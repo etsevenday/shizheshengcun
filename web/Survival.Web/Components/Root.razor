@@ -1,5 +1,6 @@
 @implements IDisposable
 @inject GameSession G
+@inject IJSRuntime JS
 
 @if (G.Config == null && G.LoadError == null)
 {
@@ -25,9 +26,22 @@ else
         await G.InitAsync();
     }
 
+    private DotNetObjectReference<FeedbackBridge>? _feedback;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _feedback = DotNetObjectReference.Create(new FeedbackBridge(G));
+        await JS.InvokeVoidAsync("survival.initFeedback", _feedback);
+    }
+
     private void OnChanged() => InvokeAsync(StateHasChanged);
 
     private async Task Reload() => await G.InitAsync();
 
-    public void Dispose() => G.Changed -= OnChanged;
+    public void Dispose()
+    {
+        G.Changed -= OnChanged;
+        _feedback?.Dispose();
+    }
 }

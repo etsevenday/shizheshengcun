@@ -1,4 +1,5 @@
 @inherits GameComponent
+@inject IJSRuntime JS
 
 @{
     var s = G.S;
@@ -29,6 +30,7 @@
             <div class="btn-row">
                 <button class="primary" @onclick="Restart">重新开始</button>
                 <button class="secondary" @onclick="ShowLog">查看记录</button>
+                <button class="secondary" @onclick="Feedback">反馈</button>
                 <button class="secondary" @onclick="G.BackToTitle">返回标题</button>
             </div>
             <div class="under">v0.2 原型不提供跨局继承，重新开始会完整重置世界与角色。</div>
@@ -62,6 +64,8 @@ else if (G.SevenDayPending && s.Main == null && s.Sub == null && !G.Running)
     }
 
     private void ShowLog() => showLog = true;
+
+    private async Task Feedback() => await JS.InvokeVoidAsync("survival.openFeedback");
 
     private void Continue()
     {

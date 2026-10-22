@@ -17,6 +17,23 @@ window.survival = {
   saveRemove: function (key) {
     try { window.localStorage.removeItem(key); window.localStorage.removeItem(key + '.tmp'); } catch (e) { }
   },
+  // 通用留言组件：游戏提供当前状态与存档，其余（截图、系统识别、提交）由组件完成
+  initFeedback: function (bridge) {
+    if (!window.FeedbackWidget) return;
+    FeedbackWidget.init({
+      project: 'shizheshengcun',
+      configUrl: 'feedback.json',
+      title: '反馈与留言',
+      subtitle: '小问题随手留言：会自动附上你的系统、浏览器、当前画面和游戏状态，方便作者定位。',
+      getContext: async function () { return JSON.parse(await bridge.invokeMethodAsync('GetFeedbackContext')); },
+      getAttachment: async function () {
+        var t = await bridge.invokeMethodAsync('GetSaveJson');
+        return t ? { name: 'save.json', text: t } : null;
+      },
+      attachmentLabel: '附带当前存档（方便作者复现问题）',
+    });
+  },
+  openFeedback: function () { if (window.FeedbackWidget) FeedbackWidget.open(); },
   hookKeys: function (dotnet) {
     if (window.__survivalKeys) document.removeEventListener('keydown', window.__survivalKeys);
     window.__survivalKeys = function (ev) {
@@ -24,7 +41,8 @@ window.survival = {
       if (t === 'INPUT' || t === 'TEXTAREA') { if (ev.key !== 'Escape') return; }
       if (ev.ctrlKey || ev.altKey || ev.metaKey) return;
       var k = ev.key;
-      if (['m', 'M', 'c', 'C', 'r', 'R', 'l', 'L', 'Escape'].indexOf(k) >= 0) {
+      if (window.FeedbackWidget && FeedbackWidget.isOpen()) return;
+      if (['m', 'M', 'c', 'C', 'r', 'R', 'l', 'L', 'f', 'F', 'Escape'].indexOf(k) >= 0) {
         ev.preventDefault();
         dotnet.invokeMethodAsync('OnKey', k.length === 1 ? k.toUpperCase() : k);
       }

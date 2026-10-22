@@ -20,6 +20,7 @@
             <button class="@(G.Panel == "craft" ? "on" : "")" @onclick='() => Toggle("craft")'>手工制作<kbd>C</kbd></button>
             <button class="@(G.Panel == "rest" ? "on" : "")" @onclick='() => Toggle("rest")'>休息<kbd>R</kbd></button>
             <button class="@(G.Panel == "log" ? "on" : "")" @onclick='() => Toggle("log")'>行动日志<kbd>L</kbd></button>
+            <button class="feedback-btn" @onclick="OpenFeedback" title="把遇到的问题或想法留给作者">反馈<kbd>F</kbd></button>
             <button class="@(G.Panel == "menu" ? "on" : "")" @onclick='() => Toggle("menu")'>菜单<kbd>Esc</kbd></button>
         </nav>
     </header>
@@ -96,6 +97,8 @@
         }
     }
 
+    private async Task OpenFeedback() => await JS.InvokeVoidAsync("survival.openFeedback");
+
     private void Toggle(string panel)
     {
         G.Panel = G.Panel == panel ? null : panel;
@@ -105,6 +108,7 @@
     [JSInvokable]
     public void OnKey(string key)
     {
+        if (key == "F") { _ = OpenFeedback(); return; }
         if (G.State == null || G.S.Progress.Dead) return;
         switch (key)
         {

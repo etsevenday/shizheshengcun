@@ -35,6 +35,7 @@ jobs:
           REPO="${GITHUB_REPOSITORY#*/}"
           sed -i "s|<base href=\"/\" />|<base href=\"/${REPO}/\" />|" publish/wwwroot/index.html
           BUILD="$(date -u +%Y-%m-%d) · ${GITHUB_SHA::7}"
+          sed -i "s|<meta name=\"app-build\" content=\"本地开发版\" />|<meta name=\"app-build\" content=\"${BUILD}\" />|" publish/wwwroot/index.html
           sed -i "s|</body>|<div style=\"position:fixed;right:6px;bottom:2px;font-size:11px;color:#6d7466;pointer-events:none\">构建 ${BUILD}</div></body>|" publish/wwwroot/index.html
           cp publish/wwwroot/index.html publish/wwwroot/404.html
           touch publish/wwwroot/.nojekyll

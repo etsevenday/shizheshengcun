@@ -7,7 +7,8 @@
 - 用电脑浏览器打开，建议窗口不小于 1280×720。
 - 首次载入需要下载约 10MB 运行时，之后会缓存。
 - 存档保存在本浏览器里，换浏览器或清除网站数据会丢失。
-- 快捷键：M 地图，C 手工制作，R 休息，L 行动日志，Esc 关闭当前面板。
+- 快捷键：M 地图，C 手工制作，R 休息，L 行动日志，F 反馈，Esc 关闭当前面板。
+- 遇到问题按 F 留言：会自动附上当前画面、系统环境和游戏状态，截图可以直接 Ctrl+V 粘贴。
 
 ## 这是什么
 
@@ -20,6 +21,7 @@
 | 实施方案 v0.1 | 工程结构、内核接口、开发中补充的规则假设（第 9 节） |
 | 开发计划 v0.1 | 里程碑与已确认决策 |
 | 试玩记录 v0.1 | 界面验收结果与发布前检查 |
+| 留言板接入说明 | 反馈组件、Supabase 配置步骤、用 AI 处理留言的流程 |
 | 试玩评价与改进建议 v0.1 | 一次完整试玩的数据、与策划案的逐条对照、已修复项与待拍板建议 |
 
 ## 工程结构
@@ -29,7 +31,8 @@ data/config.v0.3.json      全部数值配置（由策划 v0.2 转换，数值�
 src/Core/                  纯 C# 内核，不依赖 UnityEngine；同时是一个 Unity 本地包
 web/Survival.Core/         .NET 类库，编译 src/Core 的源码
 web/Survival.Core.Tests/   NUnit：M01–M09、G01–G08、S01–S12 验收用例与七日通关脚本
-web/Survival.Web/          Blazor WebAssembly 网页壳
+web/Survival.Web/          Blazor WebAssembly 网页壳（含通用留言组件 wwwroot/js/feedback-widget.js）
+tools/                     留言板建表脚本与收件工具 feedback.py
 ```
 
 将来接 Unity UGUI：在 Unity 工程的 `Packages/manifest.json` 里加一行本地包引用即可复用同一份内核。

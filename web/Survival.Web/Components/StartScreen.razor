@@ -1,4 +1,5 @@
 @inherits GameComponent
+@inject IJSRuntime JS
 
 <div class="title-screen">
     <div class="title-card">
@@ -8,6 +9,7 @@
             <button class="primary" @onclick="OnNew">新游戏</button>
             <button class="secondary" disabled="@(!hasSave)" @onclick="OnContinue">继续</button>
             <button class="secondary" @onclick="() => showHelp = !showHelp">玩法说明</button>
+            <button class="secondary" @onclick="Feedback">反馈问题</button>
         </div>
 
         @if (confirmOverwrite)
@@ -31,7 +33,7 @@
                 · 每5分钟结算一次饥饿、口渴、体力、睡意和精神。<br />
                 · 探索只发现地点与资源点，物资要另外采集；产物先放在地面，需要自己拾取。<br />
                 · 脏水要用金属锅在营地火堆上烧开再喝；块根要煮熟才能吃。<br />
-                · 快捷键：M 地图，C 手工制作，R 休息，L 行动日志，Esc 关闭当前面板。
+                · 快捷键：M 地图，C 手工制作，R 休息，L 行动日志，F 反馈，Esc 关闭当前面板。
             </div>
         }
         <div class="version"><span>原型 v0.1 · 基础系统 v0.2</span><span>存档保存在本浏览器</span></div>
@@ -71,6 +73,8 @@
         confirmOverwrite = false;
         G.NewGame();
     }
+
+    private async Task Feedback() => await JS.InvokeVoidAsync("survival.openFeedback");
 
     private void OnContinue()
     {
