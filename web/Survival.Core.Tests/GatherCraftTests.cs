@@ -252,4 +252,32 @@ public class GatherCraftTests : TestBase
         Assert.That(E.DoInstant(s, InstantRequest.Extinguish()).Ok, Is.True);
         Assert.That(f.FuelMinutes, Is.EqualTo(235), "熄火保留燃料");
     }
+
+    [Test]
+    public void Preview_BuildAtNight_ListsFireOutAsFactorChange()
+    {
+        // 夜间 03:40，火堆还剩 55 分钟：建棚开始按 ×1 算，火堆燃尽后转为夜间无照明 ×1.5。
+        // UI 案 06 要求列出导致耗时增加的原因，地图案 07 要求预计时间随之更新。
+        var s = New();
+        s.GameMinute = At(2, 3, 40);
+        E.DebugGive(s, "wood", 4, "camp");
+        E.DebugGive(s, "fiber", 4, "camp");
+        var f = s.Locations["camp"].Facility;
+        f.FireLit = true;
+        f.FuelMinutes = 55;
+
+        var p = E.Preview(s, ActionRequest.Craft("shelter"));
+        Assert.That(p.Ok, Is.True, p.Reason);
+        Assert.That(p.FactorAtStart, Is.EqualTo(1).Within(1e-9), "有照明时开工倍率为 1");
+        Assert.That(p.EstimatedMinutes, Is.GreaterThan(120), "火堆燃尽后剩余工作按 ×1.5 计时");
+        var w = p.Warnings.FirstOrDefault(x => x.Contains("火堆燃尽"));
+        Assert.That(w, Is.Not.Null, string.Join(" | ", p.Warnings));
+        Assert.That(w, Does.Contain("04:35").And.Contain("×1.5").And.Contain("夜间无照明"));
+
+        // 火堆足够烧完全程时不应出现倍率变化提示
+        f.FuelMinutes = 240;
+        var p2 = E.Preview(s, ActionRequest.Craft("shelter"));
+        Assert.That(p2.EstimatedMinutes, Is.EqualTo(120));
+        Assert.That(p2.Warnings.Any(x => x.Contains("倍率变为")), Is.False, string.Join(" | ", p2.Warnings));
+    }
 }

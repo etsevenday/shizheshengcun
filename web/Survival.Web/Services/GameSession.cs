@@ -60,6 +60,8 @@ public sealed class GameSession
     public Selection Selected { get; private set; } = new();
     /// <summary>当前打开的浏览层：map / craft / rest / log / menu / status:xxx。</summary>
     public string? Panel { get; set; }
+    /// <summary>从设施卡打开加工面板时要预选的配方；面板读取一次后清空。</summary>
+    public string? CraftRecipe { get; set; }
 
     public GameEngine E => Engine!;
     public GameState S => State!;
@@ -271,9 +273,19 @@ public sealed class GameSession
         }
         Notice = last.Ok ? null : last.Reason;
         Drain();
+        ReconcileSelection();
         Save();
         Notify();
         return last;
+    }
+
+    /// <summary>选中的物品堆已全部拾走或放下时清空选中，详情区回到默认提示（UI 案 04）。</summary>
+    private void ReconcileSelection()
+    {
+        if (Selected.Kind != SelectionKind.ItemGroup && Selected.Kind != SelectionKind.Tool) return;
+        var still = S.Items.Any(i => i.Owner == Selected.Owner && i.ItemId == Selected.Id
+                                     && (Selected.InstanceId == null || i.InstanceId == Selected.InstanceId));
+        if (!still) Selected = new Selection();
     }
 
     /// <summary>某批次在 30 公斤上限内最多能拾取多少。</summary>

@@ -30,7 +30,7 @@
 
         @if (lc.HasFire)
         {
-            <button class="card facility" @onclick='() => Open("craft")'>
+            <button class="card facility" @onclick='() => OpenCraft("boil")'>
                 <div class="ctitle"><span>火堆</span><span class="tag dark">@(fac.FireLit ? "燃烧中" : "未点燃")</span></div>
                 <div class="art">@Icons.Markup("fire")</div>
                 <div class="cinfo">燃料 @(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分钟<br /><span class="muted">点击打开营地加工</span></div>
@@ -38,7 +38,7 @@
         }
         @if (lc.CanBuildShelter)
         {
-            <button class="card facility @(fac.ShelterBuilt ? "" : "dim")" @onclick='() => Open("craft")'>
+            <button class="card facility @(fac.ShelterBuilt ? "" : "dim")" @onclick='() => OpenCraft(fac.ShelterBuilt && !fac.BedBuilt ? "bed" : "shelter")'>
                 <div class="ctitle"><span>遮蔽棚</span><span class="tag dark">@(fac.ShelterBuilt ? "已建造" : "未建造")</span></div>
                 <div class="art">@Icons.Markup("shelter")</div>
                 <div class="cinfo">@(fac.ShelterBuilt ? "营地可遮蔽睡眠" : "木材4、植物纤维4")<br />床垫：@(fac.BedBuilt ? "已铺好" : "未铺")</div>
@@ -103,5 +103,12 @@
     {
         G.Panel = panel;
         G.Notify();
+    }
+
+    /// <summary>设施卡是加工面板的入口（UI 案 UI-06），打开时预选该设施对应的配方。</summary>
+    private void OpenCraft(string recipeId)
+    {
+        G.CraftRecipe = recipeId;
+        Open("craft");
     }
 }

@@ -39,6 +39,11 @@ namespace Survival.Core.Engine
             if (a != null) a.HazardHit = false;
 
             var alerts = new HashSet<StatId>();
+            // 逐段跟踪工作倍率：火堆燃尽、入夜、体力跌破阈值都会让后续段变慢，
+            // 预览必须把变化的时刻与原因列出来（UI 案 06、地图案 07）。
+            var trackFactor = p.IsWork && !plan.IsSub;
+            var prevFactor = p.FactorAtStart;
+            var prevLit = s.Locations[s.CurrentLocation].Facility.FireLit;
             for (var k = 0; k < SimLimit; k++)
             {
                 var cur = plan.IsSub ? c.Sub : c.Main;
@@ -49,6 +54,20 @@ namespace Survival.Core.Engine
                     if (cur.PauseStat.HasValue) alerts.Add(cur.PauseStat.Value);
                     Resume(c);
                 }
+                if (trackFactor)
+                {
+                    var reasons = new List<string>();
+                    var f = WorkFactor(c, r.Type, reasons);
+                    var litNow = c.Locations[c.CurrentLocation].Facility.FireLit;
+                    if (System.Math.Abs(f - prevFactor) > Eps)
+                    {
+                        var cause = prevLit && !litNow && r.Type != ActionType.Travel ? "火堆燃尽，" : "";
+                        var why = reasons.Count > 0 ? $"（{string.Join("，", reasons)}）" : "";
+                        p.Warnings.Add($"预计{Clock.HHmm(c.GameMinute)}起{cause}工作倍率变为×{f:0.##}{why}");
+                        prevFactor = f;
+                    }
+                    prevLit = litNow;
+                }
                 Advance(c);
             }
             p.AlertsExpected = alerts.ToList();
@@ -57,7 +76,6 @@ namespace Survival.Core.Engine
             p.EstimatedEndMinute = c.GameMinute;
             p.EstimatedMinutes = c.GameMinute - s.GameMinute;
 
-            if (IsDaylight(s.GameMinute) && !IsDaylight(c.GameMinute)) p.Warnings.Add("预计途中入夜，夜间无照明时工作减速");
             if (p.WouldDie) p.Warnings.Add("按当前状态，行动途中可能死亡");
             if (p.WillPauseFireOut) p.Warnings.Add("火堆燃料不足以完成加工，途中会暂停");
             foreach (var st in alerts) p.Warnings.Add($"途中{StatName(st)}将越过提醒阈值，行动会暂停");

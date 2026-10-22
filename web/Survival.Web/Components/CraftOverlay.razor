@@ -127,7 +127,10 @@
     {
         base.OnInitialized();
         var main = G.S.Main;
+        var wanted = G.CraftRecipe;
+        G.CraftRecipe = null;
         if (main != null && (main.Type == ActionType.Craft || main.Type == ActionType.Build)) recipeId = main.TargetId;
+        else if (wanted != null && G.E.Config.Recipes.Any(r => r.Id == wanted)) recipeId = wanted;
         else if (G.E.Location(G.S.CurrentLocation).HasFire) recipeId = "boil";
     }
 
