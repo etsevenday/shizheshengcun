@@ -17,3 +17,5 @@ doc/基础系统 v0.2/*.docx
 # 留言板：本机密钥与下载的留言（含玩家截图与存档），不入库
 .feedback.local.json
 feedback-inbox/
+__pycache__/
+*.pyc
