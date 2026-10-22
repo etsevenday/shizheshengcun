@@ -332,6 +332,7 @@
     '.fbw-primary{background:#d6b779;color:#222a20;border:0;font-weight:600;font-size:16px;padding:10px 18px}' +
     '.fbw [hidden]{display:none!important}' +
     '.fbw-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}' +
+    '.fbw-foot{position:sticky;bottom:0;margin:0 -22px -20px;padding:10px 22px 16px;background:#222b24;border-top:1px solid #3b453c;display:flex;flex-direction:column;gap:10px;z-index:1}' +
     '.fbw-row .fbw-grow{flex:1}' +
     '.fbw details{background:#1b221e;border:1px solid #3b453c;border-radius:4px;padding:6px 10px}' +
     '.fbw summary{cursor:pointer;font-size:13px;color:#aab2a4}' +
@@ -349,10 +350,10 @@
     document.head.appendChild(s);
   }
 
-  function toast(msg) {
-    var t = el('div', { class: 'fbw-toast fbw-ignore', text: msg });
+  function toast(msg, ms) {
+    var t = el('div', { class: 'fbw-toast fbw-ignore', role: 'status', text: msg });
     document.body.appendChild(t);
-    setTimeout(function () { t.remove(); }, 2600);
+    setTimeout(function () { t.remove(); }, ms || 2600);
   }
 
   function setStatus(msg, kind) {
@@ -402,6 +403,7 @@
     var btn = root.querySelector('.fbw-primary');
     btn.disabled = true;
     try {
+      if (state.capturePromise) { setStatus('正在截取当前画面，稍等…'); await state.capturePromise; if (!root) return; }
       await loadConfig();
       var payload = await buildPayload();
       state.lastPayload = payload;
@@ -417,13 +419,17 @@
       lastSubmitAt = Date.now();
       store('fbw.draft.' + (opts.project || ''), null);
       store('fbw.contact', state.contact);
-      setStatus('已收到，谢谢！编号 ' + payload.id.slice(0, 8), 'ok');
+      var ticket = payload.id.slice(0, 8);
+      setStatus('已收到，谢谢！编号 ' + ticket, 'ok');
       state.message = '';
       root.querySelector('textarea').value = '';
       state.images.forEach(function (i) { URL.revokeObjectURL(i.url); });
       state.images = [];
       renderImages();
-      setTimeout(function () { if (root && state && !state.message) close(); }, 1600);
+      // 关窗后再留一条较长的提示，避免玩家还没看清编号弹窗就没了
+      setTimeout(function () {
+        if (root && state && !state.message) { close(); toast('留言已收到，谢谢！编号 ' + ticket, 8000); }
+      }, 1600);
     } catch (e) {
       setStatus('提交失败：' + e.message + '。可以先复制为文字发给作者，草稿已保留。', 'err');
       root.querySelector('.fbw-fallback').hidden = false;
@@ -432,15 +438,16 @@
     }
   }
 
-  function build() {
+  function build(o) {
     var draft = store('fbw.draft.' + (opts.project || '')) || {};
     state = {
-      category: draft.category || 'bug',
+      category: (o && o.category) || draft.category || 'bug',
       message: draft.message || '',
       contact: draft.contact || store('fbw.contact') || '',
       images: [],
       includeAttachment: true,
       capturing: false,
+      capturePromise: null,
     };
 
     var cats = el('div', { class: 'fbw-cats', role: 'radiogroup', 'aria-label': '反馈类型' });
@@ -466,7 +473,7 @@
         '截图：Ctrl+V 粘贴、拖进来，或 ',
         el('button', { type: 'button', class: 'fbw-btn', text: '选择图片', onclick: function () { file.click(); } }),
         ' ',
-        el('button', { type: 'button', class: 'fbw-btn', text: '截取当前画面', onclick: doCapture }),
+        el('button', { type: 'button', class: 'fbw-btn', text: '截取当前画面', onclick: function () { doCapture(false); } }),
       ]),
       file,
     ]);
@@ -507,12 +514,15 @@
       cats, ta, drop,
       el('div', { class: 'fbw-row' }, [el('div', { class: 'fbw-grow' }, [contact])]),
       attachRow, preview,
-      el('div', { class: 'fbw-row' }, [
-        el('div', { class: 'fbw-status fbw-grow' }),
-        el('button', { type: 'button', class: 'fbw-btn', text: '取消', onclick: close }),
-        el('button', { type: 'button', class: 'fbw-btn fbw-primary', text: '提交', onclick: submit }),
+      // 底部操作区吸附在弹窗底部：内容再长（展开自动信息、出现复制框）提交按钮也始终可见
+      el('div', { class: 'fbw-foot' }, [
+        el('div', { class: 'fbw-row' }, [
+          el('div', { class: 'fbw-status fbw-grow' }),
+          el('button', { type: 'button', class: 'fbw-btn', text: '取消', onclick: close }),
+          el('button', { type: 'button', class: 'fbw-btn fbw-primary', text: '提交', onclick: submit }),
+        ]),
+        fallback,
       ]),
-      fallback,
     ]);
 
     root = el('div', { class: 'fbw-back' }, [box]);
@@ -545,17 +555,27 @@
     toast('浏览器不允许自动复制，请按 Ctrl+C 复制已选中的文字');
   }
 
-  async function doCapture() {
-    if (state.capturing) return;
-    state.capturing = true; renderImages();
-    try {
-      var b = await captureScreen();
-      if (b) await addImage(b, '当前画面');
-    } catch (e) {
-      toast('自动截图失败，可以用系统截图后粘贴');
-    } finally {
-      if (state) { state.capturing = false; if (root) renderImages(); }
-    }
+  /** 截取当前画面并加入图片列表。auto 为打开弹窗时的自动截图：限时、失败不打扰。 */
+  function doCapture(auto) {
+    if (!state || state.capturing) return state && state.capturePromise;
+    var mine = state;
+    mine.capturing = true; renderImages();
+    mine.capturePromise = (async function () {
+      try {
+        var work = captureScreen();
+        var b = auto
+          ? await Promise.race([work, new Promise(function (r) { setTimeout(function () { r(null); }, 8000); })])
+          : await work;
+        if (b && state === mine) await addImage(b, '当前画面');
+        else if (!b && !auto) toast('自动截图失败，可以用系统截图后粘贴');
+      } catch (e) {
+        if (!auto) toast('自动截图失败，可以用系统截图后粘贴');
+      } finally {
+        mine.capturing = false; mine.capturePromise = null;
+        if (state === mine && root) renderImages();
+      }
+    })();
+    return mine.capturePromise;
   }
 
   // ───────────── 对外接口 ─────────────
@@ -572,16 +592,12 @@
     if (root) return;
     ensureCss();
     loadConfig();
-    // 先截图再显示弹窗，保证截到的是用户正在看的画面
-    var shot = null;
-    if (opts.autoCapture !== false) {
-      try { shot = await Promise.race([captureScreen(), new Promise(function (r) { setTimeout(function () { r(null); }, 6000); })]); } catch (e) { shot = null; }
-    }
-    var ta = build();
-    if (o && o.category) state.category = o.category;
+    // 立即显示弹窗，截图在后台进行并用占位格提示；截图时会排除弹窗本身（ignoreElements）
+    var ta = build(o);
     document.body.appendChild(root);
-    if (shot) await addImage(shot, '当前画面'); else renderImages();
+    renderImages();
     ta.focus();
+    if (opts.autoCapture !== false) doCapture(true);
   }
 
   function init(o) {
