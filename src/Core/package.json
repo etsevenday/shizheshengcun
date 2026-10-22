@@ -1,0 +1,10 @@
+{
+  "name": "com.survival.core",
+  "version": "0.1.0",
+  "displayName": "Survival Core",
+  "description": "适者生存纯 C# 内核：时钟、身体状态、地图、搜集、加工、存档。不依赖 UnityEngine。",
+  "unity": "2022.3",
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  }
+}

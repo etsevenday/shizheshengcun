@@ -1,0 +1,15 @@
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+TestResults/
+publish/
+*.swp
+.DS_Store
+Thumbs.db
+
+# 第三方游戏商店截图（版权属原作者），不随公开仓库分发；本地保留
+doc/基础系统 v0.2/Markdown/assets/01-figure-0[1-4].jpg
+doc/基础系统 v0.2/*.docx

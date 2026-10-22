@@ -1,0 +1,193 @@
+{
+  "version": "0.3",
+  "sourceVersion": "0.2",
+  "date": "2026-10-22",
+  "time": {
+    "tickMinutes": 5,
+    "startAbsoluteMinute": 480,
+    "minutesPerDay": 1440,
+    "daylightStartMinute": 360,
+    "daylightEndMinute": 1080,
+    "offlineProgress": false
+  },
+  "initialStats": {
+    "health": 100,
+    "satiety": 80,
+    "hydration": 80,
+    "energy": 90,
+    "wakefulness": 90,
+    "morale": 60
+  },
+  "carry": {
+    "softGrams": 20000,
+    "hardGrams": 30000
+  },
+  "workFactors": {
+    "night": 1.5,
+    "overweight": 1.25,
+    "lowEnergy": 1.25,
+    "cap": 2.0
+  },
+  "actions": {
+    "waitMinutes": [30, 60],
+    "restMinutes": [30, 60, 120],
+    "sleepMinutes": [120, 240, 480],
+    "exploreMinutes": 30,
+    "exploreProgress": 25,
+    "igniteMinutes": 5,
+    "useMinutes": 5,
+    "rateAliases": {
+      "travel": "travel",
+      "explore": "explore",
+      "gather": "gather",
+      "craft": "craft",
+      "build": "craft",
+      "ignite": "craft",
+      "wait": "wait",
+      "use": "wait",
+      "rest": "rest"
+    },
+    "workActionTypes": ["travel", "explore", "gather", "craft", "build"]
+  },
+  "startingCarried": {
+    "pot": 1,
+    "lighter": 1
+  },
+  "startingCampGround": {
+    "canned_food": 2,
+    "clean_water": 2,
+    "wood": 2,
+    "fiber": 2,
+    "cloth": 2,
+    "stone": 2
+  },
+  "fire": {
+    "burnMinutesPerWood": 60,
+    "igniteMinutes": 5,
+    "maxFuelMinutes": 240,
+    "minFuelToIgnite": 5
+  },
+  "items": [
+    { "id": "dirty_water", "name": "脏水", "weightGrams": 500, "stackMax": 20, "shelfLifeMinutes": null, "kind": "water", "toolTag": null, "maxDurability": null, "edible": true, "requiresCooking": false, "use": { "satiety": 0, "hydration": 30, "morale": 0, "health": 0, "causesDiarrhea": true, "isBandage": false }, "desc": "饮用补水30，必定腹泻12小时" },
+    { "id": "clean_water", "name": "净水", "weightGrams": 500, "stackMax": 20, "shelfLifeMinutes": null, "kind": "water", "toolTag": null, "maxDurability": null, "edible": true, "requiresCooking": false, "use": { "satiety": 0, "hydration": 30, "morale": 0, "health": 0, "causesDiarrhea": false, "isBandage": false }, "desc": "饮用补水30" },
+    { "id": "canned_food", "name": "罐头", "weightGrams": 500, "stackMax": 10, "shelfLifeMinutes": null, "kind": "food", "toolTag": null, "maxDurability": null, "edible": true, "requiresCooking": false, "use": { "satiety": 35, "hydration": 0, "morale": 0, "health": 0, "causesDiarrhea": false, "isBandage": false }, "desc": "饱食加35" },
+    { "id": "berry", "name": "野果", "weightGrams": 200, "stackMax": 20, "shelfLifeMinutes": 1440, "kind": "food", "toolTag": null, "maxDurability": null, "edible": true, "requiresCooking": false, "use": { "satiety": 10, "hydration": 5, "morale": 0, "health": 0, "causesDiarrhea": false, "isBandage": false }, "desc": "饱食加10，水分加5" },
+    { "id": "raw_root", "name": "生块根", "weightGrams": 300, "stackMax": 20, "shelfLifeMinutes": 4320, "kind": "food", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": true, "use": null, "desc": "需烹饪，不可直接食用" },
+    { "id": "cooked_root", "name": "熟块根", "weightGrams": 300, "stackMax": 20, "shelfLifeMinutes": 1440, "kind": "food", "toolTag": null, "maxDurability": null, "edible": true, "requiresCooking": false, "use": { "satiety": 25, "hydration": 0, "morale": 2, "health": 0, "causesDiarrhea": false, "isBandage": false }, "desc": "饱食加25，精神加2" },
+    { "id": "wood", "name": "木材", "weightGrams": 500, "stackMax": 20, "shelfLifeMinutes": null, "kind": "material", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "每单位提供60分钟燃烧时间" },
+    { "id": "fiber", "name": "植物纤维", "weightGrams": 100, "stackMax": 50, "shelfLifeMinutes": null, "kind": "material", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "工具与营地材料" },
+    { "id": "stone", "name": "石块", "weightGrams": 500, "stackMax": 20, "shelfLifeMinutes": null, "kind": "material", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "工具材料" },
+    { "id": "scrap", "name": "废金属", "weightGrams": 500, "stackMax": 20, "shelfLifeMinutes": null, "kind": "material", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "遗迹物资，留作后续加工" },
+    { "id": "cloth", "name": "布料", "weightGrams": 100, "stackMax": 50, "shelfLifeMinutes": null, "kind": "material", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "绷带与床垫材料" },
+    { "id": "parts", "name": "零件", "weightGrams": 200, "stackMax": 20, "shelfLifeMinutes": null, "kind": "material", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "遗迹物资，留作后续加工" },
+    { "id": "herb", "name": "草药", "weightGrams": 100, "stackMax": 20, "shelfLifeMinutes": 4320, "kind": "medical", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "制作绷带，不直接服用" },
+    { "id": "bandage", "name": "草药绷带", "weightGrams": 100, "stackMax": 20, "shelfLifeMinutes": null, "kind": "medical", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": false, "use": { "satiety": 0, "hydration": 0, "morale": 0, "health": 5, "causesDiarrhea": false, "isBandage": true }, "desc": "健康加5，每60分钟最多一次" },
+    { "id": "stone_knife", "name": "石刀", "weightGrams": 500, "stackMax": 1, "shelfLifeMinutes": null, "kind": "tool", "toolTag": "stone_knife", "maxDurability": 20, "edible": false, "requiresCooking": false, "use": null, "desc": "耐久20，纤维采集耗时20→10分钟" },
+    { "id": "hatchet", "name": "简易斧", "weightGrams": 1500, "stackMax": 1, "shelfLifeMinutes": null, "kind": "tool", "toolTag": "hatchet", "maxDurability": 30, "edible": false, "requiresCooking": false, "use": null, "desc": "耐久30，木材采集产出翻倍" },
+    { "id": "pot", "name": "金属锅", "weightGrams": 1000, "stackMax": 1, "shelfLifeMinutes": null, "kind": "tool", "toolTag": "pot", "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "烧水和烹饪的催化工具，不消耗" },
+    { "id": "lighter", "name": "打火器", "weightGrams": 100, "stackMax": 1, "shelfLifeMinutes": null, "kind": "tool", "toolTag": "lighter", "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "点火工具，首版不设使用次数" }
+  ],
+  "locations": [
+    { "id": "camp", "name": "临时营地", "exposure": "outdoor", "initialProgress": 100, "initiallyDiscovered": true, "initiallyVisited": true, "hasFire": true, "canBuildShelter": true, "mapX": 130, "mapY": 100 },
+    { "id": "field", "name": "农野荒地", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": true, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 430, "mapY": 100 },
+    { "id": "stream", "name": "溪流浅滩", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 130, "mapY": 300 },
+    { "id": "woods", "name": "树林边缘", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 850, "mapY": 100 },
+    { "id": "village", "name": "废弃村庄", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 430, "mapY": 500 },
+    { "id": "hardware", "name": "五金店", "exposure": "indoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 850, "mapY": 500 },
+    { "id": "clinic", "name": "诊所", "exposure": "indoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 130, "mapY": 500 },
+    { "id": "scrapyard", "name": "废料场", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 1100, "mapY": 300 }
+  ],
+  "edges": [
+    { "id": "camp__field", "a": "camp", "b": "field", "baseMinutes": 15, "initiallyUnlocked": true, "unlockAny": [] },
+    { "id": "field__stream", "a": "field", "b": "stream", "baseMinutes": 20, "initiallyUnlocked": false, "unlockAny": [ { "location": "field", "progress": 25 } ] },
+    { "id": "field__woods", "a": "field", "b": "woods", "baseMinutes": 20, "initiallyUnlocked": false, "unlockAny": [ { "location": "field", "progress": 50 } ] },
+    { "id": "field__village", "a": "field", "b": "village", "baseMinutes": 25, "initiallyUnlocked": false, "unlockAny": [ { "location": "field", "progress": 100 } ] },
+    { "id": "village__hardware", "a": "village", "b": "hardware", "baseMinutes": 15, "initiallyUnlocked": false, "unlockAny": [ { "location": "village", "progress": 50 } ] },
+    { "id": "village__clinic", "a": "village", "b": "clinic", "baseMinutes": 20, "initiallyUnlocked": false, "unlockAny": [ { "location": "village", "progress": 100 } ] },
+    { "id": "woods__scrapyard", "a": "woods", "b": "scrapyard", "baseMinutes": 30, "initiallyUnlocked": false, "unlockAny": [ { "location": "woods", "progress": 100 }, { "location": "scrapyard", "progress": 100 } ] },
+    { "id": "hardware__scrapyard", "a": "hardware", "b": "scrapyard", "baseMinutes": 20, "initiallyUnlocked": false, "unlockAny": [ { "location": "hardware", "progress": 100 } ] }
+  ],
+  "resources": [
+    { "nodeId": "roots", "name": "块根地", "locationId": "field", "revealAt": null, "revealOnVisit": true, "baseMinutes": 30, "cap": 6, "dailyRefill": 3, "poolMode": "renewable_units", "outputs": { "raw_root": 2 }, "toolBonus": null, "hazard": null },
+    { "nodeId": "field_fiber", "name": "荒地纤维丛", "locationId": "field", "revealAt": null, "revealOnVisit": true, "baseMinutes": 20, "cap": 8, "dailyRefill": 4, "poolMode": "renewable_units", "outputs": { "fiber": 2 }, "toolBonus": { "toolTag": "stone_knife", "outputMultiplier": 1, "baseMinutesOverride": 10 }, "hazard": null },
+    { "nodeId": "water", "name": "脏水源", "locationId": "stream", "revealAt": null, "revealOnVisit": true, "baseMinutes": 10, "cap": null, "dailyRefill": 0, "poolMode": "unlimited", "outputs": { "dirty_water": 2 }, "toolBonus": null, "hazard": null },
+    { "nodeId": "herbs", "name": "草药丛", "locationId": "stream", "revealAt": 50, "revealOnVisit": false, "baseMinutes": 20, "cap": 4, "dailyRefill": 1, "poolMode": "renewable_units", "outputs": { "herb": 1 }, "toolBonus": null, "hazard": null },
+    { "nodeId": "wood", "name": "可采木材", "locationId": "woods", "revealAt": 25, "revealOnVisit": false, "baseMinutes": 30, "cap": 10, "dailyRefill": 5, "poolMode": "renewable_units", "outputs": { "wood": 1 }, "toolBonus": { "toolTag": "hatchet", "outputMultiplier": 2, "baseMinutesOverride": null }, "hazard": { "probability": 0.05, "healthLoss": 3, "label": "划伤" } },
+    { "nodeId": "stones", "name": "地表石块", "locationId": "woods", "revealAt": 50, "revealOnVisit": false, "baseMinutes": 20, "cap": 8, "dailyRefill": 0, "poolMode": "finite_units", "outputs": { "stone": 2 }, "toolBonus": null, "hazard": null },
+    { "nodeId": "berries", "name": "野果丛", "locationId": "woods", "revealAt": 75, "revealOnVisit": false, "baseMinutes": 20, "cap": 6, "dailyRefill": 3, "poolMode": "renewable_units", "outputs": { "berry": 2 }, "toolBonus": null, "hazard": null },
+    { "nodeId": "woods_fiber", "name": "林下纤维丛", "locationId": "woods", "revealAt": 75, "revealOnVisit": false, "baseMinutes": 20, "cap": 8, "dailyRefill": 4, "poolMode": "renewable_units", "outputs": { "fiber": 2 }, "toolBonus": { "toolTag": "stone_knife", "outputMultiplier": 1, "baseMinutesOverride": 10 }, "hazard": null },
+    { "nodeId": "supply_box", "name": "补给箱", "locationId": "village", "revealAt": 25, "revealOnVisit": false, "baseMinutes": 30, "cap": 1, "dailyRefill": 0, "poolMode": "single_cache", "outputs": { "canned_food": 2, "clean_water": 1 }, "toolBonus": null, "hazard": null },
+    { "nodeId": "misc_box", "name": "杂物箱", "locationId": "village", "revealAt": 75, "revealOnVisit": false, "baseMinutes": 30, "cap": 1, "dailyRefill": 0, "poolMode": "single_cache", "outputs": { "cloth": 2, "wood": 2 }, "toolBonus": null, "hazard": { "probability": 0.05, "healthLoss": 2, "label": "划伤" } },
+    { "nodeId": "pot_box", "name": "锅具箱", "locationId": "hardware", "revealAt": 50, "revealOnVisit": false, "baseMinutes": 45, "cap": 1, "dailyRefill": 0, "poolMode": "single_cache", "outputs": { "pot": 1, "parts": 2 }, "toolBonus": null, "hazard": null },
+    { "nodeId": "tool_box", "name": "工具箱", "locationId": "hardware", "revealAt": 75, "revealOnVisit": false, "baseMinutes": 45, "cap": 1, "dailyRefill": 0, "poolMode": "single_cache", "outputs": { "hatchet": 1, "scrap": 2 }, "toolBonus": null, "hazard": null },
+    { "nodeId": "med_cabinet", "name": "药柜", "locationId": "clinic", "revealAt": 25, "revealOnVisit": false, "baseMinutes": 30, "cap": 1, "dailyRefill": 0, "poolMode": "single_cache", "outputs": { "bandage": 2, "herb": 2 }, "toolBonus": null, "hazard": null },
+    { "nodeId": "cloth_bag", "name": "布料包", "locationId": "clinic", "revealAt": 50, "revealOnVisit": false, "baseMinutes": 30, "cap": 1, "dailyRefill": 0, "poolMode": "single_cache", "outputs": { "cloth": 4 }, "toolBonus": null, "hazard": null },
+    { "nodeId": "metal_heap", "name": "废金属堆", "locationId": "scrapyard", "revealAt": 25, "revealOnVisit": false, "baseMinutes": 30, "cap": 12, "dailyRefill": 0, "poolMode": "finite_units", "outputs": { "scrap": 2 }, "toolBonus": null, "hazard": { "probability": 0.1, "healthLoss": 6, "label": "擦伤" } },
+    { "nodeId": "parts_box", "name": "零件箱", "locationId": "scrapyard", "revealAt": 50, "revealOnVisit": false, "baseMinutes": 30, "cap": 1, "dailyRefill": 0, "poolMode": "single_cache", "outputs": { "parts": 4, "scrap": 2 }, "toolBonus": null, "hazard": { "probability": 0.1, "healthLoss": 6, "label": "擦伤" } }
+  ],
+  "recipes": [
+    { "id": "knife", "name": "石刀", "kind": "craft", "baseMinutes": 30, "inputs": { "stone": 1, "fiber": 1 }, "outputs": { "stone_knife": 1 }, "catalysts": [], "requirement": null, "facilityResult": null },
+    { "id": "axe", "name": "简易斧", "kind": "craft", "baseMinutes": 60, "inputs": { "stone": 2, "wood": 1, "fiber": 2 }, "outputs": { "hatchet": 1 }, "catalysts": [], "requirement": null, "facilityResult": null },
+    { "id": "bandage", "name": "草药绷带", "kind": "craft", "baseMinutes": 15, "inputs": { "cloth": 1, "herb": 1 }, "outputs": { "bandage": 1 }, "catalysts": [], "requirement": null, "facilityResult": null },
+    { "id": "boil", "name": "烧水", "kind": "craft", "baseMinutes": 15, "inputs": { "dirty_water": 2 }, "outputs": { "clean_water": 2 }, "catalysts": ["pot"], "requirement": { "facility": "fire" }, "facilityResult": null },
+    { "id": "cook", "name": "烹饪块根", "kind": "craft", "baseMinutes": 30, "inputs": { "raw_root": 2 }, "outputs": { "cooked_root": 2 }, "catalysts": ["pot"], "requirement": { "facility": "fire" }, "facilityResult": null },
+    { "id": "shelter", "name": "建遮蔽棚", "kind": "build", "baseMinutes": 120, "inputs": { "wood": 4, "fiber": 4 }, "outputs": {}, "catalysts": [], "requirement": { "facility": "camp" }, "facilityResult": "shelterBuilt" },
+    { "id": "bed", "name": "铺床垫", "kind": "build", "baseMinutes": 60, "inputs": { "fiber": 4, "cloth": 2 }, "outputs": {}, "catalysts": [], "requirement": { "facility": "shelter" }, "facilityResult": "bedBuilt" }
+  ],
+  "hourlyRates": {
+    "travel": { "satiety": -1.875, "hydration": -4.5, "energy": -8, "wakefulness": -5, "morale": -0.5 },
+    "explore": { "satiety": -1.875, "hydration": -4.5, "energy": -10, "wakefulness": -5, "morale": -0.5 },
+    "gather": { "satiety": -1.875, "hydration": -4.5, "energy": -12, "wakefulness": -5, "morale": -0.5 },
+    "craft": { "satiety": -1.5, "hydration": -3.75, "energy": -6, "wakefulness": -5, "morale": -0.5 },
+    "wait": { "satiety": -1.5, "hydration": -3, "energy": 0, "wakefulness": -5, "morale": -0.5 },
+    "rest": { "satiety": -1.5, "hydration": -3, "energy": 20, "wakefulness": -5, "morale": 0 },
+    "sleep_sheltered": { "satiety": -1.5, "hydration": -3, "energy": 15, "wakefulness": 12, "morale": 1 },
+    "sleep_outdoors": { "satiety": -1.5, "hydration": -3, "energy": 10, "wakefulness": 6, "morale": -0.5 }
+  },
+  "healthRules": {
+    "zeroSatietyPerHour": -2,
+    "zeroHydrationPerHour": -8,
+    "zeroWakefulnessPerHour": -2,
+    "zeroEnergyWhileWorkingPerHour": -1,
+    "shelteredRestRecoveryPerHour": 1,
+    "recoveryMinSatiety": 40,
+    "recoveryMinHydration": 40,
+    "recoveryMinMorale": 20
+  },
+  "thresholds": {
+    "satiety": { "value": 20, "inclusive": true },
+    "hydration": { "value": 20, "inclusive": true },
+    "wakefulness": { "value": 20, "inclusive": true },
+    "energy": { "value": 20, "inclusive": false },
+    "morale": { "value": 20, "inclusive": false },
+    "health": { "value": 25, "inclusive": true }
+  },
+  "itemActions": {
+    "useMinutes": 5,
+    "bandageCooldownMinutes": 60,
+    "diarrheaMinutes": 720,
+    "diarrheaExtraHydrationPerHour": -3
+  },
+  "facilityEffects": {
+    "bedExtraSleepEnergyPerHour": 5,
+    "shelteredCampRestMoralePerHour": 2,
+    "lowMoraleEnergyRecoveryFactor": 0.5
+  },
+  "toolEffects": {
+    "successfulActionWear": 1
+  },
+  "progress": {
+    "sevenDayCheckMinute": 10560,
+    "guides": [
+      { "day": 1, "title": "探索荒地，找到水源与树林；安排第一次饮食和睡眠。", "flags": [ { "id": "field50", "label": "农野荒地探索度达到50" }, { "id": "visitedStreamOrWoods", "label": "到访溪流浅滩或树林边缘" }, { "id": "sleptOnce", "label": "至少睡眠一次" } ] },
+      { "day": 2, "title": "完成烧水和块根烹饪，比较露天与遮蔽恢复。", "flags": [ { "id": "boiled", "label": "完成一次烧水" }, { "id": "cooked", "label": "完成一次块根烹饪" }, { "id": "shelterBuilt", "label": "建成遮蔽棚" } ] },
+      { "day": 3, "title": "进入村庄或搜集工具，建立一份次日补给。", "flags": [ { "id": "visitedVillage", "label": "到访废弃村庄" }, { "id": "supplyReady", "label": "随身或营地有净水3与熟块根2" } ] }
+    ],
+    "sevenDayItems": [
+      { "id": "boiled", "label": "建立安全饮水" },
+      { "id": "cooked", "label": "完成食物加工" },
+      { "id": "shelterBuilt", "label": "建成遮蔽棚" },
+      { "id": "allVisited", "label": "访问全部8个地点" }
+    ]
+  }
+}

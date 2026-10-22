@@ -1,0 +1,61 @@
+using Survival.Core.Config;
+using Survival.Core.Engine;
+using Survival.Core.State;
+
+namespace Survival.Core.Tests;
+
+public abstract class TestBase
+{
+    protected static readonly GameConfig Cfg =
+        ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.3.json")));
+
+    protected GameEngine E = null!;
+
+    [SetUp]
+    public void BaseSetUp() => E = new GameEngine(Cfg);
+
+    protected GameState New(uint seed = 12345) => E.NewGame(seed);
+
+    /// <summary>第 day 日 hh:mm 的绝对分钟。</summary>
+    protected static int At(int day, int hh, int mm) => (day - 1) * 1440 + hh * 60 + mm;
+
+    protected void Start(GameState s, ActionRequest r)
+    {
+        var res = E.Start(s, r);
+        Assert.That(res.Ok, Is.True, $"开始行动失败：{res.Reason}");
+    }
+
+    /// <summary>推进直到当前（主或子）行动结束、暂停或死亡；autoResume 时阈值暂停自动继续。</summary>
+    protected SegmentStatus Run(GameState s, bool autoResume = true, int max = 3000)
+    {
+        var last = SegmentStatus.Idle;
+        for (var i = 0; i < max; i++)
+        {
+            var r = E.Advance(s);
+            last = r.Status;
+            if (r.Status == SegmentStatus.Paused)
+            {
+                if (!autoResume || s.Main?.PauseReason == PauseReason.FireOut) return last;
+                E.Resume(s);
+                continue;
+            }
+            if (r.Status != SegmentStatus.Running) return last;
+        }
+        Assert.Fail("行动未在限定段数内结束");
+        return last;
+    }
+
+    protected void Steps(GameState s, int n)
+    {
+        for (var i = 0; i < n; i++) E.Advance(s);
+    }
+
+    protected void SetStats(GameState s, double h, double n, double w, double e, double sl, double m) =>
+        E.DebugSetStats(s, h, n, w, e, sl, m);
+
+    protected int Count(GameState s, string itemId, string? owner = null) =>
+        s.Items.Where(i => i.ItemId == itemId && (owner == null || i.Owner == owner)).Sum(i => i.Count);
+
+    protected ItemInstance First(GameState s, string itemId, string? owner = null) =>
+        s.Items.First(i => i.ItemId == itemId && (owner == null || i.Owner == owner));
+}
