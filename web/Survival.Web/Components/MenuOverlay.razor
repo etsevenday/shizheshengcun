@@ -1,0 +1,78 @@
+@inherits GameComponent
+
+<div class="overlay" role="dialog" aria-label="菜单" style="inset:14px auto auto 50%;transform:translateX(-50%);width:520px">
+    <div class="overlay-head">
+        <h2>菜单</h2>
+        <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
+    </div>
+    <div style="padding:18px;display:flex;flex-direction:column;gap:14px">
+        <div>
+            <div class="eyebrow" style="margin-bottom:6px">动画速度（每5分钟时间段）</div>
+            <div class="btn-row">
+                @foreach (var (label, ms) in new[] { ("快", 40), ("标准", 120), ("慢", 250) })
+                {
+                    var v = ms;
+                    <button class="secondary @(G.SegmentDelayMs == ms ? "on" : "")" style="@(G.SegmentDelayMs == ms ? "border-color:var(--accent);color:var(--accent)" : "")" @onclick="() => SetSpeed(v)">@label</button>
+                }
+            </div>
+        </div>
+        <div class="lines">
+            <div><span>种子</span><b>@G.S.Seed</b></div>
+            <div><span>已推进时间段</span><b>@G.S.SegmentCount</b></div>
+            <div><span>存档</span><b>本浏览器单槽，每段自动保存</b></div>
+        </div>
+        <button class="secondary" @onclick="ToTitle">返回标题（进度已保存）</button>
+        @if (!confirmNew)
+        {
+            <button class="secondary danger" @onclick="() => confirmNew = true">重新开始…</button>
+        }
+        else
+        {
+            <div class="confirm-box">
+                重新开始会清除当前存档，无法恢复。
+                <div class="row">
+                    <button class="secondary danger" @onclick="Restart">确认重新开始</button>
+                    <button class="secondary" @onclick="() => confirmNew = false">取消</button>
+                </div>
+            </div>
+        }
+        @if (DebugBuild)
+        {
+            <button class="secondary" @onclick="G.DebugFill">调试：在当前地面放一批物资</button>
+        }
+        <div class="tiny muted">快捷键：M 地图 · C 手工制作 · R 休息 · L 日志 · Esc 关闭当前面板。Esc 不会取消进行中的行动。</div>
+    </div>
+</div>
+
+@code {
+#if DEBUG
+    private static readonly bool DebugBuild = true;
+#else
+    private static readonly bool DebugBuild = false;
+#endif
+    private bool confirmNew;
+
+    private void SetSpeed(int ms)
+    {
+        G.SegmentDelayMs = ms;
+        G.Notify();
+    }
+
+    private void ToTitle()
+    {
+        G.Save();
+        G.BackToTitle();
+    }
+
+    private void Restart()
+    {
+        G.ClearSave();
+        G.NewGame();
+    }
+
+    private void Close()
+    {
+        G.Panel = null;
+        G.Notify();
+    }
+}

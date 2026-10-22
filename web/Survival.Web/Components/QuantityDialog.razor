@@ -1,0 +1,74 @@
+@inherits GameComponent
+
+@{
+    var e = G.E;
+    var s = G.S;
+    var before = e.CarriedGrams(s);
+    var after = before + (ToCarried ? 1 : -1) * Item.WeightGrams * n;
+    var tooHeavy = ToCarried && n > Max;
+}
+
+<div class="modal-back" @onclick="OnCancel" @onclick:stopPropagation="true">
+    <div class="modal" role="dialog" aria-label="选择数量" @onclick:stopPropagation="true">
+        <h3>@(ToCarried ? "拾取" : "放下")@Item.Name</h3>
+        <div class="lines">
+            <div><span>来源</span><b>@Source</b></div>
+            <div><span>现有数量</span><b>@Available</b></div>
+            <div><span>每单位重量</span><b>@Ui.Kg(Item.WeightGrams)公斤</b></div>
+        </div>
+        <div class="qty-row">
+            <button class="secondary" @onclick="() => Set(n - 1)" aria-label="减少">−</button>
+            <input type="number" min="1" max="@Available" value="@n" @onchange="OnInput" aria-label="数量" />
+            <button class="secondary" @onclick="() => Set(n + 1)" aria-label="增加">+</button>
+            @if (ToCarried)
+            {
+                <button class="secondary" style="width:auto" @onclick="() => Set(Max)">最大可取 @Max</button>
+            }
+            else
+            {
+                <button class="secondary" style="width:auto" @onclick="() => Set(Available)">全部</button>
+            }
+        </div>
+        <div class="lines">
+            <div><span>操作后随身重量</span><b class="@(after > e.Config.Carry.SoftGrams ? "warn-text" : "")">@Ui.Kg(after)公斤</b></div>
+        </div>
+        @if (tooHeavy)
+        {
+            <div class="blocked">携带后将超过@(e.Config.Carry.HardGrams / 1000)公斤，最多可取@(Max)份。</div>
+        }
+        else if (ToCarried && after > e.Config.Carry.SoftGrams)
+        {
+            <div class="risk">超过@(e.Config.Carry.SoftGrams / 1000)公斤后，移动、探索、搜集和制作耗时×1.25。</div>
+        }
+        <div class="btn-row">
+            <button class="primary" disabled="@(n < 1 || tooHeavy)" @onclick="() => OnConfirm.InvokeAsync(n)">确认@(ToCarried ? "拾取" : "放下") @n</button>
+            <button class="secondary" @onclick="OnCancel">取消</button>
+        </div>
+        <div class="under">本地转移不耗时</div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ItemConfig Item { get; set; } = null!;
+    [Parameter] public int Available { get; set; }
+    [Parameter] public int Max { get; set; }
+    [Parameter] public bool ToCarried { get; set; }
+    [Parameter] public string Source { get; set; } = "";
+    [Parameter] public EventCallback<int> OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private int n = 1;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        n = ToCarried ? Math.Max(1, Math.Min(Available, Max)) : Available;
+    }
+
+    private void Set(int v) => n = Math.Clamp(v, 1, Math.Max(1, Available));
+
+    private void OnInput(ChangeEventArgs ev)
+    {
+        if (int.TryParse(ev.Value?.ToString(), out var v)) Set(v);
+    }
+}

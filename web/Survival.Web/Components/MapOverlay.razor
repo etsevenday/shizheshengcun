@@ -1,0 +1,107 @@
+@inherits GameComponent
+
+@{
+    var s = G.S;
+    var e = G.E;
+    var here = s.CurrentLocation;
+    var known = e.Config.Locations.Where(l => s.Locations[l.Id].Discovered).ToList();
+    var edges = e.Config.Edges.Where(x => s.UnlockedEdges.Contains(x.Id)).ToList();
+    var adjacent = e.AdjacentUnlocked(s).Select(x => x.Other(here)).ToHashSet();
+    var target = picked ?? here;
+    var tl = e.Location(target);
+    var ts = s.Locations[target];
+}
+
+<div class="overlay" role="dialog" aria-label="区域地图">
+    <div class="overlay-head">
+        <div><h2 style="display:inline">区域地图</h2><span class="sub">已发现@(known.Count)处 · 只显示已知路线</span></div>
+        <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
+    </div>
+    <div class="overlay-body map-body">
+        <div class="panel" style="padding:12px;display:flex;flex-direction:column;min-height:0">
+            <svg class="map-canvas" viewBox="0 0 1240 600" role="img" aria-label="地点与路线">
+                @foreach (var ed in edges)
+                {
+                    var a = e.Location(ed.A);
+                    var b = e.Location(ed.B);
+                    var mx = (a.MapX + b.MapX) / 2;
+                    var my = (a.MapY + b.MapY) / 2;
+                    var near = ed.Touches(here);
+                    <line x1="@a.MapX" y1="@a.MapY" x2="@b.MapX" y2="@b.MapY" stroke="@(near ? "#d6b779" : "#6b7a68")" stroke-width="@(near ? 5 : 3)" stroke-dasharray="@(near ? "" : "10 7")" />
+                    <rect x="@(mx - 30)" y="@(my - 15)" width="60" height="28" rx="4" fill="#1b221e" />
+                    @SvgText(mx, my + 6, 17, "#c9cfbf", $"{ed.BaseMinutes}分")
+                }
+                @foreach (var l in known)
+                {
+                    var st = s.Locations[l.Id];
+                    var isHere = l.Id == here;
+                    var isPicked = l.Id == picked;
+                    var id = l.Id;
+                    <g class="map-node" @onclick="() => Pick(id)" role="button" aria-label="@l.Name">
+                        <rect x="@(l.MapX - 95)" y="@(l.MapY - 34)" width="190" height="68" rx="8"
+                              fill="@(isHere ? "#3a4a33" : st.Visited ? "#2b3a2e" : "#222b24")"
+                              stroke="@(isPicked ? "#f0d9a0" : isHere ? "#d6b779" : "#5d6b58")" stroke-width="@(isPicked || isHere ? 4 : 2)"
+                              stroke-dasharray="@(st.Visited ? "" : "8 5")" />
+                        @SvgText(l.MapX, l.MapY + 2, 22, "#eee9db", l.Name)
+                        @SvgText(l.MapX, l.MapY + 24, 14, "#aab2a4", isHere ? "● 当前位置" : st.Visited ? $"探索度{st.Progress}%" : "待访问")
+                    </g>
+                }
+            </svg>
+            <div class="map-legend"><span>实线金色：当前地点的可走路线</span><span>虚线框：已发现未访问</span><span>浏览地图不推进时间</span></div>
+        </div>
+
+        <div class="panel detail">
+            @if (target == here)
+            {
+                <div class="detail-scroll">
+                    <div class="op-head">
+                        <div class="eyebrow">当前位置</div>
+                        <h2>@tl.Name</h2>
+                        <p>@(tl.IsIndoor ? "室内，可遮蔽睡眠" : "露天")@(tl.CanBuildShelter ? " · 营地" : "") · 探索度@(ts.Progress)%</p>
+                    </div>
+                    <div class="lines">
+                        @foreach (var to in adjacent)
+                        {
+                            var ed = e.AdjacentUnlocked(s).First(x => x.Other(here) == to);
+                            <div><span>→ @e.LocName(to)</span><b>@(ed.BaseMinutes)分钟</b></div>
+                        }
+                    </div>
+                    <div class="tiny muted">在地图上选择相邻地点查看移动预估。</div>
+                </div>
+            }
+            else if (adjacent.Contains(target) && !e.IsBusy(s))
+            {
+                <PreviewView Request="ActionRequest.Travel(target)" Eyebrow="@($"{tl.Name} · {(ts.Visited ? $"探索度{ts.Progress}%" : "待访问")}")" Title="@($"前往{tl.Name}")"
+                             Subtitle="一次只移动一段相邻路线，不提供自动寻路。" OnStarted="Close" />
+            }
+            else
+            {
+                <div class="detail-scroll">
+                    <div class="op-head">
+                        <div class="eyebrow">@(ts.Visited ? $"探索度{ts.Progress}%" : "已发现 · 待访问")</div>
+                        <h2>@tl.Name</h2>
+                        <p>@(tl.IsIndoor ? "室内" : "露天")</p>
+                    </div>
+                    <div class="blocked">@(e.IsBusy(s) ? "行动进行中，地图只能浏览" : "请先前往相邻地点")</div>
+                </div>
+                <div class="detail-foot"><button class="primary" disabled>确认移动</button></div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private static MarkupString SvgText(double x, double y, int size, string fill, string content) =>
+        new($"<text x=\"{x}\" y=\"{y}\" text-anchor=\"middle\" font-size=\"{size}\" fill=\"{fill}\">{System.Net.WebUtility.HtmlEncode(content)}</text>");
+
+    private string? picked;
+
+    private void Pick(string id) => picked = id;
+
+    private Task Close()
+    {
+        G.Panel = null;
+        G.Notify();
+        return Task.CompletedTask;
+    }
+}

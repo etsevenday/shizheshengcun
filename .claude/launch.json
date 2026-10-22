@@ -1,0 +1,28 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "web/Survival.Web",
+        "--launch-profile",
+        "http"
+      ],
+      "port": 5177
+    },
+    {
+      "name": "published",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-I",
+        "C:/Users/xujie/AppData/Local/Temp/claude/E--Workspace-shizheshengcun/2c403d90-e248-4753-a0ba-1ee211920b6e/scratchpad/serve.py",
+        "5181",
+        "publish/wwwroot"
+      ],
+      "port": 5181
+    }
+  ]
+}

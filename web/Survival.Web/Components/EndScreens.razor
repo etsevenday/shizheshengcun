@@ -1,0 +1,71 @@
+@inherits GameComponent
+
+@{
+    var s = G.S;
+    var e = G.E;
+    var f = s.Progress.Flags;
+    var items = e.Config.Progress.SevenDayItems;
+    var visited = s.Locations.Count(l => l.Value.Visited);
+}
+
+@if (s.Progress.Dead && s.Progress.Death != null)
+{
+    var d = s.Progress.Death;
+    var alive = d.Minute - e.Config.Time.StartAbsoluteMinute;
+    <div class="end-back" role="alertdialog" aria-label="死亡结算">
+        <div class="end-card">
+            <div class="eyebrow">第@(Clock.Day(d.Minute))日 @Clock.HHmm(d.Minute) · @e.LocName(d.LocationId)</div>
+            <h2>你没能活下来</h2>
+            <div class="lines">
+                <div><span>直接原因</span><b class="danger-text">@d.Cause</b></div>
+                <div><span>存活时长</span><b>@(alive / 1440)天@(alive % 1440 / 60)小时@(alive % 60)分</b></div>
+                <div><span>已访问地点</span><b>@(visited)/@(s.Locations.Count)</b></div>
+                <div><span>种子</span><b>@s.Seed</b></div>
+            </div>
+            <div class="eyebrow">基础检查目标</div>
+            <ul class="checklist">
+                @foreach (var it in items) { <li class="@(f.Contains(it.Id) ? "done" : "")">@it.Label</li> }
+            </ul>
+            <div class="btn-row">
+                <button class="primary" @onclick="Restart">重新开始</button>
+                <button class="secondary" @onclick="ShowLog">查看记录</button>
+                <button class="secondary" @onclick="G.BackToTitle">返回标题</button>
+            </div>
+            <div class="under">v0.2 原型不提供跨局继承，重新开始会完整重置世界与角色。</div>
+        </div>
+    </div>
+    @if (showLog) { <div class="end-back" style="z-index:70" @onclick="() => showLog = false"><div class="end-card" style="max-height:80vh;overflow:auto">@foreach (var l in Enumerable.Reverse(s.Log).Take(80)) {<div class="small"><span class="muted">@Clock.DayTime(l.Minute)</span> @l.Text</div>}</div></div> }
+}
+else if (G.SevenDayPending && s.Main == null && s.Sub == null && !G.Running)
+{
+    <div class="end-back" role="dialog" aria-label="七日基础生存检查">
+        <div class="end-card">
+            <div class="eyebrow">第8日 08:00</div>
+            <h2>七日基础生存检查完成</h2>
+            <p class="muted" style="margin:0;line-height:1.8">你活过了第一周。下面是基础目标的完成情况；可以继续生存并完善它们，世界不会重置。</p>
+            <ul class="checklist">
+                @foreach (var it in items) { <li class="@(f.Contains(it.Id) ? "done" : "")">@it.Label@(it.Id == "allVisited" ? $"（{visited}/{s.Locations.Count}）" : "")</li> }
+            </ul>
+            <div class="lines"><div><span>种子</span><b>@s.Seed</b></div></div>
+            <button class="primary" @onclick="Continue">继续生存</button>
+        </div>
+    </div>
+}
+
+@code {
+    private bool showLog;
+
+    private void Restart()
+    {
+        G.ClearSave();
+        G.NewGame();
+    }
+
+    private void ShowLog() => showLog = true;
+
+    private void Continue()
+    {
+        G.SevenDayPending = false;
+        G.Notify();
+    }
+}

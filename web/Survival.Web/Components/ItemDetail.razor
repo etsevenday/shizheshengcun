@@ -1,0 +1,198 @@
+@inherits GameComponent
+
+@{
+    var s = G.S;
+    var e = G.E;
+    var sel = G.Selected;
+    var cfg = e.Item(sel.Id);
+    var here = s.CurrentLocation;
+    var onGround = sel.Owner == here;
+    var carried = sel.Owner == ItemInstance.Carried;
+    var stillThere = sel.Owner == ItemInstance.Carried || sel.Owner == here;
+    var list = s.Items.Where(i => i.Owner == sel.Owner && i.ItemId == sel.Id && (sel.InstanceId == null || i.InstanceId == sel.InstanceId))
+        .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
+    var batches = list.GroupBy(i => i.ExpiresAt).Select(g => new Batch(g.Key, g.Sum(i => i.Count), g.Any(i => i.ReservedBy != null), g.ToList())).ToList();
+    var busy = e.IsBusy(s) || G.Running;
+}
+
+@if (!stillThere || list.Count == 0)
+{
+    <div class="empty-detail">这件物品已不在此处。<br />选择地点、路线、资源或物品查看操作</div>
+}
+else
+{
+    var chosen = batches.FirstOrDefault(b => b.ExpiresAt == batchKey && batchPicked) ?? batches.FirstOrDefault(b => !b.Reserved && !Spoiled(b)) ?? batches[0];
+    var inst = chosen.Stacks.FirstOrDefault(i => i.ReservedBy == null) ?? chosen.Stacks[0];
+    var spoiled = Spoiled(chosen);
+    var total = batches.Sum(b => b.Count);
+
+    <div class="detail-scroll">
+        <div class="op-head">
+            <div class="eyebrow">@(carried ? "随身物品" : $"{e.LocName(sel.Owner)}地面")</div>
+            <h2>@cfg.Name <small class="muted">×@total</small></h2>
+            <p>@cfg.Desc</p>
+        </div>
+        <div class="detail-icon">@Icons.Markup(cfg.Id)</div>
+
+        <div class="lines">
+            <div><span>单件重量</span><b>@Ui.Kg(cfg.WeightGrams)公斤</b></div>
+            <div><span>合计重量</span><b>@Ui.Kg(cfg.WeightGrams * total)公斤</b></div>
+            @if (cfg.MaxDurability.HasValue)
+            {
+                <div><span>耐久</span><b class="@(inst.Durability <= 0 ? "danger-text" : "")">@(inst.Durability <= 0 ? "已损坏" : $"{inst.Durability}/{cfg.MaxDurability}")</b></div>
+            }
+            @if (cfg.ShelfLifeMinutes.HasValue)
+            {
+                <div><span>保质期</span><b>@(cfg.ShelfLifeMinutes / 60)小时</b></div>
+            }
+        </div>
+
+        @if (batches.Count > 1 || cfg.ShelfLifeMinutes.HasValue)
+        {
+            <div>
+                <div class="tiny muted" style="margin-bottom:5px">批次（默认先用最早到期的有效批次）</div>
+                @foreach (var b in batches)
+                {
+                    var key = b.ExpiresAt;
+                    <button class="batch @(b == chosen ? "on" : "")" @onclick="() => PickBatch(key)">
+                        <span>×@b.Count@(b.Reserved ? " · 预留" : "")</span>
+                        <span class="@(Spoiled(b) ? "danger-text" : "muted")">@(b.ExpiresAt.HasValue ? Ui.Fresh(b.ExpiresAt.Value - s.GameMinute) : "不会腐败")</span>
+                    </button>
+                }
+            </div>
+        }
+
+        @if (cfg.Use != null && !spoiled)
+        {
+            var req = ActionRequest.UseInstance(inst.InstanceId);
+            var p = G.Preview(req);
+            <div class="lines">
+                <div><span>即时效果</span><b>@UseEffect(cfg)</b></div>
+                @if (p.Ok)
+                {
+                    foreach (var id in new[] { StatId.Satiety, StatId.Hydration, StatId.Health, StatId.Morale })
+                    {
+                        var b0 = Ui.Floor(p.StatsBefore.Get(id));
+                        var b1 = Ui.Floor(p.StatsAfter.Get(id));
+                        if (b0 == b1) continue;
+                        <div><span>@GameEngine.StatName(id)</span><b>@b0 → @b1</b></div>
+                    }
+                }
+                <div><span>耗时</span><b>@(e.Config.ItemActions.UseMinutes)分钟（不可中途取消）</b></div>
+            </div>
+            @if (Overflow(cfg, s.Stats) is string ov) { <div class="risk">@ov</div> }
+            @if (cfg.Use.CausesDiarrhea) { <div class="risk">⚠ 脏水必定引起腹泻12小时：期间每小时额外失水3。建议在营地烧开后再喝。</div> }
+            @if (!p.Ok) { <div class="blocked">@p.Reason</div> }
+        }
+        else if (spoiled)
+        {
+            <div class="blocked">已腐败，不能食用或用于配方。仍有重量，可以放下丢弃。</div>
+        }
+        else if (cfg.RequiresCooking)
+        {
+            <div class="risk none">需在营地用金属锅和燃烧的火堆烹饪后才能食用。</div>
+        }
+        @if (chosen.Reserved)
+        {
+            <div class="risk none">该批次正被当前行动预留，不能拾取、放下或使用。</div>
+        }
+        @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+    </div>
+
+    <div class="detail-foot">
+        <div class="btn-row" style="margin-bottom:8px">
+            @if (onGround)
+            {
+                <button class="secondary" disabled="@(busy || chosen.Reserved)" @onclick="() => Transfer(chosen, true)">拾取@(chosen.Count > 1 ? "…" : "")</button>
+            }
+            @if (carried)
+            {
+                <button class="secondary" disabled="@(busy || chosen.Reserved)" @onclick="() => Transfer(chosen, false)">放下@(chosen.Count > 1 ? "…" : "")</button>
+            }
+        </div>
+        @if (cfg.Use != null && !spoiled)
+        {
+            var label = $"{GameEngine.UseVerb(cfg)}1份{cfg.Name}·{e.Config.ItemActions.UseMinutes}分钟";
+            var p = G.Preview(ActionRequest.UseInstance(inst.InstanceId));
+            <button class="primary" disabled="@(!p.Ok || busy || chosen.Reserved)" @onclick="() => Use(inst.InstanceId)">@label</button>
+        }
+        <div class="under">@(busy ? "行动进行中，暂不能整理物品" : "拾取与放下不耗时；物品只能在当前地点取用")</div>
+    </div>
+
+    @if (qty != null)
+    {
+        <QuantityDialog Item="cfg" Max="qty.Max" Available="qty.Available" ToCarried="qty.ToCarried" Source="@(qty.ToCarried ? $"{e.LocName(here)}地面" : "随身")"
+                        OnConfirm="ConfirmQty" OnCancel="() => qty = null" />
+    }
+}
+
+@code {
+    private sealed record Batch(int? ExpiresAt, int Count, bool Reserved, List<ItemInstance> Stacks);
+    private sealed record QtyState(int? ExpiresAt, int Available, int Max, bool ToCarried);
+
+    private int? batchKey;
+    private bool batchPicked;
+    private QtyState? qty;
+    private string lastSelection = "";
+
+    protected override void OnParametersSet()
+    {
+        if (G.Selected.Key != lastSelection)
+        {
+            lastSelection = G.Selected.Key;
+            batchPicked = false;
+            qty = null;
+        }
+    }
+
+    private bool Spoiled(Batch b) => b.ExpiresAt.HasValue && b.ExpiresAt.Value <= G.S.GameMinute;
+
+    private void PickBatch(int? key)
+    {
+        batchKey = key;
+        batchPicked = true;
+    }
+
+    private void Transfer(Batch b, bool toCarried)
+    {
+        var avail = b.Count;
+        var max = toCarried ? G.MaxPickup(G.Selected.Id, avail) : avail;
+        if (avail == 1 && max == 1)
+        {
+            G.TransferBatch(G.Selected.Owner, G.Selected.Id, b.ExpiresAt, 1, toCarried);
+            return;
+        }
+        qty = new QtyState(b.ExpiresAt, avail, max, toCarried);
+    }
+
+    private void ConfirmQty(int n)
+    {
+        if (qty == null) return;
+        var q = qty;
+        qty = null;
+        G.TransferBatch(G.Selected.Owner, G.Selected.Id, q.ExpiresAt, n, q.ToCarried);
+    }
+
+    private async Task Use(int instanceId) => await G.StartAction(ActionRequest.UseInstance(instanceId));
+
+    private static string UseEffect(ItemConfig cfg)
+    {
+        var u = cfg.Use!;
+        var parts = new List<string>();
+        if (u.Satiety > 0) parts.Add($"饱食+{u.Satiety:0}");
+        if (u.Hydration > 0) parts.Add($"水分+{u.Hydration:0}");
+        if (u.Morale > 0) parts.Add($"精神+{u.Morale:0}");
+        if (u.Health > 0) parts.Add($"健康+{u.Health:0}");
+        return string.Join("，", parts);
+    }
+
+    private static string? Overflow(ItemConfig cfg, Stats st)
+    {
+        var u = cfg.Use!;
+        var over = new List<string>();
+        if (u.Satiety > 0 && st.Satiety + u.Satiety > 100) over.Add($"饱食溢出{Ui.Floor(st.Satiety + u.Satiety - 100)}");
+        if (u.Hydration > 0 && st.Hydration + u.Hydration > 100) over.Add($"水分溢出{Ui.Floor(st.Hydration + u.Hydration - 100)}");
+        if (u.Health > 0 && st.Health + u.Health > 100) over.Add($"健康溢出{Ui.Floor(st.Health + u.Health - 100)}");
+        return over.Count > 0 ? $"接近上限：{string.Join("，", over)}，溢出部分浪费。" : null;
+    }
+}

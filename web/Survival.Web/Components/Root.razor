@@ -1,0 +1,33 @@
+@implements IDisposable
+@inject GameSession G
+
+@if (G.Config == null && G.LoadError == null)
+{
+    <div class="boot"><div>正在载入适者生存…</div><div class="bar"><i></i></div></div>
+}
+else if (G.LoadError != null)
+{
+    <div class="boot"><div class="danger-text">配置载入失败：@G.LoadError</div><button class="secondary" @onclick="Reload">重试</button></div>
+}
+else if (G.State == null)
+{
+    <StartScreen />
+}
+else
+{
+    <GameScreen />
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        G.Changed += OnChanged;
+        await G.InitAsync();
+    }
+
+    private void OnChanged() => InvokeAsync(StateHasChanged);
+
+    private async Task Reload() => await G.InitAsync();
+
+    public void Dispose() => G.Changed -= OnChanged;
+}

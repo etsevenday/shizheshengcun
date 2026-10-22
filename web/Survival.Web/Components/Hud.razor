@@ -1,0 +1,78 @@
+@inherits GameComponent
+
+@{
+    var s = G.S;
+    var e = G.E;
+    var cfg = e.Config;
+    var day = e.IsDaylight(s.GameMinute);
+    var toSwitch = Clock.MinutesToSwitch(s.GameMinute, cfg.Time.DaylightStartMinute, cfg.Time.DaylightEndMinute);
+    var grams = e.CarriedGrams(s);
+    var currentDay = Clock.Day(s.GameMinute);
+}
+
+<aside class="sidebar" aria-label="求生状态">
+    <div class="panel clock">
+        <div class="eyebrow">存活第@(currentDay)日</div>
+        <div class="time">@Clock.HHmm(s.GameMinute)</div>
+        <div class="sun">@(day ? "白昼" : "夜间") · 距@(day ? "入夜" : "天亮")@Clock.Duration(toSwitch)</div>
+    </div>
+
+    <div class="panel vitals">
+        @foreach (var id in Stats.All)
+        {
+            var v = s.Stats.Get(id);
+            var key = GameEngine.StatKey(id);
+            var th = cfg.Thresholds[key];
+            var below = th.IsBelow(v);
+            var zero = v <= 0;
+            var cls = zero || (id == StatId.Health && below) ? "critical" : below ? "warning" : "";
+            var statId = id;
+            <button class="vital @cls" @onclick="() => OpenStatus(statId)" title="查看@(GameEngine.StatName(id))说明">
+                <div class="vital-label">
+                    <span>@GameEngine.StatName(id)@if (zero && id != StatId.Health) {<em class="flag danger-text">归零</em>} else if (below) {<em class="flag">偏低</em>}</span>
+                    <b>@Ui.Floor(v) <small class="muted">/100</small></b>
+                </div>
+                <div class="track"><i style="width:@(Math.Clamp(v, 0, 100).ToString("0.##"))%"></i><span class="mark" style="left:@th.Value%"></span></div>
+            </button>
+        }
+        @if (s.DiarrheaUntil.HasValue && s.DiarrheaUntil > s.GameMinute)
+        {
+            <div class="small warn-text">腹泻中 · 还剩@Clock.Duration(s.DiarrheaUntil.Value - s.GameMinute)（每小时额外失水3）</div>
+        }
+        @if (s.BandageReadyAt > s.GameMinute)
+        {
+            <div class="small muted">绷带冷却 @(s.BandageReadyAt - s.GameMinute)分钟</div>
+        }
+    </div>
+
+    <div class="panel weight">
+        <div class="eyebrow">携带重量 · @(grams > cfg.Carry.SoftGrams ? "超重" : "轻装")</div>
+        <strong class="@(grams > cfg.Carry.SoftGrams ? "warn-text" : "")">@Ui.Kg(grams) 公斤</strong>
+        <div class="tiny muted">超过@(cfg.Carry.SoftGrams / 1000)公斤减速 · 上限@(cfg.Carry.HardGrams / 1000)公斤</div>
+    </div>
+
+    <div class="panel guide">
+        <h3>生存目标</h3>
+        @foreach (var gd in cfg.Progress.Guides)
+        {
+            <div class="day @(gd.Day == Math.Min(currentDay, cfg.Progress.Guides.Max(x => x.Day)) ? "now" : "")">
+                <b>第@(gd.Day)日</b> @gd.Title
+                <ul>
+                    @foreach (var f in gd.Flags)
+                    {
+                        <li class="@(s.Progress.Flags.Contains(f.Id) ? "done" : "")">@f.Label</li>
+                    }
+                </ul>
+            </div>
+        }
+        <div class="day now"><b>七日检查</b> 活到第8日08:00</div>
+    </div>
+</aside>
+
+@code {
+    private void OpenStatus(StatId id)
+    {
+        G.Panel = "status:" + GameEngine.StatKey(id);
+        G.Notify();
+    }
+}

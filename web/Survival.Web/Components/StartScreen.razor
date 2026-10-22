@@ -1,0 +1,80 @@
+@inherits GameComponent
+
+<div class="title-screen">
+    <div class="title-card">
+        <h1>适者生存</h1>
+        <p class="tagline">末日里的单人卡牌生存。探索地点、搜集物资、烧水做饭、搭棚过夜——撑过七天。</p>
+        <div class="actions">
+            <button class="primary" @onclick="OnNew">新游戏</button>
+            <button class="secondary" disabled="@(!hasSave)" @onclick="OnContinue">继续</button>
+            <button class="secondary" @onclick="() => showHelp = !showHelp">玩法说明</button>
+        </div>
+
+        @if (confirmOverwrite)
+        {
+            <div class="confirm-box">
+                已有一份存档。开始新游戏会覆盖它，无法恢复。
+                <div class="row">
+                    <button class="secondary danger" @onclick="StartNew">覆盖并开始</button>
+                    <button class="secondary" @onclick="() => confirmOverwrite = false">返回</button>
+                </div>
+            </div>
+        }
+        @if (error != null)
+        {
+            <div class="confirm-box">@error</div>
+        }
+        @if (showHelp)
+        {
+            <div class="confirm-box small">
+                · 浏览、查看地图、整理物品都不推进时间；只有确认行动才会流逝。<br />
+                · 每5分钟结算一次饥饿、口渴、体力、睡意和精神。<br />
+                · 探索只发现地点与资源点，物资要另外采集；产物先放在地面，需要自己拾取。<br />
+                · 脏水要用金属锅在营地火堆上烧开再喝；块根要煮熟才能吃。<br />
+                · 快捷键：M 地图，C 手工制作，R 休息，L 行动日志，Esc 关闭当前面板。
+            </div>
+        }
+        <div class="version"><span>原型 v0.1 · 基础系统 v0.2</span><span>存档保存在本浏览器</span></div>
+    </div>
+</div>
+
+@code {
+    private bool hasSave;
+    private bool confirmOverwrite;
+    private bool showHelp;
+    private string? error;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        hasSave = G.HasSave;
+        if (hasSave)
+        {
+            var problem = G.SaveProblem();
+            if (problem != null)
+            {
+                hasSave = false;
+                error = problem;
+            }
+        }
+    }
+
+    private void OnNew()
+    {
+        error = null;
+        if (G.HasSave) confirmOverwrite = true;
+        else StartNew();
+    }
+
+    private void StartNew()
+    {
+        confirmOverwrite = false;
+        G.NewGame();
+    }
+
+    private void OnContinue()
+    {
+        error = G.Continue();
+        if (error != null) hasSave = false;
+    }
+}

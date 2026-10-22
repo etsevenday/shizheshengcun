@@ -1,0 +1,82 @@
+@inherits GameComponent
+
+@{
+    var s = G.S;
+    var e = G.E;
+    var carried = Owner == ItemInstance.Carried;
+    var items = s.Items.Where(i => i.Owner == Owner).ToList();
+    var stackGroups = items.Where(i => e.Item(i.ItemId).IsStackable)
+        .GroupBy(i => i.ItemId)
+        .OrderBy(g => e.Config.Items.FindIndex(c => c.Id == g.Key))
+        .ToList();
+    var tools = items.Where(i => !e.Item(i.ItemId).IsStackable)
+        .OrderBy(i => e.Config.Items.FindIndex(c => c.Id == i.ItemId)).ThenBy(i => i.InstanceId).ToList();
+    var kinds = items.Select(i => i.ItemId).Distinct().Count();
+    var sel = G.Selected;
+    var grams = items.Sum(i => e.Item(i.ItemId).WeightGrams * i.Count);
+}
+
+<div class="panel section @(carried ? "carried" : "ground")">
+    <div class="section-head">
+        <h2>@Title</h2>
+        <span>
+            @if (carried) { @($"{Ui.Kg(grams)}公斤 · {(grams > e.Config.Carry.SoftGrams ? "超重" : "轻装")} · ") }
+            显示@(kinds)种 · 拾取与放下不耗时
+        </span>
+    </div>
+    <div class="row-scroll">
+        @foreach (var g in stackGroups)
+        {
+            var list = g.OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
+            var total = list.Sum(i => i.Count);
+            var head = list.FirstOrDefault(i => i.ReservedBy == null && !e.IsSpoiled(s, i)) ?? list[0];
+            var allSpoiled = list.All(i => e.IsSpoiled(s, i));
+            var anyReserved = list.Any(i => i.ReservedBy != null);
+            var batches = list.Select(i => i.ExpiresAt).Distinct().Count();
+            var id = g.Key;
+            <button class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner ? "selected" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "")"
+                    @onclick="() => SelectGroup(id)" title="@e.Item(id).Desc">
+                <div class="ctitle"><span>@e.ItemName(id)</span><span class="qty">×@total</span></div>
+                <div class="art">@Icons.Markup(id)</div>
+                <div class="cinfo">@(allSpoiled ? "已腐败" : Ui.ItemLine(e, s, head))@(batches > 1 ? $" · {batches}批" : "")</div>
+            </button>
+        }
+        @foreach (var t in tools)
+        {
+            var broken = t.Durability.HasValue && t.Durability <= 0;
+            var inst = t.InstanceId;
+            <button class="card item @(broken ? "broken" : "") @(t.ReservedBy != null ? "reserved" : "") @(sel.Kind == SelectionKind.Tool && sel.InstanceId == inst ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
+                    @onclick="() => SelectTool(inst, t.ItemId)" title="@e.Item(t.ItemId).Desc">
+                <div class="ctitle"><span>@e.ItemName(t.ItemId)</span><span class="qty">×1</span></div>
+                <div class="art">@Icons.Markup(t.ItemId)</div>
+                <div class="cinfo">@Ui.ItemLine(e, s, t)</div>
+            </button>
+        }
+        @if (items.Count == 0)
+        {
+            <div class="empty-zone">
+                @if (carried)
+                {
+                    <strong>没有携带物品</strong>
+                    <span>在地面物品上选择“拾取”即可带走</span>
+                }
+                else
+                {
+                    <strong>这里暂时没有散落物品</strong>
+                    <span>完成搜集后，产物会留在这里</span>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Owner { get; set; } = "";
+    [Parameter] public string Title { get; set; } = "";
+
+    private void SelectGroup(string itemId) =>
+        G.Select(new Selection { Kind = SelectionKind.ItemGroup, Id = itemId, Owner = Owner });
+
+    private void SelectTool(int instanceId, string itemId) =>
+        G.Select(new Selection { Kind = SelectionKind.Tool, Id = itemId, Owner = Owner, InstanceId = instanceId });
+}

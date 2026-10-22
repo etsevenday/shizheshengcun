@@ -1,0 +1,107 @@
+@inherits GameComponent
+
+@{
+    var s = G.S;
+    var e = G.E;
+    var here = s.CurrentLocation;
+    var lc = e.Location(here);
+    var ls = s.Locations[here];
+    var fac = ls.Facility;
+    var sel = G.Selected;
+    var resources = e.Config.Resources.Where(r => r.LocationId == here && s.Resources[r.NodeId].Discovered).ToList();
+    var entrances = e.AdjacentUnlocked(s).ToList();
+}
+
+<div class="panel section loc-strip">
+    <div class="section-head">
+        <h2>@lc.Name · @(lc.IsIndoor ? "室内" : "露天")</h2>
+        <span>@(resources.Count)个资源点@(ls.Progress < 100 ? " · 继续探索可能发现更多" : " · 已充分探索")</span>
+    </div>
+    <div class="row-scroll">
+        <button class="card place @(sel.Kind == SelectionKind.Location ? "selected" : "")" @onclick="SelectLocation">
+            <div class="ctitle"><span>@lc.Name</span></div>
+            <div class="art">@Icons.Markup(lc.CanBuildShelter ? "camp" : lc.IsIndoor ? "indoor" : "outdoor")</div>
+            <div class="cinfo">
+                <div>探索度 @(ls.Progress)%</div>
+                <div class="pbar"><i style="width:@(ls.Progress)%"></i></div>
+                <div class="muted">@(ls.Progress >= 100 ? "已充分探索" : "探索周边 · 30分钟")</div>
+            </div>
+        </button>
+
+        @if (lc.HasFire)
+        {
+            <button class="card facility" @onclick='() => Open("craft")'>
+                <div class="ctitle"><span>火堆</span><span class="tag dark">@(fac.FireLit ? "燃烧中" : "未点燃")</span></div>
+                <div class="art">@Icons.Markup("fire")</div>
+                <div class="cinfo">燃料 @(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分钟<br /><span class="muted">点击打开营地加工</span></div>
+            </button>
+        }
+        @if (lc.CanBuildShelter)
+        {
+            <button class="card facility @(fac.ShelterBuilt ? "" : "dim")" @onclick='() => Open("craft")'>
+                <div class="ctitle"><span>遮蔽棚</span><span class="tag dark">@(fac.ShelterBuilt ? "已建造" : "未建造")</span></div>
+                <div class="art">@Icons.Markup("shelter")</div>
+                <div class="cinfo">@(fac.ShelterBuilt ? "营地可遮蔽睡眠" : "木材4、植物纤维4")<br />床垫：@(fac.BedBuilt ? "已铺好" : "未铺")</div>
+            </button>
+        }
+
+        @foreach (var ed in entrances)
+        {
+            var to = ed.Other(here);
+            var toState = s.Locations[to];
+            var edId = to;
+            <button class="card entrance @(sel.Kind == SelectionKind.Entrance && sel.Id == to ? "selected" : "") @(G.Highlights.Contains(ed.Id) ? "fresh" : "")" @onclick="() => SelectEntrance(edId)">
+                <div class="ctitle"><span>前往@(e.LocName(to))</span></div>
+                <div class="art">@Icons.Markup("route")</div>
+                <div class="cinfo">单程 @(ed.BaseMinutes)分钟<br /><span class="muted">@(toState.Visited ? "已访问" : "待访问")</span></div>
+            </button>
+        }
+
+        @foreach (var r in resources)
+        {
+            var rs = s.Resources[r.NodeId];
+            var empty = !r.IsUnlimited && (rs.Available ?? 0) <= 0;
+            var nodeId = r.NodeId;
+            var tool = r.ToolBonus != null ? e.BestTool(s, r.ToolBonus.ToolTag) : null;
+            var minutes = tool != null && r.ToolBonus?.BaseMinutesOverride != null ? r.ToolBonus.BaseMinutesOverride.Value : r.BaseMinutes;
+            <button class="card resource @(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId ? "selected" : "") @(empty ? "dim" : "") @(G.Highlights.Contains(r.NodeId) ? "fresh" : "")" @onclick="() => SelectResource(nodeId)">
+                <div class="ctitle"><span>@r.Name</span>@if (r.Hazard != null) {<span class="tag risk">@Ui.Pct(r.Hazard.Probability)@r.Hazard.Label</span>}</div>
+                <div class="art">@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</div>
+                <div class="cinfo">
+                    @if (r.IsCache)
+                    {
+                        <div class="stock">@(empty ? "已搜空" : "可搜1次")</div>
+                        <div>@string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}")) · @(minutes)分钟</div>
+                        <div class="muted">搜空后不补充</div>
+                    }
+                    else if (r.IsUnlimited)
+                    {
+                        <div class="stock">不限量</div>
+                        <div>每次@(r.Outputs.Values.First())份@(e.ItemName(r.Outputs.Keys.First())) · @(minutes)分钟</div>
+                        <div class="muted">可持续取用</div>
+                    }
+                    else
+                    {
+                        var per = r.Outputs.Values.First() * (tool != null && r.ToolBonus != null ? r.ToolBonus.OutputMultiplier : 1);
+                        <div class="stock">@(rs.Available) / @r.Cap@if (rs.Reserved > 0) {<small> 预留@(rs.Reserved)</small>}</div>
+                        <div>每次@(per)@(e.ItemName(r.Outputs.Keys.First())) · @(minutes)分钟</div>
+                        <div class="muted">@(r.Refills ? $"每日00:00补充{r.DailyRefill}" : "不可补充")@(tool != null ? $" · {e.ItemName(tool.ItemId)}加成" : "")</div>
+                    }
+                </div>
+            </button>
+        }
+
+    </div>
+</div>
+
+@code {
+    private void SelectLocation() => G.Select(new Selection { Kind = SelectionKind.Location, Id = G.S.CurrentLocation });
+    private void SelectEntrance(string to) => G.Select(new Selection { Kind = SelectionKind.Entrance, Id = to });
+    private void SelectResource(string id) => G.Select(new Selection { Kind = SelectionKind.Resource, Id = id });
+
+    private void Open(string panel)
+    {
+        G.Panel = panel;
+        G.Notify();
+    }
+}

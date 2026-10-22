@@ -1,0 +1,129 @@
+@inherits GameComponent
+
+@{
+    var e = G.E;
+    var s = G.S;
+    var p = G.Preview(Request);
+    var busy = G.Running || s.Main != null && !p.AsSubAction;
+}
+
+<div class="detail-scroll">
+    <div class="op-head">
+        <div class="eyebrow">@Eyebrow</div>
+        <h2>@(string.IsNullOrEmpty(Title) ? p.Label : Title)</h2>
+        @if (!string.IsNullOrEmpty(Subtitle)) { <p>@Subtitle</p> }
+    </div>
+
+    @if (p.Ok)
+    {
+        <div class="facts">
+            <div class="fact"><span>预计耗时</span><strong>@Clock.Duration(p.EstimatedMinutes)</strong></div>
+            <div class="fact"><span>预计完成</span><strong>@Clock.HHmm(p.EstimatedEndMinute)</strong></div>
+            @if (p.IsWork)
+            {
+                <div class="fact"><span>基础工作量</span><strong>@(p.BaseMinutes)分钟</strong></div>
+                <div class="fact"><span>当前倍率</span><strong>×@p.FactorAtStart.ToString("0.##")</strong></div>
+            }
+            @foreach (var o in p.Outputs)
+            {
+                <div class="fact"><span>产出 · 留在@(p.OutputPlace)</span><strong>@o.Name ×@o.Count</strong></div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="blocked">@p.Reason</div>
+        @if (p.Outputs.Count > 0 || p.BaseMinutes > 0)
+        {
+            <div class="lines">
+                @if (p.BaseMinutes > 0) { <div><span>基础耗时</span><b>@(p.BaseMinutes)分钟</b></div> }
+                @foreach (var o in p.Outputs) { <div><span>产出</span><b>@o.Name ×@o.Count</b></div> }
+            </div>
+        }
+    }
+
+    @if (p.ToolName != null)
+    {
+        <div class="lines">
+            <div><span>使用@(p.ToolName)</span><b>@(p.ToolDurabilityBefore)/@(p.ToolMaxDurability) → @(p.ToolDurabilityAfter)/@(p.ToolMaxDurability)</b></div>
+            <div class="tiny muted">无需选择工具，自动使用随身耐久最高的一件。</div>
+        </div>
+    }
+
+    @if (Request.Type == ActionType.Gather)
+    {
+        @if (p.HazardProbability > 0)
+        {
+            <div class="risk">⚠ @(p.HazardLabel)概率@(Ui.Pct(p.HazardProbability))<br />若发生，健康减少@(p.HazardHealthLoss.ToString("0"))。</div>
+        }
+        else
+        {
+            <div class="risk none">无随机伤害风险。</div>
+        }
+    }
+
+    @if (p.Ok)
+    {
+        <div class="lines">
+            @foreach (var id in Stats.All)
+            {
+                var before = Ui.Floor(p.StatsBefore.Get(id));
+                var after = Ui.Floor(p.StatsAfter.Get(id));
+                if (before == after && id != StatId.Hydration && id != StatId.Energy) continue;
+                var th = e.Config.Thresholds[GameEngine.StatKey(id)];
+                var cls = th.IsBelow(p.StatsAfter.Get(id)) ? "warn-text" : "";
+                <div><span>@GameEngine.StatName(id)</span><b class="@cls">@before → @after</b></div>
+            }
+            @if (Request.Type == ActionType.Travel || Request.Type == ActionType.Gather)
+            {
+                <div><span>负重</span><b>@(Request.Type == ActionType.Gather ? "采集后不自动增加" : Ui.Kg(e.CarriedGrams(s)) + "公斤")</b></div>
+            }
+        </div>
+    }
+
+    @if (p.Notes.Count > 0)
+    {
+        <ul class="notes">@foreach (var n in p.Notes) { <li>@n</li> }</ul>
+    }
+    @foreach (var w in p.Warnings)
+    {
+        <div class="risk">@w</div>
+    }
+    @if (G.Notice != null)
+    {
+        <div class="notice">@G.Notice</div>
+    }
+</div>
+
+<div class="detail-foot">
+    <button class="primary" disabled="@(!p.Ok || busy || starting)" @onclick="Confirm">@(p.Ok ? p.ConfirmText : DisabledLabel(p))</button>
+    <div class="under">@(p.AsSubAction ? "作为补给或维护执行，原行动保持暂停" : "确认后才推进游戏时间；时间为预计值")</div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ActionRequest Request { get; set; } = null!;
+    [Parameter] public string Eyebrow { get; set; } = "";
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Subtitle { get; set; } = "";
+    [Parameter] public EventCallback OnStarted { get; set; }
+
+    private bool starting;
+
+    private static string DisabledLabel(ActionPreview p) => string.IsNullOrEmpty(p.ConfirmText) ? "无法执行" : p.ConfirmText;
+
+    private async Task Confirm()
+    {
+        if (starting) return;
+        starting = true;
+        try
+        {
+            var t = G.StartAction(Request);
+            await OnStarted.InvokeAsync();
+            await t;
+        }
+        finally
+        {
+            starting = false;
+        }
+    }
+}

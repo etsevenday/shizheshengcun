@@ -1,0 +1,56 @@
+name: 测试并发布到 GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: 内核测试（M/G/S 验收用例与七日通关脚本）
+        run: dotnet test web/Survival.sln -c Release --filter "TestCategory!=Tuning"
+
+      - name: 发布 Blazor WebAssembly
+        run: dotnet publish web/Survival.Web -c Release -o publish
+
+      - name: 适配 Pages 子路径
+        run: |
+          REPO="${GITHUB_REPOSITORY#*/}"
+          sed -i "s|<base href=\"/\" />|<base href=\"/${REPO}/\" />|" publish/wwwroot/index.html
+          BUILD="$(date -u +%Y-%m-%d) · ${GITHUB_SHA::7}"
+          sed -i "s|</body>|<div style=\"position:fixed;right:6px;bottom:2px;font-size:11px;color:#6d7466;pointer-events:none\">构建 ${BUILD}</div></body>|" publish/wwwroot/index.html
+          cp publish/wwwroot/index.html publish/wwwroot/404.html
+          touch publish/wwwroot/.nojekyll
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: publish/wwwroot
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

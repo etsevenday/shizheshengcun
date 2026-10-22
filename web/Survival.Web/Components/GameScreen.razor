@@ -1,0 +1,129 @@
+@inherits GameComponent
+@inject IJSRuntime JS
+
+@{
+    var s = G.S;
+    var e = G.E;
+    var main = s.Main;
+    var pausedLayer = main != null && main.Status == ActionStatus.Paused && G.Panel != "craft";
+    var subRunning = s.Sub != null;
+}
+
+<div class="game">
+    <header class="top">
+        <div class="brand">
+            <b>适者生存</b>
+            <em>第@(Clock.Day(s.GameMinute))日 · @e.LocName(s.CurrentLocation)@(main?.Type == ActionType.Travel ? $" → {e.LocName(main.TargetId)}" : "")</em>
+        </div>
+        <nav class="nav" aria-label="主菜单">
+            <button class="@(G.Panel == "map" ? "on" : "")" @onclick='() => Toggle("map")'>区域地图<kbd>M</kbd></button>
+            <button class="@(G.Panel == "craft" ? "on" : "")" @onclick='() => Toggle("craft")'>手工制作<kbd>C</kbd></button>
+            <button class="@(G.Panel == "rest" ? "on" : "")" @onclick='() => Toggle("rest")'>休息<kbd>R</kbd></button>
+            <button class="@(G.Panel == "log" ? "on" : "")" @onclick='() => Toggle("log")'>行动日志<kbd>L</kbd></button>
+            <button class="@(G.Panel == "menu" ? "on" : "")" @onclick='() => Toggle("menu")'>菜单<kbd>Esc</kbd></button>
+        </nav>
+    </header>
+
+    <main class="body">
+        <Hud />
+
+        <section class="center" aria-label="当前地点">
+            <LocationStrip />
+            <ItemShelf Owner="@s.CurrentLocation" Title="@($"当前地面 · {e.LocName(s.CurrentLocation)}")" />
+            <ItemShelf Owner="@ItemInstance.Carried" Title="随身物品" />
+
+            @if (pausedLayer)
+            {
+                <PauseLayer />
+            }
+            else if (subRunning)
+            {
+                <PauseLayer />
+            }
+        </section>
+
+        <DetailPanel />
+
+        @if (G.Panel == "map") { <MapOverlay /> }
+        @if (G.Panel == "craft") { <CraftOverlay /> }
+        @if (G.Panel == "rest") { <RestOverlay /> }
+        @if (G.Panel == "log") { <LogOverlay /> }
+        @if (G.Panel == "menu") { <MenuOverlay /> }
+        @if (G.Panel != null && G.Panel.StartsWith("status:")) { <StatusInfo /> }
+
+        @if (G.Toast != null && !s.Progress.Dead)
+        {
+            var bad = G.Toast.Kind is GameEventKind.Hazard or GameEventKind.ActionAborted;
+            <div class="toast @(bad ? "bad" : "")" role="status">
+                <span>@G.Toast.Text</span>
+                <button aria-label="关闭结果提示" @onclick="G.DismissToast">×</button>
+            </div>
+        }
+    </main>
+
+    <footer class="footer">
+        @{ var last = G.Recent.LastOrDefault(); }
+        <div class="event">@if (last != null) {<b>@Clock.HHmm(last.Minute)</b>@last.Text}</div>
+        <div>@(G.Running ? "时间流逝中…" : "浏览与整理不推进时间")</div>
+        <div class="save @(G.SaveState == SaveStatus.Failed ? "failed" : "")">
+            @switch (G.SaveState)
+            {
+                case SaveStatus.Failed:
+                    <span>保存失败：@G.SaveError </span><button class="linkish" @onclick="G.RetrySave">重试</button>
+                    break;
+                case SaveStatus.Saving:
+                    <span>保存中…</span>
+                    break;
+                case SaveStatus.Saved:
+                    <span>● 已保存</span>
+                    break;
+            }
+        </div>
+    </footer>
+</div>
+
+<EndScreens />
+
+@code {
+    private DotNetObjectReference<GameScreen>? _ref;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _ref = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("survival.hookKeys", _ref);
+        }
+    }
+
+    private void Toggle(string panel)
+    {
+        G.Panel = G.Panel == panel ? null : panel;
+        G.Notify();
+    }
+
+    [JSInvokable]
+    public void OnKey(string key)
+    {
+        if (G.State == null || G.S.Progress.Dead) return;
+        switch (key)
+        {
+            case "M": Toggle("map"); break;
+            case "C": Toggle("craft"); break;
+            case "R": Toggle("rest"); break;
+            case "L": Toggle("log"); break;
+            case "Escape":
+                // Esc 只关闭当前浏览层，不取消主行动
+                if (G.Panel != null) { G.Panel = null; G.Notify(); }
+                else if (G.Selected.Kind != SelectionKind.None) G.ClearSelection();
+                else Toggle("menu");
+                break;
+        }
+    }
+
+    public override void Dispose()
+    {
+        base.Dispose();
+        _ref?.Dispose();
+    }
+}

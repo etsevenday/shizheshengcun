@@ -1,0 +1,72 @@
+@inherits GameComponent
+
+@{
+    var s = G.S;
+    var e = G.E;
+    var main = s.Main;
+    var sub = s.Sub;
+    var a = sub ?? main!;
+    var work = a.IsWorkType;
+    var pct = work ? Math.Min(1, a.WorkDone / Math.Max(1, a.BaseWorkMinutes)) : Math.Min(1, a.ElapsedMinutes / (double)Math.Max(1, a.PlannedMinutes));
+    var remaining = work ? Math.Max(0, a.BaseWorkMinutes - a.WorkDone) : Math.Max(0, a.PlannedMinutes - a.ElapsedMinutes);
+    var eta = e.EstimateEndMinute(s);
+    var paused = sub == null && main?.Status == ActionStatus.Paused;
+    var cancellable = a.Type != ActionType.Use && a.Type != ActionType.Ignite;
+}
+
+<div class="detail-scroll">
+    <div class="op-head">
+        <div class="eyebrow">
+            @if (sub != null) { <span class="status-chip sub">正在补给／维护</span> }
+            else if (paused) { <span class="status-chip paused">已暂停</span> }
+            else { <span class="status-chip">进行中</span> }
+        </div>
+        <h2>@a.Label</h2>
+        <p>开始于@(Clock.HHmm(a.StartMinute)) · 已流逝@(Clock.Duration(a.ElapsedMinutes))</p>
+    </div>
+
+    <div class="progress" aria-label="行动进度"><i style="width:@((pct * 100).ToString("0.#"))%"></i></div>
+
+    <div class="lines">
+        <div><span>@(work ? "剩余工作量" : "剩余时长")</span><b>@(Ui.Floor(remaining))分钟</b></div>
+        <div><span>预计完成</span><b>@(eta.HasValue ? Clock.HHmm(eta.Value) : paused ? "暂停中" : "无法预估")</b></div>
+        @if (work)
+        {
+            var f = e.WorkFactor(s, a.Type);
+            <div><span>当前倍率</span><b>×@f.ToString("0.##")</b></div>
+        }
+        @if (a.ReservedItemIds.Count > 0)
+        {
+            var res = s.Items.Where(i => a.ReservedItemIds.Contains(i.InstanceId)).GroupBy(i => i.ItemId).Select(g => $"{e.ItemName(g.Key)}{g.Sum(i => i.Count)}");
+            <div><span>预留材料</span><b>@string.Join("、", res)</b></div>
+        }
+        @if (a.ReservedResourceUnits > 0)
+        {
+            <div><span>预留库存</span><b>@a.ReservedResourceUnits</b></div>
+        }
+    </div>
+
+    @if (sub != null && main != null)
+    {
+        <div class="risk none">主行动“@(main.Label)”保持暂停，进度与预留不变。补给完成后需确认继续。</div>
+    }
+    @if (G.Notice != null)
+    {
+        <div class="notice">@G.Notice</div>
+    }
+</div>
+
+<div class="detail-foot">
+    @if (G.Running)
+    {
+        <div class="btn-row">
+            <button class="secondary" @onclick="G.SkipAnimation">跳过动画</button>
+            @if (cancellable) { <button class="secondary danger" @onclick="G.Cancel">@(sub != null ? "取消补给" : "取消行动")</button> }
+        </div>
+        <div class="under">取消在当前时间段边界生效；已流逝的时间与消耗不返还</div>
+    }
+    else if (paused)
+    {
+        <div class="under">请在中间的暂停面板选择继续、补给或取消</div>
+    }
+</div>

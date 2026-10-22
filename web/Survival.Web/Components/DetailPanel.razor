@@ -1,0 +1,44 @@
+@inherits GameComponent
+
+@{
+    var s = G.S;
+    var e = G.E;
+    var sel = G.Selected;
+    var active = s.Sub ?? s.Main;
+}
+
+<aside class="panel detail" aria-label="行动详情">
+    @if (active != null)
+    {
+        <ActionProgress />
+    }
+    else
+    {
+        switch (sel.Kind)
+        {
+            case SelectionKind.Location:
+                <PreviewView Request="ActionRequest.Explore()" Eyebrow="@($"已选中 · {e.LocName(s.CurrentLocation)}")" Title="探索周边"
+                             Subtitle="探索只负责发现路线、资源点和容器，不直接产出物品。" />
+                break;
+            case SelectionKind.Entrance:
+                <PreviewView Request="ActionRequest.Travel(sel.Id)" Eyebrow="@($"已选中 · 前往{e.LocName(sel.Id)}")" Title="@($"前往{e.LocName(sel.Id)}")"
+                             Subtitle="位置在到达时一次更新；途中不能取用两端的物资。" />
+                break;
+            case SelectionKind.Resource:
+                var r = e.Resource(sel.Id);
+                <PreviewView Request="ActionRequest.Gather(sel.Id)" Eyebrow="@($"已选中 · {r.Name}")" Title="@(r.IsCache ? $"搜集{r.Name}" : $"采集{r.Name}")"
+                             Subtitle="工具与成本已计入本次预估。" />
+                break;
+            case SelectionKind.ItemGroup:
+            case SelectionKind.Tool:
+                <ItemDetail />
+                break;
+            default:
+                <div class="empty-detail">
+                    选择地点、路线、资源或物品<br />查看可执行的操作
+                    @if (G.Notice != null) { <div class="notice" style="margin-top:12px">@G.Notice</div> }
+                </div>
+                break;
+        }
+    }
+</aside>

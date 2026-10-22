@@ -4,6 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <BlazorWebAssemblyLoadAllGlobalizationData>false</BlazorWebAssemblyLoadAllGlobalizationData>
+    <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +15,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Survival.Core\Survival.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 内核与 Newtonsoft 依赖反射序列化存档和配置，发布裁剪时整体保留 -->
+    <TrimmerRootAssembly Include="Survival.Core" />
+    <TrimmerRootAssembly Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 配置唯一来源：data/config.v0.3.json -->
+    <EmbeddedResource Include="../../data/config.v0.3.json" LogicalName="config.v0.3.json" />
   </ItemGroup>
 
 </Project>
