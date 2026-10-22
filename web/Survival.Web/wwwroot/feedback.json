@@ -1,6 +1,6 @@
 {
-  "supabaseUrl": "",
-  "supabaseKey": "",
+  "supabaseUrl": "https://jtrhymsaeltoazooegwk.supabase.co",
+  "supabaseKey": "sb_publishable_GC-zAGqD75q6I07TN94XXQ_0zBhhTRU",
   "table": "feedback",
   "bucket": "feedback-screenshots"
 }
