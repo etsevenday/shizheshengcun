@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Survival.Core.Config;
 using Survival.Core.State;
 
 namespace Survival.Core.Engine
@@ -11,25 +12,117 @@ namespace Survival.Core.Engine
 
         public bool IsSpoiled(GameState s, ItemInstance i) => i.ExpiresAt.HasValue && i.ExpiresAt.Value <= s.GameMinute;
 
+        public ItemInstance? FindItem(GameState s, int instanceId) => s.Items.FirstOrDefault(i => i.InstanceId == instanceId);
+
+        /// <summary>物品实际所在：锅内物品取锅所在（随身或某地面），其余就是 Owner。</summary>
+        public string PlaceOf(GameState s, ItemInstance i)
+        {
+            if (!ItemInstance.TryContainerId(i.Owner, out var potId)) return i.Owner;
+            return FindItem(s, potId)?.Owner ?? "";
+        }
+
+        /// <summary>一件物品（锅连同内容）的克重；锅内物品只随锅计一次。</summary>
+        public int ItemGrams(GameState s, ItemInstance i)
+        {
+            var g = _items[i.ItemId].WeightGrams * i.Count;
+            if (IsPot(i)) g += PotContents(s, i.InstanceId).Sum(c => _items[c.ItemId].WeightGrams * c.Count);
+            return g;
+        }
+
         public int CarriedGrams(GameState s) =>
-            s.Items.Where(i => i.IsCarried).Sum(i => _items[i.ItemId].WeightGrams * i.Count);
+            s.Items.Where(i => i.IsCarried).Sum(i => ItemGrams(s, i));
 
         public bool IsOverweight(GameState s) => CarriedGrams(s) > Config.Carry.SoftGrams;
 
-        public IEnumerable<ItemInstance> Accessible(GameState s, bool allowGround) =>
-            s.Items.Where(i => i.IsCarried || (allowGround && i.Owner == s.CurrentLocation));
+        /// <summary>随身与（可选）当前地面的物品；includeContainers 时也包括这些位置上锅里的水（饮用、引导统计用）。</summary>
+        public IEnumerable<ItemInstance> Accessible(GameState s, bool allowGround, bool includeContainers = false) =>
+            s.Items.Where(i =>
+            {
+                var place = includeContainers ? PlaceOf(s, i) : i.Owner;
+                return place == ItemInstance.Carried || (allowGround && place == s.CurrentLocation);
+            });
 
-        /// <summary>可消耗批次：到期时间升序 → 同批次随身优先 → 实例 ID 升序。</summary>
-        public List<ItemInstance> UsableBatches(GameState s, string itemId, bool allowGround) =>
-            Accessible(s, allowGround)
+        /// <summary>可消耗批次：到期时间升序 → 同批次随身优先（锅内水按锅所在） → 实例 ID 升序。配方与投料不取锅内物品。</summary>
+        public List<ItemInstance> UsableBatches(GameState s, string itemId, bool allowGround, bool includeContainers = false) =>
+            Accessible(s, allowGround, includeContainers)
                 .Where(i => i.ItemId == itemId && i.ReservedBy == null && !IsSpoiled(s, i))
                 .OrderBy(i => i.ExpiresAt ?? int.MaxValue)
-                .ThenBy(i => i.IsCarried ? 0 : 1)
+                .ThenBy(i => PlaceOf(s, i) == ItemInstance.Carried ? 0 : 1)
                 .ThenBy(i => i.InstanceId)
                 .ToList();
 
-        public int AvailableCount(GameState s, string itemId, bool allowGround) =>
-            UsableBatches(s, itemId, allowGround).Sum(i => i.Count);
+        public int AvailableCount(GameState s, string itemId, bool allowGround, bool includeContainers = false) =>
+            UsableBatches(s, itemId, allowGround, includeContainers).Sum(i => i.Count);
+
+        public bool IsLocked(GameState s, ItemInstance i) =>
+            (s.Main != null && s.Main.LockedItemIds.Contains(i.InstanceId)) || (s.Sub != null && s.Sub.LockedItemIds.Contains(i.InstanceId));
+
+        // ───────────────────────── 金属锅（拖拽与容器案 6） ─────────────────────────
+
+        public bool IsPot(ItemInstance i) => _items[i.ItemId].ContainerId != null;
+
+        public ContainerConfig PotConfig(ItemInstance pot) => Config.Containers[_items[pot.ItemId].ContainerId!];
+
+        public List<ItemInstance> PotContents(GameState s, int potId)
+        {
+            var owner = ItemInstance.ContainerOwner(potId);
+            return s.Items.Where(i => i.Owner == owner).OrderBy(i => i.InstanceId).ToList();
+        }
+
+        public int PotUnits(GameState s, int potId) => PotContents(s, potId).Sum(i => i.Count);
+
+        /// <summary>锅内液体种类；空锅为 null。同一锅只允许一种水。</summary>
+        public string? PotLiquid(GameState s, int potId) => PotContents(s, potId).FirstOrDefault()?.ItemId;
+
+        /// <summary>水量标签，如“脏水50%·500/1000毫升”；空锅为“空锅0%·0/1000毫升”。</summary>
+        public string PotLabel(GameState s, ItemInstance pot)
+        {
+            var c = PotConfig(pot);
+            var units = PotUnits(s, pot.InstanceId);
+            var liquid = PotLiquid(s, pot.InstanceId);
+            var ml = units * c.UnitMl;
+            var pct = c.CapacityMl > 0 ? ml * 100 / c.CapacityMl : 0;
+            return $"{(liquid == null ? "空锅" : ItemName(liquid))}{pct}%·{ml}/{c.CapacityMl}毫升";
+        }
+
+        /// <summary>架在某地点火堆上的锅（锅仍须在该地点地面）。</summary>
+        public ItemInstance? AttachedPot(GameState s, string locationId)
+        {
+            var id = s.Locations[locationId].Facility.AttachedPotId;
+            if (id == null) return null;
+            var pot = FindItem(s, id.Value);
+            return pot != null && pot.Owner == locationId ? pot : null;
+        }
+
+        private static void DetachEverywhere(GameState s, int potId)
+        {
+            foreach (var l in s.Locations.Values)
+                if (l.Facility.AttachedPotId == potId) l.Facility.AttachedPotId = null;
+        }
+
+        /// <summary>
+        /// 选锅（开发计划 v0.2 B2）：指定的锅优先；否则锅位锅 → 随身锅 → 当前地面锅，同类按实例 ID；被行动锁定的跳过。
+        /// </summary>
+        public ItemInstance? SelectPot(GameState s, int? requested, out string? reason)
+        {
+            reason = null;
+            var here = s.CurrentLocation;
+            bool Reachable(ItemInstance i) => IsPot(i) && i.ReservedBy == null && (i.IsCarried || i.Owner == here);
+            if (requested.HasValue)
+            {
+                var p = FindItem(s, requested.Value);
+                if (p == null || !Reachable(p)) { reason = "只能使用随身或当前地面的锅"; return null; }
+                if (IsLocked(s, p)) { reason = "行动占用：这口锅正被其他行动使用"; return null; }
+                return p;
+            }
+            var attached = AttachedPot(s, here);
+            var pick = s.Items.Where(i => Reachable(i) && !IsLocked(s, i))
+                .OrderBy(i => attached != null && i.InstanceId == attached.InstanceId ? 0 : i.IsCarried ? 1 : 2)
+                .ThenBy(i => i.InstanceId)
+                .FirstOrDefault();
+            if (pick == null) reason = "缺少金属锅（需随身或在当前地面）";
+            return pick;
+        }
 
         /// <summary>随身、耐久最高（大于0或无耐久）的指定标签工具，平手取实例 ID 小者。</summary>
         public ItemInstance? BestTool(GameState s, string toolTag) =>
@@ -40,6 +133,15 @@ namespace Survival.Core.Engine
                 .FirstOrDefault();
 
         public ItemInstance? CarriedTool(GameState s, string toolTag) => BestTool(s, toolTag);
+
+        /// <summary>同地可用的催化工具：随身优先，其次当前地面（锅位视为地面）；未预留、未被锁定、有耐久。</summary>
+        public ItemInstance? AccessibleTool(GameState s, string toolTag) =>
+            s.Items.Where(i => (i.IsCarried || i.Owner == s.CurrentLocation) && i.ReservedBy == null && !IsLocked(s, i)
+                               && _items[i.ItemId].ToolTag == toolTag && (i.Durability == null || i.Durability > 0))
+                .OrderBy(i => i.IsCarried ? 0 : 1)
+                .ThenByDescending(i => i.Durability ?? int.MaxValue)
+                .ThenBy(i => i.InstanceId)
+                .FirstOrDefault();
 
         /// <summary>按消耗顺序预留指定数量，必要时拆堆，返回预留实例 ID。</summary>
         private List<int> Reserve(GameState s, string itemId, int count, int actionId)
@@ -79,6 +181,8 @@ namespace Survival.Core.Engine
 
         private void MoveItems(GameState s, ItemInstance inst, int count, string newOwner)
         {
+            // 移动锅即解除锅位关联；锅内物品的归属是锅本身，随锅一起走
+            if (IsPot(inst)) DetachEverywhere(s, inst.InstanceId);
             if (count >= inst.Count)
             {
                 inst.Owner = newOwner;

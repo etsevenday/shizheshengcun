@@ -162,10 +162,12 @@ public class SurvivalTests : TestBase
             s.Main!.WorkDone = 10;
             f.FuelMinutes = fuel;
             var r = E.Advance(s);
+            var pot = "pot:" + First(s, "pot").InstanceId;
             if (expectDone)
             {
                 Assert.That(r.Status, Is.EqualTo(SegmentStatus.Completed));
-                Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(4));
+                Assert.That(Count(s, "clean_water", pot), Is.EqualTo(2), "v0.3：净水留在原锅");
+                Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(2), "地面只有开局的净水");
                 Assert.That(f.FireLit, Is.False, "本段末燃尽");
             }
             else
@@ -174,6 +176,7 @@ public class SurvivalTests : TestBase
                 Assert.That(s.Main!.PauseReason, Is.EqualTo(PauseReason.FireOut));
                 Assert.That(s.GameMinute, Is.EqualTo(480), "不推进该段");
                 Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(2));
+                Assert.That(Count(s, "dirty_water", pot), Is.EqualTo(2), "脏水已补入锅并预留");
             }
         }
     }

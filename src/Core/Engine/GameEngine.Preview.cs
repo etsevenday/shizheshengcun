@@ -172,6 +172,8 @@ namespace Survival.Core.Engine
                     p.BaseMinutes = rc.BaseMinutes;
                     p.Outputs = rc.Outputs.Select(kv => Line(kv.Key, kv.Value)).ToList();
                     p.ConfirmText = rc.IsBuild ? "开始建造" : "开始制作";
+                    if (plan != null) p.Notes.AddRange(plan.Notes);
+                    if (rc.Pot != null) p.OutputPlace = "原锅内";
                     if (rc.NeedsFire)
                     {
                         var f = s.Locations[s.CurrentLocation].Facility;

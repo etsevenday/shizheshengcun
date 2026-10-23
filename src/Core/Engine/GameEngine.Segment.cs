@@ -287,6 +287,8 @@ namespace Survival.Core.Engine
                         return false;
                     }
                     var rc = _recipes[a.TargetId];
+                    if (rc.Pot != null && a.PotInstanceId.HasValue && !a.LegacyGroundOutput)
+                        return CompletePotTransform(s, a, rc);
                     foreach (var id in a.ReservedItemIds) s.Items.RemoveAll(i => i.InstanceId == id);
                     a.ReservedItemIds.Clear();
                     var made = new List<string>();
@@ -332,6 +334,31 @@ namespace Survival.Core.Engine
                     ClearAction(s, a);
                     return true;
             }
+        }
+
+        /// <summary>烧水完成：把锅内预留的脏水原地改为净水，数量、归属不变，不在地面另生成（拖拽与容器案 6.2）。</summary>
+        private bool CompletePotTransform(GameState s, ActionState a, RecipeConfig rc)
+        {
+            var pp = rc.Pot!;
+            var units = 0;
+            foreach (var id in a.ReservedItemIds)
+            {
+                var inst = FindItem(s, id);
+                if (inst == null) continue;
+                inst.ItemId = pp.OutputItem;
+                inst.ReservedBy = null;
+                units += inst.Count;
+            }
+            a.ReservedItemIds.Clear();
+            var pot = FindItem(s, a.PotInstanceId!.Value);
+            if (pot != null) Normalize(s, ItemInstance.ContainerOwner(pot.InstanceId));
+            if (rc.Id == "boil") s.Progress.Flags.Add("boiled");
+            ClearAction(s, a);
+            var where = pot == null ? "锅" : ItemName(pot.ItemId);
+            var label = pot == null ? "" : $"（{PotLabel(s, pot)}）";
+            Emit(s, GameEventKind.ActionCompleted, $"{ItemName(pp.OutputItem)}+{units}，留在{where}内{label}。", null,
+                pot == null ? new[] { pp.OutputItem } : new[] { pot.ItemId, pp.OutputItem });
+            return true;
         }
 
         private void ClearAction(GameState s, ActionState a)
@@ -512,8 +539,10 @@ namespace Survival.Core.Engine
             if (s.Locations.Values.All(l => l.Visited)) f.Add("allVisited");
 
             var camp = Config.Locations.FirstOrDefault(l => l.CanBuildShelter)?.Id ?? "camp";
+            // 锅内水按锅所在计入（开发计划 v0.2 A7）
             int Count(string item) => s.Items
-                .Where(i => i.ItemId == item && (i.IsCarried || i.Owner == camp) && !IsSpoiled(s, i))
+                .Where(i => i.ItemId == item && !IsSpoiled(s, i))
+                .Where(i => { var p = PlaceOf(s, i); return p == ItemInstance.Carried || p == camp; })
                 .Sum(i => i.Count);
             if (Count("clean_water") >= 3 && Count("cooked_root") >= 2) f.Add("supplyReady");
         }

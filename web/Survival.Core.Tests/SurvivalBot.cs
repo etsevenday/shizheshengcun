@@ -102,7 +102,7 @@ public sealed class SurvivalBot
     {
         var st = S.Stats;
         var allowGround = !(sub && S.Main?.Type == ActionType.Travel);
-        bool Has(string id) => E.AvailableCount(S, id, allowGround) > 0;
+        bool Has(string id) => E.AvailableCount(S, id, allowGround, includeContainers: true) > 0;
 
         if (st.Hydration < 60 && Has("clean_water")) return ActionRequest.UseItem("clean_water");
         if (st.Hydration < 12 && Has("dirty_water")) return ActionRequest.UseItem("dirty_water");
@@ -195,7 +195,18 @@ public sealed class SurvivalBot
         DropAtCamp();
     }
 
-    private int Stock(string id) => S.Items.Where(i => i.ItemId == id && (i.IsCarried || i.Owner == Camp) && !E.IsSpoiled(S, i)).Sum(i => i.Count);
+    /// <summary>随身与营地的存量，锅里的水按锅所在计入。</summary>
+    private int Stock(string id) => S.Items.Where(i => i.ItemId == id && !E.IsSpoiled(S, i))
+        .Where(i => { var p = E.PlaceOf(S, i); return p == ItemInstance.Carried || p == Camp; })
+        .Sum(i => i.Count);
+
+    /// <summary>v0.3：烧好的净水留在锅里。再烧水或烹饪前先把锅里的净水倒到营地地面。</summary>
+    private void EmptyPotOfCleanWater()
+    {
+        foreach (var pot in S.Items.Where(i => i.ItemId == "pot" && (i.IsCarried || i.Owner == Camp)).ToList())
+            foreach (var w in E.PotContents(S, pot.InstanceId).Where(i => i.ItemId == "clean_water").ToList())
+                E.DoInstant(S, InstantRequest.Decant(w.InstanceId, Camp, w.Count));
+    }
 
     private int Avail(string node) => S.Resources[node].Discovered ? S.Resources[node].Available ?? 99 : 0;
 
@@ -208,6 +219,7 @@ public sealed class SurvivalBot
         var canCook = Stock("raw_root") >= 2;
         if (canBoil || canCook)
         {
+            EmptyPotOfCleanWater();
             if (!fac.FireLit && !Do(ActionRequest.Ignite())) return false;
             if (canBoil && Do(ActionRequest.Craft("boil"))) return true;
             if (canCook && Do(ActionRequest.Craft("cook"))) return true;

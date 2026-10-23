@@ -10,31 +10,46 @@ namespace Survival.Core.Engine
         public string TargetId { get; set; } = "";
         public int? InstanceId { get; set; }
         public int Minutes { get; set; }
+        /// <summary>烧水、烹饪指定的锅；为空时按锅位 → 随身 → 地面自动选。</summary>
+        public int? PotInstanceId { get; set; }
 
         public static ActionRequest Travel(string locationId) => new ActionRequest { Type = ActionType.Travel, TargetId = locationId };
         public static ActionRequest Explore() => new ActionRequest { Type = ActionType.Explore };
         public static ActionRequest Gather(string nodeId) => new ActionRequest { Type = ActionType.Gather, TargetId = nodeId };
-        public static ActionRequest Craft(string recipeId) => new ActionRequest { Type = ActionType.Craft, TargetId = recipeId };
+        public static ActionRequest Craft(string recipeId, int? potInstanceId = null) =>
+            new ActionRequest { Type = ActionType.Craft, TargetId = recipeId, PotInstanceId = potInstanceId };
         public static ActionRequest Wait(int minutes) => new ActionRequest { Type = ActionType.Wait, Minutes = minutes };
         public static ActionRequest Rest(int minutes) => new ActionRequest { Type = ActionType.Rest, Minutes = minutes };
         public static ActionRequest Sleep(int minutes) => new ActionRequest { Type = ActionType.Sleep, Minutes = minutes };
         public static ActionRequest UseInstance(int instanceId) => new ActionRequest { Type = ActionType.Use, InstanceId = instanceId };
         public static ActionRequest UseItem(string itemId) => new ActionRequest { Type = ActionType.Use, TargetId = itemId };
-        public static ActionRequest Ignite() => new ActionRequest { Type = ActionType.Ignite };
+        /// <summary>点火；指定打火器实例时用它（随身或当前地面），否则自动选。</summary>
+        public static ActionRequest Ignite(int? lighterInstanceId = null) => new ActionRequest { Type = ActionType.Ignite, InstanceId = lighterInstanceId };
     }
 
-    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish }
+    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, AttachPot, DetachPot }
 
     public sealed class InstantRequest
     {
         public InstantKind Kind { get; set; }
+        /// <summary>来源实例：拾取/放下的物品、投料的木材（0 表示自动选）、装水的水卡、倒出的锅内水、架上/取下的锅。</summary>
         public int InstanceId { get; set; }
         public int Count { get; set; } = 1;
+        /// <summary>目标锅（装水）。</summary>
+        public int? TargetInstanceId { get; set; }
+        /// <summary>目标区域：carried 或当前地点 ID（倒出）。</summary>
+        public string Zone { get; set; } = "";
 
         public static InstantRequest Pickup(int instanceId, int count) => new InstantRequest { Kind = InstantKind.Pickup, InstanceId = instanceId, Count = count };
         public static InstantRequest Drop(int instanceId, int count) => new InstantRequest { Kind = InstantKind.Drop, InstanceId = instanceId, Count = count };
-        public static InstantRequest AddFuel() => new InstantRequest { Kind = InstantKind.AddFuel };
+        public static InstantRequest AddFuel(int count = 1, int woodInstanceId = 0) => new InstantRequest { Kind = InstantKind.AddFuel, Count = count, InstanceId = woodInstanceId };
         public static InstantRequest Extinguish() => new InstantRequest { Kind = InstantKind.Extinguish };
+        public static InstantRequest FillPot(int waterInstanceId, int potInstanceId, int count = 1) =>
+            new InstantRequest { Kind = InstantKind.FillPot, InstanceId = waterInstanceId, TargetInstanceId = potInstanceId, Count = count };
+        public static InstantRequest Decant(int potWaterInstanceId, string zone, int count = 1) =>
+            new InstantRequest { Kind = InstantKind.Decant, InstanceId = potWaterInstanceId, Zone = zone, Count = count };
+        public static InstantRequest AttachPot(int potInstanceId) => new InstantRequest { Kind = InstantKind.AttachPot, InstanceId = potInstanceId };
+        public static InstantRequest DetachPot() => new InstantRequest { Kind = InstantKind.DetachPot };
     }
 
     public sealed class ActionResult

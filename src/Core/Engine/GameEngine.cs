@@ -168,6 +168,9 @@ namespace Survival.Core.Engine
             public ItemInstance? UseItem;
             public bool IgniteConsumesWood;
             public ItemInstance? Lighter;
+            /// <summary>烧水、烹饪选中的锅；烧水开始时要从散水补入锅的批次与数量。</summary>
+            public ItemInstance? Pot;
+            public List<(ItemInstance inst, int count)> PotFill = new List<(ItemInstance, int)>();
             public List<OutputLine> Outputs = new List<OutputLine>();
             public List<string> Notes = new List<string>();
         }
@@ -295,18 +298,34 @@ namespace Survival.Core.Engine
                                 break;
                         }
                     }
+                    // 催化工具：锅与其他工具都可以在随身或当前地面（拖拽与容器案 5、6.2）
                     foreach (var tag in rc.Catalysts)
                     {
-                        var cat = CarriedTool(s, tag);
+                        var isPot = Config.Items.Any(i => i.ToolTag == tag && i.ContainerId != null);
+                        if (isPot)
+                        {
+                            var pot = SelectPot(s, r.PotInstanceId, out var why);
+                            if (pot == null) return why;
+                            plan.Pot = pot;
+                            plan.Catalysts.Add(pot);
+                            continue;
+                        }
+                        var cat = AccessibleTool(s, tag);
                         if (cat == null)
                         {
                             var name = Config.Items.First(i => i.ToolTag == tag).Name;
-                            return $"缺少{name}（需随身）";
+                            return $"缺少{name}（需随身或在当前地面）";
                         }
                         plan.Catalysts.Add(cat);
                     }
+                    if (plan.Pot != null)
+                    {
+                        var err = ValidatePot(s, rc, plan);
+                        if (err != null) return err;
+                    }
                     foreach (var kv in rc.Inputs)
                     {
+                        if (rc.Pot != null && kv.Key == rc.Pot.InputItem) continue;
                         var have = AvailableCount(s, kv.Key, true);
                         if (have < kv.Value) return $"缺少{ItemName(kv.Key)}（{have}/{kv.Value}）";
                     }
@@ -345,16 +364,18 @@ namespace Survival.Core.Engine
                     {
                         inst = s.Items.FirstOrDefault(i => i.InstanceId == r.InstanceId.Value);
                         if (inst == null) return "物品不存在";
-                        if (!(inst.IsCarried || (allowGround && inst.Owner == here)))
+                        var place = PlaceOf(s, inst);
+                        if (!(place == ItemInstance.Carried || (allowGround && place == here)))
                             return plan.TravelPaused ? "移动途中只能使用随身物品" : "只能使用随身或当前地面的物品";
                     }
                     else
                     {
                         if (!_items.ContainsKey(r.TargetId)) return "物品不存在";
-                        inst = UsableBatches(s, r.TargetId, allowGround).FirstOrDefault();
+                        // 锅内水也可按物品饮用（开发计划 v0.2 A7）
+                        inst = UsableBatches(s, r.TargetId, allowGround, true).FirstOrDefault();
                         if (inst == null)
                         {
-                            var any = Accessible(s, allowGround).FirstOrDefault(i => i.ItemId == r.TargetId);
+                            var any = Accessible(s, allowGround, true).FirstOrDefault(i => i.ItemId == r.TargetId);
                             if (any == null) return $"没有可用的{ItemName(r.TargetId)}";
                             inst = any;
                         }
@@ -378,8 +399,17 @@ namespace Survival.Core.Engine
                     if (plan.TravelPaused) return "移动途中无法点火";
                     if (!hereCfg.HasFire) return "这里没有火堆";
                     if (hereState.Facility.FireLit) return "火堆已在燃烧";
-                    var lighter = CarriedTool(s, "lighter");
-                    if (lighter == null) return "缺少打火器（需随身）";
+                    // 打火器可在随身或当前地面（开发计划 v0.2 B1）；拖入的那一把优先
+                    ItemInstance? lighter;
+                    if (r.InstanceId.HasValue)
+                    {
+                        lighter = FindItem(s, r.InstanceId.Value);
+                        if (lighter == null || _items[lighter.ItemId].ToolTag != "lighter") return "这不是打火器";
+                        if (!(lighter.IsCarried || lighter.Owner == here)) return "只能使用随身或当前地面的打火器";
+                        if (lighter.ReservedBy != null || IsLocked(s, lighter)) return "行动占用：打火器正被使用";
+                    }
+                    else lighter = AccessibleTool(s, "lighter");
+                    if (lighter == null) return "缺少打火器（需随身或在当前地面）";
                     plan.Lighter = lighter;
                     var fuel = hereState.Facility.FuelMinutes;
                     if (fuel < Config.Fire.MinFuelToIgnite)
@@ -462,8 +492,27 @@ namespace Survival.Core.Engine
                 case ActionType.Craft:
                 case ActionType.Build:
                 {
-                    foreach (var kv in p.Recipe!.Inputs)
+                    var rc = p.Recipe!;
+                    if (p.Pot != null)
+                    {
+                        a.PotInstanceId = p.Pot.InstanceId;
+                        if (rc.Pot != null)
+                        {
+                            // 烧水：先把缺的散水原子转入锅，再预留锅内水本身（不复制、不另起虚拟锅水）
+                            var owner = ItemInstance.ContainerOwner(p.Pot.InstanceId);
+                            foreach (var (inst, count) in p.PotFill) MoveItems(s, inst, count, owner);
+                            foreach (var c in PotContents(s, p.Pot.InstanceId).Where(i => i.ItemId == rc.Pot.InputItem))
+                            {
+                                c.ReservedBy = a.ActionId;
+                                a.ReservedItemIds.Add(c.InstanceId);
+                            }
+                        }
+                    }
+                    foreach (var kv in rc.Inputs)
+                    {
+                        if (rc.Pot != null && kv.Key == rc.Pot.InputItem) continue;
                         a.ReservedItemIds.AddRange(Reserve(s, kv.Key, kv.Value, a.ActionId));
+                    }
                     foreach (var c in p.Catalysts) a.LockedItemIds.Add(c.InstanceId);
                     break;
                 }
@@ -524,6 +573,8 @@ namespace Survival.Core.Engine
                 ActionType.Travel => $"已取消移动，留在{LocName(a.SourceLocation)}；已经流逝的时间与身体消耗保留。",
                 ActionType.Explore => "已取消探索，探索度不变；已消耗的时间保留。",
                 ActionType.Gather => "已取消搜集，未获得产物，预留库存已释放。",
+                ActionType.Craft when a.PotInstanceId.HasValue && !a.LegacyGroundOutput && _recipes[a.TargetId].Pot != null
+                    => $"已取消{a.Label}，{ItemName(_recipes[a.TargetId].Pot!.InputItem)}仍留在原锅，加工进度清零。",
                 ActionType.Craft or ActionType.Build => "已取消制作，预留材料已返还当前地面，未生成半成品。",
                 ActionType.Sleep => "已提前醒来。",
                 _ => $"已结束{a.Label}。",
@@ -545,7 +596,10 @@ namespace Survival.Core.Engine
             return ActionResult.Success(s.Main.ActionId);
         }
 
-        /// <summary>释放行动的全部预留：资源库存归还，预留物品返还指定地点地面。</summary>
+        /// <summary>
+        /// 释放行动的全部预留：资源库存归还，预留的散物品返还指定地点地面；
+        /// 锅内预留的水只解除预留、留在原锅（烧水取消不复制到地面，拖拽与容器案 6.2）。
+        /// </summary>
         private void Release(GameState s, ActionState a, string groundLocation)
         {
             if (a.Type == ActionType.Gather && a.ReservedResourceUnits > 0)
@@ -557,96 +611,25 @@ namespace Survival.Core.Engine
             }
             if (a.ReservedItemIds.Count > 0)
             {
+                var owners = new HashSet<string> { groundLocation };
                 foreach (var id in a.ReservedItemIds)
                 {
                     var inst = s.Items.FirstOrDefault(i => i.InstanceId == id);
                     if (inst == null) continue;
                     inst.ReservedBy = null;
-                    inst.Owner = groundLocation;
+                    if (inst.InContainer) owners.Add(inst.Owner);
+                    else inst.Owner = groundLocation;
                 }
                 a.ReservedItemIds.Clear();
-                Normalize(s, groundLocation);
+                foreach (var o in owners) Normalize(s, o);
             }
             a.LockedItemIds.Clear();
         }
 
-        // ───────────────────────── 即时操作（不耗时） ─────────────────────────
-
-        public ActionResult DoInstant(GameState s, InstantRequest r)
-        {
-            if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
-            var here = s.CurrentLocation;
-            switch (r.Kind)
-            {
-                case InstantKind.Pickup:
-                {
-                    if (IsBusy(s)) return ActionResult.Fail("行动进行中，不能整理物品");
-                    var inst = s.Items.FirstOrDefault(i => i.InstanceId == r.InstanceId);
-                    if (inst == null || inst.Owner != here) return ActionResult.Fail("只能拾取当前地点地面的物品");
-                    if (inst.ReservedBy != null) return ActionResult.Fail("该物品已被预留");
-                    if (r.Count < 1 || r.Count > inst.Count) return ActionResult.Fail("数量无效");
-                    var w = _items[inst.ItemId].WeightGrams;
-                    var max = MaxPickup(s, inst);
-                    if (r.Count > max)
-                        return ActionResult.Fail($"携带后将超过{Config.Carry.HardGrams / 1000}公斤，最多可取{max}份", max);
-                    MoveItems(s, inst, r.Count, ItemInstance.Carried);
-                    UpdateFlags(s);
-                    return ActionResult.Success();
-                }
-                case InstantKind.Drop:
-                {
-                    if (IsBusy(s)) return ActionResult.Fail("行动进行中，不能整理物品");
-                    var inst = s.Items.FirstOrDefault(i => i.InstanceId == r.InstanceId);
-                    if (inst == null || !inst.IsCarried) return ActionResult.Fail("只能放下随身物品");
-                    if (inst.ReservedBy != null) return ActionResult.Fail("该物品已被预留");
-                    if (r.Count < 1 || r.Count > inst.Count) return ActionResult.Fail("数量无效");
-                    MoveItems(s, inst, r.Count, here);
-                    UpdateFlags(s);
-                    return ActionResult.Success();
-                }
-                case InstantKind.AddFuel:
-                {
-                    var err = FireMaintenanceBlocked(s);
-                    if (err != null) return ActionResult.Fail(err);
-                    if (!_locs[here].HasFire) return ActionResult.Fail("这里没有火堆");
-                    var fac = s.Locations[here].Facility;
-                    if (fac.FuelMinutes + Config.Fire.BurnMinutesPerWood > Config.Fire.MaxFuelMinutes)
-                        return ActionResult.Fail($"燃料不足{Config.Fire.BurnMinutesPerWood}分钟空位（上限{Config.Fire.MaxFuelMinutes}分钟）");
-                    var wood = UsableBatches(s, "wood", true).FirstOrDefault();
-                    if (wood == null) return ActionResult.Fail("没有可用的木材");
-                    ConsumeOne(s, wood);
-                    fac.FuelMinutes += Config.Fire.BurnMinutesPerWood;
-                    Emit(s, GameEventKind.Info, $"投入1木材，火堆燃料{fac.FuelMinutes}分钟。");
-                    UpdateFlags(s);
-                    return ActionResult.Success();
-                }
-                case InstantKind.Extinguish:
-                {
-                    var err = FireMaintenanceBlocked(s);
-                    if (err != null) return ActionResult.Fail(err);
-                    var fac = s.Locations[here].Facility;
-                    if (!_locs[here].HasFire || !fac.FireLit) return ActionResult.Fail("火堆没有在燃烧");
-                    fac.FireLit = false;
-                    Emit(s, GameEventKind.Info, $"已熄灭火堆，剩余燃料{fac.FuelMinutes}分钟保留。");
-                    return ActionResult.Success();
-                }
-            }
-            return ActionResult.Fail("未知操作");
-        }
-
-        private string? FireMaintenanceBlocked(GameState s)
-        {
-            if (s.Sub != null) return "请等待当前补给或维护完成";
-            if (s.Main == null) return null;
-            if (s.Main.Status != ActionStatus.Paused) return "行动进行中";
-            if (s.Main.Type == ActionType.Travel) return "移动途中无法维护火堆";
-            return null;
-        }
-
-        /// <summary>当前可从该地面堆拾取的最大数量（受30公斤上限约束）。</summary>
+        /// <summary>当前可从该地面堆拾取的最大数量（受30公斤上限约束；锅按锅加内容计）。</summary>
         public int MaxPickup(GameState s, ItemInstance inst)
         {
-            var w = _items[inst.ItemId].WeightGrams;
+            var w = inst.Count > 0 ? ItemGrams(s, inst) / inst.Count : _items[inst.ItemId].WeightGrams;
             var room = Config.Carry.HardGrams - CarriedGrams(s);
             if (room < 0) room = 0;
             return Math.Min(inst.Count, room / w);
