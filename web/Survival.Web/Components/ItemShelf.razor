@@ -22,7 +22,7 @@
         <h2>@Title</h2>
         <span>
             @if (carried) { @($"{Ui.Kg(grams)}公斤 · {(grams > e.Config.Carry.SoftGrams ? "超重" : "轻装")} · ") }
-            显示@(kinds)种 · @(carried ? "点 ▲ 放下" : "点 ▼ 拾取")，可输入数量 · 不耗时
+            显示@(kinds)种 · 选中卡片即可@(carried ? "放下" : "拾取")，可输入数量 · 不耗时
         </span>
     </div>
     <div class="row-scroll">
@@ -36,7 +36,7 @@
             var batches = list.Select(i => i.ExpiresAt).Distinct().Count();
             var id = g.Key;
             var movable = list.Any(i => i.ReservedBy == null);
-            <div @key="@("g:" + id)" class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner ? "selected" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "")"
+            <div @key="@("g:" + id)" data-card="@($"{Owner}|{id}")" class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner ? "selected" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "")"
                  role="button" tabindex="0" @onclick="() => SelectGroup(id)" @onkeydown="ev => OnCardKey(ev, () => SelectGroup(id))" title="@e.Item(id).Desc">
                 <div class="ctitle"><span>@e.ItemName(id)</span><span class="qty">×@total</span></div>
                 <div class="art">@Icons.Markup(id)</div>
@@ -49,7 +49,7 @@
             var broken = t.Durability.HasValue && t.Durability <= 0;
             var inst = t.InstanceId;
             var toolId = t.ItemId;
-            <div @key="@("t:" + inst)" class="card item @(broken ? "broken" : "") @(t.ReservedBy != null ? "reserved" : "") @(sel.Kind == SelectionKind.Tool && sel.InstanceId == inst ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
+            <div @key="@("t:" + inst)" data-card="@($"{Owner}|{toolId}|{inst}")" class="card item @(broken ? "broken" : "") @(t.ReservedBy != null ? "reserved" : "") @(sel.Kind == SelectionKind.Tool && sel.InstanceId == inst ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
                  role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
                 <div class="ctitle"><span>@e.ItemName(t.ItemId)</span><span class="qty">×1</span></div>
                 <div class="art">@Icons.Markup(t.ItemId)</div>
@@ -63,7 +63,7 @@
                 @if (carried)
                 {
                     <strong>没有携带物品</strong>
-                    <span>点地面物品卡右下角的 ▼ 即可带走</span>
+                    <span>选中地面物品卡，在卡片下方即可拾取</span>
                 }
                 else
                 {

@@ -1,7 +1,8 @@
 -- 通用留言板 · Supabase 初始化脚本
 -- 在 Supabase 后台 SQL Editor 里整段执行一次即可；重复执行是安全的。
--- 访客（anon / publishable key）只能“写入”留言和上传截图，不能读取任何人的留言；
--- 读取、标记处理状态只能用 service_role / secret key（只放在你本机，绝不提交到仓库）。
+-- 访客（anon / publishable key）只能“写入”留言和上传截图，不能直接读 feedback 表；
+-- 公开读取走 20261023120000_feedback_wall.sql 建的 feedback_wall 视图（只暴露公开字段）。
+-- 标记处理状态只能用 service_role / secret key（只放在你本机，绝不提交到仓库）。
 
 create table if not exists public.feedback (
   id              uuid primary key,
@@ -39,13 +40,13 @@ create policy "anon can submit feedback" on public.feedback
   for insert to anon, authenticated
   with check (status = 'new' and note is null);
 
--- 不给 anon 任何 select / update / delete 策略：访客看不到别人的留言
+-- 不给 anon 任何表级 select / update / delete 策略：公开读取只能走 feedback_wall 视图
 
--- 截图存储桶：私有，单张不超过 3MB，只接受常见图片格式
+-- 截图存储桶：单张不超过 3MB，只接受常见图片格式（是否公开由 feedback_wall 脚本决定，这里不改动）
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('feedback-screenshots', 'feedback-screenshots', false, 3145728, array['image/webp', 'image/jpeg', 'image/png'])
 on conflict (id) do update
-  set public = false, file_size_limit = 3145728, allowed_mime_types = array['image/webp', 'image/jpeg', 'image/png'];
+  set file_size_limit = 3145728, allowed_mime_types = array['image/webp', 'image/jpeg', 'image/png'];
 
 -- 访客只能往该桶上传（路径形如 项目/留言id/1.webp），不能读取、覆盖或删除
 drop policy if exists "anon can upload feedback screenshots" on storage.objects;

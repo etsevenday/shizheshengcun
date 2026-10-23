@@ -1,7 +1,8 @@
 -- 通用留言板 · Supabase 初始化脚本
 -- 在 Supabase 后台 SQL Editor 里整段执行一次即可；重复执行是安全的。
--- 访客（anon / publishable key）只能“写入”留言和上传截图，不能读取任何人的留言；
--- 读取、标记处理状态只能用 service_role / secret key（只放在你本机，绝不提交到仓库）。
+-- 访客（anon / publishable key）只能“写入”留言和上传截图，不能直接读 feedback 表；
+-- 公开读取走 20261023120000_feedback_wall.sql 建的 feedback_wall 视图（只暴露公开字段）。
+-- 标记处理状态只能用 service_role / secret key（只放在你本机，绝不提交到仓库）。
 
 create table if not exists public.feedback (
   id              uuid primary key,
@@ -39,13 +40,13 @@ create policy "anon can submit feedback" on public.feedback
   for insert to anon, authenticated
   with check (status = 'new' and note is null);
 
--- 不给 anon 任何 select / update / delete 策略：访客看不到别人的留言
+-- 不给 anon 任何表级 select / update / delete 策略：公开读取只能走 feedback_wall 视图
 
--- 截图存储桶：私有，单张不超过 3MB，只接受常见图片格式
+-- 截图存储桶：单张不超过 3MB，只接受常见图片格式（是否公开由 feedback_wall 脚本决定，这里不改动）
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('feedback-screenshots', 'feedback-screenshots', false, 3145728, array['image/webp', 'image/jpeg', 'image/png'])
 on conflict (id) do update
-  set public = false, file_size_limit = 3145728, allowed_mime_types = array['image/webp', 'image/jpeg', 'image/png'];
+  set file_size_limit = 3145728, allowed_mime_types = array['image/webp', 'image/jpeg', 'image/png'];
 
 -- 访客只能往该桶上传（路径形如 项目/留言id/1.webp），不能读取、覆盖或删除
 drop policy if exists "anon can upload feedback screenshots" on storage.objects;
@@ -55,3 +56,26 @@ create policy "anon can upload feedback screenshots" on storage.objects
     bucket_id = 'feedback-screenshots'
     and array_length(storage.foldername(name), 1) = 2
   );
+
+-- 公开留言墙 · 让所有访客都能看到全部留言和处理状态
+-- 在 Supabase 后台 SQL Editor 里整段执行一次即可；重复执行是安全的。
+-- 原则：feedback 表本身仍不给访客 select（里面有存档、浏览器信息等不该公开的字段），
+--       访客只能通过下面这个视图读取精选字段：留言内容、称呼、分类、处理状态、作者备注、截图。
+
+-- 视图以创建者（postgres）身份读取 feedback 表，绕过表上的行级安全，只暴露列出的字段
+create or replace view public.feedback_wall
+  with (security_invoker = false) as
+  select id, created_at, project, category, message, contact, status, note, screenshots, app_version
+  from public.feedback;
+
+comment on view public.feedback_wall is '留言墙：访客可读的留言公开字段（不含存档、页面地址、浏览器信息）';
+
+grant select on public.feedback_wall to anon, authenticated;
+
+-- 截图桶改为公开读取：路径里带留言 id（随机 uuid），只能顺着留言墙里的链接看到
+update storage.buckets set public = true where id = 'feedback-screenshots';
+
+drop policy if exists "anyone can view feedback screenshots" on storage.objects;
+create policy "anyone can view feedback screenshots" on storage.objects
+  for select to anon, authenticated
+  using (bucket_id = 'feedback-screenshots');

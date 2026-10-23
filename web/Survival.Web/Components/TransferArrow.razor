@@ -1,6 +1,6 @@
 @inherits GameComponent
 
-@* 物品卡右下角的三角箭头：打开拾取/放下数量框，可直接输入数字；只有 1 件时直接转移（试玩留言 fb68265e，按策划调整去掉长按）。 *@
+@* 物品卡右下角的三角箭头：选中这张卡并把光标放进卡片旁拾取条的数量框（试玩留言 fb68265e，按策划要求）。 *@
 <button type="button" class="card-arrow @(ToCarried ? "down" : "up")" disabled="@(!Enabled)"
         aria-label="@(ToCarried ? "拾取，可输入数量" : "放下，可输入数量")"
         title="@(ToCarried ? "拾取（可输入数量）" : "放下（可输入数量）")"
@@ -17,7 +17,9 @@
     private void OnClick()
     {
         if (!Enabled) return;
-        if (InstanceId.HasValue) G.TransferOne(Owner, ItemId, InstanceId);
-        else G.OpenQuantity(Owner, ItemId);
+        G.Select(InstanceId.HasValue
+            ? new Selection { Kind = SelectionKind.Tool, Id = ItemId, Owner = Owner, InstanceId = InstanceId }
+            : new Selection { Kind = SelectionKind.ItemGroup, Id = ItemId, Owner = Owner });
+        G.RequestTransferFocus();
     }
 }

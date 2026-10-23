@@ -4,17 +4,18 @@
  * 功能：文字留言、Ctrl+V 粘贴 / 拖入 / 选择图片、自动截取当前页面、自动识别系统与浏览器、
  *       附带应用自身的上下文与附件（例如存档），提交到 Supabase（表 + 存储桶）。
  *       未配置 Supabase 或提交失败时，可一键复制为文本、下载截图，改用聊天软件发送。
+ *       「大家的留言」页：所有人都能看到全部留言、截图、处理状态和作者回复（读 feedback_wall 视图）。
  *
  * 用法：
  *   <script src="js/feedback-widget.js"></script>
  *   FeedbackWidget.init({
  *     project: 'my-game',                    // 区分不同项目的留言
- *     configUrl: 'feedback.json',            // { supabaseUrl, supabaseKey, table?, bucket? }
+ *     configUrl: 'feedback.json',            // { supabaseUrl, supabaseKey, table?, bucket?, wall? }
  *     getContext: async () => ({ ... }),     // 可选：应用当前状态（界面、关卡、进度……）
  *     getAttachment: async () => ({ name, text }), // 可选：大段附件，如存档
  *     floatingButton: true,                  // 可选：右下角悬浮按钮
  *   });
- *   FeedbackWidget.open();
+ *   FeedbackWidget.open();                   // 打开到“写留言”；open({ tab: 'wall' }) 直接打开“大家的留言”
  *
  * 建表与存储桶脚本见 tools/supabase-feedback.sql。
  */
@@ -28,6 +29,13 @@
     { id: 'idea', label: '建议' },
     { id: 'other', label: '其他' },
   ];
+  // 处理状态（与数据库 status 字段一致），显示在留言墙上
+  var STATUSES = [
+    { id: 'new', label: '待处理' },
+    { id: 'doing', label: '处理中' },
+    { id: 'done', label: '已处理' },
+    { id: 'wontfix', label: '暂不处理' },
+  ];
   var MAX_IMAGES = 6;
   var MAX_SIDE = 1920;
   var HTML2CANVAS = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
@@ -36,6 +44,7 @@
   var cfg = null;          // Supabase 配置
   var root = null;         // 弹窗根节点
   var state = null;        // 当前一次留言的状态
+  var wall = null;         // 留言墙的读取状态
   var lastSubmitAt = 0;
 
   // ───────────── 工具 ─────────────
@@ -195,7 +204,7 @@
 
   async function loadConfig() {
     if (cfg) return cfg;
-    var c = { supabaseUrl: opts.supabaseUrl || '', supabaseKey: opts.supabaseKey || '', table: opts.table || 'feedback', bucket: opts.bucket || 'feedback-screenshots' };
+    var c = { supabaseUrl: opts.supabaseUrl || '', supabaseKey: opts.supabaseKey || '', table: opts.table || 'feedback', bucket: opts.bucket || 'feedback-screenshots', wall: opts.wall || 'feedback_wall' };
     if (opts.configUrl && !c.supabaseUrl) {
       try {
         var r = await fetch(opts.configUrl, { cache: 'no-store' });
@@ -247,6 +256,117 @@
     });
     if (res.status === 409) return;
     await check(res, '提交留言');
+  }
+
+  // ───────────── 留言墙：所有人都能看到的留言、截图、处理状态与作者回复 ─────────────
+
+  var WALL_PAGE = 30;
+
+  function statusOf(id) { return STATUSES.find(function (s) { return s.id === id; }) || { id: id, label: id }; }
+  function categoryOf(id) { return (CATEGORIES.find(function (c) { return c.id === id; }) || {}).label || id; }
+
+  function fmtTime(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    var o = { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false };
+    if (d.getFullYear() !== new Date().getFullYear()) o.year = 'numeric';
+    return d.toLocaleString('zh-CN', o);
+  }
+
+  function shotUrl(path) {
+    return cfg.supabaseUrl + '/storage/v1/object/public/' + cfg.bucket + '/' + String(path).split('/').map(encodeURIComponent).join('/');
+  }
+
+  /** 读取一页留言。more 为 true 时接在已有列表后面；切换筛选时重新读取，晚到的旧请求结果会被丢弃。 */
+  async function loadWall(more) {
+    if (!wall) return;
+    var seq = wall.seq = (wall.seq || 0) + 1;
+    await loadConfig();
+    if (seq !== wall.seq) return;
+    if (!cfg.ready) { wall.error = '留言板尚未连接服务器，暂时看不到大家的留言。'; renderWall(); return; }
+    if (!more) { wall.rows = []; wall.total = 0; }
+    wall.loading = true; wall.error = null; renderWall();
+    try {
+      var q = 'select=*&project=eq.' + encodeURIComponent(opts.project || location.hostname) +
+        '&order=created_at.desc&limit=' + WALL_PAGE + '&offset=' + wall.rows.length;
+      if (wall.filter !== 'all') q += '&status=eq.' + wall.filter;
+      var res = await fetch(cfg.supabaseUrl + '/rest/v1/' + cfg.wall + '?' + q, { headers: headers({ Prefer: 'count=exact' }) });
+      if (seq !== wall.seq) return;
+      if (res.status === 404) throw new Error('留言墙还没开通：需要作者在 Supabase 执行 feedback_wall 脚本');
+      await check(res, '读取留言');
+      var rows = await res.json();
+      if (seq !== wall.seq) return;
+      var range = (res.headers.get('Content-Range') || '').split('/')[1];
+      wall.total = range && range !== '*' ? parseInt(range, 10) : wall.rows.length + rows.length;
+      wall.rows = wall.rows.concat(rows);
+    } catch (e) {
+      if (seq !== wall.seq) return;
+      wall.error = e.message;
+    } finally {
+      if (seq === wall.seq) { wall.loading = false; renderWall(); }
+    }
+  }
+
+  function renderWall() {
+    var pane = root && root.querySelector('.fbw-wall');
+    if (!pane || !wall) return;
+    var list = pane.querySelector('.fbw-wall-list');
+    var foot = pane.querySelector('.fbw-wall-foot');
+    list.innerHTML = '';
+    wall.rows.forEach(function (r) { list.appendChild(wallItem(r)); });
+    if (!wall.rows.length && !wall.loading && !wall.error) {
+      list.appendChild(el('div', { class: 'fbw-wall-empty', text: wall.filter === 'all' ? '还没有留言，来写第一条吧。' : '没有这个状态的留言。' }));
+    }
+    foot.innerHTML = '';
+    if (wall.error) {
+      foot.appendChild(el('div', { class: 'fbw-status err fbw-grow', text: wall.error }));
+      foot.appendChild(el('button', { type: 'button', class: 'fbw-btn', text: '重试', onclick: function () { loadWall(false); } }));
+    } else if (wall.loading) {
+      foot.appendChild(el('div', { class: 'fbw-muted', text: '读取中…' }));
+    } else if (wall.rows.length) {
+      foot.appendChild(el('div', { class: 'fbw-muted fbw-grow', text: '共 ' + wall.total + ' 条' }));
+      if (wall.rows.length < wall.total) foot.appendChild(el('button', { type: 'button', class: 'fbw-btn', text: '加载更多', onclick: function () { loadWall(true); } }));
+    }
+  }
+
+  function wallItem(r) {
+    var st = statusOf(r.status);
+    var kids = [
+      el('div', { class: 'fbw-item-head' }, [
+        el('b', { text: r.contact || '匿名玩家' }),
+        el('span', { text: categoryOf(r.category) }),
+        el('span', { text: fmtTime(r.created_at) }),
+        r.app_version ? el('span', { text: r.app_version }) : null,
+        el('span', { class: 'fbw-badge ' + st.id, text: st.label }),
+      ]),
+      el('div', { class: 'fbw-item-msg', text: r.message || '（只有截图）' }),
+    ];
+    if (r.screenshots && r.screenshots.length) {
+      kids.push(el('div', { class: 'fbw-item-shots' }, r.screenshots.map(function (p, i) {
+        return el('a', { href: shotUrl(p), target: '_blank', rel: 'noopener', title: '新窗口查看第 ' + (i + 1) + ' 张截图' }, [
+          el('img', { src: shotUrl(p), alt: '截图 ' + (i + 1), loading: 'lazy' }),
+        ]);
+      })));
+    }
+    if (r.note) kids.push(el('div', { class: 'fbw-item-note' }, [el('small', { text: '作者回复' }), r.note]));
+    return el('div', { class: 'fbw-item' }, kids);
+  }
+
+  /** 切换“写留言 / 大家的留言”两页；第一次进入写留言页时才自动截图。 */
+  function setTab(name) {
+    if (!root) return;
+    root.querySelectorAll('.fbw-tab').forEach(function (t) {
+      var on = t.getAttribute('data-tab') === name;
+      t.classList.toggle('on', on); t.setAttribute('aria-selected', String(on));
+    });
+    root.querySelector('.fbw-form').hidden = name !== 'form';
+    root.querySelector('.fbw-wall').hidden = name !== 'wall';
+    if (name === 'wall') {
+      if (wall && !wall.rows.length && !wall.loading && !wall.error) loadWall(false);
+    } else if (state) {
+      if (!state.captureStarted && opts.autoCapture !== false) { state.captureStarted = true; doCapture(true); }
+      var ta = root.querySelector('textarea'); if (ta) ta.focus();
+    }
   }
 
   // ───────────── 发件箱：提交失败时存在本机，之后自动补发 ─────────────
@@ -422,7 +542,26 @@
     '.fbw-copybox{width:100%;min-height:110px;font-size:12px!important}' +
     '.fbw-status.err{color:#f0c7b9}.fbw-status.ok{color:#9db786}' +
     '.fbw-toast{position:fixed;left:50%;top:20px;transform:translateX(-50%);background:#141d17;border:1px solid #d6b779;color:#eee9db;padding:8px 14px;border-radius:5px;z-index:2147483001;font-size:14px}' +
-    '.fbw-fab{position:fixed;right:16px;bottom:16px;z-index:2147482999;background:#d6b779;color:#222a20;border:0;border-radius:20px;padding:9px 16px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}';
+    '.fbw-fab{position:fixed;right:16px;bottom:16px;z-index:2147482999;background:#d6b779;color:#222a20;border:0;border-radius:20px;padding:9px 16px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}' +
+    // 写留言 / 大家的留言 两页
+    '.fbw-tabs{display:flex;gap:4px;border-bottom:1px solid #3b453c;margin-top:-4px}' +
+    '.fbw-tab{background:none;border:0;border-bottom:2px solid transparent;color:#aab2a4;padding:6px 12px;margin-bottom:-1px;cursor:pointer;font:inherit;font-size:15px}' +
+    '.fbw-tab.on{color:#d6b779;border-bottom-color:#d6b779}' +
+    '.fbw-pane{display:flex;flex-direction:column;gap:12px}' +
+    '.fbw-wall-list{gap:8px}' +
+    '.fbw-filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}' +
+    '.fbw-item{background:#1b221e;border:1px solid #3b453c;border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}' +
+    '.fbw-item-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;color:#aab2a4}' +
+    '.fbw-item-head b{color:#eee9db;font-weight:500;font-size:14px}' +
+    '.fbw-badge{margin-left:auto;border-radius:10px;padding:1px 9px;font-size:12px;border:1px solid #485143;color:#aab2a4;white-space:nowrap}' +
+    '.fbw-badge.doing{border-color:#d6b779;color:#d6b779}.fbw-badge.done{border-color:#9db786;color:#9db786}.fbw-badge.wontfix{opacity:.7}' +
+    '.fbw-item-msg{white-space:pre-wrap;word-break:break-word}' +
+    '.fbw-item-note{border-left:3px solid #d6b779;background:#222b24;padding:6px 10px;font-size:14px;white-space:pre-wrap;word-break:break-word}' +
+    '.fbw-item-note small{display:block;color:#d6b779;font-size:12px}' +
+    '.fbw-item-shots{display:flex;gap:6px;flex-wrap:wrap}' +
+    '.fbw-item-shots a{display:block;width:112px;height:70px;border:1px solid #485143;border-radius:4px;overflow:hidden;background:#111}' +
+    '.fbw-item-shots img{width:100%;height:100%;object-fit:cover;display:block}' +
+    '.fbw-wall-empty{color:#aab2a4;text-align:center;padding:24px 0}';
 
   function ensureCss() {
     if (document.getElementById('fbw-css')) return;
@@ -539,7 +678,14 @@
       includeAttachment: true,
       capturing: false,
       capturePromise: null,
+      captureStarted: false,
     };
+    wall = { filter: 'all', rows: [], total: 0, loading: false, error: null, seq: 0 };
+
+    var tabs = el('div', { class: 'fbw-tabs', role: 'tablist' }, [
+      el('button', { type: 'button', class: 'fbw-tab on', role: 'tab', 'data-tab': 'form', 'aria-selected': 'true', text: '写留言', onclick: function () { setTab('form'); } }),
+      el('button', { type: 'button', class: 'fbw-tab', role: 'tab', 'data-tab': 'wall', 'aria-selected': 'false', text: '大家的留言', onclick: function () { setTab('wall'); } }),
+    ]);
 
     var cats = el('div', { class: 'fbw-cats', role: 'radiogroup', 'aria-label': '反馈类型' });
     CATEGORIES.forEach(function (c) {
@@ -599,8 +745,8 @@
       el('textarea', { class: 'fbw-copybox', readonly: 'readonly', hidden: 'hidden', 'aria-label': '可复制的反馈文字' }),
     ]);
 
-    var box = el('div', { class: 'fbw', role: 'dialog', 'aria-modal': 'true', 'aria-label': opts.title || '反馈与留言' }, [
-      el('h2', {}, [el('span', { text: opts.title || '反馈与留言' }), el('button', { type: 'button', class: 'fbw-x', 'aria-label': '关闭', text: '×', onclick: close })]),
+    // 写留言页：原有的表单与吸底操作区
+    var formPane = el('div', { class: 'fbw-pane fbw-form' }, [
       el('small', { text: opts.subtitle || '小问题随手留言；会自动附上你的系统、浏览器和当前画面，方便作者定位。' }),
       cats, ta, drop,
       el('div', { class: 'fbw-row' }, [el('div', { class: 'fbw-grow' }, [contact])]),
@@ -617,13 +763,36 @@
       ]),
     ]);
 
+    // 大家的留言页：按状态筛选的公开列表
+    var filters = el('div', { class: 'fbw-filters', role: 'radiogroup', 'aria-label': '按处理状态筛选' });
+    [{ id: 'all', label: '全部' }].concat(STATUSES).forEach(function (s) {
+      var b = el('button', { type: 'button', class: 'fbw-cat' + (s.id === 'all' ? ' on' : ''), role: 'radio', 'aria-checked': String(s.id === 'all'), text: s.label, onclick: function () {
+        wall.filter = s.id;
+        filters.querySelectorAll('.fbw-cat').forEach(function (x) { x.classList.remove('on'); x.setAttribute('aria-checked', 'false'); });
+        b.classList.add('on'); b.setAttribute('aria-checked', 'true');
+        loadWall(false);
+      } });
+      filters.appendChild(b);
+    });
+    var wallPane = el('div', { class: 'fbw-pane fbw-wall', hidden: 'hidden' }, [
+      el('small', { text: '所有玩家的留言都在这里；作者处理后会标上状态、写回复。' }),
+      filters,
+      el('div', { class: 'fbw-pane fbw-wall-list' }),
+      el('div', { class: 'fbw-row fbw-wall-foot' }),
+    ]);
+
+    var box = el('div', { class: 'fbw', role: 'dialog', 'aria-modal': 'true', 'aria-label': opts.title || '反馈与留言' }, [
+      el('h2', {}, [el('span', { text: opts.title || '反馈与留言' }), el('button', { type: 'button', class: 'fbw-x', 'aria-label': '关闭', text: '×', onclick: close })]),
+      tabs, formPane, wallPane,
+    ]);
+
     root = el('div', { class: 'fbw-back' }, [box]);
     root.addEventListener('mousedown', function (e) { if (e.target === root) close(); });
     // 留言框内的按键不传给页面（避免触发应用快捷键）；Esc 关闭
     root.addEventListener('keydown', function (e) {
       e.stopPropagation();
       if (e.key === 'Escape') close();
-      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submit();
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !formPane.hidden) submit();
     });
     root.addEventListener('paste', function (e) {
       var items = (e.clipboardData && e.clipboardData.items) || [];
@@ -676,22 +845,22 @@
     if (!root) return;
     root.remove();
     if (state) state.images.forEach(function (i) { URL.revokeObjectURL(i.url); });
-    root = null; state = null;
+    root = null; state = null; wall = null;
     if (opts.onClose) try { opts.onClose(); } catch (e) { /* 忽略 */ }
   }
 
+  /** 打开弹窗。o.tab 为 'wall' 时直接打开“大家的留言”，否则打开“写留言”。 */
   async function open(o) {
     if (root) return;
     ensureCss();
     loadConfig();
     // 立即显示弹窗，截图在后台进行并用占位格提示；截图时会排除弹窗本身（ignoreElements）
-    var ta = build(o);
+    build(o);
     document.body.appendChild(root);
     renderImages();
-    ta.focus();
     renderOutboxNote();
     flushOutbox();
-    if (opts.autoCapture !== false) doCapture(true);
+    setTab(o && o.tab === 'wall' ? 'wall' : 'form');
   }
 
   function init(o) {

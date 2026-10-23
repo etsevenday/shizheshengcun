@@ -226,6 +226,26 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .res-cta:disabled { background: #3a4337; color: #8f988a; }
 .hero-empty { color: #d7dfcb; font-size: 14px; background: #0e211ab8; padding: 8px 12px; border-radius: 4px; }
 
+/* ───── 物品卡旁的拾取/放下条（试玩留言 fb68265e，按策划要求出现在卡片下方） ───── */
+.tbar { position: fixed; z-index: 40; left: -999px; top: -999px; width: 340px; padding: 10px 12px; background: #1c2620f7; border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 8px 24px #000a; display: flex; flex-direction: column; gap: 7px; visibility: hidden; }
+.tbar-tip { position: absolute; width: 14px; height: 14px; background: #1c2620; border: 1px solid var(--accent); transform: rotate(45deg); }
+.tbar.below .tbar-tip { top: -8px; border-right: 0; border-bottom: 0; }
+.tbar.above .tbar-tip { bottom: -8px; border-left: 0; border-top: 0; }
+.tbar-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.tbar-head b { font-weight: 600; font-size: 15px; }
+.tbar-head span { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.tbar-row { display: flex; gap: 6px; align-items: stretch; }
+.tbar-row input { width: 64px; font-size: 18px; padding: 4px 6px; background: #121a15; color: var(--text); border: 1px solid var(--line); border-radius: 4px; text-align: center; }
+.tbar-row input:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+.tbar-step { width: 34px; font-size: 18px; background: transparent; border: 1px solid var(--line); border-radius: 4px; }
+.tbar-max { padding: 0 8px; font-size: 13px; background: transparent; border: 1px solid var(--line); border-radius: 4px; white-space: nowrap; }
+.tbar-step:hover, .tbar-max:hover { border-color: var(--accent); }
+.tbar-go { flex: 1; min-height: 36px; padding: 0 12px; background: var(--accent); color: #222a20; border: 0; border-radius: 4px; font-weight: 600; font-size: 15px; white-space: nowrap; }
+.tbar-go:disabled { background: #5b5a4b; color: #b4b19f; }
+.tbar-note { font-size: 12px; color: var(--muted); }
+.tbar-note.bad { color: #f0c7b9; }
+.tbar-note.warn { color: var(--warn); }
+
 /* 卡片底部快捷按钮与物品转移箭头（试玩留言 649cdad9、fb68265e） */
 div.card { cursor: pointer; }
 .card-cta { margin: 0 6px 6px; padding: 5px 6px; border: 0; border-radius: 3px; background: #3c4a35; color: #f2ecd8; font-size: 13px; font-weight: 600; min-height: 28px; text-align: center; }
