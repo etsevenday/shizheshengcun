@@ -3,11 +3,17 @@ using Survival.Core.Config;
 
 namespace Survival.Core.Tests;
 
-/// <summary>v0.3 结构化配置必须与策划交付的 v0.2 数值逐项一致。</summary>
+/// <summary>v0.4 结构化配置必须与策划交付的 v0.2 数值、交互与地图扩展 v0.3 整合配置逐项一致。</summary>
 public class ConfigTests : TestBase
 {
     private static JObject V02() =>
         JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.2.json")));
+
+    private static JObject V03() =>
+        JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.v0.3.json")));
+
+    private static GameConfig Fresh() =>
+        ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.4.json")), validate: false);
 
     [Test]
     public void LoadsAndValidates()
@@ -160,5 +166,107 @@ public class ConfigTests : TestBase
         Assert.That(Count(s, "pot", "carried"), Is.EqualTo(1));
         Assert.That(Count(s, "canned_food", "camp"), Is.EqualTo(2));
         Assert.That(s.Locations["camp"].Facility.FireLit, Is.False);
+    }
+
+    [Test]
+    public void LootTables_MatchV03Design()
+    {
+        var d = (JObject)V03()["lootTables"]!;
+        Assert.That(Cfg.LootTables.Keys, Is.EquivalentTo(d.Properties().Select(p => p.Name)));
+        foreach (var p in d.Properties())
+        {
+            var t = Cfg.LootTables[p.Name];
+            Assert.That(t.Version, Is.EqualTo((string)p.Value["version"]!), p.Name);
+            var entries = p.Value["entries"]!.ToList();
+            Assert.That(t.Entries, Has.Count.EqualTo(entries.Count), p.Name);
+            for (var i = 0; i < entries.Count; i++)
+            {
+                Assert.That(t.Entries[i].ItemId, Is.EqualTo((string?)entries[i]["itemId"]), $"{p.Name}[{i}] 顺序与物品");
+                Assert.That(t.Entries[i].Count, Is.EqualTo((int)entries[i]["count"]!), $"{p.Name}[{i}]");
+                Assert.That(t.Entries[i].Weight, Is.EqualTo((int)entries[i]["weight"]!), $"{p.Name}[{i}]");
+            }
+            Assert.That(t.Entries.Sum(x => x.Weight), Is.EqualTo(100), p.Name);
+        }
+    }
+
+    [Test]
+    public void LocationsClear_MatchV03Design()
+    {
+        foreach (var j in V03()["locations"]!)
+        {
+            var l = Cfg.Locations.Single(x => x.Id == (string)j["id"]!);
+            Assert.That(l.LootTableId, Is.EqualTo((string)j["lootTableId"]!), l.Id);
+            Assert.That(l.Clear.Cap, Is.EqualTo((int)j["clear"]!["cap"]!), l.Id);
+            Assert.That(l.Clear.InitialCharges, Is.EqualTo((int)j["clear"]!["initialCharges"]!), l.Id);
+            Assert.That(l.Clear.RefillIntervalMinutes, Is.EqualTo((int)j["clear"]!["refillIntervalMinutes"]!), l.Id);
+        }
+        var v = V03();
+        Assert.That(Cfg.Actions.ClearMinutes, Is.EqualTo((int)v["clearAction"]!["baseMinutes"]!));
+        Assert.That(Cfg.Actions.ExploreMinutes, Is.EqualTo((int)v["exploreAction"]!["baseMinutes"]!));
+        Assert.That(Cfg.Actions.ExploreProgress, Is.EqualTo((int)v["exploreAction"]!["progressDelta"]!));
+        var clear = v["hourlyRates"]!["clear"]!;
+        var r = Cfg.HourlyRates[Cfg.Actions.RateAliases["clear"]];
+        Assert.That(r.Satiety, Is.EqualTo((double)clear["satiety"]!));
+        Assert.That(r.Hydration, Is.EqualTo((double)clear["hydration"]!));
+        Assert.That(r.Energy, Is.EqualTo((double)clear["energy"]!));
+        Assert.That(r.Wakefulness, Is.EqualTo((double)clear["wakefulness"]!));
+        Assert.That(r.Morale, Is.EqualTo((double)clear["morale"]!));
+        Assert.That(Cfg.Actions.WorkActionTypes, Does.Contain("clear"));
+    }
+
+    [Test]
+    public void Container_MatchV03Design()
+    {
+        var v = V03();
+        var d = v["containerDefinitions"]!["pot"]!;
+        var pot = Cfg.Containers["pot"];
+        Assert.That(pot.CapacityMl, Is.EqualTo((int)d["capacityMl"]!));
+        Assert.That(pot.UnitMl, Is.EqualTo((int)d["transferQuantumMl"]!));
+        Assert.That(pot.Accepts, Is.EquivalentTo(d["accepts"]!.Select(x => (string)x!)));
+        Assert.That(Cfg.Items.Single(i => i.Id == "pot").ContainerId, Is.EqualTo("pot"));
+        Assert.That(Cfg.Items.Single(i => i.Id == "pot").WeightGrams, Is.EqualTo(1000));
+        foreach (var id in new[] { "dirty_water", "clean_water" })
+            Assert.That(Cfg.Items.Single(i => i.Id == id).UnitVolumeMl, Is.EqualTo(500), id);
+        var boil = Cfg.Recipes.Single(x => x.Id == "boil");
+        Assert.That(boil.Pot!.InputItem, Is.EqualTo((string)d["boilInputType"]!));
+        Assert.That(boil.Pot.OutputItem, Is.EqualTo((string)d["boilResultType"]!));
+        Assert.That(boil.Pot.Units * pot.UnitMl, Is.EqualTo((int)d["boilMinimumMl"]!));
+        Assert.That(boil.Pot.TransformInPlace, Is.True);
+        Assert.That(Cfg.Recipes.Single(x => x.Id == "cook").PotMustBeEmpty, Is.True);
+        Assert.That(Cfg.Fire.PotSlots, Is.EqualTo((int)v["facilityEffects"]!["firePotSlots"]!));
+        Assert.That(Cfg.Ui.DragThresholdPx, Is.EqualTo((int)v["cardInteraction"]!["dragThresholdPx"]!));
+    }
+
+    private static void AssertInvalid(Action<GameConfig> breakIt, string expect)
+    {
+        var c = Fresh();
+        breakIt(c);
+        var errors = ConfigLoader.Validate(c);
+        Assert.That(errors.Any(x => x.Contains(expect)), Is.True, $"应报“{expect}”，实际：{string.Join("；", errors)}");
+        Assert.Throws<ConfigException>(() => ConfigLoader.FromJson(Newtonsoft.Json.JsonConvert.SerializeObject(c)));
+    }
+
+    [Test]
+    public void Validate_RejectsBrokenLootAndClear()
+    {
+        AssertInvalid(c => c.Locations[0].LootTableId = "", "缺少 lootTableId");
+        AssertInvalid(c => c.Locations[0].LootTableId = "nope", "不存在");
+        AssertInvalid(c => c.LootTables["loose_woods"].Entries[1].Weight = 31, "权重合计须为100");
+        AssertInvalid(c => { var t = c.LootTables["loose_woods"].Entries; t[1].Weight = -5; t[2].Weight = 60; }, "权重不能为负");
+        AssertInvalid(c => c.LootTables["loose_woods"].Entries[1].ItemId = "gold", "不存在的物品 gold");
+        AssertInvalid(c => c.LootTables["loose_woods"].Entries[1].Count = 2, "数量须为1");
+        AssertInvalid(c => c.LootTables["loose_woods"].Entries[0].Count = 1, "空结果不能带数量");
+        AssertInvalid(c => c.Locations[0].Clear.Cap = 0, "上限须≥1");
+        AssertInvalid(c => c.Locations[0].Clear.RefillIntervalMinutes = 7, "恢复间隔");
+        AssertInvalid(c => c.Locations[0].Clear.InitialCharges = 9, "初始清理次数");
+    }
+
+    [Test]
+    public void Validate_RejectsBrokenContainer()
+    {
+        AssertInvalid(c => c.Containers["pot"].CapacityMl = 1200, "整数倍");
+        AssertInvalid(c => c.Containers["pot"].Accepts.Add("wood"), "每份体积");
+        AssertInvalid(c => c.Items.Single(i => i.Id == "pot").ContainerId = "kettle", "容器定义 kettle 不存在");
+        AssertInvalid(c => c.Recipes.Single(r => r.Id == "boil").Pot!.OutputItem = "berry", "容器可装物品");
     }
 }

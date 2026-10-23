@@ -24,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- 配置唯一来源：data/config.v0.3.json -->
-    <EmbeddedResource Include="../../data/config.v0.3.json" LogicalName="config.v0.3.json" />
+    <!-- 配置唯一来源：data/config.v0.4.json -->
+    <EmbeddedResource Include="../../data/config.v0.4.json" LogicalName="config.v0.4.json" />
   </ItemGroup>
 
 </Project>

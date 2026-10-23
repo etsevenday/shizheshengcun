@@ -28,7 +28,7 @@
 ## 工程结构
 
 ```
-data/config.v0.3.json      全部数值配置（由策划 v0.2 转换，数值不变）
+data/config.v0.4.json      全部数值配置（策划 v0.2 加交互与地图扩展 v0.3，数值不变）
 src/Core/                  纯 C# 内核，不依赖 UnityEngine；同时是一个 Unity 本地包
 web/Survival.Core/         .NET 类库，编译 src/Core 的源码
 web/Survival.Core.Tests/   NUnit：M01–M09、G01–G08、S01–S12 验收用例与七日通关脚本

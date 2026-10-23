@@ -1,0 +1,1318 @@
+{
+  "version": "0.3",
+  "time_tick_minutes": 5,
+  "start": "Day 1 08:00",
+  "clock_rollover": "00:00",
+  "daylight": [
+    "06:00",
+    "18:00"
+  ],
+  "initial_stats": {
+    "health": 100,
+    "satiety": 80,
+    "hydration": 80,
+    "energy": 90,
+    "wakefulness": 90,
+    "morale": 60
+  },
+  "carry_soft_kg": 20,
+  "carry_hard_kg": 30,
+  "night_time_factor": 1.5,
+  "overweight_time_factor": 1.25,
+  "low_energy_time_factor": 1.25,
+  "time_factor_cap": 2.0,
+  "survey_base_minutes": 30,
+  "survey_progress": 25,
+  "starting_inventory": {
+    "pot": 1,
+    "lighter": 1
+  },
+  "starting_camp_ground": {
+    "canned_food": 2,
+    "clean_water": 2,
+    "wood": 2,
+    "fiber": 2,
+    "cloth": 2,
+    "stone": 2
+  },
+  "fire_burn_minutes_per_wood": 60,
+  "fire_ignite_minutes": 5,
+  "paused_features": [
+    "侵蚀",
+    "轮回",
+    "超能力",
+    "善恶值",
+    "招募",
+    "联机",
+    "战斗",
+    "复杂天气",
+    "生态种群"
+  ],
+  "items": [
+    {
+      "id": "dirty_water",
+      "name": "脏水",
+      "weightGrams": 500,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "effect": "饮用补水30，必定腹泻12小时",
+      "unitVolumeMl": 500
+    },
+    {
+      "id": "clean_water",
+      "name": "净水",
+      "weightGrams": 500,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "effect": "饮用补水30",
+      "unitVolumeMl": 500
+    },
+    {
+      "id": "canned_food",
+      "name": "罐头",
+      "weightGrams": 500,
+      "stackMax": 10,
+      "shelfLifeMinutes": null,
+      "effect": "饱食加35"
+    },
+    {
+      "id": "berry",
+      "name": "野果",
+      "weightGrams": 200,
+      "stackMax": 20,
+      "shelfLifeMinutes": 1440,
+      "effect": "饱食加10，水分加5"
+    },
+    {
+      "id": "raw_root",
+      "name": "生块根",
+      "weightGrams": 300,
+      "stackMax": 20,
+      "shelfLifeMinutes": 4320,
+      "effect": "需烹饪，不可直接食用"
+    },
+    {
+      "id": "cooked_root",
+      "name": "熟块根",
+      "weightGrams": 300,
+      "stackMax": 20,
+      "shelfLifeMinutes": 1440,
+      "effect": "饱食加25，精神加2"
+    },
+    {
+      "id": "wood",
+      "name": "木材",
+      "weightGrams": 500,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "effect": "每单位提供60分钟燃烧时间"
+    },
+    {
+      "id": "fiber",
+      "name": "植物纤维",
+      "weightGrams": 100,
+      "stackMax": 50,
+      "shelfLifeMinutes": null,
+      "effect": "工具与营地材料"
+    },
+    {
+      "id": "stone",
+      "name": "石块",
+      "weightGrams": 500,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "effect": "工具材料"
+    },
+    {
+      "id": "scrap",
+      "name": "废金属",
+      "weightGrams": 500,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "effect": "遗迹物资，留作后续加工"
+    },
+    {
+      "id": "cloth",
+      "name": "布料",
+      "weightGrams": 100,
+      "stackMax": 50,
+      "shelfLifeMinutes": null,
+      "effect": "绷带与床垫材料"
+    },
+    {
+      "id": "parts",
+      "name": "零件",
+      "weightGrams": 200,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "effect": "遗迹物资，留作后续加工"
+    },
+    {
+      "id": "herb",
+      "name": "草药",
+      "weightGrams": 100,
+      "stackMax": 20,
+      "shelfLifeMinutes": 4320,
+      "effect": "制作绷带，不直接服用"
+    },
+    {
+      "id": "bandage",
+      "name": "草药绷带",
+      "weightGrams": 100,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "effect": "健康加5，每60分钟最多一次"
+    },
+    {
+      "id": "stone_knife",
+      "name": "石刀",
+      "weightGrams": 500,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "effect": "耐久20，初版仅作纤维采集加速工具"
+    },
+    {
+      "id": "hatchet",
+      "name": "简易斧",
+      "weightGrams": 1500,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "effect": "耐久30，木材采集产出翻倍"
+    },
+    {
+      "id": "pot",
+      "name": "金属锅",
+      "weightGrams": 1000,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "effect": "空锅1000克，容量1000毫升；可装净水或脏水，同地催化工具；烧水产物留原锅",
+      "containerDefinitionId": "pot"
+    },
+    {
+      "id": "lighter",
+      "name": "打火器",
+      "weightGrams": 100,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "effect": "点火工具，首版不设使用次数"
+    }
+  ],
+  "locations": [
+    {
+      "id": "camp",
+      "name": "临时营地",
+      "initialProgress": 100,
+      "exposure": "露天",
+      "resources": "固定火堆；可建遮蔽棚与床垫",
+      "milestones": "初始已访问",
+      "lootTableId": "loose_camp",
+      "clear": {
+        "cap": 3,
+        "initialCharges": 3,
+        "refillIntervalMinutes": 360,
+        "initialRefillProgressMinutes": 0
+      }
+    },
+    {
+      "id": "field",
+      "name": "农野荒地",
+      "initialProgress": 0,
+      "exposure": "露天",
+      "resources": "块根、纤维",
+      "milestones": "25溪流 50树林 75无新增 100村庄",
+      "lootTableId": "loose_field",
+      "clear": {
+        "cap": 4,
+        "initialCharges": 4,
+        "refillIntervalMinutes": 240,
+        "initialRefillProgressMinutes": 0
+      }
+    },
+    {
+      "id": "stream",
+      "name": "溪流浅滩",
+      "initialProgress": 0,
+      "exposure": "露天",
+      "resources": "脏水、草药",
+      "milestones": "25无新增 50草药 75无新增 100无新增",
+      "lootTableId": "loose_stream",
+      "clear": {
+        "cap": 3,
+        "initialCharges": 3,
+        "refillIntervalMinutes": 360,
+        "initialRefillProgressMinutes": 0
+      }
+    },
+    {
+      "id": "woods",
+      "name": "树林边缘",
+      "initialProgress": 0,
+      "exposure": "露天",
+      "resources": "木材、石块、野果、纤维",
+      "milestones": "25木材 50石块 75野果与纤维 100废料场",
+      "lootTableId": "loose_woods",
+      "clear": {
+        "cap": 4,
+        "initialCharges": 4,
+        "refillIntervalMinutes": 240,
+        "initialRefillProgressMinutes": 0
+      }
+    },
+    {
+      "id": "village",
+      "name": "废弃村庄",
+      "initialProgress": 0,
+      "exposure": "露天",
+      "resources": "补给箱、杂物箱",
+      "milestones": "25补给箱 50五金店 75杂物箱 100诊所",
+      "lootTableId": "loose_village",
+      "clear": {
+        "cap": 3,
+        "initialCharges": 3,
+        "refillIntervalMinutes": 480,
+        "initialRefillProgressMinutes": 0
+      }
+    },
+    {
+      "id": "hardware",
+      "name": "五金店",
+      "initialProgress": 0,
+      "exposure": "室内",
+      "resources": "锅具箱、工具箱",
+      "milestones": "25无新增 50锅具箱 75工具箱 100废料场",
+      "lootTableId": "loose_hardware",
+      "clear": {
+        "cap": 2,
+        "initialCharges": 2,
+        "refillIntervalMinutes": 720,
+        "initialRefillProgressMinutes": 0
+      }
+    },
+    {
+      "id": "clinic",
+      "name": "诊所",
+      "initialProgress": 0,
+      "exposure": "室内",
+      "resources": "药柜、布料包",
+      "milestones": "25药柜 50布料包 75无新增 100无新增",
+      "lootTableId": "loose_clinic",
+      "clear": {
+        "cap": 2,
+        "initialCharges": 2,
+        "refillIntervalMinutes": 720,
+        "initialRefillProgressMinutes": 0
+      }
+    },
+    {
+      "id": "scrapyard",
+      "name": "废料场",
+      "initialProgress": 0,
+      "exposure": "露天",
+      "resources": "废金属堆、零件箱",
+      "milestones": "25金属堆 50零件箱 75无新增 100通往树林",
+      "lootTableId": "loose_scrapyard",
+      "clear": {
+        "cap": 3,
+        "initialCharges": 3,
+        "refillIntervalMinutes": 480,
+        "initialRefillProgressMinutes": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "camp__field",
+      "source": "camp",
+      "target": "field",
+      "baseMinutes": 15,
+      "unlockCondition": "开局解锁"
+    },
+    {
+      "id": "field__stream",
+      "source": "field",
+      "target": "stream",
+      "baseMinutes": 20,
+      "unlockCondition": "field达到25"
+    },
+    {
+      "id": "field__woods",
+      "source": "field",
+      "target": "woods",
+      "baseMinutes": 20,
+      "unlockCondition": "field达到50"
+    },
+    {
+      "id": "field__village",
+      "source": "field",
+      "target": "village",
+      "baseMinutes": 25,
+      "unlockCondition": "field达到100"
+    },
+    {
+      "id": "village__hardware",
+      "source": "village",
+      "target": "hardware",
+      "baseMinutes": 15,
+      "unlockCondition": "village达到50"
+    },
+    {
+      "id": "village__clinic",
+      "source": "village",
+      "target": "clinic",
+      "baseMinutes": 20,
+      "unlockCondition": "village达到100"
+    },
+    {
+      "id": "woods__scrapyard",
+      "source": "woods",
+      "target": "scrapyard",
+      "baseMinutes": 30,
+      "unlockCondition": "woods达到100 或 scrapyard达到100"
+    },
+    {
+      "id": "hardware__scrapyard",
+      "source": "hardware",
+      "target": "scrapyard",
+      "baseMinutes": 20,
+      "unlockCondition": "hardware达到100"
+    }
+  ],
+  "resources": [
+    {
+      "nodeId": "roots",
+      "locationId": "field",
+      "revealAt": -1,
+      "baseMinutes": 30,
+      "cap": 6,
+      "dailyRefill": 3,
+      "outputs": {
+        "raw_root": 2
+      },
+      "hazardProbability": 0,
+      "hazardHealthLoss": 0,
+      "poolMode": "renewable_units"
+    },
+    {
+      "nodeId": "field_fiber",
+      "locationId": "field",
+      "revealAt": -1,
+      "baseMinutes": 20,
+      "cap": 8,
+      "dailyRefill": 4,
+      "outputs": {
+        "fiber": 2
+      },
+      "hazardProbability": 0,
+      "hazardHealthLoss": 0,
+      "poolMode": "renewable_units"
+    },
+    {
+      "nodeId": "water",
+      "locationId": "stream",
+      "revealAt": -1,
+      "baseMinutes": 10,
+      "cap": null,
+      "dailyRefill": 0,
+      "outputs": {
+        "dirty_water": 2
+      },
+      "hazardProbability": 0,
+      "hazardHealthLoss": 0,
+      "poolMode": "unlimited"
+    },
+    {
+      "nodeId": "herbs",
+      "locationId": "stream",
+      "revealAt": 50,
+      "baseMinutes": 20,
+      "cap": 4,
+      "dailyRefill": 1,
+      "outputs": {
+        "herb": 1
+      },
+      "hazardProbability": 0,
+      "hazardHealthLoss": 0,
+      "poolMode": "renewable_units"
+    },
+    {
+      "nodeId": "wood",
+      "locationId": "woods",
+      "revealAt": 25,
+      "baseMinutes": 30,
+      "cap": 10,
+      "dailyRefill": 5,
+      "outputs": {
+        "wood": 1
+      },
+      "hazardProbability": 0.05,
+      "hazardHealthLoss": 3,
+      "poolMode": "renewable_units"
+    },
+    {
+      "nodeId": "stones",
+      "locationId": "woods",
+      "revealAt": 50,
+      "baseMinutes": 20,
+      "cap": 8,
+      "dailyRefill": 0,
+      "outputs": {
+        "stone": 2
+      },
+      "hazardProbability": 0,
+      "hazardHealthLoss": 0,
+      "poolMode": "finite_units"
+    },
+    {
+      "nodeId": "berries",
+      "locationId": "woods",
+      "revealAt": 75,
+      "baseMinutes": 20,
+      "cap": 6,
+      "dailyRefill": 3,
+      "outputs": {
+        "berry": 2
+      },
+      "hazardProbability": 0,
+      "hazardHealthLoss": 0,
+      "poolMode": "renewable_units"
+    },
+    {
+      "nodeId": "woods_fiber",
+      "locationId": "woods",
+      "revealAt": 75,
+      "baseMinutes": 20,
+      "cap": 8,
+      "dailyRefill": 4,
+      "outputs": {
+        "fiber": 2
+      },
+      "hazardProbability": 0,
+      "hazardHealthLoss": 0,
+      "poolMode": "renewable_units"
+    },
+    {
+      "nodeId": "supply_box",
+      "locationId": "village",
+      "revealAt": 25,
+      "baseMinutes": 30,
+      "cap": 1,
+      "dailyRefill": 0,
+      "outputs": {
+        "canned_food": 2,
+        "clean_water": 1
+      },
+      "hazardProbability": 0,
+      "hazardHealthLoss": 0,
+      "poolMode": "single_cache"
+    },
+    {
+      "nodeId": "misc_box",
+      "locationId": "village",
+      "revealAt": 75,
+      "baseMinutes": 30,
+      "cap": 1,
+      "dailyRefill": 0,
+      "outputs": {
+        "cloth": 2,
+        "wood": 2
+      },
+      "hazardProbability": 0.05,
+      "hazardHealthLoss": 2,
+      "poolMode": "single_cache"
+    },
+    {
+      "nodeId": "pot_box",
+      "locationId": "hardware",
+      "revealAt": 50,
+      "baseMinutes": 45,
+      "cap": 1,
+      "dailyRefill": 0,
+      "outputs": {
+        "pot": 1,
+        "parts": 2
+      },
+      "hazardProbability": 0,
+      "hazardHealthLoss": 0,
+      "poolMode": "single_cache"
+    },
+    {
+      "nodeId": "tool_box",
+      "locationId": "hardware",
+      "revealAt": 75,
+      "baseMinutes": 45,
+      "cap": 1,
+      "dailyRefill": 0,
+      "outputs": {
+        "hatchet": 1,
+        "scrap": 2
+      },
+      "hazardProbability": 0,
+      "hazardHealthLoss": 0,
+      "poolMode": "single_cache"
+    },
+    {
+      "nodeId": "med_cabinet",
+      "locationId": "clinic",
+      "revealAt": 25,
+      "baseMinutes": 30,
+      "cap": 1,
+      "dailyRefill": 0,
+      "outputs": {
+        "bandage": 2,
+        "herb": 2
+      },
+      "hazardProbability": 0,
+      "hazardHealthLoss": 0,
+      "poolMode": "single_cache"
+    },
+    {
+      "nodeId": "cloth_bag",
+      "locationId": "clinic",
+      "revealAt": 50,
+      "baseMinutes": 30,
+      "cap": 1,
+      "dailyRefill": 0,
+      "outputs": {
+        "cloth": 4
+      },
+      "hazardProbability": 0,
+      "hazardHealthLoss": 0,
+      "poolMode": "single_cache"
+    },
+    {
+      "nodeId": "metal_heap",
+      "locationId": "scrapyard",
+      "revealAt": 25,
+      "baseMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 0,
+      "outputs": {
+        "scrap": 2
+      },
+      "hazardProbability": 0.1,
+      "hazardHealthLoss": 6,
+      "poolMode": "finite_units"
+    },
+    {
+      "nodeId": "parts_box",
+      "locationId": "scrapyard",
+      "revealAt": 50,
+      "baseMinutes": 30,
+      "cap": 1,
+      "dailyRefill": 0,
+      "outputs": {
+        "parts": 4,
+        "scrap": 2
+      },
+      "hazardProbability": 0.1,
+      "hazardHealthLoss": 6,
+      "poolMode": "single_cache"
+    }
+  ],
+  "recipes": [
+    {
+      "id": "knife",
+      "name": "石刀",
+      "baseMinutes": 30,
+      "inputs": {
+        "stone": 1,
+        "fiber": 1
+      },
+      "outputs": {
+        "stone_knife": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "outputOwnerRule": "current_location_ground"
+    },
+    {
+      "id": "axe",
+      "name": "简易斧",
+      "baseMinutes": 60,
+      "inputs": {
+        "stone": 2,
+        "wood": 1,
+        "fiber": 2
+      },
+      "outputs": {
+        "hatchet": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "outputOwnerRule": "current_location_ground"
+    },
+    {
+      "id": "bandage",
+      "name": "草药绷带",
+      "baseMinutes": 15,
+      "inputs": {
+        "cloth": 1,
+        "herb": 1
+      },
+      "outputs": {
+        "bandage": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "outputOwnerRule": "current_location_ground"
+    },
+    {
+      "id": "boil",
+      "name": "烧水",
+      "baseMinutes": 15,
+      "inputs": {
+        "dirty_water": 2
+      },
+      "outputs": {
+        "clean_water": 2
+      },
+      "catalysts": [
+        "pot"
+      ],
+      "requirement": "fire",
+      "facilityResult": null,
+      "outputOwnerRule": "same_designated_pot_contents",
+      "inputOwnerRule": "designated_pot_contents",
+      "transformInPlace": true,
+      "cancelOwnerRule": "keep_input_water_in_same_pot",
+      "legacyGroundOutputOnlyForMigratedActiveAction": true,
+      "buttonAutoFill": "fill_missing_units_from_current_accessible_loose_water_atomically"
+    },
+    {
+      "id": "cook",
+      "name": "烹饪块根",
+      "baseMinutes": 30,
+      "inputs": {
+        "raw_root": 2
+      },
+      "outputs": {
+        "cooked_root": 2
+      },
+      "catalysts": [
+        "pot"
+      ],
+      "requirement": "fire",
+      "facilityResult": null,
+      "outputOwnerRule": "current_location_ground",
+      "potMustBeEmpty": true,
+      "inputsAreReservedReferencesNotPotStorage": true
+    },
+    {
+      "id": "shelter",
+      "name": "建遮蔽棚",
+      "baseMinutes": 120,
+      "inputs": {
+        "wood": 4,
+        "fiber": 4
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": "camp",
+      "facilityResult": "shelterBuilt",
+      "outputOwnerRule": "current_location_facility_state"
+    },
+    {
+      "id": "bed",
+      "name": "铺床垫",
+      "baseMinutes": 60,
+      "inputs": {
+        "fiber": 4,
+        "cloth": 2
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": "shelter",
+      "facilityResult": "bedBuilt",
+      "outputOwnerRule": "current_location_facility_state"
+    }
+  ],
+  "hourlyRates": {
+    "travel": {
+      "satiety": -1.875,
+      "hydration": -4.5,
+      "energy": -8,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "explore": {
+      "satiety": -1.875,
+      "hydration": -4.5,
+      "energy": -10,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "gather": {
+      "satiety": -1.875,
+      "hydration": -4.5,
+      "energy": -12,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "craft": {
+      "satiety": -1.5,
+      "hydration": -3.75,
+      "energy": -6,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "wait": {
+      "satiety": -1.5,
+      "hydration": -3,
+      "energy": 0,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "rest": {
+      "satiety": -1.5,
+      "hydration": -3,
+      "energy": 20,
+      "wakefulness": -5,
+      "morale": 0
+    },
+    "sleep_sheltered": {
+      "satiety": -1.5,
+      "hydration": -3,
+      "energy": 15,
+      "wakefulness": 12,
+      "morale": 1
+    },
+    "sleep_outdoors": {
+      "satiety": -1.5,
+      "hydration": -3,
+      "energy": 10,
+      "wakefulness": 6,
+      "morale": -0.5
+    },
+    "clear": {
+      "satiety": -1.875,
+      "hydration": -4.5,
+      "energy": -12,
+      "wakefulness": -5,
+      "morale": -0.5
+    }
+  },
+  "healthRules": {
+    "zeroSatietyPerHour": -2,
+    "zeroHydrationPerHour": -8,
+    "zeroWakefulnessPerHour": -2,
+    "zeroEnergyWhileWorkingPerHour": -1,
+    "shelteredRestRecoveryPerHour": 1,
+    "recoveryMinSatiety": 40,
+    "recoveryMinHydration": 40,
+    "recoveryMinMorale": 20
+  },
+  "thresholds": {
+    "healthCritical": 25,
+    "satietyWarning": 20,
+    "hydrationWarning": 20,
+    "lowEnergyExclusive": 20,
+    "wakefulnessWarning": 20,
+    "lowMoraleExclusive": 20
+  },
+  "itemActions": {
+    "useMinutes": 5,
+    "cleanWaterHydration": 30,
+    "dirtyWaterHydration": 30,
+    "cannedFoodSatiety": 35,
+    "berrySatiety": 10,
+    "berryHydration": 5,
+    "cookedRootSatiety": 25,
+    "cookedRootMorale": 2,
+    "bandageHealth": 5,
+    "bandageCooldownMinutes": 60,
+    "diarrheaMinutes": 720,
+    "diarrheaExtraHydrationPerHour": -3
+  },
+  "facilityEffects": {
+    "bedExtraSleepEnergyPerHour": 5,
+    "shelteredCampRestMoralePerHour": 2,
+    "lowMoraleEnergyRecoveryFactor": 0.5,
+    "fireMaxFuelMinutes": 240,
+    "fireIgnitionUsesCraftRates": true,
+    "firePotSlots": 1,
+    "firePotPlacementConsumesMinutes": 0,
+    "firePotPlacementFromBackpackMovesPotToGround": true,
+    "fuelOverflowPolicy": "reject_whole_units_no_waste",
+    "maxAddWoodFormula": "min(availableWood,floor((240-fuelMinutes)/60))",
+    "igniteMinimumFuelMinutes": 5
+  },
+  "toolEffects": {
+    "stone_knife": {
+      "fiberBaseMinutes": 10,
+      "maxDurability": 20
+    },
+    "hatchet": {
+      "woodOutput": 2,
+      "maxDurability": 30
+    },
+    "successfulActionWear": 1
+  },
+  "timeContract": {
+    "epoch": "Day 1 00:00",
+    "startAbsoluteMinute": 480,
+    "fixedDurationActionTypes": [
+      "wait",
+      "rest",
+      "sleep",
+      "use",
+      "ignite"
+    ],
+    "workTypes": [
+      "travel",
+      "explore",
+      "gather",
+      "craft",
+      "clear"
+    ],
+    "refillAt": "00:00",
+    "offlineProgress": false,
+    "fullTickCostOnFinalPartialWork": true,
+    "clearRefillClock": "world_minute_serial_not_midnight",
+    "healthZeroEnergyWorkingIncludesClear": true
+  },
+  "schemaVersion": 3,
+  "configurationRole": "design_seed_not_engine_schema",
+  "revisionLabel": "卡片拖拽、地图清理、探索随机收获",
+  "sourceConfiguration": "../基础系统 v0.2/基础系统初始配置 v0.2.json",
+  "rulesPrecedence": [
+    "交互与地图扩展 v0.3",
+    "基础系统 v0.2",
+    "UI v0.1"
+  ],
+  "lootTables": {
+    "loose_camp": {
+      "version": "0.3",
+      "rollsPerCompletedAction": 1,
+      "sampling": "single_exclusive_weighted_integer_0_to_99",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 25
+        },
+        {
+          "itemId": "wood",
+          "count": 1,
+          "weight": 25
+        },
+        {
+          "itemId": "fiber",
+          "count": 1,
+          "weight": 30
+        },
+        {
+          "itemId": "stone",
+          "count": 1,
+          "weight": 20
+        }
+      ]
+    },
+    "loose_field": {
+      "version": "0.3",
+      "rollsPerCompletedAction": 1,
+      "sampling": "single_exclusive_weighted_integer_0_to_99",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 20
+        },
+        {
+          "itemId": "raw_root",
+          "count": 1,
+          "weight": 35
+        },
+        {
+          "itemId": "fiber",
+          "count": 1,
+          "weight": 35
+        },
+        {
+          "itemId": "stone",
+          "count": 1,
+          "weight": 10
+        }
+      ]
+    },
+    "loose_stream": {
+      "version": "0.3",
+      "rollsPerCompletedAction": 1,
+      "sampling": "single_exclusive_weighted_integer_0_to_99",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 20
+        },
+        {
+          "itemId": "stone",
+          "count": 1,
+          "weight": 35
+        },
+        {
+          "itemId": "fiber",
+          "count": 1,
+          "weight": 25
+        },
+        {
+          "itemId": "herb",
+          "count": 1,
+          "weight": 20
+        }
+      ]
+    },
+    "loose_woods": {
+      "version": "0.3",
+      "rollsPerCompletedAction": 1,
+      "sampling": "single_exclusive_weighted_integer_0_to_99",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 20
+        },
+        {
+          "itemId": "wood",
+          "count": 1,
+          "weight": 30
+        },
+        {
+          "itemId": "fiber",
+          "count": 1,
+          "weight": 25
+        },
+        {
+          "itemId": "stone",
+          "count": 1,
+          "weight": 15
+        },
+        {
+          "itemId": "berry",
+          "count": 1,
+          "weight": 10
+        }
+      ]
+    },
+    "loose_village": {
+      "version": "0.3",
+      "rollsPerCompletedAction": 1,
+      "sampling": "single_exclusive_weighted_integer_0_to_99",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 30
+        },
+        {
+          "itemId": "wood",
+          "count": 1,
+          "weight": 20
+        },
+        {
+          "itemId": "cloth",
+          "count": 1,
+          "weight": 30
+        },
+        {
+          "itemId": "scrap",
+          "count": 1,
+          "weight": 20
+        }
+      ]
+    },
+    "loose_hardware": {
+      "version": "0.3",
+      "rollsPerCompletedAction": 1,
+      "sampling": "single_exclusive_weighted_integer_0_to_99",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 30
+        },
+        {
+          "itemId": "scrap",
+          "count": 1,
+          "weight": 35
+        },
+        {
+          "itemId": "parts",
+          "count": 1,
+          "weight": 15
+        },
+        {
+          "itemId": "stone",
+          "count": 1,
+          "weight": 10
+        },
+        {
+          "itemId": "cloth",
+          "count": 1,
+          "weight": 10
+        }
+      ]
+    },
+    "loose_clinic": {
+      "version": "0.3",
+      "rollsPerCompletedAction": 1,
+      "sampling": "single_exclusive_weighted_integer_0_to_99",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 30
+        },
+        {
+          "itemId": "cloth",
+          "count": 1,
+          "weight": 45
+        },
+        {
+          "itemId": "herb",
+          "count": 1,
+          "weight": 25
+        }
+      ]
+    },
+    "loose_scrapyard": {
+      "version": "0.3",
+      "rollsPerCompletedAction": 1,
+      "sampling": "single_exclusive_weighted_integer_0_to_99",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 30
+        },
+        {
+          "itemId": "scrap",
+          "count": 1,
+          "weight": 40
+        },
+        {
+          "itemId": "parts",
+          "count": 1,
+          "weight": 10
+        },
+        {
+          "itemId": "stone",
+          "count": 1,
+          "weight": 15
+        },
+        {
+          "itemId": "wood",
+          "count": 1,
+          "weight": 5
+        }
+      ]
+    }
+  },
+  "clearAction": {
+    "type": "clear",
+    "baseMinutes": 20,
+    "hourlyRateId": "clear",
+    "requiresCurrentVisitedLocation": true,
+    "requiresExplorationProgress": false,
+    "requiresAvailableCharges": 1,
+    "chargeSpendMoment": "action_start",
+    "refundChargeOnCancelOrDeathOrEmpty": false,
+    "refillMode": "serial",
+    "resetRefillProgressOnAdditionalSpend": false,
+    "discardRefillRemainderWhenFull": true,
+    "progressDelta": 0,
+    "newDiscovery": false,
+    "lootSource": "currentLocation.lootTableId",
+    "lootDestination": "current_location_ground",
+    "consumeDirectedResourceStock": false,
+    "toolBonus": false,
+    "toolWear": 0,
+    "extraHazardProbability": 0
+  },
+  "exploreAction": {
+    "type": "explore",
+    "baseMinutes": 30,
+    "progressDelta": 25,
+    "validProgress": [
+      0,
+      25,
+      50,
+      75,
+      100
+    ],
+    "progressCap": 100,
+    "disableAtProgress": 100,
+    "resetProgressOverTime": false,
+    "chargeCost": 0,
+    "requiresClearCharge": false,
+    "lootSource": "currentLocation.lootTableId",
+    "lootDestination": "current_location_ground",
+    "emptyLootStillCommitsProgressAndMilestones": true,
+    "lootDoesNotRevealResourceNodes": true,
+    "atomicCommit": [
+      "progress",
+      "milestones",
+      "loot",
+      "log"
+    ],
+    "consumeDirectedResourceStock": false,
+    "toolBonus": false,
+    "toolWear": 0,
+    "extraHazardProbability": 0
+  },
+  "randomContract": {
+    "actions": [
+      "clear",
+      "explore"
+    ],
+    "planMoment": "validated_action_start",
+    "revealMoment": "successful_completion",
+    "savePlanAndRngStateAtStart": true,
+    "replayActiveActionRerolls": false,
+    "cancelledNewAttemptIsNewAction": true,
+    "seedSource": "saved_game_prng_not_wall_clock",
+    "freezeTableVersionForActiveAction": true,
+    "expiryEpoch": "successful_completion_world_minute"
+  },
+  "containerDefinitions": {
+    "pot": {
+      "capacityMl": 1000,
+      "transferQuantumMl": 500,
+      "accepts": [
+        "dirty_water",
+        "clean_water"
+      ],
+      "homogeneousOnly": true,
+      "allowFractionalUnits": false,
+      "allowNestedContainers": false,
+      "allowPersistentSolidContents": false,
+      "weightMode": "shell_plus_contents_once",
+      "contentsOwner": "container_instance_id",
+      "uiWaterPercent": "contentsMl/capacityMl*100",
+      "boilMinimumMl": 1000,
+      "boilInputType": "dirty_water",
+      "boilResultType": "clean_water",
+      "boilResultDestination": "same_pot_contents",
+      "cancelBoil": "unlock_original_dirty_water_in_same_pot",
+      "lockMovementAndContentsDuringAction": true
+    }
+  },
+  "catalystContract": {
+    "potAvailableOwners": [
+      "backpack",
+      "current_location_ground"
+    ],
+    "potAttachmentCountsAs": "current_location_ground",
+    "explicitGatherToolsRequireBackpack": true,
+    "explicitIgnitionToolAvailableOwners": [
+      "backpack",
+      "current_location_ground"
+    ],
+    "lockCatalystInstanceDuringAction": true
+  },
+  "cardInteraction": {
+    "dragThresholdPx": 6,
+    "sameZoneReorderMovesWholeCard": true,
+    "crossZoneAndSemanticDropDefaultQuantity": 1,
+    "shiftDropOpensQuantityDialog": true,
+    "instantVerbs": [
+      "reorder",
+      "transfer",
+      "merge",
+      "add_fuel",
+      "fill_pot",
+      "decant",
+      "attach_pot"
+    ],
+    "timedDropBehavior": "open_preview_then_explicit_start",
+    "dropPriority": [
+      "highest_modal_blocks",
+      "explicit_target_hotspot",
+      "card_face",
+      "zone_insertion_line"
+    ],
+    "invalidDrop": "rollback_without_cost",
+    "idempotencyKey": "requestId",
+    "busyPolicy": {
+      "executing": "ui_reorder_only",
+      "paused": "ui_reorder_and_allowed_supply_rest_ignite_fuel_only",
+      "childExecuting": "ui_reorder_only",
+      "deadOrModal": "no_background_drag"
+    },
+    "rules": [
+      {
+        "source": "movable_item",
+        "target": "same_zone_blank",
+        "verb": "reorder"
+      },
+      {
+        "source": "movable_item",
+        "target": "backpack_or_current_ground",
+        "verb": "transfer"
+      },
+      {
+        "source": "compatible_same_item_stack",
+        "target": "compatible_stack",
+        "verb": "merge"
+      },
+      {
+        "source": "wood",
+        "target": "current_camp_fire_fuel",
+        "verb": "add_fuel"
+      },
+      {
+        "source": "lighter",
+        "target": "current_camp_fire",
+        "verb": "preview_ignite"
+      },
+      {
+        "source": "clean_water_or_dirty_water",
+        "target": "pot_fill_hotspot",
+        "verb": "fill_pot"
+      },
+      {
+        "source": "pot_water_child",
+        "target": "backpack_or_current_ground",
+        "verb": "decant"
+      },
+      {
+        "source": "pot",
+        "target": "current_camp_fire_pot_slot",
+        "verb": "attach_pot"
+      },
+      {
+        "source": "hatchet",
+        "target": "discovered_wood_resource",
+        "verb": "preview_gather_explicit_tool"
+      },
+      {
+        "source": "stone_knife",
+        "target": "discovered_fiber_resource",
+        "verb": "preview_gather_explicit_tool"
+      },
+      {
+        "source": "recipe_material",
+        "target": "material_or_recipe_slot",
+        "verb": "preview_recipe_candidates"
+      },
+      {
+        "source": "usable_food_water_bandage",
+        "target": "self_card",
+        "verb": "preview_use"
+      }
+    ]
+  },
+  "saveMigration": {
+    "fromSchemaVersion": 2,
+    "toSchemaVersion": 3,
+    "backupBeforeMigration": true,
+    "clearCharges": "initialize_full_at_current_saved_world_minute",
+    "potContents": "initialize_empty_leave_loose_water_unchanged",
+    "historicalExploreLoot": "do_not_backfill",
+    "activeExplore": "legacyNoLoot_until_this_action_ends",
+    "activeBoil": "legacyGroundOutput_with_empty_locked_pot_until_this_action_ends",
+    "migrationIdempotent": true
+  }
+}

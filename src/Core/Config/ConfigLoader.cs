@@ -108,6 +108,62 @@ namespace Survival.Core.Config
                 if (m <= 0 || m % tick != 0) e.Add($"行动时长 {m} 须为{tick}的正倍数");
 
             if (c.Locations.Count(l => l.InitiallyVisited) != 1) e.Add("必须恰好有一个开局所在地点");
+            if (c.Actions.ClearMinutes <= 0 || c.Actions.ClearMinutes % tick != 0) e.Add($"清理时长须为{tick}的正倍数");
+
+            // 清理与共享掉落表（地图清理案 5.1、探索收获案 7）
+            foreach (var l in c.Locations)
+            {
+                if (string.IsNullOrEmpty(l.LootTableId)) e.Add($"地点 {l.Id} 缺少 lootTableId");
+                else if (!c.LootTables.ContainsKey(l.LootTableId)) e.Add($"地点 {l.Id} 的掉落表 {l.LootTableId} 不存在");
+                var cl = l.Clear;
+                if (cl.Cap < 1) e.Add($"地点 {l.Id} 清理次数上限须≥1");
+                if (cl.RefillIntervalMinutes <= 0 || cl.RefillIntervalMinutes % tick != 0) e.Add($"地点 {l.Id} 清理恢复间隔须为{tick}的正倍数");
+                if (cl.InitialCharges < 0 || cl.InitialCharges > cl.Cap) e.Add($"地点 {l.Id} 初始清理次数须在0到上限之间");
+            }
+            foreach (var kv in c.LootTables)
+            {
+                var t = kv.Value;
+                if (string.IsNullOrEmpty(t.Version)) e.Add($"掉落表 {kv.Key} 缺少版本");
+                if (t.Entries.Count == 0) e.Add($"掉落表 {kv.Key} 没有条目");
+                foreach (var en in t.Entries)
+                {
+                    if (en.Weight < 0) e.Add($"掉落表 {kv.Key} 权重不能为负");
+                    if (en.ItemId == null)
+                    {
+                        if (en.Count != 0) e.Add($"掉落表 {kv.Key} 的空结果不能带数量");
+                    }
+                    else
+                    {
+                        if (!items.Contains(en.ItemId)) e.Add($"掉落表 {kv.Key} 引用了不存在的物品 {en.ItemId}");
+                        if (en.Count != 1) e.Add($"掉落表 {kv.Key} 物品 {en.ItemId} 数量须为1");
+                    }
+                }
+                if (t.Entries.Sum(x => x.Weight) != 100) e.Add($"掉落表 {kv.Key} 权重合计须为100");
+            }
+
+            // 容器（拖拽与容器案 6.1）
+            foreach (var kv in c.Containers)
+            {
+                var ct = kv.Value;
+                if (ct.UnitMl <= 0 || ct.CapacityMl <= 0 || ct.CapacityMl % ct.UnitMl != 0) e.Add($"容器 {kv.Key} 容量须为每份体积的整数倍");
+                foreach (var a in ct.Accepts)
+                {
+                    var it = c.Items.FirstOrDefault(i => i.Id == a);
+                    if (it == null) e.Add($"容器 {kv.Key} 可装物品 {a} 不存在");
+                    else if (it.UnitVolumeMl != ct.UnitMl) e.Add($"容器 {kv.Key} 可装物品 {a} 的每份体积须为{ct.UnitMl}毫升");
+                }
+            }
+            foreach (var it in c.Items.Where(i => i.ContainerId != null))
+                if (!c.Containers.ContainsKey(it.ContainerId!)) e.Add($"物品 {it.Id} 的容器定义 {it.ContainerId} 不存在");
+            foreach (var rc in c.Recipes.Where(r => r.Pot != null))
+            {
+                var pot = c.Items.FirstOrDefault(i => i.ContainerId != null && rc.Catalysts.Contains(i.ToolTag ?? ""));
+                if (pot == null) { e.Add($"配方 {rc.Id} 的锅内转化需要容器类催化工具"); continue; }
+                if (!c.Containers.TryGetValue(pot.ContainerId!, out var ct)) continue;
+                if (!ct.Accepts.Contains(rc.Pot!.InputItem) || !ct.Accepts.Contains(rc.Pot.OutputItem))
+                    e.Add($"配方 {rc.Id} 的锅内输入输出须是容器可装物品");
+                if (rc.Pot.Units < 1 || rc.Pot.Units > ct.CapacityUnits) e.Add($"配方 {rc.Id} 的锅内份数超出容器容量");
+            }
             return e;
         }
     }

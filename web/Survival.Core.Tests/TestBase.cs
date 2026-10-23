@@ -7,7 +7,7 @@ namespace Survival.Core.Tests;
 public abstract class TestBase
 {
     protected static readonly GameConfig Cfg =
-        ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.3.json")));
+        ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.4.json")));
 
     protected GameEngine E = null!;
 

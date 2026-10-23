@@ -128,9 +128,9 @@ public sealed class GameSession
         try
         {
             await Task.Yield();
-            // 配置以内嵌资源随程序集发布，唯一来源仍是 data/config.v0.3.json
-            using var stream = typeof(GameSession).Assembly.GetManifestResourceStream("config.v0.3.json")
-                               ?? throw new InvalidOperationException("缺少内嵌配置 config.v0.3.json");
+            // 配置以内嵌资源随程序集发布，唯一来源仍是 data/config.v0.4.json
+            using var stream = typeof(GameSession).Assembly.GetManifestResourceStream("config.v0.4.json")
+                               ?? throw new InvalidOperationException("缺少内嵌配置 config.v0.4.json");
             using var reader = new StreamReader(stream);
             var json = await reader.ReadToEndAsync();
             Config = ConfigLoader.FromJson(json);

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Survival.Core.Config
 {
-    /// <summary>data/config.v0.3.json 的强类型映射。数值来源：基础系统初始配置 v0.2.json。</summary>
+    /// <summary>data/config.v0.4.json 的强类型映射。数值来源：基础系统初始配置 v0.2.json 与交互与地图扩展 v0.3 整合配置。</summary>
     public sealed class GameConfig
     {
         public string Version { get; set; } = "";
@@ -27,6 +27,11 @@ namespace Survival.Core.Config
         public FacilityEffectsConfig FacilityEffects { get; set; } = new FacilityEffectsConfig();
         public ToolEffectsConfig ToolEffects { get; set; } = new ToolEffectsConfig();
         public ProgressConfig Progress { get; set; } = new ProgressConfig();
+        /// <summary>清理与探索共用的地块掉落表（地图清理案 5.1），键为 lootTableId。</summary>
+        public Dictionary<string, LootTableConfig> LootTables { get; set; } = new Dictionary<string, LootTableConfig>();
+        /// <summary>容器定义（拖拽与容器案 6.1），键为 containerId。</summary>
+        public Dictionary<string, ContainerConfig> Containers { get; set; } = new Dictionary<string, ContainerConfig>();
+        public UiConfig Ui { get; set; } = new UiConfig();
     }
 
     public sealed class TimeConfig
@@ -84,6 +89,7 @@ namespace Survival.Core.Config
         public List<int> SleepMinutes { get; set; } = new List<int>();
         public int ExploreMinutes { get; set; } = 30;
         public int ExploreProgress { get; set; } = 25;
+        public int ClearMinutes { get; set; } = 20;
         public int IgniteMinutes { get; set; } = 5;
         public int UseMinutes { get; set; } = 5;
         public Dictionary<string, string> RateAliases { get; set; } = new Dictionary<string, string>();
@@ -96,6 +102,8 @@ namespace Survival.Core.Config
         public int IgniteMinutes { get; set; } = 5;
         public int MaxFuelMinutes { get; set; } = 240;
         public int MinFuelToIgnite { get; set; } = 5;
+        /// <summary>每个火堆的锅位数。</summary>
+        public int PotSlots { get; set; } = 1;
     }
 
     public sealed class ItemUseConfig
@@ -122,6 +130,10 @@ namespace Survival.Core.Config
         public bool RequiresCooking { get; set; }
         public ItemUseConfig? Use { get; set; }
         public string Desc { get; set; } = "";
+        /// <summary>该物品本身是容器时指向 containers 的键（金属锅）。</summary>
+        public string? ContainerId { get; set; }
+        /// <summary>液体每份体积（毫升），可装入容器的物品必须有。</summary>
+        public int? UnitVolumeMl { get; set; }
 
         public bool IsTool => Kind == "tool";
         public bool IsStackable => StackMax > 1 && !IsTool;
@@ -146,7 +158,48 @@ namespace Survival.Core.Config
         public double? SceneFireX { get; set; }
         public double? SceneFireY { get; set; }
 
+        /// <summary>清理与探索共用的掉落表 ID。</summary>
+        public string LootTableId { get; set; } = "";
+        public ClearConfig Clear { get; set; } = new ClearConfig();
+
         public bool IsIndoor => Exposure == "indoor";
+    }
+
+    /// <summary>地点清理次数：上限、初始与串行恢复间隔（地图清理案表 2）。</summary>
+    public sealed class ClearConfig
+    {
+        public int Cap { get; set; }
+        public int InitialCharges { get; set; }
+        public int RefillIntervalMinutes { get; set; }
+    }
+
+    public sealed class LootEntryConfig
+    {
+        /// <summary>null 表示未获得物资。</summary>
+        public string? ItemId { get; set; }
+        public int Count { get; set; }
+        public int Weight { get; set; }
+    }
+
+    /// <summary>一张掉落表：按条目顺序构建累积区间，从 [0,100) 抽一个整数命中唯一结果。</summary>
+    public sealed class LootTableConfig
+    {
+        public string Version { get; set; } = "";
+        public List<LootEntryConfig> Entries { get; set; } = new List<LootEntryConfig>();
+    }
+
+    public sealed class ContainerConfig
+    {
+        public int CapacityMl { get; set; }
+        public int UnitMl { get; set; }
+        public List<string> Accepts { get; set; } = new List<string>();
+
+        public int CapacityUnits => UnitMl > 0 ? CapacityMl / UnitMl : 0;
+    }
+
+    public sealed class UiConfig
+    {
+        public int DragThresholdPx { get; set; } = 6;
     }
 
     public sealed class UnlockCondition
@@ -228,9 +281,21 @@ namespace Survival.Core.Config
         public List<string> Catalysts { get; set; } = new List<string>();
         public RecipeRequirement? Requirement { get; set; }
         public string? FacilityResult { get; set; }
+        /// <summary>原地转化指定锅内液体（烧水）。</summary>
+        public RecipePotConfig? Pot { get; set; }
+        /// <summary>需要一口空锅（烹饪）。</summary>
+        public bool PotMustBeEmpty { get; set; }
 
         public bool IsBuild => Kind == "build";
         public bool NeedsFire => Requirement != null && Requirement.Facility == "fire";
+    }
+
+    public sealed class RecipePotConfig
+    {
+        public string InputItem { get; set; } = "";
+        public string OutputItem { get; set; } = "";
+        public int Units { get; set; }
+        public bool TransformInPlace { get; set; }
     }
 
     public sealed class HealthRulesConfig
