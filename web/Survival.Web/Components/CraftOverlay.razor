@@ -1,138 +1,121 @@
 @inherits GameComponent
 
+@* 手工制作。Part="center"：中部的配方列表、材料与火堆；Part="detail"：右栏的预估与确认，或暂停加工的继续/取消。 *@
 @{
     var s = G.S;
     var e = G.E;
     var here = s.CurrentLocation;
     var lc = e.Location(here);
     var fac = s.Locations[here].Facility;
+    var recipeId = G.CraftRecipe ?? (lc.HasFire ? "boil" : "knife");
     var rc = e.Recipe(recipeId);
-    var req = ActionRequest.Craft(recipeId);
     var main = s.Main;
     var craftPaused = main != null && main.Status == ActionStatus.Paused && (main.Type == ActionType.Craft || main.Type == ActionType.Build);
     var busy = G.Running || s.Sub != null;
     var maintBlocked = busy || (main != null && (main.Status != ActionStatus.Paused || main.Type == ActionType.Travel));
 }
 
-<div class="overlay" role="dialog" aria-label="手工制作与营地设施">
-    <div class="overlay-head">
-        <div><h2 style="display:inline">手工制作</h2><span class="sub">材料来自随身与@(lc.Name)地面 · 配方全部已知</span></div>
-        <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
-    </div>
-    <div class="overlay-body craft-body">
-        <div class="panel recipe-list">
-            @foreach (var r in e.Config.Recipes)
-            {
-                var id = r.Id;
-                var built = r.FacilityResult != null && lc.CanBuildShelter && (r.FacilityResult == "shelterBuilt" ? fac.ShelterBuilt : fac.BedBuilt);
-                var icon = r.FacilityResult == "shelterBuilt" ? "shelter" : r.FacilityResult == "bedBuilt" ? "bed" : r.Outputs.Keys.First();
-                <button class="recipe @(id == recipeId ? "on" : "")" @onclick="() => recipeId = id">
-                    @Icons.Markup(icon)
-                    <span>@r.Name<small>@(built ? "已建造" : $"{r.BaseMinutes}分钟{(r.NeedsFire ? " · 需火堆" : r.IsBuild ? " · 营地" : "")}")</small></span>
-                </button>
-            }
+@if (Part == "center")
+{
+    <div class="sub-panel" role="dialog" aria-label="手工制作与营地设施">
+        <div class="sub-head">
+            <div><h2>手工制作</h2><span class="sub">材料来自随身与@(lc.Name)地面 · 配方全部已知 · 预估与确认在右侧</span></div>
+            <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
         </div>
+        <div class="sub-body craft-grid">
+            <div class="recipe-list">
+                @foreach (var r in e.Config.Recipes)
+                {
+                    var id = r.Id;
+                    var built = r.FacilityResult != null && lc.CanBuildShelter && (r.FacilityResult == "shelterBuilt" ? fac.ShelterBuilt : fac.BedBuilt);
+                    var icon = r.FacilityResult == "shelterBuilt" ? "shelter" : r.FacilityResult == "bedBuilt" ? "bed" : r.Outputs.Keys.First();
+                    <button class="recipe @(id == recipeId ? "on" : "")" @onclick="() => Pick(id)">
+                        @Icons.Markup(icon)
+                        <span>@r.Name<small>@(built ? "已建造" : $"{r.BaseMinutes}分钟{(r.NeedsFire ? " · 需火堆" : r.IsBuild ? " · 营地" : "")}")</small></span>
+                    </button>
+                }
+            </div>
 
-        <div class="panel detail">
-            @if (craftPaused && main!.TargetId == recipeId)
-            {
-                <div class="detail-scroll">
-                    <div class="op-head"><div class="eyebrow"><span class="status-chip paused">已暂停</span></div><h2>@main.Label</h2>
-                        <p>@(main.PauseReason == PauseReason.FireOut ? "火堆熄灭，原材料与进度保留。请在右侧投料、点火，然后继续。" : "行动已暂停，可在右侧维护火堆或回到主界面处理。")</p></div>
-                    <div class="lines">
-                        <div><span>已完成工作量</span><b>@(Ui.Floor(main.WorkDone))/@(Ui.Floor(main.BaseWorkMinutes))分钟</b></div>
-                        <div><span>剩余工作量</span><b>@(Ui.Floor(Math.Max(0, main.BaseWorkMinutes - main.WorkDone)))分钟</b></div>
-                    </div>
+            <div class="craft-side">
+                <div class="panel craft-mats">
+                    <div class="eyebrow">@(rc.IsBuild ? "营地设施" : "配方") · @rc.Name</div>
+                    <p class="small muted" style="margin:4px 0 8px">@RecipeHint(rc)</p>
+                    @foreach (var kv in rc.Inputs)
+                    {
+                        var have = e.AvailableCount(s, kv.Key, true);
+                        var carried = e.UsableBatches(s, kv.Key, false).Sum(i => i.Count);
+                        <div class="mat @(have < kv.Value ? "missing" : "")">
+                            <span>@e.ItemName(kv.Key) ×@kv.Value</span>
+                            <span>可用@(have)（随身@(carried)／地面@(have - carried)）</span>
+                        </div>
+                    }
+                    @foreach (var tag in rc.Catalysts)
+                    {
+                        var tool = e.CarriedTool(s, tag);
+                        var name = e.Config.Items.First(i => i.ToolTag == tag).Name;
+                        <div class="mat @(tool == null ? "missing" : "")"><span>@name（催化工具，不消耗）</span><span>@(tool == null ? "需随身携带" : "随身 ✓")</span></div>
+                    }
                 </div>
-                <div class="detail-foot">
-                    <div class="btn-row">
-                        <button class="primary" disabled="@(busy || (main.PauseReason == PauseReason.FireOut && !fac.FireLit))" @onclick="G.Resume">3. 继续@(main.Label)</button>
-                        <button class="secondary danger" disabled="@busy" @onclick="G.Cancel">取消并返还材料</button>
-                    </div>
-                    <div class="under">点火完成后不会自动继续</div>
-                </div>
-            }
-            else
-            {
-                <div class="detail-scroll" style="flex:0 0 auto;overflow:visible">
-                    <div class="op-head">
-                        <div class="eyebrow">@(rc.IsBuild ? "营地设施" : "配方")</div>
-                        <h2>@rc.Name</h2>
-                        <p>@RecipeHint(rc)</p>
-                    </div>
-                    <div>
-                        @foreach (var kv in rc.Inputs)
-                        {
-                            var have = e.AvailableCount(s, kv.Key, true);
-                            var carried = e.UsableBatches(s, kv.Key, false).Sum(i => i.Count);
-                            <div class="mat @(have < kv.Value ? "missing" : "")">
-                                <span>@e.ItemName(kv.Key) ×@kv.Value</span>
-                                <span>可用@(have)（随身@(carried)／地面@(have - carried)）</span>
+
+                <div class="panel fire-box">
+                    @if (lc.HasFire)
+                    {
+                        <div class="fire-row">
+                            <div class="art">@Icons.Markup("fire")</div>
+                            <div class="lines" style="flex:1">
+                                <div><span>营地火堆</span><b class="@(fac.FireLit ? "good-text" : "muted")">@(fac.FireLit ? "燃烧中" : "未点燃")</b></div>
+                                <div><span>燃料</span><b>@(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分钟</b></div>
+                                <div><span>可用木材</span><b>@e.AvailableCount(s, "wood", true)</b></div>
+                                <div><span>遮蔽棚 / 床垫</span><b>@(fac.ShelterBuilt ? "已建" : "未建") / @(fac.BedBuilt ? "已铺" : "未铺")</b></div>
                             </div>
-                        }
-                        @foreach (var tag in rc.Catalysts)
-                        {
-                            var tool = e.CarriedTool(s, tag);
-                            var name = e.Config.Items.First(i => i.ToolTag == tag).Name;
-                            <div class="mat @(tool == null ? "missing" : "")"><span>@name（催化工具，不消耗）</span><span>@(tool == null ? "需随身携带" : "随身 ✓")</span></div>
-                        }
-                    </div>
+                        </div>
+                        <div class="btn-row">
+                            <button class="secondary" disabled="@maintBlocked" @onclick="AddFuel">@(craftPaused ? "1. " : "")投入1木材·+60分钟</button>
+                            @if (!fac.FireLit)
+                            {
+                                var ig = G.Preview(ActionRequest.Ignite());
+                                <button class="secondary" disabled="@(!ig.Ok || busy)" title="@ig.Reason" @onclick="Ignite">@(craftPaused ? "2. " : "")点燃火堆·5分钟</button>
+                            }
+                            else
+                            {
+                                <button class="secondary" disabled="@maintBlocked" @onclick="Extinguish">熄灭火堆（保留燃料）</button>
+                            }
+                        </div>
+                        <div class="tiny muted">火堆点燃后按游戏时间持续燃烧，离开、休息、睡眠时也会烧；只照亮营地。</div>
+                    }
+                    else
+                    {
+                        <div class="tiny muted">@(lc.Name)没有火堆。普通手工可以在任何地点进行；烧水、烹饪和营地设施需要回到临时营地。</div>
+                    }
                 </div>
-                <PreviewView Request="req" Eyebrow="" Title="" Subtitle="" />
-            }
-        </div>
-
-        <div class="panel fire-box">
-            @if (lc.HasFire)
-            {
-                <h3 style="margin:0;font-weight:500">营地火堆</h3>
-                <div class="art">@Icons.Markup("fire")</div>
-                <div class="lines">
-                    <div><span>状态</span><b class="@(fac.FireLit ? "good-text" : "muted")">@(fac.FireLit ? "燃烧中" : "未点燃")</b></div>
-                    <div><span>燃料</span><b>@(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分钟</b></div>
-                    <div><span>可用木材</span><b>@e.AvailableCount(s, "wood", true)</b></div>
-                </div>
-                <button class="secondary" disabled="@maintBlocked" @onclick="AddFuel">@(craftPaused ? "1. " : "")投入1木材·+60分钟</button>
-                var ig = G.Preview(ActionRequest.Ignite());
-                @if (!fac.FireLit)
-                {
-                    <button class="secondary" disabled="@(!ig.Ok || busy)" @onclick="Ignite">@(craftPaused ? "2. " : "")点燃火堆·5分钟</button>
-                    @if (!ig.Ok) { <div class="tiny muted">@ig.Reason</div> }
-                    else { foreach (var n in ig.Notes) { <div class="tiny muted">@n</div> } }
-                }
-                else
-                {
-                    <button class="secondary" disabled="@maintBlocked" @onclick="Extinguish">熄灭火堆（剩余燃料保留）</button>
-                }
-                <div class="tiny muted">火堆点燃后按游戏时间持续燃烧，即使你离开、休息或睡眠。火堆只照亮营地，烧水与烹饪需要它燃烧。</div>
-                <hr style="border-color:var(--line);width:100%" />
-                <div class="lines">
-                    <div><span>遮蔽棚</span><b>@(fac.ShelterBuilt ? "已建造" : "未建造")</b></div>
-                    <div><span>床垫</span><b>@(fac.BedBuilt ? "已铺好" : "未铺")</b></div>
-                </div>
-            }
-            else
-            {
-                <h3 style="margin:0;font-weight:500">@lc.Name</h3>
-                <div class="tiny muted">这里没有火堆。普通手工可以在任何地点进行；烧水、烹饪和营地设施需要回到临时营地。</div>
-            }
+            </div>
         </div>
     </div>
-</div>
+}
+else if (craftPaused && main!.TargetId == recipeId)
+{
+    <div class="detail-scroll">
+        <div class="op-head"><div class="eyebrow"><span class="status-chip paused">已暂停</span> 手工制作</div><h2>@main.Label</h2>
+            <p>@(main.PauseReason == PauseReason.FireOut ? "火堆熄灭，原材料与进度保留。请在中间的火堆区投料、点火，然后继续。" : "行动已暂停，可维护火堆或回到主界面处理。")</p></div>
+        <div class="lines">
+            <div><span>已完成工作量</span><b>@(Ui.Floor(main.WorkDone))/@(Ui.Floor(main.BaseWorkMinutes))分钟</b></div>
+            <div><span>剩余工作量</span><b>@(Ui.Floor(Math.Max(0, main.BaseWorkMinutes - main.WorkDone)))分钟</b></div>
+            <div><span>火堆燃料</span><b>@(fac.FuelMinutes)分钟 · @(fac.FireLit ? "燃烧中" : "未点燃")</b></div>
+        </div>
+    </div>
+    <div class="detail-foot">
+        <button class="primary" disabled="@(busy || (main.PauseReason == PauseReason.FireOut && !fac.FireLit))" @onclick="G.Resume">3. 继续@(main.Label)</button>
+        <button class="secondary danger" style="width:100%;margin-top:8px" disabled="@busy" @onclick="G.Cancel">取消并返还材料</button>
+        <div class="under">点火完成后不会自动继续</div>
+    </div>
+}
+else
+{
+    <PreviewView Request="ActionRequest.Craft(recipeId)" Eyebrow="@($"手工制作 · {(rc.IsBuild ? "营地设施" : "配方")}")" Title="@rc.Name" Subtitle="@RecipeHint(rc)" />
+}
 
 @code {
-    private string recipeId = "knife";
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        var main = G.S.Main;
-        var wanted = G.CraftRecipe;
-        G.CraftRecipe = null;
-        if (main != null && (main.Type == ActionType.Craft || main.Type == ActionType.Build)) recipeId = main.TargetId;
-        else if (wanted != null && G.E.Config.Recipes.Any(r => r.Id == wanted)) recipeId = wanted;
-        else if (G.E.Location(G.S.CurrentLocation).HasFire) recipeId = "boil";
-    }
+    [Parameter] public string Part { get; set; } = "center";
 
     private static string RecipeHint(RecipeConfig r) => r.Id switch
     {
@@ -146,13 +129,15 @@
         _ => "",
     };
 
+    private void Pick(string id)
+    {
+        G.CraftRecipe = id;
+        G.Notify();
+    }
+
     private void AddFuel() => G.Instant(InstantRequest.AddFuel());
     private void Extinguish() => G.Instant(InstantRequest.Extinguish());
     private async Task Ignite() => await G.StartAction(ActionRequest.Ignite());
 
-    private void Close()
-    {
-        G.Panel = null;
-        G.Notify();
-    }
+    private void Close() => G.OpenPanel(null);
 }

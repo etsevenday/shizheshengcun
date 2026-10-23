@@ -63,6 +63,36 @@ public sealed class GameSession
     /// <summary>从设施卡打开加工面板时要预选的配方；面板读取一次后清空。</summary>
     public string? CraftRecipe { get; set; }
 
+    /// <summary>地图上当前选中的地点（地图面板的右栏详情据此显示移动预估）。</summary>
+    public string? MapPicked { get; set; }
+    public string RestKind { get; set; } = "rest";
+    public int RestMinutes { get; set; } = 60;
+
+    /// <summary>
+    /// 打开或关闭二级面板（地图、加工、休息、日志）。二级面板只覆盖中部上方，
+    /// 左侧状态、随身物品与右侧详情保持不动（试玩留言 8f9a7c9b 第 2 点）。
+    /// </summary>
+    public void OpenPanel(string? panel, string? recipe = null)
+    {
+        if (panel == "craft" && State != null)
+        {
+            var main = S.Main;
+            if (main != null && (main.Type == ActionType.Craft || main.Type == ActionType.Build)) CraftRecipe = main.TargetId;
+            else if (recipe != null) CraftRecipe = recipe;
+            else if (CraftRecipe == null || E.Config.Recipes.All(r => r.Id != CraftRecipe))
+                CraftRecipe = E.Location(S.CurrentLocation).HasFire ? "boil" : "knife";
+        }
+        if (panel == "rest" && State != null)
+        {
+            var sleepy = S.Stats.Wakefulness < 50 || !E.IsDaylight(S.GameMinute);
+            RestKind = sleepy ? "sleep" : "rest";
+            RestMinutes = sleepy ? 480 : 60;
+        }
+        if (panel == "map") MapPicked = null;
+        Panel = panel;
+        Notify();
+    }
+
     // ───────────── 界面偏好（左栏折叠、提示翻页），存在浏览器本地，不进存档 ─────────────
 
     private HashSet<string>? _collapsed;

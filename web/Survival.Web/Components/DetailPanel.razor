@@ -5,12 +5,27 @@
     var e = G.E;
     var sel = G.Selected;
     var active = s.Sub ?? s.Main;
+    var craftPaused = s.Main != null && s.Main.Status == ActionStatus.Paused && (s.Main.Type == ActionType.Craft || s.Main.Type == ActionType.Build);
+    var craftDetail = G.Panel == "craft" && s.Sub == null && (s.Main == null || craftPaused);
 }
 
 <aside class="panel detail" aria-label="行动详情">
-    @if (active != null)
+    @* 二级面板打开时，右栏显示该面板的预估与确认（试玩留言 8f9a7c9b 第 2 点） *@
+    @if (craftDetail)
+    {
+        <CraftOverlay Part="detail" />
+    }
+    else if (active != null)
     {
         <ActionProgress />
+    }
+    else if (G.Panel == "map")
+    {
+        <MapOverlay Part="detail" />
+    }
+    else if (G.Panel == "rest")
+    {
+        <RestOverlay Part="detail" />
     }
     else
     {

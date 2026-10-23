@@ -37,6 +37,8 @@ jobs:
           BUILD="$(date -u +%Y-%m-%d) · ${GITHUB_SHA::7}"
           sed -i "s|<meta name=\"app-build\" content=\"本地开发版\" />|<meta name=\"app-build\" content=\"${BUILD}\" />|" publish/wwwroot/index.html
           sed -i "s|</body>|<div style=\"position:fixed;right:6px;bottom:2px;font-size:11px;color:#6d7466;pointer-events:none\">构建 ${BUILD}</div></body>|" publish/wwwroot/index.html
+          # 自写的脚本与样式加上提交号，发布后浏览器立即取新文件，不用旧缓存
+          sed -i "s|?v=dev|?v=${GITHUB_SHA::7}|g" publish/wwwroot/index.html
           cp publish/wwwroot/index.html publish/wwwroot/404.html
           touch publish/wwwroot/.nojekyll
 

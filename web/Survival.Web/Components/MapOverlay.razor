@@ -1,25 +1,33 @@
 @inherits GameComponent
 
+@* 区域地图。Part="center"：中部的地图画布；Part="detail"：右栏的地点信息与移动预估。 *@
 @{
     var s = G.S;
     var e = G.E;
     var here = s.CurrentLocation;
-    var known = e.Config.Locations.Where(l => s.Locations[l.Id].Discovered).ToList();
-    var edges = e.Config.Edges.Where(x => s.UnlockedEdges.Contains(x.Id)).ToList();
     var adjacent = e.AdjacentUnlocked(s).Select(x => x.Other(here)).ToHashSet();
-    var target = picked ?? here;
-    var tl = e.Location(target);
-    var ts = s.Locations[target];
+    var picked = G.MapPicked;
 }
 
-<div class="overlay" role="dialog" aria-label="区域地图">
-    <div class="overlay-head">
-        <div><h2 style="display:inline">区域地图</h2><span class="sub">已发现@(known.Count)处 · 只显示已知路线</span></div>
-        <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
-    </div>
-    <div class="overlay-body map-body">
-        <div class="panel" style="padding:12px;display:flex;flex-direction:column;min-height:0">
-            <svg class="map-canvas" viewBox="0 0 1240 600" role="img" aria-label="地点与路线">
+@if (Part == "center")
+{
+    var known = e.Config.Locations.Where(l => s.Locations[l.Id].Discovered).ToList();
+    var edges = e.Config.Edges.Where(x => s.UnlockedEdges.Contains(x.Id)).ToList();
+    <div class="sub-panel" role="dialog" aria-label="区域地图">
+        <div class="sub-head">
+            <div><h2>区域地图</h2><span class="sub">已发现@(known.Count)处 · 只显示已知路线 · 点地点看右侧预估</span></div>
+            <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
+        </div>
+        <div class="sub-body map-only">
+            @{
+                // 视野按已发现地点缩放：前期只有两三个地点时不会缩成一角
+                var minX = known.Min(l => l.MapX) - 130; var maxX = known.Max(l => l.MapX) + 130;
+                var minY = known.Min(l => l.MapY) - 80; var maxY = known.Max(l => l.MapY) + 80;
+                var w = Math.Max(maxX - minX, 620); var h = Math.Max(maxY - minY, 300);
+                var vx = (minX + maxX - w) / 2; var vy = (minY + maxY - h) / 2;
+                var viewBox = FormattableString.Invariant($"{vx:0} {vy:0} {w:0} {h:0}");
+            }
+            <svg class="map-canvas" viewBox="@viewBox" preserveAspectRatio="xMidYMid meet" role="img" aria-label="地点与路线">
                 @foreach (var ed in edges)
                 {
                     var a = e.Location(ed.A);
@@ -47,61 +55,66 @@
                     </g>
                 }
             </svg>
-            <div class="map-legend"><span>实线金色：当前地点的可走路线</span><span>虚线框：已发现未访问</span><span>浏览地图不推进时间</span></div>
-        </div>
-
-        <div class="panel detail">
-            @if (target == here)
-            {
-                <div class="detail-scroll">
-                    <div class="op-head">
-                        <div class="eyebrow">当前位置</div>
-                        <h2>@tl.Name</h2>
-                        <p>@(tl.IsIndoor ? "室内，可遮蔽睡眠" : "露天")@(tl.CanBuildShelter ? " · 营地" : "") · 探索度@(ts.Progress)%</p>
-                    </div>
-                    <div class="lines">
-                        @foreach (var to in adjacent)
-                        {
-                            var ed = e.AdjacentUnlocked(s).First(x => x.Other(here) == to);
-                            <div><span>→ @e.LocName(to)</span><b>@(ed.BaseMinutes)分钟</b></div>
-                        }
-                    </div>
-                    <div class="tiny muted">在地图上选择相邻地点查看移动预估。</div>
-                </div>
-            }
-            else if (adjacent.Contains(target) && !e.IsBusy(s))
-            {
-                <PreviewView Request="ActionRequest.Travel(target)" Eyebrow="@($"{tl.Name} · {(ts.Visited ? $"探索度{ts.Progress}%" : "待访问")}")" Title="@($"前往{tl.Name}")"
-                             Subtitle="一次只移动一段相邻路线，不提供自动寻路。" OnStarted="Close" />
-            }
-            else
-            {
-                <div class="detail-scroll">
-                    <div class="op-head">
-                        <div class="eyebrow">@(ts.Visited ? $"探索度{ts.Progress}%" : "已发现 · 待访问")</div>
-                        <h2>@tl.Name</h2>
-                        <p>@(tl.IsIndoor ? "室内" : "露天")</p>
-                    </div>
-                    <div class="blocked">@(e.IsBusy(s) ? "行动进行中，地图只能浏览" : "请先前往相邻地点")</div>
-                </div>
-                <div class="detail-foot"><button class="primary" disabled>确认移动</button></div>
-            }
+            <div class="map-legend"><span>金色实线：当前地点的可走路线</span><span>虚线框：已发现未访问</span><span>浏览地图不推进时间</span></div>
         </div>
     </div>
-</div>
+}
+else
+{
+    var target = picked ?? here;
+    var tl = e.Location(target);
+    var ts = s.Locations[target];
+    if (target == here)
+    {
+        <div class="detail-scroll">
+            <div class="op-head">
+                <div class="eyebrow">区域地图 · 当前位置</div>
+                <h2>@tl.Name</h2>
+                <p>@(tl.IsIndoor ? "室内，可遮蔽睡眠" : "露天")@(tl.CanBuildShelter ? " · 营地" : "") · 探索度@(ts.Progress)%</p>
+            </div>
+            <div class="lines">
+                @foreach (var ed in e.AdjacentUnlocked(s))
+                {
+                    <div><span>→ @e.LocName(ed.Other(here))</span><b>@(ed.BaseMinutes)分钟</b></div>
+                }
+            </div>
+            <div class="tiny muted">在地图上点选相邻地点，这里会显示移动预估与确认按钮。</div>
+        </div>
+    }
+    else if (adjacent.Contains(target) && !e.IsBusy(s))
+    {
+        <PreviewView Request="ActionRequest.Travel(target)" Eyebrow="@($"区域地图 · {tl.Name} · {(ts.Visited ? $"探索度{ts.Progress}%" : "待访问")}")" Title="@($"前往{tl.Name}")"
+                     Subtitle="一次只移动一段相邻路线，不提供自动寻路。" OnStarted="Close" />
+    }
+    else
+    {
+        <div class="detail-scroll">
+            <div class="op-head">
+                <div class="eyebrow">区域地图 · @(ts.Visited ? $"探索度{ts.Progress}%" : "已发现 · 待访问")</div>
+                <h2>@tl.Name</h2>
+                <p>@(tl.IsIndoor ? "室内" : "露天")</p>
+            </div>
+            <div class="blocked">@(e.IsBusy(s) ? "行动进行中，地图只能浏览" : "请先前往相邻地点")</div>
+        </div>
+        <div class="detail-foot"><button class="primary" disabled>确认移动</button></div>
+    }
+}
 
 @code {
+    [Parameter] public string Part { get; set; } = "center";
+
     private static MarkupString SvgText(double x, double y, int size, string fill, string content) =>
         new($"<text x=\"{x}\" y=\"{y}\" text-anchor=\"middle\" font-size=\"{size}\" fill=\"{fill}\">{System.Net.WebUtility.HtmlEncode(content)}</text>");
 
-    private string? picked;
-
-    private void Pick(string id) => picked = id;
+    private void Pick(string id)
+    {
+        G.MapPicked = id;
+        G.Notify();
+    }
 
     private Task Close()
     {
-        G.Panel = null;
-        G.Notify();
+        G.OpenPanel(null);
         return Task.CompletedTask;
     }
 }

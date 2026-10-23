@@ -121,6 +121,25 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .row-scroll::-webkit-scrollbar-thumb { background: #3d473e; border-radius: 4px; }
 
 .loc-strip { flex: 0 0 auto; }
+/* 中部上方：地点行与当前地面；二级面板只覆盖这一块（留言 8f9a7c9b 第 2 点） */
+.center-top { position: relative; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+.center > .carried { flex: 0 0 214px; }
+.sub-panel { position: absolute; inset: 0; z-index: 30; background: var(--surface); border: 1px solid var(--accent); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 6px 24px #0007; }
+.sub-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.sub-head h2 { display: inline; margin: 0; font-size: 20px; font-weight: 500; }
+.sub-head .sub { color: var(--muted); font-size: 13px; margin-left: 12px; }
+.sub-body { flex: 1; min-height: 0; padding: 10px 14px; }
+.map-only { display: flex; flex-direction: column; }
+.map-only .map-canvas { flex: 1; min-height: 0; }
+.craft-grid { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 12px; }
+.craft-grid .recipe-list { padding: 0; overflow-y: auto; }
+.craft-side { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow-y: auto; }
+.craft-mats { padding: 10px 12px; }
+.fire-box .fire-row { display: flex; gap: 12px; align-items: center; }
+.fire-box .fire-row .art svg { width: 64px; height: 64px; }
+.rest-scroll { overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.choice-title { margin: 0 0 6px; font-size: 16px; font-weight: 500; }
+.sub-panel .log-list { flex: 1; min-height: 0; padding: 8px 14px 14px; }
 .loc-strip .row-scroll { height: 236px; }
 .ground, .carried { flex: 1 1 0; }
 
@@ -323,6 +342,15 @@ div.card { cursor: pointer; }
   .op-head h2 { font-size: 20px; }
   .fact strong { font-size: 17px; }
   .detail-icon svg { width: 56px; height: 56px; }
+  .center-top { gap: 8px; }
+  .center > .carried { flex-basis: 150px; }
+  .sub-head { padding: 7px 12px; }
+  .sub-head h2 { font-size: 18px; }
+  .craft-grid { grid-template-columns: 180px minmax(0, 1fr); }
+  .recipe svg { width: 30px; height: 30px; }
+  .recipe { padding: 5px 8px; }
+  .choice { padding: 8px 10px; }
+  .choice b { font-size: 17px; }
   .card-cta { margin: 0 5px 5px; padding: 3px 5px; min-height: 24px; font-size: 12px; }
   .card-arrow { width: 26px; height: 22px; }
 }

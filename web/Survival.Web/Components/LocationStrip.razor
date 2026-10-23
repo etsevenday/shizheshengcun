@@ -136,7 +136,6 @@
     /// <summary>设施卡是加工面板的入口（UI 案 UI-06），打开时预选该设施对应的配方。</summary>
     private void OpenCraft(string recipeId)
     {
-        G.CraftRecipe = recipeId;
-        Open("craft");
+        G.OpenPanel("craft", recipeId);
     }
 }

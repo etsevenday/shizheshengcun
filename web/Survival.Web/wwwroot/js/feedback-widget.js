@@ -222,29 +222,110 @@
     throw new Error(what + '失败（' + res.status + '）' + (t ? '：' + t.slice(0, 200) : ''));
   }
 
-  async function submitToSupabase(payload) {
+  /** 上传截图再写入留言。补发时“图片已存在”“留言已存在”都视为成功，保证不重复入库。 */
+  async function submitToSupabase(payload, blobs, progress) {
     var paths = [];
-    for (var i = 0; i < state.images.length; i++) {
-      var img = state.images[i];
-      var ext = img.blob.type === 'image/webp' ? 'webp' : 'jpg';
+    for (var i = 0; i < blobs.length; i++) {
+      var blob = blobs[i];
+      var ext = blob.type === 'image/webp' ? 'webp' : blob.type === 'image/png' ? 'png' : 'jpg';
       var path = payload.project + '/' + payload.id + '/' + (i + 1) + '.' + ext;
-      setStatus('正在上传图片 ' + (i + 1) + '/' + state.images.length + '…');
+      if (progress) progress('正在上传图片 ' + (i + 1) + '/' + blobs.length + '…');
       var up = await fetch(cfg.supabaseUrl + '/storage/v1/object/' + cfg.bucket + '/' + path, {
         method: 'POST',
-        headers: headers({ 'Content-Type': img.blob.type, 'x-upsert': 'false' }),
-        body: img.blob,
+        headers: headers({ 'Content-Type': blob.type, 'x-upsert': 'false' }),
+        body: blob,
       });
-      await check(up, '上传第' + (i + 1) + '张图片');
+      if (!(up.status === 409 || up.status === 400 && /exists|Duplicate/i.test(await up.clone().text()))) await check(up, '上传第' + (i + 1) + '张图片');
       paths.push(path);
     }
     payload.screenshots = paths;
-    setStatus('正在提交留言…');
+    if (progress) progress('正在提交留言…');
     var res = await fetch(cfg.supabaseUrl + '/rest/v1/' + cfg.table, {
       method: 'POST',
       headers: headers({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
       body: JSON.stringify(payload),
     });
+    if (res.status === 409) return;
     await check(res, '提交留言');
+  }
+
+  // ───────────── 发件箱：提交失败时存在本机，之后自动补发 ─────────────
+
+  var OUTBOX_MAX_CHARS = 3500000;
+  var NL = String.fromCharCode(10);
+  var flushing = false;
+
+  function outboxKey() { return 'fbw.outbox.' + (opts.project || location.hostname); }
+  function outboxLoad() { return store(outboxKey()) || []; }
+  function outboxSave(list) {
+    try { localStorage.setItem(outboxKey(), JSON.stringify(list)); return true; } catch (e) { return false; }
+  }
+
+  function blobToDataUrl(b) {
+    return new Promise(function (ok) { var r = new FileReader(); r.onload = function () { ok(r.result); }; r.onerror = function () { ok(null); }; r.readAsDataURL(b); });
+  }
+
+  async function enqueue(payload, blobs, error) {
+    payload.context = payload.context || {};
+    payload.context.delivery = { firstError: String(error || ''), queuedAt: new Date().toISOString() };
+    var imgs = [], total = 0;
+    for (var i = 0; i < blobs.length; i++) {
+      var d = await blobToDataUrl(blobs[i]);
+      if (!d) continue;
+      if (total + d.length > OUTBOX_MAX_CHARS) { payload.message += NL + '（离线保存时截图太大，只保存了前' + imgs.length + '张）'; break; }
+      total += d.length;
+      imgs.push(d);
+    }
+    var list = outboxLoad();
+    list.push({ payload: payload, images: imgs, tries: 0 });
+    if (!outboxSave(list)) {
+      list[list.length - 1].images = [];
+      payload.message += NL + '（本机空间不足，截图未能保存）';
+      return outboxSave(list);
+    }
+    return true;
+  }
+
+  /** 逐条补发；遇到网络问题就停，等下次再试。 */
+  async function flushOutbox() {
+    if (flushing) return;
+    var list = outboxLoad();
+    if (!list.length) return;
+    await loadConfig();
+    if (!cfg.ready) return;
+    flushing = true;
+    var sent = 0;
+    try {
+      while (list.length) {
+        var item = list[0];
+        try {
+          var blobs = [];
+          for (var i = 0; i < item.images.length; i++) blobs.push(await (await fetch(item.images[i])).blob());
+          await submitToSupabase(item.payload, blobs, null);
+          list.shift();
+          sent++;
+          outboxSave(list);
+        } catch (e) {
+          item.tries = (item.tries || 0) + 1;
+          item.payload.context.delivery.lastError = String(e && e.message || e);
+          if (item.tries >= 10) { list.push(list.shift()); }
+          outboxSave(list);
+          break;
+        }
+      }
+    } finally {
+      flushing = false;
+    }
+    if (sent) toast('已补发 ' + sent + ' 条之前没送达的留言', 5000);
+    renderOutboxNote();
+  }
+
+  function renderOutboxNote() {
+    var n = root && root.querySelector('.fbw-outbox');
+    if (!n) return;
+    var c = outboxLoad().length;
+    n.hidden = c === 0;
+    n.textContent = c ? '本机还有 ' + c + ' 条之前没送达的留言，联网后会自动补发。' : '';
   }
 
   // ───────────── 组装与复制 ─────────────
@@ -415,8 +496,9 @@
         else { showCopyBox(text); setStatus('留言板尚未连接服务器，请复制下面的文字发给作者', 'err'); }
         return;
       }
-      await submitToSupabase(payload);
+      await submitToSupabase(payload, state.images.map(function (i) { return i.blob; }), setStatus);
       lastSubmitAt = Date.now();
+      flushOutbox();
       store('fbw.draft.' + (opts.project || ''), null);
       store('fbw.contact', state.contact);
       var ticket = payload.id.slice(0, 8);
@@ -431,10 +513,19 @@
         if (root && state && !state.message) { close(); toast('留言已收到，谢谢！编号 ' + ticket, 8000); }
       }, 1600);
     } catch (e) {
-      setStatus('提交失败：' + e.message + '。可以先复制为文字发给作者，草稿已保留。', 'err');
+      var queued = cfg && cfg.ready && state.lastPayload && await enqueue(state.lastPayload, state.images.map(function (i) { return i.blob; }), e && e.message);
+      if (queued) {
+        store('fbw.draft.' + (opts.project || ''), null);
+        state.queued = true;
+        setStatus('暂时没送达（' + e.message + '）。留言已保存在本机，下次打开游戏会自动补发；也可以先复制为文字发给作者。', 'err');
+        renderOutboxNote();
+      } else {
+        setStatus('提交失败：' + e.message + '。可以先复制为文字发给作者，草稿已保留。', 'err');
+      }
       root.querySelector('.fbw-fallback').hidden = false;
     } finally {
-      btn.disabled = false;
+      btn.disabled = !!(state && state.queued);
+      if (state && state.queued) btn.textContent = '已存待补发';
     }
   }
 
@@ -460,7 +551,7 @@
       cats.appendChild(b);
     });
 
-    var ta = el('textarea', { placeholder: '遇到了什么？期望是什么？（截图可以直接 Ctrl+V 粘贴到这里）', 'aria-label': '留言内容' });
+    var ta = el('textarea', { placeholder: '遇到了什么？期望是什么？（截图可以直接 Ctrl+V 粘贴到这里）', 'aria-label': '留言内容', maxlength: '5000' });
     ta.value = state.message;
     ta.addEventListener('input', function () { state.message = ta.value; saveDraft(); });
 
@@ -521,7 +612,8 @@
           el('button', { type: 'button', class: 'fbw-btn', text: '取消', onclick: close }),
           el('button', { type: 'button', class: 'fbw-btn fbw-primary', text: '提交', onclick: submit }),
         ]),
-        fallback,
+        el('div', { class: 'fbw-outbox fbw-muted', hidden: 'hidden' }),
+      fallback,
       ]),
     ]);
 
@@ -597,12 +689,15 @@
     document.body.appendChild(root);
     renderImages();
     ta.focus();
+    renderOutboxNote();
+    flushOutbox();
     if (opts.autoCapture !== false) doCapture(true);
   }
 
   function init(o) {
     opts = Object.assign({}, o || {});
     ensureCss();
+    setTimeout(flushOutbox, 3000);
     if (opts.floatingButton) {
       document.body.appendChild(el('button', { type: 'button', class: 'fbw-fab fbw-ignore', text: opts.buttonText || '反馈', onclick: function () { open(); } }));
     }

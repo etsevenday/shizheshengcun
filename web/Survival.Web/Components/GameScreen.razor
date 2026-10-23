@@ -29,8 +29,15 @@
         <Hud />
 
         <section class="center" aria-label="当前地点">
-            <LocationStrip />
-            <ItemShelf Owner="@s.CurrentLocation" Title="@($"当前地面 · {e.LocName(s.CurrentLocation)}")" />
+            <div class="center-top">
+                <LocationStrip />
+                <ItemShelf Owner="@s.CurrentLocation" Title="@($"当前地面 · {e.LocName(s.CurrentLocation)}")" />
+                @* 二级面板只替换这一块，周围的状态栏、随身物品与右侧详情不动 *@
+                @if (G.Panel == "map") { <MapOverlay Part="center" /> }
+                @if (G.Panel == "craft") { <CraftOverlay Part="center" /> }
+                @if (G.Panel == "rest") { <RestOverlay Part="center" /> }
+                @if (G.Panel == "log") { <LogOverlay /> }
+            </div>
             <ItemShelf Owner="@ItemInstance.Carried" Title="随身物品" />
 
             @if (pausedLayer)
@@ -45,10 +52,6 @@
 
         <DetailPanel />
 
-        @if (G.Panel == "map") { <MapOverlay /> }
-        @if (G.Panel == "craft") { <CraftOverlay /> }
-        @if (G.Panel == "rest") { <RestOverlay /> }
-        @if (G.Panel == "log") { <LogOverlay /> }
         @if (G.Panel == "menu") { <MenuOverlay /> }
         @if (G.Panel != null && G.Panel.StartsWith("status:")) { <StatusInfo /> }
 
@@ -101,8 +104,7 @@
 
     private void Toggle(string panel)
     {
-        G.Panel = G.Panel == panel ? null : panel;
-        G.Notify();
+        G.OpenPanel(G.Panel == panel ? null : panel);
     }
 
     [JSInvokable]
@@ -118,7 +120,7 @@
             case "L": Toggle("log"); break;
             case "Escape":
                 // Esc 只关闭当前浏览层，不取消主行动
-                if (G.Panel != null) { G.Panel = null; G.Notify(); }
+                if (G.Panel != null) G.OpenPanel(null);
                 else if (G.Selected.Kind != SelectionKind.None) G.ClearSelection();
                 else Toggle("menu");
                 break;
