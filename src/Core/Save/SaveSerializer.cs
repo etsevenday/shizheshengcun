@@ -1,6 +1,7 @@
 using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Survival.Core.Config;
 using Survival.Core.State;
 
 namespace Survival.Core.Save
@@ -29,15 +30,34 @@ namespace Survival.Core.Save
 
         public static string Serialize(GameState s) => JsonConvert.SerializeObject(s, Settings);
 
-        public static GameState Deserialize(string json)
+        /// <summary>
+        /// 读档。当前版本直接读取；旧版 0.2-proto-1 需提供配置以迁移到当前版本（迁移前由调用方备份原文）；其他版本拒绝。
+        /// </summary>
+        public static GameState Deserialize(string json, GameConfig? config = null)
         {
-            var probe = JsonConvert.DeserializeObject<SchemaProbe>(json)
-                        ?? throw new SaveVersionException("空");
-            if (probe.SchemaVersion != GameState.CurrentSchema)
-                throw new SaveVersionException(probe.SchemaVersion ?? "未知");
+            var version = SchemaOf(json);
+            if (version == SaveMigrator.LegacySchema && config != null)
+            {
+                var old = JsonConvert.DeserializeObject<GameState>(json, Settings)
+                          ?? throw new SaveVersionException("损坏");
+                SaveMigrator.Migrate(old, config);
+                return old;
+            }
+            if (version != GameState.CurrentSchema)
+                throw new SaveVersionException(version ?? "未知");
             var s = JsonConvert.DeserializeObject<GameState>(json, Settings)
                     ?? throw new SaveVersionException("损坏");
             return s;
+        }
+
+        /// <summary>存档是旧版、读取时会迁移。</summary>
+        public static bool NeedsMigration(string json) => SchemaOf(json) == SaveMigrator.LegacySchema;
+
+        private static string? SchemaOf(string json)
+        {
+            var probe = JsonConvert.DeserializeObject<SchemaProbe>(json)
+                        ?? throw new SaveVersionException("空");
+            return probe.SchemaVersion;
         }
 
         private sealed class SchemaProbe

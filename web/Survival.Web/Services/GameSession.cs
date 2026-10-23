@@ -172,10 +172,18 @@ public sealed class GameSession
         {
             var json = _store.Load();
             if (string.IsNullOrEmpty(json)) return "没有存档";
-            State = SaveSerializer.Deserialize(json);
+            // 旧版存档（0.2-proto-1）先备份原文，再迁移到当前版本并覆盖保存（00 案第 5 节）
+            var migrate = SaveSerializer.NeedsMigration(json);
+            if (migrate) _store.Backup(json);
+            State = SaveSerializer.Deserialize(json, Config);
             ResetUi();
             foreach (var l in S.Log.TakeLast(8))
                 Recent.Add(new GameEvent { Minute = l.Minute, Text = l.Text, Kind = GameEventKind.Info });
+            if (migrate)
+            {
+                Save();
+                Notice = "旧存档已升级到新版本（清理次数已按上限初始化），原档已备份";
+            }
             Notify();
             return null;
         }
@@ -196,7 +204,7 @@ public sealed class GameSession
         {
             var json = _store.Load();
             if (string.IsNullOrEmpty(json)) return "没有存档";
-            SaveSerializer.Deserialize(json);
+            SaveSerializer.Deserialize(json, Config);
             return null;
         }
         catch (SaveVersionException ex) { return ex.Message + "，请开始新游戏。"; }
