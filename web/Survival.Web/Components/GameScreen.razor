@@ -28,17 +28,31 @@
     <main class="body">
         <Hud />
 
+        @{
+            // 手工制作层盖住中部上方时，地面卡挪到下方与随身卡并排，仍能拖进材料槽（01 案第 5 节“手工拖入优先使用指定批次”）
+            var craftOpen = G.Panel == "craft";
+        }
         <section class="center" aria-label="当前地点">
             <div class="center-top">
                 <LocationStrip />
-                <ItemShelf Owner="@s.CurrentLocation" Title="@($"当前地面 · {e.LocName(s.CurrentLocation)}")" />
+                @if (!craftOpen) { <ItemShelf Owner="@s.CurrentLocation" Title="@($"当前地面 · {e.LocName(s.CurrentLocation)}")" /> }
                 @* 二级面板只替换这一块，周围的状态栏、随身物品与右侧详情不动 *@
                 @if (G.Panel == "map") { <MapOverlay Part="center" /> }
-                @if (G.Panel == "craft") { <CraftOverlay Part="center" /> }
+                @if (craftOpen) { <CraftOverlay Part="center" /> }
                 @if (G.Panel == "rest") { <RestOverlay Part="center" /> }
                 @if (G.Panel == "log") { <LogOverlay /> }
             </div>
-            <ItemShelf Owner="@ItemInstance.Carried" Title="随身物品" />
+            @if (craftOpen)
+            {
+                <div class="shelves-split">
+                    <ItemShelf Owner="@s.CurrentLocation" Title="@($"当前地面 · {e.LocName(s.CurrentLocation)}")" />
+                    <ItemShelf Owner="@ItemInstance.Carried" Title="随身物品" />
+                </div>
+            }
+            else
+            {
+                <ItemShelf Owner="@ItemInstance.Carried" Title="随身物品" />
+            }
 
             @if (pausedLayer)
             {

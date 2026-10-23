@@ -23,6 +23,20 @@
         "publish/wwwroot"
       ],
       "port": 5181
+    },
+    {
+      "name": "web-alt",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "web/Survival.Web",
+        "--launch-profile",
+        "http",
+        "--urls",
+        "http://localhost:5180"
+      ],
+      "port": 5180
     }
   ]
 }
