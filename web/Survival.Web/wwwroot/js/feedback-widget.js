@@ -642,6 +642,8 @@
       store('fbw.contact', state.contact);
       var ticket = payload.id.slice(0, 8);
       setStatus('已收到，谢谢！编号 ' + ticket, 'ok');
+      // 留言墙下次打开时重新读取，能看到刚提交的这条
+      if (wall) { wall.rows = []; wall.total = 0; wall.error = null; }
       state.message = '';
       root.querySelector('textarea').value = '';
       state.images.forEach(function (i) { URL.revokeObjectURL(i.url); });
