@@ -1,0 +1,62 @@
+@inherits GameComponent
+
+@* 物品卡右下角的三角箭头：单击转移 1 件，按住约半秒后连续转移（留言 fb68265e）。 *@
+<button type="button" class="card-arrow @(ToCarried ? "down" : "up")" disabled="@(!Enabled)"
+        aria-label="@(ToCarried ? "拾取1件，按住连续拾取" : "放下1件，按住连续放下")"
+        title="@(ToCarried ? "拾取1件（按住连续拾取）" : "放下1件（按住连续放下）")"
+        @onclick="OnClick" @onclick:stopPropagation="true"
+        @onpointerdown="OnDown" @onpointerdown:stopPropagation="true"
+        @onpointerup="Stop" @onpointerleave="Stop" @onpointercancel="Stop">@(ToCarried ? "▼" : "▲")</button>
+
+@code {
+    [Parameter] public string Owner { get; set; } = "";
+    [Parameter] public string ItemId { get; set; } = "";
+    [Parameter] public int? InstanceId { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    private bool ToCarried => Owner != ItemInstance.Carried;
+    private CancellationTokenSource? _hold;
+
+    private bool Once() => Once(Owner, ItemId, InstanceId);
+
+    private bool Once(string owner, string itemId, int? instanceId) => G.TransferOne(owner, itemId, instanceId).Ok;
+
+    /// <summary>键盘触发的点击（detail 为 0）转移一件；鼠标与触屏由按下事件处理，避免重复。</summary>
+    private void OnClick(MouseEventArgs ev)
+    {
+        if (ev.Detail == 0 && Enabled) Once();
+    }
+
+    private async Task OnDown(PointerEventArgs ev)
+    {
+        if (!Enabled || ev.Button > 0) return;
+        Stop();
+        // 按下那一刻锁定物品与来源，连续转移期间不随卡片列表变化而换成别的物品
+        var owner = Owner;
+        var itemId = ItemId;
+        if (!Once(owner, itemId, InstanceId) || InstanceId.HasValue) return;
+        var cts = _hold = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(420, cts.Token);
+            while (!cts.IsCancellationRequested && Owner == owner && ItemId == itemId)
+            {
+                if (!Once(owner, itemId, null)) break;
+                await Task.Delay(90, cts.Token);
+            }
+        }
+        catch (TaskCanceledException) { }
+    }
+
+    private void Stop()
+    {
+        _hold?.Cancel();
+        _hold = null;
+    }
+
+    public override void Dispose()
+    {
+        Stop();
+        base.Dispose();
+    }
+}

@@ -63,6 +63,30 @@ public sealed class GameSession
     /// <summary>从设施卡打开加工面板时要预选的配方；面板读取一次后清空。</summary>
     public string? CraftRecipe { get; set; }
 
+    // ───────────── 界面偏好（左栏折叠、提示翻页），存在浏览器本地，不进存档 ─────────────
+
+    private HashSet<string>? _collapsed;
+
+    public bool IsCollapsed(string key)
+    {
+        if (_collapsed == null)
+        {
+            try { _collapsed = new HashSet<string>((_store.GetPref("collapsed") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries)); }
+            catch { _collapsed = new HashSet<string>(); }
+        }
+        return _collapsed.Contains(key);
+    }
+
+    public void ToggleCollapsed(string key)
+    {
+        IsCollapsed(key);
+        if (!_collapsed!.Remove(key)) _collapsed.Add(key);
+        try { _store.SetPref("collapsed", string.Join(",", _collapsed)); } catch { /* 本地存储不可用时只在本次有效 */ }
+        Notify();
+    }
+
+    public int TipIndex { get; set; }
+
     public GameEngine E => Engine!;
     public GameState S => State!;
 
@@ -396,6 +420,22 @@ public sealed class GameSession
     {
         Toast = null;
         Notify();
+    }
+
+    /// <summary>
+    /// 物品卡上的三角箭头：把该物品转移 1 件到对面（地面→随身为拾取，随身→地面为放下）。
+    /// 工具按实例转移；可堆叠物品取最早到期、未预留的一堆。
+    /// </summary>
+    public ActionResult TransferOne(string owner, string itemId, int? instanceId)
+    {
+        if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        var inst = instanceId.HasValue
+            ? S.Items.FirstOrDefault(i => i.InstanceId == instanceId.Value && i.Owner == owner)
+            : S.Items.Where(i => i.Owner == owner && i.ItemId == itemId && i.ReservedBy == null)
+                .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).FirstOrDefault();
+        if (inst == null) return ActionResult.Fail("没有可转移的物品");
+        var toCarried = owner != ItemInstance.Carried;
+        return Instant(toCarried ? InstantRequest.Pickup(inst.InstanceId, 1) : InstantRequest.Drop(inst.InstanceId, 1));
     }
 
     public void DebugFill()

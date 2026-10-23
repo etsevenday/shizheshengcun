@@ -415,6 +415,9 @@ namespace Survival.Core.Engine
 
         // ───────────────────────── 开始 / 取消 / 继续 ─────────────────────────
 
+        /// <summary>只做开始前校验，不模拟、不改状态。返回 null 表示可以开始，否则为不能开始的原因。</summary>
+        public string? CanStart(GameState s, ActionRequest r) => Validate(s, r, out _);
+
         /// <summary>空闲时开始主行动；主行动暂停时开始子行动（补给、休息、点火）。</summary>
         public ActionResult Start(GameState s, ActionRequest r)
         {

@@ -22,4 +22,8 @@ public sealed class SaveStore
     }
 
     public void Clear() => _js.InvokeVoid("survival.saveRemove", Key);
+
+    public string? GetPref(string key) => _js.Invoke<string?>("survival.prefGet", key);
+
+    public void SetPref(string key, string value) => _js.InvokeVoid("survival.prefSet", key, value);
 }

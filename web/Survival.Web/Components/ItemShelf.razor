@@ -14,6 +14,7 @@
     var kinds = items.Select(i => i.ItemId).Distinct().Count();
     var sel = G.Selected;
     var grams = items.Sum(i => e.Item(i.ItemId).WeightGrams * i.Count);
+    var busy = e.IsBusy(s) || G.Running;
 }
 
 <div class="panel section @(carried ? "carried" : "ground")">
@@ -21,7 +22,7 @@
         <h2>@Title</h2>
         <span>
             @if (carried) { @($"{Ui.Kg(grams)}公斤 · {(grams > e.Config.Carry.SoftGrams ? "超重" : "轻装")} · ") }
-            显示@(kinds)种 · 拾取与放下不耗时
+            显示@(kinds)种 · @(carried ? "点 ▲ 放下" : "点 ▼ 拾取")，按住连续 · 不耗时
         </span>
     </div>
     <div class="row-scroll">
@@ -34,23 +35,27 @@
             var anyReserved = list.Any(i => i.ReservedBy != null);
             var batches = list.Select(i => i.ExpiresAt).Distinct().Count();
             var id = g.Key;
-            <button class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner ? "selected" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "")"
-                    @onclick="() => SelectGroup(id)" title="@e.Item(id).Desc">
+            var movable = list.Any(i => i.ReservedBy == null);
+            <div @key="@("g:" + id)" class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner ? "selected" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "")"
+                 role="button" tabindex="0" @onclick="() => SelectGroup(id)" @onkeydown="ev => OnCardKey(ev, () => SelectGroup(id))" title="@e.Item(id).Desc">
                 <div class="ctitle"><span>@e.ItemName(id)</span><span class="qty">×@total</span></div>
                 <div class="art">@Icons.Markup(id)</div>
                 <div class="cinfo">@(allSpoiled ? "已腐败" : Ui.ItemLine(e, s, head))@(batches > 1 ? $" · {batches}批" : "")</div>
-            </button>
+                <TransferArrow Owner="@Owner" ItemId="@id" Enabled="@(movable && !busy)" />
+            </div>
         }
         @foreach (var t in tools)
         {
             var broken = t.Durability.HasValue && t.Durability <= 0;
             var inst = t.InstanceId;
-            <button class="card item @(broken ? "broken" : "") @(t.ReservedBy != null ? "reserved" : "") @(sel.Kind == SelectionKind.Tool && sel.InstanceId == inst ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
-                    @onclick="() => SelectTool(inst, t.ItemId)" title="@e.Item(t.ItemId).Desc">
+            var toolId = t.ItemId;
+            <div @key="@("t:" + inst)" class="card item @(broken ? "broken" : "") @(t.ReservedBy != null ? "reserved" : "") @(sel.Kind == SelectionKind.Tool && sel.InstanceId == inst ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
+                 role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
                 <div class="ctitle"><span>@e.ItemName(t.ItemId)</span><span class="qty">×1</span></div>
                 <div class="art">@Icons.Markup(t.ItemId)</div>
                 <div class="cinfo">@Ui.ItemLine(e, s, t)</div>
-            </button>
+                <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !busy)" />
+            </div>
         }
         @if (items.Count == 0)
         {
@@ -58,7 +63,7 @@
                 @if (carried)
                 {
                     <strong>没有携带物品</strong>
-                    <span>在地面物品上选择“拾取”即可带走</span>
+                    <span>点地面物品卡右下角的 ▼ 即可带走</span>
                 }
                 else
                 {
@@ -76,6 +81,11 @@
 
     private void SelectGroup(string itemId) =>
         G.Select(new Selection { Kind = SelectionKind.ItemGroup, Id = itemId, Owner = Owner });
+
+    private static void OnCardKey(KeyboardEventArgs ev, Action select)
+    {
+        if (ev.Key == "Enter" || ev.Key == " ") select();
+    }
 
     private void SelectTool(int instanceId, string itemId) =>
         G.Select(new Selection { Kind = SelectionKind.Tool, Id = itemId, Owner = Owner, InstanceId = instanceId });

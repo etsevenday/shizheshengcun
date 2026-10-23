@@ -10,6 +10,7 @@
     var sel = G.Selected;
     var resources = e.Config.Resources.Where(r => r.LocationId == here && s.Resources[r.NodeId].Discovered).ToList();
     var entrances = e.AdjacentUnlocked(s).ToList();
+    var busy = e.IsBusy(s) || G.Running;
 }
 
 <div class="panel section loc-strip">
@@ -18,15 +19,25 @@
         <span>@(resources.Count)个资源点@(ls.Progress < 100 ? " · 继续探索可能发现更多" : " · 已充分探索")</span>
     </div>
     <div class="row-scroll">
-        <button class="card place @(sel.Kind == SelectionKind.Location ? "selected" : "")" @onclick="SelectLocation">
+        <div class="card place @(sel.Kind == SelectionKind.Location ? "selected" : "")" role="button" tabindex="0"
+             @onclick="SelectLocation" @onkeydown="ev => OnCardKey(ev, SelectLocation)">
             <div class="ctitle"><span>@lc.Name</span></div>
             <div class="art">@Icons.Markup(lc.CanBuildShelter ? "camp" : lc.IsIndoor ? "indoor" : "outdoor")</div>
             <div class="cinfo">
                 <div>探索度 @(ls.Progress)%</div>
                 <div class="pbar"><i style="width:@(ls.Progress)%"></i></div>
-                <div class="muted">@(ls.Progress >= 100 ? "已充分探索" : "探索周边 · 30分钟")</div>
             </div>
-        </button>
+            @if (ls.Progress < 100)
+            {
+                var why = busy ? "行动进行中" : e.CanStart(s, ActionRequest.Explore());
+                <button type="button" class="card-cta" disabled="@(why != null)" title="@(why ?? "直接开始，详情可看右侧预估")"
+                        @onclick="() => Quick(ActionRequest.Explore(), SelectLocation)" @onclick:stopPropagation="true">探索 · @(e.Config.Actions.ExploreMinutes)分钟</button>
+            }
+            else
+            {
+                <div class="card-cta done">已充分探索</div>
+            }
+        </div>
 
         @if (lc.HasFire)
         {
@@ -64,7 +75,10 @@
             var nodeId = r.NodeId;
             var tool = r.ToolBonus != null ? e.BestTool(s, r.ToolBonus.ToolTag) : null;
             var minutes = tool != null && r.ToolBonus?.BaseMinutesOverride != null ? r.ToolBonus.BaseMinutesOverride.Value : r.BaseMinutes;
-            <button class="card resource @(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId ? "selected" : "") @(empty ? "dim" : "") @(G.Highlights.Contains(r.NodeId) ? "fresh" : "")" @onclick="() => SelectResource(nodeId)">
+            var req = ActionRequest.Gather(r.NodeId);
+            var why = busy ? "行动进行中" : e.CanStart(s, req);
+            <div @key="@r.NodeId" class="card resource @(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId ? "selected" : "") @(empty ? "dim" : "") @(G.Highlights.Contains(r.NodeId) ? "fresh" : "")"
+                 role="button" tabindex="0" @onclick="() => SelectResource(nodeId)" @onkeydown="ev => OnCardKey(ev, () => SelectResource(nodeId))">
                 <div class="ctitle"><span>@r.Name</span>@if (r.Hazard != null) {<span class="tag risk">@Ui.Pct(r.Hazard.Probability)@r.Hazard.Label</span>}</div>
                 <div class="art">@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</div>
                 <div class="cinfo">
@@ -88,7 +102,9 @@
                         <div class="muted">@(r.Refills ? $"每日00:00补充{r.DailyRefill}" : "不可补充")@(tool != null ? $" · {e.ItemName(tool.ItemId)}加成" : "")</div>
                     }
                 </div>
-            </button>
+                <button type="button" class="card-cta" disabled="@(why != null)" title="@(why ?? "直接开始，详情可看右侧预估")"
+                        @onclick="() => Quick(req, () => SelectResource(nodeId))" @onclick:stopPropagation="true">@(r.IsCache ? "搜集" : "采集") · @(minutes)分钟</button>
+            </div>
         }
 
     </div>
@@ -98,6 +114,18 @@
     private void SelectLocation() => G.Select(new Selection { Kind = SelectionKind.Location, Id = G.S.CurrentLocation });
     private void SelectEntrance(string to) => G.Select(new Selection { Kind = SelectionKind.Entrance, Id = to });
     private void SelectResource(string id) => G.Select(new Selection { Kind = SelectionKind.Resource, Id = id });
+
+    private static void OnCardKey(KeyboardEventArgs ev, Action select)
+    {
+        if (ev.Key == "Enter" || ev.Key == " ") select();
+    }
+
+    /// <summary>卡片底部的快捷按钮：选中该卡并直接开始行动（留言 649cdad9）。</summary>
+    private async Task Quick(ActionRequest r, Action select)
+    {
+        select();
+        await G.StartAction(r);
+    }
 
     private void Open(string panel)
     {

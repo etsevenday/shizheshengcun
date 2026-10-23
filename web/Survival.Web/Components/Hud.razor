@@ -51,25 +51,62 @@
         <div class="tiny muted">超过@(cfg.Carry.SoftGrams / 1000)公斤减速 · 上限@(cfg.Carry.HardGrams / 1000)公斤</div>
     </div>
 
+    @{ var guideOpen = !G.IsCollapsed("guide"); var tipsOpen = !G.IsCollapsed("tips"); var tips = cfg.Progress.Tips; }
     <div class="panel guide">
-        <h3>生存目标</h3>
-        @foreach (var gd in cfg.Progress.Guides)
+        <button type="button" class="fold-head" aria-expanded="@guideOpen" @onclick='() => G.ToggleCollapsed("guide")'>
+            <h3>生存目标</h3><span class="fold-icon">@(guideOpen ? "收起 ▴" : "展开 ▾")</span>
+        </button>
+        @if (guideOpen)
         {
-            <div class="day @(gd.Day == Math.Min(currentDay, cfg.Progress.Guides.Max(x => x.Day)) ? "now" : "")">
-                <b>第@(gd.Day)日</b> @gd.Title
-                <ul>
-                    @foreach (var f in gd.Flags)
-                    {
-                        <li class="@(s.Progress.Flags.Contains(f.Id) ? "done" : "")">@f.Label</li>
-                    }
-                </ul>
-            </div>
+            @foreach (var gd in cfg.Progress.Guides)
+            {
+                <div class="day @(gd.Day == Math.Min(currentDay, cfg.Progress.Guides.Max(x => x.Day)) ? "now" : "")">
+                    <b>第@(gd.Day)日</b> @gd.Title
+                    <ul>
+                        @foreach (var f in gd.Flags)
+                        {
+                            <li class="@(s.Progress.Flags.Contains(f.Id) ? "done" : "")">@f.Label</li>
+                        }
+                    </ul>
+                </div>
+            }
+            <div class="day now"><b>七日检查</b> 活到第8日08:00</div>
         }
-        <div class="day now"><b>七日检查</b> 活到第8日08:00</div>
+        else
+        {
+            var done = cfg.Progress.Guides.SelectMany(x => x.Flags).Count(f => s.Progress.Flags.Contains(f.Id));
+            var all = cfg.Progress.Guides.SelectMany(x => x.Flags).Count();
+            <div class="tiny muted">已完成 @done/@all 项</div>
+        }
     </div>
+
+    @if (tips.Count > 0)
+    {
+        var i = ((G.TipIndex % tips.Count) + tips.Count) % tips.Count;
+        <div class="panel guide tips">
+            <button type="button" class="fold-head" aria-expanded="@tipsOpen" @onclick='() => G.ToggleCollapsed("tips")'>
+                <h3>生存提示</h3><span class="fold-icon">@(tipsOpen ? "收起 ▴" : "展开 ▾")</span>
+            </button>
+            @if (tipsOpen)
+            {
+                <p class="tip-text">@tips[i]</p>
+                <div class="tip-nav">
+                    <button type="button" class="linkish" aria-label="上一条提示" @onclick="() => Flip(-1)">‹ 上一条</button>
+                    <span class="tiny muted">@(i + 1)/@tips.Count</span>
+                    <button type="button" class="linkish" aria-label="下一条提示" @onclick="() => Flip(1)">下一条 ›</button>
+                </div>
+            }
+        </div>
+    }
 </aside>
 
 @code {
+    private void Flip(int d)
+    {
+        G.TipIndex += d;
+        G.Notify();
+    }
+
     private void OpenStatus(StatId id)
     {
         G.Panel = "status:" + GameEngine.StatKey(id);

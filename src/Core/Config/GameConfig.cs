@@ -285,5 +285,7 @@ namespace Survival.Core.Config
         public int SevenDayCheckMinute { get; set; } = 10560;
         public List<GuideConfig> Guides { get; set; } = new List<GuideConfig>();
         public List<GuideFlagConfig> SevenDayItems { get; set; } = new List<GuideFlagConfig>();
+        /// <summary>左栏“生存提示”的预设文案，只复述已有规则，不引入新数值。</summary>
+        public List<string> Tips { get; set; } = new List<string>();
     }
 }

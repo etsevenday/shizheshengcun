@@ -164,6 +164,24 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .item.reserved::after { content: "预留"; position: absolute; left: 6px; bottom: 26px; font-size: 11px; background: #3b4a3b; color: #e5e8da; padding: 1px 5px; border-radius: 2px; }
 .item.broken .art { opacity: .5; }
 
+/* 卡片底部快捷按钮与物品转移箭头（试玩留言 649cdad9、fb68265e） */
+div.card { cursor: pointer; }
+.card-cta { margin: 0 6px 6px; padding: 5px 6px; border: 0; border-radius: 3px; background: #3c4a35; color: #f2ecd8; font-size: 13px; font-weight: 600; min-height: 28px; text-align: center; }
+.card-cta:hover:not(:disabled) { background: #4f6145; }
+.card-cta:disabled { background: #6e6a58; color: #c9c3ad; }
+.card-cta.done { background: transparent; color: var(--muted); font-weight: 400; }
+.resource .card-cta { background: #5b6b48; }
+.resource .card-cta:hover:not(:disabled) { background: #6e8256; }
+.card-arrow { position: absolute; right: 5px; bottom: 5px; width: 30px; height: 26px; border-radius: 4px; border: 1px solid #7d7a62; background: #efe9d5; color: #2d3a29; font-size: 13px; line-height: 1; padding: 0; touch-action: none; user-select: none; }
+.card-arrow:hover:not(:disabled) { background: #fff7df; border-color: #4f5d44; }
+.card-arrow:active:not(:disabled) { background: #d6b779; }
+.card-arrow:disabled { opacity: .35; }
+.item .cinfo { padding-right: 38px; }
+.fold-head { display: flex; width: 100%; justify-content: space-between; align-items: center; background: none; border: 0; padding: 0; text-align: left; }
+.fold-head h3 { margin: 0; }
+.fold-icon { font-size: 12px; color: var(--muted); }
+.tip-text { margin: 6px 0 4px; font-size: 14px; line-height: 1.7; }
+.tip-nav { display: flex; justify-content: space-between; align-items: center; }
 .empty-zone { flex: 1; min-width: 220px; border: 1px dashed #56604f; display: flex; align-items: center; justify-content: center; flex-direction: column; border-radius: 4px; font-size: 14px; color: var(--muted); gap: 6px; text-align: center; padding: 14px; }
 .empty-zone strong { font-size: 16px; color: var(--text); font-weight: 400; }
 
@@ -305,4 +323,6 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
   .op-head h2 { font-size: 20px; }
   .fact strong { font-size: 17px; }
   .detail-icon svg { width: 56px; height: 56px; }
+  .card-cta { margin: 0 5px 5px; padding: 3px 5px; min-height: 24px; font-size: 12px; }
+  .card-arrow { width: 26px; height: 22px; }
 }

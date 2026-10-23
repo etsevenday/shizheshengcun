@@ -207,4 +207,23 @@ public class AlertDeathSaveTests : TestBase
         Assert.That(p.StatsAfter.Hydration, Is.LessThan(s.Stats.Hydration));
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before));
     }
+
+    [Test]
+    public void CanStart_ValidatesWithoutMutating()
+    {
+        var s = New();
+        var before = SaveSerializer.Serialize(s);
+        Assert.That(E.CanStart(s, ActionRequest.Explore()), Is.EqualTo("已充分探索，可继续搜集"));
+        Assert.That(E.CanStart(s, ActionRequest.Travel("field")), Is.Null);
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before));
+        Start(s, ActionRequest.Travel("field"));
+        Assert.That(E.CanStart(s, ActionRequest.Explore()), Is.EqualTo("已有进行中的行动"));
+    }
+
+    [Test]
+    public void Tips_Loaded()
+    {
+        Assert.That(Cfg.Progress.Tips, Has.Count.GreaterThanOrEqualTo(10));
+        Assert.That(Cfg.Progress.Tips, Has.All.Not.Empty);
+    }
 }

@@ -14,6 +14,13 @@ window.survival = {
       return String(e && e.message ? e.message : e);
     }
   },
+  // 每位玩家自己的界面偏好（折叠面板等），不进存档
+  prefGet: function (key) {
+    try { return window.localStorage.getItem('survival.pref.' + key); } catch (e) { return null; }
+  },
+  prefSet: function (key, value) {
+    try { window.localStorage.setItem('survival.pref.' + key, value); } catch (e) { }
+  },
   saveRemove: function (key) {
     try { window.localStorage.removeItem(key); window.localStorage.removeItem(key + '.tmp'); } catch (e) { }
   },
