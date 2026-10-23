@@ -206,6 +206,11 @@ public sealed class GameSession
                 Notice = "旧存档已升级到新版本（清理次数已按上限初始化），原档已备份";
             }
             Notify();
+            // 行动动画每 5 分钟段都会存档，播放中刷新页面时存档里的主行动仍是“运行中”；
+            // 读档后要接着推进，否则界面停在“进行中”却没有跳过/取消按钮，也开不了别的行动
+            var active = S.Sub ?? S.Main;
+            if (active != null && !S.Progress.Dead && !(S.Sub == null && S.Main!.Status == ActionStatus.Paused))
+                _ = RunLoop();
             return null;
         }
         catch (SaveVersionException ex)

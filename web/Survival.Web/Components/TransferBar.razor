@@ -6,6 +6,7 @@
    光标不在条内时的回车由 app.js 的 hookKeys 转成点击“拾取/放下”按钮，所以点完卡片直接回车也能按默认数量确认。 *@
 @{
     var info = Current();
+    SyncDefault(info);
 }
 @if (info != null)
 {
@@ -111,16 +112,17 @@
         return new Info(sel.Owner, sel.Id, null, expires, available, max, toCarried, available == 1);
     }
 
-    protected override bool ShouldRender()
+    /// <summary>
+    /// 选中的卡或它的可取数量一变，就把输入框重置为默认数量。
+    /// 放在渲染路径里而不是 ShouldRender：卡角箭头一次点击里先选中再转移，连着两次 StateHasChanged
+    /// 会被合并成一次渲染，第二次不再调用 ShouldRender，输入框就会留着转移前的数量。
+    /// </summary>
+    private void SyncDefault(Info? info)
     {
-        var info = Current();
         var key = info == null ? "" : $"{info.Key}|{info.ExpiresAt}|{info.Available}";
-        if (key != lastKey)
-        {
-            lastKey = key;
-            if (info != null) text = (info.ToCarried ? Math.Max(1, Math.Min(info.Available, info.Max)) : info.Available).ToString();
-        }
-        return true;
+        if (key == lastKey) return;
+        lastKey = key;
+        if (info != null) text = (info.ToCarried ? Math.Max(1, Math.Min(info.Available, info.Max)) : info.Available).ToString();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
