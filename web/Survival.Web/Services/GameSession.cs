@@ -90,12 +90,10 @@ public sealed class GameSession
     /// </summary>
     public void OpenPanel(string? panel, string? recipe = null)
     {
-        if (panel != "craft")
-        {
-            CraftCandidates = null;
-            CraftPreferred.Clear();
-            CraftPot = null;
-        }
+        // 每次打开或关闭面板都清掉上一次拖拽留下的候选与指定批次；拖拽入口在打开后再写入
+        CraftCandidates = null;
+        CraftPreferred.Clear();
+        CraftPot = null;
         if (panel == "craft" && State != null)
         {
             var main = S.Main;
@@ -301,7 +299,7 @@ public sealed class GameSession
 
     public ActionPreview Preview(ActionRequest r)
     {
-        var key = $"{r.Type}|{r.TargetId}|{r.InstanceId}|{r.Minutes}";
+        var key = $"{r.Type}|{r.TargetId}|{r.InstanceId}|{r.Minutes}|{r.ToolInstanceId}|{r.PotInstanceId}|{string.Join(",", r.PreferredInstanceIds)}";
         if (_previewCache.TryGetValue(key, out var c) && c.ver == Version) return c.p;
         var p = E.Preview(S, r);
         _previewCache[key] = (Version, p);

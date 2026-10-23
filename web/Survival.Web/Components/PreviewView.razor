@@ -28,6 +28,27 @@
             {
                 <div class="fact"><span>产出 · 留在@(p.OutputPlace)</span><strong>@o.Name ×@o.Count</strong></div>
             }
+            @if (p.ClearCharges.HasValue)
+            {
+                <div class="fact"><span>清理次数</span><strong>@p.ClearCharges/@p.ClearCap → @(p.ClearCharges - 1)/@p.ClearCap</strong></div>
+            }
+        </div>
+    }
+    else if (p.ClearCharges.HasValue)
+    {
+        <div class="lines">
+            <div><span>清理次数</span><b>@p.ClearCharges/@p.ClearCap@(p.NextRefillMinutes.HasValue ? $" · 距恢复1次{Clock.Duration(p.NextRefillMinutes.Value)}" : " · 已满")</b></div>
+        </div>
+    }
+
+    @if (p.LootOdds.Count > 0)
+    {
+        <div class="loot-odds">
+            <div class="tiny muted">可能物资（完成时只抽1次，产物留在当前地面）</div>
+            @foreach (var o in p.LootOdds)
+            {
+                <div class="@(o.ItemId == null ? "muted" : "")"><span>@o.Name</span><b>@(o.Percent)%</b></div>
+            }
         </div>
     }
     else
@@ -46,10 +67,14 @@
     {
         <div class="lines">
             <div><span>使用@(p.ToolName)</span><b>@(p.ToolDurabilityBefore)/@(p.ToolMaxDurability) → @(p.ToolDurabilityAfter)/@(p.ToolMaxDurability)</b></div>
-            <div class="tiny muted">无需选择工具，自动使用随身耐久最高的一件。</div>
+            <div class="tiny muted">@(p.ToolExplicit ? "使用拖入的这一把；它不可用时不会自动换成其他工具。" : "无需选择工具，自动使用随身耐久最高的一件。")</div>
         </div>
     }
 
+    @if (Request.Type == ActionType.Clear || Request.Type == ActionType.Explore)
+    {
+        <div class="risk none">无额外受伤风险；工具不改变耗时、概率与件数，也不磨损。</div>
+    }
     @if (Request.Type == ActionType.Gather)
     {
         @if (p.HazardProbability > 0)

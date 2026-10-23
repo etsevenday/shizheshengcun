@@ -8,12 +8,14 @@
     var c = e.PotConfig(Pot);
     var units = e.PotUnits(s, Pot.InstanceId);
     var liquid = e.PotLiquid(s, Pot.InstanceId);
-    var pct = c.CapacityMl > 0 ? units * c.UnitMl * 100 / c.CapacityMl : 0;
+    var ml = units * c.UnitMl;
+    var pct = c.CapacityMl > 0 ? ml * 100 / c.CapacityMl : 0;
 }
 <div class="pot-fill @(liquid == "clean_water" ? "clean" : liquid == "dirty_water" ? "dirty" : "")" data-drop="@($"potfill:{Pot.InstanceId}")" data-drop-level="hot"
-     title="把净水或脏水卡拖到这里装入1份；按住 Shift 可选数量">
-    <div class="pot-fill-head"><span>水量</span><b>@e.PotLabel(s, Pot)</b></div>
+     title="@($"水量：{e.PotLabel(s, Pot)}。把净水或脏水卡拖到这里装入1份；按住 Shift 可选数量")">
+    <div class="pot-fill-head"><span>水量</span><b>@(liquid == null ? "空锅" : e.ItemName(liquid))@(pct)%</b></div>
     <div class="pot-track"><i style="width:@(pct)%"></i></div>
+    <div class="pot-ml">@ml/@(c.CapacityMl)毫升</div>
     @if (Attached) { <div class="pot-tag">已架在火堆上</div> }
 </div>
 

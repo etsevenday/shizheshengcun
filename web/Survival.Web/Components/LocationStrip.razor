@@ -16,7 +16,12 @@
     var light = Ui.Light(Clock.MinuteOfDay(s.GameMinute), lc.IsIndoor);
     var scene = lc.Scene ?? $"scenes/{lc.Id}.svg";
     var fireOn = lc.HasFire && fac.FireLit && lc.SceneFireX.HasValue && lc.SceneFireY.HasValue;
-    var exploreWhy = ls.Progress >= 100 ? "已充分探索" : busy ? "行动进行中" : e.CanStart(s, ActionRequest.Explore());
+    var exploreWhy = ls.Progress >= 100 ? "该地点不再探索，可清理或搜集已发现资源" : busy ? "行动进行中" : e.CanStart(s, ActionRequest.Explore());
+    var clearWhy = busy ? "行动进行中" : e.CanStart(s, ActionRequest.Clear());
+    var (charges, _) = e.ClearChargesAt(s, here);
+    var cap = lc.Clear.Cap;
+    var nextRefill = e.NextClearRefillMinutes(s, here);
+    var pot = lc.HasFire ? e.AttachedPot(s, here) : null;
     string F(double v) => v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
 }
 
@@ -51,6 +56,7 @@
     <div class="hero-head">
         <div class="hero-info">
             <div class="hero-title @(sel.Kind == SelectionKind.Location ? "selected" : "")" role="button" tabindex="0" title="查看探索预估"
+                 data-drop="@($"loc:{here}")" data-drop-level="card"
                  @onclick="SelectLocation" @onkeydown="ev => OnCardKey(ev, SelectLocation)">
                 @lc.Name
                 <small>@(lc.IsIndoor ? "室内" : "露天") · 探索度@(ls.Progress)% · @light.Phase</small>
@@ -66,9 +72,17 @@
                 }
                 @if (lc.HasFire)
                 {
-                    <button type="button" class="chip facility" @onclick='() => OpenCraft("boil")' title="打开营地加工">
-                        火堆 · @(fac.FireLit ? $"燃烧中 {fac.FuelMinutes}分" : fac.FuelMinutes > 0 ? $"熄灭 余{fac.FuelMinutes}分" : "未点燃")
-                    </button>
+                    @* 火堆拆成两个热区：燃料区（木材投放）与锅位（架锅）；整张火堆卡面接收打火器 *@
+                    <div class="fire-chip" data-drop="@($"fire:{here}")" data-drop-level="card">
+                        <button type="button" class="chip facility fire-fuel" data-drop="@($"fuel:{here}")" data-drop-level="hot" @onclick='() => OpenCraft("boil")'
+                                title="火堆：把木材拖到这里投放，把打火器拖到火堆点火；点击打开营地加工">
+                            火堆 · @(fac.FireLit ? "燃烧中" : fac.FuelMinutes > 0 ? "熄灭" : "未点燃") · 燃料@(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分
+                        </button>
+                        <button type="button" class="chip facility fire-slot @(pot != null ? "filled" : "")" data-drop="@($"potslot:{here}")" data-drop-level="hot"
+                                @onclick="SelectAttachedPot" title="锅位：把金属锅拖到这里架上火堆">
+                            锅位 · @(pot == null ? "空" : $"{e.ItemName(pot.ItemId)} {e.PotLabel(s, pot)}")
+                        </button>
+                    </div>
                 }
                 @if (lc.CanBuildShelter)
                 {
@@ -78,10 +92,21 @@
                 }
             </div>
         </div>
-        <button type="button" class="chip cta" disabled="@(exploreWhy != null)" title="@(exploreWhy ?? "直接开始，详情可看右侧预估")"
-                @onclick="() => Quick(ActionRequest.Explore(), SelectLocation)">
-            @(ls.Progress >= 100 ? "已充分探索" : $"探索周边 · {e.Config.Actions.ExploreMinutes}分钟")
-        </button>
+        <div class="hero-actions">
+            <button type="button" class="chip cta" disabled="@(exploreWhy != null)" title="@(exploreWhy ?? "直接开始，详情可看右侧预估")"
+                    @onclick="() => Quick(ActionRequest.Explore(), SelectLocation)">
+                @(ls.Progress >= 100 ? "已充分探索" : $"探索周边 · {e.Config.Actions.ExploreMinutes}分钟")
+                <small>@(ls.Progress >= 100 ? "可清理或搜集已发现资源" : $"完成后{Math.Min(100, ls.Progress + e.Config.Actions.ExploreProgress)}% · 有机会取得零散物资")</small>
+            </button>
+            <div class="clear-cta">
+                <button type="button" class="chip cta" disabled="@(clearWhy != null)" title="@(clearWhy ?? "直接开始，详情可看右侧预估")"
+                        @onclick="() => Quick(ActionRequest.Clear(), SelectClear)">
+                    清理 · @(e.Config.Actions.ClearMinutes)分钟
+                    <small>@(nextRefill == null ? $"{charges}/{cap}·已满" : charges == 0 ? $"清理0/{cap} · 距恢复1次{Clock.Duration(nextRefill.Value)}" : $"次数{charges}/{cap} · 距恢复1次{Clock.Duration(nextRefill.Value)}")</small>
+                </button>
+                <button type="button" class="linkish clear-info" @onclick="SelectClear" title="查看清理详情、可能物资与恢复说明">详情</button>
+            </div>
+        </div>
     </div>
 
     <div class="hero-cards">
@@ -95,6 +120,7 @@
             var req = ActionRequest.Gather(r.NodeId);
             var why = busy ? "行动进行中" : e.CanStart(s, req);
             <div @key="@r.NodeId" class="hero-res @(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId ? "selected" : "") @(empty ? "dim" : "") @(G.Highlights.Contains(r.NodeId) ? "fresh" : "")"
+                 data-drop="@($"res:{nodeId}")" data-drop-level="card"
                  role="button" tabindex="0" @onclick="() => SelectResource(nodeId)" @onkeydown="ev => OnCardKey(ev, () => SelectResource(nodeId))">
                 <div class="pict">@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</div>
                 <div class="res-text">
@@ -142,6 +168,14 @@
     }
 
     private void SelectLocation() => G.Select(new Selection { Kind = SelectionKind.Location, Id = G.S.CurrentLocation });
+    private void SelectClear() => G.Select(new Selection { Kind = SelectionKind.Clear, Id = G.S.CurrentLocation });
+
+    private void SelectAttachedPot()
+    {
+        var pot = G.E.AttachedPot(G.S, G.S.CurrentLocation);
+        if (pot == null) { OpenCraft("boil"); return; }
+        G.Select(new Selection { Kind = SelectionKind.Tool, Id = pot.ItemId, Owner = pot.Owner, InstanceId = pot.InstanceId });
+    }
     private void SelectEntrance(string to) => G.Select(new Selection { Kind = SelectionKind.Entrance, Id = to });
     private void SelectResource(string id) => G.Select(new Selection { Kind = SelectionKind.Resource, Id = id });
 

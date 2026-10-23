@@ -142,6 +142,8 @@ public class DropResolverTests : TestBase
         Assert.That(i.IsPreview, Is.True);
         Assert.That(i.Action!.InstanceId, Is.EqualTo(lighter.InstanceId));
         Assert.That(s.Sub ?? s.Main, Is.Null, "只打开预览，不开始");
+        Assert.That(R(s, Card($"carried|lighter|{lighter.InstanceId}"), "fuel:camp").Verb, Is.EqualTo(DropVerb.PreviewIgnite), "燃料区也属于火堆");
+        Assert.That(R(s, Card($"carried|lighter|{lighter.InstanceId}"), "potslot:camp").Verb, Is.EqualTo(DropVerb.PreviewIgnite), "锅位也属于火堆");
         // 非法：没有燃料也没有木材
         foreach (var w in s.Items.Where(x => x.ItemId == "wood").ToList()) s.Items.Remove(w);
         Assert.That(R(s, Card($"carried|lighter|{lighter.InstanceId}"), "fire:camp").Reason, Is.EqualTo("请先投入木材"));

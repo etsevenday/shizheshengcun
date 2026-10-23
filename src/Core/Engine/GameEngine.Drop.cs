@@ -238,6 +238,8 @@ namespace Survival.Core.Engine
         private DropIntent DropOnFuel(GameState s, ItemInstance head, string loc)
         {
             if (loc != s.CurrentLocation || !_locs[loc].HasFire) return DropIntent.No("只能给当前营地的火堆投料");
+            // 燃料区与锅位都是火堆的一部分：打火器落在上面同样是点火
+            if (IsLighter(head)) return DropOnFire(s, new DropSource { Kind = DropSourceKind.Card }, head, loc);
             if (head.ItemId != "wood" || head.InContainer) return DropIntent.No(Unsupported);
             if (head.ReservedBy != null) return DropIntent.No("该物品已被预留");
             var fac = s.Locations[loc].Facility;
@@ -251,16 +253,19 @@ namespace Survival.Core.Engine
         private DropIntent DropOnFire(GameState s, DropSource src, ItemInstance head, string loc)
         {
             if (loc != s.CurrentLocation || !_locs[loc].HasFire) return DropIntent.No("异地不能操作火堆");
-            if (src.Kind == DropSourceKind.Card && _items[head.ItemId].ToolTag == "lighter")
+            if (src.Kind == DropSourceKind.Card && IsLighter(head))
                 return PreviewFor(s, DropVerb.PreviewIgnite, "查看点火", ActionRequest.Ignite(head.InstanceId));
             if (head.ItemId == "wood" && src.Kind == DropSourceKind.Card) return DropOnFuel(s, head, loc);
             if (src.Kind == DropSourceKind.Card && IsPot(head)) return DropOnPotSlot(s, src, head, loc);
             return DropIntent.No(Unsupported);
         }
 
+        private bool IsLighter(ItemInstance i) => _items[i.ItemId].ToolTag == "lighter";
+
         private DropIntent DropOnPotSlot(GameState s, DropSource src, ItemInstance head, string loc)
         {
             if (loc != s.CurrentLocation || !_locs[loc].HasFire) return DropIntent.No("异地不能操作火堆");
+            if (src.Kind == DropSourceKind.Card && IsLighter(head)) return DropOnFire(s, src, head, loc);
             if (src.Kind != DropSourceKind.Card || !IsPot(head)) return DropIntent.No(Unsupported);
             var why = PotBlocked(s, head);
             if (why != null) return DropIntent.No(why);

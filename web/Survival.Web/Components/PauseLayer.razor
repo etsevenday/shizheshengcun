@@ -80,7 +80,7 @@
             <div class="btn-row" style="max-width:820px">
                 @foreach (var id in supplies)
                 {
-                    var batch = e.UsableBatches(s, id, allowGround).FirstOrDefault();
+                    var batch = e.UsableBatches(s, id, allowGround, true).FirstOrDefault();
                     if (batch == null) continue;
                     var cfg = e.Item(id);
                     var req = ActionRequest.UseInstance(batch.InstanceId);
@@ -89,7 +89,7 @@
                 }
                 <button class="secondary" disabled="@busy" @onclick="() => Sub(ActionRequest.Rest(30))">休息30分钟@(travel ? "（露天）" : "")</button>
             </div>
-            var dirty = e.UsableBatches(s, "dirty_water", allowGround).FirstOrDefault();
+            var dirty = e.UsableBatches(s, "dirty_water", allowGround, true).FirstOrDefault();
             @if (dirty != null)
             {
                 <div class="risk" style="max-width:820px">
@@ -97,7 +97,7 @@
                     <button class="linkish" disabled="@busy" @onclick="() => Sub(ActionRequest.UseInstance(dirty.InstanceId))">仍然饮用1份脏水</button>
                 </div>
             }
-            @if (!supplies.Any(id => e.UsableBatches(s, id, allowGround).Any()))
+            @if (!supplies.Any(id => e.UsableBatches(s, id, allowGround, true).Any()))
             {
                 <div class="risk none">@(travel ? "随身没有可用的补给。" : "随身和地面都没有可用的补给。")</div>
             }
@@ -121,8 +121,10 @@
     {
         ActionType.Travel => "取消移动：留在出发地，已经流逝的时间与身体消耗保留。",
         ActionType.Gather => "取消搜集：不给产物、不磨损工具，预留库存释放。",
+        ActionType.Craft when a.PotInstanceId.HasValue && !a.LegacyGroundOutput && a.TargetId == "boil" => "取消烧水：脏水留在原锅，加工进度清零。",
         ActionType.Craft or ActionType.Build => "取消制作：预留材料返还当前地面，不生成半成品。",
-        ActionType.Explore => "取消探索：探索度不变，已消耗的时间保留。",
+        ActionType.Explore => "取消探索：探索度不变、不给随机物资，已消耗的时间保留。",
+        ActionType.Clear => "取消清理：不给物资，已扣除的1次清理机会不返还，已消耗的时间保留。",
         _ => "取消后已流逝的时间不返还。",
     };
 }

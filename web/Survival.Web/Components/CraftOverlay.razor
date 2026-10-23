@@ -13,6 +13,10 @@
     var craftPaused = main != null && main.Status == ActionStatus.Paused && (main.Type == ActionType.Craft || main.Type == ActionType.Build);
     var busy = G.Running || s.Sub != null;
     var maintBlocked = busy || (main != null && (main.Status != ActionStatus.Paused || main.Type == ActionType.Travel));
+    var candidates = G.CraftCandidates;
+    var recipes = candidates == null ? e.Config.Recipes : e.Config.Recipes.Where(r => candidates.Contains(r.Id)).ToList();
+    var preferred = G.CraftPreferred.Where(id => s.Items.Any(i => i.InstanceId == id && rc.Inputs.ContainsKey(i.ItemId))).ToList();
+    var request = ActionRequest.Craft(recipeId, G.CraftPot, preferred);
 }
 
 @if (Part == "center")
@@ -24,14 +28,19 @@
         </div>
         <div class="sub-body craft-grid">
             <div class="recipe-list">
-                @foreach (var r in e.Config.Recipes)
+                @if (candidates != null)
+                {
+                    <div class="tiny muted candidates-head">拖拽找到的候选配方 · 缺料的不能开始 <button class="linkish" @onclick="ShowAll">显示全部</button></div>
+                }
+                @foreach (var r in recipes)
                 {
                     var id = r.Id;
                     var built = r.FacilityResult != null && lc.CanBuildShelter && (r.FacilityResult == "shelterBuilt" ? fac.ShelterBuilt : fac.BedBuilt);
                     var icon = r.FacilityResult == "shelterBuilt" ? "shelter" : r.FacilityResult == "bedBuilt" ? "bed" : r.Outputs.Keys.First();
-                    <button class="recipe @(id == recipeId ? "on" : "")" @onclick="() => Pick(id)">
+                    var why = candidates != null ? e.CanStart(s, ActionRequest.Craft(id)) : null;
+                    <button class="recipe @(id == recipeId ? "on" : "") @(why != null ? "missing" : "")" @onclick="() => Pick(id)" title="@why">
                         @Icons.Markup(icon)
-                        <span>@r.Name<small>@(built ? "已建造" : $"{r.BaseMinutes}分钟{(r.NeedsFire ? " · 需火堆" : r.IsBuild ? " · 营地" : "")}")</small></span>
+                        <span>@r.Name<small>@(built ? "已建造" : why != null ? why : $"{r.BaseMinutes}分钟{(r.NeedsFire ? " · 需火堆" : r.IsBuild ? " · 营地" : "")}")</small></span>
                     </button>
                 }
             </div>
@@ -42,18 +51,48 @@
                     <p class="small muted" style="margin:4px 0 8px">@RecipeHint(rc)</p>
                     @foreach (var kv in rc.Inputs)
                     {
-                        var have = e.AvailableCount(s, kv.Key, true);
-                        var carried = e.UsableBatches(s, kv.Key, false).Sum(i => i.Count);
-                        <div class="mat @(have < kv.Value ? "missing" : "")">
-                            <span>@e.ItemName(kv.Key) ×@kv.Value</span>
+                        var item = kv.Key;
+                        if (rc.Pot != null && item == rc.Pot.InputItem)
+                        {
+                            var potForBoil = e.SelectPot(s, G.CraftPot, out _);
+                            var inPot = potForBoil == null ? 0 : e.PotContents(s, potForBoil.InstanceId).Where(i => i.ItemId == item).Sum(i => i.Count);
+                            var loose = e.AvailableCount(s, item, true);
+                            <div class="mat @(inPot + loose < kv.Value ? "missing" : "")">
+                                <span>@e.ItemName(item) ×@kv.Value（锅内）</span>
+                                <span>锅内@(inPot) · 可补入@(loose)</span>
+                            </div>
+                            continue;
+                        }
+                        var have = e.AvailableCount(s, item, true);
+                        var carried = e.UsableBatches(s, item, false).Sum(i => i.Count);
+                        var plan = Fill(item, kv.Value, preferred);
+                        <div class="mat slot @(have < kv.Value ? "missing" : "")" data-drop="@($"slot:{recipeId}:{item}")" data-drop-level="hot" title="把具体批次的卡拖到这里指定使用">
+                            <span>@e.ItemName(item) ×@kv.Value</span>
                             <span>可用@(have)（随身@(carried)／地面@(have - carried)）</span>
+                            <div class="slot-batches">
+                                @foreach (var (b, n) in plan)
+                                {
+                                    var bid = b.InstanceId;
+                                    var pinned = preferred.Contains(bid);
+                                    <button type="button" class="batch-chip @(pinned ? "on" : "")" title="@(pinned ? "已手工指定，点击取消" : "点击固定使用这一批")" @onclick="() => TogglePreferred(bid)">
+                                        @BatchText(b, n, pinned)
+                                    </button>
+                                }
+                            </div>
                         </div>
                     }
                     @foreach (var tag in rc.Catalysts)
                     {
-                        var tool = e.CarriedTool(s, tag);
                         var name = e.Config.Items.First(i => i.ToolTag == tag).Name;
-                        <div class="mat @(tool == null ? "missing" : "")"><span>@name（催化工具，不消耗）</span><span>@(tool == null ? "需随身携带" : "随身 ✓")</span></div>
+                        if (e.Config.Items.Any(i => i.ToolTag == tag && i.ContainerId != null))
+                        {
+                            var pot = e.SelectPot(s, G.CraftPot, out var potWhy);
+                            var place = pot == null ? "" : pot.IsCarried ? "随身" : e.AttachedPot(s, here)?.InstanceId == pot.InstanceId ? "锅位" : "地面";
+                            <div class="mat @(pot == null ? "missing" : "")"><span>@name（容器，不消耗）</span><span>@(pot == null ? potWhy : $"{place} · {e.PotLabel(s, pot)}")</span></div>
+                            continue;
+                        }
+                        var tool = e.AccessibleTool(s, tag);
+                        <div class="mat @(tool == null ? "missing" : "")"><span>@name（催化工具，不消耗）</span><span>@(tool == null ? "需随身或在当前地面" : tool.IsCarried ? "随身 ✓" : "地面 ✓")</span></div>
                     }
                 </div>
 
@@ -111,7 +150,7 @@ else if (craftPaused && main!.TargetId == recipeId)
 }
 else
 {
-    <PreviewView Request="ActionRequest.Craft(recipeId)" Eyebrow="@($"手工制作 · {(rc.IsBuild ? "营地设施" : "配方")}")" Title="@rc.Name" Subtitle="@RecipeHint(rc)" />
+    <PreviewView Request="request" Eyebrow="@($"手工制作 · {(rc.IsBuild ? "营地设施" : "配方")}")" Title="@rc.Name" Subtitle="@RecipeHint(rc)" />
 }
 
 @code {
@@ -122,8 +161,8 @@ else
         "knife" => "纤维采集耗时从20分钟降到10分钟，耐久20次。",
         "axe" => "木材采集每次产出翻倍，耐久30次。",
         "bandage" => "健康+5，每60分钟最多使用一次。",
-        "boil" => "把2份脏水烧成2份净水。需随身金属锅与燃烧的营地火堆。",
-        "cook" => "把2份生块根煮成2份熟块根，熟食保质24小时。需金属锅与燃烧火堆。",
+        "boil" => "把锅里的2份脏水原地烧成净水，净水留在原锅。锅可在随身或当前地面；锅内不足时开始前自动补入可用脏水。需燃烧的营地火堆。",
+        "cook" => "把2份生块根煮成2份熟块根，熟食保质24小时，放在当前地面。需一口空锅（随身或当前地面）与燃烧火堆。",
         "shelter" => "营地可遮蔽睡眠（清醒+12、体力+15、精神+1/小时），休息额外恢复精神。",
         "bed" => "营地睡眠体力每小时额外+5。需要先建成遮蔽棚。",
         _ => "",
@@ -133,6 +172,41 @@ else
     {
         G.CraftRecipe = id;
         G.Notify();
+    }
+
+    private void ShowAll()
+    {
+        G.CraftCandidates = null;
+        G.Notify();
+    }
+
+    private void TogglePreferred(int id)
+    {
+        if (!G.CraftPreferred.Remove(id)) G.CraftPreferred.Add(id);
+        G.Notify();
+    }
+
+    private string BatchText(ItemInstance b, int n, bool pinned)
+    {
+        var where = b.IsCarried ? "随身" : "地面";
+        var fresh = b.ExpiresAt.HasValue ? " · " + Ui.Fresh(b.ExpiresAt.Value - G.S.GameMinute) : "";
+        return $"{where}×{n}{fresh}{(pinned ? " · 指定" : "")}";
+    }
+
+    /// <summary>材料槽将用到的批次：手工指定的在前，其余按最早到期、随身优先、实例 ID 自动补齐。</summary>
+    private List<(ItemInstance inst, int n)> Fill(string itemId, int need, List<int> preferred)
+    {
+        var list = G.E.UsableBatches(G.S, itemId, true)
+            .OrderBy(b => preferred.Contains(b.InstanceId) ? preferred.IndexOf(b.InstanceId) : int.MaxValue).ToList();
+        var res = new List<(ItemInstance, int)>();
+        foreach (var b in list)
+        {
+            if (need <= 0) break;
+            var n = Math.Min(need, b.Count);
+            res.Add((b, n));
+            need -= n;
+        }
+        return res;
     }
 
     private void AddFuel() => G.Instant(InstantRequest.AddFuel());

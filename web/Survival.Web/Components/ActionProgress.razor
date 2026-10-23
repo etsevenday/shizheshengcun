@@ -23,9 +23,12 @@
         </div>
         <h2>@a.Label</h2>
         <p>开始于@(Clock.HHmm(a.StartMinute)) · 已流逝@(Clock.Duration(a.ElapsedMinutes))</p>
+        @* 清理中不显示已锁定的具体掉落（02 案第 7 节） *@
+        @if (a.Type == ActionType.Clear) { <p>正在整理地块</p> }
     </div>
 
-    <div class="progress" aria-label="行动进度"><i style="width:@((pct * 100).ToString("0.#"))%"></i></div>
+    <div class="progress-label tiny muted">@(a.Type is ActionType.Craft or ActionType.Build ? "加工" : "进度") @((pct * 100).ToString("0"))%</div>
+    <div class="progress" aria-label="@(a.Type is ActionType.Craft or ActionType.Build ? "加工进度" : "行动进度")"><i style="width:@((pct * 100).ToString("0.#"))%"></i></div>
 
     <div class="lines">
         <div><span>@(work ? "剩余工作量" : "剩余时长")</span><b>@(Ui.Floor(remaining))分钟</b></div>
@@ -39,6 +42,10 @@
         {
             var res = s.Items.Where(i => a.ReservedItemIds.Contains(i.InstanceId)).GroupBy(i => i.ItemId).Select(g => $"{e.ItemName(g.Key)}{g.Sum(i => i.Count)}");
             <div><span>预留材料</span><b>@string.Join("、", res)</b></div>
+        }
+        @if (a.PotInstanceId.HasValue && s.Items.FirstOrDefault(i => i.InstanceId == a.PotInstanceId) is ItemInstance pot)
+        {
+            <div><span>使用的锅</span><b>@e.ItemName(pot.ItemId) · 水量 @e.PotLabel(s, pot)</b></div>
         }
         @if (a.ReservedResourceUnits > 0)
         {

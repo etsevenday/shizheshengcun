@@ -462,3 +462,33 @@ body.dragging .tbar { visibility: hidden !important; }
 .pot-fill.clean .pot-track i { background: #6fa8c9; }
 .pot-fill.dirty .pot-track i { background: #9a8a5e; }
 .pot-tag { margin-top: 3px; color: #7a4f1d; font-weight: 600; }
+
+/* 地点行：探索与清理并排在右上（开发计划 v0.2 B4）；火堆拆为燃料区与锅位两个热区 */
+.hero-actions { display: flex; gap: 8px; align-items: flex-start; flex: 0 0 auto; }
+.hero-actions .chip.cta { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
+.hero-actions .chip.cta small { font-size: 12px; font-weight: 400; opacity: .85; }
+.clear-cta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.clear-info { font-size: 12px; color: #e1e8d8; text-shadow: 0 1px 4px #0b1d12; }
+.fire-chip { display: inline-flex; gap: 0; border-radius: 14px; }
+.fire-chip .fire-fuel { border-radius: 14px 0 0 14px; }
+.fire-chip .fire-slot { border-radius: 0 14px 14px 0; border-left: 0; }
+.fire-chip .fire-slot.filled { color: var(--accent); }
+.self-card { display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border: 1px dashed #6c7d68; }
+.self-card b { font-weight: 600; }
+.self-card span { font-size: 12px; color: var(--muted); }
+.loot-odds { display: flex; flex-direction: column; gap: 3px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 5px; }
+.loot-odds > div:not(.tiny) { display: flex; justify-content: space-between; font-size: 14px; }
+.pot-detail { display: flex; flex-direction: column; gap: 8px; padding: 8px; border: 1px solid var(--line); border-radius: 5px; }
+.pot-detail .pot-fill { margin: 0; background: var(--paper); color: var(--ink); }
+.pot-child { display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: var(--paper); color: var(--ink); border-radius: 4px; cursor: grab; }
+.pot-child svg { width: 28px; height: 28px; }
+.mat.slot { flex-wrap: wrap; border: 1px dashed transparent; border-radius: 4px; }
+.mat.slot:hover { border-color: #6c7d68; }
+.slot-batches { flex-basis: 100%; display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
+.batch-chip { font-size: 12px; padding: 1px 7px; border-radius: 10px; border: 1px solid #5c745d; background: #0e211a; color: #d9e1cf; }
+.batch-chip.on { border-color: var(--accent); color: var(--accent); }
+.recipe.missing small { color: var(--warn); }
+.candidates-head { padding: 0 2px 4px; }
+.pot-ml { font-size: 11px; color: #5d5a45; margin-top: 2px; }
+.pot-detail .btn-row { flex-wrap: wrap; }
+.pot-detail .btn-row button { flex: 1 1 46%; white-space: nowrap; }

@@ -36,7 +36,7 @@ else
 
         <div class="lines">
             <div><span>单件重量</span><b>@Ui.Kg(cfg.WeightGrams)公斤</b></div>
-            <div><span>合计重量</span><b>@Ui.Kg(cfg.WeightGrams * total)公斤</b></div>
+            <div><span>合计重量</span><b>@Ui.Kg(list.Sum(i => e.ItemGrams(s, i)))公斤@(e.IsPot(inst) ? "（含锅内）" : "")</b></div>
             @if (cfg.MaxDurability.HasValue)
             {
                 <div><span>耐久</span><b class="@(inst.Durability <= 0 ? "danger-text" : "")">@(inst.Durability <= 0 ? "已损坏" : $"{inst.Durability}/{cfg.MaxDurability}")</b></div>
@@ -46,6 +46,53 @@ else
                 <div><span>保质期</span><b>@(cfg.ShelfLifeMinutes / 60)小时</b></div>
             }
         </div>
+
+        @if (e.IsPot(inst))
+        {
+            var contents = e.PotContents(s, inst.InstanceId);
+            var attachedHere = e.Location(here).HasFire && e.AttachedPot(s, here)?.InstanceId == inst.InstanceId;
+            var potBusy = busy || e.IsLocked(s, inst);
+            <div class="pot-detail">
+                <PotGauge Pot="inst" Attached="attachedHere" />
+                @if (contents.Count == 0)
+                {
+                    <div class="tiny muted">空锅。把净水或脏水卡拖到锅卡的水量条上装入，每份500毫升；同一锅只装一种水。</div>
+                }
+                @foreach (var c in contents)
+                {
+                    var cid = c.InstanceId;
+                    var ccfg = e.Item(c.ItemId);
+                    var useReq = ActionRequest.UseInstance(cid);
+                    var up = G.Preview(useReq);
+                    <div class="pot-child" data-drag="@($"potchild:{cid}")" data-drag-title="@($"锅内{ccfg.Name} ×{c.Count}")" data-drag-from="@($"{e.ItemName(inst.ItemId)}内")" title="可拖到随身或地面倒出，拖到“自身”饮用">
+                        <span>@Icons.Markup(c.ItemId)</span>
+                        <b>@ccfg.Name ×@c.Count</b>
+                        @if (c.ReservedBy != null) { <em class="muted">· 加工中</em> }
+                    </div>
+                    <div class="btn-row">
+                        <button class="secondary" disabled="@(potBusy || !up.Ok)" title="@up.Reason" @onclick="() => Use(cid)">@GameEngine.UseVerb(ccfg)1份</button>
+                        @if (!carried) { <button class="secondary" disabled="@potBusy" @onclick="() => Decant(cid, ItemInstance.Carried)">倒出1份到随身</button> }
+                        <button class="secondary" disabled="@potBusy" @onclick="() => Decant(cid, here)">倒出1份到地面</button>
+                    </div>
+                }
+                @if (e.Location(here).HasFire)
+                {
+                    <div class="btn-row">
+                        @if (attachedHere)
+                        {
+                            <button class="secondary" disabled="@potBusy" @onclick="Detach">从火堆锅位取下</button>
+                        }
+                        else
+                        {
+                            <button class="secondary" disabled="@potBusy" @onclick="() => Attach(inst.InstanceId)">架到火堆锅位</button>
+                        }
+                        <button class="secondary" disabled="@busy" @onclick='() => OpenCraft("boil", inst.InstanceId)'>用这口锅烧水…</button>
+                        <button class="secondary" disabled="@busy" @onclick='() => OpenCraft("cook", inst.InstanceId)'>用这口锅烹饪…</button>
+                    </div>
+                }
+                @if (e.IsLocked(s, inst)) { <div class="risk none">行动占用：这口锅正被当前行动使用，不能移动、取水或加水。</div> }
+            </div>
+        }
 
         @if (batches.Count > 1 || cfg.ShelfLifeMinutes.HasValue)
         {
@@ -135,6 +182,17 @@ else
     }
 
     private async Task Use(int instanceId) => await G.StartAction(ActionRequest.UseInstance(instanceId));
+
+    private void Decant(int childId, string zone) => G.Instant(InstantRequest.Decant(childId, zone));
+    private void Attach(int potId) => G.Instant(InstantRequest.AttachPot(potId));
+    private void Detach() => G.Instant(InstantRequest.DetachPot());
+
+    private void OpenCraft(string recipe, int potId)
+    {
+        G.OpenPanel("craft", recipe);
+        G.CraftPot = potId;
+        G.Notify();
+    }
 
     private static string UseEffect(ItemConfig cfg)
     {

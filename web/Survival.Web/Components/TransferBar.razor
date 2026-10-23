@@ -100,7 +100,7 @@
             var t = s.Items.FirstOrDefault(i => i.InstanceId == sel.InstanceId.Value && i.Owner == sel.Owner);
             if (t == null) return null;
             var free = t.ReservedBy == null ? 1 : 0;
-            return new Info(sel.Owner, sel.Id, t.InstanceId, null, free, toCarried ? G.MaxPickup(sel.Id, free) : free, toCarried, true);
+            return new Info(sel.Owner, sel.Id, t.InstanceId, null, free, toCarried ? G.MaxPickup(sel.Id, free, t) : free, toCarried, true);
         }
         var all = s.Items.Where(i => i.Owner == sel.Owner && i.ItemId == sel.Id).ToList();
         if (all.Count == 0) return null;

@@ -12,7 +12,7 @@ namespace Survival.Web.Services;
 /// </summary>
 public sealed class FeedbackBridge
 {
-    public const string Version = "原型 v0.1";
+    public const string Version = "原型 v0.2（交互与地图扩展 v0.3）";
     private readonly GameSession G;
 
     public FeedbackBridge(GameSession session) => G = session;
@@ -57,6 +57,11 @@ public sealed class FeedbackBridge
         ctx["carriedKg"] = Math.Round(e.CarriedGrams(s) / 1000.0, 1);
         ctx["fires"] = s.Locations.Where(kv => e.Location(kv.Key).HasFire)
             .ToDictionary(kv => kv.Key, kv => new { lit = kv.Value.Facility.FireLit, fuel = kv.Value.Facility.FuelMinutes, shelter = kv.Value.Facility.ShelterBuilt, bed = kv.Value.Facility.BedBuilt });
+        ctx["clear"] = s.Locations.Where(kv => kv.Value.Visited)
+            .ToDictionary(kv => kv.Key, kv => e.ClearChargesText(s, kv.Key));
+        ctx["pots"] = s.Items.Where(i => e.IsPot(i))
+            .Select(p => $"{e.ItemName(p.ItemId)}#{p.InstanceId}@{p.Owner}：{e.PotLabel(s, p)}{(s.Locations.Values.Any(l => l.Facility.AttachedPotId == p.InstanceId) ? "（架在火堆上）" : "")}")
+            .ToList();
         ctx["carried"] = Summarize(s, e, ItemInstance.Carried);
         ctx["ground"] = Summarize(s, e, s.CurrentLocation);
         ctx["flags"] = s.Progress.Flags.OrderBy(x => x).ToList();

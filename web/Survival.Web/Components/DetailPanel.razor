@@ -7,6 +7,8 @@
     var active = s.Sub ?? s.Main;
     var craftPaused = s.Main != null && s.Main.Status == ActionStatus.Paused && (s.Main.Type == ActionType.Craft || s.Main.Type == ActionType.Build);
     var craftDetail = G.Panel == "craft" && s.Sub == null && (s.Main == null || craftPaused);
+    var dragPreview = sel.Kind == SelectionKind.Action && G.PendingAction != null && s.Sub == null
+                      && (s.Main == null || s.Main.Status == ActionStatus.Paused) && !G.Running;
 }
 
 <aside class="panel detail" aria-label="行动详情">
@@ -14,6 +16,11 @@
     @if (craftDetail)
     {
         <CraftOverlay Part="detail" />
+    }
+    else if (dragPreview)
+    {
+        @* 拖拽打开的耗时交互：与按钮同一份内核预估，按“开始”才计时（01 案 3.2） *@
+        <PreviewView Request="G.PendingAction!" Eyebrow="拖拽 · 行动预览" Title="@G.PendingActionTitle" />
     }
     else if (active != null)
     {
@@ -33,7 +40,11 @@
         {
             case SelectionKind.Location:
                 <PreviewView Request="ActionRequest.Explore()" Eyebrow="@($"已选中 · {e.LocName(s.CurrentLocation)}")" Title="探索周边"
-                             Subtitle="探索只负责发现路线、资源点和容器，不直接产出物品。" />
+                             Subtitle="探索推进地块调查，并有机会取得零散物资；探索度达到100%后不再探索。" />
+                break;
+            case SelectionKind.Clear:
+                <PreviewView Request="ActionRequest.Clear()" Eyebrow="@($"已选中 · {e.LocName(s.CurrentLocation)}")" Title="清理"
+                             Subtitle="翻找、整理地块表层的零散基础物资。每地有独立次数，随游戏世界时间恢复；不增加探索度。" />
                 break;
             case SelectionKind.Entrance:
                 <PreviewView Request="ActionRequest.Travel(sel.Id)" Eyebrow="@($"已选中 · 前往{e.LocName(sel.Id)}")" Title="@($"前往{e.LocName(sel.Id)}")"
