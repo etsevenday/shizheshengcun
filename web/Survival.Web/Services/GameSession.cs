@@ -71,6 +71,9 @@ public sealed class GameSession
     public List<int> CraftPreferred { get; } = new();
     public int? CraftPot { get; set; }
 
+    /// <summary>地块次级菜单（探索、清理）是否打开；它盖住地点行（策划答复 2026-10-24 第 4 条）。</summary>
+    public bool LocationMenuOpen { get; set; }
+
     /// <summary>拖拽打开的行动预览（SelectionKind.Action）。</summary>
     public ActionRequest? PendingAction { get; private set; }
     public string PendingActionTitle { get; private set; } = "";
@@ -251,6 +254,7 @@ public sealed class GameSession
         Notice = null;
         Selected = new Selection();
         Panel = null;
+        LocationMenuOpen = false;
         _skip = false;
         Running = false;
     }
@@ -522,6 +526,7 @@ public sealed class GameSession
             if (State != null && S.CurrentLocation != startLocation && Selected.Kind != SelectionKind.None
                 && !(Selected.Owner == ItemInstance.Carried))
                 Selected = new Selection();
+            if (State != null && S.CurrentLocation != startLocation) LocationMenuOpen = false;
             Save();
             Notify();
         }

@@ -126,6 +126,7 @@
             case "Escape":
                 // Esc 只关闭当前浏览层，不取消主行动
                 if (G.Panel != null) G.OpenPanel(null);
+                else if (G.LocationMenuOpen) { G.LocationMenuOpen = false; G.Notify(); }
                 else if (G.Selected.Kind != SelectionKind.None) G.ClearSelection();
                 else Toggle("menu");
                 break;

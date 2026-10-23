@@ -153,7 +153,7 @@ public class GatherCraftTests : TestBase
 
         Assert.That(E.DoInstant(s, InstantRequest.AddFuel()).Ok, Is.True);
         Assert.That(f.FuelMinutes, Is.EqualTo(60));
-        Start(s, ActionRequest.Ignite());
+        Start(s, ActionRequest.Ignite(First(s, "lighter").InstanceId));
         Assert.That(s.Sub, Is.Not.Null);
         Run(s);
         Assert.That(s.Sub, Is.Null);
@@ -236,7 +236,7 @@ public class GatherCraftTests : TestBase
     public void Fire_IgniteConsumesWood_AddFuelCapRejects()
     {
         var s = New();
-        Start(s, ActionRequest.Ignite());
+        Start(s, ActionRequest.Ignite(First(s, "lighter").InstanceId));
         Run(s);
         var f = s.Locations["camp"].Facility;
         Assert.That(f.FireLit, Is.True);

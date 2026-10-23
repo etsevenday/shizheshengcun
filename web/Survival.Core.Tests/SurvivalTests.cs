@@ -158,6 +158,7 @@ public class SurvivalTests : TestBase
             f.FireLit = true;
             f.FuelMinutes = 60;
             E.DebugGive(s, "dirty_water", 2, "camp");
+            E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, First(s, "pot").InstanceId, 2));
             Start(s, ActionRequest.Craft("boil"));
             s.Main!.WorkDone = 10;
             f.FuelMinutes = fuel;
@@ -176,7 +177,7 @@ public class SurvivalTests : TestBase
                 Assert.That(s.Main!.PauseReason, Is.EqualTo(PauseReason.FireOut));
                 Assert.That(s.GameMinute, Is.EqualTo(480), "不推进该段");
                 Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(2));
-                Assert.That(Count(s, "dirty_water", pot), Is.EqualTo(2), "脏水已补入锅并预留");
+                Assert.That(Count(s, "dirty_water", pot), Is.EqualTo(2), "锅内脏水被预留");
             }
         }
     }

@@ -17,6 +17,13 @@ public class ContainerTests : TestBase
         f.FuelMinutes = fuel;
     }
 
+    /// <summary>v0.3 取消自动补水后，烧水前要先把脏水装进锅。</summary>
+    private void FillDirty(GameState s, ItemInstance pot, int n)
+    {
+        E.DebugGive(s, "dirty_water", n, "camp");
+        Ok(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, n));
+    }
+
     private void Ok(GameState s, InstantRequest r)
     {
         var res = E.DoInstant(s, r);
@@ -126,10 +133,10 @@ public class ContainerTests : TestBase
     {
         var s = New();
         LightFire(s);
-        E.DebugGive(s, "dirty_water", 2, "camp");
         var pot = Pot(s);
+        FillDirty(s, pot, 2);
         Start(s, ActionRequest.Craft("boil"));
-        Assert.That(Count(s, "dirty_water", PotOwner(pot)), Is.EqualTo(2), "按钮入口原子补水入锅");
+        Assert.That(Count(s, "dirty_water", PotOwner(pot)), Is.EqualTo(2), "锅内2份脏水被预留");
         Assert.That(E.PotLabel(s, pot), Does.Contain("100%"));
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
         Assert.That(Count(s, "clean_water", PotOwner(pot)), Is.EqualTo(2));
@@ -140,7 +147,7 @@ public class ContainerTests : TestBase
     }
 
     [Test]
-    public void Boil_Rules_CleanInPot_HalfPot_OverweightAutoFill()
+    public void Boil_Rules_CleanInPot_HalfPot_NoAutoFill()
     {
         var s = New();
         LightFire(s);
@@ -153,24 +160,19 @@ public class ContainerTests : TestBase
         E.DebugGive(t, "dirty_water", 1, "camp");
         var tp = Pot(t);
         Ok(t, InstantRequest.FillPot(First(t, "dirty_water", "camp").InstanceId, tp.InstanceId));
-        Assert.That(E.CanStart(t, ActionRequest.Craft("boil")), Is.EqualTo("再加入1份脏水，凑满1升"));
+        Assert.That(E.CanStart(t, ActionRequest.Craft("boil")), Does.StartWith("再加入1份脏水，凑满1升"));
+        // 策划答复 2026-10-24 第 5 条：取消自动补水，地面有脏水也不替玩家装锅
         E.DebugGive(t, "dirty_water", 3, "camp");
-        Start(t, ActionRequest.Craft("boil"));
-        Assert.That(Count(t, "dirty_water", "camp"), Is.EqualTo(2), "半锅只补1份");
+        Assert.That(E.Start(t, ActionRequest.Craft("boil")).Ok, Is.False);
+        Assert.That(Count(t, "dirty_water", "camp"), Is.EqualTo(3), "散脏水原样不动");
+        Assert.That(E.PotUnits(t, tp.InstanceId), Is.EqualTo(1));
+        Ok(t, InstantRequest.FillPot(First(t, "dirty_water", "camp").InstanceId, tp.InstanceId));
+        Assert.That(E.CanStart(t, ActionRequest.Craft("boil")), Is.Null, "装满后可以烧");
 
-        // 开发计划 v0.2 B5：地面水补进随身锅超过30公斤时整次拒绝
         var u = New();
         LightFire(u);
         E.DebugGive(u, "dirty_water", 2, "camp");
-        E.DebugGive(u, "stone", 57);
-        E.DebugGive(u, "fiber", 3);
-        Assert.That(E.CarriedGrams(u), Is.EqualTo(29900));
-        var why = E.CanStart(u, ActionRequest.Craft("boil"));
-        Assert.That(why, Does.Contain("可先把锅放到地面"));
-        Assert.That(E.Start(u, ActionRequest.Craft("boil")).Ok, Is.False);
-        Assert.That(Count(u, "dirty_water", "camp"), Is.EqualTo(2));
-        Ok(u, InstantRequest.Drop(Pot(u).InstanceId, 1));
-        Assert.That(E.CanStart(u, ActionRequest.Craft("boil")), Is.Null, "锅放到地面后可以烧");
+        Assert.That(E.CanStart(u, ActionRequest.Craft("boil")), Does.StartWith("再加入2份脏水"), "空锅也不自动补水");
     }
 
     [Test]
@@ -178,8 +180,8 @@ public class ContainerTests : TestBase
     {
         var s = New();
         LightFire(s, 5);
-        E.DebugGive(s, "dirty_water", 2, "camp");
         var pot = Pot(s);
+        FillDirty(s, pot, 2);
         Start(s, ActionRequest.Craft("boil"));
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Paused));
         Assert.That(s.Main!.PauseReason, Is.EqualTo(PauseReason.FireOut));
@@ -192,7 +194,7 @@ public class ContainerTests : TestBase
         Assert.That(E.CanStart(s, ActionRequest.UseInstance(child.InstanceId)), Is.EqualTo("该物品已被预留"));
 
         Ok(s, InstantRequest.AddFuel());
-        Start(s, ActionRequest.Ignite());
+        Start(s, ActionRequest.Ignite(First(s, "lighter").InstanceId));
         Run(s);
         Assert.That(s.Main!.Status, Is.EqualTo(ActionStatus.Paused), "维护后仍等明确继续");
         E.Resume(s);
@@ -205,8 +207,8 @@ public class ContainerTests : TestBase
     {
         var s = New();
         LightFire(s);
-        E.DebugGive(s, "dirty_water", 2, "camp");
         var pot = Pot(s);
+        FillDirty(s, pot, 2);
         Start(s, ActionRequest.Craft("boil"));
         Steps(s, 1);
         E.Cancel(s);
@@ -225,8 +227,8 @@ public class ContainerTests : TestBase
     {
         var s = New();
         LightFire(s);
-        E.DebugGive(s, "dirty_water", 2, "camp");
         var pot = Pot(s);
+        FillDirty(s, pot, 2);
         Start(s, ActionRequest.Craft("boil"));
         s.Stats.Health = 0.01;
         s.Stats.Hydration = 0;
@@ -245,7 +247,7 @@ public class ContainerTests : TestBase
         E.DebugGive(s, "raw_root", 2, "camp");
         var pot = Pot(s);
         Ok(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId));
-        Assert.That(E.CanStart(s, ActionRequest.Craft("cook")), Is.EqualTo("锅内有水，先倒出或饮用"));
+        Assert.That(E.CanStart(s, ActionRequest.Craft("cook")), Is.EqualTo("锅内有净水1份，先倒出或饮用"), "说明锅里有什么，不自动倒出");
         Ok(s, InstantRequest.Decant(E.PotContents(s, pot.InstanceId).Single().InstanceId, "camp"));
         Ok(s, InstantRequest.Drop(pot.InstanceId, 1));
         Start(s, ActionRequest.Craft("cook"));
@@ -256,7 +258,7 @@ public class ContainerTests : TestBase
     }
 
     [Test]
-    public void B1_IgniteWithGroundLighter()
+    public void Ignite_RequiresChosenLighter_GroundAllowed()
     {
         var s = New();
         var lighter = First(s, "lighter");
@@ -268,7 +270,11 @@ public class ContainerTests : TestBase
         Assert.That(s.Locations["camp"].Facility.FireLit, Is.True);
         var t = New();
         Ok(t, InstantRequest.Drop(First(t, "lighter").InstanceId, 1));
-        Assert.That(E.CanStart(t, ActionRequest.Ignite()), Is.Null, "按钮点火同样接受地面打火器");
+        // 策划答复 2026-10-24 第 1 条：按钮点火也必须选定打火器，不自动挑
+        Assert.That(E.CanStart(t, ActionRequest.Ignite()), Is.EqualTo("请选择要使用的打火器"));
+        Assert.That(E.CanStart(t, ActionRequest.Ignite(First(t, "lighter").InstanceId)), Is.Null, "选定的地面打火器可用");
+        foreach (var l in t.Items.Where(i => i.ItemId == "lighter").ToList()) t.Items.Remove(l);
+        Assert.That(E.CanStart(t, ActionRequest.Ignite()), Is.EqualTo("缺少打火器（需随身或在当前地面）"));
     }
 
     [Test]
@@ -277,8 +283,8 @@ public class ContainerTests : TestBase
         var s = New();
         LightFire(s);
         E.DebugGive(s, "pot", 1, "camp");
-        E.DebugGive(s, "dirty_water", 2, "camp");
         var carried = s.Items.First(i => i.ItemId == "pot" && i.IsCarried);
+        FillDirty(s, carried, 2);
         var ground = s.Items.First(i => i.ItemId == "pot" && i.Owner == "camp");
         Assert.That(E.SelectPot(s, null, out _), Is.SameAs(carried), "无锅位时随身锅优先");
         Ok(s, InstantRequest.AttachPot(ground.InstanceId));

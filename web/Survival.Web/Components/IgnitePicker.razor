@@ -1,0 +1,47 @@
+@inherits GameComponent
+
+@* 按钮点火也必须先选定一把打火器（策划答复 2026-10-24 第 1 条）：只有一把时同样要点选，不自动挑。
+   拖拽入口是把打火器卡拖到火堆，等于直接选定那一把。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var lighters = e.AccessibleTools(s, "lighter");
+    if (chosen.HasValue && lighters.All(l => l.InstanceId != chosen.Value)) chosen = null;
+    var p = chosen.HasValue ? G.Preview(ActionRequest.Ignite(chosen)) : null;
+}
+<div class="ignite-picker">
+    @if (lighters.Count == 0)
+    {
+        <button class="secondary" disabled title="随身和当前地面都没有可用的打火器">@(Prefix)点燃火堆 · 缺少打火器</button>
+    }
+    else
+    {
+        <div class="ignite-choices" role="radiogroup" aria-label="选择打火器">
+            <span class="tiny muted">用哪一把：</span>
+            @foreach (var l in lighters)
+            {
+                var id = l.InstanceId;
+                <button type="button" role="radio" aria-checked="@(chosen == id)" class="batch-chip @(chosen == id ? "on" : "")" disabled="@Busy"
+                        @onclick="() => chosen = chosen == id ? null : id">@e.ItemName(l.ItemId)#@id · @(l.IsCarried ? "随身" : "地面")</button>
+            }
+        </div>
+        <button class="secondary" disabled="@(Busy || p == null || !p.Ok)" title="@(p == null ? "先选一把打火器" : p.Reason)"
+                @onclick="Go">@(Prefix)@(p == null ? "先选打火器再点火" : $"点燃火堆·{e.Config.Fire.IgniteMinutes}分钟")</button>
+        @if (p != null && !p.Ok) { <div class="tiny muted">点火：@p.Reason</div> }
+    }
+</div>
+
+@code {
+    [Parameter] public string Prefix { get; set; } = "";
+    [Parameter] public bool Busy { get; set; }
+
+    private int? chosen;
+
+    private async Task Go()
+    {
+        if (!chosen.HasValue) return;
+        var r = ActionRequest.Ignite(chosen);
+        chosen = null;
+        await G.StartAction(r);
+    }
+}

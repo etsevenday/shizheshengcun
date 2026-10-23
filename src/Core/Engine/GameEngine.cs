@@ -173,9 +173,8 @@ namespace Survival.Core.Engine
             public ItemInstance? UseItem;
             public bool IgniteConsumesWood;
             public ItemInstance? Lighter;
-            /// <summary>烧水、烹饪选中的锅；烧水开始时要从散水补入锅的批次与数量。</summary>
+            /// <summary>烧水、烹饪选中的锅。</summary>
             public ItemInstance? Pot;
-            public List<(ItemInstance inst, int count)> PotFill = new List<(ItemInstance, int)>();
             public List<OutputLine> Outputs = new List<OutputLine>();
             public List<string> Notes = new List<string>();
         }
@@ -437,17 +436,13 @@ namespace Survival.Core.Engine
                     if (plan.TravelPaused) return "移动途中无法点火";
                     if (!hereCfg.HasFire) return "这里没有火堆";
                     if (hereState.Facility.FireLit) return "火堆已在燃烧";
-                    // 打火器可在随身或当前地面（开发计划 v0.2 B1）；拖入的那一把优先
-                    ItemInstance? lighter;
-                    if (r.InstanceId.HasValue)
-                    {
-                        lighter = FindItem(s, r.InstanceId.Value);
-                        if (lighter == null || _items[lighter.ItemId].ToolTag != "lighter") return "这不是打火器";
-                        if (!(lighter.IsCarried || lighter.Owner == here)) return "只能使用随身或当前地面的打火器";
-                        if (lighter.ReservedBy != null || IsLocked(s, lighter)) return "行动占用：打火器正被使用";
-                    }
-                    else lighter = AccessibleTool(s, "lighter");
-                    if (lighter == null) return "缺少打火器（需随身或在当前地面）";
+                    // 点火必须指定一把打火器：拖到火堆即指定，按钮点火也要先选（策划答复 2026-10-24 第 1 条）
+                    if (!r.InstanceId.HasValue)
+                        return AccessibleTool(s, "lighter") == null ? "缺少打火器（需随身或在当前地面）" : "请选择要使用的打火器";
+                    var lighter = FindItem(s, r.InstanceId.Value);
+                    if (lighter == null || _items[lighter.ItemId].ToolTag != "lighter") return "这不是打火器";
+                    if (!(lighter.IsCarried || lighter.Owner == here)) return "只能使用随身或当前地面的打火器";
+                    if (lighter.ReservedBy != null || IsLocked(s, lighter)) return "行动占用：打火器正被使用";
                     plan.Lighter = lighter;
                     var fuel = hereState.Facility.FuelMinutes;
                     if (fuel < Config.Fire.MinFuelToIgnite)
@@ -553,9 +548,7 @@ namespace Survival.Core.Engine
                         a.PotInstanceId = p.Pot.InstanceId;
                         if (rc.Pot != null)
                         {
-                            // 烧水：先把缺的散水原子转入锅，再预留锅内水本身（不复制、不另起虚拟锅水）
-                            var owner = ItemInstance.ContainerOwner(p.Pot.InstanceId);
-                            foreach (var (inst, count) in p.PotFill) MoveItems(s, inst, count, owner);
+                            // 烧水：预留锅内的水本身（不复制、不另起虚拟锅水）
                             foreach (var c in PotContents(s, p.Pot.InstanceId).Where(i => i.ItemId == rc.Pot.InputItem))
                             {
                                 c.ReservedBy = a.ActionId;

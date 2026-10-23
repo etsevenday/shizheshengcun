@@ -63,16 +63,14 @@
         {
             var wood = e.AvailableCount(s, "wood", true);
             var addFuelOk = fac.FuelMinutes + e.Config.Fire.BurnMinutesPerWood <= e.Config.Fire.MaxFuelMinutes && wood > 0;
-            var ignite = G.Preview(ActionRequest.Ignite());
             <div class="lines" style="max-width:520px">
                 <div><span>火堆燃料</span><b>@(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分钟</b></div>
                 <div><span>可用木材（随身与地面）</span><b>@wood</b></div>
             </div>
             <div class="btn-row" style="max-width:720px">
                 <button class="secondary" disabled="@(!addFuelOk || busy)" @onclick="AddFuel">1. 投入1木材（+60分钟，不耗时）</button>
-                <button class="secondary" disabled="@(!ignite.Ok || busy)" @onclick="() => Sub(ActionRequest.Ignite())">2. 点燃火堆·5分钟</button>
             </div>
-            @if (!ignite.Ok && !fac.FireLit) { <div class="tiny muted">点火：@ignite.Reason</div> }
+            <IgnitePicker Prefix="2. " Busy="busy" />
         }
         else
         {

@@ -134,6 +134,14 @@ namespace Survival.Core.Engine
 
         public ItemInstance? CarriedTool(GameState s, string toolTag) => BestTool(s, toolTag);
 
+        /// <summary>同地全部可用的某标签工具（随身在前，再按实例 ID），供界面让玩家选定。</summary>
+        public List<ItemInstance> AccessibleTools(GameState s, string toolTag) =>
+            s.Items.Where(i => (i.IsCarried || i.Owner == s.CurrentLocation) && i.ReservedBy == null && !IsLocked(s, i)
+                               && _items[i.ItemId].ToolTag == toolTag && (i.Durability == null || i.Durability > 0))
+                .OrderBy(i => i.IsCarried ? 0 : 1)
+                .ThenBy(i => i.InstanceId)
+                .ToList();
+
         /// <summary>同地可用的催化工具：随身优先，其次当前地面（锅位视为地面）；未预留、未被锁定、有耐久。</summary>
         public ItemInstance? AccessibleTool(GameState s, string toolTag) =>
             s.Items.Where(i => (i.IsCarried || i.Owner == s.CurrentLocation) && i.ReservedBy == null && !IsLocked(s, i)

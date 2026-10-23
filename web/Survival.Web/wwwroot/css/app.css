@@ -492,3 +492,20 @@ body.dragging .tbar { visibility: hidden !important; }
 .pot-ml { font-size: 11px; color: #5d5a45; margin-top: 2px; }
 .pot-detail .btn-row { flex-wrap: wrap; }
 .pot-detail .btn-row button { flex: 1 1 46%; white-space: nowrap; }
+.ignite-picker { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.ignite-choices { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+
+/* 地块次级菜单：盖住地点行，探索与清理在这里（策划答复 2026-10-24 第 4 条） */
+.loc-menu-open { flex: 0 0 auto; }
+.loc-menu { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; gap: 12px; padding: 14px 18px; background: #10201aee; border: 1px solid var(--accent); border-radius: 6px; }
+.loc-menu-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.loc-menu-head b { font-size: 24px; font-weight: 500; }
+.loc-menu-head small { display: block; color: var(--muted); margin: 2px 0 6px; }
+.loc-menu-head .hero-progress { width: 260px; }
+.loc-menu-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.loc-act { flex: 1 1 260px; max-width: 420px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px 14px; text-align: left; background: #d6b779; color: #222a20; border: 0; border-radius: 6px; }
+.loc-act:hover:not(:disabled), .loc-act:focus-visible { background: #e4c88c; }
+.loc-act:disabled { background: #22332a; color: #aab2a4; border: 1px solid #5c745d; }
+.loc-act strong { font-size: 17px; }
+.loc-act span { font-size: 13px; }
+.loc-act em { font-size: 12px; font-style: normal; color: var(--warn); }

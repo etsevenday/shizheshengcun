@@ -56,10 +56,9 @@
                         {
                             var potForBoil = e.SelectPot(s, G.CraftPot, out _);
                             var inPot = potForBoil == null ? 0 : e.PotContents(s, potForBoil.InstanceId).Where(i => i.ItemId == item).Sum(i => i.Count);
-                            var loose = e.AvailableCount(s, item, true);
-                            <div class="mat @(inPot + loose < kv.Value ? "missing" : "")">
+                            <div class="mat @(inPot < kv.Value ? "missing" : "")">
                                 <span>@e.ItemName(item) ×@kv.Value（锅内）</span>
-                                <span>锅内@(inPot) · 可补入@(loose)</span>
+                                <span>锅内@(inPot)/@(kv.Value)@(inPot < kv.Value ? " · 先把脏水卡拖进锅" : "")</span>
                             </div>
                             continue;
                         }
@@ -112,8 +111,7 @@
                             <button class="secondary" disabled="@maintBlocked" @onclick="AddFuel">@(craftPaused ? "1. " : "")投入1木材·+60分钟</button>
                             @if (!fac.FireLit)
                             {
-                                var ig = G.Preview(ActionRequest.Ignite());
-                                <button class="secondary" disabled="@(!ig.Ok || busy)" title="@ig.Reason" @onclick="Ignite">@(craftPaused ? "2. " : "")点燃火堆·5分钟</button>
+                                <IgnitePicker Prefix="@(craftPaused ? "2. " : "")" Busy="busy" />
                             }
                             else
                             {
@@ -161,7 +159,7 @@ else
         "knife" => "纤维采集耗时从20分钟降到10分钟，耐久20次。",
         "axe" => "木材采集每次产出翻倍，耐久30次。",
         "bandage" => "健康+5，每60分钟最多使用一次。",
-        "boil" => "把锅里的2份脏水原地烧成净水，净水留在原锅。锅可在随身或当前地面；锅内不足时开始前自动补入可用脏水。需燃烧的营地火堆。",
+        "boil" => "把锅里的2份脏水原地烧成净水，净水留在原锅。先把脏水卡拖进锅装满1升（不会自动补水）；锅可在随身或当前地面。需燃烧的营地火堆。",
         "cook" => "把2份生块根煮成2份熟块根，熟食保质24小时，放在当前地面。需一口空锅（随身或当前地面）与燃烧火堆。",
         "shelter" => "营地可遮蔽睡眠（清醒+12、体力+15、精神+1/小时），休息额外恢复精神。",
         "bed" => "营地睡眠体力每小时额外+5。需要先建成遮蔽棚。",
@@ -211,7 +209,6 @@ else
 
     private void AddFuel() => G.Instant(InstantRequest.AddFuel());
     private void Extinguish() => G.Instant(InstantRequest.Extinguish());
-    private async Task Ignite() => await G.StartAction(ActionRequest.Ignite());
 
     private void Close() => G.OpenPanel(null);
 }

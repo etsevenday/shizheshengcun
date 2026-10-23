@@ -80,7 +80,7 @@ public class AlertDeathSaveTests : TestBase
         Run(s, autoResume: false);
         Assert.That(s.Main!.Status, Is.EqualTo(ActionStatus.Paused));
         Assert.That(E.Start(s, ActionRequest.UseItem("clean_water")).Reason, Does.Contain("没有可用"), "地面净水不可用");
-        Assert.That(E.Start(s, ActionRequest.Ignite()).Ok, Is.False);
+        Assert.That(E.Start(s, ActionRequest.Ignite(First(s, "lighter").InstanceId)).Ok, Is.False, "移动途中无法点火");
         var h = s.Stats.Health;
         Start(s, ActionRequest.Rest(60));
         Run(s);

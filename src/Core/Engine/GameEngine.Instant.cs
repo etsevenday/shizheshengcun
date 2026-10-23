@@ -275,7 +275,8 @@ namespace Survival.Core.Engine
 
             if (rc.PotMustBeEmpty)
             {
-                if (units > 0) return "锅内有水，先倒出或饮用";
+                // 不自动倒出，说明锅里有什么，由玩家决定怎么处理（策划答复 2026-10-24 第 3 条）
+                if (units > 0) return $"锅内有{ItemName(liquid!)}{units}份，先倒出或饮用";
                 plan.Notes.Add($"使用{where}的{potName}（空锅）；原料只被预留，不放进锅里存放");
                 return null;
             }
@@ -283,32 +284,10 @@ namespace Survival.Core.Engine
 
             var pp = rc.Pot;
             if (liquid != null && liquid != pp.InputItem) return $"锅内有{ItemName(liquid)}，请先倒出或饮用";
+            // 不自动补水：锅里必须已装满脏水（策划答复 2026-10-24 第 5 条取消了自动补水）
             var need = Math.Max(0, pp.Units - units);
             if (need > 0)
-            {
-                var loose = UsableBatches(s, pp.InputItem, true);
-                var have = loose.Sum(i => i.Count);
-                if (have < need)
-                    return $"再加入{need - have}份{ItemName(pp.InputItem)}，凑满{(pp.Units * cfg.UnitMl / 1000.0):0.#}升";
-                var delta = 0;
-                var left = need;
-                var from = new HashSet<string>();
-                foreach (var b in loose)
-                {
-                    if (left <= 0) break;
-                    var take = Math.Min(left, b.Count);
-                    plan.PotFill.Add((b, take));
-                    left -= take;
-                    from.Add(b.IsCarried ? "随身" : "当前地面");
-                    var g = _items[b.ItemId].WeightGrams * take;
-                    if (pot.IsCarried && !b.IsCarried) delta += g;
-                    else if (!pot.IsCarried && b.IsCarried) delta -= g;
-                }
-                if (delta > 0 && CarriedGrams(s) + delta > Config.Carry.HardGrams)
-                    return $"补水后携带将超过{Config.Carry.HardGrams / 1000}公斤，可先把锅放到地面";
-                var weight = delta == 0 ? "" : $"，随身重量{(delta > 0 ? "+" : "−")}{Math.Abs(delta) / 1000.0:0.#}公斤";
-                plan.Notes.Add($"开始时从{string.Join("与", from)}补入{need}份{ItemName(pp.InputItem)}到锅内{weight}");
-            }
+                return $"再加入{need}份{ItemName(pp.InputItem)}，凑满{(pp.Units * cfg.UnitMl / 1000.0):0.#}升；把{ItemName(pp.InputItem)}卡拖到锅的水量条上装入";
             plan.Notes.Add($"使用{where}的{potName}（{PotLabel(s, pot)}）；完成后{ItemName(pp.OutputItem)}{pp.Units}份留在原锅，不在地面另生成");
             return null;
         }

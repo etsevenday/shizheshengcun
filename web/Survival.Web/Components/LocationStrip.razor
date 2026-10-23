@@ -55,9 +55,10 @@
 
     <div class="hero-head">
         <div class="hero-info">
-            <div class="hero-title @(sel.Kind == SelectionKind.Location ? "selected" : "")" role="button" tabindex="0" title="查看探索预估"
+            <div class="hero-title @(sel.Kind == SelectionKind.Location || G.LocationMenuOpen ? "selected" : "")" role="button" tabindex="0" title="打开地块菜单：探索、清理"
+                 aria-haspopup="menu" aria-expanded="@G.LocationMenuOpen"
                  data-drop="@($"loc:{here}")" data-drop-level="card"
-                 @onclick="SelectLocation" @onkeydown="ev => OnCardKey(ev, SelectLocation)">
+                 @onclick="OpenMenu" @onkeydown="ev => OnCardKey(ev, OpenMenu)">
                 @lc.Name
                 <small>@(lc.IsIndoor ? "室内" : "露天") · 探索度@(ls.Progress)% · @light.Phase</small>
             </div>
@@ -92,22 +93,39 @@
                 }
             </div>
         </div>
-        <div class="hero-actions">
-            <button type="button" class="chip cta" disabled="@(exploreWhy != null)" title="@(exploreWhy ?? "直接开始，详情可看右侧预估")"
-                    @onclick="() => Quick(ActionRequest.Explore(), SelectLocation)">
-                @(ls.Progress >= 100 ? "已充分探索" : $"探索周边 · {e.Config.Actions.ExploreMinutes}分钟")
-                <small>@(ls.Progress >= 100 ? "可清理或搜集已发现资源" : $"完成后{Math.Min(100, ls.Progress + e.Config.Actions.ExploreProgress)}% · 有机会取得零散物资")</small>
-            </button>
-            <div class="clear-cta">
-                <button type="button" class="chip cta" disabled="@(clearWhy != null)" title="@(clearWhy ?? "直接开始，详情可看右侧预估")"
-                        @onclick="() => Quick(ActionRequest.Clear(), SelectClear)">
-                    清理 · @(e.Config.Actions.ClearMinutes)分钟
-                    <small>@(nextRefill == null ? $"{charges}/{cap}·已满" : charges == 0 ? $"清理0/{cap} · 距恢复1次{Clock.Duration(nextRefill.Value)}" : $"次数{charges}/{cap} · 距恢复1次{Clock.Duration(nextRefill.Value)}")</small>
-                </button>
-                <button type="button" class="linkish clear-info" @onclick="SelectClear" title="查看清理详情、可能物资与恢复说明">详情</button>
-            </div>
-        </div>
+        <button type="button" class="chip cta loc-menu-open" @onclick="OpenMenu" title="打开地块菜单：探索、清理">地块行动 ▸</button>
     </div>
+
+    @if (G.LocationMenuOpen)
+    {
+        @* 地块次级菜单（策划答复 2026-10-24 第 4 条）：盖住地点行，探索与清理放在这里，点击即执行；
+           指向哪个按钮，右侧信息栏就显示哪个行动的变化预测。 *@
+        <div class="loc-menu" role="menu" aria-label="@($"{lc.Name} · 地块行动")">
+            <div class="loc-menu-head">
+                <div>
+                    <b>@lc.Name</b>
+                    <small>@(lc.IsIndoor ? "室内" : "露天") · 探索度@(ls.Progress)% · @light.Phase</small>
+                    <div class="hero-progress"><i style="width:@(ls.Progress)%"></i></div>
+                </div>
+                <button type="button" class="secondary" @onclick="CloseMenu" title="关闭地块菜单（Esc）">关闭<kbd>Esc</kbd></button>
+            </div>
+            <div class="loc-menu-actions">
+                <button type="button" role="menuitem" class="loc-act" disabled="@(exploreWhy != null)" title="@(exploreWhy ?? "点击直接开始")"
+                        @onmouseenter="SelectLocation" @onfocus="SelectLocation" @onclick="() => Quick(ActionRequest.Explore(), SelectLocation)">
+                    <strong>@(ls.Progress >= 100 ? "已充分探索" : $"探索周边 · {e.Config.Actions.ExploreMinutes}分钟")</strong>
+                    <span>@(ls.Progress >= 100 ? "该地点不再探索，可清理或搜集已发现资源" : $"完成后{Math.Min(100, ls.Progress + e.Config.Actions.ExploreProgress)}% · 有机会发现新线索并取得零散物资")</span>
+                    @if (exploreWhy != null && ls.Progress < 100) { <em>@exploreWhy</em> }
+                </button>
+                <button type="button" role="menuitem" class="loc-act" disabled="@(clearWhy != null)" title="@(clearWhy ?? "点击直接开始")"
+                        @onmouseenter="SelectClear" @onfocus="SelectClear" @onclick="() => Quick(ActionRequest.Clear(), SelectClear)">
+                    <strong>清理 · @(e.Config.Actions.ClearMinutes)分钟</strong>
+                    <span>@(nextRefill == null ? $"清理次数{charges}/{cap}·已满" : $"清理次数{charges}/{cap} · 距恢复1次{Clock.Duration(nextRefill.Value)}")</span>
+                    @if (clearWhy != null) { <em>@clearWhy</em> }
+                </button>
+            </div>
+            <div class="tiny muted">指向按钮可在右侧查看耗时与身体变化预测；点击直接开始。</div>
+        </div>
+    }
 
     <div class="hero-cards">
         @foreach (var r in resources)
@@ -167,8 +185,32 @@
         return Enumerable.Range(0, 46).Select(_ => (rng.Next(20, 1180), rng.Next(20, 230), 1 + rng.NextDouble() * 1.6)).ToArray();
     }
 
-    private void SelectLocation() => G.Select(new Selection { Kind = SelectionKind.Location, Id = G.S.CurrentLocation });
-    private void SelectClear() => G.Select(new Selection { Kind = SelectionKind.Clear, Id = G.S.CurrentLocation });
+    private void SelectLocation()
+    {
+        if (G.Selected.Kind != SelectionKind.Location) G.Select(new Selection { Kind = SelectionKind.Location, Id = G.S.CurrentLocation });
+    }
+    private void SelectClear()
+    {
+        if (G.Selected.Kind != SelectionKind.Clear) G.Select(new Selection { Kind = SelectionKind.Clear, Id = G.S.CurrentLocation });
+    }
+
+    private void OpenMenu()
+    {
+        G.LocationMenuOpen = true;
+        SelectLocationOnce();
+    }
+
+    private void CloseMenu()
+    {
+        G.LocationMenuOpen = false;
+        G.Notify();
+    }
+
+    private void SelectLocationOnce()
+    {
+        if (G.Selected.Kind != SelectionKind.Location) SelectLocation();
+        else G.Notify();
+    }
 
     private void SelectAttachedPot()
     {

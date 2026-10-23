@@ -77,7 +77,7 @@ public sealed class SurvivalBot
         if (m.PauseReason == PauseReason.FireOut)
         {
             E.DoInstant(S, InstantRequest.AddFuel());
-            if (E.Start(S, ActionRequest.Ignite()).Ok) DriveSub();
+            if (E.Start(S, IgniteRequest()).Ok) DriveSub();
             if (!S.Locations[Here].Facility.FireLit) { E.Cancel(S); Log("缺燃料，取消加工"); return; }
             E.Resume(S);
             return;
@@ -200,6 +200,22 @@ public sealed class SurvivalBot
         .Where(i => { var p = E.PlaceOf(S, i); return p == ItemInstance.Carried || p == Camp; })
         .Sum(i => i.Count);
 
+    /// <summary>点火必须选定一把打火器（策划答复 2026-10-24 第 1 条）：脚本用随身或地面上的第一把。</summary>
+    private ActionRequest IgniteRequest() => ActionRequest.Ignite(E.AccessibleTool(S, "lighter")?.InstanceId);
+
+    /// <summary>不再自动补水：烧水前把可用的脏水装进锅，凑满一锅。</summary>
+    private void FillPotWithDirtyWater()
+    {
+        var pot = S.Items.FirstOrDefault(i => i.ItemId == "pot" && (i.IsCarried || i.Owner == Camp));
+        if (pot == null) return;
+        foreach (var w in E.UsableBatches(S, "dirty_water", true))
+        {
+            var space = E.PotConfig(pot).CapacityUnits - E.PotUnits(S, pot.InstanceId);
+            if (space <= 0) break;
+            E.DoInstant(S, InstantRequest.FillPot(w.InstanceId, pot.InstanceId, Math.Min(space, w.Count)));
+        }
+    }
+
     /// <summary>v0.3：烧好的净水留在锅里。再烧水或烹饪前先把锅里的净水倒到营地地面。</summary>
     private void EmptyPotOfCleanWater()
     {
@@ -220,7 +236,8 @@ public sealed class SurvivalBot
         if (canBoil || canCook)
         {
             EmptyPotOfCleanWater();
-            if (!fac.FireLit && !Do(ActionRequest.Ignite())) return false;
+            if (!fac.FireLit && !Do(IgniteRequest())) return false;
+            if (canBoil) FillPotWithDirtyWater();
             if (canBoil && Do(ActionRequest.Craft("boil"))) return true;
             if (canCook && Do(ActionRequest.Craft("cook"))) return true;
         }
