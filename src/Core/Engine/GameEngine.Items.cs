@@ -143,12 +143,15 @@ namespace Survival.Core.Engine
                 .ThenBy(i => i.InstanceId)
                 .FirstOrDefault();
 
-        /// <summary>按消耗顺序预留指定数量，必要时拆堆，返回预留实例 ID。</summary>
-        private List<int> Reserve(GameState s, string itemId, int count, int actionId)
+        /// <summary>按消耗顺序预留指定数量，必要时拆堆，返回预留实例 ID。手工指定的批次排在最前（拖拽与容器案 5）。</summary>
+        private List<int> Reserve(GameState s, string itemId, int count, int actionId, IList<int>? preferred = null)
         {
             var ids = new List<int>();
             var left = count;
-            foreach (var b in UsableBatches(s, itemId, true))
+            var batches = UsableBatches(s, itemId, true);
+            if (preferred != null && preferred.Count > 0)
+                batches = batches.OrderBy(b => preferred.Contains(b.InstanceId) ? preferred.IndexOf(b.InstanceId) : int.MaxValue).ToList();
+            foreach (var b in batches)
             {
                 if (left <= 0) break;
                 var take = Math.Min(left, b.Count);

@@ -32,7 +32,7 @@ namespace Survival.Core.Engine
             FillStatic(s, r, p, plan);
 
             var c = s.Clone();
-            var res = Start(c, r);
+            var res = Start(c, r.WithRequestId(null));
             if (!res.Ok) { p.Ok = false; p.Reason = res.Reason; return p; }
             var id = res.ActionId!.Value;
             var a = plan.IsSub ? c.Sub : c.Main;
@@ -164,11 +164,12 @@ namespace Survival.Core.Engine
                         p.HazardHealthLoss = res.Hazard.HealthLoss;
                         p.HazardLabel = res.Hazard.Label;
                     }
-                    var tool = res.ToolBonus != null ? BestTool(s, res.ToolBonus.ToolTag) : null;
+                    var tool = plan != null ? plan.Tool : res.ToolBonus != null ? BestTool(s, res.ToolBonus.ToolTag) : null;
                     if (tool != null)
                     {
                         if (res.ToolBonus!.BaseMinutesOverride.HasValue) p.BaseMinutes = res.ToolBonus.BaseMinutesOverride.Value;
                         p.ToolName = ItemName(tool.ItemId);
+                        p.ToolExplicit = plan != null && plan.ExplicitTool;
                         p.ToolDurabilityBefore = tool.Durability;
                         p.ToolMaxDurability = _items[tool.ItemId].MaxDurability;
                         if (tool.Durability.HasValue)

@@ -12,23 +12,42 @@ namespace Survival.Core.Engine
         public int Minutes { get; set; }
         /// <summary>烧水、烹饪指定的锅；为空时按锅位 → 随身 → 地面自动选。</summary>
         public int? PotInstanceId { get; set; }
+        /// <summary>采集时玩家拖入的工具；为空时自动用随身耐久最高的一件。</summary>
+        public int? ToolInstanceId { get; set; }
+        /// <summary>配方材料槽里手工指定的批次，先于自动补齐使用。</summary>
+        public List<int> PreferredInstanceIds { get; set; } = new List<int>();
+        /// <summary>幂等请求号：同一请求重复提交只生效一次。</summary>
+        public string? RequestId { get; set; }
 
         public static ActionRequest Travel(string locationId) => new ActionRequest { Type = ActionType.Travel, TargetId = locationId };
         public static ActionRequest Explore() => new ActionRequest { Type = ActionType.Explore };
         public static ActionRequest Clear() => new ActionRequest { Type = ActionType.Clear };
-        public static ActionRequest Gather(string nodeId) => new ActionRequest { Type = ActionType.Gather, TargetId = nodeId };
-        public static ActionRequest Craft(string recipeId, int? potInstanceId = null) =>
-            new ActionRequest { Type = ActionType.Craft, TargetId = recipeId, PotInstanceId = potInstanceId };
+        public static ActionRequest Gather(string nodeId, int? toolInstanceId = null) =>
+            new ActionRequest { Type = ActionType.Gather, TargetId = nodeId, ToolInstanceId = toolInstanceId };
+        public static ActionRequest Craft(string recipeId, int? potInstanceId = null, IEnumerable<int>? preferredInstanceIds = null) =>
+            new ActionRequest
+            {
+                Type = ActionType.Craft, TargetId = recipeId, PotInstanceId = potInstanceId,
+                PreferredInstanceIds = preferredInstanceIds == null ? new List<int>() : new List<int>(preferredInstanceIds),
+            };
         public static ActionRequest Wait(int minutes) => new ActionRequest { Type = ActionType.Wait, Minutes = minutes };
         public static ActionRequest Rest(int minutes) => new ActionRequest { Type = ActionType.Rest, Minutes = minutes };
         public static ActionRequest Sleep(int minutes) => new ActionRequest { Type = ActionType.Sleep, Minutes = minutes };
         public static ActionRequest UseInstance(int instanceId) => new ActionRequest { Type = ActionType.Use, InstanceId = instanceId };
         public static ActionRequest UseItem(string itemId) => new ActionRequest { Type = ActionType.Use, TargetId = itemId };
+
+        public ActionRequest WithRequestId(string? id)
+        {
+            var c = (ActionRequest)MemberwiseClone();
+            c.PreferredInstanceIds = new List<int>(PreferredInstanceIds);
+            c.RequestId = id;
+            return c;
+        }
         /// <summary>点火；指定打火器实例时用它（随身或当前地面），否则自动选。</summary>
         public static ActionRequest Ignite(int? lighterInstanceId = null) => new ActionRequest { Type = ActionType.Ignite, InstanceId = lighterInstanceId };
     }
 
-    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, AttachPot, DetachPot }
+    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, AttachPot, DetachPot, Reorder }
 
     public sealed class InstantRequest
     {
@@ -38,8 +57,13 @@ namespace Survival.Core.Engine
         public int Count { get; set; } = 1;
         /// <summary>目标锅（装水）。</summary>
         public int? TargetInstanceId { get; set; }
-        /// <summary>目标区域：carried 或当前地点 ID（倒出）。</summary>
+        /// <summary>目标区域：carried 或当前地点 ID（倒出、排序）。</summary>
         public string Zone { get; set; } = "";
+        /// <summary>排序：被移动的卡片键与插入位置（在去掉该卡后的列表里的下标）。</summary>
+        public string CardKey { get; set; } = "";
+        public int Index { get; set; }
+        /// <summary>幂等请求号：同一请求重复提交只生效一次（拖拽与容器案 9）。</summary>
+        public string? RequestId { get; set; }
 
         public static InstantRequest Pickup(int instanceId, int count) => new InstantRequest { Kind = InstantKind.Pickup, InstanceId = instanceId, Count = count };
         public static InstantRequest Drop(int instanceId, int count) => new InstantRequest { Kind = InstantKind.Drop, InstanceId = instanceId, Count = count };
@@ -51,6 +75,14 @@ namespace Survival.Core.Engine
             new InstantRequest { Kind = InstantKind.Decant, InstanceId = potWaterInstanceId, Zone = zone, Count = count };
         public static InstantRequest AttachPot(int potInstanceId) => new InstantRequest { Kind = InstantKind.AttachPot, InstanceId = potInstanceId };
         public static InstantRequest DetachPot() => new InstantRequest { Kind = InstantKind.DetachPot };
+        public static InstantRequest Reorder(string zone, string cardKey, int index) =>
+            new InstantRequest { Kind = InstantKind.Reorder, Zone = zone, CardKey = cardKey, Index = index };
+
+        public InstantRequest WithRequestId(string? id)
+        {
+            RequestId = id;
+            return this;
+        }
     }
 
     public sealed class ActionResult
@@ -109,6 +141,8 @@ namespace Survival.Core.Engine
         public List<OutputLine> Outputs { get; set; } = new List<OutputLine>();
         public string OutputPlace { get; set; } = "";
         public string? ToolName { get; set; }
+        /// <summary>工具是玩家拖入指定的那一把（不自动换）。</summary>
+        public bool ToolExplicit { get; set; }
         public int? ToolDurabilityBefore { get; set; }
         public int? ToolDurabilityAfter { get; set; }
         public int? ToolMaxDurability { get; set; }

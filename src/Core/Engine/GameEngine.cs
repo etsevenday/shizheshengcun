@@ -165,6 +165,7 @@ namespace Survival.Core.Engine
             public double BaseWork;
             public int Planned;
             public ItemInstance? Tool;
+            public bool ExplicitTool;
             public int Units;
             public ResourceConfig? Res;
             public RecipeConfig? Recipe;
@@ -254,7 +255,19 @@ namespace Survival.Core.Engine
                     plan.Res = res;
 
                     ItemInstance? tool = null;
-                    if (res.ToolBonus != null) tool = BestTool(s, res.ToolBonus.ToolTag);
+                    if (r.ToolInstanceId.HasValue)
+                    {
+                        // 显式拖入的工具：必须随身、标签匹配、未损坏；失效时不暗中换另一把（拖拽与容器案 5）
+                        tool = FindItem(s, r.ToolInstanceId.Value);
+                        if (tool == null) return "这件工具已不在，请重新选择";
+                        var tag = _items[tool.ItemId].ToolTag;
+                        if (res.ToolBonus == null || tag != res.ToolBonus.ToolTag) return "这件工具对该资源点没有加成";
+                        if (!tool.IsCarried) return "先拾取工具";
+                        if (tool.ReservedBy != null || IsLocked(s, tool)) return "行动占用：这件工具正被使用";
+                        if (tool.Durability.HasValue && tool.Durability <= 0) return "这件工具已损坏，请重新选择";
+                        plan.ExplicitTool = true;
+                    }
+                    else if (res.ToolBonus != null) tool = BestTool(s, res.ToolBonus.ToolTag);
                     plan.Tool = tool;
 
                     if (res.IsCache)
@@ -345,6 +358,14 @@ namespace Survival.Core.Engine
                         if (rc.Pot != null && kv.Key == rc.Pot.InputItem) continue;
                         var have = AvailableCount(s, kv.Key, true);
                         if (have < kv.Value) return $"缺少{ItemName(kv.Key)}（{have}/{kv.Value}）";
+                    }
+                    // 材料槽里手工指定的批次：仍须可用且属于本配方，否则要求刷新重选
+                    foreach (var id in r.PreferredInstanceIds)
+                    {
+                        var b = FindItem(s, id);
+                        if (b == null || !rc.Inputs.ContainsKey(b.ItemId) || (rc.Pot != null && b.ItemId == rc.Pot.InputItem)
+                            || !UsableBatches(s, b.ItemId, true).Contains(b))
+                            return "指定的材料批次已失效，请重新选择";
                     }
                     foreach (var kv in rc.Outputs) plan.Outputs.Add(Line(kv.Key, kv.Value));
                     plan.BaseWork = rc.BaseMinutes;
@@ -468,8 +489,11 @@ namespace Survival.Core.Engine
         /// <summary>空闲时开始主行动；主行动暂停时开始子行动（补给、休息、点火）。</summary>
         public ActionResult Start(GameState s, ActionRequest r)
         {
+            // 重发同一开始请求不再扣次数、不再抽签（清理案 C15、探索案 E05）
+            if (SeenRequest(s, r.RequestId)) return ActionResult.Success();
             var err = Validate(s, r, out var p);
             if (err != null) return ActionResult.Fail(err);
+            RememberRequest(s, r.RequestId);
 
             var a = new ActionState
             {
@@ -514,6 +538,7 @@ namespace Survival.Core.Engine
                     {
                         a.ToolInstanceId = p.Tool.InstanceId;
                         a.LockedItemIds.Add(p.Tool.InstanceId);
+                        a.ExplicitTool = p.ExplicitTool;
                     }
                     if (res.Hazard != null && res.Hazard.Probability > 0)
                         a.HazardHit = s.Rng.NextDouble() < res.Hazard.Probability;
@@ -541,7 +566,7 @@ namespace Survival.Core.Engine
                     foreach (var kv in rc.Inputs)
                     {
                         if (rc.Pot != null && kv.Key == rc.Pot.InputItem) continue;
-                        a.ReservedItemIds.AddRange(Reserve(s, kv.Key, kv.Value, a.ActionId));
+                        a.ReservedItemIds.AddRange(Reserve(s, kv.Key, kv.Value, a.ActionId, r.PreferredInstanceIds));
                     }
                     foreach (var c in p.Catalysts) a.LockedItemIds.Add(c.InstanceId);
                     break;

@@ -544,6 +544,7 @@ namespace Survival.Core.Engine
                 .Where(i => { var p = PlaceOf(s, i); return p == ItemInstance.Carried || p == camp; })
                 .Sum(i => i.Count);
             if (Count("clean_water") >= 3 && Count("cooked_root") >= 2) f.Add("supplyReady");
+            SyncLayout(s);
         }
     }
 }

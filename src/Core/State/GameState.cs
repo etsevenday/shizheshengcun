@@ -45,6 +45,11 @@ namespace Survival.Core.State
         public ProgressState Progress { get; set; } = new ProgressState();
         public List<LogEntry> Log { get; set; } = new List<LogEntry>();
 
+        /// <summary>各区卡片的手工顺序：区为 carried 或地点 ID，值为卡片键（见 GameEngine.CardKey）。不在表中的卡按配置顺序追加尾部。</summary>
+        public Dictionary<string, List<string>> Layout { get; set; } = new Dictionary<string, List<string>>();
+        /// <summary>最近处理过的请求号（最多 32 条）：重发同一请求直接返回成功且不改状态。</summary>
+        public List<string> RecentRequestIds { get; set; } = new List<string>();
+
         [JsonIgnore] public List<GameEvent> PendingEvents { get; set; } = new List<GameEvent>();
 
         public GameState Clone()
@@ -62,6 +67,8 @@ namespace Survival.Core.State
             c.Sub = Sub?.Clone();
             c.Progress = Progress.Clone();
             c.Log = new List<LogEntry>(Log);
+            c.Layout = Layout.ToDictionary(kv => kv.Key, kv => new List<string>(kv.Value));
+            c.RecentRequestIds = new List<string>(RecentRequestIds);
             c.PendingEvents = new List<GameEvent>();
             return c;
         }

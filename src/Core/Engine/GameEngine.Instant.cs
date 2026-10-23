@@ -9,7 +9,25 @@ namespace Survival.Core.Engine
     /// <summary>即时操作（不耗时）：拾取、放下、投料、熄火，以及金属锅的装水、倒出、架锅与取锅（拖拽与容器案 4、6、8）。</summary>
     public sealed partial class GameEngine
     {
+        /// <summary>执行即时操作。带 requestId 时幂等：重发同一请求直接成功、不再改状态。</summary>
         public ActionResult DoInstant(GameState s, InstantRequest r)
+        {
+            if (SeenRequest(s, r.RequestId)) return ActionResult.Success();
+            var res = DoInstantOnce(s, r);
+            if (res.Ok) RememberRequest(s, r.RequestId);
+            return res;
+        }
+
+        private static bool SeenRequest(GameState s, string? id) => !string.IsNullOrEmpty(id) && s.RecentRequestIds.Contains(id!);
+
+        private static void RememberRequest(GameState s, string? id)
+        {
+            if (string.IsNullOrEmpty(id)) return;
+            s.RecentRequestIds.Add(id!);
+            if (s.RecentRequestIds.Count > 32) s.RecentRequestIds.RemoveRange(0, s.RecentRequestIds.Count - 32);
+        }
+
+        private ActionResult DoInstantOnce(GameState s, InstantRequest r)
         {
             if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
             var here = s.CurrentLocation;
@@ -97,6 +115,8 @@ namespace Survival.Core.Engine
                     return AttachPot(s, r);
                 case InstantKind.DetachPot:
                     return DetachPot(s);
+                case InstantKind.Reorder:
+                    return Reorder(s, r);
             }
             return ActionResult.Fail("未知操作");
         }
