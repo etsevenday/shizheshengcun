@@ -45,4 +45,51 @@ public static class Ui
     };
 
     public static string Pct(double p) => $"{p * 100:0.#}%";
+
+    // ───────────── 场景昼夜光照（B 方案地点行） ─────────────
+
+    public readonly record struct SceneLight(double Brightness, double Saturate, string Tint, double Stars, double Night, string Phase);
+
+    private static readonly (int m, double b, double s, int r, int g, int bl, double a, double stars)[] LightKeys =
+    {
+        (0,    .42, .55,  18,  28,  64, .50, .9),
+        (270,  .42, .55,  18,  28,  64, .50, .9),
+        (330,  .60, .70, 120,  90, 110, .30, .3),
+        (375,  .88, .90, 230, 150,  90, .16, 0),
+        (450, 1.00, 1.0,   0,   0,   0, 0,   0),
+        (990, 1.00, 1.0,   0,   0,   0, 0,   0),
+        (1050, .90, .95, 235, 135,  70, .20, 0),
+        (1110, .66, .80, 120,  70,  90, .30, .2),
+        (1170, .42, .55,  18,  28,  64, .50, .9),
+        (1440, .42, .55,  18,  28,  64, .50, .9),
+    };
+
+    /// <summary>按游戏时刻插值场景亮度、饱和度、色调与星空；室内变化更柔和。</summary>
+    public static SceneLight Light(int minuteOfDay, bool indoor)
+    {
+        var k = LightKeys;
+        var i = 0;
+        while (i < k.Length - 2 && minuteOfDay >= k[i + 1].m) i++;
+        var a = k[i];
+        var b = k[i + 1];
+        var f = b.m == a.m ? 0 : (minuteOfDay - a.m) / (double)(b.m - a.m);
+        double L(double x, double y) => x + (y - x) * f;
+        var bright = L(a.b, b.b);
+        var sat = L(a.s, b.s);
+        // 色调：从无色调过渡时沿用另一端的颜色，只改透明度，避免中途发灰
+        var (r, g, bl) = a.a == 0 ? (b.r, b.g, b.bl) : b.a == 0 ? (a.r, a.g, a.bl) : ((int)L(a.r, b.r), (int)L(a.g, b.g), (int)L(a.bl, b.bl));
+        var alpha = L(a.a, b.a);
+        var stars = L(a.stars, b.stars);
+        if (indoor)
+        {
+            bright = .55 + .45 * bright;
+            sat = .7 + .3 * sat;
+            alpha *= .55;
+            stars = 0;
+        }
+        var night = Math.Clamp((1 - bright) / .58, 0, 1);
+        var phase = minuteOfDay < 300 || minuteOfDay >= 1140 ? "夜间" : minuteOfDay < 420 ? "清晨" : minuteOfDay < 1020 ? "白昼" : "黄昏";
+        var tint = FormattableString.Invariant($"rgba({r},{g},{bl},{alpha:0.###})");
+        return new SceneLight(bright, sat, tint, stars, night, phase);
+    }
 }

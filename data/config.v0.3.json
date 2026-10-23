@@ -88,14 +88,14 @@
     { "id": "lighter", "name": "打火器", "weightGrams": 100, "stackMax": 1, "shelfLifeMinutes": null, "kind": "tool", "toolTag": "lighter", "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "点火工具，首版不设使用次数" }
   ],
   "locations": [
-    { "id": "camp", "name": "临时营地", "exposure": "outdoor", "initialProgress": 100, "initiallyDiscovered": true, "initiallyVisited": true, "hasFire": true, "canBuildShelter": true, "mapX": 130, "mapY": 100 },
-    { "id": "field", "name": "农野荒地", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": true, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 430, "mapY": 100 },
-    { "id": "stream", "name": "溪流浅滩", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 130, "mapY": 300 },
-    { "id": "woods", "name": "树林边缘", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 850, "mapY": 100 },
-    { "id": "village", "name": "废弃村庄", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 430, "mapY": 500 },
-    { "id": "hardware", "name": "五金店", "exposure": "indoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 850, "mapY": 500 },
-    { "id": "clinic", "name": "诊所", "exposure": "indoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 130, "mapY": 500 },
-    { "id": "scrapyard", "name": "废料场", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 1100, "mapY": 300 }
+    { "id": "camp", "name": "临时营地", "exposure": "outdoor", "initialProgress": 100, "initiallyDiscovered": true, "initiallyVisited": true, "hasFire": true, "canBuildShelter": true, "mapX": 130, "mapY": 100 , "scene": "scenes/camp.svg", "sceneFireX": 745, "sceneFireY": 402 },
+    { "id": "field", "name": "农野荒地", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": true, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 430, "mapY": 100 , "scene": "scenes/field.svg" },
+    { "id": "stream", "name": "溪流浅滩", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 130, "mapY": 300 , "scene": "scenes/stream.svg" },
+    { "id": "woods", "name": "树林边缘", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 850, "mapY": 100 , "scene": "scenes/woods.svg" },
+    { "id": "village", "name": "废弃村庄", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 430, "mapY": 500 , "scene": "scenes/village.svg" },
+    { "id": "hardware", "name": "五金店", "exposure": "indoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 850, "mapY": 500 , "scene": "scenes/hardware.svg" },
+    { "id": "clinic", "name": "诊所", "exposure": "indoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 130, "mapY": 500 , "scene": "scenes/clinic.svg" },
+    { "id": "scrapyard", "name": "废料场", "exposure": "outdoor", "initialProgress": 0, "initiallyDiscovered": false, "initiallyVisited": false, "hasFire": false, "canBuildShelter": false, "mapX": 1100, "mapY": 300 , "scene": "scenes/scrapyard.svg" }
   ],
   "edges": [
     { "id": "camp__field", "a": "camp", "b": "field", "baseMinutes": 15, "initiallyUnlocked": true, "unlockAny": [] },

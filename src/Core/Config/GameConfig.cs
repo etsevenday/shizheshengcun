@@ -140,6 +140,12 @@ namespace Survival.Core.Config
         public double MapX { get; set; }
         public double MapY { get; set; }
 
+        /// <summary>地点行背景场景图（相对网页根目录）。换美术图时改这里即可，图片按 1200×650、居中裁切显示。</summary>
+        public string? Scene { get; set; }
+        /// <summary>场景图里火堆中心的坐标（1200×650 坐标系），用于叠加火焰与火光；没有火堆则为空。</summary>
+        public double? SceneFireX { get; set; }
+        public double? SceneFireY { get; set; }
+
         public bool IsIndoor => Exposure == "indoor";
     }
 
