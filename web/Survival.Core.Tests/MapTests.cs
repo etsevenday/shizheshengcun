@@ -37,7 +37,10 @@ public class MapTests : TestBase
         Assert.That(s.Locations["field"].Progress, Is.EqualTo(25));
         Assert.That(s.UnlockedEdges, Does.Contain("field__stream"));
         Assert.That(s.Locations["stream"].Discovered, Is.True);
-        Assert.That(s.Items.Count(i => i.Owner == "field"), Is.EqualTo(0), "探索不直接产物");
+        // v0.3 起探索完成抽取一次本地物资：至多 1 件，且来自荒地掉落表
+        var loot = s.Items.Where(i => i.Owner == "field").ToList();
+        Assert.That(loot.Sum(i => i.Count), Is.LessThanOrEqualTo(1), "每次探索至多1份随机物资");
+        Assert.That(loot.All(i => Cfg.LootTables["loose_field"].Entries.Any(x => x.ItemId == i.ItemId)), Is.True);
 
         Explore(s);
         Assert.That(s.UnlockedEdges, Does.Contain("field__woods"));
@@ -49,7 +52,7 @@ public class MapTests : TestBase
 
         Explore(s);
         Assert.That(s.UnlockedEdges, Does.Contain("field__village"));
-        Assert.That(E.Start(s, ActionRequest.Explore()).Reason, Is.EqualTo("已充分探索，可继续搜集"));
+        Assert.That(E.Start(s, ActionRequest.Explore()).Reason, Is.EqualTo("已充分探索，可清理或搜集已发现资源"));
     }
 
     [Test]

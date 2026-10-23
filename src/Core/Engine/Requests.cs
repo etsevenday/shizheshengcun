@@ -15,6 +15,7 @@ namespace Survival.Core.Engine
 
         public static ActionRequest Travel(string locationId) => new ActionRequest { Type = ActionType.Travel, TargetId = locationId };
         public static ActionRequest Explore() => new ActionRequest { Type = ActionType.Explore };
+        public static ActionRequest Clear() => new ActionRequest { Type = ActionType.Clear };
         public static ActionRequest Gather(string nodeId) => new ActionRequest { Type = ActionType.Gather, TargetId = nodeId };
         public static ActionRequest Craft(string recipeId, int? potInstanceId = null) =>
             new ActionRequest { Type = ActionType.Craft, TargetId = recipeId, PotInstanceId = potInstanceId };
@@ -79,6 +80,14 @@ namespace Survival.Core.Engine
         public int Count { get; set; }
     }
 
+    /// <summary>掉落表的一行：物品（null 为未获得）与概率百分比。</summary>
+    public sealed class LootOddsLine
+    {
+        public string? ItemId { get; set; }
+        public string Name { get; set; } = "";
+        public int Percent { get; set; }
+    }
+
     /// <summary>行动预览：内核的只读估算，供界面在确认前展示。</summary>
     public sealed class ActionPreview
     {
@@ -114,5 +123,12 @@ namespace Survival.Core.Engine
         public List<StatId> AlertsExpected { get; set; } = new List<StatId>();
         public List<string> Notes { get; set; } = new List<string>();
         public List<string> Warnings { get; set; } = new List<string>();
+
+        /// <summary>清理与探索：本地掉落表（含未获得物资），只列可能结果，不泄露本次抽签。</summary>
+        public List<LootOddsLine> LootOdds { get; set; } = new List<LootOddsLine>();
+        /// <summary>清理：开始前的次数、上限与距下一次恢复的世界分钟（已满为 null）。</summary>
+        public int? ClearCharges { get; set; }
+        public int? ClearCap { get; set; }
+        public int? NextRefillMinutes { get; set; }
     }
 }

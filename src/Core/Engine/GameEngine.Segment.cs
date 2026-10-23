@@ -25,6 +25,7 @@ namespace Survival.Core.Engine
             ActionType.Travel => "travel",
             ActionType.Explore => "explore",
             ActionType.Gather => "gather",
+            ActionType.Clear => "clear",
             ActionType.Craft => "craft",
             ActionType.Build => "build",
             ActionType.Ignite => "ignite",
@@ -160,6 +161,7 @@ namespace Survival.Core.Engine
             s.GameMinute += Tick;
             s.SegmentCount++;
             BurnFires(s);
+            UpdateAllClearCharges(s);
             if (s.GameMinute % Clock.MinutesPerDay == 0) NewDay(s);
 
             // 3. 判死
@@ -270,12 +272,9 @@ namespace Survival.Core.Engine
                     return true;
                 }
                 case ActionType.Explore:
-                {
-                    ClearAction(s, a);
-                    var (text, ids) = ApplyExplore(s, a.TargetId);
-                    Emit(s, GameEventKind.ActionCompleted, text, null, ids);
-                    return true;
-                }
+                    return CompleteExplore(s, a);
+                case ActionType.Clear:
+                    return CompleteClear(s, a);
                 case ActionType.Gather:
                     return CompleteGather(s, a);
                 case ActionType.Craft:

@@ -93,13 +93,13 @@ namespace Survival.Core.Engine
             ActionType.Rest => "休息",
             ActionType.Sleep => "睡眠",
             ActionType.Use => "使用",
+            ActionType.Clear => "清理",
             _ => "点燃火堆",
         };
 
         private void FillStatic(GameState s, ActionRequest r, ActionPreview p, Plan? plan)
         {
-            p.IsWork = r.Type == ActionType.Travel || r.Type == ActionType.Explore || r.Type == ActionType.Gather
-                       || r.Type == ActionType.Craft || r.Type == ActionType.Build;
+            p.IsWork = ActionState.IsWork(r.Type);
             if (p.IsWork)
             {
                 var reasons = new List<string>();
@@ -126,9 +126,32 @@ namespace Survival.Core.Engine
                         var next = System.Math.Min(100, ls.Progress + Config.Actions.ExploreProgress);
                         p.Notes.Add($"完成后探索度{ls.Progress}%→{next}%");
                         p.Notes.Add(NextMilestoneHasContent(s, s.CurrentLocation) ? "本次可能发现新线索" : "本次没有新线索，仍会推进探索度");
-                        p.Notes.Add("探索只负责发现，不直接产出物品");
+                        p.Notes.Add("探索推进地块调查，并有机会取得零散物资");
+                        p.Notes.Add("完成时按下表抽取1次本地物资，产物留在当前地面，不会自动拾取");
+                        p.Notes.Add("探索不扣清理次数");
+                        p.LootOdds = LootOdds(s.CurrentLocation);
                     }
+                    else p.Notes.Add("该地点不再探索，可清理或搜集已发现资源");
                     p.ConfirmText = "开始探索";
+                    break;
+                }
+                case ActionType.Clear:
+                {
+                    var here = s.CurrentLocation;
+                    var cfg = _locs[here].Clear;
+                    var (charges, _) = ClearChargesAt(s, here);
+                    p.BaseMinutes = Config.Actions.ClearMinutes;
+                    p.ClearCharges = charges;
+                    p.ClearCap = cfg.Cap;
+                    p.NextRefillMinutes = NextClearRefillMinutes(s, here);
+                    p.LootOdds = LootOdds(here);
+                    p.Notes.Add($"开始时扣1次清理机会（当前{charges}/{cfg.Cap}）；取消、中途死亡或未找到物资都不返还");
+                    p.Notes.Add(p.NextRefillMinutes.HasValue
+                        ? $"次数随世界时间串行恢复：每{Clock.Duration(cfg.RefillIntervalMinutes)}恢复1次，距下一次{Clock.Duration(p.NextRefillMinutes.Value)}"
+                        : $"次数已满；用掉后每{Clock.Duration(cfg.RefillIntervalMinutes)}恢复1次");
+                    p.Notes.Add("不增加探索度，不发现新路线或资源点，不消耗资源点库存");
+                    p.Notes.Add("产物留在当前地面，不会自动拾取");
+                    p.ConfirmText = $"开始清理·{Config.Actions.ClearMinutes}分钟";
                     break;
                 }
                 case ActionType.Gather:

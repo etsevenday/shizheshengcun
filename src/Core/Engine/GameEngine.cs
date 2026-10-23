@@ -89,11 +89,15 @@ namespace Survival.Core.Engine
 
             foreach (var l in c.Locations)
             {
+                // 未访问地点也从开局起维护清理次数，只是界面不展示（开发计划 v0.2 A6）
                 s.Locations[l.Id] = new LocationState
                 {
                     Discovered = l.InitiallyDiscovered || l.InitiallyVisited,
                     Visited = l.InitiallyVisited,
                     Progress = l.InitialProgress,
+                    ClearCharges = l.Clear.InitialCharges,
+                    ClearRefillProgress = 0,
+                    ClearUpdatedMinute = s.GameMinute,
                 };
                 if (l.InitiallyVisited) s.CurrentLocation = l.Id;
             }
@@ -221,10 +225,23 @@ namespace Survival.Core.Engine
 
                 case ActionType.Explore:
                 {
-                    if (hereState.Progress >= 100) return "已充分探索，可继续搜集";
+                    if (hereState.Progress >= 100) return "已充分探索，可清理或搜集已发现资源";
                     plan.TargetId = here;
                     plan.BaseWork = Config.Actions.ExploreMinutes;
                     plan.Label = "探索周边";
+                    return null;
+                }
+
+                case ActionType.Clear:
+                {
+                    if (!hereState.Visited) return "只能清理已访问的当前地点";
+                    var cap = hereCfg.Clear.Cap;
+                    var (charges, progress) = ClearChargesAt(s, here);
+                    if (charges < 1)
+                        return $"清理次数0/{cap}，{Clock.Duration(hereCfg.Clear.RefillIntervalMinutes - progress)}后恢复1次";
+                    plan.TargetId = here;
+                    plan.BaseWork = Config.Actions.ClearMinutes;
+                    plan.Label = "清理";
                     return null;
                 }
 
@@ -470,6 +487,19 @@ namespace Survival.Core.Engine
 
             switch (p.Type)
             {
+                case ActionType.Explore:
+                    a.StartProgress = s.Locations[s.CurrentLocation].Progress;
+                    PlanLoot(s, a, s.CurrentLocation);
+                    break;
+                case ActionType.Clear:
+                {
+                    // 先按世界时间更新再扣 1 次；取消、死亡、空结果都不退（地图清理案 3.1、6）
+                    UpdateClearCharges(s, s.CurrentLocation);
+                    s.Locations[s.CurrentLocation].ClearCharges -= 1;
+                    a.ChargeSpent = true;
+                    PlanLoot(s, a, s.CurrentLocation);
+                    break;
+                }
                 case ActionType.Gather:
                 {
                     var res = p.Res!;
@@ -571,7 +601,8 @@ namespace Survival.Core.Engine
             string text = a.Type switch
             {
                 ActionType.Travel => $"已取消移动，留在{LocName(a.SourceLocation)}；已经流逝的时间与身体消耗保留。",
-                ActionType.Explore => "已取消探索，探索度不变；已消耗的时间保留。",
+                ActionType.Explore => "已取消探索，探索度不变，未获得物资；已消耗的时间保留。",
+                ActionType.Clear => "已取消清理，未获得物资；已扣除的1次清理机会不返还，已消耗的时间保留。",
                 ActionType.Gather => "已取消搜集，未获得产物，预留库存已释放。",
                 ActionType.Craft when a.PotInstanceId.HasValue && !a.LegacyGroundOutput && _recipes[a.TargetId].Pot != null
                     => $"已取消{a.Label}，{ItemName(_recipes[a.TargetId].Pot!.InputItem)}仍留在原锅，加工进度清零。",

@@ -213,7 +213,7 @@ public class AlertDeathSaveTests : TestBase
     {
         var s = New();
         var before = SaveSerializer.Serialize(s);
-        Assert.That(E.CanStart(s, ActionRequest.Explore()), Is.EqualTo("已充分探索，可继续搜集"));
+        Assert.That(E.CanStart(s, ActionRequest.Explore()), Is.EqualTo("已充分探索，可清理或搜集已发现资源"));
         Assert.That(E.CanStart(s, ActionRequest.Travel("field")), Is.Null);
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before));
         Start(s, ActionRequest.Travel("field"));

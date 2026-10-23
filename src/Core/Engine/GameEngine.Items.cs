@@ -292,7 +292,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>探索完成：+25 探索度，按 25→50→75→100 顺序处理新跨过的里程碑，每个只触发一次。</summary>
-        private (string text, List<string> ids) ApplyExplore(GameState s, string locationId)
+        private (int old, int now, List<string> found, List<string> ids) ApplyExplore(GameState s, string locationId)
         {
             var ls = s.Locations[locationId];
             var old = ls.Progress;
@@ -320,10 +320,7 @@ namespace Survival.Core.Engine
                 ids.Add(e.Id);
             }
 
-            var text = $"探索度{old}%→{now}%";
-            text += found.Count > 0 ? $"，发现{string.Join("与", found)}。" : "。";
-            if (now >= 100) text += "此地已充分探索。";
-            return (text, ids);
+            return (old, now, found, ids);
         }
 
         /// <summary>检查所有未解锁连接，任一条件满足即解锁并发现两端地点。</summary>

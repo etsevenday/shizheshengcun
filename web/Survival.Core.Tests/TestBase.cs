@@ -58,4 +58,23 @@ public abstract class TestBase
 
     protected ItemInstance First(GameState s, string itemId, string? owner = null) =>
         s.Items.First(i => i.ItemId == itemId && (owner == null || i.Owner == owner));
+
+    /// <summary>空闲时用等待推进世界时间到指定分钟（每段都会结算清理次数等世界状态），多余的等待在边界取消。</summary>
+    protected void AdvanceTo(GameState s, int minute)
+    {
+        while (s.GameMinute < minute)
+        {
+            if (s.Main == null) Start(s, ActionRequest.Wait(30));
+            else if (s.Main.Status == ActionStatus.Paused) E.Resume(s);
+            E.Advance(s);
+        }
+        if (s.Main?.Type == ActionType.Wait) E.Cancel(s);
+    }
+
+    /// <summary>覆盖当前主行动已锁定的随机结果（itemId 为 null 表示空结果），用于验收表里的“强制抽中”。</summary>
+    protected static void ForceLoot(GameState s, string? itemId)
+    {
+        s.Main!.LootItemId = itemId;
+        s.Main.LootCount = itemId == null ? 0 : 1;
+    }
 }

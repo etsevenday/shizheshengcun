@@ -6,7 +6,7 @@ namespace Survival.Core.State
 {
     public enum StatId { Health, Satiety, Hydration, Energy, Wakefulness, Morale }
 
-    public enum ActionType { Travel, Explore, Gather, Craft, Build, Wait, Rest, Sleep, Use, Ignite }
+    public enum ActionType { Travel, Explore, Gather, Craft, Build, Wait, Rest, Sleep, Use, Ignite, Clear }
 
     public enum ActionStatus { Running, Paused }
 
@@ -230,8 +230,11 @@ namespace Survival.Core.State
         /// <summary>清理已在开始时扣除 1 次数（取消、死亡、空结果都不退）。</summary>
         public bool ChargeSpent { get; set; }
 
-        public bool IsWorkType => Type == ActionType.Travel || Type == ActionType.Explore || Type == ActionType.Gather
-                                  || Type == ActionType.Craft || Type == ActionType.Build;
+        public bool IsWorkType => IsWork(Type);
+
+        /// <summary>工作动作吃工作倍率与 0 体力工作伤害；清理也是工作（00 案第 3 节）。</summary>
+        public static bool IsWork(ActionType t) => t == ActionType.Travel || t == ActionType.Explore || t == ActionType.Gather
+                                                   || t == ActionType.Craft || t == ActionType.Build || t == ActionType.Clear;
 
         public ActionState Clone()
         {
