@@ -11,7 +11,7 @@ publish/
 Thumbs.db
 
 # 第三方游戏商店截图（版权属原作者），不随公开仓库分发；本地保留
-doc/基础系统 v0.2/Markdown/assets/01-figure-0[1-4].jpg
+doc/策划案/基础系统 v0.2/Markdown/assets/01-figure-0[1-4].jpg
 
 # 留言板：本机密钥与下载的留言（含玩家截图与存档），不入库
 .feedback.local.json

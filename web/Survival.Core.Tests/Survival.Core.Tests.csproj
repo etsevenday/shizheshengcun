@@ -25,9 +25,9 @@
 
   <ItemGroup>
     <Content Include="../../data/config.v0.4.json" Link="config.v0.4.json" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="../../doc/交互与地图扩展 v0.3/基础系统整合配置 v0.3.json" Link="design.v0.3.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../doc/策划案/交互与地图扩展 v0.3/基础系统整合配置 v0.3.json" Link="design.v0.3.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Fixtures/*.json" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="../../doc/基础系统 v0.2/基础系统初始配置 v0.2.json" Link="config.v0.2.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../doc/策划案/基础系统 v0.2/基础系统初始配置 v0.2.json" Link="config.v0.2.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
