@@ -82,6 +82,11 @@ window.survival = {
         var inp = document.querySelector('.tbar input');
         if (inp) { inp.focus(); inp.select(); return; }
       }
+      // 拾取条已弹出但光标不在条内（例如刚用鼠标点完卡片）时按回车：按条上当前数量直接拾取/放下
+      if (ev.key === 'Enter' && !inBar && t !== 'INPUT' && t !== 'TEXTAREA' && !ev.ctrlKey && !ev.altKey && !ev.metaKey) {
+        var go = document.querySelector('.tbar .tbar-go');
+        if (go && !go.disabled) { ev.preventDefault(); go.click(); return; }
+      }
       if (t === 'INPUT' || t === 'TEXTAREA') {
         // 拾取条输入框只收数字：字母快捷键照常生效，回车与 Esc 由拾取条自己处理
         if (!inBar && ev.key !== 'Escape') return;
