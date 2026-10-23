@@ -1,20 +1,20 @@
 @inherits GameComponent
 
+@* 随身 / 当前地面的卡片区。卡片顺序来自内核 OrderedCards（存档里的手工顺序，新卡追加尾部）。
+   拖拽：卡片 data-drag 为来源；区域 data-drop="zone:…" 是插入线落点，卡面 data-drop="card:…" 是组合落点，
+   锅卡的水量条 data-drop="potfill:…" 是装水热区（交互与地图扩展 v0.3 · 01 案）。 *@
 @{
     var s = G.S;
     var e = G.E;
     var carried = Owner == ItemInstance.Carried;
     var items = s.Items.Where(i => i.Owner == Owner).ToList();
-    var stackGroups = items.Where(i => e.Item(i.ItemId).IsStackable)
-        .GroupBy(i => i.ItemId)
-        .OrderBy(g => e.Config.Items.FindIndex(c => c.Id == g.Key))
-        .ToList();
-    var tools = items.Where(i => !e.Item(i.ItemId).IsStackable)
-        .OrderBy(i => e.Config.Items.FindIndex(c => c.Id == i.ItemId)).ThenBy(i => i.InstanceId).ToList();
+    var order = e.OrderedCards(s, Owner);
     var kinds = items.Select(i => i.ItemId).Distinct().Count();
     var sel = G.Selected;
-    var grams = items.Sum(i => e.Item(i.ItemId).WeightGrams * i.Count);
+    var grams = items.Sum(i => e.ItemGrams(s, i));
     var busy = e.IsBusy(s) || G.Running;
+    var attached = carried ? null : (e.Location(s.CurrentLocation).HasFire ? e.AttachedPot(s, s.CurrentLocation) : null);
+    var from = carried ? "随身" : $"{e.LocName(Owner)}地面";
 }
 
 <div class="panel section @(carried ? "carried" : "ground")">
@@ -22,40 +22,58 @@
         <h2>@Title</h2>
         <span>
             @if (carried) { @($"{Ui.Kg(grams)}公斤 · {(grams > e.Config.Carry.SoftGrams ? "超重" : "轻装")} · ") }
-            显示@(kinds)种 · 选中卡片即可@(carried ? "放下" : "拾取")，可输入数量 · 不耗时
+            显示@(kinds)种 · 拖动卡片可整理、转移或投放，选中卡片可输入数量 · 不耗时
         </span>
     </div>
-    <div class="row-scroll">
-        @foreach (var g in stackGroups)
+    <div class="row-scroll" data-drop="@($"zone:{Owner}")" data-drop-level="zone">
+        @foreach (var key in order)
         {
-            var list = g.OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
-            var total = list.Sum(i => i.Count);
-            var head = list.FirstOrDefault(i => i.ReservedBy == null && !e.IsSpoiled(s, i)) ?? list[0];
-            var allSpoiled = list.All(i => e.IsSpoiled(s, i));
-            var anyReserved = list.Any(i => i.ReservedBy != null);
-            var batches = list.Select(i => i.ExpiresAt).Distinct().Count();
-            var id = g.Key;
-            var movable = list.Any(i => i.ReservedBy == null);
-            <div @key="@("g:" + id)" data-card="@($"{Owner}|{id}")" class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner ? "selected" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "")"
-                 role="button" tabindex="0" @onclick="() => SelectGroup(id)" @onkeydown="ev => OnCardKey(ev, () => SelectGroup(id))" title="@e.Item(id).Desc">
-                <div class="ctitle"><span>@e.ItemName(id)</span><span class="qty">×@total</span></div>
-                <div class="art">@Icons.Markup(id)</div>
-                <div class="cinfo">@(allSpoiled ? "已腐败" : Ui.ItemLine(e, s, head))@(batches > 1 ? $" · {batches}批" : "")</div>
-                <TransferArrow Owner="@Owner" ItemId="@id" Enabled="@(movable && !busy)" />
-            </div>
-        }
-        @foreach (var t in tools)
-        {
-            var broken = t.Durability.HasValue && t.Durability <= 0;
-            var inst = t.InstanceId;
-            var toolId = t.ItemId;
-            <div @key="@("t:" + inst)" data-card="@($"{Owner}|{toolId}|{inst}")" class="card item @(broken ? "broken" : "") @(t.ReservedBy != null ? "reserved" : "") @(sel.Kind == SelectionKind.Tool && sel.InstanceId == inst ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
-                 role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
-                <div class="ctitle"><span>@e.ItemName(t.ItemId)</span><span class="qty">×1</span></div>
-                <div class="art">@Icons.Markup(t.ItemId)</div>
-                <div class="cinfo">@Ui.ItemLine(e, s, t)</div>
-                <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !busy)" />
-            </div>
+            var parts = key.Split('|');
+            var id = parts[1];
+            if (parts.Length == 2)
+            {
+                var list = items.Where(i => i.ItemId == id).OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
+                if (list.Count == 0) continue;
+                var total = list.Sum(i => i.Count);
+                var head = list.FirstOrDefault(i => i.ReservedBy == null && !e.IsSpoiled(s, i)) ?? list[0];
+                var allSpoiled = list.All(i => e.IsSpoiled(s, i));
+                var anyReserved = list.Any(i => i.ReservedBy != null);
+                var batches = list.Select(i => i.ExpiresAt).Distinct().Count();
+                var movable = list.Any(i => i.ReservedBy == null);
+                <div @key="@("g:" + id)" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drop="@($"card:{key}")" data-drop-level="card"
+                     class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner ? "selected" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "")"
+                     role="button" tabindex="0" @onclick="() => SelectGroup(id)" @onkeydown="ev => OnCardKey(ev, () => SelectGroup(id))" title="@e.Item(id).Desc">
+                    <div class="ctitle"><span>@e.ItemName(id)</span><span class="qty">×@total</span></div>
+                    <div class="art">@Icons.Markup(id)</div>
+                    <div class="cinfo">@(allSpoiled ? "已腐败" : Ui.ItemLine(e, s, head))@(batches > 1 ? $" · {batches}批" : "")</div>
+                    <TransferArrow Owner="@Owner" ItemId="@id" Enabled="@(movable && !busy)" />
+                </div>
+            }
+            else
+            {
+                var t = items.FirstOrDefault(i => i.InstanceId.ToString() == parts[2]);
+                if (t == null) continue;
+                var broken = t.Durability.HasValue && t.Durability <= 0;
+                var inst = t.InstanceId;
+                var toolId = t.ItemId;
+                var isPot = e.IsPot(t);
+                var locked = e.IsLocked(s, t);
+                <div @key="@("t:" + inst)" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drop="@($"card:{key}")" data-drop-level="card"
+                     class="card item @(isPot ? "pot-card" : "") @(broken ? "broken" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(sel.Kind == SelectionKind.Tool && sel.InstanceId == inst ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
+                     role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
+                    <div class="ctitle"><span>@e.ItemName(t.ItemId)</span><span class="qty">×1</span></div>
+                    <div class="art">@Icons.Markup(t.ItemId)</div>
+                    @if (isPot)
+                    {
+                        <PotGauge Pot="t" Attached="@(attached?.InstanceId == inst)" />
+                    }
+                    else
+                    {
+                        <div class="cinfo">@Ui.ItemLine(e, s, t)</div>
+                    }
+                    <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !locked && !busy)" />
+                </div>
+            }
         }
         @if (items.Count == 0)
         {
@@ -63,12 +81,12 @@
                 @if (carried)
                 {
                     <strong>没有携带物品</strong>
-                    <span>选中地面物品卡，在卡片下方即可拾取</span>
+                    <span>把地面物品卡拖到这里，或选中卡片后在下方拾取</span>
                 }
                 else
                 {
                     <strong>这里暂时没有散落物品</strong>
-                    <span>完成搜集后，产物会留在这里</span>
+                    <span>搜集、清理与探索的产物会留在这里</span>
                 }
             </div>
         }

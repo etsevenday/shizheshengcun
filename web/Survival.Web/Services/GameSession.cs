@@ -6,7 +6,8 @@ using Survival.Core.State;
 
 namespace Survival.Web.Services;
 
-public enum SelectionKind { None, Location, Entrance, Resource, ItemGroup, Tool }
+/// <summary>Action：拖拽打开的行动预览（点火、指定工具采集、使用）；Clear：清理预览。</summary>
+public enum SelectionKind { None, Location, Entrance, Resource, ItemGroup, Tool, Action, Clear }
 
 public sealed class Selection
 {
@@ -64,6 +65,19 @@ public sealed class GameSession
     public string? Panel { get; set; }
     /// <summary>从设施卡打开加工面板时要预选的配方；面板读取一次后清空。</summary>
     public string? CraftRecipe { get; set; }
+    /// <summary>从材料拖拽打开加工面板时的候选配方（配置顺序）；为空表示列出全部配方。</summary>
+    public List<string>? CraftCandidates { get; set; }
+    /// <summary>材料槽里手工指定的批次与指定的锅，随确认一起传给 Craft 请求。</summary>
+    public List<int> CraftPreferred { get; } = new();
+    public int? CraftPot { get; set; }
+
+    /// <summary>拖拽打开的行动预览（SelectionKind.Action）。</summary>
+    public ActionRequest? PendingAction { get; private set; }
+    public string PendingActionTitle { get; private set; } = "";
+
+    /// <summary>按住 Shift 松手时等待玩家选数量的落点；取消数量框等于取消本次拖拽。</summary>
+    public DropIntent? PendingDrop { get; private set; }
+    private string _pendingDropRequest = "";
 
     /// <summary>地图上当前选中的地点（地图面板的右栏详情据此显示移动预估）。</summary>
     public string? MapPicked { get; set; }
@@ -76,6 +90,12 @@ public sealed class GameSession
     /// </summary>
     public void OpenPanel(string? panel, string? recipe = null)
     {
+        if (panel != "craft")
+        {
+            CraftCandidates = null;
+            CraftPreferred.Clear();
+            CraftPot = null;
+        }
         if (panel == "craft" && State != null)
         {
             var main = S.Main;
@@ -300,6 +320,12 @@ public sealed class GameSession
             return res;
         }
         Notice = null;
+        // 拖拽打开的预览确认后收起，避免行动结束后仍停在旧预览上
+        if (Selected.Kind == SelectionKind.Action)
+        {
+            Selected = new Selection();
+            PendingAction = null;
+        }
         Drain();
         Save();
         Notify();
@@ -309,6 +335,8 @@ public sealed class GameSession
 
     public ActionResult Instant(InstantRequest r)
     {
+        // 每次界面操作带一个请求号：重复提交（连点、重发）只生效一次
+        if (string.IsNullOrEmpty(r.RequestId)) r.RequestId = Guid.NewGuid().ToString("N");
         var res = E.DoInstant(S, r);
         Notice = res.Ok ? null : res.Reason;
         if (res.Ok)
@@ -321,8 +349,9 @@ public sealed class GameSession
     }
 
     /// <summary>同一批次（同物品、同到期时间、同位置）可能分成多堆；按堆依次拾取或放下指定数量。</summary>
-    public ActionResult TransferBatch(string owner, string itemId, int? expiresAt, int count, bool toCarried)
+    public ActionResult TransferBatch(string owner, string itemId, int? expiresAt, int count, bool toCarried, string? requestId = null)
     {
+        if (GameEngine.SeenRequest(S, requestId)) return ActionResult.Success();
         var left = count;
         ActionResult last = ActionResult.Success();
         var stacks = S.Items.Where(i => i.Owner == owner && i.ItemId == itemId && i.ExpiresAt == expiresAt && i.ReservedBy == null)
@@ -335,6 +364,8 @@ public sealed class GameSession
             if (!last.Ok) break;
             left -= n;
         }
+        // 整批转移的请求号记在最后，拆成几堆时也只生效一次
+        if (last.Ok) GameEngine.RememberRequest(S, requestId);
         Notice = last.Ok ? null : last.Reason;
         Drain();
         ReconcileSelection();
@@ -352,12 +383,83 @@ public sealed class GameSession
         if (!still) Selected = new Selection();
     }
 
-    /// <summary>某批次在 30 公斤上限内最多能拾取多少。</summary>
-    public int MaxPickup(string itemId, int available)
+    /// <summary>某批次在 30 公斤上限内最多能拾取多少（锅按锅加内容计）。</summary>
+    public int MaxPickup(string itemId, int available, ItemInstance? inst = null)
     {
-        var w = E.Item(itemId).WeightGrams;
+        var w = inst != null && inst.Count > 0 ? E.ItemGrams(S, inst) / inst.Count : E.Item(itemId).WeightGrams;
         var room = Math.Max(0, E.Config.Carry.HardGrams - E.CarriedGrams(S));
         return Math.Min(available, room / w);
+    }
+
+    // ───────────── 拖拽落点（交互与地图扩展 v0.3 · 01 案） ─────────────
+
+    /// <summary>打开拖拽得到的行动预览：右栏显示与按钮相同的预估，玩家按“开始”才计时。</summary>
+    public void ShowAction(ActionRequest r, string title)
+    {
+        PendingAction = r;
+        PendingActionTitle = title;
+        Panel = null;
+        Selected = new Selection { Kind = SelectionKind.Action, Id = r.TargetId, InstanceId = r.InstanceId };
+        Notice = null;
+        Notify();
+    }
+
+    /// <summary>从材料、锅或营地地点卡拖拽打开配方候选：只预选，不扣物、不预留。</summary>
+    public void ShowRecipes(List<string> recipes, ActionRequest? request)
+    {
+        OpenPanel("craft", recipes.FirstOrDefault());
+        CraftCandidates = recipes;
+        CraftPreferred.Clear();
+        if (request != null) CraftPreferred.AddRange(request.PreferredInstanceIds);
+        CraftPot = request?.PotInstanceId;
+        Notify();
+    }
+
+    public void AskDropQuantity(DropIntent intent, string requestId)
+    {
+        PendingDrop = intent;
+        _pendingDropRequest = requestId;
+        Notify();
+    }
+
+    public void ConfirmDropQuantity(int count)
+    {
+        var intent = PendingDrop;
+        PendingDrop = null;
+        if (intent != null) ExecuteDrop(intent, count, _pendingDropRequest);
+        else Notify();
+    }
+
+    public void CancelDropQuantity()
+    {
+        PendingDrop = null;
+        Notify();
+    }
+
+    /// <summary>执行松手结果：即时类直接提交（同一请求号只生效一次），预览类打开对应面板。</summary>
+    public ActionResult ExecuteDrop(DropIntent intent, int count, string requestId)
+    {
+        if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        if (intent.IsPreview)
+        {
+            if (intent.Verb == DropVerb.PreviewRecipe) ShowRecipes(intent.Recipes, intent.Action);
+            else if (intent.Action != null) ShowAction(intent.Action, intent.Label.Replace("查看", ""));
+            return ActionResult.Success();
+        }
+        var r = intent.Instant!;
+        if (intent.Verb == DropVerb.Transfer && intent.Instant!.Kind is InstantKind.Pickup or InstantKind.Drop)
+        {
+            var head = S.Items.FirstOrDefault(i => i.InstanceId == r.InstanceId);
+            if (head == null) return ActionResult.Fail("物品已不在");
+            if (E.Item(head.ItemId).IsStackable)
+                return TransferBatch(head.Owner, head.ItemId, head.ExpiresAt, count, r.Kind == InstantKind.Pickup, requestId);
+        }
+        r.Count = Math.Max(1, count);
+        if (r.Kind == InstantKind.Reorder) r.Count = 1;
+        r.RequestId = requestId;
+        var res = Instant(r);
+        if (res.Ok) ReconcileSelection();
+        return res;
     }
 
     public void Cancel()

@@ -18,9 +18,9 @@ namespace Survival.Core.Engine
             return res;
         }
 
-        private static bool SeenRequest(GameState s, string? id) => !string.IsNullOrEmpty(id) && s.RecentRequestIds.Contains(id!);
+        public static bool SeenRequest(GameState s, string? id) => !string.IsNullOrEmpty(id) && s.RecentRequestIds.Contains(id!);
 
-        private static void RememberRequest(GameState s, string? id)
+        public static void RememberRequest(GameState s, string? id)
         {
             if (string.IsNullOrEmpty(id)) return;
             s.RecentRequestIds.Add(id!);

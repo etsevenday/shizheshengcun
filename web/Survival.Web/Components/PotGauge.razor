@@ -1,0 +1,23 @@
+@inherits GameComponent
+
+@* 锅卡上的水量条：标签固定为“水量”，表示容器装载比例，不是角色水分，也不是烧水进度（00 案第 2 节）。
+   整条是装水热区：水卡拖到这里装入1份。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var c = e.PotConfig(Pot);
+    var units = e.PotUnits(s, Pot.InstanceId);
+    var liquid = e.PotLiquid(s, Pot.InstanceId);
+    var pct = c.CapacityMl > 0 ? units * c.UnitMl * 100 / c.CapacityMl : 0;
+}
+<div class="pot-fill @(liquid == "clean_water" ? "clean" : liquid == "dirty_water" ? "dirty" : "")" data-drop="@($"potfill:{Pot.InstanceId}")" data-drop-level="hot"
+     title="把净水或脏水卡拖到这里装入1份；按住 Shift 可选数量">
+    <div class="pot-fill-head"><span>水量</span><b>@e.PotLabel(s, Pot)</b></div>
+    <div class="pot-track"><i style="width:@(pct)%"></i></div>
+    @if (Attached) { <div class="pot-tag">已架在火堆上</div> }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ItemInstance Pot { get; set; } = null!;
+    [Parameter] public bool Attached { get; set; }
+}

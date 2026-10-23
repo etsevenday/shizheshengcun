@@ -87,10 +87,12 @@
 </div>
 
 <TransferBar />
+<DropQuantity />
 <EndScreens />
 
 @code {
     private DotNetObjectReference<GameScreen>? _ref;
+    private DotNetObjectReference<DragController>? _drag;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -98,6 +100,8 @@
         {
             _ref = DotNetObjectReference.Create(this);
             await JS.InvokeVoidAsync("survival.hookKeys", _ref);
+            _drag = DotNetObjectReference.Create(new DragController(G));
+            await JS.InvokeVoidAsync("survivalDrag.init", _drag, G.E.Config.Ui.DragThresholdPx);
         }
     }
 
@@ -132,5 +136,6 @@
     {
         base.Dispose();
         _ref?.Dispose();
+        _drag?.Dispose();
     }
 }

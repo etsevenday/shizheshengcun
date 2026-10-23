@@ -1,0 +1,79 @@
+@inherits GameComponent
+@inject IJSRuntime JS
+
+@* 按住 Shift 松手时的数量框（01 案 3.1）：先显示可行上限，不静默截断；取消等于取消本次拖拽。 *@
+@if (G.PendingDrop is DropIntent d)
+{
+    var n = Parse();
+    var invalid = n < 1 || n > d.MaxQuantity;
+    <div class="modal-back" @onclick="Cancel">
+        <div class="modal" role="dialog" aria-label="选择数量" @onclick:stopPropagation="true" @onkeydown="OnKey">
+            <h3>@Verb(d)</h3>
+            <div class="small muted">@d.Label.Replace("1份", "").Replace("1", "") · 最多 @d.MaxQuantity</div>
+            <div class="tbar-row">
+                <button type="button" class="tbar-step" aria-label="减少" @onclick="() => Step(-1)">−</button>
+                <input @ref="input" type="text" inputmode="numeric" value="@text" @oninput="OnInput" aria-label="数量" />
+                <button type="button" class="tbar-step" aria-label="增加" @onclick="() => Step(1)">+</button>
+                <button type="button" class="tbar-max" @onclick="() => text = d.MaxQuantity.ToString()">最多@(d.MaxQuantity)</button>
+            </div>
+            @if (invalid) { <div class="tbar-note bad">请输入 1 到 @d.MaxQuantity 之间的数字</div> }
+            <div class="btn-row">
+                <button class="primary" disabled="@invalid" @onclick="Confirm">确认@(invalid ? "" : $" {n}")</button>
+                <button class="secondary" @onclick="Cancel">取消</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private ElementReference input;
+    private string text = "1";
+    private DropIntent? shown;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (G.PendingDrop != null && !ReferenceEquals(G.PendingDrop, shown))
+        {
+            shown = G.PendingDrop;
+            text = "1";
+            StateHasChanged();
+            await JS.InvokeVoidAsync("survival.focusSelect", input);
+        }
+        else if (G.PendingDrop == null) shown = null;
+    }
+
+    private static string Verb(DropIntent d) => d.Verb switch
+    {
+        DropVerb.AddFuel => "投放木材",
+        DropVerb.FillPot => "装水入锅",
+        DropVerb.Decant => "从锅里倒出",
+        _ => d.Instant?.Kind == InstantKind.Pickup ? "拾取" : "放下",
+    };
+
+    private int Parse() => int.TryParse(text.Trim(), out var v) ? v : 0;
+
+    private void OnInput(ChangeEventArgs ev) => text = new string((ev.Value?.ToString() ?? "").Where(char.IsDigit).ToArray());
+
+    private void Step(int k)
+    {
+        var max = G.PendingDrop?.MaxQuantity ?? 1;
+        text = Math.Clamp(Parse() + k, 1, max).ToString();
+    }
+
+    private void OnKey(KeyboardEventArgs ev)
+    {
+        if (ev.Key == "Enter") Confirm();
+        else if (ev.Key == "Escape") Cancel();
+    }
+
+    private void Confirm()
+    {
+        var d = G.PendingDrop;
+        if (d == null) return;
+        var n = Parse();
+        if (n < 1 || n > d.MaxQuantity) return;
+        G.ConfirmDropQuantity(n);
+    }
+
+    private void Cancel() => G.CancelDropQuantity();
+}
