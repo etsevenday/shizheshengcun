@@ -101,7 +101,7 @@
                         <div class="fire-row">
                             <div class="art">@Icons.Markup("fire")</div>
                             <div class="lines" style="flex:1">
-                                <div><span>营地火堆</span><b class="@(fac.FireLit ? "good-text" : "muted")">@(fac.FireLit ? "燃烧中" : "未点燃")</b></div>
+                                <div><span>营地火堆</span><b class="@(fac.FireLit ? "good-text" : "muted")">@(fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃")</b></div>
                                 <div><span>燃料</span><b>@(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分钟</b></div>
                                 <div><span>可用木材</span><b>@e.AvailableCount(s, "wood", true)</b></div>
                                 <div><span>遮蔽棚 / 床垫</span><b>@(fac.ShelterBuilt ? "已建" : "未建") / @(fac.BedBuilt ? "已铺" : "未铺")</b></div>
@@ -137,7 +137,7 @@ else if (craftPaused && main!.TargetId == recipeId)
         <div class="lines">
             <div><span>已完成工作量</span><b>@(Ui.Floor(main.WorkDone))/@(Ui.Floor(main.BaseWorkMinutes))分钟</b></div>
             <div><span>剩余工作量</span><b>@(Ui.Floor(Math.Max(0, main.BaseWorkMinutes - main.WorkDone)))分钟</b></div>
-            <div><span>火堆燃料</span><b>@(fac.FuelMinutes)分钟 · @(fac.FireLit ? "燃烧中" : "未点燃")</b></div>
+            <div><span>火堆燃料</span><b>@(fac.FuelMinutes)分钟 · @(fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃")</b></div>
         </div>
     </div>
     <div class="detail-foot">

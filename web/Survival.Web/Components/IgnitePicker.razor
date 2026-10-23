@@ -18,11 +18,14 @@
     {
         <div class="ignite-choices" role="radiogroup" aria-label="选择打火器">
             <span class="tiny muted">用哪一把：</span>
-            @foreach (var l in lighters)
+            @for (var k = 0; k < lighters.Count; k++)
             {
+                var l = lighters[k];
                 var id = l.InstanceId;
+                // 多把时按顺序编 1、2，不露内部实例号
+                var label = lighters.Count > 1 ? $"{e.ItemName(l.ItemId)} {k + 1}" : e.ItemName(l.ItemId);
                 <button type="button" role="radio" aria-checked="@(chosen == id)" class="batch-chip @(chosen == id ? "on" : "")" disabled="@Busy"
-                        @onclick="() => chosen = chosen == id ? null : id">@e.ItemName(l.ItemId)#@id · @(l.IsCarried ? "随身" : "地面")</button>
+                        @onclick="() => chosen = chosen == id ? null : id">@label · @(l.IsCarried ? "随身" : "地面")</button>
             }
         </div>
         <button class="secondary" disabled="@(Busy || p == null || !p.Ok)" title="@(p == null ? "先选一把打火器" : p.Reason)"

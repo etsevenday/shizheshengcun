@@ -104,6 +104,7 @@ namespace Survival.Core.Engine
                     var fac = s.Locations[here].Facility;
                     if (!_locs[here].HasFire || !fac.FireLit) return ActionResult.Fail("火堆没有在燃烧");
                     fac.FireLit = false;
+                    fac.WentOut = true;
                     Emit(s, GameEventKind.Info, $"已熄灭火堆，剩余燃料{fac.FuelMinutes}分钟保留。");
                     return ActionResult.Success();
                 }

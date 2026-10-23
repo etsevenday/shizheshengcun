@@ -17,8 +17,18 @@
     @if (p.Ok)
     {
         <div class="facts">
-            <div class="fact"><span>预计耗时</span><strong>@Clock.Duration(p.EstimatedMinutes)</strong></div>
-            <div class="fact"><span>预计完成</span><strong>@Clock.HHmm(p.EstimatedEndMinute)</strong></div>
+            @if (p.WillPauseFireOut)
+            {
+                // 模拟在火堆燃尽处停下，EstimatedMinutes 只是到暂停为止的时长；按基础工作量与起始倍率估全程，免得把“10分钟后暂停”读成“10分钟做完”
+                var full = (int)Math.Ceiling(p.BaseMinutes / Math.Max(0.01, p.FactorAtStart) / 5) * 5;
+                <div class="fact"><span>预计耗时</span><strong>约@(Clock.Duration(full))</strong></div>
+                <div class="fact"><span>燃料燃尽</span><strong>@(Clock.HHmm(p.EstimatedEndMinute)) 暂停</strong></div>
+            }
+            else
+            {
+                <div class="fact"><span>预计耗时</span><strong>@Clock.Duration(p.EstimatedMinutes)</strong></div>
+                <div class="fact"><span>预计完成</span><strong>@Clock.HHmm(p.EstimatedEndMinute)</strong></div>
+            }
             @if (p.IsWork)
             {
                 <div class="fact"><span>基础工作量</span><strong>@(p.BaseMinutes)分钟</strong></div>

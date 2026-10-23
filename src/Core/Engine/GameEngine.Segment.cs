@@ -223,6 +223,7 @@ namespace Survival.Core.Engine
                 {
                     f.FuelMinutes = 0;
                     f.FireLit = false;
+                    f.WentOut = true;
                     Emit(s, GameEventKind.FireOut, $"{LocName(kv.Key)}的火堆燃料耗尽，已熄灭。");
                 }
             }

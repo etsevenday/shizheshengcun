@@ -581,7 +581,8 @@ namespace Survival.Core.Engine
                         parts.Add("出现腹泻（12小时）");
                     }
                     if (u.IsBandage) s.BandageReadyAt = s.GameMinute + Config.ItemActions.BandageCooldownMinutes;
-                    Emit(s, GameEventKind.Info, $"{p.Label}：{string.Join("，", parts)}。");
+                    // 效果在开始时一次结清、不可取消，所以按“行动完成”发事件，界面的结果提示条才会跟着更新
+                    Emit(s, GameEventKind.ActionCompleted, $"{p.Label}：{string.Join("，", parts)}。");
                     break;
                 }
                 case ActionType.Ignite:

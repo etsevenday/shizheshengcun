@@ -122,6 +122,8 @@ namespace Survival.Core.State
         public bool BedBuilt { get; set; }
         public bool FireLit { get; set; }
         public int FuelMinutes { get; set; }
+        /// <summary>火堆点燃后熄灭过（燃尽或手动熄灭）。未燃烧时界面据此写“熄灭”而不是“未点燃”；旧存档缺省为否。</summary>
+        public bool WentOut { get; set; }
         /// <summary>架在火堆锅位上的锅实例。只是关联，锅本身仍归属营地地面。</summary>
         public int? AttachedPotId { get; set; }
 

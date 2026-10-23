@@ -77,7 +77,7 @@
                     <div class="fire-chip" data-drop="@($"fire:{here}")" data-drop-level="card">
                         <button type="button" class="chip facility fire-fuel" data-drop="@($"fuel:{here}")" data-drop-level="hot" @onclick='() => OpenCraft("boil")'
                                 title="火堆：把木材拖到这里投放，把打火器拖到火堆点火；点击打开营地加工">
-                            火堆 · @(fac.FireLit ? "燃烧中" : fac.FuelMinutes > 0 ? "熄灭" : "未点燃") · 燃料@(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分
+                            火堆 · @(fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃") · 燃料@(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分
                         </button>
                         <button type="button" class="chip facility fire-slot @(pot != null ? "filled" : "")" data-drop="@($"potslot:{here}")" data-drop-level="hot"
                                 @onclick="SelectAttachedPot" title="锅位：把金属锅拖到这里架上火堆">
