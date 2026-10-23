@@ -1,9 +1,10 @@
 @inherits GameComponent
 
-@* 物品卡右下角的三角箭头：选中这张卡并把光标放进卡片旁拾取条的数量框（试玩留言 fb68265e，按策划要求）。 *@
+@* 物品卡右下角的三角箭头：点一下直接转移 1 件（地面→随身拾取，随身→地面放下），与点卡片弹出的拾取条并行（试玩留言 fb68265e、4bb723b0）。
+   同时选中这张卡，卡片旁的拾取条跟着显示剩余数量；按策划要求不做按住连续转移。 *@
 <button type="button" class="card-arrow @(ToCarried ? "down" : "up")" disabled="@(!Enabled)"
-        aria-label="@(ToCarried ? "拾取，可输入数量" : "放下，可输入数量")"
-        title="@(ToCarried ? "拾取（可输入数量）" : "放下（可输入数量）")"
+        aria-label="@(ToCarried ? "拾取1件" : "放下1件")"
+        title="@(ToCarried ? "拾取1件（选中卡片可输入数量）" : "放下1件（选中卡片可输入数量）")"
         @onclick="OnClick" @onclick:stopPropagation="true">@(ToCarried ? "▼" : "▲")</button>
 
 @code {
@@ -20,6 +21,6 @@
         G.Select(InstanceId.HasValue
             ? new Selection { Kind = SelectionKind.Tool, Id = ItemId, Owner = Owner, InstanceId = InstanceId }
             : new Selection { Kind = SelectionKind.ItemGroup, Id = ItemId, Owner = Owner });
-        G.RequestTransferFocus();
+        G.TransferOne(Owner, ItemId, InstanceId);
     }
 }

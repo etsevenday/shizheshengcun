@@ -2,7 +2,7 @@
 @inject IJSRuntime JS
 
 @* 选中物品卡时贴在卡片旁边的拾取/放下条（试玩留言 fb68265e，按策划要求：拾取界面出现在卡片下方，可直接输入数字）。
-   地面物品卡在卡片下方弹出“拾取”，随身物品卡在上方弹出“放下”；回车确认，Esc 收起。
+   地面物品卡在卡片下方弹出“拾取”，随身物品卡在上方弹出“放下”；回车确认，Esc 收起。卡片角上的三角箭头是另一条路：直接转移 1 件，不抢焦点。
    光标不在条内时的回车由 app.js 的 hookKeys 转成点击“拾取/放下”按钮，所以点完卡片直接回车也能按默认数量确认。 *@
 @{
     var info = Current();
@@ -81,7 +81,6 @@
     private ElementReference input;
     private string text = "1";
     private string lastKey = "";
-    private int lastFocusTick;
     private bool anchored;
 
     /// <summary>按当前选中的物品卡计算可转移的批次与数量；选中的不是当前可取用的物品时返回 null。</summary>
@@ -137,13 +136,8 @@
             return;
         }
         anchored = true;
+        // 不抢焦点：点卡片后快捷键照常可用，按数字或回车由 app.js 的 hookKeys 转到条内
         await JS.InvokeVoidAsync("survival.anchorBar", bar, info.Key, info.ToCarried ? "below" : "above");
-        // 点卡片角上的三角箭头时把光标放进数量框；直接点卡片不抢焦点，快捷键照常可用
-        if (G.TransferFocusTick != lastFocusTick)
-        {
-            lastFocusTick = G.TransferFocusTick;
-            if (!info.Single) await JS.InvokeVoidAsync("survival.focusSelect", input);
-        }
     }
 
     private int Parse() => int.TryParse(text.Trim(), out var v) ? v : 0;

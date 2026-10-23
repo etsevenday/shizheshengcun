@@ -22,7 +22,7 @@
         <h2>@Title</h2>
         <span>
             @if (carried) { @($"{Ui.Kg(grams)}公斤 · {(grams > e.Config.Carry.SoftGrams ? "超重" : "轻装")} · ") }
-            显示@(kinds)种 · 拖动卡片可整理、转移或投放，选中卡片可输入数量 · 不耗时
+            显示@(kinds)种 · 拖动卡片可整理、转移或投放 · 点卡角箭头转移1件，选中卡片可输入数量 · 不耗时
         </span>
     </div>
     <div class="row-scroll" data-drop="@($"zone:{Owner}")" data-drop-level="zone">

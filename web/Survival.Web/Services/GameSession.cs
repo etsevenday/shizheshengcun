@@ -567,15 +567,6 @@ public sealed class GameSession
         Notify();
     }
 
-    /// <summary>每次点物品卡上的三角箭头加一；卡片旁的拾取条据此把光标放进数量框。</summary>
-    public int TransferFocusTick { get; private set; }
-
-    public void RequestTransferFocus()
-    {
-        TransferFocusTick++;
-        Notify();
-    }
-
     /// <summary>
     /// 物品卡上的三角箭头：把该物品转移 1 件到对面（地面→随身为拾取，随身→地面为放下）。
     /// 工具按实例转移；可堆叠物品取最早到期、未预留的一堆。
