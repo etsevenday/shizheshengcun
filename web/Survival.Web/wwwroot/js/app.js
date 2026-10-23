@@ -15,6 +15,10 @@ window.survival = {
     }
   },
   // 每位玩家自己的界面偏好（折叠面板等），不进存档
+  // 聚焦并选中输入框内容，直接打字即替换
+  focusSelect: function (el) {
+    try { el.focus(); el.select(); } catch (e) { }
+  },
   prefGet: function (key) {
     try { return window.localStorage.getItem('survival.pref.' + key); } catch (e) { return null; }
   },
@@ -49,6 +53,8 @@ window.survival = {
       if (ev.ctrlKey || ev.altKey || ev.metaKey) return;
       var k = ev.key;
       if (window.FeedbackWidget && FeedbackWidget.isOpen()) return;
+      // 数量框等弹窗自己处理按键（回车确认、Esc 取消），不再触发游戏快捷键
+      if (ev.target && ev.target.closest && ev.target.closest('.modal')) return;
       if (['m', 'M', 'c', 'C', 'r', 'R', 'l', 'L', 'f', 'F', 'Escape'].indexOf(k) >= 0) {
         ev.preventDefault();
         dotnet.invokeMethodAsync('OnKey', k.length === 1 ? k.toUpperCase() : k);

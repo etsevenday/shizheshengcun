@@ -86,6 +86,7 @@
     </footer>
 </div>
 
+<QuantityDialog />
 <EndScreens />
 
 @code {
@@ -110,6 +111,7 @@
     [JSInvokable]
     public void OnKey(string key)
     {
+        if (G.Qty != null) { if (key == "Escape") G.CloseQuantity(); return; }
         if (key == "F") { _ = OpenFeedback(); return; }
         if (G.State == null || G.S.Progress.Dead) return;
         switch (key)

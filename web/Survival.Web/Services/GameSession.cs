@@ -21,6 +21,9 @@ public sealed class Selection
 
 public enum SaveStatus { None, Saving, Saved, Failed }
 
+/// <summary>拾取/放下数量框的内容：同一批次（同物品、同到期时间、同位置）的可转移数量与上限。</summary>
+public sealed record QuantityRequest(string Owner, string ItemId, int? ExpiresAt, int Available, int Max, bool ToCarried);
+
 /// <summary>
 /// 网页壳的会话：持有配置、引擎与当前状态，驱动 5 分钟段循环并在每段之间做进度动画。
 /// 所有规则判断都交给内核，这里只负责调度、存档与界面状态。
@@ -449,6 +452,48 @@ public sealed class GameSession
     public void DismissToast()
     {
         Toast = null;
+        Notify();
+    }
+
+    /// <summary>当前打开的拾取/放下数量框；为空表示没有打开。</summary>
+    public QuantityRequest? Qty { get; private set; }
+
+    /// <summary>
+    /// 打开拾取/放下数量框（物品卡三角箭头与右侧详情共用）。未指定批次时取最早到期、未预留的一批。
+    /// 只有 1 件时不弹框，直接转移。
+    /// </summary>
+    public void OpenQuantity(string owner, string itemId, int? expiresAt = null, bool pickBatch = true)
+    {
+        if (State == null) return;
+        var stacks = S.Items.Where(i => i.Owner == owner && i.ItemId == itemId && i.ReservedBy == null).ToList();
+        if (stacks.Count == 0) return;
+        if (pickBatch) expiresAt = stacks.OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).First().ExpiresAt;
+        var available = stacks.Where(i => i.ExpiresAt == expiresAt).Sum(i => i.Count);
+        if (available <= 0) return;
+        var toCarried = owner != ItemInstance.Carried;
+        var max = toCarried ? MaxPickup(itemId, available) : available;
+        if (available == 1 && max == 1)
+        {
+            TransferBatch(owner, itemId, expiresAt, 1, toCarried);
+            return;
+        }
+        Qty = new QuantityRequest(owner, itemId, expiresAt, available, max, toCarried);
+        Notify();
+    }
+
+    public void ConfirmQuantity(int count)
+    {
+        var q = Qty;
+        if (q == null) return;
+        Qty = null;
+        if (count < 1) { Notify(); return; }
+        TransferBatch(q.Owner, q.ItemId, q.ExpiresAt, Math.Min(count, q.Available), q.ToCarried);
+    }
+
+    public void CloseQuantity()
+    {
+        if (Qty == null) return;
+        Qty = null;
         Notify();
     }
 

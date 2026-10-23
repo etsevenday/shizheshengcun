@@ -118,21 +118,13 @@ else
         }
         <div class="under">@(busy ? "行动进行中，暂不能整理物品" : "拾取与放下不耗时；物品只能在当前地点取用")</div>
     </div>
-
-    @if (qty != null)
-    {
-        <QuantityDialog Item="cfg" Max="qty.Max" Available="qty.Available" ToCarried="qty.ToCarried" Source="@(qty.ToCarried ? $"{e.LocName(here)}地面" : "随身")"
-                        OnConfirm="ConfirmQty" OnCancel="() => qty = null" />
-    }
 }
 
 @code {
     private sealed record Batch(int? ExpiresAt, int Count, bool Reserved, List<ItemInstance> Stacks);
-    private sealed record QtyState(int? ExpiresAt, int Available, int Max, bool ToCarried);
 
     private int? batchKey;
     private bool batchPicked;
-    private QtyState? qty;
     private string lastSelection = "";
 
     protected override void OnParametersSet()
@@ -141,7 +133,6 @@ else
         {
             lastSelection = G.Selected.Key;
             batchPicked = false;
-            qty = null;
         }
     }
 
@@ -153,24 +144,14 @@ else
         batchPicked = true;
     }
 
+    /// <summary>拾取/放下：工具按实例直接转移；其余打开数量框（可直接输入数字）。</summary>
     private void Transfer(Batch b, bool toCarried)
     {
-        var avail = b.Count;
-        var max = toCarried ? G.MaxPickup(G.Selected.Id, avail) : avail;
-        if (avail == 1 && max == 1)
-        {
-            G.TransferBatch(G.Selected.Owner, G.Selected.Id, b.ExpiresAt, 1, toCarried);
-            return;
-        }
-        qty = new QtyState(b.ExpiresAt, avail, max, toCarried);
-    }
-
-    private void ConfirmQty(int n)
-    {
-        if (qty == null) return;
-        var q = qty;
-        qty = null;
-        G.TransferBatch(G.Selected.Owner, G.Selected.Id, q.ExpiresAt, n, q.ToCarried);
+        var sel = G.Selected;
+        if (sel.Kind == SelectionKind.Tool && sel.InstanceId.HasValue)
+            G.TransferOne(sel.Owner, sel.Id, sel.InstanceId);
+        else
+            G.OpenQuantity(sel.Owner, sel.Id, b.ExpiresAt, pickBatch: false);
     }
 
     private async Task Use(int instanceId) => await G.StartAction(ActionRequest.UseInstance(instanceId));

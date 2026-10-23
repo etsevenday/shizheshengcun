@@ -1,74 +1,115 @@
 @inherits GameComponent
+@inject IJSRuntime JS
 
-@{
+@* 拾取/放下数量框：可直接输入数字，回车确认、Esc 取消（物品卡三角箭头与右侧详情共用）。 *@
+@if (G.Qty is { } q)
+{
     var e = G.E;
     var s = G.S;
+    var item = e.Item(q.ItemId);
+    var n = Parse();
     var before = e.CarriedGrams(s);
-    var after = before + (ToCarried ? 1 : -1) * Item.WeightGrams * n;
-    var tooHeavy = ToCarried && n > Max;
+    var after = before + (q.ToCarried ? 1 : -1) * item.WeightGrams * Math.Max(0, n);
+    var invalid = n < 1 || n > q.Available;
+    var tooHeavy = !invalid && q.ToCarried && n > q.Max;
+    <div class="modal-back" @onclick="Cancel" @onclick:stopPropagation="true">
+        <div class="modal" role="dialog" aria-label="选择数量" @onclick:stopPropagation="true">
+            <h3>@(q.ToCarried ? "拾取" : "放下")@item.Name</h3>
+            <div class="lines">
+                <div><span>来源</span><b>@(q.ToCarried ? $"{e.LocName(q.Owner)}地面" : "随身")</b></div>
+                <div><span>现有数量</span><b>@q.Available@(q.ExpiresAt.HasValue ? $"（{Ui.Fresh(q.ExpiresAt.Value - s.GameMinute)}）" : "")</b></div>
+                <div><span>每单位重量</span><b>@Ui.Kg(item.WeightGrams)公斤</b></div>
+            </div>
+            <div class="qty-row">
+                <button class="secondary" @onclick="() => Step(-1)" aria-label="减少">−</button>
+                <input @ref="input" type="text" inputmode="numeric" value="@text" @oninput="OnInput" @onkeydown="OnKey" aria-label="数量" />
+                <button class="secondary" @onclick="() => Step(1)" aria-label="增加">+</button>
+                <button class="secondary" style="width:auto" @onclick="() => SetN(q.ToCarried ? q.Max : q.Available)">@(q.ToCarried ? $"最大可取 {q.Max}" : "全部")</button>
+            </div>
+            <div class="lines">
+                <div><span>操作后随身重量</span><b class="@(after > e.Config.Carry.SoftGrams ? "warn-text" : "")">@Ui.Kg(after)公斤</b></div>
+            </div>
+            @if (invalid)
+            {
+                <div class="blocked">请输入 1 到 @q.Available 之间的数字。</div>
+            }
+            else if (tooHeavy)
+            {
+                <div class="blocked">携带后将超过@(e.Config.Carry.HardGrams / 1000)公斤，最多可取@(q.Max)份。</div>
+            }
+            else if (q.ToCarried && after > e.Config.Carry.SoftGrams)
+            {
+                <div class="risk">超过@(e.Config.Carry.SoftGrams / 1000)公斤后，移动、探索、搜集和制作耗时×1.25。</div>
+            }
+            <div class="btn-row">
+                <button class="primary" disabled="@(invalid || tooHeavy)" @onclick="Confirm">确认@(q.ToCarried ? "拾取" : "放下") @(invalid ? "" : n.ToString())</button>
+                <button class="secondary" @onclick="Cancel">取消</button>
+            </div>
+            <div class="under">直接输入数字，回车确认，Esc 取消 · 本地转移不耗时</div>
+        </div>
+    </div>
 }
 
-<div class="modal-back" @onclick="OnCancel" @onclick:stopPropagation="true">
-    <div class="modal" role="dialog" aria-label="选择数量" @onclick:stopPropagation="true">
-        <h3>@(ToCarried ? "拾取" : "放下")@Item.Name</h3>
-        <div class="lines">
-            <div><span>来源</span><b>@Source</b></div>
-            <div><span>现有数量</span><b>@Available</b></div>
-            <div><span>每单位重量</span><b>@Ui.Kg(Item.WeightGrams)公斤</b></div>
-        </div>
-        <div class="qty-row">
-            <button class="secondary" @onclick="() => Set(n - 1)" aria-label="减少">−</button>
-            <input type="number" min="1" max="@Available" value="@n" @onchange="OnInput" aria-label="数量" />
-            <button class="secondary" @onclick="() => Set(n + 1)" aria-label="增加">+</button>
-            @if (ToCarried)
-            {
-                <button class="secondary" style="width:auto" @onclick="() => Set(Max)">最大可取 @Max</button>
-            }
-            else
-            {
-                <button class="secondary" style="width:auto" @onclick="() => Set(Available)">全部</button>
-            }
-        </div>
-        <div class="lines">
-            <div><span>操作后随身重量</span><b class="@(after > e.Config.Carry.SoftGrams ? "warn-text" : "")">@Ui.Kg(after)公斤</b></div>
-        </div>
-        @if (tooHeavy)
-        {
-            <div class="blocked">携带后将超过@(e.Config.Carry.HardGrams / 1000)公斤，最多可取@(Max)份。</div>
-        }
-        else if (ToCarried && after > e.Config.Carry.SoftGrams)
-        {
-            <div class="risk">超过@(e.Config.Carry.SoftGrams / 1000)公斤后，移动、探索、搜集和制作耗时×1.25。</div>
-        }
-        <div class="btn-row">
-            <button class="primary" disabled="@(n < 1 || tooHeavy)" @onclick="() => OnConfirm.InvokeAsync(n)">确认@(ToCarried ? "拾取" : "放下") @n</button>
-            <button class="secondary" @onclick="OnCancel">取消</button>
-        </div>
-        <div class="under">本地转移不耗时</div>
-    </div>
-</div>
-
 @code {
-    [Parameter, EditorRequired] public ItemConfig Item { get; set; } = null!;
-    [Parameter] public int Available { get; set; }
-    [Parameter] public int Max { get; set; }
-    [Parameter] public bool ToCarried { get; set; }
-    [Parameter] public string Source { get; set; } = "";
-    [Parameter] public EventCallback<int> OnConfirm { get; set; }
-    [Parameter] public EventCallback OnCancel { get; set; }
+    private ElementReference input;
+    private string text = "";
+    private QuantityRequest? shown;
 
-    private int n = 1;
+    protected override void OnParametersSet() => Sync();
 
-    protected override void OnInitialized()
+    private void Sync()
     {
-        base.OnInitialized();
-        n = ToCarried ? Math.Max(1, Math.Min(Available, Max)) : Available;
+        if (G.Qty == shown) return;
+        shown = G.Qty;
+        if (shown != null) text = (shown.ToCarried ? Math.Max(1, Math.Min(shown.Available, shown.Max)) : shown.Available).ToString();
     }
 
-    private void Set(int v) => n = Math.Clamp(v, 1, Math.Max(1, Available));
-
-    private void OnInput(ChangeEventArgs ev)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (int.TryParse(ev.Value?.ToString(), out var v)) Set(v);
+        // 每次打开新的数量框时聚焦并选中默认数量
+        if (G.Qty != null && G.Qty == shown && focusedFor != shown)
+        {
+            focusedFor = shown;
+            await JS.InvokeVoidAsync("survival.focusSelect", input);
+        }
+        if (G.Qty == null) focusedFor = null;
     }
+
+    private QuantityRequest? focusedFor;
+
+    protected override bool ShouldRender()
+    {
+        Sync();
+        return true;
+    }
+
+    private int Parse() => int.TryParse(text.Trim(), out var v) ? v : 0;
+
+    private void OnInput(ChangeEventArgs ev) => text = new string((ev.Value?.ToString() ?? "").Where(char.IsDigit).ToArray());
+
+    private void SetN(int v) => text = Math.Max(1, v).ToString();
+
+    private void Step(int d)
+    {
+        var q = G.Qty;
+        if (q == null) return;
+        SetN(Math.Clamp(Parse() + d, 1, Math.Max(1, q.Available)));
+    }
+
+    private void OnKey(KeyboardEventArgs ev)
+    {
+        if (ev.Key == "Enter") Confirm();
+        else if (ev.Key == "Escape") Cancel();
+    }
+
+    private void Confirm()
+    {
+        var q = G.Qty;
+        if (q == null) return;
+        var n = Parse();
+        if (n < 1 || n > q.Available || (q.ToCarried && n > q.Max)) return;
+        G.ConfirmQuantity(n);
+    }
+
+    private void Cancel() => G.CloseQuantity();
 }
