@@ -171,7 +171,7 @@ else if (info != null)
         }
         anchored = true;
         // 不抢焦点：点卡片后快捷键照常可用，按数字或回车由 app.js 的 hookKeys 转到条内
-        await JS.InvokeVoidAsync("survival.anchorBar", bar, info.Key, info.ToCarried ? "below" : "above");
+        await JS.InvokeVoidAsync("survival.anchorBar", bar, info.Key, info.Facility || info.ToCarried ? "below" : "above");
     }
 
     private int Parse() => int.TryParse(text.Trim(), out var v) ? v : 0;

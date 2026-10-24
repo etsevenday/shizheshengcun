@@ -30,7 +30,7 @@ else
 
     <div class="detail-scroll">
         <div class="op-head">
-            <div class="eyebrow">@(carried ? "随身物品" : $"{e.LocName(sel.Owner)}地面")</div>
+            <div class="eyebrow">@(carried ? "随身物品" : e.WherePath(s, inst))</div>
             <h2>@cfg.Name <small class="muted">×@total</small></h2>
             <p>@cfg.Desc</p>
         </div>
@@ -165,7 +165,7 @@ else
             var p = G.Preview(ActionRequest.UseInstance(inst.InstanceId));
             <button class="primary" disabled="@(!p.Ok || busy || chosen.Reserved)" @onclick="() => Use(inst.InstanceId)">@label</button>
         }
-        <div class="under">@(busy ? "行动进行中，暂不能整理物品" : onGround ? "拾取在卡片下方操作，可输入数量" : carried ? "放下在卡片上方操作，可输入数量" : "物品只能在当前地点取用")</div>
+        <div class="under">@(busy ? "行动进行中，暂不能整理物品" : onGround ? "拾取在卡片下方操作，可输入数量" : carried ? "放下在卡片上方操作，可输入数量" : inst.InFacility || inst.InContainer ? "在火堆或锅里：用上面的按钮取出，或把卡片拖出" : "物品只能在当前地点取用")</div>
     </div>
 }
 
