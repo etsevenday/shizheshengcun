@@ -138,6 +138,7 @@ namespace Survival.Core.Engine
 
             // 1. 段首计算：角色本段速率；各火堆段首是否燃烧、燃料够不够、哪些加工目标可受热（设施与烹饪案第 7 节）
             var ctx = ComputeSegment(s, a);
+            SyncFacilities(s);
             var snap = SnapshotFacilities(s, a);
 
             // 2. 推进时间并应用变化

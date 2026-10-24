@@ -193,17 +193,18 @@ public sealed class GameSession
         {
             var json = _store.Load();
             if (string.IsNullOrEmpty(json)) return "没有存档";
-            // 旧版存档（0.2-proto-1）先备份原文，再迁移到当前版本并覆盖保存（00 案第 5 节）
+            // 旧版存档（0.2-proto-1、3）先备份原文，再迁移到当前版本并覆盖保存；迁移冲突时不覆盖原档（设施与烹饪 00 案第 6 节）
             var migrate = SaveSerializer.NeedsMigration(json);
             if (migrate) _store.Backup(json);
-            State = SaveSerializer.Deserialize(json, Config);
+            State = SaveSerializer.Deserialize(json, Config, out var notes);
+            E.SyncFacilities(S);
             ResetUi();
             foreach (var l in S.Log.TakeLast(8))
                 Recent.Add(new GameEvent { Minute = l.Minute, Text = l.Text, Kind = GameEventKind.Info });
             if (migrate)
             {
                 Save();
-                Notice = "旧存档已升级到新版本（清理次数已按上限初始化），原档已备份";
+                Notice = "旧存档已升级到版本4，原档已备份" + (notes.Count > 0 ? "：" + string.Join("；", notes) : "") + "。";
             }
             Notify();
             // 行动动画每 5 分钟段都会存档，播放中刷新页面时存档里的主行动仍是“运行中”；
@@ -212,6 +213,11 @@ public sealed class GameSession
             if (active != null && !S.Progress.Dead && !(S.Sub == null && S.Main!.Status == ActionStatus.Paused))
                 _ = RunLoop();
             return null;
+        }
+        catch (SaveMigrationConflictException ex)
+        {
+            State = null;
+            return ConflictText(ex);
         }
         catch (SaveVersionException ex)
         {
@@ -223,6 +229,9 @@ public sealed class GameSession
         }
     }
 
+    private static string ConflictText(SaveMigrationConflictException ex) =>
+        $"旧存档无法自动升级到版本4：{ex.Message}。原存档没有改动，并已另存一份备份；请开始新游戏。";
+
     /// <summary>检查现有存档能否读取；不能时返回原因（用于禁用“继续”）。</summary>
     public string? SaveProblem()
     {
@@ -230,7 +239,16 @@ public sealed class GameSession
         {
             var json = _store.Load();
             if (string.IsNullOrEmpty(json)) return "没有存档";
-            SaveSerializer.Deserialize(json, Config);
+            try
+            {
+                SaveSerializer.Deserialize(json, Config);
+            }
+            catch (SaveMigrationConflictException ex)
+            {
+                // 冲突档：原档不覆盖，备份照常写一份，开始界面只允许新游戏
+                try { _store.Backup(json); } catch { /* 备份失败不影响提示 */ }
+                return ConflictText(ex);
+            }
             return null;
         }
         catch (SaveVersionException ex) { return ex.Message + "，请开始新游戏。"; }
