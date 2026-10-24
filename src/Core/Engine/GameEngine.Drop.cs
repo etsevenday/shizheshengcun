@@ -278,18 +278,7 @@ namespace Survival.Core.Engine
             if (pot == null || !IsPot(pot)) return DropIntent.No(Unsupported);
             if (src.Kind == DropSourceKind.PotChild) return DropIntent.No("暂不支持锅与锅之间倒水");
             if (head.InstanceId == pot.InstanceId) return DropIntent.No(Unsupported, fallThrough: true);
-            if (head.ItemId == "raw_root")
-            {
-                var why = PotBlocked(s, pot);
-                if (why != null) return DropIntent.No(why);
-                var rec = Config.Recipes.Where(r => r.PotMustBeEmpty && r.Inputs.ContainsKey(head.ItemId)).Select(r => r.Id).ToList();
-                if (rec.Count == 0) return DropIntent.No(Unsupported);
-                return new DropIntent
-                {
-                    Ok = true, Verb = DropVerb.PreviewRecipe, Label = "查看烹饪", Recipes = rec,
-                    Action = ActionRequest.Craft(rec[0], pot.InstanceId),
-                };
-            }
+            if (!IsLiquid(head)) return DropFoodOnPot(s, head, pot);
             if (!PotConfig(pot).Accepts.Contains(head.ItemId)) return DropIntent.No(Unsupported);
             var max = MaxFill(s, head, pot, out var reason);
             if (reason != null) return DropIntent.No(reason);
@@ -298,6 +287,15 @@ namespace Survival.Core.Engine
             var after = (PotUnits(s, pot.InstanceId) + 1) * cfg.UnitMl * 100 / cfg.CapacityMl;
             return Instant(DropVerb.FillPot, $"装入1份{ItemName(head.ItemId)}，水量{before}%→{after}%",
                 InstantRequest.FillPot(head.InstanceId, pot.InstanceId), max);
+        }
+
+        /// <summary>食材落到锅（锅卡或锅食材区）：即时放进该锅的真实内容，不冒泡成火堆烤制（统一卡片案第 5 节）。</summary>
+        private DropIntent DropFoodOnPot(GameState s, ItemInstance head, ItemInstance pot)
+        {
+            var max = MaxPutFood(s, head, pot, out var why);
+            if (why != null) return DropIntent.No(why);
+            return Instant(DropVerb.PutFood, $"放进{ItemName(pot.ItemId)}#{pot.InstanceId}食材区（{PotFoodHint(s, pot)}）",
+                InstantRequest.PutFoodInPot(head.InstanceId, pot.InstanceId), max);
         }
 
         private DropIntent DropOnResource(GameState s, DropSource src, ItemInstance head, string nodeId)

@@ -7,7 +7,7 @@
     var here = s.CurrentLocation;
     var lc = e.Location(here);
     var fac = s.Locations[here].Facility;
-    var recipeId = G.CraftRecipe ?? (lc.HasFire ? "boil" : "knife");
+    var recipeId = G.CraftRecipe != null && e.Config.Recipes.Any(r => r.Id == G.CraftRecipe) ? G.CraftRecipe : "knife";
     var rc = e.Recipe(recipeId);
     var main = s.Main;
     var craftPaused = main != null && main.Status == ActionStatus.Paused && (main.Type == ActionType.Craft || main.Type == ActionType.Build);
@@ -52,16 +52,6 @@
                     @foreach (var kv in rc.Inputs)
                     {
                         var item = kv.Key;
-                        if (rc.Pot != null && item == rc.Pot.InputItem)
-                        {
-                            var potForBoil = e.SelectPot(s, G.CraftPot, out _);
-                            var inPot = potForBoil == null ? 0 : e.PotContents(s, potForBoil.InstanceId).Where(i => i.ItemId == item).Sum(i => i.Count);
-                            <div class="mat @(inPot < kv.Value ? "missing" : "")">
-                                <span>@e.ItemName(item) ×@kv.Value（锅内）</span>
-                                <span>锅内@(inPot)/@(kv.Value)@(inPot < kv.Value ? " · 先把脏水卡拖进锅" : "")</span>
-                            </div>
-                            continue;
-                        }
                         var have = e.AvailableCount(s, item, true);
                         var carried = e.UsableBatches(s, item, false).Sum(i => i.Count);
                         var plan = Fill(item, kv.Value, preferred);
@@ -83,13 +73,6 @@
                     @foreach (var tag in rc.Catalysts)
                     {
                         var name = e.Config.Items.First(i => i.ToolTag == tag).Name;
-                        if (e.Config.Items.Any(i => i.ToolTag == tag && i.ContainerId != null))
-                        {
-                            var pot = e.SelectPot(s, G.CraftPot, out var potWhy);
-                            var place = pot == null ? "" : pot.IsCarried ? "随身" : "地面";
-                            <div class="mat @(pot == null ? "missing" : "")"><span>@name（容器，不消耗）</span><span>@(pot == null ? potWhy : $"{place} · {e.PotLabel(s, pot)}")</span></div>
-                            continue;
-                        }
                         var tool = e.AccessibleTool(s, tag);
                         <div class="mat @(tool == null ? "missing" : "")"><span>@name（催化工具，不消耗）</span><span>@(tool == null ? "需随身或在当前地面" : tool.IsCarried ? "随身 ✓" : "地面 ✓")</span></div>
                     }
@@ -159,8 +142,6 @@ else
         "knife" => "纤维采集耗时从20分钟降到10分钟，耐久20次。",
         "axe" => "木材采集每次产出翻倍，耐久30次。",
         "bandage" => "健康+5，每60分钟最多使用一次。",
-        "boil" => "把锅里的2份脏水原地烧成净水，净水留在原锅。先把脏水卡拖进锅装满1升（不会自动补水）；锅可在随身或当前地面。需燃烧的营地火堆。",
-        "cook" => "把2份生块根煮成2份熟块根，熟食保质24小时，放在当前地面。需一口空锅（随身或当前地面）与燃烧火堆。",
         "shelter" => "营地可遮蔽睡眠（清醒+12、体力+15、精神+1/小时），休息额外恢复精神。",
         "bed" => "营地睡眠体力每小时额外+5。需要先建成遮蔽棚。",
         _ => "",

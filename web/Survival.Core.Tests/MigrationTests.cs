@@ -83,33 +83,19 @@ public class MigrationTests : TestBase
     }
 
     [Test]
-    public void ActiveBoil_LegacyGroundOutput_CompletesOnGround()
+    public void ActiveLegacyBoil_CancelledOnce_DirtyWaterBackOnGround()
     {
+        // v0.4 烧水不再是角色配方：首版的进行中烧水（脏水是地面散卡、锅为空）取消，预留脏水一次返还当前地面，不生成净水
         var s = SaveSerializer.Deserialize(Fixture("boil"), Cfg);
         var pot = s.Items.Single(i => i.ItemId == "pot");
-        Assert.That(s.Main!.LegacyGroundOutput, Is.True);
-        Assert.That(s.Main.PotInstanceId, Is.EqualTo(pot.InstanceId));
-        Assert.That(s.Main.LockedItemIds, Does.Contain(pot.InstanceId), "锅在旧活动结束前锁定");
-        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(0), "锅保持空");
-        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId)).Reason,
-            Does.StartWith("行动占用"));
-        var cleanBefore = Count(s, "clean_water", "camp");
-        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(cleanBefore + 2), "完成仍按旧案生成地面净水");
-        Assert.That(Count(s, "dirty_water"), Is.EqualTo(0));
-        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(0));
-        Assert.That(s.Progress.Flags, Does.Contain("boiled"));
-    }
-
-    [Test]
-    public void ActiveBoil_LegacyCancel_ReturnsRawToGround()
-    {
-        var s = SaveSerializer.Deserialize(Fixture("boil"), Cfg);
-        var pot = s.Items.Single(i => i.ItemId == "pot");
-        E.Cancel(s);
-        Assert.That(Count(s, "dirty_water", "camp"), Is.EqualTo(2), "取消按旧案返还原料到地面");
-        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(0), "锅保持空");
+        Assert.That(s.Main, Is.Null, "释放角色主行动");
+        Assert.That(Count(s, "dirty_water", "camp"), Is.EqualTo(2), "原料一次返还当前地面");
+        Assert.That(Count(s, "dirty_water"), Is.EqualTo(2), "不重复返还");
+        Assert.That(Count(s, "clean_water"), Is.EqualTo(2), "不补发净水");
+        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(0), "不自动装锅");
         Assert.That(s.Items.All(i => i.ReservedBy == null));
         Assert.That(E.IsLocked(s, pot), Is.False);
+        Assert.That(s.Log.Last().Text, Does.Contain("旧版烧水已取消"));
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 2)).Ok, Is.True, "可按新方式装锅");
     }
 }

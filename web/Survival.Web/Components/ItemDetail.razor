@@ -86,8 +86,6 @@ else
                         {
                             <button class="secondary" disabled="@potBusy" @onclick="() => Attach(inst.InstanceId)">放进火堆</button>
                         }
-                        <button class="secondary" disabled="@busy" @onclick='() => OpenCraft("boil", inst.InstanceId)'>用这口锅烧水…</button>
-                        <button class="secondary" disabled="@busy" @onclick='() => OpenCraft("cook", inst.InstanceId)'>用这口锅烹饪…</button>
                     </div>
                 }
                 @if (e.IsLocked(s, inst)) { <div class="risk none">行动占用：这口锅正被当前行动使用，不能移动、取水或加水。</div> }

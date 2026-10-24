@@ -155,15 +155,6 @@ namespace Survival.Core.Config
             }
             foreach (var it in c.Items.Where(i => i.ContainerId != null))
                 if (!c.Containers.ContainsKey(it.ContainerId!)) e.Add($"物品 {it.Id} 的容器定义 {it.ContainerId} 不存在");
-            foreach (var rc in c.Recipes.Where(r => r.Pot != null))
-            {
-                var pot = c.Items.FirstOrDefault(i => i.ContainerId != null && rc.Catalysts.Contains(i.ToolTag ?? ""));
-                if (pot == null) { e.Add($"配方 {rc.Id} 的锅内转化需要容器类催化工具"); continue; }
-                if (!c.Containers.TryGetValue(pot.ContainerId!, out var ct)) continue;
-                if (!ct.Accepts.Contains(rc.Pot!.InputItem) || !ct.Accepts.Contains(rc.Pot.OutputItem))
-                    e.Add($"配方 {rc.Id} 的锅内输入输出须是容器可装物品");
-                if (rc.Pot.Units < 1 || rc.Pot.Units > ct.CapacityUnits) e.Add($"配方 {rc.Id} 的锅内份数超出容器容量");
-            }
             foreach (var kv in c.Containers)
             {
                 if (kv.Value.FoodSlots < 0) e.Add($"容器 {kv.Key} 食材位不能为负");

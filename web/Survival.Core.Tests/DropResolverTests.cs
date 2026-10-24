@@ -287,26 +287,27 @@ public class DropResolverTests : TestBase
     }
 
     [Test]
-    public void RawRootOnEmptyPot_OpensCook()
+    public void RawRootOnPotCard_PutsIntoPotFood_NotRecipe()
     {
         var s = New();
-        E.DebugGive(s, "raw_root", 2, "camp");
+        E.DebugGive(s, "raw_root", 3, "camp");
         var i = R(s, Card("camp|raw_root"), "card:" + PotCard(s));
-        Assert.That(i.Ok && i.Verb == DropVerb.PreviewRecipe, Is.True, i.Reason);
-        Assert.That(i.Recipes, Is.EqualTo(new[] { "cook" }));
-        Assert.That(i.Action!.PotInstanceId, Is.EqualTo(Pot(s).InstanceId));
+        Assert.That(i.Ok && i.Verb == DropVerb.PutFood, Is.True, i.Reason);
+        Assert.That(i.Label, Does.Contain("缺水，只存放不加工"), "空锅只存放");
+        Assert.That(i.MaxQuantity, Is.EqualTo(2), "食材位2");
+        Assert.That(E.DoInstant(s, i.Instant!).Ok, Is.True);
+        Assert.That(E.PotFood(s, Pot(s).InstanceId), Has.Count.EqualTo(1));
+        E.DebugGive(s, "cooked_root", 1, "camp");
+        Assert.That(R(s, Card("camp|cooked_root"), "card:" + PotCard(s)).Reason, Does.StartWith("烤熟块根没有可用的处理配方"));
     }
 
     [Test]
     public void BusyTable_PausedAllowsOnlyFuelIgniteAndSupply()
     {
         var s = New();
-        var f = s.Locations["camp"].Facility;
-        f.FireLit = true;
-        f.FuelMinutes = 5;
-        E.DebugGive(s, "raw_root", 2, "camp");
-        Start(s, ActionRequest.Craft("cook"));
-        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Paused));
+        SetStats(s, 100, 80, 20.2, 90, 90, 60);
+        Start(s, ActionRequest.Clear());
+        Assert.That(Run(s, autoResume: false), Is.EqualTo(SegmentStatus.Paused), "水分跌破提醒线暂停");
         Assert.That(R(s, Card("camp|wood"), "fuel:camp").Ok, Is.True, "暂停时可投料");
         Assert.That(R(s, Card("camp|canned_food"), "self").Ok, Is.True, "暂停时可补给");
         Assert.That(R(s, Card("camp|wood"), "zone:carried").Reason, Is.EqualTo("行动暂停中，只能补给、休息或维护火堆"));

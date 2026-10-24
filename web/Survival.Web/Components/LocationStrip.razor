@@ -75,7 +75,7 @@
                 {
                     @* 火堆拆成两个热区：燃料区（木材投放）与锅位（架锅）；整张火堆卡面接收打火器 *@
                     <div class="fire-chip" data-drop="@($"fire:{here}")" data-drop-level="card">
-                        <button type="button" class="chip facility fire-fuel" data-drop="@($"fuel:{here}")" data-drop-level="hot" @onclick='() => OpenCraft("boil")'
+                        <button type="button" class="chip facility fire-fuel" data-drop="@($"fuel:{here}")" data-drop-level="hot" @onclick='() => OpenCraft("knife")'
                                 title="火堆：把木材拖到这里投放，把打火器拖到火堆点火；点击打开营地加工">
                             火堆 · @(fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃") · 燃料@(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分
                         </button>
@@ -215,7 +215,7 @@
     private void SelectAttachedPot()
     {
         var pot = G.E.FirePot(G.S, G.S.CurrentLocation);
-        if (pot == null) { OpenCraft("boil"); return; }
+        if (pot == null) { OpenCraft("knife"); return; }
         G.Select(new Selection { Kind = SelectionKind.Tool, Id = pot.ItemId, Owner = pot.Owner, InstanceId = pot.InstanceId });
     }
     private void SelectEntrance(string to) => G.Select(new Selection { Kind = SelectionKind.Entrance, Id = to });

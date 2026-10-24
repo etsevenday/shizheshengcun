@@ -113,7 +113,7 @@ public sealed class SurvivalBot
 
         if (st.Satiety < 60)
         {
-            foreach (var f in new[] { "cooked_root", "berry", "canned_food" })
+            foreach (var f in new[] { "boiled_root", "cooked_root", "berry", "canned_food" })
                 if (Has(f)) return ActionRequest.UseItem(f);
         }
         if (st.Health < 70 && Has("bandage") && S.BandageReadyAt <= S.GameMinute) return ActionRequest.UseItem("bandage");
@@ -203,25 +203,74 @@ public sealed class SurvivalBot
     /// <summary>点火必须选定一把打火器（策划答复 2026-10-24 第 1 条）：脚本用随身或地面上的第一把。</summary>
     private ActionRequest IgniteRequest() => ActionRequest.Ignite(E.AccessibleTool(S, "lighter")?.InstanceId);
 
-    /// <summary>不再自动补水：烧水前把可用的脏水装进锅，凑满一锅。</summary>
-    private void FillPotWithDirtyWater()
+    private ItemInstance? CampPot() => S.Items.FirstOrDefault(i => i.ItemId == "pot" && E.PlaceOf(S, i) is var p && (p == ItemInstance.Carried || p == Camp));
+
+    /// <summary>v0.4：取出火堆与锅里的成品放到营地地面，锅里未被预留的净水倒到地面（出行时才能带走）。</summary>
+    private void CollectFromFire()
     {
-        var pot = S.Items.FirstOrDefault(i => i.ItemId == "pot" && (i.IsCarried || i.Owner == Camp));
+        foreach (var done in S.Items.Where(i => (i.InFacility || i.InContainer) && (i.ItemId == "cooked_root" || i.ItemId == "boiled_root" || E.IsSpoiled(S, i))).ToList())
+            if (E.PlaceOf(S, done) == Camp) E.DoInstant(S, InstantRequest.TakeOut(done.InstanceId, Camp));
+        var pot = CampPot();
         if (pot == null) return;
+        foreach (var w in E.PotLiquids(S, pot.InstanceId).Where(i => i.ItemId == "clean_water").ToList())
+        {
+            var free = E.PotFreeWaterUnits(S, w);
+            if (free > 0) E.DoInstant(S, InstantRequest.Decant(w.InstanceId, Camp, Math.Min(free, w.Count)));
+        }
+    }
+
+    /// <summary>不自动补水：把可用的脏水装进锅（半锅也能烧）。</summary>
+    private void FillPotWithDirtyWater(ItemInstance pot)
+    {
         foreach (var w in E.UsableBatches(S, "dirty_water", true))
         {
             var space = E.PotConfig(pot).CapacityUnits - E.PotUnits(S, pot.InstanceId);
-            if (space <= 0) break;
+            if (space <= 0 || E.PotLiquid(S, pot.InstanceId) == "clean_water") break;
             E.DoInstant(S, InstantRequest.FillPot(w.InstanceId, pot.InstanceId, Math.Min(space, w.Count)));
         }
     }
 
-    /// <summary>v0.3：烧好的净水留在锅里。再烧水或烹饪前先把锅里的净水倒到营地地面。</summary>
-    private void EmptyPotOfCleanWater()
+    /// <summary>
+    /// v0.4 营地加工：有脏水就把锅放进火堆烧水；生块根放进空加工位直接烤（烤制无需净水，水分−2 由饮水补足）；
+    /// 火堆有东西在加工时保持燃烧并等待30分钟推进世界时间，没有就熄火省燃料。
+    /// </summary>
+    private bool TendFire()
     {
-        foreach (var pot in S.Items.Where(i => i.ItemId == "pot" && (i.IsCarried || i.Owner == Camp)).ToList())
-            foreach (var w in E.PotContents(S, pot.InstanceId).Where(i => i.ItemId == "clean_water").ToList())
-                E.DoInstant(S, InstantRequest.Decant(w.InstanceId, Camp, w.Count));
+        var fac = S.Locations[Camp].Facility;
+        CollectFromFire();
+        var pot = CampPot();
+        var dirtyOutside = E.AvailableCount(S, "dirty_water", true);
+        if (pot != null)
+        {
+            var inFire = pot.InFacility;
+            var potDirty = E.PotLiquid(S, pot.InstanceId) == "dirty_water";
+            if (dirtyOutside > 0 || potDirty)
+            {
+                FillPotWithDirtyWater(pot);
+                if (!inFire) E.DoInstant(S, InstantRequest.PutInFire(pot.InstanceId));
+            }
+            else if (inFire && E.PotFood(S, pot.InstanceId).Count == 0)
+                E.DoInstant(S, InstantRequest.TakeOut(pot.InstanceId, ItemInstance.Carried));
+        }
+        foreach (var root in E.UsableBatches(S, "raw_root", true).ToList())
+        {
+            var free = E.FireFreeSlots(S, Camp);
+            if (free <= 0) break;
+            E.DoInstant(S, InstantRequest.PutInFire(root.InstanceId, Math.Min(free, root.Count)));
+        }
+        var working = S.Locations[Camp].Facility.Processes.Any(p =>
+        {
+            var t = E.FindItem(S, p.TargetInstanceId);
+            return t != null && !E.IsSpoiled(S, t) && E.ContentStatus(S, t) is var st && !st.StartsWith("缺水") && !st.StartsWith("待");
+        });
+        if (!working)
+        {
+            if (fac.FireLit) E.DoInstant(S, InstantRequest.Extinguish());
+            return false;
+        }
+        if (fac.FuelMinutes < 35 && E.MaxWoodForFire(fac) > 0 && E.AvailableCount(S, "wood", true) > 0) E.DoInstant(S, InstantRequest.AddFuel());
+        if (!fac.FireLit && !Do(IgniteRequest())) return false;
+        return Do(ActionRequest.Wait(30));
     }
 
     private int Avail(string node) => S.Resources[node].Discovered ? S.Resources[node].Available ?? 99 : 0;
@@ -231,17 +280,7 @@ public sealed class SurvivalBot
     private bool CampWork()
     {
         var fac = S.Locations[Camp].Facility;
-        var canBoil = Stock("dirty_water") >= 2;
-        var canCook = Stock("raw_root") >= 2;
-        if (canBoil || canCook)
-        {
-            EmptyPotOfCleanWater();
-            if (!fac.FireLit && !Do(IgniteRequest())) return false;
-            if (canBoil) FillPotWithDirtyWater();
-            if (canBoil && Do(ActionRequest.Craft("boil"))) return true;
-            if (canCook && Do(ActionRequest.Craft("cook"))) return true;
-        }
-        if (fac.FireLit) E.DoInstant(S, InstantRequest.Extinguish());
+        if (TendFire()) return true;
 
         if (!fac.ShelterBuilt && Do(ActionRequest.Craft("shelter"))) return true;
         if (fac.ShelterBuilt && !fac.BedBuilt && Do(ActionRequest.Craft("bed"))) return true;

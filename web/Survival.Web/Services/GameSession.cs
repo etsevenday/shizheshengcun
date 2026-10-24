@@ -103,7 +103,7 @@ public sealed class GameSession
             if (main != null && (main.Type == ActionType.Craft || main.Type == ActionType.Build)) CraftRecipe = main.TargetId;
             else if (recipe != null) CraftRecipe = recipe;
             else if (CraftRecipe == null || E.Config.Recipes.All(r => r.Id != CraftRecipe))
-                CraftRecipe = E.Location(S.CurrentLocation).HasFire ? "boil" : "knife";
+                CraftRecipe = "knife";
         }
         if (panel == "rest" && State != null)
         {

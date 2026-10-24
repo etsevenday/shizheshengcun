@@ -255,35 +255,5 @@ namespace Survival.Core.Engine
             UpdateFlags(s);
             return ActionResult.Success();
         }
-
-        /// <summary>烧水与烹饪对所选锅的校验，并为烧水计算需从散水补入的批次（拖拽与容器案 5、6.2、8）。</summary>
-        private string? ValidatePot(GameState s, RecipeConfig rc, Plan plan)
-        {
-            var pot = plan.Pot!;
-            var cfg = PotConfig(pot);
-            var potName = ItemName(pot.ItemId);
-            var where = pot.IsCarried ? "随身" : "地面";
-            var units = PotUnits(s, pot.InstanceId);
-            var liquid = PotLiquid(s, pot.InstanceId);
-            if (PotContents(s, pot.InstanceId).Any(i => i.ReservedBy != null)) return "行动占用：这口锅正被当前行动使用";
-
-            if (rc.PotMustBeEmpty)
-            {
-                // 不自动倒出，说明锅里有什么，由玩家决定怎么处理（策划答复 2026-10-24 第 3 条）
-                if (units > 0) return $"锅内有{ItemName(liquid!)}{units}份，先倒出或饮用";
-                plan.Notes.Add($"使用{where}的{potName}（空锅）；原料只被预留，不放进锅里存放");
-                return null;
-            }
-            if (rc.Pot == null) return null;
-
-            var pp = rc.Pot;
-            if (liquid != null && liquid != pp.InputItem) return $"锅内有{ItemName(liquid)}，请先倒出或饮用";
-            // 不自动补水：锅里必须已装满脏水（策划答复 2026-10-24 第 5 条取消了自动补水）
-            var need = Math.Max(0, pp.Units - units);
-            if (need > 0)
-                return $"再加入{need}份{ItemName(pp.InputItem)}，凑满{(pp.Units * cfg.UnitMl / 1000.0):0.#}升；把{ItemName(pp.InputItem)}卡拖到锅的水量条上装入";
-            plan.Notes.Add($"使用{where}的{potName}（{PotLabel(s, pot)}）；完成后{ItemName(pp.OutputItem)}{pp.Units}份留在原锅，不在地面另生成");
-            return null;
-        }
     }
 }

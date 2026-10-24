@@ -175,8 +175,6 @@ namespace Survival.Core.Engine
             public ItemInstance? UseItem;
             public bool IgniteConsumesWood;
             public ItemInstance? Lighter;
-            /// <summary>烧水、烹饪选中的锅。</summary>
-            public ItemInstance? Pot;
             public List<OutputLine> Outputs = new List<OutputLine>();
             public List<string> Notes = new List<string>();
         }
@@ -329,18 +327,9 @@ namespace Survival.Core.Engine
                                 break;
                         }
                     }
-                    // 催化工具：锅与其他工具都可以在随身或当前地面（拖拽与容器案 5、6.2）
+                    // 催化工具可以在随身或当前地面（拖拽与容器案 5）；烧水、烤制、水煮已改为设施自动加工，不再是配方
                     foreach (var tag in rc.Catalysts)
                     {
-                        var isPot = Config.Items.Any(i => i.ToolTag == tag && i.ContainerId != null);
-                        if (isPot)
-                        {
-                            var pot = SelectPot(s, r.PotInstanceId, out var why);
-                            if (pot == null) return why;
-                            plan.Pot = pot;
-                            plan.Catalysts.Add(pot);
-                            continue;
-                        }
                         var cat = AccessibleTool(s, tag);
                         if (cat == null)
                         {
@@ -349,14 +338,8 @@ namespace Survival.Core.Engine
                         }
                         plan.Catalysts.Add(cat);
                     }
-                    if (plan.Pot != null)
-                    {
-                        var err = ValidatePot(s, rc, plan);
-                        if (err != null) return err;
-                    }
                     foreach (var kv in rc.Inputs)
                     {
-                        if (rc.Pot != null && kv.Key == rc.Pot.InputItem) continue;
                         var have = AvailableCount(s, kv.Key, true);
                         if (have < kv.Value) return $"缺少{ItemName(kv.Key)}（{have}/{kv.Value}）";
                     }
@@ -364,15 +347,12 @@ namespace Survival.Core.Engine
                     foreach (var id in r.PreferredInstanceIds)
                     {
                         var b = FindItem(s, id);
-                        if (b == null || !rc.Inputs.ContainsKey(b.ItemId) || (rc.Pot != null && b.ItemId == rc.Pot.InputItem)
-                            || !UsableBatches(s, b.ItemId, true).Contains(b))
+                        if (b == null || !rc.Inputs.ContainsKey(b.ItemId) || !UsableBatches(s, b.ItemId, true).Contains(b))
                             return "指定的材料批次已失效，请重新选择";
                     }
                     foreach (var kv in rc.Outputs) plan.Outputs.Add(Line(kv.Key, kv.Value));
                     plan.BaseWork = rc.BaseMinutes;
                     plan.Label = rc.IsBuild ? rc.Name : $"制作{rc.Name}";
-                    if (rc.Id == "boil") plan.Label = "烧水";
-                    if (rc.Id == "cook") plan.Label = "烹饪块根";
                     return null;
                 }
 
@@ -560,22 +540,8 @@ namespace Survival.Core.Engine
                 case ActionType.Build:
                 {
                     var rc = p.Recipe!;
-                    if (p.Pot != null)
-                    {
-                        a.PotInstanceId = p.Pot.InstanceId;
-                        if (rc.Pot != null)
-                        {
-                            // 烧水：预留锅内的水本身（不复制、不另起虚拟锅水）
-                            foreach (var c in PotContents(s, p.Pot.InstanceId).Where(i => i.ItemId == rc.Pot.InputItem))
-                            {
-                                c.ReservedBy = a.ActionId;
-                                a.ReservedItemIds.Add(c.InstanceId);
-                            }
-                        }
-                    }
                     foreach (var kv in rc.Inputs)
                     {
-                        if (rc.Pot != null && kv.Key == rc.Pot.InputItem) continue;
                         a.ReservedItemIds.AddRange(Reserve(s, kv.Key, kv.Value, a.ActionId, r.PreferredInstanceIds));
                     }
                     foreach (var c in p.Catalysts) a.LockedItemIds.Add(c.InstanceId);
@@ -642,8 +608,6 @@ namespace Survival.Core.Engine
                 ActionType.Explore => "已取消探索，探索度不变，未获得物资；已消耗的时间保留。",
                 ActionType.Clear => "已取消清理，未获得物资；已扣除的1次清理机会不返还，已消耗的时间保留。",
                 ActionType.Gather => "已取消搜集，未获得产物，预留库存已释放。",
-                ActionType.Craft when a.PotInstanceId.HasValue && !a.LegacyGroundOutput && _recipes[a.TargetId].Pot != null
-                    => $"已取消{a.Label}，{ItemName(_recipes[a.TargetId].Pot!.InputItem)}仍留在原锅，加工进度清零。",
                 ActionType.Craft or ActionType.Build => "已取消制作，预留材料已返还当前地面，未生成半成品。",
                 ActionType.Sleep => "已提前醒来。",
                 _ => $"已结束{a.Label}。",
@@ -665,10 +629,7 @@ namespace Survival.Core.Engine
             return ActionResult.Success(s.Main.ActionId);
         }
 
-        /// <summary>
-        /// 释放行动的全部预留：资源库存归还，预留的散物品返还指定地点地面；
-        /// 锅内预留的水只解除预留、留在原锅（烧水取消不复制到地面，拖拽与容器案 6.2）。
-        /// </summary>
+        /// <summary>释放行动的全部预留：资源库存归还，预留的物品返还指定地点地面。</summary>
         private void Release(GameState s, ActionState a, string groundLocation)
         {
             if (a.Type == ActionType.Gather && a.ReservedResourceUnits > 0)
@@ -686,8 +647,7 @@ namespace Survival.Core.Engine
                     var inst = s.Items.FirstOrDefault(i => i.InstanceId == id);
                     if (inst == null) continue;
                     inst.ReservedBy = null;
-                    if (inst.InContainer) owners.Add(inst.Owner);
-                    else inst.Owner = groundLocation;
+                    inst.Owner = groundLocation;
                 }
                 a.ReservedItemIds.Clear();
                 foreach (var o in owners) Normalize(s, o);

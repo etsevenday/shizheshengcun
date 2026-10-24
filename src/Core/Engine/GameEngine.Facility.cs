@@ -186,6 +186,18 @@ namespace Survival.Core.Engine
             return "";
         }
 
+        /// <summary>生块根放进这口锅后会怎样：燃烧时自动水煮 / 先等水净化 / 缺水只存放 / 锅要放进火堆才加工。</summary>
+        public string PotFoodHint(GameState s, ItemInstance pot)
+        {
+            var liquid = PotLiquid(s, pot.InstanceId);
+            var fp = Config.Processes.FirstOrDefault(p => p.InPot && !p.IsPotBatch);
+            if (liquid == null) return "缺水，只存放不加工";
+            if (fp?.RequiredLiquid != null && liquid != fp.RequiredLiquid)
+                return BatchProcess(liquid) != null ? "先等水净化再水煮" : "缺水，只存放不加工";
+            if (PotFireLocation(pot) == null) return "锅放进燃烧的火堆后才会水煮";
+            return $"燃烧时自动水煮，每份预留{ItemName(fp?.RequiredLiquid ?? liquid)}{fp?.WaterCostMl ?? 0}毫升";
+        }
+
         // ───────────────────────── 一致性 ─────────────────────────
 
         /// <summary>全部火堆：加工位对齐真实归属，进程记录按目标增删，按放入顺序为水煮分配净水。</summary>

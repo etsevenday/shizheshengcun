@@ -124,30 +124,6 @@ namespace Survival.Core.Engine
             return $"{(liquid == null ? "空锅" : ItemName(liquid))}{pct}%·{ml}/{c.CapacityMl}毫升";
         }
 
-        /// <summary>
-        /// 旧烧水/烹饪配方选锅：指定的锅优先；否则随身锅 → 当前地面锅，同类按实例 ID；被行动锁定的跳过。
-        /// 放进火堆的锅属于设施，不再被旧配方使用（v0.4 起由设施自动加工）。
-        /// </summary>
-        public ItemInstance? SelectPot(GameState s, int? requested, out string? reason)
-        {
-            reason = null;
-            var here = s.CurrentLocation;
-            bool Reachable(ItemInstance i) => IsPot(i) && i.ReservedBy == null && (i.IsCarried || i.Owner == here);
-            if (requested.HasValue)
-            {
-                var p = FindItem(s, requested.Value);
-                if (p == null || !Reachable(p)) { reason = "只能使用随身或当前地面的锅"; return null; }
-                if (IsLocked(s, p)) { reason = "行动占用：这口锅正被其他行动使用"; return null; }
-                return p;
-            }
-            var pick = s.Items.Where(i => Reachable(i) && !IsLocked(s, i))
-                .OrderBy(i => i.IsCarried ? 1 : 2)
-                .ThenBy(i => i.InstanceId)
-                .FirstOrDefault();
-            if (pick == null) reason = "缺少金属锅（需随身或在当前地面）";
-            return pick;
-        }
-
         /// <summary>随身、耐久最高（大于0或无耐久）的指定标签工具，平手取实例 ID 小者。</summary>
         public ItemInstance? BestTool(GameState s, string toolTag) =>
             s.Items.Where(i => i.IsCarried && i.ReservedBy == null && _items[i.ItemId].ToolTag == toolTag

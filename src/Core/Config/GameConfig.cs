@@ -322,21 +322,9 @@ namespace Survival.Core.Config
         public List<string> Catalysts { get; set; } = new List<string>();
         public RecipeRequirement? Requirement { get; set; }
         public string? FacilityResult { get; set; }
-        /// <summary>原地转化指定锅内液体（烧水）。v0.4 改为设施进程后随旧配方一起废止。</summary>
-        public RecipePotConfig? Pot { get; set; }
-        /// <summary>需要一口空锅（烹饪）。v0.4 废止。</summary>
-        public bool PotMustBeEmpty { get; set; }
 
         public bool IsBuild => Kind == "build";
         public bool NeedsFire => Requirement != null && Requirement.Facility == "fire";
-    }
-
-    public sealed class RecipePotConfig
-    {
-        public string InputItem { get; set; } = "";
-        public string OutputItem { get; set; } = "";
-        public int Units { get; set; }
-        public bool TransformInPlace { get; set; }
     }
 
     public sealed class HealthRulesConfig

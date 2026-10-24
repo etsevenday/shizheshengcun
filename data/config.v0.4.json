@@ -146,8 +146,6 @@
     { "id": "knife", "name": "石刀", "kind": "craft", "baseMinutes": 30, "inputs": { "stone": 1, "fiber": 1 }, "outputs": { "stone_knife": 1 }, "catalysts": [], "requirement": null, "facilityResult": null },
     { "id": "axe", "name": "简易斧", "kind": "craft", "baseMinutes": 60, "inputs": { "stone": 2, "wood": 1, "fiber": 2 }, "outputs": { "hatchet": 1 }, "catalysts": [], "requirement": null, "facilityResult": null },
     { "id": "bandage", "name": "草药绷带", "kind": "craft", "baseMinutes": 15, "inputs": { "cloth": 1, "herb": 1 }, "outputs": { "bandage": 1 }, "catalysts": [], "requirement": null, "facilityResult": null },
-    { "id": "boil", "name": "烧水", "kind": "craft", "baseMinutes": 15, "inputs": { "dirty_water": 2 }, "outputs": { "clean_water": 2 }, "catalysts": ["pot"], "requirement": { "facility": "fire" }, "facilityResult": null, "pot": { "inputItem": "dirty_water", "outputItem": "clean_water", "units": 2, "transformInPlace": true } },
-    { "id": "cook", "name": "烹饪块根", "kind": "craft", "baseMinutes": 30, "inputs": { "raw_root": 2 }, "outputs": { "cooked_root": 2 }, "catalysts": ["pot"], "requirement": { "facility": "fire" }, "facilityResult": null, "potMustBeEmpty": true },
     { "id": "shelter", "name": "建遮蔽棚", "kind": "build", "baseMinutes": 120, "inputs": { "wood": 4, "fiber": 4 }, "outputs": {}, "catalysts": [], "requirement": { "facility": "camp" }, "facilityResult": "shelterBuilt" },
     { "id": "bed", "name": "铺床垫", "kind": "build", "baseMinutes": 60, "inputs": { "fiber": 4, "cloth": 2 }, "outputs": {}, "catalysts": [], "requirement": { "facility": "shelter" }, "facilityResult": "bedBuilt" }
   ],

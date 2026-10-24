@@ -30,7 +30,7 @@ public class ConfigTests : TestBase
         Assert.That(Cfg.Locations, Has.Count.EqualTo(8));
         Assert.That(Cfg.Edges, Has.Count.EqualTo(8));
         Assert.That(Cfg.Resources, Has.Count.EqualTo(16));
-        Assert.That(Cfg.Recipes, Has.Count.EqualTo(7));
+        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5), "v0.4 废止烧水与烹饪块根两条角色配方");
     }
 
     [Test]
@@ -96,8 +96,11 @@ public class ConfigTests : TestBase
     [Test]
     public void Recipes_MatchV02()
     {
+        var retired = new[] { "boil", "cook" };
+        foreach (var id in retired) Assert.That(Cfg.Recipes.Any(r => r.Id == id), Is.False, $"{id} 已改为设施自动加工");
         foreach (var j in V02()["recipes"]!)
         {
+            if (retired.Contains((string)j["id"]!)) continue;
             var r = Cfg.Recipes.Single(x => x.Id == (string)j["id"]!);
             Assert.That(r.BaseMinutes, Is.EqualTo((int)j["baseMinutes"]!), r.Id);
             Assert.That(r.Inputs, Is.EquivalentTo(((JObject)j["inputs"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value)), r.Id);
@@ -236,12 +239,10 @@ public class ConfigTests : TestBase
         Assert.That(Cfg.Items.Single(i => i.Id == "pot").WeightGrams, Is.EqualTo(1000));
         foreach (var id in new[] { "dirty_water", "clean_water" })
             Assert.That(Cfg.Items.Single(i => i.Id == id).UnitVolumeMl, Is.EqualTo(500), id);
-        var boil = Cfg.Recipes.Single(x => x.Id == "boil");
-        Assert.That(boil.Pot!.InputItem, Is.EqualTo((string)d["boilInputType"]!));
-        Assert.That(boil.Pot.OutputItem, Is.EqualTo((string)d["boilResultType"]!));
-        Assert.That(boil.Pot.Units * pot.UnitMl, Is.EqualTo((int)d["boilMinimumMl"]!));
-        Assert.That(boil.Pot.TransformInPlace, Is.True);
-        Assert.That(Cfg.Recipes.Single(x => x.Id == "cook").PotMustBeEmpty, Is.True);
+        var boil = Cfg.Processes.Single(x => x.Id == "boil_water");
+        Assert.That(boil.InputId, Is.EqualTo((string)d["boilInputType"]!));
+        Assert.That(boil.OutputId, Is.EqualTo((string)d["boilResultType"]!));
+        Assert.That(boil.AllowedBatchMl, Does.Contain(pot.UnitMl), "v0.4 不再必须满1升，半锅也能烧");
         Assert.That(Cfg.Fire.MaxPots, Is.EqualTo((int)v["facilityEffects"]!["firePotSlots"]!), "锅数上限延续 v0.3 单锅位");
         Assert.That(Cfg.Ui.DragThresholdPx, Is.EqualTo((int)v["cardInteraction"]!["dragThresholdPx"]!));
     }
@@ -365,6 +366,5 @@ public class ConfigTests : TestBase
         AssertInvalid(c => c.Containers["pot"].CapacityMl = 1200, "整数倍");
         AssertInvalid(c => c.Containers["pot"].Accepts.Add("wood"), "每份体积");
         AssertInvalid(c => c.Items.Single(i => i.Id == "pot").ContainerId = "kettle", "容器定义 kettle 不存在");
-        AssertInvalid(c => c.Recipes.Single(r => r.Id == "boil").Pot!.OutputItem = "berry", "容器可装物品");
     }
 }

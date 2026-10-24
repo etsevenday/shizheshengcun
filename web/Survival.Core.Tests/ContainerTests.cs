@@ -4,7 +4,7 @@ using Survival.Core.State;
 
 namespace Survival.Core.Tests;
 
-/// <summary>卡片拖拽与容器案 v0.3 第 10 节 D03–D16 的内核部分，以及金属锅、烧水、烹饪的新规则。</summary>
+/// <summary>卡片拖拽与容器案 v0.3 第 10 节 D03–D16 的内核部分与金属锅规则；v0.4 起烧水、烤制、水煮改为设施自动加工，见 FacilityProcessTests。</summary>
 public class ContainerTests : TestBase
 {
     private ItemInstance Pot(GameState s) => s.Items.First(i => i.ItemId == "pot");
@@ -129,135 +129,6 @@ public class ContainerTests : TestBase
     }
 
     [Test]
-    public void D09_BoilSuccess_CleanWaterStaysInPot()
-    {
-        var s = New();
-        LightFire(s);
-        var pot = Pot(s);
-        FillDirty(s, pot, 2);
-        Start(s, ActionRequest.Craft("boil"));
-        Assert.That(Count(s, "dirty_water", PotOwner(pot)), Is.EqualTo(2), "锅内2份脏水被预留");
-        Assert.That(E.PotLabel(s, pot), Does.Contain("100%"));
-        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(Count(s, "clean_water", PotOwner(pot)), Is.EqualTo(2));
-        Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(2), "地面不另生成净水");
-        Assert.That(E.PotLabel(s, pot), Is.EqualTo("净水100%·1000/1000毫升"));
-        Assert.That(s.Progress.Flags, Does.Contain("boiled"));
-        Assert.That(s.Items.All(i => i.ReservedBy == null));
-    }
-
-    [Test]
-    public void Boil_Rules_CleanInPot_HalfPot_NoAutoFill()
-    {
-        var s = New();
-        LightFire(s);
-        var pot = Pot(s);
-        Ok(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId));
-        Assert.That(E.CanStart(s, ActionRequest.Craft("boil")), Is.EqualTo("锅内有净水，请先倒出或饮用"));
-
-        var t = New();
-        LightFire(t);
-        E.DebugGive(t, "dirty_water", 1, "camp");
-        var tp = Pot(t);
-        Ok(t, InstantRequest.FillPot(First(t, "dirty_water", "camp").InstanceId, tp.InstanceId));
-        Assert.That(E.CanStart(t, ActionRequest.Craft("boil")), Does.StartWith("再加入1份脏水，凑满1升"));
-        // 策划答复 2026-10-24 第 5 条：取消自动补水，地面有脏水也不替玩家装锅
-        E.DebugGive(t, "dirty_water", 3, "camp");
-        Assert.That(E.Start(t, ActionRequest.Craft("boil")).Ok, Is.False);
-        Assert.That(Count(t, "dirty_water", "camp"), Is.EqualTo(3), "散脏水原样不动");
-        Assert.That(E.PotUnits(t, tp.InstanceId), Is.EqualTo(1));
-        Ok(t, InstantRequest.FillPot(First(t, "dirty_water", "camp").InstanceId, tp.InstanceId));
-        Assert.That(E.CanStart(t, ActionRequest.Craft("boil")), Is.Null, "装满后可以烧");
-
-        var u = New();
-        LightFire(u);
-        E.DebugGive(u, "dirty_water", 2, "camp");
-        Assert.That(E.CanStart(u, ActionRequest.Craft("boil")), Does.StartWith("再加入2份脏水"), "空锅也不自动补水");
-    }
-
-    [Test]
-    public void D10_BoilPausedByFireOut_PotLocked_FuelAndIgniteAllowed()
-    {
-        var s = New();
-        LightFire(s, 5);
-        var pot = Pot(s);
-        FillDirty(s, pot, 2);
-        Start(s, ActionRequest.Craft("boil"));
-        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Paused));
-        Assert.That(s.Main!.PauseReason, Is.EqualTo(PauseReason.FireOut));
-
-        Assert.That(E.DoInstant(s, InstantRequest.Drop(pot.InstanceId, 1)).Reason, Does.StartWith("行动占用"));
-        var child = E.PotContents(s, pot.InstanceId).Single();
-        Assert.That(E.DoInstant(s, InstantRequest.Decant(child.InstanceId, "camp")).Reason, Does.StartWith("行动占用"));
-        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId)).Reason, Does.StartWith("行动占用"));
-        Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.False, "暂停中不能把锅放进火堆");
-        Assert.That(E.CanStart(s, ActionRequest.UseInstance(child.InstanceId)), Is.EqualTo("该物品已被预留"));
-
-        Ok(s, InstantRequest.AddFuel());
-        Start(s, ActionRequest.Ignite(First(s, "lighter").InstanceId));
-        Run(s);
-        Assert.That(s.Main!.Status, Is.EqualTo(ActionStatus.Paused), "维护后仍等明确继续");
-        E.Resume(s);
-        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(Count(s, "clean_water", PotOwner(pot)), Is.EqualTo(2));
-    }
-
-    [Test]
-    public void D11_BoilCancelThenReload_DirtyWaterStaysInPot()
-    {
-        var s = New();
-        LightFire(s);
-        var pot = Pot(s);
-        FillDirty(s, pot, 2);
-        Start(s, ActionRequest.Craft("boil"));
-        Steps(s, 1);
-        E.Cancel(s);
-        var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s));
-        Assert.That(Count(t, "dirty_water", PotOwner(pot)), Is.EqualTo(2), "脏水仍在原锅");
-        Assert.That(Count(t, "dirty_water"), Is.EqualTo(2), "无额外散卡");
-        Assert.That(t.Main, Is.Null, "不保留加工进度");
-        Assert.That(t.Items.All(i => i.ReservedBy == null));
-        Start(t, ActionRequest.Craft("boil"));
-        Assert.That(t.Main!.WorkDone, Is.EqualTo(0), "重新烧水重新计时");
-        Assert.That(t.Main.BaseWorkMinutes, Is.EqualTo(15));
-    }
-
-    [Test]
-    public void Boil_DeathReleasesWaterInPot()
-    {
-        var s = New();
-        LightFire(s);
-        var pot = Pot(s);
-        FillDirty(s, pot, 2);
-        Start(s, ActionRequest.Craft("boil"));
-        s.Stats.Health = 0.01;
-        s.Stats.Hydration = 0;
-        E.SyncLatches(s);
-        Run(s);
-        Assert.That(s.Progress.Dead, Is.True);
-        Assert.That(Count(s, "dirty_water", PotOwner(pot)), Is.EqualTo(2));
-        Assert.That(s.Items.All(i => i.ReservedBy == null));
-    }
-
-    [Test]
-    public void Cook_NeedsEmptyPot_GroundPotAllowed()
-    {
-        var s = New();
-        LightFire(s);
-        E.DebugGive(s, "raw_root", 2, "camp");
-        var pot = Pot(s);
-        Ok(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId));
-        Assert.That(E.CanStart(s, ActionRequest.Craft("cook")), Is.EqualTo("锅内有净水1份，先倒出或饮用"), "说明锅里有什么，不自动倒出");
-        Ok(s, InstantRequest.Decant(E.PotContents(s, pot.InstanceId).Single().InstanceId, "camp"));
-        Ok(s, InstantRequest.Drop(pot.InstanceId, 1));
-        Start(s, ActionRequest.Craft("cook"));
-        Assert.That(s.Main!.LockedItemIds, Does.Contain(pot.InstanceId), "地面锅也可催化并被锁定");
-        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(Count(s, "cooked_root", "camp"), Is.EqualTo(2));
-        Assert.That(pot.Owner, Is.EqualTo("camp"));
-    }
-
-    [Test]
     public void Ignite_RequiresChosenLighter_GroundAllowed()
     {
         var s = New();
@@ -275,24 +146,6 @@ public class ContainerTests : TestBase
         Assert.That(E.CanStart(t, ActionRequest.Ignite(First(t, "lighter").InstanceId)), Is.Null, "选定的地面打火器可用");
         foreach (var l in t.Items.Where(i => i.ItemId == "lighter").ToList()) t.Items.Remove(l);
         Assert.That(E.CanStart(t, ActionRequest.Ignite()), Is.EqualTo("缺少打火器（需随身或在当前地面）"));
-    }
-
-    [Test]
-    public void B2_PotSelection_CarriedThenGround_FirePotNotUsedByOldRecipe()
-    {
-        var s = New();
-        LightFire(s);
-        E.DebugGive(s, "pot", 1, "camp");
-        var carried = s.Items.First(i => i.ItemId == "pot" && i.IsCarried);
-        FillDirty(s, carried, 2);
-        var ground = s.Items.First(i => i.ItemId == "pot" && i.Owner == "camp");
-        Assert.That(E.SelectPot(s, null, out _), Is.SameAs(carried), "随身锅优先");
-        Ok(s, InstantRequest.PutInFire(ground.InstanceId));
-        Assert.That(E.SelectPot(s, null, out _), Is.SameAs(carried), "放进火堆的锅归设施，不再被旧配方挑中");
-        Start(s, ActionRequest.Craft("boil", carried.InstanceId));
-        Assert.That(s.Main!.PotInstanceId, Is.EqualTo(carried.InstanceId), "指定的锅优先");
-        Assert.That(E.SelectPot(s, carried.InstanceId, out var why), Is.Null);
-        Assert.That(why, Does.StartWith("行动占用"));
     }
 
     [Test]
@@ -333,12 +186,11 @@ public class ContainerTests : TestBase
         Assert.That(stacks[0].Count, Is.EqualTo(3));
         Assert.That(stacks[0].ExpiresAt, Is.EqualTo(expiry), "转移和合堆不刷新寿命");
 
-        LightFire(t);
-        E.DebugGive(t, "raw_root", 2, "camp");
-        Start(t, ActionRequest.Craft("cook"));
-        Assert.That(E.AvailableCount(t, "raw_root", true), Is.EqualTo(0), "预留批次不重复可用");
+        E.DebugGive(t, "herb", 1, "camp");
+        Start(t, ActionRequest.Craft("bandage"));
+        Assert.That(E.AvailableCount(t, "herb", true), Is.EqualTo(0), "预留批次不重复可用");
         var u = SaveSerializer.Deserialize(SaveSerializer.Serialize(t));
-        Assert.That(E.AvailableCount(u, "raw_root", true), Is.EqualTo(0));
+        Assert.That(E.AvailableCount(u, "herb", true), Is.EqualTo(0));
     }
 
     [Test]

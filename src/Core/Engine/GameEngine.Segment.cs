@@ -129,24 +129,16 @@ namespace Survival.Core.Engine
             if (a == null) return new SegmentResult(SegmentStatus.Idle);
             if (!a.IsSub && a.Status == ActionStatus.Paused) return new SegmentResult(SegmentStatus.Paused);
 
-            // 0. 段前持续条件：火堆（不推进时间）、原料腐败
-            if (a.Type == ActionType.Craft && _recipes[a.TargetId].NeedsFire)
-            {
-                var f = s.Locations[a.SourceLocation].Facility;
-                if (!f.FireLit || f.FuelMinutes < Tick)
-                {
-                    Pause(s, a, PauseReason.FireOut, null, "火堆熄灭，加工暂停。原材料与进度保留，可投料、点火后继续。");
-                    return new SegmentResult(SegmentStatus.Paused);
-                }
-            }
+            // 0. 段前持续条件：原料腐败（烧水、烤制、水煮已是设施自动进程，熄火不再暂停角色行动）
             if ((a.Type == ActionType.Craft || a.Type == ActionType.Build) && AnyReservedSpoiled(s, a))
             {
                 AbortSpoiled(s, a);
                 return new SegmentResult(SegmentStatus.Aborted);
             }
 
-            // 1. 段首计算
+            // 1. 段首计算：角色本段速率；各火堆段首是否燃烧、燃料够不够、哪些加工目标可受热（设施与烹饪案第 7 节）
             var ctx = ComputeSegment(s, a);
+            var snap = SnapshotFacilities(s, a);
 
             // 2. 推进时间并应用变化
             var h = Tick / 60.0;
@@ -164,12 +156,15 @@ namespace Survival.Core.Engine
             UpdateAllClearCharges(s);
             if (s.GameMinute % Clock.MinutesPerDay == 0) NewDay(s);
 
-            // 3. 判死
+            // 3. 判死：死亡则本段设施加工不提交
             if (s.Stats.Health <= 0)
             {
                 Kill(s, s.Progress.LastDamageCause);
                 return new SegmentResult(SegmentStatus.Dead);
             }
+
+            // 3b. 设施自动加工：按段首快照给合格目标 +5 受热分钟，达标即原地转化；不替换、不暂停角色主行动
+            AdvanceFacilities(s, snap);
 
             // 4. 累积进度
             bool done;
@@ -287,8 +282,6 @@ namespace Survival.Core.Engine
                         return false;
                     }
                     var rc = _recipes[a.TargetId];
-                    if (rc.Pot != null && a.PotInstanceId.HasValue && !a.LegacyGroundOutput)
-                        return CompletePotTransform(s, a, rc);
                     foreach (var id in a.ReservedItemIds) s.Items.RemoveAll(i => i.InstanceId == id);
                     a.ReservedItemIds.Clear();
                     var made = new List<string>();
@@ -298,8 +291,6 @@ namespace Survival.Core.Engine
                         made.Add($"{ItemName(kv.Key)}+{kv.Value}");
                     }
                     if (rc.FacilityResult != null) SetFacility(s.Locations[here].Facility, rc.FacilityResult);
-                    if (rc.Id == "boil") s.Progress.Flags.Add("boiled");
-                    if (rc.Id == "cook") s.Progress.Flags.Add("cooked");
                     ClearAction(s, a);
                     var text = rc.FacilityResult != null
                         ? $"{rc.Name.Replace("建", "").Replace("铺", "")}已完成。"
@@ -334,31 +325,6 @@ namespace Survival.Core.Engine
                     ClearAction(s, a);
                     return true;
             }
-        }
-
-        /// <summary>烧水完成：把锅内预留的脏水原地改为净水，数量、归属不变，不在地面另生成（拖拽与容器案 6.2）。</summary>
-        private bool CompletePotTransform(GameState s, ActionState a, RecipeConfig rc)
-        {
-            var pp = rc.Pot!;
-            var units = 0;
-            foreach (var id in a.ReservedItemIds)
-            {
-                var inst = FindItem(s, id);
-                if (inst == null) continue;
-                inst.ItemId = pp.OutputItem;
-                inst.ReservedBy = null;
-                units += inst.Count;
-            }
-            a.ReservedItemIds.Clear();
-            var pot = FindItem(s, a.PotInstanceId!.Value);
-            if (pot != null) Normalize(s, ItemInstance.ContainerOwner(pot.InstanceId));
-            if (rc.Id == "boil") s.Progress.Flags.Add("boiled");
-            ClearAction(s, a);
-            var where = pot == null ? "锅" : ItemName(pot.ItemId);
-            var label = pot == null ? "" : $"（{PotLabel(s, pot)}）";
-            Emit(s, GameEventKind.ActionCompleted, $"{ItemName(pp.OutputItem)}+{units}，留在{where}内{label}。", null,
-                pot == null ? new[] { pp.OutputItem } : new[] { pot.ItemId, pp.OutputItem });
-            return true;
         }
 
         private void ClearAction(GameState s, ActionState a)
@@ -527,6 +493,9 @@ namespace Survival.Core.Engine
             Emit(s, GameEventKind.SevenDay, "七日基础生存检查完成。你可以继续生存下去。");
         }
 
+        /// <summary>引导“熟制块根”接受的物品（设施与烹饪案 5.3 goals.acceptedIds）。</summary>
+        public static readonly string[] CookedFoodIds = { "cooked_root", "boiled_root" };
+
         /// <summary>引导与七日检查标记：达成即锁存（实施方案 9B-13）。</summary>
         public void UpdateFlags(GameState s)
         {
@@ -539,12 +508,13 @@ namespace Survival.Core.Engine
             if (s.Locations.Values.All(l => l.Visited)) f.Add("allVisited");
 
             var camp = Config.Locations.FirstOrDefault(l => l.CanBuildShelter)?.Id ?? "camp";
-            // 锅内水按锅所在计入（开发计划 v0.2 A7）
-            int Count(string item) => s.Items
-                .Where(i => i.ItemId == item && !IsSpoiled(s, i))
+            // 按根位置计入：随身、营地地面，以及营地火堆与锅里的有效物品；每个实例只算一次（设施与烹饪案 5.3）
+            int Count(params string[] ids) => s.Items
+                .Where(i => ids.Contains(i.ItemId) && !IsSpoiled(s, i))
                 .Where(i => { var p = PlaceOf(s, i); return p == ItemInstance.Carried || p == camp; })
-                .Sum(i => i.Count);
-            if (Count("clean_water") >= 3 && Count("cooked_root") >= 2) f.Add("supplyReady");
+                .GroupBy(i => i.InstanceId).Sum(g => g.First().Count);
+            // “熟制块根”按烤熟与水煮合计
+            if (Count("clean_water") >= 3 && Count(CookedFoodIds) >= 2) f.Add("supplyReady");
             SyncLayout(s);
         }
     }

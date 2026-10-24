@@ -149,35 +149,37 @@ public class SurvivalTests : TestBase
     }
 
     [Test]
-    public void S10_FireExactly5Minutes_CompletesBoil_4Minutes_Pauses()
+    public void S10_FireExactly5Minutes_FinishesBoilWater_4Minutes_NoHeat()
     {
+        // v0.4：烧水是火堆上锅的自动进程；段首燃料恰好5可完整加热本段，不足5则本段不加热（02 案第 7 节）
         foreach (var (fuel, expectDone) in new[] { (5, true), (4, false) })
         {
             var s = New();
             var f = s.Locations["camp"].Facility;
-            f.FireLit = true;
-            f.FuelMinutes = 60;
+            var potItem = First(s, "pot");
             E.DebugGive(s, "dirty_water", 2, "camp");
-            E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, First(s, "pot").InstanceId, 2));
-            Start(s, ActionRequest.Craft("boil"));
-            s.Main!.WorkDone = 10;
+            E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, potItem.InstanceId, 2));
+            E.DoInstant(s, InstantRequest.PutInFire(potItem.InstanceId));
+            E.ProcessOf(s, potItem)!.HeatDoneMinutes = 10;
+            f.FireLit = true;
             f.FuelMinutes = fuel;
+            Start(s, ActionRequest.Wait(30));
             var r = E.Advance(s);
-            var pot = "pot:" + First(s, "pot").InstanceId;
+            var pot = "pot:" + potItem.InstanceId;
+            Assert.That(r.Status, Is.EqualTo(SegmentStatus.Running), "设施加工不暂停角色的等待");
+            Assert.That(s.GameMinute, Is.EqualTo(485));
+            Assert.That(f.FireLit, Is.False, "本段末燃尽");
+            Assert.That(f.FuelMinutes, Is.EqualTo(0));
             if (expectDone)
             {
-                Assert.That(r.Status, Is.EqualTo(SegmentStatus.Completed));
-                Assert.That(Count(s, "clean_water", pot), Is.EqualTo(2), "v0.3：净水留在原锅");
+                Assert.That(Count(s, "clean_water", pot), Is.EqualTo(2), "净水留在原锅");
                 Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(2), "地面只有开局的净水");
-                Assert.That(f.FireLit, Is.False, "本段末燃尽");
+                Assert.That(s.Progress.Flags, Does.Contain("boiled"));
             }
             else
             {
-                Assert.That(r.Status, Is.EqualTo(SegmentStatus.Paused));
-                Assert.That(s.Main!.PauseReason, Is.EqualTo(PauseReason.FireOut));
-                Assert.That(s.GameMinute, Is.EqualTo(480), "不推进该段");
-                Assert.That(Count(s, "clean_water", "camp"), Is.EqualTo(2));
-                Assert.That(Count(s, "dirty_water", pot), Is.EqualTo(2), "锅内脏水被预留");
+                Assert.That(Count(s, "dirty_water", pot), Is.EqualTo(2));
+                Assert.That(E.ProcessOf(s, potItem)!.HeatDoneMinutes, Is.EqualTo(10), "段首不足5不给部分受热");
             }
         }
     }

@@ -138,49 +138,52 @@ public class GatherCraftTests : TestBase
     }
 
     [Test]
-    public void G06a_CookPausesWhenFireOut_ThenRefuelIgniteContinue()
+    public void G06a_RoastPausesWhenFireOut_RefuelIgnite_ResumesItself()
     {
+        // v0.4：烤制是火堆自动进程；熄火保留受热分钟，复燃后自动续行，不占也不暂停角色行动
         var s = New();
         var f = s.Locations["camp"].Facility;
-        E.DebugGive(s, "raw_root", 2, "camp");
+        E.DebugGive(s, "raw_root", 1, "camp");
+        Assert.That(E.DoInstant(s, InstantRequest.PutInFire(First(s, "raw_root", "camp").InstanceId)).Ok, Is.True);
+        var root = s.Items.Single(i => i.Owner == "facility:camp:fire");
         f.FireLit = true;
         f.FuelMinutes = 10;
-        Start(s, ActionRequest.Craft("cook"));
-        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Paused));
-        Assert.That(s.Main!.PauseReason, Is.EqualTo(PauseReason.FireOut));
-        Assert.That(s.Main.WorkDone, Is.EqualTo(10).Within(1e-9));
-        Assert.That(Count(s, "cooked_root"), Is.EqualTo(0));
+        Start(s, ActionRequest.Wait(30));
+        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed), "火堆熄灭不打断等待");
+        Assert.That(f.FireLit, Is.False);
+        Assert.That(E.ProcessOf(s, root)!.HeatDoneMinutes, Is.EqualTo(10), "熄火保留受热");
+        Assert.That(E.ContentStatus(s, root), Does.StartWith("火堆未燃烧"));
 
         Assert.That(E.DoInstant(s, InstantRequest.AddFuel()).Ok, Is.True);
         Assert.That(f.FuelMinutes, Is.EqualTo(60));
         Start(s, ActionRequest.Ignite(First(s, "lighter").InstanceId));
-        Assert.That(s.Sub, Is.Not.Null);
         Run(s);
-        Assert.That(s.Sub, Is.Null);
-        Assert.That(s.Main!.Status, Is.EqualTo(ActionStatus.Paused), "点火后不自动继续");
         Assert.That(f.FuelMinutes, Is.EqualTo(55));
-        E.Resume(s);
-        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(Count(s, "cooked_root", "camp"), Is.EqualTo(2));
+        Assert.That(E.ProcessOf(s, root)!.HeatDoneMinutes, Is.EqualTo(10), "点火这5分钟不算受热");
+        Start(s, ActionRequest.Wait(30));
+        Run(s);
+        Assert.That(root.ItemId, Is.EqualTo("cooked_root"), "复燃后自动续行到完成");
+        Assert.That(root.Owner, Is.EqualTo("facility:camp:fire"), "成品留在原加工位");
         Assert.That(Count(s, "raw_root"), Is.EqualTo(0));
     }
 
     [Test]
-    public void G06b_IngredientSpoilsDuringCook_Aborts()
+    public void G06b_IngredientExpiresAtCompletion_NoProduct()
     {
         var s = New();
         var f = s.Locations["camp"].Facility;
         f.FireLit = true;
         f.FuelMinutes = 120;
-        E.DebugGive(s, "raw_root", 2, "camp");
+        E.DebugGive(s, "raw_root", 1, "camp");
         First(s, "raw_root").ExpiresAt = 480 + 30; // 恰好在完成时刻到期
-        Start(s, ActionRequest.Craft("cook"));
-        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Aborted));
-        Assert.That(Count(s, "cooked_root"), Is.EqualTo(0));
+        Assert.That(E.DoInstant(s, InstantRequest.PutInFire(First(s, "raw_root").InstanceId)).Ok, Is.True);
+        Start(s, ActionRequest.Wait(30));
+        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
+        Assert.That(Count(s, "cooked_root"), Is.EqualTo(0), "到期优先于完成");
         var raw = First(s, "raw_root");
-        Assert.That(raw.Owner, Is.EqualTo("camp"));
-        Assert.That(raw.ReservedBy, Is.Null);
+        Assert.That(raw.Owner, Is.EqualTo("facility:camp:fire"), "腐败原料留在原位");
         Assert.That(E.IsSpoiled(s, raw), Is.True);
+        Assert.That(E.ContentStatus(s, raw), Is.EqualTo("已腐败，不再加工"));
     }
 
     [Test]
