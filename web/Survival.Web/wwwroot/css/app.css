@@ -211,7 +211,7 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .tbar-step { width: 34px; font-size: 18px; background: transparent; border: 1px solid var(--line); border-radius: 4px; }
 .tbar-max { padding: 0 8px; font-size: 13px; background: transparent; border: 1px solid var(--line); border-radius: 4px; white-space: nowrap; }
 .tbar-step:hover, .tbar-max:hover { border-color: var(--accent); }
-.tbar-go { flex: 1; min-height: 36px; padding: 0 12px; background: var(--accent); color: #222a20; border: 0; border-radius: 4px; font-weight: 600; font-size: 15px; white-space: nowrap; }
+.tbar-go { flex: 1; min-height: 40px; padding: 0 12px; background: var(--accent); color: #222a20; border: 0; border-radius: 4px; font-weight: 600; font-size: 15px; white-space: nowrap; }
 .tbar-go:disabled { background: #5b5a4b; color: #b4b19f; }
 .tbar-note { font-size: 12px; color: var(--muted); }
 .tbar-note.bad { color: #f0c7b9; }
