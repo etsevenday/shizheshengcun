@@ -14,18 +14,32 @@ namespace Survival.Core.Engine
 
         public ItemInstance? FindItem(GameState s, int instanceId) => s.Items.FirstOrDefault(i => i.InstanceId == instanceId);
 
-        /// <summary>物品实际所在：锅内物品取锅所在（随身或某地面），其余就是 Owner。</summary>
+        /// <summary>
+        /// 物品实际所在的根位置：随身或某地点。锅内物品取锅所在，设施内物品取设施所在地点（火堆 → 锅 → 水/食材，最多两层）。
+        /// </summary>
         public string PlaceOf(GameState s, ItemInstance i)
         {
-            if (!ItemInstance.TryContainerId(i.Owner, out var potId)) return i.Owner;
-            return FindItem(s, potId)?.Owner ?? "";
+            var owner = i.Owner;
+            for (var depth = 0; depth < 4; depth++)
+            {
+                if (ItemInstance.TryContainerId(owner, out var potId))
+                {
+                    var pot = FindItem(s, potId);
+                    if (pot == null) return "";
+                    owner = pot.Owner;
+                    continue;
+                }
+                if (ItemInstance.TryFacilityId(owner, out var fid)) return FacilityLocation(fid) ?? "";
+                return owner;
+            }
+            return "";
         }
 
-        /// <summary>一件物品（锅连同内容）的克重；锅内物品只随锅计一次。</summary>
+        /// <summary>一件物品连同全部后代（锅里的水与食材）的克重，每件只计一次。</summary>
         public int ItemGrams(GameState s, ItemInstance i)
         {
             var g = _items[i.ItemId].WeightGrams * i.Count;
-            if (IsPot(i)) g += PotContents(s, i.InstanceId).Sum(c => _items[c.ItemId].WeightGrams * c.Count);
+            if (IsPot(i)) g += PotContents(s, i.InstanceId).Sum(c => ItemGrams(s, c));
             return g;
         }
 
@@ -34,18 +48,31 @@ namespace Survival.Core.Engine
 
         public bool IsOverweight(GameState s) => CarriedGrams(s) > Config.Carry.SoftGrams;
 
-        /// <summary>随身与（可选）当前地面的物品；includeContainers 时也包括这些位置上锅里的水（饮用、引导统计用）。</summary>
+        /// <summary>
+        /// 随身与（可选）当前地面的物品；includeContainers 时也包括这些位置（含当前火堆里）锅中的水（饮用、引导统计用）。
+        /// 设施与锅里的食材是独立来源，不在这里自动取用（统一卡片案第 6 节）。
+        /// </summary>
         public IEnumerable<ItemInstance> Accessible(GameState s, bool allowGround, bool includeContainers = false) =>
             s.Items.Where(i =>
             {
-                var place = includeContainers ? PlaceOf(s, i) : i.Owner;
-                return place == ItemInstance.Carried || (allowGround && place == s.CurrentLocation);
+                if (i.InFacility) return false;
+                if (i.InContainer)
+                {
+                    if (!includeContainers || !IsLiquid(i)) return false;
+                    var place = PlaceOf(s, i);
+                    return place == ItemInstance.Carried || (allowGround && place == s.CurrentLocation);
+                }
+                return i.IsCarried || (allowGround && i.Owner == s.CurrentLocation);
             });
 
-        /// <summary>可消耗批次：到期时间升序 → 同批次随身优先（锅内水按锅所在） → 实例 ID 升序。配方与投料不取锅内物品。</summary>
+        /// <summary>
+        /// 可消耗批次：到期时间升序 → 同批次随身优先（锅内水按锅所在） → 实例 ID 升序。配方与投料不取锅内物品；
+        /// 锅里的水已全部被水煮预留时不可取。
+        /// </summary>
         public List<ItemInstance> UsableBatches(GameState s, string itemId, bool allowGround, bool includeContainers = false) =>
             Accessible(s, allowGround, includeContainers)
                 .Where(i => i.ItemId == itemId && i.ReservedBy == null && !IsSpoiled(s, i))
+                .Where(i => !i.InContainer || PotFreeWaterUnits(s, i) > 0)
                 .OrderBy(i => i.ExpiresAt ?? int.MaxValue)
                 .ThenBy(i => PlaceOf(s, i) == ItemInstance.Carried ? 0 : 1)
                 .ThenBy(i => i.InstanceId)
@@ -63,16 +90,28 @@ namespace Survival.Core.Engine
 
         public ContainerConfig PotConfig(ItemInstance pot) => Config.Containers[_items[pot.ItemId].ContainerId!];
 
+        /// <summary>锅里的全部直接内容（水与食材）。</summary>
         public List<ItemInstance> PotContents(GameState s, int potId)
         {
             var owner = ItemInstance.ContainerOwner(potId);
             return s.Items.Where(i => i.Owner == owner).OrderBy(i => i.InstanceId).ToList();
         }
 
-        public int PotUnits(GameState s, int potId) => PotContents(s, potId).Sum(i => i.Count);
+        public bool IsLiquidItem(string itemId) => _items.TryGetValue(itemId, out var c) && c.UnitVolumeMl.HasValue;
+        public bool IsLiquid(ItemInstance i) => IsLiquidItem(i.ItemId);
 
-        /// <summary>锅内液体种类；空锅为 null。同一锅只允许一种水。</summary>
-        public string? PotLiquid(GameState s, int potId) => PotContents(s, potId).FirstOrDefault()?.ItemId;
+        /// <summary>锅里的水（液体与食材是两个容量维度）。</summary>
+        public List<ItemInstance> PotLiquids(GameState s, int potId) => PotContents(s, potId).Where(IsLiquid).ToList();
+
+        /// <summary>锅里的食材：按放入顺序、再按实例 ID；每份单独一个实例，各占一个食材位。</summary>
+        public List<ItemInstance> PotFood(GameState s, int potId) =>
+            PotContents(s, potId).Where(i => !IsLiquid(i)).OrderBy(i => i.PlacedOrder ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
+
+        /// <summary>锅里水的份数（每份 500 毫升）。</summary>
+        public int PotUnits(GameState s, int potId) => PotLiquids(s, potId).Sum(i => i.Count);
+
+        /// <summary>锅内液体种类；无水为 null。同一锅只允许一种水。</summary>
+        public string? PotLiquid(GameState s, int potId) => PotLiquids(s, potId).FirstOrDefault()?.ItemId;
 
         /// <summary>水量标签，如“脏水50%·500/1000毫升”；空锅为“空锅0%·0/1000毫升”。</summary>
         public string PotLabel(GameState s, ItemInstance pot)
@@ -85,23 +124,9 @@ namespace Survival.Core.Engine
             return $"{(liquid == null ? "空锅" : ItemName(liquid))}{pct}%·{ml}/{c.CapacityMl}毫升";
         }
 
-        /// <summary>架在某地点火堆上的锅（锅仍须在该地点地面）。</summary>
-        public ItemInstance? AttachedPot(GameState s, string locationId)
-        {
-            var id = s.Locations[locationId].Facility.AttachedPotId;
-            if (id == null) return null;
-            var pot = FindItem(s, id.Value);
-            return pot != null && pot.Owner == locationId ? pot : null;
-        }
-
-        private static void DetachEverywhere(GameState s, int potId)
-        {
-            foreach (var l in s.Locations.Values)
-                if (l.Facility.AttachedPotId == potId) l.Facility.AttachedPotId = null;
-        }
-
         /// <summary>
-        /// 选锅（开发计划 v0.2 B2）：指定的锅优先；否则锅位锅 → 随身锅 → 当前地面锅，同类按实例 ID；被行动锁定的跳过。
+        /// 旧烧水/烹饪配方选锅：指定的锅优先；否则随身锅 → 当前地面锅，同类按实例 ID；被行动锁定的跳过。
+        /// 放进火堆的锅属于设施，不再被旧配方使用（v0.4 起由设施自动加工）。
         /// </summary>
         public ItemInstance? SelectPot(GameState s, int? requested, out string? reason)
         {
@@ -115,9 +140,8 @@ namespace Survival.Core.Engine
                 if (IsLocked(s, p)) { reason = "行动占用：这口锅正被其他行动使用"; return null; }
                 return p;
             }
-            var attached = AttachedPot(s, here);
             var pick = s.Items.Where(i => Reachable(i) && !IsLocked(s, i))
-                .OrderBy(i => attached != null && i.InstanceId == attached.InstanceId ? 0 : i.IsCarried ? 1 : 2)
+                .OrderBy(i => i.IsCarried ? 1 : 2)
                 .ThenBy(i => i.InstanceId)
                 .FirstOrDefault();
             if (pick == null) reason = "缺少金属锅（需随身或在当前地面）";
@@ -192,11 +216,12 @@ namespace Survival.Core.Engine
 
         private void MoveItems(GameState s, ItemInstance inst, int count, string newOwner)
         {
-            // 移动锅即解除锅位关联；锅内物品的归属是锅本身，随锅一起走
-            if (IsPot(inst)) DetachEverywhere(s, inst.InstanceId);
+            // 锅内物品的归属是锅本身，随锅一起走；离开设施与锅的物品清掉放入序号
+            var intoHolder = newOwner.StartsWith(ItemInstance.ContainerPrefix) || newOwner.StartsWith(ItemInstance.FacilityPrefix);
             if (count >= inst.Count)
             {
                 inst.Owner = newOwner;
+                if (!intoHolder) inst.PlacedOrder = null;
             }
             else
             {
@@ -205,9 +230,32 @@ namespace Survival.Core.Engine
                 n.InstanceId = s.NextInstanceId++;
                 n.Count = count;
                 n.Owner = newOwner;
+                if (!intoHolder) n.PlacedOrder = null;
                 s.Items.Add(n);
             }
             Normalize(s, newOwner);
+        }
+
+        /// <summary>把一份（数量 1）移入设施或锅：整堆只剩 1 份时直接改归属，否则拆出新实例。返回移入的实例。</summary>
+        private ItemInstance MoveOne(GameState s, ItemInstance inst, string newOwner)
+        {
+            ItemInstance moved;
+            if (inst.Count <= 1)
+            {
+                inst.Owner = newOwner;
+                moved = inst;
+            }
+            else
+            {
+                inst.Count -= 1;
+                moved = inst.Clone();
+                moved.InstanceId = s.NextInstanceId++;
+                moved.Count = 1;
+                moved.Owner = newOwner;
+                s.Items.Add(moved);
+            }
+            moved.PlacedOrder = s.NextProcessSeq++;
+            return moved;
         }
 
         /// <summary>生成物品到指定位置。工具逐件生成并带满耐久；易腐品按生成时刻记录 expiresAt。</summary>
@@ -215,7 +263,9 @@ namespace Survival.Core.Engine
         {
             if (count <= 0) return;
             var cfg = _items[itemId];
-            if (!cfg.IsStackable)
+            // 设施与锅里的食材每份各占一位，逐份生成，不合堆
+            var single = !cfg.IsStackable || ItemInstance.TryFacilityId(owner, out _) || (owner.StartsWith(ItemInstance.ContainerPrefix) && !cfg.UnitVolumeMl.HasValue);
+            if (single)
             {
                 for (var k = 0; k < count; k++)
                 {
@@ -227,6 +277,7 @@ namespace Survival.Core.Engine
                         Durability = cfg.MaxDurability,
                         Owner = owner,
                         ExpiresAt = cfg.ShelfLifeMinutes.HasValue ? s.GameMinute + cfg.ShelfLifeMinutes.Value : (int?)null,
+                        PlacedOrder = cfg.IsStackable ? s.NextProcessSeq++ : (int?)null,
                     });
                 }
                 return;
@@ -242,11 +293,16 @@ namespace Survival.Core.Engine
             Normalize(s, owner);
         }
 
-        /// <summary>同物品且同到期时间、未预留的实例合堆，超过堆叠上限分为新堆。</summary>
+        /// <summary>
+        /// 同物品且同到期时间、未预留的实例合堆，超过堆叠上限分为新堆。
+        /// 设施里的物品与锅里的食材每份占一个位，不合堆（否则两根会合成“一堆占一位”）；锅里的水照常合堆。
+        /// </summary>
         private void Normalize(GameState s, string owner)
         {
+            if (ItemInstance.TryFacilityId(owner, out _)) return;
+            var inPot = owner.StartsWith(ItemInstance.ContainerPrefix);
             var groups = s.Items
-                .Where(i => i.Owner == owner && i.ReservedBy == null && _items[i.ItemId].IsStackable)
+                .Where(i => i.Owner == owner && i.ReservedBy == null && _items[i.ItemId].IsStackable && (!inPot || IsLiquid(i)))
                 .GroupBy(i => (i.ItemId, i.ExpiresAt))
                 .ToList();
             foreach (var g in groups)

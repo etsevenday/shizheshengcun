@@ -60,7 +60,7 @@ public sealed class FeedbackBridge
         ctx["clear"] = s.Locations.Where(kv => kv.Value.Visited)
             .ToDictionary(kv => kv.Key, kv => e.ClearChargesText(s, kv.Key));
         ctx["pots"] = s.Items.Where(i => e.IsPot(i))
-            .Select(p => $"{e.ItemName(p.ItemId)}#{p.InstanceId}@{p.Owner}：{e.PotLabel(s, p)}{(s.Locations.Values.Any(l => l.Facility.AttachedPotId == p.InstanceId) ? "（架在火堆上）" : "")}")
+            .Select(p => $"{e.ItemName(p.ItemId)}#{p.InstanceId}@{p.Owner}：{e.PotLabel(s, p)}，食材{e.PotFood(s, p.InstanceId).Count}，{e.ContentStatus(s, p)}")
             .ToList();
         ctx["carried"] = Summarize(s, e, ItemInstance.Carried);
         ctx["ground"] = Summarize(s, e, s.CurrentLocation);

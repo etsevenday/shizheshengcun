@@ -21,7 +21,7 @@
     var (charges, _) = e.ClearChargesAt(s, here);
     var cap = lc.Clear.Cap;
     var nextRefill = e.NextClearRefillMinutes(s, here);
-    var pot = lc.HasFire ? e.AttachedPot(s, here) : null;
+    var pot = lc.HasFire ? e.FirePot(s, here) : null;
     string F(double v) => v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
 }
 
@@ -214,7 +214,7 @@
 
     private void SelectAttachedPot()
     {
-        var pot = G.E.AttachedPot(G.S, G.S.CurrentLocation);
+        var pot = G.E.FirePot(G.S, G.S.CurrentLocation);
         if (pot == null) { OpenCraft("boil"); return; }
         G.Select(new Selection { Kind = SelectionKind.Tool, Id = pot.ItemId, Owner = pot.Owner, InstanceId = pot.InstanceId });
     }

@@ -125,6 +125,8 @@ namespace Survival.Core.Engine
 
             foreach (var kv in c.StartingCarried) CreateItems(s, kv.Key, kv.Value, ItemInstance.Carried);
             foreach (var kv in c.StartingCampGround) CreateItems(s, kv.Key, kv.Value, s.CurrentLocation);
+            // 有火堆的地点初始化设施 ID 与空加工位（营地 camp:fire）
+            SyncFacilities(s);
 
             Emit(s, GameEventKind.Info, $"{Clock.DayTime(s.GameMinute)}，你在{LocName(s.CurrentLocation)}醒来。目标：活过七天。");
             UpdateFlags(s);
@@ -419,6 +421,7 @@ namespace Survival.Core.Engine
                     }
                     var cfg = _items[inst.ItemId];
                     if (inst.ReservedBy != null) return "该物品已被预留";
+                    if (inst.InContainer && IsLiquid(inst) && PotFreeWaterUnits(s, inst) < 1) return ReservedWaterText(s, inst);
                     if (cfg.Use == null)
                         return cfg.RequiresCooking ? $"{cfg.Name}需先烹饪，不可直接食用" : "该物品不能直接使用";
                     if (IsSpoiled(s, inst)) return "已腐败，不能食用";
@@ -459,6 +462,20 @@ namespace Survival.Core.Engine
         }
 
         private OutputLine Line(string itemId, int count) => new OutputLine { ItemId = itemId, Name = ItemName(itemId), Count = count };
+
+        /// <summary>“水分+5”“水分−2”：正负号如实显示，避免“水分+-2”。</summary>
+        public static string Signed(string stat, double v) => v < 0 ? $"{stat}−{-v:0.#}" : $"{stat}+{v:0.#}";
+
+        /// <summary>食用说明，如“饱食+25，水分−2，精神+2”。</summary>
+        public static string UseEffectText(ItemUseConfig u)
+        {
+            var parts = new List<string>();
+            if (u.Satiety != 0) parts.Add(Signed("饱食", u.Satiety));
+            if (u.Hydration != 0) parts.Add(Signed("水分", u.Hydration));
+            if (u.Morale != 0) parts.Add(Signed("精神", u.Morale));
+            if (u.Health != 0) parts.Add(Signed("健康", u.Health));
+            return string.Join("，", parts);
+        }
 
         public static string UseVerb(ItemConfig cfg) =>
             cfg.Use != null && cfg.Use.IsBandage ? "使用" : cfg.Kind == "water" ? "饮用" : "食用";
@@ -570,11 +587,13 @@ namespace Survival.Core.Engine
                     var cfg = _items[inst.ItemId];
                     var u = cfg.Use!;
                     ConsumeOne(s, inst);
+                    if (inst.InContainer || inst.InFacility) SyncFacilities(s);
                     var parts = new List<string>();
-                    if (u.Hydration != 0) { s.Stats.Add(StatId.Hydration, u.Hydration); parts.Add($"水分+{u.Hydration:0}"); }
-                    if (u.Satiety != 0) { s.Stats.Add(StatId.Satiety, u.Satiety); parts.Add($"饱食+{u.Satiety:0}"); }
-                    if (u.Morale != 0) { s.Stats.Add(StatId.Morale, u.Morale); parts.Add($"精神+{u.Morale:0}"); }
-                    if (u.Health != 0) { s.Stats.Add(StatId.Health, u.Health); parts.Add($"健康+{u.Health:0}"); }
+                    // 即时效果先应用并夹紧 0—100，再按 wait 推进 5 分钟；负数如实写“水分−2”（设施与烹饪案 5.3）
+                    if (u.Satiety != 0) { s.Stats.Add(StatId.Satiety, u.Satiety); parts.Add(Signed("饱食", u.Satiety)); }
+                    if (u.Hydration != 0) { s.Stats.Add(StatId.Hydration, u.Hydration); parts.Add(Signed("水分", u.Hydration)); }
+                    if (u.Morale != 0) { s.Stats.Add(StatId.Morale, u.Morale); parts.Add(Signed("精神", u.Morale)); }
+                    if (u.Health != 0) { s.Stats.Add(StatId.Health, u.Health); parts.Add(Signed("健康", u.Health)); }
                     if (u.CausesDiarrhea)
                     {
                         s.DiarrheaUntil = s.GameMinute + Config.ItemActions.DiarrheaMinutes;

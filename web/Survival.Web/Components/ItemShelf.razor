@@ -13,7 +13,6 @@
     var sel = G.Selected;
     var grams = items.Sum(i => e.ItemGrams(s, i));
     var busy = e.IsBusy(s) || G.Running;
-    var attached = carried ? null : (e.Location(s.CurrentLocation).HasFire ? e.AttachedPot(s, s.CurrentLocation) : null);
     var from = carried ? "随身" : $"{e.LocName(Owner)}地面";
 }
 
@@ -65,7 +64,7 @@
                     <div class="art">@Icons.Markup(t.ItemId)</div>
                     @if (isPot)
                     {
-                        <PotGauge Pot="t" Attached="@(attached?.InstanceId == inst)" />
+                        <PotGauge Pot="t" />
                     }
                     else
                     {

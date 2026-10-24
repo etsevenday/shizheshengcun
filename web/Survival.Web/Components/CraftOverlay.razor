@@ -86,7 +86,7 @@
                         if (e.Config.Items.Any(i => i.ToolTag == tag && i.ContainerId != null))
                         {
                             var pot = e.SelectPot(s, G.CraftPot, out var potWhy);
-                            var place = pot == null ? "" : pot.IsCarried ? "随身" : e.AttachedPot(s, here)?.InstanceId == pot.InstanceId ? "锅位" : "地面";
+                            var place = pot == null ? "" : pot.IsCarried ? "随身" : "地面";
                             <div class="mat @(pot == null ? "missing" : "")"><span>@name（容器，不消耗）</span><span>@(pot == null ? potWhy : $"{place} · {e.PotLabel(s, pot)}")</span></div>
                             continue;
                         }

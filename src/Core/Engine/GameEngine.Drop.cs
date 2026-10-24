@@ -68,7 +68,7 @@ namespace Survival.Core.Engine
     }
 
     /// <summary>拖拽动词，与拖拽与容器案第 4 节白名单一一对应（合堆在按物品分组的界面里即转移）。</summary>
-    public enum DropVerb { None, Reorder, Transfer, AddFuel, PreviewIgnite, FillPot, Decant, AttachPot, PreviewGatherTool, PreviewRecipe, PreviewUse }
+    public enum DropVerb { None, Reorder, Transfer, AddFuel, PreviewIgnite, FillPot, Decant, PutInFire, PutFood, TakeOut, PreviewGatherTool, PreviewRecipe, PreviewUse }
 
     /// <summary>落点解析结果：即时类带 Instant（壳直接提交），预览类带 Action 或候选配方（壳打开面板预选）。</summary>
     public sealed class DropIntent
@@ -267,14 +267,10 @@ namespace Survival.Core.Engine
             if (loc != s.CurrentLocation || !_locs[loc].HasFire) return DropIntent.No("异地不能操作火堆");
             if (src.Kind == DropSourceKind.Card && IsLighter(head)) return DropOnFire(s, src, head, loc);
             if (src.Kind != DropSourceKind.Card || !IsPot(head)) return DropIntent.No(Unsupported);
-            var why = PotBlocked(s, head);
+            MaxPutInFire(s, head, out var why);
             if (why != null) return DropIntent.No(why);
-            var current = AttachedPot(s, loc);
-            if (current != null && current.InstanceId == head.InstanceId) return DropIntent.No("这口锅已架在火堆上");
-            if (current != null) return DropIntent.No($"锅位已有{ItemName(current.ItemId)}，请先取下");
-            var full = PotLiquid(s, head.InstanceId) == "dirty_water"
-                       && PotUnits(s, head.InstanceId) >= PotConfig(head).CapacityUnits;
-            return Instant(DropVerb.AttachPot, $"架到火堆锅位{(full ? "，可烧水" : "")}", InstantRequest.AttachPot(head.InstanceId));
+            var dirty = PotLiquid(s, head.InstanceId) == "dirty_water";
+            return Instant(DropVerb.PutInFire, $"放进火堆加工位{(dirty ? "，燃烧时自动烧水" : "")}", InstantRequest.PutInFire(head.InstanceId));
         }
 
         private DropIntent DropOnPot(GameState s, DropSource src, ItemInstance head, ItemInstance? pot)

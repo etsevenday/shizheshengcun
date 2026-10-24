@@ -190,7 +190,7 @@ public class ContainerTests : TestBase
         var child = E.PotContents(s, pot.InstanceId).Single();
         Assert.That(E.DoInstant(s, InstantRequest.Decant(child.InstanceId, "camp")).Reason, Does.StartWith("行动占用"));
         Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId)).Reason, Does.StartWith("行动占用"));
-        Assert.That(E.DoInstant(s, InstantRequest.AttachPot(pot.InstanceId)).Reason, Does.StartWith("行动占用"));
+        Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.False, "暂停中不能把锅放进火堆");
         Assert.That(E.CanStart(s, ActionRequest.UseInstance(child.InstanceId)), Is.EqualTo("该物品已被预留"));
 
         Ok(s, InstantRequest.AddFuel());
@@ -278,7 +278,7 @@ public class ContainerTests : TestBase
     }
 
     [Test]
-    public void B2_PotSelection_SlotThenCarriedThenGround()
+    public void B2_PotSelection_CarriedThenGround_FirePotNotUsedByOldRecipe()
     {
         var s = New();
         LightFire(s);
@@ -286,9 +286,9 @@ public class ContainerTests : TestBase
         var carried = s.Items.First(i => i.ItemId == "pot" && i.IsCarried);
         FillDirty(s, carried, 2);
         var ground = s.Items.First(i => i.ItemId == "pot" && i.Owner == "camp");
-        Assert.That(E.SelectPot(s, null, out _), Is.SameAs(carried), "无锅位时随身锅优先");
-        Ok(s, InstantRequest.AttachPot(ground.InstanceId));
-        Assert.That(E.SelectPot(s, null, out _), Is.SameAs(ground), "锅位锅最优先");
+        Assert.That(E.SelectPot(s, null, out _), Is.SameAs(carried), "随身锅优先");
+        Ok(s, InstantRequest.PutInFire(ground.InstanceId));
+        Assert.That(E.SelectPot(s, null, out _), Is.SameAs(carried), "放进火堆的锅归设施，不再被旧配方挑中");
         Start(s, ActionRequest.Craft("boil", carried.InstanceId));
         Assert.That(s.Main!.PotInstanceId, Is.EqualTo(carried.InstanceId), "指定的锅优先");
         Assert.That(E.SelectPot(s, carried.InstanceId, out var why), Is.Null);
@@ -296,19 +296,25 @@ public class ContainerTests : TestBase
     }
 
     [Test]
-    public void AttachPot_CarriedPotMovesToGround_SlotSingle()
+    public void PutInFire_CarriedPotOwnedByFacility_OnePotOnly()
     {
         var s = New();
         var pot = Pot(s);
-        Ok(s, InstantRequest.AttachPot(pot.InstanceId));
-        Assert.That(pot.Owner, Is.EqualTo("camp"), "随身锅原子转到营地地面");
-        Assert.That(s.Locations["camp"].Facility.AttachedPotId, Is.EqualTo(pot.InstanceId));
+        var before = E.CarriedGrams(s);
+        Ok(s, InstantRequest.PutInFire(pot.InstanceId));
+        Assert.That(pot.Owner, Is.EqualTo("facility:camp:fire"), "随身锅直接归属火堆，不经过地面");
+        Assert.That(s.Locations["camp"].Facility.ProcessingSlots, Does.Contain((int?)pot.InstanceId));
+        Assert.That(E.CarriedGrams(s), Is.EqualTo(before - 1000), "火堆内物资不计角色携重");
+        Assert.That(E.OrderedCards(s, "camp").Any(k => k.Contains("|pot|")), Is.False, "地面栏没有这口锅");
+        Assert.That(E.OrderedCards(s, "carried").Any(k => k.Contains("|pot|")), Is.False, "随身栏也没有");
         E.DebugGive(s, "pot", 1, "camp");
         var other = s.Items.Last(i => i.ItemId == "pot");
-        Assert.That(E.DoInstant(s, InstantRequest.AttachPot(other.InstanceId)).Reason, Does.Contain("请先取下"));
-        Ok(s, InstantRequest.DetachPot());
-        Assert.That(s.Locations["camp"].Facility.AttachedPotId, Is.Null);
-        Assert.That(pot.Owner, Is.EqualTo("camp"), "取下后仍在地面");
+        var r = E.DoInstant(s, InstantRequest.PutInFire(other.InstanceId));
+        Assert.That(r.Reason, Does.Contain($"火堆已有金属锅#{pot.InstanceId}"), "已有锅时提示当前锅实例与内容，不替换");
+        Assert.That(r.Reason, Does.Contain("请先取下"));
+        Ok(s, InstantRequest.TakeOut(pot.InstanceId, "camp"));
+        Assert.That(pot.Owner, Is.EqualTo("camp"), "取下到当前地面");
+        Assert.That(s.Locations["camp"].Facility.ProcessingSlots.All(x => x == null), Is.True);
     }
 
     [Test]
@@ -336,20 +342,21 @@ public class ContainerTests : TestBase
     }
 
     [Test]
-    public void D16_AttachedFullPotPickedUp_DetachesAndWeighs2Kg()
+    public void D16_FullPotInFireTakenToCarried_Weighs2Kg()
     {
         var s = New();
         E.DebugGive(s, "dirty_water", 2, "camp");
         var pot = Pot(s);
         Ok(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 2));
-        Ok(s, InstantRequest.AttachPot(pot.InstanceId));
+        Ok(s, InstantRequest.PutInFire(pot.InstanceId));
         var before = E.CarriedGrams(s);
-        Ok(s, InstantRequest.Pickup(pot.InstanceId, 1));
-        Assert.That(s.Locations["camp"].Facility.AttachedPotId, Is.Null, "先解除关联");
+        Assert.That(E.DoInstant(s, InstantRequest.Pickup(pot.InstanceId, 1)).Ok, Is.False, "火堆里的锅不是地面物品，要用取出");
+        Ok(s, InstantRequest.TakeOut(pot.InstanceId, "carried"));
+        Assert.That(pot.Owner, Is.EqualTo("carried"));
         Assert.That(E.CarriedGrams(s) - before, Is.EqualTo(2000), "满锅按2公斤计");
         Start(s, ActionRequest.Travel("field"));
         Run(s);
-        Assert.That(E.DoInstant(s, InstantRequest.AttachPot(pot.InstanceId)).Reason, Is.EqualTo("这里没有火堆"));
+        Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Reason, Is.EqualTo("这里没有火堆"));
         Assert.That(E.DoInstant(s, InstantRequest.AddFuel()).Ok, Is.False, "异地不可操纵原火堆");
         Assert.That(Count(s, "dirty_water", PotOwner(pot)), Is.EqualTo(2), "水随锅走");
     }

@@ -25,6 +25,8 @@ namespace Survival.Core.State
         public Rng Rng { get; set; } = new Rng();
         public int NextInstanceId { get; set; } = 1;
         public int NextActionId { get; set; } = 1;
+        /// <summary>设施进程编号与放入设施/锅的先后序号（水煮分水按放入顺序，设施与烹饪案 5.2）。</summary>
+        public int NextProcessSeq { get; set; } = 1;
         public long SegmentCount { get; set; }
 
         public Stats Stats { get; set; } = new Stats();
@@ -124,10 +126,53 @@ namespace Survival.Core.State
         public int FuelMinutes { get; set; }
         /// <summary>火堆点燃后熄灭过（燃尽或手动熄灭）。未燃烧时界面据此写“熄灭”而不是“未点燃”；旧存档缺省为否。</summary>
         public bool WentOut { get; set; }
-        /// <summary>架在火堆锅位上的锅实例。只是关联，锅本身仍归属营地地面。</summary>
+        /// <summary>schema 3 的“锅位关联”（锅仍归属地面）。只供迁移读取，schema 4 起锅的真实归属是 facility:&lt;火堆ID&gt;。</summary>
         public int? AttachedPotId { get; set; }
 
-        public FacilityState Clone() => (FacilityState)MemberwiseClone();
+        /// <summary>火堆设施 ID（如 camp:fire）；没有火堆的地点为空。物品归属写作 facility:&lt;此ID&gt;。</summary>
+        public string FacilityId { get; set; } = "";
+        /// <summary>火堆加工位：每格是一件真实物品的实例 ID（锅或一份直烤食材），空位为 null。</summary>
+        public List<int?> ProcessingSlots { get; set; } = new List<int?>();
+        /// <summary>进行中的设施自动加工（烧水、烤制、水煮），每个目标一条。</summary>
+        public List<FacilityProcess> Processes { get; set; } = new List<FacilityProcess>();
+        /// <summary>最近完成的加工记录（进程号@完成段号），读档后据此不重复发放。</summary>
+        public List<string> Completed { get; set; } = new List<string>();
+
+        public FacilityState Clone()
+        {
+            var c = (FacilityState)MemberwiseClone();
+            c.ProcessingSlots = new List<int?>(ProcessingSlots);
+            c.Processes = Processes.Select(p => p.Clone()).ToList();
+            c.Completed = new List<string>(Completed);
+            return c;
+        }
+    }
+
+    public enum ProcessStatus { Waiting, Heating, Done }
+
+    /// <summary>
+    /// 一个设施自动加工目标（设施与烹饪案第 8 节）：烧水以锅为目标（整锅液体批次），烤制与水煮以单份食材为目标。
+    /// 受热分钟随世界 5 分钟段推进；熄火保留，取出对象即删除本记录（进度清零、释放水预留）。
+    /// </summary>
+    public sealed class FacilityProcess
+    {
+        public string ProcessId { get; set; } = "";
+        /// <summary>processes 配置 ID：boil_water / roast_root / boil_root。</summary>
+        public string RecipeId { get; set; } = "";
+        public int TargetInstanceId { get; set; }
+        /// <summary>目标所在的锅（烧水即目标本身；水煮为装食材的锅；直烤为空）。</summary>
+        public int? PotInstanceId { get; set; }
+        public int HeatDoneMinutes { get; set; }
+        public int RequiredHeatMinutes { get; set; }
+        /// <summary>水煮为这一份预留的净水（毫升）；完成时扣除，取出食材即释放。</summary>
+        public int ReservedWaterMl { get; set; }
+        public ProcessStatus Status { get; set; }
+        /// <summary>完成时的世界段号（GameState.SegmentCount），与 ProcessId 一起保证只提交一次。</summary>
+        public long? CompletionSerial { get; set; }
+        /// <summary>最后一次结算到的世界分钟。</summary>
+        public int LastWorldMinute { get; set; }
+
+        public FacilityProcess Clone() => (FacilityProcess)MemberwiseClone();
     }
 
     public sealed class LocationState
@@ -167,20 +212,35 @@ namespace Survival.Core.State
     {
         public const string Carried = "carried";
         public const string ContainerPrefix = "pot:";
+        public const string FacilityPrefix = "facility:";
 
         public int InstanceId { get; set; }
         public string ItemId { get; set; } = "";
         public int Count { get; set; }
         public int? ExpiresAt { get; set; }
         public int? Durability { get; set; }
-        /// <summary>"carried" 表示随身，"pot:&lt;实例ID&gt;" 表示在该锅内，否则为地点 ID（该地点地面）。</summary>
+        /// <summary>
+        /// 唯一归属：“carried” 随身；“pot:&lt;实例ID&gt;” 在该锅内；“facility:&lt;设施ID&gt;” 在该设施（火堆加工位）内；否则为地点 ID（该地点地面）。
+        /// </summary>
         public string Owner { get; set; } = Carried;
         public int? ReservedBy { get; set; }
+        /// <summary>放入设施或锅的先后序号；水煮分水先按它，再按实例 ID。离开设施与锅时清空。</summary>
+        public int? PlacedOrder { get; set; }
 
         public bool IsCarried => Owner == Carried;
         public bool InContainer => Owner.StartsWith(ContainerPrefix);
+        public bool InFacility => Owner.StartsWith(FacilityPrefix);
 
         public static string ContainerOwner(int containerInstanceId) => ContainerPrefix + containerInstanceId;
+        public static string FacilityOwner(string facilityId) => FacilityPrefix + facilityId;
+
+        public static bool TryFacilityId(string owner, out string facilityId)
+        {
+            facilityId = "";
+            if (!owner.StartsWith(FacilityPrefix) || owner.Length == FacilityPrefix.Length) return false;
+            facilityId = owner.Substring(FacilityPrefix.Length);
+            return true;
+        }
 
         public static bool TryContainerId(string owner, out int containerInstanceId)
         {
@@ -287,7 +347,9 @@ namespace Survival.Core.State
     public enum GameEventKind
     {
         ActionStarted, ActionCompleted, ActionCancelled, ActionAborted, ActionPaused,
-        Discovery, Hazard, Alert, Death, SevenDay, NewDay, FireOut, Info
+        Discovery, Hazard, Alert, Death, SevenDay, NewDay, FireOut, Info,
+        /// <summary>设施自动加工完成（不暂停、不替换角色主行动）。</summary>
+        FacilityDone
     }
 
     public sealed class GameEvent

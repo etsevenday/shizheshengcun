@@ -6,7 +6,7 @@ using Survival.Core.State;
 
 namespace Survival.Core.Engine
 {
-    /// <summary>即时操作（不耗时）：拾取、放下、投料、熄火，以及金属锅的装水、倒出、架锅与取锅（拖拽与容器案 4、6、8）。</summary>
+    /// <summary>即时操作（不耗时）：拾取、放下、投料、熄火，金属锅的装水、倒出，以及设施内容物的放入与取出（拖拽与容器案 4、6、8；设施与烹饪案第 3 节）。</summary>
     public sealed partial class GameEngine
     {
         /// <summary>执行即时操作。带 requestId 时幂等：重发同一请求直接成功、不再改状态。</summary>
@@ -112,10 +112,12 @@ namespace Survival.Core.Engine
                     return FillPot(s, r);
                 case InstantKind.Decant:
                     return Decant(s, r);
-                case InstantKind.AttachPot:
-                    return AttachPot(s, r);
-                case InstantKind.DetachPot:
-                    return DetachPot(s);
+                case InstantKind.PutInFire:
+                    return PutInFire(s, r);
+                case InstantKind.PutFoodInPot:
+                    return PutFoodInPot(s, r);
+                case InstantKind.TakeOut:
+                    return TakeOut(s, r);
                 case InstantKind.Reorder:
                     return Reorder(s, r);
             }
@@ -135,12 +137,15 @@ namespace Survival.Core.Engine
             return null;
         }
 
+        /// <summary>锅能否被整理：未被行动锁定、角色空闲、锅在随身、当前地面或当前火堆里。</summary>
         private string? PotBlocked(GameState s, ItemInstance? pot)
         {
             if (pot == null || !IsPot(pot)) return "没有这口锅";
             if (IsLocked(s, pot) || PotContents(s, pot.InstanceId).Any(i => i.ReservedBy != null)) return "行动占用：这口锅正被当前行动使用";
-            if (IsBusy(s)) return "行动进行中，不能整理物品";
-            if (!(pot.IsCarried || pot.Owner == s.CurrentLocation)) return "只能操作随身或当前地面的锅";
+            var busy = HolderBlocked(s);
+            if (busy != null) return busy;
+            var place = PlaceOf(s, pot);
+            if (!(place == ItemInstance.Carried || place == s.CurrentLocation)) return "只能操作随身、当前地面或当前火堆里的锅";
             return null;
         }
 
@@ -165,7 +170,7 @@ namespace Survival.Core.Engine
             var space = cfg.CapacityUnits - PotUnits(s, pot.InstanceId);
             if (space <= 0) { reason = $"满锅：锅内已满{cfg.CapacityMl}毫升"; return 0; }
             var max = Math.Min(space, water.Count);
-            if (pot.IsCarried && !water.IsCarried)
+            if (PlaceOf(s, pot) == ItemInstance.Carried && !water.IsCarried)
             {
                 var w = _items[water.ItemId].WeightGrams;
                 var room = Math.Max(0, Config.Carry.HardGrams - CarriedGrams(s)) / w;
@@ -192,7 +197,15 @@ namespace Survival.Core.Engine
                     ? ActionResult.Fail($"锅里只剩{capLeft}份空间", max)
                     : ActionResult.Fail($"装入后携带将超过{Config.Carry.HardGrams / 1000}公斤，最多可装{max}份", max);
             }
+            var dirtyRestart = BatchProcess(water.ItemId) != null && ProcessOf(s, pot!) is FacilityProcess bp && bp.HeatDoneMinutes > 0;
             MoveItems(s, water, r.Count, ItemInstance.ContainerOwner(pot!.InstanceId));
+            // 同种脏水追加：整批净化重新计时（设施与烹饪案 5.2），净水追加不影响已有食物进度
+            if (dirtyRestart)
+            {
+                ProcessOf(s, pot)!.HeatDoneMinutes = 0;
+                Emit(s, GameEventKind.Info, $"{ItemName(pot.ItemId)}#{pot.InstanceId}追加{ItemName(water.ItemId)}，整锅净化进度清零。");
+            }
+            SyncFacilities(s);
             UpdateFlags(s);
             return ActionResult.Success();
         }
@@ -207,8 +220,10 @@ namespace Survival.Core.Engine
             if (zone != ItemInstance.Carried && zone != s.CurrentLocation) { reason = "只能倒到随身或当前地面"; return 0; }
             if (child.ReservedBy != null) { reason = "行动占用：锅内水已被预留"; return 0; }
             var pot = FindItem(s, potId)!;
-            var max = child.Count;
-            if (zone == ItemInstance.Carried && !pot.IsCarried)
+            var free = PotFreeWaterUnits(s, pot);
+            if (free <= 0) { reason = ReservedWaterText(s, pot); return 0; }
+            var max = Math.Min(child.Count, free);
+            if (zone == ItemInstance.Carried && PlaceOf(s, pot) != ItemInstance.Carried)
             {
                 var room = Math.Max(0, Config.Carry.HardGrams - CarriedGrams(s)) / _items[child.ItemId].WeightGrams;
                 if (room <= 0) { reason = $"携带后将超过{Config.Carry.HardGrams / 1000}公斤"; return 0; }
@@ -226,39 +241,18 @@ namespace Survival.Core.Engine
             var max = MaxDecant(s, child, zone, out var why);
             if (why != null) return ActionResult.Fail(why);
             if (r.Count < 1 || r.Count > child.Count) return ActionResult.Fail("数量无效", max);
-            if (r.Count > max) return ActionResult.Fail($"携带后将超过{Config.Carry.HardGrams / 1000}公斤，最多可倒出{max}份", max);
+            if (r.Count > max)
+                return r.Count > PotFreeWaterUnits(s, child)
+                    ? ActionResult.Fail($"只有{max}份未被预留；{ReservedWaterText(s, child)}", max)
+                    : ActionResult.Fail($"携带后将超过{Config.Carry.HardGrams / 1000}公斤，最多可倒出{max}份", max);
+            var pot = ContainerOf(s, child)!;
+            var batch = ProcessOf(s, pot);
+            var interrupted = batch != null && batch.HeatDoneMinutes > 0 && child.ItemId == Process(batch.RecipeId).InputId;
             MoveItems(s, child, r.Count, zone);
+            // 倒出正在净化的水属于明确中断：该锅净化进度清零（设施与烹饪案第 6 节）
+            if (interrupted && ProcessOf(s, pot) is FacilityProcess still) still.HeatDoneMinutes = 0;
+            SyncFacilities(s);
             UpdateFlags(s);
-            return ActionResult.Success();
-        }
-
-        /// <summary>金属锅 → 营地火堆锅位：随身锅先整件放到当前地面再关联；不耗时，不自动加工（拖拽与容器案 6.2）。</summary>
-        private ActionResult AttachPot(GameState s, InstantRequest r)
-        {
-            var here = s.CurrentLocation;
-            var pot = FindItem(s, r.InstanceId);
-            var why = PotBlocked(s, pot);
-            if (why != null) return ActionResult.Fail(why);
-            if (!_locs[here].HasFire) return ActionResult.Fail("这里没有火堆");
-            var fac = s.Locations[here].Facility;
-            var current = AttachedPot(s, here);
-            if (current != null && current.InstanceId == pot!.InstanceId) return ActionResult.Fail("这口锅已架在火堆上");
-            if (current != null) return ActionResult.Fail($"锅位已有{ItemName(current.ItemId)}，请先取下");
-            if (pot!.IsCarried) MoveItems(s, pot, 1, here);
-            fac.AttachedPotId = pot.InstanceId;
-            UpdateFlags(s);
-            return ActionResult.Success();
-        }
-
-        /// <summary>从锅位取下：只解除关联，锅仍在营地地面。</summary>
-        private ActionResult DetachPot(GameState s)
-        {
-            var here = s.CurrentLocation;
-            var pot = _locs[here].HasFire ? AttachedPot(s, here) : null;
-            if (pot == null) return ActionResult.Fail("锅位上没有锅");
-            var why = PotBlocked(s, pot);
-            if (why != null) return ActionResult.Fail(why);
-            s.Locations[here].Facility.AttachedPotId = null;
             return ActionResult.Success();
         }
 
@@ -268,8 +262,7 @@ namespace Survival.Core.Engine
             var pot = plan.Pot!;
             var cfg = PotConfig(pot);
             var potName = ItemName(pot.ItemId);
-            var attached = AttachedPot(s, s.CurrentLocation);
-            var where = pot.IsCarried ? "随身" : attached != null && attached.InstanceId == pot.InstanceId ? "火堆锅位上" : "地面";
+            var where = pot.IsCarried ? "随身" : "地面";
             var units = PotUnits(s, pot.InstanceId);
             var liquid = PotLiquid(s, pot.InstanceId);
             if (PotContents(s, pot.InstanceId).Any(i => i.ReservedBy != null)) return "行动占用：这口锅正被当前行动使用";

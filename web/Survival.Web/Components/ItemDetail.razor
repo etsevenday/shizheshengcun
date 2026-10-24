@@ -8,7 +8,7 @@
     var here = s.CurrentLocation;
     var onGround = sel.Owner == here;
     var carried = sel.Owner == ItemInstance.Carried;
-    var stillThere = sel.Owner == ItemInstance.Carried || sel.Owner == here;
+    var stillThere = sel.Owner == ItemInstance.Carried || sel.Owner == here || sel.Owner == GameEngine.FireOwner(here);
     var list = s.Items.Where(i => i.Owner == sel.Owner && i.ItemId == sel.Id && (sel.InstanceId == null || i.InstanceId == sel.InstanceId))
         .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
     var batches = list.GroupBy(i => i.ExpiresAt).Select(g => new Batch(g.Key, g.Sum(i => i.Count), g.Any(i => i.ReservedBy != null), g.ToList())).ToList();
@@ -50,10 +50,10 @@ else
         @if (e.IsPot(inst))
         {
             var contents = e.PotContents(s, inst.InstanceId);
-            var attachedHere = e.Location(here).HasFire && e.AttachedPot(s, here)?.InstanceId == inst.InstanceId;
+            var attachedHere = inst.InFacility;
             var potBusy = busy || e.IsLocked(s, inst);
             <div class="pot-detail">
-                <PotGauge Pot="inst" Attached="attachedHere" />
+                <PotGauge Pot="inst" />
                 @if (contents.Count == 0)
                 {
                     <div class="tiny muted">空锅。把净水或脏水卡拖到锅卡的水量条上装入，每份500毫升；同一锅只装一种水。</div>
@@ -80,11 +80,11 @@ else
                     <div class="btn-row">
                         @if (attachedHere)
                         {
-                            <button class="secondary" disabled="@potBusy" @onclick="Detach">从火堆锅位取下</button>
+                            <button class="secondary" disabled="@potBusy" @onclick="() => Detach(inst.InstanceId)">从火堆取下到地面</button>
                         }
                         else
                         {
-                            <button class="secondary" disabled="@potBusy" @onclick="() => Attach(inst.InstanceId)">架到火堆锅位</button>
+                            <button class="secondary" disabled="@potBusy" @onclick="() => Attach(inst.InstanceId)">放进火堆</button>
                         }
                         <button class="secondary" disabled="@busy" @onclick='() => OpenCraft("boil", inst.InstanceId)'>用这口锅烧水…</button>
                         <button class="secondary" disabled="@busy" @onclick='() => OpenCraft("cook", inst.InstanceId)'>用这口锅烹饪…</button>
@@ -184,8 +184,8 @@ else
     private async Task Use(int instanceId) => await G.StartAction(ActionRequest.UseInstance(instanceId));
 
     private void Decant(int childId, string zone) => G.Instant(InstantRequest.Decant(childId, zone));
-    private void Attach(int potId) => G.Instant(InstantRequest.AttachPot(potId));
-    private void Detach() => G.Instant(InstantRequest.DetachPot());
+    private void Attach(int potId) => G.Instant(InstantRequest.PutInFire(potId));
+    private void Detach(int potId) => G.Instant(InstantRequest.TakeOut(potId, G.S.CurrentLocation));
 
     private void OpenCraft(string recipe, int potId)
     {

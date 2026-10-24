@@ -181,14 +181,14 @@ public class DropResolverTests : TestBase
     }
 
     [Test]
-    public void Row8_PotToSlot_Attach()
+    public void Row8_PotToSlot_PutInFire()
     {
         var s = New();
         var i = R(s, Card(PotCard(s)), "potslot:camp");
-        Assert.That(i.Ok && i.Verb == DropVerb.AttachPot, Is.True, i.Reason);
+        Assert.That(i.Ok && i.Verb == DropVerb.PutInFire, Is.True, i.Reason);
         E.DoInstant(s, i.Instant!);
-        Assert.That(s.Locations["camp"].Facility.AttachedPotId, Is.EqualTo(Pot(s).InstanceId));
-        Assert.That(R(s, Card(PotCard(s)), "potslot:camp").Reason, Is.EqualTo("这口锅已架在火堆上"));
+        Assert.That(Pot(s).Owner, Is.EqualTo("facility:camp:fire"), "锅的真实归属变为火堆");
+        Assert.That(R(s, Card(PotCard(s)), "potslot:camp").Reason, Does.Contain("已经在火堆里"));
         Assert.That(R(s, Card("camp|wood"), "potslot:camp").Reason, Is.EqualTo(GameEngine.Unsupported));
     }
 

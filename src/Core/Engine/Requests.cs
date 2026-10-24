@@ -47,17 +47,17 @@ namespace Survival.Core.Engine
         public static ActionRequest Ignite(int? lighterInstanceId = null) => new ActionRequest { Type = ActionType.Ignite, InstanceId = lighterInstanceId };
     }
 
-    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, AttachPot, DetachPot, Reorder }
+    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, PutInFire, PutFoodInPot, TakeOut, Reorder }
 
     public sealed class InstantRequest
     {
         public InstantKind Kind { get; set; }
-        /// <summary>来源实例：拾取/放下的物品、投料的木材（0 表示自动选）、装水的水卡、倒出的锅内水、架上/取下的锅。</summary>
+        /// <summary>来源实例：拾取/放下的物品、投料的木材（0 表示自动选）、装水的水卡、倒出的锅内水、放进或取出设施的锅与食材。</summary>
         public int InstanceId { get; set; }
         public int Count { get; set; } = 1;
-        /// <summary>目标锅（装水）。</summary>
+        /// <summary>目标锅（装水、放食材）。</summary>
         public int? TargetInstanceId { get; set; }
-        /// <summary>目标区域：carried 或当前地点 ID（倒出、排序）。</summary>
+        /// <summary>目标区域：carried 或当前地点 ID（倒出、取出、排序）。</summary>
         public string Zone { get; set; } = "";
         /// <summary>排序：被移动的卡片键与插入位置（在去掉该卡后的列表里的下标）。</summary>
         public string CardKey { get; set; } = "";
@@ -73,8 +73,13 @@ namespace Survival.Core.Engine
             new InstantRequest { Kind = InstantKind.FillPot, InstanceId = waterInstanceId, TargetInstanceId = potInstanceId, Count = count };
         public static InstantRequest Decant(int potWaterInstanceId, string zone, int count = 1) =>
             new InstantRequest { Kind = InstantKind.Decant, InstanceId = potWaterInstanceId, Zone = zone, Count = count };
-        public static InstantRequest AttachPot(int potInstanceId) => new InstantRequest { Kind = InstantKind.AttachPot, InstanceId = potInstanceId };
-        public static InstantRequest DetachPot() => new InstantRequest { Kind = InstantKind.DetachPot };
+        /// <summary>锅或直烤食材放进当前火堆的空加工位（食材每份占一位）。</summary>
+        public static InstantRequest PutInFire(int instanceId, int count = 1) => new InstantRequest { Kind = InstantKind.PutInFire, InstanceId = instanceId, Count = count };
+        /// <summary>食材放进指定锅的食材区。</summary>
+        public static InstantRequest PutFoodInPot(int foodInstanceId, int potInstanceId, int count = 1) =>
+            new InstantRequest { Kind = InstantKind.PutFoodInPot, InstanceId = foodInstanceId, TargetInstanceId = potInstanceId, Count = count };
+        /// <summary>从火堆取下锅（整锅）或取出火堆/锅里的一份食材，到随身或当前地面。</summary>
+        public static InstantRequest TakeOut(int instanceId, string zone) => new InstantRequest { Kind = InstantKind.TakeOut, InstanceId = instanceId, Zone = zone };
         public static InstantRequest Reorder(string zone, string cardKey, int index) =>
             new InstantRequest { Kind = InstantKind.Reorder, Zone = zone, CardKey = cardKey, Index = index };
 
