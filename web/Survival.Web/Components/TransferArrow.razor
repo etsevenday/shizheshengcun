@@ -1,26 +1,70 @@
 @inherits GameComponent
 
 @* 物品卡右下角的三角箭头：点一下直接转移 1 件（地面→随身拾取，随身→地面放下），与点卡片弹出的拾取条并行（试玩留言 fb68265e、4bb723b0）。
-   同时选中这张卡，卡片旁的拾取条跟着显示剩余数量；按策划要求不做按住连续转移。 *@
+   按住不放先转 1 件，过 HoldDelayMs 后每 RepeatMs 再转 1 件，松手、移出箭头、物品转完或转移失败（如超重）即停（留言 fb68265e 第 1 条“长按持续快速转移”）。
+   同时选中这张卡，卡片旁的拾取条跟着显示剩余数量。 *@
 <button type="button" class="card-arrow @(ToCarried ? "down" : "up")" disabled="@(!Enabled)"
         aria-label="@(ToCarried ? "拾取1件" : "放下1件")"
-        title="@(ToCarried ? "拾取1件（选中卡片可输入数量）" : "放下1件（选中卡片可输入数量）")"
+        title="@(ToCarried ? "拾取1件，按住连续拾取（选中卡片可输入数量）" : "放下1件，按住连续放下（选中卡片可输入数量）")"
+        @onpointerdown="OnPointerDown"
+        @onpointerup="StopHold" @onpointerleave="StopHold" @onpointercancel="StopHold"
+        @oncontextmenu:preventDefault="true"
         @onclick="OnClick" @onclick:stopPropagation="true">@(ToCarried ? "▼" : "▲")</button>
 
 @code {
+    private const int HoldDelayMs = 400;
+    private const int RepeatMs = 100;
+
     [Parameter] public string Owner { get; set; } = "";
     [Parameter] public string ItemId { get; set; } = "";
     [Parameter] public int? InstanceId { get; set; }
     [Parameter] public bool Enabled { get; set; } = true;
 
     private bool ToCarried => Owner != ItemInstance.Carried;
+    private CancellationTokenSource? _hold;
 
-    private void OnClick()
+    // 鼠标、触屏走 pointerdown；键盘回车/空格产生的 click 没有按下次数（Detail 为 0），单独转 1 件
+    private void OnClick(MouseEventArgs e)
     {
-        if (!Enabled) return;
-        G.Select(InstanceId.HasValue
-            ? new Selection { Kind = SelectionKind.Tool, Id = ItemId, Owner = Owner, InstanceId = InstanceId }
-            : new Selection { Kind = SelectionKind.ItemGroup, Id = ItemId, Owner = Owner });
-        G.TransferOne(Owner, ItemId, InstanceId);
+        if (e.Detail != 0 || !Enabled) return;
+        SelectCard();
+        TransferOnce(Owner, ItemId, InstanceId);
+    }
+
+    private async Task OnPointerDown(PointerEventArgs e)
+    {
+        if (!Enabled || e.Button != 0) return;
+        StopHold();
+        // 记下按下时的卡片：卡片转完后同位置可能换成别的物品，不能跟着转
+        var owner = Owner; var itemId = ItemId; var instanceId = InstanceId;
+        SelectCard();
+        if (!TransferOnce(owner, itemId, instanceId)) return;
+        var cts = _hold = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(HoldDelayMs, cts.Token);
+            while (!cts.IsCancellationRequested && TransferOnce(owner, itemId, instanceId))
+                await Task.Delay(RepeatMs, cts.Token);
+        }
+        catch (TaskCanceledException) { }
+        finally
+        {
+            if (_hold == cts) _hold = null;
+            cts.Dispose();
+        }
+    }
+
+    private void SelectCard() => G.Select(InstanceId.HasValue
+        ? new Selection { Kind = SelectionKind.Tool, Id = ItemId, Owner = Owner, InstanceId = InstanceId }
+        : new Selection { Kind = SelectionKind.ItemGroup, Id = ItemId, Owner = Owner });
+
+    private bool TransferOnce(string owner, string itemId, int? instanceId) => G.TransferOne(owner, itemId, instanceId).Ok;
+
+    private void StopHold() => _hold?.Cancel();
+
+    public override void Dispose()
+    {
+        StopHold();
+        base.Dispose();
     }
 }
