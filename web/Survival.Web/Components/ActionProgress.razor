@@ -43,10 +43,6 @@
             var res = s.Items.Where(i => a.ReservedItemIds.Contains(i.InstanceId)).GroupBy(i => i.ItemId).Select(g => $"{e.ItemName(g.Key)}{g.Sum(i => i.Count)}");
             <div><span>预留材料</span><b>@string.Join("、", res)</b></div>
         }
-        @if (a.PotInstanceId.HasValue && s.Items.FirstOrDefault(i => i.InstanceId == a.PotInstanceId) is ItemInstance pot)
-        {
-            <div><span>使用的锅</span><b>@e.ItemName(pot.ItemId) · 水量 @e.PotLabel(s, pot)</b></div>
-        }
         @if (a.ReservedResourceUnits > 0)
         {
             <div><span>预留库存</span><b>@a.ReservedResourceUnits</b></div>

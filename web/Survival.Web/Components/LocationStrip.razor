@@ -39,6 +39,12 @@
     </svg>
     <div class="hero-shade"></div>
 
+    @if (G.FacilityLayer != null && lc.HasFire)
+    {
+        <FacilityMenu />
+    }
+    else
+    {
     <div class="desk-row">
         <LocationCard LocationId="@here" Current="true" />
         @foreach (var to in entrances)
@@ -88,10 +94,6 @@
             <div class="desk-hint">@(s.Locations[here].Progress < 100 ? "这里还没有发现资源点，探索周边可能找到线索" : "这里没有可采集的资源")</div>
         }
     </div>
-
-    @if (G.FacilityLayer != null && lc.HasFire)
-    {
-        <FacilityMenu />
     }
 </div>
 

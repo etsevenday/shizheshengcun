@@ -1,0 +1,27 @@
+@inherits GameComponent
+
+@* 设施与锅里物品的两条点击转移路径：“取下到地面”“拾取到随身”，与拖出走同一内核校验（统一卡片案第 5 节）。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var here = s.CurrentLocation;
+    var downWhy = Busy ? "行动进行中，不能整理物品" : e.TakeOutBlocked(s, Item, here);
+    var upWhy = Busy ? "行动进行中，不能整理物品" : e.TakeOutBlocked(s, Item, ItemInstance.Carried);
+    var pot = e.IsPot(Item);
+}
+<div class="fm-btns">
+    @if (OpenPot) { <button type="button" class="secondary" @onclick='() => G.OpenFacility($"pot:{Item.InstanceId}")'>打开锅 ▸</button> }
+    <button type="button" class="secondary" disabled="@(downWhy != null)" title="@(downWhy ?? (pot ? "锅与内容整体放到当前地面，加工进度清零" : "放到当前地面，该份加工进度清零"))"
+            @onclick="() => Take(here)">@(pot ? "取下到地面" : "取出到地面")</button>
+    <button type="button" class="secondary" disabled="@(upWhy != null)" title="@(upWhy ?? $"拾取到随身（{Ui.Kg(e.ItemGrams(s, Item))}公斤）")"
+            @onclick="() => Take(ItemInstance.Carried)">拾取到随身</button>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ItemInstance Item { get; set; } = null!;
+    [Parameter] public bool Busy { get; set; }
+    /// <summary>锅卡上同一行再放“打开锅”，进入锅内容层。</summary>
+    [Parameter] public bool OpenPot { get; set; }
+
+    private void Take(string zone) => G.TransferOne(Item.Owner, Item.ItemId, Item.InstanceId, zone);
+}

@@ -51,46 +51,58 @@ else
 
         @if (e.IsPot(inst))
         {
-            var contents = e.PotContents(s, inst.InstanceId);
-            var attachedHere = inst.InFacility;
+            var liquids = e.PotLiquids(s, inst.InstanceId);
+            var foods = e.PotFood(s, inst.InstanceId);
+            var free = e.PotFreeWaterUnits(s, inst);
             var potBusy = busy || e.IsLocked(s, inst);
             <div class="pot-detail">
+                <div class="tiny muted">@e.WherePath(s, inst)</div>
                 <PotGauge Pot="inst" />
-                @if (contents.Count == 0)
+                @if (liquids.Count == 0 && foods.Count == 0)
                 {
-                    <div class="tiny muted">空锅。把净水或脏水卡拖到锅卡的水量条上装入，每份500毫升；同一锅只装一种水。</div>
+                    <div class="tiny muted">空锅。净水或脏水卡拖到水量条装入（每份500毫升，同一锅只装一种水）；生块根拖到食材行放进锅里（2个食材位）。</div>
                 }
-                @foreach (var c in contents)
+                @foreach (var c in liquids)
                 {
                     var cid = c.InstanceId;
                     var ccfg = e.Item(c.ItemId);
-                    var useReq = ActionRequest.UseInstance(cid);
-                    var up = G.Preview(useReq);
-                    <div class="pot-child" data-drag="@($"potchild:{cid}")" data-drag-title="@($"锅内{ccfg.Name} ×{c.Count}")" data-drag-from="@($"{e.ItemName(inst.ItemId)}内")" title="可拖到随身或地面倒出，拖到“自身”饮用">
-                        <span>@Icons.Markup(c.ItemId)</span>
-                        <b>@ccfg.Name ×@c.Count</b>
-                        @if (c.ReservedBy != null) { <em class="muted">· 加工中</em> }
-                    </div>
+                    var up = G.Preview(ActionRequest.UseInstance(cid));
+                    var lockedWhy = free < 1 ? e.ReservedWaterText(s, c) : null;
+                    <ItemRow Icon="@c.ItemId" Name="@ccfg.Name" Qty="@($"×{c.Count}")" Status="@($"{c.Count * e.PotConfig(inst).UnitMl}毫升{(lockedWhy != null ? " · 已被水煮预留" : "")}")"
+                             CssClass="pot-child" DataDrag="@($"potchild:{cid}")" DragFrom="@($"{e.ItemName(inst.ItemId)}#{inst.InstanceId}内")"
+                             Title="可拖到随身或地面倒出，拖到“自身”饮用" />
                     <div class="btn-row">
                         <button class="secondary" disabled="@(potBusy || !up.Ok)" title="@up.Reason" @onclick="() => Use(cid)">@GameEngine.UseVerb(ccfg)1份</button>
-                        @if (!carried) { <button class="secondary" disabled="@potBusy" @onclick="() => Decant(cid, ItemInstance.Carried)">倒出1份到随身</button> }
-                        <button class="secondary" disabled="@potBusy" @onclick="() => Decant(cid, here)">倒出1份到地面</button>
+                        @if (!inst.IsCarried) { <button class="secondary" disabled="@(potBusy || lockedWhy != null)" title="@lockedWhy" @onclick="() => Decant(cid, ItemInstance.Carried)">倒出1份到随身</button> }
+                        <button class="secondary" disabled="@(potBusy || lockedWhy != null)" title="@lockedWhy" @onclick="() => Decant(cid, here)">倒出1份到地面</button>
                     </div>
                 }
-                @if (e.Location(here).HasFire)
+                @foreach (var f in foods)
+                {
+                    <ItemRow Icon="@f.ItemId" Name="@($"{e.ItemName(f.ItemId)}#{f.InstanceId}")" Qty="×1" Status="@e.ContentStatus(s, f)"
+                             CssClass="pot-child" DataDrag="@($"potchild:{f.InstanceId}")" DragFrom="@($"{e.ItemName(inst.ItemId)}#{inst.InstanceId}内")" />
+                    <TakeOutButtons Item="f" Busy="busy" />
+                }
+                @if (inst.InFacility)
                 {
                     <div class="btn-row">
-                        @if (attachedHere)
-                        {
-                            <button class="secondary" disabled="@potBusy" @onclick="() => Detach(inst.InstanceId)">从火堆取下到地面</button>
-                        }
-                        else
-                        {
-                            <button class="secondary" disabled="@potBusy" @onclick="() => Attach(inst.InstanceId)">放进火堆</button>
-                        }
+                        <button class="secondary" @onclick='() => G.OpenFacility($"pot:{inst.InstanceId}")'>打开锅内容 ▸</button>
                     </div>
+                    <TakeOutButtons Item="inst" Busy="busy" />
+                }
+                else if (e.Location(here).HasFire)
+                {
+                    <div class="tiny muted">把锅拖到地块区火堆的空加工位，燃烧时自动烧水、水煮。</div>
                 }
                 @if (e.IsLocked(s, inst)) { <div class="risk none">行动占用：这口锅正被当前行动使用，不能移动、取水或加水。</div> }
+            </div>
+        }
+        else if (inst.InFacility)
+        {
+            <div class="pot-detail">
+                <div class="tiny muted">@e.WherePath(s, inst)</div>
+                <div class="pot-status">@e.ContentStatus(s, inst)</div>
+                <TakeOutButtons Item="inst" Busy="busy" />
             </div>
         }
 
@@ -137,7 +149,7 @@ else
         }
         else if (cfg.RequiresCooking)
         {
-            <div class="risk none">需在营地用金属锅和燃烧的火堆烹饪后才能食用。</div>
+            <div class="risk none">放进营地燃烧火堆的空加工位烤熟，或放进有净水的锅里、锅放进燃烧的火堆水煮后才能食用。</div>
         }
         @if (chosen.Reserved)
         {
@@ -184,8 +196,6 @@ else
     private async Task Use(int instanceId) => await G.StartAction(ActionRequest.UseInstance(instanceId));
 
     private void Decant(int childId, string zone) => G.Instant(InstantRequest.Decant(childId, zone));
-    private void Attach(int potId) => G.Instant(InstantRequest.PutInFire(potId));
-    private void Detach(int potId) => G.Instant(InstantRequest.TakeOut(potId, G.S.CurrentLocation));
 
     private void OpenCraft(string recipe, int potId)
     {
@@ -194,16 +204,7 @@ else
         G.Notify();
     }
 
-    private static string UseEffect(ItemConfig cfg)
-    {
-        var u = cfg.Use!;
-        var parts = new List<string>();
-        if (u.Satiety > 0) parts.Add($"饱食+{u.Satiety:0}");
-        if (u.Hydration > 0) parts.Add($"水分+{u.Hydration:0}");
-        if (u.Morale > 0) parts.Add($"精神+{u.Morale:0}");
-        if (u.Health > 0) parts.Add($"健康+{u.Health:0}");
-        return string.Join("，", parts);
-    }
+    private static string UseEffect(ItemConfig cfg) => GameEngine.UseEffectText(cfg.Use!);
 
     private static string? Overflow(ItemConfig cfg, Stats st)
     {

@@ -1,26 +1,163 @@
 @inherits GameComponent
 
-@* 设施次级菜单（01 案第 4 节）：覆盖地块区，HUD、地面、随身与右栏仍可见。层级 地块卡片区 → 火堆内容物 → 指定锅内容物。
-   不用 .overlay 类（drag.js 遇 .overlay 禁拖），菜单里的卡照样可以拖进拖出。 *@
+@* 设施次级菜单（统一卡片案第 4 节）：覆盖地块区，HUD、地面、随身与右栏仍可见。层级 地块卡片区 → 火堆内容物 → 指定锅内容物；
+   返回或 Esc 只退一级。关闭菜单不取走内容物、不停止加工、不取消主行动。
+   不用 .overlay 类（drag.js 遇 .overlay 禁拖）：菜单里的真实内容卡照样能拖出，水和生块根也能拖进锅的热区。 *@
 @{
     var s = G.S;
     var e = G.E;
     var here = s.CurrentLocation;
+    var fac = s.Locations[here].Facility;
     var layer = G.FacilityLayer ?? "fire";
+    var busy = e.IsBusy(s) || G.Running;
+    var maintBlocked = G.Running || s.Sub != null || (s.Main != null && (s.Main.Status != ActionStatus.Paused || s.Main.Type == ActionType.Travel));
+    var slots = e.FireSlots(s, here);
+    var used = slots.Count(x => x != null);
+    var state = fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃";
+    ItemInstance? pot = null;
+    if (layer.StartsWith("pot:") && int.TryParse(layer.Substring(4), out var potId)) pot = e.FindItem(s, potId);
+    var potHere = pot != null && e.IsPot(pot) && (e.PlaceOf(s, pot) == ItemInstance.Carried || e.PlaceOf(s, pot) == here);
 }
-<div class="fac-menu" role="dialog" aria-label="火堆内容物">
+<div class="fac-menu" role="dialog" aria-label="@(layer.StartsWith("pot:") ? "锅内容物" : "火堆内容物")">
     <div class="fac-menu-head">
-        <div><b>@e.LocName(here)／火堆</b></div>
+        <div class="fm-path">
+            @if (layer.StartsWith("pot:") && potHere)
+            {
+                <button type="button" class="linkish" @onclick='() => G.OpenFacility("fire")'>@e.LocName(here)／火堆</button>
+                <span>／@e.ItemName(pot!.ItemId)#@pot.InstanceId</span>
+            }
+            else
+            {
+                <b>@e.LocName(here)／火堆</b>
+                <span class="oc-badge @(fac.FireLit ? "lit" : "")">@state</span>
+                <span class="muted">内容物 @used/@slots.Count</span>
+            }
+        </div>
         <button type="button" class="secondary" @onclick="Back">@(layer.StartsWith("pot:") ? "返回火堆" : "关闭")<kbd>Esc</kbd></button>
     </div>
-    <div class="fac-menu-body">
-        @foreach (var it in e.FireContents(s, here))
+
+    @if (layer.StartsWith("pot:"))
+    {
+        if (!potHere)
         {
-            <ContentThumb @key="it.InstanceId" Item="it" />
+            <div class="fac-menu-body"><div class="desk-hint">这口锅已不在当前地点。<button class="linkish" @onclick='() => G.OpenFacility("fire")'>返回火堆</button></div></div>
         }
-    </div>
+        else
+        {
+            var p = pot!;
+            var c = e.PotConfig(p);
+            var liquids = e.PotLiquids(s, p.InstanceId);
+            var foods = e.PotFood(s, p.InstanceId);
+            var free = e.PotFreeWaterUnits(s, p);
+            <div class="fac-menu-body">
+                <div class="fm-card pot wide" data-card="@CardKey(p)" data-drag="@($"card:{CardKey(p)}")" data-drag-title="@($"{e.ItemName(p.ItemId)}#{p.InstanceId}")"
+                     data-drag-from="@e.WherePath(s, p)" data-drop="@(p.InFacility ? $"card:{CardKey(p)}" : null)" data-drop-level="@(p.InFacility ? "card" : null)">
+                    <div class="fm-card-head"><span class="ir-icon">@Icons.Markup(p.ItemId)</span><b>@e.ItemName(p.ItemId)#@p.InstanceId</b></div>
+                    <div class="fm-where">@e.WherePath(s, p)</div>
+                    <PotGauge Pot="p" />
+                    @if (p.InFacility) { <TakeOutButtons Item="p" Busy="busy" /> }
+                    else { <div class="fm-note">锅不在火堆上：把它拖到火堆的空加工位才会受热</div> }
+                </div>
+                <div class="fm-col">
+                    <div class="fm-col-title">水 · @(e.PotUnits(s, p.InstanceId) * c.UnitMl)/@(c.CapacityMl)毫升</div>
+                    @if (liquids.Count == 0)
+                    {
+                        <div class="slot-empty fm-slot" data-drop="@($"potfill:{p.InstanceId}")" data-drop-level="hot">
+                            @Icons.Markup("slot_empty")<span>没有水</span><small>把净水或脏水卡拖到这里，每份500毫升</small>
+                        </div>
+                    }
+                    @foreach (var w in liquids)
+                    {
+                        var wid = w.InstanceId;
+                        var reserved = free < w.Count;
+                        var useWhy = G.Preview(ActionRequest.UseInstance(wid));
+                        <ItemRow Icon="@w.ItemId" Name="@e.ItemName(w.ItemId)" Qty="@($"×{w.Count}")" CssClass="fm-row"
+                                 Status="@($"{w.Count * c.UnitMl}毫升{(reserved ? $" · {Math.Max(0, w.Count - free) * c.UnitMl}毫升已被水煮预留" : "")}{(e.ProcessOf(s, p) != null ? $" · {e.ContentStatus(s, p)}" : "")}")"
+                                 DataDrag="@($"potchild:{wid}")" DragFrom="@($"{e.ItemName(p.ItemId)}#{p.InstanceId}内")"
+                                 Title="可拖到随身或地面倒出，拖到“自身”饮用">
+                            <span class="fm-btns">
+                                <button type="button" class="secondary" disabled="@(busy || free < 1 || !useWhy.Ok)" title="@(free < 1 ? e.ReservedWaterText(s, w) : useWhy.Reason)" @onclick="() => Use(wid)">@GameEngine.UseVerb(e.Item(w.ItemId))1份</button>
+                                <button type="button" class="secondary" disabled="@(busy || free < 1)" title="@(free < 1 ? e.ReservedWaterText(s, w) : "倒出1份到当前地面")" @onclick="() => Decant(wid, here)">倒到地面</button>
+                                <button type="button" class="secondary" disabled="@(busy || free < 1)" title="@(free < 1 ? e.ReservedWaterText(s, w) : "倒出1份到随身")" @onclick="() => Decant(wid, ItemInstance.Carried)">倒到随身</button>
+                            </span>
+                        </ItemRow>
+                    }
+                </div>
+                <div class="fm-col">
+                    <div class="fm-col-title">食材 · @foods.Count/@c.FoodSlots</div>
+                    <div class="fm-food">
+                        @foreach (var f in foods)
+                        {
+                            <FoodCard @key="f.InstanceId" Item="f" Busy="busy" />
+                        }
+                        @for (var k = foods.Count; k < c.FoodSlots; k++)
+                        {
+                            <div @key="@("pf" + k)" class="slot-empty fm-slot" data-drop="@($"potfood:{p.InstanceId}")" data-drop-level="hot" title="@e.PotFoodHint(s, p)">
+                                @Icons.Markup("slot_empty")<span>空食材位</span><small>拖入生块根 · @e.PotFoodHint(s, p)</small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        var wood = e.AvailableCount(s, "wood", true);
+        var room = e.MaxWoodForFire(fac);
+        <div class="fac-menu-body">
+            <div class="fm-card fire">
+                <div class="fm-fire-art" data-drop="@($"fuel:{here}")" data-drop-level="hot" title="燃料区：拖入木材投料，拖入打火器点火">@Icons.Markup(fac.FireLit ? "fire_lit" : "fire_out")</div>
+                <div class="fuel-line"><span>燃料</span><b>@(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分钟</b></div>
+                <div class="fuel-track"><i style="width:@(fac.FuelMinutes * 100 / Math.Max(1, e.Config.Fire.MaxFuelMinutes))%"></i></div>
+                <button type="button" class="fm-btn" disabled="@(maintBlocked || wood < 1 || room < 1)"
+                        title="@(room < 1 ? $"至少需要{e.Config.Fire.BurnMinutesPerWood}分钟空余容量" : wood < 1 ? "随身和地面没有木材" : "不耗时")" @onclick="AddFuel">
+                    <span class="ir-icon">@Icons.Markup("wood")</span><span>投入1木材·燃料+@(e.Config.Fire.BurnMinutesPerWood)分钟<small>可用木材@(wood)</small></span>
+                </button>
+                @if (fac.FireLit)
+                {
+                    <button type="button" class="fm-btn plain" disabled="@maintBlocked" @onclick="Extinguish">熄灭火堆（保留燃料）</button>
+                }
+            </div>
+            @if (!fac.FireLit)
+            {
+                <div class="fm-col ignite"><IgnitePicker Busy="busy" /></div>
+            }
+            @for (var k = 0; k < slots.Count; k++)
+            {
+                var it = slots[k];
+                if (it == null)
+                {
+                    <div @key="@("fs" + k)" class="slot-empty fm-slot" data-drop="@($"fireslot:{here}")" data-drop-level="hot" title="空加工位：拖入金属锅（最多1口）或生块根（每份占1位）">
+                        @Icons.Markup("slot_empty")<span>空加工位 @(k + 1)</span><small>拖入锅或生块根</small>
+                    </div>
+                }
+                else if (e.IsPot(it))
+                {
+                    var pid = it.InstanceId;
+                    <div @key="it.InstanceId" class="fm-card pot in-fire" data-card="@CardKey(it)" data-drag="@($"card:{CardKey(it)}")" data-drag-title="@($"{e.ItemName(it.ItemId)}#{pid}")"
+                         data-drag-from="@e.WherePath(s, it)" data-drop="@($"card:{CardKey(it)}")" data-drop-level="card">
+                        <div class="fm-card-head"><span class="ir-icon">@Icons.Markup(it.ItemId)</span><b>@e.ItemName(it.ItemId)#@pid</b><small>加工位@(k + 1)</small></div>
+                        <PotGauge Pot="it" Compact="true" />
+                        <TakeOutButtons Item="it" Busy="busy" OpenPot="true" />
+                    </div>
+                }
+                else
+                {
+                    <FoodCard @key="it.InstanceId" Item="it" Busy="busy" Slot="@(k + 1)" />
+                }
+            }
+        </div>
+    }
+    @if (G.Notice != null) { <div class="fm-notice notice">@G.Notice</div> }
 </div>
 
 @code {
+    private static string CardKey(ItemInstance i) => $"{i.Owner}|{i.ItemId}|{i.InstanceId}";
+
     private void Back() => G.BackFacility();
+    private void AddFuel() => G.Instant(InstantRequest.AddFuel());
+    private void Extinguish() => G.Instant(InstantRequest.Extinguish());
+    private void Decant(int id, string zone) => G.Instant(InstantRequest.Decant(id, zone));
+    private async Task Use(int id) => await G.StartAction(ActionRequest.UseInstance(id));
 }

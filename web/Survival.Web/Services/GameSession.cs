@@ -605,6 +605,7 @@ public sealed class GameSession
     private void Drain()
     {
         if (State == null) return;
+        var toastSet = false;
         foreach (var ev in E.DrainEvents(S))
         {
             if (string.IsNullOrEmpty(ev.Text)) continue;
@@ -617,6 +618,11 @@ public sealed class GameSession
                 case GameEventKind.Hazard:
                 case GameEventKind.Death:
                     Toast = ev;
+                    toastSet = true;
+                    break;
+                case GameEventKind.FacilityDone:
+                    // 设施完成只提示，不暂停、不替换角色行动；同一批里角色行动的结果提示优先
+                    if (!toastSet) Toast = ev;
                     break;
                 case GameEventKind.SevenDay:
                     SevenDayPending = true;

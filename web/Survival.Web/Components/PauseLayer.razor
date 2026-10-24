@@ -7,13 +7,11 @@
     var sub = s.Sub;
     var travel = main.Type == ActionType.Travel;
     var allowGround = !travel;
-    var fireOut = main.PauseReason == PauseReason.FireOut;
     var stat = main.PauseStat;
     var zero = main.PauseReason == PauseReason.StatZero;
     var work = main.IsWorkType;
     var remaining = work ? Math.Max(0, main.BaseWorkMinutes - main.WorkDone) : Math.Max(0, main.PlannedMinutes - main.ElapsedMinutes);
-    var fac = s.Locations[s.CurrentLocation].Facility;
-    var supplies = new[] { "clean_water", "cooked_root", "canned_food", "berry", "bandage" };
+    var supplies = new[] { "clean_water", "boiled_root", "cooked_root", "canned_food", "berry", "bandage" };
     var busy = sub != null || G.Running;
 }
 
@@ -27,12 +25,7 @@
     else
     {
         <div class="eyebrow"><span class="status-chip paused">已暂停</span> · @main.Label</div>
-        @if (fireOut)
-        {
-            <h2>火堆熄灭 · @(main.Label)已暂停</h2>
-            <p class="lead">原材料与进度保留。可以投入木材、点燃火堆后继续，也可以取消并返还预留材料。点火完成后不会自动继续。</p>
-        }
-        else if (stat.HasValue)
+        @if (stat.HasValue)
         {
             <h2>@(GameEngine.StatName(stat.Value))@(zero ? "归零" : "偏低") · @(main.Label)已暂停</h2>
             <p class="lead">@e.AlertText(stat.Value, zero)当前@(GameEngine.StatName(stat.Value))为@(Ui.Floor(s.Stats.Get(stat.Value)))。补给不会自动进行，请选择处理方式。</p>
@@ -59,20 +52,6 @@
 
     @if (sub == null)
     {
-        @if (fireOut)
-        {
-            var wood = e.AvailableCount(s, "wood", true);
-            var addFuelOk = fac.FuelMinutes + e.Config.Fire.BurnMinutesPerWood <= e.Config.Fire.MaxFuelMinutes && wood > 0;
-            <div class="lines" style="max-width:520px">
-                <div><span>火堆燃料</span><b>@(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分钟</b></div>
-                <div><span>可用木材（随身与地面）</span><b>@wood</b></div>
-            </div>
-            <div class="btn-row" style="max-width:720px">
-                <button class="secondary" disabled="@(!addFuelOk || busy)" @onclick="AddFuel">1. 投入1木材（+60分钟，不耗时）</button>
-            </div>
-            <IgnitePicker Prefix="2. " Busy="busy" />
-        }
-        else
         {
             <h3 style="margin:4px 0 0;font-weight:500">可用补给@(travel ? "（随身）" : "（随身与地面）")</h3>
             <div class="btn-row" style="max-width:820px">
@@ -83,7 +62,7 @@
                     var cfg = e.Item(id);
                     var req = ActionRequest.UseInstance(batch.InstanceId);
                     var p = G.Preview(req);
-                    <button class="secondary" disabled="@(!p.Ok || busy)" title="@p.Reason" @onclick="() => Sub(req)">@GameEngine.UseVerb(cfg)1份@(cfg.Name)·5分钟</button>
+                    <button class="secondary supply-btn" disabled="@(!p.Ok || busy)" title="@p.Reason" @onclick="() => Sub(req)"><span class="ir-icon">@Icons.Markup(id)</span>@GameEngine.UseVerb(cfg)1份@(cfg.Name)·5分钟<small>@(cfg.Use == null ? "" : GameEngine.UseEffectText(cfg.Use))</small></button>
                 }
                 <button class="secondary" disabled="@busy" @onclick="() => Sub(ActionRequest.Rest(30))">休息30分钟@(travel ? "（露天）" : "")</button>
             </div>
@@ -102,7 +81,7 @@
         }
 
         <div class="btn-row" style="max-width:520px;margin-top:auto">
-            <button class="primary" disabled="@(busy || (fireOut && !fac.FireLit))" @onclick="G.Resume">继续@(main.Label)</button>
+            <button class="primary" disabled="@busy" @onclick="G.Resume">继续@(main.Label)</button>
             <button class="secondary danger" disabled="@busy" @onclick="G.Cancel">取消@(main.Label)</button>
         </div>
         <div class="tiny muted">@CancelHint(main)</div>
@@ -113,13 +92,11 @@
 @code {
     private async Task Sub(ActionRequest r) => await G.StartAction(r);
 
-    private void AddFuel() => G.Instant(InstantRequest.AddFuel());
 
     private static string CancelHint(ActionState a) => a.Type switch
     {
         ActionType.Travel => "取消移动：留在出发地，已经流逝的时间与身体消耗保留。",
         ActionType.Gather => "取消搜集：不给产物、不磨损工具，预留库存释放。",
-        ActionType.Craft when a.PotInstanceId.HasValue && !a.LegacyGroundOutput && a.TargetId == "boil" => "取消烧水：脏水留在原锅，加工进度清零。",
         ActionType.Craft or ActionType.Build => "取消制作：预留材料返还当前地面，不生成半成品。",
         ActionType.Explore => "取消探索：探索度不变、不给随机物资，已消耗的时间保留。",
         ActionType.Clear => "取消清理：不给物资，已扣除的1次清理机会不返还，已消耗的时间保留。",

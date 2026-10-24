@@ -1,0 +1,27 @@
+@* 次级菜单里的物品行（统一卡片案第 6 节）：凡以物品或设施对象身份出现的展示项，同时显示图标、名称与数量/状态。
+   同一 itemId 全局用同一张图；缺料整行标出，不用孤立红字代替。 *@
+<div class="irow @CssClass @(Missing ? "missing" : "")" title="@Title" data-drop="@DataDrop" data-drop-level="@(DataDrop == null ? null : DropLevel)"
+     data-drag="@DataDrag" data-drag-title="@(DataDrag == null ? null : Name)" data-drag-from="@DragFrom">
+    <span class="ir-icon">@Icons.Markup(Icon)</span>
+    <span class="ir-text">
+        <span class="ir-name">@Name@if (!string.IsNullOrEmpty(Qty)) {<b class="ir-qty">@Qty</b>}</span>
+        @if (!string.IsNullOrEmpty(Status)) { <span class="ir-status">@Status</span> }
+    </span>
+    @if (ChildContent != null) { <span class="ir-extra">@ChildContent</span> }
+</div>
+
+@code {
+    /// <summary>图标键：物品 ID 或设施对象 ID（fire_lit、shelter……）。</summary>
+    [Parameter, EditorRequired] public string Icon { get; set; } = "";
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+    [Parameter] public string? Qty { get; set; }
+    [Parameter] public string? Status { get; set; }
+    [Parameter] public bool Missing { get; set; }
+    [Parameter] public string CssClass { get; set; } = "";
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? DataDrop { get; set; }
+    [Parameter] public string DropLevel { get; set; } = "hot";
+    [Parameter] public string? DataDrag { get; set; }
+    [Parameter] public string? DragFrom { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

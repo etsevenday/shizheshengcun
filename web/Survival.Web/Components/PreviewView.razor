@@ -24,10 +24,7 @@
                 <div class="fact"><span>基础工作量</span><strong>@(p.BaseMinutes)分钟</strong></div>
                 <div class="fact"><span>当前倍率</span><strong>×@p.FactorAtStart.ToString("0.##")</strong></div>
             }
-            @foreach (var o in p.Outputs)
-            {
-                <div class="fact"><span>产出 · 留在@(p.OutputPlace)</span><strong>@o.Name ×@o.Count</strong></div>
-            }
+
             @if (p.ClearCharges.HasValue)
             {
                 <div class="fact"><span>清理次数</span><strong>@p.ClearCharges/@p.ClearCap → @(p.ClearCharges - 1)/@p.ClearCap</strong></div>
@@ -41,6 +38,15 @@
         </div>
     }
 
+    @if (p.Ok && p.Outputs.Count > 0)
+    {
+        <div class="outputs">
+            @foreach (var o in p.Outputs)
+            {
+                <ItemRow Icon="@o.ItemId" Name="@o.Name" Qty="@($"×{o.Count}")" Status="@($"产出 · 留在{p.OutputPlace}")" />
+            }
+        </div>
+    }
     @if (p.LootOdds.Count > 0)
     {
         <div class="loot-odds">
@@ -51,14 +57,14 @@
             }
         </div>
     }
-    else
+    else if (!p.Ok)
     {
         <div class="blocked">@p.Reason</div>
         @if (p.Outputs.Count > 0 || p.BaseMinutes > 0)
         {
             <div class="lines">
                 @if (p.BaseMinutes > 0) { <div><span>基础耗时</span><b>@(p.BaseMinutes)分钟</b></div> }
-                @foreach (var o in p.Outputs) { <div><span>产出</span><b>@o.Name ×@o.Count</b></div> }
+                @foreach (var o in p.Outputs) { <ItemRow Icon="@o.ItemId" Name="@o.Name" Qty="@($"×{o.Count}")" Status="产出" /> }
             </div>
         }
     }

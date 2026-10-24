@@ -1,0 +1,29 @@
+@inherits GameComponent
+
+@* 设施菜单里的一份食材（火堆直烤位或锅食材位）：同实例卡，图标、名称#实例、所在、加工状态与受热进度，可拖出或点按钮取出。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var name = $"{e.ItemName(Item.ItemId)}#{Item.InstanceId}";
+    var proc = e.ProcessOf(s, Item);
+    var spoiled = e.IsSpoiled(s, Item);
+    var dragKey = Item.InContainer ? $"potchild:{Item.InstanceId}" : $"card:{Item.Owner}|{Item.ItemId}|{Item.InstanceId}";
+}
+<div class="fm-card food @(spoiled ? "spoiled" : "")" data-card="@($"{Item.Owner}|{Item.ItemId}|{Item.InstanceId}")" data-drag="@dragKey"
+     data-drag-title="@name" data-drag-from="@e.WherePath(s, Item)" title="@($"{name} · {e.WherePath(s, Item)}")">
+    <div class="fm-card-head"><span class="ir-icon">@Icons.Markup(Item.ItemId)</span><b>@name</b>@if (Slot.HasValue) {<small>加工位@(Slot)</small>}</div>
+    <div class="fm-status">@e.ContentStatus(s, Item)</div>
+    @if (proc != null && !spoiled)
+    {
+        <div class="heat-track"><i style="width:@(Math.Min(100, proc.HeatDoneMinutes * 100 / Math.Max(1, proc.RequiredHeatMinutes)))%"></i></div>
+    }
+    @if (Item.ExpiresAt.HasValue) { <div class="fm-note">@Ui.Fresh(Item.ExpiresAt.Value - s.GameMinute)</div> }
+    <TakeOutButtons Item="Item" Busy="Busy" />
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ItemInstance Item { get; set; } = null!;
+    [Parameter] public bool Busy { get; set; }
+    /// <summary>火堆加工位序号（直烤时显示）。</summary>
+    [Parameter] public int? Slot { get; set; }
+}

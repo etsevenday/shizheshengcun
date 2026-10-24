@@ -34,7 +34,8 @@ window.survival = {
     var r = card.getBoundingClientRect(), w = b.bar.offsetWidth, h = b.bar.offsetHeight;
     var left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8);
     var top = b.place === 'above' ? r.top - h - 10 : r.bottom + 10;
-    var row = card.closest('.row-scroll'), rr = row ? row.getBoundingClientRect() : r;
+    // 卡片所在的滚动区：地面/随身栏、地块卡片桌面或设施菜单
+    var row = card.closest('.row-scroll, .desk-row, .fac-menu-body'), rr = row ? row.getBoundingClientRect() : r;
     var visible = r.right > rr.left + 12 && r.left < rr.right - 12;
     b.bar.style.left = left + 'px';
     b.bar.style.top = Math.max(8, Math.min(top, window.innerHeight - h - 8)) + 'px';

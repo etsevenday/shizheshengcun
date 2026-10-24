@@ -98,6 +98,7 @@ public sealed class FeedbackBridge
                 _ => G.Panel,
             };
         }
+        if (G.FacilityLayer != null) return G.FacilityLayer.StartsWith("pot:") ? "锅内容物菜单" : "火堆内容物菜单";
         if (s.Sub != null) return "补给/维护中";
         if (s.Main?.Status == ActionStatus.Paused) return "暂停面板";
         return s.Main != null ? "主界面（行动进行中）" : "主界面";

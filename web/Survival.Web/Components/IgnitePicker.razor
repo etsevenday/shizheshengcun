@@ -1,7 +1,7 @@
 @inherits GameComponent
 
-@* 按钮点火也必须先选定一把打火器（策划答复 2026-10-24 第 1 条）：只有一把时同样要点选，不自动挑。
-   拖拽入口是把打火器卡拖到火堆，等于直接选定那一把。 *@
+@* 点火工具选择（策划答复 2026-10-24 第 1 条；统一卡片案第 6 节图标化）：每把打火器一张图卡——图标、名称#实例、随身/地面、选中标记。
+   只有一把时同样要点选，不自动挑；拖拽入口是把打火器卡拖到火堆，等于直接选定那一把。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -12,25 +12,29 @@
 <div class="ignite-picker">
     @if (lighters.Count == 0)
     {
-        <button class="secondary" disabled title="随身和当前地面都没有可用的打火器">@(Prefix)点燃火堆 · 缺少打火器</button>
+        <ItemRow Icon="lighter" Name="打火器" Qty="×0" Status="随身和当前地面都没有可用的打火器" Missing="true" />
+        <button class="secondary" disabled>@(Prefix)点燃火堆 · 缺少打火器</button>
     }
     else
     {
+        <div class="tiny muted">用哪一把打火器：</div>
         <div class="ignite-choices" role="radiogroup" aria-label="选择打火器">
-            <span class="tiny muted">用哪一把：</span>
-            @for (var k = 0; k < lighters.Count; k++)
+            @foreach (var l in lighters)
             {
-                var l = lighters[k];
                 var id = l.InstanceId;
-                // 多把时按顺序编 1、2，不露内部实例号
-                var label = lighters.Count > 1 ? $"{e.ItemName(l.ItemId)} {k + 1}" : e.ItemName(l.ItemId);
-                <button type="button" role="radio" aria-checked="@(chosen == id)" class="batch-chip @(chosen == id ? "on" : "")" disabled="@Busy"
-                        @onclick="() => chosen = chosen == id ? null : id">@label · @(l.IsCarried ? "随身" : "地面")</button>
+                var on = chosen == id;
+                <button type="button" role="radio" aria-checked="@on" class="lighter-card @(on ? "on" : "")" disabled="@Busy"
+                        title="@($"{e.ItemName(l.ItemId)}#{id} · {(l.IsCarried ? "随身" : "地面")}")" @onclick="() => chosen = chosen == id ? null : id">
+                    <span class="ir-icon">@Icons.Markup(l.ItemId)</span>
+                    <span class="lc-text"><b>@e.ItemName(l.ItemId)#@id</b><small>@(l.IsCarried ? "随身" : "地面")</small></span>
+                    <span class="lc-check">@(on ? "✓" : "")</span>
+                </button>
             }
         </div>
         <button class="secondary" disabled="@(Busy || p == null || !p.Ok)" title="@(p == null ? "先选一把打火器" : p.Reason)"
                 @onclick="Go">@(Prefix)@(p == null ? "先选打火器再点火" : $"点燃火堆·{e.Config.Fire.IgniteMinutes}分钟")</button>
         @if (p != null && !p.Ok) { <div class="tiny muted">点火：@p.Reason</div> }
+        @if (p != null && p.Ok && p.Notes.Count > 0) { <div class="tiny muted">@string.Join("；", p.Notes)</div> }
     }
 </div>
 

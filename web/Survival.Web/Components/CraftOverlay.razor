@@ -1,29 +1,33 @@
 @inherits GameComponent
 
-@* 手工制作。Part="center"：中部的配方列表、材料与火堆；Part="detail"：右栏的预估与确认，或暂停加工的继续/取消。 *@
+@* 手工制作。Part="center"：中部的配方列表与材料；Part="detail"：右栏的预估与确认。
+   v0.4（统一卡片案第 6 节）：材料、产物、催化工具都是 图标+名称+数量/状态 的行，缺料整行标出；
+   烧水、烤制、水煮改为火堆自动加工，这里只保留三条“处理说明”（图示步骤 + 打开火堆），不再有占用角色时间的开始按钮。
+   火堆的投料、点火移到火堆内容物菜单。 *@
 @{
     var s = G.S;
     var e = G.E;
     var here = s.CurrentLocation;
     var lc = e.Location(here);
     var fac = s.Locations[here].Facility;
+    var procId = G.CraftRecipe != null && G.CraftRecipe.StartsWith(ProcPrefix) ? G.CraftRecipe.Substring(ProcPrefix.Length) : null;
+    var proc = procId == null ? null : e.Config.Processes.FirstOrDefault(p => p.Id == procId);
     var recipeId = G.CraftRecipe != null && e.Config.Recipes.Any(r => r.Id == G.CraftRecipe) ? G.CraftRecipe : "knife";
     var rc = e.Recipe(recipeId);
     var main = s.Main;
     var craftPaused = main != null && main.Status == ActionStatus.Paused && (main.Type == ActionType.Craft || main.Type == ActionType.Build);
     var busy = G.Running || s.Sub != null;
-    var maintBlocked = busy || (main != null && (main.Status != ActionStatus.Paused || main.Type == ActionType.Travel));
     var candidates = G.CraftCandidates;
     var recipes = candidates == null ? e.Config.Recipes : e.Config.Recipes.Where(r => candidates.Contains(r.Id)).ToList();
     var preferred = G.CraftPreferred.Where(id => s.Items.Any(i => i.InstanceId == id && rc.Inputs.ContainsKey(i.ItemId))).ToList();
-    var request = ActionRequest.Craft(recipeId, G.CraftPot, preferred);
+    var request = ActionRequest.Craft(recipeId, null, preferred);
 }
 
 @if (Part == "center")
 {
     <div class="sub-panel" role="dialog" aria-label="手工制作与营地设施">
         <div class="sub-head">
-            <div><h2>手工制作</h2><span class="sub">材料来自随身与@(lc.Name)地面 · 配方全部已知 · 预估与确认在右侧</span></div>
+            <div><h2>手工制作</h2><span class="sub">材料来自随身与@(lc.Name)地面（火堆与锅里的物资要先取出）· 配方全部已知 · 预估与确认在右侧</span></div>
             <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
         </div>
         <div class="sub-body craft-grid">
@@ -38,95 +42,126 @@
                     var built = r.FacilityResult != null && lc.CanBuildShelter && (r.FacilityResult == "shelterBuilt" ? fac.ShelterBuilt : fac.BedBuilt);
                     var icon = r.FacilityResult == "shelterBuilt" ? "shelter" : r.FacilityResult == "bedBuilt" ? "bed" : r.Outputs.Keys.First();
                     var why = candidates != null ? e.CanStart(s, ActionRequest.Craft(id)) : null;
-                    <button class="recipe @(id == recipeId ? "on" : "") @(why != null ? "missing" : "")" @onclick="() => Pick(id)" title="@why">
+                    <button class="recipe @(id == recipeId && proc == null ? "on" : "") @(why != null ? "missing" : "")" @onclick="() => Pick(id)" title="@why">
                         @Icons.Markup(icon)
-                        <span>@r.Name<small>@(built ? "已建造" : why != null ? why : $"{r.BaseMinutes}分钟{(r.NeedsFire ? " · 需火堆" : r.IsBuild ? " · 营地" : "")}")</small></span>
+                        <span>@r.Name<small>@(built ? "已建造" : why != null ? why : $"{r.BaseMinutes}分钟{(r.IsBuild ? " · 营地" : "")}")</small></span>
                     </button>
+                }
+                @if (candidates == null)
+                {
+                    <div class="tiny muted candidates-head">火堆自动加工 · 处理说明</div>
+                    @foreach (var p in e.Config.Processes)
+                    {
+                        var pid = p.Id;
+                        <button class="recipe proc @(procId == pid ? "on" : "")" @onclick="() => Pick(ProcPrefix + pid)">
+                            @Icons.Markup(p.OutputId)
+                            <span>@ProcTitle(p)<small>自动加工 · 受热@(p.HeatMinutes)分钟</small></span>
+                        </button>
+                    }
                 }
             </div>
 
             <div class="craft-side">
-                <div class="panel craft-mats">
-                    <div class="eyebrow">@(rc.IsBuild ? "营地设施" : "配方") · @rc.Name</div>
-                    <p class="small muted" style="margin:4px 0 8px">@RecipeHint(rc)</p>
-                    @foreach (var kv in rc.Inputs)
-                    {
-                        var item = kv.Key;
-                        var have = e.AvailableCount(s, item, true);
-                        var carried = e.UsableBatches(s, item, false).Sum(i => i.Count);
-                        var plan = Fill(item, kv.Value, preferred);
-                        <div class="mat slot @(have < kv.Value ? "missing" : "")" data-drop="@($"slot:{recipeId}:{item}")" data-drop-level="hot" title="把具体批次的卡拖到这里指定使用">
-                            <span>@e.ItemName(item) ×@kv.Value</span>
-                            <span>可用@(have)（随身@(carried)／地面@(have - carried)）</span>
-                            <div class="slot-batches">
-                                @foreach (var (b, n) in plan)
-                                {
-                                    var bid = b.InstanceId;
-                                    var pinned = preferred.Contains(bid);
-                                    <button type="button" class="batch-chip @(pinned ? "on" : "")" title="@(pinned ? "已手工指定，点击取消" : "点击固定使用这一批")" @onclick="() => TogglePreferred(bid)">
-                                        @BatchText(b, n, pinned)
-                                    </button>
-                                }
-                            </div>
-                        </div>
-                    }
-                    @foreach (var tag in rc.Catalysts)
-                    {
-                        var name = e.Config.Items.First(i => i.ToolTag == tag).Name;
-                        var tool = e.AccessibleTool(s, tag);
-                        <div class="mat @(tool == null ? "missing" : "")"><span>@name（催化工具，不消耗）</span><span>@(tool == null ? "需随身或在当前地面" : tool.IsCarried ? "随身 ✓" : "地面 ✓")</span></div>
-                    }
-                </div>
-
-                <div class="panel fire-box">
-                    @if (lc.HasFire)
-                    {
-                        <div class="fire-row">
-                            <div class="art">@Icons.Markup("fire")</div>
-                            <div class="lines" style="flex:1">
-                                <div><span>营地火堆</span><b class="@(fac.FireLit ? "good-text" : "muted")">@(fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃")</b></div>
-                                <div><span>燃料</span><b>@(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分钟</b></div>
-                                <div><span>可用木材</span><b>@e.AvailableCount(s, "wood", true)</b></div>
-                                <div><span>遮蔽棚 / 床垫</span><b>@(fac.ShelterBuilt ? "已建" : "未建") / @(fac.BedBuilt ? "已铺" : "未铺")</b></div>
-                            </div>
-                        </div>
-                        <div class="btn-row">
-                            <button class="secondary" disabled="@maintBlocked" @onclick="AddFuel">@(craftPaused ? "1. " : "")投入1木材·+60分钟</button>
-                            @if (!fac.FireLit)
+                @if (proc != null)
+                {
+                    <div class="panel craft-mats">
+                        <div class="eyebrow">处理说明 · 自动加工</div>
+                        <p class="small muted" style="margin:4px 0 8px">@ProcHint(proc)</p>
+                        <div class="steps">
+                            @foreach (var (icon, name, note) in Steps(proc))
                             {
-                                <IgnitePicker Prefix="@(craftPaused ? "2. " : "")" Busy="busy" />
-                            }
-                            else
-                            {
-                                <button class="secondary" disabled="@maintBlocked" @onclick="Extinguish">熄灭火堆（保留燃料）</button>
+                                <ItemRow Icon="@icon" Name="@name" Status="@note" CssClass="step" />
                             }
                         </div>
-                        <div class="tiny muted">火堆点燃后按游戏时间持续燃烧，离开、休息、睡眠时也会烧；只照亮营地。</div>
-                    }
-                    else
-                    {
-                        <div class="tiny muted">@(lc.Name)没有火堆。普通手工可以在任何地点进行；烧水、烹饪和营地设施需要回到临时营地。</div>
-                    }
-                </div>
+                        <div class="btn-row" style="margin-top:10px">
+                            <button class="secondary" disabled="@(!lc.HasFire)" title="@(lc.HasFire ? "在地块区打开火堆内容物菜单" : $"{lc.Name}没有火堆，回到营地才能加工")"
+                                    @onclick='() => G.OpenFacility("fire")'>打开火堆 ▸</button>
+                        </div>
+                        <div class="tiny muted" style="margin-top:6px">不占角色时间：放进去后角色可以去探索、清理、休息或睡眠，世界时间推进时火堆自动加工；浏览与离线不推进。</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="panel craft-mats">
+                        <div class="eyebrow">@(rc.IsBuild ? "营地设施" : "配方") · @rc.Name</div>
+                        <p class="small muted" style="margin:4px 0 8px">@RecipeHint(rc)</p>
+                        <div class="tiny muted">原料</div>
+                        @foreach (var kv in rc.Inputs)
+                        {
+                            var item = kv.Key;
+                            var have = e.AvailableCount(s, item, true);
+                            var carried = e.UsableBatches(s, item, false).Sum(i => i.Count);
+                            var reserved = s.Items.Where(i => i.ItemId == item && i.ReservedBy != null && (i.IsCarried || i.Owner == here)).Sum(i => i.Count);
+                            var plan = Fill(item, kv.Value, preferred);
+                            var lack = Math.Max(0, kv.Value - have);
+                            <ItemRow Icon="@item" Name="@e.ItemName(item)" Qty="@($"需{kv.Value}")" Missing="@(lack > 0)" CssClass="mat-row"
+                                     Status="@($"现有{have}（随身{carried}／地面{have - carried}）{(reserved > 0 ? $" · 预留{reserved}" : "")}{(lack > 0 ? $" · 缺少{lack}" : "")}")"
+                                     DataDrop="@($"slot:{recipeId}:{item}")" Title="把具体批次的卡拖到这里指定使用">
+                                <span class="slot-batches">
+                                    @foreach (var (b, n) in plan)
+                                    {
+                                        var bid = b.InstanceId;
+                                        var pinned = preferred.Contains(bid);
+                                        <button type="button" class="batch-chip @(pinned ? "on" : "")" title="@(pinned ? "已手工指定，点击取消" : "点击固定使用这一批")" @onclick="() => TogglePreferred(bid)">
+                                            @BatchText(b, n, pinned)
+                                        </button>
+                                    }
+                                </span>
+                            </ItemRow>
+                        }
+                        @foreach (var tag in rc.Catalysts)
+                        {
+                            var cfg = e.Config.Items.First(i => i.ToolTag == tag);
+                            var tool = e.AccessibleTool(s, tag);
+                            <ItemRow Icon="@cfg.Id" Name="@(tool == null ? cfg.Name : $"{cfg.Name}#{tool.InstanceId}")" Qty="催化工具" Missing="@(tool == null)"
+                                     Status="@(tool == null ? "缺少：需随身或在当前地面" : $"{(tool.IsCarried ? "随身" : "地面")} · 不消耗")" />
+                        }
+                        <div class="tiny muted" style="margin-top:8px">产物</div>
+                        @if (rc.FacilityResult != null)
+                        {
+                            var icon = rc.FacilityResult == "shelterBuilt" ? "shelter" : "bed";
+                            <ItemRow Icon="@icon" Name="@rc.Name.Replace("建", "").Replace("铺", "")" Qty="×1" Status="@($"建在{lc.Name}，不可搬动")" />
+                        }
+                        @foreach (var kv in rc.Outputs)
+                        {
+                            <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"×{kv.Value}")" Status="@($"完成后放在{lc.Name}地面")" />
+                        }
+                    </div>
+                }
+                @if (lc.HasFire)
+                {
+                    var used = e.FireContents(s, here).Count;
+                    <div class="panel fire-box">
+                        <ItemRow Icon="@(fac.FireLit ? "fire_lit" : "fire_out")" Name="营地火堆" Qty="@(fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃")"
+                                 Status="@($"燃料{fac.FuelMinutes}/{e.Config.Fire.MaxFuelMinutes}分钟 · 内容物{used}/{e.Config.Fire.ProcessingSlots}")">
+                            <button class="secondary" @onclick='() => G.OpenFacility("fire")'>打开火堆 ▸</button>
+                        </ItemRow>
+                        <div class="tiny muted">投料、点火、放锅与烤制都在火堆内容物菜单里。</div>
+                    </div>
+                }
             </div>
         </div>
     </div>
 }
-else if (craftPaused && main!.TargetId == recipeId)
+else if (proc != null)
 {
     <div class="detail-scroll">
-        <div class="op-head"><div class="eyebrow"><span class="status-chip paused">已暂停</span> 手工制作</div><h2>@main.Label</h2>
-            <p>@(main.PauseReason == PauseReason.FireOut ? "火堆熄灭，原材料与进度保留。请在中间的火堆区投料、点火，然后继续。" : "行动已暂停，可维护火堆或回到主界面处理。")</p></div>
+        <div class="op-head"><div class="eyebrow">处理说明 · 自动加工</div><h2>@ProcTitle(proc)</h2><p>@ProcHint(proc)</p></div>
         <div class="lines">
-            <div><span>已完成工作量</span><b>@(Ui.Floor(main.WorkDone))/@(Ui.Floor(main.BaseWorkMinutes))分钟</b></div>
-            <div><span>剩余工作量</span><b>@(Ui.Floor(Math.Max(0, main.BaseWorkMinutes - main.WorkDone)))分钟</b></div>
-            <div><span>火堆燃料</span><b>@(fac.FuelMinutes)分钟 · @(fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃")</b></div>
+            <div><span>有效受热</span><b>@(proc.HeatMinutes)分钟</b></div>
+            <div><span>占用角色</span><b>不占用</b></div>
+            @if (proc.WaterCostMl > 0) { <div><span>耗水</span><b>每份@(e.ItemName(proc.RequiredLiquid ?? ""))@(proc.WaterCostMl)毫升</b></div> }
+            <div><span>成品留在</span><b>@(proc.IsPotBatch ? "原锅" : proc.InPot ? "原锅食材位" : "原火堆加工位")</b></div>
         </div>
+        @if (!proc.IsPotBatch)
+        {
+            var o = e.Item(proc.OutputId);
+            <ItemRow Icon="@o.Id" Name="@o.Name" Qty="×1" Status="@($"{GameEngine.UseEffectText(o.Use!)} · 保质{o.ShelfLifeMinutes / 60}小时")" />
+        }
     </div>
     <div class="detail-foot">
-        <button class="primary" disabled="@(busy || (main.PauseReason == PauseReason.FireOut && !fac.FireLit))" @onclick="G.Resume">3. 继续@(main.Label)</button>
-        <button class="secondary danger" style="width:100%;margin-top:8px" disabled="@busy" @onclick="G.Cancel">取消并返还材料</button>
-        <div class="under">点火完成后不会自动继续</div>
+        <button class="primary" disabled="@(!lc.HasFire)" @onclick='() => G.OpenFacility("fire")'>打开火堆 ▸</button>
+        <div class="under">没有开始按钮：放进燃烧的火堆即自动加工</div>
     </div>
 }
 else
@@ -137,6 +172,9 @@ else
 @code {
     [Parameter] public string Part { get; set; } = "center";
 
+    /// <summary>处理说明条目在 CraftRecipe 里的前缀，避免与配方 ID 混淆。</summary>
+    public const string ProcPrefix = "proc:";
+
     private static string RecipeHint(RecipeConfig r) => r.Id switch
     {
         "knife" => "纤维采集耗时从20分钟降到10分钟，耐久20次。",
@@ -146,6 +184,57 @@ else
         "bed" => "营地睡眠体力每小时额外+5。需要先建成遮蔽棚。",
         _ => "",
     };
+
+    private string ProcTitle(ProcessConfig p) => p.Id switch
+    {
+        "boil_water" => "烧水",
+        "roast_root" => "烤制块根",
+        "boil_root" => "水煮块根",
+        _ => p.Name,
+    };
+
+    private string ProcHint(ProcessConfig p)
+    {
+        var e = G.E;
+        return p.Id switch
+        {
+            "boil_water" => $"装了{e.ItemName(p.InputId)}的金属锅放进燃烧的火堆，0.5升或1升都是{p.HeatMinutes}分钟原地烧成{e.ItemName(p.OutputId)}；不自动补水。",
+            "roast_root" => $"{e.ItemName(p.InputId)}直接放进燃烧火堆的空加工位，每份{p.HeatMinutes}分钟烤成{e.ItemName(p.OutputId)}，不需要锅和水。",
+            "boil_root" => $"{e.ItemName(p.InputId)}放进有{e.ItemName(p.RequiredLiquid ?? "")}的锅、锅放进燃烧的火堆，每份{p.HeatMinutes}分钟煮成{e.ItemName(p.OutputId)}，完成时扣{p.WaterCostMl}毫升；空锅只存放不加工。",
+            _ => "",
+        };
+    }
+
+    /// <summary>图示步骤：每步一行“图标+名称+说明”。</summary>
+    private List<(string icon, string name, string note)> Steps(ProcessConfig p)
+    {
+        var e = G.E;
+        var heat = $"受热{p.HeatMinutes}分钟";
+        return p.Id switch
+        {
+            "boil_water" => new()
+            {
+                (p.InputId, e.ItemName(p.InputId), "1. 把水卡拖到锅的水量条，每份500毫升"),
+                ("pot", "金属锅", "2. 把锅拖到火堆的空加工位"),
+                ("fire_lit", "燃烧的火堆", $"3. 点火并保持燃料，{heat}"),
+                (p.OutputId, e.ItemName(p.OutputId), "4. 留在原锅，可饮用或倒出"),
+            },
+            "roast_root" => new()
+            {
+                (p.InputId, e.ItemName(p.InputId), "1. 拖到火堆的空加工位（每份占1位）"),
+                ("fire_lit", "燃烧的火堆", $"2. {heat}，熄火保留进度"),
+                (p.OutputId, e.ItemName(p.OutputId), "3. 留在加工位，取出后食用"),
+            },
+            _ => new()
+            {
+                (p.RequiredLiquid ?? "clean_water", e.ItemName(p.RequiredLiquid ?? "clean_water"), $"1. 锅里装净水，每份食材预留{p.WaterCostMl}毫升"),
+                (p.InputId, e.ItemName(p.InputId), "2. 拖到锅的食材区（最多2份）"),
+                ("pot", "金属锅", "3. 锅放进火堆的空加工位"),
+                ("fire_lit", "燃烧的火堆", $"4. {heat}，完成时扣水"),
+                (p.OutputId, e.ItemName(p.OutputId), "5. 留在原锅食材位"),
+            },
+        };
+    }
 
     private void Pick(string id)
     {
@@ -187,9 +276,6 @@ else
         }
         return res;
     }
-
-    private void AddFuel() => G.Instant(InstantRequest.AddFuel());
-    private void Extinguish() => G.Instant(InstantRequest.Extinguish());
 
     private void Close() => G.OpenPanel(null);
 }
