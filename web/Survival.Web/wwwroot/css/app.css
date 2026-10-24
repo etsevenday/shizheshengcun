@@ -144,7 +144,6 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .rest-scroll { overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
 .choice-title { margin: 0 0 6px; font-size: 16px; font-weight: 500; }
 .sub-panel .log-list { flex: 1; min-height: 0; padding: 8px 14px 14px; }
-.loc-strip .row-scroll { height: 236px; }
 .ground, .carried { flex: 1 1 0; }
 
 /* 卡牌通用 */
@@ -187,7 +186,7 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .item.reserved::after { content: "预留"; position: absolute; left: 6px; bottom: 26px; font-size: 11px; background: #3b4a3b; color: #e5e8da; padding: 1px 5px; border-radius: 2px; }
 .item.broken .art { opacity: .5; }
 
-/* ───── B 方案地点行：场景聚焦（UI 策划 v0.1 方案 B，试玩留言 8f9a7c9b 第 3 点） ───── */
+/* ───── 地块卡片桌面：场景底图只作弱化背景（卡片统一与设施烹饪 v0.4 · 01 案第 1 节） ───── */
 .hero { position: relative; overflow: hidden; flex: 1.35 1 0; min-height: 228px; background: #1d372b; padding: 0; }
 .center-top > .ground { flex: 1 1 0; }
 .scene-art, .scene-over, .scene-tint, .hero-shade { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -197,38 +196,6 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .hero-shade { background: linear-gradient(180deg, #0b1610b0 0%, #0b161000 32%, #0b161000 52%, #0b1610d9 100%); pointer-events: none; }
 .flame { animation: flicker .42s ease-in-out infinite alternate; transform-origin: 0 14px; }
 @keyframes flicker { from { transform: scale(1, 1); opacity: .95; } to { transform: scale(.9, 1.12); opacity: 1; } }
-.hero-head { position: absolute; top: 14px; left: 18px; right: 18px; display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
-.hero-info { min-width: 0; }
-.hero-title { font-size: 30px; line-height: 1.2; text-shadow: 0 2px 10px #0b1d12; cursor: pointer; display: inline-block; border-bottom: 2px solid transparent; }
-.hero-title:hover, .hero-title.selected { border-bottom-color: var(--accent); }
-.hero-title small { display: block; font-size: 14px; margin-top: 4px; color: #d7dfcb; text-shadow: 0 1px 6px #0b1d12; }
-.hero-progress { width: 180px; height: 4px; background: #0d1a12a8; border-radius: 3px; overflow: hidden; margin: 6px 0 8px; }
-.hero-progress i { display: block; height: 100%; background: var(--accent); }
-.hero-chips { display: flex; gap: 6px; flex-wrap: wrap; max-width: 760px; }
-.chip { background: #0e211ad1; border: 1px solid #5c745d; color: #e1e8d8; font-size: 13px; padding: 5px 10px; border-radius: 14px; white-space: nowrap; }
-.chip:hover:not(:disabled) { border-color: var(--accent); }
-.chip.selected { border-color: var(--accent); color: var(--accent); background: #1d2c20e6; }
-.chip.facility { border-color: #7a6a48; }
-.chip.cta { font-size: 15px; padding: 8px 14px; border-radius: 6px; background: #d6b779; color: #222a20; border: 0; font-weight: 600; flex: 0 0 auto; }
-.chip.cta:hover:not(:disabled) { background: #e4c88c; }
-.chip.cta:disabled { background: #0e211ad1; color: #aab2a4; border: 1px solid #5c745d; font-weight: 400; }
-.hero-cards { position: absolute; left: 16px; right: 16px; bottom: 14px; display: flex; gap: 10px; overflow-x: auto; padding: 10px 0 2px; }
-.hero-res { flex: 1 0 210px; max-width: 300px; display: grid; grid-template-columns: 50px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 9px 10px; background: #13271fe8; border: 1px solid #536c54; border-radius: 5px; cursor: pointer; color: var(--text); }
-.hero-res:hover { border-color: #8aa07f; }
-.hero-res.selected { border-color: var(--accent); background: #293c28f2; box-shadow: 0 0 0 1px var(--accent); }
-.hero-res.dim { opacity: .62; }
-.hero-res.fresh { animation: fresh 1.6s ease-out 2; }
-.hero-res .pict svg { width: 50px; height: 50px; display: block; }
-.res-text { min-width: 0; line-height: 1.35; }
-.res-text strong { font-weight: 500; font-size: 15px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.res-text .stock { font-size: 17px; font-weight: 600; }
-.res-text small { font-size: 12px; color: #b6c4ab; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.hero-res { position: relative; }
-.res-risk { position: absolute; top: -9px; left: 8px; font-size: 11px; padding: 1px 6px; border-radius: 8px; background: #f0d7b0; color: #6b3f19; white-space: nowrap; }
-.res-cta { align-self: stretch; min-width: 46px; padding: 0 10px; border: 0; border-radius: 4px; background: #5b6b48; color: #f2ecd8; font-weight: 600; font-size: 14px; }
-.res-cta:hover:not(:disabled) { background: #6e8256; }
-.res-cta:disabled { background: #3a4337; color: #8f988a; }
-.hero-empty { color: #d7dfcb; font-size: 14px; background: #0e211ab8; padding: 8px 12px; border-radius: 4px; }
 
 /* ───── 物品卡旁的拾取/放下条（试玩留言 fb68265e，按策划要求出现在卡片下方） ───── */
 .tbar { position: fixed; z-index: 40; left: -999px; top: -999px; width: 340px; padding: 10px 12px; background: #1c2620f7; border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 8px 24px #000a; display: flex; flex-direction: column; gap: 7px; visibility: hidden; }
@@ -387,7 +354,6 @@ div.card { cursor: pointer; }
   .center { gap: 8px; }
   .section { padding: 8px 12px; }
   .section-head { margin-bottom: 5px; }
-  .loc-strip .row-scroll { height: 168px; }
   .card .ctitle { padding: 5px 8px 4px; font-size: 15px; }
   .card .art { min-height: 34px; }
   .card .art svg { height: 44px; width: 44px; }
@@ -411,17 +377,6 @@ div.card { cursor: pointer; }
   .detail-icon svg { width: 56px; height: 56px; }
   .center-top { gap: 8px; }
   .hero { min-height: 200px; }
-  .hero-head { top: 10px; left: 12px; right: 12px; }
-  .hero-title { font-size: 24px; }
-  .hero-title small { font-size: 13px; }
-  .hero-progress { margin: 4px 0 6px; }
-  .chip { font-size: 12px; padding: 3px 8px; }
-  .chip.cta { font-size: 13px; padding: 6px 10px; }
-  .hero-cards { left: 10px; right: 10px; bottom: 8px; gap: 6px; }
-  .hero-res { flex-basis: 180px; grid-template-columns: 38px minmax(0, 1fr) auto; padding: 6px 8px; gap: 6px; }
-  .hero-res .pict svg { width: 38px; height: 38px; }
-  .res-text .stock { font-size: 15px; }
-  .res-text strong { font-size: 14px; }
   /* 随身区要放得下带水量条的锅卡（标题+图+水量条约 117px，再加区头与内边距） */
   .center > .carried, .center > .shelves-split { flex-basis: 170px; }
   .center > .shelves-split { gap: 8px; }
@@ -467,24 +422,8 @@ body.dragging .tbar { visibility: hidden !important; }
 .pot-track i { display: block; height: 100%; background: #7c8d97; }
 .pot-fill.clean .pot-track i { background: #6fa8c9; }
 .pot-fill.dirty .pot-track i { background: #9a8a5e; }
-/* “已架在火堆上”作为角标盖在图上，不占卡片高度；锅卡的拾取箭头也移到图区右上，不压水量条 */
-.pot-tag { position: absolute; left: 6px; top: 34px; font-size: 11px; background: #7a4f1d; color: #f6ecd6; padding: 1px 5px; border-radius: 2px; font-weight: 600; }
-.pot-card .card-arrow { bottom: auto; top: 34px; }
 .pot-card .art { min-height: 0; }
-@media (max-height: 800px) {
-  .pot-card .card-arrow, .pot-tag { top: 29px; }
-}
 
-/* 地点行：探索与清理并排在右上（开发计划 v0.2 B4）；火堆拆为燃料区与锅位两个热区 */
-.hero-actions { display: flex; gap: 8px; align-items: flex-start; flex: 0 0 auto; }
-.hero-actions .chip.cta { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
-.hero-actions .chip.cta small { font-size: 12px; font-weight: 400; opacity: .85; }
-.clear-cta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
-.clear-info { font-size: 12px; color: #e1e8d8; text-shadow: 0 1px 4px #0b1d12; }
-.fire-chip { display: inline-flex; gap: 0; border-radius: 14px; }
-.fire-chip .fire-fuel { border-radius: 14px 0 0 14px; }
-.fire-chip .fire-slot { border-radius: 0 14px 14px 0; border-left: 0; }
-.fire-chip .fire-slot.filled { color: var(--accent); }
 .self-card { display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border: 1px dashed #6c7d68; }
 .self-card b { font-weight: 600; }
 .self-card span { font-size: 12px; color: var(--muted); }
@@ -507,17 +446,147 @@ body.dragging .tbar { visibility: hidden !important; }
 .ignite-picker { display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .ignite-choices { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 
-/* 地块次级菜单：盖住地点行，探索与清理在这里（策划答复 2026-10-24 第 4 条） */
-.loc-menu-open { flex: 0 0 auto; }
-.loc-menu { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; gap: 12px; padding: 14px 18px; background: #10201aee; border: 1px solid var(--accent); border-radius: 6px; }
-.loc-menu-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.loc-menu-head b { font-size: 24px; font-weight: 500; }
-.loc-menu-head small { display: block; color: var(--muted); margin: 2px 0 6px; }
-.loc-menu-head .hero-progress { width: 260px; }
-.loc-menu-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-.loc-act { flex: 1 1 260px; max-width: 420px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px 14px; text-align: left; background: #d6b779; color: #222a20; border: 0; border-radius: 6px; }
-.loc-act:hover:not(:disabled), .loc-act:focus-visible { background: #e4c88c; }
-.loc-act:disabled { background: #22332a; color: #aab2a4; border: 1px solid #5c745d; }
-.loc-act strong { font-size: 17px; }
-.loc-act span { font-size: 13px; }
-.loc-act em { font-size: 12px; font-style: normal; color: var(--warn); }
+
+/* ───────────── 地块卡片桌面（卡片统一与设施烹饪 v0.4 · 01 案第 1–3 节） ─────────────
+   正文≥16px、辅助≥14px、点击热区≥40px；视口不足时本区内部横向滚动，不遮 HUD 与地面栏。 */
+.hero.desk { padding: 10px 10px 4px; }
+.hero.desk .scene-art { opacity: .42; }
+.hero.desk .hero-shade { background: linear-gradient(180deg, #0b161080 0%, #0b161066 100%); }
+.desk-row { position: relative; z-index: 2; display: flex; gap: 10px; height: 100%; overflow-x: auto; overflow-y: hidden; align-items: stretch; padding-bottom: 6px; }
+.desk-row::-webkit-scrollbar { height: 8px; }
+.desk-row::-webkit-scrollbar-thumb { background: #3d473e; border-radius: 4px; }
+.desk-hint { flex: 0 0 200px; align-self: center; color: #e1e8d8; font-size: 14px; line-height: 1.6; background: #0e211ab8; padding: 10px 12px; border-radius: 6px; }
+
+/* 统一卡框：同一圆角、描边、标题与图片区 */
+.ocard { position: relative; flex: 0 0 auto; width: 158px; min-height: 0; background: var(--paper); color: var(--ink); border: 2px solid transparent; border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px #0005; }
+.ocard:hover { border-color: #e9d9ad; }
+.ocard.selected { border-color: var(--accent); box-shadow: 0 0 0 2px #111911, 0 2px 8px #0005; }
+.ocard.fresh { animation: fresh 1.6s ease-out 2; }
+.ocard.dim { opacity: .6; filter: grayscale(.45); }
+.ocard.dashed { background: #d1c5a8cc; border: 2px dashed #7d7656; }
+.ocard.dashed .oc-art { opacity: .55; filter: grayscale(.6); }
+.oc-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 6px 8px 4px; border-bottom: 1px solid #88856a55; }
+.oc-head b { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.oc-badge { flex: 0 0 auto; font-size: 14px; line-height: 1.3; padding: 1px 6px; border-radius: 4px; background: #efe9d5; color: #35402e; white-space: nowrap; }
+.oc-badge.here { background: #3c4a35; color: #f2ecd8; }
+.oc-badge.new { background: #f0d7b0; color: #6b3f19; }
+.oc-badge.lit { background: #b8682a; color: #fff3df; }
+.oc-badge.built { background: #5b6b48; color: #f2ecd8; }
+.oc-badge.unbuilt { background: #ece6d1; color: #6b5c3f; border: 1px dashed #7d7656; }
+.oc-main { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.oc-art { flex: 1 1 40%; min-height: 56px; display: flex; align-items: center; justify-content: center; background: linear-gradient(155deg, #eee6ca22, #697f612a); overflow: hidden; }
+.oc-art svg { height: 70px; width: 70px; }
+.oc-body { flex: 0 0 auto; padding: 4px 8px 6px; font-size: 14px; line-height: 1.45; display: flex; flex-direction: column; gap: 4px; }
+.oc-line { font-size: 14px; line-height: 1.4; }
+.oc-line.muted { color: #5d5a45; }
+.warn-line { color: #7a3f19; }
+.oc-foot { padding: 0 6px 6px; display: flex; gap: 6px; }
+.oc-btn { flex: 1; min-height: 40px; padding: 4px 8px; border: 0; border-radius: 4px; background: #3c4a35; color: #f2ecd8; font-size: 15px; font-weight: 600; }
+.oc-btn:hover:not(:disabled) { background: #4f6145; }
+.oc-btn:disabled { background: #8f8a74; color: #ece6d1; cursor: not-allowed; }
+.oc-btn.primary-ish { background: #5b6b48; }
+
+/* 地图卡：左图右文（当前）或上图下文（相邻）；地点主图取场景图裁切 */
+.loc-art { width: 100%; height: 100%; min-height: 56px; background-size: cover; background-position: center 60%; }
+.ocard.wide { width: 300px; }
+.ocard.wide .oc-main { flex-direction: row; }
+.ocard.wide .oc-art { flex: 0 0 40%; min-height: 0; }
+.ocard.wide .oc-body { flex: 1 1 auto; min-width: 0; justify-content: flex-start; padding: 6px 8px; }
+.loc-card.neighbor { width: 150px; }
+.loc-progress { height: 6px; background: #8a846655; border-radius: 3px; overflow: hidden; }
+.loc-progress i { display: block; height: 100%; background: #7a6a3a; }
+.loc-actions { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+.loc-btn { min-height: 44px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 5px 9px; text-align: left; background: #d6b779; color: #222a20; border: 0; border-radius: 5px; }
+.loc-btn strong { font-size: 16px; font-weight: 600; }
+.loc-btn small { font-size: 14px; line-height: 1.3; }
+.loc-btn:hover:not(:disabled), .loc-btn:focus-visible { background: #e4c88c; }
+.loc-btn:disabled { background: #b9b096; color: #4a4636; cursor: not-allowed; }
+
+/* 设施卡、资源卡 */
+.fac-card { width: 136px; }
+.res-card { width: 170px; }
+
+/* 火堆：双宽卡，左燃料右两个加工位 */
+.fire-card { width: 360px; }
+.fire-card.lit { box-shadow: 0 0 0 1px #c9823a, 0 2px 14px #e8913f55; }
+.fire-main { flex: 1 1 auto; min-height: 0; display: flex; gap: 6px; padding: 5px 6px 6px; }
+.fire-side { flex: 0 0 104px; display: flex; flex-direction: column; gap: 3px; min-height: 0; }
+.fire-art { flex: 1 1 auto; min-height: 44px; display: flex; align-items: center; justify-content: center; border: 1px dashed transparent; border-radius: 5px; }
+.fire-art:hover { border-color: #8a8466; }
+.fire-art svg { width: 64px; height: 64px; }
+.fuel-line { display: flex; justify-content: space-between; font-size: 14px; }
+.fuel-line span { color: #5d5a45; }
+.fuel-track { height: 6px; background: #8a846655; border-radius: 3px; overflow: hidden; }
+.fuel-track i { display: block; height: 100%; background: #c9823a; }
+.fire-side .oc-btn { flex: 0 0 auto; margin-top: 3px; font-size: 14px; }
+.fire-slots { flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.slot-empty { min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 2px dashed #8a8466; border-radius: 6px; background: #ece6d155; text-align: center; padding: 4px; }
+.slot-empty svg { width: 36px; height: 36px; }
+.slot-empty span { font-size: 14px; font-weight: 600; }
+.slot-empty small { font-size: 14px; color: #5d5a45; line-height: 1.3; }
+
+/* 火堆里的真实内容卡（锅缩略卡、直烤食材卡） */
+.cthumb { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 2px; padding: 3px 5px 4px; background: #efe9d5; border: 2px solid #b7ab88; border-radius: 6px; cursor: pointer; overflow: hidden; }
+.cthumb:hover { border-color: #7d7656; }
+.cthumb.selected { border-color: var(--accent); }
+.cthumb.spoiled { background: #c9c0a6; }
+.ct-head { display: flex; justify-content: space-between; align-items: center; gap: 4px; }
+.ct-head b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-arrow { flex: 0 0 auto; width: 28px; height: 26px; padding: 0; border: 1px solid #7d7a62; border-radius: 4px; background: #fff7df; color: #2d3a29; font-size: 14px; line-height: 1; position: relative; }
+.ct-arrow::after { content: ""; position: absolute; inset: -7px; }
+.ct-art { flex: 1 1 auto; min-height: 22px; display: flex; align-items: center; justify-content: center; }
+.ct-art svg { width: 40px; height: 40px; }
+.ct-status { font-size: 14px; line-height: 1.25; color: #3c4a35; }
+.heat-track { height: 5px; background: #8a846655; border-radius: 3px; overflow: hidden; }
+.heat-track i { display: block; height: 100%; background: #c9823a; }
+.cthumb .pot-fill { margin: 0; padding: 2px 4px 3px; }
+.cthumb .pot-food { margin: 0; }
+
+/* 锅的食材行（与水量条并列的第二个容量维度）与加工状态 */
+.pot-food { display: flex; align-items: center; gap: 4px; margin: 0 6px 4px; padding: 2px 6px; min-height: 26px; border: 1px dashed #8a8466; border-radius: 4px; font-size: 13px; }
+.pot-food > span:first-child { color: #5d5a45; }
+.pot-food b { margin-left: auto; }
+.pot-food-icons { display: inline-flex; gap: 1px; }
+.pot-food-icons i svg { width: 18px; height: 18px; display: block; }
+.pot-status { margin: 0 6px 6px; font-size: 13px; color: #3c4a35; }
+.pot-detail .pot-food { margin: 0; background: var(--paper); color: var(--ink); }
+.pot-detail .pot-status { margin: 0; color: var(--muted); }
+.facility-changes { display: flex; flex-direction: column; gap: 3px; }
+
+@media (max-height: 800px) {
+  .hero.desk { padding: 8px 8px 2px; }
+  .desk-row { gap: 8px; }
+  .oc-head { padding: 4px 7px 3px; }
+  .oc-art { min-height: 40px; }
+  .oc-art svg { width: 48px; height: 48px; }
+  .oc-body { padding: 3px 7px 4px; gap: 3px; }
+  .oc-foot { padding: 0 5px 5px; }
+  .ocard.wide { width: 290px; }
+  .loc-btn { min-height: 40px; padding: 3px 8px; }
+  .loc-btn strong { font-size: 16px; }
+  .fire-card { width: 350px; }
+  .fire-main { padding: 3px 5px 5px; }
+  .fire-art svg { width: 46px; height: 46px; }
+  .ct-art svg { width: 28px; height: 28px; }
+  .slot-empty svg { width: 26px; height: 26px; }
+  .pot-food { min-height: 24px; }
+}
+
+/* 设施次级菜单：只覆盖地块区（01 案第 4 节），不用 .overlay 以免禁用拖拽 */
+.fac-menu { position: absolute; inset: 0; z-index: 6; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; background: #10201af2; border: 1px solid var(--accent); border-radius: 6px; }
+.fac-menu-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.fac-menu-head b { font-size: 18px; font-weight: 600; }
+.fac-menu-body { flex: 1 1 auto; min-height: 0; display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; }
+/* 地面/随身栏的锅卡：水量与食材两行都要放得下（1280×720）；转移箭头放到图区右上，不压两行 */
+.pot-card .ctitle { padding-bottom: 2px; }
+.pot-card .art { flex: 1 1 auto; min-height: 26px; }
+.pot-card .art svg { width: 40px; height: 40px; }
+.pot-card .pot-fill { padding: 2px 6px 3px; margin-bottom: 3px; }
+.pot-card .pot-food { margin-bottom: 5px; }
+.pot-card .card-arrow { bottom: auto; top: 32px; }
+@media (max-height: 800px) {
+  .pot-card .art { flex: 0 0 26px; }
+  .pot-card .art svg { width: 24px; height: 24px; }
+  .pot-card .pot-fill-head { line-height: 1.2; }
+  .pot-card .card-arrow { top: 29px; }
+}

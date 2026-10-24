@@ -1,0 +1,27 @@
+@inherits GameComponent
+
+@* 固定设施卡：遮蔽棚、床垫（01 案第 1、7 节）。未建造用同一建筑插画 + 虚线框 + “未建造”角标，点击打开手工制作并选中对应配方；
+   不可拖动、不计为已建成，插画显示不开启设施收益。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var fac = s.Locations[s.CurrentLocation].Facility;
+    var built = Kind == "bed" ? fac.BedBuilt : fac.ShelterBuilt;
+    var title = Kind == "bed" ? "床垫" : "遮蔽棚";
+    var effect = Kind == "bed" ? "营地睡眠体力每小时额外+5" : "营地可遮蔽睡眠，休息额外恢复精神";
+    var need = Kind == "bed" && !fac.ShelterBuilt ? "需先建成遮蔽棚" : "点击查看建造条件";
+}
+<ObjectCard CssClass="fac-card" Title="@title" Badge="@(built ? "已建成" : "未建造")" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
+            Tooltip="@(built ? effect : $"{title}未建造：{need}")" OnClick="Open">
+    <Art>@Icons.Markup(Kind)</Art>
+    <ChildContent>
+        <div class="oc-line">@(built ? effect : need)</div>
+    </ChildContent>
+</ObjectCard>
+
+@code {
+    /// <summary>shelter 或 bed。</summary>
+    [Parameter, EditorRequired] public string Kind { get; set; } = "shelter";
+
+    private void Open() => G.OpenPanel("craft", Kind);
+}

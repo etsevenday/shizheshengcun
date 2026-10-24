@@ -1,0 +1,45 @@
+@* 统一卡框（卡片统一与设施烹饪 v0.4 · 01 案第 2 节）：地点、设施、资源与地面/随身物品共用同一圆角、描边、标题与图片区。
+   Wide 为左图右文（当前地图卡）；Dashed 为未建造；落点与拖拽键原样透传给 drag.js。 *@
+<div class="ocard @CssClass @(Selected ? "selected" : "") @(Dashed ? "dashed" : "") @(Dim ? "dim" : "") @(Wide ? "wide" : "") @(Fresh ? "fresh" : "")"
+     data-drop="@DataDrop" data-drop-level="@(DataDrop == null ? null : DropLevel)"
+     data-drag="@DataDrag" data-drag-from="@DragFrom" data-drag-title="@DragTitle" data-card="@DataCard"
+     role="button" tabindex="0" title="@Tooltip" aria-label="@(AriaLabel ?? Title)"
+     @onclick="Click" @onkeydown="Key">
+    <div class="oc-head">
+        <b>@Title</b>
+        @if (!string.IsNullOrEmpty(Badge)) { <span class="oc-badge @BadgeClass">@Badge</span> }
+    </div>
+    <div class="oc-main">
+        @if (Art != null) { <div class="oc-art">@Art</div> }
+        @if (ChildContent != null) { <div class="oc-body">@ChildContent</div> }
+    </div>
+    @if (Footer != null) { <div class="oc-foot">@Footer</div> }
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? Badge { get; set; }
+    [Parameter] public string BadgeClass { get; set; } = "";
+    [Parameter] public string CssClass { get; set; } = "";
+    [Parameter] public bool Selected { get; set; }
+    [Parameter] public bool Dashed { get; set; }
+    [Parameter] public bool Dim { get; set; }
+    [Parameter] public bool Wide { get; set; }
+    [Parameter] public bool Fresh { get; set; }
+    [Parameter] public string? Tooltip { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
+    [Parameter] public string? DataDrop { get; set; }
+    [Parameter] public string DropLevel { get; set; } = "card";
+    [Parameter] public string? DataDrag { get; set; }
+    [Parameter] public string? DragFrom { get; set; }
+    [Parameter] public string? DragTitle { get; set; }
+    [Parameter] public string? DataCard { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public RenderFragment? Art { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    private Task Click() => OnClick.InvokeAsync();
+
+    private Task Key(KeyboardEventArgs ev) => ev.Key is "Enter" or " " ? OnClick.InvokeAsync() : Task.CompletedTask;
+}

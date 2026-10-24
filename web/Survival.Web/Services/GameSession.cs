@@ -71,8 +71,15 @@ public sealed class GameSession
     public List<int> CraftPreferred { get; } = new();
     public int? CraftPot { get; set; }
 
-    /// <summary>地块次级菜单（探索、清理）是否打开；它盖住地点行（策划答复 2026-10-24 第 4 条）。</summary>
-    public bool LocationMenuOpen { get; set; }
+    /// <summary>
+    /// 设施次级菜单层（统一卡片案第 4 节）：null 为地块卡片桌面，"fire" 为火堆内容物，"pot:&lt;实例ID&gt;" 为指定锅内容物。
+    /// 只覆盖地块区；Esc 或返回只退一级，关闭不取走内容物、不停止加工、不取消主行动。
+    /// </summary>
+    public string? FacilityLayer { get; private set; }
+
+    /// <summary>悬停或键盘聚焦某个动作按钮时的临时预测；离开即清空。右栏在“执行中”之后、选中对象之前显示它。</summary>
+    public ActionRequest? HoverPreview { get; private set; }
+    public string HoverTitle { get; private set; } = "";
 
     /// <summary>拖拽打开的行动预览（SelectionKind.Action）。</summary>
     public ActionRequest? PendingAction { get; private set; }
@@ -93,6 +100,9 @@ public sealed class GameSession
     /// </summary>
     public void OpenPanel(string? panel, string? recipe = null)
     {
+        // 二级面板与设施菜单同一时间只开一个，Esc 才能逐级退出
+        if (panel != null) FacilityLayer = null;
+        HoverPreview = null;
         // 每次打开或关闭面板都清掉上一次拖拽留下的候选与指定批次；拖拽入口在打开后再写入
         CraftCandidates = null;
         CraftPreferred.Clear();
@@ -277,7 +287,8 @@ public sealed class GameSession
         Notice = null;
         Selected = new Selection();
         Panel = null;
-        LocationMenuOpen = false;
+        FacilityLayer = null;
+        HoverPreview = null;
         _skip = false;
         Running = false;
     }
@@ -317,6 +328,34 @@ public sealed class GameSession
     public void ClearSelection()
     {
         Selected = new Selection();
+        Notify();
+    }
+
+    /// <summary>打开设施菜单的某一层（"fire" 或 "pot:7"），null 回到卡片桌面。打开时收起覆盖中部的二级面板。</summary>
+    public void OpenFacility(string? layer)
+    {
+        FacilityLayer = layer;
+        if (layer != null) Panel = null;
+        HoverPreview = null;
+        Notify();
+    }
+
+    /// <summary>Esc / 返回：锅层退到火堆层，火堆层退到卡片桌面。返回是否退了一级。</summary>
+    public bool BackFacility()
+    {
+        if (FacilityLayer == null) return false;
+        FacilityLayer = FacilityLayer.StartsWith("pot:") ? "fire" : null;
+        Notify();
+        return true;
+    }
+
+    /// <summary>悬停/聚焦动作按钮：右栏临时显示该动作的预测；传 null 清空。</summary>
+    public void Hover(ActionRequest? r, string title = "")
+    {
+        if (ReferenceEquals(HoverPreview, r) && HoverTitle == title) return;
+        if (r == null && HoverPreview == null) return;
+        HoverPreview = r;
+        HoverTitle = title;
         Notify();
     }
 
@@ -403,6 +442,14 @@ public sealed class GameSession
     private void ReconcileSelection()
     {
         if (Selected.Kind != SelectionKind.ItemGroup && Selected.Kind != SelectionKind.Tool) return;
+        // 设施里的物品取出后改选它的新位置，卡边操作条与右栏跟着走
+        if (Selected.InstanceId is int id && S.Items.FirstOrDefault(i => i.InstanceId == id) is ItemInstance moved && moved.Owner != Selected.Owner)
+        {
+            Selected = E.Item(moved.ItemId).IsStackable && !moved.InFacility && !moved.InContainer
+                ? new Selection { Kind = SelectionKind.ItemGroup, Id = moved.ItemId, Owner = moved.Owner }
+                : new Selection { Kind = SelectionKind.Tool, Id = moved.ItemId, Owner = moved.Owner, InstanceId = moved.InstanceId };
+            return;
+        }
         var still = S.Items.Any(i => i.Owner == Selected.Owner && i.ItemId == Selected.Id
                                      && (Selected.InstanceId == null || i.InstanceId == Selected.InstanceId));
         if (!still) Selected = new Selection();
@@ -549,7 +596,7 @@ public sealed class GameSession
             if (State != null && S.CurrentLocation != startLocation && Selected.Kind != SelectionKind.None
                 && !(Selected.Owner == ItemInstance.Carried))
                 Selected = new Selection();
-            if (State != null && S.CurrentLocation != startLocation) LocationMenuOpen = false;
+            if (State != null && S.CurrentLocation != startLocation) FacilityLayer = null;
             Save();
             Notify();
         }
@@ -594,7 +641,7 @@ public sealed class GameSession
     /// 物品卡上的三角箭头：把该物品转移 1 件到对面（地面→随身为拾取，随身→地面为放下）。
     /// 工具按实例转移；可堆叠物品取最早到期、未预留的一堆。
     /// </summary>
-    public ActionResult TransferOne(string owner, string itemId, int? instanceId)
+    public ActionResult TransferOne(string owner, string itemId, int? instanceId, string? toZone = null)
     {
         if (State == null) return ActionResult.Fail("没有进行中的游戏");
         var inst = instanceId.HasValue
@@ -602,6 +649,13 @@ public sealed class GameSession
             : S.Items.Where(i => i.Owner == owner && i.ItemId == itemId && i.ReservedBy == null)
                 .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).FirstOrDefault();
         if (inst == null) return ActionResult.Fail("没有可转移的物品");
+        // 火堆或锅里的物品：明确目标“取下到地面”或“拾取到随身”，与拖出走同一校验（统一卡片案第 5 节）
+        if (inst.InFacility || (inst.InContainer && !E.IsLiquid(inst)))
+        {
+            var res = Instant(InstantRequest.TakeOut(inst.InstanceId, toZone ?? S.CurrentLocation));
+            if (res.Ok) ReconcileSelection();
+            return res;
+        }
         var toCarried = owner != ItemInstance.Carried;
         return Instant(toCarried ? InstantRequest.Pickup(inst.InstanceId, 1) : InstantRequest.Drop(inst.InstanceId, 1));
     }

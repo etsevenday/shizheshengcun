@@ -26,6 +26,11 @@
     {
         <ActionProgress />
     }
+    else if (G.HoverPreview != null && G.Panel == null)
+    {
+        @* 指向或聚焦动作按钮时的临时预测；离开后回到选中对象（统一卡片案第 3 节） *@
+        <PreviewView Request="G.HoverPreview" Eyebrow="@($"预测 · {e.LocName(s.CurrentLocation)}")" Title="@G.HoverTitle" Confirmable="false" />
+    }
     else if (G.Panel == "map")
     {
         <MapOverlay Part="detail" />
@@ -38,12 +43,13 @@
     {
         switch (sel.Kind)
         {
-            case SelectionKind.Location:
-                <PreviewView Request="ActionRequest.Explore()" Eyebrow="@($"已选中 · {e.LocName(s.CurrentLocation)}")" Title="探索周边"
+            case SelectionKind.Location when s.Locations[s.CurrentLocation].Progress < 100:
+                <PreviewView Request="ActionRequest.Explore()" Eyebrow="@($"已选中 · {e.LocName(s.CurrentLocation)}")" Title="探索周边" Confirmable="false"
                              Subtitle="探索推进地块调查，并有机会取得零散物资；探索度达到100%后不再探索。" />
                 break;
+            case SelectionKind.Location:
             case SelectionKind.Clear:
-                <PreviewView Request="ActionRequest.Clear()" Eyebrow="@($"已选中 · {e.LocName(s.CurrentLocation)}")" Title="清理"
+                <PreviewView Request="ActionRequest.Clear()" Eyebrow="@($"已选中 · {e.LocName(s.CurrentLocation)}")" Title="清理" Confirmable="false"
                              Subtitle="翻找、整理地块表层的零散基础物资。每地有独立次数，随游戏世界时间恢复；不增加探索度。" />
                 break;
             case SelectionKind.Entrance:

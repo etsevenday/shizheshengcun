@@ -1,0 +1,58 @@
+@inherits GameComponent
+
+@* 火堆加工位里的真实内容卡（锅或直烤食材）。与地面/随身同一物品同一张图；绑定同一实例，不是副本。
+   锅缩略卡本身是锅的落点（卡面 card:），其中水量条 potfill: 与食材行 potfood: 是更深的热区；
+   它不放在火堆的任何热区里，命中顺序为 锅内容热区 → 锅卡 → 火堆热区 → 普通区域（01 案第 5 节）。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var isPot = e.IsPot(Item);
+    var key = $"{Item.Owner}|{Item.ItemId}|{Item.InstanceId}";
+    var name = $"{e.ItemName(Item.ItemId)}#{Item.InstanceId}";
+    var status = e.ContentStatus(s, Item);
+    var proc = e.ProcessOf(s, Item);
+    var sel = G.Selected;
+    var selected = sel.InstanceId == Item.InstanceId;
+    var busy = e.IsBusy(s) || G.Running;
+    var spoiled = e.IsSpoiled(s, Item);
+}
+<div class="cthumb @(isPot ? "pot" : "food") @(selected ? "selected" : "") @(spoiled ? "spoiled" : "")"
+     data-card="@key" data-drag="@($"card:{key}")" data-drag-title="@name" data-drag-from="@e.WherePath(s, Item)"
+     data-drop="@(isPot ? $"card:{key}" : null)" data-drop-level="@(isPot ? "card" : null)"
+     role="button" tabindex="0" title="@($"{name} · {e.WherePath(s, Item)}：{status}")"
+     @onclick="Open" @onclick:stopPropagation="true" @onkeydown="Key" @onkeydown:stopPropagation="true">
+    <div class="ct-head">
+        <b>@name</b>
+        <button type="button" class="ct-arrow" disabled="@busy" aria-label="@($"转移{name}")" title="取下到地面或拾取到随身"
+                @onclick="Arrow" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">⇅</button>
+    </div>
+    <div class="ct-art">@Icons.Markup(Item.ItemId)</div>
+    @if (isPot)
+    {
+        <PotGauge Pot="Item" Compact="true" ShowStatus="false" />
+    }
+    <div class="ct-status">@status</div>
+    @if (proc != null && !spoiled)
+    {
+        <div class="heat-track" aria-label="@($"受热{proc.HeatDoneMinutes}/{proc.RequiredHeatMinutes}分钟")"><i style="width:@(Math.Min(100, proc.HeatDoneMinutes * 100 / Math.Max(1, proc.RequiredHeatMinutes)))%"></i></div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ItemInstance Item { get; set; } = null!;
+    /// <summary>点击卡片：锅 → 打开锅内容层；食材 → 选中它（右栏详情、卡边转移条）。</summary>
+    [Parameter] public EventCallback OnOpen { get; set; }
+
+    private Task Open()
+    {
+        if (G.E.IsPot(Item)) G.OpenFacility($"pot:{Item.InstanceId}");
+        else G.Select(new Selection { Kind = SelectionKind.Tool, Id = Item.ItemId, Owner = Item.Owner, InstanceId = Item.InstanceId });
+        return OnOpen.InvokeAsync();
+    }
+
+    private Task Key(KeyboardEventArgs ev) => ev.Key is "Enter" or " " ? Open() : Task.CompletedTask;
+
+    /// <summary>转移箭头：选中这件真实物品，卡边操作条提供“取下到地面”“拾取到随身”。</summary>
+    private void Arrow() =>
+        G.Select(new Selection { Kind = SelectionKind.Tool, Id = Item.ItemId, Owner = Item.Owner, InstanceId = Item.InstanceId });
+}

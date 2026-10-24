@@ -1,31 +1,25 @@
 @inherits GameComponent
 
-@* 地点行 · B 方案（场景聚焦）：地点场景铺满，标题、路线与设施在左上，探索在右上，资源点卡叠在场景下方。
-   场景图来自配置 locations[].scene，可直接换成美术图；昼夜光照按游戏时刻叠加。 *@
+@* 地块卡片桌面（卡片统一与设施烹饪 v0.4 · 01 案第 1 节）：当前地图卡 → 已发现相邻地图卡 → 固定设施卡 → 已发现资源卡。
+   场景底图只作弱化背景（昼夜调色与火光照旧），每个对象都有自己的图卡；视口不足时本区内部横向滚动，不遮 HUD 与地面栏。
+   点击火堆或其内容物入口，在本区打开设施次级菜单（FacilityMenu）。 *@
 @{
     var s = G.S;
     var e = G.E;
     var here = s.CurrentLocation;
     var lc = e.Location(here);
-    var ls = s.Locations[here];
-    var fac = ls.Facility;
+    var fac = s.Locations[here].Facility;
     var sel = G.Selected;
     var resources = e.Config.Resources.Where(r => r.LocationId == here && s.Resources[r.NodeId].Discovered).ToList();
-    var entrances = e.AdjacentUnlocked(s).ToList();
+    var entrances = e.AdjacentUnlocked(s).Select(x => x.Other(here)).ToList();
     var busy = e.IsBusy(s) || G.Running;
     var light = Ui.Light(Clock.MinuteOfDay(s.GameMinute), lc.IsIndoor);
     var scene = lc.Scene ?? $"scenes/{lc.Id}.svg";
     var fireOn = lc.HasFire && fac.FireLit && lc.SceneFireX.HasValue && lc.SceneFireY.HasValue;
-    var exploreWhy = ls.Progress >= 100 ? "该地点不再探索，可清理或搜集已发现资源" : busy ? "行动进行中" : e.CanStart(s, ActionRequest.Explore());
-    var clearWhy = busy ? "行动进行中" : e.CanStart(s, ActionRequest.Clear());
-    var (charges, _) = e.ClearChargesAt(s, here);
-    var cap = lc.Clear.Cap;
-    var nextRefill = e.NextClearRefillMinutes(s, here);
-    var pot = lc.HasFire ? e.FirePot(s, here) : null;
     string F(double v) => v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
 }
 
-<div class="panel hero @(lc.IsIndoor ? "indoor" : "")" data-phase="@light.Phase">
+<div class="panel hero desk @(lc.IsIndoor ? "indoor" : "")" data-phase="@light.Phase" aria-label="@($"{lc.Name} · 地块卡片")">
     <div class="scene-art" style="background-image:url('@scene');filter:brightness(@F(light.Brightness)) saturate(@F(light.Saturate))"></div>
     <div class="scene-tint" style="background:@light.Tint"></div>
     <svg class="scene-over" viewBox="0 0 1200 650" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -37,97 +31,26 @@
         }
         @if (fireOn)
         {
-            var fx = lc.SceneFireX!.Value;
-            var fy = lc.SceneFireY!.Value;
             <defs>
                 <radialGradient id="fireGlow"><stop stop-color="#ffb35c" stop-opacity=".75" /><stop offset=".45" stop-color="#ff8a3c" stop-opacity=".28" /><stop offset="1" stop-color="#ff8a3c" stop-opacity="0" /></radialGradient>
             </defs>
-            <circle cx="@F(fx)" cy="@F(fy)" r="@F(170 + 160 * light.Night)" fill="url(#fireGlow)" opacity="@F(.45 + .55 * light.Night)" />
-            <g transform="translate(@F(fx) @F(fy))">
-                <g class="flame">
-                    <path d="M0 -62Q-14 -30 -30 -16 -36 4 -18 14 0 22 18 14 36 2 26 -22 22 -6 12 -10 14 -36 0 -62Z" fill="#e8913f" />
-                    <path d="M0 -30Q-8 -12 -12 -2 -12 12 0 14 12 12 10 -2 6 -12 0 -30Z" fill="#ffd27a" />
-                </g>
-            </g>
+            <circle cx="@F(lc.SceneFireX!.Value)" cy="@F(lc.SceneFireY!.Value)" r="@F(170 + 160 * light.Night)" fill="url(#fireGlow)" opacity="@F(.45 + .55 * light.Night)" />
         }
     </svg>
     <div class="hero-shade"></div>
 
-    <div class="hero-head">
-        <div class="hero-info">
-            <div class="hero-title @(sel.Kind == SelectionKind.Location || G.LocationMenuOpen ? "selected" : "")" role="button" tabindex="0" title="打开地块菜单：探索、清理"
-                 aria-haspopup="menu" aria-expanded="@G.LocationMenuOpen"
-                 data-drop="@($"loc:{here}")" data-drop-level="card"
-                 @onclick="OpenMenu" @onkeydown="ev => OnCardKey(ev, OpenMenu)">
-                @lc.Name
-                <small>@(lc.IsIndoor ? "室内" : "露天") · 探索度@(ls.Progress)% · @light.Phase</small>
-            </div>
-            <div class="hero-progress"><i style="width:@(ls.Progress)%"></i></div>
-            <div class="hero-chips">
-                @foreach (var ed in entrances)
-                {
-                    var to = ed.Other(here);
-                    var edId = to;
-                    <button type="button" class="chip route @(sel.Kind == SelectionKind.Entrance && sel.Id == to ? "selected" : "") @(G.Highlights.Contains(ed.Id) ? "fresh" : "")"
-                            title="查看移动预估" @onclick="() => SelectEntrance(edId)">→ @e.LocName(to) · @(ed.BaseMinutes)分@(s.Locations[to].Visited ? "" : " · 待访问")</button>
-                }
-                @if (lc.HasFire)
-                {
-                    @* 火堆拆成两个热区：燃料区（木材投放）与锅位（架锅）；整张火堆卡面接收打火器 *@
-                    <div class="fire-chip" data-drop="@($"fire:{here}")" data-drop-level="card">
-                        <button type="button" class="chip facility fire-fuel" data-drop="@($"fuel:{here}")" data-drop-level="hot" @onclick='() => OpenCraft("knife")'
-                                title="火堆：把木材拖到这里投放，把打火器拖到火堆点火；点击打开营地加工">
-                            火堆 · @(fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃") · 燃料@(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分
-                        </button>
-                        <button type="button" class="chip facility fire-slot @(pot != null ? "filled" : "")" data-drop="@($"potslot:{here}")" data-drop-level="hot"
-                                @onclick="SelectAttachedPot" title="锅位：把金属锅拖到这里架上火堆">
-                            锅位 · @(pot == null ? "空" : $"{e.ItemName(pot.ItemId)} {e.PotLabel(s, pot)}")
-                        </button>
-                    </div>
-                }
-                @if (lc.CanBuildShelter)
-                {
-                    <button type="button" class="chip facility" @onclick='() => OpenCraft(fac.ShelterBuilt && !fac.BedBuilt ? "bed" : "shelter")' title="打开营地加工">
-                        遮蔽棚 · @(fac.ShelterBuilt ? (fac.BedBuilt ? "已建 · 有床垫" : "已建 · 无床垫") : "未建造")
-                    </button>
-                }
-            </div>
-        </div>
-        <button type="button" class="chip cta loc-menu-open" @onclick="OpenMenu" title="打开地块菜单：探索、清理">地块行动 ▸</button>
-    </div>
-
-    @if (G.LocationMenuOpen)
-    {
-        @* 地块次级菜单（策划答复 2026-10-24 第 4 条）：盖住地点行，探索与清理放在这里，点击即执行；
-           指向哪个按钮，右侧信息栏就显示哪个行动的变化预测。 *@
-        <div class="loc-menu" role="menu" aria-label="@($"{lc.Name} · 地块行动")">
-            <div class="loc-menu-head">
-                <div>
-                    <b>@lc.Name</b>
-                    <small>@(lc.IsIndoor ? "室内" : "露天") · 探索度@(ls.Progress)% · @light.Phase</small>
-                    <div class="hero-progress"><i style="width:@(ls.Progress)%"></i></div>
-                </div>
-                <button type="button" class="secondary" @onclick="CloseMenu" title="关闭地块菜单（Esc）">关闭<kbd>Esc</kbd></button>
-            </div>
-            <div class="loc-menu-actions">
-                <button type="button" role="menuitem" class="loc-act" disabled="@(exploreWhy != null)" title="@(exploreWhy ?? "点击直接开始")"
-                        @onmouseenter="SelectLocation" @onfocus="SelectLocation" @onclick="() => Quick(ActionRequest.Explore(), SelectLocation)">
-                    <strong>@(ls.Progress >= 100 ? "已充分探索" : $"探索周边 · {e.Config.Actions.ExploreMinutes}分钟")</strong>
-                    <span>@(ls.Progress >= 100 ? "该地点不再探索，可清理或搜集已发现资源" : $"完成后{Math.Min(100, ls.Progress + e.Config.Actions.ExploreProgress)}% · 有机会发现新线索并取得零散物资")</span>
-                    @if (exploreWhy != null && ls.Progress < 100) { <em>@exploreWhy</em> }
-                </button>
-                <button type="button" role="menuitem" class="loc-act" disabled="@(clearWhy != null)" title="@(clearWhy ?? "点击直接开始")"
-                        @onmouseenter="SelectClear" @onfocus="SelectClear" @onclick="() => Quick(ActionRequest.Clear(), SelectClear)">
-                    <strong>清理 · @(e.Config.Actions.ClearMinutes)分钟</strong>
-                    <span>@(nextRefill == null ? $"清理次数{charges}/{cap}·已满" : $"清理次数{charges}/{cap} · 距恢复1次{Clock.Duration(nextRefill.Value)}")</span>
-                    @if (clearWhy != null) { <em>@clearWhy</em> }
-                </button>
-            </div>
-            <div class="tiny muted">指向按钮可在右侧查看耗时与身体变化预测；点击直接开始。</div>
-        </div>
-    }
-
-    <div class="hero-cards">
+    <div class="desk-row">
+        <LocationCard LocationId="@here" Current="true" />
+        @foreach (var to in entrances)
+        {
+            <LocationCard @key="to" LocationId="@to" />
+        }
+        @if (lc.HasFire) { <FireCard /> }
+        @if (lc.CanBuildShelter)
+        {
+            <FacilityCard Kind="shelter" />
+            <FacilityCard Kind="bed" />
+        }
         @foreach (var r in resources)
         {
             var rs = s.Resources[r.NodeId];
@@ -137,42 +60,39 @@
             var minutes = tool != null && r.ToolBonus?.BaseMinutesOverride != null ? r.ToolBonus.BaseMinutesOverride.Value : r.BaseMinutes;
             var req = ActionRequest.Gather(r.NodeId);
             var why = busy ? "行动进行中" : e.CanStart(s, req);
-            <div @key="@r.NodeId" class="hero-res @(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId ? "selected" : "") @(empty ? "dim" : "") @(G.Highlights.Contains(r.NodeId) ? "fresh" : "")"
-                 data-drop="@($"res:{nodeId}")" data-drop-level="card"
-                 role="button" tabindex="0" @onclick="() => SelectResource(nodeId)" @onkeydown="ev => OnCardKey(ev, () => SelectResource(nodeId))">
-                <div class="pict">@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</div>
-                <div class="res-text">
-                    <strong>@r.Name</strong>
+            var stock = r.IsCache ? (empty ? "已搜空" : "可搜1次") : r.IsUnlimited ? "不限量" : $"{rs.Available}/{r.Cap}";
+            <ObjectCard @key="r.NodeId" CssClass="res-card" Title="@r.Name" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
+                        Selected="@(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId)" Fresh="@G.Highlights.Contains(r.NodeId)"
+                        DataDrop="@($"res:{nodeId}")" Tooltip="资源点：点击查看采集预估；把对应工具拖到这里指定使用" OnClick="() => SelectResource(nodeId)">
+                <Art>@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</Art>
+                <ChildContent>
                     @if (r.IsCache)
                     {
-                        <div class="stock">@(empty ? "已搜空" : "可搜1次")</div>
-                        <small>@string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}")) · @(minutes)分钟 · 不补充</small>
-                    }
-                    else if (r.IsUnlimited)
-                    {
-                        <div class="stock">不限量</div>
-                        <small>每次@(r.Outputs.Values.First())份@(e.ItemName(r.Outputs.Keys.First())) · @(minutes)分钟</small>
+                        <div class="oc-line">@string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}")) · @(minutes)分</div>
                     }
                     else
                     {
-                        var per = r.Outputs.Values.First() * (tool != null && r.ToolBonus != null ? r.ToolBonus.OutputMultiplier : 1);
-                        <div class="stock">@(rs.Available) / @r.Cap@if (rs.Reserved > 0) {<small> 预留@(rs.Reserved)</small>}</div>
-                        <small>每次@(per)@(e.ItemName(r.Outputs.Keys.First())) · @(minutes)分钟 · @(r.Refills ? $"日补{r.DailyRefill}" : "不补充")@(tool != null ? $" · {e.ItemName(tool.ItemId)}" : "")</small>
+                        var per = r.Outputs.Values.First() * (tool != null && r.ToolBonus != null && !r.IsUnlimited ? r.ToolBonus.OutputMultiplier : 1);
+                        <div class="oc-line">每次@(per)@(e.ItemName(r.Outputs.Keys.First())) · @(minutes)分@(r.Refills ? $" · 日补{r.DailyRefill}" : "")</div>
                     }
-                </div>
-                @if (r.Hazard != null)
-                {
-                    <span class="res-risk" title="完成时一次判定">@Ui.Pct(r.Hazard.Probability)@r.Hazard.Label · 健康−@r.Hazard.HealthLoss.ToString("0")</span>
-                }
-                <button type="button" class="res-cta" disabled="@(why != null)" title="@(why ?? "直接开始，详情可看右侧预估")"
-                        @onclick="() => Quick(req, () => SelectResource(nodeId))" @onclick:stopPropagation="true">@(r.IsCache ? "搜集" : "采集")</button>
-            </div>
+                    @if (r.Hazard != null) { <div class="oc-line warn-line">@Ui.Pct(r.Hazard.Probability)@r.Hazard.Label · 健康−@r.Hazard.HealthLoss.ToString("0")</div> }
+                </ChildContent>
+                <Footer>
+                    <button type="button" class="oc-btn primary-ish" disabled="@(why != null)" title="@(why ?? "直接开始，详情可看右侧预估")"
+                            @onclick="() => Quick(req, nodeId)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">@(r.IsCache ? "搜集" : "采集")</button>
+                </Footer>
+            </ObjectCard>
         }
         @if (resources.Count == 0)
         {
-            <div class="hero-empty">@(ls.Progress < 100 ? "这里还没有发现资源点，探索周边可能找到线索" : "这里没有可采集的资源")</div>
+            <div class="desk-hint">@(s.Locations[here].Progress < 100 ? "这里还没有发现资源点，探索周边可能找到线索" : "这里没有可采集的资源")</div>
         }
     </div>
+
+    @if (G.FacilityLayer != null && lc.HasFire)
+    {
+        <FacilityMenu />
+    }
 </div>
 
 @code {
@@ -185,54 +105,12 @@
         return Enumerable.Range(0, 46).Select(_ => (rng.Next(20, 1180), rng.Next(20, 230), 1 + rng.NextDouble() * 1.6)).ToArray();
     }
 
-    private void SelectLocation()
-    {
-        if (G.Selected.Kind != SelectionKind.Location) G.Select(new Selection { Kind = SelectionKind.Location, Id = G.S.CurrentLocation });
-    }
-    private void SelectClear()
-    {
-        if (G.Selected.Kind != SelectionKind.Clear) G.Select(new Selection { Kind = SelectionKind.Clear, Id = G.S.CurrentLocation });
-    }
-
-    private void OpenMenu()
-    {
-        G.LocationMenuOpen = true;
-        SelectLocationOnce();
-    }
-
-    private void CloseMenu()
-    {
-        G.LocationMenuOpen = false;
-        G.Notify();
-    }
-
-    private void SelectLocationOnce()
-    {
-        if (G.Selected.Kind != SelectionKind.Location) SelectLocation();
-        else G.Notify();
-    }
-
-    private void SelectAttachedPot()
-    {
-        var pot = G.E.FirePot(G.S, G.S.CurrentLocation);
-        if (pot == null) { OpenCraft("knife"); return; }
-        G.Select(new Selection { Kind = SelectionKind.Tool, Id = pot.ItemId, Owner = pot.Owner, InstanceId = pot.InstanceId });
-    }
-    private void SelectEntrance(string to) => G.Select(new Selection { Kind = SelectionKind.Entrance, Id = to });
     private void SelectResource(string id) => G.Select(new Selection { Kind = SelectionKind.Resource, Id = id });
 
-    private static void OnCardKey(KeyboardEventArgs ev, Action select)
+    /// <summary>资源卡底部按钮：选中并直接开始（留言 649cdad9）。</summary>
+    private async Task Quick(ActionRequest r, string nodeId)
     {
-        if (ev.Key == "Enter" || ev.Key == " ") select();
-    }
-
-    /// <summary>快捷按钮：选中并直接开始行动（留言 649cdad9）。</summary>
-    private async Task Quick(ActionRequest r, Action select)
-    {
-        select();
+        SelectResource(nodeId);
         await G.StartAction(r);
     }
-
-    /// <summary>设施是加工面板的入口，打开时预选对应配方。</summary>
-    private void OpenCraft(string recipeId) => G.OpenPanel("craft", recipeId);
 }

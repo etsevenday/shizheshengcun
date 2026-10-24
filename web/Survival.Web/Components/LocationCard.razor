@@ -1,0 +1,107 @@
+@inherits GameComponent
+
+@* 地图卡（01 案第 3 节）。当前地图卡：探索/清理直接放在卡内，指向或聚焦即在右栏预测，单击直接开始；
+   100% 时不渲染探索按钮；清理 0 次或角色忙碌时按钮可见并写明原因。相邻地图卡：图、名称、访问状态、单程时间与移动入口。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var lc = e.Location(LocationId);
+    var ls = s.Locations[LocationId];
+    var sel = G.Selected;
+    var scene = lc.Scene ?? $"scenes/{lc.Id}.svg";
+}
+
+@if (Current)
+{
+    var busy = e.IsBusy(s) || G.Running || starting;
+    var full = ls.Progress >= 100;
+    var exploreWhy = busy ? BusyReason() : e.CanStart(s, ActionRequest.Explore());
+    var clearWhy = busy ? BusyReason() : e.CanStart(s, ActionRequest.Clear());
+    var (charges, _) = e.ClearChargesAt(s, LocationId);
+    var cap = lc.Clear.Cap;
+    var next = e.NextClearRefillMinutes(s, LocationId);
+    <ObjectCard Wide="true" CssClass="loc-card current" Title="@lc.Name" Badge="当前地点" BadgeClass="here"
+                Selected="@(sel.Kind is SelectionKind.Location or SelectionKind.Clear)"
+                DataDrop="@($"loc:{LocationId}")" Tooltip="当前地点：点卡片查看探索预估；把建材拖到营地地点卡可查看营地设施"
+                OnClick="SelectLocation">
+        <Art><div class="loc-art" style="background-image:url('@scene')" role="img" aria-label="@($"{lc.Name}图片")"></div></Art>
+        <ChildContent>
+            <div class="oc-line">@(lc.IsIndoor ? "室内" : "露天") · 探索@(ls.Progress)%</div>
+            <div class="loc-progress" aria-label="@($"探索度{ls.Progress}%")"><i style="width:@(ls.Progress)%"></i></div>
+            @if (full) { <div class="oc-line muted">已充分探索</div> }
+            <div class="loc-actions">
+                @if (!full)
+                {
+                    <button @key="@("explore")" type="button" class="loc-btn" disabled="@(exploreWhy != null)" title="@(exploreWhy ?? "单击直接开始；右侧显示预测")"
+                            @onmouseenter="HoverExplore" @onfocus="HoverExplore" @onmouseleave="Unhover" @onblur="Unhover"
+                            @onclick="Explore" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                        <strong>探索周边 · @(e.Config.Actions.ExploreMinutes)分钟</strong>
+                        @if (exploreWhy != null) { <small>@exploreWhy</small> }
+                    </button>
+                }
+                <button @key="@("clear")" type="button" class="loc-btn" disabled="@(clearWhy != null)" title="@(clearWhy ?? "单击直接开始；右侧显示预测")"
+                        @onmouseenter="HoverClear" @onfocus="HoverClear" @onmouseleave="Unhover" @onblur="Unhover"
+                        @onclick="Clear" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                    <strong>清理 · @(e.Config.Actions.ClearMinutes)分钟</strong>
+                    <small>@(next == null ? $"次数{charges}/{cap}·已满" : $"次数{charges}/{cap} · 恢复还需{Clock.Duration(next.Value)}")@(clearWhy != null && charges > 0 ? $" · {clearWhy}" : "")</small>
+                </button>
+            </div>
+        </ChildContent>
+    </ObjectCard>
+}
+else
+{
+    var edge = e.AdjacentUnlocked(s).FirstOrDefault(x => x.Other(s.CurrentLocation) == LocationId);
+    var selected = sel.Kind == SelectionKind.Entrance && sel.Id == LocationId;
+    <ObjectCard CssClass="loc-card neighbor" Title="@lc.Name" Badge="@(ls.Visited ? "已访问" : "待访问")" BadgeClass="@(ls.Visited ? "" : "new")"
+                Selected="selected" Fresh="@(edge != null && G.Highlights.Contains(edge.Id))"
+                Tooltip="相邻地点：点击查看移动预估，在右侧确认出发" OnClick="SelectEntrance">
+        <Art><div class="loc-art" style="background-image:url('@scene')" role="img" aria-label="@($"{lc.Name}图片")"></div></Art>
+        <ChildContent>
+            <div class="oc-line">单程@(edge?.BaseMinutes ?? 0)分钟 · @(lc.IsIndoor ? "室内" : "露天")</div>
+        </ChildContent>
+        <Footer>
+            <button type="button" class="oc-btn" @onclick="SelectEntrance" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">前往 ▸</button>
+        </Footer>
+    </ObjectCard>
+}
+
+@code {
+    [Parameter, EditorRequired] public string LocationId { get; set; } = "";
+    [Parameter] public bool Current { get; set; }
+
+    private bool starting;
+
+    private string BusyReason() => G.S.Main?.Status == ActionStatus.Paused ? "行动暂停中" : "行动进行中";
+
+    private void SelectLocation() => G.Select(new Selection { Kind = SelectionKind.Location, Id = LocationId });
+    private void SelectEntrance() => G.Select(new Selection { Kind = SelectionKind.Entrance, Id = LocationId });
+
+    private void HoverExplore() => G.Hover(ExploreReq, "探索周边");
+    private void HoverClear() => G.Hover(ClearReq, "清理");
+    private void Unhover() => G.Hover(null);
+
+    // 同一个请求对象，悬停时右栏不必每次重算
+    private static readonly ActionRequest ExploreReq = ActionRequest.Explore();
+    private static readonly ActionRequest ClearReq = ActionRequest.Clear();
+
+    /// <summary>单击直接开始（玩法层再次校验）；请求发出后立即锁定，重复点击不排队。</summary>
+    private async Task Explore() => await Go(ActionRequest.Explore(), SelectionKind.Location);
+    private async Task Clear() => await Go(ActionRequest.Clear(), SelectionKind.Clear);
+
+    private async Task Go(ActionRequest r, SelectionKind kind)
+    {
+        if (starting || G.Running) return;
+        starting = true;
+        try
+        {
+            G.Hover(null);
+            G.Select(new Selection { Kind = kind, Id = LocationId });
+            await G.StartAction(r);
+        }
+        finally
+        {
+            starting = false;
+        }
+    }
+}

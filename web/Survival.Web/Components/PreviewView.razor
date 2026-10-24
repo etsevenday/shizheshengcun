@@ -128,8 +128,16 @@
 </div>
 
 <div class="detail-foot">
-    <button class="primary" disabled="@(!p.Ok || busy || starting)" @onclick="Confirm">@(p.Ok ? p.ConfirmText : DisabledLabel(p))</button>
-    <div class="under">@(p.AsSubAction ? "作为补给或维护执行，原行动保持暂停" : "确认后才推进游戏时间；时间为预计值")</div>
+    @if (Confirmable)
+    {
+        <button class="primary" disabled="@(!p.Ok || busy || starting)" @onclick="Confirm">@(p.Ok ? p.ConfirmText : DisabledLabel(p))</button>
+        <div class="under">@(p.AsSubAction ? "作为补给或维护执行，原行动保持暂停" : "确认后才推进游戏时间；时间为预计值")</div>
+    }
+    else
+    {
+        @* 探索/清理：卡内按钮单击直接开始，右栏只做预测，不再放第二个确认（01 案第 3 节） *@
+        <div class="under">@(p.Ok ? "单击地图卡里的按钮直接开始；时间为预计值" : "按钮暂不可用，原因见上")</div>
+    }
 </div>
 
 @code {
@@ -138,6 +146,8 @@
     [Parameter] public string Title { get; set; } = "";
     [Parameter] public string Subtitle { get; set; } = "";
     [Parameter] public EventCallback OnStarted { get; set; }
+    /// <summary>为 false 时不显示确认按钮（悬停预测、探索/清理的选中预览）。</summary>
+    [Parameter] public bool Confirmable { get; set; } = true;
 
     private bool starting;
 

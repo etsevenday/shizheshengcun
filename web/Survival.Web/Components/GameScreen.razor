@@ -138,9 +138,11 @@
             case "R": Toggle("rest"); break;
             case "L": Toggle("log"); break;
             case "Escape":
-                // Esc 只关闭当前浏览层，不取消主行动
-                if (G.Panel != null) G.OpenPanel(null);
-                else if (G.LocationMenuOpen) { G.LocationMenuOpen = false; G.Notify(); }
+                // Esc 层级栈，每次只退一级，不取消主行动（统一卡片案第 4 节）：
+                // 拖拽中（drag.js 先拦截）→ 数量框 → 锅层 → 火堆层 → 二级面板 → 清选中 → 菜单
+                if (G.PendingDrop != null) G.CancelDropQuantity();
+                else if (G.BackFacility()) { }
+                else if (G.Panel != null) G.OpenPanel(null);
                 else if (G.Selected.Kind != SelectionKind.None) G.ClearSelection();
                 else Toggle("menu");
                 break;

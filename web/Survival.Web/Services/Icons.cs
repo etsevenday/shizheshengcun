@@ -4,7 +4,10 @@ namespace Survival.Web.Services;
 
 public static partial class Icons
 {
-    /// <summary>补画的同风格占位图标：熟块根、草药、废金属、零件，以及地点与状态示意。</summary>
+    /// <summary>
+    /// 补画的同风格占位图标：熟块根、草药、废金属、零件，地点与状态示意；v0.4 新增水煮块根、火堆燃烧/熄灭两态、
+    /// 空加工位框与统一占位图（统一卡片案第 7 节）。同一 itemId 全局只用这一张图。
+    /// </summary>
     private static readonly Dictionary<string, string> Extra = new()
     {
         ["cooked_root"] = @"<path d=""M41 33Q71 18 78 38 85 56 61 71L26 84Q12 73 25 55Z"" fill=""#8a5a35"" stroke=""#5b4129"" stroke-width=""3""/><path d=""M31 62L42 68M49 47L59 54M60 36L68 42"" stroke=""#c9935c"" stroke-width=""3""/><path d=""M40 22Q36 12 42 6M56 20Q52 10 58 4"" fill=""none"" stroke=""#b9b39a"" stroke-width=""3"" stroke-linecap=""round""/>",
@@ -16,13 +19,26 @@ public static partial class Icons
         ["route"] = @"<path d=""M14 80Q34 44 56 58T88 22"" fill=""none"" stroke=""#c8b27a"" stroke-width=""7"" stroke-dasharray=""10 8"" stroke-linecap=""round""/><circle cx=""14"" cy=""80"" r=""8"" fill=""#7f9d5e""/><path d=""M80 10L94 30H66Z"" fill=""#bd8c50""/>",
         ["outdoor"] = @"<path d=""M0 100L22 46 40 70 58 36 82 72 100 52V100Z"" fill=""#355038""/><path d=""M10 100L16 70 22 100M70 100L76 64 82 100"" fill=""#24382a""/><circle cx=""78"" cy=""22"" r=""9"" fill=""#d9c48e""/>",
         ["indoor"] = @"<path d=""M14 48L50 18 86 48V92H14Z"" fill=""#5d5a4a"" stroke=""#3c3a30"" stroke-width=""3""/><rect x=""40"" y=""60"" width=""20"" height=""32"" fill=""#2c2a22""/><rect x=""22"" y=""56"" width=""12"" height=""12"" fill=""#c9b77f""/><rect x=""66"" y=""56"" width=""12"" height=""12"" fill=""#c9b77f""/>",
+        ["boiled_root"] = @"<path d=""M14 52H86Q84 84 50 86 16 84 14 52Z"" fill=""#8c9a97"" stroke=""#4e5752"" stroke-width=""3""/><path d=""M14 52H86"" stroke=""#4e5752"" stroke-width=""4""/><path d=""M26 50Q30 36 46 38 56 40 54 50M50 50Q54 34 68 36 78 40 74 50"" fill=""#c99a62"" stroke=""#7a5532"" stroke-width=""3""/><path d=""M32 62Q50 68 68 62"" fill=""none"" stroke=""#c9d6d8"" stroke-width=""3"" opacity="".8""/><path d=""M36 28Q32 18 38 10M52 26Q48 16 54 8M66 28Q62 18 68 10"" fill=""none"" stroke=""#b9b39a"" stroke-width=""3"" stroke-linecap=""round""/>",
+        ["fire_lit"] = @"<path d=""M18 84L82 70M18 70L82 84"" stroke=""#6f5236"" stroke-width=""9"" stroke-linecap=""round""/><path d=""M50 12Q34 34 30 48 26 66 50 72 74 66 70 48 66 36 58 30 58 44 50 42 52 28 50 12Z"" fill=""#e8913f"" stroke=""#a85a22"" stroke-width=""2""/><path d=""M50 40Q42 52 42 60 44 68 50 68 58 68 58 60 58 52 50 40Z"" fill=""#ffd27a""/>",
+        ["fire_out"] = @"<path d=""M18 84L82 70M18 70L82 84"" stroke=""#4b3d30"" stroke-width=""9"" stroke-linecap=""round""/><path d=""M30 70Q34 58 46 62 52 54 60 60 70 58 72 70Z"" fill=""#5a524a"" stroke=""#3b3530"" stroke-width=""2""/><circle cx=""44"" cy=""66"" r=""3"" fill=""#a9563a""/><path d=""M46 50Q40 40 48 32 44 24 50 16"" fill=""none"" stroke=""#9c968a"" stroke-width=""3"" stroke-linecap=""round"" opacity="".7""/>",
+        ["slot_empty"] = @"<rect x=""14"" y=""14"" width=""72"" height=""72"" rx=""8"" fill=""none"" stroke=""#8a8466"" stroke-width=""4"" stroke-dasharray=""10 8""/><path d=""M50 34V66M34 50H66"" stroke=""#8a8466"" stroke-width=""5"" stroke-linecap=""round""/>",
+        ["placeholder"] = @"<rect x=""12"" y=""12"" width=""76"" height=""76"" rx=""8"" fill=""#c9bf9f"" stroke=""#8a8466"" stroke-width=""4""/><path d=""M24 72L42 46 54 60 62 52 78 72Z"" fill=""#9a9478""/><circle cx=""66"" cy=""32"" r=""7"" fill=""#9a9478""/><path d=""M12 12L88 88"" stroke=""#8a8466"" stroke-width=""3"" opacity="".5""/>",
         ["camp"] = @"<path d=""M8 86L36 34 64 86Z"" fill=""#6d6346"" stroke=""#4a432f"" stroke-width=""3""/><path d=""M66 62Q60 76 66 84 74 90 82 84 88 74 78 60 78 72 72 70Z"" fill=""#d8a25a""/><path d=""M56 90L92 86"" stroke=""#786449"" stroke-width=""6"" stroke-linecap=""round""/>",
     };
+
+    /// <summary>界面请求过但没有图的键（缺图清单，见 README）。缺图时显示统一占位图，不再用石块兜底。</summary>
+    public static readonly HashSet<string> Missing = new();
+
+    public static bool Has(string key) => Extracted.ContainsKey(key) || Extra.ContainsKey(key);
 
     public static string Svg(string key)
     {
         if (!Extracted.TryGetValue(key, out var inner) && !Extra.TryGetValue(key, out inner))
-            inner = Extracted["stone"];
+        {
+            Missing.Add(key);
+            inner = Extra["placeholder"];
+        }
         return $"<svg viewBox=\"0 0 100 100\" aria-hidden=\"true\">{inner}</svg>";
     }
 

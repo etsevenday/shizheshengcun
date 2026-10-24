@@ -8,7 +8,9 @@
     var here = s.CurrentLocation;
     var onGround = sel.Owner == here;
     var carried = sel.Owner == ItemInstance.Carried;
-    var stillThere = sel.Owner == ItemInstance.Carried || sel.Owner == here || sel.Owner == GameEngine.FireOwner(here);
+    // 设施与锅里的物品按根位置判断：仍在随身或当前地点（含当前火堆与锅）才可操作
+    var probe = s.Items.FirstOrDefault(i => i.Owner == sel.Owner);
+    var stillThere = probe != null && (e.PlaceOf(s, probe) == ItemInstance.Carried || e.PlaceOf(s, probe) == here);
     var list = s.Items.Where(i => i.Owner == sel.Owner && i.ItemId == sel.Id && (sel.InstanceId == null || i.InstanceId == sel.InstanceId))
         .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
     var batches = list.GroupBy(i => i.ExpiresAt).Select(g => new Batch(g.Key, g.Sum(i => i.Count), g.Any(i => i.ReservedBy != null), g.ToList())).ToList();

@@ -1,0 +1,60 @@
+@inherits GameComponent
+
+@* 火堆设施卡（双宽，01 案第 4 节）：主图与燃料（燃料区热区 fuel:）、2 个加工位缩略卡与“内容物 n/2”入口。
+   空加工位是热区 fireslot:；整张卡面是 fire: 落点（木材投料、打火器点火、锅与生块根进空位）。点击卡面打开火堆内容物菜单。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var here = s.CurrentLocation;
+    var fac = s.Locations[here].Facility;
+    var slots = e.FireSlots(s, here);
+    var used = slots.Count(x => x != null);
+    var state = fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃";
+    var maxFuel = e.Config.Fire.MaxFuelMinutes;
+}
+<div class="ocard fire-card double @(fac.FireLit ? "lit" : "")" data-drop="@($"fire:{here}")" data-drop-level="card"
+     role="button" tabindex="0" aria-label="@($"火堆，{state}，燃料{fac.FuelMinutes}分钟，内容物{used}/{slots.Count}")"
+     title="火堆：木材拖到燃料区投料，打火器拖到火堆点火；锅与生块根拖到空加工位；点击打开内容物菜单"
+     @onclick="Open" @onkeydown="Key">
+    <div class="oc-head">
+        <b>火堆</b>
+        <span class="oc-badge @(fac.FireLit ? "lit" : "")">@state</span>
+    </div>
+    <div class="fire-main">
+        <div class="fire-side">
+            <div class="fire-art" data-drop="@($"fuel:{here}")" data-drop-level="hot" title="燃料区：拖入木材投料（每份+60分钟），拖入打火器点火">
+                @Icons.Markup(fac.FireLit ? "fire_lit" : "fire_out")
+            </div>
+            <div class="fuel-line"><span>燃料</span><b>@(fac.FuelMinutes)/@(maxFuel)分</b></div>
+            <div class="fuel-track"><i style="width:@(fac.FuelMinutes * 100 / Math.Max(1, maxFuel))%"></i></div>
+            <button type="button" class="oc-btn" @onclick="Open" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">内容物 @used/@slots.Count ▸</button>
+        </div>
+        <div class="fire-slots">
+            @for (var k = 0; k < slots.Count; k++)
+            {
+                var it = slots[k];
+                if (it == null)
+                {
+                    <div @key="@("empty" + k)" class="slot-empty" data-drop="@($"fireslot:{here}")" data-drop-level="hot" title="空加工位：拖入金属锅（最多1口）或生块根（每份占1位）">
+                        @Icons.Markup("slot_empty")
+                        <span>空加工位</span>
+                        <small>拖入锅或生块根</small>
+                    </div>
+                }
+                else
+                {
+                    <ContentThumb @key="it.InstanceId" Item="it" />
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private void Open() => G.OpenFacility("fire");
+
+    private void Key(KeyboardEventArgs ev)
+    {
+        if (ev.Key is "Enter" or " ") Open();
+    }
+}
