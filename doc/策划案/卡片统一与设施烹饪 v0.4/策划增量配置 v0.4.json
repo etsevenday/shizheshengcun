@@ -1,0 +1,263 @@
+{
+  "documentVersion": "0.4",
+  "date": "2026-10-24",
+  "role": "design_delta_not_engine_merge_patch",
+  "implementationStatus": "planned_not_verified_in_game",
+  "baseline": {
+    "documents": [
+      "基础系统 v0.2（含2026-10-24实现同步）",
+      "交互与地图扩展 v0.3（含实现同步）",
+      "UI策划 v0.1（含实现同步）"
+    ],
+    "reportedEngineConfig": "data/config.v0.4.json",
+    "sourceOfImplementationReport": "现有策划文档中的实现同步记录，未读取实际工程",
+    "saveSchemaBefore": "3",
+    "proposedSaveSchemaAfter": "4",
+    "schemaVersionMustBeUnusedInActualProject": true
+  },
+  "retire": [
+    "地块行动按钮及承载探索清理的独立菜单",
+    "100%仍显示灰色探索按钮",
+    "附着锅仍归属地面且保留地面卡",
+    "cook: 生块根2+空锅的旧主动配方",
+    "boil: 占用角色主行动的旧烧水",
+    "recipe.boil.buttonAutoFill及任何自动补水路径",
+    "按锅位/随身/地面顺序自动挑锅加工",
+    "必须满1升才允许净水",
+    "熄火后设施加工需要手动继续"
+  ],
+  "retain": {
+    "exploreBaseMinutes": 30,
+    "exploreProgressDelta": 25,
+    "clearBaseMinutes": 20,
+    "clearAndExploreShareExistingLootTables": true,
+    "clearChargesAndRefill": "unchanged",
+    "humanMainActionsMax": 1,
+    "humanChildActionsMax": 1,
+    "dragDefaultQuantity": 1,
+    "shiftDropQuantityDialog": true,
+    "fixedObjectsDraggable": false,
+    "offlineWorldProgress": false,
+    "requestIdHistoryCount": 32,
+    "carryHardGrams": 30000,
+    "zeroFuelIgnitionAutoAddsOneWood": true,
+    "igniteMinutes": 5,
+    "igniteFuelCostMinutes": 5,
+    "igniteIsWorkingForZeroEnergyDamage": false,
+    "fuelMinutesPerWood": 60,
+    "fuelCapMinutes": 240
+  },
+  "ignition": {
+    "requiredTool": "lighter",
+    "explicitToolInstanceRequired": true,
+    "buttonRequiresSelectionEvenWhenOneTool": true,
+    "dragBindsDroppedInstance": true,
+    "availableOwners": [
+      "carried",
+      "current_location_ground"
+    ],
+    "startsHeatingAfterIgnitionCompletes": true,
+    "autoFillWater": false
+  },
+  "ui": {
+    "layout": "B_scene_region_replaced_with_unified_object_cards",
+    "removeLocationActionButton": true,
+    "exploreClearOnCurrentLocationCard": true,
+    "hideExploreAtProgress": 100,
+    "showClearWhenZero": true,
+    "neighborCardsHaveLocalActions": false,
+    "exploreClearClick": "validate_and_start_no_second_confirm",
+    "previewPriority": [
+      "active_human_action",
+      "hover_or_keyboard_focus",
+      "selected_object"
+    ],
+    "facilityContentsPanel": "overlay_location_region_only",
+    "parentGroundCardForContainedItem": false,
+    "facilityShowsEmbeddedPotCard": true,
+    "allowDropIntoEmbeddedPot": true,
+    "transferModes": [
+      "drag",
+      "card_arrow_click"
+    ],
+    "allObjectRowsNeedIconAndText": true,
+    "iconBindingKey": "itemId_or_objectDefinitionId",
+    "missingIcon": "uniform_placeholder_plus_name_and_missing_asset_record"
+  },
+  "ownership": {
+    "owners": [
+      "carried",
+      "locationId",
+      "facility:<facilityId>",
+      "pot:<instanceId>"
+    ],
+    "containedItemHasOneOwner": true,
+    "hierarchyMax": "facility_to_pot_to_water_or_food",
+    "potInPot": false,
+    "displayMirrorsAreNotAdditionalItems": true,
+    "wholePotTransferIncludesContents": true,
+    "carryMass": "sum_unique_descendants_of_carried_roots",
+    "transferFailure": "atomic_no_owner_or_progress_change"
+  },
+  "fire": {
+    "definitionId": "camp_fire",
+    "processingSlotCount": 2,
+    "maxPots": 1,
+    "potSlotCost": 1,
+    "directFoodSlotCostPerUnit": 1,
+    "directFoodInputIds": [
+      "raw_root"
+    ],
+    "completedProductsRemainInSourceSlot": true,
+    "fuelBurnPerWorldMinute": 1,
+    "multiplyFuelCostByProcessCount": false
+  },
+  "pot": {
+    "itemId": "pot",
+    "shellWeightGrams": 1000,
+    "liquidCapacityMl": 1000,
+    "transferQuantumMl": 500,
+    "foodSlots": 2,
+    "homogeneousLiquidsOnly": true,
+    "acceptedLiquids": [
+      "clean_water",
+      "dirty_water"
+    ],
+    "storedFoodIds": [
+      "raw_root",
+      "boiled_root"
+    ],
+    "allowFoodStorageWithoutWater": true,
+    "cookWithoutWater": false,
+    "autoFillWater": false,
+    "autoPourOut": false,
+    "receivesHeatOnlyAsFireContent": true
+  },
+  "processes": [
+    {
+      "id": "boil_water",
+      "mode": "passive_facility",
+      "target": "pot_liquid_batch",
+      "inputId": "dirty_water",
+      "outputId": "clean_water",
+      "allowedBatchMl": [
+        500,
+        1000
+      ],
+      "heatMinutes": 15,
+      "volumeChangeMl": 0,
+      "outputOwner": "same_pot",
+      "additionalDirtyWaterResetsBatchHeat": true
+    },
+    {
+      "id": "roast_root",
+      "mode": "passive_facility",
+      "target": "single_food_instance",
+      "inputId": "raw_root",
+      "outputId": "cooked_root",
+      "inputCount": 1,
+      "outputCount": 1,
+      "heatMinutes": 30,
+      "waterCostMl": 0,
+      "requiredOwner": "fire_processing_slot",
+      "outputOwner": "same_fire_slot"
+    },
+    {
+      "id": "boil_root",
+      "mode": "passive_facility",
+      "target": "single_food_instance",
+      "inputId": "raw_root",
+      "outputId": "boiled_root",
+      "inputCount": 1,
+      "outputCount": 1,
+      "heatMinutes": 30,
+      "waterCostMl": 500,
+      "requiredLiquid": "clean_water",
+      "reserveWaterPerFoodMl": 500,
+      "waterConsumptionMoment": "food_completion",
+      "waterAllocationOrder": [
+        "insertion_order",
+        "instanceId"
+      ],
+      "requiredOwner": "pot_inside_lit_fire",
+      "outputOwner": "same_pot"
+    }
+  ],
+  "foodChanges": [
+    {
+      "id": "cooked_root",
+      "operation": "update_existing",
+      "name": "烤熟块根",
+      "weightGrams": 300,
+      "stackMax": 20,
+      "shelfLifeMinutes": 1440,
+      "immediateEffects": {
+        "satiety": 25,
+        "hydration": -2,
+        "morale": 2
+      },
+      "useMinutes": 5,
+      "useRateCategory": "wait"
+    },
+    {
+      "id": "boiled_root",
+      "operation": "add_new",
+      "name": "水煮块根",
+      "weightGrams": 300,
+      "stackMax": 20,
+      "shelfLifeMinutes": 1440,
+      "immediateEffects": {
+        "satiety": 23,
+        "hydration": 5,
+        "morale": 3
+      },
+      "useMinutes": 5,
+      "useRateCategory": "wait"
+    }
+  ],
+  "passiveClock": {
+    "source": "existing_global_world_tick",
+    "tickMinutes": 5,
+    "realTimeTimer": false,
+    "offlineProcessing": false,
+    "independentOfHumanWorkMultipliers": true,
+    "additionalHumanStatCost": false,
+    "continuesWhenPlayerAtOtherLocation": true,
+    "noRemoteItemAccess": true,
+    "heatEligibility": "lit_and_startFuelMinutes_at_least_5",
+    "fullFinalFuelTickValid": true,
+    "waterPurifiedThisTickEnablesFoodNextTick": true,
+    "expiryWinsOverFoodCompletion": true,
+    "deathWinsOverUncommittedSameTickProcesses": true,
+    "facilityCompletionDoesNotPauseHumanAction": true,
+    "completionIdempotency": [
+      "processId",
+      "completionSerial"
+    ]
+  },
+  "interruption": {
+    "fireOut": "preserve_heat_and_auto_resume_when_lit",
+    "removeFood": "reset_that_food_heat_and_release_water",
+    "removePot": "reset_all_pot_process_heat_keep_physical_contents",
+    "reservedWaterUse": "reject_until_food_process_stopped",
+    "completedFoodReheating": "reject_no_recipe_no_expiry_refresh"
+  },
+  "goals": {
+    "oldCookedRootRequirementDisplay": "熟制块根",
+    "acceptedIds": [
+      "cooked_root",
+      "boiled_root"
+    ],
+    "includeLocalFacilityDescendants": true,
+    "deduplicateByInstanceId": true
+  },
+  "saveMigrationPlan": {
+    "backupFirst": true,
+    "moveAttachedPotToFacilityOwnerOnce": true,
+    "removeOldGroundOrCarriedLayoutEntry": true,
+    "preservePotAndContentIds": true,
+    "activeBoil": "move_bound_pot_to_original_fire_and_convert_heat_done_no_refill",
+    "activeCook": "cancel_and_return_reserved_raw_roots_once_no_cooked_output",
+    "ambiguousAttachmentOrCapacity": "stop_report_keep_original_no_item_loss"
+  }
+}

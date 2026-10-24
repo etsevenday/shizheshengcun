@@ -1,6 +1,6 @@
 {
   "version": "0.4",
-  "sourceVersion": "0.2 + 交互与地图扩展 0.3",
+  "sourceVersion": "0.2 + 交互与地图扩展 0.3 + 卡片统一与设施烹饪 0.4",
   "date": "2026-10-23",
   "time": {
     "tickMinutes": 5,
@@ -68,11 +68,18 @@
     "igniteMinutes": 5,
     "maxFuelMinutes": 240,
     "minFuelToIgnite": 5,
-    "potSlots": 1
+    "processingSlots": 2,
+    "maxPots": 1,
+    "directFoodInputIds": ["raw_root"]
   },
   "containers": {
-    "pot": { "capacityMl": 1000, "unitMl": 500, "accepts": ["dirty_water", "clean_water"] }
+    "pot": { "capacityMl": 1000, "unitMl": 500, "accepts": ["dirty_water", "clean_water"], "foodSlots": 2, "storedFoodIds": ["raw_root", "boiled_root"] }
   },
+  "processes": [
+    { "id": "boil_water", "name": "烧水", "target": "pot_liquid_batch", "inputId": "dirty_water", "outputId": "clean_water", "allowedBatchMl": [500, 1000], "heatMinutes": 15, "waterCostMl": 0, "requiredOwner": "pot_inside_lit_fire", "requiredLiquid": null },
+    { "id": "roast_root", "name": "烤制", "target": "single_food_instance", "inputId": "raw_root", "outputId": "cooked_root", "allowedBatchMl": [], "heatMinutes": 30, "waterCostMl": 0, "requiredOwner": "fire_processing_slot", "requiredLiquid": null },
+    { "id": "boil_root", "name": "水煮", "target": "single_food_instance", "inputId": "raw_root", "outputId": "boiled_root", "allowedBatchMl": [], "heatMinutes": 30, "waterCostMl": 500, "requiredOwner": "pot_inside_lit_fire", "requiredLiquid": "clean_water" }
+  ],
   "ui": {
     "dragThresholdPx": 6
   },
@@ -81,8 +88,9 @@
     { "id": "clean_water", "name": "净水", "weightGrams": 500, "stackMax": 20, "shelfLifeMinutes": null, "kind": "water", "unitVolumeMl": 500, "toolTag": null, "maxDurability": null, "edible": true, "requiresCooking": false, "use": { "satiety": 0, "hydration": 30, "morale": 0, "health": 0, "causesDiarrhea": false, "isBandage": false }, "desc": "饮用补水30" },
     { "id": "canned_food", "name": "罐头", "weightGrams": 500, "stackMax": 10, "shelfLifeMinutes": null, "kind": "food", "toolTag": null, "maxDurability": null, "edible": true, "requiresCooking": false, "use": { "satiety": 35, "hydration": 0, "morale": 0, "health": 0, "causesDiarrhea": false, "isBandage": false }, "desc": "饱食加35" },
     { "id": "berry", "name": "野果", "weightGrams": 200, "stackMax": 20, "shelfLifeMinutes": 1440, "kind": "food", "toolTag": null, "maxDurability": null, "edible": true, "requiresCooking": false, "use": { "satiety": 10, "hydration": 5, "morale": 0, "health": 0, "causesDiarrhea": false, "isBandage": false }, "desc": "饱食加10，水分加5" },
-    { "id": "raw_root", "name": "生块根", "weightGrams": 300, "stackMax": 20, "shelfLifeMinutes": 4320, "kind": "food", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": true, "use": null, "desc": "需烹饪，不可直接食用" },
-    { "id": "cooked_root", "name": "熟块根", "weightGrams": 300, "stackMax": 20, "shelfLifeMinutes": 1440, "kind": "food", "toolTag": null, "maxDurability": null, "edible": true, "requiresCooking": false, "use": { "satiety": 25, "hydration": 0, "morale": 2, "health": 0, "causesDiarrhea": false, "isBandage": false }, "desc": "饱食加25，精神加2" },
+    { "id": "raw_root", "name": "生块根", "weightGrams": 300, "stackMax": 20, "shelfLifeMinutes": 4320, "kind": "food", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": true, "use": null, "desc": "需加工：放进燃烧火堆的加工位烤熟，或放进有净水的锅里水煮；不可直接食用" },
+    { "id": "cooked_root", "name": "烤熟块根", "weightGrams": 300, "stackMax": 20, "shelfLifeMinutes": 1440, "kind": "food", "toolTag": null, "maxDurability": null, "edible": true, "requiresCooking": false, "use": { "satiety": 25, "hydration": -2, "morale": 2, "health": 0, "causesDiarrhea": false, "isBandage": false }, "desc": "火堆直烤的块根：饱食加25，水分减2，精神加2" },
+    { "id": "boiled_root", "name": "水煮块根", "weightGrams": 300, "stackMax": 20, "shelfLifeMinutes": 1440, "kind": "food", "toolTag": null, "maxDurability": null, "edible": true, "requiresCooking": false, "use": { "satiety": 23, "hydration": 5, "morale": 3, "health": 0, "causesDiarrhea": false, "isBandage": false }, "desc": "有水锅里煮熟的块根：饱食加23，水分加5，精神加3" },
     { "id": "wood", "name": "木材", "weightGrams": 500, "stackMax": 20, "shelfLifeMinutes": null, "kind": "material", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "每单位提供60分钟燃烧时间" },
     { "id": "fiber", "name": "植物纤维", "weightGrams": 100, "stackMax": 50, "shelfLifeMinutes": null, "kind": "material", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "工具与营地材料" },
     { "id": "stone", "name": "石块", "weightGrams": 500, "stackMax": 20, "shelfLifeMinutes": null, "kind": "material", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "工具材料" },
@@ -93,7 +101,7 @@
     { "id": "bandage", "name": "草药绷带", "weightGrams": 100, "stackMax": 20, "shelfLifeMinutes": null, "kind": "medical", "toolTag": null, "maxDurability": null, "edible": false, "requiresCooking": false, "use": { "satiety": 0, "hydration": 0, "morale": 0, "health": 5, "causesDiarrhea": false, "isBandage": true }, "desc": "健康加5，每60分钟最多一次" },
     { "id": "stone_knife", "name": "石刀", "weightGrams": 500, "stackMax": 1, "shelfLifeMinutes": null, "kind": "tool", "toolTag": "stone_knife", "maxDurability": 20, "edible": false, "requiresCooking": false, "use": null, "desc": "耐久20，纤维采集耗时20→10分钟" },
     { "id": "hatchet", "name": "简易斧", "weightGrams": 1500, "stackMax": 1, "shelfLifeMinutes": null, "kind": "tool", "toolTag": "hatchet", "maxDurability": 30, "edible": false, "requiresCooking": false, "use": null, "desc": "耐久30，木材采集产出翻倍" },
-    { "id": "pot", "name": "金属锅", "weightGrams": 1000, "stackMax": 1, "shelfLifeMinutes": null, "kind": "tool", "toolTag": "pot", "containerId": "pot", "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "空锅1000克，容量1000毫升；可装净水或脏水，同地催化工具；烧水产物留原锅" },
+    { "id": "pot", "name": "金属锅", "weightGrams": 1000, "stackMax": 1, "shelfLifeMinutes": null, "kind": "tool", "toolTag": "pot", "containerId": "pot", "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "空锅1000克，容量1000毫升，另有2个食材位；可装净水或脏水。放进燃烧的火堆后自动烧水、水煮生块根，产物留在原锅" },
     { "id": "lighter", "name": "打火器", "weightGrams": 100, "stackMax": 1, "shelfLifeMinutes": null, "kind": "tool", "toolTag": "lighter", "maxDurability": null, "edible": false, "requiresCooking": false, "use": null, "desc": "点火工具，首版不设使用次数" }
   ],
   "locations": [
@@ -201,15 +209,15 @@
     "tips": [
       "浏览、看地图、整理物品都不消耗时间，只有确认行动才会推进。",
       "探索推进地块调查，并有机会取得零散物资；产物先落在地面，记得拾取。",
-      "脏水必定腹泻12小时：用金属锅在燃烧的营地火堆上烧开再喝。",
-      "生块根不能直接吃，煮熟后饱食+25、精神+2，但熟食24小时后腐败。",
+      "脏水必定腹泻12小时：把装了脏水的金属锅放进燃烧的营地火堆，15分钟自动烧成净水。",
+      "生块根不能直接吃：放进燃烧火堆的加工位烤熟（饱食+25、水分−2、精神+2），或放进有净水的锅里水煮（饱食+23、水分+5、精神+3），熟食24小时后腐败。",
       "露天睡眠每小时只恢复6清醒度，尽早在营地建遮蔽棚（木材4、植物纤维4）。",
       "火堆点燃后会一直燃烧，离开营地前可以熄火保留剩余燃料。",
       "夜间无照明时，移动、探索、采集都慢1.5倍；火堆燃烧的营地里加工不受影响。",
       "负重超过20公斤行动变慢，超过30公斤就不能再拾取。",
       "体力低于20时工作变慢；休息只恢复体力，清醒度要靠睡眠。",
       "简易斧让木材产量翻倍，石刀让纤维采集快一倍，成功使用会消耗耐久。",
-      "精神低于20时，休息和睡眠的体力恢复减半；遮蔽睡眠和熟块根能提升精神。",
+      "精神低于20时，休息和睡眠的体力恢复减半；遮蔽睡眠和熟制块根能提升精神。",
       "自然资源每天00:00补充，遗迹里的箱子搜空后不会再有。",
       "状态越过提醒线时行动会自动暂停，可以先吃喝再继续，原行动进度保留。",
       "健康只在遮蔽处休息或睡眠、且饱食与水分不低于40时缓慢恢复；草药绷带可立即恢复5。",
@@ -217,8 +225,8 @@
     ],
     "guides": [
       { "day": 1, "title": "探索荒地，找到水源与树林；安排第一次饮食和睡眠。", "flags": [ { "id": "field50", "label": "农野荒地探索度达到50" }, { "id": "visitedStreamOrWoods", "label": "到访溪流浅滩或树林边缘" }, { "id": "sleptOnce", "label": "至少睡眠一次" } ] },
-      { "day": 2, "title": "完成烧水和块根烹饪，比较露天与遮蔽恢复。", "flags": [ { "id": "boiled", "label": "完成一次烧水" }, { "id": "cooked", "label": "完成一次块根烹饪" }, { "id": "shelterBuilt", "label": "建成遮蔽棚" } ] },
-      { "day": 3, "title": "进入村庄或搜集工具，建立一份次日补给。", "flags": [ { "id": "visitedVillage", "label": "到访废弃村庄" }, { "id": "supplyReady", "label": "随身或营地有净水3与熟块根2" } ] }
+      { "day": 2, "title": "用火堆烧水并烤制或水煮块根，比较露天与遮蔽恢复。", "flags": [ { "id": "boiled", "label": "完成一次烧水" }, { "id": "cooked", "label": "完成一次块根烹饪" }, { "id": "shelterBuilt", "label": "建成遮蔽棚" } ] },
+      { "day": 3, "title": "进入村庄或搜集工具，建立一份次日补给。", "flags": [ { "id": "visitedVillage", "label": "到访废弃村庄" }, { "id": "supplyReady", "label": "随身或营地有净水3与熟制块根2" } ] }
     ],
     "sevenDayItems": [
       { "id": "boiled", "label": "建立安全饮水" },

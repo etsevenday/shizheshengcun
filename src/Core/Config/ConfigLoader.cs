@@ -164,6 +164,50 @@ namespace Survival.Core.Config
                     e.Add($"配方 {rc.Id} 的锅内输入输出须是容器可装物品");
                 if (rc.Pot.Units < 1 || rc.Pot.Units > ct.CapacityUnits) e.Add($"配方 {rc.Id} 的锅内份数超出容器容量");
             }
+            foreach (var kv in c.Containers)
+            {
+                if (kv.Value.FoodSlots < 0) e.Add($"容器 {kv.Key} 食材位不能为负");
+                foreach (var f in kv.Value.StoredFoodIds)
+                {
+                    if (!items.Contains(f)) e.Add($"容器 {kv.Key} 可存放食材 {f} 不存在");
+                    else if (kv.Value.Accepts.Contains(f)) e.Add($"容器 {kv.Key} 食材 {f} 不能同时是液体");
+                }
+            }
+
+            // 火堆加工位与设施进程（设施与烹饪案第 2、5 节）
+            var fire = c.Fire;
+            if (fire.ProcessingSlots < 1) e.Add("火堆加工位须≥1");
+            if (fire.MaxPots < 0 || fire.MaxPots > fire.ProcessingSlots) e.Add("火堆锅数上限须在0到加工位数之间");
+            foreach (var f in fire.DirectFoodInputIds)
+                if (!items.Contains(f)) e.Add($"火堆直烤食材 {f} 不存在");
+            Dup(c.Processes, p => p.Id, "设施进程");
+            var potCt = c.Items.Where(i => i.ContainerId != null).Select(i => c.Containers.TryGetValue(i.ContainerId!, out var x) ? x : null)
+                .FirstOrDefault(x => x != null);
+            foreach (var p in c.Processes)
+            {
+                if (!items.Contains(p.InputId)) e.Add($"设施进程 {p.Id} 的输入物品 {p.InputId} 不存在");
+                if (!items.Contains(p.OutputId)) e.Add($"设施进程 {p.Id} 的输出物品 {p.OutputId} 不存在");
+                if (p.HeatMinutes <= 0 || p.HeatMinutes % tick != 0) e.Add($"设施进程 {p.Id} 受热分钟须为{tick}的正倍数");
+                if (p.Target != ProcessTargets.PotLiquidBatch && p.Target != ProcessTargets.SingleFood) e.Add($"设施进程 {p.Id} 目标类型未知");
+                if (p.RequiredOwner != ProcessOwners.FireSlot && p.RequiredOwner != ProcessOwners.PotInFire) e.Add($"设施进程 {p.Id} 位置要求未知");
+                if (p.WaterCostMl < 0) e.Add($"设施进程 {p.Id} 耗水不能为负");
+                if (p.IsPotBatch)
+                {
+                    if (potCt == null || !potCt.Accepts.Contains(p.InputId) || !potCt.Accepts.Contains(p.OutputId))
+                        e.Add($"设施进程 {p.Id} 的锅内输入输出须是容器可装物品");
+                }
+                else if (p.InPot)
+                {
+                    if (potCt == null || !potCt.StoredFoodIds.Contains(p.InputId) || !potCt.StoredFoodIds.Contains(p.OutputId))
+                        e.Add($"设施进程 {p.Id} 的食材须在锅白名单内");
+                    if (p.RequiredLiquid != null && (potCt == null || !potCt.Accepts.Contains(p.RequiredLiquid)))
+                        e.Add($"设施进程 {p.Id} 所需液体须是容器可装物品");
+                    if (p.WaterCostMl > 0 && potCt != null && p.WaterCostMl % potCt.UnitMl != 0)
+                        e.Add($"设施进程 {p.Id} 耗水须为每份体积的整数倍");
+                }
+                else if (!fire.DirectFoodInputIds.Contains(p.InputId))
+                    e.Add($"设施进程 {p.Id} 的直烤食材须在火堆直烤白名单内");
+            }
             return e;
         }
     }

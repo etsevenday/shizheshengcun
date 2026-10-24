@@ -3,7 +3,7 @@ using Survival.Core.Config;
 
 namespace Survival.Core.Tests;
 
-/// <summary>v0.4 结构化配置必须与策划交付的 v0.2 数值、交互与地图扩展 v0.3 整合配置逐项一致。</summary>
+/// <summary>v0.4 结构化配置必须与策划交付的 v0.2 数值、交互与地图扩展 v0.3 整合配置、卡片统一与设施烹饪 v0.4 增量配置逐项一致。</summary>
 public class ConfigTests : TestBase
 {
     private static JObject V02() =>
@@ -12,6 +12,13 @@ public class ConfigTests : TestBase
     private static JObject V03() =>
         JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.v0.3.json")));
 
+    private static JObject V04() =>
+        JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.v0.4.json")));
+
+    /// <summary>v0.4 增量里改过的食物（如熟块根改名“烤熟块根”）不再按 v0.2 原值核对。</summary>
+    private static HashSet<string> ChangedByV04() =>
+        new(V04()["foodChanges"]!.Where(f => (string)f["operation"]! == "update_existing").Select(f => (string)f["id"]!));
+
     private static GameConfig Fresh() =>
         ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.4.json")), validate: false);
 
@@ -19,7 +26,7 @@ public class ConfigTests : TestBase
     public void LoadsAndValidates()
     {
         Assert.That(ConfigLoader.Validate(Cfg), Is.Empty);
-        Assert.That(Cfg.Items, Has.Count.EqualTo(18));
+        Assert.That(Cfg.Items, Has.Count.EqualTo(19), "v0.2 的18种加 v0.4 新增水煮块根");
         Assert.That(Cfg.Locations, Has.Count.EqualTo(8));
         Assert.That(Cfg.Edges, Has.Count.EqualTo(8));
         Assert.That(Cfg.Resources, Has.Count.EqualTo(16));
@@ -29,9 +36,11 @@ public class ConfigTests : TestBase
     [Test]
     public void Items_MatchV02()
     {
+        var changed = ChangedByV04();
         foreach (var j in V02()["items"]!)
         {
             var it = Cfg.Items.Single(i => i.Id == (string)j["id"]!);
+            if (changed.Contains(it.Id)) continue;
             Assert.That(it.Name, Is.EqualTo((string)j["name"]!), it.Id);
             Assert.That(it.WeightGrams, Is.EqualTo((int)j["weightGrams"]!), it.Id);
             Assert.That(it.StackMax, Is.EqualTo((int)j["stackMax"]!), it.Id);
@@ -233,8 +242,97 @@ public class ConfigTests : TestBase
         Assert.That(boil.Pot.Units * pot.UnitMl, Is.EqualTo((int)d["boilMinimumMl"]!));
         Assert.That(boil.Pot.TransformInPlace, Is.True);
         Assert.That(Cfg.Recipes.Single(x => x.Id == "cook").PotMustBeEmpty, Is.True);
-        Assert.That(Cfg.Fire.PotSlots, Is.EqualTo((int)v["facilityEffects"]!["firePotSlots"]!));
+        Assert.That(Cfg.Fire.MaxPots, Is.EqualTo((int)v["facilityEffects"]!["firePotSlots"]!), "锅数上限延续 v0.3 单锅位");
         Assert.That(Cfg.Ui.DragThresholdPx, Is.EqualTo((int)v["cardInteraction"]!["dragThresholdPx"]!));
+    }
+
+    [Test]
+    public void FoodChanges_MatchV04Delta()
+    {
+        foreach (var f in V04()["foodChanges"]!)
+        {
+            var id = (string)f["id"]!;
+            var it = Cfg.Items.Single(i => i.Id == id);
+            Assert.That(it.Name, Is.EqualTo((string)f["name"]!), id);
+            Assert.That(it.WeightGrams, Is.EqualTo((int)f["weightGrams"]!), id);
+            Assert.That(it.StackMax, Is.EqualTo((int)f["stackMax"]!), id);
+            Assert.That(it.ShelfLifeMinutes, Is.EqualTo((int)f["shelfLifeMinutes"]!), id);
+            var fx = f["immediateEffects"]!;
+            Assert.That(it.Use!.Satiety, Is.EqualTo((double)fx["satiety"]!), id);
+            Assert.That(it.Use.Hydration, Is.EqualTo((double)fx["hydration"]!), id);
+            Assert.That(it.Use.Morale, Is.EqualTo((double)fx["morale"]!), id);
+            Assert.That(it.Use.Health, Is.EqualTo(0), id + " 健康不直接变化");
+            Assert.That(it.Edible && !it.RequiresCooking, Is.True, id);
+            Assert.That(Cfg.ItemActions.UseMinutes, Is.EqualTo((int)f["useMinutes"]!), id);
+            Assert.That(Cfg.Actions.RateAliases["use"], Is.EqualTo((string)f["useRateCategory"]!), id);
+        }
+        Assert.That(Cfg.Items.FindIndex(i => i.Id == "boiled_root"), Is.EqualTo(Cfg.Items.FindIndex(i => i.Id == "cooked_root") + 1), "新物品排在烤熟块根后");
+    }
+
+    [Test]
+    public void FireAndPot_MatchV04Delta()
+    {
+        var v = V04();
+        var fire = v["fire"]!;
+        Assert.That(Cfg.Fire.ProcessingSlots, Is.EqualTo((int)fire["processingSlotCount"]!));
+        Assert.That(Cfg.Fire.MaxPots, Is.EqualTo((int)fire["maxPots"]!));
+        Assert.That(Cfg.Fire.DirectFoodInputIds, Is.EqualTo(fire["directFoodInputIds"]!.Select(x => (string)x!)));
+        var keep = v["retain"]!;
+        Assert.That(Cfg.Fire.BurnMinutesPerWood, Is.EqualTo((int)keep["fuelMinutesPerWood"]!));
+        Assert.That(Cfg.Fire.MaxFuelMinutes, Is.EqualTo((int)keep["fuelCapMinutes"]!));
+        Assert.That(Cfg.Fire.IgniteMinutes, Is.EqualTo((int)keep["igniteMinutes"]!));
+        Assert.That(Cfg.Carry.HardGrams, Is.EqualTo((int)keep["carryHardGrams"]!));
+        var pot = v["pot"]!;
+        var ct = Cfg.Containers[Cfg.Items.Single(i => i.Id == (string)pot["itemId"]!).ContainerId!];
+        Assert.That(Cfg.Items.Single(i => i.Id == "pot").WeightGrams, Is.EqualTo((int)pot["shellWeightGrams"]!));
+        Assert.That(ct.CapacityMl, Is.EqualTo((int)pot["liquidCapacityMl"]!));
+        Assert.That(ct.UnitMl, Is.EqualTo((int)pot["transferQuantumMl"]!));
+        Assert.That(ct.FoodSlots, Is.EqualTo((int)pot["foodSlots"]!));
+        Assert.That(ct.Accepts, Is.EquivalentTo(pot["acceptedLiquids"]!.Select(x => (string)x!)));
+        Assert.That(ct.StoredFoodIds, Is.EquivalentTo(pot["storedFoodIds"]!.Select(x => (string)x!)));
+    }
+
+    [Test]
+    public void Processes_MatchV04Delta()
+    {
+        var d = V04()["processes"]!.ToList();
+        Assert.That(Cfg.Processes.Select(p => p.Id), Is.EqualTo(d.Select(x => (string)x["id"]!)));
+        foreach (var j in d)
+        {
+            var p = Cfg.Processes.Single(x => x.Id == (string)j["id"]!);
+            Assert.That(p.Target, Is.EqualTo((string)j["target"]!), p.Id);
+            Assert.That(p.InputId, Is.EqualTo((string)j["inputId"]!), p.Id);
+            Assert.That(p.OutputId, Is.EqualTo((string)j["outputId"]!), p.Id);
+            Assert.That(p.HeatMinutes, Is.EqualTo((int)j["heatMinutes"]!), p.Id);
+            Assert.That(p.WaterCostMl, Is.EqualTo((int?)j["waterCostMl"] ?? 0), p.Id);
+            Assert.That(p.RequiredLiquid, Is.EqualTo((string?)j["requiredLiquid"]), p.Id);
+            if (j["requiredOwner"] != null) Assert.That(p.RequiredOwner, Is.EqualTo((string)j["requiredOwner"]!), p.Id);
+            if (j["allowedBatchMl"] != null) Assert.That(p.AllowedBatchMl, Is.EqualTo(j["allowedBatchMl"]!.Select(x => (int)x!)), p.Id);
+        }
+        Assert.That(Cfg.Processes.Single(p => p.Id == "boil_water").RequiredOwner, Is.EqualTo("pot_inside_lit_fire"), "烧水只在火堆上的锅里进行");
+        Assert.That(Cfg.Processes.Single(p => p.Id == "boil_root").WaterCostMl, Is.EqualTo((int)V04()["processes"]![2]!["reserveWaterPerFoodMl"]!));
+    }
+
+    [Test]
+    public void GuideTexts_UseCombinedCookedName()
+    {
+        var label = Cfg.Progress.Guides.SelectMany(g => g.Flags).Single(f => f.Id == "supplyReady").Label;
+        Assert.That(label, Does.Contain((string)V04()["goals"]!["oldCookedRootRequirementDisplay"]!));
+        Assert.That(string.Join("", Cfg.Progress.Tips), Does.Not.Contain("熟块根"), "旧称已统一为熟制块根或分别写明");
+    }
+
+    [Test]
+    public void Validate_RejectsBrokenProcesses()
+    {
+        AssertInvalid(c => c.Processes[0].InputId = "gold", "输入物品 gold 不存在");
+        AssertInvalid(c => c.Processes[1].OutputId = "gold", "输出物品 gold 不存在");
+        AssertInvalid(c => c.Processes[1].HeatMinutes = 0, "受热分钟");
+        AssertInvalid(c => c.Processes[1].HeatMinutes = 7, "受热分钟");
+        AssertInvalid(c => c.Processes[2].OutputId = "cooked_root", "锅白名单");
+        AssertInvalid(c => c.Processes[1].InputId = "berry", "直烤白名单");
+        AssertInvalid(c => c.Processes[0].OutputId = "berry", "容器可装物品");
+        AssertInvalid(c => c.Fire.MaxPots = 3, "锅数上限");
+        AssertInvalid(c => c.Containers["pot"].StoredFoodIds.Add("gold"), "可存放食材 gold 不存在");
     }
 
     private static void AssertInvalid(Action<GameConfig> breakIt, string expect)

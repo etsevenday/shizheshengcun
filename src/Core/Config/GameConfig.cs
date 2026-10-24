@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Survival.Core.Config
 {
-    /// <summary>data/config.v0.4.json 的强类型映射。数值来源：基础系统初始配置 v0.2.json 与交互与地图扩展 v0.3 整合配置。</summary>
+    /// <summary>data/config.v0.4.json 的强类型映射。数值来源：基础系统初始配置 v0.2.json、交互与地图扩展 v0.3 整合配置与卡片统一与设施烹饪 v0.4 增量配置。</summary>
     public sealed class GameConfig
     {
         public string Version { get; set; } = "";
@@ -31,6 +31,8 @@ namespace Survival.Core.Config
         public Dictionary<string, LootTableConfig> LootTables { get; set; } = new Dictionary<string, LootTableConfig>();
         /// <summary>容器定义（拖拽与容器案 6.1），键为 containerId。</summary>
         public Dictionary<string, ContainerConfig> Containers { get; set; } = new Dictionary<string, ContainerConfig>();
+        /// <summary>设施自动加工进程（设施与烹饪案第 5 节）：烧水、烤制、水煮。</summary>
+        public List<ProcessConfig> Processes { get; set; } = new List<ProcessConfig>();
         public UiConfig Ui { get; set; } = new UiConfig();
     }
 
@@ -102,8 +104,12 @@ namespace Survival.Core.Config
         public int IgniteMinutes { get; set; } = 5;
         public int MaxFuelMinutes { get; set; } = 240;
         public int MinFuelToIgnite { get; set; } = 5;
-        /// <summary>每个火堆的锅位数。</summary>
-        public int PotSlots { get; set; } = 1;
+        /// <summary>火堆加工位数：一口锅占1位，每份直烤食材占1位（设施与烹饪案第 2 节）。</summary>
+        public int ProcessingSlots { get; set; } = 2;
+        /// <summary>火堆最多容纳的锅数。</summary>
+        public int MaxPots { get; set; } = 1;
+        /// <summary>可以直接放进火堆加工位烤制的食材。</summary>
+        public List<string> DirectFoodInputIds { get; set; } = new List<string>();
     }
 
     public sealed class ItemUseConfig
@@ -193,8 +199,43 @@ namespace Survival.Core.Config
         public int CapacityMl { get; set; }
         public int UnitMl { get; set; }
         public List<string> Accepts { get; set; } = new List<string>();
+        /// <summary>食材位数（与液体容量是两个维度）。</summary>
+        public int FoodSlots { get; set; }
+        /// <summary>可以存放在锅里的食材（生块根及在本锅完成的水煮块根）。</summary>
+        public List<string> StoredFoodIds { get; set; } = new List<string>();
 
         public int CapacityUnits => UnitMl > 0 ? CapacityMl / UnitMl : 0;
+    }
+
+    public static class ProcessTargets
+    {
+        public const string PotLiquidBatch = "pot_liquid_batch";
+        public const string SingleFood = "single_food_instance";
+    }
+
+    public static class ProcessOwners
+    {
+        public const string FireSlot = "fire_processing_slot";
+        public const string PotInFire = "pot_inside_lit_fire";
+    }
+
+    /// <summary>一种设施自动加工：按有效受热分钟推进，不占角色主行动（设施与烹饪案第 4、5 节）。</summary>
+    public sealed class ProcessConfig
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Target { get; set; } = "";
+        public string InputId { get; set; } = "";
+        public string OutputId { get; set; } = "";
+        public List<int> AllowedBatchMl { get; set; } = new List<int>();
+        public int HeatMinutes { get; set; }
+        /// <summary>每份完成时消耗的净水（水煮 500 毫升）。</summary>
+        public int WaterCostMl { get; set; }
+        public string RequiredOwner { get; set; } = "";
+        public string? RequiredLiquid { get; set; }
+
+        public bool IsPotBatch => Target == ProcessTargets.PotLiquidBatch;
+        public bool InPot => RequiredOwner == ProcessOwners.PotInFire;
     }
 
     public sealed class UiConfig
@@ -281,9 +322,9 @@ namespace Survival.Core.Config
         public List<string> Catalysts { get; set; } = new List<string>();
         public RecipeRequirement? Requirement { get; set; }
         public string? FacilityResult { get; set; }
-        /// <summary>原地转化指定锅内液体（烧水）。</summary>
+        /// <summary>原地转化指定锅内液体（烧水）。v0.4 改为设施进程后随旧配方一起废止。</summary>
         public RecipePotConfig? Pot { get; set; }
-        /// <summary>需要一口空锅（烹饪）。</summary>
+        /// <summary>需要一口空锅（烹饪）。v0.4 废止。</summary>
         public bool PotMustBeEmpty { get; set; }
 
         public bool IsBuild => Kind == "build";
