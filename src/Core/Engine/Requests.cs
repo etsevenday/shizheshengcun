@@ -158,7 +158,11 @@ namespace Survival.Core.Engine
         public Stats StatsBefore { get; set; } = new Stats();
         public Stats StatsAfter { get; set; } = new Stats();
         public bool WouldDie { get; set; }
-        public bool WillPauseFireOut { get; set; }
+        /// <summary>
+        /// 期间设施变化（设施与烹饪案第 8 节）：从副本模拟得到，例如“生块根#21烤成烤熟块根”“临时营地火堆燃料55→25分钟”。
+        /// 只是对当前状态的预测；角色身体只按本行动结算。
+        /// </summary>
+        public List<string> FacilityChanges { get; set; } = new List<string>();
         public List<StatId> AlertsExpected { get; set; } = new List<StatId>();
         public List<string> Notes { get; set; } = new List<string>();
         public List<string> Warnings { get; set; } = new List<string>();

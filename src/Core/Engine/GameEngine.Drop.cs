@@ -8,16 +8,16 @@ namespace Survival.Core.Engine
 {
     public enum DropSourceKind { Card, PotChild }
 
-    /// <summary>拖拽来源：一张卡（堆叠物品组 owner+itemId，或工具/锅实例）或锅内的一份水。</summary>
+    /// <summary>拖拽来源：一张卡（堆叠物品组 owner+itemId，或工具/锅/设施内物品实例）或锅里的一份水或食材。</summary>
     public sealed class DropSource
     {
         public DropSourceKind Kind { get; set; }
-        /// <summary>卡片所在区：carried 或地点 ID；锅内水为 pot:&lt;锅ID&gt;。</summary>
+        /// <summary>卡片所在区：carried、地点 ID 或 facility:&lt;设施ID&gt;；锅内物品为 pot:&lt;锅ID&gt;。</summary>
         public string Owner { get; set; } = "";
         public string ItemId { get; set; } = "";
         public int? InstanceId { get; set; }
 
-        /// <summary>解析网页落点键：card:owner|item[|inst]、potchild:inst。</summary>
+        /// <summary>解析网页来源键：card:owner|item[|inst]（owner 可以是 facility:camp:fire）、potchild:inst。</summary>
         public static DropSource? Parse(string key)
         {
             if (key.StartsWith("potchild:") && int.TryParse(key.Substring(9), out var child))
@@ -30,7 +30,7 @@ namespace Survival.Core.Engine
         }
     }
 
-    public enum DropTargetKind { Zone, Card, FireFuel, FirePotSlot, FireCard, PotFill, Resource, Location, RecipeSlot, Self }
+    public enum DropTargetKind { Zone, Card, FireFuel, FirePotSlot, FireSlot, FireCard, PotFill, PotFood, Resource, Location, RecipeSlot, Self }
 
     /// <summary>拖拽落点。Id：区 ID / 卡片键 / 地点 ID / 锅实例 ID / 资源点 ID / 配方 ID；ItemId 只给配方材料槽。</summary>
     public sealed class DropTarget
@@ -40,7 +40,10 @@ namespace Survival.Core.Engine
         public string ItemId { get; set; } = "";
         public int Index { get; set; }
 
-        /// <summary>解析网页落点键：zone:、card:、fuel:、potslot:、fire:、potfill:、res:、loc:、slot:recipe:item、self。</summary>
+        /// <summary>
+        /// 解析网页落点键：zone:、card:、fuel:、potslot:（火堆加工位放锅）、fireslot:（火堆空加工位）、fire: 与 facility:（火堆卡面）、
+        /// potfill:（锅水量区）、potfood:（锅食材区）、res:、loc:、slot:recipe:item、self。
+        /// </summary>
         public static DropTarget? Parse(string key, int index = 0)
         {
             var i = key.IndexOf(':');
@@ -52,8 +55,11 @@ namespace Survival.Core.Engine
                 case "card": return new DropTarget { Kind = DropTargetKind.Card, Id = rest, Index = index };
                 case "fuel": return new DropTarget { Kind = DropTargetKind.FireFuel, Id = rest };
                 case "potslot": return new DropTarget { Kind = DropTargetKind.FirePotSlot, Id = rest };
-                case "fire": return new DropTarget { Kind = DropTargetKind.FireCard, Id = rest };
+                case "fireslot": return new DropTarget { Kind = DropTargetKind.FireSlot, Id = rest };
+                case "fire":
+                case "facility": return new DropTarget { Kind = DropTargetKind.FireCard, Id = rest };
                 case "potfill": return new DropTarget { Kind = DropTargetKind.PotFill, Id = rest };
+                case "potfood": return new DropTarget { Kind = DropTargetKind.PotFood, Id = rest };
                 case "res": return new DropTarget { Kind = DropTargetKind.Resource, Id = rest };
                 case "loc": return new DropTarget { Kind = DropTargetKind.Location, Id = rest };
                 case "self": return new DropTarget { Kind = DropTargetKind.Self };
@@ -138,8 +144,10 @@ namespace Survival.Core.Engine
                 case DropTargetKind.Card: intent = DropOnCard(s, src, head, dst); break;
                 case DropTargetKind.FireFuel: intent = DropOnFuel(s, head, dst.Id); break;
                 case DropTargetKind.FireCard: intent = DropOnFire(s, src, head, dst.Id); break;
-                case DropTargetKind.FirePotSlot: intent = DropOnPotSlot(s, src, head, dst.Id); break;
+                case DropTargetKind.FirePotSlot:
+                case DropTargetKind.FireSlot: intent = DropOnFire(s, src, head, dst.Id); break;
                 case DropTargetKind.PotFill: intent = DropOnPot(s, src, head, int.TryParse(dst.Id, out var pid) ? FindItem(s, pid) : null); break;
+                case DropTargetKind.PotFood: intent = DropOnPotFood(s, src, head, int.TryParse(dst.Id, out var fid) ? FindItem(s, fid) : null); break;
                 case DropTargetKind.Resource: intent = DropOnResource(s, src, head, dst.Id); break;
                 case DropTargetKind.Location: intent = DropOnLocation(s, src, head, dst.Id); break;
                 case DropTargetKind.RecipeSlot: intent = DropOnSlot(s, src, head, dst.Id, dst.ItemId); break;
@@ -178,6 +186,16 @@ namespace Survival.Core.Engine
             var here = s.CurrentLocation;
             if (zone != ItemInstance.Carried && zone != here) return DropIntent.No("只能放到随身或当前地面");
             var name = ItemName(head.ItemId);
+            // 设施与锅里的物品拖到随身/地面：取出（整锅连同内容），与点击转移箭头同一校验（统一卡片案第 5 节）
+            if (head.InFacility || (head.InContainer && !IsLiquid(head)))
+            {
+                var why = TakeOutBlocked(s, head, zone);
+                if (why != null) return DropIntent.No(why);
+                var to = zone == ItemInstance.Carried ? "随身" : "地面";
+                var what = IsPot(head) ? $"{name}#{head.InstanceId}（含内容{ItemGrams(s, head) / 1000.0:0.0}公斤）" : $"1份{name}#{head.InstanceId}";
+                var verb = zone == ItemInstance.Carried ? "拾取" : IsPot(head) ? "取下" : "取出";
+                return Instant(DropVerb.TakeOut, $"{verb}{what}到{to}", InstantRequest.TakeOut(head.InstanceId, zone));
+            }
             if (src.Kind == DropSourceKind.PotChild)
             {
                 var max = MaxDecant(s, head, zone, out var why);
@@ -238,9 +256,10 @@ namespace Survival.Core.Engine
         private DropIntent DropOnFuel(GameState s, ItemInstance head, string loc)
         {
             if (loc != s.CurrentLocation || !_locs[loc].HasFire) return DropIntent.No("只能给当前营地的火堆投料");
-            // 燃料区与锅位都是火堆的一部分：打火器落在上面同样是点火
+            // 燃料区与加工位都是火堆的一部分：打火器落在上面同样是点火
             if (IsLighter(head)) return DropOnFire(s, new DropSource { Kind = DropSourceKind.Card }, head, loc);
-            if (head.ItemId != "wood" || head.InContainer) return DropIntent.No(Unsupported);
+            if (IsLiquid(head)) return DropIntent.No($"{ItemName(head.ItemId)}不能直接倒进火堆（不会产生净水，也不会灭火），请拖进锅里");
+            if (head.ItemId != "wood" || head.InContainer || head.InFacility) return DropIntent.No(Unsupported);
             if (head.ReservedBy != null) return DropIntent.No("该物品已被预留");
             var fac = s.Locations[loc].Facility;
             var room = MaxWoodForFire(fac);
@@ -250,34 +269,51 @@ namespace Survival.Core.Engine
                 InstantRequest.AddFuel(1, head.InstanceId), max);
         }
 
+        /// <summary>
+        /// 火堆卡面与加工位：打火器 → 点火预览；木材 → 投料；锅 → 放进空加工位；可直烤食材 → 放进空加工位烤制；
+        /// 水 → 提示拖进锅（不产生净水、不灭火）；熟食 → 无处理配方。失败给原因，不回落成别的目标（统一卡片案第 5 节）。
+        /// </summary>
         private DropIntent DropOnFire(GameState s, DropSource src, ItemInstance head, string loc)
         {
             if (loc != s.CurrentLocation || !_locs[loc].HasFire) return DropIntent.No("异地不能操作火堆");
-            if (src.Kind == DropSourceKind.Card && IsLighter(head))
+            if (src.Kind == DropSourceKind.Card && IsLighter(head) && !head.InFacility)
                 return PreviewFor(s, DropVerb.PreviewIgnite, "查看点火", ActionRequest.Ignite(head.InstanceId));
-            if (head.ItemId == "wood" && src.Kind == DropSourceKind.Card) return DropOnFuel(s, head, loc);
-            if (src.Kind == DropSourceKind.Card && IsPot(head)) return DropOnPotSlot(s, src, head, loc);
-            return DropIntent.No(Unsupported);
+            if (head.ItemId == "wood" && src.Kind == DropSourceKind.Card && !head.InFacility) return DropOnFuel(s, head, loc);
+            var max = MaxPutInFire(s, head, out var why);
+            if (why != null) return DropIntent.No(why);
+            var name = ItemName(head.ItemId);
+            if (IsPot(head))
+            {
+                var dirty = PotLiquid(s, head.InstanceId) == "dirty_water";
+                var food = PotFood(s, head.InstanceId).Count;
+                var hint = dirty ? "，燃烧时自动烧水" : food > 0 ? $"，锅内食材{food}份{(PotLiquid(s, head.InstanceId) == null ? "（缺水，不加工）" : "")}" : "";
+                return Instant(DropVerb.PutInFire, $"把{name}#{head.InstanceId}放进火堆加工位{hint}", InstantRequest.PutInFire(head.InstanceId));
+            }
+            var p = FireFoodProcess(head.ItemId)!;
+            return Instant(DropVerb.PutInFire, $"放1份{name}进火堆加工位直接{p.Name}（{p.HeatMinutes}分钟）",
+                InstantRequest.PutInFire(head.InstanceId), Math.Min(max, CardBatchCount(s, head)));
         }
 
         private bool IsLighter(ItemInstance i) => _items[i.ItemId].ToolTag == "lighter";
 
-        private DropIntent DropOnPotSlot(GameState s, DropSource src, ItemInstance head, string loc)
+        /// <summary>锅的食材区：只收食材；水请拖到水量区。</summary>
+        private DropIntent DropOnPotFood(GameState s, DropSource src, ItemInstance head, ItemInstance? pot)
         {
-            if (loc != s.CurrentLocation || !_locs[loc].HasFire) return DropIntent.No("异地不能操作火堆");
-            if (src.Kind == DropSourceKind.Card && IsLighter(head)) return DropOnFire(s, src, head, loc);
-            if (src.Kind != DropSourceKind.Card || !IsPot(head)) return DropIntent.No(Unsupported);
-            MaxPutInFire(s, head, out var why);
-            if (why != null) return DropIntent.No(why);
-            var dirty = PotLiquid(s, head.InstanceId) == "dirty_water";
-            return Instant(DropVerb.PutInFire, $"放进火堆加工位{(dirty ? "，燃烧时自动烧水" : "")}", InstantRequest.PutInFire(head.InstanceId));
+            if (pot == null || !IsPot(pot)) return DropIntent.No(Unsupported);
+            if (head.InstanceId == pot.InstanceId) return DropIntent.No(Unsupported, fallThrough: true);
+            if (IsLiquid(head)) return src.Kind == DropSourceKind.PotChild
+                ? DropIntent.No("暂不支持锅与锅之间倒水")
+                : DropIntent.No($"{ItemName(head.ItemId)}请拖到锅的水量条上装入");
+            if (head.Owner == ItemInstance.ContainerOwner(pot.InstanceId)) return DropIntent.No(Unsupported, fallThrough: true);
+            return DropFoodOnPot(s, head, pot);
         }
 
         private DropIntent DropOnPot(GameState s, DropSource src, ItemInstance head, ItemInstance? pot)
         {
             if (pot == null || !IsPot(pot)) return DropIntent.No(Unsupported);
-            if (src.Kind == DropSourceKind.PotChild) return DropIntent.No("暂不支持锅与锅之间倒水");
-            if (head.InstanceId == pot.InstanceId) return DropIntent.No(Unsupported, fallThrough: true);
+            if (head.InstanceId == pot.InstanceId || head.Owner == ItemInstance.ContainerOwner(pot.InstanceId))
+                return DropIntent.No(Unsupported, fallThrough: true);
+            if (src.Kind == DropSourceKind.PotChild) return DropIntent.No(IsLiquid(head) ? "暂不支持锅与锅之间倒水" : "先把它从原来的锅里取出来");
             if (!IsLiquid(head)) return DropFoodOnPot(s, head, pot);
             if (!PotConfig(pot).Accepts.Contains(head.ItemId)) return DropIntent.No(Unsupported);
             var max = MaxFill(s, head, pot, out var reason);
@@ -285,7 +321,10 @@ namespace Survival.Core.Engine
             var cfg = PotConfig(pot);
             var before = PotUnits(s, pot.InstanceId) * cfg.UnitMl * 100 / cfg.CapacityMl;
             var after = (PotUnits(s, pot.InstanceId) + 1) * cfg.UnitMl * 100 / cfg.CapacityMl;
-            return Instant(DropVerb.FillPot, $"装入1份{ItemName(head.ItemId)}，水量{before}%→{after}%",
+            // 同种脏水追加会让整锅净化重新计时，预览写明（设施与烹饪案 5.2）
+            var restart = BatchProcess(head.ItemId) != null && ProcessOf(s, pot) is FacilityProcess bp && bp.HeatDoneMinutes > 0
+                ? $"；整锅净化进度{bp.HeatDoneMinutes}分钟清零重新计时" : "";
+            return Instant(DropVerb.FillPot, $"装入1份{ItemName(head.ItemId)}，水量{before}%→{after}%{restart}",
                 InstantRequest.FillPot(head.InstanceId, pot.InstanceId), max);
         }
 
@@ -324,6 +363,8 @@ namespace Survival.Core.Engine
         {
             if (!_recipes.TryGetValue(recipeId, out var rc) || !rc.Inputs.ContainsKey(itemId)) return DropIntent.No(Unsupported);
             if (src.Kind != DropSourceKind.Card || head.ItemId != itemId) return DropIntent.No($"这个材料槽需要{ItemName(itemId)}");
+            // 设施与锅里的物资是独立来源，普通制作不自动从加工中的内容物抽料，要先手动取出（统一卡片案第 6 节）
+            if (head.InFacility) return DropIntent.No("火堆里的物品要先取出才能用于制作");
             if (head.InContainer || head.ReservedBy != null || IsSpoiled(s, head)) return DropIntent.No("这批材料不可用");
             return new DropIntent
             {

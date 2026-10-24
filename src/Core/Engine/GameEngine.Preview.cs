@@ -39,6 +39,7 @@ namespace Survival.Core.Engine
             if (a != null) a.HazardHit = false;
 
             var alerts = new HashSet<StatId>();
+            c.PendingEvents.Clear();
             // 逐段跟踪工作倍率：火堆燃尽、入夜、体力跌破阈值都会让后续段变慢，
             // 预览必须把变化的时刻与原因列出来（UI 案 06、地图案 07）。
             var trackFactor = p.IsWork && !plan.IsSub;
@@ -50,7 +51,6 @@ namespace Survival.Core.Engine
                 if (cur == null || cur.ActionId != id || c.Progress.Dead) break;
                 if (!plan.IsSub && cur.Status == ActionStatus.Paused)
                 {
-                    if (cur.PauseReason == PauseReason.FireOut) { p.WillPauseFireOut = true; break; }
                     if (cur.PauseStat.HasValue) alerts.Add(cur.PauseStat.Value);
                     Resume(c);
                 }
@@ -75,11 +75,37 @@ namespace Survival.Core.Engine
             p.StatsAfter = c.Stats.Clone();
             p.EstimatedEndMinute = c.GameMinute;
             p.EstimatedMinutes = c.GameMinute - s.GameMinute;
+            p.FacilityChanges = FacilityChanges(s, c);
 
             if (p.WouldDie) p.Warnings.Add("按当前状态，行动途中可能死亡");
-            if (p.WillPauseFireOut) p.Warnings.Add("火堆燃料不足以完成加工，途中会暂停");
             foreach (var st in alerts) p.Warnings.Add($"途中{StatName(st)}将越过提醒阈值，行动会暂停");
             return p;
+        }
+
+        /// <summary>对比行动前后的状态，列出期间设施的自动加工完成、受热进度与燃料变化（不含随机结果）。</summary>
+        private List<string> FacilityChanges(GameState before, GameState after)
+        {
+            var list = new List<string>();
+            foreach (var ev in after.PendingEvents)
+            {
+                if (ev.Kind == GameEventKind.FacilityDone || ev.Kind == GameEventKind.FireOut)
+                    list.Add($"{Clock.HHmm(ev.Minute)} {ev.Text.TrimEnd('。')}");
+            }
+            foreach (var l in Config.Locations.Where(l => l.HasFire))
+            {
+                if (!before.Locations.TryGetValue(l.Id, out var b) || !after.Locations.TryGetValue(l.Id, out var a)) continue;
+                foreach (var p in b.Facility.Processes)
+                {
+                    var q = a.Facility.Processes.FirstOrDefault(x => x.ProcessId == p.ProcessId);
+                    if (q == null || q.HeatDoneMinutes == p.HeatDoneMinutes) continue;
+                    var t = FindItem(before, p.TargetInstanceId);
+                    var name = t == null ? "" : $"{ItemName(t.ItemId)}#{t.InstanceId}";
+                    list.Add($"{name}{Process(p.RecipeId).Name}受热{p.HeatDoneMinutes}→{q.HeatDoneMinutes}/{q.RequiredHeatMinutes}分钟");
+                }
+                if (b.Facility.FuelMinutes != a.Facility.FuelMinutes)
+                    list.Add($"{LocName(l.Id)}火堆燃料{b.Facility.FuelMinutes}→{a.Facility.FuelMinutes}分钟");
+            }
+            return list;
         }
 
         private static string DefaultLabel(ActionRequest r) => r.Type switch
@@ -252,21 +278,13 @@ namespace Survival.Core.Engine
             var id = target.ActionId;
             var sub = target.IsSub;
             target.HazardHit = false;
-            if (!sub && target.Status == ActionStatus.Paused)
-            {
-                if (target.PauseReason == PauseReason.FireOut) return null;
-                Resume(c);
-            }
+            if (!sub && target.Status == ActionStatus.Paused) Resume(c);
             for (var k = 0; k < SimLimit; k++)
             {
                 var cur = sub ? c.Sub : c.Main;
                 if (cur == null || cur.ActionId != id) return c.GameMinute;
                 if (c.Progress.Dead) return null;
-                if (!sub && cur.Status == ActionStatus.Paused)
-                {
-                    if (cur.PauseReason == PauseReason.FireOut) return null;
-                    Resume(c);
-                }
+                if (!sub && cur.Status == ActionStatus.Paused) Resume(c);
                 Advance(c);
             }
             return null;

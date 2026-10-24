@@ -23,6 +23,11 @@ public class DropResolverTests : TestBase
         var slot = DropTarget.Parse("slot:knife:stone")!;
         Assert.That((slot.Kind, slot.Id, slot.ItemId), Is.EqualTo((DropTargetKind.RecipeSlot, "knife", "stone")));
         Assert.That(DropTarget.Parse("self")!.Kind, Is.EqualTo(DropTargetKind.Self));
+        Assert.That(DropTarget.Parse("fireslot:camp")!.Kind, Is.EqualTo(DropTargetKind.FireSlot));
+        Assert.That(DropTarget.Parse("potfood:7")!.Kind, Is.EqualTo(DropTargetKind.PotFood));
+        Assert.That(DropTarget.Parse("facility:camp")!.Kind, Is.EqualTo(DropTargetKind.FireCard));
+        var inFire = DropSource.Parse("card:facility:camp:fire|pot|7")!;
+        Assert.That((inFire.Owner, inFire.ItemId, inFire.InstanceId), Is.EqualTo(("facility:camp:fire", "pot", (int?)7)));
         Assert.That(DropTarget.Parse("bogus:1"), Is.Null);
     }
 
@@ -112,7 +117,7 @@ public class DropResolverTests : TestBase
         E.DoInstant(s, i.Instant!);
         Assert.That(s.Locations["camp"].Facility.FuelMinutes, Is.EqualTo(60));
         Assert.That(s.Locations["camp"].Facility.FireLit, Is.False, "不自动点火");
-        Assert.That(R(s, Card("camp|clean_water"), "fuel:camp").Reason, Is.EqualTo(GameEngine.Unsupported), "水放火堆不灭火");
+        Assert.That(R(s, Card("camp|clean_water"), "fuel:camp").Reason, Does.Contain("请拖进锅里"), "水放火堆不灭火，提示拖入锅");
         s.Locations["camp"].Facility.FuelMinutes = 190;
         Assert.That(R(s, Card("camp|wood"), "fuel:camp").Reason, Does.Contain("至少需要60分钟空余容量"));
     }
@@ -189,7 +194,7 @@ public class DropResolverTests : TestBase
         E.DoInstant(s, i.Instant!);
         Assert.That(Pot(s).Owner, Is.EqualTo("facility:camp:fire"), "锅的真实归属变为火堆");
         Assert.That(R(s, Card(PotCard(s)), "potslot:camp").Reason, Does.Contain("已经在火堆里"));
-        Assert.That(R(s, Card("camp|wood"), "potslot:camp").Reason, Is.EqualTo(GameEngine.Unsupported));
+        Assert.That(R(s, Card("camp|stone"), "potslot:camp").Reason, Is.EqualTo("石块不能放进火堆加工位"));
     }
 
     [Test]
@@ -316,6 +321,111 @@ public class DropResolverTests : TestBase
         E.DebugTeleport(s, "camp");
         s.Progress.Dead = true;
         Assert.That(R(s, Card("camp|wood"), "zone:camp").Reason, Is.EqualTo("角色已死亡"));
+    }
+
+    private string FirePotKey(GameState s) => $"card:facility:camp:fire|pot|{Pot(s).InstanceId}";
+
+    [Test]
+    public void V04_FireSlot_RawRootRoasts_CookedRejected()
+    {
+        var s = New();
+        E.DebugGive(s, "raw_root", 3, "camp");
+        E.DebugGive(s, "cooked_root", 1, "camp");
+        var i = R(s, Card("camp|raw_root"), "fireslot:camp");
+        Assert.That(i.Ok && i.Verb == DropVerb.PutInFire, Is.True, i.Reason);
+        Assert.That(i.Label, Is.EqualTo("放1份生块根进火堆加工位直接烤制（30分钟）"));
+        Assert.That(i.MaxQuantity, Is.EqualTo(2), "两个空位");
+        E.DoInstant(s, i.Instant!);
+        Assert.That(s.Items.Count(x => x.Owner == "facility:camp:fire"), Is.EqualTo(1));
+        Assert.That(R(s, Card("camp|cooked_root"), "fireslot:camp").Reason, Does.StartWith("烤熟块根没有可用的处理配方"));
+        Assert.That(R(s, Card("camp|clean_water"), "fire:camp").Reason, Does.Contain("请拖进锅里"));
+        Assert.That(R(s, Card("camp|wood"), "fireslot:camp").Verb, Is.EqualTo(DropVerb.AddFuel), "木材落在火堆任何位置都是投料");
+    }
+
+    [Test]
+    public void V04_FireCardFace_PotGoesIn_SecondPotRejectedWithCurrentPot()
+    {
+        var s = New();
+        var i = R(s, Card(PotCard(s)), "facility:camp");
+        Assert.That(i.Ok && i.Verb == DropVerb.PutInFire, Is.True, i.Reason);
+        E.DoInstant(s, i.Instant!);
+        E.DebugGive(s, "pot", 1, "camp");
+        var other = s.Items.Last(x => x.ItemId == "pot");
+        var no = R(s, Card($"camp|pot|{other.InstanceId}"), "fire:camp");
+        Assert.That(no.Ok, Is.False);
+        Assert.That(no.Reason, Does.Contain($"火堆已有金属锅#{Pot(s).InstanceId}"));
+    }
+
+    [Test]
+    public void V04_RootOnPotFoodInFire_HitsPot_NotParentFire()
+    {
+        var s = New();
+        var pot = Pot(s);
+        E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId));
+        E.DebugGive(s, "raw_root", 1, "camp");
+        var i = R(s, Card("camp|raw_root"), $"potfood:{pot.InstanceId}");
+        Assert.That(i.Ok && i.Verb == DropVerb.PutFood, Is.True, i.Reason);
+        Assert.That(i.Instant!.TargetInstanceId, Is.EqualTo(pot.InstanceId), "落在锅上，不冒泡成父火堆烤制");
+        E.DoInstant(s, i.Instant!);
+        Assert.That(s.Items.Single(x => x.ItemId == "raw_root").Owner, Is.EqualTo("pot:" + pot.InstanceId));
+        Assert.That(s.Items.Count(x => x.Owner == "facility:camp:fire"), Is.EqualTo(1), "火堆里只有锅");
+        // 非法：水拖到食材区给出原因，不偷偷改投水量区
+        Assert.That(R(s, Card("camp|clean_water"), $"potfood:{pot.InstanceId}").Reason, Does.Contain("水量条"));
+        // 水拖到火堆里锅的水量区：直接装水
+        Assert.That(R(s, Card("camp|clean_water"), $"potfill:{pot.InstanceId}").Verb, Is.EqualTo(DropVerb.FillPot));
+        // 锅卡缩略图本身也是锅的落点
+        Assert.That(R(s, Card("camp|clean_water"), "card:" + FirePotKey(s).Substring(5)).Verb, Is.EqualTo(DropVerb.FillPot));
+    }
+
+    [Test]
+    public void V04_FacilityContentsDraggedOut_TakeOut_AndHeavyRejected()
+    {
+        var s = New();
+        var pot = Pot(s);
+        E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 2));
+        E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId));
+        var down = R(s, DropSource.Parse(FirePotKey(s))!, "zone:camp");
+        Assert.That(down.Ok && down.Verb == DropVerb.TakeOut, Is.True, down.Reason);
+        Assert.That(down.Label, Does.StartWith("取下金属锅"));
+        var up = R(s, DropSource.Parse(FirePotKey(s))!, "zone:carried");
+        Assert.That(up.Ok, Is.True, up.Reason);
+        Assert.That(up.Label, Does.Contain("含内容2.0公斤"));
+        E.DebugGive(s, "stone", 57);
+        Assert.That(R(s, DropSource.Parse(FirePotKey(s))!, "zone:carried").Reason, Does.Contain("整次拒绝"));
+        E.DoInstant(s, down.Instant!);
+        Assert.That(pot.Owner, Is.EqualTo("camp"));
+
+        // 锅里的食材拖出 = 取出那一份；锅里的水拖出 = 倒出
+        E.DebugGive(s, "raw_root", 1, "camp");
+        E.DoInstant(s, InstantRequest.PutFoodInPot(First(s, "raw_root").InstanceId, pot.InstanceId));
+        var root = E.PotFood(s, pot.InstanceId).Single();
+        var outRoot = R(s, DropSource.Parse($"potchild:{root.InstanceId}")!, "zone:camp");
+        Assert.That(outRoot.Verb, Is.EqualTo(DropVerb.TakeOut), outRoot.Reason);
+        var water = E.PotLiquids(s, pot.InstanceId).Single();
+        Assert.That(R(s, DropSource.Parse($"potchild:{water.InstanceId}")!, "zone:camp").Verb, Is.EqualTo(DropVerb.Decant));
+        // 执行中不能取
+        Start(s, ActionRequest.Wait(30));
+        Assert.That(R(s, DropSource.Parse($"potchild:{root.InstanceId}")!, "zone:camp").Ok, Is.False);
+    }
+
+    [Test]
+    public void V04_PreviewShowsFacilityChanges_WhileCharacterOnlyWaits()
+    {
+        var s = New();
+        var f = s.Locations["camp"].Facility;
+        f.FireLit = true;
+        f.FuelMinutes = 55;
+        E.DebugGive(s, "raw_root", 1, "camp");
+        E.DoInstant(s, InstantRequest.PutInFire(First(s, "raw_root").InstanceId));
+        var p = E.Preview(s, ActionRequest.Wait(30));
+        Assert.That(p.FacilityChanges.Any(x => x.Contains("已烤成烤熟块根")), Is.True, string.Join("|", p.FacilityChanges));
+        Assert.That(p.FacilityChanges, Does.Contain("临时营地火堆燃料55→25分钟"));
+        var t = s.Clone();
+        Start(t, ActionRequest.Wait(30));
+        Run(t);
+        Assert.That(p.StatsAfter.Hydration, Is.EqualTo(t.Stats.Hydration).Within(1e-9), "角色只按等待结算");
+        Assert.That(s.Items.Single(x => x.Owner == "facility:camp:fire").ItemId, Is.EqualTo("raw_root"), "预览不改状态");
+        Assert.That(f.FuelMinutes, Is.EqualTo(55));
     }
 
     [Test]
