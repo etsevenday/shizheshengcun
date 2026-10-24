@@ -62,7 +62,18 @@ else if (info != null)
         {
             <div class="tbar-row">
                 <button type="button" class="tbar-go" disabled="@(info.ToCarried && info.Max < 1)" @onclick="() => Go(1)">@(verb)</button>
+                @if (info.InstanceId.HasValue && e.IsPot(s.Items.First(i => i.InstanceId == info.InstanceId)) && e.Location(s.CurrentLocation).HasFire)
+                {
+                    var potItem = s.Items.First(i => i.InstanceId == info.InstanceId);
+                    e.MaxPutInFire(s, potItem, out var fireWhy);
+                    <button type="button" class="tbar-go" disabled="@(fireWhy != null)" title="@fireWhy" @onclick="() => PutInFire(potItem.InstanceId)">放入火堆</button>
+                }
             </div>
+            @if (info.InstanceId.HasValue && e.IsPot(s.Items.First(i => i.InstanceId == info.InstanceId)) && e.Location(s.CurrentLocation).HasFire
+                 && Why(s.Items.First(i => i.InstanceId == info.InstanceId)) is string fw)
+            {
+                <div class="tbar-note bad">放入火堆：@fw</div>
+            }
             @if (info.ToCarried && info.Max < 1)
             {
                 <div class="tbar-note bad">携带后将超过@(e.Config.Carry.HardGrams / 1000)公斤，拿不动了</div>
@@ -199,6 +210,19 @@ else if (info != null)
         {
             G.ClearSelection();
         }
+    }
+
+    private string? Why(ItemInstance pot)
+    {
+        G.E.MaxPutInFire(G.S, pot, out var why);
+        return why;
+    }
+
+    private void PutInFire(int potId)
+    {
+        if (G.E.IsBusy(G.S) || G.Running) return;
+        G.Instant(InstantRequest.PutInFire(potId));
+        G.ClearSelection();
     }
 
     private void Take(ItemInstance it, string zone)

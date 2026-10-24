@@ -1,4 +1,5 @@
 @inherits GameComponent
+@inject IJSRuntime JS
 
 @* 地块卡片桌面（卡片统一与设施烹饪 v0.4 · 01 案第 1 节）：当前地图卡 → 已发现相邻地图卡 → 固定设施卡 → 已发现资源卡。
    场景底图只作弱化背景（昼夜调色与火光照旧），每个对象都有自己的图卡；视口不足时本区内部横向滚动，不遮 HUD 与地面栏。
@@ -84,8 +85,14 @@
                     @if (r.Hazard != null) { <div class="oc-line warn-line">@Ui.Pct(r.Hazard.Probability)@r.Hazard.Label · 健康−@r.Hazard.HealthLoss.ToString("0")</div> }
                 </ChildContent>
                 <Footer>
-                    <button type="button" class="oc-btn primary-ish" disabled="@(why != null)" title="@(why ?? "直接开始，详情可看右侧预估")"
-                            @onclick="() => Quick(req, nodeId)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">@(r.IsCache ? "搜集" : "采集")</button>
+                    @* 试玩修复 B5：与探索/清理同一按钮形态，悬停或聚焦即在右栏预测，离开恢复 *@
+                    @{ var verb = r.IsCache ? "搜集" : "采集"; var title = $"{verb}{r.Name}"; }
+                    <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? "单击直接开始；右侧显示预测")"
+                            @onmouseenter="() => G.Hover(req, title)" @onfocus="() => G.Hover(req, title)" @onmouseleave="() => G.Hover(null)" @onblur="() => G.Hover(null)"
+                            @onclick="() => Quick(req, nodeId)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                        <strong>@verb · @(minutes)分钟</strong>
+                        @if (why != null) { <small>@why</small> }
+                    </button>
                 </Footer>
             </ObjectCard>
         }
@@ -112,7 +119,21 @@
     /// <summary>资源卡底部按钮：选中并直接开始（留言 649cdad9）。</summary>
     private async Task Quick(ActionRequest r, string nodeId)
     {
+        G.Hover(null);
         SelectResource(nodeId);
         await G.StartAction(r);
+    }
+
+    private string _lastLocation = "";
+
+    /// <summary>到达新地点后卡片桌面回到最左，当前地图卡标题不被切（试玩修复 B10）。</summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (G.State == null) return;
+        var here = G.S.CurrentLocation;
+        if (here == _lastLocation) return;
+        _lastLocation = here;
+        try { await JS.InvokeVoidAsync("survival.resetDesk"); }
+        catch (JSException) { /* 旧缓存的 app.js 没有这个函数时只是不复位，不影响游戏 */ }
     }
 }

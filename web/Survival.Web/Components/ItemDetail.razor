@@ -92,7 +92,13 @@ else
                 }
                 else if (e.Location(here).HasFire)
                 {
-                    <div class="tiny muted">把锅拖到地块区火堆的空加工位，燃烧时自动烧水、水煮。</div>
+                    @* 试玩修复：放入火堆也有点击路径（ui.transferModes = 拖拽 + 卡上按钮），不能放时写明原因 *@
+                    e.MaxPutInFire(s, inst, out var fireWhy);
+                    <div class="btn-row">
+                        <button class="secondary" disabled="@(busy || fireWhy != null)" title="@(fireWhy ?? "放进火堆空加工位，燃烧时自动烧水、水煮")" @onclick="() => PutInFire(inst.InstanceId)">放入火堆</button>
+                    </div>
+                    @if (fireWhy != null && !busy) { <div class="tiny muted">@fireWhy</div> }
+                    else { <div class="tiny muted">也可以把锅卡拖到地块区火堆的空加工位。</div> }
                 }
                 @if (e.IsLocked(s, inst)) { <div class="risk none">行动占用：这口锅正被当前行动使用，不能移动、取水或加水。</div> }
             </div>
@@ -194,6 +200,8 @@ else
     }
 
     private async Task Use(int instanceId) => await G.StartAction(ActionRequest.UseInstance(instanceId));
+
+    private void PutInFire(int potId) => G.Instant(InstantRequest.PutInFire(potId));
 
     private void Decant(int childId, string zone) => G.Instant(InstantRequest.Decant(childId, zone));
 

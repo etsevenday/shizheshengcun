@@ -27,7 +27,7 @@
             </div>
             <div class="fuel-line"><span>燃料</span><b>@(fac.FuelMinutes)/@(maxFuel)分</b></div>
             <div class="fuel-track"><i style="width:@(fac.FuelMinutes * 100 / Math.Max(1, maxFuel))%"></i></div>
-            <button type="button" class="oc-btn" @onclick="Open" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">内容物 @used/@slots.Count ▸</button>
+            <button type="button" class="oc-btn" @onclick="Open" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">内容物 @used/@slots.Count</button>
         </div>
         <div class="fire-slots">
             @for (var k = 0; k < slots.Count; k++)

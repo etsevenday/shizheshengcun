@@ -259,6 +259,11 @@ namespace Survival.Core.Engine
                 {
                     p.BaseMinutes = Config.Fire.IgniteMinutes;
                     p.ConfirmText = $"点燃火堆·{Config.Fire.IgniteMinutes}分钟";
+                    // 拖拽与按钮两条路径都写明绑定的那一把打火器
+                    if (plan?.Lighter != null)
+                    {
+                        p.Notes.Add($"使用{ItemName(plan.Lighter.ItemId)}#{plan.Lighter.InstanceId}（{(plan.Lighter.IsCarried ? "随身" : "当前地面")}），打火器不消耗");
+                    }
                     if (plan != null && plan.IgniteConsumesWood) p.Notes.Add($"将消耗1木材，提供{Config.Fire.BurnMinutesPerWood}分钟燃料");
                     p.Notes.Add($"点火过程也消耗{Config.Fire.IgniteMinutes}分钟燃料");
                     break;

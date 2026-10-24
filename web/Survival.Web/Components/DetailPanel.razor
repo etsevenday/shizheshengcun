@@ -48,6 +48,9 @@
                              Subtitle="探索推进地块调查，并有机会取得零散物资；探索度达到100%后不再探索。" />
                 break;
             case SelectionKind.Location:
+                @* 已充分探索：不把选中态转给清理（试玩修复 B4），清理要新的点击或悬停 *@
+                <div class="empty-detail">@e.LocName(s.CurrentLocation)已充分探索<br />点清理按钮或资源卡查看预测</div>
+                break;
             case SelectionKind.Clear:
                 <PreviewView Request="ActionRequest.Clear()" Eyebrow="@($"已选中 · {e.LocName(s.CurrentLocation)}")" Title="清理" Confirmable="false"
                              Subtitle="翻找、整理地块表层的零散基础物资。每地有独立次数，随游戏世界时间恢复；不增加探索度。" />

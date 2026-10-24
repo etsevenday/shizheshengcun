@@ -242,6 +242,18 @@ public sealed class GameSession
     private static string ConflictText(SaveMigrationConflictException ex) =>
         $"旧存档无法自动升级到版本4：{ex.Message}。原存档没有改动，并已另存一份备份；请开始新游戏。";
 
+    /// <summary>现有存档是旧版、继续时会升级：返回它的版本号（开始界面预告），否则为 null。</summary>
+    public string? SaveUpgradeFrom()
+    {
+        try
+        {
+            var json = _store.Load();
+            if (string.IsNullOrEmpty(json) || !SaveSerializer.NeedsMigration(json)) return null;
+            return SaveSerializer.SchemaVersionOf(json);
+        }
+        catch { return null; }
+    }
+
     /// <summary>检查现有存档能否读取；不能时返回原因（用于禁用“继续”）。</summary>
     public string? SaveProblem()
     {
@@ -384,6 +396,8 @@ public sealed class GameSession
             return res;
         }
         Notice = null;
+        // 选中的物品被吃完、用尽时清空选中（试玩修复 B6）
+        ReconcileSelection();
         // 拖拽打开的预览确认后收起，避免行动结束后仍停在旧预览上
         if (Selected.Kind == SelectionKind.Action)
         {
@@ -597,6 +611,7 @@ public sealed class GameSession
                 && !(Selected.Owner == ItemInstance.Carried))
                 Selected = new Selection();
             if (State != null && S.CurrentLocation != startLocation) FacilityLayer = null;
+            if (State != null) ReconcileSelection();
             Save();
             Notify();
         }

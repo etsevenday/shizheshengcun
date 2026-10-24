@@ -2,14 +2,16 @@
 
 @* 火堆加工位里的真实内容卡（锅或直烤食材）。与地面/随身同一物品同一张图；绑定同一实例，不是副本。
    锅缩略卡本身是锅的落点（卡面 card:），其中水量条 potfill: 与食材行 potfood: 是更深的热区；
-   它不放在火堆的任何热区里，命中顺序为 锅内容热区 → 锅卡 → 火堆热区 → 普通区域（01 案第 5 节）。 *@
+   它不放在火堆的任何热区里，命中顺序为 锅内容热区 → 锅卡 → 火堆热区 → 普通区域（01 案第 5 节）。
+   【试玩修复】版面固定：标题行、水量热区（40px）、食材热区（40px）、状态行（预留三行）位置不随内容变化，
+   状态行同时写水和食材的加工进度，不裁切。 *@
 @{
     var s = G.S;
     var e = G.E;
     var isPot = e.IsPot(Item);
     var key = $"{Item.Owner}|{Item.ItemId}|{Item.InstanceId}";
     var name = $"{e.ItemName(Item.ItemId)}#{Item.InstanceId}";
-    var status = e.ContentStatus(s, Item);
+    var status = isPot ? PotSummary(e, s) : FoodStatus(e, s);
     var proc = e.ProcessOf(s, Item);
     var sel = G.Selected;
     var selected = sel.InstanceId == Item.InstanceId;
@@ -19,22 +21,26 @@
 <div class="cthumb @(isPot ? "pot" : "food") @(selected ? "selected" : "") @(spoiled ? "spoiled" : "")"
      data-card="@key" data-drag="@($"card:{key}")" data-drag-title="@name" data-drag-from="@e.WherePath(s, Item)"
      data-drop="@(isPot ? $"card:{key}" : null)" data-drop-level="@(isPot ? "card" : null)"
-     role="button" tabindex="0" title="@($"{name} · {e.WherePath(s, Item)}：{status}")"
+     role="button" tabindex="0" title="@($"{name} · {e.WherePath(s, Item)}：{e.ContentStatus(s, Item)}")"
      @onclick="Open" @onclick:stopPropagation="true" @onkeydown="Key" @onkeydown:stopPropagation="true">
     <div class="ct-head">
+        <span class="ct-icon">@Icons.Markup(Item.ItemId)</span>
         <b>@name</b>
         <button type="button" class="ct-arrow" disabled="@busy" aria-label="@($"转移{name}")" title="取下到地面或拾取到随身"
                 @onclick="Arrow" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">⇅</button>
     </div>
-    <div class="ct-art">@Icons.Markup(Item.ItemId)</div>
     @if (isPot)
     {
         <PotGauge Pot="Item" Compact="true" ShowStatus="false" />
     }
-    <div class="ct-status">@status</div>
-    @if (proc != null && !spoiled)
+    else
     {
-        <div class="heat-track" aria-label="@($"受热{proc.HeatDoneMinutes}/{proc.RequiredHeatMinutes}分钟")"><i style="width:@(Math.Min(100, proc.HeatDoneMinutes * 100 / Math.Max(1, proc.RequiredHeatMinutes)))%"></i></div>
+        <div class="ct-art">@Icons.Markup(Item.ItemId)</div>
+    }
+    <div class="ct-status">@status</div>
+    @if (!isPot)
+    {
+        <div class="heat-track" aria-label="@(proc == null ? "" : $"受热{proc.HeatDoneMinutes}/{proc.RequiredHeatMinutes}分钟")"><i style="width:@(proc == null || spoiled ? 0 : Math.Min(100, proc.HeatDoneMinutes * 100 / Math.Max(1, proc.RequiredHeatMinutes)))%"></i></div>
     }
 </div>
 
@@ -42,6 +48,45 @@
     [Parameter, EditorRequired] public ItemInstance Item { get; set; } = null!;
     /// <summary>点击卡片：锅 → 打开锅内容层；食材 → 选中它（右栏详情、卡边转移条）。</summary>
     [Parameter] public EventCallback OnOpen { get; set; }
+
+    /// <summary>直烤食材的短状态：“烤制 10/30分”“火灭 · 暂停 10/30分”“已烤熟”“已腐败”。</summary>
+    private string FoodStatus(GameEngine e, GameState s)
+    {
+        if (e.IsSpoiled(s, Item)) return "已腐败，不再加工";
+        var p = e.ProcessOf(s, Item);
+        if (p == null) return "已完成，留在加工位";
+        var loc = e.PlaceOf(s, Item);
+        var name = e.Process(p.RecipeId).Name;
+        return e.FireHot(s, loc) ? $"{name} {p.HeatDoneMinutes}/{p.RequiredHeatMinutes}分" : $"火灭 · {name}暂停 {p.HeatDoneMinutes}/{p.RequiredHeatMinutes}分";
+    }
+
+    /// <summary>锅的合并状态：水与每份食材，如“净水500 · 水煮15/30 · 待水×1 · 熟×1”（01 案第 4 节：显示水量和加工状态）。</summary>
+    private string PotSummary(GameEngine e, GameState s)
+    {
+        var parts = new List<string>();
+        var liquid = e.PotLiquid(s, Item.InstanceId);
+        var ml = e.PotUnits(s, Item.InstanceId) * e.PotConfig(Item).UnitMl;
+        var loc = e.PotFireLocation(Item);
+        var hot = loc != null && e.FireHot(s, loc);
+        if (loc != null && !hot) parts.Add("火灭");
+        var water = liquid == null ? "无水" : $"{e.ItemName(liquid)}{ml}";
+        var batch = e.ProcessOf(s, Item);
+        if (batch != null) water += $" 烧水{batch.HeatDoneMinutes}/{batch.RequiredHeatMinutes}";
+        parts.Add(water);
+        int wait = 0, done = 0, bad = 0;
+        foreach (var f in e.PotFood(s, Item.InstanceId))
+        {
+            if (e.IsSpoiled(s, f)) { bad++; continue; }
+            var p = e.ProcessOf(s, f);
+            if (p == null) { done++; continue; }
+            if (p.ReservedWaterMl > 0 && liquid == "clean_water") parts.Add($"水煮{p.HeatDoneMinutes}/{p.RequiredHeatMinutes}");
+            else wait++;
+        }
+        if (wait > 0) parts.Add(liquid == null ? $"缺水×{wait}" : liquid == "dirty_water" ? $"待净化×{wait}" : $"待水×{wait}");
+        if (done > 0) parts.Add($"熟×{done}");
+        if (bad > 0) parts.Add($"腐败×{bad}");
+        return string.Join("·", parts);
+    }
 
     private Task Open()
     {

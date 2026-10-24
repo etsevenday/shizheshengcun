@@ -49,7 +49,7 @@
             var liquids = e.PotLiquids(s, p.InstanceId);
             var foods = e.PotFood(s, p.InstanceId);
             var free = e.PotFreeWaterUnits(s, p);
-            <div class="fac-menu-body">
+            <div class="fac-menu-body grid3">
                 <div class="fm-card pot wide" data-card="@CardKey(p)" data-drag="@($"card:{CardKey(p)}")" data-drag-title="@($"{e.ItemName(p.ItemId)}#{p.InstanceId}")"
                      data-drag-from="@e.WherePath(s, p)" data-drop="@(p.InFacility ? $"card:{CardKey(p)}" : null)" data-drop-level="@(p.InFacility ? "card" : null)">
                     <div class="fm-card-head"><span class="ir-icon">@Icons.Markup(p.ItemId)</span><b>@e.ItemName(p.ItemId)#@p.InstanceId</b></div>
@@ -81,6 +81,11 @@
                                 <button type="button" class="secondary" disabled="@(busy || free < 1)" title="@(free < 1 ? e.ReservedWaterText(s, w) : "倒出1份到随身")" @onclick="() => Decant(wid, ItemInstance.Carried)">倒到随身</button>
                             </span>
                         </ItemRow>
+                        @if (reserved)
+                        {
+                            @* 试玩修复 B11：禁用原因写在按钮下方，不只放在提示里 *@
+                            <div class="fm-reserved">@e.ReservedWaterText(s, w)</div>
+                        }
                     }
                 </div>
                 <div class="fm-col">
@@ -105,7 +110,7 @@
     {
         var wood = e.AvailableCount(s, "wood", true);
         var room = e.MaxWoodForFire(fac);
-        <div class="fac-menu-body">
+        <div class="fac-menu-body grid3">
             <div class="fm-card fire">
                 <div class="fm-fire-art" data-drop="@($"fuel:{here}")" data-drop-level="hot" title="燃料区：拖入木材投料，拖入打火器点火">@Icons.Markup(fac.FireLit ? "fire_lit" : "fire_out")</div>
                 <div class="fuel-line"><span>燃料</span><b>@(fac.FuelMinutes)/@(e.Config.Fire.MaxFuelMinutes)分钟</b></div>
@@ -118,11 +123,11 @@
                 {
                     <button type="button" class="fm-btn plain" disabled="@maintBlocked" @onclick="Extinguish">熄灭火堆（保留燃料）</button>
                 }
+                else
+                {
+                    <IgnitePicker Busy="busy" />
+                }
             </div>
-            @if (!fac.FireLit)
-            {
-                <div class="fm-col ignite"><IgnitePicker Busy="busy" /></div>
-            }
             @for (var k = 0; k < slots.Count; k++)
             {
                 var it = slots[k];

@@ -26,6 +26,12 @@ window.survival = {
     }
   },
   releaseBar: function () { window.__survivalBar = null; },
+  // 地点变化后卡片桌面横向滚动复位（渲染后可能还有一次布局，下一帧再复位一次）
+  resetDesk: function () {
+    var go = function () { var d = document.querySelector('.desk-row'); if (d) d.scrollLeft = 0; };
+    go();
+    requestAnimationFrame(go);
+  },
   placeBar: function () {
     var b = window.__survivalBar;
     if (!b || !b.bar || !b.bar.isConnected) return;

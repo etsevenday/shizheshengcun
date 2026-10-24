@@ -60,6 +60,9 @@ namespace Survival.Core.Save
         /// <summary>存档是旧版、读取时会迁移。</summary>
         public static bool NeedsMigration(string json) => IsMigratable(SchemaOf(json));
 
+        /// <summary>存档的结构版本号（开始界面预告升级用）。</summary>
+        public static string? SchemaVersionOf(string json) => SchemaOf(json);
+
         private static string? SchemaOf(string json)
         {
             var probe = JsonConvert.DeserializeObject<SchemaProbe>(json)

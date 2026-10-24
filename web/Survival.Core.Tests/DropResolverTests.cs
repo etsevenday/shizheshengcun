@@ -146,6 +146,8 @@ public class DropResolverTests : TestBase
         Assert.That(i.Ok && i.Verb == DropVerb.PreviewIgnite, Is.True, i.Reason);
         Assert.That(i.IsPreview, Is.True);
         Assert.That(i.Action!.InstanceId, Is.EqualTo(lighter.InstanceId));
+        Assert.That(i.Label, Is.EqualTo($"查看用打火器#{lighter.InstanceId}点火"), "预览写明绑定的实例");
+        Assert.That(E.Preview(s, i.Action).Notes, Does.Contain($"使用打火器#{lighter.InstanceId}（随身），打火器不消耗"));
         Assert.That(s.Sub ?? s.Main, Is.Null, "只打开预览，不开始");
         Assert.That(R(s, Card($"carried|lighter|{lighter.InstanceId}"), "fuel:camp").Verb, Is.EqualTo(DropVerb.PreviewIgnite), "燃料区也属于火堆");
         Assert.That(R(s, Card($"carried|lighter|{lighter.InstanceId}"), "potslot:camp").Verb, Is.EqualTo(DropVerb.PreviewIgnite), "锅位也属于火堆");
@@ -340,6 +342,7 @@ public class DropResolverTests : TestBase
         Assert.That(R(s, Card("camp|cooked_root"), "fireslot:camp").Reason, Does.StartWith("烤熟块根没有可用的处理配方"));
         Assert.That(R(s, Card("camp|clean_water"), "fire:camp").Reason, Does.Contain("请拖进锅里"));
         Assert.That(R(s, Card("camp|wood"), "fireslot:camp").Verb, Is.EqualTo(DropVerb.AddFuel), "木材落在火堆任何位置都是投料");
+        Assert.That(R(s, Card("camp|raw_root"), "fuel:camp").Reason, Is.EqualTo("生块根请拖到火堆的空加工位或锅的食材区；燃料区只收木材"), "试玩 B7：写明原因");
     }
 
     [Test]

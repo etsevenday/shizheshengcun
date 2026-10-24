@@ -98,6 +98,9 @@ else
             G.Hover(null);
             G.Select(new Selection { Kind = kind, Id = LocationId });
             await G.StartAction(r);
+            // 最后一次探索完成、探索按钮移除时，选中态不继承给清理（01 案第 3 节，试玩修复 B4）
+            if (kind == SelectionKind.Location && G.S.Locations[LocationId].Progress >= 100 && G.Selected.Kind == SelectionKind.Location)
+                G.ClearSelection();
         }
         finally
         {

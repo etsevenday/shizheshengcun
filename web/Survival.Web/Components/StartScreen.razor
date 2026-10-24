@@ -26,6 +26,11 @@
         {
             <div class="confirm-box">@error</div>
         }
+        else if (upgradeFrom != null)
+        {
+            @* 试玩修复 B8：旧版本存档在开始界面就预告升级，与冲突档提示同一位置 *@
+            <div class="confirm-box">存档将从版本@(upgradeFrom == "0.2-proto-1" ? "0.2-proto-1（首版）" : upgradeFrom)升级到@(GameState.CurrentSchema)，原档会另存备份；点“继续”后在右栏说明升级内容。</div>
+        }
         @if (showHelp)
         {
             <div class="confirm-box small">
@@ -46,6 +51,7 @@
     private bool confirmOverwrite;
     private bool showHelp;
     private string? error;
+    private string? upgradeFrom;
 
     protected override void OnInitialized()
     {
@@ -59,6 +65,7 @@
                 hasSave = false;
                 error = problem;
             }
+            else upgradeFrom = G.SaveUpgradeFrom();
         }
     }
 

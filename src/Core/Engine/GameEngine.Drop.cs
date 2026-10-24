@@ -259,6 +259,9 @@ namespace Survival.Core.Engine
             // 燃料区与加工位都是火堆的一部分：打火器落在上面同样是点火
             if (IsLighter(head)) return DropOnFire(s, new DropSource { Kind = DropSourceKind.Card }, head, loc);
             if (IsLiquid(head)) return DropIntent.No($"{ItemName(head.ItemId)}不能直接倒进火堆（不会产生净水，也不会灭火），请拖进锅里");
+            // 燃料区只收木材；可加工的食材写明该拖到哪里（统一卡片案第 5 节：落点失败显示原因）
+            if (head.ItemId != "wood" && (CanRoast(head.ItemId) || Config.Containers.Values.Any(c => c.StoredFoodIds.Contains(head.ItemId))))
+                return DropIntent.No($"{ItemName(head.ItemId)}请拖到火堆的空加工位或锅的食材区；燃料区只收木材");
             if (head.ItemId != "wood" || head.InContainer || head.InFacility) return DropIntent.No(Unsupported);
             if (head.ReservedBy != null) return DropIntent.No("该物品已被预留");
             var fac = s.Locations[loc].Facility;
@@ -277,7 +280,7 @@ namespace Survival.Core.Engine
         {
             if (loc != s.CurrentLocation || !_locs[loc].HasFire) return DropIntent.No("异地不能操作火堆");
             if (src.Kind == DropSourceKind.Card && IsLighter(head) && !head.InFacility)
-                return PreviewFor(s, DropVerb.PreviewIgnite, "查看点火", ActionRequest.Ignite(head.InstanceId));
+                return PreviewFor(s, DropVerb.PreviewIgnite, $"查看用{ItemName(head.ItemId)}#{head.InstanceId}点火", ActionRequest.Ignite(head.InstanceId));
             if (head.ItemId == "wood" && src.Kind == DropSourceKind.Card && !head.InFacility) return DropOnFuel(s, head, loc);
             var max = MaxPutInFire(s, head, out var why);
             if (why != null) return DropIntent.No(why);
