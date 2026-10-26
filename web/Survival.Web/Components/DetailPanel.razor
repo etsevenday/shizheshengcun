@@ -1,5 +1,9 @@
 @inherits GameComponent
 
+@* 右栏（基础UI布局与操作修订案 v0.7 第 6.1 节）：
+   顶部固定“行动区”（执行/暂停中的行动进度、继续/取消等控制，不受页签切换影响）→ 固定两个页签“对象信息 / 人物” → 详情区。
+   悬停具体操作时详情区临时显示预测，离开恢复原页签；无选中时默认人物页，选中任何对象自动切到对象信息；
+   点“对象信息”而对象已消失时提示“未选中对象”。页签只在会话内，不持久化。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -9,27 +13,39 @@
     var craftDetail = G.Panel == "craft" && s.Sub == null && (s.Main == null || craftPaused);
     var dragPreview = sel.Kind == SelectionKind.Action && G.PendingAction != null && s.Sub == null
                       && (s.Main == null || s.Main.Status == ActionStatus.Paused) && !G.Running;
+    var tab = G.DetailTab;
 }
 
-<aside class="panel detail" aria-label="行动详情">
-    @* 二级面板打开时，右栏显示该面板的预估与确认（试玩留言 8f9a7c9b 第 2 点） *@
-    @if (craftDetail)
+<aside class="panel detail" aria-label="对象信息与人物">
+    @if (active != null)
     {
+        <div class="detail-action"><ActionProgress /></div>
+    }
+    <div class="detail-tabs" role="tablist" aria-label="右栏页签">
+        <button type="button" role="tab" aria-selected="@(tab == DetailTab.Object)" class="@(tab == DetailTab.Object ? "on" : "")"
+                @onclick="() => G.SetDetailTab(DetailTab.Object)">对象信息</button>
+        <button type="button" role="tab" aria-selected="@(tab == DetailTab.Character)" class="@(tab == DetailTab.Character ? "on" : "")"
+                @onclick="() => G.SetDetailTab(DetailTab.Character)">人物</button>
+    </div>
+    <div class="detail-body" role="tabpanel">
+    @if (G.HoverPreview != null && G.Panel == null)
+    {
+        @* 指向或聚焦动作按钮、拖拽悬停时的临时预测；离开后回到原页签（统一卡片案第 3 节、v0.7 第 4.1 节） *@
+        <PreviewView Request="G.HoverPreview" Eyebrow="@($"预测 · {e.LocName(s.CurrentLocation)}")" Title="@G.HoverTitle" Confirmable="false" />
+    }
+    else if (tab == DetailTab.Character)
+    {
+        <CharacterPanel />
+    }
+    else if (craftDetail)
+    {
+        @* 二级面板打开时，右栏显示该面板的预估与确认（试玩留言 8f9a7c9b 第 2 点） *@
         <CraftOverlay Part="detail" />
     }
     else if (dragPreview)
     {
-        @* 拖拽打开的耗时交互：与按钮同一份内核预估，按“开始”才计时（01 案 3.2） *@
+        @* 拖拽打开的耗时交互（指定工具采集）：与按钮同一份内核预估，按“开始”才计时（01 案 3.2） *@
         <PreviewView Request="G.PendingAction!" Eyebrow="拖拽 · 行动预览" Title="@G.PendingActionTitle" />
-    }
-    else if (active != null)
-    {
-        <ActionProgress />
-    }
-    else if (G.HoverPreview != null && G.Panel == null)
-    {
-        @* 指向或聚焦动作按钮时的临时预测；离开后回到选中对象（统一卡片案第 3 节） *@
-        <PreviewView Request="G.HoverPreview" Eyebrow="@($"预测 · {e.LocName(s.CurrentLocation)}")" Title="@G.HoverTitle" Confirmable="false" />
     }
     else if (G.Panel == "map")
     {
@@ -74,10 +90,12 @@
                 break;
             default:
                 <div class="empty-detail">
-                    选择地点、路线、资源或物品<br />查看可执行的操作
+                    <b>未选中对象</b><br />
+                    选择地点、路线、资源、设施或物品查看信息；<br />使用与转移在被选中卡片下方
                     @if (G.Notice != null) { <div class="notice" style="margin-top:12px">@G.Notice</div> }
                 </div>
                 break;
         }
     }
+    </div>
 </aside>

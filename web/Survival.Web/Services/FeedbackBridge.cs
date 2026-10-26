@@ -100,7 +100,10 @@ public sealed class FeedbackBridge
         }
         if (s.Sub != null) return "补给/维护中";
         if (s.Main?.Status == ActionStatus.Paused) return "暂停面板";
-        return s.Main != null ? "主界面（行动进行中）" : "主界面";
+        // v0.7：没有内容物层级菜单了，记录点火工具菜单与右栏页签
+        var tab = G.DetailTab == DetailTab.Character ? "右栏人物页" : "右栏对象信息";
+        if (G.IgniteMenuOpen) return $"主界面 · 点火工具菜单（{tab}）";
+        return s.Main != null ? $"主界面（行动进行中，{tab}）" : $"主界面（{tab}）";
     }
 
     private static string ActionText(ActionState a)

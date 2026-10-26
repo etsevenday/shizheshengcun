@@ -15,9 +15,9 @@
     <div class="lines">
         <div><span>提醒阈值</span><b>@(th.Inclusive ? "≤" : "<")@th.Value</b></div>
         <div><span>当前</span><b class="@(th.IsBelow(v) ? "warn-text" : "")">@(v <= 0 && id != StatId.Health ? "已归零" : th.IsBelow(v) ? "低于阈值" : "正常")</b></div>
-        @if (id == StatId.Hydration && s.DiarrheaUntil > s.GameMinute)
+        @if (id == StatId.Hydration && e.ActiveConditions(s).FirstOrDefault(c => c.Id == "diarrhea") is ActiveCondition d)
         {
-            <div><span>腹泻</span><b class="warn-text">还剩@Clock.Duration(s.DiarrheaUntil!.Value - s.GameMinute)</b></div>
+            <div><span>@d.Name</span><b class="warn-text">还剩@Clock.Duration(d.RemainingMinutes)</b></div>
         }
         @if (id == StatId.Energy)
         {

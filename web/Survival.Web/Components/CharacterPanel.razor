@@ -1,0 +1,58 @@
+@inherits GameComponent
+
+@* 右栏“人物”页（基础UI布局与操作修订案 v0.7 第 6.1 节）：六项基础属性（数值、提醒阈值、当前状态与说明）、负重与超重、
+   日期与昼夜、状态异常（腹泻剩余时间、绷带冷却剩余）。数据与左栏 HUD 同源（Stats、ActiveConditions），不另存一份。
+   只展示已启用的字段：v0.5/v0.6 的免疫力、战斗熟练度、AP 未采纳，不显示。查看不执行任何玩法。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var cfg = e.Config;
+    var day = e.IsDaylight(s.GameMinute);
+    var toSwitch = Clock.MinutesToSwitch(s.GameMinute, cfg.Time.DaylightStartMinute, cfg.Time.DaylightEndMinute);
+    var grams = e.CarriedGrams(s);
+    var conds = e.ActiveConditions(s);
+}
+<div class="detail-scroll char-panel" data-wheel="y">
+    <div class="op-head">
+        <div class="eyebrow">人物 · 存活第@(Clock.Day(s.GameMinute))日 @Clock.HHmm(s.GameMinute)</div>
+        <h2>幸存者</h2>
+        <p>@(day ? "白昼" : "夜间") · 距@(day ? "入夜" : "天亮")@Clock.Duration(toSwitch) · 当前在@(e.LocName(s.CurrentLocation))@(e.IsSheltered(s, s.CurrentLocation) ? "（有遮蔽）" : "（露天）")</p>
+    </div>
+
+    <div class="char-stats">
+        @foreach (var id in Stats.All)
+        {
+            var v = s.Stats.Get(id);
+            var th = cfg.Thresholds[GameEngine.StatKey(id)];
+            var below = th.IsBelow(v);
+            var zero = v <= 0;
+            var cls = zero || (id == StatId.Health && below) ? "critical" : below ? "warning" : "";
+            <div class="char-stat @cls">
+                <div class="cs-line"><b>@GameEngine.StatName(id)</b><span>@Ui.Floor(v)/100</span></div>
+                <div class="track"><i style="width:@(Math.Clamp(v, 0, 100).ToString("0.##"))%"></i><span class="mark" style="left:@th.Value%"></span></div>
+                <div class="cs-state">提醒阈值@(th.Inclusive ? "≤" : "<")@th.Value · @(zero && id != StatId.Health ? "已归零" : below ? "低于阈值" : "正常")</div>
+                <div class="cs-explain">@Ui.StatExplain(id)</div>
+            </div>
+        }
+    </div>
+
+    <div class="lines">
+        <div><span>携带重量</span><b class="@(grams > cfg.Carry.SoftGrams ? "warn-text" : "")">@Ui.Kg(grams)公斤 · @(grams > cfg.Carry.SoftGrams ? "超重" : "轻装")</b></div>
+        <div><span>负重规则</span><b>超过@(cfg.Carry.SoftGrams / 1000)公斤减速 · 上限@(cfg.Carry.HardGrams / 1000)公斤</b></div>
+    </div>
+
+    <div class="char-conds">
+        <div class="tiny muted">状态异常</div>
+        @if (conds.Count == 0)
+        {
+            <div class="risk none">当前没有状态异常。</div>
+        }
+        @foreach (var c in conds)
+        {
+            <div class="risk @(c.Harmful ? "" : "none")"><b>@c.Name</b> · 还剩@(Clock.Duration(c.RemainingMinutes)) · @c.Effect</div>
+        }
+    </div>
+</div>
+<div class="detail-foot">
+    <div class="under">查看人物信息不消耗时间；对自身使用物品请选中物品，在卡片下方点使用按钮</div>
+</div>

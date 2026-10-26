@@ -26,6 +26,9 @@ public sealed class Selection
 
 public enum SaveStatus { None, Saving, Saved, Failed }
 
+/// <summary>右栏页签（v0.7 第 6.1 节）：对象信息 / 人物。只在会话内，不进存档、不持久化。</summary>
+public enum DetailTab { Object, Character }
+
 
 
 /// <summary>
@@ -65,6 +68,16 @@ public sealed class GameSession
     public string? SaveError { get; private set; }
 
     public Selection Selected { get; private set; } = new();
+
+    /// <summary>右栏当前页签：无选中时默认人物页，选中任何对象自动切到对象信息。</summary>
+    public DetailTab DetailTab { get; private set; } = DetailTab.Character;
+
+    public void SetDetailTab(DetailTab tab)
+    {
+        DetailTab = tab;
+        HoverPreview = null;
+        Notify();
+    }
     /// <summary>当前打开的浏览层：map / craft / rest / log / menu / status:xxx。</summary>
     public string? Panel { get; set; }
     /// <summary>从设施卡打开加工面板时要预选的配方；面板读取一次后清空。</summary>
@@ -117,7 +130,7 @@ public sealed class GameSession
     public void OpenPanel(string? panel, string? recipe = null)
     {
         HoverPreview = null;
-        if (panel != null) IgniteMenuOpen = false;
+        if (panel != null) { IgniteMenuOpen = false; DetailTab = DetailTab.Object; }
         // 每次打开或关闭面板都清掉上一次拖拽留下的候选与指定批次；拖拽入口在打开后再写入
         CraftCandidates = null;
         CraftPreferred.Clear();
@@ -313,6 +326,7 @@ public sealed class GameSession
         SevenDayPending = false;
         Notice = null;
         Selected = new Selection();
+        DetailTab = DetailTab.Character;
         Panel = null;
         HoverPreview = null;
         IgniteMenuOpen = false;
@@ -348,13 +362,16 @@ public sealed class GameSession
     public void Select(Selection sel)
     {
         Selected = sel;
+        if (sel.Kind != SelectionKind.None) DetailTab = DetailTab.Object;
         Notice = null;
         Notify();
     }
 
+    /// <summary>Esc 或收起操作条：清空选中，右栏回到默认的人物页。</summary>
     public void ClearSelection()
     {
         Selected = new Selection();
+        DetailTab = DetailTab.Character;
         Notify();
     }
 
@@ -533,6 +550,7 @@ public sealed class GameSession
         PendingActionTitle = title;
         Panel = null;
         Selected = new Selection { Kind = SelectionKind.Action, Id = r.TargetId, InstanceId = r.InstanceId };
+        DetailTab = DetailTab.Object;
         Notice = null;
         Notify();
     }
