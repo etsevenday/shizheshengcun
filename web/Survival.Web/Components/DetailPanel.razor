@@ -28,7 +28,12 @@
                 @onclick="() => G.SetDetailTab(DetailTab.Character)">人物</button>
     </div>
     <div class="detail-body" role="tabpanel">
-    @if (G.HoverPreview != null && G.Panel == null)
+    @if (G.InBattleUi && tab == DetailTab.Object && !(s.Encounter != null && G.HoverPreview != null))
+    {
+        @* 战斗与敌踪：指令预览 → 执行；选中目标详情（v0.5 §16） *@
+        <BattlePanel />
+    }
+    else if (G.HoverPreview != null && G.Panel == null)
     {
         @* 指向或聚焦动作按钮、拖拽悬停时的临时预测；离开后回到原页签（统一卡片案第 3 节、v0.7 第 4.1 节） *@
         <PreviewView Request="G.HoverPreview" Eyebrow="@($"预测 · {e.LocName(s.CurrentLocation)}")" Title="@G.HoverTitle" Confirmable="false" />
@@ -87,6 +92,9 @@
                 break;
             case SelectionKind.Facility:
                 <FireDetail />
+                break;
+            case SelectionKind.Enemy:
+                <EnemyDetail />
                 break;
             default:
                 <div class="empty-detail">

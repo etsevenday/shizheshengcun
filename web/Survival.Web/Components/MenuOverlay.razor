@@ -1,6 +1,22 @@
 @inherits GameComponent
 @inject IJSRuntime JS
 
+@if (Battle)
+{
+    @* 战斗菜单（开发计划 v0.5 假设 10）：只含继续、保存并返回标题；不含脱战，Esc 不能关掉覆盖层免费脱战 *@
+    <div class="overlay" role="dialog" aria-label="战斗菜单" style="inset:14px auto auto 50%;transform:translateX(-50%);width:440px">
+        <div class="overlay-head">
+            <h2>@(G.S.Battle != null ? $"战斗菜单 · 第{G.S.Battle.Round}轮" : "菜单 · 敌踪选择中")</h2>
+            <button class="secondary" @onclick="() => G.ToggleBattleMenu(false)">继续<kbd>Esc</kbd></button>
+        </div>
+        <div style="padding:18px;display:flex;flex-direction:column;gap:14px">
+            <div class="tiny muted">战斗中不能通过菜单脱战；撤退请用指令条的“撤退”。每条指令与敌方行动后都已自动保存。</div>
+            <button class="secondary" @onclick="() => G.ToggleBattleMenu(false)">继续</button>
+            <button class="secondary" @onclick="ToTitle">保存并返回标题</button>
+        </div>
+    </div>
+    return;
+}
 <div class="overlay" role="dialog" aria-label="菜单" style="inset:14px auto auto 50%;transform:translateX(-50%);width:520px">
     <div class="overlay-head">
         <h2>菜单</h2>
@@ -38,9 +54,30 @@
                 </div>
             </div>
         }
-        @if (DebugBuild)
+        @if (DebugBuild || DevMode)
         {
             <button class="secondary" @onclick="G.DebugFill">调试：在当前地面放一批物资</button>
+        }
+        @if (DevMode)
+        {
+            @* 开发入口（地址加 ?dev=1 才显示）：开发测试箱、放敌人、立即敌踪、感染与尸变测试。正式流程不可见。 *@
+            <div class="dev-box">
+                <div class="eyebrow">开发入口（?dev=1）</div>
+                <div class="btn-row">
+                    <button class="secondary" @onclick="DevKit">开发测试箱</button>
+                    <button class="secondary" @onclick="DevEncounter">本地敌人立即形成敌踪</button>
+                    <button class="secondary" @onclick="() => DevVirus(20)">感染（病毒20）</button>
+                    <button class="secondary" @onclick="() => DevVirus(99.9)">病毒99.9（尸变测试）</button>
+                    <button class="secondary" @onclick="DevDay2">跳到第2日08:00</button>
+                </div>
+                <div class="btn-row">
+                    @foreach (var en in G.E.Config.Enemies)
+                    {
+                        var id = en.Id;
+                        <button class="secondary small-btn" @onclick="() => DevSpawn(id)">放@(en.Name)</button>
+                    }
+                </div>
+            </div>
         }
         <div class="tiny muted">快捷键：M 地图 · C 手工制作 · R 休息 · L 日志 · F 反馈 · Esc 关闭当前面板。Esc 不会取消进行中的行动。</div>
     </div>
@@ -53,6 +90,35 @@
     private static readonly bool DebugBuild = false;
 #endif
     private bool confirmNew;
+
+    [Parameter] public bool Battle { get; set; }
+    [Inject] private NavigationManager Nav { get; set; } = null!;
+
+    private bool DevMode => Nav.Uri.Contains("dev=1");
+
+    private void DevDone(string text)
+    {
+        G.Notice = text;
+        G.Save();
+        G.Panel = null;
+        G.Notify();
+    }
+
+    private void DevKit() { G.E.DebugGiveDevKit(G.S); DevDone("开发测试箱已放到随身。"); }
+
+    private void DevEncounter() => DevDone(G.E.DebugForceEncounter(G.S) ? "已形成敌踪。" : "当前地点没有敌对敌人，或正在行动中。");
+
+    private void DevVirus(double v) { G.E.DebugSetVirus(G.S, v); DevDone($"病毒设为{v}。"); }
+
+    private void DevSpawn(string id) { G.E.DebugSpawnEnemy(G.S, id, G.S.CurrentLocation); DevDone($"已在当前地点放置{G.E.Enemy(id).Name}。"); }
+
+    private void DevDay2()
+    {
+        var s = G.S;
+        if (s.GameMinute < 1440 + 480) s.GameMinute = 1440 + 480;
+        G.E.ResetWorldCursors(s);
+        DevDone("已跳到第2日08:00（只改时钟，不结算身体消耗）。");
+    }
 
     private void SetSpeed(int ms)
     {

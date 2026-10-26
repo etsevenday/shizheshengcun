@@ -30,11 +30,11 @@ public static partial class Icons
     /// <summary>界面请求过但没有图的键（缺图清单，见 README）。缺图时显示统一占位图，不再用石块兜底。</summary>
     public static readonly HashSet<string> Missing = new();
 
-    public static bool Has(string key) => Extracted.ContainsKey(key) || Extra.ContainsKey(key);
+    public static bool Has(string key) => Extracted.ContainsKey(key) || Extra.ContainsKey(key) || Combat.ContainsKey(key);
 
     public static string Svg(string key)
     {
-        if (!Extracted.TryGetValue(key, out var inner) && !Extra.TryGetValue(key, out inner))
+        if (!Extracted.TryGetValue(key, out var inner) && !Extra.TryGetValue(key, out inner) && !Combat.TryGetValue(key, out inner))
         {
             Missing.Add(key);
             inner = Extra["placeholder"];
@@ -57,6 +57,10 @@ public static partial class Icons
         "tool_box" => "hatchet",
         "supply_box" => "canned_food",
         "misc_box" => "cloth",
+        "hardware_weapon_cache" => "crowbar",
+        "village_weapon_locker" => "pistol",
+        "clinic_medical_supply" => "antibiotics",
+        "village_cold_box" => "antiviral_precursor",
         _ => outputs.Keys.FirstOrDefault() ?? "stone",
     };
 }

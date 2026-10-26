@@ -1,0 +1,118 @@
+@inherits GameComponent
+
+@* 战斗右栏（v0.5 §16“点动作显示右栏预览，再点其执行确认本条指令”；v0.6 §07“同时给出命中能力值与实际命中率”）：
+   选中指令 → 预览（AP、体力、命中能力与命中率、暴击、伤害区间、弹药、耐久、噪声、撤退率）→ 执行；
+   没选指令时显示所选目标的详情。执行期间与敌方行动中锁定。敌踪选择时显示敌方组成与绕行预测。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var b = s.Battle;
+}
+
+@if (b == null && s.Encounter != null)
+{
+    <div class="detail-scroll">
+        <div class="op-head">
+            <div class="eyebrow">发现敌踪 · @e.LocName(s.Encounter.LocationId)</div>
+            <h2>接敌还是绕行？</h2>
+            <p>原@(s.Encounter.Source == "explore" ? "探索" : "清理")的结果已经提交，不会因为这次选择回滚。</p>
+        </div>
+        @foreach (var w in e.EncounterEnemies(s))
+        {
+            var ec = e.Enemy(w.EnemyId);
+            <div class="lines enemy-lines">
+                <div><span>@ec.Name</span><b>健康@(Ui.N(w.Hp))/@(Ui.N(ec.Hp)) · 甲@(Ui.T(ec.Armor))</b></div>
+                <div><span>对你命中率</span><b>@Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))（攻击能力@(Ui.T(ec.AttackRating))对闪避@(Ui.T(e.Config.Scope.BasePlayerDodge))）</b></div>
+                <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)@(ec.IsZombie ? $" · {Ui.T(ec.BiteIntentWeightPct)}%意图为咬击" : "")</b></div>
+            </div>
+        }
+        <div class="risk">咬击命中且造成伤害时按免疫判定感染：当前免疫@(Ui.N(s.Body.Immunity))，一次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。</div>
+        <ul class="notes">
+            <li>接敌：受惊遭遇，入战恐慌=(100−精神)/2+@(Ui.T(e.Config.Panic.SurpriseBonus))；每轮推进5分钟世界时间。</li>
+            <li>绕行：固定@(e.Config.Encounters.BypassMinutes)分钟、按移动消耗；敌人仍留在这里；之后@(Clock.Duration(e.Config.Encounters.PostExitRandomEncounterGraceMinutes))内不会再随机遇敌，主动接近仍可。</li>
+        </ul>
+    </div>
+    <div class="detail-foot"><div class="under">在中间的敌踪卡下方选择接敌或绕行</div></div>
+}
+else if (b != null)
+{
+    var cmd = G.CurrentBattleCommand();
+    var awaiting = e.AwaitingPlayer(s);
+    @if (G.BattleAction == null && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid)
+    {
+        @* 战斗中地面与随身物品仍可查看 *@
+        <ItemDetail />
+    }
+    else if (G.BattleAction != null)
+    {
+        var p = e.PreviewCommand(s, cmd);
+        <div class="detail-scroll">
+            <div class="op-head">
+                <div class="eyebrow">战斗第@(b.Round)轮 · 指令预览</div>
+                <h2>@p.Title</h2>
+                <p>@(p.Ap)AP · 体力@(Ui.N(p.EnergyBefore))→@(Ui.N(p.EnergyAfter))@(p.EnergyCost > 0 ? $"（−{Ui.N(p.EnergyCost)}）" : "")</p>
+            </div>
+            @foreach (var t in p.Targets)
+            {
+                <div class="facts">
+                    <div class="fact"><span>目标</span><strong>@t.Slot @t.Name</strong></div>
+                    <div class="fact"><span>实际命中率</span><strong>@Ui.Pct(t.HitChance)</strong></div>
+                    <div class="fact"><span>命中能力 / 对方闪避</span><strong>@Ui.N(t.AccuracyRating) / @Ui.T(t.Evasion)</strong></div>
+                    <div class="fact"><span>暴击（命中后）</span><strong>@Ui.Pct(t.CritChance)</strong></div>
+                </div>
+                <div class="lines">
+                    <div><span>伤害（未暴击）</span><b>@Ui.N(t.DamageMin)—@Ui.N(t.DamageMax)</b></div>
+                    <div><span>伤害（暴击×@(Ui.T(e.Config.CombatMath.CritFactor))）</span><b>@Ui.N(t.CritDamageMin)—@Ui.N(t.CritDamageMax)</b></div>
+                    <div><span>目标健康</span><b>@Ui.N(t.Hp)@(t.Armor > 0 ? $" · 护甲{Ui.T(t.Armor)}（已扣）" : "")@(t.Guarded ? " · 防御中×0.5" : "")@(t.RearPenalty ? " · 后排×0.75" : "")</b></div>
+                </div>
+            }
+            @if (p.RetreatChance.HasValue)
+            {
+                <div class="facts"><div class="fact"><span>撤退成功率</span><strong>@Ui.Pct(p.RetreatChance.Value)</strong></div>
+                    <div class="fact"><span>速度（你/敌方最高）</span><strong>@Ui.T(e.PlayerEffectiveSpeed(s, b)) / @Ui.T(b.Alive.Where(x => x.Hostile).Select(e.EnemyEffectiveSpeed).DefaultIfEmpty(0).Max())</strong></div></div>
+            }
+            <div class="lines">
+                @if (p.AmmoText != null) { <div><span>弹药</span><b>@p.AmmoText</b></div> }
+                @if (p.WearText != null) { <div><span>耐久</span><b>@p.WearText</b></div> }
+                @if (p.NoiseAfter > p.NoiseBefore) { <div><span>噪声</span><b>@Ui.T(p.NoiseBefore)→@Ui.T(p.NoiseAfter)/@Ui.T(e.Config.Noise.Max)</b></div> }
+            </div>
+            @if (p.Notes.Count > 0) { <ul class="notes">@foreach (var n in p.Notes) { <li>@n</li> }</ul> }
+            @if (!p.Ok) { <div class="blocked">@p.Reason</div> }
+            @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+        </div>
+        <div class="detail-foot">
+            <button class="primary" disabled="@(!p.Ok || !awaiting || G.BattleBusy)" @onclick="G.ExecuteBattleCommand">@(p.Ok ? p.ConfirmText : "暂不可用")</button>
+            <div class="under">点击执行才提交；同一指令只提交一次。Esc 收起预览。</div>
+        </div>
+    }
+    else
+    {
+        var t = G.BattleTarget.HasValue ? e.BattleEnemyAt(b, G.BattleTarget.Value) : null;
+        <div class="detail-scroll">
+            <div class="op-head">
+                <div class="eyebrow">战斗第@(b.Round)轮 · @(awaiting ? $"你的行动（剩{b.PlayerAp}AP）" : "敌方行动中")</div>
+                <h2>@(t != null && t.Alive ? $"{t.Slot} {e.EnemyName(t)}" : "选择指令")</h2>
+                <p>点敌卡只选目标、不攻击；点下方指令条的动作，在这里查看命中率与成本，再点“执行”。</p>
+            </div>
+            @if (t != null && t.Alive)
+            {
+                var ec = e.Enemy(t.EnemyId);
+                <div class="lines">
+                    <div><span>健康</span><b>@Ui.N(t.Hp)/@Ui.N(ec.Hp)</b></div>
+                    <div><span>护甲 / 闪避 / 速度</span><b>@Ui.T(ec.Armor) / @Ui.T(ec.Dodge) / @Ui.T(ec.Speed)</b></div>
+                    <div><span>攻击能力 / 对你命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
+                    <div><span>本轮意图</span><b>@t.IntentLabel</b></div>
+                </div>
+                @if (ec.IsZombie) { <div class="risk">丧尸咬击命中且造成伤害时可能感染（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）。抓击不会感染。</div> }
+                else { <div class="risk none">动物撕咬不会传染僵尸病毒，@(ec.Behavior.StartsWith("bleed_on_hit_") ? "但命中有概率出血" : "但仍会造成伤害")。</div> }
+            }
+            <div class="lines">
+                <div><span>恐慌</span><b>@Ui.N(b.Panic)@(e.Config.Panic.PenaltyFor(b.Panic) is PanicPenaltyConfig pp ? $"（≥{Ui.T(pp.Minimum)}：命中能力×{Ui.T(pp.AccuracyRatingFactor)}、撤退×{Ui.T(pp.RetreatFactor)}）" : "")</b></div>
+                <div><span>你的闪避能力</span><b>@Ui.T(e.Config.Scope.BasePlayerDodge)</b></div>
+                <div><span>本场世界时间</span><b>@Clock.Duration(b.Ticks * e.Config.Time.TickMinutes)（每轮5分钟）</b></div>
+            </div>
+            @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+        </div>
+        <div class="detail-foot"><div class="under">战斗中地面与随身物品只能查看；换武器、装填与用药请用指令条。</div></div>
+    }
+}

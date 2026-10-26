@@ -22,3 +22,84 @@
 .repair-pick small { color: var(--muted); font-size: 13px; }
 .repair-pick.on { border-color: var(--accent); }
 .repair-pick.missing small { color: var(--warn); }
+
+/* ───────────── 战斗与敌踪覆盖层：替换地块栏两行，高度与两行之和一致；顺序条与指令条固定，卡片区内部滚动 ───────────── */
+.battle-overlay { position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: 6px; padding: 8px 10px;
+  height: calc(var(--map-row-h) + var(--fac-card-h) + 38px + var(--gap)); min-height: 0; border-color: #8a4f3a; background: linear-gradient(#2a221e, #252e27 40%); }
+.battle-overlay.encounter { border-color: var(--warn); }
+.bt-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.bt-head > b { font-size: 17px; white-space: nowrap; }
+.bt-queue { display: flex; gap: 4px; flex-wrap: nowrap; overflow: hidden; flex: 1 1 auto; min-width: 0; }
+.q-chip { font-size: 13px; padding: 2px 8px; border-radius: 10px; background: #3a3530; color: var(--text); white-space: nowrap; border: 1px solid transparent; }
+.q-chip.me { background: #344833; }
+.q-chip.now { border-color: var(--accent); color: var(--accent); }
+.q-chip.done { opacity: .5; }
+.bt-noise { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.bt-noise .track { width: 70px; }
+.bt-cards { display: flex; gap: 10px; overflow-x: auto; overflow-y: auto; align-items: stretch; min-height: 0; padding: 2px 2px 4px; }
+.bt-cards > .ocard { width: 178px; min-height: 0; }
+.player-card { background: #d8cfb5; border-color: #5b6b48; }
+.ocard.acting { border-color: var(--accent); box-shadow: 0 0 0 2px #e9c46a88, 0 2px 8px #0005; }
+.ocard.targetable { border-color: #b8682a; }
+.ocard.unreachable { opacity: .62; }
+.ocard.empty-slot { background: #d1c5a833; border: 2px dashed #6b6450; cursor: default; color: var(--muted); }
+.ocard.empty-slot .oc-head b { color: var(--muted); }
+.slot-empty { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--muted); }
+.enemy-card .oc-art { position: relative; }
+.acted-mark { position: absolute; right: 4px; top: 4px; font-size: 12px; background: #20271dcc; color: #e4e6d9; padding: 1px 5px; border-radius: 3px; }
+.hp-line { display: flex; justify-content: space-between; font-size: 13px; }
+.hp-line span { color: #5b5a4b; }
+.ocard .track { background: #00000033; }
+.ocard .track i { background: #9b3d2e; }
+.ocard .track.en i { background: #5b6b48; }
+.intent { font-size: 13px; line-height: 1.35; padding: 2px 4px; border-radius: 3px; background: #efe9d5; color: #35402e; display: flex; gap: 4px; align-items: flex-start; }
+.intent.bite { background: #f0c7b9; color: #6b1f12; font-weight: 600; }
+.intent.calm { background: #dfe6d5; }
+.intent-ico { flex: 0 0 auto; display: inline-flex; width: 18px; height: 18px; align-items: center; justify-content: center; border-radius: 50%; background: #35402e; color: #f2ecd8; font-size: 11px; }
+.st-chips { display: flex; flex-wrap: wrap; gap: 3px; }
+.st { font-size: 12px; padding: 0 5px; border-radius: 3px; background: #efe9d5; color: #35402e; }
+.st.bad { background: #8a3b2c; color: #fff1e8; }
+.st.good { background: #5b6b48; color: #f2ecd8; }
+.bt-cmds { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+.cmd-group { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.cmd-title { font-size: 13px; color: var(--muted); margin-right: 2px; }
+.cmd { min-height: 40px; padding: 4px 10px; background: #2f3a2f; color: var(--text); border: 1px solid var(--line); border-radius: 4px; font-size: 14px; display: inline-flex; gap: 6px; align-items: baseline; }
+.cmd small { font-size: 12px; color: var(--muted); }
+.cmd.on { border-color: var(--accent); color: var(--accent); background: #3b3a2a; }
+.cmd.off { opacity: .55; }
+.cmd:disabled { opacity: .45; cursor: default; }
+.bt-log { font-size: 13px; color: var(--muted); line-height: 1.45; max-height: 64px; overflow-y: auto; border-top: 1px solid var(--line); padding-top: 4px; }
+.bt-log div:first-child { color: var(--text); }
+.bt-wait { font-size: 13px; color: var(--warn); }
+.enc-actions { display: flex; gap: 10px; }
+.enc-go { flex: 1 1 0; min-height: 56px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 12px; background: #2f3a2f; color: var(--text); border: 1px solid var(--line); border-radius: 5px; text-align: left; }
+.enc-go strong { font-size: 17px; }
+.enc-go small { font-size: 13px; color: var(--muted); }
+.enc-go.fight { border-color: #b8682a; }
+.enc-go:hover:not(:disabled) { border-color: var(--accent); }
+.enemy-lines { border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+/* 地块“敌踪”分组的敌人卡 */
+.dg-cards > .enemy-card.world { width: 160px; }
+.desk-group.enemies .dg-title { color: var(--warn); }
+
+/* 尸变结算 */
+.end-card.zombified { border-color: #6b8a3a; }
+
+@media (max-height: 800px) {
+  .bt-cards > .ocard { width: 162px; }
+  .bt-head > b { font-size: 15px; }
+  .cmd { min-height: 40px; padding: 3px 8px; font-size: 13px; }
+  .bt-log { max-height: 40px; }
+  .enc-go { min-height: 48px; }
+  .hp-line, .intent { font-size: 12px; }
+}
+
+/* 开发入口 */
+.dev-box { border: 1px dashed #8a7748; border-radius: 5px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.dev-box .btn-row { flex-wrap: wrap; }
+.small-btn { padding: 5px 8px; font-size: 13px; min-height: 40px; }
+.overlay { max-height: calc(100vh - 28px); overflow-y: auto; }
+.dev-box .btn-row > button { flex: 0 0 auto; width: auto; white-space: nowrap; }
+
+.nav button:disabled { opacity: .45; cursor: not-allowed; }
+.enemy-lines div { flex-wrap: wrap; }

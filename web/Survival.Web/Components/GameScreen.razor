@@ -7,6 +7,8 @@
     var main = s.Main;
     var pausedLayer = main != null && main.Status == ActionStatus.Paused && G.Panel != "craft";
     var subRunning = s.Sub != null;
+    // 战斗与敌踪选择：顶栏地图/制作/休息/日志入口锁定（v0.5 §16），覆盖层替换地块栏两行
+    var battleUi = G.InBattleUi;
 }
 
 <div class="game">
@@ -16,12 +18,12 @@
             <em>第@(Clock.Day(s.GameMinute))日 · @e.LocName(s.CurrentLocation)@(main?.Type == ActionType.Travel ? $" → {e.LocName(main.TargetId)}" : "")</em>
         </div>
         <nav class="nav" aria-label="主菜单">
-            <button class="@(G.Panel == "map" ? "on" : "")" @onclick='() => Toggle("map")'>区域地图<kbd>M</kbd></button>
-            <button class="@(G.Panel == "craft" ? "on" : "")" @onclick='() => Toggle("craft")'>手工制作<kbd>C</kbd></button>
-            <button class="@(G.Panel == "rest" ? "on" : "")" @onclick='() => Toggle("rest")'>休息<kbd>R</kbd></button>
-            <button class="@(G.Panel == "log" ? "on" : "")" @onclick='() => Toggle("log")'>行动日志<kbd>L</kbd></button>
+            <button class="@(G.Panel == "map" ? "on" : "")" disabled="@battleUi" title="@(battleUi ? "战斗中锁定" : "")" @onclick='() => Toggle("map")'>区域地图<kbd>M</kbd></button>
+            <button class="@(G.Panel == "craft" ? "on" : "")" disabled="@battleUi" title="@(battleUi ? "战斗中锁定" : "")" @onclick='() => Toggle("craft")'>手工制作<kbd>C</kbd></button>
+            <button class="@(G.Panel == "rest" ? "on" : "")" disabled="@battleUi" title="@(battleUi ? "战斗中锁定" : "")" @onclick='() => Toggle("rest")'>休息<kbd>R</kbd></button>
+            <button class="@(G.Panel == "log" ? "on" : "")" disabled="@battleUi" title="@(battleUi ? "战斗中锁定" : "")" @onclick='() => Toggle("log")'>行动日志<kbd>L</kbd></button>
             <button class="feedback-btn" @onclick="OpenFeedback" title="把遇到的问题或想法留给作者">反馈<kbd>F</kbd></button>
-            <button class="@(G.Panel == "menu" ? "on" : "")" @onclick='() => Toggle("menu")'>菜单<kbd>Esc</kbd></button>
+            <button class="@(G.Panel == "menu" || G.BattleMenuOpen ? "on" : "")" @onclick='() => { if (battleUi) G.ToggleBattleMenu(); else Toggle("menu"); }'>菜单<kbd>Esc</kbd></button>
         </nav>
     </header>
 
@@ -37,7 +39,8 @@
         <section class="center" aria-label="当前地点">
             <div class="center-scroll @(centerPanel ? "locked" : "")" data-wheel="y">
             <div class="center-top">
-                <LocationStrip />
+                @* 战斗/敌踪覆盖层替换地块栏两行（组件替换而非叠加，拖拽不会收集到隐藏的落点） *@
+                @if (battleUi) { <BattleOverlay /> } else { <LocationStrip /> }
                 @if (!craftOpen) { <ItemShelf Owner="@s.CurrentLocation" Title="@($"当前地面 · {e.LocName(s.CurrentLocation)}")" /> }
                 @* 二级面板只替换这一块，周围的状态栏、随身物品与右侧详情不动 *@
                 @if (G.Panel == "map") { <MapOverlay Part="center" /> }
@@ -71,6 +74,7 @@
         <DetailPanel />
 
         @if (G.Panel == "menu") { <MenuOverlay /> }
+        @if (G.BattleMenuOpen && battleUi) { <MenuOverlay Battle="true" /> }
         @if (G.Panel != null && G.Panel.StartsWith("status:")) { <StatusInfo /> }
 
         @if (G.Toast != null && !s.Progress.Dead)
@@ -134,6 +138,18 @@
     {
         if (key == "F") { _ = OpenFeedback(); return; }
         if (G.State == null || G.S.Progress.Dead) return;
+        if (G.InBattleUi)
+        {
+            // 战斗中：M/C/R/L 锁定；Esc 栈：拖拽（drag.js 先拦截）→ 数量框 → 状态说明 → 收起指令预览/物品选中 → 战斗菜单（只含继续、保存并返回标题，不能脱战）
+            if (key != "Escape") return;
+            if (G.PendingDrop != null) G.CancelDropQuantity();
+            else if (G.Panel != null && G.Panel.StartsWith("status:")) G.OpenPanel(null);
+            else if (G.BattleMenuOpen) G.ToggleBattleMenu(false);
+            else if (G.BattleAction != null) G.ClearBattleAction();
+            else if (G.Selected.Kind != SelectionKind.None) G.ClearSelection();
+            else G.ToggleBattleMenu(true);
+            return;
+        }
         switch (key)
         {
             case "M": Toggle("map"); break;

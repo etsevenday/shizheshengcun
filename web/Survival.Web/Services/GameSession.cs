@@ -11,7 +11,7 @@ namespace Survival.Web.Services;
 /// 基础UI修订 v0.7 第 3、8 节：Facility 为火堆（Id = 设施 ID，如 camp:fire）；PotLiquid 为锅里的一种液体
 /// （InstanceId = 锅实例，Id = 液体物品 ID，Owner = pot:&lt;锅ID&gt;）。锅、锅内食材、直烤食材沿用 Tool，按真实实例 ID 选中。
 /// </summary>
-public enum SelectionKind { None, Location, Entrance, Resource, ItemGroup, Tool, Action, Clear, Facility, PotLiquid }
+public enum SelectionKind { None, Location, Entrance, Resource, ItemGroup, Tool, Action, Clear, Facility, PotLiquid, Enemy }
 
 public sealed class Selection
 {
@@ -133,6 +133,8 @@ public sealed class GameSession
     /// </summary>
     public void OpenPanel(string? panel, string? recipe = null)
     {
+        // 战斗与敌踪选择中：地图、制作、休息、日志入口锁定（v0.5 §16）
+        if (panel is "map" or "craft" or "rest" or "log" && InBattleUi) return;
         HoverPreview = null;
         if (panel != null) { IgniteMenuOpen = false; DetailTab = DetailTab.Object; }
         // 关闭面板时没有选中对象就回人物页（v0.7 6.1：无选中默认展示人物信息；复验新发现 2）
@@ -258,6 +260,8 @@ public sealed class GameSession
             var active = S.Sub ?? S.Main;
             if (active != null && !S.Progress.Dead && !(S.Sub == null && S.Main!.Status == ActionStatus.Paused))
                 _ = RunLoop();
+            // 战斗中途读档：恢复覆盖层与队列游标，敌方未行动完的从游标继续（不会重复行动）
+            if (S.Battle != null && !S.Progress.Dead && !E.AwaitingPlayer(S)) _ = BattleLoop();
             return null;
         }
         catch (SaveMigrationConflictException ex)
@@ -340,6 +344,8 @@ public sealed class GameSession
         IgniteMenuOpen = false;
         _skip = false;
         Running = false;
+        ResetBattleUi();
+        BattleBusy = false;
     }
 
     public void Save()
@@ -569,6 +575,9 @@ public sealed class GameSession
             case SelectionKind.Facility:
                 if (E.FacilityLocation(Selected.Id) != S.CurrentLocation) ClearSelectionSilently();
                 return;
+            case SelectionKind.Enemy:
+                if (!(Selected.InstanceId is int wid && E.VisibleEnemiesAt(S, S.CurrentLocation).Any(w => w.Id == wid))) ClearSelectionSilently();
+                return;
         }
     }
 
@@ -744,6 +753,8 @@ public sealed class GameSession
                 case GameEventKind.ActionCancelled:
                 case GameEventKind.Hazard:
                 case GameEventKind.Death:
+                case GameEventKind.Encounter:
+                case GameEventKind.BattleEnd:
                     Toast = ev;
                     toastSet = true;
                     break;
@@ -824,6 +835,169 @@ public sealed class GameSession
     public void DebugFill()
     {
         E.DebugFillGround(S);
+        Save();
+        Notify();
+    }
+
+    // ───────────── 战斗（人物与战斗 v0.5 §16、v0.6 §07） ─────────────
+
+    /// <summary>战斗或敌踪选择中：顶栏导航、M/C/R/L、二级面板与世界交互锁定。</summary>
+    public bool InBattleUi => State != null && (S.Battle != null || S.Encounter != null);
+
+    /// <summary>指令条上选中的指令（点动作 → 右栏预览 → 点执行）。</summary>
+    public string? BattleAction { get; private set; }
+    /// <summary>选中的目标敌人（本场序号）；点敌卡只选目标，不攻击。</summary>
+    public int? BattleTarget { get; private set; }
+    /// <summary>换武器/用药指定的实例。</summary>
+    public int? BattleItem { get; private set; }
+    /// <summary>敌方行动逐条展示中（锁定输入）。</summary>
+    public bool BattleBusy { get; private set; }
+    /// <summary>战斗菜单（Esc）：只含继续、保存并返回标题，不含脱战。</summary>
+    public bool BattleMenuOpen { get; private set; }
+
+    public void ToggleBattleMenu(bool? open = null)
+    {
+        BattleMenuOpen = open ?? !BattleMenuOpen;
+        Notify();
+    }
+
+    private void ResetBattleUi()
+    {
+        BattleAction = null;
+        BattleTarget = null;
+        BattleItem = null;
+        BattleMenuOpen = false;
+    }
+
+    public BattleCommand CurrentBattleCommand() => BattleCommand.Of(BattleAction ?? "", BattleTarget, BattleItem);
+
+    /// <summary>选择指令：需要目标而目标不合法时自动改选第一个可选目标；只显示预览，不执行。</summary>
+    public void PickBattleAction(string action, int? item = null)
+    {
+        if (State == null || S.Battle == null) return;
+        BattleAction = action;
+        BattleItem = item;
+        var opt = E.BattleOptions(S).FirstOrDefault(o => o.Action == action && (item == null || o.ItemInstanceId == item));
+        if (opt != null && opt.NeedsTarget && (BattleTarget == null || !opt.Targets.Contains(BattleTarget.Value)))
+            BattleTarget = opt.Targets.Count > 0 ? opt.Targets[0] : BattleTarget;
+        DetailTab = DetailTab.Object;
+        Notice = null;
+        Notify();
+    }
+
+    /// <summary>点敌卡：只选目标，不攻击。</summary>
+    public void PickBattleTarget(int index)
+    {
+        BattleTarget = index;
+        DetailTab = DetailTab.Object;
+        Notify();
+    }
+
+    public void ClearBattleAction()
+    {
+        BattleAction = null;
+        BattleItem = null;
+        Notify();
+    }
+
+    /// <summary>执行右栏预览的指令：新 requestId，执行期间锁定输入；之后逐条展示敌方行动直到轮到玩家或战斗结束。</summary>
+    public async Task ExecuteBattleCommand()
+    {
+        if (State == null || S.Battle == null || BattleBusy || BattleAction == null) return;
+        var cmd = CurrentBattleCommand().WithRequestId(Guid.NewGuid().ToString("N"));
+        BattleBusy = true;
+        try
+        {
+            var res = E.ExecuteCommand(S, cmd);
+            Notice = res.Ok ? null : res.Reason;
+            if (res.Ok && !res.Duplicate)
+            {
+                // 用掉的指令收起；攻击类在还有行动点时保留同一指令，方便连打
+                var keep = res.Ok && S.Battle != null && E.AwaitingPlayer(S) && GameEngine.AttackActions.Contains(BattleAction);
+                if (!keep) { BattleAction = null; BattleItem = null; }
+                if (S.Battle != null && BattleTarget != null && S.Battle.Enemies.All(e => e.Index != BattleTarget || !e.Alive)) BattleTarget = null;
+            }
+            Drain();
+            Save();
+            Notify();
+        }
+        finally
+        {
+            BattleBusy = false;
+        }
+        await BattleLoop();
+    }
+
+    /// <summary>敌踪：接敌。</summary>
+    public async Task EngageEncounter()
+    {
+        if (State == null || S.Encounter == null || BattleBusy) return;
+        var res = E.Engage(S, Guid.NewGuid().ToString("N"));
+        Notice = res.Ok ? null : res.Reason;
+        ResetBattleUi();
+        Selected = new Selection();
+        DetailTab = DetailTab.Object;
+        Drain();
+        Save();
+        Notify();
+        await BattleLoop();
+    }
+
+    /// <summary>主动接近地块上的敌人卡。</summary>
+    public async Task ApproachEnemy(int worldEnemyId)
+    {
+        if (State == null || BattleBusy) return;
+        var res = E.Approach(S, worldEnemyId, Guid.NewGuid().ToString("N"));
+        Notice = res.Ok ? null : res.Reason;
+        if (res.Ok)
+        {
+            ResetBattleUi();
+            Selected = new Selection();
+            DetailTab = DetailTab.Object;
+        }
+        Drain();
+        Save();
+        Notify();
+        if (res.Ok) await BattleLoop();
+    }
+
+    /// <summary>逐条推进敌方行动与轮末，直到轮到玩家或战斗结束；每步存档，刷新页面后从游标继续。</summary>
+    public async Task BattleLoop()
+    {
+        if (State == null || S.Battle == null || BattleBusy) return;
+        BattleBusy = true;
+        try
+        {
+            while (State != null && S.Battle != null && !S.Progress.Dead && !E.AwaitingPlayer(S))
+            {
+                var r = E.BattleStep(S);
+                Drain();
+                Save();
+                Notify();
+                if (r.Kind is BattleStepKind.None or BattleStepKind.Ended) break;
+                if (r.Kind is BattleStepKind.EnemyActed or BattleStepKind.RoundEnded)
+                    await Task.Delay(Math.Max(160, SegmentDelayMs * 4));
+            }
+        }
+        finally
+        {
+            BattleBusy = false;
+            if (State != null && S.Battle == null)
+            {
+                ResetBattleUi();
+                ReconcileSelection();
+            }
+            Save();
+            Notify();
+        }
+    }
+
+    /// <summary>战外装备当前武器（免费，不耗时）。</summary>
+    public void Equip(int? instanceId)
+    {
+        var res = E.EquipWeapon(S, instanceId);
+        Notice = res.Ok ? null : res.Reason;
+        Drain();
         Save();
         Notify();
     }

@@ -67,6 +67,10 @@ public sealed class FeedbackBridge
         ctx["flags"] = s.Progress.Flags.OrderBy(x => x).ToList();
         ctx["dead"] = s.Progress.Dead ? s.Progress.Death?.Cause : null;
         ctx["seed"] = s.Seed;
+        ctx["body"] = new { immunity = Math.Round(s.Body.Immunity, 2), infected = s.Body.Infected, virus = Math.Round(s.Body.VirusLoad, 2), bleed = s.Body.BleedTriggers };
+        ctx["skills"] = s.Skills.ToDictionary(kv => kv.Key, kv => $"L{kv.Value.Level} {kv.Value.Xp}");
+        ctx["worldEnemies"] = s.WorldEnemies.Select(w => $"{w.EnemyId}#{w.Id}@{w.LocationId} HP{Math.Round(w.Hp, 2)}{(w.Engaged ? " 交战" : "")}").ToList();
+        ctx["battle"] = s.Battle == null ? null : new { round = s.Battle.Round, ap = s.Battle.PlayerAp, panic = Math.Round(s.Battle.Panic, 2), noise = s.Battle.Noise, enemies = s.Battle.Enemies.Select(x => $"{x.Slot}{x.EnemyId} HP{Math.Round(x.Hp, 2)} {x.Intent}{(x.Alive ? "" : " ×")}").ToList(), log = s.Battle.Log.TakeLast(6).ToList() };
         ctx["segments"] = s.SegmentCount;
         ctx["notice"] = G.Notice;
         ctx["recentLog"] = s.Log.TakeLast(12).Select(l => $"{Clock.DayTime(l.Minute)} {l.Text}").ToList();
@@ -83,7 +87,10 @@ public sealed class FeedbackBridge
 
     private string ScreenName(GameState s)
     {
-        if (s.Progress.Dead) return "死亡结算";
+        if (s.Progress.Dead) return s.Progress.Death?.Zombified == true ? "尸变结算" : "死亡结算";
+        if (s.Battle != null)
+            return $"战斗覆盖层（第{s.Battle.Round}轮，{(G.E.AwaitingPlayer(s) ? $"玩家行动，剩{s.Battle.PlayerAp}AP" : "敌方行动中")}{(G.BattleAction != null ? $"，预览{GameEngine.ActionName(G.BattleAction)}" : "")}{(G.BattleMenuOpen ? "，战斗菜单" : "")}）";
+        if (s.Encounter != null) return G.BattleMenuOpen ? "敌踪选择 · 菜单" : "敌踪选择（接敌/绕行）";
         if (G.SevenDayPending && s.Main == null) return "七日检查";
         if (G.Panel != null)
         {

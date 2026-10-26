@@ -1,0 +1,183 @@
+@inherits GameComponent
+
+@* 战斗覆盖层（人物与战斗 v0.5 §16、v0.6 §07；开发计划 v0.5 假设 8、9、11）：
+   替换地块栏两行（地图行 + 设施行），不叠加；地面/随身栏、左 HUD、右栏、顶栏保持可见。
+   战斗：顶部轮次、行动顺序与噪声 → 玩家卡与敌卡（F1、F2、B1；当前行动者高亮、已行动者角标、可选目标亮框、射程不足写原因、公开意图）
+   → 指令条（点指令只在右栏显示预览，点右栏“执行”才提交）→ 最近战斗日志。高度不足时顺序条与指令条固定，卡片区内部滚动。
+   敌踪选择：同一位置显示敌方组成与“接敌 / 绕行10分钟”。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var cfg = e.Config;
+    var b = s.Battle;
+}
+
+@if (b == null && s.Encounter != null)
+{
+    var group = e.EncounterEnemies(s);
+    <div class="panel battle-overlay encounter" role="region" aria-label="发现敌踪">
+        <div class="bt-head">
+            <b>发现敌踪</b>
+            <span class="muted">@e.LocName(s.Encounter.LocationId) · @(s.Encounter.Source == "explore" ? "探索" : "清理")结果已提交</span>
+        </div>
+        <div class="bt-cards" data-wheel="x">
+            @foreach (var w in group)
+            {
+                var ec = e.Enemy(w.EnemyId);
+                <ObjectCard @key="w.Id" CssClass="enemy-card" Title="@ec.Name" Badge="@(ec.IsZombie ? "丧尸" : "动物")" OnClick="() => {}">
+                    <Art>@Icons.Markup("enemy_" + ec.Id)</Art>
+                    <ChildContent>
+                        <div class="hp-line"><span>健康</span><b>@Ui.N(w.Hp)/@Ui.N(ec.Hp)</b></div>
+                        <div class="track"><i style="width:@Ui.Bar(w.Hp, ec.Hp)%"></i></div>
+                        <div class="oc-line">护甲@(Ui.T(ec.Armor)) · 闪避@(Ui.T(ec.Dodge)) · 速度@(Ui.T(ec.Speed))</div>
+                        <div class="oc-line">伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax))</div>
+                    </ChildContent>
+                </ObjectCard>
+            }
+        </div>
+        <div class="enc-actions">
+            <button type="button" class="enc-go fight" disabled="@G.BattleBusy" @onclick="G.EngageEncounter">
+                <strong>接敌</strong><small>受惊遭遇：入战恐慌+@(Ui.T(cfg.Panic.SurpriseBonus))</small>
+            </button>
+            <button type="button" class="enc-go" disabled="@(e.CanStart(s, ActionRequest.Bypass()) != null)"
+                    @onmouseenter="() => G.Hover(BypassReq, BypassTitle)" @onfocus="() => G.Hover(BypassReq, BypassTitle)" @onmouseleave="() => G.Hover(null)" @onblur="() => G.Hover(null)"
+                    @onclick="Bypass">
+                <strong>绕行 · @(cfg.Encounters.BypassMinutes)分钟</strong><small>按移动消耗；敌人仍在；@(Clock.Duration(cfg.Encounters.PostExitRandomEncounterGraceMinutes))内不再随机遇敌</small>
+            </button>
+        </div>
+        <div class="bt-log muted">只会遇到这里已有的敌人，不会凭空出现新敌人。Esc 打开菜单，不能关掉这个选择。</div>
+    </div>
+}
+else if (b != null)
+{
+    var w = e.CurrentWeapon(s, out var wi);
+    var activeIdx = b.PlayerActing ? 0 : (b.Cursor < b.Queue.Count ? b.Queue[b.Cursor] : -1);
+    var opts = e.BattleOptions(s);
+    var sel = G.BattleAction == null ? null : opts.FirstOrDefault(o => o.Action == G.BattleAction && (G.BattleItem == null || o.ItemInstanceId == G.BattleItem));
+    var waiting = !e.AwaitingPlayer(s);
+    <div class="panel battle-overlay" role="region" aria-label="战斗">
+        <div class="bt-head">
+            <b>战斗 · 第@(b.Round)轮</b>
+            <div class="bt-queue" aria-label="本轮行动顺序">
+                @for (var k = 0; k < b.Queue.Count; k++)
+                {
+                    var qi = b.Queue[k];
+                    var be = qi == 0 ? null : e.BattleEnemyAt(b, qi);
+                    if (qi != 0 && (be == null || !be.Alive)) continue;
+                    var done = k < b.Cursor && !(qi == 0 && b.PlayerActing);
+                    <span class="q-chip @(qi == activeIdx ? "now" : "") @(done ? "done" : "") @(qi == 0 ? "me" : "")" title="先手值@(Ui.T(b.Initiative.ElementAtOrDefault(k)))">@(qi == 0 ? "你" : e.EnemyName(be!))</span>
+                }
+            </div>
+            <span class="bt-noise" title="枪声+@(Ui.T(cfg.Noise.GunGain))、弩+@(Ui.T(cfg.Noise.CrossbowGain))；满@(Ui.T(cfg.Noise.Max))可能引来同地丧尸（每场最多1次）">
+                噪声<span class="track thin"><i style="width:@Ui.Bar(b.Noise, cfg.Noise.Max)%"></i></span>@Ui.T(b.Noise)/@Ui.T(cfg.Noise.Max)
+            </span>
+        </div>
+
+        <div class="bt-cards" data-wheel="x">
+            @* 玩家卡 *@
+            <div class="ocard player-card @(activeIdx == 0 ? "acting" : "")">
+                <div class="oc-head"><b>你</b><span class="oc-badge here">@(b.PlayerActing ? $"AP {b.PlayerAp}/{cfg.Scope.HumanApPerActivation}" : "等待")</span></div>
+                <div class="oc-main">
+                    <div class="oc-art">@Icons.Markup(wi?.ItemId ?? "fists")</div>
+                    <div class="oc-body">
+                        <div class="hp-line"><span>健康</span><b>@Ui.N(s.Stats.Health)/@Ui.T(s.Stats.HealthMax)</b></div>
+                        <div class="track"><i style="width:@Ui.Bar(s.Stats.Health, s.Stats.HealthMax)%"></i></div>
+                        <div class="hp-line"><span>体力</span><b>@Ui.N(s.Stats.Energy)/@Ui.T(s.Stats.EnergyMax)</b></div>
+                        <div class="track en"><i style="width:@Ui.Bar(s.Stats.Energy, s.Stats.EnergyMax)%"></i></div>
+                        <div class="oc-line">恐慌 @Ui.N(b.Panic) · @(wi == null ? "徒手" : $"{w.Name}#{wi.InstanceId}")</div>
+                        <div class="oc-line">@(wi?.Durability != null ? $"耐久{GameEngine.DurabilityText(wi)}" : "")@(w.UsesMagazine && wi != null ? $" · 弹仓{wi.LoadedAmmo}/{w.MagazineCapacity}" : "")@(w.ConsumesLooseAmmo ? $" · 箭{s.Items.Where(i => i.IsCarried && i.ItemId == w.AmmoId).Sum(i => i.Count)}" : "")</div>
+                        <div class="st-chips">
+                            @if (b.PlayerGuard) { <span class="st good">防御</span> }
+                            @if (b.PlayerStagger) { <span class="st bad">失衡</span> }
+                            @if (b.PlayerSlowActive || b.PlayerSlowPending) { <span class="st bad">减速</span> }
+                            @if (s.Body.BleedTriggers > 0) { <span class="st bad">出血×@s.Body.BleedTriggers</span> }
+                            @if (s.Body.Infected) { <span class="st bad">感染@(Ui.N(s.Body.VirusLoad))</span> }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @foreach (var slot in cfg.Scope.Slots)
+            {
+                var en = b.Alive.FirstOrDefault(x => x.Slot == slot);
+                if (en == null)
+                {
+                    <div class="ocard enemy-card empty-slot" aria-label="@($"{slot}空位")"><div class="oc-head"><b>@slot</b></div><div class="slot-empty">空位</div></div>
+                    continue;
+                }
+                var ec = e.Enemy(en.EnemyId);
+                var idx = en.Index;
+                var targetable = sel != null && sel.NeedsTarget && sel.Targets.Contains(idx);
+                var unreachable = sel != null && sel.NeedsTarget && !sel.Targets.Contains(idx);
+                var reachWhy = unreachable ? e.CommandBlocked(s, BattleCommand.Of(sel!.Action, idx, sel.ItemInstanceId)) : null;
+                <ObjectCard @key="@("be" + idx)" CssClass="@($"enemy-card {(idx == activeIdx ? "acting" : "")} {(targetable ? "targetable" : "")} {(unreachable ? "unreachable" : "")}")"
+                            Title="@ec.Name" Badge="@slot" Selected="@(G.BattleTarget == idx)"
+                            Tooltip="@(reachWhy ?? "点击选为目标（不会直接攻击）")" OnClick="() => G.PickBattleTarget(idx)">
+                    <Art>@Icons.Markup("enemy_" + ec.Id)@if (en.Acted) {<span class="acted-mark">已行动</span>}</Art>
+                    <ChildContent>
+                        <div class="hp-line"><span>健康</span><b>@Ui.N(en.Hp)/@Ui.N(ec.Hp)</b></div>
+                        <div class="track"><i style="width:@Ui.Bar(en.Hp, ec.Hp)%"></i></div>
+                        <div class="oc-line">甲@(Ui.T(ec.Armor)) · 闪避@(Ui.T(ec.Dodge)) · 速度@(Ui.T(ec.Speed))</div>
+                        <div class="intent @(en.Intent is "bite" ? "bite" : en.Intent is "flee" or "watch" or "guard" ? "calm" : "")" title="本轮公开意图（轮初锁定，不公开伤害抽值）">
+                            <span class="intent-ico">@IntentIcon(en.Intent)</span>@en.IntentLabel
+                        </div>
+                        <div class="st-chips">
+                            @if (en.Guard) { <span class="st good">防御</span> }
+                            @if (en.Stagger) { <span class="st bad">失衡</span> }
+                            @if (en.SlowActive || en.SlowPending) { <span class="st bad">减速</span> }
+                            @if (en.BleedTriggers > 0) { <span class="st bad">出血×@en.BleedTriggers</span> }
+                            @if (!en.Hostile) { <span class="st">中立</span> }
+                            @if (unreachable && reachWhy != null) { <span class="st bad">@(reachWhy.StartsWith("后排") ? "后排/射程不足" : "不可选")</span> }
+                        </div>
+                    </ChildContent>
+                </ObjectCard>
+            }
+        </div>
+
+        <div class="bt-cmds" role="toolbar" aria-label="战斗指令">
+            @foreach (var grp in new[] { ("attack", "攻击"), ("move", "招式"), ("general", "通用"), ("item", "物品") })
+            {
+                var items = opts.Where(o => o.Group == grp.Item1).ToList();
+                if (items.Count == 0) continue;
+                <div class="cmd-group"><span class="cmd-title">@grp.Item2</span>
+                    @foreach (var o in items)
+                    {
+                        var on = sel != null && sel.Action == o.Action && sel.ItemInstanceId == o.ItemInstanceId;
+                        <button type="button" class="cmd @(on ? "on" : "") @(o.Available ? "" : "off")" disabled="@(waiting || G.BattleBusy)"
+                                title="@(o.Reason ?? $"{o.Label}：{(o.Ap < 0 ? "剩余" : o.Ap.ToString())}AP{(o.Energy > 0 ? $"，体力{Ui.N(o.Energy)}" : "")}；右栏预览后执行")"
+                                @onclick="() => G.PickBattleAction(o.Action, o.ItemInstanceId)">
+                            @o.Label<small>@(o.Ap < 0 ? "剩余AP" : $"{o.Ap}AP")</small>
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+        <div class="bt-log" data-wheel="y" aria-live="polite">
+            @if (waiting) { <div class="bt-wait">敌方行动中…</div> }
+            @foreach (var line in Enumerable.Reverse(b.Log).Take(4)) { <div>@line</div> }
+        </div>
+    </div>
+}
+
+@code {
+    private static readonly ActionRequest BypassReq = ActionRequest.Bypass();
+    private const string BypassTitle = "绕行敌踪";
+
+    private async Task Bypass()
+    {
+        G.Hover(null);
+        await G.StartAction(ActionRequest.Bypass());
+    }
+
+    private static string IntentIcon(string intent) => intent switch
+    {
+        "bite" => "咬",
+        "attack" => "攻",
+        "charge" => "撞",
+        "charge_prepare" => "蓄",
+        "guard" => "防",
+        "howl" => "嚎",
+        "flee" => "逃",
+        "watch" => "望",
+        _ => "·",
+    };
+}

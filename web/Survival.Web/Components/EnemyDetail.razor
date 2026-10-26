@@ -1,0 +1,45 @@
+@inherits GameComponent
+
+@* 地块上的世界敌人（v0.6 §15“角色当前地点已有的可见敌人卡可主动接近”）：右栏详情与“接近”按钮。主动接近不受随机接敌保护期限制。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var wid = G.Selected.InstanceId ?? 0;
+    var w = e.FindWorldEnemy(s, wid);
+}
+@if (w == null || w.LocationId != s.CurrentLocation)
+{
+    <div class="empty-detail">这个敌人已经离开。<br />选择地点、路线、资源或物品查看信息</div>
+}
+else
+{
+    var ec = e.Enemy(w.EnemyId);
+    var why = e.CanApproach(s, wid);
+    var weapon = e.CurrentWeapon(s, out var wi);
+    <div class="detail-scroll">
+        <div class="op-head">
+            <div class="eyebrow">敌踪 · @e.LocName(w.LocationId)</div>
+            <h2>@ec.Name</h2>
+            <p>@(ec.IsZombie ? "丧尸" : "动物")@(w.Hostile ? "" : " · 中立（被攻击才转敌对）") · 稀有层级@(ec.Rarity switch { "common" => "普通", "rare" => "稀有", _ => "强敌" })</p>
+        </div>
+        <div class="detail-icon">@Icons.Markup("enemy_" + ec.Id)</div>
+        <div class="lines">
+            <div><span>健康</span><b>@Ui.N(w.Hp)/@Ui.N(ec.Hp)</b></div>
+            <div><span>护甲 / 闪避 / 速度</span><b>@Ui.T(ec.Armor) / @Ui.T(ec.Dodge) / @Ui.T(ec.Speed)</b></div>
+            <div><span>攻击能力 / 对你命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
+            <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)</b></div>
+            <div><span>当前武器</span><b>@(wi == null ? "徒手" : $"{weapon.Name}#{wi.InstanceId}")（战前可在随身武器卡下调整）</b></div>
+            <div><span>你的命中率</span><b>@Ui.Pct(GameEngine.HitChance(weapon.AccuracyRating + e.SkillAccuracyBonus(e.SkillLevel(s, weapon.SkillId)), ec.Dodge))（命中能力@(Ui.T(weapon.AccuracyRating + e.SkillAccuracyBonus(e.SkillLevel(s, weapon.SkillId))))）</b></div>
+        </div>
+        @if (ec.IsZombie) { <div class="risk">咬击命中且造成伤害时可能感染僵尸病毒（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）。</div> }
+        <ul class="notes">
+            <li>主动接近：不算受惊，不受随机接敌保护期限制；只与这一只交战。</li>
+            <li>每轮推进5分钟世界时间；撤退成功留在原地，存活敌人保留血量。</li>
+        </ul>
+        @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+    </div>
+    <div class="detail-foot">
+        <button class="primary" disabled="@(why != null || G.Running || G.BattleBusy)" @onclick="() => G.ApproachEnemy(wid)">@(why ?? $"接近{ec.Name}并开战")</button>
+        <div class="under">进入战斗后用中间的指令条行动；Esc 不能关掉战斗</div>
+    </div>
+}

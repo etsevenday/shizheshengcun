@@ -20,7 +20,27 @@
             <span class="ca-title"><b>@m.Name</b><small>@m.From · ×@m.Available</small></span>
         </div>
 
-        @if (m.UseId.HasValue)
+        @if (m.UseId.HasValue && s.Battle != null)
+        {
+            @* U728：战斗中卡下自用按钮改走战斗校验与 AP（绷带/抗生素/特效药 2AP），不绕到非战斗 5 分钟流程；食物与饮水战斗中禁用 *@
+            var cfg = e.Item(m.ItemId);
+            var act = cfg.Use!.IsBandage ? "bandage" : cfg.Use.IsAntibiotic ? "use_antibiotics" : cfg.Use.IsAntiviral ? "use_antiviral_cure" : null;
+            if (act != null)
+            {
+                var why = e.CommandBlocked(s, BattleCommand.Of(act, null, m.UseId));
+                <div class="ca-use-row">
+                    <button type="button" class="ca-use" disabled="@(why != null || G.BattleBusy)" title="@(why ?? "选择这条战斗指令，在右栏预览后执行")"
+                            @onclick="() => G.PickBattleAction(act, m.UseId)">@GameEngine.ActionName(act)（战斗指令·2AP）</button>
+                    <span class="ca-use-note">效果在确认时应用，不另跳5分钟</span>
+                </div>
+                @if (why != null) { <div class="ca-note bad">@why</div> }
+            }
+            else
+            {
+                <div class="ca-note">战斗中不能进食饮水，脱战后再补给</div>
+            }
+        }
+        else if (m.UseId.HasValue)
         {
             var cfg = e.Item(m.ItemId);
             var p = G.Preview(ActionRequest.UseInstance(m.UseId.Value));
@@ -59,7 +79,7 @@
             var after = e.CarriedGrams(s) + (m.ToCarried ? 1 : -1) * unit * (invalid ? 0 : n);
             if (moveBusy)
             {
-                <div class="ca-note">行动进行中，暂不能整理物品</div>
+                <div class="ca-note">@(s.Battle != null ? "战斗中不能拾取、放下或投放物品" : s.Encounter != null ? "发现敌踪：先选择接敌或绕行" : "行动进行中，暂不能整理物品")</div>
             }
             else if (m.Available == 0)
             {
@@ -77,6 +97,16 @@
                     }
                     <button type="button" class="tbar-go" disabled="@(invalid || tooHeavy || (m.ToCarried && m.Max < 1))" @onclick="() => Go(m, n)">@(verb)@(m.Instance != null ? m.Name : invalid ? "" : $"{n}份")到@(to)</button>
                 </div>
+                @if (m.Instance != null && m.Instance.IsCarried && e.Weapon(m.Instance.ItemId) != null)
+                {
+                    @* 战前装备当前武器（v0.5 §04：入战前可免费调整；装备只是随身实例的引用，不复制、不额外计重） *@
+                    var wid = m.Instance.InstanceId;
+                    var equipped = s.EquippedWeaponId == wid;
+                    <div class="tbar-row">
+                        <button type="button" class="tbar-go alt" @onclick="() => G.Equip(equipped ? null : wid)">@(equipped ? "改回徒手" : "设为当前武器")</button>
+                    </div>
+                    <div class="ca-note">@(equipped ? "这是当前武器，开战时直接使用" : "开战时使用当前武器；战斗中换武器耗1AP")</div>
+                }
                 @if (m.PotInstance is ItemInstance pot && e.Location(s.CurrentLocation).HasFire)
                 {
                     e.MaxPutInFire(s, pot, out var fireWhy);

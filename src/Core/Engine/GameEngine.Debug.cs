@@ -62,6 +62,32 @@ namespace Survival.Core.Engine
             }
         }
 
+        /// <summary>开发测试箱（v0.5 §15）：金属矛、弩、霰弹枪、步枪及弹药只经调试入口取得，放到随身。</summary>
+        public void DebugGiveDevKit(GameState s)
+        {
+            foreach (var kv in Config.DevKit.Items) CreateItems(s, kv.Key, kv.Value, ItemInstance.Carried);
+            Emit(s, GameEventKind.Info, "开发测试箱：武器与弹药已放到随身。");
+        }
+
+        /// <summary>调试：立即以当前地点的现有敌对敌人形成敌踪（第1日也可，用于检查界面）。没有敌人返回 false。</summary>
+        public bool DebugForceEncounter(GameState s)
+        {
+            if (InCombatFlow(s) || s.Main != null || s.Sub != null) return false;
+            var group = LocalHostiles(s, s.CurrentLocation).Take(Config.Encounters.GroupMax).ToList();
+            if (group.Count == 0) return false;
+            s.Encounter = new PendingEncounter { LocationId = s.CurrentLocation, EnemyIds = group.Select(w => w.Id).ToList(), Source = "explore", Minute = s.GameMinute };
+            Emit(s, GameEventKind.Encounter, "（调试）发现敌踪。");
+            return true;
+        }
+
+        /// <summary>调试：设置感染与病毒程度（0 为未感染）。</summary>
+        public void DebugSetVirus(GameState s, double load)
+        {
+            s.Body.Infected = load > 0;
+            s.Body.VirusLoad = load;
+            if (load <= 0) s.Body.HighImmunityMinutes = 0;
+        }
+
         /// <summary>调试面板：在当前地点地面放一批常用物资，用于检查大量物资时的界面。</summary>
         public void DebugFillGround(GameState s)
         {
