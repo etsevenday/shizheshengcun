@@ -11,7 +11,9 @@
     // 设施与锅里的物品按根位置判断：仍在随身或当前地点（含当前火堆与锅）才可操作
     var probe = s.Items.FirstOrDefault(i => i.Owner == sel.Owner);
     var stillThere = probe != null && (e.PlaceOf(s, probe) == ItemInstance.Carried || e.PlaceOf(s, probe) == here);
-    var list = s.Items.Where(i => i.Owner == sel.Owner && i.ItemId == sel.Id && (sel.InstanceId == null || i.InstanceId == sel.InstanceId))
+    // 锅里的液体按锅与液体种类选中（InstanceId 是锅），其余按真实实例或同区同物品
+    var potLiquid = sel.Kind == SelectionKind.PotLiquid;
+    var list = s.Items.Where(i => i.Owner == sel.Owner && i.ItemId == sel.Id && (potLiquid || sel.InstanceId == null || i.InstanceId == sel.InstanceId))
         .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
     var batches = list.GroupBy(i => i.ExpiresAt).Select(g => new Batch(g.Key, g.Sum(i => i.Count), g.Any(i => i.ReservedBy != null), g.ToList())).ToList();
     var busy = e.IsBusy(s) || G.Running;
@@ -85,9 +87,6 @@ else
                 }
                 @if (inst.InFacility)
                 {
-                    <div class="btn-row">
-                        <button class="secondary" @onclick='() => G.OpenFacility($"pot:{inst.InstanceId}")'>打开锅内容 ▸</button>
-                    </div>
                     <TakeOutButtons Item="inst" Busy="busy" />
                 }
                 else if (e.Location(here).HasFire)

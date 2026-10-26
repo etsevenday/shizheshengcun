@@ -57,19 +57,18 @@
                 var toolId = t.ItemId;
                 var isPot = e.IsPot(t);
                 var locked = e.IsLocked(s, t);
+                if (isPot)
+                {
+                    @* 锅卡与火堆加工位同一个 PotCard（v0.7 第 3.1 节）：水量条、液体行、食材行直接可见 *@
+                    <PotCard @key="@("t:" + inst)" Pot="t" />
+                    continue;
+                }
                 <div @key="@("t:" + inst)" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drop="@($"card:{key}")" data-drop-level="card"
-                     class="card item @(isPot ? "pot-card" : "") @(broken ? "broken" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(sel.Kind == SelectionKind.Tool && sel.InstanceId == inst ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
+                     class="card item @(broken ? "broken" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(sel.Kind == SelectionKind.Tool && sel.InstanceId == inst ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
                      role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
                     <div class="ctitle"><span>@e.ItemName(t.ItemId)</span><span class="qty">×1</span></div>
                     <div class="art">@Icons.Markup(t.ItemId)</div>
-                    @if (isPot)
-                    {
-                        <PotGauge Pot="t" Compact="true" ShowStatus="false" />
-                    }
-                    else
-                    {
-                        <div class="cinfo">@Ui.ItemLine(e, s, t)</div>
-                    }
+                    <div class="cinfo">@Ui.ItemLine(e, s, t)</div>
                     <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !locked && !busy)" />
                 </div>
             }

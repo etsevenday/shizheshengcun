@@ -32,12 +32,6 @@
 </div>
 
 <div class="panel facility-row" aria-label="设施与可交互对象">
-    @if (G.FacilityLayer != null && lc.HasFire)
-    {
-        <FacilityMenu />
-    }
-    else
-    {
     <div class="fac-scroll" data-wheel="x">
         @if (hasFacilities)
         {
@@ -101,7 +95,6 @@
             </div>
         </div>
     </div>
-    }
 </div>
 
 @code {

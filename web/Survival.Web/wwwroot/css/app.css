@@ -146,7 +146,7 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .center-top > * { flex: 0 0 auto; }
 .center-scroll .section.ground, .center-scroll .section.carried { height: var(--shelf-h); }
 /* 手工制作层打开时：地面与随身并排放在下方，两区都能作为材料槽的拖拽来源 */
-.center-scroll > .shelves-split { height: var(--shelf-h); display: flex; gap: var(--gap); min-height: 0; }
+.center-scroll > .shelves-split { min-height: var(--shelf-h); display: flex; gap: var(--gap); }
 .shelves-split > .section { height: auto !important; }
 .shelves-split > .section { flex: 1 1 0; min-width: 0; }
 .shelves-split .section-head span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -392,7 +392,6 @@ body.dragging .tbar { visibility: hidden !important; }
 .pot-track i { display: block; height: 100%; background: #7c8d97; }
 .pot-fill.clean .pot-track i { background: #6fa8c9; }
 .pot-fill.dirty .pot-track i { background: #9a8a5e; }
-.pot-card .art { min-height: 0; }
 
 .self-card { display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border: 1px dashed #6c7d68; }
 .self-card b { font-weight: 600; }
@@ -499,41 +498,19 @@ body.dragging .tbar { visibility: hidden !important; }
 .fac-card { width: var(--fac-w); }
 .res-card { width: var(--res-w); }
 
-/* 火堆：双宽卡，左燃料右两个加工位 */
-.fire-card { width: 360px; }
+/* 火堆燃料条、空加工位与受热进度（火堆卡布局见下方“火堆卡与内嵌锅卡”） */
 .fire-card.lit { box-shadow: 0 0 0 1px #c9823a, 0 2px 14px #e8913f55; }
-.fire-main { flex: 1 1 auto; min-height: 0; display: flex; gap: 6px; padding: 5px 6px 6px; }
-.fire-side { flex: 0 0 104px; display: flex; flex-direction: column; gap: 3px; min-height: 0; }
-.fire-art { flex: 1 1 auto; min-height: 44px; display: flex; align-items: center; justify-content: center; border: 1px dashed transparent; border-radius: 5px; }
-.fire-art:hover { border-color: #8a8466; }
-.fire-art svg { width: 64px; height: 64px; }
 .fuel-line { display: flex; justify-content: space-between; font-size: 14px; }
 .fuel-line span { color: #5d5a45; }
 .fuel-track { height: 6px; background: #8a846655; border-radius: 3px; overflow: hidden; }
 .fuel-track i { display: block; height: 100%; background: #c9823a; }
-.fire-side .oc-btn { flex: 0 0 auto; margin-top: 3px; font-size: 14px; }
-.fire-slots { flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .slot-empty { min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 2px dashed #8a8466; border-radius: 6px; background: #ece6d155; text-align: center; padding: 4px; }
 .slot-empty svg { width: 36px; height: 36px; }
 .slot-empty span { font-size: 14px; font-weight: 600; }
 .slot-empty small { font-size: 14px; color: #5d5a45; line-height: 1.3; }
 
-/* 火堆里的真实内容卡（锅缩略卡、直烤食材卡） */
-.cthumb { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 2px; padding: 3px 5px 4px; background: #efe9d5; border: 2px solid #b7ab88; border-radius: 6px; cursor: pointer; overflow: hidden; }
-.cthumb:hover { border-color: #7d7656; }
-.cthumb.selected { border-color: var(--accent); }
-.cthumb.spoiled { background: #c9c0a6; }
-.ct-head { display: flex; justify-content: space-between; align-items: center; gap: 4px; }
-.ct-head b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ct-arrow { flex: 0 0 auto; width: 28px; height: 26px; padding: 0; border: 1px solid #7d7a62; border-radius: 4px; background: #fff7df; color: #2d3a29; font-size: 14px; line-height: 1; position: relative; }
-.ct-arrow::after { content: ""; position: absolute; inset: -7px; }
-.ct-art { flex: 1 1 auto; min-height: 22px; display: flex; align-items: center; justify-content: center; }
-.ct-art svg { width: 40px; height: 40px; }
-.ct-status { font-size: 14px; line-height: 1.25; color: #3c4a35; }
 .heat-track { height: 5px; background: #8a846655; border-radius: 3px; overflow: hidden; }
 .heat-track i { display: block; height: 100%; background: #c9823a; }
-.cthumb .pot-fill { margin: 0; padding: 2px 4px 3px; }
-.cthumb .pot-food { margin: 0; }
 
 /* 锅的食材行（与水量条并列的第二个容量维度）与加工状态 */
 .pot-food { display: flex; align-items: center; gap: 4px; margin: 0 6px 4px; padding: 2px 6px; min-height: 26px; border: 1px dashed #8a8466; border-radius: 4px; font-size: 13px; }
@@ -546,19 +523,6 @@ body.dragging .tbar { visibility: hidden !important; }
 .pot-detail .pot-status { margin: 0; color: var(--muted); }
 .facility-changes { display: flex; flex-direction: column; gap: 3px; }
 
-
-/* 设施次级菜单：只覆盖地块区（01 案第 4 节），不用 .overlay 以免禁用拖拽 */
-.fac-menu { position: absolute; inset: 0; z-index: 6; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; background: #10201af2; border: 1px solid var(--accent); border-radius: 6px; }
-.fac-menu-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.fac-menu-head b { font-size: 18px; font-weight: 600; }
-.fac-menu-body { flex: 1 1 auto; min-height: 0; display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; }
-/* 地面/随身栏的锅卡：水量与食材两行都要放得下（1280×720）；转移箭头放到图区右上，不压两行 */
-.pot-card .ctitle { padding-bottom: 2px; }
-.pot-card .art { flex: 1 1 auto; min-height: 26px; }
-.pot-card .art svg { width: 40px; height: 40px; }
-.pot-card .pot-fill { padding: 2px 6px 3px; margin-bottom: 3px; }
-.pot-card .pot-food { margin-bottom: 5px; }
-.pot-card .card-arrow { bottom: auto; top: 32px; }
 
 /* ───────────── 图标+名称+数量/状态的物品行（统一卡片案第 6 节） ───────────── */
 .ir-icon { flex: 0 0 auto; display: inline-flex; width: 32px; height: 32px; align-items: center; justify-content: center; background: #efe9d5; border-radius: 5px; }
@@ -601,91 +565,15 @@ body.dragging .tbar { visibility: hidden !important; }
 .lc-text small { font-size: 14px; color: var(--muted); }
 .lc-check { width: 18px; color: var(--accent); font-weight: 700; }
 
-/* ───────────── 设施次级菜单内容（统一卡片案第 4 节） ───────────── */
-.fm-path { display: flex; align-items: center; gap: 8px; font-size: 16px; }
-.fm-path .linkish { font-size: 16px; }
-.fm-path .muted { font-size: 14px; }
-.fac-menu-body { align-items: stretch; }
-.fm-card { flex: 0 0 200px; min-height: 0; display: flex; flex-direction: column; gap: 4px; padding: 6px 8px; background: var(--paper); color: var(--ink); border: 2px solid #b7ab88; border-radius: 6px; overflow-y: auto; }
-.fm-card.wide { flex-basis: 240px; }
-.fm-card.fire { flex-basis: 220px; }
-.fm-card.spoiled { background: #c9c0a6; }
-.fm-card-head { display: flex; align-items: center; gap: 6px; }
-.fm-card-head b { font-size: 16px; font-weight: 600; }
-.fm-card-head small { margin-left: auto; font-size: 14px; color: #5d5a45; }
-.fm-where, .fm-note { font-size: 14px; color: #5d5a45; }
-.fm-status { font-size: 15px; color: #3c4a35; }
-.fm-card .pot-fill, .fm-card .pot-food, .fm-card .pot-status { margin-left: 0; margin-right: 0; }
-.fm-fire-art { display: flex; justify-content: center; border: 1px dashed transparent; border-radius: 5px; }
-.fm-fire-art:hover { border-color: #8a8466; }
-.fm-fire-art svg { width: 56px; height: 56px; }
-.fm-btn { display: flex; align-items: center; gap: 6px; min-height: 42px; padding: 3px 8px; border: 0; border-radius: 5px; background: #3c4a35; color: #f2ecd8; font-size: 15px; font-weight: 600; text-align: left; }
-.fm-btn span { display: flex; flex-direction: column; line-height: 1.25; }
-.fm-btn small { font-size: 13px; font-weight: 400; opacity: .85; }
-.fm-btn:hover:not(:disabled) { background: #4f6145; }
-.fm-btn:disabled { background: #8f8a74; color: #ece6d1; }
-.fm-btn.plain { background: transparent; color: var(--ink); border: 1px solid #8a8466; }
-.fm-btn .ir-icon { width: 28px; height: 28px; }
-.fm-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-.fm-btns > button { flex: 1 1 auto; min-height: 40px; font-size: 14px; padding: 4px 8px; }
-.fm-card .fm-btns .secondary { color: var(--ink); border-color: #8a8466; background: #efe9d5; }
-.fm-card .fm-btns .secondary:hover:not(:disabled) { background: #fff7df; }
-.fm-card .fm-btns .secondary:disabled { color: #8f8a74; }
-.fm-col { flex: 0 0 auto; min-width: 220px; max-width: 360px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
-.fm-col.ignite { min-width: 230px; }
-.fm-col-title { font-size: 15px; color: #e1e8d8; }
-.fm-col .irow { background: var(--paper); color: var(--ink); border-color: #b7ab88; }
-.fm-col .irow .ir-status { color: #5d5a45; }
-.fm-col .irow .secondary { color: var(--ink); border-color: #8a8466; background: #efe9d5; min-height: 40px; padding: 4px 8px; font-size: 14px; }
-.fm-food { display: flex; gap: 8px; min-height: 0; flex: 1 1 auto; }
-.fm-food .fm-card { flex-basis: 190px; }
-.fm-slot { flex: 0 0 170px; color: #e1e8d8; background: #ffffff10; border-color: #8a8466; }
-.fm-slot small { color: #c9cfbf; }
-.fm-notice { position: absolute; right: 12px; bottom: 10px; max-width: 420px; z-index: 2; }
 .ignite-picker .ignite-choices { gap: 6px; }
-.fm-card.pot.in-fire { flex-basis: 320px; }
-.fm-card.pot.in-fire .fm-btns > button { flex: 1 1 0; padding: 4px 4px; }
-.fm-card > *, .fm-col > * { flex-shrink: 0; }
-.fm-card.fire { flex-basis: 250px; }
 
 /* ───────────── 试玩修复（M25）：1280×720 下不裁切、热区 ≥40px、辅助文字 ≥14px ───────────── */
-/* B1/B3：火堆卡加宽；加工位缩略卡固定版面——标题、水量热区 40px、食材热区 40px、状态行预留三行，位置不随内容变化 */
-.fire-card { width: 460px; }
-.fire-side { flex-basis: 96px; }
-.fire-slots { grid-template-rows: minmax(0, 1fr); }
-.cthumb { overflow: visible; display: grid; grid-template-rows: 28px auto auto 52px; align-content: start; gap: 3px; padding: 3px 5px; }
-.cthumb.food { grid-template-rows: 28px minmax(0, 1fr) 52px 5px; }
-.ct-head { height: 28px; }
-.ct-icon { flex: 0 0 auto; display: inline-flex; width: 22px; height: 22px; }
-.ct-icon svg { width: 22px; height: 22px; }
-.ct-art { min-height: 0; overflow: hidden; }
-.ct-status { font-size: 14px; line-height: 1.25; height: 52px; overflow: hidden; word-break: break-all; }
-.cthumb .pot-fill, .cthumb .pot-food { height: 40px; min-height: 40px; box-sizing: border-box; margin: 0; padding: 2px 5px; display: flex; flex-direction: column; justify-content: center; }
-.cthumb .pot-food { flex-direction: row; align-items: center; }
 .pot-fill-head, .pot-food > span:first-child, .pot-food b { white-space: nowrap; }
 .pot-fill-head b { overflow: hidden; text-overflow: ellipsis; }
-.ct-arrow::after { inset: -7px -5px -7px -7px; }
 
-/* B2：设施菜单三栏网格，不横向滚动；整层一条可见的纵向滚动条，卡片按自然高度排列 */
-.fac-menu-body.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; overflow-x: hidden; overflow-y: auto; align-items: start; padding-right: 4px; scrollbar-width: auto; scrollbar-color: #6c7d68 #0b1610; }
-.fac-menu-body::-webkit-scrollbar { width: 10px; height: 10px; }
-.fac-menu-body::-webkit-scrollbar-thumb { background: #6c7d68; border-radius: 5px; }
-.fac-menu-body::-webkit-scrollbar-track { background: #0b1610; border-radius: 5px; }
-.grid3 > .fm-card, .grid3 > .fm-col, .grid3 > .fm-slot { min-width: 0; max-width: none; width: auto; overflow: visible; flex: none; }
-.grid3 .fm-card.fire, .grid3 .fm-card.pot.in-fire, .grid3 .fm-card.wide { flex: none; }
-.grid3 > .fm-slot { min-height: 150px; }
-.fm-food { flex-direction: column; }
-.fm-food .fm-card { flex: none; overflow: visible; }
-.fm-food .fm-slot { flex: none; min-height: 90px; }
-.fm-col .irow { flex-wrap: wrap; }
-.fm-col .irow .ir-extra { flex-basis: 100%; justify-content: flex-start; }
-.fm-btns > button, .fm-col .irow .secondary { min-height: 40px; }
-.fm-card .pot-fill, .fm-card .pot-food, .pot-detail .pot-fill, .pot-detail .pot-food { min-height: 40px; box-sizing: border-box; }
-.fm-card .pot-food, .pot-detail .pot-food { display: flex; align-items: center; }
-.fm-reserved { font-size: 14px; line-height: 1.4; color: #f0d7b0; background: #6f4d2233; border: 1px solid #8a6a3f; border-radius: 4px; padding: 4px 8px; }
+.pot-detail .pot-fill, .pot-detail .pot-food { min-height: 40px; box-sizing: border-box; }
+.pot-detail .pot-food { display: flex; align-items: center; }
 .ignite-picker .lighter-card { width: 100%; }
-.fm-card.fire .ignite-picker > button.secondary { color: var(--ink); border-color: #8a8466; background: #efe9d5; min-height: 40px; }
-.fm-card.fire .ignite-picker .tiny { color: #5d5a45; font-size: 14px; }
 
 /* B5：资源卡采集按钮与探索/清理同一形态 */
 .res-btn { width: 100%; }
@@ -698,24 +586,84 @@ body.dragging .tbar { visibility: hidden !important; }
 .pot-ml, .pot-food, .pot-status { font-size: 14px; }
 .item.reserved::after { font-size: 14px; }
 .card-arrow::after { content: ""; position: absolute; inset: -13px -5px -5px -9px; }
-/* 1280×720：缩略卡在 160px 高内放下标题、两个 40px 热区与三行状态 */
-.cthumb { gap: 2px; }
-.ct-status { line-height: 1.2; height: 51px; }
-.cthumb { grid-template-rows: 26px auto auto 51px; }
-.cthumb.food { grid-template-rows: 26px minmax(0, 1fr) 51px 5px; }
-.ct-head { height: 26px; }
-.cthumb { gap: 1px; padding: 2px 5px; grid-template-rows: 22px auto auto 51px; }
-.cthumb.food { grid-template-rows: 22px minmax(0, 1fr) 51px 5px; }
-.ct-head { height: 22px; }
-.ct-arrow { height: 22px; }
-.ct-arrow::after { inset: -9px -5px -9px -7px; }
-.fire-card { width: 476px; }
-.fire-side { flex-basis: 110px; min-width: 110px; }
 .fuel-line { white-space: nowrap; gap: 4px; }
-.fire-side .oc-btn { white-space: nowrap; padding: 4px 4px; }
-.grid3 .fm-btns > button, .grid3 .fm-card.pot.in-fire .fm-btns > button { flex: 1 1 92px; white-space: nowrap; padding: 4px 6px; }
 .card-arrow { font-size: 14px; }
 .card-arrow::after { inset: -15px -5px -5px -11px; }
+
+/* ───────────── 火堆卡与内嵌锅卡（基础UI布局与操作修订案 v0.7 第 3 节） ───────────── */
+.dg-cards > .fire-card { width: auto; height: auto; min-height: var(--fac-card-h); cursor: default; }
+.fire-card { padding: 6px; gap: 6px; }
+.fc-head { display: flex; }
+.fc-fuel { flex: 1 1 auto; display: flex; align-items: center; gap: 10px; padding: 2px 6px; border: 1px dashed transparent; border-radius: 5px; cursor: pointer; min-height: 56px; }
+.fc-fuel:hover { border-color: #8a8466; }
+.fc-art svg { width: 52px; height: 52px; display: block; }
+.fc-info { flex: 1 1 auto; min-width: 180px; display: flex; flex-direction: column; gap: 3px; }
+.fc-title { display: flex; align-items: center; gap: 8px; }
+.fc-title b { font-size: 17px; font-weight: 600; }
+.fc-slots { display: flex; gap: 8px; align-items: flex-start; }
+.fc-slots > .slot-empty { flex: 0 0 150px; min-height: 120px; }
+.fc-slot.pot { flex: 0 0 272px; }
+.fc-slot.food { flex: 0 0 176px; }
+.fc-foot { display: flex; gap: 8px; }
+.fc-btn { flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 3px 10px; border: 0; border-radius: 5px; background: #3c4a35; color: #f2ecd8; font-size: 16px; font-weight: 600; text-align: left; }
+.fc-btn small { display: block; font-size: 14px; font-weight: 400; opacity: .9; }
+.fc-btn span { display: flex; flex-direction: column; line-height: 1.25; }
+.fc-btn:hover:not(:disabled) { background: #4f6145; }
+.fc-btn:disabled { background: #8f8a74; color: #ece6d1; }
+.fc-btn.plain { background: transparent; color: var(--ink); border: 1px solid #8a8466; flex-direction: column; gap: 0; }
+.fc-btn.ignite { background: #b8682a; color: #fff3df; flex-direction: column; gap: 0; }
+.fc-btn.ignite:hover:not(:disabled), .fc-btn.ignite.on { background: #c9823a; }
+.fc-btn .ir-icon { width: 28px; height: 28px; }
+.fc-picker { padding: 6px; background: #0e211a; border-radius: 6px; color: #d9e1cf; }
+.fc-picker .ignite-picker > button.secondary { min-height: 40px; }
+
+/* 共用锅卡：地面栏、随身栏、火堆加工位同一结构；每行 ≥40px 热区，子对象图标是拖拽把手 */
+.pot-card { position: relative; flex: 0 0 auto; width: 236px; display: flex; flex-direction: column; gap: 4px; padding: 4px 6px 6px; background: var(--paper); color: var(--ink); border: 2px solid #b7ab88; border-radius: 6px; text-align: left; }
+.pot-card.in-fire { width: 100%; background: #efe9d5; }
+.pot-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px #111911; }
+.pot-card.reserved { opacity: .85; }
+.pc-head { position: relative; display: flex; align-items: center; gap: 6px; min-height: 40px; padding: 2px 2px; border-radius: 4px; cursor: grab; }
+.pc-head:hover { background: #ffffff55; }
+.pc-icon svg { width: 34px; height: 34px; display: block; }
+.pc-title { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.pc-title b { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-title small { font-size: 14px; color: #5d5a45; }
+.pot-card.in-shelf .pc-head .card-arrow { position: relative; right: auto; bottom: auto; flex: 0 0 auto; }
+.pot-card .pot-fill { margin: 0; min-height: 40px; padding: 3px 6px 4px; cursor: pointer; }
+.pc-proc { font-size: 14px; color: #3c4a35; margin-top: 2px; }
+.pc-row { display: flex; align-items: center; gap: 6px; min-height: 40px; padding: 2px 4px; border: 1px solid #b7ab8899; border-radius: 4px; background: #ffffff40; cursor: pointer; }
+.pc-row:hover { border-color: #7d7656; }
+.pc-row.selected { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: #fff7df; }
+.pc-row.spoiled { background: #c9c0a6; }
+.pc-ico { flex: 0 0 auto; display: inline-flex; width: 32px; height: 32px; align-items: center; justify-content: center; background: #efe9d5; border-radius: 5px; cursor: grab; }
+.pc-ico svg { width: 28px; height: 28px; }
+.pc-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; line-height: 1.3; }
+.pc-name { font-size: 15px; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.pc-name b { font-weight: 600; font-size: 14px; }
+.pc-name em { font-style: normal; font-size: 14px; color: #5d5a45; }
+.pc-status { font-size: 14px; color: #3c4a35; }
+.pc-status.warn { color: #7a3f19; }
+.pc-text .heat-track { display: block; margin-top: 2px; }
+.pc-reserved { font-size: 14px; line-height: 1.4; color: #6b3f19; background: #f0d7b0; border: 1px solid #b08a5a; border-radius: 4px; padding: 3px 6px; }
+.pc-foods { display: flex; flex-direction: column; gap: 4px; border-radius: 4px; }
+.pc-slot { min-height: 40px; display: flex; align-items: center; padding: 2px 8px; border: 1px dashed #8a8466; border-radius: 4px; font-size: 14px; color: #5d5a45; }
+.row-arrow { position: relative; flex: 0 0 auto; width: 30px; height: 30px; padding: 0; border: 1px solid #7d7a62; border-radius: 4px; background: #fff7df; color: #2d3a29; font-size: 14px; line-height: 1; }
+.row-arrow::after { content: ""; position: absolute; inset: -5px; }
+.row-arrow:hover { background: #d6b779; }
+
+/* 火堆直烤位的食材卡 */
+.fc-food { display: flex; flex-direction: column; gap: 4px; padding: 4px 6px 6px; background: #efe9d5; color: var(--ink); border: 2px solid #b7ab88; border-radius: 6px; cursor: pointer; }
+.fc-food:hover { border-color: #7d7656; }
+.fc-food.selected { border-color: var(--accent); box-shadow: 0 0 0 2px #111911; }
+.fc-food.spoiled { background: #c9c0a6; }
+.ff-head { display: flex; align-items: center; gap: 6px; min-height: 40px; }
+.ff-status { font-size: 14px; color: #3c4a35; line-height: 1.35; }
+.ff-note { font-size: 14px; color: #5d5a45; }
+
+/* 地面/随身栏：卡片顶端对齐，锅卡按内容高度，栏高随之增长（中部可纵滚） */
+.center-scroll .section.ground, .center-scroll .section.carried { height: auto; min-height: var(--shelf-h); }
+.row-scroll { align-items: flex-start; }
+.row-scroll > .card.item { height: calc(var(--shelf-h) - 56px); }
 
 /* ───────────── 矮屏（1280×720 等，屏高 ≤800px）：唯一一处覆盖段（v0.7 第 2 节：两行各取策划区间下限，超出靠中部纵滚） ───────────── */
 @media (max-height: 800px) {
@@ -758,10 +706,6 @@ body.dragging .tbar { visibility: hidden !important; }
   .item .ctitle { padding: 5px 7px 2px; font-size: 14px; }
   .item .cinfo { padding: 2px 34px 5px 7px; }
   .card-arrow { width: 26px; height: 22px; }
-  .pot-card .art { flex: 0 0 26px; min-height: 0; }
-  .pot-card .art svg { width: 24px; height: 24px; }
-  .pot-card .pot-fill-head { line-height: 1.2; }
-  .pot-card .card-arrow { top: 29px; }
   .pot-food { min-height: 24px; }
   /* 统一卡框 */
   .oc-head { padding: 4px 7px 3px; }
@@ -773,13 +717,4 @@ body.dragging .tbar { visibility: hidden !important; }
   .ir-icon { width: 28px; height: 28px; }
   .ir-icon svg { width: 24px; height: 24px; }
   /* 火堆卡与设施菜单（M28 改为内嵌后整理） */
-  .fire-main { padding: 3px 5px 3px; }
-  .fire-card .oc-head { padding: 3px 7px 2px; }
-  .fire-art svg { width: 46px; height: 46px; }
-  .ct-art svg { width: 28px; height: 28px; }
-  .slot-empty svg { width: 26px; height: 26px; }
-  .fac-menu { padding: 6px 8px; gap: 5px; }
-  .fm-card { padding: 4px 6px; gap: 3px; }
-  .fm-fire-art svg { width: 40px; height: 40px; }
-  .fm-btn { min-height: 40px; }
 }

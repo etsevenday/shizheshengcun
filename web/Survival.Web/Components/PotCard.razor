@@ -1,0 +1,139 @@
+@inherits GameComponent
+
+@* 共用锅卡（基础UI布局与操作修订案 v0.7 第 3 节）：地面栏、随身栏与火堆加工位三处是同一个组件、同一种内容结构——
+   锅图与“金属锅#N”、水量条、每种液体一行（图标、名称×份数、毫升、预留说明）、最多两个食材行（图标、名称#实例、加工状态）。
+   锅在火堆内时只在火堆卡内渲染，地面/随身栏不出现副本。
+   点击：标题行选中整口锅，液体行选中该锅该液体（PotLiquid），食材行选中该份食材；每次点击都阻止冒泡，不同时选中父火堆。
+   拖拽把手：标题行（整锅，全部内容随行）、液体图标、食材图标；水量条、按钮、箭头不起拖。
+   落点：卡面 card:（等同装水区）、水量条 potfill:、食材区 potfood:（热区优先于卡面，锅满不冒泡成火堆直烤）。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var c = e.PotConfig(Pot);
+    var key = $"{Pot.Owner}|{Pot.ItemId}|{Pot.InstanceId}";
+    var name = $"{e.ItemName(Pot.ItemId)}#{Pot.InstanceId}";
+    var where = e.WherePath(s, Pot);
+    var units = e.PotUnits(s, Pot.InstanceId);
+    var liquid = e.PotLiquid(s, Pot.InstanceId);
+    var ml = units * c.UnitMl;
+    var pct = c.CapacityMl > 0 ? ml * 100 / c.CapacityMl : 0;
+    var liquids = e.PotLiquids(s, Pot.InstanceId);
+    var foods = e.PotFood(s, Pot.InstanceId);
+    var reservedMl = e.PotReservedMl(s, Pot.InstanceId);
+    var free = e.PotFreeWaterUnits(s, Pot);
+    var sel = G.Selected;
+    var potSelected = sel.Kind == SelectionKind.Tool && sel.InstanceId == Pot.InstanceId;
+    var batch = e.ProcessOf(s, Pot);
+    var loc = e.PotFireLocation(Pot);
+    var hot = loc != null && e.FireHot(s, loc);
+    var locked = e.IsLocked(s, Pot) || Pot.ReservedBy != null;
+    var busy = e.IsBusy(s) || G.Running;
+}
+<div class="pot-card @(Pot.InFacility ? "in-fire" : "in-shelf") @(potSelected ? "selected" : "") @(locked ? "reserved" : "")"
+     data-card="@key" data-drop="@($"card:{key}")" data-drop-level="card" @onclick:stopPropagation="true">
+    <div class="pc-head" role="button" tabindex="0" data-drag="@($"card:{key}")" data-drag-title="@name" data-drag-from="@where"
+         title="@($"{name} · {where}：点击选中整口锅；按住标题拖动整锅（水与食材随行）")"
+         @onclick="SelectPot" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, SelectPot)" @onkeydown:stopPropagation="true">
+        <span class="pc-icon">@Icons.Markup(Pot.ItemId)</span>
+        <span class="pc-title"><b>@name</b><small>@(Pot.InFacility ? "整锅" : $"{Ui.Kg(e.ItemGrams(s, Pot))}公斤")</small></span>
+        @if (Pot.InFacility)
+        {
+            <button type="button" class="row-arrow" aria-label="@($"转移整口{name}")" title="打开整锅的转移操作条"
+                    @onclick="SelectPot" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▾</button>
+        }
+        else
+        {
+            <TransferArrow Owner="@Pot.Owner" ItemId="@Pot.ItemId" InstanceId="@Pot.InstanceId" Enabled="@(!locked && !busy)" />
+        }
+    </div>
+    @if (potSelected && Actions != null) { @Actions(new PotPart(Pot, null, null)) }
+
+    <div class="pot-fill @(liquid == "clean_water" ? "clean" : liquid == "dirty_water" ? "dirty" : "")" data-drop="@($"potfill:{Pot.InstanceId}")" data-drop-level="hot"
+         title="@($"水量：{e.PotLabel(s, Pot)}。把净水或脏水卡拖到这里装入1份；按住 Shift 可选数量")"
+         @onclick="() => { if (liquid != null) SelectLiquid(liquid); else SelectPot(); }" @onclick:stopPropagation="true">
+        <div class="pot-fill-head"><span>水量</span><b>@(liquid == null ? "空锅" : e.ItemName(liquid))@(pct)% · @(ml)/@(c.CapacityMl)毫升</b></div>
+        <div class="pot-track"><i style="width:@(pct)%"></i></div>
+        @if (batch != null)
+        {
+            <div class="pc-proc">@(hot ? "" : "火灭 · ")@e.Process(batch.RecipeId).Name 受热@(batch.HeatDoneMinutes)/@(batch.RequiredHeatMinutes)分钟</div>
+        }
+    </div>
+
+    @foreach (var w in liquids)
+    {
+        var wid = w.InstanceId;
+        var wsel = sel.Kind == SelectionKind.PotLiquid && sel.InstanceId == Pot.InstanceId && sel.Id == w.ItemId;
+        var wReserved = Math.Min(w.Count * c.UnitMl, reservedMl);
+        <div class="pc-row liquid @(wsel ? "selected" : "")" role="button" tabindex="0"
+             title="@($"{e.ItemName(w.ItemId)} · {where}／{name}：点击选中这份水")"
+             @onclick="() => SelectLiquid(w.ItemId)" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, () => SelectLiquid(w.ItemId))" @onkeydown:stopPropagation="true">
+            <span class="pc-ico" data-drag="@($"potchild:{wid}")" data-drag-title="@e.ItemName(w.ItemId)" data-drag-from="@($"{where}／{name}")">@Icons.Markup(w.ItemId)</span>
+            <span class="pc-text">
+                <span class="pc-name">@e.ItemName(w.ItemId)<b>×@w.Count</b><em>@(w.Count * c.UnitMl)毫升</em></span>
+                @if (wReserved > 0) { <span class="pc-status warn">已预留@(wReserved)毫升@(free < 1 ? " · 暂不可饮用/转移" : "")</span> }
+            </span>
+            <button type="button" class="row-arrow" aria-label="@($"转移{e.ItemName(w.ItemId)}")" title="打开这份水的转移操作条"
+                    @onclick="() => SelectLiquid(w.ItemId)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▾</button>
+        </div>
+        @if (wReserved > 0 && free < 1)
+        {
+            <div class="pc-reserved">@e.ReservedWaterText(s, w)</div>
+        }
+        @if (wsel && Actions != null) { @Actions(new PotPart(Pot, w.ItemId, null)) }
+    }
+
+    <div class="pc-foods" data-drop="@($"potfood:{Pot.InstanceId}")" data-drop-level="hot" title="@($"食材区：生块根拖到这里放进锅，{e.PotFoodHint(s, Pot)}")">
+        @foreach (var f in foods)
+        {
+            var fid = f.InstanceId;
+            var fsel = sel.Kind == SelectionKind.Tool && sel.InstanceId == fid;
+            var p = e.ProcessOf(s, f);
+            var spoiled = e.IsSpoiled(s, f);
+            var fname = $"{e.ItemName(f.ItemId)}#{fid}";
+            <div class="pc-row food @(fsel ? "selected" : "") @(spoiled ? "spoiled" : "")" role="button" tabindex="0"
+                 title="@($"{fname} · {where}／{name}：{e.ContentStatus(s, f)}")"
+                 @onclick="() => SelectFood(f)" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, () => SelectFood(f))" @onkeydown:stopPropagation="true">
+                <span class="pc-ico" data-drag="@($"potchild:{fid}")" data-drag-title="@fname" data-drag-from="@($"{where}／{name}")">@Icons.Markup(f.ItemId)</span>
+                <span class="pc-text">
+                    <span class="pc-name">@fname</span>
+                    <span class="pc-status">@e.ContentStatus(s, f)</span>
+                    @if (p != null && !spoiled)
+                    {
+                        <span class="heat-track"><i style="width:@(Math.Min(100, p.HeatDoneMinutes * 100 / Math.Max(1, p.RequiredHeatMinutes)))%"></i></span>
+                    }
+                </span>
+                <button type="button" class="row-arrow" aria-label="@($"转移{fname}")" title="打开这份食材的转移操作条"
+                        @onclick="() => SelectFood(f)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▾</button>
+            </div>
+            @if (fsel && Actions != null) { @Actions(new PotPart(Pot, null, f)) }
+        }
+        @if (foods.Count < c.FoodSlots)
+        {
+            <div class="pc-slot">食材 @foods.Count/@c.FoodSlots · 空位可拖入生块根</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ItemInstance Pot { get; set; } = null!;
+
+    /// <summary>选中的锅或锅内对象的卡下操作条（M29 接入）：一次只渲染一条，紧接在被选中的行下方。</summary>
+    [Parameter] public RenderFragment<PotPart>? Actions { get; set; }
+
+    /// <summary>锅卡里被选中的部分：整锅（Liquid、Food 都为空）、某种液体或某份食材。</summary>
+    public sealed record PotPart(ItemInstance Pot, string? Liquid, ItemInstance? Food);
+
+    private void SelectPot() =>
+        G.Select(new Selection { Kind = SelectionKind.Tool, Id = Pot.ItemId, Owner = Pot.Owner, InstanceId = Pot.InstanceId });
+
+    private void SelectLiquid(string liquidId) =>
+        G.Select(new Selection { Kind = SelectionKind.PotLiquid, Id = liquidId, Owner = ItemInstance.ContainerOwner(Pot.InstanceId), InstanceId = Pot.InstanceId });
+
+    private void SelectFood(ItemInstance f) =>
+        G.Select(new Selection { Kind = SelectionKind.Tool, Id = f.ItemId, Owner = f.Owner, InstanceId = f.InstanceId });
+
+    private static void Key(KeyboardEventArgs ev, Action act)
+    {
+        if (ev.Key is "Enter" or " ") act();
+    }
+}

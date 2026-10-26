@@ -6,14 +6,18 @@ using Survival.Core.State;
 
 namespace Survival.Web.Services;
 
-/// <summary>Action：拖拽打开的行动预览（点火、指定工具采集、使用）；Clear：清理预览。</summary>
-public enum SelectionKind { None, Location, Entrance, Resource, ItemGroup, Tool, Action, Clear }
+/// <summary>
+/// Action：拖拽打开的行动预览（指定工具采集）；Clear：清理预览。
+/// 基础UI修订 v0.7 第 3、8 节：Facility 为火堆（Id = 设施 ID，如 camp:fire）；PotLiquid 为锅里的一种液体
+/// （InstanceId = 锅实例，Id = 液体物品 ID，Owner = pot:&lt;锅ID&gt;）。锅、锅内食材、直烤食材沿用 Tool，按真实实例 ID 选中。
+/// </summary>
+public enum SelectionKind { None, Location, Entrance, Resource, ItemGroup, Tool, Action, Clear, Facility, PotLiquid }
 
 public sealed class Selection
 {
     public SelectionKind Kind { get; init; }
     public string Id { get; init; } = "";
-    /// <summary>物品所在：carried 或地点 ID。</summary>
+    /// <summary>物品所在：carried、地点 ID、facility:&lt;设施ID&gt; 或 pot:&lt;锅ID&gt;（真实 owner，展示路径用内核 WherePath 现算）。</summary>
     public string Owner { get; init; } = "";
     public int? InstanceId { get; init; }
 
@@ -71,11 +75,6 @@ public sealed class GameSession
     public List<int> CraftPreferred { get; } = new();
     public int? CraftPot { get; set; }
 
-    /// <summary>
-    /// 设施次级菜单层（统一卡片案第 4 节）：null 为地块卡片桌面，"fire" 为火堆内容物，"pot:&lt;实例ID&gt;" 为指定锅内容物。
-    /// 只覆盖地块区；Esc 或返回只退一级，关闭不取走内容物、不停止加工、不取消主行动。
-    /// </summary>
-    public string? FacilityLayer { get; private set; }
 
     /// <summary>悬停或键盘聚焦某个动作按钮时的临时预测；离开即清空。右栏在“执行中”之后、选中对象之前显示它。</summary>
     public ActionRequest? HoverPreview { get; private set; }
@@ -100,8 +99,6 @@ public sealed class GameSession
     /// </summary>
     public void OpenPanel(string? panel, string? recipe = null)
     {
-        // 二级面板与设施菜单同一时间只开一个，Esc 才能逐级退出
-        if (panel != null) FacilityLayer = null;
         HoverPreview = null;
         // 每次打开或关闭面板都清掉上一次拖拽留下的候选与指定批次；拖拽入口在打开后再写入
         CraftCandidates = null;
@@ -299,7 +296,6 @@ public sealed class GameSession
         Notice = null;
         Selected = new Selection();
         Panel = null;
-        FacilityLayer = null;
         HoverPreview = null;
         _skip = false;
         Running = false;
@@ -343,22 +339,16 @@ public sealed class GameSession
         Notify();
     }
 
-    /// <summary>打开设施菜单的某一层（"fire" 或 "pot:7"），null 回到卡片桌面。打开时收起覆盖中部的二级面板。</summary>
-    public void OpenFacility(string? layer)
+    /// <summary>
+    /// 选中当前地点的火堆（v0.7 第 3.1 节：点火堆主图只选中火堆并刷新右栏，不再打开内容物层级菜单）。
+    /// 从手工制作的“查看火堆”进入时一并收起二级面板，让第二行的火堆卡露出来。
+    /// </summary>
+    public void SelectFire()
     {
-        FacilityLayer = layer;
-        if (layer != null) Panel = null;
+        if (State == null || !E.Location(S.CurrentLocation).HasFire) return;
+        Panel = null;
         HoverPreview = null;
-        Notify();
-    }
-
-    /// <summary>Esc / 返回：锅层退到火堆层，火堆层退到卡片桌面。返回是否退了一级。</summary>
-    public bool BackFacility()
-    {
-        if (FacilityLayer == null) return false;
-        FacilityLayer = FacilityLayer.StartsWith("pot:") ? "fire" : null;
-        Notify();
-        return true;
+        Select(new Selection { Kind = SelectionKind.Facility, Id = GameEngine.FireIdOf(S.CurrentLocation) });
     }
 
     /// <summary>悬停/聚焦动作按钮：右栏临时显示该动作的预测；传 null 清空。</summary>
@@ -432,6 +422,7 @@ public sealed class GameSession
         if (res.Ok)
         {
             Drain();
+            ReconcileSelection();
             Save();
         }
         Notify();
@@ -464,21 +455,46 @@ public sealed class GameSession
         return last;
     }
 
-    /// <summary>选中的物品堆已全部拾走或放下时清空选中，详情区回到默认提示（UI 案 04）。</summary>
+    /// <summary>
+    /// 选中对象随玩法状态校正（UI 案 04；v0.7 第 7.1 节“物品已被移走或转化后，失效操作条关闭或更新到实际状态”）：
+    /// 堆叠物品全部拾走或放下 → 清空；实例被移走 → 跟到新位置；生块根烤熟（物品 ID 变化）→ 仍选同一实例；
+    /// 锅里液体净化（脏水→净水）→ 跟到新液体，喝完或倒空 → 清空；火堆不在当前地点 → 清空。
+    /// </summary>
     private void ReconcileSelection()
     {
-        if (Selected.Kind != SelectionKind.ItemGroup && Selected.Kind != SelectionKind.Tool) return;
-        // 设施里的物品取出后改选它的新位置，卡边操作条与右栏跟着走
-        if (Selected.InstanceId is int id && S.Items.FirstOrDefault(i => i.InstanceId == id) is ItemInstance moved && moved.Owner != Selected.Owner)
+        switch (Selected.Kind)
         {
-            Selected = E.Item(moved.ItemId).IsStackable && !moved.InFacility && !moved.InContainer
-                ? new Selection { Kind = SelectionKind.ItemGroup, Id = moved.ItemId, Owner = moved.Owner }
-                : new Selection { Kind = SelectionKind.Tool, Id = moved.ItemId, Owner = moved.Owner, InstanceId = moved.InstanceId };
-            return;
+            case SelectionKind.Tool when Selected.InstanceId is int id:
+            {
+                var it = S.Items.FirstOrDefault(i => i.InstanceId == id);
+                if (it == null) { Selected = new Selection(); return; }
+                if (it.Owner == Selected.Owner && it.ItemId == Selected.Id) return;
+                // 设施里的物品取出后改选它的新位置，卡下操作条与右栏跟着走
+                Selected = E.Item(it.ItemId).IsStackable && !it.InFacility && !it.InContainer
+                    ? new Selection { Kind = SelectionKind.ItemGroup, Id = it.ItemId, Owner = it.Owner }
+                    : new Selection { Kind = SelectionKind.Tool, Id = it.ItemId, Owner = it.Owner, InstanceId = it.InstanceId };
+                return;
+            }
+            case SelectionKind.ItemGroup:
+            case SelectionKind.Tool:
+            {
+                var still = S.Items.Any(i => i.Owner == Selected.Owner && i.ItemId == Selected.Id);
+                if (!still) Selected = new Selection();
+                return;
+            }
+            case SelectionKind.PotLiquid:
+            {
+                var pot = Selected.InstanceId is int pid ? S.Items.FirstOrDefault(i => i.InstanceId == pid) : null;
+                var liquids = pot == null ? new List<ItemInstance>() : E.PotLiquids(S, pot.InstanceId);
+                if (liquids.Count == 0) { Selected = new Selection(); return; }
+                if (liquids.All(l => l.ItemId != Selected.Id))
+                    Selected = new Selection { Kind = SelectionKind.PotLiquid, Id = liquids[0].ItemId, Owner = Selected.Owner, InstanceId = Selected.InstanceId };
+                return;
+            }
+            case SelectionKind.Facility:
+                if (E.FacilityLocation(Selected.Id) != S.CurrentLocation) Selected = new Selection();
+                return;
         }
-        var still = S.Items.Any(i => i.Owner == Selected.Owner && i.ItemId == Selected.Id
-                                     && (Selected.InstanceId == null || i.InstanceId == Selected.InstanceId));
-        if (!still) Selected = new Selection();
     }
 
     /// <summary>某批次在 30 公斤上限内最多能拾取多少（锅按锅加内容计）。</summary>
@@ -630,7 +646,6 @@ public sealed class GameSession
             if (State != null && S.CurrentLocation != startLocation && Selected.Kind != SelectionKind.None
                 && !(Selected.Owner == ItemInstance.Carried))
                 Selected = new Selection();
-            if (State != null && S.CurrentLocation != startLocation) FacilityLayer = null;
             if (State != null) ReconcileSelection();
             Save();
             Notify();

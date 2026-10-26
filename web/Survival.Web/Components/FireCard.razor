@@ -1,60 +1,93 @@
 @inherits GameComponent
 
-@* 火堆设施卡（双宽，01 案第 4 节）：主图与燃料（燃料区热区 fuel:）、2 个加工位缩略卡与“内容物 n/2”入口。
-   空加工位是热区 fireslot:；整张卡面是 fire: 落点（木材投料、打火器点火、锅与生块根进空位）。点击卡面打开火堆内容物菜单。 *@
+@* 火堆卡（基础UI布局与操作修订案 v0.7 第 3.1 节）：不再有内容物层级菜单，内容直接嵌在卡内——
+   头部：火堆图、燃烧状态、燃料 n/上限与进度条（燃料区热区 fuel:，木材投料、打火器点火）；
+   两个加工位：锅位渲染共用 PotCard，直烤位渲染 FoodCard，空位保留 fireslot: 热区；
+   底部：投入木材、点燃/熄灭。点火堆主图或卡面空白只选中火堆（Facility）并刷新右栏；锅、水、食材各自阻止冒泡。
+   整张卡面是 fire: 落点（锅与生块根进空加工位，打火器点火，木材投料）。 *@
 @{
     var s = G.S;
     var e = G.E;
     var here = s.CurrentLocation;
     var fac = s.Locations[here].Facility;
     var slots = e.FireSlots(s, here);
-    var used = slots.Count(x => x != null);
     var state = fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃";
     var maxFuel = e.Config.Fire.MaxFuelMinutes;
+    var fireId = GameEngine.FireIdOf(here);
+    var selected = G.Selected.Kind == SelectionKind.Facility && G.Selected.Id == fireId;
+    // 火堆维护（投料、熄灭、点火）：空闲或主行动暂停时可做，移动途中与执行中不可（拖拽与容器案 8）
+    var maintBlocked = G.Running || s.Sub != null || (s.Main != null && (s.Main.Status != ActionStatus.Paused || s.Main.Type == ActionType.Travel));
+    var wood = e.AvailableCount(s, "wood", true);
+    var room = e.MaxWoodForFire(fac);
+    var woodWhy = maintBlocked ? "行动进行中，暂不能维护火堆" : room < 1 ? $"至少需要{e.Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{maxFuel}分钟）" : wood < 1 ? "随身和当前地面没有木材" : null;
 }
-<div class="ocard fire-card double @(fac.FireLit ? "lit" : "")" data-drop="@($"fire:{here}")" data-drop-level="card"
-     role="button" tabindex="0" aria-label="@($"火堆，{state}，燃料{fac.FuelMinutes}分钟，内容物{used}/{slots.Count}")"
-     title="火堆：木材拖到燃料区投料，打火器拖到火堆点火；锅与生块根拖到空加工位；点击打开内容物菜单"
-     @onclick="Open" @onkeydown="Key">
-    <div class="oc-head">
-        <b>火堆</b>
-        <span class="oc-badge @(fac.FireLit ? "lit" : "")">@state</span>
-    </div>
-    <div class="fire-main">
-        <div class="fire-side">
-            <div class="fire-art" data-drop="@($"fuel:{here}")" data-drop-level="hot" title="燃料区：拖入木材投料（每份+60分钟），拖入打火器点火">
-                @Icons.Markup(fac.FireLit ? "fire_lit" : "fire_out")
-            </div>
-            <div class="fuel-line"><span>燃料</span><b>@(fac.FuelMinutes)/@(maxFuel)分</b></div>
-            <div class="fuel-track"><i style="width:@(fac.FuelMinutes * 100 / Math.Max(1, maxFuel))%"></i></div>
-            <button type="button" class="oc-btn" @onclick="Open" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">内容物 @used/@slots.Count</button>
+<div class="ocard fire-card @(fac.FireLit ? "lit" : "") @(selected ? "selected" : "")" data-drop="@($"fire:{here}")" data-drop-level="card"
+     title="火堆：点击查看火堆信息；木材拖到燃料区投料，打火器拖到火堆直接点火；锅与生块根拖到空加工位"
+     @onclick="SelectFire">
+    <div class="fc-head">
+        <div class="fc-fuel" data-drop="@($"fuel:{here}")" data-drop-level="hot" role="button" tabindex="0"
+             aria-label="@($"火堆，{state}，燃料{fac.FuelMinutes}分钟")" title="燃料区：拖入木材投料（每份+60分钟），拖入打火器点火；点击选中火堆"
+             @onclick="SelectFire" @onclick:stopPropagation="true" @onkeydown="Key">
+            <span class="fc-art">@Icons.Markup(fac.FireLit ? "fire_lit" : "fire_out")</span>
+            <span class="fc-info">
+                <span class="fc-title"><b>火堆</b><span class="oc-badge @(fac.FireLit ? "lit" : "")">@state</span></span>
+                <span class="fuel-line"><span>燃料</span><b>@(fac.FuelMinutes)/@(maxFuel)分钟</b></span>
+                <span class="fuel-track"><i style="width:@(fac.FuelMinutes * 100 / Math.Max(1, maxFuel))%"></i></span>
+            </span>
         </div>
-        <div class="fire-slots">
-            @for (var k = 0; k < slots.Count; k++)
+    </div>
+    <div class="fc-slots">
+        @for (var k = 0; k < slots.Count; k++)
+        {
+            var it = slots[k];
+            if (it == null)
             {
-                var it = slots[k];
-                if (it == null)
-                {
-                    <div @key="@("empty" + k)" class="slot-empty" data-drop="@($"fireslot:{here}")" data-drop-level="hot" title="空加工位：拖入金属锅（最多1口）或生块根（每份占1位）">
-                        @Icons.Markup("slot_empty")
-                        <span>空加工位</span>
-                        <small>拖入锅或生块根</small>
-                    </div>
-                }
-                else
-                {
-                    <ContentThumb @key="it.InstanceId" Item="it" />
-                }
+                <div @key="@("empty" + k)" class="slot-empty" data-drop="@($"fireslot:{here}")" data-drop-level="hot" title="空加工位：拖入金属锅（最多1口）或生块根（每份占1位）"
+                     @onclick:stopPropagation="true">
+                    @Icons.Markup("slot_empty")
+                    <span>空加工位@(k + 1)</span>
+                    <small>拖入锅或生块根</small>
+                </div>
             }
-        </div>
+            else if (e.IsPot(it))
+            {
+                <div @key="it.InstanceId" class="fc-slot pot"><PotCard Pot="it" /></div>
+            }
+            else
+            {
+                <div @key="it.InstanceId" class="fc-slot food"><FoodCard Item="it" Slot="@(k + 1)" /></div>
+            }
+        }
     </div>
+    <div class="fc-foot" @onclick:stopPropagation="true">
+        <button type="button" class="fc-btn" disabled="@(woodWhy != null)" title="@(woodWhy ?? $"投入1木材，燃料+{e.Config.Fire.BurnMinutesPerWood}分钟，不耗时")" @onclick="AddFuel">
+            <span class="ir-icon">@Icons.Markup("wood")</span><span>投入木材<small>可用@(wood) · +@(e.Config.Fire.BurnMinutesPerWood)分钟</small></span>
+        </button>
+        @if (fac.FireLit)
+        {
+            <button type="button" class="fc-btn plain" disabled="@maintBlocked" title="熄灭火堆，剩余燃料保留" @onclick="Extinguish">熄灭<small>保留燃料</small></button>
+        }
+        else
+        {
+            <button type="button" class="fc-btn ignite @(picking ? "on" : "")" aria-expanded="@picking" @onclick="() => picking = !picking">点燃<small>选择点火工具</small></button>
+        }
+    </div>
+    @if (picking && !fac.FireLit)
+    {
+        <div class="fc-picker" @onclick:stopPropagation="true"><IgnitePicker Busy="@(e.IsBusy(s) && s.Main?.Status != ActionStatus.Paused || G.Running)" /></div>
+    }
 </div>
 
 @code {
-    private void Open() => G.OpenFacility("fire");
+    private bool picking;
+
+    private void SelectFire() => G.SelectFire();
 
     private void Key(KeyboardEventArgs ev)
     {
-        if (ev.Key is "Enter" or " ") Open();
+        if (ev.Key is "Enter" or " ") SelectFire();
     }
+
+    private void AddFuel() => G.Instant(InstantRequest.AddFuel());
+    private void Extinguish() => G.Instant(InstantRequest.Extinguish());
 }

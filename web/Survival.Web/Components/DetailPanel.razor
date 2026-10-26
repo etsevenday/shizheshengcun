@@ -66,7 +66,11 @@
                 break;
             case SelectionKind.ItemGroup:
             case SelectionKind.Tool:
+            case SelectionKind.PotLiquid:
                 <ItemDetail />
+                break;
+            case SelectionKind.Facility:
+                <FireDetail />
                 break;
             default:
                 <div class="empty-detail">

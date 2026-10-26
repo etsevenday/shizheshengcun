@@ -2,8 +2,8 @@
 
 @* 手工制作。Part="center"：中部的配方列表与材料；Part="detail"：右栏的预估与确认。
    v0.4（统一卡片案第 6 节）：材料、产物、催化工具都是 图标+名称+数量/状态 的行，缺料整行标出；
-   烧水、烤制、水煮改为火堆自动加工，这里只保留三条“处理说明”（图示步骤 + 打开火堆），不再有占用角色时间的开始按钮。
-   火堆的投料、点火移到火堆内容物菜单。 *@
+   烧水、烤制、水煮改为火堆自动加工，这里只保留三条“处理说明”（图示步骤 + 查看火堆），不再有占用角色时间的开始按钮。
+   火堆的投料、点火在地块栏第二行的火堆卡上（v0.7 起锅与食材直接嵌在火堆卡内）。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -74,8 +74,8 @@
                             }
                         </div>
                         <div class="btn-row" style="margin-top:10px">
-                            <button class="secondary" disabled="@(!lc.HasFire)" title="@(lc.HasFire ? "在地块区打开火堆内容物菜单" : $"{lc.Name}没有火堆，回到营地才能加工")"
-                                    @onclick='() => G.OpenFacility("fire")'>打开火堆 ▸</button>
+                            <button class="secondary" disabled="@(!lc.HasFire)" title="@(lc.HasFire ? "关闭手工制作，在地块栏第二行选中火堆" : $"{lc.Name}没有火堆，回到营地才能加工")"
+                                    @onclick="G.SelectFire">查看火堆 ▸</button>
                         </div>
                         <div class="tiny muted" style="margin-top:6px">不占角色时间：放进去后角色可以去探索、清理、休息或睡眠，世界时间推进时火堆自动加工；浏览与离线不推进。</div>
                     </div>
@@ -134,9 +134,9 @@
                     <div class="panel fire-box">
                         <ItemRow Icon="@(fac.FireLit ? "fire_lit" : "fire_out")" Name="营地火堆" Qty="@(fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃")"
                                  Status="@($"燃料{fac.FuelMinutes}/{e.Config.Fire.MaxFuelMinutes}分钟 · 内容物{used}/{e.Config.Fire.ProcessingSlots}")">
-                            <button class="secondary" @onclick='() => G.OpenFacility("fire")'>打开火堆 ▸</button>
+                            <button class="secondary" @onclick="G.SelectFire">查看火堆 ▸</button>
                         </ItemRow>
-                        <div class="tiny muted">投料、点火、放锅与烤制都在火堆内容物菜单里。</div>
+                        <div class="tiny muted">投料、点火、放锅与烤制都在地块栏第二行的火堆卡上，锅和食材直接可见。</div>
                     </div>
                 }
             </div>
@@ -160,7 +160,7 @@ else if (proc != null)
         }
     </div>
     <div class="detail-foot">
-        <button class="primary" disabled="@(!lc.HasFire)" @onclick='() => G.OpenFacility("fire")'>打开火堆 ▸</button>
+        <button class="primary" disabled="@(!lc.HasFire)" @onclick="G.SelectFire">查看火堆 ▸</button>
         <div class="under">没有开始按钮：放进燃烧的火堆即自动加工</div>
     </div>
 }
