@@ -131,6 +131,8 @@ public sealed class GameSession
     {
         HoverPreview = null;
         if (panel != null) { IgniteMenuOpen = false; DetailTab = DetailTab.Object; }
+        // 关闭面板时没有选中对象就回人物页（v0.7 6.1：无选中默认展示人物信息；复验新发现 2）
+        else if (Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
         // 每次打开或关闭面板都清掉上一次拖拽留下的候选与指定批次；拖拽入口在打开后再写入
         CraftCandidates = null;
         CraftPreferred.Clear();

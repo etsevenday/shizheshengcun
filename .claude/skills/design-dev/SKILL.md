@@ -23,11 +23,11 @@ description: 接入《适者生存》新策划案的标准开发流程：从飞�
 1. `preview_start {url: 根页}`，`resize_window {width:1400,height:900}`；知识库树在左栏，`find "策划案"` 后点节点左侧三角展开，找到新版本节点（如「卡片统一与设施烹饪 v0.4」）。点树里的**文字**打开页面（点到了只会出 tooltip，要确认 URL 变成新的 `/wiki/<token>`）；版本页本身也可能有正文和附件（如「策划增量配置 vX.json」），子页面逐个打开。
 2. 每篇正文按下面三段式抓成 Markdown（飞书按可见区域懒渲染，且**只认真实滚轮**，程序改 scrollTop 不会触发渲染）：
    - `Read` 读 `.claude/skills/design-dev/scripts/feishu-dump.js`，把全文原样贴进 `javascript_tool` 执行一次（返回 "ready"，并把页面滚到顶）。
-   - 用 `browser_batch` 循环：`computer scroll`（坐标取正文中央，down，amount 8）→ `wait 1` → `javascript_tool "window.__fs.collect()"`，直到 collect 返回 `bottom:true` 且 `total` 不再增长（一次批处理最多 25 个动作，长文分几批）。
+   - 用 `browser_batch` 循环：`computer scroll`（坐标取正文中央，down，amount 8；注意 `resize_window` 后 `computer` 的坐标系仍是截图报告的 800×600，按它给坐标）→ `wait 1` → `javascript_tool "window.__fs.collect()"`，直到 collect 返回 `bottom:true` 且 `total` 不再增长（一次批处理最多 25 个动作，长文分几批）。
    - `javascript_tool "window.__fs.final()"` 取 `{title, markdown, images, files}`；用 `Write` 写到 `doc/策划案/<版本名>/<页名>.md`（页名用飞书标题，去掉 " - 飞书云文档"）。表格已转成 Markdown 表，图片是 `![图片n](assets/图n.jpg)` 占位。
 3. 附件（JSON 等）：在含附件的页面执行 `scripts/feishu-attachment.js`，它从文件块的封面地址取 token、走同源地址读文本，不触发浏览器下载；把 `text` 写成 `doc/策划案/<版本名>/<附件名>`。**不要点飞书的"下载"按钮**（会往浏览器下载目录落文件）。
 4. 图片（策划截图、红框图）：`javascript_tool "window.__fs.image(n)"` 把第 n 张图滚进视口并返回 CSS 坐标；先 `resize_window {preset:"desktop"}` 让坐标系一致，再 `computer zoom` 该区域、`scale 1`，结果里给出的 png 路径复制到 `doc/策划案/<版本名>/assets/图n.jpg`。截图分辨率受面板尺寸限制，细节看不清时让开发代理直接在浏览器里看原页；需要原图时可用 `fetch(img.src)` 转 base64 分段（每段 ≤10 万字符）回传后 `base64 -d` 落盘，这一步交给便宜的子代理做，别让主会话吞 50 万字符。
-5. 抓完对照飞书页核对：标题数、表格行数、章节顺序（脚本按文档纵坐标排序，但渲染不完整时会缺段，缺了就再滚一遍补 collect）。快照目录随第一个里程碑一起入库。
+5. 抓完对照飞书页核对：标题数、表格行数、章节顺序（脚本按文档纵坐标排序，但渲染不完整时会缺段，缺了就再滚一遍补 collect）。**表格的行也懒渲染**：长表格滚出视口时末尾几行只剩空单元格，要把表格 `scrollIntoView` 后直接 `querySelectorAll('tr')` 读末尾几行核对，缺行再补。快照目录随第一个里程碑一起入库。
 
 整页读法太慢时（只想先看一眼），`get_page_text` 只能拿到当前渲染出来的那一屏，不要拿它当全文。
 
@@ -43,7 +43,7 @@ description: 接入《适者生存》新策划案的标准开发流程：从飞�
    - **开发假设**：编号列表，只写"规则解释"（ID 写法、状态落在哪个类、Esc 顺序、迁移冲突时玩家看到什么、图片用占位等），不含任何数值。
    - **工程映射与里程碑**：编号接着上一轮（v0.4 用到 M25，下一轮从 M26 起），每个里程碑列文件、改法、测试；通常顺序是 配置与物品 → 模型 → 规则/tick → 拖拽与预览 → 存档迁移 → 界面 → 次级菜单 → 收尾（文档、README、SurvivalBot）。
    - **可直接复用**：函数与组件清单，让开发方别重写。
-   - **验证**：`dotnet test web/Survival.sln`、策划案里的验收编号（U/P 系列）、两档分辨率截图、旧档写入 `localStorage.survival.save.v1` 后点"继续"。
+   - **验证**：`dotnet build web/Survival.sln`（`dotnet test` 只编译测试工程，网页壳的编译错误要靠它暴露）与 `dotnet test web/Survival.sln`、策划案里的验收编号（U/P 系列）、两档分辨率截图、旧档写入 `localStorage.survival.save.v1` 后点"继续"。
    - **试玩检查清单**：必走路线 + 报告格式。
 4. 真正阻塞的空白（不问就只能补数值）用 `AskUserQuestion` 问；能用假设绕过的不问。然后 `ExitPlanMode`。
 
@@ -57,7 +57,7 @@ description: 接入《适者生存》新策划案的标准开发流程：从飞�
 - 手测用 `preview_start {name:"web"}`（5177，被占用 `web-alt` 5180），不要用 Bash 起服务器。
 - 要求它写 `doc/开发计划 v<下一号> <策划包名>.md`（格式照 v0.3：映射、假设、实施记录与偏差、待确认、资源缺失）并更新 README 文档表。
 
-代理结束后自己核对：`git log --oneline`、`git status`（应只剩别人的未入库文件）、`dotnet test web/Survival.sln` 全绿、看它的截图。
+代理结束后自己核对：`git log --oneline`、`git status`（应只剩别人的未入库文件）、`dotnet build web/Survival.sln` 0 错误与 `dotnet test web/Survival.sln` 全绿、看它的截图。
 
 ## 4 试玩（Fable 5.1 代理）
 
