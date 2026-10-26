@@ -35,6 +35,25 @@
                 <div class="track"><i style="width:@Ui.Bar(v, s.Stats.Max(id))%"></i><span class="mark" style="left:@Ui.Bar(th.Value, s.Stats.Max(id))%"></span></div>
             </button>
         }
+        @* v0.6 §07：左 HUD 新增免疫与病毒入口；病毒未感染写“未感染” *@
+        @{
+            var body = s.Body;
+            var immLow = body.Immunity < 40;
+        }
+        <button class="vital @(immLow ? "warning" : "")" @onclick='() => OpenKey("immunity")' title="查看免疫力说明">
+            <div class="vital-label">
+                <span>免疫@if (immLow) {<em class="flag">偏低</em>}</span>
+                <b>@Ui.N(body.Immunity) <small class="muted">/@Ui.T(cfg.Immunity.Max)</small></b>
+            </div>
+            <div class="track"><i style="width:@Ui.Bar(body.Immunity, cfg.Immunity.Max)%"></i><span class="mark" style="left:@Ui.Bar(cfg.Infection.NaturalCure.ConsecutiveImmunityAtLeast, cfg.Immunity.Max)%"></span></div>
+        </button>
+        <button class="vital @(body.Infected ? (body.VirusLoad >= 50 ? "critical" : "warning") : "")" @onclick='() => OpenKey("virus")' title="查看病毒说明">
+            <div class="vital-label">
+                <span>病毒@if (body.Infected) {<em class="flag danger-text">已感染</em>}</span>
+                <b>@(body.Infected ? Ui.N(body.VirusLoad) : "未感染")@if (body.Infected) {<small class="muted">/@Ui.T(cfg.Infection.ZombificationAtLoad)</small>}</b>
+            </div>
+            <div class="track"><i style="width:@Ui.Bar(body.VirusLoad, cfg.Infection.ZombificationAtLoad)%"></i></div>
+        </button>
         @* 状态异常与右栏人物页同源（内核 ActiveConditions），不在这里另算 *@
         @foreach (var c in e.ActiveConditions(s))
         {
@@ -106,9 +125,11 @@
         G.Notify();
     }
 
-    private void OpenStatus(StatId id)
+    private void OpenStatus(StatId id) => OpenKey(GameEngine.StatKey(id));
+
+    private void OpenKey(string key)
     {
-        G.Panel = "status:" + GameEngine.StatKey(id);
+        G.Panel = "status:" + key;
         G.Notify();
     }
 }

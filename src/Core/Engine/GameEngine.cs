@@ -83,15 +83,49 @@ namespace Survival.Core.Engine
                     Effect = $"每小时额外失水{Fmt.T(extra)}", Harmful = true,
                 });
             }
+            var bandage = Config.Items.FirstOrDefault(i => i.Use != null && i.Use.IsBandage)?.Name ?? "绷带";
             if (s.BandageReadyAt > s.GameMinute)
             {
-                var bandage = Config.Items.FirstOrDefault(i => i.Use != null && i.Use.IsBandage)?.Name ?? "绷带";
                 list.Add(new ActiveCondition
                 {
                     Id = "bandageCooldown", Name = "绷带冷却", RemainingMinutes = s.BandageReadyAt - s.GameMinute,
-                    Effect = $"冷却结束前不能再使用{bandage}",
+                    Effect = $"冷却结束前{bandage}不回血（仍可止血或压病毒）",
                 });
             }
+            var b = s.Body;
+            if (b.BleedTriggers > 0)
+                list.Add(new ActiveCondition
+                {
+                    Id = "bleed", Name = "出血", RemainingMinutes = 0, Harmful = true,
+                    Effect = $"还要流血{b.BleedTriggers}次，每次健康−{Fmt.T(b.BleedDamage)}；{bandage}可止血",
+                });
+            if (b.Infected)
+            {
+                var (_, vr, _) = CurrentBodyRates(s);
+                list.Add(new ActiveCondition
+                {
+                    Id = "infected", Name = "病毒感染", RemainingMinutes = 0, Harmful = true,
+                    Effect = $"病毒{Fmt.N(b.VirusLoad)}，每小时{Fmt.SignedT(vr)}；达到{Fmt.T(Config.Infection.ZombificationAtLoad)}尸变。高免疫已持续{Clock.Duration(b.HighImmunityMinutes)}/{Clock.Duration(Config.Infection.NaturalCure.Minutes)}",
+                });
+            }
+            if (b.AntibioticUntil.HasValue && b.AntibioticUntil.Value > s.GameMinute)
+                list.Add(new ActiveCondition
+                {
+                    Id = "antibiotic", Name = "抗生素作用中", RemainingMinutes = b.AntibioticUntil.Value - s.GameMinute,
+                    Effect = $"病毒正增长×{Fmt.T(Config.Infection.Antibiotics.PositiveProgressFactor)}",
+                });
+            if (b.AntibioticReadyAt > s.GameMinute)
+                list.Add(new ActiveCondition
+                {
+                    Id = "antibioticCooldown", Name = "抗生素给药间隔", RemainingMinutes = b.AntibioticReadyAt - s.GameMinute,
+                    Effect = "间隔结束前不能再用抗生素",
+                });
+            if (b.Infected && b.BandageVirusReadyAt > s.GameMinute)
+                list.Add(new ActiveCondition
+                {
+                    Id = "bandageVirusCooldown", Name = "绷带病毒减量冷却", RemainingMinutes = b.BandageVirusReadyAt - s.GameMinute,
+                    Effect = $"冷却结束前{bandage}不压病毒",
+                });
             return list;
         }
 
@@ -319,6 +353,10 @@ namespace Survival.Core.Engine
                         if ((rs.Available ?? 0) <= 0) return "该容器已搜空，不再补充";
                         plan.Units = 1;
                         foreach (var kv in res.Outputs) plan.Outputs.Add(Line(kv.Key, kv.Value));
+                        if (res.ExclusiveLoot != null)
+                            plan.Notes.Add("随机得到其一：" + string.Join("；", res.ExclusiveLoot.Select(x => $"{ItemName(x.ItemId)}×{x.Count}（{x.Weight}%）")));
+                        if (res.IndependentRare != null)
+                            plan.Notes.Add($"另有{Fmt.Pct(res.IndependentRare.Chance)}独立概率附带{ItemName(res.IndependentRare.ItemId)}×{res.IndependentRare.Count}");
                     }
                     else if (res.IsUnlimited)
                     {
@@ -363,6 +401,13 @@ namespace Survival.Core.Engine
                         if (why != null) return why;
                         plan.Tool = target;
                     }
+                    if (rc.NeedsExplicitPot)
+                    {
+                        // v0.6 §11：须明确指定一口取下并清空的锅（不消耗）；净水作为原料消耗，不自动装锅
+                        var why = ExplicitPotBlocked(s, r.PotInstanceId, out var pot);
+                        if (why != null) return why;
+                        plan.Catalysts.Add(pot!);
+                    }
                     if (rc.FacilityResult != null)
                     {
                         if (!hereCfg.CanBuildShelter) return "只能在营地建造";
@@ -378,7 +423,7 @@ namespace Survival.Core.Engine
                                 if (hereState.Facility.FuelMinutes < Tick) return "火堆燃料不足，请先投入木材";
                                 break;
                             case "camp":
-                                if (!hereCfg.CanBuildShelter) return "只能在营地建造";
+                                if (!hereCfg.CanBuildShelter) return rc.IsBuild ? "只能在营地建造" : "只能在营地制作";
                                 break;
                             case "shelter":
                                 if (!hereCfg.CanBuildShelter) return "只能在营地建造";
@@ -619,6 +664,19 @@ namespace Survival.Core.Engine
                     }
                     if (res.Hazard != null && res.Hazard.Probability > 0)
                         a.HazardHit = s.Rng.NextDouble() < res.Hazard.Probability;
+                    // 箱子的随机部分开始时锁定，完成才公布，读档不重抽（v0.6 §11）
+                    if (res.IndependentRare != null) a.RareHit = s.Rng.NextDouble() < res.IndependentRare.Chance;
+                    if (res.ExclusiveLoot != null && res.ExclusiveLoot.Count > 0)
+                    {
+                        var roll = (int)Math.Floor(s.Rng.NextDouble() * 100);
+                        var acc = 0;
+                        var pick = res.ExclusiveLoot[res.ExclusiveLoot.Count - 1];
+                        foreach (var x in res.ExclusiveLoot) { acc += x.Weight; if (roll < acc) { pick = x; break; } }
+                        a.LootPlanned = true;
+                        a.LootRoll = roll;
+                        a.LootItemId = pick.ItemId;
+                        a.LootCount = pick.Count;
+                    }
                     break;
                 }
                 case ActionType.Craft:

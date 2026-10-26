@@ -38,6 +38,25 @@
         }
     </div>
 
+    @* v0.6 §08–§11：免疫与病毒（与左栏同源） *@
+    @{
+        var body = s.Body;
+        var (ir, vr, why) = e.CurrentBodyRates(s);
+    }
+    <div class="char-stats">
+        <div class="char-stat @(body.Immunity < 40 ? "warning" : "")">
+            <div class="cs-line"><b>免疫力</b><span>@Ui.N(body.Immunity)/@Ui.T(cfg.Immunity.Max)</span></div>
+            <div class="track"><i style="width:@Ui.Bar(body.Immunity, cfg.Immunity.Max)%"></i><span class="mark" style="left:@Ui.Bar(cfg.Infection.NaturalCure.ConsecutiveImmunityAtLeast, cfg.Immunity.Max)%"></span></div>
+            <div class="cs-state">按当前状态每小时@(Ui.SignedT(ir))@(why.Count > 0 ? $"（{string.Join("，", why)}）" : "") · 咬伤感染概率@(Ui.Pct(e.ExposureChance(body.Immunity)))</div>
+        </div>
+        <div class="char-stat @(body.Infected ? (body.VirusLoad >= 50 ? "critical" : "warning") : "")">
+            <div class="cs-line"><b>病毒</b><span>@(body.Infected ? $"{Ui.N(body.VirusLoad)}/{Ui.T(cfg.Infection.ZombificationAtLoad)}" : "未感染")</span></div>
+            <div class="track"><i style="width:@Ui.Bar(body.VirusLoad, cfg.Infection.ZombificationAtLoad)%"></i></div>
+            <div class="cs-state">@(body.Infected ? $"每小时{Ui.SignedT(vr)} · 连续高免疫{Clock.Duration(body.HighImmunityMinutes)}/{Clock.Duration(cfg.Infection.NaturalCure.Minutes)}" : "未感染：病毒为0")</div>
+            <div class="cs-explain">@Ui.VirusExplain(e)</div>
+        </div>
+    </div>
+
     @* v0.6 §03：8 项熟练度，无等级上限；经验逐级扣 50×(L+1) *@
     <div class="char-skills">
         <div class="tiny muted">熟练度（无等级上限）</div>

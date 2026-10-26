@@ -55,6 +55,18 @@ namespace Survival.Core.Engine
         public static string DurabilityText(ItemInstance i) =>
             i.Durability.HasValue && i.MaxDurability.HasValue ? $"{Fmt.N(i.Durability.Value)}/{Fmt.N(i.MaxDurability.Value)}" : "";
 
+        /// <summary>病毒特效药的锅：须明确指定、随身或当前地面（不在火堆）、已清空、未被占用。</summary>
+        public string? ExplicitPotBlocked(GameState s, int? potId, out ItemInstance? pot)
+        {
+            pot = potId.HasValue ? FindItem(s, potId.Value) : null;
+            if (!potId.HasValue) return "请指定一口取下并清空的锅";
+            if (pot == null || !IsPot(pot)) return "指定的锅已不在，请重新选择";
+            if (!(pot.IsCarried || pot.Owner == s.CurrentLocation)) return pot.InFacility ? "先把锅从火堆取下" : "只能用随身或当前地面的锅";
+            if (PotContents(s, pot.InstanceId).Count > 0) return "锅须先清空（倒出水、取出食材）";
+            if (pot.ReservedBy != null || IsLocked(s, pot)) return "行动占用：这口锅正被使用";
+            return null;
+        }
+
         // ───────────── 工具维护（v0.6 §05 repair_selected_tool） ─────────────
 
         public RecipeConfig? RepairRecipe => Config.Recipes.FirstOrDefault(r => r.IsRepair);

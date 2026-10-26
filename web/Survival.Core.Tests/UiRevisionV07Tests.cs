@@ -294,7 +294,7 @@ public class UiRevisionV07Tests : TestBase
         Assert.That(why, Does.StartWith("绷带冷却中，还需"));
         var cond = E.ActiveConditions(s).Single(c => c.Id == "bandageCooldown");
         Assert.That(cond.RemainingMinutes, Is.EqualTo(s.BandageReadyAt - s.GameMinute));
-        Assert.That(cond.Effect, Is.EqualTo("冷却结束前不能再使用草药绷带"));
+        Assert.That(cond.Effect, Is.EqualTo("冷却结束前草药绷带不回血（仍可止血或压病毒）"), "v0.6：回血冷却只挡回血");
 
         // 腹泻：剩余时间与效果来自配置
         E.DebugGive(s, "dirty_water", 1);

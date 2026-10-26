@@ -105,6 +105,23 @@
                                 @if (cands.Count == 0) { <div class="risk none">随身和当前地面没有带耐久的工具。</div> }
                             </div>
                         }
+                        @if (rc.NeedsExplicitPot)
+                        {
+                            var pots = s.Items.Where(i => e.IsPot(i) && e.PlaceOf(s, i) is var pl && (pl == ItemInstance.Carried || pl == here)).ToList();
+                            <div class="tiny muted">指定一口取下并清空的锅（不消耗；不会自动装锅或倒出原锅内容）</div>
+                            <div class="repair-list">
+                                @foreach (var pot in pots)
+                                {
+                                    var pid = pot.InstanceId;
+                                    var why = e.ExplicitPotBlocked(s, pid, out _);
+                                    <button type="button" class="repair-pick @(G.CraftPot == pid ? "on" : "") @(why != null ? "missing" : "")" title="@(why ?? "指定这口锅")" @onclick="() => PickPot(pid)">
+                                        <span class="ir-icon">@Icons.Markup(pot.ItemId)</span>
+                                        <span><b>@e.ItemName(pot.ItemId)#@pid</b><small>@e.WherePath(s, pot) · @e.PotLabel(s, pot)@(why != null ? $" · {why}" : "")</small></span>
+                                    </button>
+                                }
+                                @if (pots.Count == 0) { <div class="risk none">随身和当前地面没有锅。</div> }
+                            </div>
+                        }
                         @if (batchable)
                         {
                             var maxBatch = rc.Inputs.Count == 0 ? 1 : Math.Max(1, rc.Inputs.Min(kv => e.AvailableCount(s, kv.Key, true) / Math.Max(1, kv.Value)));
@@ -288,6 +305,12 @@ else
             G.CraftPot = null;
         }
         G.CraftRecipe = id;
+        G.Notify();
+    }
+
+    private void PickPot(int id)
+    {
+        G.CraftPot = G.CraftPot == id ? null : id;
         G.Notify();
     }
 

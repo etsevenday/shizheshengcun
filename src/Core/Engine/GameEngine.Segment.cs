@@ -18,6 +18,8 @@ namespace Survival.Core.Engine
             public bool Sheltered;
             public string DamageCause = "";
             public List<string> FactorReasons = new List<string>();
+            /// <summary>本段角色在做什么（免疫的睡眠/休息加成按它判断）；战斗与无行动为 null。</summary>
+            public ActionType? ActionType;
         }
 
         private static string RateKey(ActionType t) => t switch
@@ -49,6 +51,7 @@ namespace Survival.Core.Engine
 
             ctx.Sheltered = !a.ForceOutdoor && IsSheltered(s, loc);
             ctx.IsWork = a.IsWorkType;
+            ctx.ActionType = a.Type;
 
             string key;
             if (a.Type == ActionType.Sleep) key = ctx.Sheltered ? "sleep_sheltered" : "sleep_exposed";
@@ -421,6 +424,16 @@ namespace Survival.Core.Engine
                 {
                     CreateItems(s, kv.Key, kv.Value, here, res.Scavenged);
                     made.Add($"{ItemName(kv.Key)}+{kv.Value}");
+                }
+                if (res.ExclusiveLoot != null && a.LootPlanned && a.LootItemId != null && a.LootCount > 0)
+                {
+                    CreateItems(s, a.LootItemId, a.LootCount, here, res.Scavenged);
+                    made.Add($"{ItemName(a.LootItemId)}+{a.LootCount}");
+                }
+                if (res.IndependentRare != null && a.RareHit)
+                {
+                    CreateItems(s, res.IndependentRare.ItemId, res.IndependentRare.Count, here);
+                    made.Add($"{ItemName(res.IndependentRare.ItemId)}+{res.IndependentRare.Count}（稀有）");
                 }
             }
 

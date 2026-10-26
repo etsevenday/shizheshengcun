@@ -367,6 +367,10 @@ namespace Survival.Core.State
         public bool ChargeSpent { get; set; }
         /// <summary>批量制作件数（同一预留批次一次提交）；普通行动为 1。</summary>
         public int BatchCount { get; set; } = 1;
+        /// <summary>箱子的独立稀有附带物（医药补给箱 1% 特效药）是否抽中：开始时锁定，读档不重抽。</summary>
+        public bool RareHit { get; set; }
+        /// <summary>开始时锁定的随机接敌判定值 [0,1)（v0.6 §15）；完成时与按当时敌密度算出的概率比较。预览里置为 1（不接敌）。</summary>
+        public double EncounterRoll { get; set; } = 1;
 
         public bool IsWorkType => IsWork(Type);
 
@@ -387,6 +391,8 @@ namespace Survival.Core.State
     public sealed class DeathInfo
     {
         public string Cause { get; set; } = "";
+        /// <summary>尸变结束本局（v0.6 §09，病毒≥100），复用死亡结算但文案区分。</summary>
+        public bool Zombified { get; set; }
         public int Minute { get; set; }
         public string LocationId { get; set; } = "";
     }

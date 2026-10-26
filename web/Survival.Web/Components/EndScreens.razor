@@ -13,10 +13,14 @@
 {
     var d = s.Progress.Death;
     var alive = d.Minute - e.Config.Time.StartAbsoluteMinute;
-    <div class="end-back" role="alertdialog" aria-label="死亡结算">
-        <div class="end-card">
+    <div class="end-back" role="alertdialog" aria-label="@(d.Zombified ? "尸变结算" : "死亡结算")">
+        <div class="end-card @(d.Zombified ? "zombified" : "")">
             <div class="eyebrow">第@(Clock.Day(d.Minute))日 @Clock.HHmm(d.Minute) · @e.LocName(d.LocationId)</div>
-            <h2>你没能活下来</h2>
+            <h2>@(d.Zombified ? "你已尸变" : "你没能活下来")</h2>
+            @if (d.Zombified)
+            {
+                <p class="muted" style="margin:0 0 8px;line-height:1.7">病毒程度达到@(Ui.T(e.Config.Infection.ZombificationAtLoad))，即使健康尚存也无法继续。本局结束，不能再用药补救。</p>
+            }
             <div class="lines">
                 <div><span>直接原因</span><b class="danger-text">@d.Cause</b></div>
                 <div><span>存活时长</span><b>@(alive / 1440)天@(alive % 1440 / 60)小时@(alive % 60)分</b></div>
