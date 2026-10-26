@@ -72,7 +72,7 @@
                 <div data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drop="@($"card:{key}")" data-drop-level="card"
                      class="card item @(broken ? "broken" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(tSel ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
                      role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
-                    <div class="ctitle"><span>@e.ItemName(t.ItemId)</span><span class="qty">×1</span></div>
+                    <div class="ctitle"><span>@e.ItemName(t.ItemId)#@t.InstanceId</span></div>
                     <div class="art">@Icons.Markup(t.ItemId)</div>
                     <div class="cinfo">@Ui.ItemLine(e, s, t)</div>
                     <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !locked && !busy)" />

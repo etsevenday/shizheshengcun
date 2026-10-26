@@ -40,23 +40,39 @@
     var d = horizontal ? dx : dy;
     if (d === 0) return;
     var mouseVertical = !horizontal && !ev.shiftKey;         // 纯竖向滚轮：可映射到横向栏
+    if (walk(ev, ev.target, horizontal, mouseVertical, d)) return;
+    // 鼠标下是没有溢出的提示浮层（结果提示条、落点失败提示）：交给它下面的界面，不吞掉这次滚动（试玩修复 B6）。
+    // 只对这类提示生效：暂停层、弹窗等遮罩不把滚轮漏给背后的内容。
+    var tip = ev.target.closest && ev.target.closest('.toast, .drop-flash');
+    if (!tip) return;
+    var stack = document.elementsFromPoint ? document.elementsFromPoint(ev.clientX, ev.clientY) : [];
+    for (var i = 0; i < stack.length; i++) {
+      var under = stack[i];
+      if (tip.contains(under) || under.contains(tip)) continue;
+      if (walk(ev, under, horizontal, mouseVertical, d)) return;
+    }
+  }
+
+  // 从 start 向上找第一个在该方向还能动的容器并滚动；找到返回 true
+  function walk(ev, start, horizontal, mouseVertical, d) {
     var passedVertical = false;
-    for (var el = ev.target; el && el !== document.documentElement; el = el.parentElement) {
+    for (var el = start; el && el !== document.documentElement; el = el.parentElement) {
       if (el.nodeType !== 1) continue;
       if (horizontal) {
-        if (scrollable(el, 'x') && canMove(el, 'x', d)) { consume(ev, el, 'x', d); return; }
+        if (scrollable(el, 'x') && canMove(el, 'x', d)) { consume(ev, el, 'x', d); return true; }
         continue;
       }
       if (scrollable(el, 'y')) {
-        if (canMove(el, 'y', d)) { consume(ev, el, 'y', d); return; }
+        if (canMove(el, 'y', d)) { consume(ev, el, 'y', d); return true; }
         passedVertical = true;                              // 纵向列表到底：只交给更外层的纵向容器
         continue;
       }
       if (mouseVertical && !passedVertical && xBar(el) && scrollable(el, 'x')) {
-        if (canMove(el, 'x', d)) { consume(ev, el, 'x', d); return; }
+        if (canMove(el, 'x', d)) { consume(ev, el, 'x', d); return true; }
         // 横向栏到边界：继续向上，交给中部纵滚
       }
     }
+    return false;
   }
 
   function consume(ev, el, axis, d) {

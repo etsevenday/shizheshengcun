@@ -13,7 +13,8 @@
     var s = G.S;
     var moveBusy = e.IsBusy(s) || G.Running;
     SyncDefault(m);
-    <div class="tbar cact" role="group" aria-label="@($"{m.Name}的操作")" @onclick:stopPropagation="true" @onkeydown="OnKey" @onkeydown:stopPropagation="true">
+    @* Esc 不在这里处理：交给 GameScreen 的 Esc 栈统一判定（先清选中），避免条内与全局各处理一次直接弹出菜单（试玩修复 B1） *@
+    <div class="tbar cact" role="group" aria-label="@($"{m.Name}的操作")" @onclick:stopPropagation="true">
         <div class="ca-head">
             <span class="ir-icon">@Icons.Markup(m.Icon)</span>
             <span class="ca-title"><b>@m.Name</b><small>@m.From · ×@m.Available</small></span>
@@ -28,15 +29,15 @@
                 <button type="button" class="ca-use @(GameEngine.UseRisky(cfg) ? "risky" : "")" disabled="@(why != null || using_)" title="@(why ?? "点击即使用1份，耗时5分钟、不可中途取消")"
                         @onclick="() => Use(m.UseId.Value)">@GameEngine.UseButtonText(cfg)</button>
                 <span class="ca-use-note">
-                    @GameEngine.UseEffectText(cfg.Use!) · @(e.Config.ItemActions.UseMinutes)分钟@(p.Ok ? $"（含自然消耗）" : "")
+                    @GameEngine.UseEffectText(cfg.Use!) · @(e.Config.ItemActions.UseMinutes)分钟
                     @if (p.Ok && p.StatsAfterImmediate != null)
                     {
-                        foreach (var id in new[] { StatId.Satiety, StatId.Hydration, StatId.Health, StatId.Morale })
+                        // 物品影响的属性一律列出（即时结算值，夹紧到 100 时写溢出），不因取整后相等就省略（试玩修复 B9）
+                        foreach (var (id, delta) in Affected(cfg.Use!))
                         {
-                            var b0 = Ui.Floor(p.StatsBefore.Get(id));
-                            var b1 = Ui.Floor(p.StatsAfter.Get(id));
-                            if (b0 == b1) continue;
-                            <em>@GameEngine.StatName(id)@b0→@b1</em>
+                            var raw = p.StatsBefore.Get(id) + delta;
+                            var over = raw > 100 ? Ui.Floor(raw - 100) : 0;
+                            <em>@GameEngine.StatName(id)@Ui.Floor(p.StatsBefore.Get(id))→@Ui.Floor(p.StatsAfterImmediate.Get(id))@(over > 0 ? $"（溢出{over}）" : "")</em>
                         }
                     }
                 </span>
@@ -131,7 +132,11 @@
             else
             {
                 <div class="tbar-row"><button type="button" class="tbar-go" disabled>取出@(e.ItemName(water.ItemId))1份到@(zone == ItemInstance.Carried ? "随身" : "地面")</button></div>
-                <div class="ca-note bad">@why</div>
+                @* 与上面自用按钮的原因相同（如被水煮预留）时只写一次（试玩修复 B9） *@
+                @if (!m.UseId.HasValue || G.Preview(ActionRequest.UseInstance(m.UseId.Value)).Reason != why)
+                {
+                    <div class="ca-note bad">@why</div>
+                }
             }
         }
         else if (m.Mode == Mode.None && !m.UseId.HasValue)
@@ -245,6 +250,14 @@
         text = m.Mode == Mode.Stack ? (m.ToCarried ? Math.Max(1, Math.Min(m.Available, m.Max)) : m.Available).ToString() : "1";
     }
 
+    private static IEnumerable<(StatId, double)> Affected(ItemUseConfig u)
+    {
+        if (u.Satiety != 0) yield return (StatId.Satiety, u.Satiety);
+        if (u.Hydration != 0) yield return (StatId.Hydration, u.Hydration);
+        if (u.Health != 0) yield return (StatId.Health, u.Health);
+        if (u.Morale != 0) yield return (StatId.Morale, u.Morale);
+    }
+
     private int Parse() => int.TryParse(text.Trim(), out var v) ? v : 0;
 
     private void OnInput(ChangeEventArgs ev) => text = new string((ev.Value?.ToString() ?? "").Where(char.IsDigit).ToArray());
@@ -252,11 +265,6 @@
     private void SetN(int v) => text = Math.Max(1, v).ToString();
 
     private void Step(int d, Model m) => SetN(Math.Clamp(Parse() + d, 1, Math.Max(1, m.Available)));
-
-    private void OnKey(KeyboardEventArgs ev)
-    {
-        if (ev.Key == "Escape") G.ClearSelection();
-    }
 
     private async Task Use(int instanceId)
     {
@@ -292,6 +300,9 @@
     private void Decant(ItemInstance water, string zone, int n)
     {
         if (G.E.IsBusy(G.S) || G.Running) return;
-        G.Instant(InstantRequest.Decant(water.InstanceId, zone, n));
+        var liquid = water.ItemId;
+        var res = G.Instant(InstantRequest.Decant(water.InstanceId, zone, n));
+        // 锅里这种水取完了：选中跟到目标区的同类堆（新卡或并入已有堆），不留“假选中”（试玩修复 B1）
+        if (res.Ok && G.Selected.Kind == SelectionKind.None) G.FollowToGroup(zone, liquid);
     }
 }

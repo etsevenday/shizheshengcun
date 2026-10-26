@@ -55,7 +55,8 @@
             }
             else
             {
-                <div @key="it.InstanceId" class="fc-slot food"><FoodCard Item="it" Slot="@(k + 1)" /></div>
+                @* 直烤位选中时加宽到与锅位相同，卡内操作条不挤成窄列（试玩修复 B2） *@
+                <div @key="it.InstanceId" class="fc-slot food @(G.Selected.Kind == SelectionKind.Tool && G.Selected.InstanceId == it.InstanceId ? "open" : "")"><FoodCard Item="it" Slot="@(k + 1)" /></div>
             }
         }
     </div>

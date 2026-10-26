@@ -59,7 +59,7 @@
                     <button @key="@("explore")" type="button" class="loc-btn" disabled="@(exploreWhy != null)" title="@(exploreWhy ?? "单击直接开始；右侧显示预测")"
                             @onmouseenter="HoverExplore" @onfocus="HoverExplore" @onmouseleave="Unhover" @onblur="Unhover"
                             @onclick="Explore" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
-                        <strong>探索周边 · @(e.Config.Actions.ExploreMinutes)分钟</strong>
+                        <strong>探索 · @(e.Config.Actions.ExploreMinutes)分钟</strong>
                         @if (exploreWhy != null) { <small>@exploreWhy</small> }
                     </button>
                 }

@@ -697,6 +697,19 @@ kbd { font-size: 14px; }
 .char-stat.critical .cs-line span { color: var(--danger); }
 .char-conds { display: flex; flex-direction: column; gap: 6px; }
 
+/* ───────────── 试玩修复（M34） ───────────── */
+/* B2：直烤位选中时与锅位同宽，卡内操作条不挤成窄列 */
+.fc-slot.food.open { flex-basis: 300px; }
+/* B4：操作条里执行按钮独占一行（数量控件在上一行），按钮文字不逐字折行 */
+.tbar .tbar-row .tbar-go { flex: 1 1 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tbar .tbar-row input { flex: 1 1 48px; min-width: 48px; }
+/* B5：当前地图卡按钮标题、物品卡副标不逐字折行 */
+.map-card .loc-btn strong, .map-card .loc-btn small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.card .cinfo { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* B8：中部与地块区拖动起点不在卡片上时不产生文字选区（输入框除外） */
+.center, .center * { user-select: none; -webkit-user-select: none; }
+.center input, .center textarea { user-select: text; -webkit-user-select: text; }
+
 /* ───────────── 矮屏（1280×720 等，屏高 ≤800px）：唯一一处覆盖段（v0.7 第 2 节：两行各取策划区间下限，超出靠中部纵滚） ───────────── */
 @media (max-height: 800px) {
   :root {

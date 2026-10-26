@@ -27,7 +27,7 @@ public static class Ui
         if (cfg.Use != null)
         {
             var u = cfg.Use;
-            if (u.Hydration > 0 && u.Satiety == 0) return $"水分+{u.Hydration:0}" + (u.CausesDiarrhea ? "·会腹泻" : "");
+            if (u.Hydration > 0 && u.Satiety == 0) return $"水分+{u.Hydration:0}" + (u.CausesDiarrhea ? "·腹泻" : "");
             if (u.Satiety > 0) return $"饱食+{u.Satiety:0}";
             if (u.Health > 0) return $"健康+{u.Health:0}";
         }

@@ -32,8 +32,16 @@ else
     <div class="detail-scroll">
         <div class="op-head">
             <div class="eyebrow">@(carried ? "随身物品" : e.WherePath(s, inst))</div>
-            <h2>@cfg.Name <small class="muted">×@total</small></h2>
-            <p>@cfg.Desc</p>
+            @* 工具、锅等单件实例与卡下操作条同样写“名称#实例”；可自用物品的摘要用内核的“饱食+35”写法，与卡片、操作条一致（试玩修复 B9） *@
+            @if (!cfg.IsStackable || sel.Kind == SelectionKind.Tool && sel.InstanceId.HasValue && !potLiquid)
+            {
+                <h2>@cfg.Name#@inst.InstanceId</h2>
+            }
+            else
+            {
+                <h2>@cfg.Name <small class="muted">×@total</small></h2>
+            }
+            <p>@(cfg.Use != null ? GameEngine.UseEffectText(cfg.Use) + (e.UseRiskText(cfg) is string rk ? $"；{rk}" : "") : cfg.Desc)</p>
         </div>
         <div class="detail-icon">@Icons.Markup(cfg.Id)</div>
 
@@ -87,10 +95,6 @@ else
         {
             <div class="pot-detail">
                 <div class="lines"><div><span>加工</span><b>@(inst.InContainer && e.IsLiquid(inst) ? e.ContentStatus(s, e.ContainerOf(s, inst) ?? inst) : e.ContentStatus(s, inst))</b></div></div>
-                @if (potLiquid && e.PotFreeWaterUnits(s, inst) < inst.Count)
-                {
-                    <div class="risk">@e.ReservedWaterText(s, inst)</div>
-                }
                 @if (!e.IsLiquid(inst)) { <div class="risk none">取出：@e.TakeOutConsequenceOf(s, inst).Text</div> }
             </div>
         }

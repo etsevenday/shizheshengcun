@@ -13,7 +13,7 @@
     var first = opts.FirstOrDefault(o => o.Usable);
     var p = first == null ? null : G.Preview(ActionRequest.Ignite(first.InstanceId));
 }
-<div @ref="box" class="ignite-menu" role="menu" aria-label="选择点火工具" @onclick:stopPropagation="true" @onkeydown="OnKey" @onkeydown:stopPropagation="true">
+<div @ref="box" class="ignite-menu" role="menu" aria-label="选择点火工具" @onclick:stopPropagation="true">
     <div class="im-head">
         <b>选择点火工具</b>
         <button type="button" class="im-close" aria-label="关闭点火工具菜单" title="关闭（Esc）" @onclick="Close">×</button>
@@ -71,11 +71,6 @@
     {
         G.Hover(null);
         G.CloseIgniteMenu();
-    }
-
-    private void OnKey(KeyboardEventArgs ev)
-    {
-        if (ev.Key == "Escape") Close();
     }
 
     private void HoverTool(int id, string title, bool usable) => G.Hover(ActionRequest.Ignite(id), title);

@@ -87,7 +87,8 @@ window.survival = {
       if (t === 'INPUT' || t === 'TEXTAREA') {
         // 拾取条输入框只收数字：字母快捷键照常生效，回车与 Esc 由拾取条自己处理
         if (!inBar && ev.key !== 'Escape') return;
-        if (inBar && (ev.key === 'Escape' || ev.key === 'Enter')) return;
+        // 回车由操作条自己处理；Esc 交给 GameScreen 的 Esc 栈（先清选中），不在条内另处理一次（试玩修复 B1）
+        if (inBar && ev.key === 'Enter') return;
       }
       if (ev.ctrlKey || ev.altKey || ev.metaKey) return;
       var k = ev.key;

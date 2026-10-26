@@ -367,6 +367,16 @@ public sealed class GameSession
         Notify();
     }
 
+    /// <summary>
+    /// 程序清空选中（换地点、物品用尽或移走、拖拽预览确认后）：右栏同样回到人物页（v0.7 计划假设 14、试玩修复 B11）；
+    /// “未选中对象”只在玩家主动点“对象信息”页签且没有选中时显示。不通知界面，由调用方统一 Notify。
+    /// </summary>
+    private void ClearSelectionSilently()
+    {
+        Selected = new Selection();
+        DetailTab = DetailTab.Character;
+    }
+
     /// <summary>Esc 或收起操作条：清空选中，右栏回到默认的人物页。</summary>
     public void ClearSelection()
     {
@@ -387,13 +397,34 @@ public sealed class GameSession
         Select(new Selection { Kind = SelectionKind.Facility, Id = GameEngine.FireIdOf(S.CurrentLocation) });
     }
 
-    /// <summary>悬停/聚焦动作按钮：右栏临时显示该动作的预测；传 null 清空。</summary>
+    private int _hoverSeq;
+
+    /// <summary>
+    /// 悬停/聚焦动作按钮：右栏临时显示该动作的预测；传 null 清空。
+    /// 清空延后约 150 毫秒（期间又悬停到别的按钮就取消）：指针离开按钮后立刻在右栏点一下时，
+    /// 若右栏在这一瞬间整块换掉，浏览器会把这次按下派给已被移除的节点，点击丢失（试玩修复 B3：悬停过工具后第一次点菜单外不关闭）。
+    /// </summary>
     public void Hover(ActionRequest? r, string title = "")
     {
+        if (r == null)
+        {
+            if (HoverPreview == null) return;
+            var seq = ++_hoverSeq;
+            _ = ClearHoverLater(seq);
+            return;
+        }
+        _hoverSeq++;
         if (ReferenceEquals(HoverPreview, r) && HoverTitle == title) return;
-        if (r == null && HoverPreview == null) return;
         HoverPreview = r;
         HoverTitle = title;
+        Notify();
+    }
+
+    private async Task ClearHoverLater(int seq)
+    {
+        await Task.Delay(150);
+        if (seq != _hoverSeq || HoverPreview == null) return;
+        HoverPreview = null;
         Notify();
     }
 
@@ -440,7 +471,7 @@ public sealed class GameSession
         // 拖拽打开的预览确认后收起，避免行动结束后仍停在旧预览上
         if (Selected.Kind == SelectionKind.Action)
         {
-            Selected = new Selection();
+            ClearSelectionSilently();
             PendingAction = null;
         }
         Drain();
@@ -503,7 +534,7 @@ public sealed class GameSession
             case SelectionKind.Tool when Selected.InstanceId is int id:
             {
                 var it = S.Items.FirstOrDefault(i => i.InstanceId == id);
-                if (it == null) { Selected = new Selection(); return; }
+                if (it == null) { ClearSelectionSilently(); return; }
                 if (it.Owner == Selected.Owner && it.ItemId == Selected.Id) return;
                 // 设施里的物品取出后改选它的新位置，卡下操作条与右栏跟着走
                 Selected = E.Item(it.ItemId).IsStackable && !it.InFacility && !it.InContainer
@@ -515,20 +546,20 @@ public sealed class GameSession
             case SelectionKind.Tool:
             {
                 var still = S.Items.Any(i => i.Owner == Selected.Owner && i.ItemId == Selected.Id);
-                if (!still) Selected = new Selection();
+                if (!still) ClearSelectionSilently();
                 return;
             }
             case SelectionKind.PotLiquid:
             {
                 var pot = Selected.InstanceId is int pid ? S.Items.FirstOrDefault(i => i.InstanceId == pid) : null;
                 var liquids = pot == null ? new List<ItemInstance>() : E.PotLiquids(S, pot.InstanceId);
-                if (liquids.Count == 0) { Selected = new Selection(); return; }
+                if (liquids.Count == 0) { ClearSelectionSilently(); return; }
                 if (liquids.All(l => l.ItemId != Selected.Id))
                     Selected = new Selection { Kind = SelectionKind.PotLiquid, Id = liquids[0].ItemId, Owner = Selected.Owner, InstanceId = Selected.InstanceId };
                 return;
             }
             case SelectionKind.Facility:
-                if (E.FacilityLocation(Selected.Id) != S.CurrentLocation) Selected = new Selection();
+                if (E.FacilityLocation(Selected.Id) != S.CurrentLocation) ClearSelectionSilently();
                 return;
         }
     }
@@ -682,7 +713,7 @@ public sealed class GameSession
             // 到达新地点后，原地点的路线、资源与地面选择都已失效
             if (State != null && S.CurrentLocation != startLocation && Selected.Kind != SelectionKind.None
                 && !(Selected.Owner == ItemInstance.Carried))
-                Selected = new Selection();
+                ClearSelectionSilently();
             if (State != null && S.CurrentLocation != startLocation) IgniteMenuOpen = false;
             if (State != null) ReconcileSelection();
             Save();
@@ -746,12 +777,40 @@ public sealed class GameSession
         // 火堆或锅里的物品：明确目标“取下到地面”或“拾取到随身”，与拖出走同一校验（统一卡片案第 5 节）
         if (inst.InFacility || (inst.InContainer && !E.IsLiquid(inst)))
         {
-            var res = Instant(InstantRequest.TakeOut(inst.InstanceId, toZone ?? S.CurrentLocation));
-            if (res.Ok) ReconcileSelection();
+            var id = inst.InstanceId;
+            var movedItem = inst.ItemId;
+            var zone = toZone ?? S.CurrentLocation;
+            var wasSelected = Selected.InstanceId == id && Selected.Kind == SelectionKind.Tool;
+            var res = Instant(InstantRequest.TakeOut(id, zone));
+            if (res.Ok)
+            {
+                ReconcileSelection();
+                // 取出的那份并进了目标区已有的同类堆（实例被合并掉）：选中跟到那一堆，卡下操作条与右栏不落空（试玩修复 B1）
+                if (wasSelected && S.Items.All(i => i.InstanceId != id))
+                    FollowToGroup(zone, movedItem);
+            }
             return res;
         }
         var toCarried = owner != ItemInstance.Carried;
         return Instant(toCarried ? InstantRequest.Pickup(inst.InstanceId, 1) : InstantRequest.Drop(inst.InstanceId, 1));
+    }
+
+    /// <summary>被选中的对象并进了某区的同类堆或以新卡出现：改选那一堆；找不到就清空并回人物页。</summary>
+    public void FollowToGroup(string zone, string itemId)
+    {
+        var any = S.Items.FirstOrDefault(i => i.Owner == zone && i.ItemId == itemId);
+        if (any == null) ClearSelectionSilently();
+        else if (E.Item(itemId).IsStackable)
+        {
+            Selected = new Selection { Kind = SelectionKind.ItemGroup, Id = itemId, Owner = zone };
+            DetailTab = DetailTab.Object;
+        }
+        else
+        {
+            Selected = new Selection { Kind = SelectionKind.Tool, Id = itemId, Owner = zone, InstanceId = any.InstanceId };
+            DetailTab = DetailTab.Object;
+        }
+        Notify();
     }
 
     public void DebugFill()

@@ -58,7 +58,7 @@
                     var tool = r.ToolBonus != null ? e.BestTool(s, r.ToolBonus.ToolTag) : null;
                     var minutes = tool != null && r.ToolBonus?.BaseMinutesOverride != null ? r.ToolBonus.BaseMinutesOverride.Value : r.BaseMinutes;
                     var req = ActionRequest.Gather(r.NodeId);
-                    var why = busy ? "行动进行中" : e.CanStart(s, req);
+                    var why = busy ? (s.Main?.Status == ActionStatus.Paused ? "行动暂停中" : "行动进行中") : e.CanStart(s, req);
                     var stock = r.IsCache ? (empty ? "已搜空" : "可搜1次") : r.IsUnlimited ? "不限量" : $"{rs.Available}/{r.Cap}";
                     <ObjectCard @key="r.NodeId" CssClass="res-card" Title="@r.Name" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
                                 Selected="@(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId)" Fresh="@G.Highlights.Contains(r.NodeId)"
