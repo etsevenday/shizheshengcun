@@ -1,0 +1,3564 @@
+{
+  "version": "0.6",
+  "sourceVersion": "0.2 + 交互与地图扩展 0.3 + 卡片统一与设施烹饪 0.4 + 人物与战斗 v0.6（基线 v0.5）",
+  "date": "2026-10-26",
+  "time": {
+    "tickMinutes": 5,
+    "startAbsoluteMinute": 480,
+    "minutesPerDay": 1440,
+    "daylightStartMinute": 360,
+    "daylightEndMinute": 1080,
+    "offlineProgress": false
+  },
+  "initialStats": {
+    "health": 20,
+    "satiety": 80,
+    "hydration": 80,
+    "energy": 18,
+    "wakefulness": 90,
+    "morale": 60
+  },
+  "carry": {
+    "softGrams": 20000,
+    "hardGrams": 30000
+  },
+  "workFactors": {
+    "night": 1.5,
+    "overweight": 1.25,
+    "lowEnergy": 1.25,
+    "cap": 2.0
+  },
+  "actions": {
+    "waitMinutes": [
+      30,
+      60
+    ],
+    "restMinutes": [
+      30,
+      60,
+      120
+    ],
+    "sleepMinutes": [
+      120,
+      240,
+      480
+    ],
+    "exploreMinutes": 30,
+    "exploreProgress": 25,
+    "clearMinutes": 20,
+    "igniteMinutes": 5,
+    "useMinutes": 5,
+    "rateAliases": {
+      "travel": "travel",
+      "explore": "explore",
+      "gather": "gather",
+      "clear": "clear",
+      "craft": "craft",
+      "build": "craft",
+      "ignite": "craft",
+      "wait": "wait",
+      "use": "wait",
+      "rest": "rest",
+      "butcher": "craft",
+      "repair": "craft",
+      "bypass": "travel"
+    },
+    "workActionTypes": [
+      "travel",
+      "explore",
+      "gather",
+      "craft",
+      "build",
+      "clear",
+      "butcher",
+      "repair"
+    ]
+  },
+  "startingCarried": {
+    "pot": 1,
+    "lighter": 1
+  },
+  "startingCampGround": {
+    "canned_food": 2,
+    "clean_water": 2,
+    "wood": 2,
+    "fiber": 2,
+    "cloth": 2,
+    "stone": 2
+  },
+  "fire": {
+    "burnMinutesPerWood": 60,
+    "igniteMinutes": 5,
+    "maxFuelMinutes": 240,
+    "minFuelToIgnite": 5,
+    "processingSlots": 2,
+    "maxPots": 1,
+    "directFoodInputIds": [
+      "raw_root",
+      "raw_meat"
+    ]
+  },
+  "containers": {
+    "pot": {
+      "capacityMl": 1000,
+      "unitMl": 500,
+      "accepts": [
+        "dirty_water",
+        "clean_water"
+      ],
+      "foodSlots": 2,
+      "storedFoodIds": [
+        "raw_root",
+        "boiled_root",
+        "raw_meat",
+        "cooked_meat",
+        "boiled_meat"
+      ]
+    }
+  },
+  "processes": [
+    {
+      "id": "boil_water",
+      "name": "烧水",
+      "target": "pot_liquid_batch",
+      "inputId": "dirty_water",
+      "outputId": "clean_water",
+      "allowedBatchMl": [
+        500,
+        1000
+      ],
+      "heatMinutes": 15,
+      "waterCostMl": 0,
+      "requiredOwner": "pot_inside_lit_fire",
+      "requiredLiquid": null
+    },
+    {
+      "id": "roast_root",
+      "name": "烤制",
+      "target": "single_food_instance",
+      "inputId": "raw_root",
+      "outputId": "cooked_root",
+      "allowedBatchMl": [],
+      "heatMinutes": 30,
+      "waterCostMl": 0,
+      "requiredOwner": "fire_processing_slot",
+      "requiredLiquid": null
+    },
+    {
+      "id": "boil_root",
+      "name": "水煮",
+      "target": "single_food_instance",
+      "inputId": "raw_root",
+      "outputId": "boiled_root",
+      "allowedBatchMl": [],
+      "heatMinutes": 30,
+      "waterCostMl": 500,
+      "requiredOwner": "pot_inside_lit_fire",
+      "requiredLiquid": "clean_water"
+    },
+    {
+      "id": "roast_meat",
+      "name": "烤制",
+      "target": "single_food_instance",
+      "inputId": "raw_meat",
+      "outputId": "cooked_meat",
+      "allowedBatchMl": [],
+      "heatMinutes": 30,
+      "waterCostMl": 0,
+      "requiredOwner": "fire_processing_slot",
+      "requiredLiquid": null
+    },
+    {
+      "id": "boil_meat",
+      "name": "水煮",
+      "target": "single_food_instance",
+      "inputId": "raw_meat",
+      "outputId": "boiled_meat",
+      "allowedBatchMl": [],
+      "heatMinutes": 30,
+      "waterCostMl": 500,
+      "requiredOwner": "pot_inside_lit_fire",
+      "requiredLiquid": "clean_water"
+    }
+  ],
+  "ui": {
+    "dragThresholdPx": 6
+  },
+  "items": [
+    {
+      "id": "dirty_water",
+      "name": "脏水",
+      "weightGrams": 500,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "kind": "water",
+      "unitVolumeMl": 500,
+      "toolTag": null,
+      "edible": true,
+      "requiresCooking": false,
+      "use": {
+        "satiety": 0,
+        "hydration": 30,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": true,
+        "isBandage": false
+      },
+      "desc": "饮用补水30，必定腹泻12小时",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "clean_water",
+      "name": "净水",
+      "weightGrams": 500,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "kind": "water",
+      "unitVolumeMl": 500,
+      "toolTag": null,
+      "edible": true,
+      "requiresCooking": false,
+      "use": {
+        "satiety": 0,
+        "hydration": 30,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false
+      },
+      "desc": "饮用补水30",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "canned_food",
+      "name": "罐头",
+      "weightGrams": 500,
+      "stackMax": 10,
+      "shelfLifeMinutes": null,
+      "kind": "food",
+      "toolTag": null,
+      "edible": true,
+      "requiresCooking": false,
+      "use": {
+        "satiety": 35,
+        "hydration": 0,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false
+      },
+      "desc": "饱食加35",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "berry",
+      "name": "野果",
+      "weightGrams": 200,
+      "stackMax": 20,
+      "shelfLifeMinutes": 1440,
+      "kind": "food",
+      "toolTag": null,
+      "edible": true,
+      "requiresCooking": false,
+      "use": {
+        "satiety": 10,
+        "hydration": 5,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false
+      },
+      "desc": "饱食加10，水分加5",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "raw_root",
+      "name": "生块根",
+      "weightGrams": 300,
+      "stackMax": 20,
+      "shelfLifeMinutes": 4320,
+      "kind": "food",
+      "toolTag": null,
+      "edible": false,
+      "requiresCooking": true,
+      "use": null,
+      "desc": "需加工：放进燃烧火堆的加工位烤熟，或放进有净水的锅里水煮；不可直接食用",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "cooked_root",
+      "name": "烤熟块根",
+      "weightGrams": 300,
+      "stackMax": 20,
+      "shelfLifeMinutes": 1440,
+      "kind": "food",
+      "toolTag": null,
+      "edible": true,
+      "requiresCooking": false,
+      "use": {
+        "satiety": 25,
+        "hydration": -2,
+        "morale": 2,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false
+      },
+      "desc": "火堆直烤的块根：饱食加25，水分减2，精神加2",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "boiled_root",
+      "name": "水煮块根",
+      "weightGrams": 300,
+      "stackMax": 20,
+      "shelfLifeMinutes": 1440,
+      "kind": "food",
+      "toolTag": null,
+      "edible": true,
+      "requiresCooking": false,
+      "use": {
+        "satiety": 23,
+        "hydration": 5,
+        "morale": 3,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false
+      },
+      "desc": "有水锅里煮熟的块根：饱食加23，水分加5，精神加3",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "wood",
+      "name": "木材",
+      "weightGrams": 500,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "kind": "material",
+      "toolTag": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "每单位提供60分钟燃烧时间",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "fiber",
+      "name": "植物纤维",
+      "weightGrams": 100,
+      "stackMax": 50,
+      "shelfLifeMinutes": null,
+      "kind": "material",
+      "toolTag": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "工具与营地材料",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "stone",
+      "name": "石块",
+      "weightGrams": 500,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "kind": "material",
+      "toolTag": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "工具材料",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "scrap",
+      "name": "废金属",
+      "weightGrams": 500,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "kind": "material",
+      "toolTag": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "遗迹物资，留作后续加工",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "cloth",
+      "name": "布料",
+      "weightGrams": 100,
+      "stackMax": 50,
+      "shelfLifeMinutes": null,
+      "kind": "material",
+      "toolTag": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "绷带与床垫材料",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "parts",
+      "name": "零件",
+      "weightGrams": 200,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "kind": "material",
+      "toolTag": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "遗迹物资，留作后续加工",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "herb",
+      "name": "草药",
+      "weightGrams": 100,
+      "stackMax": 20,
+      "shelfLifeMinutes": 4320,
+      "kind": "medical",
+      "toolTag": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "制作绷带，不直接服用",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "bandage",
+      "name": "草药绷带",
+      "weightGrams": 100,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "kind": "medical",
+      "toolTag": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": {
+        "satiety": 0,
+        "hydration": 0,
+        "morale": 0,
+        "health": 1,
+        "causesDiarrhea": false,
+        "isBandage": true
+      },
+      "desc": "止血；健康+1×(1+0.02×医疗等级)（60分钟冷却）；已感染时病毒−2×(1+0.01×医疗等级)（6小时冷却），最低1且不清除感染",
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "stone_knife",
+      "name": "石刀",
+      "weightGrams": 500,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "tool",
+      "toolTag": "stone_knife",
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "纤维采集耗时20→10分钟；也是刀斧类武器，可处理尸体；最大耐久随机",
+      "durabilityMaxRange": [
+        16,
+        24
+      ],
+      "legacyMaxDurability": 20
+    },
+    {
+      "id": "hatchet",
+      "name": "简易斧",
+      "weightGrams": 1500,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "tool",
+      "toolTag": "hatchet",
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "木材采集产出翻倍；也是刀斧类武器，可处理尸体；最大耐久随机",
+      "durabilityMaxRange": [
+        24,
+        36
+      ],
+      "legacyMaxDurability": 30
+    },
+    {
+      "id": "pot",
+      "name": "金属锅",
+      "weightGrams": 1000,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "tool",
+      "toolTag": "pot",
+      "containerId": "pot",
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "空锅1000克，容量1000毫升，另有2个食材位；可装净水或脏水。放进燃烧的火堆后自动烧水、水煮，产物留在原锅；每次成功净水或熟成一份食物磨损0.2",
+      "durabilityMaxRange": [
+        60,
+        100
+      ]
+    },
+    {
+      "id": "lighter",
+      "name": "打火器",
+      "weightGrams": 100,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "tool",
+      "toolTag": "lighter",
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "点火工具；每次成功点火磨损1，最大耐久随机",
+      "durabilityMaxRange": [
+        40,
+        80
+      ]
+    },
+    {
+      "id": "kitchen_knife",
+      "name": "厨房刀",
+      "weightGrams": 300,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        28,
+        42
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "刀斧类武器，前排；可处理尸体"
+    },
+    {
+      "id": "crowbar",
+      "name": "撬棍",
+      "weightGrams": 1800,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        48,
+        72
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "钝器，前排；可推挡"
+    },
+    {
+      "id": "wooden_spear",
+      "name": "木矛",
+      "weightGrams": 1200,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        20,
+        30
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "矛，可打后排（后排伤害×0.75）"
+    },
+    {
+      "id": "metal_spear",
+      "name": "金属矛",
+      "weightGrams": 1800,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        32,
+        48
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "矛，可打后排（后排伤害×0.75）"
+    },
+    {
+      "id": "wooden_bow",
+      "name": "木弓",
+      "weightGrams": 900,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        24,
+        36
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "弓箭，全排；每射直接消耗随身箭矢1"
+    },
+    {
+      "id": "crossbow",
+      "name": "弩",
+      "weightGrams": 2800,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        32,
+        48
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "弓箭，全排；弹仓1，1AP装填弩矢"
+    },
+    {
+      "id": "pistol",
+      "name": "手枪",
+      "weightGrams": 900,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        64,
+        96
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "枪械，全排；弹仓8，1AP装填9mm弹；开火噪声+25"
+    },
+    {
+      "id": "shotgun",
+      "name": "霰弹枪",
+      "weightGrams": 3200,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        56,
+        84
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "枪械，只打前排；弹仓4，可散射"
+    },
+    {
+      "id": "rifle",
+      "name": "步枪",
+      "weightGrams": 3400,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        64,
+        96
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "枪械，全排；弹仓5"
+    },
+    {
+      "id": "arrow",
+      "name": "箭矢",
+      "weightGrams": 50,
+      "stackMax": 50,
+      "shelfLifeMinutes": null,
+      "kind": "ammo",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "木弓用，首版不回收"
+    },
+    {
+      "id": "bolt",
+      "name": "弩矢",
+      "weightGrams": 50,
+      "stackMax": 50,
+      "shelfLifeMinutes": null,
+      "kind": "ammo",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "弩用"
+    },
+    {
+      "id": "ammo_9mm",
+      "name": "9mm弹",
+      "weightGrams": 10,
+      "stackMax": 50,
+      "shelfLifeMinutes": null,
+      "kind": "ammo",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "手枪用"
+    },
+    {
+      "id": "shell_12g",
+      "name": "霰弹",
+      "weightGrams": 30,
+      "stackMax": 50,
+      "shelfLifeMinutes": null,
+      "kind": "ammo",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "霰弹枪用"
+    },
+    {
+      "id": "ammo_rifle",
+      "name": "步枪弹",
+      "weightGrams": 10,
+      "stackMax": 50,
+      "shelfLifeMinutes": null,
+      "kind": "ammo",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "步枪用"
+    },
+    {
+      "id": "carcass_feral_dog",
+      "name": "野犬尸体",
+      "weightGrams": 1500,
+      "stackMax": 1,
+      "shelfLifeMinutes": 720,
+      "kind": "carcass",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "处理尸体（30分钟，需随身石刀/厨房刀/简易斧）得生肉与兽皮；12小时腐败"
+    },
+    {
+      "id": "carcass_wolf",
+      "name": "狼尸体",
+      "weightGrams": 3000,
+      "stackMax": 1,
+      "shelfLifeMinutes": 720,
+      "kind": "carcass",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "处理尸体（30分钟，需随身石刀/厨房刀/简易斧）得生肉与兽皮；12小时腐败"
+    },
+    {
+      "id": "carcass_boar",
+      "name": "野猪尸体",
+      "weightGrams": 6000,
+      "stackMax": 1,
+      "shelfLifeMinutes": 720,
+      "kind": "carcass",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "处理尸体（30分钟，需随身石刀/厨房刀/简易斧）得生肉与兽皮；12小时腐败"
+    },
+    {
+      "id": "carcass_stag",
+      "name": "鹿尸体",
+      "weightGrams": 4000,
+      "stackMax": 1,
+      "shelfLifeMinutes": 720,
+      "kind": "carcass",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "处理尸体（30分钟，需随身石刀/厨房刀/简易斧）得生肉与兽皮；12小时腐败"
+    },
+    {
+      "id": "raw_meat",
+      "name": "生肉",
+      "weightGrams": 300,
+      "stackMax": 20,
+      "shelfLifeMinutes": 720,
+      "kind": "food",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": true,
+      "use": null,
+      "desc": "需加工：放进燃烧火堆的加工位烤制，或放进有净水的锅里水煮；不可直接食用"
+    },
+    {
+      "id": "hide",
+      "name": "兽皮",
+      "weightGrams": 500,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "kind": "material",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "首版仅储备"
+    },
+    {
+      "id": "cooked_meat",
+      "name": "烤肉",
+      "weightGrams": 300,
+      "stackMax": 20,
+      "shelfLifeMinutes": 1440,
+      "kind": "food",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": true,
+      "requiresCooking": false,
+      "use": {
+        "satiety": 35,
+        "hydration": -3,
+        "morale": 2,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "火堆直烤的肉：饱食+35，水分-3，精神+2"
+    },
+    {
+      "id": "boiled_meat",
+      "name": "水煮肉",
+      "weightGrams": 300,
+      "stackMax": 20,
+      "shelfLifeMinutes": 1440,
+      "kind": "food",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": true,
+      "requiresCooking": false,
+      "use": {
+        "satiety": 32,
+        "hydration": 5,
+        "morale": 3,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "有水锅里煮熟的肉：饱食+32，水分+5，精神+3"
+    },
+    {
+      "id": "antibiotics",
+      "name": "抗生素",
+      "weightGrams": 50,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "kind": "medical",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": {
+        "satiety": 0,
+        "hydration": 0,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": true,
+        "isAntiviral": false
+      },
+      "desc": "已感染时病毒立即−8（最低1），之后6小时病毒正增长×0.5；给药间隔6小时；不能清除感染"
+    },
+    {
+      "id": "antiviral_cure",
+      "name": "病毒特效药",
+      "weightGrams": 50,
+      "stackMax": 5,
+      "shelfLifeMinutes": null,
+      "kind": "medical",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": {
+        "satiety": 0,
+        "hydration": 0,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": true
+      },
+      "desc": "立即清除病毒感染，病毒归0；不回健康、体力"
+    },
+    {
+      "id": "antiviral_precursor",
+      "name": "抗病毒前体",
+      "weightGrams": 100,
+      "stackMax": 10,
+      "shelfLifeMinutes": null,
+      "kind": "material",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "制作病毒特效药的稀缺原料"
+    },
+    {
+      "id": "lab_reagent",
+      "name": "实验室试剂",
+      "weightGrams": 100,
+      "stackMax": 10,
+      "shelfLifeMinutes": null,
+      "kind": "material",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "制作病毒特效药的原料"
+    }
+  ],
+  "locations": [
+    {
+      "id": "camp",
+      "name": "临时营地",
+      "exposure": "outdoor",
+      "initialProgress": 100,
+      "initiallyDiscovered": true,
+      "initiallyVisited": true,
+      "hasFire": true,
+      "canBuildShelter": true,
+      "mapX": 130,
+      "mapY": 100,
+      "scene": "scenes/camp.svg",
+      "sceneFireX": 745,
+      "sceneFireY": 402,
+      "lootTableId": "loose_camp",
+      "clear": {
+        "cap": 3,
+        "initialCharges": 3,
+        "refillIntervalMinutes": 360
+      }
+    },
+    {
+      "id": "field",
+      "name": "农野荒地",
+      "exposure": "outdoor",
+      "initialProgress": 0,
+      "initiallyDiscovered": true,
+      "initiallyVisited": false,
+      "hasFire": false,
+      "canBuildShelter": false,
+      "mapX": 430,
+      "mapY": 100,
+      "scene": "scenes/field.svg",
+      "lootTableId": "loose_field",
+      "clear": {
+        "cap": 4,
+        "initialCharges": 4,
+        "refillIntervalMinutes": 240
+      }
+    },
+    {
+      "id": "stream",
+      "name": "溪流浅滩",
+      "exposure": "outdoor",
+      "initialProgress": 0,
+      "initiallyDiscovered": false,
+      "initiallyVisited": false,
+      "hasFire": false,
+      "canBuildShelter": false,
+      "mapX": 130,
+      "mapY": 300,
+      "scene": "scenes/stream.svg",
+      "lootTableId": "loose_stream",
+      "clear": {
+        "cap": 3,
+        "initialCharges": 3,
+        "refillIntervalMinutes": 360
+      }
+    },
+    {
+      "id": "woods",
+      "name": "树林边缘",
+      "exposure": "outdoor",
+      "initialProgress": 0,
+      "initiallyDiscovered": false,
+      "initiallyVisited": false,
+      "hasFire": false,
+      "canBuildShelter": false,
+      "mapX": 850,
+      "mapY": 100,
+      "scene": "scenes/woods.svg",
+      "lootTableId": "loose_woods",
+      "clear": {
+        "cap": 4,
+        "initialCharges": 4,
+        "refillIntervalMinutes": 240
+      }
+    },
+    {
+      "id": "village",
+      "name": "废弃村庄",
+      "exposure": "outdoor",
+      "initialProgress": 0,
+      "initiallyDiscovered": false,
+      "initiallyVisited": false,
+      "hasFire": false,
+      "canBuildShelter": false,
+      "mapX": 430,
+      "mapY": 500,
+      "scene": "scenes/village.svg",
+      "lootTableId": "loose_village",
+      "clear": {
+        "cap": 3,
+        "initialCharges": 3,
+        "refillIntervalMinutes": 480
+      }
+    },
+    {
+      "id": "hardware",
+      "name": "五金店",
+      "exposure": "indoor",
+      "initialProgress": 0,
+      "initiallyDiscovered": false,
+      "initiallyVisited": false,
+      "hasFire": false,
+      "canBuildShelter": false,
+      "mapX": 850,
+      "mapY": 500,
+      "scene": "scenes/hardware.svg",
+      "lootTableId": "loose_hardware",
+      "clear": {
+        "cap": 2,
+        "initialCharges": 2,
+        "refillIntervalMinutes": 720
+      }
+    },
+    {
+      "id": "clinic",
+      "name": "诊所",
+      "exposure": "indoor",
+      "initialProgress": 0,
+      "initiallyDiscovered": false,
+      "initiallyVisited": false,
+      "hasFire": false,
+      "canBuildShelter": false,
+      "mapX": 130,
+      "mapY": 500,
+      "scene": "scenes/clinic.svg",
+      "lootTableId": "loose_clinic",
+      "clear": {
+        "cap": 2,
+        "initialCharges": 2,
+        "refillIntervalMinutes": 720
+      }
+    },
+    {
+      "id": "scrapyard",
+      "name": "废料场",
+      "exposure": "outdoor",
+      "initialProgress": 0,
+      "initiallyDiscovered": false,
+      "initiallyVisited": false,
+      "hasFire": false,
+      "canBuildShelter": false,
+      "mapX": 1100,
+      "mapY": 300,
+      "scene": "scenes/scrapyard.svg",
+      "lootTableId": "loose_scrapyard",
+      "clear": {
+        "cap": 3,
+        "initialCharges": 3,
+        "refillIntervalMinutes": 480
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "camp__field",
+      "a": "camp",
+      "b": "field",
+      "baseMinutes": 15,
+      "initiallyUnlocked": true,
+      "unlockAny": []
+    },
+    {
+      "id": "field__stream",
+      "a": "field",
+      "b": "stream",
+      "baseMinutes": 20,
+      "initiallyUnlocked": false,
+      "unlockAny": [
+        {
+          "location": "field",
+          "progress": 25
+        }
+      ]
+    },
+    {
+      "id": "field__woods",
+      "a": "field",
+      "b": "woods",
+      "baseMinutes": 20,
+      "initiallyUnlocked": false,
+      "unlockAny": [
+        {
+          "location": "field",
+          "progress": 50
+        }
+      ]
+    },
+    {
+      "id": "field__village",
+      "a": "field",
+      "b": "village",
+      "baseMinutes": 25,
+      "initiallyUnlocked": false,
+      "unlockAny": [
+        {
+          "location": "field",
+          "progress": 100
+        }
+      ]
+    },
+    {
+      "id": "village__hardware",
+      "a": "village",
+      "b": "hardware",
+      "baseMinutes": 15,
+      "initiallyUnlocked": false,
+      "unlockAny": [
+        {
+          "location": "village",
+          "progress": 50
+        }
+      ]
+    },
+    {
+      "id": "village__clinic",
+      "a": "village",
+      "b": "clinic",
+      "baseMinutes": 20,
+      "initiallyUnlocked": false,
+      "unlockAny": [
+        {
+          "location": "village",
+          "progress": 100
+        }
+      ]
+    },
+    {
+      "id": "woods__scrapyard",
+      "a": "woods",
+      "b": "scrapyard",
+      "baseMinutes": 30,
+      "initiallyUnlocked": false,
+      "unlockAny": [
+        {
+          "location": "woods",
+          "progress": 100
+        },
+        {
+          "location": "scrapyard",
+          "progress": 100
+        }
+      ]
+    },
+    {
+      "id": "hardware__scrapyard",
+      "a": "hardware",
+      "b": "scrapyard",
+      "baseMinutes": 20,
+      "initiallyUnlocked": false,
+      "unlockAny": [
+        {
+          "location": "hardware",
+          "progress": 100
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "nodeId": "roots",
+      "name": "块根地",
+      "locationId": "field",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 30,
+      "cap": 6,
+      "dailyRefill": 3,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "raw_root": 2
+      },
+      "toolBonus": null,
+      "hazard": null
+    },
+    {
+      "nodeId": "field_fiber",
+      "name": "荒地纤维丛",
+      "locationId": "field",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 20,
+      "cap": 8,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "fiber": 2
+      },
+      "toolBonus": {
+        "toolTag": "stone_knife",
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 10
+      },
+      "hazard": null
+    },
+    {
+      "nodeId": "water",
+      "name": "脏水源",
+      "locationId": "stream",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 10,
+      "cap": null,
+      "dailyRefill": 0,
+      "poolMode": "unlimited",
+      "outputs": {
+        "dirty_water": 2
+      },
+      "toolBonus": null,
+      "hazard": null
+    },
+    {
+      "nodeId": "herbs",
+      "name": "草药丛",
+      "locationId": "stream",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "herb": 1
+      },
+      "toolBonus": null,
+      "hazard": null
+    },
+    {
+      "nodeId": "wood",
+      "name": "可采木材",
+      "locationId": "woods",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 10,
+      "dailyRefill": 5,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "wood": 1
+      },
+      "toolBonus": {
+        "toolTag": "hatchet",
+        "outputMultiplier": 2,
+        "baseMinutesOverride": null
+      },
+      "hazard": {
+        "probability": 0.05,
+        "healthLoss": 0.6,
+        "label": "划伤"
+      }
+    },
+    {
+      "nodeId": "stones",
+      "name": "地表石块",
+      "locationId": "woods",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 8,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "stone": 2
+      },
+      "toolBonus": null,
+      "hazard": null
+    },
+    {
+      "nodeId": "berries",
+      "name": "野果丛",
+      "locationId": "woods",
+      "revealAt": 75,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 6,
+      "dailyRefill": 3,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "berry": 2
+      },
+      "toolBonus": null,
+      "hazard": null
+    },
+    {
+      "nodeId": "woods_fiber",
+      "name": "林下纤维丛",
+      "locationId": "woods",
+      "revealAt": 75,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 8,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "fiber": 2
+      },
+      "toolBonus": {
+        "toolTag": "stone_knife",
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 10
+      },
+      "hazard": null
+    },
+    {
+      "nodeId": "supply_box",
+      "name": "补给箱",
+      "locationId": "village",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "single_cache",
+      "outputs": {
+        "canned_food": 2,
+        "clean_water": 1
+      },
+      "toolBonus": null,
+      "hazard": null
+    },
+    {
+      "nodeId": "misc_box",
+      "name": "杂物箱",
+      "locationId": "village",
+      "revealAt": 75,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "single_cache",
+      "outputs": {
+        "cloth": 2,
+        "wood": 2
+      },
+      "toolBonus": null,
+      "hazard": {
+        "probability": 0.05,
+        "healthLoss": 0.4,
+        "label": "划伤"
+      }
+    },
+    {
+      "nodeId": "pot_box",
+      "name": "锅具箱",
+      "locationId": "hardware",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 45,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "single_cache",
+      "outputs": {
+        "pot": 1,
+        "parts": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "scavenged": true
+    },
+    {
+      "nodeId": "tool_box",
+      "name": "工具箱",
+      "locationId": "hardware",
+      "revealAt": 75,
+      "revealOnVisit": false,
+      "baseMinutes": 45,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "single_cache",
+      "outputs": {
+        "hatchet": 1,
+        "scrap": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "scavenged": true
+    },
+    {
+      "nodeId": "med_cabinet",
+      "name": "药柜",
+      "locationId": "clinic",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "single_cache",
+      "outputs": {
+        "bandage": 2,
+        "herb": 2
+      },
+      "toolBonus": null,
+      "hazard": null
+    },
+    {
+      "nodeId": "cloth_bag",
+      "name": "布料包",
+      "locationId": "clinic",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "single_cache",
+      "outputs": {
+        "cloth": 4
+      },
+      "toolBonus": null,
+      "hazard": null
+    },
+    {
+      "nodeId": "metal_heap",
+      "name": "废金属堆",
+      "locationId": "scrapyard",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "scrap": 2
+      },
+      "toolBonus": null,
+      "hazard": {
+        "probability": 0.1,
+        "healthLoss": 1.2,
+        "label": "擦伤"
+      }
+    },
+    {
+      "nodeId": "parts_box",
+      "name": "零件箱",
+      "locationId": "scrapyard",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "single_cache",
+      "outputs": {
+        "parts": 4,
+        "scrap": 2
+      },
+      "toolBonus": null,
+      "hazard": {
+        "probability": 0.1,
+        "healthLoss": 1.2,
+        "label": "擦伤"
+      }
+    },
+    {
+      "nodeId": "hardware_weapon_cache",
+      "name": "武器柜",
+      "locationId": "hardware",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "single_cache",
+      "outputs": {
+        "crowbar": 1,
+        "kitchen_knife": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "scavenged": true
+    },
+    {
+      "nodeId": "village_weapon_locker",
+      "name": "旧储物柜",
+      "locationId": "village",
+      "revealAt": 75,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "single_cache",
+      "outputs": {
+        "pistol": 1,
+        "ammo_9mm": 12
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "scavenged": true
+    },
+    {
+      "nodeId": "clinic_medical_supply",
+      "name": "医药补给箱",
+      "locationId": "clinic",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "single_cache",
+      "outputs": {
+        "antibiotics": 2,
+        "lab_reagent": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "independentRare": {
+        "itemId": "antiviral_cure",
+        "count": 1,
+        "chance": 0.01
+      }
+    },
+    {
+      "nodeId": "village_cold_box",
+      "name": "废弃冷藏箱",
+      "locationId": "village",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "single_cache",
+      "outputs": {},
+      "toolBonus": null,
+      "hazard": null,
+      "exclusiveLoot": [
+        {
+          "itemId": "antiviral_precursor",
+          "count": 1,
+          "weight": 20
+        },
+        {
+          "itemId": "bandage",
+          "count": 2,
+          "weight": 80
+        }
+      ]
+    }
+  ],
+  "recipes": [
+    {
+      "id": "knife",
+      "name": "石刀",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "stone": 1,
+        "fiber": 1
+      },
+      "outputs": {
+        "stone_knife": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null
+    },
+    {
+      "id": "axe",
+      "name": "简易斧",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "stone": 2,
+        "wood": 1,
+        "fiber": 2
+      },
+      "outputs": {
+        "hatchet": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null
+    },
+    {
+      "id": "bandage",
+      "name": "草药绷带",
+      "kind": "craft",
+      "baseMinutes": 15,
+      "inputs": {
+        "cloth": 1,
+        "herb": 1
+      },
+      "outputs": {
+        "bandage": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null
+    },
+    {
+      "id": "shelter",
+      "name": "建遮蔽棚",
+      "kind": "build",
+      "baseMinutes": 120,
+      "inputs": {
+        "wood": 4,
+        "fiber": 4
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": {
+        "facility": "camp"
+      },
+      "facilityResult": "shelterBuilt"
+    },
+    {
+      "id": "bed",
+      "name": "铺床垫",
+      "kind": "build",
+      "baseMinutes": 60,
+      "inputs": {
+        "fiber": 4,
+        "cloth": 2
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": {
+        "facility": "shelter"
+      },
+      "facilityResult": "bedBuilt"
+    },
+    {
+      "id": "make_wooden_spear",
+      "name": "木矛",
+      "kind": "craft",
+      "baseMinutes": 45,
+      "inputs": {
+        "wood": 2,
+        "stone": 1,
+        "fiber": 2
+      },
+      "outputs": {
+        "wooden_spear": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null
+    },
+    {
+      "id": "make_wooden_bow",
+      "name": "木弓",
+      "kind": "craft",
+      "baseMinutes": 90,
+      "inputs": {
+        "wood": 2,
+        "fiber": 4,
+        "cloth": 1
+      },
+      "outputs": {
+        "wooden_bow": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null
+    },
+    {
+      "id": "make_arrows",
+      "name": "箭矢",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "wood": 1,
+        "stone": 1,
+        "fiber": 1
+      },
+      "outputs": {
+        "arrow": 4
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null
+    },
+    {
+      "id": "repair_selected_tool",
+      "name": "工具维护",
+      "kind": "repair",
+      "baseMinutes": 30,
+      "inputs": {
+        "scrap": 1,
+        "parts": 1
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "targetInstanceRequired": true,
+      "restoreOwnDurabilityMaxFraction": 0.2,
+      "rerollDurability": false,
+      "requireEmptyDetachedPotWhenTargetIsPot": true
+    },
+    {
+      "id": "make_antiviral_cure",
+      "name": "病毒特效药",
+      "kind": "craft",
+      "baseMinutes": 120,
+      "inputs": {
+        "antiviral_precursor": 1,
+        "lab_reagent": 1,
+        "antibiotics": 2,
+        "herb": 4,
+        "clean_water": 2
+      },
+      "outputs": {
+        "antiviral_cure": 1
+      },
+      "catalysts": [],
+      "requirement": {
+        "facility": "camp"
+      },
+      "facilityResult": null,
+      "minSkills": {
+        "medicine": 15,
+        "crafting": 12
+      },
+      "potCatalyst": "explicit_empty_detached_pot",
+      "autoFillPot": false
+    }
+  ],
+  "lootTables": {
+    "loose_camp": {
+      "version": "0.3",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 25
+        },
+        {
+          "itemId": "wood",
+          "count": 1,
+          "weight": 25
+        },
+        {
+          "itemId": "fiber",
+          "count": 1,
+          "weight": 30
+        },
+        {
+          "itemId": "stone",
+          "count": 1,
+          "weight": 20
+        }
+      ]
+    },
+    "loose_field": {
+      "version": "0.3",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 20
+        },
+        {
+          "itemId": "raw_root",
+          "count": 1,
+          "weight": 35
+        },
+        {
+          "itemId": "fiber",
+          "count": 1,
+          "weight": 35
+        },
+        {
+          "itemId": "stone",
+          "count": 1,
+          "weight": 10
+        }
+      ]
+    },
+    "loose_stream": {
+      "version": "0.3",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 20
+        },
+        {
+          "itemId": "stone",
+          "count": 1,
+          "weight": 35
+        },
+        {
+          "itemId": "fiber",
+          "count": 1,
+          "weight": 25
+        },
+        {
+          "itemId": "herb",
+          "count": 1,
+          "weight": 20
+        }
+      ]
+    },
+    "loose_woods": {
+      "version": "0.3",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 20
+        },
+        {
+          "itemId": "wood",
+          "count": 1,
+          "weight": 30
+        },
+        {
+          "itemId": "fiber",
+          "count": 1,
+          "weight": 25
+        },
+        {
+          "itemId": "stone",
+          "count": 1,
+          "weight": 15
+        },
+        {
+          "itemId": "berry",
+          "count": 1,
+          "weight": 10
+        }
+      ]
+    },
+    "loose_village": {
+      "version": "0.3",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 30
+        },
+        {
+          "itemId": "wood",
+          "count": 1,
+          "weight": 20
+        },
+        {
+          "itemId": "cloth",
+          "count": 1,
+          "weight": 30
+        },
+        {
+          "itemId": "scrap",
+          "count": 1,
+          "weight": 20
+        }
+      ]
+    },
+    "loose_hardware": {
+      "version": "0.3",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 30
+        },
+        {
+          "itemId": "scrap",
+          "count": 1,
+          "weight": 35
+        },
+        {
+          "itemId": "parts",
+          "count": 1,
+          "weight": 15
+        },
+        {
+          "itemId": "stone",
+          "count": 1,
+          "weight": 10
+        },
+        {
+          "itemId": "cloth",
+          "count": 1,
+          "weight": 10
+        }
+      ]
+    },
+    "loose_clinic": {
+      "version": "0.3",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 30
+        },
+        {
+          "itemId": "cloth",
+          "count": 1,
+          "weight": 45
+        },
+        {
+          "itemId": "herb",
+          "count": 1,
+          "weight": 25
+        }
+      ]
+    },
+    "loose_scrapyard": {
+      "version": "0.3",
+      "entries": [
+        {
+          "itemId": null,
+          "count": 0,
+          "weight": 30
+        },
+        {
+          "itemId": "scrap",
+          "count": 1,
+          "weight": 40
+        },
+        {
+          "itemId": "parts",
+          "count": 1,
+          "weight": 10
+        },
+        {
+          "itemId": "stone",
+          "count": 1,
+          "weight": 15
+        },
+        {
+          "itemId": "wood",
+          "count": 1,
+          "weight": 5
+        }
+      ]
+    }
+  },
+  "hourlyRates": {
+    "travel": {
+      "satiety": -1.875,
+      "hydration": -4.5,
+      "energy": -1.6,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "explore": {
+      "satiety": -1.875,
+      "hydration": -4.5,
+      "energy": -2,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "gather": {
+      "satiety": -1.875,
+      "hydration": -4.5,
+      "energy": -2.4,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "clear": {
+      "satiety": -1.875,
+      "hydration": -4.5,
+      "energy": -2.4,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "craft": {
+      "satiety": -1.5,
+      "hydration": -3.75,
+      "energy": -1.2,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "wait": {
+      "satiety": -1.5,
+      "hydration": -3,
+      "energy": 0,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "rest": {
+      "satiety": -1.5,
+      "hydration": -3,
+      "energy": 6,
+      "wakefulness": -5,
+      "morale": 0
+    },
+    "sleep_sheltered": {
+      "satiety": -1.5,
+      "hydration": -3,
+      "energy": 4,
+      "wakefulness": 12,
+      "morale": 1
+    },
+    "sleep_exposed": {
+      "satiety": -1.5,
+      "hydration": -3,
+      "energy": 3,
+      "wakefulness": 6,
+      "morale": -0.5
+    }
+  },
+  "healthRules": {
+    "zeroSatietyPerHour": -0.4,
+    "zeroHydrationPerHour": -1.6,
+    "zeroWakefulnessPerHour": -0.4,
+    "zeroEnergyWhileWorkingPerHour": -0.2,
+    "shelteredRestRecoveryPerHour": 0.2,
+    "recoveryMinSatiety": 40,
+    "recoveryMinHydration": 40,
+    "recoveryMinMorale": 20
+  },
+  "thresholds": {
+    "satiety": {
+      "value": 20,
+      "inclusive": true
+    },
+    "hydration": {
+      "value": 20,
+      "inclusive": true
+    },
+    "wakefulness": {
+      "value": 20,
+      "inclusive": true
+    },
+    "energy": {
+      "value": 4,
+      "inclusive": false
+    },
+    "morale": {
+      "value": 20,
+      "inclusive": false
+    },
+    "health": {
+      "value": 5,
+      "inclusive": true
+    }
+  },
+  "itemActions": {
+    "useMinutes": 5,
+    "bandageCooldownMinutes": 60,
+    "diarrheaMinutes": 720,
+    "diarrheaExtraHydrationPerHour": -3
+  },
+  "facilityEffects": {
+    "bedExtraSleepEnergyPerHour": 1,
+    "shelteredCampRestMoralePerHour": 2,
+    "lowMoraleEnergyRecoveryFactor": 0.5
+  },
+  "toolEffects": {
+    "successfulActionWear": 1
+  },
+  "progress": {
+    "sevenDayCheckMinute": 10560,
+    "tips": [
+      "浏览、看地图、整理物品都不消耗时间，也不扣体力；只有确认行动才会推进。",
+      "探索推进地块调查，并有机会取得零散物资；产物先落在地面，记得拾取。",
+      "脏水必定腹泻12小时：把装了脏水的金属锅放进燃烧的营地火堆，15分钟自动烧成净水。",
+      "生块根不能直接吃：放进燃烧火堆的加工位烤熟（饱食+25、水分−2、精神+2），或放进有净水的锅里水煮（饱食+23、水分+5、精神+3），熟食24小时后腐败。",
+      "露天睡眠每小时只恢复6清醒度，尽早在营地建遮蔽棚（木材4、植物纤维4）。",
+      "火堆点燃后会一直燃烧，离开营地前可以熄火保留剩余燃料；打火器每次成功点火磨损1。",
+      "夜间无照明时，移动、探索、采集都慢1.5倍；火堆燃烧的营地里加工不受影响。",
+      "负重超过20公斤行动变慢，超过30公斤就不能再拾取。",
+      "健康与体力上限都是20；体力低于4时工作变慢；休息只恢复体力，清醒度要靠睡眠。",
+      "简易斧让木材产量翻倍，石刀让纤维采集快一倍；工具与武器的最大耐久按实例随机，成功使用会磨损，可用废金属1+零件1维护。",
+      "精神低于20时，休息和睡眠的体力恢复减半；遮蔽睡眠和熟食能提升精神。",
+      "自然资源每天00:00补充，遗迹里的箱子搜空后不会再有。",
+      "第2日起探索或清理完成后，可能撞上本地已有的敌人：可以接敌，也可以绕行10分钟。",
+      "只有丧尸咬击命中并造成伤害才可能感染病毒；免疫力越低越容易感染、病情越快。",
+      "已感染时，免疫≥85连续12小时且病毒≤10会自然治愈；绷带和抗生素只能压低病毒，病毒特效药能直接治愈。",
+      "健康只在遮蔽处休息或睡眠、且饱食与水分不低于40、精神不低于20时缓慢恢复；草药绷带止血并恢复少量健康。",
+      "遇到问题按 F 留言，会自动附上当前画面和游戏状态。"
+    ],
+    "guides": [
+      {
+        "day": 1,
+        "title": "探索荒地，找到水源与树林；安排第一次饮食和睡眠。",
+        "flags": [
+          {
+            "id": "field50",
+            "label": "农野荒地探索度达到50"
+          },
+          {
+            "id": "visitedStreamOrWoods",
+            "label": "到访溪流浅滩或树林边缘"
+          },
+          {
+            "id": "sleptOnce",
+            "label": "至少睡眠一次"
+          }
+        ]
+      },
+      {
+        "day": 2,
+        "title": "用火堆烧水并烤制或水煮块根，比较露天与遮蔽恢复。",
+        "flags": [
+          {
+            "id": "boiled",
+            "label": "完成一次烧水"
+          },
+          {
+            "id": "cooked",
+            "label": "完成一次块根烹饪"
+          },
+          {
+            "id": "shelterBuilt",
+            "label": "建成遮蔽棚"
+          }
+        ]
+      },
+      {
+        "day": 3,
+        "title": "进入村庄或搜集工具，建立一份次日补给。",
+        "flags": [
+          {
+            "id": "visitedVillage",
+            "label": "到访废弃村庄"
+          },
+          {
+            "id": "supplyReady",
+            "label": "随身或营地有净水3与熟制块根2"
+          }
+        ]
+      }
+    ],
+    "sevenDayItems": [
+      {
+        "id": "boiled",
+        "label": "建立安全饮水"
+      },
+      {
+        "id": "cooked",
+        "label": "完成食物加工"
+      },
+      {
+        "id": "shelterBuilt",
+        "label": "建成遮蔽棚"
+      },
+      {
+        "id": "allVisited",
+        "label": "访问全部8个地点"
+      }
+    ]
+  },
+  "combatEnabled": true,
+  "stateScale": {
+    "healthMax": 20,
+    "initialHealth": 20,
+    "energyMax": 20,
+    "initialEnergy": 18,
+    "satietyMax": 100,
+    "hydrationMax": 100,
+    "wakefulnessMax": 100,
+    "moraleMax": 100,
+    "initialSatiety": 80,
+    "initialHydration": 80,
+    "initialWakefulness": 90,
+    "initialMorale": 60,
+    "oldHealthAndEnergyConversionFactor": 0.2,
+    "healthCritical": 5,
+    "lowEnergyExclusive": 4,
+    "internalPrecision": "at_least_1e-6",
+    "displayDecimals": 2,
+    "displayTinyPositive": "<0.01",
+    "doNotRoundPerTick": true
+  },
+  "scope": {
+    "playerCount": 1,
+    "maxEnemies": 3,
+    "slots": [
+      "F1",
+      "F2",
+      "B1"
+    ],
+    "humanApPerActivation": 2,
+    "enemyActionsPerActivation": 1,
+    "basePlayerSpeed": 4,
+    "basePlayerDodge": 36,
+    "basePlayerArmor": 0,
+    "healthUsesExistingSurvivalHealth": true
+  },
+  "skills": [
+    {
+      "id": "crafting",
+      "name": "制造",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    },
+    {
+      "id": "medicine",
+      "name": "医疗",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    },
+    {
+      "id": "firearms",
+      "name": "枪械",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    },
+    {
+      "id": "blade",
+      "name": "刀斧",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    },
+    {
+      "id": "spear",
+      "name": "矛",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    },
+    {
+      "id": "unarmed",
+      "name": "拳",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    },
+    {
+      "id": "archery",
+      "name": "弓箭",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    },
+    {
+      "id": "blunt",
+      "name": "钝器",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    }
+  ],
+  "weapons": [
+    {
+      "id": "fists",
+      "name": "拳",
+      "skillId": "unarmed",
+      "damageMin": 0.6,
+      "damageMax": 0.9,
+      "energyCost": 0.3,
+      "weightGrams": 0,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 24,
+      "critRatingBase": 3,
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "stone_knife",
+      "name": "石刀",
+      "skillId": "blade",
+      "damageMin": 1.0,
+      "damageMax": 1.5,
+      "energyCost": 0.4,
+      "weightGrams": 500,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 26,
+      "critRatingBase": 5,
+      "durabilityMaxRange": [
+        16,
+        24
+      ]
+    },
+    {
+      "id": "kitchen_knife",
+      "name": "厨房刀",
+      "skillId": "blade",
+      "damageMin": 1.2,
+      "damageMax": 1.8,
+      "energyCost": 0.4,
+      "weightGrams": 300,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 28,
+      "critRatingBase": 6,
+      "durabilityMaxRange": [
+        28,
+        42
+      ]
+    },
+    {
+      "id": "hatchet",
+      "name": "简易斧",
+      "skillId": "blade",
+      "damageMin": 1.6,
+      "damageMax": 2.4,
+      "energyCost": 0.65,
+      "weightGrams": 1500,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 24,
+      "critRatingBase": 5,
+      "durabilityMaxRange": [
+        24,
+        36
+      ]
+    },
+    {
+      "id": "crowbar",
+      "name": "撬棍",
+      "skillId": "blunt",
+      "damageMin": 1.4,
+      "damageMax": 2.1,
+      "energyCost": 0.6,
+      "weightGrams": 1800,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 26,
+      "critRatingBase": 3,
+      "durabilityMaxRange": [
+        48,
+        72
+      ]
+    },
+    {
+      "id": "wooden_spear",
+      "name": "木矛",
+      "skillId": "spear",
+      "damageMin": 1.4,
+      "damageMax": 2.1,
+      "energyCost": 0.5,
+      "weightGrams": 1200,
+      "targets": "all_rear_damage_0.75",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 27,
+      "critRatingBase": 5,
+      "durabilityMaxRange": [
+        20,
+        30
+      ]
+    },
+    {
+      "id": "metal_spear",
+      "name": "金属矛",
+      "skillId": "spear",
+      "damageMin": 1.8,
+      "damageMax": 2.7,
+      "energyCost": 0.5,
+      "weightGrams": 1800,
+      "targets": "all_rear_damage_0.75",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 29,
+      "critRatingBase": 5,
+      "durabilityMaxRange": [
+        32,
+        48
+      ]
+    },
+    {
+      "id": "wooden_bow",
+      "name": "木弓",
+      "skillId": "archery",
+      "damageMin": 1.4,
+      "damageMax": 2.3,
+      "energyCost": 0.4,
+      "weightGrams": 900,
+      "targets": "all",
+      "ammoId": "arrow",
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 25,
+      "critRatingBase": 8,
+      "durabilityMaxRange": [
+        24,
+        36
+      ]
+    },
+    {
+      "id": "crossbow",
+      "name": "弩",
+      "skillId": "archery",
+      "damageMin": 2.0,
+      "damageMax": 3.1,
+      "energyCost": 0.3,
+      "weightGrams": 2800,
+      "targets": "all",
+      "ammoId": "bolt",
+      "magazineCapacity": 1,
+      "basicApCost": 1,
+      "accuracyRating": 31,
+      "critRatingBase": 8,
+      "durabilityMaxRange": [
+        32,
+        48
+      ]
+    },
+    {
+      "id": "pistol",
+      "name": "手枪",
+      "skillId": "firearms",
+      "damageMin": 2.4,
+      "damageMax": 3.6,
+      "energyCost": 0.25,
+      "weightGrams": 900,
+      "targets": "all",
+      "ammoId": "ammo_9mm",
+      "magazineCapacity": 8,
+      "basicApCost": 1,
+      "accuracyRating": 25,
+      "critRatingBase": 8,
+      "durabilityMaxRange": [
+        64,
+        96
+      ]
+    },
+    {
+      "id": "shotgun",
+      "name": "霰弹枪",
+      "skillId": "firearms",
+      "damageMin": 3.6,
+      "damageMax": 5.2,
+      "energyCost": 0.4,
+      "weightGrams": 3200,
+      "targets": "front",
+      "ammoId": "shell_12g",
+      "magazineCapacity": 4,
+      "basicApCost": 1,
+      "accuracyRating": 23,
+      "critRatingBase": 5,
+      "durabilityMaxRange": [
+        56,
+        84
+      ]
+    },
+    {
+      "id": "rifle",
+      "name": "步枪",
+      "skillId": "firearms",
+      "damageMin": 3.2,
+      "damageMax": 4.8,
+      "energyCost": 0.35,
+      "weightGrams": 3400,
+      "targets": "all",
+      "ammoId": "ammo_rifle",
+      "magazineCapacity": 5,
+      "basicApCost": 1,
+      "accuracyRating": 32,
+      "critRatingBase": 10,
+      "durabilityMaxRange": [
+        64,
+        96
+      ]
+    }
+  ],
+  "enemies": [
+    {
+      "id": "shambler",
+      "name": "游荡尸",
+      "family": "zombie",
+      "hp": 3.6,
+      "armor": 0,
+      "dodge": 25,
+      "speed": 2,
+      "damageMin": 0.7,
+      "damageMax": 1.1,
+      "behavior": "grab",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": true,
+      "attackRating": 20,
+      "rarity": "common",
+      "biteIntentWeightPct": 20,
+      "worldPersistentId": true
+    },
+    {
+      "id": "crawler",
+      "name": "爬行尸",
+      "family": "zombie",
+      "hp": 2.8,
+      "armor": 0,
+      "dodge": 28,
+      "speed": 1,
+      "damageMin": 0.4,
+      "damageMax": 0.8,
+      "behavior": "slow_on_hit",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": true,
+      "attackRating": 18,
+      "rarity": "common",
+      "biteIntentWeightPct": 20,
+      "worldPersistentId": true
+    },
+    {
+      "id": "runner",
+      "name": "狂奔尸",
+      "family": "zombie",
+      "hp": 3.2,
+      "armor": 0,
+      "dodge": 34,
+      "speed": 6,
+      "damageMin": 0.8,
+      "damageMax": 1.2,
+      "behavior": "stagger_on_hit",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": true,
+      "attackRating": 23,
+      "rarity": "rare",
+      "biteIntentWeightPct": 20,
+      "worldPersistentId": true
+    },
+    {
+      "id": "worker",
+      "name": "厚衣工尸",
+      "family": "zombie",
+      "hp": 5.6,
+      "armor": 0.3,
+      "dodge": 22,
+      "speed": 2,
+      "damageMin": 1.0,
+      "damageMax": 1.5,
+      "behavior": "strike",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": true,
+      "attackRating": 18,
+      "rarity": "rare",
+      "biteIntentWeightPct": 20,
+      "worldPersistentId": true
+    },
+    {
+      "id": "riot",
+      "name": "防护尸",
+      "family": "zombie",
+      "hp": 7,
+      "armor": 0.7,
+      "dodge": 20,
+      "speed": 1,
+      "damageMin": 1.2,
+      "damageMax": 1.8,
+      "behavior": "guard_first_round",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": true,
+      "attackRating": 16,
+      "rarity": "elite",
+      "biteIntentWeightPct": 20,
+      "worldPersistentId": true
+    },
+    {
+      "id": "howler",
+      "name": "嚎叫尸",
+      "family": "zombie",
+      "hp": 4,
+      "armor": 0,
+      "dodge": 28,
+      "speed": 3,
+      "damageMin": 0.5,
+      "damageMax": 0.8,
+      "behavior": "howl_odd_rounds",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": true,
+      "attackRating": 16,
+      "rarity": "rare",
+      "biteIntentWeightPct": 20,
+      "worldPersistentId": true
+    },
+    {
+      "id": "feral_dog",
+      "name": "野犬",
+      "family": "animal",
+      "hp": 3.2,
+      "armor": 0,
+      "dodge": 32,
+      "speed": 5,
+      "damageMin": 0.5,
+      "damageMax": 1.0,
+      "behavior": "bleed_on_hit_25",
+      "fleeAtHp": null,
+      "immuneBleed": false,
+      "artRequired": true,
+      "attackRating": 22,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true
+    },
+    {
+      "id": "wolf",
+      "name": "灰狼",
+      "family": "animal",
+      "hp": 4.8,
+      "armor": 0,
+      "dodge": 34,
+      "speed": 5,
+      "damageMin": 0.9,
+      "damageMax": 1.4,
+      "behavior": "bleed_on_hit_25",
+      "fleeAtHp": 1.2000000000000002,
+      "immuneBleed": false,
+      "artRequired": true,
+      "attackRating": 24,
+      "rarity": "rare",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true
+    },
+    {
+      "id": "boar",
+      "name": "野猪",
+      "family": "animal",
+      "hp": 6.8,
+      "armor": 0.2,
+      "dodge": 25,
+      "speed": 3,
+      "damageMin": 1.1,
+      "damageMax": 1.8,
+      "behavior": "charge_prepare_odd_attack_even",
+      "fleeAtHp": null,
+      "immuneBleed": false,
+      "artRequired": true,
+      "attackRating": 20,
+      "rarity": "elite",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true
+    },
+    {
+      "id": "stag",
+      "name": "警戒雄鹿",
+      "family": "animal",
+      "hp": 5.2,
+      "armor": 0,
+      "dodge": 32,
+      "speed": 4,
+      "damageMin": 0.8,
+      "damageMax": 1.3,
+      "behavior": "neutral_until_attacked",
+      "fleeAtHp": 2.0,
+      "immuneBleed": false,
+      "artRequired": true,
+      "attackRating": 18,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true
+    }
+  ],
+  "xp": {
+    "craft": "clamp(ceil(originalBaseMinutes/10),1,12)",
+    "medical": 4,
+    "damagingAttackCommand": 2,
+    "maxHitsPerEncounterEnemySkill": 3,
+    "groupAttackXpIsSingleCommand": true,
+    "cancelOrPreviewXp": 0,
+    "counterKey": [
+      "encounterId",
+      "enemyInstanceId",
+      "skillId"
+    ]
+  },
+  "crafting": {
+    "workFactor": "1/(1+0.025*L)",
+    "minFactor": null,
+    "affectsPassiveCooking": false,
+    "affectsButchering": false,
+    "batchOverflowWithinSameReservedBatch": true,
+    "carryOverflowToOtherAction": false
+  },
+  "combatMath": {
+    "initiative": "max(0.1,speed-lowEnergy-lowWakefulness-2*slowLayers)+randInt(1,4)",
+    "tieBreak": "stableBattleInstanceIdAscending",
+    "playerAccuracyRating": "(weaponBase+3*L)*actionFactor*lowEnergyFactor*lowWakefulnessFactor*panicFactor*staggerFactor",
+    "hitProbability": "attackRating/(attackRating+targetEvasionRating)",
+    "critRating": "baseCritRating+0.3*L",
+    "critProbability": "critRating/(critRating+100)",
+    "critFactor": 1.5,
+    "playerDamage": "max(0,U(min,max)*(1+0.035*L)*actionFactor*rankFactor*critFactor-armor)",
+    "guardAppliedAfterArmor": "damage*0.5",
+    "hardHitChanceClamp": null,
+    "hardCritChanceClamp": null,
+    "enemySkillScaling": false,
+    "enemyCritRating": 0,
+    "randomDamage": "uniform_real_from_saved_prng",
+    "lowEnergyExclusive": 4,
+    "lowEnergyAccuracyFactor": 0.85,
+    "lowEnergySpeedPenalty": 1,
+    "lowWakefulnessInclusive": 20,
+    "lowWakefulnessAccuracyFactor": 0.85,
+    "lowWakefulnessSpeedPenalty": 1,
+    "staggerAccuracyFactor": 0.9,
+    "guardStacks": false,
+    "aimRemoved": true
+  },
+  "panic": {
+    "range": [
+      0,
+      100
+    ],
+    "initial": "(100-morale)/2",
+    "surpriseBonus": 10,
+    "directDamageGain": "actualDamage*1.5",
+    "penalties": [
+      {
+        "minimum": 60,
+        "accuracyRatingFactor": 0.85,
+        "retreatFactor": 0.9
+      },
+      {
+        "minimum": 90,
+        "accuracyRatingFactor": 0.7,
+        "retreatFactor": 0.8
+      }
+    ],
+    "penaltiesSelectHighestOnly": true,
+    "postBattleMoraleLoss": "min(5,panic/20)",
+    "clearAfterBattle": true
+  },
+  "retreat": {
+    "chance": "sigmoid((playerEffectiveSpeed-maxEnemyEffectiveSpeed)/3+0.7)*panicFactor*lowEnergyFactor",
+    "successMovesLocation": false,
+    "failureConsumesTurn": true,
+    "preserveEncounterSurvivorHp": true,
+    "resetSurvivorTemporaryStatuses": true,
+    "claimLootOnRetreat": false
+  },
+  "ammo": {
+    "weaponLoadedCountsInMass": true,
+    "looseAndLoadedExclusiveOwners": true,
+    "reloadAp": 1,
+    "autoReload": false,
+    "bowConsumesLooseArrowDirectly": true,
+    "recoverArrows": false
+  },
+  "wear": {
+    "perExecutedAttackCommand": 1,
+    "onMiss": true,
+    "perGroupTarget": false,
+    "gatherWearRuleUnchanged": true,
+    "zeroDurabilityDisablesAttack": true
+  },
+  "noise": {
+    "max": 100,
+    "gunGain": 25,
+    "crossbowGain": 5,
+    "bowAndMeleeGain": 0,
+    "maxReinforcementsPerBattle": 1,
+    "spawnAtNextRoundWithSpace": true,
+    "cancelAfterBattleEnd": true,
+    "reinforcementSource": "unengaged_existing_local_world_enemy",
+    "createNewEnemy": false,
+    "existingEnemyFamilyFilter": "zombie"
+  },
+  "statuses": {
+    "bleed": {
+      "damagePerOwnActivation": 0.4,
+      "triggers": 3,
+      "stacks": false,
+      "refreshMaxTriggers": 3,
+      "immuneFamily": "zombie",
+      "postBattle": "0.4_health_per_world_tick_remaining_triggers",
+      "noExtraExitTrigger": true
+    },
+    "stagger": {
+      "expiresLatest": "next_round_end",
+      "nextAttackAccuracyFactor": 0.9
+    },
+    "slow": {
+      "nextRoundSpeedPenalty": 2,
+      "expires": "next_round_end",
+      "stacks": false
+    }
+  },
+  "encounters": {
+    "source": "existing_local_world_enemies_only",
+    "createNewEnemiesOnActionCompletion": false,
+    "safeLocations": [
+      "camp"
+    ],
+    "noRandomBeforeDay": 2,
+    "checkOnlyAfterCompletedActions": [
+      "explore",
+      "clear"
+    ],
+    "fullLocalPopulationActionRisk": {
+      "explore": 0.02,
+      "clear": 0.01
+    },
+    "actualRiskFormula": "baseRisk*(localUnengagedHostileCount/localCap)",
+    "noRiskWhenZeroHostile": true,
+    "activeContactEnabled": true,
+    "commitOriginalActionBeforeEncounter": true,
+    "bypassMinutes": 10,
+    "bypassRateCategory": "travel",
+    "postExitRandomEncounterGraceMinutes": 60,
+    "noNestedRandomDuringCombatOrBypass": true,
+    "groupMax": 3,
+    "groupSelection": "oldest_local_hostile_then_nearest_existing_hostiles_max3",
+    "bypassLeavesWorldEnemiesAlive": true,
+    "defeatRemovesOnlyKilledWorldIds": true,
+    "combatSurvivorsKeepHpAndXpCountersOnWorldId": true
+  },
+  "zombieLoot": {
+    "rollAtFirstEnemyDeath": true,
+    "claimOnceAtFinalVictory": true,
+    "entries": [
+      {
+        "itemId": null,
+        "count": 0,
+        "weight": 50
+      },
+      {
+        "itemId": "cloth",
+        "count": 1,
+        "weight": 30
+      },
+      {
+        "itemId": "scrap",
+        "count": 1,
+        "weight": 20
+      }
+    ],
+    "version": "0.5"
+  },
+  "animalCarcasses": [
+    {
+      "enemyId": "feral_dog",
+      "carcassItemId": "carcass_feral_dog",
+      "count": 1,
+      "butcherBaseMinutes": 30,
+      "butcherManufacturingSpeedBonus": false,
+      "requiredCarriedTools": [
+        "stone_knife",
+        "kitchen_knife",
+        "hatchet"
+      ],
+      "toolWearOnSuccess": 1,
+      "outputs": {
+        "raw_meat": 2,
+        "hide": 1
+      }
+    },
+    {
+      "enemyId": "wolf",
+      "carcassItemId": "carcass_wolf",
+      "count": 1,
+      "butcherBaseMinutes": 30,
+      "butcherManufacturingSpeedBonus": false,
+      "requiredCarriedTools": [
+        "stone_knife",
+        "kitchen_knife",
+        "hatchet"
+      ],
+      "toolWearOnSuccess": 1,
+      "outputs": {
+        "raw_meat": 3,
+        "hide": 1
+      }
+    },
+    {
+      "enemyId": "boar",
+      "carcassItemId": "carcass_boar",
+      "count": 1,
+      "butcherBaseMinutes": 30,
+      "butcherManufacturingSpeedBonus": false,
+      "requiredCarriedTools": [
+        "stone_knife",
+        "kitchen_knife",
+        "hatchet"
+      ],
+      "toolWearOnSuccess": 1,
+      "outputs": {
+        "raw_meat": 4,
+        "hide": 1
+      }
+    },
+    {
+      "enemyId": "stag",
+      "carcassItemId": "carcass_stag",
+      "count": 1,
+      "butcherBaseMinutes": 30,
+      "butcherManufacturingSpeedBonus": false,
+      "requiredCarriedTools": [
+        "stone_knife",
+        "kitchen_knife",
+        "hatchet"
+      ],
+      "toolWearOnSuccess": 1,
+      "outputs": {
+        "raw_meat": 3,
+        "hide": 1
+      }
+    }
+  ],
+  "skillGrowth": {
+    "damageFactor": "1+0.035*L",
+    "accuracyRating": "weaponBase+3*L",
+    "energyCost": "baseEnergy/(1+0.025*L)",
+    "medicalHeal": "1*(1+0.02*L)",
+    "skillLevelCap": null,
+    "damageCap": null,
+    "accuracyRatingCap": null,
+    "energyCostHardFloor": null,
+    "craftWorkHardFloor": null,
+    "physicalStateMaxStillApplies": true
+  },
+  "durability": {
+    "roll": "uniform_inclusive_tenths",
+    "rollAt": "instance_creation_once",
+    "newItemCurrent": "rolledMaximum",
+    "scavengedConditionOptional": [
+      0.6,
+      1.0
+    ],
+    "affixesMayModifyRangeWithoutGlobalHardCap": true,
+    "tools": {
+      "pot": {
+        "maxRange": [
+          60,
+          100
+        ],
+        "wearPerSuccessfulThermalProcess": 0.2
+      },
+      "lighter": {
+        "maxRange": [
+          40,
+          80
+        ],
+        "wearPerSuccessfulIgnition": 1
+      }
+    },
+    "needEnoughDurabilityForActionCost": true,
+    "migrateExisting": "roll_once_preserve_old_current_over_old_max_ratio",
+    "repair": {
+      "baseMinutes": 30,
+      "inputs": {
+        "scrap": 1,
+        "parts": 1
+      },
+      "restoreFractionOfOwnMax": 0.2,
+      "requireEmptyDetachedPot": true,
+      "rerollMaximum": false
+    }
+  },
+  "immunity": {
+    "initial": 70,
+    "min": 0,
+    "max": 100,
+    "healthyConditions": {
+      "satietyAtLeast": 50,
+      "hydrationAtLeast": 50,
+      "wakefulnessAtLeast": 50,
+      "healthRatioAtLeast": 0.5,
+      "moraleAtLeast": 40
+    },
+    "healthyBonusPerHour": 0.5,
+    "shelteredSleepPerHour": 2,
+    "exposedSleepPerHour": 1,
+    "shelteredRestPerHour": 1,
+    "exposedRestPerHour": 0.5,
+    "penaltiesPerHour": {
+      "satietyBelow20": -2,
+      "hydrationBelow20": -3,
+      "wakefulnessBelow20": -2,
+      "healthBelow5": -2,
+      "moraleBelow20": -1,
+      "diarrhea": -1,
+      "virusInfected": -0.5
+    },
+    "updateSource": "world_tick_start_state",
+    "offlineProgress": false
+  },
+  "infection": {
+    "loadRange": [
+      0,
+      100
+    ],
+    "initialInfected": false,
+    "initialLoad": 0,
+    "exposureSource": "zombie_bite_hit_with_positive_direct_damage_only",
+    "exposureProbability": "0.05+0.55*(1-immunity/100)",
+    "onFirstSuccessfulExposure": {
+      "load": 20,
+      "highImmunityMinutes": 0
+    },
+    "onRepeatedSuccessfulExposure": {
+      "loadDelta": 10,
+      "resetHighImmunityMinutes": true
+    },
+    "progressPerHour": [
+      {
+        "immunityRange": [
+          0,
+          40
+        ],
+        "rate": 4
+      },
+      {
+        "immunityRange": [
+          40,
+          70
+        ],
+        "rate": 2
+      },
+      {
+        "immunityRange": [
+          70,
+          85
+        ],
+        "rate": 0.5
+      },
+      {
+        "immunityRange": [
+          85,
+          100
+        ],
+        "includeUpper": true,
+        "rate": -1.5
+      }
+    ],
+    "naturalLoadMinimumWhileInfected": 1,
+    "zombificationAtLoad": 100,
+    "naturalCure": {
+      "consecutiveImmunityAtLeast": 85,
+      "minutes": 720,
+      "loadAtMost": 10,
+      "resetWhenBelowThresholdOrExposedAgain": true
+    },
+    "onlyCureSources": [
+      "natural_high_immunity",
+      "antiviral_cure"
+    ],
+    "antibiotics": {
+      "instantLoadReduction": 8,
+      "positiveProgressFactor": 0.5,
+      "durationMinutes": 360,
+      "useCooldownMinutes": 360,
+      "refreshNotStack": true,
+      "cannotClearInfection": true
+    },
+    "bandage": {
+      "loadReduction": "2*(1+0.01*medicineLevel)",
+      "virusCooldownMinutes": 360,
+      "doesNotPreventFutureBiteExposure": true,
+      "cannotClearInfection": true
+    },
+    "allSuppressantsMinLoad": 1,
+    "antiviralCure": {
+      "clearFlag": true,
+      "setLoad": 0,
+      "setHighImmunityMinutes": 0,
+      "restoreHealth": 0
+    },
+    "progressWarnings": [
+      20,
+      50,
+      80
+    ],
+    "gameOverReason": "zombification",
+    "endpointOrder": [
+      "apply_tick_rates",
+      "clamp_immunity_and_load",
+      "death_or_zombification",
+      "natural_cure_if_eligible"
+    ],
+    "highImmunityTimerUsesBothTickEndpoints": true
+  },
+  "worldEnemies": {
+    "globalCap": 12,
+    "localCaps": {
+      "camp": 0,
+      "field": 3,
+      "stream": 2,
+      "woods": 4,
+      "village": 4,
+      "hardware": 2,
+      "clinic": 2,
+      "scrapyard": 3
+    },
+    "initial": {
+      "camp": [],
+      "field": [
+        "shambler"
+      ],
+      "stream": [
+        "crawler"
+      ],
+      "woods": [
+        "feral_dog"
+      ],
+      "village": [
+        "shambler",
+        "shambler"
+      ],
+      "hardware": [],
+      "clinic": [],
+      "scrapyard": [
+        "shambler"
+      ]
+    },
+    "spawnChecksBeginAbsoluteMinute": 1440,
+    "spawnCheckIntervalMinutes": 120,
+    "spawnSuccessProbability": 0.25,
+    "spawnCountPerSuccessfulCheck": 1,
+    "onlyOutsidePlayerCurrentLocation": true,
+    "rarityWeights": {
+      "common": 96,
+      "rare": 3.5,
+      "elite": 0.5
+    },
+    "rarityRollBeforeLocationEligibility": true,
+    "emptyRarityLocationPool": "no_spawn_no_reroll",
+    "eligibleLocationSelection": "uniform_among_matching_available_noncurrent_locations",
+    "pools": {
+      "field": {
+        "common": [
+          {
+            "enemyId": "shambler",
+            "weight": 70
+          },
+          {
+            "enemyId": "crawler",
+            "weight": 20
+          },
+          {
+            "enemyId": "feral_dog",
+            "weight": 10
+          }
+        ],
+        "rare": [
+          {
+            "enemyId": "runner",
+            "weight": 100
+          }
+        ],
+        "elite": [
+          {
+            "enemyId": "boar",
+            "weight": 100
+          }
+        ]
+      },
+      "stream": {
+        "common": [
+          {
+            "enemyId": "shambler",
+            "weight": 60
+          },
+          {
+            "enemyId": "crawler",
+            "weight": 20
+          },
+          {
+            "enemyId": "stag",
+            "weight": 20
+          }
+        ],
+        "rare": [
+          {
+            "enemyId": "wolf",
+            "weight": 100
+          }
+        ],
+        "elite": []
+      },
+      "woods": {
+        "common": [
+          {
+            "enemyId": "shambler",
+            "weight": 40
+          },
+          {
+            "enemyId": "crawler",
+            "weight": 10
+          },
+          {
+            "enemyId": "feral_dog",
+            "weight": 20
+          },
+          {
+            "enemyId": "stag",
+            "weight": 30
+          }
+        ],
+        "rare": [
+          {
+            "enemyId": "wolf",
+            "weight": 100
+          }
+        ],
+        "elite": [
+          {
+            "enemyId": "boar",
+            "weight": 100
+          }
+        ]
+      },
+      "village": {
+        "common": [
+          {
+            "enemyId": "shambler",
+            "weight": 70
+          },
+          {
+            "enemyId": "crawler",
+            "weight": 20
+          },
+          {
+            "enemyId": "feral_dog",
+            "weight": 10
+          }
+        ],
+        "rare": [
+          {
+            "enemyId": "runner",
+            "weight": 30
+          },
+          {
+            "enemyId": "worker",
+            "weight": 40
+          },
+          {
+            "enemyId": "howler",
+            "weight": 30
+          }
+        ],
+        "elite": [
+          {
+            "enemyId": "riot",
+            "weight": 100
+          }
+        ]
+      },
+      "hardware": {
+        "common": [
+          {
+            "enemyId": "shambler",
+            "weight": 70
+          },
+          {
+            "enemyId": "crawler",
+            "weight": 30
+          }
+        ],
+        "rare": [
+          {
+            "enemyId": "worker",
+            "weight": 100
+          }
+        ],
+        "elite": [
+          {
+            "enemyId": "riot",
+            "weight": 100
+          }
+        ]
+      },
+      "clinic": {
+        "common": [
+          {
+            "enemyId": "shambler",
+            "weight": 80
+          },
+          {
+            "enemyId": "crawler",
+            "weight": 20
+          }
+        ],
+        "rare": [
+          {
+            "enemyId": "howler",
+            "weight": 100
+          }
+        ],
+        "elite": []
+      },
+      "scrapyard": {
+        "common": [
+          {
+            "enemyId": "shambler",
+            "weight": 70
+          },
+          {
+            "enemyId": "crawler",
+            "weight": 30
+          }
+        ],
+        "rare": [
+          {
+            "enemyId": "worker",
+            "weight": 100
+          }
+        ],
+        "elite": [
+          {
+            "enemyId": "riot",
+            "weight": 100
+          }
+        ]
+      }
+    },
+    "discardBlockedChecksNoSpawnDebt": true,
+    "offlineSpawns": false,
+    "patrolCheckIntervalMinutes": 180,
+    "patrolMoveProbabilityPerEnemy": 0.2,
+    "patrolMaxEdgesPerCheck": 1,
+    "engagedEnemiesDoNotPatrol": true,
+    "patrolEntersCamp": false,
+    "patrolSource": "physical_fixed_world_edges_not_player_discovery",
+    "deadDoNotCountInCap": true,
+    "engagedAliveCountInCap": true,
+    "ineligibleEnemiesNeverReplacedByStrongerTier": true,
+    "fleeWithoutValidNeighborHiddenMinutes": 60
+  },
+  "combatActions": [
+    {
+      "id": "basic_attack",
+      "ap": 1,
+      "energySource": "weapon",
+      "damageFactor": 1,
+      "accuracyRatingFactor": 1.0
+    },
+    {
+      "id": "cleave",
+      "ap": 2,
+      "energy": 1.6,
+      "skills": [
+        "blade"
+      ],
+      "minLevel": 3,
+      "damageFactor": 1.6,
+      "accuracyRatingFactor": 0.9,
+      "applyCorrespondingSkillEnergyReduction": true
+    },
+    {
+      "id": "cut",
+      "ap": 1,
+      "energy": 0.8,
+      "skills": [
+        "blade"
+      ],
+      "minLevel": 2,
+      "damageFactor": 0.75,
+      "bleed": 0.4,
+      "bleedTriggers": 3,
+      "accuracyRatingFactor": 1.0,
+      "applyCorrespondingSkillEnergyReduction": true
+    },
+    {
+      "id": "precise_thrust",
+      "ap": 2,
+      "energy": 1.4000000000000001,
+      "skills": [
+        "spear"
+      ],
+      "minLevel": 3,
+      "damageFactor": 1.35,
+      "accuracyRatingFactor": 1.1,
+      "applyCorrespondingSkillEnergyReduction": true
+    },
+    {
+      "id": "push",
+      "ap": 1,
+      "energy": 0.8,
+      "skills": [
+        "unarmed",
+        "blunt"
+      ],
+      "minLevel": 1,
+      "damageFactor": 0,
+      "status": "stagger",
+      "applyCorrespondingSkillEnergyReduction": true
+    },
+    {
+      "id": "scatter",
+      "ap": 2,
+      "energy": 1.0,
+      "skills": [
+        "firearms"
+      ],
+      "weaponId": "shotgun",
+      "minLevel": 3,
+      "damageFactor": 0.7,
+      "maxTargets": 2,
+      "targets": "front",
+      "ammoCost": 1,
+      "applyCorrespondingSkillEnergyReduction": true
+    },
+    {
+      "id": "guard",
+      "ap": 1,
+      "energy": 0,
+      "charges": 1,
+      "directDamageFactor": 0.5,
+      "expires": "next_own_activation_start"
+    },
+    {
+      "id": "breathe",
+      "ap": 2,
+      "energy": 0,
+      "restoreEnergy": 1.6,
+      "reducePanic": 10,
+      "maxPerTurn": 1
+    },
+    {
+      "id": "switch_weapon",
+      "ap": 1,
+      "energy": 0,
+      "sourceOwner": "carried"
+    },
+    {
+      "id": "reload",
+      "ap": 1,
+      "energy": 0,
+      "sourceOwner": "carried"
+    },
+    {
+      "id": "bandage",
+      "ap": 2,
+      "energy": 0,
+      "itemId": "bandage",
+      "count": 1,
+      "removeBleed": true,
+      "healthFormula": "1*(1+0.02*medicineLevel)",
+      "healthCooldownMinutes": 60,
+      "bleedRemovalIgnoresHealthCooldown": true,
+      "additionalWorldMinutes": 0,
+      "infectionReductionFormula": "2*(1+0.01*medicineLevel), infected minimum load 1",
+      "infectionEffectCooldownMinutes": 360
+    },
+    {
+      "id": "desperate_punch",
+      "ap": 1,
+      "energy": 0,
+      "skillId": "unarmed",
+      "damageFactor": 0.5,
+      "requiresInsufficientNormalAttackEnergy": true,
+      "accuracyRatingFactor": 0.65
+    },
+    {
+      "id": "retreat",
+      "ap": 2,
+      "energy": 0.8,
+      "maxPerTurn": 1,
+      "lowEnergyChanceFactor": 0.75
+    },
+    {
+      "id": "end_turn",
+      "ap": "remaining",
+      "energy": 0
+    },
+    {
+      "id": "use_antibiotics",
+      "ap": 2,
+      "energy": 0,
+      "itemId": "antibiotics",
+      "count": 1,
+      "instantVirusReduction": 8,
+      "minimumInfectedLoad": 1,
+      "cooldownMinutes": 360,
+      "positiveVirusProgressFactor": 0.5,
+      "effectMinutes": 360,
+      "clearInfected": false,
+      "additionalWorldMinutes": 0
+    },
+    {
+      "id": "use_antiviral_cure",
+      "ap": 2,
+      "energy": 0,
+      "itemId": "antiviral_cure",
+      "count": 1,
+      "clearInfected": true,
+      "setVirusLoad": 0,
+      "restoreHealth": 0,
+      "restoreEnergy": 0,
+      "additionalWorldMinutes": 0
+    }
+  ],
+  "battleTime": {
+    "roundWorldMinutes": 5,
+    "tickOnceAtRoundEndOrNonfatalEarlyExit": true,
+    "previewAdvancesTime": false,
+    "freezeImmediatelyOnDirectDeathNoFutureTick": true,
+    "hourlyRates": {
+      "satiety": -1.875,
+      "hydration": -4.5,
+      "energy": 0,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "actionEnergyPaidSeparately": true,
+    "countsAsWorkingForZeroEnergyDamage": true,
+    "passiveFacilitiesAndRefillsAdvance": true,
+    "battleLowValueWarningsNonBlocking": true,
+    "noLegacyInstantUseChildAction": true,
+    "foodAndDrinkInCombatEnabled": false,
+    "zeroEnergyWorkingHealthPerHour": -0.2
+  },
+  "devKit": {
+    "items": {
+      "metal_spear": 1,
+      "crossbow": 1,
+      "shotgun": 1,
+      "rifle": 1,
+      "wooden_bow": 1,
+      "pistol": 1,
+      "arrow": 8,
+      "bolt": 2,
+      "ammo_9mm": 16,
+      "shell_12g": 8,
+      "ammo_rifle": 10
+    }
+  }
+}

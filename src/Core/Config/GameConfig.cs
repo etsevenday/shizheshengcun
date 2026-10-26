@@ -2,7 +2,8 @@ using System.Collections.Generic;
 
 namespace Survival.Core.Config
 {
-    /// <summary>data/config.v0.4.json 的强类型映射。数值来源：基础系统初始配置 v0.2.json、交互与地图扩展 v0.3 整合配置与卡片统一与设施烹饪 v0.4 增量配置。</summary>
+    /// <summary>data/config.v0.6.json 的强类型映射。数值来源：基础系统初始配置 v0.2.json、交互与地图扩展 v0.3 整合配置、卡片统一与设施烹饪 v0.4 增量配置，
+    /// 以及人物与战斗修订参考 v0.6（基线 v0.5）参考配置。</summary>
     public sealed class GameConfig
     {
         public string Version { get; set; } = "";
@@ -34,6 +35,35 @@ namespace Survival.Core.Config
         /// <summary>设施自动加工进程（设施与烹饪案第 5 节）：烧水、烤制、水煮。</summary>
         public List<ProcessConfig> Processes { get; set; } = new List<ProcessConfig>();
         public UiConfig Ui { get; set; } = new UiConfig();
+
+        // ───── 人物与战斗 v0.6（基线 v0.5）；用户 2026-10-26 拍板直接开启 ─────
+        /// <summary>战斗、技能、免疫与世界敌人是否启用。策划参考配置为 false，按用户拍板改为 true（不做开关界面）。</summary>
+        public bool CombatEnabled { get; set; }
+        public StateScaleConfig StateScale { get; set; } = new StateScaleConfig();
+        public CombatScopeConfig Scope { get; set; } = new CombatScopeConfig();
+        public List<SkillConfig> Skills { get; set; } = new List<SkillConfig>();
+        public List<WeaponConfig> Weapons { get; set; } = new List<WeaponConfig>();
+        public List<CombatActionConfig> CombatActions { get; set; } = new List<CombatActionConfig>();
+        public List<EnemyConfig> Enemies { get; set; } = new List<EnemyConfig>();
+        public XpConfig Xp { get; set; } = new XpConfig();
+        public CraftingSkillConfig Crafting { get; set; } = new CraftingSkillConfig();
+        public CombatMathConfig CombatMath { get; set; } = new CombatMathConfig();
+        public PanicConfig Panic { get; set; } = new PanicConfig();
+        public RetreatConfig Retreat { get; set; } = new RetreatConfig();
+        public AmmoRulesConfig Ammo { get; set; } = new AmmoRulesConfig();
+        public WearConfig Wear { get; set; } = new WearConfig();
+        public NoiseConfig Noise { get; set; } = new NoiseConfig();
+        public StatusesConfig Statuses { get; set; } = new StatusesConfig();
+        public BattleTimeConfig BattleTime { get; set; } = new BattleTimeConfig();
+        public EncountersConfig Encounters { get; set; } = new EncountersConfig();
+        public ZombieLootConfig ZombieLoot { get; set; } = new ZombieLootConfig();
+        public List<CarcassConfig> AnimalCarcasses { get; set; } = new List<CarcassConfig>();
+        public SkillGrowthConfig SkillGrowth { get; set; } = new SkillGrowthConfig();
+        public DurabilityConfig Durability { get; set; } = new DurabilityConfig();
+        public ImmunityConfig Immunity { get; set; } = new ImmunityConfig();
+        public InfectionConfig Infection { get; set; } = new InfectionConfig();
+        public WorldEnemiesConfig WorldEnemies { get; set; } = new WorldEnemiesConfig();
+        public DevKitConfig DevKit { get; set; } = new DevKitConfig();
     }
 
     public sealed class TimeConfig
@@ -120,6 +150,12 @@ namespace Survival.Core.Config
         public double Health { get; set; }
         public bool CausesDiarrhea { get; set; }
         public bool IsBandage { get; set; }
+        /// <summary>抗生素（v0.6 §11）：已感染时病毒立即减量，之后一段时间正增长减半。</summary>
+        public bool IsAntibiotic { get; set; }
+        /// <summary>病毒特效药（v0.6 §10）：直接清除感染。</summary>
+        public bool IsAntiviral { get; set; }
+
+        public bool IsMedicine => IsBandage || IsAntibiotic || IsAntiviral;
     }
 
     public sealed class ItemConfig
@@ -131,7 +167,10 @@ namespace Survival.Core.Config
         public int? ShelfLifeMinutes { get; set; }
         public string Kind { get; set; } = "material";
         public string? ToolTag { get; set; }
-        public int? MaxDurability { get; set; }
+        /// <summary>实例最大耐久的随机区间 [下限, 上限]（v0.6 §05）；无耐久为 null。生成时按 0.1 精度抽一次并存进实例。</summary>
+        public double[]? DurabilityMaxRange { get; set; }
+        /// <summary>旧档（schema 4 及以前）里该物品的固定满耐久，只供一次性迁移保持成色比例。</summary>
+        public int? LegacyMaxDurability { get; set; }
         public bool Edible { get; set; }
         public bool RequiresCooking { get; set; }
         public ItemUseConfig? Use { get; set; }
@@ -142,7 +181,11 @@ namespace Survival.Core.Config
         public int? UnitVolumeMl { get; set; }
 
         public bool IsTool => Kind == "tool";
-        public bool IsStackable => StackMax > 1 && !IsTool;
+        public bool IsWeaponKind => Kind == "weapon";
+        public bool HasDurability => DurabilityMaxRange != null && DurabilityMaxRange.Length == 2;
+        /// <summary>过渡用（M36）：区间上限。M39 起实例保存自己的最大耐久，此属性删除。</summary>
+        [Newtonsoft.Json.JsonIgnore] public int? MaxDurability => HasDurability ? (int?)(int)DurabilityMaxRange![1] : null;
+        public bool IsStackable => StackMax > 1 && !IsTool && !IsWeaponKind;
     }
 
     public sealed class LocationConfig
@@ -298,6 +341,12 @@ namespace Survival.Core.Config
         public Dictionary<string, int> Outputs { get; set; } = new Dictionary<string, int>();
         public ToolBonusConfig? ToolBonus { get; set; }
         public HazardConfig? Hazard { get; set; }
+        /// <summary>拾荒箱子：产出的工具/武器按拾荒成色生成当前耐久（v0.6 §05 scavengedConditionOptional）。</summary>
+        public bool Scavenged { get; set; }
+        /// <summary>独立稀有附带物（诊所医药补给箱 1% 病毒特效药），开始搜集时锁定。</summary>
+        public IndependentRareConfig? IndependentRare { get; set; }
+        /// <summary>互斥抽取（废弃冷藏箱），开始搜集时锁定；与 Outputs 二选一。</summary>
+        public List<CacheLootEntry>? ExclusiveLoot { get; set; }
 
         public bool IsCache => PoolMode == PoolModes.SingleCache;
         public bool IsUnlimited => PoolMode == PoolModes.Unlimited;
@@ -322,8 +371,20 @@ namespace Survival.Core.Config
         public List<string> Catalysts { get; set; } = new List<string>();
         public RecipeRequirement? Requirement { get; set; }
         public string? FacilityResult { get; set; }
+        /// <summary>技能门槛（病毒特效药：医疗≥15、制造≥12）。</summary>
+        public Dictionary<string, int> MinSkills { get; set; } = new Dictionary<string, int>();
+        /// <summary>explicit_empty_detached_pot：须明确指定一口取下并清空的锅作为不消耗催化工具。</summary>
+        public string? PotCatalyst { get; set; }
+        public bool AutoFillPot { get; set; }
+        /// <summary>工具维护：须指定目标实例；恢复其自身最大耐久的比例，不重抽最大值。</summary>
+        public bool TargetInstanceRequired { get; set; }
+        public double RestoreOwnDurabilityMaxFraction { get; set; }
+        public bool RerollDurability { get; set; }
+        public bool RequireEmptyDetachedPotWhenTargetIsPot { get; set; }
 
         public bool IsBuild => Kind == "build";
+        public bool IsRepair => Kind == "repair";
+        public bool NeedsExplicitPot => PotCatalyst == "explicit_empty_detached_pot";
         public bool NeedsFire => Requirement != null && Requirement.Facility == "fire";
     }
 

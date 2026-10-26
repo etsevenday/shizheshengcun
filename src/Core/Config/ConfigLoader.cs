@@ -98,7 +98,7 @@ namespace Survival.Core.Config
 
             foreach (var a in c.Actions.RateAliases.Values.Distinct())
                 if (!c.HourlyRates.ContainsKey(a)) e.Add($"速率别名指向不存在的类别 {a}");
-            foreach (var k in new[] { "sleep_sheltered", "sleep_outdoors" })
+            foreach (var k in new[] { "sleep_sheltered", "sleep_exposed" })
                 if (!c.HourlyRates.ContainsKey(k)) e.Add($"缺少速率类别 {k}");
 
             foreach (var k in new[] { "satiety", "hydration", "wakefulness", "energy", "morale", "health" })
@@ -199,7 +199,174 @@ namespace Survival.Core.Config
                 else if (!fire.DirectFoodInputIds.Contains(p.InputId))
                     e.Add($"设施进程 {p.Id} 的直烤食材须在火堆直烤白名单内");
             }
+
+            ValidateCombat(c, e, items, locs);
             return e;
         }
+
+        /// <summary>公式形状（数字换成 #）。策划改了公式结构时这里报错，提醒同步改代码。</summary>
+        public static readonly IReadOnlyDictionary<string, string> FormulaShapes = new Dictionary<string, string>
+        {
+            ["skillGrowth.damageFactor"] = "#+#*L",
+            ["skillGrowth.accuracyRating"] = "weaponBase+#*L",
+            ["skillGrowth.energyCost"] = "baseEnergy/(#+#*L)",
+            ["skillGrowth.medicalHeal"] = "#*(#+#*L)",
+            ["crafting.workFactor"] = "#/(#+#*L)",
+            ["combatMath.critRating"] = "baseCritRating+#*L",
+            ["combatMath.critProbability"] = "critRating/(critRating+#)",
+            ["combatMath.initiative"] = "max(#,speed-lowEnergy-lowWakefulness-#*slowLayers)+randInt(#,#)",
+            ["combatMath.guardAppliedAfterArmor"] = "damage*#",
+            ["skills.nextLevelXpFormula"] = "#*(L+#)",
+            ["xp.craft"] = "clamp(ceil(originalBaseMinutes/#),#,#)",
+            ["panic.initial"] = "(#-morale)/#",
+            ["panic.directDamageGain"] = "actualDamage*#",
+            ["panic.postBattleMoraleLoss"] = "min(#,panic/#)",
+            ["retreat.chance"] = "sigmoid((playerEffectiveSpeed-maxEnemyEffectiveSpeed)/#+#)*panicFactor*lowEnergyFactor",
+            ["infection.exposureProbability"] = "#+#*(#-immunity/#)",
+            ["infection.bandage.loadReduction"] = "#*(#+#*medicineLevel)",
+        };
+
+        private static void Shape(List<string> e, string key, string? formula)
+        {
+            if (Formula.Shape(formula) != FormulaShapes[key]) e.Add($"公式 {key} 的结构变了（{formula}），需要同步修改内核");
+        }
+
+        /// <summary>人物与战斗 v0.6 各段的引用与范围校验（Newtonsoft 会静默丢弃未映射字段，这里兜底检查关键段非空）。</summary>
+        private static void ValidateCombat(GameConfig c, List<string> e, HashSet<string> items, HashSet<string> locs)
+        {
+            var tick = c.Time.TickMinutes;
+            if (!c.CombatEnabled) return;
+            if (c.StateScale.HealthMax <= 0 || c.StateScale.EnergyMax <= 0) e.Add("健康与体力上限须为正");
+            if (c.InitialStats.Health > c.StateScale.HealthMax || c.InitialStats.Energy > c.StateScale.EnergyMax) e.Add("初始健康/体力不能超过上限");
+            if (c.Weapons.Count == 0) e.Add("战斗已启用但缺少 weapons");
+            if (c.Skills.Count == 0) e.Add("战斗已启用但缺少 skills");
+            if (c.Enemies.Count == 0) e.Add("战斗已启用但缺少 enemies");
+            if (c.CombatActions.Count == 0) e.Add("战斗已启用但缺少 combatActions");
+            var skills = new HashSet<string>(c.Skills.Select(x => x.Id));
+            var enemies = c.Enemies.GroupBy(x => x.Id).ToDictionary(g => g.Key, g => g.First());
+            Dup(c.Skills, x => x.Id, "技能", e);
+            Dup(c.Weapons, x => x.Id, "武器", e);
+            Dup(c.Enemies, x => x.Id, "敌人", e);
+            Dup(c.CombatActions, x => x.Id, "战斗动作", e);
+
+            foreach (var it in c.Items.Where(i => i.DurabilityMaxRange != null))
+            {
+                var r = it.DurabilityMaxRange!;
+                if (r.Length != 2 || r[0] <= 0 || r[1] < r[0]) e.Add($"物品 {it.Id} 最大耐久区间无效");
+            }
+            foreach (var w in c.Weapons)
+            {
+                if (!w.IsFists && !items.Contains(w.Id)) e.Add($"武器 {w.Id} 没有对应物品");
+                if (!skills.Contains(w.SkillId)) e.Add($"武器 {w.Id} 的技能 {w.SkillId} 不存在");
+                if (w.AmmoId != null && !items.Contains(w.AmmoId)) e.Add($"武器 {w.Id} 的弹药 {w.AmmoId} 不存在");
+                if (w.DamageMin < 0 || w.DamageMax < w.DamageMin) e.Add($"武器 {w.Id} 伤害区间无效");
+                if (w.AccuracyRating <= 0) e.Add($"武器 {w.Id} 命中能力须为正");
+                if (!w.IsFists)
+                {
+                    var it = c.Items.FirstOrDefault(i => i.Id == w.Id);
+                    if (it != null && !(it.DurabilityMaxRange ?? new double[0]).SequenceEqual(w.DurabilityMaxRange ?? new double[0]))
+                        e.Add($"武器 {w.Id} 的最大耐久区间与物品不一致");
+                    if (it != null && it.WeightGrams != w.WeightGrams) e.Add($"武器 {w.Id} 的重量与物品不一致");
+                }
+            }
+            foreach (var a in c.CombatActions)
+            {
+                foreach (var sk in a.Skills) if (!skills.Contains(sk)) e.Add($"战斗动作 {a.Id} 的技能 {sk} 不存在");
+                if (a.ItemId != null && !items.Contains(a.ItemId)) e.Add($"战斗动作 {a.Id} 的物品 {a.ItemId} 不存在");
+                if (a.WeaponId != null && c.Weapons.All(w => w.Id != a.WeaponId)) e.Add($"战斗动作 {a.Id} 的武器 {a.WeaponId} 不存在");
+                if (a.ApCost == 0 || a.ApCost > c.Scope.HumanApPerActivation) e.Add($"战斗动作 {a.Id} 的行动点无效");
+            }
+            foreach (var en in c.Enemies)
+            {
+                if (en.Hp <= 0 || en.Dodge <= 0 || en.AttackRating <= 0) e.Add($"敌人 {en.Id} 的健康、闪避与攻击能力须为正");
+                if (!c.WorldEnemies.RarityWeights.ContainsKey(en.Rarity)) e.Add($"敌人 {en.Id} 的稀有层级 {en.Rarity} 不在刷新权重里");
+            }
+            if (c.Scope.BasePlayerDodge <= 0) e.Add("玩家闪避能力须为正");
+
+            var we = c.WorldEnemies;
+            foreach (var k in we.LocalCaps.Keys) if (!locs.Contains(k)) e.Add($"世界敌人上限引用了不存在的地点 {k}");
+            foreach (var kv in we.Initial)
+            {
+                if (!locs.Contains(kv.Key)) e.Add($"世界敌人初始分布引用了不存在的地点 {kv.Key}");
+                foreach (var id in kv.Value) if (!enemies.ContainsKey(id)) e.Add($"世界敌人初始分布引用了不存在的敌人 {id}");
+                if (kv.Value.Count > we.CapOf(kv.Key)) e.Add($"{kv.Key} 的初始敌人超过本地上限");
+            }
+            if (we.Initial.Values.Sum(v => v.Count) > we.GlobalCap) e.Add("初始世界敌人超过全局上限");
+            foreach (var kv in we.Pools)
+            {
+                if (!locs.Contains(kv.Key)) e.Add($"刷新池引用了不存在的地点 {kv.Key}");
+                foreach (var tier in kv.Value)
+                {
+                    if (!we.RarityWeights.ContainsKey(tier.Key)) e.Add($"刷新池 {kv.Key} 的层级 {tier.Key} 未知");
+                    foreach (var w in tier.Value)
+                    {
+                        if (!enemies.TryGetValue(w.EnemyId, out var en)) e.Add($"刷新池 {kv.Key} 引用了不存在的敌人 {w.EnemyId}");
+                        else if (en.Rarity != tier.Key) e.Add($"刷新池 {kv.Key} 的 {w.EnemyId} 不属于 {tier.Key} 层");
+                        if (w.Weight <= 0) e.Add($"刷新池 {kv.Key} 的权重须为正");
+                    }
+                }
+            }
+            if (we.SpawnCheckIntervalMinutes <= 0 || we.SpawnCheckIntervalMinutes % tick != 0) e.Add($"刷新检查间隔须为{tick}的正倍数");
+            if (we.PatrolCheckIntervalMinutes <= 0 || we.PatrolCheckIntervalMinutes % tick != 0) e.Add($"巡游检查间隔须为{tick}的正倍数");
+            foreach (var sl in c.Encounters.SafeLocations) if (!locs.Contains(sl)) e.Add($"安全地点 {sl} 不存在");
+            if (c.Encounters.BypassMinutes <= 0 || c.Encounters.BypassMinutes % tick != 0) e.Add($"绕行时长须为{tick}的正倍数");
+            if (!c.HourlyRates.ContainsKey(c.Encounters.BypassRateCategory)) e.Add($"绕行速率类别 {c.Encounters.BypassRateCategory} 不存在");
+            if (c.BattleTime.RoundWorldMinutes != tick) e.Add("战斗每轮世界分钟须等于时间段长度");
+
+            foreach (var en in c.ZombieLoot.Entries)
+                if (en.ItemId != null && !items.Contains(en.ItemId)) e.Add($"丧尸掉落引用了不存在的物品 {en.ItemId}");
+            if (c.ZombieLoot.Entries.Sum(x => x.Weight) != 100) e.Add("丧尸掉落权重合计须为100");
+            foreach (var cc in c.AnimalCarcasses)
+            {
+                if (!enemies.ContainsKey(cc.EnemyId)) e.Add($"尸体配置引用了不存在的敌人 {cc.EnemyId}");
+                if (!items.Contains(cc.CarcassItemId)) e.Add($"尸体物品 {cc.CarcassItemId} 不存在");
+                foreach (var t in cc.RequiredCarriedTools) if (!items.Contains(t)) e.Add($"处理尸体工具 {t} 不存在");
+                foreach (var o in cc.Outputs.Keys) if (!items.Contains(o)) e.Add($"处理尸体产物 {o} 不存在");
+                if (cc.ButcherBaseMinutes <= 0 || cc.ButcherBaseMinutes % tick != 0) e.Add($"处理尸体时长须为{tick}的正倍数");
+            }
+            foreach (var rc in c.Recipes)
+            {
+                foreach (var k in rc.MinSkills.Keys) if (!skills.Contains(k)) e.Add($"配方 {rc.Id} 的技能门槛 {k} 不存在");
+                if (rc.IsRepair && !rc.TargetInstanceRequired) e.Add($"维护配方 {rc.Id} 须指定目标实例");
+            }
+            foreach (var r in c.Resources)
+            {
+                if (r.IndependentRare != null && !items.Contains(r.IndependentRare.ItemId)) e.Add($"资源点 {r.NodeId} 稀有附带物不存在");
+                if (r.ExclusiveLoot != null)
+                {
+                    foreach (var x in r.ExclusiveLoot) if (!items.Contains(x.ItemId)) e.Add($"资源点 {r.NodeId} 互斥抽取物品 {x.ItemId} 不存在");
+                    if (r.ExclusiveLoot.Sum(x => x.Weight) != 100) e.Add($"资源点 {r.NodeId} 互斥抽取权重合计须为100");
+                }
+            }
+            foreach (var k in c.DevKit.Items.Keys) if (!items.Contains(k)) e.Add($"开发测试箱物品 {k} 不存在");
+            foreach (var t in new[] { "pot", "lighter" })
+                if (!c.Durability.Tools.ContainsKey(t)) e.Add($"缺少 {t} 的耐久配置");
+            if (c.Infection.ProgressPerHour.Count == 0) e.Add("缺少病毒进展速率");
+
+            Shape(e, "skillGrowth.damageFactor", c.SkillGrowth.DamageFactor);
+            Shape(e, "skillGrowth.accuracyRating", c.SkillGrowth.AccuracyRating);
+            Shape(e, "skillGrowth.energyCost", c.SkillGrowth.EnergyCost);
+            Shape(e, "skillGrowth.medicalHeal", c.SkillGrowth.MedicalHeal);
+            Shape(e, "crafting.workFactor", c.Crafting.WorkFactor);
+            Shape(e, "combatMath.critRating", c.CombatMath.CritRating);
+            Shape(e, "combatMath.critProbability", c.CombatMath.CritProbability);
+            Shape(e, "combatMath.initiative", c.CombatMath.Initiative);
+            Shape(e, "combatMath.guardAppliedAfterArmor", c.CombatMath.GuardAppliedAfterArmor);
+            foreach (var sk in c.Skills) Shape(e, "skills.nextLevelXpFormula", sk.NextLevelXpFormula);
+            Shape(e, "xp.craft", c.Xp.Craft);
+            Shape(e, "panic.initial", c.Panic.Initial);
+            Shape(e, "panic.directDamageGain", c.Panic.DirectDamageGain);
+            Shape(e, "panic.postBattleMoraleLoss", c.Panic.PostBattleMoraleLoss);
+            Shape(e, "retreat.chance", c.Retreat.Chance);
+            Shape(e, "infection.exposureProbability", c.Infection.ExposureProbability);
+            Shape(e, "infection.bandage.loadReduction", c.Infection.Bandage.LoadReduction);
+        }
+
+        private static void Dup<T>(IEnumerable<T> list, Func<T, string> key, string what, List<string> e)
+        {
+            foreach (var g in list.GroupBy(key).Where(g => g.Count() > 1))
+                e.Add($"{what} ID 重复：{g.Key}");
+        }
+
     }
 }

@@ -1,37 +1,45 @@
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using Survival.Core.Config;
 
 namespace Survival.Core.Tests;
 
-/// <summary>v0.4 结构化配置必须与策划交付的 v0.2 数值、交互与地图扩展 v0.3 整合配置、卡片统一与设施烹饪 v0.4 增量配置逐项一致。</summary>
+/// <summary>
+/// v0.6 结构化配置必须与策划交付的 v0.2 数值、交互与地图扩展 v0.3 整合配置、卡片统一与设施烹饪 v0.4 增量配置，
+/// 以及人物与战斗修订参考 v0.6（基线 v0.5）参考配置逐项一致；v0.6 替换的旧数值改为对照 v0.6。
+/// </summary>
 public class ConfigTests : TestBase
 {
-    private static JObject V02() =>
-        JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.2.json")));
+    private static JObject Load(string name) =>
+        JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, name)));
 
-    private static JObject V03() =>
-        JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.v0.3.json")));
-
-    private static JObject V04() =>
-        JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.v0.4.json")));
+    private static JObject V02() => Load("config.v0.2.json");
+    private static JObject V03() => Load("design.v0.3.json");
+    private static JObject V04() => Load("design.v0.4.json");
+    private static JObject V05() => Load("design.v0.5.json");
+    private static JObject V06() => Load("design.v0.6.json");
 
     /// <summary>v0.4 增量里改过的食物（如熟块根改名“烤熟块根”）不再按 v0.2 原值核对。</summary>
     private static HashSet<string> ChangedByV04() =>
         new(V04()["foodChanges"]!.Where(f => (string)f["operation"]! == "update_existing").Select(f => (string)f["id"]!));
 
     private static GameConfig Fresh() =>
-        ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.4.json")), validate: false);
+        ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")), validate: false);
 
     [Test]
     public void LoadsAndValidates()
     {
         Assert.That(ConfigLoader.Validate(Cfg), Is.Empty);
-        Assert.That(Cfg.Items, Has.Count.EqualTo(19), "v0.2 的18种加 v0.4 新增水煮块根");
+        Assert.That(Cfg.CombatEnabled, Is.True, "用户 2026-10-26 拍板：直接开启，不做开关");
+        Assert.That(Cfg.Items, Has.Count.EqualTo(19 + 26), "v0.4 的19种加 v0.6 新增武器、弹药、尸体、肉、药与原料");
         Assert.That(Cfg.Locations, Has.Count.EqualTo(8));
         Assert.That(Cfg.Edges, Has.Count.EqualTo(8));
-        Assert.That(Cfg.Resources, Has.Count.EqualTo(16));
-        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5), "v0.4 废止烧水与烹饪块根两条角色配方");
+        Assert.That(Cfg.Resources, Has.Count.EqualTo(16 + 4), "新增武器柜、旧储物柜、医药补给箱、废弃冷藏箱");
+        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5), "新增木矛、木弓、箭矢、工具维护、病毒特效药");
     }
+
+    // ───────────── v0.2–v0.4 未被 v0.6 替换的部分 ─────────────
 
     [Test]
     public void Items_MatchV02()
@@ -49,7 +57,7 @@ public class ConfigTests : TestBase
     }
 
     [Test]
-    public void ItemEffects_MatchV02ItemActions()
+    public void ItemEffects_MatchV02_WithV06Scaling()
     {
         var a = V02()["itemActions"]!;
         double Use(string id, Func<ItemUseConfig, double> f) => f(Cfg.Items.Single(i => i.Id == id).Use!);
@@ -60,21 +68,27 @@ public class ConfigTests : TestBase
         Assert.That(Use("berry", u => u.Hydration), Is.EqualTo((double)a["berryHydration"]!));
         Assert.That(Use("cooked_root", u => u.Satiety), Is.EqualTo((double)a["cookedRootSatiety"]!));
         Assert.That(Use("cooked_root", u => u.Morale), Is.EqualTo((double)a["cookedRootMorale"]!));
-        Assert.That(Use("bandage", u => u.Health), Is.EqualTo((double)a["bandageHealth"]!));
+        // v0.6 §02：绷带基础恢复 5→1（×0.2），再乘医疗公式 1×(1+0.02L)
+        var bandageAct = V06()["actions"]!.Single(x => (string)x["id"]! == "bandage");
+        Assert.That(Use("bandage", u => u.Health), Is.EqualTo((double)a["bandageHealth"]! * (double)V06()["stateScale"]!["oldHealthAndEnergyConversionFactor"]!).Within(1e-9));
+        Assert.That(Use("bandage", u => u.Health), Is.EqualTo(Formula.Num((string)bandageAct["healthFormula"]!, 0)));
         Assert.That(Cfg.ItemActions.BandageCooldownMinutes, Is.EqualTo((int)a["bandageCooldownMinutes"]!));
+        Assert.That(Cfg.ItemActions.BandageCooldownMinutes, Is.EqualTo((int)bandageAct["healthCooldownMinutes"]!));
         Assert.That(Cfg.ItemActions.DiarrheaMinutes, Is.EqualTo((int)a["diarrheaMinutes"]!));
         Assert.That(Cfg.ItemActions.DiarrheaExtraHydrationPerHour, Is.EqualTo((double)a["diarrheaExtraHydrationPerHour"]!));
         var tools = V02()["toolEffects"]!;
-        Assert.That(Cfg.Items.Single(i => i.Id == "stone_knife").MaxDurability, Is.EqualTo((int)tools["stone_knife"]!["maxDurability"]!));
-        Assert.That(Cfg.Items.Single(i => i.Id == "hatchet").MaxDurability, Is.EqualTo((int)tools["hatchet"]!["maxDurability"]!));
+        Assert.That(Cfg.Items.Single(i => i.Id == "stone_knife").LegacyMaxDurability, Is.EqualTo((int)tools["stone_knife"]!["maxDurability"]!), "旧档迁移用旧满耐久保持成色");
+        Assert.That(Cfg.Items.Single(i => i.Id == "hatchet").LegacyMaxDurability, Is.EqualTo((int)tools["hatchet"]!["maxDurability"]!));
+        Assert.That(Cfg.ToolEffects.SuccessfulActionWear, Is.EqualTo((int)tools["successfulActionWear"]!));
         Assert.That(Cfg.Resources.Single(r => r.NodeId == "wood").ToolBonus!.OutputMultiplier, Is.EqualTo((int)tools["hatchet"]!["woodOutput"]!));
         Assert.That(Cfg.Resources.Single(r => r.NodeId == "field_fiber").ToolBonus!.BaseMinutesOverride, Is.EqualTo((int)tools["stone_knife"]!["fiberBaseMinutes"]!));
         Assert.That(Cfg.Resources.Single(r => r.NodeId == "woods_fiber").ToolBonus!.BaseMinutesOverride, Is.EqualTo((int)tools["stone_knife"]!["fiberBaseMinutes"]!));
     }
 
     [Test]
-    public void Resources_MatchV02()
+    public void Resources_MatchV02_HazardsScaledByV06()
     {
+        var env = V06()["survivalRecovery"]!["environmentalGatherDamageOverrides"]!;
         foreach (var j in V02()["resources"]!)
         {
             var r = Cfg.Resources.Single(x => x.NodeId == (string)j["nodeId"]!);
@@ -88,8 +102,11 @@ public class ConfigTests : TestBase
             else Assert.That(r.RevealAt, Is.EqualTo(reveal), r.NodeId);
             var outs = ((JObject)j["outputs"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value);
             Assert.That(r.Outputs, Is.EquivalentTo(outs), r.NodeId);
-            Assert.That(r.Hazard?.Probability ?? 0, Is.EqualTo((double)j["hazardProbability"]!), r.NodeId);
-            Assert.That(r.Hazard?.HealthLoss ?? 0, Is.EqualTo((double)j["hazardHealthLoss"]!), r.NodeId);
+            Assert.That(r.Hazard?.Probability ?? 0, Is.EqualTo((double)j["hazardProbability"]!), r.NodeId + " 概率不变");
+            var old = (double)j["hazardHealthLoss"]!;
+            var expect = old == 0 ? 0 : r.NodeId == "wood" ? (double)env["wood"]! : r.NodeId == "misc_box" ? (double)env["misc_box"]! : (double)env["scrapyard"]!;
+            Assert.That(r.Hazard?.HealthLoss ?? 0, Is.EqualTo(expect), r.NodeId + " 环境伤害按 v0.6 改值");
+            if (old > 0) Assert.That(r.Hazard!.HealthLoss, Is.EqualTo(old * 0.2).Within(1e-9), r.NodeId + " 即旧值×0.2");
         }
     }
 
@@ -130,11 +147,12 @@ public class ConfigTests : TestBase
         }
     }
 
+    /// <summary>v0.6 §12：全部行为速率、恢复与归零损血改为 v0.6 survivalRates / survivalRecovery。</summary>
     [Test]
-    public void RatesAndRules_MatchV02()
+    public void RatesAndRules_MatchV06()
     {
-        var v = V02();
-        foreach (var p in ((JObject)v["hourlyRates"]!).Properties())
+        var v = V06();
+        foreach (var p in ((JObject)v["survivalRates"]!).Properties())
         {
             var r = Cfg.HourlyRates[p.Name];
             Assert.That(r.Satiety, Is.EqualTo((double)p.Value["satiety"]!), p.Name);
@@ -143,27 +161,53 @@ public class ConfigTests : TestBase
             Assert.That(r.Wakefulness, Is.EqualTo((double)p.Value["wakefulness"]!), p.Name);
             Assert.That(r.Morale, Is.EqualTo((double)p.Value["morale"]!), p.Name);
         }
-        var hr = v["healthRules"]!;
-        Assert.That(Cfg.HealthRules.ZeroSatietyPerHour, Is.EqualTo((double)hr["zeroSatietyPerHour"]!));
-        Assert.That(Cfg.HealthRules.ZeroHydrationPerHour, Is.EqualTo((double)hr["zeroHydrationPerHour"]!));
-        Assert.That(Cfg.HealthRules.ZeroWakefulnessPerHour, Is.EqualTo((double)hr["zeroWakefulnessPerHour"]!));
-        Assert.That(Cfg.HealthRules.ZeroEnergyWhileWorkingPerHour, Is.EqualTo((double)hr["zeroEnergyWhileWorkingPerHour"]!));
-        Assert.That(Cfg.HealthRules.ShelteredRestRecoveryPerHour, Is.EqualTo((double)hr["shelteredRestRecoveryPerHour"]!));
-        var init = v["initial_stats"]!;
-        Assert.That(Cfg.InitialStats.Health, Is.EqualTo((double)init["health"]!));
-        Assert.That(Cfg.InitialStats.Satiety, Is.EqualTo((double)init["satiety"]!));
-        Assert.That(Cfg.InitialStats.Hydration, Is.EqualTo((double)init["hydration"]!));
-        Assert.That(Cfg.InitialStats.Energy, Is.EqualTo((double)init["energy"]!));
-        Assert.That(Cfg.InitialStats.Wakefulness, Is.EqualTo((double)init["wakefulness"]!));
-        Assert.That(Cfg.InitialStats.Morale, Is.EqualTo((double)init["morale"]!));
-        Assert.That(Cfg.Carry.SoftGrams, Is.EqualTo((int)v["carry_soft_kg"]! * 1000));
-        Assert.That(Cfg.Carry.HardGrams, Is.EqualTo((int)v["carry_hard_kg"]! * 1000));
-        Assert.That(Cfg.WorkFactors.Night, Is.EqualTo((double)v["night_time_factor"]!));
-        Assert.That(Cfg.WorkFactors.Cap, Is.EqualTo((double)v["time_factor_cap"]!));
-        var fe = v["facilityEffects"]!;
-        Assert.That(Cfg.FacilityEffects.BedExtraSleepEnergyPerHour, Is.EqualTo((double)fe["bedExtraSleepEnergyPerHour"]!));
-        Assert.That(Cfg.FacilityEffects.ShelteredCampRestMoralePerHour, Is.EqualTo((double)fe["shelteredCampRestMoralePerHour"]!));
-        Assert.That(Cfg.Fire.MaxFuelMinutes, Is.EqualTo((int)fe["fireMaxFuelMinutes"]!));
+        Assert.That(Cfg.HourlyRates.Keys, Is.EquivalentTo(((JObject)v["survivalRates"]!).Properties().Select(p => p.Name)));
+        var rec = v["survivalRecovery"]!;
+        Assert.That(Cfg.HealthRules.ZeroSatietyPerHour, Is.EqualTo((double)rec["zeroSatietyHealthPerHour"]!));
+        Assert.That(Cfg.HealthRules.ZeroHydrationPerHour, Is.EqualTo((double)rec["zeroHydrationHealthPerHour"]!));
+        Assert.That(Cfg.HealthRules.ZeroWakefulnessPerHour, Is.EqualTo((double)rec["zeroWakefulnessHealthPerHour"]!));
+        Assert.That(Cfg.HealthRules.ZeroEnergyWhileWorkingPerHour, Is.EqualTo((double)v["worldTime"]!["zeroEnergyWorkingHealthPerHour"]!));
+        Assert.That(Cfg.HealthRules.ShelteredRestRecoveryPerHour, Is.EqualTo((double)rec["shelteredHealthyHealthRecoveryPerHour"]!));
+        Assert.That(Cfg.FacilityEffects.BedExtraSleepEnergyPerHour, Is.EqualTo((double)rec["bedSleepEnergyBonusPerHour"]!));
+        Assert.That(Cfg.FacilityEffects.ShelteredCampRestMoralePerHour, Is.EqualTo((double)rec["shelteredRestMoralePerHour"]!));
+        Assert.That(Cfg.FacilityEffects.LowMoraleEnergyRecoveryFactor, Is.EqualTo((double)rec["lowMoralePositiveEnergyFactor"]!));
+        Assert.That(Cfg.ItemActions.DiarrheaExtraHydrationPerHour, Is.EqualTo((double)rec["diarrheaExtraHydrationPerHour"]!));
+        Assert.That(Cfg.Carry.SoftGrams, Is.EqualTo((int)rec["carrySoftKg"]! * 1000));
+        Assert.That(Cfg.Carry.HardGrams, Is.EqualTo((int)rec["carryHardKg"]! * 1000));
+        // v0.2 求生规则中 v0.6 没改的部分
+        var hr = V02()["healthRules"]!;
+        Assert.That(Cfg.HealthRules.RecoveryMinSatiety, Is.EqualTo((double)hr["recoveryMinSatiety"]!));
+        Assert.That(Cfg.HealthRules.RecoveryMinHydration, Is.EqualTo((double)hr["recoveryMinHydration"]!));
+        Assert.That(Cfg.HealthRules.RecoveryMinMorale, Is.EqualTo((double)hr["recoveryMinMorale"]!));
+        Assert.That(Cfg.WorkFactors.Night, Is.EqualTo((double)V02()["night_time_factor"]!));
+        Assert.That(Cfg.WorkFactors.Cap, Is.EqualTo((double)V02()["time_factor_cap"]!));
+        Assert.That(Cfg.Fire.MaxFuelMinutes, Is.EqualTo((int)V02()["facilityEffects"]!["fireMaxFuelMinutes"]!));
+    }
+
+    /// <summary>v0.6 §02 stateScale：健康/体力上限20、初值20/18，提醒线 25→5、20→4；其余初值不变。</summary>
+    [Test]
+    public void StateScale_MatchV06()
+    {
+        var sc = V06()["stateScale"]!;
+        Assert.That(Cfg.InitialStats.Health, Is.EqualTo((double)sc["initialHealth"]!));
+        Assert.That(Cfg.InitialStats.Energy, Is.EqualTo((double)sc["initialEnergy"]!));
+        Assert.That(Cfg.InitialStats.Satiety, Is.EqualTo((double)sc["initialSatiety"]!));
+        Assert.That(Cfg.InitialStats.Hydration, Is.EqualTo((double)sc["initialHydration"]!));
+        Assert.That(Cfg.InitialStats.Wakefulness, Is.EqualTo((double)sc["initialWakefulness"]!));
+        Assert.That(Cfg.InitialStats.Morale, Is.EqualTo((double)sc["initialMorale"]!));
+        Assert.That(Cfg.StateScale.HealthMax, Is.EqualTo((double)sc["healthMax"]!));
+        Assert.That(Cfg.StateScale.EnergyMax, Is.EqualTo((double)sc["energyMax"]!));
+        Assert.That(Cfg.Thresholds["health"].Value, Is.EqualTo((double)sc["healthCritical"]!));
+        Assert.That(Cfg.Thresholds["health"].Inclusive, Is.True, "健康高危仍为“降至”（含）");
+        Assert.That(Cfg.Thresholds["energy"].Value, Is.EqualTo((double)sc["lowEnergyExclusive"]!));
+        Assert.That(Cfg.Thresholds["energy"].Inclusive, Is.False, "低体力线仍为“低于”（不含）");
+        var old = V02()["thresholds"]!;
+        Assert.That(Cfg.Thresholds["health"].Value, Is.EqualTo((double)old["healthCritical"]! * 0.2).Within(1e-9));
+        Assert.That(Cfg.Thresholds["energy"].Value, Is.EqualTo((double)old["lowEnergyExclusive"]! * 0.2).Within(1e-9));
+        Assert.That(Cfg.Thresholds["satiety"].Value, Is.EqualTo((double)old["satietyWarning"]!), "不缩放");
+        Assert.That(Cfg.Thresholds["hydration"].Value, Is.EqualTo((double)old["hydrationWarning"]!), "不缩放");
+        Assert.That(Cfg.Thresholds["wakefulness"].Value, Is.EqualTo((double)old["wakefulnessWarning"]!), "不缩放");
+        Assert.That(Cfg.Thresholds["morale"].Value, Is.EqualTo((double)old["lowMoraleExclusive"]!), "不缩放");
     }
 
     [Test]
@@ -216,13 +260,6 @@ public class ConfigTests : TestBase
         Assert.That(Cfg.Actions.ClearMinutes, Is.EqualTo((int)v["clearAction"]!["baseMinutes"]!));
         Assert.That(Cfg.Actions.ExploreMinutes, Is.EqualTo((int)v["exploreAction"]!["baseMinutes"]!));
         Assert.That(Cfg.Actions.ExploreProgress, Is.EqualTo((int)v["exploreAction"]!["progressDelta"]!));
-        var clear = v["hourlyRates"]!["clear"]!;
-        var r = Cfg.HourlyRates[Cfg.Actions.RateAliases["clear"]];
-        Assert.That(r.Satiety, Is.EqualTo((double)clear["satiety"]!));
-        Assert.That(r.Hydration, Is.EqualTo((double)clear["hydration"]!));
-        Assert.That(r.Energy, Is.EqualTo((double)clear["energy"]!));
-        Assert.That(r.Wakefulness, Is.EqualTo((double)clear["wakefulness"]!));
-        Assert.That(r.Morale, Is.EqualTo((double)clear["morale"]!));
         Assert.That(Cfg.Actions.WorkActionTypes, Does.Contain("clear"));
     }
 
@@ -242,8 +279,8 @@ public class ConfigTests : TestBase
         var boil = Cfg.Processes.Single(x => x.Id == "boil_water");
         Assert.That(boil.InputId, Is.EqualTo((string)d["boilInputType"]!));
         Assert.That(boil.OutputId, Is.EqualTo((string)d["boilResultType"]!));
-        Assert.That(boil.AllowedBatchMl, Does.Contain(pot.UnitMl), "v0.4 不再必须满1升，半锅也能烧");
-        Assert.That(Cfg.Fire.MaxPots, Is.EqualTo((int)v["facilityEffects"]!["firePotSlots"]!), "锅数上限延续 v0.3 单锅位");
+        Assert.That(boil.AllowedBatchMl, Does.Contain(pot.UnitMl));
+        Assert.That(Cfg.Fire.MaxPots, Is.EqualTo((int)v["facilityEffects"]!["firePotSlots"]!));
         Assert.That(Cfg.Ui.DragThresholdPx, Is.EqualTo((int)v["cardInteraction"]!["dragThresholdPx"]!));
     }
 
@@ -263,41 +300,39 @@ public class ConfigTests : TestBase
             Assert.That(it.Use.Hydration, Is.EqualTo((double)fx["hydration"]!), id);
             Assert.That(it.Use.Morale, Is.EqualTo((double)fx["morale"]!), id);
             Assert.That(it.Use.Health, Is.EqualTo(0), id + " 健康不直接变化");
-            Assert.That(it.Edible && !it.RequiresCooking, Is.True, id);
             Assert.That(Cfg.ItemActions.UseMinutes, Is.EqualTo((int)f["useMinutes"]!), id);
             Assert.That(Cfg.Actions.RateAliases["use"], Is.EqualTo((string)f["useRateCategory"]!), id);
         }
-        Assert.That(Cfg.Items.FindIndex(i => i.Id == "boiled_root"), Is.EqualTo(Cfg.Items.FindIndex(i => i.Id == "cooked_root") + 1), "新物品排在烤熟块根后");
     }
 
+    /// <summary>火堆与锅（v0.4）；锅食材白名单按 v0.5 §14 新增生肉及两种成品。</summary>
     [Test]
-    public void FireAndPot_MatchV04Delta()
+    public void FireAndPot_MatchV04Delta_PlusMeat()
     {
         var v = V04();
         var fire = v["fire"]!;
         Assert.That(Cfg.Fire.ProcessingSlots, Is.EqualTo((int)fire["processingSlotCount"]!));
         Assert.That(Cfg.Fire.MaxPots, Is.EqualTo((int)fire["maxPots"]!));
-        Assert.That(Cfg.Fire.DirectFoodInputIds, Is.EqualTo(fire["directFoodInputIds"]!.Select(x => (string)x!)));
+        Assert.That(Cfg.Fire.DirectFoodInputIds, Is.EqualTo(fire["directFoodInputIds"]!.Select(x => (string)x!).Append("raw_meat")));
         var keep = v["retain"]!;
         Assert.That(Cfg.Fire.BurnMinutesPerWood, Is.EqualTo((int)keep["fuelMinutesPerWood"]!));
         Assert.That(Cfg.Fire.MaxFuelMinutes, Is.EqualTo((int)keep["fuelCapMinutes"]!));
         Assert.That(Cfg.Fire.IgniteMinutes, Is.EqualTo((int)keep["igniteMinutes"]!));
-        Assert.That(Cfg.Carry.HardGrams, Is.EqualTo((int)keep["carryHardGrams"]!));
         var pot = v["pot"]!;
         var ct = Cfg.Containers[Cfg.Items.Single(i => i.Id == (string)pot["itemId"]!).ContainerId!];
-        Assert.That(Cfg.Items.Single(i => i.Id == "pot").WeightGrams, Is.EqualTo((int)pot["shellWeightGrams"]!));
         Assert.That(ct.CapacityMl, Is.EqualTo((int)pot["liquidCapacityMl"]!));
         Assert.That(ct.UnitMl, Is.EqualTo((int)pot["transferQuantumMl"]!));
-        Assert.That(ct.FoodSlots, Is.EqualTo((int)pot["foodSlots"]!));
+        Assert.That(ct.FoodSlots, Is.EqualTo((int)pot["foodSlots"]!), "新增肉类不改变2个食材位");
         Assert.That(ct.Accepts, Is.EquivalentTo(pot["acceptedLiquids"]!.Select(x => (string)x!)));
-        Assert.That(ct.StoredFoodIds, Is.EquivalentTo(pot["storedFoodIds"]!.Select(x => (string)x!)));
+        Assert.That(ct.StoredFoodIds, Is.EquivalentTo(pot["storedFoodIds"]!.Select(x => (string)x!).Concat(new[] { "raw_meat", "cooked_meat", "boiled_meat" })));
     }
 
     [Test]
-    public void Processes_MatchV04Delta()
+    public void Processes_MatchV04Delta_PlusV06Meat()
     {
         var d = V04()["processes"]!.ToList();
-        Assert.That(Cfg.Processes.Select(p => p.Id), Is.EqualTo(d.Select(x => (string)x["id"]!)));
+        var meat = V06()["passiveCookingExtensions"]!.ToList();
+        Assert.That(Cfg.Processes.Select(p => p.Id), Is.EqualTo(d.Select(x => (string)x["id"]!).Concat(meat.Select(x => (string)x["id"]!))));
         foreach (var j in d)
         {
             var p = Cfg.Processes.Single(x => x.Id == (string)j["id"]!);
@@ -307,19 +342,199 @@ public class ConfigTests : TestBase
             Assert.That(p.HeatMinutes, Is.EqualTo((int)j["heatMinutes"]!), p.Id);
             Assert.That(p.WaterCostMl, Is.EqualTo((int?)j["waterCostMl"] ?? 0), p.Id);
             Assert.That(p.RequiredLiquid, Is.EqualTo((string?)j["requiredLiquid"]), p.Id);
-            if (j["requiredOwner"] != null) Assert.That(p.RequiredOwner, Is.EqualTo((string)j["requiredOwner"]!), p.Id);
-            if (j["allowedBatchMl"] != null) Assert.That(p.AllowedBatchMl, Is.EqualTo(j["allowedBatchMl"]!.Select(x => (int)x!)), p.Id);
         }
-        Assert.That(Cfg.Processes.Single(p => p.Id == "boil_water").RequiredOwner, Is.EqualTo("pot_inside_lit_fire"), "烧水只在火堆上的锅里进行");
-        Assert.That(Cfg.Processes.Single(p => p.Id == "boil_root").WaterCostMl, Is.EqualTo((int)V04()["processes"]![2]!["reserveWaterPerFoodMl"]!));
+        foreach (var j in meat)
+        {
+            var p = Cfg.Processes.Single(x => x.Id == (string)j["id"]!);
+            Assert.That(p.InputId, Is.EqualTo((string)j["inputId"]!), p.Id);
+            Assert.That(p.OutputId, Is.EqualTo((string)j["outputId"]!), p.Id);
+            Assert.That(p.HeatMinutes, Is.EqualTo((int)j["heatMinutes"]!), p.Id);
+            Assert.That(p.WaterCostMl, Is.EqualTo((int)j["waterCostMl"]!), p.Id);
+            Assert.That(p.RequiredLiquid, Is.EqualTo((string?)j["requiredLiquid"]), p.Id);
+            Assert.That(p.InPot, Is.EqualTo((string)j["outputOwner"]! == "same_pot"), p.Id);
+        }
+    }
+
+    // ───────────── v0.6 / v0.5 新增段落 ─────────────
+
+    private static readonly JsonSerializer Camel = JsonSerializer.Create(new JsonSerializerSettings
+    {
+        ContractResolver = new CamelCasePropertyNamesContractResolver(),
+        NullValueHandling = NullValueHandling.Include,
+    });
+
+    /// <summary>
+    /// 策划段落里的每个字段都要在加载后的配置里原样存在（Newtonsoft 会静默丢弃未映射字段，这里逐字段兜底）。
+    /// 数字按数值比较，数字与字符串按文本比较（如 ap 1 与 "remaining"）。
+    /// </summary>
+    private static void AssertSubset(JToken design, JToken mapped, string path)
+    {
+        switch (design)
+        {
+            case JObject o:
+                Assert.That(mapped, Is.InstanceOf<JObject>(), path);
+                foreach (var p in o.Properties())
+                {
+                    var m = ((JObject)mapped)[p.Name] ?? ((JObject)mapped).Properties().FirstOrDefault(x => string.Equals(x.Name, p.Name, StringComparison.OrdinalIgnoreCase))?.Value;
+                    Assert.That(m, Is.Not.Null, $"{path}.{p.Name} 没有映射到 GameConfig（会被静默丢弃）");
+                    AssertSubset(p.Value, m!, $"{path}.{p.Name}");
+                }
+                break;
+            case JArray a:
+                Assert.That(mapped, Is.InstanceOf<JArray>(), path);
+                Assert.That(((JArray)mapped).Count, Is.EqualTo(a.Count), path);
+                for (var i = 0; i < a.Count; i++) AssertSubset(a[i], ((JArray)mapped)[i], $"{path}[{i}]");
+                break;
+            default:
+                var dv = (JValue)design;
+                var mv = (JValue)mapped;
+                if (dv.Type is JTokenType.Integer or JTokenType.Float && mv.Type is JTokenType.Integer or JTokenType.Float)
+                    Assert.That((double)mv, Is.EqualTo((double)dv), path);
+                else if (dv.Type == JTokenType.Null)
+                    Assert.That(mv.Type, Is.EqualTo(JTokenType.Null), path);
+                else
+                    Assert.That(Convert.ToString(mv.Value, System.Globalization.CultureInfo.InvariantCulture),
+                        Is.EqualTo(Convert.ToString(dv.Value, System.Globalization.CultureInfo.InvariantCulture)), path);
+                break;
+        }
+    }
+
+    private static readonly (string design, string config)[] CopiedSections =
+    {
+        ("scope", "scope"), ("skills", "skills"), ("weapons", "weapons"), ("actions", "combatActions"), ("enemies", "enemies"),
+        ("xp", "xp"), ("crafting", "crafting"), ("combatMath", "combatMath"), ("panic", "panic"), ("retreat", "retreat"),
+        ("ammo", "ammo"), ("wear", "wear"), ("noise", "noise"), ("statuses", "statuses"), ("worldTime", "battleTime"),
+        ("encounters", "encounters"), ("animalCarcasses", "animalCarcasses"), ("skillGrowth", "skillGrowth"),
+        ("durability", "durability"), ("immunity", "immunity"), ("infection", "infection"), ("worldEnemies", "worldEnemies"),
+        ("stateScale", "stateScale"),
+    };
+
+    [Test]
+    public void V06Sections_AllFieldsMapped_ValuesEqual()
+    {
+        var mapped = JObject.FromObject(Cfg, Camel);
+        var d = V06();
+        foreach (var (ds, cs) in CopiedSections)
+            AssertSubset(d[ds]!, mapped[cs]!, $"v0.6.{ds}");
+        // 丧尸掉落表（v0.6 沿用 v0.5）
+        AssertSubset(d["zombieLoot"]!, mapped["zombieLoot"]!, "v0.6.zombieLoot");
+        AssertSubset(V05()["zombieLoot"]!, mapped["zombieLoot"]!, "v0.5.zombieLoot");
     }
 
     [Test]
-    public void GuideTexts_UseCombinedCookedName()
+    public void V06NewItems_MatchDesign()
     {
-        var label = Cfg.Progress.Guides.SelectMany(g => g.Flags).Single(f => f.Id == "supplyReady").Label;
-        Assert.That(label, Does.Contain((string)V04()["goals"]!["oldCookedRootRequirementDisplay"]!));
-        Assert.That(string.Join("", Cfg.Progress.Tips), Does.Not.Contain("熟块根"), "旧称已统一为熟制块根或分别写明");
+        foreach (var j in V06()["newItems"]!)
+        {
+            var id = (string)j["id"]!;
+            var it = Cfg.Items.Single(i => i.Id == id);
+            Assert.That(it.Name, Is.EqualTo((string)j["name"]!), id);
+            Assert.That(it.WeightGrams, Is.EqualTo((int)j["weightGrams"]!), id);
+            Assert.That(it.StackMax, Is.EqualTo((int)j["stackMax"]!), id);
+            Assert.That(it.ShelfLifeMinutes, Is.EqualTo((int?)j["shelfLifeMinutes"]), id);
+            if (j["durabilityMaxRange"] is JArray r) Assert.That(it.DurabilityMaxRange, Is.EqualTo(r.Select(x => (double)x)), id);
+            if (j["immediateEffects"] is JObject fx)
+            {
+                Assert.That(it.Use!.Satiety, Is.EqualTo((double)fx["satiety"]!), id);
+                Assert.That(it.Use.Hydration, Is.EqualTo((double)fx["hydration"]!), id);
+                Assert.That(it.Use.Morale, Is.EqualTo((double)fx["morale"]!), id);
+            }
+            if (j["usable"] is JValue u && !(bool)u) Assert.That(it.Use, Is.Null, id + " 不可直接食用");
+        }
+        // v0.5 新物品（v0.6 未覆盖的）也一致
+        foreach (var j in V05()["newItems"]!)
+        {
+            var it = Cfg.Items.Single(i => i.Id == (string)j["id"]!);
+            Assert.That(it.WeightGrams, Is.EqualTo((int)j["weightGrams"]!), it.Id);
+            Assert.That(it.ShelfLifeMinutes, Is.EqualTo((int?)j["shelfLifeMinutes"]), it.Id);
+        }
+        // 工具随机耐久（v0.6 §05）
+        var tools = V06()["durability"]!["tools"]!;
+        Assert.That(Cfg.Items.Single(i => i.Id == "pot").DurabilityMaxRange, Is.EqualTo(tools["pot"]!["maxRange"]!.Select(x => (double)x)));
+        Assert.That(Cfg.Items.Single(i => i.Id == "lighter").DurabilityMaxRange, Is.EqualTo(tools["lighter"]!["maxRange"]!.Select(x => (double)x)));
+        foreach (var w in V06()["weapons"]!.Where(w => w["durabilityMaxRange"]!.Type == JTokenType.Array))
+            Assert.That(Cfg.Items.Single(i => i.Id == (string)w["id"]!).DurabilityMaxRange, Is.EqualTo(w["durabilityMaxRange"]!.Select(x => (double)x)), (string)w["id"]!);
+    }
+
+    [Test]
+    public void V06Recipes_Caches_MatchDesign()
+    {
+        foreach (var j in V06()["newRecipes"]!)
+        {
+            var r = Cfg.Recipes.Single(x => x.Id == (string)j["id"]!);
+            Assert.That(r.BaseMinutes, Is.EqualTo((int)j["baseMinutes"]!), r.Id);
+            Assert.That(r.Inputs, Is.EquivalentTo(((JObject)j["inputs"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value)), r.Id);
+            Assert.That(r.Outputs, Is.EquivalentTo(((JObject)j["outputs"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value)), r.Id);
+            if (j["minSkills"] is JObject ms) Assert.That(r.MinSkills, Is.EquivalentTo(ms.Properties().ToDictionary(p => p.Name, p => (int)p.Value)), r.Id);
+            if (j["requirement"] != null) Assert.That(r.Requirement?.Facility, Is.EqualTo((string)j["requirement"]!), r.Id);
+            if (j["potCatalyst"] != null) Assert.That(r.PotCatalyst, Is.EqualTo((string)j["potCatalyst"]!), r.Id);
+            if (j["restoreOwnDurabilityMaxFraction"] != null) Assert.That(r.RestoreOwnDurabilityMaxFraction, Is.EqualTo((double)j["restoreOwnDurabilityMaxFraction"]!), r.Id);
+        }
+        var rep = V06()["durability"]!["repair"]!;
+        var repair = Cfg.Recipes.Single(r => r.IsRepair);
+        Assert.That(repair.BaseMinutes, Is.EqualTo((int)rep["baseMinutes"]!));
+        Assert.That(repair.Inputs, Is.EquivalentTo(((JObject)rep["inputs"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value)));
+        Assert.That(repair.RestoreOwnDurabilityMaxFraction, Is.EqualTo((double)rep["restoreFractionOfOwnMax"]!));
+        // v0.5 配方（木矛、木弓、箭矢）一致
+        foreach (var j in V05()["newRecipes"]!)
+        {
+            var r = Cfg.Recipes.Single(x => x.Id == (string)j["id"]!);
+            Assert.That(r.BaseMinutes, Is.EqualTo((int)j["baseMinutes"]!), r.Id);
+        }
+        foreach (var j in V06()["newCaches"]!)
+        {
+            var r = Cfg.Resources.Single(x => x.NodeId == (string)j["id"]!);
+            Assert.That(r.LocationId, Is.EqualTo((string)j["locationId"]!), r.NodeId);
+            Assert.That(r.RevealAt, Is.EqualTo((int)j["revealAt"]!), r.NodeId);
+            Assert.That(r.BaseMinutes, Is.EqualTo((int)j["baseMinutes"]!), r.NodeId);
+            Assert.That(r.Cap, Is.EqualTo((int)j["initialUses"]!), r.NodeId);
+            Assert.That(r.IsCache, Is.True, r.NodeId + " 一次性，不补充");
+            Assert.That(r.Outputs, Is.EquivalentTo(((JObject)j["outputs"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value)), r.NodeId);
+        }
+        Assert.That(Cfg.Resources.Single(r => r.NodeId == "village_weapon_locker").Name, Is.EqualTo("旧储物柜"));
+        foreach (var j in V06()["medicineCaches"]!)
+        {
+            var r = Cfg.Resources.Single(x => x.NodeId == (string)j["id"]!);
+            Assert.That(r.LocationId, Is.EqualTo((string)j["locationId"]!), r.NodeId);
+            Assert.That(r.RevealAt, Is.EqualTo((int)j["revealAt"]!), r.NodeId);
+            Assert.That(r.Cap, Is.EqualTo((int)j["uses"]!), r.NodeId);
+            Assert.That(r.BaseMinutes, Is.EqualTo((int)j["baseMinutes"]!), r.NodeId);
+            if (j["outputs"] is JObject o) Assert.That(r.Outputs, Is.EquivalentTo(o.Properties().ToDictionary(p => p.Name, p => (int)p.Value)), r.NodeId);
+            if (j["independentRareCureChance"] != null) Assert.That(r.IndependentRare!.Chance, Is.EqualTo((double)j["independentRareCureChance"]!), r.NodeId);
+            if (j["exclusiveLoot"] is JArray ex)
+            {
+                Assert.That(r.ExclusiveLoot!.Select(x => (x.ItemId, x.Count, x.Weight)),
+                    Is.EqualTo(ex.Select(x => ((string)x["itemId"]!, (int)x["count"]!, (int)x["weight"]!))), r.NodeId);
+                Assert.That(r.Outputs, Is.Empty, r.NodeId);
+            }
+        }
+    }
+
+    /// <summary>公式字符串里的系数被正确读出（验证记录 v0.6“技能成长样例”）。</summary>
+    [Test]
+    public void V06Formulas_Coefficients()
+    {
+        Assert.That(Cfg.SkillGrowth.DamagePerLevel, Is.EqualTo(0.035));
+        Assert.That(Cfg.SkillGrowth.AccuracyPerLevel, Is.EqualTo(3));
+        Assert.That(Cfg.SkillGrowth.EnergyPerLevel, Is.EqualTo(0.025));
+        Assert.That(Cfg.SkillGrowth.MedicalHealPerLevel, Is.EqualTo(0.02));
+        Assert.That(Cfg.Crafting.PerLevel, Is.EqualTo(0.025));
+        Assert.That(Cfg.CombatMath.CritAccuracyPerLevel, Is.EqualTo(0.3));
+        Assert.That(Cfg.CombatMath.CritDenominator, Is.EqualTo(100));
+        Assert.That(Cfg.CombatMath.MinEffectiveSpeed, Is.EqualTo(0.1));
+        Assert.That((Cfg.CombatMath.InitiativeRollMin, Cfg.CombatMath.InitiativeRollMax), Is.EqualTo((1, 4)));
+        Assert.That(Cfg.CombatMath.GuardFactor, Is.EqualTo(0.5));
+        Assert.That(Cfg.Skills.All(s => s.XpBase == 50 && s.XpOffset == 1 && s.LevelCap == null), Is.True, "50×(L+1)，无等级上限");
+        Assert.That((Cfg.Xp.CraftDivisor, Cfg.Xp.CraftMin, Cfg.Xp.CraftMax), Is.EqualTo((10.0, 1.0, 12.0)));
+        Assert.That((Cfg.Panic.InitialBase, Cfg.Panic.InitialDivisor, Cfg.Panic.DamageGainFactor), Is.EqualTo((100.0, 2.0, 1.5)));
+        Assert.That((Cfg.Panic.MoraleLossMax, Cfg.Panic.MoraleLossDivisor), Is.EqualTo((5.0, 20.0)));
+        Assert.That((Cfg.Retreat.SpeedDivisor, Cfg.Retreat.Offset), Is.EqualTo((3.0, 0.7)));
+        Assert.That((Cfg.Infection.ExposureBase, Cfg.Infection.ExposureScale, Cfg.Infection.ExposureImmunityDivisor), Is.EqualTo((0.05, 0.55, 100.0)));
+        Assert.That((Cfg.Infection.Bandage.Base, Cfg.Infection.Bandage.PerLevel), Is.EqualTo((2.0, 0.01)));
+        Assert.That(Cfg.Weapons.Single(w => w.Id == "wooden_spear").RearDamageFactor, Is.EqualTo(0.75));
+        Assert.That(Cfg.Weapons.Single(w => w.Id == "hatchet").RearDamageFactor, Is.EqualTo(1));
+        Assert.That(Cfg.CombatActions.Single(a => a.Id == "end_turn").ApCost, Is.EqualTo(-1), "结束行动 ap=remaining");
+        Assert.That(Cfg.CombatActions.Any(a => a.Id == "aim"), Is.False, "v0.6 彻底移除瞄准");
     }
 
     [Test]
@@ -366,5 +581,20 @@ public class ConfigTests : TestBase
         AssertInvalid(c => c.Containers["pot"].CapacityMl = 1200, "整数倍");
         AssertInvalid(c => c.Containers["pot"].Accepts.Add("wood"), "每份体积");
         AssertInvalid(c => c.Items.Single(i => i.Id == "pot").ContainerId = "kettle", "容器定义 kettle 不存在");
+    }
+
+    [Test]
+    public void Validate_RejectsBrokenCombat()
+    {
+        AssertInvalid(c => c.Weapons.Single(w => w.Id == "pistol").AmmoId = "gold", "弹药 gold 不存在");
+        AssertInvalid(c => c.Weapons.Single(w => w.Id == "hatchet").SkillId = "magic", "技能 magic 不存在");
+        AssertInvalid(c => c.Items.Single(i => i.Id == "hatchet").DurabilityMaxRange = new double[] { 30, 20 }, "最大耐久区间无效");
+        AssertInvalid(c => c.WorldEnemies.Initial["field"].Add("dragon"), "不存在的敌人 dragon");
+        AssertInvalid(c => c.WorldEnemies.Pools["woods"]["common"].Add(new WeightedEnemy { EnemyId = "boar", Weight = 1 }), "不属于 common 层");
+        AssertInvalid(c => c.WorldEnemies.Initial["village"].AddRange(new[] { "shambler", "shambler", "shambler" }), "超过本地上限");
+        AssertInvalid(c => c.SkillGrowth.DamageFactor = "1+0.035*L*L", "skillGrowth.damageFactor 的结构变了");
+        AssertInvalid(c => c.Infection.ExposureProbability = "0.05+0.55*immunity", "infection.exposureProbability 的结构变了");
+        AssertInvalid(c => c.Recipes.Single(r => r.IsRepair).TargetInstanceRequired = false, "须指定目标实例");
+        AssertInvalid(c => c.Resources.Single(r => r.NodeId == "village_cold_box").ExclusiveLoot![0].Weight = 30, "互斥抽取权重合计须为100");
     }
 }

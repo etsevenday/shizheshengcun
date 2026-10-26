@@ -48,7 +48,7 @@ namespace Survival.Core.Engine
             ctx.IsWork = a.IsWorkType;
 
             string key;
-            if (a.Type == ActionType.Sleep) key = ctx.Sheltered ? "sleep_sheltered" : "sleep_outdoors";
+            if (a.Type == ActionType.Sleep) key = ctx.Sheltered ? "sleep_sheltered" : "sleep_exposed";
             else
             {
                 var raw = RateKey(a.Type);
