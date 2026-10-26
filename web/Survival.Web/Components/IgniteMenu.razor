@@ -1,0 +1,107 @@
+@inherits GameComponent
+@inject IJSRuntime JS
+
+@* 点火工具选择菜单（基础UI布局与操作修订案 v0.7 第 4.2 节）：火堆卡“点燃”按钮下方的小弹层，不是二级面板、不盖住地块栏、不禁拖。
+   列表来自内核 IgniteToolOptions（随身与当前地面的每把打火器：图标、名称#实例、来源、可用/不可用原因），不列其他地块的工具。
+   点一把可用工具即绑定该实例并开始点火（带新 requestId、组件级防连点），菜单关闭；即使只有一把也要点选，不自动选、不追加确认。
+   悬停工具时右栏显示对应预测；没有可用工具仍能打开，写“没有可用点火工具”及原因。Esc 或点菜单外只关闭。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var opts = e.IgniteToolOptions(s);
+    var none = e.IgniteNoToolReason(s);
+    var first = opts.FirstOrDefault(o => o.Usable);
+    var p = first == null ? null : G.Preview(ActionRequest.Ignite(first.InstanceId));
+}
+<div @ref="box" class="ignite-menu" role="menu" aria-label="选择点火工具" @onclick:stopPropagation="true" @onkeydown="OnKey" @onkeydown:stopPropagation="true">
+    <div class="im-head">
+        <b>选择点火工具</b>
+        <button type="button" class="im-close" aria-label="关闭点火工具菜单" title="关闭（Esc）" @onclick="Close">×</button>
+    </div>
+    <div class="im-list" data-wheel="y">
+        @foreach (var o in opts)
+        {
+            var id = o.InstanceId;
+            var title = $"用{o.Name}点火";
+            var disabled = !o.Usable || G.Running || starting;
+            <button type="button" role="menuitem" class="im-item @(o.Usable ? "" : "off")" disabled="@disabled"
+                    title="@(o.Usable ? $"点击即用{o.Name}开始点火（{e.Config.Fire.IgniteMinutes}分钟）" : o.Reason)"
+                    @onmouseenter="() => HoverTool(id, title, o.Usable)" @onfocus="() => HoverTool(id, title, o.Usable)"
+                    @onmouseleave="Unhover" @onblur="Unhover" @onclick="() => Pick(id)">
+                <span class="ir-icon">@Icons.Markup(o.ItemId)</span>
+                <span class="im-text">
+                    <b>@o.Name</b>
+                    <small>@o.Source@(o.MaxDurability.HasValue ? $" · 耐久{o.Durability}/{o.MaxDurability}" : "") · @(o.Usable ? "可用" : o.Reason)</small>
+                </span>
+            </button>
+        }
+        @if (none != null)
+        {
+            <div class="im-none"><b>没有可用点火工具</b><span>@none</span></div>
+        }
+    </div>
+    <div class="im-foot">
+        <div>选择工具后立即开始点火，耗时@(e.Config.Fire.IgniteMinutes)分钟；打火器不消耗。</div>
+        @if (p != null && p.Ok)
+        {
+            <div>@(p.AutoWood ? $"燃料为0：将自动投入1份木材（+{e.Config.Fire.BurnMinutesPerWood}分钟），" : $"现有燃料{p.FuelBefore}分钟，")点火完成时剩@(p.FuelAtEnd)分钟</div>
+            @if (p.DiesOutAtEnd) { <div class="warn-text">点火完成时燃料耗尽、火堆随即熄灭，建议先投入木材</div> }
+        }
+    </div>
+</div>
+
+@code {
+    private ElementReference box;
+    private DotNetObjectReference<IgniteMenu>? _ref;
+    private bool starting;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _ref = DotNetObjectReference.Create(this);
+        // 点菜单外（不含“点燃”按钮本身）只关闭菜单；不拦截那次点击，也不影响拖拽
+        try { await JS.InvokeVoidAsync("survival.watchOutside", box, _ref, ".fc-btn.ignite"); }
+        catch (JSException) { }
+    }
+
+    [JSInvokable]
+    public void OutsideClick() => Close();
+
+    private void Close()
+    {
+        G.Hover(null);
+        G.CloseIgniteMenu();
+    }
+
+    private void OnKey(KeyboardEventArgs ev)
+    {
+        if (ev.Key == "Escape") Close();
+    }
+
+    private void HoverTool(int id, string title, bool usable) => G.Hover(ActionRequest.Ignite(id), title);
+
+    private void Unhover() => G.Hover(null);
+
+    private async Task Pick(int id)
+    {
+        if (starting || G.Running) return;
+        starting = true;
+        try
+        {
+            G.Hover(null);
+            G.CloseIgniteMenu();
+            await G.StartAction(ActionRequest.Ignite(id));
+        }
+        finally
+        {
+            starting = false;
+        }
+    }
+
+    public override void Dispose()
+    {
+        try { _ = JS.InvokeVoidAsync("survival.unwatchOutside"); } catch { }
+        _ref?.Dispose();
+        base.Dispose();
+    }
+}

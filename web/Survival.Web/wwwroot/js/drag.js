@@ -6,6 +6,7 @@
 // 松手时 .NET 重新校验并执行。规则全部在内核，这里只管手感。
 window.survivalDrag = (function () {
   var net = null, threshold = 6, st = null, line = null, ghost = null, lastHover = null, flashTimer = 0;
+  var NO_SELF = '选中物品后在卡片下方使用';
 
   function init(ref, px) {
     net = ref;
@@ -35,7 +36,7 @@ window.survivalDrag = (function () {
     // 卡片里的小按钮（三角箭头等）照常点击
     var btn = ev.target.closest('button, input, textarea, select');
     if (btn && btn !== el && el.contains(btn)) return;
-    st = { src: el.getAttribute('data-drag'), el: el, x0: ev.clientX, y0: ev.clientY, started: false, map: null };
+    st = { src: el.getAttribute('data-drag'), el: el, x0: ev.clientX, y0: ev.clientY, started: false, map: null, hoverKey: null };
   }
 
   function onMove(ev) {
@@ -139,8 +140,25 @@ window.survivalDrag = (function () {
     return i;
   }
 
+  // 落点变化时通知 .NET：打火器悬停在合法火堆落点（kind=start）右栏显示点火预测，离开清空（v0.7 第 4.1 节）
+  function notifyHover(h) {
+    var key = h && h.r && h.r.ok && h.r.kind === 'start' ? h.key : null;
+    if (key === st.hoverKey) return;
+    st.hoverKey = key;
+    try { net.invokeMethodAsync('DragHover', st.src, key); } catch (e) { }
+  }
+
+  // 左栏、右栏（含人物页签）不是落点：原“自身”投放已取消，拖到这里原物归位（v0.7 第 6.2 节）
+  function overInfoColumn(x, y) {
+    ghost.style.display = 'none';
+    var el = document.elementFromPoint(x, y);
+    ghost.style.display = '';
+    return !!(el && el.closest && el.closest('.sidebar, .detail'));
+  }
+
   function hover(x, y) {
     var h = hit(x, y);
+    notifyHover(h);
     if (lastHover && (!h || lastHover !== h.el)) lastHover.classList.remove('drop-hover', 'drop-hover-no');
     line.style.display = 'none';
     var label = ghost.querySelector('.dg-label');
@@ -148,6 +166,7 @@ window.survivalDrag = (function () {
     if (!h || !h.r) {
       ghost.classList.remove('ok', 'preview', 'no');
       label.textContent = '';
+      if (overInfoColumn(x, y)) { ghost.classList.add('no'); label.textContent = '⛔ ' + NO_SELF; }
       lastHover = null;
       return;
     }
@@ -178,7 +197,11 @@ window.survivalDrag = (function () {
     setTimeout(function () { document.removeEventListener('click', swallow, true); }, 0);
     hover(ev.clientX, ev.clientY);
     var h = st.hit, src = st.src;
-    if (!h || !h.r) { cleanup(); return; }
+    if (!h || !h.r) {
+      if (overInfoColumn(ev.clientX, ev.clientY)) flash(NO_SELF, ev.clientX, ev.clientY);
+      cleanup();
+      return;
+    }
     if (!h.r.ok) { flash(h.r.reason || '暂不支持此组合', ev.clientX, ev.clientY); cleanup(); return; }
     var shift = ev.shiftKey;
     cleanup();
@@ -211,6 +234,7 @@ window.survivalDrag = (function () {
   function cancel() { if (st) cleanup(); }
 
   function cleanup() {
+    if (st && st.hoverKey) { try { net.invokeMethodAsync('DragHover', st.src, null); } catch (e) { } }
     if (st && st.el) st.el.classList.remove('drag-source');
     document.body.classList.remove('dragging');
     document.querySelectorAll('.drop-can, .drop-can-preview, .drop-hover, .drop-hover-no').forEach(function (d) {

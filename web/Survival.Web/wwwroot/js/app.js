@@ -22,6 +22,22 @@ window.survival = {
     go();
     requestAnimationFrame(go);
   },
+  // 点火工具菜单：点菜单外（忽略 ignoreSel 匹配的“点燃”按钮本身）时通知 .NET 关闭；只监听，不拦截那次点击
+  watchOutside: function (el, dotnet, ignoreSel) {
+    window.survival.unwatchOutside();
+    var h = function (ev) {
+      if (!el || !el.isConnected) { window.survival.unwatchOutside(); return; }
+      var t = ev.target;
+      if (el.contains(t) || (ignoreSel && t.closest && t.closest(ignoreSel))) return;
+      dotnet.invokeMethodAsync('OutsideClick');
+    };
+    window.__survivalOutside = h;
+    document.addEventListener('pointerdown', h, true);
+  },
+  unwatchOutside: function () {
+    if (window.__survivalOutside) document.removeEventListener('pointerdown', window.__survivalOutside, true);
+    window.__survivalOutside = null;
+  },
   // 聚焦并选中输入框内容，直接打字即替换
   focusSelect: function (el) {
     try { el.focus(); el.select(); } catch (e) { }

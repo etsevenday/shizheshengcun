@@ -69,18 +69,17 @@
         }
         else
         {
-            <button type="button" class="fc-btn ignite @(picking ? "on" : "")" aria-expanded="@picking" @onclick="() => picking = !picking">点燃<small>选择点火工具</small></button>
+            <button type="button" class="fc-btn ignite @(G.IgniteMenuOpen ? "on" : "")" aria-haspopup="menu" aria-expanded="@G.IgniteMenuOpen"
+                    title="打开点火工具菜单：点一把可用的打火器即开始点火" @onclick="G.ToggleIgniteMenu">点燃<small>选择点火工具</small></button>
         }
     </div>
-    @if (picking && !fac.FireLit)
+    @if (G.IgniteMenuOpen && !fac.FireLit)
     {
-        <div class="fc-picker" @onclick:stopPropagation="true"><IgnitePicker Busy="@(e.IsBusy(s) && s.Main?.Status != ActionStatus.Paused || G.Running)" /></div>
+        <IgniteMenu />
     }
 </div>
 
 @code {
-    private bool picking;
-
     private void SelectFire() => G.SelectFire();
 
     private void Key(KeyboardEventArgs ev)

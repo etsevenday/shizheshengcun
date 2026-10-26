@@ -397,7 +397,6 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .batch-chip.on { border-color: var(--accent); color: var(--accent); }
 .recipe.missing small { color: var(--warn); }
 .candidates-head { padding: 0 2px 4px; }
-.ignite-picker { display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .ignite-choices { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 
 
@@ -529,21 +528,12 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .supply-btn .ir-icon { width: 26px; height: 26px; }
 .supply-btn .ir-icon svg { width: 22px; height: 22px; }
 
-/* 点火工具图卡 */
-.lighter-card { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 8px; border: 1px solid #5c745d; border-radius: 6px; background: #0e211a; color: #d9e1cf; text-align: left; }
-.lighter-card.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.lc-text { display: flex; flex-direction: column; line-height: 1.3; }
-.lc-text b { font-size: 15px; font-weight: 600; }
-.lc-text small { font-size: 14px; color: var(--muted); }
-.lc-check { width: 18px; color: var(--accent); font-weight: 700; }
 
-.ignite-picker .ignite-choices { gap: 6px; }
 
 /* ───────────── 试玩修复（M25）：1280×720 下不裁切、热区 ≥40px、辅助文字 ≥14px ───────────── */
 .pot-fill-head { white-space: nowrap; }
 .pot-fill-head b { overflow: hidden; text-overflow: ellipsis; }
 
-.ignite-picker .lighter-card { width: 100%; }
 
 /* B5：资源卡采集按钮与探索/清理同一形态 */
 .res-btn { width: 100%; }
@@ -583,8 +573,6 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .fc-btn.ignite { background: #b8682a; color: #fff3df; flex-direction: column; gap: 0; }
 .fc-btn.ignite:hover:not(:disabled), .fc-btn.ignite.on { background: #c9823a; }
 .fc-btn .ir-icon { width: 28px; height: 28px; }
-.fc-picker { padding: 6px; background: #0e211a; border-radius: 6px; color: #d9e1cf; }
-.fc-picker .ignite-picker > button.secondary { min-height: 40px; }
 
 /* 共用锅卡：地面栏、随身栏、火堆加工位同一结构；每行 ≥40px 热区，子对象图标是拖拽把手 */
 .pot-card { position: relative; flex: 0 0 auto; width: 236px; display: flex; flex-direction: column; gap: 4px; padding: 4px 6px 6px; background: var(--paper); color: var(--ink); border: 2px solid #b7ab88; border-radius: 6px; text-align: left; }
@@ -672,6 +660,23 @@ kbd { font-size: 14px; }
 .linkish { min-height: 40px; padding: 0 4px; }
 .batch { min-height: 40px; }
 .toast button { min-width: 40px; min-height: 40px; }
+
+/* 点火工具菜单（v0.7 第 4.2 节）：锚在火堆卡“点燃”按钮下方的小弹层，在卡内文档流里展开，不盖住地块栏、不禁拖 */
+.ignite-menu { position: relative; margin-top: 2px; padding: 8px; background: #10201a; color: var(--text); border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 6px 18px #000a; display: flex; flex-direction: column; gap: 6px; cursor: default; }
+.ignite-menu::before { content: ""; position: absolute; top: -7px; right: 24%; width: 12px; height: 12px; background: #10201a; border-left: 1px solid var(--accent); border-top: 1px solid var(--accent); transform: rotate(45deg); }
+.im-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.im-head b { font-size: 15px; font-weight: 600; }
+.im-close { width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 4px; background: transparent; font-size: 18px; }
+.im-list { display: flex; flex-direction: column; gap: 6px; max-height: 196px; overflow-y: auto; scrollbar-color: #6c7d68 transparent; }
+.im-item { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 4px 8px; border: 1px solid #5c745d; border-radius: 6px; background: #0e211a; color: #d9e1cf; text-align: left; }
+.im-item:hover:not(:disabled), .im-item:focus-visible { border-color: var(--accent); background: #1c3227; }
+.im-item:disabled { opacity: .75; }
+.im-item.off .im-text small { color: #f0c7b9; }
+.im-text { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
+.im-text b { font-size: 15px; font-weight: 600; }
+.im-text small { font-size: 14px; color: var(--muted); }
+.im-none { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; border: 1px dashed #7d4f45; border-radius: 6px; font-size: 14px; color: #f0c7b9; }
+.im-foot { font-size: 14px; color: var(--muted); line-height: 1.5; }
 
 /* ───────────── 矮屏（1280×720 等，屏高 ≤800px）：唯一一处覆盖段（v0.7 第 2 节：两行各取策划区间下限，超出靠中部纵滚） ───────────── */
 @media (max-height: 800px) {

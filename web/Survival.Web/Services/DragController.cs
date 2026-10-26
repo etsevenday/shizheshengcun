@@ -59,5 +59,25 @@ public sealed class DragController
         return Result(res.Ok, res.Reason);
     }
 
+    /// <summary>
+    /// 拖动中指针所在落点变化（drag.js 只在落点变化时调用）：打火器悬停在合法火堆落点时，右栏临时显示该点火的预测
+    /// （具体工具、火堆、5分钟、身体与燃料变化、是否自动投木，v0.7 第 4.1 节）；离开或松手传 null 清空。
+    /// </summary>
+    [JSInvokable]
+    public void DragHover(string? sourceKey, string? targetKey)
+    {
+        if (G.State == null) return;
+        var src = sourceKey == null ? null : DropSource.Parse(sourceKey);
+        var dst = targetKey == null ? null : DropTarget.Parse(targetKey);
+        if (src == null || dst == null) { G.Hover(null); return; }
+        var intent = G.E.ResolveDrop(G.S, src, dst);
+        if (intent.Ok && intent.StartsAction && intent.Action != null)
+        {
+            var lighter = G.S.Items.FirstOrDefault(i => i.InstanceId == intent.Action.InstanceId);
+            G.Hover(intent.Action, lighter == null ? "点燃火堆" : $"用{G.E.ItemName(lighter.ItemId)}#{lighter.InstanceId}点火");
+        }
+        else G.Hover(null);
+    }
+
     private static string Result(bool ok, string reason) => JsonConvert.SerializeObject(new { ok, reason });
 }

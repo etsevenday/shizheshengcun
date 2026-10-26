@@ -76,6 +76,23 @@ public sealed class GameSession
     public int? CraftPot { get; set; }
 
 
+    /// <summary>火堆卡“点燃”按钮下的点火工具菜单是否打开（v0.7 第 4.2 节）；只在会话内，Esc 或点菜单外关闭。</summary>
+    public bool IgniteMenuOpen { get; private set; }
+
+    public void ToggleIgniteMenu()
+    {
+        IgniteMenuOpen = !IgniteMenuOpen;
+        if (!IgniteMenuOpen) HoverPreview = null;
+        Notify();
+    }
+
+    public void CloseIgniteMenu()
+    {
+        if (!IgniteMenuOpen) return;
+        IgniteMenuOpen = false;
+        Notify();
+    }
+
     /// <summary>悬停或键盘聚焦某个动作按钮时的临时预测；离开即清空。右栏在“执行中”之后、选中对象之前显示它。</summary>
     public ActionRequest? HoverPreview { get; private set; }
     public string HoverTitle { get; private set; } = "";
@@ -100,6 +117,7 @@ public sealed class GameSession
     public void OpenPanel(string? panel, string? recipe = null)
     {
         HoverPreview = null;
+        if (panel != null) IgniteMenuOpen = false;
         // 每次打开或关闭面板都清掉上一次拖拽留下的候选与指定批次；拖拽入口在打开后再写入
         CraftCandidates = null;
         CraftPreferred.Clear();
@@ -297,6 +315,7 @@ public sealed class GameSession
         Selected = new Selection();
         Panel = null;
         HoverPreview = null;
+        IgniteMenuOpen = false;
         _skip = false;
         Running = false;
     }
@@ -646,6 +665,7 @@ public sealed class GameSession
             if (State != null && S.CurrentLocation != startLocation && Selected.Kind != SelectionKind.None
                 && !(Selected.Owner == ItemInstance.Carried))
                 Selected = new Selection();
+            if (State != null && S.CurrentLocation != startLocation) IgniteMenuOpen = false;
             if (State != null) ReconcileSelection();
             Save();
             Notify();

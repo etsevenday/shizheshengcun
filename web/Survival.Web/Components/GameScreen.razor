@@ -142,8 +142,10 @@
             case "L": Toggle("log"); break;
             case "Escape":
                 // Esc 层级栈，每次只退一级，不取消主行动（统一卡片案第 4 节）：
-                // 拖拽中（drag.js 先拦截）→ 数量框 → 二级面板 → 清选中 → 菜单（v0.7 删除了火堆/锅内容物层级，不再有返回层）
+                // 拖拽中（drag.js 先拦截）→ 数量框 → 点火工具菜单 → 二级面板 → 清选中 → 菜单
+                // （v0.7 删除了火堆/锅内容物层级，不再有返回层）
                 if (G.PendingDrop != null) G.CancelDropQuantity();
+                else if (G.IgniteMenuOpen) { G.Hover(null); G.CloseIgniteMenu(); }
                 else if (G.Panel != null) G.OpenPanel(null);
                 else if (G.Selected.Kind != SelectionKind.None) G.ClearSelection();
                 else Toggle("menu");
