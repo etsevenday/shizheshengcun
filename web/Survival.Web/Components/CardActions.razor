@@ -73,7 +73,7 @@
                         <button type="button" class="tbar-step" aria-label="增加" @onclick="() => Step(1, m)">+</button>
                         <button type="button" class="tbar-max" @onclick="() => SetN(m.ToCarried ? m.Max : m.Available)">@(m.ToCarried ? $"最多{m.Max}" : "全部")</button>
                     }
-                    <button type="button" class="tbar-go" disabled="@(invalid || tooHeavy || (m.ToCarried && m.Max < 1))" @onclick="() => Go(m, n)">@(verb)@(invalid ? "" : $"{n}份")到@(to)</button>
+                    <button type="button" class="tbar-go" disabled="@(invalid || tooHeavy || (m.ToCarried && m.Max < 1))" @onclick="() => Go(m, n)">@(verb)@(m.Instance != null ? m.Name : invalid ? "" : $"{n}份")到@(to)</button>
                 </div>
                 @if (m.PotInstance is ItemInstance pot && e.Location(s.CurrentLocation).HasFire)
                 {

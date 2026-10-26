@@ -561,7 +561,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .fc-title b { font-size: 17px; font-weight: 600; }
 .fc-slots { display: flex; gap: 8px; align-items: flex-start; }
 .fc-slots > .slot-empty { flex: 0 0 150px; min-height: 120px; }
-.fc-slot.pot { flex: 0 0 272px; }
+.fc-slot.pot { flex: 0 0 300px; }
 .fc-slot.food { flex: 0 0 176px; }
 .fc-foot { display: flex; gap: 8px; }
 .fc-btn { flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 3px 10px; border: 0; border-radius: 5px; background: #3c4a35; color: #f2ecd8; font-size: 16px; font-weight: 600; text-align: left; }

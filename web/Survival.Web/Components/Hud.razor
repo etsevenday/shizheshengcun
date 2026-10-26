@@ -38,7 +38,7 @@
         @* 状态异常与右栏人物页同源（内核 ActiveConditions），不在这里另算 *@
         @foreach (var c in e.ActiveConditions(s))
         {
-            <div class="small @(c.Harmful ? "warn-text" : "muted")">@c.Name · 还剩@Clock.Duration(c.RemainingMinutes)（@c.Effect）</div>
+            <div class="small @(c.Harmful ? "warn-text" : "muted")">@c.Name · 还剩@(Clock.Duration(c.RemainingMinutes))（@c.Effect）</div>
         }
     </div>
 

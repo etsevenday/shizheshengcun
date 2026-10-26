@@ -13,9 +13,11 @@
     var conds = e.ActiveConditions(s);
 }
 <div class="detail-scroll char-panel" data-wheel="y">
+    @* 读档升级说明、被拒绝操作的原因等提示：默认人物页也要看得到（开始界面写明“点继续后在右栏说明升级内容”） *@
+    @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
     <div class="op-head">
         <div class="eyebrow">人物 · 存活第@(Clock.Day(s.GameMinute))日 @Clock.HHmm(s.GameMinute)</div>
-        <h2>幸存者</h2>
+        <h2>人物信息</h2>
         <p>@(day ? "白昼" : "夜间") · 距@(day ? "入夜" : "天亮")@Clock.Duration(toSwitch) · 当前在@(e.LocName(s.CurrentLocation))@(e.IsSheltered(s, s.CurrentLocation) ? "（有遮蔽）" : "（露天）")</p>
     </div>
 
