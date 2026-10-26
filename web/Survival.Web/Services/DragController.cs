@@ -30,7 +30,7 @@ public sealed class DragController
             map[key] = new
             {
                 ok = i.Ok,
-                kind = !i.Ok ? "no" : i.Verb == DropVerb.Reorder ? "reorder" : i.IsPreview ? "preview" : "instant",
+                kind = !i.Ok ? "no" : i.Verb == DropVerb.Reorder ? "reorder" : i.IsPreview ? "preview" : i.StartsAction ? "start" : "instant",
                 label = i.Label,
                 reason = i.Reason,
                 fall = i.FallThrough,

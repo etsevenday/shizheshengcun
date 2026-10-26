@@ -12,7 +12,7 @@ namespace Survival.Core.Engine
         /// <summary>执行即时操作。带 requestId 时幂等：重发同一请求直接成功、不再改状态。</summary>
         public ActionResult DoInstant(GameState s, InstantRequest r)
         {
-            if (SeenRequest(s, r.RequestId)) return ActionResult.Success();
+            if (SeenRequest(s, r.RequestId)) return ActionResult.Repeated();
             var res = DoInstantOnce(s, r);
             if (res.Ok) RememberRequest(s, r.RequestId);
             return res;

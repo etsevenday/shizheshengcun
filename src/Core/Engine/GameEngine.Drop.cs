@@ -30,7 +30,11 @@ namespace Survival.Core.Engine
         }
     }
 
-    public enum DropTargetKind { Zone, Card, FireFuel, FirePotSlot, FireSlot, FireCard, PotFill, PotFood, Resource, Location, RecipeSlot, Self }
+    /// <summary>
+    /// 落点种类。基础UI修订 v0.7 第 6.2 节取消了左栏“自身”投放卡：不再有 Self 落点，拖到左栏、右栏或人物页签一律无效，
+    /// 对自身使用统一走选中物品后的卡下按钮。
+    /// </summary>
+    public enum DropTargetKind { Zone, Card, FireFuel, FirePotSlot, FireSlot, FireCard, PotFill, PotFood, Resource, Location, RecipeSlot }
 
     /// <summary>拖拽落点。Id：区 ID / 卡片键 / 地点 ID / 锅实例 ID / 资源点 ID / 配方 ID；ItemId 只给配方材料槽。</summary>
     public sealed class DropTarget
@@ -42,7 +46,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 解析网页落点键：zone:、card:、fuel:、potslot:（火堆加工位放锅）、fireslot:（火堆空加工位）、fire: 与 facility:（火堆卡面）、
-        /// potfill:（锅水量区）、potfood:（锅食材区）、res:、loc:、slot:recipe:item、self。
+        /// potfill:（锅水量区）、potfood:（锅食材区）、res:、loc:、slot:recipe:item。旧的 self 已取消，解析为 null（无效落点）。
         /// </summary>
         public static DropTarget? Parse(string key, int index = 0)
         {
@@ -62,7 +66,6 @@ namespace Survival.Core.Engine
                 case "potfood": return new DropTarget { Kind = DropTargetKind.PotFood, Id = rest };
                 case "res": return new DropTarget { Kind = DropTargetKind.Resource, Id = rest };
                 case "loc": return new DropTarget { Kind = DropTargetKind.Location, Id = rest };
-                case "self": return new DropTarget { Kind = DropTargetKind.Self };
                 case "slot":
                 {
                     var p = rest.Split(':');
@@ -74,9 +77,13 @@ namespace Survival.Core.Engine
     }
 
     /// <summary>拖拽动词，与拖拽与容器案第 4 节白名单一一对应（合堆在按物品分组的界面里即转移）。</summary>
-    public enum DropVerb { None, Reorder, Transfer, AddFuel, PreviewIgnite, FillPot, Decant, PutInFire, PutFood, TakeOut, PreviewGatherTool, PreviewRecipe, PreviewUse }
+    /// <summary>
+    /// 拖拽动词。Ignite 是 v0.7 第 4.1 节的点火专用修订：打火器松手即开始点火（不再打开需要再按“开始”的预览），
+    /// 其余耗时交互（指定工具采集、配方）仍是预览类。
+    /// </summary>
+    public enum DropVerb { None, Reorder, Transfer, AddFuel, Ignite, FillPot, Decant, PutInFire, PutFood, TakeOut, PreviewGatherTool, PreviewRecipe }
 
-    /// <summary>落点解析结果：即时类带 Instant（壳直接提交），预览类带 Action 或候选配方（壳打开面板预选）。</summary>
+    /// <summary>落点解析结果：即时类带 Instant（壳直接提交），开始类带 Action（壳松手即开始），预览类带 Action 或候选配方（壳打开面板预选）。</summary>
     public sealed class DropIntent
     {
         public bool Ok { get; set; }
@@ -94,8 +101,10 @@ namespace Survival.Core.Engine
         /// <summary>卡面上没有语义组合：界面应改落到所在区域的插入线（热区 → 卡面 → 插入线的优先级）。</summary>
         public bool FallThrough { get; set; }
 
-        public bool IsPreview => Verb == DropVerb.PreviewIgnite || Verb == DropVerb.PreviewGatherTool
-                                 || Verb == DropVerb.PreviewRecipe || Verb == DropVerb.PreviewUse;
+        public bool IsPreview => Verb == DropVerb.PreviewGatherTool || Verb == DropVerb.PreviewRecipe;
+
+        /// <summary>松手即开始的耗时行动（点火）：Action 已通过开始校验，壳用起拖时的 requestId 提交。</summary>
+        public bool StartsAction => Verb == DropVerb.Ignite;
 
         public static DropIntent No(string reason, bool fallThrough = false) => new DropIntent { Ok = false, Reason = reason, FallThrough = fallThrough };
     }
@@ -151,20 +160,24 @@ namespace Survival.Core.Engine
                 case DropTargetKind.Resource: intent = DropOnResource(s, src, head, dst.Id); break;
                 case DropTargetKind.Location: intent = DropOnLocation(s, src, head, dst.Id); break;
                 case DropTargetKind.RecipeSlot: intent = DropOnSlot(s, src, head, dst.Id, dst.ItemId); break;
-                case DropTargetKind.Self: intent = DropOnSelf(s, head); break;
                 default: intent = DropIntent.No(Unsupported); break;
             }
             return intent.Ok ? Busy(s, intent) ?? intent : intent;
         }
 
-        /// <summary>忙碌表（拖拽与容器案 8）：执行中与子行动中只允许排序；暂停中另允许投料、点火与补给预览。</summary>
+        /// <summary>
+        /// 落在左栏、右栏、人物页签等非落点处时拖动标签的提示（v0.7 第 6.2 节：原自身投放取消，原物归位）。
+        /// </summary>
+        public const string NoSelfDropHint = "选中物品后在卡片下方使用";
+
+        /// <summary>忙碌表（拖拽与容器案 8）：执行中与子行动中只允许排序；暂停中另允许投料与点火维护（补给走卡下按钮或暂停层）。</summary>
         private DropIntent? Busy(GameState s, DropIntent intent)
         {
             if (intent.Verb == DropVerb.Reorder) return null;
             if (s.Sub != null || (s.Main != null && s.Main.Status == ActionStatus.Running))
                 return DropIntent.No("行动进行中，只能整理卡片顺序");
             if (s.Main != null && s.Main.Status == ActionStatus.Paused
-                && intent.Verb != DropVerb.AddFuel && intent.Verb != DropVerb.PreviewIgnite && intent.Verb != DropVerb.PreviewUse)
+                && intent.Verb != DropVerb.AddFuel && intent.Verb != DropVerb.Ignite)
                 return DropIntent.No("行动暂停中，只能补给、休息或维护火堆");
             return null;
         }
@@ -273,14 +286,26 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 火堆卡面与加工位：打火器 → 点火预览；木材 → 投料；锅 → 放进空加工位；可直烤食材 → 放进空加工位烤制；
+        /// 打火器落到火堆：松手重新校验，通过即开始绑定该实例的点火（v0.7 第 4.1 节），不再打开二次“开始”的预览。
+        /// 校验与按钮入口是同一个 ActionRequest.Ignite(实例)，失败直接给出原因。
+        /// </summary>
+        private DropIntent IgniteFor(GameState s, ItemInstance lighter)
+        {
+            var r = ActionRequest.Ignite(lighter.InstanceId);
+            var why = CanStart(s, r);
+            return why != null
+                ? DropIntent.No(why)
+                : new DropIntent { Ok = true, Verb = DropVerb.Ignite, Label = $"松开后开始点火·{Config.Fire.IgniteMinutes}分钟", Action = r };
+        }
+
+        /// <summary>
+        /// 火堆卡面与加工位：打火器 → 松手即点火；木材 → 投料；锅 → 放进空加工位；可直烤食材 → 放进空加工位烤制；
         /// 水 → 提示拖进锅（不产生净水、不灭火）；熟食 → 无处理配方。失败给原因，不回落成别的目标（统一卡片案第 5 节）。
         /// </summary>
         private DropIntent DropOnFire(GameState s, DropSource src, ItemInstance head, string loc)
         {
             if (loc != s.CurrentLocation || !_locs[loc].HasFire) return DropIntent.No("异地不能操作火堆");
-            if (src.Kind == DropSourceKind.Card && IsLighter(head) && !head.InFacility)
-                return PreviewFor(s, DropVerb.PreviewIgnite, $"查看用{ItemName(head.ItemId)}#{head.InstanceId}点火", ActionRequest.Ignite(head.InstanceId));
+            if (src.Kind == DropSourceKind.Card && IsLighter(head) && !head.InFacility) return IgniteFor(s, head);
             if (head.ItemId == "wood" && src.Kind == DropSourceKind.Card && !head.InFacility) return DropOnFuel(s, head, loc);
             var max = MaxPutInFire(s, head, out var why);
             if (why != null) return DropIntent.No(why);
@@ -374,19 +399,6 @@ namespace Survival.Core.Engine
                 Ok = true, Verb = DropVerb.PreviewRecipe, Label = $"指定这批{ItemName(itemId)}", Recipes = new List<string> { recipeId },
                 Action = ActionRequest.Craft(recipeId, null, new[] { head.InstanceId }),
             };
-        }
-
-        private DropIntent DropOnSelf(GameState s, ItemInstance head)
-        {
-            var cfg = _items[head.ItemId];
-            if (cfg.Use == null)
-                return DropIntent.No(cfg.RequiresCooking ? $"{cfg.Name}需先烹饪，不可直接食用" : $"{cfg.Name}不能直接使用");
-            var inst = head;
-            if (!head.InContainer && cfg.IsStackable && (head.ReservedBy != null || IsSpoiled(s, head)))
-                inst = s.Items.Where(i => i.Owner == head.Owner && i.ItemId == head.ItemId && i.ReservedBy == null && !IsSpoiled(s, i))
-                    .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).FirstOrDefault() ?? head;
-            var label = $"查看{UseVerb(cfg)}1份{cfg.Name}" + (cfg.Use.CausesDiarrhea ? "（必定腹泻12小时）" : "");
-            return PreviewFor(s, DropVerb.PreviewUse, label, ActionRequest.UseInstance(inst.InstanceId));
         }
     }
 }

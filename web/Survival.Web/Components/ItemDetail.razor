@@ -145,7 +145,7 @@ else
                 }
                 <div><span>耗时</span><b>@(e.Config.ItemActions.UseMinutes)分钟（不可中途取消）</b></div>
             </div>
-            @if (Overflow(cfg, s.Stats) is string ov) { <div class="risk">@ov</div> }
+            @if (p.OverflowText is string ov) { <div class="risk">@ov</div> }
             @if (cfg.Use.CausesDiarrhea) { <div class="risk">⚠ 脏水必定引起腹泻12小时：期间每小时额外失水3。建议在营地烧开后再喝。</div> }
             @if (!p.Ok) { <div class="blocked">@p.Reason</div> }
         }
@@ -214,13 +214,4 @@ else
 
     private static string UseEffect(ItemConfig cfg) => GameEngine.UseEffectText(cfg.Use!);
 
-    private static string? Overflow(ItemConfig cfg, Stats st)
-    {
-        var u = cfg.Use!;
-        var over = new List<string>();
-        if (u.Satiety > 0 && st.Satiety + u.Satiety > 100) over.Add($"饱食溢出{Ui.Floor(st.Satiety + u.Satiety - 100)}");
-        if (u.Hydration > 0 && st.Hydration + u.Hydration > 100) over.Add($"水分溢出{Ui.Floor(st.Hydration + u.Hydration - 100)}");
-        if (u.Health > 0 && st.Health + u.Health > 100) over.Add($"健康溢出{Ui.Floor(st.Health + u.Health - 100)}");
-        return over.Count > 0 ? $"接近上限：{string.Join("，", over)}，溢出部分浪费。" : null;
-    }
 }

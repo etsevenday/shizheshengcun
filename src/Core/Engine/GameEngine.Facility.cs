@@ -495,6 +495,62 @@ namespace Survival.Core.Engine
             return ActionResult.Success();
         }
 
+        /// <summary>
+        /// 取出（或取下整锅）会清零哪些加工、取到随身后的重量（v0.7 第 3.3 节：操作条提前显示后果）。
+        /// 与 TakeOut 同一套“相关进程”：整锅为该锅里的全部进程，单份食材为以它为目标的进程。只读，不改状态。
+        /// </summary>
+        public TakeOutConsequence TakeOutConsequenceOf(GameState s, ItemInstance inst)
+        {
+            var touched = IsPot(inst)
+                ? AllProcesses(s).Where(p => p.PotInstanceId == inst.InstanceId)
+                : AllProcesses(s).Where(p => p.TargetInstanceId == inst.InstanceId);
+            var c = new TakeOutConsequence { Grams = ItemGrams(s, inst) };
+            foreach (var p in touched.Where(p => p.HeatDoneMinutes > 0).OrderBy(p => p.TargetInstanceId))
+            {
+                var t = FindItem(s, p.TargetInstanceId);
+                var name = t == null ? "" : $"{ItemName(t.ItemId)}#{t.InstanceId}";
+                c.Resets.Add($"{name}{Process(p.RecipeId).Name}受热{p.HeatDoneMinutes}分钟");
+            }
+            c.CarriedGramsAfter = CarriedGrams(s) + (PlaceOf(s, inst) == ItemInstance.Carried ? 0 : c.Grams);
+            c.Text = c.Resets.Count > 0 ? $"取出后{string.Join("、", c.Resets)}清零" : "当前没有已受热的加工进度，取出不损失进度";
+            return c;
+        }
+
+        /// <summary>
+        /// 点火工具菜单（v0.7 第 4.2 节）：随身与当前地面的每把打火器（不列其他地块），随身在前、再按实例 ID；
+        /// 可用与否和原因全部来自同一个点火校验 CanStart(Ignite(实例))，菜单不自己判断。
+        /// </summary>
+        public List<IgniteToolOption> IgniteToolOptions(GameState s)
+        {
+            var here = s.CurrentLocation;
+            return s.Items.Where(i => _items[i.ItemId].ToolTag == "lighter" && (i.IsCarried || i.Owner == here))
+                .OrderBy(i => i.IsCarried ? 0 : 1).ThenBy(i => i.InstanceId)
+                .Select(i =>
+                {
+                    var why = CanStart(s, ActionRequest.Ignite(i.InstanceId));
+                    return new IgniteToolOption
+                    {
+                        InstanceId = i.InstanceId,
+                        ItemId = i.ItemId,
+                        Name = $"{ItemName(i.ItemId)}#{i.InstanceId}",
+                        Source = i.IsCarried ? "随身" : "当前地面",
+                        Usable = why == null,
+                        Reason = why,
+                        Durability = i.Durability,
+                        MaxDurability = _items[i.ItemId].MaxDurability,
+                    };
+                }).ToList();
+        }
+
+        /// <summary>没有任何可用点火工具时的原因（菜单“没有可用点火工具”下方写明）；有可用工具时为 null。</summary>
+        public string? IgniteNoToolReason(GameState s)
+        {
+            var opts = IgniteToolOptions(s);
+            if (opts.Any(o => o.Usable)) return null;
+            if (opts.Count == 0) return CanStart(s, ActionRequest.Ignite()) ?? "随身和当前地面都没有打火器";
+            return opts.Select(o => o.Reason).FirstOrDefault(r => r != null);
+        }
+
         // ───────────────────────── 世界时间：自动加工 ─────────────────────────
 
         /// <summary>段首快照：哪些加工目标本段可以受热（火堆燃烧、段首燃料≥5、不在点火、条件满足）。</summary>

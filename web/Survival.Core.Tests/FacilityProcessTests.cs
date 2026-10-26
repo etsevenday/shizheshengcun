@@ -518,7 +518,7 @@ public class FacilityProcessTests : TestBase
         E.DebugGive(s, "lighter", 1, "camp");
         var ground = s.Items.Single(i => i.ItemId == "lighter" && i.Owner == "camp");
         var drag = E.ResolveDrop(s, DropSource.Parse($"card:camp|lighter|{ground.InstanceId}")!, DropTarget.Parse("fire:camp")!);
-        Assert.That(drag.Verb, Is.EqualTo(DropVerb.PreviewIgnite));
+        Assert.That(drag.Verb, Is.EqualTo(DropVerb.Ignite), "v0.7：拖入即点火，不再是预览");
         Assert.That(drag.Action!.InstanceId, Is.EqualTo(ground.InstanceId), "拖入即绑定该实例");
         var p = E.Preview(s, drag.Action!);
         Assert.That(p.Notes, Does.Contain("将消耗1木材，提供60分钟燃料"), "点火预览写明消耗木材1");

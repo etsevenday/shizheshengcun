@@ -35,6 +35,16 @@ namespace Survival.Core.Engine
             var res = Start(c, r.WithRequestId(null));
             if (!res.Ok) { p.Ok = false; p.Reason = res.Reason; return p; }
             var id = res.ActionId!.Value;
+            var here = s.CurrentLocation;
+            // 点火与自用的结构化字段（v0.7 第 4.1、7 节）：开始那一刻的结果在副本上直接读出，与真实开始同一路径
+            if (plan.Type == ActionType.Ignite)
+            {
+                p.FuelBefore = s.Locations[here].Facility.FuelMinutes;
+                p.FuelAfterStart = c.Locations[here].Facility.FuelMinutes;
+                p.AutoWood = plan.IgniteConsumesWood;
+                if (plan.IgniteConsumesWood) p.AutoWoodInstanceId = UsableBatches(s, "wood", true).FirstOrDefault()?.InstanceId;
+            }
+            if (plan.Type == ActionType.Use) p.StatsAfterImmediate = c.Stats.Clone();
             var a = plan.IsSub ? c.Sub : c.Main;
             if (a != null) a.HazardHit = false;
 
@@ -76,6 +86,13 @@ namespace Survival.Core.Engine
             p.EstimatedEndMinute = c.GameMinute;
             p.EstimatedMinutes = c.GameMinute - s.GameMinute;
             p.FacilityChanges = FacilityChanges(s, c);
+            if (plan.Type == ActionType.Ignite)
+            {
+                p.FuelAtEnd = c.Locations[here].Facility.FuelMinutes;
+                p.DiesOutAtEnd = !c.Locations[here].Facility.FireLit;
+                if (p.DiesOutAtEnd)
+                    p.Warnings.Add($"现有燃料{p.FuelBefore}分钟只够点火过程：点火完成时燃尽熄灭，请先投入木材");
+            }
 
             if (p.WouldDie) p.Warnings.Add("按当前状态，行动途中可能死亡");
             foreach (var st in alerts) p.Warnings.Add($"途中{StatName(st)}将越过提醒阈值，行动会暂停");
@@ -252,9 +269,14 @@ namespace Survival.Core.Engine
                     break;
                 }
                 case ActionType.Use:
+                {
                     p.BaseMinutes = Config.ItemActions.UseMinutes;
                     p.ConfirmText = plan != null ? $"{plan.Label}·{Config.ItemActions.UseMinutes}分钟" : "使用";
+                    // 临近上限的溢出（原在网页 ItemDetail 里算，v0.7 起放进内核，卡下按钮与右栏共用）
+                    var cfg = plan?.UseItem != null ? _items[plan.UseItem.ItemId] : _items.TryGetValue(r.TargetId, out var tc) ? tc : null;
+                    if (cfg?.Use != null) p.Overflow = OverflowLines(s.Stats, cfg.Use);
                     break;
+                }
                 case ActionType.Ignite:
                 {
                     p.BaseMinutes = Config.Fire.IgniteMinutes;
@@ -262,7 +284,9 @@ namespace Survival.Core.Engine
                     // 拖拽与按钮两条路径都写明绑定的那一把打火器
                     if (plan?.Lighter != null)
                     {
-                        p.Notes.Add($"使用{ItemName(plan.Lighter.ItemId)}#{plan.Lighter.InstanceId}（{(plan.Lighter.IsCarried ? "随身" : "当前地面")}），打火器不消耗");
+                        p.LighterInstanceId = plan.Lighter.InstanceId;
+                        p.LighterPlace = plan.Lighter.IsCarried ? "随身" : "当前地面";
+                        p.Notes.Add($"使用{ItemName(plan.Lighter.ItemId)}#{plan.Lighter.InstanceId}（{p.LighterPlace}），打火器不消耗");
                     }
                     if (plan != null && plan.IgniteConsumesWood) p.Notes.Add($"将消耗1木材，提供{Config.Fire.BurnMinutesPerWood}分钟燃料");
                     p.Notes.Add($"点火过程也消耗{Config.Fire.IgniteMinutes}分钟燃料");
@@ -271,6 +295,18 @@ namespace Survival.Core.Engine
             }
             if (p.IsWork && p.FactorAtStart > 1 + Eps)
                 p.Notes.Add($"当前工作倍率×{p.FactorAtStart:0.##}：{string.Join("，", p.FactorReasons)}");
+        }
+
+        /// <summary>即时效果超过 100 的部分（显示向下取整）：“饱食溢出12”“水分溢出5”“健康溢出3”。</summary>
+        public static List<string> OverflowLines(Stats st, Survival.Core.Config.ItemUseConfig u)
+        {
+            var over = new List<string>();
+            int F(double v) => (int)System.Math.Floor(v + 1e-9);
+            if (u.Satiety > 0 && st.Satiety + u.Satiety > 100) over.Add($"饱食溢出{F(st.Satiety + u.Satiety - 100)}");
+            if (u.Hydration > 0 && st.Hydration + u.Hydration > 100) over.Add($"水分溢出{F(st.Hydration + u.Hydration - 100)}");
+            if (u.Health > 0 && st.Health + u.Health > 100) over.Add($"健康溢出{F(st.Health + u.Health - 100)}");
+            if (u.Morale > 0 && st.Morale + u.Morale > 100) over.Add($"精神溢出{F(st.Morale + u.Morale - 100)}");
+            return over;
         }
 
         /// <summary>估算当前行动的完成时刻（提醒自动继续、风险不计）。火堆会熄灭等无法预估时返回 null。</summary>

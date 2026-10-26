@@ -97,8 +97,11 @@ namespace Survival.Core.Engine
         /// <summary>超重拾取时可取的最大数量。</summary>
         public int? MaxCount { get; set; }
         public int? ActionId { get; set; }
+        /// <summary>同一 requestId 重复到达：返回成功但不再改状态（v0.7 第 4.3 节“重复请求不重复点火”）。</summary>
+        public bool Duplicate { get; set; }
 
         public static ActionResult Success(int? actionId = null) => new ActionResult { Ok = true, ActionId = actionId };
+        public static ActionResult Repeated() => new ActionResult { Ok = true, Duplicate = true };
         public static ActionResult Fail(string reason, int? max = null) => new ActionResult { Ok = false, Reason = reason, MaxCount = max };
     }
 
@@ -173,5 +176,71 @@ namespace Survival.Core.Engine
         public int? ClearCharges { get; set; }
         public int? ClearCap { get; set; }
         public int? NextRefillMinutes { get; set; }
+
+        // ───── 点火（基础UI修订 v0.7 第 4.1 节：拖拽悬停与工具菜单的结构化预测） ─────
+        /// <summary>点火前火堆燃料（分钟）。</summary>
+        public int? FuelBefore { get; set; }
+        /// <summary>开始点火后（含自动投木）的燃料。</summary>
+        public int? FuelAfterStart { get; set; }
+        /// <summary>点火完成时的燃料。</summary>
+        public int? FuelAtEnd { get; set; }
+        /// <summary>燃料为 0 时自动投入 1 份木材。</summary>
+        public bool AutoWood { get; set; }
+        /// <summary>自动投入的那一堆木材实例。</summary>
+        public int? AutoWoodInstanceId { get; set; }
+        /// <summary>点火完成即燃尽熄灭（例如只剩 5 分钟燃料）。</summary>
+        public bool DiesOutAtEnd { get; set; }
+        /// <summary>点火绑定的打火器实例与所在（随身 / 当前地面）。</summary>
+        public int? LighterInstanceId { get; set; }
+        public string LighterPlace { get; set; } = "";
+
+        // ───── 自用（v0.7 第 7 节：按钮附近写明效果与溢出） ─────
+        /// <summary>即时效果结算后、5 分钟自然消耗之前的属性。</summary>
+        public Stats? StatsAfterImmediate { get; set; }
+        /// <summary>临近上限的溢出，如“饱食溢出12”。</summary>
+        public List<string> Overflow { get; set; } = new List<string>();
+        /// <summary>“接近上限：饱食溢出12，溢出部分浪费。”；没有溢出为 null。</summary>
+        public string? OverflowText => Overflow.Count > 0 ? $"接近上限：{string.Join("，", Overflow)}，溢出部分浪费。" : null;
+    }
+
+    /// <summary>点火工具菜单的一行（v0.7 第 4.2 节）：随身与当前地面的每把打火器，含可用/不可用原因。</summary>
+    public sealed class IgniteToolOption
+    {
+        public int InstanceId { get; set; }
+        public string ItemId { get; set; } = "";
+        /// <summary>“打火器#3”。</summary>
+        public string Name { get; set; } = "";
+        /// <summary>“随身”或“当前地面”。</summary>
+        public string Source { get; set; } = "";
+        public bool Usable { get; set; }
+        /// <summary>不可用原因（内核点火校验原文）；可用为 null。</summary>
+        public string? Reason { get; set; }
+        public int? Durability { get; set; }
+        public int? MaxDurability { get; set; }
+    }
+
+    /// <summary>取出设施或锅里的物品会清零的加工（v0.7 第 3.3 节：操作条提前显示后果）。</summary>
+    public sealed class TakeOutConsequence
+    {
+        /// <summary>会清零的加工，如“生块根#21水煮受热10分钟”。</summary>
+        public List<string> Resets { get; set; } = new List<string>();
+        /// <summary>该物品连同内容的克重。</summary>
+        public int Grams { get; set; }
+        /// <summary>拾取到随身后的随身总重（克）。</summary>
+        public int CarriedGramsAfter { get; set; }
+        /// <summary>“取出后生块根#21水煮受热10分钟清零”或“当前没有已受热的加工进度”。</summary>
+        public string Text { get; set; } = "";
+    }
+
+    /// <summary>当前状态异常（v0.7 第 6.1 节人物页与左栏共用一个数据源）。</summary>
+    public sealed class ActiveCondition
+    {
+        /// <summary>diarrhea / bandageCooldown。</summary>
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public int RemainingMinutes { get; set; }
+        public string Effect { get; set; } = "";
+        /// <summary>是否属于不利状态（界面用警示色）。</summary>
+        public bool Harmful { get; set; }
     }
 }

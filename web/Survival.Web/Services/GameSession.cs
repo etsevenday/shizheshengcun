@@ -385,10 +385,23 @@ public sealed class GameSession
         return p;
     }
 
-    public async Task<ActionResult> StartAction(ActionRequest r)
+    /// <summary>
+    /// 开始耗时行动。每次提交都带一个请求号（基础UI修订 v0.7 第 8 节第 5 条：玩法请求沿用幂等机制）：
+    /// 拖拽松手用起拖时生成的那一个，按钮每次点击新生成；同一请求号重复到达时内核返回 Duplicate，这里不再推进。
+    /// </summary>
+    public async Task<ActionResult> StartAction(ActionRequest r, string? requestId = null)
+    {
+        var res = BeginAction(r, requestId);
+        if (res.Ok && !res.Duplicate) await RunLoop();
+        return res;
+    }
+
+    /// <summary>同步部分：校验、开始、存档；不等待行动推进（拖拽松手后立即返回结果给 drag.js）。</summary>
+    private ActionResult BeginAction(ActionRequest r, string? requestId)
     {
         if (State == null) return ActionResult.Fail("没有进行中的游戏");
-        var res = E.Start(S, r);
+        var res = E.Start(S, r.WithRequestId(string.IsNullOrEmpty(requestId) ? Guid.NewGuid().ToString("N") : requestId));
+        if (res.Duplicate) return res;
         if (!res.Ok)
         {
             Notice = res.Reason;
@@ -407,7 +420,6 @@ public sealed class GameSession
         Drain();
         Save();
         Notify();
-        await RunLoop();
         return res;
     }
 
@@ -526,6 +538,14 @@ public sealed class GameSession
     public ActionResult ExecuteDrop(DropIntent intent, int count, string requestId)
     {
         if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        if (intent.StartsAction && intent.Action != null)
+        {
+            // 打火器拖到火堆：松手即开始点火（v0.7 第 4.1 节），请求号沿用起拖时那一个，重复松手不重复点火
+            HoverPreview = null;
+            var started = BeginAction(intent.Action, requestId);
+            if (started.Ok && !started.Duplicate) _ = RunLoop();
+            return started;
+        }
         if (intent.IsPreview)
         {
             if (intent.Verb == DropVerb.PreviewRecipe) ShowRecipes(intent.Recipes, intent.Action);

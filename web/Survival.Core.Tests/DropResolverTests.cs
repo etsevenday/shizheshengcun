@@ -22,7 +22,7 @@ public class DropResolverTests : TestBase
         Assert.That(DropSource.Parse("potchild:12")!.InstanceId, Is.EqualTo(12));
         var slot = DropTarget.Parse("slot:knife:stone")!;
         Assert.That((slot.Kind, slot.Id, slot.ItemId), Is.EqualTo((DropTargetKind.RecipeSlot, "knife", "stone")));
-        Assert.That(DropTarget.Parse("self")!.Kind, Is.EqualTo(DropTargetKind.Self));
+        Assert.That(DropTarget.Parse("self"), Is.Null, "v0.7 第 6.2 节取消左栏自身投放：self 不再是落点");
         Assert.That(DropTarget.Parse("fireslot:camp")!.Kind, Is.EqualTo(DropTargetKind.FireSlot));
         Assert.That(DropTarget.Parse("potfood:7")!.Kind, Is.EqualTo(DropTargetKind.PotFood));
         Assert.That(DropTarget.Parse("facility:camp")!.Kind, Is.EqualTo(DropTargetKind.FireCard));
@@ -138,19 +138,20 @@ public class DropResolverTests : TestBase
     }
 
     [Test]
-    public void Row5_LighterToFire_PreviewIgnite()
+    public void Row5_LighterToFire_IgniteStartsOnDrop()
     {
         var s = New();
         var lighter = First(s, "lighter");
         var i = R(s, Card($"carried|lighter|{lighter.InstanceId}"), "fire:camp");
-        Assert.That(i.Ok && i.Verb == DropVerb.PreviewIgnite, Is.True, i.Reason);
-        Assert.That(i.IsPreview, Is.True);
+        Assert.That(i.Ok && i.Verb == DropVerb.Ignite, Is.True, i.Reason);
+        Assert.That(i.IsPreview, Is.False, "v0.7 第 4.1 节：不再打开需要再按开始的预览");
+        Assert.That(i.StartsAction, Is.True);
         Assert.That(i.Action!.InstanceId, Is.EqualTo(lighter.InstanceId));
-        Assert.That(i.Label, Is.EqualTo($"查看用打火器#{lighter.InstanceId}点火"), "预览写明绑定的实例");
+        Assert.That(i.Label, Is.EqualTo("松开后开始点火·5分钟"));
         Assert.That(E.Preview(s, i.Action).Notes, Does.Contain($"使用打火器#{lighter.InstanceId}（随身），打火器不消耗"));
-        Assert.That(s.Sub ?? s.Main, Is.Null, "只打开预览，不开始");
-        Assert.That(R(s, Card($"carried|lighter|{lighter.InstanceId}"), "fuel:camp").Verb, Is.EqualTo(DropVerb.PreviewIgnite), "燃料区也属于火堆");
-        Assert.That(R(s, Card($"carried|lighter|{lighter.InstanceId}"), "potslot:camp").Verb, Is.EqualTo(DropVerb.PreviewIgnite), "锅位也属于火堆");
+        Assert.That(s.Sub ?? s.Main, Is.Null, "解析本身不开始，松手才提交");
+        Assert.That(R(s, Card($"carried|lighter|{lighter.InstanceId}"), "fuel:camp").Verb, Is.EqualTo(DropVerb.Ignite), "燃料区也属于火堆");
+        Assert.That(R(s, Card($"carried|lighter|{lighter.InstanceId}"), "potslot:camp").Verb, Is.EqualTo(DropVerb.Ignite), "锅位也属于火堆");
         // 非法：没有燃料也没有木材
         foreach (var w in s.Items.Where(x => x.ItemId == "wood").ToList()) s.Items.Remove(w);
         Assert.That(R(s, Card($"carried|lighter|{lighter.InstanceId}"), "fire:camp").Reason, Is.EqualTo("请先投入木材"));
@@ -183,8 +184,7 @@ public class DropResolverTests : TestBase
         E.DoInstant(s, i.Instant!);
         Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(1));
         Assert.That(R(s, DropSource.Parse($"potchild:{child.InstanceId}")!, "zone:field").Ok, Is.False, "不能倒到其他地点");
-        var use = R(s, DropSource.Parse($"potchild:{child.InstanceId}")!, "self");
-        Assert.That(use.Verb, Is.EqualTo(DropVerb.PreviewUse), "锅内水子卡也可拖向自身饮用");
+        Assert.That(E.CanStart(s, ActionRequest.UseInstance(child.InstanceId)), Is.Null, "锅内水改由行下“饮用1份”按钮使用");
     }
 
     [Test]
@@ -279,18 +279,21 @@ public class DropResolverTests : TestBase
     }
 
     [Test]
-    public void Row12_FoodToSelf_PreviewUse()
+    public void Row12_SelfTargetRemoved_UseVerbsFromKernel()
     {
+        // v0.7 第 6.2 节：原“拖到自身卡使用”取消，对自身使用统一走卡下按钮；按钮文案与风险来自内核
+        Assert.That(DropTarget.Parse("self"), Is.Null);
         var s = New();
-        var i = R(s, Card("camp|canned_food"), "self");
-        Assert.That(i.Ok && i.Verb == DropVerb.PreviewUse, Is.True, i.Reason);
-        Assert.That(E.ResolveDrop(s, Card("camp|clean_water"), T("self")).Label, Is.EqualTo("查看饮用1份净水"));
-        E.DebugGive(s, "dirty_water", 1, "camp");
-        Assert.That(R(s, Card("camp|dirty_water"), "self").Label, Does.Contain("腹泻12小时"));
+        Assert.That(GameEngine.UseButtonText(E.Item("canned_food")), Is.EqualTo("食用1份"));
+        Assert.That(GameEngine.UseButtonText(E.Item("clean_water")), Is.EqualTo("饮用1份"));
+        Assert.That(GameEngine.UseButtonText(E.Item("dirty_water")), Is.EqualTo("饮用1份（风险）"));
+        Assert.That(E.UseRiskText(E.Item("dirty_water")), Is.EqualTo("必定腹泻12小时：期间每小时额外失水3"));
+        Assert.That(GameEngine.UseButtonText(E.Item("bandage")), Is.EqualTo("使用1份"));
         E.DebugGive(s, "raw_root", 1, "camp");
-        Assert.That(R(s, Card("camp|raw_root"), "self").Reason, Is.EqualTo("生块根需先烹饪，不可直接食用"));
-        E.DebugGive(s, "herb", 1, "camp");
-        Assert.That(R(s, Card("camp|herb"), "self").Ok, Is.False);
+        Assert.That(GameEngine.CanSelfUse(E.Item("raw_root")), Is.False, "生块根没有自用按钮");
+        Assert.That(E.CanStart(s, ActionRequest.UseInstance(First(s, "raw_root", "camp").InstanceId)), Is.EqualTo("生块根需先烹饪，不可直接食用"));
+        Assert.That(GameEngine.CanSelfUse(E.Item("herb")), Is.False);
+        Assert.That(GameEngine.CanSelfUse(E.Item("pot")), Is.False, "空锅不出现使用按钮");
     }
 
     [Test]
@@ -316,7 +319,8 @@ public class DropResolverTests : TestBase
         Start(s, ActionRequest.Clear());
         Assert.That(Run(s, autoResume: false), Is.EqualTo(SegmentStatus.Paused), "水分跌破提醒线暂停");
         Assert.That(R(s, Card("camp|wood"), "fuel:camp").Ok, Is.True, "暂停时可投料");
-        Assert.That(R(s, Card("camp|canned_food"), "self").Ok, Is.True, "暂停时可补给");
+        Assert.That(E.CanStart(s, ActionRequest.UseItem("canned_food")), Is.Null, "暂停时可补给（卡下按钮）");
+        Assert.That(R(s, Card($"carried|lighter|{First(s, "lighter").InstanceId}"), "fire:camp").Ok, Is.True, "暂停时可拖打火器点火维护");
         Assert.That(R(s, Card("camp|wood"), "zone:carried").Reason, Is.EqualTo("行动暂停中，只能补给、休息或维护火堆"));
         Assert.That(R(s, Card("camp|wood"), "zone:camp").Ok, Is.True, "排序始终允许");
 

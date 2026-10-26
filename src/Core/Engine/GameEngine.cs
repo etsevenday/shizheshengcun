@@ -60,6 +60,33 @@ namespace Survival.Core.Engine
 
         public bool IsBusy(GameState s) => s.Main != null || s.Sub != null;
 
+        /// <summary>
+        /// 当前状态异常（v0.7 第 6.1 节）：腹泻剩余时间、绷带冷却剩余。右栏人物页与左栏 HUD 读同一份数据，不各自维护。
+        /// </summary>
+        public List<ActiveCondition> ActiveConditions(GameState s)
+        {
+            var list = new List<ActiveCondition>();
+            if (s.DiarrheaUntil.HasValue && s.DiarrheaUntil.Value > s.GameMinute)
+            {
+                var extra = -Config.ItemActions.DiarrheaExtraHydrationPerHour;
+                list.Add(new ActiveCondition
+                {
+                    Id = "diarrhea", Name = "腹泻", RemainingMinutes = s.DiarrheaUntil.Value - s.GameMinute,
+                    Effect = $"每小时额外失水{extra:0.#}", Harmful = true,
+                });
+            }
+            if (s.BandageReadyAt > s.GameMinute)
+            {
+                var bandage = Config.Items.FirstOrDefault(i => i.Use != null && i.Use.IsBandage)?.Name ?? "绷带";
+                list.Add(new ActiveCondition
+                {
+                    Id = "bandageCooldown", Name = "绷带冷却", RemainingMinutes = s.BandageReadyAt - s.GameMinute,
+                    Effect = $"冷却结束前不能再使用{bandage}",
+                });
+            }
+            return list;
+        }
+
         // ───────────────────────── 新游戏 ─────────────────────────
 
         public GameState NewGame(uint seed)
@@ -422,8 +449,10 @@ namespace Survival.Core.Engine
                     // 点火必须指定一把打火器：拖到火堆即指定，按钮点火也要先选（策划答复 2026-10-24 第 1 条）
                     if (!r.InstanceId.HasValue)
                         return AccessibleTool(s, "lighter") == null ? "缺少打火器（需随身或在当前地面）" : "请选择要使用的打火器";
+                    // 选中的工具失效时提示重新选择，不暗换另一把（v0.7 第 4.3 节）
                     var lighter = FindItem(s, r.InstanceId.Value);
-                    if (lighter == null || _items[lighter.ItemId].ToolTag != "lighter") return "这不是打火器";
+                    if (lighter == null) return "这把打火器已不在，请重新选择";
+                    if (_items[lighter.ItemId].ToolTag != "lighter") return "这不是打火器";
                     if (!(lighter.IsCarried || lighter.Owner == here)) return "只能使用随身或当前地面的打火器";
                     if (lighter.ReservedBy != null || IsLocked(s, lighter)) return "行动占用：打火器正被使用";
                     plan.Lighter = lighter;
@@ -460,6 +489,23 @@ namespace Survival.Core.Engine
         public static string UseVerb(ItemConfig cfg) =>
             cfg.Use != null && cfg.Use.IsBandage ? "使用" : cfg.Kind == "water" ? "饮用" : "食用";
 
+        /// <summary>自用带既有风险（配置 causesDiarrhea，脏水）：按钮写“饮用1份（风险）”（v0.7 第 7 节）。</summary>
+        public static bool UseRisky(ItemConfig cfg) => cfg.Use != null && cfg.Use.CausesDiarrhea;
+
+        /// <summary>是否在玩法白名单内可对自身使用（配置 use 不为空）；材料、工具、空锅、生块根为否。</summary>
+        public static bool CanSelfUse(ItemConfig cfg) => cfg.Use != null;
+
+        /// <summary>卡下自用按钮文案：“食用1份”“饮用1份”“饮用1份（风险）”“使用1份”。</summary>
+        public static string UseButtonText(ItemConfig cfg) => UseVerb(cfg) + "1份" + (UseRisky(cfg) ? "（风险）" : "");
+
+        /// <summary>风险后果，写在按钮旁：“必定腹泻12小时：期间每小时额外失水3”；无风险为 null。</summary>
+        public string? UseRiskText(ItemConfig cfg)
+        {
+            if (!UseRisky(cfg)) return null;
+            var extra = -Config.ItemActions.DiarrheaExtraHydrationPerHour;
+            return $"必定腹泻{Clock.Duration(Config.ItemActions.DiarrheaMinutes)}：期间每小时额外失水{extra:0.#}";
+        }
+
         private static bool FacilityFlag(FacilityState f, string key) => key switch
         {
             "shelterBuilt" => f.ShelterBuilt,
@@ -481,8 +527,8 @@ namespace Survival.Core.Engine
         /// <summary>空闲时开始主行动；主行动暂停时开始子行动（补给、休息、点火）。</summary>
         public ActionResult Start(GameState s, ActionRequest r)
         {
-            // 重发同一开始请求不再扣次数、不再抽签（清理案 C15、探索案 E05）
-            if (SeenRequest(s, r.RequestId)) return ActionResult.Success();
+            // 重发同一开始请求不再扣次数、不再抽签（清理案 C15、探索案 E05）；点火同一 requestId 不重复点火（v0.7 第 4.3 节）
+            if (SeenRequest(s, r.RequestId)) return ActionResult.Repeated();
             var err = Validate(s, r, out var p);
             if (err != null) return ActionResult.Fail(err);
             RememberRequest(s, r.RequestId);
