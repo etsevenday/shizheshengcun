@@ -49,8 +49,16 @@
                 <button type="button" class="ca-use @(GameEngine.UseRisky(cfg) ? "risky" : "")" disabled="@(why != null || using_)" title="@(why ?? "点击即使用1份，耗时5分钟、不可中途取消")"
                         @onclick="() => Use(m.UseId.Value)">@GameEngine.UseButtonText(cfg)</button>
                 <span class="ca-use-note">
-                    @GameEngine.UseEffectText(cfg.Use!) · @(e.Config.ItemActions.UseMinutes)分钟
-                    @if (p.Ok && p.StatsAfterImmediate != null)
+                    @if (e.MedicineEffectText(s, cfg.Use!) is string med)
+                    {
+                        // 药品按这一次的实际效果写（冷却中不回血、病毒前后），与右栏和结果一致（试玩修复 G4）
+                        @med<text> · @(e.Config.ItemActions.UseMinutes)分钟</text>
+                    }
+                    else
+                    {
+                        @GameEngine.UseEffectText(cfg.Use!)<text> · @(e.Config.ItemActions.UseMinutes)分钟（即时）</text>
+                    }
+                    @if (p.Ok && p.StatsAfterImmediate != null && !cfg.Use!.IsMedicine)
                     {
                         // 物品影响的属性一律列出（即时结算值，夹紧到 100 时写溢出），不因取整后相等就省略（试玩修复 B9）
                         foreach (var (id, delta) in Affected(cfg.Use!, e.UseHealthAmount(s, cfg.Use!)))

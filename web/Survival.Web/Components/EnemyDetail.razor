@@ -31,6 +31,11 @@ else
             <div><span>当前武器</span><b>@(wi == null ? "徒手" : $"{weapon.Name}#{wi.InstanceId}")（战前可在随身武器卡下调整）</b></div>
             <div><span>你的命中率</span><b>@Ui.Pct(GameEngine.HitChance(weapon.AccuracyRating + e.SkillAccuracyBonus(e.SkillLevel(s, weapon.SkillId)), ec.Dodge))（命中能力@(Ui.T(weapon.AccuracyRating + e.SkillAccuracyBonus(e.SkillLevel(s, weapon.SkillId))))）</b></div>
         </div>
+        @if (wi != null && weapon.UsesMagazine && wi.LoadedAmmo <= 0)
+        {
+            @* 试玩修复 D3：弹仓为0时提前提示，开战后第一件事是装填 *@
+            <div class="risk">@($"{weapon.Name}#{wi.InstanceId}")弹仓为0：开战后需先装填（1AP），或在随身武器卡下换一把再接近。</div>
+        }
         @if (ec.IsZombie) { <div class="risk">咬击命中且造成伤害时可能感染僵尸病毒（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）。</div> }
         <ul class="notes">
             <li>主动接近：不算受惊，不受随机接敌保护期限制；只与这一只交战。</li>

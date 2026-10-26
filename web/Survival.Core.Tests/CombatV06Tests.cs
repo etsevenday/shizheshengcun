@@ -463,8 +463,10 @@ public class CombatV06Tests : BattleTestBase
         s.Body.HighImmunityMinutes = 100;
         SetStats(s, 10, 80, 80, 5, 90, 60);
         E.DebugGive(s, "antiviral_cure", 1);
+        var xp0 = s.Skills["medicine"].Xp;
         Start(s, ActionRequest.UseItem("antiviral_cure"));
         Assert.That(s.Body.Infected, Is.False);
+        Assert.That(s.Skills["medicine"].Xp, Is.EqualTo(xp0 + Cfg.Xp.Medical), "清除感染是有效医疗，给医疗经验一次（试玩修复 L2）");
         Assert.That(s.Body.VirusLoad, Is.EqualTo(0));
         Assert.That(s.Body.HighImmunityMinutes, Is.EqualTo(0));
         Assert.That(s.Stats.Health, Is.EqualTo(10), "不回健康");
@@ -979,7 +981,13 @@ public class CombatV06Tests : BattleTestBase
     [Test]
     public void Display_TwoDecimals_TinyPositive()
     {
-        Assert.That(Fmt.N(17.539), Is.EqualTo("17.53"));
+        Assert.That(Fmt.N(17.539), Is.EqualTo("17.54"), "四舍五入到两位（试玩修复 D1）");
+        Assert.That(Fmt.N(17.534), Is.EqualTo("17.53"));
+        Assert.That(Fmt.N(3.6 - 0.8), Is.EqualTo("2.80"), "浮点误差不显示成2.79");
+        Assert.That(Fmt.N(3.2 - 1.157), Is.EqualTo("2.04"));
+        Assert.That(Fmt.N(1.157), Is.EqualTo("1.16"), "被减数与差同一口径：3.20−1.16=2.04");
+        Assert.That(Fmt.N(1.035), Is.EqualTo("1.04"), "二进制略小于1.035的值按吸附后进位");
+        Assert.That(Fmt.N(0.006), Is.EqualTo("<0.01"), "正且小于0.01仍写<0.01，不进位成0.01");
         Assert.That(Fmt.N(0.004), Is.EqualTo("<0.01"));
         Assert.That(Fmt.N(0), Is.EqualTo("0.00"));
         Assert.That(Fmt.N(19.9999999), Is.EqualTo("20.00"), "浮点累计误差不显示成19.99");

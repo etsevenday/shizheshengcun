@@ -10,7 +10,14 @@
             <button class="secondary" @onclick="() => G.ToggleBattleMenu(false)">继续<kbd>Esc</kbd></button>
         </div>
         <div style="padding:18px;display:flex;flex-direction:column;gap:14px">
-            <div class="tiny muted">战斗中不能通过菜单脱战；撤退请用指令条的“撤退”。每条指令与敌方行动后都已自动保存。</div>
+            @if (G.S.Battle != null)
+            {
+                <div class="tiny muted">战斗中不能通过菜单脱战；撤退请用指令条的“撤退”。每条指令与敌方行动后都已自动保存。</div>
+            }
+            else
+            {
+                <div class="tiny muted">发现敌踪后要先在中间选择“接敌”或“绕行”，菜单不能跳过这个选择；返回标题后再继续仍停在这里。</div>
+            }
             <button class="secondary" @onclick="() => G.ToggleBattleMenu(false)">继续</button>
             <button class="secondary" @onclick="ToTitle">保存并返回标题</button>
         </div>
@@ -123,7 +130,12 @@
 
     private void DevVirus(double v) { G.E.DebugSetVirus(G.S, v); DevDone($"病毒设为{v}。"); }
 
-    private void DevSpawn(string id) { G.E.DebugSpawnEnemy(G.S, id, G.S.CurrentLocation); DevDone($"已在当前地点放置{G.E.Enemy(id).Name}。"); }
+    private void DevSpawn(string id)
+    {
+        if (G.E.DebugSpawnBlocked(G.S, G.S.CurrentLocation) is string why) { DevDone($"没有放置：{why}。"); return; }
+        G.E.DebugSpawnEnemy(G.S, id, G.S.CurrentLocation);
+        DevDone($"已在当前地点放置{G.E.Enemy(id).Name}。");
+    }
 
     private void DevDay2()
     {

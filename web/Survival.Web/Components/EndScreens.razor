@@ -37,7 +37,7 @@
                 <button class="secondary" @onclick="Feedback">反馈</button>
                 <button class="secondary" @onclick="G.BackToTitle">返回标题</button>
             </div>
-            <div class="under">v0.2 原型不提供跨局继承，重新开始会完整重置世界与角色。</div>
+            <div class="under">原型不提供跨局继承，重新开始会完整重置世界与角色。</div>
         </div>
     </div>
     @if (showLog) { <div class="end-back" style="z-index:70" @onclick="() => showLog = false"><div class="end-card" style="max-height:80vh;overflow:auto">@foreach (var l in Enumerable.Reverse(s.Log).Take(80)) {<div class="small"><span class="muted">@Clock.DayTime(l.Minute)</span> @l.Text</div>}</div></div> }

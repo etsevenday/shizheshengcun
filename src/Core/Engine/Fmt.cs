@@ -4,15 +4,16 @@ using System.Globalization;
 namespace Survival.Core.Engine
 {
     /// <summary>
-    /// 统一数值显示（v0.6 §02）：两位小数，向零截断（沿用 v0.2“显示不进位”），正且小于 0.01 显示“&lt;0.01”，不显示为 0；
-    /// 负数用全角减号“−”。内部数值保持原始 double，这里只做显示。
+    /// 统一数值显示（v0.6 §02）：两位小数，四舍五入（先加 1e-6 个百分位的吸附量，消除 2.7999999 这类浮点误差），
+    /// 正且小于 0.01 显示“&lt;0.01”，不显示为 0；负数用全角减号“−”。内部数值保持原始 double，这里只做显示。
+    /// 试玩修复 D1：原向零截断会让“3.60−0.80”显示成 2.79、“3.20−1.15”显示成 2.04（被减数实际是 1.157 之类），改为四舍五入后前后两数口径一致。
     /// </summary>
     public static class Fmt
     {
         public const string Tiny = "<0.01";
         private const double Snap = 1e-6;
 
-        private static double Trunc(double abs) => Math.Floor(abs * 100 + 1e-4) / 100;
+        private static double Round2(double abs) => Math.Floor(abs * 100 + 0.5 + 1e-6) / 100;
 
         /// <summary>固定两位小数，如 17.53、0.40、“&lt;0.01”。用于状态当前值、成本、伤害等。</summary>
         public static string N(double v)
@@ -20,7 +21,7 @@ namespace Survival.Core.Engine
             if (double.IsNaN(v)) return "—";
             var abs = Math.Abs(v);
             if (abs > 0 && abs < 0.01 - Snap / 100) return v > 0 ? Tiny : "−" + Tiny;
-            var t = Trunc(abs);
+            var t = Round2(abs);
             var s = t.ToString("0.00", CultureInfo.InvariantCulture);
             return v < 0 && t > 0 ? "−" + s : s;
         }
@@ -31,7 +32,7 @@ namespace Survival.Core.Engine
             if (double.IsNaN(v)) return "—";
             var abs = Math.Abs(v);
             if (abs > 0 && abs < 0.01 - Snap / 100) return v > 0 ? Tiny : "−" + Tiny;
-            var t = Math.Round(abs, 2, MidpointRounding.AwayFromZero);
+            var t = Round2(abs);
             var s = t.ToString("0.##", CultureInfo.InvariantCulture);
             return v < 0 && t > 0 ? "−" + s : s;
         }

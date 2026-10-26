@@ -22,6 +22,38 @@ window.survival = {
     go();
     requestAnimationFrame(go);
   },
+  // 二级面板打开、战斗或敌踪开始、读档恢复战斗时：中部纵滚回到顶部，让面板/覆盖层完整替换地块两行（试玩修复 G1、G2）
+  centerTop: function () {
+    var go = function () { var c = document.querySelector('.center-scroll'); if (c) c.scrollTop = 0; };
+    go();
+    setTimeout(go, 50);
+  },
+  // 选中卡片后卡下操作条可能落在横滚行的可视区外（卡片靠左/靠右）：横向把它滚进来；在中部下方看不到时中部纵滚到刚好露出（试玩修复 L5）
+  revealBar: function () {
+    var go = function () {
+      var bar = document.querySelector('.tbar.cact');
+      if (!bar) return;
+      var p = bar.parentElement;
+      while (p && p !== document.body) {
+        var cs = getComputedStyle(p);
+        if ((cs.overflowX === 'auto' || cs.overflowX === 'scroll') && p.scrollWidth > p.clientWidth) {
+          var br = bar.getBoundingClientRect(), pr = p.getBoundingClientRect();
+          if (br.right > pr.right) p.scrollLeft += br.right - pr.right + 8;
+          br = bar.getBoundingClientRect();
+          if (br.left < pr.left) p.scrollLeft -= pr.left - br.left + 8;
+        }
+        // 中部纵滚：操作条底部在可视区外时下移到刚好露出（不超过把操作条顶部推出可视区）
+        if (p.classList.contains('center-scroll') && cs.overflowY === 'auto') {
+          var b2 = bar.getBoundingClientRect(), r2 = p.getBoundingClientRect();
+          if (b2.bottom > r2.bottom) p.scrollTop += Math.min(b2.bottom - r2.bottom + 8, Math.max(0, b2.top - r2.top));
+        }
+        p = p.parentElement;
+      }
+    };
+    // 渲染后立即执行一次，布局再变时下一轮再校正（不用 requestAnimationFrame：页面在后台时它会被暂停）
+    go();
+    setTimeout(go, 50);
+  },
   // 点火工具菜单：点菜单外（忽略 ignoreSel 匹配的“点燃”按钮本身）时通知 .NET 关闭；只监听，不拦截那次点击
   watchOutside: function (el, dotnet, ignoreSel) {
     window.survival.unwatchOutside();
@@ -98,6 +130,8 @@ window.survival = {
       if (ev.target && ev.target.closest && ev.target.closest('.modal')) return;
       if (['m', 'M', 'c', 'C', 'r', 'R', 'l', 'L', 'f', 'F', 'Escape'].indexOf(k) >= 0) {
         ev.preventDefault();
+        // Esc 收起预览/选中后，焦点仍留在刚点过的按钮上会被画成键盘焦点框，看起来像“仍选中”（试玩修复 L6）
+        if (k === 'Escape' && document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
         dotnet.invokeMethodAsync('OnKey', k.length === 1 ? k.toUpperCase() : k);
       }
     };

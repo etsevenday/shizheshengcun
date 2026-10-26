@@ -233,5 +233,15 @@ namespace Survival.Core.Engine
 
         /// <summary>调试：在指定地点放一只世界敌人（不受上限约束，只供测试与开发菜单）。</summary>
         public WorldEnemy DebugSpawnEnemy(GameState s, string enemyId, string locationId) => AddWorldEnemy(s, enemyId, locationId);
+
+        /// <summary>开发入口放敌人前的校验：安全区、本地上限、全局上限都遵守（试玩修复 L10）；内核测试仍可直接调用 DebugSpawnEnemy 布置场景。</summary>
+        public string? DebugSpawnBlocked(GameState s, string locationId)
+        {
+            if (Config.Encounters.SafeLocations.Contains(locationId)) return $"{LocName(locationId)}是安全区，不放敌人";
+            var cap = WE.CapOf(locationId);
+            if (LocalCount(s, locationId) >= cap) return $"{LocName(locationId)}敌人已达上限{cap}";
+            if (LiveCount(s) >= WE.GlobalCap) return $"全局敌人已达上限{WE.GlobalCap}";
+            return null;
+        }
     }
 }

@@ -617,6 +617,9 @@ namespace Survival.Core.Engine
             SyncFacilities(s);
         }
 
+        /// <summary>生块根物品 ID（目标判定用）。</summary>
+        public const string RootItemId = "raw_root";
+
         private void CompleteProcess(GameState s, string loc, FacilityState fac, FacilityProcess p)
         {
             var cfg = Process(p.RecipeId);
@@ -645,7 +648,8 @@ namespace Survival.Core.Engine
                 var pot = p.PotInstanceId.HasValue ? FindItem(s, p.PotInstanceId.Value) : null;
                 if (cfg.WaterCostMl > 0 && pot != null) ConsumeWater(s, pot, cfg.RequiredLiquid!, cfg.WaterCostMl);
                 var potWorn = pot != null ? "；" + Wear(pot, PotWear) : "";
-                s.Progress.Flags.Add("cooked");
+                // 第2日目标“完成一次块根烹饪”与七日检查“完成食物加工”都来自 v0.2（当时只有块根）：只认块根烤制/水煮，烤肉煮肉不算（试玩修复 L7）
+                if (cfg.InputId == RootItemId) s.Progress.Flags.Add("cooked");
                 text = pot != null
                     ? $"{LocName(loc)}火堆：{input}#{t.InstanceId}已煮成{outCfg.Name}，留在{ItemName(pot.ItemId)}#{pot.InstanceId}里（{ItemName(cfg.RequiredLiquid ?? "")}−{cfg.WaterCostMl}毫升{potWorn}）。"
                     : $"{LocName(loc)}火堆：{input}#{t.InstanceId}已烤成{outCfg.Name}，留在火堆加工位。";

@@ -14,6 +14,9 @@
     var dragPreview = sel.Kind == SelectionKind.Action && G.PendingAction != null && s.Sub == null
                       && (s.Main == null || s.Main.Status == ActionStatus.Paused) && !G.Running;
     var tab = G.DetailTab;
+    // 悬停预测临时占用详情区时，页签高亮跟着内容走（显示的是对象预测，不是人物页）（试玩修复 L6）
+    var battlePanel = G.InBattleUi && tab == DetailTab.Object && !(s.Encounter != null && G.HoverPreview != null);
+    var shownTab = !battlePanel && G.HoverPreview != null && G.Panel == null ? DetailTab.Object : tab;
 }
 
 <aside class="panel detail" aria-label="对象信息与人物">
@@ -22,13 +25,13 @@
         <div class="detail-action"><ActionProgress /></div>
     }
     <div class="detail-tabs" role="tablist" aria-label="右栏页签">
-        <button type="button" role="tab" aria-selected="@(tab == DetailTab.Object)" class="@(tab == DetailTab.Object ? "on" : "")"
+        <button type="button" role="tab" aria-selected="@(shownTab == DetailTab.Object)" class="@(shownTab == DetailTab.Object ? "on" : "")"
                 @onclick="() => G.SetDetailTab(DetailTab.Object)">对象信息</button>
-        <button type="button" role="tab" aria-selected="@(tab == DetailTab.Character)" class="@(tab == DetailTab.Character ? "on" : "")"
+        <button type="button" role="tab" aria-selected="@(shownTab == DetailTab.Character)" class="@(shownTab == DetailTab.Character ? "on" : "")"
                 @onclick="() => G.SetDetailTab(DetailTab.Character)">人物</button>
     </div>
     <div class="detail-body" role="tabpanel">
-    @if (G.InBattleUi && tab == DetailTab.Object && !(s.Encounter != null && G.HoverPreview != null))
+    @if (battlePanel)
     {
         @* 战斗与敌踪：指令预览 → 执行；选中目标详情（v0.5 §16） *@
         <BattlePanel />

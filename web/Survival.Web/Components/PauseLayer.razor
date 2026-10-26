@@ -54,7 +54,7 @@
     {
         {
             <h3 style="margin:4px 0 0;font-weight:500">可用补给@(travel ? "（随身）" : "（随身与地面）")</h3>
-            <div class="btn-row" style="max-width:820px">
+            <div class="supply-grid">
                 @foreach (var id in supplies)
                 {
                     var batch = e.UsableBatches(s, id, allowGround, true).FirstOrDefault();
@@ -62,9 +62,9 @@
                     var cfg = e.Item(id);
                     var req = ActionRequest.UseInstance(batch.InstanceId);
                     var p = G.Preview(req);
-                    <button class="secondary supply-btn" disabled="@(!p.Ok || busy)" title="@p.Reason" @onclick="() => Sub(req)"><span class="ir-icon">@Icons.Markup(id)</span>@GameEngine.UseVerb(cfg)1份@(cfg.Name)·5分钟<small>@(cfg.Use == null ? "" : GameEngine.UseEffectText(cfg.Use))</small></button>
+                    <button class="secondary supply-btn" disabled="@(!p.Ok || busy)" title="@p.Reason" @onclick="() => Sub(req)"><span class="ir-icon">@Icons.Markup(id)</span><span class="sb-name">@GameEngine.UseVerb(cfg)1份@(cfg.Name)·5分钟</span><small>@(cfg.Use == null ? "" : e.MedicineEffectText(s, cfg.Use) ?? GameEngine.UseEffectText(cfg.Use))</small></button>
                 }
-                <button class="secondary" disabled="@busy" @onclick="() => Sub(ActionRequest.Rest(30))">休息30分钟@(travel ? "（露天）" : "")</button>
+                <button class="secondary supply-btn rest" disabled="@busy" @onclick="() => Sub(ActionRequest.Rest(30))"><span class="sb-name">休息30分钟@(travel ? "（露天）" : "")</span></button>
             </div>
             var dirty = e.UsableBatches(s, "dirty_water", allowGround, true).FirstOrDefault();
             @if (dirty != null)

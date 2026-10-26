@@ -115,6 +115,9 @@
     private DotNetObjectReference<GameScreen>? _ref;
     private DotNetObjectReference<DragController>? _drag;
 
+    private string? _topKey;
+    private string? _selKey;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -123,6 +126,26 @@
             await JS.InvokeVoidAsync("survival.hookKeys", _ref);
             _drag = DotNetObjectReference.Create(new DragController(G));
             await JS.InvokeVoidAsync("survivalDrag.init", _drag, G.E.Config.Ui.DragThresholdPx);
+        }
+        // 中部二级面板（地图/制作/休息/日志）打开、战斗或敌踪出现（含读档恢复）时，中部纵滚回顶，
+        // 面板与覆盖层才能完整替换地块两行，不被之前的滚动位置切掉标题（试玩修复 G1、G2）
+        if (G.State != null)
+        {
+            var panel = G.Panel is "map" or "craft" or "rest" or "log" ? G.Panel : "";
+            var mode = G.S.Battle != null ? "battle" : G.S.Encounter != null ? "encounter" : "";
+            var key = panel + "|" + mode;
+            if (key != _topKey)
+            {
+                var need = panel != "" || mode != "";
+                _topKey = key;
+                if (need) await JS.InvokeVoidAsync("survival.centerTop");
+            }
+            var sk = G.Selected.Key;
+            if (sk != _selKey)
+            {
+                _selKey = sk;
+                if (G.Selected.Kind != SelectionKind.None) await JS.InvokeVoidAsync("survival.revealBar");
+            }
         }
     }
 

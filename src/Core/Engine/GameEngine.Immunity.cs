@@ -239,7 +239,7 @@ namespace Survival.Core.Engine
                     s.BandageReadyAt = s.GameMinute + Config.ItemActions.BandageCooldownMinutes;
                     effective = true;
                 }
-                else parts.Add("回血冷却中或健康已满，本次不回血");
+                else parts.Add(s.BandageReadyAt > s.GameMinute ? "回血冷却中，本次不回血" : "健康已满，本次不回血");
                 if (BandageVirusUseful(s))
                 {
                     var before = b.VirusLoad;
@@ -267,13 +267,50 @@ namespace Survival.Core.Engine
                 b.HighImmunityMinutes = Inf.AntiviralCure.SetHighImmunityMinutes;
                 b.VirusWarned.Clear();
                 parts.Add("病毒感染已清除（特效药）");
+                effective = true;
             }
-            // 有效治疗给医疗经验，同次只发一次（v0.6 §03、§11）；特效药不算治疗经验
-            if (effective && !u.IsAntiviral)
+            // 有效治疗给医疗经验，同次只发一次（v0.6 §03、§11）；特效药清除感染同样是有效医疗（开发假设 26，试玩修复 L2）
+            if (effective)
             {
                 GainXp(s, Medicine, Config.Xp.Medical);
                 parts.Add($"医疗经验+{Config.Xp.Medical}");
             }
+        }
+
+        /// <summary>
+        /// 草药绷带这一次的实际效果（与 ApplyMedicine 同一判定）：出血时止血；回血冷却中写“本次不回血”，否则写健康前后；
+        /// 已感染且病毒减量就绪时写病毒前后，冷却中写剩余时间（试玩修复 G4：预估与实际一致）。
+        /// </summary>
+        public string BandageEffectText(GameState s)
+        {
+            var b = s.Body;
+            var parts = new List<string>();
+            if (b.BleedTriggers > 0) parts.Add("止血");
+            var healReady = s.BandageReadyAt <= s.GameMinute;
+            var heal = healReady ? Math.Min(BandageHeal(s), s.Stats.HealthMax - s.Stats.Health) : 0;
+            if (!healReady) parts.Add($"回血冷却中（还需{Clock.Duration(s.BandageReadyAt - s.GameMinute)}），本次不回血");
+            else if (heal > 0) parts.Add($"健康{Fmt.N(s.Stats.Health)}→{Fmt.N(s.Stats.Health + heal)}");
+            else parts.Add("健康已满，本次不回血");
+            if (b.Infected)
+            {
+                if (BandageVirusUseful(s)) parts.Add($"病毒{Fmt.N(b.VirusLoad)}→{Fmt.N(Math.Max(SuppressMin, b.VirusLoad - BandageVirusReduction(s)))}（仍感染）");
+                else if (b.BandageVirusReadyAt > s.GameMinute) parts.Add($"病毒减量冷却中（还需{Clock.Duration(b.BandageVirusReadyAt - s.GameMinute)}）");
+                else parts.Add("病毒已到最低值，不再减量");
+            }
+            return string.Join("；", parts);
+        }
+
+        /// <summary>药品这一次的实际效果文字（绷带、抗生素、特效药），卡下操作条、右栏详情与战斗预览共用；非药品返回 null。</summary>
+        public string? MedicineEffectText(GameState s, ItemUseConfig u)
+        {
+            var b = s.Body;
+            if (u.IsBandage) return BandageEffectText(s);
+            if (u.IsAntibiotic)
+                return b.Infected
+                    ? $"病毒{Fmt.N(b.VirusLoad)}→{Fmt.N(Math.Max(SuppressMin, b.VirusLoad - Inf.Antibiotics.InstantLoadReduction))}（仍感染），之后{Clock.Duration(Inf.Antibiotics.DurationMinutes)}病毒正增长×{Fmt.T(Inf.Antibiotics.PositiveProgressFactor)}"
+                    : "未感染，没有效果";
+            if (u.IsAntiviral) return b.Infected ? $"清除感染（病毒{Fmt.N(b.VirusLoad)}→{Fmt.N(Inf.AntiviralCure.SetLoad)}），不回健康与体力" : "未感染，没有效果";
+            return null;
         }
 
         /// <summary>出血（v0.6 statuses.bleed）：0.4×3 次，不叠层，重复施加只刷新到 3 次。</summary>

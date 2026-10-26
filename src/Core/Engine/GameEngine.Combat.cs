@@ -568,6 +568,14 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>攻击类指令的实际体力成本：基础/(1+0.025×对应技能L)；勉强拳击为 0。</summary>
+        /// <summary>武器按当前熟练度的普通攻击口径：伤害×(1+0.035L)、命中能力+3L（不含招式、身体、恐慌与站位修正）。界面列表与预览统一用它。</summary>
+        public (int Level, double DamageMin, double DamageMax, double Accuracy) WeaponStats(GameState s, WeaponConfig w)
+        {
+            var lv = SkillLevel(s, w.SkillId);
+            var f = SkillDamageFactor(lv);
+            return (lv, w.DamageMin * f, w.DamageMax * f, w.AccuracyRating + SkillAccuracyBonus(lv));
+        }
+
         public double AttackEnergy(GameState s, CombatActionConfig a, WeaponConfig w)
         {
             if (a.Id == "desperate_punch") return 0;
@@ -656,8 +664,9 @@ namespace Survival.Core.Engine
             var basic = Act("basic_attack")!;
             if (c.Action == "desperate_punch")
             {
-                if (s.Stats.Energy >= AttackEnergy(s, basic, w) - 1e-9 && HasWear(wi ?? new ItemInstance(), Config.Wear.PerExecutedAttackCommand) && AmmoReady(s, w, wi, 1))
-                    return "只在体力不足以普通攻击时可用";
+                // v0.5 动作表：“仅体力不足正常攻击时”；弹仓空、耐久不足时应装填或换武器，不放开勉强拳击（试玩修复 L1）
+                if (s.Stats.Energy >= AttackEnergy(s, basic, w) - 1e-9)
+                    return "只在体力不足以普通攻击时可用" + (w.UsesMagazine && !AmmoReady(s, w, wi, 1) ? "；弹仓空请装填或换武器" : wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand) ? "；耐久不足请换武器" : "");
             }
             else
             {
@@ -772,7 +781,17 @@ namespace Survival.Core.Engine
                         }
                         break;
                     case "switch_weapon":
-                        p.Notes.Add("从随身换武器，耗1AP，体力0"); break;
+                    {
+                        // 写明换成哪一把，数值与普通攻击预览同一口径（含熟练度，不含招式与身体修正）（试玩修复 L8）
+                        var to = c.ItemInstanceId is int tid && tid > 0 ? FindItem(s, tid) : null;
+                        var tw = to == null ? _weapons[Fists] : _weapons[to.ItemId];
+                        var st = WeaponStats(s, tw);
+                        var toName = to == null ? "徒手" : $"{tw.Name}#{to.InstanceId}";
+                        if (c.ItemInstanceId.HasValue) p.Title = $"换武器：{(wi == null ? "徒手" : $"{w.Name}#{wi.InstanceId}")} → {toName}";
+                        p.Notes.Add($"{toName}：{SkillName(tw.SkillId)}{st.Level}级，伤害{Fmt.N(st.DamageMin)}—{Fmt.N(st.DamageMax)}，命中能力{Fmt.N(st.Accuracy)}，{(tw.Targets == "front" ? "只打前排" : tw.RearDamageFactor < 1 ? $"可打后排（×{Fmt.T(tw.RearDamageFactor)}）" : "前后排都可打")}{(to?.Durability != null ? $"，耐久{DurabilityText(to)}" : "")}{(tw.UsesMagazine && to != null ? $"，弹仓{to.LoadedAmmo}/{tw.MagazineCapacity}" : "")}");
+                        p.Notes.Add("从随身换武器，耗1AP，体力0");
+                        break;
+                    }
                     case "retreat":
                     {
                         var (chance, energy, low) = RetreatChance(s, b, a);
@@ -787,7 +806,7 @@ namespace Survival.Core.Engine
                     case "use_antibiotics":
                     case "use_antiviral_cure":
                         p.Notes.Add("效果在确认时应用，不另跳5分钟；本轮结束时统一推进一次世界时间");
-                        if (c.Action == "bandage") p.Notes.Add($"止血；回血{Fmt.N(BandageHeal(s))}（{(s.BandageReadyAt > s.GameMinute ? "冷却中，本次不回血" : "只补缺口")}）；已感染时病毒−{Fmt.N(BandageVirusReduction(s))}（独立冷却）");
+                        if (CarriedItem(s, a.ItemId!, c.ItemInstanceId) is ItemInstance med && _items[med.ItemId].Use is ItemUseConfig mu && MedicineEffectText(s, mu) is string mt) p.Notes.Add(mt);
                         break;
                     case "end_turn": p.Notes.Add("剩余行动点清零，不积攒到下轮"); break;
                 }
@@ -1121,8 +1140,10 @@ namespace Survival.Core.Engine
             s.EncounterGraceUntil = s.GameMinute + Config.Encounters.PostExitRandomEncounterGraceMinutes;
             s.EquippedWeaponId = b.WeaponInstanceId;
             var head = outcome == "victory" ? "战斗胜利" : "撤退成功";
-            var loot = outcome == "victory" ? (lines.Count > 0 ? $"战利品{string.Join("、", lines)}已放在{LocName(loc)}地面" : "没有战利品") : "放弃了场上的尸体与掉落";
-            var text = $"{head}：共{b.Round}轮（世界时间{Clock.Duration(b.Ticks * Tick)}），精神−{Fmt.N(loss)}；{loot}。";
+            // 撤退：只有场上确有倒下敌人的掉落/尸体时才写“放弃”（试玩修复 L3）
+            var loot = outcome == "victory" ? (lines.Count > 0 ? $"战利品{string.Join("、", lines)}已放在{LocName(loc)}地面" : "没有战利品")
+                : b.Loot.Any(l => l.ItemId != null && l.Count > 0) ? "放弃了场上的尸体与掉落" : null;
+            var text = $"{head}：共{b.Round}轮（世界时间{Clock.Duration(b.Ticks * Tick)}），精神−{Fmt.N(loss)}{(loot != null ? "；" + loot : "")}。";
             BattleLog(s, text);
             s.Battle = null;
             Emit(s, GameEventKind.BattleEnd, text, null, outcome == "victory" ? b.Loot.Where(l => l.ItemId != null).Select(l => l.ItemId!) : null);

@@ -41,7 +41,8 @@ else
             {
                 <h2>@cfg.Name <small class="muted">×@total</small></h2>
             }
-            <p>@(cfg.Use != null ? GameEngine.UseEffectText(cfg.Use) + (e.UseRiskText(cfg) is string rk ? $"；{rk}" : "") : cfg.Desc)</p>
+            <p>@(cfg.Use != null && cfg.Use.IsMedicine ? (cfg.Use.IsBandage ? "药品：止血、回血、压低病毒（本次实际效果见下）" : cfg.Use.IsAntibiotic ? "药品：抑制病毒（本次实际效果见下）" : "药品：清除感染（本次实际效果见下）")
+                 : cfg.Use != null ? GameEngine.UseEffectText(cfg.Use) + (e.UseRiskText(cfg) is string rk ? $"；{rk}" : "") : cfg.Desc)</p>
         </div>
         <div class="detail-icon">@Icons.Markup(cfg.Id)</div>
 
@@ -130,17 +131,21 @@ else
             var req = ActionRequest.UseInstance(inst.InstanceId);
             var p = G.Preview(req);
             <div class="lines">
-                <div><span>即时效果</span><b>@UseEffect(cfg)</b></div>
+                <div><span>即时效果</span><b>@(e.MedicineEffectText(s, cfg.Use) ?? UseEffect(cfg))</b></div>
                 @if (cfg.Use.IsMedicine && !string.IsNullOrEmpty(cfg.Desc)) { <div><span>药效</span><b>@cfg.Desc</b></div> }
-                @if (p.Ok)
+                @if (p.Ok && p.StatsAfterImmediate != null)
                 {
+                    // 与卡下操作条同一口径：属性写“使用当下”的即时结算值；之后5分钟按等待正常消耗另起一行（试玩修复 G4）
+                    var later = new List<string>();
                     foreach (var id in new[] { StatId.Satiety, StatId.Hydration, StatId.Health, StatId.Morale })
                     {
                         var b0 = Ui.N(p.StatsBefore.Get(id));
-                        var b1 = Ui.N(p.StatsAfter.Get(id));
-                        if (b0 == b1) continue;
-                        <div><span>@GameEngine.StatName(id)</span><b>@b0 → @b1</b></div>
+                        var b1 = Ui.N(p.StatsAfterImmediate.Get(id));
+                        if (b0 != b1) { <div><span>@GameEngine.StatName(id)（即时）</span><b>@b0 → @b1</b></div> }
+                        var b2 = Ui.N(p.StatsAfter.Get(id));
+                        if (b2 != b1) later.Add($"{GameEngine.StatName(id)}{b2}");
                     }
+                    if (later.Count > 0) { <div><span>5分钟后</span><b>@string.Join("，", later)（按等待消耗）</b></div> }
                 }
                 <div><span>耗时</span><b>@(e.Config.ItemActions.UseMinutes)分钟（不可中途取消）</b></div>
             </div>

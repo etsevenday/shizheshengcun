@@ -262,6 +262,7 @@ public sealed class GameSession
                 _ = RunLoop();
             // 战斗中途读档：恢复覆盖层与队列游标，敌方未行动完的从游标继续（不会重复行动）
             if (S.Battle != null && !S.Progress.Dead && !E.AwaitingPlayer(S)) _ = BattleLoop();
+            else if (S.Battle != null) { AutoTarget(); DetailTab = DetailTab.Object; }
             return null;
         }
         catch (SaveMigrationConflictException ex)
@@ -378,6 +379,8 @@ public sealed class GameSession
         Selected = sel;
         if (sel.Kind != SelectionKind.None) DetailTab = DetailTab.Object;
         Notice = null;
+        // 选中卡片后卡下会出现操作条：旧的结果提示收起，不遮挡操作（试玩修复 G5）；内容仍在页脚与行动日志里
+        if (sel.Kind != SelectionKind.None) Toast = null;
         Notify();
     }
 
@@ -434,6 +437,14 @@ public sealed class GameSession
         Notify();
     }
 
+    /// <summary>立即清掉悬停预测（行动开始、进入或离开战斗时）：预测对象已失效，不再等鼠标离开。</summary>
+    private void ClearHoverNow()
+    {
+        _hoverSeq++;
+        HoverPreview = null;
+        HoverTitle = "";
+    }
+
     private async Task ClearHoverLater(int seq)
     {
         await Task.Delay(150);
@@ -480,8 +491,13 @@ public sealed class GameSession
             return res;
         }
         Notice = null;
+        // 开始新行动：上一条结果提示与悬停预测作废（试玩修复 G5、L6：按钮开始后消失或禁用，收不到离开事件）
+        Toast = null;
+        ClearHoverNow();
         // 选中的物品被吃完、用尽时清空选中（试玩修复 B6）
         ReconcileSelection();
+        // 无选中时右栏回人物页（例如敌踪“绕行”后不停在“未选中对象”）
+        if (Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
         // 拖拽打开的预览确认后收起，避免行动结束后仍停在旧预览上
         if (Selected.Kind == SelectionKind.Action)
         {
@@ -738,10 +754,22 @@ public sealed class GameSession
         }
     }
 
+    private int _toastSeq;
+
+    /// <summary>结果提示显示约 8 秒后自动收起（界面节奏，非玩法数值）；同一条内容仍留在页脚与行动日志（试玩修复 G5）。</summary>
+    private async Task AutoDismissToast(int seq)
+    {
+        await Task.Delay(8000);
+        if (seq != _toastSeq || Toast == null) return;
+        Toast = null;
+        Notify();
+    }
+
     private void Drain()
     {
         if (State == null) return;
         var toastSet = false;
+        var before = Toast;
         foreach (var ev in E.DrainEvents(S))
         {
             if (string.IsNullOrEmpty(ev.Text)) continue;
@@ -773,6 +801,7 @@ public sealed class GameSession
             }
         }
         if (Recent.Count > 60) Recent.RemoveRange(0, Recent.Count - 60);
+        if (Toast != null && !ReferenceEquals(Toast, before)) _ = AutoDismissToast(++_toastSeq);
     }
 
     public void DismissToast()
@@ -871,6 +900,15 @@ public sealed class GameSession
 
     public BattleCommand CurrentBattleCommand() => BattleCommand.Of(BattleAction ?? "", BattleTarget, BattleItem);
 
+    /// <summary>场上只剩一个敌人时自动选中它（试玩修复 D2）；目标已倒下时清掉。</summary>
+    private void AutoTarget()
+    {
+        if (State == null || S.Battle == null) return;
+        var alive = S.Battle.Alive.ToList();
+        if (BattleTarget != null && alive.All(x => x.Index != BattleTarget)) BattleTarget = null;
+        if (BattleTarget == null && alive.Count == 1) BattleTarget = alive[0].Index;
+    }
+
     /// <summary>选择指令：需要目标而目标不合法时自动改选第一个可选目标；只显示预览，不执行。</summary>
     public void PickBattleAction(string action, int? item = null)
     {
@@ -916,7 +954,9 @@ public sealed class GameSession
                 var keep = res.Ok && S.Battle != null && E.AwaitingPlayer(S) && GameEngine.AttackActions.Contains(BattleAction);
                 if (!keep) { BattleAction = null; BattleItem = null; }
                 if (S.Battle != null && BattleTarget != null && S.Battle.Enemies.All(e => e.Index != BattleTarget || !e.Alive)) BattleTarget = null;
+                AutoTarget();
             }
+            if (State != null && S.Battle == null) OnBattleEnded();
             Drain();
             Save();
             Notify();
@@ -935,6 +975,8 @@ public sealed class GameSession
         var res = E.Engage(S, Guid.NewGuid().ToString("N"));
         Notice = res.Ok ? null : res.Reason;
         ResetBattleUi();
+        Toast = null;
+        ClearHoverNow();
         Selected = new Selection();
         DetailTab = DetailTab.Object;
         Drain();
@@ -954,6 +996,9 @@ public sealed class GameSession
             ResetBattleUi();
             Selected = new Selection();
             DetailTab = DetailTab.Object;
+            // 进入战斗：上一场的“战斗胜利”等旧提示与地块上的悬停预测作废（试玩修复 G5、L6）
+            Toast = null;
+            ClearHoverNow();
         }
         Drain();
         Save();
@@ -982,14 +1027,20 @@ public sealed class GameSession
         finally
         {
             BattleBusy = false;
-            if (State != null && S.Battle == null)
-            {
-                ResetBattleUi();
-                ReconcileSelection();
-            }
+            if (State != null && S.Battle == null) OnBattleEnded();
+            else AutoTarget();
             Save();
             Notify();
         }
+    }
+
+    /// <summary>战斗结束（胜利、撤退、玩家指令直接结束）后的界面收尾：清指令与目标、悬停预测；没有选中对象时右栏回人物页（与 v0.7 试玩修复 B11 同一规则）。</summary>
+    private void OnBattleEnded()
+    {
+        ResetBattleUi();
+        ReconcileSelection();
+        ClearHoverNow();
+        if (Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
     }
 
     /// <summary>战外装备当前武器（免费，不耗时）。</summary>

@@ -109,7 +109,7 @@ else if (b != null)
                 var targetable = sel != null && sel.NeedsTarget && sel.Targets.Contains(idx);
                 var unreachable = sel != null && sel.NeedsTarget && !sel.Targets.Contains(idx);
                 var reachWhy = unreachable ? e.CommandBlocked(s, BattleCommand.Of(sel!.Action, idx, sel.ItemInstanceId)) : null;
-                <ObjectCard @key="@("be" + idx)" CssClass="@($"enemy-card {(idx == activeIdx ? "acting" : "")} {(targetable ? "targetable" : "")} {(unreachable ? "unreachable" : "")}")"
+                <ObjectCard @key="@("be" + idx)" CssClass="@($"enemy-card {(idx == activeIdx ? "acting" : "")} {(targetable ? "targetable" : "")} {(unreachable ? "unreachable" : "")} {(en.Acted ? "acted-done" : "")}")"
                             Title="@ec.Name" Badge="@slot" Selected="@(G.BattleTarget == idx)"
                             Tooltip="@(reachWhy ?? "点击选为目标（不会直接攻击）")" OnClick="() => G.PickBattleTarget(idx)">
                     <Art>@Icons.Markup("enemy_" + ec.Id)@if (en.Acted) {<span class="acted-mark">已行动</span>}</Art>
