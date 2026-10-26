@@ -24,7 +24,7 @@
             显示@(kinds)种 · 选中卡片在卡下使用或转移 · 卡角箭头转移1件 · 拖动整理或投放 · 不耗时
         </span>
     </div>
-    <div class="row-scroll" data-drop="@($"zone:{Owner}")" data-drop-level="zone">
+    <div class="row-scroll" data-wheel="x" data-drop="@($"zone:{Owner}")" data-drop-level="zone">
         @foreach (var key in order)
         {
             var parts = key.Split('|');

@@ -18,6 +18,11 @@ window.survivalDrag = (function () {
     document.addEventListener('pointerup', onUp);
     document.addEventListener('pointercancel', function () { cancel(); });
     document.addEventListener('keydown', onKey, true);
+    // 拖动中滚动目标栏（滚轮或滚动条）：按最后的指针坐标重算高亮与落点，不按滚动前坐标投放（v0.7 第 5 节 U719）
+    // 滚轮由 wheel.js 先同步滚动（它的捕获监听先注册），这里紧接着重算；拖滚动条走 scroll 事件
+    var rehover = function () { if (st && st.started && st.lastX != null) hover(st.lastX, st.lastY); };
+    document.addEventListener('wheel', rehover, true);
+    document.addEventListener('scroll', rehover, true);
     window.addEventListener('blur', function () { cancel(); });
     document.documentElement.addEventListener('mouseleave', function () { if (st && st.started) cancel(); });
   }
@@ -47,6 +52,8 @@ window.survivalDrag = (function () {
       if (!begin()) { st = null; return; }
     }
     ev.preventDefault();
+    st.lastX = ev.clientX;
+    st.lastY = ev.clientY;
     place(ev.clientX, ev.clientY);
     hover(ev.clientX, ev.clientY);
   }
