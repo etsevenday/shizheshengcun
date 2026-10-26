@@ -28,7 +28,7 @@ public class ExploreLootTests : TestBase
         Assert.That(s.Locations["field"].Progress, Is.EqualTo(25));
         Assert.That(s.UnlockedEdges, Does.Contain("field__stream"));
         Assert.That(GroundCount(s, "field"), Is.EqualTo(0));
-        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(5).Within(1e-9), "完整扣耗");
+        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(1).Within(1e-9), "完整扣耗（探索30分钟−2/小时）");
         Assert.That(s.Log.Last(l => l.Kind == "ActionCompleted").Text, Does.Contain("本次未找到可用物资"));
     }
 

@@ -6,7 +6,10 @@ namespace Survival.Core.State
 {
     public enum StatId { Health, Satiety, Hydration, Energy, Wakefulness, Morale }
 
-    public enum ActionType { Travel, Explore, Gather, Craft, Build, Wait, Rest, Sleep, Use, Ignite, Clear }
+    /// <summary>
+    /// 角色主行动。Butcher 处理动物尸体（v0.5 §14）；Repair 工具维护（v0.6 §05，走配方）；Bypass 绕行敌踪（v0.6 §15，固定 10 分钟按 travel 消耗）。
+    /// </summary>
+    public enum ActionType { Travel, Explore, Gather, Craft, Build, Wait, Rest, Sleep, Use, Ignite, Clear, Butcher, Repair, Bypass }
 
     public enum ActionStatus { Running, Paused }
 
@@ -33,7 +36,10 @@ namespace Survival.Core.State
         public long SegmentCount { get; set; }
 
         public Stats Stats { get; set; } = new Stats();
+        /// <summary>免疫、病毒、药效与出血（v0.6 §08–§11）。不放进六项 Stats，但走同一显示与 ActiveConditions。</summary>
+        public BodyState Body { get; set; } = new BodyState();
         public int? DiarrheaUntil { get; set; }
+        /// <summary>绷带回血冷却结束时刻（v0.6 bandageHealthReadyAt）。</summary>
         public int BandageReadyAt { get; set; }
         public Dictionary<StatId, bool> AlertLatched { get; set; } = new Dictionary<StatId, bool>();
         public Dictionary<StatId, bool> ZeroLatched { get; set; } = new Dictionary<StatId, bool>();
@@ -62,6 +68,7 @@ namespace Survival.Core.State
             var c = (GameState)MemberwiseClone();
             c.Rng = new Rng { State = Rng.State };
             c.Stats = Stats.Clone();
+            c.Body = Body.Clone();
             c.AlertLatched = new Dictionary<StatId, bool>(AlertLatched);
             c.ZeroLatched = new Dictionary<StatId, bool>(ZeroLatched);
             c.Locations = Locations.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
@@ -79,14 +86,31 @@ namespace Survival.Core.State
         }
     }
 
+    /// <summary>
+    /// 六项求生状态。v0.6 §02 起上限按项：健康、体力上限存在实例里（初始 20，未来附加系统可改），饱食、水分、清醒、精神仍 0—100。
+    /// 内部保存原始 double，不按显示精度回算、不在每段舍入。
+    /// </summary>
     public sealed class Stats
     {
+        public const double DefaultMax = 100;
+
         public double Health { get; set; }
         public double Satiety { get; set; }
         public double Hydration { get; set; }
         public double Energy { get; set; }
         public double Wakefulness { get; set; }
         public double Morale { get; set; }
+        /// <summary>健康上限（v0.6：20）。</summary>
+        public double HealthMax { get; set; } = 20;
+        /// <summary>体力上限（v0.6：20）。</summary>
+        public double EnergyMax { get; set; } = 20;
+
+        public double Max(StatId id) => id switch
+        {
+            StatId.Health => HealthMax,
+            StatId.Energy => EnergyMax,
+            _ => DefaultMax,
+        };
 
         public double Get(StatId id) => id switch
         {
@@ -101,7 +125,8 @@ namespace Survival.Core.State
         public void Set(StatId id, double v)
         {
             if (v < 0) v = 0;
-            if (v > 100) v = 100;
+            var max = Max(id);
+            if (v > max) v = max;
             switch (id)
             {
                 case StatId.Health: Health = v; break;
@@ -119,6 +144,36 @@ namespace Survival.Core.State
 
         public static readonly StatId[] All =
             { StatId.Health, StatId.Satiety, StatId.Hydration, StatId.Energy, StatId.Wakefulness, StatId.Morale };
+    }
+
+    /// <summary>
+    /// 免疫与病毒（v0.6 §08–§11）、药物冷却与出血。免疫 0—100；病毒 0—100，无感染时恒为 0，已感染时药物与自然减量最低 1。
+    /// </summary>
+    public sealed class BodyState
+    {
+        public double Immunity { get; set; } = 70;
+        public bool Infected { get; set; }
+        public double VirusLoad { get; set; }
+        /// <summary>连续高免疫时间（分钟）：段首与段末免疫都≥85 才 +5。</summary>
+        public int HighImmunityMinutes { get; set; }
+        /// <summary>绷带病毒减量的冷却结束时刻（独立于回血冷却）。</summary>
+        public int BandageVirusReadyAt { get; set; }
+        /// <summary>抗生素作用截止（段首在有效期内的段，病毒正增长×0.5）；无为 null。</summary>
+        public int? AntibioticUntil { get; set; }
+        /// <summary>抗生素下次可用时刻（给药间隔）。</summary>
+        public int AntibioticReadyAt { get; set; }
+        /// <summary>出血剩余次数与每次损血（v0.6 bleedTriggers/bleedDamage）：战内自己激活时扣，战外每个世界 tick 扣。</summary>
+        public int BleedTriggers { get; set; }
+        public double BleedDamage { get; set; }
+        /// <summary>已发过的病毒阶段警告（20/50/80）；病毒回落到阶段以下时清除，可再次提醒。</summary>
+        public List<double> VirusWarned { get; set; } = new List<double>();
+
+        public BodyState Clone()
+        {
+            var c = (BodyState)MemberwiseClone();
+            c.VirusWarned = new List<double>(VirusWarned);
+            return c;
+        }
     }
 
     public sealed class FacilityState
@@ -306,7 +361,8 @@ namespace Survival.Core.State
 
         /// <summary>工作动作吃工作倍率与 0 体力工作伤害；清理也是工作（00 案第 3 节）。</summary>
         public static bool IsWork(ActionType t) => t == ActionType.Travel || t == ActionType.Explore || t == ActionType.Gather
-                                                   || t == ActionType.Craft || t == ActionType.Build || t == ActionType.Clear;
+                                                   || t == ActionType.Craft || t == ActionType.Build || t == ActionType.Clear
+                                                   || t == ActionType.Butcher || t == ActionType.Repair;
 
         public ActionState Clone()
         {

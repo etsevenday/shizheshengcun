@@ -72,7 +72,7 @@ namespace Survival.Core.Engine
                 list.Add(new ActiveCondition
                 {
                     Id = "diarrhea", Name = "腹泻", RemainingMinutes = s.DiarrheaUntil.Value - s.GameMinute,
-                    Effect = $"每小时额外失水{extra:0.#}", Harmful = true,
+                    Effect = $"每小时额外失水{Fmt.T(extra)}", Harmful = true,
                 });
             }
             if (s.BandageReadyAt > s.GameMinute)
@@ -107,6 +107,14 @@ namespace Survival.Core.Engine
                 Energy = c.InitialStats.Energy,
                 Wakefulness = c.InitialStats.Wakefulness,
                 Morale = c.InitialStats.Morale,
+                HealthMax = c.StateScale.HealthMax,
+                EnergyMax = c.StateScale.EnergyMax,
+            };
+            s.Body = new BodyState
+            {
+                Immunity = c.Immunity.Initial,
+                Infected = c.Infection.InitialInfected,
+                VirusLoad = c.Infection.InitialLoad,
             };
             foreach (var st in Stats.All)
             {
@@ -472,8 +480,11 @@ namespace Survival.Core.Engine
 
         private OutputLine Line(string itemId, int count) => new OutputLine { ItemId = itemId, Name = ItemName(itemId), Count = count };
 
+        /// <summary>自用物品的健康恢复量：绷带按医疗公式（v0.6 §03），其他物品为配置值。</summary>
+        public double UseHealthAmount(GameState s, ItemUseConfig u) => u.IsBandage ? BandageHeal(s) : u.Health;
+
         /// <summary>“水分+5”“水分−2”：正负号如实显示，避免“水分+-2”。</summary>
-        public static string Signed(string stat, double v) => v < 0 ? $"{stat}−{-v:0.#}" : $"{stat}+{v:0.#}";
+        public static string Signed(string stat, double v) => stat + Fmt.SignedT(v);
 
         /// <summary>食用说明，如“饱食+25，水分−2，精神+2”。</summary>
         public static string UseEffectText(ItemUseConfig u)
@@ -503,7 +514,7 @@ namespace Survival.Core.Engine
         {
             if (!UseRisky(cfg)) return null;
             var extra = -Config.ItemActions.DiarrheaExtraHydrationPerHour;
-            return $"必定腹泻{Clock.Duration(Config.ItemActions.DiarrheaMinutes)}：期间每小时额外失水{extra:0.#}";
+            return $"必定腹泻{Clock.Duration(Config.ItemActions.DiarrheaMinutes)}：期间每小时额外失水{Fmt.T(extra)}";
         }
 
         private static bool FacilityFlag(FacilityState f, string key) => key switch
@@ -605,13 +616,14 @@ namespace Survival.Core.Engine
                     if (u.Satiety != 0) { s.Stats.Add(StatId.Satiety, u.Satiety); parts.Add(Signed("饱食", u.Satiety)); }
                     if (u.Hydration != 0) { s.Stats.Add(StatId.Hydration, u.Hydration); parts.Add(Signed("水分", u.Hydration)); }
                     if (u.Morale != 0) { s.Stats.Add(StatId.Morale, u.Morale); parts.Add(Signed("精神", u.Morale)); }
-                    if (u.Health != 0) { s.Stats.Add(StatId.Health, u.Health); parts.Add(Signed("健康", u.Health)); }
+                    if (u.Health != 0 && !u.IsBandage) { s.Stats.Add(StatId.Health, u.Health); parts.Add(Signed("健康", u.Health)); }
                     if (u.CausesDiarrhea)
                     {
                         s.DiarrheaUntil = s.GameMinute + Config.ItemActions.DiarrheaMinutes;
                         parts.Add("出现腹泻（12小时）");
                     }
-                    if (u.IsBandage) s.BandageReadyAt = s.GameMinute + Config.ItemActions.BandageCooldownMinutes;
+                    // 绷带、抗生素、特效药：效果在确认时应用，各自冷却只在对应效果实际生效时启动（v0.6 §11）
+                    if (u.IsMedicine) ApplyMedicine(s, u, parts);
                     // 效果在开始时一次结清、不可取消，所以按“行动完成”发事件，界面的结果提示条才会跟着更新
                     Emit(s, GameEventKind.ActionCompleted, $"{p.Label}：{string.Join("，", parts)}。");
                     break;

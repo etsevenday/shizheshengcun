@@ -3,10 +3,20 @@ using Survival.Core.State;
 
 namespace Survival.Web.Services;
 
-/// <summary>界面显示用的格式化。内部数值保留小数，显示一律向下取整（求生案 01）。</summary>
+/// <summary>
+/// 界面显示用的格式化。内部数值保留原始小数；显示统一两位小数、正且不足 0.01 写“&lt;0.01”（人物与战斗 v0.6 §02），
+/// 实现在内核 Fmt，网页与将来的 UGUI 共用。
+/// </summary>
 public static class Ui
 {
-    public static int Floor(double v) => (int)Math.Floor(v + 1e-9);
+    /// <summary>状态当前值、成本：固定两位小数。</summary>
+    public static string N(double v) => Fmt.N(v);
+
+    /// <summary>阈值、速率、规则常量：至多两位小数。</summary>
+    public static string T(double v) => Fmt.T(v);
+
+    /// <summary>进度条宽度百分比（0—100），按该项上限换算。</summary>
+    public static string Bar(double v, double max) => (max <= 0 ? 0 : Math.Clamp(v / max * 100, 0, 100)).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
 
     public static string Kg(int grams) => (grams / 1000.0).ToString("0.0");
 
@@ -27,24 +37,39 @@ public static class Ui
         if (cfg.Use != null)
         {
             var u = cfg.Use;
-            if (u.Hydration > 0 && u.Satiety == 0) return $"水分+{u.Hydration:0}" + (u.CausesDiarrhea ? "·腹泻" : "");
-            if (u.Satiety > 0) return $"饱食+{u.Satiety:0}";
-            if (u.Health > 0) return $"健康+{u.Health:0}";
+            if (u.Hydration > 0 && u.Satiety == 0) return $"水分+{T(u.Hydration)}" + (u.CausesDiarrhea ? "·腹泻" : "");
+            if (u.Satiety > 0) return $"饱食+{T(u.Satiety)}";
+            if (u.IsBandage) return "止血·回血";
+            if (u.IsAntibiotic) return "抑制病毒";
+            if (u.IsAntiviral) return "治愈感染";
+            if (u.Health > 0) return $"健康+{T(u.Health)}";
         }
         return $"{Kg(cfg.WeightGrams * i.Count)}公斤";
     }
 
-    public static string StatExplain(StatId id) => id switch
+    /// <summary>状态说明：数值全部读配置（v0.6 改值后不再写死）。</summary>
+    public static string StatExplain(GameEngine e, StatId id)
     {
-        StatId.Health => "身体损伤总量。归0即死亡。仅在休息或睡眠、处于遮蔽、饱食与水分不低于40且精神不低于20时，每小时自然恢复1。草药绷带可立即恢复5（60分钟冷却）。",
-        StatId.Satiety => "基础营养储备，所有时间都会消耗。降至20以下会提醒；归0后健康每小时减2。进食恢复：罐头35、烤熟块根25（水分−2）、水煮块根23（水分+5）、野果10。",
-        StatId.Hydration => "体内水分储备，消耗最快。降至20以下会提醒；归0后健康每小时减8。净水与脏水各补30，但脏水必定腹泻12小时（每小时额外失水3）。",
-        StatId.Energy => "短期活动能力，工作时下降。低于20时移动、探索、搜集和制作耗时×1.25；归0后继续工作每小时健康减1。休息和睡眠恢复。",
-        StatId.Wakefulness => "睡眠需求，清醒时每小时下降5。只有睡眠能恢复（遮蔽+12/小时，露天+6/小时）。降至20以下提醒；归0后健康每小时减2。",
-        _ => "简化的情绪与舒适状态。工作时缓慢下降，遮蔽睡眠与营地遮蔽棚休息可恢复。低于20时休息与睡眠的体力恢复减半。",
-    };
+        var c = e.Config;
+        var hr = c.HealthRules;
+        string Th(string k) => T(c.Thresholds[k].Value);
+        var sh = c.HourlyRates["sleep_sheltered"];
+        var ex = c.HourlyRates["sleep_exposed"];
+        var bandage = c.Items.FirstOrDefault(i => i.Use != null && i.Use.IsBandage);
+        return id switch
+        {
+            StatId.Health => $"身体损伤总量，上限{T(c.StateScale.HealthMax)}，健康与战斗共用。归0即死亡。仅在休息或睡眠、处于遮蔽、饱食与水分不低于{T(hr.RecoveryMinSatiety)}且精神不低于{T(hr.RecoveryMinMorale)}时，每小时自然恢复{T(hr.ShelteredRestRecoveryPerHour)}。{bandage?.Name ?? "绷带"}止血并恢复{T(bandage?.Use?.Health ?? 0)}×(1+0.02×医疗等级)（{c.ItemActions.BandageCooldownMinutes}分钟冷却）。",
+            StatId.Satiety => $"基础营养储备，所有时间都会消耗。降至{Th("satiety")}以下会提醒；归0后健康每小时减{T(-hr.ZeroSatietyPerHour)}。",
+            StatId.Hydration => $"体内水分储备，消耗最快。降至{Th("hydration")}以下会提醒；归0后健康每小时减{T(-hr.ZeroHydrationPerHour)}。脏水必定腹泻12小时（每小时额外失水{T(-c.ItemActions.DiarrheaExtraHydrationPerHour)}）。",
+            StatId.Energy => $"短期活动能力，上限{T(c.StateScale.EnergyMax)}。行动按每小时速率消耗（移动{T(-c.HourlyRates["travel"].Energy)}、探索{T(-c.HourlyRates["explore"].Energy)}、搜集{T(-c.HourlyRates["gather"].Energy)}、制造{T(-c.HourlyRates["craft"].Energy)}），战斗只付招式成本；浏览与整理不扣体力。低于{Th("energy")}时工作耗时×{T(c.WorkFactors.LowEnergy)}；归0后继续工作每小时健康减{T(-hr.ZeroEnergyWhileWorkingPerHour)}。休息每小时{SignedT(c.HourlyRates["rest"].Energy)}，睡眠恢复。",
+            StatId.Wakefulness => $"睡眠需求，清醒时每小时下降{T(-c.HourlyRates["wait"].Wakefulness)}。只有睡眠能恢复（遮蔽{SignedT(sh.Wakefulness)}/小时，露天{SignedT(ex.Wakefulness)}/小时）。降至{Th("wakefulness")}以下提醒；归0后健康每小时减{T(-hr.ZeroWakefulnessPerHour)}。",
+            _ => $"简化的情绪与舒适状态。工作时缓慢下降，遮蔽睡眠与营地遮蔽棚休息可恢复。低于{Th("morale")}时休息与睡眠的体力恢复×{T(c.FacilityEffects.LowMoraleEnergyRecoveryFactor)}；也决定战斗开始时的恐慌。",
+        };
+    }
 
-    public static string Pct(double p) => $"{p * 100:0.#}%";
+    public static string SignedT(double v) => Fmt.SignedT(v);
+
+    public static string Pct(double p) => Fmt.Pct(p);
 
     // ───────────── 场景昼夜光照（B 方案地点行） ─────────────
 

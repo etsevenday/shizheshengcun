@@ -323,7 +323,7 @@ public class UiRevisionV07Tests : TestBase
 
         // 溢出写进预测
         SetStats(s, 100, 90, 80, 90, 90, 50);
-        Assert.That(E.Preview(s, ActionRequest.UseItem("canned_food")).OverflowText, Is.EqualTo("接近上限：饱食溢出25，溢出部分浪费。"));
+        Assert.That(E.Preview(s, ActionRequest.UseItem("canned_food")).OverflowText, Is.EqualTo("接近上限：饱食溢出25.00，溢出部分浪费。"));
     }
 
     [Test]

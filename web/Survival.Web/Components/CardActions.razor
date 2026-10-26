@@ -33,11 +33,12 @@
                     @if (p.Ok && p.StatsAfterImmediate != null)
                     {
                         // 物品影响的属性一律列出（即时结算值，夹紧到 100 时写溢出），不因取整后相等就省略（试玩修复 B9）
-                        foreach (var (id, delta) in Affected(cfg.Use!))
+                        foreach (var (id, delta) in Affected(cfg.Use!, e.UseHealthAmount(s, cfg.Use!)))
                         {
                             var raw = p.StatsBefore.Get(id) + delta;
-                            var over = raw > 100 ? Ui.Floor(raw - 100) : 0;
-                            <em>@GameEngine.StatName(id)@Ui.Floor(p.StatsBefore.Get(id))→@Ui.Floor(p.StatsAfterImmediate.Get(id))@(over > 0 ? $"（溢出{over}）" : "")</em>
+                            var max = p.StatsBefore.Max(id);
+                            var over = raw > max + 1e-9 ? raw - max : 0;
+                            <em>@GameEngine.StatName(id)@Ui.N(p.StatsBefore.Get(id))→@Ui.N(p.StatsAfterImmediate.Get(id))@(over > 0 ? $"（溢出{Ui.N(over)}）" : "")</em>
                         }
                     }
                 </span>
@@ -250,11 +251,11 @@
         text = m.Mode == Mode.Stack ? (m.ToCarried ? Math.Max(1, Math.Min(m.Available, m.Max)) : m.Available).ToString() : "1";
     }
 
-    private static IEnumerable<(StatId, double)> Affected(ItemUseConfig u)
+    private static IEnumerable<(StatId, double)> Affected(ItemUseConfig u, double health)
     {
         if (u.Satiety != 0) yield return (StatId.Satiety, u.Satiety);
         if (u.Hydration != 0) yield return (StatId.Hydration, u.Hydration);
-        if (u.Health != 0) yield return (StatId.Health, u.Health);
+        if (health != 0) yield return (StatId.Health, health);
         if (u.Morale != 0) yield return (StatId.Morale, u.Morale);
     }
 

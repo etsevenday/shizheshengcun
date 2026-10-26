@@ -74,7 +74,7 @@
                                 var per = r.Outputs.Values.First() * (tool != null && r.ToolBonus != null && !r.IsUnlimited ? r.ToolBonus.OutputMultiplier : 1);
                                 <div class="oc-line">每次@(per)@(e.ItemName(r.Outputs.Keys.First())) · @(minutes)分@(r.Refills ? $" · 日补{r.DailyRefill}" : "")</div>
                             }
-                            @if (r.Hazard != null) { <div class="oc-line warn-line">@Ui.Pct(r.Hazard.Probability)@r.Hazard.Label · 健康−@r.Hazard.HealthLoss.ToString("0")</div> }
+                            @if (r.Hazard != null) { <div class="oc-line warn-line">@Ui.Pct(r.Hazard.Probability)@r.Hazard.Label · 健康−@Ui.T(r.Hazard.HealthLoss)</div> }
                         </ChildContent>
                         <Footer>
                             @* 试玩修复 B5：与探索/清理同一按钮形态，悬停或聚焦即在右栏预测，离开恢复 *@

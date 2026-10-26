@@ -263,8 +263,10 @@ namespace Survival.Core.Engine
                     p.BaseMinutes = r.Minutes;
                     p.ConfirmText = $"睡眠{Clock.Duration(r.Minutes)}";
                     var sheltered = IsSheltered(s, s.CurrentLocation);
-                    p.Notes.Add(sheltered ? "遮蔽睡眠：每小时清醒度+12、体力+15、精神+1" : "露天睡眠：每小时清醒度+6、体力+10、精神−0.5");
-                    if (sheltered && s.Locations[s.CurrentLocation].Facility.BedBuilt) p.Notes.Add("床垫：睡眠体力每小时额外+5");
+                    var sr = Config.HourlyRates[sheltered ? "sleep_sheltered" : "sleep_exposed"];
+                    p.Notes.Add($"{(sheltered ? "遮蔽" : "露天")}睡眠：每小时清醒度{Fmt.SignedT(sr.Wakefulness)}、体力{Fmt.SignedT(sr.Energy)}、精神{Fmt.SignedT(sr.Morale)}");
+                    if (sheltered && s.Locations[s.CurrentLocation].Facility.BedBuilt)
+                        p.Notes.Add($"床垫：睡眠体力每小时额外{Fmt.SignedT(Config.FacilityEffects.BedExtraSleepEnergyPerHour)}");
                     p.Notes.Add("睡眠中仍会消耗饱食、水分和火堆燃料");
                     break;
                 }
@@ -274,7 +276,7 @@ namespace Survival.Core.Engine
                     p.ConfirmText = plan != null ? $"{plan.Label}·{Config.ItemActions.UseMinutes}分钟" : "使用";
                     // 临近上限的溢出（原在网页 ItemDetail 里算，v0.7 起放进内核，卡下按钮与右栏共用）
                     var cfg = plan?.UseItem != null ? _items[plan.UseItem.ItemId] : _items.TryGetValue(r.TargetId, out var tc) ? tc : null;
-                    if (cfg?.Use != null) p.Overflow = OverflowLines(s.Stats, cfg.Use);
+                    if (cfg?.Use != null) p.Overflow = OverflowLines(s.Stats, cfg.Use, UseHealthAmount(s, cfg.Use));
                     break;
                 }
                 case ActionType.Ignite:
@@ -297,15 +299,20 @@ namespace Survival.Core.Engine
                 p.Notes.Add($"当前工作倍率×{p.FactorAtStart:0.##}：{string.Join("，", p.FactorReasons)}");
         }
 
-        /// <summary>即时效果超过 100 的部分（显示向下取整）：“饱食溢出12”“水分溢出5”“健康溢出3”。</summary>
-        public static List<string> OverflowLines(Stats st, Survival.Core.Config.ItemUseConfig u)
+        /// <summary>即时效果超过该项上限的部分（两位小数）：“饱食溢出12.00”“健康溢出0.30”。健康用实际恢复量（含医疗加成）。</summary>
+        public static List<string> OverflowLines(Stats st, Survival.Core.Config.ItemUseConfig u, double healthAmount)
         {
             var over = new List<string>();
-            int F(double v) => (int)System.Math.Floor(v + 1e-9);
-            if (u.Satiety > 0 && st.Satiety + u.Satiety > 100) over.Add($"饱食溢出{F(st.Satiety + u.Satiety - 100)}");
-            if (u.Hydration > 0 && st.Hydration + u.Hydration > 100) over.Add($"水分溢出{F(st.Hydration + u.Hydration - 100)}");
-            if (u.Health > 0 && st.Health + u.Health > 100) over.Add($"健康溢出{F(st.Health + u.Health - 100)}");
-            if (u.Morale > 0 && st.Morale + u.Morale > 100) over.Add($"精神溢出{F(st.Morale + u.Morale - 100)}");
+            void Check(StatId id, string name, double amount)
+            {
+                if (amount <= 0) return;
+                var raw = st.Get(id) + amount;
+                if (raw > st.Max(id) + 1e-9) over.Add($"{name}溢出{Fmt.N(raw - st.Max(id))}");
+            }
+            Check(StatId.Satiety, "饱食", u.Satiety);
+            Check(StatId.Hydration, "水分", u.Hydration);
+            Check(StatId.Health, "健康", healthAmount);
+            Check(StatId.Morale, "精神", u.Morale);
             return over;
         }
 

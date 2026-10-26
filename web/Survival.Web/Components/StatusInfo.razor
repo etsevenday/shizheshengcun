@@ -10,10 +10,10 @@
 }
 
 <div class="status-pop" role="dialog" aria-label="@GameEngine.StatName(id)说明" style="left:240px;top:120px">
-    <h3>@GameEngine.StatName(id) <small class="muted">@Ui.Floor(v)/100</small></h3>
-    <p>@Ui.StatExplain(id)</p>
+    <h3>@GameEngine.StatName(id) <small class="muted">@Ui.N(v)/@Ui.T(s.Stats.Max(id))</small></h3>
+    <p>@Ui.StatExplain(e, id)</p>
     <div class="lines">
-        <div><span>提醒阈值</span><b>@(th.Inclusive ? "≤" : "<")@th.Value</b></div>
+        <div><span>提醒阈值</span><b>@(th.Inclusive ? "≤" : "<")@Ui.T(th.Value)</b></div>
         <div><span>当前</span><b class="@(th.IsBelow(v) ? "warn-text" : "")">@(v <= 0 && id != StatId.Health ? "已归零" : th.IsBelow(v) ? "低于阈值" : "正常")</b></div>
         @if (id == StatId.Hydration && e.ActiveConditions(s).FirstOrDefault(c => c.Id == "diarrhea") is ActiveCondition d)
         {
@@ -21,7 +21,7 @@
         }
         @if (id == StatId.Energy)
         {
-            <div><span>工作倍率</span><b>@(th.IsBelow(v) ? "×1.25（低体力）" : "正常")</b></div>
+            <div><span>工作倍率</span><b>@(th.IsBelow(v) ? $"×{Ui.T(e.Config.WorkFactors.LowEnergy)}（低体力）" : "正常")</b></div>
         }
     </div>
     <button class="secondary" @onclick="Close">知道了</button>

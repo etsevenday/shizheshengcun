@@ -28,6 +28,9 @@ public sealed class SurvivalBot
     }
 
     private int Tod => Clock.MinuteOfDay(S.GameMinute);
+
+    /// <summary>脚本的休息线：体力低于上限的30%（v0.6 起上限20，原写死30/100）。</summary>
+    private bool LowEnergy => S.Stats.Energy < 0.3 * S.Stats.EnergyMax;
     private string Here => S.CurrentLocation;
 
     public void Play(int untilMinute)
@@ -41,7 +44,7 @@ public sealed class SurvivalBot
         }
     }
 
-    private void Log(string msg) => Trace.Add($"{Clock.DayTime(S.GameMinute)} H{S.Stats.Health:0} N{S.Stats.Satiety:0} W{S.Stats.Hydration:0} E{S.Stats.Energy:0} S{S.Stats.Wakefulness:0} M{S.Stats.Morale:0} | {msg}");
+    private void Log(string msg) => Trace.Add($"{Clock.DayTime(S.GameMinute)} H{S.Stats.Health:0.00} N{S.Stats.Satiety:0} W{S.Stats.Hydration:0} E{S.Stats.Energy:0.00} S{S.Stats.Wakefulness:0} M{S.Stats.Morale:0} I{S.Body.Immunity:0.0} V{S.Body.VirusLoad:0.0} | {msg}");
 
     // ───────────── 执行 ─────────────
 
@@ -116,7 +119,7 @@ public sealed class SurvivalBot
             foreach (var f in new[] { "boiled_root", "cooked_root", "berry", "canned_food" })
                 if (Has(f)) return ActionRequest.UseItem(f);
         }
-        if (st.Health < 70 && Has("bandage") && S.BandageReadyAt <= S.GameMinute) return ActionRequest.UseItem("bandage");
+        if (st.Health < 0.7 * st.HealthMax && Has("bandage") && S.BandageReadyAt <= S.GameMinute) return ActionRequest.UseItem("bandage");
         return null;
     }
 
@@ -285,7 +288,7 @@ public sealed class SurvivalBot
         if (!fac.ShelterBuilt && Do(ActionRequest.Craft("shelter"))) return true;
         if (fac.ShelterBuilt && !fac.BedBuilt && Do(ActionRequest.Craft("bed"))) return true;
         if (fac.BedBuilt && Stock("hatchet") == 0 && Stock("wood") >= 4 && Do(ActionRequest.Craft("axe"))) return true;
-        if (S.Stats.Energy < 30) return Do(ActionRequest.Rest(60));
+        if (LowEnergy) return Do(ActionRequest.Rest(60));
         return false;
     }
 
@@ -310,7 +313,7 @@ public sealed class SurvivalBot
         if (CampWork()) return;
         if (Tod < 6 * 60) { Do(ActionRequest.Wait(30)); return; }
         if (S.Stats.Wakefulness < 25) { Do(ActionRequest.Sleep(240)); return; }
-        if (S.Stats.Energy < 30) { Do(ActionRequest.Rest(60)); return; }
+        if (LowEnergy) { Do(ActionRequest.Rest(60)); return; }
         if (Tod > 18 * 60 + 30) { Do(ActionRequest.Wait(60)); return; }
 
         Trip();

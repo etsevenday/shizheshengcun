@@ -72,7 +72,7 @@ public sealed class FeedbackBridge
         ctx["recentLog"] = s.Log.TakeLast(12).Select(l => $"{Clock.DayTime(l.Minute)} {l.Text}").ToList();
         ctx["summary"] =
             $"第{Clock.Day(s.GameMinute)}日 {Clock.HHmm(s.GameMinute)} · {where} · 界面：{screen} · 行动：{action}\n" +
-            $"健康{Ui.Floor(st.Health)} 饱食{Ui.Floor(st.Satiety)} 水分{Ui.Floor(st.Hydration)} 体力{Ui.Floor(st.Energy)} 清醒{Ui.Floor(st.Wakefulness)} 精神{Ui.Floor(st.Morale)} · 负重{Ui.Kg(e.CarriedGrams(s))}公斤 · 种子{s.Seed}" +
+            $"健康{Ui.N(st.Health)} 饱食{Ui.N(st.Satiety)} 水分{Ui.N(st.Hydration)} 体力{Ui.N(st.Energy)} 清醒{Ui.N(st.Wakefulness)} 精神{Ui.N(st.Morale)} · 负重{Ui.Kg(e.CarriedGrams(s))}公斤 · 种子{s.Seed}" +
             (s.Progress.Dead ? $"\n已死亡：{s.Progress.Death?.Cause}" : "");
         return JsonConvert.SerializeObject(ctx);
     }
@@ -108,7 +108,7 @@ public sealed class FeedbackBridge
 
     private static string ActionText(ActionState a)
     {
-        var progress = a.IsWorkType ? $"{a.WorkDone:0.#}/{a.BaseWorkMinutes:0}工作分钟" : $"{a.ElapsedMinutes}/{a.PlannedMinutes}分钟";
+        var progress = a.IsWorkType ? $"{Ui.T(a.WorkDone)}/{Ui.T(a.BaseWorkMinutes)}工作分钟" : $"{a.ElapsedMinutes}/{a.PlannedMinutes}分钟";
         var status = a.Status == ActionStatus.Paused ? $"已暂停（{a.PauseReason}{(a.PauseStat.HasValue ? " " + GameEngine.StatName(a.PauseStat.Value) : "")}）" : "进行中";
         return $"{a.Label}（{status}，{progress}）";
     }

@@ -30,9 +30,9 @@
             <button class="vital @cls" @onclick="() => OpenStatus(statId)" title="查看@(GameEngine.StatName(id))说明">
                 <div class="vital-label">
                     <span>@GameEngine.StatName(id)@if (zero && id != StatId.Health) {<em class="flag danger-text">归零</em>} else if (below) {<em class="flag">偏低</em>}</span>
-                    <b>@Ui.Floor(v) <small class="muted">/100</small></b>
+                    <b>@Ui.N(v) <small class="muted">/@Ui.T(s.Stats.Max(id))</small></b>
                 </div>
-                <div class="track"><i style="width:@(Math.Clamp(v, 0, 100).ToString("0.##"))%"></i><span class="mark" style="left:@th.Value%"></span></div>
+                <div class="track"><i style="width:@Ui.Bar(v, s.Stats.Max(id))%"></i><span class="mark" style="left:@Ui.Bar(th.Value, s.Stats.Max(id))%"></span></div>
             </button>
         }
         @* 状态异常与右栏人物页同源（内核 ActiveConditions），不在这里另算 *@

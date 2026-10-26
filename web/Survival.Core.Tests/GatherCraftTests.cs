@@ -20,6 +20,7 @@ public class GatherCraftTests : TestBase
     {
         var s = AtWoods();
         E.DebugGive(s, "hatchet", 1);
+        var d0 = First(s, "hatchet").Durability!.Value;
         s.Resources["wood"].Available = 1;
         var p = E.Preview(s, ActionRequest.Gather("wood"));
         Assert.That(p.Outputs.Single().Count, Is.EqualTo(1), "预览与实际都显示1");
@@ -29,7 +30,7 @@ public class GatherCraftTests : TestBase
         Assert.That(s.GameMinute, Is.EqualTo(480 + 30), "耗时不变");
         Assert.That(Count(s, "wood", "woods"), Is.EqualTo(1));
         Assert.That(s.Resources["wood"].Available, Is.EqualTo(0));
-        Assert.That(First(s, "hatchet").Durability, Is.EqualTo(29));
+        Assert.That(First(s, "hatchet").Durability, Is.EqualTo(d0 - 1).Within(1e-9), "成功采集磨损1");
     }
 
     [Test]
@@ -38,6 +39,7 @@ public class GatherCraftTests : TestBase
         var s = AtWoods();
         E.DebugGive(s, "hatchet", 1);
         E.DebugGive(s, "stone_knife", 1);
+        var k0 = First(s, "stone_knife").Durability!.Value;
         Start(s, ActionRequest.Gather("wood"));
         s.Main!.HazardHit = false;
         Run(s);
@@ -47,7 +49,7 @@ public class GatherCraftTests : TestBase
         Start(s, ActionRequest.Gather("woods_fiber"));
         Run(s);
         Assert.That(s.GameMinute - t0, Is.EqualTo(10));
-        Assert.That(First(s, "stone_knife").Durability, Is.EqualTo(19));
+        Assert.That(First(s, "stone_knife").Durability, Is.EqualTo(k0 - 1).Within(1e-9));
     }
 
     [Test]
@@ -96,7 +98,7 @@ public class GatherCraftTests : TestBase
         var s = New();
         E.DebugTeleport(s, "field");
         s.GameMinute = At(1, 21, 0);
-        SetStats(s, 100, 80, 80, 15, 90, 60);
+        SetStats(s, 20, 80, 80, 3.9, 90, 60);
         Start(s, ActionRequest.Gather("roots"));
         Run(s);
         Assert.That(s.GameMinute - At(1, 21, 0), Is.EqualTo(60), "30÷(5÷1.875)=11.25→12段");
@@ -191,6 +193,7 @@ public class GatherCraftTests : TestBase
     {
         var s = AtWoods(seed: 99);
         E.DebugGive(s, "hatchet", 1);
+        var d0 = First(s, "hatchet").Durability!.Value;
         Start(s, ActionRequest.Gather("wood"));
         Assert.That(E.Start(s, ActionRequest.Gather("wood")).Ok, Is.False, "重复点击被拒绝");
         Steps(s, 2);
@@ -200,7 +203,7 @@ public class GatherCraftTests : TestBase
         Run(s);
         Run(t);
         Assert.That(SaveSerializer.Serialize(t), Is.EqualTo(SaveSerializer.Serialize(s)));
-        Assert.That(First(t, "hatchet").Durability, Is.EqualTo(29), "只磨损一次");
+        Assert.That(First(t, "hatchet").Durability, Is.EqualTo(d0 - 1).Within(1e-9), "只磨损一次");
         Assert.That(Count(t, "wood", "woods"), Is.EqualTo(2));
     }
 

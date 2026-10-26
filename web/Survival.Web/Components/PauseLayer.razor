@@ -28,7 +28,7 @@
         @if (stat.HasValue)
         {
             <h2>@(GameEngine.StatName(stat.Value))@(zero ? "归零" : "偏低") · @(main.Label)已暂停</h2>
-            <p class="lead">@e.AlertText(stat.Value, zero)当前@(GameEngine.StatName(stat.Value))为@(Ui.Floor(s.Stats.Get(stat.Value)))。补给不会自动进行，请选择处理方式。</p>
+            <p class="lead">@e.AlertText(stat.Value, zero)当前@(GameEngine.StatName(stat.Value))为@(Ui.N(s.Stats.Get(stat.Value)))。补给不会自动进行，请选择处理方式。</p>
         }
         else
         {
@@ -37,7 +37,7 @@
     }
 
     <div class="lines" style="max-width:520px">
-        <div><span>@(work ? "剩余工作量" : "剩余时长")</span><b>@(Ui.Floor(remaining))分钟</b></div>
+        <div><span>@(work ? "剩余工作量" : "剩余时长")</span><b>@(Ui.T(remaining))分钟</b></div>
         @if (main.ReservedItemIds.Count > 0)
         {
             var res = s.Items.Where(i => main.ReservedItemIds.Contains(i.InstanceId)).GroupBy(i => i.ItemId).Select(g => $"{e.ItemName(g.Key)}{g.Sum(i => i.Count)}");

@@ -214,7 +214,7 @@ public class DropResolverTests : TestBase
         var p = E.Preview(s, worn.Action!);
         Assert.That(p.ToolDurabilityBefore, Is.EqualTo(12), "拖入哪把就预览哪把");
         Assert.That(p.ToolExplicit, Is.True);
-        Assert.That(E.Preview(s, ActionRequest.Gather("wood")).ToolDurabilityBefore, Is.EqualTo(30), "按钮仍自动选最高耐久");
+        Assert.That(E.Preview(s, ActionRequest.Gather("wood")).ToolDurabilityBefore, Is.EqualTo(axes[0].Durability), "按钮仍自动选最高耐久");
         Start(s, worn.Action!);
         Assert.That(s.Main!.ToolInstanceId, Is.EqualTo(axes[1].InstanceId));
         E.Cancel(s);
@@ -237,7 +237,7 @@ public class DropResolverTests : TestBase
         var s = New();
         var i = R(s, Card("camp|stone"), "card:camp|fiber");
         Assert.That(i.Ok && i.Verb == DropVerb.PreviewRecipe, Is.True, i.Reason);
-        Assert.That(i.Recipes, Is.EqualTo(new[] { "knife", "axe" }), "多候选按配置顺序列出");
+        Assert.That(i.Recipes, Is.EqualTo(new[] { "knife", "axe", "make_wooden_spear", "make_arrows" }), "多候选按配置顺序列出（含 v0.5 木矛、箭矢）");
         var before = SaveSerializer.Serialize(s);
         E.ResolveDrop(s, Card("camp|stone"), T("card:camp|fiber"));
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "未确认开始不扣物、不耗时、不预留");

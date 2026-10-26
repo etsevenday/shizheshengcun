@@ -552,7 +552,7 @@ public class FacilityProcessTests : TestBase
             Assert.That(s.Stats.Satiety, Is.EqualTo(50 + sat + wait.Satiety * 5 / 60).Within(1e-9), id);
             Assert.That(s.Stats.Hydration, Is.EqualTo(50 + hyd + wait.Hydration * 5 / 60).Within(1e-9), id);
             Assert.That(s.Stats.Morale, Is.EqualTo(50 + mor + wait.Morale * 5 / 60).Within(1e-9), id);
-            Assert.That(s.Stats.Health, Is.EqualTo(100), "健康不直接变化");
+            Assert.That(s.Stats.Health, Is.EqualTo(20), "健康不直接变化");
             Assert.That(preview.StatsAfter.Hydration, Is.EqualTo(s.Stats.Hydration).Within(1e-9), "预览与实际一致");
         }
         Assert.That(GameEngine.UseEffectText(Cfg.Items.Single(i => i.Id == "cooked_root").Use!), Is.EqualTo("饱食+25，水分−2，精神+2"));

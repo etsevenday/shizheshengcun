@@ -93,7 +93,7 @@ public class AlertDeathSaveTests : TestBase
         var s = New();
         E.DebugTeleport(s, "woods");
         E.DebugSetProgress(s, "woods", 25);
-        SetStats(s, 2, 80, 80, 90, 90, 60);
+        SetStats(s, 0.5, 80, 80, 18, 90, 60);
         Start(s, ActionRequest.Gather("wood"));
         s.Main!.HazardHit = true;
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Dead));
@@ -108,7 +108,7 @@ public class AlertDeathSaveTests : TestBase
     public void Death_ByDehydration_ReturnsReservations()
     {
         var s = New();
-        SetStats(s, 1, 80, 0, 90, 90, 60);
+        SetStats(s, 0.5, 80, 0, 18, 90, 60);
         Start(s, ActionRequest.Craft("knife"));
         Run(s);
         Assert.That(s.Progress.Dead, Is.True);
@@ -161,10 +161,11 @@ public class AlertDeathSaveTests : TestBase
     {
         var s = New();
         E.DebugGive(s, "bandage", 2);
-        SetStats(s, 50, 80, 80, 90, 90, 60);
+        SetStats(s, 10, 80, 80, 18, 90, 60);
+        var heal = E.BandageHeal(s);
         Start(s, ActionRequest.UseItem("bandage"));
         Run(s);
-        Assert.That(s.Stats.Health, Is.EqualTo(55));
+        Assert.That(s.Stats.Health, Is.EqualTo(10 + heal).Within(1e-9), "v0.6：1×(1+0.02×医疗等级)");
         var r = E.Start(s, ActionRequest.UseItem("bandage"));
         Assert.That(r.Ok, Is.False);
         Assert.That(r.Reason, Does.Contain("冷却"));

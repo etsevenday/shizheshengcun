@@ -31,7 +31,7 @@
     <div class="progress" aria-label="@(a.Type is ActionType.Craft or ActionType.Build ? "加工进度" : "行动进度")"><i style="width:@((pct * 100).ToString("0.#"))%"></i></div>
 
     <div class="lines">
-        <div><span>@(work ? "剩余工作量" : "剩余时长")</span><b>@(Ui.Floor(remaining))分钟</b></div>
+        <div><span>@(work ? "剩余工作量" : "剩余时长")</span><b>@(Ui.T(remaining))分钟</b></div>
         <div><span>预计完成</span><b>@(eta.HasValue ? Clock.HHmm(eta.Value) : paused ? "暂停中" : "无法预估")</b></div>
         @if (work)
         {

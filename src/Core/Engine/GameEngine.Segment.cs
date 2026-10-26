@@ -31,6 +31,9 @@ namespace Survival.Core.Engine
             ActionType.Ignite => "ignite",
             ActionType.Use => "use",
             ActionType.Rest => "rest",
+            ActionType.Butcher => "butcher",
+            ActionType.Repair => "repair",
+            ActionType.Bypass => "bypass",
             _ => "wait",
         };
 
@@ -111,7 +114,7 @@ namespace Survival.Core.Engine
             if (Config.Thresholds["energy"].IsBelow(s.Stats.Energy))
             {
                 f *= c.LowEnergy;
-                reasons?.Add($"体力低于{Config.Thresholds["energy"].Value:0} ×{c.LowEnergy}");
+                reasons?.Add($"体力低于{Fmt.T(Config.Thresholds["energy"].Value)} ×{c.LowEnergy}");
             }
             if (f > c.Cap)
             {
@@ -121,51 +124,28 @@ namespace Survival.Core.Engine
             return f;
         }
 
-        /// <summary>推进一个 5 分钟段（求生案 06 每个5分钟段）。</summary>
+        /// <summary>
+        /// 推进一个 5 分钟段（求生案 06 每个5分钟段）：先做一次世界 tick（WorldTick），再累积主行动进度与提交结果。
+        /// 战斗中与敌踪待选时不经这里推进，战斗每轮结束自己调用一次 WorldTick（v0.6 §07、§16）。
+        /// </summary>
         public SegmentResult Advance(GameState s)
         {
             if (s.Progress.Dead) return new SegmentResult(SegmentStatus.Dead);
+            if (InCombatFlow(s)) return new SegmentResult(SegmentStatus.Idle);
             var a = s.Sub ?? s.Main;
             if (a == null) return new SegmentResult(SegmentStatus.Idle);
             if (!a.IsSub && a.Status == ActionStatus.Paused) return new SegmentResult(SegmentStatus.Paused);
 
             // 0. 段前持续条件：原料腐败（烧水、烤制、水煮已是设施自动进程，熄火不再暂停角色行动）
-            if ((a.Type == ActionType.Craft || a.Type == ActionType.Build) && AnyReservedSpoiled(s, a))
+            if ((a.Type == ActionType.Craft || a.Type == ActionType.Build || a.Type == ActionType.Butcher) && AnyReservedSpoiled(s, a))
             {
                 AbortSpoiled(s, a);
                 return new SegmentResult(SegmentStatus.Aborted);
             }
 
-            // 1. 段首计算：角色本段速率；各火堆段首是否燃烧、燃料够不够、哪些加工目标可受热（设施与烹饪案第 7 节）
+            // 1–3. 段首计算角色本段速率，再做一次世界 tick（身体、燃料、设施、免疫、病毒、终局、刷新）
             var ctx = ComputeSegment(s, a);
-            SyncFacilities(s);
-            var snap = SnapshotFacilities(s, a);
-
-            // 2. 推进时间并应用变化
-            var h = Tick / 60.0;
-            s.Stats.Add(StatId.Satiety, ctx.Rates.Satiety * h);
-            s.Stats.Add(StatId.Hydration, ctx.Rates.Hydration * h);
-            s.Stats.Add(StatId.Energy, ctx.Rates.Energy * h);
-            s.Stats.Add(StatId.Wakefulness, ctx.Rates.Wakefulness * h);
-            s.Stats.Add(StatId.Morale, ctx.Rates.Morale * h);
-            s.Stats.Add(StatId.Health, ctx.HealthPerHour * h);
-            if (!string.IsNullOrEmpty(ctx.DamageCause)) s.Progress.LastDamageCause = ctx.DamageCause;
-
-            s.GameMinute += Tick;
-            s.SegmentCount++;
-            BurnFires(s);
-            UpdateAllClearCharges(s);
-            if (s.GameMinute % Clock.MinutesPerDay == 0) NewDay(s);
-
-            // 3. 判死：死亡则本段设施加工不提交
-            if (s.Stats.Health <= 0)
-            {
-                Kill(s, s.Progress.LastDamageCause);
-                return new SegmentResult(SegmentStatus.Dead);
-            }
-
-            // 3b. 设施自动加工：按段首快照给合格目标 +5 受热分钟，达标即原地转化；不替换、不暂停角色主行动
-            AdvanceFacilities(s, snap);
+            if (!WorldTick(s, ctx, a, false)) return new SegmentResult(SegmentStatus.Dead);
 
             // 4. 累积进度
             bool done;
@@ -198,6 +178,76 @@ namespace Survival.Core.Engine
             UpdateFlags(s);
             CheckSevenDay(s);
             return new SegmentResult(status);
+        }
+
+        /// <summary>
+        /// 单段世界 tick（v0.6 §16 建议顺序）：段首快照 → 身体/燃料/药物时间/免疫/病毒 → 终局判定 → 自然治愈 →
+        /// 清理及资源恢复 → 设施加工提交（死亡先于本段未提交产物）→ 敌人刷新/巡游。主行动推进与战斗轮末都调用它，每段只结算一次。
+        /// 返回 false 表示本段死亡或尸变（已锁局）。
+        /// </summary>
+        private bool WorldTick(GameState s, SegmentContext ctx, ActionState? running, bool battle)
+        {
+            // 段首：火堆加工资格与身体快照（免疫、病毒按段首状态计算）
+            SyncFacilities(s);
+            var snap = SnapshotFacilities(s, running);
+            var start = TickStart.Capture(s);
+
+            // 身体变化（每小时速率 × 5/60），按项上限夹紧
+            var h = Tick / 60.0;
+            s.Stats.Add(StatId.Satiety, ctx.Rates.Satiety * h);
+            s.Stats.Add(StatId.Hydration, ctx.Rates.Hydration * h);
+            s.Stats.Add(StatId.Energy, ctx.Rates.Energy * h);
+            s.Stats.Add(StatId.Wakefulness, ctx.Rates.Wakefulness * h);
+            s.Stats.Add(StatId.Morale, ctx.Rates.Morale * h);
+            s.Stats.Add(StatId.Health, ctx.HealthPerHour * h);
+            if (!string.IsNullOrEmpty(ctx.DamageCause)) s.Progress.LastDamageCause = ctx.DamageCause;
+
+            s.GameMinute += Tick;
+            s.SegmentCount++;
+            BurnFires(s);
+            TickBody(s, start, ctx, battle);
+
+            // 终局：健康归零先于尸变，二者都先于自然治愈与本段未提交的设施产物
+            if (s.Stats.Health <= 0)
+            {
+                Kill(s, s.Progress.LastDamageCause);
+                return false;
+            }
+            if (Zombified(s))
+            {
+                Zombify(s);
+                return false;
+            }
+            TickNaturalCure(s, start);
+
+            UpdateAllClearCharges(s);
+            if (s.GameMinute % Clock.MinutesPerDay == 0) NewDay(s);
+
+            // 设施自动加工：按段首快照给合格目标 +5 受热分钟，达标即原地转化；不替换、不暂停角色主行动
+            AdvanceFacilities(s, snap);
+            TickWorldEnemies(s);
+            return true;
+        }
+
+        /// <summary>段首快照：免疫、病毒、出血按它计算（v0.6 §08“每5分钟读取段首状态”）。</summary>
+        private sealed class TickStart
+        {
+            public int Minute;
+            public Stats Stats = new Stats();
+            public double Immunity;
+            public bool Infected;
+            public bool Diarrhea;
+            public bool AntibioticActive;
+
+            public static TickStart Capture(GameState s) => new TickStart
+            {
+                Minute = s.GameMinute,
+                Stats = s.Stats.Clone(),
+                Immunity = s.Body.Immunity,
+                Infected = s.Body.Infected,
+                Diarrhea = s.DiarrheaUntil.HasValue && s.DiarrheaUntil.Value > s.GameMinute,
+                AntibioticActive = s.Body.AntibioticUntil.HasValue && s.Body.AntibioticUntil.Value > s.GameMinute,
+            };
         }
 
         private void Pause(GameState s, ActionState a, PauseReason reason, StatId? stat, string text)
@@ -297,7 +347,7 @@ namespace Survival.Core.Engine
                         ? $"{rc.Name.Replace("建", "").Replace("铺", "")}已完成。"
                         : $"{string.Join("，", made)}，已放在{LocName(here)}地面。";
                     if (rc.Id == "shelter") text = "遮蔽棚建成：营地可遮蔽睡眠，休息时额外恢复精神。";
-                    if (rc.Id == "bed") text = "床垫铺好：营地睡眠体力恢复每小时额外+5。";
+                    if (rc.Id == "bed") text = $"床垫铺好：营地睡眠体力恢复每小时额外{Fmt.SignedT(Config.FacilityEffects.BedExtraSleepEnergyPerHour)}。";
                     Emit(s, GameEventKind.ActionCompleted, text, null, rc.Outputs.Keys);
                     return true;
                 }
@@ -381,7 +431,7 @@ namespace Survival.Core.Engine
             {
                 s.Stats.Add(StatId.Health, -res.Hazard.HealthLoss);
                 s.Progress.LastDamageCause = $"搜集时{res.Hazard.Label}";
-                Emit(s, GameEventKind.Hazard, $"{res.Hazard.Label}，健康−{res.Hazard.HealthLoss:0}。");
+                Emit(s, GameEventKind.Hazard, $"{res.Hazard.Label}，健康−{Fmt.T(res.Hazard.HealthLoss)}。");
                 if (s.Stats.Health <= 0) Kill(s, s.Progress.LastDamageCause);
             }
             return true;
@@ -433,22 +483,22 @@ namespace Survival.Core.Engine
             {
                 return id switch
                 {
-                    StatId.Satiety => $"饱食归零：健康每小时减{-Config.HealthRules.ZeroSatietyPerHour:0}，请尽快进食。",
-                    StatId.Hydration => $"水分归零：健康每小时减{-Config.HealthRules.ZeroHydrationPerHour:0}，请立即饮水。",
-                    StatId.Wakefulness => $"清醒度归零：健康每小时减{-Config.HealthRules.ZeroWakefulnessPerHour:0}，请尽快睡眠。",
-                    _ => $"体力归零：继续工作时健康每小时减{-Config.HealthRules.ZeroEnergyWhileWorkingPerHour:0}，建议休息。",
+                    StatId.Satiety => $"饱食归零：健康每小时减{Fmt.T(-Config.HealthRules.ZeroSatietyPerHour)}，请尽快进食。",
+                    StatId.Hydration => $"水分归零：健康每小时减{Fmt.T(-Config.HealthRules.ZeroHydrationPerHour)}，请立即饮水。",
+                    StatId.Wakefulness => $"清醒度归零：健康每小时减{Fmt.T(-Config.HealthRules.ZeroWakefulnessPerHour)}，请尽快睡眠。",
+                    _ => $"体力归零：继续工作时健康每小时减{Fmt.T(-Config.HealthRules.ZeroEnergyWhileWorkingPerHour)}，建议休息。",
                 };
             }
             var th = Config.Thresholds[StatKey(id)];
             var cmp = th.Inclusive ? "降至" : "低于";
             return id switch
             {
-                StatId.Health => $"健康{cmp}{th.Value:0}，处于高危状态。",
-                StatId.Satiety => $"饱食{cmp}{th.Value:0}，请尽快进食。",
-                StatId.Hydration => $"水分{cmp}{th.Value:0}，请尽快饮水。",
-                StatId.Wakefulness => $"清醒度{cmp}{th.Value:0}，需要睡眠。",
-                StatId.Energy => $"体力{cmp}{th.Value:0}，工作耗时增加，建议休息。",
-                _ => $"精神{cmp}{th.Value:0}，休息与睡眠的体力恢复减半。",
+                StatId.Health => $"健康{cmp}{Fmt.T(th.Value)}，处于高危状态。",
+                StatId.Satiety => $"饱食{cmp}{Fmt.T(th.Value)}，请尽快进食。",
+                StatId.Hydration => $"水分{cmp}{Fmt.T(th.Value)}，请尽快饮水。",
+                StatId.Wakefulness => $"清醒度{cmp}{Fmt.T(th.Value)}，需要睡眠。",
+                StatId.Energy => $"体力{cmp}{Fmt.T(th.Value)}，工作耗时增加，建议休息。",
+                _ => $"精神{cmp}{Fmt.T(th.Value)}，休息与睡眠的体力恢复减半。",
             };
         }
 

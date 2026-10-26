@@ -17,24 +17,25 @@ public class SurvivalTests : TestBase
         Assert.That(s.Stats.Hydration, Is.EqualTo(80 - 3).Within(1e-9));
         Assert.That(s.Stats.Wakefulness, Is.EqualTo(90 - 5).Within(1e-9));
         Assert.That(s.Stats.Morale, Is.EqualTo(60 - 0.5).Within(1e-9));
-        Assert.That(s.Stats.Energy, Is.EqualTo(90));
-        Assert.That(s.Stats.Health, Is.EqualTo(100));
+        Assert.That(s.Stats.Energy, Is.EqualTo(18), "v0.6 初始体力18，等待体力变化0");
+        Assert.That(s.Stats.Health, Is.EqualTo(20), "v0.6 初始健康20");
     }
 
     [Test]
-    public void S02_ZeroSatietyAndHydration_Health10PerHour()
+    public void S02_ZeroSatietyAndHydration_Health2PerHour()
     {
+        // v0.6 §12：零饱食0.4、零水分1.6、零清醒0.4每小时（旧值×0.2）
         var s = New();
-        SetStats(s, 100, 0, 0, 90, 90, 60);
+        SetStats(s, 20, 0, 0, 18, 90, 60);
         Start(s, ActionRequest.Wait(60));
         Run(s);
-        Assert.That(s.Stats.Health, Is.EqualTo(90).Within(1e-6));
+        Assert.That(s.Stats.Health, Is.EqualTo(18).Within(1e-6));
 
         var s2 = New();
-        SetStats(s2, 100, 0, 0, 90, 0, 60);
+        SetStats(s2, 20, 0, 0, 18, 0, 60);
         Start(s2, ActionRequest.Wait(60));
         Run(s2);
-        Assert.That(s2.Stats.Health, Is.EqualTo(88).Within(1e-6));
+        Assert.That(s2.Stats.Health, Is.EqualTo(17.6).Within(1e-6));
     }
 
     [Test]
@@ -55,11 +56,11 @@ public class SurvivalTests : TestBase
     {
         var s = New();
         s.Locations["camp"].Facility.ShelterBuilt = true;
-        SetStats(s, 50, 80, 80, 50, 80, 60);
+        SetStats(s, 10, 80, 80, 10, 80, 60);
         Start(s, ActionRequest.Rest(60));
         Run(s);
-        Assert.That(s.Stats.Energy, Is.EqualTo(70).Within(1e-9));
-        Assert.That(s.Stats.Health, Is.EqualTo(51).Within(1e-9));
+        Assert.That(s.Stats.Energy, Is.EqualTo(16).Within(1e-9), "休息+6/小时");
+        Assert.That(s.Stats.Health, Is.EqualTo(10.2).Within(1e-9), "遮蔽健康恢复+0.2/小时");
         Assert.That(s.Stats.Wakefulness, Is.EqualTo(75).Within(1e-9));
         Assert.That(s.Stats.Satiety, Is.EqualTo(78.5).Within(1e-9));
         Assert.That(s.Stats.Hydration, Is.EqualTo(77).Within(1e-9));
@@ -73,14 +74,14 @@ public class SurvivalTests : TestBase
         var f = s.Locations["camp"].Facility;
         f.ShelterBuilt = true;
         f.BedBuilt = true;
-        SetStats(s, 80, 80, 80, 50, 40, 10);
+        SetStats(s, 16, 80, 80, 10, 40, 10);
         Start(s, ActionRequest.Sleep(120));
         Steps(s, 12);
         Assert.That(s.Main, Is.Not.Null, "睡眠2小时尚未结束");
-        Assert.That(s.Stats.Energy, Is.EqualTo(60).Within(1e-9), "(15+5)×0.5=10");
+        Assert.That(s.Stats.Energy, Is.EqualTo(12.5).Within(1e-9), "(4+1)×0.5=2.5");
         Assert.That(s.Stats.Wakefulness, Is.EqualTo(52).Within(1e-9));
         Assert.That(s.Stats.Morale, Is.EqualTo(11).Within(1e-9));
-        Assert.That(s.Stats.Health, Is.EqualTo(80).Within(1e-9), "精神低于20不自然恢复");
+        Assert.That(s.Stats.Health, Is.EqualTo(16).Within(1e-9), "精神低于20不自然恢复");
     }
 
     [Test]
@@ -91,13 +92,13 @@ public class SurvivalTests : TestBase
         E.DebugUnlockEdge(s, "field__stream");
         s.GameMinute = At(1, 22, 0);
         E.DebugGive(s, "stone", 50); // 25 公斤
-        SetStats(s, 100, 80, 80, 10, 90, 60);
-        Assert.That(E.WorkFactor(s, ActionType.Travel), Is.EqualTo(2.0));
+        SetStats(s, 20, 80, 80, 3, 90, 60);
+        Assert.That(E.WorkFactor(s, ActionType.Travel), Is.EqualTo(2.0), "夜间×负重×低体力（E<4）封顶2");
         Start(s, ActionRequest.Travel("stream"));
         Run(s);
         Assert.That(s.GameMinute, Is.EqualTo(At(1, 22, 40)), "20分钟移动在倍率2.0下需40分钟");
         Assert.That(s.CurrentLocation, Is.EqualTo("stream"));
-        Assert.That(s.Stats.Energy, Is.EqualTo(10 - 8 * 40 / 60.0).Within(1e-9), "按实际40分钟计算消耗");
+        Assert.That(s.Stats.Energy, Is.EqualTo(3 - 1.6 * 40 / 60.0).Within(1e-9), "按实际40分钟计算消耗（v0.6 §12）");
     }
 
     [Test]

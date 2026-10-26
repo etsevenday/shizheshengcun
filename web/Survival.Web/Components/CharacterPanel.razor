@@ -30,10 +30,10 @@
             var zero = v <= 0;
             var cls = zero || (id == StatId.Health && below) ? "critical" : below ? "warning" : "";
             <div class="char-stat @cls">
-                <div class="cs-line"><b>@GameEngine.StatName(id)</b><span>@Ui.Floor(v)/100</span></div>
-                <div class="track"><i style="width:@(Math.Clamp(v, 0, 100).ToString("0.##"))%"></i><span class="mark" style="left:@th.Value%"></span></div>
-                <div class="cs-state">提醒阈值@(th.Inclusive ? "≤" : "<")@th.Value · @(zero && id != StatId.Health ? "已归零" : below ? "低于阈值" : "正常")</div>
-                <div class="cs-explain">@Ui.StatExplain(id)</div>
+                <div class="cs-line"><b>@GameEngine.StatName(id)</b><span>@Ui.N(v)/@Ui.T(s.Stats.Max(id))</span></div>
+                <div class="track"><i style="width:@Ui.Bar(v, s.Stats.Max(id))%"></i><span class="mark" style="left:@Ui.Bar(th.Value, s.Stats.Max(id))%"></span></div>
+                <div class="cs-state">提醒阈值@(th.Inclusive ? "≤" : "<")@Ui.T(th.Value) · @(zero && id != StatId.Health ? "已归零" : below ? "低于阈值" : "正常")</div>
+                <div class="cs-explain">@Ui.StatExplain(e, id)</div>
             </div>
         }
     </div>

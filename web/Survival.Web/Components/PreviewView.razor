@@ -85,7 +85,7 @@
     {
         @if (p.HazardProbability > 0)
         {
-            <div class="risk">⚠ @(p.HazardLabel)概率@(Ui.Pct(p.HazardProbability))<br />若发生，健康减少@(p.HazardHealthLoss.ToString("0"))。</div>
+            <div class="risk">⚠ @(p.HazardLabel)概率@(Ui.Pct(p.HazardProbability))<br />若发生，健康减少@(Ui.T(p.HazardHealthLoss))。</div>
         }
         else
         {
@@ -98,8 +98,8 @@
         <div class="lines">
             @foreach (var id in Stats.All)
             {
-                var before = Ui.Floor(p.StatsBefore.Get(id));
-                var after = Ui.Floor(p.StatsAfter.Get(id));
+                var before = Ui.N(p.StatsBefore.Get(id));
+                var after = Ui.N(p.StatsAfter.Get(id));
                 if (before == after && id != StatId.Hydration && id != StatId.Energy) continue;
                 var th = e.Config.Thresholds[GameEngine.StatKey(id)];
                 var cls = th.IsBelow(p.StatsAfter.Get(id)) ? "warn-text" : "";

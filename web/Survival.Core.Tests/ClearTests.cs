@@ -101,7 +101,7 @@ public class ClearTests : TestBase
         Assert.That(Woods(s).ClearCharges, Is.EqualTo(3), "次数不退");
         Assert.That(Woods(s).ClearRefillProgress, Is.EqualTo(5), "恢复累计5分钟");
         Assert.That(s.GameMinute, Is.EqualTo(485));
-        Assert.That(s.Stats.Energy, Is.EqualTo(before - 1).Within(1e-9), "身体消耗保留");
+        Assert.That(s.Stats.Energy, Is.EqualTo(before - 2.4 * 5 / 60).Within(1e-9), "身体消耗保留（清理−2.4/小时）");
         Assert.That(Woods(s).Progress, Is.EqualTo(0), "没有探索进度");
     }
 
@@ -239,11 +239,11 @@ public class ClearTests : TestBase
         Start(s, ActionRequest.Clear());
         Run(s);
         Assert.That(s.GameMinute - At(1, 22, 0), Is.EqualTo(30));
-        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(6).Within(1e-9));
+        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(1.2).Within(1e-9), "按实际30分钟×2.4/小时");
         Assert.That(w0 - s.Stats.Hydration, Is.EqualTo(2.25).Within(1e-9));
 
         var t = AtWoods();
-        SetStats(t, 100, 80, 80, 19, 90, 60);
+        SetStats(t, 20, 80, 80, 3.9, 90, 60);
         Assert.That(E.WorkFactor(t, ActionType.Clear), Is.EqualTo(1.25));
         Start(t, ActionRequest.Clear());
         Run(t);
@@ -280,10 +280,10 @@ public class ClearTests : TestBase
     public void Clear_IsWork_ZeroEnergyHurts()
     {
         var s = AtWoods();
-        SetStats(s, 100, 80, 80, 0, 90, 60);
+        SetStats(s, 20, 80, 80, 0, 90, 60);
         Start(s, ActionRequest.Clear());
         Run(s);
-        Assert.That(s.Stats.Health, Is.LessThan(100), "0体力工作伤害适用于清理");
+        Assert.That(s.Stats.Health, Is.LessThan(20), "0体力工作伤害适用于清理");
     }
 
     [Test]

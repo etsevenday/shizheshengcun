@@ -559,14 +559,14 @@ namespace Survival.Core.Engine
             public HashSet<string> Eligible { get; } = new HashSet<string>();
         }
 
-        private FacilitySnapshot SnapshotFacilities(GameState s, ActionState running)
+        private FacilitySnapshot SnapshotFacilities(GameState s, ActionState? running)
         {
             var snap = new FacilitySnapshot();
             foreach (var l in Config.Locations.Where(l => l.HasFire))
             {
                 if (!s.Locations.TryGetValue(l.Id, out var ls)) continue;
                 // 此前未燃烧的火堆在点火完成时才获得加热资格：点火这一段不算受热（02 案第 6 节）
-                var igniting = running.Type == ActionType.Ignite && running.SourceLocation == l.Id;
+                var igniting = running != null && running.Type == ActionType.Ignite && running.SourceLocation == l.Id;
                 if (!FireHot(s, l.Id) || igniting) continue;
                 foreach (var p in ls.Facility.Processes)
                     if (HeatEligible(s, l.Id, p)) snap.Eligible.Add(p.ProcessId);

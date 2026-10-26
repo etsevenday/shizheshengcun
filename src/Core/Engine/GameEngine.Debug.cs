@@ -41,7 +41,15 @@ namespace Survival.Core.Engine
         /// <summary>设置状态值，并把提醒锁存同步为“已提醒过”，避免测试被开局提醒打断。</summary>
         public void DebugSetStats(GameState s, double h, double n, double w, double e, double sl, double m)
         {
-            s.Stats = new Stats { Health = h, Satiety = n, Hydration = w, Energy = e, Wakefulness = sl, Morale = m };
+            // 按项上限夹紧（健康/体力上限 20）：旧用例里的“100”即满值
+            var st = new Stats { HealthMax = s.Stats.HealthMax, EnergyMax = s.Stats.EnergyMax };
+            st.Set(StatId.Health, h);
+            st.Set(StatId.Satiety, n);
+            st.Set(StatId.Hydration, w);
+            st.Set(StatId.Energy, e);
+            st.Set(StatId.Wakefulness, sl);
+            st.Set(StatId.Morale, m);
+            s.Stats = st;
             SyncLatches(s);
         }
 

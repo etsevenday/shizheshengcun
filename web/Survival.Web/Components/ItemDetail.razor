@@ -124,8 +124,8 @@ else
                 {
                     foreach (var id in new[] { StatId.Satiety, StatId.Hydration, StatId.Health, StatId.Morale })
                     {
-                        var b0 = Ui.Floor(p.StatsBefore.Get(id));
-                        var b1 = Ui.Floor(p.StatsAfter.Get(id));
+                        var b0 = Ui.N(p.StatsBefore.Get(id));
+                        var b1 = Ui.N(p.StatsAfter.Get(id));
                         if (b0 == b1) continue;
                         <div><span>@GameEngine.StatName(id)</span><b>@b0 → @b1</b></div>
                     }
