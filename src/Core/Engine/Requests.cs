@@ -38,6 +38,8 @@ namespace Survival.Core.Engine
         public static ActionRequest Sleep(int minutes) => new ActionRequest { Type = ActionType.Sleep, Minutes = minutes };
         public static ActionRequest UseInstance(int instanceId) => new ActionRequest { Type = ActionType.Use, InstanceId = instanceId };
         public static ActionRequest UseItem(string itemId) => new ActionRequest { Type = ActionType.Use, TargetId = itemId };
+        /// <summary>绕行当前敌踪（固定10分钟，按 travel 消耗）。</summary>
+        public static ActionRequest Bypass() => new ActionRequest { Type = ActionType.Bypass };
 
         public ActionRequest WithRequestId(string? id)
         {

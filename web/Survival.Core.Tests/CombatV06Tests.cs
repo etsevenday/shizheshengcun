@@ -526,6 +526,224 @@ public class CombatV06Tests : TestBase
         Assert.That(u.Items.Any(i => i.InstanceId == pot.InstanceId), Is.True, "锅不消耗");
     }
 
+    // ───────────── 世界敌人（v0.6 §14、§15） ─────────────
+
+    /// <summary>冻结刷新与巡游（测试接敌时避免世界敌人自己走动）。</summary>
+    private static void FreezeWorld(GameState s)
+    {
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+    }
+
+    /// <summary>空闲推进到指定分钟，期间保持身体良好（只看世界层面的变化）。</summary>
+    private void Idle(GameState s, int minute)
+    {
+        while (s.GameMinute < minute && !s.Progress.Dead)
+        {
+            if (s.Main == null) Start(s, ActionRequest.Wait(30));
+            SetStats(s, 20, 80, 80, 18, 90, 60);
+            E.Advance(s);
+            if (s.Main?.Status == ActionStatus.Paused) E.Resume(s);
+        }
+        if (s.Main?.Type == ActionType.Wait) E.Cancel(s);
+    }
+
+    /// <summary>新局初始6只，按配置分布；营地0只。</summary>
+    [Test]
+    public void WorldEnemies_InitialDistribution()
+    {
+        var s = New();
+        Assert.That(E.LiveCount(s), Is.EqualTo(6));
+        foreach (var kv in Cfg.WorldEnemies.Initial)
+            Assert.That(s.WorldEnemies.Where(w => w.LocationId == kv.Key).Select(w => w.EnemyId), Is.EquivalentTo(kv.Value), kv.Key);
+        Assert.That(s.WorldEnemies.Select(w => w.Id).Distinct().Count(), Is.EqualTo(6), "持久ID唯一");
+        Assert.That(s.SpawnNextCheck, Is.EqualTo(1440), "第2日00:00起刷新检查");
+        Assert.That(s.WorldEnemies.Single(w => w.EnemyId == "feral_dog").Hostile, Is.True);
+    }
+
+    /// <summary>R616 全局12与本地上限：新生成及巡游都不越界，交战存活敌计数，营地不进。</summary>
+    [Test]
+    public void R616_GlobalAndLocalCaps_NeverExceeded()
+    {
+        var s = New(99);
+        AdvanceTo(s, At(2, 0, 0));
+        for (var day = 0; day < 30; day++)
+        {
+            for (var k = 0; k < 24 * 12; k++)
+            {
+                if (s.Main == null) Start(s, ActionRequest.Wait(60));
+                SetStats(s, 20, 80, 80, 18, 90, 60);
+                E.Advance(s);
+                if (s.Main?.Status == ActionStatus.Paused) E.Resume(s);
+                Assert.That(E.LiveCount(s), Is.LessThanOrEqualTo(12), "全局上限12");
+                foreach (var loc in Cfg.Locations.Select(l => l.Id))
+                    Assert.That(E.LocalCount(s, loc), Is.LessThanOrEqualTo(Cfg.WorldEnemies.CapOf(loc)), loc);
+            }
+        }
+        Assert.That(E.LocalCount(s, "camp"), Is.EqualTo(0), "营地始终0");
+        Assert.That(E.LiveCount(s), Is.GreaterThan(6), "缓慢补敌");
+        // 交战中的存活敌计数：标记交战不改变计数
+        s.WorldEnemies[0].Engaged = true;
+        Assert.That(E.LiveCount(s), Is.EqualTo(s.WorldEnemies.Count));
+    }
+
+    /// <summary>R617 无本地敌人时完成探索/清理：接敌率0，不凭空造敌。</summary>
+    [Test]
+    public void R617_NoLocalEnemies_NoEncounter()
+    {
+        var s = New();
+        E.DebugTeleport(s, "hardware");
+        s.GameMinute = At(2, 9, 0);
+        FreezeWorld(s);
+        Assert.That(E.LocalCount(s, "hardware"), Is.EqualTo(0));
+        Assert.That(E.EncounterChance(s, "hardware", ActionType.Explore), Is.EqualTo(0));
+        var before = E.LiveCount(s);
+        Start(s, ActionRequest.Explore());
+        s.Main!.EncounterRoll = 0;   // 即使抽到最小值
+        Run(s);
+        Assert.That(s.Encounter, Is.Null, "不凭空造敌");
+        Assert.That(E.LiveCount(s), Is.EqualTo(before));
+    }
+
+    /// <summary>R618 低遭遇与绕行保护：概率=基础×本地敌对数/上限；第1日与营地为0；绕行后60分钟内不再随机接敌。</summary>
+    [Test]
+    public void R618_DensityRisk_BypassGrace()
+    {
+        var s = New();
+        E.DebugTeleport(s, "village");
+        Assert.That(E.EncounterChance(s, "village", ActionType.Explore), Is.EqualTo(0), "第1日不随机接敌");
+        s.GameMinute = At(2, 9, 0);
+        FreezeWorld(s);
+        Assert.That(E.EncounterChance(s, "village", ActionType.Explore), Is.EqualTo(0.02 * 2 / 4).Within(1e-12), "探索2%×2/4");
+        Assert.That(E.EncounterChance(s, "village", ActionType.Clear), Is.EqualTo(0.01 * 2 / 4).Within(1e-12), "清理1%×2/4");
+        Assert.That(E.EncounterChance(s, "camp", ActionType.Clear), Is.EqualTo(0), "营地0");
+
+        // 强制命中：先提交探索结果，再出现敌踪（2只同地游荡尸，按最早出现）
+        Start(s, ActionRequest.Explore());
+        ForceLoot(s, "cloth");
+        s.Main!.EncounterRoll = 0;
+        Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
+        Assert.That(s.Locations["village"].Progress, Is.EqualTo(25), "原探索已提交");
+        Assert.That(Count(s, "cloth", "village"), Is.EqualTo(1), "随机物资已提交、不回滚");
+        Assert.That(s.Encounter, Is.Not.Null);
+        Assert.That(s.Encounter!.EnemyIds, Is.EqualTo(s.WorldEnemies.Where(w => w.LocationId == "village").OrderBy(w => w.Id).Select(w => w.Id)));
+        Assert.That(E.IsBusy(s), Is.True);
+        Assert.That(E.CanStart(s, ActionRequest.Explore()), Does.Contain("接敌或绕行"));
+        Assert.That(E.DoInstant(s, InstantRequest.Pickup(First(s, "cloth", "village").InstanceId, 1)).Ok, Is.False, "敌踪待选时锁定实体操作");
+
+        // 绕行：10分钟按 travel 消耗，敌人仍在；之后60分钟保护
+        var e0 = s.Stats.Energy;
+        Start(s, ActionRequest.Bypass());
+        Assert.That(s.Encounter, Is.Null);
+        Run(s);
+        Assert.That(s.GameMinute, Is.EqualTo(At(2, 9, 40)));
+        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(1.6 * 10 / 60).Within(1e-9), "按 travel 消耗");
+        Assert.That(E.LocalCount(s, "village"), Is.EqualTo(2), "绕行不杀死世界敌人");
+        Assert.That(E.EncounterChance(s, "village", ActionType.Explore), Is.EqualTo(0), "保护期内");
+        Start(s, ActionRequest.Explore());
+        s.Main!.EncounterRoll = 0;
+        Run(s);
+        Assert.That(s.Encounter, Is.Null, "60分钟保护期不重复随机接敌");
+        Idle(s, s.EncounterGraceUntil);
+        Assert.That(E.EncounterChance(s, "village", ActionType.Explore), Is.GreaterThan(0));
+        // 预览不触发接敌、不推进随机
+        var json = SaveSerializer.Serialize(s);
+        E.Preview(s, ActionRequest.Explore());
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(json));
+    }
+
+    /// <summary>R619 刷新受阻/长时间离线：无欠账爆刷，离线（不推进）无新敌。</summary>
+    [Test]
+    public void R619_NoSpawnDebt_NoOffline()
+    {
+        var s = New(3);
+        var json = SaveSerializer.Serialize(s);
+        // “离线”即不推进：读档后世界敌人不变
+        var t = SaveSerializer.Deserialize(json);
+        Assert.That(t.WorldEnemies.Count, Is.EqualTo(s.WorldEnemies.Count));
+        // 全局满12时刷新受阻；腾出空位后只按之后的检查点缓慢补，不一次补齐
+        while (E.LiveCount(s) < 12)
+            foreach (var loc in Cfg.WorldEnemies.LocalCaps.Keys.Where(l => l != "camp"))
+                if (E.LiveCount(s) < 12 && E.LocalCount(s, loc) < Cfg.WorldEnemies.CapOf(loc)) E.DebugSpawnEnemy(s, "shambler", loc);
+        Idle(s, At(3, 0, 0));
+        Assert.That(E.LiveCount(s), Is.EqualTo(12), "满员不刷新");
+        s.WorldEnemies.RemoveRange(0, 6);
+        var next = s.SpawnNextCheck;
+        Assert.That(next, Is.GreaterThan(s.GameMinute));
+        Idle(s, next);
+        Assert.That(E.LiveCount(s), Is.LessThanOrEqualTo(7), "腾出空位后一次检查至多新增1只，无欠账");
+    }
+
+    /// <summary>R620 强敌/未实现层级：层级按96/3.5/0.5抽；该层没有合法地点则本次不刷新，不保底、不改用更强或更弱的怪填空。</summary>
+    [Test]
+    public void R620_RarityTiers_NoUpgradeNoFill()
+    {
+        Assert.That(E.RollRarity(0.0), Is.EqualTo("common"));
+        Assert.That(E.RollRarity(0.9599), Is.EqualTo("common"));
+        Assert.That(E.RollRarity(0.9601), Is.EqualTo("rare"));
+        Assert.That(E.RollRarity(0.9949), Is.EqualTo("rare"));
+        Assert.That(E.RollRarity(0.9951), Is.EqualTo("elite"));
+        var s = New();
+        s.CurrentLocation = "camp";
+        var elite = E.SpawnCandidates(s, "elite");
+        Assert.That(elite, Does.Not.Contain("stream").And.Not.Contain("clinic"), "溪流、诊所无强敌池");
+        Assert.That(elite, Does.Not.Contain("camp"));
+        Assert.That(E.SpawnCandidates(s, "common"), Does.Contain("stream").And.Contain("clinic"), "普通层可在溪流、诊所刷新");
+        // 实际刷新：溪流与诊所从不出现强敌（不用强怪填空，也不把空池换成别的层）；强敌只出自强敌池
+        var u = New(2024);
+        u.CurrentLocation = "camp";
+        var spawned = new List<(string loc, string id)>();
+        for (var i = 0; i < 6000; i++)
+        {
+            u.WorldEnemies.Clear();
+            var w = E.DebugSpawnCheck(u);
+            if (w != null) spawned.Add((w.LocationId, w.EnemyId));
+        }
+        Assert.That(spawned.Count / 6000.0, Is.EqualTo(0.25).Within(0.03), "25%尝试新增");
+        foreach (var (loc, id) in spawned)
+        {
+            var tier = Cfg.Enemies.Single(x => x.Id == id).Rarity;
+            Assert.That(Cfg.WorldEnemies.Pools[loc][tier].Select(p => p.EnemyId), Does.Contain(id), $"{loc} 的 {id} 来自该地该层池");
+            if (loc is "stream" or "clinic") Assert.That(tier, Is.Not.EqualTo("elite"));
+            Assert.That(loc, Is.Not.EqualTo("camp"));
+        }
+        // 统计：2万次检查里强敌约占成功刷新的0.5%，没有保底
+        var t = New(12345);
+        var counts = new Dictionary<string, int>();
+        for (var i = 0; i < 20000; i++)
+        {
+            var tier = E.RollRarity(t.Rng.NextDouble());
+            counts[tier] = counts.GetValueOrDefault(tier) + 1;
+        }
+        Assert.That(counts["elite"] / 20000.0, Is.EqualTo(0.005).Within(0.002));
+        Assert.That(counts["rare"] / 20000.0, Is.EqualTo(0.035).Within(0.006));
+    }
+
+    /// <summary>巡游：只走物理相邻边、不进营地、交战敌不动、全局数不变；进入当前地块提示“新的敌踪出现”。</summary>
+    [Test]
+    public void Patrol_PhysicalEdges_NotCamp_EngagedLocked()
+    {
+        var s = New(77);
+        s.SpawnNextCheck = int.MaxValue;
+        var engaged = s.WorldEnemies.First(w => w.LocationId == "village");
+        engaged.Engaged = true;
+        var positions = new List<string>();
+        for (var k = 0; k < 40; k++)
+        {
+            var before = s.WorldEnemies.ToDictionary(w => w.Id, w => w.LocationId);
+            Idle(s, s.PatrolNextCheck);
+            Assert.That(E.LiveCount(s), Is.EqualTo(6), "巡游不改变总数");
+            foreach (var w in s.WorldEnemies)
+            {
+                if (before[w.Id] != w.LocationId)
+                    Assert.That(E.PhysicalNeighbors(before[w.Id]), Does.Contain(w.LocationId), "一次至多走一条物理相邻边");
+                Assert.That(w.LocationId, Is.Not.EqualTo("camp"));
+            }
+            positions.Add(engaged.LocationId);
+        }
+        Assert.That(positions.Distinct().Single(), Is.EqualTo("village"), "交战敌锁住不巡游");
+    }
+
     /// <summary>显示：两位小数向零截断，正且不足0.01写“&lt;0.01”（v0.6 §02）。</summary>
     [Test]
     public void Display_TwoDecimals_TinyPositive()

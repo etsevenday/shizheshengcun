@@ -138,6 +138,8 @@ namespace Survival.Core.Engine
         public DropIntent ResolveDrop(GameState s, DropSource src, DropTarget dst)
         {
             if (s.Progress.Dead) return DropIntent.No("角色已死亡");
+            if (s.Battle != null) return DropIntent.No("战斗中不能整理或投放物品");
+            if (s.Encounter != null) return DropIntent.No("发现敌踪：请先选择接敌或绕行");
             var head = CardHead(s, src);
             if (head == null)
                 return DropIntent.No(src.Kind == DropSourceKind.Card && s.Items.Any(i => i.Owner == src.Owner && i.ItemId == src.ItemId)

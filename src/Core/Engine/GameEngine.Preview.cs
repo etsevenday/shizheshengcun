@@ -47,7 +47,11 @@ namespace Survival.Core.Engine
             }
             if (plan.Type == ActionType.Use) p.StatsAfterImmediate = c.Stats.Clone();
             var a = plan.IsSub ? c.Sub : c.Main;
-            if (a != null) a.HazardHit = false;
+            if (a != null)
+            {
+                a.HazardHit = false;
+                a.EncounterRoll = 1;   // 预览不触发接敌、不推进真实随机
+            }
 
             var alerts = new HashSet<StatId>();
             c.PendingEvents.Clear();
@@ -138,6 +142,8 @@ namespace Survival.Core.Engine
             ActionType.Sleep => "睡眠",
             ActionType.Use => "使用",
             ActionType.Clear => "清理",
+            ActionType.Bypass => "绕行",
+            ActionType.Butcher => "处理尸体",
             _ => "点燃火堆",
         };
 
@@ -173,6 +179,7 @@ namespace Survival.Core.Engine
                         p.Notes.Add("探索推进地块调查，并有机会取得零散物资");
                         p.Notes.Add("完成时按下表抽取1次本地物资，产物留在当前地面，不会自动拾取");
                         p.Notes.Add("探索不扣清理次数");
+                        if (Config.CombatEnabled) p.Notes.Add(EncounterNote(s, s.CurrentLocation, ActionType.Explore));
                         p.LootOdds = LootOdds(s.CurrentLocation);
                     }
                     else p.Notes.Add("该地点不再探索，可清理或搜集已发现资源");
@@ -195,6 +202,7 @@ namespace Survival.Core.Engine
                         : $"次数已满；用掉后每{Clock.Duration(cfg.RefillIntervalMinutes)}恢复1次");
                     p.Notes.Add("不增加探索度，不发现新路线或资源点，不消耗资源点库存");
                     p.Notes.Add("产物留在当前地面，不会自动拾取");
+                    if (Config.CombatEnabled) p.Notes.Add(EncounterNote(s, here, ActionType.Clear));
                     p.ConfirmText = $"开始清理·{Config.Actions.ClearMinutes}分钟";
                     break;
                 }
@@ -256,6 +264,12 @@ namespace Survival.Core.Engine
                 case ActionType.Wait:
                     p.BaseMinutes = r.Minutes;
                     p.ConfirmText = $"等待{Clock.Duration(r.Minutes)}";
+                    break;
+                case ActionType.Bypass:
+                    p.BaseMinutes = Config.Encounters.BypassMinutes;
+                    p.ConfirmText = $"绕行·{Config.Encounters.BypassMinutes}分钟";
+                    p.Notes.Add($"按移动消耗，固定{Clock.Duration(Config.Encounters.BypassMinutes)}；不改变位置，敌人仍留在这里");
+                    p.Notes.Add($"绕行后{Clock.Duration(Config.Encounters.PostExitRandomEncounterGraceMinutes)}内不会再随机遇敌（主动接近仍可）");
                     break;
                 case ActionType.Rest:
                 {
@@ -333,6 +347,7 @@ namespace Survival.Core.Engine
             var id = target.ActionId;
             var sub = target.IsSub;
             target.HazardHit = false;
+            target.EncounterRoll = 1;
             if (!sub && target.Status == ActionStatus.Paused) Resume(c);
             for (var k = 0; k < SimLimit; k++)
             {

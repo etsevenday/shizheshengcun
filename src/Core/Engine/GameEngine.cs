@@ -66,7 +66,8 @@ namespace Survival.Core.Engine
             return cfg.IsIndoor || (cfg.CanBuildShelter && fac.ShelterBuilt);
         }
 
-        public bool IsBusy(GameState s) => s.Main != null || s.Sub != null;
+        /// <summary>角色忙碌：有主/子行动、战斗中或敌踪待选（世界交互、拖拽、即时操作统一拒绝）。</summary>
+        public bool IsBusy(GameState s) => s.Main != null || s.Sub != null || s.Battle != null || s.Encounter != null;
 
         /// <summary>
         /// 当前状态异常（v0.7 第 6.1 节）：腹泻剩余时间、绷带冷却剩余。右栏人物页与左栏 HUD 读同一份数据，不各自维护。
@@ -200,6 +201,7 @@ namespace Survival.Core.Engine
 
             Visit(s, s.CurrentLocation);
             InitSkills(s);
+            InitWorldEnemies(s);
 
             foreach (var kv in c.StartingCarried) CreateItems(s, kv.Key, kv.Value, ItemInstance.Carried);
             foreach (var kv in c.StartingCampGround) CreateItems(s, kv.Key, kv.Value, s.CurrentLocation);
@@ -262,6 +264,16 @@ namespace Survival.Core.Engine
         {
             plan = new Plan { Type = r.Type, TargetId = r.TargetId };
             if (s.Progress.Dead) return "角色已死亡";
+            if (s.Battle != null) return "战斗中：请使用战斗指令";
+            if (s.Encounter != null && r.Type != ActionType.Bypass) return "发现敌踪：请先选择接敌或绕行";
+            if (r.Type == ActionType.Bypass)
+            {
+                if (s.Encounter == null) return "当前没有需要绕行的敌踪";
+                plan.Planned = Config.Encounters.BypassMinutes;
+                plan.Label = "绕行敌踪";
+                plan.TargetId = s.Encounter.LocationId;
+                return null;
+            }
 
             if (s.Main == null)
             {
@@ -636,6 +648,11 @@ namespace Survival.Core.Engine
                 case ActionType.Explore:
                     a.StartProgress = s.Locations[s.CurrentLocation].Progress;
                     PlanLoot(s, a, s.CurrentLocation);
+                    // 随机接敌判定开始时锁定（v0.6 §15），完成时按当时的本地敌对密度比较；读档不重抽
+                    a.EncounterRoll = s.Rng.NextDouble();
+                    break;
+                case ActionType.Bypass:
+                    s.Encounter = null;
                     break;
                 case ActionType.Clear:
                 {
@@ -644,6 +661,7 @@ namespace Survival.Core.Engine
                     s.Locations[s.CurrentLocation].ClearCharges -= 1;
                     a.ChargeSpent = true;
                     PlanLoot(s, a, s.CurrentLocation);
+                    a.EncounterRoll = s.Rng.NextDouble();
                     break;
                 }
                 case ActionType.Gather:

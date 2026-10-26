@@ -24,12 +24,15 @@ namespace Survival.Core.Engine
         {
             if (string.IsNullOrEmpty(id)) return;
             s.RecentRequestIds.Add(id!);
-            if (s.RecentRequestIds.Count > 32) s.RecentRequestIds.RemoveRange(0, s.RecentRequestIds.Count - 32);
+            if (s.RecentRequestIds.Count > 128) s.RecentRequestIds.RemoveRange(0, s.RecentRequestIds.Count - 128);
         }
 
         private ActionResult DoInstantOnce(GameState s, InstantRequest r)
         {
             if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
+            // 战斗与敌踪待选时锁定一切实体操作（v0.5 §16）：装备与弹药走战斗指令
+            if (s.Battle != null) return ActionResult.Fail("战斗中不能整理物品；换武器、装填与用药请用战斗指令");
+            if (s.Encounter != null) return ActionResult.Fail("发现敌踪：请先选择接敌或绕行");
             var here = s.CurrentLocation;
             switch (r.Kind)
             {

@@ -152,7 +152,7 @@ public class AlertDeathSaveTests : TestBase
     public void Save_RejectsIncompatibleVersion()
     {
         var s = New();
-        var json = SaveSerializer.Serialize(s).Replace(GameState.CurrentSchema, "0.1");
+        var json = SaveSerializer.Serialize(s).Replace($"\"SchemaVersion\":\"{GameState.CurrentSchema}\"", "\"SchemaVersion\":\"0.1\"");
         Assert.Throws<SaveVersionException>(() => SaveSerializer.Deserialize(json));
     }
 

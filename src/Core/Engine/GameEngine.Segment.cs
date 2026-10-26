@@ -168,10 +168,11 @@ namespace Survival.Core.Engine
             var status = SegmentStatus.Running;
             if (done)
             {
-                // 5. 提交结果（含末尾环境伤害）
+                // 5. 提交结果（含末尾环境伤害）；探索/清理先提交原产物，再按密度检查随机接敌（v0.6 §15）
                 var ok = Complete(s, a);
                 if (s.Progress.Dead) return new SegmentResult(SegmentStatus.Dead);
                 status = ok ? SegmentStatus.Completed : SegmentStatus.Aborted;
+                if (ok) CheckRandomEncounter(s, a);
             }
 
             // 6. 阈值提醒
@@ -374,6 +375,14 @@ namespace Survival.Core.Engine
                     ClearAction(s, a);
                     Emit(s, GameEventKind.ActionCompleted, $"等待结束（{Clock.Duration(a.PlannedMinutes)}）。");
                     return true;
+                case ActionType.Bypass:
+                {
+                    ClearAction(s, a);
+                    // 绕行不杀死、不清空世界敌人，只暂时避开；之后60分钟内不再随机接敌（主动接敌仍可）
+                    s.EncounterGraceUntil = s.GameMinute + Config.Encounters.PostExitRandomEncounterGraceMinutes;
+                    Emit(s, GameEventKind.ActionCompleted, $"绕行完成，暂时避开了敌踪；{Clock.Duration(Config.Encounters.PostExitRandomEncounterGraceMinutes)}内不会再随机遇敌。");
+                    return true;
+                }
                 case ActionType.Ignite:
                 {
                     ClearAction(s, a);

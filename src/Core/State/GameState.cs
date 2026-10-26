@@ -60,8 +60,26 @@ namespace Survival.Core.State
 
         /// <summary>各区卡片的手工顺序：区为 carried 或地点 ID，值为卡片键（见 GameEngine.CardKey）。不在表中的卡按配置顺序追加尾部。</summary>
         public Dictionary<string, List<string>> Layout { get; set; } = new Dictionary<string, List<string>>();
-        /// <summary>最近处理过的请求号（最多 32 条）：重发同一请求直接返回成功且不改状态。</summary>
+        /// <summary>最近处理过的请求号：重发同一请求直接返回成功且不改状态（v0.6 起战斗指令较多，保留最近 128 条）。</summary>
         public List<string> RecentRequestIds { get; set; } = new List<string>();
+
+        // ───── 世界敌人与接敌（v0.6 §14、§15） ─────
+        /// <summary>持久世界敌人实例（只存活的；死亡即移除，尸体与掉落另行结算）。</summary>
+        public List<WorldEnemy> WorldEnemies { get; set; } = new List<WorldEnemy>();
+        public int NextWorldEnemyId { get; set; } = 1;
+        /// <summary>下次全局刷新检查的绝对分钟（第2日00:00起每120分钟）。</summary>
+        public int SpawnNextCheck { get; set; }
+        /// <summary>下次巡游检查的绝对分钟（每180分钟）。</summary>
+        public int PatrolNextCheck { get; set; }
+        /// <summary>随机接敌保护期截止（绕行/脱战后60分钟）；主动接敌不受限。</summary>
+        public int EncounterGraceUntil { get; set; }
+        /// <summary>探索/清理完成后待玩家选择“接敌/绕行”的敌踪；没有为 null。</summary>
+        public PendingEncounter? Encounter { get; set; }
+        /// <summary>进行中的战斗（v0.5 §17）；没有为 null。</summary>
+        public BattleState? Battle { get; set; }
+        public int NextBattleId { get; set; } = 1;
+        /// <summary>装备的武器（随身实例引用，不复制、不额外计重）；徒手为 null。战外可免费调整，战中换武器耗 1AP。</summary>
+        public int? EquippedWeaponId { get; set; }
 
         [JsonIgnore] public List<GameEvent> PendingEvents { get; set; } = new List<GameEvent>();
 
@@ -84,6 +102,9 @@ namespace Survival.Core.State
             c.Log = new List<LogEntry>(Log);
             c.Layout = Layout.ToDictionary(kv => kv.Key, kv => new List<string>(kv.Value));
             c.RecentRequestIds = new List<string>(RecentRequestIds);
+            c.WorldEnemies = WorldEnemies.Select(x => x.Clone()).ToList();
+            c.Encounter = Encounter?.Clone();
+            c.Battle = Battle?.Clone();
             c.PendingEvents = new List<GameEvent>();
             return c;
         }
@@ -425,7 +446,12 @@ namespace Survival.Core.State
         ActionStarted, ActionCompleted, ActionCancelled, ActionAborted, ActionPaused,
         Discovery, Hazard, Alert, Death, SevenDay, NewDay, FireOut, Info,
         /// <summary>设施自动加工完成（不暂停、不替换角色主行动）。</summary>
-        FacilityDone
+        FacilityDone,
+        /// <summary>探索/清理后发现敌踪，等待接敌或绕行（v0.6 §15）。</summary>
+        Encounter,
+        /// <summary>战斗事件：开始、指令结果、敌方行动、轮末与结束（v0.5 §16）。</summary>
+        Battle,
+        BattleEnd
     }
 
     public sealed class GameEvent
