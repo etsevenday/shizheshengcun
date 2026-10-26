@@ -18,13 +18,62 @@ public sealed class SurvivalBot
     private const string Camp = "camp";
 
     private static readonly HashSet<string> Keep = new() { "pot", "lighter", "hatchet", "stone_knife" };
-    private static readonly HashSet<string> Junk = new() { "scrap", "parts" };
+    private static readonly HashSet<string> Junk = new() { "scrap", "parts", "hide" };
 
-    public SurvivalBot(GameEngine e, GameState s, Route route)
+    /// <summary>战斗策略：false 时遇敌踪一律绕行；true 时接敌，并主动接近出行地点的可见敌人（体力与健康充足时）。</summary>
+    private readonly bool _fight;
+
+    public SurvivalBot(GameEngine e, GameState s, Route route, bool fight = false)
     {
         E = e;
         S = s;
         _route = route;
+        _fight = fight;
+    }
+
+    public int Battles { get; private set; }
+    public int Retreats { get; private set; }
+
+    /// <summary>
+    /// 简单战斗策略：轮到自己时，健康低于上限30%撤退；有出血且有绷带先包扎；体力不够普通攻击就调整呼吸或勉强拳击；
+    /// 否则用当前武器普通攻击第一个可打的目标；都不行就结束行动。只调公开接口。
+    /// </summary>
+    private void FightBattle()
+    {
+        Battles++;
+        for (var guard = 0; guard < 400 && S.Battle != null && !S.Progress.Dead; guard++)
+        {
+            if (!E.AwaitingPlayer(S)) { E.BattleStep(S); continue; }
+            var opts = E.BattleOptions(S);
+            BattleCommandOption? Opt(string id) => opts.FirstOrDefault(o => o.Action == id && o.Available);
+            BattleCommand cmd;
+            if (S.Stats.Health < 0.3 * S.Stats.HealthMax && Opt("retreat") != null) { cmd = BattleCommand.Of("retreat"); Retreats++; }
+            else if (S.Body.BleedTriggers > 0 && Opt("bandage") != null) cmd = BattleCommand.Of("bandage");
+            else if (Opt("basic_attack") is BattleCommandOption atk && atk.Targets.Count > 0) cmd = BattleCommand.Of("basic_attack", atk.Targets[0]);
+            else if (Opt("reload") != null) cmd = BattleCommand.Of("reload");
+            else if (Opt("breathe") != null) cmd = BattleCommand.Of("breathe");
+            else if (Opt("desperate_punch") is BattleCommandOption dp && dp.Targets.Count > 0) cmd = BattleCommand.Of("desperate_punch", dp.Targets[0]);
+            else cmd = BattleCommand.Of("end_turn");
+            if (!E.ExecuteCommand(S, cmd).Ok) E.ExecuteCommand(S, BattleCommand.Of("end_turn"));
+        }
+        Log($"战斗结束 H{S.Stats.Health:0.00}");
+        PickUpUseful();
+    }
+
+    private void MaybeHunt()
+    {
+        if (!_fight || S.Battle != null || S.Main != null) return;
+        if (S.Stats.Health < 0.8 * S.Stats.HealthMax || S.Stats.Energy < 0.5 * S.Stats.EnergyMax) return;
+        var target = E.VisibleEnemiesAt(S, Here).FirstOrDefault(w => E.Enemy(w.EnemyId).Rarity == "common");
+        if (target == null) return;
+        EquipBest();
+        if (E.Approach(S, target.Id).Ok) FightBattle();
+    }
+
+    private void EquipBest()
+    {
+        var best = E.CarriedWeapons(S).OrderByDescending(i => E.Weapon(i.ItemId)!.DamageMax).FirstOrDefault(i => GameEngine.HasWear(i, 1));
+        E.EquipWeapon(S, best?.InstanceId);
     }
 
     private int Tod => Clock.MinuteOfDay(S.GameMinute);
@@ -39,6 +88,7 @@ public sealed class SurvivalBot
         while (S.GameMinute < untilMinute && !S.Progress.Dead && guard++ < 20000)
         {
             var before = S.GameMinute;
+            HandleEncounter();
             Step();
             if (S.GameMinute == before && !S.Progress.Dead) Do(ActionRequest.Wait(30));
         }
@@ -54,8 +104,29 @@ public sealed class SurvivalBot
         if (!res.Ok) return false;
         Log($"{r.Type} {r.TargetId}{(r.Minutes > 0 ? " " + r.Minutes : "")}");
         Drive();
+        HandleEncounter();
         return true;
     }
+
+    /// <summary>v0.6：探索/清理后发现敌踪时，脚本选择绕行10分钟（不打架），之后60分钟保护期。</summary>
+    private void HandleEncounter()
+    {
+        if (S.Encounter == null || S.Progress.Dead) return;
+        if (_fight && S.Stats.Health >= 0.6 * S.Stats.HealthMax)
+        {
+            Encounters++;
+            EquipBest();
+            if (E.Engage(S).Ok) { FightBattle(); return; }
+        }
+        if (E.Start(S, ActionRequest.Bypass()).Ok)
+        {
+            Encounters++;
+            Log("Bypass 敌踪");
+            Drive();
+        }
+    }
+
+    public int Encounters { get; private set; }
 
     private void Drive()
     {
@@ -166,6 +237,7 @@ public sealed class SurvivalBot
         {
             Needs();
             if (!Do(ActionRequest.Travel(step)) || Here != step) return false;
+            MaybeHunt();
         }
         return true;
     }

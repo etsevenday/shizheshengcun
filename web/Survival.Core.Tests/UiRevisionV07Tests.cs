@@ -400,8 +400,39 @@ public class UiRevisionV07Tests : TestBase
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "滚动、查看、切页签只调用只读查询");
     }
 
-    [Test, Ignore("战斗未启用：v0.5/v0.6 人物与战斗参考案未采纳，自用按钮只走非战斗 5 分钟使用路径")]
+    /// <summary>
+    /// U728 战斗中操作自用按钮：走战斗校验与 AP（绷带/抗生素/特效药 2AP），不绕到非战斗 5 分钟流程；食物饮水战斗中禁用。
+    /// 战斗已按用户 2026-10-26 拍板启用，界面卡下按钮改发这条战斗指令（CardActions → PickBattleAction）。
+    /// </summary>
+    [Test]
     public void U728_CombatSelfUseGoesThroughCombatValidation()
     {
+        var s = New(28);
+        E.DebugTeleport(s, "field");
+        s.GameMinute = At(2, 9, 0);
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        s.WorldEnemies.Clear();
+        var stag = E.DebugSpawnEnemy(s, "stag", "field");
+        Assert.That(E.Approach(s, stag.Id).Ok, Is.True);
+        var b = s.Battle!;
+        b.Queue.Remove(0);
+        b.Queue.Insert(0, 0);
+        b.Cursor = 0;
+        E.BattleStep(s);
+        Assert.That(E.AwaitingPlayer(s), Is.True);
+        E.DebugGive(s, "bandage", 1);
+        E.DebugGive(s, "canned_food", 1);
+        SetStats(s, 12, 80, 80, 18, 90, 60);
+        var m0 = s.GameMinute;
+        var r = E.Start(s, ActionRequest.UseItem("bandage"));
+        Assert.That(r.Ok, Is.False, "旧的5分钟自用路径在战斗中拒绝");
+        Assert.That(r.Reason, Does.Contain("战斗"));
+        Assert.That(E.Start(s, ActionRequest.UseItem("canned_food")).Ok, Is.False, "战斗中不能进食");
+        var bandage = First(s, "bandage", ItemInstance.Carried);
+        Assert.That(E.ExecuteCommand(s, BattleCommand.Of("bandage", null, bandage.InstanceId)).Ok, Is.True);
+        Assert.That(s.Stats.Health, Is.GreaterThan(12), "效果在确认时应用");
+        Assert.That(s.GameMinute, Is.EqualTo(m0), "不另跳5分钟");
+        Assert.That(E.AwaitingPlayer(s), Is.False, "用掉2AP");
     }
 }
