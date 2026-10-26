@@ -15,6 +15,19 @@
   --danger: #d38e7b;
   --top: #172019;
   --foot: #141d17;
+  /* 布局尺寸（基础UI修订 v0.7 第 2 节）：矮屏只在文件末尾那一处 @media 里改这些变量 */
+  --top-h: 76px;
+  --foot-h: 48px;
+  --body-pad: 14px;
+  --gap: 12px;
+  --map-row-h: 220px;      /* 第一行：建议 180—240 */
+  --fac-card-h: 216px;     /* 第二行普通设施/资源卡高；第二行起始高约 220—300，按内容 */
+  --shelf-h: 214px;        /* 地面、随身栏 */
+  --card-w: 158px;         /* 统一卡框默认宽 */
+  --neighbor-w: 150px;
+  --fac-w: 136px;
+  --res-w: 170px;
+  --item-w: 140px;
 }
 
 * { box-sizing: border-box; }
@@ -65,7 +78,7 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .linkish { background: none; border: 0; color: var(--accent); padding: 0; font-size: 14px; }
 
 /* ───── 主框架 ───── */
-.game { display: grid; grid-template-rows: 76px minmax(0, 1fr) 48px; height: 100vh; min-height: 720px; }
+.game { display: grid; grid-template-rows: var(--top-h) minmax(0, 1fr) var(--foot-h); height: 100vh; min-height: 720px; }
 .top { border-bottom: 1px solid var(--line); padding: 0 22px; display: flex; align-items: center; justify-content: space-between; background: var(--top); }
 .brand { display: flex; gap: 18px; align-items: center; }
 .brand b { font-size: 26px; letter-spacing: 4px; }
@@ -75,7 +88,7 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .nav button.on { border-color: var(--accent); color: var(--accent); }
 .nav button.feedback-btn { border-color: #8a7748; color: var(--accent); }
 
-.body { position: relative; min-height: 0; padding: 14px; display: grid; grid-template-columns: 220px minmax(0, 1fr) 300px; gap: 14px; }
+.body { position: relative; min-height: 0; padding: var(--body-pad); display: grid; grid-template-columns: 220px minmax(0, 1fr) 300px; gap: var(--body-pad); }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
 
 /* ───── 左侧 HUD ───── */
@@ -111,21 +124,30 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .guide li.done::before { content: "✓ "; color: var(--good); }
 
 /* ───── 中央桌面 ───── */
-.center { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 12px; position: relative; }
+/* 中部：.center 不滚动（暂停层盖在它上面），里面的 .center-scroll 整体纵滚；左右栏不随它滚动（v0.7 第 2.2 节） */
+.center { min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; }
+.center-scroll { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--gap); overflow-x: hidden; overflow-y: auto; padding-right: 4px; scrollbar-color: #56604f transparent; }
+.center-scroll::-webkit-scrollbar { width: 10px; }
+.center-scroll::-webkit-scrollbar-thumb { background: #56604f; border-radius: 5px; }
+.center-scroll > * { flex: 0 0 auto; }
+/* 二级面板打开时不纵滚：面板盖住地块两行与地面（center-top 填满），随身栏固定在下方 */
+.center-scroll.locked { overflow-y: hidden; }
+.center-scroll.locked > .center-top { flex: 1 1 0; min-height: 0; overflow: hidden; }
 .section { padding: 12px 14px; min-height: 0; display: flex; flex-direction: column; }
 .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 12px; }
 .section-head h2 { font-size: 17px; font-weight: 500; margin: 0; white-space: nowrap; }
-.section-head span { font-size: 13px; color: var(--muted); }
+.section-head span { font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .row-scroll { display: flex; gap: 9px; overflow-x: auto; overflow-y: hidden; padding-bottom: 6px; min-height: 0; flex: 1; align-items: stretch; }
 .row-scroll::-webkit-scrollbar { height: 8px; }
 .row-scroll::-webkit-scrollbar-thumb { background: #3d473e; border-radius: 4px; }
 
-.loc-strip { flex: 0 0 auto; }
-/* 中部上方：地点行与当前地面；二级面板只覆盖这一块（留言 8f9a7c9b 第 2 点） */
-.center-top { position: relative; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
-.center > .carried { flex: 0 0 214px; }
+/* 中部上方：地块两行与当前地面；二级面板只覆盖这一块（留言 8f9a7c9b 第 2 点） */
+.center-top { position: relative; display: flex; flex-direction: column; gap: var(--gap); }
+.center-top > * { flex: 0 0 auto; }
+.center-scroll .section.ground, .center-scroll .section.carried { height: var(--shelf-h); }
 /* 手工制作层打开时：地面与随身并排放在下方，两区都能作为材料槽的拖拽来源 */
-.center > .shelves-split { flex: 0 0 214px; display: flex; gap: 12px; min-height: 0; }
+.center-scroll > .shelves-split { height: var(--shelf-h); display: flex; gap: var(--gap); min-height: 0; }
+.shelves-split > .section { height: auto !important; }
 .shelves-split > .section { flex: 1 1 0; min-width: 0; }
 .shelves-split .section-head span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sub-panel { position: absolute; inset: 0; z-index: 30; background: var(--surface); border: 1px solid var(--accent); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 6px 24px #0007; }
@@ -144,7 +166,7 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .rest-scroll { overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
 .choice-title { margin: 0 0 6px; font-size: 16px; font-weight: 500; }
 .sub-panel .log-list { flex: 1; min-height: 0; padding: 8px 14px 14px; }
-.ground, .carried { flex: 1 1 0; }
+
 
 /* 卡牌通用 */
 .card { position: relative; flex: 0 0 auto; background: var(--paper); color: var(--ink); border: 2px solid transparent; border-radius: 5px; display: flex; flex-direction: column; overflow: hidden; text-align: left; padding: 0; }
@@ -176,7 +198,6 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .facility { width: 150px; background: #3a3426; color: var(--text); border-color: #6b5c3f; }
 .facility .ctitle { border-color: #ffffff22; }
 
-.item { width: 128px; }
 .item .ctitle { font-size: 15px; padding: 7px 8px 4px; border: 0; }
 .item .qty { font-size: 12px; color: #253124; background: #efe9d5; padding: 1px 5px; border-radius: 3px; font-weight: 500; }
 .item .art svg { height: 58px; width: 58px; }
@@ -186,14 +207,6 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .item.reserved::after { content: "预留"; position: absolute; left: 6px; bottom: 26px; font-size: 11px; background: #3b4a3b; color: #e5e8da; padding: 1px 5px; border-radius: 2px; }
 .item.broken .art { opacity: .5; }
 
-/* ───── 地块卡片桌面：场景底图只作弱化背景（卡片统一与设施烹饪 v0.4 · 01 案第 1 节） ───── */
-.hero { position: relative; overflow: hidden; flex: 1.35 1 0; min-height: 228px; background: #1d372b; padding: 0; }
-.center-top > .ground { flex: 1 1 0; }
-.scene-art, .scene-over, .scene-tint, .hero-shade { position: absolute; inset: 0; width: 100%; height: 100%; }
-.scene-art { background-size: cover; background-position: center center; background-repeat: no-repeat; transition: filter 1.2s linear; }
-.scene-tint { mix-blend-mode: multiply; transition: background 1.2s linear; pointer-events: none; }
-.scene-over { pointer-events: none; }
-.hero-shade { background: linear-gradient(180deg, #0b1610b0 0%, #0b161000 32%, #0b161000 52%, #0b1610d9 100%); pointer-events: none; }
 .flame { animation: flicker .42s ease-in-out infinite alternate; transform-origin: 0 14px; }
 @keyframes flicker { from { transform: scale(1, 1); opacity: .95; } to { transform: scale(.9, 1.12); opacity: 1; } }
 
@@ -347,49 +360,6 @@ div.card { cursor: pointer; }
 #blazor-error-ui .dismiss { cursor: pointer; position: absolute; right: .75rem; top: .5rem; }
 #blazor-error-ui a { color: #ffd; }
 
-@media (max-height: 800px) {
-  .game { grid-template-rows: 60px minmax(0, 1fr) 40px; }
-  .brand b { font-size: 22px; }
-  .body { padding: 10px; gap: 10px; }
-  .center { gap: 8px; }
-  .section { padding: 8px 12px; }
-  .section-head { margin-bottom: 5px; }
-  .card .ctitle { padding: 5px 8px 4px; font-size: 15px; }
-  .card .art { min-height: 34px; }
-  .card .art svg { height: 44px; width: 44px; }
-  .card .cinfo { padding: 4px 8px 5px; line-height: 1.45; }
-  .card .stock { font-size: 16px; }
-  .place .art svg { height: 52px; }
-  .item { width: 116px; }
-  .item .art svg { height: 34px; width: 34px; }
-  .item .ctitle { padding: 5px 7px 2px; font-size: 14px; }
-  .item .cinfo { padding: 2px 7px 5px; }
-  .time { font-size: 28px; }
-  .clock { padding: 10px 14px; }
-  .vitals { padding: 8px 12px; }
-  .vital { padding: 2px 0 5px; }
-  .vital-label { font-size: 15px; margin-bottom: 3px; }
-  .weight { padding: 8px 12px; }
-  .weight strong { font-size: 20px; }
-  .detail { padding: 12px 12px 10px; }
-  .op-head h2 { font-size: 20px; }
-  .fact strong { font-size: 17px; }
-  .detail-icon svg { width: 56px; height: 56px; }
-  .center-top { gap: 8px; }
-  .hero { min-height: 200px; }
-  /* 随身区要放得下带水量条的锅卡（标题+图+水量条约 117px，再加区头与内边距） */
-  .center > .carried, .center > .shelves-split { flex-basis: 170px; }
-  .center > .shelves-split { gap: 8px; }
-  .sub-head { padding: 7px 12px; }
-  .sub-head h2 { font-size: 18px; }
-  .craft-grid { grid-template-columns: 180px minmax(0, 1fr); }
-  .recipe svg { width: 30px; height: 30px; }
-  .recipe { padding: 5px 8px; }
-  .choice { padding: 8px 10px; }
-  .choice b { font-size: 17px; }
-  .card-cta { margin: 0 5px 5px; padding: 3px 5px; min-height: 24px; font-size: 12px; }
-  .card-arrow { width: 26px; height: 22px; }
-}
 
 /* ───────────── 卡片拖拽（交互与地图扩展 v0.3 · 01 案第 3 节） ───────────── */
 [data-drag] { user-select: none; -webkit-user-select: none; touch-action: none; }
@@ -449,16 +419,44 @@ body.dragging .tbar { visibility: hidden !important; }
 
 /* ───────────── 地块卡片桌面（卡片统一与设施烹饪 v0.4 · 01 案第 1–3 节） ─────────────
    正文≥16px、辅助≥14px、点击热区≥40px；视口不足时本区内部横向滚动，不遮 HUD 与地面栏。 */
-.hero.desk { padding: 10px 10px 4px; }
-.hero.desk .scene-art { opacity: .42; }
-.hero.desk .hero-shade { background: linear-gradient(180deg, #0b161080 0%, #0b161066 100%); }
-.desk-row { position: relative; z-index: 2; display: flex; gap: 10px; height: 100%; overflow-x: auto; overflow-y: hidden; align-items: stretch; padding-bottom: 6px; }
-.desk-row::-webkit-scrollbar { height: 8px; }
-.desk-row::-webkit-scrollbar-thumb { background: #3d473e; border-radius: 4px; }
-.desk-hint { flex: 0 0 200px; align-self: center; color: #e1e8d8; font-size: 14px; line-height: 1.6; background: #0e211ab8; padding: 10px 12px; border-radius: 6px; }
+/* 第一行：当前地图大图卡固定在最左，相邻地图子栏独立横滚 */
+.map-row { height: var(--map-row-h); display: flex; gap: 10px; padding: 8px; min-width: 0; }
+.map-adjacent { flex: 1 1 0; min-width: 0; display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; align-items: stretch; padding-bottom: 4px; }
+.map-adjacent > .ocard { width: var(--neighbor-w); }
+/* 第二行：设施 → “采集资源”分组 → 资源卡，独立横滚，卡片顶端对齐、按内容高度 */
+.facility-row { position: relative; padding: 6px 8px 4px; min-width: 0; min-height: calc(var(--fac-card-h) + 38px); }
+.fac-scroll { display: flex; gap: 22px; overflow-x: auto; overflow-y: hidden; align-items: flex-start; padding-bottom: 6px; }
+.desk-group { flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; }
+.desk-group + .desk-group { border-left: 1px solid var(--line); padding-left: 18px; margin-left: -4px; }
+.dg-title { font-size: 14px; color: var(--muted); letter-spacing: 1px; line-height: 20px; }
+.dg-cards { display: flex; gap: 10px; align-items: flex-start; }
+.dg-cards > .ocard { height: var(--fac-card-h); }
+.map-adjacent::-webkit-scrollbar, .fac-scroll::-webkit-scrollbar, .row-scroll::-webkit-scrollbar { height: 8px; }
+.map-adjacent::-webkit-scrollbar-thumb, .fac-scroll::-webkit-scrollbar-thumb { background: #4a564a; border-radius: 4px; }
+.desk-hint { flex: 0 0 220px; align-self: center; color: #e1e8d8; font-size: 14px; line-height: 1.6; background: #0e211ab8; padding: 10px 12px; border-radius: 6px; }
+
+/* 当前地图大图卡：场景图铺满卡面（约三分之二以上可见），文字与按钮放在图片边缘的局部衬底上 */
+.map-card { position: relative; flex: 0 0 60%; min-width: 380px; max-width: 720px; border: 2px solid #56604f; border-radius: 6px; overflow: hidden; cursor: pointer; background: #1d372b; box-shadow: 0 2px 8px #0005; }
+.map-card:hover { border-color: #8a9a7e; }
+.map-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px #111911, 0 2px 8px #0005; }
+.mc-art, .mc-tint, .mc-over { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mc-art { background-size: cover; background-position: center 60%; background-repeat: no-repeat; transition: filter 1.2s linear; }
+.mc-tint { mix-blend-mode: multiply; pointer-events: none; transition: background 1.2s linear; }
+.mc-over { pointer-events: none; }
+.mc-top { position: absolute; left: 8px; right: 8px; top: 8px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; pointer-events: none; }
+.mc-chip { display: inline-flex; align-items: baseline; gap: 8px; padding: 3px 9px; background: #0e1a14c9; color: var(--text); border-radius: 4px; font-size: 14px; line-height: 1.5; white-space: nowrap; }
+.mc-chip.name { min-width: 0; overflow: hidden; }
+.mc-chip.name b { font-size: 17px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.mc-chip.name em { font-style: normal; color: var(--accent); font-size: 14px; }
+.mc-bottom { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: flex-end; gap: 8px; padding: 6px 8px; background: linear-gradient(180deg, #0b161000 0%, #0b1610c8 38%); }
+.mc-progress { flex: 0 0 104px; display: flex; flex-direction: column; gap: 4px; color: var(--text); font-size: 14px; padding-bottom: 4px; }
+.mc-progress .loc-progress { background: #ffffff33; }
+.mc-progress .loc-progress i { background: var(--accent); }
+.map-card .loc-actions { flex: 1 1 auto; min-width: 0; flex-direction: row; margin-top: 0; }
+.map-card .loc-btn { flex: 1 1 0; min-width: 0; }
 
 /* 统一卡框：同一圆角、描边、标题与图片区 */
-.ocard { position: relative; flex: 0 0 auto; width: 158px; min-height: 0; background: var(--paper); color: var(--ink); border: 2px solid transparent; border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px #0005; }
+.ocard { position: relative; flex: 0 0 auto; width: var(--card-w); min-height: 0; background: var(--paper); color: var(--ink); border: 2px solid transparent; border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px #0005; }
 .ocard:hover { border-color: #e9d9ad; }
 .ocard.selected { border-color: var(--accent); box-shadow: 0 0 0 2px #111911, 0 2px 8px #0005; }
 .ocard.fresh { animation: fresh 1.6s ease-out 2; }
@@ -488,11 +486,6 @@ body.dragging .tbar { visibility: hidden !important; }
 
 /* 地图卡：左图右文（当前）或上图下文（相邻）；地点主图取场景图裁切 */
 .loc-art { width: 100%; height: 100%; min-height: 56px; background-size: cover; background-position: center 60%; }
-.ocard.wide { width: 300px; }
-.ocard.wide .oc-main { flex-direction: row; }
-.ocard.wide .oc-art { flex: 0 0 40%; min-height: 0; }
-.ocard.wide .oc-body { flex: 1 1 auto; min-width: 0; justify-content: flex-start; padding: 6px 8px; }
-.loc-card.neighbor { width: 150px; }
 .loc-progress { height: 6px; background: #8a846655; border-radius: 3px; overflow: hidden; }
 .loc-progress i { display: block; height: 100%; background: #7a6a3a; }
 .loc-actions { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
@@ -503,8 +496,8 @@ body.dragging .tbar { visibility: hidden !important; }
 .loc-btn:disabled { background: #b9b096; color: #4a4636; cursor: not-allowed; }
 
 /* 设施卡、资源卡 */
-.fac-card { width: 136px; }
-.res-card { width: 170px; }
+.fac-card { width: var(--fac-w); }
+.res-card { width: var(--res-w); }
 
 /* 火堆：双宽卡，左燃料右两个加工位 */
 .fire-card { width: 360px; }
@@ -553,24 +546,6 @@ body.dragging .tbar { visibility: hidden !important; }
 .pot-detail .pot-status { margin: 0; color: var(--muted); }
 .facility-changes { display: flex; flex-direction: column; gap: 3px; }
 
-@media (max-height: 800px) {
-  .hero.desk { padding: 8px 8px 2px; }
-  .desk-row { gap: 8px; }
-  .oc-head { padding: 4px 7px 3px; }
-  .oc-art { min-height: 40px; }
-  .oc-art svg { width: 48px; height: 48px; }
-  .oc-body { padding: 3px 7px 4px; gap: 3px; }
-  .oc-foot { padding: 0 5px 5px; }
-  .ocard.wide { width: 290px; }
-  .loc-btn { min-height: 40px; padding: 3px 8px; }
-  .loc-btn strong { font-size: 16px; }
-  .fire-card { width: 350px; }
-  .fire-main { padding: 3px 5px 5px; }
-  .fire-art svg { width: 46px; height: 46px; }
-  .ct-art svg { width: 28px; height: 28px; }
-  .slot-empty svg { width: 26px; height: 26px; }
-  .pot-food { min-height: 24px; }
-}
 
 /* 设施次级菜单：只覆盖地块区（01 案第 4 节），不用 .overlay 以免禁用拖拽 */
 .fac-menu { position: absolute; inset: 0; z-index: 6; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; background: #10201af2; border: 1px solid var(--accent); border-radius: 6px; }
@@ -584,12 +559,6 @@ body.dragging .tbar { visibility: hidden !important; }
 .pot-card .pot-fill { padding: 2px 6px 3px; margin-bottom: 3px; }
 .pot-card .pot-food { margin-bottom: 5px; }
 .pot-card .card-arrow { bottom: auto; top: 32px; }
-@media (max-height: 800px) {
-  .pot-card .art { flex: 0 0 26px; }
-  .pot-card .art svg { width: 24px; height: 24px; }
-  .pot-card .pot-fill-head { line-height: 1.2; }
-  .pot-card .card-arrow { top: 29px; }
-}
 
 /* ───────────── 图标+名称+数量/状态的物品行（统一卡片案第 6 节） ───────────── */
 .ir-icon { flex: 0 0 auto; display: inline-flex; width: 32px; height: 32px; align-items: center; justify-content: center; background: #efe9d5; border-radius: 5px; }
@@ -674,14 +643,6 @@ body.dragging .tbar { visibility: hidden !important; }
 .fm-slot small { color: #c9cfbf; }
 .fm-notice { position: absolute; right: 12px; bottom: 10px; max-width: 420px; z-index: 2; }
 .ignite-picker .ignite-choices { gap: 6px; }
-@media (max-height: 800px) {
-  .fac-menu { padding: 6px 8px; gap: 5px; }
-  .fm-card { padding: 4px 6px; gap: 3px; }
-  .fm-fire-art svg { width: 40px; height: 40px; }
-  .fm-btn { min-height: 40px; }
-  .ir-icon { width: 28px; height: 28px; }
-  .ir-icon svg { width: 24px; height: 24px; }
-}
 .fm-card.pot.in-fire { flex-basis: 320px; }
 .fm-card.pot.in-fire .fm-btns > button { flex: 1 1 0; padding: 4px 4px; }
 .fm-card > *, .fm-col > * { flex-shrink: 0; }
@@ -704,10 +665,6 @@ body.dragging .tbar { visibility: hidden !important; }
 .pot-fill-head, .pot-food > span:first-child, .pot-food b { white-space: nowrap; }
 .pot-fill-head b { overflow: hidden; text-overflow: ellipsis; }
 .ct-arrow::after { inset: -7px -5px -7px -7px; }
-@media (max-height: 800px) {
-  .fire-card { width: 460px; }
-  .ct-art svg { width: 28px; height: 28px; }
-}
 
 /* B2：设施菜单三栏网格，不横向滚动；整层一条可见的纵向滚动条，卡片按自然高度排列 */
 .fac-menu-body.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; overflow-x: hidden; overflow-y: auto; align-items: start; padding-right: 4px; scrollbar-width: auto; scrollbar-color: #6c7d68 #0b1610; }
@@ -734,29 +691,19 @@ body.dragging .tbar { visibility: hidden !important; }
 .res-btn { width: 100%; }
 
 /* B12：地面/随身物品卡辅助文字 ≥14px，卡角箭头点击热区 ≥40×40，锅卡两行不裁切 */
-.item { width: 140px; }
+.item { width: var(--item-w); }
 .item .qty { font-size: 14px; }
 .item .cinfo, .card .cinfo { font-size: 14px; line-height: 1.35; padding-right: 34px; }
 .pot-fill { font-size: 14px; }
 .pot-ml, .pot-food, .pot-status { font-size: 14px; }
 .item.reserved::after { font-size: 14px; }
 .card-arrow::after { content: ""; position: absolute; inset: -13px -5px -5px -9px; }
-@media (max-height: 800px) {
-  .item { width: 140px; }
-  .item .cinfo { padding: 2px 34px 5px 7px; }
-  .center > .carried, .center > .shelves-split { flex-basis: 186px; }
-}
 /* 1280×720：缩略卡在 160px 高内放下标题、两个 40px 热区与三行状态 */
 .cthumb { gap: 2px; }
 .ct-status { line-height: 1.2; height: 51px; }
 .cthumb { grid-template-rows: 26px auto auto 51px; }
 .cthumb.food { grid-template-rows: 26px minmax(0, 1fr) 51px 5px; }
 .ct-head { height: 26px; }
-@media (max-height: 800px) {
-  .desk-row { padding-bottom: 3px; }
-  .fire-main { padding: 3px 5px 3px; }
-  .fire-card .oc-head { padding: 3px 7px 2px; }
-}
 .cthumb { gap: 1px; padding: 2px 5px; grid-template-rows: 22px auto auto 51px; }
 .cthumb.food { grid-template-rows: 22px minmax(0, 1fr) 51px 5px; }
 .ct-head { height: 22px; }
@@ -766,7 +713,73 @@ body.dragging .tbar { visibility: hidden !important; }
 .fire-side { flex-basis: 110px; min-width: 110px; }
 .fuel-line { white-space: nowrap; gap: 4px; }
 .fire-side .oc-btn { white-space: nowrap; padding: 4px 4px; }
-@media (max-height: 800px) { .fire-card { width: 476px; } }
 .grid3 .fm-btns > button, .grid3 .fm-card.pot.in-fire .fm-btns > button { flex: 1 1 92px; white-space: nowrap; padding: 4px 6px; }
 .card-arrow { font-size: 14px; }
 .card-arrow::after { inset: -15px -5px -5px -11px; }
+
+/* ───────────── 矮屏（1280×720 等，屏高 ≤800px）：唯一一处覆盖段（v0.7 第 2 节：两行各取策划区间下限，超出靠中部纵滚） ───────────── */
+@media (max-height: 800px) {
+  :root {
+    --top-h: 60px;
+    --foot-h: 40px;
+    --body-pad: 10px;
+    --gap: 8px;
+    --map-row-h: 180px;
+    --fac-card-h: 182px;
+    --shelf-h: 186px;
+  }
+  .brand b { font-size: 22px; }
+  .section { padding: 8px 12px; }
+  .section-head { margin-bottom: 5px; }
+  .time { font-size: 28px; }
+  .clock { padding: 10px 14px; }
+  .vitals { padding: 8px 12px; }
+  .vital { padding: 2px 0 5px; }
+  .vital-label { font-size: 15px; margin-bottom: 3px; }
+  .weight { padding: 8px 12px; }
+  .weight strong { font-size: 20px; }
+  .detail { padding: 12px 12px 10px; }
+  .op-head h2 { font-size: 20px; }
+  .fact strong { font-size: 17px; }
+  .detail-icon svg { width: 56px; height: 56px; }
+  .sub-head { padding: 7px 12px; }
+  .sub-head h2 { font-size: 18px; }
+  .craft-grid { grid-template-columns: 180px minmax(0, 1fr); }
+  .recipe svg { width: 30px; height: 30px; }
+  .recipe { padding: 5px 8px; }
+  .choice { padding: 8px 10px; }
+  .choice b { font-size: 17px; }
+  .card-cta { margin: 0 5px 5px; padding: 3px 5px; min-height: 24px; font-size: 12px; }
+  /* 地面/随身物品卡 */
+  .card .ctitle { padding: 5px 8px 4px; font-size: 15px; }
+  .card .art { min-height: 34px; }
+  .card .stock { font-size: 16px; }
+  .item .art svg { height: 34px; width: 34px; }
+  .item .ctitle { padding: 5px 7px 2px; font-size: 14px; }
+  .item .cinfo { padding: 2px 34px 5px 7px; }
+  .card-arrow { width: 26px; height: 22px; }
+  .pot-card .art { flex: 0 0 26px; min-height: 0; }
+  .pot-card .art svg { width: 24px; height: 24px; }
+  .pot-card .pot-fill-head { line-height: 1.2; }
+  .pot-card .card-arrow { top: 29px; }
+  .pot-food { min-height: 24px; }
+  /* 统一卡框 */
+  .oc-head { padding: 4px 7px 3px; }
+  .oc-art { min-height: 40px; }
+  .oc-art svg { width: 48px; height: 48px; }
+  .oc-body { padding: 3px 7px 4px; gap: 3px; }
+  .oc-foot { padding: 0 5px 5px; }
+  .loc-btn { min-height: 40px; padding: 3px 8px; }
+  .ir-icon { width: 28px; height: 28px; }
+  .ir-icon svg { width: 24px; height: 24px; }
+  /* 火堆卡与设施菜单（M28 改为内嵌后整理） */
+  .fire-main { padding: 3px 5px 3px; }
+  .fire-card .oc-head { padding: 3px 7px 2px; }
+  .fire-art svg { width: 46px; height: 46px; }
+  .ct-art svg { width: 28px; height: 28px; }
+  .slot-empty svg { width: 26px; height: 26px; }
+  .fac-menu { padding: 6px 8px; gap: 5px; }
+  .fm-card { padding: 4px 6px; gap: 3px; }
+  .fm-fire-art svg { width: 40px; height: 40px; }
+  .fm-btn { min-height: 40px; }
+}

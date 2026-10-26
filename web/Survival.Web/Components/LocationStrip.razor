@@ -1,119 +1,110 @@
 @inherits GameComponent
 @inject IJSRuntime JS
 
-@* 地块卡片桌面（卡片统一与设施烹饪 v0.4 · 01 案第 1 节）：当前地图卡 → 已发现相邻地图卡 → 固定设施卡 → 已发现资源卡。
-   场景底图只作弱化背景（昼夜调色与火光照旧），每个对象都有自己的图卡；视口不足时本区内部横向滚动，不遮 HUD 与地面栏。
-   点击火堆或其内容物入口，在本区打开设施次级菜单（FacilityMenu）。 *@
+@* 地块栏两行（基础UI布局与操作修订案 v0.7 第 2 节）：
+   第一行 .map-row：当前地图大图卡固定在最左（不在横滚容器里，浏览相邻地图时探索/清理不滚出视野），相邻地图子栏 .map-adjacent 独立横滚；
+   第二行 .facility-row：设施（火堆 → 遮蔽棚 → 床垫）→ 分组标题“采集资源” → 已发现资源卡，独立横滚、顶端对齐，按内容高度排。
+   两行不混排；地块区整块的场景底图与暗层已移除，场景图只作当前地图卡的大图。 *@
 @{
     var s = G.S;
     var e = G.E;
     var here = s.CurrentLocation;
     var lc = e.Location(here);
-    var fac = s.Locations[here].Facility;
     var sel = G.Selected;
     var resources = e.Config.Resources.Where(r => r.LocationId == here && s.Resources[r.NodeId].Discovered).ToList();
     var entrances = e.AdjacentUnlocked(s).Select(x => x.Other(here)).ToList();
     var busy = e.IsBusy(s) || G.Running;
-    var light = Ui.Light(Clock.MinuteOfDay(s.GameMinute), lc.IsIndoor);
-    var scene = lc.Scene ?? $"scenes/{lc.Id}.svg";
-    var fireOn = lc.HasFire && fac.FireLit && lc.SceneFireX.HasValue && lc.SceneFireY.HasValue;
-    string F(double v) => v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+    var hasFacilities = lc.HasFire || lc.CanBuildShelter;
 }
 
-<div class="panel hero desk @(lc.IsIndoor ? "indoor" : "")" data-phase="@light.Phase" aria-label="@($"{lc.Name} · 地块卡片")">
-    <div class="scene-art" style="background-image:url('@scene');filter:brightness(@F(light.Brightness)) saturate(@F(light.Saturate))"></div>
-    <div class="scene-tint" style="background:@light.Tint"></div>
-    <svg class="scene-over" viewBox="0 0 1200 650" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-        @if (light.Stars > 0.05)
+<div class="panel map-row" aria-label="@($"地图与场景 · {lc.Name}")">
+    <LocationCard LocationId="@here" Current="true" />
+    <div class="map-adjacent" data-wheel="x" aria-label="相邻地图">
+        @foreach (var to in entrances)
         {
-            <g fill="#f3efd9" opacity="@F(light.Stars)">
-                @foreach (var (x, y, r) in Stars) { <circle cx="@x" cy="@y" r="@F(r)" /> }
-            </g>
+            <LocationCard @key="to" LocationId="@to" />
         }
-        @if (fireOn)
+        @if (entrances.Count == 0)
         {
-            <defs>
-                <radialGradient id="fireGlow"><stop stop-color="#ffb35c" stop-opacity=".75" /><stop offset=".45" stop-color="#ff8a3c" stop-opacity=".28" /><stop offset="1" stop-color="#ff8a3c" stop-opacity="0" /></radialGradient>
-            </defs>
-            <circle cx="@F(lc.SceneFireX!.Value)" cy="@F(lc.SceneFireY!.Value)" r="@F(170 + 160 * light.Night)" fill="url(#fireGlow)" opacity="@F(.45 + .55 * light.Night)" />
+            <div class="desk-hint">还没有发现通往别处的路线，探索周边可能找到线索</div>
         }
-    </svg>
-    <div class="hero-shade"></div>
+    </div>
+</div>
 
+<div class="panel facility-row" aria-label="设施与可交互对象">
     @if (G.FacilityLayer != null && lc.HasFire)
     {
         <FacilityMenu />
     }
     else
     {
-    <div class="desk-row">
-        <LocationCard LocationId="@here" Current="true" />
-        @foreach (var to in entrances)
+    <div class="fac-scroll" data-wheel="x">
+        @if (hasFacilities)
         {
-            <LocationCard @key="to" LocationId="@to" />
-        }
-        @if (lc.HasFire) { <FireCard /> }
-        @if (lc.CanBuildShelter)
-        {
-            <FacilityCard Kind="shelter" />
-            <FacilityCard Kind="bed" />
-        }
-        @foreach (var r in resources)
-        {
-            var rs = s.Resources[r.NodeId];
-            var empty = !r.IsUnlimited && (rs.Available ?? 0) <= 0;
-            var nodeId = r.NodeId;
-            var tool = r.ToolBonus != null ? e.BestTool(s, r.ToolBonus.ToolTag) : null;
-            var minutes = tool != null && r.ToolBonus?.BaseMinutesOverride != null ? r.ToolBonus.BaseMinutesOverride.Value : r.BaseMinutes;
-            var req = ActionRequest.Gather(r.NodeId);
-            var why = busy ? "行动进行中" : e.CanStart(s, req);
-            var stock = r.IsCache ? (empty ? "已搜空" : "可搜1次") : r.IsUnlimited ? "不限量" : $"{rs.Available}/{r.Cap}";
-            <ObjectCard @key="r.NodeId" CssClass="res-card" Title="@r.Name" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
-                        Selected="@(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId)" Fresh="@G.Highlights.Contains(r.NodeId)"
-                        DataDrop="@($"res:{nodeId}")" Tooltip="资源点：点击查看采集预估；把对应工具拖到这里指定使用" OnClick="() => SelectResource(nodeId)">
-                <Art>@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</Art>
-                <ChildContent>
-                    @if (r.IsCache)
+            <div class="desk-group facilities">
+                <div class="dg-title">设施</div>
+                <div class="dg-cards">
+                    @if (lc.HasFire) { <FireCard /> }
+                    @if (lc.CanBuildShelter)
                     {
-                        <div class="oc-line">@string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}")) · @(minutes)分</div>
+                        <FacilityCard Kind="shelter" />
+                        <FacilityCard Kind="bed" />
                     }
-                    else
-                    {
-                        var per = r.Outputs.Values.First() * (tool != null && r.ToolBonus != null && !r.IsUnlimited ? r.ToolBonus.OutputMultiplier : 1);
-                        <div class="oc-line">每次@(per)@(e.ItemName(r.Outputs.Keys.First())) · @(minutes)分@(r.Refills ? $" · 日补{r.DailyRefill}" : "")</div>
-                    }
-                    @if (r.Hazard != null) { <div class="oc-line warn-line">@Ui.Pct(r.Hazard.Probability)@r.Hazard.Label · 健康−@r.Hazard.HealthLoss.ToString("0")</div> }
-                </ChildContent>
-                <Footer>
-                    @* 试玩修复 B5：与探索/清理同一按钮形态，悬停或聚焦即在右栏预测，离开恢复 *@
-                    @{ var verb = r.IsCache ? "搜集" : "采集"; var title = $"{verb}{r.Name}"; }
-                    <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? "单击直接开始；右侧显示预测")"
-                            @onmouseenter="() => G.Hover(req, title)" @onfocus="() => G.Hover(req, title)" @onmouseleave="() => G.Hover(null)" @onblur="() => G.Hover(null)"
-                            @onclick="() => Quick(req, nodeId)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
-                        <strong>@verb · @(minutes)分钟</strong>
-                        @if (why != null) { <small>@why</small> }
-                    </button>
-                </Footer>
-            </ObjectCard>
+                </div>
+            </div>
         }
-        @if (resources.Count == 0)
-        {
-            <div class="desk-hint">@(s.Locations[here].Progress < 100 ? "这里还没有发现资源点，探索周边可能找到线索" : "这里没有可采集的资源")</div>
-        }
+        <div class="desk-group resources">
+            <div class="dg-title">采集资源</div>
+            <div class="dg-cards">
+                @foreach (var r in resources)
+                {
+                    var rs = s.Resources[r.NodeId];
+                    var empty = !r.IsUnlimited && (rs.Available ?? 0) <= 0;
+                    var nodeId = r.NodeId;
+                    var tool = r.ToolBonus != null ? e.BestTool(s, r.ToolBonus.ToolTag) : null;
+                    var minutes = tool != null && r.ToolBonus?.BaseMinutesOverride != null ? r.ToolBonus.BaseMinutesOverride.Value : r.BaseMinutes;
+                    var req = ActionRequest.Gather(r.NodeId);
+                    var why = busy ? "行动进行中" : e.CanStart(s, req);
+                    var stock = r.IsCache ? (empty ? "已搜空" : "可搜1次") : r.IsUnlimited ? "不限量" : $"{rs.Available}/{r.Cap}";
+                    <ObjectCard @key="r.NodeId" CssClass="res-card" Title="@r.Name" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
+                                Selected="@(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId)" Fresh="@G.Highlights.Contains(r.NodeId)"
+                                DataDrop="@($"res:{nodeId}")" Tooltip="资源点：点击查看采集预估；把对应工具拖到这里指定使用" OnClick="() => SelectResource(nodeId)">
+                        <Art>@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</Art>
+                        <ChildContent>
+                            @if (r.IsCache)
+                            {
+                                <div class="oc-line">@string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}")) · @(minutes)分</div>
+                            }
+                            else
+                            {
+                                var per = r.Outputs.Values.First() * (tool != null && r.ToolBonus != null && !r.IsUnlimited ? r.ToolBonus.OutputMultiplier : 1);
+                                <div class="oc-line">每次@(per)@(e.ItemName(r.Outputs.Keys.First())) · @(minutes)分@(r.Refills ? $" · 日补{r.DailyRefill}" : "")</div>
+                            }
+                            @if (r.Hazard != null) { <div class="oc-line warn-line">@Ui.Pct(r.Hazard.Probability)@r.Hazard.Label · 健康−@r.Hazard.HealthLoss.ToString("0")</div> }
+                        </ChildContent>
+                        <Footer>
+                            @* 试玩修复 B5：与探索/清理同一按钮形态，悬停或聚焦即在右栏预测，离开恢复 *@
+                            @{ var verb = r.IsCache ? "搜集" : "采集"; var title = $"{verb}{r.Name}"; }
+                            <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? "单击直接开始；右侧显示预测")"
+                                    @onmouseenter="() => G.Hover(req, title)" @onfocus="() => G.Hover(req, title)" @onmouseleave="() => G.Hover(null)" @onblur="() => G.Hover(null)"
+                                    @onclick="() => Quick(req, nodeId)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                <strong>@verb · @(minutes)分钟</strong>
+                                @if (why != null) { <small>@why</small> }
+                            </button>
+                        </Footer>
+                    </ObjectCard>
+                }
+                @if (resources.Count == 0)
+                {
+                    <div class="desk-hint">@(s.Locations[here].Progress < 100 ? "这里还没有发现资源点，探索周边可能找到线索" : "这里没有可采集的资源")</div>
+                }
+            </div>
+        </div>
     </div>
     }
 </div>
 
 @code {
-    // 夜空星点（固定位置，只在上半部天空）
-    private static readonly (int x, int y, double r)[] Stars = BuildStars();
-
-    private static (int, int, double)[] BuildStars()
-    {
-        var rng = new Random(7);
-        return Enumerable.Range(0, 46).Select(_ => (rng.Next(20, 1180), rng.Next(20, 230), 1 + rng.NextDouble() * 1.6)).ToArray();
-    }
-
     private void SelectResource(string id) => G.Select(new Selection { Kind = SelectionKind.Resource, Id = id });
 
     /// <summary>资源卡底部按钮：选中并直接开始（留言 649cdad9）。</summary>
@@ -126,7 +117,7 @@
 
     private string _lastLocation = "";
 
-    /// <summary>到达新地点后卡片桌面回到最左，当前地图卡标题不被切（试玩修复 B10）。</summary>
+    /// <summary>到达新地点后两行横滚容器都回到最左（试玩修复 B10，v0.7 起是相邻地图子栏与第二行两个容器）。</summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (G.State == null) return;

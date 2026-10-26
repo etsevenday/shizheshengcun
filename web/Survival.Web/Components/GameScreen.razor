@@ -31,8 +31,11 @@
         @{
             // 手工制作层盖住中部上方时，地面卡挪到下方与随身卡并排，仍能拖进材料槽（01 案第 5 节“手工拖入优先使用指定批次”）
             var craftOpen = G.Panel == "craft";
+            // 二级面板打开时中部不纵滚：面板盖住地块两行与地面，随身栏固定在下方（v0.7 第 2 节：中部整体可纵滚，左右栏不动）
+            var centerPanel = G.Panel is "map" or "craft" or "rest" or "log";
         }
         <section class="center" aria-label="当前地点">
+            <div class="center-scroll @(centerPanel ? "locked" : "")" data-wheel="y">
             <div class="center-top">
                 <LocationStrip />
                 @if (!craftOpen) { <ItemShelf Owner="@s.CurrentLocation" Title="@($"当前地面 · {e.LocName(s.CurrentLocation)}")" /> }
@@ -53,6 +56,7 @@
             {
                 <ItemShelf Owner="@ItemInstance.Carried" Title="随身物品" />
             }
+            </div>
 
             @if (pausedLayer)
             {

@@ -26,9 +26,11 @@ window.survival = {
     }
   },
   releaseBar: function () { window.__survivalBar = null; },
-  // 地点变化后卡片桌面横向滚动复位（渲染后可能还有一次布局，下一帧再复位一次）
+  // 地点变化后地块两行的横滚容器（相邻地图子栏、第二行）复位到最左（渲染后可能还有一次布局，下一帧再复位一次）
   resetDesk: function () {
-    var go = function () { var d = document.querySelector('.desk-row'); if (d) d.scrollLeft = 0; };
+    var go = function () {
+      document.querySelectorAll('.map-adjacent, .fac-scroll').forEach(function (d) { d.scrollLeft = 0; });
+    };
     go();
     requestAnimationFrame(go);
   },

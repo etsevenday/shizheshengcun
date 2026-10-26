@@ -1,7 +1,8 @@
 @inherits GameComponent
 
-@* 地图卡（01 案第 3 节）。当前地图卡：探索/清理直接放在卡内，指向或聚焦即在右栏预测，单击直接开始；
-   100% 时不渲染探索按钮；清理 0 次或角色忙碌时按钮可见并写明原因。相邻地图卡：图、名称、访问状态、单程时间与移动入口。 *@
+@* 地图卡。当前地图卡（基础UI修订 v0.7 第 2.1 节）：横向大图卡，场景图铺满卡面，地名、室内外、昼夜、探索度与按钮放在图片边缘的局部衬底上，
+   不再整张覆盖暗层；探索/清理直接放在卡内，指向或聚焦即在右栏预测，单击直接开始；100% 时不渲染探索按钮，保留“已充分探索”；
+   清理 0 次或角色忙碌时按钮可见并写明原因。相邻地图卡：图、名称、访问状态、单程时间与移动入口。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -20,15 +21,38 @@
     var (charges, _) = e.ClearChargesAt(s, LocationId);
     var cap = lc.Clear.Cap;
     var next = e.NextClearRefillMinutes(s, LocationId);
-    <ObjectCard Wide="true" CssClass="loc-card current" Title="@lc.Name" Badge="当前地点" BadgeClass="here"
-                Selected="@(sel.Kind is SelectionKind.Location or SelectionKind.Clear)"
-                DataDrop="@($"loc:{LocationId}")" Tooltip="当前地点：点卡片查看探索预估；把建材拖到营地地点卡可查看营地设施"
-                OnClick="SelectLocation">
-        <Art><div class="loc-art" style="background-image:url('@scene')" role="img" aria-label="@($"{lc.Name}图片")"></div></Art>
-        <ChildContent>
-            <div class="oc-line">@(lc.IsIndoor ? "室内" : "露天") · 探索@(ls.Progress)%</div>
-            <div class="loc-progress" aria-label="@($"探索度{ls.Progress}%")"><i style="width:@(ls.Progress)%"></i></div>
-            @if (full) { <div class="oc-line muted">已充分探索</div> }
+    var light = Ui.Light(Clock.MinuteOfDay(s.GameMinute), lc.IsIndoor);
+    var fireOn = lc.HasFire && s.Locations[LocationId].Facility.FireLit && lc.SceneFireX.HasValue && lc.SceneFireY.HasValue;
+    var picked = sel.Kind is SelectionKind.Location or SelectionKind.Clear;
+    <div class="map-card @(picked ? "selected" : "") @(lc.IsIndoor ? "indoor" : "")" data-drop="@($"loc:{LocationId}")" data-drop-level="card"
+         role="button" tabindex="0" aria-label="@($"当前地点{lc.Name}，探索{ls.Progress}%")"
+         title="当前地点：点卡片查看探索预估；把建材拖到营地地点卡可查看营地设施" @onclick="SelectLocation" @onkeydown="CardKey">
+        <div class="mc-art" style="background-image:url('@scene');filter:brightness(@F(light.Brightness)) saturate(@F(light.Saturate))" role="img" aria-label="@($"{lc.Name}场景图")"></div>
+        <div class="mc-tint" style="background:@light.Tint"></div>
+        <svg class="mc-over" viewBox="0 0 1200 650" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            @if (light.Stars > 0.05)
+            {
+                <g fill="#f3efd9" opacity="@F(light.Stars)">
+                    @foreach (var (x, y, r) in Stars) { <circle cx="@x" cy="@y" r="@F(r)" /> }
+                </g>
+            }
+            @if (fireOn)
+            {
+                <defs>
+                    <radialGradient id="fireGlow"><stop stop-color="#ffb35c" stop-opacity=".75" /><stop offset=".45" stop-color="#ff8a3c" stop-opacity=".28" /><stop offset="1" stop-color="#ff8a3c" stop-opacity="0" /></radialGradient>
+                </defs>
+                <circle cx="@F(lc.SceneFireX!.Value)" cy="@F(lc.SceneFireY!.Value)" r="@F(170 + 160 * light.Night)" fill="url(#fireGlow)" opacity="@F(.45 + .55 * light.Night)" />
+            }
+        </svg>
+        <div class="mc-top">
+            <span class="mc-chip name"><b>@lc.Name</b><em>当前地点</em></span>
+            <span class="mc-chip">@(lc.IsIndoor ? "室内" : "露天") · @light.Phase</span>
+        </div>
+        <div class="mc-bottom">
+            <div class="mc-progress">
+                <span>@(full ? "已充分探索" : $"探索{ls.Progress}%")</span>
+                <div class="loc-progress" aria-label="@($"探索度{ls.Progress}%")"><i style="width:@(ls.Progress)%"></i></div>
+            </div>
             <div class="loc-actions">
                 @if (!full)
                 {
@@ -46,8 +70,8 @@
                     <small>@(next == null ? $"次数{charges}/{cap}·已满" : $"次数{charges}/{cap} · 恢复还需{Clock.Duration(next.Value)}")@(clearWhy != null && charges > 0 ? $" · {clearWhy}" : "")</small>
                 </button>
             </div>
-        </ChildContent>
-    </ObjectCard>
+        </div>
+    </div>
 }
 else
 {
@@ -75,6 +99,22 @@ else
     private string BusyReason() => G.S.Main?.Status == ActionStatus.Paused ? "行动暂停中" : "行动进行中";
 
     private void SelectLocation() => G.Select(new Selection { Kind = SelectionKind.Location, Id = LocationId });
+
+    private void CardKey(KeyboardEventArgs ev)
+    {
+        if (ev.Key is "Enter" or " ") SelectLocation();
+    }
+
+    private static string F(double v) => v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+
+    // 夜空星点（固定位置，只在上半部天空）
+    private static readonly (int x, int y, double r)[] Stars = BuildStars();
+
+    private static (int, int, double)[] BuildStars()
+    {
+        var rng = new Random(7);
+        return Enumerable.Range(0, 46).Select(_ => (rng.Next(20, 1180), rng.Next(20, 230), 1 + rng.NextDouble() * 1.6)).ToArray();
+    }
     private void SelectEntrance() => G.Select(new Selection { Kind = SelectionKind.Entrance, Id = LocationId });
 
     private void HoverExplore() => G.Hover(ExploreReq, "探索周边");
