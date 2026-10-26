@@ -375,6 +375,8 @@ namespace Survival.Core.Engine
                     ClearAction(s, a);
                     Emit(s, GameEventKind.ActionCompleted, $"等待结束（{Clock.Duration(a.PlannedMinutes)}）。");
                     return true;
+                case ActionType.Butcher:
+                    return CompleteButcher(s, a);
                 case ActionType.Bypass:
                 {
                     ClearAction(s, a);

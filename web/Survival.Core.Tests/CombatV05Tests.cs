@@ -601,6 +601,117 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(s.WorldEnemies.Count(w => w.EnemyId == "wolf"), Is.EqualTo(1), "逃离不删除，迁走或隐藏");
     }
 
+    /// <summary>B526 处理尸体取消/到期：不同时保留尸体和肉，不刷新源保质；成功磨损刀斧1。</summary>
+    [Test]
+    public void B526_Butcher_CancelAndExpiry()
+    {
+        var s = New();
+        var carcass = E.CreateItems(s, "carcass_feral_dog", 1, "camp").Single();
+        var exp = carcass.ExpiresAt;
+        Assert.That(E.CanStart(s, ActionRequest.Butcher(carcass.InstanceId)), Does.Contain("需要随身有效"));
+        var knife = E.CreateItems(s, "stone_knife", 1, ItemInstance.Carried).Single();
+        var d0 = knife.Durability!.Value;
+        s.Skills["crafting"].Level = 100;
+        Start(s, ActionRequest.Butcher(carcass.InstanceId));
+        Assert.That(s.Main!.BaseWorkMinutes, Is.EqualTo(30), "制造熟练不加速");
+        Steps(s, 2);
+        E.Cancel(s);
+        Assert.That(Count(s, "carcass_feral_dog", "camp"), Is.EqualTo(1), "取消返还原尸体");
+        Assert.That(First(s, "carcass_feral_dog").ExpiresAt, Is.EqualTo(exp), "保质期不刷新");
+        Assert.That(Count(s, "raw_meat"), Is.EqualTo(0));
+        Start(s, ActionRequest.Butcher(carcass.InstanceId));
+        Run(s);
+        Assert.That(Count(s, "carcass_feral_dog"), Is.EqualTo(0), "尸体与产物不同时存在");
+        Assert.That(Count(s, "raw_meat", "camp"), Is.EqualTo(2));
+        Assert.That(Count(s, "hide", "camp"), Is.EqualTo(1));
+        Assert.That(knife.Durability, Is.EqualTo(d0 - 1).Within(1e-9));
+        // 完成时已腐败：中止，没有产物，尸体留地面
+        var t = New();
+        var c2 = E.CreateItems(t, "carcass_wolf", 1, "camp").Single();
+        E.CreateItems(t, "hatchet", 1, ItemInstance.Carried);
+        Start(t, ActionRequest.Butcher(c2.InstanceId));
+        c2.ExpiresAt = t.GameMinute + 10;
+        Run(t);
+        Assert.That(Count(t, "raw_meat"), Is.EqualTo(0));
+        Assert.That(Count(t, "carcass_wolf", "camp"), Is.EqualTo(1));
+    }
+
+    /// <summary>生肉→烤肉（火堆直烤）/水煮肉（锅内净水500毫升），锅白名单与2个食材位（v0.5 §14）。</summary>
+    [Test]
+    public void Meat_RoastAndBoil()
+    {
+        var s = New();
+        E.DebugGive(s, "raw_meat", 3, "camp");
+        Assert.That(E.CanStart(s, ActionRequest.UseItem("raw_meat")), Does.Contain("烹饪"), "生肉不可直接食用");
+        var fac = s.Locations["camp"].Facility;
+        E.DoInstant(s, InstantRequest.PutInFire(First(s, "raw_meat", "camp").InstanceId, 1));
+        var pot = First(s, "pot");
+        E.DebugGive(s, "clean_water", 2, "camp");
+        E.DoInstant(s, InstantRequest.FillPot(First(s, "clean_water", "camp").InstanceId, pot.InstanceId, 2));
+        Assert.That(E.DoInstant(s, InstantRequest.PutFoodInPot(First(s, "raw_meat", "camp").InstanceId, pot.InstanceId, 2)).Ok, Is.True);
+        E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId));
+        fac.FireLit = true;
+        fac.FuelMinutes = 120;
+        Start(s, ActionRequest.Wait(60));
+        Run(s);
+        Assert.That(Count(s, "cooked_meat"), Is.EqualTo(1), "直烤30分钟→烤肉");
+        Assert.That(Count(s, "boiled_meat"), Is.EqualTo(2), "锅里30分钟→水煮肉，每份耗净水500毫升");
+        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(0));
+        var cooked = Cfg.Items.Single(i => i.Id == "cooked_meat").Use!;
+        Assert.That((cooked.Satiety, cooked.Hydration, cooked.Morale), Is.EqualTo((35.0, -3.0, 2.0)));
+    }
+
+    /// <summary>武器取得（v0.5 §15）：木矛/木弓/箭矢配方；五金店武器柜（50%）、村庄旧储物柜（75%，空手枪+9mm弹12）一次性；开发测试箱只经调试入口。</summary>
+    [Test]
+    public void WeaponAcquisition()
+    {
+        var s = New();
+        E.DebugGive(s, "wood", 5);
+        E.DebugGive(s, "stone", 2);
+        E.DebugGive(s, "fiber", 7);
+        E.DebugGive(s, "cloth", 1);
+        Start(s, ActionRequest.Craft("make_wooden_spear"));
+        Run(s);
+        Assert.That(Count(s, "wooden_spear"), Is.EqualTo(1));
+        Start(s, ActionRequest.Craft("make_arrows"));
+        Run(s);
+        Assert.That(Count(s, "arrow"), Is.EqualTo(4));
+        E.DebugGive(s, "wood", 1);
+        E.DebugGive(s, "fiber", 4);
+        Start(s, ActionRequest.Craft("make_wooden_bow"));
+        Run(s);
+        Assert.That(Count(s, "wooden_bow"), Is.EqualTo(1));
+
+        var h = New();
+        E.DebugTeleport(h, "hardware");
+        Assert.That(h.Resources["hardware_weapon_cache"].Discovered, Is.False);
+        E.DebugSetProgress(h, "hardware", 50);
+        Assert.That(h.Resources["hardware_weapon_cache"].Discovered, Is.True);
+        Start(h, ActionRequest.Gather("hardware_weapon_cache"));
+        Run(h);
+        Assert.That(Count(h, "crowbar", "hardware") + Count(h, "kitchen_knife", "hardware"), Is.EqualTo(2));
+        Assert.That(GameEngine.Condition(First(h, "crowbar")), Is.InRange(0.6, 1.0), "拾荒成色");
+
+        var v = New();
+        E.DebugTeleport(v, "village");
+        E.DebugSetProgress(v, "village", 75);
+        Start(v, ActionRequest.Gather("village_weapon_locker"));
+        Run(v);
+        Assert.That(First(v, "pistol").LoadedAmmo, Is.EqualTo(0), "新手枪空弹仓");
+        Assert.That(Count(v, "ammo_9mm", "village"), Is.EqualTo(12));
+        Assert.That(E.CanStart(v, ActionRequest.Gather("village_weapon_locker")), Does.Contain("搜空"));
+
+        foreach (var id in new[] { "metal_spear", "crossbow", "shotgun", "rifle" })
+        {
+            Assert.That(Cfg.Recipes.Any(r => r.Outputs.ContainsKey(id)), Is.False, id + " 无正常配方");
+            Assert.That(Cfg.Resources.Any(r => r.Outputs.ContainsKey(id)), Is.False, id + " 无正常箱子");
+            Assert.That(Cfg.DevKit.Items.ContainsKey(id), Is.True, id + " 只在开发测试箱");
+        }
+        var d = New();
+        E.DebugGiveDevKit(d);
+        Assert.That(Count(d, "rifle", ItemInstance.Carried), Is.EqualTo(1));
+    }
+
     /// <summary>B527 地面或火堆内的武器/绷带：战斗不能远程使用，只读随身。</summary>
     [Test]
     public void B527_OnlyCarriedUsable()

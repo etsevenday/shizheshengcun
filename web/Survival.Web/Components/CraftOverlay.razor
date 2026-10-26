@@ -245,18 +245,12 @@ else
         };
     }
 
-    private string ProcTitle(ProcessConfig p) => p.Id switch
-    {
-        "boil_water" => "烧水",
-        "roast_root" => "烤制块根",
-        "boil_root" => "水煮块根",
-        _ => p.Name,
-    };
+    private string ProcTitle(ProcessConfig p) => p.IsPotBatch ? "烧水" : $"{p.Name}{G.E.ItemName(p.InputId).Replace("生", "")}";
 
     private string ProcHint(ProcessConfig p)
     {
         var e = G.E;
-        return p.Id switch
+        return (p.IsPotBatch ? "boil_water" : p.InPot ? "boil_root" : "roast_root") switch
         {
             "boil_water" => $"装了{e.ItemName(p.InputId)}的金属锅放进燃烧的火堆，0.5升或1升都是{p.HeatMinutes}分钟原地烧成{e.ItemName(p.OutputId)}；不自动补水。",
             "roast_root" => $"{e.ItemName(p.InputId)}直接放进燃烧火堆的空加工位，每份{p.HeatMinutes}分钟烤成{e.ItemName(p.OutputId)}，不需要锅和水。",
@@ -270,7 +264,7 @@ else
     {
         var e = G.E;
         var heat = $"受热{p.HeatMinutes}分钟";
-        return p.Id switch
+        return (p.IsPotBatch ? "boil_water" : p.InPot ? "boil_root" : "roast_root") switch
         {
             "boil_water" => new()
             {

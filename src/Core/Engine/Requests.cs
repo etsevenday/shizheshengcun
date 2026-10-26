@@ -40,6 +40,8 @@ namespace Survival.Core.Engine
         public static ActionRequest UseItem(string itemId) => new ActionRequest { Type = ActionType.Use, TargetId = itemId };
         /// <summary>绕行当前敌踪（固定10分钟，按 travel 消耗）。</summary>
         public static ActionRequest Bypass() => new ActionRequest { Type = ActionType.Bypass };
+        /// <summary>处理一具随身或当前地面的动物尸体（v0.5 §14）。</summary>
+        public static ActionRequest Butcher(int carcassInstanceId) => new ActionRequest { Type = ActionType.Butcher, InstanceId = carcassInstanceId };
 
         public ActionRequest WithRequestId(string? id)
         {

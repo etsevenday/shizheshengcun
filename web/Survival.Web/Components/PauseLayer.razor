@@ -11,7 +11,7 @@
     var zero = main.PauseReason == PauseReason.StatZero;
     var work = main.IsWorkType;
     var remaining = work ? Math.Max(0, main.BaseWorkMinutes - main.WorkDone) : Math.Max(0, main.PlannedMinutes - main.ElapsedMinutes);
-    var supplies = new[] { "clean_water", "boiled_root", "cooked_root", "canned_food", "berry", "bandage" };
+    var supplies = new[] { "clean_water", "boiled_root", "cooked_root", "boiled_meat", "cooked_meat", "canned_food", "berry", "bandage", "antibiotics" };
     var busy = sub != null || G.Running;
 }
 

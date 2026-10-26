@@ -97,6 +97,18 @@
                     }
                     <button type="button" class="tbar-go" disabled="@(invalid || tooHeavy || (m.ToCarried && m.Max < 1))" @onclick="() => Go(m, n)">@(verb)@(m.Instance != null ? m.Name : invalid ? "" : $"{n}份")到@(to)</button>
                 </div>
+                @if (m.Instance != null && e.CarcassOf(m.Instance.ItemId) != null)
+                {
+                    @* v0.5 §14：处理尸体 30 分钟（随身刀斧，成功磨损1），产生肉与兽皮 *@
+                    var breq = ActionRequest.Butcher(m.Instance.InstanceId);
+                    var bwhy = e.CanStart(s, breq);
+                    <div class="tbar-row">
+                        <button type="button" class="tbar-go alt" disabled="@(bwhy != null || G.Running)" title="@(bwhy ?? "单击直接开始；右侧显示预测")"
+                                @onmouseenter="() => G.Hover(breq, ButcherTitle)" @onmouseleave="() => G.Hover(null)"
+                                @onclick="() => Butcher(breq)">处理尸体·@(e.CarcassOf(m.Instance.ItemId)!.ButcherBaseMinutes)分钟</button>
+                    </div>
+                    @if (bwhy != null) { <div class="ca-note bad">处理尸体：@bwhy</div> }
+                }
                 @if (m.Instance != null && m.Instance.IsCarried && e.Weapon(m.Instance.ItemId) != null)
                 {
                     @* 战前装备当前武器（v0.5 §04：入战前可免费调整；装备只是随身实例的引用，不复制、不额外计重） *@
@@ -314,6 +326,14 @@
         else G.TransferBatch(m.Owner, m.ItemId, m.ExpiresAt, n, m.ToCarried);
         // 这一堆全部转走后收起操作条
         if (m.Instance == null && !s.Items.Any(i => i.Owner == m.Owner && i.ItemId == m.ItemId)) G.ClearSelection();
+    }
+
+    private const string ButcherTitle = "处理尸体";
+
+    private async Task Butcher(ActionRequest r)
+    {
+        G.Hover(null);
+        await G.StartAction(r);
     }
 
     private void PutInFire(int potId)

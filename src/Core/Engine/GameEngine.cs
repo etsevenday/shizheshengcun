@@ -475,6 +475,10 @@ namespace Survival.Core.Engine
                     return null;
                 }
 
+                case ActionType.Butcher:
+                    if (plan.IsSub) return "暂停中只能补给、休息或点火维护";
+                    return ValidateButcher(s, r, plan);
+
                 case ActionType.Wait:
                     if (plan.IsSub) return "暂停中只能补给、休息或点火维护";
                     if (!Config.Actions.WaitMinutes.Contains(r.Minutes)) return "等待时长无效";
@@ -654,6 +658,9 @@ namespace Survival.Core.Engine
                 case ActionType.Bypass:
                     s.Encounter = null;
                     break;
+                case ActionType.Butcher:
+                    StartButcher(s, a, p);
+                    break;
                 case ActionType.Clear:
                 {
                     // 先按世界时间更新再扣 1 次；取消、死亡、空结果都不退（地图清理案 3.1、6）
@@ -780,6 +787,8 @@ namespace Survival.Core.Engine
                 ActionType.Gather => "已取消搜集，未获得产物，预留库存已释放。",
                 ActionType.Craft or ActionType.Build => "已取消制作，预留材料已返还当前地面，未生成半成品。",
                 ActionType.Sleep => "已提前醒来。",
+                ActionType.Butcher => "已取消处理尸体，尸体返还当前地面，保质期不变，没有产物。",
+                ActionType.Bypass => "已取消绕行。",
                 _ => $"已结束{a.Label}。",
             };
             Emit(s, GameEventKind.ActionCancelled, text);

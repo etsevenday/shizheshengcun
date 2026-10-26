@@ -265,6 +265,26 @@ namespace Survival.Core.Engine
                     p.BaseMinutes = r.Minutes;
                     p.ConfirmText = $"等待{Clock.Duration(r.Minutes)}";
                     break;
+                case ActionType.Butcher:
+                {
+                    var inst = r.InstanceId.HasValue ? FindItem(s, r.InstanceId.Value) : null;
+                    var c = inst == null ? null : CarcassOf(inst.ItemId);
+                    if (c == null) break;
+                    p.BaseMinutes = c.ButcherBaseMinutes;
+                    p.Outputs = c.Outputs.Select(kv => Line(kv.Key, kv.Value)).ToList();
+                    p.ConfirmText = $"处理尸体·{c.ButcherBaseMinutes}分钟";
+                    var tool = plan?.Tool ?? ButcherTool(s, c);
+                    if (tool != null)
+                    {
+                        p.ToolName = $"{ItemName(tool.ItemId)}#{tool.InstanceId}";
+                        p.ToolDurabilityBefore = tool.Durability;
+                        p.ToolMaxDurability = tool.MaxDurability;
+                        if (tool.Durability.HasValue) p.ToolDurabilityAfter = Math.Max(0, tool.Durability.Value - c.ToolWearOnSuccess);
+                    }
+                    p.Notes.Add("按制造消耗，制造熟练度不加速；取消返还原尸体，保质期不刷新；完成时已腐败则没有产物");
+                    if (inst?.ExpiresAt is int ex) p.Notes.Add($"尸体还有{Clock.Duration(System.Math.Max(0, ex - s.GameMinute))}腐败");
+                    break;
+                }
                 case ActionType.Bypass:
                     p.BaseMinutes = Config.Encounters.BypassMinutes;
                     p.ConfirmText = $"绕行·{Config.Encounters.BypassMinutes}分钟";
