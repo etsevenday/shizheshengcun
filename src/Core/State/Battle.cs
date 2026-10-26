@@ -80,10 +80,17 @@ namespace Survival.Core.State
         public bool Charged { get; set; }
         /// <summary>流血、狼/鹿：血量低于阈值后，下次行动逃离。</summary>
         public bool WillFlee { get; set; }
+        /// <summary>各技能已计入经验的命中次数（入战时从世界实例拷入，随时写回；死亡后仍用于本次指令判断）。</summary>
+        public Dictionary<string, int> XpHits { get; set; } = new Dictionary<string, int>();
 
         public bool Alive => !Dead && !Fled;
 
-        public BattleEnemy Clone() => (BattleEnemy)MemberwiseClone();
+        public BattleEnemy Clone()
+        {
+            var c = (BattleEnemy)MemberwiseClone();
+            c.XpHits = new Dictionary<string, int>(XpHits);
+            return c;
+        }
     }
 
     /// <summary>首次死亡时锁定的掉落（丧尸抽签、动物尸体），最终胜利时一次落地；撤退放弃。</summary>

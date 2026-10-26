@@ -5,7 +5,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>人物战斗与免疫系统修订参考案 v0.6 第 17 节接入验收 R601–R624（同名用例；涉及战斗的部分见 M42 起的补充）。</summary>
-public class CombatV06Tests : TestBase
+public class CombatV06Tests : BattleTestBase
 {
     private double Hours(string key, Func<Config.RateBlock, double> f, double hours) => f(Cfg.HourlyRates[key]) * hours;
 
@@ -742,6 +742,237 @@ public class CombatV06Tests : TestBase
             positions.Add(engaged.LocationId);
         }
         Assert.That(positions.Distinct().Single(), Is.EqualTo("village"), "交战敌锁住不巡游");
+    }
+
+    // ───────────── 战斗（v0.6 §04–§07、§15） ─────────────
+
+    private void Ready(GameState s)
+    {
+        PlayerFirst(s);
+        E.BattleStep(s);
+        Assert.That(E.AwaitingPlayer(s), Is.True);
+    }
+
+    /// <summary>让敌人在本轮先手并执行它锁定的意图（测试敌方攻击用）。</summary>
+    private void EnemyActsNow(GameState s, int index, string intent)
+    {
+        var b = s.Battle!;
+        var e = Enemy(s, index);
+        e.Intent = intent;
+        b.Queue = new List<int> { index, 0 };
+        b.Cursor = 0;
+        b.PlayerActing = false;
+        E.BattleStep(s);
+    }
+
+    /// <summary>R602 高能力命中/高闪避：概率用比值 A/(A+D)，不超过1，无95%硬夹紧；1级斧对游荡尸51.92%，游荡尸对玩家35.71%。</summary>
+    [Test]
+    public void R602_RatioHitChance_NoClamp()
+    {
+        var s = Fight(31, "shambler");
+        Ready(s);
+        Arm(s, "hatchet");
+        var t = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
+        Assert.That(t.AccuracyRating, Is.EqualTo(27));
+        Assert.That(t.HitChance, Is.EqualTo(27.0 / 52).Within(1e-12), "51.92%");
+        Assert.That(GameEngine.HitChance(20, 36), Is.EqualTo(20.0 / 56).Within(1e-12), "普通尸对玩家35.71%");
+        s.Skills["blade"].Level = 100000;
+        var hi = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
+        Assert.That(hi.HitChance, Is.LessThan(1).And.GreaterThan(0.999));
+        Assert.That(hi.CritChance, Is.LessThan(1), "暴击概率 C/(C+100) 也不超过1");
+        Assert.That(GameEngine.HitChance(1, 1000), Is.LessThan(0.05), "无5%下限");
+    }
+
+    /// <summary>R603 小伤害与高甲：不强行补最低1伤，护甲高于伤害时完全挡住；显示不把健康/成本取整成0。</summary>
+    [Test]
+    public void R603_SmallDamage_ArmorBlocks_NoMinimumOne()
+    {
+        var s = Fight(32, "riot");
+        Ready(s);
+        SetStats(s, 20, 80, 80, 0, 90, 60);   // 体力0：只能勉强拳击
+        var t = E.PreviewCommand(s, BattleCommand.Of("desperate_punch", 1)).Targets.Single();
+        Assert.That(t.DamageMax, Is.EqualTo(0), "0.9×1.035×0.5−0.7<0 → 0，不补1");
+        var hp0 = Enemy(s, 1).Hp;
+        Force(s, Below(0.001), AtLeast(0.999), Any());
+        Cmd(s, "desperate_punch", 1);
+        Assert.That(Enemy(s, 1).Hp, Is.EqualTo(hp0), "完全挡住");
+        Assert.That(s.Skills["unarmed"].Xp, Is.EqualTo(0), "完全挡住不给造成伤害经验");
+        Assert.That(s.Battle!.Log.Last(), Does.Contain("护甲完全挡住"));
+        // 工尸护甲0.3：勉强拳击最大0.9×1.035×0.5−0.3=0.16575，小数伤害如实生效
+        var w = Fight(33, "worker");
+        Ready(w);
+        SetStats(w, 20, 80, 80, 0, 90, 60);
+        var tw = E.PreviewCommand(w, BattleCommand.Of("desperate_punch", 1)).Targets.Single();
+        Assert.That(tw.DamageMax, Is.EqualTo(0.9 * 1.035 * 0.5 - 0.3).Within(1e-12));
+        Assert.That(Fmt.N(0.004), Is.EqualTo("<0.01"));
+        Assert.That(E.PreviewCommand(w, BattleCommand.Of("guard")).EnergyCost, Is.EqualTo(0));
+    }
+
+    /// <summary>R606 瞄准入口与增益均已删除；弩/枪装填正常；弓不强制装填、每射消耗随身箭。</summary>
+    [Test]
+    public void R606_NoAim_ReloadOk_BowLoose()
+    {
+        Assert.That(Cfg.CombatActions.Any(a => a.Id == "aim"), Is.False);
+        var s = Fight(34, "shambler", "shambler");
+        Ready(s);
+        var bow = Arm(s, "crossbow");
+        Assert.That(E.BattleOptions(s).Select(o => o.Action), Does.Not.Contain("aim"));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("aim")), Is.EqualTo("瞄准已移除"));
+        E.DebugGive(s, "bolt", 3);
+        Assert.That(Cmd(s, "reload").Ok, Is.True);
+        Assert.That(bow.LoadedAmmo, Is.EqualTo(1), "弩弹仓1");
+        var wb = Arm(s, "wooden_bow");
+        Assert.That(E.BattleOptions(s).Any(o => o.Action == "reload"), Is.False, "弓没有装填按钮");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("随身没有箭矢"));
+        E.DebugGive(s, "arrow", 2);
+        Assert.That(Cmd(s, "basic_attack", 1).Ok, Is.True);
+        Assert.That(Count(s, "arrow"), Is.EqualTo(1), "射击直接消耗随身箭1");
+        Assert.That(s.Battle!.Noise, Is.EqualTo(0), "弓与近战噪声0");
+    }
+
+    /// <summary>R607 同次丧尸咬击：只有命中且正伤害才判一次暴露；抓击命中不判。</summary>
+    [Test]
+    public void R607_BiteOnlyOnHitWithDamage()
+    {
+        // 抓击命中：不暴露（即使暴露判定值很小）
+        var s = Fight(35, "shambler");
+        Force(s, Below(0.01), Any(), Below(0.0001));
+        EnemyActsNow(s, 1, "attack");
+        Assert.That(s.Stats.Health, Is.LessThan(20), "抓击命中");
+        Assert.That(s.Body.Infected, Is.False, "抓击不判病毒");
+        // 咬击未命中：不判
+        var t = Fight(36, "shambler");
+        Force(t, AtLeast(0.999), Below(0.0001));
+        EnemyActsNow(t, 1, "bite");
+        Assert.That(t.Body.Infected, Is.False);
+        Assert.That(t.Stats.Health, Is.EqualTo(20));
+        // 咬击命中有伤害：一次暴露判定（判定值小于概率 → 感染 V=20）
+        var u = Fight(37, "shambler");
+        u.Body.Immunity = 70;
+        Force(u, Below(0.01), Any(), Below(0.215 - 0.001));
+        EnemyActsNow(u, 1, "bite");
+        Assert.That(u.Body.Infected, Is.True);
+        Assert.That(u.Body.VirusLoad, Is.EqualTo(20));
+        // 同样的咬击，判定值高于概率 → 不感染；免疫越低概率越高
+        var v = Fight(38, "shambler");
+        v.Body.Immunity = 70;
+        Force(v, Below(0.01), Any(), AtLeast(0.215 + 0.001));
+        EnemyActsNow(v, 1, "bite");
+        Assert.That(v.Body.Infected, Is.False);
+        var w = Fight(39, "shambler");
+        w.Body.Immunity = 0;
+        Force(w, Below(0.01), Any(), x => x > 0.3 && x < 0.59);
+        EnemyActsNow(w, 1, "bite");
+        Assert.That(w.Body.Infected, Is.True, "免疫0时60%");
+        // 意图20%：多场统计丧尸咬击意图约占20%
+        var bites = 0;
+        var total = 0;
+        for (uint seed = 100; seed < 400; seed++)
+        {
+            var f = Fight(seed, "shambler");
+            total++;
+            if (f.Battle!.Enemies[0].Intent == "bite") bites++;
+        }
+        Assert.That(bites / (double)total, Is.EqualTo(0.2).Within(0.07));
+    }
+
+    /// <summary>R608 抓击、动物咬击、完全挡伤：不产生僵尸病毒；动物仍可流血。</summary>
+    [Test]
+    public void R608_AnimalBite_NoVirus_CanBleed()
+    {
+        var s = Fight(40, "feral_dog");
+        s.Body.Immunity = 0;
+        Force(s, Below(0.01), Any(), Below(0.2));
+        EnemyActsNow(s, 1, "attack");
+        Assert.That(s.Body.Infected, Is.False, "动物撕咬不判僵尸病毒");
+        Assert.That(s.Body.BleedTriggers, Is.EqualTo(3), "25%出血 0.4×3");
+        Assert.That(s.Body.BleedDamage, Is.EqualTo(0.4));
+        Assert.That(Cfg.Enemies.Where(x => x.Family == "animal").All(x => x.BiteIntentWeightPct == 0), Is.True);
+    }
+
+    /// <summary>R621 噪声增援：只调用已有同地丧尸，世界活敌总数不增加；没有可用实例则没有增援。</summary>
+    [Test]
+    public void R621_Reinforcement_ExistingOnly()
+    {
+        var s = Fight(41, "shambler");
+        var dog = E.DebugSpawnEnemy(s, "feral_dog", "field");
+        Ready(s);
+        var gun = Arm(s, "pistol");
+        gun.LoadedAmmo = 8;
+        s.Battle!.Noise = 99;
+        Force(s, AtLeast(0.999));
+        Cmd(s, "basic_attack", 1);
+        var live = E.LiveCount(s);
+        Cmd(s, "end_turn");
+        ToPlayer(s);
+        Assert.That(s.Battle!.Enemies.Count, Is.EqualTo(1), "同地只有野犬（非丧尸）：没有增援，也不新造游荡尸");
+        Assert.That(s.Battle.ReinforcementUsed, Is.True, "请求已消耗");
+        Assert.That(E.LiveCount(s), Is.EqualTo(live));
+        Assert.That(s.WorldEnemies.Single(w => w.Id == dog.Id).Engaged, Is.False);
+    }
+
+    /// <summary>R622 撤退/巡游/重接同敌：HP、经验次数、掉落记录跟随 worldEnemyId。</summary>
+    [Test]
+    public void R622_StateFollowsWorldEnemyId()
+    {
+        var s = Fight(42, "shambler");
+        Ready(s);
+        Arm(s, "hatchet");
+        Force(s, Below(0.01), AtLeast(0.99), Below(0.05));
+        Cmd(s, "basic_attack", 1);
+        var w = s.WorldEnemies.Single();
+        var hp = s.Battle!.Enemies[0].Hp;
+        Cmd(s, "end_turn");
+        ToPlayer(s);
+        Force(s, Below(0.0001));
+        Cmd(s, "retreat");
+        Assert.That(s.Battle, Is.Null);
+        Assert.That(w.Hp, Is.EqualTo(hp).Within(1e-9), "撤退后HP保留");
+        Assert.That(w.XpHits["blade"], Is.EqualTo(1));
+        // 巡游走到别处再走回来：同一实例
+        w.LocationId = "stream";
+        w.LocationId = "field";
+        s.EncounterGraceUntil = 0;
+        s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = { w.Id } };
+        E.Engage(s);
+        Assert.That(s.Battle!.Enemies[0].WorldId, Is.EqualTo(w.Id));
+        Assert.That(s.Battle.Enemies[0].Hp, Is.EqualTo(hp).Within(1e-9), "换 encounterId 也不刷满血");
+        Assert.That(s.Battle.Enemies[0].XpHits["blade"], Is.EqualTo(1), "经验计数不重置");
+    }
+
+    /// <summary>R615（战斗部分）：战斗每轮只推进一次 tick，体力自然率0，只付招式成本，不双扣采集消耗。</summary>
+    [Test]
+    public void R615_BattleTick_NoGatherDoubleCharge()
+    {
+        var s = Fight(43, "stag");
+        Ready(s);
+        var e0 = s.Stats.Energy;
+        var n0 = s.Stats.Satiety;
+        var m0 = s.GameMinute;
+        Cmd(s, "guard");
+        Cmd(s, "end_turn");
+        while (s.Battle!.Round == 1) E.BattleStep(s);
+        Assert.That(s.GameMinute, Is.EqualTo(m0 + 5));
+        Assert.That(s.Stats.Energy, Is.EqualTo(e0), "防御体力0，tick 体力自然率0");
+        Assert.That(n0 - s.Stats.Satiety, Is.EqualTo(1.875 * 5 / 60).Within(1e-9), "战斗速率N−1.875/h");
+    }
+
+    /// <summary>战斗中途存档：读档恢复覆盖层与队列游标，敌人不会再行动一次（v0.5 §17）。</summary>
+    [Test]
+    public void SaveMidBattle_ResumesCursor()
+    {
+        var s = Fight(44, "shambler", "crawler");
+        ToPlayer(s);
+        var json = SaveSerializer.Serialize(s);
+        var t = SaveSerializer.Deserialize(json);
+        Assert.That(t.Battle, Is.Not.Null);
+        Assert.That(E.AwaitingPlayer(t), Is.EqualTo(E.AwaitingPlayer(s)));
+        Assert.That(t.Battle!.Cursor, Is.EqualTo(s.Battle!.Cursor));
+        Assert.That(t.Battle.Log.Count, Is.EqualTo(s.Battle.Log.Count), "敌人不重复行动");
+        Cmd(s, "end_turn");
+        Cmd(t, "end_turn");
+        for (var i = 0; i < 6; i++) { E.BattleStep(s); E.BattleStep(t); }
+        Assert.That(SaveSerializer.Serialize(t), Is.EqualTo(SaveSerializer.Serialize(s)));
     }
 
     /// <summary>显示：两位小数向零截断，正且不足0.01写“&lt;0.01”（v0.6 §02）。</summary>

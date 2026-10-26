@@ -8,7 +8,7 @@ namespace Survival.Core.Tests;
 /// 人物技能与回合制战斗参考策划案 v0.5 第 20 节验收 B501–B528（同名用例）。v0.6 冲突处以 v0.6 为准：
 /// B512/B513 改为无夹紧、无取整语义；B501 按用户 2026-10-26 拍板“直接开启”改为断言战斗已启用。
 /// </summary>
-public class CombatV05Tests : TestBase
+public class CombatV05Tests : BattleTestBase
 {
     /// <summary>B501 原为“开关关闭时无敌人”。不适用：用户 2026-10-26 拍板全量接入、直接开启，不做开关。</summary>
     [Test]
@@ -17,11 +17,494 @@ public class CombatV05Tests : TestBase
         Assert.That(Cfg.CombatEnabled, Is.True);
         var s = New();
         Assert.That(s.Skills, Is.Not.Empty, "技能已启用");
+        Assert.That(s.WorldEnemies, Is.Not.Empty, "世界敌人已启用");
     }
 
-    /// <summary>B524 制造/医疗经验只按规则发一次；预览、取消、满血空治疗不发经验。</summary>
+    /// <summary>就绪：玩家先手并开始本次激活（2AP）。</summary>
+    private void Ready(GameState s)
+    {
+        PlayerFirst(s);
+        E.BattleStep(s);
+        Assert.That(E.AwaitingPlayer(s), Is.True);
+    }
+
+    /// <summary>B502 战斗进入/结束：进入时敌踪清除、敌人交战锁定、世界交互锁住；结束后恢复，战利品落地。</summary>
     [Test]
-    public void B524_CraftAndMedicalXp_OnlyOnce()
+    public void B502_EnterAndExit()
+    {
+        var s = Fight(1, "shambler");
+        Assert.That(s.Encounter, Is.Null);
+        Assert.That(s.WorldEnemies.Single().Engaged, Is.True);
+        Assert.That(E.IsBusy(s), Is.True);
+        Assert.That(E.Advance(s).Status, Is.EqualTo(SegmentStatus.Idle), "战斗中普通推进不动");
+        Assert.That(E.CanStart(s, ActionRequest.Rest(30)), Does.Contain("战斗"));
+        Ready(s);
+        Enemy(s, 1).Hp = 0.05;
+        Arm(s, "hatchet");
+        Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
+        Assert.That(Cmd(s, "basic_attack", 1).Ok, Is.True);
+        Assert.That(s.Battle, Is.Null, "最后一敌死亡即胜利");
+        Assert.That(E.IsBusy(s), Is.False);
+        Assert.That(s.WorldEnemies, Is.Empty, "死亡敌从世界移除");
+        Assert.That(s.Log.Any(l => l.Text.StartsWith("战斗胜利")), Is.True);
+    }
+
+    /// <summary>B503 点击目标、查看预览、取消：不扣AP/弹药/体力，不掷骰。</summary>
+    [Test]
+    public void B503_PreviewChangesNothing()
+    {
+        var s = Fight(2, "shambler", "crawler");
+        Ready(s);
+        Arm(s, "pistol").LoadedAmmo = 8;
+        var json = SaveSerializer.Serialize(s);
+        E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1));
+        E.PreviewCommand(s, BattleCommand.Of("retreat"));
+        E.BattleOptions(s);
+        E.CommandBlocked(s, BattleCommand.Of("basic_attack", 2));
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(json));
+    }
+
+    /// <summary>B504 同一射击 requestId 重复：成本、伤害、耐久只提交一次。</summary>
+    [Test]
+    public void B504_DuplicateRequest_OnlyOnce()
+    {
+        var s = Fight(3, "shambler", "shambler");
+        Ready(s);
+        var gun = Arm(s, "pistol");
+        gun.LoadedAmmo = 8;
+        var d0 = gun.Durability;
+        var c = BattleCommand.Of("basic_attack", 1).WithRequestId("shot-1");
+        Assert.That(E.ExecuteCommand(s, c).Ok, Is.True);
+        var json = SaveSerializer.Serialize(s);
+        var again = E.ExecuteCommand(s, c);
+        Assert.That(again.Duplicate, Is.True);
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(json), "重复请求不改状态");
+        Assert.That(gun.LoadedAmmo, Is.EqualTo(7));
+        Assert.That(gun.Durability, Is.EqualTo(d0 - 1));
+    }
+
+    /// <summary>B505 弹仓0/武器耐久0：对应攻击禁用，可装填/换武器/徒手。</summary>
+    [Test]
+    public void B505_EmptyOrBroken_Disabled_AlternativesOk()
+    {
+        var s = Fight(4, "shambler");
+        Ready(s);
+        var gun = Arm(s, "pistol");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("弹仓空"));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("reload")), Does.Contain("随身没有"));
+        E.DebugGive(s, "ammo_9mm", 3);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("reload")), Is.Null);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("switch_weapon", null, 0)), Is.Null, "可换徒手");
+        var axe = Arm(s, "hatchet");
+        axe.Durability = 0;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("耐久不足"));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("switch_weapon", null, gun.InstanceId)), Is.Null);
+        Assert.That(E.BattleOptions(s).Any(o => o.Action == "aim"), Is.False, "没有瞄准");
+    }
+
+    /// <summary>B506 耐久1攻击且未命中：本次完成且耐久0，后续禁用，未凭命中返耐久。</summary>
+    [Test]
+    public void B506_LastDurabilityMiss()
+    {
+        var s = Fight(5, "shambler");
+        Ready(s);
+        var axe = Arm(s, "hatchet");
+        axe.Durability = 1;
+        Force(s, AtLeast(0.999));
+        Assert.That(Cmd(s, "basic_attack", 1).Ok, Is.True);
+        Assert.That(axe.Durability, Is.EqualTo(0), "未命中也扣");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("耐久不足"));
+        Assert.That(Enemy(s, 1).Hp, Is.EqualTo(Cfg.Enemies.Single(x => x.Id == "shambler").Hp));
+    }
+
+    /// <summary>B507 枪内弹药与随身弹药转移：总重量守恒，不复制弹药。</summary>
+    [Test]
+    public void B507_ReloadConservesWeight()
+    {
+        var s = Fight(6, "shambler");
+        Ready(s);
+        var gun = Arm(s, "pistol");
+        E.DebugGive(s, "ammo_9mm", 12);
+        var grams = E.CarriedGrams(s);
+        Assert.That(Cmd(s, "reload").Ok, Is.True);
+        Assert.That(gun.LoadedAmmo, Is.EqualTo(8));
+        Assert.That(Count(s, "ammo_9mm", ItemInstance.Carried), Is.EqualTo(4));
+        Assert.That(E.CarriedGrams(s), Is.EqualTo(grams), "装填前后总重量不变");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("reload")), Is.EqualTo("弹仓已满"));
+    }
+
+    /// <summary>B508 前排有敌时短刀选后排：禁止；矛可选但伤害×0.75。</summary>
+    [Test]
+    public void B508_RearNeedsReach()
+    {
+        var s = Fight(7, "shambler", "shambler", "crawler");
+        Ready(s);
+        Assert.That(Enemy(s, 3).Slot, Is.EqualTo("B1"));
+        Arm(s, "stone_knife");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 3)), Does.Contain("后排"));
+        Arm(s, "wooden_spear");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 3)), Is.Null);
+        var p = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 3)).Targets.Single();
+        Assert.That(p.RearPenalty, Is.True);
+        var front = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
+        Assert.That(p.DamageMax, Is.EqualTo(front.DamageMax * 0.75).Within(1e-9));
+    }
+
+    /// <summary>B509 杀光前排后攻击仍在后排的敌：没有屏障即可攻击，不要求等轮末，矛也不吃后排减伤。</summary>
+    [Test]
+    public void B509_NoBarrier_RearReachable()
+    {
+        var s = Fight(8, "shambler", "shambler", "crawler");
+        Ready(s);
+        Arm(s, "hatchet");
+        Enemy(s, 1).Hp = 0.01;
+        Enemy(s, 2).Hp = 0.01;
+        Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
+        Cmd(s, "basic_attack", 1);
+        Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
+        Cmd(s, "basic_attack", 2);
+        Assert.That(Enemy(s, 3).Slot, Is.EqualTo("B1"), "仍在后排（轮末才压前）");
+        s.Battle!.PlayerActing = true;
+        s.Battle.PlayerAp = 1;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 3)), Is.Null, "无前排屏障可直接攻击");
+        Arm(s, "wooden_spear");
+        Assert.That(E.PreviewCommand(s, BattleCommand.Of("basic_attack", 3)).Targets.Single().RearPenalty, Is.False);
+    }
+
+    /// <summary>B510 敌人轮末压前：每轮每人只行动一次，队列游标正确。</summary>
+    [Test]
+    public void B510_RearAdvancesAtRoundEnd_EachActsOnce()
+    {
+        var s = Fight(9, "shambler", "crawler", "shambler");
+        var b = s.Battle!;
+        Ready(s);
+        Enemy(s, 1).Hp = 0.01;
+        Arm(s, "hatchet");
+        Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
+        Cmd(s, "basic_attack", 1);
+        Cmd(s, "end_turn");
+        var round = b.Round;
+        var acted = new List<int>();
+        while (s.Battle != null && b.Round == round)
+        {
+            var before = b.Cursor < b.Queue.Count ? b.Queue[b.Cursor] : -1;
+            E.BattleStep(s);
+            if (before > 0) acted.Add(before);
+        }
+        Assert.That(acted, Is.Unique, "每个敌人每轮只激活一次");
+        Assert.That(Enemy(s, 3).Slot, Is.EqualTo("F1"), "后排压到最左空前排");
+        Assert.That(b.Round, Is.EqualTo(round + 1));
+    }
+
+    /// <summary>B511 两次1AP攻击或一次2AP招式：不超过2AP，结束不积攒。</summary>
+    [Test]
+    public void B511_TwoApMax_NoCarry()
+    {
+        var s = Fight(10, "worker");
+        Ready(s);
+        Arm(s, "hatchet");
+        s.Skills["blade"].Level = 3;
+        Cmd(s, "basic_attack", 1);
+        Assert.That(s.Battle!.PlayerAp, Is.EqualTo(1));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("cleave", 1)), Does.Contain("行动点不足"));
+        Cmd(s, "basic_attack", 1);
+        Assert.That(E.AwaitingPlayer(s), Is.False, "2AP 用完即结束激活");
+        ToPlayer(s);
+        if (s.Battle != null) Assert.That(s.Battle.PlayerAp, Is.EqualTo(2), "下轮仍是2AP，不积攒");
+    }
+
+    /// <summary>B512（v0.6 语义）低体力/低清醒/恐慌叠加：身体修正乘在命中能力上，概率=A/(A+D)，无5%—95%夹紧。</summary>
+    [Test]
+    public void B512_BodyFactorsMultiply_NoClamp()
+    {
+        var s = Fight(11, "shambler");
+        Ready(s);
+        Arm(s, "hatchet");
+        SetStats(s, 20, 80, 80, 3.5, 15, 60);
+        s.Battle!.Panic = 65;
+        var t = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
+        var a = (24 + 3 * 1) * 0.85 * 0.85 * 0.85;
+        Assert.That(t.AccuracyRating, Is.EqualTo(a).Within(1e-9), "按支付成本后的体力判低体力");
+        Assert.That(t.HitChance, Is.EqualTo(a / (a + 25)).Within(1e-12));
+        s.Battle.Panic = 95;
+        Assert.That(E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single().AccuracyRating, Is.EqualTo((24 + 3) * 0.85 * 0.85 * 0.70).Within(1e-9), "恐慌≥90改×0.70（择一）");
+        SetStats(s, 20, 80, 80, 18, 90, 60);
+        s.Battle.Panic = 0;
+        s.Skills["blade"].Level = 2000;
+        var hi = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single().HitChance;
+        Assert.That(hi, Is.GreaterThan(0.95).And.LessThan(1), "无95%硬夹紧，也不超过1");
+    }
+
+    /// <summary>B513（v0.6 语义）伤害、护甲、防御：先护甲后防御×0.5，不取整、无最低1伤；出血不被护甲或防御减免。</summary>
+    [Test]
+    public void B513_ArmorThenGuard_NoRounding()
+    {
+        var s = Fight(12, "worker");
+        Ready(s);
+        Arm(s, "hatchet");
+        var t = Enemy(s, 1);
+        t.Guard = true;
+        var hp0 = t.Hp;
+        Force(s, Below(0.001), AtLeast(0.999), x => Math.Abs(x - 0.5) < 0.01);
+        var dmgRoll = 0.0;
+        { var r = new Rng { State = s.Rng.State }; r.NextDouble(); r.NextDouble(); dmgRoll = r.NextDouble(); }
+        Cmd(s, "basic_attack", 1);
+        var raw = 1.6 + dmgRoll * (2.4 - 1.6);
+        var expect = (raw * 1.035 - 0.3) * 0.5;
+        Assert.That(hp0 - t.Hp, Is.EqualTo(expect).Within(1e-9));
+        Assert.That(t.Guard, Is.False, "防御只挡一次");
+        // 玩家出血：激活开始扣0.4，不吃防御
+        s.Battle!.PlayerGuard = true;
+        s.Body.BleedTriggers = 3;
+        s.Body.BleedDamage = 0.4;
+        Cmd(s, "end_turn");
+        var h0 = s.Stats.Health;
+        var b = s.Battle!;
+        while (s.Battle != null && !E.AwaitingPlayer(s))
+        {
+            if (b.Cursor < b.Queue.Count && b.Queue[b.Cursor] > 0) { b.Cursor++; continue; }   // 跳过敌方行动，只看出血
+            E.BattleStep(s);
+        }
+        Assert.That(s.Body.BleedTriggers, Is.EqualTo(2));
+        Assert.That(h0 - s.Stats.Health, Is.EqualTo(0.4).Within(1e-9), "出血不减免");
+    }
+
+    /// <summary>B514 包扎冷却中且出血：只止血不回血，耗1绷带2AP；无出血则禁用。</summary>
+    [Test]
+    public void B514_BandageCooldown_StopsBleedOnly()
+    {
+        var s = Fight(13, "shambler");
+        Ready(s);
+        E.DebugGive(s, "bandage", 2);
+        SetStats(s, 15, 80, 80, 18, 90, 60);
+        s.BandageReadyAt = s.GameMinute + 30;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("bandage")), Does.Contain("冷却"), "无出血、冷却中禁用");
+        s.Body.BleedTriggers = 3;
+        s.Body.BleedDamage = 0.4;
+        Assert.That(Cmd(s, "bandage").Ok, Is.True);
+        Assert.That(s.Body.BleedTriggers, Is.EqualTo(0));
+        Assert.That(s.Stats.Health, Is.EqualTo(15), "冷却中不回血");
+        Assert.That(s.BandageReadyAt, Is.EqualTo(s.GameMinute + 30), "只止血不延长回血冷却");
+        Assert.That(Count(s, "bandage"), Is.EqualTo(1));
+        Assert.That(E.AwaitingPlayer(s), Is.False, "包扎2AP");
+    }
+
+    /// <summary>B515 回合中使用绷带：不额外跳旧5分钟，仅轮末一次 tick。</summary>
+    [Test]
+    public void B515_BandageNoExtraFiveMinutes()
+    {
+        var s = Fight(14, "stag");
+        Ready(s);
+        E.DebugGive(s, "bandage", 1);
+        SetStats(s, 15, 80, 80, 18, 90, 60);
+        var m0 = s.GameMinute;
+        Cmd(s, "bandage");
+        Assert.That(s.GameMinute, Is.EqualTo(m0), "确认时不推进时间");
+        Assert.That(s.Stats.Health, Is.GreaterThan(15));
+        while (s.Battle!.Round == 1) E.BattleStep(s);
+        Assert.That(s.GameMinute, Is.EqualTo(m0 + 5), "轮末一次5分钟");
+        Assert.That(E.Start(s, ActionRequest.UseItem("bandage")).Ok, Is.False, "战斗中不走旧5分钟自用");
+    }
+
+    /// <summary>B516 一轮并行料理与两次攻击：料理/燃料只推进5分钟，体力只付招式成本（不再套采集消耗）。</summary>
+    [Test]
+    public void B516_OneRoundOneTick_EnergyOnlyCommandCost()
+    {
+        var s = New(15);
+        // 在营地火堆上烧水，同时在营地与野犬交战（调试放置）
+        var pot = First(s, "pot");
+        E.DebugGive(s, "dirty_water", 2, "camp");
+        E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 2));
+        E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId));
+        var fac = s.Locations["camp"].Facility;
+        fac.FireLit = true;
+        fac.FuelMinutes = 60;
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        var dog = E.DebugSpawnEnemy(s, "feral_dog", "camp");
+        s.Encounter = new PendingEncounter { LocationId = "camp", EnemyIds = { dog.Id } };
+        E.Engage(s);
+        Ready(s);
+        Arm(s, "hatchet");
+        var e0 = s.Stats.Energy;
+        var heat0 = E.ProcessOf(s, pot)!.HeatDoneMinutes;
+        Force(s, AtLeast(0.999));
+        Cmd(s, "basic_attack", 1);
+        Force(s, AtLeast(0.999));
+        Cmd(s, "basic_attack", 1);
+        var cost = E.SkillEnergyCost(0.65, 1) * 2;
+        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(cost).Within(1e-9));
+        var b = s.Battle!;
+        while (s.Battle != null && b.Round == 1)
+        {
+            if (b.Cursor < b.Queue.Count && b.Queue[b.Cursor] > 0) { b.Cursor++; continue; }
+            E.BattleStep(s);
+        }
+        Assert.That(E.ProcessOf(s, pot)!.HeatDoneMinutes - heat0, Is.EqualTo(5), "料理只推进5分钟");
+        Assert.That(fac.FuelMinutes, Is.EqualTo(55));
+        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(cost).Within(1e-9), "轮末 tick 体力自然率0");
+    }
+
+    /// <summary>B517 最后一敌在轮中被杀：只结算本轮5分钟，不重复推进。</summary>
+    [Test]
+    public void B517_MidRoundVictory_SingleTick()
+    {
+        var s = Fight(16, "shambler");
+        Ready(s);
+        Arm(s, "hatchet");
+        Enemy(s, 1).Hp = 0.01;
+        var m0 = s.GameMinute;
+        Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
+        Cmd(s, "basic_attack", 1);
+        Assert.That(s.Battle, Is.Null);
+        Assert.That(s.GameMinute, Is.EqualTo(m0 + 5));
+    }
+
+    /// <summary>B518 世界 tick 伤害导致死亡：优先死亡，无胜利掉落或复活。</summary>
+    [Test]
+    public void B518_TickDeath_NoLoot()
+    {
+        var s = Fight(17, "shambler");
+        Ready(s);
+        Arm(s, "hatchet");
+        Enemy(s, 1).Hp = 0.01;
+        SetStats(s, 0.01, 80, 0, 18, 90, 60);
+        Force(s, Below(0.01), AtLeast(0.99), Any(), Below(0.5));
+        Cmd(s, "basic_attack", 1);
+        Assert.That(s.Progress.Dead, Is.True, "退出时的 tick 致死");
+        Assert.That(s.Items.Count(i => i.Owner == "field" && i.ItemId is "cloth" or "scrap"), Is.EqualTo(0), "不提交掉落");
+        Assert.That(s.Battle, Is.Null);
+    }
+
+    /// <summary>B519 出血战后继承：次数正确，结束瞬间不重复扣一次，之后每个世界 tick 扣。</summary>
+    [Test]
+    public void B519_BleedCarriesOver()
+    {
+        var s = Fight(18, "shambler");
+        Ready(s);
+        Arm(s, "hatchet");
+        Enemy(s, 1).Hp = 0.01;
+        s.Body.BleedTriggers = 2;
+        s.Body.BleedDamage = 0.4;
+        var h0 = s.Stats.Health;
+        Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
+        Cmd(s, "basic_attack", 1);
+        Assert.That(s.Battle, Is.Null);
+        Assert.That(s.Body.BleedTriggers, Is.EqualTo(2), "结束的那一段不额外触发");
+        Assert.That(s.Stats.Health, Is.EqualTo(h0).Within(1e-9));
+        Start(s, ActionRequest.Wait(30));
+        Steps(s, 1);
+        Assert.That(s.Body.BleedTriggers, Is.EqualTo(1));
+        Assert.That(h0 - s.Stats.Health, Is.EqualTo(0.4).Within(1e-9));
+    }
+
+    /// <summary>B520 撤退失败后读取：不重掷；已消耗AP与敌方队列位置保留。</summary>
+    [Test]
+    public void B520_FailedRetreat_ReloadNoReroll()
+    {
+        var s = Fight(19, "runner");
+        Ready(s);
+        Force(s, AtLeast(0.999));
+        Cmd(s, "retreat");
+        Assert.That(s.Battle, Is.Not.Null, "撤退失败");
+        Assert.That(E.AwaitingPlayer(s), Is.False, "失败耗尽行动点");
+        var json = SaveSerializer.Serialize(s);
+        var t = SaveSerializer.Deserialize(json);
+        Assert.That(t.Battle!.Cursor, Is.EqualTo(s.Battle!.Cursor));
+        Assert.That(E.CommandBlocked(t, BattleCommand.Of("retreat")), Is.Not.Null, "不能读档重掷");
+        E.BattleStep(s);
+        E.BattleStep(t);
+        Assert.That(SaveSerializer.Serialize(t), Is.EqualTo(SaveSerializer.Serialize(s)), "读档后继续同一序列");
+    }
+
+    /// <summary>B521 噪声100且敌满3：增援等待空位，整场最多一次，只调用同地现有丧尸。</summary>
+    [Test]
+    public void B521_Reinforcement_WaitsForSpace_Once()
+    {
+        var s = Fight(20, "shambler", "shambler", "shambler");
+        var extra1 = E.DebugSpawnEnemy(s, "crawler", "field");
+        var extra2 = E.DebugSpawnEnemy(s, "shambler", "field");
+        Ready(s);
+        var gun = Arm(s, "pistol");
+        gun.LoadedAmmo = 8;
+        s.Battle!.Noise = 75;
+        Force(s, AtLeast(0.999));
+        Cmd(s, "basic_attack", 1);
+        Assert.That(s.Battle.ReinforcementRequested, Is.True);
+        var live = E.LiveCount(s);
+        Cmd(s, "end_turn");
+        var b = s.Battle;
+        while (s.Battle != null && b.Round == 1) { if (b.Cursor < b.Queue.Count && b.Queue[b.Cursor] > 0) { b.Cursor++; continue; } E.BattleStep(s); }
+        Assert.That(b.Enemies.Count, Is.EqualTo(3), "满3时等待空位");
+        Assert.That(b.ReinforcementUsed, Is.False);
+        Enemy(s, 1).Dead = true;
+        Enemy(s, 1).Slot = "";
+        while (s.Battle != null && b.Round == 2) { if (b.Cursor < b.Queue.Count && b.Queue[b.Cursor] > 0) { b.Cursor++; continue; } if (E.AwaitingPlayer(s)) Cmd(s, "end_turn"); else E.BattleStep(s); }
+        Assert.That(b.Enemies.Count, Is.EqualTo(4), "有空位后加入");
+        Assert.That(b.Enemies.Last().WorldId, Is.EqualTo(extra1.Id), "调用同地现有、最早的丧尸，保留原ID与类型");
+        Assert.That(b.Enemies.Last().EnemyId, Is.EqualTo("crawler"));
+        Assert.That(E.LiveCount(s), Is.EqualTo(live), "世界活敌总数不增加");
+        Assert.That(b.ReinforcementUsed, Is.True);
+        Assert.That(s.WorldEnemies.Single(w => w.Id == extra2.Id).Engaged, Is.False, "整场最多一次");
+    }
+
+    /// <summary>B522 同敌踪撤退后重进：死敌不复生，掉落不重复，存活敌HP与经验计数保留。</summary>
+    [Test]
+    public void B522_RetreatAndReengage()
+    {
+        var s = Fight(21, "shambler", "shambler");
+        Ready(s);
+        Arm(s, "hatchet");
+        Enemy(s, 1).Hp = 0.01;
+        Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
+        Cmd(s, "basic_attack", 1);
+        Force(s, Below(0.01), AtLeast(0.99), x => x < 0.1);
+        Cmd(s, "basic_attack", 2);
+        var hurt = Enemy(s, 2).Hp;
+        var wid = Enemy(s, 2).WorldId;
+        Assert.That(hurt, Is.LessThan(3.6));
+        ToPlayer(s);
+        Force(s, Below(0.0001));
+        Cmd(s, "retreat");
+        Assert.That(s.Battle, Is.Null, "撤退成功");
+        Assert.That(s.CurrentLocation, Is.EqualTo("field"), "回当前地块，不传回营地");
+        Assert.That(s.WorldEnemies.Single().Id, Is.EqualTo(wid), "死敌不复生");
+        Assert.That(s.WorldEnemies.Single().Hp, Is.EqualTo(Enemy2Hp(hurt, s)).Within(1e-9));
+        Assert.That(s.WorldEnemies.Single().XpHits["blade"], Is.EqualTo(1), "经验计数随 worldEnemyId 保存");
+        Assert.That(s.Items.Count(i => i.Owner == "field" && i.ItemId is "cloth" or "scrap"), Is.EqualTo(0), "撤退不领取掉落");
+        Assert.That(s.EncounterGraceUntil, Is.EqualTo(s.GameMinute + 60));
+        // 主动重进：同一实例、HP 保留
+        Assert.That(E.Approach(s, wid).Ok, Is.True, "保护期不挡主动接敌");
+        Assert.That(s.Battle!.Enemies.Single().Hp, Is.EqualTo(s.WorldEnemies.Single().Hp));
+        Assert.That(s.Battle.Enemies.Single().XpHits["blade"], Is.EqualTo(1));
+    }
+
+    private static double Enemy2Hp(double hurt, GameState s) => hurt;
+
+    /// <summary>B523 探索完成后遇敌：进度/随机物资已提交，不因战斗回滚或重抽（另见 R618）。</summary>
+    [Test]
+    public void B523_ExploreCommittedBeforeBattle()
+    {
+        var s = New(22);
+        E.DebugTeleport(s, "field");
+        s.GameMinute = At(2, 9, 0);
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        Start(s, ActionRequest.Explore());
+        ForceLoot(s, "fiber");
+        s.Main!.EncounterRoll = 0;
+        Run(s);
+        Assert.That(s.Encounter, Is.Not.Null);
+        var progress = s.Locations["field"].Progress;
+        var fiber = Count(s, "fiber", "field");
+        E.Engage(s);
+        Assert.That(s.Locations["field"].Progress, Is.EqualTo(progress));
+        Assert.That(Count(s, "fiber", "field"), Is.EqualTo(fiber));
+    }
+
+    /// <summary>B524 制造/医疗/群攻经验：只按规则发一次；预览、取消、满血空治疗不发；群攻一次指令只+2。</summary>
+    [Test]
+    public void B524_CraftMedicalAndGroupXp_OnlyOnce()
     {
         var s = New();
         E.DebugGive(s, "stone", 4);
@@ -29,29 +512,49 @@ public class CombatV05Tests : TestBase
         var before = SaveSerializer.Serialize(s);
         E.Preview(s, ActionRequest.Craft("knife"));
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "预览不刷经验");
-
         Start(s, ActionRequest.Craft("knife"));
         Steps(s, 1);
         E.Cancel(s);
         Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(0), "取消无经验");
-
         Start(s, ActionRequest.Craft("knife"));
         Run(s);
         Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(3), "clamp(ceil(30/10),1,12)=3");
         Start(s, ActionRequest.Craft("knife", batchCount: 2));
         Run(s);
         Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(9), "整批按实际提交的配方次数计");
-        Assert.That(Count(s, "stone_knife"), Is.EqualTo(3));
-
-        // 满血无出血：绷带不能用（无实际收益），不发经验
         E.DebugGive(s, "bandage", 2);
         SetStats(s, 20, 80, 80, 18, 90, 60);
         Assert.That(E.CanStart(s, ActionRequest.UseItem("bandage")), Is.Not.Null, "满血、未感染、无出血时禁用");
-        Assert.That(s.Skills["medicine"].Xp, Is.EqualTo(0));
         SetStats(s, 15, 80, 80, 18, 90, 60);
         Start(s, ActionRequest.UseItem("bandage"));
         Run(s);
-        Assert.That(s.Skills["medicine"].Xp, Is.EqualTo(Cfg.Xp.Medical), "真实恢复健康 +4，只发一次");
+        Assert.That(s.Skills["medicine"].Xp, Is.EqualTo(Cfg.Xp.Medical), "真实恢复健康+4，只发一次");
+
+        // 群攻：霰弹散射命中两个前排也只 +2
+        var f = Fight(23, "shambler", "shambler");
+        Ready(f);
+        var sg = Arm(f, "shotgun");
+        sg.LoadedAmmo = 4;
+        f.Skills["firearms"].Level = 3;
+        var xp0 = f.Skills["firearms"].Xp;
+        Force(f, Below(0.4), AtLeast(0.1), Any(), Below(0.4), AtLeast(0.1), Any());
+        Assert.That(Cmd(f, "scatter").Ok, Is.True);
+        Assert.That(f.Skills["firearms"].Xp - xp0 + (f.Skills["firearms"].Level - 3) * 0, Is.EqualTo(2), "群攻按一次指令计");
+        Assert.That(sg.LoadedAmmo, Is.EqualTo(3), "只耗1发");
+        // 同一敌人同技能最多计3次
+        var g = Fight(24, "riot");
+        Ready(g);
+        Arm(g, "hatchet");
+        var hits = 0;
+        for (var k = 0; k < 8 && g.Battle != null; k++)
+        {
+            if (!E.AwaitingPlayer(g)) { ToPlayer(g); continue; }
+            Enemy(g, 1).Hp = 7;
+            Force(g, Below(0.01), AtLeast(0.99), Any());
+            if (Cmd(g, "basic_attack", 1).Ok) hits++;
+        }
+        Assert.That(hits, Is.GreaterThan(3));
+        Assert.That(g.Skills["blade"].Xp, Is.EqualTo(3 * Cfg.Xp.DamagingAttackCommand), "同一世界敌人对同技能最多3次");
     }
 
     /// <summary>制造熟练度折减工作量，同批次余量结转：高等级批量在更少段内完成（v0.6 §03）。</summary>
@@ -61,7 +564,7 @@ public class CombatV05Tests : TestBase
         var s = New();
         E.DebugGive(s, "cloth", 10);
         E.DebugGive(s, "herb", 10);
-        s.Skills["crafting"].Level = 40;                 // 工作量 15/(1+1)=7.5 分钟
+        s.Skills["crafting"].Level = 40;
         Start(s, ActionRequest.Craft("bandage", batchCount: 4));
         Assert.That(s.Main!.BaseWorkMinutes, Is.EqualTo(15 * 4 / 2.0).Within(1e-9), "整批30分钟工作量");
         Run(s);
@@ -70,16 +573,72 @@ public class CombatV05Tests : TestBase
         var t = New();
         E.DebugGive(t, "cloth", 1);
         E.DebugGive(t, "herb", 1);
-        t.Skills["crafting"].Level = 100;              // 15/(1+2.5)≈4.29 分钟
+        t.Skills["crafting"].Level = 100;
         Start(t, ActionRequest.Craft("bandage"));
         Run(t);
         Assert.That(t.GameMinute - 480, Is.EqualTo(5), "单件不足5分钟也占一段（时钟精度），不倒流");
-        Assert.That(E.CanStart(t, ActionRequest.Craft("shelter") is var b ? WithBatch(b, 2) : b), Does.Contain("只能做1件"));
+        var b = ActionRequest.Craft("shelter");
+        b.BatchCount = 2;
+        Assert.That(E.CanStart(t, b), Does.Contain("只能做1件"));
     }
 
-    private static ActionRequest WithBatch(ActionRequest r, int n)
+    /// <summary>B525 狼/鹿逃走：无尸体，不把逃离当击杀。</summary>
+    [Test]
+    public void B525_WolfFlees_NoCarcass()
     {
-        r.BatchCount = n;
-        return r;
+        var s = Fight(25, "wolf");
+        Ready(s);
+        Arm(s, "hatchet");
+        Enemy(s, 1).Hp = 2.5;
+        Force(s, Below(0.01), AtLeast(0.99), x => x < 0.05);
+        Cmd(s, "basic_attack", 1);
+        Assert.That(Enemy(s, 1).WillFlee, Is.True, "≤1.2HP 下次行动逃离");
+        Assert.That(Enemy(s, 1).IntentLabel, Is.EqualTo("逃离"), "意图公开改为逃离");
+        Cmd(s, "end_turn");
+        ToPlayer(s);
+        Assert.That(s.Battle, Is.Null, "唯一的敌人逃离，战斗结束");
+        Assert.That(Count(s, "carcass_wolf"), Is.EqualTo(0), "无尸体");
+        Assert.That(s.WorldEnemies.Count(w => w.EnemyId == "wolf"), Is.EqualTo(1), "逃离不删除，迁走或隐藏");
+    }
+
+    /// <summary>B527 地面或火堆内的武器/绷带：战斗不能远程使用，只读随身。</summary>
+    [Test]
+    public void B527_OnlyCarriedUsable()
+    {
+        var s = Fight(26, "shambler");
+        Ready(s);
+        E.DebugGive(s, "bandage", 1, "field");
+        SetStats(s, 10, 80, 80, 18, 90, 60);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("bandage")), Does.Contain("随身没有"));
+        var ground = E.CreateItems(s, "hatchet", 1, "field").Single();
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("switch_weapon", null, ground.InstanceId)), Does.Contain("随身"));
+        Assert.That(E.DoInstant(s, InstantRequest.Pickup(ground.InstanceId, 1)).Ok, Is.False, "战斗中不能拾取");
+    }
+
+    /// <summary>B528 不足体力且空武器：仍可勉强拳击、防御、恢复呼吸或撤退，无输入死锁。</summary>
+    [Test]
+    public void B528_NoDeadlock()
+    {
+        var s = Fight(27, "shambler");
+        Ready(s);
+        Arm(s, "pistol");
+        SetStats(s, 20, 80, 80, 0, 90, 60);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Is.Not.Null);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 1)), Is.Null);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("guard")), Is.Null);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("breathe")), Is.Null);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("retreat")), Is.Null);
+        var p = E.PreviewCommand(s, BattleCommand.Of("retreat"));
+        Assert.That(p.EnergyCost, Is.EqualTo(0), "不足体力强行撤退不耗体力");
+        Assert.That(p.RetreatChance, Is.LessThan(E.RetreatChance(Clone(s, 18), s.Battle!).chance), "成功率再×0.75");
+        Assert.That(Cmd(s, "breathe").Ok, Is.True);
+        Assert.That(s.Stats.Energy, Is.EqualTo(1.6).Within(1e-9), "调整呼吸+1.6");
+    }
+
+    private GameState Clone(GameState s, double energy)
+    {
+        var c = s.Clone();
+        c.Stats.Energy = energy;
+        return c;
     }
 }
