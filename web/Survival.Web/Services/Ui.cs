@@ -31,8 +31,8 @@ public static class Ui
     {
         var cfg = e.Item(i.ItemId);
         if (i.ExpiresAt.HasValue) return Fresh(i.ExpiresAt.Value - s.GameMinute);
-        if (cfg.MaxDurability.HasValue && i.Durability.HasValue)
-            return i.Durability.Value <= 0 ? "已损坏" : $"耐久{i.Durability}/{cfg.MaxDurability}";
+        if (i.MaxDurability.HasValue && i.Durability.HasValue)
+            return i.Durability.Value <= 0 ? "已损坏" : $"耐久{GameEngine.DurabilityText(i)}" + (i.LoadedAmmoId != null ? $" · 弹{i.LoadedAmmo}" : "");
         if (cfg.IsTool) return cfg.ToolTag == "pot" ? "催化工具" : cfg.ToolTag == "lighter" ? "点火工具" : "工具";
         if (cfg.Use != null)
         {

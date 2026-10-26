@@ -375,9 +375,12 @@ namespace Survival.Core.Engine
                 {
                     ClearAction(s, a);
                     var f = s.Locations[here].Facility;
+                    // 成功点火磨损打火器（v0.6 §05）；点火不可取消，完成即成功
+                    var lighter = a.ToolInstanceId.HasValue ? FindItem(s, a.ToolInstanceId.Value) : null;
+                    var worn = lighter != null ? "；" + Wear(lighter, LighterWear) : "";
                     Emit(s, GameEventKind.ActionCompleted, f.FireLit
-                        ? $"火堆已点燃，剩余燃料{f.FuelMinutes}分钟。"
-                        : "火堆点燃后燃料随即耗尽。");
+                        ? $"火堆已点燃，剩余燃料{f.FuelMinutes}分钟{worn}。"
+                        : $"火堆点燃后燃料随即耗尽{worn}。");
                     return true;
                 }
                 default:
@@ -416,7 +419,7 @@ namespace Survival.Core.Engine
                 }
                 foreach (var kv in res.Outputs)
                 {
-                    CreateItems(s, kv.Key, kv.Value, here);
+                    CreateItems(s, kv.Key, kv.Value, here, res.Scavenged);
                     made.Add($"{ItemName(kv.Key)}+{kv.Value}");
                 }
             }
@@ -425,12 +428,7 @@ namespace Survival.Core.Engine
             if (a.ToolInstanceId.HasValue)
             {
                 var tool = s.Items.FirstOrDefault(i => i.InstanceId == a.ToolInstanceId.Value);
-                if (tool?.Durability != null)
-                {
-                    var before = tool.Durability.Value;
-                    tool.Durability = Math.Max(0, before - Config.ToolEffects.SuccessfulActionWear);
-                    text += $"；{ItemName(tool.ItemId)}耐久{before}→{tool.Durability}";
-                }
+                if (tool?.Durability != null) text += "；" + Wear(tool, GatherWear);
             }
             ClearAction(s, a);
             Emit(s, GameEventKind.ActionCompleted, text + "。", null, res.Outputs.Keys);

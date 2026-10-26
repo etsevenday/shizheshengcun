@@ -158,9 +158,9 @@ namespace Survival.Core.Engine
         public string? ToolName { get; set; }
         /// <summary>工具是玩家拖入指定的那一把（不自动换）。</summary>
         public bool ToolExplicit { get; set; }
-        public int? ToolDurabilityBefore { get; set; }
-        public int? ToolDurabilityAfter { get; set; }
-        public int? ToolMaxDurability { get; set; }
+        public double? ToolDurabilityBefore { get; set; }
+        public double? ToolDurabilityAfter { get; set; }
+        public double? ToolMaxDurability { get; set; }
         public double HazardProbability { get; set; }
         public double HazardHealthLoss { get; set; }
         public string HazardLabel { get; set; } = "";
@@ -222,8 +222,8 @@ namespace Survival.Core.Engine
         public bool Usable { get; set; }
         /// <summary>不可用原因（内核点火校验原文）；可用为 null。</summary>
         public string? Reason { get; set; }
-        public int? Durability { get; set; }
-        public int? MaxDurability { get; set; }
+        public double? Durability { get; set; }
+        public double? MaxDurability { get; set; }
     }
 
     /// <summary>取出设施或锅里的物品会清零的加工（v0.7 第 3.3 节：操作条提前显示后果）。</summary>

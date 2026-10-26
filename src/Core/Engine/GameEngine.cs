@@ -18,6 +18,8 @@ namespace Survival.Core.Engine
         private readonly Dictionary<string, EdgeConfig> _edges;
         private readonly Dictionary<string, ResourceConfig> _res;
         private readonly Dictionary<string, RecipeConfig> _recipes;
+        private readonly Dictionary<string, WeaponConfig> _weapons;
+        private readonly Dictionary<string, EnemyConfig> _enemies;
 
         private const double Eps = 1e-6;
 
@@ -29,7 +31,13 @@ namespace Survival.Core.Engine
             _edges = config.Edges.ToDictionary(e => e.Id);
             _res = config.Resources.ToDictionary(r => r.NodeId);
             _recipes = config.Recipes.ToDictionary(r => r.Id);
+            _weapons = config.Weapons.ToDictionary(w => w.Id);
+            _enemies = config.Enemies.ToDictionary(x => x.Id);
         }
+
+        /// <summary>该物品（或 "fists"）的武器定义；不是武器为 null。</summary>
+        public WeaponConfig? Weapon(string id) => _weapons.TryGetValue(id, out var w) ? w : null;
+        public EnemyConfig Enemy(string id) => _enemies[id];
 
         private int Tick => Config.Time.TickMinutes;
 
@@ -300,7 +308,7 @@ namespace Survival.Core.Engine
                         if (res.ToolBonus == null || tag != res.ToolBonus.ToolTag) return "这件工具对该资源点没有加成";
                         if (!tool.IsCarried) return "先拾取工具";
                         if (tool.ReservedBy != null || IsLocked(s, tool)) return "行动占用：这件工具正被使用";
-                        if (tool.Durability.HasValue && tool.Durability <= 0) return "这件工具已损坏，请重新选择";
+                        if (!HasWear(tool, GatherWear)) return tool.Durability <= 0 ? "这件工具已损坏，请重新选择" : $"这件工具耐久不足（{DurabilityText(tool)}），请维护或重新选择";
                         plan.ExplicitTool = true;
                     }
                     else if (res.ToolBonus != null) tool = BestTool(s, res.ToolBonus.ToolTag);
@@ -348,6 +356,12 @@ namespace Survival.Core.Engine
                     {
                         var lv = SkillLevel(s, kv.Key);
                         if (lv < kv.Value) return $"需要{SkillName(kv.Key)}{kv.Value}级（当前{lv}级）";
+                    }
+                    if (rc.IsRepair)
+                    {
+                        var why = RepairBlocked(s, r.InstanceId, out var target);
+                        if (why != null) return why;
+                        plan.Tool = target;
                     }
                     if (rc.FacilityResult != null)
                     {
@@ -399,7 +413,8 @@ namespace Survival.Core.Engine
                     foreach (var kv in rc.Outputs) plan.Outputs.Add(Line(kv.Key, kv.Value * batch));
                     // 制造熟练度在开始时折减基础工作量（v0.6 §03）；同批次多件合并成一个工作量，段内结转余量
                     plan.BaseWork = rc.BaseMinutes * batch * CraftWorkFactor(s);
-                    plan.Label = rc.IsBuild ? rc.Name : batch > 1 ? $"制作{rc.Name}×{batch}" : $"制作{rc.Name}";
+                    plan.Label = rc.IsBuild ? rc.Name : rc.IsRepair ? $"维护{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
+                        : batch > 1 ? $"制作{rc.Name}×{batch}" : $"制作{rc.Name}";
                     return null;
                 }
 
@@ -474,6 +489,8 @@ namespace Survival.Core.Engine
                     if (_items[lighter.ItemId].ToolTag != "lighter") return "这不是打火器";
                     if (!(lighter.IsCarried || lighter.Owner == here)) return "只能使用随身或当前地面的打火器";
                     if (lighter.ReservedBy != null || IsLocked(s, lighter)) return "行动占用：打火器正被使用";
+                    // v0.6 §05：每次成功点火磨损1，耐久不足一次磨损时拒绝（可维护或换一把）
+                    if (!HasWear(lighter, LighterWear)) return $"这把打火器耐久不足（{DurabilityText(lighter)}），请维护或换一把";
                     plan.Lighter = lighter;
                     var fuel = hereState.Facility.FuelMinutes;
                     if (fuel < Config.Fire.MinFuelToIgnite)
@@ -615,6 +632,11 @@ namespace Survival.Core.Engine
                         a.ReservedItemIds.AddRange(Reserve(s, kv.Key, kv.Value * p.Batch, a.ActionId, r.PreferredInstanceIds));
                     }
                     foreach (var c in p.Catalysts) a.LockedItemIds.Add(c.InstanceId);
+                    if (rc.IsRepair && p.Tool != null)
+                    {
+                        a.ToolInstanceId = p.Tool.InstanceId;
+                        a.LockedItemIds.Add(p.Tool.InstanceId);
+                    }
                     break;
                 }
                 case ActionType.Use:
@@ -652,6 +674,7 @@ namespace Survival.Core.Engine
                     }
                     fac.FireLit = true;
                     a.LockedItemIds.Add(p.Lighter!.InstanceId);
+                    a.ToolInstanceId = p.Lighter.InstanceId;
                     break;
                 }
             }

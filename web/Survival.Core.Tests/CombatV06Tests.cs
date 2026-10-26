@@ -150,6 +150,127 @@ public class CombatV06Tests : TestBase
         Assert.Throws<OverflowException>(() => E.GainXp(s, "crafting", 5), "经验溢出报错而非静默回零");
     }
 
+    /// <summary>R604 所有装备生成、读档、转移：最大耐久在区间内按0.1抽一次，实例保存，不重抽、成色不刷新。</summary>
+    [Test]
+    public void R604_RandomMaxDurability_RolledOnce()
+    {
+        var s = New(4242);
+        foreach (var it in Cfg.Items.Where(i => i.HasDurability))
+        {
+            var seen = new HashSet<double>();
+            for (var k = 0; k < 60; k++)
+            {
+                var inst = E.CreateItems(s, it.Id, 1, "camp").Single();
+                var max = inst.MaxDurability!.Value;
+                Assert.That(max, Is.InRange(it.DurabilityMaxRange![0], it.DurabilityMaxRange[1]), it.Id);
+                Assert.That(Math.Abs(max * 10 - Math.Round(max * 10)), Is.LessThan(1e-9), it.Id + " 按0.1精度");
+                Assert.That(inst.Durability, Is.EqualTo(max), it.Id + " 新制品当前=最大");
+                seen.Add(max);
+            }
+            Assert.That(seen.Count, Is.GreaterThan(1), it.Id + " 每件随机，不是统一满耐久");
+        }
+        // 新局开局的锅与打火器也有随机耐久
+        var t = New(7);
+        Assert.That(First(t, "pot").MaxDurability, Is.InRange(60.0, 100.0));
+        Assert.That(First(t, "lighter").MaxDurability, Is.InRange(40.0, 80.0));
+
+        // 读档、转移、拾取不重抽
+        var knife = E.CreateItems(t, "stone_knife", 1, "camp").Single();
+        var (m0, d0) = (knife.MaxDurability, knife.Durability);
+        var json = SaveSerializer.Serialize(t);
+        var u = SaveSerializer.Deserialize(json);
+        var k2 = u.Items.Single(i => i.InstanceId == knife.InstanceId);
+        Assert.That((k2.MaxDurability, k2.Durability), Is.EqualTo((m0, d0)), "读档不重抽");
+        E.DoInstant(u, InstantRequest.Pickup(k2.InstanceId, 1));
+        E.DoInstant(u, InstantRequest.Drop(k2.InstanceId, 1));
+        Assert.That((k2.MaxDurability, k2.Durability), Is.EqualTo((m0, d0)), "转移不重抽");
+        Assert.That(SaveSerializer.Serialize(SaveSerializer.Deserialize(SaveSerializer.Serialize(u))), Is.EqualTo(SaveSerializer.Serialize(u)));
+
+        // 拾荒箱子（五金店工具箱）产出：当前=最大×0.6—1.0成色，搜集时生成一次
+        var v = New(11);
+        E.DebugTeleport(v, "hardware");
+        E.DebugSetProgress(v, "hardware", 75);
+        Start(v, ActionRequest.Gather("tool_box"));
+        Run(v);
+        var axe = First(v, "hatchet", "hardware");
+        Assert.That(GameEngine.Condition(axe), Is.InRange(0.6, 1.0), "拾荒成色");
+        var save = SaveSerializer.Serialize(v);
+        Assert.That(SaveSerializer.Deserialize(save).Items.Single(i => i.InstanceId == axe.InstanceId).Durability, Is.EqualTo(axe.Durability), "成色不刷新");
+    }
+
+    /// <summary>R605 耐久不足一次成本/锅损坏：拒绝使用但保留物与内容；维护恢复自身最大20%、不重抽最大值。</summary>
+    [Test]
+    public void R605_InsufficientDurability_RepairKeepsMax()
+    {
+        var s = New();
+        var lighter = First(s, "lighter");
+        lighter.Durability = 0.8;
+        E.DebugGive(s, "wood", 1);
+        E.DoInstant(s, InstantRequest.AddFuel());
+        var why = E.CanStart(s, ActionRequest.Ignite(lighter.InstanceId));
+        Assert.That(why, Does.Contain("耐久不足"), "0.8耐久不能执行成本1的点火");
+        Assert.That(E.DoInstant(s, InstantRequest.Drop(lighter.InstanceId, 1)).Ok, Is.True, "仍可转移");
+        Assert.That(E.DoInstant(s, InstantRequest.Pickup(lighter.InstanceId, 1)).Ok, Is.True);
+
+        // 锅耐久不足：放进火堆不受热、显示维护不足，水与内容保留
+        var pot = First(s, "pot");
+        E.DebugGive(s, "dirty_water", 2, "camp");
+        E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 2));
+        pot.Durability = 0.1;
+        E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId));
+        var fac = s.Locations["camp"].Facility;
+        fac.FireLit = true;
+        fac.FuelMinutes = 120;
+        Start(s, ActionRequest.Wait(30));
+        Run(s);
+        Assert.That(E.PotLiquid(s, pot.InstanceId), Is.EqualTo("dirty_water"), "不加工、不销毁水");
+        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(2));
+        Assert.That(E.ContentStatus(s, pot), Does.Contain("维护不足"));
+
+        // 正常耐久：每次成功净水磨损0.2
+        pot.Durability = 10;
+        Start(s, ActionRequest.Wait(30));
+        Run(s);
+        Assert.That(E.PotLiquid(s, pot.InstanceId), Is.EqualTo("clean_water"));
+        Assert.That(pot.Durability, Is.EqualTo(10 - Cfg.Durability.PotWear).Within(1e-9));
+
+        // 维护：废金属1+零件1，恢复自身最大20%，不超过最大、不重抽
+        var t = New();
+        var lt = First(t, "lighter");
+        var max = lt.MaxDurability!.Value;
+        lt.Durability = 1;
+        E.DebugGive(t, "scrap", 1);
+        E.DebugGive(t, "parts", 1);
+        Assert.That(E.CanStart(t, ActionRequest.Craft("repair_selected_tool")), Is.EqualTo("请先选择要维护的工具"));
+        var req = ActionRequest.Craft("repair_selected_tool");
+        req.InstanceId = lt.InstanceId;
+        Start(t, req);
+        Assert.That(t.Main!.BaseWorkMinutes, Is.EqualTo(30 * E.CraftWorkFactor(1)).Within(1e-9), "制造熟练影响维护工作量");
+        Run(t);
+        Assert.That(lt.Durability, Is.EqualTo(1 + max * 0.2).Within(1e-9));
+        Assert.That(lt.MaxDurability, Is.EqualTo(max), "不重抽最大值");
+        Assert.That(Count(t, "scrap") + Count(t, "parts"), Is.EqualTo(0));
+        lt.Durability = max;
+        Assert.That(E.CanStart(t, req), Does.Contain("耐久已满"), "满耐久禁用");
+        lt.Durability = max - 0.5;
+        Assert.That(E.CanStart(t, req), Does.Contain("缺少废金属"), "缺料不扣物");
+        E.DebugGive(t, "scrap", 1);
+        E.DebugGive(t, "parts", 1);
+        Start(t, req);
+        Run(t);
+        Assert.That(lt.Durability, Is.EqualTo(max).Within(1e-9), "不超过自身最大");
+        // 有内容的锅须先清空
+        var tp = First(t, "pot");
+        tp.Durability = 5;
+        E.DebugGive(t, "clean_water", 1);
+        E.DoInstant(t, InstantRequest.FillPot(First(t, "clean_water", "carried").InstanceId, tp.InstanceId, 1));
+        var rp = ActionRequest.Craft("repair_selected_tool");
+        rp.InstanceId = tp.InstanceId;
+        E.DebugGive(t, "scrap", 1);
+        E.DebugGive(t, "parts", 1);
+        Assert.That(E.CanStart(t, rp), Does.Contain("清空"));
+    }
+
     /// <summary>显示：两位小数向零截断，正且不足0.01写“&lt;0.01”（v0.6 §02）。</summary>
     [Test]
     public void Display_TwoDecimals_TinyPositive()

@@ -31,7 +31,7 @@
                 <span class="ir-icon">@Icons.Markup(o.ItemId)</span>
                 <span class="im-text">
                     <b>@o.Name</b>
-                    <small>@o.Source@(o.MaxDurability.HasValue ? $" · 耐久{o.Durability}/{o.MaxDurability}" : "") · @(o.Usable ? "可用" : o.Reason)</small>
+                    <small>@o.Source@(o.MaxDurability.HasValue && o.Durability.HasValue ? $" · 耐久{Ui.N(o.Durability.Value)}/{Ui.N(o.MaxDurability.Value)}" : "") · @(o.Usable ? "可用" : o.Reason)</small>
                 </span>
             </button>
         }
@@ -41,7 +41,7 @@
         }
     </div>
     <div class="im-foot">
-        <div>选择工具后立即开始点火，耗时@(e.Config.Fire.IgniteMinutes)分钟；打火器不消耗。</div>
+        <div>选择工具后立即开始点火，耗时@(e.Config.Fire.IgniteMinutes)分钟；成功点火磨损打火器@(Ui.T(e.LighterWear))。</div>
         @if (p != null && p.Ok)
         {
             <div>@(p.AutoWood ? $"燃料为0：将自动投入1份木材（+{e.Config.Fire.BurnMinutesPerWood}分钟），" : $"现有燃料{p.FuelBefore}分钟，")点火完成时剩@(p.FuelAtEnd)分钟</div>

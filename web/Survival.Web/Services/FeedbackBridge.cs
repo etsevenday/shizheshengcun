@@ -117,7 +117,7 @@ public sealed class FeedbackBridge
         s.Items.Where(i => i.Owner == owner)
             .GroupBy(i => i.ItemId)
             .Select(g => $"{e.ItemName(g.Key)}×{g.Sum(i => i.Count)}" +
-                         (g.Any(i => i.Durability.HasValue) ? $"(耐久{string.Join("/", g.Select(i => i.Durability))})" : "") +
+                         (g.Any(i => i.Durability.HasValue) ? $"(耐久{string.Join("、", g.Select(GameEngine.DurabilityText))})" : "") +
                          (g.Any(i => e.IsSpoiled(s, i)) ? "(含腐败)" : ""))
             .ToList();
 }

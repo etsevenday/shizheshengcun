@@ -215,9 +215,9 @@ namespace Survival.Core.Engine
                         p.ToolName = ItemName(tool.ItemId);
                         p.ToolExplicit = plan != null && plan.ExplicitTool;
                         p.ToolDurabilityBefore = tool.Durability;
-                        p.ToolMaxDurability = _items[tool.ItemId].MaxDurability;
+                        p.ToolMaxDurability = tool.MaxDurability;
                         if (tool.Durability.HasValue)
-                            p.ToolDurabilityAfter = System.Math.Max(0, tool.Durability.Value - Config.ToolEffects.SuccessfulActionWear);
+                            p.ToolDurabilityAfter = System.Math.Max(0, tool.Durability.Value - GatherWear);
                     }
                     else if (res.ToolBonus != null)
                     {
@@ -294,7 +294,7 @@ namespace Survival.Core.Engine
                     {
                         p.LighterInstanceId = plan.Lighter.InstanceId;
                         p.LighterPlace = plan.Lighter.IsCarried ? "随身" : "当前地面";
-                        p.Notes.Add($"使用{ItemName(plan.Lighter.ItemId)}#{plan.Lighter.InstanceId}（{p.LighterPlace}），打火器不消耗");
+                        p.Notes.Add($"使用{ItemName(plan.Lighter.ItemId)}#{plan.Lighter.InstanceId}（{p.LighterPlace}），成功点火磨损{Fmt.T(LighterWear)}（耐久{DurabilityText(plan.Lighter)}）");
                     }
                     if (plan != null && plan.IgniteConsumesWood) p.Notes.Add($"将消耗1木材，提供{Config.Fire.BurnMinutesPerWood}分钟燃料");
                     p.Notes.Add($"点火过程也消耗{Config.Fire.IgniteMinutes}分钟燃料");

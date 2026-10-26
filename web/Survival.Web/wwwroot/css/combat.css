@@ -14,3 +14,11 @@
 /* ───────────── 手工制作：批量 ───────────── */
 .batch-row { display: flex; align-items: center; gap: 8px; margin: 2px 0 8px; flex-wrap: wrap; }
 .batch-row b { min-width: 24px; text-align: center; font-size: 17px; }
+
+/* ───────────── 手工制作：工具维护目标 ───────────── */
+.repair-list { display: flex; flex-direction: column; gap: 5px; margin: 4px 0 8px; }
+.repair-pick { display: flex; align-items: center; gap: 8px; text-align: left; background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 5px 8px; color: var(--text); min-height: 40px; }
+.repair-pick span:last-child { display: flex; flex-direction: column; }
+.repair-pick small { color: var(--muted); font-size: 13px; }
+.repair-pick.on { border-color: var(--accent); }
+.repair-pick.missing small { color: var(--warn); }

@@ -279,7 +279,13 @@ namespace Survival.Core.State
         public string ItemId { get; set; } = "";
         public int Count { get; set; }
         public int? ExpiresAt { get; set; }
-        public int? Durability { get; set; }
+        /// <summary>当前耐久（v0.6 §05：小数，0—自身最大耐久）；无耐久物品为 null。</summary>
+        public double? Durability { get; set; }
+        /// <summary>实例最大耐久：生成时按区间以 0.1 精度抽一次并保存，读档、转移、拾取都不重抽；维护不改。</summary>
+        public double? MaxDurability { get; set; }
+        /// <summary>弹仓内已装弹数与弹药类型（v0.5 §05）：属于武器内容并计重一次；散弹药另为独立实例。</summary>
+        public int LoadedAmmo { get; set; }
+        public string? LoadedAmmoId { get; set; }
         /// <summary>
         /// 唯一归属：“carried” 随身；“pot:&lt;实例ID&gt;” 在该锅内；“facility:&lt;设施ID&gt;” 在该设施（火堆加工位）内；否则为地点 ID（该地点地面）。
         /// </summary>

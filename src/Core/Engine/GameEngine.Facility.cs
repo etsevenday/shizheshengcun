@@ -157,6 +157,7 @@ namespace Survival.Core.Engine
                 var bp = BatchProcess(liquid);
                 if (bp == null) return $"{ItemName(liquid)}{PotUnits(s, inst.InstanceId) * PotConfig(inst).UnitMl}毫升";
                 if (loc == null) return $"{ItemName(liquid)}：放进燃烧的火堆后自动{bp.Name}";
+                if (!HasWear(inst, PotWear)) return $"维护不足：锅耐久{DurabilityText(inst)}，不能{bp.Name}";
                 return Heat(bp.Name, loc);
             }
             if (inst.InFacility)
@@ -178,6 +179,7 @@ namespace Survival.Core.Engine
                 if (liquid == null) return "缺水，未加工";
                 var loc = PotFireLocation(pot);
                 if (loc == null) return "锅不在火堆上，未加工";
+                if (!HasWear(pot, PotWear)) return $"维护不足：锅耐久{DurabilityText(pot)}，未加工";
                 if (fp.RequiredLiquid != null && liquid != fp.RequiredLiquid)
                     return BatchProcess(liquid) != null ? "等待水净化" : "缺水，未加工";
                 if (p == null || p.ReservedWaterMl < fp.WaterCostMl) return $"待{ItemName(fp.RequiredLiquid ?? liquid)}{fp.WaterCostMl}毫升";
@@ -537,7 +539,7 @@ namespace Survival.Core.Engine
                         Usable = why == null,
                         Reason = why,
                         Durability = i.Durability,
-                        MaxDurability = _items[i.ItemId].MaxDurability,
+                        MaxDurability = i.MaxDurability,
                     };
                 }).ToList();
         }
@@ -581,11 +583,13 @@ namespace Survival.Core.Engine
             var t = FindItem(s, p.TargetInstanceId);
             if (t == null) return false;
             var owner = FireOwner(loc);
-            if (cfg.IsPotBatch) return t.Owner == owner && PotLiquid(s, t.InstanceId) == cfg.InputId;
+            // v0.6 §05：锅耐久不足一次磨损时目标不受热，显示“维护不足”，不预扣原料
+            if (cfg.IsPotBatch) return t.Owner == owner && PotLiquid(s, t.InstanceId) == cfg.InputId && HasWear(t, PotWear);
             if (t.ItemId != cfg.InputId || IsSpoiled(s, t)) return false;
             if (!cfg.InPot) return t.Owner == owner;
             var pot = p.PotInstanceId.HasValue ? FindItem(s, p.PotInstanceId.Value) : null;
             if (pot == null || pot.Owner != owner || t.Owner != ItemInstance.ContainerOwner(pot.InstanceId)) return false;
+            if (!HasWear(pot, PotWear)) return false;
             return cfg.RequiredLiquid == null
                    || (PotLiquid(s, pot.InstanceId) == cfg.RequiredLiquid && p.ReservedWaterMl >= cfg.WaterCostMl);
         }
@@ -629,7 +633,8 @@ namespace Survival.Core.Engine
                 }
                 Normalize(s, ItemInstance.ContainerOwner(t.InstanceId));
                 s.Progress.Flags.Add("boiled");
-                text = $"{LocName(loc)}火堆：{ItemName(t.ItemId)}#{t.InstanceId}里的{ItemName(cfg.InputId)}{ml}毫升已烧成{ItemName(cfg.OutputId)}，留在原锅。";
+                var worn = Wear(t, PotWear);
+                text = $"{LocName(loc)}火堆：{ItemName(t.ItemId)}#{t.InstanceId}里的{ItemName(cfg.InputId)}{ml}毫升已烧成{ItemName(cfg.OutputId)}，留在原锅（{worn}）。";
             }
             else
             {
@@ -639,9 +644,10 @@ namespace Survival.Core.Engine
                 t.ExpiresAt = outCfg.ShelfLifeMinutes.HasValue ? s.GameMinute + outCfg.ShelfLifeMinutes.Value : (int?)null;
                 var pot = p.PotInstanceId.HasValue ? FindItem(s, p.PotInstanceId.Value) : null;
                 if (cfg.WaterCostMl > 0 && pot != null) ConsumeWater(s, pot, cfg.RequiredLiquid!, cfg.WaterCostMl);
+                var potWorn = pot != null ? "；" + Wear(pot, PotWear) : "";
                 s.Progress.Flags.Add("cooked");
                 text = pot != null
-                    ? $"{LocName(loc)}火堆：{input}#{t.InstanceId}已煮成{outCfg.Name}，留在{ItemName(pot.ItemId)}#{pot.InstanceId}里（{ItemName(cfg.RequiredLiquid ?? "")}−{cfg.WaterCostMl}毫升）。"
+                    ? $"{LocName(loc)}火堆：{input}#{t.InstanceId}已煮成{outCfg.Name}，留在{ItemName(pot.ItemId)}#{pot.InstanceId}里（{ItemName(cfg.RequiredLiquid ?? "")}−{cfg.WaterCostMl}毫升{potWorn}）。"
                     : $"{LocName(loc)}火堆：{input}#{t.InstanceId}已烤成{outCfg.Name}，留在火堆加工位。";
             }
             p.Status = ProcessStatus.Done;

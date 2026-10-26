@@ -48,9 +48,20 @@ else
         <div class="lines">
             <div><span>单件重量</span><b>@Ui.Kg(cfg.WeightGrams)公斤</b></div>
             <div><span>合计重量</span><b>@Ui.Kg(list.Sum(i => e.ItemGrams(s, i)))公斤@(e.IsPot(inst) ? "（含锅内）" : "")</b></div>
-            @if (cfg.MaxDurability.HasValue)
+            @if (inst.MaxDurability.HasValue && inst.Durability.HasValue)
             {
-                <div><span>耐久</span><b class="@(inst.Durability <= 0 ? "danger-text" : "")">@(inst.Durability <= 0 ? "已损坏" : $"{inst.Durability}/{cfg.MaxDurability}")</b></div>
+                <div><span>耐久</span><b class="@(inst.Durability <= 0 ? "danger-text" : "")">@(inst.Durability <= 0 ? "已损坏" : GameEngine.DurabilityText(inst))</b></div>
+                <div><span>成色</span><b>@Ui.Pct(GameEngine.Condition(inst))</b></div>
+                @if (cfg.DurabilityMaxRange is double[] range)
+                {
+                    <div><span>最大耐久区间</span><b>@Ui.T(range[0])—@Ui.T(range[1])（本件@(Ui.N(inst.MaxDurability.Value))，生成时抽定）</b></div>
+                }
+            }
+            @if (e.Weapon(cfg.Id) is WeaponConfig wp)
+            {
+                <div><span>武器</span><b>@e.SkillName(wp.SkillId) · 伤害@(Ui.N(wp.DamageMin))—@(Ui.N(wp.DamageMax)) · 命中能力@(Ui.T(wp.AccuracyRating)) · 暴击能力@(Ui.T(wp.CritRatingBase))</b></div>
+                <div><span>攻击范围</span><b>@(wp.Targets == "front" ? "只打前排" : wp.RearDamageFactor < 1 ? $"可打后排（后排伤害×{Ui.T(wp.RearDamageFactor)}）" : "前后排")@(wp.UsesMagazine ? $" · 弹仓{inst.LoadedAmmo}/{wp.MagazineCapacity}（{e.ItemName(wp.AmmoId!)}）" : wp.ConsumesLooseAmmo ? $" · 每射消耗随身{e.ItemName(wp.AmmoId!)}1" : "")</b></div>
+                <div><span>基础体力</span><b>@Ui.T(wp.EnergyCost)/次（按熟练度折减）</b></div>
             }
             @if (cfg.ShelfLifeMinutes.HasValue)
             {

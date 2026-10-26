@@ -183,8 +183,6 @@ namespace Survival.Core.Config
         public bool IsTool => Kind == "tool";
         public bool IsWeaponKind => Kind == "weapon";
         public bool HasDurability => DurabilityMaxRange != null && DurabilityMaxRange.Length == 2;
-        /// <summary>过渡用（M36）：区间上限。M39 起实例保存自己的最大耐久，此属性删除。</summary>
-        [Newtonsoft.Json.JsonIgnore] public int? MaxDurability => HasDurability ? (int?)(int)DurabilityMaxRange![1] : null;
         public bool IsStackable => StackMax > 1 && !IsTool && !IsWeaponKind;
     }
 

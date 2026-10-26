@@ -35,7 +35,7 @@
          title="@($"{name} · {where}：点击选中整口锅；按住标题拖动整锅（水与食材随行）")"
          @onclick="SelectPot" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, SelectPot)" @onkeydown:stopPropagation="true">
         <span class="pc-icon">@Icons.Markup(Pot.ItemId)</span>
-        <span class="pc-title"><b>@name</b><small>@(Pot.InFacility ? "整锅" : $"{Ui.Kg(e.ItemGrams(s, Pot))}公斤")</small></span>
+        <span class="pc-title"><b>@name</b><small>@(Pot.InFacility ? "整锅" : $"{Ui.Kg(e.ItemGrams(s, Pot))}公斤")@(Pot.Durability.HasValue ? $" · 耐久{GameEngine.DurabilityText(Pot)}" : "")</small></span>
         @if (Pot.InFacility)
         {
             <button type="button" class="row-arrow" aria-label="@($"转移整口{name}")" title="打开整锅的转移操作条"

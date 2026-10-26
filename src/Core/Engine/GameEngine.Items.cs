@@ -40,6 +40,8 @@ namespace Survival.Core.Engine
         {
             var g = _items[i.ItemId].WeightGrams * i.Count;
             if (IsPot(i)) g += PotContents(s, i.InstanceId).Sum(c => ItemGrams(s, c));
+            // 弹仓内弹药属于武器内容，计重一次（v0.5 §05）
+            if (i.LoadedAmmo > 0 && i.LoadedAmmoId != null && _items.TryGetValue(i.LoadedAmmoId, out var ammo)) g += ammo.WeightGrams * i.LoadedAmmo;
             return g;
         }
 
@@ -124,30 +126,34 @@ namespace Survival.Core.Engine
             return $"{(liquid == null ? "空锅" : ItemName(liquid))}{pct}%·{ml}/{c.CapacityMl}毫升";
         }
 
-        /// <summary>随身、耐久最高（大于0或无耐久）的指定标签工具，平手取实例 ID 小者。</summary>
+        /// <summary>
+        /// 随身、成色（当前/最大）最高且耐久足够一次磨损的指定标签工具，平手取实例 ID 小者（v0.6 起各实例最大耐久不同，按比例比较）。
+        /// </summary>
         public ItemInstance? BestTool(GameState s, string toolTag) =>
-            s.Items.Where(i => i.IsCarried && i.ReservedBy == null && _items[i.ItemId].ToolTag == toolTag
-                               && (i.Durability == null || i.Durability > 0))
-                .OrderByDescending(i => i.Durability ?? int.MaxValue)
+            s.Items.Where(i => i.IsCarried && i.ReservedBy == null && _items[i.ItemId].ToolTag == toolTag && HasWear(i, ToolWear(toolTag)))
+                .OrderByDescending(Condition)
                 .ThenBy(i => i.InstanceId)
                 .FirstOrDefault();
+
+        /// <summary>该标签工具一次成功使用的磨损：打火器按点火磨损，锅不按次磨损（按加工），其余按采集磨损。</summary>
+        public double ToolWear(string toolTag) => toolTag == "lighter" ? LighterWear : toolTag == "pot" ? 0 : GatherWear;
 
         public ItemInstance? CarriedTool(GameState s, string toolTag) => BestTool(s, toolTag);
 
         /// <summary>同地全部可用的某标签工具（随身在前，再按实例 ID），供界面让玩家选定。</summary>
         public List<ItemInstance> AccessibleTools(GameState s, string toolTag) =>
             s.Items.Where(i => (i.IsCarried || i.Owner == s.CurrentLocation) && i.ReservedBy == null && !IsLocked(s, i)
-                               && _items[i.ItemId].ToolTag == toolTag && (i.Durability == null || i.Durability > 0))
+                               && _items[i.ItemId].ToolTag == toolTag && HasWear(i, ToolWear(toolTag)))
                 .OrderBy(i => i.IsCarried ? 0 : 1)
                 .ThenBy(i => i.InstanceId)
                 .ToList();
 
-        /// <summary>同地可用的催化工具：随身优先，其次当前地面（锅位视为地面）；未预留、未被锁定、有耐久。</summary>
+        /// <summary>同地可用的催化工具：随身优先，其次当前地面（锅位视为地面）；未预留、未被锁定、耐久足够。</summary>
         public ItemInstance? AccessibleTool(GameState s, string toolTag) =>
             s.Items.Where(i => (i.IsCarried || i.Owner == s.CurrentLocation) && i.ReservedBy == null && !IsLocked(s, i)
-                               && _items[i.ItemId].ToolTag == toolTag && (i.Durability == null || i.Durability > 0))
+                               && _items[i.ItemId].ToolTag == toolTag && HasWear(i, ToolWear(toolTag)))
                 .OrderBy(i => i.IsCarried ? 0 : 1)
-                .ThenByDescending(i => i.Durability ?? int.MaxValue)
+                .ThenByDescending(Condition)
                 .ThenBy(i => i.InstanceId)
                 .FirstOrDefault();
 
@@ -234,10 +240,14 @@ namespace Survival.Core.Engine
             return moved;
         }
 
-        /// <summary>生成物品到指定位置。工具逐件生成并带满耐久；易腐品按生成时刻记录 expiresAt。</summary>
-        public void CreateItems(GameState s, string itemId, int count, string owner)
+        /// <summary>
+        /// 生成物品到指定位置。工具与武器逐件生成：最大耐久按区间以 0.1 精度抽一次（v0.6 §05），新制品当前=最大，
+        /// scavenged（拾荒箱子产出）再乘 0.6—1.0 成色；易腐品按生成时刻记录 expiresAt。返回新生成的实例。
+        /// </summary>
+        public List<ItemInstance> CreateItems(GameState s, string itemId, int count, string owner, bool scavenged = false)
         {
-            if (count <= 0) return;
+            var made = new List<ItemInstance>();
+            if (count <= 0) return made;
             var cfg = _items[itemId];
             // 设施与锅里的食材每份各占一位，逐份生成，不合堆
             var single = !cfg.IsStackable || ItemInstance.TryFacilityId(owner, out _) || (owner.StartsWith(ItemInstance.ContainerPrefix) && !cfg.UnitVolumeMl.HasValue);
@@ -245,28 +255,39 @@ namespace Survival.Core.Engine
             {
                 for (var k = 0; k < count; k++)
                 {
-                    s.Items.Add(new ItemInstance
+                    var inst = new ItemInstance
                     {
                         InstanceId = s.NextInstanceId++,
                         ItemId = itemId,
                         Count = 1,
-                        Durability = cfg.MaxDurability,
                         Owner = owner,
                         ExpiresAt = cfg.ShelfLifeMinutes.HasValue ? s.GameMinute + cfg.ShelfLifeMinutes.Value : (int?)null,
                         PlacedOrder = cfg.IsStackable ? s.NextProcessSeq++ : (int?)null,
-                    });
+                    };
+                    if (cfg.HasDurability)
+                    {
+                        inst.MaxDurability = RollMaxDurability(s, cfg);
+                        inst.Durability = scavenged ? inst.MaxDurability * RollCondition(s) : inst.MaxDurability;
+                    }
+                    var w = Weapon(itemId);
+                    if (w != null && w.UsesMagazine) inst.LoadedAmmoId = w.AmmoId;
+                    s.Items.Add(inst);
+                    made.Add(inst);
                 }
-                return;
+                return made;
             }
-            s.Items.Add(new ItemInstance
+            var stack = new ItemInstance
             {
                 InstanceId = s.NextInstanceId++,
                 ItemId = itemId,
                 Count = count,
                 Owner = owner,
                 ExpiresAt = cfg.ShelfLifeMinutes.HasValue ? s.GameMinute + cfg.ShelfLifeMinutes.Value : (int?)null,
-            });
+            };
+            s.Items.Add(stack);
+            made.Add(stack);
             Normalize(s, owner);
+            return made;
         }
 
         /// <summary>

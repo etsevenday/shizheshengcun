@@ -72,8 +72,11 @@
     @if (p.ToolName != null)
     {
         <div class="lines">
-            <div><span>使用@(p.ToolName)</span><b>@(p.ToolDurabilityBefore)/@(p.ToolMaxDurability) → @(p.ToolDurabilityAfter)/@(p.ToolMaxDurability)</b></div>
-            <div class="tiny muted">@(p.ToolExplicit ? "使用拖入的这一把；它不可用时不会自动换成其他工具。" : "无需选择工具，自动使用随身耐久最高的一件。")</div>
+            @if (p.ToolDurabilityBefore.HasValue && p.ToolMaxDurability.HasValue)
+            {
+                <div><span>使用@(p.ToolName)</span><b>@Ui.N(p.ToolDurabilityBefore.Value)/@Ui.N(p.ToolMaxDurability.Value) → @Ui.N(p.ToolDurabilityAfter ?? 0)/@Ui.N(p.ToolMaxDurability.Value)</b></div>
+            }
+            <div class="tiny muted">@(p.ToolExplicit ? "使用拖入的这一把；它不可用时不会自动换成其他工具。" : "无需选择工具，自动使用随身成色最高的一件。")</div>
         </div>
     }
 
