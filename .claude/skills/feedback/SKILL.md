@@ -1,6 +1,6 @@
 ---
 name: feedback
-description: 处理《适者生存》留言板的新留言：拉取、分类、修 bug（拿不准就问策划）、另起 Fable 5.1 会话试玩验证、推送上线、在留言板上回复改动情况、必要时同步策划案。用户说“处理留言”“拉一下留言”“有新留言”“/feedback”时使用。
+description: 处理《适者生存》留言板的新留言：拉取、分类、修 bug（拿不准就问策划）、另起试玩会话验证（沿用当前会话默认模型）、推送上线、在留言板上回复改动情况、必要时同步策划案。用户说“处理留言”“拉一下留言”“有新留言”“/feedback”时使用。
 ---
 
 # 留言板处理流程
@@ -51,12 +51,12 @@ dotnet test web/Survival.sln
 
 全绿才进入第 4 步。测试失败就修到绿，修不了回第 2 步问用户。
 
-## 4 另起 Fable 5.1 会话试玩验证
+## 4 另起试玩会话验证
 
 自己改的东西不能只靠自己点两下。用 `mcp__ccd_session__start_session` 起一个**独立会话**专门玩，参数：
 
 - `initiation: "user_asked"`（用户在流程里要求的），`context: "fresh"`，`use_worktree: false`（它只读不改，共用这份工作区），`wake_when_done: true`。
-- `model` 留空即继承本会话；本会话不是 Fable 5.1 时显式传 `claude-fable-5-1`。
+- **不传 `model`**，继承本会话默认模型；不要指定 Fable（太贵，用户 2026-10-26 明确要求不用）或别的型号。
 - `title`：`试玩验证 留言 <编号>`。
 - `background`：项目一句话介绍、试玩地址只用本地开发版、规则来源是策划案、它的任务只是玩和报告。
 - `prompt` 必须包含：
@@ -72,7 +72,7 @@ dotnet test web/Survival.sln
 ## 5 更新上线
 
 1. `git status` 核对改动文件，`git add <具体路径>`。
-2. 提交说明第一行：`留言 <8位编号>：<玩家能感知的改动一句话>`；正文写改法要点；结尾加 `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`。
+2. 提交说明第一行：`留言 <8位编号>：<玩家能感知的改动一句话>`；正文写改法要点；结尾加 `Co-Authored-By:`，写本会话实际的模型名（如 `Claude Opus 5.5 <noreply@anthropic.com>`）。
 3. `git push origin main`，然后等待发布：
 
 ```bash
