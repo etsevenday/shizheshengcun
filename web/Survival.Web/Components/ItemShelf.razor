@@ -21,7 +21,7 @@
         <h2>@Title</h2>
         <span>
             @if (carried) { @($"{Ui.Kg(grams)}公斤 · {(grams > e.Config.Carry.SoftGrams ? "超重" : "轻装")} · ") }
-            显示@(kinds)种 · 拖动卡片可整理、转移或投放 · 点卡角箭头转移1件，选中卡片可输入数量 · 不耗时
+            显示@(kinds)种 · 选中卡片在卡下使用或转移 · 卡角箭头转移1件 · 拖动整理或投放 · 不耗时
         </span>
     </div>
     <div class="row-scroll" data-drop="@($"zone:{Owner}")" data-drop-level="zone">
@@ -39,13 +39,17 @@
                 var anyReserved = list.Any(i => i.ReservedBy != null);
                 var batches = list.Select(i => i.ExpiresAt).Distinct().Count();
                 var movable = list.Any(i => i.ReservedBy == null);
-                <div @key="@("g:" + id)" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drop="@($"card:{key}")" data-drop-level="card"
-                     class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner ? "selected" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "")"
+                var gSel = sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner;
+                <div @key="@("g:" + id)" class="card-col @(gSel ? "open" : "")">
+                <div data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drop="@($"card:{key}")" data-drop-level="card"
+                     class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel ? "selected" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "")"
                      role="button" tabindex="0" @onclick="() => SelectGroup(id)" @onkeydown="ev => OnCardKey(ev, () => SelectGroup(id))" title="@e.Item(id).Desc">
                     <div class="ctitle"><span>@e.ItemName(id)</span><span class="qty">×@total</span></div>
                     <div class="art">@Icons.Markup(id)</div>
                     <div class="cinfo">@(allSpoiled ? "已腐败" : Ui.ItemLine(e, s, head))@(batches > 1 ? $" · {batches}批" : "")</div>
                     <TransferArrow Owner="@Owner" ItemId="@id" Enabled="@(movable && !busy)" />
+                </div>
+                @if (gSel) { <CardActions /> }
                 </div>
             }
             else
@@ -63,13 +67,17 @@
                     <PotCard @key="@("t:" + inst)" Pot="t" />
                     continue;
                 }
-                <div @key="@("t:" + inst)" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drop="@($"card:{key}")" data-drop-level="card"
-                     class="card item @(broken ? "broken" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(sel.Kind == SelectionKind.Tool && sel.InstanceId == inst ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
+                var tSel = sel.Kind == SelectionKind.Tool && sel.InstanceId == inst;
+                <div @key="@("t:" + inst)" class="card-col @(tSel ? "open" : "")">
+                <div data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drop="@($"card:{key}")" data-drop-level="card"
+                     class="card item @(broken ? "broken" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(tSel ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
                      role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
                     <div class="ctitle"><span>@e.ItemName(t.ItemId)</span><span class="qty">×1</span></div>
                     <div class="art">@Icons.Markup(t.ItemId)</div>
                     <div class="cinfo">@Ui.ItemLine(e, s, t)</div>
                     <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !locked && !busy)" />
+                </div>
+                @if (tSel) { <CardActions /> }
                 </div>
             }
         }
@@ -79,7 +87,7 @@
                 @if (carried)
                 {
                     <strong>没有携带物品</strong>
-                    <span>把地面物品卡拖到这里，或选中卡片后在下方拾取</span>
+                    <span>把地面物品卡拖到这里，或选中地面卡片后在卡下拾取</span>
                 }
                 else
                 {

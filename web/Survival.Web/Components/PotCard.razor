@@ -46,7 +46,7 @@
             <TransferArrow Owner="@Pot.Owner" ItemId="@Pot.ItemId" InstanceId="@Pot.InstanceId" Enabled="@(!locked && !busy)" />
         }
     </div>
-    @if (potSelected && Actions != null) { @Actions(new PotPart(Pot, null, null)) }
+    @if (potSelected) { <CardActions /> }
 
     <div class="pot-fill @(liquid == "clean_water" ? "clean" : liquid == "dirty_water" ? "dirty" : "")" data-drop="@($"potfill:{Pot.InstanceId}")" data-drop-level="hot"
          title="@($"水量：{e.PotLabel(s, Pot)}。把净水或脏水卡拖到这里装入1份；按住 Shift 可选数量")"
@@ -79,7 +79,7 @@
         {
             <div class="pc-reserved">@e.ReservedWaterText(s, w)</div>
         }
-        @if (wsel && Actions != null) { @Actions(new PotPart(Pot, w.ItemId, null)) }
+        @if (wsel) { <CardActions /> }
     }
 
     <div class="pc-foods" data-drop="@($"potfood:{Pot.InstanceId}")" data-drop-level="hot" title="@($"食材区：生块根拖到这里放进锅，{e.PotFoodHint(s, Pot)}")">
@@ -105,7 +105,7 @@
                 <button type="button" class="row-arrow" aria-label="@($"转移{fname}")" title="打开这份食材的转移操作条"
                         @onclick="() => SelectFood(f)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▾</button>
             </div>
-            @if (fsel && Actions != null) { @Actions(new PotPart(Pot, null, f)) }
+            @if (fsel) { <CardActions /> }
         }
         @if (foods.Count < c.FoodSlots)
         {
@@ -117,11 +117,6 @@
 @code {
     [Parameter, EditorRequired] public ItemInstance Pot { get; set; } = null!;
 
-    /// <summary>选中的锅或锅内对象的卡下操作条（M29 接入）：一次只渲染一条，紧接在被选中的行下方。</summary>
-    [Parameter] public RenderFragment<PotPart>? Actions { get; set; }
-
-    /// <summary>锅卡里被选中的部分：整锅（Liquid、Food 都为空）、某种液体或某份食材。</summary>
-    public sealed record PotPart(ItemInstance Pot, string? Liquid, ItemInstance? Food);
 
     private void SelectPot() =>
         G.Select(new Selection { Kind = SelectionKind.Tool, Id = Pot.ItemId, Owner = Pot.Owner, InstanceId = Pot.InstanceId });

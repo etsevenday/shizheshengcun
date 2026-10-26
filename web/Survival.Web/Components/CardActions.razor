@@ -1,0 +1,297 @@
+@inherits GameComponent
+
+@* 选中卡片下方的操作条（基础UI布局与操作修订案 v0.7 第 3.2、7 节）：普通文档流，紧接在被选中的卡片/子对象行之下，一次只有一条。
+   条内顺序：对象（图标、名称、完整来源、数量）→ 自用操作（食用1份/饮用1份/饮用1份（风险）/使用1份，旁边写明效果、5分钟、溢出与风险）
+   → 转移目标/数量 → 明确的转移执行按钮。选中、改数量、选目标都不执行；点自用或执行按钮才提交，玩法层重新校验。
+   根节点沿用 .tbar 类：app.js 把“选中后直接按数字/回车”转进这里的输入框与执行按钮（留言 fb68265e）。 *@
+@{
+    var m = Build();
+}
+@if (m != null)
+{
+    var e = G.E;
+    var s = G.S;
+    var moveBusy = e.IsBusy(s) || G.Running;
+    SyncDefault(m);
+    <div class="tbar cact" role="group" aria-label="@($"{m.Name}的操作")" @onclick:stopPropagation="true" @onkeydown="OnKey" @onkeydown:stopPropagation="true">
+        <div class="ca-head">
+            <span class="ir-icon">@Icons.Markup(m.Icon)</span>
+            <span class="ca-title"><b>@m.Name</b><small>@m.From · ×@m.Available</small></span>
+        </div>
+
+        @if (m.UseId.HasValue)
+        {
+            var cfg = e.Item(m.ItemId);
+            var p = G.Preview(ActionRequest.UseInstance(m.UseId.Value));
+            var why = G.Running ? "行动进行中" : p.Ok ? null : p.Reason;
+            <div class="ca-use-row">
+                <button type="button" class="ca-use @(GameEngine.UseRisky(cfg) ? "risky" : "")" disabled="@(why != null || using_)" title="@(why ?? "点击即使用1份，耗时5分钟、不可中途取消")"
+                        @onclick="() => Use(m.UseId.Value)">@GameEngine.UseButtonText(cfg)</button>
+                <span class="ca-use-note">
+                    @GameEngine.UseEffectText(cfg.Use!) · @(e.Config.ItemActions.UseMinutes)分钟@(p.Ok ? $"（含自然消耗）" : "")
+                    @if (p.Ok && p.StatsAfterImmediate != null)
+                    {
+                        foreach (var id in new[] { StatId.Satiety, StatId.Hydration, StatId.Health, StatId.Morale })
+                        {
+                            var b0 = Ui.Floor(p.StatsBefore.Get(id));
+                            var b1 = Ui.Floor(p.StatsAfter.Get(id));
+                            if (b0 == b1) continue;
+                            <em>@GameEngine.StatName(id)@b0→@b1</em>
+                        }
+                    }
+                </span>
+            </div>
+            @if (e.UseRiskText(cfg) is string risk) { <div class="ca-note risk-line">⚠ @risk</div> }
+            @if (p.OverflowText is string ov) { <div class="ca-note warn">@ov</div> }
+            @if (why != null) { <div class="ca-note bad">@(GameEngine.UseButtonText(cfg))：@why</div> }
+        }
+
+        @if (m.Mode == Mode.Stack || m.Mode == Mode.Single)
+        {
+            var verb = m.ToCarried ? "拾取" : "放下";
+            var to = m.ToCarried ? "随身" : "地面";
+            var n = m.Mode == Mode.Single ? 1 : Parse();
+            var invalid = n < 1 || n > m.Available;
+            var tooHeavy = !invalid && m.ToCarried && n > m.Max;
+            var unit = m.UnitGrams;
+            var after = e.CarriedGrams(s) + (m.ToCarried ? 1 : -1) * unit * (invalid ? 0 : n);
+            if (moveBusy)
+            {
+                <div class="ca-note">行动进行中，暂不能整理物品</div>
+            }
+            else if (m.Available == 0)
+            {
+                <div class="ca-note">该物品正被当前行动预留，不能@(verb)</div>
+            }
+            else
+            {
+                <div class="tbar-row">
+                    @if (m.Mode == Mode.Stack)
+                    {
+                        <button type="button" class="tbar-step" aria-label="减少" @onclick="() => Step(-1, m)">−</button>
+                        <input @ref="input" type="text" inputmode="numeric" value="@text" @oninput="OnInput" aria-label="转移数量" />
+                        <button type="button" class="tbar-step" aria-label="增加" @onclick="() => Step(1, m)">+</button>
+                        <button type="button" class="tbar-max" @onclick="() => SetN(m.ToCarried ? m.Max : m.Available)">@(m.ToCarried ? $"最多{m.Max}" : "全部")</button>
+                    }
+                    <button type="button" class="tbar-go" disabled="@(invalid || tooHeavy || (m.ToCarried && m.Max < 1))" @onclick="() => Go(m, n)">@(verb)@(invalid ? "" : $"{n}份")到@(to)</button>
+                </div>
+                @if (m.PotInstance is ItemInstance pot && e.Location(s.CurrentLocation).HasFire)
+                {
+                    e.MaxPutInFire(s, pot, out var fireWhy);
+                    <div class="tbar-row">
+                        <button type="button" class="tbar-go alt" disabled="@(fireWhy != null)" title="@(fireWhy ?? "放进火堆空加工位，燃烧时自动烧水、水煮")" @onclick="() => PutInFire(pot.InstanceId)">放入火堆加工位</button>
+                    </div>
+                    @if (fireWhy != null) { <div class="ca-note bad">放入火堆：@fireWhy</div> }
+                }
+                @if (invalid) { <div class="ca-note bad">请输入 1 到 @m.Available 之间的数字</div> }
+                else if (m.ToCarried && m.Max < 1) { <div class="ca-note bad">携带后将超过@(e.Config.Carry.HardGrams / 1000)公斤，拿不动了</div> }
+                else if (tooHeavy) { <div class="ca-note bad">携带后将超过@(e.Config.Carry.HardGrams / 1000)公斤，最多可取@(m.Max)份</div> }
+                else { <div class="ca-note @(after > e.Config.Carry.SoftGrams ? "warn" : "")">@(verb)后随身@(Ui.Kg(after))公斤@(after > e.Config.Carry.SoftGrams ? "，超过20公斤会减速" : "") · 不耗时</div> }
+            }
+        }
+        else if (m.Mode == Mode.TakeOut)
+        {
+            var it = m.Instance!;
+            var zone = Target(m);
+            var why = moveBusy ? "行动进行中，暂不能整理物品" : e.TakeOutBlocked(s, it, zone);
+            var c = e.TakeOutConsequenceOf(s, it);
+            var verb = e.IsPot(it) ? (zone == ItemInstance.Carried ? "拾取" : "取下") : "取出";
+            <TargetPicker Value="@zone" Here="@s.CurrentLocation" OnPick="v => target = v" />
+            <div class="tbar-row">
+                <button type="button" class="tbar-go" disabled="@(why != null)" title="@why" @onclick="() => Take(it, zone)">@(verb)@(m.Name)@(e.IsPot(it) ? "（含内容）" : "")到@(zone == ItemInstance.Carried ? "随身" : "地面")</button>
+            </div>
+            @if (why != null) { <div class="ca-note bad">@why</div> }
+            else
+            {
+                <div class="ca-note @(c.Resets.Count > 0 ? "warn" : "")">@c.Text@(zone == ItemInstance.Carried ? $" · 拾取后随身{Ui.Kg(c.CarriedGramsAfter)}公斤" : "") · 不耗时</div>
+            }
+        }
+        else if (m.Mode == Mode.Decant)
+        {
+            var water = m.Instance!;
+            var zone = Target(m);
+            var max = e.MaxDecant(s, water, zone, out var why);
+            if (moveBusy) why = "行动进行中，暂不能整理物品";
+            var n = Parse();
+            var invalid = n < 1 || n > Math.Max(1, max);
+            <TargetPicker Value="@zone" Here="@s.CurrentLocation" OnPick="v => target = v" />
+            @if (why == null)
+            {
+                <div class="tbar-row">
+                    @if (max > 1)
+                    {
+                        <button type="button" class="tbar-step" aria-label="减少" @onclick="() => SetN(Math.Max(1, Parse() - 1))">−</button>
+                        <input @ref="input" type="text" inputmode="numeric" value="@text" @oninput="OnInput" aria-label="转移数量" />
+                        <button type="button" class="tbar-step" aria-label="增加" @onclick="() => SetN(Math.Min(max, Parse() + 1))">+</button>
+                    }
+                    <button type="button" class="tbar-go" disabled="@invalid" @onclick="() => Decant(water, zone, max > 1 ? n : 1)">取出@(e.ItemName(water.ItemId))@(max > 1 ? (invalid ? "" : $"{n}份") : "1份")到@(zone == ItemInstance.Carried ? "随身" : "地面")</button>
+                </div>
+                <div class="ca-note">每份@(e.PotConfig(m.PotInstance!).UnitMl)毫升 · 可取@(max)份 · 不耗时</div>
+            }
+            else
+            {
+                <div class="tbar-row"><button type="button" class="tbar-go" disabled>取出@(e.ItemName(water.ItemId))1份到@(zone == ItemInstance.Carried ? "随身" : "地面")</button></div>
+                <div class="ca-note bad">@why</div>
+            }
+        }
+        else if (m.Mode == Mode.None && !m.UseId.HasValue)
+        {
+            <div class="ca-note">@m.Hint</div>
+        }
+        @if (m.Mode != Mode.None && m.Hint != null) { <div class="ca-note">@m.Hint</div> }
+    </div>
+}
+
+@code {
+    private enum Mode { None, Stack, Single, TakeOut, Decant }
+
+    /// <summary>操作条模型：对象、来源、可转移数量与方式、可自用的实例。</summary>
+    private sealed record Model(string Key, string ItemId, string Icon, string Name, string From, int Available, Mode Mode)
+    {
+        public int Max { get; init; }
+        public bool ToCarried { get; init; }
+        public int UnitGrams { get; init; }
+        public int? ExpiresAt { get; init; }
+        public string Owner { get; init; } = "";
+        public ItemInstance? Instance { get; init; }
+        public ItemInstance? PotInstance { get; init; }
+        public int? UseId { get; init; }
+        public string? Hint { get; init; }
+    }
+
+    private ElementReference input;
+    private string text = "1";
+    private string lastKey = "";
+    private string? target;
+    private bool using_;
+
+    private Model? Build()
+    {
+        if (G.State == null || G.S.Progress.Dead) return null;
+        var s = G.S;
+        var e = G.E;
+        var sel = G.Selected;
+        var here = s.CurrentLocation;
+        bool Here(ItemInstance i) { var p = e.PlaceOf(s, i); return p == ItemInstance.Carried || p == here; }
+        int? UseOf(ItemInstance i) => GameEngine.CanSelfUse(e.Item(i.ItemId)) ? i.InstanceId : null;
+
+        switch (sel.Kind)
+        {
+            case SelectionKind.PotLiquid:
+            {
+                var pot = sel.InstanceId is int pid ? e.FindItem(s, pid) : null;
+                var water = pot == null ? null : e.PotLiquids(s, pot.InstanceId).FirstOrDefault(w => w.ItemId == sel.Id);
+                if (pot == null || water == null || !Here(pot)) return null;
+                return new Model($"liq:{pot.InstanceId}:{water.ItemId}", water.ItemId, water.ItemId, e.ItemName(water.ItemId),
+                    $"{e.WherePath(s, pot)}／{e.ItemName(pot.ItemId)}#{pot.InstanceId}", water.Count, Mode.Decant)
+                { Instance = water, PotInstance = pot, UseId = UseOf(water), Owner = water.Owner };
+            }
+            case SelectionKind.Tool when sel.InstanceId is int id:
+            {
+                var it = e.FindItem(s, id);
+                if (it == null || !Here(it)) return null;
+                var name = $"{e.ItemName(it.ItemId)}#{it.InstanceId}";
+                if (it.InFacility || (it.InContainer && !e.IsLiquid(it)))
+                    return new Model($"take:{id}", it.ItemId, it.ItemId, name, e.WherePath(s, it), 1, Mode.TakeOut)
+                    { Instance = it, UseId = UseOf(it), Owner = it.Owner };
+                if (it.Owner != ItemInstance.Carried && it.Owner != here) return null;
+                var toCarried = it.Owner != ItemInstance.Carried;
+                var free = it.ReservedBy == null && !e.IsLocked(s, it) ? 1 : 0;
+                return new Model($"one:{id}", it.ItemId, it.ItemId, name, e.WherePath(s, it), free, Mode.Single)
+                {
+                    Instance = it, Owner = it.Owner, ToCarried = toCarried, UnitGrams = e.ItemGrams(s, it),
+                    Max = toCarried ? G.MaxPickup(it.ItemId, free, it) : free, PotInstance = e.IsPot(it) ? it : null, UseId = UseOf(it),
+                };
+            }
+            case SelectionKind.ItemGroup:
+            {
+                if (sel.Owner != ItemInstance.Carried && sel.Owner != here) return null;
+                var all = s.Items.Where(i => i.Owner == sel.Owner && i.ItemId == sel.Id).ToList();
+                if (all.Count == 0) return null;
+                var toCarried = sel.Owner != ItemInstance.Carried;
+                var stacks = all.Where(i => i.ReservedBy == null).OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
+                var from = sel.Owner == ItemInstance.Carried ? "随身" : $"{e.LocName(sel.Owner)}地面";
+                // 自用：最早到期、未预留、未腐败的一堆；全都不能用时仍给出那一堆，让按钮显示真实原因（腐败等）
+                var useInst = stacks.FirstOrDefault(i => !e.IsSpoiled(s, i)) ?? stacks.FirstOrDefault() ?? all[0];
+                if (stacks.Count == 0)
+                    return new Model($"grp:{sel.Owner}:{sel.Id}", sel.Id, sel.Id, e.ItemName(sel.Id), from, 0, Mode.Stack)
+                    { ToCarried = toCarried, Owner = sel.Owner, UseId = UseOf(useInst) };
+                var expires = stacks[0].ExpiresAt;
+                var available = stacks.Where(i => i.ExpiresAt == expires).Sum(i => i.Count);
+                var batches = all.Select(i => i.ExpiresAt).Distinct().Count();
+                return new Model($"grp:{sel.Owner}:{sel.Id}", sel.Id, sel.Id, e.ItemName(sel.Id), from, available, available == 1 ? Mode.Single : Mode.Stack)
+                {
+                    ToCarried = toCarried, Owner = sel.Owner, ExpiresAt = expires, UnitGrams = e.Item(sel.Id).WeightGrams,
+                    Max = toCarried ? G.MaxPickup(sel.Id, available) : available, UseId = UseOf(useInst),
+                    Hint = batches > 1 ? $"共{batches}批，转移先取最早到期的一批（{(expires.HasValue ? Ui.Fresh(expires.Value - s.GameMinute) : "不会腐败")}）" : null,
+                };
+            }
+        }
+        return null;
+    }
+
+    private string Target(Model m) => target ?? (m.Mode == Mode.Decant || m.Mode == Mode.TakeOut
+        ? (m.Instance != null && G.E.PlaceOf(G.S, m.Instance) == ItemInstance.Carried ? G.S.CurrentLocation : ItemInstance.Carried)
+        : ItemInstance.Carried);
+
+    /// <summary>选中的对象或它的可转移数量一变，就把数量与目标重置为默认（数量对转移生效，自用永远是1份）。</summary>
+    private void SyncDefault(Model m)
+    {
+        var key = $"{m.Key}|{m.ExpiresAt}|{m.Available}";
+        if (key == lastKey) return;
+        var sameObject = lastKey.StartsWith(m.Key + "|");
+        lastKey = key;
+        if (!sameObject) target = null;
+        text = m.Mode == Mode.Stack ? (m.ToCarried ? Math.Max(1, Math.Min(m.Available, m.Max)) : m.Available).ToString() : "1";
+    }
+
+    private int Parse() => int.TryParse(text.Trim(), out var v) ? v : 0;
+
+    private void OnInput(ChangeEventArgs ev) => text = new string((ev.Value?.ToString() ?? "").Where(char.IsDigit).ToArray());
+
+    private void SetN(int v) => text = Math.Max(1, v).ToString();
+
+    private void Step(int d, Model m) => SetN(Math.Clamp(Parse() + d, 1, Math.Max(1, m.Available)));
+
+    private void OnKey(KeyboardEventArgs ev)
+    {
+        if (ev.Key == "Escape") G.ClearSelection();
+    }
+
+    private async Task Use(int instanceId)
+    {
+        if (using_) return;
+        using_ = true;
+        try { await G.StartAction(ActionRequest.UseInstance(instanceId)); }
+        finally { using_ = false; }
+    }
+
+    private void Go(Model m, int n)
+    {
+        var s = G.S;
+        if (G.E.IsBusy(s) || G.Running) return;
+        if (n < 1 || n > m.Available || (m.ToCarried && n > m.Max)) return;
+        if (m.Instance != null) G.TransferOne(m.Instance.Owner, m.Instance.ItemId, m.Instance.InstanceId);
+        else G.TransferBatch(m.Owner, m.ItemId, m.ExpiresAt, n, m.ToCarried);
+        // 这一堆全部转走后收起操作条
+        if (m.Instance == null && !s.Items.Any(i => i.Owner == m.Owner && i.ItemId == m.ItemId)) G.ClearSelection();
+    }
+
+    private void PutInFire(int potId)
+    {
+        if (G.E.IsBusy(G.S) || G.Running) return;
+        G.Instant(InstantRequest.PutInFire(potId));
+    }
+
+    private void Take(ItemInstance it, string zone)
+    {
+        if (G.E.IsBusy(G.S) || G.Running) return;
+        G.TransferOne(it.Owner, it.ItemId, it.InstanceId, zone);
+    }
+
+    private void Decant(ItemInstance water, string zone, int n)
+    {
+        if (G.E.IsBusy(G.S) || G.Running) return;
+        G.Instant(InstantRequest.Decant(water.InstanceId, zone, n));
+    }
+}

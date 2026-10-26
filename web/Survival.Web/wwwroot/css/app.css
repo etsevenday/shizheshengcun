@@ -211,22 +211,17 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 @keyframes flicker { from { transform: scale(1, 1); opacity: .95; } to { transform: scale(.9, 1.12); opacity: 1; } }
 
 /* ───── 物品卡旁的拾取/放下条（试玩留言 fb68265e，按策划要求出现在卡片下方） ───── */
-.tbar { position: fixed; z-index: 40; left: -999px; top: -999px; width: 340px; padding: 10px 12px; background: #1c2620f7; border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 8px 24px #000a; display: flex; flex-direction: column; gap: 7px; visibility: hidden; }
-.tbar-tip { position: absolute; width: 14px; height: 14px; background: #1c2620; border: 1px solid var(--accent); transform: rotate(45deg); }
-.tbar.below .tbar-tip { top: -8px; border-right: 0; border-bottom: 0; }
-.tbar.above .tbar-tip { bottom: -8px; border-left: 0; border-top: 0; }
-.tbar-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.tbar-head b { font-weight: 600; font-size: 15px; }
-.tbar-head span { font-size: 12px; color: var(--muted); white-space: nowrap; }
+/* 卡下操作条（v0.7 第 7.1 节）：普通文档流，紧接被选中卡片或子对象行之下；宽度不足时内部换行，不遮下一张卡 */
+.tbar { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; background: #1c2620; color: var(--text); border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 4px 14px #0007; text-align: left; cursor: default; }
 .tbar-row { display: flex; gap: 6px; align-items: stretch; }
 .tbar-row input { width: 64px; font-size: 18px; padding: 4px 6px; background: #121a15; color: var(--text); border: 1px solid var(--line); border-radius: 4px; text-align: center; }
 .tbar-row input:focus { outline: 2px solid var(--accent); outline-offset: 0; }
-.tbar-step { width: 34px; font-size: 18px; background: transparent; border: 1px solid var(--line); border-radius: 4px; }
-.tbar-max { padding: 0 8px; font-size: 13px; background: transparent; border: 1px solid var(--line); border-radius: 4px; white-space: nowrap; }
+.tbar-step { width: 40px; min-height: 40px; font-size: 18px; background: transparent; border: 1px solid var(--line); border-radius: 4px; }
+.tbar-max { padding: 0 8px; font-size: 14px; background: transparent; border: 1px solid var(--line); border-radius: 4px; white-space: nowrap; min-height: 40px; }
 .tbar-step:hover, .tbar-max:hover { border-color: var(--accent); }
 .tbar-go { flex: 1; min-height: 40px; padding: 0 12px; background: var(--accent); color: #222a20; border: 0; border-radius: 4px; font-weight: 600; font-size: 15px; white-space: nowrap; }
 .tbar-go:disabled { background: #5b5a4b; color: #b4b19f; }
-.tbar-note { font-size: 12px; color: var(--muted); }
+.tbar-note { font-size: 14px; color: var(--muted); }
 .tbar-note.bad { color: #f0c7b9; }
 .tbar-note.warn { color: var(--warn); }
 
@@ -364,7 +359,6 @@ div.card { cursor: pointer; }
 /* ───────────── 卡片拖拽（交互与地图扩展 v0.3 · 01 案第 3 节） ───────────── */
 [data-drag] { user-select: none; -webkit-user-select: none; touch-action: none; }
 body.dragging, body.dragging * { cursor: grabbing !important; }
-body.dragging .tbar { visibility: hidden !important; }
 .drag-source { opacity: .45; }
 .drop-can { outline: 2px dashed #8fcf86; outline-offset: 2px; }
 .drop-can-preview { outline: 2px dashed var(--accent); outline-offset: 2px; }
@@ -393,15 +387,9 @@ body.dragging .tbar { visibility: hidden !important; }
 .pot-fill.clean .pot-track i { background: #6fa8c9; }
 .pot-fill.dirty .pot-track i { background: #9a8a5e; }
 
-.self-card { display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border: 1px dashed #6c7d68; }
-.self-card b { font-weight: 600; }
-.self-card span { font-size: 12px; color: var(--muted); }
 .loot-odds { display: flex; flex-direction: column; gap: 3px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 5px; }
 .loot-odds > div:not(.tiny) { display: flex; justify-content: space-between; font-size: 14px; }
 .pot-detail { display: flex; flex-direction: column; gap: 8px; padding: 8px; border: 1px solid var(--line); border-radius: 5px; }
-.pot-detail .pot-fill { margin: 0; background: var(--paper); color: var(--ink); }
-.pot-child { display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: var(--paper); color: var(--ink); border-radius: 4px; cursor: grab; }
-.pot-child svg { width: 28px; height: 28px; }
 .mat.slot { flex-wrap: wrap; border: 1px dashed transparent; border-radius: 4px; }
 .mat.slot:hover { border-color: #6c7d68; }
 .slot-batches { flex-basis: 100%; display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
@@ -409,9 +397,6 @@ body.dragging .tbar { visibility: hidden !important; }
 .batch-chip.on { border-color: var(--accent); color: var(--accent); }
 .recipe.missing small { color: var(--warn); }
 .candidates-head { padding: 0 2px 4px; }
-.pot-ml { font-size: 11px; color: #5d5a45; margin-top: 2px; }
-.pot-detail .btn-row { flex-wrap: wrap; }
-.pot-detail .btn-row button { flex: 1 1 46%; white-space: nowrap; }
 .ignite-picker { display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .ignite-choices { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 
@@ -513,14 +498,6 @@ body.dragging .tbar { visibility: hidden !important; }
 .heat-track i { display: block; height: 100%; background: #c9823a; }
 
 /* 锅的食材行（与水量条并列的第二个容量维度）与加工状态 */
-.pot-food { display: flex; align-items: center; gap: 4px; margin: 0 6px 4px; padding: 2px 6px; min-height: 26px; border: 1px dashed #8a8466; border-radius: 4px; font-size: 13px; }
-.pot-food > span:first-child { color: #5d5a45; }
-.pot-food b { margin-left: auto; }
-.pot-food-icons { display: inline-flex; gap: 1px; }
-.pot-food-icons i svg { width: 18px; height: 18px; display: block; }
-.pot-status { margin: 0 6px 6px; font-size: 13px; color: #3c4a35; }
-.pot-detail .pot-food { margin: 0; background: var(--paper); color: var(--ink); }
-.pot-detail .pot-status { margin: 0; color: var(--muted); }
 .facility-changes { display: flex; flex-direction: column; gap: 3px; }
 
 
@@ -546,16 +523,11 @@ body.dragging .tbar { visibility: hidden !important; }
 .fire-box .irow { border: 0; padding: 0; }
 .fire-box .irow .ir-icon { width: 44px; height: 44px; }
 .fire-box .irow .ir-icon svg { width: 40px; height: 40px; }
-.tbar-head .ir-icon { width: 26px; height: 26px; }
-.tbar-head .ir-icon svg { width: 22px; height: 22px; }
-.tbar-head { align-items: center; }
 .dq-head { display: flex; align-items: center; gap: 8px; }
 .supply-btn { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .supply-btn small { flex-basis: 100%; font-size: 13px; color: var(--muted); }
 .supply-btn .ir-icon { width: 26px; height: 26px; }
 .supply-btn .ir-icon svg { width: 22px; height: 22px; }
-.pot-child.irow { background: var(--paper); color: var(--ink); cursor: grab; }
-.pot-child.irow .ir-status { color: #5d5a45; }
 
 /* 点火工具图卡 */
 .lighter-card { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 8px; border: 1px solid #5c745d; border-radius: 6px; background: #0e211a; color: #d9e1cf; text-align: left; }
@@ -568,11 +540,9 @@ body.dragging .tbar { visibility: hidden !important; }
 .ignite-picker .ignite-choices { gap: 6px; }
 
 /* ───────────── 试玩修复（M25）：1280×720 下不裁切、热区 ≥40px、辅助文字 ≥14px ───────────── */
-.pot-fill-head, .pot-food > span:first-child, .pot-food b { white-space: nowrap; }
+.pot-fill-head { white-space: nowrap; }
 .pot-fill-head b { overflow: hidden; text-overflow: ellipsis; }
 
-.pot-detail .pot-fill, .pot-detail .pot-food { min-height: 40px; box-sizing: border-box; }
-.pot-detail .pot-food { display: flex; align-items: center; }
 .ignite-picker .lighter-card { width: 100%; }
 
 /* B5：资源卡采集按钮与探索/清理同一形态 */
@@ -583,7 +553,6 @@ body.dragging .tbar { visibility: hidden !important; }
 .item .qty { font-size: 14px; }
 .item .cinfo, .card .cinfo { font-size: 14px; line-height: 1.35; padding-right: 34px; }
 .pot-fill { font-size: 14px; }
-.pot-ml, .pot-food, .pot-status { font-size: 14px; }
 .item.reserved::after { font-size: 14px; }
 .card-arrow::after { content: ""; position: absolute; inset: -13px -5px -5px -9px; }
 .fuel-line { white-space: nowrap; gap: 4px; }
@@ -663,7 +632,46 @@ body.dragging .tbar { visibility: hidden !important; }
 /* 地面/随身栏：卡片顶端对齐，锅卡按内容高度，栏高随之增长（中部可纵滚） */
 .center-scroll .section.ground, .center-scroll .section.carried { height: auto; min-height: var(--shelf-h); }
 .row-scroll { align-items: flex-start; }
-.row-scroll > .card.item { height: calc(var(--shelf-h) - 56px); }
+.row-scroll .card.item { height: calc(var(--shelf-h) - 56px); }
+
+/* 卡下操作条内容 */
+.card-col { flex: 0 0 auto; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.card-col.open { width: 300px; }
+.card-col > .card { flex: 0 0 auto; }
+.ca-head { display: flex; align-items: center; gap: 8px; }
+.ca-head .ir-icon { width: 30px; height: 30px; }
+.ca-head .ir-icon svg { width: 26px; height: 26px; }
+.ca-title { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.ca-title b { font-size: 15px; font-weight: 600; }
+.ca-title small { font-size: 14px; color: var(--muted); }
+.ca-use-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.ca-use { min-height: 40px; padding: 4px 14px; border: 0; border-radius: 4px; background: #9db786; color: #1d2a18; font-size: 16px; font-weight: 600; white-space: nowrap; }
+.ca-use:hover:not(:disabled) { background: #b3cd9b; }
+.ca-use.risky { background: #e4b374; color: #3a2510; }
+.ca-use:disabled { background: #5b5a4b; color: #b4b19f; }
+.ca-use-note { flex: 1 1 140px; font-size: 14px; color: var(--muted); line-height: 1.4; }
+.ca-use-note em { font-style: normal; color: var(--text); margin-left: 6px; white-space: nowrap; }
+.ca-note { font-size: 14px; color: var(--muted); line-height: 1.4; }
+.ca-note.bad { color: #f0c7b9; }
+.ca-note.warn { color: var(--warn); }
+.ca-note.risk-line { color: #e2bf92; }
+.tbar .tbar-row { flex-wrap: wrap; }
+.tbar-go { min-width: 0; white-space: normal; text-align: center; line-height: 1.25; padding: 4px 10px; }
+.tbar-go.alt { background: #5b6b48; color: #f2ecd8; }
+.ca-targets { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); }
+.ca-targets button { flex: 1 1 0; min-height: 40px; border: 1px solid var(--line); border-radius: 4px; background: transparent; font-size: 15px; }
+.ca-targets button.on { border-color: var(--accent); color: var(--accent); background: #2c3427; }
+.pot-card .tbar, .fc-food .tbar { margin: 2px 0; }
+
+/* v0.7 第 2.2 节：全局辅助文字不小于 14px、操作热区不小于 40px（左右栏与页脚一并收紧） */
+kbd { font-size: 14px; }
+.tiny, .eyebrow, .under, .footer, .fold-icon, .vital .flag, .status-chip, .supply-btn small { font-size: 14px; }
+.vital-label small { font-size: 14px; }
+.vital { min-height: 40px; }
+.fold-head { min-height: 40px; }
+.linkish { min-height: 40px; padding: 0 4px; }
+.batch { min-height: 40px; }
+.toast button { min-width: 40px; min-height: 40px; }
 
 /* ───────────── 矮屏（1280×720 等，屏高 ≤800px）：唯一一处覆盖段（v0.7 第 2 节：两行各取策划区间下限，超出靠中部纵滚） ───────────── */
 @media (max-height: 800px) {
@@ -706,7 +714,6 @@ body.dragging .tbar { visibility: hidden !important; }
   .item .ctitle { padding: 5px 7px 2px; font-size: 14px; }
   .item .cinfo { padding: 2px 34px 5px 7px; }
   .card-arrow { width: 26px; height: 22px; }
-  .pot-food { min-height: 24px; }
   /* 统一卡框 */
   .oc-head { padding: 4px 7px 3px; }
   .oc-art { min-height: 40px; }

@@ -6,7 +6,6 @@
     var sel = G.Selected;
     var cfg = e.Item(sel.Id);
     var here = s.CurrentLocation;
-    var onGround = sel.Owner == here;
     var carried = sel.Owner == ItemInstance.Carried;
     // 设施与锅里的物品按根位置判断：仍在随身或当前地点（含当前火堆与锅）才可操作
     var probe = s.Items.FirstOrDefault(i => i.Owner == sel.Owner);
@@ -51,63 +50,48 @@ else
             }
         </div>
 
+        @* v0.7 第 7 节：右栏只保留详情、预测与说明；自用、倒出、取出、放入火堆都在被选中卡片（或锅内那一行）的下方操作条里 *@
         @if (e.IsPot(inst))
         {
+            var pc = e.PotConfig(inst);
             var liquids = e.PotLiquids(s, inst.InstanceId);
             var foods = e.PotFood(s, inst.InstanceId);
             var free = e.PotFreeWaterUnits(s, inst);
-            var potBusy = busy || e.IsLocked(s, inst);
             <div class="pot-detail">
-                <div class="tiny muted">@e.WherePath(s, inst)</div>
-                <PotGauge Pot="inst" />
+                <div class="lines">
+                    <div><span>水量</span><b>@e.PotLabel(s, inst)</b></div>
+                    <div><span>食材位</span><b>@foods.Count/@pc.FoodSlots</b></div>
+                    <div><span>状态</span><b>@e.ContentStatus(s, inst)</b></div>
+                </div>
                 @if (liquids.Count == 0 && foods.Count == 0)
                 {
-                    <div class="tiny muted">空锅。净水或脏水卡拖到水量条装入（每份500毫升，同一锅只装一种水）；生块根拖到食材行放进锅里（2个食材位）。</div>
+                    <div class="tiny muted">空锅。净水或脏水卡拖到锅的水量条装入（每份@(pc.UnitMl)毫升，同一锅只装一种水）；生块根拖到锅的食材区（@(pc.FoodSlots)个食材位）。</div>
                 }
                 @foreach (var c in liquids)
                 {
-                    var cid = c.InstanceId;
-                    var ccfg = e.Item(c.ItemId);
-                    var up = G.Preview(ActionRequest.UseInstance(cid));
                     var lockedWhy = free < 1 ? e.ReservedWaterText(s, c) : null;
-                    <ItemRow Icon="@c.ItemId" Name="@ccfg.Name" Qty="@($"×{c.Count}")" Status="@($"{c.Count * e.PotConfig(inst).UnitMl}毫升{(lockedWhy != null ? " · 已被水煮预留" : "")}")"
-                             CssClass="pot-child" DataDrag="@($"potchild:{cid}")" DragFrom="@($"{e.ItemName(inst.ItemId)}#{inst.InstanceId}内")"
-                             Title="可拖到随身或地面倒出，拖到“自身”饮用" />
-                    <div class="btn-row">
-                        <button class="secondary" disabled="@(potBusy || !up.Ok)" title="@up.Reason" @onclick="() => Use(cid)">@GameEngine.UseVerb(ccfg)1份</button>
-                        @if (!inst.IsCarried) { <button class="secondary" disabled="@(potBusy || lockedWhy != null)" title="@lockedWhy" @onclick="() => Decant(cid, ItemInstance.Carried)">倒出1份到随身</button> }
-                        <button class="secondary" disabled="@(potBusy || lockedWhy != null)" title="@lockedWhy" @onclick="() => Decant(cid, here)">倒出1份到地面</button>
-                    </div>
+                    <ItemRow Icon="@c.ItemId" Name="@e.ItemName(c.ItemId)" Qty="@($"×{c.Count}")" Status="@($"{c.Count * pc.UnitMl}毫升{(lockedWhy != null ? " · " + lockedWhy : "")}")" />
                 }
                 @foreach (var f in foods)
                 {
-                    <ItemRow Icon="@f.ItemId" Name="@($"{e.ItemName(f.ItemId)}#{f.InstanceId}")" Qty="×1" Status="@e.ContentStatus(s, f)"
-                             CssClass="pot-child" DataDrag="@($"potchild:{f.InstanceId}")" DragFrom="@($"{e.ItemName(inst.ItemId)}#{inst.InstanceId}内")" />
-                    <TakeOutButtons Item="f" Busy="busy" />
+                    <ItemRow Icon="@f.ItemId" Name="@($"{e.ItemName(f.ItemId)}#{f.InstanceId}")" Qty="×1" Status="@e.ContentStatus(s, f)" />
                 }
                 @if (inst.InFacility)
                 {
-                    <TakeOutButtons Item="inst" Busy="busy" />
-                }
-                else if (e.Location(here).HasFire)
-                {
-                    @* 试玩修复：放入火堆也有点击路径（ui.transferModes = 拖拽 + 卡上按钮），不能放时写明原因 *@
-                    e.MaxPutInFire(s, inst, out var fireWhy);
-                    <div class="btn-row">
-                        <button class="secondary" disabled="@(busy || fireWhy != null)" title="@(fireWhy ?? "放进火堆空加工位，燃烧时自动烧水、水煮")" @onclick="() => PutInFire(inst.InstanceId)">放入火堆</button>
-                    </div>
-                    @if (fireWhy != null && !busy) { <div class="tiny muted">@fireWhy</div> }
-                    else { <div class="tiny muted">也可以把锅卡拖到地块区火堆的空加工位。</div> }
+                    <div class="risk none">取下这口锅：@e.TakeOutConsequenceOf(s, inst).Text</div>
                 }
                 @if (e.IsLocked(s, inst)) { <div class="risk none">行动占用：这口锅正被当前行动使用，不能移动、取水或加水。</div> }
             </div>
         }
-        else if (inst.InFacility)
+        else if (inst.InFacility || inst.InContainer)
         {
             <div class="pot-detail">
-                <div class="tiny muted">@e.WherePath(s, inst)</div>
-                <div class="pot-status">@e.ContentStatus(s, inst)</div>
-                <TakeOutButtons Item="inst" Busy="busy" />
+                <div class="lines"><div><span>加工</span><b>@(inst.InContainer && e.IsLiquid(inst) ? e.ContentStatus(s, e.ContainerOf(s, inst) ?? inst) : e.ContentStatus(s, inst))</b></div></div>
+                @if (potLiquid && e.PotFreeWaterUnits(s, inst) < inst.Count)
+                {
+                    <div class="risk">@e.ReservedWaterText(s, inst)</div>
+                }
+                @if (!e.IsLiquid(inst)) { <div class="risk none">取出：@e.TakeOutConsequenceOf(s, inst).Text</div> }
             </div>
         }
 
@@ -145,7 +129,7 @@ else
                 <div><span>耗时</span><b>@(e.Config.ItemActions.UseMinutes)分钟（不可中途取消）</b></div>
             </div>
             @if (p.OverflowText is string ov) { <div class="risk">@ov</div> }
-            @if (cfg.Use.CausesDiarrhea) { <div class="risk">⚠ 脏水必定引起腹泻12小时：期间每小时额外失水3。建议在营地烧开后再喝。</div> }
+            @if (e.UseRiskText(cfg) is string risk) { <div class="risk">⚠ @(risk)。建议在营地烧开后再喝。</div> }
             @if (!p.Ok) { <div class="blocked">@p.Reason</div> }
         }
         else if (spoiled)
@@ -164,13 +148,7 @@ else
     </div>
 
     <div class="detail-foot">
-        @if (cfg.Use != null && !spoiled)
-        {
-            var label = $"{GameEngine.UseVerb(cfg)}1份{cfg.Name}·{e.Config.ItemActions.UseMinutes}分钟";
-            var p = G.Preview(ActionRequest.UseInstance(inst.InstanceId));
-            <button class="primary" disabled="@(!p.Ok || busy || chosen.Reserved)" @onclick="() => Use(inst.InstanceId)">@label</button>
-        }
-        <div class="under">@(busy ? "行动进行中，暂不能整理物品" : onGround ? "拾取在卡片下方操作，可输入数量" : carried ? "放下在卡片上方操作，可输入数量" : inst.InFacility || inst.InContainer ? "在火堆或锅里：用上面的按钮取出，或把卡片拖出" : "物品只能在当前地点取用")</div>
+        <div class="under">@(busy ? "行动进行中，暂不能整理物品" : GameEngine.CanSelfUse(cfg) ? $"在被选中卡片下方点“{GameEngine.UseButtonText(cfg)}”使用；转移目标与数量也在那里" : "转移目标与数量在被选中卡片下方的操作条里")</div>
     </div>
 }
 
@@ -197,12 +175,6 @@ else
         batchKey = key;
         batchPicked = true;
     }
-
-    private async Task Use(int instanceId) => await G.StartAction(ActionRequest.UseInstance(instanceId));
-
-    private void PutInFire(int potId) => G.Instant(InstantRequest.PutInFire(potId));
-
-    private void Decant(int childId, string zone) => G.Instant(InstantRequest.Decant(childId, zone));
 
     private void OpenCraft(string recipe, int potId)
     {

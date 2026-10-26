@@ -1,0 +1,14 @@
+@* 转移目标选择（v0.7 第 3.2 节：选择目标本身不转移，点执行按钮才提交）：随身 / 当前地面。 *@
+<div class="ca-targets" role="radiogroup" aria-label="转移目标">
+    <span>目标</span>
+    <button type="button" role="radio" aria-checked="@(Value == ItemInstance.Carried)" class="@(Value == ItemInstance.Carried ? "on" : "")"
+            @onclick="() => OnPick.InvokeAsync(ItemInstance.Carried)">随身</button>
+    <button type="button" role="radio" aria-checked="@(Value == Here)" class="@(Value == Here ? "on" : "")"
+            @onclick="() => OnPick.InvokeAsync(Here)">当前地面</button>
+</div>
+
+@code {
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public string Here { get; set; } = "";
+    [Parameter] public EventCallback<string> OnPick { get; set; }
+}
