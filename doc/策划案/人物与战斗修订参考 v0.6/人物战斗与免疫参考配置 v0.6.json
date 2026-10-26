@@ -1,0 +1,1899 @@
+{
+  "proposalVersion": "0.6-reference",
+  "date": "2026-10-26",
+  "enabled": false,
+  "role": "revised_reference_design_not_live_engine_config",
+  "doNotModifyExistingRulesUntilSelected": true,
+  "scope": {
+    "playerCount": 1,
+    "maxEnemies": 3,
+    "slots": [
+      "F1",
+      "F2",
+      "B1"
+    ],
+    "humanApPerActivation": 2,
+    "enemyActionsPerActivation": 1,
+    "basePlayerSpeed": 4,
+    "basePlayerDodge": 36,
+    "basePlayerArmor": 0,
+    "healthUsesExistingSurvivalHealth": true
+  },
+  "skills": [
+    {
+      "id": "crafting",
+      "name": "制造",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    },
+    {
+      "id": "medicine",
+      "name": "医疗",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    },
+    {
+      "id": "firearms",
+      "name": "枪械",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    },
+    {
+      "id": "blade",
+      "name": "刀斧",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    },
+    {
+      "id": "spear",
+      "name": "矛",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    },
+    {
+      "id": "unarmed",
+      "name": "拳",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    },
+    {
+      "id": "archery",
+      "name": "弓箭",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    },
+    {
+      "id": "blunt",
+      "name": "钝器",
+      "initialLevel": 1,
+      "nextLevelXpFormula": "50*(L+1)",
+      "levelCap": null
+    }
+  ],
+  "weapons": [
+    {
+      "id": "fists",
+      "name": "拳",
+      "skillId": "unarmed",
+      "damageMin": 0.6,
+      "damageMax": 0.9,
+      "energyCost": 0.3,
+      "weightGrams": 0,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 24,
+      "critRatingBase": 3,
+      "durabilityMaxRange": null
+    },
+    {
+      "id": "stone_knife",
+      "name": "石刀",
+      "skillId": "blade",
+      "damageMin": 1.0,
+      "damageMax": 1.5,
+      "energyCost": 0.4,
+      "weightGrams": 500,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 26,
+      "critRatingBase": 5,
+      "durabilityMaxRange": [
+        16,
+        24
+      ]
+    },
+    {
+      "id": "kitchen_knife",
+      "name": "厨房刀",
+      "skillId": "blade",
+      "damageMin": 1.2,
+      "damageMax": 1.8,
+      "energyCost": 0.4,
+      "weightGrams": 300,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 28,
+      "critRatingBase": 6,
+      "durabilityMaxRange": [
+        28,
+        42
+      ]
+    },
+    {
+      "id": "hatchet",
+      "name": "简易斧",
+      "skillId": "blade",
+      "damageMin": 1.6,
+      "damageMax": 2.4,
+      "energyCost": 0.65,
+      "weightGrams": 1500,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 24,
+      "critRatingBase": 5,
+      "durabilityMaxRange": [
+        24,
+        36
+      ]
+    },
+    {
+      "id": "crowbar",
+      "name": "撬棍",
+      "skillId": "blunt",
+      "damageMin": 1.4,
+      "damageMax": 2.1,
+      "energyCost": 0.6,
+      "weightGrams": 1800,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 26,
+      "critRatingBase": 3,
+      "durabilityMaxRange": [
+        48,
+        72
+      ]
+    },
+    {
+      "id": "wooden_spear",
+      "name": "木矛",
+      "skillId": "spear",
+      "damageMin": 1.4,
+      "damageMax": 2.1,
+      "energyCost": 0.5,
+      "weightGrams": 1200,
+      "targets": "all_rear_damage_0.75",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 27,
+      "critRatingBase": 5,
+      "durabilityMaxRange": [
+        20,
+        30
+      ]
+    },
+    {
+      "id": "metal_spear",
+      "name": "金属矛",
+      "skillId": "spear",
+      "damageMin": 1.8,
+      "damageMax": 2.7,
+      "energyCost": 0.5,
+      "weightGrams": 1800,
+      "targets": "all_rear_damage_0.75",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 29,
+      "critRatingBase": 5,
+      "durabilityMaxRange": [
+        32,
+        48
+      ]
+    },
+    {
+      "id": "wooden_bow",
+      "name": "木弓",
+      "skillId": "archery",
+      "damageMin": 1.4,
+      "damageMax": 2.3,
+      "energyCost": 0.4,
+      "weightGrams": 900,
+      "targets": "all",
+      "ammoId": "arrow",
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 25,
+      "critRatingBase": 8,
+      "durabilityMaxRange": [
+        24,
+        36
+      ]
+    },
+    {
+      "id": "crossbow",
+      "name": "弩",
+      "skillId": "archery",
+      "damageMin": 2.0,
+      "damageMax": 3.1,
+      "energyCost": 0.3,
+      "weightGrams": 2800,
+      "targets": "all",
+      "ammoId": "bolt",
+      "magazineCapacity": 1,
+      "basicApCost": 1,
+      "accuracyRating": 31,
+      "critRatingBase": 8,
+      "durabilityMaxRange": [
+        32,
+        48
+      ]
+    },
+    {
+      "id": "pistol",
+      "name": "手枪",
+      "skillId": "firearms",
+      "damageMin": 2.4,
+      "damageMax": 3.6,
+      "energyCost": 0.25,
+      "weightGrams": 900,
+      "targets": "all",
+      "ammoId": "ammo_9mm",
+      "magazineCapacity": 8,
+      "basicApCost": 1,
+      "accuracyRating": 25,
+      "critRatingBase": 8,
+      "durabilityMaxRange": [
+        64,
+        96
+      ]
+    },
+    {
+      "id": "shotgun",
+      "name": "霰弹枪",
+      "skillId": "firearms",
+      "damageMin": 3.6,
+      "damageMax": 5.2,
+      "energyCost": 0.4,
+      "weightGrams": 3200,
+      "targets": "front",
+      "ammoId": "shell_12g",
+      "magazineCapacity": 4,
+      "basicApCost": 1,
+      "accuracyRating": 23,
+      "critRatingBase": 5,
+      "durabilityMaxRange": [
+        56,
+        84
+      ]
+    },
+    {
+      "id": "rifle",
+      "name": "步枪",
+      "skillId": "firearms",
+      "damageMin": 3.2,
+      "damageMax": 4.8,
+      "energyCost": 0.35,
+      "weightGrams": 3400,
+      "targets": "all",
+      "ammoId": "ammo_rifle",
+      "magazineCapacity": 5,
+      "basicApCost": 1,
+      "accuracyRating": 32,
+      "critRatingBase": 10,
+      "durabilityMaxRange": [
+        64,
+        96
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "basic_attack",
+      "ap": 1,
+      "energySource": "weapon",
+      "damageFactor": 1,
+      "accuracyRatingFactor": 1.0
+    },
+    {
+      "id": "cleave",
+      "ap": 2,
+      "energy": 1.6,
+      "skills": [
+        "blade"
+      ],
+      "minLevel": 3,
+      "damageFactor": 1.6,
+      "accuracyRatingFactor": 0.9,
+      "applyCorrespondingSkillEnergyReduction": true
+    },
+    {
+      "id": "cut",
+      "ap": 1,
+      "energy": 0.8,
+      "skills": [
+        "blade"
+      ],
+      "minLevel": 2,
+      "damageFactor": 0.75,
+      "bleed": 0.4,
+      "bleedTriggers": 3,
+      "accuracyRatingFactor": 1.0,
+      "applyCorrespondingSkillEnergyReduction": true
+    },
+    {
+      "id": "precise_thrust",
+      "ap": 2,
+      "energy": 1.4000000000000001,
+      "skills": [
+        "spear"
+      ],
+      "minLevel": 3,
+      "damageFactor": 1.35,
+      "accuracyRatingFactor": 1.1,
+      "applyCorrespondingSkillEnergyReduction": true
+    },
+    {
+      "id": "push",
+      "ap": 1,
+      "energy": 0.8,
+      "skills": [
+        "unarmed",
+        "blunt"
+      ],
+      "minLevel": 1,
+      "damageFactor": 0,
+      "status": "stagger",
+      "applyCorrespondingSkillEnergyReduction": true
+    },
+    {
+      "id": "scatter",
+      "ap": 2,
+      "energy": 1.0,
+      "skills": [
+        "firearms"
+      ],
+      "weaponId": "shotgun",
+      "minLevel": 3,
+      "damageFactor": 0.7,
+      "maxTargets": 2,
+      "targets": "front",
+      "ammoCost": 1,
+      "applyCorrespondingSkillEnergyReduction": true
+    },
+    {
+      "id": "guard",
+      "ap": 1,
+      "energy": 0,
+      "charges": 1,
+      "directDamageFactor": 0.5,
+      "expires": "next_own_activation_start"
+    },
+    {
+      "id": "breathe",
+      "ap": 2,
+      "energy": 0,
+      "restoreEnergy": 1.6,
+      "reducePanic": 10,
+      "maxPerTurn": 1
+    },
+    {
+      "id": "switch_weapon",
+      "ap": 1,
+      "energy": 0,
+      "sourceOwner": "carried"
+    },
+    {
+      "id": "reload",
+      "ap": 1,
+      "energy": 0,
+      "sourceOwner": "carried"
+    },
+    {
+      "id": "bandage",
+      "ap": 2,
+      "energy": 0,
+      "itemId": "bandage",
+      "count": 1,
+      "removeBleed": true,
+      "healthFormula": "1*(1+0.02*medicineLevel)",
+      "healthCooldownMinutes": 60,
+      "bleedRemovalIgnoresHealthCooldown": true,
+      "additionalWorldMinutes": 0,
+      "infectionReductionFormula": "2*(1+0.01*medicineLevel), infected minimum load 1",
+      "infectionEffectCooldownMinutes": 360
+    },
+    {
+      "id": "desperate_punch",
+      "ap": 1,
+      "energy": 0,
+      "skillId": "unarmed",
+      "damageFactor": 0.5,
+      "requiresInsufficientNormalAttackEnergy": true,
+      "accuracyRatingFactor": 0.65
+    },
+    {
+      "id": "retreat",
+      "ap": 2,
+      "energy": 0.8,
+      "maxPerTurn": 1,
+      "lowEnergyChanceFactor": 0.75
+    },
+    {
+      "id": "end_turn",
+      "ap": "remaining",
+      "energy": 0
+    },
+    {
+      "id": "use_antibiotics",
+      "ap": 2,
+      "energy": 0,
+      "itemId": "antibiotics",
+      "count": 1,
+      "instantVirusReduction": 8,
+      "minimumInfectedLoad": 1,
+      "cooldownMinutes": 360,
+      "positiveVirusProgressFactor": 0.5,
+      "effectMinutes": 360,
+      "clearInfected": false,
+      "additionalWorldMinutes": 0
+    },
+    {
+      "id": "use_antiviral_cure",
+      "ap": 2,
+      "energy": 0,
+      "itemId": "antiviral_cure",
+      "count": 1,
+      "clearInfected": true,
+      "setVirusLoad": 0,
+      "restoreHealth": 0,
+      "restoreEnergy": 0,
+      "additionalWorldMinutes": 0
+    }
+  ],
+  "enemies": [
+    {
+      "id": "shambler",
+      "name": "游荡尸",
+      "family": "zombie",
+      "hp": 3.6,
+      "armor": 0,
+      "dodge": 25,
+      "speed": 2,
+      "damageMin": 0.7,
+      "damageMax": 1.1,
+      "behavior": "grab",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": true,
+      "attackRating": 20,
+      "rarity": "common",
+      "biteIntentWeightPct": 20,
+      "worldPersistentId": true
+    },
+    {
+      "id": "crawler",
+      "name": "爬行尸",
+      "family": "zombie",
+      "hp": 2.8,
+      "armor": 0,
+      "dodge": 28,
+      "speed": 1,
+      "damageMin": 0.4,
+      "damageMax": 0.8,
+      "behavior": "slow_on_hit",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": true,
+      "attackRating": 18,
+      "rarity": "common",
+      "biteIntentWeightPct": 20,
+      "worldPersistentId": true
+    },
+    {
+      "id": "runner",
+      "name": "狂奔尸",
+      "family": "zombie",
+      "hp": 3.2,
+      "armor": 0,
+      "dodge": 34,
+      "speed": 6,
+      "damageMin": 0.8,
+      "damageMax": 1.2,
+      "behavior": "stagger_on_hit",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": true,
+      "attackRating": 23,
+      "rarity": "rare",
+      "biteIntentWeightPct": 20,
+      "worldPersistentId": true
+    },
+    {
+      "id": "worker",
+      "name": "厚衣工尸",
+      "family": "zombie",
+      "hp": 5.6,
+      "armor": 0.3,
+      "dodge": 22,
+      "speed": 2,
+      "damageMin": 1.0,
+      "damageMax": 1.5,
+      "behavior": "strike",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": true,
+      "attackRating": 18,
+      "rarity": "rare",
+      "biteIntentWeightPct": 20,
+      "worldPersistentId": true
+    },
+    {
+      "id": "riot",
+      "name": "防护尸",
+      "family": "zombie",
+      "hp": 7,
+      "armor": 0.7,
+      "dodge": 20,
+      "speed": 1,
+      "damageMin": 1.2,
+      "damageMax": 1.8,
+      "behavior": "guard_first_round",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": true,
+      "attackRating": 16,
+      "rarity": "elite",
+      "biteIntentWeightPct": 20,
+      "worldPersistentId": true
+    },
+    {
+      "id": "howler",
+      "name": "嚎叫尸",
+      "family": "zombie",
+      "hp": 4,
+      "armor": 0,
+      "dodge": 28,
+      "speed": 3,
+      "damageMin": 0.5,
+      "damageMax": 0.8,
+      "behavior": "howl_odd_rounds",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": true,
+      "attackRating": 16,
+      "rarity": "rare",
+      "biteIntentWeightPct": 20,
+      "worldPersistentId": true
+    },
+    {
+      "id": "feral_dog",
+      "name": "野犬",
+      "family": "animal",
+      "hp": 3.2,
+      "armor": 0,
+      "dodge": 32,
+      "speed": 5,
+      "damageMin": 0.5,
+      "damageMax": 1.0,
+      "behavior": "bleed_on_hit_25",
+      "fleeAtHp": null,
+      "immuneBleed": false,
+      "artRequired": true,
+      "attackRating": 22,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true
+    },
+    {
+      "id": "wolf",
+      "name": "灰狼",
+      "family": "animal",
+      "hp": 4.8,
+      "armor": 0,
+      "dodge": 34,
+      "speed": 5,
+      "damageMin": 0.9,
+      "damageMax": 1.4,
+      "behavior": "bleed_on_hit_25",
+      "fleeAtHp": 1.2000000000000002,
+      "immuneBleed": false,
+      "artRequired": true,
+      "attackRating": 24,
+      "rarity": "rare",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true
+    },
+    {
+      "id": "boar",
+      "name": "野猪",
+      "family": "animal",
+      "hp": 6.8,
+      "armor": 0.2,
+      "dodge": 25,
+      "speed": 3,
+      "damageMin": 1.1,
+      "damageMax": 1.8,
+      "behavior": "charge_prepare_odd_attack_even",
+      "fleeAtHp": null,
+      "immuneBleed": false,
+      "artRequired": true,
+      "attackRating": 20,
+      "rarity": "elite",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true
+    },
+    {
+      "id": "stag",
+      "name": "警戒雄鹿",
+      "family": "animal",
+      "hp": 5.2,
+      "armor": 0,
+      "dodge": 32,
+      "speed": 4,
+      "damageMin": 0.8,
+      "damageMax": 1.3,
+      "behavior": "neutral_until_attacked",
+      "fleeAtHp": 2.0,
+      "immuneBleed": false,
+      "artRequired": true,
+      "attackRating": 18,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true
+    }
+  ],
+  "newItems": [
+    {
+      "id": "kitchen_knife",
+      "name": "厨房刀",
+      "weightGrams": 300,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "durabilityMaxRange": [
+        28,
+        42
+      ]
+    },
+    {
+      "id": "crowbar",
+      "name": "撬棍",
+      "weightGrams": 1800,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "durabilityMaxRange": [
+        48,
+        72
+      ]
+    },
+    {
+      "id": "wooden_spear",
+      "name": "木矛",
+      "weightGrams": 1200,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "durabilityMaxRange": [
+        20,
+        30
+      ]
+    },
+    {
+      "id": "metal_spear",
+      "name": "金属矛",
+      "weightGrams": 1800,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "durabilityMaxRange": [
+        32,
+        48
+      ]
+    },
+    {
+      "id": "wooden_bow",
+      "name": "木弓",
+      "weightGrams": 900,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "durabilityMaxRange": [
+        24,
+        36
+      ]
+    },
+    {
+      "id": "crossbow",
+      "name": "弩",
+      "weightGrams": 2800,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "durabilityMaxRange": [
+        32,
+        48
+      ]
+    },
+    {
+      "id": "pistol",
+      "name": "手枪",
+      "weightGrams": 900,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "durabilityMaxRange": [
+        64,
+        96
+      ]
+    },
+    {
+      "id": "shotgun",
+      "name": "霰弹枪",
+      "weightGrams": 3200,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "durabilityMaxRange": [
+        56,
+        84
+      ]
+    },
+    {
+      "id": "rifle",
+      "name": "步枪",
+      "weightGrams": 3400,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "durabilityMaxRange": [
+        64,
+        96
+      ]
+    },
+    {
+      "id": "arrow",
+      "name": "箭矢",
+      "weightGrams": 50,
+      "stackMax": 50,
+      "shelfLifeMinutes": null
+    },
+    {
+      "id": "bolt",
+      "name": "弩矢",
+      "weightGrams": 50,
+      "stackMax": 50,
+      "shelfLifeMinutes": null
+    },
+    {
+      "id": "ammo_9mm",
+      "name": "9mm弹",
+      "weightGrams": 10,
+      "stackMax": 50,
+      "shelfLifeMinutes": null
+    },
+    {
+      "id": "shell_12g",
+      "name": "霰弹",
+      "weightGrams": 30,
+      "stackMax": 50,
+      "shelfLifeMinutes": null
+    },
+    {
+      "id": "ammo_rifle",
+      "name": "步枪弹",
+      "weightGrams": 10,
+      "stackMax": 50,
+      "shelfLifeMinutes": null
+    },
+    {
+      "id": "carcass_feral_dog",
+      "name": "野犬尸体",
+      "weightGrams": 1500,
+      "stackMax": 1,
+      "shelfLifeMinutes": 720
+    },
+    {
+      "id": "carcass_wolf",
+      "name": "狼尸体",
+      "weightGrams": 3000,
+      "stackMax": 1,
+      "shelfLifeMinutes": 720
+    },
+    {
+      "id": "carcass_boar",
+      "name": "野猪尸体",
+      "weightGrams": 6000,
+      "stackMax": 1,
+      "shelfLifeMinutes": 720
+    },
+    {
+      "id": "carcass_stag",
+      "name": "鹿尸体",
+      "weightGrams": 4000,
+      "stackMax": 1,
+      "shelfLifeMinutes": 720
+    },
+    {
+      "id": "raw_meat",
+      "name": "生肉",
+      "weightGrams": 300,
+      "stackMax": 20,
+      "shelfLifeMinutes": 720,
+      "usable": false
+    },
+    {
+      "id": "hide",
+      "name": "兽皮",
+      "weightGrams": 500,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "advancedRecipesEnabled": false
+    },
+    {
+      "id": "cooked_meat",
+      "name": "烤肉",
+      "weightGrams": 300,
+      "stackMax": 20,
+      "shelfLifeMinutes": 1440,
+      "immediateEffects": {
+        "satiety": 35,
+        "hydration": -3,
+        "morale": 2
+      },
+      "useMinutes": 5
+    },
+    {
+      "id": "boiled_meat",
+      "name": "水煮肉",
+      "weightGrams": 300,
+      "stackMax": 20,
+      "shelfLifeMinutes": 1440,
+      "immediateEffects": {
+        "satiety": 32,
+        "hydration": 5,
+        "morale": 3
+      },
+      "useMinutes": 5
+    },
+    {
+      "id": "antibiotics",
+      "name": "抗生素",
+      "weightGrams": 50,
+      "stackMax": 20,
+      "shelfLifeMinutes": null
+    },
+    {
+      "id": "antiviral_cure",
+      "name": "病毒特效药",
+      "weightGrams": 50,
+      "stackMax": 5,
+      "shelfLifeMinutes": null
+    },
+    {
+      "id": "antiviral_precursor",
+      "name": "抗病毒前体",
+      "weightGrams": 100,
+      "stackMax": 10,
+      "shelfLifeMinutes": null
+    },
+    {
+      "id": "lab_reagent",
+      "name": "实验室试剂",
+      "weightGrams": 100,
+      "stackMax": 10,
+      "shelfLifeMinutes": null
+    }
+  ],
+  "xp": {
+    "craft": "clamp(ceil(originalBaseMinutes/10),1,12)",
+    "medical": 4,
+    "damagingAttackCommand": 2,
+    "maxHitsPerEncounterEnemySkill": 3,
+    "groupAttackXpIsSingleCommand": true,
+    "cancelOrPreviewXp": 0,
+    "counterKey": [
+      "encounterId",
+      "enemyInstanceId",
+      "skillId"
+    ]
+  },
+  "crafting": {
+    "workFactor": "1/(1+0.025*L)",
+    "minFactor": null,
+    "affectsPassiveCooking": false,
+    "affectsButchering": false,
+    "batchOverflowWithinSameReservedBatch": true,
+    "carryOverflowToOtherAction": false
+  },
+  "combatMath": {
+    "initiative": "max(0.1,speed-lowEnergy-lowWakefulness-2*slowLayers)+randInt(1,4)",
+    "tieBreak": "stableBattleInstanceIdAscending",
+    "playerAccuracyRating": "(weaponBase+3*L)*actionFactor*lowEnergyFactor*lowWakefulnessFactor*panicFactor*staggerFactor",
+    "hitProbability": "attackRating/(attackRating+targetEvasionRating)",
+    "critRating": "baseCritRating+0.3*L",
+    "critProbability": "critRating/(critRating+100)",
+    "critFactor": 1.5,
+    "playerDamage": "max(0,U(min,max)*(1+0.035*L)*actionFactor*rankFactor*critFactor-armor)",
+    "guardAppliedAfterArmor": "damage*0.5",
+    "hardHitChanceClamp": null,
+    "hardCritChanceClamp": null,
+    "enemySkillScaling": false,
+    "enemyCritRating": 0,
+    "randomDamage": "uniform_real_from_saved_prng",
+    "lowEnergyExclusive": 4,
+    "lowEnergyAccuracyFactor": 0.85,
+    "lowEnergySpeedPenalty": 1,
+    "lowWakefulnessInclusive": 20,
+    "lowWakefulnessAccuracyFactor": 0.85,
+    "lowWakefulnessSpeedPenalty": 1,
+    "staggerAccuracyFactor": 0.9,
+    "guardStacks": false,
+    "aimRemoved": true
+  },
+  "panic": {
+    "range": [
+      0,
+      100
+    ],
+    "initial": "(100-morale)/2",
+    "surpriseBonus": 10,
+    "directDamageGain": "actualDamage*1.5",
+    "penalties": [
+      {
+        "minimum": 60,
+        "accuracyRatingFactor": 0.85,
+        "retreatFactor": 0.9
+      },
+      {
+        "minimum": 90,
+        "accuracyRatingFactor": 0.7,
+        "retreatFactor": 0.8
+      }
+    ],
+    "penaltiesSelectHighestOnly": true,
+    "postBattleMoraleLoss": "min(5,panic/20)",
+    "clearAfterBattle": true
+  },
+  "retreat": {
+    "chance": "sigmoid((playerEffectiveSpeed-maxEnemyEffectiveSpeed)/3+0.7)*panicFactor*lowEnergyFactor",
+    "successMovesLocation": false,
+    "failureConsumesTurn": true,
+    "preserveEncounterSurvivorHp": true,
+    "resetSurvivorTemporaryStatuses": true,
+    "claimLootOnRetreat": false
+  },
+  "ammo": {
+    "weaponLoadedCountsInMass": true,
+    "looseAndLoadedExclusiveOwners": true,
+    "reloadAp": 1,
+    "autoReload": false,
+    "bowConsumesLooseArrowDirectly": true,
+    "recoverArrows": false
+  },
+  "wear": {
+    "perExecutedAttackCommand": 1,
+    "onMiss": true,
+    "perGroupTarget": false,
+    "gatherWearRuleUnchanged": true,
+    "zeroDurabilityDisablesAttack": true
+  },
+  "noise": {
+    "max": 100,
+    "gunGain": 25,
+    "crossbowGain": 5,
+    "bowAndMeleeGain": 0,
+    "maxReinforcementsPerBattle": 1,
+    "spawnAtNextRoundWithSpace": true,
+    "cancelAfterBattleEnd": true,
+    "reinforcementSource": "unengaged_existing_local_world_enemy",
+    "createNewEnemy": false,
+    "existingEnemyFamilyFilter": "zombie"
+  },
+  "statuses": {
+    "bleed": {
+      "damagePerOwnActivation": 0.4,
+      "triggers": 3,
+      "stacks": false,
+      "refreshMaxTriggers": 3,
+      "immuneFamily": "zombie",
+      "postBattle": "0.4_health_per_world_tick_remaining_triggers",
+      "noExtraExitTrigger": true
+    },
+    "stagger": {
+      "expiresLatest": "next_round_end",
+      "nextAttackAccuracyFactor": 0.9
+    },
+    "slow": {
+      "nextRoundSpeedPenalty": 2,
+      "expires": "next_round_end",
+      "stacks": false
+    }
+  },
+  "worldTime": {
+    "roundWorldMinutes": 5,
+    "tickOnceAtRoundEndOrNonfatalEarlyExit": true,
+    "previewAdvancesTime": false,
+    "freezeImmediatelyOnDirectDeathNoFutureTick": true,
+    "hourlyRates": {
+      "satiety": -1.875,
+      "hydration": -4.5,
+      "energy": 0,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "actionEnergyPaidSeparately": true,
+    "countsAsWorkingForZeroEnergyDamage": true,
+    "passiveFacilitiesAndRefillsAdvance": true,
+    "battleLowValueWarningsNonBlocking": true,
+    "noLegacyInstantUseChildAction": true,
+    "foodAndDrinkInCombatEnabled": false,
+    "zeroEnergyWorkingHealthPerHour": -0.2
+  },
+  "encounters": {
+    "source": "existing_local_world_enemies_only",
+    "createNewEnemiesOnActionCompletion": false,
+    "safeLocations": [
+      "camp"
+    ],
+    "noRandomBeforeDay": 2,
+    "checkOnlyAfterCompletedActions": [
+      "explore",
+      "clear"
+    ],
+    "fullLocalPopulationActionRisk": {
+      "explore": 0.02,
+      "clear": 0.01
+    },
+    "actualRiskFormula": "baseRisk*(localUnengagedHostileCount/localCap)",
+    "noRiskWhenZeroHostile": true,
+    "activeContactEnabled": true,
+    "commitOriginalActionBeforeEncounter": true,
+    "bypassMinutes": 10,
+    "bypassRateCategory": "travel",
+    "postExitRandomEncounterGraceMinutes": 60,
+    "noNestedRandomDuringCombatOrBypass": true,
+    "groupMax": 3,
+    "groupSelection": "oldest_local_hostile_then_nearest_existing_hostiles_max3",
+    "bypassLeavesWorldEnemiesAlive": true,
+    "defeatRemovesOnlyKilledWorldIds": true,
+    "combatSurvivorsKeepHpAndXpCountersOnWorldId": true
+  },
+  "zombieLoot": {
+    "rollAtFirstEnemyDeath": true,
+    "claimOnceAtFinalVictory": true,
+    "entries": [
+      {
+        "itemId": null,
+        "count": 0,
+        "weight": 50
+      },
+      {
+        "itemId": "cloth",
+        "count": 1,
+        "weight": 30
+      },
+      {
+        "itemId": "scrap",
+        "count": 1,
+        "weight": 20
+      }
+    ]
+  },
+  "animalCarcasses": [
+    {
+      "enemyId": "feral_dog",
+      "carcassItemId": "carcass_feral_dog",
+      "count": 1,
+      "butcherBaseMinutes": 30,
+      "butcherManufacturingSpeedBonus": false,
+      "requiredCarriedTools": [
+        "stone_knife",
+        "kitchen_knife",
+        "hatchet"
+      ],
+      "toolWearOnSuccess": 1,
+      "outputs": {
+        "raw_meat": 2,
+        "hide": 1
+      }
+    },
+    {
+      "enemyId": "wolf",
+      "carcassItemId": "carcass_wolf",
+      "count": 1,
+      "butcherBaseMinutes": 30,
+      "butcherManufacturingSpeedBonus": false,
+      "requiredCarriedTools": [
+        "stone_knife",
+        "kitchen_knife",
+        "hatchet"
+      ],
+      "toolWearOnSuccess": 1,
+      "outputs": {
+        "raw_meat": 3,
+        "hide": 1
+      }
+    },
+    {
+      "enemyId": "boar",
+      "carcassItemId": "carcass_boar",
+      "count": 1,
+      "butcherBaseMinutes": 30,
+      "butcherManufacturingSpeedBonus": false,
+      "requiredCarriedTools": [
+        "stone_knife",
+        "kitchen_knife",
+        "hatchet"
+      ],
+      "toolWearOnSuccess": 1,
+      "outputs": {
+        "raw_meat": 4,
+        "hide": 1
+      }
+    },
+    {
+      "enemyId": "stag",
+      "carcassItemId": "carcass_stag",
+      "count": 1,
+      "butcherBaseMinutes": 30,
+      "butcherManufacturingSpeedBonus": false,
+      "requiredCarriedTools": [
+        "stone_knife",
+        "kitchen_knife",
+        "hatchet"
+      ],
+      "toolWearOnSuccess": 1,
+      "outputs": {
+        "raw_meat": 3,
+        "hide": 1
+      }
+    }
+  ],
+  "passiveCookingExtensions": [
+    {
+      "id": "roast_meat",
+      "inputId": "raw_meat",
+      "outputId": "cooked_meat",
+      "heatMinutes": 30,
+      "outputOwner": "same_fire_slot",
+      "waterCostMl": 0
+    },
+    {
+      "id": "boil_meat",
+      "inputId": "raw_meat",
+      "outputId": "boiled_meat",
+      "heatMinutes": 30,
+      "outputOwner": "same_pot",
+      "waterCostMl": 500,
+      "requiredLiquid": "clean_water"
+    }
+  ],
+  "newRecipes": [
+    {
+      "id": "make_wooden_spear",
+      "inputs": {
+        "wood": 2,
+        "stone": 1,
+        "fiber": 2
+      },
+      "outputs": {
+        "wooden_spear": 1
+      },
+      "baseMinutes": 45
+    },
+    {
+      "id": "make_wooden_bow",
+      "inputs": {
+        "wood": 2,
+        "fiber": 4,
+        "cloth": 1
+      },
+      "outputs": {
+        "wooden_bow": 1
+      },
+      "baseMinutes": 90
+    },
+    {
+      "id": "make_arrows",
+      "inputs": {
+        "wood": 1,
+        "stone": 1,
+        "fiber": 1
+      },
+      "outputs": {
+        "arrow": 4
+      },
+      "baseMinutes": 30
+    },
+    {
+      "id": "repair_selected_tool",
+      "inputs": {
+        "scrap": 1,
+        "parts": 1
+      },
+      "outputs": {},
+      "baseMinutes": 30,
+      "targetInstanceRequired": true,
+      "restoreOwnDurabilityMaxFraction": 0.2,
+      "rerollDurability": false,
+      "requireEmptyDetachedPotWhenTargetIsPot": true
+    },
+    {
+      "id": "make_antiviral_cure",
+      "inputs": {
+        "antiviral_precursor": 1,
+        "lab_reagent": 1,
+        "antibiotics": 2,
+        "herb": 4,
+        "clean_water": 2
+      },
+      "outputs": {
+        "antiviral_cure": 1
+      },
+      "baseMinutes": 120,
+      "minSkills": {
+        "medicine": 15,
+        "crafting": 12
+      },
+      "requirement": "camp",
+      "potCatalyst": "explicit_empty_detached_pot",
+      "autoFillPot": false
+    }
+  ],
+  "newCaches": [
+    {
+      "id": "hardware_weapon_cache",
+      "locationId": "hardware",
+      "revealAt": 50,
+      "baseMinutes": 30,
+      "initialUses": 1,
+      "refill": false,
+      "outputs": {
+        "crowbar": 1,
+        "kitchen_knife": 1
+      }
+    },
+    {
+      "id": "village_weapon_locker",
+      "locationId": "village",
+      "revealAt": 75,
+      "name": "旧储物柜",
+      "baseMinutes": 30,
+      "initialUses": 1,
+      "refill": false,
+      "outputs": {
+        "pistol": 1,
+        "ammo_9mm": 12
+      },
+      "loadedAmmoOnNewPistol": 0
+    }
+  ],
+  "prototypeStages": {
+    "currentRevisionNeeds": [
+      "immunity_and_virus",
+      "persistent_world_population",
+      "fractional_health_energy",
+      "random_equipment_durability"
+    ],
+    "minimumWorldDefinitions": [
+      "shambler",
+      "crawler",
+      "feral_dog",
+      "stag"
+    ],
+    "minimumWeapons": [
+      "fists",
+      "stone_knife",
+      "hatchet",
+      "wooden_spear",
+      "pistol"
+    ],
+    "later": [
+      "all_rare_and_elite_species",
+      "remaining_guns",
+      "armor_slots",
+      "companions"
+    ],
+    "filterUnavailableSpeciesWithinSameRarityWithoutUpgrade": true,
+    "featureFlagDefault": false
+  },
+  "ui": {
+    "replaceRegion": "upper_location_cards_only",
+    "keepVisible": [
+      "top_navigation",
+      "survival_hud",
+      "ground_inventory",
+      "carried_inventory",
+      "right_preview"
+    ],
+    "lockWorldInteractionsDuringBattle": true,
+    "enemyCardHasArt": true,
+    "selectTargetDoesNotAttack": true,
+    "explicitCommandConfirmation": true,
+    "escCannotExitBattle": true
+  },
+  "save": {
+    "doNotAssumeSchemaEqualsProposalVersion": true,
+    "saveAfterEachCommandAndRound": true,
+    "preserveQueueCursor": true,
+    "preservePendingTick": true,
+    "preserveEncounterXpCounters": true,
+    "preserveLootPlansAndRandomState": true,
+    "doNotMigrateLiveSavesWithoutFeatureAdoption": true,
+    "scaleHealthAndEnergyOnce": true,
+    "scaleLegacyHealthAndEnergyRatesOnce": true,
+    "preserveGearConditionRatio": true,
+    "saveSpawnCheckCursorAndPatrolCursor": true,
+    "preserveImmunityAndLoadAndMedicationUntil": true,
+    "preserveWorldEnemyIdAndXpCounters": true
+  },
+  "baselineProposal": "0.5-reference",
+  "stateScale": {
+    "healthMax": 20,
+    "initialHealth": 20,
+    "energyMax": 20,
+    "initialEnergy": 18,
+    "satietyMax": 100,
+    "hydrationMax": 100,
+    "wakefulnessMax": 100,
+    "moraleMax": 100,
+    "initialSatiety": 80,
+    "initialHydration": 80,
+    "initialWakefulness": 90,
+    "initialMorale": 60,
+    "oldHealthAndEnergyConversionFactor": 0.2,
+    "healthCritical": 5,
+    "lowEnergyExclusive": 4,
+    "internalPrecision": "at_least_1e-6",
+    "displayDecimals": 2,
+    "displayTinyPositive": "<0.01",
+    "doNotRoundPerTick": true
+  },
+  "skillGrowth": {
+    "damageFactor": "1+0.035*L",
+    "accuracyRating": "weaponBase+3*L",
+    "energyCost": "baseEnergy/(1+0.025*L)",
+    "medicalHeal": "1*(1+0.02*L)",
+    "skillLevelCap": null,
+    "damageCap": null,
+    "accuracyRatingCap": null,
+    "energyCostHardFloor": null,
+    "craftWorkHardFloor": null,
+    "physicalStateMaxStillApplies": true
+  },
+  "durability": {
+    "roll": "uniform_inclusive_tenths",
+    "rollAt": "instance_creation_once",
+    "newItemCurrent": "rolledMaximum",
+    "scavengedConditionOptional": [
+      0.6,
+      1.0
+    ],
+    "affixesMayModifyRangeWithoutGlobalHardCap": true,
+    "tools": {
+      "pot": {
+        "maxRange": [
+          60,
+          100
+        ],
+        "wearPerSuccessfulThermalProcess": 0.2
+      },
+      "lighter": {
+        "maxRange": [
+          40,
+          80
+        ],
+        "wearPerSuccessfulIgnition": 1
+      }
+    },
+    "needEnoughDurabilityForActionCost": true,
+    "migrateExisting": "roll_once_preserve_old_current_over_old_max_ratio",
+    "repair": {
+      "baseMinutes": 30,
+      "inputs": {
+        "scrap": 1,
+        "parts": 1
+      },
+      "restoreFractionOfOwnMax": 0.2,
+      "requireEmptyDetachedPot": true,
+      "rerollMaximum": false
+    }
+  },
+  "survivalRates": {
+    "travel": {
+      "satiety": -1.875,
+      "hydration": -4.5,
+      "energy": -1.6,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "explore": {
+      "satiety": -1.875,
+      "hydration": -4.5,
+      "energy": -2,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "gather": {
+      "satiety": -1.875,
+      "hydration": -4.5,
+      "energy": -2.4,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "clear": {
+      "satiety": -1.875,
+      "hydration": -4.5,
+      "energy": -2.4,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "craft": {
+      "satiety": -1.5,
+      "hydration": -3.75,
+      "energy": -1.2,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "wait": {
+      "satiety": -1.5,
+      "hydration": -3,
+      "energy": 0,
+      "wakefulness": -5,
+      "morale": -0.5
+    },
+    "rest": {
+      "satiety": -1.5,
+      "hydration": -3,
+      "energy": 6,
+      "wakefulness": -5,
+      "morale": 0
+    },
+    "sleep_sheltered": {
+      "satiety": -1.5,
+      "hydration": -3,
+      "energy": 4,
+      "wakefulness": 12,
+      "morale": 1
+    },
+    "sleep_exposed": {
+      "satiety": -1.5,
+      "hydration": -3,
+      "energy": 3,
+      "wakefulness": 6,
+      "morale": -0.5
+    }
+  },
+  "survivalRecovery": {
+    "bedSleepEnergyBonusPerHour": 1,
+    "lowMoralePositiveEnergyFactor": 0.5,
+    "shelteredRestMoralePerHour": 2,
+    "shelteredHealthyHealthRecoveryPerHour": 0.2,
+    "zeroSatietyHealthPerHour": -0.4,
+    "zeroHydrationHealthPerHour": -1.6,
+    "zeroWakefulnessHealthPerHour": -0.4,
+    "diarrheaExtraHydrationPerHour": -3,
+    "instantActionsEnergyCost": 0,
+    "uiBrowsingEnergyCost": 0,
+    "carrySoftKg": 20,
+    "carryHardKg": 30,
+    "environmentalGatherDamageOverrides": {
+      "wood": 0.6,
+      "misc_box": 0.4,
+      "scrapyard": 1.2
+    }
+  },
+  "immunity": {
+    "initial": 70,
+    "min": 0,
+    "max": 100,
+    "healthyConditions": {
+      "satietyAtLeast": 50,
+      "hydrationAtLeast": 50,
+      "wakefulnessAtLeast": 50,
+      "healthRatioAtLeast": 0.5,
+      "moraleAtLeast": 40
+    },
+    "healthyBonusPerHour": 0.5,
+    "shelteredSleepPerHour": 2,
+    "exposedSleepPerHour": 1,
+    "shelteredRestPerHour": 1,
+    "exposedRestPerHour": 0.5,
+    "penaltiesPerHour": {
+      "satietyBelow20": -2,
+      "hydrationBelow20": -3,
+      "wakefulnessBelow20": -2,
+      "healthBelow5": -2,
+      "moraleBelow20": -1,
+      "diarrhea": -1,
+      "virusInfected": -0.5
+    },
+    "updateSource": "world_tick_start_state",
+    "offlineProgress": false
+  },
+  "infection": {
+    "loadRange": [
+      0,
+      100
+    ],
+    "initialInfected": false,
+    "initialLoad": 0,
+    "exposureSource": "zombie_bite_hit_with_positive_direct_damage_only",
+    "exposureProbability": "0.05+0.55*(1-immunity/100)",
+    "onFirstSuccessfulExposure": {
+      "load": 20,
+      "highImmunityMinutes": 0
+    },
+    "onRepeatedSuccessfulExposure": {
+      "loadDelta": 10,
+      "resetHighImmunityMinutes": true
+    },
+    "progressPerHour": [
+      {
+        "immunityRange": [
+          0,
+          40
+        ],
+        "rate": 4
+      },
+      {
+        "immunityRange": [
+          40,
+          70
+        ],
+        "rate": 2
+      },
+      {
+        "immunityRange": [
+          70,
+          85
+        ],
+        "rate": 0.5
+      },
+      {
+        "immunityRange": [
+          85,
+          100
+        ],
+        "includeUpper": true,
+        "rate": -1.5
+      }
+    ],
+    "naturalLoadMinimumWhileInfected": 1,
+    "zombificationAtLoad": 100,
+    "naturalCure": {
+      "consecutiveImmunityAtLeast": 85,
+      "minutes": 720,
+      "loadAtMost": 10,
+      "resetWhenBelowThresholdOrExposedAgain": true
+    },
+    "onlyCureSources": [
+      "natural_high_immunity",
+      "antiviral_cure"
+    ],
+    "antibiotics": {
+      "instantLoadReduction": 8,
+      "positiveProgressFactor": 0.5,
+      "durationMinutes": 360,
+      "useCooldownMinutes": 360,
+      "refreshNotStack": true,
+      "cannotClearInfection": true
+    },
+    "bandage": {
+      "loadReduction": "2*(1+0.01*medicineLevel)",
+      "virusCooldownMinutes": 360,
+      "doesNotPreventFutureBiteExposure": true,
+      "cannotClearInfection": true
+    },
+    "allSuppressantsMinLoad": 1,
+    "antiviralCure": {
+      "clearFlag": true,
+      "setLoad": 0,
+      "setHighImmunityMinutes": 0,
+      "restoreHealth": 0
+    },
+    "progressWarnings": [
+      20,
+      50,
+      80
+    ],
+    "gameOverReason": "zombification",
+    "endpointOrder": [
+      "apply_tick_rates",
+      "clamp_immunity_and_load",
+      "death_or_zombification",
+      "natural_cure_if_eligible"
+    ],
+    "highImmunityTimerUsesBothTickEndpoints": true
+  },
+  "medicineCaches": [
+    {
+      "id": "clinic_medical_supply",
+      "locationId": "clinic",
+      "revealAt": 100,
+      "uses": 1,
+      "baseMinutes": 30,
+      "outputs": {
+        "antibiotics": 2,
+        "lab_reagent": 1
+      },
+      "independentRareCureChance": 0.01
+    },
+    {
+      "id": "village_cold_box",
+      "locationId": "village",
+      "revealAt": 100,
+      "uses": 1,
+      "baseMinutes": 30,
+      "exclusiveLoot": [
+        {
+          "itemId": "antiviral_precursor",
+          "count": 1,
+          "weight": 20
+        },
+        {
+          "itemId": "bandage",
+          "count": 2,
+          "weight": 80
+        }
+      ]
+    }
+  ],
+  "worldEnemies": {
+    "globalCap": 12,
+    "localCaps": {
+      "camp": 0,
+      "field": 3,
+      "stream": 2,
+      "woods": 4,
+      "village": 4,
+      "hardware": 2,
+      "clinic": 2,
+      "scrapyard": 3
+    },
+    "initial": {
+      "camp": [],
+      "field": [
+        "shambler"
+      ],
+      "stream": [
+        "crawler"
+      ],
+      "woods": [
+        "feral_dog"
+      ],
+      "village": [
+        "shambler",
+        "shambler"
+      ],
+      "hardware": [],
+      "clinic": [],
+      "scrapyard": [
+        "shambler"
+      ]
+    },
+    "spawnChecksBeginAbsoluteMinute": 1440,
+    "spawnCheckIntervalMinutes": 120,
+    "spawnSuccessProbability": 0.25,
+    "spawnCountPerSuccessfulCheck": 1,
+    "onlyOutsidePlayerCurrentLocation": true,
+    "rarityWeights": {
+      "common": 96,
+      "rare": 3.5,
+      "elite": 0.5
+    },
+    "rarityRollBeforeLocationEligibility": true,
+    "emptyRarityLocationPool": "no_spawn_no_reroll",
+    "eligibleLocationSelection": "uniform_among_matching_available_noncurrent_locations",
+    "pools": {
+      "field": {
+        "common": [
+          {
+            "enemyId": "shambler",
+            "weight": 70
+          },
+          {
+            "enemyId": "crawler",
+            "weight": 20
+          },
+          {
+            "enemyId": "feral_dog",
+            "weight": 10
+          }
+        ],
+        "rare": [
+          {
+            "enemyId": "runner",
+            "weight": 100
+          }
+        ],
+        "elite": [
+          {
+            "enemyId": "boar",
+            "weight": 100
+          }
+        ]
+      },
+      "stream": {
+        "common": [
+          {
+            "enemyId": "shambler",
+            "weight": 60
+          },
+          {
+            "enemyId": "crawler",
+            "weight": 20
+          },
+          {
+            "enemyId": "stag",
+            "weight": 20
+          }
+        ],
+        "rare": [
+          {
+            "enemyId": "wolf",
+            "weight": 100
+          }
+        ],
+        "elite": []
+      },
+      "woods": {
+        "common": [
+          {
+            "enemyId": "shambler",
+            "weight": 40
+          },
+          {
+            "enemyId": "crawler",
+            "weight": 10
+          },
+          {
+            "enemyId": "feral_dog",
+            "weight": 20
+          },
+          {
+            "enemyId": "stag",
+            "weight": 30
+          }
+        ],
+        "rare": [
+          {
+            "enemyId": "wolf",
+            "weight": 100
+          }
+        ],
+        "elite": [
+          {
+            "enemyId": "boar",
+            "weight": 100
+          }
+        ]
+      },
+      "village": {
+        "common": [
+          {
+            "enemyId": "shambler",
+            "weight": 70
+          },
+          {
+            "enemyId": "crawler",
+            "weight": 20
+          },
+          {
+            "enemyId": "feral_dog",
+            "weight": 10
+          }
+        ],
+        "rare": [
+          {
+            "enemyId": "runner",
+            "weight": 30
+          },
+          {
+            "enemyId": "worker",
+            "weight": 40
+          },
+          {
+            "enemyId": "howler",
+            "weight": 30
+          }
+        ],
+        "elite": [
+          {
+            "enemyId": "riot",
+            "weight": 100
+          }
+        ]
+      },
+      "hardware": {
+        "common": [
+          {
+            "enemyId": "shambler",
+            "weight": 70
+          },
+          {
+            "enemyId": "crawler",
+            "weight": 30
+          }
+        ],
+        "rare": [
+          {
+            "enemyId": "worker",
+            "weight": 100
+          }
+        ],
+        "elite": [
+          {
+            "enemyId": "riot",
+            "weight": 100
+          }
+        ]
+      },
+      "clinic": {
+        "common": [
+          {
+            "enemyId": "shambler",
+            "weight": 80
+          },
+          {
+            "enemyId": "crawler",
+            "weight": 20
+          }
+        ],
+        "rare": [
+          {
+            "enemyId": "howler",
+            "weight": 100
+          }
+        ],
+        "elite": []
+      },
+      "scrapyard": {
+        "common": [
+          {
+            "enemyId": "shambler",
+            "weight": 70
+          },
+          {
+            "enemyId": "crawler",
+            "weight": 30
+          }
+        ],
+        "rare": [
+          {
+            "enemyId": "worker",
+            "weight": 100
+          }
+        ],
+        "elite": [
+          {
+            "enemyId": "riot",
+            "weight": 100
+          }
+        ]
+      }
+    },
+    "discardBlockedChecksNoSpawnDebt": true,
+    "offlineSpawns": false,
+    "patrolCheckIntervalMinutes": 180,
+    "patrolMoveProbabilityPerEnemy": 0.2,
+    "patrolMaxEdgesPerCheck": 1,
+    "engagedEnemiesDoNotPatrol": true,
+    "patrolEntersCamp": false,
+    "patrolSource": "physical_fixed_world_edges_not_player_discovery",
+    "deadDoNotCountInCap": true,
+    "engagedAliveCountInCap": true,
+    "ineligibleEnemiesNeverReplacedByStrongerTier": true,
+    "fleeWithoutValidNeighborHiddenMinutes": 60
+  }
+}
