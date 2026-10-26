@@ -87,6 +87,10 @@ public sealed class GameSession
     /// <summary>材料槽里手工指定的批次与指定的锅，随确认一起传给 Craft 请求。</summary>
     public List<int> CraftPreferred { get; } = new();
     public int? CraftPot { get; set; }
+    /// <summary>批量制作件数（v0.6 §03）；换配方时回到 1。</summary>
+    public int CraftBatch { get; set; } = 1;
+    /// <summary>工具维护的目标实例（v0.6 §05）。</summary>
+    public int? CraftTarget { get; set; }
 
 
     /// <summary>火堆卡“点燃”按钮下的点火工具菜单是否打开（v0.7 第 4.2 节）；只在会话内，Esc 或点菜单外关闭。</summary>
@@ -137,6 +141,8 @@ public sealed class GameSession
         CraftCandidates = null;
         CraftPreferred.Clear();
         CraftPot = null;
+        CraftBatch = 1;
+        CraftTarget = null;
         if (panel == "craft" && State != null)
         {
             var main = S.Main;
@@ -436,7 +442,7 @@ public sealed class GameSession
 
     public ActionPreview Preview(ActionRequest r)
     {
-        var key = $"{r.Type}|{r.TargetId}|{r.InstanceId}|{r.Minutes}|{r.ToolInstanceId}|{r.PotInstanceId}|{string.Join(",", r.PreferredInstanceIds)}";
+        var key = $"{r.Type}|{r.TargetId}|{r.InstanceId}|{r.Minutes}|{r.ToolInstanceId}|{r.PotInstanceId}|{r.BatchCount}|{string.Join(",", r.PreferredInstanceIds)}";
         if (_previewCache.TryGetValue(key, out var c) && c.ver == Version) return c.p;
         var p = E.Preview(S, r);
         _previewCache[key] = (Version, p);

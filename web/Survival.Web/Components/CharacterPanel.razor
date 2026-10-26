@@ -2,7 +2,7 @@
 
 @* 右栏“人物”页（基础UI布局与操作修订案 v0.7 第 6.1 节）：六项基础属性（数值、提醒阈值、当前状态与说明）、负重与超重、
    日期与昼夜、状态异常（腹泻剩余时间、绷带冷却剩余）。数据与左栏 HUD 同源（Stats、ActiveConditions），不另存一份。
-   只展示已启用的字段：v0.5/v0.6 的免疫力、战斗熟练度、AP 未采纳，不显示。查看不执行任何玩法。 *@
+   人物与战斗 v0.6 已启用（用户 2026-10-26 拍板）：加 8 项熟练度（等级、经验/门槛）与免疫/病毒。查看不执行任何玩法。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -36,6 +36,21 @@
                 <div class="cs-explain">@Ui.StatExplain(e, id)</div>
             </div>
         }
+    </div>
+
+    @* v0.6 §03：8 项熟练度，无等级上限；经验逐级扣 50×(L+1) *@
+    <div class="char-skills">
+        <div class="tiny muted">熟练度（无等级上限）</div>
+        <div class="skill-grid">
+            @foreach (var sk in e.SkillViews(s))
+            {
+                <div class="skill-row" title="@($"{sk.Name}：升到{sk.Level + 1}级还需{sk.NextXp - sk.Xp}经验")">
+                    <b>@sk.Name</b><span>@(sk.Level)级</span>
+                    <div class="track thin"><i style="width:@Ui.Bar(sk.Xp, sk.NextXp)%"></i></div>
+                    <small class="muted">@sk.Xp/@sk.NextXp</small>
+                </div>
+            }
+        </div>
     </div>
 
     <div class="lines">

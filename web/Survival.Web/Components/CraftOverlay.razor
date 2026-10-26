@@ -20,7 +20,10 @@
     var candidates = G.CraftCandidates;
     var recipes = candidates == null ? e.Config.Recipes : e.Config.Recipes.Where(r => candidates.Contains(r.Id)).ToList();
     var preferred = G.CraftPreferred.Where(id => s.Items.Any(i => i.InstanceId == id && rc.Inputs.ContainsKey(i.ItemId))).ToList();
-    var request = ActionRequest.Craft(recipeId, null, preferred);
+    var batchable = !rc.IsBuild && !rc.IsRepair;
+    var batch = batchable ? Math.Max(1, G.CraftBatch) : 1;
+    var request = ActionRequest.Craft(recipeId, rc.NeedsExplicitPot ? G.CraftPot : null, preferred, batch);
+    if (rc.IsRepair) request.InstanceId = G.CraftTarget;
 }
 
 @if (Part == "center")
@@ -85,16 +88,28 @@
                     <div class="panel craft-mats">
                         <div class="eyebrow">@(rc.IsBuild ? "营地设施" : "配方") · @rc.Name</div>
                         <p class="small muted" style="margin:4px 0 8px">@RecipeHint(rc)</p>
+                        @if (batchable)
+                        {
+                            var maxBatch = rc.Inputs.Count == 0 ? 1 : Math.Max(1, rc.Inputs.Min(kv => e.AvailableCount(s, kv.Key, true) / Math.Max(1, kv.Value)));
+                            <div class="batch-row">
+                                <span class="tiny muted">批量制作</span>
+                                <button type="button" class="tbar-step" aria-label="减少件数" disabled="@(batch <= 1)" @onclick="() => SetBatch(batch - 1)">−</button>
+                                <b>@batch</b>
+                                <button type="button" class="tbar-step" aria-label="增加件数" disabled="@(batch >= maxBatch)" @onclick="() => SetBatch(batch + 1)">+</button>
+                                <span class="tiny muted">材料最多够@(maxBatch)件；同批次合并工作量，高熟练度一段可做多件</span>
+                            </div>
+                        }
                         <div class="tiny muted">原料</div>
                         @foreach (var kv in rc.Inputs)
                         {
                             var item = kv.Key;
+                            var need = kv.Value * batch;
                             var have = e.AvailableCount(s, item, true);
                             var carried = e.UsableBatches(s, item, false).Sum(i => i.Count);
                             var reserved = s.Items.Where(i => i.ItemId == item && i.ReservedBy != null && (i.IsCarried || i.Owner == here)).Sum(i => i.Count);
-                            var plan = Fill(item, kv.Value, preferred);
-                            var lack = Math.Max(0, kv.Value - have);
-                            <ItemRow Icon="@item" Name="@e.ItemName(item)" Qty="@($"需{kv.Value}")" Missing="@(lack > 0)" CssClass="mat-row"
+                            var plan = Fill(item, need, preferred);
+                            var lack = Math.Max(0, need - have);
+                            <ItemRow Icon="@item" Name="@e.ItemName(item)" Qty="@($"需{need}")" Missing="@(lack > 0)" CssClass="mat-row"
                                      Status="@($"现有{have}（随身{carried}／地面{have - carried}）{(reserved > 0 ? $" · 预留{reserved}" : "")}{(lack > 0 ? $" · 缺少{lack}" : "")}")"
                                      DataDrop="@($"slot:{recipeId}:{item}")" Title="把具体批次的卡拖到这里指定使用">
                                 <span class="slot-batches">
@@ -124,7 +139,7 @@
                         }
                         @foreach (var kv in rc.Outputs)
                         {
-                            <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"×{kv.Value}")" Status="@($"完成后放在{lc.Name}地面")" />
+                            <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"×{kv.Value * batch}")" Status="@($"完成后放在{lc.Name}地面")" />
                         }
                     </div>
                 }
@@ -244,7 +259,19 @@ else
 
     private void Pick(string id)
     {
+        if (G.CraftRecipe != id)
+        {
+            G.CraftBatch = 1;
+            G.CraftTarget = null;
+            G.CraftPot = null;
+        }
         G.CraftRecipe = id;
+        G.Notify();
+    }
+
+    private void SetBatch(int n)
+    {
+        G.CraftBatch = Math.Max(1, n);
         G.Notify();
     }
 

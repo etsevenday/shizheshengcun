@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Survival.Core.State;
@@ -236,9 +237,14 @@ namespace Survival.Core.Engine
                 case ActionType.Build:
                 {
                     if (!_recipes.TryGetValue(r.TargetId, out var rc)) break;
-                    p.BaseMinutes = rc.BaseMinutes;
-                    p.Outputs = rc.Outputs.Select(kv => Line(kv.Key, kv.Value)).ToList();
-                    p.ConfirmText = rc.IsBuild ? "开始建造" : "开始制作";
+                    var batch = Math.Max(1, r.BatchCount);
+                    p.BaseMinutes = rc.BaseMinutes * batch;
+                    var lv = SkillLevel(s, Crafting);
+                    p.WorkMinutes = rc.BaseMinutes * batch * CraftWorkFactor(lv);
+                    p.Outputs = rc.Outputs.Select(kv => Line(kv.Key, kv.Value * batch)).ToList();
+                    p.ConfirmText = rc.IsBuild ? "开始建造" : rc.IsRepair ? "开始维护" : batch > 1 ? $"开始制作×{batch}" : "开始制作";
+                    p.Notes.Add($"制造{lv}级：基础工作量{rc.BaseMinutes * batch}分钟×{CraftWorkFactor(lv).ToString("0.####", System.Globalization.CultureInfo.InvariantCulture)}={Fmt.N(p.WorkMinutes)}分钟；按5分钟段推进，同批次余量结转");
+                    p.XpGains.Add($"制造经验+{CraftXp(rc.BaseMinutes) * batch}");
                     if (plan != null) p.Notes.AddRange(plan.Notes);
                     if (rc.NeedsFire)
                     {
@@ -295,6 +301,7 @@ namespace Survival.Core.Engine
                     break;
                 }
             }
+            if (p.WorkMinutes <= 0) p.WorkMinutes = p.BaseMinutes;
             if (p.IsWork && p.FactorAtStart > 1 + Eps)
                 p.Notes.Add($"当前工作倍率×{p.FactorAtStart:0.##}：{string.Join("，", p.FactorReasons)}");
         }

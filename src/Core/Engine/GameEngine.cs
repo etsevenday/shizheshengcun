@@ -157,6 +157,7 @@ namespace Survival.Core.Engine
             }
 
             Visit(s, s.CurrentLocation);
+            InitSkills(s);
 
             foreach (var kv in c.StartingCarried) CreateItems(s, kv.Key, kv.Value, ItemInstance.Carried);
             foreach (var kv in c.StartingCampGround) CreateItems(s, kv.Key, kv.Value, s.CurrentLocation);
@@ -212,6 +213,7 @@ namespace Survival.Core.Engine
             public ItemInstance? Lighter;
             public List<OutputLine> Outputs = new List<OutputLine>();
             public List<string> Notes = new List<string>();
+            public int Batch = 1;
         }
 
         private string? Validate(GameState s, ActionRequest r, out Plan plan)
@@ -338,7 +340,15 @@ namespace Survival.Core.Engine
                 {
                     if (!_recipes.TryGetValue(r.TargetId, out var rc)) return "配方不存在";
                     plan.Recipe = rc;
-                    plan.Type = rc.IsBuild ? ActionType.Build : ActionType.Craft;
+                    plan.Type = rc.IsBuild ? ActionType.Build : rc.IsRepair ? ActionType.Repair : ActionType.Craft;
+                    var batch = Math.Max(1, r.BatchCount);
+                    if (batch > 1 && (rc.IsBuild || rc.IsRepair)) return "建造与维护每次只能做1件";
+                    plan.Batch = batch;
+                    foreach (var kv in rc.MinSkills)
+                    {
+                        var lv = SkillLevel(s, kv.Key);
+                        if (lv < kv.Value) return $"需要{SkillName(kv.Key)}{kv.Value}级（当前{lv}级）";
+                    }
                     if (rc.FacilityResult != null)
                     {
                         if (!hereCfg.CanBuildShelter) return "只能在营地建造";
@@ -376,7 +386,8 @@ namespace Survival.Core.Engine
                     foreach (var kv in rc.Inputs)
                     {
                         var have = AvailableCount(s, kv.Key, true);
-                        if (have < kv.Value) return $"缺少{ItemName(kv.Key)}（{have}/{kv.Value}）";
+                        var need = kv.Value * batch;
+                        if (have < need) return $"缺少{ItemName(kv.Key)}（{have}/{need}）";
                     }
                     // 材料槽里手工指定的批次：仍须可用且属于本配方，否则要求刷新重选
                     foreach (var id in r.PreferredInstanceIds)
@@ -385,9 +396,10 @@ namespace Survival.Core.Engine
                         if (b == null || !rc.Inputs.ContainsKey(b.ItemId) || !UsableBatches(s, b.ItemId, true).Contains(b))
                             return "指定的材料批次已失效，请重新选择";
                     }
-                    foreach (var kv in rc.Outputs) plan.Outputs.Add(Line(kv.Key, kv.Value));
-                    plan.BaseWork = rc.BaseMinutes;
-                    plan.Label = rc.IsBuild ? rc.Name : $"制作{rc.Name}";
+                    foreach (var kv in rc.Outputs) plan.Outputs.Add(Line(kv.Key, kv.Value * batch));
+                    // 制造熟练度在开始时折减基础工作量（v0.6 §03）；同批次多件合并成一个工作量，段内结转余量
+                    plan.BaseWork = rc.BaseMinutes * batch * CraftWorkFactor(s);
+                    plan.Label = rc.IsBuild ? rc.Name : batch > 1 ? $"制作{rc.Name}×{batch}" : $"制作{rc.Name}";
                     return null;
                 }
 
@@ -440,8 +452,7 @@ namespace Survival.Core.Engine
                     if (cfg.Use == null)
                         return cfg.RequiresCooking ? $"{cfg.Name}需先烹饪，不可直接食用" : "该物品不能直接使用";
                     if (IsSpoiled(s, inst)) return "已腐败，不能食用";
-                    if (cfg.Use.IsBandage && s.BandageReadyAt > s.GameMinute)
-                        return $"绷带冷却中，还需{s.BandageReadyAt - s.GameMinute}分钟";
+                    if (cfg.Use.IsMedicine && MedicineBlocked(s, cfg.Use) is string medWhy) return medWhy;
                     plan.UseItem = inst;
                     plan.TargetId = inst.ItemId;
                     plan.Planned = Config.ItemActions.UseMinutes;
@@ -595,11 +606,13 @@ namespace Survival.Core.Engine
                 }
                 case ActionType.Craft:
                 case ActionType.Build:
+                case ActionType.Repair:
                 {
                     var rc = p.Recipe!;
+                    a.BatchCount = p.Batch;
                     foreach (var kv in rc.Inputs)
                     {
-                        a.ReservedItemIds.AddRange(Reserve(s, kv.Key, kv.Value, a.ActionId, r.PreferredInstanceIds));
+                        a.ReservedItemIds.AddRange(Reserve(s, kv.Key, kv.Value * p.Batch, a.ActionId, r.PreferredInstanceIds));
                     }
                     foreach (var c in p.Catalysts) a.LockedItemIds.Add(c.InstanceId);
                     break;

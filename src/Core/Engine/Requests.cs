@@ -16,6 +16,8 @@ namespace Survival.Core.Engine
         public int? ToolInstanceId { get; set; }
         /// <summary>配方材料槽里手工指定的批次，先于自动补齐使用。</summary>
         public List<int> PreferredInstanceIds { get; set; } = new List<int>();
+        /// <summary>批量制作件数（v0.6 §03 同一预留批次结转余工作量）；建造与维护只能 1。</summary>
+        public int BatchCount { get; set; } = 1;
         /// <summary>幂等请求号：同一请求重复提交只生效一次。</summary>
         public string? RequestId { get; set; }
 
@@ -24,11 +26,12 @@ namespace Survival.Core.Engine
         public static ActionRequest Clear() => new ActionRequest { Type = ActionType.Clear };
         public static ActionRequest Gather(string nodeId, int? toolInstanceId = null) =>
             new ActionRequest { Type = ActionType.Gather, TargetId = nodeId, ToolInstanceId = toolInstanceId };
-        public static ActionRequest Craft(string recipeId, int? potInstanceId = null, IEnumerable<int>? preferredInstanceIds = null) =>
+        public static ActionRequest Craft(string recipeId, int? potInstanceId = null, IEnumerable<int>? preferredInstanceIds = null, int batchCount = 1) =>
             new ActionRequest
             {
                 Type = ActionType.Craft, TargetId = recipeId, PotInstanceId = potInstanceId,
                 PreferredInstanceIds = preferredInstanceIds == null ? new List<int>() : new List<int>(preferredInstanceIds),
+                BatchCount = batchCount,
             };
         public static ActionRequest Wait(int minutes) => new ActionRequest { Type = ActionType.Wait, Minutes = minutes };
         public static ActionRequest Rest(int minutes) => new ActionRequest { Type = ActionType.Rest, Minutes = minutes };
@@ -139,6 +142,10 @@ namespace Survival.Core.Engine
         public bool AsSubAction { get; set; }
 
         public int BaseMinutes { get; set; }
+        /// <summary>按熟练度折减后的工作量（制造）；其他行动等于 BaseMinutes。</summary>
+        public double WorkMinutes { get; set; }
+        /// <summary>完成后获得的经验，如“制造+3”；没有为空。</summary>
+        public List<string> XpGains { get; set; } = new List<string>();
         public int EstimatedMinutes { get; set; }
         public int StartMinute { get; set; }
         public int EstimatedEndMinute { get; set; }

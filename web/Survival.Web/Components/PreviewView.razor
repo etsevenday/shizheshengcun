@@ -21,7 +21,7 @@
             <div class="fact"><span>预计完成</span><strong>@Clock.HHmm(p.EstimatedEndMinute)</strong></div>
             @if (p.IsWork)
             {
-                <div class="fact"><span>基础工作量</span><strong>@(p.BaseMinutes)分钟</strong></div>
+                <div class="fact"><span>基础工作量</span><strong>@(Math.Abs(p.WorkMinutes - p.BaseMinutes) > 1e-9 ? $"{Ui.N(p.WorkMinutes)}分钟" : $"{p.BaseMinutes}分钟")</strong></div>
                 <div class="fact"><span>当前倍率</span><strong>×@p.FactorAtStart.ToString("0.##")</strong></div>
             }
 
@@ -118,6 +118,10 @@
             <div class="tiny muted">期间设施变化（自动加工，不另扣角色体力）</div>
             <ul class="notes">@foreach (var n in p.FacilityChanges) { <li>@n</li> }</ul>
         </div>
+    }
+    @if (p.Ok && p.XpGains.Count > 0)
+    {
+        <div class="lines"><div><span>完成后经验</span><b>@string.Join("、", p.XpGains)</b></div></div>
     }
     @if (p.Notes.Count > 0)
     {

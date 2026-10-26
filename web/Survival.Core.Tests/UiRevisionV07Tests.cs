@@ -285,8 +285,9 @@ public class UiRevisionV07Tests : TestBase
             Assert.That(GameEngine.CanSelfUse(E.Item(id)), Is.False, id);
         Assert.That(E.CanStart(s, ActionRequest.UseInstance(First(s, "raw_root", "camp").InstanceId)), Is.EqualTo("生块根需先烹饪，不可直接食用"));
 
-        // 绷带冷却：按钮保留并写原因，人物页与左栏读同一条状态异常
+        // 绷带冷却：按钮保留并写原因，人物页与左栏读同一条状态异常（v0.6：满血无出血时包扎无效，先让健康不满）
         E.DebugGive(s, "bandage", 2);
+        SetStats(s, 15, 80, 80, 18, 90, 60);
         Start(s, ActionRequest.UseItem("bandage"));
         Run(s);
         var why = E.CanStart(s, ActionRequest.UseItem("bandage"));

@@ -1,0 +1,16 @@
+/* 人物与战斗 v0.6（基线 v0.5）新增界面：熟练度、免疫/病毒、耐久成色、世界敌人卡、敌踪选择与战斗覆盖层。
+   颜色与尺寸沿用 app.css 的变量；矮屏覆盖统一写在文件末尾。 */
+
+/* ───────────── 人物页：熟练度 ───────────── */
+.char-skills { display: flex; flex-direction: column; gap: 6px; }
+.skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+.skill-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 2px 6px; font-size: 14px; }
+.skill-row b { font-weight: 500; }
+.skill-row span { text-align: right; color: var(--accent); }
+.skill-row .track { grid-column: 1 / -1; }
+.skill-row small { grid-column: 1 / -1; font-size: 12px; text-align: right; }
+.track.thin { height: 4px; }
+
+/* ───────────── 手工制作：批量 ───────────── */
+.batch-row { display: flex; align-items: center; gap: 8px; margin: 2px 0 8px; flex-wrap: wrap; }
+.batch-row b { min-width: 24px; text-align: center; font-size: 17px; }

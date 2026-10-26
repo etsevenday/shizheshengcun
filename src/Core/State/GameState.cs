@@ -38,6 +38,8 @@ namespace Survival.Core.State
         public Stats Stats { get; set; } = new Stats();
         /// <summary>免疫、病毒、药效与出血（v0.6 §08–§11）。不放进六项 Stats，但走同一显示与 ActiveConditions。</summary>
         public BodyState Body { get; set; } = new BodyState();
+        /// <summary>8 项熟练度（制造、医疗、枪械、刀斧、矛、拳、弓箭、钝器），键为技能 ID（v0.6 §03）。</summary>
+        public Dictionary<string, SkillState> Skills { get; set; } = new Dictionary<string, SkillState>();
         public int? DiarrheaUntil { get; set; }
         /// <summary>绷带回血冷却结束时刻（v0.6 bandageHealthReadyAt）。</summary>
         public int BandageReadyAt { get; set; }
@@ -69,6 +71,7 @@ namespace Survival.Core.State
             c.Rng = new Rng { State = Rng.State };
             c.Stats = Stats.Clone();
             c.Body = Body.Clone();
+            c.Skills = Skills.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.AlertLatched = new Dictionary<StatId, bool>(AlertLatched);
             c.ZeroLatched = new Dictionary<StatId, bool>(ZeroLatched);
             c.Locations = Locations.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
@@ -356,6 +359,8 @@ namespace Survival.Core.State
         public int StartProgress { get; set; }
         /// <summary>清理已在开始时扣除 1 次数（取消、死亡、空结果都不退）。</summary>
         public bool ChargeSpent { get; set; }
+        /// <summary>批量制作件数（同一预留批次一次提交）；普通行动为 1。</summary>
+        public int BatchCount { get; set; } = 1;
 
         public bool IsWorkType => IsWork(Type);
 

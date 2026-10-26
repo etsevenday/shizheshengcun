@@ -326,6 +326,7 @@ namespace Survival.Core.Engine
                     return CompleteGather(s, a);
                 case ActionType.Craft:
                 case ActionType.Build:
+                case ActionType.Repair:
                 {
                     if (AnyReservedSpoiled(s, a))
                     {
@@ -333,19 +334,26 @@ namespace Survival.Core.Engine
                         return false;
                     }
                     var rc = _recipes[a.TargetId];
+                    var batch = Math.Max(1, a.BatchCount);
                     foreach (var id in a.ReservedItemIds) s.Items.RemoveAll(i => i.InstanceId == id);
                     a.ReservedItemIds.Clear();
                     var made = new List<string>();
                     foreach (var kv in rc.Outputs)
                     {
-                        CreateItems(s, kv.Key, kv.Value, here);
-                        made.Add($"{ItemName(kv.Key)}+{kv.Value}");
+                        CreateItems(s, kv.Key, kv.Value * batch, here);
+                        made.Add($"{ItemName(kv.Key)}+{kv.Value * batch}");
                     }
+                    if (rc.IsRepair) made.Add(CompleteRepair(s, a));
+                    // 有效制造按实际提交的配方次数发经验（v0.6 §03）
+                    var xp = CraftXp(rc.BaseMinutes) * batch;
+                    GainXp(s, Crafting, xp);
+                    made.Add($"制造经验+{xp}");
                     if (rc.FacilityResult != null) SetFacility(s.Locations[here].Facility, rc.FacilityResult);
                     ClearAction(s, a);
                     var text = rc.FacilityResult != null
-                        ? $"{rc.Name.Replace("建", "").Replace("铺", "")}已完成。"
-                        : $"{string.Join("，", made)}，已放在{LocName(here)}地面。";
+                        ? $"{rc.Name.Replace("建", "").Replace("铺", "")}已完成（{made.Last()}）。"
+                        : rc.IsRepair ? $"{string.Join("，", made)}。"
+                        : $"{string.Join("，", made)}；产物已放在{LocName(here)}地面。";
                     if (rc.Id == "shelter") text = "遮蔽棚建成：营地可遮蔽睡眠，休息时额外恢复精神。";
                     if (rc.Id == "bed") text = $"床垫铺好：营地睡眠体力恢复每小时额外{Fmt.SignedT(Config.FacilityEffects.BedExtraSleepEnergyPerHour)}。";
                     Emit(s, GameEventKind.ActionCompleted, text, null, rc.Outputs.Keys);
