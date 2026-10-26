@@ -583,11 +583,13 @@ namespace Survival.Core.Engine
             if (u.Hydration != 0) parts.Add(Signed("水分", u.Hydration));
             if (u.Morale != 0) parts.Add(Signed("精神", u.Morale));
             if (u.Health != 0) parts.Add(Signed("健康", u.Health));
+            if (u.IsAntibiotic) parts.Add("抑制病毒");
+            if (u.IsAntiviral) parts.Add("清除感染");
             return string.Join("，", parts);
         }
 
         public static string UseVerb(ItemConfig cfg) =>
-            cfg.Use != null && cfg.Use.IsBandage ? "使用" : cfg.Kind == "water" ? "饮用" : "食用";
+            cfg.Use != null && cfg.Use.IsMedicine ? "使用" : cfg.Kind == "water" ? "饮用" : "食用";
 
         /// <summary>自用带既有风险（配置 causesDiarrhea，脏水）：按钮写“饮用1份（风险）”（v0.7 第 7 节）。</summary>
         public static bool UseRisky(ItemConfig cfg) => cfg.Use != null && cfg.Use.CausesDiarrhea;

@@ -103,3 +103,9 @@
 
 .nav button:disabled { opacity: .45; cursor: not-allowed; }
 .enemy-lines div { flex-wrap: wrap; }
+.bt-cards { min-height: 150px; }
+@media (max-height: 800px) { .bt-cards { min-height: 142px; } }
+
+/* 右栏两列行：标签不被长数值挤成竖排（“耐/久”） */
+.lines > div > span:first-child { flex-shrink: 0; }
+.lines > div > b { text-align: right; }

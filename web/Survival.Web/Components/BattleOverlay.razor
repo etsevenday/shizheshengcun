@@ -136,9 +136,17 @@ else if (b != null)
         <div class="bt-cmds" role="toolbar" aria-label="战斗指令">
             @foreach (var grp in new[] { ("attack", "攻击"), ("move", "招式"), ("general", "通用"), ("item", "物品") })
             {
-                var items = opts.Where(o => o.Group == grp.Item1).ToList();
-                if (items.Count == 0) continue;
+                var items = opts.Where(o => o.Group == grp.Item1 && o.Action != "switch_weapon").ToList();
+                var switches = grp.Item1 == "general" ? opts.Where(o => o.Action == "switch_weapon").ToList() : new List<BattleCommandOption>();
+                if (items.Count == 0 && switches.Count == 0) continue;
                 <div class="cmd-group"><span class="cmd-title">@grp.Item2</span>
+                    @if (switches.Count > 0)
+                    {
+                        @* 换武器合成一个按钮：在右栏列出随身武器选择，避免随身武器多时把敌卡区挤没 *@
+                        var swOn = sel != null && sel.Action == "switch_weapon" || G.BattleAction == "switch_weapon";
+                        <button type="button" class="cmd @(swOn ? "on" : "") @(switches.Any(o => o.Available) ? "" : "off")" disabled="@(waiting || G.BattleBusy)"
+                                title="从随身武器中选择（右栏），耗1AP" @onclick='() => G.PickBattleAction("switch_weapon")'>换武器<small>@(switches[0].Ap)AP · @(switches.Count)把</small></button>
+                    }
                     @foreach (var o in items)
                     {
                         var on = sel != null && sel.Action == o.Action && sel.ItemInstanceId == o.ItemInstanceId;

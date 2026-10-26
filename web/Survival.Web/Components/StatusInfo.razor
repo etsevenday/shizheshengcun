@@ -21,7 +21,7 @@
             <div><span>当前</span><b class="@(th.IsBelow(v) ? "warn-text" : "")">@(v <= 0 && sid != StatId.Health ? "已归零" : th.IsBelow(v) ? "低于阈值" : "正常")</b></div>
             @if (sid == StatId.Hydration && e.ActiveConditions(s).FirstOrDefault(c => c.Id == "diarrhea") is ActiveCondition d)
             {
-                <div><span>@d.Name</span><b class="warn-text">还剩@(Clock.Duration(d.RemainingMinutes))</b></div>
+                <div><span>@d.Name</span><b class="warn-text">@(d.RemainingMinutes > 0 ? $"还剩{Clock.Duration(d.RemainingMinutes)}" : "持续中")</b></div>
             }
             @if (sid == StatId.Energy)
             {

@@ -85,7 +85,7 @@
         }
         @foreach (var c in conds)
         {
-            <div class="risk @(c.Harmful ? "" : "none")"><b>@c.Name</b> · 还剩@(Clock.Duration(c.RemainingMinutes)) · @c.Effect</div>
+            <div class="risk @(c.Harmful ? "" : "none")"><b>@c.Name</b>@(c.RemainingMinutes > 0 ? $" · 还剩{Clock.Duration(c.RemainingMinutes)}" : "") · @c.Effect</div>
         }
     </div>
 </div>

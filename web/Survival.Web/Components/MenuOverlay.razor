@@ -69,6 +69,8 @@
                     <button class="secondary" @onclick="() => DevVirus(20)">感染（病毒20）</button>
                     <button class="secondary" @onclick="() => DevVirus(99.9)">病毒99.9（尸变测试）</button>
                     <button class="secondary" @onclick="DevDay2">跳到第2日08:00</button>
+                    <button class="secondary" @onclick="DevMeds">药品各1（绷带/抗生素/特效药）</button>
+                    <button class="secondary" @onclick="DevRepairMats">维护材料（废金属+零件）</button>
                 </div>
                 <div class="btn-row">
                     @foreach (var en in G.E.Config.Enemies)
@@ -104,6 +106,17 @@
         G.Notify();
     }
 
+    private void DevMeds()
+    {
+        foreach (var id in new[] { "bandage", "antibiotics", "antiviral_cure" }) G.E.DebugGive(G.S, id, 1);
+        DevDone("绷带、抗生素、特效药各1已放到随身（开发用）。");
+    }
+
+    private void DevRepairMats()
+    {
+        foreach (var id in new[] { "scrap", "parts" }) G.E.DebugGive(G.S, id, 1);
+        DevDone("废金属、零件各1已放到随身（开发用，可做一次工具维护）。");
+    }
     private void DevKit() { G.E.DebugGiveDevKit(G.S); DevDone("开发测试箱已放到随身。"); }
 
     private void DevEncounter() => DevDone(G.E.DebugForceEncounter(G.S) ? "已形成敌踪。" : "当前地点没有敌对敌人，或正在行动中。");

@@ -131,6 +131,7 @@ else
             var p = G.Preview(req);
             <div class="lines">
                 <div><span>即时效果</span><b>@UseEffect(cfg)</b></div>
+                @if (cfg.Use.IsMedicine && !string.IsNullOrEmpty(cfg.Desc)) { <div><span>药效</span><b>@cfg.Desc</b></div> }
                 @if (p.Ok)
                 {
                     foreach (var id in new[] { StatId.Satiety, StatId.Hydration, StatId.Health, StatId.Morale })
