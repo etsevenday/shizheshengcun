@@ -252,7 +252,7 @@ public sealed class GameSession
             if (migrate)
             {
                 Save();
-                Notice = "旧存档已升级到版本4，原档已备份" + (notes.Count > 0 ? "：" + string.Join("；", notes) : "") + "。";
+                Notice = $"旧存档已升级到版本{GameState.CurrentSchema}，原档已备份" + (notes.Count > 0 ? "：" + string.Join("；", notes) : "") + "。";
             }
             Notify();
             // 行动动画每 5 分钟段都会存档，播放中刷新页面时存档里的主行动仍是“运行中”；
@@ -280,7 +280,7 @@ public sealed class GameSession
     }
 
     private static string ConflictText(SaveMigrationConflictException ex) =>
-        $"旧存档无法自动升级到版本4：{ex.Message}。原存档没有改动，并已另存一份备份；请开始新游戏。";
+        $"旧存档无法自动升级到版本{GameState.CurrentSchema}：{ex.Message}。原存档没有改动，并已另存一份备份；请开始新游戏。";
 
     /// <summary>现有存档是旧版、继续时会升级：返回它的版本号（开始界面预告），否则为 null。</summary>
     public string? SaveUpgradeFrom()

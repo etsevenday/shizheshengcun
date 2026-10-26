@@ -19,13 +19,14 @@ namespace Survival.Core.Save
     }
 
     /// <summary>
-    /// 存档升级链：0.2-proto-1（设计文档里的 schemaVersion 2）→ 3（交互与地图扩展）→ 4（卡片统一与设施烹饪）。
-    /// 只对旧版执行，已是 4 的档不重复迁移。不补发历史奖励、不自动补水、不凭默认顺序挑锅。
+    /// 存档升级链：0.2-proto-1（设计文档里的 schemaVersion 2）→ 3（交互与地图扩展）→ 4（卡片统一与设施烹饪）→ 5（人物与战斗 v0.6）。
+    /// 只对旧版执行，已是当前版本的档不重复迁移。不补发历史奖励、不自动补水、不凭默认顺序挑锅、H/E 只缩放一次。
     /// </summary>
     public static class SaveMigrator
     {
         public const string LegacySchema = "0.2-proto-1";
         public const string Schema3 = "3";
+        public const string Schema4 = "4";
 
         /// <summary>升级到当前版本，返回给玩家看的迁移说明（无变化时为空）。冲突时抛 SaveMigrationConflictException，状态不变。</summary>
         public static List<string> Migrate(GameState s, GameConfig config)
@@ -41,6 +42,7 @@ namespace Survival.Core.Save
                 From02To3(s, config);
             }
             if (s.SchemaVersion == Schema3) From3To4(s, config, notes);
+            if (s.SchemaVersion == Schema4) From4To5(s, config, notes);
             return notes;
         }
 
@@ -217,6 +219,82 @@ namespace Survival.Core.Save
 
             foreach (var n in notes) s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = n + "。" });
             s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = "存档已升级到版本4（卡片统一与设施烹饪）。" });
+            s.SchemaVersion = Schema4;
+        }
+
+        // ───────────────────────── 4 → 5 ─────────────────────────
+
+        /// <summary>
+        /// 人物与战斗 v0.6 §16：旧 H/E 一次性×0.2（N/W/S/M 不动）；旧装备随机抽新的最大耐久并保持旧当前/旧满成色，旧锅/打火器初始化为区间满耐久一次；
+        /// 技能 1 级、免疫初值、无感染；世界敌人按新局初始分布与游标；新增箱子在旧档已越过揭示点的不补发；进行中的主行动保留。
+        /// 实例 ID、锅内物品、布局索引不复制、不重排。
+        /// </summary>
+        private static void From4To5(GameState s, GameConfig config, List<string> notes)
+        {
+            var engine = new Engine.GameEngine(config);
+            var f = config.StateScale.OldHealthAndEnergyConversionFactor;
+            var oldH = s.Stats.Health;
+            var oldE = s.Stats.Energy;
+            s.Stats.HealthMax = config.StateScale.HealthMax;
+            s.Stats.EnergyMax = config.StateScale.EnergyMax;
+            s.Stats.Health = Math.Min(s.Stats.HealthMax, oldH * f);
+            s.Stats.Energy = Math.Min(s.Stats.EnergyMax, oldE * f);
+            engine.SyncLatches(s);
+            notes.Add($"健康与体力按0.2缩放：健康{Engine.Fmt.N(oldH)}→{Engine.Fmt.N(s.Stats.Health)}、体力{Engine.Fmt.N(oldE)}→{Engine.Fmt.N(s.Stats.Energy)}（上限20）；饱食、水分、清醒、精神不变");
+
+            var gear = new List<string>();
+            foreach (var it in s.Items)
+            {
+                var cfg = config.Items.FirstOrDefault(i => i.Id == it.ItemId);
+                if (cfg == null || !cfg.HasDurability || it.MaxDurability.HasValue) continue;
+                var max = engine.RollMaxDurability(s, cfg);
+                if (it.Durability.HasValue)
+                {
+                    var legacy = cfg.LegacyMaxDurability ?? Math.Max(1, it.Durability.Value);
+                    var ratio = Math.Max(0, Math.Min(1, it.Durability.Value / legacy));
+                    it.MaxDurability = max;
+                    it.Durability = max * ratio;
+                    gear.Add($"{cfg.Name}#{it.InstanceId} 成色{Engine.Fmt.Pct(ratio)}→耐久{Engine.Fmt.N(it.Durability.Value)}/{Engine.Fmt.N(max)}");
+                }
+                else
+                {
+                    it.MaxDurability = max;
+                    it.Durability = max;
+                    gear.Add($"{cfg.Name}#{it.InstanceId} 满耐久{Engine.Fmt.N(max)}");
+                }
+            }
+            if (gear.Count > 0) notes.Add("装备改为随机最大耐久并保持原成色：" + string.Join("；", gear));
+
+            engine.InitSkills(s);
+            s.Body = new BodyState { Immunity = config.Immunity.Initial, Infected = false, VirusLoad = 0 };
+            s.EquippedWeaponId = null;
+            s.Battle = null;
+            s.Encounter = null;
+            s.WorldEnemies = new List<WorldEnemy>();
+            s.NextWorldEnemyId = 1;
+            engine.InitWorldEnemies(s);
+            s.EncounterGraceUntil = 0;
+
+            var skipped = new List<string>();
+            foreach (var r in config.Resources)
+            {
+                if (s.Resources.ContainsKey(r.NodeId)) continue;
+                var progress = s.Locations.TryGetValue(r.LocationId, out var ls) ? ls.Progress : 0;
+                var passed = r.RevealAt.HasValue && progress >= r.RevealAt.Value;
+                s.Resources[r.NodeId] = new ResourceState
+                {
+                    Available = r.IsUnlimited ? (int?)null : passed ? 0 : r.Cap,
+                    Reserved = 0,
+                    LastRefillDay = s.GameMinute / Engine.Clock.MinutesPerDay,
+                    Discovered = passed,
+                };
+                if (passed) skipped.Add($"{r.Name}（{config.Locations.First(l => l.Id == r.LocationId).Name}）");
+            }
+            if (skipped.Count > 0) notes.Add("旧档探索度已越过揭示点的新箱子不补发、显示为已搜空：" + string.Join("、", skipped));
+            notes.Add("新增：8项熟练度（1级）、免疫力70、世界敌人6只；探索/清理后第2日起可能遇到本地敌人");
+
+            foreach (var n in notes) s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = n + "。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（人物与战斗 v0.6）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

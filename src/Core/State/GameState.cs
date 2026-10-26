@@ -20,9 +20,10 @@ namespace Survival.Core.State
     {
         /// <summary>
         /// 存档结构版本。"0.2-proto-1" 是首版（设计文档里的 schemaVersion 2），"3" 是交互与地图扩展版，读档时按链迁移；
-        /// "4" 起锅与直烤食材可以真实归属火堆设施（卡片统一与设施烹饪 v0.4）。
+        /// "4" 起锅与直烤食材可以真实归属火堆设施（卡片统一与设施烹饪 v0.4）；
+        /// "5" 起健康/体力上限20、随机耐久、技能、免疫病毒、世界敌人与战斗（人物与战斗 v0.6，程序选的未占用版本号，与策划文件名无关）。
         /// </summary>
-        public const string CurrentSchema = "4";
+        public const string CurrentSchema = "5";
 
         public string SchemaVersion { get; set; } = CurrentSchema;
         public string ConfigVersion { get; set; } = "";
