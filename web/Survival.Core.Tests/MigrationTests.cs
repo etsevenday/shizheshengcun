@@ -43,7 +43,7 @@ public class MigrationTests : TestBase
         var old = JObject.Parse(json);
         Assert.That(SaveSerializer.NeedsMigration(json), Is.True);
         var s = SaveSerializer.Deserialize(json, Cfg, out var notes);
-        Assert.That(s.SchemaVersion, Is.EqualTo("5"));
+        Assert.That(s.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "4→5→6 整条链");
         var os = old["Stats"]!;
         Assert.That(s.Stats.Health, Is.EqualTo((double)os["Health"]! * 0.2).Within(1e-9));
         Assert.That(s.Stats.Energy, Is.EqualTo((double)os["Energy"]! * 0.2).Within(1e-9));
@@ -60,11 +60,11 @@ public class MigrationTests : TestBase
             Assert.That(it.MaxDurability, Is.InRange(range[0], range[1]), id);
             Assert.That(it.Durability!.Value / it.MaxDurability!.Value, Is.EqualTo(oldDur / legacy).Within(1e-9), id + " 成色保持");
         }
-        foreach (var id in new[] { "pot", "lighter" })
-        {
-            var it = s.Items.Single(i => i.ItemId == id);
-            Assert.That(it.Durability, Is.EqualTo(it.MaxDurability), id + " 满耐久初始化一次");
-        }
+        var lt = s.Items.Single(i => i.ItemId == "lighter");
+        Assert.That(lt.Durability, Is.EqualTo(lt.MaxDurability), "打火器满耐久初始化一次");
+        Assert.That(s.Items.Single(i => i.ItemId == "pot").Durability, Is.Null, "v1.0 P02：锅没有耐久");
+        Assert.That(s.Story.Legacy, Is.True, "旧档不补新剧情（T06）");
+        Assert.That(s.Story.BaobaoPresent, Is.False);
         Assert.That(s.Items.Select(i => i.InstanceId), Is.EquivalentTo(old["Items"]!.Select(i => (int)i["InstanceId"]!)), "实例ID不复制、不重排");
         Assert.That(s.Items.Single(i => i.ItemId == "pot").Owner, Is.EqualTo("facility:camp:fire"), "锅内物品与归属不变");
         Assert.That(s.Main, Is.Not.Null, "进行中的主行动保留");

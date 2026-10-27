@@ -19,7 +19,8 @@ namespace Survival.Core.Save
     }
 
     /// <summary>
-    /// 存档升级链：0.2-proto-1（设计文档里的 schemaVersion 2）→ 3（交互与地图扩展）→ 4（卡片统一与设施烹饪）→ 5（人物与战斗 v0.6）。
+    /// 存档升级链：0.2-proto-1（设计文档里的 schemaVersion 2）→ 3（交互与地图扩展）→ 4（卡片统一与设施烹饪）→ 5（人物与战斗 v0.6）
+    /// → 6（系统策划总册 v1.0 答复：锅无耐久、旧档不补新剧情）。
     /// 只对旧版执行，已是当前版本的档不重复迁移。不补发历史奖励、不自动补水、不凭默认顺序挑锅、H/E 只缩放一次。
     /// </summary>
     public static class SaveMigrator
@@ -27,6 +28,7 @@ namespace Survival.Core.Save
         public const string LegacySchema = "0.2-proto-1";
         public const string Schema3 = "3";
         public const string Schema4 = "4";
+        public const string Schema5 = "5";
 
         /// <summary>升级到当前版本，返回给玩家看的迁移说明（无变化时为空）。冲突时抛 SaveMigrationConflictException，状态不变。</summary>
         public static List<string> Migrate(GameState s, GameConfig config)
@@ -43,6 +45,7 @@ namespace Survival.Core.Save
             }
             if (s.SchemaVersion == Schema3) From3To4(s, config, notes);
             if (s.SchemaVersion == Schema4) From4To5(s, config, notes);
+            if (s.SchemaVersion == Schema5) From5To6(s, config, notes);
             return notes;
         }
 
@@ -294,7 +297,49 @@ namespace Survival.Core.Save
             notes.Add("新增：8项熟练度（1级）、免疫力70、世界敌人6只；探索/清理后第2日起可能遇到本地敌人");
 
             foreach (var n in notes) s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = n + "。" });
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（人物与战斗 v0.6）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema5}（人物与战斗 v0.6）。" });
+            s.SchemaVersion = Schema5;
+        }
+
+        // ───────────────────────── 5 → 6 ─────────────────────────
+
+        /// <summary>
+        /// 系统策划总册 v1.0（T06、P02）：旧锅去掉耐久/最大耐久（保留实例 ID、归属、全部内容、保质、水预留与受热进度，不新建锅）；
+        /// 进行中的“维护锅”行动取消、预留材料返还当前地面；剧情标记为旧档——不补开场、首战、教学活性物质与“攻击力+0.1”，
+        /// 饱饱持续病毒输入不启用；已有世界敌人保留，未来刷新按世界日分层过滤。其余（技能、免疫、敌人、主行动）原样保留。
+        /// </summary>
+        private static void From5To6(GameState s, GameConfig config, List<string> notes)
+        {
+            var potIds = PotIds(s, config);
+            var cleared = new List<string>();
+            foreach (var it in s.Items.Where(i => potIds.Contains(i.InstanceId)))
+            {
+                if (it.Durability == null && it.MaxDurability == null) continue;
+                it.Durability = null;
+                it.MaxDurability = null;
+                cleared.Add($"金属锅#{it.InstanceId}");
+            }
+            if (cleared.Count > 0) notes.Add($"金属锅改为没有耐久（{string.Join("、", cleared)}）：内容、水与加工进度原样保留，不再磨损、不需要维护");
+            foreach (var act in new[] { s.Sub, s.Main }.Where(a => a != null && a.Type == ActionType.Repair && a.ToolInstanceId is int id && potIds.Contains(id)).ToList())
+            {
+                var back = new List<string>();
+                foreach (var id in act!.ReservedItemIds)
+                {
+                    var inst = s.Items.FirstOrDefault(i => i.InstanceId == id);
+                    if (inst == null) continue;
+                    inst.ReservedBy = null;
+                    inst.Owner = s.CurrentLocation;
+                    back.Add($"{config.Items.FirstOrDefault(c => c.Id == inst.ItemId)?.Name ?? inst.ItemId}×{inst.Count}");
+                }
+                ClearAction(s, act);
+                notes.Add($"进行中的锅维护已取消（锅不再需要维护）{(back.Count > 0 ? "，预留的" + string.Join("、", back) + "已返还当前地面" : "")}");
+            }
+            s.Story = new StoryState { Legacy = true, BaobaoPresent = config.Infection.BaobaoInput.LegacySavePresent };
+            s.Traits = new List<TraitInstance>();
+            notes.Add("本轮新增的饱饱开场、首战教学与吞噬融合只在新游戏里体验；这份存档保留原有流程，不补发教学物资，也不启用饱饱的体内病毒输入");
+
+            foreach (var n in notes) s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = n + "。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（系统策划总册 v1.0）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

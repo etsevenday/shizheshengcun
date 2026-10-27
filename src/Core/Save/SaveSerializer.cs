@@ -56,7 +56,7 @@ namespace Survival.Core.Save
         }
 
         private static bool IsMigratable(string? version) =>
-            version == SaveMigrator.LegacySchema || version == SaveMigrator.Schema3 || version == SaveMigrator.Schema4;
+            version == SaveMigrator.LegacySchema || version == SaveMigrator.Schema3 || version == SaveMigrator.Schema4 || version == SaveMigrator.Schema5;
 
         /// <summary>存档是旧版、读取时会迁移。</summary>
         public static bool NeedsMigration(string json) => IsMigratable(SchemaOf(json));
