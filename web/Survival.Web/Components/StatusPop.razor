@@ -1,0 +1,60 @@
+@inherits GameComponent
+
+@* 状态说明浮层（S14 §12.2、§13.2）：固定在视口内、锚定在图标右侧；悬停为只读提示（不拦截输入），点击固定后可移开鼠标继续阅读，
+   × 或 Esc 只关闭浮层。内容每次渲染都从当前状态重取：状态到期/消失时浮层随之关闭，不保留失效说明。 *@
+@{
+    var id = G.StatusPinned ?? G.StatusHover;
+    var pinned = G.StatusPinned != null;
+    List<StatusChip>? list = null;
+    StatusChip? chip = null;
+    if (id != null && G.State != null && !G.DialogueLocked)
+    {
+        var all = StatusView.Ordered(StatusView.All(G.E, G.S));
+        if (id == "*all") list = all;
+        else chip = all.FirstOrDefault(c => c.Id == id);
+    }
+    var (left, top) = G.StatusAnchor;
+    var style = FormattableString.Invariant($"left:min({left:0}px, calc(100vw - 340px));top:max(8px, min({top:0}px, calc(100vh - 300px)))");
+}
+@if (list != null || chip != null)
+{
+    <div class="st-pop @(pinned ? "pinned" : "hover")" role="@(pinned ? "dialog" : "tooltip")" aria-label="@(list != null ? "全部状态" : chip!.Name)" style="@style">
+        @if (list != null)
+        {
+            <div class="st-pop-head"><b>全部状态</b>@if (pinned) {<button type="button" class="st-close" aria-label="关闭全部状态" @onclick="Close">×</button>}</div>
+            <div class="st-pop-list" data-wheel="y">
+                @foreach (var c in list)
+                {
+                    <div class="st-pop-item">
+                        <span class="st-ico @(c.Danger ? "danger" : c.Harmful ? "bad" : "good")" aria-hidden="true">@Icons.Markup(c.Icon)</span>
+                        <span><b>@c.Name</b><small>@c.Effect</small><small class="muted">@StatusView.RemainingText(c)</small></span>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="st-pop-head">
+                <span class="st-ico @(chip!.Danger ? "danger" : chip.Harmful ? "bad" : "good")" aria-hidden="true">@Icons.Markup(chip.Icon)</span>
+                <b>@chip.Name</b>
+                @if (pinned) { <button type="button" class="st-close" aria-label="@($"关闭{chip.Name}说明")" @onclick="Close">×</button> }
+            </div>
+            <p>@chip.Effect</p>
+            <p class="muted">@StatusView.RemainingText(chip)</p>
+            @if (!pinned) { <p class="tiny muted">点击图标固定说明</p> }
+        }
+    </div>
+}
+
+@code {
+    private void Close() => G.PinStatus(null);
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // 状态已到期/消失（或对话锁开始）：清掉悬停/固定记录，Esc 栈不再停在一个看不见的浮层上
+        var id = G.StatusPinned ?? G.StatusHover;
+        if (id == null || G.State == null) return;
+        if (G.DialogueLocked) { G.DropStatusSilently(); return; }
+        if (id != "*all" && StatusView.All(G.E, G.S).All(c => c.Id != id)) G.DropStatusSilently();
+    }
+}

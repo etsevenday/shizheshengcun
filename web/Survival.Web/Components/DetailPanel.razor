@@ -19,7 +19,7 @@
     var shownTab = !battlePanel && G.HoverPreview != null && G.Panel == null ? DetailTab.Object : tab;
 }
 
-<aside class="panel detail" aria-label="对象信息与人物">
+<aside class="panel detail" aria-label="对象信息与人物" inert="@G.DialogueLocked">
     @if (active != null)
     {
         <div class="detail-action"><ActionProgress /></div>

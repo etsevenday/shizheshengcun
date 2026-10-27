@@ -62,6 +62,11 @@
         if (scrollable(el, 'x') && canMove(el, 'x', d)) { consume(ev, el, 'x', d); return true; }
         continue;
       }
+      // 标了 data-wheel="x" 的卡片栏（地面、随身、设施行、相邻地图）同时纵向溢出时（卡下操作条、锅卡更高，S14 §1.3 区内纵滚）：
+      // 纯竖向滚轮先横向翻卡，到横向边界再纵向滚动本区，仍不透传给父级
+      if (mouseVertical && !passedVertical && el.getAttribute && el.getAttribute('data-wheel') === 'x' && scrollable(el, 'x') && canMove(el, 'x', d)) {
+        consume(ev, el, 'x', d); return true;
+      }
       if (scrollable(el, 'y')) {
         if (canMove(el, 'y', d)) { consume(ev, el, 'y', d); return true; }
         passedVertical = true;                              // 纵向列表到底：只交给更外层的纵向容器

@@ -1,0 +1,127 @@
+@inherits GameComponent
+
+@* 右栏人物二级页（S14 §12.1、S12 §7）：在右栏原位显示某项属性的作用、真实数值、适用条件、阈值与效果，或熟练度/词条完整数据。
+   数值全部读配置与当前实例（与左栏、人物一级页同源），不另定数值；有明确返回入口，Esc 一次返回人物一级页并保留原选择。
+   只是浏览：不执行物品使用、不推进时间。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var cfg = e.Config;
+    var page = Page;
+    StatId? sid = Stats.All.Cast<StatId?>().FirstOrDefault(x => "stat:" + GameEngine.StatKey(x!.Value) == page);
+    var chips = StatusView.All(e, s);
+    string anchor = sid is StatId x ? GameEngine.StatKey(x) : page;
+    var related = chips.Where(c => c.Anchor == anchor).ToList();
+}
+<div class="detail-scroll attr-page" data-wheel="y">
+    <div class="attr-head">
+        <button type="button" class="secondary attr-back" @onclick="Back" aria-label="返回人物一级页">‹ 人物<kbd>Esc</kbd></button>
+    </div>
+    @if (sid is StatId id)
+    {
+        var v = s.Stats.Get(id);
+        var th = cfg.Thresholds[GameEngine.StatKey(id)];
+        var below = th.IsBelow(v);
+        var zero = v <= 0 && id != StatId.Health;
+        <div class="op-head">
+            <div class="eyebrow">基础属性</div>
+            <h2>@GameEngine.StatName(id) <small class="muted">@Ui.N(v)/@Ui.T(s.Stats.Max(id))</small></h2>
+        </div>
+        <div class="track big"><i style="width:@Ui.Bar(v, s.Stats.Max(id))%"></i><span class="mark" style="left:@Ui.Bar(th.Value, s.Stats.Max(id))%"></span></div>
+        <div class="lines">
+            <div><span>当前</span><b class="@(zero || below ? "warn-text" : "")">@(zero ? "已归零" : below ? "低于提醒线" : "正常")</b></div>
+            <div><span>提醒阈值</span><b>@(th.Inclusive ? "≤" : "<")@Ui.T(th.Value)</b></div>
+            @if (id == StatId.Energy)
+            {
+                <div><span>工作倍率</span><b>@(below ? $"×{Ui.T(cfg.WorkFactors.LowEnergy)}（低体力）" : "正常")</b></div>
+            }
+        </div>
+        <p class="attr-explain">@Ui.StatExplain(e, id)</p>
+    }
+    else if (page == "immunity")
+    {
+        var (ir, _, why) = e.CurrentBodyRates(s);
+        <div class="op-head">
+            <div class="eyebrow">免疫与感染</div>
+            <h2>免疫力 <small class="muted">@Ui.N(s.Body.Immunity)/@Ui.T(cfg.Immunity.Max)</small></h2>
+        </div>
+        <div class="track big"><i style="width:@Ui.Bar(s.Body.Immunity, cfg.Immunity.Max)%"></i><span class="mark" style="left:@Ui.Bar(cfg.Infection.NaturalCure.ConsecutiveImmunityAtLeast, cfg.Immunity.Max)%"></span></div>
+        <div class="lines">
+            <div><span>按当前状态每小时</span><b class="@(ir < 0 ? "warn-text" : "")">@Ui.SignedT(ir)</b></div>
+            <div><span>构成</span><b>@(why.Count == 0 ? "无增减" : string.Join("，", why))</b></div>
+            <div><span>咬伤感染概率</span><b>@Ui.Pct(e.ExposureChance(s.Body.Immunity))</b></div>
+            <div><span>高免疫门槛</span><b>≥@Ui.T(cfg.Infection.NaturalCure.ConsecutiveImmunityAtLeast)</b></div>
+        </div>
+        <p class="attr-explain">@Ui.ImmunityExplain(e)</p>
+    }
+    else if (page == "virus")
+    {
+        var b = s.Body;
+        var (_, vr, _) = e.CurrentBodyRates(s);
+        <div class="op-head">
+            <div class="eyebrow">免疫与感染</div>
+            <h2>病毒 <small class="muted">@(b.Infected ? $"{Ui.N(b.VirusLoad)}/{Ui.T(cfg.Infection.ZombificationAtLoad)}" : "未感染")</small></h2>
+        </div>
+        <div class="track big"><i style="width:@Ui.Bar(b.VirusLoad, cfg.Infection.ZombificationAtLoad)%"></i></div>
+        <div class="lines">
+            <div><span>状态</span><b class="@(b.Infected ? "danger-text" : "")">@(b.Infected ? "已感染" : "未感染")</b></div>
+            @if (b.Infected)
+            {
+                <div><span>按当前免疫每小时</span><b class="@(vr > 0 ? "warn-text" : "good-text")">@Ui.SignedT(vr)</b></div>
+                <div><span>连续高免疫</span><b>@Clock.Duration(b.HighImmunityMinutes)/@Clock.Duration(cfg.Infection.NaturalCure.Minutes)</b></div>
+                <div><span>自然治愈还需</span><b>病毒≤@Ui.T(cfg.Infection.NaturalCure.LoadAtMost)</b></div>
+            }
+        </div>
+        <p class="attr-explain">@Ui.VirusExplain(e)</p>
+    }
+    else if (page == "skills")
+    {
+        <div class="op-head">
+            <div class="eyebrow">人物</div>
+            <h2>熟练度 <small class="muted">无等级上限</small></h2>
+        </div>
+        <div class="skill-list">
+            @foreach (var sk in e.SkillViews(s))
+            {
+                <div class="skill-row">
+                    <b>@sk.Name</b><span>@(sk.Level)级</span>
+                    <div class="track thin"><i style="width:@Ui.Bar(sk.Xp, sk.NextXp)%"></i></div>
+                    <small class="muted">经验@(sk.Xp)/@(sk.NextXp) · 升到@(sk.Level + 1)级还需@(sk.NextXp - sk.Xp)</small>
+                </div>
+            }
+        </div>
+    }
+    else if (page == "traits")
+    {
+        <div class="op-head">
+            <div class="eyebrow">人物</div>
+            <h2>词条 <small class="muted">饱饱吞噬融合</small></h2>
+        </div>
+        @if (s.Traits.Count == 0)
+        {
+            <div class="risk none">还没有词条。@(GameEngine.StoryActive(s) ? "首战胜利后饱饱会吞噬融合教学活性物质。" : "")</div>
+        }
+        @foreach (var t in s.Traits)
+        {
+            <div class="trait-row q-@t.Quality">
+                <b>@t.Label</b><small>@(t.Quality == "green" ? "绿色" : t.Quality) · 直接攻击伤害平加（在技能/招式/站位/暴击乘算后、扣护甲前；推挡与出血不加）</small>
+            </div>
+        }
+    }
+    @if (related.Count > 0)
+    {
+        <div class="attr-related">
+            <div class="tiny muted">相关状态（左栏图标可查看）</div>
+            @foreach (var c in related)
+            {
+                <div class="risk @(c.Harmful ? "" : "none")"><b>@c.Name</b> · @c.Effect · @StatusView.RemainingText(c)</div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Page { get; set; } = "";
+
+    private void Back() => G.OpenCharPage(null);
+}

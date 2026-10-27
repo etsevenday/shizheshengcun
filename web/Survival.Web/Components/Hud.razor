@@ -1,5 +1,7 @@
 @inherits GameComponent
 
+@* 左栏（S14 §5.1、§12）：时间、基础状态数值/条、各属性下方的实际生效状态图标、携重摘要。
+   原“生存目标”“生存提示”长板块已迁到顶栏同名按钮（S14 §12.3、S15 §6）；点属性在右栏打开该属性的二级说明页。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -8,9 +10,11 @@
     var toSwitch = Clock.MinutesToSwitch(s.GameMinute, cfg.Time.DaylightStartMinute, cfg.Time.DaylightEndMinute);
     var grams = e.CarriedGrams(s);
     var currentDay = Clock.Day(s.GameMinute);
+    var chips = StatusView.Ordered(StatusView.All(e, s));
+    var locked = G.DialogueLocked;
 }
 
-<aside class="sidebar" aria-label="求生状态">
+<aside class="sidebar" aria-label="求生状态" inert="@locked">
     <div class="panel clock">
         <div class="eyebrow">存活第@(currentDay)日</div>
         <div class="time">@Clock.HHmm(s.GameMinute)</div>
@@ -27,38 +31,36 @@
             var zero = v <= 0;
             var cls = zero || (id == StatId.Health && below) ? "critical" : below ? "warning" : "";
             var statId = id;
-            <button class="vital @cls" @onclick="() => OpenStatus(statId)" title="查看@(GameEngine.StatName(id))说明">
+            <button class="vital @cls" @onclick="() => OpenStat(statId)" title="@($"在右栏查看{GameEngine.StatName(id)}说明")">
                 <div class="vital-label">
                     <span>@GameEngine.StatName(id)@if (zero && id != StatId.Health) {<em class="flag danger-text">归零</em>} else if (below) {<em class="flag">偏低</em>}</span>
                     <b>@Ui.N(v) <small class="muted">/@Ui.T(s.Stats.Max(id))</small></b>
                 </div>
                 <div class="track"><i style="width:@Ui.Bar(v, s.Stats.Max(id))%"></i><span class="mark" style="left:@Ui.Bar(th.Value, s.Stats.Max(id))%"></span></div>
             </button>
+            <StatusIcons Chips="@chips.Where(c => c.Anchor == key).ToList()" Label="@GameEngine.StatName(id)" />
         }
-        @* v0.6 §07：左 HUD 新增免疫与病毒入口；病毒未感染写“未感染” *@
+        @* v0.6 §07：免疫与病毒；病毒未感染写“未感染” *@
         @{
             var body = s.Body;
             var immLow = body.Immunity < 40;
         }
-        <button class="vital @(immLow ? "warning" : "")" @onclick='() => OpenKey("immunity")' title="查看免疫力说明">
+        <button class="vital @(immLow ? "warning" : "")" @onclick='() => G.OpenCharPage("immunity")' title="在右栏查看免疫力说明">
             <div class="vital-label">
                 <span>@("免疫")@if (immLow) {<em class="flag">偏低</em>}</span>
                 <b>@Ui.N(body.Immunity) <small class="muted">/@Ui.T(cfg.Immunity.Max)</small></b>
             </div>
             <div class="track"><i style="width:@Ui.Bar(body.Immunity, cfg.Immunity.Max)%"></i><span class="mark" style="left:@Ui.Bar(cfg.Infection.NaturalCure.ConsecutiveImmunityAtLeast, cfg.Immunity.Max)%"></span></div>
         </button>
-        <button class="vital @(body.Infected ? (body.VirusLoad >= 50 ? "critical" : "warning") : "")" @onclick='() => OpenKey("virus")' title="查看病毒说明">
+        <StatusIcons Chips="@chips.Where(c => c.Anchor == "immunity").ToList()" Label="免疫" />
+        <button class="vital @(body.Infected ? (body.VirusLoad >= 50 ? "critical" : "warning") : "")" @onclick='() => G.OpenCharPage("virus")' title="在右栏查看病毒说明">
             <div class="vital-label">
                 <span>@("病毒")@if (body.Infected) {<em class="flag danger-text">已感染</em>}</span>
                 <b>@(body.Infected ? Ui.N(body.VirusLoad) : "未感染")@if (body.Infected) {<small class="muted">/@Ui.T(cfg.Infection.ZombificationAtLoad)</small>}</b>
             </div>
             <div class="track"><i style="width:@Ui.Bar(body.VirusLoad, cfg.Infection.ZombificationAtLoad)%"></i></div>
         </button>
-        @* 状态异常与右栏人物页同源（内核 ActiveConditions），不在这里另算 *@
-        @foreach (var c in e.ActiveConditions(s))
-        {
-            <div class="small @(c.Harmful ? "warn-text" : "muted")">@c.Name@(c.RemainingMinutes > 0 ? $" · 还剩{Clock.Duration(c.RemainingMinutes)}" : "")（@c.Effect）</div>
-        }
+        <StatusIcons Chips="@chips.Where(c => c.Anchor == "virus").ToList()" Label="病毒" />
     </div>
 
     @* v0.7 第 6 节：左栏“自身”投放卡已取消（没有任何投放热区）；对自身使用统一在选中物品的卡下按钮 *@
@@ -68,68 +70,8 @@
         <strong class="@(grams > cfg.Carry.SoftGrams ? "warn-text" : "")">@Ui.KgText(grams)</strong>
         <div class="tiny muted">超过@(cfg.Carry.SoftGrams / 1000)公斤减速 · 上限@(cfg.Carry.HardGrams / 1000)公斤</div>
     </div>
-
-    @{ var guideOpen = !G.IsCollapsed("guide"); var tipsOpen = !G.IsCollapsed("tips"); var tips = cfg.Progress.Tips; }
-    <div class="panel guide">
-        <button type="button" class="fold-head" aria-expanded="@guideOpen" @onclick='() => G.ToggleCollapsed("guide")'>
-            <h3>生存目标</h3><span class="fold-icon">@(guideOpen ? "收起 ▴" : "展开 ▾")</span>
-        </button>
-        @if (guideOpen)
-        {
-            @foreach (var gd in cfg.Progress.Guides)
-            {
-                <div class="day @(gd.Day == Math.Min(currentDay, cfg.Progress.Guides.Max(x => x.Day)) ? "now" : "")">
-                    <b>第@(gd.Day)日</b> @gd.Title
-                    <ul>
-                        @foreach (var f in gd.Flags)
-                        {
-                            <li class="@(s.Progress.Flags.Contains(f.Id) ? "done" : "")">@f.Label</li>
-                        }
-                    </ul>
-                </div>
-            }
-            <div class="day now"><b>七日检查</b> 活到第8日08:00</div>
-        }
-        else
-        {
-            var done = cfg.Progress.Guides.SelectMany(x => x.Flags).Count(f => s.Progress.Flags.Contains(f.Id));
-            var all = cfg.Progress.Guides.SelectMany(x => x.Flags).Count();
-            <div class="tiny muted">已完成 @done/@all 项</div>
-        }
-    </div>
-
-    @if (tips.Count > 0)
-    {
-        var i = ((G.TipIndex % tips.Count) + tips.Count) % tips.Count;
-        <div class="panel guide tips">
-            <button type="button" class="fold-head" aria-expanded="@tipsOpen" @onclick='() => G.ToggleCollapsed("tips")'>
-                <h3>生存提示</h3><span class="fold-icon">@(tipsOpen ? "收起 ▴" : "展开 ▾")</span>
-            </button>
-            @if (tipsOpen)
-            {
-                <p class="tip-text">@tips[i]</p>
-                <div class="tip-nav">
-                    <button type="button" class="linkish" aria-label="上一条提示" @onclick="() => Flip(-1)">‹ 上一条</button>
-                    <span class="tiny muted">@(i + 1)/@tips.Count</span>
-                    <button type="button" class="linkish" aria-label="下一条提示" @onclick="() => Flip(1)">下一条 ›</button>
-                </div>
-            }
-        </div>
-    }
 </aside>
 
 @code {
-    private void Flip(int d)
-    {
-        G.TipIndex += d;
-        G.Notify();
-    }
-
-    private void OpenStatus(StatId id) => OpenKey(GameEngine.StatKey(id));
-
-    private void OpenKey(string key)
-    {
-        G.Panel = "status:" + key;
-        G.Notify();
-    }
+    private void OpenStat(StatId id) => G.OpenCharPage("stat:" + GameEngine.StatKey(id));
 }

@@ -1,0 +1,46 @@
+@inherits GameComponent
+
+@* 顶栏“生存目标”（S14 §12.3、S15 §6）：本局建议日程、实际完成标记（锁存，不回退）与七日检查。
+   只浏览：打开/关闭/Esc 不推进时间、不领奖、不重播剧情；建议不是任务硬门槛。原左栏常驻板块已移除。 *@
+@{
+    var s = G.S;
+    var cfg = G.E.Config;
+    var currentDay = Clock.Day(s.GameMinute);
+    var guides = cfg.Progress.Guides;
+    var lastDay = guides.Count == 0 ? 1 : guides.Max(x => x.Day);
+    var all = guides.SelectMany(x => x.Flags).ToList();
+    var done = all.Count(f => s.Progress.Flags.Contains(f.Id));
+}
+
+<div class="sub-panel goals-panel" role="dialog" aria-label="生存目标">
+    <div class="sub-head">
+        <div><h2>生存目标</h2><span class="sub">存活第@(currentDay)日 · 已完成@(done)/@(all.Count)项 · 建议日程，不是失败倒计时</span></div>
+        <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
+    </div>
+    <div class="sub-body goals-body" data-wheel="y">
+        <div class="goal-days">
+            @foreach (var gd in guides)
+            {
+                var now = gd.Day == Math.Min(currentDay, lastDay);
+                var dayDone = gd.Flags.Count > 0 && gd.Flags.All(f => s.Progress.Flags.Contains(f.Id));
+                <section class="goal-day @(now ? "now" : "") @(dayDone ? "done" : "")">
+                    <header><b>第@(gd.Day)日</b><span>@gd.Title</span>@if (now) {<em class="oc-badge here">今天</em>}</header>
+                    <ul>
+                        @foreach (var f in gd.Flags)
+                        {
+                            var ok = s.Progress.Flags.Contains(f.Id);
+                            <li class="@(ok ? "done" : "")"><span class="goal-mark" aria-hidden="true">@(ok ? "✓" : "○")</span>@f.Label<span class="sr-only">@(ok ? "（已完成）" : "（未完成）")</span></li>
+                        }
+                    </ul>
+                </section>
+            }
+            <section class="goal-day now">
+                <header><b>七日检查</b><span>活到第8日08:00</span></header>
+            </section>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void Close() => G.OpenPanel(null);
+}

@@ -16,13 +16,13 @@
   --top: #172019;
   --foot: #141d17;
   /* 布局尺寸（基础UI修订 v0.7 第 2 节）：矮屏只在文件末尾那一处 @media 里改这些变量 */
-  --top-h: 76px;
-  --foot-h: 48px;
+  --top-h: 60px;
+  --foot-h: 40px;
   --body-pad: 14px;
   --gap: 12px;
-  --map-row-h: 220px;      /* 第一行：建议 180—240 */
-  --fac-card-h: 216px;     /* 第二行普通设施/资源卡高；第二行起始高约 220—300，按内容 */
-  --shelf-h: 214px;        /* 地面、随身栏 */
+  /* 四区同屏（S14 §1.3）：地图行、设施行不再固定 180/220 与 220—300 起始高度，按中部可用高度分配（见文末“四区同屏”段）；
+     地面/随身栏高度由物品卡高 --item-h 决定，矮屏用横向紧凑卡 */
+  --item-h: 108px;
   --card-w: 158px;         /* 统一卡框默认宽 */
   --neighbor-w: 150px;
   --fac-w: 136px;
@@ -78,13 +78,14 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .linkish { background: none; border: 0; color: var(--accent); padding: 0; font-size: 14px; }
 
 /* ───── 主框架 ───── */
-.game { display: grid; grid-template-rows: var(--top-h) minmax(0, 1fr) var(--foot-h); height: 100vh; min-height: 720px; }
-.top { border-bottom: 1px solid var(--line); padding: 0 22px; display: flex; align-items: center; justify-content: space-between; background: var(--top); }
-.brand { display: flex; gap: 18px; align-items: center; }
+.game { display: grid; grid-template-rows: auto minmax(0, 1fr) var(--foot-h); height: 100vh; min-height: 720px; }
+.top { min-height: var(--top-h); border-bottom: 1px solid var(--line); padding: 6px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; background: var(--top); }
+.brand { display: flex; gap: 14px; align-items: center; min-width: 0; flex: 1 1 260px; }
 .brand b { font-size: 26px; letter-spacing: 4px; }
-.brand em { font-style: normal; border-left: 1px solid var(--line); padding-left: 18px; color: var(--muted); font-size: 16px; }
-.nav { display: flex; gap: 8px; }
-.nav button { background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 9px 12px; font-size: 15px; min-height: 40px; }
+.brand em { font-style: normal; border-left: 1px solid var(--line); padding-left: 14px; color: var(--muted); font-size: 16px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 5px; }
+.nav button { background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 0 9px; font-size: 15px; min-height: 40px; white-space: nowrap; }
+.nav-sep { width: 1px; height: 24px; background: var(--line); margin: 0 3px; }
 .nav button.on { border-color: var(--accent); color: var(--accent); }
 .nav button.feedback-btn { border-color: #8a7748; color: var(--accent); }
 
@@ -130,9 +131,6 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 .center-scroll::-webkit-scrollbar { width: 10px; }
 .center-scroll::-webkit-scrollbar-thumb { background: #56604f; border-radius: 5px; }
 .center-scroll > * { flex: 0 0 auto; }
-/* 二级面板打开时不纵滚：面板盖住地块两行与地面（center-top 填满），随身栏固定在下方 */
-.center-scroll.locked { overflow-y: hidden; }
-.center-scroll.locked > .center-top { flex: 1 1 0; min-height: 0; overflow: hidden; }
 .section { padding: 12px 14px; min-height: 0; display: flex; flex-direction: column; }
 .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 12px; }
 .section-head h2 { font-size: 17px; font-weight: 500; margin: 0; white-space: nowrap; }
@@ -143,11 +141,8 @@ kbd { font-family: inherit; font-size: 12px; color: var(--muted); margin-left: 8
 
 /* 中部上方：地块两行与当前地面；二级面板只覆盖这一块（留言 8f9a7c9b 第 2 点） */
 .center-top { position: relative; display: flex; flex-direction: column; gap: var(--gap); }
-.center-top > * { flex: 0 0 auto; }
-.center-scroll .section.ground, .center-scroll .section.carried { height: var(--shelf-h); }
 /* 手工制作层打开时：地面与随身并排放在下方，两区都能作为材料槽的拖拽来源 */
-.center-scroll > .shelves-split { min-height: var(--shelf-h); display: flex; gap: var(--gap); }
-.shelves-split > .section { height: auto !important; }
+.center-scroll > .shelves-split { display: flex; gap: var(--gap); }
 .shelves-split > .section { flex: 1 1 0; min-width: 0; }
 .shelves-split .section-head span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sub-panel { position: absolute; inset: 0; z-index: 30; background: var(--surface); border: 1px solid var(--accent); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 6px 24px #0007; }
@@ -403,17 +398,17 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 /* ───────────── 地块卡片桌面（卡片统一与设施烹饪 v0.4 · 01 案第 1–3 节） ─────────────
    正文≥16px、辅助≥14px、点击热区≥40px；视口不足时本区内部横向滚动，不遮 HUD 与地面栏。 */
 /* 第一行：当前地图大图卡固定在最左，相邻地图子栏独立横滚 */
-.map-row { height: var(--map-row-h); display: flex; gap: 10px; padding: 8px; min-width: 0; }
+.map-row { display: flex; gap: 10px; padding: 8px 8px 8px 4px; min-width: 0; }
 .map-adjacent { flex: 1 1 0; min-width: 0; display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; align-items: stretch; padding-bottom: 4px; }
 .map-adjacent > .ocard { width: var(--neighbor-w); }
 /* 第二行：设施 → “采集资源”分组 → 资源卡，独立横滚，卡片顶端对齐、按内容高度 */
-.facility-row { position: relative; padding: 6px 8px 4px; min-width: 0; min-height: calc(var(--fac-card-h) + 38px); }
-.fac-scroll { display: flex; gap: 22px; overflow-x: auto; overflow-y: hidden; align-items: flex-start; padding-bottom: 6px; }
+.facility-row { position: relative; display: flex; gap: 6px; padding: 6px 8px 4px 4px; min-width: 0; }
+.fac-scroll { flex: 1 1 0; min-width: 0; display: flex; gap: 22px; overflow: auto; align-items: stretch; padding-bottom: 6px; }
 .desk-group { flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; }
 .desk-group + .desk-group { border-left: 1px solid var(--line); padding-left: 18px; margin-left: -4px; }
 .dg-title { font-size: 14px; color: var(--muted); letter-spacing: 1px; line-height: 20px; }
 .dg-cards { display: flex; gap: 10px; align-items: flex-start; }
-.dg-cards > .ocard { height: var(--fac-card-h); }
+.dg-cards > .ocard { height: auto; min-height: min-content; }
 .map-adjacent::-webkit-scrollbar, .fac-scroll::-webkit-scrollbar, .row-scroll::-webkit-scrollbar { height: 8px; }
 .map-adjacent::-webkit-scrollbar-thumb, .fac-scroll::-webkit-scrollbar-thumb { background: #4a564a; border-radius: 4px; }
 .desk-hint { flex: 0 0 220px; align-self: center; color: #e1e8d8; font-size: 14px; line-height: 1.6; background: #0e211ab8; padding: 10px 12px; border-radius: 6px; }
@@ -550,7 +545,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .card-arrow::after { inset: -15px -5px -5px -11px; }
 
 /* ───────────── 火堆卡与内嵌锅卡（基础UI布局与操作修订案 v0.7 第 3 节） ───────────── */
-.dg-cards > .fire-card { width: auto; height: auto; min-height: var(--fac-card-h); cursor: default; }
+.dg-cards > .fire-card { width: auto; height: auto; align-self: flex-start; cursor: default; }
 .fire-card { padding: 6px; gap: 6px; }
 .fc-head { display: flex; }
 .fc-fuel { flex: 1 1 auto; display: flex; align-items: center; gap: 10px; padding: 2px 6px; border: 1px dashed transparent; border-radius: 5px; cursor: pointer; min-height: 56px; }
@@ -618,9 +613,8 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .ff-note { font-size: 14px; color: #5d5a45; }
 
 /* 地面/随身栏：卡片顶端对齐，锅卡按内容高度，栏高随之增长（中部可纵滚） */
-.center-scroll .section.ground, .center-scroll .section.carried { height: auto; min-height: var(--shelf-h); }
 .row-scroll { align-items: flex-start; }
-.row-scroll .card.item { height: calc(var(--shelf-h) - 56px); }
+.row-scroll .card.item { height: var(--item-h); }
 
 /* 卡下操作条内容 */
 .card-col { flex: 0 0 auto; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
@@ -713,13 +707,11 @@ kbd { font-size: 14px; }
 /* ───────────── 矮屏（1280×720 等，屏高 ≤800px）：唯一一处覆盖段（v0.7 第 2 节：两行各取策划区间下限，超出靠中部纵滚） ───────────── */
 @media (max-height: 800px) {
   :root {
-    --top-h: 60px;
-    --foot-h: 40px;
-    --body-pad: 10px;
+    --top-h: 54px;
+    --foot-h: 36px;
+    --body-pad: 8px;
     --gap: 8px;
-    --map-row-h: 180px;
-    --fac-card-h: 182px;
-    --shelf-h: 186px;
+    --item-h: 62px;
   }
   .brand b { font-size: 22px; }
   .section { padding: 8px 12px; }
@@ -781,3 +773,183 @@ kbd { font-size: 14px; }
 .trait-row.q-green { border-color: #7fb069; }
 .trait-row.q-green b { color: #9fd18b; }
 .ca-use.fuse { border-color: #7fb069; }
+
+/* ───────────── 四区同屏（S14 §1.3、§12.4；开发计划 M61） ─────────────
+   中部按可用高度统一分配：地块两行（地图行 48 : 设施行 52）吃掉剩余高度，当前地面与随身按物品卡高取自然高度；
+   各区溢出在区内滚动（横向为主，纵向兜底），四区标题与至少一排可操作卡始终同屏。
+   只有低于基准分辨率（1280×720）的更小窗口，才由 .center-scroll 整体纵滚兜底。 */
+:root { --map-min: 128px; --fac-min: 164px; --shelf-min: calc(var(--item-h) + 74px); }
+.center-scroll.quad { overflow-x: hidden; overflow-y: auto; }
+.center-scroll.quad > * { flex: 0 1 auto; min-height: var(--shelf-min); }
+.center-scroll.quad > .center-top { flex: 1 1 0; min-height: calc(var(--map-min) + var(--fac-min) + var(--gap) * 2 + var(--shelf-min)); }
+.center-scroll.quad.craft > .center-top { min-height: calc(var(--map-min) + var(--fac-min) + var(--gap)); }
+/* 地面/随身默认固定为“标题 + 一排卡”的高度，锅卡等更高的内容在区内纵滚；选中卡展开操作条时本区按内容加高（上限约一半），地块两行让出空间但不低于下限 */
+.center-scroll.quad > .section, .center-scroll.quad > .shelves-split { flex: 0 0 auto; height: var(--shelf-min); }
+.center-scroll.quad > .section:has(.tbar), .center-scroll.quad > .shelves-split:has(.tbar) { flex: 0 1 auto; height: auto; max-height: 46%; }
+.center-top > .rows2 { position: relative; flex: 1 1 0; min-height: calc(var(--map-min) + var(--fac-min) + var(--gap)); display: flex; flex-direction: column; }
+.rows2-inner { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: var(--gap); }
+.rows2-inner > .map-row { flex: 48 1 0; min-height: var(--map-min); }
+.rows2-inner > .facility-row { flex: 52 1 0; min-height: var(--fac-min); }
+.center-top > .section { flex: 0 0 auto; height: var(--shelf-min); min-height: var(--shelf-min); }
+.center-top > .section:has(.tbar) { flex: 0 1 auto; height: auto; max-height: 50%; }
+/* 地面/随身：标题常驻；卡片区横向滚动，卡下操作条或锅卡更高时在本区内纵滚，不把后续区域挤出屏幕 */
+.section.ground, .section.carried { overflow: hidden; }
+.section.ground .row-scroll, .section.carried .row-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; }
+.section-head h2 small { font-size: 14px; color: var(--muted); font-weight: 400; }
+.row-scroll .card.item .art { min-height: 0; overflow: hidden; }
+.row-scroll .card.item .art svg { width: 48px; height: 48px; }
+/* 行首竖排区标题：不占高度 */
+.row-tag { flex: 0 0 20px; writing-mode: vertical-rl; text-orientation: upright; font-size: 14px; line-height: 20px; letter-spacing: 2px; color: var(--muted);
+  display: flex; align-items: center; justify-content: center; user-select: none; }
+/* 地图行：当前地图卡固定在左，高度随行；相邻卡按内容最小高度，不够时子栏内滚动 */
+.map-row { align-items: stretch; }
+.map-adjacent { overflow: auto; padding-bottom: 0; }
+.map-adjacent > .ocard { min-height: min-content; }
+/* 设施行：卡片撑满行高（火堆卡按内容），超出在设施区内滚动；插画与留白先压缩 */
+.desk-group { min-height: 0; }
+.dg-cards { flex: 1 1 0; min-height: 0; align-items: stretch; }
+.oc-art { flex: 1 1 30%; min-height: 36px; }
+.oc-art svg { height: 56px; width: 56px; }
+/* 火堆卡：左列燃料与按钮，右列两个加工位 */
+.fire-card { flex-direction: row; align-items: flex-start; }
+.fc-ctrl { flex: 0 0 236px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.fc-ctrl .fc-info { min-width: 0; }
+.fc-fuel { min-height: 48px; padding: 2px 4px; gap: 8px; }
+.fc-art svg { width: 40px; height: 40px; }
+.fc-foot { flex-wrap: wrap; }
+.fc-foot > .fc-btn { flex: 1 1 100px; padding: 3px 8px; font-size: 15px; }
+.fc-slots > .slot-empty { flex: 0 0 132px; min-height: 96px; }
+.fc-slot.pot { flex: 0 0 290px; }
+/* 顶栏：按钮多时紧凑排布，窄宽度局部换行；1440 以下不显示快捷键提示（悬停提示仍写明） */
+@media (max-width: 1439px) { .nav kbd { display: none; } .brand b { letter-spacing: 3px; } }
+
+/* 左栏状态图标（S14 §12.2）：图形可辨、不只靠颜色；可视 32px，点击热区扩到 40px */
+.st-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 6px; }
+.st-ico { position: relative; flex: 0 0 auto; width: 32px; height: 32px; padding: 2px; border-radius: 7px; border: 2px solid #5b6b48; background: #1b231d;
+  display: inline-flex; align-items: center; justify-content: center; color: var(--text); font-size: 14px; font-weight: 600; }
+.st-ico svg { width: 24px; height: 24px; display: block; }
+.st-ico::after { content: ""; position: absolute; inset: -4px; }
+.st-ico.bad { border-color: var(--warn); }
+.st-ico.danger { border-color: var(--danger); background: #3a1f1a; }
+.st-ico.on { box-shadow: 0 0 0 2px var(--accent); }
+.st-ico.more { border-style: dashed; border-color: var(--line); }
+.st-ico .st-clock { position: absolute; right: -4px; top: -4px; width: 12px; height: 12px; border-radius: 50%; background: #2f3a42; border: 2px solid #c8d2d6; }
+.st-pop { position: fixed; z-index: 70; width: 320px; max-height: 300px; background: var(--surface); border: 1px solid var(--accent); border-radius: 6px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 6px; box-shadow: 0 8px 26px #000b; }
+.st-pop.hover { pointer-events: none; }
+.st-pop p { margin: 0; font-size: 15px; line-height: 1.6; }
+.st-pop p.muted, .st-pop .tiny { font-size: 14px; }
+.st-pop-head { display: flex; align-items: center; gap: 8px; }
+.st-pop-head b { flex: 1 1 auto; font-size: 17px; font-weight: 600; }
+.st-pop-head .st-ico::after { display: none; }
+.st-close { width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 4px; background: transparent; font-size: 20px; }
+.st-pop-list { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.st-pop-item { display: flex; gap: 8px; align-items: flex-start; }
+.st-pop-item > span:last-child { display: flex; flex-direction: column; gap: 2px; font-size: 14px; line-height: 1.5; }
+.st-pop-item b { font-size: 15px; }
+.st-pop-item .st-ico::after { display: none; }
+
+/* 右栏人物一级页：紧凑属性简表 + 熟练度/词条摘要入口（S14 §12.1） */
+.char-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.char-top b { font-size: 18px; font-weight: 500; }
+.char-top span { font-size: 14px; text-align: right; }
+.attr-table { display: flex; flex-direction: column; gap: 4px; }
+.attr-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto 14px; grid-template-rows: auto 4px; column-gap: 8px; row-gap: 3px; align-items: center;
+  min-height: 40px; padding: 4px 8px; border: 1px solid transparent; border-radius: 4px; background: #151e1870; text-align: left; }
+.attr-row:hover { border-color: var(--line); }
+.ar-name { font-size: 16px; }
+.ar-val { font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; }
+.ar-val small { font-size: 14px; color: var(--muted); }
+.ar-tag { font-size: 14px; color: var(--warn); min-width: 0; }
+.ar-go { font-size: 14px; color: var(--muted); text-align: right; }
+.ar-bar { grid-column: 1 / -1; height: 4px; }
+.attr-row.warning .ar-val { color: var(--warn); }
+.attr-row.warning .ar-bar i { background: var(--warn); }
+.attr-row.critical .ar-val, .attr-row.critical .ar-tag { color: var(--danger); }
+.attr-row.critical .ar-bar i { background: var(--danger); }
+.char-sum { display: flex; flex-direction: column; gap: 4px; }
+.sum-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; min-height: 40px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: transparent; text-align: left; }
+.sum-row:hover { border-color: var(--accent); }
+.sum-name { font-size: 16px; }
+.sum-val { font-size: 14px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sum-row .ar-go { white-space: nowrap; color: var(--accent); }
+/* 人物二级页 */
+.attr-head { display: flex; }
+.attr-back { min-height: 40px; padding: 0 12px; }
+.attr-back kbd { margin-left: 8px; }
+.track.big { height: 8px; }
+.attr-explain { margin: 0; font-size: 15px; line-height: 1.75; color: var(--muted); }
+.attr-related { display: flex; flex-direction: column; gap: 6px; }
+.skill-list { display: flex; flex-direction: column; gap: 10px; }
+.skill-list .skill-row { font-size: 15px; }
+.skill-list .skill-row small { font-size: 14px; text-align: left; }
+
+/* 顶栏浏览层：生存目标、生存提示、系统说明（S14 §12.3、§13.3） */
+.sub-panel .sub-body[data-wheel="y"] { overflow-y: auto; }
+.goal-days { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.goal-day { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; opacity: .78; }
+.goal-day.now { opacity: 1; border-color: var(--accent); }
+.goal-day header b { white-space: nowrap; }
+.goal-day header { display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px; font-size: 16px; }
+.goal-day header span { color: var(--muted); font-size: 15px; }
+.goal-day ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
+.goal-day li.done { color: var(--good); }
+.goal-mark { display: inline-block; width: 20px; color: var(--muted); }
+.goal-day li.done .goal-mark { color: var(--good); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.tips-body { display: flex; flex-direction: column; gap: 14px; }
+.tips-body h3 { margin: 0 0 6px; font-size: 17px; font-weight: 500; color: var(--accent); }
+.tips-now { display: flex; flex-direction: column; gap: 6px; }
+.tips-now .risk.danger { color: #f0c7b9; border-color: #7d4f45; background: #6f2f2229; }
+.tips-list ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; line-height: 1.7; }
+.tips-list li { color: #cfd5c6; }
+.tips-list li.now { color: var(--text); }
+.help-crumb { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.help-back { min-height: 40px; padding: 0 12px; }
+.help-topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.help-topic { display: flex; gap: 10px; align-items: center; min-height: 72px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: #1f2721; text-align: left; }
+.help-topic:hover, .help-topic:focus-visible { border-color: var(--accent); }
+.ht-icon { flex: 0 0 auto; width: 52px; height: 52px; display: inline-flex; align-items: center; justify-content: center; background: #efe9d5; border-radius: 8px; }
+.ht-icon svg { width: 44px; height: 44px; }
+.ht-icon.small { width: 36px; height: 36px; }
+.ht-icon.small svg { width: 30px; height: 30px; }
+.ht-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ht-text b { font-size: 17px; font-weight: 600; }
+.ht-text small { font-size: 14px; color: var(--muted); line-height: 1.45; }
+.help-entries { display: flex; flex-direction: column; gap: 6px; }
+.help-entry { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 12px; border: 1px solid var(--line); border-radius: 5px; background: transparent; text-align: left; font-size: 16px; }
+.help-entry b { flex: 1 1 auto; font-weight: 500; }
+.help-entry:hover { border-color: var(--accent); }
+.help-article h3 { margin: 0 0 8px; font-size: 20px; font-weight: 500; }
+.help-article p { margin: 0 0 10px; font-size: 16px; line-height: 1.8; }
+.help-empty { min-height: 160px; }
+
+/* 矮屏（≤800px）：物品卡改横向紧凑卡（插画在左、名称/状态在右），压缩插画高度但名称、数量、转移仍可达 */
+@media (max-height: 800px) {
+  :root { --fac-min: 160px; --shelf-min: calc(var(--item-h) + 50px); }
+  .section.ground, .section.carried { padding: 5px 10px 4px; }
+  .section-head { margin-bottom: 4px; }
+  .section-head h2 { font-size: 16px; }
+  .row-scroll .card.item { display: grid; grid-template-columns: 40px minmax(0, 1fr); grid-template-rows: auto 1fr; width: 150px; }
+  .row-scroll .card.item .ctitle { grid-column: 2; grid-row: 1; padding: 4px 6px 0; font-size: 15px; }
+  .row-scroll .card.item .ctitle span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row-scroll .card.item .art { grid-column: 1; grid-row: 1 / 3; min-height: 0; }
+  .row-scroll .card.item .art svg { width: 34px; height: 34px; }
+  .row-scroll .card.item .cinfo { grid-column: 2; grid-row: 2; padding: 2px 32px 4px 6px; align-self: center; }
+  .oc-art { min-height: 30px; }
+  .oc-art svg { width: 44px; height: 44px; }
+  .oc-head { padding: 3px 7px 2px; }
+  .fc-slots > .slot-empty { min-height: 84px; }
+  .row-scroll > .empty-zone { padding: 4px 10px; gap: 2px; }
+  .vital { padding: 1px 0 3px; min-height: 40px; }
+  .st-row { margin-bottom: 4px; }
+  .sidebar { gap: 8px; }
+  .clock { padding: 8px 12px; }
+  .time { font-size: 26px; }
+}
+/* 高屏（≥1000px，如 1920×1080）：物品卡与插画适当放大 */
+@media (min-height: 1000px) {
+  :root { --item-h: 150px; --map-min: 180px; --fac-min: 220px; }
+  .item .art svg { width: 64px; height: 64px; }
+  .oc-art svg { height: 70px; width: 70px; }
+}

@@ -1,109 +1,79 @@
 @inherits GameComponent
 
-@* 右栏“人物”页（基础UI布局与操作修订案 v0.7 第 6.1 节）：六项基础属性（数值、提醒阈值、当前状态与说明）、负重与超重、
-   日期与昼夜、状态异常（腹泻剩余时间、绷带冷却剩余）。数据与左栏 HUD 同源（Stats、ActiveConditions），不另存一份。
-   人物与战斗 v0.6 已启用（用户 2026-10-26 拍板）：加 8 项熟练度（等级、经验/门槛）与免疫/病毒。查看不执行任何玩法。 *@
+@* 右栏“人物”一级页（S14 §12.1、S12 §7）：基础属性紧凑简表（名称、当前/上限、短标记），点任一属性在右栏原位打开二级说明页，Esc 返回一级；
+   熟练度与词条只显示摘要 + 详情入口。异常状态列表已移到左栏属性下方的图标（S14 §12.2）；携带重量/负重规则板块已删除
+   （左栏携重摘要、物品自身重量与负重校验保留，S06 §7）。数据与左栏同源（Stats、Body、SkillViews），查看不执行任何玩法。 *@
 @{
     var s = G.S;
     var e = G.E;
     var cfg = e.Config;
-    var day = e.IsDaylight(s.GameMinute);
-    var toSwitch = Clock.MinutesToSwitch(s.GameMinute, cfg.Time.DaylightStartMinute, cfg.Time.DaylightEndMinute);
-    var grams = e.CarriedGrams(s);
-    var conds = e.ActiveConditions(s);
+    var charPage = G.CharPage;
 }
-<div class="detail-scroll char-panel" data-wheel="y">
-    @* 读档升级说明、被拒绝操作的原因等提示：默认人物页也要看得到（开始界面写明“点继续后在右栏说明升级内容”） *@
-    @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
-    <div class="op-head">
-        <div class="eyebrow">人物 · 存活第@(Clock.Day(s.GameMinute))日 @Clock.HHmm(s.GameMinute)</div>
-        <h2>人物信息</h2>
-        <p>@(day ? "白昼" : "夜间") · 距@(day ? "入夜" : "天亮")@Clock.Duration(toSwitch) · 当前在@(e.LocName(s.CurrentLocation))@(e.IsSheltered(s, s.CurrentLocation) ? "（有遮蔽）" : "（露天）")</p>
-    </div>
-
-    <div class="char-stats">
-        @foreach (var id in Stats.All)
-        {
-            var v = s.Stats.Get(id);
-            var th = cfg.Thresholds[GameEngine.StatKey(id)];
-            var below = th.IsBelow(v);
-            var zero = v <= 0;
-            var cls = zero || (id == StatId.Health && below) ? "critical" : below ? "warning" : "";
-            <div class="char-stat @cls">
-                <div class="cs-line"><b>@GameEngine.StatName(id)</b><span>@Ui.N(v)/@Ui.T(s.Stats.Max(id))</span></div>
-                <div class="track"><i style="width:@Ui.Bar(v, s.Stats.Max(id))%"></i><span class="mark" style="left:@Ui.Bar(th.Value, s.Stats.Max(id))%"></span></div>
-                <div class="cs-state">提醒阈值@(th.Inclusive ? "≤" : "<")@Ui.T(th.Value) · @(zero && id != StatId.Health ? "已归零" : below ? "低于阈值" : "正常")</div>
-                <div class="cs-explain">@Ui.StatExplain(e, id)</div>
-            </div>
-        }
-    </div>
-
-    @* v0.6 §08–§11：免疫与病毒（与左栏同源） *@
-    @{
-        var body = s.Body;
-        var (ir, vr, why) = e.CurrentBodyRates(s);
-    }
-    <div class="char-stats">
-        <div class="char-stat @(body.Immunity < 40 ? "warning" : "")">
-            <div class="cs-line"><b>免疫力</b><span>@Ui.N(body.Immunity)/@Ui.T(cfg.Immunity.Max)</span></div>
-            <div class="track"><i style="width:@Ui.Bar(body.Immunity, cfg.Immunity.Max)%"></i><span class="mark" style="left:@Ui.Bar(cfg.Infection.NaturalCure.ConsecutiveImmunityAtLeast, cfg.Immunity.Max)%"></span></div>
-            <div class="cs-state">按当前状态每小时@(Ui.SignedT(ir))@(why.Count > 0 ? $"（{string.Join("，", why)}）" : "") · 咬伤感染概率@(Ui.Pct(e.ExposureChance(body.Immunity)))</div>
+@if (charPage != null)
+{
+    <AttrDetail Page="@charPage" />
+}
+else
+{
+    var day = e.IsDaylight(s.GameMinute);
+    var body = s.Body;
+    var skills = e.SkillViews(s);
+    var top = skills.OrderByDescending(x => x.Level).ThenByDescending(x => x.Xp).FirstOrDefault();
+    <div class="detail-scroll char-panel" data-wheel="y">
+        @* 读档升级说明、被拒绝操作的原因等提示：默认人物页也要看得到 *@
+        @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+        <div class="char-top">
+            <b>人物</b>
+            <span class="muted">@(day ? "白昼" : "夜间") · @(e.LocName(s.CurrentLocation))@(e.IsSheltered(s, s.CurrentLocation) ? "（遮蔽）" : "（露天）")</span>
         </div>
-        <div class="char-stat @(body.Infected ? (body.VirusLoad >= 50 ? "critical" : "warning") : "")">
-            <div class="cs-line"><b>病毒</b><span>@(body.Infected ? $"{Ui.N(body.VirusLoad)}/{Ui.T(cfg.Infection.ZombificationAtLoad)}" : "未感染")</span></div>
-            <div class="track"><i style="width:@Ui.Bar(body.VirusLoad, cfg.Infection.ZombificationAtLoad)%"></i></div>
-            <div class="cs-state">@(body.Infected ? $"每小时{Ui.SignedT(vr)} · 连续高免疫{Clock.Duration(body.HighImmunityMinutes)}/{Clock.Duration(cfg.Infection.NaturalCure.Minutes)}" : "未感染：病毒为0")</div>
-            <div class="cs-explain">@Ui.VirusExplain(e)</div>
-        </div>
-    </div>
 
-    @* R07 §4：人物词条（首战教学融合的绿色“攻击力+0.1”）；不是装备，不随武器丢失 *@
-    <div class="char-traits">
-        <div class="tiny muted">词条（饱饱吞噬融合）</div>
-        @if (s.Traits.Count == 0)
-        {
-            <div class="risk none">还没有词条。@(GameEngine.StoryActive(s) ? "首战胜利后饱饱会吞噬融合教学活性物质。" : "")</div>
-        }
-        @foreach (var t in s.Traits)
-        {
-            <div class="trait-row q-@t.Quality" title="在技能/招式/站位/暴击乘算后、扣护甲前平加；推挡与出血不加">
-                <b>@t.Label</b><small>@(t.Quality == "green" ? "绿色" : t.Quality) · 直接攻击伤害平加</small>
-            </div>
-        }
-    </div>
-
-    @* v0.6 §03：8 项熟练度，无等级上限；经验逐级扣 50×(L+1) *@
-    <div class="char-skills">
-        <div class="tiny muted">熟练度（无等级上限）</div>
-        <div class="skill-grid">
-            @foreach (var sk in e.SkillViews(s))
+        <div class="attr-table" role="list" aria-label="基础属性">
+            @foreach (var id in Stats.All)
             {
-                <div class="skill-row" title="@($"{sk.Name}：升到{sk.Level + 1}级还需{sk.NextXp - sk.Xp}经验")">
-                    <b>@sk.Name</b><span>@(sk.Level)级</span>
-                    <div class="track thin"><i style="width:@Ui.Bar(sk.Xp, sk.NextXp)%"></i></div>
-                    <small class="muted">@sk.Xp/@sk.NextXp</small>
-                </div>
+                var v = s.Stats.Get(id);
+                var th = cfg.Thresholds[GameEngine.StatKey(id)];
+                var below = th.IsBelow(v);
+                var zero = v <= 0 && id != StatId.Health;
+                var cls = zero || (id == StatId.Health && below) ? "critical" : below ? "warning" : "";
+                var key = "stat:" + GameEngine.StatKey(id);
+                <button type="button" role="listitem" class="attr-row @cls" @onclick="() => G.OpenCharPage(key)" title="@($"查看{GameEngine.StatName(id)}的作用、阈值与效果")">
+                    <span class="ar-name">@GameEngine.StatName(id)</span>
+                    <span class="ar-val">@Ui.N(v)<small>/@Ui.T(s.Stats.Max(id))</small></span>
+                    <span class="ar-tag">@(zero ? "归零" : below ? "偏低" : "")</span>
+                    <span class="ar-go" aria-hidden="true">›</span>
+                    <span class="ar-bar track"><i style="width:@Ui.Bar(v, s.Stats.Max(id))%"></i></span>
+                </button>
             }
+            <button type="button" role="listitem" class="attr-row @(body.Immunity < 40 ? "warning" : "")" @onclick='() => G.OpenCharPage("immunity")' title="查看免疫力的作用与当前变化">
+                <span class="ar-name">免疫力</span>
+                <span class="ar-val">@Ui.N(body.Immunity)<small>/@Ui.T(cfg.Immunity.Max)</small></span>
+                <span class="ar-tag">@(body.Immunity < 40 ? "偏低" : body.Immunity >= cfg.Infection.NaturalCure.ConsecutiveImmunityAtLeast ? "高免疫" : "")</span>
+                <span class="ar-go" aria-hidden="true">›</span>
+                <span class="ar-bar track"><i style="width:@Ui.Bar(body.Immunity, cfg.Immunity.Max)%"></i></span>
+            </button>
+            <button type="button" role="listitem" class="attr-row @(body.Infected ? (body.VirusLoad >= 50 ? "critical" : "warning") : "")" @onclick='() => G.OpenCharPage("virus")' title="查看病毒的作用与当前变化">
+                <span class="ar-name">病毒</span>
+                <span class="ar-val">@(body.Infected ? Ui.N(body.VirusLoad) : "未感染")@if (body.Infected) {<small>/@Ui.T(cfg.Infection.ZombificationAtLoad)</small>}</span>
+                <span class="ar-tag">@(body.Infected ? "已感染" : "")</span>
+                <span class="ar-go" aria-hidden="true">›</span>
+                <span class="ar-bar track"><i style="width:@Ui.Bar(body.VirusLoad, cfg.Infection.ZombificationAtLoad)%"></i></span>
+            </button>
+        </div>
+
+        <div class="char-sum">
+            <button type="button" class="sum-row" @onclick='() => G.OpenCharPage("skills")' title="查看8项熟练度的等级与经验">
+                <span class="sum-name">熟练度</span>
+                <span class="sum-val">@(skills.Count)项@(top != null && top.Level > 0 ? $" · 最高{top.Name}{top.Level}级" : " · 均为0级")</span>
+                <span class="ar-go" aria-hidden="true">详情 ›</span>
+            </button>
+            <button type="button" class="sum-row" @onclick='() => G.OpenCharPage("traits")' title="查看人物词条">
+                <span class="sum-name">词条</span>
+                <span class="sum-val">@(s.Traits.Count == 0 ? "暂无" : string.Join("、", s.Traits.Select(t => t.Label)))</span>
+                <span class="ar-go" aria-hidden="true">详情 ›</span>
+            </button>
         </div>
     </div>
-
-    <div class="lines">
-        <div><span>携带重量</span><b class="@(grams > cfg.Carry.SoftGrams ? "warn-text" : "")">@Ui.Kg(grams)公斤 · @(grams > cfg.Carry.SoftGrams ? "超重" : "轻装")</b></div>
-        <div><span>负重规则</span><b>超过@(cfg.Carry.SoftGrams / 1000)公斤减速 · 上限@(cfg.Carry.HardGrams / 1000)公斤</b></div>
+    <div class="detail-foot">
+        <div class="under">点属性看说明 · 查看不耗时；状态图标在左栏</div>
     </div>
-
-    <div class="char-conds">
-        <div class="tiny muted">状态异常</div>
-        @if (conds.Count == 0)
-        {
-            <div class="risk none">当前没有状态异常。</div>
-        }
-        @foreach (var c in conds)
-        {
-            <div class="risk @(c.Harmful ? "" : "none")"><b>@c.Name</b>@(c.RemainingMinutes > 0 ? $" · 还剩{Clock.Duration(c.RemainingMinutes)}" : "") · @c.Effect</div>
-        }
-    </div>
-</div>
-<div class="detail-foot">
-    <div class="under">查看人物信息不消耗时间；对自身使用物品请选中物品，在卡片下方点使用按钮</div>
-</div>
+}

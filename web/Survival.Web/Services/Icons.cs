@@ -30,14 +30,15 @@ public static partial class Icons
     /// <summary>界面请求过但没有图的键（缺图清单，见 README）。缺图时显示统一占位图，不再用石块兜底。</summary>
     public static readonly HashSet<string> Missing = new();
 
-    public static bool Has(string key) => Extracted.ContainsKey(key) || Extra.ContainsKey(key) || Combat.ContainsKey(key);
+    public static bool Has(string key) => Extracted.ContainsKey(key) || Extra.ContainsKey(key) || Combat.ContainsKey(key) || Status.ContainsKey(key);
 
     public static string Svg(string key)
     {
-        if (!Extracted.TryGetValue(key, out var inner) && !Extra.TryGetValue(key, out inner) && !Combat.TryGetValue(key, out inner))
+        if (!Extracted.TryGetValue(key, out var inner) && !Extra.TryGetValue(key, out inner) && !Combat.TryGetValue(key, out inner) && !Status.TryGetValue(key, out inner))
         {
             Missing.Add(key);
-            inner = Extra["placeholder"];
+            // 状态图标缺图用统一状态占位（S14 §12.2），其他对象用统一物品占位
+            inner = key.StartsWith("status_") ? Status["status_unknown"] : Extra["placeholder"];
         }
         return $"<svg viewBox=\"0 0 100 100\" aria-hidden=\"true\">{inner}</svg>";
     }

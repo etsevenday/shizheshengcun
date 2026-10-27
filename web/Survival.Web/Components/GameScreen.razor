@@ -9,6 +9,9 @@
     var subRunning = s.Sub != null;
     // 战斗与敌踪选择：顶栏地图/制作/休息/日志入口锁定（v0.5 §16），覆盖层替换地块栏两行
     var battleUi = G.InBattleUi;
+    // 对话读完锁（Q10、S14 §10.1）：整局游戏输入锁定，未被对话层盖住的区域只保持可见
+    var dlgLock = G.DialogueLocked;
+    var navOff = battleUi || dlgLock;
 }
 
 <div class="game">
@@ -18,12 +21,19 @@
             <em>第@(Clock.Day(s.GameMinute))日 · @e.LocName(s.CurrentLocation)@(main?.Type == ActionType.Travel ? $" → {e.LocName(main.TargetId)}" : "")</em>
         </div>
         <nav class="nav" aria-label="主菜单">
-            <button class="@(G.Panel == "map" ? "on" : "")" disabled="@battleUi" title="@(battleUi ? "战斗中锁定" : "")" @onclick='() => Toggle("map")'>区域地图<kbd>M</kbd></button>
-            <button class="@(G.Panel == "craft" ? "on" : "")" disabled="@battleUi" title="@(battleUi ? "战斗中锁定" : "")" @onclick='() => Toggle("craft")'>手工制作<kbd>C</kbd></button>
-            <button class="@(G.Panel == "rest" ? "on" : "")" disabled="@battleUi" title="@(battleUi ? "战斗中锁定" : "")" @onclick='() => Toggle("rest")'>休息<kbd>R</kbd></button>
-            <button class="@(G.Panel == "log" ? "on" : "")" disabled="@battleUi" title="@(battleUi ? "战斗中锁定" : "")" @onclick='() => Toggle("log")'>行动日志<kbd>L</kbd></button>
-            <button class="feedback-btn" @onclick="OpenFeedback" title="把遇到的问题或想法留给作者">反馈<kbd>F</kbd></button>
-            <button class="@(G.Panel == "menu" || G.BattleMenuOpen ? "on" : "")" @onclick='() => { if (battleUi) G.ToggleBattleMenu(); else Toggle("menu"); }'>菜单<kbd>Esc</kbd></button>
+            @* 顶栏按钮（S14 §7、§12.3、§13.3）：战斗/敌踪中与对话读完锁期间，导航与浏览入口按同一规则禁用；反馈不属于游戏操作，始终可用 *@
+            <button class="@(G.Panel == "map" ? "on" : "")" disabled="@navOff" title="@NavTitle("区域地图", "M")" @onclick='() => Toggle("map")'>区域地图<kbd>M</kbd></button>
+            <button class="@(G.Panel == "craft" ? "on" : "")" disabled="@navOff" title="@NavTitle("手工制作", "C")" @onclick='() => Toggle("craft")'>手工制作<kbd>C</kbd></button>
+            <button class="@(G.Panel == "rest" ? "on" : "")" disabled="@navOff" title="@NavTitle("休息", "R")" @onclick='() => Toggle("rest")'>休息<kbd>R</kbd></button>
+            <button class="@(G.Panel == "log" ? "on" : "")" disabled="@navOff" title="@NavTitle("行动日志", "L")" @onclick='() => Toggle("log")'>行动日志<kbd>L</kbd></button>
+            <span class="nav-sep" aria-hidden="true"></span>
+            <button class="@(G.Panel == "goals" ? "on" : "")" disabled="@navOff" title="@NavTitle("本局生存目标与完成情况", null)" @onclick='() => Toggle("goals")'>生存目标</button>
+            <button class="@(G.Panel == "tips" ? "on" : "")" disabled="@navOff" title="@NavTitle("当前求生建议", null)" @onclick='() => Toggle("tips")'>生存提示</button>
+            <button class="@(G.Panel == "dialogs" ? "on" : "")" disabled="@navOff" title="@NavTitle("已经展示过的人物对话", null)" @onclick='() => Toggle("dialogs")'>对话记录</button>
+            <button class="@(G.Panel == "help" ? "on" : "")" disabled="@navOff" title="@NavTitle("各系统通用规则说明", null)" @onclick='() => Toggle("help")'>系统说明</button>
+            <span class="nav-sep" aria-hidden="true"></span>
+            <button class="feedback-btn" @onclick="OpenFeedback" title="把遇到的问题或想法留给作者（F）">反馈<kbd>F</kbd></button>
+            <button class="@(G.Panel == "menu" || G.BattleMenuOpen ? "on" : "")" disabled="@dlgLock" title="@(dlgLock ? "请先读完对话" : "菜单（Esc）")" @onclick='() => { if (battleUi) G.ToggleBattleMenu(); else Toggle("menu"); }'>菜单<kbd>Esc</kbd></button>
         </nav>
     </header>
 
@@ -33,25 +43,42 @@
         @{
             // 手工制作层盖住中部上方时，地面卡挪到下方与随身卡并排，仍能拖进材料槽（01 案第 5 节“手工拖入优先使用指定批次”）
             var craftOpen = G.Panel == "craft";
-            // 二级面板打开时中部不纵滚：面板盖住地块两行与地面，随身栏固定在下方（v0.7 第 2 节：中部整体可纵滚，左右栏不动）
-            var centerPanel = G.Panel is "map" or "craft" or "rest" or "log";
+            // 顶栏面板只替换中部上方（地块两行与地面），随身栏固定在下方（S14 §7）
+            var centerPanel = GameSession.IsTopPanel(G.Panel);
         }
+        @* 四区同屏（S14 §1.3）：地图行、设施行、当前地面、随身物品按中部可用高度分配，各区溢出在区内滚动；
+           只有低于基准分辨率的更小窗口才由 .center-scroll 整体纵滚兜底。 *@
         <section class="center" aria-label="当前地点">
-            <div class="center-scroll @(centerPanel ? "locked" : "")" data-wheel="y">
+            <div class="center-scroll quad @(centerPanel ? "locked" : "") @(craftOpen ? "craft" : "") @(battleUi ? "battle" : "")" data-wheel="y">
             <div class="center-top">
-                @* 战斗/敌踪覆盖层替换地块栏两行（组件替换而非叠加，拖拽不会收集到隐藏的落点） *@
-                @if (battleUi) { <BattleOverlay /> } else { <LocationStrip /> }
-                @if (!craftOpen) { <ItemShelf Owner="@s.CurrentLocation" Title="@($"当前地面 · {e.LocName(s.CurrentLocation)}")" /> }
+                <div class="rows2">
+                    <div class="rows2-inner" inert="@dlgLock">
+                        @* 战斗/敌踪覆盖层替换地块栏两行（组件替换而非叠加，拖拽不会收集到隐藏的落点） *@
+                        @if (battleUi) { <BattleOverlay /> } else { <LocationStrip /> }
+                    </div>
+                </div>
+                @if (!craftOpen) { <ItemShelf Owner="@s.CurrentLocation" Title="当前地面" Sub="@e.LocName(s.CurrentLocation)" /> }
                 @* 二级面板只替换这一块，周围的状态栏、随身物品与右侧详情不动 *@
-                @if (G.Panel == "map") { <MapOverlay Part="center" /> }
-                @if (craftOpen) { <CraftOverlay Part="center" /> }
-                @if (G.Panel == "rest") { <RestOverlay Part="center" /> }
-                @if (G.Panel == "log") { <LogOverlay /> }
+                @if (centerPanel)
+                {
+                    <div class="panel-host" inert="@dlgLock">
+                        @switch (G.Panel)
+                        {
+                            case "map": <MapOverlay Part="center" /> break;
+                            case "craft": <CraftOverlay Part="center" /> break;
+                            case "rest": <RestOverlay Part="center" /> break;
+                            case "log": <LogOverlay /> break;
+                            case "goals": <GoalsOverlay /> break;
+                            case "tips": <TipsOverlay /> break;
+                            case "help": <HelpOverlay /> break;
+                        }
+                    </div>
+                }
             </div>
             @if (craftOpen)
             {
                 <div class="shelves-split">
-                    <ItemShelf Owner="@s.CurrentLocation" Title="@($"当前地面 · {e.LocName(s.CurrentLocation)}")" />
+                    <ItemShelf Owner="@s.CurrentLocation" Title="当前地面" Sub="@e.LocName(s.CurrentLocation)" />
                     <ItemShelf Owner="@ItemInstance.Carried" Title="随身物品" />
                 </div>
             }
@@ -75,7 +102,7 @@
 
         @if (G.Panel == "menu") { <MenuOverlay /> }
         @if (G.BattleMenuOpen && battleUi) { <MenuOverlay Battle="true" /> }
-        @if (G.Panel != null && G.Panel.StartsWith("status:")) { <StatusInfo /> }
+        <StatusPop />
 
         <BaobaoDialogue />
 
@@ -133,7 +160,7 @@
         // 面板与覆盖层才能完整替换地块两行，不被之前的滚动位置切掉标题（试玩修复 G1、G2）
         if (G.State != null)
         {
-            var panel = G.Panel is "map" or "craft" or "rest" or "log" ? G.Panel : "";
+            var panel = GameSession.IsTopPanel(G.Panel) ? G.Panel : "";
             var mode = G.S.Battle != null ? "battle" : G.S.Encounter != null ? "encounter" : "";
             var key = panel + "|" + mode;
             if (key != _topKey)
@@ -158,17 +185,27 @@
         G.OpenPanel(G.Panel == panel ? null : panel);
     }
 
+    private string NavTitle(string what, string? key)
+    {
+        if (G.DialogueLocked) return "请先读完对话";
+        if (G.InBattleUi) return "战斗中锁定";
+        return key == null ? what : $"{what}（{key}）";
+    }
+
     [JSInvokable]
     public void OnKey(string key)
     {
         if (key == "F") { _ = OpenFeedback(); return; }
         if (G.State == null || G.S.Progress.Dead) return;
+        // 对话读完锁（Q10、S14 §10.1）：快捷键与 Esc 全部无效，Esc 不转入背后的游戏菜单；只有对话层自己的按钮能推进
+        if (G.DialogueLocked) return;
         if (G.InBattleUi)
         {
-            // 战斗中：M/C/R/L 锁定；Esc 栈：拖拽（drag.js 先拦截）→ 数量框 → 状态说明 → 收起指令预览/物品选中 → 战斗菜单（只含继续、保存并返回标题，不能脱战）
+            // 战斗中：M/C/R/L 锁定；Esc 栈：拖拽（drag.js 先拦截）→ 数量框 → 状态浮层 → 人物二级页 → 收起战斗菜单 → 收起指令预览/物品选中 → 战斗菜单（只含继续、保存并返回标题，不能脱战）
             if (key != "Escape") return;
             if (G.PendingDrop != null) G.CancelDropQuantity();
-            else if (G.Panel != null && G.Panel.StartsWith("status:")) G.OpenPanel(null);
+            else if (G.StatusPinned != null) G.PinStatus(null);
+            else if (G.CharPage != null && G.DetailTab == DetailTab.Character) G.OpenCharPage(null);
             else if (G.BattleMenuOpen) G.ToggleBattleMenu(false);
             else if (G.BattleAction != null) G.ClearBattleAction();
             else if (G.Selected.Kind != SelectionKind.None) G.ClearSelection();
@@ -182,12 +219,14 @@
             case "R": Toggle("rest"); break;
             case "L": Toggle("log"); break;
             case "Escape":
-                // Esc 层级栈，每次只退一级，不取消主行动（统一卡片案第 4 节）：
-                // 拖拽中（drag.js 先拦截）→ 数量框 → 点火工具菜单 → 二级面板 → 清选中 → 菜单
-                // （v0.7 删除了火堆/锅内容物层级，不再有返回层）
+                // Esc 层级栈，每次只退一级，不取消主行动、不当作“退出”（S14 §7、§11.2）：
+                // 拖拽中（drag.js 先拦截）→ 数量框 → 状态浮层 → 点火工具菜单 → 系统说明逐层 → 二级面板 → 人物二级页 → 清选中 → 菜单
                 if (G.PendingDrop != null) G.CancelDropQuantity();
+                else if (G.StatusPinned != null) G.PinStatus(null);
                 else if (G.IgniteMenuOpen) { G.Hover(null); G.CloseIgniteMenu(); }
+                else if (G.Panel == "help") G.HelpBack();
                 else if (G.Panel != null) G.OpenPanel(null);
+                else if (G.CharPage != null && G.DetailTab == DetailTab.Character) G.OpenCharPage(null);
                 else if (G.Selected.Kind != SelectionKind.None) G.ClearSelection();
                 else Toggle("menu");
                 break;

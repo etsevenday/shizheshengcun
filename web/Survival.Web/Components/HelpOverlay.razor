@@ -1,0 +1,75 @@
+@inherits GameComponent
+
+@* 顶栏“系统说明”（S14 §13.3）：带图标的主题目录 → 主题条目 → 正文，正文独立滚动；始终有返回/关闭。
+   Esc 每次返回一级（条目 → 主题 → 目录 → 关闭）；从详情定位进来的直接回原入口。只读浏览：不推进时间、不改选择、不执行玩法。
+   M61 只搭框架：条目正文由 HelpCatalog 填充（M66），没有条目的主题显示“内容整理中”。 *@
+@{
+    var e = G.E;
+    var s = G.S;
+    var topic = HelpCatalog.Topic(G.HelpTopic);
+    var entry = HelpCatalog.Entry(G.HelpTopic, G.HelpEntry);
+}
+
+<div class="sub-panel help-panel" role="dialog" aria-label="系统说明">
+    <div class="sub-head">
+        <div class="help-crumb">
+            @if (topic != null)
+            {
+                <button type="button" class="secondary help-back" @onclick="G.HelpBack">‹ 返回</button>
+            }
+            <h2>系统说明</h2>
+            @if (topic != null) { <span class="sub">@topic.Title@(entry != null ? $" · {entry.Title}" : "")</span> }
+            else { <span class="sub">通用规则 · 只读浏览，不消耗时间</span> }
+        </div>
+        <button class="secondary" @onclick="G.CloseHelp">关闭<kbd>Esc</kbd></button>
+    </div>
+    <div class="sub-body help-body" data-wheel="y">
+        @if (topic == null)
+        {
+            <div class="help-topics">
+                @foreach (var t in HelpCatalog.Topics)
+                {
+                    var id = t.Id;
+                    <button type="button" class="help-topic" @onclick="() => G.HelpPick(id, null)">
+                        <span class="ht-icon">@Icons.Markup(t.Icon)</span>
+                        <span class="ht-text"><b>@t.Title</b><small>@t.Summary</small></span>
+                    </button>
+                }
+            </div>
+        }
+        else if (entry == null)
+        {
+            @if (topic.Entries.Count == 0)
+            {
+                <div class="empty-zone help-empty">
+                    <strong>内容整理中</strong>
+                    <span>@topic.Summary</span>
+                </div>
+            }
+            else
+            {
+                <div class="help-entries">
+                    @foreach (var en in topic.Entries)
+                    {
+                        var tid = topic.Id;
+                        var eid = en.Id;
+                        <button type="button" class="help-entry" @onclick="() => G.HelpPick(tid, eid)">
+                            @if (en.Icon != null) { <span class="ht-icon small">@Icons.Markup(en.Icon)</span> }
+                            <b>@en.Title</b><span class="muted">›</span>
+                        </button>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <article class="help-article">
+                <h3>@entry.Title</h3>
+                @foreach (var para in entry.Paragraphs(e, s))
+                {
+                    <p>@para</p>
+                }
+            </article>
+        }
+    </div>
+</div>

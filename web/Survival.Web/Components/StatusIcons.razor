@@ -1,0 +1,63 @@
+@inherits GameComponent
+@inject IJSRuntime JS
+
+@* 左栏某项属性下方的状态图标行（S14 §12.2）：只显示实际生效状态；悬停/聚焦显示名称、效果、剩余时间（轻量提示），
+   点击固定说明浮层（Esc 只关浮层）。一级最多 Cap 个，危险/不利状态优先；超出的进“全部状态”。查看不耗时、不是自用入口。 *@
+@if (Chips.Count > 0)
+{
+    var shown = Chips.Count <= Cap ? Chips : Chips.Take(Cap - 1).ToList();
+    var more = Chips.Count - shown.Count;
+    <div class="st-row" role="list" aria-label="@($"{Label}相关状态")">
+        @foreach (var c in shown)
+        {
+            var chip = c;
+            var domId = "st-" + c.Id;
+            <button type="button" role="listitem" id="@domId" class="st-ico @(c.Danger ? "danger" : c.Harmful ? "bad" : "good") @(G.StatusPinned == c.Id ? "on" : "")"
+                    aria-label="@($"{c.Name}：{c.Effect}；{StatusView.RemainingText(c)}")"
+                    @onmouseenter="() => Hover(chip.Id, domId)" @onfocus="() => Hover(chip.Id, domId)"
+                    @onmouseleave="Unhover" @onblur="Unhover"
+                    @onclick="() => Pin(chip.Id, domId)" @onclick:stopPropagation="true">
+                @Icons.Markup(c.Icon)
+                @if (c.RemainingMinutes.HasValue) { <i class="st-clock" aria-hidden="true"></i> }
+            </button>
+        }
+        @if (more > 0)
+        {
+            var domId = "st-more-" + Label;
+            <button type="button" role="listitem" id="@domId" class="st-ico more" aria-label="@($"全部状态（另有{more}项）")" title="全部状态"
+                    @onclick='() => Pin("*all", domId)' @onclick:stopPropagation="true">+@more</button>
+        }
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public List<StatusChip> Chips { get; set; } = new();
+    [Parameter] public string Label { get; set; } = "";
+    /// <summary>一级容量（按左栏宽度适配：一行图标数）。</summary>
+    [Parameter] public int Cap { get; set; } = 5;
+
+    private async Task<(double, double)> Anchor(string domId)
+    {
+        try
+        {
+            var r = await JS.InvokeAsync<double[]>("survival.rectById", domId);
+            return r.Length >= 4 ? (r[2] + 8, r[1]) : (240, 120);
+        }
+        catch (JSException) { return (240, 120); }
+    }
+
+    private async Task Hover(string id, string domId)
+    {
+        var (l, t) = await Anchor(domId);
+        G.HoverStatus(id, l, t);
+    }
+
+    private void Unhover() => G.HoverStatus(null);
+
+    private async Task Pin(string id, string domId)
+    {
+        if (G.StatusPinned == id) { G.PinStatus(null); return; }
+        var (l, t) = await Anchor(domId);
+        G.PinStatus(id, l, t);
+    }
+}

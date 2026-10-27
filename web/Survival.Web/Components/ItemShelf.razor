@@ -16,12 +16,13 @@
     var from = carried ? "随身" : $"{e.LocName(Owner)}地面";
 }
 
-<div class="panel section @(carried ? "carried" : "ground")">
-    <div class="section-head">
-        <h2>@Title</h2>
+<div class="panel section @(carried ? "carried" : "ground")" inert="@G.DialogueLocked">
+    @* 区标题常驻可见（S14 §1.3 四区同屏）；操作教学收进悬停提示，不常驻铺开（S14 §13.1） *@
+    <div class="section-head" title="选中卡片在卡下使用或转移 · 卡角箭头转移1件 · 拖动整理或投放 · 不耗时">
+        <h2>@Title@if (!string.IsNullOrEmpty(Sub)) {<small> · @Sub</small>}</h2>
         <span>
             @if (carried) { @($"{Ui.Kg(grams)}公斤 · {(grams > e.Config.Carry.SoftGrams ? "超重" : "轻装")} · ") }
-            显示@(kinds)种 · 选中卡片在卡下使用或转移 · 卡角箭头转移1件 · 拖动整理或投放 · 不耗时
+            @(kinds)种
         </span>
     </div>
     <div class="row-scroll" data-wheel="x" data-drop="@($"zone:{Owner}")" data-drop-level="zone">
@@ -102,6 +103,8 @@
 @code {
     [Parameter] public string Owner { get; set; } = "";
     [Parameter] public string Title { get; set; } = "";
+    /// <summary>标题后的补充（当前地面所在地点名）。</summary>
+    [Parameter] public string Sub { get; set; } = "";
 
     private void SelectGroup(string itemId) =>
         G.Select(new Selection { Kind = SelectionKind.ItemGroup, Id = itemId, Owner = Owner });

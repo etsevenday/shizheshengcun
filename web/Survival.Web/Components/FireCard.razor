@@ -24,6 +24,8 @@
 <div class="ocard fire-card @(fac.FireLit ? "lit" : "") @(selected ? "selected" : "")" data-drop="@($"fire:{here}")" data-drop-level="card"
      title="火堆：点击查看火堆信息；木材拖到燃料区投料，打火器拖到火堆直接点火；锅与生块根拖到空加工位"
      @onclick="SelectFire">
+    @* 四区同屏（S14 §1.3）：火堆卡改左右排布——左列燃料与按钮，右列两个加工位（锅、直烤），压缩插画与留白，不再纵向叠高 *@
+    <div class="fc-ctrl">
     <div class="fc-head">
         <div class="fc-fuel" data-drop="@($"fuel:{here}")" data-drop-level="hot" role="button" tabindex="0"
              aria-label="@($"火堆，{state}，燃料{fac.FuelMinutes}分钟")" title="燃料区：拖入木材投料（每份+60分钟），拖入打火器点火；点击选中火堆"
@@ -35,6 +37,25 @@
                 <span class="fuel-track"><i style="width:@(fac.FuelMinutes * 100 / Math.Max(1, maxFuel))%"></i></span>
             </span>
         </div>
+    </div>
+    <div class="fc-foot" @onclick:stopPropagation="true">
+        <button type="button" class="fc-btn" disabled="@(woodWhy != null)" title="@(woodWhy ?? $"投入1木材，燃料+{e.Config.Fire.BurnMinutesPerWood}分钟，不耗时")" @onclick="AddFuel">
+            <span class="ir-icon">@Icons.Markup("wood")</span><span>投入木材<small>可用@(wood) · +@(e.Config.Fire.BurnMinutesPerWood)分钟</small></span>
+        </button>
+        @if (fac.FireLit)
+        {
+            <button type="button" class="fc-btn plain" disabled="@maintBlocked" title="熄灭火堆，剩余燃料保留" @onclick="Extinguish">熄灭<small>保留燃料</small></button>
+        }
+        else
+        {
+            <button type="button" class="fc-btn ignite @(G.IgniteMenuOpen ? "on" : "")" aria-haspopup="menu" aria-expanded="@G.IgniteMenuOpen"
+                    title="打开点火工具菜单：点一把可用的打火器即开始点火" @onclick="G.ToggleIgniteMenu">点燃<small>选择点火工具</small></button>
+        }
+    </div>
+    @if (G.IgniteMenuOpen && !fac.FireLit)
+    {
+        <IgniteMenu />
+    }
     </div>
     <div class="fc-slots">
         @for (var k = 0; k < slots.Count; k++)
@@ -60,24 +81,6 @@
             }
         }
     </div>
-    <div class="fc-foot" @onclick:stopPropagation="true">
-        <button type="button" class="fc-btn" disabled="@(woodWhy != null)" title="@(woodWhy ?? $"投入1木材，燃料+{e.Config.Fire.BurnMinutesPerWood}分钟，不耗时")" @onclick="AddFuel">
-            <span class="ir-icon">@Icons.Markup("wood")</span><span>投入木材<small>可用@(wood) · +@(e.Config.Fire.BurnMinutesPerWood)分钟</small></span>
-        </button>
-        @if (fac.FireLit)
-        {
-            <button type="button" class="fc-btn plain" disabled="@maintBlocked" title="熄灭火堆，剩余燃料保留" @onclick="Extinguish">熄灭<small>保留燃料</small></button>
-        }
-        else
-        {
-            <button type="button" class="fc-btn ignite @(G.IgniteMenuOpen ? "on" : "")" aria-haspopup="menu" aria-expanded="@G.IgniteMenuOpen"
-                    title="打开点火工具菜单：点一把可用的打火器即开始点火" @onclick="G.ToggleIgniteMenu">点燃<small>选择点火工具</small></button>
-        }
-    </div>
-    @if (G.IgniteMenuOpen && !fac.FireLit)
-    {
-        <IgniteMenu />
-    }
 </div>
 
 @code {

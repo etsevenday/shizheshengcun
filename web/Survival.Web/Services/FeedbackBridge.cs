@@ -92,9 +92,9 @@ public sealed class FeedbackBridge
             return $"战斗覆盖层（第{s.Battle.Round}轮，{(G.E.AwaitingPlayer(s) ? $"玩家行动，剩{s.Battle.PlayerAp}AP" : "敌方行动中")}{(G.BattleAction != null ? $"，预览{GameEngine.ActionName(G.BattleAction)}" : "")}{(G.BattleMenuOpen ? "，战斗菜单" : "")}）";
         if (s.Encounter != null) return G.BattleMenuOpen ? "敌踪选择 · 菜单" : "敌踪选择（接敌/绕行）";
         if (G.SevenDayPending && s.Main == null) return "七日检查";
+        if (G.DialogueLocked) return "人物对话（读完前输入锁定）";
         if (G.Panel != null)
         {
-            if (G.Panel.StartsWith("status:")) return "状态说明";
             return G.Panel switch
             {
                 "map" => "区域地图",
@@ -102,13 +102,17 @@ public sealed class FeedbackBridge
                 "rest" => "休息与睡眠",
                 "log" => "行动日志",
                 "menu" => "菜单",
+                "goals" => "生存目标",
+                "tips" => "生存提示",
+                "dialogs" => "对话记录",
+                "help" => "系统说明" + (G.HelpTopic != null ? $" · {G.HelpTopic}" : ""),
                 _ => G.Panel,
             };
         }
         if (s.Sub != null) return "补给/维护中";
         if (s.Main?.Status == ActionStatus.Paused) return "暂停面板";
         // v0.7：没有内容物层级菜单了，记录点火工具菜单与右栏页签
-        var tab = G.DetailTab == DetailTab.Character ? "右栏人物页" : "右栏对象信息";
+        var tab = G.DetailTab == DetailTab.Character ? (G.CharPage != null ? $"右栏人物二级页 {G.CharPage}" : "右栏人物页") : "右栏对象信息";
         if (G.IgniteMenuOpen) return $"主界面 · 点火工具菜单（{tab}）";
         return s.Main != null ? $"主界面（行动进行中，{tab}）" : $"主界面（{tab}）";
     }

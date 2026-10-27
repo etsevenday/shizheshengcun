@@ -76,9 +76,112 @@ public sealed class GameSession
     {
         DetailTab = tab;
         HoverPreview = null;
+        // 点“人物”页签回到一级简表（二级说明页只由属性入口打开）
+        CharPage = null;
         Notify();
     }
-    /// <summary>当前打开的浏览层：map / craft / rest / log / menu / status:xxx。</summary>
+
+    // ───────────── 右栏人物二级页、左栏状态图标浮层、系统说明（S14 §12、§13） ─────────────
+
+    /// <summary>
+    /// 右栏人物页的二级说明页：null 为一级简表；"stat:health"…"stat:morale"、"immunity"、"virus"、"skills"、"traits"。
+    /// 在右栏原位置显示，Esc 一次返回一级并保留原选择；只是浏览，不执行玩法、不推进时间。
+    /// </summary>
+    public string? CharPage { get; private set; }
+
+    public void OpenCharPage(string? page)
+    {
+        CharPage = page;
+        if (page != null)
+        {
+            DetailTab = DetailTab.Character;
+            HoverPreview = null;
+        }
+        Notify();
+    }
+
+    /// <summary>左栏状态图标：悬停中的状态（轻量提示，不拦截输入）与点击固定的说明浮层（"*all" 为“全部状态”）。锚点为图标在视口中的位置。</summary>
+    public string? StatusHover { get; private set; }
+    public string? StatusPinned { get; private set; }
+    public (double Left, double Top) StatusAnchor { get; private set; }
+
+    public void HoverStatus(string? id, double left = 0, double top = 0)
+    {
+        if (StatusHover == id && (id == null || StatusAnchor == (left, top))) return;
+        StatusHover = id;
+        if (id != null && StatusPinned == null) StatusAnchor = (left, top);
+        Notify();
+    }
+
+    public void PinStatus(string? id, double left = 0, double top = 0)
+    {
+        StatusPinned = id;
+        StatusHover = null;
+        if (id != null) StatusAnchor = (left, top);
+        Notify();
+    }
+
+    /// <summary>状态已消失时浮层随之关闭（不保留失效说明）；不通知界面，由下一次渲染体现。</summary>
+    public void DropStatusSilently()
+    {
+        StatusPinned = null;
+        StatusHover = null;
+    }
+
+    /// <summary>系统说明当前主题与条目（null 为目录 / 主题页）。Esc 每次返回一级：条目 → 主题 → 关闭（S14 §13.3）。</summary>
+    public string? HelpTopic { get; private set; }
+    public string? HelpEntry { get; private set; }
+    /// <summary>从对象/属性/状态详情定位打开时，关闭后要回到的原面板（null 为原主界面）。</summary>
+    private string? _helpReturn;
+    private bool _helpDirect;
+
+    /// <summary>打开系统说明（可直接定位到某主题/条目）。只读浏览，不推进时间；战斗与对话锁期间不可打开。</summary>
+    public void OpenHelp(string? topic = null, string? entry = null)
+    {
+        if (InBattleUi || DialogueLocked) return;
+        _helpReturn = Panel is "help" ? _helpReturn : Panel;
+        _helpDirect = topic != null;
+        HelpTopic = topic;
+        HelpEntry = entry;
+        HoverPreview = null;
+        Panel = "help";
+        Notify();
+    }
+
+    /// <summary>
+    /// 系统说明内退一级：条目 → 主题 → 目录 → 关闭。从对象/属性/状态详情直接定位进来的，返回时回到原入口上下文（直接关闭），不强制跳到目录首页。
+    /// </summary>
+    public void HelpBack()
+    {
+        if (_helpDirect) { CloseHelp(); return; }
+        if (HelpEntry != null) { HelpEntry = null; Notify(); return; }
+        if (HelpTopic != null) { HelpTopic = null; Notify(); return; }
+        CloseHelp();
+    }
+
+    /// <summary>在说明内点选主题/条目（玩家主动翻阅后按目录层级返回）。</summary>
+    public void HelpPick(string? topic, string? entry)
+    {
+        HelpTopic = topic;
+        HelpEntry = entry;
+        _helpDirect = false;
+        Notify();
+    }
+
+    public void CloseHelp()
+    {
+        HelpTopic = null;
+        HelpEntry = null;
+        _helpDirect = false;
+        var back = _helpReturn;
+        _helpReturn = null;
+        Panel = back is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" ? back : null;
+        Notify();
+    }
+
+    /// <summary>有未读完的对话（Q10）：整局游戏输入锁定，界面只保留对话层的阅读与“继续/结束对话”。</summary>
+    public bool DialogueLocked => State != null && Engine != null && E.DialogueLocked(S);
+    /// <summary>当前打开的浏览层：map / craft / rest / log / goals / tips / dialogs / help / menu。</summary>
     public string? Panel { get; set; }
     /// <summary>从设施卡打开加工面板时要预选的配方；面板读取一次后清空。</summary>
     public string? CraftRecipe { get; set; }
@@ -133,10 +236,15 @@ public sealed class GameSession
     /// </summary>
     public void OpenPanel(string? panel, string? recipe = null)
     {
-        // 战斗与敌踪选择中：地图、制作、休息、日志入口锁定（v0.5 §16）
-        if (panel is "map" or "craft" or "rest" or "log" && InBattleUi) return;
+        // 战斗与敌踪选择中：地图、制作、休息、日志及顶栏浏览入口锁定（v0.5 §16；生存目标/提示、对话记录、系统说明沿用日志限制，S14 §12.3、§13.3）
+        if (IsTopPanel(panel) && InBattleUi) return;
+        // 对话读完锁（Q10）：不打开任何面板；关闭（null）仍允许，便于对话出现时收起菜单
+        if (panel != null && DialogueLocked) return;
         HoverPreview = null;
-        if (panel != null) { IgniteMenuOpen = false; DetailTab = DetailTab.Object; }
+        // 只有地图/制作/休息会在右栏显示面板自己的预估，切到“对象信息”；顶栏浏览层（日志、目标、提示、对话记录、说明）不改右栏页签
+        if (panel != null) { IgniteMenuOpen = false; if (panel is "map" or "craft" or "rest") DetailTab = DetailTab.Object; }
+        if (panel == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturn = null; }
+        if (panel == "dialogs") DialogLogPick = null;
         // 关闭面板时没有选中对象就回人物页（v0.7 6.1：无选中默认展示人物信息；复验新发现 2）
         else if (Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
         // 每次打开或关闭面板都清掉上一次拖拽留下的候选与指定批次；拖拽入口在打开后再写入
@@ -163,6 +271,13 @@ public sealed class GameSession
         Panel = panel;
         Notify();
     }
+
+    /// <summary>替换中部上方的顶栏面板：地图、制作、休息、日志，以及生存目标、生存提示、对话记录、系统说明。</summary>
+    public static bool IsTopPanel(string? panel) =>
+        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help";
+
+    /// <summary>对话记录浏览层里选中的那一次对话（DialogueSession.Id）；null 为最近一次。</summary>
+    public int? DialogLogPick { get; set; }
 
     // ───────────── 界面偏好（左栏折叠、提示翻页），存在浏览器本地，不进存档 ─────────────
 
@@ -343,6 +458,12 @@ public sealed class GameSession
         Panel = null;
         HoverPreview = null;
         IgniteMenuOpen = false;
+        CharPage = null;
+        StatusHover = null;
+        StatusPinned = null;
+        HelpTopic = null;
+        HelpEntry = null;
+        DialogLogPick = null;
         _skip = false;
         Running = false;
         ResetBattleUi();

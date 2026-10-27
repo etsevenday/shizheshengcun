@@ -42,8 +42,8 @@ window.survival = {
           br = bar.getBoundingClientRect();
           if (br.left < pr.left) p.scrollLeft -= pr.left - br.left + 8;
         }
-        // 中部纵滚：操作条底部在可视区外时下移到刚好露出（不超过把操作条顶部推出可视区）
-        if (p.classList.contains('center-scroll') && cs.overflowY === 'auto') {
+        // 纵滚（所属区内部纵滚，或兜底的中部纵滚）：操作条底部在可视区外时下移到刚好露出（不超过把操作条顶部推出可视区）（S14 §1.3）
+        if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') && p.scrollHeight > p.clientHeight) {
           var b2 = bar.getBoundingClientRect(), r2 = p.getBoundingClientRect();
           if (b2.bottom > r2.bottom) p.scrollTop += Math.min(b2.bottom - r2.bottom + 8, Math.max(0, b2.top - r2.top));
         }
@@ -69,6 +69,13 @@ window.survival = {
   unwatchOutside: function () {
     if (window.__survivalOutside) document.removeEventListener('pointerdown', window.__survivalOutside, true);
     window.__survivalOutside = null;
+  },
+  // 元素在视口中的位置 [left, top, right, bottom]（状态图标浮层锚点）；找不到返回空数组
+  rectById: function (id) {
+    var el = document.getElementById(id);
+    if (!el) return [];
+    var r = el.getBoundingClientRect();
+    return [r.left, r.top, r.right, r.bottom];
   },
   // 聚焦并选中输入框内容，直接打字即替换
   focusSelect: function (el) {

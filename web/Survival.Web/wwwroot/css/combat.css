@@ -25,7 +25,7 @@
 
 /* ───────────── 战斗与敌踪覆盖层：替换地块栏两行，高度与两行之和一致；顺序条与指令条固定，卡片区内部滚动 ───────────── */
 .battle-overlay { position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: 6px; padding: 8px 10px;
-  height: calc(var(--map-row-h) + var(--fac-card-h) + 38px + var(--gap)); min-height: 0; border-color: #8a4f3a; background: linear-gradient(#2a221e, #252e27 40%); }
+  flex: 1 1 0; height: auto; min-height: 0; border-color: #8a4f3a; background: linear-gradient(#2a221e, #252e27 40%); }
 .battle-overlay.encounter { border-color: var(--warn); }
 .bt-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .bt-head > b { font-size: 17px; white-space: nowrap; }
