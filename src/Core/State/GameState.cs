@@ -7,9 +7,10 @@ namespace Survival.Core.State
     public enum StatId { Health, Satiety, Hydration, Energy, Wakefulness, Morale }
 
     /// <summary>
-    /// 角色主行动。Butcher 处理动物尸体（v0.5 §14）；Repair 工具维护（v0.6 §05，走配方）；Bypass 绕行敌踪（v0.6 §15，固定 10 分钟按 travel 消耗）；Fuse 饱饱吞噬融合活性物质（R07 §4，固定 5 分钟按 wait 消耗）。
+    /// 角色主行动。Butcher 处理动物尸体（v0.5 §14）；Repair 工具维护（v0.6 §05，走配方）；Bypass 绕行敌踪（v0.6 §15，固定 10 分钟按 travel 消耗）；Fuse 饱饱吞噬融合活性物质（R07 §4，固定 5 分钟按 wait 消耗）；
+    /// WaitCook 等待本火堆当前全部可加工内容完成（S11 §9、S13 §5，按 wait 消耗，时长由目标动态决定）。
     /// </summary>
-    public enum ActionType { Travel, Explore, Gather, Craft, Build, Wait, Rest, Sleep, Use, Ignite, Clear, Butcher, Repair, Bypass, Fuse }
+    public enum ActionType { Travel, Explore, Gather, Craft, Build, Wait, Rest, Sleep, Use, Ignite, Clear, Butcher, Repair, Bypass, Fuse, WaitCook }
 
     public enum ActionStatus { Running, Paused }
 
@@ -535,6 +536,13 @@ namespace Survival.Core.State
         /// <summary>开始时锁定的随机接敌判定值 [0,1)（v0.6 §15）；完成时与按当时敌密度算出的概率比较。预览里置为 1（不接敌）。</summary>
         public double EncounterRoll { get; set; } = 1;
 
+        /// <summary>等待烹饪：开始时绑定的本火堆进程 ID（FacilityProcess.ProcessId，含净水→食材链）；TargetId 为火堆所在地点。</summary>
+        public List<string> CookTargets { get; set; } = new List<string>();
+        /// <summary>等待烹饪：绑定目标的物品实例 ID（与 CookTargets 同序，界面展示用）。</summary>
+        public List<int> CookTargetItems { get; set; } = new List<int>();
+        /// <summary>等待烹饪：已完成的绑定进程。</summary>
+        public List<string> CookDone { get; set; } = new List<string>();
+
         public bool IsWorkType => IsWork(Type);
 
         /// <summary>工作动作吃工作倍率与 0 体力工作伤害；清理也是工作（00 案第 3 节）。</summary>
@@ -547,6 +555,9 @@ namespace Survival.Core.State
             var c = (ActionState)MemberwiseClone();
             c.ReservedItemIds = new List<int>(ReservedItemIds);
             c.LockedItemIds = new List<int>(LockedItemIds);
+            c.CookTargets = new List<string>(CookTargets);
+            c.CookTargetItems = new List<int>(CookTargetItems);
+            c.CookDone = new List<string>(CookDone);
             return c;
         }
     }

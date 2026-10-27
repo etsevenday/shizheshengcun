@@ -147,6 +147,7 @@ namespace Survival.Core.Engine
             ActionType.Bypass => "绕行",
             ActionType.Butcher => "处理尸体",
             ActionType.Fuse => "吞噬融合",
+            ActionType.WaitCook => "等待烹饪",
             _ => "点燃火堆",
         };
 

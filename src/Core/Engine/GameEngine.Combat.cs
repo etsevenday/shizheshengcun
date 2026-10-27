@@ -112,6 +112,7 @@ namespace Survival.Core.Engine
         public string? CanApproach(GameState s, int worldEnemyId)
         {
             if (s.Progress.Dead) return "角色已死亡";
+            if (DialogueLocked(s)) return DialogueLockedReason;
             if (!Config.CombatEnabled || !Config.Encounters.ActiveContactEnabled) return "战斗未启用";
             if (s.Battle != null) return "已在战斗中";
             if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";

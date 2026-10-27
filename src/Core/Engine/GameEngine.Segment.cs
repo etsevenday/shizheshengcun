@@ -147,6 +147,8 @@ namespace Survival.Core.Engine
                 AbortSpoiled(s, a);
                 return new SegmentResult(SegmentStatus.Aborted);
             }
+            // 等待烹饪：火堆不能给这一段完整供热就停止，不 tick（S11 §9、开发假设 A8）
+            if (CookWaitStoppedBeforeSegment(s, a)) return new SegmentResult(SegmentStatus.Aborted);
 
             // 1–3. 段首计算角色本段速率，再做一次世界 tick（身体、燃料、设施、免疫、病毒、终局、刷新）
             var ctx = ComputeSegment(s, a);
@@ -154,11 +156,18 @@ namespace Survival.Core.Engine
 
             // 4. 累积进度
             bool done;
+            SegmentStatus? cookEnded = null;
             if (a.IsWorkType)
             {
                 a.WorkDone += Tick / ctx.Factor;
                 a.ElapsedMinutes += Tick;
                 done = a.WorkDone >= a.BaseWorkMinutes - Eps;
+            }
+            else if (a.Type == ActionType.WaitCook)
+            {
+                a.ElapsedMinutes += Tick;
+                if (CookWaitAfterSegment(s, a, out var cooked)) cookEnded = cooked ? SegmentStatus.Completed : SegmentStatus.Aborted;
+                done = cookEnded != null;
             }
             else
             {
@@ -168,7 +177,8 @@ namespace Survival.Core.Engine
             if (a.Type == ActionType.Sleep) s.Progress.Flags.Add("sleptOnce");
 
             var status = SegmentStatus.Running;
-            if (done)
+            if (cookEnded != null) status = cookEnded.Value;
+            else if (done)
             {
                 // 5. 提交结果（含末尾环境伤害）；探索/清理先提交原产物，再按密度检查随机接敌（v0.6 §15）
                 var ok = Complete(s, a);

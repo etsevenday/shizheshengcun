@@ -271,6 +271,8 @@ namespace Survival.Core.Engine
             public List<OutputLine> Outputs = new List<OutputLine>();
             public List<string> Notes = new List<string>();
             public int Batch = 1;
+            public List<string> CookTargets = new List<string>();
+            public List<int> CookTargetItems = new List<int>();
         }
 
         private string? Validate(GameState s, ActionRequest r, out Plan plan)
@@ -296,6 +298,7 @@ namespace Survival.Core.Engine
             else if (s.Main.Status == ActionStatus.Paused && s.Sub == null)
             {
                 plan.IsSub = true;
+                if (r.Type == ActionType.WaitCook) return "主行动暂停中：请先退出原行动再等待烹饪";
                 if (r.Type != ActionType.Use && r.Type != ActionType.Rest && r.Type != ActionType.Ignite)
                     return "暂停中只能补给、休息或点火维护";
                 plan.TravelPaused = s.Main.Type == ActionType.Travel;
@@ -495,6 +498,9 @@ namespace Survival.Core.Engine
 
                 case ActionType.Fuse:
                     return ValidateFuse(s, r, plan, allowGround);
+
+                case ActionType.WaitCook:
+                    return ValidateCookWait(s, plan);
 
                 case ActionType.Wait:
                     if (plan.IsSub) return "暂停中只能补给、休息或点火维护";
@@ -768,6 +774,10 @@ namespace Survival.Core.Engine
                 case ActionType.Fuse:
                     StartFuse(s, a, p);
                     break;
+                case ActionType.WaitCook:
+                    a.CookTargets = new List<string>(p.CookTargets);
+                    a.CookTargetItems = new List<int>(p.CookTargetItems);
+                    break;
                 case ActionType.Ignite:
                 {
                     var fac = s.Locations[s.CurrentLocation].Facility;
@@ -812,6 +822,7 @@ namespace Survival.Core.Engine
                 ActionType.Sleep => "已提前醒来。",
                 ActionType.Butcher => "已取消处理尸体，尸体返还当前地面，保质期不变，没有产物。",
                 ActionType.Bypass => "已取消绕行。",
+                ActionType.WaitCook => $"已退出等待烹饪（已完成{a.CookDone.Count}项）：火堆、锅与受热进度原样保留，成品留在原位。",
                 _ => $"已结束{a.Label}。",
             };
             Emit(s, GameEventKind.ActionCancelled, text);

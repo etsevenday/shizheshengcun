@@ -42,6 +42,8 @@ namespace Survival.Core.Engine
         public static ActionRequest Bypass() => new ActionRequest { Type = ActionType.Bypass };
         /// <summary>饱饱吞噬融合指定的活性物质实例（R07 §4）。</summary>
         public static ActionRequest Fuse(int instanceId) => new ActionRequest { Type = ActionType.Fuse, InstanceId = instanceId };
+        /// <summary>等待当前地点火堆里全部当前可加工内容完成（S11 §9）：时长由目标动态决定，按 wait 消耗。</summary>
+        public static ActionRequest WaitCook() => new ActionRequest { Type = ActionType.WaitCook };
         /// <summary>处理一具随身或当前地面的动物尸体（v0.5 §14）。</summary>
         public static ActionRequest Butcher(int carcassInstanceId) => new ActionRequest { Type = ActionType.Butcher, InstanceId = carcassInstanceId };
 
@@ -108,6 +110,8 @@ namespace Survival.Core.Engine
         public int? ActionId { get; set; }
         /// <summary>同一 requestId 重复到达：返回成功但不再改状态（v0.7 第 4.3 节“重复请求不重复点火”）。</summary>
         public bool Duplicate { get; set; }
+        /// <summary>退出请求（RequestExit）：单段事务已开始结算，本段完成后才结束（不退还、不撤销）。</summary>
+        public bool Deferred { get; set; }
 
         public static ActionResult Success(int? actionId = null) => new ActionResult { Ok = true, ActionId = actionId };
         public static ActionResult Repeated() => new ActionResult { Ok = true, Duplicate = true };
