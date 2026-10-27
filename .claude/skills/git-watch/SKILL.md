@@ -1,6 +1,6 @@
 ---
 name: git-watch
-description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的新提交，按改动内容匹配现有流程（/design-dev 新策划包、策划答复待确认问题、旧策划案修订、纯文档整理），自动跑完流程并推送上线；需要策划确认的写进待确认问题文档一起推，提交说明标明在哪，再在 GitHub 开 issue @dotpad1994 提醒。本机定时任务每 30 分钟触发；用户想手动触发时可在侧栏 Scheduled 点"Run now"，或说"/git-watch""检查一下 git 有没有新提交"。
+description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的新提交，按改动内容匹配现有流程（/design-dev 新策划包、策划答复待确认问题、旧策划案修订、纯文档整理），自动跑完流程并推送上线；需要策划确认的写进待确认问题文档一起推，提交说明标明在哪，再在 GitHub 开 issue @dotpad1994 提醒。本机定时任务每 10 分钟触发（无新提交时由预检 hook 直接拦下）；用户想手动触发时可在侧栏 Scheduled 点"Run now"，或说"/git-watch""检查一下 git 有没有新提交"。
 ---
 
 # git 新提交自动处理
