@@ -85,6 +85,8 @@ namespace Survival.Core.State
         // ───── 系统策划总册 v1.0（R07 吞噬融合、N01/S15 剧情） ─────
         /// <summary>人物词条（R07：首战教学融合的绿色“攻击力+0.1”）。不是物品装备，不随武器丢失。</summary>
         public List<TraitInstance> Traits { get; set; } = new List<TraitInstance>();
+        /// <summary>开场、饱饱、首战与教学融合的持久进度（N01 §6、S15 §5、R07 §5）。</summary>
+        public StoryState Story { get; set; } = new StoryState();
 
         [JsonIgnore] public List<GameEvent> PendingEvents { get; set; } = new List<GameEvent>();
 
@@ -111,6 +113,7 @@ namespace Survival.Core.State
             c.Encounter = Encounter?.Clone();
             c.Battle = Battle?.Clone();
             c.Traits = Traits.Select(x => x.Clone()).ToList();
+            c.Story = Story.Clone();
             c.PendingEvents = new List<GameEvent>();
             return c;
         }
@@ -361,6 +364,48 @@ namespace Survival.Core.State
         public bool TutorialReward { get; set; }
 
         public ItemSource Clone() => (ItemSource)MemberwiseClone();
+    }
+
+    /// <summary>
+    /// 剧情与饱饱的持久状态（S15 §5 阶段表）：awakening → food_water_guidance → tutorial_battle_pending → tutorial_battle_won →
+    /// tutorial_fusion_pending → tutorial_fusion_done。各阶段只锁存一次；旧档 Legacy=true，不补开场、首战、教学物质与+0.1，也不启用饱饱输入（T06）。
+    /// </summary>
+    public sealed class StoryState
+    {
+        /// <summary>旧档迁移来的局（T06）：不跑本轮新剧情与教学奖励。</summary>
+        public bool Legacy { get; set; }
+        /// <summary>饱饱在体内（R04 §7.2 baobaoPresent）：新局 true，旧档 false；治愈不移除。</summary>
+        public bool BaobaoPresent { get; set; }
+        /// <summary>开场唤醒与命名对白已完成（命名标记锁存）。</summary>
+        public bool AwakeningDone { get; set; }
+        /// <summary>饮食提示已读（不自动吃喝）。</summary>
+        public bool FoodWaterRead { get; set; }
+        /// <summary>首战保留的游荡尸（新局荒地初始实例）；首战胜利前不巡游、不被其他遭遇征用。</summary>
+        public int? TutorialEnemyId { get; set; }
+        /// <summary>首次到达荒地已触发首战（重复到达不再触发）。</summary>
+        public bool TutorialTriggered { get; set; }
+        public int? TutorialBattleId { get; set; }
+        /// <summary>首战最终胜利且存活（唯一）。</summary>
+        public bool TutorialWon { get; set; }
+        /// <summary>教学活性物质的唯一发放事件 ID；已发过即不再发。</summary>
+        public string TutorialGrantEventId { get; set; } = "";
+        /// <summary>教学融合完成（绿色“攻击力+0.1”已登记）。</summary>
+        public bool TutorialFusionDone { get; set; }
+        /// <summary>已提交的融合事务 ID（防重复提交）。</summary>
+        public List<string> FusionIds { get; set; } = new List<string>();
+        /// <summary>待显示的饱饱对白 ID（按顺序）；显示并确认后移除。对白不推进时间、不发奖励。</summary>
+        public List<string> PendingDialogues { get; set; } = new List<string>();
+        /// <summary>已显示过的对白 ID（回看与防重复加入）。</summary>
+        public List<string> SeenDialogues { get; set; } = new List<string>();
+
+        public StoryState Clone()
+        {
+            var c = (StoryState)MemberwiseClone();
+            c.FusionIds = new List<string>(FusionIds);
+            c.PendingDialogues = new List<string>(PendingDialogues);
+            c.SeenDialogues = new List<string>(SeenDialogues);
+            return c;
+        }
     }
 
     /// <summary>人物词条实例（R07 §4）：效果 ID、品质、显示文字、攻击力平加值与发放来源。</summary>

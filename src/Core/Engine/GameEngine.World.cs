@@ -151,6 +151,8 @@ namespace Survival.Core.Engine
         {
             if (s.Rng.NextDouble() >= WE.SpawnSuccessProbability) return;
             var rarity = RollRarity(s.Rng.NextDouble());
+            // P06/T07（R05 §6.1）：未开放的强度层抽中则本次无刷新，不重抽、不积欠
+            if (!WE.RarityOpen(rarity, s.GameMinute)) return;
             var cands = SpawnCandidates(s, rarity);
             // 该层无可用地点：本次不刷新，不改抽更强层，也不积攒
             if (cands.Count == 0) return;

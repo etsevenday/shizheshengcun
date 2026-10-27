@@ -14,7 +14,19 @@ public abstract class TestBase
     [SetUp]
     public void BaseSetUp() => E = new GameEngine(Cfg);
 
-    protected GameState New(uint seed = 12345) => E.NewGame(seed);
+    /// <summary>
+    /// 旧系统用例的新局：去掉本轮新剧情与饱饱输入（DebugLegacyStory，同旧档 T06），只验证各自系统。
+    /// 开场、首战、饱饱病毒与通关脚本用 NewStory（完整新局）。
+    /// </summary>
+    protected GameState New(uint seed = 12345)
+    {
+        var s = E.NewGame(seed);
+        E.DebugLegacyStory(s);
+        return s;
+    }
+
+    /// <summary>完整新局（系统策划总册 v1.0：饱饱在体内、开场对白、首战门控）。</summary>
+    protected GameState NewStory(uint seed = 12345) => E.NewGame(seed);
 
     /// <summary>第 day 日 hh:mm 的绝对分钟。</summary>
     protected static int At(int day, int hh, int mm) => (day - 1) * 1440 + hh * 60 + mm;

@@ -100,6 +100,18 @@ namespace Survival.Core.Engine
                     Id = "bleed", Name = "出血", RemainingMinutes = 0, Harmful = true,
                     Effect = $"还要流血{b.BleedTriggers}次，每次健康−{Fmt.T(b.BleedDamage)}；{bandage}可止血",
                 });
+            if (s.Story.BaobaoPresent)
+            {
+                var input = BaobaoInput(s, b.Immunity);
+                var bi = Config.Infection.BaobaoInput;
+                list.Add(new ActiveCondition
+                {
+                    Id = "baobao", Name = "饱饱持续影响", RemainingMinutes = 0, Harmful = input > 0,
+                    Effect = input > 0
+                        ? $"体内病毒每小时+{Fmt.T(input)}（免疫越高越慢，免疫≥{Fmt.T(bi.FullSuppressImmunityAtLeast)}完全压制）；治愈只清当前感染，饱饱仍在"
+                        : $"免疫≥{Fmt.T(bi.FullSuppressImmunityAtLeast)}，饱饱的病毒输入被完全压制；免疫跌下来后会重新积累",
+                });
+            }
             if (b.Infected)
             {
                 var (_, vr, _) = CurrentBodyRates(s);
@@ -202,6 +214,7 @@ namespace Survival.Core.Engine
             Visit(s, s.CurrentLocation);
             InitSkills(s);
             InitWorldEnemies(s);
+            InitStory(s);
 
             foreach (var kv in c.StartingCarried) CreateItems(s, kv.Key, kv.Value, ItemInstance.Carried);
             foreach (var kv in c.StartingCampGround) CreateItems(s, kv.Key, kv.Value, s.CurrentLocation);

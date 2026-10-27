@@ -53,6 +53,9 @@ namespace Survival.Core.Engine
             return rate;
         }
 
+        /// <summary>饱饱持续体内输入（每小时，R04 §7.2）：baobaoPresent=false（旧档）为 0。</summary>
+        public double BaobaoInput(GameState s, double immunity) => s.Story.BaobaoPresent ? Inf.BaobaoInput.Rate(immunity) : 0;
+
         /// <summary>当前状态下的免疫与病毒速率（界面说明用；按当前行动与地点）。</summary>
         public (double immunity, double virus, List<string> why) CurrentBodyRates(GameState s)
         {
@@ -62,7 +65,7 @@ namespace Survival.Core.Engine
             var sheltered = a != null ? !a.ForceOutdoor && IsSheltered(s, s.CurrentLocation) : IsSheltered(s, s.CurrentLocation);
             var ir = ImmunityRate(s.Stats, s.Stats.HealthMax, diarrhea, s.Body.Infected, a?.Type, sheltered, why);
             var antibiotic = s.Body.AntibioticUntil.HasValue && s.Body.AntibioticUntil.Value > s.GameMinute;
-            var vr = s.Body.Infected ? VirusRate(s.Body.Immunity, antibiotic) : 0;
+            var vr = (s.Body.Infected ? VirusRate(s.Body.Immunity, antibiotic) : 0) + BaobaoInput(s, s.Body.Immunity);
             return (ir, vr, why);
         }
 
@@ -73,12 +76,23 @@ namespace Survival.Core.Engine
             var ir = ImmunityRate(start.Stats, start.Stats.HealthMax, start.Diarrhea, start.Infected, ctx.ActionType, ctx.Sheltered);
             b.Immunity = Math.Max(Imm.Min, Math.Min(Imm.Max, b.Immunity + ir * h));
 
+            // 饱饱持续体内输入 B(I)（R04 §7.2，按段首免疫）：与已感染进展率相加；抗生素只减缓 R，不关闭 B
+            var input = BaobaoInput(s, start.Immunity);
             if (b.Infected)
             {
-                var vr = start.Infected ? VirusRate(start.Immunity, start.AntibioticActive) : 0;
+                var vr = (start.Infected ? VirusRate(start.Immunity, start.AntibioticActive) : 0) + input;
                 var v = b.VirusLoad + vr * h;
                 if (v < Inf.NaturalLoadMinimumWhileInfected) v = Inf.NaturalLoadMinimumWhileInfected;
                 b.VirusLoad = Math.Min(Inf.LoadRange[1], v);
+                VirusWarnings(s);
+            }
+            else if (input > 0)
+            {
+                // 未感染且本段净输入为正：转为感染，V=max(最低值, 本段实际增加)，不套外部首次咬伤的 V20
+                b.Infected = true;
+                b.VirusLoad = Math.Max(Inf.BaobaoInput.FirstInfectionMinLoad, input * h);
+                b.HighImmunityMinutes = 0;
+                Emit(s, GameEventKind.Alert, $"饱饱在体内的病毒积累起来了：进入感染状态，病毒{Fmt.N(b.VirusLoad)}。免疫≥{Fmt.T(Inf.BaobaoInput.FullSuppressImmunityAtLeast)}时它会被完全压制，连续高免疫可自然治愈。");
                 VirusWarnings(s);
             }
             else b.VirusLoad = 0;
@@ -103,7 +117,7 @@ namespace Survival.Core.Engine
                 {
                     if (b.VirusWarned.Contains(stage)) continue;
                     b.VirusWarned.Add(stage);
-                    var rate = VirusRate(b.Immunity, b.AntibioticUntil.HasValue && b.AntibioticUntil.Value > s.GameMinute);
+                    var rate = VirusRate(b.Immunity, b.AntibioticUntil.HasValue && b.AntibioticUntil.Value > s.GameMinute) + BaobaoInput(s, b.Immunity);
                     var left = rate > 0 ? $"，按现状理论上约{Clock.Duration((int)Math.Ceiling((Inf.ZombificationAtLoad - b.VirusLoad) / rate * 60))}后尸变（免疫或用药改变时随之变化）" : "，按现状不会继续升高";
                     Emit(s, GameEventKind.Alert, $"病毒程度达到{Fmt.T(stage)}（当前{Fmt.N(b.VirusLoad)}）：每小时{Fmt.SignedT(rate)}{left}。");
                 }

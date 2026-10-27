@@ -88,6 +88,15 @@ namespace Survival.Core.Engine
             if (load <= 0) s.Body.HighImmunityMinutes = 0;
         }
 
+        /// <summary>
+        /// 测试/调试：把这一局改成“没有本轮新剧情”的状态（同旧档 T06：不跑开场对白与首战门控、不启用饱饱输入），
+        /// 供只验证其他系统的旧用例使用。新剧情与饱饱相关用例不调用它。
+        /// </summary>
+        public void DebugLegacyStory(GameState s)
+        {
+            s.Story = new StoryState { Legacy = true, BaobaoPresent = false };
+        }
+
         /// <summary>调试面板：在当前地点地面放一批常用物资，用于检查大量物资时的界面。</summary>
         public void DebugFillGround(GameState s)
         {
