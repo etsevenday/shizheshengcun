@@ -18,6 +18,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 
 ## 1 加锁与检测（没事就安静退出）
 
+0. **预检**（省 token）：定时任务提示词带 `[git-watch-scheduled]` 标记，本机 `.claude/settings.local.json` 的 UserPromptSubmit hook 会先跑 `python tools/git-watch-precheck.py --hook`：结论为 IDLE（锁未过期 / origin/main 已通知过 / 无新提交）时直接拦下提示词，模型不启动；WORK 或 ERROR 时把预检结论作为附加上下文放进来。上下文里已有 WORK 结论 → 下面第 2 步的 fetch 和列提交可以省掉，直接用它；没有（hook 没生效、手动触发）→ 先跑一次 `python tools/git-watch-precheck.py`，首行是 IDLE 就回一句结论结束，不用往下读。每次 hook 结论记在 `.git/claude-git-watch.log`。预检只读、不加锁，WORK 时仍从第 1 条开始加锁。
 1. 读状态文件。`runningSince` 非空且距今不到 6 小时 → 上一轮还在跑，直接结束，不通知。否则写入当前时间作为 `runningSince`。**本轮无论怎么结束，最后都要把 `runningSince` 清回 null**（第 6 节）。
 2. `git fetch origin`。列出新提交：`git log --format='%h %an %ad %s' <lastSeen>..origin/main`，只看作者不是 `etsevenday` 的。**不要用 `HEAD..origin/main`**：别的会话可能已把策划提交拉进本地 HEAD，那样会漏掉。没有 → 清锁，结束，不通知、不汇报。
 3. 本地有正在进行的工作就不碰：`git log origin/main..HEAD` 有未推送提交，或 `git status --porcelain` 里有已跟踪文件被改（未跟踪文件如 `doc/策划案.7z` 不算）→ 说明别的会话正在干活。`PushNotification`："git 有策划新提交 <短号>，但本地有未推送/未提交的工作，没自动处理"，清锁，结束（`lastSeen` 不更新，下轮再试）。
