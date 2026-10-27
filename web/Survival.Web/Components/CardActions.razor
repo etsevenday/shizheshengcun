@@ -76,6 +76,24 @@
             @if (why != null) { <div class="ca-note bad">@(GameEngine.UseButtonText(cfg))：@why</div> }
         }
 
+        @if (e.IsSubstance(m.ItemId))
+        {
+            var subs = (m.Instance != null ? new List<ItemInstance> { m.Instance } : s.Items.Where(i => i.Owner == m.Owner && i.ItemId == m.ItemId).ToList())
+                .OrderByDescending(i => i.Source?.TutorialReward == true).ThenBy(i => i.InstanceId).ToList();
+            foreach (var it in subs)
+            {
+                var freq = ActionRequest.Fuse(it.InstanceId);
+                var fwhy = G.Running ? "行动进行中" : e.CanStart(s, freq);
+                <div class="ca-use-row">
+                    <button type="button" class="ca-use fuse" disabled="@(fwhy != null || using_)" title="@(fwhy ?? "饱饱吞噬融合这1份，确认后立即结算，之后5分钟不可取消")"
+                            @onmouseenter="() => G.Hover(freq, FuseTitle)" @onmouseleave="() => G.Hover(null)"
+                            @onclick="() => Fuse(freq)">吞噬融合1份·@(e.Config.ActiveSubstance.Fusion.Minutes)分钟</button>
+                    <span class="ca-use-note">@e.SubstanceLabel(it)#@it.InstanceId（×@it.Count）→ @e.FusionOutcomeText(s, it)</span>
+                </div>
+                @if (fwhy != null) { <div class="ca-note bad">吞噬融合：@fwhy</div> }
+            }
+        }
+
         @if (m.Mode == Mode.Stack || m.Mode == Mode.Single)
         {
             var verb = m.ToCarried ? "拾取" : "放下";
@@ -337,6 +355,16 @@
     }
 
     private const string ButcherTitle = "处理尸体";
+    private const string FuseTitle = "吞噬融合";
+
+    private async Task Fuse(ActionRequest r)
+    {
+        if (using_) return;
+        using_ = true;
+        G.Hover(null);
+        try { await G.StartAction(r); }
+        finally { using_ = false; }
+    }
 
     private async Task Butcher(ActionRequest r)
     {

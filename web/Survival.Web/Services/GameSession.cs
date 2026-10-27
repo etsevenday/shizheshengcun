@@ -752,6 +752,25 @@ public sealed class GameSession
             Save();
             Notify();
         }
+        // 移动完成后由剧情首战直接进入战斗（S15 §5）：清掉地块上的选择与旧提示，接上战斗流程
+        if (State != null && S.Battle != null && !S.Progress.Dead && !BattleBusy)
+        {
+            ResetBattleUi();
+            Selected = new Selection();
+            DetailTab = DetailTab.Object;
+            ClearHoverNow();
+            Notify();
+            await BattleLoop();
+        }
+    }
+
+    /// <summary>饱饱对白“继续”：只记为已读并存档，不推进时间（N01 §6）。</summary>
+    public void AckDialogue(string id)
+    {
+        if (State == null) return;
+        E.AckDialogue(S, id);
+        Save();
+        Notify();
     }
 
     private int _toastSeq;

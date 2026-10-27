@@ -57,6 +57,21 @@
         </div>
     </div>
 
+    @* R07 §4：人物词条（首战教学融合的绿色“攻击力+0.1”）；不是装备，不随武器丢失 *@
+    <div class="char-traits">
+        <div class="tiny muted">词条（饱饱吞噬融合）</div>
+        @if (s.Traits.Count == 0)
+        {
+            <div class="risk none">还没有词条。@(GameEngine.StoryActive(s) ? "首战胜利后饱饱会吞噬融合教学活性物质。" : "")</div>
+        }
+        @foreach (var t in s.Traits)
+        {
+            <div class="trait-row q-@t.Quality" title="在技能/招式/站位/暴击乘算后、扣护甲前平加；推挡与出血不加">
+                <b>@t.Label</b><small>@(t.Quality == "green" ? "绿色" : t.Quality) · 直接攻击伤害平加</small>
+            </div>
+        }
+    </div>
+
     @* v0.6 §03：8 项熟练度，无等级上限；经验逐级扣 50×(L+1) *@
     <div class="char-skills">
         <div class="tiny muted">熟练度（无等级上限）</div>

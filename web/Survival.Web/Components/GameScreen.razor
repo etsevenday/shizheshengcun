@@ -77,6 +77,8 @@
         @if (G.BattleMenuOpen && battleUi) { <MenuOverlay Battle="true" /> }
         @if (G.Panel != null && G.Panel.StartsWith("status:")) { <StatusInfo /> }
 
+        <BaobaoDialogue />
+
         @if (G.Toast != null && !s.Progress.Dead)
         {
             var bad = G.Toast.Kind is GameEventKind.Hazard or GameEventKind.ActionAborted;

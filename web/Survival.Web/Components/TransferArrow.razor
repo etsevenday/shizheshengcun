@@ -2,10 +2,10 @@
 
 @* 物品卡右下角的三角箭头：点一下直接转移 1 件（地面→随身拾取，随身→地面放下），与点卡片弹出的拾取条并行（试玩留言 fb68265e、4bb723b0）。
    按住不放先转 1 件，过 HoldDelayMs 后每 RepeatMs 再转 1 件，松手、移出箭头、物品转完或转移失败（如超重）即停（留言 fb68265e 第 1 条“长按持续快速转移”）。
-   同时选中这张卡，卡片旁的拾取条跟着显示剩余数量。 *@
+   系统策划总册 v1.0 Q5-2（S14 §9.2）：箭头不选中卡片、不打开操作条；要改数量或目的地请点卡片本身。失败原因写在右栏提示。 *@
 <button type="button" class="card-arrow @(ToCarried ? "down" : "up")" disabled="@(!Enabled)"
         aria-label="@(ToCarried ? "拾取1件" : "放下1件")"
-        title="@(ToCarried ? "拾取1件，按住连续拾取（选中卡片可输入数量）" : "放下1件，按住连续放下（选中卡片可输入数量）")"
+        title="@(ToCarried ? "取到随身1件，按住连续拾取（点卡片本身可输入数量）" : "放到当前地面1件，按住连续放下（点卡片本身可输入数量）")"
         @onpointerdown="OnPointerDown"
         @onpointerup="StopHold" @onpointerleave="StopHold" @onpointercancel="StopHold"
         @oncontextmenu:preventDefault="true"
@@ -27,7 +27,6 @@
     private void OnClick(MouseEventArgs e)
     {
         if (e.Detail != 0 || !Enabled) return;
-        SelectCard();
         TransferOnce(Owner, ItemId, InstanceId);
     }
 
@@ -37,7 +36,6 @@
         StopHold();
         // 记下按下时的卡片：卡片转完后同位置可能换成别的物品，不能跟着转
         var owner = Owner; var itemId = ItemId; var instanceId = InstanceId;
-        SelectCard();
         if (!TransferOnce(owner, itemId, instanceId)) return;
         var cts = _hold = new CancellationTokenSource();
         try
@@ -53,10 +51,6 @@
             cts.Dispose();
         }
     }
-
-    private void SelectCard() => G.Select(InstanceId.HasValue
-        ? new Selection { Kind = SelectionKind.Tool, Id = ItemId, Owner = Owner, InstanceId = InstanceId }
-        : new Selection { Kind = SelectionKind.ItemGroup, Id = ItemId, Owner = Owner });
 
     private bool TransferOnce(string owner, string itemId, int? instanceId) => G.TransferOne(owner, itemId, instanceId).Ok;
 

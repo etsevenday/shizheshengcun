@@ -80,6 +80,27 @@
             }
         }
 
+        @* 暂停层点火（系统策划总册 v1.0 Q5-3，S01 §7、S09 §6）：主行动暂停、不在移动途中、当地火堆未燃烧时，选一把具体打火器开始 5 分钟点火维护；
+           结束仍回到暂停，主行动要明确继续。移动途中、战斗中不提供。 *@
+        @if (!travel && e.Location(s.CurrentLocation).HasFire && !s.Locations[s.CurrentLocation].Facility.FireLit)
+        {
+            var fac = s.Locations[s.CurrentLocation].Facility;
+            var opts = e.IgniteToolOptions(s);
+            <h3 style="margin:4px 0 0;font-weight:500">点燃火堆 · @(e.LocName(s.CurrentLocation))（燃料@(fac.FuelMinutes)分钟）</h3>
+            <div class="supply-grid">
+                @foreach (var o in opts)
+                {
+                    var req = ActionRequest.Ignite(o.InstanceId);
+                    var p = G.Preview(req);
+                    <button class="secondary supply-btn" disabled="@(!o.Usable || busy)" title="@(o.Reason ?? "选定这把打火器，开始5分钟点火；结束后主行动仍暂停")" @onclick="() => Sub(req)">
+                        <span class="ir-icon">@Icons.Markup(o.ItemId)</span><span class="sb-name">用@(o.Name)点火·@(e.Config.Fire.IgniteMinutes)分钟</span>
+                        <small>@o.Source@(o.Durability.HasValue ? $" · 耐久{Ui.N(o.Durability.Value)}→{Ui.N(Math.Max(0, o.Durability.Value - e.LighterWear))}" : "")@(p.AutoWood ? " · 自动投入1木材" : "")@(o.Reason != null ? " · " + o.Reason : "")</small>
+                    </button>
+                }
+            </div>
+            @if (e.IgniteNoToolReason(s) is string noTool) { <div class="risk none">@noTool</div> }
+        }
+
         <div class="btn-row" style="max-width:520px;margin-top:auto">
             <button class="primary" disabled="@busy" @onclick="G.Resume">继续@(main.Label)</button>
             <button class="secondary danger" disabled="@busy" @onclick="G.Cancel">取消@(main.Label)</button>

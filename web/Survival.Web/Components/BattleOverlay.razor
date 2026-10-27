@@ -57,7 +57,7 @@ else if (b != null)
     var waiting = !e.AwaitingPlayer(s);
     <div class="panel battle-overlay" role="region" aria-label="战斗">
         <div class="bt-head">
-            <b>战斗 · 第@(b.Round)轮</b>
+            <b>@(b.Tutorial ? "首战" : "战斗") · 第@(b.Round)轮</b>
             <div class="bt-queue" aria-label="本轮行动顺序">
                 @for (var k = 0; k < b.Queue.Count; k++)
                 {
@@ -84,7 +84,7 @@ else if (b != null)
                         <div class="track"><i style="width:@Ui.Bar(s.Stats.Health, s.Stats.HealthMax)%"></i></div>
                         <div class="hp-line"><span>体力</span><b>@Ui.N(s.Stats.Energy)/@Ui.T(s.Stats.EnergyMax)</b></div>
                         <div class="track en"><i style="width:@Ui.Bar(s.Stats.Energy, s.Stats.EnergyMax)%"></i></div>
-                        <div class="oc-line">恐慌 @Ui.N(b.Panic) · @(wi == null ? "徒手" : $"{w.Name}#{wi.InstanceId}")</div>
+                        <div class="oc-line" title="@(b.FearSourceWorldId.HasValue ? (b.Frightened ? $"入战受惊（受惊率{Ui.Pct(b.FearChance)}），恐慌+{Ui.T(b.FearPanic)}" : $"入战未受惊（受惊率{Ui.Pct(b.FearChance)}）") : "")">恐慌 @Ui.N(b.Panic)@(b.Frightened ? "（受惊）" : "") · @(wi == null ? "徒手" : $"{w.Name}#{wi.InstanceId}")</div>
                         <div class="oc-line">@(wi?.Durability != null ? $"耐久{GameEngine.DurabilityText(wi)}" : "")@(w.UsesMagazine && wi != null ? $" · 弹仓{wi.LoadedAmmo}/{w.MagazineCapacity}" : "")@(w.ConsumesLooseAmmo ? $" · 箭{s.Items.Where(i => i.IsCarried && i.ItemId == w.AmmoId).Sum(i => i.Count)}" : "")</div>
                         <div class="st-chips">
                             @if (b.PlayerGuard) { <span class="st good">防御</span> }

@@ -38,8 +38,8 @@
         <span class="pc-title"><b>@name</b><small>@(Pot.InFacility ? "整锅" : $"{Ui.Kg(e.ItemGrams(s, Pot))}公斤")@(Pot.Durability.HasValue ? $" · 耐久{GameEngine.DurabilityText(Pot)}" : "")</small></span>
         @if (Pot.InFacility)
         {
-            <button type="button" class="row-arrow" aria-label="@($"转移整口{name}")" title="打开整锅的转移操作条"
-                    @onclick="SelectPot" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▾</button>
+            <button type="button" class="row-arrow" aria-label="@($"把整口{name}取到随身")" title="取到随身：整锅连同水与食材（不打开操作条；点标题可选目的地）"
+                    disabled="@(locked || busy)" @onclick="TakePot" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▼</button>
         }
         else
         {
@@ -72,8 +72,8 @@
                 <span class="pc-name">@e.ItemName(w.ItemId)<b>×@w.Count</b><em>@(w.Count * c.UnitMl)毫升</em></span>
                 @if (wReserved > 0) { <span class="pc-status warn">已预留@(wReserved)毫升@(free < 1 ? " · 暂不可饮用/转移" : "")</span> }
             </span>
-            <button type="button" class="row-arrow" aria-label="@($"转移{e.ItemName(w.ItemId)}")" title="打开这份水的转移操作条"
-                    @onclick="() => SelectLiquid(w.ItemId)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▾</button>
+            <button type="button" class="row-arrow" aria-label="@($"取1份{e.ItemName(w.ItemId)}到随身")" title="取1份（500毫升）到随身（不打开操作条；点图标可选数量与目的地）"
+                    disabled="@busy" @onclick="() => TakeWater(w)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▼</button>
         </div>
         @if (wReserved > 0 && free < 1)
         {
@@ -102,8 +102,8 @@
                         <span class="heat-track"><i style="width:@(Math.Min(100, p.HeatDoneMinutes * 100 / Math.Max(1, p.RequiredHeatMinutes)))%"></i></span>
                     }
                 </span>
-                <button type="button" class="row-arrow" aria-label="@($"转移{fname}")" title="打开这份食材的转移操作条"
-                        @onclick="() => SelectFood(f)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▾</button>
+                <button type="button" class="row-arrow" aria-label="@($"把{fname}取到随身")" title="取到随身（不打开操作条；点图标可选目的地）"
+                        disabled="@busy" @onclick="() => TakeFood(f)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▼</button>
             </div>
             @if (fsel) { <CardActions /> }
         }
@@ -126,6 +126,13 @@
 
     private void SelectFood(ItemInstance f) =>
         G.Select(new Selection { Kind = SelectionKind.Tool, Id = f.ItemId, Owner = f.Owner, InstanceId = f.InstanceId });
+
+    // 箭头直接转移（系统策划总册 v1.0 Q5-2，S10 §6、S14 §9.2）：失败整次拒绝、不换目的地，原因写在右栏提示
+    private void TakePot() => G.TransferOne(Pot.Owner, Pot.ItemId, Pot.InstanceId, ItemInstance.Carried);
+
+    private void TakeFood(ItemInstance f) => G.TransferOne(f.Owner, f.ItemId, f.InstanceId, ItemInstance.Carried);
+
+    private void TakeWater(ItemInstance w) => G.Instant(InstantRequest.Decant(w.InstanceId, ItemInstance.Carried, 1));
 
     private static void Key(KeyboardEventArgs ev, Action act)
     {

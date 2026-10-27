@@ -762,3 +762,22 @@ kbd { font-size: 14px; }
   .ir-icon svg { width: 24px; height: 24px; }
   /* 火堆卡与设施菜单（M28 改为内嵌后整理） */
 }
+
+/* ───── 系统策划总册 v1.0：饱饱对白、人物词条、吞噬融合按钮（复用现有配色，不新增美术） ───── */
+.baobao-say { position: fixed; left: 50%; bottom: calc(var(--foot-h) + 18px); transform: translateX(-50%); z-index: 60;
+  width: min(620px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--accent); border-radius: 6px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45); padding: 12px 16px; color: var(--text); }
+.baobao-say .bb-head { display: flex; align-items: baseline; gap: 10px; }
+.baobao-say .bb-badge { background: var(--accent); color: var(--ink); font-weight: 600; padding: 1px 8px; border-radius: 3px; font-size: 13px; }
+.baobao-say .bb-head small { color: var(--muted); font-size: 12px; }
+.baobao-say .bb-text { margin: 8px 0 4px; font-size: 17px; line-height: 1.5; }
+.baobao-say .bb-note { margin: 0 0 6px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.baobao-say .bb-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.baobao-say .bb-foot .primary { min-width: 96px; }
+.char-traits { margin: 10px 0; }
+.trait-row { display: flex; align-items: baseline; gap: 10px; padding: 6px 8px; border-radius: 4px; border: 1px solid var(--line); margin-top: 4px; }
+.trait-row b { font-weight: 600; }
+.trait-row small { color: var(--muted); font-size: 12px; }
+.trait-row.q-green { border-color: #7fb069; }
+.trait-row.q-green b { color: #9fd18b; }
+.ca-use.fuse { border-color: #7fb069; }
