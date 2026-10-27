@@ -91,7 +91,12 @@ namespace Survival.Core.Config
         public int Medical { get; set; }
         public int DamagingAttackCommand { get; set; }
         public int MaxHitsPerEncounterEnemySkill { get; set; }
+        /// <summary>v1.0 P01 起为 false：群攻逐命中目标计经验。</summary>
         public bool GroupAttackXpIsSingleCommand { get; set; }
+        /// <summary>v1.0 P01：每个命中且未满额度的目标各给一次 +2。</summary>
+        public bool PerHitTarget { get; set; }
+        /// <summary>v1.0 P01：护甲完全抵消（0 伤）的命中也计经验。</summary>
+        public bool ZeroDamageHitCounts { get; set; }
         public int CancelOrPreviewXp { get; set; }
         public List<string> CounterKey { get; set; } = new List<string>();
 
@@ -212,6 +217,10 @@ namespace Survival.Core.Config
         public string Rarity { get; set; } = "";
         public double BiteIntentWeightPct { get; set; }
         public bool WorldPersistentId { get; set; }
+        /// <summary>基础惊吓概率 q（R05 §6.3，T01 已批准实装初值）。</summary>
+        public double FearChance { get; set; }
+        /// <summary>惊吓值：受惊时入场恐慌附加（R05 §6.3）。</summary>
+        public double FearValue { get; set; }
 
         [JsonIgnore] public bool IsZombie => Family == "zombie";
         [JsonIgnore] public bool NeutralUntilAttacked => Behavior == "neutral_until_attacked";
@@ -266,7 +275,8 @@ namespace Survival.Core.Config
         public double[] Range { get; set; } = { 0, 100 };
         /// <summary>"(100-morale)/2"。</summary>
         public string Initial { get; set; } = "";
-        public double SurpriseBonus { get; set; }
+        /// <summary>系统策划总册 v1.0 Q3/T01：受惊改为概率事件（取消固定+10），见 R03 §2.1、R05 §6.3。</summary>
+        public FearConfig Fear { get; set; } = new FearConfig();
         /// <summary>"actualDamage*1.5"。</summary>
         public string DirectDamageGain { get; set; } = "";
         public List<PanicPenaltyConfig> Penalties { get; set; } = new List<PanicPenaltyConfig>();
@@ -284,6 +294,21 @@ namespace Survival.Core.Config
         /// <summary>当前恐慌的惩罚档（只取最高一档）；没有为 null。</summary>
         public PanicPenaltyConfig? PenaltyFor(double panic) =>
             Penalties.Where(p => panic >= p.Minimum).OrderByDescending(p => p.Minimum).FirstOrDefault();
+    }
+
+    /// <summary>
+    /// 受惊（R03 §2.1 T01 已批准实装初值）：p=q×(1−clamp(M,0,100)/100)×K；K 按入战情境（主动接近 0.5、探索/清理接敌 1、剧情首战 1）；
+    /// 多敌只取一个主惊吓源（基础概率最高→惊吓值较高→worldEnemyId 小）；每个世界敌人的随机数 u 在 60 游戏分钟内复用。
+    /// </summary>
+    public sealed class FearConfig
+    {
+        public string Chance { get; set; } = "";
+        public Dictionary<string, double> ContextFactors { get; set; } = new Dictionary<string, double>();
+        public int ReuseRollMinutes { get; set; }
+        public string SourceSelection { get; set; } = "";
+        public bool OncePerBattle { get; set; }
+
+        public double Factor(string context) => ContextFactors.TryGetValue(context, out var k) ? k : 1;
     }
 
     /// <summary>v0.6 retreat：撤退概率 sigmoid（§07）。</summary>
@@ -582,6 +607,8 @@ namespace Survival.Core.Config
         public string GameOverReason { get; set; } = "";
         public List<string> EndpointOrder { get; set; } = new List<string>();
         public bool HighImmunityTimerUsesBothTickEndpoints { get; set; }
+        /// <summary>饱饱持续体内病毒输入（R04 §7.2，T09 已批准实装初值）。</summary>
+        public BaobaoInputConfig BaobaoInput { get; set; } = new BaobaoInputConfig();
 
         [JsonIgnore] public double ExposureBase => Formula.Num(ExposureProbability, 0);
         [JsonIgnore] public double ExposureScale => Formula.Num(ExposureProbability, 1);
@@ -622,8 +649,93 @@ namespace Survival.Core.Config
         public bool EngagedAliveCountInCap { get; set; }
         public bool IneligibleEnemiesNeverReplacedByStrongerTier { get; set; }
         public int FleeWithoutValidNeighborHiddenMinutes { get; set; }
+        /// <summary>各强度层开放的绝对分钟（R05 §6.1，P06/T07：普通第1日、稀有第3日00:00、强敌第7日00:00）；缺省视为一直开放。</summary>
+        public Dictionary<string, int> RarityOpenAbsoluteMinute { get; set; } = new Dictionary<string, int>();
+
+        public bool RarityOpen(string rarity, int minute) => !RarityOpenAbsoluteMinute.TryGetValue(rarity, out var m) || minute >= m;
 
         public int CapOf(string locationId) => LocalCaps.TryGetValue(locationId, out var c) ? c : 0;
+    }
+
+    /// <summary>
+    /// 饱饱持续病毒输入 B(I)=maxPerHour×clamp((fullSuppress−I)/bandWidth,0,1)/h（R04 §7.2）：与已感染进展率相加；
+    /// 未感染且 B&gt;0 时首次转感染，病毒取 max(最低值, 本段实际增加)。旧档不启用。
+    /// </summary>
+    public sealed class BaobaoInputConfig
+    {
+        public double MaxPerHour { get; set; }
+        public double FullSuppressImmunityAtLeast { get; set; }
+        public double LinearBandWidth { get; set; }
+        public double FirstInfectionMinLoad { get; set; }
+        public bool NewGamePresent { get; set; }
+        public bool LegacySavePresent { get; set; }
+        public double SafeTargetLoadAtMost { get; set; }
+
+        public double Rate(double immunity)
+        {
+            if (LinearBandWidth <= 0) return immunity >= FullSuppressImmunityAtLeast ? 0 : MaxPerHour;
+            var f = (FullSuppressImmunityAtLeast - immunity) / LinearBandWidth;
+            if (f < 0) f = 0;
+            if (f > 1) f = 1;
+            return MaxPerHour * f;
+        }
+    }
+
+    /// <summary>R07 活性物质：普通丧尸独立掉落、首战教学掉落、吞噬融合与教学词条（T02/T08 已批准/已确认）。</summary>
+    public sealed class ActiveSubstanceConfig
+    {
+        public string ItemId { get; set; } = "";
+        public SubstanceDropConfig NormalDrop { get; set; } = new SubstanceDropConfig();
+        public SubstanceDropConfig TutorialDrop { get; set; } = new SubstanceDropConfig();
+        public FusionConfig Fusion { get; set; } = new FusionConfig();
+        public TraitEffectConfig TutorialEffect { get; set; } = new TraitEffectConfig();
+        public string NormalFusionText { get; set; } = "";
+    }
+
+    public sealed class SubstanceDropConfig
+    {
+        public List<string> Families { get; set; } = new List<string>();
+        public double ChancePerEnemy { get; set; }
+        public int Count { get; set; } = 1;
+    }
+
+    public sealed class FusionConfig
+    {
+        public int Minutes { get; set; }
+        public string RateKey { get; set; } = "wait";
+        public double ExtraEnergy { get; set; }
+        public bool IdleOnly { get; set; }
+    }
+
+    public sealed class TraitEffectConfig
+    {
+        public string EffectId { get; set; } = "";
+        public string Quality { get; set; } = "";
+        public string Label { get; set; } = "";
+        public double FlatAttack { get; set; }
+    }
+
+    /// <summary>N01/S15 剧情：首战位置与敌种、饱饱对白（N01 §3 草案原文）。</summary>
+    public sealed class StoryConfig
+    {
+        public TutorialBattleConfig TutorialBattle { get; set; } = new TutorialBattleConfig();
+        public List<DialogueConfig> Dialogues { get; set; } = new List<DialogueConfig>();
+    }
+
+    public sealed class TutorialBattleConfig
+    {
+        public string FromLocationId { get; set; } = "";
+        public string LocationId { get; set; } = "";
+        public string EnemyId { get; set; } = "";
+        public bool NoReinforcement { get; set; }
+    }
+
+    public sealed class DialogueConfig
+    {
+        public string Id { get; set; } = "";
+        public string Speaker { get; set; } = "";
+        public string Text { get; set; } = "";
+        public string Note { get; set; } = "";
     }
 
     /// <summary>开发测试箱（v0.5 §15）：只经调试入口取得，正常流程不可见。</summary>

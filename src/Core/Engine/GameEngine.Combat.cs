@@ -172,14 +172,14 @@ namespace Survival.Core.Engine
                 k++;
             }
             var pc = Config.Panic;
-            b.Panic = Math.Max(pc.Range[0], Math.Min(pc.Range[1], (pc.InitialBase - s.Stats.Morale) / pc.InitialDivisor + (surprise ? pc.SurpriseBonus : 0)));
+            b.Panic = Math.Max(pc.Range[0], Math.Min(pc.Range[1], (pc.InitialBase - s.Stats.Morale) / pc.InitialDivisor));
             b.PanicPeak = b.Panic;
             s.Battle = b;
             // 当前武器若已不在随身，按徒手开始
             CurrentWeapon(s, out var wi);
             b.WeaponInstanceId = wi?.InstanceId;
             var names = string.Join("、", b.Enemies.Select(e => $"{e.Slot}{EnemyName(e)}"));
-            BattleLog(s, $"{source}：{names}。恐慌{Fmt.N(b.Panic)}{(surprise ? "（受惊+" + Fmt.T(pc.SurpriseBonus) + "）" : "")}。");
+            BattleLog(s, $"{source}：{names}。恐慌{Fmt.N(b.Panic)}。");
             Emit(s, GameEventKind.Battle, $"战斗开始：{names}。", null, b.Enemies.Select(e => $"enemy:{e.WorldId}"));
             BeginRound(s);
         }

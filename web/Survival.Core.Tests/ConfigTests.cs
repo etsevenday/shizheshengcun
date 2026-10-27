@@ -32,11 +32,11 @@ public class ConfigTests : TestBase
     {
         Assert.That(ConfigLoader.Validate(Cfg), Is.Empty);
         Assert.That(Cfg.CombatEnabled, Is.True, "用户 2026-10-26 拍板：直接开启，不做开关");
-        Assert.That(Cfg.Items, Has.Count.EqualTo(19 + 26), "v0.4 的19种加 v0.6 新增武器、弹药、尸体、肉、药与原料");
+        Assert.That(Cfg.Items, Has.Count.EqualTo(19 + 26 + 1), "v0.4 的19种加 v0.6 新增武器、弹药、尸体、肉、药与原料，加 v1.0 活性物质");
         Assert.That(Cfg.Locations, Has.Count.EqualTo(8));
         Assert.That(Cfg.Edges, Has.Count.EqualTo(8));
         Assert.That(Cfg.Resources, Has.Count.EqualTo(16 + 4), "新增武器柜、旧储物柜、医药补给箱、废弃冷藏箱");
-        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5), "新增木矛、木弓、箭矢、工具维护、病毒特效药");
+        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5 + 3), "新增木矛、木弓、箭矢、工具维护、病毒特效药；v1.0 新增金属矛、弩、弩矢");
     }
 
     // ───────────── v0.2–v0.4 未被 v0.6 替换的部分 ─────────────
@@ -332,7 +332,8 @@ public class ConfigTests : TestBase
     {
         var d = V04()["processes"]!.ToList();
         var meat = V06()["passiveCookingExtensions"]!.ToList();
-        Assert.That(Cfg.Processes.Select(p => p.Id), Is.EqualTo(d.Select(x => (string)x["id"]!).Concat(meat.Select(x => (string)x["id"]!))));
+        // v1.0 T03 追加烤肉复煮
+        Assert.That(Cfg.Processes.Select(p => p.Id), Is.EqualTo(d.Select(x => (string)x["id"]!).Concat(meat.Select(x => (string)x["id"]!)).Concat(new[] { "reboil_cooked_meat" })));
         foreach (var j in d)
         {
             var p = Cfg.Processes.Single(x => x.Id == (string)j["id"]!);
@@ -414,6 +415,10 @@ public class ConfigTests : TestBase
     {
         var mapped = JObject.FromObject(Cfg, Camel);
         var d = V06();
+        // 系统策划总册 v1.0 替换的 v0.6 字段（P02 锅无耐久、Q3 取消固定受惊+10、P01 逐目标经验），新值另由 V10_ 用例核对
+        ((JObject)d["durability"]!["tools"]!).Remove("pot");
+        ((JObject)d["panic"]!).Remove("surpriseBonus");
+        ((JObject)d["xp"]!).Remove("groupAttackXpIsSingleCommand");
         foreach (var (ds, cs) in CopiedSections)
             AssertSubset(d[ds]!, mapped[cs]!, $"v0.6.{ds}");
         // 丧尸掉落表（v0.6 沿用 v0.5）
@@ -450,7 +455,8 @@ public class ConfigTests : TestBase
         }
         // 工具随机耐久（v0.6 §05）
         var tools = V06()["durability"]!["tools"]!;
-        Assert.That(Cfg.Items.Single(i => i.Id == "pot").DurabilityMaxRange, Is.EqualTo(tools["pot"]!["maxRange"]!.Select(x => (double)x)));
+        // v1.0 P02：金属锅取消耐久
+        Assert.That(Cfg.Items.Single(i => i.Id == "pot").DurabilityMaxRange, Is.Null);
         Assert.That(Cfg.Items.Single(i => i.Id == "lighter").DurabilityMaxRange, Is.EqualTo(tools["lighter"]!["maxRange"]!.Select(x => (double)x)));
         foreach (var w in V06()["weapons"]!.Where(w => w["durabilityMaxRange"]!.Type == JTokenType.Array))
             Assert.That(Cfg.Items.Single(i => i.Id == (string)w["id"]!).DurabilityMaxRange, Is.EqualTo(w["durabilityMaxRange"]!.Select(x => (double)x)), (string)w["id"]!);

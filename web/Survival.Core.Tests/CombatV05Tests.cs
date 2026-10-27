@@ -701,7 +701,10 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(Count(v, "ammo_9mm", "village"), Is.EqualTo(12));
         Assert.That(E.CanStart(v, ActionRequest.Gather("village_weapon_locker")), Does.Contain("搜空"));
 
-        foreach (var id in new[] { "metal_spear", "crossbow", "shotgun", "rifle" })
+        // v1.0 P05/T04：金属矛、弩、弩矢可正常制作；霰弹枪、步枪仍不开放正常来源
+        foreach (var id in new[] { "metal_spear", "crossbow", "bolt" })
+            Assert.That(Cfg.Recipes.Any(r => r.Outputs.ContainsKey(id)), Is.True, id + " 有正常配方");
+        foreach (var id in new[] { "shotgun", "rifle" })
         {
             Assert.That(Cfg.Recipes.Any(r => r.Outputs.ContainsKey(id)), Is.False, id + " 无正常配方");
             Assert.That(Cfg.Resources.Any(r => r.Outputs.ContainsKey(id)), Is.False, id + " 无正常箱子");

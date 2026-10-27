@@ -163,6 +163,8 @@ namespace Survival.Core.Config
                     if (!items.Contains(f)) e.Add($"容器 {kv.Key} 可存放食材 {f} 不存在");
                     else if (kv.Value.Accepts.Contains(f)) e.Add($"容器 {kv.Key} 食材 {f} 不能同时是液体");
                 }
+                foreach (var f in kv.Value.StoreOnlyFoodIds)
+                    if (!kv.Value.StoredFoodIds.Contains(f)) e.Add($"容器 {kv.Key} 只存放食材 {f} 须在可存放白名单内");
             }
 
             // 火堆加工位与设施进程（设施与烹饪案第 2、5 节）
@@ -339,8 +341,26 @@ namespace Survival.Core.Config
                 }
             }
             foreach (var k in c.DevKit.Items.Keys) if (!items.Contains(k)) e.Add($"开发测试箱物品 {k} 不存在");
-            foreach (var t in new[] { "pot", "lighter" })
-                if (!c.Durability.Tools.ContainsKey(t)) e.Add($"缺少 {t} 的耐久配置");
+            // v1.0 P02：金属锅没有耐久，只校验打火器
+            if (!c.Durability.Tools.ContainsKey("lighter")) e.Add("缺少 lighter 的耐久配置");
+            foreach (var it in c.Items.Where(i => i.ContainerId != null && i.HasDurability))
+                e.Add($"容器 {it.Id} 不应有耐久（P02 锅无耐久）");
+            foreach (var en in c.Enemies)
+            {
+                if (en.FearChance < 0 || en.FearChance > 1) e.Add($"敌人 {en.Id} 基础惊吓概率须在0—1");
+                if (en.FearValue < 0) e.Add($"敌人 {en.Id} 惊吓值不能为负");
+            }
+            foreach (var k in we.RarityOpenAbsoluteMinute.Keys)
+                if (!we.RarityWeights.ContainsKey(k)) e.Add($"开放时间的层级 {k} 未知");
+            var sub = c.ActiveSubstance;
+            if (!string.IsNullOrEmpty(sub.ItemId) && !items.Contains(sub.ItemId)) e.Add($"活性物质 {sub.ItemId} 不存在");
+            if (sub.NormalDrop.ChancePerEnemy < 0 || sub.NormalDrop.ChancePerEnemy > 1) e.Add("活性物质普通掉率须在0—1");
+            if (sub.Fusion.Minutes < 0 || sub.Fusion.Minutes % tick != 0) e.Add($"吞噬融合时长须为{tick}的倍数");
+            if (!string.IsNullOrEmpty(sub.Fusion.RateKey) && !c.HourlyRates.ContainsKey(sub.Fusion.RateKey)) e.Add($"吞噬融合速率类别 {sub.Fusion.RateKey} 不存在");
+            var tb = c.Story.TutorialBattle;
+            if (!string.IsNullOrEmpty(tb.EnemyId) && !enemies.ContainsKey(tb.EnemyId)) e.Add($"首战敌人 {tb.EnemyId} 不存在");
+            if (!string.IsNullOrEmpty(tb.LocationId) && !locs.Contains(tb.LocationId)) e.Add($"首战地点 {tb.LocationId} 不存在");
+            Dup(c.Story.Dialogues, d => d.Id, "对白", e);
             if (c.Infection.ProgressPerHour.Count == 0) e.Add("缺少病毒进展速率");
 
             Shape(e, "skillGrowth.damageFactor", c.SkillGrowth.DamageFactor);

@@ -64,6 +64,10 @@ namespace Survival.Core.Config
         public InfectionConfig Infection { get; set; } = new InfectionConfig();
         public WorldEnemiesConfig WorldEnemies { get; set; } = new WorldEnemiesConfig();
         public DevKitConfig DevKit { get; set; } = new DevKitConfig();
+
+        // ───── 系统策划总册 v1.0 答复（N01/R07/S15） ─────
+        public ActiveSubstanceConfig ActiveSubstance { get; set; } = new ActiveSubstanceConfig();
+        public StoryConfig Story { get; set; } = new StoryConfig();
     }
 
     public sealed class TimeConfig
@@ -166,6 +170,8 @@ namespace Survival.Core.Config
         public int StackMax { get; set; } = 1;
         public int? ShelfLifeMinutes { get; set; }
         public string Kind { get; set; } = "material";
+        /// <summary>物品品质（R07 活性物质为 white）；普通物品为空。</summary>
+        public string? Quality { get; set; }
         public string? ToolTag { get; set; }
         /// <summary>实例最大耐久的随机区间 [下限, 上限]（v0.6 §05）；无耐久为 null。生成时按 0.1 精度抽一次并存进实例。</summary>
         public double[]? DurabilityMaxRange { get; set; }
@@ -244,6 +250,8 @@ namespace Survival.Core.Config
         public int FoodSlots { get; set; }
         /// <summary>可以存放在锅里的食材（生块根及在本锅完成的水煮块根）。</summary>
         public List<string> StoredFoodIds { get; set; } = new List<string>();
+        /// <summary>只存放、不再加工的食物（v1.0 Q2：水煮肉可从外部放回锅）。</summary>
+        public List<string> StoreOnlyFoodIds { get; set; } = new List<string>();
 
         public int CapacityUnits => UnitMl > 0 ? CapacityMl / UnitMl : 0;
     }
@@ -274,6 +282,8 @@ namespace Survival.Core.Config
         public int WaterCostMl { get; set; }
         public string RequiredOwner { get; set; } = "";
         public string? RequiredLiquid { get; set; }
+        /// <summary>成品继承原料的绝对到期时刻、不刷新保质（v1.0 T03 烤肉复煮）。</summary>
+        public bool KeepInputExpiry { get; set; }
 
         public bool IsPotBatch => Target == ProcessTargets.PotLiquidBatch;
         public bool InPot => RequiredOwner == ProcessOwners.PotInFire;

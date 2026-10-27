@@ -37,7 +37,7 @@
         </div>
         <div class="enc-actions">
             <button type="button" class="enc-go fight" disabled="@G.BattleBusy" @onclick="G.EngageEncounter">
-                <strong>接敌</strong><small>受惊遭遇：入战恐慌+@(Ui.T(cfg.Panic.SurpriseBonus))</small>
+                <strong>接敌</strong><small>入战恐慌=(100−精神)/2</small>
             </button>
             <button type="button" class="enc-go" disabled="@(e.CanStart(s, ActionRequest.Bypass()) != null)"
                     @onmouseenter="() => G.Hover(BypassReq, BypassTitle)" @onfocus="() => G.Hover(BypassReq, BypassTitle)" @onmouseleave="() => G.Hover(null)" @onblur="() => G.Hover(null)"

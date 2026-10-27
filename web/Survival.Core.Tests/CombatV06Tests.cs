@@ -169,9 +169,10 @@ public class CombatV06Tests : BattleTestBase
             }
             Assert.That(seen.Count, Is.GreaterThan(1), it.Id + " 每件随机，不是统一满耐久");
         }
-        // 新局开局的锅与打火器也有随机耐久
+        // 新局开局的打火器有随机耐久；金属锅没有耐久（系统策划总册 v1.0 P02）
         var t = New(7);
-        Assert.That(First(t, "pot").MaxDurability, Is.InRange(60.0, 100.0));
+        Assert.That(First(t, "pot").MaxDurability, Is.Null);
+        Assert.That(First(t, "pot").Durability, Is.Null);
         Assert.That(First(t, "lighter").MaxDurability, Is.InRange(40.0, 80.0));
 
         // 读档、转移、拾取不重抽
@@ -212,27 +213,19 @@ public class CombatV06Tests : BattleTestBase
         Assert.That(E.DoInstant(s, InstantRequest.Drop(lighter.InstanceId, 1)).Ok, Is.True, "仍可转移");
         Assert.That(E.DoInstant(s, InstantRequest.Pickup(lighter.InstanceId, 1)).Ok, Is.True);
 
-        // 锅耐久不足：放进火堆不受热、显示维护不足，水与内容保留
+        // v1.0 P02：锅没有耐久，放进燃烧火堆即正常净水，不磨损、不显示维护不足
         var pot = First(s, "pot");
         E.DebugGive(s, "dirty_water", 2, "camp");
         E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 2));
-        pot.Durability = 0.1;
         E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId));
         var fac = s.Locations["camp"].Facility;
         fac.FireLit = true;
         fac.FuelMinutes = 120;
         Start(s, ActionRequest.Wait(30));
         Run(s);
-        Assert.That(E.PotLiquid(s, pot.InstanceId), Is.EqualTo("dirty_water"), "不加工、不销毁水");
-        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(2));
-        Assert.That(E.ContentStatus(s, pot), Does.Contain("维护不足"));
-
-        // 正常耐久：每次成功净水磨损0.2
-        pot.Durability = 10;
-        Start(s, ActionRequest.Wait(30));
-        Run(s);
         Assert.That(E.PotLiquid(s, pot.InstanceId), Is.EqualTo("clean_water"));
-        Assert.That(pot.Durability, Is.EqualTo(10 - Cfg.Durability.PotWear).Within(1e-9));
+        Assert.That(pot.Durability, Is.Null);
+        Assert.That(E.ContentStatus(s, pot), Does.Not.Contain("维护不足"));
 
         // 维护：废金属1+零件1，恢复自身最大20%，不超过最大、不重抽
         var t = New();
@@ -259,16 +252,14 @@ public class CombatV06Tests : BattleTestBase
         Start(t, req);
         Run(t);
         Assert.That(lt.Durability, Is.EqualTo(max).Within(1e-9), "不超过自身最大");
-        // 有内容的锅须先清空
+        // v1.0 P02：锅不是维护候选
         var tp = First(t, "pot");
-        tp.Durability = 5;
-        E.DebugGive(t, "clean_water", 1);
-        E.DoInstant(t, InstantRequest.FillPot(First(t, "clean_water", "carried").InstanceId, tp.InstanceId, 1));
         var rp = ActionRequest.Craft("repair_selected_tool");
         rp.InstanceId = tp.InstanceId;
         E.DebugGive(t, "scrap", 1);
         E.DebugGive(t, "parts", 1);
-        Assert.That(E.CanStart(t, rp), Does.Contain("清空"));
+        Assert.That(E.CanStart(t, rp), Does.Contain("没有耐久"));
+        Assert.That(E.RepairCandidates(t).Any(i => i.InstanceId == tp.InstanceId), Is.False);
     }
 
     private void Infect(GameState s, double load, double immunity)

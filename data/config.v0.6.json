@@ -1,7 +1,7 @@
 {
   "version": "0.6",
-  "sourceVersion": "0.2 + 交互与地图扩展 0.3 + 卡片统一与设施烹饪 0.4 + 人物与战斗 v0.6（基线 v0.5）",
-  "date": "2026-10-26",
+  "sourceVersion": "0.2 + 交互与地图扩展 0.3 + 卡片统一与设施烹饪 0.4 + 人物与战斗 v0.6（基线 v0.5） + 系统策划总册 v1.0 答复（Q1–Q5、T01–T09、N01/R07）",
+  "date": "2026-10-27",
   "time": {
     "tickMinutes": 5,
     "startAbsoluteMinute": 480,
@@ -113,6 +113,9 @@
         "raw_meat",
         "cooked_meat",
         "boiled_meat"
+      ],
+      "storeOnlyFoodIds": [
+        "boiled_meat"
       ]
     }
   },
@@ -179,6 +182,19 @@
       "waterCostMl": 500,
       "requiredOwner": "pot_inside_lit_fire",
       "requiredLiquid": "clean_water"
+    },
+    {
+      "id": "reboil_cooked_meat",
+      "name": "复煮",
+      "target": "single_food_instance",
+      "inputId": "cooked_meat",
+      "outputId": "boiled_meat",
+      "allowedBatchMl": [],
+      "heatMinutes": 15,
+      "waterCostMl": 500,
+      "requiredOwner": "pot_inside_lit_fire",
+      "requiredLiquid": "clean_water",
+      "keepInputExpiry": true
     }
   ],
   "ui": {
@@ -494,11 +510,8 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "空锅1000克，容量1000毫升，另有2个食材位；可装净水或脏水。放进燃烧的火堆后自动烧水、水煮，产物留在原锅；每次成功净水或熟成一份食物磨损0.2",
-      "durabilityMaxRange": [
-        60,
-        100
-      ]
+      "desc": "空锅1000克，容量1000毫升，另有2个食材位；可装净水或脏水。放进燃烧的火堆后自动烧水、水煮，产物留在原锅；没有耐久，不磨损、不需要维护",
+      "durabilityMaxRange": null
     },
     {
       "id": "lighter",
@@ -845,7 +858,7 @@
         "isAntibiotic": false,
         "isAntiviral": false
       },
-      "desc": "火堆直烤的肉：饱食+35，水分-3，精神+2"
+      "desc": "火堆直烤的肉：饱食+35，水分-3，精神+2；放进有净水的锅、在燃烧的火堆上复煮可变成水煮肉（保质期不刷新）"
     },
     {
       "id": "boiled_meat",
@@ -868,7 +881,7 @@
         "isAntibiotic": false,
         "isAntiviral": false
       },
-      "desc": "有水锅里煮熟的肉：饱食+32，水分+5，精神+3"
+      "desc": "有水锅里煮熟的肉：饱食+32，水分+5，精神+3；可放回锅里存放，不再加工"
     },
     {
       "id": "antibiotics",
@@ -943,6 +956,21 @@
       "requiresCooking": false,
       "use": null,
       "desc": "制作病毒特效药的原料"
+    },
+    {
+      "id": "active_substance_white_unidentified",
+      "name": "未鉴定的活性物质",
+      "weightGrams": 50,
+      "stackMax": 20,
+      "shelfLifeMinutes": null,
+      "kind": "substance",
+      "quality": "white",
+      "toolTag": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "白色品质，饱饱吞噬融合的材料：空闲时选中卡片，在卡下“吞噬融合”。不是食物或药品，不能放进锅或火堆",
+      "durabilityMaxRange": null
     }
   ],
   "locations": [
@@ -1761,6 +1789,68 @@
       },
       "potCatalyst": "explicit_empty_detached_pot",
       "autoFillPot": false
+    },
+    {
+      "id": "make_metal_spear",
+      "name": "金属矛",
+      "kind": "craft",
+      "baseMinutes": 90,
+      "inputs": {
+        "wood": 2,
+        "scrap": 2,
+        "fiber": 2
+      },
+      "outputs": {
+        "metal_spear": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      }
+    },
+    {
+      "id": "make_crossbow",
+      "name": "弩",
+      "kind": "craft",
+      "baseMinutes": 120,
+      "inputs": {
+        "wood": 3,
+        "scrap": 2,
+        "parts": 2,
+        "fiber": 4,
+        "cloth": 1
+      },
+      "outputs": {
+        "crossbow": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      }
+    },
+    {
+      "id": "make_bolts",
+      "name": "弩矢",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "wood": 1,
+        "scrap": 1,
+        "fiber": 1
+      },
+      "outputs": {
+        "bolt": 4
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      }
     }
   ],
   "lootTables": {
@@ -2098,15 +2188,15 @@
       "脏水必定腹泻12小时：把装了脏水的金属锅放进燃烧的营地火堆，15分钟自动烧成净水。",
       "生块根不能直接吃：放进燃烧火堆的加工位烤熟（饱食+25、水分−2、精神+2），或放进有净水的锅里水煮（饱食+23、水分+5、精神+3），熟食24小时后腐败。",
       "露天睡眠每小时只恢复6清醒度，尽早在营地建遮蔽棚（木材4、植物纤维4）。",
-      "火堆点燃后会一直燃烧，离开营地前可以熄火保留剩余燃料；打火器每次成功点火磨损1。",
+      "火堆点燃后会一直燃烧，离开营地前可以熄火保留剩余燃料；打火器每次成功点火磨损1，金属锅没有耐久。",
       "夜间无照明时，移动、探索、采集都慢1.5倍；火堆燃烧的营地里加工不受影响。",
       "负重超过20公斤行动变慢，超过30公斤就不能再拾取。",
       "健康与体力上限都是20；体力低于4时工作变慢；休息只恢复体力，清醒度要靠睡眠。",
       "简易斧让木材产量翻倍，石刀让纤维采集快一倍；工具与武器的最大耐久按实例随机，成功使用会磨损，可用废金属1+零件1维护。",
       "精神低于20时，休息和睡眠的体力恢复减半；遮蔽睡眠和熟食能提升精神。",
       "自然资源每天00:00补充，遗迹里的箱子搜空后不会再有。",
-      "第2日起探索或清理完成后，可能撞上本地已有的敌人：可以接敌，也可以绕行10分钟。",
-      "只有丧尸咬击命中并造成伤害才可能感染病毒；免疫力越低越容易感染、病情越快。",
+      "第一次到达农野荒地会遇到一只游荡尸（首战，饱饱会引导）；首战胜利后、第2日起探索或清理完成时可能撞上本地已有的敌人：可以接敌，也可以绕行10分钟。",
+      "丧尸咬击命中并造成伤害可能感染病毒；饱饱也会在体内缓慢积累病毒，免疫≥85时被完全压制。免疫力越低越容易感染、病情越快。",
       "已感染时，免疫≥85连续12小时且病毒≤10会自然治愈；绷带和抗生素只能压低病毒，病毒特效药能直接治愈。",
       "健康只在遮蔽处休息或睡眠、且饱食与水分不低于40、精神不低于20时缓慢恢复；草药绷带止血并恢复少量健康。",
       "遇到问题按 F 留言，会自动附上当前画面和游戏状态。"
@@ -2522,7 +2612,9 @@
       "attackRating": 20,
       "rarity": "common",
       "biteIntentWeightPct": 20,
-      "worldPersistentId": true
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6
     },
     {
       "id": "crawler",
@@ -2541,7 +2633,9 @@
       "attackRating": 18,
       "rarity": "common",
       "biteIntentWeightPct": 20,
-      "worldPersistentId": true
+      "worldPersistentId": true,
+      "fearChance": 0.4,
+      "fearValue": 7
     },
     {
       "id": "runner",
@@ -2560,7 +2654,9 @@
       "attackRating": 23,
       "rarity": "rare",
       "biteIntentWeightPct": 20,
-      "worldPersistentId": true
+      "worldPersistentId": true,
+      "fearChance": 0.55,
+      "fearValue": 10
     },
     {
       "id": "worker",
@@ -2579,7 +2675,9 @@
       "attackRating": 18,
       "rarity": "rare",
       "biteIntentWeightPct": 20,
-      "worldPersistentId": true
+      "worldPersistentId": true,
+      "fearChance": 0.4,
+      "fearValue": 8
     },
     {
       "id": "riot",
@@ -2598,7 +2696,9 @@
       "attackRating": 16,
       "rarity": "elite",
       "biteIntentWeightPct": 20,
-      "worldPersistentId": true
+      "worldPersistentId": true,
+      "fearChance": 0.6,
+      "fearValue": 14
     },
     {
       "id": "howler",
@@ -2617,7 +2717,9 @@
       "attackRating": 16,
       "rarity": "rare",
       "biteIntentWeightPct": 20,
-      "worldPersistentId": true
+      "worldPersistentId": true,
+      "fearChance": 0.65,
+      "fearValue": 16
     },
     {
       "id": "feral_dog",
@@ -2636,7 +2738,9 @@
       "attackRating": 22,
       "rarity": "common",
       "biteIntentWeightPct": 0,
-      "worldPersistentId": true
+      "worldPersistentId": true,
+      "fearChance": 0.2,
+      "fearValue": 4
     },
     {
       "id": "wolf",
@@ -2655,7 +2759,9 @@
       "attackRating": 24,
       "rarity": "rare",
       "biteIntentWeightPct": 0,
-      "worldPersistentId": true
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 7
     },
     {
       "id": "boar",
@@ -2674,7 +2780,9 @@
       "attackRating": 20,
       "rarity": "elite",
       "biteIntentWeightPct": 0,
-      "worldPersistentId": true
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 8
     },
     {
       "id": "stag",
@@ -2693,7 +2801,9 @@
       "attackRating": 18,
       "rarity": "common",
       "biteIntentWeightPct": 0,
-      "worldPersistentId": true
+      "worldPersistentId": true,
+      "fearChance": 0.1,
+      "fearValue": 3
     }
   ],
   "xp": {
@@ -2701,13 +2811,15 @@
     "medical": 4,
     "damagingAttackCommand": 2,
     "maxHitsPerEncounterEnemySkill": 3,
-    "groupAttackXpIsSingleCommand": true,
+    "groupAttackXpIsSingleCommand": false,
     "cancelOrPreviewXp": 0,
     "counterKey": [
       "encounterId",
       "enemyInstanceId",
       "skillId"
-    ]
+    ],
+    "perHitTarget": true,
+    "zeroDamageHitCounts": true
   },
   "crafting": {
     "workFactor": "1/(1+0.025*L)",
@@ -2748,7 +2860,6 @@
       100
     ],
     "initial": "(100-morale)/2",
-    "surpriseBonus": 10,
     "directDamageGain": "actualDamage*1.5",
     "penalties": [
       {
@@ -2764,7 +2875,18 @@
     ],
     "penaltiesSelectHighestOnly": true,
     "postBattleMoraleLoss": "min(5,panic/20)",
-    "clearAfterBattle": true
+    "clearAfterBattle": true,
+    "fear": {
+      "chance": "q*(1-clamp(M,0,100)/100)*K",
+      "contextFactors": {
+        "approach": 0.5,
+        "encounter": 1.0,
+        "tutorial": 1.0
+      },
+      "reuseRollMinutes": 60,
+      "sourceSelection": "highest_chance_then_highest_value_then_world_id",
+      "oncePerBattle": true
+    }
   },
   "retreat": {
     "chance": "sigmoid((playerEffectiveSpeed-maxEnemyEffectiveSpeed)/3+0.7)*panicFactor*lowEnergyFactor",
@@ -2964,13 +3086,6 @@
     ],
     "affixesMayModifyRangeWithoutGlobalHardCap": true,
     "tools": {
-      "pot": {
-        "maxRange": [
-          60,
-          100
-        ],
-        "wearPerSuccessfulThermalProcess": 0.2
-      },
       "lighter": {
         "maxRange": [
           40,
@@ -3113,7 +3228,16 @@
       "death_or_zombification",
       "natural_cure_if_eligible"
     ],
-    "highImmunityTimerUsesBothTickEndpoints": true
+    "highImmunityTimerUsesBothTickEndpoints": true,
+    "baobaoInput": {
+      "maxPerHour": 0.1,
+      "fullSuppressImmunityAtLeast": 85,
+      "linearBandWidth": 45,
+      "firstInfectionMinLoad": 1,
+      "newGamePresent": true,
+      "legacySavePresent": false,
+      "safeTargetLoadAtMost": 10
+    }
   },
   "worldEnemies": {
     "globalCap": 12,
@@ -3360,7 +3484,12 @@
     "deadDoNotCountInCap": true,
     "engagedAliveCountInCap": true,
     "ineligibleEnemiesNeverReplacedByStrongerTier": true,
-    "fleeWithoutValidNeighborHiddenMinutes": 60
+    "fleeWithoutValidNeighborHiddenMinutes": 60,
+    "rarityOpenAbsoluteMinute": {
+      "common": 0,
+      "rare": 2880,
+      "elite": 8640
+    }
   },
   "combatActions": [
     {
@@ -3560,5 +3689,83 @@
       "shell_12g": 8,
       "ammo_rifle": 10
     }
+  },
+  "activeSubstance": {
+    "itemId": "active_substance_white_unidentified",
+    "normalDrop": {
+      "families": [
+        "zombie"
+      ],
+      "chancePerEnemy": 0.005,
+      "count": 1
+    },
+    "tutorialDrop": {
+      "count": 1
+    },
+    "fusion": {
+      "minutes": 5,
+      "rateKey": "wait",
+      "extraEnergy": 0,
+      "idleOnly": true
+    },
+    "tutorialEffect": {
+      "effectId": "tutorial_attack_bonus_001",
+      "quality": "green",
+      "label": "攻击力+0.1",
+      "flatAttack": 0.1
+    },
+    "normalFusionText": "饱饱吞噬融合了活性物质。本次未产生属性变化。"
+  },
+  "story": {
+    "tutorialBattle": {
+      "fromLocationId": "camp",
+      "locationId": "field",
+      "enemyId": "shambler",
+      "noReinforcement": true
+    },
+    "dialogues": [
+      {
+        "id": "awakening_1",
+        "speaker": "饱饱",
+        "text": "醒醒……醒醒，我饿了。",
+        "note": "你在临时营地醒来。声音不是从耳边传来的，而是在你的脑子里。"
+      },
+      {
+        "id": "awakening_2",
+        "speaker": "饱饱",
+        "text": "我不知道我叫什么。我只知道，我饿了。",
+        "note": "你在心里给它起了个名字：饱饱。"
+      },
+      {
+        "id": "food_water",
+        "speaker": "饱饱",
+        "text": "先找点能吃的。还有水。",
+        "note": "营地地面有罐头和净水；往农野荒地是出路。吃什么、喝什么、何时出发由你决定。"
+      },
+      {
+        "id": "tutorial_arrive",
+        "speaker": "饱饱",
+        "text": "前面那个……不像还活着。小心。",
+        "note": "首战：轮到你时有行动点（AP）。点敌卡选目标，点指令看右栏预估，点“执行”才提交；行动点用完或点“结束行动”轮到敌人。"
+      },
+      {
+        "id": "tutorial_won",
+        "speaker": "饱饱",
+        "text": "那东西身上有一团还在动的物质……让我试试。",
+        "note": "地面上多了一份“未鉴定的活性物质”。选中它，在卡下点“吞噬融合”。"
+      },
+      {
+        "id": "fusion_done_1",
+        "speaker": "饱饱",
+        "text": "有变化了。攻击力增加了0.1。",
+        "note": ""
+      },
+      {
+        "id": "fusion_done_2",
+        "speaker": "饱饱",
+        "text": "也可能有不好的变化……这次运气不错。",
+        "note": ""
+      }
+    ]
   }
 }
