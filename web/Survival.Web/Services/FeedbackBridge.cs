@@ -54,7 +54,7 @@ public sealed class FeedbackBridge
             health = Math.Round(st.Health, 2), satiety = Math.Round(st.Satiety, 2), hydration = Math.Round(st.Hydration, 2),
             energy = Math.Round(st.Energy, 2), wakefulness = Math.Round(st.Wakefulness, 2), morale = Math.Round(st.Morale, 2),
         };
-        ctx["carriedKg"] = Math.Round(e.CarriedGrams(s) / 1000.0, 1);
+        ctx["carriedKg"] = (double)Math.Round(e.CarriedGrams(s) / 1000m, 2, MidpointRounding.AwayFromZero);
         ctx["fires"] = s.Locations.Where(kv => e.Location(kv.Key).HasFire)
             .ToDictionary(kv => kv.Key, kv => new { lit = kv.Value.Facility.FireLit, fuel = kv.Value.Facility.FuelMinutes, shelter = kv.Value.Facility.ShelterBuilt, bed = kv.Value.Facility.BedBuilt });
         ctx["clear"] = s.Locations.Where(kv => kv.Value.Visited)

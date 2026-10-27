@@ -465,7 +465,7 @@ namespace Survival.Core.Engine
                 var grams = ItemGrams(s, inst);
                 if (CarriedGrams(s) + grams > Config.Carry.HardGrams)
                 {
-                    var what = IsPot(inst) ? $"{ItemName(inst.ItemId)}连同内容共{grams / 1000.0:0.0}公斤" : $"{ItemName(inst.ItemId)}{grams / 1000.0:0.0}公斤";
+                    var what = IsPot(inst) ? $"{ItemName(inst.ItemId)}连同内容共{Fmt.Kg(grams)}" : $"{ItemName(inst.ItemId)}{Fmt.Kg(grams)}";
                     return $"携带后将超过{Config.Carry.HardGrams / 1000}公斤（{what}），整次拒绝";
                 }
             }

@@ -207,7 +207,7 @@ namespace Survival.Core.Engine
                 var why = TakeOutBlocked(s, head, zone);
                 if (why != null) return DropIntent.No(why);
                 var to = zone == ItemInstance.Carried ? "随身" : "地面";
-                var what = IsPot(head) ? $"{name}#{head.InstanceId}（含内容{ItemGrams(s, head) / 1000.0:0.0}公斤）" : $"1份{name}#{head.InstanceId}";
+                var what = IsPot(head) ? $"{name}#{head.InstanceId}（含内容{Fmt.Kg(ItemGrams(s, head))}）" : $"1份{name}#{head.InstanceId}";
                 var verb = zone == ItemInstance.Carried ? "拾取" : IsPot(head) ? "取下" : "取出";
                 return Instant(DropVerb.TakeOut, $"{verb}{what}到{to}", InstantRequest.TakeOut(head.InstanceId, zone));
             }

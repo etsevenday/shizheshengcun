@@ -18,7 +18,11 @@ public static class Ui
     /// <summary>进度条宽度百分比（0—100），按该项上限换算。</summary>
     public static string Bar(double v, double max) => (max <= 0 ? 0 : Math.Clamp(v / max * 100, 0, 100)).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
 
-    public static string Kg(int grams) => (grams / 1000.0).ToString("0.0");
+    /// <summary>重量数值（不含单位）：公斤固定两位小数（S06 §7 Q13），调用方在后面写“公斤”。先合计克数再调用。</summary>
+    public static string Kg(long grams) => Fmt.KgValue(grams);
+
+    /// <summary>带单位的重量：“0.05公斤”。</summary>
+    public static string KgText(long grams) => Fmt.Kg(grams);
 
     public static string Fresh(int minutesLeft)
     {
@@ -44,7 +48,7 @@ public static class Ui
             if (u.IsAntiviral) return "治愈感染";
             if (u.Health > 0) return $"健康+{T(u.Health)}";
         }
-        return $"{Kg(cfg.WeightGrams * i.Count)}公斤";
+        return KgText(e.ItemGrams(s, i));
     }
 
     /// <summary>状态说明：数值全部读配置（v0.6 改值后不再写死）。</summary>

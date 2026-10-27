@@ -396,7 +396,7 @@ public class DropResolverTests : TestBase
         Assert.That(down.Label, Does.StartWith("取下金属锅"));
         var up = R(s, DropSource.Parse(FirePotKey(s))!, "zone:carried");
         Assert.That(up.Ok, Is.True, up.Reason);
-        Assert.That(up.Label, Does.Contain("含内容2.0公斤"));
+        Assert.That(up.Label, Does.Contain("含内容2.00公斤"));
         E.DebugGive(s, "stone", 57);
         Assert.That(R(s, DropSource.Parse(FirePotKey(s))!, "zone:carried").Reason, Does.Contain("整次拒绝"));
         E.DoInstant(s, down.Instant!);

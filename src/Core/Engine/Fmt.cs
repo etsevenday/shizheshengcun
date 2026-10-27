@@ -45,5 +45,15 @@ namespace Survival.Core.Engine
 
         /// <summary>百分比，至多两位小数：“51.92%”。</summary>
         public static string Pct(double p) => T(p * 100) + "%";
+
+        /// <summary>
+        /// 重量数值（S06 §7 Q13）：公斤固定两位小数，10g→“0.01”、1000g→“1.00”、0g→“0.00”。调用方先按精确克数合计再调用；
+        /// 中点远离零舍入、不随区域设置变化（开发假设 A10）。只做显示，负重阈值比较一律用克。
+        /// </summary>
+        public static string KgValue(long grams) =>
+            Math.Round(grams / 1000m, 2, MidpointRounding.AwayFromZero).ToString("0.00", CultureInfo.InvariantCulture);
+
+        /// <summary>带单位的重量：“0.05公斤”“12.34公斤”。</summary>
+        public static string Kg(long grams) => KgValue(grams) + "公斤";
     }
 }

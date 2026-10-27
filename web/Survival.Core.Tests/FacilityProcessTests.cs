@@ -110,7 +110,7 @@ public class FacilityProcessTests : TestBase
         var r = E.DoInstant(s, InstantRequest.TakeOut(pot.InstanceId, "carried"));
         Assert.That(r.Ok, Is.False);
         Assert.That(r.Reason, Does.Contain("30公斤"));
-        Assert.That(r.Reason, Does.Contain("2.6公斤"));
+        Assert.That(r.Reason, Does.Contain("2.60公斤"));
         Assert.That(pot.Owner, Is.EqualTo(Fire), "owner 不变");
         Assert.That(s.Locations["camp"].Facility.Processes.Select(p => (p.ProcessId, p.HeatDoneMinutes, p.ReservedWaterMl)), Is.EqualTo(heat), "进度与预留不变");
         Assert.That(E.CarriedGrams(s), Is.EqualTo(27500));

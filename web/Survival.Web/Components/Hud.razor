@@ -65,7 +65,7 @@
 
     <div class="panel weight">
         <div class="eyebrow">携带重量 · @(grams > cfg.Carry.SoftGrams ? "超重" : "轻装")</div>
-        <strong class="@(grams > cfg.Carry.SoftGrams ? "warn-text" : "")">@Ui.Kg(grams) 公斤</strong>
+        <strong class="@(grams > cfg.Carry.SoftGrams ? "warn-text" : "")">@Ui.KgText(grams)</strong>
         <div class="tiny muted">超过@(cfg.Carry.SoftGrams / 1000)公斤减速 · 上限@(cfg.Carry.HardGrams / 1000)公斤</div>
     </div>
 
