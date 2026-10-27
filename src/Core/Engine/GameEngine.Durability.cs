@@ -7,12 +7,11 @@ using Survival.Core.State;
 namespace Survival.Core.Engine
 {
     /// <summary>
-    /// 实例随机耐久、磨损与工具维护（v0.6 §05）：武器、石刀、斧、锅、打火器的最大耐久在实例生成时按 0.1 精度均匀抽一次并保存；
+    /// 实例随机耐久、磨损与工具维护（v0.6 §05）：武器、石刀、斧、打火器的最大耐久（v1.0 P02：金属锅没有耐久）在实例生成时按 0.1 精度均匀抽一次并保存；
     /// 新制品当前=最大，拾荒箱子产出另乘 0.6—1.0 成色；动作开始前须有足够耐久支付本次磨损；维护恢复自身最大耐久的 20%，不重抽。
     /// </summary>
     public sealed partial class GameEngine
     {
-        public double PotWear => Config.Durability.PotWear;
         public double LighterWear => Config.Durability.LighterWear;
         public double GatherWear => Config.ToolEffects.SuccessfulActionWear;
 

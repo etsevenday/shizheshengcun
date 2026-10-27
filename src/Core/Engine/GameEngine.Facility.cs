@@ -42,8 +42,12 @@ namespace Survival.Core.Engine
         /// <summary>该物品放进火堆加工位能否直烤（白名单内且有对应进程）。</summary>
         public bool CanRoast(string itemId) => Config.Fire.DirectFoodInputIds.Contains(itemId) && FireFoodProcess(itemId) != null;
 
-        /// <summary>该物品放进锅里能否水煮。</summary>
+        /// <summary>该物品放进锅里能否水煮（生块根、生肉水煮，烤肉复煮）。</summary>
         public bool CanBoilInPot(ItemInstance pot, string itemId) => PotConfig(pot).StoredFoodIds.Contains(itemId) && PotFoodProcess(itemId) != null;
+
+        /// <summary>该物品能否从外部放进锅：可加工的食材，或只存放的食物（v1.0 Q2：水煮肉放回锅里只存放、不再加工）。</summary>
+        public bool CanStoreInPot(ItemInstance pot, string itemId) =>
+            CanBoilInPot(pot, itemId) || (PotConfig(pot).StoreOnlyFoodIds.Contains(itemId) && PotConfig(pot).StoredFoodIds.Contains(itemId));
 
         // ───────────────────────── 查询 ─────────────────────────
 
@@ -157,7 +161,6 @@ namespace Survival.Core.Engine
                 var bp = BatchProcess(liquid);
                 if (bp == null) return $"{ItemName(liquid)}{PotUnits(s, inst.InstanceId) * PotConfig(inst).UnitMl}毫升";
                 if (loc == null) return $"{ItemName(liquid)}：放进燃烧的火堆后自动{bp.Name}";
-                if (!HasWear(inst, PotWear)) return $"维护不足：锅耐久{DurabilityText(inst)}，不能{bp.Name}";
                 return Heat(bp.Name, loc);
             }
             if (inst.InFacility)
@@ -174,12 +177,11 @@ namespace Survival.Core.Engine
                 if (pot == null) return "";
                 if (IsSpoiled(s, inst)) return "已腐败，不再加工";
                 var fp = PotFoodProcess(inst.ItemId);
-                if (fp == null) return "已煮熟，留在锅里";
+                if (fp == null) return PotConfig(pot).StoreOnlyFoodIds.Contains(inst.ItemId) ? "只存放，不再加工" : "已煮熟，留在锅里";
                 var liquid = PotLiquid(s, pot.InstanceId);
                 if (liquid == null) return "缺水，未加工";
                 var loc = PotFireLocation(pot);
                 if (loc == null) return "锅不在火堆上，未加工";
-                if (!HasWear(pot, PotWear)) return $"维护不足：锅耐久{DurabilityText(pot)}，未加工";
                 if (fp.RequiredLiquid != null && liquid != fp.RequiredLiquid)
                     return BatchProcess(liquid) != null ? "等待水净化" : "缺水，未加工";
                 if (p == null || p.ReservedWaterMl < fp.WaterCostMl) return $"待{ItemName(fp.RequiredLiquid ?? liquid)}{fp.WaterCostMl}毫升";
@@ -395,7 +397,7 @@ namespace Survival.Core.Engine
             }
             if (food.ReservedBy != null) { reason = "该物品已被预留"; return 0; }
             if (IsLocked(s, food)) { reason = "行动占用：该物品正被当前行动使用"; return 0; }
-            if (!CanBoilInPot(pot, food.ItemId))
+            if (!CanStoreInPot(pot, food.ItemId))
             {
                 reason = fc.Kind == "food" ? $"{fc.Name}没有可用的处理配方，不能放进锅里加工" : $"{fc.Name}不能放进锅里";
                 return 0;
@@ -583,13 +585,12 @@ namespace Survival.Core.Engine
             var t = FindItem(s, p.TargetInstanceId);
             if (t == null) return false;
             var owner = FireOwner(loc);
-            // v0.6 §05：锅耐久不足一次磨损时目标不受热，显示“维护不足”，不预扣原料
-            if (cfg.IsPotBatch) return t.Owner == owner && PotLiquid(s, t.InstanceId) == cfg.InputId && HasWear(t, PotWear);
+            // v1.0 P02：锅没有耐久，不再因耐久不足拒绝受热
+            if (cfg.IsPotBatch) return t.Owner == owner && PotLiquid(s, t.InstanceId) == cfg.InputId;
             if (t.ItemId != cfg.InputId || IsSpoiled(s, t)) return false;
             if (!cfg.InPot) return t.Owner == owner;
             var pot = p.PotInstanceId.HasValue ? FindItem(s, p.PotInstanceId.Value) : null;
             if (pot == null || pot.Owner != owner || t.Owner != ItemInstance.ContainerOwner(pot.InstanceId)) return false;
-            if (!HasWear(pot, PotWear)) return false;
             return cfg.RequiredLiquid == null
                    || (PotLiquid(s, pot.InstanceId) == cfg.RequiredLiquid && p.ReservedWaterMl >= cfg.WaterCostMl);
         }
@@ -636,18 +637,19 @@ namespace Survival.Core.Engine
                 }
                 Normalize(s, ItemInstance.ContainerOwner(t.InstanceId));
                 s.Progress.Flags.Add("boiled");
-                var worn = Wear(t, PotWear);
-                text = $"{LocName(loc)}火堆：{ItemName(t.ItemId)}#{t.InstanceId}里的{ItemName(cfg.InputId)}{ml}毫升已烧成{ItemName(cfg.OutputId)}，留在原锅（{worn}）。";
+                text = $"{LocName(loc)}火堆：{ItemName(t.ItemId)}#{t.InstanceId}里的{ItemName(cfg.InputId)}{ml}毫升已烧成{ItemName(cfg.OutputId)}，留在原锅。";
             }
             else
             {
                 var input = ItemName(t.ItemId);
                 t.ItemId = cfg.OutputId;
                 var outCfg = _items[cfg.OutputId];
-                t.ExpiresAt = outCfg.ShelfLifeMinutes.HasValue ? s.GameMinute + outCfg.ShelfLifeMinutes.Value : (int?)null;
+                // 烤肉复煮继承原烤肉的绝对到期时刻，不刷新保质（v1.0 T03，S11 §8）；其他熟成从完成时刻起算
+                if (!cfg.KeepInputExpiry)
+                    t.ExpiresAt = outCfg.ShelfLifeMinutes.HasValue ? s.GameMinute + outCfg.ShelfLifeMinutes.Value : (int?)null;
                 var pot = p.PotInstanceId.HasValue ? FindItem(s, p.PotInstanceId.Value) : null;
                 if (cfg.WaterCostMl > 0 && pot != null) ConsumeWater(s, pot, cfg.RequiredLiquid!, cfg.WaterCostMl);
-                var potWorn = pot != null ? "；" + Wear(pot, PotWear) : "";
+                var potWorn = cfg.KeepInputExpiry ? "；保质期不变" : "";
                 // 第2日目标“完成一次块根烹饪”与七日检查“完成食物加工”都来自 v0.2（当时只有块根）：只认块根烤制/水煮，烤肉煮肉不算（试玩修复 L7）
                 if (cfg.InputId == RootItemId) s.Progress.Flags.Add("cooked");
                 text = pot != null

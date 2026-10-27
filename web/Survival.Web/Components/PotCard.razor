@@ -82,7 +82,7 @@
         @if (wsel) { <CardActions /> }
     }
 
-    <div class="pc-foods" data-drop="@($"potfood:{Pot.InstanceId}")" data-drop-level="hot" title="@($"食材区：生块根或生肉拖到这里放进锅，{e.PotFoodHint(s, Pot)}")">
+    <div class="pc-foods" data-drop="@($"potfood:{Pot.InstanceId}")" data-drop-level="hot" title="@($"食材区：生块根、生肉、烤肉拖到这里放进锅（水煮肉只存放），{e.PotFoodHint(s, Pot)}")">
         @foreach (var f in foods)
         {
             var fid = f.InstanceId;
@@ -109,7 +109,7 @@
         }
         @if (foods.Count < c.FoodSlots)
         {
-            <div class="pc-slot">食材 @foods.Count/@c.FoodSlots · 空位可拖入生块根或生肉</div>
+            <div class="pc-slot">食材 @foods.Count/@c.FoodSlots · 空位可拖入生块根、生肉、烤肉或水煮肉</div>
         }
     </div>
 </div>

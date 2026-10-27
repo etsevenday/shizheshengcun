@@ -482,7 +482,6 @@ namespace Survival.Core.Config
         public string MigrateExisting { get; set; } = "";
         public RepairConfig Repair { get; set; } = new RepairConfig();
 
-        [JsonIgnore] public double PotWear => Tools.TryGetValue("pot", out var t) ? t.WearPerSuccessfulThermalProcess : 0;
         [JsonIgnore] public double LighterWear => Tools.TryGetValue("lighter", out var t) ? t.WearPerSuccessfulIgnition : 0;
     }
 
