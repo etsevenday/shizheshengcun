@@ -14,6 +14,7 @@ description: 接入《适者生存》新策划案的标准开发流程：git 拉
 - 开发阶段**不推送**，推送 = 发布到 https://etsevenday.github.io/shizheshengcun/ ，只在用户明确说"推送/上线"后做。
 - main 现在有两个人推：策划（经 Codex）推 `doc/策划案/`，本方推代码与文档。每次推送前先 `git pull --rebase --autostash origin main`，不强推（`--force` 禁用）。
 - 全程中文；用户熟 Unity/C#、不熟网页，解释网页问题多用 Unity 类比。
+- 由本机定时任务 `/git-watch` 无人值守触发时，凡本技能里"问用户 / 等用户点头 / 用户拍板"的步骤按 `git-watch` 技能第 4 节改：写进待确认问题文档、跑完就推、开 issue 提醒策划。
 
 ## 1 从 git 拉取策划包
 
