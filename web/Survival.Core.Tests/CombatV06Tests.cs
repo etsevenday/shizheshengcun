@@ -16,18 +16,18 @@ public class CombatV06Tests : BattleTestBase
     [Test]
     public void R614_NormalScheduleBudget_AndLowMoraleCounterExample()
     {
-        // 正常日程：移动3h、探索2h、搜集4h、制造3h → 工作体力合计22；休息2h回12；遮蔽睡眠5小时由0回20
+        // 正常日程：移动3h、探索2h、搜集4h、制造3h → 工作体力合计17.6（S12 §8 非战斗负率×0.8，原22）；休息2h回12；遮蔽睡眠5小时由0回20
         var work = -(Hours("travel", r => r.Energy, 3) + Hours("explore", r => r.Energy, 2) + Hours("gather", r => r.Energy, 4) + Hours("craft", r => r.Energy, 3));
-        Assert.That(work, Is.EqualTo(22).Within(1e-9), "全天工作体力合计消耗22.00");
+        Assert.That(work, Is.EqualTo(17.6).Within(1e-9), "全天工作体力合计消耗17.60");
         Assert.That(Hours("rest", r => r.Energy, 2), Is.EqualTo(12).Within(1e-9), "两小时休息提供12");
         var water = -(Hours("travel", r => r.Hydration, 3) + Hours("explore", r => r.Hydration, 2) + Hours("gather", r => r.Hydration, 4)
                       + Hours("craft", r => r.Hydration, 3) + Hours("rest", r => r.Hydration, 2) + Hours("wait", r => r.Hydration, 2)
                       + Hours("sleep_sheltered", r => r.Hydration, 8));
-        Assert.That(water, Is.EqualTo(87.75).Within(1e-9), "自然耗水87.75");
+        Assert.That(water, Is.EqualTo(70.2).Within(1e-9), "自然耗水70.2（原87.75×0.8）");
         var food = -(Hours("travel", r => r.Satiety, 3) + Hours("explore", r => r.Satiety, 2) + Hours("gather", r => r.Satiety, 4)
                      + Hours("craft", r => r.Satiety, 3) + Hours("rest", r => r.Satiety, 2) + Hours("wait", r => r.Satiety, 2)
                      + Hours("sleep_sheltered", r => r.Satiety, 8));
-        Assert.That(food, Is.EqualTo(39.375).Within(1e-9), "饱食自然消耗39.375");
+        Assert.That(food, Is.EqualTo(31.5).Within(1e-9), "饱食自然消耗31.5（原39.375×0.8）");
 
         // 引擎实跑：遮蔽睡眠5小时由0回20；露天睡眠约6小时40分由0回20
         var s = New();
@@ -44,15 +44,16 @@ public class CombatV06Tests : BattleTestBase
         Steps(t, 1);
         Assert.That(t.Stats.Energy, Is.EqualTo(20).Within(1e-9), "露天睡眠6小时40分回满");
 
-        // 反例：低精神时休息30分钟只补1.5（正常补3）；白昼轻装搜集30分钟耗1.2
+        // 反例：低精神时休息30分钟只补1.5（正常补3）；白昼轻装搜集30分钟耗0.96
         var u = New();
         SetStats(u, 20, 80, 80, 10, 90, 10);
         Start(u, ActionRequest.Rest(30));
         Run(u);
         Assert.That(u.Stats.Energy, Is.EqualTo(11.5).Within(1e-9), "精神<20时正E恢复×0.5");
-        Assert.That(-Hours("gather", r => r.Energy, 0.5), Is.EqualTo(1.2).Within(1e-9));
-        // 反例日程：重活10小时、休息1小时、露天睡眠8小时、精神低于20 → 日内体力必然归零（只看睡后体力会误判）
-        var heavy = -(Hours("gather", r => r.Energy, 8) + Hours("travel", r => r.Energy, 2));
+        Assert.That(-Hours("gather", r => r.Energy, 0.5), Is.EqualTo(0.96).Within(1e-9));
+        // 反例日程：重活12小时、休息1小时、露天睡眠8小时、精神低于20 → 日内体力必然归零（只看睡后体力会误判）。
+        // 新费率下原“重活10小时”不再归零（18+3−17.92>0），反例改为搜集10h+移动2h（M57）
+        var heavy = -(Hours("gather", r => r.Energy, 10) + Hours("travel", r => r.Energy, 2));
         var restLow = Hours("rest", r => r.Energy, 1) * Cfg.FacilityEffects.LowMoraleEnergyRecoveryFactor;
         Assert.That(Cfg.InitialStats.Energy + restLow - heavy, Is.LessThan(0), "不满足安全消耗预算：日内归零");
         var v = New();
@@ -60,7 +61,7 @@ public class CombatV06Tests : BattleTestBase
         E.DebugTeleport(v, "field");
         var minE = v.Stats.Energy;
         var zeroTicks = 0;
-        for (var i = 0; i < 16 && !v.Progress.Dead; i++)
+        for (var i = 0; i < 24 && !v.Progress.Dead; i++)
         {
             v.Resources["roots"].Available = 6;
             v.Resources["roots"].Discovered = true;
@@ -95,13 +96,13 @@ public class CombatV06Tests : BattleTestBase
         Assert.That(E.DoInstant(s, InstantRequest.Reorder("camp", E.OrderedCards(s, "camp")[0], 3)).Ok, Is.True);
         Assert.That(s.Stats.Energy, Is.EqualTo(e0), "拖卡、拾取、放下、排序不扣隐藏体力");
         Assert.That(s.GameMinute, Is.EqualTo(m0));
-        // 点火5分钟按 craft 速率 E−0.1
+        // 点火5分钟按 craft 速率 E−0.08（R01 §4 新 craft 率）
         E.DebugGive(s, "wood", 1);
         E.DoInstant(s, InstantRequest.AddFuel());
         var lighter = First(s, "lighter");
         Start(s, ActionRequest.Ignite(lighter.InstanceId));
         Run(s);
-        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(0.1).Within(1e-9), "点火5分钟按craft速率−0.1");
+        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(0.08).Within(1e-9), "点火5分钟按craft速率−0.08");
         // 食用5分钟按 wait：额外E=0
         var e1 = s.Stats.Energy;
         Start(s, ActionRequest.UseItem("canned_food"));
@@ -293,7 +294,7 @@ public class CombatV06Tests : BattleTestBase
         Assert.That(t.Body.VirusLoad, Is.EqualTo(0));
     }
 
-    /// <summary>免疫每小时变化（v0.6 §08）：良好状态+0.5、遮蔽睡眠+2、低值惩罚可叠加、已感染−0.5；按段首状态、限制0—100。</summary>
+    /// <summary>免疫每小时变化（R04 §2 Q7 新表）：良好状态+1、遮蔽睡眠+4、低值惩罚可叠加、已感染不再扣免疫；按段首状态、限制0—100。</summary>
     [Test]
     public void Immunity_RatesFromTickStart()
     {
@@ -301,21 +302,21 @@ public class CombatV06Tests : BattleTestBase
         s.Body.Immunity = 50;
         Start(s, ActionRequest.Wait(60));
         Run(s);
-        Assert.That(s.Body.Immunity, Is.EqualTo(50.5).Within(1e-9), "饱食水分清醒≥50、健康≥50%、精神≥40：+0.5/h");
+        Assert.That(s.Body.Immunity, Is.EqualTo(51).Within(1e-9), "饱食水分清醒≥50、健康≥50%、精神≥40：+1/h");
         var t = New();
         t.Locations["camp"].Facility.ShelterBuilt = true;
         t.Body.Immunity = 50;
         Start(t, ActionRequest.Sleep(120));
         Steps(t, 12);
-        Assert.That(t.Body.Immunity, Is.EqualTo(52.5).Within(1e-9), "遮蔽睡眠+2，加良好+0.5");
+        Assert.That(t.Body.Immunity, Is.EqualTo(55).Within(1e-9), "遮蔽睡眠+4，加良好+1");
         var u = New();
         SetStats(u, 4, 10, 10, 18, 10, 10);
         u.Body.Immunity = 50;
         Infect(u, 20, 50);
         Start(u, ActionRequest.Wait(30));
         Steps(u, 1);
-        var expect = 50 + (-2 - 3 - 2 - 2 - 1 - 0.5) * 5 / 60.0;
-        Assert.That(u.Body.Immunity, Is.EqualTo(expect).Within(1e-9), "N/W/S/H/M低与已感染惩罚叠加");
+        var expect = 50 + (-2 - 3 - 2 - 2 - 1) * 5 / 60.0;
+        Assert.That(u.Body.Immunity, Is.EqualTo(expect).Within(1e-9), "N/W/S/H/M低惩罚叠加，已感染不再另扣（Q7）");
         u.Body.Immunity = 0.01;
         Steps(u, 1);
         Assert.That(u.Body.Immunity, Is.EqualTo(0), "下限0");
@@ -374,12 +375,12 @@ public class CombatV06Tests : BattleTestBase
         }
     }
 
-    /// <summary>R610 I85 持续12小时：V20 自然治愈（12.0小时），V80 降到62仍感染（验证记录“病毒边界推演”）。</summary>
+    /// <summary>R610/R04-A04 I80 持续12小时：V20 自然治愈（12.0小时），V80 降到62仍感染（Q7 门槛 85→80）。</summary>
     [Test]
     public void R610_HighImmunity12h_CuresLowLoadOnly()
     {
         var s = New();
-        Infect(s, 20, 85);
+        Infect(s, 20, 80);
         CareFor(s, 11);
         Assert.That(s.Body.Infected, Is.True, "11小时未满");
         CareFor(s, 1);
@@ -387,36 +388,36 @@ public class CombatV06Tests : BattleTestBase
         Assert.That(s.Body.VirusLoad, Is.EqualTo(0));
         Assert.That(s.Log.Any(l => l.Text.Contains("高免疫自然治愈")), Is.True, "日志记为高免疫治愈");
         var t = New();
-        Infect(t, 80, 85);
+        Infect(t, 80, 80);
         CareFor(t, 12);
         Assert.That(t.Body.Infected, Is.True);
         Assert.That(t.Body.VirusLoad, Is.EqualTo(62).Within(1e-9), "12小时后仅降至62");
         Assert.That(t.Body.HighImmunityMinutes, Is.EqualTo(720), "达到12小时但V还高则继续维持");
     }
 
-    /// <summary>R611 免疫跌破85或再次暴露：连续计时重置，不能拼凑12小时。</summary>
+    /// <summary>R611 免疫跌破80或再次暴露：连续计时重置，不能拼凑12小时（Q7 门槛80）。</summary>
     [Test]
     public void R611_TimerResetsOnDipOrReexposure()
     {
         var s = New();
-        Infect(s, 5, 85);
+        Infect(s, 5, 80);
         CareFor(s, 6);
         Assert.That(s.Body.HighImmunityMinutes, Is.EqualTo(360));
-        s.Body.Immunity = 84.9;
+        s.Body.Immunity = 79; // 健康奖励+1/h，1小时内各段段首都<80
         CareFor(s, 1);
-        Assert.That(s.Body.HighImmunityMinutes, Is.EqualTo(0), "跌到85以下归0");
-        s.Body.Immunity = 85;
+        Assert.That(s.Body.HighImmunityMinutes, Is.EqualTo(0), "跌到80以下归0");
+        s.Body.Immunity = 80;
         CareFor(s, 6);
         Assert.That(s.Body.Infected, Is.True, "6+6小时拼不出连续12小时");
-        // 刚跨线：段首<85、段末≥85 不白拿一段
+        // 刚跨线：段首<80、段末≥80 不白拿一段
         var t = New();
-        Infect(t, 5, 84.99);
+        Infect(t, 5, 79.99);
         t.Locations["camp"].Facility.ShelterBuilt = true;
         SetStats(t, 20, 80, 80, 18, 90, 60);
         Start(t, ActionRequest.Sleep(120));
         Steps(t, 1);
-        Assert.That(t.Body.Immunity, Is.GreaterThanOrEqualTo(85));
-        Assert.That(t.Body.HighImmunityMinutes, Is.EqualTo(0), "段首未达85不计");
+        Assert.That(t.Body.Immunity, Is.GreaterThanOrEqualTo(80));
+        Assert.That(t.Body.HighImmunityMinutes, Is.EqualTo(0), "段首未达80不计");
     }
 
     /// <summary>R612 病毒100/健康0与同段治愈：终局优先；尸变或死亡后不能用药补救。</summary>
@@ -630,7 +631,7 @@ public class CombatV06Tests : BattleTestBase
         Assert.That(s.Encounter, Is.Null);
         Run(s);
         Assert.That(s.GameMinute, Is.EqualTo(At(2, 9, 40)));
-        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(1.6 * 10 / 60).Within(1e-9), "按 travel 消耗");
+        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(1.28 * 10 / 60).Within(1e-9), "按 travel 消耗（非战斗新率−1.28/h）");
         Assert.That(E.LocalCount(s, "village"), Is.EqualTo(2), "绕行不杀死世界敌人");
         Assert.That(E.EncounterChance(s, "village", ActionType.Explore), Is.EqualTo(0), "保护期内");
         Start(s, ActionRequest.Explore());

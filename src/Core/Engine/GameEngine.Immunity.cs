@@ -141,7 +141,7 @@ namespace Survival.Core.Engine
             Emit(s, GameEventKind.Death, $"病毒程度达到{Fmt.T(Inf.ZombificationAtLoad)}，你在{LocName(loc)}尸变了。本局结束。");
         }
 
-        /// <summary>高免疫连续时间与自然治愈：段首与段末免疫都≥85 才 +5 分钟；≥720 且 V≤10 才治愈。</summary>
+        /// <summary>高免疫连续时间与自然治愈：段首与段末免疫都≥门槛（config naturalCure，Q7 起 80）才 +5 分钟；≥720 且 V≤10 才治愈。</summary>
         private void TickNaturalCure(GameState s, TickStart start)
         {
             var b = s.Body;

@@ -102,11 +102,13 @@ public class V10WorldTests : BattleTestBase
             s.Body.AntibioticUntil = antibiotic ? s.GameMinute + 60 : null;
             return E.CurrentBodyRates(s).virus;
         }
-        Assert.That(Rate(70), Is.EqualTo(0.5 + 0.1 / 3).Within(1e-9), "I70 已感染净+0.533333/h");
-        Assert.That(Rate(40), Is.EqualTo(2.1).Within(1e-9), "I40 净+2.1/h");
-        Assert.That(Rate(0), Is.EqualTo(4.1).Within(1e-9), "I0 净+4.1/h");
-        Assert.That(Rate(85), Is.EqualTo(-1.5).Within(1e-9), "I85 以上 B0、净−1.5/h");
-        Assert.That(Rate(40, antibiotic: true), Is.EqualTo(2 * 0.5 + 0.1).Within(1e-9), "抗生素只减缓 R，不关闭 B");
+        // R04 §7.2/§8、R04-A13（Q7）：B(I)=0.05×clamp((80−I)/40,0,1)
+        Assert.That(Rate(70), Is.EqualTo(0.5125).Within(1e-9), "I70 已感染净+0.5125/h");
+        Assert.That(Rate(40), Is.EqualTo(2.05).Within(1e-9), "I40 净+2.05/h");
+        Assert.That(Rate(0), Is.EqualTo(4.05).Within(1e-9), "I0 净+4.05/h");
+        Assert.That(Rate(80), Is.EqualTo(-1.5).Within(1e-9), "I80 以上 B0、净−1.5/h");
+        Assert.That(Rate(79.99), Is.EqualTo(0.5 + 0.05 * 0.01 / 40).Within(1e-9), "I79.99 仍在 [70,80) 档 +0.5，B 尚未完全压制");
+        Assert.That(Rate(40, antibiotic: true), Is.EqualTo(2 * 0.5 + 0.05).Within(1e-9), "抗生素只减缓 R，不关闭 B");
         // 旧档：不启用
         s.Story.BaobaoPresent = false;
         Assert.That(Rate(40), Is.EqualTo(2).Within(1e-9));
@@ -131,15 +133,15 @@ public class V10WorldTests : BattleTestBase
         s.Body.VirusLoad = 5;
         s.Body.Immunity = 95;
         SetStats(s, 20, 80, 80, 18, 90, 60);
-        // 高免疫：B=0，连续 720 分钟且 V≤10 自然治愈；之后 I 仍≥85 不会无条件再种入
+        // 高免疫：B=0，连续 720 分钟且 V≤10 自然治愈；之后 I 仍≥80 不会无条件再种入
         AdvanceTo(s, s.GameMinute + 750);
         Assert.That(s.Body.Infected, Is.False, "高免疫自然治愈");
         Assert.That(s.Story.BaobaoPresent, Is.True, "治愈不移除饱饱");
-        if (s.Body.Immunity >= 85)
+        if (s.Body.Immunity >= 80)
         {
             Start(s, ActionRequest.Wait(30));
             Run(s);
-            Assert.That(s.Body.Infected, Is.False, "I≥85 时饱饱输入被压制");
+            Assert.That(s.Body.Infected, Is.False, "I≥80 时饱饱输入被压制");
         }
         // 免疫跌下来：重新积累，再次进入感染（最低1）
         s.Body.Immunity = 60;
@@ -149,7 +151,7 @@ public class V10WorldTests : BattleTestBase
         Assert.That(s.Body.VirusLoad, Is.EqualTo(1).Within(1e-12));
         Run(s);
 
-        // 特效药清除当前感染，饱饱仍在；之后 I<85 仍会再积累
+        // 特效药清除当前感染，饱饱仍在；之后 I<80 仍会再积累
         E.DebugGive(s, "antiviral_cure", 1);
         Start(s, ActionRequest.UseItem("antiviral_cure"));
         Assert.That(s.Body.Infected, Is.False);

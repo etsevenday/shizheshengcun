@@ -19,7 +19,7 @@ public class AlertDeathSaveTests : TestBase
         var main = s.Main!;
         Assert.That(main.PauseReason, Is.EqualTo(PauseReason.StatAlert));
         Assert.That(main.PauseStat, Is.EqualTo(StatId.Hydration));
-        Assert.That(s.GameMinute, Is.EqualTo(480 + 15), "21→20.625→20.25→19.875 第三段后暂停");
+        Assert.That(s.GameMinute, Is.EqualTo(480 + 20), "S12 §8 探索水分−3.6/h：21→20.7→20.4→20.1→19.8 第四段后暂停");
         var progress = main.WorkDone;
 
         Assert.That(E.Start(s, ActionRequest.Gather("roots")).Ok, Is.False, "暂停中不开放普通行动");
@@ -29,7 +29,7 @@ public class AlertDeathSaveTests : TestBase
         Assert.That(s.Sub, Is.Null);
         Assert.That(s.Main!.Status, Is.EqualTo(ActionStatus.Paused), "补给后保持暂停");
         Assert.That(s.Main.WorkDone, Is.EqualTo(progress));
-        Assert.That(s.GameMinute, Is.EqualTo(480 + 20), "子行动耗时5分钟");
+        Assert.That(s.GameMinute, Is.EqualTo(480 + 25), "子行动耗时5分钟");
 
         E.Resume(s);
         Assert.That(Run(s, autoResume: false), Is.EqualTo(SegmentStatus.Completed));

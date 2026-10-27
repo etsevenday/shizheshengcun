@@ -71,21 +71,74 @@ public class V10ConfigTests : TestBase
         Assert.That(Cfg.Durability.Tools.ContainsKey("pot"), Is.False);
     }
 
+    /// <summary>S12 §2/§8 Q7：非战斗日常小时率新表逐格（N/W/E/S/M），战斗 battleTime 率保持原值（R01 §7、R03 §7.2）。</summary>
+    [Test]
+    public void Q7_HourlyRates_MatchS12_2()
+    {
+        var expect = new Dictionary<string, double[]>
+        {
+            ["travel"] = new[] { -1.5, -3.6, -1.28, -4, -0.4 },
+            ["explore"] = new[] { -1.5, -3.6, -1.6, -4, -0.4 },
+            ["gather"] = new[] { -1.5, -3.6, -1.92, -4, -0.4 },
+            ["clear"] = new[] { -1.5, -3.6, -1.92, -4, -0.4 },
+            ["craft"] = new[] { -1.2, -3, -0.96, -4, -0.4 },
+            ["wait"] = new[] { -1.2, -2.4, 0, -4, -0.4 },
+            ["rest"] = new[] { -1.2, -2.4, 6, -4, 0 },
+            ["sleep_sheltered"] = new[] { -1.2, -2.4, 4, 12, 1 },
+            ["sleep_exposed"] = new[] { -1.2, -2.4, 3, 6, -0.4 },
+        };
+        Assert.That(Cfg.HourlyRates.Keys, Is.EquivalentTo(expect.Keys));
+        foreach (var (k, v) in expect)
+        {
+            var r = Cfg.HourlyRates[k];
+            Assert.That(new[] { r.Satiety, r.Hydration, r.Energy, r.Wakefulness, r.Morale }, Is.EqualTo(v), k);
+        }
+        var b = Cfg.BattleTime.HourlyRates;
+        Assert.That(new[] { b.Satiety, b.Hydration, b.Energy, b.Wakefulness, b.Morale }, Is.EqualTo(new[] { -1.875, -4.5, 0, -5, -0.5 }), "战斗小时率不随 Q7 缩放");
+        // 腹泻额外水耗、归零损血、正向恢复加成不缩放
+        Assert.That(Cfg.ItemActions.DiarrheaExtraHydrationPerHour, Is.EqualTo(-3));
+        Assert.That((Cfg.HealthRules.ZeroSatietyPerHour, Cfg.HealthRules.ZeroHydrationPerHour, Cfg.HealthRules.ZeroWakefulnessPerHour, Cfg.HealthRules.ZeroEnergyWhileWorkingPerHour),
+            Is.EqualTo((-0.4, -1.6, -0.4, -0.2)));
+        Assert.That(Cfg.HealthRules.ShelteredRestRecoveryPerHour, Is.EqualTo(0.2));
+        Assert.That(Cfg.FacilityEffects.BedExtraSleepEnergyPerHour, Is.EqualTo(1));
+        Assert.That(Cfg.FacilityEffects.ShelteredCampRestMoralePerHour, Is.EqualTo(2));
+    }
+
+    /// <summary>R04 §2/§3/§8 Q7：免疫正恢复×2、感染自身惩罚取消、进展档与自然治愈门槛 80，其他惩罚不变。</summary>
+    [Test]
+    public void Q7_ImmunityInfection_MatchR04_8()
+    {
+        var i = Cfg.Immunity;
+        Assert.That((i.HealthyBonusPerHour, i.ShelteredSleepPerHour, i.ExposedSleepPerHour, i.ShelteredRestPerHour, i.ExposedRestPerHour), Is.EqualTo((1.0, 4.0, 2.0, 2.0, 1.0)));
+        var p = i.PenaltiesPerHour;
+        Assert.That((p.SatietyBelow20, p.HydrationBelow20, p.WakefulnessBelow20, p.HealthBelow5, p.MoraleBelow20, p.Diarrhea, p.VirusInfected),
+            Is.EqualTo((-2.0, -3.0, -2.0, -2.0, -1.0, -1.0, 0.0)));
+        var bands = Cfg.Infection.ProgressPerHour.Select(x => (x.ImmunityRange[0], x.ImmunityRange[1], x.IncludeUpper, x.Rate)).ToArray();
+        Assert.That(bands, Is.EqualTo(new[] { (0.0, 40.0, false, 4.0), (40.0, 70.0, false, 2.0), (70.0, 80.0, false, 0.5), (80.0, 100.0, true, -1.5) }));
+        var nc = Cfg.Infection.NaturalCure;
+        Assert.That((nc.ConsecutiveImmunityAtLeast, nc.Minutes, nc.LoadAtMost), Is.EqualTo((80.0, 720, 10.0)));
+        // 完全压制、负增长、计时三处统一 80
+        Assert.That(Cfg.Infection.BaobaoInput.FullSuppressImmunityAtLeast, Is.EqualTo(nc.ConsecutiveImmunityAtLeast));
+        Assert.That(Cfg.Infection.ProgressPerHour.Single(x => x.Rate < 0).ImmunityRange[0], Is.EqualTo(nc.ConsecutiveImmunityAtLeast));
+        Assert.That(E.ExposureChance(80), Is.EqualTo(0.16).Within(1e-12), "I80 咬伤暴露概率仍为16%");
+    }
+
     [Test]
     public void BaobaoInput_MatchR04_7_2()
     {
         var b = Cfg.Infection.BaobaoInput;
-        Assert.That(b.MaxPerHour, Is.EqualTo(0.10));
-        Assert.That(b.FullSuppressImmunityAtLeast, Is.EqualTo(85));
-        Assert.That(b.LinearBandWidth, Is.EqualTo(45));
+        // R04 §8 Q7 温和初值：Bmax 0.10→0.05、完全压制 85→80、带宽 45→40
+        Assert.That(b.MaxPerHour, Is.EqualTo(0.05));
+        Assert.That(b.FullSuppressImmunityAtLeast, Is.EqualTo(80));
+        Assert.That(b.LinearBandWidth, Is.EqualTo(40));
         Assert.That(b.FirstInfectionMinLoad, Is.EqualTo(1));
         Assert.That(b.NewGamePresent, Is.True);
         Assert.That(b.LegacySavePresent, Is.False);
-        // R04 §7.2 算例：I70 时 B≈0.033333/h；I40 及以下 0.10；I85 以上 0
-        Assert.That(b.Rate(70), Is.EqualTo(0.1 / 3).Within(1e-9));
-        Assert.That(b.Rate(40), Is.EqualTo(0.10).Within(1e-12));
-        Assert.That(b.Rate(0), Is.EqualTo(0.10).Within(1e-12));
-        Assert.That(b.Rate(85), Is.EqualTo(0));
+        // R04 §7.2 算例：I70 时 B=0.0125/h；I40 及以下 0.05；I80 以上 0
+        Assert.That(b.Rate(70), Is.EqualTo(0.0125).Within(1e-12));
+        Assert.That(b.Rate(40), Is.EqualTo(0.05).Within(1e-12));
+        Assert.That(b.Rate(0), Is.EqualTo(0.05).Within(1e-12));
+        Assert.That(b.Rate(80), Is.EqualTo(0));
         Assert.That(b.Rate(100), Is.EqualTo(0));
     }
 

@@ -77,7 +77,7 @@ public static class Ui
         var p = i.PenaltiesPerHour;
         return $"0—{T(i.Max)}，生存管理的结果，不随打怪升级。饱食、水分、清醒≥{T(hc.SatietyAtLeast)}、健康≥上限{Pct(hc.HealthRatioAtLeast)}、精神≥{T(hc.MoraleAtLeast)}同时满足时每小时{SignedT(i.HealthyBonusPerHour)}；" +
                $"遮蔽/露天睡眠{SignedT(i.ShelteredSleepPerHour)}/{SignedT(i.ExposedSleepPerHour)}，遮蔽/露天休息{SignedT(i.ShelteredRestPerHour)}/{SignedT(i.ExposedRestPerHour)}；" +
-               $"饱食<20 {T(p.SatietyBelow20)}、水分<20 {T(p.HydrationBelow20)}、清醒<20 {T(p.WakefulnessBelow20)}、健康<5 {T(p.HealthBelow5)}、精神<20 {T(p.MoraleBelow20)}、腹泻{T(p.Diarrhea)}、已感染{T(p.VirusInfected)}。" +
+               $"饱食<20 {T(p.SatietyBelow20)}、水分<20 {T(p.HydrationBelow20)}、清醒<20 {T(p.WakefulnessBelow20)}、健康<5 {T(p.HealthBelow5)}、精神<20 {T(p.MoraleBelow20)}、腹泻{T(p.Diarrhea)}" + (p.VirusInfected != 0 ? $"、已感染{T(p.VirusInfected)}" : "；已感染本身不再扣免疫") + "。" +
                "免疫越低，被丧尸咬伤越容易感染，病毒也涨得越快。离线不恢复。";
     }
 

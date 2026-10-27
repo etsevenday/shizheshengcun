@@ -152,14 +152,16 @@ public class ConfigTests : TestBase
     public void RatesAndRules_MatchV06()
     {
         var v = V06();
+        // 系统策划总册 v1.0 Q7（S12 §8）：非战斗负小时率=v0.6×0.8，0 与正向恢复不变；具体新表另由 V10ConfigTests 逐格核对
+        static double Q7(double v06) => v06 < 0 ? v06 * 0.8 : v06;
         foreach (var p in ((JObject)v["survivalRates"]!).Properties())
         {
             var r = Cfg.HourlyRates[p.Name];
-            Assert.That(r.Satiety, Is.EqualTo((double)p.Value["satiety"]!), p.Name);
-            Assert.That(r.Hydration, Is.EqualTo((double)p.Value["hydration"]!), p.Name);
-            Assert.That(r.Energy, Is.EqualTo((double)p.Value["energy"]!), p.Name);
-            Assert.That(r.Wakefulness, Is.EqualTo((double)p.Value["wakefulness"]!), p.Name);
-            Assert.That(r.Morale, Is.EqualTo((double)p.Value["morale"]!), p.Name);
+            Assert.That(r.Satiety, Is.EqualTo(Q7((double)p.Value["satiety"]!)).Within(1e-12), p.Name);
+            Assert.That(r.Hydration, Is.EqualTo(Q7((double)p.Value["hydration"]!)).Within(1e-12), p.Name);
+            Assert.That(r.Energy, Is.EqualTo(Q7((double)p.Value["energy"]!)).Within(1e-12), p.Name);
+            Assert.That(r.Wakefulness, Is.EqualTo(Q7((double)p.Value["wakefulness"]!)).Within(1e-12), p.Name);
+            Assert.That(r.Morale, Is.EqualTo(Q7((double)p.Value["morale"]!)).Within(1e-12), p.Name);
         }
         Assert.That(Cfg.HourlyRates.Keys, Is.EquivalentTo(((JObject)v["survivalRates"]!).Properties().Select(p => p.Name)));
         var rec = v["survivalRecovery"]!;
@@ -419,6 +421,12 @@ public class ConfigTests : TestBase
         ((JObject)d["durability"]!["tools"]!).Remove("pot");
         ((JObject)d["panic"]!).Remove("surpriseBonus");
         ((JObject)d["xp"]!).Remove("groupAttackXpIsSingleCommand");
+        // Q7（R04 §8）：免疫正恢复×2、取消已感染免疫惩罚、高免疫门槛 85→80；新值由 V10ConfigTests.Q7_ImmunityInfection_MatchR04_8 核对
+        foreach (var k in new[] { "healthyBonusPerHour", "shelteredSleepPerHour", "exposedSleepPerHour", "shelteredRestPerHour", "exposedRestPerHour" })
+            ((JObject)d["immunity"]!).Remove(k);
+        ((JObject)d["immunity"]!["penaltiesPerHour"]!).Remove("virusInfected");
+        ((JObject)d["infection"]!).Remove("progressPerHour");
+        ((JObject)d["infection"]!["naturalCure"]!).Remove("consecutiveImmunityAtLeast");
         foreach (var (ds, cs) in CopiedSections)
             AssertSubset(d[ds]!, mapped[cs]!, $"v0.6.{ds}");
         // 丧尸掉落表（v0.6 沿用 v0.5）

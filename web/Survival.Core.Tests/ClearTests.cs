@@ -101,7 +101,7 @@ public class ClearTests : TestBase
         Assert.That(Woods(s).ClearCharges, Is.EqualTo(3), "次数不退");
         Assert.That(Woods(s).ClearRefillProgress, Is.EqualTo(5), "恢复累计5分钟");
         Assert.That(s.GameMinute, Is.EqualTo(485));
-        Assert.That(s.Stats.Energy, Is.EqualTo(before - 2.4 * 5 / 60).Within(1e-9), "身体消耗保留（清理−2.4/小时）");
+        Assert.That(s.Stats.Energy, Is.EqualTo(before - 1.92 * 5 / 60).Within(1e-9), "身体消耗保留（S12 §8 清理−1.92/小时）");
         Assert.That(Woods(s).Progress, Is.EqualTo(0), "没有探索进度");
     }
 
@@ -239,8 +239,8 @@ public class ClearTests : TestBase
         Start(s, ActionRequest.Clear());
         Run(s);
         Assert.That(s.GameMinute - At(1, 22, 0), Is.EqualTo(30));
-        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(1.2).Within(1e-9), "按实际30分钟×2.4/小时");
-        Assert.That(w0 - s.Stats.Hydration, Is.EqualTo(2.25).Within(1e-9));
+        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(0.96).Within(1e-9), "按实际30分钟×1.92/小时（S12 §8）");
+        Assert.That(w0 - s.Stats.Hydration, Is.EqualTo(1.8).Within(1e-9));
 
         var t = AtWoods();
         SetStats(t, 20, 80, 80, 3.9, 90, 60);

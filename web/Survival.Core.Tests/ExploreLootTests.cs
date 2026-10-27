@@ -28,7 +28,7 @@ public class ExploreLootTests : TestBase
         Assert.That(s.Locations["field"].Progress, Is.EqualTo(25));
         Assert.That(s.UnlockedEdges, Does.Contain("field__stream"));
         Assert.That(GroundCount(s, "field"), Is.EqualTo(0));
-        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(1).Within(1e-9), "完整扣耗（探索30分钟−2/小时）");
+        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(0.8).Within(1e-9), "完整扣耗（探索30分钟−1.6/小时，S12 §8）");
         Assert.That(s.Log.Last(l => l.Kind == "ActionCompleted").Text, Does.Contain("本次未找到可用物资"));
     }
 
@@ -200,8 +200,8 @@ public class ExploreLootTests : TestBase
     public void E13_LastSegmentAlertAndComplete_OneResultNoPausedAction()
     {
         var s = At("woods");
-        // 30分钟探索每段失水0.375，第6段（最后一段）恰好越过20
-        SetStats(s, 100, 80, 22.1, 90, 90, 60);
+        // 30分钟探索每段失水0.3（S12 §8），第6段（最后一段）恰好越过20
+        SetStats(s, 100, 80, 21.7, 90, 90, 60);
         Start(s, ActionRequest.Explore());
         ForceLoot(s, "fiber");
         var st = Run(s, autoResume: false);

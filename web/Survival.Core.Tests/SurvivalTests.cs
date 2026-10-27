@@ -13,10 +13,11 @@ public class SurvivalTests : TestBase
         Start(s, ActionRequest.Wait(60));
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
         Assert.That(s.GameMinute, Is.EqualTo(540));
-        Assert.That(s.Stats.Satiety, Is.EqualTo(80 - 1.5).Within(1e-9));
-        Assert.That(s.Stats.Hydration, Is.EqualTo(80 - 3).Within(1e-9));
-        Assert.That(s.Stats.Wakefulness, Is.EqualTo(90 - 5).Within(1e-9));
-        Assert.That(s.Stats.Morale, Is.EqualTo(60 - 0.5).Within(1e-9));
+        // S12-A01（Q7 非战斗负率×0.8）：N−1.2/W−2.4/S−4/M−0.4，E/H不变
+        Assert.That(s.Stats.Satiety, Is.EqualTo(80 - 1.2).Within(1e-9));
+        Assert.That(s.Stats.Hydration, Is.EqualTo(80 - 2.4).Within(1e-9));
+        Assert.That(s.Stats.Wakefulness, Is.EqualTo(90 - 4).Within(1e-9));
+        Assert.That(s.Stats.Morale, Is.EqualTo(60 - 0.4).Within(1e-9));
         Assert.That(s.Stats.Energy, Is.EqualTo(18), "v0.6 初始体力18，等待体力变化0");
         Assert.That(s.Stats.Health, Is.EqualTo(20), "v0.6 初始健康20");
     }
@@ -46,7 +47,7 @@ public class SurvivalTests : TestBase
         Start(s, ActionRequest.UseItem("clean_water"));
         Assert.That(s.Stats.Hydration, Is.EqualTo(80), "即时生效");
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(s.Stats.Hydration, Is.EqualTo(79.75).Within(1e-9));
+        Assert.That(s.Stats.Hydration, Is.EqualTo(79.80).Within(1e-9), "S12-A03：W50喝净水先+30再按新wait率推进5分钟");
         Assert.That(s.GameMinute, Is.EqualTo(485));
         Assert.That(Count(s, "clean_water"), Is.EqualTo(1));
     }
@@ -61,9 +62,10 @@ public class SurvivalTests : TestBase
         Run(s);
         Assert.That(s.Stats.Energy, Is.EqualTo(16).Within(1e-9), "休息+6/小时");
         Assert.That(s.Stats.Health, Is.EqualTo(10.2).Within(1e-9), "遮蔽健康恢复+0.2/小时");
-        Assert.That(s.Stats.Wakefulness, Is.EqualTo(75).Within(1e-9));
-        Assert.That(s.Stats.Satiety, Is.EqualTo(78.5).Within(1e-9));
-        Assert.That(s.Stats.Hydration, Is.EqualTo(77).Within(1e-9));
+        // S13-A01：S76、N78.8/W77.6（Q7 新 rest 负率）
+        Assert.That(s.Stats.Wakefulness, Is.EqualTo(76).Within(1e-9));
+        Assert.That(s.Stats.Satiety, Is.EqualTo(78.8).Within(1e-9));
+        Assert.That(s.Stats.Hydration, Is.EqualTo(77.6).Within(1e-9));
         Assert.That(s.Stats.Morale, Is.EqualTo(62).Within(1e-9), "营地遮蔽棚休息每小时+2精神");
     }
 
@@ -98,7 +100,7 @@ public class SurvivalTests : TestBase
         Run(s);
         Assert.That(s.GameMinute, Is.EqualTo(At(1, 22, 40)), "20分钟移动在倍率2.0下需40分钟");
         Assert.That(s.CurrentLocation, Is.EqualTo("stream"));
-        Assert.That(s.Stats.Energy, Is.EqualTo(3 - 1.6 * 40 / 60.0).Within(1e-9), "按实际40分钟计算消耗（v0.6 §12）");
+        Assert.That(s.Stats.Energy, Is.EqualTo(3 - 1.28 * 40 / 60.0).Within(1e-9), "按实际40分钟计算消耗（S12 §8 移动−1.28/h）");
     }
 
     [Test]
@@ -140,13 +142,13 @@ public class SurvivalTests : TestBase
         var w0 = s.Stats.Hydration;
         Start(s, ActionRequest.Wait(60));
         Run(s);
-        Assert.That(w0 - s.Stats.Hydration, Is.EqualTo(6).Within(1e-9), "普通3加腹泻3");
+        Assert.That(w0 - s.Stats.Hydration, Is.EqualTo(5.4).Within(1e-9), "普通2.4加腹泻3（腹泻额外水耗不缩放）");
 
         s.GameMinute = 480 + 720;
         var w1 = s.Stats.Hydration;
         Start(s, ActionRequest.Wait(60));
         Run(s);
-        Assert.That(w1 - s.Stats.Hydration, Is.EqualTo(3).Within(1e-9), "12小时后消退");
+        Assert.That(w1 - s.Stats.Hydration, Is.EqualTo(2.4).Within(1e-9), "12小时后消退");
     }
 
     [Test]

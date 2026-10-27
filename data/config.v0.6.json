@@ -1,6 +1,6 @@
 {
   "version": "0.6",
-  "sourceVersion": "0.2 + 交互与地图扩展 0.3 + 卡片统一与设施烹饪 0.4 + 人物与战斗 v0.6（基线 v0.5） + 系统策划总册 v1.0 答复（Q1–Q5、T01–T09、N01/R07）",
+  "sourceVersion": "0.2 + 交互与地图扩展 0.3 + 卡片统一与设施烹饪 0.4 + 人物与战斗 v0.6（基线 v0.5） + 系统策划总册 v1.0 答复（Q1–Q5、T01–T09、N01/R07） + Q6–Q13 答复（Q7 温和初值）",
   "date": "2026-10-27",
   "time": {
     "tickMinutes": 5,
@@ -2067,67 +2067,67 @@
   },
   "hourlyRates": {
     "travel": {
-      "satiety": -1.875,
-      "hydration": -4.5,
-      "energy": -1.6,
-      "wakefulness": -5,
-      "morale": -0.5
+      "satiety": -1.5,
+      "hydration": -3.6,
+      "energy": -1.28,
+      "wakefulness": -4,
+      "morale": -0.4
     },
     "explore": {
-      "satiety": -1.875,
-      "hydration": -4.5,
-      "energy": -2,
-      "wakefulness": -5,
-      "morale": -0.5
+      "satiety": -1.5,
+      "hydration": -3.6,
+      "energy": -1.6,
+      "wakefulness": -4,
+      "morale": -0.4
     },
     "gather": {
-      "satiety": -1.875,
-      "hydration": -4.5,
-      "energy": -2.4,
-      "wakefulness": -5,
-      "morale": -0.5
+      "satiety": -1.5,
+      "hydration": -3.6,
+      "energy": -1.92,
+      "wakefulness": -4,
+      "morale": -0.4
     },
     "clear": {
-      "satiety": -1.875,
-      "hydration": -4.5,
-      "energy": -2.4,
-      "wakefulness": -5,
-      "morale": -0.5
+      "satiety": -1.5,
+      "hydration": -3.6,
+      "energy": -1.92,
+      "wakefulness": -4,
+      "morale": -0.4
     },
     "craft": {
-      "satiety": -1.5,
-      "hydration": -3.75,
-      "energy": -1.2,
-      "wakefulness": -5,
-      "morale": -0.5
+      "satiety": -1.2,
+      "hydration": -3,
+      "energy": -0.96,
+      "wakefulness": -4,
+      "morale": -0.4
     },
     "wait": {
-      "satiety": -1.5,
-      "hydration": -3,
+      "satiety": -1.2,
+      "hydration": -2.4,
       "energy": 0,
-      "wakefulness": -5,
-      "morale": -0.5
+      "wakefulness": -4,
+      "morale": -0.4
     },
     "rest": {
-      "satiety": -1.5,
-      "hydration": -3,
+      "satiety": -1.2,
+      "hydration": -2.4,
       "energy": 6,
-      "wakefulness": -5,
+      "wakefulness": -4,
       "morale": 0
     },
     "sleep_sheltered": {
-      "satiety": -1.5,
-      "hydration": -3,
+      "satiety": -1.2,
+      "hydration": -2.4,
       "energy": 4,
       "wakefulness": 12,
       "morale": 1
     },
     "sleep_exposed": {
-      "satiety": -1.5,
-      "hydration": -3,
+      "satiety": -1.2,
+      "hydration": -2.4,
       "energy": 3,
       "wakefulness": 6,
-      "morale": -0.5
+      "morale": -0.4
     }
   },
   "healthRules": {
@@ -3118,11 +3118,11 @@
       "healthRatioAtLeast": 0.5,
       "moraleAtLeast": 40
     },
-    "healthyBonusPerHour": 0.5,
-    "shelteredSleepPerHour": 2,
-    "exposedSleepPerHour": 1,
-    "shelteredRestPerHour": 1,
-    "exposedRestPerHour": 0.5,
+    "healthyBonusPerHour": 1,
+    "shelteredSleepPerHour": 4,
+    "exposedSleepPerHour": 2,
+    "shelteredRestPerHour": 2,
+    "exposedRestPerHour": 1,
     "penaltiesPerHour": {
       "satietyBelow20": -2,
       "hydrationBelow20": -3,
@@ -3130,7 +3130,7 @@
       "healthBelow5": -2,
       "moraleBelow20": -1,
       "diarrhea": -1,
-      "virusInfected": -0.5
+      "virusInfected": 0
     },
     "updateSource": "world_tick_start_state",
     "offlineProgress": false
@@ -3170,13 +3170,13 @@
       {
         "immunityRange": [
           70,
-          85
+          80
         ],
         "rate": 0.5
       },
       {
         "immunityRange": [
-          85,
+          80,
           100
         ],
         "includeUpper": true,
@@ -3186,7 +3186,7 @@
     "naturalLoadMinimumWhileInfected": 1,
     "zombificationAtLoad": 100,
     "naturalCure": {
-      "consecutiveImmunityAtLeast": 85,
+      "consecutiveImmunityAtLeast": 80,
       "minutes": 720,
       "loadAtMost": 10,
       "resetWhenBelowThresholdOrExposedAgain": true
@@ -3230,9 +3230,9 @@
     ],
     "highImmunityTimerUsesBothTickEndpoints": true,
     "baobaoInput": {
-      "maxPerHour": 0.1,
-      "fullSuppressImmunityAtLeast": 85,
-      "linearBandWidth": 45,
+      "maxPerHour": 0.05,
+      "fullSuppressImmunityAtLeast": 80,
+      "linearBandWidth": 40,
       "firstInfectionMinLoad": 1,
       "newGamePresent": true,
       "legacySavePresent": false,

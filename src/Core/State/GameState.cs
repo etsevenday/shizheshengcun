@@ -188,7 +188,7 @@ namespace Survival.Core.State
         public double Immunity { get; set; } = 70;
         public bool Infected { get; set; }
         public double VirusLoad { get; set; }
-        /// <summary>连续高免疫时间（分钟）：段首与段末免疫都≥85 才 +5。</summary>
+        /// <summary>连续高免疫时间（分钟）：段首与段末免疫都≥门槛（config naturalCure.consecutiveImmunityAtLeast）才 +5。</summary>
         public int HighImmunityMinutes { get; set; }
         /// <summary>绷带病毒减量的冷却结束时刻（独立于回血冷却）。</summary>
         public int BandageVirusReadyAt { get; set; }
