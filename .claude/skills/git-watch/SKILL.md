@@ -1,6 +1,6 @@
 ---
 name: git-watch
-description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的新提交，按改动内容匹配现有流程（/design-dev 新策划包、策划答复待确认问题、旧策划案修订、纯文档整理），自动跑完流程并推送上线；需要策划确认的写进待确认问题文档一起推，提交说明标明在哪，再在 GitHub 开 issue @dotpad1994 提醒。本机定时任务每 10 分钟触发，用户说"/git-watch""检查一下 git 有没有新提交"时也用。
+description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的新提交，按改动内容匹配现有流程（/design-dev 新策划包、策划答复待确认问题、旧策划案修订、纯文档整理），自动跑完流程并推送上线；需要策划确认的写进待确认问题文档一起推，提交说明标明在哪，再在 GitHub 开 issue @dotpad1994 提醒。本机定时任务每 30 分钟触发；用户想手动触发时可在侧栏 Scheduled 点"Run now"，或说"/git-watch""检查一下 git 有没有新提交"。
 ---
 
 # git 新提交自动处理
@@ -19,7 +19,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 ## 1 加锁与检测（没事就安静退出）
 
 1. 读状态文件。`runningSince` 非空且距今不到 6 小时 → 上一轮还在跑，直接结束，不通知。否则写入当前时间作为 `runningSince`。**本轮无论怎么结束，最后都要把 `runningSince` 清回 null**（第 6 节）。
-2. `git fetch origin`。列出新提交：`git log --format='%h %an %ad %s' HEAD..origin/main`，只看作者不是 `etsevenday` 的；再排除 `lastSeen` 及更早的。没有 → 清锁，结束，不通知、不汇报。
+2. `git fetch origin`。列出新提交：`git log --format='%h %an %ad %s' <lastSeen>..origin/main`，只看作者不是 `etsevenday` 的。**不要用 `HEAD..origin/main`**：别的会话可能已把策划提交拉进本地 HEAD，那样会漏掉。没有 → 清锁，结束，不通知、不汇报。
 3. 本地有正在进行的工作就不碰：`git log origin/main..HEAD` 有未推送提交，或 `git status --porcelain` 里有已跟踪文件被改（未跟踪文件如 `doc/策划案.7z` 不算）→ 说明别的会话正在干活。`PushNotification`："git 有策划新提交 <短号>，但本地有未推送/未提交的工作，没自动处理"，清锁，结束（`lastSeen` 不更新，下轮再试）。
 
 ## 2 分类（按提交改到的文件判断，可以同时命中几类）
