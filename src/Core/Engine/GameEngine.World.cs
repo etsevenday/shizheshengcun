@@ -81,6 +81,7 @@ namespace Survival.Core.Engine
         {
             var en = Config.Encounters;
             if (!Config.CombatEnabled) return 0;
+            if (TutorialGateOpen(s)) return 0;   // 首战未胜利：不随机接敌（R05 §4）
             if (Clock.Day(s.GameMinute) < en.NoRandomBeforeDay) return 0;
             if (en.SafeLocations.Contains(loc)) return 0;
             if (s.GameMinute < s.EncounterGraceUntil) return 0;
@@ -96,6 +97,7 @@ namespace Survival.Core.Engine
         public string EncounterNote(GameState s, string loc, ActionType type)
         {
             var en = Config.Encounters;
+            if (TutorialGateOpen(s)) return "首战（农野荒地的游荡尸）胜利前不会随机遇敌";
             if (Clock.Day(s.GameMinute) < en.NoRandomBeforeDay) return $"第{en.NoRandomBeforeDay}日起完成后才可能遇到本地敌人（今天不会）";
             if (en.SafeLocations.Contains(loc)) return "营地是安全区，不会遇敌";
             if (s.GameMinute < s.EncounterGraceUntil) return $"随机接敌保护期还剩{Clock.Duration(s.EncounterGraceUntil - s.GameMinute)}";
@@ -176,6 +178,8 @@ namespace Survival.Core.Engine
             foreach (var w in s.WorldEnemies.OrderBy(w => w.Id).ToList())
             {
                 if (w.Engaged || Hidden(s, w)) continue;
+                // 首战保留游荡尸胜利前不巡游（R05 §5），也不抽巡游随机数
+                if (IsTutorialEnemy(s, w.Id)) continue;
                 if (s.Rng.NextDouble() >= WE.PatrolMoveProbabilityPerEnemy) continue;
                 var targets = PhysicalNeighbors(w.LocationId)
                     .Where(l => WE.PatrolEntersCamp || !Config.Encounters.SafeLocations.Contains(l))

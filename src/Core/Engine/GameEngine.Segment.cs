@@ -320,6 +320,8 @@ namespace Survival.Core.Engine
                     var t = $"到达{LocName(a.TargetId)}。";
                     if (revealed.Count > 0) t += $"发现{string.Join("、", revealed.Select(id => _res[id].Name))}。";
                     Emit(s, GameEventKind.ActionCompleted, t, null, revealed);
+                    // 首次 camp→field：落点并提交到达后，由保留游荡尸触发一次剧情首战（S15 §5、S02 §7）
+                    TryStartTutorialBattle(s, a);
                     return true;
                 }
                 case ActionType.Explore:

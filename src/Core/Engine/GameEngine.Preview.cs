@@ -144,6 +144,7 @@ namespace Survival.Core.Engine
             ActionType.Clear => "清理",
             ActionType.Bypass => "绕行",
             ActionType.Butcher => "处理尸体",
+            ActionType.Fuse => "吞噬融合",
             _ => "点燃火堆",
         };
 
@@ -165,6 +166,9 @@ namespace Survival.Core.Engine
                     var edge = Config.Edges.FirstOrDefault(e => e.Touches(s.CurrentLocation) && e.Other(s.CurrentLocation) == r.TargetId);
                     if (edge != null) p.BaseMinutes = edge.BaseMinutes;
                     p.ConfirmText = "确认移动";
+                    var tb = Config.Story.TutorialBattle;
+                    if (TutorialGateOpen(s) && !s.Story.TutorialTriggered && s.CurrentLocation == tb.FromLocationId && r.TargetId == tb.LocationId)
+                        p.Warnings.Add($"第一次到达{LocName(tb.LocationId)}会遇到一只{_enemies[tb.EnemyId].Name}（首战，到达后直接进入战斗）");
                     break;
                 }
                 case ActionType.Explore:
@@ -317,6 +321,19 @@ namespace Survival.Core.Engine
                     // 临近上限的溢出（原在网页 ItemDetail 里算，v0.7 起放进内核，卡下按钮与右栏共用）
                     var cfg = plan?.UseItem != null ? _items[plan.UseItem.ItemId] : _items.TryGetValue(r.TargetId, out var tc) ? tc : null;
                     if (cfg?.Use != null) p.Overflow = OverflowLines(s.Stats, cfg.Use, UseHealthAmount(s, cfg.Use));
+                    break;
+                }
+                case ActionType.Fuse:
+                {
+                    var fc = Config.ActiveSubstance.Fusion;
+                    p.BaseMinutes = fc.Minutes;
+                    p.ConfirmText = $"吞噬融合·{fc.Minutes}分钟";
+                    if (plan?.UseItem != null)
+                    {
+                        p.Notes.Add($"饱饱吞噬融合1份{SubstanceLabel(plan.UseItem)}#{plan.UseItem.InstanceId}（{WherePath(s, plan.UseItem)}）");
+                        p.Notes.Add($"结果：{FusionOutcomeText(s, plan.UseItem)}");
+                    }
+                    p.Notes.Add($"确认后立即消耗并结算，之后固定{fc.Minutes}分钟按等待消耗、额外体力0，期间不能取消或做别的事");
                     break;
                 }
                 case ActionType.Ignite:

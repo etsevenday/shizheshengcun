@@ -120,6 +120,8 @@ namespace Survival.Core.Engine
             if (w == null) return "这个敌人已不在";
             if (w.LocationId != s.CurrentLocation || Hidden(s, w)) return "只能接近当前地点可见的敌人";
             if (w.Engaged) return "这个敌人正在交战";
+            // 首战胜利前只开放保留的游荡尸（S15 §5：第一次接敌必须由首战承接）
+            if (TutorialGateOpen(s) && s.Story.TutorialEnemyId != w.Id) return "先完成农野荒地的首战（游荡尸），再接近其他敌人";
             return null;
         }
 
@@ -129,7 +131,10 @@ namespace Survival.Core.Engine
             var why = CanApproach(s, worldEnemyId);
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, requestId);
-            StartBattle(s, new List<WorldEnemy> { FindWorldEnemy(s, worldEnemyId)! }, false, "主动接近", FearApproach);
+            // 首战撤退后再接近同一保留游荡尸：仍是教学首战（胜利才发教学物质），情境按主动接近
+            var tutorial = IsTutorialEnemy(s, worldEnemyId);
+            StartBattle(s, new List<WorldEnemy> { FindWorldEnemy(s, worldEnemyId)! }, false, tutorial ? "首战" : "主动接近", FearApproach, tutorial);
+            if (tutorial) s.Story.TutorialBattleId = s.Battle?.BattleId;
             return ActionResult.Success();
         }
 
@@ -1198,6 +1203,7 @@ namespace Survival.Core.Engine
                     CreateItems(s, l.ItemId!, l.Count, loc, false, l.Source);
                     lines.Add($"{ItemName(l.ItemId!)}+{l.Count}");
                 }
+                if (GrantTutorialReward(s, b) is string reward) lines.Add(reward);
             }
             var loss = Math.Min(Config.Panic.MoraleLossMax, b.Panic / Config.Panic.MoraleLossDivisor);
             if (loss > 0) s.Stats.Add(StatId.Morale, -loss);
@@ -1229,6 +1235,8 @@ namespace Survival.Core.Engine
         {
             var b = s.Battle!;
             if (!b.ReinforcementRequested || b.ReinforcementUsed) return;
+            // 剧情首战只有保留游荡尸，不调用噪声增援（S15 §5）
+            if (b.Tutorial && Config.Story.TutorialBattle.NoReinforcement) { b.ReinforcementUsed = true; BattleLog(s, "首战不会引来其他丧尸。"); return; }
             if (b.Alive.Count() >= Config.Scope.MaxEnemies) return;
             b.ReinforcementUsed = true;
             var cand = s.WorldEnemies.Where(w => w.LocationId == b.LocationId && !w.Engaged && !Hidden(s, w)

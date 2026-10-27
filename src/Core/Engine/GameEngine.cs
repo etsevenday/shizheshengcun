@@ -492,6 +492,9 @@ namespace Survival.Core.Engine
                     if (plan.IsSub) return "暂停中只能补给、休息或点火维护";
                     return ValidateButcher(s, r, plan);
 
+                case ActionType.Fuse:
+                    return ValidateFuse(s, r, plan, allowGround);
+
                 case ActionType.Wait:
                     if (plan.IsSub) return "暂停中只能补给、休息或点火维护";
                     if (!Config.Actions.WaitMinutes.Contains(r.Minutes)) return "等待时长无效";
@@ -761,6 +764,9 @@ namespace Survival.Core.Engine
                     Emit(s, GameEventKind.ActionCompleted, $"{p.Label}：{string.Join("，", parts)}。");
                     break;
                 }
+                case ActionType.Fuse:
+                    StartFuse(s, a, p);
+                    break;
                 case ActionType.Ignite:
                 {
                     var fac = s.Locations[s.CurrentLocation].Facility;
@@ -778,7 +784,7 @@ namespace Survival.Core.Engine
             }
 
             if (p.IsSub) s.Sub = a; else s.Main = a;
-            if (p.Type != ActionType.Use)
+            if (p.Type != ActionType.Use && p.Type != ActionType.Fuse)
                 Emit(s, GameEventKind.ActionStarted, $"开始{a.Label}。");
             return ActionResult.Success(a.ActionId);
         }
@@ -789,7 +795,7 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
             var a = s.Sub ?? s.Main;
             if (a == null) return ActionResult.Fail("没有进行中的行动");
-            if (a.Type == ActionType.Use || a.Type == ActionType.Ignite) return ActionResult.Fail("该行动不可中途取消");
+            if (a.Type == ActionType.Use || a.Type == ActionType.Ignite || a.Type == ActionType.Fuse) return ActionResult.Fail("该行动不可中途取消");
 
             Release(s, a, s.CurrentLocation);
             if (a.IsSub) s.Sub = null; else s.Main = null;
