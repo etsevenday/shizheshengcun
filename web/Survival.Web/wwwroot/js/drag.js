@@ -27,10 +27,11 @@ window.survivalDrag = (function () {
     document.documentElement.addEventListener('mouseleave', function () { if (st && st.started) cancel(); });
   }
 
-  // 数量框、危险弹窗、菜单打开时背后的卡片不接收拖拽；战斗与敌踪选择中锁定一切拖拽（人物与战斗 v0.5 §16）
+  // 数量框、危险弹窗、菜单打开时背后的卡片不接收拖拽；战斗与敌踪选择中锁定一切拖拽（人物与战斗 v0.5 §16）；
+  // 人物对话读完前锁定一切拖拽（Q10、S07 §7）
   function blocked() {
     return document.body.classList.contains('modal-open') ||
-      !!document.querySelector('.modal-back, .end-back, .overlay, .battle-overlay') ||
+      !!document.querySelector('.modal-back, .end-back, .overlay, .battle-overlay, .dlg-layer') ||
       !!(window.FeedbackWidget && FeedbackWidget.isOpen());
   }
 

@@ -70,6 +70,12 @@ window.survival = {
     if (window.__survivalOutside) document.removeEventListener('pointerdown', window.__survivalOutside, true);
     window.__survivalOutside = null;
   },
+  // 人物对话出现（S07 §7）：取消未提交的拖拽（不执行落点），收起背后按钮的键盘焦点
+  dialogueOnset: function () {
+    try { if (window.survivalDrag) survivalDrag.cancel(); } catch (e) { }
+    var a = document.activeElement;
+    if (a && a.blur && !(a.closest && a.closest('.dlg-layer'))) a.blur();
+  },
   // 元素在视口中的位置 [left, top, right, bottom]（状态图标浮层锚点）；找不到返回空数组
   rectById: function (id) {
     var el = document.getElementById(id);
@@ -112,6 +118,16 @@ window.survival = {
     if (window.__survivalKeys) document.removeEventListener('keydown', window.__survivalKeys);
     window.__survivalKeys = function (ev) {
       var t = ev.target && ev.target.tagName;
+      // 人物对话读完锁（Q10、S14 §10.1）：数字跳数量框、回车执行操作条、M/C/R/L、Esc 一律不转给游戏；
+      // 对话层自己的按钮仍可用键盘聚焦后按回车/空格（浏览器原生行为），F 反馈不属于游戏操作
+      if (document.querySelector('.dlg-layer')) {
+        if (ev.key === 'Escape') { ev.preventDefault(); return; }
+        if ((ev.key === 'f' || ev.key === 'F') && t !== 'INPUT' && t !== 'TEXTAREA' && !ev.ctrlKey && !ev.altKey && !ev.metaKey && !(window.FeedbackWidget && FeedbackWidget.isOpen())) {
+          ev.preventDefault();
+          dotnet.invokeMethodAsync('OnKey', 'F');
+        }
+        return;
+      }
       var inBar = ev.target && ev.target.closest && ev.target.closest('.tbar');
       // 选中物品卡后直接按数字：跳进卡片下方操作条的数量框（v0.7 起操作条在卡下文档流里）
       if (/^[0-9]$/.test(ev.key) && t !== 'INPUT' && t !== 'TEXTAREA' && !ev.ctrlKey && !ev.altKey && !ev.metaKey) {
@@ -145,3 +161,41 @@ window.survival = {
     document.addEventListener('keydown', window.__survivalKeys);
   }
 };
+
+// 人物对话层的对话流（S14 §10.3）：停在底部时新句追加后跟随到最新；向上回看时保持阅读位置，亮出不含句数的“回到最新”。
+// 只改滚动位置，不推进对白；“回到最新”按钮所在的容器类名由这里切换（Blazor 不管理这个类）。
+window.survivalDlg = (function () {
+  function latestHost(el) {
+    var layer = el && el.closest ? el.closest('.dlg-layer') : null;
+    return layer ? layer.querySelector('.dlg-latest-host') : null;
+  }
+  function showLatest(el, on) {
+    var h = latestHost(el);
+    if (h) h.classList.toggle('show', !!on);
+  }
+  function bottom(el) { return el.scrollTop + el.clientHeight >= el.scrollHeight - 8; }
+  return {
+    sync: function (el, count) {
+      if (!el) return;
+      if (!el.__dlg) {
+        el.__dlg = { count: 0, atBottom: true };
+        el.addEventListener('scroll', function () {
+          el.__dlg.atBottom = bottom(el);
+          if (el.__dlg.atBottom) showLatest(el, false);
+        });
+      }
+      var st = el.__dlg;
+      // 新的一次对话（句数变少）或首次出现：从底部开始
+      if (count <= st.count || st.count === 0) { st.count = count; el.scrollTop = el.scrollHeight; st.atBottom = true; showLatest(el, false); return; }
+      st.count = count;
+      if (st.atBottom) { el.scrollTop = el.scrollHeight; showLatest(el, false); }
+      else showLatest(el, true);
+    },
+    latest: function (el) {
+      if (!el) return;
+      el.scrollTop = el.scrollHeight;
+      if (el.__dlg) el.__dlg.atBottom = true;
+      showLatest(el, false);
+    }
+  };
+})();

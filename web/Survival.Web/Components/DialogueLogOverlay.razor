@@ -1,0 +1,63 @@
+@inherits GameComponent
+
+@* 顶栏“对话记录”（S14 §10.4）：与行动日志分开。按每次对话分组，左侧列表显示游戏内日期时间、地点与对话对象，
+   右侧按原顺序显示发言者、正文与左右归属（正文 22px，可滚动）。只收录已实际展示并结束的对话，不暴露未触发或未展示的后续句。
+   只允许浏览、切换记录和关闭：关闭或 Esc 只退出回看，不重播剧情、不推进时间、不发奖励。对话进行中与战斗中入口禁用。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var hist = e.DialogueHistory(s);
+    var pick = hist.FirstOrDefault(h => h.Id == G.DialogLogPick) ?? hist.LastOrDefault();
+}
+
+<div class="sub-panel dlog-panel" role="dialog" aria-label="对话记录">
+    <div class="sub-head">
+        <div><h2>对话记录</h2><span class="sub">@(hist.Count == 0 ? "本局还没有已结束的对话" : $"共{hist.Count}次对话 · 只读回看，不消耗时间")</span></div>
+        <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
+    </div>
+    @if (hist.Count == 0)
+    {
+        <div class="sub-body">
+            <div class="empty-zone dlog-empty"><strong>暂无对话记录</strong><span>对话结束后会保存在这里，可随时回看</span></div>
+        </div>
+    }
+    else
+    {
+        <div class="sub-body dlog-body">
+            <div class="dlog-list" data-wheel="y" role="listbox" aria-label="对话列表">
+                @foreach (var h in Enumerable.Reverse(hist))
+                {
+                    var id = h.Id;
+                    var on = pick != null && pick.Id == id;
+                    <button type="button" role="option" aria-selected="@on" class="dlog-item @(on ? "on" : "")" @onclick="() => Pick(id)">
+                        <b>@(string.IsNullOrEmpty(h.Counterpart) ? "旁白" : h.Counterpart)@if (h.Legacy) {<em class="oc-badge">旧存档记录</em>}</b>
+                        <small>@(h.Minute is int m ? Clock.DayTime(m) : "日期时间未知") · @(h.LocationId != null ? e.LocName(h.LocationId) : "地点未知")</small>
+                    </button>
+                }
+            </div>
+            @if (pick != null)
+            {
+                <div class="dlog-read" data-wheel="y" tabindex="0" aria-label="对话内容">
+                    <div class="dlog-read-head">
+                        <img src="img/portraits/protagonist.svg" alt="主角（临时形象）" />
+                        <span>@(pick.Minute is int pm ? Clock.DayTime(pm) : "日期时间未知") · @(pick.LocationId != null ? e.LocName(pick.LocationId) : "地点未知")</span>
+                        <img src="@(pick.Counterpart == "饱饱" ? "img/portraits/baobao.svg" : "img/portraits/unknown.svg")" alt="@($"{pick.Counterpart}（临时形象）")" />
+                    </div>
+                    <div class="dlg-stream static">
+                        <DialogueLines Lines="pick.Lines" />
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private void Pick(int id)
+    {
+        G.DialogLogPick = id;
+        G.Notify();
+    }
+
+    private void Close() => G.OpenPanel(null);
+}

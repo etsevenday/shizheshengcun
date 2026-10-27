@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 300" role="img" aria-label="对话对象临时形象：未配置形象的统一占位">
+  <!-- 开发方统一占位：配置里出现饱饱以外的对话对象、但还没有专用形象时使用；可直接替换本文件 -->
+  <rect width="240" height="300" rx="18" fill="#2a312b"/>
+  <path d="M74 120Q74 62 120 60 166 62 166 120 164 156 120 160 76 156 74 120Z" fill="#4a5446" stroke="#8a8466" stroke-width="5" stroke-dasharray="12 8"/>
+  <path d="M34 300Q34 200 96 176H144Q206 200 206 300Z" fill="#4a5446" stroke="#8a8466" stroke-width="5" stroke-dasharray="12 8"/>
+  <path d="M104 100Q104 84 120 84 136 84 136 100 136 112 124 116 120 118 120 130" fill="none" stroke="#c9bf9f" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="120" cy="146" r="6" fill="#c9bf9f"/>
+</svg>

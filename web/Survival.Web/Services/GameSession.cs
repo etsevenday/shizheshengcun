@@ -333,8 +333,37 @@ public sealed class GameSession
 
     public void Notify()
     {
+        OnDialogueOnset();
         Version++;
         Changed?.Invoke();
+    }
+
+    private bool _wasLocked;
+
+    /// <summary>
+    /// 对话出现的那一刻（S14 §10.1、S07 §7）：取消未提交的数量框、点火工具菜单、悬停/拖拽打开的临时行动预览与状态浮层，
+    /// 收起菜单与战斗菜单，不执行其落点或原确认，保证不叠加两个可执行输入层；拖拽本身由 GameScreen 渲染后通知 drag.js 取消。
+    /// 选中对象、二级面板、滚动位置保持不动，对话结束后原样恢复。
+    /// </summary>
+    private void OnDialogueOnset()
+    {
+        var locked = DialogueLocked;
+        if (locked && !_wasLocked)
+        {
+            PendingDrop = null;
+            IgniteMenuOpen = false;
+            ClearHoverNow();
+            StatusHover = null;
+            StatusPinned = null;
+            if (Panel == "menu") Panel = null;
+            BattleMenuOpen = false;
+            if (Selected.Kind == SelectionKind.Action)
+            {
+                ClearSelectionSilently();
+                PendingAction = null;
+            }
+        }
+        _wasLocked = locked;
     }
 
     // ───────────── 开局与存档 ─────────────

@@ -1,0 +1,63 @@
+@inherits GameComponent
+@inject IJSRuntime JS
+
+@* 人物对话层（S14 §10、S07 §7、Q10）：覆盖中部“地图/场景 + 设施/资源”两行的完整区域；顶栏、左右栏、当前地面与随身保持可见但整局输入锁定。
+   主角临时形象恒在最左、对话对象恒在最右（未发言一侧弱化但保留位置），发言者以姓名牌 + 高亮框 + “发言中”区分，不只靠颜色；
+   正文按 22px 排版，同一次对话按顺序累计追加到一个纵向对话流（不清空、不替换），滚轮只回看本流、不推进也不透传；
+   停在底部时新句自动跟随，向上回看时保持位置并出现“回到最新”。不显示任何剩余句数；末句按钮为“结束对话”，明确结束才撤层解锁。
+   对话本身不推进时间、不消耗物品、不发奖励（推进由内核 AckDialogue 按当前句 ID 去重，双击不会跳句）。 *@
+@{
+    var d = G.State == null ? null : G.E.ActiveDialogue(G.S);
+}
+@if (d != null && d.Lines.Count > 0)
+{
+    var cur = d.Lines[^1];
+    var leftSpeaking = cur.Side == DialogueSide.Left;
+    var rightSpeaking = cur.Side == DialogueSide.Right;
+    var other = string.IsNullOrEmpty(d.Counterpart) ? "对方" : d.Counterpart;
+    var more = G.E.DialogueHasMore(G.S);
+    <div class="dlg-layer" role="dialog" aria-modal="true" aria-label="@($"与{other}的对话：读完后才能继续操作")">
+        <div class="dlg-side left @(leftSpeaking ? "speaking" : "idle")">
+            <img class="dlg-portrait" src="img/portraits/protagonist.svg" alt="主角（临时形象）" draggable="false" />
+            <div class="dlg-name"><b>你</b>@if (leftSpeaking) {<em>发言中</em>}</div>
+        </div>
+        <div class="dlg-main">
+            <div class="dlg-stream" @ref="_stream" tabindex="0" aria-live="polite" aria-label="对话内容（可滚动回看）">
+                <DialogueLines Lines="d.Lines" CurrentOrder="cur.Order" />
+            </div>
+            <div class="dlg-ctrl">
+                <span class="dlg-latest-host"><button type="button" class="secondary dlg-latest" @onclick="Latest">回到最新 ↓</button></span>
+                <span class="dlg-hint">对话不消耗时间 · 读完才能继续操作</span>
+                <button type="button" class="primary dlg-next" @onclick="() => Ack(cur.LineId)">@(more ? "继续" : "结束对话")</button>
+            </div>
+        </div>
+        <div class="dlg-side right @(rightSpeaking ? "speaking" : "idle")">
+            <img class="dlg-portrait" src="@(other == "饱饱" ? "img/portraits/baobao.svg" : "img/portraits/unknown.svg")" alt="@($"{other}（临时形象）")" draggable="false" />
+            <div class="dlg-name"><b>@other</b>@if (rightSpeaking) {<em>发言中</em>}</div>
+        </div>
+    </div>
+}
+
+@code {
+    private ElementReference _stream;
+    private int _shown;
+    private int _session = -1;
+
+    private void Ack(string lineId) => G.AckDialogue(lineId);
+
+    private async Task Latest()
+    {
+        try { await JS.InvokeVoidAsync("survivalDlg.latest", _stream); } catch (JSException) { }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var d = G.State == null ? null : G.E.ActiveDialogue(G.S);
+        if (d == null) { _shown = 0; _session = -1; return; }
+        if (d.Id != _session) { _session = d.Id; _shown = 0; }
+        if (d.Lines.Count == _shown) return;
+        _shown = d.Lines.Count;
+        // 停在底部就跟随最新；正在向上回看则保持位置并亮出“回到最新”（S14 §10.3）
+        try { await JS.InvokeVoidAsync("survivalDlg.sync", _stream, _shown); } catch (JSException) { }
+    }
+}

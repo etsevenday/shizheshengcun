@@ -56,6 +56,8 @@
                         @* 战斗/敌踪覆盖层替换地块栏两行（组件替换而非叠加，拖拽不会收集到隐藏的落点） *@
                         @if (battleUi) { <BattleOverlay /> } else { <LocationStrip /> }
                     </div>
+                    @* 人物对话层覆盖地图与设施两行的完整区域（S14 §10.1），地面/随身与左右栏保持可见 *@
+                    <DialogueLayer />
                 </div>
                 @if (!craftOpen) { <ItemShelf Owner="@s.CurrentLocation" Title="当前地面" Sub="@e.LocName(s.CurrentLocation)" /> }
                 @* 二级面板只替换这一块，周围的状态栏、随身物品与右侧详情不动 *@
@@ -71,6 +73,7 @@
                             case "goals": <GoalsOverlay /> break;
                             case "tips": <TipsOverlay /> break;
                             case "help": <HelpOverlay /> break;
+                            case "dialogs": <DialogueLogOverlay /> break;
                         }
                     </div>
                 }
@@ -104,7 +107,6 @@
         @if (G.BattleMenuOpen && battleUi) { <MenuOverlay Battle="true" /> }
         <StatusPop />
 
-        <BaobaoDialogue />
 
         @if (G.Toast != null && !s.Progress.Dead)
         {
@@ -147,8 +149,18 @@
     private string? _topKey;
     private string? _selKey;
 
+    private bool _lockSeen;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // 对话出现：取消未提交的拖拽（物品保持原归属，不补一次松手），收起键盘焦点，避免回车/空格落到背后的按钮（S07 §7）
+        var locked = G.DialogueLocked;
+        if (locked && !_lockSeen)
+        {
+            try { await JS.InvokeVoidAsync("survival.dialogueOnset"); }
+            catch (JSException) { }
+        }
+        _lockSeen = locked;
         if (firstRender)
         {
             _ref = DotNetObjectReference.Create(this);

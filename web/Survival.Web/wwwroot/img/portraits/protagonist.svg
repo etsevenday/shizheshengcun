@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 300" role="img" aria-label="主角临时形象：幸存者半身剪影">
+  <!-- 开发方临时形象（S14 §10.2）：通用幸存者半身剪影，不代表正式造型；可直接替换本文件 -->
+  <defs>
+    <linearGradient id="pbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a4a3c"/>
+      <stop offset="1" stop-color="#1c241e"/>
+    </linearGradient>
+    <linearGradient id="pbody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6d7a5e"/>
+      <stop offset="1" stop-color="#46503d"/>
+    </linearGradient>
+  </defs>
+  <rect width="240" height="300" rx="18" fill="url(#pbg)"/>
+  <circle cx="120" cy="96" r="80" fill="#d6b779" opacity=".08"/>
+  <!-- 兜帽与头部 -->
+  <path d="M70 118Q66 46 120 40 174 46 170 118 166 150 120 156 74 150 70 118Z" fill="#5b6650" stroke="#2f362a" stroke-width="5"/>
+  <path d="M88 116Q88 76 120 72 152 76 152 116 150 140 120 144 90 140 88 116Z" fill="#c9b694" stroke="#2f362a" stroke-width="4"/>
+  <path d="M100 112h12M128 112h12" stroke="#2f362a" stroke-width="6" stroke-linecap="round"/>
+  <path d="M108 132Q120 136 132 132" stroke="#2f362a" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- 肩背与背包带 -->
+  <path d="M30 300Q30 196 92 168L120 182 148 168Q210 196 210 300Z" fill="url(#pbody)" stroke="#2f362a" stroke-width="5"/>
+  <path d="M86 172L72 300M154 172L168 300" stroke="#8a6a48" stroke-width="12"/>
+  <path d="M104 176L120 214 136 176" fill="none" stroke="#2f362a" stroke-width="5" stroke-linejoin="round"/>
+  <rect x="62" y="236" width="24" height="18" rx="4" fill="#a9874f" stroke="#2f362a" stroke-width="3"/>
+</svg>

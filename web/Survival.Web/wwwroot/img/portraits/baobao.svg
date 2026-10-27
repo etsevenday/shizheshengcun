@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 300" role="img" aria-label="饱饱临时形象：抽象病毒与脑内声音">
+  <!-- 开发方临时形象（S14 §10.2）：抽象病毒/脑内声音，只作制作起点，不代表病毒真实外形；可直接替换本文件 -->
+  <defs>
+    <radialGradient id="bbg" cx=".5" cy=".42" r=".7">
+      <stop offset="0" stop-color="#3e5a3a"/>
+      <stop offset="1" stop-color="#18211a"/>
+    </radialGradient>
+    <radialGradient id="bbody" cx=".42" cy=".36" r=".7">
+      <stop offset="0" stop-color="#c4e3a2"/>
+      <stop offset=".6" stop-color="#8fbf7a"/>
+      <stop offset="1" stop-color="#5f8f4c"/>
+    </radialGradient>
+  </defs>
+  <rect width="240" height="300" rx="18" fill="url(#bbg)"/>
+  <!-- 声波环：脑内的声音 -->
+  <g fill="none" stroke="#a6c45a" stroke-linecap="round" opacity=".45">
+    <path d="M46 92Q30 150 46 208" stroke-width="5"/>
+    <path d="M28 76Q6 150 28 224" stroke-width="4"/>
+    <path d="M194 92Q210 150 194 208" stroke-width="5"/>
+    <path d="M212 76Q234 150 212 224" stroke-width="4"/>
+  </g>
+  <!-- 触突 -->
+  <g stroke="#5f8f4c" stroke-width="8" stroke-linecap="round">
+    <path d="M120 62V42M120 238V258M62 150H42M178 150H198M80 96L66 80M160 96L174 80M80 204L66 220M160 204L174 220"/>
+  </g>
+  <g fill="#c4e3a2" stroke="#4f7a3e" stroke-width="3">
+    <circle cx="120" cy="38" r="9"/><circle cx="120" cy="262" r="9"/><circle cx="38" cy="150" r="9"/><circle cx="202" cy="150" r="9"/>
+    <circle cx="62" cy="76" r="8"/><circle cx="178" cy="76" r="8"/><circle cx="62" cy="224" r="8"/><circle cx="178" cy="224" r="8"/>
+  </g>
+  <!-- 柔软的团状身体与表情 -->
+  <path d="M120 66Q158 62 172 92 196 110 186 146 198 180 172 202 154 236 120 230 84 238 68 204 42 184 54 150 42 114 70 96 84 64 120 66Z" fill="url(#bbody)" stroke="#4f7a3e" stroke-width="5"/>
+  <ellipse cx="98" cy="140" rx="11" ry="14" fill="#22301e"/>
+  <ellipse cx="142" cy="140" rx="11" ry="14" fill="#22301e"/>
+  <circle cx="102" cy="135" r="4" fill="#f2f7e6"/>
+  <circle cx="146" cy="135" r="4" fill="#f2f7e6"/>
+  <path d="M100 176Q120 192 140 176" stroke="#22301e" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <ellipse cx="80" cy="166" rx="10" ry="6" fill="#e9a58a" opacity=".55"/>
+  <ellipse cx="160" cy="166" rx="10" ry="6" fill="#e9a58a" opacity=".55"/>
+</svg>

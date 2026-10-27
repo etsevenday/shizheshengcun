@@ -1,0 +1,28 @@
+@* 一次对话的台词流（S14 §10.2–10.4）：对话层与对话记录共用。每条保留自己的左右归属——主角（Left）气泡靠左、对方（Right）靠右，
+   叙述/场景说明（Narration 与台词附带的 Note）用中性说明样式，不伪装成某人发言；框内文字从左向右读。不显示任何剩余句数。 *@
+@foreach (var l in Lines)
+{
+    var now = l.Order == CurrentOrder;
+    @if (l.Side == DialogueSide.Narration)
+    {
+        @if (!string.IsNullOrEmpty(l.Text)) { <div class="dlg-narr @(now ? "now" : "")" role="note">@l.Text</div> }
+    }
+    else
+    {
+        var left = l.Side == DialogueSide.Left;
+        <div class="dlg-msg @(left ? "left" : "right") @(now ? "now" : "")">
+            <div class="dlg-who">@(string.IsNullOrEmpty(l.Speaker) ? (left ? "你" : "对方") : l.Speaker)</div>
+            <div class="dlg-bubble">@l.Text</div>
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(l.Note))
+    {
+        <div class="dlg-narr @(now ? "now" : "")" role="note">@l.Note</div>
+    }
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<DialogueLine> Lines { get; set; } = Array.Empty<DialogueLine>();
+    /// <summary>当前正在显示的那句（对话层高亮）；记录浏览传 0。</summary>
+    [Parameter] public int CurrentOrder { get; set; }
+}

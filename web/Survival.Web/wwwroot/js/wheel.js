@@ -40,6 +40,14 @@
     var d = horizontal ? dx : dy;
     if (d === 0) return;
     var mouseVertical = !horizontal && !ev.shiftKey;         // 纯竖向滚轮：可映射到横向栏
+    // 人物对话层（S14 §10.3）：滚轮只回看本次对话流，不推进对白、到边界也不透传给背后的卡片栏或中部
+    var dlg = ev.target.closest && ev.target.closest('.dlg-layer');
+    if (dlg) {
+      ev.preventDefault();
+      var stream = dlg.querySelector('.dlg-stream');
+      if (stream && !horizontal) stream.scrollTop += d;
+      return;
+    }
     if (walk(ev, ev.target, horizontal, mouseVertical, d)) return;
     // 鼠标下是没有溢出的提示浮层（结果提示条、落点失败提示）：交给它下面的界面，不吞掉这次滚动（试玩修复 B6）。
     // 只对这类提示生效：暂停层、弹窗等遮罩不把滚轮漏给背后的内容。

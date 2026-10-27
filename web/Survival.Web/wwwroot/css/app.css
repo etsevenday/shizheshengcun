@@ -755,17 +755,7 @@ kbd { font-size: 14px; }
   /* 火堆卡与设施菜单（M28 改为内嵌后整理） */
 }
 
-/* ───── 系统策划总册 v1.0：饱饱对白、人物词条、吞噬融合按钮（复用现有配色，不新增美术） ───── */
-.baobao-say { position: fixed; left: 50%; bottom: calc(var(--foot-h) + 18px); transform: translateX(-50%); z-index: 60;
-  width: min(620px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--accent); border-radius: 6px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.45); padding: 12px 16px; color: var(--text); }
-.baobao-say .bb-head { display: flex; align-items: baseline; gap: 10px; }
-.baobao-say .bb-badge { background: var(--accent); color: var(--ink); font-weight: 600; padding: 1px 8px; border-radius: 3px; font-size: 13px; }
-.baobao-say .bb-head small { color: var(--muted); font-size: 12px; }
-.baobao-say .bb-text { margin: 8px 0 4px; font-size: 17px; line-height: 1.5; }
-.baobao-say .bb-note { margin: 0 0 6px; color: var(--muted); font-size: 13px; line-height: 1.5; }
-.baobao-say .bb-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.baobao-say .bb-foot .primary { min-width: 96px; }
+/* ───── 系统策划总册 v1.0：人物词条、吞噬融合按钮（饱饱对白已改为中部对话层，见文末“人物对话层”段） ───── */
 .char-traits { margin: 10px 0; }
 .trait-row { display: flex; align-items: baseline; gap: 10px; padding: 6px 8px; border-radius: 4px; border: 1px solid var(--line); margin-top: 4px; }
 .trait-row b { font-weight: 600; }
@@ -953,3 +943,53 @@ kbd { font-size: 14px; }
   .item .art svg { width: 64px; height: 64px; }
   .oc-art svg { height: 70px; width: 70px; }
 }
+
+/* ───────────── 人物对话层与对话记录（S14 §10；开发计划 M62） ─────────────
+   对话层覆盖地块两行（.rows2）的完整区域；主角形象恒左、对话对象恒右，未发言侧弱化；正文 22px（基准分辨率不低于 20px）。 */
+:root { --dlg-side: 150px; }
+.dlg-layer { position: absolute; inset: 0; z-index: 40; display: grid; grid-template-columns: var(--dlg-side) minmax(0, 1fr) var(--dlg-side); gap: 12px;
+  padding: 10px 12px; background: #141c17; background-image: linear-gradient(180deg, #121a15, #18211b); border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 8px 28px #000a; }
+.dlg-side { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; min-height: 0; transition: opacity .15s, filter .15s; }
+.dlg-side.idle { opacity: .5; filter: grayscale(.6) brightness(.85); }
+.dlg-portrait { width: 100%; min-height: 0; max-height: calc(100% - 50px); object-fit: contain; border-radius: 14px; border: 3px solid transparent; user-select: none; -webkit-user-drag: none; }
+.dlg-side.speaking .dlg-portrait { border-color: var(--accent); box-shadow: 0 0 0 3px #d6b77944, 0 0 18px #d6b77966; }
+.dlg-name { display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 44px; }
+.dlg-name b { font-size: 17px; font-weight: 600; }
+.dlg-side.speaking .dlg-name b { color: var(--accent); }
+.dlg-name em { font-style: normal; font-size: 14px; padding: 0 8px; border-radius: 10px; background: var(--accent); color: var(--ink); font-weight: 600; }
+.dlg-main { display: flex; flex-direction: column; gap: 8px; min-height: 0; min-width: 0; }
+.dlg-stream { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 6px 6px 10px; scrollbar-color: #56604f transparent; }
+.dlg-stream, .dlg-stream * { user-select: text; -webkit-user-select: text; }
+.dlg-stream:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dlg-msg { display: flex; flex-direction: column; max-width: 88%; }
+.dlg-msg.left { align-self: flex-start; align-items: flex-start; }
+.dlg-msg.right { align-self: flex-end; align-items: flex-end; }
+.dlg-who { font-size: 15px; font-weight: 600; color: var(--muted); margin: 0 10px 3px; }
+.dlg-msg.now .dlg-who { color: var(--accent); }
+.dlg-bubble { font-size: 22px; line-height: 1.6; padding: 8px 16px; border-radius: 14px; background: #2b382d; border: 1px solid var(--line); text-align: left; color: var(--text); }
+.dlg-msg.left .dlg-bubble { border-top-left-radius: 3px; background: #34402f; }
+.dlg-msg.right .dlg-bubble { border-top-right-radius: 3px; background: #26372f; }
+.dlg-msg.now .dlg-bubble { border-color: var(--accent); }
+.dlg-narr { align-self: center; max-width: 94%; font-size: 20px; line-height: 1.6; color: #cfd5c6; padding: 6px 14px; border: 1px dashed #6b7466; border-radius: 6px; background: #ffffff08; text-align: left; }
+.dlg-narr.now { border-color: #8a8466; }
+.dlg-ctrl { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; }
+.dlg-hint { flex: 1 1 auto; min-width: 0; font-size: 14px; color: var(--muted); }
+.dlg-ctrl .dlg-next { display: inline-block; width: auto; min-width: 150px; min-height: 44px; padding: 8px 20px; font-size: 18px; }
+.dlg-latest-host { display: none; }
+.dlg-latest-host.show { display: inline-flex; }
+.dlg-latest { min-height: 40px; }
+@media (max-height: 800px) { :root { --dlg-side: 124px; } .dlg-layer { padding: 8px 10px; gap: 10px; } }
+@media (min-height: 1000px) { :root { --dlg-side: 190px; } }
+
+/* 对话记录浏览层：左列表（日期时间 · 地点 · 对象），右正文（同对话层左右归属与 22px） */
+.dlog-body { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 12px; min-height: 0; }
+.dlog-list { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; min-height: 0; padding-right: 4px; }
+.dlog-item { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 52px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 5px; background: transparent; text-align: left; }
+.dlog-item b { font-size: 16px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+.dlog-item small { font-size: 14px; color: var(--muted); }
+.dlog-item.on { border-color: var(--accent); background: #2c3427; }
+.dlog-read { overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
+.dlog-read-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.dlog-read-head img { width: 44px; height: 55px; object-fit: contain; border-radius: 6px; }
+.dlg-stream.static { overflow: visible; flex: 0 0 auto; }
+.dlog-empty { min-height: 160px; }
