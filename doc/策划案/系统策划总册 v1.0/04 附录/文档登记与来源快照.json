@@ -745,7 +745,7 @@
     "designOnly": true,
     "runtimeChanged": false,
     "pendingIds": [],
-    "note": "R01-R06已接入；本轮新裁定与N01/R07尚待实现，不改变历史sourceSnapshot。 用户另授权补可调初值；上述reviewRequiredIds为建议值待审阅，不是用户已逐项确认。",
+    "note": "R01-R06已接入；本轮新增N01/R07与新裁定待实现。T01/T02/T03/T04/T09用户已批准按现有可调初值直接实装；未改变数值，不宣称程序已实现。历史sourceSnapshot保留。",
     "confirmedFollowupIds": [
       "T05",
       "T06",
@@ -753,14 +753,20 @@
       "T08",
       "B03"
     ],
-    "reviewRequiredIds": [
+    "reviewRequiredIds": [],
+    "deliveryScope": "documentation_only_confirmed_rules_and_approved_initial_values",
+    "approvedInitialValueIds": [
       "T01",
       "T02",
       "T03",
       "T04",
       "T09"
     ],
-    "deliveryScope": "documentation_only_confirmed_rules_and_proposed_initial_values"
+    "initialValueApproval": {
+      "date": "2026-10-27",
+      "decision": "可直接实装，用户测试不合适再改",
+      "valuesChangedByApproval": false
+    }
   },
   "referenceExtensionsEnabledAppliesTo": [
     "R01",
@@ -770,7 +776,7 @@
     "R05",
     "R06"
   ],
-  "proposedSystemsNotYetImplemented": [
+  "approvedSystemsPendingImplementation": [
     "R07",
     "N01"
   ]
