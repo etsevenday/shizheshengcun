@@ -277,6 +277,7 @@ namespace Survival.Core.Engine
         {
             plan = new Plan { Type = r.Type, TargetId = r.TargetId };
             if (s.Progress.Dead) return "角色已死亡";
+            if (DialogueLocked(s)) return DialogueLockedReason;
             if (s.Battle != null) return "战斗中：请使用战斗指令";
             if (s.Encounter != null && r.Type != ActionType.Bypass) return "发现敌踪：请先选择接敌或绕行";
             if (r.Type == ActionType.Bypass)
@@ -793,6 +794,7 @@ namespace Survival.Core.Engine
         public ActionResult Cancel(GameState s)
         {
             if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
+            if (DialogueLocked(s)) return ActionResult.Fail(DialogueLockedReason);
             var a = s.Sub ?? s.Main;
             if (a == null) return ActionResult.Fail("没有进行中的行动");
             if (a.Type == ActionType.Use || a.Type == ActionType.Ignite || a.Type == ActionType.Fuse) return ActionResult.Fail("该行动不可中途取消");
@@ -821,6 +823,7 @@ namespace Survival.Core.Engine
         public ActionResult Resume(GameState s)
         {
             if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
+            if (DialogueLocked(s)) return ActionResult.Fail(DialogueLockedReason);
             if (s.Main == null || s.Main.Status != ActionStatus.Paused) return ActionResult.Fail("没有暂停中的行动");
             if (s.Sub != null) return ActionResult.Fail("请等待当前补给或维护完成");
             s.Main.Status = ActionStatus.Running;

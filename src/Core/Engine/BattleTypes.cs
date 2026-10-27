@@ -23,7 +23,8 @@ namespace Survival.Core.Engine
         }
     }
 
-    public enum BattleStepKind { None, AwaitPlayer, PlayerTurnStarted, EnemyActed, RoundEnded, Ended }
+    /// <summary>Dialogue：有未读对话，下一条战斗动作不开始（不扣 AP、不执行敌行动、不推进轮末 tick；R03 §7.1）。</summary>
+    public enum BattleStepKind { None, AwaitPlayer, PlayerTurnStarted, EnemyActed, RoundEnded, Ended, Dialogue }
 
     public sealed class BattleStepResult
     {

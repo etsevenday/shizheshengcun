@@ -57,6 +57,18 @@ public abstract class TestBase
         return last;
     }
 
+    /// <summary>像玩家一样把当前所有待读对话逐句“继续/结束对话”读完（不耗时；Q10 读完才能操作）。</summary>
+    protected void ReadDialogues(GameState s)
+    {
+        for (var k = 0; k < 64 && E.DialogueLocked(s); k++)
+        {
+            var line = E.CurrentDialogueLine(s);
+            Assert.That(line, Is.Not.Null, "输入锁下必须有可确认的一句");
+            Assert.That(E.AckDialogue(s, line!.LineId).Ok, Is.True);
+        }
+        Assert.That(E.DialogueLocked(s), Is.False);
+    }
+
     protected void Steps(GameState s, int n)
     {
         for (var i = 0; i < n; i++) E.Advance(s);

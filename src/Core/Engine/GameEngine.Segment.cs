@@ -134,6 +134,8 @@ namespace Survival.Core.Engine
         public SegmentResult Advance(GameState s)
         {
             if (s.Progress.Dead) return new SegmentResult(SegmentStatus.Dead);
+            // 对白安全边界（S01 §8）：上一段已完整提交并存档；有未读对话时本段不开始，原行动/进度/预留原样保留
+            if (DialogueLocked(s)) return new SegmentResult(SegmentStatus.Dialogue);
             if (InCombatFlow(s)) return new SegmentResult(SegmentStatus.Idle);
             var a = s.Sub ?? s.Main;
             if (a == null) return new SegmentResult(SegmentStatus.Idle);

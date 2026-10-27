@@ -13,6 +13,7 @@ namespace Survival.Core.Engine
         public ActionResult DoInstant(GameState s, InstantRequest r)
         {
             if (SeenRequest(s, r.RequestId)) return ActionResult.Repeated();
+            if (!s.Progress.Dead && DialogueLocked(s)) return ActionResult.Fail(DialogueLockedReason);
             var res = DoInstantOnce(s, r);
             if (res.Ok) RememberRequest(s, r.RequestId);
             return res;

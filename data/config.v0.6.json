@@ -3726,42 +3726,49 @@
     "dialogues": [
       {
         "id": "awakening_1",
+        "eventId": "opening",
         "speaker": "饱饱",
         "text": "醒醒……醒醒，我饿了。",
         "note": "你在临时营地醒来。声音不是从耳边传来的，而是在你的脑子里。"
       },
       {
         "id": "awakening_2",
+        "eventId": "opening",
         "speaker": "饱饱",
         "text": "我不知道我叫什么。我只知道，我饿了。",
         "note": "你在心里给它起了个名字：饱饱。"
       },
       {
         "id": "food_water",
+        "eventId": "opening",
         "speaker": "饱饱",
         "text": "先找点能吃的。还有水。",
         "note": "营地地面有罐头和净水；往农野荒地是出路。吃什么、喝什么、何时出发由你决定。"
       },
       {
         "id": "tutorial_arrive",
+        "eventId": "tutorial_arrive",
         "speaker": "饱饱",
         "text": "前面那个……不像还活着。小心。",
         "note": "首战：轮到你时有行动点（AP）。点敌卡选目标，点指令看右栏预估，点“执行”才提交；行动点用完或点“结束行动”轮到敌人。"
       },
       {
         "id": "tutorial_won",
+        "eventId": "tutorial_won",
         "speaker": "饱饱",
         "text": "那东西身上有一团还在动的物质……让我试试。",
         "note": "地面上多了一份“未鉴定的活性物质”。选中它，在卡下点“吞噬融合”。"
       },
       {
         "id": "fusion_done_1",
+        "eventId": "fusion_done",
         "speaker": "饱饱",
         "text": "有变化了。攻击力增加了0.1。",
         "note": ""
       },
       {
         "id": "fusion_done_2",
+        "eventId": "fusion_done",
         "speaker": "饱饱",
         "text": "也可能有不好的变化……这次运气不错。",
         "note": ""

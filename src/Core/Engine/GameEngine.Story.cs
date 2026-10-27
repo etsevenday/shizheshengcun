@@ -38,39 +38,123 @@ namespace Survival.Core.Engine
             if (!string.IsNullOrEmpty(tb.LocationId))
                 st.TutorialEnemyId = s.WorldEnemies.Where(w => w.LocationId == tb.LocationId && w.EnemyId == tb.EnemyId).OrderBy(w => w.Id).FirstOrDefault()?.Id;
             s.Story = st;
-            QueueDialogue(s, DialogueAwakening1);
-            QueueDialogue(s, DialogueAwakening2);
-            QueueDialogue(s, DialogueFoodWater);
+            OpenDialogue(s, EventOf(DialogueAwakening1));
         }
 
-        // ───────────── 对白 ─────────────
+        // ───────────── 对白（S01 §8、S14 §10、Q10：读完才能操作） ─────────────
+
+        /// <summary>对话等待期间拒绝玩法请求的统一原因。</summary>
+        public const string DialogueLockedReason = "请先读完对话";
+
+        /// <summary>主角在对白里的发言者名：配置里写这个名字的台词归左侧；其他发言者归右侧，发言者为空的是中性叙述。</summary>
+        public const string ProtagonistSpeaker = "你";
 
         public DialogueConfig? Dialogue(string id) => Config.Story.Dialogues.FirstOrDefault(d => d.Id == id);
 
-        /// <summary>当前要显示的饱饱对白（队首）；没有为 null。</summary>
-        public DialogueConfig? CurrentDialogue(GameState s) =>
-            s.Story.PendingDialogues.Select(Dialogue).FirstOrDefault(d => d != null);
+        private string EventOf(string lineId) => Dialogue(lineId)?.Event ?? lineId;
 
-        /// <summary>对白入队：同一条只入队一次（回看、读档、重复回调都不重复）。</summary>
-        private void QueueDialogue(GameState s, string id)
+        /// <summary>当前对话（第一段未结束的）；没有为 null。死亡后不再有对话（终局优先）。</summary>
+        public DialogueSession? ActiveDialogue(GameState s) =>
+            s.Progress.Dead ? null : s.Story.DialogueLog.FirstOrDefault(d => !d.Ended);
+
+        /// <summary>
+        /// 有未读完的对话：整局游戏输入锁定（Q10、S14 §10.1）。内核据此拒绝开始/取消/继续行动、即时操作、接敌、战斗指令与换武器，
+        /// 主行动与战斗在下一个安全边界前等待（Advance 返回 Dialogue、BattleStep 返回 Dialogue），不 tick、不改原状态。
+        /// </summary>
+        public bool DialogueLocked(GameState s) => ActiveDialogue(s) != null;
+
+        /// <summary>当前对话里正在显示的那句（已展示的最后一句）；没有为 null。</summary>
+        public DialogueLine? CurrentDialogueLine(GameState s) => ActiveDialogue(s)?.Lines.LastOrDefault();
+
+        /// <summary>当前要显示的对白配置（同 CurrentDialogueLine 的那句）；没有为 null。</summary>
+        public DialogueConfig? CurrentDialogue(GameState s)
         {
-            if (Dialogue(id) == null) return;
-            if (s.Story.PendingDialogues.Contains(id) || s.Story.SeenDialogues.Contains(id)) return;
-            s.Story.PendingDialogues.Add(id);
+            var line = CurrentDialogueLine(s);
+            return line == null ? null : Dialogue(line.LineId);
+        }
+
+        /// <summary>当前对话还有没展示的台词：按钮写“继续”；否则写“结束对话”。不提供剩余句数（S14 §10.2）。</summary>
+        public bool DialogueHasMore(GameState s) => (ActiveDialogue(s)?.Pending.Count ?? 0) > 0;
+
+        /// <summary>对话记录（S14 §10.4）：已结束的各次对话，按发生顺序；只含实际展示过的台词，不含当前未结束的那次。</summary>
+        public List<DialogueSession> DialogueHistory(GameState s) => s.Story.DialogueLog.Where(d => d.Ended).ToList();
+
+        private static DialogueSide SideOf(DialogueConfig d) =>
+            string.IsNullOrEmpty(d.Speaker) ? DialogueSide.Narration : d.Speaker == ProtagonistSpeaker ? DialogueSide.Left : DialogueSide.Right;
+
+        /// <summary>
+        /// 打开一次对话：配置里同一 eventId 的台词按顺序连成一次对话。同一事件只记一次，已读/待读的台词不重复入队（读档、重复回调都不重复）。
+        /// 前面没有未结束的对话时首句立即展示并登记时间地点；否则排在后面，前一次结束后再展示。不推进时间、不发奖励。
+        /// </summary>
+        private void OpenDialogue(GameState s, string eventId)
+        {
+            var st = s.Story;
+            if (st.DialogueLog.Any(d => d.EventId == eventId)) return;
+            var ids = Config.Story.Dialogues.Where(d => d.Event == eventId).Select(d => d.Id)
+                .Where(id => !st.PendingDialogues.Contains(id) && !st.SeenDialogues.Contains(id)).ToList();
+            if (ids.Count == 0) return;
+            var counterpart = Config.Story.Dialogues.Where(d => ids.Contains(d.Id) && SideOf(d) == DialogueSide.Right).Select(d => d.Speaker).FirstOrDefault() ?? "";
+            var session = new DialogueSession { Id = st.NextDialogueSessionId++, EventId = eventId, Counterpart = counterpart, Pending = ids };
+            st.DialogueLog.Add(session);
+            st.PendingDialogues.AddRange(ids);
+            if (ReferenceEquals(ActiveDialogue(s), session)) ShowNextLine(s, session);
+        }
+
+        /// <summary>展示下一句：首次展示即登记快照（发言者、正文、叙述、左右、时间、地点），与游标一同存档。</summary>
+        private void ShowNextLine(GameState s, DialogueSession d)
+        {
+            while (d.Pending.Count > 0)
+            {
+                var id = d.Pending[0];
+                d.Pending.RemoveAt(0);
+                var cfg = Dialogue(id);
+                if (cfg == null) { s.Story.PendingDialogues.Remove(id); continue; }
+                d.Lines.Add(new DialogueLine
+                {
+                    LineId = id, Order = d.Lines.Count + 1, Speaker = cfg.Speaker, Text = cfg.Text, Note = cfg.Note, Side = SideOf(cfg),
+                    Minute = s.GameMinute, LocationId = s.CurrentLocation,
+                });
+                if (d.Minute == null) { d.Minute = s.GameMinute; d.LocationId = s.CurrentLocation; }
+                return;
+            }
+            // 配置里的台词全被删掉了：这一次没有可展示内容，直接结束，不卡住输入锁
+            if (d.Lines.Count == 0) d.Ended = true;
         }
 
         /// <summary>
-        /// 读完一条对白：出队并记为已读；命名与饮食提示锁存。只改剧情标记，不推进世界时间、不消耗物品、不发奖励（N01 §6）。
+        /// 推进对话（“继续”/“结束对话”共用）：lineId 须是当前正在显示的那句，否则视为重复点击、不改状态（双击不会跳过未读句）。
+        /// 还有下一句就追加展示；已是末句则结束本次对话、解除输入锁，并展示排在后面的下一次对话的首句。
+        /// 只改对话与剧情标记（命名、饮食提示锁存），不推进世界时间、不消耗物品、不发奖励、不调用战斗/融合（N01 §6、S01 §8）。
         /// </summary>
-        public ActionResult AckDialogue(GameState s, string id)
+        public ActionResult AckDialogue(GameState s, string lineId)
         {
             var st = s.Story;
-            if (!st.PendingDialogues.Contains(id)) return ActionResult.Repeated();
-            st.PendingDialogues.Remove(id);
-            if (!st.SeenDialogues.Contains(id)) st.SeenDialogues.Add(id);
-            if (id == DialogueAwakening2) st.AwakeningDone = true;
-            if (id == DialogueFoodWater) st.FoodWaterRead = true;
+            var d = ActiveDialogue(s);
+            var cur = d?.Lines.LastOrDefault();
+            if (d == null || cur == null || cur.LineId != lineId) return ActionResult.Repeated();
+            st.PendingDialogues.Remove(lineId);
+            if (!st.SeenDialogues.Contains(lineId)) st.SeenDialogues.Add(lineId);
+            if (lineId == DialogueAwakening2) st.AwakeningDone = true;
+            if (lineId == DialogueFoodWater) st.FoodWaterRead = true;
+            if (d.Pending.Count > 0) ShowNextLine(s, d);
+            else
+            {
+                d.Ended = true;
+                for (var next = ActiveDialogue(s); next != null && next.Lines.Count == 0; next = ActiveDialogue(s))
+                    ShowNextLine(s, next);
+            }
             return ActionResult.Success();
+        }
+
+        /// <summary>只在模拟副本上用：把所有待读对话直接读完（对话不耗时；预览/估时不能卡在输入锁上）。</summary>
+        private void SimReadDialogues(GameState c)
+        {
+            for (var k = 0; k < 256 && DialogueLocked(c); k++)
+            {
+                var line = CurrentDialogueLine(c);
+                if (line == null) { ActiveDialogue(c)!.Ended = true; continue; }
+                AckDialogue(c, line.LineId);
+            }
         }
 
         // ───────────── 首战 ─────────────
@@ -89,8 +173,9 @@ namespace Survival.Core.Engine
             var w = st.TutorialEnemyId.HasValue ? FindWorldEnemy(s, st.TutorialEnemyId.Value) : null;
             if (w == null || w.LocationId != tb.LocationId || w.Engaged || InCombatFlow(s)) return;
             w.HiddenUntil = null;
-            QueueDialogue(s, DialogueTutorialArrive);
             StartBattle(s, new List<WorldEnemy> { w }, false, "首战", FearTutorial, tutorial: true);
+            // 首战建立并保存后先展示警告对白，读完才接受第一条战斗指令（R03 §7.1）
+            OpenDialogue(s, EventOf(DialogueTutorialArrive));
             st.TutorialBattleId = s.Battle?.BattleId;
         }
 
@@ -111,7 +196,7 @@ namespace Survival.Core.Engine
             var wid = b.Enemies.FirstOrDefault(e => e.WorldId == st.TutorialEnemyId)?.WorldId ?? b.Enemies.FirstOrDefault()?.WorldId;
             CreateItems(s, sub.ItemId, Math.Max(1, sub.TutorialDrop.Count), b.LocationId, false,
                 new ItemSource { WorldEnemyId = wid, BattleId = b.BattleId, GrantEventId = grant, TutorialReward = true });
-            QueueDialogue(s, DialogueTutorialWon);
+            OpenDialogue(s, EventOf(DialogueTutorialWon));
             return $"{ItemName(sub.ItemId)}+{Math.Max(1, sub.TutorialDrop.Count)}（首战教学）";
         }
 
@@ -170,8 +255,7 @@ namespace Survival.Core.Engine
                 var te = Config.ActiveSubstance.TutorialEffect;
                 s.Traits.Add(new TraitInstance { EffectId = te.EffectId, Quality = te.Quality, Label = te.Label, FlatAttack = te.FlatAttack, FusionId = fusionId, Minute = s.GameMinute });
                 s.Story.TutorialFusionDone = true;
-                QueueDialogue(s, DialogueFusionDone1);
-                QueueDialogue(s, DialogueFusionDone2);
+                OpenDialogue(s, EventOf(DialogueFusionDone1));
                 text = $"饱饱吞噬融合了首战教学的活性物质：获得绿色词条“{te.Label}”。";
             }
             else text = Config.ActiveSubstance.NormalFusionText;

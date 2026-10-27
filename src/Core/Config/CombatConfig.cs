@@ -732,6 +732,9 @@ namespace Survival.Core.Config
     public sealed class DialogueConfig
     {
         public string Id { get; set; } = "";
+        /// <summary>所属“一次对话”的触发事件 ID（S01 §8）：同事件的台词按配置顺序连成一次对话；缺省为自身 ID。</summary>
+        public string EventId { get; set; } = "";
+        [JsonIgnore] public string Event => string.IsNullOrEmpty(EventId) ? Id : EventId;
         public string Speaker { get; set; } = "";
         public string Text { get; set; } = "";
         public string Note { get; set; } = "";

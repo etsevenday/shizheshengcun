@@ -8,14 +8,13 @@
 }
 @if (d != null)
 {
-    var left = G.S.Story.PendingDialogues.Count;
     <div class="baobao-say" role="dialog" aria-label="饱饱说话">
-        <div class="bb-head"><span class="bb-badge">@d.Speaker</span><small>脑内的声音@(left > 1 ? $" · 还有{left - 1}句" : "")</small></div>
+        <div class="bb-head"><span class="bb-badge">@d.Speaker</span><small>脑内的声音</small></div>
         <p class="bb-text">“@d.Text”</p>
         @if (!string.IsNullOrEmpty(d.Note)) { <p class="bb-note">@d.Note</p> }
         <div class="bb-foot">
             <span class="tiny muted">对话不消耗时间</span>
-            <button type="button" class="primary" @onclick="() => G.AckDialogue(d.Id)">继续</button>
+            <button type="button" class="primary" @onclick="() => G.AckDialogue(d.Id)">@(G.E.DialogueHasMore(G.S) ? "继续" : "结束对话")</button>
         </div>
     </div>
 }

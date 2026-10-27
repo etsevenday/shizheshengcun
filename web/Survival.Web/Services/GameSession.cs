@@ -735,7 +735,7 @@ public sealed class GameSession
                     Save();
                     Notify();
                 }
-                if (r.Status is SegmentStatus.Paused or SegmentStatus.Dead or SegmentStatus.Idle) break;
+                if (r.Status is SegmentStatus.Paused or SegmentStatus.Dead or SegmentStatus.Idle or SegmentStatus.Dialogue) break;
                 if (!_skip && (S.Main != null || S.Sub != null)) await Task.Delay(SegmentDelayMs);
             }
         }
@@ -764,13 +764,23 @@ public sealed class GameSession
         }
     }
 
-    /// <summary>饱饱对白“继续”：只记为已读并存档，不推进时间（N01 §6）。</summary>
+    /// <summary>
+    /// 对白“继续/结束对话”：只推进对话游标并存档，不推进时间（N01 §6、S01 §8）。对话结束、输入锁解除后，
+    /// 原来在安全边界等待的行动或战斗从下一个合法推进点继续（原暂停态仍暂停，不补 tick）。
+    /// </summary>
     public void AckDialogue(string id)
     {
         if (State == null) return;
         E.AckDialogue(S, id);
         Save();
         Notify();
+        if (E.DialogueLocked(S) || S.Progress.Dead) return;
+        if (S.Battle != null)
+        {
+            if (!E.AwaitingPlayer(S)) _ = BattleLoop();
+            else { AutoTarget(); Notify(); }
+        }
+        else if (S.Sub != null || (S.Main != null && S.Main.Status == ActionStatus.Running)) _ = RunLoop();
     }
 
     private int _toastSeq;
@@ -1038,7 +1048,7 @@ public sealed class GameSession
                 Drain();
                 Save();
                 Notify();
-                if (r.Kind is BattleStepKind.None or BattleStepKind.Ended) break;
+                if (r.Kind is BattleStepKind.None or BattleStepKind.Ended or BattleStepKind.Dialogue) break;
                 if (r.Kind is BattleStepKind.EnemyActed or BattleStepKind.RoundEnded)
                     await Task.Delay(Math.Max(160, SegmentDelayMs * 4));
             }

@@ -148,8 +148,8 @@ public class V10Q7Tests : BattleTestBase
         var s = NewStory();
         Assert.That(s.Story.BaobaoPresent, Is.True);
         Assert.That(s.Body.Immunity, Is.EqualTo(70));
-        // 新局有开场对白：读完后才能推进（S01 §8）；这里直接清掉待读，只验免疫规则
-        s.Story.PendingDialogues.Clear();
+        // 新局有开场对白：读完后才能推进（S01 §8、Q10）
+        ReadDialogues(s);
         Start(s, ActionRequest.Wait(30));
         E.Advance(s);
         Assert.That(s.Body.Infected, Is.True, "I70 时 B=0.0125>0，首个5分钟转感染");

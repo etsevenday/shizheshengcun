@@ -22,9 +22,10 @@ namespace Survival.Core.State
         /// 存档结构版本。"0.2-proto-1" 是首版（设计文档里的 schemaVersion 2），"3" 是交互与地图扩展版，读档时按链迁移；
         /// "4" 起锅与直烤食材可以真实归属火堆设施（卡片统一与设施烹饪 v0.4）；
         /// "5" 起健康/体力上限20、随机耐久、技能、免疫病毒、世界敌人与战斗（人物与战斗 v0.6，程序选的未占用版本号，与策划文件名无关）；
-        /// "6" 起金属锅无耐久、活性物质来源、人物词条、剧情与饱饱状态（系统策划总册 v1.0 答复）。
+        /// "6" 起金属锅无耐久、活性物质来源、人物词条、剧情与饱饱状态（系统策划总册 v1.0 答复）；
+        /// "7" 起对话记录（按次分组、逐句快照、游标、待显示队列）与等待烹饪行动状态（策划提交 9fdb44f：S01 §8–9、S11 §9）。
         /// </summary>
-        public const string CurrentSchema = "6";
+        public const string CurrentSchema = "7";
 
         public string SchemaVersion { get; set; } = CurrentSchema;
         public string ConfigVersion { get; set; } = "";
@@ -398,6 +399,13 @@ namespace Survival.Core.State
         public List<string> PendingDialogues { get; set; } = new List<string>();
         /// <summary>已显示过的对白 ID（回看与防重复加入）。</summary>
         public List<string> SeenDialogues { get; set; } = new List<string>();
+        /// <summary>
+        /// 本局对话记录（S01 §8、S14 §10.4，schema 7）：按“一次对话”（触发事件）分组，逐句保存实际展示的发言者/正文快照、左右归属、
+        /// 游戏内时间与地点；未结束的那次就是当前对话（输入锁）。新游戏重置；旧档按 SeenDialogues 一次性导入为“旧存档记录”。
+        /// PendingDialogues/SeenDialogues 与之同步维护（未读/已读台词 ID）。
+        /// </summary>
+        public List<DialogueSession> DialogueLog { get; set; } = new List<DialogueSession>();
+        public int NextDialogueSessionId { get; set; } = 1;
 
         public StoryState Clone()
         {
@@ -405,8 +413,58 @@ namespace Survival.Core.State
             c.FusionIds = new List<string>(FusionIds);
             c.PendingDialogues = new List<string>(PendingDialogues);
             c.SeenDialogues = new List<string>(SeenDialogues);
+            c.DialogueLog = DialogueLog.Select(d => d.Clone()).ToList();
             return c;
         }
+    }
+
+    /// <summary>台词在对话栏的归属：主角恒左、对方恒右、叙述/场景说明为中性样式（S14 §10.2）。</summary>
+    public enum DialogueSide { Left, Right, Narration }
+
+    /// <summary>一次对话（S01 §8）：一个触发事件的一组台词。Lines 为已展示（含当前句），Pending 为尚未展示的台词 ID。</summary>
+    public sealed class DialogueSession
+    {
+        /// <summary>本局内递增编号。</summary>
+        public int Id { get; set; }
+        /// <summary>触发事件 ID（config story.dialogues[].eventId，如 opening、tutorial_arrive）；同一事件只记一次。</summary>
+        public string EventId { get; set; } = "";
+        /// <summary>对话对象（非主角的发言者，如“饱饱”）。</summary>
+        public string Counterpart { get; set; } = "";
+        /// <summary>首句展示时的游戏内绝对分钟；旧档导入为 null（显示“未知”）。</summary>
+        public int? Minute { get; set; }
+        /// <summary>首句展示时所在地点；旧档导入为 null（显示“未知”）。</summary>
+        public string? LocationId { get; set; }
+        /// <summary>玩家已明确“结束对话”。</summary>
+        public bool Ended { get; set; }
+        /// <summary>从旧存档已读台词一次性导入的记录。</summary>
+        public bool Legacy { get; set; }
+        public List<DialogueLine> Lines { get; set; } = new List<DialogueLine>();
+        public List<string> Pending { get; set; } = new List<string>();
+
+        public DialogueSession Clone()
+        {
+            var c = (DialogueSession)MemberwiseClone();
+            c.Lines = Lines.Select(l => l.Clone()).ToList();
+            c.Pending = new List<string>(Pending);
+            return c;
+        }
+    }
+
+    /// <summary>一句已展示的台词快照：之后改了配置文案也不倒改本局历史（S01 §8）。</summary>
+    public sealed class DialogueLine
+    {
+        public string LineId { get; set; } = "";
+        /// <summary>在本次对话内的顺序（从 1 起）。</summary>
+        public int Order { get; set; }
+        public string Speaker { get; set; } = "";
+        public string Text { get; set; } = "";
+        /// <summary>随句的叙述/场景说明（中性样式显示）；没有为空串。</summary>
+        public string Note { get; set; } = "";
+        public DialogueSide Side { get; set; } = DialogueSide.Right;
+        public int? Minute { get; set; }
+        public string? LocationId { get; set; }
+
+        public DialogueLine Clone() => (DialogueLine)MemberwiseClone();
     }
 
     /// <summary>人物词条实例（R07 §4）：效果 ID、品质、显示文字、攻击力平加值与发放来源。</summary>

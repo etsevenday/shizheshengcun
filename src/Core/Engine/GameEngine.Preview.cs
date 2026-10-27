@@ -33,6 +33,7 @@ namespace Survival.Core.Engine
             FillStatic(s, r, p, plan);
 
             var c = s.Clone();
+            SimReadDialogues(c);
             var res = Start(c, r.WithRequestId(null));
             if (!res.Ok) { p.Ok = false; p.Reason = res.Reason; return p; }
             var id = res.ActionId!.Value;
@@ -62,6 +63,7 @@ namespace Survival.Core.Engine
             var prevLit = s.Locations[s.CurrentLocation].Facility.FireLit;
             for (var k = 0; k < SimLimit; k++)
             {
+                SimReadDialogues(c);
                 var cur = plan.IsSub ? c.Sub : c.Main;
                 if (cur == null || cur.ActionId != id || c.Progress.Dead) break;
                 if (!plan.IsSub && cur.Status == ActionStatus.Paused)
@@ -380,6 +382,7 @@ namespace Survival.Core.Engine
             var a = s.Sub ?? s.Main;
             if (a == null) return null;
             var c = s.Clone();
+            SimReadDialogues(c);
             var target = (c.Sub ?? c.Main)!;
             var id = target.ActionId;
             var sub = target.IsSub;
@@ -388,6 +391,7 @@ namespace Survival.Core.Engine
             if (!sub && target.Status == ActionStatus.Paused) Resume(c);
             for (var k = 0; k < SimLimit; k++)
             {
+                SimReadDialogues(c);
                 var cur = sub ? c.Sub : c.Main;
                 if (cur == null || cur.ActionId != id) return c.GameMinute;
                 if (c.Progress.Dead) return null;

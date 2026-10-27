@@ -22,7 +22,7 @@ public class V10MigrationTests : TestBase
         Assert.That((string)old["SchemaVersion"]!, Is.EqualTo("5"));
         Assert.That(SaveSerializer.NeedsMigration(json), Is.True);
         var s = SaveSerializer.Deserialize(json, Cfg, out var notes);
-        Assert.That(s.SchemaVersion, Is.EqualTo("6"));
+        Assert.That(s.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "5→6→7 整条链");
 
         var pots = s.Items.Where(i => i.ItemId == "pot").ToList();
         Assert.That(pots, Has.Count.EqualTo(2), "不新建、不复制锅");

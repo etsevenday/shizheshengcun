@@ -20,7 +20,7 @@ namespace Survival.Core.Save
 
     /// <summary>
     /// 存档升级链：0.2-proto-1（设计文档里的 schemaVersion 2）→ 3（交互与地图扩展）→ 4（卡片统一与设施烹饪）→ 5（人物与战斗 v0.6）
-    /// → 6（系统策划总册 v1.0 答复：锅无耐久、旧档不补新剧情）。
+    /// → 6（系统策划总册 v1.0 答复：锅无耐久、旧档不补新剧情）→ 7（策划提交 9fdb44f：对话记录与等待烹饪）。
     /// 只对旧版执行，已是当前版本的档不重复迁移。不补发历史奖励、不自动补水、不凭默认顺序挑锅、H/E 只缩放一次。
     /// </summary>
     public static class SaveMigrator
@@ -29,6 +29,7 @@ namespace Survival.Core.Save
         public const string Schema3 = "3";
         public const string Schema4 = "4";
         public const string Schema5 = "5";
+        public const string Schema6 = "6";
 
         /// <summary>升级到当前版本，返回给玩家看的迁移说明（无变化时为空）。冲突时抛 SaveMigrationConflictException，状态不变。</summary>
         public static List<string> Migrate(GameState s, GameConfig config)
@@ -46,6 +47,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema3) From3To4(s, config, notes);
             if (s.SchemaVersion == Schema4) From4To5(s, config, notes);
             if (s.SchemaVersion == Schema5) From5To6(s, config, notes);
+            if (s.SchemaVersion == Schema6) From6To7(s, config, notes);
             return notes;
         }
 
@@ -339,7 +341,68 @@ namespace Survival.Core.Save
             notes.Add("本轮新增的饱饱开场、首战教学与吞噬融合只在新游戏里体验；这份存档保留原有流程，不补发教学物资，也不启用饱饱的体内病毒输入");
 
             foreach (var n in notes) s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = n + "。" });
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（系统策划总册 v1.0）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema6}（系统策划总册 v1.0）。" });
+            s.SchemaVersion = Schema6;
+        }
+
+        // ───────────────────────── 6 → 7 ─────────────────────────
+
+        /// <summary>
+        /// 策划提交 9fdb44f（S01 §8、开发假设 A1）：新增对话记录。旧档里能确认已展示过的台词（SeenDialogues）按配置顺序一次性导入为一组
+        /// “旧存档记录”（时间、地点未知，已结束）；尚未读完的台词（PendingDialogues）按所属事件建成待读对话，从首句开始在读档后展示——
+        /// 不标成已读、不重播已读、不补剧情效果或奖励，也不解除旧档 Legacy 边界。其余世界状态原样保留；免疫/病毒按新阈值从后续 tick 起算，
+        /// 已累计的高免疫分钟保留、不倒补（R04 §8）；身体当前值不按 Q7 再缩放（R01 §7）。
+        /// </summary>
+        private static void From6To7(GameState s, GameConfig config, List<string> notes)
+        {
+            var st = s.Story;
+            if (st.DialogueLog.Count == 0)
+            {
+                var order = config.Story.Dialogues.Select(d => d.Id).ToList();
+                var seen = st.SeenDialogues.Where(order.Contains).Distinct().OrderBy(order.IndexOf).ToList();
+                if (seen.Count > 0)
+                {
+                    var legacy = new DialogueSession { Id = st.NextDialogueSessionId++, EventId = "legacy_save", Ended = true, Legacy = true };
+                    foreach (var id in seen)
+                    {
+                        var cfg = config.Story.Dialogues.First(d => d.Id == id);
+                        legacy.Lines.Add(new DialogueLine
+                        {
+                            LineId = id, Order = legacy.Lines.Count + 1, Speaker = cfg.Speaker, Text = cfg.Text, Note = cfg.Note,
+                            Side = string.IsNullOrEmpty(cfg.Speaker) ? DialogueSide.Narration : cfg.Speaker == Survival.Core.Engine.GameEngine.ProtagonistSpeaker ? DialogueSide.Left : DialogueSide.Right,
+                        });
+                    }
+                    legacy.Counterpart = legacy.Lines.Where(l => l.Side == DialogueSide.Right).Select(l => l.Speaker).FirstOrDefault() ?? "";
+                    st.DialogueLog.Add(legacy);
+                }
+                // 未读完的：按事件分组建成待读对话（不登记为已展示；读档后由引擎展示首句）
+                var pending = st.PendingDialogues.Where(order.Contains).Distinct().ToList();
+                foreach (var group in pending.GroupBy(id => config.Story.Dialogues.First(d => d.Id == id).Event))
+                {
+                    var speaker = config.Story.Dialogues.Where(d => group.Contains(d.Id) && !string.IsNullOrEmpty(d.Speaker) && d.Speaker != Survival.Core.Engine.GameEngine.ProtagonistSpeaker)
+                        .Select(d => d.Speaker).FirstOrDefault() ?? "";
+                    st.DialogueLog.Add(new DialogueSession { Id = st.NextDialogueSessionId++, EventId = group.Key, Counterpart = speaker, Pending = group.ToList() });
+                }
+                st.PendingDialogues = pending;
+                // 第一段待读对话的首句在读档这一刻展示（与引擎 ShowNextLine 同一登记口径），保证输入锁下总有可确认的一句
+                var first = st.DialogueLog.FirstOrDefault(d => !d.Ended && d.Lines.Count == 0 && d.Pending.Count > 0);
+                if (first != null)
+                {
+                    var id = first.Pending[0];
+                    first.Pending.RemoveAt(0);
+                    var cfg = config.Story.Dialogues.First(d => d.Id == id);
+                    first.Lines.Add(new DialogueLine
+                    {
+                        LineId = id, Order = 1, Speaker = cfg.Speaker, Text = cfg.Text, Note = cfg.Note,
+                        Side = string.IsNullOrEmpty(cfg.Speaker) ? DialogueSide.Narration : cfg.Speaker == Survival.Core.Engine.GameEngine.ProtagonistSpeaker ? DialogueSide.Left : DialogueSide.Right,
+                        Minute = s.GameMinute, LocationId = s.CurrentLocation,
+                    });
+                    first.Minute = s.GameMinute;
+                    first.LocationId = s.CurrentLocation;
+                }
+                if (seen.Count > 0) notes.Add("新增对话记录：这份存档里已经读过的对白整理为一组“旧存档记录”（时间、地点未知），之后的对话按次记录");
+            }
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（对话记录与等待烹饪）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

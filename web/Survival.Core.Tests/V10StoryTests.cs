@@ -12,18 +12,22 @@ public class V10StoryTests : BattleTestBase
 {
     private const string Sub = "active_substance_white_unidentified";
 
-    private void ToField(GameState s)
+    /// <summary>读完待读对话后移动到荒地；read 时把到达后出现的对话（首战警告）也读完。</summary>
+    private void ToField(GameState s, bool read = true)
     {
+        ReadDialogues(s);
         Start(s, ActionRequest.Travel("field"));
         for (var i = 0; i < 200 && s.Main != null && !s.Progress.Dead; i++)
         {
             var r = E.Advance(s);
             if (r.Status == SegmentStatus.Paused) E.Resume(s);
         }
+        if (read) ReadDialogues(s);
     }
 
     private void ToCamp(GameState s)
     {
+        ReadDialogues(s);
         Start(s, ActionRequest.Travel("camp"));
         Run(s);
     }
@@ -32,6 +36,7 @@ public class V10StoryTests : BattleTestBase
     private void WinTutorial(GameState s)
     {
         Assert.That(s.Battle!.Tutorial, Is.True);
+        ReadDialogues(s);
         for (var k = 0; k < 20 && s.Battle != null; k++)
         {
             if (!E.AwaitingPlayer(s)) { E.BattleStep(s); continue; }
@@ -69,8 +74,10 @@ public class V10StoryTests : BattleTestBase
         var s = NewStory(3);
         var tid = s.Story.TutorialEnemyId!.Value;
         Assert.That(E.FindWorldEnemy(s, tid)!.LocationId, Is.EqualTo("field"));
+        Assert.That(E.Preview(s, ActionRequest.Travel("field")).Ok, Is.False, "开场对白未读完时不能开始移动");
+        ReadDialogues(s);
         Assert.That(E.Preview(s, ActionRequest.Travel("field")).Warnings.Any(w => w.Contains("首战")), Is.True, "移动预览提前说明");
-        ToField(s);
+        ToField(s, read: false);
         Assert.That(s.CurrentLocation, Is.EqualTo("field"), "先落点到荒地");
         Assert.That(s.Battle, Is.Not.Null, "到达后直接进入首战");
         Assert.That(s.Battle!.Tutorial, Is.True);
@@ -85,6 +92,7 @@ public class V10StoryTests : BattleTestBase
     public void TutorialGate_NoRandomOrOtherApproach_NoPatrol_NoReinforcement()
     {
         var s = NewStory(4);
+        ReadDialogues(s);
         var tid = s.Story.TutorialEnemyId!.Value;
         // 首战前：第2日也不随机接敌
         s.GameMinute = At(2, 9, 0);
@@ -197,6 +205,7 @@ public class V10StoryTests : BattleTestBase
         var s = NewStory(9);
         ToField(s);
         WinTutorial(s);
+        ReadDialogues(s);
         var inst = s.Items.Single(i => i.ItemId == Sub);
         var pv = E.Preview(s, ActionRequest.Fuse(inst.InstanceId));
         Assert.That(pv.Ok, Is.True, pv.Reason);
@@ -216,9 +225,14 @@ public class V10StoryTests : BattleTestBase
         Assert.That(s.Story.TutorialFusionDone, Is.True);
         Assert.That(s.Story.PendingDialogues.Where(d => d.StartsWith("fusion_done")), Is.EqualTo(new[] { "fusion_done_1", "fusion_done_2" }), "先报收益，再提示未来风险");
         Assert.That(E.Cancel(s).Ok, Is.False, "融合期间不可取消");
+        // 融合对白在安全边界等待：本段 5 分钟不开始、不 tick，读完才继续（S01 §8）
+        Assert.That(E.Advance(s).Status, Is.EqualTo(SegmentStatus.Dialogue));
+        Assert.That(s.GameMinute, Is.EqualTo(m0));
         // 存档在 5 分钟中途：读档只续未推进的段，不再消费、不再加属性
         var back = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg, out _);
         Assert.That(E.Start(s, ActionRequest.Fuse(inst.InstanceId).WithRequestId("fuse-1")).Duplicate, Is.True, "重复请求不重复叠加");
+        ReadDialogues(s);
+        ReadDialogues(back);
         Run(s);
         Run(back);
         Assert.That(s.GameMinute - m0, Is.EqualTo(Cfg.ActiveSubstance.Fusion.Minutes), "固定5分钟");
@@ -235,6 +249,7 @@ public class V10StoryTests : BattleTestBase
         var s = NewStory(10);
         ToField(s);
         WinTutorial(s);
+        ReadDialogues(s);
         var normal = E.CreateItems(s, Sub, 1, ItemInstance.Carried, false, new ItemSource { GrantEventId = "substance-b9-w9", BattleId = 9, WorldEnemyId = 9 }).Single();
         var xp = s.Skills.Values.Sum(k => k.Xp);
         var imm = s.Body.Immunity;
@@ -252,6 +267,7 @@ public class V10StoryTests : BattleTestBase
     public void R07_A06_FusionRejectedInBattleBusyOrBadTarget()
     {
         var s = NewStory(11);
+        ReadDialogues(s);
         var sub = E.CreateItems(s, Sub, 1, ItemInstance.Carried, false, new ItemSource { GrantEventId = "x" }).Single();
         // 行动中
         Start(s, ActionRequest.Wait(30));

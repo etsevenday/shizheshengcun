@@ -143,6 +143,7 @@ namespace Survival.Core.Engine
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
             if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
+            if (DialogueLocked(s)) return ActionResult.Fail(DialogueLockedReason);
             if (s.Encounter == null) return ActionResult.Fail("当前没有敌踪");
             var group = EncounterEnemies(s).Where(w => !w.Engaged && w.LocationId == s.CurrentLocation).ToList();
             RememberRequest(s, requestId);
@@ -346,6 +347,8 @@ namespace Survival.Core.Engine
         {
             var b = s.Battle;
             if (b == null || s.Progress.Dead) return new BattleStepResult { Kind = BattleStepKind.None };
+            // 对白安全边界（R03 §7.1）：已提交的原子事务保留，下一条动作等对话读完再开始
+            if (DialogueLocked(s)) return new BattleStepResult { Kind = BattleStepKind.Dialogue };
             if (b.PlayerActing) return new BattleStepResult { Kind = BattleStepKind.AwaitPlayer };
             if (b.Cursor >= b.Queue.Count)
             {
@@ -678,6 +681,7 @@ namespace Survival.Core.Engine
             var b = s.Battle;
             if (s.Progress.Dead) return "角色已死亡";
             if (b == null) return "不在战斗中";
+            if (DialogueLocked(s)) return DialogueLockedReason;
             if (!b.PlayerActing) return "还没轮到你行动";
             var a = Act(c.Action);
             if (a == null) return c.Action == "aim" ? "瞄准已移除" : "未知指令";
@@ -1261,6 +1265,7 @@ namespace Survival.Core.Engine
         public ActionResult EquipWeapon(GameState s, int? instanceId)
         {
             if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
+            if (DialogueLocked(s)) return ActionResult.Fail(DialogueLockedReason);
             if (s.Battle != null) return ActionResult.Fail("战斗中换武器请用战斗指令（1AP）");
             if (instanceId is null or 0) { s.EquippedWeaponId = null; return ActionResult.Success(); }
             var it = FindItem(s, instanceId.Value);

@@ -114,7 +114,8 @@ namespace Survival.Core.Engine
         public static ActionResult Fail(string reason, int? max = null) => new ActionResult { Ok = false, Reason = reason, MaxCount = max };
     }
 
-    public enum SegmentStatus { Idle, Running, Completed, Paused, Aborted, Dead }
+    /// <summary>Dialogue：有未读对话，本段没有开始（不 tick、不改行动），读完后从这里继续（S01 §8）。</summary>
+    public enum SegmentStatus { Idle, Running, Completed, Paused, Aborted, Dead, Dialogue }
 
     public sealed class SegmentResult
     {

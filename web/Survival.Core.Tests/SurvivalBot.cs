@@ -43,6 +43,7 @@ public sealed class SurvivalBot
         Battles++;
         for (var guard = 0; guard < 400 && S.Battle != null && !S.Progress.Dead; guard++)
         {
+            ReadDialogues();
             if (!E.AwaitingPlayer(S)) { E.BattleStep(S); continue; }
             var opts = E.BattleOptions(S);
             BattleCommandOption? Opt(string id) => opts.FirstOrDefault(o => o.Action == id && o.Available);
@@ -57,6 +58,7 @@ public sealed class SurvivalBot
             if (!E.ExecuteCommand(S, cmd).Ok) E.ExecuteCommand(S, BattleCommand.Of("end_turn"));
         }
         Log($"战斗结束 H{S.Stats.Health:0.00}");
+        ReadDialogues();
         PickUpUseful();
     }
 
@@ -98,8 +100,16 @@ public sealed class SurvivalBot
 
     // ───────────── 执行 ─────────────
 
+    /// <summary>像玩家一样读完当前所有对话（Q10：读完才能操作；不耗时）。</summary>
+    private void ReadDialogues()
+    {
+        for (var k = 0; k < 64 && E.DialogueLocked(S); k++)
+            E.AckDialogue(S, E.CurrentDialogueLine(S)!.LineId);
+    }
+
     private bool Do(ActionRequest r)
     {
+        ReadDialogues();
         var res = E.Start(S, r);
         if (!res.Ok) return false;
         Log($"{r.Type} {r.TargetId}{(r.Minutes > 0 ? " " + r.Minutes : "")}");
@@ -115,7 +125,7 @@ public sealed class SurvivalBot
     /// </summary>
     private void HandleStory()
     {
-        while (S.Story.PendingDialogues.Count > 0) E.AckDialogue(S, S.Story.PendingDialogues[0]);
+        ReadDialogues();
         if (S.Battle != null && !S.Progress.Dead)
         {
             Log(S.Battle.Tutorial ? "首战" : "战斗");
@@ -129,7 +139,7 @@ public sealed class SurvivalBot
             Log("吞噬融合教学活性物质");
             Drive();
         }
-        while (S.Story.PendingDialogues.Count > 0) E.AckDialogue(S, S.Story.PendingDialogues[0]);
+        ReadDialogues();
     }
 
     /// <summary>v0.6：探索/清理后发现敌踪时，脚本选择绕行10分钟（不打架），之后60分钟保护期。</summary>
@@ -158,6 +168,7 @@ public sealed class SurvivalBot
         {
             if (S.Main == null && S.Sub == null) return;
             var st = E.Advance(S).Status;
+            if (st == SegmentStatus.Dialogue) { ReadDialogues(); continue; }
             if (st == SegmentStatus.Paused) HandlePause();
             else if (st != SegmentStatus.Running) { if (S.Main == null) return; }
         }
@@ -165,7 +176,7 @@ public sealed class SurvivalBot
 
     private void DriveSub()
     {
-        for (var i = 0; i < 100 && S.Sub != null && !S.Progress.Dead; i++) E.Advance(S);
+        for (var i = 0; i < 100 && S.Sub != null && !S.Progress.Dead; i++) { ReadDialogues(); E.Advance(S); }
     }
 
     private void HandlePause()
