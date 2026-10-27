@@ -1,0 +1,704 @@
+{
+  "compiledAt": "2026-10-27",
+  "role": "document_reorganization_not_runtime_config",
+  "referenceExtensionsEnabled": false,
+  "sourceSnapshot": [
+    {
+      "path": "策划文档/00 需求裁定与开发交接 v0.4.md",
+      "sha256": "afcc8a21669a5ce46f5772a8c45a77485e5f4e2858fd240c26f34a7f0e360748",
+      "bytes": 9429
+    },
+    {
+      "path": "策划文档/01 卡片拖拽交互与容器策划案 v0.3.md",
+      "sha256": "bb6219be393c9fc44dd3f7d6ce999b4c5bb4f144a9a063420fdb72543098f78d",
+      "bytes": 20542
+    },
+    {
+      "path": "策划文档/01 统一卡片与次级菜单UI策划案 v0.4.md",
+      "sha256": "5e735cde9670bf81f30eabfec9c681b4f2786742be28c6e40f8572dac1fa545e",
+      "bytes": 10982
+    },
+    {
+      "path": "策划文档/02 设施内容物与烤制水煮策划案 v0.4.md",
+      "sha256": "12aa50b30c1ccdf7bc28efd692788f2d5a721cd2645049f3dd06cfb04c95ac4d",
+      "bytes": 15217
+    },
+    {
+      "path": "策划文档/UI策划 v0.1/适者生存基础系统UI策划案 v0.1.md",
+      "sha256": "851c8b49940c1df98ae4365137ce33542fc55abbb9571254f5ec78ee2039d88f",
+      "bytes": 39566
+    },
+    {
+      "path": "策划文档/交互与地图扩展 v0.3/00 开发接入与规则变更 v0.3.md",
+      "sha256": "8a164b88bcb1cb1f6cef94ad9a99cf72f61b7d22859b8ea466095ddab2b72920",
+      "bytes": 12966
+    },
+    {
+      "path": "策划文档/交互与地图扩展 v0.3/01 卡片拖拽交互与容器策划案 v0.3.md",
+      "sha256": "bb6219be393c9fc44dd3f7d6ce999b4c5bb4f144a9a063420fdb72543098f78d",
+      "bytes": 20542
+    },
+    {
+      "path": "策划文档/交互与地图扩展 v0.3/02 地图清理系统策划案 v0.3.md",
+      "sha256": "2ed949a56f1144d02e1f09f542734c8a808e99b79904ab54d275cfcbb6fff887",
+      "bytes": 14514
+    },
+    {
+      "path": "策划文档/交互与地图扩展 v0.3/03 探索随机收获与完成规则策划案 v0.3.md",
+      "sha256": "01eff9c1aee91601386d7868be6fae7e4924d95e7cd865ab0ce3f60388f1e5aa",
+      "bytes": 11549
+    },
+    {
+      "path": "策划文档/交互与地图扩展 v0.3/基础系统整合配置 v0.3.json",
+      "sha256": "497b896051c1ee63a1942b7da79a2c92b673818c212d028f48bab0357210a94d",
+      "bytes": 32479
+    },
+    {
+      "path": "策划文档/人物与战斗修订参考 v0.6/人物与战斗关联属性总表 v0.6.md",
+      "sha256": "da644b6f5c5def0978f8cedd77d34f4e2531a03d92f9fa57785c66f8e2e8e9bc",
+      "bytes": 11250
+    },
+    {
+      "path": "策划文档/人物与战斗修订参考 v0.6/人物战斗与免疫参考配置 v0.6.json",
+      "sha256": "d05aaa1d9a833ab6ff121193c19679bc71536adcc3e2da9f8c32af8a11fb8d65",
+      "bytes": 44796
+    },
+    {
+      "path": "策划文档/人物与战斗修订参考 v0.6/人物战斗与免疫系统修订参考案 v0.6.md",
+      "sha256": "6a0f9370043f99da2f6fff34b9bd7b6270fb726264a54b5e631be8657b9cfc39",
+      "bytes": 30729
+    },
+    {
+      "path": "策划文档/人物与战斗修订参考 v0.6/数值消耗与恢复验证记录 v0.6.md",
+      "sha256": "32a2857c55d0d1a94282c4d60b83d937caf823bbcd31656d58d1ea663c073d40",
+      "bytes": 6120
+    },
+    {
+      "path": "策划文档/人物与战斗参考 v0.5/人物与战斗参考数据 v0.5.json",
+      "sha256": "b4b338c0ffb2f0abf231233d7ee553af0f56a888233f5148a2ee5615a65e944e",
+      "bytes": 28553
+    },
+    {
+      "path": "策划文档/人物与战斗参考 v0.5/人物技能与回合制战斗参考策划案 v0.5.md",
+      "sha256": "f76d19a8a3b63cff0af25316bb9c11062e50c17123a04d3d82cb76eb9e53bb31",
+      "bytes": 35003
+    },
+    {
+      "path": "策划文档/卡片统一与设施烹饪 v0.4/00 需求裁定与开发交接 v0.4.md",
+      "sha256": "afcc8a21669a5ce46f5772a8c45a77485e5f4e2858fd240c26f34a7f0e360748",
+      "bytes": 9429
+    },
+    {
+      "path": "策划文档/卡片统一与设施烹饪 v0.4/01 统一卡片与次级菜单UI策划案 v0.4.md",
+      "sha256": "5e735cde9670bf81f30eabfec9c681b4f2786742be28c6e40f8572dac1fa545e",
+      "bytes": 10982
+    },
+    {
+      "path": "策划文档/卡片统一与设施烹饪 v0.4/02 设施内容物与烤制水煮策划案 v0.4.md",
+      "sha256": "12aa50b30c1ccdf7bc28efd692788f2d5a721cd2645049f3dd06cfb04c95ac4d",
+      "bytes": 15217
+    },
+    {
+      "path": "策划文档/卡片统一与设施烹饪 v0.4/策划增量配置 v0.4.json",
+      "sha256": "e520ef41298d9d5f743b95865beee08502225ebbabf9bb081b69554afd9e565d",
+      "bytes": 8288
+    },
+    {
+      "path": "策划文档/基础UI交互修订 v0.7/基础UI布局与操作修订案 v0.7.md",
+      "sha256": "f15ba4a58f5fb52dc342c79282b1883fa81538f8266ca48295aba56541024d63",
+      "bytes": 27813
+    },
+    {
+      "path": "策划文档/基础系统 v0.2/Markdown/01 适者生存地图系统策划案 v0.2.md",
+      "sha256": "284d123fbaaf89e4aa2d9c41a12bbfbf4f2b3a04c23bc171e58898d4a1a93ab8",
+      "bytes": 20862
+    },
+    {
+      "path": "策划文档/基础系统 v0.2/Markdown/02 适者生存物资搜集系统策划案 v0.2.md",
+      "sha256": "01f08f06e1bf833581b9869f0c3fcf00d083e0a0a972e88b4ce30e98a5d7bd4b",
+      "bytes": 20097
+    },
+    {
+      "path": "策划文档/基础系统 v0.2/Markdown/03 适者生存基础求生系统策划案 v0.2.md",
+      "sha256": "88b2bcf5593b6d5b2a6f9057bb609f87b54d1078e3531b328efa20991104d936",
+      "bytes": 20603
+    },
+    {
+      "path": "策划文档/基础系统 v0.2/基础系统初始配置 v0.2.json",
+      "sha256": "e4b72412136511531167fb2d7b14e3a8b7712af0949aab9b82eee6f67fbd3e8a",
+      "bytes": 18135
+    },
+    {
+      "path": "策划文档/适者生存基础系统UI策划案 v0.1.md",
+      "sha256": "851c8b49940c1df98ae4365137ce33542fc55abbb9571254f5ec78ee2039d88f",
+      "bytes": 39566
+    },
+    {
+      "path": "本地历史来源/Survival of the Fittest策划案 20240729.xmind",
+      "sha256": "0787c28274f74b62302d32eda125877ef3c613ddb8c0c1ee5614b24bfe756255",
+      "bytes": 347723,
+      "pathRole": "historical_reference_not_bundled"
+    },
+    {
+      "path": "策划文档/适者生存 首版目标与核心循环策划案 v0.1.docx",
+      "sha256": "f8e135df6d842207661d545d1b484add567e1147f9902c21fa97143181469544",
+      "bytes": 48996
+    },
+    {
+      "path": "策划文档/适者生存 首版目标与核心循环策划案.docx",
+      "sha256": "f4804b5ce72e0f15a4b25bcb9b1c55455a44cf400bb3a3bd296f2f9faf9294ab",
+      "bytes": 49025
+    },
+    {
+      "path": "策划文档/交互与地图扩展 v0.3.zip",
+      "sha256": "2ae038fd20de37bb1f7fac61ce2e525d9584205901a0ee386c8c8bf52c69e987",
+      "bytes": 29598
+    },
+    {
+      "path": "策划文档/人物与战斗系统策划，附带ui改进 v0.5-v0.7.zip",
+      "sha256": "8e4efa1fbab1321dff674ee1bc21658eee6ff5fc2922d5fe46f5d90ef412aeec",
+      "bytes": 112323
+    },
+    {
+      "path": "策划文档/卡片统一烹饪ui优化v0.4.zip",
+      "sha256": "000ca9f257d3c824b7a076667635e350d1f3339c2c3cd421b4ebe22f9a2baf6c",
+      "bytes": 846283
+    },
+    {
+      "path": "策划文档/适者生存策划文档20261022初版.zip",
+      "sha256": "62949c38b58eed07e46f7e2d8ab41ff192d1f29bbb2da0742fce79a48ac86356",
+      "bytes": 6445850
+    }
+  ],
+  "systems": [
+    {
+      "id": "S01",
+      "title": "世界时间、行动与存档系统",
+      "path": "01 基础系统/S01 世界时间、行动与存档系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "唯一世界时钟、工作倍率、主/子行动、段结算、随机事务、保存与恢复",
+      "depends": [
+        "S12",
+        "S09",
+        "S11"
+      ],
+      "sources": [
+        "SURVIVAL",
+        "V3COMMON",
+        "DRAG",
+        "V4COMMON",
+        "COOK"
+      ],
+      "acceptanceCount": 6
+    },
+    {
+      "id": "S02",
+      "title": "地图结构与移动系统",
+      "path": "01 基础系统/S02 地图结构与移动系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "地点定义、物理连接、路线解锁、地点可见性、移动与环境属性",
+      "depends": [
+        "S01",
+        "S03",
+        "S05"
+      ],
+      "sources": [
+        "MAP",
+        "EXPLORE",
+        "V7UI"
+      ],
+      "acceptanceCount": 5
+    },
+    {
+      "id": "S03",
+      "title": "探索与发现系统",
+      "path": "01 基础系统/S03 探索与发现系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "探索行动、进度、发现里程碑与随机收获的合并提交",
+      "depends": [
+        "S01",
+        "S02",
+        "S04",
+        "S05"
+      ],
+      "sources": [
+        "MAP",
+        "EXPLORE",
+        "V4UI",
+        "V7UI"
+      ],
+      "acceptanceCount": 5
+    },
+    {
+      "id": "S04",
+      "title": "地块清理与共享掉落系统",
+      "path": "01 基础系统/S04 地块清理与共享掉落系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "各地清理次数、串行恢复、清理行动及探索/清理共用掉落主表",
+      "depends": [
+        "S01",
+        "S03",
+        "S06",
+        "S12"
+      ],
+      "sources": [
+        "CLEAR",
+        "EXPLORE",
+        "V7UI"
+      ],
+      "acceptanceCount": 6
+    },
+    {
+      "id": "S05",
+      "title": "定向采集与遗迹搜集系统",
+      "path": "01 基础系统/S05 定向采集与遗迹搜集系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "资源点定义、库存、固定产量、工具效果、午夜补充与搜集风险",
+      "depends": [
+        "S01",
+        "S03",
+        "S06",
+        "S08",
+        "S12"
+      ],
+      "sources": [
+        "GATHER",
+        "DRAG",
+        "V3COMMON"
+      ],
+      "acceptanceCount": 6
+    },
+    {
+      "id": "S06",
+      "title": "物品、背包、负重与保质系统",
+      "path": "01 基础系统/S06 物品、背包、负重与保质系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "基础物品目录、重量/堆叠/保质、批次、唯一归属和携重",
+      "depends": [
+        "S01",
+        "S10",
+        "S12"
+      ],
+      "sources": [
+        "GATHER",
+        "DRAG",
+        "COOK",
+        "V7UI"
+      ],
+      "acceptanceCount": 5
+    },
+    {
+      "id": "S07",
+      "title": "卡片拖拽与交互系统",
+      "path": "01 基础系统/S07 卡片拖拽与交互系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "起拖/落点、拖拽白名单、数量、事件优先级及点击等价语义",
+      "depends": [
+        "S01",
+        "S06",
+        "S08",
+        "S09",
+        "S10",
+        "S11",
+        "S14"
+      ],
+      "sources": [
+        "DRAG",
+        "V4UI",
+        "COOK",
+        "V7UI"
+      ],
+      "acceptanceCount": 5
+    },
+    {
+      "id": "S08",
+      "title": "手工制作系统",
+      "path": "01 基础系统/S08 手工制作系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "普通手工配方、候选、材料选择/预留、制作完成和取消",
+      "depends": [
+        "S01",
+        "S06",
+        "S07",
+        "S09"
+      ],
+      "sources": [
+        "GATHER",
+        "DRAG",
+        "V4UI",
+        "V4COMMON"
+      ],
+      "acceptanceCount": 5
+    },
+    {
+      "id": "S09",
+      "title": "营地建造与火堆系统",
+      "path": "01 基础系统/S09 营地建造与火堆系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "建筑配方/建造条件、火堆容量、燃料、点火与照明",
+      "depends": [
+        "S01",
+        "S06",
+        "S08",
+        "S10",
+        "S11",
+        "S13",
+        "S14"
+      ],
+      "sources": [
+        "GATHER",
+        "DRAG",
+        "V4COMMON",
+        "COOK",
+        "V7UI"
+      ],
+      "acceptanceCount": 6
+    },
+    {
+      "id": "S10",
+      "title": "容器与液体系统",
+      "path": "01 基础系统/S10 容器与液体系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "锅的内容结构、容量、装水/转移、重量、归属及内容物选择",
+      "depends": [
+        "S01",
+        "S06",
+        "S07",
+        "S09",
+        "S11",
+        "S14"
+      ],
+      "sources": [
+        "DRAG",
+        "COOK",
+        "V7UI"
+      ],
+      "acceptanceCount": 5
+    },
+    {
+      "id": "S11",
+      "title": "设施加工与烹饪系统",
+      "path": "01 基础系统/S11 设施加工与烹饪系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "自动受热、净水/烤制/水煮、加工水预留、进度与打断",
+      "depends": [
+        "S01",
+        "S06",
+        "S09",
+        "S10",
+        "S12"
+      ],
+      "sources": [
+        "COOK",
+        "V4COMMON",
+        "V4UI",
+        "V7UI"
+      ],
+      "acceptanceCount": 8
+    },
+    {
+      "id": "S12",
+      "title": "基础状态、饮食与医疗系统",
+      "path": "01 基础系统/S12 基础状态、饮食与医疗系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "基础H/N/W/E/S/M、行动身体速率、阈值伤害、自用效果与基础绷带",
+      "depends": [
+        "S01",
+        "S06",
+        "S11",
+        "S13"
+      ],
+      "sources": [
+        "SURVIVAL",
+        "GATHER",
+        "V4COMMON",
+        "COOK",
+        "V7UI"
+      ],
+      "acceptanceCount": 6
+    },
+    {
+      "id": "S13",
+      "title": "休息、睡眠与恢复系统",
+      "path": "01 基础系统/S13 休息、睡眠与恢复系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "可选休息/等待/睡眠、遮蔽判定、恢复修正与自然健康恢复",
+      "depends": [
+        "S01",
+        "S09",
+        "S12"
+      ],
+      "sources": [
+        "SURVIVAL",
+        "OLDUI",
+        "COOK"
+      ],
+      "acceptanceCount": 5
+    },
+    {
+      "id": "S14",
+      "title": "主界面与全局UI交互系统",
+      "path": "01 基础系统/S14 主界面与全局UI交互系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "两行地块布局、卡片图标、右栏人物/对象、内容内嵌、操作位置、滚轮和输入层",
+      "depends": [
+        "S01",
+        "S02",
+        "S06",
+        "S07",
+        "S09",
+        "S10",
+        "S12",
+        "R03"
+      ],
+      "sources": [
+        "V7UI",
+        "V4UI",
+        "OLDUI"
+      ],
+      "acceptanceCount": 28
+    },
+    {
+      "id": "S15",
+      "title": "开局、引导目标与终局系统",
+      "path": "01 基础系统/S15 开局、引导目标与终局系统.md",
+      "status": "基础设计口径；程序接入情况须结合工程核验",
+      "owns": "新局初始化、引导锁存、七日检查、死亡展示和重开边界",
+      "depends": [
+        "S01",
+        "S02",
+        "S06",
+        "S11",
+        "S12",
+        "S14"
+      ],
+      "sources": [
+        "SURVIVAL",
+        "COOK",
+        "OLDUI"
+      ],
+      "acceptanceCount": 5
+    },
+    {
+      "id": "R01",
+      "title": "人物属性、熟练度与数值尺度",
+      "path": "02 参考扩展/R01 人物属性、熟练度与数值尺度.md",
+      "status": "参考扩展；尚未自动启用",
+      "owns": "参考H/E尺度、技能ID/经验/成长、参考行动消耗与恢复替换表",
+      "depends": [
+        "S01",
+        "S05",
+        "S12",
+        "S13",
+        "R02",
+        "R03",
+        "R04"
+      ],
+      "sources": [
+        "V6",
+        "V5",
+        "ATTR",
+        "VALID"
+      ],
+      "acceptanceCount": 5
+    },
+    {
+      "id": "R02",
+      "title": "武器装备、弹药与随机耐久",
+      "path": "02 参考扩展/R02 武器装备、弹药与随机耐久.md",
+      "status": "参考扩展；尚未自动启用",
+      "owns": "武器基础面板、装备/弹药物理数据、实例随机耐久、磨损、维护与取得",
+      "depends": [
+        "S06",
+        "S08",
+        "S09",
+        "S10",
+        "S11",
+        "R01",
+        "R03",
+        "R05"
+      ],
+      "sources": [
+        "V6",
+        "V5",
+        "REFJSON"
+      ],
+      "acceptanceCount": 5
+    },
+    {
+      "id": "R03",
+      "title": "回合制战斗系统",
+      "path": "02 参考扩展/R03 回合制战斗系统.md",
+      "status": "参考扩展；尚未自动启用",
+      "owns": "AP动作表、站位/先手、命中/伤害/恐慌、临时状态、撤退与战斗事务",
+      "depends": [
+        "S01",
+        "S14",
+        "R01",
+        "R02",
+        "R04",
+        "R05"
+      ],
+      "sources": [
+        "V6",
+        "V5",
+        "REFJSON"
+      ],
+      "acceptanceCount": 7
+    },
+    {
+      "id": "R04",
+      "title": "免疫、感染与扩展医疗系统",
+      "path": "02 参考扩展/R04 免疫、感染与扩展医疗系统.md",
+      "status": "参考扩展；尚未自动启用",
+      "owns": "免疫小时率、咬伤暴露、病毒进展、自然治愈/特效药、抑制药物与冷却",
+      "depends": [
+        "S01",
+        "S06",
+        "S08",
+        "S12",
+        "S14",
+        "R01",
+        "R03",
+        "R05"
+      ],
+      "sources": [
+        "V6",
+        "REFJSON",
+        "ATTR"
+      ],
+      "acceptanceCount": 7
+    },
+    {
+      "id": "R05",
+      "title": "敌人卡、种群刷新与遭遇系统",
+      "path": "02 参考扩展/R05 敌人卡、种群刷新与遭遇系统.md",
+      "status": "参考扩展；尚未自动启用",
+      "owns": "敌面板/意图、出生池、两级数量、巡游、低遭遇、噪声增援和掉落归属",
+      "depends": [
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "R01",
+        "R03",
+        "R04",
+        "R06"
+      ],
+      "sources": [
+        "V6",
+        "V5",
+        "REFJSON"
+      ],
+      "acceptanceCount": 7
+    },
+    {
+      "id": "R06",
+      "title": "动物尸体处理与肉类加工",
+      "path": "02 参考扩展/R06 动物尸体处理与肉类加工.md",
+      "status": "参考扩展；尚未自动启用",
+      "owns": "动物尸体/肉皮目录、尸体处理成本产量、肉类烹饪与食用扩展",
+      "depends": [
+        "S01",
+        "S06",
+        "S08",
+        "S10",
+        "S11",
+        "S12",
+        "R02",
+        "R05"
+      ],
+      "sources": [
+        "V5",
+        "V6",
+        "REFJSON"
+      ],
+      "acceptanceCount": 5
+    }
+  ],
+  "additionalSourceAudit": {
+    "wordDocuments": [
+      {
+        "name": "适者生存 首版目标与核心循环策划案 v0.1.docx",
+        "textRuns": 248,
+        "commentsPart": false,
+        "trackedChanges": false
+      },
+      {
+        "name": "适者生存 首版目标与核心循环策划案.docx",
+        "textRuns": 248,
+        "commentsPart": false,
+        "trackedChanges": false
+      }
+    ],
+    "archives": [
+      {
+        "name": "交互与地图扩展 v0.3.zip",
+        "documentEntries": 5,
+        "names": [
+          "交互与地图扩展 v0.3/00 开发接入与规则变更 v0.3.md",
+          "交互与地图扩展 v0.3/01 卡片拖拽交互与容器策划案 v0.3.md",
+          "交互与地图扩展 v0.3/02 地图清理系统策划案 v0.3.md",
+          "交互与地图扩展 v0.3/03 探索随机收获与完成规则策划案 v0.3.md",
+          "交互与地图扩展 v0.3/基础系统整合配置 v0.3.json"
+        ]
+      },
+      {
+        "name": "人物与战斗系统策划，附带ui改进 v0.5-v0.7.zip",
+        "documentEntries": 12,
+        "names": [
+          "人物与战斗修订参考 v0.6/人物与战斗关联属性总表 v0.6.md",
+          "人物与战斗修订参考 v0.6/人物战斗与免疫参考配置 v0.6.json",
+          "人物与战斗修订参考 v0.6/人物战斗与免疫系统修订参考案 v0.6.md",
+          "人物与战斗修订参考 v0.6/数值消耗与恢复验证记录 v0.6.md",
+          "人物与战斗参考 v0.5/人物与战斗参考数据 v0.5.json",
+          "人物与战斗参考 v0.5/人物技能与回合制战斗参考策划案 v0.5.md",
+          "适者生存基础系统UI策划案 v0.1.md",
+          "00 需求裁定与开发交接 v0.4.md",
+          "01 卡片拖拽交互与容器策划案 v0.3.md",
+          "01 统一卡片与次级菜单UI策划案 v0.4.md",
+          "02 设施内容物与烤制水煮策划案 v0.4.md",
+          "基础UI交互修订 v0.7/基础UI布局与操作修订案 v0.7.md"
+        ]
+      },
+      {
+        "name": "卡片统一烹饪ui优化v0.4.zip",
+        "documentEntries": 14,
+        "names": [
+          ".codex-artifacts/ui-cooking-v0.4/baseline-hashes.json",
+          ".codex-artifacts/ui-cooking-v0.4/validation-report.json",
+          ".codex-artifacts/ui-cooking-v0.4/原文备份/UI策划 v0.1/适者生存基础系统UI策划案 v0.1.md",
+          ".codex-artifacts/ui-cooking-v0.4/原文备份/交互与地图扩展 v0.3/00 开发接入与规则变更 v0.3.md",
+          ".codex-artifacts/ui-cooking-v0.4/原文备份/交互与地图扩展 v0.3/01 卡片拖拽交互与容器策划案 v0.3.md",
+          ".codex-artifacts/ui-cooking-v0.4/原文备份/交互与地图扩展 v0.3/02 地图清理系统策划案 v0.3.md",
+          ".codex-artifacts/ui-cooking-v0.4/原文备份/交互与地图扩展 v0.3/03 探索随机收获与完成规则策划案 v0.3.md",
+          ".codex-artifacts/ui-cooking-v0.4/原文备份/基础系统 v0.2/Markdown/01 适者生存地图系统策划案 v0.2.md",
+          ".codex-artifacts/ui-cooking-v0.4/原文备份/基础系统 v0.2/Markdown/02 适者生存物资搜集系统策划案 v0.2.md",
+          ".codex-artifacts/ui-cooking-v0.4/原文备份/基础系统 v0.2/Markdown/03 适者生存基础求生系统策划案 v0.2.md",
+          "卡片统一与设施烹饪 v0.4/00 需求裁定与开发交接 v0.4.md",
+          "卡片统一与设施烹饪 v0.4/01 统一卡片与次级菜单UI策划案 v0.4.md",
+          "卡片统一与设施烹饪 v0.4/02 设施内容物与烤制水煮策划案 v0.4.md",
+          "卡片统一与设施烹饪 v0.4/策划增量配置 v0.4.json"
+        ]
+      },
+      {
+        "name": "适者生存策划文档20261022初版.zip",
+        "documentEntries": 8,
+        "names": [
+          "UI策划 v0.1/适者生存基础系统UI策划案 v0.1.md",
+          "基础系统 v0.2/01 适者生存地图系统策划案 v0.2.docx",
+          "基础系统 v0.2/02 适者生存物资搜集系统策划案 v0.2.docx",
+          "基础系统 v0.2/03 适者生存基础求生系统策划案 v0.2.docx",
+          "基础系统 v0.2/Markdown/01 适者生存地图系统策划案 v0.2.md",
+          "基础系统 v0.2/Markdown/02 适者生存物资搜集系统策划案 v0.2.md",
+          "基础系统 v0.2/Markdown/03 适者生存基础求生系统策划案 v0.2.md",
+          "基础系统 v0.2/基础系统初始配置 v0.2.json"
+        ]
+      }
+    ]
+  },
+  "githubDelivery": {
+    "historicalSourcesBundled": false,
+    "localAbsolutePathsNormalized": true
+  }
+}
