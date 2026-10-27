@@ -1161,6 +1161,7 @@ public sealed class GameSession
 
     private void ResetBattleUi()
     {
+        if (Pop?.Kind == "switch") Pop = null;
         BattleAction = null;
         BattleTarget = null;
         BattleItem = null;
@@ -1184,6 +1185,8 @@ public sealed class GameSession
         if (State == null || S.Battle == null) return;
         BattleAction = action;
         BattleItem = item;
+        // 换成别的指令：换武器浮窗收起（一个时刻只有一个操作上下文，S14 §14.1）
+        if (action != "switch_weapon" && Pop?.Kind == "switch") Pop = null;
         var opt = E.BattleOptions(S).FirstOrDefault(o => o.Action == action && (item == null || o.ItemInstanceId == item));
         if (opt != null && opt.NeedsTarget && (BattleTarget == null || !opt.Targets.Contains(BattleTarget.Value)))
             BattleTarget = opt.Targets.Count > 0 ? opt.Targets[0] : BattleTarget;
@@ -1207,11 +1210,21 @@ public sealed class GameSession
         Notify();
     }
 
-    /// <summary>执行右栏预览的指令：新 requestId，执行期间锁定输入；之后逐条展示敌方行动直到轮到玩家或战斗结束。</summary>
-    public async Task ExecuteBattleCommand()
+    /// <summary>
+    /// 本地“执行”按钮的请求号（R03 §7.2“一次执行一个 requestId”）：由按钮渲染时所见的战斗状态与所选指令决定——
+    /// 同一画面上的连点/双击带同一个号，内核只受理一次；行动点、游标、轮次或指令/目标/物品一变就是新号。
+    /// </summary>
+    public string BattleExecToken()
+    {
+        var b = S.Battle;
+        return b == null ? "" : $"bt:{b.BattleId}:{b.Round}:{b.Cursor}:{b.PlayerAp}:{b.Log.Count}:{BattleAction}:{BattleTarget}:{BattleItem}";
+    }
+
+    /// <summary>执行所选指令（战斗区内的本地“执行”按钮）：执行期间锁定输入；之后逐条展示敌方行动直到轮到玩家或战斗结束。</summary>
+    public async Task ExecuteBattleCommand(string? requestId = null)
     {
         if (State == null || S.Battle == null || BattleBusy || BattleAction == null) return;
-        var cmd = CurrentBattleCommand().WithRequestId(Guid.NewGuid().ToString("N"));
+        var cmd = CurrentBattleCommand().WithRequestId(string.IsNullOrEmpty(requestId) ? Guid.NewGuid().ToString("N") : requestId);
         BattleBusy = true;
         try
         {
@@ -1220,6 +1233,7 @@ public sealed class GameSession
             if (res.Ok && !res.Duplicate)
             {
                 // 用掉的指令收起；攻击类在还有行动点时保留同一指令，方便连打
+                if (Pop?.Kind == "switch") Pop = null;
                 var keep = res.Ok && S.Battle != null && E.AwaitingPlayer(S) && GameEngine.AttackActions.Contains(BattleAction);
                 if (!keep) { BattleAction = null; BattleItem = null; }
                 if (S.Battle != null && BattleTarget != null && S.Battle.Enemies.All(e => e.Index != BattleTarget || !e.Alive)) BattleTarget = null;

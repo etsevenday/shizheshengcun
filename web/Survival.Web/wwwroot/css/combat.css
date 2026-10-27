@@ -127,11 +127,162 @@
 .bt-cards > .ocard .oc-line { font-size: 13px; line-height: 1.3; }
 .bt-cards > .ocard .track { margin: 1px 0; }
 @media (max-height: 800px) {
-  /* 矮屏：插画让位给数值（敌人名在卡头；“已行动”改写在卡头名字后） */
-  .bt-cards > .ocard .oc-art { display: none; }
+  /* 矮屏：插画缩小但保留（S14 §14.3、R03 §7.2 取代原“矮屏隐藏全部插画”）；“已行动”改写在卡头名字后 */
+  .bt-cards > .ocard .oc-art { height: 30px; }
+  .bt-cards > .ocard .oc-art svg { width: 28px; height: 28px; }
   .bt-cards > .ocard .oc-head { padding: 3px 7px 2px; }
   .bt-cards > .enemy-card.acted-done .oc-head b::after { content: " · 已行动"; font-weight: 400; font-size: 13px; color: #5d5a45; }
 }
 /* 卡片按可用宽度均分，不再因多出几像素出现横向滚动条吃掉卡片高度（试玩修复 G3） */
 .bt-cards > .ocard { flex: 1 1 0; width: auto; min-width: 150px; max-width: 240px; }
 .bt-cards > .player-card { flex-grow: 1.25; }
+
+/* ───────────── 战斗左右分区与带图指令（S14 §14.2/§14.3、R03 §7.2；开发计划 M65） ─────────────
+   仍只替换地图+设施两行：顶部轮次/顺序/噪声 → 竞技场（左：我方卡 + 紧邻的指令区 + 就近执行条；中线；右：前排 F1/F2 上下排靠中线、后排 B1 更靠右）→ 最近日志。
+   矮屏只缩留白、卡高与次要说明，双方图片与指令图都保留。 */
+.battle-overlay.lr { grid-template-rows: auto minmax(0, 1fr) auto; }
+.bt-arena { display: grid; grid-template-columns: minmax(0, 1.3fr) 22px minmax(0, 1fr); gap: 6px; min-height: 0; }
+.bt-ally { display: grid; grid-template-columns: 132px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 6px 8px; min-height: 0; }
+.bt-side { display: contents; }
+.ally-card { grid-row: 1; grid-column: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; background: #d8cfb5; color: var(--ink); border: 2px solid #5b6b48; border-radius: 6px; box-shadow: 0 2px 8px #0005; }
+.ally-card.acting { border-color: var(--accent); box-shadow: 0 0 0 2px #e9c46a88, 0 2px 8px #0005; }
+.ally-head { display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 3px 7px 2px; border-bottom: 1px solid #88856a55; }
+.ally-head b { font-size: 16px; }
+.ap-pips { display: inline-flex; align-items: center; gap: 3px; }
+.ap-pips i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #3c4a35; background: transparent; }
+.ap-pips i.on { background: #b8682a; border-color: #7a3f19; }
+.ap-pips small { font-size: 13px; margin-left: 2px; color: #35402e; font-weight: 600; }
+.ally-art { position: relative; flex: 1 1 auto; min-height: 34px; max-height: 92px; display: flex; align-items: center; justify-content: center; background: linear-gradient(155deg, #eee6ca22, #697f612a); }
+.ally-art img { height: 100%; max-height: 88px; width: auto; }
+.ally-weapon { position: absolute; right: 4px; bottom: 2px; width: 28px; height: 28px; border-radius: 4px; background: #efe9d5; border: 1px solid #88856a; display: flex; align-items: center; justify-content: center; }
+.ally-weapon svg { width: 24px; height: 24px; }
+.ally-body { flex: 0 0 auto; padding: 2px 7px 4px; display: flex; flex-direction: column; gap: 1px; font-size: 13px; line-height: 1.3; }
+.ally-body .oc-line { font-size: 13px; line-height: 1.3; }
+.weapon-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-cmds.grid { grid-row: 1; grid-column: 2; display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); grid-auto-rows: minmax(58px, auto); gap: 4px; align-content: start; overflow-y: auto; min-height: 0; padding: 1px; }
+.cmdt { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 0; padding: 3px 2px 2px; min-height: 58px;
+  background: #2f3a2f; color: var(--text); border: 1px solid var(--line); border-radius: 5px; line-height: 1.15; }
+.cmdt-art { position: relative; width: 30px; height: 30px; border-radius: 4px; background: var(--paper); display: flex; align-items: center; justify-content: center; }
+.cmdt-art svg { width: 27px; height: 27px; }
+.cmdt-glyph { position: absolute; right: -6px; bottom: -4px; font-style: normal; font-size: 12px; font-weight: 700; line-height: 16px; width: 16px; height: 16px; border-radius: 50%; background: #8a3b2c; color: #fff1e8; text-align: center; }
+.cmdt-name { font-size: 14px; white-space: nowrap; margin-top: 2px; }
+.cmdt small { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.cmdt-why { position: absolute; left: 2px; right: 2px; top: 2px; font-size: 11px; line-height: 14px; color: #ffe2d6; background: #6b2f22d9; border-radius: 3px; text-align: center; white-space: nowrap; overflow: hidden; }
+.cmdt:hover:not(:disabled) { border-color: var(--accent); }
+.cmdt.on { border-color: var(--accent); background: #3b3a2a; box-shadow: inset 0 0 0 1px var(--accent); }
+.cmdt.on .cmdt-name { color: var(--accent); }
+.cmdt.off { opacity: .6; }
+.cmdt.off .cmdt-art { filter: grayscale(.8); }
+.cmdt:disabled { opacity: .45; cursor: default; }
+.bt-exec { grid-row: 2; grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 4px 6px 4px 8px; background: #141d17; border: 1px solid var(--accent); border-radius: 6px; }
+.bt-exec.idle { border-color: var(--line); }
+.bx-target { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; font-size: 14px; white-space: nowrap; }
+.bx-target b { font-size: 12px; padding: 0 4px; border-radius: 3px; background: #6b3f19; color: #fff3df; }
+.bx-target.none { color: var(--warn); }
+.bx-art { width: 30px; height: 30px; border-radius: 4px; background: var(--paper); display: inline-flex; align-items: center; justify-content: center; }
+.bx-art svg { width: 27px; height: 27px; }
+.bx-sum { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; gap: 0 10px; font-size: 14px; line-height: 1.35; font-variant-numeric: tabular-nums; }
+.bx-sum .warn, .bx-hint.warn { color: var(--warn); }
+.bx-note { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.bx-hint { flex: 1 1 auto; font-size: 14px; color: var(--muted); }
+.bx-go { flex: 0 0 auto; min-height: 40px; padding: 4px 12px; border: 0; border-radius: 5px; background: var(--accent); color: #222a20; font-size: 15px; font-weight: 700; white-space: nowrap; }
+.bx-go:disabled { background: #5b5a4b; color: #b4b19f; cursor: default; }
+.bx-x { flex: 0 0 auto; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--text); font-size: 18px; }
+.bt-mid { display: flex; align-items: center; justify-content: center; position: relative; }
+.bt-mid::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #8a4f3a99; }
+.bt-mid span { position: relative; font-size: 12px; font-weight: 700; color: #e4b374; background: #2a221e; padding: 2px 2px; border-radius: 3px; }
+.bt-foes { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px; min-height: 0; }
+.foe-col { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+.foe-col.back { padding-top: 14%; }
+.foe { flex: 1 1 0; min-height: 0; max-height: 170px; overflow: hidden; display: flex; flex-direction: column; background: var(--paper); color: var(--ink); border: 2px solid transparent; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 8px #0005; }
+.foe-col.back .foe { flex: 0 1 auto; }
+.foe:hover { border-color: #e9d9ad; }
+.foe.selected { border-color: var(--accent); box-shadow: 0 0 0 2px #111911, 0 0 0 4px #d6b77999; }
+.foe.acting { border-color: var(--accent); }
+.foe.targetable { border-color: #b8682a; }
+.foe.unreachable { opacity: .62; }
+.foe-head { display: flex; align-items: center; gap: 5px; padding: 2px 6px; border-bottom: 1px solid #88856a55; min-width: 0; }
+.foe-head b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 0; }
+.slot-tag { flex: 0 0 auto; font-size: 13px; font-weight: 700; padding: 0 5px; border-radius: 3px; background: #3c4a35; color: #f2ecd8; }
+.foe .acted-mark { position: static; flex: 0 0 auto; }
+.foe-main { display: flex; gap: 5px; padding: 3px 6px 1px; min-height: 0; align-items: flex-start; }
+.foe-art { flex: 0 0 auto; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: linear-gradient(155deg, #eee6ca55, #697f613a); }
+.foe-art svg { width: 42px; height: 42px; }
+.foe-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.foe .intent { font-size: 13px; padding: 1px 3px; }
+.foe .st-chips { padding: 1px 6px 3px; }
+.foe-empty { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 2px 8px; min-height: 28px; border: 1px dashed #6b6450; border-radius: 14px; color: var(--muted); font-size: 13px; }
+.foe-empty b { font-size: 13px; color: #c9bf9f; }
+/* 换武器浮窗 */
+.apop.switch { width: 330px; }
+.sw-list { display: flex; flex-direction: column; gap: 4px; max-height: 240px; overflow-y: auto; }
+.sw-pick { display: flex; align-items: center; gap: 8px; text-align: left; background: transparent; border: 1px solid var(--line); border-radius: 5px; padding: 4px 8px; color: var(--text); min-height: 44px; }
+.sw-pick.on { border-color: var(--accent); background: #2c3427; }
+.sw-pick.off { opacity: .6; }
+.sw-art { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 4px; background: var(--paper); display: flex; align-items: center; justify-content: center; }
+.sw-art svg { width: 32px; height: 32px; }
+.sw-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.sw-text b { font-size: 15px; }
+.sw-text small { font-size: 13px; color: var(--muted); }
+@media (max-height: 800px) {
+  .bt-ally { grid-template-columns: 124px minmax(0, 1fr); gap: 4px 6px; }
+  .ally-art { max-height: 60px; }
+  .ally-art img { max-height: 58px; }
+  .bt-cmds.grid { grid-auto-rows: minmax(52px, auto); grid-template-columns: repeat(auto-fill, minmax(53px, 1fr)); gap: 3px; }
+  .cmdt { min-height: 54px; }
+  .cmdt-art { width: 26px; height: 26px; }
+  .cmdt-art svg { width: 23px; height: 23px; }
+  .bt-exec { min-height: 44px; padding: 2px 4px 2px 6px; }
+  .foe-art { width: 34px; height: 34px; }
+  .foe-art svg { width: 32px; height: 32px; }
+  .foe .st-chips .st:first-child { display: none; }
+}
+@media (min-height: 1000px) {
+  .bt-ally { grid-template-columns: 160px minmax(0, 1fr); }
+  .ally-art { max-height: 130px; }
+  .ally-art img { max-height: 126px; }
+  .bt-cmds.grid { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); grid-auto-rows: minmax(70px, auto); }
+  .cmdt-art { width: 38px; height: 38px; }
+  .cmdt-art svg { width: 34px; height: 34px; }
+  .foe-art { width: 60px; height: 60px; }
+  .foe-art svg { width: 56px; height: 56px; }
+  .foe { max-height: 220px; }
+}
+/* 执行条两行：上行目标/动作 + 摘要（单行，超出省略，完整内容在悬停与右栏）；下行“执行·动作·AP”+ 收起 */
+.bt-exec.two { flex-direction: column; align-items: stretch; gap: 3px; padding: 4px 6px; }
+.bx-info { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 30px; }
+.bt-exec .bx-sum { display: block; flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-exec .bx-sum > span { margin-right: 10px; }
+.bx-act { display: flex; gap: 6px; }
+.bx-act .bx-go { flex: 1 1 auto; }
+@media (max-height: 800px) {
+  .bt-exec.two { gap: 2px; padding: 3px 5px; }
+  .bx-info { min-height: 26px; }
+  .bx-art { width: 26px; height: 26px; }
+  .bx-art svg { width: 23px; height: 23px; }
+  .bx-act .bx-go, .bx-act .bx-x { min-height: 36px; height: 36px; }
+}
+/* 指令卡固定行高（图 + 短名 + AP 三行完整可见，不被网格压扁）；战斗日志只留两行，让出竞技场高度 */
+.battle-overlay.lr .bt-log { max-height: 44px; }
+.bt-cmds.grid { grid-auto-rows: 64px; }
+.cmdt { min-height: 0; height: 64px; }
+.cmdt-art { width: 28px; height: 28px; flex: 0 0 auto; }
+.cmdt-art svg { width: 25px; height: 25px; }
+@media (max-height: 800px) {
+  .bt-cmds.grid { grid-auto-rows: 58px; }
+  .cmdt { height: 58px; padding: 2px 1px 1px; }
+  .cmdt-art { width: 24px; height: 24px; }
+  .cmdt-art svg { width: 21px; height: 21px; }
+  .cmdt-name { font-size: 13px; margin-top: 1px; }
+}
+@media (min-height: 1000px) {
+  .bt-cmds.grid { grid-auto-rows: 78px; }
+  .cmdt { height: 78px; }
+  .cmdt-art { width: 38px; height: 38px; }
+  .cmdt-art svg { width: 34px; height: 34px; }
+}
+/* 我方区（我方卡 + 指令）比敌方区宽一些：基准分辨率下指令少滚动，敌方前后两列仍可辨 */
+.bt-arena { grid-template-columns: minmax(0, 1.55fr) 22px minmax(0, 1fr); }
+@media (max-width: 1439px) { .bt-arena { grid-template-columns: minmax(0, 1.3fr) 22px minmax(0, 1fr); } }
+.foe .hp-line span { flex: 0 0 auto; }
+.foe .hp-line b { white-space: nowrap; }

@@ -1,7 +1,7 @@
 @inherits GameComponent
 
-@* 战斗右栏（v0.5 §16“点动作显示右栏预览，再点其执行确认本条指令”；v0.6 §07“同时给出命中能力值与实际命中率”）：
-   选中指令 → 预览（AP、体力、命中能力与命中率、暴击、伤害区间、弹药、耐久、噪声、撤退率）→ 执行；
+@* 战斗右栏（v0.6 §07“同时给出命中能力值与实际命中率”；S14 §14.2 起只作可选的完整预测，执行在战斗区内就近完成）：
+   选中指令 → 完整预测（AP、体力、命中能力与命中率、暴击、伤害区间、弹药、耐久、噪声、撤退率）；
    没选指令时显示所选目标的详情。执行期间与敌方行动中锁定。敌踪选择时显示敌方组成与绕行预测。 *@
 @{
     var s = G.S;
@@ -59,15 +59,15 @@ else if (b != null)
                     var wc = it == null ? e.Weapon(GameEngine.Fists)! : e.Weapon(it.ItemId)!;
                     var choose = o.ItemInstanceId;
                     var ws = e.WeaponStats(s, wc);
-                    <button type="button" class="repair-pick @(o.Available ? "" : "missing")" disabled="@(!o.Available)" title="@(o.Reason ?? "选择后在下方执行")" @onclick='() => G.PickBattleAction("switch_weapon", choose)'>
+                    <div class="repair-pick @(o.Available ? "" : "missing")" title="@(o.Reason ?? "在战斗区的换武器浮窗里选择并执行")">
                         <span class="ir-icon">@Icons.Markup(it?.ItemId ?? "fists")</span>
                         <span><b>@(it == null ? "徒手" : $"{wc.Name}#{it.InstanceId}")</b>
                             <small>@e.SkillName(wc.SkillId)@(ws.Level)级 · 伤害@(Ui.N(ws.DamageMin))—@(Ui.N(ws.DamageMax)) · 命中能力@(Ui.N(ws.Accuracy)) · @(wc.Targets == "front" ? "前排" : wc.RearDamageFactor < 1 ? "前后排(后×0.75)" : "全排")@(it?.Durability != null ? $" · 耐久{GameEngine.DurabilityText(it)}" : "")@(wc.UsesMagazine && it != null ? $" · 弹仓{it.LoadedAmmo}/{wc.MagazineCapacity}" : "")</small></span>
-                    </button>
+                    </div>
                 }
             </div>
         </div>
-        <div class="detail-foot"><div class="under">点一把武器查看预览，再点“执行”。</div></div>
+        <div class="detail-foot"><div class="under">在战斗区“换武器”旁的浮窗里选一把，就地执行（这里只作对照阅读）。</div></div>
     }
     else if (G.BattleAction != null)
     {
@@ -107,8 +107,8 @@ else if (b != null)
             @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
         </div>
         <div class="detail-foot">
-            <button class="primary" disabled="@(!p.Ok || !awaiting || G.BattleBusy)" @onclick="G.ExecuteBattleCommand">@(p.Ok ? p.ConfirmText : "暂不可用")</button>
-            <div class="under">点击执行才提交；同一指令只提交一次。Esc 收起预览。</div>
+            @* S14 §14.2、R03 §7.2：执行入口在战斗区指令下方，这里只作可选的完整预测，不保留第二个执行按钮 *@
+            <div class="under">在战斗区指令下方点“执行 · @(p.Title) · @(p.Ap)AP”才提交；Esc 收起预览。</div>
         </div>
     }
     else
@@ -118,7 +118,7 @@ else if (b != null)
             <div class="op-head">
                 <div class="eyebrow">战斗第@(b.Round)轮 · @(awaiting ? $"你的行动（剩{b.PlayerAp}AP）" : "敌方行动中")</div>
                 <h2>@(t != null && t.Alive ? $"{t.Slot} {e.EnemyName(t)}" : "选择指令")</h2>
-                <p>点敌卡只选目标、不攻击；点下方指令条的动作，在这里查看命中率与成本，再点“执行”。</p>
+                <p>点右侧敌卡只选目标、不攻击；点左侧带图指令，在指令下方预览并“执行”。这里是完整数据，可不看。</p>
             </div>
             @if (t != null && t.Alive)
             {
@@ -139,6 +139,6 @@ else if (b != null)
             </div>
             @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
         </div>
-        <div class="detail-foot"><div class="under">战斗中地面与随身物品只能查看；换武器、装填与用药请用指令条。</div></div>
+        <div class="detail-foot"><div class="under">战斗中地面与随身物品只能查看；换武器、装填与用药请用战斗区的指令。</div></div>
     }
 }

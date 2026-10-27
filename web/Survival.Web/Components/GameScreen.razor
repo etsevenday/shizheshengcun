@@ -237,12 +237,13 @@
         if (G.DialogueLocked) return;
         if (G.InBattleUi)
         {
-            // 战斗中：M/C/R/L 锁定；Esc 栈：拖拽（drag.js 先拦截）→ 数量框 → 状态浮层 → 人物二级页 → 收起战斗菜单 → 收起指令预览/物品选中 → 战斗菜单（只含继续、保存并返回标题，不能脱战）
+            // 战斗中：M/C/R/L 锁定；Esc 栈：拖拽（drag.js 先拦截）→ 数量框 → 状态浮层 → 人物二级页 → 收起战斗菜单 → 换武器浮窗 → 收起指令预览/物品选中 → 战斗菜单（只含继续、保存并返回标题，不能脱战）
             if (key != "Escape") return;
             if (G.PendingDrop != null) G.CancelDropQuantity();
             else if (G.StatusPinned != null) G.PinStatus(null);
             else if (G.CharPage != null && G.DetailTab == DetailTab.Character) G.OpenCharPage(null);
             else if (G.BattleMenuOpen) G.ToggleBattleMenu(false);
+            else if (G.Pop != null) G.ClosePop();
             else if (G.BattleAction != null) G.ClearBattleAction();
             else if (G.Selected.Kind != SelectionKind.None) G.ClearSelection();
             else G.ToggleBattleMenu(true);
