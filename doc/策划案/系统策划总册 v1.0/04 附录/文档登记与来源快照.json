@@ -1,7 +1,7 @@
 {
   "compiledAt": "2026-10-27",
   "role": "document_reorganization_not_runtime_config",
-  "referenceExtensionsEnabled": false,
+  "referenceExtensionsEnabled": true,
   "sourceSnapshot": [
     {
       "path": "策划文档/00 需求裁定与开发交接 v0.4.md",
@@ -189,7 +189,8 @@
         "V4COMMON",
         "COOK"
       ],
-      "acceptanceCount": 6
+      "acceptanceCount": 7,
+      "revision": "1.1"
     },
     {
       "id": "S02",
@@ -207,7 +208,8 @@
         "EXPLORE",
         "V7UI"
       ],
-      "acceptanceCount": 5
+      "acceptanceCount": 5,
+      "revision": "1.1"
     },
     {
       "id": "S03",
@@ -227,7 +229,8 @@
         "V4UI",
         "V7UI"
       ],
-      "acceptanceCount": 5
+      "acceptanceCount": 5,
+      "revision": "1.1"
     },
     {
       "id": "S04",
@@ -246,7 +249,8 @@
         "EXPLORE",
         "V7UI"
       ],
-      "acceptanceCount": 6
+      "acceptanceCount": 6,
+      "revision": "1.1"
     },
     {
       "id": "S05",
@@ -266,7 +270,8 @@
         "DRAG",
         "V3COMMON"
       ],
-      "acceptanceCount": 6
+      "acceptanceCount": 6,
+      "revision": "1.1"
     },
     {
       "id": "S06",
@@ -285,7 +290,8 @@
         "COOK",
         "V7UI"
       ],
-      "acceptanceCount": 5
+      "acceptanceCount": 5,
+      "revision": "1.1"
     },
     {
       "id": "S07",
@@ -308,7 +314,8 @@
         "COOK",
         "V7UI"
       ],
-      "acceptanceCount": 5
+      "acceptanceCount": 5,
+      "revision": "1.1"
     },
     {
       "id": "S08",
@@ -328,7 +335,8 @@
         "V4UI",
         "V4COMMON"
       ],
-      "acceptanceCount": 5
+      "acceptanceCount": 5,
+      "revision": "1.1"
     },
     {
       "id": "S09",
@@ -352,7 +360,8 @@
         "COOK",
         "V7UI"
       ],
-      "acceptanceCount": 6
+      "acceptanceCount": 6,
+      "revision": "1.1"
     },
     {
       "id": "S10",
@@ -373,7 +382,8 @@
         "COOK",
         "V7UI"
       ],
-      "acceptanceCount": 5
+      "acceptanceCount": 5,
+      "revision": "1.1"
     },
     {
       "id": "S11",
@@ -394,7 +404,8 @@
         "V4UI",
         "V7UI"
       ],
-      "acceptanceCount": 8
+      "acceptanceCount": 8,
+      "revision": "1.1"
     },
     {
       "id": "S12",
@@ -415,7 +426,8 @@
         "COOK",
         "V7UI"
       ],
-      "acceptanceCount": 6
+      "acceptanceCount": 6,
+      "revision": "1.1"
     },
     {
       "id": "S13",
@@ -433,7 +445,8 @@
         "OLDUI",
         "COOK"
       ],
-      "acceptanceCount": 5
+      "acceptanceCount": 5,
+      "revision": "1.1"
     },
     {
       "id": "S14",
@@ -456,7 +469,8 @@
         "V4UI",
         "OLDUI"
       ],
-      "acceptanceCount": 28
+      "acceptanceCount": 30,
+      "revision": "1.1"
     },
     {
       "id": "S15",
@@ -477,13 +491,14 @@
         "COOK",
         "OLDUI"
       ],
-      "acceptanceCount": 5
+      "acceptanceCount": 8,
+      "revision": "1.1"
     },
     {
       "id": "R01",
       "title": "人物属性、熟练度与数值尺度",
       "path": "02 参考扩展/R01 人物属性、熟练度与数值尺度.md",
-      "status": "参考扩展；尚未自动启用",
+      "status": "已接入；本轮修订待实施",
       "owns": "参考H/E尺度、技能ID/经验/成长、参考行动消耗与恢复替换表",
       "depends": [
         "S01",
@@ -500,13 +515,14 @@
         "ATTR",
         "VALID"
       ],
-      "acceptanceCount": 5
+      "acceptanceCount": 5,
+      "revision": "1.1"
     },
     {
       "id": "R02",
       "title": "武器装备、弹药与随机耐久",
       "path": "02 参考扩展/R02 武器装备、弹药与随机耐久.md",
-      "status": "参考扩展；尚未自动启用",
+      "status": "已接入；本轮修订待实施",
       "owns": "武器基础面板、装备/弹药物理数据、实例随机耐久、磨损、维护与取得",
       "depends": [
         "S06",
@@ -523,13 +539,14 @@
         "V5",
         "REFJSON"
       ],
-      "acceptanceCount": 5
+      "acceptanceCount": 5,
+      "revision": "1.1"
     },
     {
       "id": "R03",
       "title": "回合制战斗系统",
       "path": "02 参考扩展/R03 回合制战斗系统.md",
-      "status": "参考扩展；尚未自动启用",
+      "status": "已接入；本轮修订待实施",
       "owns": "AP动作表、站位/先手、命中/伤害/恐慌、临时状态、撤退与战斗事务",
       "depends": [
         "S01",
@@ -544,13 +561,14 @@
         "V5",
         "REFJSON"
       ],
-      "acceptanceCount": 7
+      "acceptanceCount": 7,
+      "revision": "1.1"
     },
     {
       "id": "R04",
       "title": "免疫、感染与扩展医疗系统",
       "path": "02 参考扩展/R04 免疫、感染与扩展医疗系统.md",
-      "status": "参考扩展；尚未自动启用",
+      "status": "已接入；本轮修订待实施",
       "owns": "免疫小时率、咬伤暴露、病毒进展、自然治愈/特效药、抑制药物与冷却",
       "depends": [
         "S01",
@@ -567,13 +585,14 @@
         "REFJSON",
         "ATTR"
       ],
-      "acceptanceCount": 7
+      "acceptanceCount": 10,
+      "revision": "1.1"
     },
     {
       "id": "R05",
       "title": "敌人卡、种群刷新与遭遇系统",
       "path": "02 参考扩展/R05 敌人卡、种群刷新与遭遇系统.md",
-      "status": "参考扩展；尚未自动启用",
+      "status": "已接入；本轮修订待实施",
       "owns": "敌面板/意图、出生池、两级数量、巡游、低遭遇、噪声增援和掉落归属",
       "depends": [
         "S01",
@@ -590,13 +609,14 @@
         "V5",
         "REFJSON"
       ],
-      "acceptanceCount": 7
+      "acceptanceCount": 7,
+      "revision": "1.1"
     },
     {
       "id": "R06",
       "title": "动物尸体处理与肉类加工",
       "path": "02 参考扩展/R06 动物尸体处理与肉类加工.md",
-      "status": "参考扩展；尚未自动启用",
+      "status": "已接入；本轮修订待实施",
       "owns": "动物尸体/肉皮目录、尸体处理成本产量、肉类烹饪与食用扩展",
       "depends": [
         "S01",
@@ -613,6 +633,23 @@
         "V6",
         "REFJSON"
       ],
+      "acceptanceCount": 5,
+      "revision": "1.1"
+    },
+    {
+      "id": "R07",
+      "title": "吞噬融合与活性物质系统",
+      "path": "02 参考扩展/R07 吞噬融合与活性物质系统.md",
+      "status": "新增设计，待接入",
+      "revision": "1.0",
+      "acceptanceCount": 7
+    },
+    {
+      "id": "N01",
+      "title": "世界观、背景与饱饱",
+      "path": "05 世界观与叙事/N01 世界观、背景与饱饱.md",
+      "status": "新增设计，待接入",
+      "revision": "1.0",
       "acceptanceCount": 5
     }
   ],
@@ -700,5 +737,41 @@
   "githubDelivery": {
     "historicalSourcesBundled": false,
     "localAbsolutePathsNormalized": true
-  }
+  },
+  "currentRevision": {
+    "date": "2026-10-27",
+    "baselineCommit": "2a3cb09",
+    "implementationSyncSource": "49603af",
+    "designOnly": true,
+    "runtimeChanged": false,
+    "pendingIds": [],
+    "note": "R01-R06已接入；本轮新裁定与N01/R07尚待实现，不改变历史sourceSnapshot。 用户另授权补可调初值；上述reviewRequiredIds为建议值待审阅，不是用户已逐项确认。",
+    "confirmedFollowupIds": [
+      "T05",
+      "T06",
+      "T07",
+      "T08",
+      "B03"
+    ],
+    "reviewRequiredIds": [
+      "T01",
+      "T02",
+      "T03",
+      "T04",
+      "T09"
+    ],
+    "deliveryScope": "documentation_only_confirmed_rules_and_proposed_initial_values"
+  },
+  "referenceExtensionsEnabledAppliesTo": [
+    "R01",
+    "R02",
+    "R03",
+    "R04",
+    "R05",
+    "R06"
+  ],
+  "proposedSystemsNotYetImplemented": [
+    "R07",
+    "N01"
+  ]
 }
