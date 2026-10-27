@@ -1,0 +1,183 @@
+@inherits GameComponent
+
+@* 就近执行浮窗（S14 §14.1、S02 §5、R05 §7、S08 §5）：一个时刻只有一个当前操作上下文（G.Pop）。
+   travel/mapnode：相邻地图卡或区域地图节点旁预览基础时间、预计完成、负重与入夜影响，“确认移动”一次确认；
+   approach：敌踪卡旁对象/风险预览，“接近并开战”才按 R05 接敌；gather：拖工具到资源卡后在卡旁确认开始。
+   每次渲染都从内核现算预览；目标失效（不再相邻、敌人离开、预览被替换）时直接收起，不保留失效按钮。
+   点击执行再交给内核按真实 ID/所在地/占用重验（E.Start、E.Approach），执行中锁住按钮，重复点击不重复提交。 *@
+@if (G.State != null && G.Pop is GameSession.PopContext pop && !G.DialogueLocked && Valid(pop))
+{
+    var s = G.S;
+    var e = G.E;
+    var busy = e.IsBusy(s) || G.Running || G.BattleBusy || _go;
+    switch (pop.Kind)
+    {
+        case "travel":
+        case "mapnode":
+        {
+            var to = pop.Id;
+            var lc = e.Location(to);
+            var ls = s.Locations[to];
+            var req = ActionRequest.Travel(to);
+            var p = G.Preview(req);
+            var dir = e.DirectionFromHere(s, to);
+            var grams = e.CarriedGrams(s);
+            var over = grams > e.Config.Carry.SoftGrams;
+            var night = p.Ok && !e.IsDaylight(p.EstimatedEndMinute);
+            var scene = lc.Scene ?? $"scenes/{lc.Id}.svg";
+            <AnchorPop AnchorId="@pop.AnchorId" Title="@($"前往{lc.Name}")" CssClass="travel"
+                       Sub="@($"{(dir == MapDirection.None ? "" : GameEngine.DirectionHint(dir) + " · ")}{(ls.Visited ? "已访问" : "待访问")} · 单程{p.BaseMinutes}分钟")" OnClose="G.ClosePop">
+                <Art><span class="apop-scene" style="background-image:url('@scene')"></span></Art>
+                <ChildContent>
+                    @if (p.Ok)
+                    {
+                        <div class="apop-facts">
+                            <span title="预计耗时（含当前倍率）"><i class="pf-ico">⏱</i>@Clock.Duration(p.EstimatedMinutes)</span>
+                            <span title="预计到达时刻"><i class="pf-ico">◷</i>@Clock.HHmm(p.EstimatedEndMinute)到达</span>
+                            <span class="@(over ? "warn" : "")" title="当前携带重量（超过@(Ui.T(e.Config.Carry.SoftGrams / 1000.0))公斤减速）"><i class="pf-ico">⚖</i>@Ui.KgText(grams) · @(over ? "超重" : "轻装")</span>
+                            @if (Math.Abs(p.FactorAtStart - 1) > 1e-9)
+                            {
+                                <span class="warn" title="工作倍率（夜间、超重、低体力相乘）"><i class="pf-ico">×</i>@p.FactorAtStart.ToString("0.##")@(p.FactorReasons.Count > 0 ? $"（{string.Join("，", p.FactorReasons)}）" : "")</span>
+                            }
+                        </div>
+                        @if (night) { <div class="apop-risk night">☾ 到达时已入夜</div> }
+                        @foreach (var w in p.Warnings) { <div class="apop-risk">@w</div> }
+                    }
+                    else
+                    {
+                        <div class="apop-risk">@p.Reason</div>
+                    }
+                    @if (G.Notice != null && _tried) { <div class="apop-risk">@G.Notice</div> }
+                </ChildContent>
+                <Actions>
+                    <button type="button" class="primary apop-go" disabled="@(!p.Ok || busy)" @onclick='() => Travel(req, pop.Kind == "mapnode")'>@(p.Ok ? "确认移动" : "无法移动")</button>
+                    <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消</button>
+                </Actions>
+            </AnchorPop>
+            break;
+        }
+        case "approach":
+        {
+            var wid = int.Parse(pop.Id);
+            var w = e.FindWorldEnemy(s, wid)!;
+            var ec = e.Enemy(w.EnemyId);
+            var why = e.CanApproach(s, wid);
+            var weapon = e.CurrentWeapon(s, out var wi);
+            var acc = weapon.AccuracyRating + e.SkillAccuracyBonus(e.SkillLevel(s, weapon.SkillId));
+            <AnchorPop AnchorId="@pop.AnchorId" Title="@($"接近{ec.Name}")" CssClass="approach"
+                       Sub="@($"健康{Ui.N(w.Hp)}/{Ui.N(ec.Hp)} · {(w.Hostile ? "敌对" : "中立")} · 只与这一只交战")" OnClose="G.ClosePop">
+                <Art>@Icons.Markup("enemy_" + ec.Id)</Art>
+                <ChildContent>
+                    <div class="apop-facts">
+                        <span title="敌人对你的命中率与伤害"><i class="pf-ico">⚔</i>对你@(Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))) · 伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax))</span>
+                        <span title="你当前武器的命中率"><span class="pf-weapon" aria-hidden="true">@Icons.Markup(wi?.ItemId ?? "fists")</span>@(wi == null ? "徒手" : weapon.Name) · 命中@(Ui.Pct(GameEngine.HitChance(acc, ec.Dodge)))</span>
+                    </div>
+                    @if (wi != null && weapon.UsesMagazine && wi.LoadedAmmo <= 0)
+                    {
+                        <div class="apop-risk">@($"{weapon.Name}#{wi.InstanceId}")弹仓为0：开战后需先装填（1AP）</div>
+                    }
+                    @if (ec.IsZombie) { <div class="apop-risk">咬伤可能感染（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）</div> }
+                    <div class="apop-note">@e.FearNote(s, new[] { w }, GameEngine.FearApproach)</div>
+                    @if (why != null) { <div class="apop-risk">@why</div> }
+                    @if (G.Notice != null && _tried) { <div class="apop-risk">@G.Notice</div> }
+                </ChildContent>
+                <Actions>
+                    <button type="button" class="primary apop-go fight" disabled="@(why != null || busy)" @onclick="() => Approach(wid)">接近并开战</button>
+                    <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消</button>
+                </Actions>
+            </AnchorPop>
+            break;
+        }
+        case "gather":
+        {
+            var req = G.PendingAction!;
+            var p = G.Preview(req);
+            var r = e.Resource(req.TargetId);
+            <AnchorPop AnchorId="@pop.AnchorId" Title="@G.PendingActionTitle" CssClass="gather" Sub="@($"{r.Name} · 拖入的工具")" OnClose="G.ClosePop">
+                <Art>@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</Art>
+                <ChildContent>
+                    @if (p.Ok)
+                    {
+                        <div class="apop-facts">
+                            <span><i class="pf-ico">⏱</i>@Clock.Duration(p.EstimatedMinutes)</span>
+                            <span><i class="pf-ico">◷</i>@Clock.HHmm(p.EstimatedEndMinute)完成</span>
+                            @foreach (var o in p.Outputs) { <span><span class="pf-weapon" aria-hidden="true">@Icons.Markup(o.ItemId)</span>@o.Name×@o.Count</span> }
+                            @if (p.ToolName != null && p.ToolDurabilityBefore.HasValue)
+                            {
+                                <span title="使用拖入的这一把，不可用时不会自动换"><i class="pf-ico">⚒</i>@p.ToolName @Ui.N(p.ToolDurabilityBefore.Value)→@Ui.N(p.ToolDurabilityAfter ?? 0)</span>
+                            }
+                        </div>
+                        @if (p.HazardProbability > 0) { <div class="apop-risk">@(p.HazardLabel)@(Ui.Pct(p.HazardProbability)) · 健康−@(Ui.T(p.HazardHealthLoss))</div> }
+                        @foreach (var wn in p.Warnings) { <div class="apop-risk">@wn</div> }
+                    }
+                    else
+                    {
+                        <div class="apop-risk">@p.Reason</div>
+                    }
+                </ChildContent>
+                <Actions>
+                    <button type="button" class="primary apop-go" disabled="@(!p.Ok || busy)" @onclick="() => Gather(req)">@(p.Ok ? p.ConfirmText : "无法开始")</button>
+                    <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消</button>
+                </Actions>
+            </AnchorPop>
+            break;
+        }
+    }
+}
+
+@code {
+    private bool _go;
+    private bool _tried;
+    private GameSession.PopContext? _seen;
+
+    /// <summary>浮窗目标仍然有效：相邻路线仍可走、敌人仍在本地可见、拖拽预览仍是当前选择。失效时不通知界面地收起。</summary>
+    private bool Valid(GameSession.PopContext pop)
+    {
+        if (!ReferenceEquals(pop, _seen)) { _seen = pop; _tried = false; }
+        var s = G.S;
+        var e = G.E;
+        var ok = pop.Kind switch
+        {
+            "travel" => s.Battle == null && s.Encounter == null && G.Panel == null && e.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == pop.Id),
+            "mapnode" => G.Panel == "map" && e.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == pop.Id),
+            "approach" => s.Battle == null && s.Encounter == null && int.TryParse(pop.Id, out var wid) && e.VisibleEnemiesAt(s, s.CurrentLocation).Any(w => w.Id == wid),
+            "gather" => G.Selected.Kind == SelectionKind.Action && G.PendingAction != null && G.PendingAction.Type == ActionType.Gather && G.PendingAction.TargetId == pop.Id,
+            _ => true,
+        };
+        if (!ok && pop.Kind != "switch") G.DropPop();
+        return ok && pop.Kind != "switch";
+    }
+
+    private async Task Travel(ActionRequest req, bool fromMap)
+    {
+        if (_go) return;
+        _go = true;
+        _tried = true;
+        try
+        {
+            var t = G.StartAction(req);
+            // 区域地图上确认后收起地图，让中央推进条与地块栏可见（原右栏确认的 OnStarted 行为）
+            if (fromMap && G.S.Main?.Type == ActionType.Travel) G.OpenPanel(null);
+            await t;
+        }
+        finally { _go = false; }
+    }
+
+    private async Task Approach(int wid)
+    {
+        if (_go) return;
+        _go = true;
+        _tried = true;
+        try { await G.ApproachEnemy(wid); }
+        finally { _go = false; }
+    }
+
+    private async Task Gather(ActionRequest req)
+    {
+        if (_go) return;
+        _go = true;
+        _tried = true;
+        try { await G.StartAction(req); }
+        finally { _go = false; }
+    }
+}

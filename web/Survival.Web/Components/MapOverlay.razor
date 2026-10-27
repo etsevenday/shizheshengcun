@@ -1,6 +1,6 @@
 @inherits GameComponent
 
-@* 区域地图。Part="center"：中部的地图画布；Part="detail"：右栏的地点信息与移动预估。 *@
+@* 区域地图。Part="center"：中部的地图画布（相邻地点旁锚定“确认移动”浮窗）；Part="detail"：右栏的地点信息与详细移动预估（只读）。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -15,7 +15,7 @@
     var edges = e.Config.Edges.Where(x => s.UnlockedEdges.Contains(x.Id)).ToList();
     <div class="sub-panel" role="dialog" aria-label="区域地图">
         <div class="sub-head">
-            <div><h2>区域地图</h2><span class="sub">已发现@(known.Count)处 · 只显示已知路线 · 点地点看右侧预估</span></div>
+            <div><h2>区域地图</h2><span class="sub">已发现@(known.Count)处 · 只显示已知路线 · 点相邻地点在旁边确认移动</span></div>
             <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
         </div>
         <div class="sub-body map-only">
@@ -45,7 +45,7 @@
                     var isHere = l.Id == here;
                     var isPicked = l.Id == picked;
                     var id = l.Id;
-                    <g class="map-node" @onclick="() => Pick(id)" role="button" aria-label="@l.Name">
+                    <g class="map-node" id="@($"mn-{id}")" @onclick="() => Pick(id)" role="button" aria-label="@l.Name">
                         <rect x="@(l.MapX - 95)" y="@(l.MapY - 34)" width="190" height="68" rx="8"
                               fill="@(isHere ? "#3a4a33" : st.Visited ? "#2b3a2e" : "#222b24")"
                               stroke="@(isPicked ? "#f0d9a0" : isHere ? "#d6b779" : "#5d6b58")" stroke-width="@(isPicked || isHere ? 4 : 2)"
@@ -78,13 +78,14 @@ else
                     <div><span>→ @e.LocName(ed.Other(here))</span><b>@(ed.BaseMinutes)分钟</b></div>
                 }
             </div>
-            <div class="tiny muted">在地图上点选相邻地点，这里会显示移动预估与确认按钮。</div>
+            <div class="tiny muted">在地图上点选相邻地点：地点旁出现移动确认，这里显示详细预估。</div>
         </div>
     }
     else if (adjacent.Contains(target) && !e.IsBusy(s))
     {
         <PreviewView Request="ActionRequest.Travel(target)" Eyebrow="@($"区域地图 · {tl.Name} · {(ts.Visited ? $"探索度{ts.Progress}%" : "待访问")}")" Title="@($"前往{tl.Name}")"
-                     Subtitle="一次只移动一段相邻路线，不提供自动寻路。" OnStarted="Close" />
+                     Confirmable="false" FootNote="在地图上该地点旁的浮窗确认移动；时间为预计值"
+                     Subtitle="一次只移动一段相邻路线，不提供自动寻路。" />
     }
     else
     {
@@ -96,7 +97,6 @@ else
             </div>
             <div class="blocked">@(e.IsBusy(s) ? "行动进行中，地图只能浏览" : "请先前往相邻地点")</div>
         </div>
-        <div class="detail-foot"><button class="primary" disabled>确认移动</button></div>
     }
 }
 
@@ -106,9 +106,14 @@ else
     private static MarkupString SvgText(double x, double y, int size, string fill, string content) =>
         new($"<text x=\"{x}\" y=\"{y}\" text-anchor=\"middle\" font-size=\"{size}\" fill=\"{fill}\">{System.Net.WebUtility.HtmlEncode(content)}</text>");
 
+    /// <summary>点地图节点：右栏显示详细预估；相邻且空闲时在节点旁打开移动确认浮窗（S02 §5、S14 §14.1），本身不移动。</summary>
     private void Pick(string id)
     {
         G.MapPicked = id;
+        var s = G.S;
+        var adjacent = G.E.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == id);
+        if (adjacent && !G.E.IsBusy(s) && !G.Running) G.OpenPop("mapnode", id, $"mn-{id}");
+        else G.ClosePop();
         G.Notify();
     }
 

@@ -176,8 +176,8 @@
     }
     else
     {
-        @* 探索/清理：卡内按钮单击直接开始，右栏只做预测，不再放第二个确认（01 案第 3 节） *@
-        <div class="under">@(p.Ok ? (Request.Type == ActionType.Ignite ? "松手或点选工具即开始点火；时间为预计值" : "单击卡片上的按钮直接开始；时间为预计值") : "暂不可用，原因见上")</div>
+        @* 探索/清理/采集/移动/制作/休息：执行入口在对应卡片内或卡旁（01 案第 3 节、S14 §14.1），右栏只做可选详细预测，不再放第二个确认 *@
+        <div class="under">@(FootNote ?? (p.Ok ? (Request.Type == ActionType.Ignite ? "松手或点选工具即开始点火；时间为预计值" : "单击卡片上的按钮直接开始；时间为预计值") : "暂不可用，原因见上"))</div>
     }
 </div>
 
@@ -189,6 +189,8 @@
     [Parameter] public EventCallback OnStarted { get; set; }
     /// <summary>为 false 时不显示确认按钮（悬停预测、探索/清理的选中预览）。</summary>
     [Parameter] public bool Confirmable { get; set; } = true;
+    /// <summary>不可确认时底部的说明（就近执行的入口在哪里，S14 §14.1）；为空用默认文案。</summary>
+    [Parameter] public string? FootNote { get; set; }
 
     private bool starting;
 

@@ -113,6 +113,9 @@
 
         <DetailPanel />
 
+        @* 就近操作浮窗（S14 §14.1）：渲染在卡片之外（fixed 定位锚在卡旁），点击不会冒泡成卡片选择/使用/拖拽 *@
+        <div class="apop-host" inert="@dlgLock"><ActionPops /></div>
+
         @if (G.Panel == "menu") { <MenuOverlay /> }
         @if (G.BattleMenuOpen && battleUi) { <MenuOverlay Battle="true" /> }
         <StatusPop />
@@ -253,9 +256,10 @@
             case "L": Toggle("log"); break;
             case "Escape":
                 // Esc 层级栈，每次只退一级，不取消主行动、不当作“退出”（S14 §7、§11.2）：
-                // 拖拽中（drag.js 先拦截）→ 数量框 → 状态浮层 → 点火工具菜单 → 系统说明逐层 → 二级面板 → 人物二级页 → 清选中 → 菜单
+                // 拖拽中（drag.js 先拦截）→ 数量框 → 状态浮层 → 就近操作浮窗（只收起、不提交） → 点火工具菜单 → 系统说明逐层 → 二级面板 → 人物二级页 → 清选中 → 菜单
                 if (G.PendingDrop != null) G.CancelDropQuantity();
                 else if (G.StatusPinned != null) G.PinStatus(null);
+                else if (G.Pop != null) G.ClosePop();
                 else if (G.IgniteMenuOpen) { G.Hover(null); G.CloseIgniteMenu(); }
                 else if (G.Panel == "help") G.HelpBack();
                 else if (G.Panel != null) G.OpenPanel(null);

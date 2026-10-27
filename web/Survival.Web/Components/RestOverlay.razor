@@ -1,6 +1,6 @@
 @inherits GameComponent
 
-@* 休息与睡眠。Part="center"：中部的时长选择与条件说明；Part="detail"：右栏的预估与确认。 *@
+@* 休息与睡眠。Part="center"：中部的时长选择、条件说明与开始按钮（就近执行，S14 §14.1）；Part="detail"：右栏的详细预估（只读）。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -13,13 +13,19 @@
     var restE = cfg.HourlyRates["rest"].Energy;
     var sleepR = cfg.HourlyRates[sheltered ? "sleep_sheltered" : "sleep_exposed"];
     var minutes = G.RestMinutes;
+    var req = kind switch
+    {
+        "sleep" => ActionRequest.Sleep(minutes),
+        "wait" => ActionRequest.Wait(minutes),
+        _ => ActionRequest.Rest(minutes),
+    };
 }
 
 @if (Part == "center")
 {
     <div class="sub-panel" role="dialog" aria-label="休息与睡眠">
         <div class="sub-head">
-            <div><h2>休息与睡眠</h2><span class="sub">@e.LocName(here) · @(sheltered ? "遮蔽" : "露天")@(fac.BedBuilt ? " · 有床垫" : "") · 预估与确认在右侧</span></div>
+            <div><h2>休息与睡眠</h2><span class="sub">@e.LocName(here) · @(sheltered ? "遮蔽" : "露天")@(fac.BedBuilt ? " · 有床垫" : "") · 选时长后在下方开始，详细预估在右侧</span></div>
             <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
         </div>
         <div class="sub-body rest-scroll">
@@ -66,17 +72,24 @@
             </div>
             <div class="tiny muted">期间仍消耗饱食、水分与火堆燃料，不会因满值自动结束；越过低值阈值时会暂停，可补给后继续。</div>
         </div>
+        @* 就近执行（S14 §14.1）：开始按钮紧挨所选时长卡，右栏只作可选详细预测；仍是一次确认 *@
+        @{
+            var p = G.Preview(req);
+            var busy = G.Running || s.Main != null && !p.AsSubAction || _starting;
+        }
+        <div class="rest-go">
+            <span class="rg-pick">
+                <b>@(kind == "sleep" ? "睡眠" : kind == "wait" ? "等待" : "休息") · @Clock.Duration(minutes)</b>
+                <small class="@(p.Ok ? "" : "warn-text")">@(p.Ok ? $"预计{Clock.HHmm(p.EstimatedEndMinute)}结束{(p.Warnings.Count > 0 ? " · " + p.Warnings[0] : "")}" : p.Reason)</small>
+            </span>
+            <button type="button" class="primary rg-start" disabled="@(!p.Ok || busy)" @onclick="Start">@(p.Ok ? p.ConfirmText : "无法开始")</button>
+        </div>
     </div>
 }
 else
 {
-    var req = kind switch
-    {
-        "sleep" => ActionRequest.Sleep(minutes),
-        "wait" => ActionRequest.Wait(minutes),
-        _ => ActionRequest.Rest(minutes),
-    };
-    <PreviewView Request="req" Eyebrow="@(kind == "sleep" ? "休息与睡眠 · 睡眠" : kind == "wait" ? "休息与睡眠 · 等待" : "休息与睡眠 · 休息")" Title="" Subtitle="" OnStarted="CloseAsync" />
+    <PreviewView Request="req" Eyebrow="@(kind == "sleep" ? "休息与睡眠 · 睡眠" : kind == "wait" ? "休息与睡眠 · 等待" : "休息与睡眠 · 休息")" Title="" Subtitle=""
+                 Confirmable="false" FootNote="在中间所选时长下方点开始；时间为预计值" />
 }
 
 @code {
@@ -91,9 +104,24 @@ else
 
     private void Close() => G.OpenPanel(null);
 
-    private Task CloseAsync()
+    private bool _starting;
+
+    /// <summary>开始所选休息/睡眠/等待（内核再校验）；开始成功后收起面板，让中央推进条与地块栏可见。执行中锁住按钮，重复点击不重复开始。</summary>
+    private async Task Start()
     {
-        G.OpenPanel(null);
-        return Task.CompletedTask;
+        if (_starting) return;
+        _starting = true;
+        try
+        {
+            var t = G.StartAction(G.RestKind switch
+            {
+                "sleep" => ActionRequest.Sleep(G.RestMinutes),
+                "wait" => ActionRequest.Wait(G.RestMinutes),
+                _ => ActionRequest.Rest(G.RestMinutes),
+            });
+            if (G.S.Main != null && G.Panel == "rest") G.OpenPanel(null);
+            await t;
+        }
+        finally { _starting = false; }
     }
 }

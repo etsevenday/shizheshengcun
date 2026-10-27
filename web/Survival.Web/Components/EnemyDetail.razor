@@ -1,6 +1,6 @@
 @inherits GameComponent
 
-@* 地块上的世界敌人（v0.6 §15“角色当前地点已有的可见敌人卡可主动接近”）：右栏详情与“接近”按钮。主动接近不受随机接敌保护期限制。 *@
+@* 地块上的世界敌人（v0.6 §15“角色当前地点已有的可见敌人卡可主动接近”）：右栏只作详情阅读；“接近并开战”在敌踪卡旁的浮窗（R05 §7、S14 §14.2）。主动接近不受随机接敌保护期限制。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -44,7 +44,7 @@ else
         @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
     </div>
     <div class="detail-foot">
-        <button class="primary" disabled="@(why != null || G.Running || G.BattleBusy)" @onclick="() => G.ApproachEnemy(wid)">@(why ?? $"接近{ec.Name}并开战")</button>
-        <div class="under">进入战斗后用中间的指令条行动；Esc 不能关掉战斗</div>
+        @* S14 §14.1：右栏只作可选详细阅读，接近的确认在敌踪卡旁（R05 §7），不在这里重复执行按钮 *@
+        <div class="under">@(why != null ? why : "点敌踪卡上的“接近”，在卡旁确认“接近并开战”")；Esc 不能关掉战斗</div>
     </div>
 }

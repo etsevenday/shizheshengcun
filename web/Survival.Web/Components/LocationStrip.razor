@@ -53,7 +53,7 @@
         }
         @if (enemies.Count > 0)
         {
-            @* v0.6 §15：当前地块的可见世界敌人，放在设施行“敌踪”分组（开发计划 v0.5 假设 11）；点卡选中，右栏“接近” *@
+            @* v0.6 §15：当前地块的可见世界敌人，放在设施行“敌踪”分组（开发计划 v0.5 假设 11）；点卡选中看详情，“接近”在卡旁确认（R05 §7） *@
             <div class="desk-group enemies">
                 <div class="dg-title">敌踪</div>
                 <div class="dg-cards">
@@ -61,9 +61,10 @@
                     {
                         var ec = e.Enemy(w.EnemyId);
                         var wid = w.Id;
-                        <ObjectCard @key="@("we" + wid)" CssClass="enemy-card world" Title="@ec.Name" Badge="@(w.Hostile ? "敌对" : "中立")" BadgeClass="@(w.Hostile ? "new" : "")"
+                        var open = G.Pop?.Kind == "approach" && G.Pop.Id == wid.ToString();
+                        <ObjectCard @key="@("we" + wid)" Id="@($"en-{wid}")" CssClass="enemy-card world" Title="@ec.Name" Badge="@(w.Hostile ? "敌对" : "中立")" BadgeClass="@(w.Hostile ? "new" : "")"
                                     Selected="@(sel.Kind == SelectionKind.Enemy && sel.InstanceId == wid)" Fresh="@G.Highlights.Contains($"enemy:{wid}")"
-                                    Tooltip="敌人：点击查看，在右栏选择接近" OnClick="() => SelectEnemy(wid)">
+                                    Tooltip="敌人：点击查看详情；点“接近”在卡旁预览并确认开战" OnClick="() => SelectEnemy(wid)">
                             <Art>@Icons.Markup("enemy_" + ec.Id)</Art>
                             <ChildContent>
                                 <div class="hp-line"><span>健康</span><b>@Ui.N(w.Hp)/@Ui.N(ec.Hp)</b></div>
@@ -71,9 +72,10 @@
                                 <div class="oc-line">伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax)) · 速度@(Ui.T(ec.Speed))</div>
                             </ChildContent>
                             <Footer>
-                                <button type="button" class="loc-btn res-btn" disabled="@(busy)" title="@(busy ? "行动进行中" : "在右栏查看后接近")"
-                                        @onclick="() => SelectEnemy(wid)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
-                                    <strong>查看 · 接近</strong>
+                                @* R05 §7、S14 §14.2：点“接近”只在卡旁打开对象/风险预览，点浮窗里的“接近并开战”才接敌 *@
+                                <button type="button" class="loc-btn res-btn @(open ? "on" : "")" disabled="@(busy)" aria-expanded="@open" title="@(busy ? "行动进行中" : "在卡旁预览风险并确认接近")"
+                                        @onclick="() => OpenApproach(wid)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                    <strong>接近 ▸</strong>
                                 </button>
                             </Footer>
                         </ObjectCard>
@@ -94,7 +96,7 @@
                     var req = ActionRequest.Gather(r.NodeId);
                     var why = busy ? (s.Main?.Status == ActionStatus.Paused ? "行动暂停中" : "行动进行中") : e.CanStart(s, req);
                     var stock = r.IsCache ? (empty ? "已搜空" : "可搜1次") : r.IsUnlimited ? "不限量" : $"{rs.Available}/{r.Cap}";
-                    <ObjectCard @key="r.NodeId" CssClass="res-card" Title="@r.Name" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
+                    <ObjectCard @key="r.NodeId" Id="@($"res-{nodeId}")" CssClass="res-card" Title="@r.Name" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
                                 Selected="@(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId)" Fresh="@G.Highlights.Contains(r.NodeId)"
                                 DataDrop="@($"res:{nodeId}")" Tooltip="资源点：点击查看采集预估；把对应工具拖到这里指定使用" OnClick="() => SelectResource(nodeId)">
                         <Art>@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</Art>
@@ -135,6 +137,12 @@
     private void SelectResource(string id) => G.Select(new Selection { Kind = SelectionKind.Resource, Id = id });
 
     private void SelectEnemy(int worldId) => G.Select(new Selection { Kind = SelectionKind.Enemy, Id = worldId.ToString(), InstanceId = worldId });
+
+    private void OpenApproach(int worldId)
+    {
+        SelectEnemy(worldId);
+        G.OpenPop("approach", worldId.ToString(), $"en-{worldId}");
+    }
 
     /// <summary>资源卡底部按钮：选中并直接开始（留言 649cdad9）。</summary>
     private async Task Quick(ActionRequest r, string nodeId)

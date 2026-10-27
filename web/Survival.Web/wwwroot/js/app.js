@@ -128,6 +128,8 @@ window.survival = {
         }
         return;
       }
+      // 就近操作浮窗（S14 §14.1）里的按钮：回车/空格/数字只作用于浮窗自身，不转给卡下操作条；Esc 照常交给 Esc 栈（先收起浮窗）
+      if (ev.target && ev.target.closest && ev.target.closest('.apop') && ev.key !== 'Escape') return;
       var inBar = ev.target && ev.target.closest && ev.target.closest('.tbar');
       // 选中物品卡后直接按数字：跳进卡片下方操作条的数量框（v0.7 起操作条在卡下文档流里）
       if (/^[0-9]$/.test(ev.key) && t !== 'INPUT' && t !== 'TEXTAREA' && !ev.ctrlKey && !ev.altKey && !ev.metaKey) {
@@ -197,5 +199,91 @@ window.survivalDlg = (function () {
       if (el.__dlg) el.__dlg.atBottom = true;
       showLatest(el, false);
     }
+  };
+})();
+
+// 就近操作浮窗（S14 §14.1）：锚定到对象卡/指令按钮旁。优先 data-place 顺序里第一个放得下的方向（附近空位），都放不下取空间最大的一侧，
+// 最后限制在视口内；锚点所在的滚动区滚动、窗口改变或内容变化时跟随重算；锚点消失或滚出可视区（可见不足四分之一）时通知 .NET 收起，
+// 不留下脱离目标的可执行旧按钮。只改位置，不推进任何玩法。
+window.survivalPop = (function () {
+  var cur = null;
+  function visibleRect(el) {
+    var r = el.getBoundingClientRect();
+    var L = r.left, T = r.top, R = r.right, B = r.bottom;
+    for (var p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      var cs = getComputedStyle(p);
+      if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') {
+        var pr = p.getBoundingClientRect();
+        L = Math.max(L, pr.left); T = Math.max(T, pr.top); R = Math.min(R, pr.right); B = Math.min(B, pr.bottom);
+      }
+    }
+    L = Math.max(L, 0); T = Math.max(T, 0); R = Math.min(R, window.innerWidth); B = Math.min(B, window.innerHeight);
+    var area = Math.max(1, r.width * r.height);
+    var vis = R > L && B > T ? (R - L) * (B - T) / area : 0;
+    return { left: L, top: T, right: R, bottom: B, vis: vis };
+  }
+  function place() {
+    if (!cur) return;
+    var el = cur.el;
+    if (!el || !el.isConnected) { stop(); return; }
+    var a = cur.anchor ? document.getElementById(cur.anchor) : null;
+    if (!a) { lost(); return; }
+    var A = visibleRect(a);
+    if (A.vis < 0.25) { lost(); return; }
+    var W = window.innerWidth, H = window.innerHeight, m = 8, g = 8;
+    var w = el.offsetWidth, h = el.offsetHeight;
+    var order = (el.getAttribute('data-place') || 'right,left,below,above').split(',');
+    var room = { right: W - m - A.right - g, left: A.left - g - m, below: H - m - A.bottom - g, above: A.top - g - m };
+    function pos(side) {
+      if (side === 'right') return { x: A.right + g, y: A.top };
+      if (side === 'left') return { x: A.left - g - w, y: A.top };
+      if (side === 'below') return { x: A.left, y: A.bottom + g };
+      return { x: A.left, y: A.top - g - h };
+    }
+    function fits(side) { return side === 'right' || side === 'left' ? room[side] >= w : room[side] >= h; }
+    var side = null;
+    for (var i = 0; i < order.length; i++) { if (fits(order[i])) { side = order[i]; break; } }
+    if (!side) {
+      // 都放不下：取相对空间最大的一侧（向上/另一侧翻转），再整体限制在屏内
+      side = order.slice().sort(function (x, y) {
+        var fx = room[x] / (x === 'right' || x === 'left' ? w : h), fy = room[y] / (y === 'right' || y === 'left' ? w : h);
+        return fy - fx;
+      })[0];
+    }
+    var p = pos(side);
+    var x = Math.max(m, Math.min(p.x, W - m - w));
+    var y = Math.max(m, Math.min(p.y, H - m - h));
+    el.style.left = Math.round(x) + 'px';
+    el.style.top = Math.round(y) + 'px';
+    el.style.visibility = 'visible';
+    el.setAttribute('data-side', side);
+  }
+  function lost() {
+    var d = cur && cur.dotnet;
+    stop();
+    if (d) { try { d.invokeMethodAsync('AnchorLost'); } catch (e) { } }
+  }
+  function onMove() { if (cur && !cur.raf) cur.raf = requestAnimationFrame(function () { if (cur) { cur.raf = 0; place(); } }); }
+  function stop() {
+    if (!cur) return;
+    window.removeEventListener('scroll', onMove, true);
+    window.removeEventListener('resize', onMove);
+    if (cur.ro) cur.ro.disconnect();
+    if (cur.raf) cancelAnimationFrame(cur.raf);
+    cur = null;
+  }
+  return {
+    attach: function (el, anchorId, dotnet) {
+      if (!el) return;
+      if (cur && cur.el === el) { cur.anchor = anchorId; cur.dotnet = dotnet; place(); return; }
+      stop();
+      cur = { el: el, anchor: anchorId, dotnet: dotnet, raf: 0, ro: null };
+      window.addEventListener('scroll', onMove, true);
+      window.addEventListener('resize', onMove);
+      if (window.ResizeObserver) { cur.ro = new ResizeObserver(onMove); cur.ro.observe(el); }
+      place();
+    },
+    detach: function (el) { if (cur && cur.el === el) stop(); },
+    place: place
   };
 })();

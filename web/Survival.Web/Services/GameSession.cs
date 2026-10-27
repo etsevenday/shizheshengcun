@@ -213,6 +213,41 @@ public sealed class GameSession
         Notify();
     }
 
+    /// <summary>
+    /// 就近操作浮窗（S14 §14.1、S02 §5、R05 §7）：一个时刻只有一个当前操作上下文。Kind：travel（相邻地图卡确认移动）、
+    /// mapnode（区域地图节点确认移动）、approach（敌踪卡接近并开战）、gather（拖工具到资源卡后的开始确认）、switch（战斗换武器）。
+    /// 只是界面状态，不进存档；Esc/关闭只收起，不提交、不取消已运行的行动。切对象、开面板、开始行动、进入战斗或对话时收起。
+    /// </summary>
+    public sealed record PopContext(string Kind, string Id, string AnchorId);
+    public PopContext? Pop { get; private set; }
+
+    public void OpenPop(string kind, string id, string anchorId)
+    {
+        if (State == null || DialogueLocked) return;
+        Pop = new PopContext(kind, id, anchorId);
+        IgniteMenuOpen = false;
+        Notify();
+    }
+
+    /// <summary>收起操作浮窗（Esc、×、取消、锚点滚出或消失）。拖工具打开的采集预览随浮窗一起作废（右栏不留无法开始的预览）。</summary>
+    public void ClosePop()
+    {
+        if (Pop == null) return;
+        DropPop();
+        Notify();
+    }
+
+    /// <summary>不通知界面地收起浮窗（目标失效时由渲染方调用，避免 Esc 栈停在看不见的浮窗上）。</summary>
+    public void DropPop()
+    {
+        if (Pop?.Kind == "gather" && Selected.Kind == SelectionKind.Action)
+        {
+            ClearSelectionSilently();
+            PendingAction = null;
+        }
+        Pop = null;
+    }
+
     /// <summary>悬停或键盘聚焦某个动作按钮时的临时预测；离开即清空。右栏在“执行中”之后、选中对象之前显示它。</summary>
     public ActionRequest? HoverPreview { get; private set; }
     public string HoverTitle { get; private set; } = "";
@@ -241,6 +276,7 @@ public sealed class GameSession
         // 对话读完锁（Q10）：不打开任何面板；关闭（null）仍允许，便于对话出现时收起菜单
         if (panel != null && DialogueLocked) return;
         HoverPreview = null;
+        Pop = null;
         // 只有地图/制作/休息会在右栏显示面板自己的预估，切到“对象信息”；顶栏浏览层（日志、目标、提示、对话记录、说明）不改右栏页签
         if (panel != null) { IgniteMenuOpen = false; if (panel is "map" or "craft" or "rest") DetailTab = DetailTab.Object; }
         if (panel == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturn = null; }
@@ -352,6 +388,7 @@ public sealed class GameSession
         {
             PendingDrop = null;
             IgniteMenuOpen = false;
+            DropPop();
             ClearHoverNow();
             StatusHover = null;
             StatusPinned = null;
@@ -487,6 +524,7 @@ public sealed class GameSession
         Panel = null;
         HoverPreview = null;
         IgniteMenuOpen = false;
+        Pop = null;
         CharPage = null;
         StatusHover = null;
         StatusPinned = null;
@@ -527,6 +565,7 @@ public sealed class GameSession
     public void Select(Selection sel)
     {
         Selected = sel;
+        Pop = null;
         if (sel.Kind != SelectionKind.None) DetailTab = DetailTab.Object;
         Notice = null;
         // 选中卡片后卡下会出现操作条：旧的结果提示收起，不遮挡操作（试玩修复 G5）；内容仍在页脚与行动日志里
@@ -548,6 +587,7 @@ public sealed class GameSession
     public void ClearSelection()
     {
         Selected = new Selection();
+        Pop = null;
         DetailTab = DetailTab.Character;
         Notify();
     }
@@ -641,6 +681,8 @@ public sealed class GameSession
             return res;
         }
         Notice = null;
+        // 就近确认浮窗已完成使命（S14 §14.1：执行后不留下可再次点击的旧按钮）
+        Pop = null;
         // 开始新行动：上一条结果提示与悬停预测作废（试玩修复 G5、L6：按钮开始后消失或禁用，收不到离开事件）
         Toast = null;
         ClearHoverNow();
@@ -764,6 +806,8 @@ public sealed class GameSession
         PendingActionTitle = title;
         Panel = null;
         Selected = new Selection { Kind = SelectionKind.Action, Id = r.TargetId, InstanceId = r.InstanceId };
+        // 拖工具到资源卡：开始确认放在该资源卡旁的锚定浮窗（S14 §14.1），右栏只作详细预测
+        Pop = r.Type == ActionType.Gather ? new PopContext("gather", r.TargetId, "res-" + r.TargetId) : null;
         DetailTab = DetailTab.Object;
         Notice = null;
         Notify();
@@ -951,6 +995,7 @@ public sealed class GameSession
         if (State != null && S.Battle != null && !S.Progress.Dead && !BattleBusy)
         {
             ResetBattleUi();
+            Pop = null;
             Selected = new Selection();
             DetailTab = DetailTab.Object;
             ClearHoverNow();
@@ -1201,6 +1246,7 @@ public sealed class GameSession
         ResetBattleUi();
         Toast = null;
         ClearHoverNow();
+        Pop = null;
         Selected = new Selection();
         DetailTab = DetailTab.Object;
         Drain();
@@ -1218,6 +1264,7 @@ public sealed class GameSession
         if (res.Ok)
         {
             ResetBattleUi();
+            Pop = null;
             Selected = new Selection();
             DetailTab = DetailTab.Object;
             // 进入战斗：上一场的“战斗胜利”等旧提示与地块上的悬停预测作废（试玩修复 G5、L6）

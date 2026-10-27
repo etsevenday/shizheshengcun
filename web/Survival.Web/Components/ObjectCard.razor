@@ -1,6 +1,6 @@
 @* 统一卡框（卡片统一与设施烹饪 v0.4 · 01 案第 2 节）：地点、设施、资源与地面/随身物品共用同一圆角、描边、标题与图片区。
    Wide 为左图右文（当前地图卡）；Dashed 为未建造；落点与拖拽键原样透传给 drag.js。 *@
-<div class="ocard @CssClass @(Selected ? "selected" : "") @(Dashed ? "dashed" : "") @(Dim ? "dim" : "") @(Wide ? "wide" : "") @(Fresh ? "fresh" : "")"
+<div id="@Id" class="ocard @CssClass @(Selected ? "selected" : "") @(Dashed ? "dashed" : "") @(Dim ? "dim" : "") @(Wide ? "wide" : "") @(Fresh ? "fresh" : "")"
      data-drop="@DataDrop" data-drop-level="@(DataDrop == null ? null : DropLevel)"
      data-drag="@DataDrag" data-drag-from="@DragFrom" data-drag-title="@DragTitle" data-card="@DataCard"
      role="button" tabindex="0" title="@Tooltip" aria-label="@(AriaLabel ?? Title)"
@@ -17,6 +17,8 @@
 </div>
 
 @code {
+    /// <summary>DOM id（就近操作浮窗的锚点，S14 §14.1）。</summary>
+    [Parameter] public string? Id { get; set; }
     [Parameter] public string Title { get; set; } = "";
     [Parameter] public string? Badge { get; set; }
     [Parameter] public string BadgeClass { get; set; } = "";

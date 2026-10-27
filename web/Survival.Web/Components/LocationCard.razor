@@ -78,15 +78,30 @@ else
 {
     var edge = e.AdjacentUnlocked(s).FirstOrDefault(x => x.Other(s.CurrentLocation) == LocationId);
     var selected = sel.Kind == SelectionKind.Entrance && sel.Id == LocationId;
-    <ObjectCard CssClass="loc-card neighbor" Title="@lc.Name" Badge="@(ls.Visited ? "已访问" : "待访问")" BadgeClass="@(ls.Visited ? "" : "new")"
+    // 相对方位徽标（S14 §16、S02 §3.1）：以主角当前所在地为参照，数据唯一来自内核 DirectionFromHere（区域图 mapX/mapY）；
+    // 移动途中/暂停/取消仍按起点，到达后统一刷新。只是展示：不绑定方向键、点击不移动（点到它等同点卡面：选中并在卡旁预览）。
+    var dir = e.DirectionFromHere(s, LocationId);
+    var dirHint = GameEngine.DirectionHint(dir);
+    var open = G.Pop?.Kind == "travel" && G.Pop.Id == LocationId;
+    <ObjectCard Id="@AnchorId" CssClass="loc-card neighbor" Title="@lc.Name" Badge="@(ls.Visited ? "已访问" : "待访问")" BadgeClass="@(ls.Visited ? "" : "new")"
                 Selected="selected" Fresh="@(edge != null && G.Highlights.Contains(edge.Id))"
-                Tooltip="相邻地点：点击查看移动预估，在右侧确认出发" OnClick="SelectEntrance">
-        <Art><div class="loc-art" style="background-image:url('@scene')" role="img" aria-label="@($"{lc.Name}图片")"></div></Art>
+                AriaLabel="@($"{lc.Name}，{(dir == MapDirection.None ? "" : dirHint + "，")}单程{edge?.BaseMinutes ?? 0}分钟")"
+                Tooltip="相邻地点：点击在卡旁查看移动预估并确认出发" OnClick="OpenTravel">
+        <Art>
+            <div class="loc-art" style="background-image:url('@scene')" role="img" aria-label="@($"{lc.Name}图片")"></div>
+            @if (dir != MapDirection.None)
+            {
+                <span class="dir-badge" role="img" aria-label="@dirHint" title="@($"{dirHint}（方位图标，只作展示；移动请点“前往”）")">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(@(((int)dir - 1) * 45)deg)"><path d="M12 2.5 19.5 11h-4.6v10.5H9.1V11H4.5Z" /></svg>
+                </span>
+            }
+        </Art>
         <ChildContent>
             <div class="oc-line">单程@(edge?.BaseMinutes ?? 0)分钟 · @(lc.IsIndoor ? "室内" : "露天")</div>
         </ChildContent>
         <Footer>
-            <button type="button" class="oc-btn" @onclick="SelectEntrance" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">前往 ▸</button>
+            <button type="button" class="oc-btn @(open ? "on" : "")" aria-expanded="@open" title="在卡旁预览并确认移动"
+                    @onclick="OpenTravel" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">前往 ▸</button>
         </Footer>
     </ObjectCard>
 }
@@ -116,7 +131,14 @@ else
         var rng = new Random(7);
         return Enumerable.Range(0, 46).Select(_ => (rng.Next(20, 1180), rng.Next(20, 230), 1 + rng.NextDouble() * 1.6)).ToArray();
     }
-    private void SelectEntrance() => G.Select(new Selection { Kind = SelectionKind.Entrance, Id = LocationId });
+    private string AnchorId => "loc-" + LocationId;
+
+    /// <summary>点相邻卡或“前往”：选中路线（右栏可选详细预测），并在卡旁打开移动确认浮窗（S02 §5、S14 §14.1）；本身不移动、不扣资源。</summary>
+    private void OpenTravel()
+    {
+        G.Select(new Selection { Kind = SelectionKind.Entrance, Id = LocationId });
+        G.OpenPop("travel", LocationId, AnchorId);
+    }
 
     private void HoverExplore() => G.Hover(ExploreReq, "探索周边");
     private void HoverClear() => G.Hover(ClearReq, "清理");

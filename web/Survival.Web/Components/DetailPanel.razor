@@ -43,13 +43,13 @@
     }
     else if (craftDetail)
     {
-        @* 二级面板打开时，右栏显示该面板的预估与确认（试玩留言 8f9a7c9b 第 2 点） *@
+        @* 二级面板打开时，右栏显示该面板的详细预估（试玩留言 8f9a7c9b 第 2 点）；开始入口在所选配方卡内（S08 §5、S14 §14.1） *@
         <CraftOverlay Part="detail" />
     }
     else if (dragPreview)
     {
-        @* 拖拽打开的耗时交互（指定工具采集）：与按钮同一份内核预估，按“开始”才计时（01 案 3.2） *@
-        <PreviewView Request="G.PendingAction!" Eyebrow="拖拽 · 行动预览" Title="@G.PendingActionTitle" />
+        @* 拖拽打开的耗时交互（指定工具采集）：与按钮同一份内核预估；“开始”在资源卡旁的浮窗（01 案 3.2、S14 §14.1） *@
+        <PreviewView Request="G.PendingAction!" Eyebrow="拖拽 · 行动预览" Title="@G.PendingActionTitle" Confirmable="false" FootNote="在资源卡旁的浮窗确认开始；时间为预计值" />
     }
     else if (G.Panel == "map")
     {
@@ -76,12 +76,13 @@
                              Subtitle="翻找、整理地块表层的零散基础物资。每地有独立次数，随游戏世界时间恢复；不增加探索度。" />
                 break;
             case SelectionKind.Entrance:
-                <PreviewView Request="ActionRequest.Travel(sel.Id)" Eyebrow="@($"已选中 · 前往{e.LocName(sel.Id)}")" Title="@($"前往{e.LocName(sel.Id)}")"
+                <PreviewView Request="ActionRequest.Travel(sel.Id)" Eyebrow="@($"已选中 · 前往{e.LocName(sel.Id)}")" Title="@($"前往{e.LocName(sel.Id)}")" Confirmable="false"
+                             FootNote="在相邻地图卡旁的浮窗确认移动；时间为预计值"
                              Subtitle="位置在到达时一次更新；途中不能取用两端的物资。" />
                 break;
             case SelectionKind.Resource:
                 var r = e.Resource(sel.Id);
-                <PreviewView Request="ActionRequest.Gather(sel.Id)" Eyebrow="@($"已选中 · {r.Name}")" Title="@(r.IsCache ? $"搜集{r.Name}" : $"采集{r.Name}")"
+                <PreviewView Request="ActionRequest.Gather(sel.Id)" Eyebrow="@($"已选中 · {r.Name}")" Title="@(r.IsCache ? $"搜集{r.Name}" : $"采集{r.Name}")" Confirmable="false"
                              Subtitle="工具与成本已计入本次预估。" />
                 break;
             case SelectionKind.ItemGroup:
@@ -98,7 +99,7 @@
             default:
                 <div class="empty-detail">
                     <b>未选中对象</b><br />
-                    选择地点、路线、资源、设施或物品查看信息；<br />使用与转移在被选中卡片下方
+                    选择地点、路线、资源、设施或物品查看信息；<br />执行、使用与转移都在对应卡片上或卡旁
                     @if (G.Notice != null) { <div class="notice" style="margin-top:12px">@G.Notice</div> }
                 </div>
                 break;

@@ -1,0 +1,54 @@
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+@* 通用锚定操作浮窗（S14 §14.1、§13.2）：锚在对象卡/指令按钮旁，优先附近空位、放不下时向上/另一侧翻转，限制在屏内（位置由 survivalPop 计算）。
+   内容：对象/目标小图、动作名、必要成本/短风险、明确执行与关闭，不铺长说明。控件阻止冒泡，不点穿为卡片使用/选敌/拖拽；
+   Esc/× 只收起未提交浮窗，不提交、不取消已运行的行动；锚点滚出或消失时收起（OnLost）。 *@
+<div class="apop @CssClass" @ref="_el" data-anchor="@AnchorId" data-place="@Place" role="dialog" aria-label="@Title"
+     @onclick:stopPropagation="true" @onpointerdown:stopPropagation="true" @onmousedown:stopPropagation="true" @onwheel:stopPropagation="true">
+    <div class="apop-head">
+        @if (Art != null) { <span class="apop-art" aria-hidden="true">@Art</span> }
+        <span class="apop-title"><b>@Title</b>@if (!string.IsNullOrEmpty(Sub)) {<small>@Sub</small>}</span>
+        <button type="button" class="apop-x" aria-label="@($"关闭{Title}，不执行")" title="关闭（Esc），不执行" @onclick="Close">×</button>
+    </div>
+    @if (ChildContent != null) { <div class="apop-body">@ChildContent</div> }
+    @if (Actions != null) { <div class="apop-foot">@Actions</div> }
+</div>
+
+@code {
+    /// <summary>锚点元素的 DOM id（对象卡、指令按钮）。</summary>
+    [Parameter, EditorRequired] public string AnchorId { get; set; } = "";
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? Sub { get; set; }
+    /// <summary>方向优先顺序（right,left,below,above 的子序列）；默认先右后左再下再上。</summary>
+    [Parameter] public string Place { get; set; } = "right,left,below,above";
+    [Parameter] public string CssClass { get; set; } = "";
+    [Parameter] public RenderFragment? Art { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+    /// <summary>×、锚点消失或滚出可视区时调用（调用方收起浮窗）。</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private ElementReference _el;
+    private DotNetObjectReference<AnchorPop>? _ref;
+
+    private Task Close() => OnClose.InvokeAsync();
+
+    [JSInvokable]
+    public Task AnchorLost() => InvokeAsync(() => OnClose.InvokeAsync());
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        _ref ??= DotNetObjectReference.Create(this);
+        try { await JS.InvokeVoidAsync("survivalPop.attach", _el, AnchorId, _ref); }
+        catch (JSException) { /* 旧缓存的 app.js 没有定位函数：浮窗留在默认位置，不影响执行与关闭 */ }
+        catch (InvalidOperationException) { /* 预渲染/静态渲染时没有 JS */ }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { await JS.InvokeVoidAsync("survivalPop.detach", _el); }
+        catch (Exception) { /* 页面卸载时 JS 已不可用 */ }
+        _ref?.Dispose();
+    }
+}
