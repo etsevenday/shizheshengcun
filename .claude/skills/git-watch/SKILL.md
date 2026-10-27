@@ -11,7 +11,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 
 - 仓库 `E:\Workspace\shizheshengcun`，远端 `etsevenday/shizheshengcun`，分支 `main`。本方 git 作者 `etsevenday`；策划 GitHub 账号 `dotpad1994`（仓库协作者）。
 - `/design-dev` 第 0 节全部约定照旧（数值只来自策划案、不自补；只 add 自己改的路径；不强推；不碰留言板相关文件；压缩包不入库；代理不传 `model`、不用 Fable）。
-- 无人值守：不用 `AskUserQuestion`、`EnterPlanMode`/`ExitPlanMode`、`start_session`；开发与试玩一律用 `Agent`（`general-purpose`，不传 `model`）。
+- 无人值守：不用 `AskUserQuestion`、`EnterPlanMode`/`ExitPlanMode`、`start_session`；开发与试玩一律用 `Agent`（`general-purpose`，不传 `model`，传 `effort: "high"`：用户 2026-10-27 要求定时任务用 Opus 5.5 高）。
 - 待确认问题的**唯一存放处**：`doc/策划案/系统策划总册 v1.0/00 总则/02 开发方待确认问题.md`（路径固定，不新建别的问题文件）。
 - 状态文件 `.git/claude-git-watch.json`（在 .git 里，不会入库）：`{"lastSeen": "<已处理到的 origin/main 提交>", "runningSince": "<ISO 时间或 null>", "notifiedHead": "<上次因受阻而通知用户时的 origin/main 提交>"}`。
 - 凡是"通知用户、停下、`lastSeen` 不更新"的情况，同时把 `notifiedHead` 记为当前 origin/main；下一轮 origin/main 仍是这个提交就安静结束、不再重复通知，等用户处理或策划再推新提交。
