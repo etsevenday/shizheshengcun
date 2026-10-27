@@ -16,6 +16,11 @@
 <div class="detail-scroll attr-page" data-wheel="y">
     <div class="attr-head">
         <button type="button" class="secondary attr-back" @onclick="Back" aria-label="返回人物一级页">‹ 人物<kbd>Esc</kbd></button>
+        @if (HelpCatalog.ForAttr(page) is var (ht, he) && !G.InBattleUi)
+        {
+            @* 同源通用规则（S14 §13.2/§13.3）：定位到系统说明的同一条目，关闭说明回到这里 *@
+            <button type="button" class="linkish attr-help" title="在系统说明里阅读这项的通用规则（只读，不耗时）" @onclick="() => G.OpenHelp(ht, he)">相关说明 ›</button>
+        }
     </div>
     @if (sid is StatId id)
     {

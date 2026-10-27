@@ -42,12 +42,23 @@
             <p>@chip.Effect</p>
             <p class="muted">@StatusView.RemainingText(chip)</p>
             @if (!pinned) { <p class="tiny muted">点击图标固定说明</p> }
+            else if (!G.InBattleUi)
+            {
+                var (ht, he) = HelpCatalog.ForStatus(chip.Id);
+                <button type="button" class="linkish st-help" title="在系统说明里阅读通用规则（只读，不耗时）" @onclick="() => OpenHelp(ht, he)">相关说明 ›</button>
+            }
         }
     </div>
 }
 
 @code {
     private void Close() => G.PinStatus(null);
+
+    private void OpenHelp(string topic, string entry)
+    {
+        G.PinStatus(null);
+        G.OpenHelp(topic, entry);
+    }
 
     protected override void OnAfterRender(bool firstRender)
     {

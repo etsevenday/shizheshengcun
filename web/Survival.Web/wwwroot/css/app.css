@@ -1129,3 +1129,18 @@ kbd { font-size: 14px; }
   .dg-cards > .enemy-card.world .oc-body { gap: 1px; padding: 2px 8px 3px; }
   .dg-cards > .enemy-card.world .loc-btn { min-height: 40px; padding: 3px 9px; }
 }
+
+/* ───────────── 系统说明正文：插图行（方位图例、状态图标、指令图；开发计划 M66） ───────────── */
+.help-article { max-width: 920px; }
+.help-figs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 4px 0 12px; }
+.help-fig { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: #1f2721; }
+.hf-ico { flex: 0 0 auto; width: 40px; height: 40px; border-radius: 5px; background: var(--paper); display: flex; align-items: center; justify-content: center; }
+.hf-ico > svg { width: 34px; height: 34px; }
+.hf-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.35; }
+.hf-text b { font-size: 15px; font-weight: 600; }
+.hf-text small { font-size: 14px; color: var(--muted); }
+.dir-badge.static { position: static; width: 30px; height: 30px; }
+.dir-badge.static svg { width: 20px; height: 20px; }
+.help-entries { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.attr-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.st-help { display: inline-block; margin-top: 2px; }

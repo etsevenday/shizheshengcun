@@ -64,7 +64,7 @@ public static class Ui
         {
             StatId.Health => $"身体损伤总量，上限{T(c.StateScale.HealthMax)}，健康与战斗共用。归0即死亡。仅在休息或睡眠、处于遮蔽、饱食与水分不低于{T(hr.RecoveryMinSatiety)}且精神不低于{T(hr.RecoveryMinMorale)}时，每小时自然恢复{T(hr.ShelteredRestRecoveryPerHour)}。{bandage?.Name ?? "绷带"}止血并恢复{T(bandage?.Use?.Health ?? 0)}×(1+0.02×医疗等级)（{c.ItemActions.BandageCooldownMinutes}分钟冷却）。",
             StatId.Satiety => $"基础营养储备，所有时间都会消耗。降至{Th("satiety")}以下会提醒；归0后健康每小时减{T(-hr.ZeroSatietyPerHour)}。",
-            StatId.Hydration => $"体内水分储备，消耗最快。降至{Th("hydration")}以下会提醒；归0后健康每小时减{T(-hr.ZeroHydrationPerHour)}。脏水必定腹泻12小时（每小时额外失水{T(-c.ItemActions.DiarrheaExtraHydrationPerHour)}）。",
+            StatId.Hydration => $"体内水分储备，消耗最快。降至{Th("hydration")}以下会提醒；归0后健康每小时减{T(-hr.ZeroHydrationPerHour)}。脏水必定腹泻{Clock.Duration(c.ItemActions.DiarrheaMinutes)}（每小时额外失水{T(-c.ItemActions.DiarrheaExtraHydrationPerHour)}）。",
             StatId.Energy => $"短期活动能力，上限{T(c.StateScale.EnergyMax)}。行动按每小时速率消耗（移动{T(-c.HourlyRates["travel"].Energy)}、探索{T(-c.HourlyRates["explore"].Energy)}、搜集{T(-c.HourlyRates["gather"].Energy)}、制造{T(-c.HourlyRates["craft"].Energy)}），战斗只付招式成本；浏览与整理不扣体力。低于{Th("energy")}时工作耗时×{T(c.WorkFactors.LowEnergy)}；归0后继续工作每小时健康减{T(-hr.ZeroEnergyWhileWorkingPerHour)}。休息每小时{SignedT(c.HourlyRates["rest"].Energy)}，睡眠恢复。",
             StatId.Wakefulness => $"睡眠需求，清醒时每小时下降{T(-c.HourlyRates["wait"].Wakefulness)}。只有睡眠能恢复（遮蔽{SignedT(sh.Wakefulness)}/小时，露天{SignedT(ex.Wakefulness)}/小时）。降至{Th("wakefulness")}以下提醒；归0后健康每小时减{T(-hr.ZeroWakefulnessPerHour)}。",
             _ => $"简化的情绪与舒适状态。工作时缓慢下降，遮蔽睡眠与营地遮蔽棚休息可恢复。低于{Th("morale")}时休息与睡眠的体力恢复×{T(c.FacilityEffects.LowMoraleEnergyRecoveryFactor)}；也决定战斗开始时的恐慌。",

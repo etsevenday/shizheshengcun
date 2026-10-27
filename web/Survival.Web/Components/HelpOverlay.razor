@@ -2,7 +2,7 @@
 
 @* 顶栏“系统说明”（S14 §13.3）：带图标的主题目录 → 主题条目 → 正文，正文独立滚动；始终有返回/关闭。
    Esc 每次返回一级（条目 → 主题 → 目录 → 关闭）；从详情定位进来的直接回原入口。只读浏览：不推进时间、不改选择、不执行玩法。
-   M61 只搭框架：条目正文由 HelpCatalog 填充（M66），没有条目的主题显示“内容整理中”。 *@
+   正文与插图（方位图例、状态图标、指令图）由 HelpCatalog 按配置现算；属性/状态详情的“相关说明”直接定位到同一条目。 *@
 @{
     var e = G.E;
     var s = G.S;
@@ -69,7 +69,29 @@
                 {
                     <p>@para</p>
                 }
+                @if (entry.Figures != null)
+                {
+                    <div class="help-figs" role="list">
+                        @foreach (var f in entry.Figures(e, s))
+                        {
+                            <div class="help-fig" role="listitem">
+                                <span class="hf-ico" aria-hidden="true">@FigIcon(f.Icon)</span>
+                                <span class="hf-text"><b>@f.Label</b>@if (f.Note != null) {<small>@f.Note</small>}</span>
+                            </div>
+                        }
+                    </div>
+                }
             </article>
         }
     </div>
 </div>
+
+@code {
+    /// <summary>插图：Icons 键，或 "dir:N" 方位箭头（与地块卡方位徽标同一画法）。</summary>
+    private static MarkupString FigIcon(string key)
+    {
+        if (key.StartsWith("dir:") && int.TryParse(key[4..], out var d))
+            return new MarkupString($"<span class=\"dir-badge static\"><svg viewBox=\"0 0 24 24\" style=\"transform:rotate({(d - 1) * 45}deg)\"><path d=\"M12 2.5 19.5 11h-4.6v10.5H9.1V11H4.5Z\" /></svg></span>");
+        return Icons.Markup(key);
+    }
+}

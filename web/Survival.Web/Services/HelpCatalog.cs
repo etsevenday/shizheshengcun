@@ -1,3 +1,4 @@
+using Survival.Core.Config;
 using Survival.Core.Engine;
 using Survival.Core.State;
 
@@ -12,37 +13,650 @@ public sealed class HelpTopic
     public string Icon { get; init; } = "placeholder";
     /// <summary>目录卡上的一句话范围。</summary>
     public string Summary { get; init; } = "";
-    public List<HelpEntry> Entries { get; } = new();
+    public List<HelpEntry> Entries { get; init; } = new();
 }
 
-/// <summary>主题下的一个条目：标题 + 段落。段落按当前配置/实例现算（说明跟随生效参数，不另建第二套数值）。</summary>
+/// <summary>插图行的一格：图标键（Icons 键；"dir:N" 为第 N 个方位箭头）+ 名称 + 一句说明。</summary>
+public sealed record HelpFigure(string Icon, string Label, string? Note = null);
+
+/// <summary>主题下的一个条目：标题 + 段落（+ 可选插图行）。段落按当前配置/实例现算（说明跟随生效参数，不另建第二套数值）。</summary>
 public sealed class HelpEntry
 {
     public string Id { get; init; } = "";
     public string Title { get; init; } = "";
     public string? Icon { get; init; }
     public Func<GameEngine, GameState, IEnumerable<string>> Paragraphs { get; init; } = (_, _) => Array.Empty<string>();
+    /// <summary>插图/图例（例如方位箭头、状态图标、指令图），为空不显示。</summary>
+    public Func<GameEngine, GameState, IEnumerable<HelpFigure>>? Figures { get; init; }
 }
 
 /// <summary>
-/// 系统说明目录（S14 §13.3）。本里程碑只搭目录框架与浏览层（M61）；各主题条目正文由 M66 按各主案整理后填入 Entries，
-/// 并由属性/状态详情通过 GameSession.OpenHelp(topicId, entryId) 直接定位。没有条目的主题显示“内容整理中”。
+/// 系统说明目录（S14 §13.3、总纲 §3.2）：8 个玩家主题，正文按各主案的现行规则整理成玩家文案（M66）。
+/// 所有数值都从当前配置/实例现取（Q7 新值随配置生效），不写系统编号、存档结构、开发日志、待确认事项或未实现功能；
+/// 未发现的地点/对象不在这里点名，首战教学奖励等剧情内容只在玩家已经经历后才写出。
+/// 属性/状态详情通过 GameSession.OpenHelp(topicId, entryId) 直接定位到同一条目，返回时回到原入口。
 /// </summary>
 public static class HelpCatalog
 {
+    private static string T(double v) => Fmt.T(v);
+    private static string ST(double v) => Fmt.SignedT(v);
+    private static string Pct(double v) => Fmt.Pct(v);
+    private static string Kg(long g) => Fmt.Kg(g);
+    private static string Dur(int m) => Clock.Duration(m);
+    private static string HHmm(int minuteOfDay) => $"{minuteOfDay / 60:00}:{minuteOfDay % 60:00}";
+
+    private static string Rates(RateBlock r) =>
+        string.Join("、", new[] { ("饱食", r.Satiety), ("水分", r.Hydration), ("体力", r.Energy), ("清醒", r.Wakefulness), ("精神", r.Morale) }
+            .Where(x => Math.Abs(x.Item2) > 1e-9).Select(x => $"{x.Item1}{ST(x.Item2)}"));
+
     public static readonly IReadOnlyList<HelpTopic> Topics = new List<HelpTopic>
     {
-        new() { Id = "basics", Title = "入门与操作", Icon = "camp", Summary = "卡片选择、拖拽与转移、数量、界面层级、对白与记录、开局引导" },
-        new() { Id = "time", Title = "时间、行动与保存", Icon = "bed", Summary = "世界时钟、工作与固定时长、暂停与退出、休息睡眠、保存与恢复" },
-        new() { Id = "map", Title = "地图、探索与资源", Icon = "route", Summary = "地点移动、发现、清理恢复、采集与搜集" },
-        new() { Id = "items", Title = "物品、容器与负重", Icon = "pot", Summary = "物品归属、批次与堆叠、保质、重量与负重、锅内容与液体、装备耐久" },
-        new() { Id = "body", Title = "人物、生存与医疗", Icon = "bandage", Summary = "属性与熟练度、饮食、恢复、异常状态、免疫与感染、医疗" },
-        new() { Id = "camp", Title = "制作、营地与烹饪", Icon = "fire_lit", Summary = "配方与预留、建造、点火与燃料、被动加工、等待烹饪" },
-        new() { Id = "combat", Title = "敌踪与战斗", Icon = "enemy_shambler", Summary = "遭遇、回合与行动点、动作与站位、伤害与状态、撤退与掉落" },
-        new() { Id = "baobao", Title = "饱饱与吞噬融合", Icon = "status_baobao", Summary = "饱饱已公开的身份与功能、吞噬融合流程" },
+        // ───────────── 入门与操作 ─────────────
+        new()
+        {
+            Id = "basics", Title = "入门与操作", Icon = "camp", Summary = "卡片选择、拖拽与转移、数量、界面层级、对白与记录、开局引导",
+            Entries =
+            {
+                new HelpEntry
+                {
+                    Id = "screen", Title = "界面分区", Icon = "route",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "中间从上到下是四个区：地图与场景（当前地点大图和相邻地点）、设施与资源（火堆、营地设施、敌踪、可采集的资源）、当前地面、随身物品。四个区始终同屏，内容多时各自在区内滚动。",
+                        "左栏是时间、六项基础属性、免疫与病毒、状态图标和携带重量；右栏分“对象信息”和“人物”两页，只用来阅读详情与完整预测。",
+                        "顶栏是区域地图、手工制作、休息、行动日志，以及生存目标、生存提示、对话记录和本页“系统说明”。打开它们只是浏览，不推进游戏时间。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "cards", Title = "卡片、选择与转移", Icon = "canned_food",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "点一张卡选中它：卡下出现它的操作条（拾取/放下数量、食用、点火等），右栏显示它的详情。再点别处或按 Esc 取消选中。",
+                        "物品卡右下角的三角箭头是“转移1份”：▼ 从当前地面取到随身，▲ 从随身放到当前地面，按住不放会连续转移。锅里的水和食材、火堆里的锅和食物，箭头都是“取到随身”。要改数量或目的地，点卡片本身在操作条里明确执行。",
+                        "选中物品卡后直接按数字键会跳到数量框；数量框里回车执行、Esc 退出。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "drag", Title = "拖拽与落点", Icon = "wood",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "按住卡片拖动，经过能接收它的地方会高亮，松手才执行：木材拖到火堆燃料区投料，打火器拖到火堆点火，锅和生块根拖到火堆空加工位，水拖到锅的水量条，食材拖到锅的食材区，工具拖到资源卡指定使用，材料拖到制作面板的材料槽指定批次。",
+                        "拖到不能接收的地方松手，物品回到原处，什么也不发生。按住 Shift 松手可以先选数量。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "nearby", Title = "就近执行与浮窗", Icon = "route",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "需要确认的行动，按钮就在对象卡上或卡旁的小浮窗里：点相邻地图卡或“前往”，在卡旁看耗时、到达时刻、负重和入夜影响后“确认移动”；敌踪卡点“接近”，在卡旁看风险后“接近并开战”；制作和建造在所选配方卡下方“开始”；休息在所选时长下方“开始”。",
+                        "浮窗里的“×”、“取消”或 Esc 只收起浮窗，不执行任何东西，也不会取消已经在进行的行动。对象滚出视野或消失时浮窗自动收起。",
+                        "转移、食用、点火、等待烹饪这些直接操作不额外弹确认。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "esc", Title = "Esc 与界面层级", Icon = "placeholder",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "Esc 每次只退一层：先收起正在拖拽的卡、数量框、状态说明或操作浮窗，再关闭打开的面板或说明，再取消选中，最后才打开菜单。",
+                        "Esc 不会退出正在进行的行动，退出请点屏幕中央推进条上的“退出”。战斗中 Esc 也不能脱战，战斗菜单只有“继续”和“保存并返回标题”。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "dialogue", Title = "人物对话与对话记录", Icon = "status_baobao",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "人物对话会盖住地图与设施两行，左侧是你，右侧是说话的对象。对话一句一句累计显示，点“继续”看下一句，最后一句是“结束对话”。",
+                        "对话没读完时，游戏的其他操作都会暂停受理；正在进行的行动或战斗停在原处等你读完，不会在你阅读时偷偷推进时间。",
+                        "读过的对话都能在顶栏“对话记录”里按次重看，重看不会重新触发剧情。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "start", Title = "开局与生存目标", Icon = "camp",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        $"新的一局从第1日{HHmm(e.Config.Time.StartAbsoluteMinute % e.Config.Time.MinutesPerDay)}在临时营地开始。营地有一个未点燃的火堆，随身和营地地面有少量起步物资。",
+                        "顶栏“生存目标”列出本局的阶段目标和完成情况（实际做到才记录，之后消耗也不回退）；“生存提示”给当前处境的求生建议。它们只是建议，不按日期判失败。",
+                        "健康归0会死亡，病毒达到上限会尸变，两者都会结束本局。存活到第8日早上会有一次七日生存检查，之后可以继续生存。",
+                    },
+                },
+            },
+        },
+
+        // ───────────── 时间、行动与保存 ─────────────
+        new()
+        {
+            Id = "time", Title = "时间、行动与保存", Icon = "bed", Summary = "世界时钟、工作与固定时长、暂停与退出、休息睡眠、保存与恢复",
+            Entries =
+            {
+                new HelpEntry
+                {
+                    Id = "clock", Title = "世界时钟与昼夜", Icon = "outdoor",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        $"游戏时间只在你开始行动后流逝，按{e.Config.Time.TickMinutes}分钟一段推进；浏览、整理物品、看说明都不推进时间。关闭页面后时间不会自己走。",
+                        $"白天是{HHmm(e.Config.Time.DaylightStartMinute)}到{HHmm(e.Config.Time.DaylightEndMinute)}，其余时间是夜晚。夜里工作类行动更慢（见“工作量与倍率”）。",
+                        "所有行动都同时消耗饱食和水分；不同行动对体力、清醒和精神的影响不同，开始前的预测会写出每项变化。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "work", Title = "工作量与倍率", Icon = "hatchet",
+                    Paragraphs = (e, s) =>
+                    {
+                        var w = e.Config.WorkFactors;
+                        return new[]
+                        {
+                            "移动、探索、清理、采集、制作和建造是“工作”：标的是基础工作量，实际耗时会乘上当时的倍率。休息、睡眠、等待、点火、食用是固定时长，不受倍率影响。",
+                            $"夜间×{T(w.Night)}，负重超过轻装上限×{T(w.Overweight)}，体力偏低×{T(w.LowEnergy)}；同时出现时相乘，最多×{T(w.Cap)}。行动途中进入夜晚等情况，倍率会在那一刻改变，预测里会写明时刻。",
+                        };
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "progress", Title = "中央推进条、暂停与退出", Icon = "placeholder",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "行动开始后，屏幕中央出现推进条：行动名、进度、剩余游戏时间和“退出”。固定时长写“剩余”，会受倍率或燃料影响的写“预计剩余”。",
+                        "途中某项属性越过提醒线时，行动会自动暂停：可以先吃喝、包扎或给火堆加木，再“继续”。",
+                        "点“退出”会在当前这一段结束时停下：已经过去的时间和已经发生的结果不退回，没做完的部分不结算；制作会把预留材料按原规则返还。点火、食用、吞噬融合这类一段就完成的事，已经开始就会做完这一段。",
+                        "跳过动画只是加快显示，不改变任何结果，任何速度下都可以退出。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "rest", Title = "休息、睡眠与等待", Icon = "bed",
+                    Paragraphs = (e, s) =>
+                    {
+                        var c = e.Config;
+                        var hr = c.HourlyRates;
+                        var list = new List<string>
+                        {
+                            $"休息（每小时{Rates(hr["rest"])}）只恢复体力，不恢复清醒。可选{string.Join("、", c.Actions.RestMinutes.Select(Dur))}。",
+                            $"睡眠是唯一恢复清醒的方式：遮蔽处每小时{Rates(hr["sleep_sheltered"])}；露天每小时{Rates(hr["sleep_exposed"])}。可选{string.Join("、", c.Actions.SleepMinutes.Select(Dur))}，任何时间都能睡。",
+                            $"等待（每小时{Rates(hr["wait"])}）什么也不恢复，只让时间过去，例如等天亮或等火堆加工。",
+                            $"室内地点和营地建成遮蔽棚后算“遮蔽”。营地床垫让睡眠的体力每小时额外{ST(c.FacilityEffects.BedExtraSleepEnergyPerHour)}；精神低于提醒线时，休息与睡眠的体力恢复×{T(c.FacilityEffects.LowMoraleEnergyRecoveryFactor)}。",
+                            "休息和睡眠满了也不会自动结束；途中越过提醒线会暂停。",
+                        };
+                        return list;
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "save", Title = "保存与继续", Icon = "placeholder",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "游戏只有一个存档，在本浏览器里自动保存：每完成一段时间、每次转移或使用物品、每条战斗指令之后都会保存，页脚显示“已保存”。",
+                        "关闭页面或返回标题不会丢失进度，下次点“继续”从原处接着玩，进行中的行动、战斗和未读完的对话都会恢复。保存失败时页脚会提示，可以点“重试”。",
+                        "开始新游戏会覆盖旧存档，覆盖前会再确认一次。",
+                    },
+                },
+            },
+        },
+
+        // ───────────── 地图、探索与资源 ─────────────
+        new()
+        {
+            Id = "map", Title = "地图、探索与资源", Icon = "route", Summary = "地点移动、方位图例、发现、清理恢复、采集与搜集",
+            Entries =
+            {
+                new HelpEntry
+                {
+                    Id = "travel", Title = "移动", Icon = "route",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "一次只能沿一条已知路线走到相邻地点，没有自动寻路。点相邻地图卡或区域地图上的相邻地点，在旁边的浮窗里确认移动。",
+                        "路线标的是基础时间，实际会乘夜间、超重、低体力倍率。途中不能取用出发地或目的地的物资；到达那一刻才换到新地点。中途退出就留在出发地，已经走过的时间不退。",
+                        "移动不享受出发地火堆的照明。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "direction", Title = "方位图例", Icon = "route",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "相邻地图卡图片左上角的小圆章是方位：箭头指向这个地点在区域地图上相对你当前所在地的方向，和区域地图的布局一致。悬停会写出“位于当前地点右侧”等。",
+                        "它只是方位提示，点它不会移动，也不能用方向键走格；移动仍要点“前往”并确认。你所在的地点卡标“当前地点”，没有自己的箭头。没发现的地点不会出现。",
+                        "移动途中仍以出发地为准，到达后所有卡的方位一起刷新。",
+                    },
+                    Figures = (e, s) => Enumerable.Range(1, 8).Select(i => new HelpFigure($"dir:{i}", GameEngine.DirectionName((MapDirection)i))),
+                },
+                new HelpEntry
+                {
+                    Id = "explore", Title = "探索与发现", Icon = "outdoor",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        $"探索一次{e.Config.Actions.ExploreMinutes}分钟（工作量），推进当前地点的探索度{e.Config.Actions.ExploreProgress}%，到100%为止。探索度到达一定阶段时会发现新路线或资源点，地图只显示已经发现的地点和路线。",
+                        "每次探索完成时，从当地物资表里抽一次，可能找到零散物资，也可能什么都没有；产物留在当前地面，不会自动拾取。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "clear", Title = "清理", Icon = "stone",
+                    Paragraphs = (e, s) =>
+                    {
+                        var lc = e.Location(s.CurrentLocation);
+                        return new[]
+                        {
+                            $"清理一次{e.Config.Actions.ClearMinutes}分钟（工作量），翻找地块表层的零散基础物资，完成时抽一次物资表，产物留在当前地面。清理不增加探索度。",
+                            $"每个地点有自己的清理次数，开始时扣1次，退出或没找到东西都不返还；次数随游戏时间慢慢恢复。你现在所在的{lc.Name}最多{lc.Clear.Cap}次，每{Dur(lc.Clear.RefillIntervalMinutes)}恢复1次。",
+                        };
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "gather", Title = "采集与搜集", Icon = "fiber",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "资源卡显示每次产出、耗时和库存。有的资源不限量，有的有库存并且每天补充一些；“搜集”类的旧箱子只能搜一次。",
+                        "随身带着合适的工具会自动用成色最好的一件提高效率（比如刀让纤维更快、斧让木材翻倍），也可以把某一把工具拖到资源卡上指定使用。工具每次使用会磨损。",
+                        "部分资源点有受伤风险，卡上和预测里会写出概率与伤害。",
+                    },
+                },
+            },
+        },
+
+        // ───────────── 物品、容器与负重 ─────────────
+        new()
+        {
+            Id = "items", Title = "物品、容器与负重", Icon = "pot", Summary = "物品归属、批次与堆叠、保质、重量与负重、锅内容与液体、装备耐久",
+            Entries =
+            {
+                new HelpEntry
+                {
+                    Id = "where", Title = "物品在哪里", Icon = "canned_food",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "每件物品只在一个地方：随身、某个地点的地面、火堆里或锅里。只有随身物品和你所在地点的地面能直接使用；别处地面上的东西要走过去才能拿。",
+                        "同一种物品、到期时间相同的会合成一堆，卡上显示数量；到期时间不同的分开显示。制作开始后被预留的那几份会标“已预留”，不能再转移或使用。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "weight", Title = "重量与负重", Icon = "wood",
+                    Paragraphs = (e, s) =>
+                    {
+                        var c = e.Config.Carry;
+                        return new[]
+                        {
+                            "所有重量统一按公斤显示两位小数，例如10克显示为0.01公斤。合计时先按真实克数相加再显示，不会因为四舍五入多算或少算。",
+                            $"随身总重超过{Kg(c.SoftGrams)}算超重，工作类行动耗时×{T(e.Config.WorkFactors.Overweight)}；上限是{Kg(c.HardGrams)}，超过上限的拾取整次拒绝。左栏和随身栏标题一直显示当前携重。",
+                            "锅、装填的弹药等连同里面的内容一起计重；把锅里的水倒出一份成为随身水卡，总重不变。",
+                        };
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "spoil", Title = "保质与腐败", Icon = "berry",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "食物有保质时间，卡上写“N小时后腐败”。到期就变成腐败，不能再吃或加工。保质只随游戏时间减少，放进锅、火堆或被制作预留都不会暂停。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "pot", Title = "锅、水与食材", Icon = "pot",
+                    Paragraphs = (e, s) =>
+                    {
+                        var pot = e.Config.Containers.TryGetValue("pot", out var pc) ? pc : null;
+                        var list = new List<string>();
+                        if (pot != null)
+                        {
+                            list.Add($"金属锅能装{pot.CapacityMl}毫升水（每份{pot.UnitMl}毫升），另有{pot.FoodSlots}个食材位。净水和脏水不能混装；锅没有耐久。");
+                        }
+                        list.Add("把水卡拖到锅的水量条装入，把生块根、生肉、烤肉拖到食材区；水煮肉也能放进锅里存放。锅放进燃烧的火堆才会加热，加热规则见“制作、营地与烹饪”。");
+                        list.Add("锅里水和食材那一行的箭头是“从锅中取到随身”：取1份成为独立的随身卡。锅本身在随身时也是如此，总携重不变。被加工预留的水暂时不能取。");
+                        return list;
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "durability", Title = "工具与武器耐久", Icon = "stone_knife",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "刀、斧、武器和打火器有耐久，每件的最大耐久在一定范围内随机。采集时用到的工具、每次执行攻击用到的武器都会磨损，耐久不足就不能再用来攻击。",
+                        "手工制作里的“工具维护”可以把一件工具恢复一部分耐久，不超过它自己的上限。",
+                    },
+                },
+            },
+        },
+
+        // ───────────── 人物、生存与医疗 ─────────────
+        new()
+        {
+            Id = "body", Title = "人物、生存与医疗", Icon = "bandage", Summary = "基础属性与熟练度、饮食、恢复、异常状态、免疫与感染、医疗",
+            Entries =
+            {
+                new HelpEntry { Id = "stat-health", Title = "健康", Icon = "bandage", Paragraphs = (e, s) => new[] { Ui.StatExplain(e, StatId.Health) } },
+                new HelpEntry { Id = "stat-satiety", Title = "饱食", Icon = "canned_food", Paragraphs = (e, s) => new[] { Ui.StatExplain(e, StatId.Satiety) } },
+                new HelpEntry { Id = "stat-hydration", Title = "水分", Icon = "clean_water", Paragraphs = (e, s) => new[] { Ui.StatExplain(e, StatId.Hydration) } },
+                new HelpEntry { Id = "stat-energy", Title = "体力", Icon = "status_low_energy", Paragraphs = (e, s) => new[] { Ui.StatExplain(e, StatId.Energy) } },
+                new HelpEntry { Id = "stat-wakefulness", Title = "清醒度", Icon = "bed", Paragraphs = (e, s) => new[] { Ui.StatExplain(e, StatId.Wakefulness) } },
+                new HelpEntry { Id = "stat-morale", Title = "精神", Icon = "status_low_morale", Paragraphs = (e, s) => new[] { Ui.StatExplain(e, StatId.Morale) } },
+                new HelpEntry
+                {
+                    Id = "food", Title = "饮食与饮水", Icon = "clean_water",
+                    Paragraphs = (e, s) =>
+                    {
+                        var c = e.Config;
+                        return new[]
+                        {
+                            $"选中食物或水，点卡下的“食用/饮用”，耗时{c.ItemActions.UseMinutes}分钟，效果开始时立即生效；超出上限的部分浪费，按钮旁会提示溢出。",
+                            $"脏水必定引起腹泻{Dur(c.ItemActions.DiarrheaMinutes)}，期间每小时额外失水{T(-c.ItemActions.DiarrheaExtraHydrationPerHour)}。脏水在火堆上的锅里烧开就成了净水。",
+                            "生块根、生肉要烤或煮熟才能吃。战斗中不能吃喝。",
+                        };
+                    },
+                },
+                new HelpEntry { Id = "immunity", Title = "免疫力", Icon = "status_antibiotic", Paragraphs = (e, s) => new[] { Ui.ImmunityExplain(e) } },
+                new HelpEntry { Id = "virus", Title = "感染与病毒", Icon = "status_infected", Paragraphs = (e, s) => new[] { Ui.VirusExplain(e) } },
+                new HelpEntry
+                {
+                    Id = "medical", Title = "医疗", Icon = "bandage",
+                    Paragraphs = (e, s) =>
+                    {
+                        var c = e.Config;
+                        var bandage = c.Items.FirstOrDefault(i => i.Use?.IsBandage == true);
+                        var list = new List<string>
+                        {
+                            $"{bandage?.Name ?? "绷带"}：止血，并恢复健康{T(bandage?.Use?.Health ?? 0)}×(1+0.02×医疗等级)，之后{c.ItemActions.BandageCooldownMinutes}分钟冷却；已感染时还能压低一点病毒。健康满且没有出血时用不了。",
+                            "抗生素：只对已感染有效，压低病毒，有给药间隔；病毒特效药：立即清除感染。",
+                            $"战斗中也能包扎和用药，每次{c.CombatActions.FirstOrDefault(a => a.Id == "bandage")?.ApCost ?? 2}个行动点。",
+                        };
+                        return list;
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "skills", Title = "熟练度与经验", Icon = "stone_knife",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        $"共有{e.Config.Skills.Count}项熟练度（{string.Join("、", e.Config.Skills.Select(k => k.Name))}），都从1级开始，没有等级上限。对应的行动完成或攻击命中时获得经验。",
+                        "武器熟练度提高伤害与命中能力、减少招式体力；部分招式需要达到一定等级才能用。制造熟练度让制作更快。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "statuses", Title = "状态图标一览", Icon = "status_unknown",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "左栏各属性下方的小图标是正在生效的状态，悬停看名称、效果和剩余时间，点击可以固定阅读。危险状态（出血、属性归零、感染）总是优先显示，放不下的进“全部状态”。",
+                        "下面是可能出现的图标。没出现的说明你现在没有这个状态。",
+                    },
+                    Figures = (e, s) => new[]
+                    {
+                        new HelpFigure("status_bleed", "出血", "每隔一段时间扣健康，包扎止血"),
+                        new HelpFigure("status_diarrhea", "腹泻", "额外失水，到时自愈"),
+                        new HelpFigure("status_bandage_cd", "绷带冷却", "冷却中不能再包扎回血"),
+                        new HelpFigure("status_zero", "属性归零", "健康按小时下降"),
+                        new HelpFigure("status_low_energy", "体力偏低", "工作变慢"),
+                        new HelpFigure("status_low_morale", "精神低落", "休息睡眠回体力变慢"),
+                        new HelpFigure("status_infected", "感染", "病毒随免疫变化"),
+                        new HelpFigure("status_antibiotic", "抗生素", "压低病毒的给药效果"),
+                        new HelpFigure("status_baobao", "饱饱", "体内的饱饱对病毒的影响"),
+                        new HelpFigure("status_panic", "战斗恐慌", "命中能力下降，战后清除"),
+                    },
+                },
+            },
+        },
+
+        // ───────────── 制作、营地与烹饪 ─────────────
+        new()
+        {
+            Id = "camp", Title = "制作、营地与烹饪", Icon = "fire_lit", Summary = "配方与预留、建造、点火与燃料、被动加工、等待烹饪",
+            Entries =
+            {
+                new HelpEntry
+                {
+                    Id = "craft", Title = "手工制作", Icon = "stone_knife",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "顶栏“手工制作”列出全部配方。材料从随身和当前地面取，火堆和锅里的要先取出。选一个配方查看材料够不够，在配方卡下方点“开始制作”。",
+                        "选配方、改件数、指定批次都只是预览，不会扣东西；点开始时才重新检查材料、工具和所在地，并把材料预留。完成时一次扣除材料、产物放在当前地面。",
+                        "中途退出：材料全部返还当前地面，已经过去的时间不退，不会得到半成品。材料在完成前腐败则制作中止。同一配方可以批量制作。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "build", Title = "营地设施", Icon = "shelter",
+                    Paragraphs = (e, s) =>
+                    {
+                        var sh = e.Config.HourlyRates["sleep_sheltered"];
+                        return new[]
+                        {
+                            $"营地可以建遮蔽棚和床垫，建在营地里，不能搬走。遮蔽棚让营地算作遮蔽：睡眠每小时{Rates(sh)}，休息额外恢复精神。床垫要先建遮蔽棚，让营地睡眠的体力每小时额外{ST(e.Config.FacilityEffects.BedExtraSleepEnergyPerHour)}。",
+                            "设施行里虚线框的“未建造”卡点开就是对应的建造配方。",
+                        };
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "fire", Title = "火堆、点火与燃料", Icon = "fire_lit",
+                    Paragraphs = (e, s) =>
+                    {
+                        var f = e.Config.Fire;
+                        return new[]
+                        {
+                            $"火堆燃料最多{Dur(f.MaxFuelMinutes)}，每投入1份木材+{f.BurnMinutesPerWood}分钟，投料不耗时。燃烧时每过一段时间消耗燃料，燃尽就熄灭，剩余燃料保留。",
+                            $"点火需要打火器：点“点燃”选一把，或把打火器拖到火堆，耗时{f.IgniteMinutes}分钟并磨损打火器。燃料为0时点火会自动投入1份木材。",
+                            $"火堆有{f.ProcessingSlots}个加工位，可以放一口锅和直接烤的食物。",
+                        };
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "cook", Title = "自动加工", Icon = "boiled_root",
+                    Paragraphs = (e, s) =>
+                    {
+                        var list = new List<string>
+                        {
+                            "烧水、烤制、水煮都不占用你的时间：放进燃烧的火堆后，世界时间推进时自动加热，你可以同时去探索、清理、休息或睡觉。火熄灭时加工暂停、进度保留；只看界面不推进。",
+                        };
+                        foreach (var p in e.Config.Processes)
+                        {
+                            var input = e.ItemName(p.InputId);
+                            var output = e.ItemName(p.OutputId);
+                            list.Add(p.IsPotBatch
+                                ? $"{p.Name}：锅里的{input}受热{p.HeatMinutes}分钟变成{output}，0.5升或1升同样时间。"
+                                : p.InPot
+                                    ? $"{p.Name}：{input}放在有{e.ItemName(p.RequiredLiquid ?? "clean_water")}的锅里受热{p.HeatMinutes}分钟成为{output}，完成时用掉{p.WaterCostMl}毫升。"
+                                    : $"{p.Name}：{input}直接放进火堆加工位，受热{p.HeatMinutes}分钟成为{output}。");
+                        }
+                        list.Add("成品留在原位，不会自动吃掉或取出。");
+                        return list;
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "waitcook", Title = "等待烹饪", Icon = "fire_lit",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "火堆里有东西时，火堆卡上会出现“等待烹饪”：一直等到这次能完成的加工全部做完才结束，多样东西同时加热时按最晚完成的算。悬停能看到每样的预计时间和没被纳入的原因。",
+                        "等待期间身体消耗和普通等待一样。它不会自动点火、加木或补水，燃料不够时会写明；可以随时从中央推进条退出，已有的加工进度保留。",
+                    },
+                },
+            },
+        },
+
+        // ───────────── 敌踪与战斗 ─────────────
+        new()
+        {
+            Id = "combat", Title = "敌踪与战斗", Icon = "enemy_shambler", Summary = "遭遇、回合与行动点、动作与站位、伤害与状态、撤退与掉落",
+            Entries =
+            {
+                new HelpEntry
+                {
+                    Id = "encounter", Title = "敌踪与遭遇", Icon = "enemy_shambler",
+                    Paragraphs = (e, s) =>
+                    {
+                        var en = e.Config.Encounters;
+                        return new[]
+                        {
+                            "敌人是世界里真实存在的个体，会在地点之间游荡；只会遇到当地已有的敌人，不会凭空出现。营地是安全的。",
+                            $"从第{en.NoRandomBeforeDay}日起，在有敌对敌人的地点完成探索或清理后可能发现敌踪。原来的行动结果已经算好，接下来选“接敌”或“绕行”：绕行{en.BypassMinutes}分钟、按移动消耗，之后{Dur(en.PostExitRandomEncounterGraceMinutes)}内不会再随机遇敌。",
+                            "设施行“敌踪”分组里是当前地点能看到的敌人，点卡上的“接近”在卡旁看风险，再点“接近并开战”主动交战。",
+                        };
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "rounds", Title = "回合与行动点", Icon = "cmd_end_turn",
+                    Paragraphs = (e, s) =>
+                    {
+                        var sc = e.Config.Scope;
+                        return new[]
+                        {
+                            $"战斗按轮进行，每轮开始时按先手值排出行动顺序（顶部的顺序条）。轮到你时有{sc.HumanApPerActivation}个行动点（AP），用不完不能留到下一轮。",
+                            $"每轮结束推进{e.Config.BattleTime.RoundWorldMinutes}分钟世界时间，饱食、水分等照常变化；体力主要由招式本身消耗。",
+                            "战斗中只有包扎和用药能用随身物品，不能吃喝；地面和随身物品可以查看。",
+                        };
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "actions", Title = "指令一览", Icon = "fists",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "战斗区左边是你和带图的指令，右边是敌人。先点指令或先点敌人都可以，选好后在指令下方看到命中率、伤害和消耗，点“执行 · 动作 · AP”才真正执行；“×”或 Esc 只收起预览。",
+                        "换武器在“换武器”旁边的浮窗里选一把随身武器后执行。灰掉的指令会写出原因（行动点不足、没有物品等）。",
+                    },
+                    Figures = (e, s) => e.Config.CombatActions
+                        .Where(a => a.Id != "aim")
+                        .Select(a => new HelpFigure(CmdIcon(a), GameEngine.ActionName(a.Id), a.ApCost < 0 ? "用掉剩余AP" : $"{a.ApCost}AP")),
+                },
+                new HelpEntry
+                {
+                    Id = "hit", Title = "命中、伤害与恐慌", Icon = "enemy_feral_dog",
+                    Paragraphs = (e, s) =>
+                    {
+                        var m = e.Config.CombatMath;
+                        return new[]
+                        {
+                            "命中能力不是命中率：实际命中率 = 你的命中能力 ÷（命中能力 + 对方闪避），预览会同时写两者。命中后还有机会暴击，暴击伤害×" + T(m.CritFactor) + "。",
+                            $"伤害先乘熟练度、招式和站位修正，再减去对方护甲；对方“防御”时再×{T(m.GuardFactor)}。",
+                            "战斗开始时的恐慌由当时的精神决定，受到伤害会上升；恐慌高到一定程度会降低命中能力，战斗结束后清除，但会让精神下降。",
+                            "丧尸的咬击命中并造成伤害时可能感染病毒，免疫越低越容易；动物撕咬不会传染，但部分动物会造成出血。",
+                        };
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "layout", Title = "站位与目标", Icon = "enemy_shambler",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        $"敌人站在{string.Join("、", e.Config.Scope.Slots)}位置：F开头是前排，B开头是后排。屏幕上前排靠近中线、后排更靠右，只是为了看清楚，不是新的规则。",
+                        "前排还有敌人时，只打前排的武器（拳、刀斧、撬棍等）够不到后排；能打后排的武器在换武器浮窗和右栏写明（矛打后排伤害打折）。前排清空后，轮末后排会补上前排。",
+                        "场上只剩一个敌人时会自动选中它，但不会自动攻击。",
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "retreat", Title = "撤退、胜利与掉落", Icon = "cmd_retreat",
+                    Paragraphs = (e, s) => new[]
+                    {
+                        "撤退每轮只能尝试一次，成功率看双方速度，预览里写明；成功后留在原地，活着的敌人保留血量回到世界。失败则这一轮的行动点用尽。",
+                        "全部敌人倒下或逃走即胜利，掉落物放在当前地面。打倒的动物会留下尸体，可以处理成肉和皮。",
+                        "Esc 不能关闭战斗，也没有免费脱战。",
+                    },
+                },
+            },
+        },
+
+        // ───────────── 饱饱与吞噬融合 ─────────────
+        new()
+        {
+            Id = "baobao", Title = "饱饱与吞噬融合", Icon = "status_baobao", Summary = "饱饱已公开的身份与功能、吞噬融合流程",
+            Entries =
+            {
+                new HelpEntry
+                {
+                    Id = "baobao", Title = "饱饱", Icon = "status_baobao",
+                    Paragraphs = (e, s) =>
+                    {
+                        var bi = e.Config.Infection.BaobaoInput;
+                        return new[]
+                        {
+                            "饱饱是你体内的一种特殊变异病毒，会在脑中跟你说话。它不知道自己叫什么，只知道自己饿了，“饱饱”是你给它起的名字。它会陪伴你、提醒你找吃的喝的，也会在战斗中提点你。",
+                            "它不会替你吃喝、不会自动恢复，也不会替你选择攻击。",
+                            $"饱饱会给身体带来缓慢的病毒压力：免疫越低压力越大，每小时最多{T(bi.MaxPerHour)}；免疫达到{T(bi.FullSuppressImmunityAtLeast)}及以上时完全压住。左栏的“饱饱”状态图标显示它此刻的影响。",
+                        };
+                    },
+                },
+                new HelpEntry
+                {
+                    Id = "fusion", Title = "吞噬融合", Icon = "active_substance_white_unidentified",
+                    Paragraphs = (e, s) =>
+                    {
+                        var a = e.Config.ActiveSubstance;
+                        var list = new List<string>
+                        {
+                            $"“活性物质”是一种道具卡，可以让饱饱吞噬融合。选中随身或当前地面的活性物质，点卡下的“吞噬融合”，耗时{a.Fusion.Minutes}分钟、每次1份；战斗中或行动进行中不能融合。",
+                            $"丧尸被击败时有小概率（每只{Pct(a.NormalDrop.ChancePerEnemy)}）留下活性物质。普通的活性物质融合后目前不会带来属性变化。",
+                        };
+                        // 首战教学奖励属于剧情内容：玩家经历过才写出（不因说明目录提前泄露）
+                        if (s.Traits.Count > 0)
+                            list.Add("融合得到的词条会显示在人物页的“词条”里，可以点“详情”查看效果。");
+                        return list;
+                    },
+                },
+            },
+        },
+    };
+
+    private static string CmdIcon(CombatActionConfig a) => a.Id switch
+    {
+        "basic_attack" or "desperate_punch" => "fists",
+        "cleave" or "cut" => "hatchet",
+        "precise_thrust" => "wooden_spear",
+        "push" => "crowbar",
+        "scatter" => "shotgun",
+        "guard" => "cmd_guard",
+        "breathe" => "cmd_breathe",
+        "reload" => "cmd_reload",
+        "retreat" => "cmd_retreat",
+        "end_turn" => "cmd_end_turn",
+        "switch_weapon" => "cmd_switch",
+        _ => a.ItemId ?? "placeholder",
     };
 
     public static HelpTopic? Topic(string? id) => Topics.FirstOrDefault(t => t.Id == id);
 
     public static HelpEntry? Entry(string? topic, string? entry) => Topic(topic)?.Entries.FirstOrDefault(x => x.Id == entry);
+
+    /// <summary>属性/状态详情页“相关说明”要定位的条目（同源规则，S14 §13.2/§13.3）。</summary>
+    public static (string Topic, string Entry)? ForAttr(string page) => page switch
+    {
+        "stat:health" => ("body", "stat-health"),
+        "stat:satiety" => ("body", "stat-satiety"),
+        "stat:hydration" => ("body", "stat-hydration"),
+        "stat:energy" => ("body", "stat-energy"),
+        "stat:wakefulness" => ("body", "stat-wakefulness"),
+        "stat:morale" => ("body", "stat-morale"),
+        "immunity" => ("body", "immunity"),
+        "virus" => ("body", "virus"),
+        "skills" => ("body", "skills"),
+        "traits" => ("baobao", "fusion"),
+        _ => null,
+    };
+
+    /// <summary>状态图标说明的“相关说明”条目。</summary>
+    public static (string Topic, string Entry) ForStatus(string statusId) => statusId switch
+    {
+        "diarrhea" => ("body", "food"),
+        "bleed" or "bandageCooldown" or "bandageVirusCooldown" or "antibiotic" or "antibioticCooldown" => ("body", "medical"),
+        "infected" => ("body", "virus"),
+        "baobao" => ("baobao", "baobao"),
+        "panic" => ("combat", "hit"),
+        "low_energy" => ("body", "stat-energy"),
+        "low_morale" => ("body", "stat-morale"),
+        "zero_satiety" => ("body", "stat-satiety"),
+        "zero_hydration" => ("body", "stat-hydration"),
+        "zero_energy" => ("body", "stat-energy"),
+        "zero_wakefulness" => ("body", "stat-wakefulness"),
+        _ => ("body", "statuses"),
+    };
 }
