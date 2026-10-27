@@ -38,7 +38,7 @@ else
         }
         @if (ec.IsZombie) { <div class="risk">咬击命中且造成伤害时可能感染僵尸病毒（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）。</div> }
         <ul class="notes">
-            <li>主动接近：不算受惊，不受随机接敌保护期限制；只与这一只交战。</li>
+            <li>主动接近：@e.FearNote(s, new[] { w }, GameEngine.FearApproach)；不受随机接敌保护期限制；只与这一只交战。</li>
             <li>每轮推进5分钟世界时间；撤退成功留在原地，存活敌人保留血量。</li>
         </ul>
         @if (G.Notice != null) { <div class="notice">@G.Notice</div> }

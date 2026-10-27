@@ -82,6 +82,10 @@ namespace Survival.Core.State
         /// <summary>装备的武器（随身实例引用，不复制、不额外计重）；徒手为 null。战外可免费调整，战中换武器耗 1AP。</summary>
         public int? EquippedWeaponId { get; set; }
 
+        // ───── 系统策划总册 v1.0（R07 吞噬融合、N01/S15 剧情） ─────
+        /// <summary>人物词条（R07：首战教学融合的绿色“攻击力+0.1”）。不是物品装备，不随武器丢失。</summary>
+        public List<TraitInstance> Traits { get; set; } = new List<TraitInstance>();
+
         [JsonIgnore] public List<GameEvent> PendingEvents { get; set; } = new List<GameEvent>();
 
         public GameState Clone()
@@ -106,6 +110,7 @@ namespace Survival.Core.State
             c.WorldEnemies = WorldEnemies.Select(x => x.Clone()).ToList();
             c.Encounter = Encounter?.Clone();
             c.Battle = Battle?.Clone();
+            c.Traits = Traits.Select(x => x.Clone()).ToList();
             c.PendingEvents = new List<GameEvent>();
             return c;
         }
@@ -315,6 +320,8 @@ namespace Survival.Core.State
         public int? ReservedBy { get; set; }
         /// <summary>放入设施或锅的先后序号；水煮分水先按它，再按实例 ID。离开设施与锅时清空。</summary>
         public int? PlacedOrder { get; set; }
+        /// <summary>来源（R07 活性物质：来源世界敌人、战斗、发放事件、是否教学奖励）；不同来源不合堆。普通物品为 null。</summary>
+        public ItemSource? Source { get; set; }
 
         public bool IsCarried => Owner == Carried;
         public bool InContainer => Owner.StartsWith(ContainerPrefix);
@@ -337,7 +344,37 @@ namespace Survival.Core.State
             return owner.StartsWith(ContainerPrefix) && int.TryParse(owner.Substring(ContainerPrefix.Length), out containerInstanceId);
         }
 
-        public ItemInstance Clone() => (ItemInstance)MemberwiseClone();
+        public ItemInstance Clone()
+        {
+            var c = (ItemInstance)MemberwiseClone();
+            c.Source = Source?.Clone();
+            return c;
+        }
+    }
+
+    /// <summary>物品来源（R07 §2）：sourceWorldEnemyId、sourceBattleId、grantEventId、tutorialReward。合堆键含 GrantEventId，教学与普通实例不合并。</summary>
+    public sealed class ItemSource
+    {
+        public int? WorldEnemyId { get; set; }
+        public int? BattleId { get; set; }
+        public string GrantEventId { get; set; } = "";
+        public bool TutorialReward { get; set; }
+
+        public ItemSource Clone() => (ItemSource)MemberwiseClone();
+    }
+
+    /// <summary>人物词条实例（R07 §4）：效果 ID、品质、显示文字、攻击力平加值与发放来源。</summary>
+    public sealed class TraitInstance
+    {
+        public string EffectId { get; set; } = "";
+        public string Quality { get; set; } = "";
+        public string Label { get; set; } = "";
+        public double FlatAttack { get; set; }
+        /// <summary>融合事务 ID（同一事务不重复提交）。</summary>
+        public string FusionId { get; set; } = "";
+        public int Minute { get; set; }
+
+        public TraitInstance Clone() => (TraitInstance)MemberwiseClone();
     }
 
     public sealed class ActionState

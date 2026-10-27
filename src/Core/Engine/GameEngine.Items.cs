@@ -244,7 +244,7 @@ namespace Survival.Core.Engine
         /// 生成物品到指定位置。工具与武器逐件生成：最大耐久按区间以 0.1 精度抽一次（v0.6 §05），新制品当前=最大，
         /// scavenged（拾荒箱子产出）再乘 0.6—1.0 成色；易腐品按生成时刻记录 expiresAt。返回新生成的实例。
         /// </summary>
-        public List<ItemInstance> CreateItems(GameState s, string itemId, int count, string owner, bool scavenged = false)
+        public List<ItemInstance> CreateItems(GameState s, string itemId, int count, string owner, bool scavenged = false, ItemSource? source = null)
         {
             var made = new List<ItemInstance>();
             if (count <= 0) return made;
@@ -263,6 +263,7 @@ namespace Survival.Core.Engine
                         Owner = owner,
                         ExpiresAt = cfg.ShelfLifeMinutes.HasValue ? s.GameMinute + cfg.ShelfLifeMinutes.Value : (int?)null,
                         PlacedOrder = cfg.IsStackable ? s.NextProcessSeq++ : (int?)null,
+                        Source = source?.Clone(),
                     };
                     if (cfg.HasDurability)
                     {
@@ -283,6 +284,7 @@ namespace Survival.Core.Engine
                 Count = count,
                 Owner = owner,
                 ExpiresAt = cfg.ShelfLifeMinutes.HasValue ? s.GameMinute + cfg.ShelfLifeMinutes.Value : (int?)null,
+                Source = source?.Clone(),
             };
             s.Items.Add(stack);
             made.Add(stack);
@@ -291,7 +293,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 同物品且同到期时间、未预留的实例合堆，超过堆叠上限分为新堆。
+        /// 同物品、同到期时间且同来源（R07 活性物质的发放事件）、未预留的实例合堆，超过堆叠上限分为新堆。
         /// 设施里的物品与锅里的食材每份占一个位，不合堆（否则两根会合成“一堆占一位”）；锅里的水照常合堆。
         /// </summary>
         private void Normalize(GameState s, string owner)
@@ -300,7 +302,7 @@ namespace Survival.Core.Engine
             var inPot = owner.StartsWith(ItemInstance.ContainerPrefix);
             var groups = s.Items
                 .Where(i => i.Owner == owner && i.ReservedBy == null && _items[i.ItemId].IsStackable && (!inPot || IsLiquid(i)))
-                .GroupBy(i => (i.ItemId, i.ExpiresAt))
+                .GroupBy(i => (i.ItemId, i.ExpiresAt, i.Source?.GrantEventId))
                 .ToList();
             foreach (var g in groups)
             {
@@ -327,6 +329,7 @@ namespace Survival.Core.Engine
                         Count = take,
                         Owner = owner,
                         ExpiresAt = tmpl.ExpiresAt,
+                        Source = tmpl.Source?.Clone(),
                     });
                     total -= take;
                 }

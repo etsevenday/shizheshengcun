@@ -129,11 +129,11 @@ namespace Survival.Core.Engine
             var why = CanApproach(s, worldEnemyId);
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, requestId);
-            StartBattle(s, new List<WorldEnemy> { FindWorldEnemy(s, worldEnemyId)! }, false, "主动接近");
+            StartBattle(s, new List<WorldEnemy> { FindWorldEnemy(s, worldEnemyId)! }, false, "主动接近", FearApproach);
             return ActionResult.Success();
         }
 
-        /// <summary>敌踪选择“接敌”：用开始时那组同地现有敌人入战（受惊遭遇，恐慌+10）。</summary>
+        /// <summary>敌踪选择“接敌”：用开始时那组同地现有敌人入战（受惊情境系数 K=1，R03 §2.1）。</summary>
         public ActionResult Engage(GameState s, string? requestId = null)
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
@@ -148,11 +148,16 @@ namespace Survival.Core.Engine
                 return ActionResult.Success();
             }
             s.Encounter = null;
-            StartBattle(s, group, true, "遭遇");
+            StartBattle(s, group, true, "遭遇", FearEncounter);
             return ActionResult.Success();
         }
 
-        private void StartBattle(GameState s, List<WorldEnemy> group, bool surprise, string source)
+        /// <summary>入战情境（R03 §2.1）：主动接近、探索/清理接敌、剧情首战。</summary>
+        public const string FearApproach = "approach";
+        public const string FearEncounter = "encounter";
+        public const string FearTutorial = "tutorial";
+
+        private void StartBattle(GameState s, List<WorldEnemy> group, bool surprise, string source, string context, bool tutorial = false)
         {
             var slots = Config.Scope.Slots;
             var b = new BattleState
@@ -161,27 +166,81 @@ namespace Survival.Core.Engine
                 LocationId = s.CurrentLocation,
                 StartMinute = s.GameMinute,
                 Surprise = surprise,
+                Context = context,
+                Tutorial = tutorial,
                 WeaponInstanceId = s.EquippedWeaponId,
             };
             b.EncounterId = $"enc-{b.BattleId}";
             var k = 0;
-            foreach (var w in group.Take(Config.Scope.MaxEnemies))
+            var joined = group.Take(Config.Scope.MaxEnemies).ToList();
+            foreach (var w in joined)
             {
                 w.Engaged = true;
                 b.Enemies.Add(new BattleEnemy { WorldId = w.Id, Index = k + 1, EnemyId = w.EnemyId, Slot = slots[k], Hp = w.Hp, Hostile = w.Hostile, XpHits = new Dictionary<string, int>(w.XpHits) });
                 k++;
             }
             var pc = Config.Panic;
-            b.Panic = Math.Max(pc.Range[0], Math.Min(pc.Range[1], (pc.InitialBase - s.Stats.Morale) / pc.InitialDivisor));
+            // 受惊（R03 §2.1、R05 §6.3）：同一 battleId 只判一次并锁存；恐慌基础值 (100−M)/2，受惊才加主惊吓源的惊吓值
+            RollFear(s, b, joined, context);
+            b.Panic = Math.Max(pc.Range[0], Math.Min(pc.Range[1], (pc.InitialBase - s.Stats.Morale) / pc.InitialDivisor + b.FearPanic));
             b.PanicPeak = b.Panic;
             s.Battle = b;
             // 当前武器若已不在随身，按徒手开始
             CurrentWeapon(s, out var wi);
             b.WeaponInstanceId = wi?.InstanceId;
             var names = string.Join("、", b.Enemies.Select(e => $"{e.Slot}{EnemyName(e)}"));
-            BattleLog(s, $"{source}：{names}。恐慌{Fmt.N(b.Panic)}。");
+            var fearText = !b.FearSourceWorldId.HasValue ? ""
+                : b.Frightened ? $"（受惊：{_enemies[joined.First(w => w.Id == b.FearSourceWorldId).EnemyId].Name}，受惊率{Fmt.Pct(b.FearChance)}，恐慌+{Fmt.T(b.FearPanic)}）"
+                : $"（未受惊，受惊率{Fmt.Pct(b.FearChance)}）";
+            BattleLog(s, $"{source}：{names}。恐慌{Fmt.N(b.Panic)}{fearText}。");
             Emit(s, GameEventKind.Battle, $"战斗开始：{names}。", null, b.Enemies.Select(e => $"enemy:{e.WorldId}"));
             BeginRound(s);
+        }
+
+        /// <summary>主惊吓源：基础惊吓概率最高，平手取惊吓值较高，再平手 worldEnemyId 小（R03 §2.1）。</summary>
+        public WorldEnemy? FearSource(IEnumerable<WorldEnemy> group) =>
+            group.OrderByDescending(w => _enemies[w.EnemyId].FearChance).ThenByDescending(w => _enemies[w.EnemyId].FearValue).ThenBy(w => w.Id).FirstOrDefault();
+
+        /// <summary>受惊概率 p=q×(1−clamp(M,0,100)/100)×K。</summary>
+        public double FearChance(double fearChance, double morale, string context)
+        {
+            var m = Math.Max(0, Math.Min(100, morale));
+            return fearChance * (1 - m / 100) * Config.Panic.Fear.Factor(context);
+        }
+
+        /// <summary>
+        /// 入战受惊判定（R03 §2.1）：主惊吓源的随机数 u 在 60 游戏分钟内复用（超过才重新生成），每次新入战按当时精神与情境重算 p；
+        /// u&lt;p 则受惊、恐慌加该敌惊吓值。结果写进 BattleState，读档、回调、换目标都不重抽。
+        /// </summary>
+        private void RollFear(GameState s, BattleState b, List<WorldEnemy> group, string context)
+        {
+            var main = FearSource(group);
+            if (main == null) return;
+            var cfg = _enemies[main.EnemyId];
+            double u;
+            if (main.FearRollMinute.HasValue && s.GameMinute - main.FearRollMinute.Value <= Config.Panic.Fear.ReuseRollMinutes) u = main.FearRoll;
+            else
+            {
+                u = s.Rng.NextDouble();
+                main.FearRoll = u;
+                main.FearRollMinute = s.GameMinute;
+            }
+            b.FearSourceWorldId = main.Id;
+            b.FearMorale = s.Stats.Morale;
+            b.FearRoll = u;
+            b.FearChance = FearChance(cfg.FearChance, s.Stats.Morale, context);
+            b.Frightened = u < b.FearChance;
+            b.FearPanic = b.Frightened ? cfg.FearValue : 0;
+        }
+
+        /// <summary>入战前的受惊说明（敌踪选择、接近详情）：“可能受惊：游荡尸受惊率14.00%，受惊时恐慌+6”。</summary>
+        public string FearNote(GameState s, IEnumerable<WorldEnemy> group, string context)
+        {
+            var main = FearSource(group);
+            if (main == null) return "";
+            var cfg = _enemies[main.EnemyId];
+            var p = FearChance(cfg.FearChance, s.Stats.Morale, context);
+            return p <= 0 ? $"精神{Fmt.N(s.Stats.Morale)}，不会受惊" : $"可能受惊：{cfg.Name}受惊率{Fmt.Pct(p)}，受惊时恐慌+{Fmt.T(cfg.FearValue)}";
         }
 
         private void BattleLog(GameState s, string text)
@@ -709,12 +768,8 @@ namespace Survival.Core.Engine
             var rear = !IsFront(t) && barrier && w.RearDamageFactor < 1;
             var rank = rear ? w.RearDamageFactor : 1;
             var mult = SkillDamageFactor(lv) * a.DamageFactor * rank;
-            double Dmg(double raw, double critF)
-            {
-                var d = Math.Max(0, raw * mult * critF - cfg.Armor);
-                if (t.Guard) d *= Config.CombatMath.GuardFactor;
-                return d;
-            }
+            var flat = FlatAttackFor(s, a, w);
+            double Dmg(double raw, double critF) => AttackDamage(raw * mult * critF, flat, cfg.Armor, t.Guard, Config.CombatMath.GuardFactor);
             var cf = Config.CombatMath.CritFactor;
             return new BattleTargetPreview
             {
@@ -762,7 +817,9 @@ namespace Survival.Core.Engine
                 if (c.Action == "push") p.Notes.Add("零直接伤害，命中令目标下次攻击失衡（命中能力×0.9）");
                 if (c.Action == "scatter") p.Notes.Add($"前排至多{a.MaxTargets}个目标各判一次，伤害×{Fmt.T(a.DamageFactor)}，只耗1发");
                 var lv = SkillLevel(s, weapon.SkillId);
-                p.Notes.Add($"{SkillName(weapon.SkillId)}{lv}级：伤害×{Fmt.T(SkillDamageFactor(lv))}，命中能力+{Fmt.T(SkillAccuracyBonus(lv))}；造成伤害+{Config.Xp.DamagingAttackCommand}经验（每个敌人每技能最多3次）");
+                p.Notes.Add($"{SkillName(weapon.SkillId)}{lv}级：伤害×{Fmt.T(SkillDamageFactor(lv))}，命中能力+{Fmt.T(SkillAccuracyBonus(lv))}；每命中一个目标+{Config.Xp.DamagingAttackCommand}经验（含被护甲挡住的命中，每个敌人每技能最多{Config.Xp.MaxHitsPerEncounterEnemySkill}次）");
+                var fl = FlatAttackFor(s, a, weapon);
+                if (fl > 0) p.Notes.Add($"词条攻击力+{Fmt.T(fl)}：在技能/招式/站位/暴击乘算后、扣护甲前平加，防御再×{Fmt.T(Config.CombatMath.GuardFactor)}");
             }
             else
             {
@@ -967,8 +1024,9 @@ namespace Survival.Core.Engine
             // 2. 结算：每个目标独立判命中 → 暴击 → 伤害
             var targets = a.Id == "scatter" ? ScatterTargets(b, a) : new List<BattleEnemy> { BattleEnemyAt(b, c.Target!.Value)! };
             var parts = new List<string>();
-            var damagedIds = new List<BattleEnemy>();
+            var hitTargets = new List<BattleEnemy>();
             var energyAfter = s.Stats.Energy;
+            var flat = FlatAttackFor(s, a, weapon);
             foreach (var t in targets)
             {
                 var pv = TargetCalc(s, b, a, weapon, t, energyAfter);
@@ -987,13 +1045,15 @@ namespace Survival.Core.Engine
                     parts.Add($"{cfg.Name}未命中（{Fmt.Pct(pv.HitChance)}）");
                     continue;
                 }
+                hitTargets.Add(t);
                 var crit = s.Rng.NextDouble() < pv.CritChance;
                 var raw = weapon.DamageMin + s.Rng.NextDouble() * (weapon.DamageMax - weapon.DamageMin);
                 var lv = SkillLevel(s, weapon.SkillId);
-                var dmg = raw * SkillDamageFactor(lv) * a.DamageFactor * (pv.RearPenalty ? weapon.RearDamageFactor : 1) * (crit ? Config.CombatMath.CritFactor : 1) - cfg.Armor;
-                dmg = Math.Max(0, dmg);
-                var guarded = false;
-                if (t.Guard && dmg > 0) { dmg *= Config.CombatMath.GuardFactor; t.Guard = false; guarded = true; }
+                // 伤害 = max(0, 乘算后伤害 + 平加攻击力 − 护甲)，防御再×0.5（R03 §2、R07 §4：+0.1 在乘算后、扣甲前，不被暴击再放大）
+                var multiplied = raw * SkillDamageFactor(lv) * a.DamageFactor * (pv.RearPenalty ? weapon.RearDamageFactor : 1) * (crit ? Config.CombatMath.CritFactor : 1);
+                var guarded = t.Guard && Math.Max(0, multiplied + flat - cfg.Armor) > 0;
+                var dmg = AttackDamage(multiplied, flat, cfg.Armor, guarded, Config.CombatMath.GuardFactor);
+                if (guarded) t.Guard = false;
                 if (a.Id == "push")
                 {
                     t.Stagger = true;
@@ -1007,7 +1067,6 @@ namespace Survival.Core.Engine
                     continue;
                 }
                 t.Hp -= dmg;
-                damagedIds.Add(t);
                 parts.Add($"{cfg.Name}{(crit ? "暴击" : "命中")}−{Fmt.N(dmg)}{(guarded ? "（防御减半）" : "")}{(pv.RearPenalty ? "（后排×" + Fmt.T(weapon.RearDamageFactor) + "）" : "")}");
                 if (a.Id == "cut" && !cfg.ImmuneBleed && t.Hp > 0)
                 {
@@ -1019,27 +1078,21 @@ namespace Survival.Core.Engine
                 else CheckFlee(s, t);
             }
             b.PlayerStagger = false;   // 失衡在本次攻击结算后消失
-            // 3. 经验：本指令造成直接伤害 → 对应武器技能+2（群攻也只+2）；同一世界敌人/技能最多计3次
+            // 3. 经验（v1.0 P01，R01 §3）：逐命中目标计——每个命中且该目标该技能未满3次的目标各+2，含护甲完全抵消的0伤命中与推挡命中；
+            //    未命中不计，已满的目标不给但不影响其他目标；计数随 worldEnemyId 保存，撤退、巡游、换 encounterId 都不重置
             var xpNote = "";
-            if (damagedIds.Count > 0)
+            var skill = weapon.SkillId;
+            var gained = 0;
+            foreach (var t in hitTargets)
             {
-                var skill = weapon.SkillId;
-                var counted = false;
-                foreach (var t in damagedIds)
-                {
-                    t.XpHits.TryGetValue(skill, out var hits);
-                    if (hits >= Config.Xp.MaxHitsPerEncounterEnemySkill) continue;
-                    t.XpHits[skill] = hits + 1;
-                    // 计数随 worldEnemyId 保存：撤退、巡游、换 encounterId 都不重置
-                    if (FindWorldEnemy(s, t.WorldId) is WorldEnemy we) we.XpHits[skill] = hits + 1;
-                    counted = true;
-                }
-                if (counted)
-                {
-                    GainXp(s, skill, Config.Xp.DamagingAttackCommand);
-                    xpNote = $"；{SkillName(skill)}经验+{Config.Xp.DamagingAttackCommand}";
-                }
+                t.XpHits.TryGetValue(skill, out var hits);
+                if (hits >= Config.Xp.MaxHitsPerEncounterEnemySkill) continue;
+                t.XpHits[skill] = hits + 1;
+                if (FindWorldEnemy(s, t.WorldId) is WorldEnemy we) we.XpHits[skill] = hits + 1;
+                GainXp(s, skill, Config.Xp.DamagingAttackCommand);
+                gained += Config.Xp.DamagingAttackCommand;
             }
+            if (gained > 0) xpNote = $"；{SkillName(skill)}经验+{gained}";
             BattleLog(s, $"你{ActionName(a.Id)}{(desperate ? "" : $"（{weapon.Name}）")}：{string.Join("，", parts)}{(spent.Count > 0 ? "；" + string.Join("，", spent) : "")}{xpNote}。");
             CheckVictory(s);
         }
@@ -1070,6 +1123,17 @@ namespace Survival.Core.Engine
                 var r = (int)Math.Floor(s.Rng.NextDouble() * 100);
                 var pick = LootTable.Pick(Config.ZombieLoot.Table, r);
                 b.Loot.Add(new BattleLoot { WorldId = e.WorldId, ItemId = pick.ItemId, Count = pick.ItemId == null ? 0 : pick.Count });
+            }
+            // R07 §3：普通丧尸每只独立 0.5% 附加 1 份白色活性物质（不覆盖原互斥掉落；动物不抽；首战教学敌人不抽，胜利另发教学实例）
+            var sub = Config.ActiveSubstance;
+            if (!string.IsNullOrEmpty(sub.ItemId) && sub.NormalDrop.Families.Contains(cfg.Family) && !b.Tutorial)
+            {
+                if (s.Rng.NextDouble() < sub.NormalDrop.ChancePerEnemy)
+                    b.Loot.Add(new BattleLoot
+                    {
+                        WorldId = e.WorldId, ItemId = sub.ItemId, Count = sub.NormalDrop.Count,
+                        Source = new ItemSource { WorldEnemyId = e.WorldId, BattleId = b.BattleId, GrantEventId = $"substance-b{b.BattleId}-w{e.WorldId}" },
+                    });
             }
             else
             {
@@ -1131,7 +1195,7 @@ namespace Survival.Core.Engine
             {
                 foreach (var l in b.Loot.Where(l => l.ItemId != null && l.Count > 0))
                 {
-                    CreateItems(s, l.ItemId!, l.Count, loc);
+                    CreateItems(s, l.ItemId!, l.Count, loc, false, l.Source);
                     lines.Add($"{ItemName(l.ItemId!)}+{l.Count}");
                 }
             }
@@ -1196,6 +1260,26 @@ namespace Survival.Core.Engine
             s.EquippedWeaponId = it.InstanceId;
             Emit(s, GameEventKind.Info, $"装备{ItemName(it.ItemId)}#{it.InstanceId}为当前武器。");
             return ActionResult.Success();
+        }
+    
+        // ───────────── 词条平加攻击力（R07 §4、R03 §2） ─────────────
+
+        /// <summary>人物词条的攻击力平加合计（教学融合的绿色“攻击力+0.1”）。</summary>
+        public double FlatAttack(GameState s) => s.Traits.Sum(x => x.FlatAttack);
+
+        /// <summary>本次攻击是否吃平加：只作用于有正基础伤害的直接攻击（含拳）；推挡这类基础0伤动作不加（R07 §4）。</summary>
+        public double FlatAttackFor(GameState s, CombatActionConfig a, WeaponConfig w) =>
+            a.DamageFactor > 0 && w.DamageMax > 0 ? FlatAttack(s) : 0;
+
+        /// <summary>
+        /// 直接伤害 = max(0, 乘算后伤害 + 平加攻击力 − 护甲)，防御生效时再×0.5（R03 §2 建议公式）。
+        /// R07 §4.1 算例：乘算后1.20、护甲0.30 → 无词条0.90、有词条1.00；防御0.45/0.50；暴击后1.80 → 1.60。
+        /// </summary>
+        public static double AttackDamage(double multiplied, double flat, double armor, bool guard, double guardFactor)
+        {
+            var d = Math.Max(0, multiplied + flat - armor);
+            if (guard && d > 0) d *= guardFactor;
+            return d;
         }
     }
 }

@@ -789,7 +789,7 @@ public class CombatV06Tests : BattleTestBase
         Force(s, Below(0.001), AtLeast(0.999), Any());
         Cmd(s, "desperate_punch", 1);
         Assert.That(Enemy(s, 1).Hp, Is.EqualTo(hp0), "完全挡住");
-        Assert.That(s.Skills["unarmed"].Xp, Is.EqualTo(0), "完全挡住不给造成伤害经验");
+        Assert.That(s.Skills["unarmed"].Xp, Is.EqualTo(Cfg.Xp.DamagingAttackCommand), "v1.0 P01：完全挡住的0伤命中也给命中经验");
         Assert.That(s.Battle!.Log.Last(), Does.Contain("护甲完全挡住"));
         // 工尸护甲0.3：勉强拳击最大0.9×1.035×0.5−0.3=0.16575，小数伤害如实生效
         var w = Fight(33, "worker");

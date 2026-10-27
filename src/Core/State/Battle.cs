@@ -22,6 +22,9 @@ namespace Survival.Core.State
         public int SpawnMinute { get; set; }
         /// <summary>反刷：每个技能对该敌人已计入经验的命中次数（最多 3 次，撤退、巡游、重接都不重置）。</summary>
         public Dictionary<string, int> XpHits { get; set; } = new Dictionary<string, int>();
+        /// <summary>受惊随机数 u 与生成的世界分钟（R03 §2.1：60 游戏分钟内再入战复用同一个 u，防撤退重接刷受惊）。</summary>
+        public double FearRoll { get; set; }
+        public int? FearRollMinute { get; set; }
 
         public WorldEnemy Clone()
         {
@@ -99,8 +102,15 @@ namespace Survival.Core.State
         public int WorldId { get; set; }
         public string? ItemId { get; set; }
         public int Count { get; set; }
+        /// <summary>R07 活性物质等需要保留来源的掉落；普通掉落为 null。</summary>
+        public ItemSource? Source { get; set; }
 
-        public BattleLoot Clone() => (BattleLoot)MemberwiseClone();
+        public BattleLoot Clone()
+        {
+            var c = (BattleLoot)MemberwiseClone();
+            c.Source = Source?.Clone();
+            return c;
+        }
     }
 
     /// <summary>
@@ -114,8 +124,19 @@ namespace Survival.Core.State
         public string LocationId { get; set; } = "";
         public int Round { get; set; } = 1;
         public int StartMinute { get; set; }
-        /// <summary>随机接敌（受惊遭遇，恐慌+10）。</summary>
+        /// <summary>随机接敌（探索/清理后的敌踪“接敌”）。</summary>
         public bool Surprise { get; set; }
+        /// <summary>入战情境（R03 §2.1）：approach 主动接近 / encounter 探索清理接敌 / tutorial 剧情首战。</summary>
+        public string Context { get; set; } = "";
+        /// <summary>剧情首战（S15 §5）：唯一保留游荡尸，不调用噪声增援，胜利发教学活性物质。</summary>
+        public bool Tutorial { get; set; }
+        /// <summary>受惊结果（同一 battleId 只判一次，读档不重抽）：主惊吓源、入战精神快照、随机数、概率、是否受惊、附加恐慌。</summary>
+        public int? FearSourceWorldId { get; set; }
+        public double FearMorale { get; set; }
+        public double FearRoll { get; set; }
+        public double FearChance { get; set; }
+        public bool Frightened { get; set; }
+        public double FearPanic { get; set; }
 
         /// <summary>本轮行动队列：0 为玩家，其余为敌人 Index；按先手值降序、平手按 Index 升序。</summary>
         public List<int> Queue { get; set; } = new List<int>();

@@ -28,7 +28,7 @@
         }
         <div class="risk">咬击命中且造成伤害时按免疫判定感染：当前免疫@(Ui.N(s.Body.Immunity))，一次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。</div>
         <ul class="notes">
-            <li>接敌：入战恐慌=(100−精神)/2。每轮推进5分钟世界时间。</li>
+            <li>接敌：入战恐慌=(100−精神)/2；@e.FearNote(s, e.EncounterEnemies(s), GameEngine.FearEncounter)。每轮推进5分钟世界时间。</li>
             <li>绕行：固定@(e.Config.Encounters.BypassMinutes)分钟、按移动消耗；敌人仍留在这里；之后@(Clock.Duration(e.Config.Encounters.PostExitRandomEncounterGraceMinutes))内不会再随机遇敌，主动接近仍可。</li>
         </ul>
     </div>

@@ -502,7 +502,7 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(Count(s, "fiber", "field"), Is.EqualTo(fiber));
     }
 
-    /// <summary>B524 制造/医疗/群攻经验：只按规则发一次；预览、取消、满血空治疗不发；群攻一次指令只+2。</summary>
+    /// <summary>B524 制造/医疗/群攻经验：只按规则发一次；预览、取消、满血空治疗不发；群攻按命中目标逐个+2（v1.0 P01）。</summary>
     [Test]
     public void B524_CraftMedicalAndGroupXp_OnlyOnce()
     {
@@ -537,9 +537,11 @@ public class CombatV05Tests : BattleTestBase
         sg.LoadedAmmo = 4;
         f.Skills["firearms"].Level = 3;
         var xp0 = f.Skills["firearms"].Xp;
+        Enemy(f, 1).Hp = 50;   // 不让第一个目标倒下（倒下会抽掉落随机数）
+        Enemy(f, 2).Hp = 50;
         Force(f, Below(0.4), AtLeast(0.1), Any(), Below(0.4), AtLeast(0.1), Any());
         Assert.That(Cmd(f, "scatter").Ok, Is.True);
-        Assert.That(f.Skills["firearms"].Xp - xp0 + (f.Skills["firearms"].Level - 3) * 0, Is.EqualTo(2), "群攻按一次指令计");
+        Assert.That(f.Skills["firearms"].Xp - xp0, Is.EqualTo(2 * Cfg.Xp.DamagingAttackCommand), "v1.0 P01：群攻逐命中目标计，两个都命中+4");
         Assert.That(sg.LoadedAmmo, Is.EqualTo(3), "只耗1发");
         // 同一敌人同技能最多计3次
         var g = Fight(24, "riot");
