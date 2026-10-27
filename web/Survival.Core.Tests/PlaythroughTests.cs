@@ -10,14 +10,15 @@ public class PlaythroughTests : TestBase
 {
     private GameState Play(SurvivalBot.Route route, uint seed, bool fight = false)
     {
-        var s = New(seed);
+        // 系统策划总册 v1.0：完整新局（饱饱在体内、开场对白、首次到荒地强制首战）
+        var s = NewStory(seed);
         var bot = new SurvivalBot(E, s, route, fight);
         bot.Play(Cfg.Progress.SevenDayCheckMinute);
         var f = s.Progress.Flags;
         TestContext.WriteLine($"路线 {route} 种子 {seed}：{(s.Progress.Dead ? "死亡：" + s.Progress.Death!.Cause : "存活")}，时间 {Engine.Clock.DayTime(s.GameMinute)}");
         TestContext.WriteLine($"安全饮水 {f.Contains("boiled")}，食物加工 {f.Contains("cooked")}，遮蔽棚 {f.Contains("shelterBuilt")}，全部地点 {f.Contains("allVisited")}");
         TestContext.WriteLine($"状态 健康{s.Stats.Health:0.00} 饱食{s.Stats.Satiety:0.0} 水分{s.Stats.Hydration:0.0} 体力{s.Stats.Energy:0.00} 清醒{s.Stats.Wakefulness:0.0} 精神{s.Stats.Morale:0.0} 免疫{s.Body.Immunity:0.0} 病毒{(s.Body.Infected ? s.Body.VirusLoad.ToString("0.0") : "未感染")}");
-        TestContext.WriteLine($"敌踪{bot.Encounters}次{(fight ? $"、战斗{bot.Battles}场、撤退{bot.Retreats}次" : "（全部绕行）")} · 世界敌人{s.WorldEnemies.Count} · 打火器耐久{string.Join("/", s.Items.Where(i => i.ItemId == "lighter").Select(i => $"{i.Durability:0.0}/{i.MaxDurability:0.0}"))} · 锅耐久{string.Join("/", s.Items.Where(i => i.ItemId == "pot").Select(i => $"{i.Durability:0.0}/{i.MaxDurability:0.0}"))}");
+        TestContext.WriteLine($"敌踪{bot.Encounters}次{(fight ? "" : "（全部绕行）")}、战斗{bot.Battles}场（含首战）、撤退{bot.Retreats}次 · 首战{(s.Story.TutorialWon ? "胜利" : "未胜")}、词条{string.Join("/", s.Traits.Select(t => t.Label))} · 世界敌人{s.WorldEnemies.Count} · 打火器耐久{string.Join("/", s.Items.Where(i => i.ItemId == "lighter").Select(i => $"{i.Durability:0.0}/{i.MaxDurability:0.0}"))}");
         if (s.Progress.Dead)
             foreach (var line in bot.Trace.TakeLast(40)) TestContext.WriteLine(line);
         return s;

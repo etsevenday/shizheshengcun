@@ -104,8 +104,32 @@ public sealed class SurvivalBot
         if (!res.Ok) return false;
         Log($"{r.Type} {r.TargetId}{(r.Minutes > 0 ? " " + r.Minutes : "")}");
         Drive();
+        HandleStory();
         HandleEncounter();
         return true;
+    }
+
+    /// <summary>
+    /// 系统策划总册 v1.0：首次到达荒地强制首战（不论战斗策略都要打，撤退条件同普通战斗）；读完饱饱对白（不耗时）；
+    /// 首战胜利后像玩家一样把教学活性物质吞噬融合（5 分钟）。
+    /// </summary>
+    private void HandleStory()
+    {
+        while (S.Story.PendingDialogues.Count > 0) E.AckDialogue(S, S.Story.PendingDialogues[0]);
+        if (S.Battle != null && !S.Progress.Dead)
+        {
+            Log(S.Battle.Tutorial ? "首战" : "战斗");
+            EquipBest();
+            FightBattle();
+        }
+        if (S.Progress.Dead || S.Main != null || S.Battle != null) return;
+        var sub = S.Items.FirstOrDefault(i => i.Source?.TutorialReward == true && (i.Owner == Here || i.IsCarried));
+        if (sub != null && E.Start(S, ActionRequest.Fuse(sub.InstanceId)).Ok)
+        {
+            Log("吞噬融合教学活性物质");
+            Drive();
+        }
+        while (S.Story.PendingDialogues.Count > 0) E.AckDialogue(S, S.Story.PendingDialogues[0]);
     }
 
     /// <summary>v0.6：探索/清理后发现敌踪时，脚本选择绕行10分钟（不打架），之后60分钟保护期。</summary>

@@ -78,6 +78,8 @@
                     <button class="secondary" @onclick="DevDay2">跳到第2日08:00</button>
                     <button class="secondary" @onclick="DevMeds">药品各1（绷带/抗生素/特效药）</button>
                     <button class="secondary" @onclick="DevRepairMats">维护材料（废金属+零件）</button>
+                    <button class="secondary" @onclick="DevSubstance">普通活性物质1份</button>
+                    <button class="secondary" @onclick="DevRecipeMats">金属矛/弩/弩矢材料各1次</button>
                 </div>
                 <div class="btn-row">
                     @foreach (var en in G.E.Config.Enemies)
@@ -125,6 +127,20 @@
         DevDone("废金属、零件各1已放到随身（开发用，可做一次工具维护）。");
     }
     private void DevKit() { G.E.DebugGiveDevKit(G.S); DevDone("开发测试箱已放到随身。"); }
+
+    private void DevSubstance()
+    {
+        var sub = G.E.Config.ActiveSubstance;
+        G.E.CreateItems(G.S, sub.ItemId, 1, ItemInstance.Carried, false, new ItemSource { GrantEventId = $"dev-{G.S.NextInstanceId}" });
+        DevDone("普通白色活性物质1份已放到随身（开发用，融合无属性）。");
+    }
+
+    private void DevRecipeMats()
+    {
+        foreach (var rid in new[] { "make_metal_spear", "make_crossbow", "make_bolts" })
+            foreach (var kv in G.E.Recipe(rid).Inputs) G.E.DebugGive(G.S, kv.Key, kv.Value);
+        DevDone("金属矛、弩、弩矢各一次的材料已放到随身（开发用）。");
+    }
 
     private void DevEncounter() => DevDone(G.E.DebugForceEncounter(G.S) ? "已形成敌踪。" : "当前地点没有敌对敌人，或正在行动中。");
 
