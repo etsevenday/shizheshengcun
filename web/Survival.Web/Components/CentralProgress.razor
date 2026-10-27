@@ -1,0 +1,70 @@
+@inherits GameComponent
+
+@* 中央时间推进条（S14 §11、S01 §9、S13 §5）：所有主动推进世界时间的行动开始后，在屏幕中央显示紧凑横条——行动名、进度条、
+   剩余游戏时间（固定时长“剩余X”，工作/等待烹饪“预计剩余X”，燃料不足等写明原因而不是假倒计时）与明确的“退出”。
+   150ms 淡入、150ms 淡出（只是表现：不推进 tick、不延迟退出、淡出期间不拦截操作）。暂停时同一区域显示真实原因与“继续/退出”；
+   对话等待时标“对话中，时间未推进”并暂隐条形动画。数据全部来自内核 ActionProgress，界面不另建现实秒表。
+   InFlow：嵌在暂停层中间行（暂停/补给时），否则悬浮在中部正中。 *@
+@{
+    var p = Info ?? G.ProgressInfo();
+}
+@if (p != null)
+{
+    var dlg = p.DialogueWaiting;
+    var remain = p.RemainingMinutes is int r
+        ? (p.Estimated ? $"预计剩余{Clock.Duration(r)}" : $"剩余{Clock.Duration(r)}")
+        : p.Paused ? "暂停中" : "无法给出剩余时间";
+    var pct = Math.Clamp(p.Fraction, 0, 1) * 100;
+    var busy = G.Running || G.S.Sub != null;
+    var exitNote = G.ExitNote != null && G.ExitNoteAction == p.ActionId ? G.ExitNote : null;
+    <div class="cprog @(InFlow ? "inflow" : "float") @(Fading ? "fading" : "") @(p.Paused ? "paused" : "") @(dlg ? "dlg" : "")"
+         role="status" aria-live="polite" aria-label="@($"{p.Label}：{(dlg ? "对话中，时间未推进" : remain)}")" inert="@(Fading || G.DialogueLocked)">
+        <div class="cp-head">
+            <span class="cp-chip @(p.IsSub ? "sub" : p.Paused ? "paused" : "")">@(p.IsSub ? "补给／维护" : p.Paused ? "已暂停" : dlg ? "等待对话" : "进行中")</span>
+            <b class="cp-name">@p.Label</b>
+            <span class="cp-remain @(p.RemainingMinutes == null && !p.Paused ? "warn-text" : "")">@(dlg ? "对话中，时间未推进" : remain)</span>
+        </div>
+        @if (!dlg)
+        {
+            <div class="cp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@((int)pct)"><i style="width:@pct.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></i></div>
+        }
+        @if (p.Paused && !string.IsNullOrEmpty(p.PauseText))
+        {
+            <div class="cp-reason">暂停原因：@p.PauseText</div>
+        }
+        @if (!string.IsNullOrEmpty(p.StopNote))
+        {
+            <div class="cp-note warn-text">@p.StopNote</div>
+        }
+        @if (p.CookTargets.Count > 0)
+        {
+            <div class="cp-targets">
+                @foreach (var t in p.CookTargets)
+                {
+                    <span class="cp-target @(t.Done ? "done" : "")">@(t.Done ? "✓" : "○") @t.Label@(t.Done ? "" : t.EtaMinutes is int m ? $" · 约{Clock.Duration(m)}" : "")</span>
+                }
+            </div>
+        }
+        <div class="cp-ctrl">
+            @if (p.Paused && !p.IsSub)
+            {
+                <button type="button" class="primary cp-go" disabled="@busy" @onclick="G.Resume">继续</button>
+            }
+            else if (G.Running && !dlg)
+            {
+                <button type="button" class="secondary cp-skip" @onclick="G.SkipAnimation" title="只跳过表现，不改变游戏时间与结果">跳过动画</button>
+            }
+            <span class="cp-exit-note">@(exitNote ?? (p.Exit == ExitKind.None ? p.ExitNote : p.Exit == ExitKind.CompletesCurrentTransaction ? p.ExitNote : ""))</span>
+            <button type="button" class="secondary danger cp-exit" disabled="@(p.Exit == ExitKind.None)" title="@p.ExitNote" @onclick="G.Exit">退出</button>
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>嵌在暂停层中间行；false 时悬浮在中部正中。</summary>
+    [Parameter] public bool InFlow { get; set; }
+    /// <summary>淡出中的最后一帧（行动已结束/退出）：不拦截输入。</summary>
+    [Parameter] public bool Fading { get; set; }
+    /// <summary>淡出时沿用的最后数据；为 null 时取当前行动。</summary>
+    [Parameter] public ActionProgressInfo? Info { get; set; }
+}

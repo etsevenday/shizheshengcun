@@ -41,18 +41,26 @@
         try
         {
             var r = await JS.InvokeAsync<double[]>("survival.rectById", domId);
-            return r.Length >= 4 ? (r[2] + 8, r[1]) : (240, 120);
+            return r is { Length: >= 4 } ? (r[2] + 8, r[1]) : (240, 120);
         }
         catch (JSException) { return (240, 120); }
     }
 
+    private string? _over;
+
     private async Task Hover(string id, string domId)
     {
+        _over = id;
         var (l, t) = await Anchor(domId);
-        G.HoverStatus(id, l, t);
+        // 取锚点期间指针已离开：不再弹出（避免离开后残留提示）
+        if (_over == id) G.HoverStatus(id, l, t);
     }
 
-    private void Unhover() => G.HoverStatus(null);
+    private void Unhover()
+    {
+        _over = null;
+        G.HoverStatus(null);
+    }
 
     private async Task Pin(string id, string domId)
     {

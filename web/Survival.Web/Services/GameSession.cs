@@ -835,13 +835,52 @@ public sealed class GameSession
         return res;
     }
 
-    public void Cancel()
+    /// <summary>
+    /// 中央推进条“退出”（S01 §9、S14 §11.2）：走内核 RequestExit——内核每次推进都是完整 5 分钟原子段，收到即在段边界停止，
+    /// 不再调度下一段；未发生的时长/工作不结算、按各玩法释放预留，已提交的不回滚；子行动退出回原主行动暂停态。
+    /// 点火、自用、融合（单段事务）已开始结算：如实提示“本段完成后结束”，不撤销。对话中、战斗中、死亡后拒绝并说明原因。
+    /// </summary>
+    public void Exit()
     {
-        var res = E.Cancel(S);
+        if (State == null) return;
+        var res = E.RequestExit(S);
+        ExitNote = res.Ok && res.Deferred ? res.Reason : null;
+        ExitNoteAction = res.ActionId ?? 0;
         Notice = res.Ok ? null : res.Reason;
-        Drain();
-        Save();
+        if (res.Ok && !res.Deferred)
+        {
+            Drain();
+            ReconcileSelection();
+            Save();
+        }
         Notify();
+    }
+
+    /// <summary>单段事务点“退出”后的说明（“已开始结算，本段完成后结束”），只对同一行动显示。</summary>
+    public string? ExitNote { get; private set; }
+    public int ExitNoteAction { get; private set; }
+
+    private (int ver, ActionProgressInfo? info) _progressCache = (-1, null);
+
+    /// <summary>中央推进条数据（内核 ActionProgress，只读估算）；每次界面版本只算一次。</summary>
+    public ActionProgressInfo? ProgressInfo()
+    {
+        if (State == null) return null;
+        if (_progressCache.ver == Version) return _progressCache.info;
+        var info = E.ActionProgress(S);
+        _progressCache = (Version, info);
+        return info;
+    }
+
+    private (int ver, string loc, CookWaitPlan? plan) _cookCache = (-1, "", null);
+
+    /// <summary>当前地点火堆“等待烹饪”的只读解析（S11 §9）：悬停预览与按钮禁用原因共用；每次界面版本只算一次。</summary>
+    public CookWaitPlan CookWaitPreview()
+    {
+        if (_cookCache.ver == Version && _cookCache.loc == S.CurrentLocation && _cookCache.plan != null) return _cookCache.plan;
+        var plan = E.PreviewCookWait(S);
+        _cookCache = (Version, S.CurrentLocation, plan);
+        return plan;
     }
 
     public async Task Resume()
@@ -869,6 +908,7 @@ public sealed class GameSession
         if (Running) return;
         Running = true;
         _skip = false;
+        var segs = 0;
         var startLocation = S.CurrentLocation;
         try
         {
@@ -880,13 +920,18 @@ public sealed class GameSession
 
                 var r = E.Advance(S);
                 Drain();
+                segs++;
                 if (!_skip)
                 {
                     Save();
                     Notify();
                 }
+                // 跳过动画时每 4 段刷新一次中央条（剩余时间是游戏分钟，由内核按真实状态给出）
+                else if (segs % 4 == 0) Notify();
                 if (r.Status is SegmentStatus.Paused or SegmentStatus.Dead or SegmentStatus.Idle or SegmentStatus.Dialogue) break;
-                if (!_skip && (S.Main != null || S.Sub != null)) await Task.Delay(SegmentDelayMs);
+                if (S.Main == null && S.Sub == null) break;
+                // 任何速度都给“退出”留出响应机会（S01 §9、S14 §11.2）：跳过动画时每段也让出线程，不一次同步把未来整段时间算完
+                await Task.Delay(_skip ? 1 : SegmentDelayMs);
             }
         }
         finally

@@ -12,6 +12,10 @@
     // 对话读完锁（Q10、S14 §10.1）：整局游戏输入锁定，未被对话层盖住的区域只保持可见
     var dlgLock = G.DialogueLocked;
     var navOff = battleUi || dlgLock;
+    // 中央推进条（S14 §11）：死亡后由结算层接管
+    var progress = s.Progress.Dead ? null : G.ProgressInfo();
+    if (progress != null) { _lastInfo = progress; _fadeInfo = null; }
+    else if (_lastInfo != null && !s.Progress.Dead) { _fadeInfo = _lastInfo; _lastInfo = null; _ = FadeOut(_fadeInfo); }
 }
 
 <div class="game">
@@ -91,13 +95,19 @@
             }
             </div>
 
-            @if (pausedLayer)
+            @if (pausedLayer || subRunning)
             {
+                @* 暂停/补给：中央推进条嵌在暂停层正中一行 *@
                 <PauseLayer />
             }
-            else if (subRunning)
+            else if (progress != null && !progress.DialogueWaiting)
             {
-                <PauseLayer />
+                <CentralProgress Info="progress" />
+            }
+            else if (_fadeInfo != null)
+            {
+                @* 完成/退出/终止：150ms 淡出，期间不拦截操作 *@
+                <CentralProgress Info="_fadeInfo" Fading="true" />
             }
         </section>
 
@@ -150,6 +160,17 @@
     private string? _selKey;
 
     private bool _lockSeen;
+    private ActionProgressInfo? _lastInfo;
+    private ActionProgressInfo? _fadeInfo;
+
+    /// <summary>中央条淡出 150ms（UI 初值，S14 §11.2）后移除；只是表现，不推进 tick、不拦截操作。</summary>
+    private async Task FadeOut(ActionProgressInfo info)
+    {
+        await Task.Delay(150);
+        if (!ReferenceEquals(_fadeInfo, info)) return;
+        _fadeInfo = null;
+        await InvokeAsync(StateHasChanged);
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

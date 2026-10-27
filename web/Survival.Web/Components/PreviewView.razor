@@ -80,6 +80,34 @@
         </div>
     }
 
+    @if (Request.Type == ActionType.WaitCook)
+    {
+        @* 等待烹饪预览（S11 §9、S14 §11.3）：本次目标（并行取最晚，不相加）、未纳入项及原因、燃料不足提示、等待期间身体速率（同普通等待） *@
+        var cw = G.CookWaitPreview();
+        <div class="cook-plan">
+            <div class="tiny muted">本次等待目标 · 全部完成才结束</div>
+            @foreach (var t in cw.Targets)
+            {
+                <div class="cook-row"><span>@t.Label</span><b>@(t.EtaMinutes is int m ? $"约{Clock.Duration(m)}" : "燃料不足")</b></div>
+            }
+            @if (cw.Targets.Count == 0) { <div class="cook-row muted"><span>没有可加工的目标</span></div> }
+            @if (cw.EstimatedMinutes is int all)
+            {
+                <div class="cook-row total"><span>预计全部完成</span><b>@Clock.Duration(all)</b></div>
+            }
+            @if (cw.FuelNote != null) { <div class="risk">@cw.FuelNote</div> }
+            @if (cw.Excluded.Count > 0)
+            {
+                <div class="tiny muted">未纳入</div>
+                @foreach (var x in cw.Excluded)
+                {
+                    <div class="cook-row muted"><span>@x.Label</span><b>@x.Reason</b></div>
+                }
+            }
+            <div class="cook-row"><span>等待期间每小时</span><b>@string.Join(" ", new[] { ("饱食", cw.BodyRates.Satiety), ("水分", cw.BodyRates.Hydration), ("体力", cw.BodyRates.Energy), ("清醒", cw.BodyRates.Wakefulness), ("精神", cw.BodyRates.Morale) }.Where(x => x.Item2 != 0).Select(x => x.Item1 + Ui.SignedT(x.Item2)))</b></div>
+            <div class="tiny muted">同普通等待的消耗；不自动点火、加木、补水，成品留在原位不自动食用。</div>
+        </div>
+    }
     @if (Request.Type == ActionType.Clear || Request.Type == ActionType.Explore)
     {
         <div class="risk none">无额外受伤风险；工具不改变耗时、概率与件数，也不磨损。</div>

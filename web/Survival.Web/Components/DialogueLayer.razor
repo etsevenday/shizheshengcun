@@ -27,7 +27,15 @@
             </div>
             <div class="dlg-ctrl">
                 <span class="dlg-latest-host"><button type="button" class="secondary dlg-latest" @onclick="Latest">回到最新 ↓</button></span>
-                <span class="dlg-hint">对话不消耗时间 · 读完才能继续操作</span>
+                @if (G.ProgressInfo() is { DialogueWaiting: true } act)
+                {
+                    @* 有行动在安全边界等待对话时，中央推进条并入这里显示（S14 §11.2：标“对话中，时间未推进”，暂隐条形动画，不叠放第二个可执行层） *@
+                    <span class="dlg-hint dlg-action" role="status"><b>@act.Label</b> · 对话中，时间未推进；读完后从原处继续</span>
+                }
+                else
+                {
+                    <span class="dlg-hint">对话不消耗时间 · 读完才能继续操作</span>
+                }
                 <button type="button" class="primary dlg-next" @onclick="() => Ack(cur.LineId)">@(more ? "继续" : "结束对话")</button>
             </div>
         </div>

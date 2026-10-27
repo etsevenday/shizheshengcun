@@ -1,14 +1,13 @@
 @inherits GameComponent
 
-@* 右栏（基础UI布局与操作修订案 v0.7 第 6.1 节）：
-   顶部固定“行动区”（执行/暂停中的行动进度、继续/取消等控制，不受页签切换影响）→ 固定两个页签“对象信息 / 人物” → 详情区。
+@* 右栏（基础UI布局与操作修订案 v0.7 第 6.1 节；S14 §11.1 起执行进度移到中央推进条）：
+   固定两个页签“对象信息 / 人物” → 详情区。
    悬停具体操作时详情区临时显示预测，离开恢复原页签；无选中时默认人物页，选中任何对象自动切到对象信息；
    点“对象信息”而对象已消失时提示“未选中对象”。页签只在会话内，不持久化。 *@
 @{
     var s = G.S;
     var e = G.E;
     var sel = G.Selected;
-    var active = s.Sub ?? s.Main;
     var craftPaused = s.Main != null && s.Main.Status == ActionStatus.Paused && (s.Main.Type == ActionType.Craft || s.Main.Type == ActionType.Build);
     var craftDetail = G.Panel == "craft" && s.Sub == null && (s.Main == null || craftPaused);
     var dragPreview = sel.Kind == SelectionKind.Action && G.PendingAction != null && s.Sub == null
@@ -20,10 +19,7 @@
 }
 
 <aside class="panel detail" aria-label="对象信息与人物" inert="@G.DialogueLocked">
-    @if (active != null)
-    {
-        <div class="detail-action"><ActionProgress /></div>
-    }
+    @* 开始后的执行进度、剩余时间与退出统一在屏幕中央（S14 §5.1、§11.1），右栏不再重复显示；开始前悬停/选中的预估照常在下方显示 *@
     <div class="detail-tabs" role="tablist" aria-label="右栏页签">
         <button type="button" role="tab" aria-selected="@(shownTab == DetailTab.Object)" class="@(shownTab == DetailTab.Object ? "on" : "")"
                 @onclick="() => G.SetDetailTab(DetailTab.Object)">对象信息</button>

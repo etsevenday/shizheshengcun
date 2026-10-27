@@ -15,7 +15,10 @@
     var busy = sub != null || G.Running;
 }
 
-<div class="center-layer" role="alertdialog" aria-label="行动暂停">
+@* 暂停层（S01 §7、S14 §8、§11）：上半区原因/剩余/预留，中间一行是中央推进条（继续/退出、真实原因，或补给子行动的进度与退出），
+   下半区补给与点火。上下两区各自滚动，中央条始终在正中、可达。 *@
+<div class="center-layer pause-grid" role="alertdialog" aria-label="行动暂停" inert="@G.DialogueLocked">
+    <div class="pg-top" data-wheel="y">
     @if (sub != null)
     {
         <div class="eyebrow"><span class="status-chip sub">正在补给／维护</span></div>
@@ -50,6 +53,9 @@
         @if (travel) { <div><span>位置</span><b>前往@(e.LocName(main.TargetId))途中 · 只能使用随身物品</b></div> }
     </div>
 
+    </div>
+    <div class="pg-mid"><CentralProgress InFlow="true" /></div>
+    <div class="pg-bottom" data-wheel="y">
     @if (sub == null)
     {
         {
@@ -101,13 +107,11 @@
             @if (e.IgniteNoToolReason(s) is string noTool) { <div class="risk none">@noTool</div> }
         }
 
-        <div class="btn-row" style="max-width:520px;margin-top:auto">
-            <button class="primary" disabled="@busy" @onclick="G.Resume">继续@(main.Label)</button>
-            <button class="secondary danger" disabled="@busy" @onclick="G.Cancel">取消@(main.Label)</button>
-        </div>
-        <div class="tiny muted">@CancelHint(main)</div>
+        @* 继续/退出统一在中间的中央推进条（S14 §11.2）；这里只写清退出后果 *@
+        <div class="tiny muted">退出：@CancelHint(main)</div>
     }
     @if (G.Notice != null) { <div class="notice" style="max-width:720px">@G.Notice</div> }
+    </div>
 </div>
 
 @code {
@@ -116,11 +120,12 @@
 
     private static string CancelHint(ActionState a) => a.Type switch
     {
-        ActionType.Travel => "取消移动：留在出发地，已经流逝的时间与身体消耗保留。",
-        ActionType.Gather => "取消搜集：不给产物、不磨损工具，预留库存释放。",
-        ActionType.Craft or ActionType.Build => "取消制作：预留材料返还当前地面，不生成半成品。",
-        ActionType.Explore => "取消探索：探索度不变、不给随机物资，已消耗的时间保留。",
-        ActionType.Clear => "取消清理：不给物资，已扣除的1次清理机会不返还，已消耗的时间保留。",
-        _ => "取消后已流逝的时间不返还。",
+        ActionType.Travel => "留在出发地，已经流逝的时间与身体消耗保留。",
+        ActionType.Gather => "不给产物、不磨损工具，预留库存释放。",
+        ActionType.Craft or ActionType.Build => "预留材料返还当前地面，不生成半成品。",
+        ActionType.Explore => "探索度不变、不给随机物资，已消耗的时间保留。",
+        ActionType.Clear => "不给物资，已扣除的1次清理机会不返还，已消耗的时间保留。",
+        ActionType.WaitCook => "火堆、锅与受热进度原样保留，成品留在原位。",
+        _ => "已流逝的时间与已发生的消耗/恢复不返还。",
     };
 }
