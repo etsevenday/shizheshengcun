@@ -69,6 +69,7 @@
     @* v0.7 第 6 节：左栏“自身”投放卡已取消（没有任何投放热区）；对自身使用统一在选中物品的卡下按钮 *@
 
     <div class="panel weight">
+        <span class="weight-icon" aria-hidden="true">@Icons.Markup("backpack")</span>
         <div class="eyebrow">携带重量 · @(grams > cfg.Carry.SoftGrams ? "超重" : "轻装")</div>
         <strong class="@(grams > cfg.Carry.SoftGrams ? "warn-text" : "")">@Ui.KgText(grams)</strong>
         <div class="tiny muted">超过@(cfg.Carry.SoftGrams / 1000)公斤减速 · 上限@(cfg.Carry.HardGrams / 1000)公斤</div>

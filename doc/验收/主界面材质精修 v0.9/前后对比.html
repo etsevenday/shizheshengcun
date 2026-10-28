@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>适者生存 · v0.9 材质精修前后对比</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0c1519;color:#e9dec2;font:16px/1.6 system-ui,sans-serif}main{max-width:1968px;margin:auto;padding:24px}h1{font:700 28px/1.3 serif;margin:0 0 8px}p{margin:8px 0;color:#bab9ac}.bar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:20px 0}select,button{font:inherit;background:#24302d;color:#f3dfad;border:1px solid #7b6d4d;padding:7px 12px;border-radius:3px}input{accent-color:#d9b15e;width:min(360px,50vw)}.stage{position:relative;width:100%;overflow:hidden;background:#060b0e;box-shadow:0 4px 20px #0008}.stage img{display:block;width:100%;height:auto}.stage .after{position:absolute;inset:0;clip-path:inset(0 50% 0 0)}.divider{position:absolute;top:0;bottom:0;left:50%;width:2px;background:#ffe2a1;pointer-events:none}.labels{display:flex;justify-content:space-between;margin-bottom:8px;color:#e7c879}.detail{display:flex;gap:20px;flex-wrap:wrap;align-items:start;margin-top:24px}.detail figure{margin:0;background:#152024;padding:12px}.detail img{max-width:100%;image-rendering:auto}.detail figcaption{font-size:14px;color:#bbb6a4}a{color:#e1bf78}.note{font-size:14px}
+</style>
+<main>
+<h1>适者生存 · 主界面材质精修 v0.9</h1>
+<p>同一存档、同一视口、设备比例 1。拖动分界线看变化；左边是精修后，右边是 v0.8 原版。将页面缩放设为 100%，大图可右键单独打开查看原始像素。</p>
+<div class="bar">
+<label>场景 <select id="scene"><option value="hardware">五金店</option><option value="camp">临时营地</option></select></label>
+<label>视口 <select id="size"><option value="1280">1280 × 720</option><option value="1600" selected>1600 × 900</option><option value="1920">1920 × 1080</option></select></label>
+<label>对比 <input id="split" type="range" min="0" max="100" value="50"></label>
+<button id="old">只看原版</button><button id="new">只看精修</button>
+</div>
+<div class="labels"><span>← 精修后</span><span>原版 →</span></div>
+<div class="stage"><img id="before" alt="精修前同状态游戏截图"><img id="after" class="after" alt="精修后同状态游戏截图"><div class="divider"></div></div>
+<div class="detail">
+<figure><img src="screenshots/weight-detail.png" alt="携重面板，100%像素"><figcaption>携重面板：断开的墨线、角部露底、放大的背包。</figcaption></figure>
+<figure><img src="screenshots/resource-selected.png" alt="选中的锅具箱，100%像素"><figcaption>锅具箱：旧纸边、墨刷标题、金色选中、放大的插画。</figcaption></figure>
+<figure><img src="screenshots/resource-exhausted.png" alt="搜空资源卡，100%像素"><figcaption>耗尽状态：灰纸和禁用按钮，保留真实状态文字。</figcaption></figure>
+</div>
+<p class="note">验证截图使用隔离测试存档，未覆盖玩家浏览器存档。包含默认、悬停、键盘焦点、按下、禁用、对白、战斗和资源缺失回退的截图，见同目录 screenshots。完整结果与发布状态见《验收记录.md》。</p>
+</main>
+<script>
+const scene=document.querySelector('#scene'),size=document.querySelector('#size'),split=document.querySelector('#split');
+function load(){document.querySelector('#before').src=`before/${scene.value}-${size.value}.png`;document.querySelector('#after').src=`screenshots/${scene.value}-${size.value}.png`}
+function draw(){document.querySelector('#after').style.clipPath=`inset(0 ${100-split.value}% 0 0)`;document.querySelector('.divider').style.left=split.value+'%'}
+scene.onchange=size.onchange=load;split.oninput=draw;document.querySelector('#old').onclick=()=>{split.value=0;draw()};document.querySelector('#new').onclick=()=>{split.value=100;draw()};load();draw();
+</script>
+</html>

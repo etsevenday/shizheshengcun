@@ -1,0 +1,271 @@
+/* v0.9: static, nine-slice material borders; the original layout and hit areas
+   stay intact. No overlay nodes, new grid rows, dynamic filters or input handlers.
+   Each 24-unit source corner occupies 12 CSS px, independent of panel size. */
+:root {
+  --paper-texture: url('../art/v09/paper.svg');
+  --iron-texture: url('../art/v09/iron.svg');
+  --frame-iron: url('../art/v09/frame-iron.svg');
+  --frame-paper: url('../art/v09/frame-paper.svg');
+  --frame-selected: url('../art/v09/frame-selected.svg');
+  --frame-button: url('../art/v09/frame-button.svg');
+  --frame-iron-alt: url('../art/v09/frame-iron-alt.svg');
+  --frame-paper-alt: url('../art/v09/frame-paper-alt.svg');
+}
+
+/* Keep a plain border and base colour as the missing-resource fallback.
+   The paint stops at the padding box; gaps in the frame reveal the scene. */
+.wasteland :is(.panel, .sub-panel, .apop, .st-pop, .menu-box, .cprog, .pause-layer, .dlg-layer),
+.title-card {
+  border-color: #665f4c;
+  border-radius: 2px;
+  border-image: var(--frame-iron) 24 / 12px / 0 stretch;
+  background-clip: padding-box;
+  box-shadow: 0 3px 8px #03080a99;
+}
+.wasteland .panel { background-image: var(--iron-texture); }
+.wasteland :is(.weight, .facility-row, .section.carried) { border-image-source: var(--frame-iron-alt); }
+.wasteland .clock {
+  background-image: var(--iron-texture), linear-gradient(105deg, #10191ae8, #152025a6), var(--scene-art);
+  background-position: center, center, 25% 33%;
+  background-size: auto, auto, auto 340%;
+}
+.wasteland .map-row {
+  background-image: var(--iron-texture), linear-gradient(100deg, #0b1419e0, #101a20d9), var(--scene-art);
+  background-position: center, center, center 15%;
+  background-size: auto, auto, 110% auto;
+}
+.wasteland .facility-row {
+  background-image: var(--iron-texture), linear-gradient(95deg, #0b1419ed, #101a20d2), var(--scene-art);
+  background-position: center, center, 62% 51%;
+  background-size: auto, auto, 130% auto;
+}
+.wasteland .section.ground {
+  background-image: var(--iron-texture), linear-gradient(95deg, #10191be8, #0c161bb8), var(--scene-art);
+  background-position: center, center, center 84%;
+  background-size: auto, auto, 110% auto;
+}
+.wasteland .section.carried {
+  background-image: var(--iron-texture), linear-gradient(95deg, #10191bf5, #0c161bd5), var(--scene-art);
+  background-position: center, center, 30% 96%;
+  background-size: auto, auto, 135% auto;
+}
+.wasteland .detail {
+  background-image: var(--iron-texture), linear-gradient(#11191bf7 0%, #11191bf2 68%, #0c171cc9), var(--scene-art);
+  background-position: center, center, right bottom;
+  background-size: auto, auto, auto 100%;
+}
+.wasteland .map-card {
+  border-color: #514d3b;
+  border-image: var(--frame-iron) 24 / 10px / 0 stretch;
+  border-radius: 2px;
+  box-shadow: 0 3px 5px #0009;
+}
+.wasteland .map-card.selected { border-image-source: var(--frame-selected); }
+
+/* Paper, edge darkening and restrained corner stains. Central text has no
+   scratch layer above it. Card borders retain their original 2px layout size. */
+.wasteland :is(.card, .ocard, .pot-card, .pot-card.in-fire, .fc-food) {
+  border-color: #6e6041;
+  border-radius: 2px;
+  border-image: var(--frame-paper) 24 / 10px / 0 stretch;
+  background: var(--paper-texture), linear-gradient(110deg, #dfcfa8, #c9b68b);
+  background-size: 100% 100%, auto;
+  background-clip: padding-box;
+  box-shadow: inset 0 0 13px #72532650, 0 3px 5px #0009;
+}
+.wasteland .ocard:nth-child(3n + 2),
+.wasteland .card-col:nth-child(3n + 2) > .card {
+  border-image-source: var(--frame-paper-alt);
+  background-position: right bottom, center;
+  background-size: 112% 125%, auto;
+}
+.wasteland :is(.card, .ocard, .pot-card, .fc-food).selected {
+  border-color: #d4a34f;
+  border-image-source: var(--frame-selected);
+  box-shadow: inset 0 0 14px #80551e55, 0 2px 7px #000b;
+}
+.wasteland :is(.card, .ocard):hover:not(.selected) {
+  border-image-source: var(--frame-button);
+  box-shadow: inset 0 0 12px #80551e33, 0 2px 7px #000b;
+}
+.wasteland :is(.card, .ocard).dim {
+  background: var(--paper-texture), linear-gradient(110deg, #b1ae9e, #96968b);
+  background-size: 100% 100%, auto;
+  filter: saturate(.38);
+  color: #252922;
+}
+.wasteland .ocard.dim .oc-art { opacity: .7; }
+.wasteland :is(.card.item, .fc-food).spoiled {
+  background: var(--paper-texture), #aaa58c;
+  color: #3f402d;
+}
+.wasteland .ocard.dashed { background-color: #b8b19a; }
+.wasteland :is(.card, .ocard).dim .oc-badge { background: #ceccbc; color: #383b33; }
+.wasteland .oc-head { padding-inline: 9px; border-bottom-color: #6e5c354d; }
+.wasteland .oc-head b { font-family: var(--title-font); font-weight: 700; }
+.wasteland .ocard.selected .oc-head b {
+  margin: -2px -4px;
+  padding: 2px 6px;
+  background: #26291f;
+  color: #f5e5b6;
+  clip-path: polygon(2% 4%, 91% 0, 100% 8%, 97% 77%, 100% 92%, 9% 100%, 0 92%, 2% 46%, 0 28%);
+}
+.wasteland :is(.oc-badge, .tag, .item .qty) {
+  border-color: #9b885d;
+  border-radius: 1px;
+  background-image: var(--paper-texture);
+  box-shadow: 1px 1px 1px #59482744;
+}
+.wasteland :is(.oc-badge.built, .oc-badge.lit, .tag.dark) { background-image: none; }
+
+/* Borders use separate small corner scale on controls. Focus and drop
+   outlines deliberately stay independent from the decorative border image. */
+.wasteland :is(.nav button, .secondary, .detail-tabs button, .attr-back, .st-close, .oc-foot .oc-btn, .fc-btn) {
+  border-color: #786a4c;
+  border-image: var(--frame-iron) 24 / 8px / 0 stretch;
+  border-radius: 1px;
+  background: var(--iron-texture), linear-gradient(115deg, #26302e, #151e21);
+  background-clip: padding-box;
+  box-shadow: 0 2px 2px #0007;
+}
+.wasteland .fc-btn.plain { color: #f1e3c4; }
+.wasteland :is(.loc-btn, .primary, .apop-go, .rest-go button, .ca-use, .fc-btn.ignite, .fc-btn.cook) {
+  border-color: #ac8546;
+  border-image: var(--frame-button) 24 / 9px / 0 stretch;
+  border-radius: 1px;
+  background: var(--paper-texture), linear-gradient(110deg, #e5be72, #c99e51);
+  background-size: 100% 100%, auto;
+  background-clip: padding-box;
+  color: #211b0e;
+  box-shadow: inset 0 0 10px #7954253b, 0 2px 2px #0008;
+}
+.wasteland :is(.loc-btn, .primary, .apop-go, .rest-go button, .ca-use, .fc-btn.ignite, .fc-btn.cook):hover:not(:disabled) {
+  background-color: #efd08a;
+  border-image-source: var(--frame-selected);
+  filter: brightness(1.07);
+}
+.wasteland :is(.nav button, .secondary, .oc-btn):hover:not(:disabled) {
+  border-image-source: var(--frame-button);
+  color: #ffe0a0;
+}
+.wasteland :is(.nav button.on, .detail-tabs button.on, .oc-btn.on, .loc-btn.on) {
+  border-image-source: var(--frame-selected);
+  color: #f6d387;
+  background: var(--iron-texture), #2c3026;
+  box-shadow: inset 0 0 12px #030b1099;
+}
+.wasteland :is(.loc-btn, .primary, .oc-btn, .fc-btn, .ca-use, .apop-go, .rest-go button):disabled {
+  background: var(--iron-texture), #45483f;
+  color: #dbd6c6;
+  border-color: #676a59;
+  border-image-source: var(--frame-iron);
+  filter: none;
+  opacity: 1;
+  box-shadow: inset 0 0 8px #14201c44;
+}
+.wasteland button:active:not(:disabled) {
+  filter: brightness(.88);
+  box-shadow: inset 0 2px 4px #03080a80;
+}
+.wasteland :is(button, [tabindex]):focus-visible {
+  outline: 2px solid #ffe4a7;
+  outline-offset: -4px;
+}
+.wasteland :is(.mc-chip, .fact, .item-row, .pc-row, .pc-slot, .pc-reserved) {
+  border-radius: 1px;
+  border-image: var(--frame-iron) 24 / 5px / 0 stretch;
+}
+.wasteland .mc-chip { background: var(--iron-texture), #111a1beb; box-shadow: 1px 2px #060c0caa; }
+.wasteland :is(.pc-row, .pc-slot, .pc-reserved) { border-image-source: var(--frame-paper); }
+.wasteland :is(.card-arrow, .row-arrow) {
+  border-image: var(--frame-paper) 24 / 6px / 0 stretch;
+  background-image: var(--paper-texture);
+  border-radius: 1px;
+}
+
+/* Enlarge only the already clipped sprite viewport, never the 4x4 atlas
+   image itself. No altered aspect ratios, source cells or game identities. */
+.wasteland .oc-art { background: radial-gradient(ellipse at 50% 78%, #59472b1c, transparent 67%); }
+.wasteland :is(.res-card, .fac-card) .oc-art > .ink-sprite { transform: scale(1.12); transform-origin: 50% 60%; }
+.wasteland .res-card .oc-art > [data-art="resource_pot_box"] { transform: scale(1.2); }
+.wasteland .res-card .oc-art > [data-art="resource_tool_box"] { transform: scale(1.16); }
+.wasteland .card.item .art > .ink-sprite { transform: scale(1.12); }
+.wasteland .detail-icon > .ink-sprite { transform: scale(1.08); }
+.wasteland .weight { padding-left: 67px; }
+.wasteland .weight::before { content: none; }
+.weight-icon {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 52px;
+  height: 62px;
+  pointer-events: none;
+  filter: brightness(1.25) contrast(1.1) drop-shadow(1px 2px 1px #0009);
+}
+.weight-icon > .ink-sprite { width: 100%; height: 100%; }
+.wasteland .weight .tiny { margin-left: -55px; }
+.wasteland .vital-icon { width: 27px; height: 30px; stroke-width: 2.1; }
+.wasteland .vital { padding-left: 34px; }
+.wasteland .vital[data-stat="health"] .vital-icon,
+.wasteland .vital[data-stat="hydration"] .vital-icon,
+.wasteland .vital[data-stat="immunity"] .vital-icon { fill: currentColor; fill-opacity: .13; }
+.wasteland .vital.critical .vital-icon { color: #f1a18a; }
+.wasteland .vital.warning .vital-label b { color: #edc273; }
+.wasteland .vital.critical .vital-label b { color: #efa38c; }
+.wasteland :is(.time, .weight strong, .fact strong, .vital-label b) { font-variant-numeric: tabular-nums; }
+.wasteland :is(.section-head h2, .dg-title, .pc-title b, .fc-title b) { font-family: var(--title-font); font-weight: 700; }
+.wasteland .section-head { border-bottom-color: #67706a55; }
+
+/* Patina is on the track; fill width and its terminal edge remain exact. */
+.wasteland :is(.track, .loc-progress, .pot-track, .fuel-track, .heat-track, .cp-bar) {
+  border-radius: 1px;
+  box-shadow: inset 1px 1px 2px #000a;
+}
+.wasteland .track { border-color: #6b6a50; }
+.wasteland .track i {
+  background-image: linear-gradient(90deg, #83976e, #bccaa0);
+  box-shadow: inset 0 1px #e3e4bb44, inset 0 -1px #30433066;
+}
+.wasteland .vital.warning .track i { background-image: linear-gradient(90deg, #a87f3b, #dfbc78); }
+.wasteland .vital.critical .track i { background-image: linear-gradient(90deg, #8e493b, #d8876d); }
+.wasteland .loc-progress i { box-shadow: inset 0 1px #f5df9b66, inset 0 -1px #65471b88; }
+.wasteland :is(.track, .loc-progress, .pot-track, .fuel-track, .heat-track, .cp-bar) i {
+  background-image: var(--iron-texture);
+}
+.wasteland .track i { background-image: var(--iron-texture), linear-gradient(90deg, #83976e, #bccaa0); }
+.wasteland .vital .track i { background-image: url('../art/v09/iron.svg'), linear-gradient(90deg, #83976e, #bccaa0); }
+.wasteland .vital.warning .track i { background-image: url('../art/v09/iron.svg'), linear-gradient(90deg, #a87f3b, #dfbc78); }
+.wasteland .vital.critical .track i { background-image: url('../art/v09/iron.svg'), linear-gradient(90deg, #8e493b, #d8876d); }
+
+/* The shared theme also reaches dialogue and combat. Keep turn/target states
+   explicit; only these surfaces change, not action locks or target logic. */
+.wasteland :is(.ally-card, .foe) {
+  border-image: var(--frame-paper) 24 / 8px / 0 stretch;
+  border-radius: 1px;
+  background: var(--paper-texture), #d3c299;
+  background-size: 100% 100%, auto;
+  background-clip: padding-box;
+}
+.wasteland :is(.ally-card, .foe, .ocard).acting,
+.wasteland .foe.selected { border-image-source: var(--frame-selected); }
+.wasteland .foe.targetable:not(.selected):not(.acting) { border-image-source: var(--frame-button); }
+.wasteland :is(.cmdt, .bx-x) {
+  border-image: var(--frame-iron) 24 / 6px / 0 stretch;
+  border-radius: 1px;
+}
+.wasteland .cmdt.on { border-image-source: var(--frame-selected); }
+.wasteland .bx-go { background-image: var(--paper-texture); border-radius: 1px; }
+
+@media (max-height: 999px) {
+  .wasteland .vital { padding-left: 30px; }
+  .wasteland .vital-icon { width: 25px; height: 28px; }
+  .wasteland .row-scroll .card.item { grid-template-columns: 62px minmax(0, 1fr); }
+  .wasteland .row-scroll .card.item .art svg { width: 62px; height: 70px; }
+  .wasteland .row-scroll .card.item .ctitle { font-family: var(--title-font); }
+}
+@media (max-height: 800px) {
+  .wasteland .weight { padding-left: 61px; }
+  .wasteland .weight .tiny { margin-left: -49px; }
+  .weight-icon { left: 8px; top: 5px; width: 48px; height: 55px; }
+  .wasteland .vital-icon { top: 2px; height: 26px; }
+}

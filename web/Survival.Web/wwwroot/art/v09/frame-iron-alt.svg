@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><g transform="rotate(180 60 60)">
+  <!-- Nine-slice: 24 source units per corner. Transparent breaks are intentional. -->
+  <path fill="#070d10" fill-rule="evenodd" d="M8 2 20 3 25 1 46 3 70 2 92 3 101 1 116 5 119 16 117 27 119 48 117 75 119 97 116 117 102 119 86 117 62 119 32 117 18 119 3 114 1 101 3 83 1 63 3 32 1 18ZM13 11 28 10 49 11 72 10 94 11 107 10 109 26 108 53 109 77 108 106 91 108 70 107 44 109 24 107 11 109 10 89 11 65 10 39Z"/>
+  <g fill="none" stroke-linecap="square" stroke-linejoin="bevel">
+    <path stroke="#455051" stroke-width="2" d="m10 6 8-1 11 2 18-1m10 0 33 1 16-2 8 4 1 13m-1 10 1 17-1 38m1 10-3 15-13 2-25-1m-10 1-32-1-18 1-8-6-1-13m1-11-1-24 1-20m0-11 1-14"/>
+    <path stroke="#a08a60" stroke-width="1.3" d="m12 4 9 1m5-1 10 1m68-1 9 4 2 6m1 13-1 9M114 102l-2 9-9 3m-10 0-9 1m-68-2-8-5-1-8M5 27l2-12 5-7"/>
+    <path stroke="#536365" stroke-width="1" d="m15 10 21-1m49 1 18-1 5 6m1 26-1 38m-1 24-5 5-25-1m-13 1-33-1m-15 1-5-8 1-13m-1-34 1-18"/>
+    <path stroke="#080e10" stroke-width="3" d="m19 2 3 6M4 39l5-3m106 24 4 3m-37 50-5 5m-34-6-4 5M107 4l-3 5m13 83-7 4"/>
+  </g>
+  <g fill="#927549">
+    <path d="m6 7 9-3-5 7-2 10-4-3Zm103 0 6 3 1 13-4-8-7-5ZM5 103l5 7 10 5-9 1-5-5Zm106 1 6-5-2 13-10 3 4-6Z"/>
+    <path d="m16 14 4-4 2 1-5 5Zm-8 9 3-2-1 4Zm98-8 2 3-4-1ZM15 107l4 1 2 4-6-3Zm87 2 4-3-1 4Z"/>
+  </g>
+</g></svg>

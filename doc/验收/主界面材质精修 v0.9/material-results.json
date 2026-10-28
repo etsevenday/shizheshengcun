@@ -1,0 +1,936 @@
+{
+  "url": "http://127.0.0.1:5179/shizheshengcun/?dev=1",
+  "browser": "155.0.8059.40",
+  "deviceScaleFactor": 1,
+  "results": [
+    {
+      "name": "default, selected, hover, focus, pressed and exhausted at 100 percent",
+      "pass": true,
+      "detail": {
+        "minute": 2025,
+        "resourceDisabled": true,
+        "focusVisible": true,
+        "enterSelection": true,
+        "escapeClosesPanel": true
+      }
+    },
+    {
+      "name": "all theme resources decode, sprite crop and control reachability",
+      "pass": true,
+      "detail": {
+        "loaded": [
+          {
+            "asset": "frame-iron.svg",
+            "bytes": 1404
+          },
+          {
+            "asset": "frame-iron-alt.svg",
+            "bytes": 1440
+          },
+          {
+            "asset": "frame-paper.svg",
+            "bytes": 1202
+          },
+          {
+            "asset": "frame-paper-alt.svg",
+            "bytes": 1238
+          },
+          {
+            "asset": "frame-button.svg",
+            "bytes": 935
+          },
+          {
+            "asset": "frame-selected.svg",
+            "bytes": 1000
+          },
+          {
+            "asset": "paper.svg",
+            "bytes": 1223
+          },
+          {
+            "asset": "iron.svg",
+            "bytes": 465
+          }
+        ],
+        "measures": [
+          {
+            "width": 1280,
+            "height": 720,
+            "data": [
+              {
+                "class": "vital-icon",
+                "x": 20,
+                "y": 178,
+                "width": 25,
+                "height": 26,
+                "top": 178,
+                "right": 45,
+                "bottom": 204,
+                "left": 20
+              },
+              {
+                "class": "vital-icon",
+                "x": 20,
+                "y": 218,
+                "width": 25,
+                "height": 26,
+                "top": 218,
+                "right": 45,
+                "bottom": 244,
+                "left": 20
+              },
+              {
+                "class": "vital-icon",
+                "x": 20,
+                "y": 258,
+                "width": 25,
+                "height": 26,
+                "top": 258,
+                "right": 45,
+                "bottom": 284,
+                "left": 20
+              },
+              {
+                "class": "vital-icon",
+                "x": 20,
+                "y": 298,
+                "width": 25,
+                "height": 26,
+                "top": 298,
+                "right": 45,
+                "bottom": 324,
+                "left": 20
+              },
+              {
+                "class": "vital-icon",
+                "x": 20,
+                "y": 338,
+                "width": 25,
+                "height": 26,
+                "top": 338,
+                "right": 45,
+                "bottom": 364,
+                "left": 20
+              },
+              {
+                "class": "vital-icon",
+                "x": 20,
+                "y": 378,
+                "width": 25,
+                "height": 26,
+                "top": 378,
+                "right": 45,
+                "bottom": 404,
+                "left": 20
+              },
+              {
+                "class": "vital-icon",
+                "x": 20,
+                "y": 418,
+                "width": 25,
+                "height": 26,
+                "top": 418,
+                "right": 45,
+                "bottom": 444,
+                "left": 20
+              },
+              {
+                "class": "vital-icon",
+                "x": 20,
+                "y": 458,
+                "width": 25,
+                "height": 26,
+                "top": 458,
+                "right": 45,
+                "bottom": 484,
+                "left": 20
+              },
+              {
+                "class": "panel weight",
+                "x": 8,
+                "y": 548,
+                "width": 220,
+                "height": 90,
+                "top": 548,
+                "right": 228,
+                "bottom": 638,
+                "left": 8
+              },
+              {
+                "class": "row-arrow",
+                "x": 613,
+                "y": 250,
+                "width": 40,
+                "height": 40,
+                "top": 250,
+                "right": 653,
+                "bottom": 290,
+                "left": 613
+              },
+              {
+                "class": "row-arrow",
+                "x": 610,
+                "y": 314.78125,
+                "width": 40,
+                "height": 40,
+                "top": 314.78125,
+                "right": 650,
+                "bottom": 354.78125,
+                "left": 610
+              },
+              {
+                "class": "pc-foods",
+                "x": 661,
+                "y": 303.59375,
+                "width": 169,
+                "height": 101.984375,
+                "top": 303.59375,
+                "right": 830,
+                "bottom": 405.578125,
+                "left": 661
+              },
+              {
+                "class": "row-arrow",
+                "x": 785,
+                "y": 318.28125,
+                "width": 40,
+                "height": 40,
+                "top": 318.28125,
+                "right": 825,
+                "bottom": 358.28125,
+                "left": 785
+              },
+              {
+                "class": "card-arrow down",
+                "x": 395,
+                "y": 492,
+                "width": 40,
+                "height": 40,
+                "top": 492,
+                "right": 435,
+                "bottom": 532,
+                "left": 395
+              },
+              {
+                "class": "card-arrow down",
+                "x": 598,
+                "y": 492,
+                "width": 40,
+                "height": 40,
+                "top": 492,
+                "right": 638,
+                "bottom": 532,
+                "left": 598
+              },
+              {
+                "class": "card-arrow down",
+                "x": 801,
+                "y": 492,
+                "width": 40,
+                "height": 40,
+                "top": 492,
+                "right": 841,
+                "bottom": 532,
+                "left": 801
+              },
+              {
+                "class": "card-arrow down",
+                "x": 1004,
+                "y": 492,
+                "width": 40,
+                "height": 40,
+                "top": 492,
+                "right": 1044,
+                "bottom": 532,
+                "left": 1004
+              },
+              {
+                "class": "card-arrow down",
+                "x": 1207,
+                "y": 492,
+                "width": 40,
+                "height": 40,
+                "top": 492,
+                "right": 1247,
+                "bottom": 532,
+                "left": 1207
+              },
+              {
+                "class": "card-arrow down",
+                "x": 1410,
+                "y": 492,
+                "width": 40,
+                "height": 40,
+                "top": 492,
+                "right": 1450,
+                "bottom": 532,
+                "left": 1410
+              },
+              {
+                "class": "card-arrow up",
+                "x": 395,
+                "y": 622,
+                "width": 40,
+                "height": 40,
+                "top": 622,
+                "right": 435,
+                "bottom": 662,
+                "left": 395
+              }
+            ],
+            "controls": [
+              {
+                "label": "把整口金属锅#1取到随身",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "从锅中取1份净水到随身",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "把生块根#31从锅中取到随身",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "放下1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              }
+            ]
+          },
+          {
+            "width": 1600,
+            "height": 900,
+            "data": [
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 221.390625,
+                "width": 25,
+                "height": 28,
+                "top": 221.390625,
+                "right": 49,
+                "bottom": 249.390625,
+                "left": 24
+              },
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 266.390625,
+                "width": 25,
+                "height": 28,
+                "top": 266.390625,
+                "right": 49,
+                "bottom": 294.390625,
+                "left": 24
+              },
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 311.390625,
+                "width": 25,
+                "height": 28,
+                "top": 311.390625,
+                "right": 49,
+                "bottom": 339.390625,
+                "left": 24
+              },
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 356.390625,
+                "width": 25,
+                "height": 28,
+                "top": 356.390625,
+                "right": 49,
+                "bottom": 384.390625,
+                "left": 24
+              },
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 401.390625,
+                "width": 25,
+                "height": 28,
+                "top": 401.390625,
+                "right": 49,
+                "bottom": 429.390625,
+                "left": 24
+              },
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 446.390625,
+                "width": 25,
+                "height": 28,
+                "top": 446.390625,
+                "right": 49,
+                "bottom": 474.390625,
+                "left": 24
+              },
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 491.390625,
+                "width": 25,
+                "height": 28,
+                "top": 491.390625,
+                "right": 49,
+                "bottom": 519.390625,
+                "left": 24
+              },
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 536.390625,
+                "width": 25,
+                "height": 28,
+                "top": 536.390625,
+                "right": 49,
+                "bottom": 564.390625,
+                "left": 24
+              },
+              {
+                "class": "panel weight",
+                "x": 10,
+                "y": 636.390625,
+                "width": 220,
+                "height": 103,
+                "top": 636.390625,
+                "right": 230,
+                "bottom": 739.390625,
+                "left": 10
+              },
+              {
+                "class": "row-arrow",
+                "x": 619,
+                "y": 349.4375,
+                "width": 40,
+                "height": 40,
+                "top": 349.4375,
+                "right": 659,
+                "bottom": 389.4375,
+                "left": 619
+              },
+              {
+                "class": "row-arrow",
+                "x": 616,
+                "y": 414.21875,
+                "width": 40,
+                "height": 40,
+                "top": 414.21875,
+                "right": 656,
+                "bottom": 454.21875,
+                "left": 616
+              },
+              {
+                "class": "pc-foods",
+                "x": 667,
+                "y": 403.03125,
+                "width": 169,
+                "height": 101.984375,
+                "top": 403.03125,
+                "right": 836,
+                "bottom": 505.015625,
+                "left": 667
+              },
+              {
+                "class": "row-arrow",
+                "x": 791,
+                "y": 417.71875,
+                "width": 40,
+                "height": 40,
+                "top": 417.71875,
+                "right": 831,
+                "bottom": 457.71875,
+                "left": 791
+              },
+              {
+                "class": "card-arrow down",
+                "x": 401,
+                "y": 667,
+                "width": 40,
+                "height": 40,
+                "top": 667,
+                "right": 441,
+                "bottom": 707,
+                "left": 401
+              },
+              {
+                "class": "card-arrow down",
+                "x": 604,
+                "y": 667,
+                "width": 40,
+                "height": 40,
+                "top": 667,
+                "right": 644,
+                "bottom": 707,
+                "left": 604
+              },
+              {
+                "class": "card-arrow down",
+                "x": 807,
+                "y": 667,
+                "width": 40,
+                "height": 40,
+                "top": 667,
+                "right": 847,
+                "bottom": 707,
+                "left": 807
+              },
+              {
+                "class": "card-arrow down",
+                "x": 1010,
+                "y": 667,
+                "width": 40,
+                "height": 40,
+                "top": 667,
+                "right": 1050,
+                "bottom": 707,
+                "left": 1010
+              },
+              {
+                "class": "card-arrow down",
+                "x": 1213,
+                "y": 667,
+                "width": 40,
+                "height": 40,
+                "top": 667,
+                "right": 1253,
+                "bottom": 707,
+                "left": 1213
+              },
+              {
+                "class": "card-arrow down",
+                "x": 1416,
+                "y": 667,
+                "width": 40,
+                "height": 40,
+                "top": 667,
+                "right": 1456,
+                "bottom": 707,
+                "left": 1416
+              },
+              {
+                "class": "card-arrow up",
+                "x": 401,
+                "y": 801,
+                "width": 40,
+                "height": 40,
+                "top": 801,
+                "right": 441,
+                "bottom": 841,
+                "left": 401
+              }
+            ],
+            "controls": [
+              {
+                "label": "把整口金属锅#1取到随身",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "从锅中取1份净水到随身",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "把生块根#31从锅中取到随身",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "放下1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              }
+            ]
+          },
+          {
+            "width": 1920,
+            "height": 1080,
+            "data": [
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 221.390625,
+                "width": 27,
+                "height": 30,
+                "top": 221.390625,
+                "right": 51,
+                "bottom": 251.390625,
+                "left": 24
+              },
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 266.390625,
+                "width": 27,
+                "height": 30,
+                "top": 266.390625,
+                "right": 51,
+                "bottom": 296.390625,
+                "left": 24
+              },
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 311.390625,
+                "width": 27,
+                "height": 30,
+                "top": 311.390625,
+                "right": 51,
+                "bottom": 341.390625,
+                "left": 24
+              },
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 356.390625,
+                "width": 27,
+                "height": 30,
+                "top": 356.390625,
+                "right": 51,
+                "bottom": 386.390625,
+                "left": 24
+              },
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 401.390625,
+                "width": 27,
+                "height": 30,
+                "top": 401.390625,
+                "right": 51,
+                "bottom": 431.390625,
+                "left": 24
+              },
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 446.390625,
+                "width": 27,
+                "height": 30,
+                "top": 446.390625,
+                "right": 51,
+                "bottom": 476.390625,
+                "left": 24
+              },
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 491.390625,
+                "width": 27,
+                "height": 30,
+                "top": 491.390625,
+                "right": 51,
+                "bottom": 521.390625,
+                "left": 24
+              },
+              {
+                "class": "vital-icon",
+                "x": 24,
+                "y": 536.390625,
+                "width": 27,
+                "height": 30,
+                "top": 536.390625,
+                "right": 51,
+                "bottom": 566.390625,
+                "left": 24
+              },
+              {
+                "class": "panel weight",
+                "x": 10,
+                "y": 636.390625,
+                "width": 220,
+                "height": 103,
+                "top": 636.390625,
+                "right": 230,
+                "bottom": 739.390625,
+                "left": 10
+              },
+              {
+                "class": "row-arrow",
+                "x": 619,
+                "y": 340.640625,
+                "width": 40,
+                "height": 40,
+                "top": 340.640625,
+                "right": 659,
+                "bottom": 380.640625,
+                "left": 619
+              },
+              {
+                "class": "row-arrow",
+                "x": 616,
+                "y": 405.421875,
+                "width": 40,
+                "height": 40,
+                "top": 405.421875,
+                "right": 656,
+                "bottom": 445.421875,
+                "left": 616
+              },
+              {
+                "class": "pc-foods",
+                "x": 667,
+                "y": 394.234375,
+                "width": 169,
+                "height": 101.984375,
+                "top": 394.234375,
+                "right": 836,
+                "bottom": 496.21875,
+                "left": 667
+              },
+              {
+                "class": "row-arrow",
+                "x": 791,
+                "y": 408.921875,
+                "width": 40,
+                "height": 40,
+                "top": 408.921875,
+                "right": 831,
+                "bottom": 448.921875,
+                "left": 791
+              },
+              {
+                "class": "card-arrow down",
+                "x": 349,
+                "y": 727,
+                "width": 40,
+                "height": 40,
+                "top": 727,
+                "right": 389,
+                "bottom": 767,
+                "left": 349
+              },
+              {
+                "class": "card-arrow down",
+                "x": 498,
+                "y": 727,
+                "width": 40,
+                "height": 40,
+                "top": 727,
+                "right": 538,
+                "bottom": 767,
+                "left": 498
+              },
+              {
+                "class": "card-arrow down",
+                "x": 647,
+                "y": 727,
+                "width": 40,
+                "height": 40,
+                "top": 727,
+                "right": 687,
+                "bottom": 767,
+                "left": 647
+              },
+              {
+                "class": "card-arrow down",
+                "x": 796,
+                "y": 727,
+                "width": 40,
+                "height": 40,
+                "top": 727,
+                "right": 836,
+                "bottom": 767,
+                "left": 796
+              },
+              {
+                "class": "card-arrow down",
+                "x": 945,
+                "y": 727,
+                "width": 40,
+                "height": 40,
+                "top": 727,
+                "right": 985,
+                "bottom": 767,
+                "left": 945
+              },
+              {
+                "class": "card-arrow down",
+                "x": 1094,
+                "y": 727,
+                "width": 40,
+                "height": 40,
+                "top": 727,
+                "right": 1134,
+                "bottom": 767,
+                "left": 1094
+              },
+              {
+                "class": "card-arrow up",
+                "x": 349,
+                "y": 961,
+                "width": 40,
+                "height": 40,
+                "top": 961,
+                "right": 389,
+                "bottom": 1001,
+                "left": 349
+              }
+            ],
+            "controls": [
+              {
+                "label": "把整口金属锅#1取到随身",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "从锅中取1份净水到随身",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "把生块根#31从锅中取到随身",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "拾取1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              },
+              {
+                "label": "放下1件",
+                "w": 40,
+                "h": 40,
+                "hit": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "missing all v09 art keeps controls readable and operational",
+      "pass": true,
+      "detail": {
+        "missingTextureFallback": true,
+        "selection": true,
+        "navigation": true
+      }
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "failed": 0
+}
