@@ -30,7 +30,21 @@ const sizes = [[1280,720],[1600,900],[1920,1080]];
     await page.goto(url,{waitUntil:'networkidle'});
     await page.getByRole('button',{name:'继续',exact:true}).click();await page.locator('.game').waitFor();
   };
-  const shot = name => page.screenshot({path:path.join(out,'screenshots',name+'.png')});
+  const shot = async name => {
+    // Continuing from the title creates image requests after navigation idle.
+    // Wait for the actual scene, sprites and CSS frames before visual evidence.
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+      const sources=new Set([...document.querySelectorAll('svg image')].map(e=>e.getAttribute('href')));
+      for(const e of document.querySelectorAll('.game,.game *')) {
+        const style=getComputedStyle(e);
+        for(const value of [style.backgroundImage,style.borderImageSource])
+          for(const match of value.matchAll(/url\(["']?(.*?)["']?\)/g)) sources.add(match[1]);
+      }
+      await Promise.all([...sources].filter(Boolean).map(src=>{const img=new Image();img.src=src;return img.decode();}));
+    });
+    return page.screenshot({path:path.join(out,'screenshots',name+'.png')});
+  };
   const waitIdle = async () => {await page.waitForFunction(k=>{const s=JSON.parse(localStorage.getItem(k));return !s.Main&&!s.Sub;},key);await page.locator('.cprog').waitFor({state:'hidden'});};
   const resize = ([width,height]) => page.setViewportSize({width,height});
   const drag = async (a,b) => {await a.scrollIntoViewIfNeeded();let r=await a.boundingBox();await page.mouse.move(r.x+r.width/2,r.y+r.height/2);await page.mouse.down();await b.scrollIntoViewIfNeeded();r=await b.boundingBox();await page.mouse.move(r.x+r.width/2,r.y+r.height/2,{steps:15});await page.mouse.up();};
