@@ -1,0 +1,20 @@
+# 主界面视觉精修 v1.0 素材
+
+2026-10-28。通过内置 image_gen 生成的透明位图；用于本轮已确认的卡片插画方向，不包含游戏文字或数值。
+
+- `resource-focus.png`：2172×724，3 列 ×1 行，依次为锅具箱、工具箱、五金武器箱。保留原始 PNG，2,102,061 字节。
+- 来源：`C:/Users/270KP/.codex/generated_images/01a182d3-c5ed-7de1-8982-006a7d1c165c/exec-51827a05-b210-4fd6-b181-3a19ec8f0a2a.png`。
+- 风格输入：本轮用户已确认的预览，保存在 `doc/策划案/主界面视觉精修 v1.0/assets/已确认视觉预览.png`。原始用户参考保留在 v0.8 策划案中。
+- 映射：`Services/ArtAssets.cs`，三个既有资源 ID 不变；SVG 内层裁切单格，去掉上下透明安全区，不改原 PNG。显示范围由 `tools/measure-art-frames.cjs` 读取 alpha 验证。
+- `hardware.png`：1536×1024，五金店场景，强调右侧窗光、冷暗货架和较大明暗块；不含界面、文字或数值。来源：同目录 `exec-e6864a41-b24b-47da-8ede-9c21966f3515.png`。
+- 其他七个场景、物品和状态继续复用 v0.8 素材；本次不宣称重绘全部素材。
+
+## 最终生成提示词
+
+内置 image_gen，`transparent_background: true`，输入为上述已确认预览：
+
+> Production game art asset, NOT a screen mockup. Create ONE wide 3:1 transparent PNG sprite strip: three equal square cells horizontally, one object composition in EACH cell, centered with 8% transparent safety margins and no overlap across cells. Output ideally 3072x1024. Use attached image ONLY as painting style and subject reference, specifically its three large resource-card illustrations. Do not reproduce any interface, card, border, text, button, number or background. Cell1 LEFT: open weathered chunky wooden crate with a substantial soot-marked metal cooking pot with lid as central object, a few metal parts nestle around it. Cell2 MIDDLE: open rusty hinged metal toolbox with recognisable short wood-handled hatchet and scrap tools, hatchet blade clearly visible. Cell3 RIGHT: open elongated dark weathered storage chest containing one long red-brown curved crowbar and a kitchen knife. Distinct silhouettes. The three objects fill 82–88% of their respective square cells without clipping. Match rustic comic-book hand illustration, bold broken dark ink contours, controlled crosshatching, broad watercolor washes, worn brown wood and muted grey metal, warm upper-right highlights and cool charcoal lower-left shadows. Illustrations must be substantial and readable at small sizes, no excessive fine noisy marks, no 3D-render glossy look, no photorealism. Each object has a subtle soft painted contact shadow directly underneath, rest of entire image truly transparent. No scenery, no paper texture outside objects, no labels, no grid lines, no glyphs. Preserve the three distinct resource identities of the screenshot.
+
+五金店场景：内置 image_gen，`transparent_background: false`，使用相同预览输入。
+
+> Create one production game environment illustration only, landscape 3:2, ideally 1536x1024. Reference image is only for visual style and the hardware shop in its upper central scene. NO game interface, NO frame, NO card, NO text, NO letters, NO numbers, NO watermark. Interior of a long-abandoned small rural Chinese hardware shop. Left half has old wooden shelves with readable silhouettes of a few cans, iron tools, toolboxes, thick wood beams. Worn wooden service counter across the middle distance, walking floor and a little foreground space. Large broken shopfront window and partially open doorway on the RIGHT, through which warm pale sunlight enters at a diagonal and lights the counter edge and dusty floor. Preserve strong sense of depth. Match the reference's hand-drawn ink and painted graphic novel art style, not photorealism and not 3D. Bold deliberate ink outlines, selective restrained crosshatching, BROAD calm painted shadow masses, not all-over micro-detail. Cool desaturated charcoal and slate-blue shadowed interior occupies most of image; warm golden light is localized around right window and counter, DO NOT make entire shop brown or uniformly orange. Strong clear light hierarchy, highlights not blown out; distant shelves legible in shadow. Objects recognizable, no abstract clutter, no jagged edge noise. Empty scene, no people, no creatures. Full bleed, carefully composed to work when cropped to a shallow panoramic landscape UI: meaningful counter and shelves in central horizontal band, bright window on right middle band, not only at extreme top. Entire output is reusable background art, absolutely no UI or lettering.

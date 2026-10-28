@@ -1,0 +1,114 @@
+/* v1.0: illustration-led paper cards. All rules are presentation-only.
+   Keep the v0.9 frame assets, input targets, game state and night tint intact. */
+.wasteland {
+  background: linear-gradient(100deg, #081721d4, #0a1720dc 52%, #0b1720cf), var(--scene-art) center / cover;
+}
+.wasteland .map-row {
+  background-image: var(--iron-texture), linear-gradient(100deg, #0b1823e8, #0d1a24db), var(--scene-art);
+}
+.wasteland .facility-row {
+  background-image: linear-gradient(95deg, #08141bdd, #0a1621a6 65%, #0a172079), var(--scene-art);
+  background-position: center, 62% 57%;
+  background-size: auto, cover;
+}
+.wasteland .section.ground {
+  background-image: linear-gradient(100deg, #0b1821db, #0a17219e), var(--scene-art);
+  background-position: center, center 83%;
+  background-size: auto, cover;
+}
+.wasteland .section.carried {
+  background-image: linear-gradient(100deg, #0c1821ee, #0a1721d4), var(--scene-art);
+  background-position: center, 30% 96%;
+  background-size: auto, cover;
+}
+.wasteland .detail {
+  background-image: linear-gradient(#101a20fc 0%, #101a20f7 72%, #0b1721df), var(--scene-art);
+}
+.wasteland :is(.card, .ocard, .pot-card, .pot-card.in-fire, .fc-food) {
+  background: var(--paper-texture), linear-gradient(115deg, #e7d9b8, #d3c299);
+  background-size: 100% 100%, auto;
+  box-shadow: inset 0 0 14px #72532635, 0 3px 5px #0009;
+}
+.wasteland :is(.res-card, .fac-card) .oc-head { border-bottom: 0; }
+.wasteland :is(.res-card, .fac-card) .oc-body { border-top: 0; }
+.wasteland .oc-art,
+.wasteland .card.item .art { background: transparent; }
+.wasteland .res-card .oc-art {
+  /* The drawing, not a second rectangular panel, sits directly on the paper. */
+  margin: 0 5px;
+  background: radial-gradient(ellipse at 50% 86%, #69513628, transparent 63%);
+}
+.wasteland .res-card .oc-art > .ink-sprite {
+  inset: 3% 3%;
+  width: 94%; height: 94%;
+  transform: none;
+  filter: drop-shadow(0 3px 2px #47392333);
+}
+.wasteland .res-card .oc-art > .ink-sprite.focus-art {
+  inset: 1% 0; width: 100%; height: 98%;
+}
+.wasteland .ocard.dim { filter: saturate(.35); }
+.wasteland .ocard.dim .oc-art { opacity: .87; }
+.wasteland .res-card .oc-head { padding: 7px 9px 3px; }
+.wasteland .res-card .oc-head b { font-size: 19px; }
+.wasteland .res-card .oc-body { padding: 3px 8px 5px; }
+.wasteland .res-card .oc-foot { padding: 0 7px 7px; }
+.wasteland .res-card .oc-foot button:not(:disabled) {
+  color: #211b0e;
+  background: var(--paper-texture), linear-gradient(110deg, #e5be72, #c99e51);
+  background-size: 100% 100%, auto;
+  border-image-source: var(--frame-button);
+}
+.wasteland .res-card .oc-foot button:not(:disabled):hover { filter: brightness(1.07); }
+.wasteland .res-card.selected .oc-head b {
+  margin: 0; padding: 0; background: none; color: #211d16; clip-path: none;
+}
+.wasteland .card.item .art > .ink-sprite { transform: none; }
+.wasteland .card.item .ctitle { border-bottom: 0; }
+.wasteland .card.item .cinfo { color: #332d22; }
+.wasteland .res-card { width: 222px; }
+
+/* 900p: enlarge the compact shelves while reserving room for resource art.
+   Scope to the shelves so recipes, combat and pot layouts retain their rules. */
+@media (min-height: 801px) {
+  :root { --item-h: 100px; --shelf-min: 145px; }
+  .wasteland .section.ground, .wasteland .section.carried { padding: 5px 10px 4px; }
+  .wasteland .section-head { margin-bottom: 4px; }
+  .wasteland .row-scroll .card.item {
+    display: grid; grid-template-columns: 88px minmax(0, 1fr);
+    grid-template-rows: auto 1fr; width: 212px; height: var(--item-h);
+  }
+  .wasteland .row-scroll .card.item .ctitle {
+    grid-column: 2; grid-row: 1; padding: 5px 7px 1px;
+    font-family: var(--title-font); font-size: 16px;
+  }
+  .wasteland .row-scroll .card.item .art { grid-column: 1; grid-row: 1 / 3; min-height: 0; }
+  .wasteland .row-scroll .card.item .art svg {
+    width: 88px; height: 94px; max-height: none;
+  }
+  .wasteland .row-scroll .card.item .cinfo {
+    grid-column: 2; grid-row: 2; padding: 5px 46px 5px 7px; align-self: center;
+  }
+  .wasteland .rows2-inner > .map-row { flex-grow: 34; }
+  .wasteland .rows2-inner > .facility-row { flex-grow: 66; }
+}
+@media (min-height: 1000px) {
+  :root { --item-h: 172px; --shelf-min: 218px; }
+  .wasteland .res-card { width: 252px; }
+  .wasteland .row-scroll .card.item { display: flex; flex-direction: column; width: 164px; }
+  .wasteland .row-scroll .card.item .ctitle { flex: 0 0 auto; }
+  .wasteland .row-scroll .card.item .art { flex: 1 1 auto; }
+  .wasteland .row-scroll .card.item .art svg { width: 100%; height: 100%; }
+  .wasteland .row-scroll .card.item .cinfo { flex: 0 0 40px; min-height: 40px; align-self: stretch; }
+  .wasteland .res-card .oc-head b { font-size: 21px; }
+}
+/* At 720p the two inventory rows remain compact and every arrow stays 40px. */
+@media (max-height: 800px) {
+  .wasteland .res-card { width: 184px; }
+  .wasteland .res-card .oc-head { padding: 4px 7px 1px; }
+  .wasteland .res-card .oc-head b { font-size: 17px; }
+  .wasteland .res-card .oc-body { padding: 2px 7px 3px; }
+  .wasteland .res-card .oc-foot { padding: 0 5px 5px; }
+  .wasteland .row-scroll .card.item { grid-template-columns: 76px minmax(0, 1fr); width: 210px; }
+  .wasteland .row-scroll .card.item .art svg { width: 76px; height: 74px; }
+}

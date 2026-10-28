@@ -9,6 +9,7 @@ public static class ArtAssets
     };
 
     public static string Scene(string id, string? fallback = null) =>
+        id == "hardware" ? "art/v10/hardware.png" :
         Scenes.Contains(id) ? $"art/v08/{id}.png" : fallback ?? $"scenes/{id}.svg";
 
     public static readonly IReadOnlyDictionary<string, (string Sheet, int Cell)> Sprites = BuildSprites();
@@ -46,6 +47,18 @@ public static class ArtAssets
     public static string? Sprite(string key)
     {
         if (!Sprites.TryGetValue(key, out var sprite)) return null;
+        // v1.0: independently composed resource illustrations. The nested
+        // viewport clips exactly one cell; the outer viewBox removes only its
+        // transparent guard band, keeping the complete silhouette undistorted.
+        var focus = key switch
+        {
+            "resource_pot_box" => (Cell: 0, Top: 10, Height: 89),
+            "resource_tool_box" => (Cell: 1, Top: 10, Height: 81),
+            "resource_hardware_weapon_cache" => (Cell: 2, Top: 8, Height: 88),
+            _ => (Cell: -1, Top: 0, Height: 100)
+        };
+        if (focus.Cell >= 0)
+            return $"<svg class=\"ink-sprite focus-art\" data-art=\"{key}\" viewBox=\"0 0 100 {focus.Height}\" aria-hidden=\"true\" focusable=\"false\"><svg width=\"100\" height=\"{focus.Height}\" viewBox=\"0 {focus.Top} 100 {focus.Height}\" style=\"overflow:hidden;width:100%;height:100%;max-width:none;max-height:none\"><image href=\"art/v10/resource-focus.png\" x=\"{-focus.Cell * 100}\" y=\"0\" width=\"300\" height=\"100\" /></svg></svg>";
         // A nested viewport clips one cell even when the outer SVG is letterboxed.
         var x = sprite.Cell % 4 * 100;
         var y = sprite.Cell / 4 * 100;
