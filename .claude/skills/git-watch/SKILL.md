@@ -13,7 +13,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 - `/design-dev` 第 0 节全部约定照旧（数值只来自策划案、不自补；只 add 自己改的路径；不强推；不碰留言板相关文件；压缩包不入库；代理不传 `model`、不用 Fable）。
 - 无人值守：不用 `AskUserQuestion`、`EnterPlanMode`/`ExitPlanMode`、`start_session`；开发与试玩一律用 `Agent`（`general-purpose`，不传 `model`，传 `effort: "high"`：用户 2026-10-27 要求定时任务用 Opus 5.5 高）。
 - 待确认问题的**唯一存放处**：`doc/策划案/系统策划总册 v1.0/00 总则/02 开发方待确认问题.md`（路径固定，不新建别的问题文件）。
-- 状态文件 `.git/claude-git-watch.json`（在 .git 里，不会入库）：`{"lastSeen": "<已处理到的 origin/main 提交>", "runningSince": "<ISO 时间或 null>", "notifiedHead": "<上次因受阻而通知用户时的 origin/main 提交>"}`。
+- 状态文件 `.git/claude-git-watch.json`（在 .git 里，不会入库）：`{"lastSeen": "<已处理到的 origin/main 提交>", "runningSince": "<ISO 时间或 null>", "notifiedHead": "<上次因受阻而通知用户时的 origin/main 提交>", "pendingPlaytest": ["<已上线但还没浏览器试玩的提交短号>"]}`（`pendingPlaytest` 可缺省，见第 4.1 节）。
 - 凡是"通知用户、停下、`lastSeen` 不更新"的情况，同时把 `notifiedHead` 记为当前 origin/main；下一轮 origin/main 仍是这个提交就安静结束、不再重复通知，等用户处理或策划再推新提交。
 
 ## 1 加锁与检测（没事就安静退出）
@@ -67,16 +67,20 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 | 第 2 步用 `AskUserQuestion` 问阻塞空白 | 需要补数值才能做的那部分**不做**，写成待确认问题；其余照做 |
 | 第 2 步 `ExitPlanMode` 等批准 | 计划写好直接开发 |
 | 第 5 步"体验改进、策划案空白 → 列给用户拍板" | 不做，写成待确认问题（写清现状、可选做法、开发方建议） |
-| 第 5 步"两轮复验不过 → 问用户" | **不推送**，本地提交保留，`PushNotification` 告诉用户卡在哪，清锁结束（`lastSeen` 不更新） |
+| 第 5 步"两轮复验不过 → 问用户"（试玩起来了、但修两轮仍不过） | **不推送**，本地提交保留，`PushNotification` 告诉用户卡在哪，清锁结束（`lastSeen` 不更新） |
 | 第 7 步"用 wrap_up 问现在推送吗" | 满足推送条件就推（第 5 节） |
 | 开发代理汇报里的"待确认" | 写成待确认问题 |
 
 ### 4.1 无人值守试玩
 
-`preview_start`/`preview_stop` 已在本机 `.claude/settings.local.json` 放行（2026-10-27），定时回合里不用人点确认就能起服务器。
+`preview_start`/`preview_stop` 虽已在本机 `.claude/settings.local.json` 放行，但 2026-10-27、10-28 两次定时运行实测仍被拒（应用自己要人点确认），无人值守回合里基本起不来。用户 2026-10-28 定：**起不来就先推送上线，之后再试玩修改**，这段时间线上有 bug 可以接受。
 
-- 试玩固定用 `preview_start {name:"web-fb"}`（5190），开发代理手测用 `web`（5177）/`web-alt`（5180），两者别抢端口。试玩代理起不来时本会话自己试一次。
-- 仍被拒（返回"declined"）或起不来 → 不重试、不推送；本地提交保留，文档同步可以先做好提交，`PushNotification`："<短号> 已在本地实现、测试全绿，试玩服务器起不来未复验，未推送"，清锁结束，`notifiedHead` 记当前 origin/main，`lastSeen` 不更新。
+- 试玩固定用 `preview_start {name:"web-fb"}`（5190），开发代理手测用 `web`（5177）/`web-alt`（5180），两者别抢端口。本会话先试一次 `preview_start web-fb`：起来了就照常起试玩代理复验（让它复用这台服务器、别自己 preview_start）。
+- 被拒（返回"declined"）或起不来 → 不重试，**照常推送**（第 5 节其余条件仍要满足）；开发代理改用静态截图自测（HtmlRenderer 渲染真实组件 + 无头 Chrome 截三档分辨率，做法见开发计划 v0.7 与提交 2b7eeb4 的说明），交互项尽量写成内核测试。然后：
+  - 待确认文档里相关 Q 的"处理结果"写"已上线，浏览器试玩待做"，提交说明加一行 `试玩：未做（预览服务器起不来），待用户在场时补`。
+  - 状态文件加 `"pendingPlaytest": ["<本轮实现提交短号>", …]`（追加，不覆盖已有的），`lastSeen` 照常更新。
+  - `PushNotification`："策划 <短号> 已处理并上线，未经浏览器试玩（服务器起不来），N 项待策划确认"。
+- **补试玩**：用户在场的会话（手动 `/git-watch`、或用户说"试玩一下"）开头先看状态文件 `pendingPlaytest`，非空就本会话 `preview_start web-fb`，起试玩代理走这些提交涉及的路线 → bug 交开发代理修（一次提交）→ 复验 → 推送 → 待确认文档"处理结果"改成"试玩复验通过" → 清空 `pendingPlaytest`。本地浏览器可能缓存 `?v=dev` 的旧 js/css，试玩前强制刷新（线上 pages.yml 会换成提交号，不受影响）；服务器要 `preview_stop` 再 start 才加载新版本。
 - 试玩手法：`?dev=1` 后菜单里有开发入口（测试箱含烤肉/水煮肉、放各种敌人、普通活性物质、跳日期等）；要触发暂停层，可在 `localStorage['survival.save.v1']` 里把 `Stats.Energy` 改到略高于低体力线再开行动；动存档前先另存一份到 `qa.backup.*`。批量连点时注意战斗结束后界面切回地块，同一坐标可能点到敌踪卡误接敌。
 - 试玩只记录现象：违反策划案的交开发代理修（第 5 步规则），体验问题写成待确认问题。
 
@@ -84,7 +88,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 
 ## 5 推送条件与提交说明
 
-**推送条件（全部满足）**：`dotnet build web/Survival.sln` 0 错误；`dotnet test web/Survival.sln` 全绿；改了玩法或界面时试玩复验通过（第 4.1 节，起不来就不推）；文档已按 `/design-dev` 第 6 步同步。只改文档的跳过前三条。
+**推送条件（全部满足）**：`dotnet build web/Survival.sln` 0 错误；`dotnet test web/Survival.sln` 全绿；改了玩法或界面时试玩复验通过（第 4.1 节；预览服务器起不来时这条豁免，先推、记 `pendingPlaytest`，之后补试玩）；文档已按 `/design-dev` 第 6 步同步。只改文档的跳过前三条。
 
 **提交说明**：本轮最后一个提交（通常是文档同步那次）的说明末尾、`Co-Authored-By` 之前必须有这一段：
 
