@@ -1,0 +1,59 @@
+{
+  "url": "https://etsevenday.github.io/shizheshengcun/?release=8661b6f",
+  "browser": "155.0.8059.40",
+  "deviceScaleFactor": 1,
+  "results": [
+    {
+      "name": "eight scenes, missing image, cache reload and night",
+      "pass": true,
+      "detail": [
+        {
+          "id": "camp",
+          "bytes": 3315976,
+          "status": 200
+        },
+        {
+          "id": "field",
+          "bytes": 3596736,
+          "status": 200
+        },
+        {
+          "id": "woods",
+          "bytes": 3426571,
+          "status": 200
+        },
+        {
+          "id": "stream",
+          "bytes": 3468318,
+          "status": 200
+        },
+        {
+          "id": "village",
+          "bytes": 3162415,
+          "status": 200
+        },
+        {
+          "id": "hardware",
+          "bytes": 2896092,
+          "status": 200
+        },
+        {
+          "id": "scrapyard",
+          "bytes": 3238301,
+          "status": 200
+        },
+        {
+          "id": "clinic",
+          "bytes": 2786774,
+          "status": 200
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "firstTitleMs": 17945,
+  "appBuild": "2026-10-28 · 8661b6f",
+  "cachedTitleMs": 183,
+  "failed": 0
+}
