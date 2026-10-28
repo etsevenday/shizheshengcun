@@ -46,54 +46,40 @@
         <Hud />
 
         @{
-            // 顶栏面板（地图/制作/休息/日志/目标/提示/对话记录/说明）盖住中部上方时，地面卡挪到下方与随身卡并排：
-            // 四区同屏延续到这些一级页（S14 §1.3、§13；试玩修复 B3），手工制作仍能把地面卡拖进材料槽
+            // 顶栏面板（地图/制作/休息/日志/目标/提示/对话记录/说明）只覆盖①②两行，③当前地面、④随身不动（S14 §18.1：
+            // 导航面板不得重新分配四行高度）；手工制作仍能把地面卡拖进材料槽
             var centerPanel = GameSession.IsTopPanel(G.Panel);
-            var craftOpen = centerPanel;
         }
-        @* 四区同屏（S14 §1.3）：地图行、设施行、当前地面、随身物品按中部可用高度分配，各区溢出在区内滚动；
-           只有低于基准分辨率的更小窗口才由 .center-scroll 整体纵滚兜底。 *@
+        @* 固定四行（S14 §18.1）：中部净高均分四份——①地图/场景 ②设施/资源 ③当前地面 ④随身；选卡、展开锅、悬停、开面板、对白、
+           战斗都不改行高，行内放不下的在行内滚动（随身五张卡不滚动）。对白/战斗/面板只占①②合并区域。 *@
         <section class="center" aria-label="当前地点">
-            <div class="center-scroll quad @(centerPanel ? "locked" : "") @(craftOpen ? "craft" : "") @(G.Panel == "craft" ? "craft-panel" : "") @(battleUi ? "battle" : "")" data-wheel="y">
-            <div class="center-top">
-                <div class="rows2">
+            <div class="center-scroll four @(centerPanel ? "locked" : "") @(G.Panel == "craft" ? "craft-panel" : "") @(battleUi ? "battle" : "")">
+                <div class="rows2" data-row="1-2">
                     <div class="rows2-inner" inert="@dlgLock">
                         @* 战斗/敌踪覆盖层替换地块栏两行（组件替换而非叠加，拖拽不会收集到隐藏的落点） *@
                         @if (battleUi) { <BattleOverlay /> } else { <LocationStrip /> }
                     </div>
                     @* 人物对话层覆盖地图与设施两行的完整区域（S14 §10.1），地面/随身与左右栏保持可见 *@
                     <DialogueLayer />
+                    @if (centerPanel)
+                    {
+                        <div class="panel-host" inert="@dlgLock">
+                            @switch (G.Panel)
+                            {
+                                case "map": <MapOverlay Part="center" /> break;
+                                case "craft": <CraftOverlay Part="center" /> break;
+                                case "rest": <RestOverlay Part="center" /> break;
+                                case "log": <LogOverlay /> break;
+                                case "goals": <GoalsOverlay /> break;
+                                case "tips": <TipsOverlay /> break;
+                                case "help": <HelpOverlay /> break;
+                                case "dialogs": <DialogueLogOverlay /> break;
+                            }
+                        </div>
+                    }
                 </div>
-                @if (!craftOpen) { <ItemShelf Owner="@s.CurrentLocation" Title="当前地面" Sub="@e.LocName(s.CurrentLocation)" /> }
-                @* 二级面板只替换这一块，周围的状态栏、随身物品与右侧详情不动 *@
-                @if (centerPanel)
-                {
-                    <div class="panel-host" inert="@dlgLock">
-                        @switch (G.Panel)
-                        {
-                            case "map": <MapOverlay Part="center" /> break;
-                            case "craft": <CraftOverlay Part="center" /> break;
-                            case "rest": <RestOverlay Part="center" /> break;
-                            case "log": <LogOverlay /> break;
-                            case "goals": <GoalsOverlay /> break;
-                            case "tips": <TipsOverlay /> break;
-                            case "help": <HelpOverlay /> break;
-                            case "dialogs": <DialogueLogOverlay /> break;
-                        }
-                    </div>
-                }
-            </div>
-            @if (craftOpen)
-            {
-                <div class="shelves-split">
-                    <ItemShelf Owner="@s.CurrentLocation" Title="当前地面" Sub="@e.LocName(s.CurrentLocation)" />
-                    <ItemShelf Owner="@ItemInstance.Carried" Title="随身物品" />
-                </div>
-            }
-            else
-            {
+                <ItemShelf Owner="@s.CurrentLocation" Title="当前地面" Sub="@e.LocName(s.CurrentLocation)" />
                 <ItemShelf Owner="@ItemInstance.Carried" Title="随身物品" />
-            }
             </div>
 
             @if (pausedLayer || subRunning)
@@ -117,10 +103,13 @@
         @* 就近操作浮窗（S14 §14.1）：渲染在卡片之外（fixed 定位锚在卡旁），点击不会冒泡成卡片选择/使用/拖拽 *@
         <div class="apop-host" inert="@dlgLock">
             <ActionPops />
+            @* 选卡操作（S14 §18.3）：锚定在所选卡片下方的紧凑浮窗，脱离文档流，不撑高所在行；同屏只有一个 *@
+            <CardPop />
             @* 点火工具菜单：锚定在火堆卡“点燃”按钮旁的浮窗，不在卡内撑高设施行（试玩修复 B1） *@
             @if (G.IgniteMenuOpen && !battleUi && e.Location(s.CurrentLocation).HasFire && !s.Locations[s.CurrentLocation].Facility.FireLit) { <IgniteMenu /> }
         </div>
 
+        @if (G.OverflowPending && G.Panel != "menu") { <OverflowOverlay /> }
         @if (G.Panel == "menu") { <MenuOverlay /> }
         @if (G.BattleMenuOpen && battleUi) { <MenuOverlay Battle="true" /> }
         <StatusPop />

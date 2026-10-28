@@ -14,6 +14,9 @@
     var grams = items.Sum(i => e.ItemGrams(s, i));
     var busy = e.IsBusy(s) || G.Running;
     var from = carried ? "随身" : $"{e.LocName(Owner)}地面";
+    // 随身五张根物品卡（S06 §8）：固定五个可见位置，已用卡数与内核同一计数；同物品多批或超堆叠的卡标“占N格”并占相应宽度
+    var used = carried ? e.RootCardCount(s) : 0;
+    var slots = carried ? Math.Max(e.MaxRootCards, used) : 0;
 }
 
 <div class="panel section @(carried ? "carried" : "ground")" inert="@G.DialogueLocked">
@@ -21,11 +24,12 @@
     <div class="section-head" title="选中卡片在卡下使用或转移 · 卡角箭头转移1件 · 拖动整理或投放 · 不耗时">
         <h2>@Title@if (!string.IsNullOrEmpty(Sub)) {<small> · @Sub</small>}</h2>
         <span>
-            @if (carried) { @($"{Ui.Kg(grams)}公斤 · {(grams > e.Config.Carry.SoftGrams ? "超重" : "轻装")} · ") }
-            @(kinds)种
+            @if (carried) { @($"{Ui.Kg(grams)}公斤 · {(grams > e.Config.Carry.SoftGrams ? "超重" : "轻装")} · {used}/{e.MaxRootCards}张卡") }
+            else { @($"{kinds}种") }
         </span>
     </div>
-    <div class="row-scroll" data-wheel="x" data-drop="@($"zone:{Owner}")" data-drop-level="zone">
+    <div class="row-scroll @(carried ? "slots5" : "")" data-wheel="@(carried ? null : "x")" data-drop="@($"zone:{Owner}")" data-drop-level="zone"
+         style="@(carried ? $"--slots:{slots}" : null)">
         @foreach (var key in order)
         {
             var parts = key.Split('|');
@@ -41,16 +45,17 @@
                 var batches = list.Select(i => i.ExpiresAt).Distinct().Count();
                 var movable = list.Any(i => i.ReservedBy == null);
                 var gSel = sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner;
-                <div @key="@("g:" + id)" class="card-col @(gSel ? "open" : "")">
-                <div data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drop="@($"card:{key}")" data-drop-level="card"
+                var span = carried ? Math.Max(1, e.RootCardsOf(s, list.Select(i => i.InstanceId))) : 1;
+                <div @key="@("g:" + id)" class="card-col @(gSel ? "open" : "")" style="@(span > 1 ? $"grid-column:span {span}" : null)">
+                <div id="@(gSel ? "card-sel" : null)" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drop="@($"card:{key}")" data-drop-level="card"
                      class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel ? "selected" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "")"
                      role="button" tabindex="0" @onclick="() => SelectGroup(id)" @onkeydown="ev => OnCardKey(ev, () => SelectGroup(id))" title="@e.Item(id).Desc">
                     <div class="ctitle"><span>@e.ItemName(id)</span><span class="qty">×@total</span></div>
                     <div class="art">@Icons.Markup(id)</div>
                     <div class="cinfo">@(allSpoiled ? "已腐败" : Ui.ItemLine(e, s, head))@(batches > 1 ? $" · {batches}批" : "")</div>
+                    @if (span > 1) { <span class="slot-span" title="@($"同物品{batches}批/超过堆叠上限，占{span}张随身卡")">占@(span)格</span> }
                     <TransferArrow Owner="@Owner" ItemId="@id" Enabled="@(movable && !busy)" />
                 </div>
-                @if (gSel) { <CardActions /> }
                 </div>
             }
             else
@@ -70,7 +75,7 @@
                 }
                 var tSel = sel.Kind == SelectionKind.Tool && sel.InstanceId == inst;
                 <div @key="@("t:" + inst)" class="card-col @(tSel ? "open" : "")">
-                <div data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drop="@($"card:{key}")" data-drop-level="card"
+                <div id="@(tSel ? "card-sel" : null)" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drop="@($"card:{key}")" data-drop-level="card"
                      class="card item @(broken ? "broken" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(tSel ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
                      role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
                     <div class="ctitle"><span>@e.ItemName(t.ItemId)#@t.InstanceId</span></div>
@@ -78,23 +83,22 @@
                     <div class="cinfo">@Ui.ItemLine(e, s, t)</div>
                     <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !locked && !busy)" />
                 </div>
-                @if (tSel) { <CardActions /> }
                 </div>
             }
         }
-        @if (items.Count == 0)
+        @if (carried)
+        {
+            @* 空位轻量表示（S06 §8：固定五个可见位置，无滚动、无分页） *@
+            for (var k = used; k < e.MaxRootCards; k++)
+            {
+                <div @key="@("empty" + k)" class="slot-free" aria-label="空随身卡位" title="空随身卡位：把地面物品卡拖到这里，或选中地面卡片后拾取">空位</div>
+            }
+        }
+        @if (items.Count == 0 && !carried)
         {
             <div class="empty-zone">
-                @if (carried)
-                {
-                    <strong>没有携带物品</strong>
-                    <span>把地面物品卡拖到这里，或选中地面卡片后在卡下拾取</span>
-                }
-                else
-                {
-                    <strong>这里暂时没有散落物品</strong>
-                    <span>搜集、清理与探索的产物会留在这里</span>
-                }
+                <strong>这里暂时没有散落物品</strong>
+                <span>搜集、清理与探索的产物会留在这里</span>
             </div>
         }
     </div>

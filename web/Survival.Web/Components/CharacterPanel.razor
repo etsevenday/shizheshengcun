@@ -1,7 +1,7 @@
 @inherits GameComponent
 
-@* 右栏“人物”一级页（S14 §12.1、S12 §7）：基础属性紧凑简表（名称、当前/上限、短标记），点任一属性在右栏原位打开二级说明页，Esc 返回一级；
-   熟练度与词条只显示摘要 + 详情入口。异常状态列表已移到左栏属性下方的图标（S14 §12.2）；携带重量/负重规则板块已删除
+@* 右栏“人物”一级页（S14 §18.2 取代 §12.1 属性简表、S12 §7）：常态只放熟练度、词条两块，各自展开/收起；基础属性数值只在左栏，
+   点左栏属性在右栏原位打开二级说明页（AttrDetail），Esc 返回一级。异常状态列表已移到左栏属性下方的图标（S14 §12.2）；携带重量/负重规则板块已删除
    （左栏携重摘要、物品自身重量与负重校验保留，S06 §7）。数据与左栏同源（Stats、Body、SkillViews），查看不执行任何玩法。 *@
 @{
     var s = G.S;
@@ -27,53 +27,55 @@ else
             <span class="muted">@(day ? "白昼" : "夜间") · @(e.LocName(s.CurrentLocation))@(e.IsSheltered(s, s.CurrentLocation) ? "（遮蔽）" : "（露天）")</span>
         </div>
 
-        <div class="attr-table" role="list" aria-label="基础属性">
-            @foreach (var id in Stats.All)
+        @* S14 §18.2：右栏人物常态只放熟练度与词条两块，各自展开/收起（折叠后标题与摘要仍可见）；基础属性数值只在左栏，
+           点左栏属性在右栏原位看说明（AttrDetail）。 *@
+        <section class="char-fold @(_skillsOpen ? "open" : "")" aria-label="熟练度">
+            <button type="button" class="fold-head" aria-expanded="@_skillsOpen" @onclick="() => _skillsOpen = !_skillsOpen">
+                <span class="fold-name">熟练度</span>
+                <span class="fold-sum">@(skills.Count)项@(top != null && top.Level > 0 ? $" · 最高{top.Name}{top.Level}级" : " · 均为0级")</span>
+                <span class="fold-arrow" aria-hidden="true">@(_skillsOpen ? "▾" : "▸")</span>
+            </button>
+            @if (_skillsOpen)
             {
-                var v = s.Stats.Get(id);
-                var th = cfg.Thresholds[GameEngine.StatKey(id)];
-                var below = th.IsBelow(v);
-                var zero = v <= 0 && id != StatId.Health;
-                var cls = zero || (id == StatId.Health && below) ? "critical" : below ? "warning" : "";
-                var key = "stat:" + GameEngine.StatKey(id);
-                <button type="button" role="listitem" class="attr-row @cls" @onclick="() => G.OpenCharPage(key)" title="@($"查看{GameEngine.StatName(id)}的作用、阈值与效果")">
-                    <span class="ar-name">@GameEngine.StatName(id)</span>
-                    <span class="ar-val">@Ui.N(v)<small>/@Ui.T(s.Stats.Max(id))</small></span>
-                    <span class="ar-tag">@(zero ? "归零" : below ? "偏低" : "")</span>
-                    <span class="ar-go" aria-hidden="true">›</span>
-                    <span class="ar-bar track"><i style="width:@Ui.Bar(v, s.Stats.Max(id))%"></i></span>
-                </button>
+                <div class="skill-list">
+                    @foreach (var sk in skills)
+                    {
+                        <div class="skill-row">
+                            <b>@sk.Name</b><span>@(sk.Level)级</span>
+                            <div class="track thin"><i style="width:@Ui.Bar(sk.Xp, sk.NextXp)%"></i></div>
+                            <small class="muted">经验@(sk.Xp)/@(sk.NextXp)</small>
+                        </div>
+                    }
+                </div>
             }
-            <button type="button" role="listitem" class="attr-row @(body.Immunity < 40 ? "warning" : "")" @onclick='() => G.OpenCharPage("immunity")' title="查看免疫力的作用与当前变化">
-                <span class="ar-name">免疫力</span>
-                <span class="ar-val">@Ui.N(body.Immunity)<small>/@Ui.T(cfg.Immunity.Max)</small></span>
-                <span class="ar-tag">@(body.Immunity < 40 ? "偏低" : body.Immunity >= cfg.Infection.NaturalCure.ConsecutiveImmunityAtLeast ? "高免疫" : "")</span>
-                <span class="ar-go" aria-hidden="true">›</span>
-                <span class="ar-bar track"><i style="width:@Ui.Bar(body.Immunity, cfg.Immunity.Max)%"></i></span>
+        </section>
+        <section class="char-fold @(_traitsOpen ? "open" : "")" aria-label="词条">
+            <button type="button" class="fold-head" aria-expanded="@_traitsOpen" @onclick="() => _traitsOpen = !_traitsOpen">
+                <span class="fold-name">词条</span>
+                <span class="fold-sum">@(s.Traits.Count == 0 ? "暂无" : $"{s.Traits.Count}条")</span>
+                <span class="fold-arrow" aria-hidden="true">@(_traitsOpen ? "▾" : "▸")</span>
             </button>
-            <button type="button" role="listitem" class="attr-row @(body.Infected ? (body.VirusLoad >= 50 ? "critical" : "warning") : "")" @onclick='() => G.OpenCharPage("virus")' title="查看病毒的作用与当前变化">
-                <span class="ar-name">病毒</span>
-                <span class="ar-val">@(body.Infected ? Ui.N(body.VirusLoad) : "未感染")@if (body.Infected) {<small>/@Ui.T(cfg.Infection.ZombificationAtLoad)</small>}</span>
-                <span class="ar-tag">@(body.Infected ? "已感染" : "")</span>
-                <span class="ar-go" aria-hidden="true">›</span>
-                <span class="ar-bar track"><i style="width:@Ui.Bar(body.VirusLoad, cfg.Infection.ZombificationAtLoad)%"></i></span>
-            </button>
-        </div>
-
-        <div class="char-sum">
-            <button type="button" class="sum-row" @onclick='() => G.OpenCharPage("skills")' title="查看8项熟练度的等级与经验">
-                <span class="sum-name">熟练度</span>
-                <span class="sum-val">@(skills.Count)项@(top != null && top.Level > 0 ? $" · 最高{top.Name}{top.Level}级" : " · 均为0级")</span>
-                <span class="ar-go" aria-hidden="true">详情 ›</span>
-            </button>
-            <button type="button" class="sum-row" @onclick='() => G.OpenCharPage("traits")' title="查看人物词条">
-                <span class="sum-name">词条</span>
-                <span class="sum-val">@(s.Traits.Count == 0 ? "暂无" : string.Join("、", s.Traits.Select(t => t.Label)))</span>
-                <span class="ar-go" aria-hidden="true">详情 ›</span>
-            </button>
-        </div>
+            @if (_traitsOpen)
+            {
+                @if (s.Traits.Count == 0)
+                {
+                    <div class="risk none">还没有词条。</div>
+                }
+                @foreach (var t in s.Traits)
+                {
+                    <div class="trait-row q-@t.Quality" title="直接攻击伤害平加（在技能/招式/站位/暴击乘算后、扣护甲前；推挡与出血不加）">
+                        <b>@t.Label</b><small>@(t.Quality == "green" ? "绿色" : t.Quality)</small>
+                    </div>
+                }
+            }
+        </section>
     </div>
     <div class="detail-foot">
-        <div class="under">点属性看说明 · 查看不耗时；状态图标在左栏</div>
+        <div class="under">基础属性在左栏，点左栏属性看说明 · 查看不耗时</div>
     </div>
+}
+
+@code {
+    private bool _skillsOpen = true;
+    private bool _traitsOpen = true;
 }

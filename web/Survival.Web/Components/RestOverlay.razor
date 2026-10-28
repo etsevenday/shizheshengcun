@@ -65,12 +65,15 @@
                     }
                 </div>
             </div>
-            <div class="lines" style="max-width:560px">
+            @* Q21（S14 §19）：恢复条件等教学短文移进悬浮说明，一级只留当前条件与实际风险（精神偏低减半） *@
+            <div class="lines" style="max-width:560px"
+                 title="@($"健康自然恢复：{(sheltered ? $"饱食与水分≥{Ui.T(cfg.HealthRules.RecoveryMinSatiety)}且精神≥{Ui.T(cfg.HealthRules.RecoveryMinMorale)}时每小时{Ui.SignedT(cfg.HealthRules.ShelteredRestRecoveryPerHour)}" : "露天不恢复")}。期间仍消耗饱食、水分与火堆燃料，不会因满值自动结束；越过低值阈值时会暂停，可补给后继续。完整规则见系统说明。")">
                 <div><span>当前条件</span><b>@(sheltered ? "遮蔽" : "露天")@(fac.BedBuilt && sheltered ? $"，床垫：睡眠体力{Ui.SignedT(cfg.FacilityEffects.BedExtraSleepEnergyPerHour)}/小时" : "")</b></div>
-                <div><span>精神</span><b class="@(lowMorale ? "warn-text" : "")">@Ui.N(s.Stats.Morale)@(lowMorale ? $"（低于{Ui.T(cfg.Thresholds["morale"].Value)}，体力恢复减半）" : "")</b></div>
-                <div><span>健康自然恢复</span><b>@(sheltered ? $"饱食与水分≥{Ui.T(cfg.HealthRules.RecoveryMinSatiety)}且精神≥{Ui.T(cfg.HealthRules.RecoveryMinMorale)}时每小时{Ui.SignedT(cfg.HealthRules.ShelteredRestRecoveryPerHour)}" : "露天不恢复")</b></div>
+                @if (lowMorale)
+                {
+                    <div><span>精神</span><b class="warn-text">@Ui.N(s.Stats.Morale)（低于@(Ui.T(cfg.Thresholds["morale"].Value))，体力恢复减半）</b></div>
+                }
             </div>
-            <div class="tiny muted">期间仍消耗饱食、水分与火堆燃料，不会因满值自动结束；越过低值阈值时会暂停，可补给后继续。</div>
         </div>
         @* 就近执行（S14 §14.1）：开始按钮紧挨所选时长卡，右栏只作可选详细预测；仍是一次确认 *@
         @{

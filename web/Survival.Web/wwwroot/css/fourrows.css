@@ -1,0 +1,124 @@
+/* S14 修订1.10 §18：固定四行等高、选卡紧凑浮窗、约80%图片的物品卡、随身五个固定卡位（策划提交 5493951，开发计划 v0.8 M73）。
+   只改尺寸与排布：纸面/铁框/插画/光影等视觉仍由 wasteland.css、materials.css、illustration.css 提供。本文件最后加载。 */
+
+/* ───── 四行：中部净高均分四份（①地图/场景 ②设施/资源 ③当前地面 ④随身），误差只来自像素取整 ───── */
+.center-scroll.four {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: var(--gap);
+  overflow: hidden;
+  padding-right: 0;
+}
+.center-scroll.four > * { min-height: 0; min-width: 0; height: auto; max-height: none; }
+/* ①② 合并区：地块两行、对白、战斗、顶栏面板都只在这里，③④ 不位移、不缩高 */
+.center-scroll.four > .rows2 { grid-row: 1 / span 2; position: relative; display: block; }
+.center-scroll.four > .rows2 > .rows2-inner {
+  position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr)); gap: var(--gap); min-height: 0;
+}
+.center-scroll.four .rows2-inner > .map-row,
+.center-scroll.four .rows2-inner > .facility-row { min-height: 0; height: auto; max-height: none; overflow: hidden; }
+.center-scroll.four .rows2-inner > .battle-overlay { grid-row: 1 / span 2; min-height: 0; overflow: hidden; }
+.center-scroll.four .panel-host { position: absolute; inset: 0; z-index: 30; }
+.center-scroll.four > .section.ground { grid-row: 3; }
+.center-scroll.four > .section.carried { grid-row: 4; }
+.center-scroll.four > .section { overflow: hidden; padding: 4px 10px 6px; }
+.center-scroll.four > .section .section-head { margin-bottom: 4px; padding-bottom: 2px; }
+.center-scroll.four > .section .section-head h2 { font-size: 16px; }
+.center-scroll.four .fac-scroll { overflow: auto; }
+.center-scroll.four .map-adjacent { overflow: auto; }
+
+/* ───── ③④ 物品行：卡片撑满行高，行内横滚（地面）；随身固定五个卡位、不滚动 ───── */
+.center-scroll.four .row-scroll { align-items: stretch; min-height: 0; padding-bottom: 2px; }
+.center-scroll.four .row-scroll > .card-col { height: 100%; min-height: 0; flex: 0 0 auto; }
+.center-scroll.four .card-col.open { width: auto; }
+.center-scroll.four .section.carried .row-scroll.slots5 {
+  display: grid; grid-template-columns: repeat(var(--slots, 5), minmax(0, 1fr)); grid-auto-rows: 100%;
+  gap: 8px; overflow: hidden;
+}
+.center-scroll.four .section.carried .row-scroll.slots5 > * { min-width: 0; height: 100%; }
+.center-scroll.four .section.carried .row-scroll.slots5 > .card-col > .card { width: 100%; }
+.slot-free {
+  display: flex; align-items: center; justify-content: center; height: 100%; min-height: 0;
+  border: 1px dashed #b4a27a66; border-radius: 4px; color: #bfb79c88; font-size: 13px; letter-spacing: 2px; user-select: none;
+}
+
+/* ───── 物品卡：图片区约占卡面 80%，下方约 20% 写短名称；数量/状态做带衬底的角标，不压主图主体（S14 §18.2） ───── */
+.wasteland .center-scroll.four .row-scroll .card.item {
+  display: grid; position: relative;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 4fr) minmax(0, 1fr);
+  grid-template-areas: "art" "name";
+  height: 100%; width: auto; aspect-ratio: 1 / 1; min-width: 92px; max-width: 240px;
+}
+.wasteland .center-scroll.four .row-scroll .card.item .art {
+  grid-area: art; grid-column: auto; grid-row: auto; min-height: 0; padding: 4px 4px 0; overflow: hidden;
+}
+.wasteland .center-scroll.four .row-scroll .card.item .art svg,
+.wasteland .center-scroll.four .row-scroll .card.item .art img,
+.wasteland .center-scroll.four .row-scroll .card.item .art > .ink-sprite {
+  width: 100%; height: 100%; max-height: none; object-fit: contain;
+}
+.wasteland .center-scroll.four .row-scroll .card.item .ctitle {
+  grid-area: name; grid-column: auto; grid-row: auto; min-height: 0;
+  display: flex; align-items: center; justify-content: flex-start;
+  padding: 0 38px 0 7px; font-size: 14px; line-height: 1.1; border: 0;
+}
+.wasteland .center-scroll.four .row-scroll .card.item .ctitle > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wasteland .center-scroll.four .row-scroll .card.item .ctitle .qty {
+  position: absolute; top: 4px; right: 4px; z-index: 2; font-size: 13px; padding: 1px 6px;
+  background: #f2e6c3f0; border: 1px solid #88784f; box-shadow: 1px 1px #655837;
+}
+.wasteland .center-scroll.four .row-scroll .card.item .cinfo {
+  grid-area: art; grid-column: auto; grid-row: auto; align-self: end; justify-self: start; z-index: 2;
+  max-width: calc(100% - 8px); margin: 0 4px 3px; padding: 1px 6px; font-size: 12px; line-height: 1.35;
+  background: #efe6cbe8; border-radius: 2px; box-shadow: 0 1px 2px #0004;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.wasteland .center-scroll.four .row-scroll .card.item .card-arrow { right: 4px; bottom: 3px; }
+.slot-span {
+  position: absolute; top: 4px; left: 4px; z-index: 2; font-size: 12px; padding: 1px 5px;
+  background: #3a3426e6; color: #f2e6c3; border-radius: 2px;
+}
+/* 锅卡在物品行：撑满行高，内容多时卡内纵滚（真实水量/食材/槽位优先，不机械套80%） */
+.center-scroll.four .row-scroll > .pot-card { height: 100%; overflow-y: auto; overflow-x: hidden; flex: 0 0 auto; }
+.center-scroll.four .section.carried .row-scroll.slots5 > .pot-card { width: auto; }
+
+/* ───── 选卡紧凑浮窗（S14 §18.3）：卡下方，脱离文档流；宽不超过中部约 1/3，高不超过约两行，内容多时窗内滚动 ───── */
+.apop.card-pop { width: min(360px, 34vw); max-height: min(46vh, 420px); overflow-y: auto; padding: 8px 10px; }
+.apop.card-pop:not(:has(.tbar)) { display: none; }
+.apop.card-pop .apop-head { position: absolute; top: 4px; right: 4px; z-index: 3; }
+.apop.card-pop .apop-title, .apop.card-pop .apop-art { display: none; }
+.apop.card-pop .apop-x { width: 32px; height: 32px; font-size: 18px; }
+.apop.card-pop .apop-body { gap: 0; }
+.apop.card-pop .tbar { border: 0; box-shadow: none; background: transparent; padding: 0; gap: 5px; }
+.apop.card-pop .ca-head { padding-right: 38px; }
+
+/* ───── 右栏人物：熟练度/词条两块各自折叠（S14 §18.2） ───── */
+.char-fold { border: 1px solid #82724c66; border-radius: 4px; margin-top: 8px; }
+.char-fold .fold-head {
+  display: flex; align-items: center; gap: 8px; width: 100%; min-height: 40px; padding: 6px 10px;
+  background: transparent; border: 0; text-align: left;
+}
+.char-fold .fold-name { font-weight: 600; }
+.char-fold .fold-sum { flex: 1 1 auto; min-width: 0; color: var(--muted); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.char-fold .skill-list, .char-fold .trait-row, .char-fold .risk { margin: 0 10px 8px; }
+
+/* ───── 区域地图节点方位徽标（Q22） ───── */
+.map-dir circle { filter: drop-shadow(0 1px 2px #0008); }
+
+/* ───── 随身超额整理窗（S06 §8） ───── */
+.overflow-layer { position: fixed; inset: 0; z-index: 80; background: #050b0dcc; display: flex; align-items: center; justify-content: center; }
+.overflow-box { width: min(620px, 92vw); max-height: 86vh; display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; }
+.ov-head h2 { margin: 0 0 4px; font-size: 20px; }
+.ov-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.ov-item { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+.ov-item.on { border-color: var(--accent); }
+.ov-item input { width: 20px; height: 20px; }
+.ov-ico { width: 36px; height: 36px; flex: 0 0 36px; }
+.ov-ico svg, .ov-ico img { width: 100%; height: 100%; }
+.ov-text { display: flex; flex-direction: column; min-width: 0; }
+.ov-text small { color: var(--muted); }
+.ov-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ov-foot .primary { width: auto; padding: 10px 18px; }

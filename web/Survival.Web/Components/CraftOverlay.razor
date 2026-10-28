@@ -68,8 +68,8 @@
                 @if (proc != null)
                 {
                     <div class="panel craft-mats">
-                        <div class="eyebrow">处理说明 · 自动加工</div>
-                        <p class="small muted" style="margin:4px 0 8px">@ProcHint(proc)</p>
+                        @* Q21：处理说明与“不占角色时间”教学短文移进悬浮说明 *@
+                        <div class="eyebrow" title="@($"{ProcHint(proc)} 不额外占角色主行动，仍需世界时间推进：放进去后角色可以去探索、清理、休息或睡眠，世界时间推进时火堆自动加工；浏览与离线不推进。")">处理说明 · 自动加工 ⓘ</div>
                         <div class="steps">
                             @foreach (var (icon, name, note) in Steps(proc))
                             {
@@ -80,14 +80,12 @@
                             <button class="secondary" disabled="@(!lc.HasFire)" title="@(lc.HasFire ? "关闭手工制作，在地块栏第二行选中火堆" : $"{lc.Name}没有火堆，回到营地才能加工")"
                                     @onclick="G.SelectFire">查看火堆 ▸</button>
                         </div>
-                        <div class="tiny muted" style="margin-top:6px">不占角色时间：放进去后角色可以去探索、清理、休息或睡眠，世界时间推进时火堆自动加工；浏览与离线不推进。</div>
                     </div>
                 }
                 else
                 {
                     <div class="panel craft-mats">
-                        <div class="eyebrow">@(rc.IsBuild ? "营地设施" : "配方") · @rc.Name</div>
-                        <p class="small muted" style="margin:4px 0 8px">@RecipeHint(rc)</p>
+                        <div class="eyebrow" title="@RecipeHint(rc)">@(rc.IsBuild ? "营地设施" : "配方") · @rc.Name ⓘ</div>
                         @if (rc.IsRepair)
                         {
                             var cands = e.RepairCandidates(s);
@@ -205,7 +203,6 @@
                                  Status="@($"燃料{fac.FuelMinutes}/{e.Config.Fire.MaxFuelMinutes}分钟 · 内容物{used}/{e.Config.Fire.ProcessingSlots}")">
                             <button class="secondary" @onclick="G.SelectFire">查看火堆 ▸</button>
                         </ItemRow>
-                        <div class="tiny muted">投料、点火、放锅与烤制都在地块栏第二行的火堆卡上，锅和食材直接可见。</div>
                     </div>
                 }
             </div>

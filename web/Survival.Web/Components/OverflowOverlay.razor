@@ -1,0 +1,61 @@
+@inherits GameComponent
+
+@* 随身超额整理窗（S06 §8、开发假设 H3）：旧档读进来随身超过五张根物品卡时，在安全空闲（无战斗/敌踪/行动/未读对白）弹出。
+   玩家明确勾选要保留的物品（合计不超过上限），其余一次放到当前地面；不删除、不随机丢、不自动合错批次。确认后保存。
+   超额期间不能再增加随身卡数；战斗、移动等进行中先保留原状，等安全空闲再出现。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var roots = e.CarriedRootItems(s);
+    var cards = e.RootCardsOf(s, _keep);
+    var max = e.MaxRootCards;
+    var over = cards > max;
+}
+<div class="overflow-layer" role="dialog" aria-modal="true" aria-label="整理随身物品">
+    <div class="panel overflow-box">
+        <div class="ov-head">
+            <h2>整理随身物品</h2>
+            <span class="muted">随身最多@(max)张物品卡，这份存档现在有@(e.RootCardCount(s))张。勾选要留在身上的，其余放到@(e.LocName(s.CurrentLocation))地面，不会丢失。</span>
+        </div>
+        <div class="ov-list" data-wheel="y">
+            @foreach (var it in roots)
+            {
+                var id = it.InstanceId;
+                var on = _keep.Contains(id);
+                <label class="ov-item @(on ? "on" : "")">
+                    <input type="checkbox" checked="@on" @onchange="() => Toggle(id)" />
+                    <span class="ov-ico">@Icons.Markup(it.ItemId)</span>
+                    <span class="ov-text"><b>@e.ItemName(it.ItemId)@(e.Item(it.ItemId).IsStackable && !e.IsPot(it) ? $"×{it.Count}" : $"#{id}")</b>
+                        <small>@Ui.ItemLine(e, s, it) · @Ui.Kg(e.ItemGrams(s, it))公斤</small></span>
+                </label>
+            }
+        </div>
+        <div class="ov-foot">
+            <span class="@(over ? "danger-text" : "")">已选@(cards)/@(max)张@(over ? "，超过上限" : "")</span>
+            <button type="button" class="primary" disabled="@(over || _busy)" @onclick="Confirm">保留所选，其余放到地面</button>
+        </div>
+        @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+    </div>
+</div>
+
+@code {
+    private readonly List<int> _keep = new();
+    private bool _busy;
+
+    private void Toggle(int id)
+    {
+        if (!_keep.Remove(id)) _keep.Add(id);
+    }
+
+    private void Confirm()
+    {
+        if (_busy) return;
+        _busy = true;
+        try
+        {
+            var res = G.ResolveOverflow(_keep.ToList());
+            if (res.Ok) _keep.Clear();
+        }
+        finally { _busy = false; }
+    }
+}

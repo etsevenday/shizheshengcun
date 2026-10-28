@@ -31,7 +31,7 @@
 }
 <div class="pot-card @(Pot.InFacility ? "in-fire" : "in-shelf") @(potSelected ? "selected" : "") @(locked ? "reserved" : "")"
      data-card="@key" data-drop="@($"card:{key}")" data-drop-level="card" @onclick:stopPropagation="true">
-    <div class="pc-head" role="button" tabindex="0" data-drag="@($"card:{key}")" data-drag-title="@name" data-drag-from="@where"
+    <div class="pc-head" id="@(potSelected ? "card-sel" : null)" role="button" tabindex="0" data-drag="@($"card:{key}")" data-drag-title="@name" data-drag-from="@where"
          title="@($"{name} · {where}：点击选中整口锅；按住标题拖动整锅（水与食材随行）")"
          @onclick="SelectPot" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, SelectPot)" @onkeydown:stopPropagation="true">
         <span class="pc-icon">@Icons.Markup(Pot.ItemId)</span>
@@ -46,7 +46,6 @@
             <TransferArrow Owner="@Pot.Owner" ItemId="@Pot.ItemId" InstanceId="@Pot.InstanceId" Enabled="@(!locked && !busy)" />
         }
     </div>
-    @if (potSelected) { <CardActions /> }
 
     <div class="pot-fill @(liquid == "clean_water" ? "clean" : liquid == "dirty_water" ? "dirty" : "")" data-drop="@($"potfill:{Pot.InstanceId}")" data-drop-level="hot"
          title="@($"水量：{e.PotLabel(s, Pot)}。把净水或脏水卡拖到这里装入1份；按住 Shift 可选数量")"
@@ -64,7 +63,7 @@
         var wid = w.InstanceId;
         var wsel = sel.Kind == SelectionKind.PotLiquid && sel.InstanceId == Pot.InstanceId && sel.Id == w.ItemId;
         var wReserved = Math.Min(w.Count * c.UnitMl, reservedMl);
-        <div class="pc-row liquid @(wsel ? "selected" : "")" role="button" tabindex="0"
+        <div class="pc-row liquid @(wsel ? "selected" : "")" id="@(wsel ? "card-sel" : null)" role="button" tabindex="0"
              title="@($"{e.ItemName(w.ItemId)} · {where}／{name}：点击选中这份水")"
              @onclick="() => SelectLiquid(w.ItemId)" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, () => SelectLiquid(w.ItemId))" @onkeydown:stopPropagation="true">
             <span class="pc-ico" data-drag="@($"potchild:{wid}")" data-drag-title="@e.ItemName(w.ItemId)" data-drag-from="@($"{where}／{name}")">@Icons.Markup(w.ItemId)</span>
@@ -79,7 +78,6 @@
         {
             <div class="pc-reserved" title="@e.ReservedWaterText(s, w)">@e.ReservedWaterText(s, w)</div>
         }
-        @if (wsel) { <CardActions /> }
     }
 
     <div class="pc-foods" data-drop="@($"potfood:{Pot.InstanceId}")" data-drop-level="hot" title="@($"食材区：生块根、生肉、烤肉拖到这里放进锅（水煮肉只存放），{e.PotFoodHint(s, Pot)}")">
@@ -90,7 +88,7 @@
             var p = e.ProcessOf(s, f);
             var spoiled = e.IsSpoiled(s, f);
             var fname = $"{e.ItemName(f.ItemId)}#{fid}";
-            <div class="pc-row food @(fsel ? "selected" : "") @(spoiled ? "spoiled" : "")" role="button" tabindex="0"
+            <div class="pc-row food @(fsel ? "selected" : "") @(spoiled ? "spoiled" : "")" id="@(fsel ? "card-sel" : null)" role="button" tabindex="0"
                  title="@($"{fname} · {where}／{name}：{e.ContentStatus(s, f)}")"
                  @onclick="() => SelectFood(f)" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, () => SelectFood(f))" @onkeydown:stopPropagation="true">
                 <span class="pc-ico" data-drag="@($"potchild:{fid}")" data-drag-title="@fname" data-drag-from="@($"{where}／{name}")">@Icons.Markup(f.ItemId)</span>
@@ -105,7 +103,6 @@
                 <button type="button" class="row-arrow" aria-label="@($"把{fname}从锅中取到随身")" title="@($"从锅中取到随身：成为独立随身卡{(Pot.IsCarried ? "，总携重不变" : "")}（不打开操作条；点图标可选目的地）")"
                         disabled="@busy" @onclick="() => TakeFood(f)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▼</button>
             </div>
-            @if (fsel) { <CardActions /> }
         }
         @if (foods.Count < c.FoodSlots)
         {
