@@ -131,6 +131,58 @@ namespace Survival.Core.Engine
         public bool CarriedOverflow(GameState s) => RootCardCount(s) > MaxRootCards;
 
         /// <summary>
+        /// 现在能否做超额整理：安全空闲——未死亡、无战斗/敌踪、无主/子行动（含暂停）、无未读对白。战斗/移动/子行动中先保留原状，
+        /// 等安全空闲再整理（S06 §8）。
+        /// </summary>
+        public bool OverflowResolvable(GameState s) =>
+            !s.Progress.Dead && s.Battle == null && s.Encounter == null && s.Main == null && s.Sub == null && !DialogueLocked(s);
+
+        /// <summary>超额整理窗列出的随身根物品（未预留的随身实例，按卡片顺序）。</summary>
+        public List<ItemInstance> CarriedRootItems(GameState s) =>
+            s.Items.Where(i => i.IsCarried && i.ReservedBy == null).OrderBy(i => i.InstanceId).ToList();
+
+        /// <summary>只保留这些随身实例时的根卡数（同批多堆合计、按堆叠上限折算）。</summary>
+        public int RootCardsOf(GameState s, IEnumerable<int> instanceIds)
+        {
+            var ids = new HashSet<int>(instanceIds);
+            var stacks = new Dictionary<(string, int?, string?), int>();
+            var singles = 0;
+            foreach (var i in s.Items.Where(i => i.IsCarried && ids.Contains(i.InstanceId)))
+            {
+                if (StacksAsBatch(i)) { var k = StackKey(i); stacks[k] = (stacks.TryGetValue(k, out var c) ? c : 0) + i.Count; }
+                else singles++;
+            }
+            return singles + stacks.Sum(kv => (kv.Value + _items[kv.Key.Item1].StackMax - 1) / Math.Max(1, _items[kv.Key.Item1].StackMax));
+        }
+
+        /// <summary>
+        /// 超额整理（S06 §8、开发假设 H3）：玩家明确选择保留的随身实例（合计不超过上限），其余一次性原子移到当前地面；
+        /// 不删除、不自动合错批次、不随机丢物。仅安全空闲、确实超额时可用；校验失败什么都不变。带 requestId 幂等。
+        /// </summary>
+        public ActionResult ResolveCarriedOverflow(GameState s, IList<int> keepInstanceIds, string? requestId = null)
+        {
+            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
+            if (!CarriedOverflow(s)) return ActionResult.Fail($"随身没有超过{MaxRootCards}张卡，不需要整理");
+            if (!OverflowResolvable(s)) return ActionResult.Fail("现在不能整理随身物品：请先结束战斗、行动或对话");
+            var roots = CarriedRootItems(s);
+            var keep = new HashSet<int>(keepInstanceIds);
+            if (keep.Any(id => roots.All(i => i.InstanceId != id))) return ActionResult.Fail("选择的物品已不在随身");
+            var cards = RootCardsOf(s, keep);
+            if (cards > MaxRootCards) return ActionResult.Fail($"保留{cards}张，超过{MaxRootCards}张上限");
+            var here = s.CurrentLocation;
+            var moved = roots.Where(i => !keep.Contains(i.InstanceId)).ToList();
+            if (moved.Any(i => IsLocked(s, i))) return ActionResult.Fail("行动占用：有物品正被行动使用");
+            foreach (var i in moved) i.Owner = here;
+            Normalize(s, here);
+            Normalize(s, ItemInstance.Carried);
+            RememberRequest(s, requestId);
+            var names = moved.GroupBy(i => i.ItemId).Select(g => $"{ItemName(g.Key)}×{g.Sum(i => i.Count)}");
+            Emit(s, GameEventKind.Info, $"整理随身：保留{RootCardCount(s)}张卡，{string.Join("、", names)}放到{LocName(here)}地面。");
+            UpdateFlags(s);
+            return ActionResult.Success();
+        }
+
+        /// <summary>
         /// 随身与（可选）当前地面的物品；includeContainers 时也包括这些位置（含当前火堆里）锅中的水（饮用、引导统计用）。
         /// 设施与锅里的食材是独立来源，不在这里自动取用（统一卡片案第 6 节）。
         /// </summary>

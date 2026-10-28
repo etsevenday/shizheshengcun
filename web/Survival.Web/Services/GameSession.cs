@@ -725,6 +725,24 @@ public sealed class GameSession
         return res;
     }
 
+    /// <summary>旧档随身超过五张卡且安全空闲：显示超额整理窗（S06 §8、开发假设 H3）。</summary>
+    public bool OverflowPending => State != null && E.CarriedOverflow(S) && E.OverflowResolvable(S);
+
+    /// <summary>超额整理：保留所选随身物品（不超过上限），其余放到当前地面，确认后保存。</summary>
+    public ActionResult ResolveOverflow(IList<int> keep)
+    {
+        var res = E.ResolveCarriedOverflow(S, keep, Guid.NewGuid().ToString("N"));
+        Notice = res.Ok ? null : res.Reason;
+        if (res.Ok)
+        {
+            Drain();
+            ReconcileSelection();
+            Save();
+        }
+        Notify();
+        return res;
+    }
+
     public ActionResult Instant(InstantRequest r)
     {
         // 每次界面操作带一个请求号：重复提交（连点、重发）只生效一次
