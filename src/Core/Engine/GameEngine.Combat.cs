@@ -872,8 +872,9 @@ namespace Survival.Core.Engine
                     case "bandage":
                     case "use_antibiotics":
                     case "use_antiviral_cure":
+                        // 效果数值放在第一条（与执行同一份计算 MedicineEffectText），战斗区执行条直接显示它
+                        if (CarriedItem(s, a.ItemId!, c.ItemInstanceId) is ItemInstance med && _items[med.ItemId].Use is ItemUseConfig mu && MedicineEffectText(s, mu) is string mt) { p.EffectText = mt; p.Notes.Add(mt); }
                         p.Notes.Add("效果在确认时应用，不另跳5分钟；本轮结束时统一推进一次世界时间");
-                        if (CarriedItem(s, a.ItemId!, c.ItemInstanceId) is ItemInstance med && _items[med.ItemId].Use is ItemUseConfig mu && MedicineEffectText(s, mu) is string mt) p.Notes.Add(mt);
                         break;
                     case "end_turn": p.Notes.Add("剩余行动点清零，不积攒到下轮"); break;
                 }

@@ -36,7 +36,7 @@
                 <ol>
                     @for (var k = 0; k < tips.Count; k++)
                     {
-                        <li class="@(k == cur ? "now" : "")">@tips[k]</li>
+                        <li class="@(k == cur ? "now" : "")">@Ui.TipText(e, tips[k])</li>
                     }
                 </ol>
             </section>

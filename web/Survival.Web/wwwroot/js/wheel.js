@@ -71,9 +71,10 @@
         continue;
       }
       // 标了 data-wheel="x" 的卡片栏（地面、随身、设施行、相邻地图）同时纵向溢出时（卡下操作条、锅卡更高，S14 §1.3 区内纵滚）：
-      // 纯竖向滚轮先横向翻卡，到横向边界再纵向滚动本区，仍不透传给父级
-      if (mouseVertical && !passedVertical && el.getAttribute && el.getAttribute('data-wheel') === 'x' && scrollable(el, 'x') && canMove(el, 'x', d)) {
-        consume(ev, el, 'x', d); return true;
+      // 纯竖向滚轮先纵向滚动本区（把被遮住的下半截滚进来），到纵向边界再横向翻卡；Shift+滚轮仍是横向（试玩修复 B1）
+      if (mouseVertical && !passedVertical && el.getAttribute && el.getAttribute('data-wheel') === 'x' && scrollable(el, 'x')) {
+        if (scrollable(el, 'y') && canMove(el, 'y', d)) { consume(ev, el, 'y', d); return true; }
+        if (canMove(el, 'x', d)) { consume(ev, el, 'x', d); return true; }
       }
       if (scrollable(el, 'y')) {
         if (canMove(el, 'y', d)) { consume(ev, el, 'y', d); return true; }

@@ -54,7 +54,8 @@
             {
                 <button type="button" class="secondary cp-skip" @onclick="G.SkipAnimation" title="只跳过表现，不改变游戏时间与结果">跳过动画</button>
             }
-            <span class="cp-exit-note">@(exitNote ?? (p.Exit == ExitKind.None ? p.ExitNote : p.Exit == ExitKind.CompletesCurrentTransaction ? p.ExitNote : ""))</span>
+            @* 附带小改：退出会作废本次成果的行动（探索/清理/采集/制作/处理尸体/移动）在“退出”旁常驻写明后果 *@
+            <span class="cp-exit-note @(p.ExitForfeits ? "forfeit" : "")">@(exitNote ?? (p.Exit == ExitKind.None || p.Exit == ExitKind.CompletesCurrentTransaction || p.ExitForfeits ? p.ExitNote : ""))</span>
             <button type="button" class="secondary danger cp-exit" disabled="@(p.Exit == ExitKind.None)" title="@p.ExitNote" @onclick="G.Exit">退出</button>
         </div>
     </div>

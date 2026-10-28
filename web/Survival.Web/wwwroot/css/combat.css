@@ -260,7 +260,7 @@
   .bx-info { min-height: 26px; }
   .bx-art { width: 26px; height: 26px; }
   .bx-art svg { width: 23px; height: 23px; }
-  .bx-act .bx-go, .bx-act .bx-x { min-height: 36px; height: 36px; }
+  .bx-act .bx-go, .bx-act .bx-x { min-height: 40px; height: 40px; }
 }
 /* 指令卡固定行高（图 + 短名 + AP 三行完整可见，不被网格压扁）；战斗日志只留两行，让出竞技场高度 */
 .battle-overlay.lr .bt-log { max-height: 44px; }
@@ -286,3 +286,5 @@
 @media (max-width: 1439px) { .bt-arena { grid-template-columns: minmax(0, 1.3fr) 22px minmax(0, 1fr); } }
 .foe .hp-line span { flex: 0 0 auto; }
 .foe .hp-line b { white-space: nowrap; }
+/* 试玩修复 B9/B12：矮屏执行条按钮恢复 40px 热区；指令网格在自己的格子里裁切滚动，不与执行条重叠 */
+.bt-cmds.grid { overflow: hidden auto; contain: paint; }

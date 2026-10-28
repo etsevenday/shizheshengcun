@@ -287,3 +287,44 @@ window.survivalPop = (function () {
     place: place
   };
 })();
+
+// 试玩修复 B7：点中央条/暂停层“退出”后，地块两行（相邻地图、设施行）保持原滚动位置。
+// 退出会让中央条消失、火堆卡与选中项重绘，期间若有程序性滚动（不是玩家的滚轮/拖动/点击）把设施行横向推到别处，
+// 在随后 1.5 秒内还原到点“退出”那一刻的位置；玩家自己滚动或点按这两行时立即放弃还原。只改滚动位置，不涉及玩法。
+(function () {
+  var snap = null, until = 0;
+  function rows() { return Array.prototype.slice.call(document.querySelectorAll('.map-adjacent, .fac-scroll')); }
+  function fix() {
+    if (!snap) return;
+    if (Date.now() > until) { release(); return; }
+    snap.forEach(function (s) {
+      if (s.el.isConnected && (s.el.scrollLeft !== s.x || s.el.scrollTop !== s.y)) { s.el.scrollLeft = s.x; s.el.scrollTop = s.y; }
+    });
+    setTimeout(fix, 40);
+  }
+  function take() {
+    snap = rows().map(function (el) { return { el: el, x: el.scrollLeft, y: el.scrollTop }; });
+    until = Date.now() + 1500;
+    setTimeout(fix, 0);
+  }
+  function release() { snap = null; until = 0; }
+  document.addEventListener('pointerdown', function (ev) {
+    var t = ev.target;
+    if (t && t.closest && t.closest('.cp-exit')) { take(); return; }
+    if (snap && t && t.closest && t.closest('.map-adjacent, .fac-scroll')) release();
+  }, true);
+  document.addEventListener('keydown', function (ev) {
+    var t = ev.target;
+    if ((ev.key === 'Enter' || ev.key === ' ') && t && t.closest && t.closest('.cp-exit')) take();
+  }, true);
+  document.addEventListener('wheel', function () { if (snap) release(); }, true);
+  document.addEventListener('scroll', function (ev) {
+    if (!snap) return;
+    if (Date.now() > until) { release(); return; }
+    snap.forEach(function (s) {
+      if (s.el === ev.target && s.el.isConnected && (s.el.scrollLeft !== s.x || s.el.scrollTop !== s.y)) {
+        s.el.scrollLeft = s.x; s.el.scrollTop = s.y;
+      }
+    });
+  }, true);
+})();

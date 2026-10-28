@@ -45,15 +45,15 @@
         <Hud />
 
         @{
-            // 手工制作层盖住中部上方时，地面卡挪到下方与随身卡并排，仍能拖进材料槽（01 案第 5 节“手工拖入优先使用指定批次”）
-            var craftOpen = G.Panel == "craft";
-            // 顶栏面板只替换中部上方（地块两行与地面），随身栏固定在下方（S14 §7）
+            // 顶栏面板（地图/制作/休息/日志/目标/提示/对话记录/说明）盖住中部上方时，地面卡挪到下方与随身卡并排：
+            // 四区同屏延续到这些一级页（S14 §1.3、§13；试玩修复 B3），手工制作仍能把地面卡拖进材料槽
             var centerPanel = GameSession.IsTopPanel(G.Panel);
+            var craftOpen = centerPanel;
         }
         @* 四区同屏（S14 §1.3）：地图行、设施行、当前地面、随身物品按中部可用高度分配，各区溢出在区内滚动；
            只有低于基准分辨率的更小窗口才由 .center-scroll 整体纵滚兜底。 *@
         <section class="center" aria-label="当前地点">
-            <div class="center-scroll quad @(centerPanel ? "locked" : "") @(craftOpen ? "craft" : "") @(battleUi ? "battle" : "")" data-wheel="y">
+            <div class="center-scroll quad @(centerPanel ? "locked" : "") @(craftOpen ? "craft" : "") @(G.Panel == "craft" ? "craft-panel" : "") @(battleUi ? "battle" : "")" data-wheel="y">
             <div class="center-top">
                 <div class="rows2">
                     <div class="rows2-inner" inert="@dlgLock">
@@ -114,7 +114,11 @@
         <DetailPanel />
 
         @* 就近操作浮窗（S14 §14.1）：渲染在卡片之外（fixed 定位锚在卡旁），点击不会冒泡成卡片选择/使用/拖拽 *@
-        <div class="apop-host" inert="@dlgLock"><ActionPops /></div>
+        <div class="apop-host" inert="@dlgLock">
+            <ActionPops />
+            @* 点火工具菜单：锚定在火堆卡“点燃”按钮旁的浮窗，不在卡内撑高设施行（试玩修复 B1） *@
+            @if (G.IgniteMenuOpen && !battleUi && e.Location(s.CurrentLocation).HasFire && !s.Locations[s.CurrentLocation].Facility.FireLit) { <IgniteMenu /> }
+        </div>
 
         @if (G.Panel == "menu") { <MenuOverlay /> }
         @if (G.BattleMenuOpen && battleUi) { <MenuOverlay Battle="true" /> }

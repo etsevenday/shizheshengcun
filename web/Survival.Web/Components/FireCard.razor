@@ -49,7 +49,7 @@
         }
         else
         {
-            <button type="button" class="fc-btn ignite @(G.IgniteMenuOpen ? "on" : "")" aria-haspopup="menu" aria-expanded="@G.IgniteMenuOpen"
+            <button type="button" id="fc-ignite" class="fc-btn ignite @(G.IgniteMenuOpen ? "on" : "")" aria-haspopup="menu" aria-expanded="@G.IgniteMenuOpen"
                     title="打开点火工具菜单：点一把可用的打火器即开始点火" @onclick="G.ToggleIgniteMenu">点燃<small>选择点火工具</small></button>
         }
     </div>
@@ -66,10 +66,7 @@
             </button>
         </div>
     }
-    @if (G.IgniteMenuOpen && !fac.FireLit)
-    {
-        <IgniteMenu />
-    }
+    @* 点火工具菜单改为锚定浮窗，在 GameScreen 的浮窗层渲染（试玩修复 B1） *@
     </div>
     <div class="fc-slots">
         @for (var k = 0; k < slots.Count; k++)

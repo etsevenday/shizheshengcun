@@ -90,6 +90,8 @@ namespace Survival.Core.Engine
         public double NoiseBefore { get; set; }
         public double NoiseAfter { get; set; }
         public List<string> Notes { get; set; } = new List<string>();
+        /// <summary>用药的效果数值（“健康3.00→4.00，止血”“病毒12.00→7.00”等，与执行结算同源）；其他指令为 null。</summary>
+        public string? EffectText { get; set; }
         public string ConfirmText { get; set; } = "";
     }
 }

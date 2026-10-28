@@ -79,7 +79,7 @@ else
     var edge = e.AdjacentUnlocked(s).FirstOrDefault(x => x.Other(s.CurrentLocation) == LocationId);
     var selected = sel.Kind == SelectionKind.Entrance && sel.Id == LocationId;
     // 相对方位徽标（S14 §16、S02 §3.1）：以主角当前所在地为参照，数据唯一来自内核 DirectionFromHere（区域图 mapX/mapY）；
-    // 移动途中/暂停/取消仍按起点，到达后统一刷新。只是展示：不绑定方向键、点击不移动（点到它等同点卡面：选中并在卡旁预览）。
+    // 移动途中/暂停/取消仍按起点，到达后统一刷新。只是展示：不绑定方向键、点击无操作（不移动、不打开移动浮窗）。
     var dir = e.DirectionFromHere(s, LocationId);
     var dirHint = GameEngine.DirectionHint(dir);
     var open = G.Pop?.Kind == "travel" && G.Pop.Id == LocationId;
@@ -91,7 +91,9 @@ else
             <div class="loc-art" style="background-image:url('@scene')" role="img" aria-label="@($"{lc.Name}图片")"></div>
             @if (dir != MapDirection.None)
             {
-                <span class="dir-badge" role="img" aria-label="@dirHint" title="@($"{dirHint}（方位图标，只作展示；移动请点“前往”）")">
+                @* 试玩修复 B10：点徽标不打开移动浮窗、不选中（阻止冒泡，无操作），S14 §16 *@
+                <span class="dir-badge" role="img" aria-label="@dirHint" title="@($"{dirHint}（方位图标，只作展示，点它不会移动；移动请点“前往”）")"
+                      @onclick:stopPropagation="true" @onclick:preventDefault="true">
                     <svg viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(@(((int)dir - 1) * 45)deg)"><path d="M12 2.5 19.5 11h-4.6v10.5H9.1V11H4.5Z" /></svg>
                 </span>
             }

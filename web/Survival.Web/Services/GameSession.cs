@@ -134,6 +134,20 @@ public sealed class GameSession
     /// <summary>从对象/属性/状态详情定位打开时，关闭后要回到的原面板（null 为原主界面）。</summary>
     private string? _helpReturn;
     private bool _helpDirect;
+    /// <summary>从固定的状态说明浮层“相关说明”进入时，关闭说明后要恢复的那个浮层与锚点（试玩修复 B8：Esc 逐层回到来源）。</summary>
+    private string? _helpReturnStatus;
+    private (double Left, double Top) _helpReturnAnchor;
+
+    /// <summary>从固定的状态浮层打开说明：记下浮层，关闭/返回说明时原样恢复它。</summary>
+    public void OpenHelpFromStatus(string topic, string entry)
+    {
+        var pinned = StatusPinned;
+        var anchor = StatusAnchor;
+        StatusPinned = null;
+        StatusHover = null;
+        OpenHelp(topic, entry);
+        if (Panel == "help") { _helpReturnStatus = pinned; _helpReturnAnchor = anchor; }
+    }
 
     /// <summary>打开系统说明（可直接定位到某主题/条目）。只读浏览，不推进时间；战斗与对话锁期间不可打开。</summary>
     public void OpenHelp(string? topic = null, string? entry = null)
@@ -141,6 +155,7 @@ public sealed class GameSession
         if (InBattleUi || DialogueLocked) return;
         _helpReturn = Panel is "help" ? _helpReturn : Panel;
         _helpDirect = topic != null;
+        _helpReturnStatus = null;
         HelpTopic = topic;
         HelpEntry = entry;
         HoverPreview = null;
@@ -176,6 +191,13 @@ public sealed class GameSession
         var back = _helpReturn;
         _helpReturn = null;
         Panel = back is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" ? back : null;
+        // 来源是固定的状态浮层：恢复它（状态已消失时 StatusPop 渲染后自行收起）
+        if (_helpReturnStatus != null)
+        {
+            StatusPinned = _helpReturnStatus;
+            StatusAnchor = _helpReturnAnchor;
+            _helpReturnStatus = null;
+        }
         Notify();
     }
 
@@ -202,6 +224,7 @@ public sealed class GameSession
     public void ToggleIgniteMenu()
     {
         IgniteMenuOpen = !IgniteMenuOpen;
+        if (IgniteMenuOpen) Pop = null;
         if (!IgniteMenuOpen) HoverPreview = null;
         Notify();
     }
@@ -279,7 +302,7 @@ public sealed class GameSession
         Pop = null;
         // 只有地图/制作/休息会在右栏显示面板自己的预估，切到“对象信息”；顶栏浏览层（日志、目标、提示、对话记录、说明）不改右栏页签
         if (panel != null) { IgniteMenuOpen = false; if (panel is "map" or "craft" or "rest") DetailTab = DetailTab.Object; }
-        if (panel == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturn = null; }
+        if (panel == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturn = null; _helpReturnStatus = null; }
         if (panel == "dialogs") DialogLogPick = null;
         // 关闭面板时没有选中对象就回人物页（v0.7 6.1：无选中默认展示人物信息；复验新发现 2）
         else if (Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;

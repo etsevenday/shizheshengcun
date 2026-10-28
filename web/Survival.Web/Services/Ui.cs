@@ -90,11 +90,28 @@ public static class Ui
     {
         var f = e.Config.Infection;
         var bands = string.Join("、", f.ProgressPerHour.Select(b => $"免疫{T(b.ImmunityRange[0])}—{T(b.ImmunityRange[1])}：{SignedT(b.Rate)}"));
-        return $"只有丧尸咬击命中并造成伤害才可能感染（初次病毒{T(f.OnFirstSuccessfulExposure.Load)}，再次+{T(f.OnRepeatedSuccessfulExposure.LoadDelta)}）。已感染时病毒每小时按免疫变化：{bands}；达到{T(f.ZombificationAtLoad)}尸变，本局结束。" +
+        var bi = f.BaobaoInput;
+        // 试玩修复 B5：感染来源有两条——丧尸咬伤与体内饱饱的持续输入（R04 §7.2），数值读配置
+        return $"感染有两个来源：丧尸咬击命中并造成伤害时可能感染（初次病毒{T(f.OnFirstSuccessfulExposure.Load)}，再次+{T(f.OnRepeatedSuccessfulExposure.LoadDelta)}）；" +
+               $"体内的饱饱在免疫低于{T(bi.FullSuppressImmunityAtLeast)}时持续输入病毒（每小时最多{T(bi.MaxPerHour)}，免疫越高越慢），净输入一转为正就进入感染（病毒至少{T(bi.FirstInfectionMinLoad)}）。已感染时病毒每小时按免疫变化：{bands}；达到{T(f.ZombificationAtLoad)}尸变，本局结束。" +
                $"绷带与抗生素只能压低病毒（最低{T(f.AllSuppressantsMinLoad)}，仍感染）；治愈只有两种：免疫≥{T(f.NaturalCure.ConsecutiveImmunityAtLeast)}连续{Clock.Duration(f.NaturalCure.Minutes)}且病毒≤{T(f.NaturalCure.LoadAtMost)}的自然治愈，或病毒特效药。";
     }
 
     public static string Pct(double p) => Fmt.Pct(p);
+
+    /// <summary>
+    /// 生存提示文案里的数值占位符换成现行配置（试玩修复 B4：提示不再写死“免疫≥85”）：
+    /// {baobaoSuppressImmunity} 饱饱完全压制门槛、{cureImmunity}/{cureDuration}/{cureLoad} 自然治愈的免疫门槛/连续时长/病毒上限。
+    /// </summary>
+    public static string TipText(GameEngine e, string tip)
+    {
+        if (!tip.Contains('{')) return tip;
+        var f = e.Config.Infection;
+        return tip.Replace("{baobaoSuppressImmunity}", T(f.BaobaoInput.FullSuppressImmunityAtLeast))
+            .Replace("{cureImmunity}", T(f.NaturalCure.ConsecutiveImmunityAtLeast))
+            .Replace("{cureDuration}", Clock.Duration(f.NaturalCure.Minutes))
+            .Replace("{cureLoad}", T(f.NaturalCure.LoadAtMost));
+    }
 
     // ───────────── 场景昼夜光照（B 方案地点行） ─────────────
 

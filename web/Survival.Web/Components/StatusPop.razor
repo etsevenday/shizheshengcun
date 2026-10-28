@@ -54,11 +54,7 @@
 @code {
     private void Close() => G.PinStatus(null);
 
-    private void OpenHelp(string topic, string entry)
-    {
-        G.PinStatus(null);
-        G.OpenHelp(topic, entry);
-    }
+    private void OpenHelp(string topic, string entry) => G.OpenHelpFromStatus(topic, entry);
 
     protected override void OnAfterRender(bool firstRender)
     {

@@ -30,8 +30,9 @@
                     var id = h.Id;
                     var on = pick != null && pick.Id == id;
                     <button type="button" role="option" aria-selected="@on" class="dlog-item @(on ? "on" : "")" @onclick="() => Pick(id)">
-                        <b>@(string.IsNullOrEmpty(h.Counterpart) ? "旁白" : h.Counterpart)@if (h.Legacy) {<em class="oc-badge">旧存档记录</em>}</b>
-                        <small>@(h.Minute is int m ? Clock.DayTime(m) : "日期时间未知") · @(h.LocationId != null ? e.LocName(h.LocationId) : "地点未知")</small>
+                        @* 试玩修复 B11：每组标出事件名（同一时刻的“首战胜利”“融合完成”可区分）；旧存档组只写一次“时间地点未记录” *@
+                        <b><span class="dlog-event">@EventName(h)</span> · @(string.IsNullOrEmpty(h.Counterpart) ? "旁白" : h.Counterpart)</b>
+                        <small>@WhenWhere(h)</small>
                     </button>
                 }
             </div>
@@ -40,7 +41,7 @@
                 <div class="dlog-read" data-wheel="y" tabindex="0" aria-label="对话内容">
                     <div class="dlog-read-head">
                         <img src="img/portraits/protagonist.svg" alt="主角（临时形象）" />
-                        <span>@(pick.Minute is int pm ? Clock.DayTime(pm) : "日期时间未知") · @(pick.LocationId != null ? e.LocName(pick.LocationId) : "地点未知")</span>
+                        <span><b>@EventName(pick)</b> · @WhenWhere(pick)</span>
                         <img src="@(pick.Counterpart == "饱饱" ? "img/portraits/baobao.svg" : "img/portraits/unknown.svg")" alt="@($"{pick.Counterpart}（临时形象）")" />
                     </div>
                     <div class="dlg-stream static">
@@ -60,4 +61,20 @@
     }
 
     private void Close() => G.OpenPanel(null);
+
+    /// <summary>对话所属事件的玩家可读名称；旧存档导入组统一叫“旧存档记录”。</summary>
+    private static string EventName(DialogueSession h) => h.Legacy ? "旧存档记录" : h.EventId switch
+    {
+        "opening" => "开场",
+        "tutorial_arrive" => "首战到达",
+        "tutorial_won" => "首战胜利",
+        "fusion_done" => "融合完成",
+        _ => "对话",
+    };
+
+    private string WhenWhere(DialogueSession h)
+    {
+        if (h.Minute == null && h.LocationId == null) return "时间地点未记录";
+        return $"{(h.Minute is int m ? Clock.DayTime(m) : "时间未记录")} · {(h.LocationId != null ? G.E.LocName(h.LocationId) : "地点未记录")}";
+    }
 }

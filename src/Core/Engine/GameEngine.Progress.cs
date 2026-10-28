@@ -43,6 +43,8 @@ namespace Survival.Core.Engine
         public ExitKind Exit { get; set; }
         /// <summary>退出入口旁的说明（单段事务“已开始结算，完成后结束”、对话中/战斗中不能退出的原因）。</summary>
         public string ExitNote { get; set; } = "";
+        /// <summary>退出会作废本次行动的成果（探索、清理、采集、制作、处理尸体、移动）：中央条在“退出”旁常驻写明后果。</summary>
+        public bool ExitForfeits { get; set; }
         /// <summary>等待烹饪的目标与各自预计（其他行动为空）。</summary>
         public List<CookTargetInfo> CookTargets { get; set; } = new List<CookTargetInfo>();
     }
@@ -100,9 +102,23 @@ namespace Survival.Core.Engine
             }
             var why = ExitBlocked(s);
             info.Exit = why != null ? ExitKind.None : IsSingleTransaction(a.Type) ? ExitKind.CompletesCurrentTransaction : ExitKind.StopAtBoundary;
-            info.ExitNote = why ?? (info.Exit == ExitKind.CompletesCurrentTransaction ? $"{a.Label}已开始结算，本段完成后结束（已提交的消耗与效果不撤销）" : "在当前5分钟段结束处停止，已发生的消耗与收获保留");
+            var forfeit = info.Exit == ExitKind.StopAtBoundary ? ExitForfeitText(a) : null;
+            info.ExitForfeits = forfeit != null;
+            info.ExitNote = why ?? (info.Exit == ExitKind.CompletesCurrentTransaction ? $"{a.Label}已开始结算，本段完成后结束（已提交的消耗与效果不撤销）" : forfeit ?? "在当前5分钟段结束处停止，已发生的消耗与收获保留");
             return info;
         }
+
+        /// <summary>中途退出会作废成果的行动：退出后果短提示（与 Cancel 的实际结算一致，已耗时间不退）。其余行动返回 null。</summary>
+        private string? ExitForfeitText(ActionState a) => a.Type switch
+        {
+            ActionType.Explore => "退出将放弃本次探索：探索度不变、不获得物资（已耗时间不退）",
+            ActionType.Clear => "退出将放弃本次清理：不获得物资，已扣的1次清理机会不返还（已耗时间不退）",
+            ActionType.Gather => "退出将放弃本次采集：不获得产物（已耗时间不退）",
+            ActionType.Craft or ActionType.Build => "退出将放弃本次制作：材料返还当前地面，不得半成品（已耗时间不退）",
+            ActionType.Butcher => "退出将放弃本次处理：尸体返还当前地面，没有产物（已耗时间不退）",
+            ActionType.Travel => $"退出将留在{LocName(a.SourceLocation)}（已走的时间与消耗不退）",
+            _ => null,
+        };
 
         private string PauseText(GameState s, ActionState a) => a.PauseReason switch
         {
