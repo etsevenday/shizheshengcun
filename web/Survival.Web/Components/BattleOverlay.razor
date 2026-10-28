@@ -205,7 +205,7 @@ else if (b != null)
         var picked = G.BattleAction == "switch_weapon" && G.BattleItem != null;
         var sp2 = picked ? e.PreviewCommand(s, G.CurrentBattleCommand()) : null;
         var swToken = G.BattleExecToken();
-        <AnchorPop AnchorId="cmd-switch" Title="换武器" Sub="@($"当前：{cur} · 只能换随身武器")" Place="above,below" Bound=".center" CssClass="switch" OnClose="G.ClosePop">
+        <AnchorPop AnchorId="cmd-switch" Title="换武器" Sub="@($"当前：{cur} · 只能换随身武器")" Place="below,above" Bound=".center" CssClass="switch" OnClose="G.ClosePop">
             <Art>@Icons.Markup("cmd_switch")</Art>
             <ChildContent>
                 <div class="sw-list">

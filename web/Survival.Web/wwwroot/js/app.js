@@ -233,7 +233,11 @@ window.survivalPop = (function () {
     var W = window.innerWidth, H = window.innerHeight, m = 8, g = 8;
     var w = el.offsetWidth, h = el.offsetHeight;
     var order = (el.getAttribute('data-place') || 'right,left,below,above').split(',');
-    var room = { right: W - m - A.right - g, left: A.left - g - m, below: H - m - A.bottom - g, above: A.top - g - m };
+    // data-bound：浮窗限制在指定容器（中部列）里——上下可用空间也按容器算，放不下就翻到另一侧，不压左右栏和底栏（M77-B4、M78）
+    var bsel = el.getAttribute('data-bound');
+    var bel = bsel ? document.querySelector(bsel) : null;
+    var B = bel ? bel.getBoundingClientRect() : { left: 0, top: 0, right: W, bottom: H };
+    var room = { right: Math.min(W, B.right) - m - A.right - g, left: A.left - g - Math.max(m, B.left), below: Math.min(H, B.bottom) - m - A.bottom - g, above: A.top - g - Math.max(m, B.top) };
     function pos(side) {
       if (side === 'right') return { x: A.right + g, y: A.top };
       if (side === 'left') return { x: A.left - g - w, y: A.top };
@@ -253,12 +257,9 @@ window.survivalPop = (function () {
     var p = pos(side);
     var x = Math.max(m, Math.min(p.x, W - m - w));
     var y = Math.max(m, Math.min(p.y, H - m - h));
-    // data-bound：横向限制在指定容器（中部列）内，不压到左右栏（试玩修复 M77-B4）；容器比浮窗窄时贴左边
-    var bsel = el.getAttribute('data-bound');
-    var bel = bsel ? document.querySelector(bsel) : null;
     if (bel) {
-      var B = bel.getBoundingClientRect();
       x = Math.max(B.left + 4, Math.min(x, B.right - 4 - w));
+      y = Math.max(B.top + 4, Math.min(y, B.bottom - 4 - h));
     }
     el.style.left = Math.round(x) + 'px';
     el.style.top = Math.round(y) + 'px';

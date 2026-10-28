@@ -10,9 +10,9 @@
 {
     var pot = PotOf();
     <AnchorPop AnchorId="card-sel" Title="" Place="below,above,right,left" Bound=".center" CssClass="@(pot != null ? "card-pop pot" : "card-pop")" OnClose="G.ClearSelection">
-        @* 锅（或锅里的水/食材）：浮窗里先展开锅的完整内容，再接所选对象的操作（试玩修复 M77-B2） *@
-        @if (pot != null) { <PotCard Pot="pot" Expanded="true" /> }
+        @* 锅（或锅里的水/食材）：先放所选对象的操作（主按钮固定在浮窗上部可见，M78），再展开锅的完整内容（内容多时在自己的区内滚动；M77-B2） *@
         <CardActions />
+        @if (pot != null) { <PotCard Pot="pot" Expanded="true" /> }
     </AnchorPop>
 }
 

@@ -109,6 +109,18 @@ async function readDialogues(max = 40) {
   }
   return !await ev(`!!document.querySelector('.dlg-layer')`);
 }
+/**
+ * 收起本次打开的浮窗/面板/选中（M78：原来无条件按 Esc，没有可收起的东西时 Esc 会打开“菜单”，盖住箭头造成误报）。
+ * 只在确有可收起的层时按 Esc，最多三次；万一菜单被打开了再按一次关掉。
+ */
+async function closeLayers() {
+  for (let i = 0; i < 3; i++) {
+    const has = await ev(`!!document.querySelector('.apop, .sub-panel, .card.selected, .pot-card.selected, .fc-food.selected, .ocard.selected, .pc-row.selected')`);
+    if (!has) break;
+    await key('Escape');
+  }
+  if (await ev(`!!document.querySelector('.overlay[role=dialog]')`)) await key('Escape');
+}
 const saved = () => ev(`(() => { const s = JSON.parse(localStorage.getItem(${JSON.stringify(SAVE_KEY)}) || 'null'); return s && { m: s.GameMinute, rng: JSON.stringify(s.Rng) }; })()`);
 
 // ───────────── 页面内测量 ─────────────
@@ -255,17 +267,17 @@ const MEASURE = `(() => {
           };
           await step('default', async () => true);
           await step('select-ground', () => clickSel('.section.ground .card.item'));
-          await key('Escape');
+          await closeLayers();
           await step('select-ground-last', () => clickSel('.section.ground .card-col:last-of-type .card.item'));
-          await key('Escape');
+          await closeLayers();
           await step('select-carried', () => clickSel('.section.carried .card.item, .section.carried .pot-card .pc-head'));
-          await key('Escape');
+          await closeLayers();
           await step('select-pot-in-fire', () => clickSel('.pot-card.in-fire .pc-head'));
-          await key('Escape');
+          await closeLayers();
           await step('panel-map', () => key('m'));
-          await key('Escape');
+          await closeLayers();
           await step('panel-craft', () => key('c'));
-          await key('Escape');
+          await closeLayers();
           const after = await saved();
           rec.timeUnchanged = !before || !after || (before.m === after.m && before.rng === after.rng);
           if (!rec.timeUnchanged) console.log(`FAIL ${w}x${h} ${scene} 浏览后游戏时间或随机状态变化`);
@@ -298,7 +310,7 @@ const MEASURE = `(() => {
           aim.preview = await ev(`(document.querySelector('.detail') || document.body).innerText.includes('实际命中率')`);
           if (!aim.preview) aim.issues.push('悬停合法目标时右栏没有实际预测');
           rec.states.push({ name: 'battle-aim-hover', pass: aim.issues.length === 0, screenshot: await shot(`battle-${w}-aim-hover`), ...aim });
-          await key('Escape');
+          await key('Escape');   // 瞄准中 Esc 是“取消瞄准”本身，要真的按
           const ap1 = await ev(`(document.querySelector('.ap-pips small')||{}).innerText||''`);
           const esc = await ev(MEASURE);
           if (ap0 !== ap1) esc.issues.push('Esc 取消瞄准后 AP 变化：' + ap0 + ' → ' + ap1);

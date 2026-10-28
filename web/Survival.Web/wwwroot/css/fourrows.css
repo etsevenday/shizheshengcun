@@ -73,11 +73,14 @@
 }
 .wasteland .center-scroll.four .row-scroll .card.item .cinfo {
   grid-column: 1; grid-row: 1; align-self: end; justify-self: start; z-index: 2;
-  max-width: calc(100% - 44px); margin: 0 4px 3px; padding: 1px 6px; font-size: 12px; line-height: 1.35;
+  max-width: calc(100% - 8px); margin: 0 4px 3px; padding: 1px 6px; font-size: 12px; line-height: 1.35;
   background: #efe6cbe8; border-radius: 2px; box-shadow: 0 1px 2px #0004;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.wasteland .center-scroll.four .row-scroll .card.item .card-arrow { right: 4px; bottom: 3px; }
+/* M78-N2：箭头只占名称条右端（高 22px、贴底），图片区底部的效果/重量角标用满宽，二者不抢同一位置 */
+.wasteland .center-scroll.four .row-scroll .card.item .card-arrow { right: 4px; bottom: 1px; height: 22px; z-index: 1; }
+/* M78-N3：精灵图图块边缘会带进相邻图块的碎片，物品卡里裁掉外圈 4% */
+.wasteland .center-scroll.four .row-scroll .card.item .art > .ink-sprite { clip-path: inset(4%); }
 .slot-span {
   position: absolute; top: 4px; left: 4px; z-index: 2; font-size: 12px; padding: 1px 5px;
   background: #3a3426e6; color: #f2e6c3; border-radius: 2px;
@@ -204,10 +207,10 @@
 .center-scroll.four .section.carried .row-scroll.slots5 > .pot-card.compact { width: auto; }
 /* 选卡浮窗里展开的锅内容 */
 .apop.card-pop.pot { width: clamp(260px, calc((100vw - 576px) / 3 + 30px), 380px); }
-.pot-detail { display: flex; flex-direction: column; gap: 4px; margin: 0 0 6px; color: var(--ink); }
-.pot-detail > :first-child { margin-right: 36px; }
-.pot-detail .pc-row { background: var(--paper); }
-.pot-detail .pc-slot { color: var(--ink); background: #e9dfc4; }
+/* M78-N1：类名改为 pot-pop-detail——右栏 ItemDetail 原本就用 .pot-detail，上一版把纸面深色字漏进了右栏 */
+.pot-pop-detail { display: flex; flex-direction: column; gap: 4px; margin: 6px 0 0; padding-top: 6px; border-top: 1px solid #82724c66; max-height: 200px; overflow-y: auto; }
+.pot-pop-detail .pc-row { background: var(--paper); color: var(--ink); }
+.pot-pop-detail .pc-slot { color: var(--ink); background: #e9dfc4; }
 
 /* B3 火堆卡：左列两行（燃料+等待烹饪 / 投木+点燃或熄灭），关键操作不滚动可见；加工位跟着变矮 */
 .center-scroll.four .fire-card { padding: 4px; gap: 6px; }
@@ -258,3 +261,19 @@
 
 /* B6 底栏右侧给发布时注入的“构建 xxx”标签留位，不与“已保存”重叠 */
 .footer { padding-right: 170px; }
+
+/* ───── 试玩修复 M78 ───── */
+/* N1 根因见上方 .pot-pop-detail 注释：只改了浮窗内锅内容的类名，右栏 .pot-detail 回到原来的右栏字色，不另加覆盖规则（避免压掉警示色） */
+/* N4 等待烹饪的禁用原因最多两行，完整原因在悬停提示 */
+.center-scroll.four .fire-card .fc-btn.cook small { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
+/* 锅卡名称（不带实例号）与第二行 */
+.pot-card.compact .pc-title b { font-size: 14px; }
+.pot-card.compact .pc-title small { font-size: 11px; }
+/* 选卡浮窗：操作在上、锅内容在下，浮窗本身不再整体滚动把主按钮滚走 */
+.apop.card-pop.pot { overflow-y: hidden; display: flex; flex-direction: column; }
+.apop.card-pop.pot .apop-body { min-height: 0; display: flex; flex-direction: column; }
+.apop.card-pop.pot .apop-body > .tbar { flex: 0 0 auto; }
+.apop.card-pop.pot .pot-pop-detail { flex: 1 1 auto; min-height: 48px; }
+/* 结果提示条：落在底栏，最多两行，完整内容在悬停提示 */
+.toast { max-width: min(760px, 70vw); }
+.toast span { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; line-height: 1.3; }
