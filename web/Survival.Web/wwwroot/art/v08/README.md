@@ -7,7 +7,7 @@
 参考：`doc/策划案/主界面美术换肤 v0.8/assets/主界面风格参考.png`。使用 ImageGen 按该参考制作位图。场景与物品均不包含界面文字、数字或按钮；所有游戏信息仍由 Razor 组件根据真实状态渲染。没有把参考整屏当作游戏背景。
 
 - 8 张 1536×1024 场景：camp、field、woods、stream、village、hardware、scrapyard、clinic。
-- 5 张 1280×1280 透明图集：supplies、tools、equipment、creatures、resources；每张 4×4，共 80 个图位，另有 fire 别名。覆盖当前配置全部 46 个物品。
+- 5 张 1254×1254 透明图集：supplies、tools、equipment、creatures、resources；每张 4×4，共 80 个图位，另有 fire 别名。覆盖当前配置全部 46 个物品。
 - paper.svg、iron.svg：代码绘制的低对比纹理。HUD 的 8 个小图标由 VitalIcon.razor 绘制，保持缩放清晰。
 - 物品通过 SVG 内层 viewport 裁切，外层适应不同卡片尺寸；内层显式设置 overflow，避免旧的全局 SVG 样式使相邻图位漏出。没有复制 80 张解码后的大图。
 - 未知未来场景保留原配置路径，未收录的未来图标保留原有 fallback。当前已知物品不存在缺图键。

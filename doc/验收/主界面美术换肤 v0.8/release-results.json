@@ -1,0 +1,1615 @@
+{
+  "beforeBuild": "2026-10-28 · b5b25e3",
+  "build": "2026-10-28 · 30775e3",
+  "css": "css/wasteland.css?v=30775e3",
+  "theme": "game wasteland",
+  "hardware": {
+    "before": [
+      {
+        "InstanceId": 9,
+        "ItemId": "scrap",
+        "Count": 4,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "hardware",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      }
+    ],
+    "after": [
+      {
+        "InstanceId": 9,
+        "ItemId": "scrap",
+        "Count": 3,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "hardware",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 12,
+        "ItemId": "scrap",
+        "Count": 1,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "carried",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": true,
+        "InContainer": false,
+        "InFacility": false
+      }
+    ],
+    "restored": [
+      {
+        "InstanceId": 9,
+        "ItemId": "scrap",
+        "Count": 3,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "hardware",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 12,
+        "ItemId": "scrap",
+        "Count": 1,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "carried",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": true,
+        "InContainer": false,
+        "InFacility": false
+      }
+    ]
+  },
+  "campBeforeReload": {
+    "SchemaVersion": "7",
+    "ConfigVersion": "0.6",
+    "GameMinute": 540,
+    "Seed": 1577962896,
+    "Rng": {
+      "State": 2072024102
+    },
+    "NextInstanceId": 32,
+    "NextActionId": 2,
+    "NextProcessSeq": 2,
+    "SegmentCount": 6,
+    "Stats": {
+      "Health": 20,
+      "Satiety": 79.40000000000003,
+      "Hydration": 78.79999999999998,
+      "Energy": 18,
+      "Wakefulness": 88.00000000000003,
+      "Morale": 59.80000000000001,
+      "HealthMax": 20,
+      "EnergyMax": 20
+    },
+    "Body": {
+      "Immunity": 70.49999999999997,
+      "Infected": true,
+      "VirusLoad": 1.2134114583333333,
+      "HighImmunityMinutes": 0,
+      "BandageVirusReadyAt": 0,
+      "AntibioticUntil": null,
+      "AntibioticReadyAt": 0,
+      "BleedTriggers": 0,
+      "BleedDamage": 0,
+      "VirusWarned": []
+    },
+    "Skills": {
+      "crafting": {
+        "Level": 1,
+        "Xp": 0
+      },
+      "medicine": {
+        "Level": 1,
+        "Xp": 0
+      },
+      "firearms": {
+        "Level": 1,
+        "Xp": 0
+      },
+      "blade": {
+        "Level": 1,
+        "Xp": 0
+      },
+      "spear": {
+        "Level": 1,
+        "Xp": 0
+      },
+      "unarmed": {
+        "Level": 1,
+        "Xp": 0
+      },
+      "archery": {
+        "Level": 1,
+        "Xp": 0
+      },
+      "blunt": {
+        "Level": 1,
+        "Xp": 0
+      }
+    },
+    "DiarrheaUntil": null,
+    "BandageReadyAt": 0,
+    "AlertLatched": {
+      "Health": false,
+      "Satiety": false,
+      "Hydration": false,
+      "Energy": false,
+      "Wakefulness": false,
+      "Morale": false
+    },
+    "ZeroLatched": {
+      "Health": false,
+      "Satiety": false,
+      "Hydration": false,
+      "Energy": false,
+      "Wakefulness": false,
+      "Morale": false
+    },
+    "CurrentLocation": "camp",
+    "Locations": {
+      "camp": {
+        "Discovered": true,
+        "Visited": true,
+        "Progress": 100,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": true,
+          "FuelMinutes": 150,
+          "WentOut": false,
+          "AttachedPotId": 1,
+          "FacilityId": "camp:fire",
+          "ProcessingSlots": [
+            1,
+            null
+          ],
+          "Processes": [],
+          "Completed": [
+            "boil_root#1@6"
+          ]
+        },
+        "ClearCharges": 3,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      },
+      "field": {
+        "Discovered": true,
+        "Visited": false,
+        "Progress": 0,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": false,
+          "FuelMinutes": 0,
+          "WentOut": false,
+          "AttachedPotId": null,
+          "FacilityId": "",
+          "ProcessingSlots": [],
+          "Processes": [],
+          "Completed": []
+        },
+        "ClearCharges": 4,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      },
+      "stream": {
+        "Discovered": false,
+        "Visited": false,
+        "Progress": 0,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": false,
+          "FuelMinutes": 0,
+          "WentOut": false,
+          "AttachedPotId": null,
+          "FacilityId": "",
+          "ProcessingSlots": [],
+          "Processes": [],
+          "Completed": []
+        },
+        "ClearCharges": 3,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      },
+      "woods": {
+        "Discovered": false,
+        "Visited": false,
+        "Progress": 0,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": false,
+          "FuelMinutes": 0,
+          "WentOut": false,
+          "AttachedPotId": null,
+          "FacilityId": "",
+          "ProcessingSlots": [],
+          "Processes": [],
+          "Completed": []
+        },
+        "ClearCharges": 4,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      },
+      "village": {
+        "Discovered": false,
+        "Visited": false,
+        "Progress": 0,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": false,
+          "FuelMinutes": 0,
+          "WentOut": false,
+          "AttachedPotId": null,
+          "FacilityId": "",
+          "ProcessingSlots": [],
+          "Processes": [],
+          "Completed": []
+        },
+        "ClearCharges": 3,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      },
+      "hardware": {
+        "Discovered": false,
+        "Visited": false,
+        "Progress": 0,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": false,
+          "FuelMinutes": 0,
+          "WentOut": false,
+          "AttachedPotId": null,
+          "FacilityId": "",
+          "ProcessingSlots": [],
+          "Processes": [],
+          "Completed": []
+        },
+        "ClearCharges": 2,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      },
+      "clinic": {
+        "Discovered": false,
+        "Visited": false,
+        "Progress": 0,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": false,
+          "FuelMinutes": 0,
+          "WentOut": false,
+          "AttachedPotId": null,
+          "FacilityId": "",
+          "ProcessingSlots": [],
+          "Processes": [],
+          "Completed": []
+        },
+        "ClearCharges": 2,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      },
+      "scrapyard": {
+        "Discovered": false,
+        "Visited": false,
+        "Progress": 0,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": false,
+          "FuelMinutes": 0,
+          "WentOut": false,
+          "AttachedPotId": null,
+          "FacilityId": "",
+          "ProcessingSlots": [],
+          "Processes": [],
+          "Completed": []
+        },
+        "ClearCharges": 3,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      }
+    },
+    "UnlockedEdges": [
+      "camp__field"
+    ],
+    "Resources": {
+      "roots": {
+        "Available": 6,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "field_fiber": {
+        "Available": 8,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "water": {
+        "Available": null,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "herbs": {
+        "Available": 4,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "wood": {
+        "Available": 10,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "stones": {
+        "Available": 8,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "berries": {
+        "Available": 6,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "woods_fiber": {
+        "Available": 8,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "supply_box": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "misc_box": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "pot_box": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "tool_box": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "med_cabinet": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "cloth_bag": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "metal_heap": {
+        "Available": 12,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "parts_box": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "hardware_weapon_cache": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "village_weapon_locker": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "clinic_medical_supply": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "village_cold_box": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      }
+    },
+    "Items": [
+      {
+        "InstanceId": 1,
+        "ItemId": "pot",
+        "Count": 1,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "facility:camp:fire",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": true
+      },
+      {
+        "InstanceId": 2,
+        "ItemId": "lighter",
+        "Count": 1,
+        "ExpiresAt": null,
+        "Durability": 42.5,
+        "MaxDurability": 42.5,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "carried",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": true,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 3,
+        "ItemId": "canned_food",
+        "Count": 2,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "camp",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 4,
+        "ItemId": "clean_water",
+        "Count": 2,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "camp",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 5,
+        "ItemId": "wood",
+        "Count": 2,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "camp",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 6,
+        "ItemId": "fiber",
+        "Count": 2,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "camp",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 7,
+        "ItemId": "cloth",
+        "Count": 2,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "camp",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 8,
+        "ItemId": "stone",
+        "Count": 2,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "camp",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 31,
+        "ItemId": "boiled_root",
+        "Count": 1,
+        "ExpiresAt": 1980,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "pot:1",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": true,
+        "InFacility": false
+      }
+    ],
+    "Main": null,
+    "Sub": null,
+    "Progress": {
+      "Flags": [
+        "cooked"
+      ],
+      "SevenDayShown": false,
+      "Dead": false,
+      "Death": null,
+      "LastDamageCause": ""
+    },
+    "Log": [
+      {
+        "Minute": 480,
+        "Kind": "Info",
+        "Text": "第1日 08:00，你在临时营地醒来。目标：活过七天。"
+      },
+      {
+        "Minute": 510,
+        "Kind": "ActionStarted",
+        "Text": "开始等待烹饪。"
+      },
+      {
+        "Minute": 515,
+        "Kind": "Alert",
+        "Text": "饱饱在体内的病毒积累起来了：进入感染状态，病毒1.00。免疫≥80时它会被完全压制，连续高免疫可自然治愈。"
+      },
+      {
+        "Minute": 540,
+        "Kind": "FacilityDone",
+        "Text": "临时营地火堆：生块根#31已煮成水煮块根，留在金属锅#1里（净水−500毫升）。"
+      },
+      {
+        "Minute": 540,
+        "Kind": "ActionCompleted",
+        "Text": "等待烹饪结束：临时营地火堆1项加工全部完成，成品留在原位（30分钟）。"
+      }
+    ],
+    "Layout": {},
+    "RecentRequestIds": [
+      "17609629ea1b4825b681a6b9cc141d64"
+    ],
+    "WorldEnemies": [
+      {
+        "Id": 1,
+        "EnemyId": "shambler",
+        "LocationId": "field",
+        "Hp": 3.6,
+        "Hostile": true,
+        "Engaged": false,
+        "HiddenUntil": null,
+        "SpawnMinute": 480,
+        "XpHits": {},
+        "FearRoll": 0,
+        "FearRollMinute": null
+      },
+      {
+        "Id": 2,
+        "EnemyId": "crawler",
+        "LocationId": "stream",
+        "Hp": 2.8,
+        "Hostile": true,
+        "Engaged": false,
+        "HiddenUntil": null,
+        "SpawnMinute": 480,
+        "XpHits": {},
+        "FearRoll": 0,
+        "FearRollMinute": null
+      },
+      {
+        "Id": 3,
+        "EnemyId": "feral_dog",
+        "LocationId": "scrapyard",
+        "Hp": 3.2,
+        "Hostile": true,
+        "Engaged": false,
+        "HiddenUntil": null,
+        "SpawnMinute": 480,
+        "XpHits": {},
+        "FearRoll": 0,
+        "FearRollMinute": null
+      },
+      {
+        "Id": 4,
+        "EnemyId": "shambler",
+        "LocationId": "village",
+        "Hp": 3.6,
+        "Hostile": true,
+        "Engaged": false,
+        "HiddenUntil": null,
+        "SpawnMinute": 480,
+        "XpHits": {},
+        "FearRoll": 0,
+        "FearRollMinute": null
+      },
+      {
+        "Id": 5,
+        "EnemyId": "shambler",
+        "LocationId": "village",
+        "Hp": 3.6,
+        "Hostile": true,
+        "Engaged": false,
+        "HiddenUntil": null,
+        "SpawnMinute": 480,
+        "XpHits": {},
+        "FearRoll": 0,
+        "FearRollMinute": null
+      },
+      {
+        "Id": 6,
+        "EnemyId": "shambler",
+        "LocationId": "hardware",
+        "Hp": 3.6,
+        "Hostile": true,
+        "Engaged": false,
+        "HiddenUntil": null,
+        "SpawnMinute": 480,
+        "XpHits": {},
+        "FearRoll": 0,
+        "FearRollMinute": null
+      }
+    ],
+    "NextWorldEnemyId": 7,
+    "SpawnNextCheck": 1440,
+    "PatrolNextCheck": 720,
+    "EncounterGraceUntil": 0,
+    "Encounter": null,
+    "Battle": null,
+    "NextBattleId": 1,
+    "EquippedWeaponId": null,
+    "Traits": [],
+    "Story": {
+      "Legacy": false,
+      "BaobaoPresent": true,
+      "AwakeningDone": true,
+      "FoodWaterRead": true,
+      "TutorialEnemyId": 1,
+      "TutorialTriggered": false,
+      "TutorialBattleId": null,
+      "TutorialWon": false,
+      "TutorialGrantEventId": "",
+      "TutorialFusionDone": false,
+      "FusionIds": [],
+      "PendingDialogues": [],
+      "SeenDialogues": [
+        "awakening_1",
+        "awakening_2",
+        "food_water"
+      ],
+      "DialogueLog": [
+        {
+          "Id": 1,
+          "EventId": "opening",
+          "Counterpart": "饱饱",
+          "Minute": 480,
+          "LocationId": "camp",
+          "Ended": true,
+          "Legacy": false,
+          "Lines": [
+            {
+              "LineId": "awakening_1",
+              "Order": 1,
+              "Speaker": "饱饱",
+              "Text": "醒醒……醒醒，我饿了。",
+              "Note": "你在临时营地醒来。声音不是从耳边传来的，而是在你的脑子里。",
+              "Side": "Right",
+              "Minute": 480,
+              "LocationId": "camp"
+            },
+            {
+              "LineId": "awakening_2",
+              "Order": 2,
+              "Speaker": "饱饱",
+              "Text": "我不知道我叫什么。我只知道，我饿了。",
+              "Note": "你在心里给它起了个名字：饱饱。",
+              "Side": "Right",
+              "Minute": 480,
+              "LocationId": "camp"
+            },
+            {
+              "LineId": "food_water",
+              "Order": 3,
+              "Speaker": "饱饱",
+              "Text": "先找点能吃的。还有水。",
+              "Note": "营地地面有罐头和净水；往农野荒地是出路。吃什么、喝什么、何时出发由你决定。",
+              "Side": "Right",
+              "Minute": 480,
+              "LocationId": "camp"
+            }
+          ],
+          "Pending": []
+        }
+      ],
+      "NextDialogueSessionId": 2
+    }
+  },
+  "artReady": [
+    {
+      "src": "art/v08/resources.png",
+      "width": 1254
+    },
+    {
+      "src": "art/v08/tools.png",
+      "width": 1254
+    },
+    {
+      "src": "art/v08/supplies.png",
+      "width": 1254
+    }
+  ],
+  "finalErrors": [],
+  "campAfterReload": {
+    "SchemaVersion": "7",
+    "ConfigVersion": "0.6",
+    "GameMinute": 540,
+    "Seed": 1577962896,
+    "Rng": {
+      "State": 2072024102
+    },
+    "NextInstanceId": 32,
+    "NextActionId": 2,
+    "NextProcessSeq": 2,
+    "SegmentCount": 6,
+    "Stats": {
+      "Health": 20,
+      "Satiety": 79.40000000000003,
+      "Hydration": 78.79999999999998,
+      "Energy": 18,
+      "Wakefulness": 88.00000000000003,
+      "Morale": 59.80000000000001,
+      "HealthMax": 20,
+      "EnergyMax": 20
+    },
+    "Body": {
+      "Immunity": 70.49999999999997,
+      "Infected": true,
+      "VirusLoad": 1.2134114583333333,
+      "HighImmunityMinutes": 0,
+      "BandageVirusReadyAt": 0,
+      "AntibioticUntil": null,
+      "AntibioticReadyAt": 0,
+      "BleedTriggers": 0,
+      "BleedDamage": 0,
+      "VirusWarned": []
+    },
+    "Skills": {
+      "crafting": {
+        "Level": 1,
+        "Xp": 0
+      },
+      "medicine": {
+        "Level": 1,
+        "Xp": 0
+      },
+      "firearms": {
+        "Level": 1,
+        "Xp": 0
+      },
+      "blade": {
+        "Level": 1,
+        "Xp": 0
+      },
+      "spear": {
+        "Level": 1,
+        "Xp": 0
+      },
+      "unarmed": {
+        "Level": 1,
+        "Xp": 0
+      },
+      "archery": {
+        "Level": 1,
+        "Xp": 0
+      },
+      "blunt": {
+        "Level": 1,
+        "Xp": 0
+      }
+    },
+    "DiarrheaUntil": null,
+    "BandageReadyAt": 0,
+    "AlertLatched": {
+      "Health": false,
+      "Satiety": false,
+      "Hydration": false,
+      "Energy": false,
+      "Wakefulness": false,
+      "Morale": false
+    },
+    "ZeroLatched": {
+      "Health": false,
+      "Satiety": false,
+      "Hydration": false,
+      "Energy": false,
+      "Wakefulness": false,
+      "Morale": false
+    },
+    "CurrentLocation": "camp",
+    "Locations": {
+      "camp": {
+        "Discovered": true,
+        "Visited": true,
+        "Progress": 100,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": true,
+          "FuelMinutes": 150,
+          "WentOut": false,
+          "AttachedPotId": 1,
+          "FacilityId": "camp:fire",
+          "ProcessingSlots": [
+            1,
+            null
+          ],
+          "Processes": [],
+          "Completed": [
+            "boil_root#1@6"
+          ]
+        },
+        "ClearCharges": 3,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      },
+      "field": {
+        "Discovered": true,
+        "Visited": false,
+        "Progress": 0,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": false,
+          "FuelMinutes": 0,
+          "WentOut": false,
+          "AttachedPotId": null,
+          "FacilityId": "",
+          "ProcessingSlots": [],
+          "Processes": [],
+          "Completed": []
+        },
+        "ClearCharges": 4,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      },
+      "stream": {
+        "Discovered": false,
+        "Visited": false,
+        "Progress": 0,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": false,
+          "FuelMinutes": 0,
+          "WentOut": false,
+          "AttachedPotId": null,
+          "FacilityId": "",
+          "ProcessingSlots": [],
+          "Processes": [],
+          "Completed": []
+        },
+        "ClearCharges": 3,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      },
+      "woods": {
+        "Discovered": false,
+        "Visited": false,
+        "Progress": 0,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": false,
+          "FuelMinutes": 0,
+          "WentOut": false,
+          "AttachedPotId": null,
+          "FacilityId": "",
+          "ProcessingSlots": [],
+          "Processes": [],
+          "Completed": []
+        },
+        "ClearCharges": 4,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      },
+      "village": {
+        "Discovered": false,
+        "Visited": false,
+        "Progress": 0,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": false,
+          "FuelMinutes": 0,
+          "WentOut": false,
+          "AttachedPotId": null,
+          "FacilityId": "",
+          "ProcessingSlots": [],
+          "Processes": [],
+          "Completed": []
+        },
+        "ClearCharges": 3,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      },
+      "hardware": {
+        "Discovered": false,
+        "Visited": false,
+        "Progress": 0,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": false,
+          "FuelMinutes": 0,
+          "WentOut": false,
+          "AttachedPotId": null,
+          "FacilityId": "",
+          "ProcessingSlots": [],
+          "Processes": [],
+          "Completed": []
+        },
+        "ClearCharges": 2,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      },
+      "clinic": {
+        "Discovered": false,
+        "Visited": false,
+        "Progress": 0,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": false,
+          "FuelMinutes": 0,
+          "WentOut": false,
+          "AttachedPotId": null,
+          "FacilityId": "",
+          "ProcessingSlots": [],
+          "Processes": [],
+          "Completed": []
+        },
+        "ClearCharges": 2,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      },
+      "scrapyard": {
+        "Discovered": false,
+        "Visited": false,
+        "Progress": 0,
+        "TriggeredMilestones": [],
+        "Facility": {
+          "ShelterBuilt": false,
+          "BedBuilt": false,
+          "FireLit": false,
+          "FuelMinutes": 0,
+          "WentOut": false,
+          "AttachedPotId": null,
+          "FacilityId": "",
+          "ProcessingSlots": [],
+          "Processes": [],
+          "Completed": []
+        },
+        "ClearCharges": 3,
+        "ClearRefillProgress": 0,
+        "ClearUpdatedMinute": 540
+      }
+    },
+    "UnlockedEdges": [
+      "camp__field"
+    ],
+    "Resources": {
+      "roots": {
+        "Available": 6,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "field_fiber": {
+        "Available": 8,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "water": {
+        "Available": null,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "herbs": {
+        "Available": 4,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "wood": {
+        "Available": 10,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "stones": {
+        "Available": 8,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "berries": {
+        "Available": 6,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "woods_fiber": {
+        "Available": 8,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "supply_box": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "misc_box": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "pot_box": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "tool_box": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "med_cabinet": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "cloth_bag": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "metal_heap": {
+        "Available": 12,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "parts_box": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "hardware_weapon_cache": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "village_weapon_locker": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "clinic_medical_supply": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      },
+      "village_cold_box": {
+        "Available": 1,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": false
+      }
+    },
+    "Items": [
+      {
+        "InstanceId": 1,
+        "ItemId": "pot",
+        "Count": 1,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "facility:camp:fire",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": true
+      },
+      {
+        "InstanceId": 2,
+        "ItemId": "lighter",
+        "Count": 1,
+        "ExpiresAt": null,
+        "Durability": 42.5,
+        "MaxDurability": 42.5,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "carried",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": true,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 3,
+        "ItemId": "canned_food",
+        "Count": 2,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "camp",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 4,
+        "ItemId": "clean_water",
+        "Count": 2,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "camp",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 5,
+        "ItemId": "wood",
+        "Count": 2,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "camp",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 6,
+        "ItemId": "fiber",
+        "Count": 2,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "camp",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 7,
+        "ItemId": "cloth",
+        "Count": 2,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "camp",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 8,
+        "ItemId": "stone",
+        "Count": 2,
+        "ExpiresAt": null,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "camp",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": false,
+        "InFacility": false
+      },
+      {
+        "InstanceId": 31,
+        "ItemId": "boiled_root",
+        "Count": 1,
+        "ExpiresAt": 1980,
+        "Durability": null,
+        "MaxDurability": null,
+        "LoadedAmmo": 0,
+        "LoadedAmmoId": null,
+        "Owner": "pot:1",
+        "ReservedBy": null,
+        "PlacedOrder": null,
+        "Source": null,
+        "IsCarried": false,
+        "InContainer": true,
+        "InFacility": false
+      }
+    ],
+    "Main": null,
+    "Sub": null,
+    "Progress": {
+      "Flags": [
+        "cooked"
+      ],
+      "SevenDayShown": false,
+      "Dead": false,
+      "Death": null,
+      "LastDamageCause": ""
+    },
+    "Log": [
+      {
+        "Minute": 480,
+        "Kind": "Info",
+        "Text": "第1日 08:00，你在临时营地醒来。目标：活过七天。"
+      },
+      {
+        "Minute": 510,
+        "Kind": "ActionStarted",
+        "Text": "开始等待烹饪。"
+      },
+      {
+        "Minute": 515,
+        "Kind": "Alert",
+        "Text": "饱饱在体内的病毒积累起来了：进入感染状态，病毒1.00。免疫≥80时它会被完全压制，连续高免疫可自然治愈。"
+      },
+      {
+        "Minute": 540,
+        "Kind": "FacilityDone",
+        "Text": "临时营地火堆：生块根#31已煮成水煮块根，留在金属锅#1里（净水−500毫升）。"
+      },
+      {
+        "Minute": 540,
+        "Kind": "ActionCompleted",
+        "Text": "等待烹饪结束：临时营地火堆1项加工全部完成，成品留在原位（30分钟）。"
+      }
+    ],
+    "Layout": {},
+    "RecentRequestIds": [
+      "17609629ea1b4825b681a6b9cc141d64"
+    ],
+    "WorldEnemies": [
+      {
+        "Id": 1,
+        "EnemyId": "shambler",
+        "LocationId": "field",
+        "Hp": 3.6,
+        "Hostile": true,
+        "Engaged": false,
+        "HiddenUntil": null,
+        "SpawnMinute": 480,
+        "XpHits": {},
+        "FearRoll": 0,
+        "FearRollMinute": null
+      },
+      {
+        "Id": 2,
+        "EnemyId": "crawler",
+        "LocationId": "stream",
+        "Hp": 2.8,
+        "Hostile": true,
+        "Engaged": false,
+        "HiddenUntil": null,
+        "SpawnMinute": 480,
+        "XpHits": {},
+        "FearRoll": 0,
+        "FearRollMinute": null
+      },
+      {
+        "Id": 3,
+        "EnemyId": "feral_dog",
+        "LocationId": "scrapyard",
+        "Hp": 3.2,
+        "Hostile": true,
+        "Engaged": false,
+        "HiddenUntil": null,
+        "SpawnMinute": 480,
+        "XpHits": {},
+        "FearRoll": 0,
+        "FearRollMinute": null
+      },
+      {
+        "Id": 4,
+        "EnemyId": "shambler",
+        "LocationId": "village",
+        "Hp": 3.6,
+        "Hostile": true,
+        "Engaged": false,
+        "HiddenUntil": null,
+        "SpawnMinute": 480,
+        "XpHits": {},
+        "FearRoll": 0,
+        "FearRollMinute": null
+      },
+      {
+        "Id": 5,
+        "EnemyId": "shambler",
+        "LocationId": "village",
+        "Hp": 3.6,
+        "Hostile": true,
+        "Engaged": false,
+        "HiddenUntil": null,
+        "SpawnMinute": 480,
+        "XpHits": {},
+        "FearRoll": 0,
+        "FearRollMinute": null
+      },
+      {
+        "Id": 6,
+        "EnemyId": "shambler",
+        "LocationId": "hardware",
+        "Hp": 3.6,
+        "Hostile": true,
+        "Engaged": false,
+        "HiddenUntil": null,
+        "SpawnMinute": 480,
+        "XpHits": {},
+        "FearRoll": 0,
+        "FearRollMinute": null
+      }
+    ],
+    "NextWorldEnemyId": 7,
+    "SpawnNextCheck": 1440,
+    "PatrolNextCheck": 720,
+    "EncounterGraceUntil": 0,
+    "Encounter": null,
+    "Battle": null,
+    "NextBattleId": 1,
+    "EquippedWeaponId": null,
+    "Traits": [],
+    "Story": {
+      "Legacy": false,
+      "BaobaoPresent": true,
+      "AwakeningDone": true,
+      "FoodWaterRead": true,
+      "TutorialEnemyId": 1,
+      "TutorialTriggered": false,
+      "TutorialBattleId": null,
+      "TutorialWon": false,
+      "TutorialGrantEventId": "",
+      "TutorialFusionDone": false,
+      "FusionIds": [],
+      "PendingDialogues": [],
+      "SeenDialogues": [
+        "awakening_1",
+        "awakening_2",
+        "food_water"
+      ],
+      "DialogueLog": [
+        {
+          "Id": 1,
+          "EventId": "opening",
+          "Counterpart": "饱饱",
+          "Minute": 480,
+          "LocationId": "camp",
+          "Ended": true,
+          "Legacy": false,
+          "Lines": [
+            {
+              "LineId": "awakening_1",
+              "Order": 1,
+              "Speaker": "饱饱",
+              "Text": "醒醒……醒醒，我饿了。",
+              "Note": "你在临时营地醒来。声音不是从耳边传来的，而是在你的脑子里。",
+              "Side": "Right",
+              "Minute": 480,
+              "LocationId": "camp"
+            },
+            {
+              "LineId": "awakening_2",
+              "Order": 2,
+              "Speaker": "饱饱",
+              "Text": "我不知道我叫什么。我只知道，我饿了。",
+              "Note": "你在心里给它起了个名字：饱饱。",
+              "Side": "Right",
+              "Minute": 480,
+              "LocationId": "camp"
+            },
+            {
+              "LineId": "food_water",
+              "Order": 3,
+              "Speaker": "饱饱",
+              "Text": "先找点能吃的。还有水。",
+              "Note": "营地地面有罐头和净水；往农野荒地是出路。吃什么、喝什么、何时出发由你决定。",
+              "Side": "Right",
+              "Minute": 480,
+              "LocationId": "camp"
+            }
+          ],
+          "Pending": []
+        }
+      ],
+      "NextDialogueSessionId": 2
+    }
+  },
+  "campRestored": true,
+  "hardwareRestored": true,
+  "campImages": [
+    {
+      "id": "camp",
+      "width": 1536
+    },
+    {
+      "id": "field",
+      "width": 1536
+    },
+    {
+      "id": "supplies",
+      "width": 1254
+    },
+    {
+      "id": "tools",
+      "width": 1254
+    },
+    {
+      "id": "creatures",
+      "width": 1254
+    }
+  ],
+  "checkedAt": "2026-10-28T10:37:28.378Z"
+}
