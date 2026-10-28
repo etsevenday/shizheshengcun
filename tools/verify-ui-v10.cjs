@@ -7,15 +7,17 @@ const url = process.argv[2] || 'http://127.0.0.1:5180/?dev=1';
 const out = path.resolve(process.argv[3] || 'doc/验收/主界面视觉精修 v1.0');
 const key = 'survival.save.v1';
 const sizes = [[1280, 720], [1600, 900], [1920, 1080]];
+let browser;
 
 (async () => {
   const fixtures = JSON.parse(await fs.readFile('doc/验收/主界面美术换肤 v0.8/fixtures.json', 'utf8'));
   await fs.mkdir(path.join(out, 'screenshots'), { recursive: true });
-  const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+  browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true,
+    ...(process.env.BROWSER_PROXY ? { proxy: { server: process.env.BROWSER_PROXY } } : {}) });
   const context = await browser.newContext({ viewport: { width: 1600, height: 900 }, deviceScaleFactor: 1 });
   const page = await context.newPage();
-  page.setDefaultTimeout(12000);
-  const report = { url, browser: browser.version(), results: [], errors: [], httpErrors: [] };
+  page.setDefaultTimeout(url.startsWith('https:') ? 45000 : 12000);
+  const report = { url, browser: browser.version(), proxy: !!process.env.BROWSER_PROXY, results: [], errors: [], httpErrors: [] };
   page.on('pageerror', e => report.errors.push(e.message));
   page.on('response', r => { if (r.status() >= 400) report.httpErrors.push({ url: r.url(), status: r.status() }); });
   const save = () => fs.writeFile(path.join(out, 'illustration-results.json'), JSON.stringify(report, null, 2));
@@ -25,8 +27,9 @@ const sizes = [[1280, 720], [1600, 900], [1920, 1080]];
     await save();
   };
   const load = async state => {
+    await page.goto(new URL('icon-192.png', url).href, { waitUntil: 'domcontentloaded' });
     await page.evaluate(([k, s]) => localStorage.setItem(k, JSON.stringify(s)), [key, state]);
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
     await page.getByRole('button', { name: '继续', exact: true }).click();
     await page.locator('.game').waitFor();
     await page.evaluate(async () => {
@@ -141,4 +144,4 @@ const sizes = [[1280, 720], [1600, 900], [1920, 1080]];
   if (report.errors.length || report.httpErrors.length) report.failed++;
   await save(); await browser.close();
   if (report.failed) process.exitCode = 1;
-})().catch(e => { console.error(e); process.exitCode = 1; });
+})().catch(async e => { console.error(e); await browser?.close(); process.exitCode = 1; });

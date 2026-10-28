@@ -22,7 +22,14 @@ const sizes = [[1280,720],[1600,900],[1920,1080]];
   const state = () => page.evaluate(k => JSON.parse(localStorage.getItem(k)),key);
   const checkpoint = async name => {const s=await state();report.results.push({name,minute:s.GameMinute,items:s.Items,main:s.Main,round:s.Battle?.Round,ap:s.Battle?.PlayerAp});await write();};
   const run = async (name,fn) => {try{const detail=await fn();report.results.push({name,pass:true,detail});console.log('PASS '+name);}catch(e){report.results.push({name,pass:false,error:e.message});console.log('FAIL '+name+': '+e.message);}await write();};
-  const load = async s => {await page.evaluate(([k,s])=>localStorage.setItem(k,JSON.stringify(s)),[key,s]);await page.reload({waitUntil:'networkidle'});await page.getByRole('button',{name:'继续',exact:true}).click();await page.locator('.game').waitFor();};
+  const load = async s => {
+    // Stop the previous game's action/battle timers before replacing the fixture.
+    // On a slower network they can otherwise save over it while reload waits.
+    await page.goto(new URL('icon-192.png',url).href,{waitUntil:'domcontentloaded'});
+    await page.evaluate(([k,s])=>localStorage.setItem(k,JSON.stringify(s)),[key,s]);
+    await page.goto(url,{waitUntil:'networkidle'});
+    await page.getByRole('button',{name:'继续',exact:true}).click();await page.locator('.game').waitFor();
+  };
   const shot = name => page.screenshot({path:path.join(out,'screenshots',name+'.png')});
   const waitIdle = async () => {await page.waitForFunction(k=>{const s=JSON.parse(localStorage.getItem(k));return !s.Main&&!s.Sub;},key);await page.locator('.cprog').waitFor({state:'hidden'});};
   const resize = ([width,height]) => page.setViewportSize({width,height});

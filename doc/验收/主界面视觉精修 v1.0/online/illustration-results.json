@@ -1,0 +1,1418 @@
+{
+  "url": "https://etsevenday.github.io/shizheshengcun/?dev=1",
+  "browser": "155.0.8059.40",
+  "proxy": true,
+  "results": [
+    {
+      "name": "six real screenshots, card art and controls remain inside all four rows",
+      "pass": true,
+      "detail": [
+        {
+          "scene": "hardware",
+          "width": 1280,
+          "height": 720,
+          "rows": [
+            {
+              "cls": "panel map-row",
+              "x": 236,
+              "y": 62,
+              "width": 724,
+              "height": 140,
+              "top": 62,
+              "right": 960,
+              "bottom": 202,
+              "left": 236
+            },
+            {
+              "cls": "panel facility-row",
+              "x": 236,
+              "y": 208,
+              "width": 724,
+              "height": 208,
+              "top": 208,
+              "right": 960,
+              "bottom": 416,
+              "left": 236
+            },
+            {
+              "cls": "panel section ground",
+              "x": 236,
+              "y": 422,
+              "width": 724,
+              "height": 124,
+              "top": 422,
+              "right": 960,
+              "bottom": 546,
+              "left": 236
+            },
+            {
+              "cls": "panel section carried",
+              "x": 236,
+              "y": 552,
+              "width": 724,
+              "height": 124,
+              "top": 552,
+              "right": 960,
+              "bottom": 676,
+              "left": 236
+            }
+          ],
+          "items": [
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 326,
+              "titleLeft": 326,
+              "infoLeft": 326,
+              "titleBottom": 489,
+              "artTop": 461,
+              "artBottom": 537,
+              "infoTop": 500.546875,
+              "cardBottom": 539,
+              "infoBottom": 525.4375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 545,
+              "titleLeft": 545,
+              "infoLeft": 545,
+              "titleBottom": 489,
+              "artTop": 461,
+              "artBottom": 537,
+              "infoTop": 500.546875,
+              "cardBottom": 539,
+              "infoBottom": 525.4375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 326,
+              "titleLeft": 326,
+              "infoLeft": 326,
+              "titleBottom": 619,
+              "artTop": 591,
+              "artBottom": 667,
+              "infoTop": 630.546875,
+              "cardBottom": 669,
+              "infoBottom": 655.4375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 545,
+              "titleLeft": 545,
+              "infoLeft": 545,
+              "titleBottom": 619,
+              "artTop": 591,
+              "artBottom": 667,
+              "infoTop": 630.546875,
+              "cardBottom": 669,
+              "infoBottom": 655.4375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 764,
+              "titleLeft": 764,
+              "infoLeft": 764,
+              "titleBottom": 619,
+              "artTop": 591,
+              "artBottom": 667,
+              "infoTop": 630.546875,
+              "cardBottom": 669,
+              "infoBottom": 655.4375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 983,
+              "titleLeft": 983,
+              "infoLeft": 983,
+              "titleBottom": 619,
+              "artTop": 591,
+              "artBottom": 667,
+              "infoTop": 630.546875,
+              "cardBottom": 669,
+              "infoBottom": 655.4375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 1202,
+              "titleLeft": 1202,
+              "infoLeft": 1202,
+              "titleBottom": 619,
+              "artTop": 591,
+              "artBottom": 667,
+              "infoTop": 630.546875,
+              "cardBottom": 669,
+              "infoBottom": 655.4375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 1421,
+              "titleLeft": 1421,
+              "infoLeft": 1421,
+              "titleBottom": 619,
+              "artTop": 591,
+              "artBottom": 667,
+              "infoTop": 630.546875,
+              "cardBottom": 669,
+              "infoBottom": 655.4375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 1640,
+              "titleLeft": 1640,
+              "infoLeft": 1640,
+              "titleBottom": 618,
+              "artTop": 591,
+              "artBottom": 667,
+              "infoTop": 630.046875,
+              "cardBottom": 669,
+              "infoBottom": 654.9375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 2118,
+              "titleLeft": 2118,
+              "infoLeft": 2118,
+              "titleBottom": 618,
+              "artTop": 591,
+              "artBottom": 667,
+              "infoTop": 630.046875,
+              "cardBottom": 669,
+              "infoBottom": 654.9375
+            }
+          ],
+          "targets": [
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            }
+          ]
+        },
+        {
+          "scene": "hardware",
+          "width": 1600,
+          "height": 900,
+          "rows": [
+            {
+              "cls": "panel map-row",
+              "x": 240,
+              "y": 70,
+              "width": 1036,
+              "height": 163.5625,
+              "top": 70,
+              "right": 1276,
+              "bottom": 233.5625,
+              "left": 240
+            },
+            {
+              "cls": "panel facility-row",
+              "x": 240,
+              "y": 243.5625,
+              "width": 1036,
+              "height": 296.4375,
+              "top": 243.5625,
+              "right": 1276,
+              "bottom": 540,
+              "left": 240
+            },
+            {
+              "cls": "panel section ground",
+              "x": 240,
+              "y": 550,
+              "width": 1036,
+              "height": 145,
+              "top": 550,
+              "right": 1276,
+              "bottom": 695,
+              "left": 240
+            },
+            {
+              "cls": "panel section carried",
+              "x": 240,
+              "y": 705,
+              "width": 1036,
+              "height": 145,
+              "top": 705,
+              "right": 1276,
+              "bottom": 850,
+              "left": 240
+            }
+          ],
+          "items": [
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 342,
+              "titleLeft": 342,
+              "infoLeft": 342,
+              "titleBottom": 623,
+              "artTop": 593,
+              "artBottom": 689,
+              "infoTop": 641.546875,
+              "cardBottom": 691,
+              "infoBottom": 670.4375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 563,
+              "titleLeft": 563,
+              "infoLeft": 563,
+              "titleBottom": 623,
+              "artTop": 593,
+              "artBottom": 689,
+              "infoTop": 641.546875,
+              "cardBottom": 691,
+              "infoBottom": 670.4375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 342,
+              "titleLeft": 342,
+              "infoLeft": 342,
+              "titleBottom": 778,
+              "artTop": 748,
+              "artBottom": 844,
+              "infoTop": 796.546875,
+              "cardBottom": 846,
+              "infoBottom": 825.4375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 563,
+              "titleLeft": 563,
+              "infoLeft": 563,
+              "titleBottom": 778,
+              "artTop": 748,
+              "artBottom": 844,
+              "infoTop": 796.546875,
+              "cardBottom": 846,
+              "infoBottom": 825.4375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 784,
+              "titleLeft": 784,
+              "infoLeft": 784,
+              "titleBottom": 778,
+              "artTop": 748,
+              "artBottom": 844,
+              "infoTop": 796.546875,
+              "cardBottom": 846,
+              "infoBottom": 825.4375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 1005,
+              "titleLeft": 1005,
+              "infoLeft": 1005,
+              "titleBottom": 778,
+              "artTop": 748,
+              "artBottom": 844,
+              "infoTop": 796.546875,
+              "cardBottom": 846,
+              "infoBottom": 825.4375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 1226,
+              "titleLeft": 1226,
+              "infoLeft": 1226,
+              "titleBottom": 778,
+              "artTop": 748,
+              "artBottom": 844,
+              "infoTop": 796.546875,
+              "cardBottom": 846,
+              "infoBottom": 825.4375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 1447,
+              "titleLeft": 1447,
+              "infoLeft": 1447,
+              "titleBottom": 778,
+              "artTop": 748,
+              "artBottom": 844,
+              "infoTop": 796.546875,
+              "cardBottom": 846,
+              "infoBottom": 825.4375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 1668,
+              "titleLeft": 1668,
+              "infoLeft": 1668,
+              "titleBottom": 777,
+              "artTop": 748,
+              "artBottom": 844,
+              "infoTop": 796.046875,
+              "cardBottom": 846,
+              "infoBottom": 824.9375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 2148,
+              "titleLeft": 2148,
+              "infoLeft": 2148,
+              "titleBottom": 777,
+              "artTop": 748,
+              "artBottom": 844,
+              "infoTop": 796.046875,
+              "cardBottom": 846,
+              "infoBottom": 824.9375
+            }
+          ],
+          "targets": [
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            }
+          ]
+        },
+        {
+          "scene": "hardware",
+          "width": 1920,
+          "height": 1080,
+          "rows": [
+            {
+              "cls": "panel map-row",
+              "x": 240,
+              "y": 70,
+              "width": 1356,
+              "height": 180,
+              "top": 70,
+              "right": 1596,
+              "bottom": 250,
+              "left": 240
+            },
+            {
+              "cls": "panel facility-row",
+              "x": 240,
+              "y": 260,
+              "width": 1356,
+              "height": 314,
+              "top": 260,
+              "right": 1596,
+              "bottom": 574,
+              "left": 240
+            },
+            {
+              "cls": "panel section ground",
+              "x": 240,
+              "y": 584,
+              "width": 1356,
+              "height": 218,
+              "top": 584,
+              "right": 1596,
+              "bottom": 802,
+              "left": 240
+            },
+            {
+              "cls": "panel section carried",
+              "x": 240,
+              "y": 812,
+              "width": 1356,
+              "height": 218,
+              "top": 812,
+              "right": 1596,
+              "bottom": 1030,
+              "left": 240
+            }
+          ],
+          "items": [
+            {
+              "h": 172,
+              "artHeight": 98,
+              "artRight": 414,
+              "titleLeft": 254,
+              "infoLeft": 254,
+              "titleBottom": 657,
+              "artTop": 657,
+              "artBottom": 755,
+              "infoTop": 755,
+              "cardBottom": 797,
+              "infoBottom": 795
+            },
+            {
+              "h": 172,
+              "artHeight": 98,
+              "artRight": 587,
+              "titleLeft": 427,
+              "infoLeft": 427,
+              "titleBottom": 657,
+              "artTop": 657,
+              "artBottom": 755,
+              "infoTop": 755,
+              "cardBottom": 797,
+              "infoBottom": 795
+            },
+            {
+              "h": 172,
+              "artHeight": 98,
+              "artRight": 414,
+              "titleLeft": 254,
+              "infoLeft": 254,
+              "titleBottom": 885,
+              "artTop": 885,
+              "artBottom": 983,
+              "infoTop": 983,
+              "cardBottom": 1025,
+              "infoBottom": 1023
+            },
+            {
+              "h": 172,
+              "artHeight": 98,
+              "artRight": 587,
+              "titleLeft": 427,
+              "infoLeft": 427,
+              "titleBottom": 885,
+              "artTop": 885,
+              "artBottom": 983,
+              "infoTop": 983,
+              "cardBottom": 1025,
+              "infoBottom": 1023
+            },
+            {
+              "h": 172,
+              "artHeight": 98,
+              "artRight": 760,
+              "titleLeft": 600,
+              "infoLeft": 600,
+              "titleBottom": 885,
+              "artTop": 885,
+              "artBottom": 983,
+              "infoTop": 983,
+              "cardBottom": 1025,
+              "infoBottom": 1023
+            },
+            {
+              "h": 172,
+              "artHeight": 98,
+              "artRight": 933,
+              "titleLeft": 773,
+              "infoLeft": 773,
+              "titleBottom": 885,
+              "artTop": 885,
+              "artBottom": 983,
+              "infoTop": 983,
+              "cardBottom": 1025,
+              "infoBottom": 1023
+            },
+            {
+              "h": 172,
+              "artHeight": 98,
+              "artRight": 1106,
+              "titleLeft": 946,
+              "infoLeft": 946,
+              "titleBottom": 885,
+              "artTop": 885,
+              "artBottom": 983,
+              "infoTop": 983,
+              "cardBottom": 1025,
+              "infoBottom": 1023
+            },
+            {
+              "h": 172,
+              "artHeight": 98,
+              "artRight": 1279,
+              "titleLeft": 1119,
+              "infoLeft": 1119,
+              "titleBottom": 885,
+              "artTop": 885,
+              "artBottom": 983,
+              "infoTop": 983,
+              "cardBottom": 1025,
+              "infoBottom": 1023
+            },
+            {
+              "h": 172,
+              "artHeight": 99,
+              "artRight": 1452,
+              "titleLeft": 1292,
+              "infoLeft": 1292,
+              "titleBottom": 884,
+              "artTop": 884,
+              "artBottom": 983,
+              "infoTop": 983,
+              "cardBottom": 1025,
+              "infoBottom": 1023
+            },
+            {
+              "h": 172,
+              "artHeight": 99,
+              "artRight": 1884,
+              "titleLeft": 1724,
+              "infoLeft": 1724,
+              "titleBottom": 884,
+              "artTop": 884,
+              "artBottom": 983,
+              "infoTop": 983,
+              "cardBottom": 1025,
+              "infoBottom": 1023
+            }
+          ],
+          "targets": [
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            }
+          ]
+        },
+        {
+          "scene": "camp",
+          "width": 1280,
+          "height": 720,
+          "rows": [
+            {
+              "cls": "panel map-row",
+              "x": 236,
+              "y": 62,
+              "width": 724,
+              "height": 140,
+              "top": 62,
+              "right": 960,
+              "bottom": 202,
+              "left": 236
+            },
+            {
+              "cls": "panel facility-row",
+              "x": 236,
+              "y": 208,
+              "width": 724,
+              "height": 208,
+              "top": 208,
+              "right": 960,
+              "bottom": 416,
+              "left": 236
+            },
+            {
+              "cls": "panel section ground",
+              "x": 236,
+              "y": 422,
+              "width": 724,
+              "height": 124,
+              "top": 422,
+              "right": 960,
+              "bottom": 546,
+              "left": 236
+            },
+            {
+              "cls": "panel section carried",
+              "x": 236,
+              "y": 552,
+              "width": 724,
+              "height": 124,
+              "top": 552,
+              "right": 960,
+              "bottom": 676,
+              "left": 236
+            }
+          ],
+          "items": [
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 326,
+              "titleLeft": 326,
+              "infoLeft": 326,
+              "titleBottom": 489,
+              "artTop": 461,
+              "artBottom": 537,
+              "infoTop": 500.546875,
+              "cardBottom": 539,
+              "infoBottom": 525.4375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 545,
+              "titleLeft": 545,
+              "infoLeft": 545,
+              "titleBottom": 489,
+              "artTop": 461,
+              "artBottom": 537,
+              "infoTop": 500.546875,
+              "cardBottom": 539,
+              "infoBottom": 525.4375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 764,
+              "titleLeft": 764,
+              "infoLeft": 764,
+              "titleBottom": 489,
+              "artTop": 461,
+              "artBottom": 537,
+              "infoTop": 500.546875,
+              "cardBottom": 539,
+              "infoBottom": 525.4375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 983,
+              "titleLeft": 983,
+              "infoLeft": 983,
+              "titleBottom": 489,
+              "artTop": 461,
+              "artBottom": 537,
+              "infoTop": 500.546875,
+              "cardBottom": 539,
+              "infoBottom": 525.4375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 1202,
+              "titleLeft": 1202,
+              "infoLeft": 1202,
+              "titleBottom": 489,
+              "artTop": 461,
+              "artBottom": 537,
+              "infoTop": 500.546875,
+              "cardBottom": 539,
+              "infoBottom": 525.4375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 1421,
+              "titleLeft": 1421,
+              "infoLeft": 1421,
+              "titleBottom": 489,
+              "artTop": 461,
+              "artBottom": 537,
+              "infoTop": 500.546875,
+              "cardBottom": 539,
+              "infoBottom": 525.4375
+            },
+            {
+              "h": 80,
+              "artHeight": 76,
+              "artRight": 326,
+              "titleLeft": 326,
+              "infoLeft": 326,
+              "titleBottom": 618,
+              "artTop": 591,
+              "artBottom": 667,
+              "infoTop": 630.046875,
+              "cardBottom": 669,
+              "infoBottom": 654.9375
+            }
+          ],
+          "targets": [
+            {
+              "label": "把整口金属锅#1取到随身",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "从锅中取1份净水到随身",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "把生块根#31从锅中取到随身",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            }
+          ]
+        },
+        {
+          "scene": "camp",
+          "width": 1600,
+          "height": 900,
+          "rows": [
+            {
+              "cls": "panel map-row",
+              "x": 240,
+              "y": 70,
+              "width": 1036,
+              "height": 163.5625,
+              "top": 70,
+              "right": 1276,
+              "bottom": 233.5625,
+              "left": 240
+            },
+            {
+              "cls": "panel facility-row",
+              "x": 240,
+              "y": 243.5625,
+              "width": 1036,
+              "height": 296.4375,
+              "top": 243.5625,
+              "right": 1276,
+              "bottom": 540,
+              "left": 240
+            },
+            {
+              "cls": "panel section ground",
+              "x": 240,
+              "y": 550,
+              "width": 1036,
+              "height": 145,
+              "top": 550,
+              "right": 1276,
+              "bottom": 695,
+              "left": 240
+            },
+            {
+              "cls": "panel section carried",
+              "x": 240,
+              "y": 705,
+              "width": 1036,
+              "height": 145,
+              "top": 705,
+              "right": 1276,
+              "bottom": 850,
+              "left": 240
+            }
+          ],
+          "items": [
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 342,
+              "titleLeft": 342,
+              "infoLeft": 342,
+              "titleBottom": 623,
+              "artTop": 593,
+              "artBottom": 689,
+              "infoTop": 641.546875,
+              "cardBottom": 691,
+              "infoBottom": 670.4375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 563,
+              "titleLeft": 563,
+              "infoLeft": 563,
+              "titleBottom": 623,
+              "artTop": 593,
+              "artBottom": 689,
+              "infoTop": 641.546875,
+              "cardBottom": 691,
+              "infoBottom": 670.4375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 784,
+              "titleLeft": 784,
+              "infoLeft": 784,
+              "titleBottom": 623,
+              "artTop": 593,
+              "artBottom": 689,
+              "infoTop": 641.546875,
+              "cardBottom": 691,
+              "infoBottom": 670.4375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 1005,
+              "titleLeft": 1005,
+              "infoLeft": 1005,
+              "titleBottom": 623,
+              "artTop": 593,
+              "artBottom": 689,
+              "infoTop": 641.546875,
+              "cardBottom": 691,
+              "infoBottom": 670.4375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 1226,
+              "titleLeft": 1226,
+              "infoLeft": 1226,
+              "titleBottom": 623,
+              "artTop": 593,
+              "artBottom": 689,
+              "infoTop": 641.546875,
+              "cardBottom": 691,
+              "infoBottom": 670.4375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 1447,
+              "titleLeft": 1447,
+              "infoLeft": 1447,
+              "titleBottom": 623,
+              "artTop": 593,
+              "artBottom": 689,
+              "infoTop": 641.546875,
+              "cardBottom": 691,
+              "infoBottom": 670.4375
+            },
+            {
+              "h": 100,
+              "artHeight": 96,
+              "artRight": 342,
+              "titleLeft": 342,
+              "infoLeft": 342,
+              "titleBottom": 777,
+              "artTop": 748,
+              "artBottom": 844,
+              "infoTop": 796.046875,
+              "cardBottom": 846,
+              "infoBottom": 824.9375
+            }
+          ],
+          "targets": [
+            {
+              "label": "把整口金属锅#1取到随身",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "从锅中取1份净水到随身",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "把生块根#31从锅中取到随身",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            }
+          ]
+        },
+        {
+          "scene": "camp",
+          "width": 1920,
+          "height": 1080,
+          "rows": [
+            {
+              "cls": "panel map-row",
+              "x": 240,
+              "y": 70,
+              "width": 1356,
+              "height": 180,
+              "top": 70,
+              "right": 1596,
+              "bottom": 250,
+              "left": 240
+            },
+            {
+              "cls": "panel facility-row",
+              "x": 240,
+              "y": 260,
+              "width": 1356,
+              "height": 314,
+              "top": 260,
+              "right": 1596,
+              "bottom": 574,
+              "left": 240
+            },
+            {
+              "cls": "panel section ground",
+              "x": 240,
+              "y": 584,
+              "width": 1356,
+              "height": 218,
+              "top": 584,
+              "right": 1596,
+              "bottom": 802,
+              "left": 240
+            },
+            {
+              "cls": "panel section carried",
+              "x": 240,
+              "y": 812,
+              "width": 1356,
+              "height": 218,
+              "top": 812,
+              "right": 1596,
+              "bottom": 1030,
+              "left": 240
+            }
+          ],
+          "items": [
+            {
+              "h": 172,
+              "artHeight": 98,
+              "artRight": 414,
+              "titleLeft": 254,
+              "infoLeft": 254,
+              "titleBottom": 657,
+              "artTop": 657,
+              "artBottom": 755,
+              "infoTop": 755,
+              "cardBottom": 797,
+              "infoBottom": 795
+            },
+            {
+              "h": 172,
+              "artHeight": 98,
+              "artRight": 587,
+              "titleLeft": 427,
+              "infoLeft": 427,
+              "titleBottom": 657,
+              "artTop": 657,
+              "artBottom": 755,
+              "infoTop": 755,
+              "cardBottom": 797,
+              "infoBottom": 795
+            },
+            {
+              "h": 172,
+              "artHeight": 98,
+              "artRight": 760,
+              "titleLeft": 600,
+              "infoLeft": 600,
+              "titleBottom": 657,
+              "artTop": 657,
+              "artBottom": 755,
+              "infoTop": 755,
+              "cardBottom": 797,
+              "infoBottom": 795
+            },
+            {
+              "h": 172,
+              "artHeight": 98,
+              "artRight": 933,
+              "titleLeft": 773,
+              "infoLeft": 773,
+              "titleBottom": 657,
+              "artTop": 657,
+              "artBottom": 755,
+              "infoTop": 755,
+              "cardBottom": 797,
+              "infoBottom": 795
+            },
+            {
+              "h": 172,
+              "artHeight": 98,
+              "artRight": 1106,
+              "titleLeft": 946,
+              "infoLeft": 946,
+              "titleBottom": 657,
+              "artTop": 657,
+              "artBottom": 755,
+              "infoTop": 755,
+              "cardBottom": 797,
+              "infoBottom": 795
+            },
+            {
+              "h": 172,
+              "artHeight": 98,
+              "artRight": 1279,
+              "titleLeft": 1119,
+              "infoLeft": 1119,
+              "titleBottom": 657,
+              "artTop": 657,
+              "artBottom": 755,
+              "infoTop": 755,
+              "cardBottom": 797,
+              "infoBottom": 795
+            },
+            {
+              "h": 172,
+              "artHeight": 99,
+              "artRight": 414,
+              "titleLeft": 254,
+              "infoLeft": 254,
+              "titleBottom": 884,
+              "artTop": 884,
+              "artBottom": 983,
+              "infoTop": 983,
+              "cardBottom": 1025,
+              "infoBottom": 1023
+            }
+          ],
+          "targets": [
+            {
+              "label": "把整口金属锅#1取到随身",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "从锅中取1份净水到随身",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "把生块根#31从锅中取到随身",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "拾取1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            },
+            {
+              "label": "放下1件",
+              "width": 40,
+              "height": 40,
+              "hit": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "selected, exhausted, hover and keyboard focus retain meaning",
+      "pass": true,
+      "detail": {
+        "selected": true,
+        "exhausted": true,
+        "keyboardFocus": true
+      }
+    },
+    {
+      "name": "new art decodes in the deployed base path; missing art never blocks play",
+      "pass": true,
+      "detail": {
+        "decoded": [
+          {
+            "src": "art/v10/resource-focus.png",
+            "width": 2172,
+            "height": 724
+          },
+          {
+            "src": "art/v10/hardware.png",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "selection": true,
+        "actionAvailable": true,
+        "navigation": true,
+        "timeUnchanged": true
+      }
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "failed": 0
+}
