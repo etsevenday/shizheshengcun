@@ -20,6 +20,8 @@
 .center-scroll.four .rows2-inner > .map-row,
 .center-scroll.four .rows2-inner > .facility-row { min-height: 0; height: auto; max-height: none; overflow: hidden; }
 .center-scroll.four .rows2-inner > .battle-overlay { grid-row: 1 / span 2; min-height: 0; overflow: hidden; }
+.center-scroll.four .rows2-inner > .battle-overlay.bt-team { grid-row: 1; }
+.center-scroll.four .rows2-inner > .battle-overlay.bt-console { grid-row: 2; }
 .center-scroll.four .panel-host { position: absolute; inset: 0; z-index: 30; }
 .center-scroll.four > .section.ground { grid-row: 3; }
 .center-scroll.four > .section.carried { grid-row: 4; }
@@ -122,3 +124,60 @@
 .ov-text small { color: var(--muted); }
 .ov-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .ov-foot .primary { width: auto; padding: 10px 18px; }
+
+/* ───── 两行战斗（S14 §18.4、R03 §7.4）：①队伍场景（我方左、敌方右）②操作台；两行各等于正常行高 ───── */
+.battle-overlay.bt-team { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 4px; padding: 5px 8px 6px; }
+.battle-overlay.bt-team.aiming { border-color: #b8682a; }
+.bt-scene { display: grid; grid-template-columns: minmax(120px, 0.55fr) 22px minmax(0, 1.45fr); gap: 6px; min-height: 0; }
+.bt-scene .bt-ally { display: flex; min-height: 0; grid-template-columns: none; }
+.bt-scene .ally-card { flex: 1 1 auto; display: flex; flex-direction: row; gap: 6px; min-height: 0; padding: 2px; }
+.bt-scene .ally-art { flex: 1 1 0; min-width: 0; min-height: 0; max-height: none; }
+.bt-scene .ally-art img { height: 100%; max-height: none; width: auto; max-width: 100%; object-fit: contain; }
+.bt-scene .ally-foot { flex: 0 0 104px; display: flex; flex-direction: column; justify-content: flex-end; gap: 3px; padding: 2px 6px 3px 0; font-size: 13px; }
+.bt-scene .ally-head { border: 0; padding: 0; }
+.bt-scene .ally-foot .track { height: 6px; }
+.bt-scene .bt-foes { display: flex; gap: 6px; min-height: 0; }
+.bt-scene .foe-col { flex-direction: row; gap: 6px; min-height: 0; }
+.bt-scene .foe-col.front { flex: 2 1 0; }
+.bt-scene .foe-col.back { flex: 1 1 0; padding-top: 0; }
+.bt-scene .foe { flex: 1 1 0; max-height: none; min-width: 0; }
+.bt-scene .foe-main { flex: 1 1 auto; min-height: 0; flex-direction: column; align-items: stretch; }
+.bt-scene .foe-art { width: 100%; height: auto; flex: 1 1 auto; min-height: 0; }
+.bt-scene .foe-art svg, .bt-scene .foe-art img { width: 100%; height: 100%; max-height: 100%; }
+.bt-scene .foe-empty { align-self: center; }
+.bt-scene .foe.targetable { border-color: #e08a3c; box-shadow: 0 0 0 2px #e08a3c88, 0 2px 8px #0005; cursor: crosshair; }
+.bt-scene .foe.targetable.hover { box-shadow: 0 0 0 3px #f0b062, 0 2px 8px #0005; }
+.bt-scene .foe.unreachable { cursor: not-allowed; }
+.bt-scene .foe .st-chips .st:first-child { display: none; }
+
+.battle-overlay.bt-console {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: minmax(0, 1fr) auto;
+  gap: 3px 8px; padding: 5px 8px 6px;
+}
+.bt-console .bc-label { display: block; font-size: 12px; color: var(--muted); line-height: 14px; margin-bottom: 2px; white-space: nowrap; }
+.bt-console .bc-equip { grid-column: 1; grid-row: 1; display: grid; grid-template-columns: 34px minmax(0, 1fr); grid-template-rows: auto 1fr; column-gap: 5px; min-width: 0; max-width: 140px; }
+.bt-console .bc-equip .bc-label { grid-column: 1 / -1; }
+.bt-console .bc-weapon-art { width: 34px; height: 34px; border-radius: 4px; background: var(--paper); display: flex; align-items: center; justify-content: center; }
+.bt-console .bc-weapon-art svg { width: 30px; height: 30px; }
+.bt-console .bc-weapon-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.bt-console .bc-weapon-text b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-console .bc-weapon-text small { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-console .bc-groups { grid-column: 2; grid-row: 1; display: flex; gap: 10px; min-width: 0; min-height: 0; overflow-x: auto; overflow-y: hidden; }
+.bt-console .bc-group { flex: 0 0 auto; display: flex; flex-direction: column; min-height: 0; }
+.bt-console .bc-cmds { display: flex; gap: 4px; min-height: 0; }
+.bt-console .bc-cmds .cmdt { width: 58px; height: 58px; flex: 0 0 auto; }
+.bt-console .bc-status { grid-column: 3; grid-row: 1; max-width: 120px; min-width: 0; overflow: hidden; }
+.bt-console .bc-feed { grid-column: 1 / -1; grid-row: 2; display: flex; align-items: center; gap: 6px; min-height: 40px; min-width: 0; }
+.bt-console .bc-feed .bx-hint, .bt-console .bc-feed .bx-last { flex: 1 1 auto; min-width: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-console .bc-feed .bx-last { color: var(--muted); }
+.bt-console .bc-feed .bx-go { min-height: 40px; padding: 2px 12px; }
+.bt-console .bc-feed .bx-x { width: 40px; height: 40px; }
+@media (min-height: 801px) {
+  .bt-console .bc-cmds .cmdt { width: 66px; height: 66px; }
+  .bt-console .bc-feed { min-height: 40px; }
+  .bt-console .bc-feed .bx-go { min-height: 40px; }
+  .bt-console .bc-feed .bx-x { width: 40px; height: 40px; }
+}
+@media (min-height: 1000px) {
+  .bt-console .bc-cmds .cmdt { width: 78px; height: 78px; }
+}

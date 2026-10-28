@@ -2,9 +2,8 @@
 
 @* 战斗覆盖层（人物与战斗 v0.5 §16、v0.6 §07；开发计划 v0.5 假设 8、9、11）：
    替换地块栏两行（地图行 + 设施行），不叠加；地面/随身栏、左 HUD、右栏、顶栏保持可见。
-   战斗（S14 §14.2/§14.3、R03 §7.2）：顶部轮次、行动顺序与噪声 → 左：我方卡 + 紧邻的带图指令区与就近“执行·动作·AP”；
-   右：敌方 F1/F2 前排上下排靠中线、B1 后排更靠右（当前行动者高亮、已行动角标、可选目标亮框、射程不足写原因、公开意图）→ 最近战斗日志。
-   右栏只作可选详细预测；全流程在战斗区内完成。
+   战斗（S14 §18.4、R03 §7.4 取代 §14.3/§7.2 的左右混排与“执行”条）：第①行队伍场景（我方左、敌方右，F1/F2 前排靠中线、B1 后排更靠右），
+   第②行操作台（装备/技能/指令/道具/状态/一行短反馈）；右栏对象信息显示悬停或选中对象与实际预测。
    敌踪选择：同一位置显示敌方组成与“接敌 / 绕行10分钟”。 *@
 @{
     var s = G.S;
@@ -61,7 +60,16 @@ else if (b != null)
     var front = cfg.Scope.Slots.Where(x => x.StartsWith("F")).ToList();
     var back = cfg.Scope.Slots.Where(x => !x.StartsWith("F")).ToList();
     var apMax = cfg.Scope.HumanApPerActivation;
-    <div class="panel battle-overlay lr" role="region" aria-label="战斗">
+    var aiming = G.BattleAiming;
+    var aimSet = G.AimTargets();
+    var token = G.BattleExecToken();
+    var skills = opts.Where(o => o.Group is "attack" or "move").ToList();
+    var general = opts.Where(o => o.Group == "general" && o.Action != "switch_weapon").ToList();
+    var items = opts.Where(o => o.Group == "item").ToList();
+    @* 两行战斗（S14 §18.4、R03 §7.4，参考暗黑地牢1的分层）：第①行队伍场景——我方左、敌方右，脚下只放健康/AP/状态/槽位；
+       第②行当前行动者操作台——装备、带图技能、通用指令、道具、状态与一行短反馈。两行严格等于正常行高，不在两行外另铺指令/日志。
+       选技能进入瞄准：合法目标高亮、悬停看右栏实际预测、点击合法目标即提交；自用/无目标指令在操作台就近“确认”。右键/Esc 只取消瞄准。 *@
+    <div class="panel battle-overlay bt-team @(aiming ? "aiming" : "")" role="region" aria-label="战斗队伍" @oncontextmenu="CancelAim" @oncontextmenu:preventDefault="true">
         <div class="bt-head">
             <b>@(b.Tutorial ? "首战" : "战斗") · 第@(b.Round)轮</b>
             <div class="bt-queue" aria-label="本轮行动顺序">
@@ -78,129 +86,23 @@ else if (b != null)
                 噪声<span class="track thin"><i style="width:@Ui.Bar(b.Noise, cfg.Noise.Max)%"></i></span>@Ui.T(b.Noise)/@Ui.T(cfg.Noise.Max)
             </span>
         </div>
-
-        @* 左右分区（S14 §14.3、R03 §7.2）：我方卡固定在左、指令区紧邻其右；敌方真实卡集中在右，前排 F1/F2 上下排、靠近中线，后排 B1 更靠右；
-           只改视觉映射，槽位/范围/前压/目标 ID 仍按内核。空槽只留轻量标记。 *@
-        <div class="bt-arena">
+        <div class="bt-scene">
             <div class="bt-ally" aria-label="我方">
                 <div class="ally-card @(activeIdx == 0 ? "acting" : "")" id="bt-me">
-                    <div class="ally-head"><b>你</b>
-                        <span class="ap-pips" aria-label="@($"行动点{(b.PlayerActing ? b.PlayerAp : 0)}/{apMax}")" title="@(b.PlayerActing ? $"本次激活剩{b.PlayerAp}AP（不带入下轮）" : "等待轮到你")">
-                            @for (var i = 0; i < apMax; i++) { <i class="@(b.PlayerActing && i < b.PlayerAp ? "on" : "")"></i> }
-                            <small>@(b.PlayerActing ? $"AP {b.PlayerAp}/{apMax}" : "等待")</small>
-                        </span>
-                    </div>
                     <div class="ally-art">
                         <img src="img/portraits/protagonist.svg" alt="" />
                         <span class="ally-weapon" title="@(wi == null ? "徒手" : $"{w.Name}#{wi.InstanceId}")">@Icons.Markup(wi?.ItemId ?? "fists")</span>
                     </div>
-                    <div class="ally-body">
-                        <div class="hp-line"><span>健康</span><b>@Ui.N(s.Stats.Health)/@Ui.T(s.Stats.HealthMax)</b></div>
-                        <div class="track"><i style="width:@Ui.Bar(s.Stats.Health, s.Stats.HealthMax)%"></i></div>
-                        <div class="hp-line"><span>体力</span><b>@Ui.N(s.Stats.Energy)/@Ui.T(s.Stats.EnergyMax)</b></div>
-                        <div class="track en"><i style="width:@Ui.Bar(s.Stats.Energy, s.Stats.EnergyMax)%"></i></div>
-                        <div class="oc-line" title="@(b.FearSourceWorldId.HasValue ? (b.Frightened ? $"入战受惊（受惊率{Ui.Pct(b.FearChance)}），恐慌+{Ui.T(b.FearPanic)}" : $"入战未受惊（受惊率{Ui.Pct(b.FearChance)}）") : "")">恐慌 @Ui.N(b.Panic)@(b.Frightened ? "（受惊）" : "")</div>
-                        <div class="oc-line weapon-line">@(wi == null ? "徒手" : w.Name)@(wi?.Durability != null ? $" · 耐久{GameEngine.DurabilityText(wi)}" : "")@(w.UsesMagazine && wi != null ? $" · 弹{wi.LoadedAmmo}/{w.MagazineCapacity}" : "")@(w.ConsumesLooseAmmo ? $" · 箭{s.Items.Where(i => i.IsCarried && i.ItemId == w.AmmoId).Sum(i => i.Count)}" : "")</div>
-                        <div class="st-chips">
-                            @if (b.PlayerGuard) { <span class="st good">防御</span> }
-                            @if (b.PlayerStagger) { <span class="st bad">失衡</span> }
-                            @if (b.PlayerSlowActive || b.PlayerSlowPending) { <span class="st bad">减速</span> }
-                            @if (s.Body.BleedTriggers > 0) { <span class="st bad">出血×@s.Body.BleedTriggers</span> }
-                            @if (s.Body.Infected) { <span class="st bad">感染@(Ui.N(s.Body.VirusLoad))</span> }
+                    <div class="ally-foot">
+                        <div class="ally-head"><b>你</b>
+                            <span class="ap-pips" aria-label="@($"行动点{(b.PlayerActing ? b.PlayerAp : 0)}/{apMax}")" title="@(b.PlayerActing ? $"本次激活剩{b.PlayerAp}AP（不带入下轮）" : "等待轮到你")">
+                                @for (var i = 0; i < apMax; i++) { <i class="@(b.PlayerActing && i < b.PlayerAp ? "on" : "")"></i> }
+                                <small>@(b.PlayerActing ? $"AP {b.PlayerAp}/{apMax}" : "等待")</small>
+                            </span>
                         </div>
-                    </div>
-                </div>
-
-                <div class="bt-side">
-                    @* 带图指令（S14 §14.2）：图片为主体 + 短名 + AP/数量；不可用保留禁用态与短原因（完整原因在悬停/辅助名称）。点指令只预览，不执行。 *@
-                    <div class="bt-cmds grid" role="toolbar" aria-label="战斗指令">
-                        @foreach (var o in opts.Where(o => o.Action != "switch_weapon"))
-                        {
-                            var on = sel != null && sel.Action == o.Action && sel.ItemInstanceId == o.ItemInstanceId;
-                            var (art, glyph, qty) = CmdArt(o, wi, w);
-                            var oo = o;
-                            <button type="button" id="@($"cmd-{o.Action}")" class="cmdt @(on ? "on" : "") @(o.Available ? "" : "off")" disabled="@locked"
-                                    aria-label="@($"{ShortName(o)}，{ApText(o.Ap)}{(qty != null ? "，" + qty : "")}{(o.Reason != null ? "；不可用：" + o.Reason : "")}")"
-                                    title="@(o.Reason ?? $"{o.Label}：{ApText(o.Ap)}{(o.Energy > 0 ? $"，体力{Ui.N(o.Energy)}" : "")}；选中后在下方预览并执行")"
-                                    @onclick="() => G.PickBattleAction(oo.Action, oo.ItemInstanceId)">
-                                <span class="cmdt-art">@Icons.Markup(art)@if (glyph != null) {<em class="cmdt-glyph">@glyph</em>}</span>
-                                <span class="cmdt-name">@ShortName(o)</span>
-                                <small>@(qty != null ? qty + " · " : "")@ApText(o.Ap)</small>
-                                @if (!o.Available) { <span class="cmdt-why">@ShortWhy(o.Reason)</span> }
-                            </button>
-                        }
-                        @if (switches.Count > 0)
-                        {
-                            var swOn = G.BattleAction == "switch_weapon";
-                            <button type="button" id="cmd-switch" class="cmdt @(swOn ? "on" : "") @(switches.Any(o => o.Available) ? "" : "off")" disabled="@locked"
-                                    aria-label="@($"换武器，{ApText(switches[0].Ap)}，随身{switches.Count}个选择")" aria-expanded="@(G.Pop?.Kind == "switch")"
-                                    title="@($"在旁边的浮窗里选随身武器并执行（{ApText(switches[0].Ap)}）")" @onclick="OpenSwitch">
-                                <span class="cmdt-art">@Icons.Markup("cmd_switch")</span>
-                                <span class="cmdt-name">换武器</span>
-                                <small>@(switches.Count)把 · @ApText(switches[0].Ap)</small>
-                            </button>
-                        }
-                    </div>
-                    @* 就近预览与执行（R03 §7、§7.2）：先选动作或先选目标都行，信息齐备才可执行；每次渲染按真实状态重算，目标/武器/AP 变了就更新或禁用。
-                       “执行·动作·AP”与右栏共用同一真实指令，一次执行一个 requestId（同一画面上的连点只受理一次）。 *@
-                    <div class="bt-exec @(sel == null || waiting ? "idle" : "two")" aria-live="polite">
-                        @if (waiting)
-                        {
-                            <span class="bx-hint warn">敌方行动中…</span>
-                        }
-                        else if (G.BattleAction == "switch_weapon" && G.Pop?.Kind == "switch")
-                        {
-                            <span class="bx-hint">在换武器浮窗里选一把并执行</span>
-                        }
-                        else if (G.BattleAction == null || (G.BattleAction == "switch_weapon" && G.BattleItem == null))
-                        {
-                            var t0 = G.BattleTarget.HasValue ? e.BattleEnemyAt(b, G.BattleTarget.Value) : null;
-                            @if (t0 != null && t0.Alive)
-                            {
-                                <span class="bx-target"><span class="bx-art">@Icons.Markup("enemy_" + t0.EnemyId)</span><b>@t0.Slot</b>@e.EnemyName(t0)</span>
-                            }
-                            <span class="bx-hint">@(t0 != null && t0.Alive ? "已选目标 · 再选一个动作" : "选一个动作，或先点右侧敌人选目标")</span>
-                        }
-                        else
-                        {
-                            var cmd = G.CurrentBattleCommand();
-                            var p = e.PreviewCommand(s, cmd);
-                            var tp = p.Targets.FirstOrDefault();
-                            var needTarget = sel?.NeedsTarget == true;
-                            var token = G.BattleExecToken();
-                            <div class="bx-info">
-                                @if (tp != null)
-                                {
-                                    var te = e.BattleEnemyAt(b, tp.Index);
-                                    <span class="bx-target"><span class="bx-art">@Icons.Markup("enemy_" + (te?.EnemyId ?? ""))</span><b>@tp.Slot</b>@tp.Name@(p.Targets.Count > 1 ? $" 等{p.Targets.Count}个" : "")</span>
-                                }
-                                else if (needTarget)
-                                {
-                                    <span class="bx-target none">未选目标</span>
-                                }
-                                else if (sel != null)
-                                {
-                                    var (art0, _, qty0) = CmdArt(sel, wi, w);
-                                    <span class="bx-target"><span class="bx-art">@Icons.Markup(art0)</span>@ShortName(sel)@(qty0 != null ? " " + qty0 : "")</span>
-                                }
-                                <span class="bx-sum" title="@(p.Ok ? string.Join("；", p.Notes) : p.Reason)">
-                                    @if (!p.Ok) { <span class="warn">@p.Reason</span> }
-                                    else
-                                    {
-                                        @if (tp != null) { <span>命中@(Ui.Pct(tp.HitChance))</span><span>伤害@(Ui.N(tp.DamageMin))—@(Ui.N(tp.DamageMax))</span> }
-                                        @if (p.RetreatChance.HasValue) { <span>成功率@(Ui.Pct(p.RetreatChance.Value))</span> }
-                                        @if (p.EnergyCost > 0) { <span>体力−@(Ui.N(p.EnergyCost))</span> }
-                                        @if (p.AmmoText != null) { <span>@p.AmmoText</span> }
-                                        @if (tp == null && !p.RetreatChance.HasValue && p.Notes.Count > 0) { <span class="bx-note">@p.Notes[0]</span> }
-                                    }
-                                </span>
-                            </div>
-                            <div class="bx-act">
-                                <button type="button" class="bx-go" disabled="@(!p.Ok || locked)" title="@(p.Ok ? "点击执行才提交；同一指令只提交一次" : p.Reason)"
-                                        @onclick="() => Exec(token)">执行 · @(sel != null ? ShortName(sel) : p.Title) · @(p.Ap)AP</button>
-                                <button type="button" class="bx-x" aria-label="收起指令预览（Esc）" title="收起预览（Esc），不执行" @onclick="G.ClearBattleAction">×</button>
-                            </div>
-                        }
+                        <div class="track" title="@($"健康{Ui.N(s.Stats.Health)}/{Ui.T(s.Stats.HealthMax)}")"><i style="width:@Ui.Bar(s.Stats.Health, s.Stats.HealthMax)%"></i></div>
+                        <div class="track en" title="@($"体力{Ui.N(s.Stats.Energy)}/{Ui.T(s.Stats.EnergyMax)}")"><i style="width:@Ui.Bar(s.Stats.Energy, s.Stats.EnergyMax)%"></i></div>
+                        <div class="hp-line"><span>健康@(Ui.N(s.Stats.Health))</span><b>体力@(Ui.N(s.Stats.Energy))</b></div>
                     </div>
                 </div>
             </div>
@@ -209,16 +111,89 @@ else if (b != null)
 
             <div class="bt-foes" aria-label="敌方">
                 <div class="foe-col front">
-                    @foreach (var slot in front) { @Foe(slot, sel, activeIdx) }
+                    @foreach (var slot in front) { @Foe(slot, aiming, aimSet, activeIdx, token, locked) }
                 </div>
                 <div class="foe-col back">
-                    @foreach (var slot in back) { @Foe(slot, sel, activeIdx) }
+                    @foreach (var slot in back) { @Foe(slot, aiming, aimSet, activeIdx, token, locked) }
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="bt-log" data-wheel="y" aria-live="polite">
-            @foreach (var line in Enumerable.Reverse(b.Log).Take(4)) { <div>@line</div> }
+    <div class="panel battle-overlay bt-console" role="region" aria-label="操作台" @oncontextmenu="CancelAim" @oncontextmenu:preventDefault="true">
+        <div class="bc-equip" title="@($"当前武器：{(wi == null ? "徒手" : $"{w.Name}#{wi.InstanceId}")}")">
+            <span class="bc-label">装备</span>
+            <span class="bc-weapon-art">@Icons.Markup(wi?.ItemId ?? "fists")</span>
+            <span class="bc-weapon-text"><b>@(wi == null ? "徒手" : w.Name)</b>
+                <small>@(wi?.Durability != null ? $"耐久{GameEngine.DurabilityText(wi)}" : "")@(w.UsesMagazine && wi != null ? $" 弹{wi.LoadedAmmo}/{w.MagazineCapacity}" : "")@(w.ConsumesLooseAmmo ? $" 箭{s.Items.Where(i => i.IsCarried && i.ItemId == w.AmmoId).Sum(i => i.Count)}" : "")</small></span>
+        </div>
+        <div class="bc-groups" data-wheel="x">
+        <div class="bc-group skills" role="toolbar" aria-label="技能">
+            <span class="bc-label">技能</span>
+            <div class="bc-cmds">
+                @foreach (var o in skills) { @Cmd(o, sel, wi, w, locked) }
+            </div>
+        </div>
+        <div class="bc-group general" role="toolbar" aria-label="通用指令">
+            <span class="bc-label">指令</span>
+            <div class="bc-cmds">
+                @foreach (var o in general) { @Cmd(o, sel, wi, w, locked) }
+                @if (switches.Count > 0)
+                {
+                    var swOn = G.BattleAction == "switch_weapon";
+                    <button type="button" id="cmd-switch" class="cmdt @(swOn ? "on" : "") @(switches.Any(o => o.Available) ? "" : "off")" disabled="@locked"
+                            aria-label="@($"换武器，{ApText(switches[0].Ap)}，随身{switches.Count}个选择")" aria-expanded="@(G.Pop?.Kind == "switch")"
+                            title="@($"在旁边的浮窗里选随身武器并执行（{ApText(switches[0].Ap)}）")" @onclick="OpenSwitch">
+                        <span class="cmdt-art">@Icons.Markup("cmd_switch")</span>
+                        <span class="cmdt-name">换武器</span>
+                        <small>@(switches.Count)把 · @ApText(switches[0].Ap)</small>
+                    </button>
+                }
+            </div>
+        </div>
+        @if (items.Count > 0)
+        {
+            <div class="bc-group items" role="toolbar" aria-label="道具">
+                <span class="bc-label">道具</span>
+                <div class="bc-cmds">
+                    @foreach (var o in items) { @Cmd(o, sel, wi, w, locked) }
+                </div>
+            </div>
+        }
+        </div>
+        <div class="bc-status" aria-label="战斗状态">
+            <span class="bc-label">状态</span>
+            <div class="st-chips">
+                <span class="st" title="恐慌越高命中能力越低">恐慌@(Ui.N(b.Panic))@(b.Frightened ? "·受惊" : "")</span>
+                @if (b.PlayerGuard) { <span class="st good">防御</span> }
+                @if (b.PlayerStagger) { <span class="st bad">失衡</span> }
+                @if (b.PlayerSlowActive || b.PlayerSlowPending) { <span class="st bad">减速</span> }
+                @if (s.Body.BleedTriggers > 0) { <span class="st bad">出血×@s.Body.BleedTriggers</span> }
+                @if (s.Body.Infected) { <span class="st bad">感染@(Ui.N(s.Body.VirusLoad))</span> }
+            </div>
+        </div>
+        @* 一行短反馈 + 自用/无目标指令的就近确认；完整日志在右栏与行动日志 *@
+        <div class="bc-feed" aria-live="polite">
+            @if (waiting)
+            {
+                <span class="bx-hint warn">敌方行动中…</span>
+            }
+            else if (sel != null && aiming)
+            {
+                <span class="bx-hint">@(sel.Action == "scatter" ? "点亮起的任一前排目标提交散射" : "把鼠标移到亮起的目标上看右侧预测，点击目标执行") · 右键/Esc 取消</span>
+            }
+            else if (sel != null && sel.Action != "switch_weapon")
+            {
+                var p = e.PreviewCommand(s, G.CurrentBattleCommand());
+                <span class="bx-hint @(p.Ok ? "" : "warn")" title="@(p.Ok ? string.Join("；", p.Notes) : p.Reason)">@(p.Ok ? (p.RetreatChance.HasValue ? $"成功率{Ui.Pct(p.RetreatChance.Value)}" : p.Notes.FirstOrDefault() ?? ShortName(sel)) : p.Reason)</span>
+                <button type="button" class="bx-go" id="bt-confirm" disabled="@(!p.Ok || locked)" title="@(p.Ok ? "点击确认才提交；同一指令只提交一次" : p.Reason)"
+                        @onclick="() => Exec(token)">确认 · @ShortName(sel) · @(p.Ap)AP</button>
+                <button type="button" class="bx-x" aria-label="取消（Esc）" title="取消（Esc/右键），不执行" @onclick="G.ClearBattleAction">×</button>
+            }
+            else
+            {
+                <span class="bx-last" title="完整战斗记录在右栏与行动日志">@(b.Log.LastOrDefault() ?? "选一个技能，再点亮起的目标")</span>
+            }
         </div>
     </div>
 
@@ -270,7 +245,7 @@ else if (b != null)
         await G.StartAction(ActionRequest.Bypass());
     }
 
-    private RenderFragment Foe(string slot, BattleCommandOption? sel, int activeIdx) => __builder =>
+    private RenderFragment Foe(string slot, bool aiming, IReadOnlyCollection<int> aimSet, int activeIdx, string token, bool locked) => __builder =>
     {
         var s = G.S;
         var e = G.E;
@@ -283,13 +258,15 @@ else if (b != null)
         }
         var ec = e.Enemy(en.EnemyId);
         var idx = en.Index;
-        var targetable = sel != null && sel.NeedsTarget && sel.Targets.Contains(idx);
-        var unreachable = sel != null && sel.NeedsTarget && !sel.Targets.Contains(idx);
-        var reachWhy = unreachable ? e.CommandBlocked(s, BattleCommand.Of(sel!.Action, idx, sel.ItemInstanceId)) : null;
+        var targetable = aiming && aimSet.Contains(idx);
+        var unreachable = aiming && !aimSet.Contains(idx);
+        var reachWhy = unreachable ? (e.CommandBlocked(s, BattleCommand.Of(G.BattleAction!, idx, G.BattleItem)) ?? "不在本指令范围内") : null;
         var picked = G.BattleTarget == idx;
-        <div @key="@("foe" + idx)" id="@($"foe-{idx}")" class="foe @(idx == activeIdx ? "acting" : "") @(targetable ? "targetable" : "") @(unreachable ? "unreachable" : "") @(en.Acted ? "acted-done" : "") @(picked ? "selected" : "")"
-             role="button" tabindex="0" aria-pressed="@picked" aria-label="@($"{slot} {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}，意图{en.IntentLabel}{(reachWhy != null ? "；" + reachWhy : "")}")"
-             title="@(reachWhy ?? "点击选为目标（不会直接攻击）")" @onclick="() => G.PickBattleTarget(idx)" @onkeydown="ev => FoeKey(ev, idx)">
+        var tip = reachWhy ?? (targetable ? "点击即对它执行所选技能（右侧是实际预测）" : "点击选中查看（不会攻击）；先选技能再点亮起的目标才执行");
+        <div @key="@("foe" + idx)" id="@($"foe-{idx}")" class="foe @(idx == activeIdx ? "acting" : "") @(targetable ? "targetable" : "") @(unreachable ? "unreachable" : "") @(en.Acted ? "acted-done" : "") @(picked ? "selected" : "") @(G.BattleHover == idx ? "hover" : "")"
+             role="button" tabindex="0" aria-pressed="@picked" aria-disabled="@(unreachable || (targetable && locked))" aria-label="@($"{slot} {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}，意图{en.IntentLabel}{(reachWhy != null ? "；" + reachWhy : "")}")"
+             title="@tip" @onclick="() => ClickFoe(idx, token, locked)" @onkeydown="ev => FoeKey(ev, idx, token, locked)"
+             @onmouseenter="() => G.HoverBattleTarget(idx)" @onmouseleave="() => G.HoverBattleTarget(null)">
             <div class="foe-head"><span class="slot-tag">@slot</span><b>@ec.Name</b>@if (en.Acted) {<span class="acted-mark">已行动</span>}</div>
             <div class="foe-main">
                 <span class="foe-art">@Icons.Markup("enemy_" + ec.Id)</span>
@@ -313,10 +290,40 @@ else if (b != null)
         </div>
     };
 
-    private void FoeKey(KeyboardEventArgs ev, int idx)
+    private async Task FoeKey(KeyboardEventArgs ev, int idx, string token, bool locked)
     {
-        if (ev.Key is "Enter" or " ") G.PickBattleTarget(idx);
+        if (ev.Key is "Enter" or " ") await ClickFoe(idx, token, locked);
     }
+
+    /// <summary>瞄准中点合法目标=提交（执行锁期间不受理）；未瞄准只选中查看。</summary>
+    private async Task ClickFoe(int idx, string token, bool locked)
+    {
+        if (G.BattleAiming && locked) return;
+        await G.ClickBattleTarget(idx, token);
+    }
+
+    private void CancelAim()
+    {
+        if (G.BattleAction != null && G.Pop?.Kind != "switch") G.ClearBattleAction();
+    }
+
+    /// <summary>操作台上的一条带图指令：点选进入瞄准/待确认，不执行；不可用保留禁用态与短原因。</summary>
+    private RenderFragment Cmd(BattleCommandOption o, BattleCommandOption? sel, ItemInstance? wi, WeaponConfig w, bool locked) => __builder =>
+    {
+        var on = sel != null && sel.Action == o.Action && sel.ItemInstanceId == o.ItemInstanceId;
+        var (art, glyph, qty) = CmdArt(o, wi, w);
+        var oo = o;
+        var range = o.NeedsTarget ? (o.Targets.Count > 0 ? $"可选目标{o.Targets.Count}个" : "当前没有可选目标") : o.Action == "scatter" ? "前排群攻" : "自用/无目标";
+        <button type="button" id="@($"cmd-{o.Action}{(o.ItemInstanceId is int ii ? "-" + ii : "")}")" class="cmdt @(on ? "on" : "") @(o.Available ? "" : "off")" disabled="@locked"
+                aria-label="@($"{ShortName(o)}，{ApText(o.Ap)}{(qty != null ? "，" + qty : "")}{(o.Reason != null ? "；不可用：" + o.Reason : "")}")"
+                title="@(o.Reason ?? $"{o.Label}：{ApText(o.Ap)}{(o.Energy > 0 ? $"，体力{Ui.N(o.Energy)}" : "")}；{range}。{(o.NeedsTarget || o.Action == "scatter" ? "点选后点亮起的目标执行" : "点选后在旁边确认")}")"
+                @onclick="() => G.PickBattleAction(oo.Action, oo.ItemInstanceId)">
+            <span class="cmdt-art">@Icons.Markup(art)@if (glyph != null) {<em class="cmdt-glyph">@glyph</em>}</span>
+            <span class="cmdt-name">@ShortName(o)</span>
+            <small>@(qty != null ? qty + " · " : "")@ApText(o.Ap)</small>
+            @if (!o.Available) { <span class="cmdt-why">@ShortWhy(o.Reason)</span> }
+        </button>
+    };
 
     /// <summary>指令图（S14 §14.2）：攻击用当前武器/拳图，招式用武器图 + 招式字角标，医疗用真实物品图与随身数量，装填用实际弹药图；缺图统一占位。</summary>
     private (string art, string? glyph, string? qty) CmdArt(BattleCommandOption o, ItemInstance? wi, WeaponConfig w)

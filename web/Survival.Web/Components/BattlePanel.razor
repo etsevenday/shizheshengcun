@@ -1,8 +1,8 @@
 @inherits GameComponent
 
-@* 战斗右栏（v0.6 §07“同时给出命中能力值与实际命中率”；S14 §14.2 起只作可选的完整预测，执行在战斗区内就近完成）：
-   选中指令 → 完整预测（AP、体力、命中能力与命中率、暴击、伤害区间、弹药、耐久、噪声、撤退率）；
-   没选指令时显示所选目标的详情。执行期间与敌方行动中锁定。敌踪选择时显示敌方组成与绕行预测。 *@
+@* 战斗右栏“对象信息”（v0.6 §07；S14 §18.4、R03 §7.4）：只读，不执行。
+   瞄准中悬停合法目标 → 对该目标的实际预测（AP、体力、命中能力与命中率、暴击、伤害区间、弹药、耐久、噪声、撤退率）；
+   未瞄准时显示悬停或选中的敌人详情，移开恢复已选对象；另列最近战斗记录。敌踪选择时显示敌方组成与绕行预测。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -36,8 +36,14 @@
 }
 else if (b != null)
 {
-    var cmd = G.CurrentBattleCommand();
     var awaiting = e.AwaitingPlayer(s);
+    var aiming = G.BattleAiming;
+    var aimSet = G.AimTargets();
+    // 瞄准中：只在悬停合法目标时给出对它的预测（不预选目标、不自动攻击）；自用/无目标指令按所选指令预测
+    int? hoverTarget = aiming && G.BattleHover is int hv && aimSet.Contains(hv) ? hv : null;
+    var cmd = aiming
+        ? BattleCommand.Of(G.BattleAction!, G.BattleAction == "scatter" ? null : hoverTarget, G.BattleItem)
+        : G.CurrentBattleCommand();
     @if (G.BattleAction == null && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid)
     {
         @* 战斗中地面与随身物品仍可查看 *@
@@ -68,6 +74,20 @@ else if (b != null)
             </div>
         </div>
         <div class="detail-foot"><div class="under">在战斗区“换武器”旁的浮窗里选一把，就地执行（这里只作对照阅读）。</div></div>
+    }
+    else if (G.BattleAction != null && aiming && hoverTarget == null && G.BattleAction != "scatter")
+    {
+        var o = e.BattleOptions(s).FirstOrDefault(x => x.Action == G.BattleAction);
+        <div class="detail-scroll">
+            <div class="op-head">
+                <div class="eyebrow">战斗第@(b.Round)轮 · 瞄准中</div>
+                <h2>@GameEngine.ActionName(G.BattleAction)</h2>
+                <p>@(o == null ? "" : $"{(o.Ap < 0 ? "剩余AP" : o.Ap + "AP")}{(o.Energy > 0 ? $" · 体力{Ui.N(o.Energy)}" : "")} · 可选目标{aimSet.Count}个")</p>
+            </div>
+            <div class="risk none">把鼠标移到亮起的目标上，这里显示对它的实际命中率与伤害；点击亮起的目标即执行。右键或 Esc 取消，不耗AP。</div>
+            @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+        </div>
+        <div class="detail-foot"><div class="under">悬停只看预测，不扣费、不抽随机</div></div>
     }
     else if (G.BattleAction != null)
     {
@@ -107,18 +127,19 @@ else if (b != null)
             @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
         </div>
         <div class="detail-foot">
-            @* S14 §14.2、R03 §7.2：执行入口在战斗区指令下方，这里只作可选的完整预测，不保留第二个执行按钮 *@
-            <div class="under">在战斗区指令下方点“执行 · @(p.Title) · @(p.Ap)AP”才提交；Esc 收起预览。</div>
+            @* S14 §18.4、R03 §7.4：提交入口在战斗区（点亮起的目标 / 操作台“确认”），这里只作完整预测，不保留执行按钮 *@
+            <div class="under">@(aiming ? "点击亮起的目标即执行；右键/Esc 取消" : $"在操作台点“确认 · {p.Title} · {p.Ap}AP”才提交；Esc 取消")</div>
         </div>
     }
     else
     {
-        var t = G.BattleTarget.HasValue ? e.BattleEnemyAt(b, G.BattleTarget.Value) : null;
+        var focus = G.BattleHover ?? G.BattleTarget;
+        var t = focus.HasValue ? e.BattleEnemyAt(b, focus.Value) : null;
         <div class="detail-scroll">
             <div class="op-head">
                 <div class="eyebrow">战斗第@(b.Round)轮 · @(awaiting ? $"你的行动（剩{b.PlayerAp}AP）" : "敌方行动中")</div>
                 <h2>@(t != null && t.Alive ? $"{t.Slot} {e.EnemyName(t)}" : "选择指令")</h2>
-                <p>点右侧敌卡只选目标、不攻击；点左侧带图指令，在指令下方预览并“执行”。这里是完整数据，可不看。</p>
+                <p>先在操作台选技能，再把鼠标移到亮起的目标上看预测、点击目标执行；没选技能时点敌卡只查看。</p>
             </div>
             @if (t != null && t.Alive)
             {
@@ -137,6 +158,12 @@ else if (b != null)
                 <div><span>你的闪避能力</span><b>@Ui.T(e.Config.Scope.BasePlayerDodge)</b></div>
                 <div><span>本场世界时间</span><b>@Clock.Duration(b.Ticks * e.Config.Time.TickMinutes)（每轮5分钟）</b></div>
             </div>
+            @if (b.Log.Count > 0)
+            {
+                @* 操作台只留一行短反馈，完整的最近战斗记录在这里（更早的在行动日志） *@
+                <div class="eyebrow" style="margin-top:8px">最近战斗记录</div>
+                <ul class="notes">@foreach (var line in Enumerable.Reverse(b.Log).Take(6)) { <li>@line</li> }</ul>
+            }
             @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
         </div>
         <div class="detail-foot"><div class="under">战斗中地面与随身物品只能查看；换武器、装填与用药请用战斗区的指令。</div></div>

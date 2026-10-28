@@ -1201,10 +1201,15 @@ public sealed class GameSession
     /// <summary>战斗或敌踪选择中：顶栏导航、M/C/R/L、二级面板与世界交互锁定。</summary>
     public bool InBattleUi => State != null && (S.Battle != null || S.Encounter != null);
 
-    /// <summary>指令条上选中的指令（点动作 → 右栏预览 → 点执行）。</summary>
+    /// <summary>
+    /// 操作台上选中的指令（R03 §7.4、S14 §18.4）：需要目标的技能选中即进入瞄准——合法目标高亮，悬停看右侧预测，点击合法目标即提交；
+    /// 自用/无目标指令选中后在操作台就近点“确认”提交。
+    /// </summary>
     public string? BattleAction { get; private set; }
-    /// <summary>选中的目标敌人（本场序号）；点敌卡只选目标，不攻击。</summary>
+    /// <summary>选中查看的敌人（本场序号）：未瞄准时点敌卡只选中查看，不攻击；单敌自动选中也只是查看。</summary>
     public int? BattleTarget { get; private set; }
+    /// <summary>鼠标正悬停的敌人：右栏对象信息临时显示它（瞄准中显示对它的实际预测），移开恢复。</summary>
+    public int? BattleHover { get; private set; }
     /// <summary>换武器/用药指定的实例。</summary>
     public int? BattleItem { get; private set; }
     /// <summary>敌方行动逐条展示中（锁定输入）。</summary>
@@ -1223,6 +1228,7 @@ public sealed class GameSession
         if (Pop?.Kind == "switch") Pop = null;
         BattleAction = null;
         BattleTarget = null;
+        BattleHover = null;
         BattleItem = null;
         BattleMenuOpen = false;
     }
@@ -1238,23 +1244,73 @@ public sealed class GameSession
         if (BattleTarget == null && alive.Count == 1) BattleTarget = alive[0].Index;
     }
 
-    /// <summary>选择指令：需要目标而目标不合法时自动改选第一个可选目标；只显示预览，不执行。</summary>
+    /// <summary>
+    /// 选择指令（R03 §7.4）：只进入瞄准或待确认，不执行、不自动选第一个目标（取代旧“自动改选第一个可选目标后点执行”）；
+    /// 再点同一指令收起。先选敌再点技能也只进入瞄准，仍须一次目标点击。
+    /// </summary>
     public void PickBattleAction(string action, int? item = null)
     {
         if (State == null || S.Battle == null) return;
+        if (BattleAction == action && BattleItem == item && action != "switch_weapon") { ClearBattleAction(); return; }
         BattleAction = action;
         BattleItem = item;
         // 换成别的指令：换武器浮窗收起（一个时刻只有一个操作上下文，S14 §14.1）
         if (action != "switch_weapon" && Pop?.Kind == "switch") Pop = null;
-        var opt = E.BattleOptions(S).FirstOrDefault(o => o.Action == action && (item == null || o.ItemInstanceId == item));
-        if (opt != null && opt.NeedsTarget && (BattleTarget == null || !opt.Targets.Contains(BattleTarget.Value)))
-            BattleTarget = opt.Targets.Count > 0 ? opt.Targets[0] : BattleTarget;
         DetailTab = DetailTab.Object;
         Notice = null;
         Notify();
     }
 
-    /// <summary>点敌卡：只选目标，不攻击。</summary>
+    /// <summary>当前选中的指令是否处于瞄准（需要点击目标提交）：单体攻击类与群攻（散射：点受影响集合中任一目标提交一次）。</summary>
+    public bool BattleAiming => State != null && S.Battle != null && BattleAction != null && AimOption() != null;
+
+    private BattleCommandOption? AimOption()
+    {
+        var o = E.BattleOptions(S).FirstOrDefault(x => x.Action == BattleAction && (BattleItem == null || x.ItemInstanceId == BattleItem));
+        return o != null && (o.NeedsTarget || o.Action == "scatter") ? o : null;
+    }
+
+    /// <summary>瞄准中可点击提交的目标：单体为合法目标；群攻为预览里真实受影响的集合。</summary>
+    public IReadOnlyCollection<int> AimTargets()
+    {
+        var o = BattleAiming ? AimOption() : null;
+        if (o == null) return Array.Empty<int>();
+        if (o.Action == "scatter")
+            return E.PreviewCommand(S, BattleCommand.Of("scatter")) is { Ok: true } p ? p.Targets.Select(t => t.Index).ToList() : new List<int>();
+        return o.Targets;
+    }
+
+    /// <summary>悬停敌卡：右栏对象信息临时显示它；瞄准中显示对它的实际预测（不扣费、不抽随机）。</summary>
+    public void HoverBattleTarget(int? index)
+    {
+        if (BattleHover == index) return;
+        BattleHover = index;
+        Notify();
+    }
+
+    /// <summary>
+    /// 点敌卡（R03 §7.4）：未瞄准时只选中查看；瞄准中点合法目标即这条指令的明确提交（一次 requestId，同一画面连点只受理一次）；
+    /// 点非法目标不换敌、不执行，只说明原因。
+    /// </summary>
+    public async Task ClickBattleTarget(int index, string token)
+    {
+        if (State == null || S.Battle == null || BattleBusy) return;
+        if (!BattleAiming)
+        {
+            PickBattleTarget(index);
+            return;
+        }
+        if (!AimTargets().Contains(index))
+        {
+            Notice = E.CommandBlocked(S, BattleCommand.Of(BattleAction!, index, BattleItem)) ?? "这个目标不在本指令范围内";
+            Notify();
+            return;
+        }
+        if (BattleAction != "scatter") BattleTarget = index;
+        await ExecuteBattleCommand(token);
+    }
+
+    /// <summary>点敌卡（未瞄准）：只选中查看，不攻击。</summary>
     public void PickBattleTarget(int index)
     {
         BattleTarget = index;
@@ -1262,6 +1318,7 @@ public sealed class GameSession
         Notify();
     }
 
+    /// <summary>右键/Esc：只取消未提交的瞄准或待确认指令，不耗 AP、不脱战。</summary>
     public void ClearBattleAction()
     {
         BattleAction = null;
@@ -1291,10 +1348,10 @@ public sealed class GameSession
             Notice = res.Ok ? null : res.Reason;
             if (res.Ok && !res.Duplicate)
             {
-                // 用掉的指令收起；攻击类在还有行动点时保留同一指令，方便连打
+                // 提交后瞄准收起（R03 §7.4：连点/双击只提交一次，第二击不排队成另一攻击；新目标不复用旧点击）
                 if (Pop?.Kind == "switch") Pop = null;
-                var keep = res.Ok && S.Battle != null && E.AwaitingPlayer(S) && GameEngine.AttackActions.Contains(BattleAction);
-                if (!keep) { BattleAction = null; BattleItem = null; }
+                BattleAction = null;
+                BattleItem = null;
                 if (S.Battle != null && BattleTarget != null && S.Battle.Enemies.All(e => e.Index != BattleTarget || !e.Alive)) BattleTarget = null;
                 AutoTarget();
             }
