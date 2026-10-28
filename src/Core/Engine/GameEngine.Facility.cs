@@ -149,9 +149,9 @@ namespace Survival.Core.Engine
         public string ContentStatus(GameState s, ItemInstance inst)
         {
             var p = ProcessOf(s, inst);
-            string Heat(string verb, string loc) => p == null ? "" : FireHot(s, loc)
+            string Heat(string verb, string loc) => p == null ? "" : (FireHot(s, loc)
                 ? $"{verb}中 受热{p.HeatDoneMinutes}/{p.RequiredHeatMinutes}分钟"
-                : $"火堆未燃烧 · {verb}暂停 {p.HeatDoneMinutes}/{p.RequiredHeatMinutes}分钟";
+                : $"火堆未燃烧 · {verb}暂停 {p.HeatDoneMinutes}/{p.RequiredHeatMinutes}分钟") + ProtectText(s, inst, p);
 
             if (IsPot(inst))
             {
@@ -188,6 +188,13 @@ namespace Survival.Core.Engine
                 return Heat(fp.Name, loc);
             }
             return "";
+        }
+
+        /// <summary>“ · 受热保护中”“ · 受热保护中，已过原保质期，取出即腐败”（Q16、S11 §10：卡旁显示真实保护状态与取出后果）。</summary>
+        private string ProtectText(GameState s, ItemInstance inst, FacilityProcess p)
+        {
+            if (!p.HeatProtected) return "";
+            return PastExpiryButProtected(s, inst) ? " · 受热保护中，已过原保质期，取出即腐败" : " · 受热保护中";
         }
 
         /// <summary>生块根放进这口锅后会怎样：燃烧时自动水煮 / 先等水净化 / 缺水只存放 / 锅要放进火堆才加工。</summary>
@@ -488,13 +495,18 @@ namespace Survival.Core.Engine
                 ? AllProcesses(s).Where(p => p.PotInstanceId == inst.InstanceId).ToList()
                 : AllProcesses(s).Where(p => p.TargetInstanceId == inst.InstanceId).ToList();
             var reset = touched.Any(p => p.HeatDoneMinutes > 0);
+            // Q16：成功取出即解除保护；原保质期已过的食材取出后立即按原 expiresAt 判腐败（失败的取出在上面已整次拒绝，什么都不变）
+            var lost = touched.Where(p => p.HeatProtected).Select(p => FindItem(s, p.TargetInstanceId))
+                .Where(t => t != null && t.ExpiresAt.HasValue && t.ExpiresAt.Value <= s.GameMinute)
+                .Select(t => $"{ItemName(t!.ItemId)}#{t.InstanceId}").ToList();
             var name = IsPot(inst) ? $"{ItemName(inst.ItemId)}#{inst.InstanceId}" : $"{ItemName(inst.ItemId)}#{inst.InstanceId}";
             inst.Owner = zone;
             inst.PlacedOrder = null;
             Normalize(s, zone);
             SyncFacilities(s);
             var to = zone == ItemInstance.Carried ? "随身" : $"{LocName(zone)}地面";
-            Emit(s, GameEventKind.Info, $"把{name}从{from}取出到{to}{(reset ? "，相关加工进度清零" : "")}。");
+            Emit(s, GameEventKind.Info, $"把{name}从{from}取出到{to}{(reset ? "，相关加工进度清零" : "")}"
+                                        + $"{(lost.Count > 0 ? $"，{string.Join("、", lost)}解除烹饪保护、已过原保质期而腐败" : "")}。");
             UpdateFlags(s);
             return ActionResult.Success();
         }
@@ -515,8 +527,14 @@ namespace Survival.Core.Engine
                 var name = t == null ? "" : $"{ItemName(t.ItemId)}#{t.InstanceId}";
                 c.Resets.Add($"{name}{Process(p.RecipeId).Name}受热{p.HeatDoneMinutes}分钟");
             }
+            foreach (var p in touched.Where(p => p.HeatProtected).OrderBy(p => p.TargetInstanceId))
+            {
+                var t = FindItem(s, p.TargetInstanceId);
+                if (t != null && PastExpiryButProtected(s, t)) c.Spoils.Add($"{ItemName(t.ItemId)}#{t.InstanceId}");
+            }
             c.CarriedGramsAfter = CarriedGrams(s) + (PlaceOf(s, inst) == ItemInstance.Carried ? 0 : c.Grams);
             c.Text = c.Resets.Count > 0 ? $"取出后{string.Join("、", c.Resets)}清零" : "当前没有已受热的加工进度，取出不损失进度";
+            if (c.Spoils.Count > 0) c.Text += $"；{string.Join("、", c.Spoils)}已过原保质期，取出即解除烹饪保护并立即腐败";
             return c;
         }
 
@@ -578,8 +596,11 @@ namespace Survival.Core.Engine
             return snap;
         }
 
-        /// <summary>目标此刻是否满足受热条件（不含火堆燃烧条件）。</summary>
-        private bool HeatEligible(GameState s, string loc, FacilityProcess p)
+        /// <summary>
+        /// 目标此刻是否满足受热条件（不含火堆燃烧条件）。ignoreSpoil 用于段末复核：段首仍新鲜且本段实际完整受热的食材，
+        /// 即使在本段内越过原期限也算有效受热段并取得保护（Q16、S01 §10“首次有效段可跨越原到期时间”）。
+        /// </summary>
+        private bool HeatEligible(GameState s, string loc, FacilityProcess p, bool ignoreSpoil = false)
         {
             var cfg = Process(p.RecipeId);
             var t = FindItem(s, p.TargetInstanceId);
@@ -587,7 +608,7 @@ namespace Survival.Core.Engine
             var owner = FireOwner(loc);
             // v1.0 P02：锅没有耐久，不再因耐久不足拒绝受热
             if (cfg.IsPotBatch) return t.Owner == owner && PotLiquid(s, t.InstanceId) == cfg.InputId;
-            if (t.ItemId != cfg.InputId || IsSpoiled(s, t)) return false;
+            if (t.ItemId != cfg.InputId || (!ignoreSpoil && IsSpoiled(s, t))) return false;
             if (!cfg.InPot) return t.Owner == owner;
             var pot = p.PotInstanceId.HasValue ? FindItem(s, p.PotInstanceId.Value) : null;
             if (pot == null || pot.Owner != owner || t.Owner != ItemInstance.ContainerOwner(pot.InstanceId)) return false;
@@ -596,8 +617,9 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 段末结算（02 案第 7 节）：按段首快照、且段末仍有效的目标各加 5 受热分钟；到期优先于完成；
-        /// 达标的一次提交转化、耗水、新保质期与完成标记。随后重新分水：本段刚净化的水下一段才供食材受热。
+        /// 段末结算（02 案第 7 节）：按段首快照、且段末仍有效的目标各加 5 受热分钟；Q16（S11 §10）：段首新鲜且本段实际受热的食材
+        /// 同次取得受热保护，之后不因原期限腐败；未受热、仅预留或等水净化的仍按原期限腐败。达标的一次提交转化、耗水、
+        /// 完成起新保质、清保护与完成标记。随后重新分水：本段刚净化的水下一段才供食材受热。
         /// </summary>
         private void AdvanceFacilities(GameState s, FacilitySnapshot snap)
         {
@@ -608,10 +630,11 @@ namespace Survival.Core.Engine
                 foreach (var p in fac.Processes.ToList())
                 {
                     p.LastWorldMinute = s.GameMinute;
-                    var heated = snap.Eligible.Contains(p.ProcessId) && HeatEligible(s, l.Id, p);
+                    var heated = snap.Eligible.Contains(p.ProcessId) && HeatEligible(s, l.Id, p, ignoreSpoil: true);
                     p.Status = heated ? ProcessStatus.Heating : ProcessStatus.Waiting;
                     if (!heated) continue;
                     p.HeatDoneMinutes += Tick;
+                    if (!Process(p.RecipeId).IsPotBatch) p.HeatProtected = true;
                     if (p.HeatDoneMinutes >= p.RequiredHeatMinutes) CompleteProcess(s, l.Id, fac, p);
                 }
             }
@@ -656,6 +679,7 @@ namespace Survival.Core.Engine
                     : $"{LocName(loc)}火堆：{input}#{t.InstanceId}已烤成{outCfg.Name}，留在火堆加工位。";
             }
             p.Status = ProcessStatus.Done;
+            p.HeatProtected = false;
             p.CompletionSerial = s.SegmentCount;
             fac.Processes.Remove(p);
             fac.Completed.Add($"{p.ProcessId}@{p.CompletionSerial}");

@@ -148,13 +148,21 @@ public class V10CookWaitTests : BattleTestBase
         Assert.That(E.PotLiquid(v, vpot.InstanceId), Is.EqualTo("clean_water"), "已完成的净化保留");
         Assert.That(E.PotFood(v, vpot.InstanceId).All(f => f.ItemId == "raw_root" && Proc(v, f).HeatDoneMinutes == 5), Is.True, "受热进度保留，不清零");
 
-        // 完成前会腐败：不纳入
+        // Q16：完成前才会过原期限、但首段就能受热的新鲜食材取得保护，照样纳入（S11-A16）
         var (w2, wpot) = PotOnFire("clean_water", 1);
         RootsInPot(w2, wpot, 1);
         E.PotFood(w2, wpot.InstanceId).Single().ExpiresAt = w2.GameMinute + 10;
         plan = E.PreviewCookWait(w2);
-        Assert.That(plan.Ok, Is.False);
-        Assert.That(plan.Excluded.Single(x => !x.Label.Contains("锅")).Reason, Does.Contain("腐败"));
+        Assert.That(plan.Ok, Is.True, plan.Reason);
+        Assert.That(plan.Targets.Count, Is.EqualTo(1));
+        Assert.That(Proc(w2, E.PotFood(w2, wpot.InstanceId).Single()).HeatProtected, Is.False, "预览不先设保护");
+
+        // 首次受热前就会腐败（脏水要先净化，食材10分钟后到期）：不纳入并写原因
+        var (w3, w3pot) = PotOnFire("dirty_water", 2);
+        RootsInPot(w3, w3pot, 1);
+        E.PotFood(w3, w3pot.InstanceId).Single().ExpiresAt = w3.GameMinute + 10;
+        plan = E.PreviewCookWait(w3);
+        Assert.That(plan.Excluded.Single(x => !x.Label.Contains("锅")).Reason, Does.Contain("首次受热前就会腐败"));
     }
 
     /// <summary>S11-A12/S01-A12：中途退出不清进度/预留、不灭火；重新等待从实际剩余继续；读档后剩余按真实进度重算、不多tick；末段燃料恰好够按完成。</summary>

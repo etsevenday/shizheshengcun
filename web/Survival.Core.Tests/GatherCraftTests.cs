@@ -170,7 +170,7 @@ public class GatherCraftTests : TestBase
     }
 
     [Test]
-    public void G06b_IngredientExpiresAtCompletion_NoProduct()
+    public void G06b_IngredientExpiresAtCompletion_ProtectedCooks()
     {
         var s = New();
         var f = s.Locations["camp"].Facility;
@@ -181,11 +181,11 @@ public class GatherCraftTests : TestBase
         Assert.That(E.DoInstant(s, InstantRequest.PutInFire(First(s, "raw_root").InstanceId)).Ok, Is.True);
         Start(s, ActionRequest.Wait(30));
         Assert.That(Run(s), Is.EqualTo(SegmentStatus.Completed));
-        Assert.That(Count(s, "cooked_root"), Is.EqualTo(0), "到期优先于完成");
-        var raw = First(s, "raw_root");
-        Assert.That(raw.Owner, Is.EqualTo("facility:camp:fire"), "腐败原料留在原位");
-        Assert.That(E.IsSpoiled(s, raw), Is.True);
-        Assert.That(E.ContentStatus(s, raw), Is.EqualTo("已腐败，不再加工"));
+        // Q16（S11 §10）：开工时新鲜、实际受热后受保护，完成时恰好到期也熟成（取代旧“到期优先于完成”）
+        Assert.That(Count(s, "cooked_root"), Is.EqualTo(1), "受保护食材熟成");
+        var cooked = First(s, "cooked_root");
+        Assert.That(cooked.Owner, Is.EqualTo("facility:camp:fire"), "成品留在原位");
+        Assert.That(E.IsSpoiled(s, cooked), Is.False);
     }
 
     [Test]

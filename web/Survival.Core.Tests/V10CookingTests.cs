@@ -48,18 +48,29 @@ public class V10CookingTests : TestBase
     }
 
     [Test]
-    public void Reboil_SpoilsFirst_WhenCompletingExactlyAtExpiry()
+    public void Reboil_ProtectedCooks_WhenCompletingExactlyAtExpiry()
     {
         var (s, pot) = PotOnFire(2);
         var meat = E.CreateItems(s, "cooked_meat", 1, "camp").Single();
-        meat.ExpiresAt = s.GameMinute + 15;   // 恰好在完成那一刻腐败：先腐败、不产成品
+        meat.ExpiresAt = s.GameMinute + 15;   // 恰好在完成那一刻到期：Q16 受热保护，照常复煮
         E.DoInstant(s, InstantRequest.PutFoodInPot(meat.InstanceId, pot.InstanceId, 1));
         Start(s, ActionRequest.Wait(30));
         Run(s);
         var food = E.PotFood(s, pot.InstanceId).Single();
-        Assert.That(food.ItemId, Is.EqualTo("cooked_meat"));
-        Assert.That(E.IsSpoiled(s, food), Is.True);
-        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(2), "不扣水");
+        Assert.That(food.ItemId, Is.EqualTo("boiled_meat"));
+        Assert.That(E.IsSpoiled(s, food), Is.False);
+        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(1), "完成扣水500ml");
+    }
+
+    [Test]
+    public void Reboil_SpoiledMeat_CannotStart()
+    {
+        var (s, pot) = PotOnFire(2);
+        var meat = E.CreateItems(s, "cooked_meat", 1, "camp").Single();
+        meat.ExpiresAt = s.GameMinute;   // 已变质
+        var r = E.DoInstant(s, InstantRequest.PutFoodInPot(meat.InstanceId, pot.InstanceId, 1));
+        Assert.That(r.Ok, Is.False, "R06-A06：坏肉不可开工");
+        Assert.That(r.Reason, Does.Contain("腐败"));
     }
 
     [Test]

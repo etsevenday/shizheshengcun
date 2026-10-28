@@ -551,6 +551,8 @@ namespace Survival.Core.Engine
                     if (cfg.Use == null)
                         return cfg.RequiresCooking ? $"{cfg.Name}需先烹饪，不可直接食用" : "该物品不能直接使用";
                     if (IsSpoiled(s, inst)) return "已腐败，不能食用";
+                    // Q16：受热保护只保这次烹饪能完成，不让已过原保质期的原料被直接吃掉（开发方保守做法）
+                    if (PastExpiryButProtected(s, inst)) return "已过原保质期，只受本次烹饪保护，不能直接食用";
                     if (cfg.Use.IsMedicine && MedicineBlocked(s, cfg.Use) is string medWhy) return medWhy;
                     plan.UseItem = inst;
                     plan.TargetId = inst.ItemId;

@@ -242,6 +242,10 @@ namespace Survival.Core.Engine
     {
         /// <summary>会清零的加工，如“生块根#21水煮受热10分钟”。</summary>
         public List<string> Resets { get; set; } = new List<string>();
+        /// <summary>受烹饪保护且已过原保质期、取出后会立即腐败的食材（Q16）。</summary>
+        public List<string> Spoils { get; set; } = new List<string>();
+        /// <summary>取到随身后的随身根卡数（S06 §8）。</summary>
+        public int RootCardsAfter { get; set; }
         /// <summary>该物品连同内容的克重。</summary>
         public int Grams { get; set; }
         /// <summary>拾取到随身后的随身总重（克）。</summary>

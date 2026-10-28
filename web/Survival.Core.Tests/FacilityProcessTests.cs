@@ -456,11 +456,21 @@ public class FacilityProcessTests : TestBase
         var root = RootInFire(s);
         root.ExpiresAt = s.GameMinute + 30;
         WaitMinutes(s, 30);
-        Assert.That(root.ItemId, Is.EqualTo("raw_root"), "到期料不出成品");
-        Assert.That(E.IsSpoiled(s, root), Is.True);
-        Assert.That(root.Owner, Is.EqualTo(Fire), "留原位显示腐败");
-        WaitMinutes(s, 10);
-        Assert.That(root.ItemId, Is.EqualTo("raw_root"), "腐败后不再受热恢复");
+        // Q16（S11 §10）：新鲜食材实际受热后受本次加工保护，恰好在完成时刻到期也照常熟成，成品从完成起算保质
+        Assert.That(root.ItemId, Is.EqualTo("cooked_root"), "受保护食材跨原期限熟成");
+        Assert.That(E.IsSpoiled(s, root), Is.False);
+        Assert.That(root.Owner, Is.EqualTo(Fire), "成品留原位");
+
+        // 未受热（火堆没点）到期：照常腐败，之后点火也不再受热恢复
+        var u = New();
+        var r0 = RootInFire(u);
+        r0.ExpiresAt = u.GameMinute + 10;
+        WaitMinutes(u, 10);
+        Assert.That(E.IsSpoiled(u, r0), Is.True, "未受热的原料照常腐败");
+        LightFire(u);
+        WaitMinutes(u, 40);
+        Assert.That(r0.ItemId, Is.EqualTo("raw_root"), "腐败后不再受热恢复");
+        Assert.That(r0.Owner, Is.EqualTo(Fire), "留原位显示腐败");
 
         var t = New();
         LightFire(t);

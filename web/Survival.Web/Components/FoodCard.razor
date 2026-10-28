@@ -26,7 +26,7 @@
     {
         <div class="heat-track"><i style="width:@(Math.Min(100, proc.HeatDoneMinutes * 100 / Math.Max(1, proc.RequiredHeatMinutes)))%"></i></div>
     }
-    @if (Item.ExpiresAt.HasValue) { <div class="ff-note">@Ui.Fresh(Item.ExpiresAt.Value - s.GameMinute)</div> }
+    @if (Item.ExpiresAt.HasValue) { <div class="ff-note">@Ui.FreshOf(e, s, Item)</div> }
     @if (selected) { <CardActions /> }
 </div>
 

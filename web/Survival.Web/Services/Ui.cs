@@ -31,10 +31,19 @@ public static class Ui
         return $"{minutesLeft / 60}小时后腐败";
     }
 
+    /// <summary>保质文字；受本次烹饪保护的写“受热保护中”（Q16：不宣称永久不腐败，过原期限的写明取出即腐败）。</summary>
+    public static string FreshOf(GameEngine e, GameState s, ItemInstance i)
+    {
+        if (!i.ExpiresAt.HasValue) return "";
+        if (e.IsHeatProtected(s, i))
+            return e.PastExpiryButProtected(s, i) ? "受热保护中·取出即腐败" : $"受热保护中·原{Fresh(i.ExpiresAt.Value - s.GameMinute)}";
+        return Fresh(i.ExpiresAt.Value - s.GameMinute);
+    }
+
     public static string ItemLine(GameEngine e, GameState s, ItemInstance i)
     {
         var cfg = e.Item(i.ItemId);
-        if (i.ExpiresAt.HasValue) return Fresh(i.ExpiresAt.Value - s.GameMinute);
+        if (i.ExpiresAt.HasValue) return FreshOf(e, s, i);
         if (i.MaxDurability.HasValue && i.Durability.HasValue)
             return i.Durability.Value <= 0 ? "已损坏" : $"耐久{GameEngine.DurabilityText(i)}" + (i.LoadedAmmoId != null ? $" · 弹{i.LoadedAmmo}" : "");
         if (cfg.IsTool) return cfg.ToolTag == "pot" ? "催化工具" : cfg.ToolTag == "lighter" ? "点火工具" : "工具";

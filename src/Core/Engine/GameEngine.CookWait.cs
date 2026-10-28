@@ -18,7 +18,7 @@ namespace Survival.Core.Engine
         public bool Done { get; set; }
     }
 
-    /// <summary>火堆里没被纳入本次等待的物品及原因（空锅、仅成品、只存放、缺水、完成前会腐败……）。</summary>
+    /// <summary>火堆里没被纳入本次等待的物品及原因（空锅、仅成品、只存放、缺水、首次受热前就会腐败……）。</summary>
     public sealed class CookExcludedInfo
     {
         public int InstanceId { get; set; }
@@ -55,7 +55,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 等待烹饪的解析（S11 §9）：本地火堆当前全部可加工进程中，连续供热下能完成的才纳入（含锅内脏水净化后供水的食材链）；
-        /// 空锅、仅成品、只存放、缺水、完成前会腐败的列入未纳入及原因。预计时间按当前燃料模拟，并行取最晚完成；燃料不足明确说明。
+        /// 空锅、仅成品、只存放、缺水、首次受热前就会腐败的列入未纳入及原因（Q16：能取得受热保护的新鲜食材不因熟前过原期限排除）。预计时间按当前燃料模拟，并行取最晚完成；燃料不足明确说明。
         /// 只读：在副本上模拟，不推进真实时间、不改真实随机。
         /// </summary>
         public CookWaitPlan PreviewCookWait(GameState s)
@@ -179,7 +179,8 @@ namespace Survival.Core.Engine
                 {
                     var p = fac.Processes.First(x => x.ProcessId == pid);
                     var t = FindItem(c, p.TargetInstanceId);
-                    if (t != null && IsSpoiled(c, t)) { open.Remove(pid); fail[pid] = "完成前会腐败"; }
+                    // Q16：受热保护的食材不再因原期限停止；只有首次有效受热前就到期的才会在这里腐败
+                    if (t != null && IsSpoiled(c, t)) { open.Remove(pid); fail[pid] = "首次受热前就会腐败，不能烹饪"; }
                 }
                 var heatAfter = open.Sum(pid => fac.Processes.FirstOrDefault(p => p.ProcessId == pid)?.HeatDoneMinutes ?? 0);
                 // 火堆其他进程（如本锅净水）也算推进路径：所有开放目标和其所在锅的净水都不动才算卡住
