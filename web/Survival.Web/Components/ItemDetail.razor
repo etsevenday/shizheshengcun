@@ -120,7 +120,8 @@ else
                     var key = b.ExpiresAt;
                     <button class="batch @(b == chosen ? "on" : "")" @onclick="() => PickBatch(key)">
                         <span>×@b.Count@(b.Reserved ? " · 预留" : "")</span>
-                        <span class="@(Spoiled(b) ? "danger-text" : "muted")">@(b.ExpiresAt.HasValue ? Ui.Fresh(b.ExpiresAt.Value - s.GameMinute) : "不会腐败")</span>
+                        @* 试玩修复 M77-B9：受本次烹饪保护的食材不显示普通倒计时，写“受热保护中（原期限N小时）” *@
+                        <span class="@(Spoiled(b) ? "danger-text" : "muted")">@(!b.ExpiresAt.HasValue ? "不会腐败" : b.Stacks.Count == 1 && e.IsHeatProtected(s, b.Stacks[0]) ? Ui.FreshOf(e, s, b.Stacks[0]) : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute))</span>
                     </button>
                 }
             </div>
@@ -189,7 +190,7 @@ else
         }
     }
 
-    private bool Spoiled(Batch b) => b.ExpiresAt.HasValue && b.ExpiresAt.Value <= G.S.GameMinute;
+    private bool Spoiled(Batch b) => b.ExpiresAt.HasValue && b.Stacks.All(i => G.E.IsSpoiled(G.S, i));
 
     private void PickBatch(int? key)
     {

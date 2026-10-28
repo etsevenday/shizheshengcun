@@ -162,12 +162,27 @@ const MEASURE = `(() => {
     if (carriedInfo.scrollX > 1 || carriedInfo.scrollY > 1) issues.push('随身行出现滚动（' + carriedInfo.scrollX + ',' + carriedInfo.scrollY + '）');
     if (slots < 5) issues.push('随身行可见卡位' + slots + '<5');
   }
-  // 箭头命中与尺寸
+  // 箭头命中：先排除“在所在滚动区里被滚出可视范围”（滚动即可到达，不是遮挡）与“被有意打开的浮层盖住”（浮窗/整理窗/对白/面板），
+  // 剩下点不中的才算遮挡问题（M77：原脚本把这两类都算成遮挡，1280 报了 117 次）
+  const overlays = [...document.querySelectorAll('.apop, .overflow-layer, .dlg-layer, .sub-panel, .menu-box, .pause-layer, .cprog')].filter(vis).map(R);
+  const inside = (x, y, o) => x >= o.x && x <= o.r && y >= o.y && y <= o.b;
+  const clipOf = e => {
+    let L = 0, T = 0, Rt = innerWidth, B = innerHeight;
+    for (let p = e.parentElement; p && p !== document.body; p = p.parentElement) {
+      const cs = getComputedStyle(p);
+      if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') { const pr = p.getBoundingClientRect(); L = Math.max(L, pr.left); T = Math.max(T, pr.top); Rt = Math.min(Rt, pr.right); B = Math.min(B, pr.bottom); }
+    }
+    return { x: L, y: T, r: Rt, b: B };
+  };
   const arrows = [...document.querySelectorAll('.center .card-arrow, .center .row-arrow')].filter(vis).map(e => {
-    const r = e.getBoundingClientRect(); const hitEl = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
-    return { label: e.getAttribute('aria-label'), w: r.width, h: r.height, hit: !!hitEl && (hitEl === e || e.contains(hitEl)) };
+    const r = e.getBoundingClientRect(); const cx = r.x + r.width / 2, cy = r.y + r.height / 2;
+    const scrolledOut = !inside(cx, cy, clipOf(e));
+    const underOverlay = !e.closest('.apop') && overlays.some(o => inside(cx, cy, o));
+    const hitEl = document.elementFromPoint(cx, cy);
+    return { label: e.getAttribute('aria-label'), w: r.width, h: r.height, scrolledOut, underOverlay, hit: !!hitEl && (hitEl === e || e.contains(hitEl)) };
   });
-  arrows.filter(a => !a.hit).forEach(a => issues.push('箭头点不中（被遮挡）：' + a.label));
+  arrows.filter(a => !a.hit && !a.scrolledOut && !a.underOverlay).forEach(a => issues.push('箭头点不中（被遮挡）：' + a.label));
+  const overflowOpen = !!document.querySelector('.overflow-layer');
   // 选卡浮窗
   let pop = null;
   const pe = document.querySelector('.apop.card-pop');
@@ -196,7 +211,9 @@ const MEASURE = `(() => {
   // 文字被裁（非省略号的溢出）只计数
   const clipped = [...document.querySelectorAll('.center button, .center .ctitle, .center .cinfo, .apop')].filter(vis)
     .filter(e => e.scrollHeight > e.clientHeight + 2 && getComputedStyle(e).overflowY === 'hidden').length;
-  return { viewport: [innerWidth, innerHeight], tracks, gap, spread, rows, upper, cards, carried: carriedInfo, arrows: arrows.length, pop, battle, clippedText: clipped, issues };
+  return { viewport: [innerWidth, innerHeight], tracks, gap, spread, rows, upper, cards, carried: carriedInfo, overflowOpen,
+    arrows: { total: arrows.length, scrolledOut: arrows.filter(a => a.scrolledOut).length, underOverlay: arrows.filter(a => a.underOverlay).length },
+    pop, battle, clippedText: clipped, issues };
 })()`;
 
 // ───────────── 主流程 ─────────────

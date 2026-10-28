@@ -24,6 +24,9 @@ public static class Ui
     /// <summary>带单位的重量：“0.05公斤”。</summary>
     public static string KgText(long grams) => Fmt.Kg(grams);
 
+    /// <summary>“70小时”“40分钟”：剩余保质的时长写法（不带“后腐败”）。</summary>
+    public static string FreshLeft(int minutesLeft) => minutesLeft < 60 ? $"{Math.Max(0, minutesLeft)}分钟" : $"{minutesLeft / 60}小时";
+
     public static string Fresh(int minutesLeft)
     {
         if (minutesLeft <= 0) return "已腐败";
@@ -36,7 +39,7 @@ public static class Ui
     {
         if (!i.ExpiresAt.HasValue) return "";
         if (e.IsHeatProtected(s, i))
-            return e.PastExpiryButProtected(s, i) ? "受热保护中·取出即腐败" : $"受热保护中·原{Fresh(i.ExpiresAt.Value - s.GameMinute)}";
+            return e.PastExpiryButProtected(s, i) ? "受热保护中（已过原期限，取出即腐败）" : $"受热保护中（原期限{FreshLeft(i.ExpiresAt.Value - s.GameMinute)}）";
         return Fresh(i.ExpiresAt.Value - s.GameMinute);
     }
 

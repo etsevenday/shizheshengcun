@@ -8,7 +8,26 @@
 @if (G.State != null && G.Pop == null && !G.IgniteMenuOpen && !G.DialogueLocked && !G.OverflowPending
      && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid)
 {
-    <AnchorPop AnchorId="card-sel" Title="" Place="below,above,right,left" CssClass="card-pop" OnClose="G.ClearSelection">
+    var pot = PotOf();
+    <AnchorPop AnchorId="card-sel" Title="" Place="below,above,right,left" Bound=".center" CssClass="@(pot != null ? "card-pop pot" : "card-pop")" OnClose="G.ClearSelection">
+        @* 锅（或锅里的水/食材）：浮窗里先展开锅的完整内容，再接所选对象的操作（试玩修复 M77-B2） *@
+        @if (pot != null) { <PotCard Pot="pot" Expanded="true" /> }
         <CardActions />
     </AnchorPop>
+}
+
+@code {
+    /// <summary>所选对象所属的锅：锅本身、锅里的水（PotLiquid）或锅里的一份食材；都不是为 null。</summary>
+    private ItemInstance? PotOf()
+    {
+        var s = G.S;
+        var e = G.E;
+        var sel = G.Selected;
+        if (sel.Kind == SelectionKind.PotLiquid && sel.InstanceId is int pid) return e.FindItem(s, pid);
+        if (sel.Kind != SelectionKind.Tool || sel.InstanceId is not int id) return null;
+        var it = e.FindItem(s, id);
+        if (it == null) return null;
+        if (e.IsPot(it)) return it;
+        return it.InContainer ? e.ContainerOf(s, it) : null;
+    }
 }

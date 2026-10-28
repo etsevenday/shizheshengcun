@@ -4,7 +4,7 @@
 @* 通用锚定操作浮窗（S14 §14.1、§13.2）：锚在对象卡/指令按钮旁，优先附近空位、放不下时向上/另一侧翻转，限制在屏内（位置由 survivalPop 计算）。
    内容：对象/目标小图、动作名、必要成本/短风险、明确执行与关闭，不铺长说明。控件阻止冒泡，不点穿为卡片使用/选敌/拖拽；
    Esc/× 只收起未提交浮窗，不提交、不取消已运行的行动；锚点滚出或消失时收起（OnLost）。 *@
-<div class="apop @CssClass" @ref="_el" data-anchor="@AnchorId" data-place="@Place" role="dialog" aria-label="@Title"
+<div class="apop @CssClass" @ref="_el" data-anchor="@AnchorId" data-place="@Place" data-bound="@Bound" role="dialog" aria-label="@Title"
      @onclick:stopPropagation="true" @onpointerdown:stopPropagation="true" @onmousedown:stopPropagation="true" @onwheel:stopPropagation="true">
     <div class="apop-head">
         @if (Art != null) { <span class="apop-art" aria-hidden="true">@Art</span> }
@@ -23,6 +23,8 @@
     /// <summary>方向优先顺序（right,left,below,above 的子序列）；默认先右后左再下再上。</summary>
     [Parameter] public string Place { get; set; } = "right,left,below,above";
     [Parameter] public string CssClass { get; set; } = "";
+    /// <summary>限制浮窗不越出的容器（CSS 选择器，如 ".center"）；为空时只限制在视口内（试玩修复 M77-B4）。</summary>
+    [Parameter] public string? Bound { get; set; }
     [Parameter] public RenderFragment? Art { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? Actions { get; set; }

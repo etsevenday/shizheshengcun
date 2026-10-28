@@ -253,6 +253,13 @@ window.survivalPop = (function () {
     var p = pos(side);
     var x = Math.max(m, Math.min(p.x, W - m - w));
     var y = Math.max(m, Math.min(p.y, H - m - h));
+    // data-bound：横向限制在指定容器（中部列）内，不压到左右栏（试玩修复 M77-B4）；容器比浮窗窄时贴左边
+    var bsel = el.getAttribute('data-bound');
+    var bel = bsel ? document.querySelector(bsel) : null;
+    if (bel) {
+      var B = bel.getBoundingClientRect();
+      x = Math.max(B.left + 4, Math.min(x, B.right - 4 - w));
+    }
     el.style.left = Math.round(x) + 'px';
     el.style.top = Math.round(y) + 'px';
     el.style.visibility = 'visible';

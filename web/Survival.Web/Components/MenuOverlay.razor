@@ -117,29 +117,28 @@
 
     private void DevMeds()
     {
-        foreach (var id in new[] { "bandage", "antibiotics", "antiviral_cure" }) G.E.DebugGive(G.S, id, 1);
-        DevDone("绷带、抗生素、特效药各1已放到随身（开发用）。");
+        DevDone("绷带、抗生素、特效药各1（开发用）：" + G.E.DebugGiveCarriedOrGround(G.S, new[] { ("bandage", 1), ("antibiotics", 1), ("antiviral_cure", 1) }));
     }
 
     private void DevRepairMats()
     {
-        foreach (var id in new[] { "scrap", "parts" }) G.E.DebugGive(G.S, id, 1);
-        DevDone("废金属、零件各1已放到随身（开发用，可做一次工具维护）。");
+        DevDone("废金属、零件各1（开发用，可做一次工具维护）：" + G.E.DebugGiveCarriedOrGround(G.S, new[] { ("scrap", 1), ("parts", 1) }));
     }
-    private void DevKit() { G.E.DebugGiveDevKit(G.S); DevDone("开发测试箱已放到随身。"); }
+    private void DevKit() => DevDone(G.E.DebugGiveDevKit(G.S));
 
     private void DevSubstance()
     {
         var sub = G.E.Config.ActiveSubstance;
-        G.E.CreateItems(G.S, sub.ItemId, 1, ItemInstance.Carried, false, new ItemSource { GrantEventId = $"dev-{G.S.NextInstanceId}" });
-        DevDone("普通白色活性物质1份已放到随身（开发用，融合无属性）。");
+        var here = G.S.CurrentLocation;
+        var made = G.E.CreateItems(G.S, sub.ItemId, 1, here, false, new ItemSource { GrantEventId = $"dev-{G.S.NextInstanceId}" }).Single();
+        var picked = G.E.MaxPickup(G.S, made) >= 1 && G.E.DoInstant(G.S, InstantRequest.Pickup(made.InstanceId, 1)).Ok;
+        DevDone(picked ? "普通白色活性物质1份已放到随身（开发用，融合无属性）。" : "普通白色活性物质1份放在当前地面（随身卡位已满；开发用，融合无属性）。");
     }
 
     private void DevRecipeMats()
     {
-        foreach (var rid in new[] { "make_metal_spear", "make_crossbow", "make_bolts" })
-            foreach (var kv in G.E.Recipe(rid).Inputs) G.E.DebugGive(G.S, kv.Key, kv.Value);
-        DevDone("金属矛、弩、弩矢各一次的材料已放到随身（开发用）。");
+        var mats = new[] { "make_metal_spear", "make_crossbow", "make_bolts" }.SelectMany(rid => G.E.Recipe(rid).Inputs.Select(kv => (kv.Key, kv.Value)));
+        DevDone("金属矛、弩、弩矢各一次的材料（开发用）：" + G.E.DebugGiveCarriedOrGround(G.S, mats));
     }
 
     private void DevEncounter() => DevDone(G.E.DebugForceEncounter(G.S) ? "已形成敌踪。" : "当前地点没有敌对敌人，或正在行动中。");

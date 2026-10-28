@@ -304,8 +304,9 @@ public sealed class GameSession
         if (panel != null) { IgniteMenuOpen = false; if (panel is "map" or "craft" or "rest") DetailTab = DetailTab.Object; }
         if (panel == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturn = null; _helpReturnStatus = null; }
         if (panel == "dialogs") DialogLogPick = null;
-        // 关闭面板时没有选中对象就回人物页（v0.7 6.1：无选中默认展示人物信息；复验新发现 2）
-        else if (Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
+        // 关闭面板时没有选中对象就回人物页（v0.7 6.1：无选中默认展示人物信息；复验新发现 2）。
+        // 试玩修复 M77-B8：原来这句 else 挂在 dialogs 判断上，打开休息/制作/地图也会被切回人物页，右栏看不到“详细预估”
+        if (panel == null && Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
         // 每次打开或关闭面板都清掉上一次拖拽留下的候选与指定批次；拖拽入口在打开后再写入
         CraftCandidates = null;
         CraftPreferred.Clear();

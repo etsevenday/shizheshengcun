@@ -40,7 +40,7 @@
   gap: 8px; overflow: hidden;
 }
 .center-scroll.four .section.carried .row-scroll.slots5 > * { min-width: 0; height: 100%; }
-.center-scroll.four .section.carried .row-scroll.slots5 > .card-col > .card { width: 100%; }
+.center-scroll.four .section.carried .row-scroll.slots5 > .card-col > .card { width: 100%; min-width: 0; max-width: none; aspect-ratio: auto; }
 .slot-free {
   display: flex; align-items: center; justify-content: center; height: 100%; min-height: 0;
   border: 1px dashed #b4a27a66; border-radius: 4px; color: #bfb79c88; font-size: 13px; letter-spacing: 2px; user-select: none;
@@ -51,11 +51,10 @@
   display: grid; position: relative;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 4fr) minmax(0, 1fr);
-  grid-template-areas: "art" "name";
   height: 100%; width: auto; aspect-ratio: 1 / 1; min-width: 92px; max-width: 240px;
 }
 .wasteland .center-scroll.four .row-scroll .card.item .art {
-  grid-area: art; grid-column: auto; grid-row: auto; min-height: 0; padding: 4px 4px 0; overflow: hidden;
+  grid-column: 1; grid-row: 1; min-height: 0; padding: 4px 4px 0; overflow: hidden;
 }
 .wasteland .center-scroll.four .row-scroll .card.item .art svg,
 .wasteland .center-scroll.four .row-scroll .card.item .art img,
@@ -63,7 +62,7 @@
   width: 100%; height: 100%; max-height: none; object-fit: contain;
 }
 .wasteland .center-scroll.four .row-scroll .card.item .ctitle {
-  grid-area: name; grid-column: auto; grid-row: auto; min-height: 0;
+  grid-column: 1; grid-row: 2; min-height: 0; overflow: hidden;
   display: flex; align-items: center; justify-content: flex-start;
   padding: 0 38px 0 7px; font-size: 14px; line-height: 1.1; border: 0;
 }
@@ -73,8 +72,8 @@
   background: #f2e6c3f0; border: 1px solid #88784f; box-shadow: 1px 1px #655837;
 }
 .wasteland .center-scroll.four .row-scroll .card.item .cinfo {
-  grid-area: art; grid-column: auto; grid-row: auto; align-self: end; justify-self: start; z-index: 2;
-  max-width: calc(100% - 8px); margin: 0 4px 3px; padding: 1px 6px; font-size: 12px; line-height: 1.35;
+  grid-column: 1; grid-row: 1; align-self: end; justify-self: start; z-index: 2;
+  max-width: calc(100% - 44px); margin: 0 4px 3px; padding: 1px 6px; font-size: 12px; line-height: 1.35;
   background: #efe6cbe8; border-radius: 2px; box-shadow: 0 1px 2px #0004;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
@@ -83,12 +82,12 @@
   position: absolute; top: 4px; left: 4px; z-index: 2; font-size: 12px; padding: 1px 5px;
   background: #3a3426e6; color: #f2e6c3; border-radius: 2px;
 }
-/* 锅卡在物品行：撑满行高，内容多时卡内纵滚（真实水量/食材/槽位优先，不机械套80%） */
-.center-scroll.four .row-scroll > .pot-card { height: 100%; overflow-y: auto; overflow-x: hidden; flex: 0 0 auto; }
+/* 锅卡在物品行：卡面只放名称、水量与食材摘要（M77-B2），撑满行高、不卡内滚动；完整内容在选卡浮窗里展开 */
+.center-scroll.four .row-scroll > .pot-card { height: 100%; overflow: hidden; flex: 0 0 auto; }
 .center-scroll.four .section.carried .row-scroll.slots5 > .pot-card { width: auto; }
 
 /* ───── 选卡紧凑浮窗（S14 §18.3）：卡下方，脱离文档流；宽不超过中部约 1/3，高不超过约两行，内容多时窗内滚动 ───── */
-.apop.card-pop { width: min(360px, 34vw); max-height: min(46vh, 420px); overflow-y: auto; padding: 8px 10px; }
+.apop.card-pop { width: clamp(260px, calc((100vw - 576px) / 3 + 30px), 360px); max-height: min(46vh, 420px); overflow-y: auto; padding: 8px 10px; }
 .apop.card-pop:not(:has(.tbar)) { display: none; }
 .apop.card-pop .apop-head { position: absolute; top: 4px; right: 4px; z-index: 3; }
 .apop.card-pop .apop-title, .apop.card-pop .apop-art { display: none; }
@@ -181,3 +180,81 @@
 @media (min-height: 1000px) {
   .bt-console .bc-cmds .cmdt { width: 78px; height: 78px; }
 }
+
+/* ───── 试玩修复 M77 ───── */
+/* B2/B3 锅卡摘要：名称一行、水量条一行、食材摘要一行；同一组件用于物品行与火堆加工位 */
+.pot-card.compact { display: flex; flex-direction: column; gap: 4px; padding: 4px 6px; min-width: 0; width: 200px; }
+.pot-card.compact .pc-head { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 0; padding: 0; }
+.pot-card.compact .pc-icon { flex: 0 0 30px; width: 30px; height: 30px; }
+.pot-card.compact .pc-icon svg, .pot-card.compact .pc-icon img { width: 30px; height: 30px; }
+.pot-card.compact .pc-title { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
+.pot-card.compact .pc-title b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pot-card.compact .pc-title small { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pot-card.compact .pc-head .card-arrow, .pot-card.compact .pc-head .row-arrow { position: relative; right: auto; bottom: auto; flex: 0 0 auto; }
+.pot-card.compact .pot-fill { padding: 2px 5px; min-height: 0; }
+.pot-card.compact .pot-fill-head { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; line-height: 1.3; white-space: nowrap; overflow: hidden; }
+.pot-card.compact .pot-fill-head b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.pot-card.compact .pot-fill-head em { font-style: normal; color: #6b3f19; overflow: hidden; text-overflow: ellipsis; }
+.pc-sum { display: flex; align-items: center; gap: 4px; min-height: 26px; padding: 1px 4px; border: 1px dashed #8e805b; border-radius: 2px; font-size: 12px; overflow: hidden; cursor: pointer; }
+.pc-sum-label { flex: 0 0 auto; white-space: nowrap; }
+.pc-sum-food { position: relative; flex: 0 0 24px; width: 24px; height: 24px; }
+.pc-sum-food svg, .pc-sum-food img { width: 24px; height: 24px; }
+.pc-sum-food i { position: absolute; left: 0; bottom: -2px; height: 3px; background: #b8682a; }
+.pc-sum-food.spoiled { filter: grayscale(.9); opacity: .7; }
+.center-scroll.four .section.carried .row-scroll.slots5 > .pot-card.compact { width: auto; }
+/* 选卡浮窗里展开的锅内容 */
+.apop.card-pop.pot { width: clamp(260px, calc((100vw - 576px) / 3 + 30px), 380px); }
+.pot-detail { display: flex; flex-direction: column; gap: 4px; margin: 0 0 6px; color: var(--ink); }
+.pot-detail > :first-child { margin-right: 36px; }
+.pot-detail .pc-row { background: var(--paper); }
+.pot-detail .pc-slot { color: var(--ink); background: #e9dfc4; }
+
+/* B3 火堆卡：左列两行（燃料+等待烹饪 / 投木+点燃或熄灭），关键操作不滚动可见；加工位跟着变矮 */
+.center-scroll.four .fire-card { padding: 4px; gap: 6px; }
+.center-scroll.four .fire-card .fc-ctrl {
+  flex: 0 0 280px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: "head cook" "foot foot"; gap: 4px;
+}
+.center-scroll.four .fire-card .fc-ctrl:not(:has(.fc-cook)) .fc-head { grid-column: 1 / -1; }
+.center-scroll.four .fire-card .fc-head { grid-area: head; min-width: 0; }
+.center-scroll.four .fire-card .fc-cook { grid-area: cook; min-width: 0; }
+.center-scroll.four .fire-card .fc-foot { grid-area: foot; flex-wrap: nowrap; gap: 4px; }
+.center-scroll.four .fire-card .fc-fuel { min-height: 40px; padding: 0 2px; gap: 4px; }
+.center-scroll.four .fire-card .fc-art svg { width: 28px; height: 28px; }
+.center-scroll.four .fire-card .fc-title b { font-size: 15px; }
+.center-scroll.four .fire-card .fuel-line { font-size: 12px; white-space: nowrap; }
+.center-scroll.four .fire-card .fc-btn { min-height: 40px; padding: 1px 6px; font-size: 14px; gap: 3px; min-width: 0; }
+.center-scroll.four .fire-card .fc-btn small { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.center-scroll.four .fire-card .fc-btn span { min-width: 0; }
+.center-scroll.four .fire-card .fc-btn.cook { height: 100%; }
+.center-scroll.four .fire-card .fc-slots { gap: 6px; align-items: stretch; }
+.center-scroll.four .fire-card .fc-slots > .slot-empty { flex: 0 0 96px; min-height: 0; }
+.center-scroll.four .fire-card .fc-slot.pot { flex: 0 0 200px; }
+.center-scroll.four .fire-card .fc-slot.pot > .pot-card.compact { width: 100%; }
+.center-scroll.four .facility-row :is(.fac-card, .res-card) { width: 150px; }
+@media (min-height: 801px) { .center-scroll.four .facility-row :is(.fac-card, .res-card) { width: 180px; } }
+
+/* B4 选卡浮窗不越出中部列：横向位置由 data-bound=".center" 限制（app.js survivalPop） */
+
+/* B5 战斗操作台：装备列固定宽度（技能不随装备名长短平移）；状态挪到短反馈行左侧；禁用原因贴在按钮底部，不压招式角标 */
+.battle-overlay.bt-console { grid-template-columns: 116px minmax(0, 1fr); }
+.bt-console .bc-equip { width: 116px; max-width: 116px; }
+.bt-console .bc-groups { grid-column: 2 / -1; }
+.bt-console .bc-status { grid-column: 1; grid-row: 2; max-width: 116px; align-self: center; }
+.bt-console .bc-status .bc-label { display: none; }
+.bt-console .bc-status .st-chips { flex-wrap: wrap; gap: 2px; }
+.bt-console .bc-feed { grid-column: 2 / -1; }
+.bt-console .cmdt-why { top: auto; bottom: 2px; }
+.bt-console .cmdt.off small { visibility: hidden; }
+/* 敌卡：插画在左撑满卡高，健康/意图在右，图不再被压扁 */
+.bt-scene .foe { display: flex; flex-direction: column; }
+.bt-scene .foe-main { flex: 1 1 auto; flex-direction: row; align-items: stretch; gap: 6px; }
+.bt-scene .foe-art { flex: 0 0 auto; height: 100%; width: auto; aspect-ratio: 1 / 1; max-width: 50%; }
+.bt-scene .foe-body { justify-content: center; }
+
+/* B5 结果提示条：落在底栏位置，不压随身行（四行之外） */
+.toast { top: auto; bottom: calc(-1 * var(--foot-h)); min-height: var(--foot-h); padding: 0 4px 0 14px; z-index: 60; max-width: min(640px, 60vw); }
+.toast span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* B6 底栏右侧给发布时注入的“构建 xxx”标签留位，不与“已保存”重叠 */
+.footer { padding-right: 170px; }

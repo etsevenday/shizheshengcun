@@ -104,6 +104,20 @@ public class V11FiveCardTests : TestBase
         Assert.That(E.TakeOutConsequenceOf(t, tpot).RootCardsAfter, Is.EqualTo(6));
     }
 
+    /// <summary>M77-B10：开发测试箱的说明与实际一致（放到随身几张、放在地面几张），随身不超过5张。</summary>
+    [Test]
+    public void DevKit_TextMatchesPlacement()
+    {
+        var s = New();
+        var before = s.Items.Count(i => i.Owner == s.CurrentLocation);
+        var text = E.DebugGiveDevKit(s);
+        var carriedNew = E.RootCardCount(s) - 2;
+        var groundNew = s.Items.Count(i => i.Owner == s.CurrentLocation) - before;
+        Assert.That(E.RootCardCount(s), Is.LessThanOrEqualTo(Cfg.Carry.MaxRootCards));
+        Assert.That(text, Does.Contain($"{carriedNew}张放到随身").And.Contain($"放不下的{groundNew}张放在当前地面"));
+        Assert.That(s.Log.Last().Text, Is.EqualTo(text), "日志与界面提示同一句");
+    }
+
     /// <summary>弹仓内容不另占卡；武器连同弹仓1张。</summary>
     [Test]
     public void Magazine_DoesNotTakeExtraCard()
