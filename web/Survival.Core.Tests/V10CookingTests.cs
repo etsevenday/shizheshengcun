@@ -26,7 +26,7 @@ public class V10CookingTests : TestBase
     }
 
     [Test]
-    public void Reboil_CookedMeat_15Minutes_500ml_KeepsExpiry()
+    public void Reboil_CookedMeat_15Minutes_500ml_Fresh24HoursFromCompletion()
     {
         var (s, pot) = PotOnFire(2);
         var meat = E.CreateItems(s, "cooked_meat", 1, "camp").Single();
@@ -40,10 +40,11 @@ public class V10CookingTests : TestBase
         Run(s);
         var food = E.PotFood(s, pot.InstanceId).Single();
         Assert.That(food.ItemId, Is.EqualTo("boiled_meat"), "复煮后为水煮肉，留在原锅");
-        Assert.That(food.ExpiresAt, Is.EqualTo(expires), "继承原烤肉的绝对到期时刻，不刷新24小时");
+        Assert.That(food.ExpiresAt, Is.Not.EqualTo(expires));
         Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(1), "扣净水500ml（1份）");
         var log = s.Log.Last(l => l.Text.Contains("已煮成水煮肉")).Minute;
         Assert.That(log - start, Is.EqualTo(15), "15有效分钟");
+        Assert.That(food.ExpiresAt, Is.EqualTo(log + 1440), "Q16：合法复煮成品从完成起保质24小时，不再继承原烤肉期限");
     }
 
     [Test]

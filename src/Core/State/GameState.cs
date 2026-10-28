@@ -24,9 +24,10 @@ namespace Survival.Core.State
         /// "4" 起锅与直烤食材可以真实归属火堆设施（卡片统一与设施烹饪 v0.4）；
         /// "5" 起健康/体力上限20、随机耐久、技能、免疫病毒、世界敌人与战斗（人物与战斗 v0.6，程序选的未占用版本号，与策划文件名无关）；
         /// "6" 起金属锅无耐久、活性物质来源、人物词条、剧情与饱饱状态（系统策划总册 v1.0 答复）；
-        /// "7" 起对话记录（按次分组、逐句快照、游标、待显示队列）与等待烹饪行动状态（策划提交 9fdb44f：S01 §8–9、S11 §9）。
+        /// "7" 起对话记录（按次分组、逐句快照、游标、待显示队列）与等待烹饪行动状态（策划提交 9fdb44f：S01 §8–9、S11 §9）；
+        /// "8" 起设施加工进程带烹饪受热保护标记（策划提交 5493951：Q16、S11 §10），随身最多五张根物品卡（S06 §8）。
         /// </summary>
-        public const string CurrentSchema = "7";
+        public const string CurrentSchema = "8";
 
         public string SchemaVersion { get; set; } = CurrentSchema;
         public string ConfigVersion { get; set; } = "";
@@ -265,6 +266,11 @@ namespace Survival.Core.State
         public long? CompletionSerial { get; set; }
         /// <summary>最后一次结算到的世界分钟。</summary>
         public int LastWorldMinute { get; set; }
+        /// <summary>
+        /// 烹饪受热保护（Q16、S11 §10）：食材段首仍新鲜、本段实际完整受热 5 分钟后置 true；此后原 expiresAt 不再判腐败，
+        /// 熄火保留，目标被取出（进程随之移除）即解除。不改写原料的 ExpiresAt；净水批次进程不用。
+        /// </summary>
+        public bool HeatProtected { get; set; }
 
         public FacilityProcess Clone() => (FacilityProcess)MemberwiseClone();
     }

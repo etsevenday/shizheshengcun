@@ -10,7 +10,20 @@ namespace Survival.Core.Engine
     {
         // ───────────────────────── 物品（搜集案 05） ─────────────────────────
 
-        public bool IsSpoiled(GameState s, ItemInstance i) => i.ExpiresAt.HasValue && i.ExpiresAt.Value <= s.GameMinute;
+        /// <summary>
+        /// 已到期且不在受热保护中（Q16、S11 §10）：设施/锅里的新鲜食材实际完整受热一段后受本次加工保护，原 expiresAt 不再判腐败；
+        /// 取出（进程移除）即按原 expiresAt 立即判断。保护不改写 ExpiresAt。
+        /// </summary>
+        public bool IsSpoiled(GameState s, ItemInstance i) =>
+            i.ExpiresAt.HasValue && i.ExpiresAt.Value <= s.GameMinute && !IsHeatProtected(s, i);
+
+        /// <summary>该物品正受本次烹饪加工保护（只可能在火堆加工位或火堆里的锅中）。</summary>
+        public bool IsHeatProtected(GameState s, ItemInstance i) =>
+            (i.InFacility || i.InContainer) && AllProcesses(s).Any(p => p.HeatProtected && p.TargetInstanceId == i.InstanceId);
+
+        /// <summary>受保护且原保质期已过：取出后会立即腐败（界面提前写明后果）。</summary>
+        public bool PastExpiryButProtected(GameState s, ItemInstance i) =>
+            i.ExpiresAt.HasValue && i.ExpiresAt.Value <= s.GameMinute && IsHeatProtected(s, i);
 
         public ItemInstance? FindItem(GameState s, int instanceId) => s.Items.FirstOrDefault(i => i.InstanceId == instanceId);
 
@@ -49,6 +62,73 @@ namespace Survival.Core.Engine
             s.Items.Where(i => i.IsCarried).Sum(i => ItemGrams(s, i));
 
         public bool IsOverweight(GameState s) => CarriedGrams(s) > Config.Carry.SoftGrams;
+
+        // ───────────────────────── 随身五张根物品卡（S06 §8） ─────────────────────────
+
+        /// <summary>随身最多几张根物品卡（配置 carry.maxRootCards，策划定 5）。</summary>
+        public int MaxRootCards => Config.Carry.MaxRootCards;
+
+        /// <summary>合堆键：同物品、同到期、同来源事件（与 Normalize 一致）。</summary>
+        private static (string, int?, string?) StackKey(ItemInstance i) => (i.ItemId, i.ExpiresAt, i.Source?.GrantEventId);
+
+        /// <summary>
+        /// 随身根物品卡数（开发假设 H1）：可堆叠物品按合堆键分批，每批 ceil(数量/堆叠上限) 张；工具/武器/锅每件 1 张（锅连同内容、
+        /// 武器连同弹仓都只算 1 张）。制作预留临时拆出的堆仍按所在批次合计，不算新卡。
+        /// </summary>
+        public int RootCardCount(GameState s) => RootCardsAfter(s, null, 0, null, 0);
+
+        /// <summary>
+        /// 一次转移后的随身根卡数（只读预演，H2）：add 为将进入随身的物品（addCount 份；锅/工具等整件进入时按 1 张），
+        /// remove 为将离开随身的物品（removeCount 份）。
+        /// </summary>
+        public int RootCardsAfter(GameState s, ItemInstance? add, int addCount, ItemInstance? remove, int removeCount)
+        {
+            var stacks = new Dictionary<(string, int?, string?), int>();
+            var singles = 0;
+            foreach (var i in s.Items.Where(i => i.IsCarried))
+            {
+                var n = i.Count;
+                if (remove != null && i.InstanceId == remove.InstanceId) n -= Math.Min(n, removeCount);
+                if (n <= 0) continue;
+                if (StacksAsBatch(i)) { var k = StackKey(i); stacks[k] = (stacks.TryGetValue(k, out var c) ? c : 0) + n; }
+                else singles++;
+            }
+            if (add != null && addCount > 0 && !add.IsCarried)
+            {
+                if (StacksAsBatch(add)) { var k = StackKey(add); stacks[k] = (stacks.TryGetValue(k, out var c) ? c : 0) + addCount; }
+                else singles++;
+            }
+            return singles + stacks.Sum(kv => (kv.Value + _items[kv.Key.Item1].StackMax - 1) / Math.Max(1, _items[kv.Key.Item1].StackMax));
+        }
+
+        private bool StacksAsBatch(ItemInstance i) => _items[i.ItemId].IsStackable && !IsPot(i);
+
+        /// <summary>这次进入随身后根卡数是否允许：不超过上限；旧档已超限时不得再增加（S06 §8）。</summary>
+        public bool RootCardsAllow(GameState s, int after) => after <= Math.Max(MaxRootCards, RootCardCount(s));
+
+        /// <summary>“随身卡位已满（5/5张），……”拒绝原因。</summary>
+        public string RootCardsFullText(GameState s) =>
+            $"随身卡位已满（{RootCardCount(s)}/{MaxRootCards}张）：会多出一张新卡，请先放下或用掉一张";
+
+        /// <summary>
+        /// 从某处取 1..upTo 份进随身时，按根卡上限最多能取几份（单调：份数越多卡数不减）。整件物品（锅、工具、武器）为 0 或 1。
+        /// </summary>
+        public int MaxIntoCarriedByCards(GameState s, ItemInstance inst, int upTo)
+        {
+            if (upTo <= 0) return 0;
+            if (!StacksAsBatch(inst)) return RootCardsAllow(s, RootCardsAfter(s, inst, 1, null, 0)) ? Math.Min(1, upTo) : 0;
+            var lo = 0;
+            var hi = upTo;
+            while (lo < hi)
+            {
+                var mid = (lo + hi + 1) / 2;
+                if (RootCardsAllow(s, RootCardsAfter(s, inst, mid, null, 0))) lo = mid; else hi = mid - 1;
+            }
+            return lo;
+        }
+
+        /// <summary>随身根卡超过上限（旧档或调试物资）：需要在安全空闲时整理（S06 §8、开发假设 H3）。</summary>
+        public bool CarriedOverflow(GameState s) => RootCardCount(s) > MaxRootCards;
 
         /// <summary>
         /// 随身与（可选）当前地面的物品；includeContainers 时也包括这些位置（含当前火堆里）锅中的水（饮用、引导统计用）。

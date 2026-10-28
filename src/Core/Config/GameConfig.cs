@@ -108,6 +108,8 @@ namespace Survival.Core.Config
     {
         public int SoftGrams { get; set; } = 20000;
         public int HardGrams { get; set; } = 30000;
+        /// <summary>随身最多几张根物品卡（S06 §8：同批合法堆叠算一张，独立工具/武器各一张，锅连同内容一张）。</summary>
+        public int MaxRootCards { get; set; } = 5;
     }
 
     public sealed class WorkFactorConfig
@@ -282,8 +284,6 @@ namespace Survival.Core.Config
         public int WaterCostMl { get; set; }
         public string RequiredOwner { get; set; } = "";
         public string? RequiredLiquid { get; set; }
-        /// <summary>成品继承原料的绝对到期时刻、不刷新保质（v1.0 T03 烤肉复煮）。</summary>
-        public bool KeepInputExpiry { get; set; }
 
         public bool IsPotBatch => Target == ProcessTargets.PotLiquidBatch;
         public bool InPot => RequiredOwner == ProcessOwners.PotInFire;

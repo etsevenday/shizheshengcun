@@ -65,7 +65,7 @@ public class V10ConfigTests : TestBase
         Assert.That(p.WaterCostMl, Is.EqualTo(500));
         Assert.That(p.RequiredLiquid, Is.EqualTo("clean_water"));
         Assert.That(p.InPot, Is.True);
-        Assert.That(p.KeepInputExpiry, Is.True, "继承原烤肉 expiresAt");
+        // Q16（S11 §10）取代 T03 继承原期限：配置不再有 keepInputExpiry，成品统一完成起 24 小时（V11CookProtectTests）
         Assert.That(Cfg.Containers["pot"].StoreOnlyFoodIds, Is.EqualTo(new[] { "boiled_meat" }));
         Assert.That(Cfg.Items.Single(i => i.Id == "pot").DurabilityMaxRange, Is.Null);
         Assert.That(Cfg.Durability.Tools.ContainsKey("pot"), Is.False);

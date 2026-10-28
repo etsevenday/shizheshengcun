@@ -644,12 +644,11 @@ namespace Survival.Core.Engine
                 var input = ItemName(t.ItemId);
                 t.ItemId = cfg.OutputId;
                 var outCfg = _items[cfg.OutputId];
-                // 烤肉复煮继承原烤肉的绝对到期时刻，不刷新保质（v1.0 T03，S11 §8）；其他熟成从完成时刻起算
-                if (!cfg.KeepInputExpiry)
-                    t.ExpiresAt = outCfg.ShelfLifeMinutes.HasValue ? s.GameMinute + outCfg.ShelfLifeMinutes.Value : (int?)null;
+                // Q16（S11 §10，取代 T03 继承原烤肉期限）：所有合法烹饪/复煮成品一律从完成时刻起算自己的保质（水煮肉 24 小时）
+                t.ExpiresAt = outCfg.ShelfLifeMinutes.HasValue ? s.GameMinute + outCfg.ShelfLifeMinutes.Value : (int?)null;
                 var pot = p.PotInstanceId.HasValue ? FindItem(s, p.PotInstanceId.Value) : null;
                 if (cfg.WaterCostMl > 0 && pot != null) ConsumeWater(s, pot, cfg.RequiredLiquid!, cfg.WaterCostMl);
-                var potWorn = cfg.KeepInputExpiry ? "；保质期不变" : "";
+                var potWorn = "";
                 // 第2日目标“完成一次块根烹饪”与七日检查“完成食物加工”都来自 v0.2（当时只有块根）：只认块根烤制/水煮，烤肉煮肉不算（试玩修复 L7）
                 if (cfg.InputId == RootItemId) s.Progress.Flags.Add("cooked");
                 text = pot != null

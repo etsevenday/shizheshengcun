@@ -172,7 +172,7 @@ public class V10DialogueTests : BattleTestBase
         var json6 = j.ToString();
         Assert.That(SaveSerializer.NeedsMigration(json6), Is.True);
         var m = SaveSerializer.Deserialize(json6, Cfg, out var notes);
-        Assert.That(m.SchemaVersion, Is.EqualTo("7"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "6→7→8 整条链");
         var legacy = m.Story.DialogueLog[0];
         Assert.That(legacy.Legacy && legacy.Ended, Is.True);
         Assert.That(legacy.Lines.Select(l => l.LineId), Is.EqualTo(new[] { "awakening_1", "awakening_2" }), "按配置顺序");

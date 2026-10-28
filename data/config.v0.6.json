@@ -20,7 +20,8 @@
   },
   "carry": {
     "softGrams": 20000,
-    "hardGrams": 30000
+    "hardGrams": 30000,
+    "maxRootCards": 5
   },
   "workFactors": {
     "night": 1.5,
@@ -193,8 +194,7 @@
       "heatMinutes": 15,
       "waterCostMl": 500,
       "requiredOwner": "pot_inside_lit_fire",
-      "requiredLiquid": "clean_water",
-      "keepInputExpiry": true
+      "requiredLiquid": "clean_water"
     }
   ],
   "ui": {
@@ -3750,7 +3750,7 @@
         "eventId": "tutorial_arrive",
         "speaker": "饱饱",
         "text": "前面那个……不像还活着。小心。",
-        "note": "首战：轮到你时有行动点（AP）。点敌卡选目标，点指令看右栏预估，点“执行”才提交；行动点用完或点“结束行动”轮到敌人。"
+        "note": "轮到你时可使用行动点（AP）。先选技能，再把鼠标移到亮起的目标上看右侧预测，点击目标就会执行。自用或无目标指令按旁边的明确按钮确认；用完行动点或点‘结束行动’后继续战斗。"
       },
       {
         "id": "tutorial_won",

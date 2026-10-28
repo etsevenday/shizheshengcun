@@ -20,7 +20,7 @@ namespace Survival.Core.Save
 
     /// <summary>
     /// 存档升级链：0.2-proto-1（设计文档里的 schemaVersion 2）→ 3（交互与地图扩展）→ 4（卡片统一与设施烹饪）→ 5（人物与战斗 v0.6）
-    /// → 6（系统策划总册 v1.0 答复：锅无耐久、旧档不补新剧情）→ 7（策划提交 9fdb44f：对话记录与等待烹饪）。
+    /// → 6（系统策划总册 v1.0 答复：锅无耐久、旧档不补新剧情）→ 7（策划提交 9fdb44f：对话记录与等待烹饪）→ 8（策划提交 5493951：烹饪受热保护）。
     /// 只对旧版执行，已是当前版本的档不重复迁移。不补发历史奖励、不自动补水、不凭默认顺序挑锅、H/E 只缩放一次。
     /// </summary>
     public static class SaveMigrator
@@ -30,6 +30,7 @@ namespace Survival.Core.Save
         public const string Schema4 = "4";
         public const string Schema5 = "5";
         public const string Schema6 = "6";
+        public const string Schema7 = "7";
 
         /// <summary>升级到当前版本，返回给玩家看的迁移说明（无变化时为空）。冲突时抛 SaveMigrationConflictException，状态不变。</summary>
         public static List<string> Migrate(GameState s, GameConfig config)
@@ -48,6 +49,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema4) From4To5(s, config, notes);
             if (s.SchemaVersion == Schema5) From5To6(s, config, notes);
             if (s.SchemaVersion == Schema6) From6To7(s, config, notes);
+            if (s.SchemaVersion == Schema7) From7To8(s, config, notes);
             return notes;
         }
 
@@ -402,7 +404,37 @@ namespace Survival.Core.Save
                 }
                 if (seen.Count > 0) notes.Add("新增对话记录：这份存档里已经读过的对白整理为一组“旧存档记录”（时间、地点未知），之后的对话按次记录");
             }
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（对话记录与等待烹饪）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema7}（对话记录与等待烹饪）。" });
+            s.SchemaVersion = Schema7;
+        }
+
+        // ───────────────────────── 7 → 8 ─────────────────────────
+
+        /// <summary>
+        /// 策划提交 5493951（S01 §10、S11 §10、S06 §8，开发假设 H3/H6）：已有有效受热进度、目标仍新鲜的食材进程一次性补烹饪保护；
+        /// 已腐败的不复活，旧的继承期限成品不刷新期限。随身超过五张根物品卡的不在迁移里删物或丢地——读档后在安全空闲时由玩家整理。
+        /// 重复读档不会再走这里（版本已是 8），不会刷新任何截止时间。
+        /// </summary>
+        private static void From7To8(GameState s, GameConfig config, List<string> notes)
+        {
+            var protectedCount = 0;
+            foreach (var ls in s.Locations.Values)
+                foreach (var p in ls.Facility.Processes)
+                {
+                    var cfg = config.Processes.FirstOrDefault(x => x.Id == p.RecipeId);
+                    if (cfg == null || cfg.IsPotBatch || p.HeatDoneMinutes <= 0 || p.HeatProtected) continue;
+                    var t = s.Items.FirstOrDefault(i => i.InstanceId == p.TargetInstanceId);
+                    if (t == null || (t.ExpiresAt.HasValue && t.ExpiresAt.Value <= s.GameMinute)) continue;
+                    p.HeatProtected = true;
+                    protectedCount++;
+                }
+            if (protectedCount > 0)
+            {
+                var note = $"火堆里已在受热的{protectedCount}份新鲜食材按新规则受本次烹饪保护（取出即解除）；已腐败的不会恢复";
+                notes.Add(note);
+                s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = note + "。" });
+            }
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（烹饪受热保护与随身五张卡）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 
