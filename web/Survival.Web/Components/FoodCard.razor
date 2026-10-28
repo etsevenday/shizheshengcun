@@ -18,7 +18,7 @@
     <div class="ff-head">
         <span class="pc-ico" data-drag="@($"card:{key}")" data-drag-title="@name" data-drag-from="@where">@Icons.Markup(Item.ItemId)</span>
         <span class="pc-text"><span class="pc-name">@name</span>@if (Slot.HasValue) {<span class="pc-status">加工位@(Slot)</span>}</span>
-        <button type="button" class="row-arrow" aria-label="@($"把{name}取到随身")" title="取到随身（不打开操作条；点图标可选目的地）"
+        <button type="button" class="row-arrow" aria-label="@($"把{name}取到随身")" title="取到随身（不打开操作窗；点图标可选目的地）"
                 disabled="@(G.E.IsBusy(s) || G.Running)" @onclick="Take" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▼</button>
     </div>
     <div class="ff-status">@e.ContentStatus(s, Item)</div>

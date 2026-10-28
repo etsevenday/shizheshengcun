@@ -38,7 +38,7 @@
         <span class="pc-title"><b>@name</b><small>@(Pot.InFacility ? "整锅" : $"{Ui.Kg(e.ItemGrams(s, Pot))}公斤")@(Pot.Durability.HasValue ? $" · 耐久{GameEngine.DurabilityText(Pot)}" : "")</small></span>
         @if (Pot.InFacility)
         {
-            <button type="button" class="row-arrow" aria-label="@($"把整口{name}取到随身")" title="取到随身：整锅连同水与食材（不打开操作条；点标题可选目的地）"
+            <button type="button" class="row-arrow" aria-label="@($"把整口{name}取到随身")" title="取到随身：整锅连同水与食材（不打开操作窗；点标题可选目的地）"
                     disabled="@(locked || busy)" @onclick="TakePot" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▼</button>
         }
         else
@@ -71,7 +71,7 @@
                 <span class="pc-name">@e.ItemName(w.ItemId)<b>×@w.Count</b><em>@(w.Count * c.UnitMl)毫升</em></span>
                 @if (wReserved > 0) { <span class="pc-status warn" title="@($"已预留{wReserved}毫升{(free < 1 ? " · 暂不可饮用/转移" : "")}")">已预留@(wReserved)毫升@(free < 1 ? " · 暂不可饮用/转移" : "")</span> }
             </span>
-            <button type="button" class="row-arrow" aria-label="@($"从锅中取1份{e.ItemName(w.ItemId)}到随身")" title="@($"从锅中取到随身：1份（{c.UnitMl}毫升）成为独立随身卡{(Pot.IsCarried ? "，总携重不变" : "")}（不打开操作条；点图标可选数量与目的地）")"
+            <button type="button" class="row-arrow" aria-label="@($"从锅中取1份{e.ItemName(w.ItemId)}到随身")" title="@($"从锅中取到随身：1份（{c.UnitMl}毫升）成为独立随身卡{(Pot.IsCarried ? "，总携重不变" : "")}（不打开操作窗；点图标可选数量与目的地）")"
                     disabled="@busy" @onclick="() => TakeWater(w)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▼</button>
         </div>
         @if (wReserved > 0 && free < 1)
@@ -100,7 +100,7 @@
                         <span class="heat-track"><i style="width:@(Math.Min(100, p.HeatDoneMinutes * 100 / Math.Max(1, p.RequiredHeatMinutes)))%"></i></span>
                     }
                 </span>
-                <button type="button" class="row-arrow" aria-label="@($"把{fname}从锅中取到随身")" title="@($"从锅中取到随身：成为独立随身卡{(Pot.IsCarried ? "，总携重不变" : "")}（不打开操作条；点图标可选目的地）")"
+                <button type="button" class="row-arrow" aria-label="@($"把{fname}从锅中取到随身")" title="@($"从锅中取到随身：成为独立随身卡{(Pot.IsCarried ? "，总携重不变" : "")}（不打开操作窗；点图标可选目的地）")"
                         disabled="@busy" @onclick="() => TakeFood(f)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▼</button>
             </div>
         }

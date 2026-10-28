@@ -1,6 +1,6 @@
 @inherits GameComponent
 
-@* 选中卡片下方的操作条（基础UI布局与操作修订案 v0.7 第 3.2、7 节）：普通文档流，紧接在被选中的卡片/子对象行之下，一次只有一条。
+@* 选中卡片的操作内容（v0.7 第 3.2、7 节；S14 §18.3 起放在 CardPop 的锚定浮窗里，不再占文档流撑高所在行），一次只有一个。
    条内顺序：对象（图标、名称、完整来源、数量）→ 自用操作（食用1份/饮用1份/饮用1份（风险）/使用1份，旁边写明效果、5分钟、溢出与风险）
    → 转移目标/数量 → 明确的转移执行按钮。选中、改数量、选目标都不执行；点自用或执行按钮才提交，玩法层重新校验。
    根节点沿用 .tbar 类：app.js 把“选中后直接按数字/回车”转进这里的输入框与执行按钮（留言 fb68265e）。 *@
@@ -29,7 +29,7 @@
             {
                 var why = e.CommandBlocked(s, BattleCommand.Of(act, null, m.UseId));
                 <div class="ca-use-row">
-                    <button type="button" class="ca-use" disabled="@(why != null || G.BattleBusy)" title="@(why ?? "选择这条战斗指令，在右栏预览后执行")"
+                    <button type="button" class="ca-use" disabled="@(why != null || G.BattleBusy)" title="@(why ?? "选择这条战斗指令，在战斗操作台点“确认”执行")"
                             @onclick="() => G.PickBattleAction(act, m.UseId)">@GameEngine.ActionName(act)（战斗指令·2AP）</button>
                     <span class="ca-use-note">效果在确认时应用，不另跳5分钟</span>
                 </div>

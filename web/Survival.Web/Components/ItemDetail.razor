@@ -169,7 +169,7 @@ else
     </div>
 
     <div class="detail-foot">
-        <div class="under">@(busy ? "行动进行中，暂不能整理物品" : GameEngine.CanSelfUse(cfg) ? $"在被选中卡片下方点“{GameEngine.UseButtonText(cfg)}”使用；转移目标与数量也在那里" : "转移目标与数量在被选中卡片下方的操作条里")</div>
+        <div class="under">@(busy ? "行动进行中，暂不能整理物品" : GameEngine.CanSelfUse(cfg) ? $"在被选中卡片旁的操作窗里点“{GameEngine.UseButtonText(cfg)}”使用；转移目标与数量也在那里" : "转移目标与数量在被选中卡片旁的操作窗里")</div>
     </div>
 }
 
