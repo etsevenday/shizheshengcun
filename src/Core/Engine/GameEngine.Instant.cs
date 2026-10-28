@@ -47,7 +47,7 @@ namespace Survival.Core.Engine
                     if (r.Count < 1 || r.Count > inst.Count) return ActionResult.Fail("数量无效");
                     var max = MaxPickup(s, inst);
                     if (r.Count > max)
-                        return ActionResult.Fail($"携带后将超过{Config.Carry.HardGrams / 1000}公斤，最多可取{max}份", max);
+                        return ActionResult.Fail(PickupBlockedText(s, inst, r.Count) ?? $"最多可取{max}份", max);
                     MoveItems(s, inst, r.Count, ItemInstance.Carried);
                     UpdateFlags(s);
                     return ActionResult.Success();
@@ -233,6 +233,13 @@ namespace Survival.Core.Engine
                 if (room <= 0) { reason = $"携带后将超过{Config.Carry.HardGrams / 1000}公斤"; return 0; }
                 max = Math.Min(max, room);
             }
+            // 倒到随身成为独立水卡：按最终根卡数校验（随身锅里倒到随身也一样，S10 联动、Q11）
+            if (zone == ItemInstance.Carried)
+            {
+                var byCards = MaxIntoCarriedByCards(s, child, max);
+                if (byCards <= 0) { reason = RootCardsFullText(s); return 0; }
+                max = Math.Min(max, byCards);
+            }
             return max;
         }
 
@@ -248,7 +255,9 @@ namespace Survival.Core.Engine
             if (r.Count > max)
                 return r.Count > PotFreeWaterUnits(s, child)
                     ? ActionResult.Fail($"只有{max}份未被预留；{ReservedWaterText(s, child)}", max)
-                    : ActionResult.Fail($"携带后将超过{Config.Carry.HardGrams / 1000}公斤，最多可倒出{max}份", max);
+                    : zone == ItemInstance.Carried && MaxIntoCarriedByCards(s, child, r.Count) < r.Count
+                        ? ActionResult.Fail($"{RootCardsFullText(s)}；最多可倒出{max}份", max)
+                        : ActionResult.Fail($"携带后将超过{Config.Carry.HardGrams / 1000}公斤，最多可倒出{max}份", max);
             var pot = ContainerOf(s, child)!;
             var batch = ProcessOf(s, pot);
             var interrupted = batch != null && batch.HeatDoneMinutes > 0 && child.ItemId == Process(batch.RecipeId).InputId;

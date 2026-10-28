@@ -62,11 +62,22 @@ namespace Survival.Core.Engine
             }
         }
 
-        /// <summary>开发测试箱（v0.5 §15）：金属矛、弩、霰弹枪、步枪及弹药只经调试入口取得，放到随身。</summary>
+        /// <summary>
+        /// 开发测试箱（v0.5 §15）：金属矛、弩、霰弹枪、步枪及弹药只经调试入口取得，放到随身；随身五张根卡放不下的放当前地面（开发假设 H4）。
+        /// </summary>
         public void DebugGiveDevKit(GameState s)
         {
-            foreach (var kv in Config.DevKit.Items) CreateItems(s, kv.Key, kv.Value, ItemInstance.Carried);
-            Emit(s, GameEventKind.Info, "开发测试箱：武器与弹药已放到随身。");
+            const string tmp = "devkit:tmp";
+            foreach (var kv in Config.DevKit.Items) CreateItems(s, kv.Key, kv.Value, tmp);
+            var ground = 0;
+            foreach (var m in s.Items.Where(i => i.Owner == tmp).OrderBy(i => i.InstanceId).ToList())
+            {
+                if (RootCardsAfter(s, m, m.Count, null, 0) <= MaxRootCards) MoveItems(s, m, m.Count, ItemInstance.Carried);
+                else { MoveItems(s, m, m.Count, s.CurrentLocation); ground++; }
+            }
+            Emit(s, GameEventKind.Info, ground > 0
+                ? $"开发测试箱：武器与弹药已放到随身；随身最多{MaxRootCards}张卡，放不下的{ground}张放在当前地面。"
+                : "开发测试箱：武器与弹药已放到随身。");
         }
 
         /// <summary>调试：立即以当前地点的现有敌对敌人形成敌踪（第1日也可，用于检查界面）。没有敌人返回 false。</summary>

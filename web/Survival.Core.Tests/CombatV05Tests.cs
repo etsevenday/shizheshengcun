@@ -714,7 +714,9 @@ public class CombatV05Tests : BattleTestBase
         }
         var d = New();
         E.DebugGiveDevKit(d);
-        Assert.That(Count(d, "rifle", ItemInstance.Carried), Is.EqualTo(1));
+        Assert.That(Count(d, "rifle"), Is.EqualTo(1));
+        Assert.That(E.RootCardCount(d), Is.EqualTo(Cfg.Carry.MaxRootCards), "开发测试箱放不下的放当前地面（S06 §8、开发假设 H4）");
+        Assert.That(d.Items.Count(i => i.Owner == d.CurrentLocation && Cfg.DevKit.Items.ContainsKey(i.ItemId)), Is.GreaterThan(0));
     }
 
     /// <summary>B527 地面或火堆内的武器/绷带：战斗不能远程使用，只读随身。</summary>

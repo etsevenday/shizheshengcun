@@ -84,9 +84,14 @@ public class DropResolverTests : TestBase
         E.DebugGive(s, "stone", 57);
         E.DebugGive(s, "fiber", 2);
         Assert.That(E.CarriedGrams(s), Is.EqualTo(29800));
-        var no = R(s, Card("camp|wood"), "zone:carried");
+        // 石块能并进随身已有的石块堆，不多出新卡，只受重量限制（S06 §8：五卡与30公斤同时校验）
+        var no = R(s, Card("camp|stone"), "zone:carried");
         Assert.That(no.Ok, Is.False);
         Assert.That(no.Reason, Does.Contain("30公斤"));
+        // 木材会多出一张新卡：先报卡位已满
+        var full = R(s, Card("camp|wood"), "zone:carried");
+        Assert.That(full.Ok, Is.False);
+        Assert.That(full.Reason, Does.Contain("随身卡位已满"));
     }
 
     [Test]

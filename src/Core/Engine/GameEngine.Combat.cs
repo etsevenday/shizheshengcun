@@ -592,9 +592,7 @@ namespace Survival.Core.Engine
             foreach (var id in AttackActions)
             {
                 var a = Act(id);
-                if (a == null) continue;
-                if (id != "basic_attack" && id != "desperate_punch" && a.Skills.Count > 0 && !a.Skills.Contains(w.SkillId)) continue;
-                if (a.WeaponId != null && a.WeaponId != w.Id) continue;
+                if (a == null || !CommandCompatible(s, a, w)) continue;
                 var opt = new BattleCommandOption { Action = id, Label = ActionName(id), Group = id == "basic_attack" || id == "desperate_punch" ? "attack" : "move", Ap = a.ApCost, NeedsTarget = id != "scatter" };
                 opt.Energy = AttackEnergy(s, a, w);
                 foreach (var e in b.Alive) if (CommandBlocked(s, BattleCommand.Of(id, e.Index)) == null) opt.Targets.Add(e.Index);
@@ -631,6 +629,74 @@ namespace Survival.Core.Engine
                 var why = CommandBlocked(s, BattleCommand.Of(id));
                 var have = s.Items.Where(i => i.IsCarried && i.ItemId == a.ItemId).Sum(i => i.Count);
                 list.Add(new BattleCommandOption { Action = id, Label = $"{ActionName(id)}（随身×{have}）", Group = "item", Ap = a.ApCost, Available = why == null, Reason = why });
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// 招式与当前武器/技能是否兼容（Q19、R03 §7.4）：武器技能类别、专属武器、技能等级门槛。战斗操作台与系统说明“指令一览”共用，
+        /// 不兼容的不列出；AP、弹药、耐久等暂时不足不在这里过滤（列出并写禁用原因）。
+        /// </summary>
+        public bool CommandCompatible(GameState s, CombatActionConfig a, WeaponConfig w)
+        {
+            var common = a.Id == "basic_attack" || a.Id == "desperate_punch";
+            if (!common && a.Skills.Count > 0 && !a.Skills.Contains(w.SkillId)) return false;
+            if (a.WeaponId != null && a.WeaponId != w.Id) return false;
+            if (!common && a.MinLevel > 0 && SkillLevel(s, w.SkillId) < a.MinLevel) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// 系统说明“指令一览”（Q19）：按当前实际装备武器与技能等级筛出兼容招式，再列通用指令与医疗物品指令；战斗内外都能用。
+        /// 战斗中可用性与原因直接取 CommandBlocked（与操作台同源）；战斗外只写暂时条件（弹仓空、耐久不足、没有随身药品）。只读。
+        /// </summary>
+        public List<BattleCommandOption> CompatibleCommands(GameState s)
+        {
+            if (s.Battle != null)
+            {
+                var seen = new HashSet<string>();
+                return BattleOptions(s).Where(o => seen.Add(o.Action)).Select(o =>
+                    o.Action == "switch_weapon" ? new BattleCommandOption { Action = o.Action, Label = ActionName(o.Action), Group = o.Group, Ap = o.Ap, Available = o.Available, Reason = o.Reason } : o).ToList();
+            }
+            var list = new List<BattleCommandOption>();
+            var w = CurrentWeapon(s, out var wi);
+            foreach (var id in AttackActions)
+            {
+                var a = Act(id);
+                if (a == null || !CommandCompatible(s, a, w)) continue;
+                string? why = null;
+                if (id != "desperate_punch")
+                {
+                    if (wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand)) why = $"{w.Name}耐久不足（{DurabilityText(wi)}）";
+                    else if (!AmmoReady(s, w, wi, Math.Max(1, a.AmmoCost))) why = w.UsesMagazine ? "弹仓空了：先装填" : $"随身没有{ItemName(w.AmmoId!)}";
+                }
+                list.Add(new BattleCommandOption
+                {
+                    Action = id, Label = ActionName(id), Group = id == "basic_attack" || id == "desperate_punch" ? "attack" : "move",
+                    Ap = a.ApCost, NeedsTarget = id != "scatter", Energy = AttackEnergy(s, a, w), Available = why == null, Reason = why,
+                });
+            }
+            foreach (var id in new[] { "guard", "breathe", "reload", "switch_weapon", "retreat", "end_turn" })
+            {
+                var a = Act(id);
+                if (a == null) continue;
+                if (id == "reload" && !w.UsesMagazine) continue;
+                string? why = null;
+                if (id == "reload" && wi != null)
+                    why = wi.LoadedAmmo >= w.MagazineCapacity ? "弹仓已满" : CarriedCount(s, w.AmmoId!) <= 0 ? $"随身没有{ItemName(w.AmmoId!)}" : null;
+                if (id == "switch_weapon" && wi == null && CarriedWeapons(s).Count == 0) why = "随身没有武器可换";
+                list.Add(new BattleCommandOption { Action = id, Label = ActionName(id), Group = "general", Ap = a.ApCost, Available = why == null, Reason = why });
+            }
+            foreach (var id in new[] { "bandage", "use_antibiotics", "use_antiviral_cure" })
+            {
+                var a = Act(id);
+                if (a?.ItemId == null) continue;
+                var have = s.Items.Where(i => i.IsCarried && i.ItemId == a.ItemId).Sum(i => i.Count);
+                list.Add(new BattleCommandOption
+                {
+                    Action = id, Label = $"{ActionName(id)}（随身×{have}）", Group = "item", Ap = a.ApCost,
+                    Available = have > 0, Reason = have > 0 ? null : $"随身没有{ItemName(a.ItemId)}",
+                });
             }
             return list;
         }

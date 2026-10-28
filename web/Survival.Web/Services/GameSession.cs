@@ -749,6 +749,13 @@ public sealed class GameSession
         ActionResult last = ActionResult.Success();
         var stacks = S.Items.Where(i => i.Owner == owner && i.ItemId == itemId && i.ExpiresAt == expiresAt && i.ReservedBy == null)
             .OrderBy(i => i.InstanceId).ToList();
+        // 拾取整批先按最终根卡数与重量预演：会出现第六张卡或超重就整次拒绝，一份都不先拿（S06 §8、开发假设 H2）
+        if (toCarried && stacks.Count > 0 && E.PickupBlockedText(S, stacks[0], count) is string blocked)
+        {
+            Notice = blocked;
+            Notify();
+            return ActionResult.Fail(blocked);
+        }
         foreach (var st in stacks)
         {
             if (left <= 0) break;
@@ -812,13 +819,24 @@ public sealed class GameSession
         }
     }
 
-    /// <summary>某批次在 30 公斤上限内最多能拾取多少（锅按锅加内容计）。</summary>
+    /// <summary>某批次最多能拾取多少：30 公斤上限与随身五张根卡同时校验（锅按锅加内容计、算 1 张；内核同一函数）。</summary>
     public int MaxPickup(string itemId, int available, ItemInstance? inst = null)
     {
-        var w = inst != null && inst.Count > 0 ? E.ItemGrams(S, inst) / inst.Count : E.Item(itemId).WeightGrams;
-        var room = Math.Max(0, E.Config.Carry.HardGrams - E.CarriedGrams(S));
-        return Math.Min(available, room / w);
+        var head = inst ?? GroundHead(itemId);
+        return head == null ? 0 : E.MaxPickupBatch(S, head, available);
     }
+
+    /// <summary>想拾取 want 份但超限时的原因（第六张卡 / 超重）；可以拾取时为 null。</summary>
+    public string? PickupLimitText(string itemId, int want, ItemInstance? inst = null)
+    {
+        var head = inst ?? GroundHead(itemId);
+        return head == null ? "物品已不在" : E.PickupBlockedText(S, head, Math.Max(1, want));
+    }
+
+    /// <summary>当前地面该物品最早到期、未预留的一堆（与转移同一顺序）。</summary>
+    private ItemInstance? GroundHead(string itemId) =>
+        S.Items.Where(i => i.Owner == S.CurrentLocation && i.ItemId == itemId && i.ReservedBy == null)
+            .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).FirstOrDefault();
 
     // ───────────── 拖拽落点（交互与地图扩展 v0.3 · 01 案） ─────────────
 

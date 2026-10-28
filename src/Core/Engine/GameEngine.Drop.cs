@@ -225,19 +225,11 @@ namespace Survival.Core.Engine
             if (zone == ItemInstance.Carried)
             {
                 var max = MaxPickupBatch(s, head, batch);
-                if (max < 1) return DropIntent.No($"携带后将超过{Config.Carry.HardGrams / 1000}公斤");
+                if (max < 1) return DropIntent.No(PickupBlockedText(s, head, 1) ?? $"携带后将超过{Config.Carry.HardGrams / 1000}公斤");
                 var extra = IsPot(head) ? $"（{PotLabel(s, head)}）" : "";
                 return Instant(DropVerb.Transfer, $"拾取1{name}{extra}到随身", InstantRequest.Pickup(head.InstanceId, 1), max);
             }
             return Instant(DropVerb.Transfer, $"放下1{name}到地面", InstantRequest.Drop(head.InstanceId, 1), batch);
-        }
-
-        /// <summary>整批（可能分成几堆）在 30 公斤内最多能拾取多少份。</summary>
-        private int MaxPickupBatch(GameState s, ItemInstance head, int batch)
-        {
-            var unit = head.Count > 0 ? ItemGrams(s, head) / head.Count : _items[head.ItemId].WeightGrams;
-            var room = Math.Max(0, Config.Carry.HardGrams - CarriedGrams(s));
-            return Math.Min(batch, unit > 0 ? room / unit : batch);
         }
 
         private DropIntent DropOnCard(GameState s, DropSource src, ItemInstance head, DropTarget dst)

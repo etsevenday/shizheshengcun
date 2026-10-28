@@ -871,13 +871,28 @@ namespace Survival.Core.Engine
             a.LockedItemIds.Clear();
         }
 
-        /// <summary>当前可从该地面堆拾取的最大数量（受30公斤上限约束；锅按锅加内容计）。</summary>
-        public int MaxPickup(GameState s, ItemInstance inst)
+        /// <summary>当前可从该地面堆拾取的最大数量（30公斤上限与随身五张根卡同时约束；锅按锅加内容计、算1张）。</summary>
+        public int MaxPickup(GameState s, ItemInstance inst) => MaxPickupBatch(s, inst, inst.Count);
+
+        /// <summary>
+        /// 整批 batch 份（同物品同到期，可能分几堆）最多能拾取几份：重量与根卡数（按操作后最终根数预演，S06 §8、开发假设 H2）同时校验。
+        /// </summary>
+        public int MaxPickupBatch(GameState s, ItemInstance head, int batch)
         {
-            var w = inst.Count > 0 ? ItemGrams(s, inst) / inst.Count : _items[inst.ItemId].WeightGrams;
-            var room = Config.Carry.HardGrams - CarriedGrams(s);
-            if (room < 0) room = 0;
-            return Math.Min(inst.Count, room / w);
+            var unit = head.Count > 0 ? ItemGrams(s, head) / head.Count : _items[head.ItemId].WeightGrams;
+            var room = Math.Max(0, Config.Carry.HardGrams - CarriedGrams(s));
+            var byWeight = Math.Min(batch, unit > 0 ? room / unit : batch);
+            return Math.Min(byWeight, MaxIntoCarriedByCards(s, head, batch));
+        }
+
+        /// <summary>想拾取 want 份但超限时的原因：先报根卡（第六张），再报重量；都满足为 null。</summary>
+        public string? PickupBlockedText(GameState s, ItemInstance head, int want)
+        {
+            var byCards = MaxIntoCarriedByCards(s, head, want);
+            if (byCards < want) return byCards <= 0 ? RootCardsFullText(s) : $"{RootCardsFullText(s)}；最多可取{byCards}份";
+            var max = MaxPickupBatch(s, head, want);
+            if (max < want) return max <= 0 ? $"携带后将超过{Config.Carry.HardGrams / 1000}公斤，拿不动了" : $"携带后将超过{Config.Carry.HardGrams / 1000}公斤，最多可取{max}份";
+            return null;
         }
     }
 }

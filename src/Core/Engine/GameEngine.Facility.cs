@@ -476,6 +476,9 @@ namespace Survival.Core.Engine
                     return $"携带后将超过{Config.Carry.HardGrams / 1000}公斤（{what}），整次拒绝";
                 }
             }
+            // 取到随身成为根卡（整锅算1张；随身锅里的食材取到随身也要空位，Q11 + S06 §8）：按最终根数整次校验，失败不改进度/保护
+            if (zone == ItemInstance.Carried && !RootCardsAllow(s, RootCardsAfter(s, inst, inst.Count, null, 0)))
+                return $"{RootCardsFullText(s)}，整次拒绝";
             return null;
         }
 
@@ -533,6 +536,7 @@ namespace Survival.Core.Engine
                 if (t != null && PastExpiryButProtected(s, t)) c.Spoils.Add($"{ItemName(t.ItemId)}#{t.InstanceId}");
             }
             c.CarriedGramsAfter = CarriedGrams(s) + (PlaceOf(s, inst) == ItemInstance.Carried ? 0 : c.Grams);
+            c.RootCardsAfter = RootCardsAfter(s, inst, inst.Count, null, 0);
             c.Text = c.Resets.Count > 0 ? $"取出后{string.Join("、", c.Resets)}清零" : "当前没有已受热的加工进度，取出不损失进度";
             if (c.Spoils.Count > 0) c.Text += $"；{string.Join("、", c.Spoils)}已过原保质期，取出即解除烹饪保护并立即腐败";
             return c;

@@ -154,9 +154,8 @@
                     @if (fireWhy != null) { <div class="ca-note bad">放入火堆：@fireWhy</div> }
                 }
                 @if (invalid) { <div class="ca-note bad">请输入 1 到 @m.Available 之间的数字</div> }
-                else if (m.ToCarried && m.Max < 1) { <div class="ca-note bad">携带后将超过@(e.Config.Carry.HardGrams / 1000)公斤，拿不动了</div> }
-                else if (tooHeavy) { <div class="ca-note bad">携带后将超过@(e.Config.Carry.HardGrams / 1000)公斤，最多可取@(m.Max)份</div> }
-                else { <div class="ca-note @(after > e.Config.Carry.SoftGrams ? "warn" : "")">@(verb)后随身@(Ui.Kg(after))公斤@(after > e.Config.Carry.SoftGrams ? "，超过20公斤会减速" : "") · 不耗时</div> }
+                else if (m.ToCarried && (m.Max < 1 || tooHeavy)) { <div class="ca-note bad">@(G.PickupLimitText(m.ItemId, m.Max < 1 ? 1 : n, m.Instance) ?? $"最多可取{m.Max}份")</div> }
+                else { <div class="ca-note @(after > e.Config.Carry.SoftGrams ? "warn" : "")">@(verb)后随身@(Ui.Kg(after))公斤@(after > e.Config.Carry.SoftGrams ? $"，超过{e.Config.Carry.SoftGrams / 1000}公斤会减速" : "")@(m.ToCarried ? $" · 随身{e.RootCardsAfter(s, m.Instance ?? s.Items.FirstOrDefault(i => i.Owner == m.Owner && i.ItemId == m.ItemId && i.ExpiresAt == m.ExpiresAt), invalid ? 0 : n, null, 0)}/{e.MaxRootCards}张卡" : "") · 不耗时</div> }
             }
         }
         else if (m.Mode == Mode.TakeOut)
