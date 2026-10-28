@@ -24,7 +24,7 @@
             var grams = e.CarriedGrams(s);
             var over = grams > e.Config.Carry.SoftGrams;
             var night = p.Ok && !e.IsDaylight(p.EstimatedEndMinute);
-            var scene = lc.Scene ?? $"scenes/{lc.Id}.svg";
+            var scene = ArtAssets.Scene(lc.Id, lc.Scene);
             <AnchorPop AnchorId="@pop.AnchorId" Title="@($"前往{lc.Name}")" CssClass="travel"
                        Sub="@($"{(dir == MapDirection.None ? "" : GameEngine.DirectionHint(dir) + " · ")}{(ls.Visited ? "已访问" : "待访问")} · 单程{p.BaseMinutes}分钟")" OnClose="G.ClosePop">
                 <Art><span class="apop-scene" style="background-image:url('@scene')"></span></Art>

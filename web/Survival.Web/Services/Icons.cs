@@ -30,10 +30,11 @@ public static partial class Icons
     /// <summary>界面请求过但没有图的键（缺图清单，见 README）。缺图时显示统一占位图，不再用石块兜底。</summary>
     public static readonly HashSet<string> Missing = new();
 
-    public static bool Has(string key) => Extracted.ContainsKey(key) || Extra.ContainsKey(key) || Combat.ContainsKey(key) || Status.ContainsKey(key);
+    public static bool Has(string key) => ArtAssets.Sprites.ContainsKey(key) || Extracted.ContainsKey(key) || Extra.ContainsKey(key) || Combat.ContainsKey(key) || Status.ContainsKey(key);
 
     public static string Svg(string key)
     {
+        if (ArtAssets.Sprite(key) is { } sprite) return sprite;
         if (!Extracted.TryGetValue(key, out var inner) && !Extra.TryGetValue(key, out inner) && !Combat.TryGetValue(key, out inner) && !Status.TryGetValue(key, out inner))
         {
             Missing.Add(key);
@@ -45,7 +46,8 @@ public static partial class Icons
 
     public static MarkupString Markup(string key) => new(Svg(key));
 
-    public static string ForResource(string nodeId, IReadOnlyDictionary<string, int> outputs) => nodeId switch
+    public static string ForResource(string nodeId, IReadOnlyDictionary<string, int> outputs) =>
+        ArtAssets.Sprites.ContainsKey("resource_" + nodeId) ? "resource_" + nodeId : nodeId switch
     {
         "roots" => "raw_root",
         "water" => "dirty_water",

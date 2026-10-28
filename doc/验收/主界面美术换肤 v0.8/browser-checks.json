@@ -1,0 +1,1072 @@
+{
+  "browser": "155.0.8059.40",
+  "viewportScale": 1,
+  "results": [
+    {
+      "test": "navigation",
+      "w": 1280,
+      "h": 720,
+      "label": "区域地图",
+      "box": {
+        "x": 236,
+        "y": 62,
+        "width": 724,
+        "height": 484
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1280,
+      "h": 720,
+      "label": "手工制作",
+      "box": {
+        "x": 236,
+        "y": 62,
+        "width": 724,
+        "height": 484
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1280,
+      "h": 720,
+      "label": "休息",
+      "box": {
+        "x": 236,
+        "y": 62,
+        "width": 724,
+        "height": 484
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1280,
+      "h": 720,
+      "label": "行动日志",
+      "box": {
+        "x": 236,
+        "y": 62,
+        "width": 724,
+        "height": 484
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1280,
+      "h": 720,
+      "label": "生存目标",
+      "box": {
+        "x": 236,
+        "y": 62,
+        "width": 724,
+        "height": 484
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1280,
+      "h": 720,
+      "label": "生存提示",
+      "box": {
+        "x": 236,
+        "y": 62,
+        "width": 724,
+        "height": 484
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1280,
+      "h": 720,
+      "label": "对话记录",
+      "box": {
+        "x": 236,
+        "y": 62,
+        "width": 724,
+        "height": 484
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1280,
+      "h": 720,
+      "label": "系统说明",
+      "box": {
+        "x": 236,
+        "y": 62,
+        "width": 724,
+        "height": 484
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1280,
+      "h": 720,
+      "label": "菜单",
+      "box": {
+        "x": 380,
+        "y": 68,
+        "width": 520,
+        "height": 692
+      }
+    },
+    {
+      "test": "attribute",
+      "w": 1280,
+      "h": 720,
+      "text": "对象信息\n人物\n‹ 人物Esc\n相关说明 ›\n基础属性\n水分 67.88/100\n当前\n正常\n提醒阈值\n≤20\n\n体内水分储备，消耗最快。降至20以下会提醒；归0后健康每小时减1.6。脏水必定腹泻12小时（每小时额外失水3）。"
+    },
+    {
+      "test": "navigation",
+      "w": 1600,
+      "h": 900,
+      "label": "区域地图",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1036,
+        "height": 646
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1600,
+      "h": 900,
+      "label": "手工制作",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1036,
+        "height": 646
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1600,
+      "h": 900,
+      "label": "休息",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1036,
+        "height": 646
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1600,
+      "h": 900,
+      "label": "行动日志",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1036,
+        "height": 646
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1600,
+      "h": 900,
+      "label": "生存目标",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1036,
+        "height": 646
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1600,
+      "h": 900,
+      "label": "生存提示",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1036,
+        "height": 646
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1600,
+      "h": 900,
+      "label": "对话记录",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1036,
+        "height": 646
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1600,
+      "h": 900,
+      "label": "系统说明",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1036,
+        "height": 646
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1600,
+      "h": 900,
+      "label": "菜单",
+      "box": {
+        "x": 540,
+        "y": 74,
+        "width": 520,
+        "height": 872
+      }
+    },
+    {
+      "test": "attribute",
+      "w": 1600,
+      "h": 900,
+      "text": "对象信息\n人物\n‹ 人物Esc\n相关说明 ›\n基础属性\n水分 67.88/100\n当前\n正常\n提醒阈值\n≤20\n\n体内水分储备，消耗最快。降至20以下会提醒；归0后健康每小时减1.6。脏水必定腹泻12小时（每小时额外失水3）。"
+    },
+    {
+      "test": "navigation",
+      "w": 1920,
+      "h": 1080,
+      "label": "区域地图",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1356,
+        "height": 726
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1920,
+      "h": 1080,
+      "label": "手工制作",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1356,
+        "height": 726
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1920,
+      "h": 1080,
+      "label": "休息",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1356,
+        "height": 726
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1920,
+      "h": 1080,
+      "label": "行动日志",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1356,
+        "height": 726
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1920,
+      "h": 1080,
+      "label": "生存目标",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1356,
+        "height": 726
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1920,
+      "h": 1080,
+      "label": "生存提示",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1356,
+        "height": 726
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1920,
+      "h": 1080,
+      "label": "对话记录",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1356,
+        "height": 726
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1920,
+      "h": 1080,
+      "label": "系统说明",
+      "box": {
+        "x": 240,
+        "y": 70,
+        "width": 1356,
+        "height": 726
+      }
+    },
+    {
+      "test": "navigation",
+      "w": 1920,
+      "h": 1080,
+      "label": "菜单",
+      "box": {
+        "x": 700,
+        "y": 74,
+        "width": 520,
+        "height": 933.671875
+      }
+    },
+    {
+      "test": "attribute",
+      "w": 1920,
+      "h": 1080,
+      "text": "对象信息\n人物\n‹ 人物Esc\n相关说明 ›\n基础属性\n水分 67.88/100\n当前\n正常\n提醒阈值\n≤20\n\n体内水分储备，消耗最快。降至20以下会提醒；归0后健康每小时减1.6。脏水必定腹泻12小时（每小时额外失水3）。"
+    },
+    {
+      "test": "idle",
+      "minuteBefore": 2025,
+      "minuteAfter": 2025,
+      "rngBefore": 273184687,
+      "rngAfter": 273184687
+    },
+    {
+      "test": "layout",
+      "location": "hardware",
+      "w": 1280,
+      "h": 720,
+      "layout": [
+        {
+          "cls": "panel map-row",
+          "r": {
+            "x": 236,
+            "y": 62,
+            "width": 724,
+            "height": 140,
+            "top": 62,
+            "right": 960,
+            "bottom": 202,
+            "left": 236
+          },
+          "scrollHeight": 136,
+          "clientHeight": 136
+        },
+        {
+          "cls": "oc-btn ",
+          "r": {
+            "x": 714.1875,
+            "y": 153.59375,
+            "width": 136,
+            "height": 40,
+            "top": 153.59375,
+            "right": 850.1875,
+            "bottom": 193.59375,
+            "left": 714.1875
+          },
+          "scrollHeight": 38,
+          "clientHeight": 38
+        },
+        {
+          "cls": "oc-btn ",
+          "r": {
+            "x": 874.1875,
+            "y": 153.59375,
+            "width": 136,
+            "height": 40,
+            "top": 153.59375,
+            "right": 1010.1875,
+            "bottom": 193.59375,
+            "left": 874.1875
+          },
+          "scrollHeight": 38,
+          "clientHeight": 38
+        },
+        {
+          "cls": "panel facility-row",
+          "r": {
+            "x": 236,
+            "y": 208,
+            "width": 724,
+            "height": 208,
+            "top": 208,
+            "right": 960,
+            "bottom": 416,
+            "left": 236
+          },
+          "scrollHeight": 204,
+          "clientHeight": 204
+        },
+        {
+          "cls": "panel section ground",
+          "r": {
+            "x": 236,
+            "y": 422,
+            "width": 724,
+            "height": 124,
+            "top": 422,
+            "right": 960,
+            "bottom": 546,
+            "left": 236
+          },
+          "scrollHeight": 120,
+          "clientHeight": 120
+        },
+        {
+          "cls": "panel section carried",
+          "r": {
+            "x": 236,
+            "y": 552,
+            "width": 724,
+            "height": 124,
+            "top": 552,
+            "right": 960,
+            "bottom": 676,
+            "left": 236
+          },
+          "scrollHeight": 120,
+          "clientHeight": 120
+        }
+      ]
+    },
+    {
+      "test": "layout",
+      "location": "hardware",
+      "w": 1600,
+      "h": 900,
+      "layout": [
+        {
+          "cls": "panel map-row",
+          "r": {
+            "x": 240,
+            "y": 70,
+            "width": 1036,
+            "height": 225.4375,
+            "top": 70,
+            "right": 1276,
+            "bottom": 295.4375,
+            "left": 240
+          },
+          "scrollHeight": 221,
+          "clientHeight": 221
+        },
+        {
+          "cls": "oc-btn ",
+          "r": {
+            "x": 905.390625,
+            "y": 240.4375,
+            "width": 136,
+            "height": 40,
+            "top": 240.4375,
+            "right": 1041.390625,
+            "bottom": 280.4375,
+            "left": 905.390625
+          },
+          "scrollHeight": 38,
+          "clientHeight": 38
+        },
+        {
+          "cls": "oc-btn ",
+          "r": {
+            "x": 1065.390625,
+            "y": 240.4375,
+            "width": 136,
+            "height": 40,
+            "top": 240.4375,
+            "right": 1201.390625,
+            "bottom": 280.4375,
+            "left": 1065.390625
+          },
+          "scrollHeight": 38,
+          "clientHeight": 38
+        },
+        {
+          "cls": "panel facility-row",
+          "r": {
+            "x": 240,
+            "y": 305.4375,
+            "width": 1036,
+            "height": 276.5625,
+            "top": 305.4375,
+            "right": 1276,
+            "bottom": 582,
+            "left": 240
+          },
+          "scrollHeight": 273,
+          "clientHeight": 273
+        },
+        {
+          "cls": "panel section ground",
+          "r": {
+            "x": 240,
+            "y": 592,
+            "width": 1036,
+            "height": 124,
+            "top": 592,
+            "right": 1276,
+            "bottom": 716,
+            "left": 240
+          },
+          "scrollHeight": 120,
+          "clientHeight": 120
+        },
+        {
+          "cls": "panel section carried",
+          "r": {
+            "x": 240,
+            "y": 726,
+            "width": 1036,
+            "height": 124,
+            "top": 726,
+            "right": 1276,
+            "bottom": 850,
+            "left": 240
+          },
+          "scrollHeight": 120,
+          "clientHeight": 120
+        }
+      ]
+    },
+    {
+      "test": "layout",
+      "location": "hardware",
+      "w": 1920,
+      "h": 1080,
+      "layout": [
+        {
+          "cls": "panel map-row",
+          "r": {
+            "x": 240,
+            "y": 70,
+            "width": 1356,
+            "height": 216.640625,
+            "top": 70,
+            "right": 1596,
+            "bottom": 286.640625,
+            "left": 240
+          },
+          "scrollHeight": 213,
+          "clientHeight": 213
+        },
+        {
+          "cls": "oc-btn ",
+          "r": {
+            "x": 1011,
+            "y": 231.640625,
+            "width": 136,
+            "height": 40,
+            "top": 231.640625,
+            "right": 1147,
+            "bottom": 271.640625,
+            "left": 1011
+          },
+          "scrollHeight": 38,
+          "clientHeight": 38
+        },
+        {
+          "cls": "oc-btn ",
+          "r": {
+            "x": 1171,
+            "y": 231.640625,
+            "width": 136,
+            "height": 40,
+            "top": 231.640625,
+            "right": 1307,
+            "bottom": 271.640625,
+            "left": 1171
+          },
+          "scrollHeight": 38,
+          "clientHeight": 38
+        },
+        {
+          "cls": "panel facility-row",
+          "r": {
+            "x": 240,
+            "y": 296.640625,
+            "width": 1356,
+            "height": 265.359375,
+            "top": 296.640625,
+            "right": 1596,
+            "bottom": 562,
+            "left": 240
+          },
+          "scrollHeight": 261,
+          "clientHeight": 261
+        },
+        {
+          "cls": "panel section ground",
+          "r": {
+            "x": 240,
+            "y": 572,
+            "width": 1356,
+            "height": 224,
+            "top": 572,
+            "right": 1596,
+            "bottom": 796,
+            "left": 240
+          },
+          "scrollHeight": 220,
+          "clientHeight": 220
+        },
+        {
+          "cls": "panel section carried",
+          "r": {
+            "x": 240,
+            "y": 806,
+            "width": 1356,
+            "height": 224,
+            "top": 806,
+            "right": 1596,
+            "bottom": 1030,
+            "left": 240
+          },
+          "scrollHeight": 220,
+          "clientHeight": 220
+        }
+      ]
+    },
+    {
+      "test": "layout",
+      "location": "camp",
+      "w": 1280,
+      "h": 720,
+      "layout": [
+        {
+          "cls": "panel map-row",
+          "r": {
+            "x": 236,
+            "y": 62,
+            "width": 724,
+            "height": 140,
+            "top": 62,
+            "right": 960,
+            "bottom": 202,
+            "left": 236
+          },
+          "scrollHeight": 136,
+          "clientHeight": 136
+        },
+        {
+          "cls": "oc-btn ",
+          "r": {
+            "x": 714.1875,
+            "y": 153.59375,
+            "width": 136,
+            "height": 40,
+            "top": 153.59375,
+            "right": 850.1875,
+            "bottom": 193.59375,
+            "left": 714.1875
+          },
+          "scrollHeight": 38,
+          "clientHeight": 38
+        },
+        {
+          "cls": "panel facility-row",
+          "r": {
+            "x": 236,
+            "y": 208,
+            "width": 724,
+            "height": 208,
+            "top": 208,
+            "right": 960,
+            "bottom": 416,
+            "left": 236
+          },
+          "scrollHeight": 204,
+          "clientHeight": 204
+        },
+        {
+          "cls": "fc-cook",
+          "r": {
+            "x": 272,
+            "y": 349.984375,
+            "width": 200,
+            "height": 41.5,
+            "top": 349.984375,
+            "right": 472,
+            "bottom": 391.484375,
+            "left": 272
+          },
+          "scrollHeight": 42,
+          "clientHeight": 42
+        },
+        {
+          "cls": "pot-card in-fire  ",
+          "r": {
+            "x": 478,
+            "y": 242,
+            "width": 360,
+            "height": 173.171875,
+            "top": 242,
+            "right": 838,
+            "bottom": 415.171875,
+            "left": 478
+          },
+          "scrollHeight": 169,
+          "clientHeight": 169
+        },
+        {
+          "cls": "panel section ground",
+          "r": {
+            "x": 236,
+            "y": 422,
+            "width": 724,
+            "height": 124,
+            "top": 422,
+            "right": 960,
+            "bottom": 546,
+            "left": 236
+          },
+          "scrollHeight": 120,
+          "clientHeight": 120
+        },
+        {
+          "cls": "panel section carried",
+          "r": {
+            "x": 236,
+            "y": 552,
+            "width": 724,
+            "height": 124,
+            "top": 552,
+            "right": 960,
+            "bottom": 676,
+            "left": 236
+          },
+          "scrollHeight": 120,
+          "clientHeight": 120
+        }
+      ]
+    },
+    {
+      "test": "layout",
+      "location": "camp",
+      "w": 1600,
+      "h": 900,
+      "layout": [
+        {
+          "cls": "panel map-row",
+          "r": {
+            "x": 240,
+            "y": 70,
+            "width": 1036,
+            "height": 225.4375,
+            "top": 70,
+            "right": 1276,
+            "bottom": 295.4375,
+            "left": 240
+          },
+          "scrollHeight": 221,
+          "clientHeight": 221
+        },
+        {
+          "cls": "oc-btn ",
+          "r": {
+            "x": 905.390625,
+            "y": 240.4375,
+            "width": 136,
+            "height": 40,
+            "top": 240.4375,
+            "right": 1041.390625,
+            "bottom": 280.4375,
+            "left": 905.390625
+          },
+          "scrollHeight": 38,
+          "clientHeight": 38
+        },
+        {
+          "cls": "panel facility-row",
+          "r": {
+            "x": 240,
+            "y": 305.4375,
+            "width": 1036,
+            "height": 276.5625,
+            "top": 305.4375,
+            "right": 1276,
+            "bottom": 582,
+            "left": 240
+          },
+          "scrollHeight": 273,
+          "clientHeight": 273
+        },
+        {
+          "cls": "fc-cook",
+          "r": {
+            "x": 278,
+            "y": 449.421875,
+            "width": 200,
+            "height": 41.5,
+            "top": 449.421875,
+            "right": 478,
+            "bottom": 490.921875,
+            "left": 278
+          },
+          "scrollHeight": 42,
+          "clientHeight": 42
+        },
+        {
+          "cls": "pot-card in-fire  ",
+          "r": {
+            "x": 484,
+            "y": 341.4375,
+            "width": 360,
+            "height": 173.171875,
+            "top": 341.4375,
+            "right": 844,
+            "bottom": 514.609375,
+            "left": 484
+          },
+          "scrollHeight": 169,
+          "clientHeight": 169
+        },
+        {
+          "cls": "panel section ground",
+          "r": {
+            "x": 240,
+            "y": 592,
+            "width": 1036,
+            "height": 124,
+            "top": 592,
+            "right": 1276,
+            "bottom": 716,
+            "left": 240
+          },
+          "scrollHeight": 120,
+          "clientHeight": 120
+        },
+        {
+          "cls": "panel section carried",
+          "r": {
+            "x": 240,
+            "y": 726,
+            "width": 1036,
+            "height": 124,
+            "top": 726,
+            "right": 1276,
+            "bottom": 850,
+            "left": 240
+          },
+          "scrollHeight": 120,
+          "clientHeight": 120
+        }
+      ]
+    },
+    {
+      "test": "layout",
+      "location": "camp",
+      "w": 1920,
+      "h": 1080,
+      "layout": [
+        {
+          "cls": "panel map-row",
+          "r": {
+            "x": 240,
+            "y": 70,
+            "width": 1356,
+            "height": 216.640625,
+            "top": 70,
+            "right": 1596,
+            "bottom": 286.640625,
+            "left": 240
+          },
+          "scrollHeight": 213,
+          "clientHeight": 213
+        },
+        {
+          "cls": "oc-btn ",
+          "r": {
+            "x": 1011,
+            "y": 231.640625,
+            "width": 136,
+            "height": 40,
+            "top": 231.640625,
+            "right": 1147,
+            "bottom": 271.640625,
+            "left": 1011
+          },
+          "scrollHeight": 38,
+          "clientHeight": 38
+        },
+        {
+          "cls": "panel facility-row",
+          "r": {
+            "x": 240,
+            "y": 296.640625,
+            "width": 1356,
+            "height": 265.359375,
+            "top": 296.640625,
+            "right": 1596,
+            "bottom": 562,
+            "left": 240
+          },
+          "scrollHeight": 261,
+          "clientHeight": 261
+        },
+        {
+          "cls": "fc-cook",
+          "r": {
+            "x": 278,
+            "y": 440.625,
+            "width": 200,
+            "height": 41.5,
+            "top": 440.625,
+            "right": 478,
+            "bottom": 482.125,
+            "left": 278
+          },
+          "scrollHeight": 42,
+          "clientHeight": 42
+        },
+        {
+          "cls": "pot-card in-fire  ",
+          "r": {
+            "x": 484,
+            "y": 332.640625,
+            "width": 360,
+            "height": 173.171875,
+            "top": 332.640625,
+            "right": 844,
+            "bottom": 505.8125,
+            "left": 484
+          },
+          "scrollHeight": 169,
+          "clientHeight": 169
+        },
+        {
+          "cls": "panel section ground",
+          "r": {
+            "x": 240,
+            "y": 572,
+            "width": 1356,
+            "height": 224,
+            "top": 572,
+            "right": 1596,
+            "bottom": 796,
+            "left": 240
+          },
+          "scrollHeight": 220,
+          "clientHeight": 220
+        },
+        {
+          "cls": "panel section carried",
+          "r": {
+            "x": 240,
+            "y": 806,
+            "width": 1356,
+            "height": 224,
+            "top": 806,
+            "right": 1596,
+            "bottom": 1030,
+            "left": 240
+          },
+          "scrollHeight": 220,
+          "clientHeight": 220
+        }
+      ]
+    },
+    {
+      "test": "all-scenes",
+      "sceneChecks": [
+        {
+          "id": "camp",
+          "status": 200,
+          "bytes": 3315976
+        },
+        {
+          "id": "field",
+          "status": 200,
+          "bytes": 3596736
+        },
+        {
+          "id": "stream",
+          "status": 200,
+          "bytes": 3468318
+        },
+        {
+          "id": "woods",
+          "status": 200,
+          "bytes": 3426571
+        },
+        {
+          "id": "village",
+          "status": 200,
+          "bytes": 3162415
+        },
+        {
+          "id": "hardware",
+          "status": 200,
+          "bytes": 2896092
+        },
+        {
+          "id": "clinic",
+          "status": 200,
+          "bytes": 2786774
+        },
+        {
+          "id": "scrapyard",
+          "status": 200,
+          "bytes": 3238301
+        }
+      ]
+    },
+    {
+      "test": "missing-art",
+      "name": "五金店",
+      "buttonEnabled": true,
+      "errors": []
+    },
+    {
+      "test": "quantity",
+      "carried": 2,
+      "ground": 2
+    },
+    {
+      "test": "hold-stop-on-leave",
+      "c1": 3,
+      "c2": 3,
+      "pass": true
+    },
+    {
+      "test": "explore-completion",
+      "progress": 100,
+      "buttonGone": true
+    },
+    {
+      "test": "clear-exhaustion",
+      "disabled": true,
+      "text": "五金店\n室内 · 白昼\n天气：待接入\n已充分探索\n清理 · 20分钟\n次数0/2 · 恢复还需11小时20分"
+    },
+    {
+      "test": "resource-exhaustion",
+      "resource": {
+        "Available": 0,
+        "Reserved": 0,
+        "LastRefillDay": 0,
+        "Discovered": true
+      },
+      "disabled": true
+    }
+  ],
+  "errors": [],
+  "network": []
+}

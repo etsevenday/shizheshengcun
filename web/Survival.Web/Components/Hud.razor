@@ -31,7 +31,8 @@
             var zero = v <= 0;
             var cls = zero || (id == StatId.Health && below) ? "critical" : below ? "warning" : "";
             var statId = id;
-            <button class="vital @cls" @onclick="() => OpenStat(statId)" title="@($"在右栏查看{GameEngine.StatName(id)}说明")">
+            <button class="vital @cls" data-stat="@key" @onclick="() => OpenStat(statId)" title="@($"在右栏查看{GameEngine.StatName(id)}说明")">
+                <VitalIcon Stat="@key" />
                 <div class="vital-label">
                     <span>@GameEngine.StatName(id)@if (zero && id != StatId.Health) {<em class="flag danger-text">归零</em>} else if (below) {<em class="flag">偏低</em>}</span>
                     <b>@Ui.N(v) <small class="muted">/@Ui.T(s.Stats.Max(id))</small></b>
@@ -45,7 +46,8 @@
             var body = s.Body;
             var immLow = body.Immunity < 40;
         }
-        <button class="vital @(immLow ? "warning" : "")" @onclick='() => G.OpenCharPage("immunity")' title="在右栏查看免疫力说明">
+        <button class="vital @(immLow ? "warning" : "")" data-stat="immunity" @onclick='() => G.OpenCharPage("immunity")' title="在右栏查看免疫力说明">
+            <VitalIcon Stat="immunity" />
             <div class="vital-label">
                 <span>@("免疫")@if (immLow) {<em class="flag">偏低</em>}</span>
                 <b>@Ui.N(body.Immunity) <small class="muted">/@Ui.T(cfg.Immunity.Max)</small></b>
@@ -53,7 +55,8 @@
             <div class="track"><i style="width:@Ui.Bar(body.Immunity, cfg.Immunity.Max)%"></i><span class="mark" style="left:@Ui.Bar(cfg.Infection.NaturalCure.ConsecutiveImmunityAtLeast, cfg.Immunity.Max)%"></span></div>
         </button>
         <StatusIcons Chips="@chips.Where(c => c.Anchor == "immunity").ToList()" Label="免疫" />
-        <button class="vital @(body.Infected ? (body.VirusLoad >= 50 ? "critical" : "warning") : "")" @onclick='() => G.OpenCharPage("virus")' title="在右栏查看病毒说明">
+        <button class="vital @(body.Infected ? (body.VirusLoad >= 50 ? "critical" : "warning") : "")" data-stat="virus" @onclick='() => G.OpenCharPage("virus")' title="在右栏查看病毒说明">
+            <VitalIcon Stat="virus" />
             <div class="vital-label">
                 <span>@("病毒")@if (body.Infected) {<em class="flag danger-text">已感染</em>}</span>
                 <b>@(body.Infected ? Ui.N(body.VirusLoad) : "未感染")@if (body.Infected) {<small class="muted">/@Ui.T(cfg.Infection.ZombificationAtLoad)</small>}</b>

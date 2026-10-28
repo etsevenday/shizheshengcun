@@ -51,7 +51,7 @@
     <div class="pot-fill @(liquid == "clean_water" ? "clean" : liquid == "dirty_water" ? "dirty" : "")" data-drop="@($"potfill:{Pot.InstanceId}")" data-drop-level="hot"
          title="@($"水量：{e.PotLabel(s, Pot)}。把净水或脏水卡拖到这里装入1份；按住 Shift 可选数量")"
          @onclick="() => { if (liquid != null) SelectLiquid(liquid); else SelectPot(); }" @onclick:stopPropagation="true">
-        <div class="pot-fill-head"><span>水量</span><b>@(liquid == null ? "空锅" : e.ItemName(liquid))@(pct)% · @(ml)/@(c.CapacityMl)毫升</b></div>
+        <div class="pot-fill-head"><span>水量</span><b><span>@(liquid == null ? "空锅" : e.ItemName(liquid))@(pct)%</span><span>@(ml)/@(c.CapacityMl)毫升</span></b></div>
         <div class="pot-track"><i style="width:@(pct)%"></i></div>
         @if (batch != null)
         {
@@ -70,14 +70,14 @@
             <span class="pc-ico" data-drag="@($"potchild:{wid}")" data-drag-title="@e.ItemName(w.ItemId)" data-drag-from="@($"{where}／{name}")">@Icons.Markup(w.ItemId)</span>
             <span class="pc-text">
                 <span class="pc-name">@e.ItemName(w.ItemId)<b>×@w.Count</b><em>@(w.Count * c.UnitMl)毫升</em></span>
-                @if (wReserved > 0) { <span class="pc-status warn">已预留@(wReserved)毫升@(free < 1 ? " · 暂不可饮用/转移" : "")</span> }
+                @if (wReserved > 0) { <span class="pc-status warn" title="@($"已预留{wReserved}毫升{(free < 1 ? " · 暂不可饮用/转移" : "")}")">已预留@(wReserved)毫升@(free < 1 ? " · 暂不可饮用/转移" : "")</span> }
             </span>
             <button type="button" class="row-arrow" aria-label="@($"从锅中取1份{e.ItemName(w.ItemId)}到随身")" title="@($"从锅中取到随身：1份（{c.UnitMl}毫升）成为独立随身卡{(Pot.IsCarried ? "，总携重不变" : "")}（不打开操作条；点图标可选数量与目的地）")"
                     disabled="@busy" @onclick="() => TakeWater(w)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▼</button>
         </div>
         @if (wReserved > 0 && free < 1)
         {
-            <div class="pc-reserved">@e.ReservedWaterText(s, w)</div>
+            <div class="pc-reserved" title="@e.ReservedWaterText(s, w)">@e.ReservedWaterText(s, w)</div>
         }
         @if (wsel) { <CardActions /> }
     }
@@ -109,7 +109,7 @@
         }
         @if (foods.Count < c.FoodSlots)
         {
-            <div class="pc-slot">食材 @foods.Count/@c.FoodSlots · 空位可拖入生块根、生肉、烤肉或水煮肉</div>
+            <div class="pc-slot" title="空位可拖入生块根、生肉、烤肉或水煮肉">食材 @foods.Count/@c.FoodSlots · 拖入食材</div>
         }
     </div>
 </div>

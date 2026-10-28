@@ -1,0 +1,467 @@
+{
+  "version": "0.8",
+  "style": "废土墨线插画、冷暗场景、旧纸卡牌",
+  "scenes": [
+    {
+      "id": "camp",
+      "file": "camp.png"
+    },
+    {
+      "id": "field",
+      "file": "field.png"
+    },
+    {
+      "id": "stream",
+      "file": "stream.png"
+    },
+    {
+      "id": "woods",
+      "file": "woods.png"
+    },
+    {
+      "id": "village",
+      "file": "village.png"
+    },
+    {
+      "id": "hardware",
+      "file": "hardware.png"
+    },
+    {
+      "id": "clinic",
+      "file": "clinic.png"
+    },
+    {
+      "id": "scrapyard",
+      "file": "scrapyard.png"
+    }
+  ],
+  "sprites": {
+    "wood": {
+      "sheet": "supplies",
+      "cell": 0
+    },
+    "stone": {
+      "sheet": "supplies",
+      "cell": 1
+    },
+    "berry": {
+      "sheet": "supplies",
+      "cell": 2
+    },
+    "fiber": {
+      "sheet": "supplies",
+      "cell": 3
+    },
+    "clean_water": {
+      "sheet": "supplies",
+      "cell": 4
+    },
+    "dirty_water": {
+      "sheet": "supplies",
+      "cell": 5
+    },
+    "canned_food": {
+      "sheet": "supplies",
+      "cell": 6
+    },
+    "hatchet": {
+      "sheet": "supplies",
+      "cell": 7
+    },
+    "pot": {
+      "sheet": "supplies",
+      "cell": 8
+    },
+    "lighter": {
+      "sheet": "supplies",
+      "cell": 9
+    },
+    "bandage": {
+      "sheet": "supplies",
+      "cell": 10
+    },
+    "stone_knife": {
+      "sheet": "supplies",
+      "cell": 11
+    },
+    "cloth": {
+      "sheet": "supplies",
+      "cell": 12
+    },
+    "raw_root": {
+      "sheet": "supplies",
+      "cell": 13
+    },
+    "cooked_root": {
+      "sheet": "supplies",
+      "cell": 14
+    },
+    "boiled_root": {
+      "sheet": "supplies",
+      "cell": 15
+    },
+    "herb": {
+      "sheet": "tools",
+      "cell": 0
+    },
+    "scrap": {
+      "sheet": "tools",
+      "cell": 1
+    },
+    "parts": {
+      "sheet": "tools",
+      "cell": 2
+    },
+    "shelter": {
+      "sheet": "tools",
+      "cell": 3
+    },
+    "bed": {
+      "sheet": "tools",
+      "cell": 4
+    },
+    "fire_lit": {
+      "sheet": "tools",
+      "cell": 5
+    },
+    "fire_out": {
+      "sheet": "tools",
+      "cell": 6
+    },
+    "fists": {
+      "sheet": "tools",
+      "cell": 7
+    },
+    "repair": {
+      "sheet": "tools",
+      "cell": 8
+    },
+    "kitchen_knife": {
+      "sheet": "tools",
+      "cell": 9
+    },
+    "crowbar": {
+      "sheet": "tools",
+      "cell": 10
+    },
+    "wooden_spear": {
+      "sheet": "tools",
+      "cell": 11
+    },
+    "metal_spear": {
+      "sheet": "tools",
+      "cell": 12
+    },
+    "wooden_bow": {
+      "sheet": "tools",
+      "cell": 13
+    },
+    "crossbow": {
+      "sheet": "tools",
+      "cell": 14
+    },
+    "pistol": {
+      "sheet": "tools",
+      "cell": 15
+    },
+    "shotgun": {
+      "sheet": "equipment",
+      "cell": 0
+    },
+    "rifle": {
+      "sheet": "equipment",
+      "cell": 1
+    },
+    "arrow": {
+      "sheet": "equipment",
+      "cell": 2
+    },
+    "bolt": {
+      "sheet": "equipment",
+      "cell": 3
+    },
+    "ammo_9mm": {
+      "sheet": "equipment",
+      "cell": 4
+    },
+    "shell_12g": {
+      "sheet": "equipment",
+      "cell": 5
+    },
+    "ammo_rifle": {
+      "sheet": "equipment",
+      "cell": 6
+    },
+    "raw_meat": {
+      "sheet": "equipment",
+      "cell": 7
+    },
+    "hide": {
+      "sheet": "equipment",
+      "cell": 8
+    },
+    "cooked_meat": {
+      "sheet": "equipment",
+      "cell": 9
+    },
+    "boiled_meat": {
+      "sheet": "equipment",
+      "cell": 10
+    },
+    "active_substance_white_unidentified": {
+      "sheet": "equipment",
+      "cell": 11
+    },
+    "antibiotics": {
+      "sheet": "equipment",
+      "cell": 12
+    },
+    "antiviral_cure": {
+      "sheet": "equipment",
+      "cell": 13
+    },
+    "antiviral_precursor": {
+      "sheet": "equipment",
+      "cell": 14
+    },
+    "lab_reagent": {
+      "sheet": "equipment",
+      "cell": 15
+    },
+    "enemy_shambler": {
+      "sheet": "creatures",
+      "cell": 0
+    },
+    "enemy_crawler": {
+      "sheet": "creatures",
+      "cell": 1
+    },
+    "enemy_runner": {
+      "sheet": "creatures",
+      "cell": 2
+    },
+    "enemy_worker": {
+      "sheet": "creatures",
+      "cell": 3
+    },
+    "enemy_riot": {
+      "sheet": "creatures",
+      "cell": 4
+    },
+    "enemy_howler": {
+      "sheet": "creatures",
+      "cell": 5
+    },
+    "enemy_feral_dog": {
+      "sheet": "creatures",
+      "cell": 6
+    },
+    "enemy_wolf": {
+      "sheet": "creatures",
+      "cell": 7
+    },
+    "enemy_boar": {
+      "sheet": "creatures",
+      "cell": 8
+    },
+    "enemy_stag": {
+      "sheet": "creatures",
+      "cell": 9
+    },
+    "carcass_feral_dog": {
+      "sheet": "creatures",
+      "cell": 10
+    },
+    "carcass_wolf": {
+      "sheet": "creatures",
+      "cell": 11
+    },
+    "carcass_boar": {
+      "sheet": "creatures",
+      "cell": 12
+    },
+    "carcass_stag": {
+      "sheet": "creatures",
+      "cell": 13
+    },
+    "backpack": {
+      "sheet": "creatures",
+      "cell": 14
+    },
+    "crate": {
+      "sheet": "creatures",
+      "cell": 15
+    },
+    "resource_roots": {
+      "sheet": "resources",
+      "cell": 0
+    },
+    "resource_water": {
+      "sheet": "resources",
+      "cell": 1
+    },
+    "resource_herbs": {
+      "sheet": "resources",
+      "cell": 2
+    },
+    "resource_metal_heap": {
+      "sheet": "resources",
+      "cell": 3
+    },
+    "resource_parts_box": {
+      "sheet": "resources",
+      "cell": 4
+    },
+    "resource_med_cabinet": {
+      "sheet": "resources",
+      "cell": 5
+    },
+    "resource_cloth_bag": {
+      "sheet": "resources",
+      "cell": 6
+    },
+    "resource_pot_box": {
+      "sheet": "resources",
+      "cell": 7
+    },
+    "resource_tool_box": {
+      "sheet": "resources",
+      "cell": 8
+    },
+    "resource_supply_box": {
+      "sheet": "resources",
+      "cell": 9
+    },
+    "resource_misc_box": {
+      "sheet": "resources",
+      "cell": 10
+    },
+    "resource_hardware_weapon_cache": {
+      "sheet": "resources",
+      "cell": 11
+    },
+    "resource_village_weapon_locker": {
+      "sheet": "resources",
+      "cell": 12
+    },
+    "resource_clinic_medical_supply": {
+      "sheet": "resources",
+      "cell": 13
+    },
+    "resource_village_cold_box": {
+      "sheet": "resources",
+      "cell": 14
+    },
+    "resource_wood": {
+      "sheet": "resources",
+      "cell": 15
+    },
+    "fire": {
+      "sheet": "tools",
+      "cell": 5
+    }
+  },
+  "files": [
+    {
+      "file": "camp.png",
+      "bytes": 3315976,
+      "sha256": "f27ce8203dafc36bcf3c9046109b23110762c9b1bff98da0bd874045977df05e",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "file": "clinic.png",
+      "bytes": 2786774,
+      "sha256": "ed7ee5405f3f56a5c5b37dd9329ed6955daf8b1ce6d6f84ece1af48940c2f6f4",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "file": "creatures.png",
+      "bytes": 1876830,
+      "sha256": "04c2c2bc64529336e824ba447e8b4f35ea894d1f116e11850d69565d5ad0e121",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "equipment.png",
+      "bytes": 1673278,
+      "sha256": "3c7df7fe7587abc913f99ef963d9af575de9ed1964a57a9609146895860e24cb",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "field.png",
+      "bytes": 3596736,
+      "sha256": "4e7ee1ca57a3ad602a2b0026eab7c19870bbff7348a3efdfeb7f0ed6f1bc3a25",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "file": "hardware.png",
+      "bytes": 2896092,
+      "sha256": "fe1effdf4c40341eee191f2b9a5a5789bcefd73911e570851da4024cc13e49fe",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "file": "iron.svg",
+      "bytes": 347,
+      "sha256": "8afbc5d64c4b575a652927f3bae3f540cddcff2c5f5ef43b188c183033308b71"
+    },
+    {
+      "file": "paper.svg",
+      "bytes": 571,
+      "sha256": "34a2cbb2d230b3efc9b68c0e3634a29ebe114b4f9cb48eb8b16cf01a999562b1"
+    },
+    {
+      "file": "resources.png",
+      "bytes": 2780442,
+      "sha256": "455ca5afba8241a9cd0271bfd2607917f8585fffff540a88f1103f2d8a08528f",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "scrapyard.png",
+      "bytes": 3238301,
+      "sha256": "64eec7ac804d03c55491f679a538fae1eed68516044d05b269fb33d3a1c1e06f",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "file": "stream.png",
+      "bytes": 3468318,
+      "sha256": "6bbce49f1612cc6e72a08bc8a5f3b3e914e2a0851b02ad2b8ec4283ec78ee9cd",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "file": "supplies.png",
+      "bytes": 2035445,
+      "sha256": "eca8262fdbaad4cc2a24062aaceb60efa4614815d4983e15afcf2adbe41c3abc",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "tools.png",
+      "bytes": 1806849,
+      "sha256": "b7fbb0d152794bf340dc9459d729880bd1a6c15cc3ceeb34b20336673aac943a",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "village.png",
+      "bytes": 3162415,
+      "sha256": "2abf7ac1b44d488854abcab977de4df57289ef2360e6b64fc80918fd171d8f41",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "file": "woods.png",
+      "bytes": 3426571,
+      "sha256": "621560521f67fc55f11124c2c2f58e32e55a874f0dcc4ab0c626b261e56ecc39",
+      "width": 1536,
+      "height": 1024
+    }
+  ]
+}

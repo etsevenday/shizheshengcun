@@ -1,5 +1,6 @@
 @inherits GameComponent
 @inject IJSRuntime JS
+@inject NavigationManager Navigation
 
 @{
     var s = G.S;
@@ -18,7 +19,7 @@
     else if (_lastInfo != null && !s.Progress.Dead) { _fadeInfo = _lastInfo; _lastInfo = null; _ = FadeOut(_fadeInfo); }
 }
 
-<div class="game">
+<div class="game wasteland" style="--scene-art: url('@Navigation.ToAbsoluteUri(ArtAssets.Scene(s.CurrentLocation, e.Location(s.CurrentLocation).Scene))')">
     <header class="top">
         <div class="brand">
             <b>适者生存</b>
