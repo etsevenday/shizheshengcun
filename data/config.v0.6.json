@@ -5803,7 +5803,11 @@
       "skillId"
     ],
     "perHitTarget": true,
-    "zeroDamageHitCounts": true
+    "zeroDamageHitCounts": true,
+    "gatherSubmit": 2,
+    "gatherDailyPerNode": 3,
+    "travelEdge": 1,
+    "travelDailyPerDirectedEdge": 1
   },
   "crafting": {
     "workFactor": "1/(1+0.025*L)",

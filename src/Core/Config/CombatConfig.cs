@@ -140,6 +140,12 @@ namespace Survival.Core.Config
         /// <summary>v1.0 P01：护甲完全抵消（0 伤）的命中也计经验。</summary>
         public bool ZeroDamageHitCounts { get; set; }
         public int CancelOrPreviewXp { get; set; }
+        /// <summary>A06 §3：采集/搜集每成功提交一次的经验（+2）与同资源点每个世界日的经验次数上限（3）。</summary>
+        public int GatherSubmit { get; set; }
+        public int GatherDailyPerNode { get; set; }
+        /// <summary>A06 §3：行旅每完整非取消物理边移动 +1，同向边每个世界日最多 1 次。</summary>
+        public int TravelEdge { get; set; }
+        public int TravelDailyPerDirectedEdge { get; set; }
         public List<string> CounterKey { get; set; } = new List<string>();
 
         [JsonIgnore] public double CraftDivisor => Formula.Num(Craft, 0);

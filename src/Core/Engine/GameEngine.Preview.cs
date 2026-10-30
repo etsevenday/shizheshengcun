@@ -169,6 +169,7 @@ namespace Survival.Core.Engine
                 {
                     var edge = Config.Edges.FirstOrDefault(e => e.Touches(s.CurrentLocation) && e.Other(s.CurrentLocation) == r.TargetId);
                     if (edge != null) p.BaseMinutes = edge.BaseMinutes;
+                    if (edge != null) p.XpGains.Add(TravelXpPreview(s, s.CurrentLocation, r.TargetId));
                     p.ConfirmText = "确认移动";
                     var tb = Config.Story.TutorialBattle;
                     if (TutorialGateOpen(s) && !s.Story.TutorialTriggered && s.CurrentLocation == tb.FromLocationId && r.TargetId == tb.LocationId)
@@ -246,6 +247,7 @@ namespace Survival.Core.Engine
                         p.Notes.AddRange(plan.Notes);
                     }
                     p.Notes.Add("产物先放在当前地点地面，不会自动拾取");
+                    p.XpGains.Add(GatherXpPreview(s, res));
                     p.ConfirmText = res.IsCache ? "开始搜集" : "开始采集";
                     break;
                 }

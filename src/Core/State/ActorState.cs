@@ -21,6 +21,11 @@ namespace Survival.Core.State
         public int BandageReadyAt { get; set; }
         public Dictionary<StatId, bool> AlertLatched { get; set; } = new Dictionary<StatId, bool>();
         public Dictionary<StatId, bool> ZeroLatched { get; set; } = new Dictionary<StatId, bool>();
+        /// <summary>
+        /// 按世界日的完成计数（A06 §3 防刷、gathering_10“每日首次”；开发计划 v0.9 B5 H4）：键 "日|类别|对象"，
+        /// 类别 gather（资源点 NodeId）或 move（"出发地>目的地"）。只保留当日的键，跨日自动清掉。
+        /// </summary>
+        public Dictionary<string, int> DailyCounts { get; set; } = new Dictionary<string, int>();
 
         public bool IsPlayer => Id == GameState.PlayerId;
 
@@ -32,6 +37,7 @@ namespace Survival.Core.State
             c.Skills = Skills.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.AlertLatched = new Dictionary<StatId, bool>(AlertLatched);
             c.ZeroLatched = new Dictionary<StatId, bool>(ZeroLatched);
+            c.DailyCounts = new Dictionary<string, int>(DailyCounts);
             return c;
         }
     }

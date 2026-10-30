@@ -108,4 +108,82 @@ public class B5SkillTests : BattleTestBase
         Assert.That(E.CanStart(u, req), Does.Not.Contain("需要"), "医疗10/制造10 过了熟练门槛（正常经验可达；剩下的是锅等配方条件）");
         Assert.That(Cfg.Recipes.Count(r => r.Outputs.ContainsKey("antiviral_cure")), Is.EqualTo(1), "没有第三条治愈入口");
     }
+
+    // ───────────── M122：经验来源与防刷（H4） ─────────────
+
+    private GameState AtWoods(uint seed = 7)
+    {
+        var s = New(seed);
+        E.DebugTeleport(s, "woods");
+        E.DebugSetProgress(s, "woods", 75);
+        return s;
+    }
+
+    private void GatherOnce(GameState s, string node)
+    {
+        Start(s, ActionRequest.Gather(node));
+        s.Main!.HazardHit = false;
+        Run(s);
+    }
+
+    [Test]
+    public void H4_GatherXp_Plus2_ThreePerNodePerDay()
+    {
+        var s = AtWoods();
+        s.Resources["berries"].Available = 99;
+        Assert.That(E.Preview(s, ActionRequest.Gather("berries")).XpGains, Has.Some.Contains("采集经验+2"));
+        for (var k = 0; k < 4; k++) GatherOnce(s, "berries");
+        Assert.That(s.Skills["gathering"].Xp, Is.EqualTo(6), "同资源点同日最多3次");
+        Assert.That(s.Log.Last(x => x.Text.Contains("野果")).Text, Does.Contain("今日已计3次"));
+        Assert.That(E.Preview(s, ActionRequest.Gather("berries")).XpGains.Single(), Does.Contain("不再给经验"));
+        s.Resources["woods_fiber"].Available = 99;
+        GatherOnce(s, "woods_fiber");
+        Assert.That(s.Skills["gathering"].Xp, Is.EqualTo(8), "另一个资源点单独计");
+        // 次日（世界日）重新计
+        E.DebugSetStats(s, 20, 80, 80, 18, 90, 60);
+        AdvanceTo(s, At(2, 8, 0));
+        s.Resources["berries"].Available = 99;
+        GatherOnce(s, "berries");
+        Assert.That(s.Skills["gathering"].Xp, Is.EqualTo(10), "次日重新给经验");
+        Assert.That(s.Player.DailyCounts.Keys.All(k => k.StartsWith("2|")), Is.True, "只保留当日计数");
+        Assert.That(s.Skills["scavenging"].Xp, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void H4_CacheTrainsScavenging_CancelGivesNothing()
+    {
+        var s = New(7);
+        E.DebugTeleport(s, "village");
+        E.DebugSetProgress(s, "village", 100);
+        Start(s, ActionRequest.Gather("supply_box"));
+        E.Cancel(s);
+        Assert.That(s.Skills["scavenging"].Xp, Is.EqualTo(0), "取消不给经验");
+        Assert.That(s.Player.DailyCounts, Is.Empty);
+        Start(s, ActionRequest.Gather("misc_box"));
+        s.Main!.HazardHit = false;
+        Run(s);
+        Assert.That(s.Skills["scavenging"].Xp, Is.EqualTo(2), "单次箱子练搜集");
+        Assert.That(s.Skills["gathering"].Xp, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void H4_TravelXp_OncePerDirectedEdgePerDay()
+    {
+        var s = New(7);
+        E.DebugTeleport(s, "field");
+        E.DebugUnlockEdge(s, "field__stream");
+        Assert.That(E.Preview(s, ActionRequest.Travel("stream")).XpGains.Single(), Is.EqualTo("行旅经验+1"));
+        Start(s, ActionRequest.Travel("stream"));
+        Run(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo("stream"));
+        Assert.That(s.Skills["athletics"].Xp, Is.EqualTo(1));
+        Start(s, ActionRequest.Travel("field"));
+        Run(s);
+        Assert.That(s.Skills["athletics"].Xp, Is.EqualTo(2), "反方向是另一条有向边");
+        Assert.That(E.Preview(s, ActionRequest.Travel("stream")).XpGains.Single(), Does.Contain("不再给"));
+        Start(s, ActionRequest.Travel("stream"));
+        Run(s);
+        Assert.That(s.Skills["athletics"].Xp, Is.EqualTo(2), "同向边同日只给1次");
+        Assert.That(s.Log.Any(x => x.Text.Contains("到达") && x.Text.Contains("行旅经验+1")), Is.True);
+    }
 }

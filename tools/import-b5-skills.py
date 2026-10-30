@@ -135,6 +135,12 @@ def main():
     cfg["skillKindBaseEnergy"] = KIND_BASE_E
     cfg["skillPassiveRules"] = PASSIVE_RULES
 
+    # A06 §3 新增经验来源与防刷额度：采集/搜集每成功提交+2、同资源点每日最多3次（按世界日）；行旅每完整移动+1、同向边每日最多1次
+    cfg["xp"]["gatherSubmit"] = 2
+    cfg["xp"]["gatherDailyPerNode"] = 3
+    cfg["xp"]["travelEdge"] = 1
+    cfg["xp"]["travelDailyPerDirectedEdge"] = 1
+
     # 斧类武器改练“斧”，盾/指挥器具挂各自门类（A06 §4；开发假设 H2）；医疗器具仍练医疗
     for w in cfg["weapons"]:
         if w.get("weaponKind") in ("axe", "shield", "command"):
