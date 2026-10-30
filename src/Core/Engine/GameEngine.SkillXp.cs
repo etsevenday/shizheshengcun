@@ -41,7 +41,8 @@ namespace Survival.Core.Engine
         public string GatherXpPreview(GameState s, ResourceConfig res)
         {
             var skill = GatherSkillOf(res);
-            if (SkillMaxed(s, skill)) return XpText(s, skill, Config.Xp.GatherSubmit);
+            // 单次资源点（箱子）只能搜一次，不写“第1/3次”（B5 试玩修复 M127）
+            if (SkillMaxed(s, skill) || res.IsCache) return XpText(s, skill, Config.Xp.GatherSubmit);
             var done = DailyCount(s, s.Player, DailyGather, res.NodeId);
             var cap = Config.Xp.GatherDailyPerNode;
             return done < cap

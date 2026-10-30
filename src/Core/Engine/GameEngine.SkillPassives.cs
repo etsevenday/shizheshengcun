@@ -117,7 +117,22 @@ namespace Survival.Core.Engine
 
         /// <summary>人物页“已获得的求生被动”一行一个：“采集3级·稳手采集：采集划伤概率×0.9（生效中）”。</summary>
         public List<string> SurvivalPassiveLines(ActorState actor) =>
-            SurvivalPassives(actor).Select(n => $"{SkillName(n.SkillId)}{n.Level}级·{n.Name}：{n.EffectText}（{PassiveStatusText(n)}）").ToList();
+            SurvivalPassives(actor).Select(n => $"{SkillName(n.SkillId)}{n.Level}级·{n.Name}：{n.Text}（{PassiveStatus(actor, n)}）").ToList();
+
+        /// <summary>
+        /// 已生效的被动是否被同门更高级的节点替代（同一效果键全部由更高级的已获得节点提供，如节奏行进被耐力行进替代）。返回替代它的等级，没有为 null。
+        /// </summary>
+        public int? SupersededBy(ActorState actor, SkillNodeConfig n)
+        {
+            if (!n.IsLive || n.Effects.Count == 0) return null;
+            var higher = SurvivalPassives(actor, true).Where(x => x.SkillId == n.SkillId && x.Level > n.Level).OrderBy(x => x.Level).ToList();
+            var by = higher.FirstOrDefault(x => n.Effects.All(e => x.Effects.Any(h => h.Key == e.Key)));
+            return by?.Level;
+        }
+
+        /// <summary>某角色视角的被动状态：被替代的写“已被7级替代”，其余同 PassiveStatusText。</summary>
+        public string PassiveStatus(ActorState actor, SkillNodeConfig n) =>
+            SupersededBy(actor, n) is int lv ? $"已被{lv}级替代" : PassiveStatusText(n);
 
         public static string PassiveStatusText(SkillNodeConfig n) => n.Status switch
         {

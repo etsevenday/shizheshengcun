@@ -415,4 +415,49 @@ public class B5SkillTests : BattleTestBase
         E.DebugSetSkillLevels(s, 1, false);
         Assert.That(s.Skills.Values.All(x => x.Level == 1 && x.Xp == 0), Is.True);
     }
+
+    // ───────────── M127：B5 线上第 1 轮试玩修复 ─────────────
+
+    [Test]
+    public void Fix1_NodeDisplayText_NoInternalIds()
+    {
+        foreach (var n in Cfg.SkillNodes)
+        {
+            Assert.That(n.Text, Does.Not.Match("[a-z_]{3,}"), n.Id);
+            Assert.That(n.Text, Does.Not.Contain("R04").And.Not.Contain("kg").And.Not.Contain("负E"), n.Id);
+        }
+        Assert.That(Cfg.SkillNodes.Single(x => x.Id == "medicine_10").Text, Does.StartWith("消耗盐水剂×1+医用纱布×1；健康≤25%上限时健康+1.5×(1+0.02×医疗等级)"));
+        Assert.That(Cfg.SkillNodes.Single(x => x.Id == "athletics_05").Text, Is.EqualTo("≤20公斤时移动基础工作量×0.95"));
+        Assert.That(Cfg.SkillNodes.Single(x => x.Id == "scavenging_10").Text, Does.Contain("废金属×1").And.Contain("80%上限暂未实装"));
+        Assert.That(Cfg.SkillNodes.Single(x => x.Id == "cooking_10").Text, Does.Contain("饱食额外+3"));
+        Assert.That(Cfg.SkillNodes.Single(x => x.Id == "medicine_01").EffectText, Does.Contain("bandage1"), "原文保留");
+    }
+
+    [Test]
+    public void Fix3_SupersededPassive_NotLive()
+    {
+        var s = New();
+        Lv(s, "athletics", 7);
+        var lines = E.SurvivalPassiveLines(s.Player);
+        Assert.That(lines.Single(x => x.StartsWith("行旅3级")), Does.EndWith("（已被7级替代）"));
+        Assert.That(lines.Single(x => x.StartsWith("行旅7级")), Does.EndWith("（生效中）"));
+        Assert.That(lines.Single(x => x.StartsWith("行旅5级")), Does.EndWith("（生效中）"), "5级轻装步伐没被替代");
+        Lv(s, "athletics", 10);
+        Assert.That(E.SurvivalPassiveLines(s.Player).Single(x => x.StartsWith("行旅5级")), Does.EndWith("（生效中）"), "远途规划只替代走过的路，5级仍生效");
+    }
+
+    [Test]
+    public void Fix4_CachePreview_NoDailyFraction_Q61Note()
+    {
+        var s = New(7);
+        E.DebugTeleport(s, "village");
+        E.DebugSetProgress(s, "village", 100);
+        Assert.That(E.Preview(s, ActionRequest.Gather("supply_box")).XpGains.Single(), Is.EqualTo("搜集经验+2"));
+        var t = AtWoods();
+        Lv(t, "gathering", 7);
+        t.Resources["berries"].Available = 10;
+        Assert.That(E.Preview(t, ActionRequest.Gather("berries")).Notes, Has.Some.Contains("省下的时间不足5分钟时，实际耗时不缩短"));
+        Lv(t, "gathering", 1);
+        Assert.That(E.Preview(t, ActionRequest.Gather("berries")).Notes, Has.None.Contains("不足5分钟"));
+    }
 }

@@ -77,6 +77,9 @@ namespace Survival.Core.Config
         public double BaseEnergy { get; set; }
         public string Positions { get; set; } = "";
         public string EffectText { get; set; } = "";
+        /// <summary>界面显示用效果文字：A06 原文里的物品 ID、状态缩写、文档编号换成中文（导入脚本生成，数值不改；B5 试玩修复 M127）。</summary>
+        public string DisplayText { get; set; } = "";
+        [JsonIgnore] public string Text => DisplayText != "" ? DisplayText : EffectText;
         public int CooldownRounds { get; set; }
         public string ExtraCost { get; set; } = "";
         /// <summary>combat 或 survival。</summary>

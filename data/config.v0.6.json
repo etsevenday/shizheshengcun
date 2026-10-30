@@ -7816,7 +7816,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×1.00"
     },
     {
       "id": "unarmed_03",
@@ -7831,7 +7832,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害0；命中后目标失衡"
     },
     {
       "id": "unarmed_05",
@@ -7846,7 +7848,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "获得格挡1次"
     },
     {
       "id": "unarmed_07",
@@ -7861,7 +7864,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "解除被保护以外的束缚、标记，向后移动1位"
     },
     {
       "id": "unarmed_10",
@@ -7876,7 +7880,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "两次独立命中，每击伤害×0.85；本指令同目标经验最多计1次"
     },
     {
       "id": "blade_01",
@@ -7891,7 +7896,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×1.00"
     },
     {
       "id": "blade_03",
@@ -7906,7 +7912,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×0.65；命中正伤后施加流血"
     },
     {
       "id": "blade_05",
@@ -7921,7 +7928,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "格挡1次；受直接攻击后反击1次，伤害×0.70"
     },
     {
       "id": "blade_07",
@@ -7936,7 +7944,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "前移1位后攻击；伤害×1.20，移位失败拒绝整次"
     },
     {
       "id": "blade_10",
@@ -7951,7 +7960,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×1.70；目标健康≤30%上限时再×1.20"
     },
     {
       "id": "axe_01",
@@ -7966,7 +7976,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×1.00"
     },
     {
       "id": "axe_03",
@@ -7981,7 +7992,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×0.80；护甲−0.25持续2轮"
     },
     {
       "id": "axe_05",
@@ -7996,7 +8008,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "下次该斧攻击伤害×1.35，持续至下一大回合末；不叠"
     },
     {
       "id": "axe_07",
@@ -8011,7 +8024,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×0.90；控制成功后目标后移1位"
     },
     {
       "id": "axe_10",
@@ -8026,7 +8040,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×1.75；移除目标1次格挡后结算伤害"
     },
     {
       "id": "spear_01",
@@ -8041,7 +8056,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "单体伤害×1.00"
     },
     {
       "id": "spear_03",
@@ -8056,7 +8072,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×0.60；控制成功后目标后移1位"
     },
     {
       "id": "spear_05",
@@ -8071,7 +8088,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "本轮至下一正常激活前，敌主动前移后迎击1次，伤害×0.75"
     },
     {
       "id": "spear_07",
@@ -8086,7 +8104,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "选择一个相邻双位集合；每个目标独立命中、伤害×0.65"
     },
     {
       "id": "spear_10",
@@ -8101,7 +8120,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "单体两击，各伤害×0.85；经验每目标至多1次"
     },
     {
       "id": "blunt_01",
@@ -8116,7 +8136,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×1.00"
     },
     {
       "id": "blunt_03",
@@ -8131,7 +8152,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×0.70；命中后失衡"
     },
     {
       "id": "blunt_05",
@@ -8146,7 +8168,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×0.50；控制成功后目标下轮速度−2"
     },
     {
       "id": "blunt_07",
@@ -8161,7 +8184,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×0.50；控制成功取消目标本轮尚未执行的蓄力意图，改普通攻击"
     },
     {
       "id": "blunt_10",
@@ -8176,7 +8200,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×1.60；控制成功施加虚弱（伤害×0.8）2轮"
     },
     {
       "id": "archery_01",
@@ -8191,7 +8216,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×1.00；弩使用本武器基础体力成本"
     },
     {
       "id": "archery_03",
@@ -8206,7 +8232,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×0.75；正伤且控制成功后下轮速度−2"
     },
     {
       "id": "archery_05",
@@ -8221,7 +8248,8 @@
       "extraCost": "弹药1",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "命中无伤；标记目标2轮，全队对其攻击命中能力+6"
     },
     {
       "id": "archery_07",
@@ -8236,7 +8264,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "单体伤害×1.20；忽略护甲0.25"
     },
     {
       "id": "archery_10",
@@ -8251,7 +8280,8 @@
       "extraCost": "弹药2",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "两击伤害各×0.85；需弹仓或箭数量≥2，单发弩不可用"
     },
     {
       "id": "firearms_01",
@@ -8266,7 +8296,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×1.00；体力使用武器基础成本"
     },
     {
       "id": "firearms_03",
@@ -8281,7 +8312,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "单体伤害×0.70；命中后虚弱2轮"
     },
     {
       "id": "firearms_05",
@@ -8296,7 +8328,8 @@
       "extraCost": "实际装填弹药",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "装入本武器完整弹仓可容数量；本技能激活后本次装填不再另付通用装填"
     },
     {
       "id": "firearms_07",
@@ -8311,7 +8344,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "手枪、步枪单体×1.35；霰弹枪对12双位各×0.65"
     },
     {
       "id": "firearms_10",
@@ -8326,7 +8360,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "单体×1.80；额外命中能力+6"
     },
     {
       "id": "shield_01",
@@ -8341,7 +8376,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "伤害×1.00；命中后失衡"
     },
     {
       "id": "shield_03",
@@ -8356,7 +8392,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "接下指定友方下一次单体直接攻击；不拦范围伤害、持续伤害，持续至下一正常激活"
     },
     {
       "id": "shield_05",
@@ -8371,7 +8408,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "格挡1次且位移抵抗+25个百分点，2轮"
     },
     {
       "id": "shield_07",
@@ -8386,7 +8424,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "保护1次；双方获得下一次直接伤害×0.8，2轮"
     },
     {
       "id": "shield_10",
@@ -8401,7 +8440,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "自己格挡2次；其他队员下一次直接伤害×0.8，持续1轮"
     },
     {
       "id": "command_01",
@@ -8416,7 +8456,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "目标下一次攻击命中能力+6；持续2轮"
     },
     {
       "id": "command_03",
@@ -8431,7 +8472,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "目标与相邻友方交换站位；必须二者合法且存活"
     },
     {
       "id": "command_05",
@@ -8446,7 +8488,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "恐慌−8；同目标每大回合最多一次"
     },
     {
       "id": "command_07",
@@ -8461,7 +8504,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "目标下一正常激活行动点+1；不超过6，不加追击"
     },
     {
       "id": "command_10",
@@ -8476,7 +8520,8 @@
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "全队下一次攻击伤害×1.15，最多持续2轮；同名不叠"
     },
     {
       "id": "medicine_01",
@@ -8491,7 +8536,8 @@
       "extraCost": "bandage1",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "消耗草药绷带×1；效果与目标冷却完全同绷带；基础专属技战外亦可"
     },
     {
       "id": "medicine_03",
@@ -8506,7 +8552,8 @@
       "extraCost": "medical_gauze1",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "消耗医用纱布×1；止血并健康+0.6×(1+0.02×医疗等级)，与绷带共享60分钟回血冷却"
     },
     {
       "id": "medicine_05",
@@ -8521,7 +8568,8 @@
       "extraCost": "saline1",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "消耗盐水剂×1；健康+0.8×(1+0.02×医疗等级)，共享回血冷却；不回生、不改病毒"
     },
     {
       "id": "medicine_07",
@@ -8536,7 +8584,8 @@
       "extraCost": "medical_gauze1",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "消耗医用纱布×1；解除失衡、虚弱二者之一，若均有优先虚弱；不解除感染"
     },
     {
       "id": "medicine_10",
@@ -8551,7 +8600,8 @@
       "extraCost": "saline1+medical_gauze1",
       "kind": "combat",
       "status": "combat",
-      "effects": []
+      "effects": [],
+      "displayText": "消耗盐水剂×1+医用纱布×1；健康≤25%上限时健康+1.5×(1+0.02×医疗等级)，共享回血冷却；目标必须存活"
     },
     {
       "id": "crafting_01",
@@ -8566,7 +8616,8 @@
       "extraCost": "无",
       "kind": "survival",
       "status": "pending",
-      "effects": []
+      "effects": [],
+      "displayText": "原新手配方与0阶（W0）装备许可（含义待策划确认）"
     },
     {
       "id": "crafting_03",
@@ -8581,7 +8632,8 @@
       "extraCost": "无",
       "kind": "survival",
       "status": "dormant",
-      "effects": []
+      "effects": [],
+      "displayText": "开放制作等级3配方与工作台、缝纫台"
     },
     {
       "id": "crafting_05",
@@ -8607,7 +8659,8 @@
           "op": "set",
           "value": 0.3
         }
-      ]
+      ],
+      "displayText": "维护恢复量在原基础额外+5个百分点；最高30%，与维护手册取较高值"
     },
     {
       "id": "crafting_07",
@@ -8622,7 +8675,8 @@
       "extraCost": "无",
       "kind": "survival",
       "status": "dormant",
-      "effects": []
+      "effects": [],
+      "displayText": "开放制作等级7配方和对应工坊许可"
     },
     {
       "id": "crafting_10",
@@ -8637,7 +8691,8 @@
       "extraCost": "无",
       "kind": "survival",
       "status": "dormant",
-      "effects": []
+      "effects": [],
+      "displayText": "开放制作等级10配方；可从该装备合法附加池定向选1词条，仍付精密零件1"
     },
     {
       "id": "gathering_01",
@@ -8652,7 +8707,8 @@
       "extraCost": "无",
       "kind": "survival",
       "status": "baseline",
-      "effects": []
+      "effects": [],
+      "displayText": "开放原有植物、木石定向采集"
     },
     {
       "id": "gathering_03",
@@ -8673,7 +8729,8 @@
           "op": "mul",
           "value": 0.9
         }
-      ]
+      ],
+      "displayText": "采集划伤概率×0.9"
     },
     {
       "id": "gathering_05",
@@ -8694,7 +8751,8 @@
           "op": "add",
           "value": 1
         }
-      ]
+      ],
+      "displayText": "每次木、石、纤维定向采集产量+1，受库存限制"
     },
     {
       "id": "gathering_07",
@@ -8715,7 +8773,8 @@
           "op": "mul",
           "value": 0.9
         }
-      ]
+      ],
+      "displayText": "定向采集基础工作量×0.9"
     },
     {
       "id": "gathering_10",
@@ -8736,7 +8795,8 @@
           "op": "add",
           "value": 1
         }
-      ]
+      ],
+      "displayText": "每个资源点每日首次采集额外+1，仍扣库存，不生产工业材料"
     },
     {
       "id": "scavenging_01",
@@ -8751,7 +8811,8 @@
       "extraCost": "无",
       "kind": "survival",
       "status": "baseline",
-      "effects": []
+      "effects": [],
+      "displayText": "开放普通遗迹搜集"
     },
     {
       "id": "scavenging_03",
@@ -8766,7 +8827,8 @@
       "extraCost": "无",
       "kind": "survival",
       "status": "pending",
-      "effects": []
+      "effects": [],
+      "displayText": "开放拆解低阶装备；不增加固定箱数量"
     },
     {
       "id": "scavenging_05",
@@ -8787,7 +8849,8 @@
           "op": "mul",
           "value": 0.9
         }
-      ]
+      ],
+      "displayText": "选择合格工具时搜集工作量×0.9"
     },
     {
       "id": "scavenging_07",
@@ -8808,7 +8871,8 @@
           "op": "mul",
           "value": 0.8
         }
-      ]
+      ],
+      "displayText": "危险搜集划伤概率×0.8，不影响战斗接敌"
     },
     {
       "id": "scavenging_10",
@@ -8829,7 +8893,8 @@
           "op": "add",
           "value": 1
         }
-      ]
+      ],
+      "displayText": "拆解固定多返废金属×1；总回收不得超过配方投入价值80%（80%上限暂未实装）"
     },
     {
       "id": "cooking_01",
@@ -8844,7 +8909,8 @@
       "extraCost": "无",
       "kind": "survival",
       "status": "baseline",
-      "effects": []
+      "effects": [],
+      "displayText": "开放本轮普通食品配方，旧火堆烹饪不倒锁"
     },
     {
       "id": "cooking_03",
@@ -8865,7 +8931,8 @@
           "op": "mul",
           "value": 0.95
         }
-      ]
+      ],
+      "displayText": "新食品主动制作基础工作量×0.95"
     },
     {
       "id": "cooking_05",
@@ -8880,7 +8947,8 @@
       "extraCost": "无",
       "kind": "survival",
       "status": "dormant",
-      "effects": []
+      "effects": [],
+      "displayText": "开放腌肉、干粮配方，按配方消耗盐和燃料"
     },
     {
       "id": "cooking_07",
@@ -8901,7 +8969,8 @@
           "op": "mul",
           "value": 0.9
         }
-      ]
+      ],
+      "displayText": "新食品主动制作工作量×0.90（替代3级倍率）"
     },
     {
       "id": "cooking_10",
@@ -8922,7 +8991,8 @@
           "op": "add",
           "value": 3
         }
-      ]
+      ],
+      "displayText": "新制远征口粮饱食额外+3，实例保存，不给旧食物追补"
     },
     {
       "id": "athletics_01",
@@ -8937,7 +9007,8 @@
       "extraCost": "无",
       "kind": "survival",
       "status": "baseline",
-      "effects": []
+      "effects": [],
+      "displayText": "开放行旅预估；无初始数值加成"
     },
     {
       "id": "athletics_03",
@@ -8958,7 +9029,8 @@
           "op": "mul",
           "value": 0.95
         }
-      ]
+      ],
+      "displayText": "移动每小时体力消耗×0.95"
     },
     {
       "id": "athletics_05",
@@ -8979,7 +9051,8 @@
           "op": "mul",
           "value": 0.95
         }
-      ]
+      ],
+      "displayText": "≤20公斤时移动基础工作量×0.95"
     },
     {
       "id": "athletics_07",
@@ -9000,7 +9073,8 @@
           "op": "mul",
           "value": 0.9
         }
-      ]
+      ],
+      "displayText": "移动每小时体力消耗×0.90（替代3级）"
     },
     {
       "id": "athletics_10",
@@ -9021,7 +9095,8 @@
           "op": "mul",
           "value": 0.9
         }
-      ]
+      ],
+      "displayText": "已访问物理边移动基础工作量×0.90（替代5级）；不免费传送"
     }
   ],
   "skillKindBaseEnergy": {
