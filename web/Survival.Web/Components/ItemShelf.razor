@@ -74,9 +74,10 @@
                 <div id="@(gSel ? "card-sel" : null)" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drop="@($"card:{key}")" data-drop-level="card"
                      class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel && (!stacked || pickedKey == kb![0].Key) ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "")"
                      role="button" tabindex="0" @onclick="() => SelectFront(id, kb)" @onkeydown="ev => OnCardKey(ev, () => SelectFront(id, kb))" title="@e.Item(id).Desc">
-                    <div class="ctitle"><span>@e.ItemName(id)</span><span class="qty" title="@(stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : null)">×@total</span></div>
+                    <div class="ctitle"><span title="@e.ItemName(id)">@e.ItemName(id)</span><span class="qty" title="@(stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : null)">×@total</span></div>
                     <div class="art">@Icons.Markup(id)</div>
-                    <div class="cinfo">@(stacked ? (kb![0].Spoiled ? "已腐败" : Ui.ItemLine(e, s, head)) : allSpoiled ? "已腐败" : Ui.ItemLine(e, s, head))@(!stacked && batches > 1 ? $" · {batches}批" : "")</div>
+                    @{ var infoLine = (stacked ? (kb![0].Spoiled ? "已腐败" : Ui.ItemLine(e, s, head)) : allSpoiled ? "已腐败" : Ui.ItemLine(e, s, head)) + (!stacked && batches > 1 ? $" · {batches}批" : ""); }
+                    <div class="cinfo" title="@infoLine">@infoLine</div>
                     @if (span > 1) { <span class="slot-span" title="@($"同物品{batches}批/超过堆叠上限，占{span}张随身卡{(stacked ? $"；最前这一批×{kb![0].Count}" : "")}")">占@(span)格@(batches > 1 ? $"·{batches}批" : "")</span> }
                     <TransferArrow Owner="@Owner" ItemId="@id" Enabled="@(movable && !busy)" />
                 </div>
@@ -102,9 +103,9 @@
                 <div id="@(tSel ? "card-sel" : null)" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drop="@($"card:{key}")" data-drop-level="card"
                      class="card item @(broken ? "broken" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(tSel ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
                      role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
-                    <div class="ctitle"><span>@e.ItemName(t.ItemId)#@t.InstanceId</span></div>
+                    <div class="ctitle"><span title="@($"{e.ItemName(t.ItemId)}#{t.InstanceId}")">@e.ItemName(t.ItemId)#@t.InstanceId</span></div>
                     <div class="art">@Icons.Markup(t.ItemId)</div>
-                    <div class="cinfo">@Ui.ItemLine(e, s, t)</div>
+                    <div class="cinfo" title="@Ui.ItemLine(e, s, t)">@Ui.ItemLine(e, s, t)</div>
                     <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !locked && !busy)" />
                 </div>
                 </div>

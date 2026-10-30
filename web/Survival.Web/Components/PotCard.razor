@@ -40,7 +40,7 @@
     <div class="pot-card compact @(Pot.InFacility ? "in-fire" : "in-shelf") @(potSelected || childSel ? "selected" : "") @(locked ? "reserved" : "")"
          data-card="@key" data-drop="@($"card:{key}")" data-drop-level="card" @onclick:stopPropagation="true">
         <div class="pc-head" id="@(potSelected || childSel ? "card-sel" : null)" role="button" tabindex="0" data-drag="@($"card:{key}")" data-drag-title="@name" data-drag-from="@where"
-             title="@($"{name} · {where}：点击展开锅里的水与食材并操作；按住标题拖动整锅（水与食材随行）")"
+             title="@($"{name}（{(Pot.InFacility ? "整锅" : $"{Ui.Kg(e.ItemGrams(s, Pot))}公斤")}） · {where}：点击展开锅里的水与食材并操作；按住标题拖动整锅（水与食材随行）")"
              @onclick="SelectPot" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, SelectPot)" @onkeydown:stopPropagation="true">
             <span class="pc-icon">@Icons.Markup(Pot.ItemId)</span>
             @* 卡面窄：名称不带实例号，实例号与重量放第二行（M78：1280 随身行锅名被截成“金…”） *@

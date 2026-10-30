@@ -452,3 +452,183 @@
   .center-scroll.four .fire-card .pc-sum-food svg, .center-scroll.four .fire-card .pc-sum-food img { width: 36px; height: 36px; }
 }
 
+/* ───── B2 图文与边框安全区（S14 截图复核 §B，验收 UI-M05/M06/M10；开发计划 v0.9 M86） ─────
+   口径：纸面/铁框是 border-image，画出来的框线约占 border-image-width 的 15/24（纸框约6px、铁框约7.5px），
+   “到可见框体内缘”按这个厚度算：文字/数字/按钮图标距卡片外缘 ≥ 6+8 = 14px，极紧凑角标（数量、占格）≥ 6+6 = 12px。
+   物品卡改为互不重叠的格子：上行左格是完整主图（只取图位里主体的实际范围，等比适配，不再 clip-path 裁外圈），
+   上行右窄列放数量角标（顶）与转移箭头（底），不压主图；下方整宽两行：名称（屏高≥801 时最多两行，省略时悬停看全名）、
+   效果/重量/保质。箭头可见 30px、点击热区用伪元素扩到 ≥40px，不再与名称同占一格。屏高≤800 时地面卡改为 6:5 横卡，给名称留宽。 */
+.wasteland .center-scroll.four .row-scroll .card.item {
+  grid-template-columns: minmax(0, 1fr) minmax(30px, auto);
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  grid-template-areas: "art side" "name name" "info info";
+  column-gap: 2px; padding: 0 12px 13px 14px;
+}
+.wasteland .center-scroll.four .row-scroll .card.item .art {
+  grid-area: art; min-height: 0; overflow: visible; padding: 0; margin: 8px 0 3px -6px;
+  display: flex; align-items: center; justify-content: center;
+}
+.wasteland .center-scroll.four .row-scroll .card.item .art > .ink-sprite,
+.wasteland .center-scroll.four .row-scroll .card.item .art > svg,
+.wasteland .center-scroll.four .row-scroll .card.item .art > img { clip-path: none; transform: none; width: 100%; height: 100%; }
+.wasteland .center-scroll.four .row-scroll .card.item .ctitle { display: contents; }
+.wasteland .center-scroll.four .row-scroll .card.item .ctitle > span:first-child {
+  grid-area: name; min-width: 0; font-size: 13px; line-height: 1.2; font-weight: 600;
+  display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-line-clamp: unset;
+}
+.wasteland .center-scroll.four .row-scroll .card.item .ctitle .qty {
+  grid-area: side; position: relative; top: auto; right: auto; align-self: start; justify-self: end; margin-top: 12px;
+  font-size: 12px; line-height: 1.25; padding: 0 3px; box-shadow: none; white-space: nowrap;
+}
+.wasteland .center-scroll.four .row-scroll .card.item .cinfo {
+  grid-area: info; align-self: start; justify-self: stretch; position: static; z-index: auto;
+  max-width: none; margin: 1px 0 0; padding: 0; background: none; box-shadow: none; border-radius: 0;
+  font-size: 12px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.wasteland .center-scroll.four .row-scroll .card.item .card-arrow {
+  grid-area: side; align-self: end; justify-self: end; position: relative; margin-bottom: 3px;
+  right: auto; bottom: auto; width: 30px; height: 30px; min-width: 0; min-height: 0; z-index: 1;
+}
+.wasteland .center-scroll.four .row-scroll .card.item .card-arrow::after { inset: -6px -6px -6px -6px; }
+.wasteland .center-scroll.four .row-scroll .card.item .slot-span { top: 12px; left: 12px; }
+@media (max-height: 800px) {
+  .wasteland .center-scroll.four .section.ground .row-scroll .card.item { aspect-ratio: 6 / 5; }
+  /* 1280×720 卡高约103px：右窄列数量角标与箭头上下错开（箭头可见24px，热区仍 ≥40px） */
+  .wasteland .center-scroll.four .row-scroll .card.item .ctitle .qty { line-height: 1.1; }
+  .wasteland .center-scroll.four .row-scroll .card.item .card-arrow { width: 26px; height: 24px; margin-bottom: 1px; font-size: 12px; }
+  .wasteland .center-scroll.four .row-scroll .card.item .card-arrow::after { inset: -9px -8px -8px -8px; }
+}
+@media (min-height: 801px) {
+  .wasteland .center-scroll.four .row-scroll .card.item .ctitle > span:first-child {
+    white-space: normal; word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+}
+/* 右栏详情等处的精灵图也不再整体放大（放大会把已取到主体范围的图挤出框） */
+.wasteland .detail-icon > .ink-sprite { transform: none; }
+/* 资源、设施、敌踪、相邻地点卡：主图离框 ≥2px（框线约6px，主图从8px起），名称/状态/按钮离可见框内缘 ≥8px，右上小角标 ≥6px */
+.center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-art { margin: 8px 8px 0; }
+.center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-badge { top: 12px; right: 12px; }
+.center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-head { padding: 2px 4px 0 14px; }
+.center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-body { padding: 1px 4px 14px 14px; }
+.center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor):not(:has(> .oc-foot)) :is(.oc-head, .oc-body) { padding-right: 14px; }
+.center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-foot { padding: 2px 12px 12px 0; align-self: end; }
+/* B1 遗留（开发计划 v0.9 §B1.7）：1280×720 设施行卡高约139px，资源卡带危险/不能开始原因、敌踪卡带健康与伤害行时，
+   上图下文的排法只剩约35%—45%给主图。屏高≤800 时这两类卡改为左图右文：主图占满卡高（约0.88），右列名称+角标、状态/原因、主按钮；
+   文字不缩、原因不隐藏（每条最多两行，悬停卡片看全文），卡宽相应加到236px（设施行本就横向滚动）。 */
+@media (max-height: 800px) {
+  .center-scroll.four .facility-row :is(.res-card, .enemy-card.world) {
+    width: 236px; grid-template-columns: 108px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "art head" "art body" "art foot";
+  }
+  .center-scroll.four .facility-row :is(.res-card, .enemy-card.world) .oc-art { grid-area: art; grid-column: 1; grid-row: 1 / -1; margin: 8px 0 8px 8px; }
+  .center-scroll.four .facility-row :is(.res-card, .enemy-card.world) .oc-head {
+    grid-area: head; grid-column: 2; grid-row: 1; align-self: start; padding: 13px 12px 0 8px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px;
+  }
+  .center-scroll.four .facility-row :is(.res-card, .enemy-card.world) .oc-badge { position: static; flex: 0 0 auto; }
+  .center-scroll.four .facility-row :is(.res-card, .enemy-card.world) .oc-body { grid-area: body; grid-column: 2; grid-row: 2; padding: 2px 12px 0 8px; min-height: 0; overflow: hidden; }
+  .center-scroll.four .facility-row :is(.res-card, .enemy-card.world) .oc-foot { grid-area: foot; grid-column: 2; grid-row: 3; justify-self: start; align-self: end; padding: 2px 12px 12px 8px; }
+  .center-scroll.four .facility-row :is(.res-card, .enemy-card.world):not(:has(> .oc-foot)) :is(.oc-head, .oc-body) { grid-column: 2; }
+  .center-scroll.four .facility-row .res-card .oc-foot .res-btn { flex-direction: row; gap: 4px; }
+}
+/* 锅卡（随身/地面/火堆加工位同一紧凑卡）、火堆卡、直烤食材卡：内容离纸框内缘 ≥8px（卡内边距 12—14px），
+   1280×720 卡高约103px 时名称/水量/食材三行仍完整；箭头可见 24—30px，热区用伪元素扩到 ≥40px */
+.center-scroll.four .pot-card.compact { padding: 12px 12px 11px 14px; gap: 3px; align-items: stretch; }
+.center-scroll.four .pot-card.compact .pc-head { height: 28px; min-height: 0; gap: 4px; }
+.center-scroll.four .pot-card.compact .pc-icon { flex: 0 0 26px; width: 26px; height: 26px; }
+.center-scroll.four .pot-card.compact .pc-icon :is(svg, img) { width: 26px; height: 26px; }
+.center-scroll.four .pot-card.compact .pc-title b { font-size: 13px; line-height: 1.15; }
+.center-scroll.four .pot-card.compact .pc-title small { font-size: 11px; line-height: 1.15; }
+.center-scroll.four .pot-card.compact .pc-head :is(.card-arrow, .row-arrow) { width: 28px; height: 28px; min-width: 0; min-height: 0; }
+.center-scroll.four .pot-card.compact .pc-head :is(.card-arrow, .row-arrow)::after { content: ""; position: absolute; inset: -6px; }
+.center-scroll.four .pot-card.compact .pot-fill { min-height: 0; padding: 2px 5px 3px; }
+.center-scroll.four .pot-card.compact .pc-sum { min-height: 22px; }
+.center-scroll.four .dg-cards > .fire-card { padding: 12px 10px 12px 10px; column-gap: 8px; }
+.center-scroll.four .fire-card .fc-fuel { padding: 2px 4px; }
+.center-scroll.four .fire-card .fc-slot > .fc-food { padding: 12px 12px 12px 14px; gap: 3px; }
+.center-scroll.four .fire-card .fc-food .ff-head { min-height: 0; }
+.center-scroll.four .fire-card .fc-food .row-arrow { width: 28px; height: 28px; }
+.center-scroll.four .fire-card .fc-food :is(.ff-status, .ff-note) { font-size: 13px; line-height: 1.25; }
+.center-scroll.four .fire-card .fc-slots > .slot-empty { padding: 8px; }
+@media (max-height: 800px) {
+  .center-scroll.four .dg-cards > .fire-card { --fire-art: 40px; }
+  .center-scroll.four .pot-card.compact .pc-head :is(.card-arrow, .row-arrow) { width: 26px; height: 24px; font-size: 12px; }
+  .center-scroll.four .pot-card.compact .pc-head :is(.card-arrow, .row-arrow)::after { inset: -8px; }
+}
+/* 行框与面板（铁框线约占 border-image-width 的 13/24，约6.5px）：卡片外缘离行框内缘 ≥2px，行首竖排标题、区标题、左右栏文字离框 ≥8px */
+.center-scroll.four .rows2-inner > .map-row { padding: 9px 9px 9px 12px; }
+.center-scroll.four .rows2-inner > .facility-row { padding: 9px 9px 9px 12px; }
+.center-scroll.four .row-tag { flex-basis: 20px; }
+.center-scroll.four .facility-row .dg-title { padding-top: 6px; }
+.center-scroll.four .fac-scroll { padding-bottom: 0; }
+.center-scroll.four > .section { padding: 14px 9px 9px 15px; }
+.center-scroll.four > .section .section-head { margin-bottom: 4px; padding-bottom: 2px; }
+.center-scroll.four > .section .section-head h2 { font-size: 15px; line-height: 18px; }
+.center-scroll.four > .section .section-head span { font-size: 13px; line-height: 18px; padding-right: 6px; }
+.center-scroll.four > .section .row-scroll { padding-bottom: 0; }
+.wasteland .clock { padding: 14px 15px; }
+.wasteland .vitals { padding: 13px 15px; }
+.wasteland .weight { padding-top: 14px; padding-bottom: 14px; padding-right: 15px; }
+.wasteland .weight-icon { left: 10px; }
+.wasteland .detail { padding: 15px 15px 14px; }
+.apop { padding: 14px 15px 14px; }
+.apop.card-pop { padding: 14px 15px; }
+.apop.card-pop .apop-head { top: 13px; right: 13px; }
+@media (max-height: 800px) {
+  /* 1280×720 火堆卡高约127px：主图32px、名称与状态角标一行，燃料数值与条整宽，投木/点火按钮保留 40px 热区 */
+  .center-scroll.four .dg-cards > .fire-card { --fire-art: 32px; padding: 9px 10px 12px; }
+  .center-scroll.four .fire-card .fc-fuel { row-gap: 2px; }
+  .center-scroll.four .fire-card .fc-title { flex-wrap: nowrap; white-space: nowrap; }
+  .center-scroll.four .fire-card .fc-title .oc-badge { font-size: 12px; padding: 0 4px; }
+  .center-scroll.four .fire-card .fc-slots > .fc-slot.food { flex-basis: 200px; }
+  .center-scroll.four .fire-card .fc-food .ff-head { gap: 4px; }
+  .center-scroll.four .fire-card .fc-food .pc-ico { width: 26px; height: 26px; }
+  .center-scroll.four .fire-card .fc-food .pc-ico svg { width: 24px; height: 24px; }
+  .center-scroll.four .fire-card .fc-food .pc-status { display: none; }
+  .center-scroll.four .fire-card .fc-food .ff-status { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* 锅卡卡高约92px：标题副行（#编号·重量）收进悬停提示，名称/水量/食材三行完整 */
+  .center-scroll.four .pot-card.compact { padding: 13px 12px 11px 14px; gap: 2px; }
+  .center-scroll.four .pot-card.compact .pc-head { height: 24px; }
+  .center-scroll.four .pot-card.compact .pc-icon { flex-basis: 22px; width: 22px; height: 22px; }
+  .center-scroll.four .pot-card.compact .pc-icon :is(svg, img) { width: 22px; height: 22px; }
+  .center-scroll.four .pot-card.compact .pc-title small { display: none; }
+  .center-scroll.four .pot-card.compact .pot-fill { padding: 1px 5px 2px; }
+  .center-scroll.four .pot-card.compact .pc-sum { min-height: 20px; }
+  .center-scroll.four .pot-card.compact .pc-sum-food { flex-basis: 18px; width: 18px; height: 18px; }
+  .center-scroll.four .pot-card.compact .pc-sum-food :is(svg, img) { width: 18px; height: 18px; }
+}
+@media (max-height: 800px) { .center-scroll.four .fire-card .fc-cook { margin-top: 3px; } }
+.center-scroll.four > .section { padding-top: 15px; }
+.wasteland .weight { padding-bottom: 15px; }
+/* 数量角标并入名称行右端（名称省略时数量仍完整），右窄列只放转移箭头，二者不再上下挤在一起 */
+.wasteland .center-scroll.four .row-scroll .card.item .ctitle {
+  grid-area: name; display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; min-width: 0;
+  position: static; padding: 0; overflow: hidden; border: 0;
+}
+.wasteland .center-scroll.four .row-scroll .card.item .ctitle > span:first-child { grid-area: auto; flex: 0 1 auto; }
+.wasteland .center-scroll.four .row-scroll .card.item .ctitle .qty { grid-area: auto; flex: 0 0 auto; margin: 0 0 1px; align-self: flex-end; }
+.wasteland .center-scroll.four .row-scroll .card.item .card-arrow { margin-top: 12px; align-self: end; }
+/* 状态角标（存量/已建成/敌对/访问）改在名称行内，不再压在主图右上角（截图复核 §B：角标不能盖住主图轮廓） */
+.center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-head {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 2px 5px;
+}
+.center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-badge { position: static; flex: 0 0 auto; }
+.center-scroll.four .facility-row .desk-hint { margin-right: 8px; }
+/* B1 遗留（§B1.7）：两行战斗我方卡信息栏约54px，“健康20.00”折成两行。我方列略加宽，信息栏按内容不换行（“健康20.00”“体力17.68”各一行），插画取余下宽度 */
+.bt-scene { grid-template-columns: minmax(150px, 0.68fr) 22px minmax(0, 1.32fr); }
+.bt-scene .ally-foot { flex: 0 0 auto; min-width: 0; padding-right: 8px; }
+.bt-scene .ally-foot .hp-line > * { white-space: nowrap; }
+/* 敌卡意图“抓击 0.70—1.10”在 1280×720 被拆成两行、末行被卡底裁掉：信息栏按内容宽（最多卡宽55%），意图数值不在破折号处断开 */
+.bt-scene .foe-body { flex: 0 1 auto; min-width: 72px; max-width: 55%; }
+.bt-scene .foe .intent { word-break: keep-all; }
+.bt-scene .foe .intent :is(b, span, small) { white-space: nowrap; }
+/* 复验补正：设施行横滚区右端离铁框 ≥8px（行尾分组标题/提示文字不贴框）；锅卡标题离纸框 ≥8px；制作面板材料区；
+   选卡浮窗改为窗内滚动正文（滚动视口在内边距以内，末行文字不会滚到框线下） */
+.center-scroll.four .rows2-inner > .facility-row { padding-right: 15px; }
+.center-scroll.four .pot-card.compact { padding-top: 15px; }
+.wasteland .craft-mats { padding: 14px 15px; }
+.apop.card-pop { padding: 15px; overflow: hidden; display: flex; flex-direction: column; }
+.apop.card-pop .apop-body { min-height: 0; overflow-y: auto; }
+@media (max-height: 800px) { .center-scroll.four .pot-card.compact { padding-top: 13px; } }
+/* 相邻地点卡的主图是场景背景（S14 §B：场景背景可按构图裁切，不属前景主体），访问角标仍贴图右上，名称行不被挤成两行、主图不缩小 */
+.center-scroll.four .loc-card.neighbor .oc-badge { position: absolute; top: 12px; right: 12px; }
