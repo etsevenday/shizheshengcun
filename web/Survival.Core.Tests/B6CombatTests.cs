@@ -99,6 +99,9 @@ public class B6CombatTests : BattleTestBase
         var swap = E.BattleOptions(s).Single(o => o.Action == "swap");
         Assert.That((swap.Available, swap.Ap, swap.Energy), Is.EqualTo((false, 1, 0.1)));
         Assert.That(swap.Reason, Does.StartWith("只有你一人在场"));
+        var outside = Fight(30, "shambler");
+        outside.Battle = null;
+        Assert.That(E.CompatibleCommands(outside).Single(o => o.Action == "swap").Reason, Does.StartWith("只有你一人在场"), "系统说明指令一览同源写原因");
 
         // 我方两人时（队友参战在 B8；这里只往站位表里放一个占位，检验规则本身）：步枪不能在1号位用，相邻换位 1AP、E0.1 后可用
         b.Allies = new List<string> { GameState.PlayerId, "ally" };

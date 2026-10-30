@@ -957,6 +957,7 @@ namespace Survival.Core.Engine
                 string? why = null;
                 if (id == "reload" && wi != null)
                     why = wi.LoadedAmmo >= w.MagazineCapacity ? "弹仓已满" : CarriedCount(s, w.AmmoId!) <= 0 ? $"随身没有{ItemName(w.AmmoId!)}" : null;
+                if (id == "swap") why = "只有你一人在场，没有相邻的队友可换位（队友参战在后续版本）";
                 list.Add(new BattleCommandOption { Action = id, Label = ActionName(id), Group = "general", Ap = a.ApCost, Available = why == null, Reason = why });
             }
             foreach (var id in new[] { "bandage", "use_antibiotics", "use_antiviral_cure" })
