@@ -19,7 +19,7 @@ public class V11ModelTests : TestBase
         Assert.That(note, Is.EqualTo("轮到你时可使用行动点（AP）。先选技能，再把鼠标移到亮起的目标上看右侧预测，点击目标就会执行。自用或无目标指令按旁边的明确按钮确认；用完行动点或点‘结束行动’后继续战斗。"),
             "N01 §3.1 首战操作附注原文");
         Assert.That(note, Does.Not.Contain("执行”"), "不再要求另点“执行”");
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("9"));
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("10"), "B4 装备品质与词条");
     }
 
     [Test]

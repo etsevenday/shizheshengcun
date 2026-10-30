@@ -432,39 +432,21 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 生成物品到指定位置。工具与武器逐件生成：最大耐久按区间以 0.1 精度抽一次（v0.6 §05），新制品当前=最大，
-        /// scavenged（拾荒箱子产出）再乘 0.6—1.0 成色；易腐品按生成时刻记录 expiresAt。返回新生成的实例。
+        /// scavenged（拾荒箱子产出）再乘 0.6—1.0 成色；易腐品按生成时刻记录 expiresAt。
+        /// 装备另按来源 origin 抽品质与附加词条（A05 §4，B4 H4）：scavenged 且未指定来源时按 equipment.scavengedResourceOrigin；
+        /// 没写概率的来源（开局、开发箱、掉落、剧情等）为白色。返回新生成的实例。
         /// </summary>
-        public List<ItemInstance> CreateItems(GameState s, string itemId, int count, string owner, bool scavenged = false, ItemSource? source = null)
+        public List<ItemInstance> CreateItems(GameState s, string itemId, int count, string owner, bool scavenged = false, ItemSource? source = null, string? origin = null)
         {
             var made = new List<ItemInstance>();
             if (count <= 0) return made;
             var cfg = _items[itemId];
+            if (scavenged && origin == null && Config.Equipment.ScavengedResourceOrigin != "") origin = Config.Equipment.ScavengedResourceOrigin;
             // 设施与锅里的食材每份各占一位，逐份生成，不合堆
             var single = !cfg.IsStackable || ItemInstance.TryFacilityId(owner, out _) || (owner.StartsWith(ItemInstance.ContainerPrefix) && !cfg.UnitVolumeMl.HasValue);
             if (single)
             {
-                for (var k = 0; k < count; k++)
-                {
-                    var inst = new ItemInstance
-                    {
-                        InstanceId = s.NextInstanceId++,
-                        ItemId = itemId,
-                        Count = 1,
-                        Owner = owner,
-                        ExpiresAt = cfg.ShelfLifeMinutes.HasValue ? s.GameMinute + cfg.ShelfLifeMinutes.Value : (int?)null,
-                        PlacedOrder = cfg.IsStackable ? s.NextProcessSeq++ : (int?)null,
-                        Source = source?.Clone(),
-                    };
-                    if (cfg.HasDurability)
-                    {
-                        inst.MaxDurability = RollMaxDurability(s, cfg);
-                        inst.Durability = scavenged ? inst.MaxDurability * RollCondition(s) : inst.MaxDurability;
-                    }
-                    var w = Weapon(itemId);
-                    if (w != null && w.UsesMagazine) inst.LoadedAmmoId = w.AmmoId;
-                    s.Items.Add(inst);
-                    made.Add(inst);
-                }
+                for (var k = 0; k < count; k++) made.Add(NewSingle(s, itemId, owner, scavenged, source, origin, null));
                 return made;
             }
             var stack = new ItemInstance
@@ -480,6 +462,34 @@ namespace Survival.Core.Engine
             made.Add(stack);
             Normalize(s, owner);
             return made;
+        }
+
+        /// <summary>逐件生成一个实例：随机最大耐久 → 拾荒成色 → 品质与词条（durable 调整最大耐久）。抽随机数顺序固定，读档不重抽。</summary>
+        private ItemInstance NewSingle(GameState s, string itemId, string owner, bool scavenged, ItemSource? source, string? origin, string? forcedQuality)
+        {
+            var cfg = _items[itemId];
+            var inst = new ItemInstance
+            {
+                InstanceId = s.NextInstanceId++,
+                ItemId = itemId,
+                Count = 1,
+                Owner = owner,
+                ExpiresAt = cfg.ShelfLifeMinutes.HasValue ? s.GameMinute + cfg.ShelfLifeMinutes.Value : (int?)null,
+                PlacedOrder = cfg.IsStackable ? s.NextProcessSeq++ : (int?)null,
+                Source = source?.Clone(),
+            };
+            double condition = 1;
+            if (cfg.HasDurability)
+            {
+                inst.MaxDurability = RollMaxDurability(s, cfg);
+                if (scavenged) condition = RollCondition(s);
+                inst.Durability = scavenged ? inst.MaxDurability * condition : inst.MaxDurability;
+            }
+            ApplyQuality(s, inst, cfg, origin, condition, forcedQuality);
+            var w = Weapon(itemId);
+            if (w != null && w.UsesMagazine) inst.LoadedAmmoId = w.AmmoId;
+            s.Items.Add(inst);
+            return inst;
         }
 
         /// <summary>

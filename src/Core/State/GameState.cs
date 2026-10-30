@@ -26,9 +26,10 @@ namespace Survival.Core.State
         /// "6" 起金属锅无耐久、活性物质来源、人物词条、剧情与饱饱状态（系统策划总册 v1.0 答复）；
         /// "7" 起对话记录（按次分组、逐句快照、游标、待显示队列）与等待烹饪行动状态（策划提交 9fdb44f：S01 §8–9、S11 §9）；
         /// "8" 起设施加工进程带烹饪受热保护标记（策划提交 5493951：Q16、S11 §10），随身最多五张根物品卡（S06 §8）；
-        /// "9" 起角色个人状态按 actorId 存在 Actors（主角 "p0"，R08 §2/§5、开发计划 v0.9 B3），装备改为穿戴 owner（七槽，S06 全系统更新目标 §1）。
+        /// "9" 起角色个人状态按 actorId 存在 Actors（主角 "p0"，R08 §2/§5、开发计划 v0.9 B3），装备改为穿戴 owner（七槽，S06 全系统更新目标 §1）；
+        /// "10" 起装备实例带品质与附加词条（A05 §4、R02 §2/§3，开发计划 v0.9 B4）。
         /// </summary>
-        public const string CurrentSchema = "9";
+        public const string CurrentSchema = "10";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -364,6 +365,12 @@ namespace Survival.Core.State
         public int? PlacedOrder { get; set; }
         /// <summary>来源（R07 活性物质：来源世界敌人、战斗、发放事件、是否教学奖励）；不同来源不合堆。普通物品为 null。</summary>
         public ItemSource? Source { get; set; }
+        /// <summary>
+        /// 装备品质（schema 10，A05 §4）：white/green/blue；非装备为 null，旧档装备迁移为 white。生成时抽一次，维修、穿脱、读档都不重抽。
+        /// </summary>
+        public string? Quality { get; set; }
+        /// <summary>附加词条 ID（白 0 条、绿 1 条、蓝 2 条；生成时按兼容池等权抽取、同互斥组最多 1 条）；没有词条为 null。</summary>
+        public List<string>? Affixes { get; set; }
 
         public bool IsCarried => Owner == Carried;
         /// <summary>穿戴中（任一角色的七槽之一）：不占五张物资卡，重量计入该角色。</summary>
@@ -417,6 +424,7 @@ namespace Survival.Core.State
         {
             var c = (ItemInstance)MemberwiseClone();
             c.Source = Source?.Clone();
+            c.Affixes = Affixes == null ? null : new List<string>(Affixes);
             return c;
         }
     }

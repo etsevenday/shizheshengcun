@@ -410,8 +410,9 @@ namespace Survival.Core.Engine
                     var made = new List<string>();
                     foreach (var kv in rc.Outputs)
                     {
-                        CreateItems(s, kv.Key, kv.Value * batch, here);
-                        made.Add($"{ItemName(kv.Key)}+{kv.Value * batch}");
+                        // 制造产物按“普通制造”来源定品质（A05 §4：普通制造默认绿色1条，B4 H4）
+                        var crafted = CreateItems(s, kv.Key, kv.Value * batch, here, false, null, Config.Equipment.CraftOrigin == "" ? null : Config.Equipment.CraftOrigin);
+                        made.Add($"{ItemName(kv.Key)}+{kv.Value * batch}{QualitySuffix(crafted)}");
                     }
                     if (rc.IsRepair) made.Add(CompleteRepair(s, a));
                     // 有效制造按实际提交的配方次数发经验（v0.6 §03）
