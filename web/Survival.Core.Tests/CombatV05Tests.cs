@@ -242,11 +242,12 @@ public class CombatV05Tests : BattleTestBase
         SetStats(s, 20, 80, 80, 3.5, 15, 60);
         s.Battle!.Panic = 65;
         var t = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
-        var a = (24 + 3 * 1) * 0.85 * 0.85 * 0.85;
+        // B6 按新规则改写（R03 §5）：恐慌≥60 命中能力×0.9、≥90 改×0.8；低体力/低清醒×0.85 保持（开发假设 B6-7）
+        var a = (24 + 3 * 1) * 0.85 * 0.85 * 0.9;
         Assert.That(t.AccuracyRating, Is.EqualTo(a).Within(1e-9), "按支付成本后的体力判低体力");
         Assert.That(t.HitChance, Is.EqualTo(a / (a + 25)).Within(1e-12));
         s.Battle.Panic = 95;
-        Assert.That(E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single().AccuracyRating, Is.EqualTo((24 + 3) * 0.85 * 0.85 * 0.70).Within(1e-9), "恐慌≥90改×0.70（择一）");
+        Assert.That(E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single().AccuracyRating, Is.EqualTo((24 + 3) * 0.85 * 0.85 * 0.8).Within(1e-9), "恐慌≥90改×0.8（择一）");
         SetStats(s, 20, 80, 80, 18, 90, 60);
         s.Battle.Panic = 0;
         // B5（A06 §1）：熟练度最高10级，简易斧改练“斧”；“无95%硬夹紧”改按公式核对
@@ -271,7 +272,7 @@ public class CombatV05Tests : BattleTestBase
         { var r = new Rng { State = s.Rng.State }; r.NextDouble(); r.NextDouble(); dmgRoll = r.NextDouble(); }
         Cmd(s, "basic_attack", 1);
         var raw = 1.6 + dmgRoll * (2.4 - 1.6);
-        var expect = (raw * 1.035 - 0.3) * 0.5;
+        var expect = (raw * 1.035 - (0.3 - 0.1)) * 0.5;   // B6：简易斧“劈砍”忽略护甲0.1（A05 §1）作为穿透
         Assert.That(hp0 - t.Hp, Is.EqualTo(expect).Within(1e-9));
         Assert.That(t.Guard, Is.False, "防御只挡一次");
         // 玩家出血：激活开始扣0.4，不吃防御

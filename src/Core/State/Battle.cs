@@ -76,6 +76,8 @@ namespace Survival.Core.State
         /// <summary>失衡：下一次攻击命中能力×0.9，最迟到施加后的下一轮末清除。</summary>
         public bool Stagger { get; set; }
         public int StaggerRound { get; set; }
+        /// <summary>稳态（R03 §4）：控制成功后至此轮末，控制抗性临时+30个百分点；0 为没有。</summary>
+        public int SteadyUntilRound { get; set; }
         /// <summary>减速：本轮被施加 → 下一轮先手速度−2 → 下一轮末清除；不叠层。</summary>
         public bool SlowPending { get; set; }
         public bool SlowActive { get; set; }
@@ -183,6 +185,13 @@ namespace Survival.Core.State
         public int ActivationAp { get; set; }
         public bool PlayerStagger { get; set; }
         public int PlayerStaggerRound { get; set; }
+        /// <summary>主角的稳态截止轮（同 BattleEnemy.SteadyUntilRound）。</summary>
+        public int PlayerSteadyUntilRound { get; set; }
+        /// <summary>
+        /// 保护关系（R03 §4）：保护者 actorId → 被保护者 actorId；一名保护者只接一名目标，不允许相互/循环保护。
+        /// 保护指令属于 B7 技能、队友参战在 B8；本批只有规则校验（ProtectBlocked），场上不会出现保护。
+        /// </summary>
+        public Dictionary<string, string> Protections { get; set; } = new Dictionary<string, string>();
         public bool PlayerSlowPending { get; set; }
         public bool PlayerSlowActive { get; set; }
 
@@ -217,6 +226,7 @@ namespace Survival.Core.State
             c.Initiative = new List<double>(Initiative);
             c.Enemies = Enemies.Select(e => e.Clone()).ToList();
             c.Allies = new List<string>(Allies);
+            c.Protections = new Dictionary<string, string>(Protections);
             c.Loot = Loot.Select(l => l.Clone()).ToList();
             c.Log = new List<string>(Log);
             return c;

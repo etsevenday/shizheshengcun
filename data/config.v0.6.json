@@ -4342,6 +4342,7 @@
     "basePlayerSpeed": 4,
     "basePlayerDodge": 36,
     "basePlayerArmor": 0,
+    "basePlayerControlResist": 0,
     "healthUsesExistingSurvivalHealth": true
   },
   "skills": [
@@ -4565,6 +4566,7 @@
       "ownPositions": "12",
       "targetPositions": "1",
       "traitText": "劈砍：该武器直接攻击忽略护甲0.1",
+      "armorIgnore": 0.1,
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
@@ -4710,6 +4712,7 @@
       "ownPositions": "234",
       "targetPositions": "1234",
       "traitText": "劲弩：忽略护甲0.15",
+      "armorIgnore": 0.15,
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
@@ -4797,6 +4800,7 @@
       "ownPositions": "34",
       "targetPositions": "1234",
       "traitText": "穿甲：忽略护甲0.2",
+      "armorIgnore": 0.2,
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
@@ -5854,7 +5858,14 @@
     "pursuitScale": 50,
     "pursuitThreshold": 100,
     "pursuitAp": 2,
-    "shieldGuardFactor": 0.4
+    "shieldGuardFactor": 0.4,
+    "minAccuracy": 1,
+    "minEvasion": 1,
+    "damageBuffCap": 1.5,
+    "controlBase": 0.75,
+    "controlMin": 0.1,
+    "controlMax": 0.95,
+    "steadyResistBonus": 30
   },
   "panic": {
     "range": [
@@ -5866,12 +5877,12 @@
     "penalties": [
       {
         "minimum": 60,
-        "accuracyRatingFactor": 0.85,
+        "accuracyRatingFactor": 0.9,
         "retreatFactor": 0.9
       },
       {
         "minimum": 90,
-        "accuracyRatingFactor": 0.7,
+        "accuracyRatingFactor": 0.8,
         "retreatFactor": 0.8
       }
     ],

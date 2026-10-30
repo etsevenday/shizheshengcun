@@ -322,6 +322,171 @@ public class B6CombatTests : BattleTestBase
         Assert.That((s.Stats.Energy, s.Battle.PlayerAp), Is.EqualTo((e0, ap - 1)), "1AP、E0");
     }
 
+    // ───────────── M131：命中、伤害、控制、状态（R23；验收 CB05、CB06） ─────────────
+
+    [Test]
+    public void R23_HitCritDamage_GearAccuracyCritPenetrationBuffCap()
+    {
+        var s = Fight(16, "riot");    // 护甲0.7、闪避20
+        Ready(s);
+        var axe = Wear(s, "hatchet", EquipSlots.Weapon1, "blue", "accurate", "piercing");   // 命中+4、忽略护甲+0.1（攻击类，只算本武器）
+        Wear(s, "steady_ring", EquipSlots.CombatAccessory);                                 // 命中+3
+        var fx = E.EquipmentEffects(s, GameState.PlayerId, 1);
+        Assert.That(fx.Accuracy, Is.EqualTo(7), "校准+4（本页武器）+ 稳手指环+3");
+        var t = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
+        var acc = 24 + 3 * 1 + fx.Accuracy;
+        Assert.That(t.AccuracyRating, Is.EqualTo(acc).Within(1e-9), "A = 武器A + 3L + 装备命中");
+        Assert.That(t.HitChance, Is.EqualTo(acc / (acc + 20)).Within(1e-12), "P = A/(A+D)");
+        Assert.That(t.CritRating, Is.EqualTo(5 + 0.3 + fx.Crit).Within(1e-9), "C = 武器C + 0.3L + 装备暴击");
+        Assert.That(t.CritChance, Is.EqualTo(t.CritRating / (t.CritRating + 100)).Within(1e-12));
+        Assert.That(t.Penetration, Is.EqualTo(0.1 + 0.1).Within(1e-9), "劈砍0.1 + 破甲词条0.1");
+        Assert.That(t.DamageMin, Is.EqualTo(1.6 * 1.035 - (0.7 - 0.2)).Within(1e-9), "扣 max(0,护甲−穿透)");
+        // 伤害增益：锐利+0.06；不同来源乘算总上限×1.5
+        axe.Affixes = new List<string> { "keen" };
+        t = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
+        Assert.That((t.DamageBuff, t.Multiplier), Is.EqualTo((1.06, 1.035 * 1.06)).Within(1e-9));
+        Assert.That(t.DamageMin, Is.EqualTo(1.6 * 1.035 * 1.06 - (0.7 - 0.1)).Within(1e-9));
+        Assert.That(Cfg.CombatMath.DamageBuffCap, Is.EqualTo(1.5));
+        // 实际结算与预览同源
+        var hp0 = Enemy(s, 1).Hp;
+        Force(s, Below(0.5), AtLeast(0.2), Below(1e-3));
+        Cmd(s, "basic_attack", 1);
+        Assert.That(hp0 - Enemy(s, 1).Hp, Is.EqualTo(t.DamageMin).Within(2e-3));
+    }
+
+    [Test]
+    public void R23_EnemyHit_PlayerDodge36_GearArmor()
+    {
+        var s = Fight(17, "worker");
+        Wear(s, "leather_armor", EquipSlots.Armor);   // 护甲0.2
+        Assert.That(E.PlayerArmor(s), Is.EqualTo(0.2).Within(1e-9));
+        var e = s.Battle!.Alive.First();
+        var hp = s.Stats.Health;
+        Force(s, Below(0.01), Below(1e-3));
+        typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
+        Assert.That(hp - s.Stats.Health, Is.EqualTo(1.0 - 0.2).Within(1e-3), "敌人伤害扣主角装备护甲");
+        Assert.That(GameEngine.HitChance(18, Cfg.Scope.BasePlayerDodge), Is.EqualTo(18.0 / 54).Within(1e-12), "主角闪避沿用36（开发假设 B6-2）");
+    }
+
+    [Test]
+    public void R23_ControlChance_ClampAndSteady()
+    {
+        Assert.That(E.ControlChance(0, 0), Is.EqualTo(0.75).Within(1e-12));
+        Assert.That(E.ControlChance(50, 0), Is.EqualTo(0.95).Within(1e-12), "上限0.95");
+        Assert.That(E.ControlChance(0, 90), Is.EqualTo(0.10).Within(1e-12), "下限0.10");
+        Assert.That(E.ControlChance(0, 30), Is.EqualTo(0.45).Within(1e-12), "稳态+30个百分点");
+
+        // 推挡：命中后再判控制；成功给稳态到下一大回合末，同轮再成功不加第二层
+        var s = Fight(18, "worker");
+        Ready(s);
+        s.Skills["unarmed"].Level = 1;
+        var t = Enemy(s, 1);
+        Force(s, Below(0.001), AtLeast(0.999), Any(), Below(0.75));
+        Assert.That(Cmd(s, "push", 1).Ok, Is.True);
+        Assert.That((t.Stagger, t.SteadyUntilRound), Is.EqualTo((true, s.Battle!.Round + 1)));
+        Assert.That(s.Battle.Log.Last(), Does.Contain("控制75%"));
+        t.Stagger = false;
+        Force(s, Below(0.001), AtLeast(0.999), Any(), x => x >= 0.45 && x < 0.75);
+        Assert.That(Cmd(s, "push", 1).Ok, Is.True);
+        Assert.That(t.Stagger, Is.False, "稳态中只有45%");
+        Assert.That(s.Battle.Log.Last(), Does.Contain("稳住了").And.Contain("控制45%"));
+        Assert.That(t.SteadyUntilRound, Is.EqualTo(s.Battle.Round + 1), "不加第二层、不延长");
+    }
+
+    [Test]
+    public void R23_EnemySlowOnHit_IsControl_PlayerResist0()
+    {
+        var s = Fight(19, "crawler");
+        var e = s.Battle!.Alive.First();
+        Force(s, Below(0.01), Any(), AtLeast(0.75));
+        typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
+        Assert.That(s.Battle.PlayerSlowPending, Is.False, "控制判定失败（75%）不减速");
+        Force(s, Below(0.01), Any(), Below(0.75));
+        typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
+        Assert.That((s.Battle.PlayerSlowPending, s.Battle.PlayerSteadyUntilRound), Is.EqualTo((true, s.Battle.Round + 1)));
+    }
+
+    [Test]
+    public void R23_Bleed_AtRoundStart_Once_PursuitNoExtra()
+    {
+        var s = Fight(20, "crawler");   // 4 对 1：每轮都有追击
+        var b = s.Battle!;
+        s.Body.BleedTriggers = 3;
+        s.Body.BleedDamage = 0.4;
+        var h0 = s.Stats.Health;
+        Ready(s);
+        Assert.That(s.Body.BleedTriggers, Is.EqualTo(3), "激活开始不再扣出血");
+        Cmd(s, "end_turn");
+        for (var i = 0; i < 20 && b.Round == 1; i++)
+        {
+            if (b.Cursor < b.Queue.Count && b.Queue[b.Cursor] > 0) { b.Cursor++; continue; }   // 跳过敌方行动
+            Step(s);
+        }
+        Assert.That(b.Round, Is.EqualTo(2));
+        Assert.That(s.Body.BleedTriggers, Is.EqualTo(2), "一个大回合只扣一次（追击不多扣）");
+        Assert.That(h0 - s.Stats.Health, Is.EqualTo(0.4).Within(1e-9));
+        Assert.That(b.Log.Any(x => x.StartsWith("第2轮") && x.Contains("你流血")), Is.True, "在第2轮开始扣");
+    }
+
+    [Test]
+    public void R23_EnemyBleedKillsLastAtRoundStart_VictoryWithoutExtraTick()
+    {
+        var s = Fight(21, "feral_dog");
+        var b = s.Battle!;
+        var dog = Enemy(s, 1);
+        dog.Hp = 0.3;
+        dog.BleedTriggers = 2;
+        dog.BleedDamage = 0.4;
+        Ready(s);
+        Cmd(s, "end_turn");
+        var minute = s.GameMinute;
+        for (var i = 0; i < 20 && s.Battle != null; i++)
+        {
+            if (b.Cursor < b.Queue.Count && b.Queue[b.Cursor] > 0) { b.Cursor++; continue; }
+            Step(s);
+        }
+        Assert.That(s.Battle, Is.Null, "第2轮开始流血倒下即胜利");
+        Assert.That(s.GameMinute, Is.EqualTo(minute + 5), "只有第1轮那一次5分钟，不为没有行动的第2轮再推进");
+        Assert.That(b.Ticks, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void CB05_Protection_NoSelfNoMutualNoLoop_OneTargetEach()
+    {
+        var links = new Dictionary<string, string>();
+        Assert.That(GameEngine.ProtectBlocked(links, "a", "a"), Is.EqualTo("不能保护自己"));
+        Assert.That(GameEngine.ProtectBlocked(links, "a", "b"), Is.Null);
+        links["a"] = "b";
+        Assert.That(GameEngine.ProtectBlocked(links, "b", "a"), Is.EqualTo("不能相互或循环保护"), "不允许相互保护");
+        Assert.That(GameEngine.ProtectBlocked(links, "a", "c"), Is.EqualTo("每名保护者只能保护一名目标"));
+        Assert.That(GameEngine.ProtectBlocked(links, "c", "b"), Is.EqualTo("目标已有保护者"));
+        Assert.That(GameEngine.ProtectBlocked(links, "b", "c"), Is.Null, "链条不成环可以");
+        links["b"] = "c";
+        Assert.That(GameEngine.ProtectBlocked(links, "c", "a"), Is.EqualTo("不能相互或循环保护"), "a→b→c→a 成环");
+        Assert.That(new BattleState().Protections, Is.Empty, "本批战斗里没有保护（保护技能在 B7、队友在 B8）");
+    }
+
+    [Test]
+    public void CB06_TwoWeapons_CostAndAffixesBelongToOwnPage()
+    {
+        var s = Fight(22, "shambler");
+        var knife = Wear(s, "stone_knife", EquipSlots.Weapon1, "green", "balanced");   // 平衡：本武器 E×0.92
+        Wear(s, "wooden_spear", EquipSlots.Weapon2);
+        Ready(s);
+        var basic = Cfg.CombatActions.Single(a => a.Id == "basic_attack");
+        Assert.That(E.AttackEnergy(s, basic, Cfg.Weapons.Single(w => w.Id == "stone_knife"), 1), Is.EqualTo(E.SkillEnergyCost(0.4, 1) * 0.92).Within(1e-9));
+        Assert.That(E.AttackEnergy(s, basic, Cfg.Weapons.Single(w => w.Id == "wooden_spear"), 2), Is.EqualTo(E.SkillEnergyCost(0.5, 1)).Within(1e-9), "词条不借给另一把");
+        var e0 = s.Stats.Energy;
+        E.SelectWeaponPage(s, 2);
+        Force(s, AtLeast(0.999));
+        Cmd(s, "basic_attack", 1);
+        Assert.That(e0 - s.Stats.Energy, Is.EqualTo(E.SkillEnergyCost(0.5, 1)).Within(1e-9), "切到矛页攻击付矛的成本");
+        Assert.That(knife.Durability, Is.EqualTo(knife.Durability), "刀不磨损");
+    }
+
     [Test]
     public void R21_SameSpeed_OrderByLockedRandomThenActorId_NotReshuffled()
     {

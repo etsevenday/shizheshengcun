@@ -315,17 +315,20 @@ namespace Survival.Core.Engine
 
         // ───────────── 界面文字（对象信息栏、人物页装备区；B4 H10） ─────────────
 
-        /// <summary>效果是否已接入现行规则：combat.* 在 B6 前只显示；净水片配方未上线；其余求生效果生效。</summary>
-        public static bool EffectLive(EquipEffectConfig e) => !e.Key.StartsWith("combat.") && e.Key != "work.purificationTablet";
+        /// <summary>
+        /// 效果是否已接入现行规则：B6 起战斗类的速度、护甲、命中、暴击、忽略护甲、伤害乘数、招式体力、噪声在战斗中生效；
+        /// 位移抵抗要等位移类技能（B7）；净水片配方未上线；其余求生效果生效。
+        /// </summary>
+        public static bool EffectLive(EquipEffectConfig e) => e.Key != "combat.displaceResist" && e.Key != "work.purificationTablet";
 
-        /// <summary>“校准：命中能力+4（战斗类，四对四战斗上线后生效）”；求生类词条穿着时写“生效中”，没穿写“穿戴后生效”（M120）。</summary>
+        /// <summary>“校准：命中能力+4（生效中）”；位移抵抗写“位移类技能上线后生效”；没穿写“穿戴后生效”（M120、B6）。</summary>
         public string AffixText(string id, bool worn = true)
         {
             var a = Affix(id);
             if (a == null) return id;
             var live = a.Effects.Count > 0 && a.Effects.All(EffectLive);
             var note = a.Effects.Any(x => x.Key == "durability.max") ? "（生成时已计入最大耐久）"
-                : live ? (worn ? "（生效中）" : "（穿戴后生效）") : "（战斗类，四对四战斗上线后生效，当前只显示）";
+                : live ? (worn ? "（生效中）" : "（穿戴后生效）") : "（位移类技能上线后生效，当前只显示）";
             return $"{a.Name}：{a.EffectText}{note}";
         }
 
@@ -342,8 +345,8 @@ namespace Survival.Core.Engine
             if (Weapon(it.ItemId) is WeaponConfig w)
             {
                 list.Add(("类型", $"{WeaponKinds.Name(w.WeaponKind)}·T{w.Tier}{(w.Speed != 0 ? $" · 速度修正{Fmt.SignedT(w.Speed)}" : " · 速度修正0")}"));
-                if (w.OwnPositions != null) list.Add(("站位", $"使用位{w.OwnPositions} → 目标位{w.TargetPositions}（四对四战斗上线后生效）"));
-                if (w.TraitText != null) list.Add(("固定特性", $"{w.TraitText}（四对四战斗上线后生效）"));
+                if (w.OwnPositions != null) list.Add(("站位", $"使用位{w.OwnPositions} → 目标位{w.TargetPositions}（我方只剩一人时任何武器都按1号位可用）"));
+                if (w.TraitText != null) list.Add(("固定特性", $"{w.TraitText}{(w.ArmorIgnore > 0 ? "（生效中）" : "（相关技能或多人战斗上线后生效）")}"));
                 if (!w.CanAttack) list.Add(("技能", $"{WeaponKinds.Name(w.WeaponKind)}的技能尚未开放：可以穿进武器槽、占{WeaponKinds.Name(w.WeaponKind)}类，但现在不能用它攻击"));
             }
             else if (Gear(it.ItemId) is GearConfig g)
@@ -352,7 +355,7 @@ namespace Survival.Core.Engine
                 var live = g.Effects.Where(EffectLive).ToList();
                 var shown = g.Effects.Count > live.Count || g.Effects.Count == 0;
                 var on = worn ? "生效中" : "穿戴后生效";
-                list.Add(("固定效果", g.EffectText + (live.Count > 0 && !shown ? $"（{on}）" : live.Count > 0 ? $"（求生部分{on}；战斗部分在四对四战斗上线后生效）" : "（四对四战斗上线后生效，当前只显示）")));
+                list.Add(("固定效果", g.EffectText + (live.Count > 0 && !shown ? $"（{on}）" : live.Count > 0 ? $"（部分{on}；其余在相关技能上线后生效）" : "（相关技能上线后生效，当前只显示）")));
             }
             if (it.Durability.HasValue && it.Durability.Value <= 1e-9) list.Add(("状态", "耐久为0：效果暂停（仍占槽、计重），维护后恢复"));
             var sal = SalvageOutput(it);
@@ -377,7 +380,7 @@ namespace Survival.Core.Engine
             if (Math.Abs(fx.EnergyCostFactor - 1) > 1e-12) combat.Add($"招式E×{Fmt.T(fx.EnergyCostFactor)}");
             if (fx.DisplaceResist != 0) combat.Add($"位移抵抗+{Fmt.T(fx.DisplaceResist)}个百分点");
             if (fx.Noise != 0) combat.Add($"噪声{Fmt.SignedT(fx.Noise)}");
-            if (combat.Count > 0) lines.Add($"战斗（本页武器）：{string.Join("，", combat)}——四对四战斗上线后生效，当前只显示");
+            if (combat.Count > 0) lines.Add($"战斗（本页武器）：{string.Join("，", combat)}{(fx.DisplaceResist != 0 ? "——位移抵抗要等位移类技能上线，其余战斗中生效" : "——战斗中生效")}");
             var names = new Dictionary<string, string>
             {
                 ["work.craft"] = "制造/建造工作量", ["work.scavenge"] = "搜集工作量", ["work.move"] = "移动工作量", ["work.route"] = "已发现路线移动工作量",

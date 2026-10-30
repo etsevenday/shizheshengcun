@@ -50,6 +50,8 @@ namespace Survival.Core.Config
         public double BasePlayerSpeed { get; set; }
         public double BasePlayerDodge { get; set; }
         public double BasePlayerArmor { get; set; }
+        /// <summary>我方控制抗性基准（开发假设 B6-2：总册没写，取 0，待确认 Q-L）。</summary>
+        public double BasePlayerControlResist { get; set; }
         public bool HealthUsesExistingSurvivalHealth { get; set; }
     }
 
@@ -191,6 +193,8 @@ namespace Survival.Core.Config
         public double DamageMax { get; set; }
         public double EnergyCost { get; set; }
         public int WeightGrams { get; set; }
+        /// <summary>固定特性里的“忽略护甲”（A05 §1：简易斧0.1、弩0.15、步枪0.2），作为穿透计入扣甲（B6 R23）。</summary>
+        public double ArmorIgnore { get; set; }
         /// <summary>front / all / all_rear_damage_0.75。</summary>
         public string Targets { get; set; } = "front";
         public string? AmmoId { get; set; }
@@ -301,6 +305,8 @@ namespace Survival.Core.Config
         public double FearChance { get; set; }
         /// <summary>惊吓值：受惊时入场恐慌附加（R05 §6.3）。</summary>
         public double FearValue { get; set; }
+        /// <summary>控制抗性（百分点；A09 敌人字段在 B7 接入，本批默认 0）。</summary>
+        public double ControlResist { get; set; }
 
         [JsonIgnore] public bool IsZombie => Family == "zombie";
         [JsonIgnore] public bool NeutralUntilAttacked => Behavior == "neutral_until_attacked";
@@ -337,6 +343,18 @@ namespace Survival.Core.Config
         public double MinSpeed { get; set; } = 1;
         /// <summary>盾类格挡的直接伤害倍率（R03 §3、A05 木盾“盾类格挡减伤60%”）；普通防御为 guardAppliedAfterArmor 的 0.5。</summary>
         public double ShieldGuardFactor { get; set; } = 0.4;
+        // ───── B6 命中、伤害与控制（R03 §4） ─────
+        /// <summary>攻击能力与闪避下限（A=max(1,…)，目标闪避最低1）。</summary>
+        public double MinAccuracy { get; set; } = 1;
+        public double MinEvasion { get; set; } = 1;
+        /// <summary>不同来源伤害增益乘算的总上限（×1.5，不含技能/熟练/暴击）。</summary>
+        public double DamageBuffCap { get; set; } = 1.5;
+        /// <summary>控制判定 clamp(controlBase + 控制能力/100 − 目标控制抗性/100, controlMin, controlMax)。</summary>
+        public double ControlBase { get; set; } = 0.75;
+        public double ControlMin { get; set; } = 0.10;
+        public double ControlMax { get; set; } = 0.95;
+        /// <summary>控制成功后目标“稳态”至下一大回合末：控制抗性临时+30个百分点，同轮重复成功不加第二层。</summary>
+        public double SteadyResistBonus { get; set; } = 30;
         /// <summary>清醒低于此值速度−1（R03 §2“S&lt;20”；命中的低清醒修正仍按 lowWakefulnessInclusive）。</summary>
         public double LowWakefulnessSpeedExclusive { get; set; } = 20;
         /// <summary>追击进度 q=clamp(pursuitScale×(v/vmax−1), 0, pursuitThreshold)；满 pursuitThreshold 得一次 pursuitAp 的追击。</summary>

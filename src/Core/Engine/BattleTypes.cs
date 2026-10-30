@@ -68,6 +68,14 @@ namespace Survival.Core.Engine
         public double CritDamageMin { get; set; }
         public double CritDamageMax { get; set; }
         public double Armor { get; set; }
+        /// <summary>穿透（装备“忽略护甲”词条 + 武器固定特性），扣甲时 max(0, 护甲−穿透)。</summary>
+        public double Penetration { get; set; }
+        /// <summary>伤害增益（装备“直接伤害乘数”合计，乘算总上限×1.5；不含技能/熟练/暴击）。</summary>
+        public double DamageBuff { get; set; } = 1;
+        /// <summary>未暴击时的总乘数：熟练(1+0.035L)×招式×伤害增益（结算与预览同源）。</summary>
+        public double Multiplier { get; set; } = 1;
+        /// <summary>平加攻击力（R07 词条）。</summary>
+        public double Flat { get; set; }
         public bool Guarded { get; set; }
         public bool RearPenalty { get; set; }
         public double Hp { get; set; }

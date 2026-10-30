@@ -201,7 +201,50 @@ namespace Survival.Core.Engine
             return f;
         }
 
-        public static double HitChance(double accuracy, double evasion) => accuracy <= 0 ? 0 : accuracy / (accuracy + evasion);
+        public static double HitChance(double accuracy, double evasion) => accuracy <= 0 ? 0 : accuracy / (accuracy + Math.Max(1, evasion));
+
+        /// <summary>控制判定成功率 clamp(0.75 + 控制能力/100 − 目标控制抗性/100, 0.10, 0.95)（R03 §4）。</summary>
+        public double ControlChance(double controlBonus, double resist)
+        {
+            var m = Config.CombatMath;
+            return Math.Max(m.ControlMin, Math.Min(m.ControlMax, m.ControlBase + controlBonus / 100 - resist / 100));
+        }
+
+        /// <summary>
+        /// 命中后判一次控制（R03 §4：击退/拉扯/减速/打断/失衡）：控制能力默认 0；目标抗性 = 基准 + 稳态+30。成功则目标获稳态至下一大回合末，
+        /// 同轮重复成功不再加第二层。返回是否成功与成功率（写进日志）。
+        /// </summary>
+        private bool RollControl(GameState s, BattleState b, double baseResist, ref int steadyUntil, out double chance)
+        {
+            var steady = steadyUntil >= b.Round;
+            chance = ControlChance(0, baseResist + (steady ? Config.CombatMath.SteadyResistBonus : 0));
+            if (s.Rng.NextDouble() >= chance) return false;
+            if (!steady) steadyUntil = b.Round + 1;
+            return true;
+        }
+
+        /// <summary>
+        /// 保护是否合法（R03 §4“只可一名保护者接一名目标，不允许相互/循环保护”）：不能保护自己；一名保护者只接一名目标；
+        /// 一名目标只有一名保护者；沿保护链从目标走回保护者即成环，拒绝。只读。
+        /// </summary>
+        public static string? ProtectBlocked(IReadOnlyDictionary<string, string> links, string protector, string target)
+        {
+            if (protector == target) return "不能保护自己";
+            if (links.ContainsKey(protector)) return "每名保护者只能保护一名目标";
+            if (links.Values.Contains(target)) return "目标已有保护者";
+            var seen = new HashSet<string>();
+            var cur = target;
+            while (links.TryGetValue(cur, out var next) && seen.Add(cur))
+            {
+                if (next == protector) return "不能相互或循环保护";
+                cur = next;
+            }
+            return null;
+        }
+
+        /// <summary>主角护甲：基础 0 + 装备护甲（总上限 0.9，耐久 0 的防具暂停；A05 §2）。</summary>
+        public double PlayerArmor(GameState s) =>
+            Math.Max(0, Math.Min(Config.Equipment.Limits.ArmorCap, Config.Scope.BasePlayerArmor + EquipmentEffects(s, GameState.PlayerId, 0).Armor));
 
         public double CritChance(double critRating) => critRating <= 0 ? 0 : critRating / (critRating + Config.CombatMath.CritDenominator);
 
@@ -371,6 +414,7 @@ namespace Survival.Core.Engine
         private void BeginRound(GameState s)
         {
             var b = s.Battle!;
+            if (!RoundStartBleed(s)) return;
             TryReinforce(s);
             b.PlayerSlowActive = b.PlayerSlowPending;
             b.PlayerSlowPending = false;
@@ -469,10 +513,40 @@ namespace Survival.Core.Engine
                     if (id == "desperate_punch") continue;
                     var a = Act(id);
                     if (a == null || !CommandCompatible(s, a, w)) continue;
-                    min = Math.Min(min, AttackEnergy(s, a, w));
+                    min = Math.Min(min, AttackEnergy(s, a, w, page));
                 }
             }
             return min == double.MaxValue ? 0 : min;
+        }
+
+        /// <summary>
+        /// 大回合开始的出血（R03 §4）：每个出血者 H−0.4、次数−1（刷新次数不叠强度，丧尸免疫），追击不多扣；先判主角死亡，
+        /// 再判敌人倒下/重伤逃离。出血让最后一个敌人倒下即胜利，这一轮没有任何行动，不另推进世界时间（B6 开发假设 B6-6）。
+        /// 返回 false 表示战斗已结束。
+        /// </summary>
+        private bool RoundStartBleed(GameState s)
+        {
+            var b = s.Battle!;
+            var body = s.Body;
+            if (body.BleedTriggers > 0)
+            {
+                s.Stats.Add(StatId.Health, -body.BleedDamage);
+                body.BleedTriggers--;
+                BattleLog(s, $"你流血，健康−{Fmt.N(body.BleedDamage)}（还剩{body.BleedTriggers}次）。");
+                if (body.BleedTriggers == 0) body.BleedDamage = 0;
+                if (s.Stats.Health <= 0) { BattleDeath(s, "出血"); return false; }
+            }
+            foreach (var e in b.Alive.Where(e => e.BleedTriggers > 0).OrderBy(e => e.Pos).ToList())
+            {
+                e.Hp -= e.BleedDamage;
+                e.BleedTriggers--;
+                BattleLog(s, $"{EnemyName(e)}流血，−{Fmt.N(e.BleedDamage)}。");
+                if (e.Hp <= 1e-9) KillEnemy(s, e);
+                else CheckFlee(s, e);
+            }
+            CompactEnemies(b);
+            if (!b.Alive.Any()) { FinishBattle(s, "victory", false); return false; }
+            return true;
         }
 
         /// <summary>队列第 k 项是不是追击激活。</summary>
@@ -574,14 +648,7 @@ namespace Survival.Core.Engine
                 BattleLog(s, $"你追击：{b.PlayerAp}AP（速度优势带来的额外激活）。");
                 return;
             }
-            if (body.BleedTriggers > 0)
-            {
-                s.Stats.Add(StatId.Health, -body.BleedDamage);
-                body.BleedTriggers--;
-                BattleLog(s, $"你流血，健康−{Fmt.N(body.BleedDamage)}（还剩{body.BleedTriggers}次）。");
-                if (body.BleedTriggers == 0) body.BleedDamage = 0;
-                if (s.Stats.Health <= 0) { BattleDeath(s, "出血"); return; }
-            }
+            // 出血改在大回合开始结算（R03 §4，见 RoundStartBleed）；这里只清旧防御、恢复 AP
             b.PlayerGuard = false;
             b.PlayerAp = NormalActivationAp(s.Player);
             b.ActivationAp = b.PlayerAp;
@@ -674,15 +741,7 @@ namespace Survival.Core.Engine
                 EnemyAttack(s, e, cfg, true);
                 return;
             }
-            // 自己的出血（丧尸免疫，不会有）
-            if (e.BleedTriggers > 0)
-            {
-                e.Hp -= e.BleedDamage;
-                e.BleedTriggers--;
-                BattleLog(s, $"{EnemyName(e)}流血，−{Fmt.N(e.BleedDamage)}。");
-                if (e.Hp <= 1e-9) { KillEnemy(s, e); CheckVictory(s); return; }
-                CheckFlee(s, e);
-            }
+            // 出血改在大回合开始结算（R03 §4，见 RoundStartBleed）
             e.Guard = false;
             // 3、4 号位的近战敌人前压/等待（开发假设 B6-3；敌方站位字段在 B7）
             var outOfReach = e.Pos > EnemyMeleeMaxPos;
@@ -725,7 +784,7 @@ namespace Survival.Core.Engine
             var bite = !pursuit && e.Intent == "bite";
             var charge = !pursuit && e.Intent == "charge";
             var verb = (pursuit ? "追击" : "") + (bite ? "咬击" : charge ? "冲撞" : AttackVerb(cfg));
-            var a = cfg.AttackRating;
+            var a = Math.Max(Config.CombatMath.MinAccuracy, cfg.AttackRating);
             if (e.Stagger) { a *= Config.Statuses.Stagger.NextAttackAccuracyFactor; e.Stagger = false; }
             var p = HitChance(a, Config.Scope.BasePlayerDodge);
             if (s.Rng.NextDouble() >= p)
@@ -735,7 +794,8 @@ namespace Survival.Core.Engine
             }
             var raw = cfg.DamageMin + s.Rng.NextDouble() * (cfg.DamageMax - cfg.DamageMin);
             if (charge) raw *= BoarChargeFactor;
-            var dmg = Math.Max(0, raw - Config.Scope.BasePlayerArmor);
+            // 主角护甲 = 基础0 + 装备护甲（≤0.9）；先按磨损前的护甲算，再磨损防具（B6 R23、A05 §2）
+            var dmg = Math.Max(0, raw - PlayerArmor(s));
             var guarded = false;
             if (b.PlayerGuard && dmg > 0)
             {
@@ -773,10 +833,17 @@ namespace Survival.Core.Engine
             }
             else
             {
-                switch (cfg.Behavior)
+                if (cfg.Behavior is "slow_on_hit" or "stagger_on_hit")
                 {
-                    case "slow_on_hit": b.PlayerSlowPending = true; extra.Add($"你被扯腿，下轮速度−{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}"); break;
-                    case "stagger_on_hit": b.PlayerStagger = true; b.PlayerStaggerRound = b.Round; extra.Add("你失衡了"); break;
+                    // 减速/失衡是控制：命中后再判，我方控制抗性基准 0（开发假设 B6-2），稳态期间+30（R03 §4）
+                    var steady = b.PlayerSteadyUntilRound;
+                    if (RollControl(s, b, Config.Scope.BasePlayerControlResist, ref steady, out var cc))
+                    {
+                        b.PlayerSteadyUntilRound = steady;
+                        if (cfg.Behavior == "slow_on_hit") { b.PlayerSlowPending = true; extra.Add($"你被扯腿，下轮速度−{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}（控制{Fmt.Pct(cc)}）"); }
+                        else { b.PlayerStagger = true; b.PlayerStaggerRound = b.Round; extra.Add($"你失衡了（控制{Fmt.Pct(cc)}）"); }
+                    }
+                    else extra.Add($"你稳住了，没有被{(cfg.Behavior == "slow_on_hit" ? "扯慢" : "扑倒失衡")}（控制{Fmt.Pct(cc)}）");
                 }
                 if (cfg.Behavior.StartsWith("bleed_on_hit_") && s.Rng.NextDouble() * 100 < Formula.Num(cfg.Behavior, 0))
                 {
@@ -907,11 +974,16 @@ namespace Survival.Core.Engine
             return (lv, w.DamageMin * f, w.DamageMax * f, w.AccuracyRating + SkillAccuracyBonus(lv));
         }
 
-        public double AttackEnergy(GameState s, CombatActionConfig a, WeaponConfig w)
+        /// <summary>
+        /// 攻击类指令的实际体力成本：基础/(1+0.025×对应技能L)，再乘该武器的“平衡”类词条（combat.energyCost，只作用本武器技能，R01 §3）；应急拳为 0。
+        /// page 为空时按战斗当前页（战外按开战默认页）找该武器的词条。
+        /// </summary>
+        public double AttackEnergy(GameState s, CombatActionConfig a, WeaponConfig w, int? page = null)
         {
             if (a.Id == "desperate_punch") return 0;
             var baseCost = a.EnergySource == "weapon" ? w.EnergyCost : a.Energy ?? 0;
-            return SkillEnergyCost(baseCost, SkillLevel(s, w.SkillId));
+            var factor = w.IsFists ? 1 : EquipmentEffects(s, GameState.PlayerId, page ?? s.Battle?.ActiveWeaponSlot ?? DefaultWeaponPage(s)).EnergyCostFactor;
+            return SkillEnergyCost(baseCost, SkillLevel(s, w.SkillId)) * factor;
         }
 
         private ItemInstance? CarriedItem(GameState s, string itemId, int? instanceId)
@@ -1034,22 +1106,34 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>某攻击对某目标的命中、暴击与伤害区间（体力按支付本次成本后；不推进随机）。</summary>
+        /// <summary>
+        /// 某攻击对某目标的命中、暴击与伤害区间（R03 §4；体力按支付本次成本后；不推进随机；预览与结算同源）：
+        /// 攻击能力 A=max(1,(武器A+3L+装备命中)×招式×身体)，命中 P=A/(A+max(1,目标闪避))；暴击 C=max(0,武器C+0.3L+装备暴击)，概率 C/(C+100)；
+        /// 直接伤害=max(0, 抽值×(1+0.035L)×招式×暴击×伤害增益(≤1.5) + 平加 − max(0,护甲−穿透))，再乘格挡。
+        /// 应急拳不吃本页武器的攻击类词条。
+        /// </summary>
         private BattleTargetPreview TargetCalc(GameState s, BattleState b, CombatActionConfig a, WeaponConfig w, BattleEnemy t, double energyAfter)
         {
             var cfg = _enemies[t.EnemyId];
+            var m = Config.CombatMath;
             var lv = SkillLevel(s, w.SkillId);
-            var acc = (w.AccuracyRating + SkillAccuracyBonus(lv)) * a.AccuracyRatingFactor * BodyAccuracyFactor(s, b, energyAfter);
-            var crit = w.CritRatingBase + Config.CombatMath.CritAccuracyPerLevel * lv;
+            var gear = EquipmentEffects(s, GameState.PlayerId, a.Id == "desperate_punch" ? 0 : b.ActiveWeaponSlot);
+            var acc = Math.Max(m.MinAccuracy, (w.AccuracyRating + SkillAccuracyBonus(lv) + gear.Accuracy) * a.AccuracyRatingFactor * BodyAccuracyFactor(s, b, energyAfter));
+            var crit = Math.Max(0, w.CritRatingBase + m.CritAccuracyPerLevel * lv + gear.Crit);
             // 四对四按目标位判射程，取消旧“矛隔前排打后排×0.75”（R03 §1 取代 v0.5 §07）
-            var rear = false;
-            var mult = SkillDamageFactor(lv) * a.DamageFactor;
+            var buff = Math.Min(m.DamageBuffCap, 1 + gear.DamageMultiplier);
+            var mult = SkillDamageFactor(lv) * a.DamageFactor * buff;
+            var pen = gear.ArmorIgnore + (a.Id == "desperate_punch" ? 0 : w.ArmorIgnore);
+            var armor = Math.Max(0, Math.Min(Config.Equipment.Limits.ArmorCap, cfg.Armor) - pen);
             var flat = FlatAttackFor(s, a, w);
-            double Dmg(double raw, double critF) => AttackDamage(raw * mult * critF, flat, cfg.Armor, t.Guard, Config.CombatMath.GuardFactor);
-            var cf = Config.CombatMath.CritFactor;
+            double Dmg(double raw, double critF) => AttackDamage(raw * mult * critF, flat, armor, t.Guard, m.GuardFactor);
+            var cf = m.CritFactor;
+            var evasion = Math.Max(m.MinEvasion, cfg.Dodge);
             return new BattleTargetPreview
             {
-                Index = t.Index, Name = cfg.Name, Slot = t.Slot, Hp = t.Hp, Armor = cfg.Armor, Guarded = t.Guard, RearPenalty = rear,
-                AccuracyRating = acc, Evasion = cfg.Dodge, HitChance = HitChance(acc, cfg.Dodge),
+                Index = t.Index, Name = cfg.Name, Slot = t.Slot, Hp = t.Hp, Armor = cfg.Armor, Guarded = t.Guard, RearPenalty = false,
+                Penetration = pen, DamageBuff = buff, Multiplier = mult, Flat = flat,
+                AccuracyRating = acc, Evasion = evasion, HitChance = HitChance(acc, evasion),
                 CritRating = crit, CritChance = CritChance(crit),
                 DamageMin = Dmg(w.DamageMin, 1), DamageMax = Dmg(w.DamageMax, 1), CritDamageMin = Dmg(w.DamageMin, cf), CritDamageMax = Dmg(w.DamageMax, cf),
             };
@@ -1085,7 +1169,7 @@ namespace Survival.Core.Engine
                     if (w.UsesMagazine && wi != null) p.AmmoText = $"弹仓{wi.LoadedAmmo}→{Math.Max(0, wi.LoadedAmmo - Math.Max(1, a.AmmoCost))}/{w.MagazineCapacity}";
                     else if (w.ConsumesLooseAmmo) p.AmmoText = $"随身{ItemName(w.AmmoId!)}{CarriedCount(s, w.AmmoId!)}→{Math.Max(0, CarriedCount(s, w.AmmoId!) - 1)}";
                     if (wi?.Durability != null) p.WearText = $"{w.Name}耐久{Fmt.N(wi.Durability.Value)}→{Fmt.N(Math.Max(0, wi.Durability.Value - Config.Wear.PerExecutedAttackCommand))}（命中与否都扣）";
-                    p.NoiseAfter = Math.Min(Config.Noise.Max, b.Noise + NoiseGain(w));
+                    p.NoiseAfter = Math.Min(Config.Noise.Max, b.Noise + AttackNoise(s, w));
                 }
                 else p.Notes.Add("用拳头勉强一击：不磨损原武器，伤害×0.5，命中能力×0.65");
                 if (c.Action == "cut") p.Notes.Add($"命中后施加出血{Fmt.T(a.Bleed)}×{a.BleedTriggers}（丧尸免疫）");
@@ -1187,6 +1271,10 @@ namespace Survival.Core.Engine
             w.WeaponKind == "firearms" || w.SkillId == "firearms" ? Config.Noise.GunGain
             : w.AmmoId == "bolt" ? Config.Noise.CrossbowGain
             : Config.Noise.BowAndMeleeGain;
+
+        /// <summary>本次攻击的实际噪声增量：武器噪声 + 本页武器“隐声”类词条（combat.noise），不低于 0（B6 R23）。</summary>
+        public double AttackNoise(GameState s, WeaponConfig w) =>
+            Math.Max(0, NoiseGain(w) + (w.IsFists ? 0 : EquipmentEffects(s, GameState.PlayerId, s.Battle?.ActiveWeaponSlot).Noise));
 
         /// <summary>撤退率 sigmoid((己方有效速度−敌方最高有效速度)/3+0.7)×恐慌惩罚×低体力惩罚，结果自然在0—1。</summary>
         public (double chance, double energy, bool lowEnergy) RetreatChance(GameState s, BattleState b, CombatActionConfig? a = null)
@@ -1328,7 +1416,7 @@ namespace Survival.Core.Engine
                 if (w.UsesMagazine && wi != null) { wi.LoadedAmmo -= Math.Max(1, a.AmmoCost); spent.Add($"弹仓{wi.LoadedAmmo}/{w.MagazineCapacity}"); b.ShotsFired++; }
                 else if (w.ConsumesLooseAmmo) { TakeCarried(s, w.AmmoId!, 1); spent.Add($"{ItemName(w.AmmoId!)}−1"); b.ShotsFired++; }
                 if (wi?.Durability != null) spent.Add(Wear(wi, Config.Wear.PerExecutedAttackCommand));
-                var gain = NoiseGain(w);
+                var gain = AttackNoise(s, w);
                 if (gain > 0)
                 {
                     b.Noise = Math.Min(Config.Noise.Max, b.Noise + gain);
@@ -1366,17 +1454,24 @@ namespace Survival.Core.Engine
                 hitTargets.Add(t);
                 var crit = s.Rng.NextDouble() < pv.CritChance;
                 var raw = weapon.DamageMin + s.Rng.NextDouble() * (weapon.DamageMax - weapon.DamageMin);
-                var lv = SkillLevel(s, weapon.SkillId);
-                // 伤害 = max(0, 乘算后伤害 + 平加攻击力 − 护甲)，防御再×0.5（R03 §2、R07 §4：+0.1 在乘算后、扣甲前，不被暴击再放大）
-                var multiplied = raw * SkillDamageFactor(lv) * a.DamageFactor * (crit ? Config.CombatMath.CritFactor : 1);
-                var guarded = t.Guard && Math.Max(0, multiplied + flat - cfg.Armor) > 0;
-                var dmg = AttackDamage(multiplied, flat, cfg.Armor, guarded, Config.CombatMath.GuardFactor);
+                // 伤害 = max(0, 抽值×熟练×招式×伤害增益×暴击 + 平加攻击力 − max(0,护甲−穿透))，格挡再×0.5（R03 §4、R07 §4：+0.1 在乘算后、扣甲前，不被暴击再放大）
+                var multiplied = raw * pv.Multiplier * (crit ? Config.CombatMath.CritFactor : 1);
+                var armor = Math.Max(0, Math.Min(Config.Equipment.Limits.ArmorCap, cfg.Armor) - pv.Penetration);
+                var guarded = t.Guard && Math.Max(0, multiplied + flat - armor) > 0;
+                var dmg = AttackDamage(multiplied, flat, armor, guarded, Config.CombatMath.GuardFactor);
                 if (guarded) t.Guard = false;
                 if (a.Id == "push")
                 {
-                    t.Stagger = true;
-                    t.StaggerRound = b.Round;
-                    parts.Add($"{cfg.Name}被推得失衡");
+                    // 失衡是控制：命中后再判 clamp(0.75+0−抗性/100,0.10,0.95)，目标稳态期间抗性+30（R03 §4）
+                    var steady = t.SteadyUntilRound;
+                    if (RollControl(s, b, cfg.ControlResist, ref steady, out var cc))
+                    {
+                        t.SteadyUntilRound = steady;
+                        t.Stagger = true;
+                        t.StaggerRound = b.Round;
+                        parts.Add($"{cfg.Name}被推得失衡（控制{Fmt.Pct(cc)}）");
+                    }
+                    else parts.Add($"{cfg.Name}稳住了，没有失衡（控制{Fmt.Pct(cc)}）");
                     continue;
                 }
                 if (dmg <= 0)
@@ -1496,10 +1591,10 @@ namespace Survival.Core.Engine
         /// 结束（胜利或撤退成功）：本轮唯一一次世界 tick（中途退出也只推进一次；tick 致死则不提交掉落）；存活敌带 HP 回世界池、清临时状态；
         /// 逃离的狼/鹿迁到合法相邻地或原地隐藏60分钟；胜利一次落地掉落；战后精神−min(5,P/20)，恐慌清除；60分钟随机接敌保护。
         /// </summary>
-        private void FinishBattle(GameState s, string outcome)
+        private void FinishBattle(GameState s, string outcome, bool tick = true)
         {
             var b = s.Battle!;
-            if (!BattleTick(s)) return;
+            if (tick && !BattleTick(s)) return;
             var loc = b.LocationId;
             foreach (var e in b.Enemies)
             {

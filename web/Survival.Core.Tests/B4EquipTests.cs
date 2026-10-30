@@ -582,15 +582,17 @@ public class B4EquipTests : BattleTestBase
         Assert.That(E.Equip(s, P0, shirt.InstanceId, EquipSlots.Top).Ok, Is.True);
         Assert.That(E.EquipDetailLines(s, shirt).Single(x => x.Label == "固定效果").Value, Does.Contain("（生效中）"));
         Assert.That(E.AffixText("craftsman", worn: false), Does.Contain("穿戴后生效"));
+        // B6 按新规则改写：战斗类效果（命中、速度、护甲……）在四对四内核里生效，没穿写“穿戴后生效”；位移抵抗仍只显示
         var ring = E.DebugCreateEquipment(s, "steady_ring", "white", ItemInstance.Carried);
-        Assert.That(E.EquipDetailLines(s, ring).Single(x => x.Label == "固定效果").Value, Does.Contain("当前只显示"));
+        Assert.That(E.EquipDetailLines(s, ring).Single(x => x.Label == "固定效果").Value, Does.Contain("穿戴后生效"));
         Assert.That(E.EquipDetailLines(s, ring).Single(x => x.Label == "拆解").Value, Does.Contain("待策划确认"));
         var shield = E.DebugCreateEquipment(s, "wooden_shield", "white", ItemInstance.Carried);
         Assert.That(E.EquipDetailLines(s, shield).Any(x => x.Label == "技能" && x.Value.Contains("尚未开放")), Is.True);
         Assert.That(E.EquipDetailLines(s, s.Items.First(i => i.ItemId == "lighter")), Is.Empty);
         Assert.That(E.AffixText("durable"), Does.Contain("生成时已计入"));
         Assert.That(E.AffixText("craftsman"), Does.Contain("生效中"));
-        Assert.That(E.AffixText("accurate"), Does.Contain("当前只显示"));
+        Assert.That(E.AffixText("accurate"), Does.Contain("生效中"));
+        Assert.That(E.AffixText("anchored"), Does.Contain("当前只显示"), "位移抵抗等位移类技能（B7）");
     }
 
     [Test]
@@ -600,7 +602,7 @@ public class B4EquipTests : BattleTestBase
         Wear(s, "scout_armor", EquipSlots.Armor);
         Wear(s, "craft_coat", EquipSlots.Top);
         var lines = E.EquipSummaryLines(s);
-        Assert.That(lines[0], Does.Contain("速度+1").And.Contain("护甲0.2").And.Contain("当前只显示"));
+        Assert.That(lines[0], Does.Contain("速度+1").And.Contain("护甲0.2").And.Contain("战斗中生效"), "B6 按新规则改写：战斗类效果生效");
         Assert.That(lines[1], Does.Contain("制造/建造工作量×0.9").And.Contain("生效中"));
         s.Items.Single(i => i.ItemId == "scout_armor").Durability = 0;
         Assert.That(E.EquipSummaryLines(s).Last(), Does.Contain("效果暂停").And.Contain("侦察护具"));

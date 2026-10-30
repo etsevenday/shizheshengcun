@@ -442,6 +442,7 @@ public class ConfigTests : TestBase
         foreach (var a in ((JArray)d["actions"]!).Where(a => (string?)a["id"] == "basic_attack")) ((JObject)a).Remove("ap");
         foreach (var a in ((JArray)d["actions"]!).Where(a => (string?)a["id"] == "breathe")) ((JObject)a).Remove("restoreEnergy");
         foreach (var k in new[] { "initiative", "tieBreak" }) ((JObject)d["combatMath"]!).Remove(k);
+        ((JObject)d["panic"]!).Remove("penalties");   // R03 §5：恐慌≥60×0.9、≥90×0.8
         var designActionIds = ((JArray)d["actions"]!).Select(a => (string)a["id"]!).ToList();
         mapped["combatActions"] = new JArray(designActionIds.Select(id => ((JArray)mapped["combatActions"]!).First(a => (string?)a["id"] == id)));
         mapped["skills"] = new JArray(((JArray)d["skills"]!).Select(x => ((JArray)mapped["skills"]!).First(m => (string?)m["id"] == (string?)x["id"])));
