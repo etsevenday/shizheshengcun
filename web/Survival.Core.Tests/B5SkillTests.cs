@@ -186,4 +186,62 @@ public class B5SkillTests : BattleTestBase
         Assert.That(s.Skills["athletics"].Xp, Is.EqualTo(2), "同向边同日只给1次");
         Assert.That(s.Log.Any(x => x.Text.Contains("到达") && x.Text.Contains("行旅经验+1")), Is.True);
     }
+
+    // ───────────── M123：旧档 10→11（H5；验收 SK03、R01-A05） ─────────────
+
+    /// <summary>做一份 schema 10 的旧档 JSON：只有旧 8 门技能，按给定等级/经验。</summary>
+    private string OldSave(GameState s, Dictionary<string, (int lv, long xp)> skills)
+    {
+        var j = Newtonsoft.Json.Linq.JObject.Parse(Survival.Core.Save.SaveSerializer.Serialize(s));
+        var sk = new Newtonsoft.Json.Linq.JObject();
+        foreach (var id in new[] { "crafting", "medicine", "firearms", "blade", "spear", "unarmed", "archery", "blunt" })
+        {
+            var (lv, xp) = skills.TryGetValue(id, out var v) ? v : (1, 0L);
+            sk[id] = new Newtonsoft.Json.Linq.JObject { ["Level"] = lv, ["Xp"] = xp };
+        }
+        j["Actors"]![GameState.PlayerId]!["Skills"] = sk;
+        ((Newtonsoft.Json.Linq.JObject)j["Actors"]![GameState.PlayerId]!).Remove("DailyCounts");
+        j["SchemaVersion"] = "10";
+        return j.ToString();
+    }
+
+    [Test]
+    public void SK03_R01A05_Migration10To11_BladeCopiedOnce_CappedAt10_Idempotent()
+    {
+        var s = New();
+        var json = OldSave(s, new Dictionary<string, (int, long)> { ["blade"] = (7, 123), ["crafting"] = (13, 40), ["medicine"] = (10, 5) });
+        var m = Survival.Core.Save.SaveSerializer.Deserialize(json, Cfg, out var notes);
+        Assert.That(m.SchemaVersion, Is.EqualTo("11"));
+        var p = m.Player.Skills;
+        Assert.That(p.Keys, Is.EquivalentTo(Cfg.Skills.Select(x => x.Id)), "十五门");
+        Assert.That((p["blade"].Level, p["blade"].Xp), Is.EqualTo((7, 123L)), "刀剑沿用旧刀斧");
+        Assert.That((p["axe"].Level, p["axe"].Xp), Is.EqualTo((7, 123L)), "斧复制旧刀斧");
+        Assert.That((p["crafting"].Level, p["crafting"].Xp, p["crafting"].LegacyLevel, p["crafting"].LegacyXp), Is.EqualTo((10, 0L, (int?)13, (long?)40)), "超过10截到10，原值只作历史");
+        Assert.That((p["medicine"].Level, p["medicine"].Xp), Is.EqualTo((10, 0L)), "10级的余经验清零");
+        foreach (var id in new[] { "shield", "command", "gathering", "scavenging", "cooking", "athletics" })
+            Assert.That((p[id].Level, p[id].Xp), Is.EqualTo((1, 0L)), id);
+        Assert.That(notes.Single(), Does.Contain("刀斧7级（经验123）复制为刀剑与斧").And.Contain("制造13级截到10级"));
+        Assert.That(m.Items.Count, Is.EqualTo(s.Items.Count), "不发物资");
+        // 再存再读不再迁移、不再复制
+        m.Player.Skills["axe"].Level = 8;
+        var again = Survival.Core.Save.SaveSerializer.Deserialize(Survival.Core.Save.SaveSerializer.Serialize(m), Cfg, out var notes2);
+        Assert.That(notes2, Is.Empty);
+        Assert.That(again.Player.Skills["axe"].Level, Is.EqualTo(8), "不再从刀剑复制");
+    }
+
+    [Test]
+    public void SK03_Migration_WorldEnemyCounters_NotReset()
+    {
+        var s = Fight(43, "riot");
+        var w = s.WorldEnemies.Single();
+        w.XpHits["blade"] = 3;
+        s.Battle!.Enemies.Single().XpHits["blade"] = 3;
+        var json = OldSave(s, new Dictionary<string, (int, long)>());
+        var j = Newtonsoft.Json.Linq.JObject.Parse(json);
+        foreach (var we in (Newtonsoft.Json.Linq.JArray)j["WorldEnemies"]!) ((Newtonsoft.Json.Linq.JObject)we["XpHits"]!).Remove("axe");
+        var m = Survival.Core.Save.SaveSerializer.Deserialize(j.ToString(), Cfg, out _);
+        Assert.That(m.WorldEnemies.Single().XpHits["blade"], Is.EqualTo(3));
+        Assert.That(m.WorldEnemies.Single().XpHits["axe"], Is.EqualTo(3), "旧刀斧防刷计数同样算给斧，不重置");
+        Assert.That(m.Battle!.Enemies.Single().XpHits["axe"], Is.EqualTo(3));
+    }
 }

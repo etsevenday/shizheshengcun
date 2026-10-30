@@ -220,7 +220,7 @@ public class B4EquipTests : BattleTestBase
         j["SchemaVersion"] = "9";
         var rng = s.Rng.State;
         var m = Survival.Core.Save.SaveSerializer.Deserialize(j.ToString(), Cfg, out var notes);
-        Assert.That(m.SchemaVersion, Is.EqualTo("10"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "9→10→11（B5 起再升到 11）");
         var k = m.Items.Single(i => i.InstanceId == knife.InstanceId);
         Assert.That((k.Quality, k.Affixes), Is.EqualTo(("white", (List<string>?)null)));
         Assert.That((k.Durability, k.MaxDurability), Is.EqualTo((knife.Durability, knife.MaxDurability)));

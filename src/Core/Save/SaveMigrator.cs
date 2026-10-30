@@ -21,7 +21,7 @@ namespace Survival.Core.Save
     /// <summary>
     /// 存档升级链：0.2-proto-1（设计文档里的 schemaVersion 2）→ 3（交互与地图扩展）→ 4（卡片统一与设施烹饪）→ 5（人物与战斗 v0.6）
     /// → 6（系统策划总册 v1.0 答复：锅无耐久、旧档不补新剧情）→ 7（策划提交 9fdb44f：对话记录与等待烹饪）→ 8（策划提交 5493951：烹饪受热保护）
-    /// → 9（策划提交 f172677 B3：主角个人状态进 Actors.p0、旧单装备引用迁到武器槽 1）→ 10（B4：旧装备记白色、0 词条）。
+    /// → 9（策划提交 f172677 B3：主角个人状态进 Actors.p0、旧单装备引用迁到武器槽 1）→ 10（B4：旧装备记白色、0 词条）→ 11（B5：十五门十级熟练度，旧刀斧复制为刀剑与斧、等级截到 10）。
     /// 只对旧版执行，已是当前版本的档不重复迁移。不补发历史奖励、不自动补水、不凭默认顺序挑锅、H/E 只缩放一次。
     /// </summary>
     public static class SaveMigrator
@@ -34,6 +34,7 @@ namespace Survival.Core.Save
         public const string Schema7 = "7";
         public const string Schema8 = "8";
         public const string Schema9 = "9";
+        public const string Schema10 = "10";
 
         /// <summary>升级到当前版本，返回给玩家看的迁移说明（无变化时为空）。冲突时抛 SaveMigrationConflictException，状态不变。</summary>
         public static List<string> Migrate(GameState s, GameConfig config)
@@ -55,6 +56,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema7) From7To8(s, config, notes);
             if (s.SchemaVersion == Schema8) From8To9(s, config, notes);
             if (s.SchemaVersion == Schema9) From9To10(s, config, notes);
+            if (s.SchemaVersion == Schema10) From10To11(s, config, notes);
             return notes;
         }
 
@@ -505,7 +507,64 @@ namespace Survival.Core.Save
                 notes.Add(note);
                 s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = note + "。" });
             }
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（装备品质与附加词条）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema10}（装备品质与附加词条）。" });
+            s.SchemaVersion = Schema10;
+        }
+
+        // ───────────────────────── 10 → 11 ─────────────────────────
+
+        /// <summary>
+        /// 策划提交 f172677 B5（A06 §4、R01 §5，开发计划 v0.9 B5 H5）：每个角色的熟练度一次性迁到十五门十级——
+        /// 旧 blade（刀斧）的等级与经验复制给 blade（刀剑）与 axe（斧）；所有门类等级截到上限 10，到 10 级的当前经验清零，
+        /// 原等级/经验只记在 LegacyLevel/LegacyXp 作历史（不发物资、不兑换点数）；新增门类 1 级 0 经验。
+        /// 世界敌人与战斗中敌人的 blade 防刷计数同样复制给 axe（不因迁移重置，SK03）。不回补旧行为经验。
+        /// </summary>
+        private static void From10To11(GameState s, GameConfig config, List<string> notes)
+        {
+            var caps = config.Skills.ToDictionary(x => x.Id, x => x.LevelCap ?? config.SkillGrowth.SkillLevelCap ?? int.MaxValue);
+            var parts = new List<string>();
+            foreach (var actor in s.Actors.Values)
+            {
+                if (actor.Skills.TryGetValue("blade", out var blade) && !actor.Skills.ContainsKey("axe"))
+                {
+                    actor.Skills["axe"] = blade.Clone();
+                    if (actor.IsPlayer) parts.Add($"刀斧{blade.Level}级（经验{blade.Xp}）复制为刀剑与斧");
+                }
+                foreach (var kv in actor.Skills)
+                {
+                    if (!caps.TryGetValue(kv.Key, out var cap)) continue;
+                    var sk = kv.Value;
+                    if (sk.Level < cap) continue;
+                    if (sk.Level > cap || sk.Xp > 0)
+                    {
+                        sk.LegacyLevel = sk.Level;
+                        sk.LegacyXp = sk.Xp;
+                        if (actor.IsPlayer) parts.Add($"{config.Skills.First(x => x.Id == kv.Key).Name}{sk.Level}级截到{cap}级（多余经验只作历史记录）");
+                    }
+                    sk.Level = cap;
+                    sk.Xp = 0;
+                }
+                var added = 0;
+                foreach (var sc in config.Skills)
+                {
+                    if (actor.Skills.ContainsKey(sc.Id)) continue;
+                    actor.Skills[sc.Id] = new SkillState { Level = sc.InitialLevel, Xp = 0 };
+                    added++;
+                }
+                if (actor.IsPlayer && added > 0) parts.Add($"新增{added}门熟练度从1级开始");
+            }
+            foreach (var w in s.WorldEnemies)
+                if (w.XpHits.TryGetValue("blade", out var h) && !w.XpHits.ContainsKey("axe")) w.XpHits["axe"] = h;
+            if (s.Battle != null)
+                foreach (var e in s.Battle.Enemies)
+                    if (e.XpHits.TryGetValue("blade", out var h) && !e.XpHits.ContainsKey("axe")) e.XpHits["axe"] = h;
+            if (parts.Count > 0)
+            {
+                var note = "熟练度改为十五门、最高10级：" + string.Join("；", parts);
+                notes.Add(note);
+                s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = note + "。" });
+            }
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（十五门十级熟练度）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 
