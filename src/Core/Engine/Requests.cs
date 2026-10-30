@@ -265,4 +265,20 @@ namespace Survival.Core.Engine
         /// <summary>是否属于不利状态（界面用警示色）。</summary>
         public bool Harmful { get; set; }
     }
+
+    /// <summary>同一位置同一物品的一个真实批次（Q24，GameEngine.BatchesOf）：到期 + 来源 + 预留状态相同的若干堆。</summary>
+    public sealed class ItemBatch
+    {
+        public string Key { get; set; } = "";
+        public string ItemId { get; set; } = "";
+        public string Owner { get; set; } = "";
+        public int? ExpiresAt { get; set; }
+        public string? GrantEventId { get; set; }
+        public bool Reserved { get; set; }
+        public bool Spoiled { get; set; }
+        public int Count { get; set; }
+        public List<ItemInstance> Stacks { get; set; } = new List<ItemInstance>();
+        /// <summary>未预留、未腐败：可食用与转移的合法批次。</summary>
+        public bool Usable => !Reserved && !Spoiled;
+    }
 }

@@ -277,3 +277,45 @@
 /* 结果提示条：落在底栏，最多两行，完整内容在悬停提示 */
 .toast { max-width: min(760px, 70vw); }
 .toast span { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; line-height: 1.3; }
+
+/* ───── Q24 随身同物品叠卡（S06 X4 用户答复）：最早到期一批在最前，其余批次按到期依次压在下面、铺满真实所占卡位；
+   点后层 = 选中这一批（展开选批次），卡下操作窗的食用/转移随即只作用于它。只用于随身行。 ───── */
+.center-scroll.four .section.carried .row-scroll.slots5 > .card-col.stacked {
+  position: relative;
+  --fw: calc((100% - (var(--span, 1) - 1) * 8px) / var(--span, 1));
+}
+.center-scroll.four .section.carried .row-scroll.slots5 > .card-col.stacked > .card.stack-front {
+  position: relative; z-index: calc(var(--layers, 1) + 1); width: var(--fw); box-shadow: 4px 0 8px #000a;
+}
+.center-scroll.four .section.carried .row-scroll.slots5 > .card-col.stacked > .stack-layer {
+  --w: calc((100% - var(--fw)) / var(--layers, 1));
+  position: absolute; top: 5px; bottom: 0; left: calc(var(--fw) - 16px + (var(--i) - 1) * var(--w)); width: calc(var(--w) + 16px);
+  z-index: calc(var(--layers, 1) - var(--i) + 1);
+  display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 4px 4px 4px 20px;
+  color: var(--ink); text-align: left; cursor: pointer;
+  border: 1px solid #6e6041; border-radius: 2px;
+  background: var(--paper-texture), linear-gradient(110deg, #d3c39b, #bba97f); background-size: 100% 100%, auto;
+  box-shadow: inset 0 0 12px #72532650, 3px 0 6px #0008;
+}
+.center-scroll.four .section.carried .row-scroll.slots5 > .card-col.stacked > .stack-layer:hover { filter: brightness(1.06); }
+.center-scroll.four .section.carried .row-scroll.slots5 > .card-col.stacked > .stack-layer.on {
+  border-color: #d4a34f; box-shadow: inset 0 0 0 2px #b98939, 3px 0 6px #000a;
+}
+.center-scroll.four .section.carried .row-scroll.slots5 > .card-col.stacked > .stack-layer.spoiled { filter: grayscale(.8); }
+.center-scroll.four .section.carried .row-scroll.slots5 > .card-col.stacked > .stack-layer.reserved { opacity: .8; }
+.stack-layer .sl-art { flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.stack-layer .sl-art svg, .stack-layer .sl-art img, .stack-layer .sl-art > .ink-sprite { width: 100%; height: 100%; object-fit: contain; }
+.stack-layer .sl-tag {
+  flex: 0 0 auto; align-self: stretch; padding: 1px 5px; font-size: 12px; line-height: 1.3; border-radius: 2px;
+  background: #efe6cbe8; box-shadow: 0 1px 2px #0004; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* 操作窗里的批次条（同一组批次，默认最前合法可用批次） */
+.ca-batches { display: flex; flex-wrap: wrap; gap: 4px; }
+.ca-batch {
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: center; min-height: 40px; min-width: 72px;
+  padding: 2px 8px; border: 1px solid var(--line); border-radius: 3px; background: none; color: inherit; text-align: left;
+}
+.ca-batch b { font-size: 14px; }
+.ca-batch small { font-size: 12px; color: var(--muted); }
+.ca-batch.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.ca-batch.spoiled small { color: #f0c7b9; }

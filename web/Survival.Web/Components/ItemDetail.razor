@@ -14,7 +14,11 @@
     var potLiquid = sel.Kind == SelectionKind.PotLiquid;
     var list = s.Items.Where(i => i.Owner == sel.Owner && i.ItemId == sel.Id && (potLiquid || sel.InstanceId == null || i.InstanceId == sel.InstanceId))
         .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
-    var batches = list.GroupBy(i => i.ExpiresAt).Select(g => new Batch(g.Key, g.Sum(i => i.Count), g.Any(i => i.ReservedBy != null), g.ToList())).ToList();
+    // Q24：同区同物品按真实批次（到期 + 来源 + 预留状态）列出，所选批次与卡下操作窗共用会话里的 SelectedBatchKey，真正作用于食用与转移
+    var group = sel.Kind == SelectionKind.ItemGroup;
+    var batches = group
+        ? e.BatchesOf(s, sel.Owner, sel.Id).Select(b => new Batch(b.Key, b.ExpiresAt, b.Count, b.Reserved, b.Stacks)).ToList()
+        : list.GroupBy(i => i.ExpiresAt).Select(g => new Batch(g.Key?.ToString() ?? "-", g.Key, g.Sum(i => i.Count), g.Any(i => i.ReservedBy != null), g.ToList())).ToList();
     var busy = e.IsBusy(s) || G.Running;
 }
 
@@ -24,7 +28,9 @@
 }
 else
 {
-    var chosen = batches.FirstOrDefault(b => b.ExpiresAt == batchKey && batchPicked) ?? batches.FirstOrDefault(b => !b.Reserved && !Spoiled(b)) ?? batches[0];
+    var groupKey = group ? G.CurrentBatch(sel.Owner, sel.Id)?.Key : null;
+    var chosen = (group ? batches.FirstOrDefault(b => b.Key == groupKey) : batches.FirstOrDefault(b => b.Key == batchKey && batchPicked))
+                 ?? batches.FirstOrDefault(b => !b.Reserved && !Spoiled(b)) ?? batches[0];
     var inst = chosen.Stacks.FirstOrDefault(i => i.ReservedBy == null) ?? chosen.Stacks[0];
     var spoiled = Spoiled(chosen);
     var total = batches.Sum(b => b.Count);
@@ -115,11 +121,11 @@ else
         @if (batches.Count > 1 || cfg.ShelfLifeMinutes.HasValue)
         {
             <div>
-                <div class="tiny muted" style="margin-bottom:5px">批次（默认先用最早到期的有效批次）</div>
+                <div class="tiny muted" style="margin-bottom:5px">@(group ? "批次（默认最早到期的有效批次；点选后食用、转移都用所选这一批）" : "批次（默认先用最早到期的有效批次）")</div>
                 @foreach (var b in batches)
                 {
-                    var key = b.ExpiresAt;
-                    <button class="batch @(b == chosen ? "on" : "")" @onclick="() => PickBatch(key)">
+                    var key = b.Key;
+                    <button class="batch @(b == chosen ? "on" : "")" @onclick="() => PickBatch(key, group)">
                         <span>×@b.Count@(b.Reserved ? " · 预留" : "")</span>
                         @* 试玩修复 M77-B9：受本次烹饪保护的食材不显示普通倒计时，写“受热保护中（原期限N小时）” *@
                         <span class="@(Spoiled(b) ? "danger-text" : "muted")">@(!b.ExpiresAt.HasValue ? "不会腐败" : b.Stacks.Count == 1 && e.IsHeatProtected(s, b.Stacks[0]) ? Ui.FreshOf(e, s, b.Stacks[0]) : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute))</span>
@@ -176,9 +182,9 @@ else
 }
 
 @code {
-    private sealed record Batch(int? ExpiresAt, int Count, bool Reserved, List<ItemInstance> Stacks);
+    private sealed record Batch(string Key, int? ExpiresAt, int Count, bool Reserved, List<ItemInstance> Stacks);
 
-    private int? batchKey;
+    private string? batchKey;
     private bool batchPicked;
     private string lastSelection = "";
 
@@ -193,8 +199,13 @@ else
 
     private bool Spoiled(Batch b) => b.ExpiresAt.HasValue && b.Stacks.All(i => G.E.IsSpoiled(G.S, i));
 
-    private void PickBatch(int? key)
+    private void PickBatch(string key, bool group)
     {
+        if (group)
+        {
+            G.PickBatch(G.Selected.Owner, G.Selected.Id, key);
+            return;
+        }
         batchKey = key;
         batchPicked = true;
     }

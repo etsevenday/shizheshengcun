@@ -588,6 +588,7 @@ public sealed class GameSession
 
     public void Select(Selection sel)
     {
+        if (sel.Key != Selected.Key) SelectedBatchKey = null;
         Selected = sel;
         Pop = null;
         if (sel.Kind != SelectionKind.None) DetailTab = DetailTab.Object;
@@ -595,6 +596,30 @@ public sealed class GameSession
         // 选中卡片后卡下会出现操作条：旧的结果提示收起，不遮挡操作（试玩修复 G5）；内容仍在页脚与行动日志里
         if (sel.Kind != SelectionKind.None) Toast = null;
         Notify();
+    }
+
+    /// <summary>
+    /// 选中物品卡时玩家明确选的真实批次（Q24：可展开选批次，默认指向最前合法可用批次）；null = 默认批次。只在会话内，换选中对象即清空；
+    /// 所选批次不存在了（用完、转走、腐败后被丢弃）也回到默认批次。
+    /// </summary>
+    public string? SelectedBatchKey { get; private set; }
+
+    /// <summary>选中某处某物品的某一批（叠卡后层、操作窗批次条、右栏批次按钮共用）；先选中该物品卡再记批次。</summary>
+    public void PickBatch(string owner, string itemId, string? batchKey)
+    {
+        var sel = new Selection { Kind = SelectionKind.ItemGroup, Id = itemId, Owner = owner };
+        if (sel.Key != Selected.Key) Select(sel);
+        SelectedBatchKey = batchKey;
+        Notify();
+    }
+
+    /// <summary>当前对这处这种物品生效的批次：玩家选过且仍存在的那一批，否则默认批次（最前合法可用）。</summary>
+    public ItemBatch? CurrentBatch(string owner, string itemId, IList<ItemBatch>? batches = null)
+    {
+        batches ??= E.BatchesOf(S, owner, itemId);
+        var picked = Selected.Kind == SelectionKind.ItemGroup && Selected.Owner == owner && Selected.Id == itemId && SelectedBatchKey != null
+            ? batches.FirstOrDefault(b => b.Key == SelectedBatchKey) : null;
+        return picked ?? GameEngine.DefaultBatch(batches);
     }
 
     /// <summary>
@@ -760,13 +785,17 @@ public sealed class GameSession
         return res;
     }
 
-    /// <summary>同一批次（同物品、同到期时间、同位置）可能分成多堆；按堆依次拾取或放下指定数量。</summary>
-    public ActionResult TransferBatch(string owner, string itemId, int? expiresAt, int count, bool toCarried, string? requestId = null)
+    /// <summary>
+    /// 同一批次（同物品、同到期时间、同位置）可能分成多堆；按堆依次拾取或放下指定数量。batchKey 不为空时只取这一真实批次
+    /// （到期 + 来源 + 预留状态，Q24 所选批次作用于转移）。
+    /// </summary>
+    public ActionResult TransferBatch(string owner, string itemId, int? expiresAt, int count, bool toCarried, string? requestId = null, string? batchKey = null)
     {
         if (GameEngine.SeenRequest(S, requestId)) return ActionResult.Success();
         var left = count;
         ActionResult last = ActionResult.Success();
-        var stacks = S.Items.Where(i => i.Owner == owner && i.ItemId == itemId && i.ExpiresAt == expiresAt && i.ReservedBy == null)
+        var stacks = S.Items.Where(i => i.Owner == owner && i.ItemId == itemId && i.ExpiresAt == expiresAt && i.ReservedBy == null
+                                        && (batchKey == null || GameEngine.BatchKeyOf(i) == batchKey))
             .OrderBy(i => i.InstanceId).ToList();
         // 拾取整批先按最终根卡数与重量预演：会出现第六张卡或超重就整次拒绝，一份都不先拿（S06 §8、开发假设 H2）
         if (toCarried && stacks.Count > 0 && E.PickupBlockedText(S, stacks[0], count) is string blocked)

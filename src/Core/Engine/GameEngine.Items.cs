@@ -72,6 +72,45 @@ namespace Survival.Core.Engine
         private static (string, int?, string?) StackKey(ItemInstance i) => (i.ItemId, i.ExpiresAt, i.Source?.GrantEventId);
 
         /// <summary>
+        /// 真实批次键（Q24，S06 X4）：到期 + 来源（发放事件，与合堆键同一字段）+ 预留状态。现有存档字段能区分的只有这三项，
+        /// “鉴定状态”目前没有对应字段（开发假设 B1-H2），不新增存档字段。形如“1500|grant:7|”“-||r”。
+        /// </summary>
+        public static string BatchKeyOf(ItemInstance i) =>
+            $"{(i.ExpiresAt.HasValue ? i.ExpiresAt.Value.ToString() : "-")}|{i.Source?.GrantEventId ?? ""}|{(i.ReservedBy != null ? "r" : "")}";
+
+        /// <summary>
+        /// 某处同一物品的真实批次（Q24）：最早到期在前、无保质在后，同期限按批内最小实例号稳定排序。每批列出全部堆、合计份数、
+        /// 是否预留、是否已腐败；只读，不合并、不改占格（占格仍按 RootCardsOf 的合堆键计）。
+        /// </summary>
+        public List<ItemBatch> BatchesOf(GameState s, string owner, string itemId) =>
+            s.Items.Where(i => i.Owner == owner && i.ItemId == itemId)
+                .GroupBy(BatchKeyOf)
+                .Select(g =>
+                {
+                    var stacks = g.OrderBy(i => i.InstanceId).ToList();
+                    var head = stacks[0];
+                    return new ItemBatch
+                    {
+                        Key = g.Key,
+                        ItemId = itemId,
+                        Owner = owner,
+                        ExpiresAt = head.ExpiresAt,
+                        GrantEventId = head.Source?.GrantEventId,
+                        Reserved = head.ReservedBy != null,
+                        Spoiled = stacks.All(i => IsSpoiled(s, i)),
+                        Count = stacks.Sum(i => i.Count),
+                        Stacks = stacks,
+                    };
+                })
+                .OrderBy(b => b.ExpiresAt ?? int.MaxValue)
+                .ThenBy(b => b.Stacks[0].InstanceId)
+                .ToList();
+
+        /// <summary>默认批次（Q24“默认指向最前合法可用批次”）：最前一个未预留、未腐败的批；都不可用时取最前未预留的，再不行取最前一批。</summary>
+        public static ItemBatch? DefaultBatch(IList<ItemBatch> batches) =>
+            batches.FirstOrDefault(b => b.Usable) ?? batches.FirstOrDefault(b => !b.Reserved) ?? batches.FirstOrDefault();
+
+        /// <summary>
         /// 随身根物品卡数（开发假设 H1）：可堆叠物品按合堆键分批，每批 ceil(数量/堆叠上限) 张；工具/武器/锅每件 1 张（锅连同内容、
         /// 武器连同弹仓都只算 1 张）。制作预留临时拆出的堆仍按所在批次合计，不算新卡。
         /// </summary>

@@ -20,6 +20,22 @@
             <span class="ca-title"><b>@m.Name</b><small>@m.From · ×@m.Available</small></span>
         </div>
 
+        @if (m.Batches != null)
+        {
+            @* Q24：同物品多批叠卡，展开选批次；最早到期在前、无保质在后；所选批次决定下面的食用与转移 *@
+            <div class="ca-batches" role="radiogroup" aria-label="选择批次">
+                @foreach (var b in m.Batches)
+                {
+                    var bk = b.Key;
+                    <button type="button" role="radio" aria-checked="@(bk == m.BatchKey)" class="ca-batch @(bk == m.BatchKey ? "on" : "") @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")"
+                            title="@BatchTitle(b)" @onclick="() => G.PickBatch(m.Owner, m.ItemId, bk)">
+                        <b>×@b.Count</b><small>@BatchFresh(b)@(b.Reserved ? " · 预留" : "")</small>
+                    </button>
+                }
+            </div>
+            <div class="ca-note">已选：×@(m.Batches.First(b => b.Key == m.BatchKey).Count)，@BatchFresh(m.Batches.First(b => b.Key == m.BatchKey))；食用和转移都只用这一批</div>
+        }
+
         @if (m.UseId.HasValue && s.Battle != null)
         {
             @* U728：战斗中卡下自用按钮改走战斗校验与 AP（绷带/抗生素/特效药 2AP），不绕到非战斗 5 分钟流程；食物与饮水战斗中禁用 *@
@@ -156,8 +172,8 @@
                     @if (fireWhy != null) { <div class="ca-note bad">放入火堆：@fireWhy</div> }
                 }
                 @if (invalid) { <div class="ca-note bad">请输入 1 到 @m.Available 之间的数字</div> }
-                else if (m.ToCarried && (m.Max < 1 || tooHeavy)) { <div class="ca-note bad">@(G.PickupLimitText(m.ItemId, m.Max < 1 ? 1 : n, m.Instance) ?? $"最多可取{m.Max}份")</div> }
-                else { <div class="ca-note @(after > e.Config.Carry.SoftGrams ? "warn" : "")">@(verb)后随身@(Ui.Kg(after))公斤@(after > e.Config.Carry.SoftGrams ? $"，超过{e.Config.Carry.SoftGrams / 1000}公斤会减速" : "")@(m.ToCarried ? $" · 随身{e.RootCardsAfter(s, m.Instance ?? s.Items.FirstOrDefault(i => i.Owner == m.Owner && i.ItemId == m.ItemId && i.ExpiresAt == m.ExpiresAt), invalid ? 0 : n, null, 0)}/{e.MaxRootCards}张卡" : "") · 不耗时</div> }
+                else if (m.ToCarried && (m.Max < 1 || tooHeavy)) { <div class="ca-note bad">@(G.PickupLimitText(m.ItemId, m.Max < 1 ? 1 : n, m.Instance ?? m.Head) ?? $"最多可取{m.Max}份")</div> }
+                else { <div class="ca-note @(after > e.Config.Carry.SoftGrams ? "warn" : "")">@(verb)后随身@(Ui.Kg(after))公斤@(after > e.Config.Carry.SoftGrams ? $"，超过{e.Config.Carry.SoftGrams / 1000}公斤会减速" : "")@(m.ToCarried ? $" · 随身{e.RootCardsAfter(s, m.Instance ?? m.Head, invalid ? 0 : n, null, 0)}/{e.MaxRootCards}张卡" : "") · 不耗时</div> }
             }
         }
         else if (m.Mode == Mode.TakeOut)
@@ -232,7 +248,19 @@
         public ItemInstance? PotInstance { get; init; }
         public int? UseId { get; init; }
         public string? Hint { get; init; }
+        /// <summary>所选真实批次键（Q24）；转移只取这一批。</summary>
+        public string? BatchKey { get; init; }
+        /// <summary>所选批次里第一堆未预留的（转移的重量与卡数预演用）。</summary>
+        public ItemInstance? Head { get; init; }
+        /// <summary>随身同物品多批时的批次条（Q24 可展开选批次）；其余为 null。</summary>
+        public List<ItemBatch>? Batches { get; init; }
     }
+
+    private string BatchFresh(ItemBatch b) =>
+        b.Spoiled ? "已腐败" : !b.ExpiresAt.HasValue ? "不会腐败" : Ui.Fresh(b.ExpiresAt.Value - G.S.GameMinute);
+
+    private string BatchTitle(ItemBatch b) =>
+        $"这一批×{b.Count}：{BatchFresh(b)}{(string.IsNullOrEmpty(b.GrantEventId) ? "" : " · 来源单独成批")}{(b.Reserved ? " · 正被当前行动预留" : "")}";
 
     private ElementReference input;
     private string text = "1";
@@ -284,21 +312,20 @@
                 var all = s.Items.Where(i => i.Owner == sel.Owner && i.ItemId == sel.Id).ToList();
                 if (all.Count == 0) return null;
                 var toCarried = sel.Owner != ItemInstance.Carried;
-                var stacks = all.Where(i => i.ReservedBy == null).OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
                 var from = sel.Owner == ItemInstance.Carried ? "随身" : $"{e.LocName(sel.Owner)}地面";
-                // 自用：最早到期、未预留、未腐败的一堆；全都不能用时仍给出那一堆，让按钮显示真实原因（腐败等）
-                var useInst = stacks.FirstOrDefault(i => !e.IsSpoiled(s, i)) ?? stacks.FirstOrDefault() ?? all[0];
-                if (stacks.Count == 0)
-                    return new Model($"grp:{sel.Owner}:{sel.Id}", sel.Id, sel.Id, e.ItemName(sel.Id), from, 0, Mode.Stack)
-                    { ToCarried = toCarried, Owner = sel.Owner, UseId = UseOf(useInst) };
-                var expires = stacks[0].ExpiresAt;
-                var available = stacks.Where(i => i.ExpiresAt == expires).Sum(i => i.Count);
-                var batches = all.Select(i => i.ExpiresAt).Distinct().Count();
+                // Q24：自用与转移都作用于所选真实批次（默认最前合法可用批次）；批次全被预留时仍给出那一批，让按钮写真实原因
+                var batches = e.BatchesOf(s, sel.Owner, sel.Id);
+                var chosen = G.CurrentBatch(sel.Owner, sel.Id, batches)!;
+                var useInst = chosen.Stacks.FirstOrDefault(i => i.ReservedBy == null && !e.IsSpoiled(s, i)) ?? chosen.Stacks[0];
+                var available = chosen.Reserved ? 0 : chosen.Count;
+                var head = chosen.Stacks.FirstOrDefault(i => i.ReservedBy == null);
+                var batchPick = batches.Count > 1 && sel.Owner == ItemInstance.Carried;
                 return new Model($"grp:{sel.Owner}:{sel.Id}", sel.Id, sel.Id, e.ItemName(sel.Id), from, available, available == 1 ? Mode.Single : Mode.Stack)
                 {
-                    ToCarried = toCarried, Owner = sel.Owner, ExpiresAt = expires, UnitGrams = e.Item(sel.Id).WeightGrams,
-                    Max = toCarried ? G.MaxPickup(sel.Id, available) : available, UseId = UseOf(useInst),
-                    Hint = batches > 1 ? $"共{batches}批，转移先取最早到期的一批（{(expires.HasValue ? Ui.Fresh(expires.Value - s.GameMinute) : "不会腐败")}）" : null,
+                    ToCarried = toCarried, Owner = sel.Owner, ExpiresAt = chosen.ExpiresAt, BatchKey = chosen.Key, UnitGrams = e.Item(sel.Id).WeightGrams,
+                    Max = toCarried ? G.MaxPickup(sel.Id, available, head) : available, UseId = UseOf(useInst), Head = head,
+                    Batches = batchPick ? batches : null,
+                    Hint = batches.Count > 1 && !batchPick ? $"共{batches.Count}批，转移先取最早到期的有效批次（{BatchFresh(chosen)}）" : null,
                 };
             }
         }
@@ -312,7 +339,7 @@
     /// <summary>选中的对象或它的可转移数量一变，就把数量与目标重置为默认（数量对转移生效，自用永远是1份）。</summary>
     private void SyncDefault(Model m)
     {
-        var key = $"{m.Key}|{m.ExpiresAt}|{m.Available}";
+        var key = $"{m.Key}|{m.BatchKey}|{m.Available}";
         if (key == lastKey) return;
         var sameObject = lastKey.StartsWith(m.Key + "|");
         lastKey = key;
@@ -350,7 +377,7 @@
         if (G.E.IsBusy(s) || G.Running) return;
         if (n < 1 || n > m.Available || (m.ToCarried && n > m.Max)) return;
         if (m.Instance != null) G.TransferOne(m.Instance.Owner, m.Instance.ItemId, m.Instance.InstanceId);
-        else G.TransferBatch(m.Owner, m.ItemId, m.ExpiresAt, n, m.ToCarried);
+        else G.TransferBatch(m.Owner, m.ItemId, m.ExpiresAt, n, m.ToCarried, batchKey: m.BatchKey);
         // 这一堆全部转走后收起操作条
         if (m.Instance == null && !s.Items.Any(i => i.Owner == m.Owner && i.ItemId == m.ItemId)) G.ClearSelection();
     }

@@ -42,17 +42,41 @@
                 var head = list.FirstOrDefault(i => i.ReservedBy == null && !e.IsSpoiled(s, i)) ?? list[0];
                 var allSpoiled = list.All(i => e.IsSpoiled(s, i));
                 var anyReserved = list.Any(i => i.ReservedBy != null);
-                var batches = list.Select(i => i.ExpiresAt).Distinct().Count();
+                // Q24：随身同物品按真实批次（到期 + 来源 + 预留状态）叠卡；最早到期在最前，无保质在后；占格仍按内核合堆计数
+                var kb = carried ? e.BatchesOf(s, Owner, id) : null;
+                var batches = kb?.Count ?? list.Select(i => i.ExpiresAt).Distinct().Count();
                 var movable = list.Any(i => i.ReservedBy == null);
                 var gSel = sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner;
                 var span = carried ? Math.Max(1, e.RootCardsOf(s, list.Select(i => i.InstanceId))) : 1;
-                <div @key="@("g:" + id)" class="card-col @(gSel ? "open" : "")" style="@(span > 1 ? $"grid-column:span {span}" : null)">
+                // 只有真实批次确实占了多个卡位时才铺成叠卡；同批仅因制作预留临时拆堆（仍占1格）不叠
+                var stacked = kb != null && kb.Count > 1 && span > 1;
+                var pickedKey = stacked && gSel ? G.CurrentBatch(Owner, id, kb)?.Key : null;
+                if (stacked) head = kb![0].Stacks.FirstOrDefault(i => i.ReservedBy == null) ?? kb[0].Stacks[0];
+                var colStyle = (span > 1 ? $"grid-column:span {span};--span:{span};" : "") + (stacked ? $"--layers:{kb!.Count - 1};" : "");
+                <div @key="@("g:" + id)" class="card-col @(gSel ? "open" : "") @(stacked ? "stacked" : "")"
+                     style="@(colStyle.Length > 0 ? colStyle : null)">
+                @if (stacked)
+                {
+                    @* 后层：从最晚到期到第二早，依次压在前一张下面；点后层 = 选中这一批（展开选批次），卡下操作窗随即作用于它 *@
+                    for (var k = kb!.Count - 1; k >= 1; k--)
+                    {
+                        var b = kb[k];
+                        var bk = b.Key;
+                        var fresh = b.Spoiled ? "已腐败" : !b.ExpiresAt.HasValue ? "不会腐败" : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute);
+                        <button type="button" class="stack-layer @(pickedKey == bk ? "on" : "") @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")" style="--i:@k"
+                                title="@($"第{k + 1}批×{b.Count}：{fresh}{(b.Reserved ? " · 预留" : "")}（点选这一批）")" aria-label="@($"选择第{k + 1}批，{b.Count}份，{fresh}")"
+                                @onclick="() => G.PickBatch(Owner, id, bk)">
+                            <span class="sl-art">@Icons.Markup(id)</span>
+                            <span class="sl-tag"><b>×@b.Count</b> @fresh</span>
+                        </button>
+                    }
+                }
                 <div id="@(gSel ? "card-sel" : null)" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drop="@($"card:{key}")" data-drop-level="card"
-                     class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel ? "selected" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "")"
-                     role="button" tabindex="0" @onclick="() => SelectGroup(id)" @onkeydown="ev => OnCardKey(ev, () => SelectGroup(id))" title="@e.Item(id).Desc">
-                    <div class="ctitle"><span>@e.ItemName(id)</span><span class="qty">×@total</span></div>
+                     class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel && (!stacked || pickedKey == kb![0].Key) ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "")"
+                     role="button" tabindex="0" @onclick="() => SelectFront(id, kb)" @onkeydown="ev => OnCardKey(ev, () => SelectFront(id, kb))" title="@e.Item(id).Desc">
+                    <div class="ctitle"><span>@e.ItemName(id)</span><span class="qty">×@(stacked ? kb![0].Count : total)</span></div>
                     <div class="art">@Icons.Markup(id)</div>
-                    <div class="cinfo">@(allSpoiled ? "已腐败" : Ui.ItemLine(e, s, head))@(batches > 1 ? $" · {batches}批" : "")</div>
+                    <div class="cinfo">@(stacked ? (kb![0].Spoiled ? "已腐败" : Ui.ItemLine(e, s, head)) : allSpoiled ? "已腐败" : Ui.ItemLine(e, s, head))@(batches > 1 ? $" · {batches}批" : "")</div>
                     @if (span > 1) { <span class="slot-span" title="@($"同物品{batches}批/超过堆叠上限，占{span}张随身卡")">占@(span)格</span> }
                     <TransferArrow Owner="@Owner" ItemId="@id" Enabled="@(movable && !busy)" />
                 </div>
@@ -112,6 +136,13 @@
 
     private void SelectGroup(string itemId) =>
         G.Select(new Selection { Kind = SelectionKind.ItemGroup, Id = itemId, Owner = Owner });
+
+    /// <summary>点叠卡最前一张：选中这一物品卡，批次回到默认（最前合法可用批次，Q24）。不叠卡时同 SelectGroup。</summary>
+    private void SelectFront(string itemId, List<ItemBatch>? batches)
+    {
+        if (batches == null || batches.Count < 2) { SelectGroup(itemId); return; }
+        G.PickBatch(Owner, itemId, null);
+    }
 
     private static void OnCardKey(KeyboardEventArgs ev, Action select)
     {
