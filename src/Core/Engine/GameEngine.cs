@@ -415,9 +415,9 @@ namespace Survival.Core.Engine
                 {
                     if (!_recipes.TryGetValue(r.TargetId, out var rc)) return "配方不存在";
                     plan.Recipe = rc;
-                    plan.Type = rc.IsBuild ? ActionType.Build : rc.IsRepair ? ActionType.Repair : ActionType.Craft;
+                    plan.Type = rc.IsBuild ? ActionType.Build : rc.IsRepair ? ActionType.Repair : rc.IsSalvage ? ActionType.Salvage : ActionType.Craft;
                     var batch = Math.Max(1, r.BatchCount);
-                    if (batch > 1 && (rc.IsBuild || rc.IsRepair)) return "建造与维护每次只能做1件";
+                    if (batch > 1 && (rc.IsBuild || rc.IsRepair || rc.IsSalvage)) return "建造、维护与拆解每次只能做1件";
                     plan.Batch = batch;
                     foreach (var kv in rc.MinSkills)
                     {
@@ -429,6 +429,14 @@ namespace Survival.Core.Engine
                         var why = RepairBlocked(s, r.InstanceId, out var target);
                         if (why != null) return why;
                         plan.Tool = target;
+                    }
+                    if (rc.IsSalvage)
+                    {
+                        var why = SalvageBlocked(s, r.InstanceId, out var target);
+                        if (why != null) return why;
+                        plan.Tool = target;
+                        var (oid, n) = SalvageOutput(target!)!.Value;
+                        plan.Outputs.Add(Line(oid, n));
                     }
                     if (rc.NeedsExplicitPot)
                     {
@@ -488,6 +496,7 @@ namespace Survival.Core.Engine
                     // 制造熟练度在开始时折减基础工作量（v0.6 §03）；同批次多件合并成一个工作量，段内结转余量
                     plan.BaseWork = rc.BaseMinutes * batch * CraftWorkFactor(s);
                     plan.Label = rc.IsBuild ? rc.Name : rc.IsRepair ? $"维护{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
+                        : rc.IsSalvage ? $"拆解{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
                         : batch > 1 ? $"制作{rc.Name}×{batch}" : $"制作{rc.Name}";
                     return null;
                 }
@@ -734,6 +743,7 @@ namespace Survival.Core.Engine
                 case ActionType.Craft:
                 case ActionType.Build:
                 case ActionType.Repair:
+                case ActionType.Salvage:
                 {
                     var rc = p.Recipe!;
                     a.BatchCount = p.Batch;
@@ -742,7 +752,7 @@ namespace Survival.Core.Engine
                         a.ReservedItemIds.AddRange(Reserve(s, kv.Key, kv.Value * p.Batch, a.ActionId, r.PreferredInstanceIds));
                     }
                     foreach (var c in p.Catalysts) a.LockedItemIds.Add(c.InstanceId);
-                    if (rc.IsRepair && p.Tool != null)
+                    if ((rc.IsRepair || rc.IsSalvage) && p.Tool != null)
                     {
                         a.ToolInstanceId = p.Tool.InstanceId;
                         a.LockedItemIds.Add(p.Tool.InstanceId);

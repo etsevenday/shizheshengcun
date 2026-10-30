@@ -8,9 +8,10 @@ namespace Survival.Core.State
 
     /// <summary>
     /// 角色主行动。Butcher 处理动物尸体（v0.5 §14）；Repair 工具维护（v0.6 §05，走配方）；Bypass 绕行敌踪（v0.6 §15，固定 10 分钟按 travel 消耗）；Fuse 饱饱吞噬融合活性物质（R07 §4，固定 5 分钟按 wait 消耗）；
-    /// WaitCook 等待本火堆当前全部可加工内容完成（S11 §9、S13 §5，按 wait 消耗，时长由目标动态决定）。
+    /// WaitCook 等待本火堆当前全部可加工内容完成（S11 §9、S13 §5，按 wait 消耗，时长由目标动态决定）；
+    /// Salvage 拆解装备（A05 §5，B4 H9：走配方 salvage_equipment，15 基础分钟按 craft 消耗，产物落当前地面）。
     /// </summary>
-    public enum ActionType { Travel, Explore, Gather, Craft, Build, Wait, Rest, Sleep, Use, Ignite, Clear, Butcher, Repair, Bypass, Fuse, WaitCook }
+    public enum ActionType { Travel, Explore, Gather, Craft, Build, Wait, Rest, Sleep, Use, Ignite, Clear, Butcher, Repair, Bypass, Fuse, WaitCook, Salvage }
 
     public enum ActionStatus { Running, Paused }
 
@@ -619,7 +620,7 @@ namespace Survival.Core.State
         /// <summary>工作动作吃工作倍率与 0 体力工作伤害；清理也是工作（00 案第 3 节）。</summary>
         public static bool IsWork(ActionType t) => t == ActionType.Travel || t == ActionType.Explore || t == ActionType.Gather
                                                    || t == ActionType.Craft || t == ActionType.Build || t == ActionType.Clear
-                                                   || t == ActionType.Butcher || t == ActionType.Repair;
+                                                   || t == ActionType.Butcher || t == ActionType.Repair || t == ActionType.Salvage;
 
         public ActionState Clone()
         {

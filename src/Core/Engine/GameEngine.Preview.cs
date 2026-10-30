@@ -148,6 +148,7 @@ namespace Survival.Core.Engine
             ActionType.Butcher => "处理尸体",
             ActionType.Fuse => "吞噬融合",
             ActionType.WaitCook => "等待烹饪",
+            ActionType.Salvage => "拆解",
             _ => "点燃火堆",
         };
 
@@ -257,9 +258,16 @@ namespace Survival.Core.Engine
                     var lv = SkillLevel(s, Crafting);
                     p.WorkMinutes = rc.BaseMinutes * batch * CraftWorkFactor(lv);
                     p.Outputs = rc.Outputs.Select(kv => Line(kv.Key, kv.Value * batch)).ToList();
-                    p.ConfirmText = rc.IsBuild ? "开始建造" : rc.IsRepair ? "开始维护" : batch > 1 ? $"开始制作×{batch}" : "开始制作";
+                    p.ConfirmText = rc.IsBuild ? "开始建造" : rc.IsRepair ? "开始维护" : rc.IsSalvage ? "开始拆解" : batch > 1 ? $"开始制作×{batch}" : "开始制作";
                     p.Notes.Add($"制造{lv}级：基础工作量{rc.BaseMinutes * batch}分钟×{CraftWorkFactor(lv).ToString("0.####", System.Globalization.CultureInfo.InvariantCulture)}={Fmt.N(p.WorkMinutes)}分钟；按5分钟段推进，同批次余量结转");
-                    p.XpGains.Add($"制造经验+{CraftXp(rc.BaseMinutes) * batch}");
+                    if (rc.IsSalvage)
+                    {
+                        if (plan != null) p.Outputs = plan.Outputs;
+                        p.Notes.Add("完成后原装备移除，产物放在当前地点地面；拆解不给制造经验");
+                    }
+                    else if (rc.IsRepair && plan?.Tool != null)
+                        p.Notes.Add($"恢复自身最大耐久的{Fmt.Pct(RepairFraction(s, rc))}（不超过上限、不重抽最大耐久，品质与词条不变）");
+                    if (!rc.IsSalvage) p.XpGains.Add($"制造经验+{CraftXp(rc.BaseMinutes) * batch}");
                     if (plan != null) p.Notes.AddRange(plan.Notes);
                     if (rc.NeedsFire)
                     {

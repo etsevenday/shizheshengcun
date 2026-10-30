@@ -35,6 +35,7 @@ namespace Survival.Core.Engine
             ActionType.Rest => "rest",
             ActionType.Butcher => "butcher",
             ActionType.Repair => "repair",
+            ActionType.Salvage => "salvage",
             ActionType.Bypass => "bypass",
             _ => "wait",
         };
@@ -435,6 +436,8 @@ namespace Survival.Core.Engine
                     Emit(s, GameEventKind.ActionCompleted, text, null, rc.Outputs.Keys);
                     return true;
                 }
+                case ActionType.Salvage:
+                    return CompleteSalvage(s, a);
                 case ActionType.Sleep:
                     ClearAction(s, a);
                     Emit(s, GameEventKind.ActionCompleted, $"睡眠结束（{Clock.Duration(a.PlannedMinutes)}）。");

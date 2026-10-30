@@ -93,6 +93,60 @@ namespace Survival.Core.Engine
             return null;
         }
 
+        // ───────────── 拆解（A05 §5，B4 H9） ─────────────
+
+        public RecipeConfig? SalvageRecipe => Config.Recipes.FirstOrDefault(r => r.IsSalvage);
+
+        /// <summary>这件装备拆解得什么：武器白/绿/蓝 scrap1/2/3（按实例品质），电台 electronics1，布皮装备 cloth1 或 leather1；A05 没写产出的为 null。</summary>
+        public (string itemId, int count)? SalvageOutput(ItemInstance it)
+        {
+            var def = Weapon(it.ItemId)?.Salvage ?? Gear(it.ItemId)?.Salvage;
+            if (def == null) return null;
+            if (!def.ByQuality) return (def.ItemId, def.Count);
+            return Config.Equipment.Salvage.ScrapByQuality.TryGetValue(it.Quality ?? "white", out var n) ? (def.ItemId, n) : ((string, int)?)null;
+        }
+
+        /// <summary>
+        /// 能否拆解（只读）：须是本人随身或当前地面的装备、未穿戴、未被预留或行动占用、有拆解定义；弹仓里还有弹药的先打空（不吞弹药）。
+        /// 战斗、敌踪待选、其他行动进行中由通用开始校验拦截。
+        /// </summary>
+        public string? SalvageBlocked(GameState s, int? instanceId, out ItemInstance? target)
+        {
+            target = null;
+            if (!instanceId.HasValue) return "请先选择要拆解的装备";
+            target = FindItem(s, instanceId.Value);
+            if (target == null) return "这件装备已不在，请重新选择";
+            var cfg = _items[target.ItemId];
+            if (!cfg.IsEquipment) return $"{cfg.Name}不是装备，不能拆解";
+            if (target.IsWorn) return target.IsWornBy(GameState.PlayerId) ? "穿戴中：先在装备区卸下再拆解" : "穿在别人身上，不能拆解";
+            if (!(target.IsCarried || target.Owner == s.CurrentLocation)) return "只能拆解随身或当前地面的装备";
+            if (target.ReservedBy != null || IsLocked(s, target)) return "行动占用：这件装备正被使用";
+            if (target.LoadedAmmo > 0) return $"弹仓里还有{target.LoadedAmmo}发{ItemName(target.LoadedAmmoId ?? "")}，打空后再拆解";
+            if (SalvageOutput(target) == null) return $"{cfg.Name}的拆解产出待策划确认，暂不能拆解";
+            return null;
+        }
+
+        /// <summary>拆解完成：原装备移除，产物落当前地面；目标已不在则不产出、不改其他状态。不给制造经验。</summary>
+        private bool CompleteSalvage(GameState s, ActionState a)
+        {
+            var here = s.CurrentLocation;
+            var t = a.ToolInstanceId.HasValue ? FindItem(s, a.ToolInstanceId.Value) : null;
+            var output = t != null ? SalvageOutput(t) : null;
+            ClearAction(s, a);
+            if (t == null || output == null)
+            {
+                Emit(s, GameEventKind.ActionCompleted, "要拆解的装备已不在，没有产出。");
+                return true;
+            }
+            var name = $"{ItemName(t.ItemId)}#{t.InstanceId}（{QualityName(t)}）";
+            s.Items.Remove(t);
+            var (oid, n) = output.Value;
+            CreateItems(s, oid, n, here);
+            Emit(s, GameEventKind.ActionCompleted, $"拆解{name}：{ItemName(oid)}+{n}，已放在{LocName(here)}地面。", null, new[] { oid });
+            UpdateFlags(s);
+            return true;
+        }
+
         /// <summary>维护完成：恢复自身最大耐久 20%，不超过自身最大、不重抽最大值。</summary>
         private string CompleteRepair(GameState s, ActionState a)
         {

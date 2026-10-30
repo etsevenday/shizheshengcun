@@ -476,6 +476,91 @@ public class B4EquipTests : BattleTestBase
         Assert.That(spear.Durability, Is.EqualTo(p0));
     }
 
+    // ───────────── M117：维修与拆解（R17b，H8/H9） ─────────────
+
+    [Test]
+    public void EQ05_RepairArmor_NoMaxIncrease_QualityAffixesKept()
+    {
+        var s = New();
+        var vest = E.DebugCreateEquipment(s, "leather_armor", "blue", ItemInstance.EquipOwner(P0, EquipSlots.Armor));
+        var max = vest.MaxDurability!.Value;
+        var affixes = vest.Affixes!.ToList();
+        vest.Durability = 10;
+        Assert.That(E.RepairCandidates(s), Does.Contain(vest), "穿戴中的防具也可维护");
+        E.DebugGive(s, "scrap", 1);
+        E.DebugGive(s, "parts", 1);
+        Start(s, new ActionRequest { Type = ActionType.Craft, TargetId = "repair_selected_tool", InstanceId = vest.InstanceId });
+        Run(s);
+        Assert.That(vest.MaxDurability, Is.EqualTo(max), "EQ05 修理不增最大耐久");
+        Assert.That(vest.Durability, Is.EqualTo(Math.Min(max, 10 + max * 0.2)).Within(1e-9));
+        Assert.That((vest.Quality, vest.Affixes), Is.EqualTo(("blue", affixes)));
+    }
+
+    private ActionRequest Salvage(int id) => new ActionRequest { Type = ActionType.Craft, TargetId = "salvage_equipment", InstanceId = id };
+
+    [Test]
+    public void H9_Salvage_WeaponScrapByQuality_15Minutes_ToGround()
+    {
+        foreach (var (q, n) in new[] { ("white", 1), ("green", 2), ("blue", 3) })
+        {
+            var s = New();
+            var it = E.DebugCreateEquipment(s, "machete", q, ItemInstance.Carried);
+            var scrap0 = s.Items.Where(i => i.ItemId == "scrap").Sum(i => i.Count);
+            var p = E.Preview(s, Salvage(it.InstanceId));
+            Assert.That(p.Ok, Is.True, p.Reason);
+            Assert.That(p.BaseMinutes, Is.EqualTo(15));
+            Assert.That(p.Outputs.Single().Count, Is.EqualTo(n));
+            Assert.That(p.XpGains, Is.Empty, "拆解不给制造经验");
+            var t0 = s.GameMinute;
+            Start(s, Salvage(it.InstanceId));
+            Assert.That(E.IsLocked(s, it), Is.True, "开工锁定目标");
+            Run(s);
+            Assert.That(s.GameMinute - t0, Is.EqualTo(15), "制造 1 级、白天无倍率时 15 分钟");
+            Assert.That(s.Items.Any(i => i.InstanceId == it.InstanceId), Is.False, "原物移除");
+            Assert.That(s.Items.Where(i => i.ItemId == "scrap" && i.Owner == s.CurrentLocation).Sum(i => i.Count), Is.EqualTo(n), q);
+            Assert.That(s.Items.Where(i => i.ItemId == "scrap").Sum(i => i.Count) - scrap0, Is.EqualTo(n));
+        }
+    }
+
+    [Test]
+    public void H9_Salvage_ClothLeatherRadio_AndRefusals()
+    {
+        var s = New();
+        var shirt = Ground(s, "work_shirt");
+        Assert.That(E.SalvageOutput(shirt), Is.EqualTo(("cloth", 1)));
+        Assert.That(E.SalvageOutput(Ground(s, "craft_coat")), Is.EqualTo(("leather", 1)), "主材皮革");
+        Assert.That(E.SalvageOutput(Ground(s, "field_radio")), Is.EqualTo(("electronics", 1)));
+        var ring = Ground(s, "steady_ring");
+        Assert.That(E.SalvageBlocked(s, ring.InstanceId, out _), Does.Contain("拆解产出待策划确认"));
+        Assert.That(E.SalvageBlocked(s, Ground(s, "scrap_armor").InstanceId, out _), Does.Contain("待策划确认"), "主材不是布/皮");
+        var wood = s.Items.First(i => i.ItemId == "wood");
+        Assert.That(E.SalvageBlocked(s, wood.InstanceId, out _), Does.Contain("不是装备"));
+        var worn = Wear(s, "machete", EquipSlots.Weapon1);
+        Assert.That(E.SalvageBlocked(s, worn.InstanceId, out _), Does.Contain("先在装备区卸下"));
+        var pistol = Ground(s, "pistol");
+        pistol.LoadedAmmo = 3;
+        Assert.That(E.SalvageBlocked(s, pistol.InstanceId, out _), Does.Contain("弹仓里还有3发"));
+        var away = E.CreateItems(s, "machete", 1, "field").Single();
+        Assert.That(E.SalvageBlocked(s, away.InstanceId, out _), Does.Contain("随身或当前地面"));
+        // 失败不改状态
+        var before = Survival.Core.Save.SaveSerializer.Serialize(s);
+        Assert.That(E.Start(s, Salvage(ring.InstanceId)).Ok, Is.False);
+        Assert.That(Survival.Core.Save.SaveSerializer.Serialize(s), Is.EqualTo(before));
+        Assert.That(E.Start(s, new ActionRequest { Type = ActionType.Craft, TargetId = "salvage_equipment", InstanceId = shirt.InstanceId, BatchCount = 2 }).Reason, Does.Contain("每次只能做1件"));
+    }
+
+    [Test]
+    public void H9_SalvageCancelled_TargetStays()
+    {
+        var s = New();
+        var it = E.DebugCreateEquipment(s, "machete", "green", ItemInstance.Carried);
+        Start(s, Salvage(it.InstanceId));
+        E.Advance(s);
+        Assert.That(E.Cancel(s).Ok, Is.True);
+        Assert.That(s.Items.Single(i => i.InstanceId == it.InstanceId).Quality, Is.EqualTo("green"));
+        Assert.That(E.IsLocked(s, it), Is.False);
+    }
+
     [Test]
     public void EQ03_GearWeightCountsOnPerson_NotRootCards()
     {
