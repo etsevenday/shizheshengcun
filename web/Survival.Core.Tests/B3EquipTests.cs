@@ -298,6 +298,69 @@ public class B3EquipTests : BattleTestBase
         Assert.That(E.BattleOptions(full).Any(o => o.Action == "switch_weapon"), Is.False);
     }
 
+    // ───────────── M101：非法同类双武器整理（COMP08） ─────────────
+
+    private (GameState s, ItemInstance a, ItemInstance b) IllegalPair()
+    {
+        var s = New();
+        var a = E.CreateItems(s, "stone_knife", 1, ItemInstance.EquipOwner(P0, EquipSlots.Weapon1)).Single();
+        var b = E.CreateItems(s, "kitchen_knife", 1, ItemInstance.EquipOwner(P0, EquipSlots.Weapon2)).Single();
+        return (s, a, b);
+    }
+
+    [Test]
+    public void COMP08_DetectIllegalSameKind()
+    {
+        var (s, a, b) = IllegalPair();
+        Assert.That(E.DuplicateWeaponsIllegal(s), Is.True);
+        Assert.That(E.DuplicateKindWeapons(s).Select(i => i.InstanceId), Is.EqualTo(new[] { a.InstanceId, b.InstanceId }));
+        b.Owner = ItemInstance.Carried;
+        Assert.That(E.DuplicateWeaponsIllegal(s), Is.False);
+    }
+
+    [Test]
+    public void COMP08_ResolveNeedsExplicitChoice_FailLeavesStateUnchanged()
+    {
+        var (s, a, b) = IllegalPair();
+        var before = SaveSerializer.Serialize(s);
+        var r = E.ResolveDuplicateWeapons(s, P0, a.InstanceId, new Dictionary<int, bool>());
+        Assert.That(r.Ok, Is.False);
+        Assert.That(r.Reason, Does.Contain("选择去向"), "默认不勾，必须明确选择");
+        Assert.That(E.ResolveDuplicateWeapons(s, P0, 9999, new Dictionary<int, bool> { [b.InstanceId] = false }).Ok, Is.False);
+        foreach (var id in new[] { "wood", "fiber", "stone" }) E.DebugGive(s, id, 1);
+        before = SaveSerializer.Serialize(s);
+        r = E.ResolveDuplicateWeapons(s, P0, a.InstanceId, new Dictionary<int, bool> { [b.InstanceId] = false });
+        Assert.That(r.Ok, Is.False);
+        Assert.That(r.Reason, Does.Contain("卡位不够"));
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "失败不改状态");
+    }
+
+    [Test]
+    public void COMP08_ResolveKeepOne_OthersToCardsOrGround_NoDeleteNoReroll()
+    {
+        var (s, a, b) = IllegalPair();
+        var dur = b.Durability;
+        var count = s.Items.Count;
+        Assert.That(E.ResolveDuplicateWeapons(s, P0, b.InstanceId, new Dictionary<int, bool> { [a.InstanceId] = false }, "dup-1").Ok, Is.True);
+        Assert.That(a.Owner, Is.EqualTo(ItemInstance.Carried));
+        Assert.That(b.Owner, Is.EqualTo("equip:p0:weapon2"), "保留的那把留在原槽");
+        Assert.That(b.Durability, Is.EqualTo(dur));
+        Assert.That(s.Items.Count, Is.EqualTo(count), "不删除");
+        Assert.That(E.DuplicateWeaponsIllegal(s), Is.False);
+
+        var (s2, a2, b2) = IllegalPair();
+        Assert.That(E.ResolveDuplicateWeapons(s2, P0, a2.InstanceId, new Dictionary<int, bool> { [b2.InstanceId] = true }).Ok, Is.True);
+        Assert.That(b2.Owner, Is.EqualTo(s2.CurrentLocation), "明确选择放当前地面");
+    }
+
+    [Test]
+    public void COMP08_ResolveOnlyAtSafeIdle()
+    {
+        var (s, a, b) = IllegalPair();
+        Start(s, ActionRequest.Wait(30));
+        Assert.That(E.ResolveDuplicateWeaponsBlocked(s, P0, a.InstanceId, new Dictionary<int, bool> { [b.InstanceId] = true }), Does.Contain("现在不能整理"));
+    }
+
     // ───────────── 8→9 迁移：旧当前武器进武器Ⅰ ─────────────
 
     [Test]

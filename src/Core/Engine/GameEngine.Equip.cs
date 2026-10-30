@@ -155,6 +155,68 @@ namespace Survival.Core.Engine
             return ActionResult.Success();
         }
 
+        // ───────────── 旧档非法同类双武器整理（各案“同类型武器限制”末句、B3 H8、COMP08） ─────────────
+
+        /// <summary>两武器槽里同 kind 的武器（非法时为 2 件，按槽序）；合法为空表。</summary>
+        public List<ItemInstance> DuplicateKindWeapons(GameState s, string actorId = GameState.PlayerId)
+        {
+            var worn = EquipSlots.Weapons.Select(slot => WornItem(s, actorId, slot)).Where(i => i != null && Weapon(i.ItemId) != null).Select(i => i!).ToList();
+            return worn.GroupBy(i => WeaponKindOf(i.ItemId)).Where(g => g.Key != null && g.Count() > 1).SelectMany(g => g).ToList();
+        }
+
+        public bool DuplicateWeaponsIllegal(GameState s, string actorId = GameState.PlayerId) => DuplicateKindWeapons(s, actorId).Count > 1;
+
+        /// <summary>
+        /// 只读预演整理：保留 keep，其余每件按玩家明确选择进本人五卡（false）或放当前地面（true）；未选去向、卡位超限、时机不安全都给原因。
+        /// </summary>
+        public string? ResolveDuplicateWeaponsBlocked(GameState s, string actorId, int keepInstanceId, IDictionary<int, bool> toGround)
+        {
+            var dup = DuplicateKindWeapons(s, actorId);
+            if (dup.Count < 2) return "两把武器类型不同，不需要整理";
+            if (!OverflowResolvable(s)) return "现在不能整理装备：请先结束战斗、行动或对话";
+            if (dup.All(i => i.InstanceId != keepInstanceId)) return "请选择要保留的那把武器";
+            var others = dup.Where(i => i.InstanceId != keepInstanceId).ToList();
+            foreach (var o in others)
+            {
+                if (!toGround.ContainsKey(o.InstanceId)) return $"请为{ItemName(o.ItemId)}选择去向：进本人随身或放当前地面";
+                if (o.ReservedBy != null || IsLocked(s, o)) return "行动占用：有武器正被行动使用";
+            }
+            var intoCards = others.Where(o => !toGround[o.InstanceId]).ToList();
+            if (intoCards.Count > 0)
+            {
+                // 最终状态：这些武器各占一张根卡（武器不合堆），按整次结果校验
+                var after = RootCardCount(s) + intoCards.Count;
+                if (!RootCardsAllow(s, after)) return $"随身卡位不够（整理后{after}/{MaxRootCards}张）：请改为放当前地面或先腾出卡位";
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 原子整理非法同类双武器：保留一把，其余各自进本人五卡或放当前地面（玩家明确选择，默认不勾，同 Q27）；按最终状态校验，失败不改任何状态；
+        /// 不删除、不重抽属性。仅安全空闲可用（同超五卡整理）；带 requestId 幂等。
+        /// </summary>
+        public ActionResult ResolveDuplicateWeapons(GameState s, string actorId, int keepInstanceId, IDictionary<int, bool> toGround, string? requestId = null)
+        {
+            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
+            var why = ResolveDuplicateWeaponsBlocked(s, actorId, keepInstanceId, toGround);
+            if (why != null) return ActionResult.Fail(why);
+            RememberRequest(s, requestId);
+            var keep = FindItem(s, keepInstanceId)!;
+            var parts = new List<string>();
+            foreach (var o in DuplicateKindWeapons(s, actorId).Where(i => i.InstanceId != keepInstanceId))
+            {
+                var ground = toGround[o.InstanceId];
+                o.Owner = ground ? s.CurrentLocation : ItemInstance.CarriedOwner(actorId);
+                o.PlacedOrder = null;
+                parts.Add($"{ItemName(o.ItemId)}#{o.InstanceId}{(ground ? $"放在{LocName(s.CurrentLocation)}地面" : "放回随身")}");
+            }
+            Normalize(s, s.CurrentLocation);
+            Normalize(s, ItemInstance.CarriedOwner(actorId));
+            Emit(s, GameEventKind.Info, $"整理装备：保留{ItemName(keep.ItemId)}#{keep.InstanceId}，{string.Join("，", parts)}（同类型武器最多装备1件）。");
+            UpdateFlags(s);
+            return ActionResult.Success();
+        }
+
         /// <summary>这件随身武器能装到哪些武器槽：每槽给出不可用原因（界面“装备到武器Ⅰ/武器Ⅱ”按钮用）。</summary>
         public List<(string slot, string? reason)> EquipChoices(GameState s, string actorId, int instanceId) =>
             EquipSlots.Weapons.Select(slot => (slot, EquipBlocked(s, actorId, instanceId, slot))).ToList();
