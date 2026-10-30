@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// S14 修订1.10 §18 实机测量（开发计划 v0.8 M76）：固定四行等高、选卡浮窗、约80%图卡、随身五卡位、两行战斗。
+// S14 修订1.10 §18 实机测量（开发计划 v0.8 M76）：固定四行等高、选卡浮窗、约70%图卡（Q28 取代约80%，v0.9 M81）、随身五卡位、两行战斗。
 // 零依赖：Node 18+ 自带 fetch/WebSocket + Chrome DevTools Protocol（做法同 tools/playtest/cdp.mjs），不需要 playwright。
 //
 // 用法：
@@ -10,7 +10,8 @@
 // 每档分辨率（1280×720 / 1600×900 / 1920×1080）× 每个场景状态：
 //   - 四行高度：中部网格四条轨道（①②③④）最大最小差 ≤1px，地面/随身行实际高度与轨道一致，①②合并区=两轨+间隔；
 //     各状态（选地面卡/随身卡/锅、开地图/制作面板、战斗瞄准）前后轨道不变。
-//   - 卡片：图片区占卡高比例（目标约80%）、图与名称不相压、卡不被所在行纵向裁切、同行卡片两两不重叠、箭头可点中且≥40px。
+//   - 卡片：图片区占卡高比例（目标约70%，Q28）、图与名称不相压、卡不被所在行纵向裁切、同行卡片两两不重叠、箭头可点中且≥40px；
+//     ②行资源/设施/敌踪卡与①行相邻地点卡也量图片区占比（行矮时名称与按钮保底，低于0.5才报）。
 //   - 随身行：卡位数=5（或超额时的实际卡数）、无横/纵滚动条。
 //   - 选卡浮窗：在视口内、不压所选卡主图、不压顶栏、浮窗中心点命中浮窗自身（无穿透/错层）。
 //   - 浏览前后游戏分钟与随机状态不变。
@@ -157,7 +158,7 @@ const MEASURE = `(() => {
         const ar = R(art), tr = R(title);
         info.artRatio = +(ar.h / cr.h).toFixed(3);
         if (ar.b > tr.y + 1) issues.push(info.row + '第' + (i + 1) + '张卡图片压住名称');
-        if (info.artRatio < 0.7 || info.artRatio > 0.86) issues.push(info.row + '第' + (i + 1) + '张卡图片区占比' + info.artRatio + '（目标约0.8）');
+        if (info.artRatio < 0.6 || info.artRatio > 0.78) issues.push(info.row + '第' + (i + 1) + '张卡图片区占比' + info.artRatio + '（目标约0.7）');
       }
       if (cr.y < secR.y - 1 || cr.b > secR.b + 1) issues.push(info.row + '第' + (i + 1) + '张卡被行纵向裁切');
       cards.push(info);
@@ -165,6 +166,13 @@ const MEASURE = `(() => {
     for (let a = 0; a < list.length; a++) for (let b = a + 1; b < list.length; b++)
       if (inter(R(list[a]), R(list[b])) > 1) issues.push((sec.classList.contains('carried') ? 'carried' : 'ground') + '卡片' + (a + 1) + '与' + (b + 1) + '重叠');
   }
+  // Q28：资源、设施、敌踪、相邻地点卡的图片区占比（目标约0.7）
+  const ocards = [...document.querySelectorAll('.center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor)')].filter(vis).map((c, i) => {
+    const cr = R(c); const art = c.querySelector('.oc-art');
+    const o = { cls: String(c.className).split(' ').filter(Boolean).join(' ').slice(0, 40), i, ...cr, artRatio: art ? +(R(art).h / cr.h).toFixed(3) : null };
+    if (o.artRatio != null && (o.artRatio < 0.5 || o.artRatio > 0.82)) issues.push(o.cls + '图片区占比' + o.artRatio + '（目标约0.7）');
+    return o;
+  });
   // 随身五卡位
   let carriedInfo = null;
   if (carried) {
@@ -223,7 +231,7 @@ const MEASURE = `(() => {
   // 文字被裁（非省略号的溢出）只计数
   const clipped = [...document.querySelectorAll('.center button, .center .ctitle, .center .cinfo, .apop')].filter(vis)
     .filter(e => e.scrollHeight > e.clientHeight + 2 && getComputedStyle(e).overflowY === 'hidden').length;
-  return { viewport: [innerWidth, innerHeight], tracks, gap, spread, rows, upper, cards, carried: carriedInfo, overflowOpen,
+  return { viewport: [innerWidth, innerHeight], tracks, gap, spread, rows, upper, cards, ocards, carried: carriedInfo, overflowOpen,
     arrows: { total: arrows.length, scrolledOut: arrows.filter(a => a.scrolledOut).length, underOverlay: arrows.filter(a => a.underOverlay).length },
     pop, battle, clippedText: clipped, issues };
 })()`;

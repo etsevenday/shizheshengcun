@@ -111,6 +111,8 @@
                                 <div class="oc-line">每次@(per)@(e.ItemName(r.Outputs.Keys.First())) · @(minutes)分@(r.Refills ? $" · 日补{r.DailyRefill}" : "")</div>
                             }
                             @if (r.Hazard != null) { <div class="oc-line warn-line">@Ui.Pct(r.Hazard.Probability)@r.Hazard.Label · 健康−@Ui.T(r.Hazard.HealthLoss)</div> }
+                            @* Q28：按钮缩成“动词 + 时长”让出约70%图片区，不能开始的实际原因改写在卡面状态角标里，不隐藏 *@
+                            @if (why != null) { <div class="oc-line warn-line res-why">@why</div> }
                         </ChildContent>
                         <Footer>
                             @* 试玩修复 B5：与探索/清理同一按钮形态，悬停或聚焦即在右栏预测，离开恢复 *@
@@ -118,8 +120,8 @@
                             <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? "单击直接开始；右侧显示预测")"
                                     @onmouseenter="() => G.Hover(req, title)" @onfocus="() => G.Hover(req, title)" @onmouseleave="() => G.Hover(null)" @onblur="() => G.Hover(null)"
                                     @onclick="() => Quick(req, nodeId)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
-                                <strong>@verb · @(minutes)分钟</strong>
-                                @if (why != null) { <small>@why</small> }
+                                <strong>@verb</strong>
+                                <small>@(minutes)分钟</small>
                             </button>
                         </Footer>
                     </ObjectCard>
