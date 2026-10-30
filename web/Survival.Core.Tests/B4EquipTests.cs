@@ -415,6 +415,67 @@ public class B4EquipTests : BattleTestBase
         Assert.That(e2.ComputeSegment(s3, a).Rates.Energy, Is.EqualTo(raw * 0.75).Within(1e-9), "负小时率合成下限×0.75");
     }
 
+    // ───────────── M116：磨损与噪声（R17a） ─────────────
+
+    [Test]
+    public void R17_ArmorWearsOnePerPositiveHit_EvenIfFullyBlocked()
+    {
+        var s = Fight(11, "shambler");
+        var vest = Wear(s, "padded_vest", EquipSlots.Armor);
+        var d0 = vest.Durability!.Value;
+        var e = s.Battle!.Alive.First();
+        var hp = s.Stats.Health;
+        // 敌人命中：强制命中判定与伤害抽签
+        Force(s, Below(0.01), Any());
+        typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId) });
+        Assert.That(s.Stats.Health, Is.LessThan(hp));
+        Assert.That(vest.Durability, Is.EqualTo(d0 - 1).Within(1e-9), "防具每次受正直接伤害磨损 1");
+        Assert.That(s.Battle!.Log.Last(), Does.Contain("衬垫护具耐久"));
+        // 落空不磨损
+        Force(s, AtLeast(0.999));
+        typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId) });
+        Assert.That(vest.Durability, Is.EqualTo(d0 - 1).Within(1e-9));
+        // 耐久 0：不再扣、效果暂停
+        vest.Durability = 0;
+        Force(s, Below(0.01), Any());
+        typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId) });
+        Assert.That(vest.Durability, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void R17_NoiseByKind_NewGunsAndCrossbowFollowSameClass()
+    {
+        double N(string id) => E.NoiseGain(Cfg.Weapons.Single(w => w.Id == id));
+        Assert.That(N("pistol"), Is.EqualTo(Cfg.Noise.GunGain));
+        Assert.That(N("service_pistol"), Is.EqualTo(Cfg.Noise.GunGain));
+        Assert.That(N("marksman_rifle"), Is.EqualTo(Cfg.Noise.GunGain));
+        Assert.That(N("crossbow"), Is.EqualTo(Cfg.Noise.CrossbowGain));
+        Assert.That(N("repeater_crossbow"), Is.EqualTo(Cfg.Noise.CrossbowGain));
+        Assert.That(N("hunter_bow"), Is.EqualTo(0), "弓无声");
+        Assert.That(N("machete"), Is.EqualTo(0));
+    }
+
+    [Test]
+    public void EQ01_AttackWearsOnlyTheUsedWeapon()
+    {
+        var s = Fight(5, "shambler");
+        var knife = Wear(s, "machete", EquipSlots.Weapon1);
+        var spear = Wear(s, "pike", EquipSlots.Weapon2);
+        s.Battle!.ActiveWeaponSlot = 1;
+        ToPlayer(s);
+        PlayerFirst(s);
+        ToPlayer(s);
+        var k0 = knife.Durability;
+        var p0 = spear.Durability;
+        Force(s, AtLeast(0.999));
+        Assert.That(Cmd(s, "basic_attack", s.Battle!.Alive.First().Index).Ok, Is.True);
+        Assert.That(knife.Durability, Is.EqualTo(k0 - 1).Within(1e-9));
+        Assert.That(spear.Durability, Is.EqualTo(p0));
+    }
+
     [Test]
     public void EQ03_GearWeightCountsOnPerson_NotRootCards()
     {

@@ -575,9 +575,11 @@ namespace Survival.Core.Engine
                 guarded = true;
             }
             if (charge) e.Charged = false;
+            // 防具受到正直接伤害（扣甲前）磨损 1（A05 §2，B4 H7）；耐久 0 时防具效果暂停但仍穿着
+            var armorWear = raw > 0 ? WearArmor(s, GameState.PlayerId) : "";
             if (dmg <= 0)
             {
-                BattleLog(s, $"{EnemyName(e)}{verb}被完全挡住。");
+                BattleLog(s, $"{EnemyName(e)}{verb}被完全挡住{(armorWear != "" ? "（" + armorWear + "）" : "")}。");
                 return;
             }
             s.Stats.Add(StatId.Health, -dmg);
@@ -586,6 +588,7 @@ namespace Survival.Core.Engine
             b.PanicPeak = Math.Max(b.PanicPeak, b.Panic);
             var extra = new List<string>();
             if (guarded) extra.Add("防御减半");
+            if (armorWear != "") extra.Add(armorWear);
             if (s.Stats.Health <= 0)
             {
                 BattleLog(s, $"{EnemyName(e)}{verb}命中，健康−{Fmt.N(dmg)}。");
@@ -974,6 +977,14 @@ namespace Survival.Core.Engine
             var front = b.Alive.Where(IsFront).OrderBy(e => e.Slot).ToList();
             if (front.Count == 0) front = b.Alive.OrderBy(e => e.Slot).ToList();
             return front.Take(Math.Max(1, a.MaxTargets)).ToList();
+        }
+
+        /// <summary>防具槽的装备磨损一次（A05 §2：每次遭到正直接伤害磨损 1，整条多段指令最多 1）；没有防具或已为 0 返回空串。</summary>
+        private string WearArmor(GameState s, string actorId)
+        {
+            var armor = WornItem(s, actorId, EquipSlots.Armor);
+            if (armor?.Durability == null || armor.Durability.Value <= 1e-9) return "";
+            return Wear(armor, Config.Equipment.ArmorWearPerHit);
         }
 
         /// <summary>
