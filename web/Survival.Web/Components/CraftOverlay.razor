@@ -18,7 +18,8 @@
     var craftPaused = main != null && main.Status == ActionStatus.Paused && (main.Type == ActionType.Craft || main.Type == ActionType.Build);
     var busy = G.Running || s.Sub != null;
     var candidates = G.CraftCandidates;
-    var recipes = candidates == null ? e.Config.Recipes : e.Config.Recipes.Where(r => candidates.Contains(r.Id)).ToList();
+    // 拆解（B4）走配方流程但只在选中装备的卡下开始，不进手工制作列表
+    var recipes = (candidates == null ? e.Config.Recipes : e.Config.Recipes.Where(r => candidates.Contains(r.Id))).Where(r => !r.IsSalvage).ToList();
     var preferred = G.CraftPreferred.Where(id => s.Items.Any(i => i.InstanceId == id && rc.Inputs.ContainsKey(i.ItemId))).ToList();
     var batchable = !rc.IsBuild && !rc.IsRepair;
     var batch = batchable ? Math.Max(1, G.CraftBatch) : 1;

@@ -141,6 +141,23 @@ namespace Survival.Core.Config
         public double AccuracyRating { get; set; }
         public double CritRatingBase { get; set; }
         public double[]? DurabilityMaxRange { get; set; }
+        // ───── A05 §1 新表字段（B4 H3：B6 四对四战斗内核之前只存数据并在详情显示，现行两行战斗仍按 Targets） ─────
+        /// <summary>阶 T0—T3。拳为 null。</summary>
+        public int? Tier { get; set; }
+        /// <summary>装备速度修正（A05 §1“速度修正”）。</summary>
+        public double Speed { get; set; }
+        /// <summary>使用位（己方站位，数字连写，如“234”）。</summary>
+        public string? OwnPositions { get; set; }
+        /// <summary>目标位（敌方槽位数字连写，或“友方”）。</summary>
+        public string? TargetPositions { get; set; }
+        /// <summary>固定基础特性原文。</summary>
+        public string? TraitText { get; set; }
+        /// <summary>拆解产出（A05 §5）。</summary>
+        public SalvageOutputConfig? Salvage { get; set; }
+
+        /// <summary>盾、指挥、医疗器具的技能在 B5/B7，B4 只能穿戴、不能用它攻击（开发假设 H2）。</summary>
+        public static readonly string[] SkillLockedKinds = { "shield", "command", "medical" };
+        [JsonIgnore] public bool CanAttack => IsFists || System.Array.IndexOf(SkillLockedKinds, WeaponKind) < 0;
 
         [JsonIgnore] public bool ReachesRear => Targets.StartsWith("all");
         /// <summary>矛打后排（有前排屏障时）的伤害倍率；没有写倍率的为 1。</summary>

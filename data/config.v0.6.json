@@ -62,7 +62,8 @@
       "rest": "rest",
       "butcher": "craft",
       "repair": "craft",
-      "bypass": "travel"
+      "bypass": "travel",
+      "salvage": "craft"
     },
     "workActionTypes": [
       "travel",
@@ -478,7 +479,8 @@
         16,
         24
       ],
-      "legacyMaxDurability": 20
+      "legacyMaxDurability": 20,
+      "equipSlot": "weapon"
     },
     {
       "id": "hatchet",
@@ -496,7 +498,8 @@
         24,
         36
       ],
-      "legacyMaxDurability": 30
+      "legacyMaxDurability": 30,
+      "equipSlot": "weapon"
     },
     {
       "id": "pot",
@@ -545,7 +548,8 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "刀斧类武器，前排；可处理尸体"
+      "desc": "刀斧类武器，前排；可处理尸体",
+      "equipSlot": "weapon"
     },
     {
       "id": "crowbar",
@@ -562,7 +566,8 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "钝器，前排；可推挡"
+      "desc": "钝器，前排；可推挡",
+      "equipSlot": "weapon"
     },
     {
       "id": "wooden_spear",
@@ -579,7 +584,8 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "矛，可打后排（后排伤害×0.75）"
+      "desc": "矛，可打后排（后排伤害×0.75）",
+      "equipSlot": "weapon"
     },
     {
       "id": "metal_spear",
@@ -596,7 +602,8 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "矛，可打后排（后排伤害×0.75）"
+      "desc": "矛，可打后排（后排伤害×0.75）",
+      "equipSlot": "weapon"
     },
     {
       "id": "wooden_bow",
@@ -613,7 +620,8 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "弓箭，全排；每射直接消耗随身箭矢1"
+      "desc": "弓箭，全排；每射直接消耗随身箭矢1",
+      "equipSlot": "weapon"
     },
     {
       "id": "crossbow",
@@ -630,7 +638,8 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "弓箭，全排；弹仓1，1AP装填弩矢"
+      "desc": "弓箭，全排；弹仓1，1AP装填弩矢",
+      "equipSlot": "weapon"
     },
     {
       "id": "pistol",
@@ -647,7 +656,8 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "枪械，全排；弹仓8，1AP装填9mm弹；开火噪声+25"
+      "desc": "枪械，全排；弹仓8，1AP装填9mm弹；开火噪声+25",
+      "equipSlot": "weapon"
     },
     {
       "id": "shotgun",
@@ -664,7 +674,8 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "枪械，只打前排；弹仓4，可散射"
+      "desc": "枪械，只打前排；弹仓4，可散射",
+      "equipSlot": "weapon"
     },
     {
       "id": "rifle",
@@ -681,7 +692,8 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "枪械，全排；弹仓5"
+      "desc": "枪械，全排；弹仓5",
+      "equipSlot": "weapon"
     },
     {
       "id": "arrow",
@@ -1951,6 +1963,1026 @@
       "requiresCooking": false,
       "use": null,
       "desc": "策划用途：E+2/S-2/M-1，6h给药冷却；不增N/W/H/I、不减V；战内2AP可对友方。本版只有物品定义，用途在后续版本开放"
+    },
+    {
+      "id": "machete",
+      "name": "砍刀",
+      "weightGrams": 1100,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        36,
+        48
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "刀剑·T1；固定特性：扫切：本武器流血命中能力+4"
+    },
+    {
+      "id": "guard_sword",
+      "name": "守备短剑",
+      "weightGrams": 1200,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        44,
+        56
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "刀剑·T2；固定特性：反击：反击技能伤害×1.15"
+    },
+    {
+      "id": "fire_axe",
+      "name": "消防斧",
+      "weightGrams": 2200,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        40,
+        52
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "斧·T1；固定特性：破门：搜集锁闭点工作量−10%（仅实际选为工具）"
+    },
+    {
+      "id": "breach_axe",
+      "name": "破障斧",
+      "weightGrams": 2600,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        48,
+        64
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "斧·T2；固定特性：破甲：破甲技能减甲量+0.1"
+    },
+    {
+      "id": "rescue_axe",
+      "name": "救援短斧",
+      "weightGrams": 1600,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        50,
+        66
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "斧·T3；固定特性：救援：攻击正保护队友的目标时伤害×1.15"
+    },
+    {
+      "id": "pike",
+      "name": "加固长枪",
+      "weightGrams": 2400,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        48,
+        60
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "矛·T2；固定特性：架阵：每轮迎击额外触发次数+1（最多2）"
+    },
+    {
+      "id": "barbed_spear",
+      "name": "倒刺短矛",
+      "weightGrams": 1700,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        42,
+        56
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "矛·T3；固定特性：钩刺：逼退命中能力+8"
+    },
+    {
+      "id": "wooden_club",
+      "name": "木棍",
+      "weightGrams": 1000,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        24,
+        32
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "钝器·T0；固定特性：朴素：无需附加词条也可使用全部钝器技能"
+    },
+    {
+      "id": "steel_mace",
+      "name": "钢制钉锤",
+      "weightGrams": 2100,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        50,
+        64
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "钝器·T2；固定特性：震荡：失衡持续到目标下次攻击后"
+    },
+    {
+      "id": "shock_baton",
+      "name": "绝缘警棍",
+      "weightGrams": 1300,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        48,
+        60
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "钝器·T3；固定特性：压制：打断成功后目标下轮速度额外−1（不叠）"
+    },
+    {
+      "id": "recurve_bow",
+      "name": "复合木弓",
+      "weightGrams": 1100,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        36,
+        48
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "弓弩·T1；固定特性：稳弓：对标记目标命中能力+5"
+    },
+    {
+      "id": "hunter_bow",
+      "name": "猎手弓",
+      "weightGrams": 1000,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        44,
+        56
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "弓弩·T2；固定特性：狩猎：对动物伤害×1.15"
+    },
+    {
+      "id": "repeater_crossbow",
+      "name": "轻型战术弩",
+      "weightGrams": 2600,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        48,
+        60
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "弓弩·T3；固定特性：快装：每次装填最多2发"
+    },
+    {
+      "id": "service_pistol",
+      "name": "勤务手枪",
+      "weightGrams": 1000,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        72,
+        96
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "枪械·T2；固定特性：稳枪：压制命中能力+6"
+    },
+    {
+      "id": "marksman_rifle",
+      "name": "精校步枪",
+      "weightGrams": 3600,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        80,
+        104
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "枪械·T3；固定特性：精校：对标记目标伤害×1.15"
+    },
+    {
+      "id": "wooden_shield",
+      "name": "木盾",
+      "weightGrams": 2200,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        28,
+        36
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "盾·T0；固定特性：盾面：盾类格挡减伤60%，不被动增加护甲"
+    },
+    {
+      "id": "scrap_shield",
+      "name": "包铁盾",
+      "weightGrams": 2800,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        40,
+        52
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "盾·T1；固定特性：包铁：被保护者所受直接伤害转移后再减10%"
+    },
+    {
+      "id": "riot_shield",
+      "name": "防暴盾",
+      "weightGrams": 3200,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        52,
+        68
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "盾·T2；固定特性：稳固：位移抵抗+25个百分点"
+    },
+    {
+      "id": "rescue_shield",
+      "name": "救援盾",
+      "weightGrams": 2800,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        60,
+        76
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "盾·T3；固定特性：护送：保护技能可指定任一友位"
+    },
+    {
+      "id": "signal_whistle",
+      "name": "信号哨",
+      "weightGrams": 100,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "指挥器具·T0；固定特性：号令：提供指挥技能，不可直接攻击"
+    },
+    {
+      "id": "signal_flag",
+      "name": "战术旗",
+      "weightGrams": 600,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        40,
+        56
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "指挥器具·T1；固定特性：集合：位置调整技能体力−0.1"
+    },
+    {
+      "id": "field_radio",
+      "name": "战术电台",
+      "weightGrams": 1200,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        48,
+        64
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "指挥器具·T2；固定特性：协同：指挥增益持续多1轮；同名不叠"
+    },
+    {
+      "id": "command_terminal",
+      "name": "便携指挥终端",
+      "weightGrams": 1500,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        60,
+        76
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "指挥器具·T3；固定特性：预判：每场首次号令额外赋予目标下一击命中能力+4"
+    },
+    {
+      "id": "field_medkit",
+      "name": "随行医疗包",
+      "weightGrams": 800,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        32,
+        44
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "医疗器具·T0；固定特性：医疗：开放战地医疗技能；药物另付"
+    },
+    {
+      "id": "trauma_bag",
+      "name": "创伤救护包",
+      "weightGrams": 1200,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        44,
+        56
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "医疗器具·T1；固定特性：创伤处置：非病毒医疗恢复+0.2H"
+    },
+    {
+      "id": "rescue_medkit",
+      "name": "救援医疗箱",
+      "weightGrams": 1800,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        52,
+        68
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "医疗器具·T2；固定特性：稳定：有效医疗后目标获下一次直接伤害−10%"
+    },
+    {
+      "id": "triage_kit",
+      "name": "分诊器材组",
+      "weightGrams": 2000,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "weapon",
+      "equipSlot": "weapon",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        60,
+        76
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "医疗器具·T3；固定特性：分诊：危急救护的回血额外+0.3H"
+    },
+    {
+      "id": "padded_vest",
+      "name": "衬垫护具",
+      "weightGrams": 1600,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "armor",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "防具·T0；护甲+0.10；速度0"
+    },
+    {
+      "id": "leather_armor",
+      "name": "皮革护具",
+      "weightGrams": 2400,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "armor",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "防具·T1；护甲+0.20；速度0"
+    },
+    {
+      "id": "scrap_armor",
+      "name": "拼接铁甲",
+      "weightGrams": 4200,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "armor",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "防具·T1；护甲+0.40；速度−2"
+    },
+    {
+      "id": "guard_armor",
+      "name": "守备护甲",
+      "weightGrams": 4000,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "armor",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "防具·T2；护甲+0.45；速度−1"
+    },
+    {
+      "id": "scout_armor",
+      "name": "侦察护具",
+      "weightGrams": 2000,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "armor",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "防具·T2；护甲+0.20；速度+1"
+    },
+    {
+      "id": "heavy_armor",
+      "name": "重型防护甲",
+      "weightGrams": 6000,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "armor",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "防具·T3；护甲+0.65；速度−2；位移抵抗+15个百分点"
+    },
+    {
+      "id": "medic_armor",
+      "name": "救护防护背心",
+      "weightGrams": 2300,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "armor",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "防具·T2；护甲+0.20；接受的非病毒医疗恢复×1.10"
+    },
+    {
+      "id": "balanced_armor",
+      "name": "均衡战术甲",
+      "weightGrams": 3500,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "armor",
+      "toolTag": null,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "防具·T3；护甲+0.40；首次受暴击时该击暴击倍率减0.25（每场一次）"
+    },
+    {
+      "id": "steady_ring",
+      "name": "稳手指环",
+      "weightGrams": 50,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "combat_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "战斗饰品·T0；战斗命中能力+3"
+    },
+    {
+      "id": "swift_pendant",
+      "name": "轻捷吊坠",
+      "weightGrams": 80,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "combat_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "战斗饰品·T1；战斗速度+1；护甲−0.05，最低0"
+    },
+    {
+      "id": "guard_badge",
+      "name": "守护徽记",
+      "weightGrams": 100,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "combat_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "战斗饰品·T1；保护转移伤害额外×0.90；不作用他人伤害"
+    },
+    {
+      "id": "hunter_token",
+      "name": "猎手护符",
+      "weightGrams": 80,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "combat_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "战斗饰品·T1；对动物命中能力+6"
+    },
+    {
+      "id": "focus_lens",
+      "name": "聚焦镜片",
+      "weightGrams": 120,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "combat_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "战斗饰品·T2；暴击能力+4；速度−1"
+    },
+    {
+      "id": "aid_badge",
+      "name": "救护徽章",
+      "weightGrams": 80,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "combat_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "战斗饰品·T2；主动非病毒治疗量+0.15H"
+    },
+    {
+      "id": "resolve_medal",
+      "name": "镇定勋章",
+      "weightGrams": 120,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "combat_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "战斗饰品·T2；入场恐慌最终值−5，最低0"
+    },
+    {
+      "id": "tactics_watch",
+      "name": "战术计时表",
+      "weightGrams": 150,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "combat_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "战斗饰品·T3；每场首次正常激活AP+1；不超过临时AP上限6"
+    },
+    {
+      "id": "work_shirt",
+      "name": "耐磨工作衣",
+      "weightGrams": 500,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "top",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "上衣·T0；制造/建造的基础工作量×0.95"
+    },
+    {
+      "id": "forage_jacket",
+      "name": "采集外套",
+      "weightGrams": 800,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "top",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "上衣·T1；采集负E小时率×0.90"
+    },
+    {
+      "id": "scavenge_vest",
+      "name": "搜集背心",
+      "weightGrams": 700,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "top",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "上衣·T1；搜集基础工作量×0.90；不增物资卡"
+    },
+    {
+      "id": "craft_coat",
+      "name": "工匠围衣",
+      "weightGrams": 1000,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "top",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "上衣·T2；制造/建造基础工作量×0.90"
+    },
+    {
+      "id": "rest_coat",
+      "name": "休养外衣",
+      "weightGrams": 600,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "top",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "上衣·T2；遮蔽休息时正E恢复额外+0.3/h"
+    },
+    {
+      "id": "expedition_coat",
+      "name": "远征上衣",
+      "weightGrams": 900,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "top",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "上衣·T3；非战斗负N/W小时率×0.95；不改即时效果"
+    },
+    {
+      "id": "work_trousers",
+      "name": "工作长裤",
+      "weightGrams": 600,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "bottom",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "下衣·T0；采集负E小时率×0.95"
+    },
+    {
+      "id": "trail_trousers",
+      "name": "行路裤",
+      "weightGrams": 650,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "bottom",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "下衣·T1；移动负E小时率×0.90"
+    },
+    {
+      "id": "utility_trousers",
+      "name": "作业长裤",
+      "weightGrams": 750,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "bottom",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "下衣·T1；搜集/清理负E小时率×0.90"
+    },
+    {
+      "id": "reinforced_trousers",
+      "name": "加固长裤",
+      "weightGrams": 1000,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "bottom",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "下衣·T2；环境划伤直接H损失×0.80；不影响战斗"
+    },
+    {
+      "id": "recovery_trousers",
+      "name": "休养长裤",
+      "weightGrams": 500,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "bottom",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "下衣·T2；睡眠正E恢复额外+0.2/h"
+    },
+    {
+      "id": "expedition_trousers",
+      "name": "远征下衣",
+      "weightGrams": 800,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "bottom",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "下衣·T3；移动基础工作量×0.90；不加战斗速度"
+    },
+    {
+      "id": "gather_gloves",
+      "name": "采集手套",
+      "weightGrams": 150,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "survival_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "求生饰品·T0；木材/废料采集划伤概率×0.80"
+    },
+    {
+      "id": "route_compass",
+      "name": "路线罗盘",
+      "weightGrams": 100,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "survival_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "求生饰品·T1；已发现路线移动工作量×0.95；不显未知地点"
+    },
+    {
+      "id": "filter_token",
+      "name": "净水操作套件",
+      "weightGrams": 200,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "survival_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "求生饰品·T1；主动制作净水片工作量×0.90；不自动净水"
+    },
+    {
+      "id": "repair_manual",
+      "name": "维护手册",
+      "weightGrams": 200,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "survival_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "求生饰品·T2；工具维护恢复最大耐久25%（替代20%，非相加）"
+    },
+    {
+      "id": "medical_notes",
+      "name": "护理笔记",
+      "weightGrams": 150,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "survival_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "求生饰品·T2；非战斗有效包扎H恢复额外+0.2；不改冷却/病毒"
+    },
+    {
+      "id": "ration_pouch",
+      "name": "配给袋",
+      "weightGrams": 250,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "survival_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "求生饰品·T3；非战斗食用正N收益×1.05；不增格、不保鲜"
     }
   ],
   "locations": [
@@ -2831,6 +3863,21 @@
       "minSkills": {
         "crafting": 1
       }
+    },
+    {
+      "id": "salvage_equipment",
+      "name": "拆解装备",
+      "kind": "salvage",
+      "baseMinutes": 15,
+      "inputs": {},
+      "outputs": {},
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "targetInstanceRequired": true,
+      "restoreOwnDurabilityMaxFraction": 0,
+      "rerollDurability": false,
+      "requireEmptyDetachedPotWhenTargetIsPot": false
     }
   ],
   "lootTables": {
@@ -3382,7 +4429,16 @@
       "durabilityMaxRange": [
         16,
         24
-      ]
+      ],
+      "tier": 0,
+      "speed": 0,
+      "ownPositions": "12",
+      "targetPositions": "12",
+      "traitText": "轻巧：首次相邻换位体力−0.1（每轮一次）",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
     },
     {
       "id": "kitchen_knife",
@@ -3402,7 +4458,16 @@
       "durabilityMaxRange": [
         28,
         42
-      ]
+      ],
+      "tier": 0,
+      "speed": 0,
+      "ownPositions": "12",
+      "targetPositions": "12",
+      "traitText": "锋口：流血持续轮数+1（仍不叠层）",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
     },
     {
       "id": "hatchet",
@@ -3422,7 +4487,16 @@
       "durabilityMaxRange": [
         24,
         36
-      ]
+      ],
+      "tier": 0,
+      "speed": -1,
+      "ownPositions": "12",
+      "targetPositions": "1",
+      "traitText": "劈砍：该武器直接攻击忽略护甲0.1",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
     },
     {
       "id": "crowbar",
@@ -3442,7 +4516,16 @@
       "durabilityMaxRange": [
         48,
         72
-      ]
+      ],
+      "tier": 1,
+      "speed": -1,
+      "ownPositions": "12",
+      "targetPositions": "12",
+      "traitText": "撬动：撬取类搜集工作量−10%",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
     },
     {
       "id": "wooden_spear",
@@ -3462,7 +4545,16 @@
       "durabilityMaxRange": [
         20,
         30
-      ]
+      ],
+      "tier": 0,
+      "speed": 0,
+      "ownPositions": "123",
+      "targetPositions": "123",
+      "traitText": "长柄：基础射程123",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
     },
     {
       "id": "metal_spear",
@@ -3482,7 +4574,16 @@
       "durabilityMaxRange": [
         32,
         48
-      ]
+      ],
+      "tier": 1,
+      "speed": 0,
+      "ownPositions": "123",
+      "targetPositions": "123",
+      "traitText": "金属尖：迎击伤害×1.1",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
     },
     {
       "id": "wooden_bow",
@@ -3502,7 +4603,16 @@
       "durabilityMaxRange": [
         24,
         36
-      ]
+      ],
+      "tier": 0,
+      "speed": 0,
+      "ownPositions": "234",
+      "targetPositions": "1234",
+      "traitText": "无声：本武器攻击噪声0",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
     },
     {
       "id": "crossbow",
@@ -3522,7 +4632,16 @@
       "durabilityMaxRange": [
         32,
         48
-      ]
+      ],
+      "tier": 1,
+      "speed": -1,
+      "ownPositions": "234",
+      "targetPositions": "1234",
+      "traitText": "劲弩：忽略护甲0.15",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
     },
     {
       "id": "pistol",
@@ -3542,7 +4661,16 @@
       "durabilityMaxRange": [
         64,
         96
-      ]
+      ],
+      "tier": 1,
+      "speed": 0,
+      "ownPositions": "234",
+      "targetPositions": "1234",
+      "traitText": "短枪：允许我方2号位使用",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
     },
     {
       "id": "shotgun",
@@ -3562,7 +4690,16 @@
       "durabilityMaxRange": [
         56,
         84
-      ]
+      ],
+      "tier": 2,
+      "speed": -1,
+      "ownPositions": "23",
+      "targetPositions": "12",
+      "traitText": "散布：散射技能仅作用敌位12",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
     },
     {
       "id": "rifle",
@@ -3582,7 +4719,799 @@
       "durabilityMaxRange": [
         64,
         96
-      ]
+      ],
+      "tier": 2,
+      "speed": -1,
+      "ownPositions": "34",
+      "targetPositions": "1234",
+      "traitText": "穿甲：忽略护甲0.2",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "machete",
+      "name": "砍刀",
+      "skillId": "blade",
+      "weaponKind": "blade",
+      "damageMin": 1.5,
+      "damageMax": 2.1,
+      "energyCost": 0.5,
+      "weightGrams": 1100,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 29,
+      "critRatingBase": 5,
+      "durabilityMaxRange": [
+        36,
+        48
+      ],
+      "tier": 1,
+      "speed": 0,
+      "ownPositions": "12",
+      "targetPositions": "12",
+      "traitText": "扫切：本武器流血命中能力+4",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "guard_sword",
+      "name": "守备短剑",
+      "skillId": "blade",
+      "weaponKind": "blade",
+      "damageMin": 1.6,
+      "damageMax": 2.3,
+      "energyCost": 0.5,
+      "weightGrams": 1200,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 31,
+      "critRatingBase": 6,
+      "durabilityMaxRange": [
+        44,
+        56
+      ],
+      "tier": 2,
+      "speed": 0,
+      "ownPositions": "12",
+      "targetPositions": "12",
+      "traitText": "反击：反击技能伤害×1.15",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "fire_axe",
+      "name": "消防斧",
+      "skillId": "blade",
+      "weaponKind": "axe",
+      "damageMin": 2,
+      "damageMax": 2.8,
+      "energyCost": 0.8,
+      "weightGrams": 2200,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 25,
+      "critRatingBase": 5,
+      "durabilityMaxRange": [
+        40,
+        52
+      ],
+      "tier": 1,
+      "speed": -1,
+      "ownPositions": "12",
+      "targetPositions": "1",
+      "traitText": "破门：搜集锁闭点工作量−10%（仅实际选为工具）",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "breach_axe",
+      "name": "破障斧",
+      "skillId": "blade",
+      "weaponKind": "axe",
+      "damageMin": 2.2,
+      "damageMax": 3,
+      "energyCost": 0.9,
+      "weightGrams": 2600,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 26,
+      "critRatingBase": 5,
+      "durabilityMaxRange": [
+        48,
+        64
+      ],
+      "tier": 2,
+      "speed": -2,
+      "ownPositions": "12",
+      "targetPositions": "1",
+      "traitText": "破甲：破甲技能减甲量+0.1",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "rescue_axe",
+      "name": "救援短斧",
+      "skillId": "blade",
+      "weaponKind": "axe",
+      "damageMin": 1.9,
+      "damageMax": 2.7,
+      "energyCost": 0.65,
+      "weightGrams": 1600,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 30,
+      "critRatingBase": 6,
+      "durabilityMaxRange": [
+        50,
+        66
+      ],
+      "tier": 3,
+      "speed": 0,
+      "ownPositions": "12",
+      "targetPositions": "1",
+      "traitText": "救援：攻击正保护队友的目标时伤害×1.15",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "pike",
+      "name": "加固长枪",
+      "skillId": "spear",
+      "weaponKind": "spear",
+      "damageMin": 2,
+      "damageMax": 2.8,
+      "energyCost": 0.65,
+      "weightGrams": 2400,
+      "targets": "all_rear_damage_0.75",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 29,
+      "critRatingBase": 5,
+      "durabilityMaxRange": [
+        48,
+        60
+      ],
+      "tier": 2,
+      "speed": -1,
+      "ownPositions": "123",
+      "targetPositions": "123",
+      "traitText": "架阵：每轮迎击额外触发次数+1（最多2）",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "barbed_spear",
+      "name": "倒刺短矛",
+      "skillId": "spear",
+      "weaponKind": "spear",
+      "damageMin": 1.8,
+      "damageMax": 2.6,
+      "energyCost": 0.55,
+      "weightGrams": 1700,
+      "targets": "all_rear_damage_0.75",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 32,
+      "critRatingBase": 7,
+      "durabilityMaxRange": [
+        42,
+        56
+      ],
+      "tier": 3,
+      "speed": 1,
+      "ownPositions": "123",
+      "targetPositions": "123",
+      "traitText": "钩刺：逼退命中能力+8",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "wooden_club",
+      "name": "木棍",
+      "skillId": "blunt",
+      "weaponKind": "blunt",
+      "damageMin": 1,
+      "damageMax": 1.6,
+      "energyCost": 0.45,
+      "weightGrams": 1000,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 27,
+      "critRatingBase": 2,
+      "durabilityMaxRange": [
+        24,
+        32
+      ],
+      "tier": 0,
+      "speed": 0,
+      "ownPositions": "12",
+      "targetPositions": "12",
+      "traitText": "朴素：无需附加词条也可使用全部钝器技能",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "steel_mace",
+      "name": "钢制钉锤",
+      "skillId": "blunt",
+      "weaponKind": "blunt",
+      "damageMin": 1.8,
+      "damageMax": 2.5,
+      "energyCost": 0.75,
+      "weightGrams": 2100,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 28,
+      "critRatingBase": 3,
+      "durabilityMaxRange": [
+        50,
+        64
+      ],
+      "tier": 2,
+      "speed": -1,
+      "ownPositions": "12",
+      "targetPositions": "12",
+      "traitText": "震荡：失衡持续到目标下次攻击后",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "shock_baton",
+      "name": "绝缘警棍",
+      "skillId": "blunt",
+      "weaponKind": "blunt",
+      "damageMin": 1.6,
+      "damageMax": 2.3,
+      "energyCost": 0.55,
+      "weightGrams": 1300,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 32,
+      "critRatingBase": 4,
+      "durabilityMaxRange": [
+        48,
+        60
+      ],
+      "tier": 3,
+      "speed": 1,
+      "ownPositions": "12",
+      "targetPositions": "12",
+      "traitText": "压制：打断成功后目标下轮速度额外−1（不叠）",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "recurve_bow",
+      "name": "复合木弓",
+      "skillId": "archery",
+      "weaponKind": "archery",
+      "damageMin": 1.7,
+      "damageMax": 2.5,
+      "energyCost": 0.45,
+      "weightGrams": 1100,
+      "targets": "all",
+      "ammoId": "arrow",
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 28,
+      "critRatingBase": 8,
+      "durabilityMaxRange": [
+        36,
+        48
+      ],
+      "tier": 1,
+      "speed": 0,
+      "ownPositions": "234",
+      "targetPositions": "1234",
+      "traitText": "稳弓：对标记目标命中能力+5",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "hunter_bow",
+      "name": "猎手弓",
+      "skillId": "archery",
+      "weaponKind": "archery",
+      "damageMin": 1.9,
+      "damageMax": 2.7,
+      "energyCost": 0.5,
+      "weightGrams": 1000,
+      "targets": "all",
+      "ammoId": "arrow",
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 30,
+      "critRatingBase": 10,
+      "durabilityMaxRange": [
+        44,
+        56
+      ],
+      "tier": 2,
+      "speed": 1,
+      "ownPositions": "234",
+      "targetPositions": "1234",
+      "traitText": "狩猎：对动物伤害×1.15",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "repeater_crossbow",
+      "name": "轻型战术弩",
+      "skillId": "archery",
+      "weaponKind": "archery",
+      "damageMin": 1.9,
+      "damageMax": 2.8,
+      "energyCost": 0.3,
+      "weightGrams": 2600,
+      "targets": "all",
+      "ammoId": "bolt",
+      "magazineCapacity": 2,
+      "basicApCost": 1,
+      "accuracyRating": 33,
+      "critRatingBase": 8,
+      "durabilityMaxRange": [
+        48,
+        60
+      ],
+      "tier": 3,
+      "speed": 0,
+      "ownPositions": "234",
+      "targetPositions": "1234",
+      "traitText": "快装：每次装填最多2发",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "service_pistol",
+      "name": "勤务手枪",
+      "skillId": "firearms",
+      "weaponKind": "firearms",
+      "damageMin": 2.5,
+      "damageMax": 3.6,
+      "energyCost": 0.25,
+      "weightGrams": 1000,
+      "targets": "all",
+      "ammoId": "ammo_9mm",
+      "magazineCapacity": 10,
+      "basicApCost": 1,
+      "accuracyRating": 29,
+      "critRatingBase": 8,
+      "durabilityMaxRange": [
+        72,
+        96
+      ],
+      "tier": 2,
+      "speed": 1,
+      "ownPositions": "234",
+      "targetPositions": "1234",
+      "traitText": "稳枪：压制命中能力+6",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "marksman_rifle",
+      "name": "精校步枪",
+      "skillId": "firearms",
+      "weaponKind": "firearms",
+      "damageMin": 3.4,
+      "damageMax": 4.8,
+      "energyCost": 0.4,
+      "weightGrams": 3600,
+      "targets": "all",
+      "ammoId": "ammo_rifle",
+      "magazineCapacity": 5,
+      "basicApCost": 1,
+      "accuracyRating": 36,
+      "critRatingBase": 10,
+      "durabilityMaxRange": [
+        80,
+        104
+      ],
+      "tier": 3,
+      "speed": -1,
+      "ownPositions": "34",
+      "targetPositions": "1234",
+      "traitText": "精校：对标记目标伤害×1.15",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "wooden_shield",
+      "name": "木盾",
+      "skillId": "",
+      "weaponKind": "shield",
+      "damageMin": 0.3,
+      "damageMax": 0.5,
+      "energyCost": 0.3,
+      "weightGrams": 2200,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 30,
+      "critRatingBase": 0,
+      "durabilityMaxRange": [
+        28,
+        36
+      ],
+      "tier": 0,
+      "speed": -1,
+      "ownPositions": "12",
+      "targetPositions": "1",
+      "traitText": "盾面：盾类格挡减伤60%，不被动增加护甲",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "scrap_shield",
+      "name": "包铁盾",
+      "skillId": "",
+      "weaponKind": "shield",
+      "damageMin": 0.4,
+      "damageMax": 0.7,
+      "energyCost": 0.35,
+      "weightGrams": 2800,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 31,
+      "critRatingBase": 0,
+      "durabilityMaxRange": [
+        40,
+        52
+      ],
+      "tier": 1,
+      "speed": -1,
+      "ownPositions": "12",
+      "targetPositions": "1",
+      "traitText": "包铁：被保护者所受直接伤害转移后再减10%",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "riot_shield",
+      "name": "防暴盾",
+      "skillId": "",
+      "weaponKind": "shield",
+      "damageMin": 0.4,
+      "damageMax": 0.7,
+      "energyCost": 0.35,
+      "weightGrams": 3200,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 33,
+      "critRatingBase": 0,
+      "durabilityMaxRange": [
+        52,
+        68
+      ],
+      "tier": 2,
+      "speed": -2,
+      "ownPositions": "12",
+      "targetPositions": "1",
+      "traitText": "稳固：位移抵抗+25个百分点",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "rescue_shield",
+      "name": "救援盾",
+      "skillId": "",
+      "weaponKind": "shield",
+      "damageMin": 0.5,
+      "damageMax": 0.8,
+      "energyCost": 0.4,
+      "weightGrams": 2800,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 34,
+      "critRatingBase": 0,
+      "durabilityMaxRange": [
+        60,
+        76
+      ],
+      "tier": 3,
+      "speed": -1,
+      "ownPositions": "12",
+      "targetPositions": "1",
+      "traitText": "护送：保护技能可指定任一友位",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "signal_whistle",
+      "name": "信号哨",
+      "skillId": "",
+      "weaponKind": "command",
+      "damageMin": 0,
+      "damageMax": 0,
+      "energyCost": 0.2,
+      "weightGrams": 100,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 0,
+      "critRatingBase": 0,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "tier": 0,
+      "speed": 0,
+      "ownPositions": "234",
+      "targetPositions": "友方",
+      "traitText": "号令：提供指挥技能，不可直接攻击",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "signal_flag",
+      "name": "战术旗",
+      "skillId": "",
+      "weaponKind": "command",
+      "damageMin": 0,
+      "damageMax": 0,
+      "energyCost": 0.25,
+      "weightGrams": 600,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 0,
+      "critRatingBase": 0,
+      "durabilityMaxRange": [
+        40,
+        56
+      ],
+      "tier": 1,
+      "speed": 0,
+      "ownPositions": "234",
+      "targetPositions": "友方",
+      "traitText": "集合：位置调整技能体力−0.1",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "field_radio",
+      "name": "战术电台",
+      "skillId": "",
+      "weaponKind": "command",
+      "damageMin": 0,
+      "damageMax": 0,
+      "energyCost": 0.2,
+      "weightGrams": 1200,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 0,
+      "critRatingBase": 0,
+      "durabilityMaxRange": [
+        48,
+        64
+      ],
+      "tier": 2,
+      "speed": 0,
+      "ownPositions": "234",
+      "targetPositions": "友方",
+      "traitText": "协同：指挥增益持续多1轮；同名不叠",
+      "salvage": {
+        "itemId": "electronics",
+        "count": 1
+      }
+    },
+    {
+      "id": "command_terminal",
+      "name": "便携指挥终端",
+      "skillId": "",
+      "weaponKind": "command",
+      "damageMin": 0,
+      "damageMax": 0,
+      "energyCost": 0.2,
+      "weightGrams": 1500,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 0,
+      "critRatingBase": 0,
+      "durabilityMaxRange": [
+        60,
+        76
+      ],
+      "tier": 3,
+      "speed": 0,
+      "ownPositions": "234",
+      "targetPositions": "友方",
+      "traitText": "预判：每场首次号令额外赋予目标下一击命中能力+4",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "field_medkit",
+      "name": "随行医疗包",
+      "skillId": "medicine",
+      "weaponKind": "medical",
+      "damageMin": 0,
+      "damageMax": 0,
+      "energyCost": 0.2,
+      "weightGrams": 800,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 0,
+      "critRatingBase": 0,
+      "durabilityMaxRange": [
+        32,
+        44
+      ],
+      "tier": 0,
+      "speed": 0,
+      "ownPositions": "234",
+      "targetPositions": "友方",
+      "traitText": "医疗：开放战地医疗技能；药物另付",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "trauma_bag",
+      "name": "创伤救护包",
+      "skillId": "medicine",
+      "weaponKind": "medical",
+      "damageMin": 0,
+      "damageMax": 0,
+      "energyCost": 0.2,
+      "weightGrams": 1200,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 0,
+      "critRatingBase": 0,
+      "durabilityMaxRange": [
+        44,
+        56
+      ],
+      "tier": 1,
+      "speed": 0,
+      "ownPositions": "234",
+      "targetPositions": "友方",
+      "traitText": "创伤处置：非病毒医疗恢复+0.2H",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "rescue_medkit",
+      "name": "救援医疗箱",
+      "skillId": "medicine",
+      "weaponKind": "medical",
+      "damageMin": 0,
+      "damageMax": 0,
+      "energyCost": 0.25,
+      "weightGrams": 1800,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 0,
+      "critRatingBase": 0,
+      "durabilityMaxRange": [
+        52,
+        68
+      ],
+      "tier": 2,
+      "speed": -1,
+      "ownPositions": "234",
+      "targetPositions": "友方",
+      "traitText": "稳定：有效医疗后目标获下一次直接伤害−10%",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
+    },
+    {
+      "id": "triage_kit",
+      "name": "分诊器材组",
+      "skillId": "medicine",
+      "weaponKind": "medical",
+      "damageMin": 0,
+      "damageMax": 0,
+      "energyCost": 0.25,
+      "weightGrams": 2000,
+      "targets": "front",
+      "ammoId": null,
+      "magazineCapacity": 0,
+      "basicApCost": 1,
+      "accuracyRating": 0,
+      "critRatingBase": 0,
+      "durabilityMaxRange": [
+        60,
+        76
+      ],
+      "tier": 3,
+      "speed": -1,
+      "ownPositions": "234",
+      "targetPositions": "友方",
+      "traitText": "分诊：危急救护的回血额外+0.3H",
+      "salvage": {
+        "itemId": "scrap",
+        "byQuality": true
+      }
     }
   ],
   "enemies": [
@@ -4765,5 +6694,1042 @@
         "note": ""
       }
     ]
+  },
+  "gear": [
+    {
+      "id": "padded_vest",
+      "name": "衬垫护具",
+      "slot": "armor",
+      "tier": 0,
+      "weightGrams": 1600,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "effectText": "护甲+0.10；速度0",
+      "effects": [
+        {
+          "key": "combat.armor",
+          "op": "add",
+          "value": 0.1
+        }
+      ],
+      "salvage": {
+        "itemId": "cloth",
+        "count": 1
+      }
+    },
+    {
+      "id": "leather_armor",
+      "name": "皮革护具",
+      "slot": "armor",
+      "tier": 1,
+      "weightGrams": 2400,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "effectText": "护甲+0.20；速度0",
+      "effects": [
+        {
+          "key": "combat.armor",
+          "op": "add",
+          "value": 0.2
+        }
+      ],
+      "salvage": {
+        "itemId": "leather",
+        "count": 1
+      }
+    },
+    {
+      "id": "scrap_armor",
+      "name": "拼接铁甲",
+      "slot": "armor",
+      "tier": 1,
+      "weightGrams": 4200,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "effectText": "护甲+0.40；速度−2",
+      "effects": [
+        {
+          "key": "combat.armor",
+          "op": "add",
+          "value": 0.4
+        },
+        {
+          "key": "combat.speed",
+          "op": "add",
+          "value": -2
+        }
+      ],
+      "salvage": null
+    },
+    {
+      "id": "guard_armor",
+      "name": "守备护甲",
+      "slot": "armor",
+      "tier": 2,
+      "weightGrams": 4000,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "effectText": "护甲+0.45；速度−1",
+      "effects": [
+        {
+          "key": "combat.armor",
+          "op": "add",
+          "value": 0.45
+        },
+        {
+          "key": "combat.speed",
+          "op": "add",
+          "value": -1
+        }
+      ],
+      "salvage": null
+    },
+    {
+      "id": "scout_armor",
+      "name": "侦察护具",
+      "slot": "armor",
+      "tier": 2,
+      "weightGrams": 2000,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "effectText": "护甲+0.20；速度+1",
+      "effects": [
+        {
+          "key": "combat.armor",
+          "op": "add",
+          "value": 0.2
+        },
+        {
+          "key": "combat.speed",
+          "op": "add",
+          "value": 1
+        }
+      ],
+      "salvage": null
+    },
+    {
+      "id": "heavy_armor",
+      "name": "重型防护甲",
+      "slot": "armor",
+      "tier": 3,
+      "weightGrams": 6000,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "effectText": "护甲+0.65；速度−2；位移抵抗+15个百分点",
+      "effects": [
+        {
+          "key": "combat.armor",
+          "op": "add",
+          "value": 0.65
+        },
+        {
+          "key": "combat.speed",
+          "op": "add",
+          "value": -2
+        },
+        {
+          "key": "combat.displaceResist",
+          "op": "add",
+          "value": 15
+        }
+      ],
+      "salvage": null
+    },
+    {
+      "id": "medic_armor",
+      "name": "救护防护背心",
+      "slot": "armor",
+      "tier": 2,
+      "weightGrams": 2300,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "effectText": "护甲+0.20；接受的非病毒医疗恢复×1.10",
+      "effects": [
+        {
+          "key": "combat.armor",
+          "op": "add",
+          "value": 0.2
+        }
+      ],
+      "salvage": {
+        "itemId": "leather",
+        "count": 1
+      }
+    },
+    {
+      "id": "balanced_armor",
+      "name": "均衡战术甲",
+      "slot": "armor",
+      "tier": 3,
+      "weightGrams": 3500,
+      "durabilityMaxRange": [
+        40,
+        60
+      ],
+      "effectText": "护甲+0.40；首次受暴击时该击暴击倍率减0.25（每场一次）",
+      "effects": [
+        {
+          "key": "combat.armor",
+          "op": "add",
+          "value": 0.4
+        }
+      ],
+      "salvage": null
+    },
+    {
+      "id": "steady_ring",
+      "name": "稳手指环",
+      "slot": "combat_acc",
+      "tier": 0,
+      "weightGrams": 50,
+      "durabilityMaxRange": null,
+      "effectText": "战斗命中能力+3",
+      "effects": [
+        {
+          "key": "combat.accuracy",
+          "op": "add",
+          "value": 3
+        }
+      ],
+      "salvage": null
+    },
+    {
+      "id": "swift_pendant",
+      "name": "轻捷吊坠",
+      "slot": "combat_acc",
+      "tier": 1,
+      "weightGrams": 80,
+      "durabilityMaxRange": null,
+      "effectText": "战斗速度+1；护甲−0.05，最低0",
+      "effects": [
+        {
+          "key": "combat.speed",
+          "op": "add",
+          "value": 1
+        },
+        {
+          "key": "combat.armor",
+          "op": "add",
+          "value": -0.05
+        }
+      ],
+      "salvage": null
+    },
+    {
+      "id": "guard_badge",
+      "name": "守护徽记",
+      "slot": "combat_acc",
+      "tier": 1,
+      "weightGrams": 100,
+      "durabilityMaxRange": null,
+      "effectText": "保护转移伤害额外×0.90；不作用他人伤害",
+      "effects": [],
+      "salvage": null
+    },
+    {
+      "id": "hunter_token",
+      "name": "猎手护符",
+      "slot": "combat_acc",
+      "tier": 1,
+      "weightGrams": 80,
+      "durabilityMaxRange": null,
+      "effectText": "对动物命中能力+6",
+      "effects": [],
+      "salvage": null
+    },
+    {
+      "id": "focus_lens",
+      "name": "聚焦镜片",
+      "slot": "combat_acc",
+      "tier": 2,
+      "weightGrams": 120,
+      "durabilityMaxRange": null,
+      "effectText": "暴击能力+4；速度−1",
+      "effects": [
+        {
+          "key": "combat.crit",
+          "op": "add",
+          "value": 4
+        },
+        {
+          "key": "combat.speed",
+          "op": "add",
+          "value": -1
+        }
+      ],
+      "salvage": null
+    },
+    {
+      "id": "aid_badge",
+      "name": "救护徽章",
+      "slot": "combat_acc",
+      "tier": 2,
+      "weightGrams": 80,
+      "durabilityMaxRange": null,
+      "effectText": "主动非病毒治疗量+0.15H",
+      "effects": [],
+      "salvage": null
+    },
+    {
+      "id": "resolve_medal",
+      "name": "镇定勋章",
+      "slot": "combat_acc",
+      "tier": 2,
+      "weightGrams": 120,
+      "durabilityMaxRange": null,
+      "effectText": "入场恐慌最终值−5，最低0",
+      "effects": [],
+      "salvage": null
+    },
+    {
+      "id": "tactics_watch",
+      "name": "战术计时表",
+      "slot": "combat_acc",
+      "tier": 3,
+      "weightGrams": 150,
+      "durabilityMaxRange": null,
+      "effectText": "每场首次正常激活AP+1；不超过临时AP上限6",
+      "effects": [],
+      "salvage": null
+    },
+    {
+      "id": "work_shirt",
+      "name": "耐磨工作衣",
+      "slot": "top",
+      "tier": 0,
+      "weightGrams": 500,
+      "durabilityMaxRange": null,
+      "effectText": "制造/建造的基础工作量×0.95",
+      "effects": [
+        {
+          "key": "work.craft",
+          "op": "mul",
+          "value": 0.95
+        }
+      ],
+      "salvage": {
+        "itemId": "cloth",
+        "count": 1
+      }
+    },
+    {
+      "id": "forage_jacket",
+      "name": "采集外套",
+      "slot": "top",
+      "tier": 1,
+      "weightGrams": 800,
+      "durabilityMaxRange": null,
+      "effectText": "采集负E小时率×0.90",
+      "effects": [
+        {
+          "key": "rate.gather.energy",
+          "op": "mul",
+          "value": 0.9
+        }
+      ],
+      "salvage": {
+        "itemId": "cloth",
+        "count": 1
+      }
+    },
+    {
+      "id": "scavenge_vest",
+      "name": "搜集背心",
+      "slot": "top",
+      "tier": 1,
+      "weightGrams": 700,
+      "durabilityMaxRange": null,
+      "effectText": "搜集基础工作量×0.90；不增物资卡",
+      "effects": [
+        {
+          "key": "work.scavenge",
+          "op": "mul",
+          "value": 0.9
+        }
+      ],
+      "salvage": {
+        "itemId": "cloth",
+        "count": 1
+      }
+    },
+    {
+      "id": "craft_coat",
+      "name": "工匠围衣",
+      "slot": "top",
+      "tier": 2,
+      "weightGrams": 1000,
+      "durabilityMaxRange": null,
+      "effectText": "制造/建造基础工作量×0.90",
+      "effects": [
+        {
+          "key": "work.craft",
+          "op": "mul",
+          "value": 0.9
+        }
+      ],
+      "salvage": {
+        "itemId": "leather",
+        "count": 1
+      }
+    },
+    {
+      "id": "rest_coat",
+      "name": "休养外衣",
+      "slot": "top",
+      "tier": 2,
+      "weightGrams": 600,
+      "durabilityMaxRange": null,
+      "effectText": "遮蔽休息时正E恢复额外+0.3/h",
+      "effects": [
+        {
+          "key": "pos.shelteredRest.energy",
+          "op": "add",
+          "value": 0.3
+        }
+      ],
+      "salvage": {
+        "itemId": "cloth",
+        "count": 1
+      }
+    },
+    {
+      "id": "expedition_coat",
+      "name": "远征上衣",
+      "slot": "top",
+      "tier": 3,
+      "weightGrams": 900,
+      "durabilityMaxRange": null,
+      "effectText": "非战斗负N/W小时率×0.95；不改即时效果",
+      "effects": [
+        {
+          "key": "rate.nonCombat.satiety",
+          "op": "mul",
+          "value": 0.95
+        },
+        {
+          "key": "rate.nonCombat.hydration",
+          "op": "mul",
+          "value": 0.95
+        }
+      ],
+      "salvage": {
+        "itemId": "cloth",
+        "count": 1
+      }
+    },
+    {
+      "id": "work_trousers",
+      "name": "工作长裤",
+      "slot": "bottom",
+      "tier": 0,
+      "weightGrams": 600,
+      "durabilityMaxRange": null,
+      "effectText": "采集负E小时率×0.95",
+      "effects": [
+        {
+          "key": "rate.gather.energy",
+          "op": "mul",
+          "value": 0.95
+        }
+      ],
+      "salvage": {
+        "itemId": "cloth",
+        "count": 1
+      }
+    },
+    {
+      "id": "trail_trousers",
+      "name": "行路裤",
+      "slot": "bottom",
+      "tier": 1,
+      "weightGrams": 650,
+      "durabilityMaxRange": null,
+      "effectText": "移动负E小时率×0.90",
+      "effects": [
+        {
+          "key": "rate.move.energy",
+          "op": "mul",
+          "value": 0.9
+        }
+      ],
+      "salvage": {
+        "itemId": "cloth",
+        "count": 1
+      }
+    },
+    {
+      "id": "utility_trousers",
+      "name": "作业长裤",
+      "slot": "bottom",
+      "tier": 1,
+      "weightGrams": 750,
+      "durabilityMaxRange": null,
+      "effectText": "搜集/清理负E小时率×0.90",
+      "effects": [
+        {
+          "key": "rate.scavengeClear.energy",
+          "op": "mul",
+          "value": 0.9
+        }
+      ],
+      "salvage": {
+        "itemId": "cloth",
+        "count": 1
+      }
+    },
+    {
+      "id": "reinforced_trousers",
+      "name": "加固长裤",
+      "slot": "bottom",
+      "tier": 2,
+      "weightGrams": 1000,
+      "durabilityMaxRange": null,
+      "effectText": "环境划伤直接H损失×0.80；不影响战斗",
+      "effects": [
+        {
+          "key": "hazard.health",
+          "op": "mul",
+          "value": 0.8
+        }
+      ],
+      "salvage": {
+        "itemId": "cloth",
+        "count": 1
+      }
+    },
+    {
+      "id": "recovery_trousers",
+      "name": "休养长裤",
+      "slot": "bottom",
+      "tier": 2,
+      "weightGrams": 500,
+      "durabilityMaxRange": null,
+      "effectText": "睡眠正E恢复额外+0.2/h",
+      "effects": [
+        {
+          "key": "pos.sleep.energy",
+          "op": "add",
+          "value": 0.2
+        }
+      ],
+      "salvage": {
+        "itemId": "cloth",
+        "count": 1
+      }
+    },
+    {
+      "id": "expedition_trousers",
+      "name": "远征下衣",
+      "slot": "bottom",
+      "tier": 3,
+      "weightGrams": 800,
+      "durabilityMaxRange": null,
+      "effectText": "移动基础工作量×0.90；不加战斗速度",
+      "effects": [
+        {
+          "key": "work.move",
+          "op": "mul",
+          "value": 0.9
+        }
+      ],
+      "salvage": {
+        "itemId": "cloth",
+        "count": 1
+      }
+    },
+    {
+      "id": "gather_gloves",
+      "name": "采集手套",
+      "slot": "survival_acc",
+      "tier": 0,
+      "weightGrams": 150,
+      "durabilityMaxRange": null,
+      "effectText": "木材/废料采集划伤概率×0.80",
+      "effects": [
+        {
+          "key": "hazard.woodScrapChance",
+          "op": "mul",
+          "value": 0.8
+        }
+      ],
+      "salvage": null
+    },
+    {
+      "id": "route_compass",
+      "name": "路线罗盘",
+      "slot": "survival_acc",
+      "tier": 1,
+      "weightGrams": 100,
+      "durabilityMaxRange": null,
+      "effectText": "已发现路线移动工作量×0.95；不显未知地点",
+      "effects": [
+        {
+          "key": "work.route",
+          "op": "mul",
+          "value": 0.95
+        }
+      ],
+      "salvage": null
+    },
+    {
+      "id": "filter_token",
+      "name": "净水操作套件",
+      "slot": "survival_acc",
+      "tier": 1,
+      "weightGrams": 200,
+      "durabilityMaxRange": null,
+      "effectText": "主动制作净水片工作量×0.90；不自动净水",
+      "effects": [
+        {
+          "key": "work.purificationTablet",
+          "op": "mul",
+          "value": 0.9
+        }
+      ],
+      "salvage": null
+    },
+    {
+      "id": "repair_manual",
+      "name": "维护手册",
+      "slot": "survival_acc",
+      "tier": 2,
+      "weightGrams": 200,
+      "durabilityMaxRange": null,
+      "effectText": "工具维护恢复最大耐久25%（替代20%，非相加）",
+      "effects": [
+        {
+          "key": "repair.fraction",
+          "op": "set",
+          "value": 0.25
+        }
+      ],
+      "salvage": null
+    },
+    {
+      "id": "medical_notes",
+      "name": "护理笔记",
+      "slot": "survival_acc",
+      "tier": 2,
+      "weightGrams": 150,
+      "durabilityMaxRange": null,
+      "effectText": "非战斗有效包扎H恢复额外+0.2；不改冷却/病毒",
+      "effects": [
+        {
+          "key": "bandage.health",
+          "op": "add",
+          "value": 0.2
+        }
+      ],
+      "salvage": null
+    },
+    {
+      "id": "ration_pouch",
+      "name": "配给袋",
+      "slot": "survival_acc",
+      "tier": 3,
+      "weightGrams": 250,
+      "durabilityMaxRange": null,
+      "effectText": "非战斗食用正N收益×1.05；不增格、不保鲜",
+      "effects": [
+        {
+          "key": "eat.satiety",
+          "op": "mul",
+          "value": 1.05
+        }
+      ],
+      "salvage": null
+    }
+  ],
+  "affixes": [
+    {
+      "id": "accurate",
+      "name": "校准",
+      "poolText": "攻击武器",
+      "pools": [
+        "kind:blade",
+        "kind:axe",
+        "kind:spear",
+        "kind:blunt",
+        "kind:archery",
+        "kind:firearms"
+      ],
+      "effectText": "命中能力+4",
+      "group": "offense",
+      "effects": [
+        {
+          "key": "combat.accuracy",
+          "op": "add",
+          "value": 4,
+          "scope": "attack"
+        }
+      ]
+    },
+    {
+      "id": "keen",
+      "name": "锐利",
+      "poolText": "刀剑/斧/矛",
+      "pools": [
+        "kind:blade",
+        "kind:axe",
+        "kind:spear"
+      ],
+      "effectText": "直接伤害乘数+0.06",
+      "group": "offense",
+      "effects": [
+        {
+          "key": "combat.damageMultiplier",
+          "op": "add",
+          "value": 0.06,
+          "scope": "attack"
+        }
+      ]
+    },
+    {
+      "id": "piercing",
+      "name": "破甲",
+      "poolText": "攻击武器",
+      "pools": [
+        "kind:blade",
+        "kind:axe",
+        "kind:spear",
+        "kind:blunt",
+        "kind:archery",
+        "kind:firearms"
+      ],
+      "effectText": "忽略护甲0.10",
+      "group": "offense",
+      "effects": [
+        {
+          "key": "combat.armorIgnore",
+          "op": "add",
+          "value": 0.1,
+          "scope": "attack"
+        }
+      ]
+    },
+    {
+      "id": "balanced",
+      "name": "平衡",
+      "poolText": "攻击武器",
+      "pools": [
+        "kind:blade",
+        "kind:axe",
+        "kind:spear",
+        "kind:blunt",
+        "kind:archery",
+        "kind:firearms"
+      ],
+      "effectText": "该武器招式E成本×0.92",
+      "group": "utility",
+      "effects": [
+        {
+          "key": "combat.energyCost",
+          "op": "mul",
+          "value": 0.92,
+          "scope": "attack"
+        }
+      ]
+    },
+    {
+      "id": "swift",
+      "name": "轻量",
+      "poolText": "武器/防具",
+      "pools": [
+        "kind:blade",
+        "kind:axe",
+        "kind:spear",
+        "kind:blunt",
+        "kind:archery",
+        "kind:firearms",
+        "kind:shield",
+        "kind:command",
+        "kind:medical",
+        "slot:armor"
+      ],
+      "effectText": "装备速度+1",
+      "group": "speed",
+      "effects": [
+        {
+          "key": "combat.speed",
+          "op": "add",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "heavy",
+      "name": "厚重",
+      "poolText": "防具",
+      "pools": [
+        "slot:armor"
+      ],
+      "effectText": "护甲+0.08；速度−1",
+      "group": "defense",
+      "effects": [
+        {
+          "key": "combat.armor",
+          "op": "add",
+          "value": 0.08
+        },
+        {
+          "key": "combat.speed",
+          "op": "add",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "id": "guarded",
+      "name": "坚守",
+      "poolText": "盾",
+      "pools": [
+        "kind:shield"
+      ],
+      "effectText": "保护转移伤害×0.92",
+      "group": "defense",
+      "effects": []
+    },
+    {
+      "id": "anchored",
+      "name": "稳固",
+      "poolText": "盾/防具",
+      "pools": [
+        "kind:shield",
+        "slot:armor"
+      ],
+      "effectText": "位移抵抗+10个百分点",
+      "group": "defense",
+      "effects": [
+        {
+          "key": "combat.displaceResist",
+          "op": "add",
+          "value": 10
+        }
+      ]
+    },
+    {
+      "id": "tactical",
+      "name": "协作",
+      "poolText": "指挥器具",
+      "pools": [
+        "kind:command"
+      ],
+      "effectText": "号令目标下一次攻击命中能力额外+3",
+      "group": "support",
+      "effects": []
+    },
+    {
+      "id": "restorative",
+      "name": "护理",
+      "poolText": "医疗器具",
+      "pools": [
+        "kind:medical"
+      ],
+      "effectText": "非病毒主动治疗+0.15H",
+      "group": "support",
+      "effects": []
+    },
+    {
+      "id": "staggering",
+      "name": "震荡",
+      "poolText": "钝器/盾",
+      "pools": [
+        "kind:blunt",
+        "kind:shield"
+      ],
+      "effectText": "控制成功判定能力+5",
+      "group": "control",
+      "effects": []
+    },
+    {
+      "id": "pushing",
+      "name": "推拒",
+      "poolText": "矛/盾",
+      "pools": [
+        "kind:spear",
+        "kind:shield"
+      ],
+      "effectText": "击退判定能力+5",
+      "group": "control",
+      "effects": []
+    },
+    {
+      "id": "durable",
+      "name": "耐用",
+      "poolText": "有耐久装备",
+      "pools": [
+        "durable"
+      ],
+      "effectText": "生成最大耐久×1.15",
+      "group": "utility",
+      "effects": [
+        {
+          "key": "durability.max",
+          "op": "mul",
+          "value": 1.15
+        }
+      ]
+    },
+    {
+      "id": "quiet",
+      "name": "隐声",
+      "poolText": "弓弩",
+      "pools": [
+        "kind:archery"
+      ],
+      "effectText": "该武器单次噪声−3，最低0",
+      "group": "utility",
+      "effects": [
+        {
+          "key": "combat.noise",
+          "op": "add",
+          "value": -3,
+          "scope": "attack"
+        }
+      ]
+    },
+    {
+      "id": "craftsman",
+      "name": "熟作",
+      "poolText": "求生上衣",
+      "pools": [
+        "slot:top"
+      ],
+      "effectText": "制造基础工作量额外×0.97",
+      "group": "survival",
+      "effects": [
+        {
+          "key": "work.craft",
+          "op": "mul",
+          "value": 0.97
+        }
+      ]
+    },
+    {
+      "id": "economical",
+      "name": "节用",
+      "poolText": "求生衣物",
+      "pools": [
+        "slot:top",
+        "slot:bottom"
+      ],
+      "effectText": "非战斗负W小时率×0.97",
+      "group": "survival",
+      "effects": [
+        {
+          "key": "rate.nonCombat.hydration",
+          "op": "mul",
+          "value": 0.97
+        }
+      ]
+    },
+    {
+      "id": "patient",
+      "name": "舒缓",
+      "poolText": "求生衣物",
+      "pools": [
+        "slot:top",
+        "slot:bottom"
+      ],
+      "effectText": "遮蔽休息正E额外+0.1/h",
+      "group": "survival",
+      "effects": [
+        {
+          "key": "pos.shelteredRest.energy",
+          "op": "add",
+          "value": 0.1
+        }
+      ]
+    },
+    {
+      "id": "surefoot",
+      "name": "稳步",
+      "poolText": "求生下衣",
+      "pools": [
+        "slot:bottom"
+      ],
+      "effectText": "移动负E小时率额外×0.95",
+      "group": "survival",
+      "effects": [
+        {
+          "key": "rate.move.energy",
+          "op": "mul",
+          "value": 0.95
+        }
+      ]
+    }
+  ],
+  "equipment": {
+    "qualityOrder": [
+      "white",
+      "green",
+      "blue"
+    ],
+    "qualityNames": {
+      "white": "白",
+      "green": "绿",
+      "blue": "蓝"
+    },
+    "affixCounts": {
+      "white": 0,
+      "green": 1,
+      "blue": 2
+    },
+    "qualityOrigins": {
+      "novice_scavenge": {
+        "white": 0.8,
+        "green": 0.2
+      },
+      "mainline_scavenge": {
+        "white": 0.5,
+        "green": 0.45,
+        "blue": 0.05
+      },
+      "dungeon_boss": {
+        "green": 0.8,
+        "blue": 0.2
+      },
+      "craft": {
+        "green": 1
+      }
+    },
+    "originNames": {
+      "novice_scavenge": "新手普通拾荒",
+      "mainline_scavenge": "主线普通拾荒",
+      "dungeon_boss": "副本首领奖励",
+      "craft": "普通制造"
+    },
+    "scavengedResourceOrigin": "novice_scavenge",
+    "craftOrigin": "craft",
+    "durabilityRounding": 0.1,
+    "limits": {
+      "positiveSpeedCap": 3,
+      "armorCap": 0.9,
+      "survivalWorkFloor": 0.7,
+      "negativeRateFloor": 0.75
+    },
+    "salvage": {
+      "recipeId": "salvage_equipment",
+      "scrapByQuality": {
+        "white": 1,
+        "green": 2,
+        "blue": 3
+      }
+    },
+    "armorWearPerHit": 1
   }
 }

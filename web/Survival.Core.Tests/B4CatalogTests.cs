@@ -91,6 +91,157 @@ public class B4CatalogTests : TestBase
         Assert.That(Cfg.Items.All(i => ItemConfig.Kinds.Contains(i.Kind)), Is.True);
     }
 
+    // ───────────── M112：72 件装备静态表与弹仓表（R14） ─────────────
+
+    private static double[] Range(string text)
+    {
+        var p = text.Replace("—", "–").Split('–');
+        return new[] { double.Parse(p[0], System.Globalization.CultureInfo.InvariantCulture), double.Parse(p[1], System.Globalization.CultureInfo.InvariantCulture) };
+    }
+
+    private static readonly Dictionary<string, string> SlotMap = new()
+    {
+        ["armor"] = "armor", ["combat_charm"] = "combat_acc", ["top"] = "top", ["bottom"] = "bottom", ["survival_charm"] = "survival_acc",
+    };
+
+    [Test]
+    public void EQ_Weapons38_MatchA05Panel()
+    {
+        var a12 = (JArray)A12()["equipment"]!["weapons"]!;
+        Assert.That(a12, Has.Count.EqualTo(38));
+        Assert.That(Cfg.Weapons.Count(w => !w.IsFists), Is.EqualTo(38));
+        var oldIds = new[] { "stone_knife", "kitchen_knife", "hatchet", "crowbar", "wooden_spear", "metal_spear", "wooden_bow", "crossbow", "pistol", "shotgun", "rifle" };
+        foreach (var j in a12)
+        {
+            var id = (string)j["id"]!;
+            var w = Cfg.Weapons.Single(x => x.Id == id);
+            var it = Item(id);
+            var dmg = Range((string)j["damage"]!);
+            var dur = Range((string)j["durability"]!);
+            Assert.That(w.WeaponKind, Is.EqualTo((string)j["kind"]!), id);
+            Assert.That(w.Tier, Is.EqualTo((int)j["tier"]!), id);
+            Assert.That((w.DamageMin, w.DamageMax), Is.EqualTo((dmg[0], dmg[1])), id);
+            Assert.That(w.AccuracyRating, Is.EqualTo((double)j["accuracy"]!), id);
+            Assert.That(w.CritRatingBase, Is.EqualTo((double)j["crit"]!), id);
+            Assert.That(w.EnergyCost, Is.EqualTo((double)j["energy"]!).Within(1e-9), id);
+            Assert.That(w.Speed, Is.EqualTo((double)j["speed"]!), id);
+            Assert.That(w.WeightGrams, Is.EqualTo((int)j["weight_g"]!), id);
+            Assert.That(w.DurabilityMaxRange, Is.EqualTo(dur), id);
+            Assert.That((w.OwnPositions, w.TargetPositions), Is.EqualTo(((string)j["own"]!, (string)j["target"]!)), id);
+            Assert.That(w.TraitText, Is.EqualTo((string)j["trait"]!), id);
+            // 弹仓表（A05“弹药、弹仓与实际出手实例补全”）
+            var ammo = (string)j["ammo"]!;
+            Assert.That(w.AmmoId, Is.EqualTo(ammo == "" ? null : ammo), id);
+            Assert.That(w.MagazineCapacity, Is.EqualTo((int)j["magazine"]!), id);
+            Assert.That(it.EquipSlot, Is.EqualTo("weapon"), id);
+            Assert.That(it.WeightGrams, Is.EqualTo(w.WeightGrams), id);
+            if (!oldIds.Contains(id))
+            {
+                Assert.That(it.Kind, Is.EqualTo("weapon"), id);
+                Assert.That(it.ToolTag, Is.Null, $"{id} 新武器不凭名字获得工具用途（S05）");
+            }
+        }
+        // 旧武器的现行两行战斗射程不动（开发假设 H3）；新武器按目标位推导
+        Assert.That(Cfg.Weapons.Single(w => w.Id == "wooden_spear").Targets, Is.EqualTo("all_rear_damage_0.75"));
+        Assert.That(Cfg.Weapons.Single(w => w.Id == "pike").Targets, Is.EqualTo("all_rear_damage_0.75"));
+        Assert.That(Cfg.Weapons.Single(w => w.Id == "service_pistol").Targets, Is.EqualTo("all"));
+        Assert.That(Cfg.Weapons.Single(w => w.Id == "machete").Targets, Is.EqualTo("front"));
+        Assert.That(Cfg.Weapons.Where(w => w.WeaponKind is "shield" or "command" or "medical").All(w => !w.CanAttack), Is.True);
+        Assert.That(Cfg.Weapons.Single(w => w.Id == "field_medkit").SkillId, Is.EqualTo("medicine"), "医疗器具使用 medicine 熟练（A05 §1 末段）");
+    }
+
+    [Test]
+    public void EQ_MagazineTable_TenRows()
+    {
+        var mags = Cfg.Weapons.Where(w => w.AmmoId != null).ToDictionary(w => w.Id, w => (w.AmmoId, w.MagazineCapacity));
+        Assert.That(mags, Has.Count.EqualTo(10));
+        Assert.That(mags["repeater_crossbow"], Is.EqualTo(("bolt", 2)));
+        Assert.That(mags["service_pistol"], Is.EqualTo(("ammo_9mm", 10)));
+        Assert.That(mags["marksman_rifle"], Is.EqualTo(("ammo_rifle", 5)));
+        Assert.That(mags["hunter_bow"], Is.EqualTo(("arrow", 0)));
+    }
+
+    [Test]
+    public void EQ_Gear34_MatchA05Table()
+    {
+        var a12 = (JArray)A12()["equipment"]!["gear"]!;
+        Assert.That(a12, Has.Count.EqualTo(34));
+        Assert.That(Cfg.Gear, Has.Count.EqualTo(34));
+        foreach (var j in a12)
+        {
+            var id = (string)j["id"]!;
+            var g = Cfg.Gear.Single(x => x.Id == id);
+            var it = Item(id);
+            Assert.That(g.Slot, Is.EqualTo(SlotMap[(string)j["slot"]!]), id);
+            Assert.That(it.EquipSlot, Is.EqualTo(g.Slot), id);
+            Assert.That(it.Kind, Is.EqualTo("gear"), id);
+            Assert.That(g.Tier, Is.EqualTo((int)j["tier"]!), id);
+            Assert.That(g.WeightGrams, Is.EqualTo((int)j["weight_g"]!), id);
+            Assert.That(it.WeightGrams, Is.EqualTo(g.WeightGrams), id);
+            Assert.That(g.EffectText, Is.EqualTo((string)j["effect"]!), id);
+            var d = (string)j["durability"]!;
+            Assert.That(g.DurabilityMaxRange, Is.EqualTo(d == "无" ? null : Range(d)), id);
+            // 结构化效果的数值必须出现在原文里（只是把原文抄成机器可读，不自补数值）
+            foreach (var ef in g.Effects)
+                Assert.That(InText(g.EffectText, ef.Value), Is.True, $"{id} {ef.Key}={ef.Value} 不在原文“{g.EffectText}”里");
+        }
+        Assert.That(Cfg.Gear.Count(g => g.Slot == "armor"), Is.EqualTo(8));
+        Assert.That(Cfg.Gear.Count(g => g.Slot == "combat_acc"), Is.EqualTo(8));
+        Assert.That(Cfg.Gear.Count(g => g.Slot == "top"), Is.EqualTo(6));
+        Assert.That(Cfg.Gear.Count(g => g.Slot == "bottom"), Is.EqualTo(6));
+        Assert.That(Cfg.Gear.Count(g => g.Slot == "survival_acc"), Is.EqualTo(6));
+    }
+
+    [Test]
+    public void EQ_Affixes18_MatchA05Table_PoolsAndGroups()
+    {
+        var a12 = (JArray)A12()["equipment"]!["affixes"]!;
+        Assert.That(Cfg.Affixes, Has.Count.EqualTo(18));
+        foreach (var j in a12)
+        {
+            var id = (string)j["id"]!;
+            var a = Cfg.Affixes.Single(x => x.Id == id);
+            Assert.That((a.Name, a.PoolText, a.EffectText, a.Group), Is.EqualTo(((string)j["name"]!, (string)j["pool"]!, (string)j["effect"]!, (string)j["group"]!)), id);
+            foreach (var ef in a.Effects)
+                Assert.That(InText(a.EffectText, ef.Value), Is.True, $"{id} {ef.Key}={ef.Value} 不在原文里");
+        }
+        Assert.That(Cfg.Affixes.Single(a => a.Id == "accurate").Pools, Does.Not.Contain("kind:shield"), "攻击武器不含盾/指挥/医疗");
+        Assert.That(Cfg.Affixes.Single(a => a.Id == "durable").Pools, Is.EqualTo(new[] { "durable" }));
+        Assert.That(Cfg.Affixes.Single(a => a.Id == "economical").Pools, Is.EqualTo(new[] { "slot:top", "slot:bottom" }));
+    }
+
+    [Test]
+    public void EQ_QualityRules_FromA05_4()
+    {
+        var q = Cfg.Equipment;
+        Assert.That(q.AffixCounts, Is.EqualTo(new Dictionary<string, int> { ["white"] = 0, ["green"] = 1, ["blue"] = 2 }));
+        Assert.That(q.QualityOrigins["novice_scavenge"], Is.EqualTo(new Dictionary<string, double> { ["white"] = 0.8, ["green"] = 0.2 }));
+        Assert.That(q.QualityOrigins["mainline_scavenge"], Is.EqualTo(new Dictionary<string, double> { ["white"] = 0.5, ["green"] = 0.45, ["blue"] = 0.05 }));
+        Assert.That(q.QualityOrigins["dungeon_boss"], Is.EqualTo(new Dictionary<string, double> { ["green"] = 0.8, ["blue"] = 0.2 }));
+        Assert.That(q.QualityOrigins["craft"], Is.EqualTo(new Dictionary<string, double> { ["green"] = 1 }), "普通制造默认绿色1条");
+        Assert.That((q.Limits.PositiveSpeedCap, q.Limits.ArmorCap, q.Limits.SurvivalWorkFloor, q.Limits.NegativeRateFloor), Is.EqualTo((3.0, 0.9, 0.7, 0.75)));
+        Assert.That(q.Salvage.ScrapByQuality, Is.EqualTo(new Dictionary<string, int> { ["white"] = 1, ["green"] = 2, ["blue"] = 3 }));
+        var salvage = Cfg.Recipes.Single(r => r.Id == q.Salvage.RecipeId);
+        Assert.That((salvage.IsSalvage, salvage.BaseMinutes), Is.EqualTo((true, 15)));
+    }
+
+    /// <summary>数值（或其百分数写法，如 0.25 ↔ 25%）出现在原文里。</summary>
+    private static bool InText(string text, double v) =>
+        Numbers(text).Any(n => Math.Abs(n - Math.Abs(v)) < 1e-9 || Math.Abs(n - Math.Abs(v) * 100) < 1e-6);
+
+    private static List<double> Numbers(string text) =>
+        System.Text.RegularExpressions.Regex.Matches(text, @"\d+(\.\d+)?")
+            .Select(m => double.Parse(m.Value, System.Globalization.CultureInfo.InvariantCulture)).ToList();
+
+    [Test]
+    public void ConfigLoader_RejectsGearSlotMismatch()
+    {
+        var j = ConfigJson();
+        ((JArray)j["items"]!).First(x => (string?)x["id"] == "padded_vest")["equipSlot"] = "top";
+        var ex = Assert.Throws<ConfigException>(() => ConfigLoader.FromJson(j.ToString()));
+        Assert.That(string.Join("；", ex!.Errors), Does.Contain("padded_vest"));
+    }
+
     [Test]
     public void ConfigLoader_RejectsUnknownItemKind()
     {

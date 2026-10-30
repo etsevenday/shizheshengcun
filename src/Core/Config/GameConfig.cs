@@ -65,6 +65,13 @@ namespace Survival.Core.Config
         public WorldEnemiesConfig WorldEnemies { get; set; } = new WorldEnemiesConfig();
         public DevKitConfig DevKit { get; set; } = new DevKitConfig();
 
+        // ───── 系统策划总册 v1.0 B4 物理目录与装备数据（A05 §1、§2、§4、§5；开发计划 v0.9 B4） ─────
+        /// <summary>防具、战斗饰品、上衣、下衣、求生饰品（34 件）。武器在 Weapons。</summary>
+        public List<GearConfig> Gear { get; set; } = new List<GearConfig>();
+        /// <summary>18 条附加词条。</summary>
+        public List<AffixConfig> Affixes { get; set; } = new List<AffixConfig>();
+        public EquipmentRulesConfig Equipment { get; set; } = new EquipmentRulesConfig();
+
         // ───── 系统策划总册 v1.0 答复（N01/R07/S15） ─────
         public ActiveSubstanceConfig ActiveSubstance { get; set; } = new ActiveSubstanceConfig();
         public StoryConfig Story { get; set; } = new StoryConfig();
@@ -193,6 +200,14 @@ namespace Survival.Core.Config
         public string? ContainerId { get; set; }
         /// <summary>液体每份体积（毫升），可装入容器的物品必须有。</summary>
         public int? UnitVolumeMl { get; set; }
+        /// <summary>
+        /// 能穿进哪类槽（B4 H2）：weapon（武器Ⅰ/Ⅱ）、armor、combat_acc、top、bottom、survival_acc（代码槽名；A05 combat_charm/survival_charm 由导入脚本映射）。
+        /// 不能穿戴为 null。
+        /// </summary>
+        public string? EquipSlot { get; set; }
+
+        public static readonly string[] EquipSlotKinds = { "weapon", "armor", "combat_acc", "top", "bottom", "survival_acc" };
+        public bool IsEquipment => EquipSlot != null;
 
         public bool IsTool => Kind == "tool";
         public bool IsWeaponKind => Kind == "weapon";
@@ -398,6 +413,8 @@ namespace Survival.Core.Config
 
         public bool IsBuild => Kind == "build";
         public bool IsRepair => Kind == "repair";
+        /// <summary>拆解装备（A05 §5，B4 H9）：须指定目标实例，产出按目标装备的拆解定义，不出现在手工制作列表。</summary>
+        public bool IsSalvage => Kind == "salvage";
         public bool NeedsExplicitPot => PotCatalyst == "explicit_empty_detached_pot";
         public bool NeedsFire => Requirement != null && Requirement.Facility == "fire";
     }

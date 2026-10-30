@@ -32,11 +32,11 @@ public class ConfigTests : TestBase
     {
         Assert.That(ConfigLoader.Validate(Cfg), Is.Empty);
         Assert.That(Cfg.CombatEnabled, Is.True, "用户 2026-10-26 拍板：直接开启，不做开关");
-        Assert.That(Cfg.Items, Has.Count.EqualTo(19 + 26 + 1 + 70), "v0.4 的19种加 v0.6 新增武器、弹药、尸体、肉、药与原料，加 v1.0 活性物质，加 B4 物理目录 70 件（A07/A12 physicalItems）");
+        Assert.That(Cfg.Items, Has.Count.EqualTo(19 + 26 + 1 + 70 + 61), "v0.4 的19种加 v0.6 新增武器、弹药、尸体、肉、药与原料，加 v1.0 活性物质，加 B4 物理目录 70 件（A07/A12 physicalItems）与新装备 61 件（27 武器 + 34 防具饰品衣物）");
         Assert.That(Cfg.Locations, Has.Count.EqualTo(8));
         Assert.That(Cfg.Edges, Has.Count.EqualTo(8));
         Assert.That(Cfg.Resources, Has.Count.EqualTo(16 + 4), "新增武器柜、旧储物柜、医药补给箱、废弃冷藏箱");
-        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5 + 3), "新增木矛、木弓、箭矢、工具维护、病毒特效药；v1.0 新增金属矛、弩、弩矢");
+        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5 + 3 + 1), "新增木矛、木弓、箭矢、工具维护、病毒特效药；v1.0 新增金属矛、弩、弩矢；B4 拆解装备");
     }
 
     // ───────────── v0.2–v0.4 未被 v0.6 替换的部分 ─────────────
@@ -432,6 +432,9 @@ public class ConfigTests : TestBase
         ((JObject)d["immunity"]!["penaltiesPerHour"]!).Remove("virusInfected");
         ((JObject)d["infection"]!).Remove("progressPerHour");
         ((JObject)d["infection"]!["naturalCure"]!).Remove("consecutiveImmunityAtLeast");
+        // B4（A05 §1）：weapons 新增 27 件，旧 12 行原值不动——按 ID 取出旧行再逐字段比对
+        var designWeaponIds = ((JArray)d["weapons"]!).Select(w => (string)w["id"]!).ToList();
+        mapped["weapons"] = new JArray(designWeaponIds.Select(id => ((JArray)mapped["weapons"]!).First(w => (string?)w["id"] == id)));
         foreach (var (ds, cs) in CopiedSections)
             AssertSubset(d[ds]!, mapped[cs]!, $"v0.6.{ds}");
         // 丧尸掉落表（v0.6 沿用 v0.5）

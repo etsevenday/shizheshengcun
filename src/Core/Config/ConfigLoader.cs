@@ -261,10 +261,11 @@ namespace Survival.Core.Config
             foreach (var w in c.Weapons)
             {
                 if (!w.IsFists && !items.Contains(w.Id)) e.Add($"武器 {w.Id} 没有对应物品");
-                if (!skills.Contains(w.SkillId)) e.Add($"武器 {w.Id} 的技能 {w.SkillId} 不存在");
+                // 盾、指挥器具的熟练度在 B5（十五门），B4 不能攻击，允许留空（开发假设 H2）
+                if (!skills.Contains(w.SkillId) && !(w.SkillId == "" && !w.CanAttack)) e.Add($"武器 {w.Id} 的技能 {w.SkillId} 不存在");
                 if (w.AmmoId != null && !items.Contains(w.AmmoId)) e.Add($"武器 {w.Id} 的弹药 {w.AmmoId} 不存在");
                 if (w.DamageMin < 0 || w.DamageMax < w.DamageMin) e.Add($"武器 {w.Id} 伤害区间无效");
-                if (w.AccuracyRating <= 0) e.Add($"武器 {w.Id} 命中能力须为正");
+                if (w.AccuracyRating <= 0 && w.CanAttack) e.Add($"武器 {w.Id} 命中能力须为正");   // 指挥/医疗器具命中 0（A05 §1，不可直接攻击）
                 if (w.IsFists && w.WeaponKind != null) e.Add("拳不占武器槽，不能有 weaponKind");
                 if (!w.IsFists && !State.WeaponKinds.IsValid(w.WeaponKind)) e.Add($"武器 {w.Id} 的 weaponKind {w.WeaponKind ?? "（缺）"} 不是九种武器类型之一");
                 if (!w.IsFists)
@@ -275,6 +276,7 @@ namespace Survival.Core.Config
                     if (it != null && it.WeightGrams != w.WeightGrams) e.Add($"武器 {w.Id} 的重量与物品不一致");
                 }
             }
+            ValidateEquipment(c, e, items);
             foreach (var a in c.CombatActions)
             {
                 foreach (var sk in a.Skills) if (!skills.Contains(sk)) e.Add($"战斗动作 {a.Id} 的技能 {sk} 不存在");
@@ -385,6 +387,64 @@ namespace Survival.Core.Config
             Shape(e, "retreat.chance", c.Retreat.Chance);
             Shape(e, "infection.exposureProbability", c.Infection.ExposureProbability);
             Shape(e, "infection.bandage.loadReduction", c.Infection.Bandage.LoadReduction);
+        }
+
+        /// <summary>B4 装备静态表（A05 §1、§2、§4、§5）：装备槽、武器/防具与物品一致、词条兼容池、品质概率与拆解产出。</summary>
+        private static void ValidateEquipment(GameConfig c, List<string> e, HashSet<string> items)
+        {
+            Dup(c.Gear, x => x.Id, "装备", e);
+            Dup(c.Affixes, x => x.Id, "词条", e);
+            var weapons = c.Weapons.Where(w => !w.IsFists).ToDictionary(w => w.Id);
+            var gear = c.Gear.GroupBy(g => g.Id).ToDictionary(g => g.Key, g => g.First());
+            var eq = c.Equipment;
+            foreach (var it in c.Items.Where(i => i.EquipSlot != null))
+            {
+                if (Array.IndexOf(ItemConfig.EquipSlotKinds, it.EquipSlot) < 0) { e.Add($"物品 {it.Id} 的装备槽 {it.EquipSlot} 未知"); continue; }
+                if (it.IsStackable) e.Add($"装备 {it.Id} 不能堆叠");
+                if (it.EquipSlot == "weapon")
+                {
+                    if (!weapons.ContainsKey(it.Id)) e.Add($"物品 {it.Id} 能进武器槽却没有武器定义");
+                }
+                else if (!gear.TryGetValue(it.Id, out var g)) e.Add($"物品 {it.Id} 能进{it.EquipSlot}槽却没有装备定义");
+                else if (g.Slot != it.EquipSlot) e.Add($"物品 {it.Id} 的装备槽与装备定义不一致");
+            }
+            foreach (var w in weapons.Values)
+                if (c.Items.FirstOrDefault(i => i.Id == w.Id) is ItemConfig wi && wi.EquipSlot != "weapon") e.Add($"武器 {w.Id} 的物品须写 equipSlot weapon");
+            foreach (var g in c.Gear)
+            {
+                var it = c.Items.FirstOrDefault(i => i.Id == g.Id);
+                if (it == null) { e.Add($"装备 {g.Id} 没有对应物品"); continue; }
+                if (it.WeightGrams != g.WeightGrams) e.Add($"装备 {g.Id} 的重量与物品不一致");
+                if (!(it.DurabilityMaxRange ?? new double[0]).SequenceEqual(g.DurabilityMaxRange ?? new double[0])) e.Add($"装备 {g.Id} 的最大耐久区间与物品不一致");
+                if (it.EquipSlot != g.Slot) e.Add($"装备 {g.Id} 的物品须写 equipSlot {g.Slot}");
+            }
+            foreach (var s in c.Gear.Select(g => g.Salvage).Concat(c.Weapons.Select(w => w.Salvage)).Where(x => x != null))
+                if (!items.Contains(s!.ItemId) || (!s.ByQuality && s.Count <= 0)) e.Add($"拆解产出 {s.ItemId} 无效");
+            if (c.Gear.Count == 0) return;
+            foreach (var a in c.Affixes)
+            {
+                if (string.IsNullOrEmpty(a.Group)) e.Add($"词条 {a.Id} 缺少互斥组");
+                if (a.Pools.Count == 0) e.Add($"词条 {a.Id} 没有兼容池");
+                foreach (var p in a.Pools)
+                {
+                    var ok = p == "durable"
+                             || p.StartsWith("kind:") && State.WeaponKinds.IsValid(p.Substring(5))
+                             || p.StartsWith("slot:") && Array.IndexOf(ItemConfig.EquipSlotKinds, p.Substring(5)) > 0;
+                    if (!ok) e.Add($"词条 {a.Id} 的兼容池 {p} 未知");
+                }
+            }
+            foreach (var q in eq.QualityOrder)
+                if (!eq.AffixCounts.ContainsKey(q) || !eq.QualityNames.ContainsKey(q)) e.Add($"品质 {q} 缺少词条数或名称");
+            foreach (var kv in eq.QualityOrigins)
+            {
+                foreach (var q in kv.Value.Keys) if (!eq.QualityOrder.Contains(q)) e.Add($"品质来源 {kv.Key} 的品质 {q} 未知");
+                if (Math.Abs(kv.Value.Values.Sum() - 1) > 1e-9) e.Add($"品质来源 {kv.Key} 的概率合计须为1");
+            }
+            if (eq.ScavengedResourceOrigin != "" && !eq.QualityOrigins.ContainsKey(eq.ScavengedResourceOrigin)) e.Add("拾荒箱品质来源未定义");
+            if (eq.CraftOrigin != "" && !eq.QualityOrigins.ContainsKey(eq.CraftOrigin)) e.Add("制造品质来源未定义");
+            if (eq.DurabilityRounding <= 0) e.Add("最大耐久取整精度须为正");
+            if (!c.Recipes.Any(r => r.Id == eq.Salvage.RecipeId && r.IsSalvage)) e.Add($"拆解配方 {eq.Salvage.RecipeId} 不存在");
+            foreach (var q in eq.QualityOrder) if (!eq.Salvage.ScrapByQuality.ContainsKey(q)) e.Add($"拆解缺少品质 {q} 的废金属数");
         }
 
         private static void Dup<T>(IEnumerable<T> list, Func<T, string> key, string what, List<string> e)
