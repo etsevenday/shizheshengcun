@@ -57,8 +57,8 @@ public class V10Q7Tests : BattleTestBase
         Assert.That(Cmd(b, "end_turn").Ok, Is.True);
         while (b.Battle != null && b.GameMinute == m0 && !b.Progress.Dead) Step(b);
         Assert.That(b.GameMinute, Is.EqualTo(m0 + 5));
-        Assert.That(b.Stats.Satiety, Is.EqualTo(80 - 1.875 * 5 / 60).Within(1e-9), "战斗饱食率保持");
-        Assert.That(b.Stats.Hydration, Is.EqualTo(80 - 4.5 * 5 / 60).Within(1e-9), "战斗水分率保持");
+        Assert.That(b.Stats.Satiety, Is.EqualTo(80).Within(1e-9), "B6 按新规则改写（R03 §6）：战斗中饱食负变化冻结");
+        Assert.That(b.Stats.Hydration, Is.EqualTo(80).Within(1e-9), "B6 按新规则改写（R03 §6）：战斗中水分负变化冻结");
         Assert.That(b.Stats.Wakefulness, Is.EqualTo(90 - 5 * 5 / 60.0).Within(1e-9), "战斗清醒率保持");
         Assert.That(b.Stats.Energy, Is.EqualTo(18).Within(1e-9), "战斗自然体力率0");
     }

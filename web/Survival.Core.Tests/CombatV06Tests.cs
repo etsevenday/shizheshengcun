@@ -950,7 +950,7 @@ public class CombatV06Tests : BattleTestBase
         while (s.Battle!.Round == 1) Step(s);
         Assert.That(s.GameMinute, Is.EqualTo(m0 + 5));
         Assert.That(s.Stats.Energy, Is.EqualTo(e0), "防御体力0，tick 体力自然率0");
-        Assert.That(n0 - s.Stats.Satiety, Is.EqualTo(1.875 * 5 / 60).Within(1e-9), "战斗速率N−1.875/h");
+        Assert.That(n0 - s.Stats.Satiety, Is.EqualTo(0).Within(1e-9), "B6 按新规则改写（R03 §6）：战斗中 N 负变化冻结");
     }
 
     /// <summary>战斗中途存档：读档恢复覆盖层与队列游标，敌人不会再行动一次（v0.5 §17）。</summary>

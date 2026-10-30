@@ -487,6 +487,92 @@ public class B6CombatTests : BattleTestBase
         Assert.That(knife.Durability, Is.EqualTo(knife.Durability), "刀不磨损");
     }
 
+    // ───────────── M132：战斗中的时间与食水（R24；验收 CB07—CB09、CB12、RG03、COMP04） ─────────────
+
+    [Test]
+    public void CB07_BattleFreezesNegativeNW_IncludingDiarrhea_NoCatchUpAfter()
+    {
+        var s = Fight(23, "stag");
+        SetStats(s, 20, 50, 50, 18, 90, 60);
+        s.DiarrheaUntil = s.GameMinute + 600;
+        var minute = s.GameMinute;
+        var heat = s.Stats.Wakefulness;
+        var fight = s.Battle!;
+        for (var round = 0; round < 3 && s.Battle != null; round++)
+        {
+            if (!E.AwaitingPlayer(s)) ToPlayer(s);
+            if (s.Battle == null) break;
+            Cmd(s, "guard");
+            while (s.Battle != null && fight.Round == round + 1) Step(s);
+        }
+        Assert.That(s.GameMinute, Is.EqualTo(minute + 15), "三个大回合各一次5分钟");
+        Assert.That((s.Stats.Satiety, s.Stats.Hydration), Is.EqualTo((50.0, 50.0)), "战内 N/W 负变化（含腹泻扣水）都为0");
+        Assert.That(s.Stats.Wakefulness, Is.EqualTo(heat - 5 * 15 / 60.0).Within(1e-9), "S 仍按战斗率−5/h");
+        // 撤退脱战后不补扣：之后的普通时间才按正常速率扣
+        s.Battle!.PlayerActing = true;
+        s.Battle.PlayerAp = 3;
+        Force(s, Below(0.0001));
+        Assert.That(Cmd(s, "retreat").Ok, Is.True);
+        Assert.That(s.Battle, Is.Null);
+        Assert.That((s.Stats.Satiety, s.Stats.Hydration), Is.EqualTo((50.0, 50.0)), "脱战那一段也是战斗段，战后不补扣");
+    }
+
+    [Test]
+    public void CB08_ZeroHydrationHealthRiskKeptInBattle_CB09_PlayerDeathFirst()
+    {
+        var s = Fight(24, "shambler");
+        Ready(s);
+        SetStats(s, 0.1, 50, 0, 18, 90, 60);
+        var e = Enemy(s, 1);
+        e.Hp = 0.01;
+        Force(s, Below(0.001), AtLeast(0.999), Any(), Any());
+        Cmd(s, "basic_attack", 1);
+        Assert.That(s.Progress.Dead, Is.True, "水分0的健康伤害照旧，轮末 tick 致死");
+        Assert.That(s.Battle, Is.Null);
+        Assert.That(s.Items.Any(i => i.Owner == "field" && i.ItemId is "cloth" or "scrap"), Is.False, "同指令杀最后一敌也不救回、不发掉落");
+    }
+
+    [Test]
+    public void RG03_COMP04_PartyTickOncePerRound_NotMultiplied()
+    {
+        var s = Fight(25, "stag");
+        var mate = s.Actor("c1");
+        mate.Stats.Satiety = 60;
+        mate.Stats.Hydration = 60;
+        mate.Stats.Wakefulness = 90;
+        mate.Stats.Health = 20;
+        mate.Stats.Energy = 18;
+        s.Party.Add("c1");
+        var minute = s.GameMinute;
+        Ready(s);
+        Cmd(s, "guard");
+        while (s.Battle != null && s.Battle.Round == 1) Step(s);
+        Assert.That(s.GameMinute, Is.EqualTo(minute + 5), "两名角色共用同一个5分钟，不按人数倍乘");
+        Assert.That((mate.Stats.Satiety, mate.Stats.Hydration), Is.EqualTo((60.0, 60.0)), "同行者同样冻结 N/W");
+        Assert.That(mate.Stats.Wakefulness, Is.EqualTo(90 - 5 * 5 / 60.0).Within(1e-9), "各自结算一次身体");
+    }
+
+    [Test]
+    public void CB12_SaveLoad_RestoresPursuitTieSteadyAp_NoReroll()
+    {
+        var s = Fight(26, "shambler", "crawler");
+        s.Player.TacticalTier = 1;
+        Ready(s);
+        var b = s.Battle!;
+        Enemy(s, 1).SteadyUntilRound = 2;
+        var json = SaveSerializer.Serialize(s);
+        var t = SaveSerializer.Deserialize(json, Cfg);
+        var tb = t.Battle!;
+        Assert.That((tb.PlayerPursuit, tb.NormalCount, tb.PlayerAp, tb.ActivationAp, tb.PlayerTieRoll), Is.EqualTo((b.PlayerPursuit, b.NormalCount, b.PlayerAp, b.ActivationAp, b.PlayerTieRoll)));
+        Assert.That(tb.Queue, Is.EqualTo(b.Queue));
+        Assert.That(tb.Enemies.Select(e => (e.PursuitProgress, e.TieRoll, e.SteadyUntilRound)), Is.EqualTo(b.Enemies.Select(e => (e.PursuitProgress, e.TieRoll, e.SteadyUntilRound))));
+        // 读档后接着打，与不读档完全同一序列
+        Cmd(s, "end_turn");
+        Cmd(t, "end_turn");
+        for (var i = 0; i < 6; i++) { Step(s); Step(t); }
+        Assert.That(SaveSerializer.Serialize(t), Is.EqualTo(SaveSerializer.Serialize(s)));
+    }
+
     [Test]
     public void R21_SameSpeed_OrderByLockedRandomThenActorId_NotReshuffled()
     {

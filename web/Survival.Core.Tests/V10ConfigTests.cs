@@ -94,7 +94,8 @@ public class V10ConfigTests : TestBase
             Assert.That(new[] { r.Satiety, r.Hydration, r.Energy, r.Wakefulness, r.Morale }, Is.EqualTo(v), k);
         }
         var b = Cfg.BattleTime.HourlyRates;
-        Assert.That(new[] { b.Satiety, b.Hydration, b.Energy, b.Wakefulness, b.Morale }, Is.EqualTo(new[] { -1.875, -4.5, 0, -5, -0.5 }), "战斗小时率不随 Q7 缩放");
+        Assert.That(new[] { b.Satiety, b.Hydration, b.Energy, b.Wakefulness, b.Morale }, Is.EqualTo(new[] { 0, 0, 0, -5, -0.5 }), "战斗小时率不随 Q7 缩放；B6（R03 §6）N/W 冻结为0，S/M 沿原−5/−0.5");
+        Assert.That(Cfg.BattleTime.FreezeNegativeSatietyHydration, Is.True);
         // 腹泻额外水耗、归零损血、正向恢复加成不缩放
         Assert.That(Cfg.ItemActions.DiarrheaExtraHydrationPerHour, Is.EqualTo(-3));
         Assert.That((Cfg.HealthRules.ZeroSatietyPerHour, Cfg.HealthRules.ZeroHydrationPerHour, Cfg.HealthRules.ZeroWakefulnessPerHour, Cfg.HealthRules.ZeroEnergyWhileWorkingPerHour),

@@ -510,6 +510,10 @@ namespace Survival.Core.Config
         public bool NoLegacyInstantUseChildAction { get; set; }
         public bool FoodAndDrinkInCombatEnabled { get; set; }
         public double ZeroEnergyWorkingHealthPerHour { get; set; }
+        /// <summary>
+        /// 战斗期间每名参战角色 N/W 全部负变化为 0（R03 §6、R01 §3：含腹泻扣水），战后不补扣；进入时已 N/W=0 的健康伤害照旧（B6 R24）。
+        /// </summary>
+        public bool FreezeNegativeSatietyHydration { get; set; }
     }
 
     /// <summary>v0.6 encounters：按地块敌密度接敌、绕行与保护期（§15）。</summary>

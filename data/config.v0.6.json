@@ -6681,12 +6681,13 @@
     "previewAdvancesTime": false,
     "freezeImmediatelyOnDirectDeathNoFutureTick": true,
     "hourlyRates": {
-      "satiety": -1.875,
-      "hydration": -4.5,
+      "satiety": 0,
+      "hydration": 0,
       "energy": 0,
       "wakefulness": -5,
       "morale": -0.5
     },
+    "freezeNegativeSatietyHydration": true,
     "actionEnergyPaidSeparately": true,
     "countsAsWorkingForZeroEnergyDamage": true,
     "passiveFacilitiesAndRefillsAdvance": true,

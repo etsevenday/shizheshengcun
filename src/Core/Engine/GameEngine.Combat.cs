@@ -703,13 +703,21 @@ namespace Survival.Core.Engine
             return true;
         }
 
-        /// <summary>战斗段：N−1.875/W−4.5/S−5/M−0.5 每小时，E 自然率 0；体力归零按工作计损血；腹泻照常。</summary>
+        /// <summary>
+        /// 战斗段（R03 §6、R01 §3）：N/W 负变化全部为 0（含腹泻扣水，战后不补扣），S−5/M−0.5 每小时，E 自然率 0（只付动作）；
+        /// 进入时已为 0 的饱食/水分/清醒与体力归零（按工作计）的健康伤害照旧；I/V、燃料、保质、加工按同一个世界 tick 继续。
+        /// </summary>
         private SegmentContext BattleSegment(GameState s, ActorState actor)
         {
             var c = Config;
             var ctx = new SegmentContext { Rates = c.BattleTime.HourlyRates.Copy(), IsWork = c.BattleTime.CountsAsWorkingForZeroEnergyDamage, ActionType = null };
             ctx.Sheltered = IsSheltered(s, s.CurrentLocation);
             if (actor.DiarrheaUntil.HasValue && actor.DiarrheaUntil.Value > s.GameMinute) ctx.Rates.Hydration += c.ItemActions.DiarrheaExtraHydrationPerHour;
+            if (c.BattleTime.FreezeNegativeSatietyHydration)
+            {
+                ctx.Rates.Satiety = Math.Max(0, ctx.Rates.Satiety);
+                ctx.Rates.Hydration = Math.Max(0, ctx.Rates.Hydration);
+            }
             var hr = c.HealthRules;
             var st = actor.Stats;
             var causes = new List<string>();
