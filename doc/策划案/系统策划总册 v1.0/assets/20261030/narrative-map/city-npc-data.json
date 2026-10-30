@@ -1,0 +1,244 @@
+{
+  "status": "approved_initial_values_for_implementation_not_gameplay_tested",
+  "date": "2026-10-30",
+  "npcs": [
+    {
+      "npcId": "npc_lu_heng",
+      "displayName": "陆衡",
+      "role": "值守登记员",
+      "factionId": "hub_survivor",
+      "locationId": "h01_gate",
+      "questIds": [
+        "QMAP01"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_lu_heng_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_xu_an",
+      "displayName": "许安",
+      "role": "公事务协调员",
+      "factionId": "hub_survivor",
+      "locationId": "h02_square",
+      "questIds": [
+        "FA01",
+        "FA04",
+        "EXQ07"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_xu_an_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_luo_zheng",
+      "displayName": "罗铮",
+      "role": "工务领班",
+      "factionId": "hub_survivor",
+      "locationId": "h03_workshop",
+      "questIds": [
+        "QMAP02",
+        "QMAP04",
+        "EXQ05",
+        "EXQ06"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_luo_zheng_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_chen_zhi",
+      "displayName": "陈芷",
+      "role": "值班医师",
+      "factionId": "hub_survivor",
+      "locationId": "h04_infirmary",
+      "questIds": [
+        "NE01",
+        "EXQ08"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_chen_zhi_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_tao_cen",
+      "displayName": "陶岑",
+      "role": "样本鉴定师",
+      "factionId": "hub_survivor",
+      "locationId": "h05_appraisal",
+      "questIds": [
+        "HU01",
+        "HU02"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_tao_cen_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_du_sui",
+      "displayName": "杜穗",
+      "role": "安置登记员",
+      "factionId": "hub_survivor",
+      "locationId": "h06_shelter",
+      "questIds": [
+        "HU03",
+        "HU04"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_du_sui_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_qi_wen",
+      "displayName": "祁闻",
+      "role": "外来者接待者",
+      "factionId": "faction_church",
+      "locationId": "c02_church",
+      "questIds": [
+        "FA02"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_qi_wen_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_bai_ling",
+      "displayName": "白苓",
+      "role": "施济员",
+      "factionId": "faction_church",
+      "locationId": "c04_alms",
+      "questIds": [
+        "CH01"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_bai_ling_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_ji_mu",
+      "displayName": "纪牧",
+      "role": "训诫执事",
+      "factionId": "faction_church",
+      "locationId": "c05_admonition",
+      "questIds": [
+        "CH02"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_ji_mu_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_song_zhu",
+      "displayName": "宋烛",
+      "role": "誊录员",
+      "factionId": "faction_church",
+      "locationId": "c06_archive",
+      "questIds": [
+        "FA02",
+        "CH02"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_song_zhu_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_fu_heng",
+      "displayName": "傅珩",
+      "role": "主持者",
+      "factionId": "faction_church",
+      "locationId": "c07_sanctuary",
+      "questIds": [],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_fu_heng_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_wen_cheng",
+      "displayName": "温澄",
+      "role": "协调员",
+      "factionId": "faction_academy",
+      "locationId": "r04_reception",
+      "questIds": [
+        "FA03"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_wen_cheng_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_ji_wen",
+      "displayName": "季闻",
+      "role": "检测研究员",
+      "factionId": "faction_academy",
+      "locationId": "r05_testing",
+      "questIds": [
+        "FA03",
+        "AC01"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_ji_wen_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_shao_ning",
+      "displayName": "邵宁",
+      "role": "档案员",
+      "factionId": "faction_academy",
+      "locationId": "r06_archive",
+      "questIds": [
+        "AC02"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_shao_ning_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_he_yuan",
+      "displayName": "何远",
+      "role": "设备技师",
+      "factionId": "faction_academy",
+      "locationId": "r07_workshop",
+      "questIds": [
+        "QMAP04"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_he_yuan_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    },
+    {
+      "npcId": "npc_yin_ke",
+      "displayName": "尹珂",
+      "role": "观察区负责人",
+      "factionId": "faction_academy",
+      "locationId": "r08_observation",
+      "questIds": [
+        "AC01"
+      ],
+      "recruitmentType": "service_only",
+      "canRecruit": false,
+      "dialogueSet": "npc_yin_ke_dialogue",
+      "serviceAtCurrentLocationOnly": true
+    }
+  ],
+  "buildingOnlyLocations": [
+    "r02_academy"
+  ],
+  "serviceContinuation": "岗位接续 不复活命名人物",
+  "approvalDate": "2026-10-30",
+  "approvalNote": "用户批准已有建议初值直接实装，可调实测再改；无初值待定不补值"
+}

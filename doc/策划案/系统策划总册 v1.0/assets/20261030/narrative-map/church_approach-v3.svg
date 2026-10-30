@@ -1,0 +1,18 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='2460' height='1340'><rect width='100%' height='100%' fill='white'/>
+<path d='M 1210 805 L 1430 1095' stroke='#999' fill='none'/><text x='1320' y='950' fill='#a00'>25</text>
+<path d='M 1430 1095 L 1650 1095' stroke='#999' fill='none'/><text x='1540' y='1095' fill='#a00'>20</text>
+<path d='M 1650 1095 L 1870 1095' stroke='#999' fill='none'/><text x='1760' y='1095' fill='#a00'>20</text>
+<path d='M 1870 1095 L 2090 1095' stroke='#999' fill='none'/><text x='1980' y='1095' fill='#a00'>25</text>
+<path d='M 2090 1095 L 1430 805' stroke='#999' fill='none'/><text x='1760' y='950' fill='#a00'>20</text>
+<path d='M 1650 1095 L 2310 1095' stroke='#999' fill='none'/><text x='1980' y='1095' fill='#a00'>30</text>
+<path d='M 2310 1095 L 1430 805' stroke='#999' fill='none'/><text x='1870' y='950' fill='#a00'>25</text>
+<path d='M 2090 1240 L 1650 1095' stroke='#999' fill='none'/><text x='1870' y='1167.5' fill='#a00'>30</text>
+<rect x='1115' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1118' y='800' font-size='14'>旧水库</text><text x='1118' y='821' font-size='12'>w08_reservoir</text>
+<rect x='1335' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1338' y='800' font-size='14'>朝圣路</text><text x='1338' y='821' font-size='12'>c01_pilgrim</text>
+<rect x='1335' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1338' y='1090' font-size='14'>荒弃果园</text><text x='1338' y='1111' font-size='12'>w11_orchard</text>
+<rect x='1555' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1558' y='1090' font-size='14'>灌溉渠岸</text><text x='1558' y='1111' font-size='12'>w12_canal</text>
+<rect x='1775' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1778' y='1090' font-size='14'>旧磨坊</text><text x='1778' y='1111' font-size='12'>w13_mill</text>
+<rect x='1995' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1998' y='1090' font-size='14'>墓地荒径</text><text x='1998' y='1111' font-size='12'>w14_cemeteryroad</text>
+<rect x='2215' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='2218' y='1090' font-size='14'>祈祷林</text><text x='2218' y='1111' font-size='12'>w15_shrinewoods</text>
+<rect x='1995' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1998' y='1235' font-size='14'>河道弯口</text><text x='1998' y='1256' font-size='12'>w29_riverbend</text>
+</svg>

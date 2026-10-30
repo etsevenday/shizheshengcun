@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<rect width="1600" height="900" fill="#101a20"/>
+<text x="16" y="40" fill="#d8b675" font-size="28" font-family="Microsoft YaHei, sans-serif">适者生存</text>
+<text x="180" y="38" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">营区广场</text>
+<rect x="950" y="12" width="94" height="37" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="965.0" y="37" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">区域地图</text>
+<rect x="1054" y="12" width="94" height="37" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1069.0" y="37" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">主城鸟瞰</text>
+<rect x="1158" y="12" width="94" height="37" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1189.0" y="37" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">制作</text>
+<rect x="1262" y="12" width="94" height="37" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1293.0" y="37" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">休息</text>
+<rect x="1366" y="12" width="94" height="37" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1381.0" y="37" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">系统说明</text>
+<rect x="1470" y="12" width="94" height="37" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1501.0" y="37" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">菜单</text>
+<rect x="12" y="76" width="176" height="146" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="27" y="109" fill="#aeb9b6" font-size="17" font-family="Microsoft YaHei, sans-serif">存活第1日</text>
+<text x="27" y="163" fill="#efe3c5" font-size="38" font-family="Microsoft YaHei, sans-serif">10:00</text>
+<text x="27" y="197" fill="#d8b675" font-size="16" font-family="Microsoft YaHei, sans-serif">白昼 · 示意数值</text>
+<rect x="12" y="234" width="176" height="437" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="25" y="269" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">健康</text>
+<text x="84" y="269" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">20.00/20</text>
+<rect x="25" y="282" width="149" height="5" rx="1" fill="#9aa982" stroke="#9aa982" stroke-width="1"/>
+<text x="25" y="323" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">饱食</text>
+<text x="84" y="323" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">80.00/100</text>
+<rect x="25" y="336" width="149" height="5" rx="1" fill="#9aa982" stroke="#9aa982" stroke-width="1"/>
+<text x="25" y="377" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">水分</text>
+<text x="84" y="377" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">80.00/100</text>
+<rect x="25" y="390" width="149" height="5" rx="1" fill="#9aa982" stroke="#9aa982" stroke-width="1"/>
+<text x="25" y="431" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">体力</text>
+<text x="84" y="431" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">18.00/20</text>
+<rect x="25" y="444" width="149" height="5" rx="1" fill="#9aa982" stroke="#9aa982" stroke-width="1"/>
+<text x="25" y="485" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">清醒</text>
+<text x="84" y="485" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">90.00/100</text>
+<rect x="25" y="498" width="149" height="5" rx="1" fill="#9aa982" stroke="#9aa982" stroke-width="1"/>
+<text x="25" y="539" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">精神</text>
+<text x="84" y="539" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">60.00/100</text>
+<rect x="25" y="552" width="149" height="5" rx="1" fill="#9aa982" stroke="#9aa982" stroke-width="1"/>
+<text x="25" y="593" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">免疫</text>
+<text x="84" y="593" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">70.00/100</text>
+<rect x="25" y="606" width="149" height="5" rx="1" fill="#9aa982" stroke="#9aa982" stroke-width="1"/>
+<rect x="12" y="684" width="176" height="183" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="26" y="718" fill="#aeb9b6" font-size="17" font-family="Microsoft YaHei, sans-serif">携带重量</text>
+<text x="26" y="759" fill="#d8b675" font-size="24" font-family="Microsoft YaHei, sans-serif">5.40公斤</text>
+<text x="26" y="794" fill="#efe3c5" font-size="15" font-family="Microsoft YaHei, sans-serif">轻装 · 精确计重</text>
+<rect x="1330" y="76" width="256" height="791" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<rect x="1343" y="90" width="112" height="38" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<rect x="1463" y="90" width="111" height="38" rx="6" fill="#17242a" stroke="#d8b675" stroke-width="1"/>
+<text x="1365.0" y="117" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">对象信息</text>
+<text x="1501.0" y="117" fill="#d8b675" font-size="17" font-family="Microsoft YaHei, sans-serif">人物</text>
+<text x="1348" y="173" fill="#efe3c5" font-size="21" font-family="Microsoft YaHei, sans-serif">人物</text>
+<rect x="1344" y="197" width="228" height="49" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1357" y="229" fill="#efe3c5" font-size="18" font-family="Microsoft YaHei, sans-serif">熟练度 · 已收起</text>
+<text x="1541" y="229" fill="#efe3c5" font-size="18" font-family="Microsoft YaHei, sans-serif">▸</text>
+<rect x="1344" y="259" width="228" height="48" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1357" y="290" fill="#efe3c5" font-size="18" font-family="Microsoft YaHei, sans-serif">词条 · 已收起</text>
+<text x="1541" y="290" fill="#efe3c5" font-size="18" font-family="Microsoft YaHei, sans-serif">▸</text>
+<text x="1348" y="808" fill="#aeb9b6" font-size="16" font-family="Microsoft YaHei, sans-serif">保留最近折叠选择</text>
+<text x="1348" y="837" fill="#aeb9b6" font-size="16" font-family="Microsoft YaHei, sans-serif">不因切页自动展开</text>
+<rect x="205" y="676" width="1109" height="192" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="221" y="705" fill="#d8b675" font-size="18" font-family="Microsoft YaHei, sans-serif">随身物资  3/5格</text>
+<text x="1006" y="705" fill="#aeb9b6" font-size="16" font-family="Microsoft YaHei, sans-serif">鸟瞰期间仅查看</text>
+<rect x="222" y="723" width="198" height="128" rx="6" fill="#253239" stroke="#807052" stroke-width="1"/>
+<rect x="303" y="743" width="30" height="69" rx="6" fill="#7dabb7" stroke="#b3d0d2" stroke-width="1"/>
+<rect x="308" y="733" width="20" height="14" rx="6" fill="#567983" stroke="#665c48" stroke-width="1"/>
+<text x="290.0" y="841" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">净水 ×2</text>
+<rect x="437" y="723" width="198" height="128" rx="6" fill="#253239" stroke="#807052" stroke-width="1"/>
+<polygon points="492,790 560,750 582,777 514,817" fill="#785f41" stroke="#91856a" stroke-width="2"/>
+<polyline points="509,794 560,764" fill="none" stroke="#d8b675" stroke-width="2"/>
+<text x="505.0" y="841" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">木材 ×4</text>
+<rect x="652" y="723" width="198" height="128" rx="6" fill="#253239" stroke="#807052" stroke-width="1"/>
+<rect x="718" y="750" width="66" height="57" rx="6" fill="#c1b998" stroke="#665c48" stroke-width="1"/>
+<polyline points="751,758 751,798" fill="none" stroke="#976759" stroke-width="8"/>
+<polyline points="731,778 771,778" fill="none" stroke="#976759" stroke-width="8"/>
+<text x="720.0" y="841" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">绷带 ×1</text>
+<rect x="867" y="723" width="198" height="128" rx="6" fill="#162229" stroke="#3b4a4c" stroke-width="1"/>
+<text x="949.0" y="841" fill="#aeb9b6" font-size="17" font-family="Microsoft YaHei, sans-serif">空位</text>
+<rect x="1082" y="723" width="198" height="128" rx="6" fill="#162229" stroke="#3b4a4c" stroke-width="1"/>
+<text x="1164.0" y="841" fill="#aeb9b6" font-size="17" font-family="Microsoft YaHei, sans-serif">空位</text>
+<text x="16" y="892" fill="#aeb9b6" font-size="14" font-family="Microsoft YaHei, sans-serif">UI布局示意 · 非实机截图 · 浏览不推进时间；移动与服务按真实规则提交</text>
+<rect x="205" y="76" width="1109" height="592" rx="6" fill="#202c2e" stroke="#b2965d" stroke-width="2"/>
+<text x="226" y="111" fill="#d8b675" font-size="23" font-family="Microsoft YaHei, sans-serif">幸存者营区 · 主城鸟瞰</text>
+<text x="885" y="111" fill="#aeb9b6" font-size="16" font-family="Microsoft YaHei, sans-serif">只读浏览 · 上三行覆盖</text>
+<rect x="1144" y="85" width="153" height="36" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1172.0" y="110" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">返回当前地点</text>
+<polygon points="240,182 1185,151 1282,550 262,574" fill="#29352f" stroke="#4e554c" stroke-width="2"/>
+<polyline points="264,159 272,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="312,159 320,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="360,159 368,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="408,159 416,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="456,159 464,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="504,159 512,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="552,159 560,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="600,159 608,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="648,159 656,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="696,159 704,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="744,159 752,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="792,159 800,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="840,159 848,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="888,159 896,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="936,159 944,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="984,159 992,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="1032,159 1040,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="1080,159 1088,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="1128,159 1136,181" fill="none" stroke="#475144" stroke-width="5"/>
+<polyline points="452,430 760,436" fill="none" stroke="#756e59" stroke-width="14"/>
+<polyline points="452,430 760,436" fill="none" stroke="#999075" stroke-width="2"/>
+<polyline points="760,436 480,244" fill="none" stroke="#756e59" stroke-width="14"/>
+<polyline points="760,436 480,244" fill="none" stroke="#999075" stroke-width="2"/>
+<polyline points="760,436 1028,244" fill="none" stroke="#756e59" stroke-width="14"/>
+<polyline points="760,436 1028,244" fill="none" stroke="#999075" stroke-width="2"/>
+<polyline points="760,436 1060,436" fill="none" stroke="#756e59" stroke-width="14"/>
+<polyline points="760,436 1060,436" fill="none" stroke="#999075" stroke-width="2"/>
+<polyline points="760,436 1060,436" fill="none" stroke="#d8b675" stroke-width="5"/>
+<polyline points="760,436 760,244" fill="none" stroke="#756e59" stroke-width="14"/>
+<polyline points="760,436 760,244" fill="none" stroke="#999075" stroke-width="2"/>
+<rect x="694" y="204" width="132" height="80" rx="6" fill="#39413b" stroke="#8b846c" stroke-width="1"/>
+<polygon points="683,204 722,176 837,204 798,232" fill="#736446" stroke="#91856a" stroke-width="2"/>
+<polygon points="683,204 722,176 722,226 694,252" fill="#5c523c" stroke="#91856a" stroke-width="2"/>
+<rect x="747" y="246" width="26" height="38" rx="1" fill="#182323" stroke="#a0916b" stroke-width="1"/>
+<rect x="714" y="227" width="17" height="20" rx="1" fill="#9f9d73" stroke="#b6ab84" stroke-width="1"/>
+<rect x="791" y="227" width="17" height="20" rx="1" fill="#9f9d73" stroke="#b6ab84" stroke-width="1"/>
+<rect x="677" y="291" width="166" height="30" rx="6" fill="#162228" stroke="#5e675d" stroke-width="1"/>
+<text x="734.5" y="312" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">收容所</text>
+<rect x="386" y="390" width="132" height="80" rx="6" fill="#39413b" stroke="#8b846c" stroke-width="1"/>
+<polygon points="375,390 414,362 529,390 490,418" fill="#736446" stroke="#91856a" stroke-width="2"/>
+<polygon points="375,390 414,362 414,412 386,438" fill="#5c523c" stroke="#91856a" stroke-width="2"/>
+<rect x="439" y="432" width="26" height="38" rx="1" fill="#182323" stroke="#a0916b" stroke-width="1"/>
+<rect x="406" y="413" width="17" height="20" rx="1" fill="#9f9d73" stroke="#b6ab84" stroke-width="1"/>
+<rect x="483" y="413" width="17" height="20" rx="1" fill="#9f9d73" stroke="#b6ab84" stroke-width="1"/>
+<rect x="369" y="477" width="166" height="30" rx="6" fill="#162228" stroke="#5e675d" stroke-width="1"/>
+<text x="435.0" y="498" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">营门</text>
+<rect x="694" y="396" width="132" height="80" rx="6" fill="#39413b" stroke="#8b846c" stroke-width="1"/>
+<polygon points="683,396 722,368 837,396 798,424" fill="#736446" stroke="#91856a" stroke-width="2"/>
+<polygon points="683,396 722,368 722,418 694,444" fill="#5c523c" stroke="#91856a" stroke-width="2"/>
+<rect x="747" y="438" width="26" height="38" rx="1" fill="#182323" stroke="#a0916b" stroke-width="1"/>
+<rect x="714" y="419" width="17" height="20" rx="1" fill="#9f9d73" stroke="#b6ab84" stroke-width="1"/>
+<rect x="791" y="419" width="17" height="20" rx="1" fill="#9f9d73" stroke="#b6ab84" stroke-width="1"/>
+<rect x="677" y="483" width="166" height="30" rx="6" fill="#162228" stroke="#5e675d" stroke-width="1"/>
+<text x="743.0" y="504" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">广场</text>
+<circle cx="683" cy="393" r="15" fill="#b48b3f" stroke="#d8b675" stroke-width="2"/>
+<text x="676.5" y="403" fill="#111b20" font-size="21" font-family="Microsoft YaHei, sans-serif">◎</text>
+<rect x="414" y="204" width="132" height="80" rx="6" fill="#39413b" stroke="#8b846c" stroke-width="1"/>
+<polygon points="403,204 442,176 557,204 518,232" fill="#736446" stroke="#91856a" stroke-width="2"/>
+<polygon points="403,204 442,176 442,226 414,252" fill="#5c523c" stroke="#91856a" stroke-width="2"/>
+<rect x="467" y="246" width="26" height="38" rx="1" fill="#182323" stroke="#a0916b" stroke-width="1"/>
+<rect x="434" y="227" width="17" height="20" rx="1" fill="#9f9d73" stroke="#b6ab84" stroke-width="1"/>
+<rect x="511" y="227" width="17" height="20" rx="1" fill="#9f9d73" stroke="#b6ab84" stroke-width="1"/>
+<rect x="397" y="291" width="166" height="30" rx="6" fill="#162228" stroke="#5e675d" stroke-width="1"/>
+<text x="463.0" y="312" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">工坊</text>
+<rect x="962" y="204" width="132" height="80" rx="6" fill="#39413b" stroke="#8b846c" stroke-width="1"/>
+<polygon points="951,204 990,176 1105,204 1066,232" fill="#736446" stroke="#91856a" stroke-width="2"/>
+<polygon points="951,204 990,176 990,226 962,252" fill="#5c523c" stroke="#91856a" stroke-width="2"/>
+<rect x="1015" y="246" width="26" height="38" rx="1" fill="#182323" stroke="#a0916b" stroke-width="1"/>
+<rect x="982" y="227" width="17" height="20" rx="1" fill="#9f9d73" stroke="#b6ab84" stroke-width="1"/>
+<rect x="1059" y="227" width="17" height="20" rx="1" fill="#9f9d73" stroke="#b6ab84" stroke-width="1"/>
+<rect x="945" y="291" width="166" height="30" rx="6" fill="#162228" stroke="#5e675d" stroke-width="1"/>
+<text x="1002.5" y="312" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">医务室</text>
+<rect x="994" y="396" width="132" height="80" rx="6" fill="#39413b" stroke="#d8b675" stroke-width="3"/>
+<polygon points="983,396 1022,368 1137,396 1098,424" fill="#736446" stroke="#91856a" stroke-width="2"/>
+<polygon points="983,396 1022,368 1022,418 994,444" fill="#5c523c" stroke="#91856a" stroke-width="2"/>
+<rect x="1047" y="438" width="26" height="38" rx="1" fill="#182323" stroke="#a0916b" stroke-width="1"/>
+<rect x="1014" y="419" width="17" height="20" rx="1" fill="#9f9d73" stroke="#b6ab84" stroke-width="1"/>
+<rect x="1091" y="419" width="17" height="20" rx="1" fill="#9f9d73" stroke="#b6ab84" stroke-width="1"/>
+<rect x="977" y="483" width="166" height="30" rx="6" fill="#162228" stroke="#d8b675" stroke-width="1"/>
+<text x="1034.5" y="504" fill="#d8b675" font-size="17" font-family="Microsoft YaHei, sans-serif">鉴定所</text>
+<circle cx="1136" cy="392" r="14" fill="#c9a65e" stroke="#d8b675" stroke-width="2"/>
+<text x="1132.5" y="402" fill="#152329" font-size="21" font-family="Microsoft YaHei, sans-serif">!</text>
+<text x="232" y="599" fill="#d8b675" font-size="15" font-family="Microsoft YaHei, sans-serif">◎ 当前  ◇ 目标  ! 任务  锁 条件不足</text>
+<text x="232" y="629" fill="#aeb9b6" font-size="16" font-family="Microsoft YaHei, sans-serif">道路仅连接已配置物理边；点建筑不直接传送</text>
+<rect x="747" y="550" width="550" height="101" rx="6" fill="#122027" stroke="#d8b675" stroke-width="2"/>
+<text x="763" y="579" fill="#d8b675" font-size="19" font-family="Microsoft YaHei, sans-serif">鉴定所 · 已选中</text>
+<text x="763" y="604" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">广场 → 鉴定所 · 5分钟</text>
+<text x="763" y="633" fill="#aeb9b6" font-size="16" font-family="Microsoft YaHei, sans-serif">基础5分钟</text>
+<rect x="1155" y="608" width="129" height="33" rx="6" fill="#b6985e" stroke="#d8b675" stroke-width="1"/>
+<text x="1186.0" y="631" fill="#152129" font-size="17" font-family="Microsoft YaHei, sans-serif">确认前往</text>
+<text x="763" y="141" fill="#aeb9b6" font-size="15" font-family="Microsoft YaHei, sans-serif">营外安全屋是独立地块，走区域地图</text>
+</svg>

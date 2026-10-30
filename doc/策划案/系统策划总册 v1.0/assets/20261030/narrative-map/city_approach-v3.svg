@@ -1,0 +1,19 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='2900' height='1485'><rect width='100%' height='100%' fill='white'/>
+<path d='M 770 805 L 2090 1240' stroke='#999' fill='none'/><text x='1430' y='1022.5' fill='#a00'>25</text>
+<path d='M 2090 1240 L 2310 1240' stroke='#999' fill='none'/><text x='2200' y='1240' fill='#a00'>25</text>
+<path d='M 2310 1240 L 2530 1240' stroke='#999' fill='none'/><text x='2420' y='1240' fill='#a00'>25</text>
+<path d='M 2530 1240 L 2750 1240' stroke='#999' fill='none'/><text x='2640' y='1240' fill='#a00'>20</text>
+<path d='M 2750 1240 L 1870 515' stroke='#999' fill='none'/><text x='2310' y='877.5' fill='#a00'>25</text>
+<path d='M 2530 1240 L 1870 805' stroke='#999' fill='none'/><text x='2200' y='1022.5' fill='#a00'>30</text>
+<path d='M 2090 1240 L 1650 1095' stroke='#999' fill='none'/><text x='1870' y='1167.5' fill='#a00'>30</text>
+<path d='M 2090 1385 L 2310 1240' stroke='#999' fill='none'/><text x='2200' y='1312.5' fill='#a00'>25</text>
+<rect x='675' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='678' y='800' font-size='14'>断桥河滩</text><text x='678' y='821' font-size='12'>w06_bridge</text>
+<rect x='1775' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1778' y='800' font-size='14'>教堂墓园</text><text x='1778' y='821' font-size='12'>c03_crypt</text>
+<rect x='1775' y='490' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1778' y='510' font-size='14'>旧城门</text><text x='1778' y='531' font-size='12'>o01_oldgate</text>
+<rect x='1555' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1558' y='1090' font-size='14'>灌溉渠岸</text><text x='1558' y='1111' font-size='12'>w12_canal</text>
+<rect x='1995' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1998' y='1235' font-size='14'>河道弯口</text><text x='1998' y='1256' font-size='12'>w29_riverbend</text>
+<rect x='2215' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='2218' y='1235' font-size='14'>货车休息区</text><text x='2218' y='1256' font-size='12'>w30_truckstop</text>
+<rect x='2435' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='2438' y='1235' font-size='14'>城郊棚户</text><text x='2438' y='1256' font-size='12'>w31_suburb</text>
+<rect x='2655' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='2658' y='1235' font-size='14'>铁路线切口</text><text x='2658' y='1256' font-size='12'>w32_railcut</text>
+<rect x='1995' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1998' y='1380' font-size='14'>应急仓外</text><text x='1998' y='1401' font-size='12'>w34_depot</text>
+</svg>

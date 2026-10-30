@@ -1,0 +1,20 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='1580' height='1485'><rect width='100%' height='100%' fill='white'/>
+<path d='M 550 805 L 330 1240' stroke='#999' fill='none'/><text x='440' y='1022.5' fill='#a00'>25</text>
+<path d='M 330 1240 L 550 1240' stroke='#999' fill='none'/><text x='440' y='1240' fill='#a00'>25</text>
+<path d='M 550 1240 L 770 1240' stroke='#999' fill='none'/><text x='660' y='1240' fill='#a00'>20</text>
+<path d='M 770 1240 L 990 1240' stroke='#999' fill='none'/><text x='880' y='1240' fill='#a00'>25</text>
+<path d='M 990 1240 L 550 950' stroke='#999' fill='none'/><text x='770' y='1095' fill='#a00'>20</text>
+<path d='M 550 1240 L 1210 1240' stroke='#999' fill='none'/><text x='880' y='1240' fill='#a00'>30</text>
+<path d='M 1210 1240 L 990 1240' stroke='#999' fill='none'/><text x='1100' y='1240' fill='#a00'>20</text>
+<path d='M 330 1385 L 770 1240' stroke='#999' fill='none'/><text x='550' y='1312.5' fill='#a00'>30</text>
+<path d='M 1430 1385 L 1210 1240' stroke='#999' fill='none'/><text x='1320' y='1312.5' fill='#a00'>35</text>
+<rect x='455' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='458' y='800' font-size='14'>山脊哨道</text><text x='458' y='821' font-size='12'>w07_ridge</text>
+<rect x='455' y='925' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='458' y='945' font-size='14'>灰塔观测站</text><text x='458' y='966' font-size='12'>r01_observatory</text>
+<rect x='235' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='238' y='1235' font-size='14'>山间服务站</text><text x='238' y='1256' font-size='12'>w16_service</text>
+<rect x='455' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='458' y='1235' font-size='14'>盘山公路</text><text x='458' y='1256' font-size='12'>w17_switchback</text>
+<rect x='675' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='678' y='1235' font-size='14'>塌隧道外</text><text x='678' y='1256' font-size='12'>w18_tunnel</text>
+<rect x='895' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='898' y='1235' font-size='14'>测绘营址</text><text x='898' y='1256' font-size='12'>w19_survey</text>
+<rect x='1115' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1118' y='1235' font-size='14'>高压走廊</text><text x='1118' y='1256' font-size='12'>w20_powercut</text>
+<rect x='235' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='238' y='1380' font-size='14'>陡壁沟谷</text><text x='238' y='1401' font-size='12'>w22_ravine</text>
+<rect x='1335' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1338' y='1380' font-size='14'>废中继营</text><text x='1338' y='1401' font-size='12'>w27_relay</text>
+</svg>

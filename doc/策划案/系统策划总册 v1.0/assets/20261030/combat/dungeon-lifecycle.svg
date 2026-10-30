@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1760" viewBox="0 0 1600 1760"><title>地牢远征、撤离与重置生命周期 v1.0</title><desc>战斗撤退留在实例；整图退出保留已得奖励；通关72世界小时后无人可确认重置，首次奖励永久去重。</desc><rect width="1600" height="1760" fill="#f3f4ee"/>
+<text x="40" y="64" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="44" fill="#243940">地牢远征 · 撤离与重置</text>
+<text x="1040" y="62" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">v1.0  |  已批准 · 待实机</text>
+<polyline fill="none" stroke="#546d75" stroke-width="4" points="800,260 800,330"/>
+<polygon fill="#546d75" points="800.0,330.0 793.4,314.3 806.6,314.3"/>
+<polyline fill="none" stroke="#546d75" stroke-width="4" points="800,460 800,500 270,500 270,550"/>
+<polygon fill="#546d75" points="270.0,550.0 263.4,534.3 276.6,534.3"/>
+<polyline fill="none" stroke="#546d75" stroke-width="4" points="800,460 800,550"/>
+<polygon fill="#546d75" points="800.0,550.0 793.4,534.3 806.6,534.3"/>
+<polyline fill="none" stroke="#546d75" stroke-width="4" points="800,460 800,500 1330,500 1330,550"/>
+<polygon fill="#546d75" points="1330.0,550.0 1323.4,534.3 1336.6,534.3"/>
+<polyline fill="none" stroke="#546d75" stroke-width="4" points="270,750 270,820"/>
+<polygon fill="#546d75" points="270.0,820.0 263.4,804.3 276.6,804.3"/>
+<polyline fill="none" stroke="#546d75" stroke-width="4" points="800,750 800,820"/>
+<polygon fill="#546d75" points="800.0,820.0 793.4,804.3 806.6,804.3"/>
+<polyline fill="none" stroke="#546d75" stroke-width="4" points="1330,750 1330,820"/>
+<polygon fill="#546d75" points="1330.0,820.0 1323.4,804.3 1336.6,804.3"/>
+<polyline fill="none" stroke="#546d75" stroke-width="4" points="40,905 16,905 16,395 300,395"/>
+<polygon fill="#546d75" points="300.0,395.0 284.3,401.6 284.3,388.4"/>
+<polyline fill="none" stroke="#546d75" stroke-width="4" points="800,990 800,1080"/>
+<polygon fill="#546d75" points="800.0,1080.0 793.4,1064.3 806.6,1064.3"/>
+<polyline fill="none" stroke="#546d75" stroke-width="4" points="1330,990 1330,1080"/>
+<polygon fill="#546d75" points="1330.0,1080.0 1323.4,1064.3 1336.6,1064.3"/>
+<polyline fill="none" stroke="#546d75" stroke-width="4" points="800,1235 800,1275 390,1275 390,1320"/>
+<polygon fill="#546d75" points="390.0,1320.0 383.4,1304.3 396.6,1304.3"/>
+<polyline fill="none" stroke="#546d75" stroke-width="4" points="800,1235 800,1275 1190,1275 1190,1320"/>
+<polygon fill="#546d75" points="1190.0,1320.0 1183.4,1304.3 1196.6,1304.3"/>
+<polyline fill="none" stroke="#546d75" stroke-width="4" points="1190,1490 1190,1560"/>
+<polygon fill="#546d75" points="1190.0,1560.0 1183.4,1544.3 1196.6,1544.3"/>
+<rect x="300" y="100" width="1000" height="160" rx="16" fill="#e8edf0" stroke="#365b73" stroke-width="3"/>
+<text x="322" y="146" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="31" fill="#365b73">进入前：准备与明确预告</text>
+<text x="322" y="188" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">检查全队食水、医疗、弹药、伤病与退出代价</text>
+<text x="322" y="222" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">01缓冲未入危险门可正常返回；跨危险门锁远征ID</text>
+<rect x="300" y="330" width="1000" height="130" rx="16" fill="#e4eee6" stroke="#35674b" stroke-width="3"/>
+<text x="322" y="376" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="31" fill="#35674b">同一实例中探索、战斗、领取奖励</text>
+<text x="322" y="418" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">战斗每完整回合仅5分钟；战内N/W负变化暂停</text>
+<rect x="40" y="550" width="460" height="200" rx="16" fill="#e4edf5" stroke="#365b83" stroke-width="3"/>
+<text x="62" y="596" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="31" fill="#365b83">普通战斗撤退</text>
+<text x="62" y="638" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">2AP＋原E成本／原概率</text>
+<text x="62" y="672" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">成功退已清节点或01</text>
+<text x="62" y="706" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">仅结一次战斗tick</text>
+<text x="62" y="740" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">不扣整图退出惩罚</text>
+<rect x="570" y="550" width="460" height="200" rx="16" fill="#e2efe5" stroke="#376a49" stroke-width="3"/>
+<text x="592" y="596" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="31" fill="#376a49">记录点提交：通关</text>
+<text x="592" y="638" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">guard后提交recordNode</text>
+<text x="592" y="672" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">首次账与普通包分开</text>
+<text x="592" y="706" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">写入72世界小时冷却</text>
+<text x="592" y="740" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">exitNode单向10分钟</text>
+<rect x="1100" y="550" width="460" height="200" rx="16" fill="#f5e8dc" stroke="#935f2e" stroke-width="3"/>
+<text x="1122" y="596" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="31" fill="#935f2e">未通关：结束远征</text>
+<text x="1122" y="638" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">主动确认：大量属性损失</text>
+<text x="1122" y="672" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">合法强退：较轻固定包</text>
+<text x="1122" y="706" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">两种类型不可叠扣</text>
+<text x="1122" y="740" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">关闭程序不等于撤离</text>
+<rect x="40" y="820" width="460" height="170" rx="16" fill="#e4edf5" stroke="#365b83" stroke-width="3"/>
+<text x="62" y="866" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="31" fill="#365b83">继续原实例</text>
+<text x="62" y="908" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">原HP／箱子／进度保留</text>
+<text x="62" y="942" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">未通关走出外部仍要确认</text>
+<text x="62" y="976" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">不是免费终止远征</text>
+<rect x="570" y="820" width="460" height="170" rx="16" fill="#e2efe5" stroke="#376a49" stroke-width="3"/>
+<text x="592" y="866" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="31" fill="#376a49">安全出口返程</text>
+<text x="592" y="908" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">按真实travel自然消耗</text>
+<text x="592" y="942" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">不扣主动终止固定包</text>
+<text x="592" y="976" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">期间既有病伤仍会推进</text>
+<rect x="1100" y="820" width="460" height="170" rx="16" fill="#f5e8dc" stroke="#935f2e" stroke-width="3"/>
+<text x="1122" y="866" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="31" fill="#935f2e">撤出组织与返程</text>
+<text x="1122" y="908" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">T＝至少30分钟且含路径</text>
+<text x="1122" y="942" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">固定包替代五项负速率</text>
+<text x="1122" y="976" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">健康／感染风险照常</text>
+<rect x="40" y="1080" width="1520" height="155" rx="16" fill="#e7ece9" stroke="#41645b" stroke-width="3"/>
+<text x="62" y="1126" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="31" fill="#41645b">主角存活抵达各自父地点：保留全部已得且未消耗的物资</text>
+<text x="62" y="1168" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">随身仍归本人；封存奖励迁本地回收箱；未领箱不自动搜空</text>
+<text x="62" y="1202" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">主角途中死亡立即终局，不补后续路程、不复活、不把物资瞬移营区</text>
+<rect x="40" y="1320" width="700" height="170" rx="16" fill="#e9edf2" stroke="#4e637f" stroke-width="3"/>
+<text x="62" y="1366" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="31" fill="#4e637f">尚未通关：旧实例继续有效</text>
+<text x="62" y="1408" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">主动退出不启动72小时重置</text>
+<text x="62" y="1442" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">再进沿用进度；早期箱不能重刷</text>
+<text x="62" y="1476" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">可以补给后回来，不剥夺撤离权</text>
+<rect x="820" y="1320" width="740" height="170" rx="16" fill="#e4eee1" stroke="#4b6b3c" stroke-width="3"/>
+<text x="842" y="1366" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="31" fill="#4b6b3c">已通关：冷却到期且内部无人</text>
+<text x="842" y="1408" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">通关时刻＋72世界小时；离线不计时</text>
+<text x="842" y="1442" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">父地点明确确认；旧物先迁认领箱</text>
+<text x="842" y="1476" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">有人／战斗／预留未结时不得重置</text>
+<rect x="820" y="1560" width="740" height="150" rx="16" fill="#e4eee1" stroke="#4b6b3c" stroke-width="3"/>
+<text x="842" y="1606" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="31" fill="#4b6b3c">新一代实例：只再生可重复部分</text>
+<text x="842" y="1648" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">普通敌／普通箱重建；新instanceId</text>
+<text x="842" y="1682" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="24" fill="#243940">任务／蓝图／容量／唯一装备永不重发</text>
+<text x="40" y="1605" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="25" fill="#8b443c">红线：直接退出扣H不致死，</text>
+<text x="40" y="1645" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="25" fill="#8b443c">但真实返程中的伤病与尸变可以致死。</text>
+<text x="40" y="1723" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="23" fill="#243940">流程说明与完整惩罚值见 R03最新地牢章节；本图不是实机测试结果。</text>
+</svg>

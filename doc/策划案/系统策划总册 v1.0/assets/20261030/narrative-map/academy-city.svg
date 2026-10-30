@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2100" height="1500" viewBox="0 0 2100 1500"><rect width="2100" height="1500" fill="white"/>
+<path d='M 685 1240 L 100 1430' stroke='#999' fill='none'/><text x='392.5' y='1335' fill='#a00'>5</text>
+<path d='M 100 1430 L 295 1430' stroke='#999' fill='none'/><text x='197.5' y='1430' fill='#a00'>5</text>
+<path d='M 100 1430 L 490 1430' stroke='#999' fill='none'/><text x='295' y='1430' fill='#a00'>5</text>
+<path d='M 490 1430 L 685 1430' stroke='#999' fill='none'/><text x='587.5' y='1430' fill='#a00'>5</text>
+<path d='M 685 1430 L 880 1430' stroke='#999' fill='none'/><text x='782.5' y='1430' fill='#a00'>5</text>
+<path d='M 880 1430 L 100 1430' stroke='#999' fill='none'/><text x='490' y='1430' fill='#a00'>5</text>
+<rect x='605' y='1215' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='608' y='1236' font-size='14'>科学院外院</text><text x='608' y='1257' font-size='12'>r02_academy</text>
+<rect x='20' y='1405' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='23' y='1426' font-size='14'>接待处</text><text x='23' y='1447' font-size='12'>r04_reception</text>
+<rect x='215' y='1405' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='218' y='1426' font-size='14'>检测室</text><text x='218' y='1447' font-size='12'>r05_testing</text>
+<rect x='410' y='1405' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='413' y='1426' font-size='14'>档案室</text><text x='413' y='1447' font-size='12'>r06_archive</text>
+<rect x='605' y='1405' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='608' y='1426' font-size='14'>试制工坊</text><text x='608' y='1447' font-size='12'>r07_workshop</text>
+<rect x='800' y='1405' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='803' y='1426' font-size='14'>隔离观察区</text><text x='803' y='1447' font-size='12'>r08_observation</text>
+</svg>

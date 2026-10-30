@@ -1,0 +1,5159 @@
+{
+  "dungeons": [
+    {
+      "names": "墓门缓冲,捐献仓,忏悔长廊,藏书密室,环形礼拜厅,骨龛回道,封锁祭室,旧路线档案",
+      "links": "01:02,01:03,02:04,04:05,03:06,06:05,05:07,07:08",
+      "id": "d01",
+      "parent": "c03_crypt",
+      "name": "教会地下圣所",
+      "safe": "01,04,06",
+      "reward": "church_route_record",
+      "boss": "07",
+      "xy": "0:1,1:0,1:2,2:0,2:1,2:2,3:1,4:1",
+      "exit": "08",
+      "theme": "文献与旧衣，双翼汇入礼拜厅，未经守卫不可到档案",
+      "gate": "FA02_public_route",
+      "recordNode": "d01_08",
+      "clearNode": "d01_08",
+      "exitNode": "d01_08",
+      "guardNode": "d01_07",
+      "safeNodes": [
+        "d01_01",
+        "d01_04",
+        "d01_06"
+      ]
+    },
+    {
+      "names": "消洗门厅,观察廊,样本冷库,控制室,试制间,检修竖井,隔离核心,流程终端,外排廊",
+      "links": "01:02,02:03,02:04,03:05,05:04,04:06,06:02,04:07,07:08,08:09",
+      "id": "d02",
+      "parent": "r03_lab",
+      "name": "灰塔封存区",
+      "safe": "01,04,06",
+      "reward": "academy_safety_record",
+      "boss": "07",
+      "xy": "0:1,1:1,1:0,2:1,2:0,2:2,3:1,4:1,4:2",
+      "exit": "09",
+      "theme": "可选样本支路与检修循环，终端后单向外排；不人体实验",
+      "gate": "FA03_environment_only",
+      "recordNode": "d02_08",
+      "clearNode": "d02_08",
+      "exitNode": "d02_09",
+      "guardNode": "d02_07",
+      "safeNodes": [
+        "d02_01",
+        "d02_04",
+        "d02_06"
+      ]
+    },
+    {
+      "names": "装卸门,外仓,器材室,值勤室,内仓闸口,配电房,军械守卫,封存仓",
+      "links": "01:02,02:03,02:04,04:06,06:05,02:05,05:07,07:08",
+      "id": "d03",
+      "parent": "o03_police",
+      "name": "旧城警备仓",
+      "safe": "01,04,06",
+      "reward": "communication_power",
+      "boss": "07",
+      "xy": "0:1,1:1,1:0,1:2,2:1,2:2,3:1,4:1",
+      "exit": "08",
+      "theme": "仓库中心关卡、两条进内仓路线；装备固定箱依旧唯一",
+      "gate": "FA04_merged",
+      "recordNode": "d03_08",
+      "clearNode": "d03_08",
+      "exitNode": "d03_08",
+      "guardNode": "d03_07",
+      "safeNodes": [
+        "d03_01",
+        "d03_04",
+        "d03_06"
+      ]
+    },
+    {
+      "names": "地堡入口,缆线沟,蓄电室,山腹机房,屋顶梯井,天线守卫台,联络台,逃生索道",
+      "links": "01:02,02:03,03:04,04:05,05:06,06:07,07:08,04:02",
+      "id": "d04",
+      "parent": "w10_watchtower",
+      "name": "深野通信站",
+      "safe": "01,03,05",
+      "reward": "chapter_contact",
+      "boss": "06",
+      "xy": "0:2,1:2,1:1,2:1,2:0,3:0,4:0,4:1",
+      "exit": "08",
+      "theme": "连续爬升与回撤捷径，机房至天线再索道退出",
+      "gate": "FA05_power_owned",
+      "recordNode": "d04_07",
+      "clearNode": "d04_07",
+      "exitNode": "d04_08",
+      "guardNode": "d04_06",
+      "safeNodes": [
+        "d04_01",
+        "d04_03",
+        "d04_05"
+      ]
+    },
+    {
+      "names": "检修井,分流室,沉淀池,滤料库,环水渠,泵房守卫,阀控室,出水涵洞",
+      "links": "01:02,02:03,03:04,04:05,05:02,05:06,06:07,07:08",
+      "id": "d05",
+      "parent": "w33_waterworks",
+      "name": "废水厂地下管网",
+      "safe": "01,04,07",
+      "reward": "waterworks_record",
+      "boss": "06",
+      "xy": "0:1,1:1,1:0,2:0,2:2,3:1,4:1,4:2",
+      "exit": "08",
+      "theme": "绕行环水渠，滤料支线先获消毒材料，水非默认可饮",
+      "gate": "parent_explore100",
+      "recordNode": "d05_07",
+      "clearNode": "d05_07",
+      "exitNode": "d05_08",
+      "guardNode": "d05_06",
+      "safeNodes": [
+        "d05_01",
+        "d05_04",
+        "d05_07"
+      ]
+    },
+    {
+      "names": "洞口,岔井,浅矿脉,废轨道,塌方绕道,矿工营室,深井守卫,工具封库,通风出口",
+      "links": "01:02,02:03,02:04,04:05,05:06,06:07,04:07,07:08,08:09",
+      "id": "d06",
+      "parent": "w24_cave",
+      "name": "深林矿洞",
+      "safe": "01,03,06",
+      "reward": "mining_blueprint_pack",
+      "boss": "07",
+      "xy": "0:1,1:1,1:0,2:1,2:2,3:2,3:1,4:1,4:0",
+      "exit": "09",
+      "theme": "浅矿支路与长短路取舍，不要求爆破炸药",
+      "gate": "parent_explore100",
+      "recordNode": "d06_08",
+      "clearNode": "d06_08",
+      "exitNode": "d06_09",
+      "guardNode": "d06_07",
+      "safeNodes": [
+        "d06_01",
+        "d06_03",
+        "d06_06"
+      ]
+    },
+    {
+      "names": "卷帘入口,中庭,食品层,服装层,药妆侧厅,扶梯守卫,屋顶避难点,消防出口",
+      "links": "01:02,02:03,03:04,04:02,02:05,05:06,02:06,06:07,07:08",
+      "id": "d07",
+      "parent": "o02_market",
+      "name": "洪淹商城",
+      "safe": "01,04,07",
+      "reward": "civilian_cache_knowledge",
+      "boss": "06",
+      "xy": "0:1,1:1,1:0,2:0,2:2,3:1,4:1,4:2",
+      "exit": "08",
+      "theme": "中庭三资源支翼，屋顶救援记录，无随机钥匙",
+      "gate": "parent_explore100",
+      "recordNode": "d07_07",
+      "clearNode": "d07_07",
+      "exitNode": "d07_08",
+      "guardNode": "d07_06",
+      "safeNodes": [
+        "d07_01",
+        "d07_04",
+        "d07_07"
+      ]
+    },
+    {
+      "names": "货台,温区分拣,干货库,冷库走廊,封存药架,备用电房,仓管守卫,调度室,卸货出口",
+      "links": "01:02,02:03,02:04,04:05,04:06,06:02,04:07,07:08,08:09",
+      "id": "d08",
+      "parent": "w34_depot",
+      "name": "应急冷链仓",
+      "safe": "01,03,06",
+      "reward": "coldchain_knowledge",
+      "boss": "07",
+      "xy": "0:1,1:1,1:0,2:1,2:0,2:2,3:1,4:1,4:2",
+      "exit": "09",
+      "theme": "温区/冷区分流与配电回路，无新增温度数值；冷藏物按保质规则",
+      "gate": "parent_explore100",
+      "recordNode": "d08_08",
+      "clearNode": "d08_08",
+      "exitNode": "d08_09",
+      "guardNode": "d08_07",
+      "safeNodes": [
+        "d08_01",
+        "d08_03",
+        "d08_06"
+      ]
+    }
+  ],
+  "resource_id_note": "既有item ID需总控映射，新增clay只作储备材料不锁配方",
+  "nodes": [
+    {
+      "id": "camp",
+      "name": "临时营地",
+      "zone": "starter",
+      "x": 0,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "field",
+      "name": "农野荒地",
+      "zone": "starter",
+      "x": 1,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "stream",
+      "name": "溪流浅滩",
+      "zone": "starter",
+      "x": 0,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "woods",
+      "name": "树林边缘",
+      "zone": "starter",
+      "x": 2,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "village",
+      "name": "废弃村庄",
+      "zone": "starter",
+      "x": 1,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "hardware",
+      "name": "五金店",
+      "zone": "starter",
+      "x": 2,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "clinic",
+      "name": "诊所",
+      "zone": "starter",
+      "x": 0,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "scrapyard",
+      "name": "废料场",
+      "zone": "starter",
+      "x": 3,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "m01_road",
+      "name": "旧公路",
+      "zone": "wild",
+      "x": 2,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "m02_checkpoint",
+      "name": "检查哨",
+      "zone": "wild",
+      "x": 3,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "h01_gate",
+      "name": "营门",
+      "zone": "hub",
+      "x": 4,
+      "y": 2,
+      "parent_city": "h02_square",
+      "node_kind": "city_building",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "public",
+      "safehousePermissionReason": "营区公共城市/服务用地，不可覆盖公共设施"
+    },
+    {
+      "id": "h02_square",
+      "name": "营区广场",
+      "zone": "hub",
+      "x": 5,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "public",
+      "safehousePermissionReason": "营区公共城市/服务用地，不可覆盖公共设施"
+    },
+    {
+      "id": "h03_workshop",
+      "name": "营区工坊",
+      "zone": "hub",
+      "x": 5,
+      "y": 1,
+      "parent_city": "h02_square",
+      "node_kind": "city_building",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "public",
+      "safehousePermissionReason": "营区公共城市/服务用地，不可覆盖公共设施"
+    },
+    {
+      "id": "h04_infirmary",
+      "name": "营区医务室",
+      "zone": "hub",
+      "x": 4,
+      "y": 1,
+      "parent_city": "h02_square",
+      "node_kind": "city_building",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "public",
+      "safehousePermissionReason": "营区公共城市/服务用地，不可覆盖公共设施"
+    },
+    {
+      "id": "h05_homestead",
+      "name": "营外安全屋地块",
+      "zone": "hub",
+      "x": 4,
+      "y": 3,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safety": {
+        "exterior": "safe",
+        "safehouseInterior": "not_built"
+      },
+      "accessGate": "registered_at_survivor_hub",
+      "safehousePermissionReason": "营区外独立玩家建地，不是广场/鉴定所/收容所；外部明确safe"
+    },
+    {
+      "id": "w01_farm",
+      "name": "近郊农场",
+      "zone": "wild",
+      "x": 5,
+      "y": 3,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w02_forest",
+      "name": "林间营址",
+      "zone": "wild",
+      "x": 3,
+      "y": 3,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w03_quarry",
+      "name": "采石坡",
+      "zone": "wild",
+      "x": 2,
+      "y": 4,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w04_crossroads",
+      "name": "荒野岔路",
+      "zone": "wild",
+      "x": 5,
+      "y": 4,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w05_marsh",
+      "name": "芦苇湿地",
+      "zone": "wild",
+      "x": 4,
+      "y": 5,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w06_bridge",
+      "name": "断桥河滩",
+      "zone": "wild",
+      "x": 3,
+      "y": 5,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w07_ridge",
+      "name": "山脊哨道",
+      "zone": "wild",
+      "x": 2,
+      "y": 5,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w08_reservoir",
+      "name": "旧水库",
+      "zone": "wild",
+      "x": 5,
+      "y": 5,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w09_logging",
+      "name": "深林伐木场",
+      "zone": "wild",
+      "x": 1,
+      "y": 5,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w10_watchtower",
+      "name": "山顶瞭望台",
+      "zone": "wild",
+      "x": 1,
+      "y": 6,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "a01_yard",
+      "name": "铁路货场",
+      "zone": "works",
+      "x": 6,
+      "y": 3,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "a02_pump",
+      "name": "旧泵站",
+      "zone": "works",
+      "x": 6,
+      "y": 4,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "a03_foundry",
+      "name": "铸造厂外",
+      "zone": "works",
+      "x": 7,
+      "y": 4,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "b01_school",
+      "name": "安置学校",
+      "zone": "aid",
+      "x": 6,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "public",
+      "safehousePermissionReason": "现役安置/急救公共服务设施区，非普通野外；不是因aid区域批量禁建"
+    },
+    {
+      "id": "b02_station",
+      "name": "急救转运站",
+      "zone": "aid",
+      "x": 7,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "public",
+      "safehousePermissionReason": "现役安置/急救公共服务设施区，非普通野外；不是因aid区域批量禁建"
+    },
+    {
+      "id": "b03_hospital",
+      "name": "医院外院",
+      "zone": "city",
+      "x": 8,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "c01_pilgrim",
+      "name": "朝圣路",
+      "zone": "church",
+      "x": 6,
+      "y": 5,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "c02_church",
+      "name": "教会接待庭",
+      "zone": "church",
+      "x": 7,
+      "y": 5,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "faction",
+      "safehousePermissionReason": "教会/科学院实际核心、城内服务或受控设施用地；按具体职责认定"
+    },
+    {
+      "id": "c03_crypt",
+      "name": "教堂墓园",
+      "zone": "church",
+      "x": 8,
+      "y": 5,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "faction",
+      "safehousePermissionReason": "教会/科学院实际核心、城内服务或受控设施用地；按具体职责认定"
+    },
+    {
+      "id": "r01_observatory",
+      "name": "灰塔观测站",
+      "zone": "academy",
+      "x": 2,
+      "y": 6,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "faction",
+      "safehousePermissionReason": "教会/科学院实际核心、城内服务或受控设施用地；按具体职责认定"
+    },
+    {
+      "id": "r02_academy",
+      "name": "科学院外院",
+      "zone": "academy",
+      "x": 3,
+      "y": 6,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "faction",
+      "safehousePermissionReason": "教会/科学院实际核心、城内服务或受控设施用地；按具体职责认定"
+    },
+    {
+      "id": "r03_lab",
+      "name": "封存实验楼",
+      "zone": "academy",
+      "x": 4,
+      "y": 6,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "faction",
+      "safehousePermissionReason": "教会/科学院实际核心、城内服务或受控设施用地；按具体职责认定"
+    },
+    {
+      "id": "o01_oldgate",
+      "name": "旧城门",
+      "zone": "city",
+      "x": 8,
+      "y": 3,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "o02_market",
+      "name": "旧城商圈",
+      "zone": "city",
+      "x": 9,
+      "y": 3,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "o03_police",
+      "name": "警备仓外",
+      "zone": "city",
+      "x": 9,
+      "y": 4,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "o04_transit",
+      "name": "旧城车站",
+      "zone": "city",
+      "x": 9,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "world",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "h05_appraisal",
+      "name": "鉴定所",
+      "zone": "hub",
+      "x": 6,
+      "y": 2,
+      "parent_city": "h02_square",
+      "node_kind": "city_building",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "public",
+      "safehousePermissionReason": "营区公共城市/服务用地，不可覆盖公共设施"
+    },
+    {
+      "id": "h06_shelter",
+      "name": "收容所",
+      "zone": "hub",
+      "x": 5,
+      "y": 0,
+      "parent_city": "h02_square",
+      "node_kind": "city_building",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "public",
+      "safehousePermissionReason": "营区公共城市/服务用地，不可覆盖公共设施"
+    },
+    {
+      "id": "c04_alms",
+      "name": "施济处",
+      "zone": "church",
+      "x": 7,
+      "y": 6,
+      "parent_city": "c02_church",
+      "node_kind": "city_building",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "faction",
+      "safehousePermissionReason": "教会/科学院实际核心、城内服务或受控设施用地；按具体职责认定"
+    },
+    {
+      "id": "c05_admonition",
+      "name": "训诫堂",
+      "zone": "church",
+      "x": 8,
+      "y": 6,
+      "parent_city": "c02_church",
+      "node_kind": "city_building",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "faction",
+      "safehousePermissionReason": "教会/科学院实际核心、城内服务或受控设施用地；按具体职责认定"
+    },
+    {
+      "id": "c06_archive",
+      "name": "典藏室",
+      "zone": "church",
+      "x": 9,
+      "y": 6,
+      "parent_city": "c02_church",
+      "node_kind": "city_building",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "faction",
+      "safehousePermissionReason": "教会/科学院实际核心、城内服务或受控设施用地；按具体职责认定"
+    },
+    {
+      "id": "c07_sanctuary",
+      "name": "圣堂",
+      "zone": "church",
+      "x": 9,
+      "y": 5,
+      "parent_city": "c02_church",
+      "node_kind": "city_building",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "faction",
+      "safehousePermissionReason": "教会/科学院实际核心、城内服务或受控设施用地；按具体职责认定"
+    },
+    {
+      "id": "r04_reception",
+      "name": "接待处",
+      "zone": "academy",
+      "x": 0,
+      "y": 7,
+      "parent_city": "r02_academy",
+      "node_kind": "city_building",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "faction",
+      "safehousePermissionReason": "教会/科学院实际核心、城内服务或受控设施用地；按具体职责认定"
+    },
+    {
+      "id": "r05_testing",
+      "name": "检测室",
+      "zone": "academy",
+      "x": 1,
+      "y": 7,
+      "parent_city": "r02_academy",
+      "node_kind": "city_building",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "faction",
+      "safehousePermissionReason": "教会/科学院实际核心、城内服务或受控设施用地；按具体职责认定"
+    },
+    {
+      "id": "r06_archive",
+      "name": "档案室",
+      "zone": "academy",
+      "x": 2,
+      "y": 7,
+      "parent_city": "r02_academy",
+      "node_kind": "city_building",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "faction",
+      "safehousePermissionReason": "教会/科学院实际核心、城内服务或受控设施用地；按具体职责认定"
+    },
+    {
+      "id": "r07_workshop",
+      "name": "试制工坊",
+      "zone": "academy",
+      "x": 3,
+      "y": 7,
+      "parent_city": "r02_academy",
+      "node_kind": "city_building",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "faction",
+      "safehousePermissionReason": "教会/科学院实际核心、城内服务或受控设施用地；按具体职责认定"
+    },
+    {
+      "id": "r08_observation",
+      "name": "隔离观察区",
+      "zone": "academy",
+      "x": 4,
+      "y": 7,
+      "parent_city": "r02_academy",
+      "node_kind": "city_building",
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "faction",
+      "safehousePermissionReason": "教会/科学院实际核心、城内服务或受控设施用地；按具体职责认定"
+    },
+    {
+      "id": "w11_orchard",
+      "name": "荒弃果园",
+      "zone": "church_approach",
+      "x": 6,
+      "y": 7,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 2,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w12_canal",
+      "name": "灌溉渠岸",
+      "zone": "church_approach",
+      "x": 7,
+      "y": 7,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 2,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w13_mill",
+      "name": "旧磨坊",
+      "zone": "church_approach",
+      "x": 8,
+      "y": 7,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 2,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true,
+        "temporaryCamp": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w14_cemeteryroad",
+      "name": "墓地荒径",
+      "zone": "church_approach",
+      "x": 9,
+      "y": 7,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 3,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w15_shrinewoods",
+      "name": "祈祷林",
+      "zone": "church_approach",
+      "x": 10,
+      "y": 7,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 3,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w16_service",
+      "name": "山间服务站",
+      "zone": "academy_approach",
+      "x": 1,
+      "y": 8,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 2,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true,
+        "temporaryCamp": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w17_switchback",
+      "name": "盘山公路",
+      "zone": "academy_approach",
+      "x": 2,
+      "y": 8,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 3,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w18_tunnel",
+      "name": "塌隧道外",
+      "zone": "academy_approach",
+      "x": 3,
+      "y": 8,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 3,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w19_survey",
+      "name": "测绘营址",
+      "zone": "academy_approach",
+      "x": 4,
+      "y": 8,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 3,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true,
+        "temporaryCamp": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w20_powercut",
+      "name": "高压走廊",
+      "zone": "academy_approach",
+      "x": 5,
+      "y": 8,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 3,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w21_pine",
+      "name": "深针叶林",
+      "zone": "deep_wild",
+      "x": 0,
+      "y": 9,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 3,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true,
+        "temporaryCamp": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w22_ravine",
+      "name": "陡壁沟谷",
+      "zone": "deep_wild",
+      "x": 1,
+      "y": 9,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 3,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w23_hunting",
+      "name": "猎人旧营",
+      "zone": "deep_wild",
+      "x": 2,
+      "y": 9,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 3,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true,
+        "temporaryCamp": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w24_cave",
+      "name": "岩洞入口",
+      "zone": "deep_wild",
+      "x": 3,
+      "y": 9,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 4,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w25_wetland",
+      "name": "黑水湿地",
+      "zone": "deep_wild",
+      "x": 4,
+      "y": 9,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 4,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w26_island",
+      "name": "湖心陆洲",
+      "zone": "deep_wild",
+      "x": 5,
+      "y": 9,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 4,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w27_relay",
+      "name": "废中继营",
+      "zone": "deep_wild",
+      "x": 6,
+      "y": 9,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 4,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true,
+        "temporaryCamp": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w28_highland",
+      "name": "风蚀高地",
+      "zone": "deep_wild",
+      "x": 7,
+      "y": 9,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 4,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w29_riverbend",
+      "name": "河道弯口",
+      "zone": "city_approach",
+      "x": 9,
+      "y": 8,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 2,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w30_truckstop",
+      "name": "货车休息区",
+      "zone": "city_approach",
+      "x": 10,
+      "y": 8,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 3,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true,
+        "temporaryCamp": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w31_suburb",
+      "name": "城郊棚户",
+      "zone": "city_approach",
+      "x": 11,
+      "y": 8,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 3,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w32_railcut",
+      "name": "铁路线切口",
+      "zone": "city_approach",
+      "x": 12,
+      "y": 8,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 3,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w33_waterworks",
+      "name": "荒废水厂",
+      "zone": "utility",
+      "x": 8,
+      "y": 9,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 3,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "w34_depot",
+      "name": "应急仓外",
+      "zone": "utility",
+      "x": 9,
+      "y": 9,
+      "parent_city": "",
+      "node_kind": "world",
+      "danger": 3,
+      "worldKind": "overworld",
+      "buildAllowed": {
+        "safehouse": true,
+        "temporaryCamp": true
+      },
+      "landOwner": "unclaimed",
+      "safehousePermissionReason": "无势力占用的普通主世界野外/中立遗迹；按用户通用许可可付费建设，不按zone推占地"
+    },
+    {
+      "id": "d01_01",
+      "name": "墓门缓冲",
+      "zone": "d01",
+      "x": 0,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d01_02",
+      "name": "捐献仓",
+      "zone": "d01",
+      "x": 1,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d01_03",
+      "name": "忏悔长廊",
+      "zone": "d01",
+      "x": 1,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d01_04",
+      "name": "藏书密室",
+      "zone": "d01",
+      "x": 2,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d01_05",
+      "name": "环形礼拜厅",
+      "zone": "d01",
+      "x": 2,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d01_06",
+      "name": "骨龛回道",
+      "zone": "d01",
+      "x": 2,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d01_07",
+      "name": "封锁祭室",
+      "zone": "d01",
+      "x": 3,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d01_08",
+      "name": "旧路线档案",
+      "zone": "d01",
+      "x": 4,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d02_01",
+      "name": "消洗门厅",
+      "zone": "d02",
+      "x": 0,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d02_02",
+      "name": "观察廊",
+      "zone": "d02",
+      "x": 1,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d02_03",
+      "name": "样本冷库",
+      "zone": "d02",
+      "x": 1,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d02_04",
+      "name": "控制室",
+      "zone": "d02",
+      "x": 2,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d02_05",
+      "name": "试制间",
+      "zone": "d02",
+      "x": 2,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d02_06",
+      "name": "检修竖井",
+      "zone": "d02",
+      "x": 2,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d02_07",
+      "name": "隔离核心",
+      "zone": "d02",
+      "x": 3,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d02_08",
+      "name": "流程终端",
+      "zone": "d02",
+      "x": 4,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d02_09",
+      "name": "外排廊",
+      "zone": "d02",
+      "x": 4,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d03_01",
+      "name": "装卸门",
+      "zone": "d03",
+      "x": 0,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d03_02",
+      "name": "外仓",
+      "zone": "d03",
+      "x": 1,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d03_03",
+      "name": "器材室",
+      "zone": "d03",
+      "x": 1,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d03_04",
+      "name": "值勤室",
+      "zone": "d03",
+      "x": 1,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d03_05",
+      "name": "内仓闸口",
+      "zone": "d03",
+      "x": 2,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d03_06",
+      "name": "配电房",
+      "zone": "d03",
+      "x": 2,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d03_07",
+      "name": "军械守卫",
+      "zone": "d03",
+      "x": 3,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d03_08",
+      "name": "封存仓",
+      "zone": "d03",
+      "x": 4,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d04_01",
+      "name": "地堡入口",
+      "zone": "d04",
+      "x": 0,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d04_02",
+      "name": "缆线沟",
+      "zone": "d04",
+      "x": 1,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d04_03",
+      "name": "蓄电室",
+      "zone": "d04",
+      "x": 1,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d04_04",
+      "name": "山腹机房",
+      "zone": "d04",
+      "x": 2,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d04_05",
+      "name": "屋顶梯井",
+      "zone": "d04",
+      "x": 2,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d04_06",
+      "name": "天线守卫台",
+      "zone": "d04",
+      "x": 3,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d04_07",
+      "name": "联络台",
+      "zone": "d04",
+      "x": 4,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d04_08",
+      "name": "逃生索道",
+      "zone": "d04",
+      "x": 4,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d05_01",
+      "name": "检修井",
+      "zone": "d05",
+      "x": 0,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d05_02",
+      "name": "分流室",
+      "zone": "d05",
+      "x": 1,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d05_03",
+      "name": "沉淀池",
+      "zone": "d05",
+      "x": 1,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d05_04",
+      "name": "滤料库",
+      "zone": "d05",
+      "x": 2,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d05_05",
+      "name": "环水渠",
+      "zone": "d05",
+      "x": 2,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d05_06",
+      "name": "泵房守卫",
+      "zone": "d05",
+      "x": 3,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d05_07",
+      "name": "阀控室",
+      "zone": "d05",
+      "x": 4,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d05_08",
+      "name": "出水涵洞",
+      "zone": "d05",
+      "x": 4,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d06_01",
+      "name": "洞口",
+      "zone": "d06",
+      "x": 0,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d06_02",
+      "name": "岔井",
+      "zone": "d06",
+      "x": 1,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d06_03",
+      "name": "浅矿脉",
+      "zone": "d06",
+      "x": 1,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d06_04",
+      "name": "废轨道",
+      "zone": "d06",
+      "x": 2,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d06_05",
+      "name": "塌方绕道",
+      "zone": "d06",
+      "x": 2,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d06_06",
+      "name": "矿工营室",
+      "zone": "d06",
+      "x": 3,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d06_07",
+      "name": "深井守卫",
+      "zone": "d06",
+      "x": 3,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d06_08",
+      "name": "工具封库",
+      "zone": "d06",
+      "x": 4,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d06_09",
+      "name": "通风出口",
+      "zone": "d06",
+      "x": 4,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d07_01",
+      "name": "卷帘入口",
+      "zone": "d07",
+      "x": 0,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d07_02",
+      "name": "中庭",
+      "zone": "d07",
+      "x": 1,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d07_03",
+      "name": "食品层",
+      "zone": "d07",
+      "x": 1,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d07_04",
+      "name": "服装层",
+      "zone": "d07",
+      "x": 2,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d07_05",
+      "name": "药妆侧厅",
+      "zone": "d07",
+      "x": 2,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d07_06",
+      "name": "扶梯守卫",
+      "zone": "d07",
+      "x": 3,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d07_07",
+      "name": "屋顶避难点",
+      "zone": "d07",
+      "x": 4,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d07_08",
+      "name": "消防出口",
+      "zone": "d07",
+      "x": 4,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d08_01",
+      "name": "货台",
+      "zone": "d08",
+      "x": 0,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d08_02",
+      "name": "温区分拣",
+      "zone": "d08",
+      "x": 1,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d08_03",
+      "name": "干货库",
+      "zone": "d08",
+      "x": 1,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d08_04",
+      "name": "冷库走廊",
+      "zone": "d08",
+      "x": 2,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d08_05",
+      "name": "封存药架",
+      "zone": "d08",
+      "x": 2,
+      "y": 0,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d08_06",
+      "name": "备用电房",
+      "zone": "d08",
+      "x": 2,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d08_07",
+      "name": "仓管守卫",
+      "zone": "d08",
+      "x": 3,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d08_08",
+      "name": "调度室",
+      "zone": "d08",
+      "x": 4,
+      "y": 1,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    },
+    {
+      "id": "d08_09",
+      "name": "卸货出口",
+      "zone": "d08",
+      "x": 4,
+      "y": 2,
+      "parent_city": "",
+      "node_kind": "dungeon",
+      "danger": 3,
+      "worldKind": "dungeon_instance",
+      "buildAllowed": {
+        "safehouse": false
+      },
+      "landOwner": "quest_reserved",
+      "safehousePermissionReason": "地牢实例空间，按地牢域禁止永久屋，不能随重置建玩家固定资产"
+    }
+  ],
+  "new_field_nodes": 24,
+  "version": "3.0",
+  "edges": [
+    {
+      "from": "camp",
+      "to": "field",
+      "minutes": 15,
+      "bidirectional": true,
+      "gate": "open"
+    },
+    {
+      "from": "field",
+      "to": "stream",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "field25"
+    },
+    {
+      "from": "field",
+      "to": "woods",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "field50"
+    },
+    {
+      "from": "field",
+      "to": "village",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "field100"
+    },
+    {
+      "from": "village",
+      "to": "hardware",
+      "minutes": 15,
+      "bidirectional": true,
+      "gate": "village50"
+    },
+    {
+      "from": "village",
+      "to": "clinic",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "village100"
+    },
+    {
+      "from": "woods",
+      "to": "scrapyard",
+      "minutes": 30,
+      "bidirectional": true,
+      "gate": "woods100_or_scrapyard100"
+    },
+    {
+      "from": "hardware",
+      "to": "scrapyard",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "hardware100"
+    },
+    {
+      "from": "village",
+      "to": "m01_road",
+      "minutes": 30,
+      "bidirectional": true,
+      "gate": "QMAP01"
+    },
+    {
+      "from": "m01_road",
+      "to": "m02_checkpoint",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "m02_checkpoint",
+      "to": "h01_gate",
+      "minutes": 15,
+      "bidirectional": true,
+      "gate": "clear_checkpoint"
+    },
+    {
+      "from": "h01_gate",
+      "to": "h02_square",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "register"
+    },
+    {
+      "from": "h02_square",
+      "to": "h03_workshop",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "register"
+    },
+    {
+      "from": "h02_square",
+      "to": "h04_infirmary",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "register"
+    },
+    {
+      "from": "h02_square",
+      "to": "h05_homestead",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "register"
+    },
+    {
+      "from": "h02_square",
+      "to": "w01_farm",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "register"
+    },
+    {
+      "from": "h02_square",
+      "to": "w02_forest",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "register"
+    },
+    {
+      "from": "h02_square",
+      "to": "b01_school",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "register"
+    },
+    {
+      "from": "h02_square",
+      "to": "a01_yard",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "register"
+    },
+    {
+      "from": "w02_forest",
+      "to": "w03_quarry",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "w01_farm",
+      "to": "w04_crossroads",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "w02_forest",
+      "to": "w04_crossroads",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "w04_crossroads",
+      "to": "w05_marsh",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "w05_marsh",
+      "to": "w06_bridge",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "w06_bridge",
+      "to": "w03_quarry",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "w03_quarry",
+      "to": "w07_ridge",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "w07_ridge",
+      "to": "w09_logging",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "w09_logging",
+      "to": "w10_watchtower",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "r01_observatory",
+      "to": "r02_academy",
+      "minutes": 15,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "r02_academy",
+      "to": "r03_lab",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "w05_marsh",
+      "to": "w08_reservoir",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "w08_reservoir",
+      "to": "w04_crossroads",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "c01_pilgrim",
+      "to": "c02_church",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "c02_church",
+      "to": "c03_crypt",
+      "minutes": 15,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "w04_crossroads",
+      "to": "a02_pump",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "a01_yard",
+      "to": "a02_pump",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "a02_pump",
+      "to": "a03_foundry",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "a03_foundry",
+      "to": "o01_oldgate",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "b01_school",
+      "to": "b02_station",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "b02_station",
+      "to": "b03_hospital",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "b03_hospital",
+      "to": "o04_transit",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "o04_transit",
+      "to": "o02_market",
+      "minutes": 15,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "o01_oldgate",
+      "to": "o02_market",
+      "minutes": 20,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "o02_market",
+      "to": "o03_police",
+      "minutes": 15,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "o03_police",
+      "to": "a03_foundry",
+      "minutes": 25,
+      "bidirectional": true,
+      "gate": "from_explore_100"
+    },
+    {
+      "from": "h02_square",
+      "to": "h05_appraisal",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "register"
+    },
+    {
+      "from": "h02_square",
+      "to": "h06_shelter",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "register"
+    },
+    {
+      "from": "c02_church",
+      "to": "c04_alms",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "church_public_access"
+    },
+    {
+      "from": "c02_church",
+      "to": "c05_admonition",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "church_public_access"
+    },
+    {
+      "from": "c05_admonition",
+      "to": "c06_archive",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "FA02_accept_no_oath"
+    },
+    {
+      "from": "c06_archive",
+      "to": "c07_sanctuary",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "church_public_access"
+    },
+    {
+      "from": "c07_sanctuary",
+      "to": "c02_church",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "church_public_access"
+    },
+    {
+      "from": "r02_academy",
+      "to": "r04_reception",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "academy_public_access"
+    },
+    {
+      "from": "r04_reception",
+      "to": "r05_testing",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "consent_or_decline_no_mainline_lock"
+    },
+    {
+      "from": "r04_reception",
+      "to": "r06_archive",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "academy_public_access"
+    },
+    {
+      "from": "r06_archive",
+      "to": "r07_workshop",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "FA03_accept_environment_record"
+    },
+    {
+      "from": "r07_workshop",
+      "to": "r08_observation",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "supervised_no_experiment_required"
+    },
+    {
+      "from": "r08_observation",
+      "to": "r04_reception",
+      "minutes": 5,
+      "bidirectional": true,
+      "gate": "academy_public_access"
+    },
+    {
+      "from": "w08_reservoir",
+      "to": "w11_orchard",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w11_orchard",
+      "to": "w12_canal",
+      "minutes": 20,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w12_canal",
+      "to": "w13_mill",
+      "minutes": 20,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w13_mill",
+      "to": "w14_cemeteryroad",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w14_cemeteryroad",
+      "to": "c01_pilgrim",
+      "minutes": 20,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w12_canal",
+      "to": "w15_shrinewoods",
+      "minutes": 30,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w15_shrinewoods",
+      "to": "c01_pilgrim",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w07_ridge",
+      "to": "w16_service",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w16_service",
+      "to": "w17_switchback",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w17_switchback",
+      "to": "w18_tunnel",
+      "minutes": 20,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w18_tunnel",
+      "to": "w19_survey",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w19_survey",
+      "to": "r01_observatory",
+      "minutes": 20,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w17_switchback",
+      "to": "w20_powercut",
+      "minutes": 30,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w20_powercut",
+      "to": "w19_survey",
+      "minutes": 20,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w09_logging",
+      "to": "w21_pine",
+      "minutes": 30,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w21_pine",
+      "to": "w22_ravine",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w22_ravine",
+      "to": "w23_hunting",
+      "minutes": 20,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w23_hunting",
+      "to": "w24_cave",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w24_cave",
+      "to": "w25_wetland",
+      "minutes": 30,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w25_wetland",
+      "to": "w26_island",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w26_island",
+      "to": "w27_relay",
+      "minutes": 30,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w27_relay",
+      "to": "w28_highland",
+      "minutes": 30,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w28_highland",
+      "to": "w10_watchtower",
+      "minutes": 30,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w22_ravine",
+      "to": "w18_tunnel",
+      "minutes": 30,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w23_hunting",
+      "to": "w25_wetland",
+      "minutes": 35,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w25_wetland",
+      "to": "w08_reservoir",
+      "minutes": 35,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w27_relay",
+      "to": "w20_powercut",
+      "minutes": 35,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w06_bridge",
+      "to": "w29_riverbend",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w29_riverbend",
+      "to": "w30_truckstop",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w30_truckstop",
+      "to": "w31_suburb",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w31_suburb",
+      "to": "w32_railcut",
+      "minutes": 20,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w32_railcut",
+      "to": "o01_oldgate",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w31_suburb",
+      "to": "c03_crypt",
+      "minutes": 30,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w29_riverbend",
+      "to": "w12_canal",
+      "minutes": 30,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w08_reservoir",
+      "to": "w33_waterworks",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w33_waterworks",
+      "to": "w34_depot",
+      "minutes": 20,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "w34_depot",
+      "to": "w30_truckstop",
+      "minutes": 25,
+      "gate": "from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "c03_crypt",
+      "to": "d01_01",
+      "minutes": 10,
+      "gate": "FA02_public_route",
+      "bidirectional": true
+    },
+    {
+      "from": "d01_01",
+      "to": "d01_02",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d01_01",
+      "to": "d01_03",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d01_02",
+      "to": "d01_04",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d01_04",
+      "to": "d01_05",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d01_03",
+      "to": "d01_06",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d01_06",
+      "to": "d01_05",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d01_05",
+      "to": "d01_07",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d01_07",
+      "to": "d01_08",
+      "minutes": 5,
+      "gate": "guardian_defeated",
+      "bidirectional": true
+    },
+    {
+      "from": "d01_08",
+      "to": "c03_crypt",
+      "minutes": 10,
+      "gate": "instance_complete",
+      "bidirectional": false
+    },
+    {
+      "from": "r03_lab",
+      "to": "d02_01",
+      "minutes": 10,
+      "gate": "FA03_environment_only",
+      "bidirectional": true
+    },
+    {
+      "from": "d02_01",
+      "to": "d02_02",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d02_02",
+      "to": "d02_03",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d02_02",
+      "to": "d02_04",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d02_03",
+      "to": "d02_05",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d02_05",
+      "to": "d02_04",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d02_04",
+      "to": "d02_06",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d02_06",
+      "to": "d02_02",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d02_04",
+      "to": "d02_07",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d02_07",
+      "to": "d02_08",
+      "minutes": 5,
+      "gate": "guardian_defeated",
+      "bidirectional": true
+    },
+    {
+      "from": "d02_08",
+      "to": "d02_09",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d02_09",
+      "to": "r03_lab",
+      "minutes": 10,
+      "gate": "instance_complete",
+      "bidirectional": false
+    },
+    {
+      "from": "o03_police",
+      "to": "d03_01",
+      "minutes": 10,
+      "gate": "FA04_merged",
+      "bidirectional": true
+    },
+    {
+      "from": "d03_01",
+      "to": "d03_02",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d03_02",
+      "to": "d03_03",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d03_02",
+      "to": "d03_04",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d03_04",
+      "to": "d03_06",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d03_06",
+      "to": "d03_05",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d03_02",
+      "to": "d03_05",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d03_05",
+      "to": "d03_07",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d03_07",
+      "to": "d03_08",
+      "minutes": 5,
+      "gate": "guardian_defeated",
+      "bidirectional": true
+    },
+    {
+      "from": "d03_08",
+      "to": "o03_police",
+      "minutes": 10,
+      "gate": "instance_complete",
+      "bidirectional": false
+    },
+    {
+      "from": "w10_watchtower",
+      "to": "d04_01",
+      "minutes": 10,
+      "gate": "FA05_power_owned",
+      "bidirectional": true
+    },
+    {
+      "from": "d04_01",
+      "to": "d04_02",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d04_02",
+      "to": "d04_03",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d04_03",
+      "to": "d04_04",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d04_04",
+      "to": "d04_05",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d04_05",
+      "to": "d04_06",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d04_06",
+      "to": "d04_07",
+      "minutes": 5,
+      "gate": "guardian_defeated",
+      "bidirectional": true
+    },
+    {
+      "from": "d04_07",
+      "to": "d04_08",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d04_04",
+      "to": "d04_02",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d04_08",
+      "to": "w10_watchtower",
+      "minutes": 10,
+      "gate": "instance_complete",
+      "bidirectional": false
+    },
+    {
+      "from": "w33_waterworks",
+      "to": "d05_01",
+      "minutes": 10,
+      "gate": "parent_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d05_01",
+      "to": "d05_02",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d05_02",
+      "to": "d05_03",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d05_03",
+      "to": "d05_04",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d05_04",
+      "to": "d05_05",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d05_05",
+      "to": "d05_02",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d05_05",
+      "to": "d05_06",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d05_06",
+      "to": "d05_07",
+      "minutes": 5,
+      "gate": "guardian_defeated",
+      "bidirectional": true
+    },
+    {
+      "from": "d05_07",
+      "to": "d05_08",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d05_08",
+      "to": "w33_waterworks",
+      "minutes": 10,
+      "gate": "instance_complete",
+      "bidirectional": false
+    },
+    {
+      "from": "w24_cave",
+      "to": "d06_01",
+      "minutes": 10,
+      "gate": "parent_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d06_01",
+      "to": "d06_02",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d06_02",
+      "to": "d06_03",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d06_02",
+      "to": "d06_04",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d06_04",
+      "to": "d06_05",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d06_05",
+      "to": "d06_06",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d06_06",
+      "to": "d06_07",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d06_04",
+      "to": "d06_07",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d06_07",
+      "to": "d06_08",
+      "minutes": 5,
+      "gate": "guardian_defeated",
+      "bidirectional": true
+    },
+    {
+      "from": "d06_08",
+      "to": "d06_09",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d06_09",
+      "to": "w24_cave",
+      "minutes": 10,
+      "gate": "instance_complete",
+      "bidirectional": false
+    },
+    {
+      "from": "o02_market",
+      "to": "d07_01",
+      "minutes": 10,
+      "gate": "parent_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d07_01",
+      "to": "d07_02",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d07_02",
+      "to": "d07_03",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d07_03",
+      "to": "d07_04",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d07_04",
+      "to": "d07_02",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d07_02",
+      "to": "d07_05",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d07_05",
+      "to": "d07_06",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d07_02",
+      "to": "d07_06",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d07_06",
+      "to": "d07_07",
+      "minutes": 5,
+      "gate": "guardian_defeated",
+      "bidirectional": true
+    },
+    {
+      "from": "d07_07",
+      "to": "d07_08",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d07_08",
+      "to": "o02_market",
+      "minutes": 10,
+      "gate": "instance_complete",
+      "bidirectional": false
+    },
+    {
+      "from": "w34_depot",
+      "to": "d08_01",
+      "minutes": 10,
+      "gate": "parent_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d08_01",
+      "to": "d08_02",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d08_02",
+      "to": "d08_03",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d08_02",
+      "to": "d08_04",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d08_04",
+      "to": "d08_05",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d08_04",
+      "to": "d08_06",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d08_06",
+      "to": "d08_02",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d08_04",
+      "to": "d08_07",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d08_07",
+      "to": "d08_08",
+      "minutes": 5,
+      "gate": "guardian_defeated",
+      "bidirectional": true
+    },
+    {
+      "from": "d08_08",
+      "to": "d08_09",
+      "minutes": 5,
+      "gate": "instance_from_explore100",
+      "bidirectional": true
+    },
+    {
+      "from": "d08_09",
+      "to": "w34_depot",
+      "minutes": 10,
+      "gate": "instance_complete",
+      "bidirectional": false
+    }
+  ],
+  "resources": [
+    {
+      "id": "w11_orchard_a",
+      "nodeId": "w11_orchard",
+      "items": {
+        "raw_root": 2
+      },
+      "workMinutes": 25,
+      "cap": 12,
+      "dailyRefill": 4,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w11_orchard_b",
+      "nodeId": "w11_orchard",
+      "items": {
+        "cloth": 2
+      },
+      "workMinutes": 30,
+      "cap": 8,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w12_canal_a",
+      "nodeId": "w12_canal",
+      "items": {
+        "fiber": 2
+      },
+      "workMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 6,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w12_canal_b",
+      "nodeId": "w12_canal",
+      "items": {
+        "rubber": 1
+      },
+      "workMinutes": 30,
+      "cap": 6,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w13_mill_a",
+      "nodeId": "w13_mill",
+      "items": {
+        "grain": 2
+      },
+      "workMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 4,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w13_mill_b",
+      "nodeId": "w13_mill",
+      "items": {
+        "plank": 2
+      },
+      "workMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w14_cemeteryroad_a",
+      "nodeId": "w14_cemeteryroad",
+      "items": {
+        "stone": 2
+      },
+      "workMinutes": 25,
+      "cap": 12,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w14_cemeteryroad_b",
+      "nodeId": "w14_cemeteryroad",
+      "items": {
+        "cloth": 2
+      },
+      "workMinutes": 30,
+      "cap": 8,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w15_shrinewoods_a",
+      "nodeId": "w15_shrinewoods",
+      "items": {
+        "herb": 1
+      },
+      "workMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w15_shrinewoods_b",
+      "nodeId": "w15_shrinewoods",
+      "items": {
+        "wood": 2
+      },
+      "workMinutes": 30,
+      "cap": 16,
+      "dailyRefill": 6,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w16_service_a",
+      "nodeId": "w16_service",
+      "items": {
+        "scrap": 2
+      },
+      "workMinutes": 25,
+      "cap": 12,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w16_service_b",
+      "nodeId": "w16_service",
+      "items": {
+        "plastic": 2
+      },
+      "workMinutes": 30,
+      "cap": 10,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w17_switchback_a",
+      "nodeId": "w17_switchback",
+      "items": {
+        "stone": 2
+      },
+      "workMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 4,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w17_switchback_b",
+      "nodeId": "w17_switchback",
+      "items": {
+        "wire": 1
+      },
+      "workMinutes": 30,
+      "cap": 8,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w18_tunnel_a",
+      "nodeId": "w18_tunnel",
+      "items": {
+        "iron_ore": 2
+      },
+      "workMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w18_tunnel_b",
+      "nodeId": "w18_tunnel",
+      "items": {
+        "fastener": 2
+      },
+      "workMinutes": 30,
+      "cap": 10,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w19_survey_a",
+      "nodeId": "w19_survey",
+      "items": {
+        "parts": 1
+      },
+      "workMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w19_survey_b",
+      "nodeId": "w19_survey",
+      "items": {
+        "battery": 1
+      },
+      "workMinutes": 30,
+      "cap": 4,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w20_powercut_a",
+      "nodeId": "w20_powercut",
+      "items": {
+        "wire": 2
+      },
+      "workMinutes": 25,
+      "cap": 12,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w20_powercut_b",
+      "nodeId": "w20_powercut",
+      "items": {
+        "electronics": 1
+      },
+      "workMinutes": 30,
+      "cap": 4,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w21_pine_a",
+      "nodeId": "w21_pine",
+      "items": {
+        "wood": 2
+      },
+      "workMinutes": 25,
+      "cap": 24,
+      "dailyRefill": 8,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w21_pine_b",
+      "nodeId": "w21_pine",
+      "items": {
+        "fiber": 2
+      },
+      "workMinutes": 30,
+      "cap": 16,
+      "dailyRefill": 6,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w22_ravine_a",
+      "nodeId": "w22_ravine",
+      "items": {
+        "iron_ore": 2
+      },
+      "workMinutes": 25,
+      "cap": 20,
+      "dailyRefill": 4,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w22_ravine_b",
+      "nodeId": "w22_ravine",
+      "items": {
+        "stone": 2
+      },
+      "workMinutes": 30,
+      "cap": 20,
+      "dailyRefill": 4,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w23_hunting_a",
+      "nodeId": "w23_hunting",
+      "items": {
+        "leather": 1
+      },
+      "workMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w23_hunting_b",
+      "nodeId": "w23_hunting",
+      "items": {
+        "rope": 1
+      },
+      "workMinutes": 30,
+      "cap": 6,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w24_cave_a",
+      "nodeId": "w24_cave",
+      "items": {
+        "iron_ore": 2
+      },
+      "workMinutes": 25,
+      "cap": 24,
+      "dailyRefill": 4,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w24_cave_b",
+      "nodeId": "w24_cave",
+      "items": {
+        "charcoal": 2
+      },
+      "workMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w25_wetland_a",
+      "nodeId": "w25_wetland",
+      "items": {
+        "herb": 1
+      },
+      "workMinutes": 25,
+      "cap": 12,
+      "dailyRefill": 3,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w25_wetland_b",
+      "nodeId": "w25_wetland",
+      "items": {
+        "fiber": 2
+      },
+      "workMinutes": 30,
+      "cap": 20,
+      "dailyRefill": 6,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w26_island_a",
+      "nodeId": "w26_island",
+      "items": {
+        "raw_root": 2
+      },
+      "workMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 6,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w26_island_b",
+      "nodeId": "w26_island",
+      "items": {
+        "salt": 1
+      },
+      "workMinutes": 30,
+      "cap": 6,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w27_relay_a",
+      "nodeId": "w27_relay",
+      "items": {
+        "electronics": 1
+      },
+      "workMinutes": 25,
+      "cap": 6,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w27_relay_b",
+      "nodeId": "w27_relay",
+      "items": {
+        "precision_parts": 1
+      },
+      "workMinutes": 30,
+      "cap": 4,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w28_highland_a",
+      "nodeId": "w28_highland",
+      "items": {
+        "stone": 2
+      },
+      "workMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 4,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w28_highland_b",
+      "nodeId": "w28_highland",
+      "items": {
+        "herb": 1
+      },
+      "workMinutes": 30,
+      "cap": 8,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w29_riverbend_a",
+      "nodeId": "w29_riverbend",
+      "items": {
+        "fiber": 2
+      },
+      "workMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 4,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w29_riverbend_b",
+      "nodeId": "w29_riverbend",
+      "items": {
+        "clay": 2
+      },
+      "workMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w30_truckstop_a",
+      "nodeId": "w30_truckstop",
+      "items": {
+        "oil": 1
+      },
+      "workMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w30_truckstop_b",
+      "nodeId": "w30_truckstop",
+      "items": {
+        "rubber": 1
+      },
+      "workMinutes": 30,
+      "cap": 8,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w31_suburb_a",
+      "nodeId": "w31_suburb",
+      "items": {
+        "cloth": 2
+      },
+      "workMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 4,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w31_suburb_b",
+      "nodeId": "w31_suburb",
+      "items": {
+        "medical_gauze": 1
+      },
+      "workMinutes": 30,
+      "cap": 8,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w32_railcut_a",
+      "nodeId": "w32_railcut",
+      "items": {
+        "steel": 1
+      },
+      "workMinutes": 25,
+      "cap": 10,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w32_railcut_b",
+      "nodeId": "w32_railcut",
+      "items": {
+        "fastener": 2
+      },
+      "workMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w33_waterworks_a",
+      "nodeId": "w33_waterworks",
+      "items": {
+        "adhesive": 1
+      },
+      "workMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w33_waterworks_b",
+      "nodeId": "w33_waterworks",
+      "items": {
+        "disinfectant": 1
+      },
+      "workMinutes": 30,
+      "cap": 6,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w34_depot_a",
+      "nodeId": "w34_depot",
+      "items": {
+        "canned_beans": 1
+      },
+      "workMinutes": 25,
+      "cap": 6,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "finite",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w34_depot_b",
+      "nodeId": "w34_depot",
+      "items": {
+        "saline": 1
+      },
+      "workMinutes": 30,
+      "cap": 6,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "finite",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w12_canal_water",
+      "nodeId": "w12_canal",
+      "items": {
+        "dirty_water": 4
+      },
+      "workMinutes": 10,
+      "cap": "-1",
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "flowing",
+      "reveal": 0,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w25_wetland_water",
+      "nodeId": "w25_wetland",
+      "items": {
+        "dirty_water": 4
+      },
+      "workMinutes": 10,
+      "cap": "-1",
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "flowing",
+      "reveal": 0,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w29_riverbend_water",
+      "nodeId": "w29_riverbend",
+      "items": {
+        "dirty_water": 4
+      },
+      "workMinutes": 10,
+      "cap": "-1",
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "flowing",
+      "reveal": 0,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w33_waterworks_water",
+      "nodeId": "w33_waterworks",
+      "items": {
+        "dirty_water": 4
+      },
+      "workMinutes": 10,
+      "cap": "-1",
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "flowing",
+      "reveal": 0,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w08_reservoir_water",
+      "nodeId": "w08_reservoir",
+      "items": {
+        "dirty_water": 4
+      },
+      "workMinutes": 10,
+      "cap": "-1",
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "flowing",
+      "reveal": 0,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w16_service_cistern",
+      "nodeId": "w16_service",
+      "items": {
+        "dirty_water": 4
+      },
+      "workMinutes": 10,
+      "cap": 12,
+      "dailyRefill": 4,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "cistern",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w19_survey_cistern",
+      "nodeId": "w19_survey",
+      "items": {
+        "dirty_water": 4
+      },
+      "workMinutes": 10,
+      "cap": 12,
+      "dailyRefill": 4,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "cistern",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w23_hunting_cistern",
+      "nodeId": "w23_hunting",
+      "items": {
+        "dirty_water": 4
+      },
+      "workMinutes": 10,
+      "cap": 12,
+      "dailyRefill": 4,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "cistern",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w27_relay_cistern",
+      "nodeId": "w27_relay",
+      "items": {
+        "dirty_water": 4
+      },
+      "workMinutes": 10,
+      "cap": 12,
+      "dailyRefill": 4,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "cistern",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w30_truckstop_cistern",
+      "nodeId": "w30_truckstop",
+      "items": {
+        "dirty_water": 4
+      },
+      "workMinutes": 10,
+      "cap": 12,
+      "dailyRefill": 4,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "cistern",
+      "reveal": 25,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w13_mill_bottles",
+      "nodeId": "w13_mill",
+      "items": {
+        "clean_water": 2
+      },
+      "workMinutes": 10,
+      "cap": 8,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "finite",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w31_suburb_bottles",
+      "nodeId": "w31_suburb",
+      "items": {
+        "clean_water": 2
+      },
+      "workMinutes": 10,
+      "cap": 8,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "finite",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "w34_depot_bottles",
+      "nodeId": "w34_depot",
+      "items": {
+        "clean_water": 2
+      },
+      "workMinutes": 10,
+      "cap": 8,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "finite",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d01_04_cache0",
+      "nodeId": "d01_04",
+      "items": {
+        "cloth": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d01_06_cache1",
+      "nodeId": "d01_06",
+      "items": {
+        "thread": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d01_04_cache2",
+      "nodeId": "d01_04",
+      "items": {
+        "leather": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d01_08_unique",
+      "nodeId": "d01_08",
+      "items": {
+        "church_route_record": 1
+      },
+      "workMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "reveal": 100,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d02_04_cache0",
+      "nodeId": "d02_04",
+      "items": {
+        "medical_gauze": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d02_06_cache1",
+      "nodeId": "d02_06",
+      "items": {
+        "lab_reagent": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d02_04_cache2",
+      "nodeId": "d02_04",
+      "items": {
+        "electronics": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d02_08_unique",
+      "nodeId": "d02_08",
+      "items": {
+        "academy_safety_record": 1
+      },
+      "workMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "reveal": 100,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d03_04_cache0",
+      "nodeId": "d03_04",
+      "items": {
+        "weapon_parts": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d03_06_cache1",
+      "nodeId": "d03_06",
+      "items": {
+        "steel": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d03_04_cache2",
+      "nodeId": "d03_04",
+      "items": {
+        "fastener": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d03_08_unique",
+      "nodeId": "d03_08",
+      "items": {
+        "communication_power": 1
+      },
+      "workMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "reveal": 100,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d04_03_cache0",
+      "nodeId": "d04_03",
+      "items": {
+        "wire": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d04_05_cache1",
+      "nodeId": "d04_05",
+      "items": {
+        "battery": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d04_03_cache2",
+      "nodeId": "d04_03",
+      "items": {
+        "electronics": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d04_07_unique",
+      "nodeId": "d04_07",
+      "items": {
+        "chapter_contact": 1
+      },
+      "workMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "reveal": 100,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d05_04_cache0",
+      "nodeId": "d05_04",
+      "items": {
+        "rubber": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d05_07_cache1",
+      "nodeId": "d05_07",
+      "items": {
+        "disinfectant": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d05_04_cache2",
+      "nodeId": "d05_04",
+      "items": {
+        "adhesive": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d05_07_unique",
+      "nodeId": "d05_07",
+      "items": {
+        "waterworks_record": 1
+      },
+      "workMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "reveal": 100,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d06_03_cache0",
+      "nodeId": "d06_03",
+      "items": {
+        "iron_ore": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d06_06_cache1",
+      "nodeId": "d06_06",
+      "items": {
+        "iron_plate": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d06_03_cache2",
+      "nodeId": "d06_03",
+      "items": {
+        "charcoal": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d06_08_unique",
+      "nodeId": "d06_08",
+      "items": {
+        "mining_blueprint_pack": 1
+      },
+      "workMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "reveal": 100,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d07_04_cache0",
+      "nodeId": "d07_04",
+      "items": {
+        "canned_beans": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d07_07_cache1",
+      "nodeId": "d07_07",
+      "items": {
+        "cloth": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d07_04_cache2",
+      "nodeId": "d07_04",
+      "items": {
+        "plastic": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d07_07_unique",
+      "nodeId": "d07_07",
+      "items": {
+        "civilian_cache_knowledge": 1
+      },
+      "workMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "reveal": 100,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d08_03_cache0",
+      "nodeId": "d08_03",
+      "items": {
+        "saline": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d08_06_cache1",
+      "nodeId": "d08_06",
+      "items": {
+        "medical_gauze": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d08_03_cache2",
+      "nodeId": "d08_03",
+      "items": {
+        "dried_meat": 2
+      },
+      "workMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "instanceId",
+      "kind": "instance",
+      "reveal": 50,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "d08_08_unique",
+      "nodeId": "d08_08",
+      "items": {
+        "coldchain_knowledge": 1
+      },
+      "workMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "unit": "item_count",
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "reveal": 100,
+      "source": "map-v3-data.json"
+    },
+    {
+      "id": "h03_workshop_supply_disinfectant",
+      "nodeId": "h03_workshop",
+      "items": {
+        "disinfectant": 1
+      },
+      "workMinutes": 20,
+      "cap": 4,
+      "dailyRefill": 1,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "world_addition",
+      "reveal": 100,
+      "source": "expansion-supply.json"
+    },
+    {
+      "id": "w13_mill_supply_salt",
+      "nodeId": "w13_mill",
+      "items": {
+        "salt": 1
+      },
+      "workMinutes": 25,
+      "cap": 6,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "world_addition",
+      "reveal": 50,
+      "source": "expansion-supply.json"
+    },
+    {
+      "id": "w15_shrinewoods_supply_berry",
+      "nodeId": "w15_shrinewoods",
+      "items": {
+        "berry": 2
+      },
+      "workMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 2,
+      "unit": "item_count",
+      "scope": "world_stock",
+      "kind": "world_addition",
+      "reveal": 50,
+      "source": "expansion-supply.json"
+    }
+  ],
+  "resourceTableScope": "96新增规范化补丁，旧S05/A08主世界资源保持；旧地牢资源迁移替换，不叠发",
+  "gateSemantics": {
+    "QMAP01": "(firstTutorialBattleWon OR legacyEquivalent) AND camp_route_known AND visited(village)",
+    "visitorArrival": "用户已批准：D5 08:00且首战胜利，下一安全边界登记；人在外不拉回。旧档等效资格见S15"
+  },
+  "status": "用户已批准现有可调初值直接实装，测试不合适再改；本策划数据非运行配置，尚未实机平衡",
+  "safehousePolicy": {
+    "approved": true,
+    "rule": "全部非势力占用的普通野外（含中立遗迹）可建永久安全屋，不限专用h05或旧少数点；现役公共服务设施区不是普通野外",
+    "requirements": "实际到访、探索100%、营区登记、清除已生成阻碍敌踪、每地点唯一、独立材料与成本按S09",
+    "campCompatibility": "camp可正常付费建新屋，既有棚/火不倒锁、不自动补柜",
+    "safety": "外部原危险不变，未定义安全不补safe；h05_homestead外部safe沿原已明示"
+  }
+}

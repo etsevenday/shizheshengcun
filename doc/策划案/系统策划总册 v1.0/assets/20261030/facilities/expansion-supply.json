@@ -1,0 +1,2844 @@
+{
+  "status": "用户已批准可调初值直接实装；未实现、未实机验证",
+  "mapBaseline": {
+    "file": "map-v3-data.json",
+    "nodes": 143,
+    "edges": 180,
+    "resourcePatch": 96,
+    "note": "93条仅新增补丁，保留S05/A08原资源",
+    "source": "../narrative-map/map-v3-normalized.json",
+    "rawResourcePatchBeforeSupply": 93
+  },
+  "aliases": {
+    "raw_roots": "raw_root",
+    "herb": "herb",
+    "dirty_water": "dirty_water",
+    "clean_water": "clean_water",
+    "field_wrap": "compression_bandage",
+    "filter_liner": "filter_cartridge",
+    "mineral_insert": "ceramic_shell",
+    "insulation_lining": "canvas"
+  },
+  "physicalItems": [
+    {
+      "id": "clay",
+      "name": "黏土",
+      "weightGrams": 500,
+      "stackMax": 20,
+      "shelfLifeHours": 0,
+      "category": "material",
+      "use": "陶壳、烧窑设施",
+      "sourceRefs": [
+        "w29_riverbend_b"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "ceramic_shell",
+      "name": "陶壳",
+      "weightGrams": 300,
+      "stackMax": 20,
+      "shelfLifeHours": 0,
+      "category": "intermediate",
+      "use": "滤芯骨架、固定净水台",
+      "sourceRefs": [
+        "recipe:ex_ceramic_shell"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "purification_tablet",
+      "name": "净水片",
+      "weightGrams": 25,
+      "stackMax": 20,
+      "shelfLifeHours": 0,
+      "category": "water",
+      "use": "1份处理脏水4份，20世界分钟，游戏抽象净化规则",
+      "sourceRefs": [
+        "recipe:ex_purification_tablet"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "filter_cartridge",
+      "name": "长效滤芯",
+      "weightGrams": 200,
+      "stackMax": 10,
+      "shelfLifeHours": 0,
+      "category": "water",
+      "use": "用于已有water_filter，每芯净化脏水4份，20世界分钟",
+      "sourceRefs": [
+        "recipe:ex_filter_cartridge"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "ration_canteen",
+      "name": "分量水壶",
+      "weightGrams": 400,
+      "stackMax": 1,
+      "shelfLifeHours": 0,
+      "category": "container",
+      "use": "空重400g，容量2000ml，250ml分量饮用；不保鲜、不受热",
+      "sourceRefs": [
+        "recipe:ex_ration_canteen"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "hardtack",
+      "name": "远行硬饼",
+      "weightGrams": 200,
+      "stackMax": 20,
+      "shelfLifeHours": 336,
+      "category": "food",
+      "use": "N+24/W-3；食用5分钟，战内禁用",
+      "sourceRefs": [
+        "recipe:ex_hardtack"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "expedition_bar",
+      "name": "远征口粮棒",
+      "weightGrams": 250,
+      "stackMax": 20,
+      "shelfLifeHours": 168,
+      "category": "food",
+      "use": "N+38/W-2；食用5分钟，战内禁用",
+      "sourceRefs": [
+        "recipe:ex_expedition_bar"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "stew_portion",
+      "name": "谷肉炖食",
+      "weightGrams": 400,
+      "stackMax": 20,
+      "shelfLifeHours": 24,
+      "category": "food",
+      "use": "N+35/W+12/M+2；食用5分钟，战内禁用",
+      "sourceRefs": [
+        "recipe:ex_stew_portion"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "field_tarp",
+      "name": "野营遮雨布",
+      "weightGrams": 1000,
+      "stackMax": 1,
+      "shelfLifeHours": 0,
+      "category": "camping",
+      "use": "铺取各10分钟，提供睡眠遮蔽不提供遭遇安全、不叠安全屋",
+      "sourceRefs": [
+        "recipe:ex_field_tarp"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "folding_stove",
+      "name": "折叠柴炉",
+      "weightGrams": 1200,
+      "stackMax": 1,
+      "shelfLifeHours": 0,
+      "category": "camping",
+      "use": "地面部署5分钟，沿火堆两位一锅但燃料上限60；收起5分钟须清空熄火且燃料0",
+      "sourceRefs": [
+        "recipe:ex_folding_stove"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "field_patch",
+      "name": "野外修补包",
+      "weightGrams": 150,
+      "stackMax": 10,
+      "shelfLifeHours": 0,
+      "category": "repair",
+      "use": "战外15基础分钟hand修金属工具/武器最大耐久10%，不修枪/布皮/锅",
+      "sourceRefs": [
+        "recipe:ex_field_patch"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "cable_bundle",
+      "name": "绝缘线束",
+      "weightGrams": 200,
+      "stackMax": 20,
+      "shelfLifeHours": 0,
+      "category": "intermediate",
+      "use": "标记器与灯具维修用中间件，不产生电量",
+      "sourceRefs": [
+        "recipe:ex_cable_bundle"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "flash_marker",
+      "name": "闪光标记器",
+      "weightGrams": 100,
+      "stackMax": 10,
+      "shelfLifeHours": 0,
+      "category": "tactical",
+      "use": "战术消耗品，AP/效果/持续/冷却仅由expansion-combat定义",
+      "sourceRefs": [
+        "recipe:ex_flash_marker"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "brace_pack",
+      "name": "支撑护带包",
+      "weightGrams": 300,
+      "stackMax": 10,
+      "shelfLifeHours": 0,
+      "category": "tactical",
+      "use": "战术消耗品，自身抗位移接口；战斗稿定效果",
+      "sourceRefs": [
+        "recipe:ex_brace_pack"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "rally_patch",
+      "name": "鼓舞提示贴",
+      "weightGrams": 50,
+      "stackMax": 20,
+      "shelfLifeHours": 0,
+      "category": "tactical",
+      "use": "战术消耗品，友方减恐慌接口；战斗稿定效果",
+      "sourceRefs": [
+        "recipe:ex_rally_patch"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "antidiarrheal_powder",
+      "name": "止泻药粉",
+      "weightGrams": 50,
+      "stackMax": 20,
+      "shelfLifeHours": 0,
+      "category": "medical",
+      "use": "腹泻剩余减120分钟；与oral_rehydration共享6h缓解冷却，无腹泻拒绝；战内禁用",
+      "sourceRefs": [
+        "recipe:ex_antidiarrheal_powder"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "emergency_tonic",
+      "name": "应急恢复剂",
+      "weightGrams": 100,
+      "stackMax": 10,
+      "shelfLifeHours": 72,
+      "category": "medical",
+      "use": "E+2/S-2/M-1，6h给药冷却；不增N/W/H/I、不减V；战内2AP可对友方",
+      "sourceRefs": [
+        "recipe:ex_emergency_tonic"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources"
+    }
+  ],
+  "recipes": [
+    {
+      "id": "ex_ceramic_shell",
+      "inputs": {
+        "clay": 2
+      },
+      "outputs": {
+        "ceramic_shell": 2
+      },
+      "station": "kiln",
+      "skill": "crafting",
+      "level": 3,
+      "baseMinutes": 60,
+      "knowledgeId": "ceramic_methods",
+      "fuel": {
+        "charcoal": 1
+      },
+      "mode": "passive_heat"
+    },
+    {
+      "id": "ex_purification_tablet",
+      "inputs": {
+        "disinfectant": 1,
+        "salt": 1
+      },
+      "outputs": {
+        "purification_tablet": 4
+      },
+      "station": "medical",
+      "skill": "medicine",
+      "level": 3,
+      "baseMinutes": 30,
+      "knowledgeId": "expedition_basics"
+    },
+    {
+      "id": "ex_tablet_water",
+      "inputs": {
+        "dirty_water": 4,
+        "purification_tablet": 1
+      },
+      "outputs": {
+        "clean_water": 4
+      },
+      "station": "hand",
+      "skill": "crafting",
+      "level": 1,
+      "baseMinutes": 20,
+      "knowledgeId": "expedition_basics",
+      "mode": "fixed_wait",
+      "prerequisite": "明确一批2L来源，输出为普通水份，不自动补包/锅"
+    },
+    {
+      "id": "ex_filter_cartridge",
+      "inputs": {
+        "ceramic_shell": 1,
+        "charcoal": 1,
+        "cloth": 1
+      },
+      "outputs": {
+        "filter_cartridge": 1
+      },
+      "station": "workbench",
+      "skill": "crafting",
+      "level": 3,
+      "baseMinutes": 30,
+      "knowledgeId": "ceramic_methods"
+    },
+    {
+      "id": "ex_cartridge_water",
+      "inputs": {
+        "dirty_water": 4,
+        "filter_cartridge": 1
+      },
+      "outputs": {
+        "clean_water": 4
+      },
+      "station": "hand",
+      "skill": "crafting",
+      "level": 1,
+      "baseMinutes": 20,
+      "knowledgeId": "expedition_basics",
+      "mode": "fixed_wait",
+      "tools": {
+        "water_filter": 1
+      },
+      "prerequisite": "工具非消耗；滤芯整份消耗，无余次藏进工具"
+    },
+    {
+      "id": "ex_ration_canteen",
+      "inputs": {
+        "plastic": 2,
+        "rubber": 1,
+        "cloth": 1
+      },
+      "outputs": {
+        "ration_canteen": 1
+      },
+      "station": "workbench",
+      "skill": "crafting",
+      "level": 3,
+      "baseMinutes": 45,
+      "knowledgeId": "expedition_basics"
+    },
+    {
+      "id": "ex_hardtack",
+      "inputs": {
+        "grain": 2,
+        "clean_water": 1,
+        "salt": 1
+      },
+      "outputs": {
+        "hardtack": 2
+      },
+      "station": "fire_pot",
+      "skill": "cooking",
+      "level": 3,
+      "baseMinutes": 60,
+      "knowledgeId": "expedition_basics",
+      "mode": "passive_heat",
+      "foodSlots": 2,
+      "fuel": "原火堆燃料按世界分钟扣，不另扣木材",
+      "waterMl": 500,
+      "auxiliaryInputs": [
+        "salt"
+      ]
+    },
+    {
+      "id": "ex_expedition_bar",
+      "inputs": {
+        "dried_meat": 1,
+        "dried_berries": 1
+      },
+      "outputs": {
+        "expedition_bar": 1
+      },
+      "station": "hand",
+      "skill": "cooking",
+      "level": 5,
+      "baseMinutes": 15,
+      "knowledgeId": "expedition_basics",
+      "shelfRule": "min(完成+168h,两原料原expiresAt)，非热加工不刷新原料寿命"
+    },
+    {
+      "id": "ex_stew_portion",
+      "inputs": {
+        "grain": 1,
+        "raw_meat": 1,
+        "clean_water": 2
+      },
+      "outputs": {
+        "stew_portion": 2
+      },
+      "station": "fire_pot",
+      "skill": "cooking",
+      "level": 5,
+      "baseMinutes": 45,
+      "knowledgeId": "expedition_basics",
+      "mode": "passive_heat",
+      "foodSlots": 2,
+      "waterMl": 1000
+    },
+    {
+      "id": "ex_field_tarp",
+      "inputs": {
+        "canvas": 2,
+        "rope": 2,
+        "fastener": 2
+      },
+      "outputs": {
+        "field_tarp": 1
+      },
+      "station": "sewing",
+      "skill": "crafting",
+      "level": 3,
+      "baseMinutes": 60,
+      "knowledgeId": "expedition_basics"
+    },
+    {
+      "id": "ex_folding_stove",
+      "inputs": {
+        "iron_plate": 2,
+        "metal_tube": 1,
+        "fastener": 2
+      },
+      "outputs": {
+        "folding_stove": 1
+      },
+      "station": "workbench",
+      "skill": "crafting",
+      "level": 3,
+      "baseMinutes": 60,
+      "knowledgeId": "expedition_basics"
+    },
+    {
+      "id": "ex_field_patch",
+      "inputs": {
+        "iron_plate": 1,
+        "adhesive": 1,
+        "cloth": 1
+      },
+      "outputs": {
+        "field_patch": 2
+      },
+      "station": "workbench",
+      "skill": "crafting",
+      "level": 3,
+      "baseMinutes": 30,
+      "knowledgeId": "expedition_basics"
+    },
+    {
+      "id": "ex_cable_bundle",
+      "inputs": {
+        "wire": 2,
+        "rubber": 1
+      },
+      "outputs": {
+        "cable_bundle": 2
+      },
+      "station": "workbench",
+      "skill": "crafting",
+      "level": 3,
+      "baseMinutes": 20,
+      "knowledgeId": "expedition_basics"
+    },
+    {
+      "id": "ex_flash_marker",
+      "inputs": {
+        "electronics": 1,
+        "battery": 1,
+        "cable_bundle": 1,
+        "plastic": 1
+      },
+      "outputs": {
+        "flash_marker": 2
+      },
+      "station": "workbench",
+      "skill": "crafting",
+      "level": 3,
+      "baseMinutes": 30,
+      "knowledgeId": "expedition_basics",
+      "effectAuthority": "expansion-combat",
+      "craftOnly": true
+    },
+    {
+      "id": "ex_brace_pack",
+      "inputs": {
+        "canvas": 1,
+        "rope": 1,
+        "leather": 1
+      },
+      "outputs": {
+        "brace_pack": 2
+      },
+      "station": "sewing",
+      "skill": "crafting",
+      "level": 3,
+      "baseMinutes": 30,
+      "knowledgeId": "expedition_basics",
+      "effectAuthority": "expansion-combat",
+      "craftOnly": true
+    },
+    {
+      "id": "ex_rally_patch",
+      "inputs": {
+        "cloth": 1,
+        "thread": 1
+      },
+      "outputs": {
+        "rally_patch": 2
+      },
+      "station": "hand",
+      "skill": "crafting",
+      "level": 1,
+      "baseMinutes": 15,
+      "knowledgeId": "expedition_basics",
+      "effectAuthority": "expansion-combat",
+      "craftOnly": true
+    },
+    {
+      "id": "ex_antidiarrheal_powder",
+      "inputs": {
+        "herb_extract": 1,
+        "charcoal": 1,
+        "grain": 1
+      },
+      "outputs": {
+        "antidiarrheal_powder": 2
+      },
+      "station": "medical",
+      "skill": "medicine",
+      "level": 3,
+      "baseMinutes": 30,
+      "knowledgeId": "expedition_basics"
+    },
+    {
+      "id": "ex_emergency_tonic",
+      "inputs": {
+        "herb_extract": 1,
+        "clean_water": 1
+      },
+      "outputs": {
+        "emergency_tonic": 2
+      },
+      "station": "medical",
+      "skill": "medicine",
+      "level": 5,
+      "baseMinutes": 30,
+      "knowledgeId": "expedition_basics",
+      "shelfRule": "min(完成+72h,herb_extract原expiresAt)；非热配药不刷鲜"
+    },
+    {
+      "id": "ex_station_water",
+      "inputs": {
+        "dirty_water": 4,
+        "filter_media": 1
+      },
+      "outputs": {
+        "clean_water": 4
+      },
+      "station": "water_station",
+      "skill": "crafting",
+      "level": 1,
+      "baseMinutes": 30,
+      "knowledgeId": "ceramic_methods",
+      "mode": "passive"
+    }
+  ],
+  "facilities": [
+    {
+      "id": "kiln",
+      "name": "陶窑",
+      "inputs": {
+        "stone": 8,
+        "clay": 6,
+        "iron_plate": 2
+      },
+      "baseMinutes": 180,
+      "craftingLevel": 3,
+      "knowledgeId": "ceramic_methods",
+      "capacity": "一批两个陶壳",
+      "fuel": "charcoal1/60分钟完整批",
+      "mode": "固定设施"
+    },
+    {
+      "id": "water_station",
+      "name": "固定净水台",
+      "inputs": {
+        "ceramic_shell": 4,
+        "plank": 2,
+        "cloth": 2
+      },
+      "baseMinutes": 90,
+      "craftingLevel": 3,
+      "knowledgeId": "ceramic_methods",
+      "capacity": "一批脏水4份/2L",
+      "fuel": "无火；filter_media1/批",
+      "mode": "固定设施"
+    }
+  ],
+  "resourceAdjustments": [
+    {
+      "resourceId": "w11_orchard_a",
+      "itemId": "raw_root",
+      "quantity": 2,
+      "cap": 12,
+      "dailyRefill": 4,
+      "reason": "只修正raw_roots语义ID，产量不变"
+    },
+    {
+      "resourceId": "w26_island_a",
+      "itemId": "raw_root",
+      "quantity": 2,
+      "cap": 16,
+      "dailyRefill": 6,
+      "reason": "只修正raw_roots语义ID，产量不变"
+    },
+    {
+      "resourceId": "w34_depot_a",
+      "itemId": "canned_beans",
+      "quantity": 1,
+      "cap": 6,
+      "dailyRefill": 0,
+      "reason": "将kind从renewable标为finite；不改产量"
+    },
+    {
+      "resourceId": "w34_depot_b",
+      "itemId": "saline",
+      "quantity": 1,
+      "cap": 6,
+      "dailyRefill": 0,
+      "reason": "将kind从renewable标为finite；不改产量"
+    },
+    {
+      "resourceId": "w11_orchard_b",
+      "itemId": "cloth",
+      "quantity": 2,
+      "cap": 8,
+      "dailyRefill": 2,
+      "reason": "原日补1但每次固定取2，空点须隔日才可操作；已批准改日补2提供每日一次确定布料"
+    },
+    {
+      "resourceId": "w14_cemeteryroad_b",
+      "itemId": "cloth",
+      "quantity": 2,
+      "cap": 8,
+      "dailyRefill": 2,
+      "reason": "同果园，固定取2与日补1对齐为每日一次；非重复发箱"
+    }
+  ],
+  "resourceAdditions": [
+    {
+      "resourceId": "h03_workshop_supply_disinfectant",
+      "nodeId": "h03_workshop",
+      "reveal": 100,
+      "workMinutes": 20,
+      "items": {
+        "disinfectant": 1
+      },
+      "cap": 4,
+      "dayRefill": 1,
+      "unit": "item_count",
+      "claimScope": "world_stock",
+      "reason": "公共回收配给，水处理初期确定材料；不会替代治疗药物"
+    },
+    {
+      "resourceId": "w13_mill_supply_salt",
+      "nodeId": "w13_mill",
+      "reveal": 50,
+      "workMinutes": 25,
+      "items": {
+        "salt": 1
+      },
+      "cap": 6,
+      "dayRefill": 2,
+      "unit": "item_count",
+      "claimScope": "world_stock",
+      "reason": "长途硬饼的确定辅料，避免只靠远端陆洲或拆罐"
+    },
+    {
+      "resourceId": "w15_shrinewoods_supply_berry",
+      "nodeId": "w15_shrinewoods",
+      "reveal": 50,
+      "workMinutes": 25,
+      "items": {
+        "berry": 2
+      },
+      "cap": 8,
+      "dayRefill": 2,
+      "unit": "item_count",
+      "claimScope": "world_stock",
+      "reason": "果干来源为原新手之外的长途替代，非主线钥匙"
+    }
+  ],
+  "knowledge": [
+    {
+      "id": "expedition_basics",
+      "sourceNode": "h03_workshop",
+      "gate": "营区登记后免费查看制作告示0分钟，授予普通实用配方",
+      "alternative": "值班/告示机构服务，不绑特定NPC",
+      "campaignOnce": true,
+      "independentOfQuestPacks": true
+    },
+    {
+      "id": "ceramic_methods",
+      "sourceNode": "h03_workshop",
+      "gate": "制造3免费领基础陶工说明0分钟",
+      "alternative": "d06_08 mining_blueprint_pack可补同一免费基础知识，但不取代任务稿kp_mining两件装备知识；仅出口在d06_09",
+      "campaignOnce": true,
+      "independentOfQuestPacks": true
+    }
+  ],
+  "dungeonInterfaces": [
+    {
+      "id": "d01",
+      "entryNode": "c03_crypt",
+      "bufferNode": "d01_01",
+      "guardianNode": "d01_07",
+      "exitNode": "d01_08",
+      "recordNode": "d01_08",
+      "recordId": "church_route_record",
+      "cacheRows": [
+        {
+          "resourceId": "d01_04_cache0",
+          "itemId": "cloth",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d01_06_cache1",
+          "itemId": "thread",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d01_04_cache2",
+          "itemId": "leather",
+          "quantity": 2
+        }
+      ],
+      "repeatCacheWeightGrams": 1100,
+      "minHarvestMinutes": 60,
+      "resetCooldownHours": 72,
+      "firstOrUniqueRewardAuthority": "expansion-combat.json",
+      "knowledge": "campaignRecord不作实体、不作配方材料、不重发",
+      "clearNode": "d01_08",
+      "bossSalvageRef": "instanceId:d01_07:combat_salvage",
+      "bossSalvageItems": {
+        "cloth": 1
+      },
+      "bossSalvageWeightGrams": 100,
+      "repeatCacheAndBossWeightGrams": 1200,
+      "repeatRewardScope": "地图侧箱+一次守卫固定回收；不含随机普通尸体、首通、唯一；无通用parts2额外包"
+    },
+    {
+      "id": "d02",
+      "entryNode": "r03_lab",
+      "bufferNode": "d02_01",
+      "guardianNode": "d02_07",
+      "exitNode": "d02_09",
+      "recordNode": "d02_08",
+      "recordId": "academy_safety_record",
+      "cacheRows": [
+        {
+          "resourceId": "d02_04_cache0",
+          "itemId": "medical_gauze",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d02_06_cache1",
+          "itemId": "lab_reagent",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d02_04_cache2",
+          "itemId": "electronics",
+          "quantity": 2
+        }
+      ],
+      "repeatCacheWeightGrams": 600,
+      "minHarvestMinutes": 60,
+      "resetCooldownHours": 72,
+      "firstOrUniqueRewardAuthority": "expansion-combat.json",
+      "knowledge": "campaignRecord不作实体、不作配方材料、不重发",
+      "clearNode": "d02_08",
+      "bossSalvageRef": "instanceId:d02_07:combat_salvage",
+      "bossSalvageItems": {
+        "medical_gauze": 1
+      },
+      "bossSalvageWeightGrams": 50,
+      "repeatCacheAndBossWeightGrams": 650,
+      "repeatRewardScope": "地图侧箱+一次守卫固定回收；不含随机普通尸体、首通、唯一；无通用parts2额外包"
+    },
+    {
+      "id": "d03",
+      "entryNode": "o03_police",
+      "bufferNode": "d03_01",
+      "guardianNode": "d03_07",
+      "exitNode": "d03_08",
+      "recordNode": "d03_08",
+      "recordId": "communication_power",
+      "cacheRows": [
+        {
+          "resourceId": "d03_04_cache0",
+          "itemId": "weapon_parts",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d03_06_cache1",
+          "itemId": "steel",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d03_04_cache2",
+          "itemId": "fastener",
+          "quantity": 2
+        }
+      ],
+      "repeatCacheWeightGrams": 1800,
+      "minHarvestMinutes": 60,
+      "resetCooldownHours": 72,
+      "firstOrUniqueRewardAuthority": "expansion-combat.json",
+      "knowledge": "campaignRecord不作实体、不作配方材料、不重发",
+      "clearNode": "d03_08",
+      "bossSalvageRef": "instanceId:d03_07:combat_salvage",
+      "bossSalvageItems": {
+        "parts": 1
+      },
+      "bossSalvageWeightGrams": 200,
+      "repeatCacheAndBossWeightGrams": 2000,
+      "repeatRewardScope": "地图侧箱+一次守卫固定回收；不含随机普通尸体、首通、唯一；无通用parts2额外包"
+    },
+    {
+      "id": "d04",
+      "entryNode": "w10_watchtower",
+      "bufferNode": "d04_01",
+      "guardianNode": "d04_06",
+      "exitNode": "d04_08",
+      "recordNode": "d04_07",
+      "recordId": "chapter_contact",
+      "cacheRows": [
+        {
+          "resourceId": "d04_03_cache0",
+          "itemId": "wire",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d04_05_cache1",
+          "itemId": "battery",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d04_03_cache2",
+          "itemId": "electronics",
+          "quantity": 2
+        }
+      ],
+      "repeatCacheWeightGrams": 700,
+      "minHarvestMinutes": 60,
+      "resetCooldownHours": 72,
+      "firstOrUniqueRewardAuthority": "expansion-combat.json",
+      "knowledge": "campaignRecord不作实体、不作配方材料、不重发",
+      "clearNode": "d04_07",
+      "bossSalvageRef": "instanceId:d04_06:combat_salvage",
+      "bossSalvageItems": {
+        "wire": 1
+      },
+      "bossSalvageWeightGrams": 100,
+      "repeatCacheAndBossWeightGrams": 800,
+      "repeatRewardScope": "地图侧箱+一次守卫固定回收；不含随机普通尸体、首通、唯一；无通用parts2额外包"
+    },
+    {
+      "id": "d05",
+      "entryNode": "w33_waterworks",
+      "bufferNode": "d05_01",
+      "guardianNode": "d05_06",
+      "exitNode": "d05_08",
+      "recordNode": "d05_07",
+      "recordId": "waterworks_record",
+      "cacheRows": [
+        {
+          "resourceId": "d05_04_cache0",
+          "itemId": "rubber",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d05_07_cache1",
+          "itemId": "disinfectant",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d05_04_cache2",
+          "itemId": "adhesive",
+          "quantity": 2
+        }
+      ],
+      "repeatCacheWeightGrams": 800,
+      "minHarvestMinutes": 60,
+      "resetCooldownHours": 72,
+      "firstOrUniqueRewardAuthority": "expansion-combat.json",
+      "knowledge": "campaignRecord不作实体、不作配方材料、不重发",
+      "clearNode": "d05_07",
+      "bossSalvageRef": "instanceId:d05_06:combat_salvage",
+      "bossSalvageItems": {
+        "rubber": 1
+      },
+      "bossSalvageWeightGrams": 200,
+      "repeatCacheAndBossWeightGrams": 1000,
+      "repeatRewardScope": "地图侧箱+一次守卫固定回收；不含随机普通尸体、首通、唯一；无通用parts2额外包"
+    },
+    {
+      "id": "d06",
+      "entryNode": "w24_cave",
+      "bufferNode": "d06_01",
+      "guardianNode": "d06_07",
+      "exitNode": "d06_09",
+      "recordNode": "d06_08",
+      "recordId": "mining_blueprint_pack",
+      "cacheRows": [
+        {
+          "resourceId": "d06_03_cache0",
+          "itemId": "iron_ore",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d06_06_cache1",
+          "itemId": "iron_plate",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d06_03_cache2",
+          "itemId": "charcoal",
+          "quantity": 2
+        }
+      ],
+      "repeatCacheWeightGrams": 2400,
+      "minHarvestMinutes": 60,
+      "resetCooldownHours": 72,
+      "firstOrUniqueRewardAuthority": "expansion-combat.json",
+      "knowledge": "campaignRecord不作实体、不作配方材料、不重发",
+      "clearNode": "d06_08",
+      "bossSalvageRef": "instanceId:d06_07:combat_salvage",
+      "bossSalvageItems": {
+        "iron_ore": 2
+      },
+      "bossSalvageWeightGrams": 1000,
+      "repeatCacheAndBossWeightGrams": 3400,
+      "repeatRewardScope": "地图侧箱+一次守卫固定回收；不含随机普通尸体、首通、唯一；无通用parts2额外包"
+    },
+    {
+      "id": "d07",
+      "entryNode": "o02_market",
+      "bufferNode": "d07_01",
+      "guardianNode": "d07_06",
+      "exitNode": "d07_08",
+      "recordNode": "d07_07",
+      "recordId": "civilian_cache_knowledge",
+      "cacheRows": [
+        {
+          "resourceId": "d07_04_cache0",
+          "itemId": "canned_beans",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d07_07_cache1",
+          "itemId": "cloth",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d07_04_cache2",
+          "itemId": "plastic",
+          "quantity": 2
+        }
+      ],
+      "repeatCacheWeightGrams": 1200,
+      "minHarvestMinutes": 60,
+      "resetCooldownHours": 72,
+      "firstOrUniqueRewardAuthority": "expansion-combat.json",
+      "knowledge": "campaignRecord不作实体、不作配方材料、不重发",
+      "clearNode": "d07_07",
+      "bossSalvageRef": "instanceId:d07_06:combat_salvage",
+      "bossSalvageItems": {
+        "plastic": 1
+      },
+      "bossSalvageWeightGrams": 100,
+      "repeatCacheAndBossWeightGrams": 1300,
+      "repeatRewardScope": "地图侧箱+一次守卫固定回收；不含随机普通尸体、首通、唯一；无通用parts2额外包"
+    },
+    {
+      "id": "d08",
+      "entryNode": "w34_depot",
+      "bufferNode": "d08_01",
+      "guardianNode": "d08_07",
+      "exitNode": "d08_09",
+      "recordNode": "d08_08",
+      "recordId": "coldchain_knowledge",
+      "cacheRows": [
+        {
+          "resourceId": "d08_03_cache0",
+          "itemId": "saline",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d08_06_cache1",
+          "itemId": "medical_gauze",
+          "quantity": 2
+        },
+        {
+          "resourceId": "d08_03_cache2",
+          "itemId": "dried_meat",
+          "quantity": 2
+        }
+      ],
+      "repeatCacheWeightGrams": 1500,
+      "minHarvestMinutes": 60,
+      "resetCooldownHours": 72,
+      "firstOrUniqueRewardAuthority": "expansion-combat.json",
+      "knowledge": "campaignRecord不作实体、不作配方材料、不重发",
+      "clearNode": "d08_08",
+      "bossSalvageRef": "instanceId:d08_07:combat_salvage",
+      "bossSalvageItems": {
+        "cloth": 1
+      },
+      "bossSalvageWeightGrams": 100,
+      "repeatCacheAndBossWeightGrams": 1600,
+      "repeatRewardScope": "地图侧箱+一次守卫固定回收；不含随机普通尸体、首通、唯一；无通用parts2额外包"
+    }
+  ],
+  "resourceAudit": [
+    {
+      "resourceId": "w11_orchard_a",
+      "nodeId": "w11_orchard",
+      "mapItemId": "raw_roots",
+      "canonicalItemId": "raw_root",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 12,
+      "dailyRefill": 4,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w11_orchard_b",
+      "nodeId": "w11_orchard",
+      "mapItemId": "cloth",
+      "canonicalItemId": "cloth",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 8,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w12_canal_a",
+      "nodeId": "w12_canal",
+      "mapItemId": "fiber",
+      "canonicalItemId": "fiber",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 16,
+      "dailyRefill": 6,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w12_canal_b",
+      "nodeId": "w12_canal",
+      "mapItemId": "rubber",
+      "canonicalItemId": "rubber",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 6,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w13_mill_a",
+      "nodeId": "w13_mill",
+      "mapItemId": "grain",
+      "canonicalItemId": "grain",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 16,
+      "dailyRefill": 4,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w13_mill_b",
+      "nodeId": "w13_mill",
+      "mapItemId": "plank",
+      "canonicalItemId": "plank",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 12,
+      "dailyRefill": 2,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w14_cemeteryroad_a",
+      "nodeId": "w14_cemeteryroad",
+      "mapItemId": "stone",
+      "canonicalItemId": "stone",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 12,
+      "dailyRefill": 2,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w14_cemeteryroad_b",
+      "nodeId": "w14_cemeteryroad",
+      "mapItemId": "cloth",
+      "canonicalItemId": "cloth",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 8,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w15_shrinewoods_a",
+      "nodeId": "w15_shrinewoods",
+      "mapItemId": "herb",
+      "canonicalItemId": "herb",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 8,
+      "dailyRefill": 2,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w15_shrinewoods_b",
+      "nodeId": "w15_shrinewoods",
+      "mapItemId": "wood",
+      "canonicalItemId": "wood",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 16,
+      "dailyRefill": 6,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w16_service_a",
+      "nodeId": "w16_service",
+      "mapItemId": "scrap",
+      "canonicalItemId": "scrap",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 12,
+      "dailyRefill": 2,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w16_service_b",
+      "nodeId": "w16_service",
+      "mapItemId": "plastic",
+      "canonicalItemId": "plastic",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 10,
+      "dailyRefill": 2,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w17_switchback_a",
+      "nodeId": "w17_switchback",
+      "mapItemId": "stone",
+      "canonicalItemId": "stone",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 16,
+      "dailyRefill": 4,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w17_switchback_b",
+      "nodeId": "w17_switchback",
+      "mapItemId": "wire",
+      "canonicalItemId": "wire",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 8,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w18_tunnel_a",
+      "nodeId": "w18_tunnel",
+      "mapItemId": "iron_ore",
+      "canonicalItemId": "iron_ore",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 16,
+      "dailyRefill": 2,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w18_tunnel_b",
+      "nodeId": "w18_tunnel",
+      "mapItemId": "fastener",
+      "canonicalItemId": "fastener",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 10,
+      "dailyRefill": 2,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w19_survey_a",
+      "nodeId": "w19_survey",
+      "mapItemId": "parts",
+      "canonicalItemId": "parts",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 8,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w19_survey_b",
+      "nodeId": "w19_survey",
+      "mapItemId": "battery",
+      "canonicalItemId": "battery",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 4,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w20_powercut_a",
+      "nodeId": "w20_powercut",
+      "mapItemId": "wire",
+      "canonicalItemId": "wire",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 12,
+      "dailyRefill": 2,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w20_powercut_b",
+      "nodeId": "w20_powercut",
+      "mapItemId": "electronics",
+      "canonicalItemId": "electronics",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 4,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w21_pine_a",
+      "nodeId": "w21_pine",
+      "mapItemId": "wood",
+      "canonicalItemId": "wood",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 24,
+      "dailyRefill": 8,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w21_pine_b",
+      "nodeId": "w21_pine",
+      "mapItemId": "fiber",
+      "canonicalItemId": "fiber",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 16,
+      "dailyRefill": 6,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w22_ravine_a",
+      "nodeId": "w22_ravine",
+      "mapItemId": "iron_ore",
+      "canonicalItemId": "iron_ore",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 20,
+      "dailyRefill": 4,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w22_ravine_b",
+      "nodeId": "w22_ravine",
+      "mapItemId": "stone",
+      "canonicalItemId": "stone",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 20,
+      "dailyRefill": 4,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w23_hunting_a",
+      "nodeId": "w23_hunting",
+      "mapItemId": "leather",
+      "canonicalItemId": "leather",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 8,
+      "dailyRefill": 2,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w23_hunting_b",
+      "nodeId": "w23_hunting",
+      "mapItemId": "rope",
+      "canonicalItemId": "rope",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 6,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w24_cave_a",
+      "nodeId": "w24_cave",
+      "mapItemId": "iron_ore",
+      "canonicalItemId": "iron_ore",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 24,
+      "dailyRefill": 4,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w24_cave_b",
+      "nodeId": "w24_cave",
+      "mapItemId": "charcoal",
+      "canonicalItemId": "charcoal",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 12,
+      "dailyRefill": 2,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w25_wetland_a",
+      "nodeId": "w25_wetland",
+      "mapItemId": "herb",
+      "canonicalItemId": "herb",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 12,
+      "dailyRefill": 3,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w25_wetland_b",
+      "nodeId": "w25_wetland",
+      "mapItemId": "fiber",
+      "canonicalItemId": "fiber",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 20,
+      "dailyRefill": 6,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w26_island_a",
+      "nodeId": "w26_island",
+      "mapItemId": "raw_roots",
+      "canonicalItemId": "raw_root",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 16,
+      "dailyRefill": 6,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w26_island_b",
+      "nodeId": "w26_island",
+      "mapItemId": "salt",
+      "canonicalItemId": "salt",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 6,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w27_relay_a",
+      "nodeId": "w27_relay",
+      "mapItemId": "electronics",
+      "canonicalItemId": "electronics",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 6,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w27_relay_b",
+      "nodeId": "w27_relay",
+      "mapItemId": "precision_parts",
+      "canonicalItemId": "precision_parts",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 4,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w28_highland_a",
+      "nodeId": "w28_highland",
+      "mapItemId": "stone",
+      "canonicalItemId": "stone",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 16,
+      "dailyRefill": 4,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w28_highland_b",
+      "nodeId": "w28_highland",
+      "mapItemId": "herb",
+      "canonicalItemId": "herb",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 8,
+      "dailyRefill": 2,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w29_riverbend_a",
+      "nodeId": "w29_riverbend",
+      "mapItemId": "fiber",
+      "canonicalItemId": "fiber",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 16,
+      "dailyRefill": 4,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w29_riverbend_b",
+      "nodeId": "w29_riverbend",
+      "mapItemId": "clay",
+      "canonicalItemId": "clay",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 12,
+      "dailyRefill": 2,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w30_truckstop_a",
+      "nodeId": "w30_truckstop",
+      "mapItemId": "oil",
+      "canonicalItemId": "oil",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 8,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w30_truckstop_b",
+      "nodeId": "w30_truckstop",
+      "mapItemId": "rubber",
+      "canonicalItemId": "rubber",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 8,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w31_suburb_a",
+      "nodeId": "w31_suburb",
+      "mapItemId": "cloth",
+      "canonicalItemId": "cloth",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 16,
+      "dailyRefill": 4,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w31_suburb_b",
+      "nodeId": "w31_suburb",
+      "mapItemId": "medical_gauze",
+      "canonicalItemId": "medical_gauze",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 8,
+      "dailyRefill": 2,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w32_railcut_a",
+      "nodeId": "w32_railcut",
+      "mapItemId": "steel",
+      "canonicalItemId": "steel",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 10,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w32_railcut_b",
+      "nodeId": "w32_railcut",
+      "mapItemId": "fastener",
+      "canonicalItemId": "fastener",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 12,
+      "dailyRefill": 2,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w33_waterworks_a",
+      "nodeId": "w33_waterworks",
+      "mapItemId": "adhesive",
+      "canonicalItemId": "adhesive",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 8,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w33_waterworks_b",
+      "nodeId": "w33_waterworks",
+      "mapItemId": "disinfectant",
+      "canonicalItemId": "disinfectant",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 6,
+      "dailyRefill": 1,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w34_depot_a",
+      "nodeId": "w34_depot",
+      "mapItemId": "canned_beans",
+      "canonicalItemId": "canned_beans",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 6,
+      "dailyRefill": 0,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w34_depot_b",
+      "nodeId": "w34_depot",
+      "mapItemId": "saline",
+      "canonicalItemId": "saline",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 1,
+      "cap": 6,
+      "dailyRefill": 0,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w12_canal_water",
+      "nodeId": "w12_canal",
+      "mapItemId": "dirty_water",
+      "canonicalItemId": "dirty_water",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 4,
+      "cap": -1,
+      "dailyRefill": 0,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w25_wetland_water",
+      "nodeId": "w25_wetland",
+      "mapItemId": "dirty_water",
+      "canonicalItemId": "dirty_water",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 4,
+      "cap": -1,
+      "dailyRefill": 0,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w29_riverbend_water",
+      "nodeId": "w29_riverbend",
+      "mapItemId": "dirty_water",
+      "canonicalItemId": "dirty_water",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 4,
+      "cap": -1,
+      "dailyRefill": 0,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w33_waterworks_water",
+      "nodeId": "w33_waterworks",
+      "mapItemId": "dirty_water",
+      "canonicalItemId": "dirty_water",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 4,
+      "cap": -1,
+      "dailyRefill": 0,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w08_reservoir_water",
+      "nodeId": "w08_reservoir",
+      "mapItemId": "dirty_water",
+      "canonicalItemId": "dirty_water",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 4,
+      "cap": -1,
+      "dailyRefill": 0,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w16_service_cistern",
+      "nodeId": "w16_service",
+      "mapItemId": "dirty_water",
+      "canonicalItemId": "dirty_water",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 4,
+      "cap": 12,
+      "dailyRefill": 4,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w19_survey_cistern",
+      "nodeId": "w19_survey",
+      "mapItemId": "dirty_water",
+      "canonicalItemId": "dirty_water",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 4,
+      "cap": 12,
+      "dailyRefill": 4,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w23_hunting_cistern",
+      "nodeId": "w23_hunting",
+      "mapItemId": "dirty_water",
+      "canonicalItemId": "dirty_water",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 4,
+      "cap": 12,
+      "dailyRefill": 4,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w27_relay_cistern",
+      "nodeId": "w27_relay",
+      "mapItemId": "dirty_water",
+      "canonicalItemId": "dirty_water",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 4,
+      "cap": 12,
+      "dailyRefill": 4,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w30_truckstop_cistern",
+      "nodeId": "w30_truckstop",
+      "mapItemId": "dirty_water",
+      "canonicalItemId": "dirty_water",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 4,
+      "cap": 12,
+      "dailyRefill": 4,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w13_mill_bottles",
+      "nodeId": "w13_mill",
+      "mapItemId": "clean_water",
+      "canonicalItemId": "clean_water",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 8,
+      "dailyRefill": 0,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w31_suburb_bottles",
+      "nodeId": "w31_suburb",
+      "mapItemId": "clean_water",
+      "canonicalItemId": "clean_water",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 8,
+      "dailyRefill": 0,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "w34_depot_bottles",
+      "nodeId": "w34_depot",
+      "mapItemId": "clean_water",
+      "canonicalItemId": "clean_water",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 8,
+      "dailyRefill": 0,
+      "claimScope": "world_stock",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d01_04_cache0",
+      "nodeId": "d01_04",
+      "mapItemId": "cloth",
+      "canonicalItemId": "cloth",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d01_06_cache1",
+      "nodeId": "d01_06",
+      "mapItemId": "thread",
+      "canonicalItemId": "thread",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d01_04_cache2",
+      "nodeId": "d01_04",
+      "mapItemId": "leather",
+      "canonicalItemId": "leather",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d01_08_unique",
+      "nodeId": "d01_08",
+      "mapItemId": "church_route_record",
+      "canonicalItemId": null,
+      "recordId": "church_route_record",
+      "entityKind": "campaign_record",
+      "quantity": 1,
+      "cap": 1,
+      "dailyRefill": 0,
+      "claimScope": "campaignClaimId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d02_04_cache0",
+      "nodeId": "d02_04",
+      "mapItemId": "medical_gauze",
+      "canonicalItemId": "medical_gauze",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d02_06_cache1",
+      "nodeId": "d02_06",
+      "mapItemId": "lab_reagent",
+      "canonicalItemId": "lab_reagent",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d02_04_cache2",
+      "nodeId": "d02_04",
+      "mapItemId": "electronics",
+      "canonicalItemId": "electronics",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d02_08_unique",
+      "nodeId": "d02_08",
+      "mapItemId": "academy_safety_record",
+      "canonicalItemId": null,
+      "recordId": "academy_safety_record",
+      "entityKind": "campaign_record",
+      "quantity": 1,
+      "cap": 1,
+      "dailyRefill": 0,
+      "claimScope": "campaignClaimId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d03_04_cache0",
+      "nodeId": "d03_04",
+      "mapItemId": "weapon_parts",
+      "canonicalItemId": "weapon_parts",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d03_06_cache1",
+      "nodeId": "d03_06",
+      "mapItemId": "steel",
+      "canonicalItemId": "steel",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d03_04_cache2",
+      "nodeId": "d03_04",
+      "mapItemId": "fastener",
+      "canonicalItemId": "fastener",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d03_08_unique",
+      "nodeId": "d03_08",
+      "mapItemId": "communication_power",
+      "canonicalItemId": null,
+      "recordId": "communication_power",
+      "entityKind": "campaign_record",
+      "quantity": 1,
+      "cap": 1,
+      "dailyRefill": 0,
+      "claimScope": "campaignClaimId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d04_03_cache0",
+      "nodeId": "d04_03",
+      "mapItemId": "wire",
+      "canonicalItemId": "wire",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d04_05_cache1",
+      "nodeId": "d04_05",
+      "mapItemId": "battery",
+      "canonicalItemId": "battery",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d04_03_cache2",
+      "nodeId": "d04_03",
+      "mapItemId": "electronics",
+      "canonicalItemId": "electronics",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d04_07_unique",
+      "nodeId": "d04_07",
+      "mapItemId": "chapter_contact",
+      "canonicalItemId": null,
+      "recordId": "chapter_contact",
+      "entityKind": "campaign_record",
+      "quantity": 1,
+      "cap": 1,
+      "dailyRefill": 0,
+      "claimScope": "campaignClaimId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d05_04_cache0",
+      "nodeId": "d05_04",
+      "mapItemId": "rubber",
+      "canonicalItemId": "rubber",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d05_07_cache1",
+      "nodeId": "d05_07",
+      "mapItemId": "disinfectant",
+      "canonicalItemId": "disinfectant",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d05_04_cache2",
+      "nodeId": "d05_04",
+      "mapItemId": "adhesive",
+      "canonicalItemId": "adhesive",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d05_07_unique",
+      "nodeId": "d05_07",
+      "mapItemId": "waterworks_record",
+      "canonicalItemId": null,
+      "recordId": "waterworks_record",
+      "entityKind": "campaign_record",
+      "quantity": 1,
+      "cap": 1,
+      "dailyRefill": 0,
+      "claimScope": "campaignClaimId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d06_03_cache0",
+      "nodeId": "d06_03",
+      "mapItemId": "iron_ore",
+      "canonicalItemId": "iron_ore",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d06_06_cache1",
+      "nodeId": "d06_06",
+      "mapItemId": "iron_plate",
+      "canonicalItemId": "iron_plate",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d06_03_cache2",
+      "nodeId": "d06_03",
+      "mapItemId": "charcoal",
+      "canonicalItemId": "charcoal",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d06_08_unique",
+      "nodeId": "d06_08",
+      "mapItemId": "mining_blueprint_pack",
+      "canonicalItemId": null,
+      "recordId": "mining_blueprint_pack",
+      "entityKind": "campaign_record",
+      "quantity": 1,
+      "cap": 1,
+      "dailyRefill": 0,
+      "claimScope": "campaignClaimId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d07_04_cache0",
+      "nodeId": "d07_04",
+      "mapItemId": "canned_beans",
+      "canonicalItemId": "canned_beans",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d07_07_cache1",
+      "nodeId": "d07_07",
+      "mapItemId": "cloth",
+      "canonicalItemId": "cloth",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d07_04_cache2",
+      "nodeId": "d07_04",
+      "mapItemId": "plastic",
+      "canonicalItemId": "plastic",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d07_07_unique",
+      "nodeId": "d07_07",
+      "mapItemId": "civilian_cache_knowledge",
+      "canonicalItemId": null,
+      "recordId": "civilian_cache_knowledge",
+      "entityKind": "campaign_record",
+      "quantity": 1,
+      "cap": 1,
+      "dailyRefill": 0,
+      "claimScope": "campaignClaimId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d08_03_cache0",
+      "nodeId": "d08_03",
+      "mapItemId": "saline",
+      "canonicalItemId": "saline",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d08_06_cache1",
+      "nodeId": "d08_06",
+      "mapItemId": "medical_gauze",
+      "canonicalItemId": "medical_gauze",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d08_03_cache2",
+      "nodeId": "d08_03",
+      "mapItemId": "dried_meat",
+      "canonicalItemId": "dried_meat",
+      "recordId": null,
+      "entityKind": "physical_item",
+      "quantity": 2,
+      "cap": 2,
+      "dailyRefill": 0,
+      "claimScope": "instanceId",
+      "sourceLayer": "map_v3_new_patch"
+    },
+    {
+      "resourceId": "d08_08_unique",
+      "nodeId": "d08_08",
+      "mapItemId": "coldchain_knowledge",
+      "canonicalItemId": null,
+      "recordId": "coldchain_knowledge",
+      "entityKind": "campaign_record",
+      "quantity": 1,
+      "cap": 1,
+      "dailyRefill": 0,
+      "claimScope": "campaignClaimId",
+      "sourceLayer": "map_v3_new_patch"
+    }
+  ],
+  "budgets": [
+    {
+      "id": "four_actor_day",
+      "hours": 24,
+      "schedule": [
+        {
+          "action": "travel",
+          "hours": 3,
+          "executor": "四人同计划",
+          "teamN": 18,
+          "teamW": 43.2
+        },
+        {
+          "action": "explore",
+          "hours": 2,
+          "executor": "一人执行其余三人wait",
+          "teamN": 10.2,
+          "teamW": 21.599999999999998
+        },
+        {
+          "action": "gather",
+          "hours": 4,
+          "executor": "一人执行其余三人wait",
+          "teamN": 20.4,
+          "teamW": 43.199999999999996
+        },
+        {
+          "action": "craft",
+          "hours": 3,
+          "executor": "一人执行其余三人wait",
+          "teamN": 14.399999999999999,
+          "teamW": 30.599999999999998
+        },
+        {
+          "action": "wait",
+          "hours": 2,
+          "executor": "四人同计划",
+          "teamN": 9.6,
+          "teamW": 19.2
+        },
+        {
+          "action": "rest",
+          "hours": 2,
+          "executor": "四人同计划",
+          "teamN": 9.6,
+          "teamW": 19.2
+        },
+        {
+          "action": "sleep",
+          "hours": 8,
+          "executor": "四人同计划",
+          "teamN": 38.4,
+          "teamW": 76.8
+        }
+      ],
+      "teamN": 120.6,
+      "teamW": 253.79999999999995,
+      "leaderN": 31.5,
+      "leaderW": 70.19999999999999,
+      "otherActorN": 29.7,
+      "otherActorW": 61.19999999999999,
+      "note": "2小时wait含食用/饮水的5分钟，不另加在24h之外；无腹泻/负重/伤病，未计战斗N/W冻结额外时间；不能把72h冷却当现实离线免费快进"
+    },
+    {
+      "id": "hard_food_day",
+      "carry": {
+        "hardtack": 8,
+        "clean_water": 12
+      },
+      "carryFoodWaterGrams": 7600,
+      "foodN": 192,
+      "foodW": -24,
+      "requiredTeamWater": 277.79999999999995,
+      "minWaterUnits": 10,
+      "recommendedWaterUnits": 12,
+      "waterMargin": 82.20000000000005,
+      "production": {
+        "inputs": {
+          "grain": 8,
+          "clean_water": 4,
+          "salt": 4
+        },
+        "heatMinutes": 240,
+        "ignitionMinutes": 5,
+        "woodRequiredFromZeroFuel": 5,
+        "outputs": {
+          "hardtack": 8
+        }
+      },
+      "note": "每人硬饼2+净水3；每日仅10份水是按总量最低，推荐12按个体分配不保证所有环境"
+    },
+    {
+      "id": "bar_day",
+      "carry": {
+        "expedition_bar": 4,
+        "clean_water": 12
+      },
+      "carryFoodWaterGrams": 7000,
+      "foodN": 152,
+      "foodW": -8,
+      "requiredTeamWater": 261.79999999999995,
+      "minWaterUnits": 9,
+      "production": {
+        "inputs": {
+          "dried_meat": 4,
+          "dried_berries": 4
+        },
+        "assemblyBaseMinutes": 60,
+        "rawInputs": {
+          "raw_meat": 4,
+          "salt": 4,
+          "berry": 8
+        },
+        "dryingRackSlots": 2,
+        "dryingWorldMinutes": 600
+      },
+      "note": "肉干cooking5；原料肉12h/莓24h，新鲜先肉后果10小时可完工，非热加工保质按原规则；条成品截止不晚于任一原料"
+    },
+    {
+      "id": "d02_30h_worked_example",
+      "scope": "已开放路线的30h补给压力计划，非首次开图/实战通关实测",
+      "travelBaseOutAndBackMinutes": 440,
+      "instanceEntryExitAndInteriorTravelMinutes": 55,
+      "insideRoute": [
+        "r03_lab",
+        "d02_01",
+        "d02_02",
+        "d02_04",
+        "d02_06",
+        "d02_04",
+        "d02_07",
+        "d02_08",
+        "d02_09",
+        "r03_lab"
+      ],
+      "exploredNodes": 7,
+      "exploreMinutes": 210,
+      "battleAssumption": {
+        "fullRounds": 12,
+        "worldMinutes": 60,
+        "notGuaranteeVictory": true
+      },
+      "schedule": [
+        {
+          "action": "travel",
+          "minutes": 495,
+          "oneWorker": false,
+          "teamN": 49.5,
+          "teamW": 118.8
+        },
+        {
+          "action": "explore",
+          "minutes": 210,
+          "oneWorker": true,
+          "teamN": 17.849999999999998,
+          "teamW": 37.8
+        },
+        {
+          "action": "gather",
+          "minutes": 60,
+          "oneWorker": true,
+          "teamN": 5.1,
+          "teamW": 10.799999999999999
+        },
+        {
+          "action": "craft",
+          "minutes": 50,
+          "oneWorker": true,
+          "teamN": 4,
+          "teamW": 8.5
+        },
+        {
+          "action": "wait",
+          "minutes": 325,
+          "oneWorker": false,
+          "teamN": 26,
+          "teamW": 52
+        },
+        {
+          "action": "sleep",
+          "minutes": 480,
+          "oneWorker": false,
+          "teamN": 38.4,
+          "teamW": 76.8
+        },
+        {
+          "action": "rest",
+          "minutes": 120,
+          "oneWorker": false,
+          "teamN": 9.6,
+          "teamW": 19.2
+        },
+        {
+          "action": "battle",
+          "minutes": 60,
+          "oneWorker": false,
+          "teamN": 0,
+          "teamW": 0
+        }
+      ],
+      "hours": 30,
+      "teamN": 150.45,
+      "teamW": 323.9,
+      "workerN": 38.625,
+      "workerW": 85.39999999999999,
+      "otherActorN": 37.275,
+      "otherActorW": 79.5,
+      "food": {
+        "hardtack": 8,
+        "totalN": 192,
+        "totalW": -24
+      },
+      "water": {
+        "carryUnits": 16,
+        "totalW": 480,
+        "minUnits": 12,
+        "needW": 347.9,
+        "marginW": 132.10000000000002
+      },
+      "actors": [
+        {
+          "actor": "甲近战/工作执行",
+          "roots": {
+            "clean_water": 4,
+            "hardtack": 2,
+            "pot": 1,
+            "wood": 3,
+            "lighter": 1
+          },
+          "rootCards": 5,
+          "supplyGrams": 5000,
+          "equipmentBudgetGrams": 10000,
+          "totalGrams": 15000,
+          "toLightThresholdGrams": 5000,
+          "toHardLimitGrams": 15000,
+          "actualEquipmentValidated": false
+        },
+        {
+          "actor": "乙弓手/露营",
+          "roots": {
+            "clean_water": 4,
+            "hardtack": 2,
+            "arrow": 20,
+            "field_tarp": 1,
+            "folding_stove": 1
+          },
+          "rootCards": 5,
+          "supplyGrams": 5600,
+          "equipmentBudgetGrams": 10000,
+          "totalGrams": 15600,
+          "toLightThresholdGrams": 4400,
+          "toHardLimitGrams": 14400,
+          "actualEquipmentValidated": false
+        },
+        {
+          "actor": "丙枪手/维护",
+          "roots": {
+            "clean_water": 4,
+            "hardtack": 2,
+            "repair_kit": 1,
+            "bandage": 2
+          },
+          "rootCards": 5,
+          "supplyGrams": 3420,
+          "equipmentBudgetGrams": 10000,
+          "totalGrams": 13420,
+          "toLightThresholdGrams": 6580,
+          "toHardLimitGrams": 16580,
+          "actualEquipmentValidated": false
+        },
+        {
+          "actor": "丁医疗/备用净化",
+          "roots": {
+            "clean_water": 4,
+            "hardtack": 2,
+            "first_aid_pack": 2,
+            "purification_tablet": 4
+          },
+          "rootCards": 4,
+          "supplyGrams": 3200,
+          "equipmentBudgetGrams": 10000,
+          "totalGrams": 13200,
+          "toLightThresholdGrams": 6800,
+          "toHardLimitGrams": 16800,
+          "actualEquipmentValidated": false
+        }
+      ],
+      "inventoryPolicy": "不战内跨人物取药弹；安全点明确交接且校验，补给默认各自自足。硬饼每人同批2份，N≤52可连吃两份10分钟清空其根卡，为3种d02箱留卡；也可不吃保留并先封存合格奖励，不暗塞包。",
+      "resupplyPolicy": "不依赖核心净水；起点自带8L，水片/木锅仅突发备用。山路w16/w19脏水取前查库存，不把其4份日补当全队日供。",
+      "risk": "疾病、伤害、高负重、夜晚倍率与首次野外探索会延长；预算余量不是保险。主动退出固定惩罚需另加，不把奖励封存当外带物资仓。"
+    }
+  ],
+  "validation": {
+    "inputOutputPhysicalRefsMissing": [],
+    "duplicateWithBase": [],
+    "allSourceNodesExist": true,
+    "allDungeonsMatchMap": true,
+    "hourSum": 24,
+    "newItems": 17,
+    "recipes": 19,
+    "facilities": 2,
+    "resourceRows": 93,
+    "gameplayTestsRun": false,
+    "allResourceNodesExist": true,
+    "d02Hours": 30,
+    "d02EachAtMostFiveCards": true,
+    "d02EachBelow20kg": true,
+    "d02Notes": "装备10kg含7穿戴及已装弹仓，以实际装备复核；只是明确上限预算非已选装备",
+    "repeatWeightJoin": true,
+    "tacticalRecipeJoin": true
+  },
+  "locationAdjustments": [
+    {
+      "nodeId": "w13_mill",
+      "buildAllowed": {
+        "temporaryCamp": true
+      },
+      "reason": "普通野外允许放野营布/柴炉；不把外部safety改成safe，营地袭击系统不在本案"
+    },
+    {
+      "nodeId": "w16_service",
+      "buildAllowed": {
+        "temporaryCamp": true
+      },
+      "reason": "普通野外允许放野营布/柴炉；不把外部safety改成safe，营地袭击系统不在本案"
+    },
+    {
+      "nodeId": "w19_survey",
+      "buildAllowed": {
+        "temporaryCamp": true
+      },
+      "reason": "普通野外允许放野营布/柴炉；不把外部safety改成safe，营地袭击系统不在本案"
+    },
+    {
+      "nodeId": "w23_hunting",
+      "buildAllowed": {
+        "temporaryCamp": true
+      },
+      "reason": "普通野外允许放野营布/柴炉；不把外部safety改成safe，营地袭击系统不在本案"
+    },
+    {
+      "nodeId": "w27_relay",
+      "buildAllowed": {
+        "temporaryCamp": true
+      },
+      "reason": "普通野外允许放野营布/柴炉；不把外部safety改成safe，营地袭击系统不在本案"
+    },
+    {
+      "nodeId": "w30_truckstop",
+      "buildAllowed": {
+        "temporaryCamp": true
+      },
+      "reason": "普通野外允许放野营布/柴炉；不把外部safety改成safe，营地袭击系统不在本案"
+    },
+    {
+      "nodeId": "w34_depot",
+      "buildAllowed": {
+        "temporaryCamp": true
+      },
+      "reason": "普通野外允许放野营布/柴炉；不把外部safety改成safe，营地袭击系统不在本案"
+    },
+    {
+      "nodeId": "w21_pine",
+      "buildAllowed": {
+        "temporaryCamp": true
+      },
+      "reason": "普通野外允许放野营布/柴炉；不把外部safety改成safe，营地袭击系统不在本案"
+    }
+  ],
+  "operationalRules": {
+    "aliasesAreNotExtraItems": true,
+    "craftOnlyTactical": [
+      "flash_marker",
+      "brace_pack",
+      "rally_patch"
+    ],
+    "fieldWrapCanonical": "compression_bandage，沿A07既有120g/堆10/无保质/medical_gauze2+cloth1/medicine5/medical20分钟",
+    "tacticalEffectsAuthority": "expansion-combat.md/json唯一，不在本案改AP/持续/冷却",
+    "medical": {
+      "antidiarrheal_powder": {
+        "combatUse": false,
+        "diarrheaReductionMinutes": 120,
+        "sharedCooldownWith": "oral_rehydration",
+        "cooldownMinutes": 360,
+        "onlyWithDiarrhea": true
+      },
+      "emergency_tonic": {
+        "combatAP": 2,
+        "canTargetLivingAlly": true,
+        "E": 2,
+        "S": -2,
+        "M": -1,
+        "cooldownMinutes": 360,
+        "cooldownScope": "target",
+        "noEffectWhenEMax": true,
+        "noRevive": true,
+        "noVirusEffect": true
+      }
+    },
+    "container": {
+      "ration_canteen": {
+        "capacityMl": 2000,
+        "emptyWeightGrams": 400,
+        "minTransferMl": 250,
+        "acceptedLiquids": [
+          "dirty_water",
+          "clean_water"
+        ],
+        "mixedLiquids": false,
+        "childrenAllowed": false,
+        "heatAllowed": false,
+        "drink250Ml": {
+          "W": 15,
+          "worldMinutes": 5,
+          "combatUse": false
+        },
+        "conversion": "500ml水份与壶液各250ml整数转换；从壶取水卡须500ml；不足500只能壶内按250ml饮用",
+        "weight": "总重=400+水ml克；满壶2400g，根物资卡1；不增加角色卡位"
+      }
+    },
+    "camping": {
+      "deploymentScope": "仅主世界temporaryCamp许可且角色在当地空闲；无战斗/待处理事件/移动；地牢safe节点不自动许可",
+      "field_tarp": {
+        "deployMinutes": 10,
+        "packMinutes": 10,
+        "partyCapacity": 4,
+        "shelter": true,
+        "safety": false,
+        "extraMRest": 0,
+        "notSafehouse": true
+      },
+      "folding_stove": {
+        "deployMinutes": 5,
+        "packMinutes": 5,
+        "fireSlots": 2,
+        "maxPots": 1,
+        "maxFuelMinutes": 60,
+        "woodAddsMinutes": 60,
+        "lightMinutes": 5,
+        "portableWhen": "空内容、熄火、燃料0；剩燃料可显式放弃，不返木材",
+        "fireUniqueness": "当前可访问zone已有固定火堆则不部署第二火堆；未部署物品不加工",
+        "noFreePot": true
+      }
+    },
+    "repair": {
+      "field_patch": {
+        "minutes": 15,
+        "skill": "crafting",
+        "station": "hand",
+        "repairMaxFraction": 0.1,
+        "legalTargets": "非枪械金属武器/工具；锅和布皮除外",
+        "targetMissingDurabilityOnly": true,
+        "cap": "原实例最大值；不重抽成色"
+      }
+    },
+    "water": {
+      "input": "4份脏水2L锁同种明确来源，可来自合法水卡或水壶，不自动喝净水；无自动装锅",
+      "output": "净水4份落原服务/加工地面，待玩家合法取；不自动入五卡",
+      "tablet": "20固定世界分钟无制造加速，等待不额外craft费用",
+      "filter": "20固定世界分钟，需已有water_filter工具+整滤芯1，无隐藏剩余次数",
+      "station": "30有效世界分钟一批2L，预留filter_media1；可跨地点被动处理，无远程投取",
+      "cancel": "净化开始只预留；中断释放原水/耗材原状态、无产物、时间不退，已完成不退款"
+    },
+    "expiry": "所有普通预留继续绝对保质；新鲜输入完成重验；热食沿Q16真实受热保护，谷肉炖食完成+24h、硬饼完成+336h；口粮棒和恢复剂按配方min保留更早原截止；非热储存不加保护"
+  },
+  "campaignRecords": [
+    {
+      "id": "church_route_record",
+      "nodeId": "d01_08",
+      "physical": false,
+      "weightGrams": null,
+      "craftable": false,
+      "consumeAsRecipe": false,
+      "claimScope": "campaignClaimId"
+    },
+    {
+      "id": "academy_safety_record",
+      "nodeId": "d02_08",
+      "physical": false,
+      "weightGrams": null,
+      "craftable": false,
+      "consumeAsRecipe": false,
+      "claimScope": "campaignClaimId"
+    },
+    {
+      "id": "communication_power",
+      "nodeId": "d03_08",
+      "physical": false,
+      "weightGrams": null,
+      "craftable": false,
+      "consumeAsRecipe": false,
+      "claimScope": "campaignClaimId"
+    },
+    {
+      "id": "chapter_contact",
+      "nodeId": "d04_07",
+      "physical": false,
+      "weightGrams": null,
+      "craftable": false,
+      "consumeAsRecipe": false,
+      "claimScope": "campaignClaimId"
+    },
+    {
+      "id": "waterworks_record",
+      "nodeId": "d05_07",
+      "physical": false,
+      "weightGrams": null,
+      "craftable": false,
+      "consumeAsRecipe": false,
+      "claimScope": "campaignClaimId"
+    },
+    {
+      "id": "mining_blueprint_pack",
+      "nodeId": "d06_08",
+      "physical": false,
+      "weightGrams": null,
+      "craftable": false,
+      "consumeAsRecipe": false,
+      "claimScope": "campaignClaimId"
+    },
+    {
+      "id": "civilian_cache_knowledge",
+      "nodeId": "d07_07",
+      "physical": false,
+      "weightGrams": null,
+      "craftable": false,
+      "consumeAsRecipe": false,
+      "claimScope": "campaignClaimId"
+    },
+    {
+      "id": "coldchain_knowledge",
+      "nodeId": "d08_08",
+      "physical": false,
+      "weightGrams": null,
+      "craftable": false,
+      "consumeAsRecipe": false,
+      "claimScope": "campaignClaimId"
+    }
+  ],
+  "questKnowledgeBoundary": {
+    "source": "expansion-quests.json",
+    "expedition_basics": "免费营区基础知识，不锁在EXQ05—08包内",
+    "ceramic_methods": "制造3免费基础陶工，不锁在EXQ06；矿道记录仅可补习已知基础，不重复奖励",
+    "existingQuestPacks": [
+      {
+        "id": "EXQ05",
+        "knowledgePack": "kp_waterworks",
+        "knowledge": [
+          "blueprint_filter_token",
+          "blueprint_repair_manual"
+        ]
+      },
+      {
+        "id": "EXQ06",
+        "knowledgePack": "kp_mining",
+        "knowledge": [
+          "blueprint_gather_gloves",
+          "blueprint_utility_trousers"
+        ]
+      },
+      {
+        "id": "EXQ07",
+        "knowledgePack": "kp_civilian_cache",
+        "knowledge": [
+          "blueprint_forage_jacket",
+          "blueprint_field_medkit"
+        ]
+      },
+      {
+        "id": "EXQ08",
+        "knowledgePack": "kp_coldchain",
+        "knowledge": [
+          "blueprint_ration_pouch"
+        ]
+      }
+    ],
+    "ownership": "蓝图装备配方归expansion-combat；不在本供给表另造同名装备"
+  },
+  "tacticalEffectRefs": [
+    {
+      "id": "flash_marker",
+      "source": "expansion-combat.json:tacticalItems",
+      "recipeRef": "ex_flash_marker",
+      "physicalRef": "flash_marker"
+    },
+    {
+      "id": "brace_pack",
+      "source": "expansion-combat.json:tacticalItems",
+      "recipeRef": "ex_brace_pack",
+      "physicalRef": "brace_pack"
+    },
+    {
+      "id": "rally_patch",
+      "source": "expansion-combat.json:tacticalItems",
+      "recipeRef": "ex_rally_patch",
+      "physicalRef": "rally_patch"
+    }
+  ],
+  "approval": {
+    "allProposedInitialValues": "approved_adjustable_implement_now",
+    "dungeonResetHours": 72,
+    "cardImageTargetPercent": 70
+  }
+}

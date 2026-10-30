@@ -1,0 +1,1891 @@
+{
+  "version": "1.1-v3-approved",
+  "status": "用户已批准可调初值直接实装，未实现/未实机",
+  "mapSHA256": "1f2d21dd7118efcf81037fd1b1316a6a0037d91a70ae711494752100298af2c2",
+  "dungeonInterfaces": [
+    {
+      "id": "d01",
+      "name": "教会地下圣所",
+      "parent": "c03_crypt",
+      "recordNode": "d01_08",
+      "clearNode": "d01_08",
+      "exitNode": "d01_08",
+      "guardNode": "d01_07",
+      "safeNodes": [
+        "d01_01",
+        "d01_04",
+        "d01_06"
+      ]
+    },
+    {
+      "id": "d02",
+      "name": "灰塔封存区",
+      "parent": "r03_lab",
+      "recordNode": "d02_08",
+      "clearNode": "d02_08",
+      "exitNode": "d02_09",
+      "guardNode": "d02_07",
+      "safeNodes": [
+        "d02_01",
+        "d02_04",
+        "d02_06"
+      ]
+    },
+    {
+      "id": "d03",
+      "name": "旧城警备仓",
+      "parent": "o03_police",
+      "recordNode": "d03_08",
+      "clearNode": "d03_08",
+      "exitNode": "d03_08",
+      "guardNode": "d03_07",
+      "safeNodes": [
+        "d03_01",
+        "d03_04",
+        "d03_06"
+      ]
+    },
+    {
+      "id": "d04",
+      "name": "深野通信站",
+      "parent": "w10_watchtower",
+      "recordNode": "d04_07",
+      "clearNode": "d04_07",
+      "exitNode": "d04_08",
+      "guardNode": "d04_06",
+      "safeNodes": [
+        "d04_01",
+        "d04_03",
+        "d04_05"
+      ]
+    },
+    {
+      "id": "d05",
+      "name": "废水厂地下管网",
+      "parent": "w33_waterworks",
+      "recordNode": "d05_07",
+      "clearNode": "d05_07",
+      "exitNode": "d05_08",
+      "guardNode": "d05_06",
+      "safeNodes": [
+        "d05_01",
+        "d05_04",
+        "d05_07"
+      ]
+    },
+    {
+      "id": "d06",
+      "name": "深林矿洞",
+      "parent": "w24_cave",
+      "recordNode": "d06_08",
+      "clearNode": "d06_08",
+      "exitNode": "d06_09",
+      "guardNode": "d06_07",
+      "safeNodes": [
+        "d06_01",
+        "d06_03",
+        "d06_06"
+      ]
+    },
+    {
+      "id": "d07",
+      "name": "洪淹商城",
+      "parent": "o02_market",
+      "recordNode": "d07_07",
+      "clearNode": "d07_07",
+      "exitNode": "d07_08",
+      "guardNode": "d07_06",
+      "safeNodes": [
+        "d07_01",
+        "d07_04",
+        "d07_07"
+      ]
+    },
+    {
+      "id": "d08",
+      "name": "应急冷链仓",
+      "parent": "w34_depot",
+      "recordNode": "d08_08",
+      "clearNode": "d08_08",
+      "exitNode": "d08_09",
+      "guardNode": "d08_07",
+      "safeNodes": [
+        "d08_01",
+        "d08_03",
+        "d08_06"
+      ]
+    }
+  ],
+  "newEnemies": [
+    {
+      "id": "ec_cantor",
+      "name": "低吟感染者",
+      "hp": 4.6,
+      "armor": 0,
+      "evasion": 28,
+      "attack": 22,
+      "damage": [
+        0.6,
+        0.9
+      ],
+      "speed": 4,
+      "ap": 3,
+      "controlResist": 20,
+      "ownSlots": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "biteRule": "只有意图明确写咬击且正直接伤害才按R04判暴露；其他攻击不传播病毒",
+      "intents": [
+        "正常激活1：鼓动至多两名同伴下一击伤害×1.10，不叠层",
+        "激活2：普通抓击；在后排则先前移1位；循环"
+      ],
+      "targetSlots": [
+        1,
+        2
+      ],
+      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+    },
+    {
+      "id": "ec_labwalker",
+      "name": "试制区感染者",
+      "hp": 5.4,
+      "armor": 0.15,
+      "evasion": 29,
+      "attack": 24,
+      "damage": [
+        0.8,
+        1.2
+      ],
+      "speed": 5,
+      "ap": 3,
+      "controlResist": 20,
+      "ownSlots": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "biteRule": "只有意图明确写咬击且正直接伤害才按R04判暴露；其他攻击不传播病毒",
+      "intents": [
+        "普通抓击；命中后目标下一次攻击失衡",
+        "无合法目标先前移；不施加毒素/病毒值"
+      ],
+      "targetSlots": [
+        1,
+        2
+      ],
+      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+    },
+    {
+      "id": "ec_cablecrawler",
+      "name": "缠线爬行者",
+      "hp": 4.4,
+      "armor": 0.1,
+      "evasion": 30,
+      "attack": 23,
+      "damage": [
+        0.6,
+        1
+      ],
+      "speed": 3,
+      "ap": 3,
+      "controlResist": 20,
+      "ownSlots": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "biteRule": "只有意图明确写咬击且正直接伤害才按R04判暴露；其他攻击不传播病毒",
+      "intents": [
+        "奇数激活：低伤×0.6拉扯，控制成功后目标前移1位",
+        "偶数激活：抓击80%/咬击20%；不同时拉扯与咬伤"
+      ],
+      "targetSlots": [
+        1,
+        2
+      ],
+      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+    },
+    {
+      "id": "ec_stockbracer",
+      "name": "货架护卫感染者",
+      "hp": 6.4,
+      "armor": 0.3,
+      "evasion": 23,
+      "attack": 24,
+      "damage": [
+        0.9,
+        1.3
+      ],
+      "speed": 3,
+      "ap": 3,
+      "controlResist": 30,
+      "ownSlots": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "biteRule": "只有意图明确写咬击且正直接伤害才按R04判暴露；其他攻击不传播病毒",
+      "intents": [
+        "奇数激活保护相邻同伴1次，不形成循环保护",
+        "偶数激活普通抓击80%/咬击20%"
+      ],
+      "targetSlots": [
+        1,
+        2
+      ],
+      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+    },
+    {
+      "id": "ec_boss_crypt",
+      "name": "封锁祭室守卫",
+      "hp": 10.5,
+      "armor": 0.25,
+      "evasion": 24,
+      "attack": 26,
+      "damage": [
+        1,
+        1.5
+      ],
+      "speed": 3,
+      "ap": 4,
+      "controlResist": 40,
+      "ownSlots": [
+        1,
+        2
+      ],
+      "biteRule": "只有意图明确写咬击且正直接伤害才按R04判暴露；其他攻击不传播病毒",
+      "intents": [
+        "格挡1次→重击×1.3→普通抓击，三激活循环"
+      ],
+      "targetSlots": [
+        1,
+        2
+      ],
+      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+    },
+    {
+      "id": "ec_boss_lab",
+      "name": "隔离核心守卫",
+      "hp": 11,
+      "armor": 0.2,
+      "evasion": 28,
+      "attack": 26,
+      "damage": [
+        1,
+        1.5
+      ],
+      "speed": 5,
+      "ap": 4,
+      "controlResist": 40,
+      "ownSlots": [
+        1,
+        2
+      ],
+      "biteRule": "只有意图明确写咬击且正直接伤害才按R04判暴露；其他攻击不传播病毒",
+      "intents": [
+        "标记我方1人→对该目标普通攻击→格挡，目标失效不暗换未预告大招"
+      ],
+      "targetSlots": [
+        1,
+        2
+      ],
+      "specialTargetRule": "标记可选任意存活目标；冷链守卫标记最靠后存活者，意图锁定后公开；基础近战仍12",
+      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+    },
+    {
+      "id": "ec_boss_armory",
+      "name": "军械库守卫",
+      "hp": 12,
+      "armor": 0.55,
+      "evasion": 24,
+      "attack": 27,
+      "damage": [
+        1.2,
+        1.8
+      ],
+      "speed": 3,
+      "ap": 4,
+      "controlResist": 45,
+      "ownSlots": [
+        1,
+        2
+      ],
+      "biteRule": "只有意图明确写咬击且正直接伤害才按R04判暴露；其他攻击不传播病毒",
+      "intents": [
+        "蓄力→重击×1.4→保护相邻同伴1次"
+      ],
+      "targetSlots": [
+        1,
+        2
+      ],
+      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+    },
+    {
+      "id": "ec_boss_relay",
+      "name": "天线台守卫",
+      "hp": 13,
+      "armor": 0.4,
+      "evasion": 28,
+      "attack": 28,
+      "damage": [
+        1.1,
+        1.7
+      ],
+      "speed": 5,
+      "ap": 4,
+      "controlResist": 45,
+      "ownSlots": [
+        1,
+        2
+      ],
+      "biteRule": "只有意图明确写咬击且正直接伤害才按R04判暴露；其他攻击不传播病毒",
+      "intents": [
+        "公开扫击我方12各×0.6→单体重击×1.3→防御"
+      ],
+      "targetSlots": [
+        1,
+        2
+      ],
+      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+    },
+    {
+      "id": "ec_boss_water",
+      "name": "泵房推挤者",
+      "hp": 11,
+      "armor": 0.3,
+      "evasion": 25,
+      "attack": 26,
+      "damage": [
+        1,
+        1.5
+      ],
+      "speed": 4,
+      "ap": 4,
+      "controlResist": 40,
+      "ownSlots": [
+        1,
+        2
+      ],
+      "biteRule": "只有意图明确写咬击且正直接伤害才按R04判暴露；其他攻击不传播病毒",
+      "intents": [
+        "推挤伤害×0.7并击退1位→普通抓击→保护同伴"
+      ],
+      "targetSlots": [
+        1,
+        2
+      ],
+      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+    },
+    {
+      "id": "ec_boss_mine",
+      "name": "深井重击者",
+      "hp": 13.5,
+      "armor": 0.5,
+      "evasion": 21,
+      "attack": 27,
+      "damage": [
+        1.2,
+        1.8
+      ],
+      "speed": 2,
+      "ap": 4,
+      "controlResist": 45,
+      "ownSlots": [
+        1,
+        2
+      ],
+      "biteRule": "只有意图明确写咬击且正直接伤害才按R04判暴露；其他攻击不传播病毒",
+      "intents": [
+        "蓄力→重击×1.4并破甲0.2两轮→普通抓击"
+      ],
+      "targetSlots": [
+        1,
+        2
+      ],
+      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+    },
+    {
+      "id": "ec_boss_mall",
+      "name": "扶梯拦截者",
+      "hp": 11.5,
+      "armor": 0.25,
+      "evasion": 28,
+      "attack": 27,
+      "damage": [
+        1,
+        1.5
+      ],
+      "speed": 5,
+      "ap": 4,
+      "controlResist": 40,
+      "ownSlots": [
+        1,
+        2
+      ],
+      "biteRule": "只有意图明确写咬击且正直接伤害才按R04判暴露；其他攻击不传播病毒",
+      "intents": [
+        "保护相邻后排1次→普通抓击→公开12扫击各×0.55"
+      ],
+      "targetSlots": [
+        1,
+        2
+      ],
+      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+    },
+    {
+      "id": "ec_boss_cold",
+      "name": "仓管守卫",
+      "hp": 12,
+      "armor": 0.3,
+      "evasion": 28,
+      "attack": 27,
+      "damage": [
+        1,
+        1.6
+      ],
+      "speed": 4,
+      "ap": 4,
+      "controlResist": 45,
+      "ownSlots": [
+        1,
+        2
+      ],
+      "biteRule": "只有意图明确写咬击且正直接伤害才按R04判暴露；其他攻击不传播病毒",
+      "intents": [
+        "标记我方后排1人→拉扯低伤×0.7→对12普通抓击；无温度伤害"
+      ],
+      "targetSlots": [
+        1,
+        2
+      ],
+      "specialTargetRule": "标记可选任意存活目标；冷链守卫标记最靠后存活者，意图锁定后公开；基础近战仍12",
+      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+    }
+  ],
+  "enemySets": [
+    {
+      "nodeId": "d01_02",
+      "enemyOrder": [
+        "z_slow",
+        "shambler"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d01_03",
+      "enemyOrder": [
+        "ec_cantor",
+        "z_clinger",
+        "z_slow"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d01_05",
+      "enemyOrder": [
+        "z_helmet",
+        "ec_cantor",
+        "worker"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d01_07",
+      "enemyOrder": [
+        "ec_boss_crypt",
+        "ec_cantor",
+        "z_clinger",
+        "z_slow"
+      ],
+      "requiredGate": true,
+      "activation": "首次揭示敌踪后固定同实例名单；进入前预告并整备；守卫胜利才可解门",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d02_02",
+      "enemyOrder": [
+        "z_nurse",
+        "z_darter"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d02_03",
+      "enemyOrder": [
+        "ec_labwalker",
+        "z_spitter",
+        "z_nurse"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d02_05",
+      "enemyOrder": [
+        "ec_labwalker",
+        "z_darter",
+        "z_nurse"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d02_07",
+      "enemyOrder": [
+        "ec_boss_lab",
+        "ec_labwalker",
+        "z_spitter",
+        "z_darter"
+      ],
+      "requiredGate": true,
+      "activation": "首次揭示敌踪后固定同实例名单；进入前预告并整备；守卫胜利才可解门",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d03_02",
+      "enemyOrder": [
+        "worker",
+        "z_hauler"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d03_03",
+      "enemyOrder": [
+        "z_helmet",
+        "z_engineer"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d03_05",
+      "enemyOrder": [
+        "riot",
+        "z_engineer",
+        "z_signal"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d03_07",
+      "enemyOrder": [
+        "ec_boss_armory",
+        "z_engineer",
+        "z_signal",
+        "z_helmet"
+      ],
+      "requiredGate": true,
+      "activation": "首次揭示敌踪后固定同实例名单；进入前预告并整备；守卫胜利才可解门",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d04_02",
+      "enemyOrder": [
+        "ec_cablecrawler",
+        "z_darter"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d04_04",
+      "enemyOrder": [
+        "z_engineer",
+        "z_signal",
+        "ec_cablecrawler"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d04_06",
+      "enemyOrder": [
+        "ec_boss_relay",
+        "z_darter",
+        "z_signal",
+        "ec_cablecrawler"
+      ],
+      "requiredGate": true,
+      "activation": "首次揭示敌踪后固定同实例名单；进入前预告并整备；守卫胜利才可解门",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d05_02",
+      "enemyOrder": [
+        "ec_cablecrawler",
+        "z_slow"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d05_03",
+      "enemyOrder": [
+        "z_bloater",
+        "z_spitter"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d05_05",
+      "enemyOrder": [
+        "z_hauler",
+        "ec_cablecrawler",
+        "z_spitter"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d05_06",
+      "enemyOrder": [
+        "ec_boss_water",
+        "z_hauler",
+        "z_spitter",
+        "ec_cablecrawler"
+      ],
+      "requiredGate": true,
+      "activation": "首次揭示敌踪后固定同实例名单；进入前预告并整备；守卫胜利才可解门",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d06_02",
+      "enemyOrder": [
+        "worker",
+        "z_slow"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d06_04",
+      "enemyOrder": [
+        "z_hauler",
+        "z_engineer"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d06_05",
+      "enemyOrder": [
+        "z_helmet",
+        "worker",
+        "z_darter"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d06_07",
+      "enemyOrder": [
+        "ec_boss_mine",
+        "z_engineer",
+        "z_helmet",
+        "z_slow"
+      ],
+      "requiredGate": true,
+      "activation": "首次揭示敌踪后固定同实例名单；进入前预告并整备；守卫胜利才可解门",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d07_02",
+      "enemyOrder": [
+        "z_slow",
+        "z_screamer"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d07_03",
+      "enemyOrder": [
+        "z_darter",
+        "shambler"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d07_05",
+      "enemyOrder": [
+        "z_nurse",
+        "z_screamer",
+        "z_darter"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d07_06",
+      "enemyOrder": [
+        "ec_boss_mall",
+        "ec_stockbracer",
+        "z_screamer",
+        "z_darter"
+      ],
+      "requiredGate": true,
+      "activation": "首次揭示敌踪后固定同实例名单；进入前预告并整备；守卫胜利才可解门",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d08_02",
+      "enemyOrder": [
+        "ec_stockbracer",
+        "worker"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d08_04",
+      "enemyOrder": [
+        "ec_cablecrawler",
+        "z_darter"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d08_05",
+      "enemyOrder": [
+        "z_nurse",
+        "ec_labwalker",
+        "z_slow"
+      ],
+      "requiredGate": false,
+      "activation": "公开敌踪，可离开；若此节点位于必经路线则须胜利或走地图已存在绕路",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    },
+    {
+      "nodeId": "d08_07",
+      "enemyOrder": [
+        "ec_boss_cold",
+        "ec_stockbracer",
+        "ec_labwalker",
+        "z_darter"
+      ],
+      "requiredGate": true,
+      "activation": "首次揭示敌踪后固定同实例名单；进入前预告并整备；守卫胜利才可解门",
+      "capRule": "按当前已解锁C截前C项并从1号位压紧，已揭示后持久化，不因实到人数重抽",
+      "reinforcement": false
+    }
+  ],
+  "newWildPools": [
+    {
+      "nodeId": "w11_orchard",
+      "weights": {
+        "z_slow": 35,
+        "shambler": 25,
+        "ec_cantor": 20,
+        "z_clinger": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_church_approach"
+    },
+    {
+      "nodeId": "w12_canal",
+      "weights": {
+        "z_slow": 35,
+        "shambler": 25,
+        "ec_cantor": 20,
+        "z_clinger": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_church_approach"
+    },
+    {
+      "nodeId": "w13_mill",
+      "weights": {
+        "z_slow": 35,
+        "shambler": 25,
+        "ec_cantor": 20,
+        "z_clinger": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_church_approach"
+    },
+    {
+      "nodeId": "w14_cemeteryroad",
+      "weights": {
+        "z_slow": 35,
+        "shambler": 25,
+        "ec_cantor": 20,
+        "z_clinger": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_church_approach"
+    },
+    {
+      "nodeId": "w15_shrinewoods",
+      "weights": {
+        "z_slow": 35,
+        "shambler": 25,
+        "ec_cantor": 20,
+        "z_clinger": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_church_approach"
+    },
+    {
+      "nodeId": "w16_service",
+      "weights": {
+        "z_darter": 30,
+        "ec_labwalker": 25,
+        "z_engineer": 25,
+        "ec_cablecrawler": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_academy_approach"
+    },
+    {
+      "nodeId": "w17_switchback",
+      "weights": {
+        "z_darter": 30,
+        "ec_labwalker": 25,
+        "z_engineer": 25,
+        "ec_cablecrawler": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_academy_approach"
+    },
+    {
+      "nodeId": "w18_tunnel",
+      "weights": {
+        "z_darter": 30,
+        "ec_labwalker": 25,
+        "z_engineer": 25,
+        "ec_cablecrawler": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_academy_approach"
+    },
+    {
+      "nodeId": "w19_survey",
+      "weights": {
+        "z_darter": 30,
+        "ec_labwalker": 25,
+        "z_engineer": 25,
+        "ec_cablecrawler": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_academy_approach"
+    },
+    {
+      "nodeId": "w20_powercut",
+      "weights": {
+        "z_darter": 30,
+        "ec_labwalker": 25,
+        "z_engineer": 25,
+        "ec_cablecrawler": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_academy_approach"
+    },
+    {
+      "nodeId": "w21_pine",
+      "weights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_deep_wild"
+    },
+    {
+      "nodeId": "w22_ravine",
+      "weights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_deep_wild"
+    },
+    {
+      "nodeId": "w23_hunting",
+      "weights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_deep_wild"
+    },
+    {
+      "nodeId": "w24_cave",
+      "weights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_deep_wild"
+    },
+    {
+      "nodeId": "w25_wetland",
+      "weights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_deep_wild"
+    },
+    {
+      "nodeId": "w26_island",
+      "weights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_deep_wild"
+    },
+    {
+      "nodeId": "w27_relay",
+      "weights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_deep_wild"
+    },
+    {
+      "nodeId": "w28_highland",
+      "weights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_deep_wild"
+    },
+    {
+      "nodeId": "w29_riverbend",
+      "weights": {
+        "shambler": 25,
+        "z_darter": 25,
+        "ec_stockbracer": 25,
+        "z_screamer": 25
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_city_approach"
+    },
+    {
+      "nodeId": "w30_truckstop",
+      "weights": {
+        "shambler": 25,
+        "z_darter": 25,
+        "ec_stockbracer": 25,
+        "z_screamer": 25
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_city_approach"
+    },
+    {
+      "nodeId": "w31_suburb",
+      "weights": {
+        "shambler": 25,
+        "z_darter": 25,
+        "ec_stockbracer": 25,
+        "z_screamer": 25
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_city_approach"
+    },
+    {
+      "nodeId": "w32_railcut",
+      "weights": {
+        "shambler": 25,
+        "z_darter": 25,
+        "ec_stockbracer": 25,
+        "z_screamer": 25
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_city_approach"
+    },
+    {
+      "nodeId": "w33_waterworks",
+      "weights": {
+        "ec_cablecrawler": 35,
+        "z_bloater": 25,
+        "z_spitter": 25,
+        "z_hauler": 15
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_utility"
+    },
+    {
+      "nodeId": "w34_depot",
+      "weights": {
+        "ec_stockbracer": 35,
+        "ec_labwalker": 25,
+        "z_nurse": 25,
+        "z_slow": 15
+      },
+      "firstPopulation": 2,
+      "localCap": 4,
+      "populationRegionId": "ex_pop_utility"
+    }
+  ],
+  "mapRewardRefs": [
+    {
+      "sourceResourceId": "d01_04_cache0",
+      "nodeId": "d01_04",
+      "itemId": "cloth",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d01_04_cache0",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d01_06_cache1",
+      "nodeId": "d01_06",
+      "itemId": "thread",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d01_06_cache1",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d01_04_cache2",
+      "nodeId": "d01_04",
+      "itemId": "leather",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d01_04_cache2",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d01_08_unique",
+      "nodeId": "d01_08",
+      "itemId": "church_route_record",
+      "quantity": 1,
+      "scope": "campaignClaimId",
+      "key": "campaignId:d01_08_unique",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d02_04_cache0",
+      "nodeId": "d02_04",
+      "itemId": "medical_gauze",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d02_04_cache0",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d02_06_cache1",
+      "nodeId": "d02_06",
+      "itemId": "lab_reagent",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d02_06_cache1",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d02_04_cache2",
+      "nodeId": "d02_04",
+      "itemId": "electronics",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d02_04_cache2",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d02_08_unique",
+      "nodeId": "d02_08",
+      "itemId": "academy_safety_record",
+      "quantity": 1,
+      "scope": "campaignClaimId",
+      "key": "campaignId:d02_08_unique",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d03_04_cache0",
+      "nodeId": "d03_04",
+      "itemId": "weapon_parts",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d03_04_cache0",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d03_06_cache1",
+      "nodeId": "d03_06",
+      "itemId": "steel",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d03_06_cache1",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d03_04_cache2",
+      "nodeId": "d03_04",
+      "itemId": "fastener",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d03_04_cache2",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d03_08_unique",
+      "nodeId": "d03_08",
+      "itemId": "communication_power",
+      "quantity": 1,
+      "scope": "campaignClaimId",
+      "key": "campaignId:d03_08_unique",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d04_03_cache0",
+      "nodeId": "d04_03",
+      "itemId": "wire",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d04_03_cache0",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d04_05_cache1",
+      "nodeId": "d04_05",
+      "itemId": "battery",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d04_05_cache1",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d04_03_cache2",
+      "nodeId": "d04_03",
+      "itemId": "electronics",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d04_03_cache2",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d04_07_unique",
+      "nodeId": "d04_07",
+      "itemId": "chapter_contact",
+      "quantity": 1,
+      "scope": "campaignClaimId",
+      "key": "campaignId:d04_07_unique",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d05_04_cache0",
+      "nodeId": "d05_04",
+      "itemId": "rubber",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d05_04_cache0",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d05_07_cache1",
+      "nodeId": "d05_07",
+      "itemId": "disinfectant",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d05_07_cache1",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d05_04_cache2",
+      "nodeId": "d05_04",
+      "itemId": "adhesive",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d05_04_cache2",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d05_07_unique",
+      "nodeId": "d05_07",
+      "itemId": "waterworks_record",
+      "quantity": 1,
+      "scope": "campaignClaimId",
+      "key": "campaignId:d05_07_unique",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d06_03_cache0",
+      "nodeId": "d06_03",
+      "itemId": "iron_ore",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d06_03_cache0",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d06_06_cache1",
+      "nodeId": "d06_06",
+      "itemId": "iron_plate",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d06_06_cache1",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d06_03_cache2",
+      "nodeId": "d06_03",
+      "itemId": "charcoal",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d06_03_cache2",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d06_08_unique",
+      "nodeId": "d06_08",
+      "itemId": "mining_blueprint_pack",
+      "quantity": 1,
+      "scope": "campaignClaimId",
+      "key": "campaignId:d06_08_unique",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d07_04_cache0",
+      "nodeId": "d07_04",
+      "itemId": "canned_beans",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d07_04_cache0",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d07_07_cache1",
+      "nodeId": "d07_07",
+      "itemId": "cloth",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d07_07_cache1",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d07_04_cache2",
+      "nodeId": "d07_04",
+      "itemId": "plastic",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d07_04_cache2",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d07_07_unique",
+      "nodeId": "d07_07",
+      "itemId": "civilian_cache_knowledge",
+      "quantity": 1,
+      "scope": "campaignClaimId",
+      "key": "campaignId:d07_07_unique",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d08_03_cache0",
+      "nodeId": "d08_03",
+      "itemId": "saline",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d08_03_cache0",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d08_06_cache1",
+      "nodeId": "d08_06",
+      "itemId": "medical_gauze",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d08_06_cache1",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d08_03_cache2",
+      "nodeId": "d08_03",
+      "itemId": "dried_meat",
+      "quantity": 2,
+      "scope": "instanceId",
+      "key": "instanceId:d08_03_cache2",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    },
+    {
+      "sourceResourceId": "d08_08_unique",
+      "nodeId": "d08_08",
+      "itemId": "coldchain_knowledge",
+      "quantity": 1,
+      "scope": "campaignClaimId",
+      "key": "campaignId:d08_08_unique",
+      "policy": "复用地图同一claim；本表不是第二箱"
+    }
+  ],
+  "firstClearRewards": [
+    {
+      "dungeonId": "d01",
+      "clearNode": "d01_08",
+      "key": "campaignId:d01:combat_first",
+      "scope": "campaign_once",
+      "items": {
+        "cloth": 3,
+        "thread": 2
+      },
+      "condition": "本局首次明确提交通关；独立于地图记录，仅本表固定材料；已有旧版通关者标已领不追补"
+    },
+    {
+      "dungeonId": "d02",
+      "clearNode": "d02_08",
+      "key": "campaignId:d02:combat_first",
+      "scope": "campaign_once",
+      "items": {
+        "medical_gauze": 3,
+        "lab_reagent": 1
+      },
+      "condition": "本局首次明确提交通关；独立于地图记录，仅本表固定材料；已有旧版通关者标已领不追补"
+    },
+    {
+      "dungeonId": "d03",
+      "clearNode": "d03_08",
+      "key": "campaignId:d03:combat_first",
+      "scope": "campaign_once",
+      "items": {
+        "gun_service_kit": 1,
+        "ammo_9mm": 8
+      },
+      "condition": "本局首次明确提交通关；独立于地图记录，仅本表固定材料；已有旧版通关者标已领不追补"
+    },
+    {
+      "dungeonId": "d04",
+      "clearNode": "d04_07",
+      "key": "campaignId:d04:combat_first",
+      "scope": "campaign_once",
+      "items": {
+        "battery": 2,
+        "wire": 2
+      },
+      "condition": "本局首次明确提交通关；独立于地图记录，仅本表固定材料；已有旧版通关者标已领不追补"
+    },
+    {
+      "dungeonId": "d05",
+      "clearNode": "d05_07",
+      "key": "campaignId:d05:combat_first",
+      "scope": "campaign_once",
+      "items": {
+        "disinfectant": 2,
+        "filter_media": 2
+      },
+      "condition": "本局首次明确提交通关；独立于地图记录，仅本表固定材料；已有旧版通关者标已领不追补"
+    },
+    {
+      "dungeonId": "d06",
+      "clearNode": "d06_08",
+      "key": "campaignId:d06:combat_first",
+      "scope": "campaign_once",
+      "items": {
+        "steel": 2,
+        "precision_parts": 1
+      },
+      "condition": "本局首次明确提交通关；独立于地图记录，仅本表固定材料；已有旧版通关者标已领不追补"
+    },
+    {
+      "dungeonId": "d07",
+      "clearNode": "d07_07",
+      "key": "campaignId:d07:combat_first",
+      "scope": "campaign_once",
+      "items": {
+        "canned_beans": 2,
+        "cloth": 3
+      },
+      "condition": "本局首次明确提交通关；独立于地图记录，仅本表固定材料；已有旧版通关者标已领不追补"
+    },
+    {
+      "dungeonId": "d08",
+      "clearNode": "d08_08",
+      "key": "campaignId:d08:combat_first",
+      "scope": "campaign_once",
+      "items": {
+        "saline": 2,
+        "dried_meat": 2
+      },
+      "condition": "本局首次明确提交通关；独立于地图记录，仅本表固定材料；已有旧版通关者标已领不追补"
+    }
+  ],
+  "bossSalvage": [
+    {
+      "nodeId": "d01_07",
+      "key": "instanceId:d01_07:combat_salvage",
+      "scope": "instance_once",
+      "items": {
+        "cloth": 1
+      },
+      "condition": "该守卫战最终胜利且主角存活，固定材料；不再抽另一份精英固定素材"
+    },
+    {
+      "nodeId": "d02_07",
+      "key": "instanceId:d02_07:combat_salvage",
+      "scope": "instance_once",
+      "items": {
+        "medical_gauze": 1
+      },
+      "condition": "该守卫战最终胜利且主角存活，固定材料；不再抽另一份精英固定素材"
+    },
+    {
+      "nodeId": "d03_07",
+      "key": "instanceId:d03_07:combat_salvage",
+      "scope": "instance_once",
+      "items": {
+        "parts": 1
+      },
+      "condition": "该守卫战最终胜利且主角存活，固定材料；不再抽另一份精英固定素材"
+    },
+    {
+      "nodeId": "d04_06",
+      "key": "instanceId:d04_06:combat_salvage",
+      "scope": "instance_once",
+      "items": {
+        "wire": 1
+      },
+      "condition": "该守卫战最终胜利且主角存活，固定材料；不再抽另一份精英固定素材"
+    },
+    {
+      "nodeId": "d05_06",
+      "key": "instanceId:d05_06:combat_salvage",
+      "scope": "instance_once",
+      "items": {
+        "rubber": 1
+      },
+      "condition": "该守卫战最终胜利且主角存活，固定材料；不再抽另一份精英固定素材"
+    },
+    {
+      "nodeId": "d06_07",
+      "key": "instanceId:d06_07:combat_salvage",
+      "scope": "instance_once",
+      "items": {
+        "iron_ore": 2
+      },
+      "condition": "该守卫战最终胜利且主角存活，固定材料；不再抽另一份精英固定素材"
+    },
+    {
+      "nodeId": "d07_06",
+      "key": "instanceId:d07_06:combat_salvage",
+      "scope": "instance_once",
+      "items": {
+        "plastic": 1
+      },
+      "condition": "该守卫战最终胜利且主角存活，固定材料；不再抽另一份精英固定素材"
+    },
+    {
+      "nodeId": "d08_07",
+      "key": "instanceId:d08_07:combat_salvage",
+      "scope": "instance_once",
+      "items": {
+        "cloth": 1
+      },
+      "condition": "该守卫战最终胜利且主角存活，固定材料；不再抽另一份精英固定素材"
+    }
+  ],
+  "legacyUniqueRewards": [
+    {
+      "campaignClaimId": "shield_cache",
+      "nodeId": "d03_03",
+      "items": {
+        "riot_shield": 1
+      },
+      "scope": "campaign_once",
+      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim"
+    },
+    {
+      "campaignClaimId": "officer_cache",
+      "nodeId": "d03_04",
+      "items": {
+        "service_pistol": 1
+      },
+      "scope": "campaign_once",
+      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim"
+    },
+    {
+      "campaignClaimId": "shotgun_cache",
+      "nodeId": "d03_08",
+      "items": {
+        "shotgun": 1
+      },
+      "scope": "campaign_once",
+      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim"
+    },
+    {
+      "campaignClaimId": "rifle_cache",
+      "nodeId": "d03_08",
+      "items": {
+        "rifle": 1
+      },
+      "scope": "campaign_once",
+      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim"
+    },
+    {
+      "campaignClaimId": "armor_cache",
+      "nodeId": "d03_08",
+      "items": {
+        "guard_armor": 1
+      },
+      "scope": "campaign_once",
+      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim"
+    },
+    {
+      "campaignClaimId": "ammo_reserve_cache",
+      "nodeId": "d03_08",
+      "items": {
+        "ammo_9mm": 24,
+        "shell_12g": 12,
+        "ammo_rifle": 15
+      },
+      "scope": "campaign_once",
+      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim"
+    }
+  ],
+  "tacticalItems": [
+    {
+      "id": "flash_marker",
+      "ap": 2,
+      "energy": 0.1,
+      "target": "敌方任意存活单体1234",
+      "effect": "标记2完整大回合：全队对其攻击能力+6；与猎标同名取强、不叠层，不直接扣H",
+      "cooldown": "施用者每大回合战术品最多1次",
+      "noise": 5,
+      "physicalAuthority": "expansion-supply.json:physicalItems:flash_marker",
+      "recipeRef": "ex_flash_marker"
+    },
+    {
+      "id": "brace_pack",
+      "ap": 1,
+      "energy": 0,
+      "target": "自身",
+      "effect": "位移抵抗+25个百分点，持续2大回合；与稳固同类取强，不格挡/免伤/永久免疫",
+      "cooldown": "施用者每大回合战术品最多1次",
+      "noise": 0,
+      "physicalAuthority": "expansion-supply.json:physicalItems:brace_pack",
+      "recipeRef": "ex_brace_pack"
+    },
+    {
+      "id": "rally_patch",
+      "ap": 2,
+      "energy": 0,
+      "target": "任一存活友方",
+      "effect": "当前恐慌-6最低0；每目标每大回合来自此道具总减量最多6，无实际收益禁用",
+      "cooldown": "施用者每大回合战术品最多1次",
+      "noise": 0,
+      "physicalAuthority": "expansion-supply.json:physicalItems:rally_patch",
+      "recipeRef": "ex_rally_patch"
+    }
+  ],
+  "itemAliases": {
+    "raw_roots": "raw_root",
+    "herb": "herb",
+    "dirty_water": "dirty_water",
+    "clean_water": "clean_water",
+    "field_wrap": "compression_bandage",
+    "filter_liner": "filter_cartridge",
+    "mineral_insert": "ceramic_shell",
+    "insulation_lining": "canvas"
+  },
+  "validation": {
+    "all31EncounterNodesExist": true,
+    "all24WildNodesExist": true,
+    "all8GuardianNodesMatched": true,
+    "noBattlesAtSafeNodes": true,
+    "allPhysicalRewardsHaveDefinitions": true,
+    "all3TacticalItemsHaveOwnerApprovedPhysicalRecipes": true,
+    "campaignClaimsReuseMapResourceIds": true,
+    "realGameplayTestsRun": false,
+    "eightRepeatableFixedTotalsComputed": true
+  },
+  "repeatableTotals": [
+    {
+      "dungeonId": "d01",
+      "repeatableFixedItems": {
+        "cloth": 3,
+        "thread": 2,
+        "leather": 2
+      },
+      "weightGrams": 1200,
+      "excluded": "普通敌互斥概率掉落/首通包/唯一箱/任务记录/未领取物，不含隐藏parts2"
+    },
+    {
+      "dungeonId": "d02",
+      "repeatableFixedItems": {
+        "medical_gauze": 3,
+        "lab_reagent": 2,
+        "electronics": 2
+      },
+      "weightGrams": 650,
+      "excluded": "普通敌互斥概率掉落/首通包/唯一箱/任务记录/未领取物，不含隐藏parts2"
+    },
+    {
+      "dungeonId": "d03",
+      "repeatableFixedItems": {
+        "weapon_parts": 2,
+        "steel": 2,
+        "fastener": 2,
+        "parts": 1
+      },
+      "weightGrams": 2000,
+      "excluded": "普通敌互斥概率掉落/首通包/唯一箱/任务记录/未领取物，不含隐藏parts2"
+    },
+    {
+      "dungeonId": "d04",
+      "repeatableFixedItems": {
+        "wire": 3,
+        "battery": 2,
+        "electronics": 2
+      },
+      "weightGrams": 800,
+      "excluded": "普通敌互斥概率掉落/首通包/唯一箱/任务记录/未领取物，不含隐藏parts2"
+    },
+    {
+      "dungeonId": "d05",
+      "repeatableFixedItems": {
+        "rubber": 3,
+        "disinfectant": 2,
+        "adhesive": 2
+      },
+      "weightGrams": 1000,
+      "excluded": "普通敌互斥概率掉落/首通包/唯一箱/任务记录/未领取物，不含隐藏parts2"
+    },
+    {
+      "dungeonId": "d06",
+      "repeatableFixedItems": {
+        "iron_ore": 4,
+        "iron_plate": 2,
+        "charcoal": 2
+      },
+      "weightGrams": 3400,
+      "excluded": "普通敌互斥概率掉落/首通包/唯一箱/任务记录/未领取物，不含隐藏parts2"
+    },
+    {
+      "dungeonId": "d07",
+      "repeatableFixedItems": {
+        "canned_beans": 2,
+        "cloth": 2,
+        "plastic": 3
+      },
+      "weightGrams": 1300,
+      "excluded": "普通敌互斥概率掉落/首通包/唯一箱/任务记录/未领取物，不含隐藏parts2"
+    },
+    {
+      "dungeonId": "d08",
+      "repeatableFixedItems": {
+        "saline": 2,
+        "medical_gauze": 2,
+        "dried_meat": 2,
+        "cloth": 1
+      },
+      "weightGrams": 1600,
+      "excluded": "普通敌互斥概率掉落/首通包/唯一箱/任务记录/未领取物，不含隐藏parts2"
+    }
+  ],
+  "populationRegions": [
+    {
+      "id": "ex_pop_church_approach",
+      "cap": 12,
+      "nodes": [
+        "w11_orchard",
+        "w12_canal",
+        "w13_mill",
+        "w14_cemeteryroad",
+        "w15_shrinewoods"
+      ],
+      "spawnEveryMinutes": 120,
+      "spawnAttempt": 0.25,
+      "patrolEveryMinutes": 180,
+      "patrolAttempt": 0.2
+    },
+    {
+      "id": "ex_pop_academy_approach",
+      "cap": 12,
+      "nodes": [
+        "w16_service",
+        "w17_switchback",
+        "w18_tunnel",
+        "w19_survey",
+        "w20_powercut"
+      ],
+      "spawnEveryMinutes": 120,
+      "spawnAttempt": 0.25,
+      "patrolEveryMinutes": 180,
+      "patrolAttempt": 0.2
+    },
+    {
+      "id": "ex_pop_deep_wild",
+      "cap": 16,
+      "nodes": [
+        "w21_pine",
+        "w22_ravine",
+        "w23_hunting",
+        "w24_cave",
+        "w25_wetland",
+        "w26_island",
+        "w27_relay",
+        "w28_highland"
+      ],
+      "spawnEveryMinutes": 120,
+      "spawnAttempt": 0.25,
+      "patrolEveryMinutes": 180,
+      "patrolAttempt": 0.2
+    },
+    {
+      "id": "ex_pop_city_approach",
+      "cap": 12,
+      "nodes": [
+        "w29_riverbend",
+        "w30_truckstop",
+        "w31_suburb",
+        "w32_railcut"
+      ],
+      "spawnEveryMinutes": 120,
+      "spawnAttempt": 0.25,
+      "patrolEveryMinutes": 180,
+      "patrolAttempt": 0.2
+    },
+    {
+      "id": "ex_pop_utility",
+      "cap": 8,
+      "nodes": [
+        "w33_waterworks",
+        "w34_depot"
+      ],
+      "spawnEveryMinutes": 120,
+      "spawnAttempt": 0.25,
+      "patrolEveryMinutes": 180,
+      "patrolAttempt": 0.2
+    }
+  ],
+  "lifecycle": {
+    "resetCooldownMinutes": 4320,
+    "resetCooldownHours": 72,
+    "startsAt": "clearedAt",
+    "resetBoundaryCases": [
+      "71h55不可重置",
+      "72h且其他条件全满足可确认"
+    ],
+    "uncompletedInstanceNeverRefreshes": true
+  },
+  "recruitment": {
+    "locationId": "h06_shelter",
+    "serviceId": "service_shelter_recruitment",
+    "refreshMinutes": 4320,
+    "candidatesPerCycle": 3,
+    "rosterCapFormula": "min(3,C-1)",
+    "cycleFormula": "floor((worldMinute-shelterOpenedAt)/4320)",
+    "noOfflineRefresh": true
+  },
+  "userDecisions": {
+    "q25": "提交后收起瞄准，下一击重选",
+    "q26": "未解锁在当前操作台和指令说明隐藏，成长页可见",
+    "q23": "保护中原本可食允许食用；原子消费取消该份加工，取出解除保护按原期腐败"
+  },
+  "mapSource": "../narrative-map/map-v3-normalized.json"
+}

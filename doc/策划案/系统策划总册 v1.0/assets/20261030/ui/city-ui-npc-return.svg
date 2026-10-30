@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<rect width="1600" height="900" fill="#101a20"/>
+<text x="16" y="40" fill="#d8b675" font-size="28" font-family="Microsoft YaHei, sans-serif">适者生存</text>
+<text x="180" y="38" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">鉴定所</text>
+<rect x="950" y="12" width="94" height="37" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="965.0" y="37" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">区域地图</text>
+<rect x="1054" y="12" width="94" height="37" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1069.0" y="37" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">主城鸟瞰</text>
+<rect x="1158" y="12" width="94" height="37" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1189.0" y="37" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">制作</text>
+<rect x="1262" y="12" width="94" height="37" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1293.0" y="37" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">休息</text>
+<rect x="1366" y="12" width="94" height="37" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1381.0" y="37" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">系统说明</text>
+<rect x="1470" y="12" width="94" height="37" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1501.0" y="37" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">菜单</text>
+<rect x="12" y="76" width="176" height="146" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="27" y="109" fill="#aeb9b6" font-size="17" font-family="Microsoft YaHei, sans-serif">存活第1日</text>
+<text x="27" y="163" fill="#efe3c5" font-size="38" font-family="Microsoft YaHei, sans-serif">10:00</text>
+<text x="27" y="197" fill="#d8b675" font-size="16" font-family="Microsoft YaHei, sans-serif">白昼 · 示意数值</text>
+<rect x="12" y="234" width="176" height="437" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="25" y="269" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">健康</text>
+<text x="84" y="269" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">20.00/20</text>
+<rect x="25" y="282" width="149" height="5" rx="1" fill="#9aa982" stroke="#9aa982" stroke-width="1"/>
+<text x="25" y="323" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">饱食</text>
+<text x="84" y="323" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">80.00/100</text>
+<rect x="25" y="336" width="149" height="5" rx="1" fill="#9aa982" stroke="#9aa982" stroke-width="1"/>
+<text x="25" y="377" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">水分</text>
+<text x="84" y="377" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">80.00/100</text>
+<rect x="25" y="390" width="149" height="5" rx="1" fill="#9aa982" stroke="#9aa982" stroke-width="1"/>
+<text x="25" y="431" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">体力</text>
+<text x="84" y="431" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">18.00/20</text>
+<rect x="25" y="444" width="149" height="5" rx="1" fill="#9aa982" stroke="#9aa982" stroke-width="1"/>
+<text x="25" y="485" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">清醒</text>
+<text x="84" y="485" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">90.00/100</text>
+<rect x="25" y="498" width="149" height="5" rx="1" fill="#9aa982" stroke="#9aa982" stroke-width="1"/>
+<text x="25" y="539" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">精神</text>
+<text x="84" y="539" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">60.00/100</text>
+<rect x="25" y="552" width="149" height="5" rx="1" fill="#9aa982" stroke="#9aa982" stroke-width="1"/>
+<text x="25" y="593" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">免疫</text>
+<text x="84" y="593" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">70.00/100</text>
+<rect x="25" y="606" width="149" height="5" rx="1" fill="#9aa982" stroke="#9aa982" stroke-width="1"/>
+<rect x="12" y="684" width="176" height="183" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="26" y="718" fill="#aeb9b6" font-size="17" font-family="Microsoft YaHei, sans-serif">携带重量</text>
+<text x="26" y="759" fill="#d8b675" font-size="24" font-family="Microsoft YaHei, sans-serif">5.40公斤</text>
+<text x="26" y="794" fill="#efe3c5" font-size="15" font-family="Microsoft YaHei, sans-serif">轻装 · 精确计重</text>
+<rect x="1330" y="76" width="256" height="791" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<rect x="1343" y="90" width="112" height="38" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<rect x="1463" y="90" width="111" height="38" rx="6" fill="#17242a" stroke="#d8b675" stroke-width="1"/>
+<text x="1365.0" y="117" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">对象信息</text>
+<text x="1501.0" y="117" fill="#d8b675" font-size="17" font-family="Microsoft YaHei, sans-serif">人物</text>
+<text x="1348" y="173" fill="#efe3c5" font-size="21" font-family="Microsoft YaHei, sans-serif">人物</text>
+<rect x="1344" y="197" width="228" height="49" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1357" y="229" fill="#efe3c5" font-size="18" font-family="Microsoft YaHei, sans-serif">熟练度 · 已收起</text>
+<text x="1541" y="229" fill="#efe3c5" font-size="18" font-family="Microsoft YaHei, sans-serif">▸</text>
+<rect x="1344" y="259" width="228" height="48" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1357" y="290" fill="#efe3c5" font-size="18" font-family="Microsoft YaHei, sans-serif">词条 · 已收起</text>
+<text x="1541" y="290" fill="#efe3c5" font-size="18" font-family="Microsoft YaHei, sans-serif">▸</text>
+<text x="1348" y="808" fill="#aeb9b6" font-size="16" font-family="Microsoft YaHei, sans-serif">保留最近折叠选择</text>
+<text x="1348" y="837" fill="#aeb9b6" font-size="16" font-family="Microsoft YaHei, sans-serif">不因切页自动展开</text>
+<rect x="205" y="676" width="1109" height="192" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="221" y="705" fill="#d8b675" font-size="18" font-family="Microsoft YaHei, sans-serif">随身物资  3/5格</text>
+<text x="1006" y="705" fill="#aeb9b6" font-size="16" font-family="Microsoft YaHei, sans-serif">鸟瞰期间仅查看</text>
+<rect x="222" y="723" width="198" height="128" rx="6" fill="#253239" stroke="#807052" stroke-width="1"/>
+<rect x="303" y="743" width="30" height="69" rx="6" fill="#7dabb7" stroke="#b3d0d2" stroke-width="1"/>
+<rect x="308" y="733" width="20" height="14" rx="6" fill="#567983" stroke="#665c48" stroke-width="1"/>
+<text x="290.0" y="841" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">净水 ×2</text>
+<rect x="437" y="723" width="198" height="128" rx="6" fill="#253239" stroke="#807052" stroke-width="1"/>
+<polygon points="492,790 560,750 582,777 514,817" fill="#785f41" stroke="#91856a" stroke-width="2"/>
+<polyline points="509,794 560,764" fill="none" stroke="#d8b675" stroke-width="2"/>
+<text x="505.0" y="841" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">木材 ×4</text>
+<rect x="652" y="723" width="198" height="128" rx="6" fill="#253239" stroke="#807052" stroke-width="1"/>
+<rect x="718" y="750" width="66" height="57" rx="6" fill="#c1b998" stroke="#665c48" stroke-width="1"/>
+<polyline points="751,758 751,798" fill="none" stroke="#976759" stroke-width="8"/>
+<polyline points="731,778 771,778" fill="none" stroke="#976759" stroke-width="8"/>
+<text x="720.0" y="841" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">绷带 ×1</text>
+<rect x="867" y="723" width="198" height="128" rx="6" fill="#162229" stroke="#3b4a4c" stroke-width="1"/>
+<text x="949.0" y="841" fill="#aeb9b6" font-size="17" font-family="Microsoft YaHei, sans-serif">空位</text>
+<rect x="1082" y="723" width="198" height="128" rx="6" fill="#162229" stroke="#3b4a4c" stroke-width="1"/>
+<text x="1164.0" y="841" fill="#aeb9b6" font-size="17" font-family="Microsoft YaHei, sans-serif">空位</text>
+<text x="16" y="892" fill="#aeb9b6" font-size="14" font-family="Microsoft YaHei, sans-serif">UI布局示意 · 非实机截图 · 浏览不推进时间；移动与服务按真实规则提交</text>
+<rect x="205" y="76" width="1109" height="192" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<rect x="205" y="276" width="1109" height="192" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<rect x="205" y="476" width="1109" height="192" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="224" y="115" fill="#d8b675" font-size="24" font-family="Microsoft YaHei, sans-serif">鉴定所 · 已抵达</text>
+<text x="224" y="148" fill="#aeb9b6" font-size="17" font-family="Microsoft YaHei, sans-serif">营区建筑 / 真实当前地点</text>
+<polyline points="238,231 610,151 1130,230" fill="none" stroke="#5e6151" stroke-width="6"/>
+<rect x="694" y="135" width="132" height="80" rx="6" fill="#39413b" stroke="#d8b675" stroke-width="3"/>
+<polygon points="683,135 722,107 837,135 798,163" fill="#736446" stroke="#91856a" stroke-width="2"/>
+<polygon points="683,135 722,107 722,157 694,183" fill="#5c523c" stroke="#91856a" stroke-width="2"/>
+<rect x="747" y="177" width="26" height="38" rx="1" fill="#182323" stroke="#a0916b" stroke-width="1"/>
+<rect x="714" y="158" width="17" height="20" rx="1" fill="#9f9d73" stroke="#b6ab84" stroke-width="1"/>
+<rect x="791" y="158" width="17" height="20" rx="1" fill="#9f9d73" stroke="#b6ab84" stroke-width="1"/>
+<rect x="677" y="222" width="166" height="30" rx="6" fill="#162228" stroke="#d8b675" stroke-width="1"/>
+<text x="734.5" y="243" fill="#d8b675" font-size="17" font-family="Microsoft YaHei, sans-serif">鉴定所</text>
+<circle cx="683" cy="132" r="15" fill="#b48b3f" stroke="#d8b675" stroke-width="2"/>
+<text x="676.5" y="142" fill="#111b20" font-size="21" font-family="Microsoft YaHei, sans-serif">◎</text>
+<rect x="1113" y="91" width="184" height="39" rx="6" fill="#17242a" stroke="#665c48" stroke-width="1"/>
+<text x="1154.0" y="117" fill="#efe3c5" font-size="17" font-family="Microsoft YaHei, sans-serif">打开主城鸟瞰</text>
+<text x="222" y="304" fill="#d8b675" font-size="17" font-family="Microsoft YaHei, sans-serif">设施</text>
+<text x="686" y="304" fill="#d8b675" font-size="17" font-family="Microsoft YaHei, sans-serif">人物</text>
+<rect x="222" y="319" width="210" height="133" rx="6" fill="#b0a17d" stroke="#d8b675" stroke-width="2"/>
+<text x="297.0" y="350" fill="#182329" font-size="20" font-family="Microsoft YaHei, sans-serif">鉴定台</text>
+<polygon points="262,404 322,368 392,400 332,428" fill="#584e3a" stroke="#91856a" stroke-width="2"/>
+<polyline points="332,422 332,440" fill="none" stroke="#392f25" stroke-width="8"/>
+<rect x="450" y="319" width="210" height="133" rx="6" fill="#b0a17d" stroke="#d8b675" stroke-width="2"/>
+<text x="505.0" y="350" fill="#182329" font-size="20" font-family="Microsoft YaHei, sans-serif">交易登记台</text>
+<polygon points="490,404 550,368 620,400 560,428" fill="#584e3a" stroke="#91856a" stroke-width="2"/>
+<polyline points="560,422 560,440" fill="none" stroke="#392f25" stroke-width="8"/>
+<rect x="686" y="319" width="294" height="133" rx="6" fill="#28363a" stroke="#d8b675" stroke-width="2"/>
+<circle cx="733" cy="355" r="21" fill="#a79a78" stroke="#d8b675" stroke-width="2"/>
+<polygon points="701,421 711,381 754,381 766,421" fill="#6c705c" stroke="#91856a" stroke-width="2"/>
+<text x="780" y="348" fill="#d8b675" font-size="18" font-family="Microsoft YaHei, sans-serif">陶岑 · 样本鉴定师</text>
+<text x="780" y="374" fill="#aeb9b6" font-size="15" font-family="Microsoft YaHei, sans-serif">岗位NPC · 在场</text>
+<rect x="780" y="395" width="180" height="44" rx="6" fill="#b6985e" stroke="#d8b675" stroke-width="1"/>
+<text x="825.0" y="423" fill="#142027" font-size="18" font-family="Microsoft YaHei, sans-serif">交谈 / 服务</text>
+<text x="1002" y="355" fill="#efe3c5" font-size="18" font-family="Microsoft YaHei, sans-serif">同一设施轨道</text>
+<text x="1002" y="389" fill="#aeb9b6" font-size="17" font-family="Microsoft YaHei, sans-serif">人物不替换设施</text>
+<text x="1002" y="424" fill="#aeb9b6" font-size="17" font-family="Microsoft YaHei, sans-serif">无在场者不发对白</text>
+<text x="222" y="505" fill="#d8b675" font-size="18" font-family="Microsoft YaHei, sans-serif">当前地面 · 鉴定所</text>
+<rect x="224" y="522" width="195" height="128" rx="6" fill="#2c393d" stroke="#665c48" stroke-width="1"/>
+<circle cx="320" cy="572" r="28" fill="#c2bda8" stroke="#d8b675" stroke-width="2"/>
+<circle cx="329" cy="566" r="9" fill="#8b8c7d" stroke="#d8b675" stroke-width="2"/>
+<text x="265.0" y="635" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">未鉴定活性物质</text>
+<rect x="439" y="522" width="195" height="128" rx="6" fill="#2c393d" stroke="#665c48" stroke-width="1"/>
+<text x="504.0" y="635" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">当地物品</text>
+<rect x="654" y="522" width="195" height="128" rx="6" fill="#2c393d" stroke="#665c48" stroke-width="1"/>
+<text x="735.0" y="635" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">空位</text>
+<rect x="905" y="508" width="392" height="145" rx="6" fill="#142129" stroke="#d8b675" stroke-width="1"/>
+<text x="925" y="539" fill="#d8b675" font-size="19" font-family="Microsoft YaHei, sans-serif">服务浮窗 · 功能示意</text>
+<text x="925" y="571" fill="#efe3c5" font-size="16" font-family="Microsoft YaHei, sans-serif">鉴定 / 交易按实际费用与库存确认</text>
+<text x="925" y="604" fill="#aeb9b6" font-size="16" font-family="Microsoft YaHei, sans-serif">岗位不可招募；候选/固定队友另标</text>
+<text x="925" y="635" fill="#aeb9b6" font-size="16" font-family="Microsoft YaHei, sans-serif">角色为叙事提案；不在此图定义报价</text>
+</svg>

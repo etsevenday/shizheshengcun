@@ -1,0 +1,34 @@
+{
+  "purpose": "A12 equipmentAcquisition及旧来源语义迁移；按claim/知识包身份，不得把同节点其他侧室搬走",
+  "coreNodeByOldSixNode": {
+    "d01_06": "d01_08",
+    "d02_06": "d02_08",
+    "d03_06": "d03_08",
+    "d04_06": "d04_07"
+  },
+  "coreNodeByOldSevenNode": {
+    "d01_07": "d01_08",
+    "d02_07": "d02_08",
+    "d03_07": "d03_08",
+    "d04_07": "d04_07"
+  },
+  "claimNodes": {
+    "shield_cache": "d03_03",
+    "officer_cache": "d03_04",
+    "rifle_cache": "d03_08",
+    "shotgun_cache": "d03_08",
+    "armor_cache": "d03_08",
+    "ammo_reserve_cache": "d03_08"
+  },
+  "recordNodes": {
+    "d01": "d01_08",
+    "d02": "d02_08",
+    "d03": "d03_08",
+    "d04": "d04_07",
+    "d05": "d05_07",
+    "d06": "d06_08",
+    "d07": "d07_07",
+    "d08": "d08_08"
+  },
+  "note": "唯一装备claimId保持，已领不补。旧A12的blueprint_breach_axe/rescue_axe/steel_mace等工业包归d01_08，医疗包d02_08，武备包d03_08，通信包d04_07。"
+}

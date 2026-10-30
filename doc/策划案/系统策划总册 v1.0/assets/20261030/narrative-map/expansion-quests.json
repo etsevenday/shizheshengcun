@@ -1,0 +1,133 @@
+{
+  "version": "2026-10-30-review-1",
+  "status": "approved_initial_values_for_implementation_not_gameplay_tested",
+  "mapSource": "map-v3-data.json",
+  "mainlineCapacityRecords": [
+    "church_route_record",
+    "academy_safety_record"
+  ],
+  "optionalQuests": [
+    {
+      "id": "EXQ05",
+      "title": "水从哪里来",
+      "dungeonId": "d05",
+      "entrance": "w33_waterworks",
+      "recordNode": "d05_07",
+      "exitNode": "d05_08",
+      "record": "waterworks_record",
+      "board": "h03_workshop",
+      "requires": [
+        "hub_registered"
+      ],
+      "workMinutes": 10,
+      "extraMaterialCost": {},
+      "knowledgePack": "kp_waterworks",
+      "knowledge": [
+        "blueprint_filter_token",
+        "blueprint_repair_manual"
+      ],
+      "alternativeKnowledgeNode": "h03_workshop",
+      "alternativeWorkMinutes": 30,
+      "claimId": "d05_07_unique",
+      "rewardScope": "campaign_once",
+      "capacityDelta": 0,
+      "repeatableRewardSource": "dungeon_repeatable_table"
+    },
+    {
+      "id": "EXQ06",
+      "title": "矿道里的旧工具",
+      "dungeonId": "d06",
+      "entrance": "w24_cave",
+      "recordNode": "d06_08",
+      "exitNode": "d06_09",
+      "record": "mining_blueprint_pack",
+      "board": "h03_workshop",
+      "requires": [
+        "hub_registered"
+      ],
+      "workMinutes": 10,
+      "extraMaterialCost": {},
+      "knowledgePack": "kp_mining",
+      "knowledge": [
+        "blueprint_gather_gloves",
+        "blueprint_utility_trousers"
+      ],
+      "alternativeKnowledgeNode": "h03_workshop",
+      "alternativeWorkMinutes": 30,
+      "claimId": "d06_08_unique",
+      "rewardScope": "campaign_once",
+      "capacityDelta": 0,
+      "repeatableRewardSource": "dungeon_repeatable_table"
+    },
+    {
+      "id": "EXQ07",
+      "title": "最后一张疏散图",
+      "dungeonId": "d07",
+      "entrance": "o02_market",
+      "recordNode": "d07_07",
+      "exitNode": "d07_08",
+      "record": "civilian_cache_knowledge",
+      "board": "h02_square",
+      "requires": [
+        "hub_registered"
+      ],
+      "workMinutes": 10,
+      "extraMaterialCost": {},
+      "knowledgePack": "kp_civilian_cache",
+      "knowledge": [
+        "blueprint_forage_jacket",
+        "blueprint_field_medkit"
+      ],
+      "alternativeKnowledgeNode": "h02_square",
+      "alternativeWorkMinutes": 30,
+      "claimId": "d07_07_unique",
+      "rewardScope": "campaign_once",
+      "capacityDelta": 0,
+      "repeatableRewardSource": "dungeon_repeatable_table"
+    },
+    {
+      "id": "EXQ08",
+      "title": "封存不是永存",
+      "dungeonId": "d08",
+      "entrance": "w34_depot",
+      "recordNode": "d08_08",
+      "exitNode": "d08_09",
+      "record": "coldchain_knowledge",
+      "board": "h04_infirmary",
+      "requires": [
+        "hub_registered"
+      ],
+      "workMinutes": 10,
+      "extraMaterialCost": {},
+      "knowledgePack": "kp_coldchain",
+      "knowledge": [
+        "blueprint_ration_pouch"
+      ],
+      "alternativeKnowledgeNode": "h04_infirmary",
+      "alternativeWorkMinutes": 30,
+      "claimId": "d08_08_unique",
+      "rewardScope": "campaign_once",
+      "capacityDelta": 0,
+      "repeatableRewardSource": "dungeon_repeatable_table"
+    }
+  ],
+  "recordRules": {
+    "owner": "campaign_quest_log",
+    "physicalCard": false,
+    "weight": 0,
+    "canTrade": false,
+    "generationScoped": false
+  },
+  "knowledgeRules": {
+    "setUnion": true,
+    "duplicateConversionReward": false,
+    "skipPaidCopyIfKnown": true,
+    "recipeCostsAndSkillUnchanged": true,
+    "alternativeRequiresDungeonRecord": false,
+    "alternativeRequiresMembership": false
+  },
+  "itemDataSource": "equipment-mainline-20261030/equipment-skill-data.json",
+  "resourceRewardAuthority": "地图最终repeatable/unique奖励清单 单一claimId 不在任务稿另发实体包",
+  "approvalDate": "2026-10-30",
+  "approvalNote": "用户批准已有建议初值直接实装，可调实测再改；无初值待定不补值"
+}

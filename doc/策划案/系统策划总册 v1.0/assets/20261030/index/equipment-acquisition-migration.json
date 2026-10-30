@@ -1,0 +1,194 @@
+[
+  {
+    "itemId": "guard_sword",
+    "grant": "blueprint_guard_sword",
+    "from": "d03_06",
+    "to": "d03_08"
+  },
+  {
+    "itemId": "breach_axe",
+    "grant": "blueprint_breach_axe",
+    "from": "d01_06",
+    "to": "d01_08"
+  },
+  {
+    "itemId": "rescue_axe",
+    "grant": "blueprint_rescue_axe",
+    "from": "d01_06",
+    "to": "d01_08"
+  },
+  {
+    "itemId": "pike",
+    "grant": "blueprint_pike",
+    "from": "d03_06",
+    "to": "d03_08"
+  },
+  {
+    "itemId": "steel_mace",
+    "grant": "blueprint_steel_mace",
+    "from": "d01_06",
+    "to": "d01_08"
+  },
+  {
+    "itemId": "shock_baton",
+    "grant": "blueprint_shock_baton",
+    "from": "d03_06",
+    "to": "d03_08"
+  },
+  {
+    "itemId": "repeater_crossbow",
+    "grant": "blueprint_repeater_crossbow",
+    "from": "d03_06",
+    "to": "d03_08"
+  },
+  {
+    "itemId": "service_pistol",
+    "grant": "officer_cache：service_pistol1",
+    "from": "d03_05",
+    "to": "d03_04"
+  },
+  {
+    "itemId": "shotgun",
+    "grant": "shotgun_cache：shotgun1（独立箱）",
+    "from": "d03_06",
+    "to": "d03_08"
+  },
+  {
+    "itemId": "rifle",
+    "grant": "rifle_cache：rifle1",
+    "from": "d03_06",
+    "to": "d03_08"
+  },
+  {
+    "itemId": "rescue_shield",
+    "grant": "blueprint_rescue_shield",
+    "from": "d03_06",
+    "to": "d03_08"
+  },
+  {
+    "itemId": "field_radio",
+    "grant": "blueprint_field_radio",
+    "from": "d03_06",
+    "to": "d03_08"
+  },
+  {
+    "itemId": "command_terminal",
+    "grant": "blueprint_command_terminal",
+    "from": "d04_06",
+    "to": "d04_07"
+  },
+  {
+    "itemId": "rescue_medkit",
+    "grant": "blueprint_rescue_medkit",
+    "from": "d02_06",
+    "to": "d02_08"
+  },
+  {
+    "itemId": "triage_kit",
+    "grant": "blueprint_triage_kit",
+    "from": "d02_06",
+    "to": "d02_08"
+  },
+  {
+    "itemId": "guard_armor",
+    "grant": "armor_cache：guard_armor1",
+    "from": "d03_06",
+    "to": "d03_08"
+  },
+  {
+    "itemId": "heavy_armor",
+    "grant": "blueprint_heavy_armor",
+    "from": "d01_06",
+    "to": "d01_08"
+  },
+  {
+    "itemId": "medic_armor",
+    "grant": "blueprint_medic_armor",
+    "from": "d02_06",
+    "to": "d02_08"
+  },
+  {
+    "itemId": "balanced_armor",
+    "grant": "blueprint_balanced_armor",
+    "from": "d04_06",
+    "to": "d04_07"
+  },
+  {
+    "itemId": "focus_lens",
+    "grant": "blueprint_focus_lens",
+    "from": "d03_06",
+    "to": "d03_08"
+  },
+  {
+    "itemId": "aid_badge",
+    "grant": "blueprint_aid_badge",
+    "from": "d02_06",
+    "to": "d02_08"
+  },
+  {
+    "itemId": "resolve_medal",
+    "grant": "blueprint_resolve_medal",
+    "from": "d03_06",
+    "to": "d03_08"
+  },
+  {
+    "itemId": "tactics_watch",
+    "grant": "blueprint_tactics_watch",
+    "from": "d04_06",
+    "to": "d04_07"
+  },
+  {
+    "itemId": "craft_coat",
+    "grant": "blueprint_craft_coat",
+    "from": "d01_06",
+    "to": "d01_08"
+  },
+  {
+    "itemId": "rest_coat",
+    "grant": "blueprint_rest_coat",
+    "from": "d02_06",
+    "to": "d02_08"
+  },
+  {
+    "itemId": "expedition_coat",
+    "grant": "blueprint_expedition_coat",
+    "from": "d04_06",
+    "to": "d04_07"
+  },
+  {
+    "itemId": "reinforced_trousers",
+    "grant": "blueprint_reinforced_trousers",
+    "from": "d01_06",
+    "to": "d01_08"
+  },
+  {
+    "itemId": "recovery_trousers",
+    "grant": "blueprint_recovery_trousers",
+    "from": "d02_06",
+    "to": "d02_08"
+  },
+  {
+    "itemId": "expedition_trousers",
+    "grant": "blueprint_expedition_trousers",
+    "from": "d04_06",
+    "to": "d04_07"
+  },
+  {
+    "itemId": "repair_manual",
+    "grant": "blueprint_repair_manual",
+    "from": "d01_06",
+    "to": "d01_08"
+  },
+  {
+    "itemId": "medical_notes",
+    "grant": "blueprint_medical_notes",
+    "from": "d02_06",
+    "to": "d02_08"
+  },
+  {
+    "itemId": "ration_pouch",
+    "grant": "blueprint_ration_pouch",
+    "from": "d04_06",
+    "to": "d04_07"
+  }
+]

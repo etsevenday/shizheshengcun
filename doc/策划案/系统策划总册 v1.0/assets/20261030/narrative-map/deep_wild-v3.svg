@@ -1,0 +1,33 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='1800' height='1485'><rect width='100%' height='100%' fill='white'/>
+<path d='M 330 805 L 330 950' stroke='#999' fill='none'/><text x='330' y='877.5' fill='#a00'>20</text>
+<path d='M 330 805 L 110 1385' stroke='#999' fill='none'/><text x='220' y='1095' fill='#a00'>30</text>
+<path d='M 110 1385 L 330 1385' stroke='#999' fill='none'/><text x='220' y='1385' fill='#a00'>25</text>
+<path d='M 330 1385 L 550 1385' stroke='#999' fill='none'/><text x='440' y='1385' fill='#a00'>20</text>
+<path d='M 550 1385 L 770 1385' stroke='#999' fill='none'/><text x='660' y='1385' fill='#a00'>25</text>
+<path d='M 770 1385 L 990 1385' stroke='#999' fill='none'/><text x='880' y='1385' fill='#a00'>30</text>
+<path d='M 990 1385 L 1210 1385' stroke='#999' fill='none'/><text x='1100' y='1385' fill='#a00'>25</text>
+<path d='M 1210 1385 L 1430 1385' stroke='#999' fill='none'/><text x='1320' y='1385' fill='#a00'>30</text>
+<path d='M 1430 1385 L 1650 1385' stroke='#999' fill='none'/><text x='1540' y='1385' fill='#a00'>30</text>
+<path d='M 1650 1385 L 330 950' stroke='#999' fill='none'/><text x='990' y='1167.5' fill='#a00'>30</text>
+<path d='M 330 1385 L 770 1240' stroke='#999' fill='none'/><text x='550' y='1312.5' fill='#a00'>30</text>
+<path d='M 550 1385 L 990 1385' stroke='#999' fill='none'/><text x='770' y='1385' fill='#a00'>35</text>
+<path d='M 990 1385 L 1210 805' stroke='#999' fill='none'/><text x='1100' y='1095' fill='#a00'>35</text>
+<path d='M 1430 1385 L 1210 1240' stroke='#999' fill='none'/><text x='1320' y='1312.5' fill='#a00'>35</text>
+<path d='M 770 1385 L 110 225' stroke='#999' fill='none'/><text x='440' y='805' fill='#a00'>10</text>
+<path d='M 990 80 L 770 1385' stroke='#999' fill='none'/><text x='880' y='732.5' fill='#a00'>10→</text>
+<rect x='1115' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1118' y='800' font-size='14'>旧水库</text><text x='1118' y='821' font-size='12'>w08_reservoir</text>
+<rect x='235' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='238' y='800' font-size='14'>深林伐木场</text><text x='238' y='821' font-size='12'>w09_logging</text>
+<rect x='235' y='925' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='238' y='945' font-size='14'>山顶瞭望台</text><text x='238' y='966' font-size='12'>w10_watchtower</text>
+<rect x='675' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='678' y='1235' font-size='14'>塌隧道外</text><text x='678' y='1256' font-size='12'>w18_tunnel</text>
+<rect x='1115' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1118' y='1235' font-size='14'>高压走廊</text><text x='1118' y='1256' font-size='12'>w20_powercut</text>
+<rect x='15' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='18' y='1380' font-size='14'>深针叶林</text><text x='18' y='1401' font-size='12'>w21_pine</text>
+<rect x='235' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='238' y='1380' font-size='14'>陡壁沟谷</text><text x='238' y='1401' font-size='12'>w22_ravine</text>
+<rect x='455' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='458' y='1380' font-size='14'>猎人旧营</text><text x='458' y='1401' font-size='12'>w23_hunting</text>
+<rect x='675' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='678' y='1380' font-size='14'>岩洞入口</text><text x='678' y='1401' font-size='12'>w24_cave</text>
+<rect x='895' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='898' y='1380' font-size='14'>黑水湿地</text><text x='898' y='1401' font-size='12'>w25_wetland</text>
+<rect x='1115' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1118' y='1380' font-size='14'>湖心陆洲</text><text x='1118' y='1401' font-size='12'>w26_island</text>
+<rect x='1335' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1338' y='1380' font-size='14'>废中继营</text><text x='1338' y='1401' font-size='12'>w27_relay</text>
+<rect x='1555' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1558' y='1380' font-size='14'>风蚀高地</text><text x='1558' y='1401' font-size='12'>w28_highland</text>
+<rect x='15' y='200' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='18' y='220' font-size='14'>洞口</text><text x='18' y='241' font-size='12'>d06_01</text>
+<rect x='895' y='55' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='898' y='75' font-size='14'>通风出口</text><text x='898' y='96' font-size='12'>d06_09</text>
+</svg>

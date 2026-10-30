@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1260" viewBox="0 0 1600 1260"><defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="none" stroke="#52657b" stroke-width="1.6"/></marker></defs><rect width="1600" height="1260" fill="#f3f6fa"/><g font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif">
+<text x='48' y='59' font-size='38' fill='#172b43' font-weight='700'>把安全屋建在旅途中</text>
+<text x='48' y='95' font-size='21' fill='#52657b' font-weight='400'>选址 → 建造 → 使用   ·   2026-10-30 联合审阅稿   ·   新增建议初值，未实现 / 未测试</text>
+<rect x='48' y='126' width='1504' height='276' rx='16' fill='#ffffff' stroke='#d6deea' stroke-width='2'/>
+<text x='74' y='165' font-size='26' fill='#125f61' font-weight='700'>01  选址：营区旁有推荐地块，也可选择其他合格普通地点</text>
+<rect x='76' y='190' width='246' height='82' rx='16' fill='#eef3fa' stroke='#d6deea' stroke-width='2'/>
+<text x='101' y='224' font-size='24' fill='#26364c' font-weight='700'>新手区 / 旧营地</text>
+<text x='101' y='253' font-size='19' fill='#26364c' font-weight='400'>旧库存与设施一直保留</text>
+<path d='M330,231 L385,231' stroke='#52657b' stroke-width='2.5' fill='none' marker-end='url(#arrow)'/>
+<rect x='398' y='190' width='263' height='82' rx='16' fill='#eef3fa' stroke='#d6deea' stroke-width='2'/>
+<text x='421' y='224' font-size='24' fill='#26364c' font-weight='700'>约两张过渡野外</text>
+<text x='421' y='253' font-size='19' fill='#26364c' font-weight='400'>实际物理路线 · 无传送</text>
+<path d='M670,231 L723,231' stroke='#52657b' stroke-width='2.5' fill='none' marker-end='url(#arrow)'/>
+<rect x='738' y='190' width='250' height='82' rx='16' fill='#e5f1ec' stroke='#d6deea' stroke-width='2'/>
+<text x='760' y='224' font-size='24' fill='#26364c' font-weight='700'>幸存者营区</text>
+<text x='760' y='253' font-size='19' fill='#26364c' font-weight='400'>登记解锁安全屋知识</text>
+<path d='M997,231 L1061,231' stroke='#52657b' stroke-width='2.5' fill='none' marker-end='url(#arrow)'/>
+<rect x='1076' y='190' width='448' height='82' rx='16' fill='#e5f1ec' stroke='#d6deea' stroke-width='2'/>
+<text x='1100' y='224' font-size='24' fill='#125f61' font-weight='700'>营区旁独立建地 / 自选普通地</text>
+<text x='1100' y='253' font-size='19' fill='#26364c' font-weight='400'>地点 ID 与移动分钟由地图统一</text>
+<text x='78' y='317' font-size='21' fill='#125f61' font-weight='700'>须满足</text>
+<text x='180' y='317' font-size='21' fill='#26364c' font-weight='400'>已访问、探索 100% · 明确可建 · 土地可用 · 清除当前敌踪与事件阻挡</text>
+<text x='78' y='355' font-size='21' fill='#9a4d42' font-weight='700'>不可覆盖</text>
+<text x='180' y='355' font-size='21' fill='#26364c' font-weight='400'>地牢实例 / 阵营公屋 / 公共工坊 / 任务保留地；未配置许可默认不可建</text>
+<text x='78' y='384' font-size='18' fill='#61748b' font-weight='400'>图为体验顺序，不是正式拓扑；推荐建地外部安全，其他野外保持原危险。</text>
+<rect x='48' y='424' width='1504' height='350' rx='16' fill='#ffffff' stroke='#d6deea' stroke-width='2'/>
+<text x='74' y='465' font-size='26' fill='#125f61' font-weight='700'>02  建造：先有可开门的基础屋，再按需要添床、添火与工坊</text>
+<rect x='76' y='488' width='628' height='230' rx='16' fill='#e5f1ec' stroke='#d6deea' stroke-width='2'/>
+<text x='100' y='525' font-size='25' fill='#125f61' font-weight='700'>基础屋 ＝ 遮蔽棚屋 + 门 + 固定储物柜</text>
+<text x='100' y='563' font-size='24' fill='#26364c' font-weight='400'>木材 8 · 纤维 6 · 布料 2 · 石块 4</text>
+<text x='100' y='600' font-size='22' fill='#26364c' font-weight='400'>制造 1 级 · 基础工作 240 分钟 · 材料 6.80kg</text>
+<text x='100' y='636' font-size='21' fill='#26364c' font-weight='400'>完工才可进入；附 200kg 柜，无床、无火、无锅。</text>
+<text x='100' y='674' font-size='20' fill='#26364c' font-weight='400'>暂停保留锁与进度；取消全返当地地面，时间不退。</text>
+<path d='M714,589 L767,589' stroke='#52657b' stroke-width='2.5' fill='none' marker-end='url(#arrow)'/>
+<rect x='782' y='488' width='359' height='230' rx='16' fill='#f9fafc' stroke='#d6deea' stroke-width='2'/>
+<text x='805' y='525' font-size='25' fill='#26364c' font-weight='700'>可选：床垫 / 火堆</text>
+<text x='805' y='566' font-size='22' fill='#26364c' font-weight='400'>床：纤维 4 + 布料 2</text>
+<text x='805' y='597' font-size='20' fill='#26364c' font-weight='400'>制造 1 · 基础 60 分钟</text>
+<text x='805' y='638' font-size='22' fill='#26364c' font-weight='400'>火：石块 4 + 木材 2</text>
+<text x='805' y='669' font-size='20' fill='#26364c' font-weight='400'>制造 1 · 基础 30 分钟</text>
+<rect x='1161' y='488' width='363' height='230' rx='16' fill='#f9fafc' stroke='#d6deea' stroke-width='2'/>
+<text x='1183' y='525' font-size='25' fill='#26364c' font-weight='700'>可选：自建工坊</text>
+<text x='1183' y='566' font-size='21' fill='#26364c' font-weight='400'>材料 / 等级 / 蓝图沿 A07</text>
+<text x='1183' y='604' font-size='21' fill='#26364c' font-weight='400'>每类每屋最多一座</text>
+<text x='1183' y='642' font-size='21' fill='#26364c' font-weight='400'>不跳过军械等知识门槛</text>
+<text x='1183' y='680' font-size='20' fill='#26364c' font-weight='400'>不私有化营区公共服务</text>
+<text x='78' y='752' font-size='20' fill='#52657b' font-weight='400'>基础屋 + 床 + 火：木材10 / 纤维10 / 布料4 / 石块8，基础330分钟；实际预览按现行工作倍率。</text>
+<rect x='48' y='796' width='1504' height='362' rx='16' fill='#ffffff' stroke='#d6deea' stroke-width='2'/>
+<text x='74' y='838' font-size='26' fill='#125f61' font-weight='700'>03  使用：当地存取与恢复，带着补给沿原路返程</text>
+<rect x='76' y='859' width='348' height='266' rx='16' fill='#eef3fa' stroke='#d6deea' stroke-width='2'/>
+<text x='97' y='897' font-size='25' fill='#26364c' font-weight='700'>真实存物</text>
+<text x='97' y='939' font-size='22' fill='#26364c' font-weight='400'>每屋独立 200kg 柜</text>
+<text x='97' y='974' font-size='21' fill='#26364c' font-weight='400'>物品只有一个 owner</text>
+<text x='97' y='1009' font-size='21' fill='#26364c' font-weight='400'>存取不刷新保质期</text>
+<text x='97' y='1044' font-size='21' fill='#26364c' font-weight='400'>随身仍五卡 / 每人30kg</text>
+<text x='97' y='1092' font-size='19' fill='#52657b' font-weight='400'>远处可看记录，不能取放</text>
+<rect x='443' y='859' width='348' height='266' rx='16' fill='#e5f1ec' stroke='#d6deea' stroke-width='2'/>
+<text x='465' y='897' font-size='25' fill='#125f61' font-weight='700'>屋内休息与加工</text>
+<text x='465' y='939' font-size='21' fill='#26364c' font-weight='400'>遮蔽，床效沿既有规则</text>
+<text x='465' y='974' font-size='20' fill='#26364c' font-weight='400'>火堆两位 / 一锅 / 240燃料</text>
+<text x='465' y='1009' font-size='21' fill='#26364c' font-weight='400'>屋内免普通遭遇</text>
+<text x='465' y='1044' font-size='21' fill='#26364c' font-weight='400'>饮食、感染、腐败照常</text>
+<text x='465' y='1092' font-size='19' fill='#52657b' font-weight='400'>安全不等于免费照护</text>
+<rect x='810' y='859' width='348' height='266' rx='16' fill='#eef3fa' stroke='#d6deea' stroke-width='2'/>
+<text x='832' y='897' font-size='25' fill='#26364c' font-weight='700'>进出与返程</text>
+<text x='832' y='939' font-size='21' fill='#26364c' font-weight='400'>同地空闲进出门 0 分钟</text>
+<text x='832' y='974' font-size='20' fill='#26364c' font-weight='400'>战斗 / 待裁决遭遇禁进门</text>
+<text x='832' y='1009' font-size='21' fill='#26364c' font-weight='400'>返屋需走真实物理边</text>
+<text x='832' y='1044' font-size='21' fill='#26364c' font-weight='400'>全队同行，不分队驻屋</text>
+<text x='832' y='1092' font-size='19' fill='#52657b' font-weight='400'>收藏地点不会免费传送</text>
+<rect x='1177' y='859' width='347' height='266' rx='16' fill='#fff4e8' stroke='#d6deea' stroke-width='2'/>
+<text x='1199' y='897' font-size='25' fill='#8b5c2a' font-weight='700'>持久化边界</text>
+<text x='1199' y='939' font-size='20' fill='#26364c' font-weight='400'>多屋各自独立，旧营地保留</text>
+<text x='1199' y='974' font-size='21' fill='#26364c' font-weight='400'>候补仅营区公共照护</text>
+<text x='1199' y='1009' font-size='21' fill='#26364c' font-weight='400'>地牢重置不清外部屋</text>
+<text x='1199' y='1044' font-size='19' fill='#26364c' font-weight='400'>不扩基地袭击 / 耕种 / 电网</text>
+<text x='1199' y='1092' font-size='19' fill='#52657b' font-weight='400'>柜、锅与后代不复制</text>
+<text x='52' y='1200' font-size='21' fill='#52657b' font-weight='400'>阅读对应：safehouse-rules.md §1–3 选址建设 · §4 中断事务 · §5–8 使用与持久化 · §10 验收</text>
+<text x='52' y='1234' font-size='19' fill='#52657b' font-weight='400'>材料保底：原新手资源 + 营区周边确定产出；正式地点与资源名称由地图会话最终统一。</text>
+</g></svg>

@@ -1,0 +1,184 @@
+{
+  "date": "2026-10-30",
+  "status": "approved_initial_values_for_implementation_not_gameplay_tested",
+  "taskCount": 18,
+  "visitor": {
+    "npcId": "npc_cheng_wang",
+    "name": "程望",
+    "location": "camp",
+    "recruitable": false,
+    "notBeforeWorldMinute": 6240,
+    "suggestedDay": 5,
+    "suggestedTime": "08:00",
+    "needsTutorialBattleWon": true,
+    "trigger": "next_safe_boundary",
+    "persistentUntilTalked": true,
+    "teleportPlayer": false,
+    "approvedDay": 5,
+    "approvedTime": "08:00",
+    "timingApproved": true
+  },
+  "exit": {
+    "from": "village",
+    "to": "m01_road",
+    "requires": [
+      "tutorialBattleWon_or_LegacyEquivalent",
+      "camp_route_known",
+      "visited_village"
+    ],
+    "villageExplore100Required": false,
+    "fusionRequired": false,
+    "allTutorialTasksRequired": false,
+    "preserveAlreadyUnlocked": true
+  },
+  "daysAreDeadlines": false,
+  "sevenDayWinPopup": false,
+  "tasks": [
+    {
+      "id": "PRO01",
+      "title": "看清眼前",
+      "suggestedStage": "D1",
+      "completionRule": "首次实际选中地面/物资对象并展开一次合法操作预览",
+      "guidance": "中性系统提示四行的地图/设施/地面/随身归属；关闭说明不扣时间",
+      "exitGate": "否，关闭教学可继续"
+    },
+    {
+      "id": "PRO02",
+      "title": "留住力气",
+      "suggestedStage": "D1",
+      "completionRule": "开局补给中至少一次食用或饮水实际改善N或W",
+      "guidance": "饱饱只表达饿/渴；系统说明选择数量、费用和提交，满值不强迫浪费",
+      "exitGate": "否"
+    },
+    {
+      "id": "PRO03",
+      "title": "带点防身物",
+      "suggestedStage": "D1",
+      "completionRule": "获得并装备任一合法伤害型武器；已有合法装备直接算",
+      "guidance": "指向已知可制作的低阶配方及所缺材料来源，不要求新增专属配方",
+      "exitGate": "否；无武器仍可用拳，首次离营前警告风险"
+    },
+    {
+      "id": "PRO04",
+      "title": "第一次交手",
+      "suggestedStage": "D1",
+      "completionRule": "沿原S15保留游荡尸，最终胜利且唯一轮末tick存活",
+      "guidance": "保留首次强制、撤退后主动续战与同敌HP；教选技能/合法目标/预测/AP/防御/结束行动",
+      "exitGate": "是，沿用既有首战门控"
+    },
+    {
+      "id": "PRO05",
+      "title": "身体里的变化",
+      "suggestedStage": "D1以后",
+      "completionRule": "自愿融合唯一教学实例，完成原R07事务",
+      "guidance": "显示真实白色物质/绿色攻击+0.1；主角可疑虑，饱饱不保证绝对安全",
+      "exitGate": "否，不融合也能求医和进主线"
+    },
+    {
+      "id": "PRO06",
+      "title": "找到水源",
+      "suggestedStage": "D2",
+      "completionRule": "到访stream，且完成一次从合法水源取水",
+      "guidance": "说明脏水与净水、容器/重量/owner，不靠“看起来清”判断",
+      "exitGate": "否"
+    },
+    {
+      "id": "PRO07",
+      "title": "火要有燃料",
+      "suggestedStage": "D2",
+      "completionRule": "合法给火堆添燃料并成功点火一次",
+      "guidance": "选卡预览/磨损/耗时；使用真实木材与打火器，不赠免费火",
+      "exitGate": "否"
+    },
+    {
+      "id": "PRO08",
+      "title": "一份安全的水",
+      "suggestedStage": "D2",
+      "completionRule": "设施完成一次脏水→净水并真实生成",
+      "guidance": "提示锅里内容、受热进度、等待烹饪与“退出保留已做工作”，不废止现有配方",
+      "exitGate": "否"
+    },
+    {
+      "id": "PRO09",
+      "title": "能再做的食物",
+      "suggestedStage": "D2",
+      "completionRule": "生块根烤制或水煮真实完成一次",
+      "guidance": "指向确定采集/搜集来源和腐败风险；罐头食用不冒充制作完成",
+      "exitGate": "否；新手只选一条简单食物链"
+    },
+    {
+      "id": "PRO10",
+      "title": "工具换来效率",
+      "suggestedStage": "D3",
+      "completionRule": "完成一件当前已知基础工具/武器配方；PRO03已自行制作可追认",
+      "guidance": "对照材料、工作量、设施与成品，工具属性按既有案",
+      "exitGate": "否"
+    },
+    {
+      "id": "PRO11",
+      "title": "五格不是五份",
+      "suggestedStage": "D3",
+      "completionRule": "一次实际地面↔随身物资转移成功",
+      "guidance": "系统提示批次/数量与五卡、七装备槽分开；不替Q24选择批次显示方案",
+      "exitGate": "否，不要求故意超重或丢弃物品"
+    },
+    {
+      "id": "PRO12",
+      "title": "不要硬撑",
+      "suggestedStage": "D3",
+      "completionRule": "实际睡眠累计120游戏分钟；按已提交睡眠段计",
+      "guidance": "提示E/S/遮蔽差异，睡眠优先推荐4—6小时但不强制固定一觉",
+      "exitGate": "否；等待不冒充睡眠，未睡也不锁主线"
+    },
+    {
+      "id": "PRO13",
+      "title": "留个能回的地方",
+      "suggestedStage": "D3",
+      "completionRule": "建棚完成；有合格旧棚也算",
+      "guidance": "说明遮蔽是恢复条件而非无敌；不把新安全屋完整体系提前塞进序章",
+      "exitGate": "否，材料不足仍可露天休息"
+    },
+    {
+      "id": "PRO14",
+      "title": "走一趟再回来",
+      "suggestedStage": "D4",
+      "completionRule": "从camp出发，到village或clinic后实际回camp一次",
+      "guidance": "认识边/耗时/发现与探索区别，往返补给和真实回程；village100才开clinic规则仍保持",
+      "exitGate": "否，不强迫先开诊所"
+    },
+    {
+      "id": "PRO15",
+      "title": "找一条求医线索",
+      "suggestedStage": "D4",
+      "completionRule": "首次到访village并查看固定公开救助残页",
+      "guidance": "给“可能还有组织在救助幸存者”的背景；不是地图钥匙、无医院定位或根治承诺",
+      "exitGate": "否，查看0分钟；已访问可在下一次到访补读"
+    },
+    {
+      "id": "PRO16",
+      "title": "来客与路",
+      "suggestedStage": "D5以后",
+      "completionRule": "到camp与来客交谈，取得营区路线日志",
+      "guidance": "详见§5，真正把个人求生接向主线",
+      "exitGate": "是，新的路线信息门槛"
+    },
+    {
+      "id": "PRO17",
+      "title": "为远行打包",
+      "suggestedStage": "D5以后",
+      "completionRule": "看真实路线与当前全员状态/携物预览后选择“准备好了”",
+      "guidance": "建议净水2份+可食2份+防身物；列出缺项但可明确继续，不偷赠或强吃",
+      "exitGate": "否，知情确认不是物资硬钥匙"
+    },
+    {
+      "id": "PRO18",
+      "title": "走向有人烟的地方",
+      "suggestedStage": "主线接续",
+      "completionRule": "到village南口识别固定路标，解锁并真实移动至m01_road",
+      "guidance": "任务目标更新旧公路→检查哨→营门→营区；按原边逐段走",
+      "exitGate": "是，实际抵达不靠读图代替"
+    }
+  ],
+  "approvalDate": "2026-10-30",
+  "approvalNote": "用户批准已有建议初值直接实装，可调实测再改；无初值待定不补值"
+}

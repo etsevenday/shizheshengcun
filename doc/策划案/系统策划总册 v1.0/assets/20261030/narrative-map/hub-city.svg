@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2100" height="1500" viewBox="0 0 2100 1500"><rect width="2100" height="1500" fill="white"/>
+<path d='M 880 480 L 1075 480' stroke='#999' fill='none'/><text x='977.5' y='480' fill='#a00'>5</text>
+<path d='M 1075 480 L 1075 290' stroke='#999' fill='none'/><text x='1075' y='385' fill='#a00'>5</text>
+<path d='M 1075 480 L 880 290' stroke='#999' fill='none'/><text x='977.5' y='385' fill='#a00'>5</text>
+<path d='M 1075 480 L 1270 480' stroke='#999' fill='none'/><text x='1172.5' y='480' fill='#a00'>5</text>
+<path d='M 1075 480 L 1075 100' stroke='#999' fill='none'/><text x='1075' y='290' fill='#a00'>5</text>
+<rect x='800' y='455' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='803' y='476' font-size='14'>营门</text><text x='803' y='497' font-size='12'>h01_gate</text>
+<rect x='995' y='455' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='998' y='476' font-size='14'>营区广场</text><text x='998' y='497' font-size='12'>h02_square</text>
+<rect x='995' y='265' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='998' y='286' font-size='14'>营区工坊</text><text x='998' y='307' font-size='12'>h03_workshop</text>
+<rect x='800' y='265' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='803' y='286' font-size='14'>营区医务室</text><text x='803' y='307' font-size='12'>h04_infirmary</text>
+<rect x='1190' y='455' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='1193' y='476' font-size='14'>鉴定所</text><text x='1193' y='497' font-size='12'>h05_appraisal</text>
+<rect x='995' y='75' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='998' y='96' font-size='14'>收容所</text><text x='998' y='117' font-size='12'>h06_shelter</text>
+</svg>

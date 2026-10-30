@@ -1,0 +1,173 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='2900' height='1485'><rect width='100%' height='100%' fill='white'/>
+<path d='M 110 80 L 330 80' stroke='#999' fill='none'/><text x='220' y='80' fill='#a00'>15</text>
+<path d='M 330 80 L 110 225' stroke='#999' fill='none'/><text x='220' y='152.5' fill='#a00'>20</text>
+<path d='M 330 80 L 550 80' stroke='#999' fill='none'/><text x='440' y='80' fill='#a00'>20</text>
+<path d='M 330 80 L 330 225' stroke='#999' fill='none'/><text x='330' y='152.5' fill='#a00'>25</text>
+<path d='M 330 225 L 550 225' stroke='#999' fill='none'/><text x='440' y='225' fill='#a00'>15</text>
+<path d='M 330 225 L 110 370' stroke='#999' fill='none'/><text x='220' y='297.5' fill='#a00'>20</text>
+<path d='M 550 80 L 770 225' stroke='#999' fill='none'/><text x='660' y='152.5' fill='#a00'>30</text>
+<path d='M 550 225 L 770 225' stroke='#999' fill='none'/><text x='660' y='225' fill='#a00'>20</text>
+<path d='M 330 225 L 550 370' stroke='#999' fill='none'/><text x='440' y='297.5' fill='#a00'>30</text>
+<path d='M 550 370 L 770 370' stroke='#999' fill='none'/><text x='660' y='370' fill='#a00'>20</text>
+<path d='M 770 370 L 990 370' stroke='#999' fill='none'/><text x='880' y='370' fill='#a00'>15</text>
+<path d='M 990 370 L 1210 370' stroke='#999' fill='none'/><text x='1100' y='370' fill='#a00'>5</text>
+<path d='M 1210 370 L 1210 225' stroke='#999' fill='none'/><text x='1210' y='297.5' fill='#a00'>5</text>
+<path d='M 1210 370 L 990 225' stroke='#999' fill='none'/><text x='1100' y='297.5' fill='#a00'>5</text>
+<path d='M 1210 370 L 990 515' stroke='#999' fill='none'/><text x='1100' y='442.5' fill='#a00'>5</text>
+<path d='M 1210 370 L 1210 515' stroke='#999' fill='none'/><text x='1210' y='442.5' fill='#a00'>25</text>
+<path d='M 1210 370 L 770 515' stroke='#999' fill='none'/><text x='990' y='442.5' fill='#a00'>25</text>
+<path d='M 1210 370 L 1430 225' stroke='#999' fill='none'/><text x='1320' y='297.5' fill='#a00'>25</text>
+<path d='M 1210 370 L 1430 515' stroke='#999' fill='none'/><text x='1320' y='442.5' fill='#a00'>25</text>
+<path d='M 770 515 L 550 660' stroke='#999' fill='none'/><text x='660' y='587.5' fill='#a00'>20</text>
+<path d='M 1210 515 L 1210 660' stroke='#999' fill='none'/><text x='1210' y='587.5' fill='#a00'>20</text>
+<path d='M 770 515 L 1210 660' stroke='#999' fill='none'/><text x='990' y='587.5' fill='#a00'>25</text>
+<path d='M 1210 660 L 990 805' stroke='#999' fill='none'/><text x='1100' y='732.5' fill='#a00'>20</text>
+<path d='M 990 805 L 770 805' stroke='#999' fill='none'/><text x='880' y='805' fill='#a00'>20</text>
+<path d='M 770 805 L 550 660' stroke='#999' fill='none'/><text x='660' y='732.5' fill='#a00'>25</text>
+<path d='M 550 660 L 550 805' stroke='#999' fill='none'/><text x='550' y='732.5' fill='#a00'>25</text>
+<path d='M 550 805 L 330 805' stroke='#999' fill='none'/><text x='440' y='805' fill='#a00'>25</text>
+<path d='M 330 805 L 330 950' stroke='#999' fill='none'/><text x='330' y='877.5' fill='#a00'>20</text>
+<path d='M 550 950 L 770 950' stroke='#999' fill='none'/><text x='660' y='950' fill='#a00'>15</text>
+<path d='M 770 950 L 990 950' stroke='#999' fill='none'/><text x='880' y='950' fill='#a00'>20</text>
+<path d='M 990 805 L 1210 805' stroke='#999' fill='none'/><text x='1100' y='805' fill='#a00'>20</text>
+<path d='M 1210 805 L 1210 660' stroke='#999' fill='none'/><text x='1210' y='732.5' fill='#a00'>25</text>
+<path d='M 1430 805 L 1650 805' stroke='#999' fill='none'/><text x='1540' y='805' fill='#a00'>20</text>
+<path d='M 1650 805 L 1870 805' stroke='#999' fill='none'/><text x='1760' y='805' fill='#a00'>15</text>
+<path d='M 1210 660 L 1430 660' stroke='#999' fill='none'/><text x='1320' y='660' fill='#a00'>25</text>
+<path d='M 1430 515 L 1430 660' stroke='#999' fill='none'/><text x='1430' y='587.5' fill='#a00'>20</text>
+<path d='M 1430 660 L 1650 660' stroke='#999' fill='none'/><text x='1540' y='660' fill='#a00'>25</text>
+<path d='M 1650 660 L 1870 515' stroke='#999' fill='none'/><text x='1760' y='587.5' fill='#a00'>25</text>
+<path d='M 1430 225 L 1650 225' stroke='#999' fill='none'/><text x='1540' y='225' fill='#a00'>20</text>
+<path d='M 1650 225 L 1870 225' stroke='#999' fill='none'/><text x='1760' y='225' fill='#a00'>25</text>
+<path d='M 1870 225 L 2090 370' stroke='#999' fill='none'/><text x='1980' y='297.5' fill='#a00'>20</text>
+<path d='M 2090 370 L 2090 515' stroke='#999' fill='none'/><text x='2090' y='442.5' fill='#a00'>15</text>
+<path d='M 1870 515 L 2090 515' stroke='#999' fill='none'/><text x='1980' y='515' fill='#a00'>20</text>
+<path d='M 2090 515 L 2090 660' stroke='#999' fill='none'/><text x='2090' y='587.5' fill='#a00'>15</text>
+<path d='M 2090 660 L 1650 660' stroke='#999' fill='none'/><text x='1870' y='660' fill='#a00'>25</text>
+<path d='M 1210 370 L 1430 370' stroke='#999' fill='none'/><text x='1320' y='370' fill='#a00'>5</text>
+<path d='M 1210 370 L 1210 80' stroke='#999' fill='none'/><text x='1210' y='225' fill='#a00'>5</text>
+<path d='M 1650 805 L 1650 950' stroke='#999' fill='none'/><text x='1650' y='877.5' fill='#a00'>5</text>
+<path d='M 1650 805 L 1870 950' stroke='#999' fill='none'/><text x='1760' y='877.5' fill='#a00'>5</text>
+<path d='M 1870 950 L 2090 950' stroke='#999' fill='none'/><text x='1980' y='950' fill='#a00'>5</text>
+<path d='M 2090 950 L 2090 805' stroke='#999' fill='none'/><text x='2090' y='877.5' fill='#a00'>5</text>
+<path d='M 2090 805 L 1650 805' stroke='#999' fill='none'/><text x='1870' y='805' fill='#a00'>5</text>
+<path d='M 770 950 L 110 1095' stroke='#999' fill='none'/><text x='440' y='1022.5' fill='#a00'>5</text>
+<path d='M 110 1095 L 330 1095' stroke='#999' fill='none'/><text x='220' y='1095' fill='#a00'>5</text>
+<path d='M 110 1095 L 550 1095' stroke='#999' fill='none'/><text x='330' y='1095' fill='#a00'>5</text>
+<path d='M 550 1095 L 770 1095' stroke='#999' fill='none'/><text x='660' y='1095' fill='#a00'>5</text>
+<path d='M 770 1095 L 990 1095' stroke='#999' fill='none'/><text x='880' y='1095' fill='#a00'>5</text>
+<path d='M 990 1095 L 110 1095' stroke='#999' fill='none'/><text x='550' y='1095' fill='#a00'>5</text>
+<path d='M 1210 805 L 1430 1095' stroke='#999' fill='none'/><text x='1320' y='950' fill='#a00'>25</text>
+<path d='M 1430 1095 L 1650 1095' stroke='#999' fill='none'/><text x='1540' y='1095' fill='#a00'>20</text>
+<path d='M 1650 1095 L 1870 1095' stroke='#999' fill='none'/><text x='1760' y='1095' fill='#a00'>20</text>
+<path d='M 1870 1095 L 2090 1095' stroke='#999' fill='none'/><text x='1980' y='1095' fill='#a00'>25</text>
+<path d='M 2090 1095 L 1430 805' stroke='#999' fill='none'/><text x='1760' y='950' fill='#a00'>20</text>
+<path d='M 1650 1095 L 2310 1095' stroke='#999' fill='none'/><text x='1980' y='1095' fill='#a00'>30</text>
+<path d='M 2310 1095 L 1430 805' stroke='#999' fill='none'/><text x='1870' y='950' fill='#a00'>25</text>
+<path d='M 550 805 L 330 1240' stroke='#999' fill='none'/><text x='440' y='1022.5' fill='#a00'>25</text>
+<path d='M 330 1240 L 550 1240' stroke='#999' fill='none'/><text x='440' y='1240' fill='#a00'>25</text>
+<path d='M 550 1240 L 770 1240' stroke='#999' fill='none'/><text x='660' y='1240' fill='#a00'>20</text>
+<path d='M 770 1240 L 990 1240' stroke='#999' fill='none'/><text x='880' y='1240' fill='#a00'>25</text>
+<path d='M 990 1240 L 550 950' stroke='#999' fill='none'/><text x='770' y='1095' fill='#a00'>20</text>
+<path d='M 550 1240 L 1210 1240' stroke='#999' fill='none'/><text x='880' y='1240' fill='#a00'>30</text>
+<path d='M 1210 1240 L 990 1240' stroke='#999' fill='none'/><text x='1100' y='1240' fill='#a00'>20</text>
+<path d='M 330 805 L 110 1385' stroke='#999' fill='none'/><text x='220' y='1095' fill='#a00'>30</text>
+<path d='M 110 1385 L 330 1385' stroke='#999' fill='none'/><text x='220' y='1385' fill='#a00'>25</text>
+<path d='M 330 1385 L 550 1385' stroke='#999' fill='none'/><text x='440' y='1385' fill='#a00'>20</text>
+<path d='M 550 1385 L 770 1385' stroke='#999' fill='none'/><text x='660' y='1385' fill='#a00'>25</text>
+<path d='M 770 1385 L 990 1385' stroke='#999' fill='none'/><text x='880' y='1385' fill='#a00'>30</text>
+<path d='M 990 1385 L 1210 1385' stroke='#999' fill='none'/><text x='1100' y='1385' fill='#a00'>25</text>
+<path d='M 1210 1385 L 1430 1385' stroke='#999' fill='none'/><text x='1320' y='1385' fill='#a00'>30</text>
+<path d='M 1430 1385 L 1650 1385' stroke='#999' fill='none'/><text x='1540' y='1385' fill='#a00'>30</text>
+<path d='M 1650 1385 L 330 950' stroke='#999' fill='none'/><text x='990' y='1167.5' fill='#a00'>30</text>
+<path d='M 330 1385 L 770 1240' stroke='#999' fill='none'/><text x='550' y='1312.5' fill='#a00'>30</text>
+<path d='M 550 1385 L 990 1385' stroke='#999' fill='none'/><text x='770' y='1385' fill='#a00'>35</text>
+<path d='M 990 1385 L 1210 805' stroke='#999' fill='none'/><text x='1100' y='1095' fill='#a00'>35</text>
+<path d='M 1430 1385 L 1210 1240' stroke='#999' fill='none'/><text x='1320' y='1312.5' fill='#a00'>35</text>
+<path d='M 770 805 L 2090 1240' stroke='#999' fill='none'/><text x='1430' y='1022.5' fill='#a00'>25</text>
+<path d='M 2090 1240 L 2310 1240' stroke='#999' fill='none'/><text x='2200' y='1240' fill='#a00'>25</text>
+<path d='M 2310 1240 L 2530 1240' stroke='#999' fill='none'/><text x='2420' y='1240' fill='#a00'>25</text>
+<path d='M 2530 1240 L 2750 1240' stroke='#999' fill='none'/><text x='2640' y='1240' fill='#a00'>20</text>
+<path d='M 2750 1240 L 1870 515' stroke='#999' fill='none'/><text x='2310' y='877.5' fill='#a00'>25</text>
+<path d='M 2530 1240 L 1870 805' stroke='#999' fill='none'/><text x='2200' y='1022.5' fill='#a00'>30</text>
+<path d='M 2090 1240 L 1650 1095' stroke='#999' fill='none'/><text x='1870' y='1167.5' fill='#a00'>30</text>
+<path d='M 1210 805 L 1870 1385' stroke='#999' fill='none'/><text x='1540' y='1095' fill='#a00'>25</text>
+<path d='M 1870 1385 L 2090 1385' stroke='#999' fill='none'/><text x='1980' y='1385' fill='#a00'>20</text>
+<path d='M 2090 1385 L 2310 1240' stroke='#999' fill='none'/><text x='2200' y='1312.5' fill='#a00'>25</text>
+<rect x='15' y='55' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='18' y='75' font-size='14'>临时营地</text><text x='18' y='96' font-size='12'>camp</text>
+<rect x='235' y='55' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='238' y='75' font-size='14'>农野荒地</text><text x='238' y='96' font-size='12'>field</text>
+<rect x='15' y='200' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='18' y='220' font-size='14'>溪流浅滩</text><text x='18' y='241' font-size='12'>stream</text>
+<rect x='455' y='55' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='458' y='75' font-size='14'>树林边缘</text><text x='458' y='96' font-size='12'>woods</text>
+<rect x='235' y='200' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='238' y='220' font-size='14'>废弃村庄</text><text x='238' y='241' font-size='12'>village</text>
+<rect x='455' y='200' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='458' y='220' font-size='14'>五金店</text><text x='458' y='241' font-size='12'>hardware</text>
+<rect x='15' y='345' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='18' y='365' font-size='14'>诊所</text><text x='18' y='386' font-size='12'>clinic</text>
+<rect x='675' y='200' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='678' y='220' font-size='14'>废料场</text><text x='678' y='241' font-size='12'>scrapyard</text>
+<rect x='455' y='345' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='458' y='365' font-size='14'>旧公路</text><text x='458' y='386' font-size='12'>m01_road</text>
+<rect x='675' y='345' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='678' y='365' font-size='14'>检查哨</text><text x='678' y='386' font-size='12'>m02_checkpoint</text>
+<rect x='895' y='345' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='898' y='365' font-size='14'>营门</text><text x='898' y='386' font-size='12'>h01_gate</text>
+<rect x='1115' y='345' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1118' y='365' font-size='14'>营区广场</text><text x='1118' y='386' font-size='12'>h02_square</text>
+<rect x='1115' y='200' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1118' y='220' font-size='14'>营区工坊</text><text x='1118' y='241' font-size='12'>h03_workshop</text>
+<rect x='895' y='200' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='898' y='220' font-size='14'>营区医务室</text><text x='898' y='241' font-size='12'>h04_infirmary</text>
+<rect x='895' y='490' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='898' y='510' font-size='14'>营外安全屋地块</text><text x='898' y='531' font-size='12'>h05_homestead</text>
+<rect x='1115' y='490' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1118' y='510' font-size='14'>近郊农场</text><text x='1118' y='531' font-size='12'>w01_farm</text>
+<rect x='675' y='490' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='678' y='510' font-size='14'>林间营址</text><text x='678' y='531' font-size='12'>w02_forest</text>
+<rect x='455' y='635' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='458' y='655' font-size='14'>采石坡</text><text x='458' y='676' font-size='12'>w03_quarry</text>
+<rect x='1115' y='635' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1118' y='655' font-size='14'>荒野岔路</text><text x='1118' y='676' font-size='12'>w04_crossroads</text>
+<rect x='895' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='898' y='800' font-size='14'>芦苇湿地</text><text x='898' y='821' font-size='12'>w05_marsh</text>
+<rect x='675' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='678' y='800' font-size='14'>断桥河滩</text><text x='678' y='821' font-size='12'>w06_bridge</text>
+<rect x='455' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='458' y='800' font-size='14'>山脊哨道</text><text x='458' y='821' font-size='12'>w07_ridge</text>
+<rect x='1115' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1118' y='800' font-size='14'>旧水库</text><text x='1118' y='821' font-size='12'>w08_reservoir</text>
+<rect x='235' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='238' y='800' font-size='14'>深林伐木场</text><text x='238' y='821' font-size='12'>w09_logging</text>
+<rect x='235' y='925' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='238' y='945' font-size='14'>山顶瞭望台</text><text x='238' y='966' font-size='12'>w10_watchtower</text>
+<rect x='1335' y='490' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1338' y='510' font-size='14'>铁路货场</text><text x='1338' y='531' font-size='12'>a01_yard</text>
+<rect x='1335' y='635' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1338' y='655' font-size='14'>旧泵站</text><text x='1338' y='676' font-size='12'>a02_pump</text>
+<rect x='1555' y='635' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1558' y='655' font-size='14'>铸造厂外</text><text x='1558' y='676' font-size='12'>a03_foundry</text>
+<rect x='1335' y='200' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1338' y='220' font-size='14'>安置学校</text><text x='1338' y='241' font-size='12'>b01_school</text>
+<rect x='1555' y='200' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1558' y='220' font-size='14'>急救转运站</text><text x='1558' y='241' font-size='12'>b02_station</text>
+<rect x='1775' y='200' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1778' y='220' font-size='14'>医院外院</text><text x='1778' y='241' font-size='12'>b03_hospital</text>
+<rect x='1335' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1338' y='800' font-size='14'>朝圣路</text><text x='1338' y='821' font-size='12'>c01_pilgrim</text>
+<rect x='1555' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1558' y='800' font-size='14'>教会接待庭</text><text x='1558' y='821' font-size='12'>c02_church</text>
+<rect x='1775' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1778' y='800' font-size='14'>教堂墓园</text><text x='1778' y='821' font-size='12'>c03_crypt</text>
+<rect x='455' y='925' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='458' y='945' font-size='14'>灰塔观测站</text><text x='458' y='966' font-size='12'>r01_observatory</text>
+<rect x='675' y='925' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='678' y='945' font-size='14'>科学院外院</text><text x='678' y='966' font-size='12'>r02_academy</text>
+<rect x='895' y='925' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='898' y='945' font-size='14'>封存实验楼</text><text x='898' y='966' font-size='12'>r03_lab</text>
+<rect x='1775' y='490' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1778' y='510' font-size='14'>旧城门</text><text x='1778' y='531' font-size='12'>o01_oldgate</text>
+<rect x='1995' y='490' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1998' y='510' font-size='14'>旧城商圈</text><text x='1998' y='531' font-size='12'>o02_market</text>
+<rect x='1995' y='635' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1998' y='655' font-size='14'>警备仓外</text><text x='1998' y='676' font-size='12'>o03_police</text>
+<rect x='1995' y='345' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1998' y='365' font-size='14'>旧城车站</text><text x='1998' y='386' font-size='12'>o04_transit</text>
+<rect x='1335' y='345' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1338' y='365' font-size='14'>鉴定所</text><text x='1338' y='386' font-size='12'>h05_appraisal</text>
+<rect x='1115' y='55' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1118' y='75' font-size='14'>收容所</text><text x='1118' y='96' font-size='12'>h06_shelter</text>
+<rect x='1555' y='925' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1558' y='945' font-size='14'>施济处</text><text x='1558' y='966' font-size='12'>c04_alms</text>
+<rect x='1775' y='925' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1778' y='945' font-size='14'>训诫堂</text><text x='1778' y='966' font-size='12'>c05_admonition</text>
+<rect x='1995' y='925' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1998' y='945' font-size='14'>典藏室</text><text x='1998' y='966' font-size='12'>c06_archive</text>
+<rect x='1995' y='780' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1998' y='800' font-size='14'>圣堂</text><text x='1998' y='821' font-size='12'>c07_sanctuary</text>
+<rect x='15' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='18' y='1090' font-size='14'>接待处</text><text x='18' y='1111' font-size='12'>r04_reception</text>
+<rect x='235' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='238' y='1090' font-size='14'>检测室</text><text x='238' y='1111' font-size='12'>r05_testing</text>
+<rect x='455' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='458' y='1090' font-size='14'>档案室</text><text x='458' y='1111' font-size='12'>r06_archive</text>
+<rect x='675' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='678' y='1090' font-size='14'>试制工坊</text><text x='678' y='1111' font-size='12'>r07_workshop</text>
+<rect x='895' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='898' y='1090' font-size='14'>隔离观察区</text><text x='898' y='1111' font-size='12'>r08_observation</text>
+<rect x='1335' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1338' y='1090' font-size='14'>荒弃果园</text><text x='1338' y='1111' font-size='12'>w11_orchard</text>
+<rect x='1555' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1558' y='1090' font-size='14'>灌溉渠岸</text><text x='1558' y='1111' font-size='12'>w12_canal</text>
+<rect x='1775' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1778' y='1090' font-size='14'>旧磨坊</text><text x='1778' y='1111' font-size='12'>w13_mill</text>
+<rect x='1995' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1998' y='1090' font-size='14'>墓地荒径</text><text x='1998' y='1111' font-size='12'>w14_cemeteryroad</text>
+<rect x='2215' y='1070' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='2218' y='1090' font-size='14'>祈祷林</text><text x='2218' y='1111' font-size='12'>w15_shrinewoods</text>
+<rect x='235' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='238' y='1235' font-size='14'>山间服务站</text><text x='238' y='1256' font-size='12'>w16_service</text>
+<rect x='455' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='458' y='1235' font-size='14'>盘山公路</text><text x='458' y='1256' font-size='12'>w17_switchback</text>
+<rect x='675' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='678' y='1235' font-size='14'>塌隧道外</text><text x='678' y='1256' font-size='12'>w18_tunnel</text>
+<rect x='895' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='898' y='1235' font-size='14'>测绘营址</text><text x='898' y='1256' font-size='12'>w19_survey</text>
+<rect x='1115' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1118' y='1235' font-size='14'>高压走廊</text><text x='1118' y='1256' font-size='12'>w20_powercut</text>
+<rect x='15' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='18' y='1380' font-size='14'>深针叶林</text><text x='18' y='1401' font-size='12'>w21_pine</text>
+<rect x='235' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='238' y='1380' font-size='14'>陡壁沟谷</text><text x='238' y='1401' font-size='12'>w22_ravine</text>
+<rect x='455' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='458' y='1380' font-size='14'>猎人旧营</text><text x='458' y='1401' font-size='12'>w23_hunting</text>
+<rect x='675' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='678' y='1380' font-size='14'>岩洞入口</text><text x='678' y='1401' font-size='12'>w24_cave</text>
+<rect x='895' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='898' y='1380' font-size='14'>黑水湿地</text><text x='898' y='1401' font-size='12'>w25_wetland</text>
+<rect x='1115' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1118' y='1380' font-size='14'>湖心陆洲</text><text x='1118' y='1401' font-size='12'>w26_island</text>
+<rect x='1335' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1338' y='1380' font-size='14'>废中继营</text><text x='1338' y='1401' font-size='12'>w27_relay</text>
+<rect x='1555' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1558' y='1380' font-size='14'>风蚀高地</text><text x='1558' y='1401' font-size='12'>w28_highland</text>
+<rect x='1995' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1998' y='1235' font-size='14'>河道弯口</text><text x='1998' y='1256' font-size='12'>w29_riverbend</text>
+<rect x='2215' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='2218' y='1235' font-size='14'>货车休息区</text><text x='2218' y='1256' font-size='12'>w30_truckstop</text>
+<rect x='2435' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='2438' y='1235' font-size='14'>城郊棚户</text><text x='2438' y='1256' font-size='12'>w31_suburb</text>
+<rect x='2655' y='1215' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='2658' y='1235' font-size='14'>铁路线切口</text><text x='2658' y='1256' font-size='12'>w32_railcut</text>
+<rect x='1775' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1778' y='1380' font-size='14'>荒废水厂</text><text x='1778' y='1401' font-size='12'>w33_waterworks</text>
+<rect x='1995' y='1360' width='195' height='60' fill='#e5f1ff' stroke='#678'/><text x='1998' y='1380' font-size='14'>应急仓外</text><text x='1998' y='1401' font-size='12'>w34_depot</text>
+</svg>

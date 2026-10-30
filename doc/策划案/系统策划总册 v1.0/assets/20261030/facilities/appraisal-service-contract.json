@@ -1,0 +1,121 @@
+{
+  "status": "用户已批准可调初值直接实装；未实现、未实机验证",
+  "serviceId": "appraisal_white_v1",
+  "locationId": "h05_appraisal",
+  "parentCity": "h02_square",
+  "services": {
+    "information": {
+      "worldMinutes": 0
+    },
+    "appraise": {
+      "worldMinutes": 10,
+      "mode": "wait",
+      "consume": {
+        "fiber": 1
+      },
+      "sampleConsumed": false
+    },
+    "trade": {
+      "worldMinutes": 5,
+      "mode": "wait",
+      "consume": {
+        "active_substance_white_unidentified": 1
+      },
+      "dailyPartyQuota": 2,
+      "outputOwner": "current_service_zone_ground"
+    }
+  },
+  "offers": [
+    {
+      "id": "white_for_cloth",
+      "itemId": "cloth",
+      "inclusiveQuantityBounds": [
+        1,
+        3
+      ],
+      "probabilityPerQuantity": "1/3",
+      "inclusiveWeightGrams": [
+        100,
+        300
+      ]
+    },
+    {
+      "id": "white_for_scrap",
+      "itemId": "scrap",
+      "inclusiveQuantityBounds": [
+        1,
+        2
+      ],
+      "probabilityPerQuantity": "1/2",
+      "inclusiveWeightGrams": [
+        500,
+        1000
+      ]
+    },
+    {
+      "id": "white_for_water",
+      "itemId": "clean_water",
+      "inclusiveQuantityBounds": [
+        1,
+        2
+      ],
+      "probabilityPerQuantity": "1/2",
+      "inclusiveWeightGrams": [
+        500,
+        1000
+      ],
+      "mlPerUnit": 500
+    }
+  ],
+  "dailyQuotaKey": [
+    "partyId",
+    "serviceId",
+    "startWorldDay"
+  ],
+  "tutorialTradeForbidden": true,
+  "ordinaryFusionEffect": "none",
+  "newRandomTraitsEnabled": false,
+  "quoteVersion": "white_barter_v2",
+  "quoteGeneration": {
+    "mode": "independent_uniform_integer_each_offer",
+    "seedFields": [
+      "campaignId",
+      "serviceId",
+      "worldDay",
+      "offerId",
+      "quoteVersion"
+    ],
+    "snapshotKey": [
+      "campaignId",
+      "serviceId",
+      "worldDay",
+      "quoteVersion"
+    ],
+    "lockMoment": "first_safe_service_visit_of_world_day_before_confirmation",
+    "persistFullOfferTable": true,
+    "rerollOnWindowCancelReloadActorOrNpcChange": false,
+    "refresh": "next_world_midnight_then_next_safe_service_visit",
+    "quality": "unchanged_existing_ordinary_item_definition",
+    "confirmShows": [
+      "exactOutputQuantity",
+      "ordinaryQuality",
+      "exactWeight",
+      "outputGroundLocation",
+      "quoteDay",
+      "nextWorldMidnight"
+    ]
+  },
+  "transactionLocks": [
+    "serviceTxnId",
+    "startDay",
+    "quoteDay",
+    "quoteVersion",
+    "offerId",
+    "exactOutput",
+    "sampleInstanceIdAndPortion",
+    "sourceOwner",
+    "quotaReservation"
+  ],
+  "crossMidnight": "finish_against_start_day_exact_quote_and_quota; next_day_snapshot_must_not_reprice_old_transaction",
+  "unknownQuoteVersion": "safely_cancel_preserve_original_sample_and_owner_no_consumption"
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2100" height="1500" viewBox="0 0 2100 1500"><rect width="2100" height="1500" fill="white"/>
+<path d='M 1465 1050 L 1465 1240' stroke='#999' fill='none'/><text x='1465' y='1145' fill='#a00'>5</text>
+<path d='M 1465 1050 L 1660 1240' stroke='#999' fill='none'/><text x='1562.5' y='1145' fill='#a00'>5</text>
+<path d='M 1660 1240 L 1855 1240' stroke='#999' fill='none'/><text x='1757.5' y='1240' fill='#a00'>5</text>
+<path d='M 1855 1240 L 1855 1050' stroke='#999' fill='none'/><text x='1855' y='1145' fill='#a00'>5</text>
+<path d='M 1855 1050 L 1465 1050' stroke='#999' fill='none'/><text x='1660' y='1050' fill='#a00'>5</text>
+<rect x='1385' y='1025' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='1388' y='1046' font-size='14'>新生教会外庭</text><text x='1388' y='1067' font-size='12'>c02_church</text>
+<rect x='1385' y='1215' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='1388' y='1236' font-size='14'>施济处</text><text x='1388' y='1257' font-size='12'>c04_alms</text>
+<rect x='1580' y='1215' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='1583' y='1236' font-size='14'>训诫堂</text><text x='1583' y='1257' font-size='12'>c05_admonition</text>
+<rect x='1775' y='1215' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='1778' y='1236' font-size='14'>典藏室</text><text x='1778' y='1257' font-size='12'>c06_archive</text>
+<rect x='1775' y='1025' width='175' height='62' fill='#e4f1ff' stroke='#567'/><text x='1778' y='1046' font-size='14'>圣堂</text><text x='1778' y='1067' font-size='12'>c07_sanctuary</text>
+</svg>
