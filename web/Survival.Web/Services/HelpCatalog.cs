@@ -385,8 +385,9 @@ public static class HelpCatalog
                     Id = "skills", Title = "熟练度与经验", Icon = "stone_knife",
                     Paragraphs = (e, s) => new[]
                     {
-                        $"共有{e.Config.Skills.Count}项熟练度（{string.Join("、", e.Config.Skills.Select(k => k.Name))}），都从1级开始，没有等级上限。对应的行动完成或攻击命中时获得经验。",
-                        "武器熟练度提高伤害与命中能力、减少招式体力；部分招式需要达到一定等级才能用。制造熟练度让制作更快。",
+                        $"共有{e.Config.Skills.Count}门熟练度（{string.Join("、", e.Config.Skills.Select(k => k.Name))}），都从1级开始，最高10级；升到下一级要50×(当前等级+1)经验，1级到10级共{e.TotalXpToCap("crafting")}经验，到10级后这一门不再获得经验。",
+                        $"经验来源：攻击命中每个目标+{e.Config.Xp.DamagingAttackCommand}（同一个敌人对同一门最多{e.Config.Xp.MaxHitsPerEncounterEnemySkill}次）；有效医疗+{e.Config.Xp.Medical}；制作、建造、维护完成按配方时间给制造经验；采集或搜集每成功一次+{e.Config.Xp.GatherSubmit}（同一资源点每天最多{e.Config.Xp.GatherDailyPerNode}次计经验，箱子练搜集，其余练采集）；每走完一段路+{e.Config.Xp.TravelEdge}行旅（同一方向每天一次）。预估、取消不给经验。",
+                        "武器熟练度提高伤害与命中能力、减少招式体力；部分招式需要达到一定等级才能用。制造熟练度让制作更快。每门在1/3/5/7/10级各有一个专属技能：制造、采集、搜集、烹饪、行旅五门的是求生被动（如采集7级工作量×0.9），达到等级自动生效，在人物页“熟练度”里列出；战斗门类的技能在四对四战斗上线后开放。",
                     },
                 },
                 new HelpEntry
@@ -564,7 +565,7 @@ public static class HelpCatalog
                     Paragraphs = (e, s) => new[]
                     {
                         $"敌人站在{string.Join("、", e.Config.Scope.Slots)}位置：F开头是前排，B开头是后排。屏幕上前排靠近中线、后排更靠右，只是为了看清楚，不是新的规则。",
-                        "前排还有敌人时，只打前排的武器（拳、刀斧、撬棍等）够不到后排：选好技能后够不到的敌人不亮起，悬停写明原因；能打后排的武器在武器页签悬停和右栏写明（矛打后排伤害打折）。前排清空后，轮末后排会补上前排。",
+                        "前排还有敌人时，只打前排的武器（拳、刀剑、斧、撬棍等）够不到后排：选好技能后够不到的敌人不亮起，悬停写明原因；能打后排的武器在武器页签悬停和右栏写明（矛打后排伤害打折）。前排清空后，轮末后排会补上前排。",
                         "场上只剩一个敌人时会自动选中它查看，但不会自动攻击，仍要先选技能再点它。",
                     },
                 },

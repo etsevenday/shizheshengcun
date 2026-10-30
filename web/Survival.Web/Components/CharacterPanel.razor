@@ -25,6 +25,7 @@ else
     var body = s.Body;
     var skills = e.SkillViews(s);
     var top = skills.OrderByDescending(x => x.Level).ThenByDescending(x => x.Xp).FirstOrDefault();
+    var passives = e.SurvivalPassiveLines(s.Player);
     <div class="detail-scroll char-panel" data-wheel="y">
         @* 读档升级说明、被拒绝操作的原因等提示：默认人物页也要看得到 *@
         @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
@@ -110,19 +111,30 @@ else
         <section class="char-fold @(skillsOpen ? "open" : "")" aria-label="熟练度" data-fold="skills">
             <button type="button" class="fold-head" aria-expanded="@skillsOpen" disabled="@foldLocked" title="@(lockWhy ?? (skillsOpen ? "收起熟练度（记住你的选择）" : "展开熟练度（记住你的选择）"))" @onclick="() => G.ToggleFold(UiFoldPrefs.Skills)">
                 <span class="fold-name">熟练度</span>
-                <span class="fold-sum">@(skills.Count)项@(top != null && top.Level > 0 ? $" · 最高{top.Name}{top.Level}级" : " · 均为0级")</span>
+                <span class="fold-sum">@(skills.Count)门@(top != null && top.Level > 1 ? $" · 最高{top.Name}{top.Level}级" : " · 均为1级")</span>
                 <span class="fold-arrow" aria-hidden="true">@(skillsOpen ? "▾" : "▸")</span>
             </button>
             @if (skillsOpen)
             {
+                @* B5（A06 §1/§4、开发计划 v0.9 B5 H10）：十五门按战斗/医疗/求生分组，等级/上限、本级经验或“满级”；悬停一门看它的 5 个专属技能。
+                   完整 75 节点的成长页在 B10。 *@
                 <div class="skill-list">
-                    @foreach (var sk in skills)
+                    @foreach (var grp in new[] { ("combat", "战斗"), ("both", "医疗（战内外）"), ("survival", "求生") })
                     {
-                        <div class="skill-row">
-                            <b>@sk.Name</b><span>@(sk.Level)级</span>
-                            <div class="track thin"><i style="width:@Ui.Bar(sk.Xp, sk.NextXp)%"></i></div>
-                            <small class="muted">经验@(sk.Xp)/@(sk.NextXp)</small>
-                        </div>
+                        <div class="skill-group muted">@grp.Item2</div>
+                        @foreach (var sk in skills.Where(x => x.Category == grp.Item1))
+                        {
+                            <div class="skill-row" data-skill="@sk.Id" title="@SkillNodesTip(sk)">
+                                <b>@sk.Name</b><span>@(sk.Level)/@(sk.Cap)级</span>
+                                <div class="track thin"><i style="width:@(sk.Maxed ? 100 : Ui.Bar(sk.Xp, sk.NextXp))%"></i></div>
+                                <small class="muted">@(sk.Maxed ? "满级，不再获得经验" : $"经验{sk.Xp}/{sk.NextXp}")</small>
+                            </div>
+                        }
+                    }
+                    <div class="skill-group muted">已获得的求生被动（@(passives.Count)个）</div>
+                    @foreach (var line in passives)
+                    {
+                        <div class="skill-passive" data-passive>@line</div>
                     }
                 </div>
             }
@@ -154,6 +166,10 @@ else
 }
 
 @code {
+    /// <summary>一门熟练度的 5 个专属技能（悬停提示）：“1级 斩击：伤害×1.00（已解锁）”。</summary>
+    private static string SkillNodesTip(SkillView sk) =>
+        string.Join("\n", sk.Nodes.Select(n => $"{n.Level}级 {n.Name}：{n.EffectText}（{(sk.Level >= n.Level ? (n.IsSurvival ? GameEngine.PassiveStatusText(n) : "已解锁，四对四战斗上线后可用") : "未解锁")}）"));
+
     private async Task Repair(ActionRequest r)
     {
         G.Hover(null);

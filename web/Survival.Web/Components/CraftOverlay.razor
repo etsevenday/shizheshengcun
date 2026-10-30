@@ -251,14 +251,14 @@ else
         var sh = c.HourlyRates["sleep_sheltered"];
         return r.Id switch
         {
-            "knife" => $"纤维采集耗时从20分钟降到10分钟；也是刀斧类武器。{Range("stone_knife")}。",
-            "axe" => $"木材采集每次产出翻倍；也是刀斧类武器。{Range("hatchet")}。",
+            "knife" => $"纤维采集耗时从20分钟降到10分钟；也是刀剑类武器（练刀剑熟练度）。{Range("stone_knife")}。",
+            "axe" => $"木材采集每次产出翻倍；也是斧类武器（练斧熟练度）。{Range("hatchet")}。",
             "bandage" => $"止血；健康+1×(1+0.02×医疗等级)，{c.ItemActions.BandageCooldownMinutes}分钟冷却；已感染时还能压低病毒。",
             "shelter" => $"营地可遮蔽睡眠（清醒{Ui.SignedT(sh.Wakefulness)}、体力{Ui.SignedT(sh.Energy)}、精神{Ui.SignedT(sh.Morale)}/小时），休息额外恢复精神。",
             "bed" => $"营地睡眠体力每小时额外{Ui.SignedT(c.FacilityEffects.BedExtraSleepEnergyPerHour)}。需要先建成遮蔽棚。",
             "repair_selected_tool" => $"选定一件随身、穿戴中或当前地面的工具或装备，恢复它自身最大耐久的{Ui.Pct(G.E.RepairFraction(G.S, r))}{(G.E.RepairFraction(G.S, r) > r.RestoreOwnDurabilityMaxFraction + 1e-9 ? "（穿着维护手册，替代" + Ui.Pct(r.RestoreOwnDurabilityMaxFraction) + "）" : "")}，不超过上限、不重抽最大耐久，品质与词条不变；满耐久不能维护。",
             "make_wooden_spear" => $"矛类武器，可打后排（后排伤害×0.75）。{Range("wooden_spear")}。",
-            "make_wooden_bow" => $"弓箭类武器，全排；每射直接消耗随身箭矢1。{Range("wooden_bow")}。",
+            "make_wooden_bow" => $"弓弩类武器，全排；每射直接消耗随身箭矢1。{Range("wooden_bow")}。",
             "make_arrows" => "木弓的箭矢，首版不回收。",
             "make_antiviral_cure" => "立即清除病毒感染。需医疗≥15、制造≥12，在营地制作，并指定一口取下并清空的锅（不消耗）；净水作为原料直接消耗，不自动装锅。",
             _ => "",

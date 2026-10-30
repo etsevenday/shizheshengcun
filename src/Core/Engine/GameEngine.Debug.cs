@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Survival.Core.State;
@@ -127,6 +128,18 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 开发入口（B4）：在当前地面放一组指定品质（white/green/blue）的装备，词条按兼容池照常抽；放地面不占随身卡位。返回给玩家看的说明。
         /// </summary>
+        /// <summary>开发入口（B5）：把一组熟练度设为某等级、经验 0（survival=求生五门，否则全部十五门）。不经过 GainXp、不发事件。</summary>
+        public string DebugSetSkillLevels(GameState s, int level, bool survivalOnly)
+        {
+            var ids = Config.Skills.Where(k => !survivalOnly || k.Category == "survival").Select(k => k.Id).ToList();
+            foreach (var id in ids)
+            {
+                var lv = Math.Max(1, Math.Min(SkillCap(id), level));
+                s.Skills[id] = new SkillState { Level = lv, Xp = 0 };
+            }
+            return $"{(survivalOnly ? "求生五门（制造、采集、搜集、烹饪、行旅）" : "全部十五门")}熟练度设为{level}级（开发用）。";
+        }
+
         public string DebugGiveEquipmentSet(GameState s, string quality)
         {
             var made = DevEquipmentSet.Select(id => DebugCreateEquipment(s, id, quality, s.CurrentLocation)).ToList();

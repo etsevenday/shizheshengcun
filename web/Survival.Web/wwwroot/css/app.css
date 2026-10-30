@@ -871,6 +871,8 @@ kbd { font-size: 14px; }
 .skill-list { display: flex; flex-direction: column; gap: 10px; }
 .skill-list .skill-row { font-size: 15px; }
 .skill-list .skill-row small { font-size: 14px; text-align: left; }
+.skill-list .skill-group { font-size: 13px; margin-top: 4px; border-bottom: 1px solid rgba(255,255,255,.12); padding-bottom: 2px; }
+.skill-list .skill-passive { font-size: 13px; line-height: 1.4; }
 
 /* 顶栏浏览层：生存目标、生存提示、系统说明（S14 §12.3、§13.3） */
 .sub-panel .sub-body[data-wheel="y"] { overflow-y: auto; }

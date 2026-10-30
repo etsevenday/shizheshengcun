@@ -398,4 +398,21 @@ public class B5SkillTests : BattleTestBase
         Assert.That(lines.Single(x => x.StartsWith("制造1级")), Does.Contain("待策划确认"));
         Assert.That(Cfg.SkillNodes.Count(n => n.IsSurvival && n.IsLive), Is.EqualTo(11));
     }
+
+    // ───────────── M125：人物页与开发入口（H10） ─────────────
+
+    [Test]
+    public void H10_SkillViews_Groups_DevSetLevels()
+    {
+        var s = New();
+        var v = E.SkillViews(s);
+        Assert.That((v.Count(x => x.Category == "combat"), v.Count(x => x.Category == "both"), v.Count(x => x.Category == "survival")), Is.EqualTo((9, 1, 5)));
+        Assert.That(v.All(x => x.Nodes.Count == 5 && x.Cap == 10 && x.NextXp == 100), Is.True);
+        Assert.That(E.DebugSetSkillLevels(s, 10, true), Does.Contain("求生五门"));
+        Assert.That(s.Skills["athletics"].Level, Is.EqualTo(10));
+        Assert.That(s.Skills["blade"].Level, Is.EqualTo(1), "只改求生五门");
+        Assert.That(E.SurvivalPassiveLines(s.Player), Has.Count.EqualTo(25));
+        E.DebugSetSkillLevels(s, 1, false);
+        Assert.That(s.Skills.Values.All(x => x.Level == 1 && x.Xp == 0), Is.True);
+    }
 }
