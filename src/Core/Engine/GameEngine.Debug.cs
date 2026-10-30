@@ -142,7 +142,8 @@ namespace Survival.Core.Engine
         {
             var ids = Config.Items.Where(i => i.Kind == kind && !i.IsEquipment && i.Desc.Contains("本版只有物品定义")).Select(i => i.Id).ToList();
             foreach (var id in ids) CreateItems(s, id, 1, s.CurrentLocation);
-            var text = $"开发：新物品（{kind}）{ids.Count}种各1份放在{LocName(s.CurrentLocation)}地面";
+            var name = kind switch { "material" => "材料", "food" => "食品", "medical" => "医疗", _ => kind };
+            var text = $"开发：新物品（{name}）{ids.Count}种各1份放在{LocName(s.CurrentLocation)}地面";
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }

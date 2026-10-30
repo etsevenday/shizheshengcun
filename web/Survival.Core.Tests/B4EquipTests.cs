@@ -316,7 +316,8 @@ public class B4EquipTests : BattleTestBase
         var c = New();
         Wear(c, "craft_coat", EquipSlots.Top, "white", "craftsman");
         Assert.That(E.GearWorkFactor(c, P0, ActionType.Craft, "knife"), Is.EqualTo(0.9 * 0.97).Within(1e-12));
-        Assert.That(E.GearWorkFactor(c, P0, ActionType.Repair, "repair_selected_tool"), Is.EqualTo(1), "维护不是制造/建造");
+        Assert.That(E.GearWorkFactor(c, P0, ActionType.Repair, "repair_selected_tool"), Is.EqualTo(0.9 * 0.97).Within(1e-12), "维修、拆解按制造类工作（M120，待确认 Q52）");
+        Assert.That(E.GearWorkFactor(c, P0, ActionType.Salvage, "salvage_equipment"), Is.EqualTo(0.9 * 0.97).Within(1e-12));
         Assert.That(E.GearWorkFactor(c, P0, ActionType.Travel, null), Is.EqualTo(1));
     }
 
@@ -577,7 +578,10 @@ public class B4EquipTests : BattleTestBase
         Assert.That(lines["拆解"], Does.StartWith("废金属×3"));
         var shirt = E.DebugCreateEquipment(s, "work_shirt", "white", ItemInstance.Carried);
         var sl = E.EquipDetailLines(s, shirt).ToDictionary(x => x.Label, x => x.Value);
-        Assert.That(sl["固定效果"], Does.Contain("（生效中）"));
+        Assert.That(sl["固定效果"], Does.Contain("（穿戴后生效）"), "没穿不写生效中（M120）");
+        Assert.That(E.Equip(s, P0, shirt.InstanceId, EquipSlots.Top).Ok, Is.True);
+        Assert.That(E.EquipDetailLines(s, shirt).Single(x => x.Label == "固定效果").Value, Does.Contain("（生效中）"));
+        Assert.That(E.AffixText("craftsman", worn: false), Does.Contain("穿戴后生效"));
         var ring = E.DebugCreateEquipment(s, "steady_ring", "white", ItemInstance.Carried);
         Assert.That(E.EquipDetailLines(s, ring).Single(x => x.Label == "固定效果").Value, Does.Contain("当前只显示"));
         Assert.That(E.EquipDetailLines(s, ring).Single(x => x.Label == "拆解").Value, Does.Contain("待策划确认"));
@@ -616,8 +620,46 @@ public class B4EquipTests : BattleTestBase
             Assert.That(E.SlotsFor(id), Is.Not.Empty, id);
         }
         Assert.That(GameEngine.DevEquipmentSet.Select(id => E.SlotsFor(id)[0]).Distinct().Count(), Is.EqualTo(6), "覆盖武器与五个非武器槽");
-        Assert.That(E.DebugGiveNewItems(s, "material"), Does.Contain("新物品（material）"));
+        Assert.That(E.DebugGiveNewItems(s, "material"), Does.Contain("新物品（材料）"));
         Assert.That(s.Items.Any(i => i.ItemId == "steel" && i.Owner == s.CurrentLocation), Is.True);
+    }
+
+    // ───────────── M120：B4 线上试玩第 1 轮修复 ─────────────
+
+    [Test]
+    public void M120_RepairPreview_ShowsBeforeAfter_WithManual()
+    {
+        var s = New();
+        var vest = E.DebugCreateEquipment(s, "leather_armor", "white", ItemInstance.EquipOwner(P0, EquipSlots.Armor));
+        vest.Durability = 20;
+        var max = vest.MaxDurability!.Value;
+        E.DebugGive(s, "scrap", 1);
+        E.DebugGive(s, "parts", 1);
+        Wear(s, "repair_manual", EquipSlots.SurvivalAccessory);
+        var p = E.Preview(s, new ActionRequest { Type = ActionType.Craft, TargetId = "repair_selected_tool", InstanceId = vest.InstanceId });
+        Assert.That(p.Ok, Is.True, p.Reason);
+        Assert.That(p.Notes, Has.Some.Contains($"耐久20.00→{Fmt.N(Math.Min(max, 20 + max * 0.25))}").And.Some.Contains("25%"));
+    }
+
+    [Test]
+    public void M120_GatherPreview_HasGearRateLine()
+    {
+        var s = New();
+        Wear(s, "work_trousers", EquipSlots.Bottom);
+        Assert.That(E.GearRateNote(s, ActionType.Gather, "roots"), Is.EqualTo("装备：采集负体力×0.95（只缩减消耗，下限×0.75）"));
+        Assert.That(E.GearRateNote(s, ActionType.Craft, "knife"), Is.Null);
+    }
+
+    [Test]
+    public void M120_NewItemDesc_ReadableChinese()
+    {
+        string D(string id) => Cfg.Items.Single(i => i.Id == id).Desc;
+        Assert.That(D("root_porridge"), Does.StartWith("策划用途：饱食+38、水分+10、精神+2。"));
+        Assert.That(D("dried_meat"), Does.Contain("水分−5"));
+        Assert.That(D("first_aid_pack"), Does.Contain("止血，健康+2"));
+        Assert.That(D("antidiarrheal_powder"), Does.Contain("与口服补液共享6小时"));
+        foreach (var it in Cfg.Items.Where(i => i.Desc.Contains("本版只有物品定义")))
+            Assert.That(System.Text.RegularExpressions.Regex.IsMatch(it.Desc, "(?<![A-Za-z])[NWMHESIV][+−-]"), Is.False, it.Id);
     }
 
     [Test]

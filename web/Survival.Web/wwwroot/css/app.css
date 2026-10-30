@@ -1196,3 +1196,27 @@ kbd { font-size: 14px; }
 .eq-name.q-blue, .lines .q-blue b { color: #8cc4f0; }
 h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .equip-fx { font-size: 12px; }
+
+/* M120 试玩修复（B4 第 1 轮）：
+   ① 品质描边用 outline（不被 .wasteland 卡面 box-shadow 覆盖），米色卡面上的小标签改实底白字；
+   ② 装备区折叠标题横排、名称可折行完整显示；③ 卡片操作窗与菜单底部渐隐，提示下面还有内容。 */
+.card.item.q-green { outline: 3px solid #4f9a3a; outline-offset: -3px; }
+.card.item.q-blue { outline: 3px solid #2f74c0; outline-offset: -3px; }
+.card .qtag { font-size: 12px; padding: 2px 5px; border: 0; color: #fff; text-shadow: none; }
+.card .qtag.q-green { background: #3d7a2a; }
+.card .qtag.q-blue { background: #2363a8; }
+.detail-scroll h2 .qtag.q-blue, .detail-scroll h2 .qtag.q-green { color: #fff; border: 0; }
+.detail-scroll h2 .qtag.q-blue { background: #2363a8; }
+.detail-scroll h2 .qtag.q-green { background: #3d7a2a; }
+.char-fold .fold-name { flex: none; white-space: nowrap; }
+.equip-row .eq-item { white-space: normal; align-items: flex-start; }
+.equip-row .eq-name { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; line-height: 1.35; padding-top: 2px; }
+.equip-row .eq-ico { margin-top: 1px; }
+.equip-row .eq-kg { line-height: 24px; }
+.equip-row .eq-why { color: var(--warn); }
+.apop.card-pop::after, .menu-scroll::after {
+  content: ""; position: sticky; bottom: -10px; display: block; flex: none; height: 18px; margin-top: -2px;
+  background: linear-gradient(#17202400, #172024 85%); pointer-events: none;
+}
+.menu-scroll { max-height: calc(100vh - 110px); overflow-y: auto; }
+.menu-scroll::after { bottom: -18px; }

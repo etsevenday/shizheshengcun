@@ -265,8 +265,8 @@ namespace Survival.Core.Engine
                         if (plan != null) p.Outputs = plan.Outputs;
                         p.Notes.Add("完成后原装备移除，产物放在当前地点地面；拆解不给制造经验");
                     }
-                    else if (rc.IsRepair && plan?.Tool != null)
-                        p.Notes.Add($"恢复自身最大耐久的{Fmt.Pct(RepairFraction(s, rc))}（不超过上限、不重抽最大耐久，品质与词条不变）");
+                    else if (rc.IsRepair && plan?.Tool is ItemInstance rt && rt.Durability is double d0 && rt.MaxDurability is double dm)
+                        p.Notes.Add($"{ItemName(rt.ItemId)}#{rt.InstanceId}耐久{Fmt.N(d0)}→{Fmt.N(Math.Min(dm, d0 + dm * RepairFraction(s, rc)))}/{Fmt.N(dm)}：恢复自身最大耐久的{Fmt.Pct(RepairFraction(s, rc))}（不超过上限、不重抽最大耐久，品质与词条不变）");
                     if (!rc.IsSalvage) p.XpGains.Add($"制造经验+{CraftXp(rc.BaseMinutes) * batch}");
                     if (plan != null) p.Notes.AddRange(plan.Notes);
                     if (rc.NeedsFire)
@@ -368,6 +368,8 @@ namespace Survival.Core.Engine
             if (p.WorkMinutes <= 0) p.WorkMinutes = p.BaseMinutes;
             if (p.IsWork && System.Math.Abs(p.FactorAtStart - 1) > Eps)
                 p.Notes.Add($"当前工作倍率×{p.FactorAtStart:0.##}：{string.Join("，", p.FactorReasons)}");
+            // B4 试玩修复：装备的负小时率效果也写一行（与“装备工作量×…”同样写法），右栏状态预估已按它计算
+            if (p.IsWork && GearRateNote(s, r.Type, r.TargetId) is string gr) p.Notes.Add(gr);
         }
 
         /// <summary>即时效果超过该项上限的部分（两位小数）：“饱食溢出12.00”“健康溢出0.30”。健康用实际恢复量（含医疗加成）。</summary>

@@ -151,6 +151,8 @@ namespace Survival.Core.Engine
             {
                 case ActionType.Craft:
                 case ActionType.Build:
+                case ActionType.Repair:     // 维修、拆解按制造类工作（M120，待确认 Q52 选 A 的现状）
+                case ActionType.Salvage:
                     yield return "work.craft";
                     break;
                 case ActionType.Travel:
@@ -196,6 +198,28 @@ namespace Survival.Core.Engine
                     break;
             }
             return list;
+        }
+
+        private static readonly Dictionary<string, string> RateKeyNames = new Dictionary<string, string>
+        {
+            ["rate.gather.energy"] = "采集负体力", ["rate.move.energy"] = "移动负体力", ["rate.scavengeClear.energy"] = "搜集/清理负体力",
+            ["rate.nonCombat.satiety"] = "非战斗负饱食", ["rate.nonCombat.hydration"] = "非战斗负水分",
+        };
+
+        /// <summary>预估里的装备速率说明：“装备：采集负体力×0.95，非战斗负水分×0.97”（每项按 0.75 下限合成）；没有为 null。</summary>
+        public string? GearRateNote(GameState s, ActionType type, string? targetId)
+        {
+            var fx = EquipmentEffects(s);
+            var floor = Config.Equipment.Limits.NegativeRateFloor;
+            var parts = new List<string>();
+            foreach (var g in RateKeys(type, targetId).GroupBy(x => x.stat))
+            {
+                var f = g.Aggregate(1.0, (acc, x) => acc * fx.Factor(x.key));
+                if (f < floor) f = floor;
+                if (Math.Abs(f - 1) < 1e-12) continue;
+                parts.Add($"{RateKeyNames[g.Last().key]}×{Fmt.T(f)}");
+            }
+            return parts.Count == 0 ? null : $"装备：{string.Join("，", parts)}（只缩减消耗，下限×{Fmt.T(floor)}）";
         }
 
         /// <summary>
@@ -276,14 +300,14 @@ namespace Survival.Core.Engine
         /// <summary>效果是否已接入现行规则：combat.* 在 B6 前只显示；净水片配方未上线；其余求生效果生效。</summary>
         public static bool EffectLive(EquipEffectConfig e) => !e.Key.StartsWith("combat.") && e.Key != "work.purificationTablet";
 
-        /// <summary>“校准：命中能力+4（战斗类，四对四战斗上线后生效）”。</summary>
-        public string AffixText(string id)
+        /// <summary>“校准：命中能力+4（战斗类，四对四战斗上线后生效）”；求生类词条穿着时写“生效中”，没穿写“穿戴后生效”（M120）。</summary>
+        public string AffixText(string id, bool worn = true)
         {
             var a = Affix(id);
             if (a == null) return id;
             var live = a.Effects.Count > 0 && a.Effects.All(EffectLive);
             var note = a.Effects.Any(x => x.Key == "durability.max") ? "（生成时已计入最大耐久）"
-                : live ? "（生效中）" : "（战斗类，四对四战斗上线后生效，当前只显示）";
+                : live ? (worn ? "（生效中）" : "（穿戴后生效）") : "（战斗类，四对四战斗上线后生效，当前只显示）";
             return $"{a.Name}：{a.EffectText}{note}";
         }
 
@@ -295,7 +319,8 @@ namespace Survival.Core.Engine
             if (!cfg.IsEquipment) return list;
             var n = it.Affixes?.Count ?? 0;
             list.Add(("品质", $"{QualityName(it)}（附加词条{n}条）"));
-            foreach (var id in it.Affixes ?? new List<string>()) list.Add(("附加词条", AffixText(id)));
+            var worn = it.IsWorn;
+            foreach (var id in it.Affixes ?? new List<string>()) list.Add(("附加词条", AffixText(id, worn)));
             if (Weapon(it.ItemId) is WeaponConfig w)
             {
                 list.Add(("类型", $"{WeaponKinds.Name(w.WeaponKind)}·T{w.Tier}{(w.Speed != 0 ? $" · 速度修正{Fmt.SignedT(w.Speed)}" : " · 速度修正0")}"));
@@ -308,7 +333,8 @@ namespace Survival.Core.Engine
                 list.Add(("类型", $"{EquipSlots.Name(g.Slot)}·T{g.Tier}"));
                 var live = g.Effects.Where(EffectLive).ToList();
                 var shown = g.Effects.Count > live.Count || g.Effects.Count == 0;
-                list.Add(("固定效果", g.EffectText + (live.Count > 0 && !shown ? "（生效中）" : live.Count > 0 ? "（求生部分生效中；战斗部分在四对四战斗上线后生效）" : "（四对四战斗上线后生效，当前只显示）")));
+                var on = worn ? "生效中" : "穿戴后生效";
+                list.Add(("固定效果", g.EffectText + (live.Count > 0 && !shown ? $"（{on}）" : live.Count > 0 ? $"（求生部分{on}；战斗部分在四对四战斗上线后生效）" : "（四对四战斗上线后生效，当前只显示）")));
             }
             if (it.Durability.HasValue && it.Durability.Value <= 1e-9) list.Add(("状态", "耐久为0：效果暂停（仍占槽、计重），维护后恢复"));
             var sal = SalvageOutput(it);

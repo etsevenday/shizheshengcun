@@ -66,10 +66,17 @@ else
                 <div><span>成色</span><b>@Ui.Pct(GameEngine.Condition(inst))</b></div>
                 @if (cfg.DurabilityMaxRange is double[] range)
                 {
-                    <div><span>最大耐久区间</span><b>@Ui.T(range[0])—@Ui.T(range[1])（本件@(Ui.N(inst.MaxDurability.Value))，生成时抽定）</b></div>
+                    @* M120：带“耐用”词条的本件 = 区间内抽定 × 1.15，写明，避免看起来超出区间 *@
+                    var durableMul = (inst.Affixes ?? new List<string>()).Select(e.Affix).Where(a => a != null).SelectMany(a => a!.Effects).Where(x => x.Key == "durability.max").Select(x => x.Value).FirstOrDefault();
+                    <div><span>最大耐久区间</span><b>@Ui.T(range[0])—@Ui.T(range[1])@(durableMul > 0 ? $"，耐用×{Ui.T(durableMul)}后本件{Ui.N(inst.MaxDurability.Value)}（生成时抽定）" : $"（本件{Ui.N(inst.MaxDurability.Value)}，生成时抽定）")</b></div>
                 }
             }
-            @if (e.Weapon(cfg.Id) is WeaponConfig wp)
+            @if (e.Weapon(cfg.Id) is WeaponConfig { CanAttack: false } lw)
+            {
+                @* M120：盾、指挥、医疗器具技能未开放，攻击面板只作说明，不写成现在可用 *@
+                <div><span>攻击面板</span><b>技能上线后才能使用：伤害@(Ui.N(lw.DamageMin))—@(Ui.N(lw.DamageMax)) · 命中能力@(Ui.T(lw.AccuracyRating)) · 基础体力@(Ui.T(lw.EnergyCost))/次</b></div>
+            }
+            else if (e.Weapon(cfg.Id) is WeaponConfig wp)
             {
                 <div><span>武器</span><b>@(wp.SkillId == "" ? "（无对应熟练度）" : e.SkillName(wp.SkillId)) · 伤害@(Ui.N(wp.DamageMin))—@(Ui.N(wp.DamageMax)) · 命中能力@(Ui.T(wp.AccuracyRating)) · 暴击能力@(Ui.T(wp.CritRatingBase))</b></div>
                 <div><span>攻击范围</span><b>@(wp.Targets == "front" ? "只打前排" : wp.RearDamageFactor < 1 ? $"可打后排（后排伤害×{Ui.T(wp.RearDamageFactor)}）" : "前后排")@(wp.UsesMagazine ? $" · 弹仓{inst.LoadedAmmo}/{wp.MagazineCapacity}（{e.ItemName(wp.AmmoId!)}）" : wp.ConsumesLooseAmmo ? $" · 每射消耗随身{e.ItemName(wp.AmmoId!)}1" : "")</b></div>
@@ -131,7 +138,7 @@ else
         @if (batches.Count > 1 || cfg.ShelfLifeMinutes.HasValue)
         {
             <div>
-                <div class="tiny muted" style="margin-bottom:5px">@(group ? "批次（默认最早到期的有效批次；点选后食用、转移都用所选这一批）" : "批次（默认先用最早到期的有效批次）")</div>
+                <div class="tiny muted" style="margin-bottom:5px">@(group ? (GameEngine.CanSelfUse(cfg) ? "批次（默认最早到期的有效批次；点选后食用、转移都用所选这一批）" : "批次（默认最早到期的有效批次；点选后转移用所选这一批）") : "批次（默认先用最早到期的有效批次）")</div>
                 @foreach (var b in batches)
                 {
                     var key = b.Key;

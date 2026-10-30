@@ -73,6 +73,18 @@ else
                                     {
                                         <span class="eq-btns">
                                             <button type="button" class="eq-btn" disabled="@(why != null)" title="@(why ?? $"卸下{name}，放回随身（占一张物资卡）")" @onclick="() => G.Unequip(slot, false)">卸下</button>
+                                            @if (it.MaxDurability.HasValue && e.RepairRecipe is RecipeConfig rrc)
+                                            {
+                                                @* M120：穿戴中的装备直接在装备区维修（与卡下“维修”同一请求、预测与禁用原因） *@
+                                                var rreq = new ActionRequest { Type = ActionType.Craft, TargetId = rrc.Id, InstanceId = it.InstanceId };
+                                                var rwhy = G.Running ? "行动进行中" : e.CanStart(s, rreq);
+                                                var rf = e.RepairFraction(s, rrc);
+                                                var rto = Math.Min(it.MaxDurability.Value, (it.Durability ?? 0) + it.MaxDurability.Value * rf);
+                                                <button type="button" class="eq-btn" disabled="@(rwhy != null)" title="@(rwhy ?? $"维修{name}：耐久{Ui.N(it.Durability ?? 0)}→{Ui.N(rto)}（恢复最大耐久{Ui.Pct(rf)}），消耗废金属1、零件1；单击直接开始")"
+                                                        @onclick="() => Repair(rreq)">维修·@(rrc.BaseMinutes)分钟</button>
+                                                @if (rwhy != null && !rwhy.Contains("耐久已满")) { <small class="eq-stat eq-why">维修：@rwhy</small> }
+                                                else if (rwhy == null) { <small class="eq-stat">维修后耐久@(Ui.N(rto))</small> }
+                                            }
                                             @if (why != null && groundWhy == null)
                                             {
                                                 <button type="button" class="eq-btn alt" title="@($"把{name}放到{e.LocName(s.CurrentLocation)}地面")" @onclick="() => G.Unequip(slot, true)">放当前地面</button>
@@ -142,13 +154,20 @@ else
 }
 
 @code {
+    private async Task Repair(ActionRequest r)
+    {
+        G.Hover(null);
+        await G.StartAction(r);
+    }
+
     /// <summary>装备区第二行：品质词条、耐久与弹仓（“绿·校准 · 耐久67.00/80.00 · 弹仓3/8”；木弓写随身箭矢数），没有的项不写；重量在名称行右侧。</summary>
     private string EquipStat(ItemInstance it)
     {
         var s = G.S;
         var e = G.E;
         var parts = new List<string>();
-        if (it.Quality is "green" or "blue") parts.Add($"{e.QualityName(it)}·{string.Join("、", (it.Affixes ?? new List<string>()).Select(id => e.Affix(id)?.Name ?? id))}");
+        if (it.Quality is "green" or "blue")
+            parts.Add(it.Affixes is { Count: > 0 } af ? $"{e.QualityName(it)}·{string.Join("、", af.Select(id => e.Affix(id)?.Name ?? id))}" : $"{e.QualityName(it)}（无附加词条）");
         if (it.Durability.HasValue && it.MaxDurability.HasValue)
             parts.Add(it.Durability.Value <= 0 ? "已损坏（效果暂停）" : $"耐久{GameEngine.DurabilityText(it)}");
         if (e.Weapon(it.ItemId) is { } w)

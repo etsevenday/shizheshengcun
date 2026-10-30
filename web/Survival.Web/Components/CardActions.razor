@@ -23,7 +23,8 @@
         @if (m.Batches != null)
         {
             @* Q24：同物品多批叠卡，展开选批次；最早到期在前、无保质在后；所选批次决定下面的食用与转移 *@
-            <div class="ca-batches" role="radiogroup" aria-label="选择批次（食用和转移都只用所选这一批）" title="点选批次：食用和转移都只用所选这一批">
+            var batchUse = GameEngine.CanSelfUse(G.E.Item(m.ItemId)) ? "食用和转移" : "转移";
+            <div class="ca-batches" role="radiogroup" aria-label="@($"选择批次（{batchUse}都只用所选这一批）")" title="@($"点选批次：{batchUse}都只用所选这一批")">
                 @foreach (var b in m.Batches)
                 {
                     var bk = b.Key;

@@ -1360,7 +1360,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：N+30/W+3。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：饱食+30、水分+3。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "dried_meat",
@@ -1374,7 +1374,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：N+28/W-5。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：饱食+28、水分−5。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "iron_ore",
@@ -1486,7 +1486,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：N+38/W+10/M+2。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：饱食+38、水分+10、精神+2。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "meat_stew",
@@ -1500,7 +1500,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：N+55/W+12/M+3。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：饱食+55、水分+12、精神+3。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "grain_cake",
@@ -1514,7 +1514,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：N+28/W-2。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：饱食+28、水分−2。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "berry_jam",
@@ -1528,7 +1528,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：N+22/M+3。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：饱食+22、精神+3。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "dried_berries",
@@ -1542,7 +1542,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：N+16/W-2。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：饱食+16、水分−2。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "fried_root",
@@ -1556,7 +1556,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：N+35/W-3/M+3。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：饱食+35、水分−3、精神+3。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "trail_ration",
@@ -1570,7 +1570,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：N+48/W-6。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：饱食+48、水分−6。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "herbal_drink",
@@ -1584,7 +1584,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：W+25/M+2。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：水分+25、精神+2。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "sterile_bandage",
@@ -1598,7 +1598,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：止血H+1，共享绷带60分钟回血冷却，不压病毒。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：止血，健康+1，共享绷带60分钟回血冷却，不压病毒。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "compression_bandage",
@@ -1626,7 +1626,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：止血H+2，共享60分钟回血冷却。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：止血，健康+2，共享60分钟回血冷却。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "oral_rehydration",
@@ -1640,7 +1640,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：W+35，腹泻剩余减60分钟，6小时冷却。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：水分+35，腹泻剩余减60分钟，6小时冷却。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "cleaning_wipe",
@@ -1654,7 +1654,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：一次维护抵扣cloth1，不直接回耐久。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：一次维护抵扣布料1，不直接回耐久。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "water_filter",
@@ -1724,7 +1724,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：铺取各10分钟，原地睡眠E+0.5/h，与床垫取高、不提供遮蔽。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：铺取各10分钟，原地睡眠体力+0.5每小时，与床垫取高、不提供遮蔽。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "clay",
@@ -1780,7 +1780,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：用于已有water_filter，每芯净化脏水4份，20世界分钟。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：用于已有便携滤水器，每芯净化脏水4份，20世界分钟。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "ration_canteen",
@@ -1808,7 +1808,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：N+24/W-3；食用5分钟，战内禁用。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：饱食+24、水分−3；食用5分钟，战内禁用。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "expedition_bar",
@@ -1822,7 +1822,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：N+38/W-2；食用5分钟，战内禁用。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：饱食+38、水分−2；食用5分钟，战内禁用。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "stew_portion",
@@ -1836,7 +1836,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：N+35/W+12/M+2；食用5分钟，战内禁用。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：饱食+35、水分+12、精神+2；食用5分钟，战内禁用。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "field_tarp",
@@ -1878,7 +1878,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：战外15基础分钟hand修金属工具/武器最大耐久10%，不修枪/布皮/锅。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：战外15基础分钟手工修金属工具、武器最大耐久10%，不修枪、布皮、锅。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "cable_bundle",
@@ -1906,7 +1906,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：战术消耗品，AP/效果/持续/冷却仅由expansion-combat定义。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：战术消耗品，AP、效果、持续、冷却仅由expansion-combat定义。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "brace_pack",
@@ -1948,7 +1948,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：腹泻剩余减120分钟；与oral_rehydration共享6h缓解冷却，无腹泻拒绝；战内禁用。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：腹泻剩余减120分钟；与口服补液共享6小时缓解冷却，无腹泻拒绝；战内禁用。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "emergency_tonic",
@@ -1962,7 +1962,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：E+2/S-2/M-1，6h给药冷却；不增N/W/H/I、不减V；战内2AP可对友方。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：体力+2、清醒度−2、精神−1，6小时给药冷却；不增饱食、水分、健康、免疫、不减病毒；战内2AP可对友方。本版只有物品定义，用途在后续版本开放"
     },
     {
       "id": "machete",

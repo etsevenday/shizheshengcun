@@ -14,6 +14,7 @@
 
 import argparse
 import json
+import re
 import os
 import sys
 
@@ -54,9 +55,25 @@ def item_kind(p):
     return "material"
 
 
+STAT_NAMES = {"N": "饱食", "W": "水分", "M": "精神", "H": "健康", "E": "体力", "S": "清醒度", "I": "免疫", "V": "病毒"}
+ITEM_NAMES = {}   # 物品 ID → 中文名（main 里按配置与 A12 填好）
+
+
+def readable(text):
+    """策划用途原文里的内部缩写改成玩家能读的中文（B4 试玩修复 M120，数值不改）：N/W/M/H/E/S/I/V → 游戏里的状态名，
+    物品 ID → 物品名，hand → 手工，6h → 6小时，“/h” → 每小时，斜杠分隔 → 顿号，减号写成“−”。"""
+    text = re.sub(r"/h(?![a-z])", "每小时", text)
+    text = re.sub(r"(\d)h(?![a-z])", r"\g<1>小时", text)
+    text = re.sub(r"(?<![A-Za-z])([NWMHESIV])(?![A-Za-z])", lambda m: STAT_NAMES[m.group(1)], text)
+    text = re.sub(r"[a-z][a-z_0-9]*[a-z](?=\d|\b|[^a-z_])", lambda m: ITEM_NAMES.get(m.group(0), "手工" if m.group(0) == "hand" else m.group(0)), text)
+    text = re.sub(r"(饱食|水分|精神|健康|体力|清醒度|免疫|病毒)-(\d)", r"\g<1>−\g<2>", text)
+    text = text.replace("/", "、").replace("止血健康", "止血，健康")
+    return text
+
+
 def item_desc(p):
     text = p.get("effect") or p.get("use") or ""
-    text = text.strip()
+    text = readable(text.strip())
     return (f"策划用途：{text}。" if text else "") + "本版只有物品定义，用途在后续版本开放"
 
 
@@ -194,9 +211,18 @@ def salvage_of_gear(g, slot):
 
 def import_items(cfg, a12):
     have = {i["id"] for i in cfg["items"]}
+    for i in cfg["items"]:
+        ITEM_NAMES.setdefault(i["id"], i["name"])
+    for p in a12["physicalItems"]:
+        ITEM_NAMES.setdefault(p["id"], p["name"])
     added = 0
+    byid = {i["id"]: i for i in cfg["items"]}
     for p in a12["physicalItems"]:
         if p["id"] in have:
+            # 本脚本导入过的（只有定义的）新物品：说明按最新写法重写，其余字段不动
+            it = byid[p["id"]]
+            if "本版只有物品定义" in it.get("desc", ""):
+                it["desc"] = item_desc(p)
             continue
         hours = p.get("shelfLifeHours") or 0
         cfg["items"].append({
