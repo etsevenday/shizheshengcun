@@ -29,6 +29,7 @@
     <Content Include="../../doc/策划案/人物与战斗参考 v0.5/人物与战斗参考数据 v0.5.json" Link="design.v0.5.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/交互与地图扩展 v0.3/基础系统整合配置 v0.3.json" Link="design.v0.3.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/卡片统一与设施烹饪 v0.4/策划增量配置 v0.4.json" Link="design.v0.4.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../doc/策划案/系统策划总册 v1.0/04 附录/A12 全系统策划数据索引.json" Link="design.a12.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Fixtures/*.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/基础系统 v0.2/基础系统初始配置 v0.2.json" Link="config.v0.2.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

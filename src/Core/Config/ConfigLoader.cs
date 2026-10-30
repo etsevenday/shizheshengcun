@@ -56,6 +56,8 @@ namespace Survival.Core.Config
                 if (it.StackMax < 1) e.Add($"物品 {it.Id} 堆叠上限必须≥1");
                 if (it.ShelfLifeMinutes.HasValue && it.ShelfLifeMinutes.Value % tick != 0)
                     e.Add($"物品 {it.Id} 保质期须为{tick}的倍数");
+                if (Array.IndexOf(ItemConfig.Kinds, it.Kind) < 0) e.Add($"物品 {it.Id} 的类别 {it.Kind} 未知");
+                if (it.Edible && it.Use == null) e.Add($"物品 {it.Id} 可食用却没有使用效果");
             }
 
             foreach (var ed in c.Edges)

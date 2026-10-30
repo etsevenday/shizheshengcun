@@ -166,6 +166,12 @@ namespace Survival.Core.Config
 
     public sealed class ItemConfig
     {
+        /// <summary>
+        /// 物品类别：water 液体、food 食物、material 材料、medical 医疗、tool 工具、weapon 武器、ammo 弹药、carcass 尸体、substance 活性物质、
+        /// gear 非武器装备（防具/饰品/衣物，B4）。B4 起 A07/A12 物理目录的新物品只导定义，类别按 A07 所在表归类（开发计划 v0.9 B4 H1）。
+        /// </summary>
+        public static readonly string[] Kinds = { "water", "food", "material", "medical", "tool", "weapon", "ammo", "carcass", "substance", "gear" };
+
         public string Id { get; set; } = "";
         public string Name { get; set; } = "";
         public int WeightGrams { get; set; }
