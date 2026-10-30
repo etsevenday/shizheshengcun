@@ -68,10 +68,19 @@
 
     @* v0.7 第 6 节：左栏“自身”投放卡已取消（没有任何投放热区）；对自身使用统一在选中物品的卡下按钮 *@
 
-    <div class="panel weight">
+    @* Q34 答复（选 B）：当前角色携重摘要是总重量（公斤两位）、负重状态与实际随身占格 N/5 的唯一常驻来源（④行不再另写），
+       每次渲染按真实数据重算，食用/放下/拾取/选批拆并后即时刷新 *@
+    @{
+        var over = grams > cfg.Carry.SoftGrams;
+        var cardsUsed = e.RootCardCount(s);
+    }
+    <div class="panel weight" aria-label="@($"当前角色携重：{Ui.KgText(grams)}，{(over ? "超重" : "轻装")}，随身{cardsUsed}/{e.MaxRootCards}张卡")">
         <span class="weight-icon" aria-hidden="true">@Icons.Markup("backpack")</span>
-        <div class="eyebrow">携带重量 · @(grams > cfg.Carry.SoftGrams ? "超重" : "轻装")</div>
-        <strong class="@(grams > cfg.Carry.SoftGrams ? "warn-text" : "")">@Ui.KgText(grams)</strong>
+        <div class="eyebrow">携带重量 · @(over ? "超重" : "轻装")</div>
+        <div class="weight-main">
+            <strong class="@(over ? "warn-text" : "")">@Ui.KgText(grams)</strong>
+            <span class="weight-cards @(cardsUsed > e.MaxRootCards ? "warn-text" : "")" title="随身已用卡位 / 上限（同物品多批、超堆叠按真实占格计）">@cardsUsed/@(e.MaxRootCards)张卡</span>
+        </div>
         <div class="tiny muted">超过@(cfg.Carry.SoftGrams / 1000)公斤减速 · 上限@(cfg.Carry.HardGrams / 1000)公斤</div>
     </div>
 </aside>

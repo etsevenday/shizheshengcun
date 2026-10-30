@@ -19,15 +19,17 @@
     var slots = carried ? Math.Max(e.MaxRootCards, used) : 0;
 }
 
-<div class="panel section @(carried ? "carried" : "ground")" inert="@G.DialogueLocked">
-    @* 区标题常驻可见（S14 §1.3 四区同屏）；操作教学收进悬停提示，不常驻铺开（S14 §13.1） *@
-    <div class="section-head" title="选中卡片在卡下使用或转移 · 卡角箭头转移1件 · 拖动整理或投放 · 不耗时">
-        <h2>@Title@if (!string.IsNullOrEmpty(Sub)) {<small> · @Sub</small>}</h2>
-        <span>
-            @if (carried) { @($"{Ui.Kg(grams)}公斤 · {(grams > e.Config.Carry.SoftGrams ? "超重" : "轻装")} · {used}/{e.MaxRootCards}张卡") }
-            else { @($"{kinds}种") }
-        </span>
-    </div>
+@{
+    // Q34 答复（选 B）：③④区标题改为与①②一致的竖排行首标签，不再占一整条横向标题/元信息带；
+    // 随身的携重/轻装/N/5张卡只在左栏携重摘要常驻（唯一常驻来源），这里只放进标签的悬停/聚焦说明。
+    var full = carried
+        ? $"{Title}：{Ui.Kg(grams)}公斤 · {(grams > e.Config.Carry.SoftGrams ? "超重" : "轻装")} · {used}/{e.MaxRootCards}张卡（左栏携重摘要常驻）"
+        : $"{Title}：{(string.IsNullOrEmpty(Sub) ? "" : Sub + " · ")}{kinds}种物品";
+    const string help = "选中卡片在卡下使用或转移 · 卡角箭头转移1件 · 拖动整理或投放 · 不耗时";
+}
+<div class="panel section @(carried ? "carried" : "ground")" inert="@G.DialogueLocked" aria-label="@full">
+    @* 行首竖排区标题常驻可见（S14 §1.3 四区同屏）；完整区域语义与操作教学在悬停/键盘聚焦说明里（S14 §13.1） *@
+    <div class="row-tag" tabindex="0" title="@($"{full}\n{help}")" aria-label="@full">@Title</div>
     <div class="row-scroll @(carried ? "slots5" : "")" data-wheel="@(carried ? null : "x")" data-drop="@($"zone:{Owner}")" data-drop-level="zone"
          style="@(carried ? $"--slots:{slots}" : null)">
         @foreach (var key in order)

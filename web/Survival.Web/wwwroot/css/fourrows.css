@@ -800,3 +800,15 @@
 /* 标题字体（粗体衬线）升降部比正文高：物品卡名称、锅卡名称单行时行高给到约1.35，不切字底 */
 .wasteland .center-scroll.four .row-scroll .card.item .ctitle > span:first-child { line-height: 1.35; }
 .center-scroll.four .pot-card.compact .pc-title b { line-height: 1.3; }
+
+/* ───── B2a 答复 Q34（选 B，开发计划 v0.9 §B2a，M91）：③当前地面、④随身物品改为与①②一致的竖排行首标签 ─────
+   不再单独占一条横向标题/元信息带（约回收 30px 给卡面）；四行仍等高（行轨道不变）。携重/轻装/N/5张卡只在左栏携重摘要常驻；
+   区域全称、地点名与操作教学在行首标签的悬停/键盘聚焦说明里。行内边距与①②行一致（铁框约6.5px，卡外缘离行框 ≥2px）。 */
+.center-scroll.four > .section { flex-direction: row; align-items: stretch; gap: 6px; padding: 9px 9px 9px 12px; }
+.center-scroll.four > .section > .row-tag { flex: 0 0 20px; min-height: 0; overflow: hidden; cursor: help; border-radius: 2px; }
+.center-scroll.four > .section > .row-tag:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.center-scroll.four > .section > .row-scroll { flex: 1 1 auto; min-width: 0; min-height: 0; }
+/* 左栏携重摘要：总重量（公斤两位）与随身占格 N/5 同一行，负重状态在上方小字；放不下时占格折到下一行，不删数字 */
+.wasteland .weight .weight-main { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 0; min-width: 0; }
+.wasteland .weight .weight-cards { font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; color: #e8d6ad; }
+.wasteland .weight .weight-cards.warn-text { color: var(--warn); }

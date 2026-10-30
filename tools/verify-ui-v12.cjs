@@ -24,6 +24,8 @@
 //   - 物品卡名称与转移箭头不相交；卡片外缘不压所在行框。
 //   - 首屏可见（M90）：设施行在最左时火堆（全部按钮与加工位）、遮蔽棚、床垫整张可见，屏高≥1000 时采集资源标题与第一项可见；
 //     火堆宽度在同一档尺寸的所有场景/状态里不变；单行省略文字不被盒高切掉字底；卡内文字不被同卡按钮压住。
+//   - B2a 答复 Q34（UI-B2-34a/b/c，M91）：③④为竖排行首标签（无横向区标题带、标签不截、卡区不压标签）；左栏携重摘要常驻两位小数总重量、
+//     轻装/超重、随身 N/5张卡；结束时按尺寸×卡类汇总主体高/卡高（report.ratios）。
 //   - 右栏折叠（UI-M07—M09）：四种组合各经地图/制作/休息/日志/系统说明开关、对象信息↔人物切换、刷新、读旧档后保持；对白锁期间点击不改变。
 // 结果写 <输出目录>/v12-results.json，截图写 <输出目录>/screenshots/。自动测量不替代人工逐图确认纹理与装饰实边（S14 §B 最后一段）。
 'use strict';
@@ -266,6 +268,28 @@ const MEASURE = `(() => {
       for (const r0 of rg.getClientRects()) { const r = isect(rr(r0), clip); if (!r) continue; for (const b of btns) { const i = isect(r, b); if (i && i.w > 0.5 && i.h > 0.5) issues.push('文字被按钮压住 ' + label(c) + '「' + t.innerText.trim().slice(0, 10) + '」'); } }
     }
   }
+  // 1d B2a 答复 Q34（UI-B2-34a/b）：③④为竖排行首标签、横向区标题带已释放；携重总重量（公斤两位）/负重状态/N/5张卡在左栏携重摘要常驻
+  const q34 = {};
+  for (const sec of [...document.querySelectorAll('.center-scroll.four > .section.ground, .center-scroll.four > .section.carried')].filter(vis)) {
+    const k = sec.classList.contains('ground') ? '当前地面' : '随身';
+    const tag = sec.querySelector(':scope > .row-tag');
+    if (!tag || !vis(tag)) { issues.push('③④缺竖排行首标签：' + k); continue; }
+    if (!/^vertical/.test(getComputedStyle(tag).writingMode)) issues.push('③④行首标签不是竖排：' + k);
+    if (sec.querySelector(':scope > .section-head')) issues.push('③④仍有横向区标题带：' + k);
+    const tr = R(tag), sr = R(sec), sc = sec.querySelector(':scope > .row-scroll');
+    // 标签可读完整（文字不被标签盒裁掉）、卡区与标签同一行起（标题带释放后卡区顶端紧跟行内边距）
+    if (tag.scrollHeight > tr.h + 1) issues.push('③④行首标签被截：' + k);
+    if (sc) { const cr = R(sc); q34[k] = { tagW: f1(tr.w), rowH: f1(sr.h), scrollTop: f1(cr.y - sr.y), scrollH: f1(cr.h) }; if (cr.x < tr.r - 0.5) issues.push('③④卡区压住行首标签：' + k); }
+  }
+  const wt = document.querySelector('.sidebar .weight');
+  if (wt && vis(wt)) {
+    const t = wt.innerText.replace(/\\s+/g, ' ');
+    q34.weight = t;
+    if (!/\\d+\\.\\d{2}公斤/.test(t)) issues.push('左栏携重缺两位小数总重量');
+    if (!/(轻装|超重)/.test(t)) issues.push('左栏携重缺负重状态');
+    if (!/\\d+\\/\\d+张卡/.test(t)) issues.push('左栏携重缺随身占格 N/5');
+    const wc = wt.querySelector('.weight-cards'); if (wc) { const a = R(wc), b = R(wt); if (a.r > b.r + 0.5 || a.b > b.b + 0.5) issues.push('左栏随身占格越出携重面板'); }
+  }
   // 2 文字与可见框内缘（UI-M06）
   const FRAMED = '.card.item, .ocard, .map-card, .pot-card, .fc-food, .apop, .panel, .stack-layer, .st-pop';
   const BADGE = '.qty, .slot-span, .oc-badge, .badge, .tag, .card-arrow, .row-arrow, .apop-x';
@@ -335,7 +359,10 @@ const MEASURE = `(() => {
     const inView = isect(sub, { x: 0, y: 0, r: innerWidth, b: innerHeight });
     const scroller = svg.closest('.row-scroll, .fac-scroll, .map-adjacent, .detail-scroll');
     const scrolledOut = scroller && !isect(R(card), R(scroller));
-    const info = { key: svg.getAttribute('data-art'), card: label(card), subH: f1(sh), cardH: f1(cr.h), ratio: f1(sh / cr.h * 100) / 100, kept: f1(kept * 100) };
+    const cl = card.classList;
+    const kind = cl.contains('item') ? 'item' : cl.contains('res-card') ? 'res' : cl.contains('enemy-card') ? 'enemy' : cl.contains('fac-card') ? 'fac'
+      : cl.contains('pot-card') ? 'pot' : cl.contains('fc-food') ? 'food' : cl.contains('fire-card') ? 'fire' : cl.contains('detail-icon') ? 'detail' : 'other';
+    const info = { kind, key: svg.getAttribute('data-art'), card: label(card), subH: f1(sh), cardH: f1(cr.h), ratio: f1(sh / cr.h * 100) / 100, kept: f1(kept * 100) };
     if (cs.clipPath && cs.clipPath !== 'none') issues.push('主图有 clip-path：' + info.key);
     // 部分滚出所在横滚区的卡（地面/设施行最后一张）是“滚动可达”，不算裁切
     const partlyScrolled = scroller && !scrolledOut && (cr.x < R(scroller).x - 0.5 || cr.r > R(scroller).r + 0.5);
@@ -360,7 +387,7 @@ const MEASURE = `(() => {
   const grid = document.querySelector('.center-scroll.four');
   const tracks = grid ? getComputedStyle(grid).gridTemplateRows.split(' ').map(parseFloat) : [];
   if (tracks.length === 4 && Math.max(...tracks) - Math.min(...tracks) > 1) issues.push('四行不等高：' + tracks.join(','));
-  return { viewport: [innerWidth, innerHeight], tracks, fire: fireInfo, firstScreen, textChecked, safety: safety.sort((a, b) => (a.d - a.need) - (b.d - b.need)).slice(0, 12), arts, pop, issues };
+  return { viewport: [innerWidth, innerHeight], tracks, fire: fireInfo, firstScreen, q34, textChecked, safety: safety.sort((a, b) => (a.d - a.need) - (b.d - b.need)).slice(0, 12), arts, pop, issues };
 })()`;
 
 const FOLD = `(() => { const g = k => { const sec = document.querySelector('[data-fold=' + k + ']'); const b = sec && sec.querySelector('.fold-head'); return b ? { open: sec.classList.contains('open'), disabled: b.disabled } : null; };
@@ -472,6 +499,15 @@ const FOLD = `(() => { const g = k => { const sec = document.querySelector('[dat
       } catch (e) { log('折叠测试异常 ' + e.message, false, null); }
     }
     const states = report.results.flatMap(r => r.states);
+    // 主体高/卡高按尺寸×卡类汇总（UI-B2-34c/36a：报实测值供人工对照；物品卡 1280 争取约0.50、高屏趋近约0.70，不设硬门槛）
+    const ratios = {};
+    for (const r of report.results) for (const st of r.states) for (const a of st.arts || []) {
+      if (!['item', 'res', 'enemy', 'loc', 'fac'].includes(a.kind)) continue;
+      const o = ((ratios[r.size] ||= {})[a.kind] ||= { min: 9, max: 0 });
+      o.min = Math.min(o.min, a.ratio); o.max = Math.max(o.max, a.ratio);
+    }
+    report.ratios = ratios;
+    for (const [sz, o] of Object.entries(ratios)) console.log('主体高/卡高 ' + sz + '：' + Object.entries(o).map(([k, v]) => `${k} ${v.min.toFixed(2)}—${v.max.toFixed(2)}`).join('，'));
     report.summary = { states: states.length, failed: states.filter(s => !s.pass).length, errors: report.results.filter(r => r.error).length,
       fold: report.fold.length, foldFailed: report.fold.filter(f => !f.pass).length };
     save();
