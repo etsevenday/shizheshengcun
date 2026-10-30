@@ -101,14 +101,15 @@
                                 DataDrop="@($"res:{nodeId}")" Tooltip="资源点：点击查看采集预估；把对应工具拖到这里指定使用" OnClick="() => SelectResource(nodeId)">
                         <Art>@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</Art>
                         <ChildContent>
+                            @* M84：耗时只写在按钮上（“采集/搜集 + N分钟”），状态行不再重复，给名称和产出留位 *@
                             @if (r.IsCache)
                             {
-                                <div class="oc-line">@string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}")) · @(minutes)分</div>
+                                <div class="oc-line">@string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}"))</div>
                             }
                             else
                             {
                                 var per = r.Outputs.Values.First() * (tool != null && r.ToolBonus != null && !r.IsUnlimited ? r.ToolBonus.OutputMultiplier : 1);
-                                <div class="oc-line">每次@(per)@(e.ItemName(r.Outputs.Keys.First())) · @(minutes)分@(r.Refills ? $" · 日补{r.DailyRefill}" : "")</div>
+                                <div class="oc-line">每次@(per)@(e.ItemName(r.Outputs.Keys.First()))@(r.Refills ? $" · 日补{r.DailyRefill}" : "")</div>
                             }
                             @if (r.Hazard != null) { <div class="oc-line warn-line">@Ui.Pct(r.Hazard.Probability)@r.Hazard.Label · 健康−@Ui.T(r.Hazard.HealthLoss)</div> }
                             @* Q28：按钮缩成“动词 + 时长”让出约70%图片区，不能开始的实际原因改写在卡面状态角标里，不隐藏 *@

@@ -76,8 +76,8 @@
                      role="button" tabindex="0" @onclick="() => SelectFront(id, kb)" @onkeydown="ev => OnCardKey(ev, () => SelectFront(id, kb))" title="@e.Item(id).Desc">
                     <div class="ctitle"><span>@e.ItemName(id)</span><span class="qty" title="@(stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : null)">×@total</span></div>
                     <div class="art">@Icons.Markup(id)</div>
-                    <div class="cinfo">@(stacked ? (kb![0].Spoiled ? "已腐败" : Ui.ItemLine(e, s, head)) : allSpoiled ? "已腐败" : Ui.ItemLine(e, s, head))@(stacked ? $" · 最前×{kb![0].Count} · {batches}批" : batches > 1 ? $" · {batches}批" : "")</div>
-                    @if (span > 1) { <span class="slot-span" title="@($"同物品{batches}批/超过堆叠上限，占{span}张随身卡")">占@(span)格</span> }
+                    <div class="cinfo">@(stacked ? (kb![0].Spoiled ? "已腐败" : Ui.ItemLine(e, s, head)) : allSpoiled ? "已腐败" : Ui.ItemLine(e, s, head))@(!stacked && batches > 1 ? $" · {batches}批" : "")</div>
+                    @if (span > 1) { <span class="slot-span" title="@($"同物品{batches}批/超过堆叠上限，占{span}张随身卡{(stacked ? $"；最前这一批×{kb![0].Count}" : "")}")">占@(span)格@(batches > 1 ? $"·{batches}批" : "")</span> }
                     <TransferArrow Owner="@Owner" ItemId="@id" Enabled="@(movable && !busy)" />
                 </div>
                 </div>

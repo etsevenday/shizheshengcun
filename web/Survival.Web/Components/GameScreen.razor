@@ -127,7 +127,7 @@
 
     <footer class="footer">
         @{ var last = G.Recent.LastOrDefault(); }
-        <div class="event">@if (last != null) {<b>@Clock.HHmm(last.Minute)</b>@last.Text}</div>
+        <div class="event" title="@last?.Text">@if (last != null) {<b>@Clock.HHmm(last.Minute)</b>@last.Text}</div>
         <div>@(G.Running ? "时间流逝中…" : "浏览与整理不推进时间")</div>
         <div class="save @(G.SaveState == SaveStatus.Failed ? "failed" : "")">
             @switch (G.SaveState)

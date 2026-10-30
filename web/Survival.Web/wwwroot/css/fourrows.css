@@ -321,12 +321,20 @@
 .ca-batch.spoiled small { color: #f0c7b9; }
 
 /* ───── Q28（策划答复 2026-10-30，取代 S14 §18.2 约80%）：资源、设施、敌踪、相邻地点卡的图片区以约70%卡面为目标 ─────
-   卡面改为两行网格：上行约70%整张给主图（完整显示，不放大裁切），下行约30%放名称与主操作；角标（存量/建成/敌对/访问）贴主图右上，
-   状态与不能开始的原因做带衬底的短角标贴主图底部（同物品卡）。下行按内容至少保留可读高度，行很矮时主图让位、文字不缩。
-   锅与火堆保留真实槽位，不套这个比例；物品卡精灵图外圈 4% 的裁切（M78-N3）不在本批改动。 */
+   M84 试玩修复后的排布：上行整张给主图（完整显示，不放大裁切，图上不压文字角标，只留右上角一枚小角标）；下方信息区左列
+   名称（最多两行）+ 状态/原因（每条最多两行），右列主按钮跨两行。信息区按内容保底，行很矮时主图让位、文字不缩。
+   设施行的分组标题改为竖排，把约 20px 高度让给卡面。锅与火堆保留真实槽位，不套这个比例；物品卡精灵图外圈 4% 裁切留给 B2。 */
+.center-scroll.four .facility-row .desk-group { flex-direction: row; gap: 6px; }
+.center-scroll.four .facility-row .dg-title { flex: 0 0 auto; writing-mode: vertical-rl; letter-spacing: 3px; line-height: 18px; }
+.center-scroll.four .facility-row :is(.fac-card, .res-card) { width: 160px; }
+.center-scroll.four .facility-row .enemy-card.world { width: 190px; }
+@media (min-height: 801px) {
+  .center-scroll.four .facility-row :is(.fac-card, .res-card) { width: 190px; }
+  .center-scroll.four .facility-row .enemy-card.world { width: 210px; }
+}
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) {
   display: grid; grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-rows: minmax(0, 7fr) minmax(min-content, 3fr);
+  grid-template-rows: minmax(0, 1fr) auto auto;
 }
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) > .oc-main { display: contents; }
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-art {
@@ -336,24 +344,29 @@
 .wasteland .center-scroll.four :is(.res-card, .fac-card) .oc-art > .ink-sprite { inset: 0; width: 100%; height: 100%; transform: none; }
 .center-scroll.four .loc-card.neighbor .loc-art { min-height: 0; background-size: contain; background-repeat: no-repeat; background-position: center; }
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-head {
-  grid-column: 1; grid-row: 2; align-self: center; min-width: 0; padding: 2px 4px 2px 7px; border: 0;
+  grid-column: 1; grid-row: 2; align-self: end; min-width: 0; padding: 2px 4px 0 7px; border: 0;
 }
-.center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor):not(:has(> .oc-foot)) .oc-head { grid-column: 1 / -1; }
-.wasteland .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-head b { font-size: 15px; }
+.wasteland .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-head b {
+  font-size: 14px; line-height: 1.15; white-space: normal; word-break: break-all;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-badge {
   position: absolute; top: 6px; right: 6px; z-index: 3; font-size: 12px; padding: 0 5px; box-shadow: 0 1px 2px #0005;
 }
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-body {
-  grid-column: 1 / -1; grid-row: 1; align-self: end; justify-self: start; z-index: 2;
-  max-width: calc(100% - 12px); margin: 0 6px 3px; padding: 1px 6px; gap: 0;
-  background: #efe6cbe8; color: #332d22; border-radius: 2px; box-shadow: 0 1px 2px #0004; font-size: 12px; line-height: 1.3;
+  grid-column: 1; grid-row: 3; align-self: start; min-width: 0; margin: 0; padding: 1px 4px 4px 7px; gap: 1px;
+  background: none; box-shadow: none; font-size: 12px; line-height: 1.2;
 }
+.center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor):not(:has(> .oc-foot)) :is(.oc-head, .oc-body) { grid-column: 1 / -1; }
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-body :is(.oc-line, .hp-line) {
-  font-size: 12px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: 12px; line-height: 1.2; white-space: normal; word-break: break-all;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.center-scroll.four .enemy-card.world .oc-body .track { height: 4px; margin: 1px 0; }
+.center-scroll.four .enemy-card.world .oc-body .hp-line { display: flex; gap: 4px; justify-content: flex-start; }
+/* 敌踪卡的健康条：数值已写在健康行，信息区不再另画条，让位给主图 */
+.center-scroll.four .enemy-card.world .oc-body .track { display: none; }
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-foot {
-  grid-column: 2; grid-row: 2; align-self: center; padding: 2px 4px 3px 0;
+  grid-column: 2; grid-row: 2 / span 2; align-self: center; padding: 2px 4px 3px 0;
 }
 .center-scroll.four :is(.res-card, .enemy-card.world, .loc-card.neighbor) .oc-foot :is(.loc-btn, .oc-btn) {
   width: auto; min-height: 40px; min-width: 52px; padding: 2px 8px; align-items: center; text-align: center;
@@ -361,9 +374,32 @@
 .center-scroll.four :is(.res-card, .enemy-card.world, .loc-card.neighbor) .oc-foot :is(.loc-btn, .oc-btn) strong { font-size: 14px; }
 .center-scroll.four .res-card .oc-foot .res-btn small { font-size: 12px; line-height: 1.1; }
 .center-scroll.four .loc-card.neighbor .oc-foot .oc-btn { font-size: 14px; }
-/* 敌人/角色卡（两行战斗①）：插画与右侧信息约 7:3，信息栏保底宽度 */
+/* 敌人/角色卡（两行战斗①）：插画约占卡宽 70%，右侧信息栏约 30%，内容在栏内换行（M84：原先信息栏最小内容宽撑开，7:3 不生效） */
 .bt-scene .foe-art { flex: 7 1 0; height: 100%; width: auto; min-width: 0; max-width: none; aspect-ratio: auto; }
 .bt-scene .foe-art svg, .bt-scene .foe-art img { object-fit: contain; }
-.bt-scene .foe-body { flex: 3 0 104px; min-width: 104px; }
-.bt-scene .ally-art { flex: 7 1 0; }
-.bt-scene .ally-foot { flex: 3 0 96px; }
+.bt-scene .foe-body { flex: 3 1 0; min-width: 0; }
+.bt-scene .foe-body .hp-line { flex-wrap: wrap; gap: 0 3px; justify-content: flex-start; }
+.bt-scene .foe-body .hp-line b, .bt-scene .foe .hp-line b { white-space: normal; word-break: break-all; }
+.bt-scene .foe .intent { flex-wrap: wrap; min-width: 0; word-break: break-all; font-size: 12px; line-height: 1.25; }
+.bt-scene .ally-art { flex: 7 1 0; min-width: 0; }
+.bt-scene .ally-foot { flex: 3 1 0; min-width: 0; padding-right: 4px; font-size: 12px; }
+.bt-scene .ally-foot .ally-head { flex-wrap: wrap; gap: 0 4px; padding: 0; }
+.bt-scene .ally-foot .ap-pips { flex-wrap: wrap; }
+.bt-scene .ally-foot .ap-pips small { font-size: 12px; }
+.bt-scene .ally-foot .hp-line { flex-direction: column; align-items: flex-start; font-size: 12px; line-height: 1.2; }
+.center-scroll.four .facility-row .desk-group > .dg-cards { flex: 0 0 auto; }
+
+/* ───── 试玩修复 M84 ───── */
+/* 1 整页单列网格不被长内容撑宽：.game 的列显式为 minmax(0,1fr)；页脚长日志在页脚内省略（悬停看全文），其余页脚项不收缩 */
+.game { grid-template-columns: minmax(0, 1fr); }
+.footer .event { min-width: 0; }
+.footer > :not(.event) { flex: 0 0 auto; white-space: nowrap; }
+.top > * { min-width: 0; }
+/* 4 物品卡名称最多两行（S14 原要求），不再一行截成“未鉴…” */
+.wasteland .center-scroll.four .row-scroll .card.item .ctitle > span:first-child {
+  white-space: normal; word-break: break-all; font-size: 13px; line-height: 1.15;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+/* 5 选卡浮窗批次条只占一行（多了横向滑动），不把食用/转移主按钮挤出浮窗 */
+.ca-batches { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; }
+.ca-batch { flex: 0 0 auto; min-width: 0; padding: 2px 7px; }
