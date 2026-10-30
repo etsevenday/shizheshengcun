@@ -413,6 +413,7 @@ public sealed class GameSession
             var json = await reader.ReadToEndAsync();
             Config = ConfigLoader.FromJson(json);
             Engine = new GameEngine(Config);
+            Icons.RegisterCategories(Config);   // B4 新物品/装备缺正式图时按分类占位（同一 ID 全局一张）
         }
         catch (Exception ex)
         {

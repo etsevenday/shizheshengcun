@@ -107,9 +107,9 @@
                 var tSel = sel.Kind == SelectionKind.Tool && sel.InstanceId == inst;
                 <div @key="@("t:" + inst)" class="card-col @(tSel ? "open" : "")">
                 <div id="@(tSel ? "card-sel" : null)" data-tip="@($"{e.ItemName(t.ItemId)}#{t.InstanceId} · {Ui.ItemLine(e, s, t)}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@from" data-drop="@($"card:{key}")" data-drop-level="card"
-                     class="card item @(broken ? "broken" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(tSel ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
+                     class="card item @(t.Quality is "green" or "blue" ? "q-" + t.Quality : "") @(broken ? "broken" : "") @(t.ReservedBy != null || locked ? "reserved" : "") @(tSel ? "selected" : "") @(G.Highlights.Contains(t.ItemId) && !carried ? "fresh" : "")"
                      role="button" tabindex="0" @onclick="() => SelectTool(inst, toolId)" @onkeydown="ev => OnCardKey(ev, () => SelectTool(inst, toolId))" title="@e.Item(t.ItemId).Desc">
-                    <div class="ctitle"><span title="@($"{e.ItemName(t.ItemId)}#{t.InstanceId}")">@e.ItemName(t.ItemId)#@t.InstanceId</span></div>
+                    <div class="ctitle"><span title="@($"{e.ItemName(t.ItemId)}#{t.InstanceId}")">@e.ItemName(t.ItemId)#@t.InstanceId</span>@if (t.Quality is "green" or "blue") { <i class="qtag q-@t.Quality" title="@($"{e.QualityName(t)}色品质：附加词条{t.Affixes?.Count ?? 0}条")">@e.QualityName(t)</i> }</div>
                     <div class="art">@Icons.Markup(t.ItemId)</div>
                     <div class="cinfo" title="@Ui.ItemLine(e, s, t)">@Ui.ItemLine(e, s, t)</div>
                     <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !locked && !busy)" />

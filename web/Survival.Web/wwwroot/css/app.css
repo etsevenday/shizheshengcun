@@ -1184,3 +1184,15 @@ kbd { font-size: 14px; }
 }
 /* 附带小改：会作废本次成果的退出，在“退出”旁常驻提示后果 */
 .cp-exit-note.forfeit { color: var(--warn); }
+
+/* B4 装备品质（开发计划 v0.9 B4 H10）：白不着色，绿、蓝在卡面描边与小标签着色；对象信息栏与装备区名称同色 */
+.qtag { flex: none; font-style: normal; font-size: 11px; font-weight: 700; line-height: 1; padding: 2px 4px; border-radius: 3px; border: 1px solid currentColor; align-self: center; }
+.qtag.q-white { color: var(--muted); }
+.qtag.q-green { color: #9fd18b; }
+.qtag.q-blue { color: #8cc4f0; }
+.card.item.q-green { box-shadow: inset 0 0 0 2px #7fb06999; }
+.card.item.q-blue { box-shadow: inset 0 0 0 2px #5f9fd6aa; }
+.eq-name.q-green, .lines .q-green b { color: #9fd18b; }
+.eq-name.q-blue, .lines .q-blue b { color: #8cc4f0; }
+h2 .qtag { margin-left: 6px; vertical-align: middle; }
+.equip-fx { font-size: 12px; }

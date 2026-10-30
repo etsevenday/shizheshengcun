@@ -27,6 +27,55 @@ public static partial class Icons
         ["camp"] = @"<path d=""M8 86L36 34 64 86Z"" fill=""#6d6346"" stroke=""#4a432f"" stroke-width=""3""/><path d=""M66 62Q60 76 66 84 74 90 82 84 88 74 78 60 78 72 72 70Z"" fill=""#d8a25a""/><path d=""M56 90L92 86"" stroke=""#786449"" stroke-width=""6"" stroke-linecap=""round""/>",
     };
 
+    /// <summary>
+    /// B4 新物品与新装备的分类占位图（开发计划 v0.9 B4 H10）：按武器类型、装备槽、物品类别各一张同画风示意图，同一 ID 全局只用这一张。
+    /// 正式美术到位前，这些 ID 记在 Placeholder（缺图清单），不算 Missing。
+    /// </summary>
+    private static readonly Dictionary<string, string> CategoryArt = new()
+    {
+        ["ph_blade"] = @"<path d=""M22 80L70 22 78 26 34 86Z"" fill=""#b8bdb4"" stroke=""#4e5752"" stroke-width=""3""/><path d=""M18 74L32 88"" stroke=""#6f5236"" stroke-width=""9"" stroke-linecap=""round""/>",
+        ["ph_axe"] = @"<path d=""M30 88L62 20"" stroke=""#6f5236"" stroke-width=""7"" stroke-linecap=""round""/><path d=""M52 18Q78 14 84 36 70 42 58 40Z"" fill=""#9aa39b"" stroke=""#4e5752"" stroke-width=""3""/>",
+        ["ph_spear"] = @"<path d=""M20 88L74 22"" stroke=""#6f5236"" stroke-width=""6"" stroke-linecap=""round""/><path d=""M70 14L88 10 84 28 74 30Z"" fill=""#b8bdb4"" stroke=""#4e5752"" stroke-width=""3""/>",
+        ["ph_blunt"] = @"<path d=""M28 86L58 34"" stroke=""#6f5236"" stroke-width=""8"" stroke-linecap=""round""/><rect x=""50"" y=""14"" width=""26"" height=""30"" rx=""6"" transform=""rotate(30 63 29)"" fill=""#8e978f"" stroke=""#4e5752"" stroke-width=""3""/>",
+        ["ph_archery"] = @"<path d=""M30 12Q78 50 30 88"" fill=""none"" stroke=""#8a5a35"" stroke-width=""6""/><path d=""M30 12V88"" stroke=""#d8cfaf"" stroke-width=""2""/><path d=""M18 50H84M76 44L86 50 76 56"" fill=""none"" stroke=""#6f6648"" stroke-width=""3""/>",
+        ["ph_firearms"] = @"<path d=""M12 40H80V52H44L38 76H24L28 52H12Z"" fill=""#5d625c"" stroke=""#3b3f3a"" stroke-width=""3""/><rect x=""80"" y=""42"" width=""10"" height=""6"" fill=""#3b3f3a""/>",
+        ["ph_shield"] = @"<path d=""M50 10L84 22V50Q82 76 50 90 18 76 16 50V22Z"" fill=""#8b7a52"" stroke=""#5c4f36"" stroke-width=""4""/><path d=""M50 18V82M24 46H76"" stroke=""#b29d6c"" stroke-width=""4""/>",
+        ["ph_command"] = @"<path d=""M28 90V12"" stroke=""#6f6648"" stroke-width=""5"" stroke-linecap=""round""/><path d=""M30 14H80L70 30 80 46H30Z"" fill=""#bd8c50"" stroke=""#7a5532"" stroke-width=""3""/>",
+        ["ph_medical"] = @"<rect x=""14"" y=""28"" width=""72"" height=""54"" rx=""8"" fill=""#d8cfaf"" stroke=""#6f6648"" stroke-width=""3""/><path d=""M40 28V18H60V28"" fill=""none"" stroke=""#6f6648"" stroke-width=""3""/><path d=""M50 40V70M35 55H65"" stroke=""#a8443a"" stroke-width=""8""/>",
+        ["ph_armor"] = @"<path d=""M30 12L44 20H56L70 12 84 28 76 40V88H24V40L16 28Z"" fill=""#7b8580"" stroke=""#4e5752"" stroke-width=""3""/><path d=""M24 52H76M24 68H76"" stroke=""#a9b1a8"" stroke-width=""3""/>",
+        ["ph_combat_acc"] = @"<path d=""M50 10V36"" stroke=""#8a8466"" stroke-width=""3""/><circle cx=""50"" cy=""58"" r=""22"" fill=""#c9a24e"" stroke=""#7a5532"" stroke-width=""4""/><circle cx=""50"" cy=""58"" r=""9"" fill=""#e8d9a4""/>",
+        ["ph_top"] = @"<path d=""M34 14L50 22 66 14 88 30 78 44 70 38V88H30V38L22 44 12 30Z"" fill=""#8c9a72"" stroke=""#4f5a3e"" stroke-width=""3""/>",
+        ["ph_bottom"] = @"<path d=""M26 12H74L80 88H58L50 40 42 88H20Z"" fill=""#6d6346"" stroke=""#4a432f"" stroke-width=""3""/><path d=""M26 22H74"" stroke=""#b29d6c"" stroke-width=""3""/>",
+        ["ph_survival_acc"] = @"<circle cx=""50"" cy=""50"" r=""34"" fill=""#d8cfaf"" stroke=""#6f6648"" stroke-width=""4""/><path d=""M50 22L58 50 50 78 42 50Z"" fill=""#a8443a""/><circle cx=""50"" cy=""50"" r=""4"" fill=""#4e5752""/>",
+        ["ph_material"] = @"<rect x=""16"" y=""34"" width=""68"" height=""50"" rx=""4"" fill=""#a6ad9c"" stroke=""#4e5752"" stroke-width=""3""/><path d=""M16 50H84M38 34V84M62 34V84"" stroke=""#7b8580"" stroke-width=""3""/><path d=""M28 34L40 18H60L72 34"" fill=""none"" stroke=""#4e5752"" stroke-width=""3""/>",
+        ["ph_food"] = @"<path d=""M12 48H88Q86 84 50 86 14 84 12 48Z"" fill=""#c99a62"" stroke=""#7a5532"" stroke-width=""3""/><path d=""M26 44Q34 28 50 32 66 28 74 44"" fill=""#e0c48a"" stroke=""#7a5532"" stroke-width=""3""/>",
+        ["ph_medicine"] = @"<rect x=""30"" y=""24"" width=""40"" height=""62"" rx=""8"" fill=""#c9d6d8"" stroke=""#4e5752"" stroke-width=""3""/><rect x=""36"" y=""12"" width=""28"" height=""14"" rx=""3"" fill=""#8e978f"" stroke=""#4e5752"" stroke-width=""3""/><path d=""M50 44V70M37 57H63"" stroke=""#a8443a"" stroke-width=""6""/>",
+    };
+
+    /// <summary>物品 ID → 分类占位图键（RegisterCategories 按配置登记，只登记没有正式图的 ID）。</summary>
+    private static readonly Dictionary<string, string> CategoryOf = new();
+
+    /// <summary>正在用分类占位图的物品 ID（缺图清单：正式美术待补）。</summary>
+    public static readonly HashSet<string> Placeholder = new();
+
+    /// <summary>
+    /// 按配置给没有正式图的物品登记分类占位图：武器按类型、防具饰品衣物按槽、其余按物品类别（材料/食物/医疗）。只在启动时调用一次。
+    /// </summary>
+    public static void RegisterCategories(Survival.Core.Config.GameConfig cfg)
+    {
+        foreach (var it in cfg.Items)
+        {
+            if (Has(it.Id)) continue;
+            var w = cfg.Weapons.FirstOrDefault(x => x.Id == it.Id);
+            var key = w?.WeaponKind != null ? "ph_" + w.WeaponKind
+                : it.EquipSlot != null ? "ph_" + it.EquipSlot
+                : it.Kind == "food" ? "ph_food"
+                : it.Kind == "medical" ? "ph_medicine"
+                : "ph_material";
+            if (CategoryArt.ContainsKey(key)) CategoryOf[it.Id] = key;
+        }
+    }
+
     /// <summary>界面请求过但没有图的键（缺图清单，见 README）。缺图时显示统一占位图，不再用石块兜底。</summary>
     public static readonly HashSet<string> Missing = new();
 
@@ -35,7 +84,10 @@ public static partial class Icons
     public static string Svg(string key)
     {
         if (ArtAssets.Sprite(key) is { } sprite) return sprite;
-        if (!Extracted.TryGetValue(key, out var inner) && !Extra.TryGetValue(key, out inner) && !Combat.TryGetValue(key, out inner) && !Status.TryGetValue(key, out inner))
+        if (!Extracted.TryGetValue(key, out var inner) && !Extra.TryGetValue(key, out inner) && !Combat.TryGetValue(key, out inner) && !Status.TryGetValue(key, out inner)
+            && CategoryOf.TryGetValue(key, out var cat) && CategoryArt.TryGetValue(cat, out inner))
+            Placeholder.Add(key);   // B4 新物品：分类占位图（缺图清单）
+        if (inner == null)
         {
             Missing.Add(key);
             // 状态图标缺图用统一状态占位（S14 §12.2），其他对象用统一物品占位

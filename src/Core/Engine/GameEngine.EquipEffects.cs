@@ -270,5 +270,86 @@ namespace Survival.Core.Engine
         /// <summary>非战斗食用的正饱食收益 × 装备 eat.satiety（配给袋 ×1.05）；负值与战斗中不变。</summary>
         public double UseSatiety(GameState s, ItemUseConfig u) =>
             u.Satiety > 0 && s.Battle == null ? u.Satiety * EquipmentEffects(s).Factor("eat.satiety") : u.Satiety;
+
+        // ───────────── 界面文字（对象信息栏、人物页装备区；B4 H10） ─────────────
+
+        /// <summary>效果是否已接入现行规则：combat.* 在 B6 前只显示；净水片配方未上线；其余求生效果生效。</summary>
+        public static bool EffectLive(EquipEffectConfig e) => !e.Key.StartsWith("combat.") && e.Key != "work.purificationTablet";
+
+        /// <summary>“校准：命中能力+4（战斗类，四对四战斗上线后生效）”。</summary>
+        public string AffixText(string id)
+        {
+            var a = Affix(id);
+            if (a == null) return id;
+            var live = a.Effects.Count > 0 && a.Effects.All(EffectLive);
+            var note = a.Effects.Any(x => x.Key == "durability.max") ? "（生成时已计入最大耐久）"
+                : live ? "（生效中）" : "（战斗类，四对四战斗上线后生效，当前只显示）";
+            return $"{a.Name}：{a.EffectText}{note}";
+        }
+
+        /// <summary>对象信息栏的装备行：品质、附加词条、类型与阶、速度修正、使用位→目标位、固定特性/效果、生效情况、拆解产出。非装备为空表。</summary>
+        public List<(string Label, string Value)> EquipDetailLines(GameState s, ItemInstance it)
+        {
+            var list = new List<(string, string)>();
+            var cfg = _items[it.ItemId];
+            if (!cfg.IsEquipment) return list;
+            var n = it.Affixes?.Count ?? 0;
+            list.Add(("品质", $"{QualityName(it)}（附加词条{n}条）"));
+            foreach (var id in it.Affixes ?? new List<string>()) list.Add(("附加词条", AffixText(id)));
+            if (Weapon(it.ItemId) is WeaponConfig w)
+            {
+                list.Add(("类型", $"{WeaponKinds.Name(w.WeaponKind)}·T{w.Tier}{(w.Speed != 0 ? $" · 速度修正{Fmt.SignedT(w.Speed)}" : " · 速度修正0")}"));
+                if (w.OwnPositions != null) list.Add(("站位", $"使用位{w.OwnPositions} → 目标位{w.TargetPositions}（四对四战斗上线后生效）"));
+                if (w.TraitText != null) list.Add(("固定特性", $"{w.TraitText}（四对四战斗上线后生效）"));
+                if (!w.CanAttack) list.Add(("技能", $"{WeaponKinds.Name(w.WeaponKind)}的技能尚未开放：可以穿进武器槽、占{WeaponKinds.Name(w.WeaponKind)}类，但现在不能用它攻击"));
+            }
+            else if (Gear(it.ItemId) is GearConfig g)
+            {
+                list.Add(("类型", $"{EquipSlots.Name(g.Slot)}·T{g.Tier}"));
+                var live = g.Effects.Where(EffectLive).ToList();
+                var shown = g.Effects.Count > live.Count || g.Effects.Count == 0;
+                list.Add(("固定效果", g.EffectText + (live.Count > 0 && !shown ? "（生效中）" : live.Count > 0 ? "（求生部分生效中；战斗部分在四对四战斗上线后生效）" : "（四对四战斗上线后生效，当前只显示）")));
+            }
+            if (it.Durability.HasValue && it.Durability.Value <= 1e-9) list.Add(("状态", "耐久为0：效果暂停（仍占槽、计重），维护后恢复"));
+            var sal = SalvageOutput(it);
+            list.Add(("拆解", sal is (string oid, int cnt) ? $"{ItemName(oid)}×{cnt}（{SalvageRecipe?.BaseMinutes ?? 0}基础分钟，产物落当前地面）" : "拆解产出待策划确认，暂不能拆解"));
+            return list;
+        }
+
+        /// <summary>人物页装备区的效果汇总（一行一项）：战斗合计（只显示）、生效中的求生效果、暂停的装备。</summary>
+        public List<string> EquipSummaryLines(GameState s, string actorId = GameState.PlayerId)
+        {
+            var fx = EquipmentEffects(s, actorId);
+            var lim = Config.Equipment.Limits;
+            var lines = new List<string>();
+            var combat = new List<string>();
+            if (fx.SpeedPositiveRaw != 0 || fx.SpeedNegative != 0)
+                combat.Add($"速度{Fmt.SignedT(fx.Speed)}{(fx.SpeedPositiveRaw > lim.PositiveSpeedCap ? $"（正加成封顶+{Fmt.T(lim.PositiveSpeedCap)}）" : "")}");
+            if (fx.ArmorRaw != 0) combat.Add($"护甲{Fmt.T(fx.Armor)}{(fx.ArmorRaw > lim.ArmorCap ? $"（封顶{Fmt.T(lim.ArmorCap)}）" : "")}");
+            if (fx.Accuracy != 0) combat.Add($"命中能力{Fmt.SignedT(fx.Accuracy)}");
+            if (fx.Crit != 0) combat.Add($"暴击能力{Fmt.SignedT(fx.Crit)}");
+            if (fx.ArmorIgnore != 0) combat.Add($"忽略护甲{Fmt.T(fx.ArmorIgnore)}");
+            if (fx.DamageMultiplier != 0) combat.Add($"直接伤害乘数{Fmt.SignedT(fx.DamageMultiplier)}");
+            if (Math.Abs(fx.EnergyCostFactor - 1) > 1e-12) combat.Add($"招式E×{Fmt.T(fx.EnergyCostFactor)}");
+            if (fx.DisplaceResist != 0) combat.Add($"位移抵抗+{Fmt.T(fx.DisplaceResist)}个百分点");
+            if (fx.Noise != 0) combat.Add($"噪声{Fmt.SignedT(fx.Noise)}");
+            if (combat.Count > 0) lines.Add($"战斗（本页武器）：{string.Join("，", combat)}——四对四战斗上线后生效，当前只显示");
+            var names = new Dictionary<string, string>
+            {
+                ["work.craft"] = "制造/建造工作量", ["work.scavenge"] = "搜集工作量", ["work.move"] = "移动工作量", ["work.route"] = "已发现路线移动工作量",
+                ["rate.gather.energy"] = "采集负体力", ["rate.move.energy"] = "移动负体力", ["rate.scavengeClear.energy"] = "搜集/清理负体力",
+                ["rate.nonCombat.satiety"] = "非战斗负饱食", ["rate.nonCombat.hydration"] = "非战斗负水分",
+                ["hazard.health"] = "划伤健康损失", ["hazard.woodScrapChance"] = "木材/废料划伤概率", ["eat.satiety"] = "非战斗食用正饱食",
+            };
+            var survival = new List<string>();
+            foreach (var kv in fx.Factors.Where(k => names.ContainsKey(k.Key) && Math.Abs(k.Value - 1) > 1e-12)) survival.Add($"{names[kv.Key]}×{Fmt.T(kv.Value)}");
+            if (fx.Add("pos.shelteredRest.energy") != 0) survival.Add($"遮蔽休息体力恢复+{Fmt.T(fx.Add("pos.shelteredRest.energy"))}/小时");
+            if (fx.Add("pos.sleep.energy") != 0) survival.Add($"睡眠体力恢复+{Fmt.T(fx.Add("pos.sleep.energy"))}/小时");
+            if (fx.Add("bandage.health") != 0) survival.Add($"非战斗包扎回血+{Fmt.T(fx.Add("bandage.health"))}");
+            if (fx.Set("repair.fraction") is double rf) survival.Add($"工具维护恢复{Fmt.Pct(rf)}（替代，不相加）");
+            if (survival.Count > 0) lines.Add($"求生（生效中，工作量合成下限×{Fmt.T(lim.SurvivalWorkFloor)}、负小时率下限×{Fmt.T(lim.NegativeRateFloor)}）：{string.Join("，", survival)}");
+            if (fx.Paused.Count > 0) lines.Add($"耐久为0、效果暂停：{string.Join("、", fx.Paused)}");
+            return lines;
+        }
     }
 }

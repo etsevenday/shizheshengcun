@@ -164,7 +164,7 @@
                 else if (m.ToCarried && (m.Max < 1 || tooHeavy)) { <div class="ca-note bad">@(G.PickupLimitText(m.ItemId, m.Max < 1 ? 1 : n, m.Instance ?? m.Head) ?? $"最多可取{m.Max}份")</div> }
                 else { <div class="ca-note @(after > e.Config.Carry.SoftGrams ? "warn" : "")">@(verb)后随身@(Ui.Kg(after))公斤@(after > e.Config.Carry.SoftGrams ? $"，超过{e.Config.Carry.SoftGrams / 1000}公斤会减速" : "")@(m.ToCarried ? $" · 随身{e.RootCardsAfter(s, m.Instance ?? m.Head, invalid ? 0 : n, null, 0)}/{e.MaxRootCards}张卡" : "") · 不耗时</div> }
             }
-            @if (m.Instance is ItemInstance wInst && e.Weapon(wInst.ItemId) is { IsFists: false } && s.Battle == null
+            @if (m.Instance is ItemInstance wInst && e.IsWearable(wInst.ItemId) && s.Battle == null
                  && ((wInst.IsCarried && (m.Available > 0 || moveBusy)) || (wInst.Owner == s.CurrentLocation && !moveBusy && m.Available > 0)))
             {
                 @* B3（R02 §1、A05 §5、A10 §7.2；开发计划 v0.9 B3 H5/H9）与 B3a（Q40 选 B、Q42 选 A）：随身或当前地面的武器“装备到武器Ⅰ/武器Ⅱ”，
@@ -208,7 +208,40 @@
                 }
                 @if (choices.Any(c => c.reason == null))
                 {
-                    <div class="ca-note">@(fromGround ? "从地面直接穿上，不经随身卡位；" : "")开战停在第一个有武器的页，战斗中切换武器页0AP；同类型武器最多装备1件</div>
+                    <div class="ca-note">@(fromGround ? "从地面直接穿上，不经随身卡位；" : "")@(e.Weapon(wInst.ItemId) != null ? "开战停在第一个有武器的页，战斗中切换武器页0AP；同类型武器最多装备1件" : "穿戴不占随身卡位，重量计本人")</div>
+                }
+            }
+            @if (m.Instance is ItemInstance kInst && s.Battle == null && (kInst.IsCarried || kInst.Owner == s.CurrentLocation)
+                 && (kInst.MaxDurability.HasValue || e.Item(kInst.ItemId).IsEquipment))
+            {
+                @* B4（A05 §5；开发计划 v0.9 B4 H8/H9/H10）：选中有耐久的工具/装备时卡下给“维修·30分钟”，选中装备时给“拆解·15分钟”；
+                   单击直接开始、悬停在右栏看预测；不可用时按钮禁用并在下面写原因。手工制作面板里的“工具维护”保留。 *@
+                var kid = kInst.InstanceId;
+                var repairRc = e.RepairRecipe;
+                var salvageRc = e.SalvageRecipe;
+                var rreq = repairRc != null && kInst.MaxDurability.HasValue ? new ActionRequest { Type = ActionType.Craft, TargetId = repairRc.Id, InstanceId = kid } : null;
+                var sreq = salvageRc != null && e.Item(kInst.ItemId).IsEquipment ? new ActionRequest { Type = ActionType.Craft, TargetId = salvageRc.Id, InstanceId = kid } : null;
+                var rwhy = rreq == null ? null : G.Running ? "行动进行中" : e.CanStart(s, rreq);
+                var swhy = sreq == null ? null : G.Running ? "行动进行中" : e.CanStart(s, sreq);
+                <div class="tbar-row keep-row">
+                    @if (rreq != null)
+                    {
+                        <button type="button" class="tbar-go alt" disabled="@(rwhy != null)" title="@(rwhy ?? "单击直接开始；右侧显示预测")"
+                                @onmouseenter="() => G.Hover(rreq, RepairTitle)" @onmouseleave="() => G.Hover(null)"
+                                @onclick="() => StartKeep(rreq)">维修·@(repairRc!.BaseMinutes)分钟</button>
+                    }
+                    @if (sreq != null)
+                    {
+                        <button type="button" class="tbar-go alt" disabled="@(swhy != null)" title="@(swhy ?? "单击直接开始；右侧显示预测")"
+                                @onmouseenter="() => G.Hover(sreq, SalvageTitle)" @onmouseleave="() => G.Hover(null)"
+                                @onclick="() => StartKeep(sreq)">拆解·@(salvageRc!.BaseMinutes)分钟</button>
+                    }
+                </div>
+                @if (rwhy != null) { <div class="ca-note bad">维修：@rwhy</div> }
+                @if (swhy != null) { <div class="ca-note bad">拆解：@swhy</div> }
+                @if (sreq != null && swhy == null && e.SalvageOutput(kInst) is (string so, int sn))
+                {
+                    <div class="ca-note">拆解得@(e.ItemName(so))×@(sn)，放在当前地面；原装备移除，不给经验</div>
                 }
             }
         }
@@ -421,6 +454,17 @@
     }
 
     private const string ButcherTitle = "处理尸体";
+    private const string RepairTitle = "维修";
+    private const string SalvageTitle = "拆解";
+
+    private async Task StartKeep(ActionRequest r)
+    {
+        if (using_) return;
+        using_ = true;
+        G.Hover(null);
+        try { await G.StartAction(r); }
+        finally { using_ = false; }
+    }
     private const string FuseTitle = "吞噬融合";
 
     private async Task Fuse(ActionRequest r)

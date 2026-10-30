@@ -561,6 +561,65 @@ public class B4EquipTests : BattleTestBase
         Assert.That(E.IsLocked(s, it), Is.False);
     }
 
+    // ───────────── M118：界面文字与开发入口（H10） ─────────────
+
+    [Test]
+    public void H10_DetailLines_QualityAffixTierTraitSalvage()
+    {
+        var s = New();
+        var w = E.DebugCreateEquipment(s, "pike", "blue", ItemInstance.Carried);
+        var lines = E.EquipDetailLines(s, w).ToDictionary(x => x.Label + (x.Label == "附加词条" ? x.Value : ""), x => x.Value);
+        Assert.That(lines["品质"], Is.EqualTo("蓝（附加词条2条）"));
+        Assert.That(lines.Keys.Count(k => k.StartsWith("附加词条")), Is.EqualTo(2));
+        Assert.That(lines["类型"], Does.Contain("矛·T2").And.Contain("速度修正−1"));
+        Assert.That(lines["站位"], Does.Contain("使用位123 → 目标位123"));
+        Assert.That(lines["固定特性"], Does.Contain("架阵"));
+        Assert.That(lines["拆解"], Does.StartWith("废金属×3"));
+        var shirt = E.DebugCreateEquipment(s, "work_shirt", "white", ItemInstance.Carried);
+        var sl = E.EquipDetailLines(s, shirt).ToDictionary(x => x.Label, x => x.Value);
+        Assert.That(sl["固定效果"], Does.Contain("（生效中）"));
+        var ring = E.DebugCreateEquipment(s, "steady_ring", "white", ItemInstance.Carried);
+        Assert.That(E.EquipDetailLines(s, ring).Single(x => x.Label == "固定效果").Value, Does.Contain("当前只显示"));
+        Assert.That(E.EquipDetailLines(s, ring).Single(x => x.Label == "拆解").Value, Does.Contain("待策划确认"));
+        var shield = E.DebugCreateEquipment(s, "wooden_shield", "white", ItemInstance.Carried);
+        Assert.That(E.EquipDetailLines(s, shield).Any(x => x.Label == "技能" && x.Value.Contains("尚未开放")), Is.True);
+        Assert.That(E.EquipDetailLines(s, s.Items.First(i => i.ItemId == "lighter")), Is.Empty);
+        Assert.That(E.AffixText("durable"), Does.Contain("生成时已计入"));
+        Assert.That(E.AffixText("craftsman"), Does.Contain("生效中"));
+        Assert.That(E.AffixText("accurate"), Does.Contain("当前只显示"));
+    }
+
+    [Test]
+    public void H10_SummaryLines_CombatShownSurvivalLivePaused()
+    {
+        var s = New();
+        Wear(s, "scout_armor", EquipSlots.Armor);
+        Wear(s, "craft_coat", EquipSlots.Top);
+        var lines = E.EquipSummaryLines(s);
+        Assert.That(lines[0], Does.Contain("速度+1").And.Contain("护甲0.2").And.Contain("当前只显示"));
+        Assert.That(lines[1], Does.Contain("制造/建造工作量×0.9").And.Contain("生效中"));
+        s.Items.Single(i => i.ItemId == "scout_armor").Durability = 0;
+        Assert.That(E.EquipSummaryLines(s).Last(), Does.Contain("效果暂停").And.Contain("侦察护具"));
+    }
+
+    [Test]
+    public void H10_DevEntries_EquipmentSetAndNewItems()
+    {
+        var s = New();
+        var text = E.DebugGiveEquipmentSet(s, "green");
+        Assert.That(text, Does.Contain("绿色装备7件"));
+        foreach (var id in GameEngine.DevEquipmentSet)
+        {
+            var it = s.Items.Single(i => i.ItemId == id);
+            Assert.That(it.Owner, Is.EqualTo(s.CurrentLocation));
+            Assert.That(it.Quality, Is.EqualTo("green"));
+            Assert.That(E.SlotsFor(id), Is.Not.Empty, id);
+        }
+        Assert.That(GameEngine.DevEquipmentSet.Select(id => E.SlotsFor(id)[0]).Distinct().Count(), Is.EqualTo(6), "覆盖武器与五个非武器槽");
+        Assert.That(E.DebugGiveNewItems(s, "material"), Does.Contain("新物品（material）"));
+        Assert.That(s.Items.Any(i => i.ItemId == "steel" && i.Owner == s.CurrentLocation), Is.True);
+    }
+
     [Test]
     public void EQ03_GearWeightCountsOnPerson_NotRootCards()
     {

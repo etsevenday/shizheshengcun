@@ -81,6 +81,15 @@
                     <button class="secondary" @onclick="DevSubstance">普通活性物质1份</button>
                     <button class="secondary" @onclick="DevRecipeMats">金属矛/弩/弩矢材料各1次</button>
                 </div>
+                @* B4（开发计划 v0.9 B4 H10）：一组七件装备（每槽一件）按指定品质放当前地面；B4 新导入物品按类放当前地面 *@
+                <div class="btn-row">
+                    <button class="secondary" @onclick='() => DevEquip("white")'>给一组装备（白）</button>
+                    <button class="secondary" @onclick='() => DevEquip("green")'>给一组装备（绿）</button>
+                    <button class="secondary" @onclick='() => DevEquip("blue")'>给一组装备（蓝）</button>
+                    <button class="secondary" @onclick='() => DevNewItems("material")'>新物品（材料）</button>
+                    <button class="secondary" @onclick='() => DevNewItems("food")'>新物品（食品）</button>
+                    <button class="secondary" @onclick='() => DevNewItems("medical")'>新物品（医疗）</button>
+                </div>
                 <div class="btn-row">
                     @foreach (var en in G.E.Config.Enemies)
                     {
@@ -125,6 +134,10 @@
         DevDone("废金属、零件各1（开发用，可做一次工具维护）：" + G.E.DebugGiveCarriedOrGround(G.S, new[] { ("scrap", 1), ("parts", 1) }));
     }
     private void DevKit() => DevDone(G.E.DebugGiveDevKit(G.S));
+
+    private void DevEquip(string quality) => DevDone(G.E.DebugGiveEquipmentSet(G.S, quality));
+
+    private void DevNewItems(string kind) => DevDone(G.E.DebugGiveNewItems(G.S, kind));
 
     private void DevSubstance()
     {

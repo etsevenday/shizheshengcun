@@ -120,6 +120,33 @@ namespace Survival.Core.Engine
             s.Story = new StoryState { Legacy = true, BaobaoPresent = false };
         }
 
+        /// <summary>开发入口“给一组装备”的清单：每个槽各一件（武器两件不同 kind），覆盖有耐久/无耐久、可拆/待确认。</summary>
+        public static readonly string[] DevEquipmentSet =
+            { "machete", "wooden_shield", "leather_armor", "steady_ring", "work_shirt", "work_trousers", "repair_manual" };
+
+        /// <summary>
+        /// 开发入口（B4）：在当前地面放一组指定品质（white/green/blue）的装备，词条按兼容池照常抽；放地面不占随身卡位。返回给玩家看的说明。
+        /// </summary>
+        public string DebugGiveEquipmentSet(GameState s, string quality)
+        {
+            var made = DevEquipmentSet.Select(id => DebugCreateEquipment(s, id, quality, s.CurrentLocation)).ToList();
+            Normalize(s, s.CurrentLocation);
+            var text = $"开发：{Config.Equipment.QualityName(quality)}色装备{made.Count}件放在{LocName(s.CurrentLocation)}地面：" +
+                       string.Join("、", made.Select(i => ItemName(i.ItemId) + (i.Affixes is { Count: > 0 } a ? "（" + string.Join("、", a.Select(x => Affix(x)?.Name ?? x)) + "）" : "")));
+            Emit(s, GameEventKind.Info, text + "。");
+            return text;
+        }
+
+        /// <summary>开发入口（B4）：B4 新导入、只有定义的某类物品（material/food/medical）各 1 份放在当前地面。</summary>
+        public string DebugGiveNewItems(GameState s, string kind)
+        {
+            var ids = Config.Items.Where(i => i.Kind == kind && !i.IsEquipment && i.Desc.Contains("本版只有物品定义")).Select(i => i.Id).ToList();
+            foreach (var id in ids) CreateItems(s, id, 1, s.CurrentLocation);
+            var text = $"开发：新物品（{kind}）{ids.Count}种各1份放在{LocName(s.CurrentLocation)}地面";
+            Emit(s, GameEventKind.Info, text + "。");
+            return text;
+        }
+
         /// <summary>调试面板：在当前地点地面放一批常用物资，用于检查大量物资时的界面。</summary>
         public void DebugFillGround(GameState s)
         {

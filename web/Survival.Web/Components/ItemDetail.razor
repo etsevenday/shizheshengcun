@@ -41,7 +41,7 @@ else
             @* 工具、锅等单件实例与卡下操作条同样写“名称#实例”；可自用物品的摘要用内核的“饱食+35”写法，与卡片、操作条一致（试玩修复 B9） *@
             @if (!cfg.IsStackable || sel.Kind == SelectionKind.Tool && sel.InstanceId.HasValue && !potLiquid)
             {
-                <h2>@cfg.Name#@inst.InstanceId</h2>
+                <h2>@cfg.Name#@inst.InstanceId@if (cfg.IsEquipment) { <small class="qtag q-@(inst.Quality ?? "white")">@e.QualityName(inst)</small> }</h2>
             }
             else
             {
@@ -71,9 +71,14 @@ else
             }
             @if (e.Weapon(cfg.Id) is WeaponConfig wp)
             {
-                <div><span>武器</span><b>@e.SkillName(wp.SkillId) · 伤害@(Ui.N(wp.DamageMin))—@(Ui.N(wp.DamageMax)) · 命中能力@(Ui.T(wp.AccuracyRating)) · 暴击能力@(Ui.T(wp.CritRatingBase))</b></div>
+                <div><span>武器</span><b>@(wp.SkillId == "" ? "（无对应熟练度）" : e.SkillName(wp.SkillId)) · 伤害@(Ui.N(wp.DamageMin))—@(Ui.N(wp.DamageMax)) · 命中能力@(Ui.T(wp.AccuracyRating)) · 暴击能力@(Ui.T(wp.CritRatingBase))</b></div>
                 <div><span>攻击范围</span><b>@(wp.Targets == "front" ? "只打前排" : wp.RearDamageFactor < 1 ? $"可打后排（后排伤害×{Ui.T(wp.RearDamageFactor)}）" : "前后排")@(wp.UsesMagazine ? $" · 弹仓{inst.LoadedAmmo}/{wp.MagazineCapacity}（{e.ItemName(wp.AmmoId!)}）" : wp.ConsumesLooseAmmo ? $" · 每射消耗随身{e.ItemName(wp.AmmoId!)}1" : "")</b></div>
                 <div><span>基础体力</span><b>@Ui.T(wp.EnergyCost)/次（按熟练度折减）</b></div>
+            }
+            @* B4（A05 §1、§2、§4、§5；开发计划 v0.9 B4 H10）：品质、附加词条、阶、速度、站位、固定特性/效果、生效情况与拆解产出 *@
+            @foreach (var (label, value) in e.EquipDetailLines(s, inst))
+            {
+                <div class="@(label == "品质" ? "q-" + (inst.Quality ?? "white") : "")"><span>@label</span><b>@value</b></div>
             }
             @if (cfg.ShelfLifeMinutes.HasValue)
             {
