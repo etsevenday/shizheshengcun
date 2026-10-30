@@ -100,7 +100,7 @@ namespace Survival.Core.Engine
             var t = a.ToolInstanceId.HasValue ? FindItem(s, a.ToolInstanceId.Value) : null;
             if (t?.Durability == null || t.MaxDurability == null) return "目标工具已不在，未恢复耐久";
             var before = t.Durability.Value;
-            t.Durability = Math.Min(t.MaxDurability.Value, before + t.MaxDurability.Value * rc.RestoreOwnDurabilityMaxFraction);
+            t.Durability = Math.Min(t.MaxDurability.Value, before + t.MaxDurability.Value * RepairFraction(s, rc));
             return $"{ItemName(t.ItemId)}#{t.InstanceId}耐久{Fmt.N(before)}→{Fmt.N(t.Durability.Value)}/{Fmt.N(t.MaxDurability.Value)}";
         }
     }

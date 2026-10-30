@@ -69,6 +69,8 @@ namespace Survival.Core.Engine
                 ctx.Rates.Morale += c.FacilityEffects.ShelteredCampRestMoralePerHour;
             if (a.Type == ActionType.Sleep && ctx.Sheltered && fac.BedBuilt)
                 ctx.Rates.Energy += c.FacilityEffects.BedExtraSleepEnergyPerHour;
+            // 装备求生效果（R16、A05 §2/§4，B4 H3）：负小时率缩放（下限×0.75），正恢复先加算，之后才受精神低于阈值折半
+            ApplyGearRates(s, actor, a, ctx);
             if ((a.Type == ActionType.Rest || a.Type == ActionType.Sleep) && ctx.Rates.Energy > 0
                 && c.Thresholds["morale"].IsBelow(st.Morale))
                 ctx.Rates.Energy *= c.FacilityEffects.LowMoraleEnergyRecoveryFactor;
@@ -94,7 +96,7 @@ namespace Survival.Core.Engine
 
             if (ctx.IsWork)
             {
-                ctx.Factor = WorkFactor(s, actor, a.Type, ctx.FactorReasons);
+                ctx.Factor = WorkFactor(s, actor, a.Type, ctx.FactorReasons, a.TargetId);
             }
             return ctx;
         }
@@ -110,10 +112,13 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>M = min(上限, 夜间×负重×低体力)（主角）。</summary>
-        public double WorkFactor(GameState s, ActionType type, List<string>? reasons = null) => WorkFactor(s, s.Player, type, reasons);
+        public double WorkFactor(GameState s, ActionType type, List<string>? reasons = null, string? targetId = null) => WorkFactor(s, s.Player, type, reasons, targetId);
 
-        /// <summary>M = min(上限, 夜间×负重×低体力)。移动始终视为无照明；其他工作在火堆燃烧的地点不吃夜间系数。负重与体力按该角色本人。</summary>
-        public double WorkFactor(GameState s, ActorState actor, ActionType type, List<string>? reasons = null)
+        /// <summary>
+        /// M = min(上限, 夜间×负重×低体力)。移动始终视为无照明；其他工作在火堆燃烧的地点不吃夜间系数。负重与体力按该角色本人。
+        /// 再乘装备的求生工作量倍率（B4：A05 §4 末段“求生同类工作量合成下限×0.70，后乘现行S01工作倍率”，等价于基础工作量先乘装备倍率）。
+        /// </summary>
+        public double WorkFactor(GameState s, ActorState actor, ActionType type, List<string>? reasons = null, string? targetId = null)
         {
             var c = Config.WorkFactors;
             double f = 1;
@@ -140,7 +145,7 @@ namespace Survival.Core.Engine
                 f = c.Cap;
                 reasons?.Add($"倍率封顶 {c.Cap}");
             }
-            return f;
+            return f * GearWorkFactor(s, actor.Id, type, targetId, reasons);
         }
 
         /// <summary>
@@ -526,9 +531,10 @@ namespace Survival.Core.Engine
 
             if (a.HazardHit && res.Hazard != null)
             {
-                s.Stats.Add(StatId.Health, -res.Hazard.HealthLoss);
+                var loss = HazardLoss(s, res);
+                s.Stats.Add(StatId.Health, -loss);
                 s.Progress.LastDamageCause = $"搜集时{res.Hazard.Label}";
-                Emit(s, GameEventKind.Hazard, $"{res.Hazard.Label}，健康−{Fmt.T(res.Hazard.HealthLoss)}。");
+                Emit(s, GameEventKind.Hazard, $"{res.Hazard.Label}，健康−{Fmt.T(loss)}。");
                 if (s.Stats.Health <= 0) Kill(s, s.Progress.LastDamageCause);
             }
             return true;

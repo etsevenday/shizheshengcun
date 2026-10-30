@@ -232,6 +232,189 @@ public class B4EquipTests : BattleTestBase
         Assert.That(notes2, Is.Empty);
     }
 
+    // ───────────── M115：效果合成（R16） ─────────────
+
+    private ItemInstance Wear(GameState s, string itemId, string slot, string quality = "white", params string[] affixes)
+    {
+        var it = E.DebugCreateEquipment(s, itemId, quality, ItemInstance.EquipOwner(P0, slot));
+        if (affixes.Length > 0) it.Affixes = affixes.ToList();
+        return it;
+    }
+
+    [Test]
+    public void R16_SpeedPositiveCap3_NegativeStillCounts_ArmorCap09()
+    {
+        var s = New();
+        Wear(s, "barbed_spear", EquipSlots.Weapon1, "white", "swift");      // +1 +1
+        Wear(s, "hunter_bow", EquipSlots.Weapon2);                         // +1
+        Wear(s, "scout_armor", EquipSlots.Armor, "white", "swift");        // +1（swift 同名只取一次）
+        Wear(s, "swift_pendant", EquipSlots.CombatAccessory);              // +1，护甲−0.05
+        var fx = E.EquipmentEffects(s);
+        Assert.That(fx.SpeedPositiveRaw, Is.EqualTo(5), "固定 +1×4，两件上的 swift 同名只算一次 +1");
+        Assert.That(fx.Speed, Is.EqualTo(3), "正加成最多 +3");
+        Assert.That(fx.Armor, Is.EqualTo(0.15).Within(1e-9));
+        // 换重甲：负修正照算
+        var s2 = New();
+        Wear(s2, "heavy_armor", EquipSlots.Armor, "white", "heavy");
+        Wear(s2, "barbed_spear", EquipSlots.Weapon1);
+        var fx2 = E.EquipmentEffects(s2);
+        Assert.That(fx2.Speed, Is.EqualTo(1 - 2 - 1));
+        Assert.That(fx2.ArmorRaw, Is.EqualTo(0.73).Within(1e-9));
+        var s3 = New();
+        Wear(s3, "heavy_armor", EquipSlots.Armor, "white", "heavy");
+        Wear(s3, "wooden_shield", EquipSlots.Weapon1);
+        s3.Items.Single(i => i.ItemId == "heavy_armor").Affixes = new List<string> { "heavy" };
+        var fx3 = E.EquipmentEffects(s3);
+        Assert.That(fx3.Armor, Is.LessThanOrEqualTo(0.9));
+    }
+
+    [Test]
+    public void R16_AttackAffix_OnlyFromPageWeapon_NotBorrowed()
+    {
+        var s = New();
+        Wear(s, "machete", EquipSlots.Weapon1, "white", "accurate");
+        Wear(s, "wooden_spear", EquipSlots.Weapon2, "white", "piercing");
+        var p1 = E.EquipmentEffects(s, P0, 1);
+        var p2 = E.EquipmentEffects(s, P0, 2);
+        Assert.That((p1.Accuracy, p1.ArmorIgnore), Is.EqualTo((4.0, 0.0)));
+        Assert.That((p2.Accuracy, p2.ArmorIgnore), Is.EqualTo((0.0, 0.1)));
+    }
+
+    [Test]
+    public void EQ06_SurvivalClothes_NoCombatArmorOrSpeed()
+    {
+        var s = New();
+        foreach (var (id, slot) in new[] { ("expedition_coat", EquipSlots.Top), ("expedition_trousers", EquipSlots.Bottom), ("route_compass", EquipSlots.SurvivalAccessory) })
+            Wear(s, id, slot, "white", id == "expedition_coat" ? "economical" : id == "expedition_trousers" ? "surefoot" : "");
+        s.Items.Single(i => i.ItemId == "route_compass").Affixes = null;
+        var fx = E.EquipmentEffects(s);
+        Assert.That((fx.Speed, fx.Armor, fx.Accuracy, fx.Crit), Is.EqualTo((0.0, 0.0, 0.0, 0.0)), "求生衣物不加战斗甲/速");
+        Assert.That(fx.Factor("work.move"), Is.EqualTo(0.9));
+        Assert.That(fx.Factor("rate.nonCombat.hydration"), Is.EqualTo(0.95 * 0.97).Within(1e-12));
+        Assert.That(fx.Factor("rate.move.energy"), Is.EqualTo(0.95).Within(1e-12));
+    }
+
+    [Test]
+    public void EQ08_PassiveAffixes_NoApOrControlEffectsApplied()
+    {
+        // 词条里没有 AP、物资卡位、免疫类效果；控制/位移类只作展示，没有可叠加成无限链的数值钩子
+        var keys = Cfg.Affixes.SelectMany(a => a.Effects).Select(e => e.Key).Concat(Cfg.Gear.SelectMany(g => g.Effects).Select(e => e.Key)).Distinct().ToList();
+        Assert.That(keys.Any(k => k.Split('.').Any(p => p.Equals("ap", StringComparison.OrdinalIgnoreCase) || p.StartsWith("ap", StringComparison.OrdinalIgnoreCase) && p.Length <= 3)), Is.False);
+        Assert.That(keys.Any(k => k.Contains("card") || k.Contains("immun")), Is.False);
+    }
+
+    [Test]
+    public void R16_SameNameTakesStrongest_AffixMultiplies_FloorApplies()
+    {
+        var s = New();
+        Wear(s, "forage_jacket", EquipSlots.Top, "white", "economical");   // 采集负E×0.90
+        Wear(s, "work_trousers", EquipSlots.Bottom, "white", "economical"); // 同名 ×0.95 → 取强 0.90；同名词条只算一次
+        var fx = E.EquipmentEffects(s);
+        Assert.That(fx.Factor("rate.gather.energy"), Is.EqualTo(0.9));
+        Assert.That(fx.Factor("rate.nonCombat.hydration"), Is.EqualTo(0.97));
+        // 工作量：工匠围衣 0.90 × 熟作 0.97
+        var c = New();
+        Wear(c, "craft_coat", EquipSlots.Top, "white", "craftsman");
+        Assert.That(E.GearWorkFactor(c, P0, ActionType.Craft, "knife"), Is.EqualTo(0.9 * 0.97).Within(1e-12));
+        Assert.That(E.GearWorkFactor(c, P0, ActionType.Repair, "repair_selected_tool"), Is.EqualTo(1), "维护不是制造/建造");
+        Assert.That(E.GearWorkFactor(c, P0, ActionType.Travel, null), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void R16_ZeroDurability_PausesEffects_StillWornAndWeighted()
+    {
+        var s = New();
+        var vest = Wear(s, "heavy_armor", EquipSlots.Armor);
+        vest.Durability = 0;
+        var fx = E.EquipmentEffects(s);
+        Assert.That(fx.Armor, Is.EqualTo(0));
+        Assert.That(fx.Paused.Single(), Does.Contain("重型防护甲"));
+        Assert.That(E.WornItems(s), Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public void R16_Hooks_WorkRatesRestHazardRepairBandageEat()
+    {
+        // 制造：耐磨工作衣 ×0.95 进工作倍率
+        var s = New();
+        var basef = E.WorkFactor(s, ActionType.Craft);
+        Wear(s, "work_shirt", EquipSlots.Top);
+        var reasons = new List<string>();
+        Assert.That(E.WorkFactor(s, ActionType.Craft, reasons), Is.EqualTo(basef * 0.95).Within(1e-12));
+        Assert.That(reasons.Last(), Does.Contain("装备工作量×0.95"));
+
+        // 移动负体力：行路裤 ×0.90；非战斗负N/W：远征上衣 ×0.95
+        var t = New();
+        var a = new ActionState { Type = ActionType.Travel, TargetId = "field" };
+        var before = E.ComputeSegment(t, a);
+        Wear(t, "trail_trousers", EquipSlots.Bottom);
+        Wear(t, "expedition_coat", EquipSlots.Top);
+        var after = E.ComputeSegment(t, a);
+        Assert.That(after.Rates.Energy, Is.EqualTo(before.Rates.Energy * 0.9).Within(1e-9));
+        Assert.That(after.Rates.Satiety, Is.EqualTo(before.Rates.Satiety * 0.95).Within(1e-9));
+        Assert.That(after.Rates.Wakefulness, Is.EqualTo(before.Rates.Wakefulness), "清醒不在 N/W/E 范围");
+
+        // 睡眠正体力 +0.2（休养长裤）
+        var z = New();
+        var sleep = new ActionState { Type = ActionType.Sleep };
+        var e0 = E.ComputeSegment(z, sleep).Rates.Energy;
+        Wear(z, "recovery_trousers", EquipSlots.Bottom);
+        Assert.That(E.ComputeSegment(z, sleep).Rates.Energy, Is.EqualTo(e0 + 0.2).Within(1e-9));
+
+        // 划伤：采集手套概率 ×0.80（木材点）、加固长裤损失 ×0.80
+        var h = New();
+        var wood = Cfg.Resources.Single(r => r.NodeId == "wood");
+        var p0 = E.HazardChance(h, wood);
+        Wear(h, "gather_gloves", EquipSlots.SurvivalAccessory);
+        Wear(h, "reinforced_trousers", EquipSlots.Bottom);
+        Assert.That(E.HazardChance(h, wood), Is.EqualTo(p0 * 0.8).Within(1e-12));
+        Assert.That(E.HazardLoss(h, wood), Is.EqualTo(wood.Hazard!.HealthLoss * 0.8).Within(1e-12));
+        var box = Cfg.Resources.Single(r => r.NodeId == "misc_box");
+        Assert.That(E.HazardChance(h, box), Is.EqualTo(box.Hazard!.Probability), "手套只管木材/废料");
+
+        // 维修手册 25% 替代 20%
+        var rp = New();
+        var rc = Cfg.Recipes.Single(r => r.IsRepair);
+        Assert.That(E.RepairFraction(rp, rc), Is.EqualTo(0.2));
+        Wear(rp, "repair_manual", EquipSlots.SurvivalAccessory);
+        Assert.That(E.RepairFraction(rp, rc), Is.EqualTo(0.25));
+
+        // 护理笔记：非战斗包扎 +0.2；配给袋：非战斗食用正饱食 ×1.05
+        var m = New();
+        var heal = E.BandageHeal(m);
+        Wear(m, "medical_notes", EquipSlots.SurvivalAccessory);
+        Assert.That(E.BandageHeal(m), Is.EqualTo(heal + 0.2).Within(1e-12));
+        var mm = New();
+        Wear(mm, "ration_pouch", EquipSlots.SurvivalAccessory);
+        Assert.That(E.UseSatiety(mm, Cfg.Items.Single(i => i.Id == "canned_food").Use!), Is.EqualTo(35 * 1.05).Within(1e-9));
+        Assert.That(E.UseSatiety(mm, Cfg.Items.Single(i => i.Id == "cooked_root").Use!), Is.EqualTo(25 * 1.05).Within(1e-9));
+    }
+
+    [Test]
+    public void R16_WorkFloor070_RateFloor075()
+    {
+        // 人为叠出低于下限的组合：工作量下限 0.70（只有制造键能叠 0.90×0.97，不到下限）→ 用移动的两个键 0.90×0.95=0.855
+        var s = New();
+        Wear(s, "expedition_trousers", EquipSlots.Bottom);
+        Wear(s, "route_compass", EquipSlots.SurvivalAccessory);
+        Assert.That(E.GearWorkFactor(s, P0, ActionType.Travel, "field"), Is.EqualTo(0.9 * 0.95).Within(1e-12));
+        // 下限：直接改配置副本里的倍率验证夹紧
+        var cfg = Survival.Core.Config.ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));
+        cfg.Gear.Single(g => g.Id == "expedition_trousers").Effects[0].Value = 0.5;
+        cfg.Gear.Single(g => g.Id == "trail_trousers").Effects[0].Value = 0.5;
+        var e2 = new GameEngine(cfg);
+        var s2 = e2.NewGame(1);
+        e2.DebugLegacyStory(s2);
+        e2.DebugCreateEquipment(s2, "expedition_trousers", "white", ItemInstance.EquipOwner(P0, EquipSlots.Bottom)).Affixes = null;
+        Assert.That(e2.GearWorkFactor(s2, P0, ActionType.Travel, "field"), Is.EqualTo(0.7), "工作量合成下限×0.70");
+        var s3 = e2.NewGame(1);
+        e2.DebugLegacyStory(s3);
+        e2.DebugCreateEquipment(s3, "trail_trousers", "white", ItemInstance.EquipOwner(P0, EquipSlots.Bottom)).Affixes = null;
+        var a = new ActionState { Type = ActionType.Travel, TargetId = "field" };
+        var raw = cfg.HourlyRates["travel"].Energy;
+        Assert.That(e2.ComputeSegment(s3, a).Rates.Energy, Is.EqualTo(raw * 0.75).Within(1e-9), "负小时率合成下限×0.75");
+    }
+
     [Test]
     public void EQ03_GearWeightCountsOnPerson_NotRootCards()
     {

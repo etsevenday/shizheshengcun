@@ -74,7 +74,7 @@ namespace Survival.Core.Engine
                 if (trackFactor)
                 {
                     var reasons = new List<string>();
-                    var f = WorkFactor(c, r.Type, reasons);
+                    var f = WorkFactor(c, r.Type, reasons, r.TargetId);
                     var litNow = c.Locations[c.CurrentLocation].Facility.FireLit;
                     if (System.Math.Abs(f - prevFactor) > Eps)
                     {
@@ -157,7 +157,7 @@ namespace Survival.Core.Engine
             if (p.IsWork)
             {
                 var reasons = new List<string>();
-                p.FactorAtStart = WorkFactor(s, r.Type, reasons);
+                p.FactorAtStart = WorkFactor(s, r.Type, reasons, r.TargetId);
                 p.FactorReasons = reasons;
             }
             p.OutputPlace = $"{LocName(s.CurrentLocation)}地面";
@@ -219,8 +219,8 @@ namespace Survival.Core.Engine
                     p.BaseMinutes = res.BaseMinutes;
                     if (res.Hazard != null)
                     {
-                        p.HazardProbability = res.Hazard.Probability;
-                        p.HazardHealthLoss = res.Hazard.HealthLoss;
+                        p.HazardProbability = HazardChance(s, res);
+                        p.HazardHealthLoss = HazardLoss(s, res);
                         p.HazardLabel = res.Hazard.Label;
                     }
                     var tool = plan != null ? plan.Tool : res.ToolBonus != null ? BestTool(s, res.ToolBonus.ToolTag) : null;
@@ -358,7 +358,7 @@ namespace Survival.Core.Engine
                 }
             }
             if (p.WorkMinutes <= 0) p.WorkMinutes = p.BaseMinutes;
-            if (p.IsWork && p.FactorAtStart > 1 + Eps)
+            if (p.IsWork && System.Math.Abs(p.FactorAtStart - 1) > Eps)
                 p.Notes.Add($"当前工作倍率×{p.FactorAtStart:0.##}：{string.Join("，", p.FactorReasons)}");
         }
 

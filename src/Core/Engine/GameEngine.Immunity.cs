@@ -198,7 +198,9 @@ namespace Survival.Core.Engine
         // ───────────── 药物 ─────────────
 
         /// <summary>绷带一次的健康恢复量 1×(1+0.02×医疗L)（未扣除已满部分）。</summary>
-        public double BandageHeal(GameState s) => MedicalHeal(BandageItem?.Use?.Health ?? 0, SkillLevel(s, Medicine));
+        /// <summary>包扎回血：1×(1+0.02×医疗L)；非战斗再加护理笔记的 +0.2（A05 §2“非战斗有效包扎H恢复额外+0.2；不改冷却/病毒”，B4）。</summary>
+        public double BandageHeal(GameState s) =>
+            MedicalHeal(BandageItem?.Use?.Health ?? 0, SkillLevel(s, Medicine)) + (s.Battle == null ? EquipmentEffects(s).Add("bandage.health") : 0);
 
         /// <summary>绷带一次的病毒减量 2×(1+0.01×医疗L)。</summary>
         public double BandageVirusReduction(GameState s) => Inf.Bandage.Base * (1 + Inf.Bandage.PerLevel * SkillLevel(s, Medicine));
