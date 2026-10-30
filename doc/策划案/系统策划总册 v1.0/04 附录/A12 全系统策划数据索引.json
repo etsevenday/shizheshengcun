@@ -29901,7 +29901,8 @@
       "sourceQuestions": [
         "Q34B",
         "Q35A",
-        "Q36B"
+        "Q36B",
+        "Q37A"
       ],
       "compactHeightMaxInclusive": 800,
       "regularHeightMinInclusive": 801,
@@ -29923,8 +29924,8 @@
       "criticalRisksAndActionCostsAlwaysVisible": true,
       "resourceEnemyTraceAdjacentLayout": "image_above_text_at_all_screen_heights",
       "lowScreenSubjectHeightRatioAccepted": [
-        0.35,
-        0.45
+        0.38,
+        0.52
       ],
       "force236pxWideHorizontalCards": false,
       "priority": [
@@ -29934,7 +29935,23 @@
         "critical_risk_and_action",
         "approx_image_ratio"
       ],
-      "preserveSelectionBatchFoldAndGameplayState": true
+      "preserveSelectionBatchFoldAndGameplayState": true,
+      "q37ApprovalDate": "2026-10-31",
+      "compactPrimaryButtonPlacement": "independent_region_right_of_main_image_same_row",
+      "compactCardWidthsPx": {
+        "resource": 166,
+        "enemyTrace": 190,
+        "adjacentLocation": 190
+      },
+      "regularPrimaryButtonPlacement": "right_side_of_lower_information_area",
+      "statusAndOutputMaxVisibleLines": 1,
+      "riskAndUnavailableReasonMaxVisibleLines": 2,
+      "fullTextAccess": [
+        "hover",
+        "keyboard_focus",
+        "selected_object_detail"
+      ],
+      "riskIndicatorAlwaysVisible": true
     }
   },
   "gateContract": {
