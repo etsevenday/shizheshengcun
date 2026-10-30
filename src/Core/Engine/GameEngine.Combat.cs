@@ -54,13 +54,23 @@ namespace Survival.Core.Engine
         private static bool IsFront(BattleEnemy e) => e.Slot.StartsWith("F");
 
         /// <summary>
-        /// 当前武器（B3 H6、A10 §4.2、A05 §5）：当前武器页对应武器槽里的那把（战外为武器Ⅰ页）；空槽页即徒手（拳）。
-        /// 损坏、没子弹的武器仍是当前武器（照旧在指令上写原因）。
+        /// 当前武器（B3 H6、A10 §4.2、A05 §5）：当前武器页对应武器槽里的那把（战外为开战默认页，见 DefaultWeaponPage）；空槽页即徒手（拳）。
+        /// 损坏、没子弹的武器仍是当前武器（照旧在指令上写原因，Q39 选 A：坏或无弹不视为空槽、不变拳）。
         /// </summary>
         public WeaponConfig CurrentWeapon(GameState s, out ItemInstance? item)
         {
-            item = WeaponOnPage(s, s.Battle?.ActiveWeaponSlot ?? 1, out var w);
+            item = WeaponOnPage(s, s.Battle?.ActiveWeaponSlot ?? DefaultWeaponPage(s), out var w);
             return w;
+        }
+
+        /// <summary>
+        /// 开战默认停在哪一页（开发计划 v0.9 B3a H3）：第一个有武器的槽所在页——武器Ⅰ有武器为 1，武器Ⅰ空而武器Ⅱ有武器为 2，两槽都空为 1（拳页）。
+        /// 坏或没子弹的武器也算“有武器”（Q39）。战外的当前武器、系统说明指令一览按同一页。
+        /// </summary>
+        public int DefaultWeaponPage(GameState s)
+        {
+            if (WeaponOnPage(s, 1, out _) != null) return 1;
+            return WeaponOnPage(s, 2, out _) != null ? 2 : 1;
         }
 
         /// <summary>某武器页（1/2）上的武器：该武器槽的穿戴实例与定义；空槽为拳、实例为 null。</summary>
@@ -202,8 +212,8 @@ namespace Survival.Core.Engine
                 Surprise = surprise,
                 Context = context,
                 Tutorial = tutorial,
-                // 开战锁定两个武器槽，从武器Ⅰ页开始（B3 H6）；战内不换装、战后不回写
-                ActiveWeaponSlot = 1,
+                // 开战锁定两个武器槽（B3 H6）；停在第一个有武器的页，两槽都空才是武器Ⅰ拳页（B3a H3）；战内不换装、战后不回写
+                ActiveWeaponSlot = DefaultWeaponPage(s),
             };
             b.EncounterId = $"enc-{b.BattleId}";
             var k = 0;
