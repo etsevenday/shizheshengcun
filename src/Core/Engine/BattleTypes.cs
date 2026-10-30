@@ -8,7 +8,7 @@ namespace Survival.Core.Engine
         public string Action { get; set; } = "";
         /// <summary>目标敌人的本场序号（BattleEnemy.Index）；不需要目标为 null。</summary>
         public int? Target { get; set; }
-        /// <summary>换武器的目标实例（0 = 徒手）；用药的物品实例（为空时取随身最早一份）。</summary>
+        /// <summary>切换武器页（switch_weapon）的目标页号 1/2；用药的物品实例（为空时取随身最早一份）。</summary>
         public int? ItemInstanceId { get; set; }
         public string? RequestId { get; set; }
 
@@ -44,7 +44,8 @@ namespace Survival.Core.Engine
         public bool NeedsTarget { get; set; }
         public bool Available { get; set; }
         public string? Reason { get; set; }
-        /// <summary>换武器/用药的物品实例（每把随身武器、每种药各一条）。</summary>
+        /// <summary>用药的物品实例。</summary>
+
         public int? ItemInstanceId { get; set; }
         /// <summary>该指令当前可以选的目标序号。</summary>
         public List<int> Targets { get; set; } = new List<int>();

@@ -35,7 +35,7 @@ namespace Survival.Core.Engine
             "desperate_punch" => "勉强拳击",
             "guard" => "防御",
             "breathe" => "调整呼吸",
-            "switch_weapon" => "换武器",
+            "switch_weapon" => "切换武器页",
             "reload" => "装填",
             "bandage" => "包扎",
             "use_antibiotics" => "用抗生素",
@@ -53,27 +53,54 @@ namespace Survival.Core.Engine
 
         private static bool IsFront(BattleEnemy e) => e.Slot.StartsWith("F");
 
-        /// <summary>当前武器：随身的那把武器实例；不在随身（被拿走、损坏后仍可用来换）则为徒手。</summary>
+        /// <summary>
+        /// 当前武器（B3 H6、A10 §4.2、A05 §5）：当前武器页对应武器槽里的那把（战外为武器Ⅰ页）；空槽页即徒手（拳）。
+        /// 损坏、没子弹的武器仍是当前武器（照旧在指令上写原因）。
+        /// </summary>
         public WeaponConfig CurrentWeapon(GameState s, out ItemInstance? item)
         {
-            item = null;
-            var b = s.Battle;
-            var id = b != null ? b.WeaponInstanceId : WornItem(s, GameState.PlayerId, EquipSlots.Weapon1)?.InstanceId;
-            if (id.HasValue)
-            {
-                var it = FindItem(s, id.Value);
-                if (it != null && OnPlayer(it) && _weapons.TryGetValue(it.ItemId, out var w))
-                {
-                    item = it;
-                    return w;
-                }
-            }
-            return _weapons[Fists];
+            item = WeaponOnPage(s, s.Battle?.ActiveWeaponSlot ?? 1, out var w);
+            return w;
         }
 
-        /// <summary>随身全部武器实例（换武器、战前装备用）。</summary>
+        /// <summary>某武器页（1/2）上的武器：该武器槽的穿戴实例与定义；空槽为拳、实例为 null。</summary>
+        public ItemInstance? WeaponOnPage(GameState s, int page, out WeaponConfig weapon)
+        {
+            weapon = _weapons[Fists];
+            var slot = EquipSlots.WeaponSlotOfPage(page);
+            var it = slot != null ? WornItem(s, GameState.PlayerId, slot) : null;
+            if (it == null || !_weapons.TryGetValue(it.ItemId, out var w)) return null;
+            weapon = w;
+            return it;
+        }
+
+        /// <summary>本人身上（随身与穿戴）全部武器实例（开发机器人挑武器、旧调试用）。</summary>
         public List<ItemInstance> CarriedWeapons(GameState s) =>
             s.Items.Where(i => OnPlayer(i) && _weapons.ContainsKey(i.ItemId)).OrderBy(i => i.InstanceId).ToList();
+
+        /// <summary>
+        /// 切换武器页（A10 §4.2“切页只是切换本次可选技能组、零AP”、A05 §5、B3 H6）：战斗中随时可切（非本人激活也可查看），不耗 AP、不耗体力、
+        /// 不推进时间；两槽在开战时锁定，不能从随身换入第三把。界面切页时同时取消尚未提交的瞄准。页号随战斗存档。
+        /// </summary>
+        public string? WeaponPageBlocked(GameState s, int page)
+        {
+            if (s.Progress.Dead) return "角色已死亡";
+            if (s.Battle == null) return "不在战斗中";
+            if (DialogueLocked(s)) return DialogueLockedReason;
+            if (page != 1 && page != 2) return "只有武器Ⅰ、武器Ⅱ两页";
+            if (s.Battle.ActiveWeaponSlot == page) return $"已在{EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page)!)}页";
+            return null;
+        }
+
+        public ActionResult SelectWeaponPage(GameState s, int page, string? requestId = null)
+        {
+            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
+            var why = WeaponPageBlocked(s, page);
+            if (why != null) return ActionResult.Fail(why);
+            RememberRequest(s, requestId);
+            s.Battle!.ActiveWeaponSlot = page;
+            return ActionResult.Success();
+        }
 
         public double PlayerEffectiveSpeed(GameState s, BattleState b, double? energy = null)
         {
@@ -175,7 +202,8 @@ namespace Survival.Core.Engine
                 Surprise = surprise,
                 Context = context,
                 Tutorial = tutorial,
-                WeaponInstanceId = WornItem(s, GameState.PlayerId, EquipSlots.Weapon1)?.InstanceId,
+                // 开战锁定两个武器槽，从武器Ⅰ页开始（B3 H6）；战内不换装、战后不回写
+                ActiveWeaponSlot = 1,
             };
             b.EncounterId = $"enc-{b.BattleId}";
             var k = 0;
@@ -192,9 +220,6 @@ namespace Survival.Core.Engine
             b.Panic = Math.Max(pc.Range[0], Math.Min(pc.Range[1], (pc.InitialBase - s.Stats.Morale) / pc.InitialDivisor + b.FearPanic));
             b.PanicPeak = b.Panic;
             s.Battle = b;
-            // 当前武器若已不在随身，按徒手开始
-            CurrentWeapon(s, out var wi);
-            b.WeaponInstanceId = wi?.InstanceId;
             var names = string.Join("、", b.Enemies.Select(e => $"{e.Slot}{EnemyName(e)}"));
             var fearText = !b.FearSourceWorldId.HasValue ? ""
                 : b.Frightened ? $"（受惊：{_enemies[joined.First(w => w.Id == b.FearSourceWorldId).EnemyId].Name}，受惊率{Fmt.Pct(b.FearChance)}，恐慌+{Fmt.T(b.FearPanic)}）"
@@ -609,19 +634,7 @@ namespace Survival.Core.Engine
                 var why = CommandBlocked(s, BattleCommand.Of(id));
                 list.Add(new BattleCommandOption { Action = id, Label = ActionName(id), Group = "general", Ap = a.ApCost, Energy = id == "retreat" ? (a.Energy ?? 0) : 0, Available = why == null, Reason = why });
             }
-            var sw = Act("switch_weapon");
-            if (sw != null)
-            {
-                var cur = b.WeaponInstanceId;
-                var choices = CarriedWeapons(s).Where(i => i.InstanceId != cur).Select(i => (int?)i.InstanceId).ToList();
-                if (cur.HasValue) choices.Insert(0, 0);
-                foreach (var it in choices)
-                {
-                    var why = CommandBlocked(s, BattleCommand.Of("switch_weapon", null, it));
-                    var name = it == 0 ? "徒手" : $"{ItemName(FindItem(s, it!.Value)!.ItemId)}#{it}";
-                    list.Add(new BattleCommandOption { Action = "switch_weapon", Label = $"换{name}", Group = "general", Ap = sw.ApCost, ItemInstanceId = it, Available = why == null, Reason = why });
-                }
-            }
+            // 切换武器页不在指令条里：界面用武器Ⅰ/武器Ⅱ页签（SelectWeaponPage，0AP）
             foreach (var id in new[] { "bandage", "use_antibiotics", "use_antiviral_cure" })
             {
                 var a = Act(id);
@@ -655,8 +668,10 @@ namespace Survival.Core.Engine
             if (s.Battle != null)
             {
                 var seen = new HashSet<string>();
-                return BattleOptions(s).Where(o => seen.Add(o.Action)).Select(o =>
-                    o.Action == "switch_weapon" ? new BattleCommandOption { Action = o.Action, Label = ActionName(o.Action), Group = o.Group, Ap = o.Ap, Available = o.Available, Reason = o.Reason } : o).ToList();
+                var inBattle = BattleOptions(s).Where(o => seen.Add(o.Action)).ToList();
+                if (Act("switch_weapon") is CombatActionConfig swb)
+                    inBattle.Add(new BattleCommandOption { Action = "switch_weapon", Label = ActionName("switch_weapon"), Group = "general", Ap = swb.ApCost, Available = true });
+                return inBattle;
             }
             var list = new List<BattleCommandOption>();
             var w = CurrentWeapon(s, out var wi);
@@ -684,7 +699,7 @@ namespace Survival.Core.Engine
                 string? why = null;
                 if (id == "reload" && wi != null)
                     why = wi.LoadedAmmo >= w.MagazineCapacity ? "弹仓已满" : CarriedCount(s, w.AmmoId!) <= 0 ? $"随身没有{ItemName(w.AmmoId!)}" : null;
-                if (id == "switch_weapon" && wi == null && CarriedWeapons(s).Count == 0) why = "随身没有武器可换";
+
                 list.Add(new BattleCommandOption { Action = id, Label = ActionName(id), Group = "general", Ap = a.ApCost, Available = why == null, Reason = why });
             }
             foreach (var id in new[] { "bandage", "use_antibiotics", "use_antiviral_cure" })
@@ -746,6 +761,8 @@ namespace Survival.Core.Engine
         public string? CommandBlocked(GameState s, BattleCommand c)
         {
             var b = s.Battle;
+            // 切换武器页：ItemInstanceId 为目标页号 1/2；随时可切、0AP，不要求轮到自己（B3 H6）
+            if (c.Action == "switch_weapon") return c.ItemInstanceId.HasValue ? WeaponPageBlocked(s, c.ItemInstanceId.Value) : "请选择武器页（1或2）";
             if (s.Progress.Dead) return "角色已死亡";
             if (b == null) return "不在战斗中";
             if (DialogueLocked(s)) return DialogueLockedReason;
@@ -761,15 +778,7 @@ namespace Survival.Core.Engine
                 case "guard": return b.PlayerGuard ? "已在防御（不叠层）" : null;
                 case "breathe": return b.BreatheUsed ? "本回合已调整过呼吸" : null;
                 case "retreat": return b.RetreatUsed ? "本回合已尝试撤退" : null;
-                case "switch_weapon":
-                {
-                    if (!c.ItemInstanceId.HasValue) return "请选择要换的武器";
-                    if (c.ItemInstanceId == 0) return b.WeaponInstanceId == null ? "已经是徒手" : null;
-                    var it = FindItem(s, c.ItemInstanceId.Value);
-                    if (it == null || !OnPlayer(it) || !_weapons.ContainsKey(it.ItemId)) return "只能换随身的武器";
-                    if (b.WeaponInstanceId == it.InstanceId) return "已经拿着这把武器";
-                    return null;
-                }
+
                 case "reload":
                 {
                     if (!w.UsesMagazine || wi == null) return w.ConsumesLooseAmmo ? "弓不需要装填，射击直接消耗随身箭" : "当前武器不用装填";
@@ -801,13 +810,14 @@ namespace Survival.Core.Engine
             {
                 // v0.5 动作表：“仅体力不足正常攻击时”；弹仓空、耐久不足时应装填或换武器，不放开勉强拳击（试玩修复 L1）
                 if (s.Stats.Energy >= AttackEnergy(s, basic, w) - 1e-9)
-                    return "只在体力不足以普通攻击时可用" + (w.UsesMagazine && !AmmoReady(s, w, wi, 1) ? "；弹仓空请装填或换武器" : wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand) ? "；耐久不足请换武器" : "");
+                    return "只在体力不足以普通攻击时可用" + (w.UsesMagazine && !AmmoReady(s, w, wi, 1) ? "；弹仓空请装填或切换武器页" : wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand) ? "；耐久不足请切换武器页" : "");
             }
             else
             {
                 var energy = AttackEnergy(s, a, w);
                 if (s.Stats.Energy < energy - 1e-9) return $"体力不足（需{Fmt.N(energy)}，现有{Fmt.N(s.Stats.Energy)}）；可勉强拳击、防御、调整呼吸或撤退";
-                if (wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand)) return $"{w.Name}耐久不足（{DurabilityText(wi)}），换武器或徒手";
+                if (wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand)) return $"{w.Name}耐久不足（{DurabilityText(wi)}），可切换武器页";
+
                 var ammo = Math.Max(1, a.AmmoCost);
                 if (!AmmoReady(s, w, wi, ammo))
                     return w.UsesMagazine ? "弹仓空了：先装填" : $"随身没有{ItemName(w.AmmoId!)}";
@@ -915,14 +925,15 @@ namespace Survival.Core.Engine
                         break;
                     case "switch_weapon":
                     {
-                        // 写明换成哪一把，数值与普通攻击预览同一口径（含熟练度，不含招式与身体修正）（试玩修复 L8）
-                        var to = c.ItemInstanceId is int tid && tid > 0 ? FindItem(s, tid) : null;
-                        var tw = to == null ? _weapons[Fists] : _weapons[to.ItemId];
+                        // 切到哪一页、那页是什么武器，数值与普通攻击预览同一口径（含熟练度，不含招式与身体修正）
+                        var page = c.ItemInstanceId ?? (b.ActiveWeaponSlot == 1 ? 2 : 1);
+                        var to = WeaponOnPage(s, page, out var tw);
                         var st = WeaponStats(s, tw);
-                        var toName = to == null ? "徒手" : $"{tw.Name}#{to.InstanceId}";
-                        if (c.ItemInstanceId.HasValue) p.Title = $"换武器：{(wi == null ? "徒手" : $"{w.Name}#{wi.InstanceId}")} → {toName}";
+                        var pageName = EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page) ?? EquipSlots.Weapon1);
+                        var toName = to == null ? "空槽（拳）" : $"{tw.Name}#{to.InstanceId}";
+                        p.Title = $"切换到{pageName}页：{toName}";
                         p.Notes.Add($"{toName}：{SkillName(tw.SkillId)}{st.Level}级，伤害{Fmt.N(st.DamageMin)}—{Fmt.N(st.DamageMax)}，命中能力{Fmt.N(st.Accuracy)}，{(tw.Targets == "front" ? "只打前排" : tw.RearDamageFactor < 1 ? $"可打后排（×{Fmt.T(tw.RearDamageFactor)}）" : "前后排都可打")}{(to?.Durability != null ? $"，耐久{DurabilityText(to)}" : "")}{(tw.UsesMagazine && to != null ? $"，弹仓{to.LoadedAmmo}/{tw.MagazineCapacity}" : "")}");
-                        p.Notes.Add("从随身换武器，耗1AP，体力0");
+                        p.Notes.Add("切页0AP、不耗体力，只换本次可选技能组；两把武器开战时已锁定，不能从随身换入第三把");
                         break;
                     }
                     case "retreat":
@@ -979,10 +990,13 @@ namespace Survival.Core.Engine
         public ActionResult ExecuteCommand(GameState s, BattleCommand c)
         {
             if (SeenRequest(s, c.RequestId)) return ActionResult.Repeated();
+            // 切换武器页：0AP，不结束激活、不推进队列（B3 H6）
+            if (c.Action == "switch_weapon") return c.ItemInstanceId.HasValue ? SelectWeaponPage(s, c.ItemInstanceId.Value, c.RequestId) : ActionResult.Fail("请选择武器页（1或2）");
             var why = CommandBlocked(s, c);
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, c.RequestId);
             var b = s.Battle!;
+
             var a = Act(c.Action)!;
             var ap = a.ApCost < 0 ? b.PlayerAp : a.ApCost;
             b.PlayerAp -= ap;
@@ -1006,13 +1020,7 @@ namespace Survival.Core.Engine
                     BattleLog(s, $"你调整呼吸：体力{Fmt.N(e0)}→{Fmt.N(s.Stats.Energy)}，恐慌{Fmt.N(b.Panic)}。");
                     break;
                 }
-                case "switch_weapon":
-                {
-                    b.WeaponInstanceId = c.ItemInstanceId == 0 ? null : c.ItemInstanceId;
-                    var nw = CurrentWeapon(s, out var ni);
-                    BattleLog(s, $"你换上了{(ni == null ? "拳头" : $"{nw.Name}#{ni.InstanceId}")}。");
-                    break;
-                }
+
                 case "reload":
                 {
                     var need = w.MagazineCapacity - wi!.LoadedAmmo;

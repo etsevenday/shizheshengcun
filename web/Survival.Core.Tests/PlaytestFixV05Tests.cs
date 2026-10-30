@@ -84,18 +84,23 @@ public class PlaytestFixV05Tests : BattleTestBase
         Assert.That(s.Progress.Flags, Does.Contain("cooked"), "块根烤熟才打勾");
     }
 
-    /// <summary>L8：换武器预估写明换成哪一把；武器数值与普通攻击预览同一口径（含熟练度）。</summary>
+    /// <summary>
+    /// L8：切换武器页的预估写明切到哪一页、那页是哪一把；武器数值与普通攻击预览同一口径（含熟练度）。
+    /// B3 H6 改写：旧“从随身换武器 1AP”改为两个已锁定武器页之间 0AP 切换（武器在开战前已装备到武器Ⅱ）。
+    /// </summary>
     [Test]
     public void L8_SwitchWeaponPreview_NamesTarget_SameNumbers()
     {
         var s = Fight(43, "shambler");
         Ready(s);
-        var axe = E.CreateItems(s, "hatchet", 1, ItemInstance.Carried).Single();
-        var p = E.PreviewCommand(s, BattleCommand.Of("switch_weapon", null, axe.InstanceId));
-        Assert.That(p.Title, Does.Contain($"简易斧#{axe.InstanceId}"));
+        var axe = E.CreateItems(s, "hatchet", 1, ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Weapon2)).Single();
+        var p = E.PreviewCommand(s, BattleCommand.Of("switch_weapon", null, 2));
+        Assert.That(p.Title, Does.Contain($"武器Ⅱ页：简易斧#{axe.InstanceId}"));
+        Assert.That(p.Ap, Is.EqualTo(0));
         var st = E.WeaponStats(s, E.Weapon("hatchet")!);
         Assert.That(p.Notes[0], Does.Contain($"伤害{Fmt.N(st.DamageMin)}—{Fmt.N(st.DamageMax)}").And.Contain($"命中能力{Fmt.N(st.Accuracy)}"));
-        Assert.That(Cmd(s, "switch_weapon", null, axe.InstanceId).Ok, Is.True);
+        Assert.That(Cmd(s, "switch_weapon", null, 2).Ok, Is.True);
+
         var atk = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
         Assert.That(atk.DamageMin, Is.EqualTo(Math.Max(0, st.DamageMin - E.Enemy("shambler").Armor)).Within(1e-9), "普通攻击伤害=同口径伤害−护甲");
     }

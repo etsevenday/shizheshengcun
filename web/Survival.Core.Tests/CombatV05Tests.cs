@@ -94,11 +94,15 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("reload")), Does.Contain("随身没有"));
         E.DebugGive(s, "ammo_9mm", 3);
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("reload")), Is.Null);
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("switch_weapon", null, 0)), Is.Null, "可换徒手");
-        var axe = Arm(s, "hatchet");
+        // B3 H6 改写：旧“换徒手/换随身武器 1AP”改为两个武器页 0AP 切换；武器Ⅱ空槽页即拳
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("switch_weapon", null, 2)), Is.Null, "可切到空的武器Ⅱ页（拳）");
+        var axe = E.CreateItems(s, "hatchet", 1, ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Weapon2)).Single();
         axe.Durability = 0;
+        Assert.That(Cmd(s, "switch_weapon", null, 2).Ok, Is.True);
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("耐久不足"));
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("switch_weapon", null, gun.InstanceId)), Is.Null);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("switch_weapon", null, 1)), Is.Null, "可切回手枪页");
+        Assert.That(gun.IsWornBy(GameState.PlayerId), Is.True);
+
         Assert.That(E.BattleOptions(s).Any(o => o.Action == "aim"), Is.False, "没有瞄准");
     }
 
@@ -729,8 +733,11 @@ public class CombatV05Tests : BattleTestBase
         SetStats(s, 10, 80, 80, 18, 90, 60);
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("bandage")), Does.Contain("随身没有"));
         var ground = E.CreateItems(s, "hatchet", 1, "field").Single();
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("switch_weapon", null, ground.InstanceId)), Does.Contain("随身"));
+        // B3 H6 改写：战内只能在两个已锁定的武器页之间切换，不能从地面或随身换入第三把
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("switch_weapon", null, ground.InstanceId)), Does.Contain("只有武器Ⅰ、武器Ⅱ两页"));
+        Assert.That(E.EquipBlocked(s, GameState.PlayerId, ground.InstanceId, EquipSlots.Weapon1), Does.Contain("战斗中"));
         Assert.That(E.DoInstant(s, InstantRequest.Pickup(ground.InstanceId, 1)).Ok, Is.False, "战斗中不能拾取");
+
     }
 
     /// <summary>B528 不足体力且空武器：仍可勉强拳击、防御、恢复呼吸或撤退，无输入死锁。</summary>

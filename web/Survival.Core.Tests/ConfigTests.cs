@@ -421,6 +421,11 @@ public class ConfigTests : TestBase
         ((JObject)d["durability"]!["tools"]!).Remove("pot");
         ((JObject)d["panic"]!).Remove("surpriseBonus");
         ((JObject)d["xp"]!).Remove("groupAttackXpIsSingleCommand");
+        // 策划提交 f172677 B3（A10 §4.2、A05 §5、R02 §5）：旧“换武器1AP、从随身取”改为两个武器页 0AP 切换（穿戴槽）；新值由 B3EquipTests 核对
+        var sw = (JObject)((JArray)d["actions"]!).First(x => (string?)x["id"] == "switch_weapon");
+        sw.Remove("ap");
+        sw.Remove("sourceOwner");
+
         // Q7（R04 §8）：免疫正恢复×2、取消已感染免疫惩罚、高免疫门槛 85→80；新值由 V10ConfigTests.Q7_ImmunityInfection_MatchR04_8 核对
         foreach (var k in new[] { "healthyBonusPerHour", "shelteredSleepPerHour", "exposedSleepPerHour", "shelteredRestPerHour", "exposedRestPerHour" })
             ((JObject)d["immunity"]!).Remove(k);

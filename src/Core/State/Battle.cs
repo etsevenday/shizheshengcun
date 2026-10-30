@@ -162,8 +162,9 @@ namespace Survival.Core.State
         public bool PlayerSlowPending { get; set; }
         public bool PlayerSlowActive { get; set; }
 
-        /// <summary>当前武器（随身实例）；徒手为 null。</summary>
+        /// <summary>schema 8 的战内当前武器（随身实例引用）。只供 8→9 迁移读取（迁到武器Ⅰ后清空）；schema 9 起当前武器由 ActiveWeaponSlot 指向武器槽。</summary>
         public int? WeaponInstanceId { get; set; }
+
         /// <summary>当前武器页（1=武器Ⅰ、2=武器Ⅱ；A10 §4.2、B3 H6）：开战为 1，切页 0AP；随战斗存档。</summary>
         public int ActiveWeaponSlot { get; set; } = 1;
 

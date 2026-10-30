@@ -88,21 +88,29 @@ public class V10BattleLocalExecTests : BattleTestBase
         Assert.That(idx, Is.GreaterThan(0));
     }
 
+    /// <summary>
+    /// B3 H6 改写（原“换武器浮窗就地执行 1AP”）：武器页签切换 0AP、带 requestId 只执行一次、不结束激活；
+    /// 随身的第三把武器不出现在指令里，也不能换入。
+    /// </summary>
     [Test]
     public void SwitchWeapon_FromNearbyPopover_SameCommandOnce()
     {
         var s = Ready("shambler");
         var b = s.Battle!;
-        var knife = E.CreateItems(s, "stone_knife", 1, ItemInstance.Carried).Single();
-        var opt = E.BattleOptions(s).Single(o => o.Action == "switch_weapon" && o.ItemInstanceId == knife.InstanceId);
-        Assert.That(opt.Available, Is.True);
+        var knife = E.CreateItems(s, "stone_knife", 1, ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Weapon2)).Single();
+        E.CreateItems(s, "wooden_spear", 1, ItemInstance.Carried);
+        Assert.That(E.BattleOptions(s).Any(o => o.Action == "switch_weapon"), Is.False, "切页不在指令条，随身武器不能换入");
         var ap = b.PlayerAp;
-        var cmd = BattleCommand.Of("switch_weapon", null, knife.InstanceId).WithRequestId("sw-1");
+        var cmd = BattleCommand.Of("switch_weapon", null, 2).WithRequestId("sw-1");
         Assert.That(E.ExecuteCommand(s, cmd).Ok, Is.True);
         Assert.That(E.ExecuteCommand(s, cmd).Duplicate, Is.True);
-        Assert.That(b.WeaponInstanceId, Is.EqualTo(knife.InstanceId));
-        Assert.That(b.PlayerAp, Is.EqualTo(ap - opt.Ap));
+        Assert.That(b.ActiveWeaponSlot, Is.EqualTo(2));
+        Assert.That(E.CurrentWeapon(s, out var wi).Id, Is.EqualTo("stone_knife"));
+        Assert.That(wi!.InstanceId, Is.EqualTo(knife.InstanceId));
+        Assert.That(b.PlayerAp, Is.EqualTo(ap), "切页 0AP");
+        Assert.That(E.AwaitingPlayer(s), Is.True, "不结束激活");
     }
+
 
     [Test]
     public void LeftRightLayout_DoesNotChangeSlotsOrReach()

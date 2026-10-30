@@ -465,7 +465,12 @@ namespace Survival.Core.Save
             }
             else if (legacyId.HasValue)
                 s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"旧存档记录的当前武器#{legacyId}已不在随身，装备槽保持为空。" });
-            if (s.Battle != null) s.Battle.ActiveWeaponSlot = 1;
+            if (s.Battle != null)
+            {
+                s.Battle.ActiveWeaponSlot = 1;
+                s.Battle.WeaponInstanceId = null;
+            }
+
 
             s.LegacyEquippedWeaponId = null;
 

@@ -205,6 +205,99 @@ public class B3EquipTests : BattleTestBase
         Assert.That(wi!.InstanceId, Is.EqualTo(spear.InstanceId));
     }
 
+    // ───────────── M100：战内两个武器页 0AP ─────────────
+
+    private GameState ArmedFight(uint seed, out ItemInstance knife, out ItemInstance spear)
+    {
+        var s = New(seed);
+        knife = Give(s, "stone_knife");
+        spear = Give(s, "wooden_spear");
+        Assert.That(E.Equip(s, P0, knife.InstanceId, EquipSlots.Weapon1).Ok, Is.True);
+        Assert.That(E.Equip(s, P0, spear.InstanceId, EquipSlots.Weapon2).Ok, Is.True);
+        E.DebugTeleport(s, "field");
+        s.GameMinute = At(2, 9, 0);
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        s.WorldEnemies.Clear();
+        var w = E.DebugSpawnEnemy(s, "shambler", "field");
+        Assert.That(E.Approach(s, w.Id).Ok, Is.True);
+        return s;
+    }
+
+    [Test]
+    public void H6_BattleStartsOnPage1_SwitchZeroAp_AnyTime_SavedInBattle()
+    {
+        var s = ArmedFight(31, out var knife, out var spear);
+        Assert.That(s.Battle!.ActiveWeaponSlot, Is.EqualTo(1));
+        Assert.That(E.CurrentWeapon(s, out _).Id, Is.EqualTo("stone_knife"));
+        // 非本人激活也可切页查看（A10 §4.2）
+        Assert.That(E.AwaitingPlayer(s), Is.False, "开战后先推进队列，尚未轮到玩家");
+        Assert.That(E.SelectWeaponPage(s, 2).Ok, Is.True);
+
+        Assert.That(E.CurrentWeapon(s, out _).Id, Is.EqualTo("wooden_spear"));
+        Assert.That(E.SelectWeaponPage(s, 2).Reason, Does.Contain("已在武器Ⅱ页"));
+        Assert.That(E.SelectWeaponPage(s, 3).Ok, Is.False);
+        var json = SaveSerializer.Serialize(s);
+        var back = SaveSerializer.Deserialize(json, Cfg);
+        Assert.That(back.Battle!.ActiveWeaponSlot, Is.EqualTo(2), "战斗中存读档后当前页保留");
+        Assert.That(E.CurrentWeapon(back, out _).Id, Is.EqualTo("wooden_spear"));
+        ToPlayer(s);
+        var ap = s.Battle!.PlayerAp;
+        var energy = s.Stats.Energy;
+        Assert.That(Cmd(s, "switch_weapon", null, 1).Ok, Is.True);
+        Assert.That(s.Battle!.PlayerAp, Is.EqualTo(ap), "0AP");
+        Assert.That(s.Stats.Energy, Is.EqualTo(energy), "不耗体力");
+        Assert.That(knife.IsWornBy(P0) && spear.IsWornBy(P0), Is.True, "切页不改变装备归属");
+    }
+
+    [Test]
+    public void EQ01_AttackWearsOnlyUsedWeapon_PostBattleNoWriteBack()
+    {
+        var s = ArmedFight(32, out var knife, out var spear);
+        ToPlayer(s);
+        PlayerFirst(s);
+        ToPlayer(s);
+        Assert.That(E.SelectWeaponPage(s, 2).Ok, Is.True);
+        var kd = knife.Durability;
+        var sd = spear.Durability;
+        Force(s, AtLeast(0.999));
+        Assert.That(Cmd(s, "basic_attack", 1).Ok, Is.True);
+        Assert.That(spear.Durability, Is.EqualTo(sd - Cfg.Wear.PerExecutedAttackCommand).Within(1e-9), "只扣本次所用武器");
+        Assert.That(knife.Durability, Is.EqualTo(kd), "另一把不扣");
+        // 撤退结束战斗（停在武器Ⅱ页）：两把仍在原槽，页号不回写装备
+        Assert.That(Cmd(s, "end_turn").Ok, Is.True);
+        ToPlayer(s);
+        Assert.That(s.Battle!.ActiveWeaponSlot, Is.EqualTo(2));
+        Force(s, Below(0.0001));
+
+        Assert.That(Cmd(s, "retreat").Ok, Is.True);
+        Assert.That(s.Battle, Is.Null);
+        Assert.That(E.WornItem(s, P0, EquipSlots.Weapon1)!.InstanceId, Is.EqualTo(knife.InstanceId));
+        Assert.That(E.WornItem(s, P0, EquipSlots.Weapon2)!.InstanceId, Is.EqualTo(spear.InstanceId));
+        Assert.That(E.CurrentWeapon(s, out _).Id, Is.EqualTo("stone_knife"), "战外当前武器回到武器Ⅰ页");
+    }
+
+    [Test]
+    public void H6_EmptyPageIsFists_FullPagesHaveNoSeparateFists()
+    {
+        var s = New(33);
+        var knife = Give(s, "stone_knife");
+        Assert.That(E.Equip(s, P0, knife.InstanceId, EquipSlots.Weapon1).Ok, Is.True);
+        E.DebugTeleport(s, "field");
+        s.GameMinute = At(2, 9, 0);
+        s.WorldEnemies.Clear();
+        s.SpawnNextCheck = int.MaxValue;
+        var w = E.DebugSpawnEnemy(s, "shambler", "field");
+        Assert.That(E.Approach(s, w.Id).Ok, Is.True);
+        Assert.That(E.WeaponOnPage(s, 2, out var wp2), Is.Null);
+        Assert.That(wp2.IsFists, Is.True, "空槽页即拳");
+        var full = ArmedFight(34, out _, out _);
+        Assert.That(E.WeaponOnPage(full, 1, out var a1)!.ItemId, Is.EqualTo("stone_knife"));
+        Assert.That(E.WeaponOnPage(full, 2, out var a2)!.ItemId, Is.EqualTo("wooden_spear"));
+        Assert.That(a1.IsFists || a2.IsFists, Is.False, "两槽都有武器时不再提供单独徒手页");
+        Assert.That(E.BattleOptions(full).Any(o => o.Action == "switch_weapon"), Is.False);
+    }
+
     // ───────────── 8→9 迁移：旧当前武器进武器Ⅰ ─────────────
 
     [Test]
