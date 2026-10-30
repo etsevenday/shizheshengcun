@@ -59,8 +59,13 @@ namespace Survival.Core.State
         /// <summary>本场稳定实例序号（先手平手按它升序；玩家为 0）。</summary>
         public int Index { get; set; }
         public string EnemyId { get; set; } = "";
-        /// <summary>F1 / F2 / B1；死亡或逃离后清空。</summary>
+        /// <summary>
+        /// 敌方站位 "1"—"4"（R03 §1 四对四：1 最靠中央、4 最后；schema 12 起，旧 F1/F2/B1 迁为 1/2/3）；死亡或逃离后清空。
+        /// 每条完整指令（玩家指令或一次敌方行动）后存活者按原顺序从 1 起紧凑重排。
+        /// </summary>
         public string Slot { get; set; } = "";
+        /// <summary>站位号 1—4；不在场为 0。</summary>
+        [Newtonsoft.Json.JsonIgnore] public int Pos => int.TryParse(Slot, out var p) ? p : 0;
         public double Hp { get; set; }
         public bool Hostile { get; set; } = true;
         public bool Dead { get; set; }
@@ -169,6 +174,13 @@ namespace Survival.Core.State
         public int ActiveWeaponSlot { get; set; } = 1;
 
         public List<BattleEnemy> Enemies { get; set; } = new List<BattleEnemy>();
+        /// <summary>
+        /// 队伍容量 C（R03 §1、A11：1—4，含主角）：本场敌人数上限（入战与噪声增援累计都不超过它），战斗建立时锁存。
+        /// 容量随主线解锁在后续批次（B8/R31）；本批按配置 scope.defaultCapacity（开发假设 B6-1）。
+        /// </summary>
+        public int Capacity { get; set; }
+        /// <summary>我方站位（R03 §1）：按 1..实际人数紧凑排列的 actorId；本批只有主角（队友参战在 B8）。</summary>
+        public List<string> Allies { get; set; } = new List<string> { GameState.PlayerId };
         public List<BattleLoot> Loot { get; set; } = new List<BattleLoot>();
         /// <summary>战斗日志（最近 80 条），界面逐条展示。</summary>
         public List<string> Log { get; set; } = new List<string>();
@@ -185,6 +197,7 @@ namespace Survival.Core.State
             c.Queue = new List<int>(Queue);
             c.Initiative = new List<double>(Initiative);
             c.Enemies = Enemies.Select(e => e.Clone()).ToList();
+            c.Allies = new List<string>(Allies);
             c.Loot = Loot.Select(l => l.Clone()).ToList();
             c.Log = new List<string>(Log);
             return c;

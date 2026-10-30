@@ -137,45 +137,53 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("reload")), Is.EqualTo("弹仓已满"));
     }
 
-    /// <summary>B508 前排有敌时短刀选后排：禁止；矛可选但伤害×0.75。</summary>
+    /// <summary>
+    /// B508 按新规则改写（R03 §1、A05 §1 目标位，取代 v0.5 §07 前排屏障与矛后排×0.75）：石刀目标位 12 打不到 3 号位；
+    /// 木矛目标位 123 可打 3 号位，且伤害与打 1 号位相同（没有后排减伤）。
+    /// </summary>
     [Test]
     public void B508_RearNeedsReach()
     {
         var s = Fight(7, "shambler", "shambler", "crawler");
         Ready(s);
-        Assert.That(Enemy(s, 3).Slot, Is.EqualTo("B1"));
+        Assert.That(Enemy(s, 3).Slot, Is.EqualTo("3"));
         Arm(s, "stone_knife");
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 3)), Does.Contain("后排"));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 3)), Does.StartWith("射程不足").And.Contain("3号位").And.Contain("1、2号位"));
         Arm(s, "wooden_spear");
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 3)), Is.Null);
         var p = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 3)).Targets.Single();
-        Assert.That(p.RearPenalty, Is.True);
+        Assert.That(p.RearPenalty, Is.False);
         var front = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
-        Assert.That(p.DamageMax, Is.EqualTo(front.DamageMax * 0.75).Within(1e-9));
+        Assert.That(p.DamageMax, Is.EqualTo(front.DamageMax).Within(1e-9));
     }
 
-    /// <summary>B509 杀光前排后攻击仍在后排的敌：没有屏障即可攻击，不要求等轮末，矛也不吃后排减伤。</summary>
+    /// <summary>
+    /// B509 按新规则改写（R03 §1“死亡立即清位，完整指令后从后往前压紧”，取代“轮末压前”）：打倒 1 号位后，后面的敌人在这条指令后立刻往前补；
+    /// 只打 1 号位的简易斧可以直接打补上来的敌人。
+    /// </summary>
     [Test]
     public void B509_NoBarrier_RearReachable()
     {
         var s = Fight(8, "shambler", "shambler", "crawler");
         Ready(s);
         Arm(s, "hatchet");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 2)), Does.StartWith("射程不足"), "斧只打1号位");
         Enemy(s, 1).Hp = 0.01;
-        Enemy(s, 2).Hp = 0.01;
         Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
         Cmd(s, "basic_attack", 1);
+        Assert.That((Enemy(s, 2).Slot, Enemy(s, 3).Slot), Is.EqualTo(("1", "2")), "完整指令后立即压紧");
+        Enemy(s, 2).Hp = 0.01;
+        s.Battle!.PlayerActing = true;
+        s.Battle.PlayerAp = 2;
         Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
         Cmd(s, "basic_attack", 2);
-        Assert.That(Enemy(s, 3).Slot, Is.EqualTo("B1"), "仍在后排（轮末才压前）");
+        Assert.That(Enemy(s, 3).Slot, Is.EqualTo("1"));
         s.Battle!.PlayerActing = true;
-        s.Battle.PlayerAp = 1;
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 3)), Is.Null, "无前排屏障可直接攻击");
-        Arm(s, "wooden_spear");
-        Assert.That(E.PreviewCommand(s, BattleCommand.Of("basic_attack", 3)).Targets.Single().RearPenalty, Is.False);
+        s.Battle.PlayerAp = 2;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 3)), Is.Null, "补到1号位后斧可打");
     }
 
-    /// <summary>B510 敌人轮末压前：每轮每人只行动一次，队列游标正确。</summary>
+    /// <summary>B510 按新规则改写（压紧在每条完整指令后，不等轮末）：每轮每人只行动一次，队列游标正确，后面的敌人已在 1、2 号位。</summary>
     [Test]
     public void B510_RearAdvancesAtRoundEnd_EachActsOnce()
     {
@@ -186,6 +194,7 @@ public class CombatV05Tests : BattleTestBase
         Arm(s, "hatchet");
         Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
         Cmd(s, "basic_attack", 1);
+        Assert.That((Enemy(s, 2).Slot, Enemy(s, 3).Slot), Is.EqualTo(("1", "2")), "指令后立即压紧");
         Cmd(s, "end_turn");
         var round = b.Round;
         var acted = new List<int>();
@@ -196,7 +205,7 @@ public class CombatV05Tests : BattleTestBase
             if (before > 0) acted.Add(before);
         }
         Assert.That(acted, Is.Unique, "每个敌人每轮只激活一次");
-        Assert.That(Enemy(s, 3).Slot, Is.EqualTo("F1"), "后排压到最左空前排");
+        Assert.That((Enemy(s, 2).Slot, Enemy(s, 3).Slot), Is.EqualTo(("1", "2")));
         Assert.That(b.Round, Is.EqualTo(round + 1));
     }
 
@@ -423,11 +432,27 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(SaveSerializer.Serialize(t), Is.EqualTo(SaveSerializer.Serialize(s)), "读档后继续同一序列");
     }
 
-    /// <summary>B521 噪声100且敌满3：增援等待空位，整场最多一次，只调用同地现有丧尸。</summary>
+    /// <summary>
+    /// B521 按新规则改写（R05 §4、R03 §1 容量 C：场上存活加增援、本场累计投入都不超过 C，取代“敌满3等空位”）：
+    /// 容量 3、开场 3 敌时打倒一只后累计投入仍是 3，噪声满也不增援；开场 2 敌时下一轮补进 3 号位，整场最多一次，只调用同地现有丧尸。
+    /// </summary>
     [Test]
-    public void B521_Reinforcement_WaitsForSpace_Once()
+    public void B521_Reinforcement_CapacityCumulative()
     {
-        var s = Fight(20, "shambler", "shambler", "shambler");
+        var full = Fight(20, "shambler", "shambler", "shambler");
+        E.DebugSpawnEnemy(full, "crawler", "field");
+        Ready(full);
+        Assert.That(full.Battle!.Capacity, Is.EqualTo(3));
+        full.Battle.ReinforcementRequested = true;
+        Enemy(full, 1).Dead = true;
+        Enemy(full, 1).Slot = "";
+        Cmd(full, "end_turn");
+        var fb = full.Battle!;
+        while (full.Battle != null && fb.Round == 1) { if (fb.Cursor < fb.Queue.Count && fb.Queue[fb.Cursor] > 0) { fb.Cursor++; continue; } E.BattleStep(full); }
+        Assert.That(fb.Enemies.Count, Is.EqualTo(3), "累计投入已达容量C=3，不增援");
+        Assert.That(fb.ReinforcementUsed, Is.False);
+
+        var s = Fight(20, "shambler", "shambler");
         var extra1 = E.DebugSpawnEnemy(s, "crawler", "field");
         var extra2 = E.DebugSpawnEnemy(s, "shambler", "field");
         Ready(s);
@@ -441,12 +466,8 @@ public class CombatV05Tests : BattleTestBase
         Cmd(s, "end_turn");
         var b = s.Battle;
         while (s.Battle != null && b.Round == 1) { if (b.Cursor < b.Queue.Count && b.Queue[b.Cursor] > 0) { b.Cursor++; continue; } E.BattleStep(s); }
-        Assert.That(b.Enemies.Count, Is.EqualTo(3), "满3时等待空位");
-        Assert.That(b.ReinforcementUsed, Is.False);
-        Enemy(s, 1).Dead = true;
-        Enemy(s, 1).Slot = "";
-        while (s.Battle != null && b.Round == 2) { if (b.Cursor < b.Queue.Count && b.Queue[b.Cursor] > 0) { b.Cursor++; continue; } if (E.AwaitingPlayer(s)) Cmd(s, "end_turn"); else E.BattleStep(s); }
-        Assert.That(b.Enemies.Count, Is.EqualTo(4), "有空位后加入");
+        Assert.That(b.Enemies.Count, Is.EqualTo(3), "下一轮轮初补进");
+        Assert.That(b.Enemies.Last().Slot, Is.EqualTo("3"), "排在最后一个空位");
         Assert.That(b.Enemies.Last().WorldId, Is.EqualTo(extra1.Id), "调用同地现有、最早的丧尸，保留原ID与类型");
         Assert.That(b.Enemies.Last().EnemyId, Is.EqualTo("crawler"));
         Assert.That(E.LiveCount(s), Is.EqualTo(live), "世界活敌总数不增加");

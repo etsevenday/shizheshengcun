@@ -56,8 +56,9 @@ else if (b != null)
     var sel = G.BattleAction == null ? null : opts.FirstOrDefault(o => o.Action == G.BattleAction && (G.BattleItem == null || o.ItemInstanceId == G.BattleItem));
     var waiting = !e.AwaitingPlayer(s);
     var locked = waiting || G.BattleBusy;
-    var front = cfg.Scope.Slots.Where(x => x.StartsWith("F")).ToList();
-    var back = cfg.Scope.Slots.Where(x => !x.StartsWith("F")).ToList();
+    @* 四对四（R03 §1）：敌方左至右 1/2/3/4，1 最靠中央；两行战斗里 1、2 号位一列，3、4 号位一列 *@
+    var front = cfg.Scope.Slots.Take(2).ToList();
+    var back = cfg.Scope.Slots.Skip(2).ToList();
     var apMax = cfg.Scope.HumanApPerActivation;
     var aiming = G.BattleAiming;
     var aimSet = G.AimTargets();

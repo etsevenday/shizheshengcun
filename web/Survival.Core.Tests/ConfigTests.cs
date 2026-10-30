@@ -437,6 +437,10 @@ public class ConfigTests : TestBase
         ((JObject)d["skillGrowth"]!).Remove("skillLevelCap");
         foreach (var w in ((JArray)d["weapons"]!).Where(w => (string?)w["id"] == "hatchet")) ((JObject)w).Remove("skillId");
         foreach (var a in ((JArray)d["actions"]!).Where(a => (string?)a["id"] is "cleave" or "cut")) ((JObject)a).Remove("skills");
+        // B6（R03 §1—§6 四对四战斗内核）：站位改 1—4、容量C、新增换位；新值由 B6CombatTests 核对
+        foreach (var k in new[] { "maxEnemies", "slots" }) ((JObject)d["scope"]!).Remove(k);
+        var designActionIds = ((JArray)d["actions"]!).Select(a => (string)a["id"]!).ToList();
+        mapped["combatActions"] = new JArray(designActionIds.Select(id => ((JArray)mapped["combatActions"]!).First(a => (string?)a["id"] == id)));
         mapped["skills"] = new JArray(((JArray)d["skills"]!).Select(x => ((JArray)mapped["skills"]!).First(m => (string?)m["id"] == (string?)x["id"])));
         // B4（A05 §1）：weapons 新增 27 件，旧 12 行原值不动——按 ID 取出旧行再逐字段比对
         var designWeaponIds = ((JArray)d["weapons"]!).Select(w => (string)w["id"]!).ToList();

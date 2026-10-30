@@ -211,7 +211,7 @@ public class B5SkillTests : BattleTestBase
         var s = New();
         var json = OldSave(s, new Dictionary<string, (int, long)> { ["blade"] = (7, 123), ["crafting"] = (13, 40), ["medicine"] = (10, 5) });
         var m = Survival.Core.Save.SaveSerializer.Deserialize(json, Cfg, out var notes);
-        Assert.That(m.SchemaVersion, Is.EqualTo("11"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "11 之后继续升到当前版本");
         var p = m.Player.Skills;
         Assert.That(p.Keys, Is.EquivalentTo(Cfg.Skills.Select(x => x.Id)), "十五门");
         Assert.That((p["blade"].Level, p["blade"].Xp), Is.EqualTo((7, 123L)), "刀剑沿用旧刀斧");

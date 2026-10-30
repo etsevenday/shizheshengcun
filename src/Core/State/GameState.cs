@@ -31,7 +31,7 @@ namespace Survival.Core.State
         /// "10" 起装备实例带品质与附加词条（A05 §4、R02 §2/§3，开发计划 v0.9 B4）；
         /// "11" 起熟练度为十五门、最高 10 级，角色带按世界日的经验计数，记录走过的物理边（A06 §1–§4、R01 §5，开发计划 v0.9 B5）。
         /// </summary>
-        public const string CurrentSchema = "11";
+        public const string CurrentSchema = "12";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";

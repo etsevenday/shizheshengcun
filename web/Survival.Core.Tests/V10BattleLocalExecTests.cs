@@ -58,7 +58,7 @@ public class V10BattleLocalExecTests : BattleTestBase
     {
         var s = Ready("shambler", "shambler");
         var b = s.Battle!;
-        var target = b.Alive.First(x => x.Slot.StartsWith("F"));
+        var target = b.Alive.First(x => x.Pos <= 2);
         var p = E.PreviewCommand(s, BattleCommand.Of("basic_attack", target.Index));
         Assert.That(p.Ok, Is.True);
         // 预览后目标倒下：近处确认重验，原目标的旧预览不能被执行，也不暗换到另一只
@@ -115,13 +115,13 @@ public class V10BattleLocalExecTests : BattleTestBase
     [Test]
     public void LeftRightLayout_DoesNotChangeSlotsOrReach()
     {
-        // 前排 F1/F2、后排 B1：屏幕左右只是视觉映射，前排武器打不到后排、槽位与实例 ID 不变
+        // B6 按新规则改写（R03 §1）：敌方 1/2/3 号位；屏幕左右只是视觉映射，拳（目标位 12）打不到 3 号位，站位与实例 ID 不变
         var s = Ready("shambler", "shambler", "shambler");
         var b = s.Battle!;
-        Assert.That(b.Alive.Select(x => x.Slot), Is.EquivalentTo(new[] { "F1", "F2", "B1" }));
-        var back = b.Alive.Single(x => x.Slot == "B1");
+        Assert.That(b.Alive.Select(x => x.Slot), Is.EquivalentTo(new[] { "1", "2", "3" }));
+        var back = b.Alive.Single(x => x.Slot == "3");
         var attack = E.BattleOptions(s).Single(o => o.Action == "basic_attack");
-        Assert.That(attack.Targets, Does.Not.Contain(back.Index), "徒手只打前排，前排有敌时后排不可选");
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", back.Index)), Does.StartWith("后排"));
+        Assert.That(attack.Targets, Does.Not.Contain(back.Index), "拳只打1、2号位");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", back.Index)), Does.StartWith("射程不足"));
     }
 }

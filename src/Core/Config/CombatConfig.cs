@@ -37,7 +37,10 @@ namespace Survival.Core.Config
     {
         public int PlayerCount { get; set; } = 1;
         public int MaxEnemies { get; set; } = 3;
+        /// <summary>每侧站位 "1"—"4"（R03 §1 四对四）。</summary>
         public List<string> Slots { get; set; } = new List<string>();
+        /// <summary>队伍容量 C 的默认值（开发假设 B6-1：容量随主线解锁在 B8/R31 之前，取现行单场敌人上限 3）。</summary>
+        public int DefaultCapacity { get; set; } = 3;
         public int HumanApPerActivation { get; set; } = 2;
         public int EnemyActionsPerActivation { get; set; } = 1;
         public double BasePlayerSpeed { get; set; }

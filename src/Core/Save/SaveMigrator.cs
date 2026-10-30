@@ -35,6 +35,7 @@ namespace Survival.Core.Save
         public const string Schema8 = "8";
         public const string Schema9 = "9";
         public const string Schema10 = "10";
+        public const string Schema11 = "11";
 
         /// <summary>升级到当前版本，返回给玩家看的迁移说明（无变化时为空）。冲突时抛 SaveMigrationConflictException，状态不变。</summary>
         public static List<string> Migrate(GameState s, GameConfig config)
@@ -57,6 +58,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema8) From8To9(s, config, notes);
             if (s.SchemaVersion == Schema9) From9To10(s, config, notes);
             if (s.SchemaVersion == Schema10) From10To11(s, config, notes);
+            if (s.SchemaVersion == Schema11) From11To12(s, config, notes);
             return notes;
         }
 
@@ -564,7 +566,35 @@ namespace Survival.Core.Save
                 notes.Add(note);
                 s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = note + "。" });
             }
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（十五门十级熟练度）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema11}（十五门十级熟练度）。" });
+            s.SchemaVersion = Schema11;
+        }
+
+        // ───────────────────────── 11 → 12 ─────────────────────────
+
+        /// <summary>
+        /// 策划提交 f172677 B6（R03 §1—§6，开发计划 v0.9 B6）：四对四战斗内核。只有进行中的战斗需要迁移——
+        /// 敌方旧站位 F1/F2/B1 改为 1/2/3 号位并紧凑排位；容量 C 按默认值锁存（不少于场上已有敌人数，不删已在场的敌人）；
+        /// 我方站位只有主角。轮中进度（队列、游标、AP）原样保留，本轮照旧走完，下一轮起按新规则排序。不补发、不重抽。
+        /// </summary>
+        private static void From11To12(GameState s, GameConfig config, List<string> notes)
+        {
+            var b = s.Battle;
+            if (b != null)
+            {
+                var map = new Dictionary<string, int> { ["F1"] = 1, ["F2"] = 2, ["B1"] = 3 };
+                var k = 1;
+                foreach (var e in b.Enemies.Where(e => !e.Dead && !e.Fled).OrderBy(e => map.TryGetValue(e.Slot, out var p) ? p : 9).ThenBy(e => e.Index))
+                    e.Slot = (k++).ToString();
+                foreach (var e in b.Enemies.Where(e => e.Dead || e.Fled)) e.Slot = "";
+                var cap = Math.Max(1, Math.Min(config.Scope.Slots.Count, config.Scope.DefaultCapacity));
+                b.Capacity = Math.Max(cap, b.Enemies.Count);
+                b.Allies = new List<string> { GameState.PlayerId };
+                var note = "进行中的战斗改为四对四站位：敌人按原顺序排到1—" + (k - 1) + "号位，本轮照旧走完，下一轮起按新的速度与行动点规则";
+                notes.Add(note);
+                s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = note + "。" });
+            }
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（四对四战斗内核）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 
