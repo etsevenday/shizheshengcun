@@ -152,29 +152,6 @@
                     </div>
                     @if (bwhy != null) { <div class="ca-note bad">处理尸体：@bwhy</div> }
                 }
-                @if (m.Instance != null && m.Instance.IsCarried && e.Weapon(m.Instance.ItemId) != null)
-                {
-                    @* B3（R02 §1、A05 §5、A10 §7.2；开发计划 v0.9 B3 H5/H9）：随身武器装备到武器Ⅰ/武器Ⅱ，0 时间、按最终状态原子校验；
-                       同类型最多1件，不合法时按钮禁用并写原因。穿戴后不占物资卡、重量照计；战斗中两把锁定只能切页。 *@
-                    var wid = m.Instance.InstanceId;
-                    var choices = e.EquipChoices(s, GameState.PlayerId, wid);
-                    <div class="tbar-row equip-to">
-                        @foreach (var (slot, why) in choices)
-                        {
-                            var cur = e.WornItem(s, GameState.PlayerId, slot);
-                            var tip = why ?? (cur == null ? $"装备到{EquipSlots.Name(slot)}（不占物资卡，不耗时）" : $"装备到{EquipSlots.Name(slot)}，换下{e.ItemName(cur.ItemId)}回到随身");
-                            <button type="button" class="tbar-go alt" disabled="@(why != null)" title="@tip" @onclick="() => G.Equip(wid, slot)">装备到@(EquipSlots.Name(slot))</button>
-                        }
-                    </div>
-                    @foreach (var (slot, why) in choices.Where(c => c.reason != null).GroupBy(c => c.reason).Select(g => g.First()))
-                    {
-                        <div class="ca-note bad">@(choices.All(c => c.reason == why) ? "" : $"{EquipSlots.Name(slot)}：")@why</div>
-                    }
-                    @if (choices.Any(c => c.reason == null))
-                    {
-                        <div class="ca-note">开战从武器Ⅰ页开始，战斗中切换武器页0AP；同类型武器最多装备1件</div>
-                    }
-                }
                 @if (m.PotInstance is ItemInstance pot && e.Location(s.CurrentLocation).HasFire)
                 {
                     e.MaxPutInFire(s, pot, out var fireWhy);
@@ -186,6 +163,44 @@
                 @if (invalid) { <div class="ca-note bad">请输入 1 到 @m.Available 之间的数字</div> }
                 else if (m.ToCarried && (m.Max < 1 || tooHeavy)) { <div class="ca-note bad">@(G.PickupLimitText(m.ItemId, m.Max < 1 ? 1 : n, m.Instance ?? m.Head) ?? $"最多可取{m.Max}份")</div> }
                 else { <div class="ca-note @(after > e.Config.Carry.SoftGrams ? "warn" : "")">@(verb)后随身@(Ui.Kg(after))公斤@(after > e.Config.Carry.SoftGrams ? $"，超过{e.Config.Carry.SoftGrams / 1000}公斤会减速" : "")@(m.ToCarried ? $" · 随身{e.RootCardsAfter(s, m.Instance ?? m.Head, invalid ? 0 : n, null, 0)}/{e.MaxRootCards}张卡" : "") · 不耗时</div> }
+            }
+            @if (m.Instance is ItemInstance wInst && e.Weapon(wInst.ItemId) is { IsFists: false } && s.Battle == null
+                 && ((wInst.IsCarried && (m.Available > 0 || moveBusy)) || (wInst.Owner == s.CurrentLocation && !moveBusy && m.Available > 0)))
+            {
+                @* B3（R02 §1、A05 §5、A10 §7.2；开发计划 v0.9 B3 H5/H9）与 B3a（Q40 选 B、Q42 选 A）：随身或当前地面的武器“装备到武器Ⅰ/武器Ⅱ”，
+                   0 时间、按最终状态原子校验；同类型最多1件，不合法时按钮禁用并写原因。随身↔穿戴在行动进行中、敌踪待选时也可（被行动占用的除外）；
+                   地面直穿沿拾取条件（空闲、无敌踪），不先临时进五卡。目标槽旧件默认回随身，放不下时另给“旧件放当前地面”的明确按钮，不点即取消、不自动丢。 *@
+                var wid = wInst.InstanceId;
+                var fromGround = !wInst.IsCarried;
+                var choices = e.EquipChoices(s, GameState.PlayerId, wid);
+                <div class="tbar-row equip-to">
+                    @foreach (var (slot, why) in choices)
+                    {
+                        var cur = e.WornItem(s, GameState.PlayerId, slot);
+                        var (eg, ec) = e.EquipOutcome(s, GameState.PlayerId, wInst, slot, false);
+                        var tip = why ?? $"{(fromGround ? "从地面直接" : "")}装备到{EquipSlots.Name(slot)}{(cur == null ? "" : $"，换下{e.ItemName(cur.ItemId)}#{cur.InstanceId}回到随身")} · 装备后本人{Ui.Kg(eg)}公斤 · 随身{ec}/{e.MaxRootCards}张 · 不耗时";
+                        <button type="button" class="tbar-go alt" disabled="@(why != null)" title="@tip" @onclick="() => G.Equip(wid, slot)">装备到@(EquipSlots.Name(slot))</button>
+                    }
+                </div>
+                @foreach (var (slot, why) in choices.Where(c => c.reason != null))
+                {
+                    var cur = e.WornItem(s, GameState.PlayerId, slot);
+                    if (cur == null || e.EquipBlocked(s, GameState.PlayerId, wid, slot, oldToGround: true) != null) continue;
+                    var (gg, gc) = e.EquipOutcome(s, GameState.PlayerId, wInst, slot, true);
+                    var curName = $"{e.ItemName(cur.ItemId)}#{cur.InstanceId}";
+                    <div class="tbar-row equip-to">
+                        <button type="button" class="tbar-go alt wrap" title="@($"装备到{EquipSlots.Name(slot)}，换下的{curName}放到{e.LocName(s.CurrentLocation)}地面 · 装备后本人{Ui.Kg(gg)}公斤 · 随身{gc}/{e.MaxRootCards}张 · 不耗时")"
+                                @onclick="() => G.Equip(wid, slot, true)">装备到@(EquipSlots.Name(slot))·旧件@(e.ItemName(cur.ItemId))放当前地面</button>
+                    </div>
+                }
+                @foreach (var (slot, why) in choices.Where(c => c.reason != null).GroupBy(c => c.reason).Select(g => g.First()))
+                {
+                    <div class="ca-note bad">@(choices.All(c => c.reason == why) ? "" : $"{EquipSlots.Name(slot)}：")@why</div>
+                }
+                @if (choices.Any(c => c.reason == null))
+                {
+                    <div class="ca-note">@(fromGround ? "从地面直接穿上，不经随身卡位；" : "")开战停在第一个有武器的页，战斗中切换武器页0AP；同类型武器最多装备1件</div>
+                }
             }
         }
         else if (m.Mode == Mode.TakeOut)

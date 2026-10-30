@@ -4,6 +4,7 @@
    玩家明确勾选要保留的物品（合计不超过上限），其余一次放到当前地面；不删除、不随机丢、不自动合错批次。确认后保存。
    超额期间不能再增加随身卡数；战斗、移动等进行中先保留原状，等安全空闲再出现。 *@
 @{
+    G.SyncSortChoices();
     var s = G.S;
     var e = G.E;
     var roots = e.CarriedRootItems(s);
@@ -39,7 +40,8 @@
 </div>
 
 @code {
-    private readonly List<int> _keep = new();
+    // 勾选存在会话里（G.OverflowKeep）：Esc 打开菜单时本窗卸载，关菜单后恢复原选择（R90d）
+    private List<int> _keep => G.OverflowKeep;
     private bool _busy;
 
     private void Toggle(int id)

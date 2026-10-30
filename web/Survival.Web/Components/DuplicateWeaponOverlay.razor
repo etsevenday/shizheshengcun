@@ -4,6 +4,7 @@
    两个武器槽是同类型武器时，在安全空闲（无战斗/敌踪/行动/未读对白）先于超五卡整理弹出。玩家单选保留哪一把，其余每把明确选
    “进本人随身”或“放当前地面”（默认都不选，同 Q27）；按最终状态一次校验，失败不改任何状态；不删除、不重抽属性。 *@
 @{
+    G.SyncSortChoices();
     var s = G.S;
     var e = G.E;
     var dup = e.DuplicateKindWeapons(s);
@@ -51,8 +52,9 @@
 </div>
 
 @code {
-    private int? _keep;
-    private readonly Dictionary<int, bool> _dest = new();
+    // 保留哪把与去向存在会话里（G.DupKeep/G.DupDest）：Esc 打开菜单时本窗卸载，关菜单后恢复原选择，不清空（R90d）
+    private int? _keep { get => G.DupKeep; set => G.DupKeep = value; }
+    private Dictionary<int, bool> _dest => G.DupDest;
     private bool _busy;
 
     private void Keep(int id)

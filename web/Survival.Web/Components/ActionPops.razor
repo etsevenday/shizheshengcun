@@ -70,7 +70,7 @@
                 <ChildContent>
                     <div class="apop-facts">
                         <span title="敌人对你的命中率与伤害"><i class="pf-ico">⚔</i>对你@(Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))) · 伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax))</span>
-                        <span title="开战时武器Ⅰ页的命中率（战斗中可切到武器Ⅱ页，0AP）"><span class="pf-weapon" aria-hidden="true">@Icons.Markup(wi?.ItemId ?? "fists")</span>Ⅰ @(wi == null ? "拳" : weapon.Name) · 命中@(Ui.Pct(GameEngine.HitChance(acc, ec.Dodge)))</span>
+                        <span title="开战默认页（第一个有武器的页）的命中率（战斗中可切换武器页，0AP）"><span class="pf-weapon" aria-hidden="true">@Icons.Markup(wi?.ItemId ?? "fists")</span>@(e.DefaultWeaponPage(s) == 1 ? "Ⅰ" : "Ⅱ") @(wi == null ? "拳" : weapon.Name) · 命中@(Ui.Pct(GameEngine.HitChance(acc, ec.Dodge)))</span>
                     </div>
                     @if (wi != null && weapon.UsesMagazine && wi.LoadedAmmo <= 0)
                     {

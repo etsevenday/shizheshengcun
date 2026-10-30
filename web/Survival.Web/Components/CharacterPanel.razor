@@ -34,7 +34,7 @@ else
         </div>
 
         @* B3（S06 全系统更新目标 §1、R02 §1、A05 §5、A10 §7；开发计划 v0.9 B3 H9）：七个穿戴槽的装备区，折叠偏好同熟练度/词条（档案×角色×板块）。
-           穿戴物不占五张物资卡、重量计本人；点槽内武器可卸下回随身，卡位不够时给“放当前地面”。战斗中只读（两把已锁定，用战斗区页签切换）。
+           穿戴物不占五张物资卡、重量计本人；点槽内武器可卸下回随身，卡位不够时给“放当前地面”。战斗中只读（不给卸下按钮；两把已锁定，用战斗区页签切换）。
            全屏整备面板留到后续批次（A10 §7.1 建议，Q41）。 *@
         <section class="char-fold equip-fold @(equipOpen ? "open" : "")" aria-label="装备" data-fold="equip">
             <button type="button" class="fold-head" aria-expanded="@equipOpen" disabled="@foldLocked" title="@(lockWhy ?? (equipOpen ? "收起装备（记住你的选择）" : "展开装备（记住你的选择）"))" @onclick="() => G.ToggleFold(UiFoldPrefs.Equip)">
@@ -57,25 +57,33 @@ else
                             <span class="eq-slot">@EquipSlots.Name(slot)</span>
                             @if (it == null)
                             {
-                                <span class="eq-item muted" title="@(weaponSlot ? "选中随身武器卡，点“装备到" + EquipSlots.Name(slot) + "”" : "本批只有武器能穿戴；防具、饰品与衣物在后续批次开放")">空</span>
+                                <span class="eq-item muted" title="@(weaponSlot ? "选中随身或当前地面的武器卡，点“装备到" + EquipSlots.Name(slot) + "”" : "本批只有武器能穿戴；防具、饰品与衣物在后续批次开放")">空</span>
                             }
                             else
                             {
+                                @* R90b：名称（带实例号，同随身卡 R90f）一行、耐久/弹仓一行、按钮另起一行，1280 下三样都可读；战斗中只读不给按钮 *@
                                 var name = e.ItemName(it.ItemId);
                                 var why = e.UnequipBlocked(s, GameState.PlayerId, slot, false);
                                 var groundWhy = e.UnequipBlocked(s, GameState.PlayerId, slot, true);
-                                <span class="eq-item" title="@($"{name}#{it.InstanceId} · {WeaponKinds.Name(e.WeaponKindOf(it.ItemId))} · {Ui.ItemLine(e, s, it)} · {Ui.KgText(e.ItemGrams(s, it))}（计入本人重量，不占物资卡）")">
-                                    <span class="eq-ico" aria-hidden="true">@Icons.Markup(it.ItemId)</span>@name<small>@Ui.ItemLine(e, s, it)</small>
-                                </span>
-                                <button type="button" class="eq-btn" disabled="@(why != null)" title="@(why ?? $"卸下{name}，放回随身（占一张物资卡）")" @onclick="() => G.Unequip(slot, false)">卸下</button>
-                                @if (why != null && groundWhy == null)
-                                {
-                                    <button type="button" class="eq-btn alt" title="@($"把{name}放到{e.LocName(s.CurrentLocation)}地面")" @onclick="() => G.Unequip(slot, true)">放当前地面</button>
-                                }
+                                var stat = EquipStat(it);
+                                <div class="eq-main" title="@($"{name}#{it.InstanceId} · {WeaponKinds.Name(e.WeaponKindOf(it.ItemId))} · {stat} · {Ui.KgText(e.ItemGrams(s, it))}（计入本人重量，不占物资卡）")">
+                                    <span class="eq-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(it.ItemId)</span><span class="eq-name">@name#@it.InstanceId</span></span>
+                                    <small class="eq-stat">@stat</small>
+                                    @if (s.Battle == null)
+                                    {
+                                        <span class="eq-btns">
+                                            <button type="button" class="eq-btn" disabled="@(why != null)" title="@(why ?? $"卸下{name}，放回随身（占一张物资卡）")" @onclick="() => G.Unequip(slot, false)">卸下</button>
+                                            @if (why != null && groundWhy == null)
+                                            {
+                                                <button type="button" class="eq-btn alt" title="@($"把{name}放到{e.LocName(s.CurrentLocation)}地面")" @onclick="() => G.Unequip(slot, true)">放当前地面</button>
+                                            }
+                                        </span>
+                                    }
+                                </div>
                             }
                         </div>
                     }
-                    <div class="ca-note">穿戴不占@(e.MaxRootCards)张物资卡，重量计入本人（穿戴@(Ui.KgText(e.WornGrams(s)))）@(s.Battle != null ? " · 战斗中两把武器已锁定，用战斗区武器Ⅰ/武器Ⅱ页签切换" : " · 选中随身武器卡可装备，同类型最多1件")</div>
+                    <div class="ca-note">穿戴不占@(e.MaxRootCards)张物资卡，重量计入本人（穿戴@(Ui.KgText(e.WornGrams(s)))）@(s.Battle != null ? " · 战斗中两把武器已锁定，用战斗区武器Ⅰ/武器Ⅱ页签切换" : " · 选中随身或当前地面的武器卡可装备，同类型最多1件")</div>
                 </div>
             }
         </section>
@@ -129,6 +137,23 @@ else
 }
 
 @code {
+    /// <summary>装备区第二行：耐久与弹仓（“耐久67.00/80.00 · 弹仓3/6”；弓写随身箭数），没有的项不写。</summary>
+    private string EquipStat(ItemInstance it)
+    {
+        var s = G.S;
+        var e = G.E;
+        var parts = new List<string>();
+        if (it.Durability.HasValue && it.MaxDurability.HasValue)
+            parts.Add(it.Durability.Value <= 0 ? "已损坏" : $"耐久{GameEngine.DurabilityText(it)}");
+        if (e.Weapon(it.ItemId) is { } w)
+        {
+            if (w.UsesMagazine) parts.Add($"弹仓{it.LoadedAmmo}/{w.MagazineCapacity}");
+            else if (w.ConsumesLooseAmmo && w.AmmoId != null) parts.Add($"随身{e.ItemName(w.AmmoId)}{s.Items.Where(i => i.IsCarried && i.ItemId == w.AmmoId).Sum(i => i.Count)}");
+        }
+        parts.Add($"{Ui.Kg(e.ItemGrams(s, it))}公斤");
+        return string.Join(" · ", parts);
+    }
+
     /// <summary>装备折叠后的摘要：“武器Ⅰ 石刀 · 武器Ⅱ 空”。</summary>
     private string EquipSummary()
     {

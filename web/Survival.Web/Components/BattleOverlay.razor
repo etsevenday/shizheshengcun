@@ -122,7 +122,8 @@ else if (b != null)
 
     <div class="panel battle-overlay bt-console" role="region" aria-label="操作台" @oncontextmenu="CancelAim" @oncontextmenu:preventDefault="true">
         @* B3（A10 §4.2、A05 §5、R02 §1；开发计划 v0.9 B3 H6）：两个武器页签取代旧“装备”格与“换武器1AP”浮窗。开战锁定两槽，
-           切页只换本次可选技能组、0AP、不耗体力，随时可切；切页取消尚未提交的瞄准。空槽页即拳；不能从随身换入第三把。 *@
+           切页只换本次可选技能组、0AP、不耗体力，随时可切（敌方行动展示中也可切页查看，R90a）；切页取消尚未提交的瞄准。空槽页即拳；不能从随身换入第三把。
+           开战停在第一个有武器的页（B3a H3）。 *@
         <div class="bc-equip bc-pages" role="tablist" aria-label="武器页">
             <span class="bc-label">武器</span>
             @for (var pg = 1; pg <= 2; pg++)
@@ -132,7 +133,7 @@ else if (b != null)
                 var onPage = b.ActiveWeaponSlot == page;
                 var slotName = EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page)!);
                 var warn = pi != null && !GameEngine.HasWear(pi, cfg.Wear.PerExecutedAttackCommand) ? "耐久不足" : pi != null && pw.UsesMagazine && pi.LoadedAmmo <= 0 ? "弹仓空" : null;
-                <button type="button" role="tab" class="bc-page @(onPage ? "on" : "")" aria-selected="@onPage" disabled="@G.BattleBusy"
+                <button type="button" role="tab" class="bc-page @(onPage ? "on" : "")" aria-selected="@onPage"
                         title="@($"{slotName}：{(pi == null ? "空槽（拳）" : $"{pw.Name}#{pi.InstanceId}")}{(warn != null ? $"，{warn}" : "")} · 切页0AP，只换可选技能，取消已选目标")"
                         @onclick="() => G.SelectWeaponPage(page)">
                     <span class="bc-weapon-art">@Icons.Markup(pi?.ItemId ?? "fists")</span>

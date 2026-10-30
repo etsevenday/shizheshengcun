@@ -1506,9 +1506,12 @@ public sealed class GameSession
 
     // ───────────── 七个穿戴槽（S06 全系统更新目标 §1、R02 §1、A05 §5；开发计划 v0.9 B3 H5/H9） ─────────────
 
-    /// <summary>把本人随身的这件武器装备到武器Ⅰ/武器Ⅱ（0 时间；不合法时内核拒绝并写原因，状态不变）。</summary>
-    public ActionResult Equip(int instanceId, string slot) =>
-        Commit(E.Equip(S, GameState.PlayerId, instanceId, slot, Guid.NewGuid().ToString("N")));
+    /// <summary>
+    /// 把本人随身或当前地面（Q40 选 B）的这件武器装备到武器Ⅰ/武器Ⅱ（0 时间；不合法时内核拒绝并写原因，状态不变）。
+    /// oldToGround：目标槽旧件放当前地面（玩家明确选择；默认旧件回本人随身）。
+    /// </summary>
+    public ActionResult Equip(int instanceId, string slot, bool oldToGround = false) =>
+        Commit(E.Equip(S, GameState.PlayerId, instanceId, slot, Guid.NewGuid().ToString("N"), oldToGround));
 
     /// <summary>卸下某槽：toGround=false 回本人随身（卡位不够时拒绝），toGround=true 是玩家明确选的“放当前地面”。</summary>
     public ActionResult Unequip(string slot, bool toGround) =>
@@ -1516,6 +1519,25 @@ public sealed class GameSession
 
     /// <summary>旧档非法同类双武器：已在安全空闲，弹整理窗（先于超五卡整理，B3 H8）。</summary>
     public bool DuplicateWeaponsPending => State != null && E.DuplicateWeaponsIllegal(S) && E.OverflowResolvable(S);
+
+    // R90d（B3 线上试玩遗留）：两个整理窗的勾选存在会话里——Esc 打开菜单时整理窗会卸载，关菜单后恢复原选择；换局或读档后作废。
+    private GameState? _sortChoicesFor;
+    /// <summary>整理同类型武器窗：选中保留的那把。</summary>
+    public int? DupKeep { get; set; }
+    /// <summary>整理同类型武器窗：其余每把的去向（true=放当前地面）。</summary>
+    public Dictionary<int, bool> DupDest { get; } = new();
+    /// <summary>超五卡整理窗：勾选留在身上的实例。</summary>
+    public List<int> OverflowKeep { get; } = new();
+
+    /// <summary>整理窗渲染前调用：当前局面换了（新局、读档）就清空上一局的勾选。</summary>
+    public void SyncSortChoices()
+    {
+        if (ReferenceEquals(_sortChoicesFor, State)) return;
+        _sortChoicesFor = State;
+        DupKeep = null;
+        DupDest.Clear();
+        OverflowKeep.Clear();
+    }
 
     /// <summary>非法同类双武器整理：保留一把，其余按玩家选择进随身或放当前地面。</summary>
     public ActionResult ResolveDuplicateWeapons(int keep, IDictionary<int, bool> toGround) =>
@@ -1539,7 +1561,8 @@ public sealed class GameSession
     /// </summary>
     public void SelectWeaponPage(int page)
     {
-        if (State == null || S.Battle == null || BattleBusy) return;
+        // 敌方行动逐条展示中（BattleBusy）也可切页查看（B3 H6、A10 §4.2“非本人激活可看但不执行”；R90a）：切页只改当前页，不提交指令
+        if (State == null || S.Battle == null) return;
         var res = E.SelectWeaponPage(S, page, Guid.NewGuid().ToString("N"));
         Notice = res.Ok ? null : res.Reason;
         if (res.Ok)
