@@ -439,6 +439,7 @@ public class ConfigTests : TestBase
         foreach (var a in ((JArray)d["actions"]!).Where(a => (string?)a["id"] is "cleave" or "cut")) ((JObject)a).Remove("skills");
         // B6（R03 §1—§6 四对四战斗内核）：站位改 1—4、容量C、新增换位；新值由 B6CombatTests 核对
         foreach (var k in new[] { "maxEnemies", "slots" }) ((JObject)d["scope"]!).Remove(k);
+        foreach (var k in new[] { "initiative", "tieBreak" }) ((JObject)d["combatMath"]!).Remove(k);
         var designActionIds = ((JArray)d["actions"]!).Select(a => (string)a["id"]!).ToList();
         mapped["combatActions"] = new JArray(designActionIds.Select(id => ((JArray)mapped["combatActions"]!).First(a => (string?)a["id"] == id)));
         mapped["skills"] = new JArray(((JArray)d["skills"]!).Select(x => ((JArray)mapped["skills"]!).First(m => (string?)m["id"] == (string?)x["id"])));
@@ -554,8 +555,8 @@ public class ConfigTests : TestBase
         Assert.That(Cfg.Crafting.PerLevel, Is.EqualTo(0.025));
         Assert.That(Cfg.CombatMath.CritAccuracyPerLevel, Is.EqualTo(0.3));
         Assert.That(Cfg.CombatMath.CritDenominator, Is.EqualTo(100));
-        Assert.That(Cfg.CombatMath.MinEffectiveSpeed, Is.EqualTo(0.1));
-        Assert.That((Cfg.CombatMath.InitiativeRollMin, Cfg.CombatMath.InitiativeRollMax), Is.EqualTo((1, 4)));
+        Assert.That((Cfg.CombatMath.MinSpeed, Cfg.CombatMath.PursuitScale, Cfg.CombatMath.PursuitThreshold, Cfg.CombatMath.PursuitAp), Is.EqualTo((1.0, 50.0, 100.0, 2)),
+            "B6 按新规则改写（R03 §2）：有效速度最低1、取消先手随机1—4、追击 q=50×(v/vmax−1) 满100得2AP");
         Assert.That(Cfg.CombatMath.GuardFactor, Is.EqualTo(0.5));
         Assert.That(Cfg.Skills.All(s => s.XpBase == 50 && s.XpOffset == 1 && s.LevelCap == 10), Is.True, "50×(L+1)，B5 起最高10级（A06 §1）");
         Assert.That((Cfg.Xp.CraftDivisor, Cfg.Xp.CraftMin, Cfg.Xp.CraftMax), Is.EqualTo((10.0, 1.0, 12.0)));

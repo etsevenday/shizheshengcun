@@ -5820,8 +5820,8 @@
     "carryOverflowToOtherAction": false
   },
   "combatMath": {
-    "initiative": "max(0.1,speed-lowEnergy-lowWakefulness-2*slowLayers)+randInt(1,4)",
-    "tieBreak": "stableBattleInstanceIdAscending",
+    "initiative": "max(1,base+gear+status-[E<4]-[S<20])",
+    "tieBreak": "roundStartSpeedDesc_thenLockedRandomU_thenWorldActorId",
     "playerAccuracyRating": "(weaponBase+3*L)*actionFactor*lowEnergyFactor*lowWakefulnessFactor*panicFactor*staggerFactor",
     "hitProbability": "attackRating/(attackRating+targetEvasionRating)",
     "critRating": "baseCritRating+0.3*L",
@@ -5842,7 +5842,12 @@
     "lowWakefulnessSpeedPenalty": 1,
     "staggerAccuracyFactor": 0.9,
     "guardStacks": false,
-    "aimRemoved": true
+    "aimRemoved": true,
+    "minSpeed": 1,
+    "lowWakefulnessSpeedExclusive": 20,
+    "pursuitScale": 50,
+    "pursuitThreshold": 100,
+    "pursuitAp": 2
   },
   "panic": {
     "range": [

@@ -218,7 +218,7 @@ namespace Survival.Core.Config
             ["crafting.workFactor"] = "#/(#+#*L)",
             ["combatMath.critRating"] = "baseCritRating+#*L",
             ["combatMath.critProbability"] = "critRating/(critRating+#)",
-            ["combatMath.initiative"] = "max(#,speed-lowEnergy-lowWakefulness-#*slowLayers)+randInt(#,#)",
+            ["combatMath.initiative"] = "max(#,base+gear+status-[E<#]-[S<#])",
             ["combatMath.guardAppliedAfterArmor"] = "damage*#",
             ["skills.nextLevelXpFormula"] = "#*(L+#)",
             ["xp.craft"] = "clamp(ceil(originalBaseMinutes/#),#,#)",

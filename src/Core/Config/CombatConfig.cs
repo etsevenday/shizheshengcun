@@ -328,11 +328,17 @@ namespace Survival.Core.Config
         public double StaggerAccuracyFactor { get; set; } = 1;
         public bool GuardStacks { get; set; }
         public bool AimRemoved { get; set; }
+        // ───── B6 四对四（R03 §2 行动顺序、速度与追击；R01 §4） ─────
+        /// <summary>有效速度下限（R03 §2：max(1, 基础+装备+状态)）。</summary>
+        public double MinSpeed { get; set; } = 1;
+        /// <summary>清醒低于此值速度−1（R03 §2“S&lt;20”；命中的低清醒修正仍按 lowWakefulnessInclusive）。</summary>
+        public double LowWakefulnessSpeedExclusive { get; set; } = 20;
+        /// <summary>追击进度 q=clamp(pursuitScale×(v/vmax−1), 0, pursuitThreshold)；满 pursuitThreshold 得一次 pursuitAp 的追击。</summary>
+        public double PursuitScale { get; set; } = 50;
+        public double PursuitThreshold { get; set; } = 100;
+        public int PursuitAp { get; set; } = 2;
 
-        [JsonIgnore] public double MinEffectiveSpeed => Formula.Num(Initiative, 0);
-        [JsonIgnore] public double SlowSpeedMultiplier => Formula.Num(Initiative, 1);
-        [JsonIgnore] public int InitiativeRollMin => (int)Formula.Num(Initiative, 2);
-        [JsonIgnore] public int InitiativeRollMax => (int)Formula.Num(Initiative, 3);
+
         [JsonIgnore] public double CritAccuracyPerLevel => Formula.Num(CritRating, 0);
         [JsonIgnore] public double CritDenominator => Formula.Num(CritProbability, 0);
         [JsonIgnore] public double GuardFactor => Formula.Num(GuardAppliedAfterArmor, 0);

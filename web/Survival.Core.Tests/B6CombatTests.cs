@@ -18,6 +18,34 @@ public class B6CombatTests : BattleTestBase
         Assert.That(E.AwaitingPlayer(s), Is.True);
     }
 
+    private ItemInstance Wear(GameState s, string itemId, string slot, string quality = "white", params string[] affixes)
+    {
+        var it = E.DebugCreateEquipment(s, itemId, quality, ItemInstance.EquipOwner(GameState.PlayerId, slot));
+        if (affixes.Length > 0) it.Affixes = affixes.ToList();
+        return it;
+    }
+
+    /// <summary>把这一轮剩下的行动走完（玩家激活一律结束行动），返回本轮玩家激活次数与追击标记。</summary>
+    private (int playerActs, int playerChases, int enemyChases) FinishRound(GameState s)
+    {
+        var b = s.Battle!;
+        var round = b.Round;
+        int acts = 0, chases = 0, enemyChases = 0;
+        for (var i = 0; i < 100 && s.Battle != null && b.Round == round && !s.Progress.Dead; i++)
+        {
+            if (E.AwaitingPlayer(s))
+            {
+                acts++;
+                if (b.ActingPursuit) chases++;
+                Cmd(s, "end_turn");
+                continue;
+            }
+            if (b.Cursor < b.Queue.Count && b.Queue[b.Cursor] > 0 && GameEngine.IsPursuitSlot(b, b.Cursor)) enemyChases++;
+            E.BattleStep(s);
+        }
+        return (acts, chases, enemyChases);
+    }
+
     // ───────────── M128：四对四站位、容量 C、换位（R20；验收 CB01） ─────────────
 
     [Test]
@@ -110,5 +138,113 @@ public class B6CombatTests : BattleTestBase
         var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(m), Cfg, out var notes2);
         Assert.That(notes2, Is.Empty, "再读档不再迁移");
         Assert.That(again.Battle!.Enemies.Select(e => e.Slot), Is.EqualTo(new[] { "", "1", "2" }));
+    }
+
+    // ───────────── M129：速度、行动队列与追击（R21；验收 CB02、CB03、RG02） ─────────────
+
+    [Test]
+    public void R21_EffectiveSpeed_GearCapStatusPenaltiesMin1()
+    {
+        var s = Fight(5, "shambler");
+        var b = s.Battle!;
+        Assert.That(E.PlayerEffectiveSpeed(s, b), Is.EqualTo(4), "玩家基础4");
+        Wear(s, "swift_pendant", EquipSlots.CombatAccessory);                  // +1
+        Wear(s, "scout_armor", EquipSlots.Armor, "white", "swift");        // +1 +1
+        Wear(s, "barbed_spear", EquipSlots.Weapon1);                       // +1
+        Assert.That(E.PlayerEffectiveSpeed(s, b), Is.EqualTo(7), "正速度合计最多+3");
+        s.Stats.Energy = 3.9;
+        s.Stats.Wakefulness = 19.9;
+        Assert.That(E.PlayerEffectiveSpeed(s, b), Is.EqualTo(5), "E<4 与 S<20 各−1");
+        s.Stats.Wakefulness = 20;
+        Assert.That(E.PlayerEffectiveSpeed(s, b), Is.EqualTo(6), "S=20 不算低清醒（速度按 S<20）");
+        foreach (var it in s.Items.Where(i => i.Owner.StartsWith("equip:")).ToList()) s.Items.Remove(it);
+        Wear(s, "heavy_armor", EquipSlots.Armor);                          // −2
+        Wear(s, "breach_axe", EquipSlots.Weapon1);                         // −2
+        Assert.That(E.PlayerEffectiveSpeed(s, b), Is.EqualTo(1), "4−2−2−1=−1 → 最低1");
+    }
+
+    [Test]
+    public void CB02_TwoTimesSpeed_PursuitEveryOtherRound_ThreeTimesEveryRound()
+    {
+        // 4 对 2：q=50 → 每两轮一次追击
+        var s = Fight(6, "shambler");
+        var b = s.Battle!;
+        Assert.That(b.NormalCount, Is.EqualTo(2));
+        Assert.That(b.Queue, Is.EqualTo(new[] { 0, 1 }), "第1轮进度50，未满100");
+        Assert.That(b.PlayerPursuit, Is.EqualTo(50).Within(1e-9));
+        var r1 = FinishRound(s);
+        Assert.That(r1, Is.EqualTo((1, 0, 0)));
+        Assert.That(b.Queue, Is.EqualTo(new[] { 0, 1, 0 }), "第2轮满100：正常队列之后追击一次");
+        Assert.That(b.PlayerPursuit, Is.EqualTo(0).Within(1e-9), "扣100");
+        Assert.That(b.Log.Last(x => x.Contains("行动顺序")), Does.Contain("追击：你"));
+        var r2 = FinishRound(s);
+        Assert.That(r2, Is.EqualTo((2, 1, 0)), "一轮最多一次追击");
+
+        // 6 对 2（3倍速）：q=clamp(100)=100 → 每轮一次，进度不溢出累积
+        var t = Fight(7, "shambler");
+        Wear(t, "swift_pendant", EquipSlots.CombatAccessory);
+        Wear(t, "scout_armor", EquipSlots.Armor);
+        var tb = t.Battle!;
+        FinishRound(t);
+        for (var round = 0; round < 3 && t.Battle != null; round++)
+        {
+            Assert.That(tb.Queue.Count(x => x == 0), Is.EqualTo(2), "3倍速每轮一次追击");
+            Assert.That(tb.PlayerPursuit, Is.EqualTo(50).Within(1e-9), "q 封顶100：第1轮（换装前）留下的50不因此多追一次，每轮仍只一次");
+            FinishRound(t);
+        }
+    }
+
+    [Test]
+    public void CB02_EnemyPursuit_FasterEnemyGetsExtraAttack_TutorialNever()
+    {
+        // 跑尸 6 对玩家 4：q=25 → 第4轮追击；追击是一次普通攻击
+        var s = Fight(8, "runner");
+        var b = s.Battle!;
+        Assert.That(b.Queue.First(), Is.EqualTo(1), "速度快的先动");
+        int chases = 0;
+        for (var round = 1; round <= 4 && s.Battle != null && !s.Progress.Dead; round++)
+        {
+            s.Stats.Health = 20;
+            chases += FinishRound(s).enemyChases;
+        }
+        Assert.That(chases, Is.EqualTo(1), "4轮里追击一次");
+        Assert.That(b.Log.Any(x => x.Contains("追击")), Is.True);
+    }
+
+    [Test]
+    public void CB03_Pursuit_DoesNotRefreshPerRoundLimits_OrAddTick()
+    {
+        var s = Fight(9, "crawler");   // 4 对 1：每轮都有追击
+        var b = s.Battle!;
+        Ready(s);
+        var minute = s.GameMinute;
+        Assert.That(Cmd(s, "breathe").Ok, Is.True);
+        Assert.That(b.BreatheUsed, Is.True);
+        Cmd(s, "end_turn");
+        while (s.Battle != null && !E.AwaitingPlayer(s)) E.BattleStep(s);
+        Assert.That(b.ActingPursuit, Is.True, "同一轮的追击激活");
+        Assert.That(b.PlayerAp, Is.EqualTo(2), "追击固定2AP");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("breathe")), Is.EqualTo("本回合已调整过呼吸"), "调息每大回合一次，追击不刷新");
+        Assert.That(s.GameMinute, Is.EqualTo(minute), "追击不推进世界时间");
+        Cmd(s, "end_turn");
+        while (s.Battle != null && b.Round == 1) E.BattleStep(s);
+        Assert.That(s.GameMinute, Is.EqualTo(minute + 5), "整轮（含追击）只推进一次5分钟");
+        Assert.That(b.Ticks, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void R21_SameSpeed_OrderByLockedRandomThenActorId_NotReshuffled()
+    {
+        var s = Fight(10, "shambler", "worker");   // 同为速度2
+        var b = s.Battle!;
+        var e1 = Enemy(s, 1);
+        var e2 = Enemy(s, 2);
+        var first = e1.TieRoll >= e2.TieRoll ? 1 : 2;
+        Assert.That(b.Queue.Skip(1).Take(2).First(), Is.EqualTo(first), "同速按锁定随机数u降序");
+        FinishRound(s);
+        Assert.That(b.Queue.Skip(1).Take(2).First(), Is.EqualTo(first), "每轮同一顺序，不重新洗");
+        var json = SaveSerializer.Serialize(s);
+        var t = SaveSerializer.Deserialize(json, Cfg);
+        Assert.That(t.Battle!.Enemies.Select(e => e.TieRoll), Is.EqualTo(b.Enemies.Select(e => e.TieRoll)), "u 随存档，读档不重抽");
     }
 }

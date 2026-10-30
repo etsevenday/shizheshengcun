@@ -154,19 +154,39 @@ namespace Survival.Core.Engine
             return ActionResult.Success();
         }
 
-        public double PlayerEffectiveSpeed(GameState s, BattleState b, double? energy = null)
+        /// <summary>
+        /// 玩家有效速度（R03 §2、R01 §4）：max(1, 基础4 + 装备速度修正（正加成合计最多+3，负值照算，耐久0的装备暂停）+ 状态修正)，
+        /// E&lt;4 与 S&lt;20 各−1，减速−2。
+        /// </summary>
+        public double PlayerEffectiveSpeed(GameState s, BattleState? b, double? energy = null) =>
+            PlayerSpeedParts(s, b, energy).Speed;
+
+        /// <summary>速度的组成（预览与说明用）：基础、装备、状态各项与合计。</summary>
+        public (double Speed, double Base, double Gear, List<string> Status) PlayerSpeedParts(GameState s, BattleState? b, double? energy = null)
         {
             var m = Config.CombatMath;
             var e = energy ?? s.Stats.Energy;
-            var sp = Config.Scope.BasePlayerSpeed;
-            if (e < m.LowEnergyExclusive) sp -= m.LowEnergySpeedPenalty;
-            if (s.Stats.Wakefulness <= m.LowWakefulnessInclusive) sp -= m.LowWakefulnessSpeedPenalty;
-            if (b.PlayerSlowActive) sp -= Config.Statuses.Slow.NextRoundSpeedPenalty;
-            return Math.Max(m.MinEffectiveSpeed, sp);
+            var status = new List<string>();
+            var baseSp = Config.Scope.BasePlayerSpeed;
+            var gear = EquipmentEffects(s, GameState.PlayerId, b?.ActiveWeaponSlot).Speed;
+            var sp = baseSp + gear;
+            if (e < m.LowEnergyExclusive) { sp -= m.LowEnergySpeedPenalty; status.Add($"体力<{Fmt.T(m.LowEnergyExclusive)} −{Fmt.T(m.LowEnergySpeedPenalty)}"); }
+            if (s.Stats.Wakefulness < m.LowWakefulnessSpeedExclusive) { sp -= m.LowWakefulnessSpeedPenalty; status.Add($"清醒<{Fmt.T(m.LowWakefulnessSpeedExclusive)} −{Fmt.T(m.LowWakefulnessSpeedPenalty)}"); }
+            if (b != null && b.PlayerSlowActive) { sp -= Config.Statuses.Slow.NextRoundSpeedPenalty; status.Add($"减速 −{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}"); }
+            return (Math.Max(m.MinSpeed, sp), baseSp, gear, status);
         }
 
+        /// <summary>敌人有效速度：max(1, A09 面板速度 − 减速)。</summary>
         public double EnemyEffectiveSpeed(BattleEnemy e) =>
-            Math.Max(Config.CombatMath.MinEffectiveSpeed, _enemies[e.EnemyId].Speed - (e.SlowActive ? Config.Statuses.Slow.NextRoundSpeedPenalty : 0));
+            Math.Max(Config.CombatMath.MinSpeed, _enemies[e.EnemyId].Speed - (e.SlowActive ? Config.Statuses.Slow.NextRoundSpeedPenalty : 0));
+
+        /// <summary>追击进度增量 q=clamp(50×(自己的轮初有效速度/敌方最快存活角色轮初有效速度−1), 0, 100)（R03 §2）。</summary>
+        public double PursuitGain(double own, double fastestOpponent)
+        {
+            var m = Config.CombatMath;
+            if (fastestOpponent <= 0) return 0;
+            return Math.Max(0, Math.Min(m.PursuitThreshold, m.PursuitScale * (own / fastestOpponent - 1)));
+        }
 
         /// <summary>身体修正（乘命中能力）：E&lt;4、S≤20 各×0.85；恐慌≥60 ×0.85、≥90 ×0.7 择一；失衡×0.9。体力按支付本次成本后计算。</summary>
         public double BodyAccuracyFactor(GameState s, BattleState b, double energyAfter, List<string>? why = null)
@@ -268,6 +288,7 @@ namespace Survival.Core.Engine
                 b.Enemies.Add(new BattleEnemy { WorldId = w.Id, Index = k + 1, EnemyId = w.EnemyId, Slot = (k + 1).ToString(), Hp = w.Hp, Hostile = w.Hostile, XpHits = new Dictionary<string, int>(w.XpHits) });
                 k++;
             }
+
             var pc = Config.Panic;
             // 受惊（R03 §2.1、R05 §6.3）：同一 battleId 只判一次并锁存；恐慌基础值 (100−M)/2，受惊才加主惊吓源的惊吓值
             RollFear(s, b, joined, context);
@@ -280,6 +301,9 @@ namespace Survival.Core.Engine
                 : $"（未受惊，受惊率{Fmt.Pct(b.FearChance)}）";
             BattleLog(s, $"{source}：{names}。恐慌{Fmt.N(b.Panic)}{fearText}。");
             Emit(s, GameEventKind.Battle, $"战斗开始：{names}。", null, b.Enemies.Select(e => $"enemy:{e.WorldId}"));
+            // 同速排序用的锁定随机数 u（R03 §2）：入场时各抽一次并存档（在受惊判定之后抽，不改受惊结果）
+            b.PlayerTieRoll = s.Rng.NextDouble();
+            foreach (var be in b.Enemies) be.TieRoll = s.Rng.NextDouble();
             BeginRound(s);
         }
 
@@ -339,7 +363,11 @@ namespace Survival.Core.Engine
 
         // ───────────── 轮与队列 ─────────────
 
-        /// <summary>轮初：增援加入、减速生效、锁定敌人意图、按先手值排队列（平手按稳定序号，玩家为 0）。</summary>
+        /// <summary>
+        /// 轮初（R03 §2）：增援加入、减速生效；按轮初有效速度降序排正常激活队列（同速按锁定随机数 u 降序、再按 worldActorId 升序），
+        /// 不在轮中重新洗先手；每个存活角色的追击进度加 q，满 100 扣 100、在正常队列之后获得一次 2AP 追击（同样排序，每轮至多一次，
+        /// 首战教学敌人不追击）；锁定并公开敌人意图。
+        /// </summary>
         private void BeginRound(GameState s)
         {
             var b = s.Battle!;
@@ -353,20 +381,50 @@ namespace Survival.Core.Engine
                 e.Acted = false;
             }
             b.RoundStartEnergy = s.Stats.Energy;
-            var m = Config.CombatMath;
-            var entries = new List<(int idx, double ini)>();
-            double Roll() => m.InitiativeRollMin + Math.Floor(s.Rng.NextDouble() * (m.InitiativeRollMax - m.InitiativeRollMin + 1));
-            entries.Add((0, PlayerEffectiveSpeed(s, b) + Roll()));
-            foreach (var e in b.Alive.OrderBy(e => e.Index)) entries.Add((e.Index, EnemyEffectiveSpeed(e) + Roll()));
-            var ordered = entries.OrderByDescending(x => x.ini).ThenBy(x => x.idx).ToList();
-            b.Queue = ordered.Select(x => x.idx).ToList();
-            b.Initiative = ordered.Select(x => x.ini).ToList();
+            b.BreatheUsed = false;
+            b.RetreatUsed = false;
+            var entries = new List<(int idx, double speed, double u, int actor)>
+            {
+                (0, PlayerEffectiveSpeed(s, b), b.PlayerTieRoll, 0),
+            };
+            foreach (var e in b.Alive.OrderBy(e => e.Index)) entries.Add((e.Index, EnemyEffectiveSpeed(e), e.TieRoll, e.WorldId));
+            List<(int idx, double speed, double u, int actor)> Sort(IEnumerable<(int idx, double speed, double u, int actor)> xs) =>
+                xs.OrderByDescending(x => x.speed).ThenByDescending(x => x.u).ThenBy(x => x.actor).ToList();
+            var ordered = Sort(entries);
+            // 追击：对方阵营最快存活角色的轮初速度为基准
+            var playerSpeed = entries[0].speed;
+            var fastestEnemy = entries.Skip(1).Select(x => x.speed).DefaultIfEmpty(0).Max();
+            var pursuit = new List<(int idx, double speed, double u, int actor)>();
+            var th = Config.CombatMath.PursuitThreshold;
+            foreach (var x in entries)
+            {
+                if (x.idx == 0)
+                {
+                    b.PlayerPursuit += PursuitGain(x.speed, fastestEnemy);
+                    if (b.PlayerPursuit >= th - 1e-9) { b.PlayerPursuit -= th; pursuit.Add(x); }
+                }
+                else if (BattleEnemyAt(b, x.idx) is BattleEnemy e && !b.Tutorial)
+                {
+                    e.PursuitProgress += PursuitGain(x.speed, playerSpeed);
+                    if (e.PursuitProgress >= th - 1e-9) { e.PursuitProgress -= th; pursuit.Add(x); }
+                }
+            }
+            var chase = Sort(pursuit);
+            b.Queue = ordered.Concat(chase).Select(x => x.idx).ToList();
+            b.Initiative = ordered.Concat(chase).Select(x => x.speed).ToList();
+            b.NormalCount = ordered.Count;
             b.Cursor = 0;
             b.PlayerActing = false;
+            b.ActingPursuit = false;
             b.PlayerAp = 0;
             foreach (var e in b.Alive) LockIntent(s, b, e);
-            BattleLog(s, "行动顺序：" + string.Join(" → ", ordered.Select(x => x.idx == 0 ? $"你({Fmt.T(x.ini)})" : $"{EnemyName(BattleEnemyAt(b, x.idx)!)}({Fmt.T(x.ini)})")));
+            string Name(int idx) => idx == 0 ? "你" : EnemyName(BattleEnemyAt(b, idx)!);
+            BattleLog(s, "行动顺序（速度）：" + string.Join(" → ", ordered.Select(x => $"{Name(x.idx)}({Fmt.T(x.speed)})"))
+                         + (chase.Count > 0 ? "；追击：" + string.Join(" → ", chase.Select(x => Name(x.idx))) : ""));
         }
+
+        /// <summary>队列第 k 项是不是追击激活。</summary>
+        public static bool IsPursuitSlot(BattleState b, int k) => b.NormalCount > 0 && k >= b.NormalCount;
 
         /// <summary>轮初锁定并公开敌人意图（不公开伤害抽值）；丧尸准备普通伤害动作时 20% 选咬击。</summary>
         private void LockIntent(GameState s, BattleState b, BattleEnemy e)
@@ -436,24 +494,33 @@ namespace Survival.Core.Engine
                 return new BattleStepResult { Kind = s.Battle == null ? BattleStepKind.Ended : BattleStepKind.RoundEnded, Text = b.Log.LastOrDefault() ?? "" };
             }
             var idx = b.Queue[b.Cursor];
+            var chase = IsPursuitSlot(b, b.Cursor);
             if (idx == 0)
             {
-                StartPlayerActivation(s);
+                StartPlayerActivation(s, chase);
                 return new BattleStepResult { Kind = s.Battle == null ? BattleStepKind.Ended : BattleStepKind.PlayerTurnStarted, Text = b.Log.LastOrDefault() ?? "" };
             }
             var e = BattleEnemyAt(b, idx);
             b.Cursor++;
             if (e == null || !e.Alive) return new BattleStepResult { Kind = BattleStepKind.EnemyActed, Text = "" };
-            EnemyActivation(s, e);
+            EnemyActivation(s, e, chase);
             if (s.Battle != null) CompactEnemies(s.Battle);
             return new BattleStepResult { Kind = s.Battle == null ? BattleStepKind.Ended : BattleStepKind.EnemyActed, Text = b.Log.LastOrDefault() ?? "" };
         }
 
-        /// <summary>玩家激活开始：自己的出血 → 判死 → 清旧防御 → 恢复本次 AP。</summary>
-        private void StartPlayerActivation(GameState s)
+        /// <summary>玩家激活开始：自己的出血 → 判死 → 清旧防御 → 恢复本次 AP。追击激活固定 2AP，不扣出血、不清防御（R03 §2）。</summary>
+        private void StartPlayerActivation(GameState s, bool pursuit = false)
         {
             var b = s.Battle!;
             var body = s.Body;
+            b.ActingPursuit = pursuit;
+            if (pursuit)
+            {
+                b.PlayerAp = Config.CombatMath.PursuitAp;
+                b.PlayerActing = true;
+                BattleLog(s, $"你追击：{b.PlayerAp}AP（速度优势带来的额外激活）。");
+                return;
+            }
             if (body.BleedTriggers > 0)
             {
                 s.Stats.Add(StatId.Health, -body.BleedDamage);
@@ -465,8 +532,6 @@ namespace Survival.Core.Engine
             b.PlayerGuard = false;
             b.PlayerAp = Config.Scope.HumanApPerActivation;
             b.PlayerActing = true;
-            b.BreatheUsed = false;
-            b.RetreatUsed = false;
             BattleLog(s, $"轮到你行动：{b.PlayerAp}AP。");
         }
 
@@ -476,6 +541,7 @@ namespace Survival.Core.Engine
             if (b == null) return;
             b.PlayerAp = 0;
             b.PlayerActing = false;
+            b.ActingPursuit = false;
             b.Cursor++;
         }
 
@@ -538,11 +604,22 @@ namespace Survival.Core.Engine
 
         // ───────────── 敌方行动 ─────────────
 
-        private void EnemyActivation(GameState s, BattleEnemy e)
+        /// <summary>
+        /// 敌人一次激活：公开意图执行一个动作（敌人 AP 与意图循环在 B7）。追击激活（开发假设 B6-5）：敌对的敌人做一次普通攻击，
+        /// 不重复蓄力/冲撞/嚎叫/防御、不改判咬击；中立警戒的仍只警戒；不扣出血、不清防御。
+        /// </summary>
+        private void EnemyActivation(GameState s, BattleEnemy e, bool pursuit = false)
         {
             var b = s.Battle!;
             var cfg = _enemies[e.EnemyId];
             e.Acted = true;
+            if (pursuit)
+            {
+                if (!e.Hostile || e.Intent is "watch" or "flee") { BattleLog(s, $"{EnemyName(e)}（追击）警戒地观察，没有攻击。"); return; }
+                if (e.Pos > EnemyMeleeMaxPos) { BattleLog(s, $"{EnemyName(e)}（追击）在{PosName(e.Pos)}前压/等待（近战只能从1、2号位出手）。"); return; }
+                EnemyAttack(s, e, cfg, true);
+                return;
+            }
             // 自己的出血（丧尸免疫，不会有）
             if (e.BleedTriggers > 0)
             {
@@ -588,12 +665,12 @@ namespace Survival.Core.Engine
             EnemyAttack(s, e, cfg);
         }
 
-        private void EnemyAttack(GameState s, BattleEnemy e, EnemyConfig cfg)
+        private void EnemyAttack(GameState s, BattleEnemy e, EnemyConfig cfg, bool pursuit = false)
         {
             var b = s.Battle!;
-            var bite = e.Intent == "bite";
-            var charge = e.Intent == "charge";
-            var verb = bite ? "咬击" : charge ? "冲撞" : AttackVerb(cfg);
+            var bite = !pursuit && e.Intent == "bite";
+            var charge = !pursuit && e.Intent == "charge";
+            var verb = (pursuit ? "追击" : "") + (bite ? "咬击" : charge ? "冲撞" : AttackVerb(cfg));
             var a = cfg.AttackRating;
             if (e.Stagger) { a *= Config.Statuses.Stagger.NextAttackAccuracyFactor; e.Stagger = false; }
             var p = HitChance(a, Config.Scope.BasePlayerDodge);
@@ -1421,7 +1498,7 @@ namespace Survival.Core.Engine
             var slot = (b.Alive.Count() + 1).ToString();
             cand.Engaged = true;
             var idx = b.Enemies.Count == 0 ? 1 : b.Enemies.Max(e => e.Index) + 1;
-            b.Enemies.Add(new BattleEnemy { WorldId = cand.Id, Index = idx, EnemyId = cand.EnemyId, Slot = slot, Hp = cand.Hp, Hostile = true, XpHits = new Dictionary<string, int>(cand.XpHits) });
+            b.Enemies.Add(new BattleEnemy { WorldId = cand.Id, Index = idx, EnemyId = cand.EnemyId, Slot = slot, Hp = cand.Hp, Hostile = true, XpHits = new Dictionary<string, int>(cand.XpHits), TieRoll = s.Rng.NextDouble() });
             LockIntent(s, b, b.Enemies[b.Enemies.Count - 1]);
             BattleLog(s, $"枪声引来了{_enemies[cand.EnemyId].Name}（{PosName(int.Parse(slot))}）。");
         }

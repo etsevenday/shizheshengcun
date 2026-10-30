@@ -429,20 +429,20 @@ public class B4EquipTests : BattleTestBase
         // 敌人命中：强制命中判定与伤害抽签
         Force(s, Below(0.01), Any());
         typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
-            .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId) });
+            .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
         Assert.That(s.Stats.Health, Is.LessThan(hp));
         Assert.That(vest.Durability, Is.EqualTo(d0 - 1).Within(1e-9), "防具每次受正直接伤害磨损 1");
         Assert.That(s.Battle!.Log.Last(), Does.Contain("衬垫护具耐久"));
         // 落空不磨损
         Force(s, AtLeast(0.999));
         typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
-            .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId) });
+            .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
         Assert.That(vest.Durability, Is.EqualTo(d0 - 1).Within(1e-9));
         // 耐久 0：不再扣、效果暂停
         vest.Durability = 0;
         Force(s, Below(0.01), Any());
         typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
-            .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId) });
+            .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
         Assert.That(vest.Durability, Is.EqualTo(0));
     }
 

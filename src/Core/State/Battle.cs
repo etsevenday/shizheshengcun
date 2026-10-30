@@ -88,6 +88,10 @@ namespace Survival.Core.State
         public bool Charged { get; set; }
         /// <summary>流血、狼/鹿：血量低于阈值后，下次行动逃离。</summary>
         public bool WillFlee { get; set; }
+        /// <summary>追击表进度（R03 §2：每轮初加 q，满 100 扣 100 得一次 2AP 追击；不跨战斗）。</summary>
+        public double PursuitProgress { get; set; }
+        /// <summary>同速排序用的本局锁定随机数 u（入场时抽一次，读档不重抽）。</summary>
+        public double TieRoll { get; set; }
         /// <summary>各技能已计入经验的命中次数（入战时从世界实例拷入，随时写回；死亡后仍用于本次指令判断）。</summary>
         public Dictionary<string, int> XpHits { get; set; } = new Dictionary<string, int>();
 
@@ -143,10 +147,21 @@ namespace Survival.Core.State
         public bool Frightened { get; set; }
         public double FearPanic { get; set; }
 
-        /// <summary>本轮行动队列：0 为玩家，其余为敌人 Index；按先手值降序、平手按 Index 升序。</summary>
+        /// <summary>
+        /// 本轮行动队列（R03 §2）：0 为玩家，其余为敌人 Index。前 NormalCount 项是正常激活，按轮初有效速度降序、同速按锁定随机数 u 降序、
+        /// 再按 worldActorId（玩家为 0、敌人为 worldEnemyId）升序；其后是本轮的追击激活（同样排序），每角色每轮至多一次。
+        /// </summary>
         public List<int> Queue { get; set; } = new List<int>();
+        /// <summary>与 Queue 对应的轮初有效速度（schema 12 起；旧档为先手值，只供本轮显示）。</summary>
         public List<double> Initiative { get; set; } = new List<double>();
+        /// <summary>Queue 中正常激活的项数；之后的是追击。旧档为 0 时按全部正常处理。</summary>
+        public int NormalCount { get; set; }
         public int Cursor { get; set; }
+        /// <summary>当前这次激活是追击（固定 2AP，不清防御、不刷新每轮一次的限制）。</summary>
+        public bool ActingPursuit { get; set; }
+        /// <summary>玩家的追击进度与同速随机数 u（同 BattleEnemy）。</summary>
+        public double PlayerPursuit { get; set; }
+        public double PlayerTieRoll { get; set; }
         /// <summary>玩家本次激活的剩余行动点；不在激活中为 0。</summary>
         public int PlayerAp { get; set; }
         public bool PlayerActing { get; set; }
