@@ -336,3 +336,38 @@ window.survivalPop = (function () {
     });
   }, true);
 })();
+
+// B2a 答复 Q35（开发计划 v0.9 §B2a，M92）：键盘聚焦提示。带 data-tip 的卡/标签被键盘聚焦（:focus-visible）时，在旁边浮出一行完整说明
+// （紧凑模式下不常驻的锅编号/单锅重量、直烤加工位编号、物品全名等）；鼠标悬停仍用原生 title。只读展示，不改选择、不触发操作。
+(function () {
+  var tip = null, anchor = null, timer = 0;
+  function el() {
+    if (!tip) { tip = document.createElement('div'); tip.className = 'focus-tip'; tip.id = 'focus-tip'; tip.setAttribute('role', 'tooltip'); document.body.appendChild(tip); }
+    return tip;
+  }
+  function hide() {
+    if (timer) { clearInterval(timer); timer = 0; }
+    if (anchor) anchor.removeAttribute('aria-describedby');
+    anchor = null; if (tip) tip.hidden = true;
+  }
+  function place() {
+    if (!anchor || !anchor.isConnected || document.activeElement !== anchor) { hide(); return; }
+    var r = anchor.getBoundingClientRect(), t = el();
+    var w = t.offsetWidth, h = t.offsetHeight, m = 6;
+    var y = r.bottom + m; if (y + h > innerHeight - 4) y = Math.max(4, r.top - h - m);
+    var x = Math.min(Math.max(4, r.left), Math.max(4, innerWidth - w - 4));
+    t.style.left = x + 'px'; t.style.top = y + 'px';
+  }
+  document.addEventListener('focusin', function (ev) {
+    var a = ev.target;
+    if (!a || !a.getAttribute || !a.getAttribute('data-tip')) { hide(); return; }
+    var fv = false; try { fv = a.matches(':focus-visible'); } catch (e) { fv = true; }
+    if (!fv) { hide(); return; }
+    hide(); anchor = a;
+    var t = el(); t.textContent = a.getAttribute('data-tip'); t.hidden = false;
+    a.setAttribute('aria-describedby', 'focus-tip');
+    place(); timer = setInterval(place, 250);
+  });
+  document.addEventListener('focusout', function (ev) { if (ev.target === anchor) hide(); });
+  document.addEventListener('pointerdown', hide, true);
+})();

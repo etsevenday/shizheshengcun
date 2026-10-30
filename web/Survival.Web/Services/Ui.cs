@@ -24,6 +24,17 @@ public static class Ui
     /// <summary>带单位的重量：“0.05公斤”。</summary>
     public static string KgText(long grams) => Fmt.Kg(grams);
 
+    /// <summary>
+    /// 物品所在火堆加工位序号（1 起；不在火堆加工位里返回 null）。紧凑模式（屏高≤800）卡面不常驻“加工位N”时，
+    /// 悬停/键盘聚焦提示与选中详情用它写等价全文（Q35 答复）。
+    /// </summary>
+    public static int? FireSlotNo(GameEngine e, GameState s, ItemInstance i)
+    {
+        if (!ItemInstance.TryFacilityId(i.Owner, out var fid) || e.FacilityLocation(fid) is not string loc) return null;
+        var k = e.FireSlots(s, loc).FindIndex(x => x != null && x.InstanceId == i.InstanceId);
+        return k < 0 ? null : k + 1;
+    }
+
     /// <summary>“70小时”“40分钟”：剩余保质的时长写法（不带“后腐败”）。</summary>
     public static string FreshLeft(int minutesLeft) => minutesLeft < 60 ? $"{Math.Max(0, minutesLeft)}分钟" : $"{minutesLeft / 60}小时";
 

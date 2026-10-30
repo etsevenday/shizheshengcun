@@ -11,9 +11,11 @@
     var key = $"{Item.Owner}|{Item.ItemId}|{Item.InstanceId}";
     var where = e.WherePath(s, Item);
     var selected = G.Selected.Kind == SelectionKind.Tool && G.Selected.InstanceId == Item.InstanceId;
+    // Q35：紧凑模式卡面不常驻“加工位N”，悬停/键盘聚焦提示写等价全文（名称#实例、所在加工位、加工状态、保质）
+    var tip = $"{name} · {where}{(Slot.HasValue ? $"／加工位{Slot}" : "")}：{e.ContentStatus(s, Item)}{(Item.ExpiresAt.HasValue ? " · " + Ui.FreshOf(e, s, Item) : "")}";
 }
 <div class="fc-food @(selected ? "selected" : "") @(spoiled ? "spoiled" : "")" id="@(selected ? "card-sel" : null)" data-card="@key" role="button" tabindex="0"
-     title="@($"{name} · {where}：{e.ContentStatus(s, Item)}")"
+     title="@tip" data-tip="@tip"
      @onclick="Select" @onclick:stopPropagation="true" @onkeydown="Key" @onkeydown:stopPropagation="true">
     <div class="ff-head">
         <span class="pc-ico" data-drag="@($"card:{key}")" data-drag-title="@name" data-drag-from="@where">@Icons.Markup(Item.ItemId)</span>

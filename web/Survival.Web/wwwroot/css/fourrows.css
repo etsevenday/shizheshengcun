@@ -812,3 +812,20 @@
 .wasteland .weight .weight-main { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 0; min-width: 0; }
 .wasteland .weight .weight-cards { font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; color: #e8d6ad; }
 .wasteland .weight .weight-cards.warn-text { color: var(--warn); }
+
+/* ───── B2a 答复 Q35（M92）：紧凑模式次要信息——悬停（title）与键盘聚焦（data-tip 浮出说明）都能读到完整内容 ───── */
+.focus-tip {
+  position: fixed; z-index: 120; max-width: min(420px, 90vw); padding: 6px 10px; pointer-events: none;
+  font-size: 13px; line-height: 1.35; color: #f2e6c3; background: #10191bf2; border: 1px solid #b4a27a; border-radius: 3px;
+  box-shadow: 0 3px 10px #000a; white-space: normal; word-break: break-all;
+}
+.focus-tip[hidden] { display: none; }
+/* 屏高≥801 恢复常驻：火堆加工位里的锅“#编号·重量”与直烤“加工位N”写在名称同一行（名称优先，次要信息可省略、悬停/聚焦看全文） */
+@media (min-height: 801px) {
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-title { flex-direction: row; align-items: baseline; gap: 4px; min-width: 0; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-title b { flex: 0 1 auto; min-width: 0; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-title small { display: block; flex: 0 100 auto; min-width: 0; font-size: 11px; color: #5d5137; }
+  .center-scroll.four .fire-card .fc-slot > .fc-food .pc-text { display: flex; flex-direction: row; align-items: baseline; gap: 4px; min-width: 0; overflow: hidden; }
+  .center-scroll.four .fire-card .fc-slot > .fc-food .pc-name { flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .center-scroll.four .fire-card .fc-slot > .fc-food .pc-status { display: block; flex: 0 100 auto; min-width: 0; font-size: 11px; color: #5d5137; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}

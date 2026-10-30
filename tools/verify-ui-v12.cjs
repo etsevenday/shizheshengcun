@@ -14,7 +14,7 @@
 //   fuelfull 营地：同 full，燃料满240、床垫已建
 //   hardware 五金店：资源卡（可搜/已搜空、不能开始的原因）
 //   field    农野荒地：块根地、荒地纤维丛（长名+存量角标+日补）、可能有游荡尸敌踪卡（M90 加）
-// 每个场景测默认、选地面卡、选随身最长名卡、选火堆、选火堆里的锅、悬停地面卡，开地图/制作面板。
+// 每个场景测默认、选地面卡、选随身最长名卡、选火堆、选火堆里的锅、悬停地面卡，键盘聚焦锅/直烤（Q35）、第一档切屏高800/801（Q35），开地图/制作面板。
 // 测量口径（S14 截图复核 §B）：
 //   - 火堆外框与同组遮蔽棚/床垫顶、底各差 ≤1px，各状态前后火堆高度不变（UI-M04）。
 //   - 可见框体厚度：border-image 画出的框线约占 border-image-width 的 15/24（纸框约6.3px），铁框约 13/24（约6.5px），无 border-image 时取边框宽；
@@ -170,6 +170,41 @@ function stage(json, mode) {
   s.NextInstanceId = id;
   return JSON.stringify(s);
 }
+/** 先按一次 Tab（让后续 focus() 算键盘聚焦），再聚焦目标；返回提示是否出现、内容是否含期望全文。元素不存在时算未执行。 */
+async function focusTip(sel, re) {
+  const ok = await ev(`(() => { const e = [...document.querySelectorAll(${JSON.stringify(sel)})].find(x => x.getBoundingClientRect().width > 0); if (!e) return false; e.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return true; })()`);
+  if (!ok) return false;
+  await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Shift', code: 'ShiftLeft', windowsVirtualKeyCode: 16 });
+  await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Shift', code: 'ShiftLeft', windowsVirtualKeyCode: 16 });
+  const r = await ev(`(() => { const e = [...document.querySelectorAll(${JSON.stringify(sel)})].find(x => x.getBoundingClientRect().width > 0); if (document.activeElement === e) e.blur(); e.focus(); return new Promise(ok => setTimeout(() => {
+    const t = document.querySelector('.focus-tip'); const shown = !!t && !t.hidden && t.getBoundingClientRect().width > 0;
+    ok({ shown, text: shown ? t.textContent : '', fv: e.matches(':focus-visible'), active: document.activeElement === e, tip: e.getAttribute('data-tip') }); }, 200)); })()`);
+  const issues = [];
+  if (!r.shown) issues.push('键盘聚焦后没有浮出提示：' + sel + (r.fv ? '' : '（未处于键盘聚焦）') + (r.active ? '' : '（焦点不在元素上）') + (r.tip ? '' : '（元素无 data-tip）'));
+  else if (!re.test(r.text)) issues.push('键盘聚焦提示缺全文：' + r.text);
+  return { issues };
+}
+/** 选中随身最长名卡（多批时点后层选批），记下选择/批次/折叠，切到屏高801再切回800与原尺寸，比较是否不变。 */
+async function resizeKeep(w, h) {
+  const pick = async () => {
+    const layer = await centerOf('.section.carried .stack-layer');
+    if (layer) { await clickAt(layer.x, layer.y); return; }
+    const i = await ev(`[...document.querySelectorAll('.section.carried .card.item')].findIndex(c => c.innerText.includes('未鉴定'))`);
+    await clickSel('.section.carried .card.item', Math.max(0, i));
+  };
+  await pick();
+  const snap = () => ev(`(() => { const s = document.getElementById('card-sel'); const on = document.querySelector('.stack-layer.on, .ca-batch.on');
+    const f = k => { const x = document.querySelector('[data-fold=' + k + ']'); return x ? x.classList.contains('open') : null; };
+    return JSON.stringify({ sel: s && (s.getAttribute('data-card') || s.closest('[data-card]')?.getAttribute('data-card')), batch: on && (on.getAttribute('aria-label') || on.innerText), skills: f('skills'), traits: f('traits'), save: localStorage.getItem(${JSON.stringify(SAVE_KEY)}) }); })()`);
+  const a = await snap();
+  await size(w, 801); const b = await snap();
+  await size(w, 800); const c = await snap();
+  await size(w, h); const d = await snap();
+  const issues = [];
+  if (!JSON.parse(a).sel) issues.push('切尺寸前没选中卡');
+  for (const [n, x] of [['801', b], ['800', c], ['原尺寸', d]]) if (x !== a) issues.push('切到屏高' + n + '后选择/批次/折叠/存档变化');
+  return { issues };
+}
 let campBase = null;
 async function loadScene(scene, fixtures) {
   if (scene === 'new') { await loadState(null); await readDialogues(); return; }
@@ -290,6 +325,33 @@ const MEASURE = `(() => {
     if (!/\\d+\\/\\d+张卡/.test(t)) issues.push('左栏携重缺随身占格 N/5');
     const wc = wt.querySelector('.weight-cards'); if (wc) { const a = R(wc), b = R(wt); if (a.r > b.r + 0.5 || a.b > b.b + 0.5) issues.push('左栏随身占格越出携重面板'); }
   }
+  // 1e B2a 答复 Q35（UI-B2-35a，M92）：屏高≤800 可不常驻锅“#编号·重量”、直烤“加工位N”、物品长名，但悬停（title）与键盘聚焦（data-tip）
+  //    必须有等价全文；屏高≥801 恢复常驻。键盘聚焦提示浮层在视口内、内容与焦点元素 data-tip 一致。
+  const compact = innerHeight <= 800;
+  const q35 = { compact, potHidden: 0, slotHidden: 0, nameCut: 0 };
+  for (const h of [...document.querySelectorAll('.center .pot-card.compact .pc-head')].filter(vis)) {
+    const sm = h.querySelector('.pc-title small'); const tipT = h.getAttribute('data-tip') || ''; const ttl = h.getAttribute('title') || '';
+    const shown = sm && vis(sm) && sm.scrollWidth <= sm.clientWidth + 1;
+    if (!shown) { q35.potHidden++; if (!/#\\d+/.test(tipT) || !/公斤/.test(tipT) || !/#\\d+/.test(ttl)) issues.push('锅编号/重量不常驻但提示缺全文'); }
+    if (!compact && !(sm && vis(sm))) issues.push('屏高≥801 锅“#编号·重量”未常驻');
+  }
+  for (const f of [...document.querySelectorAll('.center .fire-card .fc-food')].filter(vis)) {
+    const st = f.querySelector('.pc-status'); const tipT = f.getAttribute('data-tip') || ''; const ttl = f.getAttribute('title') || '';
+    if (!(st && vis(st))) { q35.slotHidden++; if (!/加工位\\d/.test(tipT) || !/加工位\\d/.test(ttl)) issues.push('直烤加工位编号不常驻但提示缺全文'); }
+    if (!compact && !(st && vis(st))) issues.push('屏高≥801 直烤“加工位N”未常驻');
+  }
+  for (const c of [...document.querySelectorAll('.center .card.item')].filter(vis)) {
+    const n = c.querySelector('.ctitle > span:first-child'); if (!n) continue;
+    if (n.scrollWidth > n.clientWidth + 1 || n.scrollHeight > n.clientHeight + 1) {
+      q35.nameCut++; const full = n.getAttribute('title') || '';
+      if (!full || !(c.getAttribute('data-tip') || '').includes(full.split('#')[0])) issues.push('物品长名省略但缺全名提示 ' + full);
+    }
+  }
+  const ft = document.querySelector('.focus-tip'); if (ft && vis(ft)) {
+    const fr = R(ft); q35.focusTip = ft.textContent;
+    if (fr.x < -0.5 || fr.y < -0.5 || fr.r > innerWidth + 0.5 || fr.b > innerHeight + 0.5) issues.push('键盘聚焦提示超出视口');
+    const a = document.activeElement; if (!a || a.getAttribute('data-tip') !== ft.textContent) issues.push('键盘聚焦提示与焦点元素不一致');
+  }
   // 2 文字与可见框内缘（UI-M06）
   const FRAMED = '.card.item, .ocard, .map-card, .pot-card, .fc-food, .apop, .panel, .stack-layer, .st-pop';
   const BADGE = '.qty, .slot-span, .oc-badge, .badge, .tag, .card-arrow, .row-arrow, .apop-x';
@@ -387,7 +449,7 @@ const MEASURE = `(() => {
   const grid = document.querySelector('.center-scroll.four');
   const tracks = grid ? getComputedStyle(grid).gridTemplateRows.split(' ').map(parseFloat) : [];
   if (tracks.length === 4 && Math.max(...tracks) - Math.min(...tracks) > 1) issues.push('四行不等高：' + tracks.join(','));
-  return { viewport: [innerWidth, innerHeight], tracks, fire: fireInfo, firstScreen, q34, textChecked, safety: safety.sort((a, b) => (a.d - a.need) - (b.d - b.need)).slice(0, 12), arts, pop, issues };
+  return { viewport: [innerWidth, innerHeight], tracks, fire: fireInfo, firstScreen, q34, q35, textChecked, safety: safety.sort((a, b) => (a.d - a.need) - (b.d - b.need)).slice(0, 12), arts, pop, issues };
 })()`;
 
 const FOLD = `(() => { const g = k => { const sec = document.querySelector('[data-fold=' + k + ']'); const b = sec && sec.querySelector('.fold-head'); return b ? { open: sec.classList.contains('open'), disabled: b.disabled } : null; };
@@ -407,7 +469,7 @@ const FOLD = `(() => { const g = k => { const sec = document.querySelector('[dat
     await connect();
     await send('Page.enable'); await send('Runtime.enable');
     const fixtures = fs.existsSync(FIXTURES) ? JSON.parse(fs.readFileSync(FIXTURES, 'utf8')) : {};
-    const scenes = ['new', 'empty', 'full', 'fuelfull', 'hardware', 'field'];
+    const scenes = (process.env.SCENES || 'new,empty,full,fuelfull,hardware,field').split(',');
     const fireW0 = {};
     for (const [w, h] of SIZES) {
       await size(w, h);
@@ -417,11 +479,12 @@ const FOLD = `(() => { const g = k => { const sec = document.querySelector('[dat
         try {
           await loadScene(scene, fixtures);
           let fireH0 = null;
-          const step = async (name, act) => {
-            let did = true;
-            try { did = (await act()) !== false; } catch (e) { did = false; }
+          const step = async (name, act, check) => {
+            let did = true, extra = null;
+            try { const v = await act(); did = v !== false; extra = v && v.issues; } catch (e) { did = false; }
             await sleep(350);
             const m = await ev(MEASURE);
+            if (extra && extra.length) m.issues.push(...extra);
             if (m.fire) { if (fireH0 == null) fireH0 = m.fire.h; else if (Math.abs(m.fire.h - fireH0) > 1) m.issues.push('火堆高度随状态变化：' + fireH0 + '→' + m.fire.h); }
             // 火堆宽度固定（M90）：同一档尺寸下所有场景、状态（空/放锅/直烤/选中）宽度一致
             if (m.fire) { const k = `${w}x${h}`; if (fireW0[k] == null) fireW0[k] = m.fire.w; else if (Math.abs(m.fire.w - fireW0[k]) > 1) m.issues.push('火堆宽度随内容变化：' + fireW0[k] + '→' + m.fire.w); }
@@ -443,6 +506,13 @@ const FOLD = `(() => { const g = k => { const sec = document.querySelector('[dat
           await step('select-fire', () => clickSel('.fire-card .fc-fuel'));
           await closeLayers();
           await step('select-pot-in-fire', () => clickSel('.pot-card.in-fire .pc-head'));
+          await closeLayers();
+          // Q35（UI-B2-35a）：键盘聚焦火堆里的锅/直烤食材，浮出提示写锅编号与重量、加工位编号的全文（提示内容本身在 MEASURE 里核对）
+          await step('focus-pot-key', () => focusTip('.pot-card.in-fire .pc-head', /#\d+.*公斤/));
+          await step('focus-food-key', () => focusTip('.fire-card .fc-food', /加工位\d/));
+          await ev(`document.activeElement && document.activeElement.blur && document.activeElement.blur()`);
+          // Q35：800/801 高切换只重排，不清选择/批次/折叠（每个场景在第一档尺寸上做一次）
+          if (w === SIZES[0][0] && h === SIZES[0][1]) await step('resize-800-801', () => resizeKeep(w, h));
           await closeLayers();
           await step('panel-map', () => key('m'));
           await closeLayers();

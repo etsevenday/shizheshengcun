@@ -53,6 +53,11 @@ else
         <div class="detail-icon">@Icons.Markup(cfg.Id)</div>
 
         <div class="lines">
+            @* Q35：紧凑模式卡面不常驻的火堆加工位编号，选中详情写等价全文 *@
+            @if (Ui.FireSlotNo(e, s, inst) is int slotNo)
+            {
+                <div><span>所在加工位</span><b>@($"{e.WherePath(s, inst)}／加工位{slotNo}")</b></div>
+            }
             <div><span>单件重量</span><b>@Ui.Kg(cfg.WeightGrams)公斤</b></div>
             <div><span>合计重量</span><b>@Ui.Kg(list.Sum(i => e.ItemGrams(s, i)))公斤@(e.IsPot(inst) ? "（含锅内）" : "")</b></div>
             @if (inst.MaxDurability.HasValue && inst.Durability.HasValue)
