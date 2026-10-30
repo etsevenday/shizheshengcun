@@ -32,7 +32,7 @@ else
             <div><span>护甲 / 闪避 / 速度</span><b>@Ui.T(ec.Armor) / @Ui.T(ec.Dodge) / @Ui.T(ec.Speed)</b></div>
             <div><span>攻击能力 / 对你命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
             <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)</b></div>
-            <div><span>开战武器</span><b>@(wi == null ? $"{pageName}空（拳）" : $"{pageName} {weapon.Name}#{wi.InstanceId}")（战前可在右栏人物“装备”区调整，战斗中可切到{otherName}页）</b></div>
+            <div><span>开战武器</span><b>@(wi == null ? $"{pageName}空（拳）" : $"{pageName} {weapon.Name}#{wi.InstanceId}")（战前可在右栏人物“装备”区调整，战斗中可切到@(otherName)页）</b></div>
             <div><span>你的命中率</span><b>@Ui.Pct(GameEngine.HitChance(weapon.AccuracyRating + e.SkillAccuracyBonus(e.SkillLevel(s, weapon.SkillId)), ec.Dodge))（命中能力@(Ui.T(weapon.AccuracyRating + e.SkillAccuracyBonus(e.SkillLevel(s, weapon.SkillId))))）</b></div>
         </div>
         @if (wi != null && weapon.UsesMagazine && wi.LoadedAmmo <= 0)
