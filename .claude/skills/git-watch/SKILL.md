@@ -1,11 +1,13 @@
 ---
 name: git-watch
-description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的新提交，按改动内容匹配现有流程（/design-dev 新策划包、策划答复待确认问题、旧策划案修订、纯文档整理），自动跑完流程并推送上线；需要策划确认的写进待确认问题文档一起推，提交说明标明在哪，再在 GitHub 开 issue @dotpad1994 提醒。本机定时任务每 10 分钟触发（无新提交时由预检 hook 直接拦下）；用户想手动触发时可在侧栏 Scheduled 点"Run now"，或说"/git-watch""检查一下 git 有没有新提交"。
+description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的新提交，先拆成需求清单、按主题分批排进队列（一轮只做一批），每批按改动内容匹配现有流程（/design-dev 新策划包、策划答复待确认问题、旧策划案修订、纯文档整理），自动跑完流程并推送上线；需要策划确认的写进待确认问题文档一起推，提交说明标明在哪，再在 GitHub 开 issue @dotpad1994 提醒。本机定时任务每 10 分钟触发（无新提交时由预检 hook 直接拦下）；用户想手动触发时可在侧栏 Scheduled 点"Run now"，或说"/git-watch""检查一下 git 有没有新提交"。
 ---
 
 # git 新提交自动处理
 
 用户 2026-10-27 定的规则：**跑完流程就推**；需要确认的列进文档一起上传，提交说明里标明哪些要确认、在哪个文档；然后给 dotpad1994 发消息提醒。本技能是 `/design-dev` 的"无人值守版"：凡 `/design-dev` 里写"问用户/等用户点头/用户拍板"的地方，按下面第 4 节改成"写进待确认文档、按最保守做法继续"。
+
+用户 2026-10-30 补充：策划常一次提交改十几份策划案（一项需求散在多个 S/R 文件里）。所以新提交先**拆需求清单、按主题分批排队**（第 2 节），**一轮只做一批**、做完就推送并记进度，下一次定时触发接着做下一批；锁改为心跳续期，防止长时间运行时第二轮同时开跑。
 
 ## 0 约定
 
@@ -13,19 +15,81 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 - `/design-dev` 第 0 节全部约定照旧（数值只来自策划案、不自补；只 add 自己改的路径；不强推；不碰留言板相关文件；压缩包不入库；代理不传 `model`、不用 Fable）。
 - 无人值守：不用 `AskUserQuestion`、`EnterPlanMode`/`ExitPlanMode`、`start_session`；开发与试玩一律用 `Agent`（`general-purpose`，不传 `model`，传 `effort: "high"`：用户 2026-10-27 要求定时任务用 Opus 5.5 高）。**所有代理都一样**（2026-10-28 用户补充）：`/design-dev` 第 2 步的两个分析代理、需求提炼、文档同步等也用 `general-purpose` + 不传 `model` + `effort: "high"`，不用 `Explore`/`Plan` 类型（它们有自己的默认模型和强度）；只读的在 brief 里写明"只读，不改文件"。
 - 待确认问题的**唯一存放处**：`doc/策划案/系统策划总册 v1.0/00 总则/02 开发方待确认问题.md`（路径固定，不新建别的问题文件）。
-- 状态文件 `.git/claude-git-watch.json`（在 .git 里，不会入库）：`{"lastSeen": "<已处理到的 origin/main 提交>", "runningSince": "<ISO 时间或 null>", "notifiedHead": "<上次因受阻而通知用户时的 origin/main 提交>", "pendingPlaytest": ["<已上线但还没浏览器试玩的提交短号>"]}`（`pendingPlaytest` 可缺省，见第 4.1 节）。
-- 凡是"通知用户、停下、`lastSeen` 不更新"的情况，同时把 `notifiedHead` 记为当前 origin/main；下一轮 origin/main 仍是这个提交就安静结束、不再重复通知，等用户处理或策划再推新提交。
+- 状态文件 `.git/claude-git-watch.json`（在 .git 里，不会入库；改它一律"读出 → 改字段 → 整个写回"，别的字段原样保留）：
+
+  ```json
+  {
+    "lastSeen": "<已拆进队列的 origin/main 提交>",
+    "runId": "<本轮编号，加锁时生成，如 2026-10-30T19:05:00+08:00-a3f9>",
+    "runningSince": "<ISO 时间或 null>",
+    "heartbeat": "<最近一次心跳的 ISO 时间或 null>",
+    "notifiedHead": "<上次因受阻而通知用户时的 origin/main 提交>",
+    "queue": {
+      "source": ["<被拆的策划提交短号>"],
+      "head": "<拆分时的 origin/main 提交>",
+      "issue": "<本队列开的待策划确认 issue 号或 null>",
+      "batches": [
+        {"id": "B1", "title": "<主题>", "items": ["R1", "R2"], "kind": "A|B|C|D", "status": "pending|running|done|blocked", "commits": ["<短号>"], "questions": ["Q29"], "note": "<受阻原因或遗留问题>"}
+      ]
+    },
+    "pendingPlaytest": ["<已上线但还没浏览器试玩的提交短号>"]
+  }
+  ```
+
+  `queue`、`pendingPlaytest` 可缺省。需求清单全文写在 `.git/claude-git-watch-queue.md`（第 2 节；每轮是新会话，scratchpad 不跨轮保留，所以放 .git 里）。队列全部 `done` 后把 `queue` 删掉、清单文件改名为 `.git/claude-git-watch-queue.<日期>.done.md` 留档。
+- 凡是"通知用户、停下"的情况，同时把 `notifiedHead` 记为当前 origin/main；下一轮 origin/main 仍是这个提交就安静结束、不再重复通知，等用户处理或策划再推新提交。本轮成功推送后把 `notifiedHead` 清回 null。
+- 用户手动触发（在场）时预检报"已通知过用户"或"批次受阻"：先把受阻原因讲给用户，用户说继续再清 `notifiedHead`、把受阻批次改回 `pending` 往下走。
 
 ## 1 加锁与检测（没事就安静退出）
 
 0. **预检**（省 token）：定时任务提示词带 `[git-watch-scheduled]` 标记，本机 `.claude/settings.local.json` 的 UserPromptSubmit hook 会先跑 `python tools/git-watch-precheck.py --hook`：结论为 IDLE（锁未过期 / origin/main 已通知过 / 无新提交）时直接拦下提示词，模型不启动；WORK 或 ERROR 时把预检结论作为附加上下文放进来。上下文里已有 WORK 结论 → 下面第 2 步的 fetch 和列提交可以省掉，直接用它；没有（hook 没生效、手动触发）→ 先跑一次 `python tools/git-watch-precheck.py`，首行是 IDLE 就回一句结论结束，不用往下读。每次 hook 结论记在 `.git/claude-git-watch.log`。预检只读、不加锁，WORK 时仍从第 1 条开始加锁。
-1. 读状态文件。`runningSince` 非空且距今不到 6 小时 → 上一轮还在跑，直接结束，不通知。否则写入当前时间作为 `runningSince`。**本轮无论怎么结束，最后都要把 `runningSince` 清回 null**（第 6 节）。
-2. `git fetch origin`。列出新提交：`git log --format='%h %an %ad %s' <lastSeen>..origin/main`，只看作者不是 `etsevenday` 的。**不要用 `HEAD..origin/main`**：别的会话可能已把策划提交拉进本地 HEAD，那样会漏掉。没有 → 清锁，结束，不通知、不汇报。
-3. 本地有正在进行的工作就不碰：`git log origin/main..HEAD` 有未推送提交，或 `git status --porcelain` 里有已跟踪文件被改（未跟踪文件如 `doc/策划案.7z` 不算）→ 说明别的会话正在干活。`PushNotification`："git 有策划新提交 <短号>，但本地有未推送/未提交的工作，没自动处理"，清锁，结束（`lastSeen` 不更新，下轮再试）。
+1. **加锁（心跳锁）**：读状态文件。`runningSince` 非空、且 `heartbeat`（缺省看 `runningSince`）距今不到 4 小时 → 上一轮还在跑，直接结束，不通知、不动状态文件。否则生成本轮 `runId`（当前 ISO 时间 + 4 位随机），把 `runId`、`runningSince`、`heartbeat` 写进去，记住自己的 `runId`。
+   - **心跳**：每进入一个阶段都刷新 `heartbeat` = 当前时间：拆分完成、每起一个代理之前和它返回之后、每次提交前、推送前、等部署前、每轮试玩/修复前。刷新时先读出 `runId`：**不是自己的** → 说明锁已被别的轮次接手（本轮卡太久），立即停手：不提交、不推送、不改队列，`PushNotification`"git-watch 本轮 <runId> 锁被接手，已停下"，结束。
+   - **清锁**：本轮无论怎么结束都要清锁，但**只清自己的**：读出状态文件，`runId` 等于自己的才把 `runId`/`runningSince`/`heartbeat` 置 null；不是自己的就不碰。
+   - 单个代理别一口气塞太多活：一批的开发量控制在一个代理 1–2 小时内（第 2 节分批时就按这个量切），保证 4 小时内一定会有下一次心跳。
+2. `git fetch origin`。看两样：
+   - 新提交：`git log --format='%h %an %ad %s' <lastSeen>..origin/main`，只看作者不是 `etsevenday` 的。**不要用 `HEAD..origin/main`**：别的会话可能已把策划提交拉进本地 HEAD，那样会漏掉。
+   - 队列：`queue.batches` 里有没有 `pending`（上一轮留下的 `running` 说明那轮中途死了：看它的 `commits` 与 origin/main 判断做到哪，没推上去的改回 `pending` 重做，已推上去的按第 4.1 节从试玩接着做）。
+   两样都没有 → 清锁，结束，不通知、不汇报。
+3. 本地有正在进行的工作就不碰：`git log origin/main..HEAD` 有未推送提交，或 `git status --porcelain` 里有已跟踪文件被改（未跟踪文件如 `doc/策划案.7z` 不算）→ 说明别的会话正在干活。`PushNotification`："git 有策划新提交/待处理批次 <短号或批次号>，但本地有未推送/未提交的工作，没自动处理"，清锁，结束（`lastSeen`、队列都不更新；照第 0 节记 `notifiedHead`，别的会话推送后 origin/main 变了自然会接着做）。
+4. 有新提交 → 第 2 节拆分（并入队列）；没有新提交、只有 pending 批次 → 跳过拆分，直接取队列第一个 `pending` 批次进第 3 节。
 
-## 2 分类（按提交改到的文件判断，可以同时命中几类）
+## 2 拆需求清单、按主题分批（有新提交时做）
 
-先 `git show --stat <每个新提交>`，再逐个看 diff。
+### 2.1 先看越界、再合入
+
+先 `git show --stat <每个新提交>`。改到 `doc/策划案/` 以外的（下表 X）→ 不合入、不处理，`PushNotification` 告诉用户哪几个提交改了哪些文件，清锁结束，`lastSeen` 不更新。没有越界就合入：`git pull --rebase --autostash origin main`。冲突按 `/design-dev` 第 1 步第 2 条：策划原文以策划为准，本方【实现同步】与修改记录两边保留；两边改了同一句拿不准 → `git rebase --abort`，通知用户，清锁结束。
+
+### 2.2 拆需求清单
+
+改动很小（只答复几个 Q、或一两个文件的小修订）就不起代理，自己列清单、只分一批，照样写队列（2.4）。否则起一个**拆分代理**（`general-purpose`，不传 `model`，`effort: "high"`，brief 写明"只读，不改文件"），交给它：新提交的短号、提交说明全文（策划按 `AGENTS.md` 会按主题分组写，没分组就照逐文件变更与 CHANGELOG 最新一节自己归纳）、`git show <短号> -- doc/策划案` 的读法；队列里还没做的批次（有的话）也一并交给它重排。要它产出一份需求清单，每条一行，写清：
+
+- 编号 R1、R2……（接着清单文件里已有的最大号）、一句话需求；
+- 出处：文件 + §节 + 验收编号（如 `S06 §7 A09–A11`），同一需求散在几个文件就都列上；
+- 类别：下表 A/B/C/D（一条只归一类）；
+- 要动的代码区域（内核哪些类 / 网页壳哪些组件 / 存档迁移 / 只改文档）、依赖哪几条 R；
+- 有没有数值空白、规则含糊（有就标"待确认"，这条不做，第 4 节写成问题）。
+
+只是索引与汇总的改动（README、CHANGELOG、`00 总则/01 规则迁移与待定清单`、`04 附录/A04 验收索引`、`文档登记与来源快照.json`）不单列需求，挂在对应需求上。
+
+### 2.3 分批
+
+按下面的规则把需求清单分成批次（拆分代理给方案，本会话核对后定）：
+
+1. **同一主题、互相依赖、改同一块代码的需求放同一批**（例：五卡上限 + 转移校验 + 锅算一张卡，即使分散在 S06/S07/S10）。**绝不按文件切**，一个文件里的不同需求可以分到不同批。
+2. **每批的量**：一个开发代理 1–2 小时做得完，约等于以往 8–10 个里程碑以内；超了就按"内核规则 → 界面"或按子主题再切。
+3. **顺序**：A 类答复里只改文档、或改一两处代码的放 B1；然后内核/存档相关；然后界面；被依赖的在前。D 类纯文档整理单独一批放最后（或挂进相关批）。
+4. 整体量和以往一轮相当（一个主题、≤10 个里程碑）就只分一批，照旧一轮做完。
+5. 新提交到来时队列里还有没做完的批次：已 `done` 的不动；新需求如果修订了某个未做批次的内容就并进那一批，否则按上面顺序插队或排在后面；策划答复（A）照样排最前。
+
+### 2.4 写队列
+
+- 清单写进 `.git/claude-git-watch-queue.md`：文首写来源提交与拆分时间；`## 需求清单`（每条一行，格式见 2.2）；`## 批次`（每批：编号、主题、包含的 R、类别、为什么这样分、状态）。已有文件就追加/重排，不删已 `done` 的记录。
+- 状态文件写 `queue`（批次列表，`items` 填 R 编号，`status: "pending"`），`lastSeen` = 拆分覆盖到的最后一个提交（第 1 节第 2 步 fetch 到的 origin/main；合入时又拉到更新的策划提交，没拆进来就别越过它），刷新心跳。**从这一步起 `lastSeen` 就前移**：后面的进度全靠队列记，某一批失败也不会把整个提交重来一遍。
+- `PushNotification` 一行："策划 <短号> 拆成 N 批：B1 <主题>、B2 <主题>……，本轮先做 B1"。
+- 然后取第一个 `pending` 批次进第 3 节。
+
+### 2.5 类别
 
 | 类别 | 判断 | 处理 |
 | --- | --- | --- |
@@ -37,9 +101,16 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 
 拿不准 B 还是 D：逐条比对改动句与当前实现（`data/config.v0.6.json`、`src/`），有任何一条要改代码就是 B。
 
-合入：`git pull --rebase --autostash origin main`。冲突按 `/design-dev` 第 1 步第 2 条：策划原文以策划为准，本方【实现同步】与修改记录两边保留；两边改了同一句拿不准 → `git rebase --abort`，通知用户，清锁结束。
+## 3 做一批（一轮只做一批）
 
-## 3 各类处理
+取队列第一个 `pending` 批次，状态改成 `running`、刷新心跳。只做这一批包含的 R：读 `.git/claude-git-watch-queue.md` 里这些 R 的出处，按它们的类别走下面 3.1–3.4（一批里有几类就几种都走）。给开发/试玩/文档代理的 brief 里写清"本批只做 R…；同一提交里的其他需求属于后续批次，不要顺手做"。
+
+- 文档同步（`/design-dev` 第 6 步）只给本批做过的需求补【实现同步】与修改记录；后续批次的条目还没实现，不写【实现同步】、不当作偏差。
+- 本批做完（推送、线上试玩复验都结束）→ 批次 `status: "done"`，`commits` 记本批提交短号，`questions` 记本批新增的 Q；试玩两轮仍有没修好的，照样 `done`，遗留写进 `note`。
+- 本批受阻（测试不绿修不好、推送前拉到冲突的策划提交等第 5 节要停下的情况）→ `status: "blocked"`，`note` 写原因，记 `notifiedHead`，通知用户，清锁结束；后面的批次等用户处理后再继续（不跳过去做，免得在不稳的基础上叠改动）。
+- 一轮只做一批：做完就走第 6 节收尾结束，下一批留给下次定时触发（10 分钟后）。
+
+各类的做法：
 
 ### 3.1 A 策划答复了待确认问题
 
@@ -54,7 +125,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 
 ### 3.3 C 新策划包
 
-完整走 `/design-dev` 第 1–6 步，按第 4 节的无人值守改法。计划写在 scratchpad 的 `plan.md`（不进 plan mode），里程碑编号接着最新开发计划往下排，开发代理照常写 `doc/开发计划 v<下一号> <策划包名>.md`。
+完整走 `/design-dev` 第 1–6 步，按第 4 节的无人值守改法。计划写在 scratchpad 的 `plan.md`（不进 plan mode），里程碑编号接着最新开发计划往下排，开发代理照常写 `doc/开发计划 v<下一号> <策划包名>.md`。同一队列分成几批时共用一份开发计划：B1 新建，后面的批次在里面各加一节"批次 Bn：<主题>"（映射、假设、实施记录与偏差、试玩修复），不再新开文件。
 
 ### 3.4 D 纯文档整理
 
@@ -86,7 +157,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 - 试玩手法：`?dev=1` 后菜单里有开发入口（测试箱含烤肉/水煮肉、放各种敌人、普通活性物质、跳日期等）；要触发暂停层，可在 `localStorage['survival.save.v1']` 里把 `Stats.Energy` 改到略高于低体力线再开行动；动存档前先另存一份到 `qa.backup.*`。批量连点时注意战斗结束后界面切回地块，同一坐标可能点到敌踪卡误接敌。
 - 试玩只记录现象：违反策划案的交开发代理修（第 5 步规则），体验问题写成待确认问题。
 
-写待确认问题的格式：在待确认文档"## 修改记录"之前新增一节 `## <日期> 来自 <策划提交短号>（<一句话主题>）`，编号接着文档里最大的 Q 往下（Q6、Q7……）。每条照 Q2 的样子写：总册写法 / 游戏现状 / 请确认（A、B 选项，A 为开发方建议）/ `策划答复：待定`。文末修改记录加一行。
+写待确认问题的格式：在待确认文档"## 修改记录"之前新增一节 `## <日期> 来自 <策划提交短号> <批次号>（<一句话主题>）`（只有一批就不写批次号；每批各开一节），编号接着文档里最大的 Q 往下（Q6、Q7……）。拆分时就标了"待确认"、整批没法做的需求，在它所属批次那轮写成问题。每条照 Q2 的样子写：总册写法 / 游戏现状 / 请确认（A、B 选项，A 为开发方建议）/ `策划答复：待定`。文末修改记录加一行。
 
 ## 5 推送条件与提交说明
 
@@ -100,13 +171,13 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 - Q7 <一句话>
 ```
 
-没有新问题就写 `待策划确认：无`。另起一行写 `来源：策划提交 <短号>…`。
+没有新问题就写 `待策划确认：无`。另起一行写 `来源：策划提交 <短号>…`。分了批的再加一行 `批次：B2/4 <主题>（R5–R9）；剩余 B3 <主题>、B4 <主题>`（最后一批写"剩余：无，本次策划提交已全部处理"）。
 
-**推送**：`git pull --rebase --autostash origin main`；拉到策划的新提交且改到本轮涉及的策划案文件 → 不推，通知用户，清锁结束。否则 `git push origin main`，然后 `gh run list --limit 1 --json databaseId,status,conclusion` 拿 run id，`gh run watch <id> --exit-status --compact`；失败读日志修，修不了通知用户。成功后 `curl -s -o /dev/null -w "%{http_code}" https://etsevenday.github.io/shizheshengcun/` 应为 200。
+**推送**：推送前刷新心跳（第 1 节，`runId` 不是自己的就不推）。`git pull --rebase --autostash origin main`；拉到策划的新提交且改到本批涉及的策划案文件 → 不推，批次记 `blocked`，通知用户，清锁结束（拉到的新提交只改了别的文件 → 照常推，下一轮会把它拆进队列）。否则 `git push origin main`，然后 `gh run list --limit 1 --json databaseId,status,conclusion` 拿 run id，`gh run watch <id> --exit-status --compact`；失败读日志修，修不了通知用户。成功后 `curl -s -o /dev/null -w "%{http_code}" https://etsevenday.github.io/shizheshengcun/` 应为 200。
 
 ## 6 通知与收尾
 
-1. **提醒策划**（本轮有新待确认问题，或处理完了策划的答复时）：用 `gh` 在仓库开 issue，指派并 @ 策划，GitHub 会给他发邮件和站内通知：
+1. **提醒策划**（本轮有新待确认问题，或处理完了策划的答复时）。一个队列只开一个 issue：`queue.issue` 为空 → 按下面开新 issue 并把号记进 `queue.issue`；已有 → 在那个 issue 下 `gh issue comment` 追加本批的新 Q（同样的正文格式，标明批次）。用 `gh` 在仓库开 issue，指派并 @ 策划，GitHub 会给他发邮件和站内通知：
 
    ```bash
    gh issue create --repo etsevenday/shizheshengcun --assignee dotpad1994 --label 待策划确认 --title "待策划确认：<主题>（Q6–Q8）" --body-file <scratchpad 里写好的正文>
@@ -114,6 +185,6 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 
    正文：`@dotpad1994` 开头；一句话说明开发方已按哪次策划提交处理完并上线；列出每个 Q 的一句话与文档链接（`https://github.com/etsevenday/shizheshengcun/blob/main/<URL 编码后的待确认文档路径>`）；提交链接；最后写"请在文档里每条的'策划答复'一栏填结论后推送，开发方会自动处理"。标签 `待策划确认` 不存在时先 `gh label create 待策划确认 --repo etsevenday/shizheshengcun --color D93F0B`。
    处理完策划的答复后：在对应 open issue 下 `gh issue comment` 写明每个 Q 的处理结果；全部 Q 都已处理就 `gh issue close`。用 `gh issue list --repo etsevenday/shizheshengcun --label 待策划确认 --state open` 找 issue。
-2. **告诉用户**：`PushNotification` 一行：处理了哪个策划提交、是否已上线、几项待策划确认（例："策划 82151fb 已处理并上线，3 项待策划确认，已开 issue #5"）。最终消息按 `/design-dev` 第 7 步的四段写。
-3. 更新状态文件：`lastSeen` = 本轮处理到的 origin/main 提交号（只有成功处理完才更新），`runningSince` = null。
+2. **告诉用户**：`PushNotification` 一行：处理了哪个策划提交的哪一批、是否已上线、几项待策划确认、还剩几批（例："策划 82151fb B2/4 地图箭头已上线，1 项待策划确认（issue #5），剩 B3、B4"）。最终消息按 `/design-dev` 第 7 步的四段写，并附队列现状（每批一行：编号、主题、状态、提交）。
+3. 更新状态文件：本批状态与 `commits`/`questions`/`note`（第 3 节）；`notifiedHead` 成功推送后清 null；队列全部 `done` → 删 `queue`、清单文件改名留档（第 0 节）；最后按第 1 节**只清自己的锁**。`lastSeen` 在拆分时已前移（第 2.4 节），这里不再改。
 4. 流程有新经验写进记忆 `git-watch-automation.md`。
