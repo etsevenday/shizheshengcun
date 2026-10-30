@@ -29895,7 +29895,47 @@
     "q30": "完整gate-contract实施，不按令牌字面猜",
     "q31": "新增探索/资源/清理；135逐点配置；现役城市无随机",
     "q32": "完整逐字文案已补",
-    "q33": "16岗位19服务已补"
+    "q33": "16岗位19服务已补",
+    "compactUI": {
+      "decisionDate": "2026-10-30",
+      "sourceQuestions": [
+        "Q34B",
+        "Q35A",
+        "Q36B"
+      ],
+      "compactHeightMaxInclusive": 800,
+      "regularHeightMinInclusive": 801,
+      "groundCarriedTitles": "vertical_row_leading_label",
+      "carriedMetadata": "left_selected_actor_weight_status_actual_slot_count",
+      "carriedMetadataAlwaysVisible": true,
+      "groundCarriedLowScreenSubjectHeightRatioApprox": 0.5,
+      "approxRecoveredHeightPx": 30,
+      "minorDetailsMayCollapse": [
+        "pot_instance_number",
+        "pot_weight",
+        "direct_roast_slot_number"
+      ],
+      "detailFallback": [
+        "hover",
+        "keyboard_focus",
+        "selected_object_detail"
+      ],
+      "criticalRisksAndActionCostsAlwaysVisible": true,
+      "resourceEnemyTraceAdjacentLayout": "image_above_text_at_all_screen_heights",
+      "lowScreenSubjectHeightRatioAccepted": [
+        0.35,
+        0.45
+      ],
+      "force236pxWideHorizontalCards": false,
+      "priority": [
+        "complete_subject",
+        "safe_padding",
+        "readable_text",
+        "critical_risk_and_action",
+        "approx_image_ratio"
+      ],
+      "preserveSelectionBatchFoldAndGameplayState": true
+    }
   },
   "gateContract": {
     "version": "2026-10-30-Q30-final",

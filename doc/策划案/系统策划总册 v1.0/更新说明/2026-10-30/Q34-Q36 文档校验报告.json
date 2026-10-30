@@ -1,0 +1,171 @@
+{
+  "date": "2026-10-30",
+  "scope": "策划文档静态检查；不代表新程序实现或兼容性工程自测已通过",
+  "checks": [
+    {
+      "name": "Q文件只改策划答复字段",
+      "passed": true
+    },
+    {
+      "name": "Q23-Q28均已答",
+      "passed": true
+    },
+    {
+      "name": "143节点180边",
+      "passed": true
+    },
+    {
+      "name": "所有边端点/时间",
+      "passed": true
+    },
+    {
+      "name": "全图物理可达",
+      "passed": true
+    },
+    {
+      "name": "八地牢守卫不可绕到记录点",
+      "passed": true
+    },
+    {
+      "name": "记录与出口字段正确",
+      "passed": true
+    },
+    {
+      "name": "许可54/禁22/副本67",
+      "passed": true
+    },
+    {
+      "name": "全部许可为非势力主世界",
+      "passed": true
+    },
+    {
+      "name": "72h公式JSON",
+      "passed": true
+    },
+    {
+      "name": "D5 08批准/18序章目标",
+      "passed": true
+    },
+    {
+      "name": "70%与攻击后/隐藏技能",
+      "passed": true
+    },
+    {
+      "name": "19配方输入输出燃料都有定义",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "96资源节点有效",
+      "passed": true
+    },
+    {
+      "name": "42敌/31遭遇引用",
+      "passed": true
+    },
+    {
+      "name": "72装备75技能保留",
+      "passed": true
+    },
+    {
+      "name": "迁移后72来源节点有效",
+      "passed": true
+    },
+    {
+      "name": "随机报价保守有界且普通品质",
+      "passed": true
+    },
+    {
+      "name": "报价整表锁定/读档取消不重抽",
+      "passed": true
+    },
+    {
+      "name": "索引与同源文件一致",
+      "passed": true
+    },
+    {
+      "name": "原开发记录及修改记录保持",
+      "passed": true
+    },
+    {
+      "name": "本地链接有效",
+      "passed": true,
+      "details": {
+        "links": 724
+      }
+    },
+    {
+      "name": "全部JSON可读",
+      "passed": true
+    },
+    {
+      "name": "27原gate/26规范/180边合同",
+      "passed": true
+    },
+    {
+      "name": "135新增规则且旧8不覆盖",
+      "passed": true
+    },
+    {
+      "name": "普通30+25/副本15+50/公共到访100",
+      "passed": true
+    },
+    {
+      "name": "新增清理全部明确/九池100",
+      "passed": true
+    },
+    {
+      "name": "现役城市与副本无随机",
+      "passed": true
+    },
+    {
+      "name": "副本每代1次不世界补充",
+      "passed": true
+    },
+    {
+      "name": "完整16岗位18教学8支线253集",
+      "passed": true
+    },
+    {
+      "name": "对白非空且ID唯一",
+      "passed": true
+    },
+    {
+      "name": "NPC文本入口与全部状态有效",
+      "passed": true
+    },
+    {
+      "name": "18教学三类文本均存在",
+      "passed": true
+    },
+    {
+      "name": "16岗位19服务均绑定",
+      "passed": true
+    },
+    {
+      "name": "服务输入输出物品有效",
+      "passed": true
+    },
+    {
+      "name": "服务与门槛关键事实同名",
+      "passed": true
+    },
+    {
+      "name": "Q29-Q33均已答",
+      "passed": true
+    },
+    {
+      "name": "Q34-Q36已答且字段合同一致",
+      "passed": true
+    }
+  ],
+  "brokenLinks": [],
+  "preservationErrors": [],
+  "jsonErrors": [],
+  "gameplayTested": false,
+  "codeOrRuntimeChanged": false,
+  "linkCount": 724,
+  "perDocumentNotes": 44,
+  "classificationCompatibilityCases": 24,
+  "errors": []
+}
