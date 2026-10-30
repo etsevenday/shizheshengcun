@@ -512,23 +512,23 @@
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-body { padding: 1px 4px 14px 14px; }
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor):not(:has(> .oc-foot)) :is(.oc-head, .oc-body) { padding-right: 14px; }
 .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-foot { padding: 2px 12px 12px 0; align-self: end; }
-/* B1 遗留（开发计划 v0.9 §B1.7）：1280×720 设施行卡高约139px，资源卡带危险/不能开始原因、敌踪卡带健康与伤害行时，
+/* B1 遗留（开发计划 v0.9 §B1.7）：1280×720 设施行卡高约127px，资源卡带危险/不能开始原因、敌踪卡带健康与伤害行时（相邻地点卡同理），
    上图下文的排法只剩约35%—45%给主图。屏高≤800 时这两类卡改为左图右文：主图占满卡高（约0.88），右列名称+角标、状态/原因、主按钮；
    文字不缩、原因不隐藏（每条最多两行，悬停卡片看全文），卡宽相应加到236px（设施行本就横向滚动）。 */
 @media (max-height: 800px) {
-  .center-scroll.four .facility-row :is(.res-card, .enemy-card.world) {
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) {
     width: 236px; grid-template-columns: 108px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas: "art head" "art body" "art foot";
   }
-  .center-scroll.four .facility-row :is(.res-card, .enemy-card.world) .oc-art { grid-area: art; grid-column: 1; grid-row: 1 / -1; margin: 8px 0 8px 8px; }
-  .center-scroll.four .facility-row :is(.res-card, .enemy-card.world) .oc-head {
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) .oc-art { grid-area: art; grid-column: 1; grid-row: 1 / -1; margin: 8px 0 8px 8px; }
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) .oc-head {
     grid-area: head; grid-column: 2; grid-row: 1; align-self: start; padding: 13px 12px 0 8px;
     display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px;
   }
-  .center-scroll.four .facility-row :is(.res-card, .enemy-card.world) .oc-badge { position: static; flex: 0 0 auto; }
-  .center-scroll.four .facility-row :is(.res-card, .enemy-card.world) .oc-body { grid-area: body; grid-column: 2; grid-row: 2; padding: 2px 12px 0 8px; min-height: 0; overflow: hidden; }
-  .center-scroll.four .facility-row :is(.res-card, .enemy-card.world) .oc-foot { grid-area: foot; grid-column: 2; grid-row: 3; justify-self: start; align-self: end; padding: 2px 12px 12px 8px; }
-  .center-scroll.four .facility-row :is(.res-card, .enemy-card.world):not(:has(> .oc-foot)) :is(.oc-head, .oc-body) { grid-column: 2; }
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) .oc-badge { position: static; flex: 0 0 auto; }
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) .oc-body { grid-area: body; grid-column: 2; grid-row: 2; padding: 2px 12px 0 8px; min-height: 0; overflow: hidden; }
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) .oc-foot { grid-area: foot; grid-column: 2; grid-row: 3; justify-self: start; align-self: end; padding: 2px 12px 12px 8px; }
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor):not(:has(> .oc-foot)) :is(.oc-head, .oc-body) { grid-column: 2; }
   .center-scroll.four .facility-row .res-card .oc-foot .res-btn { flex-direction: row; gap: 4px; }
 }
 /* 锅卡（随身/地面/火堆加工位同一紧凑卡）、火堆卡、直烤食材卡：内容离纸框内缘 ≥8px（卡内边距 12—14px），
@@ -632,3 +632,26 @@
 @media (max-height: 800px) { .center-scroll.four .pot-card.compact { padding-top: 13px; } }
 /* 相邻地点卡的主图是场景背景（S14 §B：场景背景可按构图裁切，不属前景主体），访问角标仍贴图右上，名称行不被挤成两行、主图不缩小 */
 .center-scroll.four .loc-card.neighbor .oc-badge { position: absolute; top: 12px; right: 12px; }
+/* 复验补正：illustration.css 屏高≥1000 给旧卡面信息行留的 40px 保底高在四行卡面里不再需要（否则 1920×1080 主图少约25px） */
+.wasteland .center-scroll.four .row-scroll .card.item .cinfo { flex: none; min-height: 0; }
+@media (max-height: 800px) {
+  /* 相邻地点卡左图右文时访问角标并入名称行（右列），场景图在左列整高显示 */
+  .center-scroll.four .map-adjacent .loc-card.neighbor .oc-badge { position: static; }
+  .center-scroll.four .map-adjacent > .loc-card.neighbor { width: 236px; }
+}
+/* 当前地点大图卡（铁框约5.4px）：顶部名称/室内/天气衬底条与底部探索度、探索/清理按钮离框 ≥6—8px */
+.wasteland .center-scroll.four .map-card .mc-top { left: 12px; right: 12px; top: 12px; }
+.wasteland .center-scroll.four .map-card .mc-bottom { padding: 6px 12px 12px 14px; }
+/* 左图右文的资源/敌踪/相邻地点卡：名称离纸框顶 ≥8px */
+@media (max-height: 800px) {
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) .oc-head { padding-top: 15px; }
+}
+/* 余量补足（复验时最紧两处差 0.2—0.5px）：携重面板底边、火堆底部按钮 */
+.wasteland .weight { padding-bottom: 16px; }
+.center-scroll.four .dg-cards > .fire-card { padding-bottom: 13px; }
+@media (max-height: 800px) { .center-scroll.four .fire-card .fc-fuel { padding: 1px 4px; } }
+.wasteland .weight .tiny { margin-left: -53px; }
+@media (max-height: 800px) { .wasteland .weight .tiny { margin-left: -47px; } }
+.center-scroll.four .dg-cards > .fire-card { padding-left: 12px; padding-right: 12px; }
+.center-scroll.four .fire-card .fc-slot > .fc-food { padding-top: 14px; }
+.wasteland .center-scroll.four .row-scroll .card.item { padding-right: 13px; }
