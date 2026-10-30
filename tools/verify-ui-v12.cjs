@@ -24,6 +24,8 @@
 //   - 物品卡名称与转移箭头不相交；卡片外缘不压所在行框。
 //   - 首屏可见（M90）：设施行在最左时火堆（全部按钮与加工位）、遮蔽棚、床垫整张可见，屏高≥1000 时采集资源标题与第一项可见；
 //     火堆宽度在同一档尺寸的所有场景/状态里不变；单行省略文字不被盒高切掉字底；卡内文字不被同卡按钮压住。
+//   - B2a 答复 Q36（UI-B2-36a，M93）：资源/敌踪/相邻地点卡各尺寸上图下文、不套横卡；1280×720 主图主体约35%—45%（低于约0.33报错）；相邻地点首卡与角标在子栏内可见。
+//   - B2a 答复 Q35（UI-B2-35a，M92）：不常驻的锅编号/重量、加工位编号、长名有悬停与键盘聚焦全文；≥801 常驻；800/801 切换不改选择/批次/折叠。
 //   - B2a 答复 Q34（UI-B2-34a/b/c，M91）：③④为竖排行首标签（无横向区标题带、标签不截、卡区不压标签）；左栏携重摘要常驻两位小数总重量、
 //     轻装/超重、随身 N/5张卡；结束时按尺寸×卡类汇总主体高/卡高（report.ratios）。
 //   - 右栏折叠（UI-M07—M09）：四种组合各经地图/制作/休息/日志/系统说明开关、对象信息↔人物切换、刷新、读旧档后保持；对白锁期间点击不改变。
@@ -438,6 +440,34 @@ const MEASURE = `(() => {
     if (!scrolledOut && info.covered > 2) issues.push('主图被压 ' + info.card + '：' + by + ' ' + info.covered + '%');
     arts.push(info);
   }
+  // 4b 相邻地点卡主图是场景背景（background-size: contain），按图片原始比例在框内等比适配算主体矩形
+  for (const la of [...document.querySelectorAll('.center .loc-card.neighbor .loc-art')].filter(vis)) {
+    const card = la.closest('.loc-card'); const cr = R(card), ar = R(la);
+    const m = /url\\(["']?([^"')]+)/.exec(getComputedStyle(la).backgroundImage || ''); let sw = ar.w, sh = ar.h;
+    if (m) { const im = new Image(); im.src = m[1]; if (im.naturalWidth && im.naturalHeight) { const k = Math.min(ar.w / im.naturalWidth, ar.h / im.naturalHeight); sw = im.naturalWidth * k; sh = im.naturalHeight * k; } }
+    arts.push({ kind: 'loc', key: 'loc-art', card: label(card) || (card.querySelector('.oc-head b') || {}).innerText, subH: f1(sh), cardH: f1(cr.h), ratio: f1(sh / cr.h * 100) / 100, kept: 100, covered: 0 });
+  }
+  // 4c B2a 答复 Q36（UI-B2-36a，M93）：资源/敌踪/相邻地点卡各尺寸都是上图下文（主图在名称之上、不占满卡高），不再套 236/280px 横卡；
+  //     1280×720 主图主体高/卡高约 35%—45%（取约 0.33 为下限，低于此报错）；相邻地点卡在子栏最左时整张（含右上角标与右框）可见。
+  const q36 = [];
+  for (const c of [...document.querySelectorAll('.center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor)')].filter(vis)) {
+    const cr = R(c), art = c.querySelector('.oc-art'), head = c.querySelector('.oc-head');
+    if (!art || !head) continue;
+    const a = R(art), hd = R(head); const nm = (head.querySelector('b') || {}).innerText || '';
+    q36.push({ name: nm, w: f1(cr.w), artH: f1(a.h), cardH: f1(cr.h) });
+    if (a.b > hd.y + 1) issues.push('不是上图下文（主图不在名称之上）：' + nm);
+    if (a.h > cr.h * 0.8) issues.push('主图占满卡高（疑似左图右文）：' + nm);
+    if (cr.w > 220) issues.push('卡宽' + f1(cr.w) + 'px，疑似横卡：' + nm);
+  }
+  if (innerHeight <= 800) for (const a of arts) if (['res', 'enemy', 'loc'].includes(a.kind) && a.ratio < 0.33) issues.push('主图低于约35%：' + a.card + ' ' + a.ratio);
+  const adj = document.querySelector('.center-scroll.four .map-adjacent');
+  if (adj && adj.scrollLeft < 1) {
+    const z = R(adj); const first = adj.querySelector('.loc-card.neighbor');
+    if (first && vis(first)) {
+      const fr = R(first); if (fr.r > z.r + 0.5) issues.push('相邻地点首卡比子栏可见宽还宽（右框被截）' + f1(fr.w) + '>' + f1(z.w));
+      const bd = first.querySelector('.oc-badge'); if (bd && vis(bd)) { const b = R(bd); if (b.r > z.r + 0.5 || b.x < z.x - 0.5) issues.push('相邻地点访问角标被截'); }
+    }
+  }
   // 5 选卡浮窗：在视口内、不撑高行、不压所选卡主图
   let pop = null;
   const pe = document.querySelector('.apop'); if (pe && vis(pe)) {
@@ -449,7 +479,7 @@ const MEASURE = `(() => {
   const grid = document.querySelector('.center-scroll.four');
   const tracks = grid ? getComputedStyle(grid).gridTemplateRows.split(' ').map(parseFloat) : [];
   if (tracks.length === 4 && Math.max(...tracks) - Math.min(...tracks) > 1) issues.push('四行不等高：' + tracks.join(','));
-  return { viewport: [innerWidth, innerHeight], tracks, fire: fireInfo, firstScreen, q34, q35, textChecked, safety: safety.sort((a, b) => (a.d - a.need) - (b.d - b.need)).slice(0, 12), arts, pop, issues };
+  return { viewport: [innerWidth, innerHeight], tracks, fire: fireInfo, firstScreen, q34, q35, q36, textChecked, safety: safety.sort((a, b) => (a.d - a.need) - (b.d - b.need)).slice(0, 12), arts, pop, issues };
 })()`;
 
 const FOLD = `(() => { const g = k => { const sec = document.querySelector('[data-fold=' + k + ']'); const b = sec && sec.querySelector('.fold-head'); return b ? { open: sec.classList.contains('open'), disabled: b.disabled } : null; };
