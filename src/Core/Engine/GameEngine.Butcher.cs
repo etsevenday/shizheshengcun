@@ -15,7 +15,8 @@ namespace Survival.Core.Engine
 
         /// <summary>处理尸体用的工具：随身、配置列出的刀斧、耐久够一次磨损，成色最高者。</summary>
         public ItemInstance? ButcherTool(GameState s, CarcassConfig c) =>
-            s.Items.Where(i => i.IsCarried && c.RequiredCarriedTools.Contains(i.ItemId) && i.ReservedBy == null && !IsLocked(s, i) && HasWear(i, c.ToolWearOnSuccess))
+            s.Items.Where(i => OnPlayer(i) && c.RequiredCarriedTools.Contains(i.ItemId)
+ && i.ReservedBy == null && !IsLocked(s, i) && HasWear(i, c.ToolWearOnSuccess))
                 .OrderByDescending(Condition).ThenBy(i => i.InstanceId).FirstOrDefault();
 
         private string? ValidateButcher(GameState s, ActionRequest r, Plan plan)

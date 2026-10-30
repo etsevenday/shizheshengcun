@@ -263,6 +263,8 @@ namespace Survival.Core.Config
                 if (w.AmmoId != null && !items.Contains(w.AmmoId)) e.Add($"武器 {w.Id} 的弹药 {w.AmmoId} 不存在");
                 if (w.DamageMin < 0 || w.DamageMax < w.DamageMin) e.Add($"武器 {w.Id} 伤害区间无效");
                 if (w.AccuracyRating <= 0) e.Add($"武器 {w.Id} 命中能力须为正");
+                if (w.IsFists && w.WeaponKind != null) e.Add("拳不占武器槽，不能有 weaponKind");
+                if (!w.IsFists && !State.WeaponKinds.IsValid(w.WeaponKind)) e.Add($"武器 {w.Id} 的 weaponKind {w.WeaponKind ?? "（缺）"} 不是九种武器类型之一");
                 if (!w.IsFists)
                 {
                     var it = c.Items.FirstOrDefault(i => i.Id == w.Id);
@@ -276,7 +278,9 @@ namespace Survival.Core.Config
                 foreach (var sk in a.Skills) if (!skills.Contains(sk)) e.Add($"战斗动作 {a.Id} 的技能 {sk} 不存在");
                 if (a.ItemId != null && !items.Contains(a.ItemId)) e.Add($"战斗动作 {a.Id} 的物品 {a.ItemId} 不存在");
                 if (a.WeaponId != null && c.Weapons.All(w => w.Id != a.WeaponId)) e.Add($"战斗动作 {a.Id} 的武器 {a.WeaponId} 不存在");
-                if (a.ApCost == 0 || a.ApCost > c.Scope.HumanApPerActivation) e.Add($"战斗动作 {a.Id} 的行动点无效");
+                // 切换武器页 0AP（A10 §4.2、A05 §5，B3 H6）；其余动作至少 1AP
+                if ((a.ApCost == 0 && a.Id != "switch_weapon") || a.ApCost > c.Scope.HumanApPerActivation) e.Add($"战斗动作 {a.Id} 的行动点无效");
+
             }
             foreach (var en in c.Enemies)
             {

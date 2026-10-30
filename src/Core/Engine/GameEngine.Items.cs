@@ -43,6 +43,8 @@ namespace Survival.Core.Engine
                     continue;
                 }
                 if (ItemInstance.TryFacilityId(owner, out var fid)) return FacilityLocation(fid) ?? "";
+                // 穿戴物在本人身上：根位置同该角色的随身（不占五卡，B3 H3）
+                if (ItemInstance.TryEquip(owner, out var actorId, out _)) return ItemInstance.CarriedOwner(actorId);
                 return owner;
             }
             return "";
@@ -58,13 +60,25 @@ namespace Survival.Core.Engine
             return g;
         }
 
-        public int CarriedGrams(GameState s) =>
-            s.Items.Where(i => i.IsCarried).Sum(i => ItemGrams(s, i));
+        /// <summary>
+        /// 主角本人的携重：随身物品与穿戴物（七槽）连同后代全部相加（S06 全系统更新目标 §1“穿戴与随身及后代重量全部相加”、B3 H3）。
+        /// 20/30 公斤线按它判断；N/5 张卡另按 RootCardCount（不含穿戴）。
+        /// </summary>
+        public int CarriedGrams(GameState s) => CarriedGramsOf(s, GameState.PlayerId);
 
-        /// <summary>某角色本人的携重（主角同 CarriedGrams；队友按 "carried:&lt;actorId&gt;"，本批没有队友物品）。</summary>
-        public int CarriedGramsOf(GameState s, string actorId) =>
-            actorId == GameState.PlayerId ? CarriedGrams(s)
-                : s.Items.Where(i => i.Owner == ItemInstance.CarriedOwner(actorId)).Sum(i => ItemGrams(s, i));
+        /// <summary>某角色本人的携重：该角色随身 owner 与穿戴 owner 的物品连同后代（队友随身为 "carried:&lt;actorId&gt;"，本批没有队友物品）。</summary>
+        public int CarriedGramsOf(GameState s, string actorId)
+        {
+            var carried = ItemInstance.CarriedOwner(actorId);
+            return s.Items.Where(i => i.Owner == carried || i.IsWornBy(actorId)).Sum(i => ItemGrams(s, i));
+        }
+
+        /// <summary>主角身上的穿戴物合计克重（左栏悬停“含穿戴 x kg”）。</summary>
+        public int WornGrams(GameState s, string actorId = GameState.PlayerId) =>
+            s.Items.Where(i => i.IsWornBy(actorId)).Sum(i => ItemGrams(s, i));
+
+        /// <summary>在主角身上：随身或主角穿戴（工具查找、维护对象等“本人可用”判断用，B3 H3）。</summary>
+        public static bool OnPlayer(ItemInstance i) => i.IsCarried || i.IsWornBy(GameState.PlayerId);
 
         public bool IsOverweight(GameState s) => CarriedGrams(s) > Config.Carry.SoftGrams;
 
@@ -306,7 +320,7 @@ namespace Survival.Core.Engine
         /// 随身、成色（当前/最大）最高且耐久足够一次磨损的指定标签工具，平手取实例 ID 小者（v0.6 起各实例最大耐久不同，按比例比较）。
         /// </summary>
         public ItemInstance? BestTool(GameState s, string toolTag) =>
-            s.Items.Where(i => i.IsCarried && i.ReservedBy == null && _items[i.ItemId].ToolTag == toolTag && HasWear(i, ToolWear(toolTag)))
+            s.Items.Where(i => OnPlayer(i) && i.ReservedBy == null && _items[i.ItemId].ToolTag == toolTag && HasWear(i, ToolWear(toolTag)))
                 .OrderByDescending(Condition)
                 .ThenBy(i => i.InstanceId)
                 .FirstOrDefault();
@@ -318,17 +332,19 @@ namespace Survival.Core.Engine
 
         /// <summary>同地全部可用的某标签工具（随身在前，再按实例 ID），供界面让玩家选定。</summary>
         public List<ItemInstance> AccessibleTools(GameState s, string toolTag) =>
-            s.Items.Where(i => (i.IsCarried || i.Owner == s.CurrentLocation) && i.ReservedBy == null && !IsLocked(s, i)
+            s.Items.Where(i => (OnPlayer(i) || i.Owner == s.CurrentLocation) && i.ReservedBy == null && !IsLocked(s, i)
                                && _items[i.ItemId].ToolTag == toolTag && HasWear(i, ToolWear(toolTag)))
-                .OrderBy(i => i.IsCarried ? 0 : 1)
+                .OrderBy(i => OnPlayer(i) ? 0 : 1)
+
                 .ThenBy(i => i.InstanceId)
                 .ToList();
 
         /// <summary>同地可用的催化工具：随身优先，其次当前地面（锅位视为地面）；未预留、未被锁定、耐久足够。</summary>
         public ItemInstance? AccessibleTool(GameState s, string toolTag) =>
-            s.Items.Where(i => (i.IsCarried || i.Owner == s.CurrentLocation) && i.ReservedBy == null && !IsLocked(s, i)
+            s.Items.Where(i => (OnPlayer(i) || i.Owner == s.CurrentLocation) && i.ReservedBy == null && !IsLocked(s, i)
                                && _items[i.ItemId].ToolTag == toolTag && HasWear(i, ToolWear(toolTag)))
-                .OrderBy(i => i.IsCarried ? 0 : 1)
+                .OrderBy(i => OnPlayer(i) ? 0 : 1)
+
                 .ThenByDescending(Condition)
                 .ThenBy(i => i.InstanceId)
                 .FirstOrDefault();

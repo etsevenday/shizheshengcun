@@ -145,8 +145,10 @@ namespace Survival.Core.Engine
                 return DropIntent.No(src.Kind == DropSourceKind.Card && s.Items.Any(i => i.Owner == src.Owner && i.ItemId == src.ItemId)
                     ? "该物品已被预留" : "物品已不在");
             var here = s.CurrentLocation;
+            if (head.IsWorn) return DropIntent.No(WornMoveBlocked);
             var srcPlace = PlaceOf(s, head);
             if (srcPlace != ItemInstance.Carried && srcPlace != here) return DropIntent.No("其他地点的物品不能操作");
+
 
             DropIntent intent;
             switch (dst.Kind)
@@ -366,7 +368,8 @@ namespace Survival.Core.Engine
             var tag = _items[head.ItemId].ToolTag;
             if (src.Kind != DropSourceKind.Card || tag == null || res.ToolBonus == null || res.ToolBonus.ToolTag != tag)
                 return DropIntent.No(Unsupported);
-            if (!head.IsCarried) return DropIntent.No("先拾取工具");
+            if (!OnPlayer(head)) return DropIntent.No("先拾取工具");
+
             return PreviewFor(s, DropVerb.PreviewGatherTool, $"查看采集（使用这把{ItemName(head.ItemId)}）",
                 ActionRequest.Gather(nodeId, head.InstanceId));
         }

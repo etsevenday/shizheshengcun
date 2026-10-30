@@ -124,7 +124,13 @@ namespace Survival.Core.Config
         public string Id { get; set; } = "";
         public string Name { get; set; } = "";
         public string SkillId { get; set; } = "";
+        /// <summary>
+        /// 武器类型（A05 §1“类”列，九种：blade/axe/spear/blunt/archery/firearms/shield/command/medical）：两武器槽同 kind 最多 1 件
+        /// （“同类型武器限制（用户跨会话补充，2026-10-30）”）。熟练度仍按 SkillId。拳没有 kind（不占武器槽）。
+        /// </summary>
+        public string? WeaponKind { get; set; }
         public double DamageMin { get; set; }
+
         public double DamageMax { get; set; }
         public double EnergyCost { get; set; }
         public int WeightGrams { get; set; }

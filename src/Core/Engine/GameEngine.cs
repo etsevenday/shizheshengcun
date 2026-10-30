@@ -369,7 +369,8 @@ namespace Survival.Core.Engine
                         if (tool == null) return "这件工具已不在，请重新选择";
                         var tag = _items[tool.ItemId].ToolTag;
                         if (res.ToolBonus == null || tag != res.ToolBonus.ToolTag) return "这件工具对该资源点没有加成";
-                        if (!tool.IsCarried) return "先拾取工具";
+                        if (!OnPlayer(tool)) return "先拾取工具";
+
                         if (tool.ReservedBy != null || IsLocked(s, tool)) return "行动占用：这件工具正被使用";
                         if (!HasWear(tool, GatherWear)) return tool.Durability <= 0 ? "这件工具已损坏，请重新选择" : $"这件工具耐久不足（{DurabilityText(tool)}），请维护或重新选择";
                         plan.ExplicitTool = true;

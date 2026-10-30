@@ -130,6 +130,8 @@ namespace Survival.Core.Engine
         public string WherePath(GameState s, ItemInstance i)
         {
             if (i.IsCarried) return "随身";
+            if (ItemInstance.TryEquip(i.Owner, out _, out var slot)) return $"穿戴·{EquipSlots.Name(slot)}";
+
             if (ItemInstance.TryContainerId(i.Owner, out _))
             {
                 var pot = ContainerOf(s, i);

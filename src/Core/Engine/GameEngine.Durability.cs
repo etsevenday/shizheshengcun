@@ -72,8 +72,8 @@ namespace Survival.Core.Engine
 
         /// <summary>可维护的目标：随身或当前地面（不在火堆、不在锅里）、有耐久且未满、未被预留或锁定。</summary>
         public List<ItemInstance> RepairCandidates(GameState s) =>
-            s.Items.Where(i => i.Durability.HasValue && i.MaxDurability.HasValue && (i.IsCarried || i.Owner == s.CurrentLocation))
-                .OrderBy(i => i.IsCarried ? 0 : 1).ThenBy(i => Condition(i)).ThenBy(i => i.InstanceId).ToList();
+            s.Items.Where(i => i.Durability.HasValue && i.MaxDurability.HasValue && (OnPlayer(i) || i.Owner == s.CurrentLocation))
+                .OrderBy(i => OnPlayer(i) ? 0 : 1).ThenBy(i => Condition(i)).ThenBy(i => i.InstanceId).ToList();
 
         /// <summary>维护目标是否合法；合法时返回 null 并给出实例。</summary>
         public string? RepairBlocked(GameState s, int? instanceId, out ItemInstance? target)
@@ -84,7 +84,8 @@ namespace Survival.Core.Engine
             if (target == null) return "这件工具已不在，请重新选择";
             var cfg = _items[target.ItemId];
             if (!target.Durability.HasValue || !target.MaxDurability.HasValue) return $"{cfg.Name}没有耐久，不需要维护";
-            if (!(target.IsCarried || target.Owner == s.CurrentLocation))
+            if (!(OnPlayer(target) || target.Owner == s.CurrentLocation))
+
                 return target.InFacility ? $"先把{cfg.Name}从火堆取下" : "只能维护随身或当前地面的工具";
             if (target.ReservedBy != null || IsLocked(s, target)) return "行动占用：这件工具正被使用";
             if (target.Durability.Value >= target.MaxDurability.Value - 1e-9) return $"{cfg.Name}#{target.InstanceId}耐久已满";

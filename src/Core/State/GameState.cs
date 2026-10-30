@@ -354,7 +354,8 @@ namespace Survival.Core.State
         public int LoadedAmmo { get; set; }
         public string? LoadedAmmoId { get; set; }
         /// <summary>
-        /// 唯一归属：“carried” 随身；“pot:&lt;实例ID&gt;” 在该锅内；“facility:&lt;设施ID&gt;” 在该设施（火堆加工位）内；否则为地点 ID（该地点地面）。
+        /// 唯一归属：“carried” 随身；“equip:&lt;actorId&gt;:&lt;槽&gt;” 穿戴在该角色该槽（schema 9）；“pot:&lt;实例ID&gt;” 在该锅内；
+        /// “facility:&lt;设施ID&gt;” 在该设施（火堆加工位）内；否则为地点 ID（该地点地面）。
         /// </summary>
         public string Owner { get; set; } = Carried;
         public int? ReservedBy { get; set; }
@@ -364,6 +365,9 @@ namespace Survival.Core.State
         public ItemSource? Source { get; set; }
 
         public bool IsCarried => Owner == Carried;
+        /// <summary>穿戴中（任一角色的七槽之一）：不占五张物资卡，重量计入该角色。</summary>
+        public bool IsWorn => Owner.StartsWith(EquipPrefix);
+        public bool IsWornBy(string actorId) => TryEquip(Owner, out var a, out _) && a == actorId;
         public bool InContainer => Owner.StartsWith(ContainerPrefix);
         public bool InFacility => Owner.StartsWith(FacilityPrefix);
 
@@ -371,6 +375,25 @@ namespace Survival.Core.State
         /// 某角色的随身 owner（开发计划 v0.9 B3 H2）：主角仍为 "carried"（不改旧档与现有逻辑）；队友将来为 "carried:&lt;actorId&gt;"（本批只预留）。
         /// </summary>
         public static string CarriedOwner(string actorId) => actorId == GameState.PlayerId ? Carried : Carried + ":" + actorId;
+
+        /// <summary>穿戴 owner 前缀（B3 H2）：完整写法 "equip:&lt;actorId&gt;:&lt;槽ID&gt;"，槽见 EquipSlots。</summary>
+        public const string EquipPrefix = "equip:";
+
+        public static string EquipOwner(string actorId, string slot) => EquipPrefix + actorId + ":" + slot;
+
+        /// <summary>拆穿戴 owner；不是穿戴或格式不对返回 false。</summary>
+        public static bool TryEquip(string owner, out string actorId, out string slot)
+        {
+            actorId = "";
+            slot = "";
+            if (!owner.StartsWith(EquipPrefix)) return false;
+            var rest = owner.Substring(EquipPrefix.Length);
+            var k = rest.LastIndexOf(':');
+            if (k <= 0 || k == rest.Length - 1) return false;
+            actorId = rest.Substring(0, k);
+            slot = rest.Substring(k + 1);
+            return true;
+        }
 
         public static string ContainerOwner(int containerInstanceId) => ContainerPrefix + containerInstanceId;
         public static string FacilityOwner(string facilityId) => FacilityPrefix + facilityId;
