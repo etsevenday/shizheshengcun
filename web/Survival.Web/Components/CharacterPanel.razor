@@ -8,6 +8,11 @@
     var e = G.E;
     var cfg = e.Config;
     var charPage = G.CharPage;
+    // S14 截图复核 §C：两块各自的展开/收起是玩家偏好（档案×角色×板块），不是组件字段，组件重建/切菜单/刷新/读档都恢复最近选择
+    var skillsOpen = G.IsFoldOpen(UiFoldPrefs.Skills);
+    var traitsOpen = G.IsFoldOpen(UiFoldPrefs.Traits);
+    var foldLocked = G.FoldLocked;
+    var lockWhy = foldLocked ? "对白或战斗进行中，暂不能折叠" : null;
 }
 @if (charPage != null)
 {
@@ -29,13 +34,13 @@ else
 
         @* S14 §18.2：右栏人物常态只放熟练度与词条两块，各自展开/收起（折叠后标题与摘要仍可见）；基础属性数值只在左栏，
            点左栏属性在右栏原位看说明（AttrDetail）。 *@
-        <section class="char-fold @(_skillsOpen ? "open" : "")" aria-label="熟练度">
-            <button type="button" class="fold-head" aria-expanded="@_skillsOpen" @onclick="() => _skillsOpen = !_skillsOpen">
+        <section class="char-fold @(skillsOpen ? "open" : "")" aria-label="熟练度" data-fold="skills">
+            <button type="button" class="fold-head" aria-expanded="@skillsOpen" disabled="@foldLocked" title="@(lockWhy ?? (skillsOpen ? "收起熟练度（记住你的选择）" : "展开熟练度（记住你的选择）"))" @onclick="() => G.ToggleFold(UiFoldPrefs.Skills)">
                 <span class="fold-name">熟练度</span>
                 <span class="fold-sum">@(skills.Count)项@(top != null && top.Level > 0 ? $" · 最高{top.Name}{top.Level}级" : " · 均为0级")</span>
-                <span class="fold-arrow" aria-hidden="true">@(_skillsOpen ? "▾" : "▸")</span>
+                <span class="fold-arrow" aria-hidden="true">@(skillsOpen ? "▾" : "▸")</span>
             </button>
-            @if (_skillsOpen)
+            @if (skillsOpen)
             {
                 <div class="skill-list">
                     @foreach (var sk in skills)
@@ -49,13 +54,13 @@ else
                 </div>
             }
         </section>
-        <section class="char-fold @(_traitsOpen ? "open" : "")" aria-label="词条">
-            <button type="button" class="fold-head" aria-expanded="@_traitsOpen" @onclick="() => _traitsOpen = !_traitsOpen">
+        <section class="char-fold @(traitsOpen ? "open" : "")" aria-label="词条" data-fold="traits">
+            <button type="button" class="fold-head" aria-expanded="@traitsOpen" disabled="@foldLocked" title="@(lockWhy ?? (traitsOpen ? "收起词条（记住你的选择）" : "展开词条（记住你的选择）"))" @onclick="() => G.ToggleFold(UiFoldPrefs.Traits)">
                 <span class="fold-name">词条</span>
                 <span class="fold-sum">@(s.Traits.Count == 0 ? "暂无" : $"{s.Traits.Count}条")</span>
-                <span class="fold-arrow" aria-hidden="true">@(_traitsOpen ? "▾" : "▸")</span>
+                <span class="fold-arrow" aria-hidden="true">@(traitsOpen ? "▾" : "▸")</span>
             </button>
-            @if (_traitsOpen)
+            @if (traitsOpen)
             {
                 @if (s.Traits.Count == 0)
                 {
@@ -73,9 +78,4 @@ else
     <div class="detail-foot">
         <div class="under">基础属性在左栏，点左栏属性看说明 · 查看不耗时</div>
     </div>
-}
-
-@code {
-    private bool _skillsOpen = true;
-    private bool _traitsOpen = true;
 }

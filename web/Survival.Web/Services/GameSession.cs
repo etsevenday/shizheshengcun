@@ -361,6 +361,39 @@ public sealed class GameSession
         Notify();
     }
 
+    // 右栏人物板块折叠（S14 截图复核 §C，UI-M07—M09；开发计划 v0.9 M87）：按 档案×角色×板块 记玩家最近一次点击，
+    // 存浏览器本地 survival.pref.fold（与左栏折叠同一机制），不进存档；组件重建、切次级菜单、刷新、读档、退出战斗都不重置。
+    // 本地存储不可用时只在本次会话的内存里保留。
+
+    private UiFoldPrefs? _fold;
+
+    private UiFoldPrefs Fold
+    {
+        get
+        {
+            if (_fold != null) return _fold;
+            string? raw = null;
+            try { raw = _store.GetPref("fold"); } catch { /* 本地存储不可用：从默认值开始，只在内存里记 */ }
+            return _fold = UiFoldPrefs.Parse(raw);
+        }
+    }
+
+    /// <summary>当前角色某板块是否展开（没有记录时为原默认：展开）。只读，不写默认值。</summary>
+    public bool IsFoldOpen(string sectionId, string actorId = UiFoldPrefs.MainActor) =>
+        Fold.IsOpen(UiFoldPrefs.DefaultProfile, actorId, sectionId);
+
+    /// <summary>对白读完前、战斗/接敌界面期间，人物栏折叠不接受背后点击（S14 截图复核 §C 输入锁）。</summary>
+    public bool FoldLocked => DialogueLocked || InBattleUi;
+
+    /// <summary>玩家点击折叠标题：切换并立即写入偏好。输入锁期间不处理。</summary>
+    public void ToggleFold(string sectionId, string actorId = UiFoldPrefs.MainActor)
+    {
+        if (FoldLocked) return;
+        Fold.Toggle(UiFoldPrefs.DefaultProfile, actorId, sectionId);
+        try { _store.SetPref("fold", Fold.Serialize()); } catch { /* 本地存储不可用时只在本次有效 */ }
+        Notify();
+    }
+
     public int TipIndex { get; set; }
 
     public GameEngine E => Engine!;
