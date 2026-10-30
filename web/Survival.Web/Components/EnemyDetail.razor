@@ -28,13 +28,13 @@ else
             <div><span>护甲 / 闪避 / 速度</span><b>@Ui.T(ec.Armor) / @Ui.T(ec.Dodge) / @Ui.T(ec.Speed)</b></div>
             <div><span>攻击能力 / 对你命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
             <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)</b></div>
-            <div><span>当前武器</span><b>@(wi == null ? "徒手" : $"{weapon.Name}#{wi.InstanceId}")（战前可在随身武器卡下调整）</b></div>
+            <div><span>开战武器</span><b>@(wi == null ? "武器Ⅰ空（拳）" : $"武器Ⅰ {weapon.Name}#{wi.InstanceId}")（战前可在右栏人物“装备”区调整，战斗中可切到武器Ⅱ页）</b></div>
             <div><span>你的命中率</span><b>@Ui.Pct(GameEngine.HitChance(weapon.AccuracyRating + e.SkillAccuracyBonus(e.SkillLevel(s, weapon.SkillId)), ec.Dodge))（命中能力@(Ui.T(weapon.AccuracyRating + e.SkillAccuracyBonus(e.SkillLevel(s, weapon.SkillId))))）</b></div>
         </div>
         @if (wi != null && weapon.UsesMagazine && wi.LoadedAmmo <= 0)
         {
             @* 试玩修复 D3：弹仓为0时提前提示，开战后第一件事是装填 *@
-            <div class="risk">@($"{weapon.Name}#{wi.InstanceId}")弹仓为0：开战后需先装填（1AP），或在随身武器卡下换一把再接近。</div>
+            <div class="risk">@($"{weapon.Name}#{wi.InstanceId}")弹仓为0：开战后需先装填（1AP），或在右栏人物“装备”区换一把再接近。</div>
         }
         @if (ec.IsZombie) { <div class="risk">咬击命中且造成伤害时可能感染僵尸病毒（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）。</div> }
         <ul class="notes">

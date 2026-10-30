@@ -118,7 +118,6 @@ namespace Survival.Core.State
         /// </summary>
         [JsonIgnore] public int? LegacyEquippedWeaponId { get; set; }
 
-
         // ───── 系统策划总册 v1.0（R07 吞噬融合、N01/S15 剧情） ─────
         /// <summary>人物词条（R07：首战教学融合的绿色“攻击力+0.1”）。不是物品装备，不随武器丢失。</summary>
         public List<TraitInstance> Traits { get; set; } = new List<TraitInstance>();

@@ -130,7 +130,6 @@ namespace Survival.Core.Config
         /// </summary>
         public string? WeaponKind { get; set; }
         public double DamageMin { get; set; }
-
         public double DamageMax { get; set; }
         public double EnergyCost { get; set; }
         public int WeightGrams { get; set; }

@@ -77,7 +77,5 @@ public abstract class BattleTestBase : TestBase
         var it = E.CreateItems(s, weaponId, 1, slot).Single();
         if (s.Battle != null) s.Battle.ActiveWeaponSlot = 1;
         return it;
-
     }
-
 }

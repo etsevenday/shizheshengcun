@@ -154,13 +154,26 @@
                 }
                 @if (m.Instance != null && m.Instance.IsCarried && e.Weapon(m.Instance.ItemId) != null)
                 {
-                    @* 战前装备当前武器（v0.5 §04：入战前可免费调整；装备只是随身实例的引用，不复制、不额外计重） *@
+                    @* B3（R02 §1、A05 §5、A10 §7.2；开发计划 v0.9 B3 H5/H9）：随身武器装备到武器Ⅰ/武器Ⅱ，0 时间、按最终状态原子校验；
+                       同类型最多1件，不合法时按钮禁用并写原因。穿戴后不占物资卡、重量照计；战斗中两把锁定只能切页。 *@
                     var wid = m.Instance.InstanceId;
-                    var equipped = m.Instance.IsWorn;
-                    <div class="tbar-row">
-                        <button type="button" class="tbar-go alt" @onclick="() => G.Equip(equipped ? null : wid)">@(equipped ? "改回徒手" : "设为当前武器")</button>
+                    var choices = e.EquipChoices(s, GameState.PlayerId, wid);
+                    <div class="tbar-row equip-to">
+                        @foreach (var (slot, why) in choices)
+                        {
+                            var cur = e.WornItem(s, GameState.PlayerId, slot);
+                            var tip = why ?? (cur == null ? $"装备到{EquipSlots.Name(slot)}（不占物资卡，不耗时）" : $"装备到{EquipSlots.Name(slot)}，换下{e.ItemName(cur.ItemId)}回到随身");
+                            <button type="button" class="tbar-go alt" disabled="@(why != null)" title="@tip" @onclick="() => G.Equip(wid, slot)">装备到@(EquipSlots.Name(slot))</button>
+                        }
                     </div>
-                    <div class="ca-note">@(equipped ? "这是当前武器，开战时直接使用" : "开战时使用当前武器；战斗中换武器耗1AP")</div>
+                    @foreach (var (slot, why) in choices.Where(c => c.reason != null).GroupBy(c => c.reason).Select(g => g.First()))
+                    {
+                        <div class="ca-note bad">@(choices.All(c => c.reason == why) ? "" : $"{EquipSlots.Name(slot)}：")@why</div>
+                    }
+                    @if (choices.Any(c => c.reason == null))
+                    {
+                        <div class="ca-note">开战从武器Ⅰ页开始，战斗中切换武器页0AP；同类型武器最多装备1件</div>
+                    }
                 }
                 @if (m.PotInstance is ItemInstance pot && e.Location(s.CurrentLocation).HasFire)
                 {

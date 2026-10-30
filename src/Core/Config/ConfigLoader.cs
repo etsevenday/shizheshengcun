@@ -280,7 +280,6 @@ namespace Survival.Core.Config
                 if (a.WeaponId != null && c.Weapons.All(w => w.Id != a.WeaponId)) e.Add($"战斗动作 {a.Id} 的武器 {a.WeaponId} 不存在");
                 // 切换武器页 0AP（A10 §4.2、A05 §5，B3 H6）；其余动作至少 1AP
                 if ((a.ApCost == 0 && a.Id != "switch_weapon") || a.ApCost > c.Scope.HumanApPerActivation) e.Add($"战斗动作 {a.Id} 的行动点无效");
-
             }
             foreach (var en in c.Enemies)
             {

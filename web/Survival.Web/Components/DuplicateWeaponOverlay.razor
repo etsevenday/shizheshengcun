@@ -1,0 +1,77 @@
+@inherits GameComponent
+
+@* 旧档非法同类双武器整理窗（各案“同类型武器限制（用户跨会话补充，2026-10-30）”末句、开发计划 v0.9 B3 H8、COMP08）：
+   两个武器槽是同类型武器时，在安全空闲（无战斗/敌踪/行动/未读对白）先于超五卡整理弹出。玩家单选保留哪一把，其余每把明确选
+   “进本人随身”或“放当前地面”（默认都不选，同 Q27）；按最终状态一次校验，失败不改任何状态；不删除、不重抽属性。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var dup = e.DuplicateKindWeapons(s);
+    var keep = _keep is int k && dup.Any(i => i.InstanceId == k) ? _keep : null;
+    var others = dup.Where(i => i.InstanceId != keep).ToList();
+    var why = keep == null ? "先选要保留的一把" : e.ResolveDuplicateWeaponsBlocked(s, GameState.PlayerId, keep.Value, _dest);
+    var kind = dup.Count > 0 ? WeaponKinds.Name(e.WeaponKindOf(dup[0].ItemId)) : "";
+}
+<div class="overflow-layer" role="dialog" aria-modal="true" aria-label="整理同类型武器">
+    <div class="panel overflow-box">
+        <div class="ov-head">
+            <h2>整理同类型武器</h2>
+            <span class="muted">两个武器槽里装着同类型（@(kind)）武器：每人同类型最多装备1件。选一把留在原槽，其余的明确选择放回随身或放到@(e.LocName(s.CurrentLocation))地面，不会丢失或重抽属性。</span>
+        </div>
+        <div class="ov-list" data-wheel="y">
+            @foreach (var it in dup)
+            {
+                var id = it.InstanceId;
+                var on = keep == id;
+                ItemInstance.TryEquip(it.Owner, out _, out var slot);
+                <div class="ov-item dup-item @(on ? "on" : "")">
+                    <label class="dup-keep">
+                        <input type="radio" name="dup-keep" checked="@on" @onchange="() => Keep(id)" />
+                        <span class="ov-ico">@Icons.Markup(it.ItemId)</span>
+                        <span class="ov-text"><b>@e.ItemName(it.ItemId)#@id</b>
+                            <small>@EquipSlots.Name(slot) · @Ui.ItemLine(e, s, it) · @Ui.Kg(e.ItemGrams(s, it))公斤</small></span>
+                    </label>
+                    @if (keep != null && !on)
+                    {
+                        var toGround = _dest.TryGetValue(id, out var g) ? g : (bool?)null;
+                        <span class="dup-dest" role="radiogroup" aria-label="@($"{e.ItemName(it.ItemId)}的去向")">
+                            <label><input type="radio" name="@($"dup-dest-{id}")" checked="@(toGround == false)" @onchange="() => Dest(id, false)" />放回随身</label>
+                            <label><input type="radio" name="@($"dup-dest-{id}")" checked="@(toGround == true)" @onchange="() => Dest(id, true)" />放当前地面</label>
+                        </span>
+                    }
+                </div>
+            }
+        </div>
+        <div class="ov-foot">
+            <span class="@(why != null ? "danger-text" : "")">@(why ?? "可以确认")</span>
+            <button type="button" class="primary" disabled="@(why != null || _busy)" @onclick="Confirm">确认整理</button>
+        </div>
+        @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+    </div>
+</div>
+
+@code {
+    private int? _keep;
+    private readonly Dictionary<int, bool> _dest = new();
+    private bool _busy;
+
+    private void Keep(int id)
+    {
+        _keep = id;
+        _dest.Remove(id);
+    }
+
+    private void Dest(int id, bool toGround) => _dest[id] = toGround;
+
+    private void Confirm()
+    {
+        if (_busy || _keep == null) return;
+        _busy = true;
+        try
+        {
+            var res = G.ResolveDuplicateWeapons(_keep.Value, new Dictionary<int, bool>(_dest));
+            if (res.Ok) { _keep = null; _dest.Clear(); }
+        }
+        finally { _busy = false; }
+    }
+}

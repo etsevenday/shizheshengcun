@@ -56,7 +56,6 @@ else if (b != null)
     var sel = G.BattleAction == null ? null : opts.FirstOrDefault(o => o.Action == G.BattleAction && (G.BattleItem == null || o.ItemInstanceId == G.BattleItem));
     var waiting = !e.AwaitingPlayer(s);
     var locked = waiting || G.BattleBusy;
-    var switches = opts.Where(o => o.Action == "switch_weapon").ToList();
     var front = cfg.Scope.Slots.Where(x => x.StartsWith("F")).ToList();
     var back = cfg.Scope.Slots.Where(x => !x.StartsWith("F")).ToList();
     var apMax = cfg.Scope.HumanApPerActivation;
@@ -64,7 +63,7 @@ else if (b != null)
     var aimSet = G.AimTargets();
     var token = G.BattleExecToken();
     var skills = opts.Where(o => o.Group is "attack" or "move").ToList();
-    var general = opts.Where(o => o.Group == "general" && o.Action != "switch_weapon").ToList();
+    var general = opts.Where(o => o.Group == "general").ToList();
     // 操作台道具区只放随身确实有的药品（试玩修复 M77-B5：1280 下没有的药品占位把道具挤出可见宽度）；系统说明“指令一览”仍列全部并写原因
     var items = opts.Where(o => o.Group == "item" && CarriedFor(o) > 0).ToList();
     @* 两行战斗（S14 §18.4、R03 §7.4，参考暗黑地牢1的分层）：第①行队伍场景——我方左、敌方右，脚下只放健康/AP/状态/槽位；
@@ -122,11 +121,25 @@ else if (b != null)
     </div>
 
     <div class="panel battle-overlay bt-console" role="region" aria-label="操作台" @oncontextmenu="CancelAim" @oncontextmenu:preventDefault="true">
-        <div class="bc-equip" title="@($"当前武器：{(wi == null ? "徒手" : $"{w.Name}#{wi.InstanceId}")}")">
-            <span class="bc-label">装备</span>
-            <span class="bc-weapon-art">@Icons.Markup(wi?.ItemId ?? "fists")</span>
-            <span class="bc-weapon-text"><b>@(wi == null ? "徒手" : w.Name)</b>
-                <small>@(wi?.Durability != null ? $"耐久{GameEngine.DurabilityText(wi)}" : "")@(w.UsesMagazine && wi != null ? $" 弹{wi.LoadedAmmo}/{w.MagazineCapacity}" : "")@(w.ConsumesLooseAmmo ? $" 箭{s.Items.Where(i => i.IsCarried && i.ItemId == w.AmmoId).Sum(i => i.Count)}" : "")</small></span>
+        @* B3（A10 §4.2、A05 §5、R02 §1；开发计划 v0.9 B3 H6）：两个武器页签取代旧“装备”格与“换武器1AP”浮窗。开战锁定两槽，
+           切页只换本次可选技能组、0AP、不耗体力，随时可切；切页取消尚未提交的瞄准。空槽页即拳；不能从随身换入第三把。 *@
+        <div class="bc-equip bc-pages" role="tablist" aria-label="武器页">
+            <span class="bc-label">武器</span>
+            @for (var pg = 1; pg <= 2; pg++)
+            {
+                var page = pg;
+                var pi = e.WeaponOnPage(s, page, out var pw);
+                var onPage = b.ActiveWeaponSlot == page;
+                var slotName = EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page)!);
+                var warn = pi != null && !GameEngine.HasWear(pi, cfg.Wear.PerExecutedAttackCommand) ? "耐久不足" : pi != null && pw.UsesMagazine && pi.LoadedAmmo <= 0 ? "弹仓空" : null;
+                <button type="button" role="tab" class="bc-page @(onPage ? "on" : "")" aria-selected="@onPage" disabled="@G.BattleBusy"
+                        title="@($"{slotName}：{(pi == null ? "空槽（拳）" : $"{pw.Name}#{pi.InstanceId}")}{(warn != null ? $"，{warn}" : "")} · 切页0AP，只换可选技能，取消已选目标")"
+                        @onclick="() => G.SelectWeaponPage(page)">
+                    <span class="bc-weapon-art">@Icons.Markup(pi?.ItemId ?? "fists")</span>
+                    <span class="bc-weapon-text"><b>@(page == 1 ? "Ⅰ" : "Ⅱ") @(pi == null ? "拳" : pw.Name)</b>
+                        <small class="@(warn != null ? "warn-text" : "")">@(warn ?? "")@(warn == null && pi?.Durability != null ? $"耐久{GameEngine.DurabilityText(pi)}" : "")@(pw.UsesMagazine && pi != null ? $" 弹{pi.LoadedAmmo}/{pw.MagazineCapacity}" : "")@(pw.ConsumesLooseAmmo ? $" 箭{s.Items.Where(i => i.IsCarried && i.ItemId == pw.AmmoId).Sum(i => i.Count)}" : "")</small></span>
+                </button>
+            }
         </div>
         <div class="bc-groups" data-wheel="x">
         <div class="bc-group skills" role="toolbar" aria-label="技能">
@@ -139,17 +152,6 @@ else if (b != null)
             <span class="bc-label">指令</span>
             <div class="bc-cmds">
                 @foreach (var o in general) { @Cmd(o, sel, wi, w, locked) }
-                @if (switches.Count > 0)
-                {
-                    var swOn = G.BattleAction == "switch_weapon";
-                    <button type="button" id="cmd-switch" class="cmdt @(swOn ? "on" : "") @(switches.Any(o => o.Available) ? "" : "off")" disabled="@locked"
-                            aria-label="@($"换武器，{ApText(switches[0].Ap)}，随身{switches.Count}个选择")" aria-expanded="@(G.Pop?.Kind == "switch")"
-                            title="@($"在旁边的浮窗里选随身武器并执行（{ApText(switches[0].Ap)}）")" @onclick="OpenSwitch">
-                        <span class="cmdt-art">@Icons.Markup("cmd_switch")</span>
-                        <span class="cmdt-name">换武器</span>
-                        <small>@(switches.Count)把 · @ApText(switches[0].Ap)</small>
-                    </button>
-                }
             </div>
         </div>
         @if (items.Count > 0)
@@ -183,7 +185,7 @@ else if (b != null)
             {
                 <span class="bx-hint">@(sel.Action == "scatter" ? "点亮起的任一前排目标提交散射" : "把鼠标移到亮起的目标上看右侧预测，点击目标执行") · 右键/Esc 取消</span>
             }
-            else if (sel != null && sel.Action != "switch_weapon")
+            else if (sel != null)
             {
                 var p = e.PreviewCommand(s, G.CurrentBattleCommand());
                 <span class="bx-hint @(p.Ok ? "" : "warn")" title="@(p.Ok ? string.Join("；", p.Notes) : p.Reason)">@(p.Ok ? (p.RetreatChance.HasValue ? $"成功率{Ui.Pct(p.RetreatChance.Value)}" : p.Notes.FirstOrDefault() ?? ShortName(sel)) : p.Reason)</span>
@@ -198,42 +200,6 @@ else if (b != null)
         </div>
     </div>
 
-    @if (G.Pop is GameSession.PopContext sp && sp.Kind == "switch" && !waiting)
-    {
-        @* 换武器（R03 §7.2）：在我方指令旁的浮窗里看实际武器缩略图与数据，选一把后就地执行，不依赖右栏 *@
-        var cur = wi == null ? "徒手" : $"{w.Name}#{wi.InstanceId}";
-        var picked = G.BattleAction == "switch_weapon" && G.BattleItem != null;
-        var sp2 = picked ? e.PreviewCommand(s, G.CurrentBattleCommand()) : null;
-        var swToken = G.BattleExecToken();
-        <AnchorPop AnchorId="cmd-switch" Title="换武器" Sub="@($"当前：{cur} · 只能换随身武器")" Place="below,above" Bound=".center" CssClass="switch" OnClose="G.ClosePop">
-            <Art>@Icons.Markup("cmd_switch")</Art>
-            <ChildContent>
-                <div class="sw-list">
-                    @foreach (var o in switches)
-                    {
-                        var it = o.ItemInstanceId is int iid && iid > 0 ? e.FindItem(s, iid) : null;
-                        var wc = it == null ? e.Weapon(GameEngine.Fists)! : e.Weapon(it.ItemId)!;
-                        var ws = e.WeaponStats(s, wc);
-                        var choose = o.ItemInstanceId;
-                        var on = G.BattleAction == "switch_weapon" && G.BattleItem == choose;
-                        <button type="button" class="sw-pick @(on ? "on" : "") @(o.Available ? "" : "off")" disabled="@(!o.Available)" title="@(o.Reason ?? "选这一把")"
-                                @onclick='() => G.PickBattleAction("switch_weapon", choose)'>
-                            <span class="sw-art">@Icons.Markup(it?.ItemId ?? "fists")</span>
-                            <span class="sw-text"><b>@(it == null ? "徒手" : $"{wc.Name}#{it.InstanceId}")</b>
-                                <small>伤害@(Ui.N(ws.DamageMin))—@(Ui.N(ws.DamageMax)) · 命中能力@(Ui.N(ws.Accuracy)) · @(wc.Targets == "front" ? "前排" : wc.RearDamageFactor < 1 ? "可打后排" : "全排")@(it?.Durability != null ? $" · 耐久{GameEngine.DurabilityText(it)}" : "")@(wc.UsesMagazine && it != null ? $" · 弹{it.LoadedAmmo}/{wc.MagazineCapacity}" : "")</small>
-                                @if (o.Reason != null) { <small class="warn-text">@o.Reason</small> }
-                            </span>
-                        </button>
-                    }
-                </div>
-            </ChildContent>
-            <Actions>
-                <button type="button" class="primary apop-go" disabled="@(sp2 == null || !sp2.Ok || locked)" title="@(sp2?.Reason ?? "先选一把武器")"
-                        @onclick="() => Exec(swToken)">@(sp2 == null ? "先选一把武器" : sp2.Ok ? $"执行 · 换武器 · {sp2.Ap}AP" : sp2.Reason)</button>
-                <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消</button>
-            </Actions>
-        </AnchorPop>
-    }
 }
 
 @code {
@@ -311,7 +277,7 @@ else if (b != null)
 
     private void CancelAim()
     {
-        if (G.BattleAction != null && G.Pop?.Kind != "switch") G.ClearBattleAction();
+        if (G.BattleAction != null) G.ClearBattleAction();
     }
 
     /// <summary>操作台上的一条带图指令：点选进入瞄准/待确认，不执行；不可用保留禁用态与短原因。</summary>
@@ -395,12 +361,6 @@ else if (b != null)
     }
 
     private async Task Exec(string token) => await G.ExecuteBattleCommand(token);
-
-    private void OpenSwitch()
-    {
-        G.PickBattleAction("switch_weapon");
-        G.OpenPop("switch", "", "cmd-switch");
-    }
 
     /// <summary>意图里的伤害区间“0.70—1.10”不在破折号处折行（破折号两侧加 U+2060 不断行符，只影响显示，B2a M94）。</summary>
     private static string NoBreakRange(string label) => label.Replace("—", "\u2060—\u2060");

@@ -45,7 +45,6 @@ namespace Survival.Core.Engine
         public bool Available { get; set; }
         public string? Reason { get; set; }
         /// <summary>用药的物品实例。</summary>
-
         public int? ItemInstanceId { get; set; }
         /// <summary>该指令当前可以选的目标序号。</summary>
         public List<int> Targets { get; set; } = new List<int>();

@@ -4,8 +4,8 @@
    取出、放入火堆……）统一放在锚定于该卡下方的紧凑浮窗里，脱离文档流、不撑高所属行；下方放不下翻到上方或侧边，限制在屏内。
    锚点是被选中元素的 id="card-sel"（同屏只有一个选中对象）。× / Esc 只收起（清选中），不执行；锚点滚出或消失时收起。
    浮窗内仍是 CardActions（根节点 .tbar：app.js 的数字键/回车跳转依赖它），每次渲染按真实状态重算，失效对象不留旧按钮。
-   另一个就近浮窗（移动、接近、换武器、点火工具菜单）打开时先让位，survivalPop 同一时刻只定位一个浮窗。 *@
-@if (G.State != null && G.Pop == null && !G.IgniteMenuOpen && !G.DialogueLocked && !G.OverflowPending
+   另一个就近浮窗（移动、接近、点火工具菜单）打开时先让位，survivalPop 同一时刻只定位一个浮窗。 *@
+@if (G.State != null && G.Pop == null && !G.IgniteMenuOpen && !G.DialogueLocked && !G.OverflowPending && !G.DuplicateWeaponsPending
      && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid)
 {
     var pot = PotOf();

@@ -22,8 +22,11 @@
 @{
     // Q34 答复（选 B）：③④区标题改为与①②一致的竖排行首标签，不再占一整条横向标题/元信息带；
     // 随身的携重/轻装/N/5张卡只在左栏携重摘要常驻（唯一常驻来源），这里只放进标签的悬停/聚焦说明。
+    // B3：穿戴物不在随身行（不占卡），但重量计本人——本人总重含穿戴
+    var personGrams = carried ? e.CarriedGrams(s) : grams;
+    var wornGrams = carried ? e.WornGrams(s) : 0;
     var full = carried
-        ? $"{Title}：{Ui.Kg(grams)}公斤 · {(grams > e.Config.Carry.SoftGrams ? "超重" : "轻装")} · {used}/{e.MaxRootCards}张卡（左栏携重摘要常驻）"
+        ? $"{Title}：{Ui.Kg(personGrams)}公斤{(wornGrams > 0 ? $"（含穿戴{Ui.Kg(wornGrams)}公斤）" : "")} · {(personGrams > e.Config.Carry.SoftGrams ? "超重" : "轻装")} · {used}/{e.MaxRootCards}张卡（穿戴不占卡；左栏携重摘要常驻）"
         : $"{Title}：{(string.IsNullOrEmpty(Sub) ? "" : Sub + " · ")}{kinds}种物品";
     const string help = "选中卡片在卡下使用或转移 · 卡角箭头转移1件 · 拖动整理或投放 · 不耗时";
 }

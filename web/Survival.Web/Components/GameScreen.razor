@@ -109,7 +109,9 @@
             @if (G.IgniteMenuOpen && !battleUi && e.Location(s.CurrentLocation).HasFire && !s.Locations[s.CurrentLocation].Facility.FireLit) { <IgniteMenu /> }
         </div>
 
-        @if (G.OverflowPending && G.Panel != "menu") { <OverflowOverlay /> }
+        @* 旧档非法同类双武器整理先于超五卡整理（B3 H8）；两者都只在安全空闲出现 *@
+        @if (G.DuplicateWeaponsPending && G.Panel != "menu") { <DuplicateWeaponOverlay /> }
+        else if (G.OverflowPending && G.Panel != "menu") { <OverflowOverlay /> }
         @if (G.Panel == "menu") { <MenuOverlay /> }
         @if (G.BattleMenuOpen && battleUi) { <MenuOverlay Battle="true" /> }
         <StatusPop />
@@ -231,7 +233,7 @@
         if (G.DialogueLocked) return;
         if (G.InBattleUi)
         {
-            // 战斗中：M/C/R/L 锁定；Esc 栈：拖拽（drag.js 先拦截）→ 数量框 → 状态浮层 → 人物二级页 → 收起战斗菜单 → 换武器浮窗 → 收起指令预览/物品选中 → 战斗菜单（只含继续、保存并返回标题，不能脱战）
+            // 战斗中：M/C/R/L 锁定；Esc 栈：拖拽（drag.js 先拦截）→ 数量框 → 状态浮层 → 人物二级页 → 收起战斗菜单 → 就近浮窗 → 收起指令预览/物品选中 → 战斗菜单（只含继续、保存并返回标题，不能脱战）
             if (key != "Escape") return;
             if (G.PendingDrop != null) G.CancelDropQuantity();
             else if (G.StatusPinned != null) G.PinStatus(null);

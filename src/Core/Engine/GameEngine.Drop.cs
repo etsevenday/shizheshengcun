@@ -149,7 +149,6 @@ namespace Survival.Core.Engine
             var srcPlace = PlaceOf(s, head);
             if (srcPlace != ItemInstance.Carried && srcPlace != here) return DropIntent.No("其他地点的物品不能操作");
 
-
             DropIntent intent;
             switch (dst.Kind)
             {
@@ -369,7 +368,6 @@ namespace Survival.Core.Engine
             if (src.Kind != DropSourceKind.Card || tag == null || res.ToolBonus == null || res.ToolBonus.ToolTag != tag)
                 return DropIntent.No(Unsupported);
             if (!OnPlayer(head)) return DropIntent.No("先拾取工具");
-
             return PreviewFor(s, DropVerb.PreviewGatherTool, $"查看采集（使用这把{ItemName(head.ItemId)}）",
                 ActionRequest.Gather(nodeId, head.InstanceId));
         }

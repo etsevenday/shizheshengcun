@@ -14,10 +14,13 @@ namespace Survival.Core.State
     {
         /// <summary>当前唯一的本地存档槽（SaveStore 单槽 survival.save.v1）。</summary>
         public const string DefaultProfile = "slot1";
-        /// <summary>主角的角色ID（多角色模型 B3 之前只有这一个角色）。</summary>
-        public const string MainActor = "p0";
+        /// <summary>主角的角色ID（与 GameState.PlayerId 相同；B3 起角色个人状态按 actorId 存）。</summary>
+        public const string MainActor = GameState.PlayerId;
         public const string Skills = "skills";
         public const string Traits = "traits";
+        /// <summary>右栏人物页“装备”板块（七个穿戴槽，B3 H9）。</summary>
+        public const string Equip = "equip";
+
         /// <summary>没有记录时的原默认值：两块都展开（S14 §18.2 原实现）。</summary>
         public const bool DefaultOpen = true;
 

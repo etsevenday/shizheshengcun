@@ -470,8 +470,6 @@ namespace Survival.Core.Save
                 s.Battle.ActiveWeaponSlot = 1;
                 s.Battle.WeaponInstanceId = null;
             }
-
-
             s.LegacyEquippedWeaponId = null;
 
             if (s.Party.Count == 0 || s.Party[0] != GameState.PlayerId)

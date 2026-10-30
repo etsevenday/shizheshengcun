@@ -335,7 +335,6 @@ namespace Survival.Core.Engine
             s.Items.Where(i => (OnPlayer(i) || i.Owner == s.CurrentLocation) && i.ReservedBy == null && !IsLocked(s, i)
                                && _items[i.ItemId].ToolTag == toolTag && HasWear(i, ToolWear(toolTag)))
                 .OrderBy(i => OnPlayer(i) ? 0 : 1)
-
                 .ThenBy(i => i.InstanceId)
                 .ToList();
 
@@ -344,7 +343,6 @@ namespace Survival.Core.Engine
             s.Items.Where(i => (OnPlayer(i) || i.Owner == s.CurrentLocation) && i.ReservedBy == null && !IsLocked(s, i)
                                && _items[i.ItemId].ToolTag == toolTag && HasWear(i, ToolWear(toolTag)))
                 .OrderBy(i => OnPlayer(i) ? 0 : 1)
-
                 .ThenByDescending(Condition)
                 .ThenBy(i => i.InstanceId)
                 .FirstOrDefault();

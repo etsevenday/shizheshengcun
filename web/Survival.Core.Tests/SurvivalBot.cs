@@ -79,7 +79,6 @@ public sealed class SurvivalBot
         if (best == null) { E.Unequip(S, GameState.PlayerId, EquipSlots.Weapon1, false); return; }
         if (best.IsWornBy(GameState.PlayerId)) return;
         E.Equip(S, GameState.PlayerId, best.InstanceId, EquipSlots.Weapon1);
-
     }
 
     private int Tod => Clock.MinuteOfDay(S.GameMinute);

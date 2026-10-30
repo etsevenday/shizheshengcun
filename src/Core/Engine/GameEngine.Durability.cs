@@ -85,7 +85,6 @@ namespace Survival.Core.Engine
             var cfg = _items[target.ItemId];
             if (!target.Durability.HasValue || !target.MaxDurability.HasValue) return $"{cfg.Name}没有耐久，不需要维护";
             if (!(OnPlayer(target) || target.Owner == s.CurrentLocation))
-
                 return target.InFacility ? $"先把{cfg.Name}从火堆取下" : "只能维护随身或当前地面的工具";
             if (target.ReservedBy != null || IsLocked(s, target)) return "行动占用：这件工具正被使用";
             if (target.Durability.Value >= target.MaxDurability.Value - 1e-9) return $"{cfg.Name}#{target.InstanceId}耐久已满";

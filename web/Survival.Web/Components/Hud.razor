@@ -73,8 +73,11 @@
     @{
         var over = grams > cfg.Carry.SoftGrams;
         var cardsUsed = e.RootCardCount(s);
+        // B3：重量含穿戴（七槽），N/5 只数随身物资卡（穿戴不占卡）
+        var worn = e.WornGrams(s);
+        var weightTip = $"总重{Ui.KgText(grams)}{(worn > 0 ? $"，含穿戴{Ui.KgText(worn)}" : "")}；随身物资卡{cardsUsed}/{e.MaxRootCards}张（穿戴不占卡）";
     }
-    <div class="panel weight" aria-label="@($"当前角色携重：{Ui.KgText(grams)}，{(over ? "超重" : "轻装")}，随身{cardsUsed}/{e.MaxRootCards}张卡")">
+    <div class="panel weight" title="@weightTip" aria-label="@($"当前角色携重：{Ui.KgText(grams)}{(worn > 0 ? $"（含穿戴{Ui.KgText(worn)}）" : "")}，{(over ? "超重" : "轻装")}，随身{cardsUsed}/{e.MaxRootCards}张卡")">
         <span class="weight-icon" aria-hidden="true">@Icons.Markup("backpack")</span>
         <div class="eyebrow">携带重量 · @(over ? "超重" : "轻装")</div>
         <div class="weight-main">

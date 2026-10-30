@@ -699,7 +699,6 @@ namespace Survival.Core.Engine
                 string? why = null;
                 if (id == "reload" && wi != null)
                     why = wi.LoadedAmmo >= w.MagazineCapacity ? "弹仓已满" : CarriedCount(s, w.AmmoId!) <= 0 ? $"随身没有{ItemName(w.AmmoId!)}" : null;
-
                 list.Add(new BattleCommandOption { Action = id, Label = ActionName(id), Group = "general", Ap = a.ApCost, Available = why == null, Reason = why });
             }
             foreach (var id in new[] { "bandage", "use_antibiotics", "use_antiviral_cure" })
@@ -778,7 +777,6 @@ namespace Survival.Core.Engine
                 case "guard": return b.PlayerGuard ? "已在防御（不叠层）" : null;
                 case "breathe": return b.BreatheUsed ? "本回合已调整过呼吸" : null;
                 case "retreat": return b.RetreatUsed ? "本回合已尝试撤退" : null;
-
                 case "reload":
                 {
                     if (!w.UsesMagazine || wi == null) return w.ConsumesLooseAmmo ? "弓不需要装填，射击直接消耗随身箭" : "当前武器不用装填";
@@ -817,7 +815,6 @@ namespace Survival.Core.Engine
                 var energy = AttackEnergy(s, a, w);
                 if (s.Stats.Energy < energy - 1e-9) return $"体力不足（需{Fmt.N(energy)}，现有{Fmt.N(s.Stats.Energy)}）；可勉强拳击、防御、调整呼吸或撤退";
                 if (wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand)) return $"{w.Name}耐久不足（{DurabilityText(wi)}），可切换武器页";
-
                 var ammo = Math.Max(1, a.AmmoCost);
                 if (!AmmoReady(s, w, wi, ammo))
                     return w.UsesMagazine ? "弹仓空了：先装填" : $"随身没有{ItemName(w.AmmoId!)}";
@@ -996,7 +993,6 @@ namespace Survival.Core.Engine
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, c.RequestId);
             var b = s.Battle!;
-
             var a = Act(c.Action)!;
             var ap = a.ApCost < 0 ? b.PlayerAp : a.ApCost;
             b.PlayerAp -= ap;
@@ -1020,7 +1016,6 @@ namespace Survival.Core.Engine
                     BattleLog(s, $"你调整呼吸：体力{Fmt.N(e0)}→{Fmt.N(s.Stats.Energy)}，恐慌{Fmt.N(b.Panic)}。");
                     break;
                 }
-
                 case "reload":
                 {
                     var need = w.MagazineCapacity - wi!.LoadedAmmo;
@@ -1336,10 +1331,7 @@ namespace Survival.Core.Engine
 
         // ───────────── 战外装备 ─────────────
 
-        /// <summary>旧“设为当前武器/改回徒手”（过渡，网页改版后删除）：穿到武器Ⅰ / 把武器Ⅰ卸回随身。</summary>
-        public ActionResult EquipWeapon(GameState s, int? instanceId) =>
-            instanceId is null or 0 ? Unequip(s, GameState.PlayerId, EquipSlots.Weapon1, false) : Equip(s, GameState.PlayerId, instanceId.Value, EquipSlots.Weapon1);
-
+        // 旧“战外装备当前武器 EquipWeapon”已由七槽换装 Equip/Unequip 取代（GameEngine.Equip.cs，B3 H5）。
     
         // ───────────── 词条平加攻击力（R07 §4、R03 §2） ─────────────
 

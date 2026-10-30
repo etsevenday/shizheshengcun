@@ -238,7 +238,8 @@ public sealed class GameSession
 
     /// <summary>
     /// 就近操作浮窗（S14 §14.1、S02 §5、R05 §7）：一个时刻只有一个当前操作上下文。Kind：travel（相邻地图卡确认移动）、
-    /// mapnode（区域地图节点确认移动）、approach（敌踪卡接近并开战）、gather（拖工具到资源卡后的开始确认）、switch（战斗换武器）。
+    /// mapnode（区域地图节点确认移动）、approach（敌踪卡接近并开战）、gather（拖工具到资源卡后的开始确认）。
+    /// （B3 起战斗换武器浮窗取消，改为武器Ⅰ/武器Ⅱ页签。）
     /// 只是界面状态，不进存档；Esc/关闭只收起，不提交、不取消已运行的行动。切对象、开面板、开始行动、进入战斗或对话时收起。
     /// </summary>
     public sealed record PopContext(string Kind, string Id, string AnchorId);
@@ -785,7 +786,7 @@ public sealed class GameSession
     }
 
     /// <summary>旧档随身超过五张卡且安全空闲：显示超额整理窗（S06 §8、开发假设 H3）。</summary>
-    public bool OverflowPending => State != null && E.CarriedOverflow(S) && E.OverflowResolvable(S);
+    public bool OverflowPending => State != null && E.CarriedOverflow(S) && E.OverflowResolvable(S) && !E.DuplicateWeaponsIllegal(S);
 
     /// <summary>超额整理：保留所选随身物品（不超过上限），其余放到当前地面，确认后保存。</summary>
     public ActionResult ResolveOverflow(IList<int> keep)
@@ -1273,7 +1274,7 @@ public sealed class GameSession
     public int? BattleTarget { get; private set; }
     /// <summary>鼠标正悬停的敌人：右栏对象信息临时显示它（瞄准中显示对它的实际预测），移开恢复。</summary>
     public int? BattleHover { get; private set; }
-    /// <summary>换武器/用药指定的实例。</summary>
+    /// <summary>用药指定的实例。</summary>
     public int? BattleItem { get; private set; }
     /// <summary>敌方行动逐条展示中（锁定输入）。</summary>
     public bool BattleBusy { get; private set; }
@@ -1288,7 +1289,6 @@ public sealed class GameSession
 
     private void ResetBattleUi()
     {
-        if (Pop?.Kind == "switch") Pop = null;
         BattleAction = null;
         BattleTarget = null;
         BattleHover = null;
@@ -1314,11 +1314,9 @@ public sealed class GameSession
     public void PickBattleAction(string action, int? item = null)
     {
         if (State == null || S.Battle == null) return;
-        if (BattleAction == action && BattleItem == item && action != "switch_weapon") { ClearBattleAction(); return; }
+        if (BattleAction == action && BattleItem == item) { ClearBattleAction(); return; }
         BattleAction = action;
         BattleItem = item;
-        // 换成别的指令：换武器浮窗收起（一个时刻只有一个操作上下文，S14 §14.1）
-        if (action != "switch_weapon" && Pop?.Kind == "switch") Pop = null;
         DetailTab = DetailTab.Object;
         Notice = null;
         Notify();
@@ -1412,7 +1410,6 @@ public sealed class GameSession
             if (res.Ok && !res.Duplicate)
             {
                 // 提交后瞄准收起（R03 §7.4：连点/双击只提交一次，第二击不排队成另一攻击；新目标不复用旧点击）
-                if (Pop?.Kind == "switch") Pop = null;
                 BattleAction = null;
                 BattleItem = null;
                 if (S.Battle != null && BattleTarget != null && S.Battle.Enemies.All(e => e.Index != BattleTarget || !e.Alive)) BattleTarget = null;
@@ -1507,13 +1504,51 @@ public sealed class GameSession
         if (Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
     }
 
-    /// <summary>战外装备当前武器（免费，不耗时）。</summary>
-    public void Equip(int? instanceId)
+    // ───────────── 七个穿戴槽（S06 全系统更新目标 §1、R02 §1、A05 §5；开发计划 v0.9 B3 H5/H9） ─────────────
+
+    /// <summary>把本人随身的这件武器装备到武器Ⅰ/武器Ⅱ（0 时间；不合法时内核拒绝并写原因，状态不变）。</summary>
+    public ActionResult Equip(int instanceId, string slot) =>
+        Commit(E.Equip(S, GameState.PlayerId, instanceId, slot, Guid.NewGuid().ToString("N")));
+
+    /// <summary>卸下某槽：toGround=false 回本人随身（卡位不够时拒绝），toGround=true 是玩家明确选的“放当前地面”。</summary>
+    public ActionResult Unequip(string slot, bool toGround) =>
+        Commit(E.Unequip(S, GameState.PlayerId, slot, toGround, Guid.NewGuid().ToString("N")));
+
+    /// <summary>旧档非法同类双武器：已在安全空闲，弹整理窗（先于超五卡整理，B3 H8）。</summary>
+    public bool DuplicateWeaponsPending => State != null && E.DuplicateWeaponsIllegal(S) && E.OverflowResolvable(S);
+
+    /// <summary>非法同类双武器整理：保留一把，其余按玩家选择进随身或放当前地面。</summary>
+    public ActionResult ResolveDuplicateWeapons(int keep, IDictionary<int, bool> toGround) =>
+        Commit(E.ResolveDuplicateWeapons(S, GameState.PlayerId, keep, toGround, Guid.NewGuid().ToString("N")));
+
+    private ActionResult Commit(ActionResult res)
     {
-        var res = E.EquipWeapon(S, instanceId);
         Notice = res.Ok ? null : res.Reason;
-        Drain();
-        Save();
+        if (res.Ok)
+        {
+            Drain();
+            ReconcileSelection();
+            Save();
+        }
+        Notify();
+        return res;
+    }
+
+    /// <summary>
+    /// 战斗中切换武器页（A10 §4.2：0AP，只换本次可选技能组）：切页取消尚未提交的瞄准与目标确认；随战斗存档。
+    /// </summary>
+    public void SelectWeaponPage(int page)
+    {
+        if (State == null || S.Battle == null || BattleBusy) return;
+        var res = E.SelectWeaponPage(S, page, Guid.NewGuid().ToString("N"));
+        Notice = res.Ok ? null : res.Reason;
+        if (res.Ok)
+        {
+            BattleAction = null;
+            BattleItem = null;
+            BattleHover = null;
+            Save();
+        }
         Notify();
     }
 }
