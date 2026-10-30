@@ -14,7 +14,10 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_lu_heng_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "hub_registration_existing"
+      ]
     },
     {
       "npcId": "npc_xu_an",
@@ -30,7 +33,10 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_xu_an_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "hub_affairs_record"
+      ]
     },
     {
       "npcId": "npc_luo_zheng",
@@ -47,7 +53,11 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_luo_zheng_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "hub_workshop_access",
+        "copy_public_knowledge"
+      ]
     },
     {
       "npcId": "npc_chen_zhi",
@@ -62,7 +72,12 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_chen_zhi_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "clinic_consult",
+        "clinic_dressing",
+        "clinic_observation_rest"
+      ]
     },
     {
       "npcId": "npc_tao_cen",
@@ -77,7 +92,10 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_tao_cen_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "appraisal_white_v1"
+      ]
     },
     {
       "npcId": "npc_du_sui",
@@ -92,7 +110,10 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_du_sui_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "shelter_recruitment"
+      ]
     },
     {
       "npcId": "npc_qi_wen",
@@ -106,7 +127,10 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_qi_wen_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "church_reception_existing"
+      ]
     },
     {
       "npcId": "npc_bai_ling",
@@ -120,7 +144,10 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_bai_ling_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "church_relief_ration"
+      ]
     },
     {
       "npcId": "npc_ji_mu",
@@ -134,7 +161,10 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_ji_mu_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "church_public_mediation"
+      ]
     },
     {
       "npcId": "npc_song_zhu",
@@ -149,7 +179,10 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_song_zhu_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "church_archive_copy"
+      ]
     },
     {
       "npcId": "npc_fu_heng",
@@ -161,7 +194,10 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_fu_heng_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "church_quiet_rest"
+      ]
     },
     {
       "npcId": "npc_wen_cheng",
@@ -175,7 +211,10 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_wen_cheng_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "academy_reception_existing"
+      ]
     },
     {
       "npcId": "npc_ji_wen",
@@ -190,7 +229,10 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_ji_wen_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "academy_noninvasive_observation"
+      ]
     },
     {
       "npcId": "npc_shao_ning",
@@ -204,7 +246,10 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_shao_ning_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "academy_report_compare"
+      ]
     },
     {
       "npcId": "npc_he_yuan",
@@ -218,7 +263,10 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_he_yuan_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "academy_workshop_access"
+      ]
     },
     {
       "npcId": "npc_yin_ke",
@@ -232,7 +280,10 @@
       "recruitmentType": "service_only",
       "canRecruit": false,
       "dialogueSet": "npc_yin_ke_dialogue",
-      "serviceAtCurrentLocationOnly": true
+      "serviceAtCurrentLocationOnly": true,
+      "serviceIds": [
+        "academy_observation_record"
+      ]
     }
   ],
   "buildingOnlyLocations": [

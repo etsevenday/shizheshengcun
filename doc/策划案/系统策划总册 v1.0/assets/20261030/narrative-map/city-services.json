@@ -1,0 +1,338 @@
+{
+  "version": "city_services_q33_v1",
+  "date": "2026-10-30",
+  "status": "用户授权补齐的可调实装初值，未实现/未实机验证",
+  "services": [
+    {
+      "id": "hub_registration_existing",
+      "locationId": "h01_gate",
+      "kind": "registration",
+      "worldMinutes": 0,
+      "inputs": {},
+      "outputs": {},
+      "effect": "在h01明确登记意愿与规则后只授registration_authorized通行授权；沿真实h01→h02边到达提交才写hub_registered/C2及原一次配给，不在h01预发，不重复发旧已领。",
+      "claimScope": "campaign",
+      "delegate": "A11 QMAP01",
+      "facts": [
+        "registration_authorized"
+      ]
+    },
+    {
+      "id": "hub_affairs_record",
+      "locationId": "h02_square",
+      "kind": "quest_record",
+      "worldMinutes": 10,
+      "inputs": {},
+      "outputs": {},
+      "effect": "FA04两份首次核心记录到齐后10分钟整合，原任务同一事务，不另扣第二次10分钟",
+      "questId": "FA04",
+      "claimScope": "campaign"
+    },
+    {
+      "id": "hub_workshop_access",
+      "locationId": "h03_workshop",
+      "kind": "facility_menu",
+      "worldMinutes": 0,
+      "inputs": {},
+      "outputs": {},
+      "effect": "打开当地真实已开放工坊配方；后续制作独立按执行者/设施/配方预留及工时，不自动制造、不免耗材"
+    },
+    {
+      "id": "copy_public_knowledge",
+      "locationId": "h03_workshop",
+      "kind": "knowledge_copy",
+      "worldMinutes": 30,
+      "inputs": {},
+      "outputs": {},
+      "effect": "按EXQ05/06的已公开固定替代知识包复制，已知包禁用；只授知识不伪造调查记录/通关/容量",
+      "claimScope": "knowledgeSet",
+      "delegate": "A11 kp_waterworks/kp_mining；其他包在其原场所办理"
+    },
+    {
+      "id": "clinic_consult",
+      "locationId": "h04_infirmary",
+      "kind": "information",
+      "worldMinutes": 0,
+      "inputs": {},
+      "outputs": {},
+      "effect": "选一名当前同行者，显示本人现有H/I/V、出血与用药/回血冷却和公开医疗说明；不新抽诊断、不恢复、不触发治愈"
+    },
+    {
+      "id": "clinic_dressing",
+      "locationId": "h04_infirmary",
+      "kind": "medical_item",
+      "worldMinutes": 10,
+      "inputs": {
+        "bandage": 1,
+        "cloth": 1
+      },
+      "outputs": {},
+      "effect": "完成时消耗自带绷带1+机构换药耗材布1，NPC有效medicine=1无装备增益；对指定存活同行者调用R04原草药绷带函数（止血/原公式回血/V抑制最低1），目标共享H60分钟与V6小时冷却不绕过；没有任何实际收益则开始前拒绝",
+      "actorSkillLevel": 1,
+      "playerXp": 0,
+      "target": "one_present_party_actor",
+      "medicalAuthority": "R04 §7.2与R01医疗公式；不是新增清感染入口",
+      "effectAt": "after_last_tick_survival_check"
+    },
+    {
+      "id": "clinic_observation_rest",
+      "locationId": "h04_infirmary",
+      "kind": "sheltered_rest",
+      "worldMinutes": 30,
+      "inputs": {},
+      "outputs": {},
+      "effect": "全体当前同行者按S13普通有遮蔽rest逐段恢复，床额外E不提供、无额外H/I/V效果；正常N/W/药期/感染照推，30分钟不是一次性补满",
+      "canCancelAtTickBoundary": true,
+      "mode": "rest"
+    },
+    {
+      "id": "appraisal_white_v1",
+      "locationId": "h05_appraisal",
+      "kind": "delegated_appraisal",
+      "worldMinutes": null,
+      "inputs": {},
+      "outputs": {},
+      "effect": "使用R07 appraisal-service-contract.json既有三服务；具体报价/10或5分钟/耗材/日总2包全部同一契约，不叠收本表费用",
+      "delegateFile": "../facilities/appraisal-service-contract.json"
+    },
+    {
+      "id": "shelter_recruitment",
+      "locationId": "h06_shelter",
+      "kind": "delegated_recruitment",
+      "worldMinutes": null,
+      "inputs": {},
+      "outputs": {},
+      "effect": "使用R08既有72h周期、3候选、10min登记或RB01的30min；候补照护不因此免费新增，查看名册0min",
+      "delegate": "R08 RC1—RC8与B3招募契约"
+    },
+    {
+      "id": "church_reception_existing",
+      "locationId": "c02_church",
+      "kind": "information",
+      "worldMinutes": 0,
+      "inputs": {},
+      "outputs": {},
+      "effect": "FA02公开路线说明，接受调查/拒宣誓仍获取同一个FA02_route_briefed；无入教费/捐献/组织归属",
+      "facts": [
+        "church_contacted",
+        "FA02_route_briefed"
+      ]
+    },
+    {
+      "id": "church_relief_ration",
+      "locationId": "c04_alms",
+      "kind": "limited_relief",
+      "worldMinutes": 5,
+      "inputs": {},
+      "outputs": {},
+      "effect": "目标当前同行者N<40可选熟块根1，或W<40可选净水1；只选一项，全队同机构每世界日合计最多1份；完成生成普通既有食品实例落当前服务地面，不自动吃喝",
+      "choices": [
+        {
+          "id": "relief_food",
+          "targetPredicate": "satiety<40",
+          "outputs": {
+            "cooked_root": 1
+          }
+        },
+        {
+          "id": "relief_water",
+          "targetPredicate": "hydration<40",
+          "outputs": {
+            "clean_water": 1
+          }
+        }
+      ],
+      "dailyPartyQuota": 1,
+      "quotaKey": [
+        "campaignId",
+        "partyId",
+        "serviceId",
+        "startWorldDay"
+      ],
+      "quality": "existing_ordinary_definition",
+      "expiry": "从完成生成时按S06原物品保质，不给旧物刷新",
+      "membershipRequired": false,
+      "eligibilityRecheck": "start_and_completion",
+      "quotaRule": "预留/跨日/取消同R07日桶；未完成不扣额，完成只能一次"
+    },
+    {
+      "id": "church_public_mediation",
+      "locationId": "c05_admonition",
+      "kind": "quest_record",
+      "worldMinutes": 10,
+      "inputs": {},
+      "outputs": {},
+      "effect": "CH02公开资料交接或拒宣誓的公开备份流程；与CH02原10分钟抄录同一事务，拒绝不扣M/I、不封主线；已完成再聊0分钟",
+      "questId": "CH02",
+      "claimScope": "campaign",
+      "noDoubleChargeWith": [
+        "church_archive_copy"
+      ]
+    },
+    {
+      "id": "church_archive_copy",
+      "locationId": "c06_archive",
+      "kind": "quest_record",
+      "worldMinutes": 10,
+      "inputs": {},
+      "outputs": {},
+      "effect": "按CH02抄公开路线备份；若已在训诫堂完成同一归档则免费回看，不二次收费/加知识/发物；不是额外通关记录来源",
+      "questId": "CH02",
+      "claimScope": "campaign",
+      "noDoubleChargeWith": [
+        "church_public_mediation"
+      ]
+    },
+    {
+      "id": "church_quiet_rest",
+      "locationId": "c07_sanctuary",
+      "kind": "sheltered_rest",
+      "worldMinutes": 30,
+      "inputs": {},
+      "outputs": {},
+      "effect": "公开安静角落30分钟普通有遮蔽rest，全体同行按S13原率逐段；无专属M/H加成、无床、无宣誓，不清伤病/病毒，正常饮食与时间代价",
+      "mode": "rest",
+      "canCancelAtTickBoundary": true
+    },
+    {
+      "id": "academy_reception_existing",
+      "locationId": "r04_reception",
+      "kind": "information",
+      "worldMinutes": 0,
+      "inputs": {},
+      "outputs": {},
+      "effect": "FA03只调查环境/拒检测仍领公开路线两种分支均写FA03_environment_briefed，不把拒绝当永久锁门",
+      "facts": [
+        "academy_contacted",
+        "FA03_environment_briefed"
+      ]
+    },
+    {
+      "id": "academy_noninvasive_observation",
+      "locationId": "r05_testing",
+      "kind": "quest_record",
+      "worldMinutes": 10,
+      "inputs": {},
+      "outputs": {},
+      "effect": "AC01当前已有状态只读核对或环境记录核对10分钟，两选择共任务账，绝不生成身体新效果；无需提交活性物质/抽血/实验",
+      "questId": "AC01",
+      "claimScope": "campaign",
+      "noDoubleChargeWith": [
+        "academy_observation_record"
+      ]
+    },
+    {
+      "id": "academy_report_compare",
+      "locationId": "r06_archive",
+      "kind": "quest_record",
+      "worldMinutes": 10,
+      "inputs": {},
+      "outputs": {},
+      "effect": "AC02原报告比对10分钟，完成输出确定的核对笔记与外部医疗线索文本；不授新药/永久免疫/容量或另一个知识箱",
+      "questId": "AC02",
+      "claimScope": "campaign"
+    },
+    {
+      "id": "academy_workshop_access",
+      "locationId": "r07_workshop",
+      "kind": "facility_menu",
+      "worldMinutes": 0,
+      "inputs": {},
+      "outputs": {},
+      "effect": "打开当前已开放普通工坊菜单与公共通道说明；进入r08的观察/拒实验选择均可登记；制造材料/门槛/时间仍沿A07/S08，不提供免费高级工坊或军械蓝图",
+      "facts": [
+        "academy_observation_pass"
+      ]
+    },
+    {
+      "id": "academy_observation_record",
+      "locationId": "r08_observation",
+      "kind": "information",
+      "worldMinutes": 0,
+      "inputs": {},
+      "outputs": {},
+      "effect": "查看AC01已有观察范围/记录，若尚未做则指向r05对应10分钟事务；观察区本身不再扣10分钟、不自动开始检测",
+      "delegate": "AC01同一claim，拒绝仍有公开路线"
+    }
+  ],
+  "npcBindings": {
+    "npc_lu_heng": [
+      "hub_registration_existing"
+    ],
+    "npc_xu_an": [
+      "hub_affairs_record"
+    ],
+    "npc_luo_zheng": [
+      "hub_workshop_access",
+      "copy_public_knowledge"
+    ],
+    "npc_chen_zhi": [
+      "clinic_consult",
+      "clinic_dressing",
+      "clinic_observation_rest"
+    ],
+    "npc_tao_cen": [
+      "appraisal_white_v1"
+    ],
+    "npc_du_sui": [
+      "shelter_recruitment"
+    ],
+    "npc_qi_wen": [
+      "church_reception_existing"
+    ],
+    "npc_bai_ling": [
+      "church_relief_ration"
+    ],
+    "npc_ji_mu": [
+      "church_public_mediation"
+    ],
+    "npc_song_zhu": [
+      "church_archive_copy"
+    ],
+    "npc_fu_heng": [
+      "church_quiet_rest"
+    ],
+    "npc_wen_cheng": [
+      "academy_reception_existing"
+    ],
+    "npc_ji_wen": [
+      "academy_noninvasive_observation"
+    ],
+    "npc_shao_ning": [
+      "academy_report_compare"
+    ],
+    "npc_he_yuan": [
+      "academy_workshop_access"
+    ],
+    "npc_yin_ke": [
+      "academy_observation_record"
+    ]
+  },
+  "common": {
+    "mustBeAtActualLocation": true,
+    "actorScope": "current_present_party_only",
+    "currency": "none",
+    "noRemoteMaterials": true,
+    "noMembershipGate": true,
+    "onlyOneMainAction": true,
+    "transaction": "preview0→校验地点/精确owner/目标/条件/费用/配额→预留serviceTxnId与startDay→5分钟段→死亡/尸变优先→最后段原子消耗+效果+claim+配额；失败原物原owner保持",
+    "cancel": "信息/预览0费用；未完成已耗时间不退、释放预留、未消费不扣材料，无完成效果；rest按已提交段保留真实消耗恢复",
+    "cooldowns": "医疗共享目标冷却/病毒单独冷却，机构替班/切人/读档不重置",
+    "duplicates": "同任务/同知识不因服务表再建第二份事务或领奖，已完成信息0分钟",
+    "saveFields": [
+      "serviceTxnId",
+      "serviceId",
+      "actorAndTarget",
+      "locationId",
+      "sourceInstancesAndOwners",
+      "startDay",
+      "remainingMinutes",
+      "lockedOutput",
+      "claimId",
+      "quotaReservation",
+      "completionSerial"
+    ],
+    "institutionFallback": "岗位不在由同机构代班/公开记录接续，不复活人物，不重置任务/配额",
+    "servicesDoNotAdvance": "首次招募周期起点/副本clear/reset计时不因普通服务重设"
+  }
+}

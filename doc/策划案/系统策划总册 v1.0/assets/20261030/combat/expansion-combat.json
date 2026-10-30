@@ -1,7 +1,7 @@
 {
   "version": "1.1-v3-approved",
   "status": "用户已批准可调初值直接实装，未实现/未实机",
-  "mapSHA256": "1f2d21dd7118efcf81037fd1b1316a6a0037d91a70ae711494752100298af2c2",
+  "mapSHA256": "882ae53f17365c738d13dfb56c688de6c37d9141635003730a4b155b8bd25627",
   "dungeonInterfaces": [
     {
       "id": "d01",

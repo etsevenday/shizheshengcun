@@ -1,0 +1,5512 @@
+{
+  "version": "2026-10-30-Q30-final",
+  "status": "用户选B授权总控补齐并实装的完整门槛定义；不是工程实现或已实机验证",
+  "rawGateCount": 27,
+  "canonicalGateCount": 26,
+  "aliases": {
+    "from_explore_100": "from_explore100"
+  },
+  "rawLabels": [
+    "open",
+    "field25",
+    "field50",
+    "field100",
+    "village50",
+    "village100",
+    "woods100_or_scrapyard100",
+    "hardware100",
+    "QMAP01",
+    "from_explore_100",
+    "clear_checkpoint",
+    "register",
+    "church_public_access",
+    "FA02_accept_no_oath",
+    "academy_public_access",
+    "consent_or_decline_no_mainline_lock",
+    "FA03_accept_environment_record",
+    "supervised_no_experiment_required",
+    "from_explore100",
+    "FA02_public_route",
+    "instance_from_explore100",
+    "guardian_defeated",
+    "instance_complete",
+    "FA03_environment_only",
+    "FA04_merged",
+    "FA05_power_owned",
+    "parent_explore100"
+  ],
+  "definitions": [
+    {
+      "id": "open",
+      "predicate": {
+        "op": "literal",
+        "value": true
+      },
+      "unlockScope": "campaign",
+      "description": "新局camp↔field公开边；原首战门控由S15在实际到达field后执行，不靠锁camp出门替代",
+      "producerEvent": "对应事实首次提交或探索完成后复核",
+      "failedLabel": "新局camp↔field公开边；原首战门控由S15在实际到达field后执行，不靠锁camp出门替代",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "field25",
+      "predicate": {
+        "op": "exploreAtLeast",
+        "node": "field",
+        "value": 25,
+        "scope": "campaign"
+      },
+      "unlockScope": "campaign",
+      "description": "field持久探索度≥25，首次满足锁存此边，两向返程不查另一端探索",
+      "producerEvent": "对应事实首次提交或探索完成后复核",
+      "failedLabel": "field持久探索度≥25，首次满足锁存此边，两向返程不查另一端探索",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "field50",
+      "predicate": {
+        "op": "exploreAtLeast",
+        "node": "field",
+        "value": 50,
+        "scope": "campaign"
+      },
+      "unlockScope": "campaign",
+      "description": "field持久探索度≥50，首次满足锁存此边，两向返程不查另一端探索",
+      "producerEvent": "对应事实首次提交或探索完成后复核",
+      "failedLabel": "field持久探索度≥50，首次满足锁存此边，两向返程不查另一端探索",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "field100",
+      "predicate": {
+        "op": "exploreAtLeast",
+        "node": "field",
+        "value": 100,
+        "scope": "campaign"
+      },
+      "unlockScope": "campaign",
+      "description": "field持久探索度≥100，首次满足锁存此边，两向返程不查另一端探索",
+      "producerEvent": "对应事实首次提交或探索完成后复核",
+      "failedLabel": "field持久探索度≥100，首次满足锁存此边，两向返程不查另一端探索",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "village50",
+      "predicate": {
+        "op": "exploreAtLeast",
+        "node": "village",
+        "value": 50,
+        "scope": "campaign"
+      },
+      "unlockScope": "campaign",
+      "description": "village持久探索度≥50，首次满足锁存此边，两向返程不查另一端探索",
+      "producerEvent": "对应事实首次提交或探索完成后复核",
+      "failedLabel": "village持久探索度≥50，首次满足锁存此边，两向返程不查另一端探索",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "village100",
+      "predicate": {
+        "op": "exploreAtLeast",
+        "node": "village",
+        "value": 100,
+        "scope": "campaign"
+      },
+      "unlockScope": "campaign",
+      "description": "village持久探索度≥100，首次满足锁存此边，两向返程不查另一端探索",
+      "producerEvent": "对应事实首次提交或探索完成后复核",
+      "failedLabel": "village持久探索度≥100，首次满足锁存此边，两向返程不查另一端探索",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "hardware100",
+      "predicate": {
+        "op": "exploreAtLeast",
+        "node": "hardware",
+        "value": 100,
+        "scope": "campaign"
+      },
+      "unlockScope": "campaign",
+      "description": "hardware持久探索度≥100，首次满足锁存此边，两向返程不查另一端探索",
+      "producerEvent": "对应事实首次提交或探索完成后复核",
+      "failedLabel": "hardware持久探索度≥100，首次满足锁存此边，两向返程不查另一端探索",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "woods100_or_scrapyard100",
+      "predicate": {
+        "op": "or",
+        "args": [
+          {
+            "op": "exploreAtLeast",
+            "node": "woods",
+            "value": 100,
+            "scope": "campaign"
+          },
+          {
+            "op": "exploreAtLeast",
+            "node": "scrapyard",
+            "value": 100,
+            "scope": "campaign"
+          }
+        ]
+      },
+      "unlockScope": "campaign",
+      "description": "woods或scrapyard任一探索100即锁存；不是两端都100",
+      "producerEvent": "对应事实首次提交或探索完成后复核",
+      "failedLabel": "woods或scrapyard任一探索100即锁存；不是两端都100",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "QMAP01",
+      "predicate": {
+        "op": "and",
+        "args": [
+          {
+            "op": "or",
+            "args": [
+              {
+                "op": "fact",
+                "key": "tutorialBattleWon"
+              },
+              {
+                "op": "fact",
+                "key": "legacyTutorialEquivalent"
+              }
+            ]
+          },
+          {
+            "op": "fact",
+            "key": "camp_route_known"
+          },
+          {
+            "op": "visited",
+            "node": "village"
+          }
+        ]
+      },
+      "unlockScope": "campaign",
+      "description": "首战胜利/Legacy等效且来客路线已知且实际到访village；不要village100/融合/全教学",
+      "producerEvent": "S15程望交谈或village到达成功时重判；已开旧边直接承接",
+      "failedLabel": "首战胜利/Legacy等效且来客路线已知且实际到访village；不要village100/融合/全教学",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "from_explore100",
+      "predicate": {
+        "op": "exploreAtLeast",
+        "node": "$authoredFrom",
+        "value": 100,
+        "scope": "campaign"
+      },
+      "unlockScope": "campaign",
+      "description": "只查序列化边原from节点探索100；from不是本次移动者站点，正向首次满足永久双向锁存",
+      "producerEvent": "对应事实首次提交或探索完成后复核",
+      "failedLabel": "只查序列化边原from节点探索100；from不是本次移动者站点，正向首次满足永久双向锁存",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "clear_checkpoint",
+      "predicate": {
+        "op": "fact",
+        "key": "checkpoint_obstruction_cleared"
+      },
+      "unlockScope": "campaign",
+      "description": "m02固定拦路事件已结算；m02固定迟缓尸战胜且主角存活后提交，不读取S04随机清理成功或未来守卫胜利",
+      "producerEvent": "m02一次性固定任务战结束提交；不花随机清理次数，不重发原任务奖励",
+      "failedLabel": "m02固定拦路事件已结算；m02固定迟缓尸战胜且主角存活后提交，不读取S04随机清理成功或未来守卫胜利",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "register",
+      "predicate": {
+        "op": "if",
+        "condition": {
+          "op": "contextEquals",
+          "key": "edgeRole",
+          "value": "hub_registration_boundary"
+        },
+        "then": {
+          "op": "or",
+          "args": [
+            {
+              "op": "fact",
+              "key": "registration_authorized"
+            },
+            {
+              "op": "fact",
+              "key": "hub_registered"
+            }
+          ]
+        },
+        "else": {
+          "op": "fact",
+          "key": "hub_registered"
+        }
+      },
+      "unlockScope": "campaign",
+      "description": "h01↔h02只需h01登记对话已授权，真实到达h02才提交hub_registered/C2；其余9条register边必须真正hub_registered",
+      "producerEvent": "h01安全空闲0分钟登记对话写registration_authorized；h02到达成功事务写hub_registered和QMAP01登记完成，容量幂等",
+      "failedLabel": "h01↔h02只需h01登记对话已授权，真实到达h02才提交hub_registered/C2；其余9条register边必须真正hub_registered",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "church_public_access",
+      "predicate": {
+        "op": "fact",
+        "key": "church_contacted"
+      },
+      "unlockScope": "campaign",
+      "description": "首次实际抵达c02即church_contacted，允许公共城市边；不要求入教/捐献/先完成FA02",
+      "producerEvent": "c02到达成功提交；旧已到访c02等效接触，不伪造对白",
+      "failedLabel": "首次实际抵达c02即church_contacted，允许公共城市边；不要求入教/捐献/先完成FA02",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "FA02_accept_no_oath",
+      "predicate": {
+        "op": "fact",
+        "key": "FA02_route_briefed"
+      },
+      "unlockScope": "campaign",
+      "description": "c02固定接待对话选择调查记录或拒绝宣誓但领取公开路线，两个分支同写FA02_route_briefed；这是明确唯一接受节点",
+      "producerEvent": "c02接待人/同岗位告示0分钟对话提交路线事实；关窗不算，重新交谈可继续",
+      "failedLabel": "c02固定接待对话选择调查记录或拒绝宣誓但领取公开路线，两个分支同写FA02_route_briefed；这是明确唯一接受节点",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "academy_public_access",
+      "predicate": {
+        "op": "fact",
+        "key": "academy_contacted"
+      },
+      "unlockScope": "campaign",
+      "description": "首次实际抵达r02即academy_contacted，开放公共接待/档案路径，不要求检测或FA03",
+      "producerEvent": "r02到达成功提交；旧已到访r02可等效接触",
+      "failedLabel": "首次实际抵达r02即academy_contacted，开放公共接待/档案路径，不要求检测或FA03",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "consent_or_decline_no_mainline_lock",
+      "predicate": {
+        "op": "fact",
+        "key": "academy_contacted"
+      },
+      "unlockScope": "campaign",
+      "description": "检测室r05入口只查academy_contacted，入内再选同意非侵入观察或拒绝；两者不改变FA03可走性",
+      "producerEvent": "公开接触即具入口资格；不能把r05室内选择反过来当进入r05的前提",
+      "failedLabel": "检测室r05入口只查academy_contacted，入内再选同意非侵入观察或拒绝；两者不改变FA03可走性",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "FA03_accept_environment_record",
+      "predicate": {
+        "op": "fact",
+        "key": "FA03_environment_briefed"
+      },
+      "unlockScope": "campaign",
+      "description": "r04固定接待对话选择只调查环境记录或拒绝检测但领取公开路线，两个分支同写FA03_environment_briefed；不要求人体实验",
+      "producerEvent": "r04接待/同岗位公开说明0分钟对话完整提交；不把r07或地牢完成作为接受条件",
+      "failedLabel": "r04固定接待对话选择只调查环境记录或拒绝检测但领取公开路线，两个分支同写FA03_environment_briefed；不要求人体实验",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "supervised_no_experiment_required",
+      "predicate": {
+        "op": "fact",
+        "key": "academy_observation_pass"
+      },
+      "unlockScope": "campaign",
+      "description": "r07门旁公开告示0分钟确认仅沿观察通道、不参与实验即写academy_observation_pass，允许进入r08；非跟随者/职业/付费钥匙",
+      "producerEvent": "实际到r07安全空闲阅读并明确确认；拒绝实验与只观察同样获通道资格，可重读不收费",
+      "failedLabel": "r07门旁公开告示0分钟确认仅沿观察通道、不参与实验即写academy_observation_pass，允许进入r08；非跟随者/职业/付费钥匙",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "FA02_public_route",
+      "predicate": {
+        "op": "fact",
+        "key": "FA02_route_briefed"
+      },
+      "unlockScope": "campaign",
+      "description": "d01入口与FA02_accept_no_oath复用同一c02路线事实，无第二次任务接受/会籍门槛；到c03仍按真实边移动",
+      "producerEvent": "对应事实首次提交或探索完成后复核",
+      "failedLabel": "d01入口与FA02_accept_no_oath复用同一c02路线事实，无第二次任务接受/会籍门槛；到c03仍按真实边移动",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "instance_from_explore100",
+      "predicate": {
+        "op": "exploreAtLeast",
+        "node": "$authoredFrom",
+        "value": 100,
+        "scope": "current_instance"
+      },
+      "unlockScope": "current_instance",
+      "description": "只查当前campaign+dungeon+generation中原边from房间探索100；锁存于该实例边，返程不看未知端，重置新代不继承旧房间探索",
+      "producerEvent": "对应事实首次提交或探索完成后复核",
+      "failedLabel": "只查当前campaign+dungeon+generation中原边from房间探索100；锁存于该实例边，返程不看未知端，重置新代不继承旧房间探索",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "guardian_defeated",
+      "predicate": {
+        "op": "instanceFact",
+        "key": "guardianDefeated",
+        "dungeon": "$dungeonId"
+      },
+      "unlockScope": "current_instance",
+      "description": "当前实例对应guardNode固定守卫已最终战胜，结果提交且主角存活；旧代/别地牢/普通遭遇胜利不算",
+      "producerEvent": "同一instanceId固定守卫胜利事务，不因探索100或旧首通账伪造",
+      "failedLabel": "当前实例对应guardNode固定守卫已最终战胜，结果提交且主角存活；旧代/别地牢/普通遭遇胜利不算",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "instance_complete",
+      "predicate": {
+        "op": "instanceFact",
+        "key": "recordClaimedAndClear",
+        "dungeon": "$dungeonId"
+      },
+      "unlockScope": "revalidate_current_instance",
+      "description": "仅当前实例recordNode/clearNode核心领取事务完成可用单向出口；只杀守卫不算，历史首通或冷却到期不算",
+      "producerEvent": "当前代记录交互实际领取/幂等知识事务写recordClaimedAndClear；再次看旧记录不重发奖",
+      "failedLabel": "仅当前实例recordNode/clearNode核心领取事务完成可用单向出口；只杀守卫不算，历史首通或冷却到期不算",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "FA03_environment_only",
+      "predicate": {
+        "op": "fact",
+        "key": "FA03_environment_briefed"
+      },
+      "unlockScope": "campaign",
+      "description": "d02入口复用r04环境路线事实；拒检测/只环境均通，不另加consent或实验同意",
+      "producerEvent": "对应事实首次提交或探索完成后复核",
+      "failedLabel": "d02入口复用r04环境路线事实；拒检测/只环境均通，不另加consent或实验同意",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "FA04_merged",
+      "predicate": {
+        "op": "and",
+        "args": [
+          {
+            "op": "fact",
+            "key": "FA02_record_credit"
+          },
+          {
+            "op": "fact",
+            "key": "FA03_record_credit"
+          },
+          {
+            "op": "fact",
+            "key": "FA04_merged"
+          }
+        ]
+      },
+      "unlockScope": "campaign",
+      "description": "不同教会/科学院记录资格各一次（或各自Legacy等效），实际在h02进行FA04 wait10分钟，两段都提交才写FA04_merged；不用C4单值替代两种记录",
+      "producerEvent": "d01_08/d02_08领取写独立record_credit；h02公告/协调员安全空闲明确开始wait10，2段完成写merged，退出保留已做段",
+      "failedLabel": "不同教会/科学院记录资格各一次（或各自Legacy等效），实际在h02进行FA04 wait10分钟，两段都提交才写FA04_merged；不用C4单值替代两种记录",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "FA05_power_owned",
+      "predicate": {
+        "op": "fact",
+        "key": "communication_power_claimed"
+      },
+      "unlockScope": "campaign",
+      "description": "d03_08通信电源已领取的campaign任务账；不是当前背包持有/消耗品数量、不是仅守卫死或见过物品",
+      "producerEvent": "d03_08通信电源campaignClaim同事务写communication_power_claimed，历史已领等效但不重发电源",
+      "failedLabel": "d03_08通信电源已领取的campaign任务账；不是当前背包持有/消耗品数量、不是仅守卫死或见过物品",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    },
+    {
+      "id": "parent_explore100",
+      "predicate": {
+        "op": "exploreAtLeast",
+        "node": "$dungeonParent",
+        "value": 100,
+        "scope": "campaign"
+      },
+      "unlockScope": "campaign",
+      "description": "d05—08入口各自父地点探索100，不要未进入的dXX_01探索；可选知识任务接取不是门槛",
+      "producerEvent": "对应事实首次提交或探索完成后复核",
+      "failedLabel": "d05—08入口各自父地点探索100，不要未进入的dXX_01探索；可选知识任务接取不是门槛",
+      "legacy": "旧世界已开边保留；实例事实仅匹配当前generation；不补道具/故事/敌人胜利"
+    }
+  ],
+  "publicAutoExplore100Nodes": [
+    "h01_gate",
+    "h02_square",
+    "h03_workshop",
+    "h04_infirmary",
+    "h05_homestead",
+    "b01_school",
+    "b02_station",
+    "c02_church",
+    "c03_crypt",
+    "r01_observatory",
+    "r02_academy",
+    "r03_lab",
+    "h05_appraisal",
+    "h06_shelter",
+    "c04_alms",
+    "c05_admonition",
+    "c06_archive",
+    "c07_sanctuary",
+    "r04_reception",
+    "r05_testing",
+    "r06_archive",
+    "r07_workshop",
+    "r08_observation"
+  ],
+  "publicVisitPolicy": "23公共城市/服务与安全专用地块首次真实抵达置100，仅发现事实，不授25/50/75/100随机物资或敌踪；普通野外含c01和r01以实际土地职责为准，r01已属势力设施故自动100",
+  "edgeCount": 180,
+  "directedTraversalCount": 352,
+  "edgeContracts": [
+    {
+      "edgeId": "edge_camp__field",
+      "rawAlias": "open",
+      "canonical": "open",
+      "context": {
+        "authoredFrom": "camp",
+        "authoredTo": "field",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "camp",
+          "to": "field",
+          "predicate": "open",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "field",
+          "to": "camp",
+          "predicate": "open",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_field__stream",
+      "rawAlias": "field25",
+      "canonical": "field25",
+      "context": {
+        "authoredFrom": "field",
+        "authoredTo": "stream",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "field",
+          "to": "stream",
+          "predicate": "field25",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "stream",
+          "to": "field",
+          "predicate": "field25",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_field__woods",
+      "rawAlias": "field50",
+      "canonical": "field50",
+      "context": {
+        "authoredFrom": "field",
+        "authoredTo": "woods",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "field",
+          "to": "woods",
+          "predicate": "field50",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "woods",
+          "to": "field",
+          "predicate": "field50",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_field__village",
+      "rawAlias": "field100",
+      "canonical": "field100",
+      "context": {
+        "authoredFrom": "field",
+        "authoredTo": "village",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "field",
+          "to": "village",
+          "predicate": "field100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "village",
+          "to": "field",
+          "predicate": "field100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_village__hardware",
+      "rawAlias": "village50",
+      "canonical": "village50",
+      "context": {
+        "authoredFrom": "village",
+        "authoredTo": "hardware",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "village",
+          "to": "hardware",
+          "predicate": "village50",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "hardware",
+          "to": "village",
+          "predicate": "village50",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_village__clinic",
+      "rawAlias": "village100",
+      "canonical": "village100",
+      "context": {
+        "authoredFrom": "village",
+        "authoredTo": "clinic",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "village",
+          "to": "clinic",
+          "predicate": "village100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "clinic",
+          "to": "village",
+          "predicate": "village100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_woods__scrapyard",
+      "rawAlias": "woods100_or_scrapyard100",
+      "canonical": "woods100_or_scrapyard100",
+      "context": {
+        "authoredFrom": "woods",
+        "authoredTo": "scrapyard",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "woods",
+          "to": "scrapyard",
+          "predicate": "woods100_or_scrapyard100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "scrapyard",
+          "to": "woods",
+          "predicate": "woods100_or_scrapyard100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_hardware__scrapyard",
+      "rawAlias": "hardware100",
+      "canonical": "hardware100",
+      "context": {
+        "authoredFrom": "hardware",
+        "authoredTo": "scrapyard",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "hardware",
+          "to": "scrapyard",
+          "predicate": "hardware100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "scrapyard",
+          "to": "hardware",
+          "predicate": "hardware100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_village__m01_road",
+      "rawAlias": "QMAP01",
+      "canonical": "QMAP01",
+      "context": {
+        "authoredFrom": "village",
+        "authoredTo": "m01_road",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "village",
+          "to": "m01_road",
+          "predicate": "QMAP01",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "m01_road",
+          "to": "village",
+          "predicate": "QMAP01",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_m01_road__m02_checkpoint",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "m01_road",
+        "authoredTo": "m02_checkpoint",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "m01_road",
+          "to": "m02_checkpoint",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "m02_checkpoint",
+          "to": "m01_road",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_m02_checkpoint__h01_gate",
+      "rawAlias": "clear_checkpoint",
+      "canonical": "clear_checkpoint",
+      "context": {
+        "authoredFrom": "m02_checkpoint",
+        "authoredTo": "h01_gate",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "m02_checkpoint",
+          "to": "h01_gate",
+          "predicate": "clear_checkpoint",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "h01_gate",
+          "to": "m02_checkpoint",
+          "predicate": "clear_checkpoint",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_h01_gate__h02_square",
+      "rawAlias": "register",
+      "canonical": "register",
+      "context": {
+        "authoredFrom": "h01_gate",
+        "authoredTo": "h02_square",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "hub_registration_boundary"
+      },
+      "directions": {
+        "forward": {
+          "from": "h01_gate",
+          "to": "h02_square",
+          "predicate": "register",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "h02_square",
+          "to": "h01_gate",
+          "predicate": "register",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_h02_square__h03_workshop",
+      "rawAlias": "register",
+      "canonical": "register",
+      "context": {
+        "authoredFrom": "h02_square",
+        "authoredTo": "h03_workshop",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "h02_square",
+          "to": "h03_workshop",
+          "predicate": "register",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "h03_workshop",
+          "to": "h02_square",
+          "predicate": "register",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_h02_square__h04_infirmary",
+      "rawAlias": "register",
+      "canonical": "register",
+      "context": {
+        "authoredFrom": "h02_square",
+        "authoredTo": "h04_infirmary",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "h02_square",
+          "to": "h04_infirmary",
+          "predicate": "register",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "h04_infirmary",
+          "to": "h02_square",
+          "predicate": "register",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_h02_square__h05_homestead",
+      "rawAlias": "register",
+      "canonical": "register",
+      "context": {
+        "authoredFrom": "h02_square",
+        "authoredTo": "h05_homestead",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "h02_square",
+          "to": "h05_homestead",
+          "predicate": "register",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "h05_homestead",
+          "to": "h02_square",
+          "predicate": "register",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_h02_square__w01_farm",
+      "rawAlias": "register",
+      "canonical": "register",
+      "context": {
+        "authoredFrom": "h02_square",
+        "authoredTo": "w01_farm",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "h02_square",
+          "to": "w01_farm",
+          "predicate": "register",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w01_farm",
+          "to": "h02_square",
+          "predicate": "register",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_h02_square__w02_forest",
+      "rawAlias": "register",
+      "canonical": "register",
+      "context": {
+        "authoredFrom": "h02_square",
+        "authoredTo": "w02_forest",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "h02_square",
+          "to": "w02_forest",
+          "predicate": "register",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w02_forest",
+          "to": "h02_square",
+          "predicate": "register",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_h02_square__b01_school",
+      "rawAlias": "register",
+      "canonical": "register",
+      "context": {
+        "authoredFrom": "h02_square",
+        "authoredTo": "b01_school",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "h02_square",
+          "to": "b01_school",
+          "predicate": "register",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "b01_school",
+          "to": "h02_square",
+          "predicate": "register",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_h02_square__a01_yard",
+      "rawAlias": "register",
+      "canonical": "register",
+      "context": {
+        "authoredFrom": "h02_square",
+        "authoredTo": "a01_yard",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "h02_square",
+          "to": "a01_yard",
+          "predicate": "register",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "a01_yard",
+          "to": "h02_square",
+          "predicate": "register",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w02_forest__w03_quarry",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w02_forest",
+        "authoredTo": "w03_quarry",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w02_forest",
+          "to": "w03_quarry",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w03_quarry",
+          "to": "w02_forest",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w01_farm__w04_crossroads",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w01_farm",
+        "authoredTo": "w04_crossroads",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w01_farm",
+          "to": "w04_crossroads",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w04_crossroads",
+          "to": "w01_farm",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w02_forest__w04_crossroads",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w02_forest",
+        "authoredTo": "w04_crossroads",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w02_forest",
+          "to": "w04_crossroads",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w04_crossroads",
+          "to": "w02_forest",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w04_crossroads__w05_marsh",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w04_crossroads",
+        "authoredTo": "w05_marsh",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w04_crossroads",
+          "to": "w05_marsh",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w05_marsh",
+          "to": "w04_crossroads",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w05_marsh__w06_bridge",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w05_marsh",
+        "authoredTo": "w06_bridge",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w05_marsh",
+          "to": "w06_bridge",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w06_bridge",
+          "to": "w05_marsh",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w06_bridge__w03_quarry",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w06_bridge",
+        "authoredTo": "w03_quarry",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w06_bridge",
+          "to": "w03_quarry",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w03_quarry",
+          "to": "w06_bridge",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w03_quarry__w07_ridge",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w03_quarry",
+        "authoredTo": "w07_ridge",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w03_quarry",
+          "to": "w07_ridge",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w07_ridge",
+          "to": "w03_quarry",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w07_ridge__w09_logging",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w07_ridge",
+        "authoredTo": "w09_logging",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w07_ridge",
+          "to": "w09_logging",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w09_logging",
+          "to": "w07_ridge",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w09_logging__w10_watchtower",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w09_logging",
+        "authoredTo": "w10_watchtower",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w09_logging",
+          "to": "w10_watchtower",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w10_watchtower",
+          "to": "w09_logging",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_r01_observatory__r02_academy",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "r01_observatory",
+        "authoredTo": "r02_academy",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "r01_observatory",
+          "to": "r02_academy",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "r02_academy",
+          "to": "r01_observatory",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_r02_academy__r03_lab",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "r02_academy",
+        "authoredTo": "r03_lab",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "r02_academy",
+          "to": "r03_lab",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "r03_lab",
+          "to": "r02_academy",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w05_marsh__w08_reservoir",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w05_marsh",
+        "authoredTo": "w08_reservoir",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w05_marsh",
+          "to": "w08_reservoir",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w08_reservoir",
+          "to": "w05_marsh",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w08_reservoir__w04_crossroads",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w08_reservoir",
+        "authoredTo": "w04_crossroads",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w08_reservoir",
+          "to": "w04_crossroads",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w04_crossroads",
+          "to": "w08_reservoir",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_c01_pilgrim__c02_church",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "c01_pilgrim",
+        "authoredTo": "c02_church",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "c01_pilgrim",
+          "to": "c02_church",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "c02_church",
+          "to": "c01_pilgrim",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_c02_church__c03_crypt",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "c02_church",
+        "authoredTo": "c03_crypt",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "c02_church",
+          "to": "c03_crypt",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "c03_crypt",
+          "to": "c02_church",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w04_crossroads__a02_pump",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w04_crossroads",
+        "authoredTo": "a02_pump",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w04_crossroads",
+          "to": "a02_pump",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "a02_pump",
+          "to": "w04_crossroads",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_a01_yard__a02_pump",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "a01_yard",
+        "authoredTo": "a02_pump",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "a01_yard",
+          "to": "a02_pump",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "a02_pump",
+          "to": "a01_yard",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_a02_pump__a03_foundry",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "a02_pump",
+        "authoredTo": "a03_foundry",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "a02_pump",
+          "to": "a03_foundry",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "a03_foundry",
+          "to": "a02_pump",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_a03_foundry__o01_oldgate",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "a03_foundry",
+        "authoredTo": "o01_oldgate",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "a03_foundry",
+          "to": "o01_oldgate",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "o01_oldgate",
+          "to": "a03_foundry",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_b01_school__b02_station",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "b01_school",
+        "authoredTo": "b02_station",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "b01_school",
+          "to": "b02_station",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "b02_station",
+          "to": "b01_school",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_b02_station__b03_hospital",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "b02_station",
+        "authoredTo": "b03_hospital",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "b02_station",
+          "to": "b03_hospital",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "b03_hospital",
+          "to": "b02_station",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_b03_hospital__o04_transit",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "b03_hospital",
+        "authoredTo": "o04_transit",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "b03_hospital",
+          "to": "o04_transit",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "o04_transit",
+          "to": "b03_hospital",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_o04_transit__o02_market",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "o04_transit",
+        "authoredTo": "o02_market",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "o04_transit",
+          "to": "o02_market",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "o02_market",
+          "to": "o04_transit",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_o01_oldgate__o02_market",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "o01_oldgate",
+        "authoredTo": "o02_market",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "o01_oldgate",
+          "to": "o02_market",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "o02_market",
+          "to": "o01_oldgate",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_o02_market__o03_police",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "o02_market",
+        "authoredTo": "o03_police",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "o02_market",
+          "to": "o03_police",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "o03_police",
+          "to": "o02_market",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_o03_police__a03_foundry",
+      "rawAlias": "from_explore_100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "o03_police",
+        "authoredTo": "a03_foundry",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "o03_police",
+          "to": "a03_foundry",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "a03_foundry",
+          "to": "o03_police",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_h02_square__h05_appraisal",
+      "rawAlias": "register",
+      "canonical": "register",
+      "context": {
+        "authoredFrom": "h02_square",
+        "authoredTo": "h05_appraisal",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "h02_square",
+          "to": "h05_appraisal",
+          "predicate": "register",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "h05_appraisal",
+          "to": "h02_square",
+          "predicate": "register",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_h02_square__h06_shelter",
+      "rawAlias": "register",
+      "canonical": "register",
+      "context": {
+        "authoredFrom": "h02_square",
+        "authoredTo": "h06_shelter",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "h02_square",
+          "to": "h06_shelter",
+          "predicate": "register",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "h06_shelter",
+          "to": "h02_square",
+          "predicate": "register",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_c02_church__c04_alms",
+      "rawAlias": "church_public_access",
+      "canonical": "church_public_access",
+      "context": {
+        "authoredFrom": "c02_church",
+        "authoredTo": "c04_alms",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "c02_church",
+          "to": "c04_alms",
+          "predicate": "church_public_access",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "c04_alms",
+          "to": "c02_church",
+          "predicate": "church_public_access",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_c02_church__c05_admonition",
+      "rawAlias": "church_public_access",
+      "canonical": "church_public_access",
+      "context": {
+        "authoredFrom": "c02_church",
+        "authoredTo": "c05_admonition",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "c02_church",
+          "to": "c05_admonition",
+          "predicate": "church_public_access",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "c05_admonition",
+          "to": "c02_church",
+          "predicate": "church_public_access",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_c05_admonition__c06_archive",
+      "rawAlias": "FA02_accept_no_oath",
+      "canonical": "FA02_accept_no_oath",
+      "context": {
+        "authoredFrom": "c05_admonition",
+        "authoredTo": "c06_archive",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "c05_admonition",
+          "to": "c06_archive",
+          "predicate": "FA02_accept_no_oath",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "c06_archive",
+          "to": "c05_admonition",
+          "predicate": "FA02_accept_no_oath",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_c06_archive__c07_sanctuary",
+      "rawAlias": "church_public_access",
+      "canonical": "church_public_access",
+      "context": {
+        "authoredFrom": "c06_archive",
+        "authoredTo": "c07_sanctuary",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "c06_archive",
+          "to": "c07_sanctuary",
+          "predicate": "church_public_access",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "c07_sanctuary",
+          "to": "c06_archive",
+          "predicate": "church_public_access",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_c07_sanctuary__c02_church",
+      "rawAlias": "church_public_access",
+      "canonical": "church_public_access",
+      "context": {
+        "authoredFrom": "c07_sanctuary",
+        "authoredTo": "c02_church",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "c07_sanctuary",
+          "to": "c02_church",
+          "predicate": "church_public_access",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "c02_church",
+          "to": "c07_sanctuary",
+          "predicate": "church_public_access",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_r02_academy__r04_reception",
+      "rawAlias": "academy_public_access",
+      "canonical": "academy_public_access",
+      "context": {
+        "authoredFrom": "r02_academy",
+        "authoredTo": "r04_reception",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "r02_academy",
+          "to": "r04_reception",
+          "predicate": "academy_public_access",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "r04_reception",
+          "to": "r02_academy",
+          "predicate": "academy_public_access",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_r04_reception__r05_testing",
+      "rawAlias": "consent_or_decline_no_mainline_lock",
+      "canonical": "consent_or_decline_no_mainline_lock",
+      "context": {
+        "authoredFrom": "r04_reception",
+        "authoredTo": "r05_testing",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "r04_reception",
+          "to": "r05_testing",
+          "predicate": "consent_or_decline_no_mainline_lock",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "r05_testing",
+          "to": "r04_reception",
+          "predicate": "consent_or_decline_no_mainline_lock",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_r04_reception__r06_archive",
+      "rawAlias": "academy_public_access",
+      "canonical": "academy_public_access",
+      "context": {
+        "authoredFrom": "r04_reception",
+        "authoredTo": "r06_archive",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "r04_reception",
+          "to": "r06_archive",
+          "predicate": "academy_public_access",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "r06_archive",
+          "to": "r04_reception",
+          "predicate": "academy_public_access",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_r06_archive__r07_workshop",
+      "rawAlias": "FA03_accept_environment_record",
+      "canonical": "FA03_accept_environment_record",
+      "context": {
+        "authoredFrom": "r06_archive",
+        "authoredTo": "r07_workshop",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "r06_archive",
+          "to": "r07_workshop",
+          "predicate": "FA03_accept_environment_record",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "r07_workshop",
+          "to": "r06_archive",
+          "predicate": "FA03_accept_environment_record",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_r07_workshop__r08_observation",
+      "rawAlias": "supervised_no_experiment_required",
+      "canonical": "supervised_no_experiment_required",
+      "context": {
+        "authoredFrom": "r07_workshop",
+        "authoredTo": "r08_observation",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "r07_workshop",
+          "to": "r08_observation",
+          "predicate": "supervised_no_experiment_required",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "r08_observation",
+          "to": "r07_workshop",
+          "predicate": "supervised_no_experiment_required",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_r08_observation__r04_reception",
+      "rawAlias": "academy_public_access",
+      "canonical": "academy_public_access",
+      "context": {
+        "authoredFrom": "r08_observation",
+        "authoredTo": "r04_reception",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "r08_observation",
+          "to": "r04_reception",
+          "predicate": "academy_public_access",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "r04_reception",
+          "to": "r08_observation",
+          "predicate": "academy_public_access",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w08_reservoir__w11_orchard",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w08_reservoir",
+        "authoredTo": "w11_orchard",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w08_reservoir",
+          "to": "w11_orchard",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w11_orchard",
+          "to": "w08_reservoir",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w11_orchard__w12_canal",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w11_orchard",
+        "authoredTo": "w12_canal",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w11_orchard",
+          "to": "w12_canal",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w12_canal",
+          "to": "w11_orchard",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w12_canal__w13_mill",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w12_canal",
+        "authoredTo": "w13_mill",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w12_canal",
+          "to": "w13_mill",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w13_mill",
+          "to": "w12_canal",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w13_mill__w14_cemeteryroad",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w13_mill",
+        "authoredTo": "w14_cemeteryroad",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w13_mill",
+          "to": "w14_cemeteryroad",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w14_cemeteryroad",
+          "to": "w13_mill",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w14_cemeteryroad__c01_pilgrim",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w14_cemeteryroad",
+        "authoredTo": "c01_pilgrim",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w14_cemeteryroad",
+          "to": "c01_pilgrim",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "c01_pilgrim",
+          "to": "w14_cemeteryroad",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w12_canal__w15_shrinewoods",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w12_canal",
+        "authoredTo": "w15_shrinewoods",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w12_canal",
+          "to": "w15_shrinewoods",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w15_shrinewoods",
+          "to": "w12_canal",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w15_shrinewoods__c01_pilgrim",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w15_shrinewoods",
+        "authoredTo": "c01_pilgrim",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w15_shrinewoods",
+          "to": "c01_pilgrim",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "c01_pilgrim",
+          "to": "w15_shrinewoods",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w07_ridge__w16_service",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w07_ridge",
+        "authoredTo": "w16_service",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w07_ridge",
+          "to": "w16_service",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w16_service",
+          "to": "w07_ridge",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w16_service__w17_switchback",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w16_service",
+        "authoredTo": "w17_switchback",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w16_service",
+          "to": "w17_switchback",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w17_switchback",
+          "to": "w16_service",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w17_switchback__w18_tunnel",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w17_switchback",
+        "authoredTo": "w18_tunnel",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w17_switchback",
+          "to": "w18_tunnel",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w18_tunnel",
+          "to": "w17_switchback",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w18_tunnel__w19_survey",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w18_tunnel",
+        "authoredTo": "w19_survey",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w18_tunnel",
+          "to": "w19_survey",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w19_survey",
+          "to": "w18_tunnel",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w19_survey__r01_observatory",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w19_survey",
+        "authoredTo": "r01_observatory",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w19_survey",
+          "to": "r01_observatory",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "r01_observatory",
+          "to": "w19_survey",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w17_switchback__w20_powercut",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w17_switchback",
+        "authoredTo": "w20_powercut",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w17_switchback",
+          "to": "w20_powercut",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w20_powercut",
+          "to": "w17_switchback",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w20_powercut__w19_survey",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w20_powercut",
+        "authoredTo": "w19_survey",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w20_powercut",
+          "to": "w19_survey",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w19_survey",
+          "to": "w20_powercut",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w09_logging__w21_pine",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w09_logging",
+        "authoredTo": "w21_pine",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w09_logging",
+          "to": "w21_pine",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w21_pine",
+          "to": "w09_logging",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w21_pine__w22_ravine",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w21_pine",
+        "authoredTo": "w22_ravine",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w21_pine",
+          "to": "w22_ravine",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w22_ravine",
+          "to": "w21_pine",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w22_ravine__w23_hunting",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w22_ravine",
+        "authoredTo": "w23_hunting",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w22_ravine",
+          "to": "w23_hunting",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w23_hunting",
+          "to": "w22_ravine",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w23_hunting__w24_cave",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w23_hunting",
+        "authoredTo": "w24_cave",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w23_hunting",
+          "to": "w24_cave",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w24_cave",
+          "to": "w23_hunting",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w24_cave__w25_wetland",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w24_cave",
+        "authoredTo": "w25_wetland",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w24_cave",
+          "to": "w25_wetland",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w25_wetland",
+          "to": "w24_cave",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w25_wetland__w26_island",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w25_wetland",
+        "authoredTo": "w26_island",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w25_wetland",
+          "to": "w26_island",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w26_island",
+          "to": "w25_wetland",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w26_island__w27_relay",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w26_island",
+        "authoredTo": "w27_relay",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w26_island",
+          "to": "w27_relay",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w27_relay",
+          "to": "w26_island",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w27_relay__w28_highland",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w27_relay",
+        "authoredTo": "w28_highland",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w27_relay",
+          "to": "w28_highland",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w28_highland",
+          "to": "w27_relay",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w28_highland__w10_watchtower",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w28_highland",
+        "authoredTo": "w10_watchtower",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w28_highland",
+          "to": "w10_watchtower",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w10_watchtower",
+          "to": "w28_highland",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w22_ravine__w18_tunnel",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w22_ravine",
+        "authoredTo": "w18_tunnel",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w22_ravine",
+          "to": "w18_tunnel",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w18_tunnel",
+          "to": "w22_ravine",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w23_hunting__w25_wetland",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w23_hunting",
+        "authoredTo": "w25_wetland",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w23_hunting",
+          "to": "w25_wetland",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w25_wetland",
+          "to": "w23_hunting",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w25_wetland__w08_reservoir",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w25_wetland",
+        "authoredTo": "w08_reservoir",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w25_wetland",
+          "to": "w08_reservoir",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w08_reservoir",
+          "to": "w25_wetland",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w27_relay__w20_powercut",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w27_relay",
+        "authoredTo": "w20_powercut",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w27_relay",
+          "to": "w20_powercut",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w20_powercut",
+          "to": "w27_relay",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w06_bridge__w29_riverbend",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w06_bridge",
+        "authoredTo": "w29_riverbend",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w06_bridge",
+          "to": "w29_riverbend",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w29_riverbend",
+          "to": "w06_bridge",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w29_riverbend__w30_truckstop",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w29_riverbend",
+        "authoredTo": "w30_truckstop",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w29_riverbend",
+          "to": "w30_truckstop",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w30_truckstop",
+          "to": "w29_riverbend",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w30_truckstop__w31_suburb",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w30_truckstop",
+        "authoredTo": "w31_suburb",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w30_truckstop",
+          "to": "w31_suburb",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w31_suburb",
+          "to": "w30_truckstop",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w31_suburb__w32_railcut",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w31_suburb",
+        "authoredTo": "w32_railcut",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w31_suburb",
+          "to": "w32_railcut",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w32_railcut",
+          "to": "w31_suburb",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w32_railcut__o01_oldgate",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w32_railcut",
+        "authoredTo": "o01_oldgate",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w32_railcut",
+          "to": "o01_oldgate",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "o01_oldgate",
+          "to": "w32_railcut",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w31_suburb__c03_crypt",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w31_suburb",
+        "authoredTo": "c03_crypt",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w31_suburb",
+          "to": "c03_crypt",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "c03_crypt",
+          "to": "w31_suburb",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w29_riverbend__w12_canal",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w29_riverbend",
+        "authoredTo": "w12_canal",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w29_riverbend",
+          "to": "w12_canal",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w12_canal",
+          "to": "w29_riverbend",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w08_reservoir__w33_waterworks",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w08_reservoir",
+        "authoredTo": "w33_waterworks",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w08_reservoir",
+          "to": "w33_waterworks",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w33_waterworks",
+          "to": "w08_reservoir",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w33_waterworks__w34_depot",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w33_waterworks",
+        "authoredTo": "w34_depot",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w33_waterworks",
+          "to": "w34_depot",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w34_depot",
+          "to": "w33_waterworks",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_w34_depot__w30_truckstop",
+      "rawAlias": "from_explore100",
+      "canonical": "from_explore100",
+      "context": {
+        "authoredFrom": "w34_depot",
+        "authoredTo": "w30_truckstop",
+        "dungeonId": null,
+        "dungeonParent": null,
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w34_depot",
+          "to": "w30_truckstop",
+          "predicate": "from_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "w30_truckstop",
+          "to": "w34_depot",
+          "predicate": "from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_c03_crypt__d01_01",
+      "rawAlias": "FA02_public_route",
+      "canonical": "FA02_public_route",
+      "context": {
+        "authoredFrom": "c03_crypt",
+        "authoredTo": "d01_01",
+        "dungeonId": "d01",
+        "dungeonParent": "c03_crypt",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "c03_crypt",
+          "to": "d01_01",
+          "predicate": "FA02_public_route",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "d01_01",
+          "to": "c03_crypt",
+          "predicate": "FA02_public_route",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d01_01__d01_02",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d01_01",
+        "authoredTo": "d01_02",
+        "dungeonId": "d01",
+        "dungeonParent": "c03_crypt",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d01_01",
+          "to": "d01_02",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d01_02",
+          "to": "d01_01",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d01_01__d01_03",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d01_01",
+        "authoredTo": "d01_03",
+        "dungeonId": "d01",
+        "dungeonParent": "c03_crypt",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d01_01",
+          "to": "d01_03",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d01_03",
+          "to": "d01_01",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d01_02__d01_04",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d01_02",
+        "authoredTo": "d01_04",
+        "dungeonId": "d01",
+        "dungeonParent": "c03_crypt",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d01_02",
+          "to": "d01_04",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d01_04",
+          "to": "d01_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d01_04__d01_05",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d01_04",
+        "authoredTo": "d01_05",
+        "dungeonId": "d01",
+        "dungeonParent": "c03_crypt",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d01_04",
+          "to": "d01_05",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d01_05",
+          "to": "d01_04",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d01_03__d01_06",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d01_03",
+        "authoredTo": "d01_06",
+        "dungeonId": "d01",
+        "dungeonParent": "c03_crypt",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d01_03",
+          "to": "d01_06",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d01_06",
+          "to": "d01_03",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d01_06__d01_05",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d01_06",
+        "authoredTo": "d01_05",
+        "dungeonId": "d01",
+        "dungeonParent": "c03_crypt",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d01_06",
+          "to": "d01_05",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d01_05",
+          "to": "d01_06",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d01_05__d01_07",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d01_05",
+        "authoredTo": "d01_07",
+        "dungeonId": "d01",
+        "dungeonParent": "c03_crypt",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d01_05",
+          "to": "d01_07",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d01_07",
+          "to": "d01_05",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d01_07__d01_08",
+      "rawAlias": "guardian_defeated",
+      "canonical": "guardian_defeated",
+      "context": {
+        "authoredFrom": "d01_07",
+        "authoredTo": "d01_08",
+        "dungeonId": "d01",
+        "dungeonParent": "c03_crypt",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d01_07",
+          "to": "d01_08",
+          "predicate": "guardian_defeated",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d01_08",
+          "to": "d01_07",
+          "predicate": "guardian_defeated",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d01_08__c03_crypt",
+      "rawAlias": "instance_complete",
+      "canonical": "instance_complete",
+      "context": {
+        "authoredFrom": "d01_08",
+        "authoredTo": "c03_crypt",
+        "dungeonId": "d01",
+        "dungeonParent": "c03_crypt",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d01_08",
+          "to": "c03_crypt",
+          "predicate": "instance_complete",
+          "latchScope": "revalidate_current_instance"
+        },
+        "reverse": null
+      }
+    },
+    {
+      "edgeId": "edge_r03_lab__d02_01",
+      "rawAlias": "FA03_environment_only",
+      "canonical": "FA03_environment_only",
+      "context": {
+        "authoredFrom": "r03_lab",
+        "authoredTo": "d02_01",
+        "dungeonId": "d02",
+        "dungeonParent": "r03_lab",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "r03_lab",
+          "to": "d02_01",
+          "predicate": "FA03_environment_only",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "d02_01",
+          "to": "r03_lab",
+          "predicate": "FA03_environment_only",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d02_01__d02_02",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d02_01",
+        "authoredTo": "d02_02",
+        "dungeonId": "d02",
+        "dungeonParent": "r03_lab",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d02_01",
+          "to": "d02_02",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d02_02",
+          "to": "d02_01",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d02_02__d02_03",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d02_02",
+        "authoredTo": "d02_03",
+        "dungeonId": "d02",
+        "dungeonParent": "r03_lab",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d02_02",
+          "to": "d02_03",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d02_03",
+          "to": "d02_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d02_02__d02_04",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d02_02",
+        "authoredTo": "d02_04",
+        "dungeonId": "d02",
+        "dungeonParent": "r03_lab",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d02_02",
+          "to": "d02_04",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d02_04",
+          "to": "d02_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d02_03__d02_05",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d02_03",
+        "authoredTo": "d02_05",
+        "dungeonId": "d02",
+        "dungeonParent": "r03_lab",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d02_03",
+          "to": "d02_05",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d02_05",
+          "to": "d02_03",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d02_05__d02_04",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d02_05",
+        "authoredTo": "d02_04",
+        "dungeonId": "d02",
+        "dungeonParent": "r03_lab",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d02_05",
+          "to": "d02_04",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d02_04",
+          "to": "d02_05",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d02_04__d02_06",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d02_04",
+        "authoredTo": "d02_06",
+        "dungeonId": "d02",
+        "dungeonParent": "r03_lab",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d02_04",
+          "to": "d02_06",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d02_06",
+          "to": "d02_04",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d02_06__d02_02",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d02_06",
+        "authoredTo": "d02_02",
+        "dungeonId": "d02",
+        "dungeonParent": "r03_lab",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d02_06",
+          "to": "d02_02",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d02_02",
+          "to": "d02_06",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d02_04__d02_07",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d02_04",
+        "authoredTo": "d02_07",
+        "dungeonId": "d02",
+        "dungeonParent": "r03_lab",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d02_04",
+          "to": "d02_07",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d02_07",
+          "to": "d02_04",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d02_07__d02_08",
+      "rawAlias": "guardian_defeated",
+      "canonical": "guardian_defeated",
+      "context": {
+        "authoredFrom": "d02_07",
+        "authoredTo": "d02_08",
+        "dungeonId": "d02",
+        "dungeonParent": "r03_lab",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d02_07",
+          "to": "d02_08",
+          "predicate": "guardian_defeated",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d02_08",
+          "to": "d02_07",
+          "predicate": "guardian_defeated",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d02_08__d02_09",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d02_08",
+        "authoredTo": "d02_09",
+        "dungeonId": "d02",
+        "dungeonParent": "r03_lab",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d02_08",
+          "to": "d02_09",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d02_09",
+          "to": "d02_08",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d02_09__r03_lab",
+      "rawAlias": "instance_complete",
+      "canonical": "instance_complete",
+      "context": {
+        "authoredFrom": "d02_09",
+        "authoredTo": "r03_lab",
+        "dungeonId": "d02",
+        "dungeonParent": "r03_lab",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d02_09",
+          "to": "r03_lab",
+          "predicate": "instance_complete",
+          "latchScope": "revalidate_current_instance"
+        },
+        "reverse": null
+      }
+    },
+    {
+      "edgeId": "edge_o03_police__d03_01",
+      "rawAlias": "FA04_merged",
+      "canonical": "FA04_merged",
+      "context": {
+        "authoredFrom": "o03_police",
+        "authoredTo": "d03_01",
+        "dungeonId": "d03",
+        "dungeonParent": "o03_police",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "o03_police",
+          "to": "d03_01",
+          "predicate": "FA04_merged",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "d03_01",
+          "to": "o03_police",
+          "predicate": "FA04_merged",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d03_01__d03_02",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d03_01",
+        "authoredTo": "d03_02",
+        "dungeonId": "d03",
+        "dungeonParent": "o03_police",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d03_01",
+          "to": "d03_02",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d03_02",
+          "to": "d03_01",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d03_02__d03_03",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d03_02",
+        "authoredTo": "d03_03",
+        "dungeonId": "d03",
+        "dungeonParent": "o03_police",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d03_02",
+          "to": "d03_03",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d03_03",
+          "to": "d03_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d03_02__d03_04",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d03_02",
+        "authoredTo": "d03_04",
+        "dungeonId": "d03",
+        "dungeonParent": "o03_police",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d03_02",
+          "to": "d03_04",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d03_04",
+          "to": "d03_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d03_04__d03_06",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d03_04",
+        "authoredTo": "d03_06",
+        "dungeonId": "d03",
+        "dungeonParent": "o03_police",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d03_04",
+          "to": "d03_06",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d03_06",
+          "to": "d03_04",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d03_06__d03_05",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d03_06",
+        "authoredTo": "d03_05",
+        "dungeonId": "d03",
+        "dungeonParent": "o03_police",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d03_06",
+          "to": "d03_05",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d03_05",
+          "to": "d03_06",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d03_02__d03_05",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d03_02",
+        "authoredTo": "d03_05",
+        "dungeonId": "d03",
+        "dungeonParent": "o03_police",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d03_02",
+          "to": "d03_05",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d03_05",
+          "to": "d03_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d03_05__d03_07",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d03_05",
+        "authoredTo": "d03_07",
+        "dungeonId": "d03",
+        "dungeonParent": "o03_police",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d03_05",
+          "to": "d03_07",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d03_07",
+          "to": "d03_05",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d03_07__d03_08",
+      "rawAlias": "guardian_defeated",
+      "canonical": "guardian_defeated",
+      "context": {
+        "authoredFrom": "d03_07",
+        "authoredTo": "d03_08",
+        "dungeonId": "d03",
+        "dungeonParent": "o03_police",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d03_07",
+          "to": "d03_08",
+          "predicate": "guardian_defeated",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d03_08",
+          "to": "d03_07",
+          "predicate": "guardian_defeated",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d03_08__o03_police",
+      "rawAlias": "instance_complete",
+      "canonical": "instance_complete",
+      "context": {
+        "authoredFrom": "d03_08",
+        "authoredTo": "o03_police",
+        "dungeonId": "d03",
+        "dungeonParent": "o03_police",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d03_08",
+          "to": "o03_police",
+          "predicate": "instance_complete",
+          "latchScope": "revalidate_current_instance"
+        },
+        "reverse": null
+      }
+    },
+    {
+      "edgeId": "edge_w10_watchtower__d04_01",
+      "rawAlias": "FA05_power_owned",
+      "canonical": "FA05_power_owned",
+      "context": {
+        "authoredFrom": "w10_watchtower",
+        "authoredTo": "d04_01",
+        "dungeonId": "d04",
+        "dungeonParent": "w10_watchtower",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w10_watchtower",
+          "to": "d04_01",
+          "predicate": "FA05_power_owned",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "d04_01",
+          "to": "w10_watchtower",
+          "predicate": "FA05_power_owned",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d04_01__d04_02",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d04_01",
+        "authoredTo": "d04_02",
+        "dungeonId": "d04",
+        "dungeonParent": "w10_watchtower",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d04_01",
+          "to": "d04_02",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d04_02",
+          "to": "d04_01",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d04_02__d04_03",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d04_02",
+        "authoredTo": "d04_03",
+        "dungeonId": "d04",
+        "dungeonParent": "w10_watchtower",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d04_02",
+          "to": "d04_03",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d04_03",
+          "to": "d04_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d04_03__d04_04",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d04_03",
+        "authoredTo": "d04_04",
+        "dungeonId": "d04",
+        "dungeonParent": "w10_watchtower",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d04_03",
+          "to": "d04_04",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d04_04",
+          "to": "d04_03",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d04_04__d04_05",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d04_04",
+        "authoredTo": "d04_05",
+        "dungeonId": "d04",
+        "dungeonParent": "w10_watchtower",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d04_04",
+          "to": "d04_05",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d04_05",
+          "to": "d04_04",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d04_05__d04_06",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d04_05",
+        "authoredTo": "d04_06",
+        "dungeonId": "d04",
+        "dungeonParent": "w10_watchtower",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d04_05",
+          "to": "d04_06",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d04_06",
+          "to": "d04_05",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d04_06__d04_07",
+      "rawAlias": "guardian_defeated",
+      "canonical": "guardian_defeated",
+      "context": {
+        "authoredFrom": "d04_06",
+        "authoredTo": "d04_07",
+        "dungeonId": "d04",
+        "dungeonParent": "w10_watchtower",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d04_06",
+          "to": "d04_07",
+          "predicate": "guardian_defeated",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d04_07",
+          "to": "d04_06",
+          "predicate": "guardian_defeated",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d04_07__d04_08",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d04_07",
+        "authoredTo": "d04_08",
+        "dungeonId": "d04",
+        "dungeonParent": "w10_watchtower",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d04_07",
+          "to": "d04_08",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d04_08",
+          "to": "d04_07",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d04_04__d04_02",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d04_04",
+        "authoredTo": "d04_02",
+        "dungeonId": "d04",
+        "dungeonParent": "w10_watchtower",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d04_04",
+          "to": "d04_02",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d04_02",
+          "to": "d04_04",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d04_08__w10_watchtower",
+      "rawAlias": "instance_complete",
+      "canonical": "instance_complete",
+      "context": {
+        "authoredFrom": "d04_08",
+        "authoredTo": "w10_watchtower",
+        "dungeonId": "d04",
+        "dungeonParent": "w10_watchtower",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d04_08",
+          "to": "w10_watchtower",
+          "predicate": "instance_complete",
+          "latchScope": "revalidate_current_instance"
+        },
+        "reverse": null
+      }
+    },
+    {
+      "edgeId": "edge_w33_waterworks__d05_01",
+      "rawAlias": "parent_explore100",
+      "canonical": "parent_explore100",
+      "context": {
+        "authoredFrom": "w33_waterworks",
+        "authoredTo": "d05_01",
+        "dungeonId": "d05",
+        "dungeonParent": "w33_waterworks",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w33_waterworks",
+          "to": "d05_01",
+          "predicate": "parent_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "d05_01",
+          "to": "w33_waterworks",
+          "predicate": "parent_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d05_01__d05_02",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d05_01",
+        "authoredTo": "d05_02",
+        "dungeonId": "d05",
+        "dungeonParent": "w33_waterworks",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d05_01",
+          "to": "d05_02",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d05_02",
+          "to": "d05_01",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d05_02__d05_03",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d05_02",
+        "authoredTo": "d05_03",
+        "dungeonId": "d05",
+        "dungeonParent": "w33_waterworks",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d05_02",
+          "to": "d05_03",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d05_03",
+          "to": "d05_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d05_03__d05_04",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d05_03",
+        "authoredTo": "d05_04",
+        "dungeonId": "d05",
+        "dungeonParent": "w33_waterworks",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d05_03",
+          "to": "d05_04",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d05_04",
+          "to": "d05_03",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d05_04__d05_05",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d05_04",
+        "authoredTo": "d05_05",
+        "dungeonId": "d05",
+        "dungeonParent": "w33_waterworks",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d05_04",
+          "to": "d05_05",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d05_05",
+          "to": "d05_04",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d05_05__d05_02",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d05_05",
+        "authoredTo": "d05_02",
+        "dungeonId": "d05",
+        "dungeonParent": "w33_waterworks",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d05_05",
+          "to": "d05_02",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d05_02",
+          "to": "d05_05",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d05_05__d05_06",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d05_05",
+        "authoredTo": "d05_06",
+        "dungeonId": "d05",
+        "dungeonParent": "w33_waterworks",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d05_05",
+          "to": "d05_06",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d05_06",
+          "to": "d05_05",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d05_06__d05_07",
+      "rawAlias": "guardian_defeated",
+      "canonical": "guardian_defeated",
+      "context": {
+        "authoredFrom": "d05_06",
+        "authoredTo": "d05_07",
+        "dungeonId": "d05",
+        "dungeonParent": "w33_waterworks",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d05_06",
+          "to": "d05_07",
+          "predicate": "guardian_defeated",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d05_07",
+          "to": "d05_06",
+          "predicate": "guardian_defeated",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d05_07__d05_08",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d05_07",
+        "authoredTo": "d05_08",
+        "dungeonId": "d05",
+        "dungeonParent": "w33_waterworks",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d05_07",
+          "to": "d05_08",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d05_08",
+          "to": "d05_07",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d05_08__w33_waterworks",
+      "rawAlias": "instance_complete",
+      "canonical": "instance_complete",
+      "context": {
+        "authoredFrom": "d05_08",
+        "authoredTo": "w33_waterworks",
+        "dungeonId": "d05",
+        "dungeonParent": "w33_waterworks",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d05_08",
+          "to": "w33_waterworks",
+          "predicate": "instance_complete",
+          "latchScope": "revalidate_current_instance"
+        },
+        "reverse": null
+      }
+    },
+    {
+      "edgeId": "edge_w24_cave__d06_01",
+      "rawAlias": "parent_explore100",
+      "canonical": "parent_explore100",
+      "context": {
+        "authoredFrom": "w24_cave",
+        "authoredTo": "d06_01",
+        "dungeonId": "d06",
+        "dungeonParent": "w24_cave",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w24_cave",
+          "to": "d06_01",
+          "predicate": "parent_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "d06_01",
+          "to": "w24_cave",
+          "predicate": "parent_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d06_01__d06_02",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d06_01",
+        "authoredTo": "d06_02",
+        "dungeonId": "d06",
+        "dungeonParent": "w24_cave",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d06_01",
+          "to": "d06_02",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d06_02",
+          "to": "d06_01",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d06_02__d06_03",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d06_02",
+        "authoredTo": "d06_03",
+        "dungeonId": "d06",
+        "dungeonParent": "w24_cave",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d06_02",
+          "to": "d06_03",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d06_03",
+          "to": "d06_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d06_02__d06_04",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d06_02",
+        "authoredTo": "d06_04",
+        "dungeonId": "d06",
+        "dungeonParent": "w24_cave",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d06_02",
+          "to": "d06_04",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d06_04",
+          "to": "d06_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d06_04__d06_05",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d06_04",
+        "authoredTo": "d06_05",
+        "dungeonId": "d06",
+        "dungeonParent": "w24_cave",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d06_04",
+          "to": "d06_05",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d06_05",
+          "to": "d06_04",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d06_05__d06_06",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d06_05",
+        "authoredTo": "d06_06",
+        "dungeonId": "d06",
+        "dungeonParent": "w24_cave",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d06_05",
+          "to": "d06_06",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d06_06",
+          "to": "d06_05",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d06_06__d06_07",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d06_06",
+        "authoredTo": "d06_07",
+        "dungeonId": "d06",
+        "dungeonParent": "w24_cave",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d06_06",
+          "to": "d06_07",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d06_07",
+          "to": "d06_06",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d06_04__d06_07",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d06_04",
+        "authoredTo": "d06_07",
+        "dungeonId": "d06",
+        "dungeonParent": "w24_cave",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d06_04",
+          "to": "d06_07",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d06_07",
+          "to": "d06_04",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d06_07__d06_08",
+      "rawAlias": "guardian_defeated",
+      "canonical": "guardian_defeated",
+      "context": {
+        "authoredFrom": "d06_07",
+        "authoredTo": "d06_08",
+        "dungeonId": "d06",
+        "dungeonParent": "w24_cave",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d06_07",
+          "to": "d06_08",
+          "predicate": "guardian_defeated",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d06_08",
+          "to": "d06_07",
+          "predicate": "guardian_defeated",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d06_08__d06_09",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d06_08",
+        "authoredTo": "d06_09",
+        "dungeonId": "d06",
+        "dungeonParent": "w24_cave",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d06_08",
+          "to": "d06_09",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d06_09",
+          "to": "d06_08",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d06_09__w24_cave",
+      "rawAlias": "instance_complete",
+      "canonical": "instance_complete",
+      "context": {
+        "authoredFrom": "d06_09",
+        "authoredTo": "w24_cave",
+        "dungeonId": "d06",
+        "dungeonParent": "w24_cave",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d06_09",
+          "to": "w24_cave",
+          "predicate": "instance_complete",
+          "latchScope": "revalidate_current_instance"
+        },
+        "reverse": null
+      }
+    },
+    {
+      "edgeId": "edge_o02_market__d07_01",
+      "rawAlias": "parent_explore100",
+      "canonical": "parent_explore100",
+      "context": {
+        "authoredFrom": "o02_market",
+        "authoredTo": "d07_01",
+        "dungeonId": "d07",
+        "dungeonParent": "o02_market",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "o02_market",
+          "to": "d07_01",
+          "predicate": "parent_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "d07_01",
+          "to": "o02_market",
+          "predicate": "parent_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d07_01__d07_02",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d07_01",
+        "authoredTo": "d07_02",
+        "dungeonId": "d07",
+        "dungeonParent": "o02_market",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d07_01",
+          "to": "d07_02",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d07_02",
+          "to": "d07_01",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d07_02__d07_03",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d07_02",
+        "authoredTo": "d07_03",
+        "dungeonId": "d07",
+        "dungeonParent": "o02_market",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d07_02",
+          "to": "d07_03",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d07_03",
+          "to": "d07_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d07_03__d07_04",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d07_03",
+        "authoredTo": "d07_04",
+        "dungeonId": "d07",
+        "dungeonParent": "o02_market",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d07_03",
+          "to": "d07_04",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d07_04",
+          "to": "d07_03",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d07_04__d07_02",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d07_04",
+        "authoredTo": "d07_02",
+        "dungeonId": "d07",
+        "dungeonParent": "o02_market",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d07_04",
+          "to": "d07_02",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d07_02",
+          "to": "d07_04",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d07_02__d07_05",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d07_02",
+        "authoredTo": "d07_05",
+        "dungeonId": "d07",
+        "dungeonParent": "o02_market",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d07_02",
+          "to": "d07_05",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d07_05",
+          "to": "d07_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d07_05__d07_06",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d07_05",
+        "authoredTo": "d07_06",
+        "dungeonId": "d07",
+        "dungeonParent": "o02_market",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d07_05",
+          "to": "d07_06",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d07_06",
+          "to": "d07_05",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d07_02__d07_06",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d07_02",
+        "authoredTo": "d07_06",
+        "dungeonId": "d07",
+        "dungeonParent": "o02_market",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d07_02",
+          "to": "d07_06",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d07_06",
+          "to": "d07_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d07_06__d07_07",
+      "rawAlias": "guardian_defeated",
+      "canonical": "guardian_defeated",
+      "context": {
+        "authoredFrom": "d07_06",
+        "authoredTo": "d07_07",
+        "dungeonId": "d07",
+        "dungeonParent": "o02_market",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d07_06",
+          "to": "d07_07",
+          "predicate": "guardian_defeated",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d07_07",
+          "to": "d07_06",
+          "predicate": "guardian_defeated",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d07_07__d07_08",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d07_07",
+        "authoredTo": "d07_08",
+        "dungeonId": "d07",
+        "dungeonParent": "o02_market",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d07_07",
+          "to": "d07_08",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d07_08",
+          "to": "d07_07",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d07_08__o02_market",
+      "rawAlias": "instance_complete",
+      "canonical": "instance_complete",
+      "context": {
+        "authoredFrom": "d07_08",
+        "authoredTo": "o02_market",
+        "dungeonId": "d07",
+        "dungeonParent": "o02_market",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d07_08",
+          "to": "o02_market",
+          "predicate": "instance_complete",
+          "latchScope": "revalidate_current_instance"
+        },
+        "reverse": null
+      }
+    },
+    {
+      "edgeId": "edge_w34_depot__d08_01",
+      "rawAlias": "parent_explore100",
+      "canonical": "parent_explore100",
+      "context": {
+        "authoredFrom": "w34_depot",
+        "authoredTo": "d08_01",
+        "dungeonId": "d08",
+        "dungeonParent": "w34_depot",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "w34_depot",
+          "to": "d08_01",
+          "predicate": "parent_explore100",
+          "latchScope": "campaign"
+        },
+        "reverse": {
+          "from": "d08_01",
+          "to": "w34_depot",
+          "predicate": "parent_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "campaign",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d08_01__d08_02",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d08_01",
+        "authoredTo": "d08_02",
+        "dungeonId": "d08",
+        "dungeonParent": "w34_depot",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d08_01",
+          "to": "d08_02",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d08_02",
+          "to": "d08_01",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d08_02__d08_03",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d08_02",
+        "authoredTo": "d08_03",
+        "dungeonId": "d08",
+        "dungeonParent": "w34_depot",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d08_02",
+          "to": "d08_03",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d08_03",
+          "to": "d08_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d08_02__d08_04",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d08_02",
+        "authoredTo": "d08_04",
+        "dungeonId": "d08",
+        "dungeonParent": "w34_depot",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d08_02",
+          "to": "d08_04",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d08_04",
+          "to": "d08_02",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d08_04__d08_05",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d08_04",
+        "authoredTo": "d08_05",
+        "dungeonId": "d08",
+        "dungeonParent": "w34_depot",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d08_04",
+          "to": "d08_05",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d08_05",
+          "to": "d08_04",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d08_04__d08_06",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d08_04",
+        "authoredTo": "d08_06",
+        "dungeonId": "d08",
+        "dungeonParent": "w34_depot",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d08_04",
+          "to": "d08_06",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d08_06",
+          "to": "d08_04",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d08_06__d08_02",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d08_06",
+        "authoredTo": "d08_02",
+        "dungeonId": "d08",
+        "dungeonParent": "w34_depot",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d08_06",
+          "to": "d08_02",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d08_02",
+          "to": "d08_06",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d08_04__d08_07",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d08_04",
+        "authoredTo": "d08_07",
+        "dungeonId": "d08",
+        "dungeonParent": "w34_depot",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d08_04",
+          "to": "d08_07",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d08_07",
+          "to": "d08_04",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d08_07__d08_08",
+      "rawAlias": "guardian_defeated",
+      "canonical": "guardian_defeated",
+      "context": {
+        "authoredFrom": "d08_07",
+        "authoredTo": "d08_08",
+        "dungeonId": "d08",
+        "dungeonParent": "w34_depot",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d08_07",
+          "to": "d08_08",
+          "predicate": "guardian_defeated",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d08_08",
+          "to": "d08_07",
+          "predicate": "guardian_defeated",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d08_08__d08_09",
+      "rawAlias": "instance_from_explore100",
+      "canonical": "instance_from_explore100",
+      "context": {
+        "authoredFrom": "d08_08",
+        "authoredTo": "d08_09",
+        "dungeonId": "d08",
+        "dungeonParent": "w34_depot",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d08_08",
+          "to": "d08_09",
+          "predicate": "instance_from_explore100",
+          "latchScope": "current_instance"
+        },
+        "reverse": {
+          "from": "d08_09",
+          "to": "d08_08",
+          "predicate": "instance_from_explore100",
+          "anchor": "authoredFrom",
+          "latchScope": "current_instance",
+          "returnPolicy": "reuse_same_edge_unlock_do_not_require_reverse_origin_explore"
+        }
+      }
+    },
+    {
+      "edgeId": "edge_d08_09__w34_depot",
+      "rawAlias": "instance_complete",
+      "canonical": "instance_complete",
+      "context": {
+        "authoredFrom": "d08_09",
+        "authoredTo": "w34_depot",
+        "dungeonId": "d08",
+        "dungeonParent": "w34_depot",
+        "edgeRole": "normal"
+      },
+      "directions": {
+        "forward": {
+          "from": "d08_09",
+          "to": "w34_depot",
+          "predicate": "instance_complete",
+          "latchScope": "revalidate_current_instance"
+        },
+        "reverse": null
+      }
+    }
+  ],
+  "stateRules": {
+    "campaignLatch": "条件首次满足即写campaignId+edgeId.unlocked，双向共享；事实先满足后到达也重判。已开世界边不因探索/UI/任务展示倒锁。",
+    "instanceLatch": "当前instanceId+edgeId.unlocked，generation变化丢弃旧代房间探索/守卫/clear；campaign知识/路线/唯一claim仍保留。",
+    "revalidation": "每次走边都检查真实当前位置、角色存活/终局、队伍同行、空闲事务、目标/边发现和实例归属；不取消固定时长，不绕战斗/撤出惩罚。instance_complete每次查当前代clear，无反向。",
+    "reverse": "原from是数据锚，不是运行时currentLocation；成功走正向后逆向重用同一解锁。未满足锁的逆向也用原锚检查，不额外查原to探索；地图环从别路抵达不创造不存在的边。",
+    "legacy": "只承接可信旧世界已开边/任务完成/记录等效。当前实例重置后不按旧代通关放守卫门。世界进度缺键不补奖励/新对白；可在明确地点重做免费公开对话补路线事实。"
+  },
+  "factProducers": {
+    "checkpoint_obstruction_cleared": "m02固定任务路障战最终胜利且主角存活提交，不使用S04随机清理次数",
+    "registration_authorized": "h01登记人0分钟明确登记对话提交，不要求先到h02",
+    "hub_registered": "持有效授权真实到达h02成功事务，幂等给C2/完成营区登记",
+    "church_contacted": "c02真实到达",
+    "academy_contacted": "r02真实到达",
+    "FA02_route_briefed": "c02选择接受记录调查或拒绝宣誓但领取公开路线；两者同键",
+    "FA03_environment_briefed": "r04选择仅环境调查或拒检测但领取公开路线；两者同键",
+    "academy_observation_pass": "r07公开告示确认仅观察/不参与实验；不消耗时间或物资",
+    "FA02_record_credit": "d01_08核心campaign领取或Legacy对应完成",
+    "FA03_record_credit": "d02_08核心campaign领取或Legacy对应完成",
+    "FA04_merged": "两种record_credit齐后h02固定wait10完成两段；未完成只存进度",
+    "communication_power_claimed": "d03_08原唯一电源claim完成或其可信旧档领取账"
+  },
+  "expressionLanguage": {
+    "version": 1,
+    "literal": "返回value布尔",
+    "and": "所有args为真",
+    "or": "任一args为真",
+    "fact": "campaign事实字典读取key，缺失false",
+    "visited": "实际到达成功的campaign visited集合包含node",
+    "exploreAtLeast": "campaign读取worldExplore[node]；current_instance读取instance[currentId].explore[node]；缺失0；比较>=value",
+    "instanceFact": "读取当前instanceId且其dungeonId与$dungeonId一致的facts[key]；不是campaign首通字典",
+    "contextEquals": "context[key]严格等于value",
+    "if": "condition真执行then否则else",
+    "binding": "$authoredFrom/$dungeonParent/$dungeonId从edge.gateContext绑定；不可绑定currentLocation；未知op/未绑定变量报错，不默认放行",
+    "idScope": "世界探索/事实/边锁按campaignId；实例探索/facts/边锁按campaignId+dungeonId+generation"
+  },
+  "explorationActionContract": {
+    "publicAuto": {
+      "nodes": 23,
+      "onVisit": 100,
+      "enabled": false
+    },
+    "newOverworld": {
+      "nodes": 45,
+      "workMinutes": 30,
+      "progressGain": 25,
+      "actionsFromZeroTo100": 4
+    },
+    "dungeon": {
+      "nodes": 67,
+      "workMinutes": 15,
+      "progressGain": 50,
+      "actionsFromZeroTo100": 2,
+      "scope": "current_instance"
+    },
+    "starter": "8地点既有初值保持",
+    "gateThreshold": "from/parent/instance门槛仍检查100，不把副本单次+50误设50通行"
+  }
+}
