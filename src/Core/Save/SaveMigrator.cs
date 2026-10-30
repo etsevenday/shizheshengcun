@@ -20,7 +20,8 @@ namespace Survival.Core.Save
 
     /// <summary>
     /// 存档升级链：0.2-proto-1（设计文档里的 schemaVersion 2）→ 3（交互与地图扩展）→ 4（卡片统一与设施烹饪）→ 5（人物与战斗 v0.6）
-    /// → 6（系统策划总册 v1.0 答复：锅无耐久、旧档不补新剧情）→ 7（策划提交 9fdb44f：对话记录与等待烹饪）→ 8（策划提交 5493951：烹饪受热保护）。
+    /// → 6（系统策划总册 v1.0 答复：锅无耐久、旧档不补新剧情）→ 7（策划提交 9fdb44f：对话记录与等待烹饪）→ 8（策划提交 5493951：烹饪受热保护）
+    /// → 9（策划提交 f172677 B3：主角个人状态进 Actors.p0、旧单装备引用迁到武器槽 1）。
     /// 只对旧版执行，已是当前版本的档不重复迁移。不补发历史奖励、不自动补水、不凭默认顺序挑锅、H/E 只缩放一次。
     /// </summary>
     public static class SaveMigrator
@@ -31,6 +32,7 @@ namespace Survival.Core.Save
         public const string Schema5 = "5";
         public const string Schema6 = "6";
         public const string Schema7 = "7";
+        public const string Schema8 = "8";
 
         /// <summary>升级到当前版本，返回给玩家看的迁移说明（无变化时为空）。冲突时抛 SaveMigrationConflictException，状态不变。</summary>
         public static List<string> Migrate(GameState s, GameConfig config)
@@ -50,6 +52,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema5) From5To6(s, config, notes);
             if (s.SchemaVersion == Schema6) From6To7(s, config, notes);
             if (s.SchemaVersion == Schema7) From7To8(s, config, notes);
+            if (s.SchemaVersion == Schema8) From8To9(s, config, notes);
             return notes;
         }
 
@@ -434,7 +437,27 @@ namespace Survival.Core.Save
                 notes.Add(note);
                 s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = note + "。" });
             }
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（烹饪受热保护与随身五张卡）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema8}（烹饪受热保护与随身五张卡）。" });
+            s.SchemaVersion = Schema8;
+        }
+
+        // ───────────────────────── 8 → 9 ─────────────────────────
+
+        /// <summary>
+        /// 策划提交 f172677 B3（R08 §5、S06 全系统更新目标 §3、R02 §5，开发计划 v0.9 B3 H7）：主角个人状态已由 SaveSerializer 预处理搬进 Actors.p0
+        /// （数值原样，不重置）；Party 只有主角。重复读档不会再走这里（版本已是 9）。
+        /// </summary>
+        private static void From8To9(GameState s, GameConfig config, List<string> notes)
+        {
+            s.Player.Id = GameState.PlayerId;
+            s.EquippedWeaponId = s.LegacyEquippedWeaponId;
+            s.LegacyEquippedWeaponId = null;
+            if (s.Party.Count == 0 || s.Party[0] != GameState.PlayerId)
+            {
+                s.Party.Remove(GameState.PlayerId);
+                s.Party.Insert(0, GameState.PlayerId);
+            }
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（角色编号与七个穿戴槽）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

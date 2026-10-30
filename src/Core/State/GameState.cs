@@ -25,9 +25,13 @@ namespace Survival.Core.State
         /// "5" 起健康/体力上限20、随机耐久、技能、免疫病毒、世界敌人与战斗（人物与战斗 v0.6，程序选的未占用版本号，与策划文件名无关）；
         /// "6" 起金属锅无耐久、活性物质来源、人物词条、剧情与饱饱状态（系统策划总册 v1.0 答复）；
         /// "7" 起对话记录（按次分组、逐句快照、游标、待显示队列）与等待烹饪行动状态（策划提交 9fdb44f：S01 §8–9、S11 §9）；
-        /// "8" 起设施加工进程带烹饪受热保护标记（策划提交 5493951：Q16、S11 §10），随身最多五张根物品卡（S06 §8）。
+        /// "8" 起设施加工进程带烹饪受热保护标记（策划提交 5493951：Q16、S11 §10），随身最多五张根物品卡（S06 §8）；
+        /// "9" 起角色个人状态按 actorId 存在 Actors（主角 "p0"，R08 §2/§5、开发计划 v0.9 B3），装备改为穿戴 owner（七槽，S06 全系统更新目标 §1）。
         /// </summary>
-        public const string CurrentSchema = "8";
+        public const string CurrentSchema = "9";
+
+        /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
+        public const string PlayerId = "p0";
 
         public string SchemaVersion { get; set; } = CurrentSchema;
         public string ConfigVersion { get; set; } = "";
@@ -40,16 +44,41 @@ namespace Survival.Core.State
         public int NextProcessSeq { get; set; } = 1;
         public long SegmentCount { get; set; }
 
-        public Stats Stats { get; set; } = new Stats();
+        /// <summary>
+        /// 全部角色的个人状态，键为 actorId（schema 9，R08 §2/§5）。本批只有主角 "p0"；队友加入在后续批次。
+        /// </summary>
+        public Dictionary<string, ActorState> Actors { get; set; } = new Dictionary<string, ActorState> { [PlayerId] = new ActorState { Id = PlayerId } };
+        /// <summary>当前同行队伍的 actorId（主角在首位）。世界 tick 对其中每人各结算一次身体，同一个 5 分钟只推进一次世界（R08 §2、COMP04）。</summary>
+        public List<string> Party { get; set; } = new List<string> { PlayerId };
+
+        /// <summary>按 actorId 取角色；不存在时建空角色（只在迁移与测试注入时发生）。</summary>
+        public ActorState Actor(string actorId)
+        {
+            if (!Actors.TryGetValue(actorId, out var a))
+            {
+                a = new ActorState { Id = actorId };
+                Actors[actorId] = a;
+            }
+            return a;
+        }
+
+        /// <summary>主角（p0）。</summary>
+        [JsonIgnore] public ActorState Player => Actor(PlayerId);
+
+        /// <summary>同行队伍里的全部角色（主角在前），按 Party 顺序；缺失的 actorId 跳过。</summary>
+        [JsonIgnore] public IEnumerable<ActorState> PartyActors => Party.Where(Actors.ContainsKey).Select(id => Actors[id]);
+
+        // 以下为主角个人状态的转发（schema 9 起存在 Actors["p0"]；旧档读入时由 SaveSerializer 预处理搬入），不单独序列化。
+        [JsonIgnore] public Stats Stats { get => Player.Stats; set => Player.Stats = value; }
         /// <summary>免疫、病毒、药效与出血（v0.6 §08–§11）。不放进六项 Stats，但走同一显示与 ActiveConditions。</summary>
-        public BodyState Body { get; set; } = new BodyState();
-        /// <summary>8 项熟练度（制造、医疗、枪械、刀斧、矛、拳、弓箭、钝器），键为技能 ID（v0.6 §03）。</summary>
-        public Dictionary<string, SkillState> Skills { get; set; } = new Dictionary<string, SkillState>();
-        public int? DiarrheaUntil { get; set; }
+        [JsonIgnore] public BodyState Body { get => Player.Body; set => Player.Body = value; }
+        /// <summary>熟练度，键为技能 ID（v0.6 §03）。</summary>
+        [JsonIgnore] public Dictionary<string, SkillState> Skills { get => Player.Skills; set => Player.Skills = value; }
+        [JsonIgnore] public int? DiarrheaUntil { get => Player.DiarrheaUntil; set => Player.DiarrheaUntil = value; }
         /// <summary>绷带回血冷却结束时刻（v0.6 bandageHealthReadyAt）。</summary>
-        public int BandageReadyAt { get; set; }
-        public Dictionary<StatId, bool> AlertLatched { get; set; } = new Dictionary<StatId, bool>();
-        public Dictionary<StatId, bool> ZeroLatched { get; set; } = new Dictionary<StatId, bool>();
+        [JsonIgnore] public int BandageReadyAt { get => Player.BandageReadyAt; set => Player.BandageReadyAt = value; }
+        [JsonIgnore] public Dictionary<StatId, bool> AlertLatched { get => Player.AlertLatched; set => Player.AlertLatched = value; }
+        [JsonIgnore] public Dictionary<StatId, bool> ZeroLatched { get => Player.ZeroLatched; set => Player.ZeroLatched = value; }
 
         public string CurrentLocation { get; set; } = "";
         public Dictionary<string, LocationState> Locations { get; set; } = new Dictionary<string, LocationState>();
@@ -85,6 +114,8 @@ namespace Survival.Core.State
         public int NextBattleId { get; set; } = 1;
         /// <summary>装备的武器（随身实例引用，不复制、不额外计重）；徒手为 null。战外可免费调整，战中换武器耗 1AP。</summary>
         public int? EquippedWeaponId { get; set; }
+        /// <summary>schema &lt; 9 存档顶层的 EquippedWeaponId（读档预处理取出，只供 8→9 迁移读取，不序列化）。</summary>
+        [JsonIgnore] public int? LegacyEquippedWeaponId { get; set; }
 
         // ───── 系统策划总册 v1.0（R07 吞噬融合、N01/S15 剧情） ─────
         /// <summary>人物词条（R07：首战教学融合的绿色“攻击力+0.1”）。不是物品装备，不随武器丢失。</summary>
@@ -98,11 +129,8 @@ namespace Survival.Core.State
         {
             var c = (GameState)MemberwiseClone();
             c.Rng = new Rng { State = Rng.State };
-            c.Stats = Stats.Clone();
-            c.Body = Body.Clone();
-            c.Skills = Skills.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
-            c.AlertLatched = new Dictionary<StatId, bool>(AlertLatched);
-            c.ZeroLatched = new Dictionary<StatId, bool>(ZeroLatched);
+            c.Actors = Actors.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
+            c.Party = new List<string>(Party);
             c.Locations = Locations.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.UnlockedEdges = new HashSet<string>(UnlockedEdges);
             c.Resources = Resources.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using Survival.Core.Config;
 using Survival.Core.State;
 
@@ -43,8 +44,11 @@ namespace Survival.Core.Save
             var version = SchemaOf(json);
             if (IsMigratable(version) && config != null)
             {
-                var old = JsonConvert.DeserializeObject<GameState>(json, Settings)
+                var obj = JObject.Parse(json);
+                var legacy = PreprocessLegacy(obj);
+                var old = obj.ToObject<GameState>(JsonSerializer.Create(Settings))
                           ?? throw new SaveVersionException("损坏");
+                old.LegacyEquippedWeaponId = legacy.EquippedWeaponId;
                 migrationNotes = SaveMigrator.Migrate(old, config);
                 return old;
             }
@@ -57,7 +61,38 @@ namespace Survival.Core.Save
 
         private static bool IsMigratable(string? version) =>
             version == SaveMigrator.LegacySchema || version == SaveMigrator.Schema3 || version == SaveMigrator.Schema4 || version == SaveMigrator.Schema5
-            || version == SaveMigrator.Schema6 || version == SaveMigrator.Schema7;
+            || version == SaveMigrator.Schema6 || version == SaveMigrator.Schema7 || version == SaveMigrator.Schema8;
+
+        /// <summary>schema 9 前在顶层的主角个人字段（R08 §5“旧档主角创建 actorId 一次”）。</summary>
+        private static readonly string[] LegacyActorFields =
+            { "Stats", "Body", "Skills", "DiarrheaUntil", "BandageReadyAt", "AlertLatched", "ZeroLatched" };
+
+        /// <summary>预处理读出的、schema 9 已删除的旧字段（只供迁移）。</summary>
+        public sealed class LegacyFields
+        {
+            public int? EquippedWeaponId { get; set; }
+        }
+
+        /// <summary>
+        /// 旧档（schema &lt; 9）的 JSON 预处理（开发计划 v0.9 B3 H7）：把顶层主角个人字段原样搬进 Actors.p0、Party=[p0]，再交给原有迁移链；
+        /// 取出已删除的 EquippedWeaponId 供 8→9 迁到武器槽 1。已有 Actors 的不再搬（幂等）；缺的字段保持默认值，由各级迁移按原规则补。
+        /// </summary>
+        public static LegacyFields PreprocessLegacy(JObject obj)
+        {
+            var legacy = new LegacyFields();
+            if (obj["EquippedWeaponId"] is JToken eq && eq.Type == JTokenType.Integer) legacy.EquippedWeaponId = eq.Value<int>();
+            obj.Remove("EquippedWeaponId");
+            if (obj["Actors"] is JObject) return legacy;
+            var p0 = new JObject { ["Id"] = GameState.PlayerId };
+            foreach (var f in LegacyActorFields)
+            {
+                if (obj[f] is JToken v) p0[f] = v.DeepClone();
+                obj.Remove(f);
+            }
+            obj["Actors"] = new JObject { [GameState.PlayerId] = p0 };
+            obj["Party"] = new JArray(GameState.PlayerId);
+            return legacy;
+        }
 
         /// <summary>存档是旧版、读取时会迁移。</summary>
         public static bool NeedsMigration(string json) => IsMigratable(SchemaOf(json));

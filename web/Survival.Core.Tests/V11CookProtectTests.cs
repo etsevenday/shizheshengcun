@@ -269,7 +269,7 @@ public class V11CookProtectTests : TestBase
         var j = JObject.Parse(SaveSerializer.Serialize(s));
         j["SchemaVersion"] = "7";
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out var notes);
-        Assert.That(m.SchemaVersion, Is.EqualTo("8"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
         var pf = E.ProcessOf(m, m.Items.Single(i => i.InstanceId == fresh.InstanceId))!;
         Assert.That(pf.HeatProtected, Is.True);
         var sp = m.Items.Single(i => i.InstanceId == spoiled.InstanceId);

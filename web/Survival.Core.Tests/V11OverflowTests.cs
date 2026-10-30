@@ -21,7 +21,7 @@ public class V11OverflowTests : TestBase
         var j = JObject.Parse(SaveSerializer.Serialize(s));
         j["SchemaVersion"] = "7";
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg);
-        Assert.That(m.SchemaVersion, Is.EqualTo("8"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
         return m;
     }
 
