@@ -171,12 +171,22 @@ namespace Survival.Core.Engine
         public double GearWorkFactor(GameState s, string actorId, ActionType type, string? targetId, List<string>? reasons = null)
         {
             var keys = WorkKeys(type, targetId).ToList();
-            if (keys.Count == 0) return 1;
-            var fx = EquipmentEffects(s, actorId);
-            var f = keys.Aggregate(1.0, (acc, k) => acc * fx.Factor(k));
+            var fx = keys.Count == 0 ? null : EquipmentEffects(s, actorId);
+            var gear = fx == null ? 1 : keys.Aggregate(1.0, (acc, k) => acc * fx.Factor(k));
+            // B5 求生被动与装备相乘后同受 ×0.70 下限（开发假设 H7）
+            var (passive, source) = PassiveWorkFactor(s, s.Actor(actorId), type, targetId);
+            var f = gear * passive;
             var floor = Config.Equipment.Limits.SurvivalWorkFloor;
-            if (f < floor) f = floor;
-            if (Math.Abs(f - 1) > 1e-12) reasons?.Add($"装备工作量×{Fmt.T(f)}");
+            var floored = f < floor;
+            if (floored) f = floor;
+            if (Math.Abs(passive - 1) < 1e-12)
+            {
+                if (Math.Abs(f - 1) > 1e-12) reasons?.Add($"装备工作量×{Fmt.T(f)}");
+                return f;
+            }
+            if (Math.Abs(gear - 1) > 1e-12) reasons?.Add($"装备工作量×{Fmt.T(gear)}");
+            reasons?.Add($"熟练（{source}）工作量×{Fmt.T(passive)}");
+            if (floored) reasons?.Add($"求生工作量合成下限×{Fmt.T(floor)}");
             return f;
         }
 
@@ -212,14 +222,20 @@ namespace Survival.Core.Engine
             var fx = EquipmentEffects(s);
             var floor = Config.Equipment.Limits.NegativeRateFloor;
             var parts = new List<string>();
+            bool anyGear = false, anyPassive = false;
             foreach (var g in RateKeys(type, targetId).GroupBy(x => x.stat))
             {
-                var f = g.Aggregate(1.0, (acc, x) => acc * fx.Factor(x.key));
+                var gear = g.Aggregate(1.0, (acc, x) => acc * fx.Factor(x.key));
+                var passive = g.Aggregate(1.0, (acc, x) => acc * PassiveFactor(s.Player, x.key));
+                var f = gear * passive;
                 if (f < floor) f = floor;
                 if (Math.Abs(f - 1) < 1e-12) continue;
+                anyGear |= Math.Abs(gear - 1) > 1e-12;
+                anyPassive |= Math.Abs(passive - 1) > 1e-12;
                 parts.Add($"{RateKeyNames[g.Last().key]}×{Fmt.T(f)}");
             }
-            return parts.Count == 0 ? null : $"装备：{string.Join("，", parts)}（只缩减消耗，下限×{Fmt.T(floor)}）";
+            var who = anyGear && anyPassive ? "装备与熟练" : anyPassive ? "熟练" : "装备";
+            return parts.Count == 0 ? null : $"{who}：{string.Join("，", parts)}（只缩减消耗，下限×{Fmt.T(floor)}）";
         }
 
         /// <summary>
@@ -229,11 +245,13 @@ namespace Survival.Core.Engine
         private void ApplyGearRates(GameState s, ActorState actor, ActionState a, SegmentContext ctx)
         {
             var fx = EquipmentEffects(s, actor.Id);
-            if (fx.Factors.Count == 0 && fx.Adds.Count == 0) return;
+            var anyPassive = SurvivalPassives(actor, true).Count > 0;
+            if (fx.Factors.Count == 0 && fx.Adds.Count == 0 && !anyPassive) return;
             var floor = Config.Equipment.Limits.NegativeRateFloor;
             foreach (var g in RateKeys(a.Type, a.TargetId).GroupBy(x => x.stat))
             {
-                var f = g.Aggregate(1.0, (acc, x) => acc * fx.Factor(x.key));
+                // B5 求生被动（节奏行进/耐力行进）与装备相乘后同受 ×0.75 下限（开发假设 H7）
+                var f = g.Aggregate(1.0, (acc, x) => acc * fx.Factor(x.key) * (anyPassive ? PassiveFactor(actor, x.key) : 1));
                 if (f < floor) f = floor;
                 if (Math.Abs(f - 1) < 1e-12) continue;
                 var v = Get(ctx.Rates, g.Key);
@@ -277,7 +295,7 @@ namespace Survival.Core.Engine
             if (res.Hazard == null) return 0;
             var p = res.Hazard.Probability;
             if (IsWoodOrScrapGather(res)) p *= EquipmentEffects(s).Factor("hazard.woodScrapChance");
-            return p;
+            return p * PassiveHazardFactor(s.Player, res);   // B5 稳手采集×0.9 / 危险辨识×0.8
         }
 
         public static bool IsWoodOrScrapGather(ResourceConfig res) =>
@@ -289,7 +307,7 @@ namespace Survival.Core.Engine
 
         /// <summary>工具维护恢复比例：配方 20% 与装备替代比例（维护手册 25%）取较高者，不相加（A05 §2、§5）。</summary>
         public double RepairFraction(GameState s, RecipeConfig rc) =>
-            Math.Max(rc.RestoreOwnDurabilityMaxFraction, EquipmentEffects(s).Set("repair.fraction") ?? 0);
+            Math.Max(PassiveRepairFraction(s.Player, rc.RestoreOwnDurabilityMaxFraction), EquipmentEffects(s).Set("repair.fraction") ?? 0);
 
         /// <summary>非战斗食用的正饱食收益 × 装备 eat.satiety（配给袋 ×1.05）；负值与战斗中不变。</summary>
         public double UseSatiety(GameState s, ItemUseConfig u) =>

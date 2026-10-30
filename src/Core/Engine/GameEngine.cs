@@ -398,6 +398,7 @@ namespace Survival.Core.Engine
                             return res.Refills ? $"库存为0，下次00:00补充{res.DailyRefill}" : "已采尽，不再补充";
                         var kv = res.Outputs.First();
                         var per = kv.Value * (tool != null && res.ToolBonus != null ? res.ToolBonus.OutputMultiplier : 1);
+                        per += PassiveGatherBonus(s, s.Player, res, kv.Key, plan.Notes);   // B5 合理取材/精取，仍受库存限制
                         plan.Units = Math.Min(avail, per);
                         plan.Outputs.Add(Line(kv.Key, plan.Units));
                         if (plan.Units < per) plan.Notes.Add($"库存不足，本次产出{plan.Units}{ItemName(kv.Key)}，耗时不减少");
@@ -436,7 +437,14 @@ namespace Survival.Core.Engine
                         if (why != null) return why;
                         plan.Tool = target;
                         var (oid, n) = SalvageOutput(target!)!.Value;
-                        plan.Outputs.Add(Line(oid, n));
+                        var extra = SalvageExtraScrap(s);   // B5 回收专家：多返废金属1
+                        if (extra > 0 && oid == "scrap") plan.Outputs.Add(Line(oid, n + extra));
+                        else
+                        {
+                            plan.Outputs.Add(Line(oid, n));
+                            if (extra > 0) plan.Outputs.Add(Line("scrap", extra));
+                        }
+                        if (extra > 0) plan.Notes.Add($"搜集10级·回收专家：拆解多得废金属×{extra}");
                     }
                     if (rc.NeedsExplicitPot)
                     {

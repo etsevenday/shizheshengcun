@@ -142,7 +142,14 @@ namespace Survival.Core.Engine
             s.Items.Remove(t);
             var (oid, n) = output.Value;
             CreateItems(s, oid, n, here);
-            Emit(s, GameEventKind.ActionCompleted, $"拆解{name}：{ItemName(oid)}+{n}，已放在{LocName(here)}地面。", null, new[] { oid });
+            var got = $"{ItemName(oid)}+{n}";
+            var extra = SalvageExtraScrap(s);   // B5 回收专家（搜集10级）：多返废金属1；80% 回收上限无价值口径，不实装
+            if (extra > 0)
+            {
+                CreateItems(s, "scrap", extra, here);
+                got += $"，{ItemName("scrap")}+{extra}（回收专家）";
+            }
+            Emit(s, GameEventKind.ActionCompleted, $"拆解{name}：{got}，已放在{LocName(here)}地面。", null, new[] { oid });
             UpdateFlags(s);
             return true;
         }

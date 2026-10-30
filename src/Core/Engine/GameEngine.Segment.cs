@@ -385,6 +385,8 @@ namespace Survival.Core.Engine
                 case ActionType.Travel:
                 {
                     var from = s.CurrentLocation;
+                    var walked = Config.Edges.FirstOrDefault(e => e.Touches(from) && e.Other(from) == a.TargetId);
+                    if (walked != null) s.TraveledEdges.Add(walked.Id);
                     s.CurrentLocation = a.TargetId;
                     var revealed = Visit(s, a.TargetId);
                     ClearAction(s, a);

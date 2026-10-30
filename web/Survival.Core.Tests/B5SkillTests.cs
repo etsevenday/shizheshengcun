@@ -244,4 +244,158 @@ public class B5SkillTests : BattleTestBase
         Assert.That(m.WorldEnemies.Single().XpHits["axe"], Is.EqualTo(3), "旧刀斧防刷计数同样算给斧，不重置");
         Assert.That(m.Battle!.Enemies.Single().XpHits["axe"], Is.EqualTo(3));
     }
+
+    // ───────────── M124：求生被动（H7；验收 SK01、SK04） ─────────────
+
+    private static void Lv(GameState s, string id, int lv) => s.Skills[id].Level = lv;
+
+    [Test]
+    public void H7_Gathering07_WorkX09_Gathering03_HazardX09_Scavenging07_X08()
+    {
+        var s = AtWoods();
+        var w1 = E.WorkFactor(s, ActionType.Gather, null, "berries");
+        Lv(s, "gathering", 7);
+        var reasons = new List<string>();
+        Assert.That(E.WorkFactor(s, ActionType.Gather, reasons, "berries"), Is.EqualTo(w1 * 0.9).Within(1e-12), "熟练采伐×0.9");
+        Assert.That(reasons, Has.Some.Contains("采集7级·熟练采伐"));
+        var wood = Cfg.Resources.Single(r => r.NodeId == "wood");
+        var p0 = wood.Hazard!.Probability;
+        Assert.That(E.HazardChance(s, wood), Is.EqualTo(p0 * 0.9).Within(1e-12), "稳手采集×0.9（3级起）");
+        var misc = Cfg.Resources.Single(r => r.NodeId == "misc_box");
+        Assert.That(E.HazardChance(s, misc), Is.EqualTo(misc.Hazard!.Probability).Within(1e-12), "箱子不吃采集被动");
+        Lv(s, "scavenging", 7);
+        Assert.That(E.HazardChance(s, misc), Is.EqualTo(misc.Hazard!.Probability * 0.8).Within(1e-12), "危险辨识×0.8");
+        Assert.That(E.WorkFactor(s, ActionType.Gather, null, "misc_box"), Is.EqualTo(w1).Within(1e-12), "箱子不吃熟练采伐");
+    }
+
+    [Test]
+    public void H7_Gathering05_BasicPlusOne_Gathering10_FirstDailyPlusOne()
+    {
+        var s = AtWoods();
+        s.Resources["woods_fiber"].Available = 2;
+        Lv(s, "gathering", 5);
+        Assert.That(E.Preview(s, ActionRequest.Gather("woods_fiber")).Outputs.Single().Count, Is.EqualTo(2), "受库存限制");
+        s.Resources["woods_fiber"].Available = 10;
+        Assert.That(E.Preview(s, ActionRequest.Gather("woods_fiber")).Outputs.Single().Count, Is.EqualTo(3), "纤维 2+1");
+        s.Resources["berries"].Available = 10;
+        Assert.That(E.Preview(s, ActionRequest.Gather("berries")).Outputs.Single().Count, Is.EqualTo(2), "野果不是木/石/纤维");
+        Lv(s, "gathering", 10);
+        Assert.That(E.Preview(s, ActionRequest.Gather("berries")).Outputs.Single().Count, Is.EqualTo(3), "精取：今日首次+1");
+        GatherOnce(s, "berries");
+        Assert.That(Count(s, "berry", "woods"), Is.EqualTo(3));
+        Assert.That(s.Resources["berries"].Available, Is.EqualTo(7), "仍扣库存");
+        Assert.That(E.Preview(s, ActionRequest.Gather("berries")).Outputs.Single().Count, Is.EqualTo(2), "第二次不再+1");
+        Assert.That(E.Preview(s, ActionRequest.Gather("woods_fiber")).Outputs.Single().Count, Is.EqualTo(4), "纤维 2+1+1");
+        var t = New(7);
+        E.DebugTeleport(t, "scrapyard");
+        E.DebugSetProgress(t, "scrapyard", 100);
+        t.Resources["metal_heap"].Available = 10;
+        Lv(t, "gathering", 10);
+        Assert.That(E.Preview(t, ActionRequest.Gather("metal_heap")).Outputs.Single().Count, Is.EqualTo(2), "废金属是工业材料，不吃精取");
+    }
+
+    [Test]
+    public void H7_Athletics_MoveLight_Visited_RateFactors()
+    {
+        var s = New(7);
+        E.DebugTeleport(s, "field");
+        E.DebugUnlockEdge(s, "field__stream");
+        var w1 = E.WorkFactor(s, ActionType.Travel, null, "stream");
+        Lv(s, "athletics", 5);
+        Assert.That(E.WorkFactor(s, ActionType.Travel, null, "stream"), Is.EqualTo(w1 * 0.95).Within(1e-12), "≤20kg 轻装步伐×0.95");
+        E.DebugGive(s, "stone", 50);   // 随身超过 20 公斤
+        Assert.That(E.CarriedGramsOf(s, GameState.PlayerId), Is.GreaterThan(20000));
+        Assert.That(E.WorkFactor(s, ActionType.Travel, null, "stream"), Is.EqualTo(w1 * Cfg.WorkFactors.Overweight).Within(1e-12), "超过20公斤不吃轻装步伐");
+        s.Items.RemoveAll(i => i.ItemId == "stone" && i.IsCarried);
+        Lv(s, "athletics", 10);
+        Assert.That(E.WorkFactor(s, ActionType.Travel, null, "stream"), Is.EqualTo(w1 * 0.95).Within(1e-12), "没走过的路仍按5级");
+        Start(s, ActionRequest.Travel("stream"));
+        Run(s);
+        Assert.That(s.TraveledEdges, Does.Contain("field__stream"));
+        var reasons = new List<string>();
+        Assert.That(E.WorkFactor(s, ActionType.Travel, reasons, "field"), Is.EqualTo(w1 * 0.90).Within(1e-12), "走过的路远途规划×0.90（替代5级）");
+        Assert.That(reasons, Has.Some.Contains("远途规划"));
+        // 节奏行进/耐力行进：移动负体力
+        Lv(s, "athletics", 1);
+        Assert.That(E.GearRateNote(s, ActionType.Travel, "field"), Is.Null);
+        Lv(s, "athletics", 3);
+        Assert.That(E.GearRateNote(s, ActionType.Travel, "field"), Does.Contain("熟练：移动负体力×0.95"));
+        Lv(s, "athletics", 7);
+        Assert.That(E.GearRateNote(s, ActionType.Travel, "field"), Does.Contain("移动负体力×0.9（"), "7级替代3级");
+        // 实际推进：同条件下 7 级比 1 级少扣体力 10%
+        double Drop(int lv)
+        {
+            var u = New(7);
+            E.DebugTeleport(u, "field");
+            E.DebugUnlockEdge(u, "field__stream");
+            Lv(u, "athletics", lv);
+            var e0 = u.Stats.Energy;
+            Start(u, ActionRequest.Travel("stream"));
+            Run(u);
+            return e0 - u.Stats.Energy;
+        }
+        Assert.That(Drop(7), Is.EqualTo(Drop(1) * 0.9).Within(1e-9));
+    }
+
+    [Test]
+    public void H7_Crafting05_Repair25Pct_Scavenging10_ExtraScrap()
+    {
+        var s = New();
+        var rc = Cfg.Recipes.Single(r => r.Id == "repair_selected_tool");
+        Assert.That(E.RepairFraction(s, rc), Is.EqualTo(0.20).Within(1e-12));
+        Lv(s, "crafting", 5);
+        Assert.That(E.RepairFraction(s, rc), Is.EqualTo(0.25).Within(1e-12), "精细加工+5个百分点");
+        E.DebugCreateEquipment(s, "repair_manual", "white", ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.SurvivalAccessory));
+        Assert.That(E.RepairFraction(s, rc), Is.EqualTo(0.25).Within(1e-12), "与维护手册25%取较高，不相加");
+
+        var it = E.DebugCreateEquipment(s, "machete", "white", ItemInstance.Carried);
+        var req = new ActionRequest { Type = ActionType.Craft, TargetId = "salvage_equipment", InstanceId = it.InstanceId };
+        Assert.That(E.Preview(s, req).Outputs.Single().Count, Is.EqualTo(1));
+        Lv(s, "scavenging", 10);
+        var p = E.Preview(s, req);
+        Assert.That(p.Outputs.Single().Count, Is.EqualTo(2), "回收专家多返废金属1");
+        var scrap0 = s.Items.Where(i => i.ItemId == "scrap").Sum(i => i.Count);
+        Start(s, req);
+        Run(s);
+        Assert.That(s.Items.Where(i => i.ItemId == "scrap").Sum(i => i.Count) - scrap0, Is.EqualTo(2));
+        var shirt = E.DebugCreateEquipment(s, "work_shirt", "white", ItemInstance.Carried);
+        var p2 = E.Preview(s, new ActionRequest { Type = ActionType.Craft, TargetId = "salvage_equipment", InstanceId = shirt.InstanceId });
+        Assert.That(p2.Outputs.Select(o => (o.ItemId, o.Count)), Is.EquivalentTo(new[] { ("cloth", 1), ("scrap", 1) }), "布料装备另得废金属1");
+    }
+
+    [Test]
+    public void H7_PassiveWithGear_FloorsSameAsEquipment()
+    {
+        // 天然数据：远征长裤×0.9 × 路线罗盘×0.95 × 远途规划×0.90 = 0.7695（未触下限）
+        var s = New(7);
+        E.DebugTeleport(s, "field");
+        E.DebugUnlockEdge(s, "field__stream");
+        s.TraveledEdges.Add("field__stream");
+        Lv(s, "athletics", 10);
+        E.DebugCreateEquipment(s, "expedition_trousers", "white", ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Bottom));
+        E.DebugCreateEquipment(s, "route_compass", "white", ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.SurvivalAccessory));
+        Assert.That(E.GearWorkFactor(s, GameState.PlayerId, ActionType.Travel, "stream"), Is.EqualTo(0.9 * 0.95 * 0.9).Within(1e-12));
+        // 把被动值调到 0.5 的配置：合成后下限 ×0.70；负小时率下限 ×0.75
+        var cfg = Survival.Core.Config.ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));
+        cfg.SkillNodes.Single(n => n.Id == "athletics_10").Effects.Single().Value = 0.5;
+        cfg.SkillNodes.Single(n => n.Id == "athletics_07").Effects.Single().Value = 0.5;
+        var e2 = new GameEngine(cfg);
+        var reasons = new List<string>();
+        Assert.That(e2.GearWorkFactor(s, GameState.PlayerId, ActionType.Travel, "stream", reasons), Is.EqualTo(0.70).Within(1e-12));
+        Assert.That(reasons, Has.Some.Contains("合成下限×0.7"));
+        Assert.That(e2.GearRateNote(s, ActionType.Travel, "stream"), Does.Contain("移动负体力×0.75"), "负小时率合成下限×0.75");
+    }
+
+    [Test]
+    public void SK01_SurvivalPassiveLines_ByLevel()
+    {
+        var s = New();
+        Assert.That(E.SurvivalPassiveLines(s.Player), Has.Count.EqualTo(5), "1级五门各一个开放类被动");
+        Lv(s, "gathering", 10);
+        var lines = E.SurvivalPassiveLines(s.Player);
+        Assert.That(lines, Has.Count.EqualTo(9));
+        Assert.That(lines, Has.Some.EqualTo("采集3级·稳手采集：采集划伤概率×0.9（生效中）"));
+        Assert.That(lines.Single(x => x.StartsWith("制造1级")), Does.Contain("待策划确认"));
+        Assert.That(Cfg.SkillNodes.Count(n => n.IsSurvival && n.IsLive), Is.EqualTo(11));
+    }
 }

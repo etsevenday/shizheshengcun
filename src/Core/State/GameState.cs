@@ -86,6 +86,8 @@ namespace Survival.Core.State
         public string CurrentLocation { get; set; } = "";
         public Dictionary<string, LocationState> Locations { get; set; } = new Dictionary<string, LocationState>();
         public HashSet<string> UnlockedEdges { get; set; } = new HashSet<string>();
+        /// <summary>完整走过（任一方向）的物理边 ID（athletics_10“已访问物理边”，开发计划 v0.9 B5 H7；schema 11 起记录，旧档从空开始）。</summary>
+        public HashSet<string> TraveledEdges { get; set; } = new HashSet<string>();
         public Dictionary<string, ResourceState> Resources { get; set; } = new Dictionary<string, ResourceState>();
         public List<ItemInstance> Items { get; set; } = new List<ItemInstance>();
 
@@ -137,6 +139,7 @@ namespace Survival.Core.State
             c.Party = new List<string>(Party);
             c.Locations = Locations.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.UnlockedEdges = new HashSet<string>(UnlockedEdges);
+            c.TraveledEdges = new HashSet<string>(TraveledEdges);
             c.Resources = Resources.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.Items = Items.Select(i => i.Clone()).ToList();
             c.Main = Main?.Clone();
