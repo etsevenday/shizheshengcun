@@ -34,6 +34,8 @@
 .q-chip.me { background: #344833; }
 .q-chip.now { border-color: var(--accent); color: var(--accent); }
 .q-chip.done { opacity: .5; }
+.q-chip.chase { border-style: dashed; border-color: #b08a4a; }
+.q-chip.chase.now { border-style: solid; border-color: var(--accent); }
 .bt-noise { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); white-space: nowrap; }
 .bt-noise .track { width: 70px; }
 .bt-cards { display: flex; gap: 10px; overflow-x: auto; overflow-y: auto; align-items: stretch; min-height: 0; padding: 2px 2px 4px; }

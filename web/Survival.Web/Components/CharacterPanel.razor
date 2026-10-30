@@ -168,7 +168,7 @@ else
 @code {
     /// <summary>一门熟练度的 5 个专属技能（悬停提示）：“1级 斩击：伤害×1.00（已解锁）”。</summary>
     private string SkillNodesTip(SkillView sk) =>
-        string.Join("\n", sk.Nodes.Select(n => $"{n.Level}级 {n.Name}：{n.Text}（{(sk.Level >= n.Level ? (n.IsSurvival ? G.E.PassiveStatus(G.S.Player, n) : "已解锁，四对四战斗上线后可用") : "未解锁")}）"));
+        string.Join("\n", sk.Nodes.Select(n => $"{n.Level}级 {n.Name}：{n.Text}（{(sk.Level >= n.Level ? (n.IsSurvival ? G.E.PassiveStatus(G.S.Player, n) : "已解锁，战斗技能在后续版本开放") : "未解锁")}）"));
 
     private async Task Repair(ActionRequest r)
     {

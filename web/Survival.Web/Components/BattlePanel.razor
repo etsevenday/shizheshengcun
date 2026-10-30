@@ -76,7 +76,7 @@ else if (b != null)
             @foreach (var t in p.Targets)
             {
                 <div class="facts">
-                    <div class="fact"><span>目标</span><strong>@t.Slot @t.Name</strong></div>
+                    <div class="fact"><span>目标</span><strong>@(t.Slot)号位 @t.Name</strong></div>
                     <div class="fact"><span>实际命中率</span><strong>@Ui.Pct(t.HitChance)</strong></div>
                     <div class="fact"><span>命中能力 / 对方闪避</span><strong>@Ui.N(t.AccuracyRating) / @Ui.T(t.Evasion)</strong></div>
                     <div class="fact"><span>暴击（命中后）</span><strong>@Ui.Pct(t.CritChance)</strong></div>
@@ -84,7 +84,7 @@ else if (b != null)
                 <div class="lines">
                     <div><span>伤害（未暴击）</span><b>@Ui.N(t.DamageMin)—@Ui.N(t.DamageMax)</b></div>
                     <div><span>伤害（暴击×@(Ui.T(e.Config.CombatMath.CritFactor))）</span><b>@Ui.N(t.CritDamageMin)—@Ui.N(t.CritDamageMax)</b></div>
-                    <div><span>目标健康</span><b>@Ui.N(t.Hp)@(t.Armor > 0 ? $" · 护甲{Ui.T(t.Armor)}（已扣）" : "")@(t.Guarded ? " · 防御中×0.5" : "")@(t.RearPenalty ? " · 后排×0.75" : "")</b></div>
+                    <div><span>目标健康</span><b>@Ui.N(t.Hp)@(t.Armor > 0 ? $" · 护甲{Ui.T(t.Armor)}{(t.Penetration > 0 ? $"−穿透{Ui.T(t.Penetration)}" : "")}（已扣）" : "")@(t.Guarded ? " · 防御中×0.5" : "")@(t.DamageBuff > 1 + 1e-9 ? $" · 伤害增益×{Ui.T(t.DamageBuff)}" : "")</b></div>
                 </div>
             }
             @if (p.RetreatChance.HasValue)
@@ -113,7 +113,7 @@ else if (b != null)
         <div class="detail-scroll">
             <div class="op-head">
                 <div class="eyebrow">战斗第@(b.Round)轮 · @(awaiting ? $"你的行动（剩{b.PlayerAp}AP）" : "敌方行动中")</div>
-                <h2>@(t != null && t.Alive ? $"{t.Slot} {e.EnemyName(t)}" : "选择指令")</h2>
+                <h2>@(t != null && t.Alive ? $"{t.Slot}号位 {e.EnemyName(t)}" : "选择指令")</h2>
                 <p>先在操作台选技能，再把鼠标移到亮起的目标上看预测、点击目标执行；没选技能时点敌卡只查看。</p>
             </div>
             @if (t != null && t.Alive)

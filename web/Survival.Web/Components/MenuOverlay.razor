@@ -92,6 +92,10 @@
                     <button class="secondary" @onclick="() => DevSkills(5, true)">求生熟练度全部5级</button>
                     <button class="secondary" @onclick="() => DevSkills(10, true)">求生熟练度全部10级</button>
                     <button class="secondary" @onclick="() => DevSkills(1, false)">熟练度全部回到1级</button>
+                    @* B6（R03 §3）：战术训练阶位 0/1/2 → 每次普通激活 3/4/5AP；训练入口（h03）在后续批次 *@
+                    <button class="secondary" @onclick="() => DevTier(0)">战术训练阶位0（3AP）</button>
+                    <button class="secondary" @onclick="() => DevTier(1)">战术训练阶位1（4AP）</button>
+                    <button class="secondary" @onclick="() => DevTier(2)">战术训练阶位2（5AP）</button>
                 </div>
                 <div class="btn-row">
                     @foreach (var en in G.E.Config.Enemies)
@@ -143,6 +147,8 @@
     private void DevNewItems(string kind) => DevDone(G.E.DebugGiveNewItems(G.S, kind));
 
     private void DevSkills(int level, bool survivalOnly) => DevDone(G.E.DebugSetSkillLevels(G.S, level, survivalOnly));
+
+    private void DevTier(int tier) => DevDone(G.E.DebugSetTacticalTier(G.S, tier));
 
     private void DevSubstance()
     {
