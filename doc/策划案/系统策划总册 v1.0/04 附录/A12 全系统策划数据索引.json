@@ -29986,6 +29986,23 @@
       "currentEquipmentUi": "right_character_independent_fold",
       "fullPreparationPanelDeveloperBatch": "B10",
       "combatEquipmentUiReadOnly": true
+    },
+    "battleInitialWeaponPage": {
+      "decisionDate": "2026-10-31",
+      "sourceQuestion": "Q43A",
+      "priority": [
+        "weapon1_if_occupied",
+        "weapon2_if_occupied",
+        "weapon1_unarmed_if_both_empty"
+      ],
+      "occupancyIncludesBrokenOrUnloadedWeapons": true,
+      "previewAndBattleShareSelector": true,
+      "refreshPreviewAfterLegalEquipmentChange": true,
+      "initializeOnlyOnNewBattle": true,
+      "preserveValidSavedOrManuallySelectedPage": true,
+      "autoAttack": false,
+      "worldMinutes": 0,
+      "ap": 0
     }
   },
   "gateContract": {
