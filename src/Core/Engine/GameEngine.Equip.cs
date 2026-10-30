@@ -48,12 +48,42 @@ namespace Survival.Core.Engine
 
         // ───────────── 穿上 ─────────────
 
+        /// <summary>该实例是否在当前地点地面（顶层，不在锅里、设施里、别处或他人身上；Q40 只认当前实际可访问的地面）。</summary>
+        public static bool OnCurrentGround(GameState s, ItemInstance it) => it.Owner == s.CurrentLocation;
+
         /// <summary>
-        /// 能否把本人随身五卡里的这件物品穿进该槽（只读，按最终状态一次校验；B3 H5）：只从本人五卡穿上（不从地面直接穿，Q40 待确认）；
-        /// 本批只有武器能进 weapon1/weapon2；同 kind 已在另一武器槽 →“已装备同类型武器：名称”；目标槽已有物品则交换回五卡，
-        /// 交换后五卡与 30 公斤硬线都要合法；预留或行动占用的实例不可穿。
+        /// 地面取放的时机（Q40/Q42 选定：地面→穿戴、旧件放当前地面沿原地面操作条件）：与拾取/放下相同，要求无敌踪待选、无主/子行动（含暂停）。
+        /// 死亡、未读对白、战斗由 EquipTimingBlocked 先拦。
         /// </summary>
-        public string? EquipBlocked(GameState s, string actorId, int instanceId, string slot)
+        public string? GroundEquipBlocked(GameState s, bool fromGround)
+        {
+            if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
+            if (s.Main != null || s.Sub != null) return fromGround ? "行动进行中，不能从地面穿上" : "行动进行中，不能放到地面";
+            return null;
+        }
+
+        /// <summary>
+        /// 穿上后的最终状态（只读预演，Q40 选 B“按最终个人总重量/卡位一次校验”）：本人总重（随身+穿戴+弹仓+容器后代，各计一次）与随身根卡数。
+        /// 来源是本人随身时新件离开五卡；来源是当前地面时新件不经五卡、重量加到本人；旧件按 oldToGround 回本人随身或放当前地面。
+        /// </summary>
+        public (int Grams, int Cards) EquipOutcome(GameState s, string actorId, ItemInstance it, string slot, bool oldToGround)
+        {
+            var old = WornItem(s, actorId, slot);
+            var fromCarried = it.Owner == ItemInstance.CarriedOwner(actorId);
+            var grams = CarriedGramsOf(s, actorId);
+            if (!fromCarried && !it.IsWornBy(actorId)) grams += ItemGrams(s, it);
+            if (old != null && oldToGround) grams -= ItemGrams(s, old);
+            var cards = RootCardsAfter(s, old != null && !oldToGround ? old : null, 1, fromCarried ? it : null, fromCarried ? it.Count : 0);
+            return (grams, cards);
+        }
+
+        /// <summary>
+        /// 能否把这件物品穿进该槽（只读，按最终状态一次校验；B3 H5、B3a H1/H2）：来源是本人随身五卡，或当前地点地面（Q40 选 B，地面直穿，
+        /// 不先临时进五卡）；本批只有武器能进 weapon1/weapon2；同 kind 已在另一武器槽 →“已装备同类型武器：名称”；新旧件都不能被预留或行动占用。
+        /// 目标槽已有物品：oldToGround=false 旧件回本人随身（默认），按最终卡数校验，放不下时提示可选“旧件放当前地面”；oldToGround=true 是玩家明确选的放当前地面。
+        /// 涉及地面（地面来源或旧件放地）时沿拾取/放下的地面操作条件。最终本人总重不得超过 30 公斤硬线（旧档已超重的不得再增加）。
+        /// </summary>
+        public string? EquipBlocked(GameState s, string actorId, int instanceId, string slot, bool oldToGround = false)
         {
             var t = EquipTimingBlocked(s, actorId);
             if (t != null) return t;
@@ -62,52 +92,68 @@ namespace Survival.Core.Engine
             if (it == null) return "物品已不在";
             if (it.IsWornBy(actorId))
                 return ItemInstance.TryEquip(it.Owner, out _, out var cur) && cur == slot ? $"已经装备在{EquipSlots.Name(slot)}" : $"已装备在{EquipSlots.Name(cur)}，先卸下";
-            if (it.Owner != ItemInstance.CarriedOwner(actorId))
-                return it.Owner == s.CurrentLocation ? "只能从本人随身物资卡穿上：先拾取到随身" : "只能从本人随身物资卡穿上";
+            var fromGround = OnCurrentGround(s, it);
+            if (it.Owner != ItemInstance.CarriedOwner(actorId) && !fromGround)
+                return it.IsWorn ? "穿在别人身上，不能直接穿上" : "只能穿上本人随身或当前地面的装备：其他地方的先拿到当前地点";
             var w = Weapon(it.ItemId);
             if (!EquipSlots.IsWeaponSlot(slot))
                 return $"{EquipSlots.Name(slot)}槽暂未开放：本批只有武器能穿戴（防具、饰品与衣物在后续批次）";
             if (w == null || w.IsFists) return $"{ItemName(it.ItemId)}不是武器，不能放进{EquipSlots.Name(slot)}";
             if (it.ReservedBy != null) return "该物品已被预留";
             if (IsLocked(s, it)) return "行动占用：该物品正被当前行动使用";
+            if (it.Count != 1) return "一次只能穿上一件";
+            var old = WornItem(s, actorId, slot);
+            if (fromGround || (old != null && oldToGround))
+            {
+                var g = GroundEquipBlocked(s, fromGround);
+                if (g != null) return g;
+            }
             var other = WornItem(s, actorId, OtherWeaponSlot(slot));
             if (other != null && WeaponKindOf(other.ItemId) == w.WeaponKind)
                 return $"已装备同类型武器：{ItemName(other.ItemId)}（{EquipSlots.Name(OtherWeaponSlot(slot))}，{WeaponKinds.Name(w.WeaponKind)}类最多1件）";
-            var old = WornItem(s, actorId, slot);
+            var (grams, cards) = EquipOutcome(s, actorId, it, slot, oldToGround);
             if (old != null)
             {
                 if (old.ReservedBy != null || IsLocked(s, old)) return $"{EquipSlots.Name(slot)}里的{ItemName(old.ItemId)}正被行动使用，不能换下";
-                // 交换：新武器离开五卡、旧武器回五卡，按交换后的最终卡数校验（不因中间瞬态误拒）
-                var after = RootCardsAfter(s, old, 1, it, it.Count);
-                if (!RootCardsAllow(s, after))
-                    return $"随身卡位不够换下{ItemName(old.ItemId)}（换后{after}/{MaxRootCards}张）：先卸下到当前地面或腾出一张卡";
+                // 交换：按交换后的最终卡数校验（不因中间瞬态误拒，也不因“先拾取会六张”误拒）
+                if (!oldToGround && !RootCardsAllow(s, cards))
+                    return $"随身卡位不够换下{ItemName(old.ItemId)}（换后{cards}/{MaxRootCards}张）：可以选择旧件放当前地面，或先腾出一张卡";
             }
-            // 30 公斤硬线：穿上与交换都发生在本人身上（随身↔穿戴），最终总重与现在相同，不会越线（旧档已超重的也不因换装增加）
+            // 30 公斤硬线按最终本人总重判断：随身↔穿戴不改总重；地面直穿加上新件、旧件放地减去旧件（旧档已超重的不得再增加）
+            var hard = Config.Carry.HardGrams;
+            if (grams > hard && grams > CarriedGramsOf(s, actorId))
+                return $"穿上后携带{Fmt.N(grams / 1000.0)}公斤，将超过{hard / 1000}公斤";
             return null;
         }
 
-        /// <summary>把本人随身五卡里的物品穿进该槽（0 时间、原子；失败不改任何状态；带 requestId 幂等）。目标槽原有物品回本人五卡。</summary>
-        public ActionResult Equip(GameState s, string actorId, int instanceId, string slot, string? requestId = null)
+        /// <summary>
+        /// 把本人随身五卡或当前地面上的物品穿进该槽（0 时间、原子：全部校验通过才一次改 owner，失败不改任何状态；带 requestId 幂等）。
+        /// 目标槽原有物品默认回本人五卡，oldToGround=true 时放当前地面（玩家明确选择）。不复制、不重抽实例属性。
+        /// </summary>
+        public ActionResult Equip(GameState s, string actorId, int instanceId, string slot, string? requestId = null, bool oldToGround = false)
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
-            var why = EquipBlocked(s, actorId, instanceId, slot);
+            var why = EquipBlocked(s, actorId, instanceId, slot, oldToGround);
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, requestId);
             var it = FindItem(s, instanceId)!;
+            var fromGround = OnCurrentGround(s, it);
             var old = WornItem(s, actorId, slot);
             var carried = ItemInstance.CarriedOwner(actorId);
+            var here = s.CurrentLocation;
             if (old != null)
             {
-                old.Owner = carried;
+                old.Owner = oldToGround ? here : carried;
                 old.PlacedOrder = null;
             }
             it.Owner = ItemInstance.EquipOwner(actorId, slot);
             it.PlacedOrder = null;
             Normalize(s, carried);
+            if (fromGround || (old != null && oldToGround)) Normalize(s, here);
             var name = $"{ItemName(it.ItemId)}#{it.InstanceId}";
-            Emit(s, GameEventKind.Info, old == null
-                ? $"装备{name}到{EquipSlots.Name(slot)}。"
-                : $"装备{name}到{EquipSlots.Name(slot)}，换下的{ItemName(old.ItemId)}#{old.InstanceId}回到随身。");
+            var src = fromGround ? $"从{LocName(here)}地面" : "";
+            var oldText = old == null ? "" : $"，换下的{ItemName(old.ItemId)}#{old.InstanceId}{(oldToGround ? $"放在{LocName(here)}地面" : "回到随身")}";
+            Emit(s, GameEventKind.Info, $"{src}装备{name}到{EquipSlots.Name(slot)}{oldText}。");
             UpdateFlags(s);
             return ActionResult.Success();
         }
@@ -217,7 +263,7 @@ namespace Survival.Core.Engine
             return ActionResult.Success();
         }
 
-        /// <summary>这件随身武器能装到哪些武器槽：每槽给出不可用原因（界面“装备到武器Ⅰ/武器Ⅱ”按钮用）。</summary>
+        /// <summary>这件随身或当前地面的武器能装到哪些武器槽：每槽给出不可用原因（旧件默认回随身；界面“装备到武器Ⅰ/武器Ⅱ”按钮用）。</summary>
         public List<(string slot, string? reason)> EquipChoices(GameState s, string actorId, int instanceId) =>
             EquipSlots.Weapons.Select(slot => (slot, EquipBlocked(s, actorId, instanceId, slot))).ToList();
     }

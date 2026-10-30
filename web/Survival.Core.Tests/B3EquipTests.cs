@@ -167,7 +167,10 @@ public class B3EquipTests : BattleTestBase
     {
         var s = New();
         var ground = E.CreateItems(s, "stone_knife", 1, s.CurrentLocation).Single();
-        Assert.That(E.EquipBlocked(s, P0, ground.InstanceId, EquipSlots.Weapon1), Does.Contain("先拾取到随身"), "不从地面直接穿（Q40）");
+        // Q40 选 B（B3a）：当前地面的合法装备可直接穿；其他地点的仍拒绝
+        Assert.That(E.EquipBlocked(s, P0, ground.InstanceId, EquipSlots.Weapon1), Is.Null, "当前地面可直接穿（Q40 选 B）");
+        var away = E.CreateItems(s, "stone_knife", 1, "field").Single();
+        Assert.That(E.EquipBlocked(s, P0, away.InstanceId, EquipSlots.Weapon1), Does.Contain("只能穿上本人随身或当前地面"));
         var lighter = s.Items.First(i => i.IsCarried && i.ItemId == "lighter");
         Assert.That(E.EquipBlocked(s, P0, lighter.InstanceId, EquipSlots.Weapon1), Does.Contain("不是武器"));
         var knife = Give(s, "stone_knife");
