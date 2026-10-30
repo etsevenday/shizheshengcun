@@ -324,6 +324,8 @@ namespace Survival.Core.Engine
                     // 临近上限的溢出（原在网页 ItemDetail 里算，v0.7 起放进内核，卡下按钮与右栏共用）
                     var cfg = plan?.UseItem != null ? _items[plan.UseItem.ItemId] : _items.TryGetValue(r.TargetId, out var tc) ? tc : null;
                     if (cfg?.Use != null) p.Overflow = OverflowLines(s.Stats, cfg.Use, UseHealthAmount(s, cfg.Use));
+                    // Q23：吃掉正在加工的食材，提前写明终止加工与预留释放
+                    if (plan?.UseItem != null && UseCookNote(s, plan.UseItem) is string cookNote) p.Notes.Add(cookNote);
                     break;
                 }
                 case ActionType.Fuse:

@@ -108,6 +108,7 @@ else
             <div class="pot-detail">
                 <div class="lines"><div><span>加工</span><b>@(inst.InContainer && e.IsLiquid(inst) ? e.ContentStatus(s, e.ContainerOf(s, inst) ?? inst) : e.ContentStatus(s, inst))</b></div></div>
                 @if (!e.IsLiquid(inst)) { <div class="risk none">取出：@e.TakeOutConsequenceOf(s, inst).Text</div> }
+                @if (cfg.Use != null && e.UseCookNote(s, inst) is string cookNote) { <div class="risk none">直接@(GameEngine.UseVerb(cfg))：@cookNote</div> }
             </div>
         }
 

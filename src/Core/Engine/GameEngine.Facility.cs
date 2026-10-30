@@ -197,6 +197,23 @@ namespace Survival.Core.Engine
             return PastExpiryButProtected(s, inst) ? " · 受热保护中，已过原保质期，取出即腐败" : " · 受热保护中";
         }
 
+        /// <summary>
+        /// 直接食用一份正在火堆/锅里加工的食材的后果（Q23 选 B，S10 X4 食用与锅进程互斥）：终止它自己的加工、作废已受热、解除保护、
+        /// 释放它自己的预留水；已耗燃料不退、不再产出成品。不在加工中为 null。设施与锅里的食材都是一份一个实例（MoveOne），
+        /// 吃掉即实例消失，SyncFacilities 只移除以它为目标的进程，同锅其他食材与烧水批次不受影响。只读。
+        /// </summary>
+        public string? UseCookNote(GameState s, ItemInstance inst)
+        {
+            if (!(inst.InFacility || inst.InContainer) || IsPot(inst) || IsLiquid(inst)) return null;
+            var p = ProcessOf(s, inst);
+            if (p == null) return null;
+            var cfg = Process(p.RecipeId);
+            var text = $"{ItemName(inst.ItemId)}#{inst.InstanceId}的{cfg.Name}随之终止";
+            if (p.HeatDoneMinutes > 0) text += $"（已受热{p.HeatDoneMinutes}分钟作废{(p.HeatProtected ? "，烹饪保护解除" : "")}）";
+            if (p.ReservedWaterMl > 0) text += $"，释放预留{ItemName(cfg.RequiredLiquid ?? "clean_water")}{p.ReservedWaterMl}毫升";
+            return text + "；已耗燃料不退，不再产出成品";
+        }
+
         /// <summary>生块根放进这口锅后会怎样：燃烧时自动水煮 / 先等水净化 / 缺水只存放 / 锅要放进火堆才加工。</summary>
         public string PotFoodHint(GameState s, ItemInstance pot)
         {

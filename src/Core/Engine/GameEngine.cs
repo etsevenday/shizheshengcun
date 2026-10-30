@@ -551,8 +551,8 @@ namespace Survival.Core.Engine
                     if (cfg.Use == null)
                         return cfg.RequiresCooking ? $"{cfg.Name}需先烹饪，不可直接食用" : "该物品不能直接使用";
                     if (IsSpoiled(s, inst)) return "已腐败，不能食用";
-                    // Q16：受热保护只保这次烹饪能完成，不让已过原保质期的原料被直接吃掉（开发方保守做法）
-                    if (PastExpiryButProtected(s, inst)) return "已过原保质期，只受本次烹饪保护，不能直接食用";
+                    // Q23 选 B（S11 X4、S10 X4、S01 2026-10-30 裁定）：仍在本次有效受热保护中、原物本来可食的实例，过了原保质期也可直接食用，
+                    // 按原物类型结算；食用即终止它自己的加工、释放它自己的预留，见 Start 的 Use 分支与 UseCookNote。
                     if (cfg.Use.IsMedicine && MedicineBlocked(s, cfg.Use) is string medWhy) return medWhy;
                     plan.UseItem = inst;
                     plan.TargetId = inst.ItemId;
@@ -754,6 +754,9 @@ namespace Survival.Core.Engine
                     var inst = p.UseItem!;
                     var cfg = _items[inst.ItemId];
                     var u = cfg.Use!;
+                    // Q23：设施/锅里正在加工的实例被吃掉 = 原子地扣它的真实份额并终止它自己的进程（同锅其他食材的进程不动）；
+                    // 水预留随进程移除释放，已烧掉的燃料与已扣的水不退；进程不在了，不会再产出成品
+                    var cookNote = UseCookNote(s, inst);
                     ConsumeOne(s, inst);
                     if (inst.InContainer || inst.InFacility) SyncFacilities(s);
                     var parts = new List<string>();
@@ -770,7 +773,7 @@ namespace Survival.Core.Engine
                     // 绷带、抗生素、特效药：效果在确认时应用，各自冷却只在对应效果实际生效时启动（v0.6 §11）
                     if (u.IsMedicine) ApplyMedicine(s, u, parts);
                     // 效果在开始时一次结清、不可取消，所以按“行动完成”发事件，界面的结果提示条才会跟着更新
-                    Emit(s, GameEventKind.ActionCompleted, $"{p.Label}：{string.Join("，", parts)}。");
+                    Emit(s, GameEventKind.ActionCompleted, $"{p.Label}：{string.Join("，", parts)}。{(cookNote != null ? cookNote + "。" : "")}");
                     break;
                 }
                 case ActionType.Fuse:

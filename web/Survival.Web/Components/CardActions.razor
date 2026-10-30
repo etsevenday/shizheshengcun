@@ -72,6 +72,8 @@
                 </span>
             </div>
             @if (e.UseRiskText(cfg) is string risk) { <div class="ca-note risk-line">⚠ @risk</div> }
+            @* Q23：吃掉正在火堆/锅里加工的那一份，提前写明终止它的加工、释放它的预留 *@
+            @if (e.FindItem(s, m.UseId.Value) is ItemInstance useIt && e.UseCookNote(s, useIt) is string cookNote) { <div class="ca-note warn">@(GameEngine.UseVerb(cfg))后：@cookNote</div> }
             @if (p.OverflowText is string ov) { <div class="ca-note warn">@ov</div> }
             @if (why != null) { <div class="ca-note bad">@(GameEngine.UseButtonText(cfg))：@why</div> }
         }

@@ -95,7 +95,7 @@ public class V11CookProtectTests : TestBase
         Assert.That(E.ProcessOf(s, root)!.HeatProtected, Is.True, "熄火保留保护");
         Assert.That(E.ProcessOf(s, root)!.HeatDoneMinutes, Is.EqualTo(10), "熄火保留热进度");
         Assert.That(E.IsSpoiled(s, root), Is.False);
-        Assert.That(E.CanStart(s, ActionRequest.UseInstance(root.InstanceId)), Is.Not.Null, "受保护且已过原期限的原料不能直接拿来吃");
+        Assert.That(E.CanStart(s, ActionRequest.UseInstance(root.InstanceId)), Does.Contain("需先烹饪"), "生块根本来不可直接食用：受保护也不能吃（Q23 只放开原本可食的实例）");
 
         // 失败取出：随身超重 → 整次拒绝，保护与进度不变
         E.DebugGive(s, "stone", 1);
@@ -125,6 +125,81 @@ public class V11CookProtectTests : TestBase
         Assert.That(E.DoInstant(t, InstantRequest.TakeOut(tpot.InstanceId, "camp")).Ok, Is.True, "取下整锅");
         Assert.That(E.ProcessOf(t, r2), Is.Null, "整锅取下：锅内进程与保护一并解除");
         Assert.That(E.IsSpoiled(t, r2), Is.False);
+    }
+
+    /// <summary>
+    /// Q23 选 B（S11 X4、S10 X4、S01 2026-10-30 裁定；验收 COMP03、COMP17）：受保护、原本可食、已过原期限的烤肉可直接吃，按原物结算；
+    /// 食用原子：只扣这一份、只终止它自己的复煮进程、只释放它自己的 500 毫升预留；同锅生块根的进程/保护/预留不动；
+    /// 已耗燃料不退、锅里的水不扣；之后不会再出水煮肉；同一请求重发不重复扣。
+    /// </summary>
+    [Test]
+    public void Q23_ProtectedPastExpiryEdible_AtomicOwnProcessOnly()
+    {
+        var (s, pot) = PotOnFire("clean_water", 2);
+        var meat = E.CreateItems(s, "cooked_meat", 1, "camp").Single();
+        meat.ExpiresAt = s.GameMinute + 5;            // 首段内到期
+        Assert.That(E.DoInstant(s, InstantRequest.PutFoodInPot(meat.InstanceId, pot.InstanceId, 1)).Ok, Is.True);
+        var root = RootInPot(s, pot);
+        Assert.That(E.PotReservedMl(s, pot.InstanceId), Is.EqualTo(1000), "两份食材各预留500毫升");
+        Wait(s, 5);
+        var mp = E.ProcessOf(s, meat)!;
+        Assert.That(mp.HeatProtected, Is.True);
+        Assert.That(E.PastExpiryButProtected(s, meat), Is.True, "受保护且已过原期限");
+        Assert.That(E.ProcessOf(s, root)!.HeatProtected, Is.True);
+
+        SetStats(s, 20, 50, 50, 18, 90, 60);
+        var req = ActionRequest.UseInstance(meat.InstanceId).WithRequestId("eat-q23");
+        Assert.That(E.CanStart(s, req), Is.Null, "Q23：受保护期间过原期限仍可直接食用");
+        var pv = E.Preview(s, req);
+        Assert.That(pv.Ok, Is.True, pv.Reason);
+        Assert.That(string.Join("；", pv.Notes), Does.Contain("复煮随之终止").And.Contain("释放预留净水500毫升").And.Contain("已耗燃料不退"));
+
+        var fuel = s.Locations["camp"].Facility.FuelMinutes;
+        var water = E.PotUnits(s, pot.InstanceId);
+        var meatId = meat.InstanceId;
+        Start(s, req);
+        Assert.That(s.Stats.Get(StatId.Satiety), Is.EqualTo(85).Within(1e-9), "按原物（烤肉）结算饱食+35");
+        Assert.That(s.Items.Any(i => i.InstanceId == meatId), Is.False, "只扣这一份");
+        Assert.That(E.AllProcesses(s).Any(p => p.TargetInstanceId == meatId), Is.False, "终止它自己的复煮进程");
+        var rp = E.ProcessOf(s, root)!;
+        Assert.That(rp.HeatProtected, Is.True, "同锅生块根的保护不动");
+        Assert.That(rp.HeatDoneMinutes, Is.EqualTo(5), "同锅生块根的热进度不动");
+        Assert.That(E.PotReservedMl(s, pot.InstanceId), Is.EqualTo(500), "只释放烤肉那份预留");
+        Assert.That(E.PotUnits(s, pot.InstanceId), Is.EqualTo(water), "锅里的水不扣");
+        Assert.That(s.Locations["camp"].Facility.FuelMinutes, Is.EqualTo(fuel), "燃料不退");
+        Assert.That(s.Log.Last().Text, Does.Contain("食用1份烤肉").And.Contain("复煮随之终止"));
+
+        var again = E.Start(s, req);
+        Assert.That(again.Duplicate, Is.True, "同一请求重发不重复扣");
+        Assert.That(E.Start(s, ActionRequest.UseInstance(meatId)).Ok, Is.False, "这一份已不在");
+
+        Run(s);
+        Wait(s, 30);
+        Assert.That(s.Items.Any(i => i.ItemId == "boiled_meat"), Is.False, "不会再产出水煮肉");
+        Assert.That(E.PotFood(s, pot.InstanceId).Single().ItemId, Is.EqualTo("boiled_root"), "生块根照常煮熟");
+    }
+
+    /// <summary>Q23 边界：未受热（只预留）的过期烤肉照常腐败、不能吃；受保护的烤肉取出后解除保护立即腐败、也不能吃。</summary>
+    [Test]
+    public void Q23_UnprotectedOrTakenOutStillSpoiled()
+    {
+        // 锅不在火堆上：只存放，不受热，到期腐败
+        var s = New();
+        var pot = First(s, "pot");
+        var meat = E.CreateItems(s, "cooked_meat", 1, "camp").Single();
+        Assert.That(E.DoInstant(s, InstantRequest.PutFoodInPot(meat.InstanceId, pot.InstanceId, 1)).Ok, Is.True);
+        meat.ExpiresAt = s.GameMinute - 1;
+        Assert.That(E.CanStart(s, ActionRequest.UseInstance(meat.InstanceId)), Is.EqualTo("已腐败，不能食用"));
+
+        // 受保护后取出：按原期限立即腐败
+        var (t, tpot) = PotOnFire("clean_water", 2);
+        var m2 = E.CreateItems(t, "cooked_meat", 1, "camp").Single();
+        m2.ExpiresAt = t.GameMinute + 5;
+        Assert.That(E.DoInstant(t, InstantRequest.PutFoodInPot(m2.InstanceId, tpot.InstanceId, 1)).Ok, Is.True);
+        Wait(t, 5);
+        Assert.That(E.CanStart(t, ActionRequest.UseInstance(m2.InstanceId)), Is.Null);
+        Assert.That(E.DoInstant(t, InstantRequest.TakeOut(m2.InstanceId, "camp")).Ok, Is.True);
+        Assert.That(E.CanStart(t, ActionRequest.UseInstance(m2.InstanceId)), Is.EqualTo("已腐败，不能食用"), "取出先解除保护再判腐败");
     }
 
     /// <summary>S11-A15/R06-A06：复煮在原期限前、后完成都从完成起 1440 分钟；已变质不可开工；水煮肉再存放不加工不刷新。</summary>
