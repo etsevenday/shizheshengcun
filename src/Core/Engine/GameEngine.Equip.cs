@@ -79,7 +79,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 能否把这件物品穿进该槽（只读，按最终状态一次校验；B3 H5、B3a H1/H2）：来源是本人随身五卡，或当前地点地面（Q40 选 B，地面直穿，
-        /// 不先临时进五卡）；本批只有武器能进 weapon1/weapon2；同 kind 已在另一武器槽 →“已装备同类型武器：名称”；新旧件都不能被预留或行动占用。
+        /// 不先临时进五卡）；槽位按物品 equipSlot（B4 H2：七槽全开放）；同 kind 已在另一武器槽 →“已装备同类型武器：名称”；新旧件都不能被预留或行动占用。
         /// 目标槽已有物品：oldToGround=false 旧件回本人随身（默认），按最终卡数校验，放不下时提示可选“旧件放当前地面”；oldToGround=true 是玩家明确选的放当前地面。
         /// 涉及地面（地面来源或旧件放地）时沿拾取/放下的地面操作条件。最终本人总重不得超过 30 公斤硬线（旧档已超重的不得再增加）。
         /// </summary>
@@ -96,9 +96,14 @@ namespace Survival.Core.Engine
             if (it.Owner != ItemInstance.CarriedOwner(actorId) && !fromGround)
                 return it.IsWorn ? "穿在别人身上，不能直接穿上" : "只能穿上本人随身或当前地面的装备：其他地方的先拿到当前地点";
             var w = Weapon(it.ItemId);
-            if (!EquipSlots.IsWeaponSlot(slot))
-                return $"{EquipSlots.Name(slot)}槽暂未开放：本批只有武器能穿戴（防具、饰品与衣物在后续批次）";
-            if (w == null || w.IsFists) return $"{ItemName(it.ItemId)}不是武器，不能放进{EquipSlots.Name(slot)}";
+            // B4 H2：七槽全开放，按物品的 equipSlot 匹配（武器→武器Ⅰ/Ⅱ，防具、战斗饰品、上衣、下衣、求生饰品各一槽）
+            var allowed = SlotsFor(it.ItemId);
+            if (!allowed.Contains(slot))
+            {
+                if (allowed.Count == 0)
+                    return EquipSlots.IsWeaponSlot(slot) ? $"{ItemName(it.ItemId)}不是武器，不能放进{EquipSlots.Name(slot)}" : $"{ItemName(it.ItemId)}不是装备，不能穿戴";
+                return $"{ItemName(it.ItemId)}只能装备到{string.Join("或", allowed.Select(EquipSlots.Name))}";
+            }
             if (it.ReservedBy != null) return "该物品已被预留";
             if (IsLocked(s, it)) return "行动占用：该物品正被当前行动使用";
             if (it.Count != 1) return "一次只能穿上一件";
@@ -108,8 +113,8 @@ namespace Survival.Core.Engine
                 var g = GroundEquipBlocked(s, fromGround);
                 if (g != null) return g;
             }
-            var other = WornItem(s, actorId, OtherWeaponSlot(slot));
-            if (other != null && WeaponKindOf(other.ItemId) == w.WeaponKind)
+            var other = EquipSlots.IsWeaponSlot(slot) ? WornItem(s, actorId, OtherWeaponSlot(slot)) : null;
+            if (other != null && w != null && WeaponKindOf(other.ItemId) == w.WeaponKind)
                 return $"已装备同类型武器：{ItemName(other.ItemId)}（{EquipSlots.Name(OtherWeaponSlot(slot))}，{WeaponKinds.Name(w.WeaponKind)}类最多1件）";
             var (grams, cards) = EquipOutcome(s, actorId, it, slot, oldToGround);
             if (old != null)
@@ -273,8 +278,27 @@ namespace Survival.Core.Engine
             return ActionResult.Success();
         }
 
-        /// <summary>这件随身或当前地面的武器能装到哪些武器槽：每槽给出不可用原因（旧件默认回随身；界面“装备到武器Ⅰ/武器Ⅱ”按钮用）。</summary>
-        public List<(string slot, string? reason)> EquipChoices(GameState s, string actorId, int instanceId) =>
-            EquipSlots.Weapons.Select(slot => (slot, EquipBlocked(s, actorId, instanceId, slot))).ToList();
+        /// <summary>
+        /// 这件随身或当前地面的装备能装到哪些槽：武器为武器Ⅰ/Ⅱ，其余为各自一槽（B4 H2）；每槽给出不可用原因（旧件默认回随身；界面“装备到××”按钮用）。
+        /// 不是装备为空表。
+        /// </summary>
+        public List<(string slot, string? reason)> EquipChoices(GameState s, string actorId, int instanceId)
+        {
+            var it = FindItem(s, instanceId);
+            if (it == null) return new List<(string, string?)>();
+            return SlotsFor(it.ItemId).Select(slot => (slot, EquipBlocked(s, actorId, instanceId, slot))).ToList();
+        }
+
+        /// <summary>物品能进的穿戴槽（按配置 equipSlot；武器=武器Ⅰ/Ⅱ；拳与非装备为空）。</summary>
+        public List<string> SlotsFor(string itemId)
+        {
+            var cfg = _items.TryGetValue(itemId, out var c) ? c : null;
+            if (cfg?.EquipSlot == null) return new List<string>();
+            if (cfg.EquipSlot == "weapon") return Weapon(itemId) is WeaponConfig w && !w.IsFists ? EquipSlots.Weapons.ToList() : new List<string>();
+            return EquipSlots.IsValid(cfg.EquipSlot) ? new List<string> { cfg.EquipSlot } : new List<string>();
+        }
+
+        /// <summary>能穿戴（有合法槽位）。</summary>
+        public bool IsWearable(string itemId) => SlotsFor(itemId).Count > 0;
     }
 }

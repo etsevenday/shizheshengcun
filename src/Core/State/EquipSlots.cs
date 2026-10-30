@@ -5,7 +5,7 @@ namespace Survival.Core.State
     /// <summary>
     /// 每角色七个穿戴槽（S06 2026-10-30 全系统更新目标 §1、R02 §1、A05 §5）：武器×2、防具、战斗饰品、上衣、下衣、求生饰品。
     /// 穿戴物的 owner 为 "equip:&lt;actorId&gt;:&lt;槽ID&gt;"（ItemInstance.EquipOwner），不占五张物资卡，重量计入本人。
-    /// 本批（开发计划 v0.9 B3）只有武器能穿进 weapon1/weapon2，其余五槽是空结构。界面名取 R02 总案写法。
+    /// B4 起七槽全开放：物品按配置 equipSlot 进对应槽（武器→weapon1/weapon2）。界面名取 R02 总案写法。
     /// </summary>
     public static class EquipSlots
     {

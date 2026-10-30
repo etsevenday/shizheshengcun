@@ -692,7 +692,8 @@ namespace Survival.Core.Engine
                 string? why = null;
                 if (id != "desperate_punch")
                 {
-                    if (wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand)) why = $"{w.Name}耐久不足（{DurabilityText(wi)}）";
+                    if (!w.CanAttack) why = SkillLockedReason(w);
+                    else if (wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand)) why = $"{w.Name}耐久不足（{DurabilityText(wi)}）";
                     else if (!AmmoReady(s, w, wi, Math.Max(1, a.AmmoCost))) why = w.UsesMagazine ? "弹仓空了：先装填" : $"随身没有{ItemName(w.AmmoId!)}";
                 }
                 list.Add(new BattleCommandOption
@@ -805,6 +806,7 @@ namespace Survival.Core.Engine
                 }
             }
             // 攻击类
+            if (c.Action != "desperate_punch" && !w.CanAttack) return SkillLockedReason(w);
             if (c.Action != "basic_attack" && c.Action != "desperate_punch" && a.Skills.Count > 0 && !a.Skills.Contains(w.SkillId))
                 return $"当前武器（{w.Name}）不能用{ActionName(c.Action)}";
             if (a.WeaponId != null && a.WeaponId != w.Id) return $"{ActionName(c.Action)}需要{_weapons[a.WeaponId].Name}";
@@ -974,7 +976,20 @@ namespace Survival.Core.Engine
             return front.Take(Math.Max(1, a.MaxTargets)).ToList();
         }
 
-        private double NoiseGain(WeaponConfig w) => w.SkillId == "firearms" ? Config.Noise.GunGain : w.Id == "crossbow" ? Config.Noise.CrossbowGain : Config.Noise.BowAndMeleeGain;
+        /// <summary>
+        /// 盾、指挥、医疗器具（B4 H2）：可穿进武器槽、占各自 kind，但对应技能在 B5/B7 才上线，现在不能用它攻击；通用指令与勉强拳击规则照旧。
+        /// </summary>
+        public static string SkillLockedReason(WeaponConfig w) =>
+            $"{w.Name}是{WeaponKinds.Name(w.WeaponKind)}，它的技能尚未开放，现在不能用它攻击（可切换武器页）";
+
+        /// <summary>
+        /// 一次攻击的噪声增量（B4 H7 配置化）：枪械类按 noise.gunGain（A01 枪 +25），用弩矢的弩按 noise.crossbowGain（A01 弩 +5），
+        /// 弓与近战按 noise.bowAndMeleeGain（0）。新枪弩（勤务手枪、精校步枪、轻型战术弩）A05 没写噪声，按同类沿用（待确认）。
+        /// </summary>
+        public double NoiseGain(WeaponConfig w) =>
+            w.WeaponKind == "firearms" || w.SkillId == "firearms" ? Config.Noise.GunGain
+            : w.AmmoId == "bolt" ? Config.Noise.CrossbowGain
+            : Config.Noise.BowAndMeleeGain;
 
         /// <summary>撤退率 sigmoid((己方有效速度−敌方最高有效速度)/3+0.7)×恐慌惩罚×低体力惩罚，结果自然在0—1。</summary>
         public (double chance, double energy, bool lowEnergy) RetreatChance(GameState s, BattleState b, CombatActionConfig? a = null)

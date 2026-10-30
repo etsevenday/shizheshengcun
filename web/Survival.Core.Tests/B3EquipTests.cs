@@ -174,7 +174,7 @@ public class B3EquipTests : BattleTestBase
         var lighter = s.Items.First(i => i.IsCarried && i.ItemId == "lighter");
         Assert.That(E.EquipBlocked(s, P0, lighter.InstanceId, EquipSlots.Weapon1), Does.Contain("不是武器"));
         var knife = Give(s, "stone_knife");
-        Assert.That(E.EquipBlocked(s, P0, knife.InstanceId, EquipSlots.Armor), Does.Contain("暂未开放"));
+        Assert.That(E.EquipBlocked(s, P0, knife.InstanceId, EquipSlots.Armor), Does.Contain("只能装备到武器Ⅰ或武器Ⅱ"), "B4 起七槽开放，按 equipSlot 匹配");
         knife.ReservedBy = 99;
         Assert.That(E.EquipBlocked(s, P0, knife.InstanceId, EquipSlots.Weapon1), Does.Contain("预留"));
         knife.ReservedBy = null;
