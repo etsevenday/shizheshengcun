@@ -275,7 +275,7 @@ else if (b != null)
                     <div class="hp-line" title="健康"><span>♥</span><b>@Ui.N(en.Hp)/@Ui.N(ec.Hp)</b></div>
                     <div class="track"><i style="width:@Ui.Bar(en.Hp, ec.Hp)%"></i></div>
                     <div class="intent @(en.Intent is "bite" ? "bite" : en.Intent is "flee" or "watch" or "guard" ? "calm" : "")" title="本轮公开意图（轮初锁定，不公开伤害抽值）">
-                        <span class="intent-ico">@IntentIcon(en.Intent)</span>@en.IntentLabel
+                        <span class="intent-ico">@IntentIcon(en.Intent)</span>@NoBreakRange(en.IntentLabel)
                     </div>
                 </div>
             </div>
@@ -401,6 +401,9 @@ else if (b != null)
         G.PickBattleAction("switch_weapon");
         G.OpenPop("switch", "", "cmd-switch");
     }
+
+    /// <summary>意图里的伤害区间“0.70—1.10”不在破折号处折行（破折号两侧加 U+2060 不断行符，只影响显示，B2a M94）。</summary>
+    private static string NoBreakRange(string label) => label.Replace("—", "\u2060—\u2060");
 
     private static string IntentIcon(string intent) => intent switch
     {

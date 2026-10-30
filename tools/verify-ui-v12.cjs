@@ -14,6 +14,9 @@
 //   fuelfull 营地：同 full，燃料满240、床垫已建
 //   hardware 五金店：资源卡（可搜/已搜空、不能开始的原因）
 //   field    农野荒地：块根地、荒地纤维丛（长名+存量角标+日补）、可能有游荡尸敌踪卡（M90 加）
+//   battle   首战两行战斗（B2a M94 加）：默认、选技能瞄准、悬停目标、选中敌卡、最长意图文案“咬击 0.70—1.10（可能感染）”；
+//            测敌卡信息栏不溢出、文字到可见框内缘 ≥8px。两行战斗面板标题/操作台标签离铁框不足是 B2 已记录项，只记在 known 不判失败。
+//   环境变量 SCENES=new,full… 只跑部分场景。
 // 每个场景测默认、选地面卡、选随身最长名卡、选火堆、选火堆里的锅、悬停地面卡，键盘聚焦锅/直烤（Q35）、第一档切屏高800/801（Q35），开地图/制作面板。
 // 测量口径（S14 截图复核 §B）：
 //   - 火堆外框与同组遮蔽棚/床垫顶、底各差 ≤1px，各状态前后火堆高度不变（UI-M04）。
@@ -210,6 +213,16 @@ async function resizeKeep(w, h) {
 let campBase = null;
 async function loadScene(scene, fixtures) {
   if (scene === 'new') { await loadState(null); await readDialogues(); return; }
+  if (scene === 'battle') {
+    // 首战（两行战斗）：新局读完开场对白 → 前往农野荒地 → 读完首战对白
+    await loadState(null); await readDialogues();
+    await clickSel('.map-adjacent .loc-card');
+    if (!await clickText('确认移动')) throw new Error('找不到“确认移动”');
+    if (!await waitFor(`!!document.querySelector('.bt-team') || !!document.querySelector('.dlg-layer')`, 60000)) throw new Error('没进入首战');
+    await readDialogues();
+    if (!await waitFor(`!!document.querySelector('.bt-team')`, 10000)) throw new Error('没进入两行战斗');
+    await sleep(400); return;
+  }
   if (scene === 'hardware') {
     await loadState(fixtures.hardware);
     if (await ev(`!!document.querySelector('.overflow-layer')`)) {
@@ -254,7 +267,7 @@ const MEASURE = `(() => {
     }
     return parseFloat(cs.borderTopWidth) || 0;
   };
-  const issues = [];
+  const issues = [], known = [];
   const label = e => { const c = e.closest('.card.item, .ocard, .pot-card, .fc-food, .apop, .panel, .section'); const t = c && (c.getAttribute('aria-label') || (c.querySelector('.ctitle span, .oc-head b, .pc-title b, .pc-name, .apop-title') || {}).innerText || c.className); return String(t || '').trim().replace(/\\s+/g, ' ').slice(0, 16); };
   // 1 火堆与同组设施等高（UI-M04）
   const fire = document.querySelector('.fire-card');
@@ -396,7 +409,8 @@ const MEASURE = `(() => {
       if (d - 6 < minD) { minD = d - 6; worst = { text: '[' + (b.getAttribute('aria-label') || b.innerText || b.className).trim().slice(0, 10) + ']', d: f1(d), need: 6, badge: true }; }
     }
     if (worst) safety.push({ box: label(B), cls: String(B.className).split(' ').slice(0, 2).join('.'), frame: f1(fb), ...worst });
-    if (worst && worst.d < worst.need - 0.5) issues.push('安全区 ' + label(B) + '「' + worst.text + '」距框内缘' + worst.d + 'px<' + worst.need);
+    // 两行战斗的队伍面板标题、操作台“装备”标签离铁框不足 8px 是 B2 已记录的已知项（两行战斗由 B9 全屏战斗取代），只记录不判失败
+    if (worst && worst.d < worst.need - 0.5) (B.matches('.battle-overlay') ? known : issues).push('安全区 ' + label(B) + '「' + worst.text + '」距框内缘' + worst.d + 'px<' + worst.need);
   }
   // 3 物品卡：名称与箭头不相交；卡片外缘不压行框
   for (const c of [...document.querySelectorAll('.center .card.item')].filter(vis)) {
@@ -468,6 +482,25 @@ const MEASURE = `(() => {
       const bd = first.querySelector('.oc-badge'); if (bd && vis(bd)) { const b = R(bd); if (b.r > z.r + 0.5 || b.x < z.x - 0.5) issues.push('相邻地点访问角标被截'); }
     }
   }
+  // 4d B2 遗留（B2a M94）：两行战斗敌卡信息栏（健康/意图）不溢出卡面，文字到敌卡可见框内缘 ≥8px（不缩字）
+  const foes = [];
+  for (const f of [...document.querySelectorAll('.bt-scene .foe')].filter(vis)) {
+    const fb = frameOf(f), fr = R(f); const inner = { x: fr.x + fb, y: fr.y + fb, r: fr.r - fb, b: fr.b - fb };
+    const body = f.querySelector('.foe-body'); if (!body) continue;
+    const name = (f.querySelector('.foe-head b') || {}).innerText || '敌卡';
+    if (body.scrollHeight > body.clientHeight + 1) issues.push('敌卡信息栏溢出 ' + name + ' ' + body.scrollHeight + '>' + body.clientHeight);
+    const main = f.querySelector('.foe-main'); if (main && R(body).b > R(main).b + 0.5) issues.push('敌卡信息栏越出卡面 ' + name);
+    let minD = Infinity, worst = '';
+    const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (!n.textContent.trim() || !vis(n.parentElement)) continue;
+      const rg = document.createRange(); rg.selectNodeContents(n);
+      for (const r0 of rg.getClientRects()) { const r = isect(rr(r0), fr); if (!r || r.w < 1 || r.h < 1) continue;
+        const d = Math.min(r.x - inner.x, inner.r - r.r, r.y - inner.y, inner.b - r.b); if (d < minD) { minD = d; worst = n.textContent.trim().slice(0, 12); } }
+    }
+    foes.push({ name, w: f1(fr.w), h: f1(fr.h), minD: f1(minD), worst });
+    if (minD < 7.5) issues.push('敌卡文字距可见框内缘 ' + name + '「' + worst + '」' + f1(minD) + 'px<8');
+  }
   // 5 选卡浮窗：在视口内、不撑高行、不压所选卡主图
   let pop = null;
   const pe = document.querySelector('.apop'); if (pe && vis(pe)) {
@@ -479,7 +512,7 @@ const MEASURE = `(() => {
   const grid = document.querySelector('.center-scroll.four');
   const tracks = grid ? getComputedStyle(grid).gridTemplateRows.split(' ').map(parseFloat) : [];
   if (tracks.length === 4 && Math.max(...tracks) - Math.min(...tracks) > 1) issues.push('四行不等高：' + tracks.join(','));
-  return { viewport: [innerWidth, innerHeight], tracks, fire: fireInfo, firstScreen, q34, q35, q36, textChecked, safety: safety.sort((a, b) => (a.d - a.need) - (b.d - b.need)).slice(0, 12), arts, pop, issues };
+  return { viewport: [innerWidth, innerHeight], tracks, fire: fireInfo, firstScreen, q34, q35, q36, foes, known, textChecked, safety: safety.sort((a, b) => (a.d - a.need) - (b.d - b.need)).slice(0, 12), arts, pop, issues };
 })()`;
 
 const FOLD = `(() => { const g = k => { const sec = document.querySelector('[data-fold=' + k + ']'); const b = sec && sec.querySelector('.fold-head'); return b ? { open: sec.classList.contains('open'), disabled: b.disabled } : null; };
@@ -499,7 +532,7 @@ const FOLD = `(() => { const g = k => { const sec = document.querySelector('[dat
     await connect();
     await send('Page.enable'); await send('Runtime.enable');
     const fixtures = fs.existsSync(FIXTURES) ? JSON.parse(fs.readFileSync(FIXTURES, 'utf8')) : {};
-    const scenes = (process.env.SCENES || 'new,empty,full,fuelfull,hardware,field').split(',');
+    const scenes = (process.env.SCENES || 'new,empty,full,fuelfull,hardware,field,battle').split(',');
     const fireW0 = {};
     for (const [w, h] of SIZES) {
       await size(w, h);
@@ -521,10 +554,23 @@ const FOLD = `(() => { const g = k => { const sec = document.querySelector('[dat
             const file = await shot(`${scene}-${w}-${name}`);
             rec.states.push({ name, did, pass: m.issues.length === 0, screenshot: file, ...m });
             console.log(`${m.issues.length ? 'FAIL' : 'PASS'} ${w}x${h} ${scene} ${name}${did ? '' : '（未执行到）'}` +
-              (m.fire ? ` 火堆高${m.fire.h}/棚床差${m.fire.maxDiff}` : '') + (m.issues.length ? '：' + [...new Set(m.issues)].join('；') : ''));
+              (m.fire ? ` 火堆高${m.fire.h}/棚床差${m.fire.maxDiff}` : '') + (m.issues.length ? '：' + [...new Set(m.issues)].join('；') : '') + (m.known && m.known.length ? '（已知未修：' + [...new Set(m.known)].join('；') + '）' : ''));
             save();
           };
           await step('default', async () => true);
+          if (scene === 'battle') {
+            // B2 遗留（B2a M94）：两行战斗敌卡意图长文案不溢出、文字到可见内缘 ≥8px；选技能瞄准、悬停目标、Esc 取消前后都测
+            await step('battle-aim', () => clickSel('.bc-group.skills .cmdt:not(.off)'));
+            await step('battle-hover-foe', () => hoverSel('.foe.targetable'));
+            await key('Escape');
+            await step('battle-select-foe', () => clickSel('.foe'));
+            // 最长意图文案（咬击带“可能感染”，轮初随机抽到）：把首个敌卡意图文字换成该文案测排版（只改显示文字，不改战斗状态）
+            await step('battle-long-intent', () => ev(`(() => { const it = document.querySelector('.bt-scene .foe .intent'); if (!it) return false;
+              const tn = [...it.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim()).pop(); if (!tn) return false;
+              tn.textContent = '咬击 0.70\\u2060—\\u20601.10（可能感染）'; it.classList.add('bite');
+              return true; })()`));
+            continue;
+          }
           await step('hover-ground', () => hoverSel('.section.ground .card.item'));
           await step('select-ground', () => clickSel('.section.ground .card.item'));
           await closeLayers();

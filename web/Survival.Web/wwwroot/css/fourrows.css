@@ -835,3 +835,13 @@
   }
   .center-scroll.four .facility-row .res-card { width: 166px; }
 }
+
+/* ───── B2 遗留（B2a M94）：两行战斗敌卡意图长文案（如“咬击 0.70—1.10（可能感染）”）在 1280×720 折成三行、贴下边框、信息栏溢出约3px ─────
+   意图图标与文字同一行排（图标不再单独占一行），长文案最多两行；字号不变。信息栏底部留足到可见框内缘 ≥8px。 */
+.bt-scene .foe .intent { display: block; padding: 2px 4px; }
+.bt-scene .foe .intent .intent-ico { display: inline-flex; vertical-align: middle; margin: -2px 4px 0 0; }
+.bt-scene .foe .foe-body { overflow: hidden; }
+@media (max-height: 800px) {
+  /* 1280×720 敌卡约230px宽：信息栏最多占卡宽62%（原55%），“[图标] 咬击 0.70—1.10”一行、“（可能感染）”第二行，主图按高度适配不受影响 */
+  .bt-scene .foe-body { max-width: 62%; }
+}
