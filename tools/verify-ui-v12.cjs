@@ -171,6 +171,7 @@ function stage(json, mode) {
     add('active_substance_white_unidentified', 1, 'camp');
     add('antiviral_precursor', 1, 'camp');
     add('cooked_root', 3, 'camp', { ExpiresAt: s.GameMinute + 1440 });
+    add('cooked_root', 1, 'camp', { ExpiresAt: s.GameMinute + 4320 });   // 地面同物品第二批（M95：手动选批后的转移提示）
   }
   s.NextInstanceId = id;
   return JSON.stringify(s);
@@ -348,7 +349,7 @@ const MEASURE = `(() => {
     const sm = h.querySelector('.pc-title small'); const tipT = h.getAttribute('data-tip') || ''; const ttl = h.getAttribute('title') || '';
     const shown = sm && vis(sm) && sm.scrollWidth <= sm.clientWidth + 1;
     if (!shown) { q35.potHidden++; if (!/#\\d+/.test(tipT) || !/公斤/.test(tipT) || !/#\\d+/.test(ttl)) issues.push('锅编号/重量不常驻但提示缺全文'); }
-    if (!compact && !(sm && vis(sm))) issues.push('屏高≥801 锅“#编号·重量”未常驻');
+    if (!compact && !(sm && vis(sm) && /#\\d+.*公斤/.test(sm.textContent) && sm.scrollWidth <= sm.clientWidth + 1)) issues.push('屏高≥801 锅“#编号·重量”未完整常驻：' + (sm ? sm.textContent : ''));
   }
   for (const f of [...document.querySelectorAll('.center .fire-card .fc-food')].filter(vis)) {
     const st = f.querySelector('.pc-status'); const tipT = f.getAttribute('data-tip') || ''; const ttl = f.getAttribute('title') || '';
@@ -582,6 +583,20 @@ const FOLD = `(() => { const g = k => { const sec = document.querySelector('[dat
           await step('select-fire', () => clickSel('.fire-card .fc-fuel'));
           await closeLayers();
           await step('select-pot-in-fire', () => clickSel('.pot-card.in-fire .pc-head'));
+          await closeLayers();
+          // M95：地面同物品两批，未手动选批时提示“先取最早到期的有效批次”，在右栏手动选较晚一批后改写“转移所选批次”
+          if (scene === 'full') await step('ground-batch-pick', async () => {
+            const i = await ev(`[...document.querySelectorAll('.section.ground .card.item')].findIndex(c => c.innerText.includes('烤熟块根'))`);
+            if (i < 0 || !await clickSel('.section.ground .card.item', i)) return false;
+            const note = () => ev(`[...document.querySelectorAll('.apop .ca-note')].map(e => e.innerText).join(' / ')`);
+            const a = await note();
+            if (!await clickSel('.detail button.batch:not(.on)')) return false;
+            await sleep(300); const b = await note();
+            const issues = [];
+            if (!/最早到期/.test(a)) issues.push('未选批时转移提示应写最早到期：' + a);
+            if (!/所选批次/.test(b) || /最早到期/.test(b)) issues.push('手动选批后转移提示应写所选批次：' + b);
+            return { issues };
+          });
           await closeLayers();
           // Q35（UI-B2-35a）：键盘聚焦火堆里的锅/直烤食材，浮出提示写锅编号与重量、加工位编号的全文（提示内容本身在 MEASURE 里核对）
           await step('focus-pot-key', () => focusTip('.pot-card.in-fire .pc-head', /#\d+.*公斤/));

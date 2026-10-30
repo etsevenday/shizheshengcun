@@ -46,8 +46,8 @@
              title="@($"{potTip}：点击展开锅里的水与食材并操作；按住标题拖动整锅（水与食材随行）")" data-tip="@potTip"
              @onclick="SelectPot" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, SelectPot)" @onkeydown:stopPropagation="true">
             <span class="pc-icon">@Icons.Markup(Pot.ItemId)</span>
-            @* 卡面窄：名称不带实例号，实例号与重量放第二行（M78：1280 随身行锅名被截成“金…”） *@
-            <span class="pc-title"><b>@e.ItemName(Pot.ItemId)</b><small>#@Pot.InstanceId · @(Pot.InFacility ? "整锅" : $"{Ui.Kg(e.ItemGrams(s, Pot))}公斤")</small></span>
+            @* 卡面窄：名称不带实例号，实例号与重量放第二行（M78：1280 随身行锅名被截成“金…”）；火堆加工位里也写单锅重量（含锅内，M95：Q35“≥801 照常显示”） *@
+            <span class="pc-title"><b>@e.ItemName(Pot.ItemId)</b><small>#@Pot.InstanceId · @(Ui.Kg(e.ItemGrams(s, Pot)))公斤</small></span>
             @if (Pot.InFacility)
             {
                 <button type="button" class="row-arrow" aria-label="@($"把整口{name}取到随身")" title="取到随身：整锅连同水与食材（不打开操作窗；点标题可选目的地）"

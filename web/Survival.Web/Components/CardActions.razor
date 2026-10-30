@@ -319,12 +319,14 @@
                 var available = chosen.Reserved ? 0 : chosen.Count;
                 var head = chosen.Stacks.FirstOrDefault(i => i.ReservedBy == null);
                 var batchPick = batches.Count > 1 && sel.Owner == ItemInstance.Carried;
+                // M95：玩家在右栏手动选过批次（会话里的所选批次就是这一批）时，提示如实写“所选批次”，没选过才写默认的“最早到期的有效批次”
+                var manualBatch = G.SelectedBatchKey != null && chosen.Key == G.SelectedBatchKey;
                 return new Model($"grp:{sel.Owner}:{sel.Id}", sel.Id, sel.Id, e.ItemName(sel.Id), from, available, available == 1 ? Mode.Single : Mode.Stack)
                 {
                     ToCarried = toCarried, Owner = sel.Owner, ExpiresAt = chosen.ExpiresAt, BatchKey = chosen.Key, UnitGrams = e.Item(sel.Id).WeightGrams,
                     Max = toCarried ? G.MaxPickup(sel.Id, available, head) : available, UseId = UseOf(useInst), Head = head,
                     Batches = batchPick ? batches : null,
-                    Hint = batches.Count > 1 && !batchPick ? $"共{batches.Count}批，转移先取最早到期的有效批次（{BatchFresh(chosen)}）" : null,
+                    Hint = batches.Count > 1 && !batchPick ? (manualBatch ? $"共{batches.Count}批，转移所选批次（{BatchFresh(chosen)}）" : $"共{batches.Count}批，转移先取最早到期的有效批次（{BatchFresh(chosen)}）") : null,
                 };
             }
         }
