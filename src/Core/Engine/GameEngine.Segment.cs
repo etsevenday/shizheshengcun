@@ -39,11 +39,14 @@ namespace Survival.Core.Engine
             _ => "wait",
         };
 
-        /// <summary>按段首状态计算本段速率、工作倍率、归零伤害与自然恢复（求生案 01/02/04/05）。</summary>
-        public SegmentContext ComputeSegment(GameState s, ActionState a)
+        /// <summary>按段首状态计算主角本段速率、工作倍率、归零伤害与自然恢复（求生案 01/02/04/05）。</summary>
+        public SegmentContext ComputeSegment(GameState s, ActionState a) => ComputeSegment(s, a, s.Player);
+
+        /// <summary>按某角色的段首状态计算本段速率（R08 §2：各角色身体各自结算；同行者的行动类型见 CompanionAction）。</summary>
+        public SegmentContext ComputeSegment(GameState s, ActionState a, ActorState actor)
         {
             var ctx = new SegmentContext();
-            var st = s.Stats;
+            var st = actor.Stats;
             var loc = s.CurrentLocation;
             var locCfg = _locs[loc];
             var fac = s.Locations[loc].Facility;
@@ -69,7 +72,7 @@ namespace Survival.Core.Engine
             if ((a.Type == ActionType.Rest || a.Type == ActionType.Sleep) && ctx.Rates.Energy > 0
                 && c.Thresholds["morale"].IsBelow(st.Morale))
                 ctx.Rates.Energy *= c.FacilityEffects.LowMoraleEnergyRecoveryFactor;
-            if (s.DiarrheaUntil.HasValue && s.DiarrheaUntil.Value > s.GameMinute)
+            if (actor.DiarrheaUntil.HasValue && actor.DiarrheaUntil.Value > s.GameMinute)
                 ctx.Rates.Hydration += c.ItemActions.DiarrheaExtraHydrationPerHour;
 
             // 归零伤害：段首为0才计（求生案 02 统一伤害计算）
@@ -91,13 +94,26 @@ namespace Survival.Core.Engine
 
             if (ctx.IsWork)
             {
-                ctx.Factor = WorkFactor(s, a.Type, ctx.FactorReasons);
+                ctx.Factor = WorkFactor(s, actor, a.Type, ctx.FactorReasons);
             }
             return ctx;
         }
 
-        /// <summary>M = min(上限, 夜间×负重×低体力)。移动始终视为无照明；其他工作在火堆燃烧的地点不吃夜间系数。</summary>
-        public double WorkFactor(GameState s, ActionType type, List<string>? reasons = null)
+        /// <summary>
+        /// 执行者以外的同行者本段按什么行动计速率（R08 §2“S01统一一名执行者，其他同行wait，移动全员travel，休息睡眠同计划各自条件”）。
+        /// </summary>
+        public static ActionState CompanionAction(ActionState a)
+        {
+            var c = a.Clone();
+            if (a.Type != ActionType.Travel && a.Type != ActionType.Rest && a.Type != ActionType.Sleep) c.Type = ActionType.Wait;
+            return c;
+        }
+
+        /// <summary>M = min(上限, 夜间×负重×低体力)（主角）。</summary>
+        public double WorkFactor(GameState s, ActionType type, List<string>? reasons = null) => WorkFactor(s, s.Player, type, reasons);
+
+        /// <summary>M = min(上限, 夜间×负重×低体力)。移动始终视为无照明；其他工作在火堆燃烧的地点不吃夜间系数。负重与体力按该角色本人。</summary>
+        public double WorkFactor(GameState s, ActorState actor, ActionType type, List<string>? reasons = null)
         {
             var c = Config.WorkFactors;
             double f = 1;
@@ -109,12 +125,12 @@ namespace Survival.Core.Engine
                 f *= c.Night;
                 reasons?.Add($"夜间无照明 ×{c.Night}");
             }
-            if (CarriedGrams(s) > Config.Carry.SoftGrams)
+            if (CarriedGramsOf(s, actor.Id) > Config.Carry.SoftGrams)
             {
                 f *= c.Overweight;
                 reasons?.Add($"负重超过{Config.Carry.SoftGrams / 1000}公斤 ×{c.Overweight}");
             }
-            if (Config.Thresholds["energy"].IsBelow(s.Stats.Energy))
+            if (Config.Thresholds["energy"].IsBelow(actor.Stats.Energy))
             {
                 f *= c.LowEnergy;
                 reasons?.Add($"体力低于{Fmt.T(Config.Thresholds["energy"].Value)} ×{c.LowEnergy}");
@@ -152,7 +168,8 @@ namespace Survival.Core.Engine
 
             // 1–3. 段首计算角色本段速率，再做一次世界 tick（身体、燃料、设施、免疫、病毒、终局、刷新）
             var ctx = ComputeSegment(s, a);
-            if (!WorldTick(s, ctx, a, false)) return new SegmentResult(SegmentStatus.Dead);
+            var companion = CompanionAction(a);
+            if (!WorldTick(s, actor => actor.IsPlayer ? ctx : ComputeSegment(s, companion, actor), a, false)) return new SegmentResult(SegmentStatus.Dead);
 
             // 4. 累积进度
             bool done;
@@ -199,42 +216,45 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 单段世界 tick（v0.6 §16 建议顺序）：段首快照 → 身体/燃料/药物时间/免疫/病毒 → 终局判定 → 自然治愈 →
         /// 清理及资源恢复 → 设施加工提交（死亡先于本段未提交产物）→ 敌人刷新/巡游。主行动推进与战斗轮末都调用它，每段只结算一次。
-        /// 返回 false 表示本段死亡或尸变（已锁局）。
+        /// 多角色（R08 §2、COMP04，开发计划 v0.9 B3 H10）：世界部分（时间、燃料、设施、清理、刷新）每段只推进一次；
+        /// 身体部分对 Party 每人各结算一次（ApplyRates/TickBody/终局/自然治愈），速率由 ctxOf 按各自段首状态给出。只有主角时与单人版逐段一致。
+        /// 返回 false 表示本段主角死亡或尸变（已锁局）。
         /// </summary>
-        private bool WorldTick(GameState s, SegmentContext ctx, ActionState? running, bool battle)
+        private bool WorldTick(GameState s, Func<ActorState, SegmentContext> ctxOf, ActionState? running, bool battle)
         {
+            var party = s.PartyActors.ToList();
+            var ctxs = party.Select(ctxOf).ToList();
             // 段首：火堆加工资格与身体快照（免疫、病毒按段首状态计算）
             SyncFacilities(s);
             var snap = SnapshotFacilities(s, running);
-            var start = TickStart.Capture(s);
+            var starts = party.Select(actor => TickStart.Capture(s, actor)).ToList();
 
             // 身体变化（每小时速率 × 5/60），按项上限夹紧
-            var h = Tick / 60.0;
-            s.Stats.Add(StatId.Satiety, ctx.Rates.Satiety * h);
-            s.Stats.Add(StatId.Hydration, ctx.Rates.Hydration * h);
-            s.Stats.Add(StatId.Energy, ctx.Rates.Energy * h);
-            s.Stats.Add(StatId.Wakefulness, ctx.Rates.Wakefulness * h);
-            s.Stats.Add(StatId.Morale, ctx.Rates.Morale * h);
-            s.Stats.Add(StatId.Health, ctx.HealthPerHour * h);
-            if (!string.IsNullOrEmpty(ctx.DamageCause)) s.Progress.LastDamageCause = ctx.DamageCause;
+            for (var k = 0; k < party.Count; k++) ApplyRates(s, party[k], ctxs[k]);
 
             s.GameMinute += Tick;
             s.SegmentCount++;
             BurnFires(s);
-            TickBody(s, start, ctx, battle);
+            for (var k = 0; k < party.Count; k++) TickBody(s, party[k], starts[k], ctxs[k], battle);
 
             // 终局：健康归零先于尸变，二者都先于自然治愈与本段未提交的设施产物
-            if (s.Stats.Health <= 0)
+            for (var k = 0; k < party.Count; k++)
             {
-                Kill(s, s.Progress.LastDamageCause);
-                return false;
+                var actor = party[k];
+                if (actor.Stats.Health <= 0)
+                {
+                    if (actor.IsPlayer) { Kill(s, s.Progress.LastDamageCause); return false; }
+                    CompanionDown(s, actor, string.IsNullOrEmpty(ctxs[k].DamageCause) ? "伤势过重" : ctxs[k].DamageCause);
+                    continue;
+                }
+                if (Zombified(actor))
+                {
+                    if (actor.IsPlayer) { Zombify(s); return false; }
+                    CompanionDown(s, actor, ZombifiedCause);
+                }
             }
-            if (Zombified(s))
-            {
-                Zombify(s);
-                return false;
-            }
-            TickNaturalCure(s, start);
+            for (var k = 0; k < party.Count; k++)
+                if (s.Party.Contains(party[k].Id)) TickNaturalCure(s, party[k], starts[k]);
 
             UpdateAllClearCharges(s);
             if (s.GameMinute % Clock.MinutesPerDay == 0) NewDay(s);
@@ -244,6 +264,38 @@ namespace Survival.Core.Engine
             TickWorldEnemies(s);
             return true;
         }
+
+        /// <summary>一个角色本段的六项状态变化（每小时速率 × 5/60，按项上限夹紧）；主角记最近伤害原因。</summary>
+        private void ApplyRates(GameState s, ActorState actor, SegmentContext ctx)
+        {
+            var h = Tick / 60.0;
+            var st = actor.Stats;
+            st.Add(StatId.Satiety, ctx.Rates.Satiety * h);
+            st.Add(StatId.Hydration, ctx.Rates.Hydration * h);
+            st.Add(StatId.Energy, ctx.Rates.Energy * h);
+            st.Add(StatId.Wakefulness, ctx.Rates.Wakefulness * h);
+            st.Add(StatId.Morale, ctx.Rates.Morale * h);
+            st.Add(StatId.Health, ctx.HealthPerHour * h);
+            if (actor.IsPlayer && !string.IsNullOrEmpty(ctx.DamageCause)) s.Progress.LastDamageCause = ctx.DamageCause;
+        }
+
+        /// <summary>
+        /// 队友在世界 tick 中健康归零或尸变（R08 §4“队友同条件永久退出可控名册”）：本批只把他移出同行队伍并记录；
+        /// 遗物容器、名册与补员在后续批次（B8）实现。主角不走这里。
+        /// </summary>
+        private void CompanionDown(GameState s, ActorState actor, string cause)
+        {
+            if (actor.IsPlayer) return;
+            if (cause != ZombifiedCause) actor.Stats.Health = 0;
+            s.Party.Remove(actor.Id);
+            Emit(s, GameEventKind.Alert, $"{ActorLabel(actor)}倒下了（{cause}），已离开队伍。");
+        }
+
+        /// <summary>角色在文案里的称呼：主角为“你”，队友暂用 actorId（命名在后续批次）。</summary>
+        public static string ActorLabel(ActorState actor) => actor.IsPlayer ? "你" : $"队友{actor.Id}";
+
+        /// <summary>队友提示前缀（主角为空，保持单人版文案不变）。</summary>
+        private static string ActorPrefix(ActorState actor) => actor.IsPlayer ? "" : $"{ActorLabel(actor)}：";
 
         /// <summary>段首快照：免疫、病毒、出血按它计算（v0.6 §08“每5分钟读取段首状态”）。</summary>
         private sealed class TickStart
@@ -255,14 +307,14 @@ namespace Survival.Core.Engine
             public bool Diarrhea;
             public bool AntibioticActive;
 
-            public static TickStart Capture(GameState s) => new TickStart
+            public static TickStart Capture(GameState s, ActorState actor) => new TickStart
             {
                 Minute = s.GameMinute,
-                Stats = s.Stats.Clone(),
-                Immunity = s.Body.Immunity,
-                Infected = s.Body.Infected,
-                Diarrhea = s.DiarrheaUntil.HasValue && s.DiarrheaUntil.Value > s.GameMinute,
-                AntibioticActive = s.Body.AntibioticUntil.HasValue && s.Body.AntibioticUntil.Value > s.GameMinute,
+                Stats = actor.Stats.Clone(),
+                Immunity = actor.Body.Immunity,
+                Infected = actor.Body.Infected,
+                Diarrhea = actor.DiarrheaUntil.HasValue && actor.DiarrheaUntil.Value > s.GameMinute,
+                AntibioticActive = actor.Body.AntibioticUntil.HasValue && actor.Body.AntibioticUntil.Value > s.GameMinute,
             };
         }
 
@@ -481,6 +533,13 @@ namespace Survival.Core.Engine
             return true;
         }
 
+        /// <summary>某角色死亡：主角终局（同 Kill(s, cause)）；队友移出同行队伍（R08 §4，遗物在后续批次）。</summary>
+        private void Kill(GameState s, ActorState actor, string cause)
+        {
+            if (actor.IsPlayer) Kill(s, cause);
+            else CompanionDown(s, actor, cause);
+        }
+
         private void Kill(GameState s, string cause)
         {
             var loc = s.CurrentLocation;
@@ -546,38 +605,49 @@ namespace Survival.Core.Engine
             };
         }
 
-        /// <summary>阈值与归零提醒（求生案 02）。返回是否暂停了刚推进的主行动。子行动不会被暂停（实施方案 9A）。</summary>
+        /// <summary>
+        /// 阈值与归零提醒（求生案 02）。返回是否暂停了刚推进的主行动。子行动不会被暂停（实施方案 9A）。
+        /// 多角色（B3 H10）：同行每人各自锁存；队友的提醒带“队友xx：”前缀，同样会暂停主行动（只有主角时与单人版一致）。
+        /// </summary>
         private bool CheckAlerts(GameState s, ActionState ran, bool completed)
         {
-            var triggers = new List<(StatId stat, bool zero)>();
-            foreach (var id in ZeroStats)
-            {
-                var isZero = s.Stats.Get(id) <= 0;
-                if (isZero && !s.ZeroLatched[id]) { s.ZeroLatched[id] = true; triggers.Add((id, true)); }
-                else if (!isZero) s.ZeroLatched[id] = false;
-            }
-            foreach (var id in Stats.All)
-            {
-                var below = Config.Thresholds[StatKey(id)].IsBelow(s.Stats.Get(id));
-                if (below && !s.AlertLatched[id]) { s.AlertLatched[id] = true; triggers.Add((id, false)); }
-                else if (!below) s.AlertLatched[id] = false;
-            }
+            var triggers = new List<(ActorState actor, StatId stat, bool zero)>();
+            foreach (var actor in s.PartyActors.ToList()) CollectAlerts(actor, triggers);
             if (triggers.Count == 0) return false;
 
             // 归零优先于普通提醒
             triggers = triggers.OrderBy(t => t.zero ? 0 : 1).ToList();
             foreach (var t in triggers)
-                Emit(s, GameEventKind.Alert, AlertText(t.stat, t.zero), t.stat);
+                Emit(s, GameEventKind.Alert, ActorPrefix(t.actor) + AlertText(t.stat, t.zero), t.stat);
 
             var main = s.Main;
             if (!ran.IsSub && !completed && main != null && main.ActionId == ran.ActionId && main.Status == ActionStatus.Running)
             {
                 var first = triggers[0];
                 Pause(s, main, first.zero ? PauseReason.StatZero : PauseReason.StatAlert, first.stat,
-                    $"{main.Label}已暂停：{AlertText(first.stat, first.zero)}");
+                    $"{main.Label}已暂停：{ActorPrefix(first.actor)}{AlertText(first.stat, first.zero)}");
                 return true;
             }
             return false;
+        }
+
+        /// <summary>某角色本段新触发的归零与阈值提醒（锁存按角色）。</summary>
+        private void CollectAlerts(ActorState actor, List<(ActorState actor, StatId stat, bool zero)> triggers)
+        {
+            foreach (var id in ZeroStats)
+            {
+                var isZero = actor.Stats.Get(id) <= 0;
+                var latched = actor.ZeroLatched.TryGetValue(id, out var z) && z;
+                if (isZero && !latched) { actor.ZeroLatched[id] = true; triggers.Add((actor, id, true)); }
+                else if (!isZero) actor.ZeroLatched[id] = false;
+            }
+            foreach (var id in Stats.All)
+            {
+                var below = Config.Thresholds[StatKey(id)].IsBelow(actor.Stats.Get(id));
+                var latched = actor.AlertLatched.TryGetValue(id, out var al) && al;
+                if (below && !latched) { actor.AlertLatched[id] = true; triggers.Add((actor, id, false)); }
+                else if (!below) actor.AlertLatched[id] = false;
+            }
         }
 
         private void CheckSevenDay(GameState s)

@@ -69,22 +69,26 @@ namespace Survival.Core.Engine
             return (ir, vr, why);
         }
 
-        private void TickBody(GameState s, TickStart start, SegmentContext ctx, bool battle)
+        /// <summary>某角色的饱饱输入：只有主角有饱饱（R08 §2“只有主角有baobaoPresent”），队友恒为 0。</summary>
+        private double BaobaoInput(GameState s, ActorState actor, double immunity) => actor.IsPlayer ? BaobaoInput(s, immunity) : 0;
+
+        /// <summary>一个角色本段的免疫、病毒与战外出血（按该角色段首快照，B3 H10）。</summary>
+        private void TickBody(GameState s, ActorState actor, TickStart start, SegmentContext ctx, bool battle)
         {
-            var b = s.Body;
+            var b = actor.Body;
             var h = Tick / 60.0;
             var ir = ImmunityRate(start.Stats, start.Stats.HealthMax, start.Diarrhea, start.Infected, ctx.ActionType, ctx.Sheltered);
             b.Immunity = Math.Max(Imm.Min, Math.Min(Imm.Max, b.Immunity + ir * h));
 
             // 饱饱持续体内输入 B(I)（R04 §7.2，按段首免疫）：与已感染进展率相加；抗生素只减缓 R，不关闭 B
-            var input = BaobaoInput(s, start.Immunity);
+            var input = BaobaoInput(s, actor, start.Immunity);
             if (b.Infected)
             {
                 var vr = (start.Infected ? VirusRate(start.Immunity, start.AntibioticActive) : 0) + input;
                 var v = b.VirusLoad + vr * h;
                 if (v < Inf.NaturalLoadMinimumWhileInfected) v = Inf.NaturalLoadMinimumWhileInfected;
                 b.VirusLoad = Math.Min(Inf.LoadRange[1], v);
-                VirusWarnings(s);
+                VirusWarnings(s, actor);
             }
             else if (input > 0)
             {
@@ -93,39 +97,41 @@ namespace Survival.Core.Engine
                 b.VirusLoad = Math.Max(Inf.BaobaoInput.FirstInfectionMinLoad, input * h);
                 b.HighImmunityMinutes = 0;
                 Emit(s, GameEventKind.Alert, $"饱饱在体内的病毒积累起来了：进入感染状态，病毒{Fmt.N(b.VirusLoad)}。免疫≥{Fmt.T(Inf.BaobaoInput.FullSuppressImmunityAtLeast)}时它会被完全压制，连续高免疫可自然治愈。");
-                VirusWarnings(s);
+                VirusWarnings(s, actor);
             }
             else b.VirusLoad = 0;
 
             // 战外出血：每个世界 tick 扣一次；战斗轮末的 tick 不扣（战内出血在自己激活时扣，退出瞬间不补扣）
             if (!battle && b.BleedTriggers > 0)
             {
-                s.Stats.Add(StatId.Health, -b.BleedDamage);
+                actor.Stats.Add(StatId.Health, -b.BleedDamage);
                 b.BleedTriggers--;
-                s.Progress.LastDamageCause = "出血";
+                if (actor.IsPlayer) s.Progress.LastDamageCause = "出血";
                 if (b.BleedTriggers == 0) b.BleedDamage = 0;
             }
         }
 
+        private void VirusWarnings(GameState s) => VirusWarnings(s, s.Player);
+
         /// <summary>病毒越过 20/50/80 时的阶段警告：当前变化速率与理论剩余时间（假设免疫与用药不变，不是必定倒计时）。不暂停行动。</summary>
-        private void VirusWarnings(GameState s)
+        private void VirusWarnings(GameState s, ActorState actor)
         {
-            var b = s.Body;
+            var b = actor.Body;
             foreach (var stage in Inf.ProgressWarnings)
             {
                 if (b.VirusLoad + VirusEps >= stage)
                 {
                     if (b.VirusWarned.Contains(stage)) continue;
                     b.VirusWarned.Add(stage);
-                    var rate = VirusRate(b.Immunity, b.AntibioticUntil.HasValue && b.AntibioticUntil.Value > s.GameMinute) + BaobaoInput(s, b.Immunity);
+                    var rate = VirusRate(b.Immunity, b.AntibioticUntil.HasValue && b.AntibioticUntil.Value > s.GameMinute) + BaobaoInput(s, actor, b.Immunity);
                     var left = rate > 0 ? $"，按现状理论上约{Clock.Duration((int)Math.Ceiling((Inf.ZombificationAtLoad - b.VirusLoad) / rate * 60))}后尸变（免疫或用药改变时随之变化）" : "，按现状不会继续升高";
-                    Emit(s, GameEventKind.Alert, $"病毒程度达到{Fmt.T(stage)}（当前{Fmt.N(b.VirusLoad)}）：每小时{Fmt.SignedT(rate)}{left}。");
+                    Emit(s, GameEventKind.Alert, $"{ActorPrefix(actor)}病毒程度达到{Fmt.T(stage)}（当前{Fmt.N(b.VirusLoad)}）：每小时{Fmt.SignedT(rate)}{left}。");
                 }
                 else b.VirusWarned.Remove(stage);
             }
         }
 
-        private bool Zombified(GameState s) => s.Body.Infected && s.Body.VirusLoad >= Inf.ZombificationAtLoad - VirusEps;
+        private bool Zombified(ActorState actor) => actor.Body.Infected && actor.Body.VirusLoad >= Inf.ZombificationAtLoad - VirusEps;
 
         /// <summary>尸变：本局结束，复用死亡结算（文案区分）。</summary>
         private void Zombify(GameState s)
@@ -142,9 +148,9 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>高免疫连续时间与自然治愈：段首与段末免疫都≥门槛（config naturalCure，Q7 起 80）才 +5 分钟；≥720 且 V≤10 才治愈。</summary>
-        private void TickNaturalCure(GameState s, TickStart start)
+        private void TickNaturalCure(GameState s, ActorState actor, TickStart start)
         {
-            var b = s.Body;
+            var b = actor.Body;
             var nc = Inf.NaturalCure;
             if (!b.Infected) { b.HighImmunityMinutes = 0; return; }
             if (start.Immunity >= nc.ConsecutiveImmunityAtLeast && b.Immunity >= nc.ConsecutiveImmunityAtLeast) b.HighImmunityMinutes += Tick;
@@ -155,7 +161,7 @@ namespace Survival.Core.Engine
                 b.VirusLoad = 0;
                 b.HighImmunityMinutes = 0;
                 b.VirusWarned.Clear();
-                Emit(s, GameEventKind.Info, $"高免疫持续{Clock.Duration(nc.Minutes)}，病毒已被自然清除（高免疫自然治愈）。");
+                Emit(s, GameEventKind.Info, $"{ActorPrefix(actor)}高免疫持续{Clock.Duration(nc.Minutes)}，病毒已被自然清除（高免疫自然治愈）。");
             }
         }
 

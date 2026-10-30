@@ -432,9 +432,9 @@ namespace Survival.Core.Engine
         private bool BattleTick(GameState s)
         {
             var b = s.Battle!;
-            var ctx = BattleSegment(s);
             b.Ticks++;
-            var alive = WorldTick(s, ctx, null, true);
+            // 每个同行角色按自己的段首状态计战斗段速率，世界只推进一次（B3 H10、COMP04）
+            var alive = WorldTick(s, actor => BattleSegment(s, actor), null, true);
             if (!alive)
             {
                 // tick 本身致死：该 tick 已发生，不回滚、不补第二段；不提交胜利掉落
@@ -445,14 +445,14 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>战斗段：N−1.875/W−4.5/S−5/M−0.5 每小时，E 自然率 0；体力归零按工作计损血；腹泻照常。</summary>
-        private SegmentContext BattleSegment(GameState s)
+        private SegmentContext BattleSegment(GameState s, ActorState actor)
         {
             var c = Config;
             var ctx = new SegmentContext { Rates = c.BattleTime.HourlyRates.Copy(), IsWork = c.BattleTime.CountsAsWorkingForZeroEnergyDamage, ActionType = null };
             ctx.Sheltered = IsSheltered(s, s.CurrentLocation);
-            if (s.DiarrheaUntil.HasValue && s.DiarrheaUntil.Value > s.GameMinute) ctx.Rates.Hydration += c.ItemActions.DiarrheaExtraHydrationPerHour;
+            if (actor.DiarrheaUntil.HasValue && actor.DiarrheaUntil.Value > s.GameMinute) ctx.Rates.Hydration += c.ItemActions.DiarrheaExtraHydrationPerHour;
             var hr = c.HealthRules;
-            var st = s.Stats;
+            var st = actor.Stats;
             var causes = new List<string>();
             double health = 0;
             if (st.Satiety <= 0) { health += hr.ZeroSatietyPerHour; causes.Add("饥饿"); }

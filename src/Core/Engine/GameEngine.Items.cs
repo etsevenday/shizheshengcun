@@ -61,6 +61,11 @@ namespace Survival.Core.Engine
         public int CarriedGrams(GameState s) =>
             s.Items.Where(i => i.IsCarried).Sum(i => ItemGrams(s, i));
 
+        /// <summary>某角色本人的携重（主角同 CarriedGrams；队友按 "carried:&lt;actorId&gt;"，本批没有队友物品）。</summary>
+        public int CarriedGramsOf(GameState s, string actorId) =>
+            actorId == GameState.PlayerId ? CarriedGrams(s)
+                : s.Items.Where(i => i.Owner == ItemInstance.CarriedOwner(actorId)).Sum(i => ItemGrams(s, i));
+
         public bool IsOverweight(GameState s) => CarriedGrams(s) > Config.Carry.SoftGrams;
 
         // ───────────────────────── 随身五张根物品卡（S06 §8） ─────────────────────────

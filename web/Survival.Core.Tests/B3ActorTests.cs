@@ -66,6 +66,97 @@ public class B3ActorTests : TestBase
         Assert.That(s.Party.Count, Is.EqualTo(1));
     }
 
+    /// <summary>测试注入一名同行队友 p1（身体与主角相同的起点），本批游戏里还没有招募入口。</summary>
+    internal static ActorState InjectCompanion(GameState s, string id = "p1")
+    {
+        var p1 = s.Player.Clone();
+        p1.Id = id;
+        s.Actors[id] = p1;
+        s.Party.Add(id);
+        return p1;
+    }
+
+    [Test]
+    public void PT02_COMP04_TwoActors_OneClock_EachBodyOnce()
+    {
+        var solo = New(77);
+        var duo = New(77);
+        foreach (var x in new[] { solo, duo })
+        {
+            var fac = x.Locations[x.CurrentLocation].Facility;
+            fac.FireLit = true;
+            fac.FuelMinutes = 120;
+        }
+        var p1 = InjectCompanion(duo);
+        Start(solo, ActionRequest.Wait(60));
+        Start(duo, ActionRequest.Wait(60));
+        Run(solo);
+        Run(duo);
+        Assert.That(duo.GameMinute, Is.EqualTo(solo.GameMinute), "世界时间只推进一次，不按人数重复");
+        Assert.That(duo.SegmentCount, Is.EqualTo(solo.SegmentCount));
+        Assert.That(duo.Locations[duo.CurrentLocation].Facility.FuelMinutes, Is.EqualTo(solo.Locations[solo.CurrentLocation].Facility.FuelMinutes), "燃料只烧一次");
+        Assert.That(duo.Player.Stats.Satiety, Is.EqualTo(solo.Player.Stats.Satiety).Within(1e-9), "主角身体与单人时逐段一致");
+        Assert.That(duo.Player.Body.Immunity, Is.EqualTo(solo.Player.Body.Immunity).Within(1e-9));
+        // 队友同起点、同为 wait：各自结算一次，结果与主角相同（不是两倍）
+        Assert.That(p1.Stats.Satiety, Is.EqualTo(duo.Player.Stats.Satiety).Within(1e-9));
+        Assert.That(p1.Stats.Hydration, Is.EqualTo(duo.Player.Stats.Hydration).Within(1e-9));
+        Assert.That(p1.Stats.Satiety, Is.LessThan(New(77).Stats.Satiety), "队友身体确实被结算");
+        // 保质按绝对时间：同一物品到期判定不因人数变化
+        Assert.That(duo.Items.Count(i => E.IsSpoiled(duo, i)), Is.EqualTo(solo.Items.Count(i => E.IsSpoiled(solo, i))));
+    }
+
+    [Test]
+    public void PT02_CompanionUsesWaitWhilePlayerWorks_TravelAll()
+    {
+        var a = new ActionState { Type = ActionType.Craft };
+        Assert.That(GameEngine.CompanionAction(a).Type, Is.EqualTo(ActionType.Wait), "S01 一名执行者，其他同行 wait");
+        Assert.That(GameEngine.CompanionAction(new ActionState { Type = ActionType.Travel }).Type, Is.EqualTo(ActionType.Travel), "移动全员 travel");
+        Assert.That(GameEngine.CompanionAction(new ActionState { Type = ActionType.Sleep }).Type, Is.EqualTo(ActionType.Sleep));
+        Assert.That(a.Type, Is.EqualTo(ActionType.Craft), "不改原行动");
+    }
+
+    [Test]
+    public void PT02_CompanionOwnLatchesAndBodies()
+    {
+        var s = New();
+        var p1 = InjectCompanion(s);
+        p1.Stats.Satiety = 0.01;
+        p1.Body.Infected = true;
+        p1.Body.VirusLoad = 30;
+        Start(s, ActionRequest.Wait(30));
+        Run(s);
+        Assert.That(p1.ZeroLatched[StatId.Satiety], Is.True, "队友归零提醒按本人锁存");
+        Assert.That(s.ZeroLatched[StatId.Satiety], Is.False, "主角不受队友影响");
+        Assert.That(s.Log.Any(l => l.Text.Contains("队友p1：饱食归零")), Is.True);
+        Assert.That(p1.Body.VirusLoad, Is.Not.EqualTo(30), "队友病毒按本人免疫推进");
+        Assert.That(s.Body.Infected, Is.False);
+    }
+
+    [Test]
+    public void COMP04_BattleRoundTicksEachActorOnce()
+    {
+        var s = New();
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        var p1 = InjectCompanion(s);
+        var minute = s.GameMinute;
+        var ctxSat = Cfg.BattleTime.HourlyRates.Satiety * 5 / 60.0;
+        var sat0 = p1.Stats.Satiety;
+        E.DebugTeleport(s, "field");
+        s.WorldEnemies.Clear();
+        var w = E.DebugSpawnEnemy(s, "shambler", "field");
+        s.GameMinute = At(2, 9, 0);
+        minute = s.GameMinute;
+        Assert.That(E.Approach(s, w.Id).Ok, Is.True);
+        for (var i = 0; i < 50 && s.Battle != null && s.Battle.Ticks == 0; i++)
+        {
+            if (E.AwaitingPlayer(s)) E.ExecuteCommand(s, BattleCommand.Of("end_turn"));
+            else E.BattleStep(s);
+        }
+        Assert.That(s.GameMinute, Is.EqualTo(minute + 5), "一轮只推进一次 5 分钟");
+        Assert.That(p1.Stats.Satiety, Is.EqualTo(sat0 + ctxSat).Within(1e-9), "队友按战斗段速率结算一次");
+    }
+
     [Test]
     public void Migration8To9_MovesTopLevelIntoP0_Once()
     {

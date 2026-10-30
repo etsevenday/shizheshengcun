@@ -367,6 +367,11 @@ namespace Survival.Core.State
         public bool InContainer => Owner.StartsWith(ContainerPrefix);
         public bool InFacility => Owner.StartsWith(FacilityPrefix);
 
+        /// <summary>
+        /// 某角色的随身 owner（开发计划 v0.9 B3 H2）：主角仍为 "carried"（不改旧档与现有逻辑）；队友将来为 "carried:&lt;actorId&gt;"（本批只预留）。
+        /// </summary>
+        public static string CarriedOwner(string actorId) => actorId == GameState.PlayerId ? Carried : Carried + ":" + actorId;
+
         public static string ContainerOwner(int containerInstanceId) => ContainerPrefix + containerInstanceId;
         public static string FacilityOwner(string facilityId) => FacilityPrefix + facilityId;
 
