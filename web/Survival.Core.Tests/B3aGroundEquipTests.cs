@@ -202,4 +202,40 @@ public class B3aGroundEquipTests : BattleTestBase
         var k = Ground(story, "stone_knife");
         Assert.That(E.EquipBlocked(story, P0, k.InstanceId, W1), Is.EqualTo(GameEngine.DialogueLockedReason));
     }
+
+    // ───────────── B3a 试玩修复 2/3：原因文字只在放地真能做时才提“放当前地面” ─────────────
+
+    [Test]
+    public void Fix2_FullCardsSwap_OldToGroundAlsoIllegal_ReasonDoesNotOfferIt()
+    {
+        var s = New();
+        var bow = Give(s, "wooden_bow");
+        Assert.That(E.Equip(s, P0, bow.InstanceId, W1).Ok, Is.True);
+        Assert.That(E.Equip(s, P0, Give(s, "metal_spear").InstanceId, W2).Ok, Is.True);
+        FillCards(s);
+        var xbow = Ground(s, "crossbow");
+        // 每张卡堆满（木头/石头 20、纤维 50）凑到约 28.8 公斤：+ 弩 2.8 − 木弓 0.9 > 30
+        foreach (var (id, n) in new[] { ("wood", 20), ("stone", 20), ("fiber", 50) }) s.Items.First(i => i.IsCarried && i.ItemId == id).Count = n;
+        Assert.That(E.RootCardCount(s), Is.EqualTo(5));
+        Assert.That(E.CarriedGrams(s) + E.ItemGrams(s, xbow) - E.ItemGrams(s, bow), Is.GreaterThan(30000));
+        Assert.That(E.EquipBlocked(s, P0, xbow.InstanceId, W1, oldToGround: true), Does.Contain("将超过30公斤"));
+        var why = E.EquipBlocked(s, P0, xbow.InstanceId, W1);
+        Assert.That(why, Does.Contain("随身卡位不够换下木弓"));
+        Assert.That(why, Does.Not.Contain("可以选择旧件放当前地面"));
+        Assert.That(why, Does.Contain("旧件放当前地面也不行").And.Contain("将超过30公斤"));
+    }
+
+    [Test]
+    public void Fix3_UnequipFullCardsDuringAction_ReasonDoesNotOfferGround()
+    {
+        var s = New();
+        var knife = Give(s, "stone_knife");
+        Assert.That(E.Equip(s, P0, knife.InstanceId, W1).Ok, Is.True);
+        FillCards(s);
+        Assert.That(E.UnequipBlocked(s, P0, W1, false), Does.Contain("可以选择放当前地面"), "空闲时可放地");
+        Start(s, ActionRequest.Wait(30));
+        var why = E.UnequipBlocked(s, P0, W1, false);
+        Assert.That(why, Does.Not.Contain("可以选择放当前地面"));
+        Assert.That(why, Does.Contain("现在不能放当前地面：行动进行中"));
+    }
 }

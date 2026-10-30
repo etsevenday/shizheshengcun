@@ -27,7 +27,7 @@
                     <input type="checkbox" checked="@on" @onchange="() => Toggle(id)" />
                     <span class="ov-ico">@Icons.Markup(it.ItemId)</span>
                     <span class="ov-text"><b>@e.ItemName(it.ItemId)@(e.Item(it.ItemId).IsStackable && !e.IsPot(it) ? $"×{it.Count}" : $"#{id}")</b>
-                        <small>@Ui.ItemLine(e, s, it) · @Ui.Kg(e.ItemGrams(s, it))公斤</small></span>
+                        <small>@ItemMeta(it)</small></span>
                 </label>
             }
         </div>
@@ -43,6 +43,14 @@
     // 勾选存在会话里（G.OverflowKeep）：Esc 打开菜单时本窗卸载，关菜单后恢复原选择（R90d）
     private List<int> _keep => G.OverflowKeep;
     private bool _busy;
+
+    /// <summary>物品说明 · 重量；没有别的说明时 ItemLine 本身就是重量，不再重复写（B3a 试玩修复 5：“箭矢×8 0.40公斤 · 0.40公斤”）。</summary>
+    private string ItemMeta(ItemInstance it)
+    {
+        var line = Ui.ItemLine(G.E, G.S, it);
+        var kg = Ui.KgText(G.E.ItemGrams(G.S, it));
+        return line == kg ? kg : $"{line} · {kg}";
+    }
 
     private void Toggle(int id)
     {

@@ -117,7 +117,12 @@ namespace Survival.Core.Engine
                 if (old.ReservedBy != null || IsLocked(s, old)) return $"{EquipSlots.Name(slot)}里的{ItemName(old.ItemId)}正被行动使用，不能换下";
                 // 交换：按交换后的最终卡数校验（不因中间瞬态误拒，也不因“先拾取会六张”误拒）
                 if (!oldToGround && !RootCardsAllow(s, cards))
-                    return $"随身卡位不够换下{ItemName(old.ItemId)}（换后{cards}/{MaxRootCards}张）：可以选择旧件放当前地面，或先腾出一张卡";
+                {
+                    // 只在“旧件放当前地面”本身合法时才提这个选项（B3a 试玩修复 2：会超 30 公斤、行动中等情况不再误导）
+                    var alt = EquipBlocked(s, actorId, instanceId, slot, oldToGround: true);
+                    return $"随身卡位不够换下{ItemName(old.ItemId)}（换后{cards}/{MaxRootCards}张）：" +
+                           (alt == null ? "可以选择旧件放当前地面，或先腾出一张卡" : $"请先腾出一张卡（旧件放当前地面也不行：{alt}）");
+                }
             }
             // 30 公斤硬线按最终本人总重判断：随身↔穿戴不改总重；地面直穿加上新件、旧件放地减去旧件（旧档已超重的不得再增加）
             var hard = Config.Carry.HardGrams;
@@ -180,7 +185,12 @@ namespace Survival.Core.Engine
             }
             var after = RootCardsAfter(s, it, 1, null, 0);
             if (!RootCardsAllow(s, after))
-                return $"随身卡位已满（{RootCardCount(s)}/{MaxRootCards}张）：卸下会多出一张卡，可以选择放当前地面";
+            {
+                // 按实际能否放地写（B3a 试玩修复 3：行动中、敌踪待选时没有放地按钮）
+                var g = UnequipBlocked(s, actorId, slot, true);
+                return $"随身卡位已满（{RootCardCount(s)}/{MaxRootCards}张）：卸下会多出一张卡，" +
+                       (g == null ? "可以选择放当前地面" : $"请先腾出一张卡（现在不能放当前地面：{g}）");
+            }
             return null;
         }
 

@@ -67,7 +67,7 @@ else
                                 var groundWhy = e.UnequipBlocked(s, GameState.PlayerId, slot, true);
                                 var stat = EquipStat(it);
                                 <div class="eq-main" title="@($"{name}#{it.InstanceId} · {WeaponKinds.Name(e.WeaponKindOf(it.ItemId))} · {stat} · {Ui.KgText(e.ItemGrams(s, it))}（计入本人重量，不占物资卡）")">
-                                    <span class="eq-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(it.ItemId)</span><span class="eq-name">@name#@it.InstanceId</span></span>
+                                    <span class="eq-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(it.ItemId)</span><span class="eq-name">@name#@it.InstanceId</span><span class="eq-kg">@Ui.KgText(e.ItemGrams(s, it))</span></span>
                                     <small class="eq-stat">@stat</small>
                                     @if (s.Battle == null)
                                     {
@@ -137,7 +137,7 @@ else
 }
 
 @code {
-    /// <summary>装备区第二行：耐久与弹仓（“耐久67.00/80.00 · 弹仓3/6”；弓写随身箭数），没有的项不写。</summary>
+    /// <summary>装备区第二行：耐久与弹仓（“耐久67.00/80.00 · 弹仓3/8”；木弓写随身箭矢数），没有的项不写；重量在名称行右侧。</summary>
     private string EquipStat(ItemInstance it)
     {
         var s = G.S;
@@ -150,7 +150,7 @@ else
             if (w.UsesMagazine) parts.Add($"弹仓{it.LoadedAmmo}/{w.MagazineCapacity}");
             else if (w.ConsumesLooseAmmo && w.AmmoId != null) parts.Add($"随身{e.ItemName(w.AmmoId)}{s.Items.Where(i => i.IsCarried && i.ItemId == w.AmmoId).Sum(i => i.Count)}");
         }
-        parts.Add($"{Ui.Kg(e.ItemGrams(s, it))}公斤");
+        // 重量放在名称行右侧（B3a 试玩修复 6：第二行原先在 1280/1600/1920 都折行，“0.90公斤”单独掉一行）
         return string.Join(" · ", parts);
     }
 

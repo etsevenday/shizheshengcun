@@ -182,6 +182,11 @@
                         <button type="button" class="tbar-go alt" disabled="@(why != null)" title="@tip" @onclick="() => G.Equip(wid, slot)">装备到@(EquipSlots.Name(slot))</button>
                     }
                 </div>
+                @* 禁用原因紧跟在按钮行下面（B3a 试玩修复 4：原先排在旧件放地按钮之后，1280×720 要滚动才看到） *@
+                @foreach (var (slot, why) in choices.Where(c => c.reason != null).GroupBy(c => c.reason).Select(g => g.First()))
+                {
+                    <div class="ca-note bad">@(choices.All(c => c.reason == why) ? "" : $"{EquipSlots.Name(slot)}：")@why</div>
+                }
                 @* S07/S06 Q40“预览明确旧件去向、最终重量和实际N/5”：每个可点的槽常驻一行结果，点按钮即确认提交 *@
                 @foreach (var (slot, _) in choices.Where(c => c.reason == null))
                 {
@@ -200,10 +205,6 @@
                                 @onclick="() => G.Equip(wid, slot, true)">装备到@(EquipSlots.Name(slot))·旧件@(e.ItemName(cur.ItemId))放当前地面</button>
                     </div>
                     <div class="ca-note @(gg > e.Config.Carry.SoftGrams ? "warn" : "")">@(EquipSlots.Name(slot))：@(curName)放到@(e.LocName(s.CurrentLocation))地面，装备后本人@(Ui.Kg(gg))公斤 · 随身@(gc)/@(e.MaxRootCards)张 · 不耗时；不选就是取消</div>
-                }
-                @foreach (var (slot, why) in choices.Where(c => c.reason != null).GroupBy(c => c.reason).Select(g => g.First()))
-                {
-                    <div class="ca-note bad">@(choices.All(c => c.reason == why) ? "" : $"{EquipSlots.Name(slot)}：")@why</div>
                 }
                 @if (choices.Any(c => c.reason == null))
                 {
