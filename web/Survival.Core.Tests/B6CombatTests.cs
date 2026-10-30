@@ -69,6 +69,66 @@ public class B6CombatTests : BattleTestBase
         Assert.That(b.Log.First(), Does.Contain("1号位游荡尸").And.Contain("3号位游荡尸"));
     }
 
+    // ───────────── M137：B6 线上第 1 轮试玩修复 ─────────────
+
+    /// <summary>
+    /// BUG1/UX3：3、4 号位够不到，近战攻击意图（抓击/咬击/冲撞）实际只前压/等待，敌卡意图同源显示“前压/等待（在3号位够不到）”；
+    /// 嚎叫等非攻击意图照常执行（旧 R03 §1“远程/嚎叫可按合法意图行动”）。
+    /// </summary>
+    [Test]
+    public void M137_Pos3_MeleeIntentShownAsWait_HowlStillHowls()
+    {
+        var s = Fight(31, "shambler", "shambler", "howler");
+        var b = s.Battle!;
+        var z = Enemy(s, 2);
+        var howler = Enemy(s, 3);
+        Assert.That(howler.Slot, Is.EqualTo("3"));
+        z.Intent = "bite";
+        z.IntentLabel = E.IntentLabel(z);
+        Assert.That(GameEngine.IntentOutOfReach(z), Is.False, "2号位够得到");
+        Assert.That(GameEngine.IntentShown(z), Does.StartWith("咬击"));
+        z.Slot = "4";
+        Assert.That(GameEngine.IntentOutOfReach(z), Is.True);
+        Assert.That(GameEngine.IntentShown(z), Is.EqualTo("前压/等待（在4号位够不到）"));
+        z.Slot = "2";
+        // 嚎叫尸第1轮（奇数轮）在3号位：意图仍显示嚎叫，并照常嚎叫
+        Assert.That(howler.Intent, Is.EqualTo("howl"));
+        Assert.That(GameEngine.IntentOutOfReach(howler), Is.False);
+        Assert.That(GameEngine.IntentShown(howler), Does.StartWith("嚎叫"));
+        var panic = b.Panic;
+        for (var i = 0; i < 20 && !howler.Acted && s.Battle != null; i++) Step(s);
+        Assert.That(b.Panic, Is.GreaterThan(panic), "3号位嚎叫照常（不是近战攻击）");
+        Assert.That(b.Log.Any(x => x.Contains("嚎叫尸嚎叫")), Is.True);
+    }
+
+    /// <summary>UX4：本轮已调息且剩余 AP 不足 2 时，调息写“本回合已调整过呼吸”，不写“行动点不足”；撤退同理。</summary>
+    [Test]
+    public void M137_PerRoundLimit_ReasonBeforeApShortage()
+    {
+        var s = Fight(32, "worker");
+        Ready(s);
+        Assert.That(Cmd(s, "breathe").Ok, Is.True);
+        Assert.That(s.Battle!.PlayerAp, Is.EqualTo(1));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("breathe")), Is.EqualTo("本回合已调整过呼吸"));
+        s.Battle.RetreatUsed = true;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("retreat")), Is.EqualTo("本回合已尝试撤退"));
+        s.Battle.RetreatUsed = false;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("retreat")), Does.StartWith("行动点不足"), "没用过时照常报行动点不足");
+    }
+
+    /// <summary>UX5：人物页战斗效果汇总标签写清是全身装备合计（攻击类词条只算当前武器页），不再写“本页武器”。</summary>
+    [Test]
+    public void M137_EquipSummaryLabel_WholeBody()
+    {
+        var s = New();
+        Wear(s, "wooden_shield", EquipSlots.Weapon2);
+        Wear(s, "leather_armor", EquipSlots.Armor);
+        Wear(s, "steady_ring", EquipSlots.CombatAccessory);
+        var line = E.EquipSummaryLines(s)[0];
+        Assert.That(line, Does.StartWith("战斗（全身装备合计；攻击类词条只算当前武器页）：").And.Contain("速度−1").And.Contain("护甲0.2").And.Contain("命中能力+3"));
+        Assert.That(line, Does.Not.Contain("本页武器"));
+    }
+
     [Test]
     public void CB01_TargetPositions_PerWeapon()
     {

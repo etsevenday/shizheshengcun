@@ -61,6 +61,15 @@ namespace Survival.Core.Engine
         /// </summary>
         public const int EnemyMeleeMaxPos = 2;
 
+        /// <summary>
+        /// 这个敌人本轮的公开意图是近战攻击（抓击/咬击/扑击/冲撞……），但它在 3、4 号位够不到，实际只会前压/等待（开发假设 B6-3、M137）。
+        /// 嚎叫、防御、蓄力、逃离、警戒不需要够到目标，照常执行（旧 R03 §1“远程/嚎叫可按合法意图行动”、A09 嚎叫尸“奇数轮恐慌”）。
+        /// </summary>
+        public static bool IntentOutOfReach(BattleEnemy e) => e.Alive && e.Pos > EnemyMeleeMaxPos && e.Intent is "attack" or "bite" or "charge";
+
+        /// <summary>敌卡上显示的意图（与实际执行同源）：够不到时写“前压/等待（在3号位够不到）”，其余为轮初公开的意图。</summary>
+        public static string IntentShown(BattleEnemy e) => IntentOutOfReach(e) ? $"前压/等待（在{e.Pos}号位够不到）" : e.IntentLabel;
+
         /// <summary>拳没有物品，A05 只写“合法己位用拳”；目标位按旧“只打前排”取 12（开发假设 B6-4）。</summary>
         public const string FistTargetPositions = "12";
 
@@ -745,7 +754,7 @@ namespace Survival.Core.Engine
             if (pursuit)
             {
                 if (!e.Hostile || e.Intent is "watch" or "flee") { BattleLog(s, $"{EnemyName(e)}（追击）警戒地观察，没有攻击。"); return; }
-                if (e.Pos > EnemyMeleeMaxPos) { BattleLog(s, $"{EnemyName(e)}（追击）在{PosName(e.Pos)}前压/等待（近战只能从1、2号位出手）。"); return; }
+                if (e.Pos > EnemyMeleeMaxPos) { BattleLog(s, $"{EnemyName(e)}（追击）在{PosName(e.Pos)}前压/等待（近战攻击只能从1、2号位出手）。"); return; }
                 EnemyAttack(s, e, cfg, true);
                 return;
             }
@@ -780,7 +789,7 @@ namespace Survival.Core.Engine
             }
             if (outOfReach)
             {
-                BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}前压/等待（近战只能从1、2号位出手）。");
+                BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}前压/等待（近战攻击只能从1、2号位出手）。");
                 return;
             }
             EnemyAttack(s, e, cfg);
@@ -1032,6 +1041,9 @@ namespace Survival.Core.Engine
             if (!b.PlayerActing) return "还没轮到你行动";
             var a = Act(c.Action);
             if (a == null) return c.Action == "aim" ? "瞄准已移除" : "未知指令";
+            // 每大回合一次的限制先于行动点判断：本轮已用过就写“本回合已…”，不写“行动点不足”（试玩修复 M137 UX4）
+            if (c.Action == "breathe" && b.BreatheUsed) return "本回合已调整过呼吸";
+            if (c.Action == "retreat" && b.RetreatUsed) return "本回合已尝试撤退";
             var ap = a.ApCost < 0 ? b.PlayerAp : a.ApCost;
             if (a.ApCost > 0 && ap > b.PlayerAp) return $"行动点不足（需{ap}，剩{b.PlayerAp}）";
             var w = CurrentWeapon(s, out var wi);

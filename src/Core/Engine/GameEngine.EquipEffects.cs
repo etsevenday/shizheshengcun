@@ -380,7 +380,7 @@ namespace Survival.Core.Engine
             if (Math.Abs(fx.EnergyCostFactor - 1) > 1e-12) combat.Add($"招式E×{Fmt.T(fx.EnergyCostFactor)}");
             if (fx.DisplaceResist != 0) combat.Add($"位移抵抗+{Fmt.T(fx.DisplaceResist)}个百分点");
             if (fx.Noise != 0) combat.Add($"噪声{Fmt.SignedT(fx.Noise)}");
-            if (combat.Count > 0) lines.Add($"战斗（本页武器）：{string.Join("，", combat)}{(fx.DisplaceResist != 0 ? "——位移抵抗要等位移类技能上线，其余战斗中生效" : "——战斗中生效")}");
+            if (combat.Count > 0) lines.Add($"战斗（全身装备合计；攻击类词条只算当前武器页）：{string.Join("，", combat)}{(fx.DisplaceResist != 0 ? "——位移抵抗要等位移类技能上线，其余战斗中生效" : "——战斗中生效")}");
             var names = new Dictionary<string, string>
             {
                 ["work.craft"] = "制造/建造工作量", ["work.scavenge"] = "搜集工作量", ["work.move"] = "移动工作量", ["work.route"] = "已发现路线移动工作量",

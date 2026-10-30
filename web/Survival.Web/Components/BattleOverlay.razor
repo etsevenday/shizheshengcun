@@ -101,7 +101,7 @@ else if (b != null)
                         <span class="ally-weapon" title="@(wi == null ? "徒手" : $"{w.Name}#{wi.InstanceId}")">@Icons.Markup(wi?.ItemId ?? "fists")</span>
                     </div>
                     <div class="ally-foot">
-                        <div class="ally-head"><b>你</b><small class="muted" title="我方站位（我方只剩一人时所有武器都按1号位可用）">@(GameEngine.PlayerPos(b))号位</small>
+                        <div class="ally-head"><b>你</b><small class="ally-pos" title="我方站位（我方只剩一人时所有武器都按1号位可用）">@(GameEngine.PlayerPos(b))号位</small>
                             <span class="ap-pips" aria-label="@($"行动点{(b.PlayerActing ? b.PlayerAp : 0)}/{apMax}")" title="@(b.PlayerActing ? $"本次{(b.ActingPursuit ? "追击" : "激活")}剩{b.PlayerAp}AP（不带入下次）" : $"等待轮到你；每次普通激活{e.NormalActivationAp(s.Player)}AP（战术训练阶位{s.Player.TacticalTier}）")">
                                 @for (var i = 0; i < apMax; i++) { <i class="@(b.PlayerActing && i < b.PlayerAp ? "on" : "")"></i> }
                                 <small>@(b.PlayerActing ? $"{(b.ActingPursuit ? "追击 " : "")}AP {b.PlayerAp}/{apMax}" : "等待")</small>
@@ -110,7 +110,7 @@ else if (b != null)
                         <div class="track" title="@($"健康{Ui.N(s.Stats.Health)}/{Ui.T(s.Stats.HealthMax)}")"><i style="width:@Ui.Bar(s.Stats.Health, s.Stats.HealthMax)%"></i></div>
                         <div class="track en" title="@($"体力{Ui.N(s.Stats.Energy)}/{Ui.T(s.Stats.EnergyMax)}")"><i style="width:@Ui.Bar(s.Stats.Energy, s.Stats.EnergyMax)%"></i></div>
                         <div class="hp-line"><span>健康@(Ui.N(s.Stats.Health))</span><b>体力@(Ui.N(s.Stats.Energy))</b></div>
-                        <div class="hp-line" title="@($"有效速度=max(1, 基础{Ui.T(mySpeed.Base)}+装备{Ui.SignedT(mySpeed.Gear)}{(mySpeed.Status.Count > 0 ? "，" + string.Join("，", mySpeed.Status) : "")})；追击进度{Ui.T(b.PlayerPursuit)}/100")"><span>速度@(Ui.T(mySpeed.Speed))</span><b>追击@(Ui.T(b.PlayerPursuit))/100</b></div>
+                        <div class="hp-line speed-line" title="@($"有效速度=max(1, 基础{Ui.T(mySpeed.Base)}+装备{Ui.SignedT(mySpeed.Gear)}{(mySpeed.Status.Count > 0 ? "，" + string.Join("，", mySpeed.Status) : "")})；追击进度{Ui.T(b.PlayerPursuit)}/100")"><span>速度@(Ui.T(mySpeed.Speed))</span><b>追击@(Ui.T(b.PlayerPursuit))/100</b></div>
                     </div>
                 </div>
             </div>
@@ -241,7 +241,7 @@ else if (b != null)
         var picked = G.BattleTarget == idx;
         var tip = reachWhy ?? (targetable ? "点击即对它执行所选技能（右侧是实际预测）" : "点击选中查看（不会攻击）；先选技能再点亮起的目标才执行");
         <div @key="@("foe" + idx)" id="@($"foe-{idx}")" class="foe @(idx == activeIdx ? "acting" : "") @(targetable ? "targetable" : "") @(unreachable ? "unreachable" : "") @(en.Acted ? "acted-done" : "") @(picked ? "selected" : "") @(G.BattleHover == idx ? "hover" : "")"
-             role="button" tabindex="0" aria-pressed="@picked" aria-disabled="@(unreachable || (targetable && locked))" aria-label="@($"{slot}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}，意图{en.IntentLabel}{(reachWhy != null ? "；" + reachWhy : "")}")"
+             role="button" tabindex="0" aria-pressed="@picked" aria-disabled="@(unreachable || (targetable && locked))" aria-label="@($"{slot}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}，意图{GameEngine.IntentShown(en)}{(reachWhy != null ? "；" + reachWhy : "")}")"
              title="@tip" @onclick="() => ClickFoe(idx, token, locked)" @onkeydown="ev => FoeKey(ev, idx, token, locked)"
              @onmouseenter="() => G.HoverBattleTarget(idx)" @onmouseleave="() => G.HoverBattleTarget(null)">
             <div class="foe-head"><span class="slot-tag">@(slot)号</span><b>@ec.Name</b>@if (en.Acted) {<span class="acted-mark">已行动</span>}</div>
@@ -250,8 +250,10 @@ else if (b != null)
                 <div class="foe-body">
                     <div class="hp-line" title="健康"><span>♥</span><b>@Ui.N(en.Hp)/@Ui.N(ec.Hp)</b></div>
                     <div class="track"><i style="width:@Ui.Bar(en.Hp, ec.Hp)%"></i></div>
-                    <div class="intent @(en.Intent is "bite" ? "bite" : en.Intent is "flee" or "watch" or "guard" ? "calm" : "")" title="本轮公开意图（轮初锁定，不公开伤害抽值）">
-                        <span class="intent-ico">@IntentIcon(en.Intent)</span>@NoBreakRange(en.IntentLabel)
+                    @{ var far = GameEngine.IntentOutOfReach(en); }
+                    <div class="intent @(far ? "calm" : en.Intent is "bite" ? "bite" : en.Intent is "flee" or "watch" or "guard" ? "calm" : "")"
+                         title="@(far ? $"本轮公开意图是{en.IntentLabel}，但站在{slot}号位够不到，实际只往前挤；前面的位置空出来、被压到1、2号位后才会出手" : "本轮公开意图（轮初锁定，不公开伤害抽值）")">
+                        <span class="intent-ico">@(far ? "等" : IntentIcon(en.Intent))</span>@NoBreakRange(GameEngine.IntentShown(en))
                     </div>
                 </div>
             </div>
