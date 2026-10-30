@@ -277,7 +277,7 @@ namespace Survival.Core.Save
 
             engine.InitSkills(s);
             s.Body = new BodyState { Immunity = config.Immunity.Initial, Infected = false, VirusLoad = 0 };
-            s.EquippedWeaponId = null;
+            s.LegacyEquippedWeaponId = null;
             s.Battle = null;
             s.Encounter = null;
             s.WorldEnemies = new List<WorldEnemy>();
@@ -450,8 +450,25 @@ namespace Survival.Core.Save
         private static void From8To9(GameState s, GameConfig config, List<string> notes)
         {
             s.Player.Id = GameState.PlayerId;
-            s.EquippedWeaponId = s.LegacyEquippedWeaponId;
+            // 旧单装备引用迁到武器Ⅰ（R02 §5、S06 全系统更新目标 §3）：战斗中的旧档按战内当前武器；引用无效（不在随身或不是武器）则忽略。
+            // 从五卡根列表移走同一实例（不复制），其余随身不删、不重抽。
+            var legacyId = s.Battle != null ? s.Battle.WeaponInstanceId : s.LegacyEquippedWeaponId;
+            var weapon = legacyId.HasValue ? s.Items.FirstOrDefault(i => i.InstanceId == legacyId.Value) : null;
+            var wcfg = weapon != null ? config.Weapons.FirstOrDefault(w => w.Id == weapon.ItemId && !w.IsFists) : null;
+            if (weapon != null && wcfg != null && weapon.Owner == ItemInstance.Carried)
+            {
+                weapon.Owner = ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Weapon1);
+                weapon.PlacedOrder = null;
+                var note = $"原来的当前武器{wcfg.Name}#{weapon.InstanceId}迁到武器Ⅰ（穿戴中不再占随身卡位，重量照计）；武器Ⅱ与其他穿戴槽为空";
+                notes.Add(note);
+                s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = note + "。" });
+            }
+            else if (legacyId.HasValue)
+                s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"旧存档记录的当前武器#{legacyId}已不在随身，装备槽保持为空。" });
+            if (s.Battle != null) s.Battle.ActiveWeaponSlot = 1;
+
             s.LegacyEquippedWeaponId = null;
+
             if (s.Party.Count == 0 || s.Party[0] != GameState.PlayerId)
             {
                 s.Party.Remove(GameState.PlayerId);

@@ -156,7 +156,7 @@
                 {
                     @* 战前装备当前武器（v0.5 §04：入战前可免费调整；装备只是随身实例的引用，不复制、不额外计重） *@
                     var wid = m.Instance.InstanceId;
-                    var equipped = s.EquippedWeaponId == wid;
+                    var equipped = m.Instance.IsWorn;
                     <div class="tbar-row">
                         <button type="button" class="tbar-go alt" @onclick="() => G.Equip(equipped ? null : wid)">@(equipped ? "改回徒手" : "设为当前武器")</button>
                     </div>

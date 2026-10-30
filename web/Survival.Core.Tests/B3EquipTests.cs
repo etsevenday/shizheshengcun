@@ -66,4 +66,196 @@ public class B3EquipTests : BattleTestBase
         Assert.That(E.RepairCandidates(s).Any(i => i.InstanceId == knife.InstanceId), Is.True);
         Assert.That(E.WherePath(s, knife), Is.EqualTo("穿戴·武器Ⅰ"));
     }
+
+    // ───────────── M99：战外换装 API 与 8→9 迁移 ─────────────
+
+    private ItemInstance Give(GameState s, string itemId)
+    {
+        E.DebugGive(s, itemId, 1);
+        return s.Items.Where(i => i.IsCarried && i.ItemId == itemId).OrderByDescending(i => i.InstanceId).First();
+    }
+
+    private const string P0 = GameState.PlayerId;
+
+    [Test]
+    public void EQ_SameKindSecondWeaponRejected_StateUnchanged()
+    {
+        var s = New();
+        var stone = Give(s, "stone_knife");
+        var kitchen = Give(s, "kitchen_knife");
+        var spear = Give(s, "wooden_spear");
+        Assert.That(E.Equip(s, P0, stone.InstanceId, EquipSlots.Weapon1).Ok, Is.True);
+        var before = SaveSerializer.Serialize(s);
+        var r = E.Equip(s, P0, kitchen.InstanceId, EquipSlots.Weapon2);
+        Assert.That(r.Ok, Is.False);
+        Assert.That(r.Reason, Does.StartWith("已装备同类型武器：石刀"));
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "失败不卸原武器、不改任何状态");
+        Assert.That(E.Equip(s, P0, spear.InstanceId, EquipSlots.Weapon2).Ok, Is.True, "刀+矛合法");
+        // 同槽替换同类：石刀换厨房刀（另一槽是矛）合法，石刀回随身
+        Assert.That(E.Equip(s, P0, kitchen.InstanceId, EquipSlots.Weapon1).Ok, Is.True);
+        Assert.That(stone.Owner, Is.EqualTo(ItemInstance.Carried));
+        Assert.That(E.WornItem(s, P0, EquipSlots.Weapon1)!.InstanceId, Is.EqualTo(kitchen.InstanceId));
+    }
+
+    [Test]
+    public void EQ_SameKindPairsAcrossNames_BowCrossbow_PistolRifle()
+    {
+        var s = New();
+        var bow = Give(s, "wooden_bow");
+        var xbow = Give(s, "crossbow");
+        Assert.That(E.Equip(s, P0, bow.InstanceId, EquipSlots.Weapon2).Ok, Is.True);
+        Assert.That(E.EquipBlocked(s, P0, xbow.InstanceId, EquipSlots.Weapon1), Does.Contain("已装备同类型武器：木弓"));
+        Assert.That(E.Unequip(s, P0, EquipSlots.Weapon2, false).Ok, Is.True);
+        var pistol = Give(s, "pistol");
+        var rifle = Give(s, "rifle");
+        Assert.That(E.Equip(s, P0, pistol.InstanceId, EquipSlots.Weapon1).Ok, Is.True);
+        Assert.That(E.EquipBlocked(s, P0, rifle.InstanceId, EquipSlots.Weapon2), Does.Contain("已装备同类型武器：手枪"));
+        Assert.That(E.EquipBlocked(s, P0, bow.InstanceId, EquipSlots.Weapon2), Is.Null, "弓+枪合法");
+    }
+
+    [Test]
+    public void INV01_EQ03_TwoWornPlusFiveCards_WeightSumsOnPerson()
+    {
+        var s = New();
+        var knife = Give(s, "stone_knife");
+        var spear = Give(s, "wooden_spear");
+        Assert.That(E.Equip(s, P0, knife.InstanceId, EquipSlots.Weapon1).Ok, Is.True);
+        Assert.That(E.Equip(s, P0, spear.InstanceId, EquipSlots.Weapon2).Ok, Is.True);
+        foreach (var id in new[] { "wood", "fiber", "stone" }) E.DebugGive(s, id, 1);
+        Assert.That(E.RootCardCount(s), Is.EqualTo(5), "锅、打火器、木头、纤维、石头 = 5 张；两件穿戴不占卡");
+        var expect = s.Items.Where(i => i.IsCarried || i.IsWorn).Sum(i => E.ItemGrams(s, i));
+        Assert.That(E.CarriedGrams(s), Is.EqualTo(expect), "七槽与五卡的重量都计本人");
+        Assert.That(E.WornGrams(s), Is.EqualTo(E.Item("stone_knife").WeightGrams + E.Item("wooden_spear").WeightGrams));
+    }
+
+    [Test]
+    public void INV02_UnequipWithFullCards_RejectedUnlessGround()
+    {
+        var s = New();
+        var knife = Give(s, "stone_knife");
+        Assert.That(E.Equip(s, P0, knife.InstanceId, EquipSlots.Weapon1).Ok, Is.True);
+        foreach (var id in new[] { "wood", "fiber", "stone" }) E.DebugGive(s, id, 1);
+        Assert.That(E.RootCardCount(s), Is.EqualTo(5));
+        var before = SaveSerializer.Serialize(s);
+        var r = E.Unequip(s, P0, EquipSlots.Weapon1, false);
+        Assert.That(r.Ok, Is.False);
+        Assert.That(r.Reason, Does.Contain("放当前地面"));
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before), "整次拒绝，不自动丢地");
+        Assert.That(E.Unequip(s, P0, EquipSlots.Weapon1, true).Ok, Is.True);
+        Assert.That(knife.Owner, Is.EqualTo(s.CurrentLocation), "玩家明确选择后放当前地面");
+        Assert.That(E.RootCardCount(s), Is.EqualTo(5));
+    }
+
+    [Test]
+    public void Equip_SwapWithFullCards_JudgedByFinalState()
+    {
+        var s = New();
+        var knife = Give(s, "stone_knife");
+        Assert.That(E.Equip(s, P0, knife.InstanceId, EquipSlots.Weapon1).Ok, Is.True);
+        var axe = Give(s, "hatchet");
+        foreach (var id in new[] { "wood", "fiber" }) E.DebugGive(s, id, 1);
+        Assert.That(E.RootCardCount(s), Is.EqualTo(5));
+        // 斧离开五卡、石刀回五卡：最终仍 5 张，不因中间瞬态第六张误拒
+        Assert.That(E.Equip(s, P0, axe.InstanceId, EquipSlots.Weapon1).Ok, Is.True);
+        Assert.That(knife.Owner, Is.EqualTo(ItemInstance.Carried));
+        Assert.That(axe.Owner, Is.EqualTo(ItemInstance.EquipOwner(P0, EquipSlots.Weapon1)));
+        Assert.That(E.RootCardCount(s), Is.EqualTo(5));
+    }
+
+    [Test]
+    public void Equip_SourceAndSlotRules()
+    {
+        var s = New();
+        var ground = E.CreateItems(s, "stone_knife", 1, s.CurrentLocation).Single();
+        Assert.That(E.EquipBlocked(s, P0, ground.InstanceId, EquipSlots.Weapon1), Does.Contain("先拾取到随身"), "不从地面直接穿（Q40）");
+        var lighter = s.Items.First(i => i.IsCarried && i.ItemId == "lighter");
+        Assert.That(E.EquipBlocked(s, P0, lighter.InstanceId, EquipSlots.Weapon1), Does.Contain("不是武器"));
+        var knife = Give(s, "stone_knife");
+        Assert.That(E.EquipBlocked(s, P0, knife.InstanceId, EquipSlots.Armor), Does.Contain("暂未开放"));
+        knife.ReservedBy = 99;
+        Assert.That(E.EquipBlocked(s, P0, knife.InstanceId, EquipSlots.Weapon1), Does.Contain("预留"));
+        knife.ReservedBy = null;
+        Assert.That(E.Unequip(s, P0, EquipSlots.Weapon2, false).Reason, Does.Contain("空的"));
+        Assert.That(E.Equip(s, "p9", knife.InstanceId, EquipSlots.Weapon1).Ok, Is.False, "不在同行的角色不能换装");
+    }
+
+    [Test]
+    public void Equip_IdempotentAndBlockedInBattle()
+    {
+        var s = New();
+        var knife = Give(s, "stone_knife");
+        Assert.That(E.Equip(s, P0, knife.InstanceId, EquipSlots.Weapon1, "eq-1").Ok, Is.True);
+        Assert.That(E.Unequip(s, P0, EquipSlots.Weapon1, false, "uq-1").Ok, Is.True);
+        Assert.That(E.Equip(s, P0, knife.InstanceId, EquipSlots.Weapon1, "eq-1").Duplicate, Is.True, "同一 requestId 不重复执行");
+        Assert.That(knife.Owner, Is.EqualTo(ItemInstance.Carried));
+
+        var b = Fight(5, "shambler");
+        var k2 = Give(b, "kitchen_knife");
+        Assert.That(E.EquipBlocked(b, P0, k2.InstanceId, EquipSlots.Weapon1), Does.Contain("战斗中"));
+    }
+
+    [Test]
+    public void Equip_ArmedWeaponUsedOutOfBattle_Weapon1IsCurrent()
+    {
+        var s = New();
+        var spear = Give(s, "wooden_spear");
+        Assert.That(E.CurrentWeapon(s, out _).IsFists, Is.True);
+        Assert.That(E.Equip(s, P0, spear.InstanceId, EquipSlots.Weapon1).Ok, Is.True);
+        Assert.That(E.CurrentWeapon(s, out var wi).Id, Is.EqualTo("wooden_spear"));
+        Assert.That(wi!.InstanceId, Is.EqualTo(spear.InstanceId));
+    }
+
+    // ───────────── 8→9 迁移：旧当前武器进武器Ⅰ ─────────────
+
+    [Test]
+    public void Migration8To9_EquippedWeaponMovesToWeapon1_FreesCard()
+    {
+        var s = New();
+        var knife = Give(s, "stone_knife");
+        var cards = E.RootCardCount(s);
+        var j = B3ActorTests.ToSchema8(s);
+        j["EquippedWeaponId"] = knife.InstanceId;
+        var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out var notes);
+        var mk = m.Items.Single(i => i.InstanceId == knife.InstanceId);
+        Assert.That(mk.Owner, Is.EqualTo("equip:p0:weapon1"));
+        Assert.That(E.RootCardCount(m), Is.EqualTo(cards - 1), "从五卡根列表移除同一实例，不复制");
+        Assert.That(m.Items.Count(i => i.ItemId == "stone_knife"), Is.EqualTo(1));
+        Assert.That(mk.Durability, Is.EqualTo(knife.Durability), "不重抽耐久");
+        Assert.That(notes.Any(n => n.Contains("武器Ⅰ")), Is.True);
+        var json = SaveSerializer.Serialize(m);
+        Assert.That(json, Does.Not.Contain("EquippedWeaponId"));
+        var back = SaveSerializer.Deserialize(json, Cfg);
+        Assert.That(SaveSerializer.Serialize(back), Is.EqualTo(json), "往返不变、不再迁移");
+    }
+
+    [Test]
+    public void Migration8To9_InvalidReferenceIgnored()
+    {
+        var s = New();
+        var ground = E.CreateItems(s, "stone_knife", 1, s.CurrentLocation).Single();
+        foreach (var bad in new[] { 9999, ground.InstanceId, s.Items.First(i => i.ItemId == "lighter").InstanceId })
+        {
+            var j = B3ActorTests.ToSchema8(s);
+            j["EquippedWeaponId"] = bad;
+            var m = SaveSerializer.Deserialize(j.ToString(), Cfg);
+            Assert.That(m.Items.Any(i => i.IsWorn), Is.False, $"无效引用 {bad} 忽略");
+            Assert.That(m.Items.Count, Is.EqualTo(s.Items.Count));
+        }
+    }
+
+    [Test]
+    public void Migration8To9_InBattle_UsesBattleCurrentWeapon()
+    {
+        var s = Fight(9, "shambler");
+        var knife = Give(s, "stone_knife");
+        var pistol = Give(s, "pistol");
+        s.Battle!.WeaponInstanceId = pistol.InstanceId;
+        var j = B3ActorTests.ToSchema8(s);
+        j["EquippedWeaponId"] = knife.InstanceId;
+        var m = SaveSerializer.Deserialize(j.ToString(), Cfg);
+        Assert.That(m.Items.Single(i => i.InstanceId == pistol.InstanceId).Owner, Is.EqualTo("equip:p0:weapon1"), "战斗中的旧档按战内当前武器");
+        Assert.That(m.Items.Single(i => i.InstanceId == knife.InstanceId).Owner, Is.EqualTo(ItemInstance.Carried));
+        Assert.That(m.Battle!.ActiveWeaponSlot, Is.EqualTo(1));
+        Assert.That(E.CurrentWeapon(m, out _).Id, Is.EqualTo("pistol"));
+    }
 }

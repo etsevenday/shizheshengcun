@@ -142,7 +142,7 @@ public class V11FiveCardTests : TestBase
         Assert.That(fists, Does.Contain("guard").And.Contain("end_turn"));
 
         E.DebugGive(s, "stone_knife", 1);
-        Assert.That(E.EquipWeapon(s, First(s, "stone_knife").InstanceId).Ok, Is.True);
+        Assert.That(E.Equip(s, GameState.PlayerId, First(s, "stone_knife").InstanceId, EquipSlots.Weapon1).Ok, Is.True);
         var knife = E.CompatibleCommands(s).Select(o => o.Action).ToList();
         Assert.That(knife, Does.Not.Contain("push"), "换刀后不再列徒手招式");
         Assert.That(knife, Does.Not.Contain("cut"), "刀斧1级：劈砍需2级，未满足不列出");
@@ -152,7 +152,7 @@ public class V11FiveCardTests : TestBase
 
         // 霰弹枪：散射只列给霰弹枪；空弹仓保留并写原因
         E.DebugGive(s, "shotgun", 1);
-        Assert.That(E.EquipWeapon(s, First(s, "shotgun").InstanceId).Ok, Is.True);
+        Assert.That(E.Equip(s, GameState.PlayerId, First(s, "shotgun").InstanceId, EquipSlots.Weapon1).Ok, Is.True, "同槽替换：石刀退回随身");
         s.Skills["firearms"].Level = 3;
         var gun = E.CompatibleCommands(s);
         var scatter = gun.Single(o => o.Action == "scatter");

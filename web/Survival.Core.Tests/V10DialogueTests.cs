@@ -61,7 +61,7 @@ public class V10DialogueTests : BattleTestBase
         Assert.That(E.Cancel(s).Ok, Is.False);
         Assert.That(E.Resume(s).Ok, Is.False);
         Assert.That(E.Engage(s).Ok, Is.False);
-        Assert.That(E.EquipWeapon(s, null).Ok, Is.False);
+        Assert.That(E.Equip(s, GameState.PlayerId, First(s, "lighter").InstanceId, EquipSlots.Weapon1).Ok, Is.False);
         Assert.That(E.Advance(s).Status, Is.EqualTo(SegmentStatus.Dialogue));
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(json), "被拒绝的请求不改任何状态、不 tick");
     }

@@ -164,6 +164,9 @@ namespace Survival.Core.State
 
         /// <summary>当前武器（随身实例）；徒手为 null。</summary>
         public int? WeaponInstanceId { get; set; }
+        /// <summary>当前武器页（1=武器Ⅰ、2=武器Ⅱ；A10 §4.2、B3 H6）：开战为 1，切页 0AP；随战斗存档。</summary>
+        public int ActiveWeaponSlot { get; set; } = 1;
+
 
         public List<BattleEnemy> Enemies { get; set; } = new List<BattleEnemy>();
         public List<BattleLoot> Loot { get; set; } = new List<BattleLoot>();

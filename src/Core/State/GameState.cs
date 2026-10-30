@@ -112,10 +112,12 @@ namespace Survival.Core.State
         /// <summary>进行中的战斗（v0.5 §17）；没有为 null。</summary>
         public BattleState? Battle { get; set; }
         public int NextBattleId { get; set; } = 1;
-        /// <summary>装备的武器（随身实例引用，不复制、不额外计重）；徒手为 null。战外可免费调整，战中换武器耗 1AP。</summary>
-        public int? EquippedWeaponId { get; set; }
-        /// <summary>schema &lt; 9 存档顶层的 EquippedWeaponId（读档预处理取出，只供 8→9 迁移读取，不序列化）。</summary>
+        /// <summary>
+        /// schema &lt; 9 存档顶层的 EquippedWeaponId（旧“当前武器”随身引用；读档预处理取出，只供 8→9 迁移到武器槽 1，不序列化）。
+        /// schema 9 起装备是物品 owner（"equip:p0:weapon1" 等，见 EquipSlots），不再有单独的当前武器引用。
+        /// </summary>
         [JsonIgnore] public int? LegacyEquippedWeaponId { get; set; }
+
 
         // ───── 系统策划总册 v1.0（R07 吞噬融合、N01/S15 剧情） ─────
         /// <summary>人物词条（R07：首战教学融合的绿色“攻击力+0.1”）。不是物品装备，不随武器丢失。</summary>

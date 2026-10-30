@@ -58,11 +58,11 @@ namespace Survival.Core.Engine
         {
             item = null;
             var b = s.Battle;
-            var id = b != null ? b.WeaponInstanceId : s.EquippedWeaponId;
+            var id = b != null ? b.WeaponInstanceId : WornItem(s, GameState.PlayerId, EquipSlots.Weapon1)?.InstanceId;
             if (id.HasValue)
             {
                 var it = FindItem(s, id.Value);
-                if (it != null && it.IsCarried && _weapons.TryGetValue(it.ItemId, out var w))
+                if (it != null && OnPlayer(it) && _weapons.TryGetValue(it.ItemId, out var w))
                 {
                     item = it;
                     return w;
@@ -73,7 +73,7 @@ namespace Survival.Core.Engine
 
         /// <summary>随身全部武器实例（换武器、战前装备用）。</summary>
         public List<ItemInstance> CarriedWeapons(GameState s) =>
-            s.Items.Where(i => i.IsCarried && _weapons.ContainsKey(i.ItemId)).OrderBy(i => i.InstanceId).ToList();
+            s.Items.Where(i => OnPlayer(i) && _weapons.ContainsKey(i.ItemId)).OrderBy(i => i.InstanceId).ToList();
 
         public double PlayerEffectiveSpeed(GameState s, BattleState b, double? energy = null)
         {
@@ -175,7 +175,7 @@ namespace Survival.Core.Engine
                 Surprise = surprise,
                 Context = context,
                 Tutorial = tutorial,
-                WeaponInstanceId = s.EquippedWeaponId,
+                WeaponInstanceId = WornItem(s, GameState.PlayerId, EquipSlots.Weapon1)?.InstanceId,
             };
             b.EncounterId = $"enc-{b.BattleId}";
             var k = 0;
@@ -766,7 +766,7 @@ namespace Survival.Core.Engine
                     if (!c.ItemInstanceId.HasValue) return "请选择要换的武器";
                     if (c.ItemInstanceId == 0) return b.WeaponInstanceId == null ? "已经是徒手" : null;
                     var it = FindItem(s, c.ItemInstanceId.Value);
-                    if (it == null || !it.IsCarried || !_weapons.ContainsKey(it.ItemId)) return "只能换随身的武器";
+                    if (it == null || !OnPlayer(it) || !_weapons.ContainsKey(it.ItemId)) return "只能换随身的武器";
                     if (b.WeaponInstanceId == it.InstanceId) return "已经拿着这把武器";
                     return null;
                 }
@@ -1280,7 +1280,6 @@ namespace Survival.Core.Engine
             var loss = Math.Min(Config.Panic.MoraleLossMax, b.Panic / Config.Panic.MoraleLossDivisor);
             if (loss > 0) s.Stats.Add(StatId.Morale, -loss);
             s.EncounterGraceUntil = s.GameMinute + Config.Encounters.PostExitRandomEncounterGraceMinutes;
-            s.EquippedWeaponId = b.WeaponInstanceId;
             var head = outcome == "victory" ? "战斗胜利" : "撤退成功";
             // 撤退：只有场上确有倒下敌人的掉落/尸体时才写“放弃”（试玩修复 L3）
             var loot = outcome == "victory" ? (lines.Count > 0 ? $"战利品{string.Join("、", lines)}已放在{LocName(loc)}地面" : "没有战利品")
@@ -1329,19 +1328,10 @@ namespace Survival.Core.Engine
 
         // ───────────── 战外装备 ─────────────
 
-        /// <summary>战外调整当前武器（免费、不耗时）：只能选随身武器；0 或 null 为徒手。</summary>
-        public ActionResult EquipWeapon(GameState s, int? instanceId)
-        {
-            if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
-            if (DialogueLocked(s)) return ActionResult.Fail(DialogueLockedReason);
-            if (s.Battle != null) return ActionResult.Fail("战斗中换武器请用战斗指令（1AP）");
-            if (instanceId is null or 0) { s.EquippedWeaponId = null; return ActionResult.Success(); }
-            var it = FindItem(s, instanceId.Value);
-            if (it == null || !it.IsCarried || !_weapons.ContainsKey(it.ItemId)) return ActionResult.Fail("只能装备随身的武器");
-            s.EquippedWeaponId = it.InstanceId;
-            Emit(s, GameEventKind.Info, $"装备{ItemName(it.ItemId)}#{it.InstanceId}为当前武器。");
-            return ActionResult.Success();
-        }
+        /// <summary>旧“设为当前武器/改回徒手”（过渡，网页改版后删除）：穿到武器Ⅰ / 把武器Ⅰ卸回随身。</summary>
+        public ActionResult EquipWeapon(GameState s, int? instanceId) =>
+            instanceId is null or 0 ? Unequip(s, GameState.PlayerId, EquipSlots.Weapon1, false) : Equip(s, GameState.PlayerId, instanceId.Value, EquipSlots.Weapon1);
+
     
         // ───────────── 词条平加攻击力（R07 §4、R03 §2） ─────────────
 

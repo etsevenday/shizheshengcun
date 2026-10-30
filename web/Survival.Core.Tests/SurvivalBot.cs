@@ -74,8 +74,12 @@ public sealed class SurvivalBot
 
     private void EquipBest()
     {
+        // B3：最好的一把穿进武器Ⅰ（原武器Ⅰ退回随身）；没有可用武器时卸下武器Ⅰ（卡位不够则留着）
         var best = E.CarriedWeapons(S).OrderByDescending(i => E.Weapon(i.ItemId)!.DamageMax).FirstOrDefault(i => GameEngine.HasWear(i, 1));
-        E.EquipWeapon(S, best?.InstanceId);
+        if (best == null) { E.Unequip(S, GameState.PlayerId, EquipSlots.Weapon1, false); return; }
+        if (best.IsWornBy(GameState.PlayerId)) return;
+        E.Equip(S, GameState.PlayerId, best.InstanceId, EquipSlots.Weapon1);
+
     }
 
     private int Tod => Clock.MinuteOfDay(S.GameMinute);

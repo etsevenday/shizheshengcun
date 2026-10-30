@@ -67,12 +67,16 @@ public abstract class BattleTestBase : TestBase
     protected static Func<double, bool> AtLeast(double p) => x => x >= p;
     protected static Func<double, bool> Any() => _ => true;
 
-    /// <summary>给随身一把武器并设为当前武器（战斗中直接改当前武器，不耗 AP；只用于布置场景）。</summary>
+    /// <summary>
+    /// 给主角一把武器并直接穿进武器Ⅰ（B3：装备是 owner "equip:p0:weapon1"；原武器Ⅰ里的武器退回随身）。只用于布置场景，不校验同类与卡位。
+    /// </summary>
     protected ItemInstance Arm(GameState s, string weaponId)
     {
-        var it = E.CreateItems(s, weaponId, 1, ItemInstance.Carried).Single();
+        var slot = ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Weapon1);
+        foreach (var old in s.Items.Where(i => i.Owner == slot)) old.Owner = ItemInstance.Carried;
+        var it = E.CreateItems(s, weaponId, 1, slot).Single();
         if (s.Battle != null) s.Battle.WeaponInstanceId = it.InstanceId;
-        else s.EquippedWeaponId = it.InstanceId;
         return it;
     }
+
 }
