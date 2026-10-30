@@ -69,7 +69,7 @@
                             <ChildContent>
                                 <div class="hp-line"><span>健康</span><b>@Ui.N(w.Hp)/@Ui.N(ec.Hp)</b></div>
                                 <div class="track"><i style="width:@Ui.Bar(w.Hp, ec.Hp)%"></i></div>
-                                <div class="oc-line">伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax)) · 速度@(Ui.T(ec.Speed))</div>
+                                <div class="oc-line" title="@($"伤害{Ui.N(ec.DamageMin)}—{Ui.N(ec.DamageMax)} · 速度{Ui.T(ec.Speed)}")">伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax)) · 速度@(Ui.T(ec.Speed))</div>
                             </ChildContent>
                             <Footer>
                                 @* R05 §7、S14 §14.2：点“接近”只在卡旁打开对象/风险预览，点浮窗里的“接近并开战”才接敌 *@
@@ -104,16 +104,18 @@
                             @* M84：耗时只写在按钮上（“采集/搜集 + N分钟”），状态行不再重复，给名称和产出留位 *@
                             @if (r.IsCache)
                             {
-                                <div class="oc-line">@string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}"))</div>
+                                var cacheLine = string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}"));
+                                <div class="oc-line" title="@cacheLine">@cacheLine</div>
                             }
                             else
                             {
                                 var per = r.Outputs.Values.First() * (tool != null && r.ToolBonus != null && !r.IsUnlimited ? r.ToolBonus.OutputMultiplier : 1);
-                                <div class="oc-line">每次@(per)@(e.ItemName(r.Outputs.Keys.First()))@(r.Refills ? $" · 日补{r.DailyRefill}" : "")</div>
+                                var perLine = $"每次{per}{e.ItemName(r.Outputs.Keys.First())}{(r.Refills ? $" · 日补{r.DailyRefill}" : "")}";
+                                <div class="oc-line" title="@perLine">@perLine</div>
                             }
-                            @if (r.Hazard != null) { <div class="oc-line warn-line">@Ui.Pct(r.Hazard.Probability)@r.Hazard.Label · 健康−@Ui.T(r.Hazard.HealthLoss)</div> }
+                            @if (r.Hazard != null) { var hz = $"{Ui.Pct(r.Hazard.Probability)}{r.Hazard.Label} · 健康−{Ui.T(r.Hazard.HealthLoss)}"; <div class="oc-line warn-line" title="@hz">@hz</div> }
                             @* Q28：按钮缩成“动词 + 时长”让出约70%图片区，不能开始的实际原因改写在卡面状态角标里，不隐藏 *@
-                            @if (why != null) { <div class="oc-line warn-line res-why">@why</div> }
+                            @if (why != null) { <div class="oc-line warn-line res-why" title="@why">@why</div> }
                         </ChildContent>
                         <Footer>
                             @* 试玩修复 B5：与探索/清理同一按钮形态，悬停或聚焦即在右栏预测，离开恢复 *@

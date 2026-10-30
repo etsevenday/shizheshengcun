@@ -13,6 +13,7 @@
 //   full     营地：火堆燃烧、锅满（水1000毫升+2份生块根）、直烤位1份生块根、遮蔽棚已建、随身五张卡（含“未鉴定的活性物质”最长名）
 //   fuelfull 营地：同 full，燃料满240、床垫已建
 //   hardware 五金店：资源卡（可搜/已搜空、不能开始的原因）
+//   field    农野荒地：块根地、荒地纤维丛（长名+存量角标+日补）、可能有游荡尸敌踪卡（M90 加）
 // 每个场景测默认、选地面卡、选随身最长名卡、选火堆、选火堆里的锅、悬停地面卡，开地图/制作面板。
 // 测量口径（S14 截图复核 §B）：
 //   - 火堆外框与同组遮蔽棚/床垫顶、底各差 ≤1px，各状态前后火堆高度不变（UI-M04）。
@@ -21,6 +22,8 @@
 //   - 主图：按 viewBox 等比适配算出主体实际所在矩形，不被裁（祖先 overflow 与卡框内缘）、不被同卡文字/角标/按钮压住（>2%面积才报）、
 //     精灵图无 clip-path（UI-M05）；记录主体高/卡高，供人工对照“约70%”。
 //   - 物品卡名称与转移箭头不相交；卡片外缘不压所在行框。
+//   - 首屏可见（M90）：设施行在最左时火堆（全部按钮与加工位）、遮蔽棚、床垫整张可见，屏高≥1000 时采集资源标题与第一项可见；
+//     火堆宽度在同一档尺寸的所有场景/状态里不变；单行省略文字不被盒高切掉字底；卡内文字不被同卡按钮压住。
 //   - 右栏折叠（UI-M07—M09）：四种组合各经地图/制作/休息/日志/系统说明开关、对象信息↔人物切换、刷新、读旧档后保持；对白锁期间点击不改变。
 // 结果写 <输出目录>/v12-results.json，截图写 <输出目录>/screenshots/。自动测量不替代人工逐图确认纹理与装饰实边（S14 §B 最后一段）。
 'use strict';
@@ -177,6 +180,11 @@ async function loadScene(scene, fixtures) {
     await sleep(400); return;
   }
   if (!campBase) { await loadState(fixtures.camp); campBase = await savedJson(); }
+  if (scene === 'field') {
+    const st = JSON.parse(campBase); st.CurrentLocation = 'field';
+    for (const k of ['roots', 'field_fiber']) if (st.Resources[k]) st.Resources[k].Discovered = true;
+    await loadState(JSON.stringify(st)); return;
+  }
   await loadState(stage(campBase, scene));
 }
 
@@ -227,6 +235,37 @@ const MEASURE = `(() => {
       for (const e of es) { const a = R(e); if (a.b > fr.b + 0.5 || a.y < fr.y - 0.5) issues.push('火堆' + name + '被卡底/顶裁切'); }
     }
   }
+  // 1b 首屏可见（M90）：设施行滚动区在最左时，火堆（含全部按钮与两个加工位）、遮蔽棚、床垫整张在可见区内；
+  //    屏高≥1000 时“采集资源”分组标题与第一项也要整块可见。火堆宽度不随内容变（各状态比较见主流程）。
+  const facScroll = document.querySelector('.center-scroll.four .fac-scroll');
+  const firstScreen = {};
+  if (facScroll && facScroll.scrollLeft < 1) {
+    const z = R(facScroll);
+    const frac = e => { const a = R(e); return a.w > 0 ? Math.max(0, Math.min(a.r, z.r) - Math.max(a.x, z.x)) / a.w : 0; };
+    const must = [];
+    if (fire && vis(fire)) must.push([fire, '火堆'], ...[...fire.querySelectorAll('.fc-btn, .fc-slots > *, .fc-slot :is(.card-arrow, .row-arrow)')].filter(vis).map(e => [e, '火堆内' + ((e.innerText || e.getAttribute('aria-label') || '').trim().split('\\n')[0].slice(0, 8))]));
+    for (const f of [...document.querySelectorAll('.desk-group.facilities .fac-card')].filter(vis)) must.push([f, (f.querySelector('.oc-head b') || {}).innerText || '设施卡']);
+    if (innerHeight >= 1000) { const g = document.querySelector('.desk-group.resources'); if (g) { const t = g.querySelector('.dg-title'), c = g.querySelector('.dg-cards > *'); if (t) must.push([t, '采集资源标题']); if (c) must.push([c, '采集资源第一项']); } }
+    for (const [e, n] of must) { const v = frac(e); firstScreen[n] = f1(v * 100); if (v < 0.99) issues.push('首屏不可见：' + n + ' 可见' + f1(v * 100) + '%'); }
+  }
+  // 1c 文字被盒子切掉（M90）：overflow 隐藏、未用多行截断的单行/省略文字，若内容高于盒高（字底被切）报错；
+  //    卡内文字行与同卡按钮相交（文字被按钮压住）报错
+  for (const e of [...document.querySelectorAll('.center :is(.ff-status, .oc-head b, .oc-line, .hp-line, .ctitle > span, .cinfo, .pot-fill-head b, .pc-sum-label, .fc-btn small, .pc-title b, .pc-name, .fuel-line)')].filter(vis)) {
+    const cs = getComputedStyle(e); if (cs.webkitLineClamp && cs.webkitLineClamp !== 'none') continue;
+    // scrollHeight 取整、clientHeight 向下取整，按元素实际高度比较，超出 1px 以上才算切字（排除取整误差）
+    if (cs.overflowY !== 'visible' && e.scrollHeight > e.getBoundingClientRect().height - (parseFloat(cs.borderTopWidth) || 0) - (parseFloat(cs.borderBottomWidth) || 0) + 1) issues.push('字底被切 ' + label(e) + '「' + e.innerText.trim().slice(0, 10) + '」' + e.scrollHeight + '>' + e.clientHeight);
+  }
+  for (const c of [...document.querySelectorAll('.center :is(.ocard, .pot-card, .fc-food, .card.item)')].filter(vis)) {
+    const btns = [...c.querySelectorAll('button')].filter(vis).map(R);
+    for (const t of [...c.querySelectorAll('.oc-line, .hp-line, .oc-head b, .oc-badge, .cinfo, .ctitle > span, .ff-status, .fc-title b, .fuel-line')].filter(vis)) {
+      if (t.closest('button')) continue;
+      // 角标/文字盒本身越出所在列压到按钮（如 1920“燃烧中”角标压“等待烹饪”）也算
+      for (const b of btns) { const i = isect(R(t), b); if (i && i.w > 0.5 && i.h > 0.5) { issues.push('文字盒压住按钮 ' + label(c) + '「' + t.innerText.trim().slice(0, 10) + '」'); break; } }
+      const rg = document.createRange(); rg.selectNodeContents(t);
+      const clip = clipOf(t);
+      for (const r0 of rg.getClientRects()) { const r = isect(rr(r0), clip); if (!r) continue; for (const b of btns) { const i = isect(r, b); if (i && i.w > 0.5 && i.h > 0.5) issues.push('文字被按钮压住 ' + label(c) + '「' + t.innerText.trim().slice(0, 10) + '」'); } }
+    }
+  }
   // 2 文字与可见框内缘（UI-M06）
   const FRAMED = '.card.item, .ocard, .map-card, .pot-card, .fc-food, .apop, .panel, .stack-layer, .st-pop';
   const BADGE = '.qty, .slot-span, .oc-badge, .badge, .tag, .card-arrow, .row-arrow, .apop-x';
@@ -248,7 +287,9 @@ const MEASURE = `(() => {
       if (partlyScrolled(el, B)) continue;
       const badge = !!el.closest(BADGE); const need = badge ? 6 : 8;
       const rg = document.createRange(); rg.selectNodeContents(n);
-      const clip = clipOf(el); const ec = rr(el.getBoundingClientRect());
+      // 元素自身 overflow 隐藏（省略号单行）时，被省略掉的那段字不显示，也要按元素自身裁掉
+      let clip = clipOf(el); const ec = rr(el.getBoundingClientRect());
+      { const ecs = getComputedStyle(el); if (ecs.overflowX !== 'visible' || ecs.overflowY !== 'visible') clip = isect(clip, ec) || { x: 0, y: 0, r: 0, b: 0, w: 0, h: 0 }; }
       for (const r0 of rg.getClientRects()) {
         let r = isect(rr(r0), clip); if (!r) continue;
         r = isect(r, { x: Math.min(ec.x, br.x), y: Math.min(ec.y, br.y), r: Math.max(ec.r, br.r), b: Math.max(ec.b, br.b) }); if (!r) continue;
@@ -319,7 +360,7 @@ const MEASURE = `(() => {
   const grid = document.querySelector('.center-scroll.four');
   const tracks = grid ? getComputedStyle(grid).gridTemplateRows.split(' ').map(parseFloat) : [];
   if (tracks.length === 4 && Math.max(...tracks) - Math.min(...tracks) > 1) issues.push('四行不等高：' + tracks.join(','));
-  return { viewport: [innerWidth, innerHeight], tracks, fire: fireInfo, textChecked, safety: safety.sort((a, b) => (a.d - a.need) - (b.d - b.need)).slice(0, 12), arts, pop, issues };
+  return { viewport: [innerWidth, innerHeight], tracks, fire: fireInfo, firstScreen, textChecked, safety: safety.sort((a, b) => (a.d - a.need) - (b.d - b.need)).slice(0, 12), arts, pop, issues };
 })()`;
 
 const FOLD = `(() => { const g = k => { const sec = document.querySelector('[data-fold=' + k + ']'); const b = sec && sec.querySelector('.fold-head'); return b ? { open: sec.classList.contains('open'), disabled: b.disabled } : null; };
@@ -339,7 +380,8 @@ const FOLD = `(() => { const g = k => { const sec = document.querySelector('[dat
     await connect();
     await send('Page.enable'); await send('Runtime.enable');
     const fixtures = fs.existsSync(FIXTURES) ? JSON.parse(fs.readFileSync(FIXTURES, 'utf8')) : {};
-    const scenes = ['new', 'empty', 'full', 'fuelfull', 'hardware'];
+    const scenes = ['new', 'empty', 'full', 'fuelfull', 'hardware', 'field'];
+    const fireW0 = {};
     for (const [w, h] of SIZES) {
       await size(w, h);
       for (const scene of scenes) {
@@ -354,6 +396,8 @@ const FOLD = `(() => { const g = k => { const sec = document.querySelector('[dat
             await sleep(350);
             const m = await ev(MEASURE);
             if (m.fire) { if (fireH0 == null) fireH0 = m.fire.h; else if (Math.abs(m.fire.h - fireH0) > 1) m.issues.push('火堆高度随状态变化：' + fireH0 + '→' + m.fire.h); }
+            // 火堆宽度固定（M90）：同一档尺寸下所有场景、状态（空/放锅/直烤/选中）宽度一致
+            if (m.fire) { const k = `${w}x${h}`; if (fireW0[k] == null) fireW0[k] = m.fire.w; else if (Math.abs(m.fire.w - fireW0[k]) > 1) m.issues.push('火堆宽度随内容变化：' + fireW0[k] + '→' + m.fire.w); }
             const file = await shot(`${scene}-${w}-${name}`);
             rec.states.push({ name, did, pass: m.issues.length === 0, screenshot: file, ...m });
             console.log(`${m.issues.length ? 'FAIL' : 'PASS'} ${w}x${h} ${scene} ${name}${did ? '' : '（未执行到）'}` +

@@ -6,7 +6,7 @@
      role="button" tabindex="0" title="@Tooltip" aria-label="@(AriaLabel ?? Title)"
      @onclick="Click" @onkeydown="Key">
     <div class="oc-head">
-        <b>@Title</b>
+        <b title="@Title">@Title</b>
         @if (!string.IsNullOrEmpty(Badge)) { <span class="oc-badge @BadgeClass">@Badge</span> }
     </div>
     <div class="oc-main">

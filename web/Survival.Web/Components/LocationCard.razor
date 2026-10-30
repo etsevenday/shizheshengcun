@@ -99,7 +99,7 @@ else
             }
         </Art>
         <ChildContent>
-            <div class="oc-line">单程@(edge?.BaseMinutes ?? 0)分钟 · @(lc.IsIndoor ? "室内" : "露天")</div>
+            <div class="oc-line" title="@($"单程{edge?.BaseMinutes ?? 0}分钟 · {(lc.IsIndoor ? "室内" : "露天")}")">单程@(edge?.BaseMinutes ?? 0)分钟 · @(lc.IsIndoor ? "室内" : "露天")</div>
         </ChildContent>
         <Footer>
             <button type="button" class="oc-btn @(open ? "on" : "")" aria-expanded="@open" title="在卡旁预览并确认移动"

@@ -655,3 +655,148 @@
 .center-scroll.four .dg-cards > .fire-card { padding-left: 12px; padding-right: 12px; }
 .center-scroll.four .fire-card .fc-slot > .fc-food { padding-top: 14px; }
 .wasteland .center-scroll.four .row-scroll .card.item { padding-right: 13px; }
+
+/* ───── B2 试玩修复第 1 轮（开发计划 v0.9 §B2.6，M90） ─────
+   1 火堆宽度固定，不随“放锅/直烤”变宽（UI-M04“不扩大到挤掉其他设施/采集资源区”）：按屏高三档固定 420/520/560px，
+     首屏同时放下火堆全部主要动作与遮蔽棚、床垫（1280×720 棚/床卡宽 104px，组内间距 8px）。两个加工位改为右列上下两格，
+     格子用细线框（不再套纸框，省出 2×12px 给文字），锅格：名称+箭头 / 水量 + 食材数（屏高≥801 再加水量条与食材图标）；
+     直烤格：名称+箭头 / 加工状态一行（省略时悬停看全文）。锅、食材的完整内容仍在选卡浮窗与右栏。 */
+.center-scroll.four .dg-cards > .fire-card { --fire-w: 420px; --ctrl-w: 226px; width: var(--fire-w); flex: 0 0 var(--fire-w); grid-template-columns: var(--ctrl-w) minmax(0, 1fr); }
+@media (min-height: 801px) { .center-scroll.four .dg-cards > .fire-card { --fire-w: 520px; --ctrl-w: 280px; } }
+@media (min-height: 1000px) { .center-scroll.four .dg-cards > .fire-card { --fire-w: 560px; --ctrl-w: 280px; --fire-art: 64px; } }
+.center-scroll.four .fire-card .fc-ctrl { flex: none; width: auto; min-width: 0; }
+.center-scroll.four .fire-card .fc-title { flex-wrap: wrap; white-space: normal; min-width: 0; overflow: hidden; }
+.center-scroll.four .fire-card .fc-title .oc-badge { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.center-scroll.four .fire-card .fc-slots { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 6px; min-width: 0; }
+.center-scroll.four .fire-card .fc-slots > * { width: auto; min-width: 0; height: auto; flex: none; flex-basis: auto; }
+.center-scroll.four .fire-card .fc-slots > .fc-slot.food, .center-scroll.four .fire-card .fc-slots > .fc-slot.pot { flex-basis: auto; }
+.center-scroll.four .fire-card .fc-slots > .slot-empty { flex-direction: row; gap: 6px; padding: 4px 8px; border-width: 1px; }
+.center-scroll.four .fire-card .fc-slots > .slot-empty svg { width: 20px; height: 20px; }
+.center-scroll.four .fire-card .fc-slots > .slot-empty span { font-size: 13px; }
+/* 加工位里的锅与食材：细线框，内边距 8px */
+.wasteland .center-scroll.four .fire-card .fc-slot > :is(.pot-card.compact, .fc-food) {
+  border: 1px solid #8e805b; border-image: none; border-radius: 3px; box-shadow: none; padding: 6px 8px; gap: 2px;
+}
+.wasteland .center-scroll.four .fire-card .fc-slot > :is(.pot-card.compact, .fc-food).selected { border-color: #d4a34f; box-shadow: 0 0 0 1px #b98939; }
+.center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-head { height: auto; min-height: 0; }
+.center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-title small { display: none; }
+.center-scroll.four .fire-card .fc-slot > .pot-card.compact .pot-fill { border: 0; padding: 0; background: none; }
+.center-scroll.four .fire-card .fc-slot > .pot-card.compact .pot-fill-head { font-size: 12px; line-height: 1.25; }
+.center-scroll.four .fire-card .fc-slot > .pot-card.compact .pot-fill-head em { display: none; }
+.center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-sum { flex: 0 0 auto; min-height: 0; border: 0; padding: 0; gap: 3px; }
+.center-scroll.four .fire-card .fc-slot > .fc-food .ff-head { min-height: 0; gap: 4px; }
+.center-scroll.four .fire-card .fc-slot > .fc-food .pc-ico { width: 22px; height: 22px; }
+.center-scroll.four .fire-card .fc-slot > .fc-food .pc-ico svg { width: 20px; height: 20px; }
+.center-scroll.four .fire-card .fc-slot > .fc-food .pc-name { font-size: 13px; line-height: 1.25; }
+.center-scroll.four .fire-card .fc-slot > .fc-food .pc-status { display: none; }
+/* 2 直烤状态行：按字体行高给足高度，一行省略，不再被盒高切掉字底 */
+.center-scroll.four .fire-card .fc-slot > .fc-food .ff-status {
+  font-size: 12px; line-height: 1.3; min-height: 1.3em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none;
+}
+@media (max-height: 999px) {
+  /* 1280×720 每格高约49px、1600×900 约69px：两行（名称+箭头 / 水量·食材数 或 加工状态） */
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 6px; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-head { grid-column: 1 / -1; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-icon { flex-basis: 18px; width: 18px; height: 18px; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-icon :is(svg, img) { width: 18px; height: 18px; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pot-track { display: none; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-sum-food { display: none; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-sum-label { font-size: 12px; line-height: 1.25; }
+  .center-scroll.four .fire-card .fc-slot > .fc-food :is(.heat-track, .ff-note) { display: none; }
+  .center-scroll.four .facility-row .dg-cards { gap: 8px; }
+  .center-scroll.four .facility-row .fac-card { width: 104px; }
+}
+/* 3 左图右文卡（屏高≤800 资源/敌踪/相邻地点）：名称一行（悬停看全名）、角标同行；描述区在按钮上方单独占位，放不下时区内滚动，
+   不再被“采集 N分钟”按钮压住；名称行高按字体给足，不切字底 */
+@media (max-height: 800px) {
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) { width: 256px; }
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) .oc-head { flex-wrap: nowrap; }
+  .wasteland .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) .oc-head b {
+    display: block; -webkit-line-clamp: unset; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; line-height: 1.3;
+  }
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) .oc-body {
+    overflow-y: auto; overflow-x: hidden; scrollbar-width: none; margin-bottom: 2px;
+  }
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) .oc-body :is(.oc-line, .hp-line) { line-height: 1.25; }
+}
+.wasteland .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-head b { line-height: 1.3; }
+/* 5 临界：1280 随身锅卡标题离纸框；两行战斗敌卡意图右端离纸框 ≥8px */
+@media (max-height: 800px) { .center-scroll.four .row-scroll .pot-card.compact { padding-top: 14px; } }
+.bt-scene .foe-body { padding-right: 4px; }
+.center-scroll.four .fire-card .fc-slot :is(.card-arrow, .row-arrow) { min-width: 0; min-height: 0; width: 24px; height: 24px; flex: 0 0 24px; }
+.center-scroll.four .fire-card .fc-slot :is(.card-arrow, .row-arrow)::after { content: ""; position: absolute; inset: -8px; }
+@media (max-height: 999px) {
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact > .pot-fill { grid-column: 1; grid-row: 2; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact > .pc-sum { grid-column: 2; grid-row: 2; justify-self: end; }
+}
+@media (max-height: 999px) {
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact { grid-template-columns: minmax(0, 1fr) auto; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact > .pot-fill { min-width: 0; overflow: hidden; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pot-fill-head b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+}
+@media (max-height: 800px) {
+  /* 左图右文卡宽 280px：右列每条状态一行（省略时悬停看全文，选中后右栏有完整说明），描述区不滚动、不裁半行字 */
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) { width: 280px; }
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) .oc-body { overflow: hidden; }
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) .oc-body :is(.oc-line, .hp-line) {
+    display: block; -webkit-line-clamp: unset; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3;
+  }
+  .center-scroll.four .facility-row .enemy-card.world .oc-body .hp-line { display: flex; }
+}
+/* 加工位格子：箭头离细线框 ≥6px（格内边距 7px 8px），箭头可见 18—22px、热区伪元素扩到 ≥40px */
+.wasteland .center-scroll.four .fire-card .fc-slot > :is(.pot-card.compact, .fc-food) { padding: 7px 8px; }
+.center-scroll.four .fire-card .fc-slot :is(.card-arrow, .row-arrow) { width: 22px; height: 22px; flex-basis: 22px; font-size: 11px; }
+.center-scroll.four .fire-card .fc-slot :is(.card-arrow, .row-arrow)::after { inset: -9px; }
+.center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-head { gap: 4px; }
+@media (max-height: 800px) {
+  .center-scroll.four .fire-card .fc-slot :is(.card-arrow, .row-arrow) { width: 18px; height: 18px; flex-basis: 18px; }
+  .center-scroll.four .fire-card .fc-slot :is(.card-arrow, .row-arrow)::after { inset: -11px; }
+  .center-scroll.four .fire-card .fc-slot > .fc-food .pc-ico { width: 18px; height: 18px; }
+  .center-scroll.four .fire-card .fc-slot > .fc-food .pc-ico svg { width: 16px; height: 16px; }
+  /* 1280×720 火堆左列：名称与状态角标一行（左格加宽、等待烹饪格收窄），名称离纸框顶 ≥8px */
+  .center-scroll.four .fire-card .fc-ctrl { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); }
+  .center-scroll.four .fire-card .fc-title { flex-wrap: nowrap; white-space: nowrap; }
+  .center-scroll.four .fire-card .fc-fuel { row-gap: 1px; padding: 1px 4px; }
+  .center-scroll.four .fire-card .fc-btn.cook { padding: 1px 6px; }
+  /* 遮蔽棚/床垫卡宽104px：效果/条件一行省略（悬停卡片看全文），不再撑出卡底 */
+  .center-scroll.four .facility-row .fac-card .oc-body .oc-line { display: block; -webkit-line-clamp: unset; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .center-scroll.four .facility-row .fac-card .oc-head { padding-right: 12px; }
+}
+@media (min-height: 801px) and (max-height: 999px) {
+  .center-scroll.four .fire-card .fc-slot > .fc-food .ff-note { display: none; }
+}
+@media (min-height: 1000px) {
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-sum-food { flex-basis: 24px; width: 24px; height: 24px; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-sum-food :is(svg, img) { width: 24px; height: 24px; }
+}
+@media (max-height: 800px) {
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-head :is(.card-arrow, .row-arrow) { width: 18px; height: 18px; }
+  .center-scroll.four .fire-card .fc-slot > .fc-food { padding-top: 8px; }
+}
+@media (min-height: 801px) {
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-head :is(.card-arrow, .row-arrow) { width: 22px; height: 22px; }
+}
+@media (max-height: 800px) {
+  /* 1280×720 加工位格子文字离细线框 ≥8px：格子列上下各借火堆内边距几像素（格框仍在纸框线以内），两格间距 4px，每格约53px */
+  .center-scroll.four .fire-card .fc-slots { margin: -2px 0 -5px; gap: 4px; }
+  .wasteland .center-scroll.four .fire-card .fc-slot > :is(.pot-card.compact, .fc-food) { padding: 9px 8px 8px; row-gap: 1px; gap: 1px; }
+  .center-scroll.four .fire-card .fc-slot > .pot-card.compact .pc-head, .center-scroll.four .fire-card .fc-slot > .fc-food .ff-head { height: 18px; min-height: 0; }
+}
+@media (max-height: 800px) {
+  .center-scroll.four .fire-card .fc-slots { height: auto; align-self: stretch; }
+  .center-scroll.four .fire-card .fc-slot > .fc-food .ff-head { flex: 0 0 18px; }
+}
+@media (max-height: 800px) {
+  .center-scroll.four .fire-card .fc-slot > .fc-food .ff-head { flex-basis: 17px; height: 17px; }
+  .center-scroll.four .fire-card .fc-slot > .fc-food .ff-status { line-height: 1.2; min-height: 1.2em; }
+}
+@media (max-height: 800px) {
+  .center-scroll.four .fire-card .fc-slot > .fc-food .ff-head { flex-basis: 16px; height: 16px; }
+  .center-scroll.four .fire-card .fc-slot > .fc-food .pc-name { line-height: 1.2; }
+  .center-scroll.four .fire-card .fc-slot > .fc-food .ff-status { line-height: 1.25; min-height: 1.25em; }
+}
+/* 资源/设施/敌踪/相邻地点卡名称行高给足（14px 字、行高约20px），单行省略时不切字底 */
+.wasteland .center-scroll.four :is(.res-card, .fac-card, .enemy-card.world, .loc-card.neighbor) .oc-head b { line-height: 1.4; }
+/* 标题字体（粗体衬线）升降部比正文高：物品卡名称、锅卡名称单行时行高给到约1.35，不切字底 */
+.wasteland .center-scroll.four .row-scroll .card.item .ctitle > span:first-child { line-height: 1.35; }
+.center-scroll.four .pot-card.compact .pc-title b { line-height: 1.3; }
