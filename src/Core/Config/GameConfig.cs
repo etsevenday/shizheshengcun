@@ -72,6 +72,13 @@ namespace Survival.Core.Config
         public List<AffixConfig> Affixes { get; set; } = new List<AffixConfig>();
         public EquipmentRulesConfig Equipment { get; set; } = new EquipmentRulesConfig();
 
+        // ───── 系统策划总册 v1.0 B5 十级熟练度与求生被动（A06 §1–§4、R01 §1/§2/§5；开发计划 v0.9 B5） ─────
+        /// <summary>75 个专属技能节点（15 门 × 1/3/5/7/10）。</summary>
+        public List<SkillNodeConfig> SkillNodes { get; set; } = new List<SkillNodeConfig>();
+        /// <summary>各武器类基准 E（A06 §1：拳.30/刀剑.40/斧.65/……），B6/B7 主动技能 E 成本换算用。</summary>
+        public Dictionary<string, double> SkillKindBaseEnergy { get; set; } = new Dictionary<string, double>();
+        public SkillPassiveRulesConfig SkillPassiveRules { get; set; } = new SkillPassiveRulesConfig();
+
         // ───── 系统策划总册 v1.0 答复（N01/R07/S15） ─────
         public ActiveSubstanceConfig ActiveSubstance { get; set; } = new ActiveSubstanceConfig();
         public StoryConfig Story { get; set; } = new StoryConfig();

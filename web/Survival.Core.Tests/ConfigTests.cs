@@ -432,6 +432,12 @@ public class ConfigTests : TestBase
         ((JObject)d["immunity"]!["penaltiesPerHour"]!).Remove("virusInfected");
         ((JObject)d["infection"]!).Remove("progressPerHour");
         ((JObject)d["infection"]!["naturalCure"]!).Remove("consecutiveImmunityAtLeast");
+        // B5（A06 §1/§4）：技能 8→15 门、最高10级、刀斧改名刀剑/弓箭改名弓弩；斧改练“斧”，劈砍/割伤加 axe；新值由 B5SkillTests 核对
+        d["skills"] = new JArray(((JArray)d["skills"]!).Select(x => { var o = (JObject)x.DeepClone(); o.Remove("name"); o.Remove("levelCap"); return o; }));
+        ((JObject)d["skillGrowth"]!).Remove("skillLevelCap");
+        foreach (var w in ((JArray)d["weapons"]!).Where(w => (string?)w["id"] == "hatchet")) ((JObject)w).Remove("skillId");
+        foreach (var a in ((JArray)d["actions"]!).Where(a => (string?)a["id"] is "cleave" or "cut")) ((JObject)a).Remove("skills");
+        mapped["skills"] = new JArray(((JArray)d["skills"]!).Select(x => ((JArray)mapped["skills"]!).First(m => (string?)m["id"] == (string?)x["id"])));
         // B4（A05 §1）：weapons 新增 27 件，旧 12 行原值不动——按 ID 取出旧行再逐字段比对
         var designWeaponIds = ((JArray)d["weapons"]!).Select(w => (string)w["id"]!).ToList();
         mapped["weapons"] = new JArray(designWeaponIds.Select(id => ((JArray)mapped["weapons"]!).First(w => (string?)w["id"] == id)));
@@ -487,7 +493,8 @@ public class ConfigTests : TestBase
             Assert.That(r.BaseMinutes, Is.EqualTo((int)j["baseMinutes"]!), r.Id);
             Assert.That(r.Inputs, Is.EquivalentTo(((JObject)j["inputs"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value)), r.Id);
             Assert.That(r.Outputs, Is.EquivalentTo(((JObject)j["outputs"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value)), r.Id);
-            if (j["minSkills"] is JObject ms) Assert.That(r.MinSkills, Is.EquivalentTo(ms.Properties().ToDictionary(p => p.Name, p => (int)p.Value)), r.Id);
+            // B5（A06 §4）：特效药旧门槛 医疗15/制造12 改 医疗10/制造10，新值由 B5SkillTests 核对
+            if (j["minSkills"] is JObject ms && r.Id != "make_antiviral_cure") Assert.That(r.MinSkills, Is.EquivalentTo(ms.Properties().ToDictionary(p => p.Name, p => (int)p.Value)), r.Id);
             if (j["requirement"] != null) Assert.That(r.Requirement?.Facility, Is.EqualTo((string)j["requirement"]!), r.Id);
             if (j["potCatalyst"] != null) Assert.That(r.PotCatalyst, Is.EqualTo((string)j["potCatalyst"]!), r.Id);
             if (j["restoreOwnDurabilityMaxFraction"] != null) Assert.That(r.RestoreOwnDurabilityMaxFraction, Is.EqualTo((double)j["restoreOwnDurabilityMaxFraction"]!), r.Id);
@@ -546,7 +553,7 @@ public class ConfigTests : TestBase
         Assert.That(Cfg.CombatMath.MinEffectiveSpeed, Is.EqualTo(0.1));
         Assert.That((Cfg.CombatMath.InitiativeRollMin, Cfg.CombatMath.InitiativeRollMax), Is.EqualTo((1, 4)));
         Assert.That(Cfg.CombatMath.GuardFactor, Is.EqualTo(0.5));
-        Assert.That(Cfg.Skills.All(s => s.XpBase == 50 && s.XpOffset == 1 && s.LevelCap == null), Is.True, "50×(L+1)，无等级上限");
+        Assert.That(Cfg.Skills.All(s => s.XpBase == 50 && s.XpOffset == 1 && s.LevelCap == 10), Is.True, "50×(L+1)，B5 起最高10级（A06 §1）");
         Assert.That((Cfg.Xp.CraftDivisor, Cfg.Xp.CraftMin, Cfg.Xp.CraftMax), Is.EqualTo((10.0, 1.0, 12.0)));
         Assert.That((Cfg.Panic.InitialBase, Cfg.Panic.InitialDivisor, Cfg.Panic.DamageGainFactor), Is.EqualTo((100.0, 2.0, 1.5)));
         Assert.That((Cfg.Panic.MoraleLossMax, Cfg.Panic.MoraleLossDivisor), Is.EqualTo((5.0, 20.0)));

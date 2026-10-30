@@ -135,9 +135,9 @@ public class CombatV06Tests : BattleTestBase
         Assert.That(E.SkillEnergyCost(axe.EnergyCost, 1000), Is.GreaterThan(0).And.LessThan(E.SkillEnergyCost(axe.EnergyCost, 100)));
         Assert.That(E.CraftWorkFactor(1000), Is.GreaterThan(0).And.LessThan(E.CraftWorkFactor(100)));
 
-        // 无10级上限：经验持续累计、逐级扣门槛，可多级提升；溢出报错不回零
+        // B5（A06 §1，取代 v0.6“无10级上限”）：经验逐级扣门槛、可多级提升，到10级停；溢出报错不回零
         var s = New();
-        Assert.That(s.Skills.Keys, Is.EquivalentTo(Cfg.Skills.Select(x => x.Id)), "新局8项技能");
+        Assert.That(s.Skills.Keys, Is.EquivalentTo(Cfg.Skills.Select(x => x.Id)), "新局15门技能");
         Assert.That(s.Skills.Values.All(x => x.Level == 1 && x.Xp == 0), Is.True);
         E.GainXp(s, "blade", 100 + 150);      // 1→2 需100，2→3 需150
         Assert.That(s.Skills["blade"].Level, Is.EqualTo(3));
@@ -145,8 +145,8 @@ public class CombatV06Tests : BattleTestBase
         long total = 0;
         for (var l = 3; l < 12; l++) total += E.NextLevelXp("blade", l);
         E.GainXp(s, "blade", total + 7);
-        Assert.That(s.Skills["blade"].Level, Is.EqualTo(12), "10级后继续升级");
-        Assert.That(s.Skills["blade"].Xp, Is.EqualTo(7));
+        Assert.That(s.Skills["blade"].Level, Is.EqualTo(10), "10级封顶");
+        Assert.That(s.Skills["blade"].Xp, Is.EqualTo(0), "满级不留溢出经验");
         s.Skills["crafting"].Xp = long.MaxValue - 1;
         Assert.Throws<OverflowException>(() => E.GainXp(s, "crafting", 5), "经验溢出报错而非静默回零");
     }
@@ -500,9 +500,9 @@ public class CombatV06Tests : BattleTestBase
         var u = New();
         foreach (var kv in Cfg.Recipes.Single(r => r.Id == "make_antiviral_cure").Inputs) E.DebugGive(u, kv.Key, kv.Value, "camp");
         var req = ActionRequest.Craft("make_antiviral_cure");
-        Assert.That(E.CanStart(u, req), Does.Contain("需要医疗15级"));
-        u.Skills["medicine"].Level = 15;
-        u.Skills["crafting"].Level = 12;
+        Assert.That(E.CanStart(u, req), Does.Contain("需要医疗10级"), "B5：旧医疗15/制造12门槛改为医疗10/制造10（A06 §4）");
+        u.Skills["medicine"].Level = 10;
+        u.Skills["crafting"].Level = 10;
         Assert.That(E.CanStart(u, req), Is.EqualTo("请指定一口取下并清空的锅"));
         var pot = First(u, "pot");
         E.DebugGive(u, "clean_water", 1);
@@ -770,9 +770,11 @@ public class CombatV06Tests : BattleTestBase
         Assert.That(t.AccuracyRating, Is.EqualTo(27));
         Assert.That(t.HitChance, Is.EqualTo(27.0 / 52).Within(1e-12), "51.92%");
         Assert.That(GameEngine.HitChance(20, 36), Is.EqualTo(20.0 / 56).Within(1e-12), "普通尸对玩家35.71%");
-        s.Skills["blade"].Level = 100000;
+        // B5（A06 §1）：熟练度最高10级、简易斧练“斧”；“趋近但不超过1”改按公式核对
+        s.Skills["axe"].Level = 100000;
         var hi = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
-        Assert.That(hi.HitChance, Is.LessThan(1).And.GreaterThan(0.999));
+        Assert.That(hi.AccuracyRating, Is.EqualTo(24 + 3 * 10), "超过10级按10级");
+        Assert.That(GameEngine.HitChance(24 + 3 * 100000, 25), Is.LessThan(1).And.GreaterThan(0.999));
         Assert.That(hi.CritChance, Is.LessThan(1), "暴击概率 C/(C+100) 也不超过1");
         Assert.That(GameEngine.HitChance(1, 1000), Is.LessThan(0.05), "无5%下限");
     }
@@ -922,7 +924,7 @@ public class CombatV06Tests : BattleTestBase
         Cmd(s, "retreat");
         Assert.That(s.Battle, Is.Null);
         Assert.That(w.Hp, Is.EqualTo(hp).Within(1e-9), "撤退后HP保留");
-        Assert.That(w.XpHits["blade"], Is.EqualTo(1));
+        Assert.That(w.XpHits["axe"], Is.EqualTo(1));
         // 巡游走到别处再走回来：同一实例
         w.LocationId = "stream";
         w.LocationId = "field";
@@ -931,7 +933,7 @@ public class CombatV06Tests : BattleTestBase
         E.Engage(s);
         Assert.That(s.Battle!.Enemies[0].WorldId, Is.EqualTo(w.Id));
         Assert.That(s.Battle.Enemies[0].Hp, Is.EqualTo(hp).Within(1e-9), "换 encounterId 也不刷满血");
-        Assert.That(s.Battle.Enemies[0].XpHits["blade"], Is.EqualTo(1), "经验计数不重置");
+        Assert.That(s.Battle.Enemies[0].XpHits["axe"], Is.EqualTo(1), "经验计数不重置");
     }
 
     /// <summary>R615（战斗部分）：战斗每轮只推进一次 tick，体力自然率0，只付招式成本，不双扣采集消耗。</summary>

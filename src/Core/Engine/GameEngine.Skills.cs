@@ -7,20 +7,33 @@ using Survival.Core.State;
 namespace Survival.Core.Engine
 {
     /// <summary>
-    /// 无等级封顶的熟练度（v0.6 §03）：8 项技能各自经验，升级门槛 50×(L+1) 逐级扣；能力收益随等级持续增长，
-    /// 不设 10 级/95% 之类的硬上限，只有概率≤1、成本为正、恢复不超过上限这类结果范围。
+    /// 十级熟练度（A06 §1/§4、R01 §1/§2；开发计划 v0.9 B5，取代 v0.6 §03“8 项无封顶”）：15 门各自经验，升级门槛 50×(L+1) 逐级扣，
+    /// 最高 10 级（1→10 累计 2700），Lv10 停止获取该门经验（溢出不兑换任何东西）。熟练度属于角色（ActorState.Skills）。
+    /// 能力公式本身仍按等级计算；状态里的等级超过上限时（只可能来自测试注入）按上限取用。
     /// </summary>
     public sealed partial class GameEngine
     {
         public const string Crafting = "crafting";
         public const string Medicine = "medicine";
+        public const string Gathering = "gathering";
+        public const string Scavenging = "scavenging";
+        public const string Cooking = "cooking";
+        public const string Athletics = "athletics";
 
         public SkillConfig? SkillCfg(string id) => Config.Skills.FirstOrDefault(x => x.Id == id);
 
         public string SkillName(string id) => SkillCfg(id)?.Name ?? id;
 
-        public int SkillLevel(GameState s, string id) =>
-            s.Skills.TryGetValue(id, out var sk) ? sk.Level : SkillCfg(id)?.InitialLevel ?? 1;
+        /// <summary>该门等级上限：技能自身 levelCap，否则 skillGrowth.skillLevelCap，都没有则不封顶。</summary>
+        public int SkillCap(string id) => SkillCfg(id)?.LevelCap ?? Config.SkillGrowth.SkillLevelCap ?? int.MaxValue;
+
+        public int SkillLevel(GameState s, string id) => SkillLevel(s.Player, id);
+
+        public int SkillLevel(ActorState actor, string id) =>
+            Math.Min(SkillCap(id), actor.Skills.TryGetValue(id, out var sk) ? sk.Level : SkillCfg(id)?.InitialLevel ?? 1);
+
+        /// <summary>该门已到上限（Lv10），不再获得经验。</summary>
+        public bool SkillMaxed(GameState s, string id) => SkillLevel(s, id) >= SkillCap(id);
 
         /// <summary>从 L 升到 L+1 所需经验：50×(L+1)。</summary>
         public long NextLevelXp(string id, int level)
@@ -31,25 +44,47 @@ namespace Survival.Core.Engine
             return checked((long)Math.Round(b * (level + o)));
         }
 
-        /// <summary>新局与旧档迁移：全部技能初始等级、经验 0。</summary>
-        public void InitSkills(GameState s)
+        /// <summary>从初始等级累计到上限所需的总经验（50×(2+…+10)=2700）。</summary>
+        public long TotalXpToCap(string id)
         {
-            foreach (var sk in Config.Skills)
-                if (!s.Skills.ContainsKey(sk.Id)) s.Skills[sk.Id] = new SkillState { Level = sk.InitialLevel, Xp = 0 };
+            long total = 0;
+            var cap = SkillCap(id);
+            for (var l = SkillCfg(id)?.InitialLevel ?? 1; l < cap && cap != int.MaxValue; l++) total = checked(total + NextLevelXp(id, l));
+            return total;
         }
 
-        /// <summary>获得经验并逐级升级（扣当前门槛后继续判断多级提升）。返回升了几级。</summary>
-        public int GainXp(GameState s, string id, long amount)
+        /// <summary>新局与旧档迁移：缺的技能补初始等级、经验 0（已有的不动）。</summary>
+        public void InitSkills(GameState s)
+        {
+            foreach (var a in s.Actors.Values) InitSkills(a);
+        }
+
+        public void InitSkills(ActorState actor)
+        {
+            foreach (var sk in Config.Skills)
+                if (!actor.Skills.ContainsKey(sk.Id)) actor.Skills[sk.Id] = new SkillState { Level = sk.InitialLevel, Xp = 0 };
+        }
+
+        /// <summary>获得经验并逐级升级（扣当前门槛后继续判断多级提升）。返回升了几级。主角。</summary>
+        public int GainXp(GameState s, string id, long amount) => GainXp(s, s.Player, id, amount);
+
+        /// <summary>
+        /// 某角色获得经验：Lv10（上限）时不再累计，返回 0；升到上限时剩余经验清零（A06 §1“Lv10 停止获取该门经验，不将溢出经验兑换局外点数”）。
+        /// 加减一律 checked，溢出报错不静默回零。
+        /// </summary>
+        public int GainXp(GameState s, ActorState actor, string id, long amount)
         {
             if (amount <= 0) return 0;
-            if (!s.Skills.TryGetValue(id, out var sk))
+            if (!actor.Skills.TryGetValue(id, out var sk))
             {
                 sk = new SkillState { Level = SkillCfg(id)?.InitialLevel ?? 1 };
-                s.Skills[id] = sk;
+                actor.Skills[id] = sk;
             }
+            var cap = SkillCap(id);
+            if (sk.Level >= cap) return 0;
             sk.Xp = checked(sk.Xp + amount);
             var ups = 0;
-            while (true)
+            while (sk.Level < cap)
             {
                 var need = NextLevelXp(id, sk.Level);
                 if (sk.Xp < need) break;
@@ -57,9 +92,17 @@ namespace Survival.Core.Engine
                 sk.Level = checked(sk.Level + 1);
                 ups++;
             }
-            if (ups > 0) Emit(s, GameEventKind.Info, $"{SkillName(id)}熟练度升到{sk.Level}级。");
+            if (sk.Level >= cap) sk.Xp = 0;
+            if (ups > 0)
+                Emit(s, GameEventKind.Info, sk.Level >= cap
+                    ? $"{SkillName(id)}熟练度升到{sk.Level}级（满级，此后不再获得{SkillName(id)}经验）。"
+                    : $"{SkillName(id)}熟练度升到{sk.Level}级。");
             return ups;
         }
+
+        /// <summary>给玩家看的经验文字：“制造经验+3”；已满级写“制造已满10级，不再获得经验”。</summary>
+        public string XpText(GameState s, string id, long amount) =>
+            SkillMaxed(s, id) ? $"{SkillName(id)}已满{SkillCap(id)}级，不再获得经验" : $"{SkillName(id)}经验+{amount}";
 
         // ───────── 能力公式（系数读配置里的公式字符串） ─────────
 
@@ -89,15 +132,19 @@ namespace Survival.Core.Engine
         public double MedicalHeal(double baseHeal, int medicineLevel) =>
             baseHeal * (Config.SkillGrowth.MedicalHealOne + Config.SkillGrowth.MedicalHealPerLevel * medicineLevel);
 
-        /// <summary>人物页技能区：名称、等级、当前经验与下级门槛。</summary>
-        public List<SkillView> SkillViews(GameState s) => Config.Skills.Select(c =>
+        /// <summary>人物页技能区：15 门的名称、类别、等级/上限、当前经验与下级门槛、已获得的专属节点。</summary>
+        public List<SkillView> SkillViews(GameState s) => SkillViews(s.Player);
+
+        public List<SkillView> SkillViews(ActorState actor) => Config.Skills.Select(c =>
         {
-            var lv = SkillLevel(s, c.Id);
+            var lv = SkillLevel(actor, c.Id);
+            var cap = SkillCap(c.Id);
             return new SkillView
             {
-                Id = c.Id, Name = c.Name, Level = lv,
-                Xp = s.Skills.TryGetValue(c.Id, out var sk) ? sk.Xp : 0,
-                NextXp = NextLevelXp(c.Id, lv),
+                Id = c.Id, Name = c.Name, Category = c.Category, Level = lv, Cap = cap,
+                Xp = lv >= cap ? 0 : actor.Skills.TryGetValue(c.Id, out var sk) ? sk.Xp : 0,
+                NextXp = lv >= cap ? 0 : NextLevelXp(c.Id, lv),
+                Nodes = Config.SkillNodes.Where(n => n.SkillId == c.Id).OrderBy(n => n.Level).ToList(),
             };
         }).ToList();
     }
@@ -106,8 +153,14 @@ namespace Survival.Core.Engine
     {
         public string Id { get; set; } = "";
         public string Name { get; set; } = "";
+        public string Category { get; set; } = "combat";
         public int Level { get; set; }
+        public int Cap { get; set; }
         public long Xp { get; set; }
+        /// <summary>升到下一级的门槛；满级为 0。</summary>
         public long NextXp { get; set; }
+        public bool Maxed => Level >= Cap;
+        /// <summary>该门 5 个专属节点（按等级）。</summary>
+        public List<SkillNodeConfig> Nodes { get; set; } = new List<SkillNodeConfig>();
     }
 }

@@ -207,7 +207,7 @@ public class CombatV05Tests : BattleTestBase
         var s = Fight(10, "worker");
         Ready(s);
         Arm(s, "hatchet");
-        s.Skills["blade"].Level = 3;
+        s.Skills["axe"].Level = 3;   // B5：简易斧练“斧”
         Cmd(s, "basic_attack", 1);
         Assert.That(s.Battle!.PlayerAp, Is.EqualTo(1));
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("cleave", 1)), Does.Contain("行动点不足"));
@@ -234,9 +234,11 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single().AccuracyRating, Is.EqualTo((24 + 3) * 0.85 * 0.85 * 0.70).Within(1e-9), "恐慌≥90改×0.70（择一）");
         SetStats(s, 20, 80, 80, 18, 90, 60);
         s.Battle.Panic = 0;
-        s.Skills["blade"].Level = 2000;
-        var hi = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single().HitChance;
-        Assert.That(hi, Is.GreaterThan(0.95).And.LessThan(1), "无95%硬夹紧，也不超过1");
+        // B5（A06 §1）：熟练度最高10级，简易斧改练“斧”；“无95%硬夹紧”改按公式核对
+        s.Skills["axe"].Level = 2000;
+        var hi = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
+        Assert.That(hi.AccuracyRating, Is.EqualTo(24 + 3 * 10), "状态里超过10级按10级取用");
+        Assert.That(GameEngine.HitChance(24 + 3 * 2000, 25), Is.GreaterThan(0.95).And.LessThan(1), "公式无95%硬夹紧，也不超过1");
     }
 
     /// <summary>B513（v0.6 语义）伤害、护甲、防御：先护甲后防御×0.5，不取整、无最低1伤；出血不被护甲或防御减免。</summary>
@@ -474,13 +476,13 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(s.CurrentLocation, Is.EqualTo("field"), "回当前地块，不传回营地");
         Assert.That(s.WorldEnemies.Single().Id, Is.EqualTo(wid), "死敌不复生");
         Assert.That(s.WorldEnemies.Single().Hp, Is.EqualTo(Enemy2Hp(hurt, s)).Within(1e-9));
-        Assert.That(s.WorldEnemies.Single().XpHits["blade"], Is.EqualTo(1), "经验计数随 worldEnemyId 保存");
+        Assert.That(s.WorldEnemies.Single().XpHits["axe"], Is.EqualTo(1), "经验计数随 worldEnemyId 保存");
         Assert.That(s.Items.Count(i => i.Owner == "field" && i.ItemId is "cloth" or "scrap"), Is.EqualTo(0), "撤退不领取掉落");
         Assert.That(s.EncounterGraceUntil, Is.EqualTo(s.GameMinute + 60));
         // 主动重进：同一实例、HP 保留
         Assert.That(E.Approach(s, wid).Ok, Is.True, "保护期不挡主动接敌");
         Assert.That(s.Battle!.Enemies.Single().Hp, Is.EqualTo(s.WorldEnemies.Single().Hp));
-        Assert.That(s.Battle.Enemies.Single().XpHits["blade"], Is.EqualTo(1));
+        Assert.That(s.Battle.Enemies.Single().XpHits["axe"], Is.EqualTo(1));
     }
 
     private static double Enemy2Hp(double hurt, GameState s) => hurt;
@@ -560,7 +562,7 @@ public class CombatV05Tests : BattleTestBase
             if (Cmd(g, "basic_attack", 1).Ok) hits++;
         }
         Assert.That(hits, Is.GreaterThan(3));
-        Assert.That(g.Skills["blade"].Xp, Is.EqualTo(3 * Cfg.Xp.DamagingAttackCommand), "同一世界敌人对同技能最多3次");
+        Assert.That(g.Skills["axe"].Xp, Is.EqualTo(3 * Cfg.Xp.DamagingAttackCommand), "同一世界敌人对同技能最多3次");
     }
 
     /// <summary>制造熟练度折减工作量，同批次余量结转：高等级批量在更少段内完成（v0.6 §03）。</summary>
@@ -570,19 +572,14 @@ public class CombatV05Tests : BattleTestBase
         var s = New();
         E.DebugGive(s, "cloth", 10);
         E.DebugGive(s, "herb", 10);
-        s.Skills["crafting"].Level = 40;
+        // B5（A06 §1）：熟练度最高10级，制造10级倍率 1/(1+0.025×10)=0.8；原“40级/100级单件不足5分钟”的场景已不可达
+        s.Skills["crafting"].Level = 10;
         Start(s, ActionRequest.Craft("bandage", batchCount: 4));
-        Assert.That(s.Main!.BaseWorkMinutes, Is.EqualTo(15 * 4 / 2.0).Within(1e-9), "整批30分钟工作量");
+        Assert.That(s.Main!.BaseWorkMinutes, Is.EqualTo(15 * 4 * 0.8).Within(1e-9), "整批48分钟工作量");
         Run(s);
-        Assert.That(s.GameMinute - 480, Is.EqualTo(30), "4件合计30分钟，余量在同批内结转");
+        Assert.That(s.GameMinute - 480, Is.EqualTo(50), "4件合计48分钟按5分钟段推进为50分钟，余量在同批内结转");
         Assert.That(Count(s, "bandage"), Is.EqualTo(4));
         var t = New();
-        E.DebugGive(t, "cloth", 1);
-        E.DebugGive(t, "herb", 1);
-        t.Skills["crafting"].Level = 100;
-        Start(t, ActionRequest.Craft("bandage"));
-        Run(t);
-        Assert.That(t.GameMinute - 480, Is.EqualTo(5), "单件不足5分钟也占一段（时钟精度），不倒流");
         var b = ActionRequest.Craft("shelter");
         b.BatchCount = 2;
         Assert.That(E.CanStart(t, b), Does.Contain("只能做1件"));

@@ -294,8 +294,8 @@ namespace Survival.Core.Engine
             // 有效治疗给医疗经验，同次只发一次（v0.6 §03、§11）；特效药清除感染同样是有效医疗（开发假设 26，试玩修复 L2）
             if (effective)
             {
+                parts.Add(XpText(s, Medicine, Config.Xp.Medical));
                 GainXp(s, Medicine, Config.Xp.Medical);
-                parts.Add($"医疗经验+{Config.Xp.Medical}");
             }
         }
 

@@ -423,8 +423,8 @@ namespace Survival.Core.Engine
                     if (rc.IsRepair) made.Add(CompleteRepair(s, a));
                     // 有效制造按实际提交的配方次数发经验（v0.6 §03）
                     var xp = CraftXp(rc.BaseMinutes) * batch;
+                    made.Add(XpText(s, Crafting, xp));
                     GainXp(s, Crafting, xp);
-                    made.Add($"制造经验+{xp}");
                     if (rc.FacilityResult != null) SetFacility(s.Locations[here].Facility, rc.FacilityResult);
                     ClearAction(s, a);
                     var text = rc.FacilityResult != null

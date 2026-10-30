@@ -23,7 +23,7 @@ public class B3EquipTests : BattleTestBase
         };
         foreach (var kv in expect) Assert.That(Cfg.Weapons.Single(w => w.Id == kv.Key).WeaponKind, Is.EqualTo(kv.Value), kv.Key);
         Assert.That(Cfg.Weapons.Single(w => w.IsFists).WeaponKind, Is.Null, "拳不占武器槽");
-        Assert.That(Cfg.Weapons.Single(w => w.Id == "hatchet").SkillId, Is.EqualTo("blade"), "熟练度 skillId 不动");
+        Assert.That(Cfg.Weapons.Single(w => w.Id == "hatchet").SkillId, Is.EqualTo("axe"), "B5（A06 §4）：斧类武器练“斧”");
         Assert.That(WeaponKinds.All, Has.Length.EqualTo(9));
     }
 

@@ -1205,6 +1205,7 @@ namespace Survival.Core.Engine
                 if (hits >= Config.Xp.MaxHitsPerEncounterEnemySkill) continue;
                 t.XpHits[skill] = hits + 1;
                 if (FindWorldEnemy(s, t.WorldId) is WorldEnemy we) we.XpHits[skill] = hits + 1;
+                if (SkillMaxed(s, skill)) continue;      // Lv10 停止获取该门经验（A06 §1）；计数照记
                 GainXp(s, skill, Config.Xp.DamagingAttackCommand);
                 gained += Config.Xp.DamagingAttackCommand;
             }

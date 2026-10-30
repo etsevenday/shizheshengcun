@@ -249,6 +249,19 @@ namespace Survival.Core.Config
             var skills = new HashSet<string>(c.Skills.Select(x => x.Id));
             var enemies = c.Enemies.GroupBy(x => x.Id).ToDictionary(g => g.Key, g => g.First());
             Dup(c.Skills, x => x.Id, "技能", e);
+            // A06 §1/§4、验收 SK01/RG01：每门恰好 1/3/5/7/10 五个专属节点，等级上限 10
+            if (c.SkillNodes.Count > 0)
+            {
+                Dup(c.SkillNodes, x => x.Id, "技能节点", e);
+                foreach (var n in c.SkillNodes.Where(n => !skills.Contains(n.SkillId))) e.Add($"技能节点 {n.Id} 的门类 {n.SkillId} 不存在");
+                foreach (var sk in c.Skills)
+                {
+                    var lv = c.SkillNodes.Where(n => n.SkillId == sk.Id).Select(n => n.Level).OrderBy(x => x).ToList();
+                    if (!lv.SequenceEqual(new[] { 1, 3, 5, 7, 10 })) e.Add($"技能 {sk.Id} 须恰好有 1/3/5/7/10 级五个节点（现有 {string.Join("/", lv)}）");
+                }
+                foreach (var n in c.SkillNodes.Where(n => n.IsSurvival && n.Kind != "survival")) e.Add($"技能节点 {n.Id} 类型无效");
+            }
+            foreach (var sk in c.Skills.Where(x => x.LevelCap is int cap && cap < x.InitialLevel)) e.Add($"技能 {sk.Id} 的初始等级超过上限");
             Dup(c.Weapons, x => x.Id, "武器", e);
             Dup(c.Enemies, x => x.Id, "敌人", e);
             Dup(c.CombatActions, x => x.Id, "战斗动作", e);

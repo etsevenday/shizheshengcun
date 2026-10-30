@@ -53,10 +53,52 @@ namespace Survival.Core.Config
         public int InitialLevel { get; set; } = 1;
         /// <summary>"50*(L+1)"。</summary>
         public string NextLevelXpFormula { get; set; } = "";
+        /// <summary>等级上限（A06 §1：全部熟练度最高 10 级，Lv10 停止获取该门经验）。null 为无上限（v0.6 旧口径）。</summary>
         public int? LevelCap { get; set; }
+        /// <summary>combat 战斗门类、survival 求生门类、both 医疗（战内外都有用途，A06 §4）。</summary>
+        public string Category { get; set; } = "combat";
 
         [JsonIgnore] public double XpBase => Formula.Num(NextLevelXpFormula, 0);
         [JsonIgnore] public double XpOffset => Formula.Num(NextLevelXpFormula, 1);
+    }
+
+    /// <summary>
+    /// A06 §2 全技能主表的一个专属节点（15 门 × 1/3/5/7/10 级 = 75 个；开发计划 v0.9 B5 H6）。由 tools/import-b5-skills.py 从 A06 生成。
+    /// 战斗节点（主动技能/战斗被动）在 B6/B7 执行，本批只存数据；求生被动按 Status 接入（live）或只存数据。
+    /// </summary>
+    public sealed class SkillNodeConfig
+    {
+        public string Id { get; set; } = "";
+        public string SkillId { get; set; } = "";
+        public int Level { get; set; }
+        public string Name { get; set; } = "";
+        public int Ap { get; set; }
+        /// <summary>主动技能表的基准武器 E（同类不同装备按 武器E÷该类基准E 换算，见 GameConfig.SkillKindBaseEnergy）。</summary>
+        public double BaseEnergy { get; set; }
+        public string Positions { get; set; } = "";
+        public string EffectText { get; set; } = "";
+        public int CooldownRounds { get; set; }
+        public string ExtraCost { get; set; } = "";
+        /// <summary>combat 或 survival。</summary>
+        public string Kind { get; set; } = "combat";
+        /// <summary>live 已接入；baseline 1 级开放原有内容；dormant 现在没有挂点只存数据；pending 待策划确认；combat B6/B7。</summary>
+        public string Status { get; set; } = "combat";
+        /// <summary>求生被动的程序效果（键/运算/值，数值取自 A06 §2 效果列）。</summary>
+        public List<EquipEffectConfig> Effects { get; set; } = new List<EquipEffectConfig>();
+
+        [JsonIgnore] public bool IsSurvival => Kind == "survival";
+        [JsonIgnore] public bool IsLive => Status == "live";
+    }
+
+    /// <summary>求生被动的附加参数（取自 A06 §2 效果原文）。</summary>
+    public sealed class SkillPassiveRulesConfig
+    {
+        /// <summary>gathering_05“木/石/纤维定向采集产量+1”适用的产物。</summary>
+        public List<string> GatherBasicItems { get; set; } = new List<string>();
+        /// <summary>gathering_10“不生产工业材料”排除的产物（开发假设：废金属、零件，待确认 Q55）。</summary>
+        public List<string> IndustrialItems { get; set; } = new List<string>();
+        /// <summary>athletics_05“≤20kg 时移动基础工作量×0.95”的重量线（克）。</summary>
+        public int MoveLightMaxGrams { get; set; }
     }
 
     /// <summary>v0.6 skillGrowth：能力随等级持续增长，无硬上限（§03）。</summary>
