@@ -126,14 +126,14 @@ public class B3aEquipTests : BattleTestBase
         Assert.That(w1.IsFists, Is.False, "损坏不等于空槽");
         Assert.That(E.BattleOptions(s).Any(o => o.Action == "push"), Is.False, "坏刀页不出现拳/钝器的推挡");
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("耐久不足"));
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 1)), Does.StartWith("只在体力不足以普通攻击时可用"), "体力足够时不放开勉强拳击");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 1)), Does.StartWith("只在体力不足以使用任何已装备攻击技能时可用"), "体力足够时不放开勉强拳击");
 
         // 武器Ⅱ：没子弹的手枪仍是枪页
         Assert.That(E.SelectWeaponPage(s, 2).Ok, Is.True);
         Assert.That(E.CurrentWeapon(s, out var pi).Id, Is.EqualTo("pistol"));
         Assert.That(pi!.InstanceId, Is.EqualTo(pistol.InstanceId));
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("弹仓空"));
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 1)), Does.StartWith("只在体力不足以普通攻击时可用"));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 1)), Does.StartWith("只在体力不足以使用任何已装备攻击技能时可用"));
         Assert.That(E.BattleOptions(s).Any(o => o.Action == "push"), Is.False, "两槽满不另给拳");
 
         // 原条件：体力不足以普通攻击时才可勉强拳击

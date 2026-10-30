@@ -4331,7 +4331,13 @@
       "4"
     ],
     "defaultCapacity": 3,
-    "humanApPerActivation": 2,
+    "humanApPerActivation": 3,
+    "apByTier": [
+      3,
+      4,
+      5
+    ],
+    "apCap": 6,
     "enemyActionsPerActivation": 1,
     "basePlayerSpeed": 4,
     "basePlayerDodge": 36,
@@ -5847,7 +5853,8 @@
     "lowWakefulnessSpeedExclusive": 20,
     "pursuitScale": 50,
     "pursuitThreshold": 100,
-    "pursuitAp": 2
+    "pursuitAp": 2,
+    "shieldGuardFactor": 0.4
   },
   "panic": {
     "range": [
@@ -6489,7 +6496,7 @@
   "combatActions": [
     {
       "id": "basic_attack",
-      "ap": 1,
+      "ap": 2,
       "energySource": "weapon",
       "damageFactor": 1,
       "accuracyRatingFactor": 1.0
@@ -6574,7 +6581,7 @@
       "id": "breathe",
       "ap": 2,
       "energy": 0,
-      "restoreEnergy": 1.6,
+      "restoreEnergy": 1.2,
       "reducePanic": 10,
       "maxPerTurn": 1
     },

@@ -433,6 +433,6 @@ public class UiRevisionV07Tests : TestBase
         Assert.That(E.ExecuteCommand(s, BattleCommand.Of("bandage", null, bandage.InstanceId)).Ok, Is.True);
         Assert.That(s.Stats.Health, Is.GreaterThan(12), "效果在确认时应用");
         Assert.That(s.GameMinute, Is.EqualTo(m0), "不另跳5分钟");
-        Assert.That(E.AwaitingPlayer(s), Is.False, "用掉2AP");
+        Assert.That(b.PlayerAp, Is.EqualTo(1), "用掉2AP（B6：3AP 里剩1AP）");
     }
 }

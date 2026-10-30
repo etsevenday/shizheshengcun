@@ -423,6 +423,58 @@ namespace Survival.Core.Engine
                          + (chase.Count > 0 ? "；追击：" + string.Join(" → ", chase.Select(x => Name(x.idx))) : ""));
         }
 
+        /// <summary>
+        /// 普通激活的 AP（R03 §3、R01 §4）：战术训练阶位 0/1/2 → 3/4/5AP，加临时 +AP（同源取强；本批还没有来源）后不超过 6；
+        /// 不按熟练度门类堆叠（RG02）。
+        /// </summary>
+        public int NormalActivationAp(ActorState actor, int tempBonus = 0)
+        {
+            var sc = Config.Scope;
+            var tier = Math.Max(0, Math.Min(sc.ApByTier.Count - 1, actor.TacticalTier));
+            return Math.Min(sc.ApCap, sc.ApByTier[tier] + Math.Max(0, tempBonus));
+        }
+
+        /// <summary>开发入口：设主角战术训练阶位（0/1/2）。训练入口在后续批次。</summary>
+        public string DebugSetTacticalTier(GameState s, int tier)
+        {
+            s.Player.TacticalTier = Math.Max(0, Math.Min(Config.Scope.ApByTier.Count - 1, tier));
+            return $"战术训练阶位设为{s.Player.TacticalTier}：每次普通激活{NormalActivationAp(s.Player)}AP（开发用）。";
+        }
+
+        /// <summary>
+        /// 主角装着的盾（任一武器槽、耐久未归零）：防御按盾类格挡×0.4 并磨损盾 1（A05 §2“盾执行格挡指令磨损1”）。没有为 null。
+        /// </summary>
+        public ItemInstance? GuardShield(GameState s)
+        {
+            foreach (var page in new[] { 1, 2 })
+            {
+                var it = WeaponOnPage(s, page, out var w);
+                if (it != null && w.WeaponKind == "shield" && HasWear(it, Config.Wear.PerExecutedAttackCommand)) return it;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 应急拳击的门槛（R03 §3）：两页已装备武器（空槽页为拳）的全部可用攻击技能里，最低的体力成本；体力低于它才可用应急拳击。
+        /// 损坏/没子弹不算“付不起”，不因此放开应急拳击（Q39）。
+        /// </summary>
+        public double MinEquippedAttackEnergy(GameState s)
+        {
+            var min = double.MaxValue;
+            foreach (var page in new[] { 1, 2 })
+            {
+                WeaponOnPage(s, page, out var w);
+                foreach (var id in AttackActions)
+                {
+                    if (id == "desperate_punch") continue;
+                    var a = Act(id);
+                    if (a == null || !CommandCompatible(s, a, w)) continue;
+                    min = Math.Min(min, AttackEnergy(s, a, w));
+                }
+            }
+            return min == double.MaxValue ? 0 : min;
+        }
+
         /// <summary>队列第 k 项是不是追击激活。</summary>
         public static bool IsPursuitSlot(BattleState b, int k) => b.NormalCount > 0 && k >= b.NormalCount;
 
@@ -517,6 +569,7 @@ namespace Survival.Core.Engine
             if (pursuit)
             {
                 b.PlayerAp = Config.CombatMath.PursuitAp;
+                b.ActivationAp = b.PlayerAp;
                 b.PlayerActing = true;
                 BattleLog(s, $"你追击：{b.PlayerAp}AP（速度优势带来的额外激活）。");
                 return;
@@ -530,7 +583,8 @@ namespace Survival.Core.Engine
                 if (s.Stats.Health <= 0) { BattleDeath(s, "出血"); return; }
             }
             b.PlayerGuard = false;
-            b.PlayerAp = Config.Scope.HumanApPerActivation;
+            b.PlayerAp = NormalActivationAp(s.Player);
+            b.ActivationAp = b.PlayerAp;
             b.PlayerActing = true;
             BattleLog(s, $"轮到你行动：{b.PlayerAp}AP。");
         }
@@ -685,7 +739,7 @@ namespace Survival.Core.Engine
             var guarded = false;
             if (b.PlayerGuard && dmg > 0)
             {
-                dmg *= Config.CombatMath.GuardFactor;
+                dmg *= b.PlayerGuardFactor;
                 b.PlayerGuard = false;
                 guarded = true;
             }
@@ -702,7 +756,7 @@ namespace Survival.Core.Engine
             b.Panic = Math.Min(Config.Panic.Range[1], b.Panic + dmg * Config.Panic.DamageGainFactor);
             b.PanicPeak = Math.Max(b.PanicPeak, b.Panic);
             var extra = new List<string>();
-            if (guarded) extra.Add("防御减半");
+            if (guarded) extra.Add($"格挡×{Fmt.T(b.PlayerGuardFactor)}");
             if (armorWear != "") extra.Add(armorWear);
             if (s.Stats.Health <= 0)
             {
@@ -945,9 +999,9 @@ namespace Survival.Core.Engine
             var basic = Act("basic_attack")!;
             if (c.Action == "desperate_punch")
             {
-                // v0.5 动作表：“仅体力不足正常攻击时”；弹仓空、耐久不足时应装填或换武器，不放开勉强拳击（试玩修复 L1）
-                if (s.Stats.Energy >= AttackEnergy(s, basic, w) - 1e-9)
-                    return "只在体力不足以普通攻击时可用" + (w.UsesMagazine && !AmmoReady(s, w, wi, 1) ? "；弹仓空请装填或切换武器页" : wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand) ? "；耐久不足请切换武器页" : "");
+                // R03 §3：只有付不起两页已装备攻击技能的最低体力成本时可用；弹仓空、耐久不足时应装填或切页，不放开（试玩修复 L1、Q39）
+                if (s.Stats.Energy >= MinEquippedAttackEnergy(s) - 1e-9)
+                    return "只在体力不足以使用任何已装备攻击技能时可用" + (w.UsesMagazine && !AmmoReady(s, w, wi, 1) ? "；弹仓空请装填或切换武器页" : wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand) ? "；耐久不足请切换武器页" : "");
             }
             else
             {
@@ -1047,10 +1101,17 @@ namespace Survival.Core.Engine
                 p.EnergyAfter = s.Stats.Energy;
                 switch (c.Action)
                 {
-                    case "guard": p.Notes.Add($"下一次受到的直接伤害×{Fmt.T(Config.CombatMath.GuardFactor)}，只挡一次，下次自己行动开始时清除"); break;
+                    case "guard":
+                    {
+                        var shield = GuardShield(s);
+                        p.Notes.Add(shield != null
+                            ? $"盾类格挡（{ItemName(shield.ItemId)}）：下一次受到的直接伤害×{Fmt.T(Config.CombatMath.ShieldGuardFactor)}，只挡一次，下次自己正常行动开始时清除；{ItemName(shield.ItemId)}耐久−{Fmt.T(Config.Wear.PerExecutedAttackCommand)}"
+                            : $"下一次受到的直接伤害×{Fmt.T(Config.CombatMath.GuardFactor)}，只挡一次，下次自己正常行动开始时清除（追击不清）");
+                        break;
+                    }
                     case "breathe":
                         p.EnergyAfter = Math.Min(s.Stats.EnergyMax, s.Stats.Energy + a.RestoreEnergy);
-                        p.Notes.Add($"体力+{Fmt.T(a.RestoreEnergy)}、恐慌−{Fmt.T(a.ReducePanic)}；每回合至多一次，敌人仍正常行动"); break;
+                        p.Notes.Add($"体力+{Fmt.T(a.RestoreEnergy)}、恐慌−{Fmt.T(a.ReducePanic)}；每大回合至多一次（追击不刷新），敌人仍正常行动"); break;
                     case "reload":
                         if (wi != null && w.UsesMagazine)
                         {
@@ -1165,9 +1226,14 @@ namespace Survival.Core.Engine
                     b.PlayerAp = 0;
                     break;
                 case "guard":
+                {
                     b.PlayerGuard = true;
-                    BattleLog(s, "你摆出防御姿态。");
+                    var shield = GuardShield(s);
+                    b.PlayerGuardFactor = shield != null ? Config.CombatMath.ShieldGuardFactor : Config.CombatMath.GuardFactor;
+                    var wear = shield != null ? Wear(shield, Config.Wear.PerExecutedAttackCommand) : "";
+                    BattleLog(s, shield != null ? $"你举起{ItemName(shield.ItemId)}格挡（下一次直接伤害×{Fmt.T(b.PlayerGuardFactor)}；{wear}）。" : "你摆出防御姿态。");
                     break;
+                }
                 case "breathe":
                 {
                     b.BreatheUsed = true;

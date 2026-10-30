@@ -227,9 +227,99 @@ public class B6CombatTests : BattleTestBase
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("breathe")), Is.EqualTo("本回合已调整过呼吸"), "调息每大回合一次，追击不刷新");
         Assert.That(s.GameMinute, Is.EqualTo(minute), "追击不推进世界时间");
         Cmd(s, "end_turn");
-        while (s.Battle != null && b.Round == 1) E.BattleStep(s);
+        while (s.Battle != null && b.Round == 1) Step(s);
         Assert.That(s.GameMinute, Is.EqualTo(minute + 5), "整轮（含追击）只推进一次5分钟");
         Assert.That(b.Ticks, Is.EqualTo(1));
+    }
+
+    // ───────────── M130：AP 阶位与通用动作（R22；验收 CB04、RG02） ─────────────
+
+    [Test]
+    public void CB04_TacticalTier_3_4_5Ap_TempCap6_NotStackedBySkills()
+    {
+        var s = Fight(11, "worker");
+        var p = s.Player;
+        Assert.That(p.TacticalTier, Is.EqualTo(0), "新局阶位0");
+        Assert.That((E.NormalActivationAp(p), E.NormalActivationAp(p, 9)), Is.EqualTo((3, 6)), "阶位0：3AP；临时+AP后最多6");
+        Assert.That(E.DebugSetTacticalTier(s, 1), Does.Contain("4AP"));
+        Assert.That(E.NormalActivationAp(p), Is.EqualTo(4));
+        E.DebugSetTacticalTier(s, 2);
+        Assert.That((E.NormalActivationAp(p), E.NormalActivationAp(p, 1), E.NormalActivationAp(p, 3)), Is.EqualTo((5, 6, 6)));
+        E.DebugSetTacticalTier(s, 7);
+        Assert.That(p.TacticalTier, Is.EqualTo(2), "最高阶位2");
+        // RG02：AP 不按熟练度门类堆叠
+        E.DebugSetSkillLevels(s, 10, false);
+        Ready(s);
+        Assert.That((s.Battle!.PlayerAp, s.Battle.ActivationAp), Is.EqualTo((5, 5)), "全部十级仍是阶位2的5AP");
+        var json = SaveSerializer.Serialize(s);
+        Assert.That(SaveSerializer.Deserialize(json, Cfg).Player.TacticalTier, Is.EqualTo(2), "阶位随角色存档");
+    }
+
+    [Test]
+    public void R22_GeneralActionCosts()
+    {
+        var s = Fight(12, "worker");
+        Ready(s);
+        Arm(s, "pistol").LoadedAmmo = 1;
+        var opts = E.BattleOptions(s).ToDictionary(o => o.Action);
+        Assert.That(opts["basic_attack"].Ap, Is.EqualTo(2), "普通攻击2AP");
+        Assert.That(opts["breathe"].Ap, Is.EqualTo(2), "调息2AP");
+        Assert.That((opts["guard"].Ap, opts["swap"].Ap, opts["reload"].Ap), Is.EqualTo((1, 1, 1)), "防御/换位/装填1AP");
+        Assert.That(opts["retreat"].Ap, Is.EqualTo(2), "撤退2AP");
+        Assert.That(opts["desperate_punch"].Ap, Is.EqualTo(1), "应急拳1AP");
+        Assert.That(opts["desperate_punch"].Energy, Is.EqualTo(0), "应急拳E0");
+        Assert.That(Cfg.CombatActions.Single(a => a.Id == "breathe").RestoreEnergy, Is.EqualTo(1.2), "调息E+1.2");
+    }
+
+    [Test]
+    public void R22_Guard_Half_ShieldGuard04_WearsShieldOnce_NoStack()
+    {
+        var s = Fight(13, "worker");
+        Ready(s);
+        Assert.That(Cmd(s, "guard").Ok, Is.True);
+        Assert.That((s.Battle!.PlayerGuard, s.Battle.PlayerGuardFactor), Is.EqualTo((true, 0.5)));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("guard")), Is.EqualTo("已在防御（不叠层）"));
+
+        var t = Fight(14, "worker");
+        var shield = Wear(t, "wooden_shield", EquipSlots.Weapon2);
+        var d0 = shield.Durability!.Value;
+        Ready(t);
+        Assert.That(E.PreviewCommand(t, BattleCommand.Of("guard")).Notes.Single(), Does.StartWith("盾类格挡（木盾）").And.Contain("×0.4"));
+        Assert.That(Cmd(t, "guard").Ok, Is.True);
+        Assert.That(t.Battle!.PlayerGuardFactor, Is.EqualTo(0.4), "装着盾（另一页也算）：盾类格挡×0.4");
+        Assert.That(shield.Durability, Is.EqualTo(d0 - 1).Within(1e-9), "盾执行格挡指令磨损1");
+        // 敌人命中时按 0.4 减伤，触发格挡不再重复磨损盾
+        var e = t.Battle.Alive.First();
+        var hp = t.Stats.Health;
+        Force(t, Below(0.01), Below(0.0001));
+        typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { t, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
+        var raw = Cfg.Enemies.Single(x => x.Id == "worker").DamageMin;
+        Assert.That(hp - t.Stats.Health, Is.EqualTo(raw * 0.4).Within(1e-3));
+        Assert.That(shield.Durability, Is.EqualTo(d0 - 1).Within(1e-9), "触发格挡不重复扣");
+        Assert.That(t.Battle.PlayerGuard, Is.False, "只挡一次");
+    }
+
+    [Test]
+    public void R22_DesperatePunch_OnlyWhenNoEquippedAttackAffordable()
+    {
+        var s = Fight(15, "shambler");
+        Wear(s, "stone_knife", EquipSlots.Weapon1);      // 基础E0.4
+        Wear(s, "hatchet", EquipSlots.Weapon2);          // 基础E0.65
+        Ready(s);
+        var knifeE = E.SkillEnergyCost(0.4, 1);
+        Assert.That(E.MinEquippedAttackEnergy(s), Is.EqualTo(knifeE).Within(1e-9), "两页里最便宜的攻击技能");
+        E.SelectWeaponPage(s, 2);
+        s.Stats.Energy = knifeE + 0.01;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.StartWith("体力不足"), "斧页付不起");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 1)), Does.StartWith("只在体力不足以使用任何已装备攻击技能时可用"), "刀页还付得起，不放开应急拳");
+        s.Stats.Energy = knifeE - 0.01;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 1)), Is.Null);
+        var e0 = s.Stats.Energy;
+        var ap = s.Battle!.PlayerAp;
+        Force(s, AtLeast(0.999));
+        Assert.That(Cmd(s, "desperate_punch", 1).Ok, Is.True);
+        Assert.That((s.Stats.Energy, s.Battle.PlayerAp), Is.EqualTo((e0, ap - 1)), "1AP、E0");
     }
 
     [Test]

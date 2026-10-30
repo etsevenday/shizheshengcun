@@ -55,7 +55,7 @@ public class V10Q7Tests : BattleTestBase
         SetStats(b, 20, 80, 80, 18, 90, 60);
         var m0 = b.GameMinute;
         Assert.That(Cmd(b, "end_turn").Ok, Is.True);
-        while (b.Battle != null && b.GameMinute == m0 && !b.Progress.Dead) E.BattleStep(b);
+        while (b.Battle != null && b.GameMinute == m0 && !b.Progress.Dead) Step(b);
         Assert.That(b.GameMinute, Is.EqualTo(m0 + 5));
         Assert.That(b.Stats.Satiety, Is.EqualTo(80 - 1.875 * 5 / 60).Within(1e-9), "战斗饱食率保持");
         Assert.That(b.Stats.Hydration, Is.EqualTo(80 - 4.5 * 5 / 60).Within(1e-9), "战斗水分率保持");

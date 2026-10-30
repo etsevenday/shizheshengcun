@@ -296,7 +296,7 @@ namespace Survival.Core.Config
                 if (a.ItemId != null && !items.Contains(a.ItemId)) e.Add($"战斗动作 {a.Id} 的物品 {a.ItemId} 不存在");
                 if (a.WeaponId != null && c.Weapons.All(w => w.Id != a.WeaponId)) e.Add($"战斗动作 {a.Id} 的武器 {a.WeaponId} 不存在");
                 // 切换武器页 0AP（A10 §4.2、A05 §5，B3 H6）；其余动作至少 1AP
-                if ((a.ApCost == 0 && a.Id != "switch_weapon") || a.ApCost > c.Scope.HumanApPerActivation) e.Add($"战斗动作 {a.Id} 的行动点无效");
+                if ((a.ApCost == 0 && a.Id != "switch_weapon") || a.ApCost > c.Scope.ApCap) e.Add($"战斗动作 {a.Id} 的行动点无效");
             }
             foreach (var en in c.Enemies)
             {
@@ -304,6 +304,7 @@ namespace Survival.Core.Config
                 if (!c.WorldEnemies.RarityWeights.ContainsKey(en.Rarity)) e.Add($"敌人 {en.Id} 的稀有层级 {en.Rarity} 不在刷新权重里");
             }
             if (c.Scope.BasePlayerDodge <= 0) e.Add("玩家闪避能力须为正");
+            if (c.Scope.ApByTier.Count == 0 || c.Scope.ApByTier.Any(x => x <= 0 || x > c.Scope.ApCap)) e.Add("战术训练阶位的行动点（scope.apByTier）无效");
 
             var we = c.WorldEnemies;
             foreach (var k in we.LocalCaps.Keys) if (!locs.Contains(k)) e.Add($"世界敌人上限引用了不存在的地点 {k}");

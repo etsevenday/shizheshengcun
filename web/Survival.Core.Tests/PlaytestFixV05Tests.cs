@@ -26,7 +26,7 @@ public class PlaytestFixV05Tests : BattleTestBase
         pistol.LoadedAmmo = 0;
         SetStats(s, 20, 80, 80, 18, 90, 60);
         var why = E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 1));
-        Assert.That(why, Does.Contain("只在体力不足以普通攻击时可用").And.Contain("装填"));
+        Assert.That(why, Does.Contain("只在体力不足以使用任何已装备攻击技能时可用").And.Contain("装填"));
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("弹仓空"));
         SetStats(s, 20, 80, 80, 0, 90, 60);
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 1)), Is.Null, "体力不足时仍可勉强拳击（B528 无死锁）");

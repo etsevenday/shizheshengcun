@@ -117,6 +117,7 @@ public class CombatV05Tests : BattleTestBase
         Force(s, AtLeast(0.999));
         Assert.That(Cmd(s, "basic_attack", 1).Ok, Is.True);
         Assert.That(axe.Durability, Is.EqualTo(0), "未命中也扣");
+        s.Battle!.PlayerAp = 3;   // B6：普通攻击2AP，3AP用掉2AP后先报行动点不足；这里只看耐久原因
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("耐久不足"));
         Assert.That(Enemy(s, 1).Hp, Is.EqualTo(Cfg.Enemies.Single(x => x.Id == "shambler").Hp));
     }
@@ -201,7 +202,7 @@ public class CombatV05Tests : BattleTestBase
         while (s.Battle != null && b.Round == round)
         {
             var before = b.Cursor < b.Queue.Count ? b.Queue[b.Cursor] : -1;
-            E.BattleStep(s);
+            Step(s);
             if (before > 0) acted.Add(before);
         }
         Assert.That(acted, Is.Unique, "每个敌人每轮只激活一次");
@@ -209,7 +210,10 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(b.Round, Is.EqualTo(round + 1));
     }
 
-    /// <summary>B511 两次1AP攻击或一次2AP招式：不超过2AP，结束不积攒。</summary>
+    /// <summary>
+    /// B511 按新规则改写（R03 §3：普通激活 3AP、普通攻击 2AP、防御 1AP，取代“每次激活 2AP、普通攻击 1AP”）：
+    /// 普通攻击后剩 1AP，2AP 的重劈禁用；再防御 1AP 用完即结束激活；下一次普通激活仍是 3AP，不积攒。
+    /// </summary>
     [Test]
     public void B511_TwoApMax_NoCarry()
     {
@@ -217,13 +221,15 @@ public class CombatV05Tests : BattleTestBase
         Ready(s);
         Arm(s, "hatchet");
         s.Skills["axe"].Level = 3;   // B5：简易斧练“斧”
+        Assert.That(s.Battle!.PlayerAp, Is.EqualTo(3));
         Cmd(s, "basic_attack", 1);
         Assert.That(s.Battle!.PlayerAp, Is.EqualTo(1));
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("cleave", 1)), Does.Contain("行动点不足"));
-        Cmd(s, "basic_attack", 1);
-        Assert.That(E.AwaitingPlayer(s), Is.False, "2AP 用完即结束激活");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("行动点不足"));
+        Cmd(s, "guard");
+        Assert.That(E.AwaitingPlayer(s), Is.False, "3AP 用完即结束激活");
         ToPlayer(s);
-        if (s.Battle != null) Assert.That(s.Battle.PlayerAp, Is.EqualTo(2), "下轮仍是2AP，不积攒");
+        if (s.Battle != null) Assert.That(s.Battle.PlayerAp, Is.EqualTo(3), "下一次普通激活仍是3AP，不积攒");
     }
 
     /// <summary>B512（v0.6 语义）低体力/低清醒/恐慌叠加：身体修正乘在命中能力上，概率=A/(A+D)，无5%—95%夹紧。</summary>
@@ -301,7 +307,7 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(s.Stats.Health, Is.EqualTo(15), "冷却中不回血");
         Assert.That(s.BandageReadyAt, Is.EqualTo(s.GameMinute + 30), "只止血不延长回血冷却");
         Assert.That(Count(s, "bandage"), Is.EqualTo(1));
-        Assert.That(E.AwaitingPlayer(s), Is.False, "包扎2AP");
+        Assert.That(s.Battle!.PlayerAp, Is.EqualTo(1), "包扎2AP（B6：3AP 里剩1AP）");
     }
 
     /// <summary>B515 回合中使用绷带：不额外跳旧5分钟，仅轮末一次 tick。</summary>
@@ -316,7 +322,7 @@ public class CombatV05Tests : BattleTestBase
         Cmd(s, "bandage");
         Assert.That(s.GameMinute, Is.EqualTo(m0), "确认时不推进时间");
         Assert.That(s.Stats.Health, Is.GreaterThan(15));
-        while (s.Battle!.Round == 1) E.BattleStep(s);
+        while (s.Battle!.Round == 1) Step(s);
         Assert.That(s.GameMinute, Is.EqualTo(m0 + 5), "轮末一次5分钟");
         Assert.That(E.Start(s, ActionRequest.UseItem("bandage")).Ok, Is.False, "战斗中不走旧5分钟自用");
     }
@@ -345,15 +351,14 @@ public class CombatV05Tests : BattleTestBase
         var heat0 = E.ProcessOf(s, pot)!.HeatDoneMinutes;
         Force(s, AtLeast(0.999));
         Cmd(s, "basic_attack", 1);
-        Force(s, AtLeast(0.999));
-        Cmd(s, "basic_attack", 1);
-        var cost = E.SkillEnergyCost(0.65, 1) * 2;
+        Cmd(s, "end_turn");   // B6：普通攻击 2AP，一次激活只够一击
+        var cost = E.SkillEnergyCost(0.65, 1);
         Assert.That(e0 - s.Stats.Energy, Is.EqualTo(cost).Within(1e-9));
         var b = s.Battle!;
         while (s.Battle != null && b.Round == 1)
         {
             if (b.Cursor < b.Queue.Count && b.Queue[b.Cursor] > 0) { b.Cursor++; continue; }
-            E.BattleStep(s);
+            Step(s);
         }
         Assert.That(E.ProcessOf(s, pot)!.HeatDoneMinutes - heat0, Is.EqualTo(5), "料理只推进5分钟");
         Assert.That(fac.FuelMinutes, Is.EqualTo(55));
@@ -448,7 +453,7 @@ public class CombatV05Tests : BattleTestBase
         Enemy(full, 1).Slot = "";
         Cmd(full, "end_turn");
         var fb = full.Battle!;
-        while (full.Battle != null && fb.Round == 1) { if (fb.Cursor < fb.Queue.Count && fb.Queue[fb.Cursor] > 0) { fb.Cursor++; continue; } E.BattleStep(full); }
+        while (full.Battle != null && fb.Round == 1) { if (fb.Cursor < fb.Queue.Count && fb.Queue[fb.Cursor] > 0) { fb.Cursor++; continue; } Step(full); }
         Assert.That(fb.Enemies.Count, Is.EqualTo(3), "累计投入已达容量C=3，不增援");
         Assert.That(fb.ReinforcementUsed, Is.False);
 
@@ -465,7 +470,7 @@ public class CombatV05Tests : BattleTestBase
         var live = E.LiveCount(s);
         Cmd(s, "end_turn");
         var b = s.Battle;
-        while (s.Battle != null && b.Round == 1) { if (b.Cursor < b.Queue.Count && b.Queue[b.Cursor] > 0) { b.Cursor++; continue; } E.BattleStep(s); }
+        while (s.Battle != null && b.Round == 1) { if (b.Cursor < b.Queue.Count && b.Queue[b.Cursor] > 0) { b.Cursor++; continue; } Step(s); }
         Assert.That(b.Enemies.Count, Is.EqualTo(3), "下一轮轮初补进");
         Assert.That(b.Enemies.Last().Slot, Is.EqualTo("3"), "排在最后一个空位");
         Assert.That(b.Enemies.Last().WorldId, Is.EqualTo(extra1.Id), "调用同地现有、最早的丧尸，保留原ID与类型");
@@ -480,6 +485,7 @@ public class CombatV05Tests : BattleTestBase
     public void B522_RetreatAndReengage()
     {
         var s = Fight(21, "shambler", "shambler");
+        s.Player.TacticalTier = 2;   // B6：5AP 才够两次 2AP 普通攻击
         Ready(s);
         Arm(s, "hatchet");
         Enemy(s, 1).Hp = 0.01;
@@ -490,6 +496,7 @@ public class CombatV05Tests : BattleTestBase
         var hurt = Enemy(s, 2).Hp;
         var wid = Enemy(s, 2).WorldId;
         Assert.That(hurt, Is.LessThan(3.6));
+        Cmd(s, "end_turn");   // B6：5AP 用掉4AP，剩1AP不够撤退（2AP）
         ToPlayer(s);
         Force(s, Below(0.0001));
         Cmd(s, "retreat");
@@ -575,12 +582,13 @@ public class CombatV05Tests : BattleTestBase
         Ready(g);
         Arm(g, "hatchet");
         var hits = 0;
-        for (var k = 0; k < 8 && g.Battle != null; k++)
+        for (var k = 0; k < 16 && g.Battle != null; k++)
         {
             if (!E.AwaitingPlayer(g)) { ToPlayer(g); continue; }
             Enemy(g, 1).Hp = 7;
             Force(g, Below(0.01), AtLeast(0.99), Any());
             if (Cmd(g, "basic_attack", 1).Ok) hits++;
+            else Cmd(g, "end_turn");   // B6：剩 1AP 不够普通攻击
         }
         Assert.That(hits, Is.GreaterThan(3));
         Assert.That(g.Skills["axe"].Xp, Is.EqualTo(3 * Cfg.Xp.DamagingAttackCommand), "同一世界敌人对同技能最多3次");
@@ -775,7 +783,7 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(p.EnergyCost, Is.EqualTo(0), "不足体力强行撤退不耗体力");
         Assert.That(p.RetreatChance, Is.LessThan(E.RetreatChance(Clone(s, 18), s.Battle!).chance), "成功率再×0.75");
         Assert.That(Cmd(s, "breathe").Ok, Is.True);
-        Assert.That(s.Stats.Energy, Is.EqualTo(1.6).Within(1e-9), "调整呼吸+1.6");
+        Assert.That(s.Stats.Energy, Is.EqualTo(1.2).Within(1e-9), "B6 按新规则改写（R03 §3）：调息 E+1.2");
     }
 
     private GameState Clone(GameState s, double energy)

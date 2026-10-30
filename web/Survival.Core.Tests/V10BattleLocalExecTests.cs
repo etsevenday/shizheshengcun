@@ -81,8 +81,9 @@ public class V10BattleLocalExecTests : BattleTestBase
         var b = s.Battle!;
         var idx = b.Alive.Single().Index;
         Assert.That(E.PreviewCommand(s, BattleCommand.Of("bandage")).Ap, Is.EqualTo(2));
-        // 先花 1AP，原本 2AP 的用药预览随之禁用（不可用原因来自真实规则）
+        // 先花 2AP（B6：3AP 起步），原本 2AP 的用药预览随之禁用（不可用原因来自真实规则）
         Assert.That(Cmd(s, "guard").Ok, Is.True);
+        s.Battle!.PlayerAp = 1;
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("bandage")), Does.StartWith("行动点不足"));
         Assert.That(E.PreviewCommand(s, BattleCommand.Of("bandage")).Ok, Is.False);
         Assert.That(idx, Is.GreaterThan(0));

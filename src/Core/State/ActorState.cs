@@ -26,6 +26,11 @@ namespace Survival.Core.State
         /// 类别 gather（资源点 NodeId）或 move（"出发地>目的地"）。只保留当日的键，跨日自动清掉。
         /// </summary>
         public Dictionary<string, int> DailyCounts { get; set; } = new Dictionary<string, int>();
+        /// <summary>
+        /// 战术训练阶位 0/1/2（R03 §3）：每次普通激活 3/4/5AP。训练入口（h03，C3/QMAP04 后花材料）在后续批次；本批默认 0，开发入口可设。
+        /// 不是熟练度，不跨局继承。
+        /// </summary>
+        public int TacticalTier { get; set; }
 
         public bool IsPlayer => Id == GameState.PlayerId;
 

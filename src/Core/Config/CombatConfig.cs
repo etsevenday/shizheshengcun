@@ -42,6 +42,10 @@ namespace Survival.Core.Config
         /// <summary>队伍容量 C 的默认值（开发假设 B6-1：容量随主线解锁在 B8/R31 之前，取现行单场敌人上限 3）。</summary>
         public int DefaultCapacity { get; set; } = 3;
         public int HumanApPerActivation { get; set; } = 2;
+        /// <summary>战术训练阶位 0/1/2 的普通激活 AP（R03 §3：3/4/5）。</summary>
+        public List<int> ApByTier { get; set; } = new List<int>();
+        /// <summary>所有临时 +AP 效果下单次激活 AP 上限（R03 §3：6）。</summary>
+        public int ApCap { get; set; } = 6;
         public int EnemyActionsPerActivation { get; set; } = 1;
         public double BasePlayerSpeed { get; set; }
         public double BasePlayerDodge { get; set; }
@@ -331,6 +335,8 @@ namespace Survival.Core.Config
         // ───── B6 四对四（R03 §2 行动顺序、速度与追击；R01 §4） ─────
         /// <summary>有效速度下限（R03 §2：max(1, 基础+装备+状态)）。</summary>
         public double MinSpeed { get; set; } = 1;
+        /// <summary>盾类格挡的直接伤害倍率（R03 §3、A05 木盾“盾类格挡减伤60%”）；普通防御为 guardAppliedAfterArmor 的 0.5。</summary>
+        public double ShieldGuardFactor { get; set; } = 0.4;
         /// <summary>清醒低于此值速度−1（R03 §2“S&lt;20”；命中的低清醒修正仍按 lowWakefulnessInclusive）。</summary>
         public double LowWakefulnessSpeedExclusive { get; set; } = 20;
         /// <summary>追击进度 q=clamp(pursuitScale×(v/vmax−1), 0, pursuitThreshold)；满 pursuitThreshold 得一次 pursuitAp 的追击。</summary>

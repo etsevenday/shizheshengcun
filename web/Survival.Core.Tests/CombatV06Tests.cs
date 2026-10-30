@@ -947,7 +947,7 @@ public class CombatV06Tests : BattleTestBase
         var m0 = s.GameMinute;
         Cmd(s, "guard");
         Cmd(s, "end_turn");
-        while (s.Battle!.Round == 1) E.BattleStep(s);
+        while (s.Battle!.Round == 1) Step(s);
         Assert.That(s.GameMinute, Is.EqualTo(m0 + 5));
         Assert.That(s.Stats.Energy, Is.EqualTo(e0), "防御体力0，tick 体力自然率0");
         Assert.That(n0 - s.Stats.Satiety, Is.EqualTo(1.875 * 5 / 60).Within(1e-9), "战斗速率N−1.875/h");

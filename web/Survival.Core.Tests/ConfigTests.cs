@@ -438,7 +438,9 @@ public class ConfigTests : TestBase
         foreach (var w in ((JArray)d["weapons"]!).Where(w => (string?)w["id"] == "hatchet")) ((JObject)w).Remove("skillId");
         foreach (var a in ((JArray)d["actions"]!).Where(a => (string?)a["id"] is "cleave" or "cut")) ((JObject)a).Remove("skills");
         // B6（R03 §1—§6 四对四战斗内核）：站位改 1—4、容量C、新增换位；新值由 B6CombatTests 核对
-        foreach (var k in new[] { "maxEnemies", "slots" }) ((JObject)d["scope"]!).Remove(k);
+        foreach (var k in new[] { "maxEnemies", "slots", "humanApPerActivation" }) ((JObject)d["scope"]!).Remove(k);
+        foreach (var a in ((JArray)d["actions"]!).Where(a => (string?)a["id"] == "basic_attack")) ((JObject)a).Remove("ap");
+        foreach (var a in ((JArray)d["actions"]!).Where(a => (string?)a["id"] == "breathe")) ((JObject)a).Remove("restoreEnergy");
         foreach (var k in new[] { "initiative", "tieBreak" }) ((JObject)d["combatMath"]!).Remove(k);
         var designActionIds = ((JArray)d["actions"]!).Select(a => (string)a["id"]!).ToList();
         mapped["combatActions"] = new JArray(designActionIds.Select(id => ((JArray)mapped["combatActions"]!).First(a => (string?)a["id"] == id)));

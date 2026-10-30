@@ -177,6 +177,10 @@ namespace Survival.Core.State
         public bool ReinforcementUsed { get; set; }
 
         public bool PlayerGuard { get; set; }
+        /// <summary>这次防御的直接伤害倍率：普通 0.5，装着未损坏的盾时 0.4（R03 §3）；不叠多个同类格挡。</summary>
+        public double PlayerGuardFactor { get; set; } = 0.5;
+        /// <summary>本次激活开始时得到的 AP（界面画 AP 格用）：普通激活按训练阶位 3/4/5，追击 2。</summary>
+        public int ActivationAp { get; set; }
         public bool PlayerStagger { get; set; }
         public int PlayerStaggerRound { get; set; }
         public bool PlayerSlowPending { get; set; }

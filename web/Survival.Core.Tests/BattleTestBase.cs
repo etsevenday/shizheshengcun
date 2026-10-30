@@ -28,6 +28,15 @@ public abstract class BattleTestBase : TestBase
         for (var i = 0; i < max && s.Battle != null && !E.AwaitingPlayer(s) && !s.Progress.Dead; i++) E.BattleStep(s);
     }
 
+    /// <summary>
+    /// 推进一步；轮到玩家（含 B6 的 3AP 剩余与追击激活）时结束行动。用于“把这一轮走完”的循环，避免玩家还剩 AP 时原地空转。
+    /// </summary>
+    protected void Step(GameState s)
+    {
+        if (E.AwaitingPlayer(s)) E.ExecuteCommand(s, BattleCommand.Of("end_turn"));
+        else E.BattleStep(s);
+    }
+
     /// <summary>让玩家在本轮先手：把队列里玩家挪到最前（只用于测试，模拟先手抽中）。</summary>
     protected static void PlayerFirst(GameState s)
     {
