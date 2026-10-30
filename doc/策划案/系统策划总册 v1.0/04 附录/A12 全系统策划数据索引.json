@@ -29952,6 +29952,40 @@
         "selected_object_detail"
       ],
       "riskIndicatorAlwaysVisible": true
+    },
+    "equipmentInteractions": {
+      "decisionDate": "2026-10-31",
+      "sourceQuestions": [
+        "Q38A",
+        "Q39A",
+        "Q40B",
+        "Q41A",
+        "Q42A"
+      ],
+      "wornToolsRemainUsable": true,
+      "toolEligibility": "existing_tool_capability_and_durability_same_actor",
+      "toolInstanceLockPreserved": true,
+      "emptyWeaponSlotPage": "unarmed",
+      "thirdOrdinaryUnarmedPageWhenBothFull": false,
+      "brokenOrEmptyAmmoDoesNotMeanEmptySlot": true,
+      "existingLowEnergyEmergencyPunchOnly": true,
+      "equipFromCurrentAccessibleGround": true,
+      "groundEquipTransientBagSlotRequired": false,
+      "groundEquipFinalSlotAndWeightValidation": true,
+      "groundEquipOldItemDefault": "same_actor_carried",
+      "groundEquipIfOldItemDoesNotFit": "explicit_current_ground_or_cancel",
+      "groundEquipAtomicAndIdempotent": true,
+      "groundOperationsRequireIdleAndNoPendingEncounter": true,
+      "inProgressOrPendingEncounterSelfBagEquipAllowedForUnlockedItems": true,
+      "blockedOn": [
+        "death",
+        "forced_unread_dialogue",
+        "battle",
+        "reserved_or_action_locked_involved_item"
+      ],
+      "currentEquipmentUi": "right_character_independent_fold",
+      "fullPreparationPanelDeveloperBatch": "B10",
+      "combatEquipmentUiReadOnly": true
     }
   },
   "gateContract": {
