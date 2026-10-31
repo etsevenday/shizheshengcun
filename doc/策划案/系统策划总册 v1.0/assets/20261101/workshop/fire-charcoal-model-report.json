@@ -1,0 +1,65 @@
+{
+  "status": "independent_thermal_material_model_not_game_engine_or_ui",
+  "cases": {
+    "fuelAndProgressCombinations": 4056,
+    "litSingleDoubleColdExamples": 4,
+    "medicalXpRecipes": 3
+  },
+  "examples": {
+    "litSingle": {
+      "fuel": 0,
+      "heat": [
+        60
+      ],
+      "done": [
+        true
+      ],
+      "elapsed": 60,
+      "consumedWood": 4,
+      "charcoal": 3,
+      "burned": 60
+    },
+    "litDouble": {
+      "fuel": 0,
+      "heat": [
+        60,
+        60
+      ],
+      "done": [
+        true,
+        true
+      ],
+      "elapsed": 60,
+      "consumedWood": 8,
+      "charcoal": 6,
+      "burned": 60
+    },
+    "coldOneFuelWood": {
+      "fuel": 0,
+      "heat": [
+        55
+      ],
+      "done": [
+        false
+      ],
+      "elapsed": 55,
+      "consumedWood": 0,
+      "charcoal": 0,
+      "burned": 55
+    },
+    "coldTwoFuelWood": {
+      "fuel": 55,
+      "heat": [
+        60
+      ],
+      "done": [
+        true
+      ],
+      "elapsed": 60,
+      "consumedWood": 4,
+      "charcoal": 3,
+      "burned": 60
+    }
+  },
+  "limitations": "Does not test actual facility ownership, UI slot interactions, RNG, world death ordering, save retry implementation, recipes or blueprints in the game."
+}

@@ -1,0 +1,118 @@
+{
+  "version": "q107_q111_20261101",
+  "status": "approved_planning_target_not_engine_verified",
+  "sourceQuestions": [
+    "Q107",
+    "Q108",
+    "Q109",
+    "Q110",
+    "Q111"
+  ],
+  "workshopPlacement": {
+    "selfBuild": [
+      "camp_exterior",
+      "built_safehouse_interior"
+    ],
+    "uniqueKey": [
+      "locationId",
+      "zoneId",
+      "stationId"
+    ],
+    "types": [
+      "workbench",
+      "forge",
+      "sewing",
+      "medical",
+      "armory",
+      "drying_rack"
+    ],
+    "h03_workshop": "public_only_no_player_build_original_unlocks",
+    "currentDelivery": "camp_now_safehouse_when_system_available"
+  },
+  "knowledge": {
+    "initialItems": [
+      "stone_knife",
+      "hatchet",
+      "wooden_spear",
+      "wooden_bow",
+      "metal_spear",
+      "crossbow"
+    ],
+    "registeredDefaults": "require_real_hub_registered_once_no_items_no_preview_grants",
+    "armory": {
+      "id": "blueprint_armory_station",
+      "node": "d03_08",
+      "claim": "d03_08_unique",
+      "grant": "same_successful_original_claim_transaction_alive_no_extra_cost_or_time",
+      "legacyEquivalentFact": "communication_power_claimed",
+      "legacy": "grant_missing_knowledge_only_once_no_reward_reissue",
+      "publicArmory": "unchanged_QMAP02"
+    }
+  },
+  "medicalMaterialXp": {
+    "scope": [
+      "saline",
+      "disinfectant",
+      "herb_extract"
+    ],
+    "baseMinutes": [
+      15,
+      20,
+      30
+    ],
+    "minMedicine": [
+      1,
+      5,
+      3
+    ],
+    "xpSkill": "medicine",
+    "xpAmounts": [
+      2,
+      2,
+      3
+    ],
+    "formula": "clamp(ceil(original_base_minutes/10),1,12)",
+    "noCraftingOrCookingOrHealXp": true,
+    "executor": "p0",
+    "legacy": "completed_no_retroactive_xp_in_progress_saved_rule_once_new_batches_new_xp"
+  },
+  "fireCharcoal": {
+    "processId": "fire_charcoal",
+    "input": {
+      "wood": 4
+    },
+    "output": {
+      "charcoal": 3
+    },
+    "effectiveHeatMinutes": 60,
+    "processingSlotsUsed": 1,
+    "totalFireSlots": 2,
+    "maxPotsUnchanged": 1,
+    "knowledge": null,
+    "minSkill": null,
+    "catalyst": null,
+    "tools": null,
+    "xp": 0,
+    "source": "p0_carried_or_current_accessible_ground_only",
+    "fuel": "original_fire_fuel_separate_from_input_once_per_fire_not_per_batch",
+    "woodFuelMinutes": 60,
+    "maxFuelMinutes": 240,
+    "heatStepMinutes": 5,
+    "requiresFullFuelStep": true,
+    "ignitionMinutes": 5,
+    "ignitionAddsHeat": false,
+    "coldOneFuelWoodHeatAvailable": 55,
+    "coldTwoFuelWoodAfterIgniteAndOneBatchRemaining": 55,
+    "litOneOrTwoBatchesFuelMinutes": 60,
+    "progress": "pause_when_unlit_or_insufficient_fuel_resume_no_offline_heat_no_work_carry",
+    "withdraw": "return_all4_wood_to_legal_bag_or_ground_reset_heat_spent_fuel_not_refunded",
+    "complete": "atomic_consume_input_produce3_same_slot_receipt_keep_until_pickup",
+    "waitAction": "extend_goal_driven_fire_wait_to_all_eligible_heat_processes_last_completion_not_sum_no_auto_refuel",
+    "dragWood": "original_add_fuel_unchanged_explicit_charcoal_loading_action",
+    "legacy": "new_process_empty_no_historical_charcoal_existing_fuel_food_unchanged",
+    "supersedes": "drying_rack_charcoal_route_and_included_heat_or_stone_catalyst",
+    "dryingRack": "original_drying_only_not_advanced_this_batch",
+    "existingMapCharcoalSourcesPreserved": true
+  },
+  "precedence": "explicit_scope_overrides_A07_old_charcoal_and_medical_material_xp_and_h03_self_build_only_preserve_original_implementation_history"
+}

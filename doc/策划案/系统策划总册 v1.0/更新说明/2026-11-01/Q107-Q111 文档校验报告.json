@@ -1,0 +1,280 @@
+{
+  "date": "2026-11-01",
+  "status": "static_document_and_abstract_model_only_not_engine_or_ui",
+  "questionsAsked": 5,
+  "supplements": 2,
+  "answers": {
+    "Q107": "A",
+    "Q108": "A",
+    "Q109": "A",
+    "Q110": "B",
+    "Q111": "new_fire_charcoal_independent_fuel_4wood_3char_60heat_one_slot_base_unlocked_zero_xp"
+  },
+  "pending": [],
+  "developerDelegations": [],
+  "checks": [
+    {
+      "name": "完整保留开发同步与修改记录 04 附录/A07 材料、制作工坊与求生物资目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文除明确取代处均保留 04 附录/A07 材料、制作工坊与求生物资目录.md",
+      "passed": true
+    },
+    {
+      "name": "完整保留开发同步与修改记录 01 基础系统/S09 营地建造与火堆系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文除明确取代处均保留 01 基础系统/S09 营地建造与火堆系统.md",
+      "passed": true
+    },
+    {
+      "name": "完整保留开发同步与修改记录 01 基础系统/S11 设施加工与烹饪系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文除明确取代处均保留 01 基础系统/S11 设施加工与烹饪系统.md",
+      "passed": true
+    },
+    {
+      "name": "完整保留开发同步与修改记录 01 基础系统/S08 手工制作系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文除明确取代处均保留 01 基础系统/S08 手工制作系统.md",
+      "passed": true
+    },
+    {
+      "name": "完整保留开发同步与修改记录 04 附录/A05 装备、词条与具体装备目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文除明确取代处均保留 04 附录/A05 装备、词条与具体装备目录.md",
+      "passed": true
+    },
+    {
+      "name": "完整保留开发同步与修改记录 04 附录/A06 十级熟练度与全技能目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文除明确取代处均保留 04 附录/A06 十级熟练度与全技能目录.md",
+      "passed": true
+    },
+    {
+      "name": "完整保留开发同步与修改记录 04 附录/A08 主线地图、资源与副本目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文除明确取代处均保留 04 附录/A08 主线地图、资源与副本目录.md",
+      "passed": true
+    },
+    {
+      "name": "完整保留开发同步与修改记录 04 附录/A11 主线任务、势力与队伍角色目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文除明确取代处均保留 04 附录/A11 主线任务、势力与队伍角色目录.md",
+      "passed": true
+    },
+    {
+      "name": "完整保留开发同步与修改记录 01 基础系统/S01 世界时间、行动与存档系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文除明确取代处均保留 01 基础系统/S01 世界时间、行动与存档系统.md",
+      "passed": true
+    },
+    {
+      "name": "完整保留开发同步与修改记录 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文除明确取代处均保留 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "完整保留开发同步与修改记录 00 总则/02 开发方待确认问题.md",
+      "passed": true
+    },
+    {
+      "name": "只填写Q107—Q111五字段",
+      "passed": true
+    },
+    {
+      "name": "完整保留开发同步与修改记录 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "原正文除明确取代处均保留 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "完整保留开发同步与修改记录 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "原正文除明确取代处均保留 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "所有策划JSON可解析",
+      "passed": true
+    },
+    {
+      "name": "合同副本一致其他数据不变 04 附录/A12 全系统策划数据索引.json",
+      "passed": true
+    },
+    {
+      "name": "合同副本一致其他数据不变 assets/20261030/index/joint-expansion-data.json",
+      "passed": true
+    },
+    {
+      "name": "工坊区/公共/旧六知识明确",
+      "passed": true
+    },
+    {
+      "name": "军械台知识领取原账无实物",
+      "passed": true
+    },
+    {
+      "name": "医疗材料XP与门槛",
+      "passed": true
+    },
+    {
+      "name": "炭化占位/产出/有效分钟/经验",
+      "passed": true
+    },
+    {
+      "name": "点火空转和燃料边界",
+      "passed": true
+    },
+    {
+      "name": "11类验收存在",
+      "passed": true
+    },
+    {
+      "name": "无待定答复字段",
+      "passed": true
+    },
+    {
+      "name": "相对链接有效",
+      "passed": true
+    }
+  ],
+  "model": {
+    "status": "independent_thermal_material_model_not_game_engine_or_ui",
+    "cases": {
+      "fuelAndProgressCombinations": 4056,
+      "litSingleDoubleColdExamples": 4,
+      "medicalXpRecipes": 3
+    },
+    "examples": {
+      "litSingle": {
+        "fuel": 0,
+        "heat": [
+          60
+        ],
+        "done": [
+          true
+        ],
+        "elapsed": 60,
+        "consumedWood": 4,
+        "charcoal": 3,
+        "burned": 60
+      },
+      "litDouble": {
+        "fuel": 0,
+        "heat": [
+          60,
+          60
+        ],
+        "done": [
+          true,
+          true
+        ],
+        "elapsed": 60,
+        "consumedWood": 8,
+        "charcoal": 6,
+        "burned": 60
+      },
+      "coldOneFuelWood": {
+        "fuel": 0,
+        "heat": [
+          55
+        ],
+        "done": [
+          false
+        ],
+        "elapsed": 55,
+        "consumedWood": 0,
+        "charcoal": 0,
+        "burned": 55
+      },
+      "coldTwoFuelWood": {
+        "fuel": 55,
+        "heat": [
+          60
+        ],
+        "done": [
+          true
+        ],
+        "elapsed": 60,
+        "consumedWood": 4,
+        "charcoal": 3,
+        "burned": 60
+      }
+    },
+    "limitations": "Does not test actual facility ownership, UI slot interactions, RNG, world death ordering, save retry implementation, recipes or blueprints in the game."
+  },
+  "preUploadAudit": [
+    {
+      "category": "数值",
+      "result": "已核对；2项补充已答并整合，无遗留"
+    },
+    {
+      "category": "名词",
+      "result": "已核对；2项补充已答并整合，无遗留"
+    },
+    {
+      "category": "范围",
+      "result": "已核对；2项补充已答并整合，无遗留"
+    },
+    {
+      "category": "时机",
+      "result": "已核对；2项补充已答并整合，无遗留"
+    },
+    {
+      "category": "边界",
+      "result": "已核对；2项补充已答并整合，无遗留"
+    },
+    {
+      "category": "自动行为",
+      "result": "已核对；2项补充已答并整合，无遗留"
+    },
+    {
+      "category": "入口",
+      "result": "已核对；2项补充已答并整合，无遗留"
+    },
+    {
+      "category": "来源",
+      "result": "已核对；2项补充已答并整合，无遗留"
+    },
+    {
+      "category": "冲突",
+      "result": "已核对；2项补充已答并整合，无遗留"
+    },
+    {
+      "category": "未完成依赖",
+      "result": "已核对；2项补充已答并整合，无遗留"
+    },
+    {
+      "category": "旧档",
+      "result": "已核对；2项补充已答并整合，无遗留"
+    },
+    {
+      "category": "验收",
+      "result": "已核对；2项补充已答并整合，无遗留"
+    }
+  ]
+}
