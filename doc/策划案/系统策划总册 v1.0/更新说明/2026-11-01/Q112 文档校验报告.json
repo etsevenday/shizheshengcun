@@ -1,0 +1,148 @@
+{
+  "date": "2026-11-01",
+  "status": "static_documents_data_examples_only_not_game_or_ui",
+  "questionsAsked": 1,
+  "answer": "Q112 A",
+  "pending": [],
+  "developerDelegations": [],
+  "checks": [
+    {
+      "name": "开发同步和修改记录原文保留 04 附录/A05 装备、词条与具体装备目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文无删除改写 04 附录/A05 装备、词条与具体装备目录.md",
+      "passed": true
+    },
+    {
+      "name": "开发同步和修改记录原文保留 04 附录/A07 材料、制作工坊与求生物资目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文无删除改写 04 附录/A07 材料、制作工坊与求生物资目录.md",
+      "passed": true
+    },
+    {
+      "name": "开发同步和修改记录原文保留 01 基础系统/S08 手工制作系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文无删除改写 01 基础系统/S08 手工制作系统.md",
+      "passed": true
+    },
+    {
+      "name": "开发同步和修改记录原文保留 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文无删除改写 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "开发同步和修改记录原文保留 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "原正文无删除改写 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "开发同步和修改记录原文保留 00 总则/02 开发方待确认问题.md",
+      "passed": true
+    },
+    {
+      "name": "仅填Q112答复",
+      "passed": true
+    },
+    {
+      "name": "开发同步和修改记录原文保留 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "原正文无删除改写 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "全部策划JSON解析",
+      "passed": true
+    },
+    {
+      "name": "原工坊/医疗/炭化规则不改",
+      "passed": true
+    },
+    {
+      "name": "工坊合同一致其余数据不变 04 附录/A12 全系统策划数据索引.json",
+      "passed": true
+    },
+    {
+      "name": "工坊合同一致其余数据不变 assets/20261030/index/joint-expansion-data.json",
+      "passed": true
+    },
+    {
+      "name": "三算例遵守N份而非产物件数",
+      "passed": true
+    },
+    {
+      "name": "四类验收有正文",
+      "passed": true
+    },
+    {
+      "name": "无待定答复",
+      "passed": true
+    },
+    {
+      "name": "相对链接可达",
+      "passed": true
+    }
+  ],
+  "preUploadAudit": [
+    {
+      "category": "数值",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "名词",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "范围",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "时机",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "边界",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "自动行为",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "入口",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "来源",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "冲突",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "未完成依赖",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "旧档",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "验收",
+      "result": "已核对，无遗留缺口"
+    }
+  ]
+}

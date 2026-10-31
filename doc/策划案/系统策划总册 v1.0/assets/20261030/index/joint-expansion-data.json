@@ -51602,14 +51602,15 @@
     ]
   },
   "workshopAdjudications": {
-    "version": "q107_q111_20261101",
+    "version": "q107_q112_20261101",
     "status": "approved_planning_target_not_engine_verified",
     "sourceQuestions": [
       "Q107",
       "Q108",
       "Q109",
       "Q110",
-      "Q111"
+      "Q111",
+      "Q112"
     ],
     "workshopPlacement": {
       "selfBuild": [
@@ -51717,6 +51718,50 @@
       "dryingRack": "original_drying_only_not_advanced_this_batch",
       "existingMapCharcoalSourcesPreserved": true
     },
-    "precedence": "explicit_scope_overrides_A07_old_charcoal_and_medical_material_xp_and_h03_self_build_only_preserve_original_implementation_history"
+    "precedence": "explicit_scope_overrides_A07_old_charcoal_and_medical_material_xp_and_h03_self_build_only_preserve_original_implementation_history",
+    "forgeBatchFuel": {
+      "sourceQuestion": "Q112",
+      "appliesToStation": "forge",
+      "N": "existing_valid_positive_integer_recipe_execution_count_not_output_item_count",
+      "existingBatchLimitUnchanged": true,
+      "extraCharcoalPerRecipeExecution": 1,
+      "extraFuelFormula": "N",
+      "ingredientCharcoalFormula": "m*N",
+      "totalCharcoalFormula": "(m+1)*N",
+      "outputFormula": "recipe_output*N",
+      "preview": "show_recipe_count_output_ingredient_fuel_total_separately_no_reservation",
+      "transaction": "reserve_ingredient_and_fuel_together_consume_once_only_on_success",
+      "cancel": "existing_S08_return_entire_reserved_batch_to_local_ground_once_no_time_refund_no_partial_output",
+      "inProgress": "original_saved_count_and_reservations_no_retroactive_charge",
+      "noSeparateTimeBasedFuelBurn": true,
+      "fireCharcoalFuelUnchanged": true,
+      "fuelExcludedFromSalvageBudget": true,
+      "examples": [
+        {
+          "recipe": "steel",
+          "N": 1,
+          "ingredientCharcoal": 1,
+          "fuelCharcoal": 1,
+          "totalCharcoal": 2,
+          "steelOutput": 2
+        },
+        {
+          "recipe": "steel",
+          "N": 3,
+          "ingredientCharcoal": 3,
+          "fuelCharcoal": 3,
+          "totalCharcoal": 6,
+          "steelOutput": 6
+        },
+        {
+          "recipe": "spring",
+          "N": 3,
+          "ingredientCharcoal": 0,
+          "fuelCharcoal": 3,
+          "totalCharcoal": 3,
+          "springOutput": 6
+        }
+      ]
+    }
   }
 }
