@@ -34,6 +34,22 @@
         }
         <span class="tiny muted gear-cap">同行@(members.Count) / 容量@(e.PartyCapacity(s))</span>
     </div>
+    @if (G.GivePending is { } gd && s.Items.FirstOrDefault(i => i.InstanceId == gd.InstanceId) is { } gi)
+    {
+        @* A10 §7.2：双方头像间短浮窗列最终重量/卡数，确认再一次提交；Esc/取消退出 *@
+        var gwhy = e.GiveBlocked(s, gd.From, gd.To, gd.InstanceId, gd.Count);
+        var (fc, tc, fg, tg) = e.GiveOutcome(s, gd.From, gd.To, gi, Math.Min(gd.Count, gi.Count));
+        <div class="give-confirm" role="dialog" aria-label="确认交接" data-give-confirm>
+            <b>把@(e.ItemName(gi.ItemId))×@gd.Count 从@(e.ActorDisplayName(s, gd.From))交给@(e.ActorDisplayName(s, gd.To))？</b>
+            <span>交接后 @e.ActorDisplayName(s, gd.From)：@(fc)/@(e.MaxRootCards)张 · @Ui.KgText(fg)</span>
+            <span>交接后 @e.ActorDisplayName(s, gd.To)：@(tc)/@(e.MaxRootCards)张 · @Ui.KgText(tg)</span>
+            @if (gwhy != null) { <span class="warn-text">@gwhy</span> }
+            <span class="btn-row">
+                <button type="button" class="primary" disabled="@(gwhy != null)" @onclick="() => G.ConfirmGive()">确认交接</button>
+                <button type="button" class="secondary" @onclick="G.CancelGive">取消<kbd>Esc</kbd></button>
+            </span>
+        </div>
+    }
     <div class="sub-body gear-body" data-wheel="y">
         <section class="gear-col" aria-label="七槽装备">
             <div class="eyebrow">@e.ActorDisplayName(s, me) · 七槽</div>
@@ -89,15 +105,19 @@
                             var n = inst.Count;
                             var gw = e.GiveBlocked(s, me, tid, inst.InstanceId, n);
                             var g1 = n > 1 ? e.GiveBlocked(s, me, tid, inst.InstanceId, 1) : gw;
-                            <button type="button" class="eq-btn give" disabled="@(gw != null)" title="@(gw ?? GiveTip(me, tid, inst, n))" @onclick="() => G.GiveTo(me, tid, inst.InstanceId, n)">交给@(e.ActorDisplayName(s, tid))@(n > 1 ? $"×{n}" : "")</button>
+                            <button type="button" class="eq-btn give" disabled="@(gw != null)" title="@(gw ?? GiveTip(me, tid, inst, n))" @onclick="() => G.AskGive(me, tid, inst.InstanceId, n)">交给@(e.ActorDisplayName(s, tid))@(n > 1 ? $"×{n}" : "")</button>
                             @if (n > 1)
                             {
-                                <button type="button" class="eq-btn give alt" disabled="@(g1 != null)" title="@(g1 ?? GiveTip(me, tid, inst, 1))" @onclick="() => G.GiveTo(me, tid, inst.InstanceId, 1)">×1</button>
+                                <button type="button" class="eq-btn give alt" disabled="@(g1 != null)" title="@(g1 ?? GiveTip(me, tid, inst, 1))" @onclick="() => G.AskGive(me, tid, inst.InstanceId, 1)">×1</button>
                             }
                         }
                     </span>
-                    @{ var firstWhy = members.Where(x => x != me).Select(x => e.GiveBlocked(s, me, x, inst.InstanceId, inst.Count)).FirstOrDefault(x => x != null); }
-                    @if (firstWhy != null && members.Count > 1) { <small class="muted gs-why">交接：@firstWhy</small> }
+                    @* B10 试玩修复 5：被拒原因按接收人分别写；整批不行但 1 份可以的，写整批的原因 *@
+                    @foreach (var to in members.Where(x => x != me))
+                    {
+                        var why = e.GiveBlocked(s, me, to, inst.InstanceId, inst.Count);
+                        if (why != null) { <small class="muted gs-why">交给@(e.ActorDisplayName(s, to))：@why</small> }
+                    }
                 </div>
             }
             @if (members.Count == 1) { <div class="tiny muted">只有你一人同行：队友加入后可在这里互相递物品、换装</div> }
@@ -131,6 +151,7 @@
 
     private void PickActor(string id)
     {
+        G.GivePending = null;
         G.GearActor = id;
         G.Notify();
     }

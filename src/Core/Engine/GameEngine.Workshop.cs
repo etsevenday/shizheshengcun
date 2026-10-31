@@ -38,7 +38,7 @@ namespace Survival.Core.Engine
             if (WorkshopBuilt(s, here, rc.Station)) return null;
             var name = StationName(rc.Station);
             return CanBuildWorkshopsAt(here)
-                ? $"需要{name}：{LocName(here)}还没有建成{name}（在“工坊建造”里建）"
+                ? $"需要{name}：{LocName(here)}还没有建成{name}（在“营地建造”里建）"
                 : $"需要{name}：{LocName(here)}没有{name}，工坊只能建在{string.Join("、", Config.Workshops.BuildLocations.Select(LocName))}";
         }
 

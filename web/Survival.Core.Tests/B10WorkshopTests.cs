@@ -184,4 +184,17 @@ public class B10WorkshopTests : TestBase
         Start(s, Craft("knife"));
         Assert.That(E.GiveBlocked(s, GameState.PlayerId, mate, knife.InstanceId, 1), Does.Contain("行动进行中"));
     }
+
+    /// <summary>B10 试玩修复 1/10：制造3/7级随工坊生效、10级部分生效；不可自制装备的来源只写类别与地点。</summary>
+    [Test]
+    public void B10_CraftingNodesLive_SourceTextsClean()
+    {
+        string St(string id) => GameEngine.PassiveStatusText(Cfg.SkillNodes.Single(n => n.Id == id));
+        Assert.That(St("crafting_03"), Is.EqualTo("生效中"));
+        Assert.That(St("crafting_07"), Is.EqualTo("生效中"));
+        Assert.That(St("crafting_10"), Does.StartWith("部分生效"));
+        Assert.That(E.EquipmentSource("shotgun")!.Text, Is.EqualTo("不可自制：固定箱拾获（d03_08）"));
+        Assert.That(E.EquipmentSource("marksman_rifle")!.Text, Is.EqualTo("不可自制：一次性交换（h03_workshop）"));
+        Assert.That(Cfg.Knowledge.Single(k => k.Id == "blueprint_shock_baton").Source, Does.Not.Contain("电击"));
+    }
 }

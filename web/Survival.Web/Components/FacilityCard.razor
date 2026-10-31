@@ -6,22 +6,31 @@
     var s = G.S;
     var e = G.E;
     var fac = s.Locations[s.CurrentLocation].Facility;
-    var built = Kind == "bed" ? fac.BedBuilt : fac.ShelterBuilt;
-    var title = Kind == "bed" ? "床垫" : "遮蔽棚";
-    var effect = Kind == "bed" ? "营地睡眠体力每小时额外+5" : "营地可遮蔽睡眠，休息额外恢复精神";
-    var need = Kind == "bed" && !fac.ShelterBuilt ? "需先建成遮蔽棚" : "点击查看建造条件";
+    var stations = e.Config.Workshops.Stations.Where(x => x.BuildRecipe != null).ToList();
+    var builtWs = stations.Where(x => fac.Workshops.Contains(x.Id)).Select(x => x.Name).ToList();
+    var built = Kind == "workshops" ? builtWs.Count > 0 : Kind == "bed" ? fac.BedBuilt : fac.ShelterBuilt;
+    var title = Kind == "workshops" ? "工坊" : Kind == "bed" ? "床垫" : "遮蔽棚";
+    var effect = Kind == "workshops" ? $"已建{string.Join("、", builtWs)}" : Kind == "bed" ? "营地睡眠体力每小时额外+5" : "营地可遮蔽睡眠，休息额外恢复精神";
+    var need = Kind == "workshops" ? "点击在“营地建造”里建" : Kind == "bed" && !fac.ShelterBuilt ? "需先建成遮蔽棚" : "点击查看建造条件";
+    var badge = Kind == "workshops" ? $"已建{builtWs.Count}/{stations.Count}" : built ? "已建成" : "未建造";
 }
-<ObjectCard CssClass="fac-card" Title="@title" Badge="@(built ? "已建成" : "未建造")" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
+<ObjectCard CssClass="fac-card" Title="@title" Badge="@badge" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
             Tooltip="@(built ? effect : $"{title}未建造：{need}")" OnClick="Open">
-    <Art>@Icons.Markup(Kind)</Art>
+    <Art>@Icons.Markup(Kind == "workshops" ? "parts" : Kind)</Art>
     <ChildContent>
         <div class="oc-line">@(built ? effect : need)</div>
     </ChildContent>
 </ObjectCard>
 
 @code {
-    /// <summary>shelter 或 bed。</summary>
+    /// <summary>shelter、bed 或 workshops（B10：本地已建工坊汇总）。</summary>
     [Parameter, EditorRequired] public string Kind { get; set; } = "shelter";
 
-    private void Open() => G.OpenPanel("craft", Kind);
+    private void Open()
+    {
+        if (Kind != "workshops") { G.OpenPanel("craft", Kind); return; }
+        G.OpenPanel("craft", "build_workbench");
+        G.CraftTab = "camp";
+        G.Notify();
+    }
 }

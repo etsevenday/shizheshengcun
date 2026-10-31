@@ -403,7 +403,7 @@ public class B5SkillTests : BattleTestBase
         Assert.That(lines, Has.Some.EqualTo("采集3级·稳手采集：采集划伤概率×0.9（生效中）"));
         // B7b 按新规则改写（Q53：W0 是 T0 误记，基础手作=原有内容；Q54：分类勘整/周密检索接入，回收专家迁出）
         Assert.That(lines.Single(x => x.StartsWith("制造1级")), Does.Contain("原有内容，已开放"));
-        Assert.That(Cfg.SkillNodes.Count(n => n.IsSurvival && n.IsLive), Is.EqualTo(12));
+        Assert.That(Cfg.SkillNodes.Count(n => n.IsSurvival && n.IsLive), Is.EqualTo(14), "B10：制造3/7级随工坊与等级配方生效");
     }
 
     // ───────────── M125：人物页与开发入口（H10） ─────────────

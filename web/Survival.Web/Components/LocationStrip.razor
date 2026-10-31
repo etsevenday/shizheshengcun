@@ -48,6 +48,8 @@
                         <FacilityCard Kind="shelter" />
                         <FacilityCard Kind="bed" />
                     }
+                    @* B10 试玩修复 9：营地设施栏显示已建工坊（只在可建工坊的地点） *@
+                    @if (G.E.CanBuildWorkshopsAt(G.S.CurrentLocation)) { <FacilityCard Kind="workshops" /> }
                 </div>
             </div>
         }

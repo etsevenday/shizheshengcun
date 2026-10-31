@@ -148,7 +148,7 @@ namespace Survival.Core.Config
         public string ExtraCost { get; set; } = "";
         /// <summary>combat 或 survival。</summary>
         public string Kind { get; set; } = "combat";
-        /// <summary>live 已接入；baseline 1 级开放原有内容；dormant 现在没有挂点只存数据；pending 待策划确认；combat B6/B7。</summary>
+        /// <summary>live 已接入；baseline 1 级开放原有内容；dormant 现在没有挂点只存数据；partial 部分生效（制造10：等级配方已开放、定向词条未做，B10）；pending 待策划确认；combat B6/B7。</summary>
         public string Status { get; set; } = "combat";
         /// <summary>求生被动的程序效果（键/运算/值，数值取自 A06 §2 效果列）。</summary>
         public List<EquipEffectConfig> Effects { get; set; } = new List<EquipEffectConfig>();

@@ -168,6 +168,7 @@ namespace Survival.Core.Engine
             "baseline" => "原有内容，已开放",
             "pending" => "部分内容待策划确认，暂未生效",
             "dormant" => "相关配方/内容尚未上线，暂未生效",
+            "partial" => "部分生效：本级配方已开放，其余内容尚未上线",
             "closed" => "暂未开放：不加成、不磨损",
             _ => "四对四战斗上线后生效",
         };

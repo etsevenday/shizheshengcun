@@ -12552,7 +12552,7 @@
       "cooldownRounds": 0,
       "extraCost": "无",
       "kind": "survival",
-      "status": "dormant",
+      "status": "live",
       "effects": [],
       "displayText": "开放制作等级3配方与工作台、缝纫台"
     },
@@ -12595,7 +12595,7 @@
       "cooldownRounds": 0,
       "extraCost": "无",
       "kind": "survival",
-      "status": "dormant",
+      "status": "live",
       "effects": [],
       "displayText": "开放制作等级7配方和对应工坊许可"
     },
@@ -12611,7 +12611,7 @@
       "cooldownRounds": 0,
       "extraCost": "无",
       "kind": "survival",
-      "status": "dormant",
+      "status": "partial",
       "effects": [],
       "displayText": "开放制作等级10配方；可从该装备合法附加池定向选1词条，仍付精密零件1"
     },
@@ -13816,7 +13816,7 @@
       "name": "军械台蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "d03 主线军械蓝图（A07；地图与任务在后续版本开放，现在只能用开发入口学会）"
+      "source": "蓝图：d03 主线（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_stone_knife",
@@ -13838,7 +13838,7 @@
       "name": "守备短剑蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d03_08（势力守备路线技术委托；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d03_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_hatchet",
@@ -13852,14 +13852,14 @@
       "name": "破障斧蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d01_08（工业路线图纸；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d01_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_rescue_axe",
       "name": "救援短斧蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d01_08（工业副本首通图纸；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d01_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_wooden_spear",
@@ -13880,14 +13880,14 @@
       "name": "加固长枪蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d03_08（守备路线图纸；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d03_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_barbed_spear",
       "name": "倒刺短矛蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：w03_quarry（林地副本图纸；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：w03_quarry（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_wooden_club",
@@ -13902,14 +13902,14 @@
       "name": "钢制钉锤蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d01_08（工业路线图纸；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d01_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_shock_baton",
       "name": "绝缘警棍蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d03_08（守备副本图纸；无电击耗材机制；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d03_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_wooden_bow",
@@ -13931,7 +13931,7 @@
       "name": "猎手弓蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：w03_quarry（林地支线图纸；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：w03_quarry（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_crossbow",
@@ -13945,7 +13945,7 @@
       "name": "轻型战术弩蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d03_08（拾荒路线终点图纸；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d03_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_wooden_shield",
@@ -13968,7 +13968,7 @@
       "name": "救援盾蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d03_08（守备副本图纸；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d03_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_signal_whistle",
@@ -13991,14 +13991,14 @@
       "name": "战术电台蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d03_08（拾荒路线通信点图纸；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d03_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_command_terminal",
       "name": "便携指挥终端蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d04_07（终章通信副本图纸；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d04_07（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_field_medkit",
@@ -14021,14 +14021,14 @@
       "name": "救援医疗箱蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d02_08（医疗副本图纸；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d02_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_triage_kit",
       "name": "分诊器材组蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d02_08（医疗路线终点图纸；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d02_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_padded_vest",
@@ -14059,28 +14059,28 @@
       "name": "侦察护具蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：w03_quarry（营区；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：w03_quarry（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_heavy_armor",
       "name": "重型防护甲蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d01_08（营区；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d01_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_medic_armor",
       "name": "救护防护背心蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d02_08（营区；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d02_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_balanced_armor",
       "name": "均衡战术甲蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d04_07（营区；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d04_07（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_steady_ring",
@@ -14119,28 +14119,28 @@
       "name": "聚焦镜片蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d03_08（拾荒路线；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d03_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_aid_badge",
       "name": "救护徽章蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d02_08（医疗副本；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d02_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_resolve_medal",
       "name": "镇定勋章蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d03_08（守备支线；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d03_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_tactics_watch",
       "name": "战术计时表蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d04_07（通信副本；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d04_07（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_work_shirt",
@@ -14171,21 +14171,21 @@
       "name": "工匠围衣蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d01_08（工业；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d01_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_rest_coat",
       "name": "休养外衣蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d02_08（医疗；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d02_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_expedition_coat",
       "name": "远征上衣蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d04_07（主线终点；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d04_07（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_work_trousers",
@@ -14216,21 +14216,21 @@
       "name": "加固长裤蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d01_08（工业；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d01_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_recovery_trousers",
       "name": "休养长裤蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d02_08（医疗；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d02_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_expedition_trousers",
       "name": "远征下衣蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d04_07（主线终点；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d04_07（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_gather_gloves",
@@ -14261,21 +14261,21 @@
       "name": "维护手册蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d01_08（工业委托；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d01_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_medical_notes",
       "name": "护理笔记蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d02_08（医疗支线；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d02_08（地图固定箱与任务在后续版本开放）"
     },
     {
       "id": "blueprint_ration_pouch",
       "name": "配给袋蓝图",
       "grantedByFacts": [],
       "blueprint": true,
-      "source": "蓝图：d04_07（主线终点；地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d04_07（地图固定箱与任务在后续版本开放）"
     }
   ],
   "party": {
@@ -14457,7 +14457,7 @@
         "craftable": false,
         "recipeId": null,
         "knowledge": null,
-        "text": "不可自制：新手hardware武器柜（hardware；hardware_weapon_cache：kitchen_knife1（原箱））"
+        "text": "不可自制：固定箱拾获（hardware）"
       },
       {
         "itemId": "machete",
@@ -14471,7 +14471,7 @@
         "craftable": true,
         "recipeId": "make_guard_sword",
         "knowledge": "blueprint_guard_sword",
-        "text": "锻炉／制造7／120分钟；蓝图：d03_08（势力守备路线技术委托；地图固定箱与任务在后续版本开放）"
+        "text": "锻炉／制造7／120分钟；蓝图：d03_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "hatchet",
@@ -14485,21 +14485,21 @@
         "craftable": false,
         "recipeId": null,
         "knowledge": null,
-        "text": "不可自制：主线消防车／消防站保底（m01_road；firetruck_cache：fire_axe1）"
+        "text": "不可自制：固定箱拾获（m01_road）"
       },
       {
         "itemId": "breach_axe",
         "craftable": true,
         "recipeId": "make_breach_axe",
         "knowledge": "blueprint_breach_axe",
-        "text": "锻炉／制造7／150分钟；蓝图：d01_08（工业路线图纸；地图固定箱与任务在后续版本开放）"
+        "text": "锻炉／制造7／150分钟；蓝图：d01_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "rescue_axe",
         "craftable": true,
         "recipeId": "make_rescue_axe",
         "knowledge": "blueprint_rescue_axe",
-        "text": "锻炉／制造10／150分钟；蓝图：d01_08（工业副本首通图纸；地图固定箱与任务在后续版本开放）"
+        "text": "锻炉／制造10／150分钟；蓝图：d01_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "wooden_spear",
@@ -14520,14 +14520,14 @@
         "craftable": true,
         "recipeId": "make_pike",
         "knowledge": "blueprint_pike",
-        "text": "锻炉／制造7／120分钟；蓝图：d03_08（守备路线图纸；地图固定箱与任务在后续版本开放）"
+        "text": "锻炉／制造7／120分钟；蓝图：d03_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "barbed_spear",
         "craftable": true,
         "recipeId": "make_barbed_spear",
         "knowledge": "blueprint_barbed_spear",
-        "text": "锻炉／制造10／135分钟；蓝图：w03_quarry（林地副本图纸；地图固定箱与任务在后续版本开放）"
+        "text": "锻炉／制造10／135分钟；蓝图：w03_quarry（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "wooden_club",
@@ -14541,21 +14541,21 @@
         "craftable": false,
         "recipeId": null,
         "knowledge": null,
-        "text": "不可自制：新手hardware保底／营区工具委托（hardware；hardware_weapon_cache：crowbar1（同箱，不另发））"
+        "text": "不可自制：固定箱拾获（hardware）"
       },
       {
         "itemId": "steel_mace",
         "craftable": true,
         "recipeId": "make_steel_mace",
         "knowledge": "blueprint_steel_mace",
-        "text": "锻炉／制造7／105分钟；蓝图：d01_08（工业路线图纸；地图固定箱与任务在后续版本开放）"
+        "text": "锻炉／制造7／105分钟；蓝图：d01_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "shock_baton",
         "craftable": true,
         "recipeId": "make_shock_baton",
         "knowledge": "blueprint_shock_baton",
-        "text": "工作台／制造10／120分钟；蓝图：d03_08（守备副本图纸；无电击耗材机制；地图固定箱与任务在后续版本开放）"
+        "text": "工作台／制造10／120分钟；蓝图：d03_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "wooden_bow",
@@ -14576,7 +14576,7 @@
         "craftable": true,
         "recipeId": "make_hunter_bow",
         "knowledge": "blueprint_hunter_bow",
-        "text": "工作台／制造7／120分钟；蓝图：w03_quarry（林地支线图纸；地图固定箱与任务在后续版本开放）"
+        "text": "工作台／制造7／120分钟；蓝图：w03_quarry（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "crossbow",
@@ -14590,42 +14590,42 @@
         "craftable": true,
         "recipeId": "make_repeater_crossbow",
         "knowledge": "blueprint_repeater_crossbow",
-        "text": "军械台／制造10／180分钟；蓝图：d03_08（拾荒路线终点图纸；地图固定箱与任务在后续版本开放）"
+        "text": "军械台／制造10／180分钟；蓝图：d03_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "pistol",
         "craftable": false,
         "recipeId": null,
         "knowledge": null,
-        "text": "不可自制：新手village旧储物柜；保留既有手枪（village；village_weapon_locker：pistol1+9mm12（原箱））"
+        "text": "不可自制：固定箱拾获（village）"
       },
       {
         "itemId": "service_pistol",
         "craftable": false,
         "recipeId": null,
         "knowledge": null,
-        "text": "不可自制：守备技术委托固定奖励；不可制造（d03_05；officer_cache：service_pistol1）"
+        "text": "不可自制：固定箱拾获（d03_04）"
       },
       {
         "itemId": "shotgun",
         "craftable": false,
         "recipeId": null,
         "knowledge": null,
-        "text": "不可自制：守备路线军械箱保底；新手不开放（d03_08；shotgun_cache：shotgun1（独立箱））"
+        "text": "不可自制：固定箱拾获（d03_08）"
       },
       {
         "itemId": "rifle",
         "craftable": false,
         "recipeId": null,
         "knowledge": null,
-        "text": "不可自制：拾荒路线警备仓保底；新手不开放（d03_08；rifle_cache：rifle1）"
+        "text": "不可自制：固定箱拾获（d03_08）"
       },
       {
         "itemId": "marksman_rifle",
         "craftable": false,
         "recipeId": null,
         "knowledge": null,
-        "text": "不可自制：末章军械委托以步枪1+precision_parts2+gun_service_kit1交换；不可自行制造（h03_workshop；一次性交换：rifle1+precision_parts2+gun_service_kit1→marksman_rifle1；确认后原子扣料）"
+        "text": "不可自制：一次性交换（h03_workshop）"
       },
       {
         "itemId": "wooden_shield",
@@ -14646,14 +14646,14 @@
         "craftable": false,
         "recipeId": null,
         "knowledge": null,
-        "text": "不可自制：守备路线保底装备箱（d03_03；shield_cache：riot_shield1）"
+        "text": "不可自制：固定箱拾获（d03_03）"
       },
       {
         "itemId": "rescue_shield",
         "craftable": true,
         "recipeId": "make_rescue_shield",
         "knowledge": "blueprint_rescue_shield",
-        "text": "工作台／制造10／150分钟；蓝图：d03_08（守备副本图纸；地图固定箱与任务在后续版本开放）"
+        "text": "工作台／制造10／150分钟；蓝图：d03_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "signal_whistle",
@@ -14674,14 +14674,14 @@
         "craftable": true,
         "recipeId": "make_field_radio",
         "knowledge": "blueprint_field_radio",
-        "text": "工作台／制造7／120分钟；蓝图：d03_08（拾荒路线通信点图纸；地图固定箱与任务在后续版本开放）"
+        "text": "工作台／制造7／120分钟；蓝图：d03_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "command_terminal",
         "craftable": true,
         "recipeId": "make_command_terminal",
         "knowledge": "blueprint_command_terminal",
-        "text": "工作台／制造10／180分钟；蓝图：d04_07（终章通信副本图纸；地图固定箱与任务在后续版本开放）"
+        "text": "工作台／制造10／180分钟；蓝图：d04_07（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "field_medkit",
@@ -14702,14 +14702,14 @@
         "craftable": true,
         "recipeId": "make_rescue_medkit",
         "knowledge": "blueprint_rescue_medkit",
-        "text": "医疗台／制造7／120分钟；蓝图：d02_08（医疗副本图纸；地图固定箱与任务在后续版本开放）"
+        "text": "医疗台／制造7／120分钟；蓝图：d02_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "triage_kit",
         "craftable": true,
         "recipeId": "make_triage_kit",
         "knowledge": "blueprint_triage_kit",
-        "text": "医疗台／制造10／150分钟；蓝图：d02_08（医疗路线终点图纸；地图固定箱与任务在后续版本开放）"
+        "text": "医疗台／制造10／150分钟；蓝图：d02_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "padded_vest",
@@ -14737,35 +14737,35 @@
         "craftable": false,
         "recipeId": null,
         "knowledge": null,
-        "text": "不可自制：守备路线固定委托奖励（d03_08；armor_cache：guard_armor1）"
+        "text": "不可自制：固定箱拾获（d03_08）"
       },
       {
         "itemId": "scout_armor",
         "craftable": true,
         "recipeId": "make_scout_armor",
         "knowledge": "blueprint_scout_armor",
-        "text": "缝纫台／制造7／120分钟；蓝图：w03_quarry（营区；地图固定箱与任务在后续版本开放）"
+        "text": "缝纫台／制造7／120分钟；蓝图：w03_quarry（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "heavy_armor",
         "craftable": true,
         "recipeId": "make_heavy_armor",
         "knowledge": "blueprint_heavy_armor",
-        "text": "工作台／制造10／180分钟；蓝图：d01_08（营区；地图固定箱与任务在后续版本开放）"
+        "text": "工作台／制造10／180分钟；蓝图：d01_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "medic_armor",
         "craftable": true,
         "recipeId": "make_medic_armor",
         "knowledge": "blueprint_medic_armor",
-        "text": "缝纫台／制造7／105分钟；蓝图：d02_08（营区；地图固定箱与任务在后续版本开放）"
+        "text": "缝纫台／制造7／105分钟；蓝图：d02_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "balanced_armor",
         "craftable": true,
         "recipeId": "make_balanced_armor",
         "knowledge": "blueprint_balanced_armor",
-        "text": "缝纫台／制造10／150分钟；蓝图：d04_07（营区；地图固定箱与任务在后续版本开放）"
+        "text": "缝纫台／制造10／150分钟；蓝图：d04_07（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "steady_ring",
@@ -14800,28 +14800,28 @@
         "craftable": true,
         "recipeId": "make_focus_lens",
         "knowledge": "blueprint_focus_lens",
-        "text": "工作台／制造7／60分钟；蓝图：d03_08（拾荒路线；地图固定箱与任务在后续版本开放）"
+        "text": "工作台／制造7／60分钟；蓝图：d03_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "aid_badge",
         "craftable": true,
         "recipeId": "make_aid_badge",
         "knowledge": "blueprint_aid_badge",
-        "text": "医疗台／制造7／45分钟；蓝图：d02_08（医疗副本；地图固定箱与任务在后续版本开放）"
+        "text": "医疗台／制造7／45分钟；蓝图：d02_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "resolve_medal",
         "craftable": true,
         "recipeId": "make_resolve_medal",
         "knowledge": "blueprint_resolve_medal",
-        "text": "工作台／制造7／50分钟；蓝图：d03_08（守备支线；地图固定箱与任务在后续版本开放）"
+        "text": "工作台／制造7／50分钟；蓝图：d03_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "tactics_watch",
         "craftable": true,
         "recipeId": "make_tactics_watch",
         "knowledge": "blueprint_tactics_watch",
-        "text": "工作台／制造10／90分钟；蓝图：d04_07（通信副本；地图固定箱与任务在后续版本开放）"
+        "text": "工作台／制造10／90分钟；蓝图：d04_07（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "work_shirt",
@@ -14849,21 +14849,21 @@
         "craftable": true,
         "recipeId": "make_craft_coat",
         "knowledge": "blueprint_craft_coat",
-        "text": "缝纫台／制造7／90分钟；蓝图：d01_08（工业；地图固定箱与任务在后续版本开放）"
+        "text": "缝纫台／制造7／90分钟；蓝图：d01_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "rest_coat",
         "craftable": true,
         "recipeId": "make_rest_coat",
         "knowledge": "blueprint_rest_coat",
-        "text": "缝纫台／制造7／75分钟；蓝图：d02_08（医疗；地图固定箱与任务在后续版本开放）"
+        "text": "缝纫台／制造7／75分钟；蓝图：d02_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "expedition_coat",
         "craftable": true,
         "recipeId": "make_expedition_coat",
         "knowledge": "blueprint_expedition_coat",
-        "text": "缝纫台／制造10／120分钟；蓝图：d04_07（主线终点；地图固定箱与任务在后续版本开放）"
+        "text": "缝纫台／制造10／120分钟；蓝图：d04_07（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "work_trousers",
@@ -14891,21 +14891,21 @@
         "craftable": true,
         "recipeId": "make_reinforced_trousers",
         "knowledge": "blueprint_reinforced_trousers",
-        "text": "缝纫台／制造7／90分钟；蓝图：d01_08（工业；地图固定箱与任务在后续版本开放）"
+        "text": "缝纫台／制造7／90分钟；蓝图：d01_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "recovery_trousers",
         "craftable": true,
         "recipeId": "make_recovery_trousers",
         "knowledge": "blueprint_recovery_trousers",
-        "text": "缝纫台／制造7／75分钟；蓝图：d02_08（医疗；地图固定箱与任务在后续版本开放）"
+        "text": "缝纫台／制造7／75分钟；蓝图：d02_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "expedition_trousers",
         "craftable": true,
         "recipeId": "make_expedition_trousers",
         "knowledge": "blueprint_expedition_trousers",
-        "text": "缝纫台／制造10／120分钟；蓝图：d04_07（主线终点；地图固定箱与任务在后续版本开放）"
+        "text": "缝纫台／制造10／120分钟；蓝图：d04_07（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "gather_gloves",
@@ -14933,21 +14933,21 @@
         "craftable": true,
         "recipeId": "make_repair_manual",
         "knowledge": "blueprint_repair_manual",
-        "text": "工作台／制造7／60分钟；蓝图：d01_08（工业委托；地图固定箱与任务在后续版本开放）"
+        "text": "工作台／制造7／60分钟；蓝图：d01_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "medical_notes",
         "craftable": true,
         "recipeId": "make_medical_notes",
         "knowledge": "blueprint_medical_notes",
-        "text": "医疗台／制造7／60分钟；蓝图：d02_08（医疗支线；地图固定箱与任务在后续版本开放）"
+        "text": "医疗台／制造7／60分钟；蓝图：d02_08（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "ration_pouch",
         "craftable": true,
         "recipeId": "make_ration_pouch",
         "knowledge": "blueprint_ration_pouch",
-        "text": "缝纫台／制造10／90分钟；蓝图：d04_07（主线终点；地图固定箱与任务在后续版本开放）"
+        "text": "缝纫台／制造10／90分钟；蓝图：d04_07（地图固定箱与任务在后续版本开放）"
       },
       {
         "itemId": "knuckle_wraps",

@@ -50,7 +50,7 @@
                             var st = e.Config.Workshops.Stations.FirstOrDefault(x => x.Id == t && x.BuildRecipe != null);
                             var builtSt = st == null || e.WorkshopBuilt(s, here, t);
                             <button type="button" role="tab" aria-selected="@(tab == t)" class="craft-tab @(tab == t ? "on" : "") @(builtSt ? "" : "unbuilt")" data-tab="@t"
-                                    title="@(st == null ? tname : builtSt ? $"{tname}：{lc.Name}已建成" : $"{tname}：{lc.Name}还没有（可浏览配方与门槛）")" @onclick="() => PickTab(t)">@tname@(builtSt ? "" : "·未建")</button>
+                                    title="@(st == null ? tname : builtSt ? $"{tname}：{lc.Name}已建成" : $"{tname}：{lc.Name}{TabSuffix(t).TrimStart('·')}（可浏览配方与门槛）")" @onclick="() => PickTab(t)">@tname@(builtSt ? "" : TabSuffix(t))</button>
                         }
                     </div>
             }
@@ -106,7 +106,7 @@
                 else
                 {
                     <div class="panel craft-mats">
-                        <div class="eyebrow" title="@RecipeHint(rc)">@(rc.IsBuild ? (rc.Group == "workshop" ? "工坊建造" : "营地设施") : e.StationName(rc.Station)) · @rc.Name ⓘ</div>
+                        <div class="eyebrow" title="@RecipeHint(rc)">@(rc.IsBuild ? "营地建造" : e.StationName(rc.Station)) · @rc.Name ⓘ</div>
                         @* B10（A10 §9.1）：来源、工坊与门槛一次写全；不满足的标出原因（不是缺料） *@
                         <div class="craft-source" data-craft-source>
                             <span>@RecipeMeta(rc)</span>
@@ -149,16 +149,28 @@
                         }
                         @if (batchable)
                         {
-                            var maxBatch = rc.AllInputs.Count == 0 ? 1 : Math.Max(1, rc.AllInputs.Min(kv => e.AvailableCount(s, kv.Key, true) / Math.Max(1, kv.Value)));
+                            var enough = rc.AllInputs.Count == 0 ? 1 : rc.AllInputs.Min(kv => e.AvailableCount(s, kv.Key, true) / Math.Max(1, kv.Value));
+                            var maxBatch = Math.Max(1, enough);
                             <div class="batch-row">
                                 <span class="tiny muted">批量制作</span>
                                 <button type="button" class="tbar-step" aria-label="减少件数" disabled="@(batch <= 1)" @onclick="() => SetBatch(batch - 1)">−</button>
                                 <b>@batch</b>
                                 <button type="button" class="tbar-step" aria-label="增加件数" disabled="@(batch >= maxBatch)" @onclick="() => SetBatch(batch + 1)">+</button>
-                                <span class="tiny muted">材料最多够@(maxBatch)件；同批次合并工作量，高熟练度一段可做多件</span>
+                                <span class="tiny @(enough == 0 ? "warn-text" : "muted")" title="同批次合并工作量，高熟练度一段可做多件">@(enough == 0 ? "材料不足，一件也不够" : $"材料最多够{enough}件")</span>
                             </div>
                         }
-                        <div class="tiny muted">原料</div>
+                        <div class="mat-scroll" data-wheel="y">
+                        <div class="tiny muted">原料@(rc.Fuel.Count > 0 ? "与燃料" : "")</div>
+                        <div class="mat-grid">
+                        @foreach (var kv in rc.Fuel)
+                        {
+                            @* A05 §3：锻炉每批另付木炭1作燃料，与原料一起预留；原料里也有同种物品时合计校验 *@
+                            var fneed = kv.Value * batch;
+                            var fall = rc.AllInputs[kv.Key] * batch;
+                            var fhave = e.AvailableCount(s, kv.Key, true);
+                            <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"燃料{fneed}")" Missing="@(fhave < fall)" CssClass="mat-row"
+                                     Status="@($"{e.StationName(rc.Station)}每批{kv.Value} · 现有{fhave}{(fall != fneed ? $"（连同原料共需{fall}）" : "")}{(fhave < fall ? $" · 缺少{fall - fhave}" : "")}")" />
+                        }
                         @foreach (var kv in rc.Inputs)
                         {
                             var item = kv.Key;
@@ -183,15 +195,7 @@
                                 </span>
                             </ItemRow>
                         }
-                        @foreach (var kv in rc.Fuel)
-                        {
-                            @* A05 §3：锻炉每批另付木炭1作燃料，与原料一起预留；原料里也有同种物品时合计校验 *@
-                            var fneed = kv.Value * batch;
-                            var fall = rc.AllInputs[kv.Key] * batch;
-                            var fhave = e.AvailableCount(s, kv.Key, true);
-                            <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"燃料{fneed}")" Missing="@(fhave < fall)" CssClass="mat-row"
-                                     Status="@($"{e.StationName(rc.Station)}每批{kv.Value} · 现有{fhave}{(fall != fneed ? $"（连同原料共需{fall}）" : "")}{(fhave < fall ? $" · 缺少{fall - fhave}" : "")}")" />
-                        }
+                        </div>
                         @foreach (var tag in rc.Catalysts)
                         {
                             var cfg = e.Config.Items.First(i => i.ToolTag == tag);
@@ -208,6 +212,7 @@
                         {
                             <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"×{kv.Value * batch}")" Status="@($"完成后放在{lc.Name}地面")" />
                         }
+                        </div>
                         @* 唯一“开始制作/开始建造”入口在所选配方卡内（S08 §5、S14 §14.1）：选配方、改件数、指定批次/锅只预览，不扣物不预留；
                            点开始才交内核按真实材料/工具/锅/占用重验并预留开工（E.Start），执行中锁住按钮，重复点击不重复制作。右栏只作可选详细预测。 *@
                         @{
@@ -230,7 +235,8 @@
                         }
                     </div>
                 }
-                @if (lc.HasFire)
+                @* B10 试玩修复 7：火堆摘要只在“自动加工”里显示，让出配方卡的原料区 *@
+                @if (lc.HasFire && proc != null)
                 {
                     var used = e.FireContents(s, here).Count;
                     <div class="panel fire-box">
@@ -357,6 +363,16 @@ else
     }
 
     private static string TabOf(RecipeConfig r) => r.IsBuild ? CampTab : r.Station;
+
+    /// <summary>工坊标签后缀：本地可建写“·未建”；不能建的地点写“·营地已建”或“·本地无”（B10 试玩修复 9）。</summary>
+    private string TabSuffix(string station)
+    {
+        var e = G.E;
+        var here = G.S.CurrentLocation;
+        if (e.CanBuildWorkshopsAt(here)) return "·未建";
+        var camp = e.Config.Workshops.BuildLocations.FirstOrDefault();
+        return camp != null && e.WorkshopBuilt(G.S, camp, station) ? "·营地已建" : "·本地无";
+    }
 
     private void PickTab(string t)
     {

@@ -306,6 +306,7 @@ public sealed class GameSession
         Pop = null;
         // 离开编队面板（切到别的面板或关闭）就丢弃草稿：关闭不自动保存（Q86）
         if (panel != "formation") { FormationDraft = null; FormationPick = null; }
+        GivePending = null;
         // 只有地图/制作/休息会在右栏显示面板自己的预估，切到“对象信息”；顶栏浏览层（日志、目标、提示、对话记录、说明）不改右栏页签
         if (panel != null) { IgniteMenuOpen = false; if (panel is "map" or "craft" or "rest") DetailTab = DetailTab.Object; }
         if (panel == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturn = null; _helpReturnStatus = null; }
@@ -1741,6 +1742,29 @@ public sealed class GameSession
     public ActionResult UnequipFor(string actorId, string slot, bool toGround) =>
         Commit(E.Unequip(S, actorId, slot, toGround, Guid.NewGuid().ToString("N")));
 
+    /// <summary>待确认的交接（A10 §7.2：先在短浮窗列双方最终重量/卡数，确认再提交；Esc/取消退出）。</summary>
+    public GiveDraft? GivePending { get; set; }
+
+    public void AskGive(string fromId, string toId, int instanceId, int count)
+    {
+        GivePending = new GiveDraft(fromId, toId, instanceId, count);
+        Notify();
+    }
+
+    public void CancelGive()
+    {
+        GivePending = null;
+        Notify();
+    }
+
+    public ActionResult ConfirmGive()
+    {
+        var d = GivePending;
+        GivePending = null;
+        if (d == null) return ActionResult.Fail("没有待确认的交接");
+        return GiveTo(d.From, d.To, d.InstanceId, d.Count);
+    }
+
     /// <summary>队员交接（A10 §7.2）：0 时间、原子，双方卡数/重量由内核一次校验。</summary>
     public ActionResult GiveTo(string fromId, string toId, int instanceId, int count) =>
         Commit(E.Give(S, fromId, toId, instanceId, count, Guid.NewGuid().ToString("N")));
@@ -1945,3 +1969,6 @@ public sealed class GameSession
         Notify();
     }
 }
+
+/// <summary>一次待确认的队员交接（B10 试玩修复 2）。</summary>
+public sealed record GiveDraft(string From, string To, int InstanceId, int Count);

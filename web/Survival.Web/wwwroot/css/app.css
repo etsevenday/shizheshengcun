@@ -1296,7 +1296,7 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .gs-item .eq-ico svg { width: 24px; height: 24px; }
 .gs-btns { display: flex; flex-wrap: wrap; gap: 4px; grid-column: 1 / -1; }
 .gs-why { grid-column: 1 / -1; font-size: 13px; }
-.eq-btn.give { border-color: #6d8a5a; }
+.gear-panel .eq-btn.give:not(:disabled) { border-color: #6d8a5a; }
 .growth-body { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 12px; min-height: 0; overflow: hidden; }
 .growth-list, .growth-detail { overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 4px; }
 .growth-skill { display: flex; justify-content: space-between; gap: 6px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: #1f2721; color: inherit; text-align: left; }
@@ -1319,3 +1319,24 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .gear-slot .gs-btns { grid-column: auto; }
 .gear-slot .gs-item small { flex-basis: 100%; }
 .gear-slot .gs-why { grid-column: 1 / -1; }
+/* B10 试玩修复 7/8：配方卡原料区独立滚动（燃料排在原料最前）、开工条不再盖住原料；整备按钮与全局禁用样式一致；交接确认浮窗 */
+.craft-side { overflow: hidden; }
+.craft-side > .craft-mats { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.craft-side > .craft-mats > * { flex: 0 0 auto; }
+.craft-side > .craft-mats > .mat-scroll { flex: 1 1 auto; min-height: 48px; overflow-y: auto; }
+.craft-side > .fire-box { flex: 0 0 auto; }
+.craft-side .craft-go { position: static; margin: 6px -12px -10px; }
+.craft-source span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px; }
+.gear-panel .eq-btn { font-size: 13px; padding: 1px 10px; min-height: 26px; white-space: nowrap; background: #2f3a31; color: var(--text); border: 1px solid var(--accent); border-radius: 4px; }
+.gear-panel .eq-btn:hover:not(:disabled) { background: #3d4a3a; }
+.gear-panel .eq-btn.alt { border-color: var(--warn); }
+.gear-panel .eq-btn:disabled { background: transparent; color: #7d8578; border: 1px dashed var(--line); cursor: not-allowed; }
+.give-confirm { margin: 0 12px 6px; padding: 8px 12px; border: 1px solid var(--accent); border-radius: 6px; background: #26301f; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; }
+.give-confirm > b { flex-basis: 100%; }
+.give-confirm .btn-row { margin-left: auto; display: flex; gap: 8px; }
+.craft-mats .batch-row { margin: 0 0 4px; }
+.craft-mats .batch-row .tbar-step { width: 32px; min-height: 30px; }
+.mat-grid { grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); }
+.mat-grid .irow.mat-row { padding-top: 3px; padding-bottom: 3px; }
+.give-confirm .btn-row button { white-space: nowrap; width: auto; min-width: 0; padding: 4px 14px; }

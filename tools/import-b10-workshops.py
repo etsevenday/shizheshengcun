@@ -41,6 +41,9 @@ INITIAL_KNOWN = {"stone_knife", "hatchet", "wooden_spear", "wooden_bow", "metal_
 # A05「B4 蓝图包与旧唯一装备位置迁移」：四旧蓝图终点
 NODE_MOVE = {"d01_06": "d01_08", "d02_06": "d02_08", "d03_06": "d03_08", "d04_06": "d04_07"}
 FORGE_FUEL = {"charcoal": 1}
+# A05「B4 蓝图包与旧唯一装备位置迁移」：唯一装备按原 claim 迁移后的节点（equipment-acquisition-migration.json 的 to）
+MIGRATION = os.path.join(BASE, "assets", "20261030", "index", "equipment-acquisition-migration.json")
+UNIQUE_MOVE = {}
 ARMORY_KNOWLEDGE = "blueprint_armory_station"
 
 
@@ -72,6 +75,9 @@ def main():
         a12 = json.load(f)
     with open(A07, encoding="utf-8") as f:
         a07 = f.read()
+    with open(MIGRATION, encoding="utf-8") as f:
+        for m in json.load(f):
+            UNIQUE_MOVE[m["itemId"]] = m["to"]
     items = {i["id"]: i for i in cfg["items"]}
     recipes = cfg["recipes"]
     by_id = {r["id"]: r for r in recipes}
@@ -128,7 +134,7 @@ def main():
         "name": "军械台蓝图",
         "grantedByFacts": [],
         "blueprint": True,
-        "source": "d03 主线军械蓝图（A07；地图与任务在后续版本开放，现在只能用开发入口学会）",
+        "source": "蓝图：d03 主线（地图固定箱与任务在后续版本开放）",
     })
 
     # ── 72 件装备：62 个配方 + 10 件不可自制 ──
@@ -140,8 +146,11 @@ def main():
         node = NODE_MOVE.get(acq.get("node", ""), acq.get("node", ""))
         craftable = bool(x.get("inputs")) and x.get("minutes", 0) > 0
         if not craftable:
+            # B10 试玩修复 10：玩家可见文字只留来源类别与地点，不显示策划内部备注
+            unode = UNIQUE_MOVE.get(iid, node)
+            kind = "一次性交换" if "交换" in grant else "固定箱拾获"
             sources.append({"itemId": iid, "craftable": False, "recipeId": None, "knowledge": None,
-                            "text": f"不可自制：{x.get('source', '')}（{node}；{grant}）"})
+                            "text": f"不可自制：{kind}（{unode}）"})
             continue
         default = "默认知识" in grant
         kid = "blueprint_" + iid
@@ -153,7 +162,7 @@ def main():
             old = knowledge.get(kid)
             put_knowledge({"id": kid, "name": (old or {}).get("name", f"{x['name']}的做法"), "grantedByFacts": ["hub_registered"], "source": ktext})
         else:
-            ktext = f"蓝图：{node}（{x.get('source', '')}；地图固定箱与任务在后续版本开放）"
+            ktext = f"蓝图：{node}（地图固定箱与任务在后续版本开放）"
             put_knowledge({"id": kid, "name": f"{x['name']}蓝图", "grantedByFacts": [], "blueprint": True, "source": ktext})
         rid = LEGACY_RECIPE.get(iid, "make_" + iid)
         old = by_id.get(rid, {})
@@ -213,6 +222,12 @@ def main():
                 raise SystemExit("缺物品定义：" + k)
         put_recipe(rec)
 
+    # B10 试玩修复 1：制造3级工坊装配、7级专业制造随 B10 生效；10级大师装配的等级配方已开放、定向词条未做（partial）
+    for n in cfg["skillNodes"]:
+        if n["id"] in ("crafting_03", "crafting_07"):
+            n["status"] = "live"
+        elif n["id"] == "crafting_10":
+            n["status"] = "partial"
     cfg["knowledge"] = list(knowledge.values())
     cfg["workshops"] = {
         "source": "A07「工坊设施」「材料加工链」；A05 §3；S08 X4；S09 X2.7；开发计划 v0.9 B10（tools/import-b10-workshops.py）",

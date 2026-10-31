@@ -952,3 +952,6 @@
 /* B10 整备/成长（A10 §7.1 应用内容区内整备面板）：盖住中部四行（随身五卡在面板内按所选角色显示），关闭后四行原样 */
 .center-scroll.four.full-panel > .rows2 { grid-row: 1 / span 4; z-index: 31; }
 .center-scroll.four.full-panel > * { grid-column: 1; }
+/* B10 试玩修复 7：手工制作面板加高到①②③三行（④随身仍可见、可拖入材料槽），原料区独立滚动、开工条固定在下方 */
+.center-scroll.four.tall-panel > * { grid-column: 1; }
+.center-scroll.four.tall-panel > .rows2 { grid-row: 1 / span 3; z-index: 31; }
