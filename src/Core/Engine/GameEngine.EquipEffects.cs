@@ -354,6 +354,24 @@ namespace Survival.Core.Engine
                 if (w.OwnPositions != null) list.Add(("站位", $"使用位{w.OwnPositions} → 目标位{w.TargetPositions}（我方只剩一人时任何武器都按1号位可用）"));
                 if (w.TraitText != null) list.Add(("固定特性", $"{w.TraitText}{(w.ArmorIgnore > 0 ? "（生效中）" : "（相关技能或多人战斗上线后生效）")}"));
                 if (!w.CanAttack) list.Add(("技能", $"{WeaponKinds.Name(w.WeaponKind)}不能直接攻击：穿进武器槽后，这一页只列{WeaponKinds.Name(w.WeaponKind)}技能（单人时以自己为目标）"));
+                // B7a Q49：逐件显示技能归属（weaponSkillBindings：本门五节点，medical 器具→医疗熟练）
+                var nodes = Config.SkillNodes.Where(x => x.SkillId == w.SkillId).OrderBy(x => x.Level).ToList();
+                if (nodes.Count > 0)
+                {
+                    var lv = SkillLevel(s, w.SkillId);
+                    list.Add(("技能归属", $"{SkillName(w.SkillId)}熟练（当前{lv}级，已解锁{nodes.Count(x => x.Level <= lv)}个）：{string.Join("、", nodes.Select(x => $"{x.Name}{x.Level}级"))}"));
+                }
+                // B7a Q45：攻击噪声按类型；隐声只算本把武器、最低0
+                if (w.CanAttack)
+                {
+                    var noise = NoiseGain(w);
+                    var quiet = (it.Affixes ?? new List<string>()).Select(Affix).Where(a => a != null)
+                        .SelectMany(a => a!.Effects).Where(e => e.Key == "combat.noise").Sum(e => e.Value);
+                    var kindText = w.WeaponKind == "firearms" || w.SkillId == "firearms" ? "枪械" : w.AmmoId == "bolt" ? "用弩矢的弩" : "弓与近战";
+                    list.Add(("噪声", Math.Abs(quiet) > 1e-12
+                        ? $"每次攻击+{Fmt.T(Math.Max(0, noise + quiet))}（{kindText}+{Fmt.T(noise)}，隐声{Fmt.SignedT(quiet)}，最低0；只算用这把攻击时）"
+                        : $"每次攻击+{Fmt.T(noise)}（{kindText}）"));
+                }
             }
             else if (Gear(it.ItemId) is GearConfig g)
             {

@@ -336,4 +336,152 @@ public class B7aEquipTests : BattleTestBase
         var loaded = SaveSerializer.Deserialize(SaveSerializer.Serialize(s));
         Assert.That(loaded.Items.Single(i => i.InstanceId == charm.InstanceId).Affixes, Is.EqualTo(new[] { "economical", "patient" }));
     }
+
+    // ───────────── M154：装备实例效果、技能绑定、求生场景核对（R92/R94/R95） ─────────────
+
+    [Test]
+    public void EQ_Q44_ScavengedChests_White80Green20_UnspecifiedSourcesWhiteNoRoll()
+    {
+        // 现有八地点的拾荒箱（锅具箱、工具箱、武器柜、旧储物柜）全部按新手普通拾荒
+        var scav = Cfg.Resources.Where(r => r.Scavenged).Select(r => r.NodeId).ToList();
+        Assert.That(scav, Is.EquivalentTo(new[] { "pot_box", "tool_box", "hardware_weapon_cache", "village_weapon_locker" }));
+        Assert.That(Cfg.Equipment.QualityOrigins[Cfg.Equipment.ScavengedResourceOrigin], Is.EqualTo(new Dictionary<string, double> { ["white"] = 0.8, ["green"] = 0.2 }));
+        var s = New();
+        var greens = 0;
+        for (var k = 0; k < 1000; k++)
+        {
+            var it = E.CreateItems(s, "kitchen_knife", 1, "hardware", scavenged: true).Single();
+            Assert.That(it.Quality, Is.AnyOf("white", "green"));
+            if (it.Quality == "green") greens++;
+            Assert.That(it.Affixes?.Count ?? 0, Is.EqualTo(it.Quality == "green" ? 1 : 0));
+        }
+        Assert.That(greens, Is.InRange(150, 250), "绿约20%");
+        // 未规定来源（开局、开发箱、掉落、剧情、交换）：白色0条，不抽品质——两份同状态生成后随机数仍同步
+        var a = SaveSerializer.Deserialize(SaveSerializer.Serialize(s));
+        var b = SaveSerializer.Deserialize(SaveSerializer.Serialize(s));
+        var x = E.CreateItems(a, "kitchen_knife", 1, ItemInstance.Carried).Single();
+        var y = E.CreateItems(b, "wooden_shield", 1, ItemInstance.Carried).Single();   // 不同装备、同样只抽最大耐久一次
+        Assert.That((x.Quality, x.Affixes, y.Quality, y.Affixes), Is.EqualTo(("white", (List<string>?)null, "white", (List<string>?)null)));
+        Assert.That(a.Rng.NextDouble(), Is.EqualTo(b.Rng.NextDouble()), "白色来源不消耗品质/词条随机数");
+        Assert.That(New().Items.Where(i => Cfg.Items.Single(c => c.Id == i.ItemId).IsEquipment).All(i => i.Quality == "white" && i.Affixes == null), Is.True, "开局物品白色");
+    }
+
+    [Test]
+    public void EQ_Q45_Noise_NewGunsAndCrossbow_QuietOnlyUsedWeapon_Min0()
+    {
+        double N(string id) => E.NoiseGain(Cfg.Weapons.Single(w => w.Id == id));
+        Assert.That((N("service_pistol"), N("marksman_rifle"), N("repeater_crossbow"), N("wooden_bow"), N("machete")), Is.EqualTo((25.0, 25.0, 5.0, 0.0, 0.0)));
+        var s = Fight(41, "feral_dog");
+        var bow = Arm(s, "wooden_bow");
+        bow.Affixes = new List<string> { "quiet" };
+        Assert.That(E.AttackNoise(s, Cfg.Weapons.Single(w => w.Id == "wooden_bow")), Is.EqualTo(0), "弓0−3 最低0");
+        var cb = Arm(s, "crossbow");
+        cb.Affixes = new List<string> { "quiet" };
+        Assert.That(E.AttackNoise(s, Cfg.Weapons.Single(w => w.Id == "crossbow")), Is.EqualTo(2), "弩5−3");
+        // 隐声在武器Ⅱ、用武器Ⅰ攻击：不借
+        cb.Affixes = null;
+        var slot2 = ItemInstance.EquipOwner(P0, EquipSlots.Weapon2);
+        E.CreateItems(s, "hunter_bow", 1, slot2).Single().Affixes = new List<string> { "quiet" };
+        s.Battle!.ActiveWeaponSlot = 1;
+        Assert.That(E.AttackNoise(s, Cfg.Weapons.Single(w => w.Id == "crossbow")), Is.EqualTo(5));
+        // 对象信息栏写噪声
+        Assert.That(E.EquipDetailLines(s, cb).Single(l => l.Label == "噪声").Value, Is.EqualTo("每次攻击+5（用弩矢的弩）"));
+        Assert.That(E.EquipDetailLines(s, bow).Single(l => l.Label == "噪声").Value, Does.Contain("隐声−3"));
+    }
+
+    [Test]
+    public void EQ_Q47_Durable_RoundedHalfUpToTenth_ScavengedConditionKept()
+    {
+        var s = New();
+        var seen = 0;
+        var range = Cfg.Items.Single(c => c.Id == "kitchen_knife").DurabilityMaxRange!;
+        for (var k = 0; k < 400 && seen < 20; k++)
+        {
+            var it = E.CreateItems(s, "kitchen_knife", 1, "hardware", scavenged: true).Single();
+            if (it.Affixes?.Contains("durable") != true) continue;
+            seen++;
+            var max = it.MaxDurability!.Value;
+            Assert.That(Math.Abs(max * 10 - Math.Round(max * 10)), Is.LessThan(1e-6), "0.1 步长");
+            Assert.That(max, Is.InRange(Math.Floor(range[0] * 1.15 * 10 + 0.5) / 10, Math.Floor(range[1] * 1.15 * 10 + 0.5) / 10));
+            Assert.That(it.Durability!.Value / max, Is.InRange(0.6 - 1e-9, 1 + 1e-9), "当前=新最大×原成色");
+        }
+        Assert.That(seen, Is.GreaterThan(0));
+        // 磨损口径（扣甲前正伤即磨、落空不磨、0 耐久暂停）见 B4 R17_ArmorWearsOnePerPositiveHit_EvenIfFullyBlocked
+    }
+
+    [Test]
+    public void EQ_Q48_BothWeaponSpeedsCount_Cap3_BrokenPaused_AttackAffixOnlyUsedPage()
+    {
+        var s = New();
+        var baton = Wear(s, "shock_baton", EquipSlots.Weapon1);           // 速度+1
+        Wear(s, "scout_armor", EquipSlots.Armor);                         // +1
+        var w2 = Cfg.Weapons.First(w => w.Speed > 0 && w.Id != "shock_baton" && w.WeaponKind != "blunt" && w.WeaponKind is "blade" or "axe" or "spear");
+        Wear(s, w2.Id, EquipSlots.Weapon2, "green", "keen");
+        var raw = 1 + 1 + w2.Speed;
+        Assert.That(E.EquipmentEffects(s, P0, 1).SpeedPositiveRaw, Is.EqualTo(raw), "两把已穿戴武器的速度都计入");
+        Assert.That(E.EquipmentEffects(s, P0, 2).SpeedPositiveRaw, Is.EqualTo(raw), "与当前页无关");
+        Assert.That(E.EquipmentEffects(s, P0, 1).Speed, Is.EqualTo(Math.Min(3, raw)));
+        Assert.That(E.EquipmentEffects(s, P0, 1).DamageMultiplier, Is.EqualTo(0), "攻击词条不借另一页");
+        Assert.That(E.EquipmentEffects(s, P0, 2).DamageMultiplier, Is.EqualTo(0.06));
+        baton.Durability = 0;
+        var fx = E.EquipmentEffects(s, P0, 1);
+        Assert.That(fx.SpeedPositiveRaw, Is.EqualTo(raw - 1), "坏件效果暂停");
+        Assert.That(fx.Paused, Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public void EQ_Q49_ThirtyEightWeapons_FiveSkillBindings_MatchAdjudication()
+    {
+        var bindings = (JArray)Adj()["weaponSkillBindings"]!;
+        Assert.That(bindings, Has.Count.EqualTo(38));
+        var checkedKinds = new HashSet<string>();
+        foreach (var bj in bindings)
+        {
+            var id = (string)bj["itemId"]!;
+            var w = Cfg.Weapons.Single(x => x.Id == id);
+            var want = bj["skillIds"]!.Select(t => (string)t!).ToList();
+            Assert.That(w.WeaponKind, Is.EqualTo((string)bj["weaponKind"]!), id);
+            Assert.That(w.SkillId, Is.EqualTo((string)bj["proficiencyId"]!), $"{id} 熟练度归属");
+            Assert.That(Cfg.SkillNodes.Where(n => n.SkillId == w.SkillId).OrderBy(n => n.Level).Select(n => n.Id), Is.EqualTo(want), $"{id} 五技能");
+            Assert.That(w.CanAttack, Is.EqualTo((bool)bj["directAttackAllowed"]!), $"{id} 能否直接攻击");
+            if (w.WeaponKind == "medical") Assert.That(w.SkillId, Is.EqualTo("medicine"), "medical 器具 → medicine 熟练");
+            // 操作台（10 级）列出这五个节点（需要队友的也列出、禁用写原因）；每类抽首件检查
+            if (!checkedKinds.Add(w.WeaponKind)) continue;
+            var s = Fight(49, "feral_dog");
+            foreach (var k in s.Skills.Keys.ToList()) s.Skills[k].Level = 10;
+            var worn = Arm(s, id);
+            var listed = E.BattleOptions(s).Where(o => o.NodeId != null).Select(o => o.NodeId!).Distinct().ToList();
+            Assert.That(listed, Is.EqualTo(want), $"{id} 操作台列出的技能");
+            Assert.That(E.EquipDetailLines(s, worn).Single(l => l.Label == "技能归属").Value, Does.Contain("已解锁5个"), id);
+        }
+        Assert.That(checkedKinds, Has.Count.EqualTo(9));
+    }
+
+    [Test]
+    public void EQ_Q50_SurvivalScopes_BoxVsStock_Gloves_Compass_RestSleepWait_Strongest()
+    {
+        var s = New();
+        Wear(s, "scavenge_vest", EquipSlots.Top);                 // 搜集基础工作量×0.90
+        Assert.That(E.GearWorkFactor(s, P0, ActionType.Gather, "misc_box"), Is.EqualTo(0.9), "一次性箱子算搜集");
+        Assert.That(E.GearWorkFactor(s, P0, ActionType.Gather, "metal_heap"), Is.EqualTo(1), "其余库存点算采集");
+        Assert.That(E.GearWorkFactor(s, P0, ActionType.Gather, "wood"), Is.EqualTo(1));
+        // 采集手套：木材主产或产废金属的点；布为主的村庄杂物箱不算
+        bool G(string id) => GameEngine.IsWoodOrScrapGather(E.Resource(id));
+        Assert.That((G("wood"), G("metal_heap"), G("parts_box"), G("misc_box"), G("stones")), Is.EqualTo((true, true, true, false, false)));
+        // 路线罗盘：全部已发现路线移动
+        var c = New();
+        Wear(c, "route_compass", EquipSlots.SurvivalAccessory);
+        Assert.That(E.GearWorkFactor(c, P0, ActionType.Travel, "field"), Is.EqualTo(0.95));
+        // 远征上衣：非战斗负 N/W 含休息、睡眠、等待
+        var r = New();
+        Wear(r, "expedition_coat", EquipSlots.Top);
+        foreach (var t in new[] { ActionType.Rest, ActionType.Sleep, ActionType.Wait, ActionType.Gather })
+            Assert.That(E.GearRateNote(r, t, null), Does.Contain("非战斗负饱食×0.95").And.Contain("非战斗负水分×0.95"), t.ToString());
+        // 同名固定效果取强（采集外套0.90 与工作长裤0.95 → 0.90），重复词条取强
+        r.Items.RemoveAll(i => i.ItemId == "expedition_coat");
+        Wear(r, "forage_jacket", EquipSlots.Top, "green", "economical");
+        Wear(r, "work_trousers", EquipSlots.Bottom, "green", "economical");
+        var fx = E.EquipmentEffects(r);
+        Assert.That((fx.Factor("rate.gather.energy"), fx.Factor("rate.nonCombat.hydration")), Is.EqualTo((0.9, 0.97)));
+    }
 }
