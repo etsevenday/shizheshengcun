@@ -324,7 +324,12 @@ namespace Survival.Core.Engine
                 case ReachPlan.AdvanceThenAttack: return $"{lead}前移到{e.Pos - 1}号位{(lead != "" ? "（1AP）" : "")}后{verb} {Range(cfg, 1)}{(e.Intent == "bite" ? "（可能感染）" : "")}";
                 case ReachPlan.Advance: return assist == AssistKind.Assist ? $"{lead}前移到{e.Pos - 1}号位（1AP；还够不到）" : $"前移1位（在{e.Pos}号位够不到）";
                 case ReachPlan.Weak: return $"弱攻击 {Range(cfg, WeakAttackFactor)}（在{e.Pos}号位，{verb}要在{PosList(SlotsOf(cfg, st).own)}）";
-                case ReachPlan.Guard: return "防御（够不到目标）";
+                case ReachPlan.Guard:
+                {
+                    // B9 遗留：原来只写“够不到目标”，站在非法己位又不能迫近时每轮都防御，看起来像卡住——写明它要在哪出手、为什么只能防御
+                    var (own, tgt) = SlotsOf(cfg, st);
+                    return $"防御（够不到目标：{verb}要在{PosList(own)}打{PosList(tgt)}，它在{e.Pos}号位{(own.Contains(e.Pos) ? "，目标位里没有我方" : "")}，不能前移或迫近时只防御）";
+                }
                 case ReachPlan.Approach: return $"迫近{FrontName(b)}（{PosName(FrontPos(b))}，{ApproachBraceTag(b)}）→弱近袭 {Range(cfg, ea.DamageFactor)}（{ea.ApproachAp}+{ea.PlainAttackAp}AP，不咬不控）";
                 case ReachPlan.AdvanceThenApproach: return $"{lead}前移到{e.Pos - 1}号位，再迫近{FrontName(b)}（{PosName(FrontPos(b))}，{ApproachBraceTag(b)}）→弱近袭 {Range(cfg, ea.DamageFactor)}（共{1 + ea.TotalAp}AP，不咬不控）";
             }

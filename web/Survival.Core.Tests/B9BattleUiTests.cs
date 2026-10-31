@@ -46,6 +46,44 @@ public class B9BattleUiTests : BattleTestBase
         Assert.That(dealt, Is.InRange(min - 1e-9, max + 1e-9), "实际伤害在预测区间内");
     }
 
+    /// <summary>B9 遗留（B7 线上第 2 轮）：致胜一击打倒膨胀感染者，战斗记录/行动日志先写“你……倒下”，再写死亡喷溅，结算仍在最后。</summary>
+    [Test]
+    public void DeathSplash_LoggedAfterKillingBlow()
+    {
+        var p = Fight(770, "z_bloater");
+        PlayerFirst(p);
+        E.BattleStep(p);
+        Enemy(p, 1).Hp = 0.01;
+        Force(p, Below(0.01), AtLeast(0.99), Any(), Any());
+        Assert.That(Cmd(p, "basic_attack", 1).Ok, Is.True);
+        Assert.That(p.Battle, Is.Null);
+        var texts = p.Log.Select(l => l.Text).ToList();
+        var kill = texts.FindLastIndex(t => t.Contains("倒下"));
+        var splash = texts.FindLastIndex(t => t.Contains("膨胀感染者死亡喷溅"));
+        Assert.That(kill, Is.GreaterThanOrEqualTo(0));
+        Assert.That(splash, Is.GreaterThan(kill), "喷溅写在致胜一击之后");
+        Assert.That(texts.Last(), Does.StartWith("战斗胜利"));
+    }
+
+    /// <summary>B9 遗留：站在非法己位又不能前移/迫近的敌人，意图写明它要在哪出手、为什么只能防御（与执行同源的 PlanFor=Guard）。</summary>
+    [Test]
+    public void GuardFallback_IntentExplainsWhy()
+    {
+        var s = Fight(9505, "crawler");
+        PlayerFirst(s);
+        E.BattleStep(s);
+        var z = Enemy(s, 1);
+        foreach (var x in s.Battle!.Alive) { x.Intent = "attack"; x.IntentStep = -2; x.Acted = false; x.RoundApUsed = 0; }
+        z.Slot = "1";
+        StandAt(s, 3);
+        z.RoundApUsed = 1;
+        Assert.That(E.PlanFor(s.Battle!, z, E.StepOf(z)), Is.EqualTo(GameEngine.ReachPlan.Guard));
+        var text = E.IntentShown(s.Battle!, z);
+        Assert.That(text, Does.StartWith("防御（够不到目标："));
+        Assert.That(text, Does.Contain("它在1号位"));
+        Assert.That(text, Does.Contain("只防御"));
+    }
+
     /// <summary>没有保护时预测不带重定向标记（AimedIndex 为空、没有“实际由”说明）。</summary>
     [Test]
     public void NoProtect_NoRedirectMark()

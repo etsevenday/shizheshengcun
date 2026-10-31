@@ -288,3 +288,11 @@
 .bc-med-text { display: flex; flex-direction: column; line-height: 1.25; }
 .bc-med-text b, .bc-med-text small { font-size: 16px; }
 .bc-med-text small { color: var(--muted); }
+
+.bfs-console .cmdt-glyph { font-size: 14px; width: 18px; height: 18px; line-height: 18px; right: -8px; bottom: -6px; }
+@media (min-height: 1000px) {
+  .bc-skills .cmdt-art { width: 48px; height: 48px; }
+  .bc-skills .cmdt-art svg { width: 44px; height: 44px; }
+  .bc-general .cmdt-art, .bc-general .cmdt-art svg { width: 34px; height: 34px; }
+  .bc-face { width: 52px; height: 52px; }
+}

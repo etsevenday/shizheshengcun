@@ -535,6 +535,9 @@ namespace Survival.Core.Engine
             }
             var hitTargets = new List<BattleEnemy>();
             var energyAfter = s.Stats.Energy;
+            // B9 遗留（B7 试玩第 2 轮）：击倒膨胀感染者时它的死亡喷溅日志先于这一击的总结写进战斗记录，看起来顺序颠倒；
+            // 记下这一刻的记录条数，结算中途追加的行（喷溅等）挪到总结之后，结算本身与时机不变
+            var logMark = b.Log.Count;
             foreach (var t in targets)
             {
                 var cfg = _enemies[t.EnemyId];
@@ -581,7 +584,10 @@ namespace Survival.Core.Engine
             b.PlayerStagger = false;   // 失衡在本次攻击结算后消失
             ConsumeAttackBuffs(s, b, sp);
             var xpNote = AttackXp(s, weapon.SkillId, hitTargets);
+            var midLines = logMark <= b.Log.Count ? b.Log.GetRange(logMark, b.Log.Count - logMark) : new List<string>();
+            if (midLines.Count > 0) b.Log.RemoveRange(logMark, midLines.Count);
             BattleLog(s, $"你{(sp.Desperate ? ActionName(DesperatePunch) : sp.Node!.Name)}{(sp.Desperate ? "" : $"（{weapon.Name}）")}：{string.Join("，", parts)}{(spent.Count > 0 ? "；" + string.Join("，", spent) : "")}{xpNote}。");
+            b.Log.AddRange(midLines);
             if (s.Stats.Health <= 0) { BattleDeath(s, s.Progress.LastDamageCause ?? "喷溅"); return; }
             CheckVictory(s);
         }

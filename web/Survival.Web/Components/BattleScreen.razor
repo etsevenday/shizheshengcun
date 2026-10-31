@@ -117,8 +117,8 @@
                 <div class="bc-gear" aria-label="战斗装备">
                     @{ var armor = e.WornItem(s, GameState.PlayerId, EquipSlots.Armor); var trinket = e.WornItem(s, GameState.PlayerId, EquipSlots.CombatAccessory); }
                     <span class="bc-gear-slot" title="@(wi == null ? "本页：拳" : $"本页武器：{w.Name}#{wi.InstanceId}")">@Icons.Markup(wi?.ItemId ?? "fists")</span>
-                    <span class="bc-gear-slot @(armor == null ? "none" : "")" title="@(armor == null ? "防具：空" : $"防具：{e.ItemName(armor.ItemId)}#{armor.InstanceId}{(armor.Durability != null ? $"，耐久{GameEngine.DurabilityText(armor)}" : "")}")">@if (armor != null) { @Icons.Markup(armor.ItemId) } else { <i>甲</i> }</span>
-                    <span class="bc-gear-slot @(trinket == null ? "none" : "")" title="@(trinket == null ? "战斗饰品：空" : $"战斗饰品：{e.ItemName(trinket.ItemId)}#{trinket.InstanceId}")">@if (trinket != null) { @Icons.Markup(trinket.ItemId) } else { <i>饰</i> }</span>
+                    <span class="bc-gear-slot @(armor == null ? "none" : "")" title="@(armor == null ? "防具：空" : $"防具：{e.ItemName(armor.ItemId)}#{armor.InstanceId}{(armor.Durability != null ? $"，耐久{GameEngine.DurabilityText(armor)}" : "")}")">@if (armor != null) { @Icons.Markup(armor.ItemId) } else { <i class="bdg">甲</i> }</span>
+                    <span class="bc-gear-slot @(trinket == null ? "none" : "")" title="@(trinket == null ? "战斗饰品：空" : $"战斗饰品：{e.ItemName(trinket.ItemId)}#{trinket.InstanceId}")">@if (trinket != null) { @Icons.Markup(trinket.ItemId) } else { <i class="bdg">饰</i> }</span>
                     <button type="button" class="secondary bc-gear-btn" @onclick='() => G.OpenBattleDrawer("equip")' title="只读查看七个装备槽（战斗中不能换装或换入第三把武器）">装备</button>
                 </div>
             </div>
@@ -434,7 +434,7 @@
             {
                 GameEngine.ReachPlan.Approach => ("迫", "迫近→弱袭", range, "far"),
                 GameEngine.ReachPlan.AdvanceThenApproach => ("迫", "前移+迫近", range, "far"),
-                GameEngine.ReachPlan.AdvanceThenAttack => ("移", "前移后" + VerbOf(shown), range, en.Intent == "bite" ? "bite" : "far"),
+                GameEngine.ReachPlan.AdvanceThenAttack => ("移", VerbOf(shown), range, en.Intent == "bite" ? "bite" : "far"),
                 GameEngine.ReachPlan.Weak => ("弱", "弱攻击", range, "far"),
                 GameEngine.ReachPlan.Guard => ("防", "防御·够不到", null, "calm"),
                 _ => ("移", "前移", null, "far"),
@@ -555,7 +555,7 @@
             {
                 var inR = range?.Contains(p) == true;
                 var ok = inR && legal.Contains(p);
-                <span class="rg @(inR ? "in" : "") @(ok ? "ok" : "") @(inR && !ok ? "blocked" : "")" title="@($"敌方{p}号位：{(range == null ? "—" : !inR ? "不在这个技能的目标位" : ok ? "可以选" : "在目标位里，但现在没有可选目标（空位、被挡或你的站位不符）")}")">@p</span>
+                <span class="rg bdg @(inR ? "in" : "") @(ok ? "ok" : "") @(inR && !ok ? "blocked" : "")" title="@($"敌方{p}号位：{(range == null ? "—" : !inR ? "不在这个技能的目标位" : ok ? "可以选" : "在目标位里，但现在没有可选目标（空位、被挡或你的站位不符）")}")">@p</span>
             }
             @if (own != null) { <span class="bc-range-own" title="@($"这个技能要你站在我方{string.Join("、", own.OrderBy(x => x))}号位；你在{GameEngine.PlayerPos(b)}号位")">使用位@(string.Join("", own.OrderBy(x => x)))@(own.Contains(GameEngine.PlayerPos(b)) ? "" : "（不符）")</span> }
         </div>
@@ -578,7 +578,7 @@
                 @onclick="() => { if (oo.Available) G.PickBattleAction(oo.Action, oo.ItemInstanceId); else G.ExplainBlocked(oo.Label, oo.Reason); }">
             @if (level > 0) { <span class="cmdt-lv bdg" aria-hidden="true">@(level)级</span> }
             <span class="cmdt-ap bdg" aria-hidden="true">@ApText(o.Ap)</span>
-            <span class="cmdt-art">@Icons.Markup(art)@if (glyph != null) {<em class="cmdt-glyph">@glyph</em>}</span>
+            <span class="cmdt-art">@Icons.Markup(art)@if (glyph != null) {<em class="cmdt-glyph bdg">@glyph</em>}</span>
             <span class="cmdt-text">
                 <span class="cmdt-name">@ShortName(o)</span>
                 @if (!o.Available) { <span class="cmdt-why">@ShortWhy(o.Reason)</span> }
@@ -663,18 +663,6 @@
     }
 
     private async Task Exec(string token) => await G.ExecuteBattleCommand(token);
-
-    /// <summary>意图里的伤害区间“0.70—1.10”不在破折号处折行（破折号两侧加 U+2060 不断行符，只影响显示，B2a M94）。</summary>
-    private static string NoBreakRange(string label) => label.Replace("—", "\u2060—\u2060");
-
-    /// <summary>够不到时的意图图标（试玩修复 M150 UX8）：前移“移”、弱攻击“弱”、改防御“防”、空前排迫近“迫”（Q80）；同伴没 AP 补位时等待“等”（Q87，调用处判断）。</summary>
-    private static string FarIcon(GameEngine.ReachPlan plan) => plan switch
-    {
-        GameEngine.ReachPlan.Weak => "弱",
-        GameEngine.ReachPlan.Guard => "防",
-        GameEngine.ReachPlan.Approach => "迫",
-        _ => "移",
-    };
 
     private static string IntentIcon(string intent) => intent switch
     {

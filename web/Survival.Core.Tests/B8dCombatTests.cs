@@ -140,7 +140,7 @@ public class B8dCombatTests : BattleTestBase
             StandAt(s, 3);
             z.RoundApUsed = 1;
             Assert.That(E.PlanFor(s.Battle!, z, E.StepOf(z)), Is.EqualTo(GameEngine.ReachPlan.Guard));
-            Assert.That(E.IntentShown(s.Battle!, z), Is.EqualTo("防御（够不到目标）"));
+            Assert.That(E.IntentShown(s.Battle!, z), Does.StartWith("防御（够不到目标："));   // B9：括注补写出手位置与原因
             EnemyAct(s, z);
             Assert.That((z.Guard, z.RoundApUsed), Is.EqualTo((true, 3)), "兜底防御 2AP");
         }
