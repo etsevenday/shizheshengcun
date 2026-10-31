@@ -122,6 +122,27 @@ else if (b != null)
             <div class="under">@(aiming ? "点击亮起的目标即执行；右键/Esc 取消" : $"在操作台点“确认 · {p.Title} · {p.Ap}AP”才提交；Esc 取消")</div>
         </div>
     }
+    else if (G.BattleAllyView != null && G.BattleHover == null)
+    {
+        @* B9（A10 §4.1）：点我方锚点/队列头像只查看状态，不夺回合、不替换当前行动者 *@
+        var mySpeed = e.PlayerSpeedParts(s, b);
+        var apMax = b.PlayerActing && b.ActivationAp > 0 ? b.ActivationAp : e.NormalActivationAp(s.Player);
+        <div class="detail-scroll">
+            <div class="op-head">
+                <div class="eyebrow">战斗第@(b.Round)轮 · 我方@(GameEngine.PlayerPos(b))号位 · 只查看</div>
+                <h2>@(G.BattleAllyView == GameState.PlayerId ? "你" : e.ActorDisplayName(s, G.BattleAllyView))</h2>
+            </div>
+            <div class="lines">
+                <div><span>健康 / 体力</span><b>@Ui.N(s.Stats.Health)/@Ui.T(s.Stats.HealthMax) · @Ui.N(s.Stats.Energy)/@Ui.T(s.Stats.EnergyMax)</b></div>
+                <div><span>行动点</span><b>@(b.PlayerActing ? $"本次{(b.ActingPursuit ? "追击" : "普通激活")}剩{b.PlayerAp}/{apMax}" : $"等待；每次普通激活{e.NormalActivationAp(s.Player)}AP（战术训练阶位{s.Player.TacticalTier}）")</b></div>
+                <div><span>有效速度</span><b>@Ui.Speed(mySpeed.Speed)（基础@(Ui.Speed(mySpeed.Base))、装备@(Ui.SignedT(mySpeed.Gear))@(mySpeed.Status.Count > 0 ? "、" + string.Join("、", mySpeed.Status) : "")）</b></div>
+                <div><span>追击进度</span><b>@Ui.T(b.PlayerPursuit)/100</b></div>
+                <div><span>恐慌</span><b>@Ui.N(b.Panic)@(b.Frightened ? "（受惊）" : "")</b></div>
+            </div>
+            @if (G.Notice != null) { <div class="blocked">@G.Notice</div> }
+        </div>
+        <div class="detail-foot"><div class="under">点己方只查看；行动顺序由队列决定</div></div>
+    }
     else
     {
         var focus = G.BattleHover ?? G.BattleTarget;

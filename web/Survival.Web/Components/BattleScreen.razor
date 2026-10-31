@@ -16,8 +16,7 @@
     var sel = G.BattleAction == null ? null : opts.FirstOrDefault(o => o.Action == G.BattleAction && (G.BattleItem == null || o.ItemInstanceId == G.BattleItem));
     var waiting = !e.AwaitingPlayer(s);
     var locked = waiting || G.BattleBusy;
-    var front = cfg.Scope.Slots.Take(2).ToList();
-    var back = cfg.Scope.Slots.Skip(2).ToList();
+    var slotCount = cfg.Scope.Slots.Count;
     // B6（R03 §3）：本次激活得到的 AP（普通激活按训练阶位 3/4/5，追击 2）；不在激活中时按下一次普通激活显示
     var apMax = b.PlayerActing && b.ActivationAp > 0 ? b.ActivationAp : e.NormalActivationAp(s.Player);
     var mySpeed = e.PlayerSpeedParts(s, b);
@@ -47,81 +46,136 @@
             </span>
         </header>
 
-        @* 行动队列（R03 §2、A10 §4.1）：本轮已排定的实际顺序，追击用同一角色再出现并带“追”标 *@
-        <div class="bfs-queue" inert="@dlg" aria-label="本轮行动顺序">
+        @* 行动队列（R03 §2、A10 §4.1）：本轮已排定的实际顺序，最多 8 个头像；追击用同一角色再出现并带“追”角标。
+           未来的追击还没判定，只在“追击条件”里写进度与条件，不伪造确定队列；悬停写速度来源，点击只固定查看（不夺回合）。 *@
+        <div class="bfs-queue" inert="@dlg" role="list" aria-label="本轮行动顺序">
+            <span class="bq-label">顺序</span>
+            @{
+                var shown = 0;
+                var hidden = new List<string>();
+            }
             @for (var k = 0; k < b.Queue.Count; k++)
             {
                 var qi = b.Queue[k];
                 var be = qi == 0 ? null : e.BattleEnemyAt(b, qi);
                 if (qi != 0 && (be == null || !be.Alive)) continue;
                 var chase = GameEngine.IsPursuitSlot(b, k);
-                var now = qi == activeIdx && (b.Cursor == k || (qi == 0 && b.PlayerActing && b.Cursor == k));
-                var done = k < b.Cursor && !(qi == 0 && b.PlayerActing && b.Cursor == k);
-                <span class="q-chip @(now ? "now" : "") @(done ? "done" : "") @(qi == 0 ? "me" : "") @(chase ? "chase" : "")"
-                      title="@($"速度{Ui.Speed(b.Initiative.ElementAtOrDefault(k))}{(chase ? "；追击：速度优势带来的额外2AP激活" : "")}")">@(chase ? "追·" : "")@(qi == 0 ? "你" : $"{be!.Slot}号 {e.EnemyName(be)}")</span>
+                var now = qi == activeIdx && b.Cursor == k;
+                var done = k < b.Cursor;
+                var qName = qi == 0 ? "你" : $"{be!.Pos}号 {e.EnemyName(be)}";
+                var qSpeed = Ui.Speed(b.Initiative.ElementAtOrDefault(k));
+                if (shown >= 8) { hidden.Add($"{(chase ? "追击·" : "")}{qName}（速度{qSpeed}）"); continue; }
+                if (shown > 0) { <span class="bq-arrow" aria-hidden="true">→</span> }
+                shown++;
+                var qIdx = qi;
+                <button type="button" role="listitem" class="q-av @(now ? "now" : "") @(done ? "done" : "") @(qi == 0 ? "me" : "foe") @(chase ? "chase" : "")"
+                        title="@($"{qName}：轮初有效速度{qSpeed}{(qi == 0 ? $"（{SpeedSource(mySpeed)}）" : "")}{(chase ? "；追击：速度优势攒满100进度，正常激活之后多一次2AP" : "；正常激活")}{(now ? "；正在行动" : done ? "；已行动" : "")}。点击只查看，不改顺序")"
+                        aria-label="@($"{(chase ? "追击 " : "")}{qName}{(now ? "，行动中" : done ? "，已行动" : "")}")"
+                        @onclick="() => QueueClick(qIdx)">
+                    <span class="q-art" aria-hidden="true">@if (qi == 0) {<img src="img/portraits/protagonist.svg" alt="" />} else { @Icons.Markup("enemy_" + be!.EnemyId) }</span>
+                    <span class="q-name">@qName</span>
+                    @if (chase) { <span class="q-chase bdg" aria-hidden="true">追</span> }
+                </button>
             }
+            @if (hidden.Count > 0) { <span class="q-more bdg" tabindex="0" title="@string.Join("；", hidden)">+@hidden.Count</span> }
+            <span class="bq-cond" tabindex="0" title="@PursuitCondition(b)">追击条件</span>
         </div>
 
-        <section class="bfs-scene bt-scene" inert="@dlg" aria-label="战场">
-            <div class="bt-ally" aria-label="我方">
-                <div class="ally-card @(activeIdx == 0 ? "acting" : "")" id="bt-me">
-                    <div class="ally-art">
-                        <img src="img/portraits/protagonist.svg" alt="" />
-                        <span class="ally-weapon" title="@(wi == null ? "徒手" : $"{w.Name}#{wi.InstanceId}")">@Icons.Markup(wi?.ItemId ?? "fists")</span>
-                    </div>
-                    <div class="ally-foot">
-                        @{ var myPos = GameEngine.PlayerPos(b); }
-                        <div class="ally-head"><b>你</b><small class="ally-pos">@(myPos)号位</small>
-                            <span class="ap-pips" aria-label="@($"行动点{(b.PlayerActing ? b.PlayerAp : 0)}/{apMax}")">
-                                @for (var i = 0; i < apMax; i++) { <i class="@(b.PlayerActing && i < b.PlayerAp ? "on" : "")"></i> }
-                            </span>
-                        </div>
-                        <div class="track" title="@($"健康{Ui.N(s.Stats.Health)}/{Ui.T(s.Stats.HealthMax)}")"><i style="width:@Ui.Bar(s.Stats.Health, s.Stats.HealthMax)%"></i></div>
-                        <div class="track en" title="@($"体力{Ui.N(s.Stats.Energy)}/{Ui.T(s.Stats.EnergyMax)}")"><i style="width:@Ui.Bar(s.Stats.Energy, s.Stats.EnergyMax)%"></i></div>
-                        <div class="hp-line"><span>健康@(Ui.N(s.Stats.Health))</span><b>体力@(Ui.N(s.Stats.Energy))</b></div>
-                        <div class="hp-line speed-line"><span>速度@(Ui.Speed(mySpeed.Speed))</span><b>追击@(Ui.T(b.PlayerPursuit))/100</b></div>
-                    </div>
-                </div>
+        @* 场景：八个永久锚点（A10 §2.2、§4.1；R03 §1）——从左到右己方 4/3/2/1、敌方 1/2/3/4，中线两边的 1 号位最近；
+           按我方真实槽（Allies）与敌人真实号位数据驱动渲染：空位画空锚点，人少、死亡、悬停、读数变长都不重排、不跳位。 *@
+        <section class="bfs-scene" inert="@dlg" aria-label="战场：我方从左到右4、3、2、1号位，敌方从左到右1、2、3、4号位">
+            <div class="bfs-side ally" aria-label="我方">
+                @for (var p = slotCount; p >= 1; p--) { @AllyAnchor(p, activeIdx) }
             </div>
-            <div class="bt-mid" aria-hidden="true"><span>VS</span></div>
-            <div class="bt-foes" aria-label="敌方">
-                <div class="foe-col front">
-                    @foreach (var slot in front) { @Foe(slot, aiming, aimSet, activeIdx, token, locked) }
-                </div>
-                <div class="foe-col back">
-                    @foreach (var slot in back) { @Foe(slot, aiming, aimSet, activeIdx, token, locked) }
-                </div>
+            <div class="bfs-mid" aria-hidden="true"><span>VS</span></div>
+            <div class="bfs-side foes" aria-label="敌方">
+                @for (var p = 1; p <= slotCount; p++) { @FoeAnchor(p, aiming, aimSet, activeIdx, token, locked) }
             </div>
         </section>
 
-        <section class="bfs-console bt-console" inert="@dlg" aria-label="操作台">
-            <div class="bc-equip bc-pages" role="tablist" aria-label="武器页">
-                <span class="bc-label">武器</span>
-                @for (var pg = 1; pg <= 2; pg++)
-                {
-                    var page = pg;
-                    var pi = e.WeaponOnPage(s, page, out var pw);
-                    var onPage = b.ActiveWeaponSlot == page;
-                    <button type="button" role="tab" class="bc-page @(onPage ? "on" : "")" aria-selected="@onPage" @onclick="() => G.SelectWeaponPage(page)">
-                        <span class="bc-weapon-art">@Icons.Markup(pi?.ItemId ?? "fists")</span>
-                        <span class="bc-weapon-text"><b>@(page == 1 ? "Ⅰ" : "Ⅱ") @(pi == null ? "拳" : pw.Name)</b></span>
-                    </button>
-                }
+        @* 操作台（A10 §2.2、§4.2、§5）：左——当前行动者摘要与战斗装备（本页武器/防具/战斗饰品，另一把武器在页签上，七槽在“装备查看”）；
+           中——武器Ⅰ/Ⅱ两页签（切页0AP）+ 本页五个技能位（对应 1/3/5/7/10 级；Q26 未解锁的位留空、不放剪影）+ 敌方目标位图；
+           右——通用动作与“医疗”入口（快捷医疗小盘）。“结束行动”在底部常驻。 *@
+        <section class="bfs-console" inert="@dlg" aria-label="操作台">
+            <div class="bc-who" aria-label="当前角色">
+                <div class="bc-who-head">
+                    <span class="bc-face" aria-hidden="true"><img src="img/portraits/protagonist.svg" alt="" /></span>
+                    <span class="bc-who-name"><b>你 · @(GameEngine.PlayerPos(b))号位</b><small class="@(waiting ? "" : "now")">@(waiting ? "等待轮到你" : $"{(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}")</small></span>
+                </div>
+                <div class="bc-who-lines">
+                    <span title="体力">体力 @Ui.N(s.Stats.Energy)/@Ui.T(s.Stats.EnergyMax)</span>
+                    <span title="恐慌越高命中能力越低">恐慌 @Ui.N(b.Panic)@(b.Frightened ? "·受惊" : "")</span>
+                    @if (b.PlayerGuard) { <span class="good" title="下一次直接伤害减免">@(b.PlayerGuardSourceId != null ? "盾格挡" : "防御")×@Ui.T(b.PlayerGuardFactor)</span> }
+                </div>
+                <div class="bc-gear" aria-label="战斗装备">
+                    @{ var armor = e.WornItem(s, GameState.PlayerId, EquipSlots.Armor); var trinket = e.WornItem(s, GameState.PlayerId, EquipSlots.CombatAccessory); }
+                    <span class="bc-gear-slot" title="@(wi == null ? "本页：拳" : $"本页武器：{w.Name}#{wi.InstanceId}")">@Icons.Markup(wi?.ItemId ?? "fists")</span>
+                    <span class="bc-gear-slot @(armor == null ? "none" : "")" title="@(armor == null ? "防具：空" : $"防具：{e.ItemName(armor.ItemId)}#{armor.InstanceId}{(armor.Durability != null ? $"，耐久{GameEngine.DurabilityText(armor)}" : "")}")">@if (armor != null) { @Icons.Markup(armor.ItemId) } else { <i>甲</i> }</span>
+                    <span class="bc-gear-slot @(trinket == null ? "none" : "")" title="@(trinket == null ? "战斗饰品：空" : $"战斗饰品：{e.ItemName(trinket.ItemId)}#{trinket.InstanceId}")">@if (trinket != null) { @Icons.Markup(trinket.ItemId) } else { <i>饰</i> }</span>
+                    <button type="button" class="secondary bc-gear-btn" @onclick='() => G.OpenBattleDrawer("equip")' title="只读查看七个装备槽（战斗中不能换装或换入第三把武器）">装备</button>
+                </div>
             </div>
-            <div class="bc-groups">
-                <div class="bc-group skills" role="toolbar" aria-label="技能">
-                    <span class="bc-label">技能</span>
-                    <div class="bc-cmds">@foreach (var o in skills) { @Cmd(o, sel, wi, w, locked) }</div>
+
+            <div class="bc-main">
+                <div class="bc-tabs" role="tablist" aria-label="武器页（切页0AP）">
+                    @for (var pg = 1; pg <= 2; pg++)
+                    {
+                        var page = pg;
+                        var pi = e.WeaponOnPage(s, page, out var pw);
+                        var onPage = b.ActiveWeaponSlot == page;
+                        var slotName = EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page)!);
+                        var warn = pi != null && !GameEngine.HasWear(pi, cfg.Wear.PerExecutedAttackCommand) ? "耐久不足" : pi != null && pw.UsesMagazine && pi.LoadedAmmo <= 0 ? "弹仓空" : null;
+                        var sub = string.Join(" · ", new[] {
+                            warn,
+                            warn == null && pi?.Durability != null ? $"耐久{GameEngine.DurabilityText(pi)}" : null,
+                            pw.UsesMagazine && pi != null ? $"弹{pi.LoadedAmmo}/{pw.MagazineCapacity}" : null,
+                            pw.ConsumesLooseAmmo ? $"箭{s.Items.Where(i => i.IsCarried && i.ItemId == pw.AmmoId).Sum(i => i.Count)}" : null,
+                            pi == null ? "空槽·拳" : null,
+                        }.Where(x => x != null));
+                        <button type="button" role="tab" class="bc-tab @(onPage ? "on" : "")" aria-selected="@onPage" data-page="@(page)"
+                                title="@($"{slotName}：{(pi == null ? "空槽（拳）" : $"{pw.Name}#{pi.InstanceId}")}{(sub != "" ? "，" + sub : "")} · 切页0AP，只换可选技能，取消已选目标")"
+                                @onclick="() => G.SelectWeaponPage(page)">
+                            <span class="bc-tab-art" aria-hidden="true">@Icons.Markup(pi?.ItemId ?? "fists")</span>
+                            <span class="bc-tab-text"><b>@(page == 1 ? "Ⅰ" : "Ⅱ") @(pi == null ? "拳" : pw.Name)</b><small class="@(warn != null ? "warn" : "")">@sub</small></span>
+                        </button>
+                    }
                 </div>
-                <div class="bc-group general" role="toolbar" aria-label="通用指令">
-                    <span class="bc-label">通用</span>
-                    <div class="bc-cmds">@foreach (var o in general.Where(x => x.Action != "end_turn")) { @Cmd(o, sel, wi, w, locked) }</div>
+                <div class="bc-skills" role="toolbar" aria-label="@($"{(b.ActiveWeaponSlot == 1 ? "Ⅰ" : "Ⅱ")}页技能（1、3、5、7、10级）")">
+                    @foreach (var lv in SkillLevels)
+                    {
+                        @SkillSlot(lv, skills, sel, wi, w, locked)
+                    }
                 </div>
-                @if (items.Count > 0)
+                @RangeMap(sel ?? HoverSkill(skills), aimSet)
+            </div>
+
+            <div class="bc-side">
+                <span class="bc-label">通用</span>
+                <div class="bc-general" role="toolbar" aria-label="通用动作">
+                    @foreach (var o in general.Where(x => x.Action != "end_turn")) { @Cmd(o, sel, wi, w, locked) }
+                    @foreach (var o in skills.Where(x => x.NodeId == null)) { @Cmd(o, sel, wi, w, locked) }
+                    @{ var meds = opts.Where(o => o.Group == "item").ToList(); var medCount = meds.Sum(CarriedFor); }
+                    <button type="button" class="cmdt med @(G.MedTrayOpen ? "on" : "") @(meds.Any(m => m.Available) ? "" : "off")" id="cmd-med" aria-expanded="@G.MedTrayOpen"
+                            title="@($"快捷医疗：随身药品{medCount}份（绷带/抗生素/特效药）；点开看数量、成本与原因，选好后再确认")" @onclick="() => G.ToggleMedTray()">
+                        <span class="cmdt-art">@Icons.Markup("bandage")</span>
+                        <span class="cmdt-text"><span class="cmdt-name">医疗</span><small class="bdg">×@medCount</small></span>
+                    </button>
+                </div>
+                @if (G.MedTrayOpen)
                 {
-                    <div class="bc-group items" role="toolbar" aria-label="医疗">
-                        <span class="bc-label">医疗</span>
-                        <div class="bc-cmds">@foreach (var o in items) { @Cmd(o, sel, wi, w, locked) }</div>
+                    <div class="bc-medtray" role="dialog" aria-label="快捷医疗">
+                        <div class="bc-medtray-head"><b>快捷医疗（只对自己）</b><button type="button" class="bx-x" aria-label="收起（Esc）" @onclick="() => G.ToggleMedTray(false)">×</button></div>
+                        @foreach (var m in meds)
+                        {
+                            var mo = m;
+                            var have = CarriedFor(m);
+                            <button type="button" class="bc-med @(m.Available ? "" : "off")" disabled="@locked" aria-disabled="@(!m.Available)"
+                                    title="@(m.Reason ?? $"{ShortName(m)}：{ApText(m.Ap)}，随身{have}份；选中后在底部确认")"
+                                    @onclick="() => { G.ToggleMedTray(false); if (mo.Available) G.PickBattleAction(mo.Action, mo.ItemInstanceId); else G.ExplainBlocked(ShortName(mo), mo.Reason); }">
+                                <span class="cmdt-art">@Icons.Markup(MedItem(m.Action))</span>
+                                <span class="bc-med-text"><b>@ShortName(m) ×@have</b><small>@(m.Available ? ApText(m.Ap) : ShortWhy(m.Reason))</small></span>
+                            </button>
+                        }
                     </div>
                 }
             </div>
@@ -209,15 +263,86 @@
         : sel.TargetMode == "pair" ? "点1、2号位打12，点3号位打23；悬停看右侧预测"
         : "把鼠标移到亮起的目标上看右侧预测，点击目标执行";
 
-    private RenderFragment Foe(string slot, bool aiming, IReadOnlyCollection<int> aimSet, int activeIdx, string token, bool locked) => __builder =>
+    /// <summary>
+    /// 我方锚点（A10 §2.1/§4.1）：按我方真实槽数据驱动——空槽画空锚点；有人的画立绘、脚下生命/体力与状态。
+    /// 现在只有主角会在号位上（队友入场是 B9a）；队友的号位到时由同一个函数渲染，点击只查看、不夺回合。
+    /// </summary>
+    private RenderFragment AllyAnchor(int pos, int activeIdx) => __builder =>
     {
         var s = G.S;
         var e = G.E;
         var b = s.Battle!;
-        var en = b.Alive.FirstOrDefault(x => x.Slot == slot);
+        var id = GameEngine.AllyAt(b, pos);
+        if (id == null)
+        {
+            <div class="anc ally empty" data-slot="@pos" title="@($"我方{pos}号位：空位（可用“调整站位”移过来；空位不是未解锁）")" aria-label="@($"我方{pos}号位，空位")">
+                <span class="anc-slot bdg">@(pos)号</span><span class="anc-empty">空位</span>
+            </div>
+            return;
+        }
+        var me = id == GameState.PlayerId;
+        var acting = me && activeIdx == 0;
+        var viewing = G.BattleAllyView == id;
+        var name = me ? "你" : e.ActorDisplayName(s, id);
+        var st = me ? s.Stats : s.Actors.TryGetValue(id, out var act) ? act.Stats : s.Stats;
+        var apMax = b.PlayerActing && b.ActivationAp > 0 ? b.ActivationAp : e.NormalActivationAp(s.Player);
+        <div class="anc ally @(acting ? "acting" : "") @(viewing ? "selected" : "")" data-slot="@pos" role="button" tabindex="0" aria-pressed="@viewing"
+             aria-label="@($"我方{pos}号位 {name}，健康{Ui.N(st.Health)}/{Ui.T(st.HealthMax)}，体力{Ui.N(st.Energy)}{(acting ? "，行动中" : "")}")"
+             title="点击在右侧查看状态（只查看，不改变行动顺序）" @onclick="() => G.ViewBattleAlly(id)" @onkeydown="ev => AllyKey(ev, id)">
+            <div class="anc-top" title="@(b.PlayerActing && me ? $"本次{(b.ActingPursuit ? "追击" : "普通激活")}剩{b.PlayerAp}AP（不带入下次）" : "还没轮到；行动顺序见上方队列")">
+                @if (me) { <span class="anc-ap">@(acting ? $"{(b.ActingPursuit ? "追击" : "行动中")} {b.PlayerAp}/{apMax}AP" : "等待")</span> }
+            </div>
+            <div class="anc-head">@if (acting) {<span class="anc-ptr" aria-hidden="true">▼</span>}<span class="anc-slot bdg">@(pos)号</span><b>@name</b></div>
+            <div class="anc-art">
+                <img src="img/portraits/protagonist.svg" alt="" draggable="false" />
+                @if (me) { var cw = e.CurrentWeapon(s, out var cwi); <span class="anc-weapon" title="@(cwi == null ? "当前页：拳" : $"当前页：{cw.Name}#{cwi.InstanceId}")">@Icons.Markup(cwi?.ItemId ?? "fists")</span> }
+            </div>
+            <div class="anc-foot">
+                <div class="anc-nums"><span title="健康">♥@(Ui.N(st.Health))</span><span title="体力">体@(Ui.N(st.Energy))</span></div>
+                <div class="track hp"><i style="width:@Ui.Bar(st.Health, st.HealthMax)%"></i></div>
+                <div class="track en"><i style="width:@Ui.Bar(st.Energy, st.EnergyMax)%"></i></div>
+                @if (me) { <div class="anc-chips">@AllyChips()</div> }
+            </div>
+        </div>
+    };
+
+    private void AllyKey(KeyboardEventArgs ev, string id)
+    {
+        if (ev.Key is "Enter" or " ") G.ViewBattleAlly(id);
+    }
+
+    /// <summary>主角脚下的状态角标（短徽标，完整说明在右侧对象信息）：防御/格挡、架矛、蓄力、失衡、减速、出血、感染等。</summary>
+    private RenderFragment AllyChips() => __builder =>
+    {
+        var s = G.S;
+        var b = s.Battle!;
+        if (b.PlayerGuard) { <span class="st good bdg" title="@($"{(b.PlayerGuardSourceId != null ? "盾格挡" : "防御")}：下一次直接伤害×{Ui.T(b.PlayerGuardFactor)}")">@(b.PlayerGuardSourceId != null ? "盾" : "防")×@Ui.T(b.PlayerGuardFactor)</span> }
+        if (b.BraceCharges > 0) { <span class="st good bdg" title="架矛：敌人主动前移后迎击">架矛×@b.BraceCharges</span> }
+        if (b.CounterFactor > 0) { <span class="st good bdg" title="反击架势">反击</span> }
+        if (GameEngine.AxeChargeOn(b)) { <span class="st good bdg" title="斧蓄力">蓄力</span> }
+        if (b.PlayerStagger) { <span class="st bad bdg">失衡</span> }
+        if (b.PlayerSlowActive || b.PlayerSlowPending) { <span class="st bad bdg">减速</span> }
+        if (GameEngine.PlayerArmorBroken(b)) { <span class="st bad bdg">破甲</span> }
+        if (GameEngine.PlayerWeakActive(b)) { <span class="st bad bdg">虚弱</span> }
+        if (s.Body.BleedTriggers > 0) { <span class="st bad bdg">出血×@s.Body.BleedTriggers</span> }
+        if (s.Body.Infected) { <span class="st bad bdg" title="@($"已感染：病毒{Ui.N(s.Body.VirusLoad)}")">感染</span> }
+    };
+
+    /// <summary>
+    /// 敌方锚点（A10 §4.1）：头像上方一枚意图图标和短名（完整意图在右侧对象信息与悬停/读屏文字），立绘，脚下生命、状态角标；
+    /// 瞄准时合法目标加准星、不可选的加叉线与短原因；空号位画空锚点。
+    /// </summary>
+    private RenderFragment FoeAnchor(int pos, bool aiming, IReadOnlyCollection<int> aimSet, int activeIdx, string token, bool locked) => __builder =>
+    {
+        var s = G.S;
+        var e = G.E;
+        var b = s.Battle!;
+        var en = b.Alive.FirstOrDefault(x => x.Pos == pos);
         if (en == null)
         {
-            <div class="foe-empty" aria-label="@($"{slot}号位空")" title="@($"{slot}号位空")"><b>@(slot)号</b>空</div>
+            <div class="anc foe empty" data-slot="@pos" title="@($"敌方{pos}号位：空位")" aria-label="@($"敌方{pos}号位，空位")">
+                <span class="anc-slot bdg">@(pos)号</span><span class="anc-empty">空位</span>
+            </div>
             return;
         }
         var ec = e.Enemy(en.EnemyId);
@@ -226,41 +351,108 @@
         var unreachable = aiming && !aimSet.Contains(idx);
         var reachWhy = unreachable ? (e.CommandBlocked(s, BattleCommand.Of(G.BattleAction!, idx, G.BattleItem)) ?? "不在本指令范围内") : null;
         var picked = G.BattleTarget == idx;
+        var shown = e.IntentShown(b, en);
+        var note = e.IntentTargetNote(s, b, en);
+        var (ico, brief, range, kind) = IntentBrief(en, shown);
         var tip = reachWhy ?? (targetable ? "点击即对它执行所选技能（右侧是实际预测）" : "点击选中查看（不会攻击）；先选技能再点亮起的目标才执行");
-        <div @key="@("foe" + idx)" id="@($"foe-{idx}")" class="foe @(idx == activeIdx ? "acting" : "") @(targetable ? "targetable" : "") @(unreachable ? "unreachable" : "") @(en.Acted ? "acted-done" : "") @(picked ? "selected" : "") @(G.BattleHover == idx ? "hover" : "")"
-             role="button" tabindex="0" aria-pressed="@picked" aria-disabled="@(unreachable || (targetable && locked))" aria-label="@($"{slot}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}，意图{G.E.IntentShown(G.S.Battle!, en)}{(G.E.IntentTargetNote(G.S, G.S.Battle!, en) is string tnA ? "；" + tnA : "")}{(reachWhy != null ? "；" + reachWhy : "")}")"
+        <div @key="@("foe" + idx)" id="@($"foe-{idx}")" data-slot="@pos" class="anc foe @(idx == activeIdx ? "acting" : "") @(targetable ? "targetable" : "") @(unreachable ? "unreachable" : "") @(en.Acted ? "acted-done" : "") @(picked ? "selected" : "") @(G.BattleHover == idx ? "hover" : "")"
+             role="button" tabindex="0" aria-pressed="@picked" aria-disabled="@(unreachable || (targetable && locked))"
+             aria-label="@($"敌方{pos}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}，意图{shown}{(note != null ? "；" + note : "")}{(reachWhy != null ? "；" + reachWhy : "")}")"
              title="@tip" @onclick="() => ClickFoe(idx, token, locked)" @onkeydown="ev => FoeKey(ev, idx, token, locked)"
              @onmouseenter="() => G.HoverBattleTarget(idx)" @onmouseleave="() => G.HoverBattleTarget(null)">
-            <div class="foe-head"><span class="slot-tag">@(slot)号</span><b>@ec.Name</b>@if (en.Acted) {<span class="acted-mark">已行动</span>}</div>
-            <div class="foe-main">
-                <span class="foe-art">@Icons.Markup("enemy_" + ec.Id)</span>
-                <div class="foe-body">
-                    <div class="hp-line" title="健康"><span>♥</span><b>@Ui.N(en.Hp)/@Ui.N(ec.Hp)</b></div>
-                    <div class="track"><i style="width:@Ui.Bar(en.Hp, ec.Hp)%"></i></div>
-                    @{ var far = G.E.IntentOutOfReach(G.S.Battle!, en); }
-                    <div class="intent @(far ? "calm" : en.Intent is "bite" ? "bite" : en.Intent is "flee" or "watch" or "guard" or "protect" or "buff" or "reload" ? "calm" : "")"
-                         title="@(far ? $"本轮公开意图是{G.E.IntentLabel(en, G.S.Battle)}，但站在{slot}号位、你在{GameEngine.PlayerPos(G.S.Battle!)}号位，不能照原样出手：{G.E.IntentShown(G.S.Battle!, en)}（敌人{ec.Ap}AP：前移1AP，余下只做一次普通攻击；前面的同伴已能出手且它前面空着时，同伴先花自己本轮1AP补位、它再花1AP跟进，同伴没AP就等待；你躲在后排且前面全空时，它可付1AP迫近（算主动前移{(GameEngine.BraceActive(G.S.Battle!) ? "，会触发你的架矛" : "；你现在没有生效的架矛")}）再2AP弱近袭×0.7，不咬不控制）{(G.E.IntentTargetNote(G.S, G.S.Battle!, en) is string tnF ? "；" + tnF : "")}" : $"本轮公开意图（轮初锁定，不公开伤害抽值）；{ec.Ap}AP{(ec.Elite ? "精英" : "")}，每次激活一个主意图{(G.E.IntentTargetNote(G.S, G.S.Battle!, en) is string tnT ? "；" + tnT : "")}")">
-                        <span class="intent-ico">@(far ? (G.E.IntentShown(G.S.Battle!, en).StartsWith("等待") ? "等" : FarIcon(G.E.PlanFor(G.S.Battle!, en, G.E.StepOf(en)))) : G.E.IntentShown(G.S.Battle!, en).StartsWith("等待") ? "等" : IntentIcon(en.Intent))</span>@NoBreakRange(G.E.IntentShown(G.S.Battle!, en))
-                    </div>
-                </div>
+            <div class="anc-top anc-intent @kind" title="@($"本轮公开意图（轮初锁定，不公开伤害抽值）：{shown}{(note != null ? "；" + note : "")}")">
+                <span class="intent-ico" aria-hidden="true">@ico</span><span class="anc-intent-text"><b>@brief</b>@if (range != null) {<small>@range</small>}</span>
             </div>
-            <div class="st-chips">
-                <span class="st" title="@($"护甲 · 闪避 · 有效速度；追击进度{Ui.T(en.PursuitProgress)}/100")">甲@(Ui.T(ec.Armor)) 闪@(Ui.T(ec.Dodge)) 速@(Ui.Speed(e.EnemyEffectiveSpeed(en)))</span>
-                @if (en.Guard) { <span class="st good">防御</span> }
-                @if (en.Stagger) { <span class="st bad">失衡</span> }
-                @if (en.SteadyUntilRound >= b.Round) { <span class="st" title="控制成功后至下一大回合末，控制抗性+30个百分点">稳态</span> }
-                @if (en.SlowActive || en.SlowPending) { <span class="st bad">减速</span> }
-                @if (en.BleedTriggers > 0) { <span class="st bad">出血×@en.BleedTriggers</span> }
-                @if (!en.Hostile) { <span class="st">中立</span> }
-                @if (ec.Elite) { <span class="st" title="精英：每次正常激活4AP">精英</span> }
-                @if (GameEngine.EnemyMarked(b, en)) { <span class="st bad" title="@($"被标记：我方对它命中能力+{Ui.T(en.MarkBonus)}，到第{en.MarkUntilRound}轮末")">标记</span> }
-                @if (en.ArmorBreak > 0 && en.ArmorBreakUntilRound >= b.Round) { <span class="st bad" title="@($"护甲−{Ui.T(en.ArmorBreak)}，到第{en.ArmorBreakUntilRound}轮末")">破甲</span> }
-                @if (GameEngine.EnemyWeak(b, en)) { <span class="st bad" title="@($"伤害×{Ui.T(en.WeakFactor)}，到第{en.WeakUntilRound}轮末")">虚弱</span> }
-                @if (en.ProtectingIndex > 0) { <span class="st good" title="对同伴的单体攻击由它接下">保护中</span> }
-                @if (unreachable && reachWhy != null) { <span class="st bad">@(reachWhy.StartsWith("射程不足") ? "射程不足" : "不可选")</span> }
+            <div class="anc-head">@if (idx == activeIdx) {<span class="anc-ptr" aria-hidden="true">▼</span>}<span class="anc-slot bdg">@(pos)号</span><b title="@ec.Name">@ec.Name</b>@if (en.Acted) {<span class="anc-done bdg">已动</span>}</div>
+            <div class="anc-art">
+                @Icons.Markup("enemy_" + ec.Id)
+                @if (targetable) { <span class="anc-aim" aria-hidden="true">⌖</span> }
+                @if (unreachable) { <span class="anc-no" aria-hidden="true"></span> }
+            </div>
+            <div class="anc-foot">
+                <div class="anc-nums"><span title="健康">♥@(Ui.N(en.Hp))/@(Ui.N(ec.Hp))</span></div>
+                <div class="track hp">@HpForecast(en, ec)<i style="width:@Ui.Bar(en.Hp, ec.Hp)%"></i></div>
+                <div class="anc-chips">
+                    @if (en.Guard) { <span class="st good bdg">防御</span> }
+                    @if (en.ProtectingIndex > 0) { <span class="st good bdg" title="对同伴的单体攻击由它接下">保护</span> }
+                    @if (en.Stagger) { <span class="st bad bdg">失衡</span> }
+                    @if (en.SlowActive || en.SlowPending) { <span class="st bad bdg">减速</span> }
+                    @if (en.BleedTriggers > 0) { <span class="st bad bdg">出血×@en.BleedTriggers</span> }
+                    @if (GameEngine.EnemyMarked(b, en)) { <span class="st bad bdg">标记</span> }
+                    @if (en.ArmorBreak > 0 && en.ArmorBreakUntilRound >= b.Round) { <span class="st bad bdg">破甲</span> }
+                    @if (GameEngine.EnemyWeak(b, en)) { <span class="st bad bdg">虚弱</span> }
+                    @if (!en.Hostile) { <span class="st bdg">中立</span> }
+                    @if (ec.Elite) { <span class="st bdg" title="精英：每次正常激活4AP">精英</span> }
+                </div>
+                @if (unreachable) { <div class="anc-why" title="@reachWhy">@ShortReach(reachWhy)</div> }
             </div>
         </div>
     };
+
+    /// <summary>目标生命条上的预计伤害（M217 起瞄准时填充）。</summary>
+    private RenderFragment HpForecast(BattleEnemy en, EnemyConfig ec) => __builder => { };
+
+    /// <summary>
+    /// 意图图标 + 短名 + 伤害区间（与 IntentShown 同源，只截短显示）：够不到时按真实计划写“迫近→弱袭”“前移”“弱攻击”“防御·够不到”“等待”。
+    /// kind 给图形样式：bite 咬击（可能感染）、calm 非攻击、far 够不到。
+    /// </summary>
+    private (string Ico, string Brief, string? Range, string Kind) IntentBrief(BattleEnemy en, string shown)
+    {
+        var e = G.E;
+        var b = G.S.Battle!;
+        var m = System.Text.RegularExpressions.Regex.Match(shown, @"\d+\.\d+—\d+\.\d+");
+        var range = m.Success ? m.Value.Replace("—", "⁠—⁠") : null;
+        if (shown.StartsWith("等待")) return ("等", "等待", null, "calm");
+        if (e.IntentOutOfReach(b, en))
+        {
+            var plan = e.PlanFor(b, en, e.StepOf(en));
+            return plan switch
+            {
+                GameEngine.ReachPlan.Approach => ("迫", "迫近→弱袭", range, "far"),
+                GameEngine.ReachPlan.AdvanceThenApproach => ("迫", "前移+迫近", range, "far"),
+                GameEngine.ReachPlan.AdvanceThenAttack => ("移", "前移后" + VerbOf(shown), range, en.Intent == "bite" ? "bite" : "far"),
+                GameEngine.ReachPlan.Weak => ("弱", "弱攻击", range, "far"),
+                GameEngine.ReachPlan.Guard => ("防", "防御·够不到", null, "calm"),
+                _ => ("移", "前移", null, "far"),
+            };
+        }
+        var label = e.IntentLabel(en, b);
+        var cut = label.IndexOfAny(new[] { ' ', '（', '，' });
+        var brief = cut > 0 ? label[..cut] : label;
+        var kind = en.Intent is "bite" ? "bite" : en.Intent is "flee" or "watch" or "guard" or "protect" or "buff" or "reload" or "howl" or "signal" or "charge_prepare" ? "calm" : "";
+        return (IntentIcon(en.Intent), brief, range, kind);
+    }
+
+    private static string VerbOf(string shown)
+    {
+        var i = shown.IndexOf("后");
+        if (i < 0) return "攻击";
+        var rest = shown[(i + 1)..];
+        var j = rest.IndexOf(' ');
+        return j > 0 ? rest[..j] : rest;
+    }
+
+    private static string ShortReach(string? why) =>
+        why == null ? "" : why.StartsWith("射程不足") ? "射程不足" : why.Contains("号位") ? "位置不符" : "不可选";
+
+    /// <summary>点队列头像：敌人只固定查看，自己/队友在右侧看状态；不改顺序、不夺回合。</summary>
+    private void QueueClick(int qi)
+    {
+        if (qi == 0) G.ViewBattleAlly(GameState.PlayerId);
+        else G.PickBattleTarget(qi);
+    }
+
+    private static string SpeedSource((double Speed, double Base, double Gear, List<string> Status) p) =>
+        $"基础{Ui.Speed(p.Base)}、装备{Ui.SignedT(p.Gear)}{(p.Status.Count > 0 ? "、" + string.Join("、", p.Status) : "")}";
+
+    /// <summary>未来追击只写条件与当前进度（R03 §2），不伪造确定队列。</summary>
+    private string PursuitCondition(BattleState b)
+    {
+        var e = G.E;
+        var parts = new List<string> { $"你{Ui.T(b.PlayerPursuit)}/100" };
+        parts.AddRange(b.Alive.OrderBy(x => x.Pos).Select(x => $"{x.Pos}号{e.EnemyName(x)}{Ui.T(x.PursuitProgress)}/100"));
+        return "追击条件：每轮初按“自己的轮初速度÷对方最快者−1”×50 攒进度，满100在本轮正常激活之后多一次2AP（每轮至多一次）；速度变化从下轮起算。现在进度：" + string.Join("，", parts);
+    }
 
     private async Task FoeKey(KeyboardEventArgs ev, int idx, string token, bool locked)
     {
@@ -285,23 +477,88 @@
         if (G.BattleAction != null) G.ClearBattleAction();
     }
 
+    private static readonly int[] SkillLevels = { 1, 3, 5, 7, 10 };
+
+    /// <summary>
+    /// 本页一个技能位（A10 §4.2/§4.3、Q26）：该门在这一级的专属节点——已解锁的主动技能为可点按钮（不可用写短原因）；
+    /// 已解锁的战斗被动只读显示；未解锁的位留空（不放锁形剪影、不可操作）。
+    /// </summary>
+    private RenderFragment SkillSlot(int lv, List<BattleCommandOption> skills, BattleCommandOption? sel, ItemInstance? wi, WeaponConfig w, bool locked) => __builder =>
+    {
+        var e = G.E;
+        var node = e.Config.SkillNodes.FirstOrDefault(n => n.SkillId == w.SkillId && n.Level == lv && !n.IsSurvival);
+        var opt = node == null ? null : skills.FirstOrDefault(o => o.NodeId == node.Id);
+        if (opt != null) { @Cmd(opt, sel, wi, w, locked, lv) return; }
+        if (node != null && e.SkillUnlocked(G.S, node))
+        {
+            <div class="cmdt passive" data-level="@lv" tabindex="0" title="@($"{node.Name}（{e.SkillName(node.SkillId)}{lv}级被动）：{node.Text}")" aria-label="@($"{node.Name}，被动，自动生效")">
+                <span class="cmdt-lv bdg">@(lv)级</span>
+                <span class="cmdt-art">@Icons.Markup(wi?.ItemId ?? "fists")</span>
+                <span class="cmdt-text"><span class="cmdt-name">@node.Name</span><small class="bdg">被动</small></span>
+            </div>
+            return;
+        }
+        <div class="cmdt locked-slot" data-level="@lv" aria-hidden="true"></div>
+    };
+
+    /// <summary>悬停中的技能（未选技能时目标位图跟着悬停显示）。</summary>
+    private string? _hoverSkill;
+    private BattleCommandOption? HoverSkill(List<BattleCommandOption> skills) => _hoverSkill == null ? null : skills.FirstOrDefault(o => o.Action == _hoverSkill);
+    private void SetHoverSkill(string? action) { if (_hoverSkill != action) { _hoverSkill = action; StateHasChanged(); } }
+
+    /// <summary>
+    /// 敌方目标位图（A10 §4.4）：固定画敌方 1/2/3/4 小槽——技能（或武器）规定能打的号位亮起，再叠加主案的实际合法性：
+    /// 现在真能选的目标加准星，范围内但当前不能选（空位/被挡/站位不符）画斜线。与执行同一个 SkillTargetPositions / 目标列表。
+    /// </summary>
+    private RenderFragment RangeMap(BattleCommandOption? o, IReadOnlyCollection<int> aimSet) => __builder =>
+    {
+        var s = G.S;
+        var e = G.E;
+        var b = s.Battle!;
+        var w = e.CurrentWeapon(s, out _);
+        var node = o?.NodeId != null ? e.SkillNode(o.NodeId) : null;
+        HashSet<int>? range = null;
+        HashSet<int>? own = null;
+        if (o != null && (o.NeedsTarget || o.TargetMode == "area"))
+        {
+            if (node != null) { range = e.SkillTargetPositions(s, node, w); own = e.SkillOwnPositions(node, w); }
+            else if (o.Action == "desperate_punch") range = new HashSet<int> { 1 };
+        }
+        var legal = o == null ? new HashSet<int>() : (G.BattleAiming && G.BattleAction == o.Action ? aimSet : o.Targets).Select(i => e.BattleEnemyAt(b, i)?.Pos ?? 0).ToHashSet();
+        <div class="bc-range" aria-label="@(range == null ? "目标位：选一个攻击技能后显示" : $"{o!.Label}可打敌方{string.Join("、", range.OrderBy(x => x))}号位，现在可选{(legal.Count == 0 ? "无" : string.Join("、", legal.OrderBy(x => x)) + "号位")}")">
+            <span class="bc-range-label">@(range == null ? "目标位" : $"{ShortName(o!)} 打")</span>
+            @for (var p = 1; p <= 4; p++)
+            {
+                var inR = range?.Contains(p) == true;
+                var ok = inR && legal.Contains(p);
+                <span class="rg @(inR ? "in" : "") @(ok ? "ok" : "") @(inR && !ok ? "blocked" : "")" title="@($"敌方{p}号位：{(range == null ? "—" : !inR ? "不在这个技能的目标位" : ok ? "可以选" : "在目标位里，但现在没有可选目标（空位、被挡或你的站位不符）")}")">@p</span>
+            }
+            @if (own != null) { <span class="bc-range-own" title="@($"这个技能要你站在我方{string.Join("、", own.OrderBy(x => x))}号位；你在{GameEngine.PlayerPos(b)}号位")">使用位@(string.Join("", own.OrderBy(x => x)))@(own.Contains(GameEngine.PlayerPos(b)) ? "" : "（不符）")</span> }
+        </div>
+    };
+
+    private string MedItem(string action) => G.E.Config.CombatActions.FirstOrDefault(a => a.Id == action)?.ItemId ?? "placeholder";
+
     /// <summary>操作台上的一条带图指令：点选进入瞄准/待确认，不执行；不可用保留禁用态与短原因。</summary>
-    private RenderFragment Cmd(BattleCommandOption o, BattleCommandOption? sel, ItemInstance? wi, WeaponConfig w, bool locked) => __builder =>
+    private RenderFragment Cmd(BattleCommandOption o, BattleCommandOption? sel, ItemInstance? wi, WeaponConfig w, bool locked, int level = 0) => __builder =>
     {
         var on = sel != null && sel.Action == o.Action && sel.ItemInstanceId == o.ItemInstanceId;
         var (art, glyph, qty) = CmdArt(o, wi, w);
         var oo = o;
         var range = o.TargetMode == "area" ? "1、2号位群攻" : o.TargetMode == "suffix" ? (o.Targets.Count > 0 ? $"点起点打到4号位（可选起点{o.Targets.Count}个）" : "当前没有可选目标") : o.TargetMode == "pair" ? (o.Targets.Count > 0 ? "相邻双位（点12或23）" : "当前没有可选目标") : o.NeedsTarget ? (o.Targets.Count > 0 ? $"可选目标{o.Targets.Count}个" : "当前没有可选目标") : o.Action == "swap" ? "我方站位" : "自用/无目标";
         @* 试玩修复 M150：不可用的指令真正禁用（冷却中、AP 不足……都不进入瞄准），点它只在右栏写原因；悬停照样写原因 *@
-        <button type="button" id="@($"cmd-{o.Action}{(o.ItemInstanceId is int ii ? "-" + ii : "")}")" class="cmdt @(on ? "on" : "") @(o.Available ? "" : "off") @(o.NodeId != null || o.Action == "desperate_punch" ? "skill" : "plain")" disabled="@locked" aria-disabled="@(!o.Available)"
+        <button type="button" id="@($"cmd-{o.Action}{(o.ItemInstanceId is int ii ? "-" + ii : "")}")" class="cmdt @(on ? "on" : "") @(o.Available ? "" : "off") @(o.NodeId != null || o.Action == "desperate_punch" ? "skill" : "plain")" disabled="@locked" aria-disabled="@(!o.Available)" data-level="@(level > 0 ? level : null)"
+                @onmouseenter="() => SetHoverSkill(oo.Action)" @onmouseleave="() => SetHoverSkill(null)" @onfocus="() => SetHoverSkill(oo.Action)" @onblur="() => SetHoverSkill(null)"
                 aria-label="@($"{ShortName(o)}，{ApText(o.Ap)}{(qty != null ? "，" + qty : "")}{(o.Reason != null ? "；不可用：" + o.Reason : "")}")"
                 title="@(o.Reason ?? $"{o.Label}：{ApText(o.Ap)}{(o.Energy > 0 ? $"，体力{Ui.N(o.Energy)}" : "")}{(o.CooldownRounds > 0 ? $"，冷却{o.CooldownRounds}轮" : "")}；{range}。{(o.EffectText != null ? o.EffectText + "。" : "")}{(o.NeedsTarget || o.TargetMode == "area" ? "点选后点亮起的目标执行" : "点选后在旁边确认")}")"
                 @onclick="() => { if (oo.Available) G.PickBattleAction(oo.Action, oo.ItemInstanceId); else G.ExplainBlocked(oo.Label, oo.Reason); }">
+            @if (level > 0) { <span class="cmdt-lv bdg" aria-hidden="true">@(level)级</span> }
+            <span class="cmdt-ap bdg" aria-hidden="true">@ApText(o.Ap)</span>
             <span class="cmdt-art">@Icons.Markup(art)@if (glyph != null) {<em class="cmdt-glyph">@glyph</em>}</span>
             <span class="cmdt-text">
                 <span class="cmdt-name">@ShortName(o)</span>
-                @if (o.Available) { <small>@(qty != null ? qty + " · " : "")@ApText(o.Ap)</small> }
-                else { <span class="cmdt-why">@ShortWhy(o.Reason)</span> }
+                @if (!o.Available) { <span class="cmdt-why">@ShortWhy(o.Reason)</span> }
+                else if (qty != null) { <small class="bdg">@qty</small> }
             </span>
         </button>
     };
@@ -337,9 +594,10 @@
     private static string ShortName(BattleCommandOption o) => o.Action switch
     {
         "bandage" => "包扎",
+        "breathe" => "调息",
         "use_antibiotics" => "抗生素",
         "use_antiviral_cure" => "特效药",
-        "swap" => o.ItemInstanceId is int to ? $"站位→{to}号" : "调整站位",   // Q80：每个相邻目的槽一条
+        "swap" => o.ItemInstanceId is int to ? $"→{to}号位" : "调整站位",   // Q80：每个相邻目的槽一条
         _ when o.NodeId != null => o.Label,   // B7：拳击/斩击/割伤……（1级攻击技能即普通攻击）
         _ => GameEngine.ActionName(o.Action),
     };
@@ -352,7 +610,7 @@
         if (string.IsNullOrEmpty(why)) return "";
         if (why.StartsWith("行动点不足")) return "AP不足";
         if (why.StartsWith("还没轮到")) return "等待";
-        if (why.StartsWith("只在体力不足")) return "仅缺体力";
+        if (why.StartsWith("只在体力不足")) return "体力够用";
         if (why.StartsWith("体力不足")) return "体力不足";
         if (why.StartsWith("随身没有")) return why.Contains("弹") || why.Contains("箭") || why.Contains("矢") ? "无弹药" : "无物品";
         if (why.StartsWith("随身") && why.Contains("不足")) return "弹药不足";

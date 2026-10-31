@@ -1319,6 +1319,17 @@ public sealed class GameSession
     /// <summary>快捷医疗锚定小盘（A10 §5）：列出绷带/抗生素/特效药的真实随身数量、成本与不可用原因；选药后照常就近确认。</summary>
     public bool MedTrayOpen { get; private set; }
 
+    /// <summary>全屏战斗里点我方锚点/队列头像：右侧只查看这名我方的状态（A10 §4.1：不跳过队列、不替换当前行动者）。</summary>
+    public string? BattleAllyView { get; private set; }
+
+    public void ViewBattleAlly(string? actorId)
+    {
+        if (State == null || S.Battle == null) return;
+        BattleAllyView = BattleAllyView == actorId ? null : actorId;
+        if (BattleAllyView != null) BattleTarget = null;
+        Notify();
+    }
+
     public void OpenBattleDrawer(string? drawer)
     {
         if (State == null || S.Battle == null) return;
@@ -1351,9 +1362,10 @@ public sealed class GameSession
         if (BattleDrawer == "help") { HelpBack(); return; }
         if (BattleDrawer != null) { OpenBattleDrawer(null); return; }
         if (BattleAction != null) { ClearBattleAction(); return; }
-        if (BattleTarget != null || BattleHover != null || Selected.Kind != SelectionKind.None)
+        if (BattleTarget != null || BattleHover != null || BattleAllyView != null || Selected.Kind != SelectionKind.None)
         {
             BattleTarget = null;
+            BattleAllyView = null;
             BattleHover = null;
             ClearSelectionSilently();
             Notify();
@@ -1374,6 +1386,7 @@ public sealed class GameSession
         BattleMenuOpen = false;
         BattleDrawer = null;
         MedTrayOpen = false;
+        BattleAllyView = null;
     }
 
     public BattleCommand CurrentBattleCommand() => BattleCommand.Of(BattleAction ?? "", BattleTarget, BattleItem);
@@ -1468,6 +1481,7 @@ public sealed class GameSession
     public void PickBattleTarget(int index)
     {
         BattleTarget = index;
+        BattleAllyView = null;
         DetailTab = DetailTab.Object;
         Notify();
     }
