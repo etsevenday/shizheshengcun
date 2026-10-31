@@ -206,6 +206,7 @@ public class B8PartyLossTests : TestBase
         var n = s.Items.Count(i => i.ItemId == "wooden_spear");
         E.DebugAddEscort(s);
         Assert.That(s.Items.Count(i => i.ItemId == "wooden_spear"), Is.EqualTo(n), "不另发");
+        Assert.That(s.Log.Any(l => l.Text.Contains("该借用位（loan_1）的木矛已损毁或找不到，请在营区报失补发")), Is.True, "M191：开发入口也写日志");
         Assert.That(E.LoanSlotIds(s), Is.EqualTo(new[] { "loan_1", "loan_2" }));
         Assert.That(E.ReportLostLoanBlocked(s, "loan_1"), Is.Null, "损毁的矛在遗物里：可以报失");
     }

@@ -241,7 +241,10 @@ namespace Survival.Core.Engine
         {
             if (AliveEscorts(s).Count >= EscortCap(s)) return $"存活护送员已达上限 {EscortCap(s)}（C−1）";
             var r = CreateEscort(s, true);
-            return $"{r.Name}已加入" + (s.Party.Contains(r.ActorId) ? "并编入同行" : "（同行已满，留作候补）");
+            // 与正式 RB01 登记一样写借用矛去向（试玩修复 M191：绑定到矛已损毁的借用位时也要提示报失）
+            var text = $"{r.Name}已加入" + (s.Party.Contains(r.ActorId) ? "并编入同行" : "（同行已满，留作候补）") + "。" + LoanNote(s, r);
+            Emit(s, GameEventKind.Info, text);
+            return text;
         }
 
         /// <summary>开发入口：改所选队友的状态（health1 / virus79 / food41 / kill / spear0）。</summary>

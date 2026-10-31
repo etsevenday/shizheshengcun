@@ -85,7 +85,7 @@ namespace Survival.Core.Engine
         /// 把一名命名角色登记入名册（A11 §6/§7 RN01—RN06 的奖励；本批只经开发入口调用）：首次一次初始化个人状态与两件武器，进候补。
         /// 已在名册（含已死亡）时不重发、不重抽，返回失败原因。0 时间。
         /// </summary>
-        public ActionResult AddNamedToRoster(GameState s, string actorId)
+        public ActionResult AddNamedToRoster(GameState s, string actorId, bool announce = true)
         {
             var cfg = Config.Party.Named(actorId);
             if (cfg == null) return ActionResult.Fail("没有这名角色");
@@ -96,7 +96,7 @@ namespace Survival.Core.Engine
             GrantWorn(s, actorId, EquipSlots.Weapon1, cfg.Weapon1, "recruit:" + actorId);
             GrantWorn(s, actorId, EquipSlots.Weapon2, cfg.Weapon2, "recruit:" + actorId);
             s.Roster.Add(new RosterEntry { ActorId = actorId, Kind = "named", Name = cfg.Name, JoinedMinute = s.GameMinute });
-            Emit(s, GameEventKind.Info, $"{cfg.Name}登记入名册（候补，在{LocName(HubLocation)}留守）。");
+            if (announce) Emit(s, GameEventKind.Info, $"{cfg.Name}登记入名册（候补，在{LocName(HubLocation)}留守）。");
             return ActionResult.Success();
         }
 
@@ -276,15 +276,19 @@ namespace Survival.Core.Engine
         /// <summary>开发入口：命名角色直接登记入名册；同行未满 C 时直接编入（跳过营区限制）。返回说明。</summary>
         public string DebugRecruit(GameState s, string actorId)
         {
-            var res = AddNamedToRoster(s, actorId);
+            // 日志按实际去处写一条（试玩修复 M191：编入同行时不再写“候补留守”）
+            var res = AddNamedToRoster(s, actorId, false);
             if (!res.Ok) return res.Reason;
             var name = RosterOf(s, actorId)!.Name;
+            string text;
             if (s.Party.Count < PartyCapacity(s))
             {
                 ApplySetActive(s, actorId, true);
-                return $"{name}已入名册并编入同行（{s.Party.Count}/{PartyCapacity(s)}）";
+                text = $"{name}登记入名册并编入同行（{s.Party.Count}/{PartyCapacity(s)}）";
             }
-            return $"{name}已入名册，同行已满 {s.Party.Count}/{PartyCapacity(s)}，留作候补";
+            else text = $"{name}登记入名册，同行已满 {s.Party.Count}/{PartyCapacity(s)}，留作候补（在{LocName(HubLocation)}）";
+            Emit(s, GameEventKind.Info, text + "。");
+            return text;
         }
 
         /// <summary>开发入口：在队/候补切换（跳过营区与行动限制，仍守容量、主角与死亡规则）。</summary>

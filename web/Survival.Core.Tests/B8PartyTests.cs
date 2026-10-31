@@ -305,5 +305,9 @@ public class B8PartyTests : TestBase
         Assert.That(E.DebugRecruit(s, "npc_zhou_yan"), Does.Contain("留作候补"));
         Assert.That(s.Party, Is.EqualTo(new[] { "p0", "npc_lin_zhao" }));
         Assert.That(E.ActorDisplayName(s, "npc_zhou_yan"), Is.EqualTo("周砚"));
+        // M191：日志与实际去处一致——编入同行的不写“候补留守”
+        Assert.That(s.Log.Count(l => l.Text.Contains("林昭登记入名册并编入同行")), Is.EqualTo(1));
+        Assert.That(s.Log.Any(l => l.Text.Contains("林昭") && l.Text.Contains("候补")), Is.False);
+        Assert.That(s.Log.Count(l => l.Text.Contains("周砚登记入名册") && l.Text.Contains("作候补")), Is.EqualTo(1));
     }
 }
