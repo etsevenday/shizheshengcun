@@ -394,7 +394,7 @@ public class B7dCombatTests : BattleTestBase
         z.Intent = "bite";   // 即使公开意图是咬击，迫近弱近袭也不咬
         StandAt(s, 3);
         Assert.That(E.PlanFor(b, z, E.StepOf(z)), Is.EqualTo(GameEngine.ReachPlan.Approach));
-        Assert.That(E.IntentShown(b, z), Does.StartWith("迫近你（3号位）1AP后弱近袭 0.28—0.56"));
+        Assert.That(E.IntentShown(b, z), Does.StartWith("迫近你（3号位）弱近袭 0.28—0.56（1+2AP，不咬不控）"));
         Assert.That(E.PlanFor(b, z, E.StepOf(z), 2), Is.EqualTo(GameEngine.ReachPlan.Guard), "追击 2AP 付不起 1+2AP 的迫近");
         b.BraceCharges = 1;
         b.BracePage = 1;

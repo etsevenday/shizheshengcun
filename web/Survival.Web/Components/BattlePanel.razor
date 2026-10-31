@@ -67,7 +67,7 @@ else if (b != null)
                 <h2>@(o?.Label ?? GameEngine.ActionName(G.BattleAction))</h2>
                 <p>@(o == null ? "" : $"{(o.Ap < 0 ? "剩余AP" : o.Ap + "AP")}{(o.Energy > 0 ? $" · 体力{Ui.N(o.Energy)}" : "")} · 可选目标{aimSet.Count}个{(o.CooldownRounds > 0 ? $" · 冷却{o.CooldownRounds}轮" : "")}")</p>
                 @if (o?.EffectText != null) { <p class="muted">@o.EffectText</p> }
-                @if (o?.TargetMode == "pair") { <p class="muted">相邻双位：点1、2号位的敌人打1、2号位，点3号位的敌人打2、3号位，每个目标独立命中。</p> }
+                @if (o?.TargetMode == "suffix") { <p class="muted">贯穿：点哪个敌人就从它的号位打到4号位，每个目标独立判命中；离起点0/1/2/3格伤害×0.65/0.50/0.35/0.25，空位也占一格、不重排。</p> }
             </div>
             @if (G.BattleHover is int hx && !aimSet.Contains(hx) && e.BattleEnemyAt(b, hx) is BattleEnemy he && he.Alive)
             {
@@ -100,7 +100,7 @@ else if (b != null)
                 <div class="lines">
                     <div><span>伤害（未暴击）</span><b>@Ui.N(t.DamageMin)—@Ui.N(t.DamageMax)</b></div>
                     <div><span>伤害（暴击×@(Ui.T(e.Config.CombatMath.CritFactor))）</span><b>@Ui.N(t.CritDamageMin)—@Ui.N(t.CritDamageMax)</b></div>
-                    <div><span>目标健康</span><b>@Ui.N(t.Hp)@(t.Armor > 0 ? $" · 护甲{Ui.T(t.Armor)}{(t.Penetration > 0 ? $"−穿透{Ui.T(t.Penetration)}" : "")}（已扣）" : "")@(t.Guarded ? " · 防御中×0.5" : "")@(t.DamageBuff > 1 + 1e-9 ? $" · 伤害增益×{Ui.T(t.DamageBuff)}" : "")</b></div>
+                    <div><span>目标健康</span><b>@Ui.N(t.Hp)@(t.Armor > 0 ? $" · 护甲{Ui.T(t.Armor)}{(t.Penetration > 0 ? $"−穿透{Ui.T(t.Penetration)}" : "")}（已扣）" : "")@(t.Guarded ? " · 防御中×0.5" : "")@(t.DamageBuff > 1 + 1e-9 ? $" · 伤害增益×{Ui.T(t.DamageBuff)}{(t.RawDamageBuff > t.DamageBuff + 1e-9 ? $"（合计×{Ui.T(t.RawDamageBuff)}，超过×1.35的部分递减）" : "")}" : "")</b></div>
                 </div>
             }
             @if (p.RetreatChance.HasValue)

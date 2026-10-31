@@ -104,7 +104,16 @@ else if (b != null)
                         <span class="ally-weapon" title="@(wi == null ? "徒手" : $"{w.Name}#{wi.InstanceId}")">@Icons.Markup(wi?.ItemId ?? "fists")</span>
                     </div>
                     <div class="ally-foot">
-                        <div class="ally-head"><b>你</b><small class="ally-pos" title="我方站位（我方只剩一人时所有武器都按1号位可用）">@(GameEngine.PlayerPos(b))号位</small>
+                        @{ var myPos = GameEngine.PlayerPos(b); }
+                        <div class="ally-head"><b>你</b><small class="ally-pos" title="@($"我方真实站位：你在{myPos}号位。使用位按真实号位判断（只剩你一人也一样），不在使用位时先“调整站位”（1AP）；倒下、被拉动都不会自动补位")">@(myPos)号位</small>
+                            @* Q80 最小真实槽（A10 本轮章）：我方 4/3/2/1 号位条，1 号位靠中线；空位写“空” *@
+                            <span class="ally-slots" aria-label="@($"我方站位：你在{myPos}号位，其余空位")">
+                                @for (var sp = cfg.Scope.Slots.Count; sp >= 1; sp--)
+                                {
+                                    var who = GameEngine.AllyAt(b, sp);
+                                    <i class="@(who == GameState.PlayerId ? "me" : who != null ? "mate" : "")" title="@($"{sp}号位：{(who == GameState.PlayerId ? "你" : who != null ? "同伴" : "空")}")">@(who == GameState.PlayerId ? "你" : sp.ToString())</i>
+                                }
+                            </span>
                             <span class="ap-pips" aria-label="@($"行动点{(b.PlayerActing ? b.PlayerAp : 0)}/{apMax}")" title="@(b.PlayerActing ? $"本次{(b.ActingPursuit ? "追击" : "激活")}剩{b.PlayerAp}AP（不带入下次）" : $"等待轮到你；每次普通激活{e.NormalActivationAp(s.Player)}AP（战术训练阶位{s.Player.TacticalTier}）")">
                                 @for (var i = 0; i < apMax; i++) { <i class="@(b.PlayerActing && i < b.PlayerAp ? "on" : "")"></i> }
                                 <small>@(b.PlayerActing ? $"{(b.ActingPursuit ? "追击 " : "")}AP {b.PlayerAp}/{apMax}" : "等待")</small>
@@ -191,7 +200,7 @@ else if (b != null)
                 @if (GameEngine.AxeChargeOn(b)) { <span class="st good" title="@($"下次用这把斧攻击伤害×{Ui.T(b.ChargeFactor)}，到第{b.ChargeUntilRound}轮末")">蓄力×@Ui.T(b.ChargeFactor)</span> }
                 @if (GameEngine.InspireActive(b)) { <span class="st good" title="@($"下一次攻击命中能力+{Ui.T(b.InspireBonus)}，到第{b.InspireUntilRound}轮末")">鼓舞+@Ui.T(b.InspireBonus)</span> }
                 @if (GameEngine.AllOutActive(b)) { <span class="st good" title="@($"下一次攻击伤害×{Ui.T(b.AllOutFactor)}，到第{b.AllOutUntilRound}轮末")">总攻令</span> }
-                @if (b.DisplaceResist > 0 && b.DisplaceUntilRound >= b.Round) { <span class="st good" title="位移抵抗（只剩你一人时没有可被移动的位置）">稳固</span> }
+                @if (b.DisplaceResist > 0 && b.DisplaceUntilRound >= b.Round) { <span class="st good" title="位移抵抗：被拉扯/击退判控制时生效">稳固</span> }
                 @if (GameEngine.PlayerArmorBroken(b)) { <span class="st bad" title="@($"护甲−{Ui.T(b.PlayerArmorBreak)}，到第{b.PlayerArmorBreakUntilRound}轮末")">破甲−@Ui.T(b.PlayerArmorBreak)</span> }
                 @if (GameEngine.PlayerWeakActive(b)) { <span class="st bad">虚弱</span> }
                 @if (s.Body.BleedTriggers > 0) { <span class="st bad">出血×@s.Body.BleedTriggers</span> }
@@ -206,7 +215,7 @@ else if (b != null)
             }
             else if (sel != null && aiming)
             {
-                <span class="bx-hint">@(sel.TargetMode == "area" ? $"点亮起的任一1、2号位目标提交{sel.Label}（1、2号位都打）" : sel.TargetMode == "pair" ? "点1、2号位打12，点3号位打23；悬停看右侧预测" : "把鼠标移到亮起的目标上看右侧预测，点击目标执行") · 右键/Esc 取消</span>
+                <span class="bx-hint">@(sel.TargetMode == "area" ? $"点亮起的任一1、2号位目标提交{sel.Label}（1、2号位都打）" : sel.TargetMode == "suffix" ? "点起点敌人：从它的号位打到4号位，按离起点的格数×0.65/0.50/0.35/0.25，空位不重排；悬停看右侧逐个预测" : sel.TargetMode == "pair" ? "点1、2号位打12，点3号位打23；悬停看右侧预测" : "把鼠标移到亮起的目标上看右侧预测，点击目标执行") · 右键/Esc 取消</span>
             }
             else if (sel != null)
             {
@@ -265,7 +274,7 @@ else if (b != null)
                     <div class="track"><i style="width:@Ui.Bar(en.Hp, ec.Hp)%"></i></div>
                     @{ var far = G.E.IntentOutOfReach(G.S.Battle!, en); }
                     <div class="intent @(far ? "calm" : en.Intent is "bite" ? "bite" : en.Intent is "flee" or "watch" or "guard" or "protect" or "buff" or "reload" ? "calm" : "")"
-                         title="@(far ? $"本轮公开意图是{G.E.IntentLabel(en, G.S.Battle)}，但站在{slot}号位不能照原样出手：{G.E.IntentShown(G.S.Battle!, en)}（敌人{ec.Ap}AP：前移1AP，余下只做一次普通攻击）" : $"本轮公开意图（轮初锁定，不公开伤害抽值）；{ec.Ap}AP{(ec.Elite ? "精英" : "")}，每次激活一个主意图")">
+                         title="@(far ? $"本轮公开意图是{G.E.IntentLabel(en, G.S.Battle)}，但站在{slot}号位、你在{GameEngine.PlayerPos(G.S.Battle!)}号位，不能照原样出手：{G.E.IntentShown(G.S.Battle!, en)}（敌人{ec.Ap}AP：前移1AP，余下只做一次普通攻击；你躲在后排且前面全空时，它可付1AP迫近再2AP弱近袭×0.7，不咬不控制）" : $"本轮公开意图（轮初锁定，不公开伤害抽值）；{ec.Ap}AP{(ec.Elite ? "精英" : "")}，每次激活一个主意图")">
                         <span class="intent-ico">@(far ? FarIcon(G.E.PlanFor(G.S.Battle!, en, G.E.StepOf(en))) : IntentIcon(en.Intent))</span>@NoBreakRange(G.E.IntentShown(G.S.Battle!, en))
                     </div>
                 </div>
@@ -317,7 +326,7 @@ else if (b != null)
         var on = sel != null && sel.Action == o.Action && sel.ItemInstanceId == o.ItemInstanceId;
         var (art, glyph, qty) = CmdArt(o, wi, w);
         var oo = o;
-        var range = o.TargetMode == "area" ? "1、2号位群攻" : o.TargetMode == "pair" ? (o.Targets.Count > 0 ? "相邻双位（点12或23）" : "当前没有可选目标") : o.NeedsTarget ? (o.Targets.Count > 0 ? $"可选目标{o.Targets.Count}个" : "当前没有可选目标") : "自用/无目标";
+        var range = o.TargetMode == "area" ? "1、2号位群攻" : o.TargetMode == "suffix" ? (o.Targets.Count > 0 ? $"点起点打到4号位（可选起点{o.Targets.Count}个）" : "当前没有可选目标") : o.TargetMode == "pair" ? (o.Targets.Count > 0 ? "相邻双位（点12或23）" : "当前没有可选目标") : o.NeedsTarget ? (o.Targets.Count > 0 ? $"可选目标{o.Targets.Count}个" : "当前没有可选目标") : o.Action == "swap" ? "我方站位" : "自用/无目标";
         @* 试玩修复 M150：不可用的指令真正禁用（冷却中、AP 不足……都不进入瞄准），点它只在右栏写原因；悬停照样写原因 *@
         <button type="button" id="@($"cmd-{o.Action}{(o.ItemInstanceId is int ii ? "-" + ii : "")}")" class="cmdt @(on ? "on" : "") @(o.Available ? "" : "off") @(o.NodeId != null || o.Action == "desperate_punch" ? "skill" : "plain")" disabled="@locked" aria-disabled="@(!o.Available)"
                 aria-label="@($"{ShortName(o)}，{ApText(o.Ap)}{(qty != null ? "，" + qty : "")}{(o.Reason != null ? "；不可用：" + o.Reason : "")}")"
@@ -350,7 +359,7 @@ else if (b != null)
             // B7：五节点技能用当前武器图 + 技能名首字角标
             _ when o.NodeId != null => (weaponArt, o.Label.Length > 0 ? o.Label[..1] : null, null),
             "guard" => ("cmd_guard", null, null),
-            "swap" => ("cmd_switch", "换", null),
+            "swap" => ("cmd_switch", o.ItemInstanceId is int to && to < GameEngine.PlayerPos(G.S.Battle!) ? "前" : "后", null),
             "breathe" => ("cmd_breathe", null, null),
             "reload" => (w.AmmoId ?? "cmd_reload", null, null),
             "retreat" => ("cmd_retreat", null, null),
@@ -365,6 +374,7 @@ else if (b != null)
         "bandage" => "包扎",
         "use_antibiotics" => "抗生素",
         "use_antiviral_cure" => "特效药",
+        "swap" => o.ItemInstanceId is int to ? $"站位→{to}号" : "调整站位",   // Q80：每个相邻目的槽一条
         _ when o.NodeId != null => o.Label,   // B7：拳击/斩击/割伤……（1级攻击技能即普通攻击）
         _ => GameEngine.ActionName(o.Action),
     };
@@ -410,11 +420,12 @@ else if (b != null)
     /// <summary>意图里的伤害区间“0.70—1.10”不在破折号处折行（破折号两侧加 U+2060 不断行符，只影响显示，B2a M94）。</summary>
     private static string NoBreakRange(string label) => label.Replace("—", "\u2060—\u2060");
 
-    /// <summary>够不到时的意图图标（试玩修复 M150 UX8）：前移“移”、弱攻击“弱”、改防御“防”。</summary>
+    /// <summary>够不到时的意图图标（试玩修复 M150 UX8）：前移“移”、弱攻击“弱”、改防御“防”、空前排迫近“迫”（Q80）。</summary>
     private static string FarIcon(GameEngine.ReachPlan plan) => plan switch
     {
         GameEngine.ReachPlan.Weak => "弱",
         GameEngine.ReachPlan.Guard => "防",
+        GameEngine.ReachPlan.Approach => "迫",
         _ => "移",
     };
 

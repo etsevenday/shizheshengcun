@@ -231,8 +231,8 @@ namespace Survival.Core.Engine
                 case ReachPlan.Advance: return $"前移1位（在{e.Pos}号位够不到）";
                 case ReachPlan.Weak: return $"弱攻击 {Range(cfg, WeakAttackFactor)}（在{e.Pos}号位，{verb}要在{PosList(SlotsOf(cfg, st).own)}）";
                 case ReachPlan.Guard: return "防御（够不到目标）";
-                case ReachPlan.Approach: return $"迫近你（{PosName(PlayerPos(b))}）1AP后弱近袭 {Range(cfg, Config.CombatMath.ExposureApproach.DamageFactor)}（2AP，不咬、不附控制）";
-                case ReachPlan.AdvanceThenApproach: return $"前移到{e.Pos - 1}号位，再迫近你（{PosName(PlayerPos(b))}）弱近袭 {Range(cfg, Config.CombatMath.ExposureApproach.DamageFactor)}（共{1 + Config.CombatMath.ExposureApproach.TotalAp}AP，不咬、不附控制）";
+                case ReachPlan.Approach: return $"迫近你（{PosName(PlayerPos(b))}）弱近袭 {Range(cfg, Config.CombatMath.ExposureApproach.DamageFactor)}（{Config.CombatMath.ExposureApproach.ApproachAp}+{Config.CombatMath.ExposureApproach.PlainAttackAp}AP，不咬不控）";
+                case ReachPlan.AdvanceThenApproach: return $"前移到{e.Pos - 1}号位再迫近你（{PosName(PlayerPos(b))}）弱近袭 {Range(cfg, Config.CombatMath.ExposureApproach.DamageFactor)}（共{1 + Config.CombatMath.ExposureApproach.TotalAp}AP，不咬不控）";
             }
             return IntentLabel(e, b);
         }

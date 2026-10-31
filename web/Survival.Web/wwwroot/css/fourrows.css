@@ -943,3 +943,8 @@
   .bt-console .bc-cmds .cmdt .cmdt-art svg { width: 27px; height: 27px; }
   .bt-console .cmdt-text .cmdt-name { font-size: 14px; }
 }
+/* B7d（Q80 最小真实槽）：我方 4/3/2/1 号位条，1 号位靠中线；你所在号位高亮，空位只写号码 */
+.bt-scene .ally-head .ally-slots { display: inline-flex; gap: 2px; margin-left: 4px; }
+.bt-scene .ally-head .ally-slots i { font-style: normal; font-size: 11px; line-height: 16px; min-width: 16px; text-align: center; border-radius: 4px; border: 1px dashed var(--line, #8a8070); color: var(--ink); opacity: .75; }
+.bt-scene .ally-head .ally-slots i.me { opacity: 1; border-style: solid; background: var(--accent, #c9a14a); color: #1b1712; font-weight: 700; }
+.bt-scene .ally-head .ally-slots i.mate { opacity: 1; border-style: solid; color: var(--ink); }

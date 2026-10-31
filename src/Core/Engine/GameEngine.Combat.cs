@@ -913,8 +913,8 @@ namespace Survival.Core.Engine
             return new[] { me - 1, me + 1 }.Where(p => p >= 1 && p <= Config.Scope.Slots.Count).ToList();
         }
 
-        /// <summary>调整站位的目的槽：Target 或（界面）ItemInstanceId。</summary>
-        private static int? SwapDestination(BattleCommand c) => c.Target ?? c.ItemInstanceId;
+        /// <summary>调整站位的目的槽：界面用 ItemInstanceId 传（优先，避免和选中的敌人序号混淆），内核/测试也可放 Target。</summary>
+        private static int? SwapDestination(BattleCommand c) => c.ItemInstanceId ?? c.Target;
 
         /// <summary>该武器能否打到这个目标（R03 §1、A05 §1）：目标站位在武器目标位集合里（矛123、刀剑12、斧1、弓枪1234；不是群攻）。</summary>
         public bool CanReach(BattleState b, WeaponConfig w, BattleEnemy t) => t.Alive && TargetPositionsOf(w).Contains(t.Pos);
