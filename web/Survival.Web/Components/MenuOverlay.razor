@@ -92,6 +92,12 @@
                     <button class="secondary" @onclick="() => DevSkills(5, true)">求生熟练度全部5级</button>
                     <button class="secondary" @onclick="() => DevSkills(10, true)">求生熟练度全部10级</button>
                     <button class="secondary" @onclick="() => DevSkills(1, false)">熟练度全部回到1级</button>
+                    @* B7（A06 §2）：战斗/医疗技能按 1/3/5/7/10 级解锁；技能器具一组放当前地面，供逐页试技能 *@
+                    <button class="secondary" @onclick="() => DevSkills(3, false)">熟练度全部3级（含战斗）</button>
+                    <button class="secondary" @onclick="() => DevSkills(5, false)">熟练度全部5级（含战斗）</button>
+                    <button class="secondary" @onclick="() => DevSkills(7, false)">熟练度全部7级（含战斗）</button>
+                    <button class="secondary" @onclick="() => DevSkills(10, false)">熟练度全部10级（含战斗）</button>
+                    <button class="secondary" @onclick="DevSkillKit">技能器具一组（各类武器/盾/指挥/医疗与耗材）</button>
                     @* B6（R03 §3）：战术训练阶位 0/1/2 → 每次普通激活 3/4/5AP；训练入口（h03）在后续批次 *@
                     <button class="secondary" @onclick="() => DevTier(0)">战术训练阶位0（3AP）</button>
                     <button class="secondary" @onclick="() => DevTier(1)">战术训练阶位1（4AP）</button>
@@ -161,6 +167,8 @@
     private void DevSkills(int level, bool survivalOnly) => DevDone(G.E.DebugSetSkillLevels(G.S, level, survivalOnly));
 
     private void DevTier(int tier) => DevDone(G.E.DebugSetTacticalTier(G.S, tier));
+
+    private void DevSkillKit() => DevDone(G.E.DebugGiveSkillKit(G.S));
 
     private void DevSubstance()
     {

@@ -821,6 +821,19 @@ public class B7CombatTests : BattleTestBase
     }
 
     [Test]
+    public void DevSkillKit_OnGround_AllKinds()
+    {
+        var s = New();
+        E.DebugTeleport(s, "field");
+        var text = E.DebugGiveSkillKit(s);
+        Assert.That(text, Does.Contain("信号哨").And.Contain("创伤救护包").And.Contain("医用纱布×3"));
+        var kinds = s.Items.Where(i => i.Owner == "field" && E.Weapon(i.ItemId) != null).Select(i => E.Weapon(i.ItemId)!.WeaponKind).Distinct();
+        Assert.That(kinds, Is.SupersetOf(new[] { "blade", "axe", "spear", "blunt", "archery", "firearms", "shield", "command", "medical" }));
+        Assert.That(E.DebugSetSkillLevels(s, 7, false), Does.Contain("全部十五门"));
+        Assert.That(s.Skills["shield"].Level, Is.EqualTo(7));
+    }
+
+    [Test]
     public void NewEnemies_NotInOldSpawnPools()
     {
         var old = new[] { "shambler", "crawler", "runner", "worker", "riot", "howler", "feral_dog", "wolf", "boar", "stag" };

@@ -140,6 +140,28 @@ namespace Survival.Core.Engine
             return $"{(survivalOnly ? "求生五门（制造、采集、搜集、烹饪、行旅）" : "全部十五门")}熟练度设为{level}级（开发用）。";
         }
 
+        /// <summary>开发入口“技能器具一组”的清单（B7）：每类武器各一件（含盾、指挥、医疗器具）与技能耗材。</summary>
+        public static readonly (string Id, int Count)[] DevSkillKit =
+        {
+            ("kitchen_knife", 1), ("hatchet", 1), ("wooden_spear", 1), ("crowbar", 1), ("wooden_bow", 1), ("arrow", 10),
+            ("pistol", 1), ("ammo_9mm", 16), ("shotgun", 1), ("shell_12g", 8), ("wooden_shield", 1), ("signal_whistle", 1),
+            ("trauma_bag", 1), ("bandage", 2), ("medical_gauze", 3), ("saline", 3),
+        };
+
+        /// <summary>开发入口（B7）：技能器具一组放在当前地面（白色、无词条），返回给玩家看的说明。</summary>
+        public string DebugGiveSkillKit(GameState s)
+        {
+            foreach (var (id, n) in DevSkillKit)
+            {
+                if (_weapons.ContainsKey(id) || Config.Gear.Any(g => g.Id == id)) for (var i = 0; i < n; i++) DebugCreateEquipment(s, id, "white", s.CurrentLocation);
+                else CreateItems(s, id, n, s.CurrentLocation);
+            }
+            Normalize(s, s.CurrentLocation);
+            var text = $"开发：技能器具一组放在{LocName(s.CurrentLocation)}地面：" + string.Join("、", DevSkillKit.Select(x => ItemName(x.Id) + (x.Count > 1 ? $"×{x.Count}" : "")));
+            Emit(s, GameEventKind.Info, text + "。");
+            return text;
+        }
+
         public string DebugGiveEquipmentSet(GameState s, string quality)
         {
             var made = DevEquipmentSet.Select(id => DebugCreateEquipment(s, id, quality, s.CurrentLocation)).ToList();
