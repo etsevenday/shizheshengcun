@@ -100,6 +100,98 @@ namespace Survival.Core.Config
 
         [JsonIgnore] public bool IsSurvival => Kind == "survival";
         [JsonIgnore] public bool IsLive => Status == "live";
+
+        /// <summary>“12→1”左边：己方使用位（数字连写）；“按武器”为空串，按武器使用位。</summary>
+        [JsonIgnore] public string OwnPart => PositionsPart(0);
+        /// <summary>“12→1”右边：敌方目标位（数字连写）；“按武器”为空串；“自身/友方/全队”为空串。</summary>
+        [JsonIgnore] public string TargetPart => PositionsPart(1);
+
+        private string PositionsPart(int i)
+        {
+            var parts = Positions.Split('→');
+            if (parts.Length != 2) return "";
+            return new string(parts[i].Where(char.IsDigit).ToArray());
+        }
+    }
+
+    /// <summary>
+    /// 战斗/医疗主动技能的执行口径（A06 §2 效果列；开发计划 v0.9 B7，tools/import-b7-combat.py 导入）。
+    /// AP、基准E、使用位→目标、冷却、额外物资仍读 SkillNodeConfig。
+    /// </summary>
+    public sealed class SkillExecConfig
+    {
+        public string Id { get; set; } = "";
+        /// <summary>attack 攻击 / guard 自身格挡类 / buff 自身增益 / ally 友方增益或调整 / medical 医疗 / reload 装填。</summary>
+        public string Type { get; set; } = "attack";
+        /// <summary>single 单体 / pair 相邻双位（贯穿）/ self 自身 / ally 友方（单人时即自己）。</summary>
+        public string TargetMode { get; set; } = "single";
+        public double DamageFactor { get; set; } = 1;
+        /// <summary>同一目标的独立命中次数（连拳/连刺/连射 2）。</summary>
+        public int Hits { get; set; } = 1;
+        public double AccuracyBonus { get; set; }
+        public double ArmorIgnore { get; set; }
+        /// <summary>A06“额外物资”写明的弹药数（猎标1、连射2）；0 表示有弹药的武器按每次命中段数各1。</summary>
+        public int Ammo { get; set; }
+        public int MinAmmo { get; set; }
+        /// <summary>单发弩（弹仓1）不可用（连射）。</summary>
+        public bool NoSingleShot { get; set; }
+        /// <summary>移除目标格挡次数（破阵）。</summary>
+        public int RemoveGuard { get; set; }
+        /// <summary>处决：目标 H≤上限×比例时伤害再×ExecuteFactor。</summary>
+        public double? ExecuteHpRatio { get; set; }
+        public double ExecuteFactor { get; set; } = 1;
+        /// <summary>突进斩：攻击前我方前移 1 位，移位失败拒绝整次。</summary>
+        public int Advance { get; set; }
+        /// <summary>专长射击：这些武器改为对敌方 1、2 号位各一击、伤害×AreaDamageFactor。</summary>
+        public List<string> AreaWeapons { get; set; } = new List<string>();
+        public double AreaDamageFactor { get; set; } = 1;
+        public List<SkillStatusConfig> Effects { get; set; } = new List<SkillStatusConfig>();
+
+        public int GuardCharges { get; set; }
+        public double CounterFactor { get; set; }
+        public int BraceCharges { get; set; }
+        public int BraceMax { get; set; }
+        public double BraceFactor { get; set; }
+        /// <summary>斧蓄力：下次该斧攻击伤害×，持续至下一大回合末。</summary>
+        public double ChargeFactor { get; set; }
+        public double DisplaceResist { get; set; }
+        /// <summary>增益持续的大回合数（施加轮 r 起到 r+N 轮末）。</summary>
+        public int BuffRounds { get; set; }
+        public double TeamGuardFactor { get; set; }
+        public bool Cleanse { get; set; }
+        public int MoveBack { get; set; }
+        public double InspireAccuracy { get; set; }
+        public double PanicReduce { get; set; }
+        public double AllOutFactor { get; set; }
+        public int ApBonus { get; set; }
+        public bool Protect { get; set; }
+        /// <summary>需要相邻/其他队友（保护、掩护、整队、协同）；我方只有一人时禁用（队友参战在 B8）。</summary>
+        public bool NeedsAllies { get; set; }
+
+        public Dictionary<string, int> Items { get; set; } = new Dictionary<string, int>();
+        /// <summary>完全按 R04 绷带效果（战地包扎）。</summary>
+        public bool UseBandage { get; set; }
+        public bool StopBleed { get; set; }
+        /// <summary>回血基础值，×(1+0.02×医疗L)。</summary>
+        public double Heal { get; set; }
+        /// <summary>危急救护：目标 H≤上限×比例才可用。</summary>
+        public double? HealMaxRatio { get; set; }
+        public bool RemoveWeakOrStagger { get; set; }
+        public bool ReloadFull { get; set; }
+
+        [JsonIgnore] public bool IsAttack => Type == "attack";
+    }
+
+    /// <summary>技能附带状态（R03 §4）：stagger 失衡 / slow 减速 / weak 虚弱 / mark 标记 / armor_break 破甲 / knockback 击退 / cancel_charge 打断蓄力 / bleed 流血。</summary>
+    public sealed class SkillStatusConfig
+    {
+        public string Status { get; set; } = "";
+        public double Value { get; set; }
+        public int Rounds { get; set; }
+        /// <summary>需命中后再判控制（R03 §4）。</summary>
+        public bool Control { get; set; }
+        /// <summary>须造成正直接伤害才施加（割伤、致残射击）。</summary>
+        public bool Positive { get; set; }
     }
 
     /// <summary>求生被动的附加参数（取自 A06 §2 效果原文）。</summary>
@@ -216,8 +308,11 @@ namespace Survival.Core.Config
         public string? TraitText { get; set; }
         /// <summary>拆解产出（A05 §5）。</summary>
         public SalvageOutputConfig? Salvage { get; set; }
+        /// <summary>固定特性里挂在技能上的程序效果（A05 §1；B7 tools/import-b7-combat.py）：锋口 bleedTriggers、扫切 bleedAccuracy……</summary>
+        public Dictionary<string, double> TraitEffects { get; set; } = new Dictionary<string, double>();
+        public double Trait(string key, double fallback = 0) => TraitEffects.TryGetValue(key, out var v) ? v : fallback;
 
-        /// <summary>盾、指挥、医疗器具的技能在 B5/B7，B4 只能穿戴、不能用它攻击（开发假设 H2）。</summary>
+        /// <summary>指挥、医疗器具不能直接攻击（A05 §1“不可直接攻击”），只用本门的增益/医疗技能（B7）；盾自 B7 起有盾击。</summary>
         public static readonly string[] SkillLockedKinds = { "shield", "command", "medical" };
         [JsonIgnore] public bool CanAttack => IsFists || System.Array.IndexOf(SkillLockedKinds, WeaponKind) < 0;
 
@@ -305,11 +400,79 @@ namespace Survival.Core.Config
         public double FearChance { get; set; }
         /// <summary>惊吓值：受惊时入场恐慌附加（R05 §6.3）。</summary>
         public double FearValue { get; set; }
-        /// <summary>控制抗性（百分点；A09 敌人字段在 B7 接入，本批默认 0）。</summary>
+        /// <summary>控制抗性（百分点；A09 §1，B7 接入）。</summary>
         public double ControlResist { get; set; }
+        // ───── A09 §1「敌人面板与行为」、R03「敌方资源接口补充」（B7 R26） ─────
+        /// <summary>普通 3AP、精英 4AP（追击 2AP）。</summary>
+        public int Ap { get; set; } = 3;
+        public bool Elite { get; set; }
+        /// <summary>己位（数字连写）：主要意图从这些站位出手。</summary>
+        public string OwnSlots { get; set; } = "12";
+        /// <summary>目标位（我方站位，数字连写）。</summary>
+        public string TargetSlots { get; set; } = "12";
+        /// <summary>意图循环：按本场第几次正常激活取 opening 前几项，之后循环 cycle。</summary>
+        public EnemyIntentsConfig Intents { get; set; } = new EnemyIntentsConfig();
+        /// <summary>A09 附加掉落（独立额外判一次；“固定”为 1）。</summary>
+        public EnemyDropConfig? ExtraDrop { get; set; }
+        /// <summary>护盔感染者：首次失衡免疫。</summary>
+        public bool StaggerImmuneOnce { get; set; }
+        /// <summary>膨胀感染者：死亡时对我方 1、2 号位各 H−该值（护甲照算，非咬不感染）。</summary>
+        public double DeathSplash { get; set; }
+        /// <summary>流窜枪手：本场弹药计划总数与弹仓容量（打空后弱近战或前移）。</summary>
+        public int AmmoTotal { get; set; }
+        public int Magazine { get; set; }
 
         [JsonIgnore] public bool IsZombie => Family == "zombie";
+        [JsonIgnore] public bool IsHuman => Family == "human";
+        [JsonIgnore] public string FamilyName => Family switch { "zombie" => "丧尸", "animal" => "动物", "human" => "敌对人类", _ => Family };
         [JsonIgnore] public bool NeutralUntilAttacked => Behavior == "neutral_until_attacked";
+    }
+
+    public sealed class EnemyIntentsConfig
+    {
+        public List<EnemyIntentStepConfig> Opening { get; set; } = new List<EnemyIntentStepConfig>();
+        public List<EnemyIntentStepConfig> Cycle { get; set; } = new List<EnemyIntentStepConfig>();
+        [JsonIgnore] public int Count => Opening.Count + Cycle.Count;
+
+        /// <summary>第 n 次正常激活（0 起）用第几项（opening 与 cycle 合并编号）。</summary>
+        public int IndexFor(int n) => n < Opening.Count ? n : Cycle.Count == 0 ? 0 : Opening.Count + (n - Opening.Count) % Cycle.Count;
+
+        public EnemyIntentStepConfig? At(int index) =>
+            index < 0 ? null : index < Opening.Count ? Opening[index] : index - Opening.Count < Cycle.Count ? Cycle[index - Opening.Count] : null;
+    }
+
+    /// <summary>
+    /// 敌人一次正常激活的主意图（A09 §1）：attack 攻击（可按 bitePct 改判咬击）/ bite 咬击 / charge 冲撞重击推撞 / charge_prepare 蓄力 /
+    /// guard 防御 / howl 嚎叫尖啸 / protect 保护相邻同伴 / signal 鸣响请求增援 / buff 自身下一击增益 / sweep 扫击 / spit 喷吐 /
+    /// pull 拉扯 / shoot 射击 / reload 装填。
+    /// </summary>
+    public sealed class EnemyIntentStepConfig
+    {
+        public string Kind { get; set; } = "attack";
+        public string Verb { get; set; } = "";
+        public double Factor { get; set; } = 1;
+        public double BitePct { get; set; }
+        /// <summary>命中后控制：slow 扯腿减速 / stagger 失衡。</summary>
+        public string? Control { get; set; }
+        public double BleedPct { get; set; }
+        public int Knockback { get; set; }
+        public int Pull { get; set; }
+        public double ArmorBreak { get; set; }
+        public int ArmorBreakRounds { get; set; }
+        public double Panic { get; set; }
+        public double NextHitFactor { get; set; }
+        /// <summary>本场最多几次（隔离守卫保护限1次）；0 不限。</summary>
+        public int Limit { get; set; }
+        /// <summary>覆盖敌人的己位/目标位（尖啸尸等后排敌人的近战为 12→12）。</summary>
+        public string? OwnSlots { get; set; }
+        public string? TargetSlots { get; set; }
+    }
+
+    public sealed class EnemyDropConfig
+    {
+        public string ItemId { get; set; } = "";
+        public int Count { get; set; } = 1;
+        public double Chance { get; set; } = 1;
     }
 
     /// <summary>v0.6 combatMath：命中、暴击、伤害、身体修正（§04）。</summary>

@@ -16,8 +16,9 @@ public class V10ConfigTests : TestBase
             ["shambler"] = (0.35, 6), ["crawler"] = (0.40, 7), ["runner"] = (0.55, 10), ["worker"] = (0.40, 8), ["riot"] = (0.60, 14),
             ["howler"] = (0.65, 16), ["feral_dog"] = (0.20, 4), ["wolf"] = (0.35, 7), ["boar"] = (0.35, 8), ["stag"] = (0.10, 3),
         };
-        Assert.That(Cfg.Enemies.Select(e => e.Id), Is.EquivalentTo(expect.Keys));
-        foreach (var e in Cfg.Enemies)
+        // B7：A09 §1 新增 20 种另按 A09 §4 新敌受惊参数（B7CombatTests.EN01），旧 10 种不改
+        Assert.That(Cfg.Enemies.Select(e => e.Id), Is.SupersetOf(expect.Keys));
+        foreach (var e in Cfg.Enemies.Where(e => expect.ContainsKey(e.Id)))
         {
             Assert.That(e.FearChance, Is.EqualTo(expect[e.Id].q), e.Id);
             Assert.That(e.FearValue, Is.EqualTo(expect[e.Id].v), e.Id);

@@ -450,6 +450,10 @@ public class ConfigTests : TestBase
         // B4（A05 §1）：weapons 新增 27 件，旧 12 行原值不动——按 ID 取出旧行再逐字段比对
         var designWeaponIds = ((JArray)d["weapons"]!).Select(w => (string)w["id"]!).ToList();
         mapped["weapons"] = new JArray(designWeaponIds.Select(id => ((JArray)mapped["weapons"]!).First(w => (string?)w["id"] == id)));
+        // B7（A09 §1）：enemies 新增 20 种，旧 10 行原值不动（只补控制抗性/站位/AP/意图字段）——按 ID 取出旧行再逐字段比对
+        var designEnemyIds = ((JArray)d["enemies"]!).Select(w => (string)w["id"]!).ToList();
+        mapped["enemies"] = new JArray(designEnemyIds.Select(id => ((JArray)mapped["enemies"]!).First(w => (string?)w["id"] == id)));
+        mapped["animalCarcasses"] = new JArray(((JArray)mapped["animalCarcasses"]!).Take(((JArray)d["animalCarcasses"]!).Count));   // 野犬首领/暴躁野猪的尸体行追加在后
         foreach (var (ds, cs) in CopiedSections)
             AssertSubset(d[ds]!, mapped[cs]!, $"v0.6.{ds}");
         // 丧尸掉落表（v0.6 沿用 v0.5）

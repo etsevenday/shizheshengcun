@@ -260,6 +260,25 @@ namespace Survival.Core.Config
                     if (!lv.SequenceEqual(new[] { 1, 3, 5, 7, 10 })) e.Add($"技能 {sk.Id} 须恰好有 1/3/5/7/10 级五个节点（现有 {string.Join("/", lv)}）");
                 }
                 foreach (var n in c.SkillNodes.Where(n => n.IsSurvival && n.Kind != "survival")) e.Add($"技能节点 {n.Id} 类型无效");
+                // B7（A06 §2、SK01）：每个战斗/医疗节点恰好一条执行口径，物品与状态有效
+                if (c.SkillExec.Count > 0)
+                {
+                    Dup(c.SkillExec, x => x.Id, "技能执行", e);
+                    var execIds = new HashSet<string>(c.SkillExec.Select(x => x.Id));
+                    foreach (var n in c.SkillNodes.Where(n => !n.IsSurvival && !execIds.Contains(n.Id))) e.Add($"战斗技能 {n.Id} 缺少执行口径（skillExec）");
+                    foreach (var x in c.SkillExec)
+                    {
+                        var node = c.SkillNodes.FirstOrDefault(n => n.Id == x.Id);
+                        if (node == null || node.IsSurvival) e.Add($"技能执行 {x.Id} 不是战斗/医疗技能节点");
+                        if (!new[] { "attack", "guard", "buff", "ally", "medical", "reload" }.Contains(x.Type)) e.Add($"技能执行 {x.Id} 的类型 {x.Type} 无效");
+                        if (!new[] { "single", "pair", "self", "ally" }.Contains(x.TargetMode)) e.Add($"技能执行 {x.Id} 的目标方式 {x.TargetMode} 无效");
+                        if (x.Hits < 1) e.Add($"技能执行 {x.Id} 的段数须≥1");
+                        foreach (var kv in x.Items) if (!items.Contains(kv.Key) || kv.Value <= 0) e.Add($"技能执行 {x.Id} 的物品 {kv.Key} 无效");
+                        foreach (var fx in x.Effects)
+                            if (!new[] { "stagger", "slow", "weak", "mark", "armor_break", "knockback", "cancel_charge", "bleed" }.Contains(fx.Status)) e.Add($"技能执行 {x.Id} 的状态 {fx.Status} 无效");
+                        foreach (var w in x.AreaWeapons) if (c.Weapons.All(v => v.Id != w)) e.Add($"技能执行 {x.Id} 的武器 {w} 不存在");
+                    }
+                }
             }
             foreach (var sk in c.Skills.Where(x => x.LevelCap is int cap && cap < x.InitialLevel)) e.Add($"技能 {sk.Id} 的初始等级超过上限");
             Dup(c.Weapons, x => x.Id, "武器", e);
@@ -302,6 +321,20 @@ namespace Survival.Core.Config
             {
                 if (en.Hp <= 0 || en.Dodge <= 0 || en.AttackRating <= 0) e.Add($"敌人 {en.Id} 的健康、闪避与攻击能力须为正");
                 if (!c.WorldEnemies.RarityWeights.ContainsKey(en.Rarity)) e.Add($"敌人 {en.Id} 的稀有层级 {en.Rarity} 不在刷新权重里");
+                // B7（A09 §1、R03 敌方资源接口）：AP 普通3/精英4、己位/目标位 1—4、意图循环非空、附加掉落物品存在
+                if (en.Ap != (en.Elite ? 4 : 3)) e.Add($"敌人 {en.Id} 的行动点须为普通3/精英4");
+                bool Slots(string? t) => !string.IsNullOrEmpty(t) && t!.All(ch => ch >= '1' && ch <= '4');
+                if (!Slots(en.OwnSlots) || !Slots(en.TargetSlots)) e.Add($"敌人 {en.Id} 的己位/目标位无效");
+                if (en.Intents.Cycle.Count == 0) e.Add($"敌人 {en.Id} 缺少意图循环");
+                var kinds = new[] { "attack", "bite", "charge", "charge_prepare", "guard", "howl", "protect", "signal", "buff", "sweep", "spit", "pull", "shoot", "reload" };
+                foreach (var st in en.Intents.Opening.Concat(en.Intents.Cycle))
+                {
+                    if (!kinds.Contains(st.Kind)) e.Add($"敌人 {en.Id} 的意图 {st.Kind} 无效");
+                    if ((st.OwnSlots != null && !Slots(st.OwnSlots)) || (st.TargetSlots != null && !Slots(st.TargetSlots))) e.Add($"敌人 {en.Id} 的意图站位无效");
+                }
+                if (en.ControlResist < 0 || en.ControlResist > 100) e.Add($"敌人 {en.Id} 的控制抗性须在 0—100");
+                if (en.ExtraDrop != null && (!items.Contains(en.ExtraDrop.ItemId) || en.ExtraDrop.Count <= 0 || en.ExtraDrop.Chance <= 0 || en.ExtraDrop.Chance > 1))
+                    e.Add($"敌人 {en.Id} 的附加掉落无效");
             }
             if (c.Scope.BasePlayerDodge <= 0) e.Add("玩家闪避能力须为正");
             if (c.Scope.ApByTier.Count == 0 || c.Scope.ApByTier.Any(x => x <= 0 || x > c.Scope.ApCap)) e.Add("战术训练阶位的行动点（scope.apByTier）无效");

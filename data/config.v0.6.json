@@ -4540,6 +4540,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "bleedTriggers": 1
       }
     },
     {
@@ -4657,6 +4660,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "braceDamage": 1.1
       }
     },
     {
@@ -4833,6 +4839,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "bleedAccuracy": 4
       }
     },
     {
@@ -4862,6 +4871,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "counterDamage": 1.15
       }
     },
     {
@@ -4920,6 +4932,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "armorBreakBonus": 0.1
       }
     },
     {
@@ -4949,6 +4964,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "protectorDamage": 1.15
       }
     },
     {
@@ -4978,6 +4996,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "braceExtra": 1
       }
     },
     {
@@ -5007,6 +5028,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "knockbackAccuracy": 8
       }
     },
     {
@@ -5065,6 +5089,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "staggerUntilAttack": 1
       }
     },
     {
@@ -5094,6 +5121,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "interruptSlow": 1
       }
     },
     {
@@ -5123,6 +5153,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "markedAccuracy": 5
       }
     },
     {
@@ -5152,6 +5185,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "animalDamage": 1.15
       }
     },
     {
@@ -5181,6 +5217,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "reloadMax": 2
       }
     },
     {
@@ -5210,6 +5249,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "suppressAccuracy": 6
       }
     },
     {
@@ -5239,6 +5281,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "markedDamage": 1.15
       }
     },
     {
@@ -5442,6 +5487,9 @@
       "salvage": {
         "itemId": "electronics",
         "count": 1
+      },
+      "traitEffects": {
+        "commandRounds": 1
       }
     },
     {
@@ -5471,6 +5519,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "firstCommandAccuracy": 4
       }
     },
     {
@@ -5529,6 +5580,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "medicalHealBonus": 0.2
       }
     },
     {
@@ -5558,6 +5612,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "postMedicalDamage": 0.9
       }
     },
     {
@@ -5587,6 +5644,9 @@
       "salvage": {
         "itemId": "scrap",
         "byQuality": true
+      },
+      "traitEffects": {
+        "criticalCareBonus": 0.3
       }
     }
   ],
@@ -5610,7 +5670,21 @@
       "biteIntentWeightPct": 20,
       "worldPersistentId": true,
       "fearChance": 0.35,
-      "fearValue": 6
+      "fearValue": 6,
+      "controlResist": 10,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 20
+          }
+        ]
+      }
     },
     {
       "id": "crawler",
@@ -5631,7 +5705,22 @@
       "biteIntentWeightPct": 20,
       "worldPersistentId": true,
       "fearChance": 0.4,
-      "fearValue": 7
+      "fearValue": 7,
+      "controlResist": 10,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "扯腿",
+            "bitePct": 20,
+            "control": "slow"
+          }
+        ]
+      }
     },
     {
       "id": "runner",
@@ -5652,7 +5741,22 @@
       "biteIntentWeightPct": 20,
       "worldPersistentId": true,
       "fearChance": 0.55,
-      "fearValue": 10
+      "fearValue": 10,
+      "controlResist": 15,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "扑击",
+            "bitePct": 20,
+            "control": "stagger"
+          }
+        ]
+      }
     },
     {
       "id": "worker",
@@ -5673,7 +5777,21 @@
       "biteIntentWeightPct": 20,
       "worldPersistentId": true,
       "fearChance": 0.4,
-      "fearValue": 8
+      "fearValue": 8,
+      "controlResist": 20,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "挥击",
+            "bitePct": 20
+          }
+        ]
+      }
     },
     {
       "id": "riot",
@@ -5694,7 +5812,26 @@
       "biteIntentWeightPct": 20,
       "worldPersistentId": true,
       "fearChance": 0.6,
-      "fearValue": 14
+      "fearValue": 14,
+      "controlResist": 30,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "opening": [
+          {
+            "kind": "guard"
+          }
+        ],
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "撞击",
+            "bitePct": 20
+          }
+        ]
+      }
     },
     {
       "id": "howler",
@@ -5715,7 +5852,28 @@
       "biteIntentWeightPct": 20,
       "worldPersistentId": true,
       "fearChance": 0.65,
-      "fearValue": 16
+      "fearValue": 16,
+      "controlResist": 15,
+      "ownSlots": "34",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "howl",
+            "verb": "嚎叫",
+            "panic": 4
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 20,
+            "ownSlots": "12",
+            "targetSlots": "12"
+          }
+        ]
+      }
     },
     {
       "id": "feral_dog",
@@ -5736,7 +5894,21 @@
       "biteIntentWeightPct": 0,
       "worldPersistentId": true,
       "fearChance": 0.2,
-      "fearValue": 4
+      "fearValue": 4,
+      "controlResist": 15,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "撕咬",
+            "bleedPct": 25
+          }
+        ]
+      }
     },
     {
       "id": "wolf",
@@ -5757,7 +5929,21 @@
       "biteIntentWeightPct": 0,
       "worldPersistentId": true,
       "fearChance": 0.35,
-      "fearValue": 7
+      "fearValue": 7,
+      "controlResist": 20,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "撕咬",
+            "bleedPct": 25
+          }
+        ]
+      }
     },
     {
       "id": "boar",
@@ -5778,7 +5964,24 @@
       "biteIntentWeightPct": 0,
       "worldPersistentId": true,
       "fearChance": 0.35,
-      "fearValue": 8
+      "fearValue": 8,
+      "controlResist": 30,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "charge_prepare"
+          },
+          {
+            "kind": "charge",
+            "verb": "冲撞",
+            "factor": 1.5
+          }
+        ]
+      }
     },
     {
       "id": "stag",
@@ -5799,7 +6002,909 @@
       "biteIntentWeightPct": 0,
       "worldPersistentId": true,
       "fearChance": 0.1,
-      "fearValue": 3
+      "fearValue": 3,
+      "controlResist": 20,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "顶撞"
+          }
+        ]
+      }
+    },
+    {
+      "id": "z_slow",
+      "name": "迟缓感染者",
+      "family": "zombie",
+      "hp": 4.2,
+      "armor": 0,
+      "dodge": 22,
+      "speed": 2,
+      "damageMin": 0.7,
+      "damageMax": 1.1,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 21,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 10,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 20
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "scrap",
+        "count": 1,
+        "chance": 0.2
+      }
+    },
+    {
+      "id": "z_helmet",
+      "name": "护盔感染者",
+      "family": "zombie",
+      "hp": 5.8,
+      "armor": 0.35,
+      "dodge": 22,
+      "speed": 3,
+      "damageMin": 0.9,
+      "damageMax": 1.3,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 22,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 25,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 20
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "iron_plate",
+        "count": 1,
+        "chance": 0.25
+      },
+      "staggerImmuneOnce": true
+    },
+    {
+      "id": "z_spitter",
+      "name": "酸液感染者",
+      "family": "zombie",
+      "hp": 4.2,
+      "armor": 0,
+      "dodge": 28,
+      "speed": 4,
+      "damageMin": 0.6,
+      "damageMax": 0.9,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 24,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 20,
+      "ownSlots": "34",
+      "targetSlots": "1234",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "spit",
+            "verb": "喷吐",
+            "factor": 0.8,
+            "armorBreak": 0.15,
+            "armorBreakRounds": 2
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "ownSlots": "12",
+            "targetSlots": "12"
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "plastic",
+        "count": 1,
+        "chance": 0.25
+      }
+    },
+    {
+      "id": "z_hauler",
+      "name": "搬运感染者",
+      "family": "zombie",
+      "hp": 6.2,
+      "armor": 0.2,
+      "dodge": 20,
+      "speed": 2,
+      "damageMin": 1.0,
+      "damageMax": 1.5,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 22,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 25,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "opening": [
+          {
+            "kind": "charge_prepare"
+          },
+          {
+            "kind": "charge",
+            "verb": "推撞",
+            "factor": 1.3,
+            "knockback": 1
+          }
+        ],
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 20
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "fastener",
+        "count": 1,
+        "chance": 0.3
+      }
+    },
+    {
+      "id": "z_darter",
+      "name": "迅捷感染者",
+      "family": "zombie",
+      "hp": 3.8,
+      "armor": 0,
+      "dodge": 36,
+      "speed": 8,
+      "damageMin": 0.6,
+      "damageMax": 1.0,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 25,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.55,
+      "fearValue": 10,
+      "controlResist": 15,
+      "ownSlots": "123",
+      "targetSlots": "123",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "扑击",
+            "bitePct": 20
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "cloth",
+        "count": 1,
+        "chance": 0.25
+      }
+    },
+    {
+      "id": "z_screamer",
+      "name": "尖啸感染者",
+      "family": "zombie",
+      "hp": 4.8,
+      "armor": 0,
+      "dodge": 28,
+      "speed": 4,
+      "damageMin": 0.5,
+      "damageMax": 0.8,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 20,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.65,
+      "fearValue": 16,
+      "controlResist": 20,
+      "ownSlots": "34",
+      "targetSlots": "1234",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "howl",
+            "verb": "尖啸",
+            "panic": 5
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "ownSlots": "12",
+            "targetSlots": "12"
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "cloth",
+        "count": 1,
+        "chance": 0.3
+      }
+    },
+    {
+      "id": "z_guard",
+      "name": "重装守卫感染者",
+      "family": "zombie",
+      "hp": 9,
+      "armor": 0.65,
+      "dodge": 20,
+      "speed": 2,
+      "damageMin": 1.1,
+      "damageMax": 1.7,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 23,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 40,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "protect"
+          },
+          {
+            "kind": "charge",
+            "verb": "重击"
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "steel",
+        "count": 1,
+        "chance": 0.4
+      }
+    },
+    {
+      "id": "z_clinger",
+      "name": "攀附感染者",
+      "family": "zombie",
+      "hp": 4.6,
+      "armor": 0.1,
+      "dodge": 32,
+      "speed": 6,
+      "damageMin": 0.7,
+      "damageMax": 1.1,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 24,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 25,
+      "ownSlots": "23",
+      "targetSlots": "123",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "pull",
+            "verb": "拉扯",
+            "factor": 0,
+            "pull": 1
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 20
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "rope",
+        "count": 1,
+        "chance": 0.3
+      }
+    },
+    {
+      "id": "z_bloater",
+      "name": "膨胀感染者",
+      "family": "zombie",
+      "hp": 7.2,
+      "armor": 0.1,
+      "dodge": 18,
+      "speed": 1,
+      "damageMin": 0.8,
+      "damageMax": 1.2,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 20,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 35,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 0
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "rubber",
+        "count": 1,
+        "chance": 0.25
+      },
+      "deathSplash": 0.3
+    },
+    {
+      "id": "z_nurse",
+      "name": "制服感染者",
+      "family": "zombie",
+      "hp": 4.4,
+      "armor": 0,
+      "dodge": 27,
+      "speed": 4,
+      "damageMin": 0.6,
+      "damageMax": 1.0,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 23,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 15,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 20
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "medical_gauze",
+        "count": 1,
+        "chance": 0.3
+      }
+    },
+    {
+      "id": "z_engineer",
+      "name": "机修感染者",
+      "family": "zombie",
+      "hp": 6,
+      "armor": 0.35,
+      "dodge": 24,
+      "speed": 3,
+      "damageMin": 1.0,
+      "damageMax": 1.4,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 24,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 25,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "敲击",
+            "bitePct": 20,
+            "control": "stagger"
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "parts",
+        "count": 1,
+        "chance": 0.3
+      }
+    },
+    {
+      "id": "z_signal",
+      "name": "鸣响感染者",
+      "family": "zombie",
+      "hp": 5,
+      "armor": 0,
+      "dodge": 28,
+      "speed": 5,
+      "damageMin": 0.6,
+      "damageMax": 0.9,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 22,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 20,
+      "ownSlots": "34",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "opening": [
+          {
+            "kind": "signal",
+            "verb": "鸣响"
+          }
+        ],
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "ownSlots": "12",
+            "targetSlots": "12"
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "wire",
+        "count": 1,
+        "chance": 0.3
+      }
+    },
+    {
+      "id": "z_pump_foreman",
+      "name": "泵室领班",
+      "family": "zombie",
+      "hp": 10,
+      "armor": 0.3,
+      "dodge": 24,
+      "speed": 4,
+      "damageMin": 1.1,
+      "damageMax": 1.6,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 26,
+      "rarity": "elite",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.6,
+      "fearValue": 14,
+      "controlResist": 45,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 4,
+      "elite": true,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "charge_prepare"
+          },
+          {
+            "kind": "charge",
+            "verb": "重击",
+            "factor": 1.4
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击"
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "precision_parts",
+        "count": 1,
+        "chance": 1.0
+      }
+    },
+    {
+      "id": "z_isolation_guard",
+      "name": "隔离守卫",
+      "family": "zombie",
+      "hp": 10,
+      "armor": 0.4,
+      "dodge": 25,
+      "speed": 4,
+      "damageMin": 1.0,
+      "damageMax": 1.5,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 25,
+      "rarity": "elite",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.6,
+      "fearValue": 14,
+      "controlResist": 45,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 4,
+      "elite": true,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "protect",
+            "limit": 1
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击"
+          },
+          {
+            "kind": "bite",
+            "verb": "咬击"
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "medical_gauze",
+        "count": 2,
+        "chance": 1.0
+      }
+    },
+    {
+      "id": "z_power_guard",
+      "name": "配电守卫",
+      "family": "zombie",
+      "hp": 12,
+      "armor": 0.55,
+      "dodge": 25,
+      "speed": 4,
+      "damageMin": 1.2,
+      "damageMax": 1.8,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 27,
+      "rarity": "elite",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.6,
+      "fearValue": 14,
+      "controlResist": 50,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 4,
+      "elite": true,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "charge_prepare"
+          },
+          {
+            "kind": "charge",
+            "verb": "冲撞",
+            "factor": 1.4,
+            "knockback": 1
+          },
+          {
+            "kind": "guard"
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "electronics",
+        "count": 1,
+        "chance": 1.0
+      }
+    },
+    {
+      "id": "z_relay_guard",
+      "name": "天线守卫",
+      "family": "zombie",
+      "hp": 14,
+      "armor": 0.45,
+      "dodge": 28,
+      "speed": 5,
+      "damageMin": 1.2,
+      "damageMax": 1.8,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 28,
+      "rarity": "elite",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.6,
+      "fearValue": 14,
+      "controlResist": 50,
+      "ownSlots": "12",
+      "targetSlots": "123",
+      "ap": 4,
+      "elite": true,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "sweep",
+            "verb": "扫击",
+            "factor": 0.6,
+            "ownSlots": "12",
+            "targetSlots": "12"
+          },
+          {
+            "kind": "charge",
+            "verb": "重击",
+            "factor": 1.3
+          },
+          {
+            "kind": "guard"
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "precision_parts",
+        "count": 2,
+        "chance": 1.0
+      }
+    },
+    {
+      "id": "raider_melee",
+      "name": "流窜掠夺者",
+      "family": "human",
+      "hp": 5.6,
+      "armor": 0.15,
+      "dodge": 30,
+      "speed": 5,
+      "damageMin": 0.9,
+      "damageMax": 1.3,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": false,
+      "artRequired": false,
+      "attackRating": 27,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 25,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "斩击"
+          },
+          {
+            "kind": "protect"
+          },
+          {
+            "kind": "attack",
+            "verb": "斩击"
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "cloth",
+        "count": 1,
+        "chance": 1.0
+      }
+    },
+    {
+      "id": "raider_gunner",
+      "name": "流窜枪手",
+      "family": "human",
+      "hp": 5,
+      "armor": 0.1,
+      "dodge": 29,
+      "speed": 4,
+      "damageMin": 1.1,
+      "damageMax": 1.6,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": false,
+      "artRequired": false,
+      "attackRating": 26,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 20,
+      "ownSlots": "34",
+      "targetSlots": "1234",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "shoot",
+            "verb": "射击"
+          },
+          {
+            "kind": "shoot",
+            "verb": "射击"
+          },
+          {
+            "kind": "reload",
+            "verb": "装填"
+          }
+        ]
+      },
+      "extraDrop": {
+        "itemId": "ammo_9mm",
+        "count": 2,
+        "chance": 1.0
+      },
+      "ammoTotal": 6,
+      "magazine": 2
+    },
+    {
+      "id": "wild_dog_leader",
+      "name": "野犬首领",
+      "family": "animal",
+      "hp": 6.4,
+      "armor": 0.1,
+      "dodge": 34,
+      "speed": 7,
+      "damageMin": 0.8,
+      "damageMax": 1.2,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": false,
+      "artRequired": false,
+      "attackRating": 25,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 30,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "opening": [
+          {
+            "kind": "buff",
+            "verb": "蓄势",
+            "nextHitFactor": 1.2
+          }
+        ],
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "撕咬",
+            "bleedPct": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "feral_boar",
+      "name": "暴躁野猪",
+      "family": "animal",
+      "hp": 8,
+      "armor": 0.25,
+      "dodge": 24,
+      "speed": 4,
+      "damageMin": 1.0,
+      "damageMax": 1.6,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": false,
+      "artRequired": false,
+      "attackRating": 23,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 35,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "charge_prepare"
+          },
+          {
+            "kind": "charge",
+            "verb": "冲撞",
+            "factor": 1.4
+          }
+        ]
+      }
     }
   ],
   "xp": {
@@ -6073,6 +7178,40 @@
       "toolWearOnSuccess": 1,
       "outputs": {
         "raw_meat": 3,
+        "hide": 1
+      }
+    },
+    {
+      "enemyId": "wild_dog_leader",
+      "carcassItemId": "carcass_wolf",
+      "count": 1,
+      "butcherBaseMinutes": 30,
+      "butcherManufacturingSpeedBonus": false,
+      "requiredCarriedTools": [
+        "stone_knife",
+        "kitchen_knife",
+        "hatchet"
+      ],
+      "toolWearOnSuccess": 1,
+      "outputs": {
+        "raw_meat": 3,
+        "hide": 1
+      }
+    },
+    {
+      "enemyId": "feral_boar",
+      "carcassItemId": "carcass_boar",
+      "count": 1,
+      "butcherBaseMinutes": 30,
+      "butcherManufacturingSpeedBonus": false,
+      "requiredCarriedTools": [
+        "stone_knife",
+        "kitchen_knife",
+        "hatchet"
+      ],
+      "toolWearOnSuccess": 1,
+      "outputs": {
+        "raw_meat": 4,
         "hide": 1
       }
     }
@@ -9153,5 +10292,406 @@
       "parts"
     ],
     "moveLightMaxGrams": 20000
-  }
+  },
+  "skillExec": [
+    {
+      "id": "unarmed_01",
+      "type": "attack"
+    },
+    {
+      "id": "unarmed_03",
+      "type": "attack",
+      "damageFactor": 0,
+      "effects": [
+        {
+          "status": "stagger",
+          "control": true
+        }
+      ]
+    },
+    {
+      "id": "unarmed_05",
+      "type": "guard",
+      "targetMode": "self",
+      "guardCharges": 1
+    },
+    {
+      "id": "unarmed_07",
+      "type": "buff",
+      "targetMode": "self",
+      "cleanse": true,
+      "moveBack": 1
+    },
+    {
+      "id": "unarmed_10",
+      "type": "attack",
+      "hits": 2,
+      "damageFactor": 0.85
+    },
+    {
+      "id": "blade_01",
+      "type": "attack"
+    },
+    {
+      "id": "blade_03",
+      "type": "attack",
+      "damageFactor": 0.65,
+      "effects": [
+        {
+          "status": "bleed",
+          "positive": true
+        }
+      ]
+    },
+    {
+      "id": "blade_05",
+      "type": "guard",
+      "targetMode": "self",
+      "guardCharges": 1,
+      "counterFactor": 0.7
+    },
+    {
+      "id": "blade_07",
+      "type": "attack",
+      "damageFactor": 1.2,
+      "advance": 1
+    },
+    {
+      "id": "blade_10",
+      "type": "attack",
+      "damageFactor": 1.7,
+      "executeHpRatio": 0.3,
+      "executeFactor": 1.2
+    },
+    {
+      "id": "axe_01",
+      "type": "attack"
+    },
+    {
+      "id": "axe_03",
+      "type": "attack",
+      "damageFactor": 0.8,
+      "effects": [
+        {
+          "status": "armor_break",
+          "value": 0.25,
+          "rounds": 2
+        }
+      ]
+    },
+    {
+      "id": "axe_05",
+      "type": "buff",
+      "targetMode": "self",
+      "chargeFactor": 1.35
+    },
+    {
+      "id": "axe_07",
+      "type": "attack",
+      "damageFactor": 0.9,
+      "effects": [
+        {
+          "status": "knockback",
+          "value": 1,
+          "control": true
+        }
+      ]
+    },
+    {
+      "id": "axe_10",
+      "type": "attack",
+      "damageFactor": 1.75,
+      "removeGuard": 1
+    },
+    {
+      "id": "spear_01",
+      "type": "attack"
+    },
+    {
+      "id": "spear_03",
+      "type": "attack",
+      "damageFactor": 0.6,
+      "effects": [
+        {
+          "status": "knockback",
+          "value": 1,
+          "control": true
+        }
+      ]
+    },
+    {
+      "id": "spear_05",
+      "type": "buff",
+      "targetMode": "self",
+      "braceCharges": 1,
+      "braceMax": 2,
+      "braceFactor": 0.75
+    },
+    {
+      "id": "spear_07",
+      "type": "attack",
+      "targetMode": "pair",
+      "damageFactor": 0.65
+    },
+    {
+      "id": "spear_10",
+      "type": "attack",
+      "hits": 2,
+      "damageFactor": 0.85
+    },
+    {
+      "id": "blunt_01",
+      "type": "attack"
+    },
+    {
+      "id": "blunt_03",
+      "type": "attack",
+      "damageFactor": 0.7,
+      "effects": [
+        {
+          "status": "stagger",
+          "control": true
+        }
+      ]
+    },
+    {
+      "id": "blunt_05",
+      "type": "attack",
+      "damageFactor": 0.5,
+      "effects": [
+        {
+          "status": "slow",
+          "control": true
+        }
+      ]
+    },
+    {
+      "id": "blunt_07",
+      "type": "attack",
+      "damageFactor": 0.5,
+      "effects": [
+        {
+          "status": "cancel_charge",
+          "control": true
+        }
+      ]
+    },
+    {
+      "id": "blunt_10",
+      "type": "attack",
+      "damageFactor": 1.6,
+      "effects": [
+        {
+          "status": "weak",
+          "value": 0.8,
+          "rounds": 2,
+          "control": true
+        }
+      ]
+    },
+    {
+      "id": "archery_01",
+      "type": "attack"
+    },
+    {
+      "id": "archery_03",
+      "type": "attack",
+      "damageFactor": 0.75,
+      "effects": [
+        {
+          "status": "slow",
+          "control": true,
+          "positive": true
+        }
+      ]
+    },
+    {
+      "id": "archery_05",
+      "type": "attack",
+      "damageFactor": 0,
+      "ammo": 1,
+      "effects": [
+        {
+          "status": "mark",
+          "value": 6,
+          "rounds": 2
+        }
+      ]
+    },
+    {
+      "id": "archery_07",
+      "type": "attack",
+      "damageFactor": 1.2,
+      "armorIgnore": 0.25
+    },
+    {
+      "id": "archery_10",
+      "type": "attack",
+      "hits": 2,
+      "damageFactor": 0.85,
+      "ammo": 2,
+      "minAmmo": 2,
+      "noSingleShot": true
+    },
+    {
+      "id": "firearms_01",
+      "type": "attack"
+    },
+    {
+      "id": "firearms_03",
+      "type": "attack",
+      "damageFactor": 0.7,
+      "effects": [
+        {
+          "status": "weak",
+          "value": 0.8,
+          "rounds": 2
+        }
+      ]
+    },
+    {
+      "id": "firearms_05",
+      "type": "reload",
+      "targetMode": "self",
+      "reloadFull": true
+    },
+    {
+      "id": "firearms_07",
+      "type": "attack",
+      "damageFactor": 1.35,
+      "areaWeapons": [
+        "shotgun"
+      ],
+      "areaDamageFactor": 0.65
+    },
+    {
+      "id": "firearms_10",
+      "type": "attack",
+      "damageFactor": 1.8,
+      "accuracyBonus": 6
+    },
+    {
+      "id": "shield_01",
+      "type": "attack",
+      "effects": [
+        {
+          "status": "stagger",
+          "control": true
+        }
+      ]
+    },
+    {
+      "id": "shield_03",
+      "type": "ally",
+      "targetMode": "ally",
+      "needsAllies": true,
+      "protect": true
+    },
+    {
+      "id": "shield_05",
+      "type": "guard",
+      "targetMode": "self",
+      "guardCharges": 1,
+      "displaceResist": 25,
+      "buffRounds": 2
+    },
+    {
+      "id": "shield_07",
+      "type": "ally",
+      "targetMode": "ally",
+      "needsAllies": true,
+      "protect": true,
+      "teamGuardFactor": 0.8,
+      "buffRounds": 2
+    },
+    {
+      "id": "shield_10",
+      "type": "guard",
+      "targetMode": "self",
+      "guardCharges": 2,
+      "teamGuardFactor": 0.8,
+      "buffRounds": 1
+    },
+    {
+      "id": "command_01",
+      "type": "ally",
+      "targetMode": "ally",
+      "inspireAccuracy": 6,
+      "buffRounds": 2
+    },
+    {
+      "id": "command_03",
+      "type": "ally",
+      "targetMode": "ally",
+      "needsAllies": true
+    },
+    {
+      "id": "command_05",
+      "type": "ally",
+      "targetMode": "ally",
+      "panicReduce": 8
+    },
+    {
+      "id": "command_07",
+      "type": "ally",
+      "targetMode": "ally",
+      "needsAllies": true,
+      "apBonus": 1
+    },
+    {
+      "id": "command_10",
+      "type": "ally",
+      "targetMode": "ally",
+      "allOutFactor": 1.15,
+      "buffRounds": 2
+    },
+    {
+      "id": "medicine_01",
+      "type": "medical",
+      "targetMode": "ally",
+      "items": {
+        "bandage": 1
+      },
+      "useBandage": true
+    },
+    {
+      "id": "medicine_03",
+      "type": "medical",
+      "targetMode": "ally",
+      "items": {
+        "medical_gauze": 1
+      },
+      "stopBleed": true,
+      "heal": 0.6
+    },
+    {
+      "id": "medicine_05",
+      "type": "medical",
+      "targetMode": "ally",
+      "items": {
+        "saline": 1
+      },
+      "heal": 0.8
+    },
+    {
+      "id": "medicine_07",
+      "type": "medical",
+      "targetMode": "ally",
+      "items": {
+        "medical_gauze": 1
+      },
+      "removeWeakOrStagger": true
+    },
+    {
+      "id": "medicine_10",
+      "type": "medical",
+      "targetMode": "ally",
+      "items": {
+        "saline": 1,
+        "medical_gauze": 1
+      },
+      "heal": 1.5,
+      "healMaxRatio": 0.25
+    }
+  ]
 }

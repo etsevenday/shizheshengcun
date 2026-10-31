@@ -77,6 +77,8 @@ namespace Survival.Core.Config
         public List<SkillNodeConfig> SkillNodes { get; set; } = new List<SkillNodeConfig>();
         /// <summary>各武器类基准 E（A06 §1：拳.30/刀剑.40/斧.65/……），B6/B7 主动技能 E 成本换算用。</summary>
         public Dictionary<string, double> SkillKindBaseEnergy { get; set; } = new Dictionary<string, double>();
+        /// <summary>50 个战斗/医疗主动技能的执行口径（A06 §2；开发计划 v0.9 B7 R25）。</summary>
+        public List<SkillExecConfig> SkillExec { get; set; } = new List<SkillExecConfig>();
         public SkillPassiveRulesConfig SkillPassiveRules { get; set; } = new SkillPassiveRulesConfig();
 
         // ───── 系统策划总册 v1.0 答复（N01/R07/S15） ─────
