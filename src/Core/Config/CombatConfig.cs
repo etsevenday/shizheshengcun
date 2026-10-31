@@ -313,7 +313,7 @@ namespace Survival.Core.Config
         public double Trait(string key, double fallback = 0) => TraitEffects.TryGetValue(key, out var v) ? v : fallback;
 
         /// <summary>指挥、医疗器具不能直接攻击（A05 §1“不可直接攻击”），只用本门的增益/医疗技能（B7）；盾自 B7 起有盾击。</summary>
-        public static readonly string[] SkillLockedKinds = { "shield", "command", "medical" };
+        public static readonly string[] SkillLockedKinds = { "command", "medical" };
         [JsonIgnore] public bool CanAttack => IsFists || System.Array.IndexOf(SkillLockedKinds, WeaponKind) < 0;
 
         [JsonIgnore] public bool ReachesRear => Targets.StartsWith("all");

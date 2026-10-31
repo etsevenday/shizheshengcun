@@ -48,6 +48,13 @@ namespace Survival.Core.Engine
         public int? ItemInstanceId { get; set; }
         /// <summary>该指令当前可以选的目标序号。</summary>
         public List<int> Targets { get; set; } = new List<int>();
+        /// <summary>single 点一个目标 / pair 点一个目标打相邻双位 / area 点任一亮起目标打全部 / self 无目标就近确认（B7）。</summary>
+        public string TargetMode { get; set; } = "single";
+        /// <summary>技能节点 ID（A06 §2）；通用指令为 null。</summary>
+        public string? NodeId { get; set; }
+        public int CooldownRounds { get; set; }
+        /// <summary>A06 效果文字（界面悬停）。</summary>
+        public string? EffectText { get; set; }
     }
 
     /// <summary>对一个目标的预测：命中能力值与实际命中率分开写（命中能力27 不是 27%）。</summary>

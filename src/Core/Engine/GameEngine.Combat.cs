@@ -22,16 +22,9 @@ namespace Survival.Core.Engine
 
         private CombatActionConfig? Act(string id) => Config.CombatActions.FirstOrDefault(a => a.Id == id);
 
-        public static readonly string[] AttackActions = { "basic_attack", "cleave", "cut", "precise_thrust", "push", "scatter", "desperate_punch" };
-
         public static string ActionName(string id) => id switch
         {
             "basic_attack" => "普通攻击",
-            "cleave" => "重劈",
-            "cut" => "割伤",
-            "precise_thrust" => "精准突刺",
-            "push" => "推挡",
-            "scatter" => "散射",
             "desperate_punch" => "勉强拳击",
             "guard" => "防御",
             "breathe" => "调整呼吸",
@@ -43,7 +36,7 @@ namespace Survival.Core.Engine
             "use_antiviral_cure" => "用特效药",
             "retreat" => "撤退",
             "end_turn" => "结束行动",
-            _ => id,
+            _ => SkillNames.TryGetValue(id, out var n) ? n : id,
         };
 
         // ───────────── 查询 ─────────────
@@ -508,27 +501,6 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 应急拳击的门槛（R03 §3）：两页已装备武器（空槽页为拳）的全部可用攻击技能里，最低的体力成本；体力低于它才可用应急拳击。
-        /// 损坏/没子弹不算“付不起”，不因此放开应急拳击（Q39）。
-        /// </summary>
-        public double MinEquippedAttackEnergy(GameState s)
-        {
-            var min = double.MaxValue;
-            foreach (var page in new[] { 1, 2 })
-            {
-                WeaponOnPage(s, page, out var w);
-                foreach (var id in AttackActions)
-                {
-                    if (id == "desperate_punch") continue;
-                    var a = Act(id);
-                    if (a == null || !CommandCompatible(s, a, w)) continue;
-                    min = Math.Min(min, AttackEnergy(s, a, w, page));
-                }
-            }
-            return min == double.MaxValue ? 0 : min;
-        }
-
-        /// <summary>
         /// 大回合开始的出血（R03 §4）：每个出血者 H−0.4、次数−1（刷新次数不叠强度，丧尸免疫），追击不多扣；先判主角死亡，
         /// 再判敌人倒下/重伤逃离。出血让最后一个敌人倒下即胜利，这一轮没有任何行动，不另推进世界时间（B6 开发假设 B6-6）。
         /// 返回 false 表示战斗已结束。
@@ -811,13 +783,16 @@ namespace Survival.Core.Engine
             }
             var raw = cfg.DamageMin + s.Rng.NextDouble() * (cfg.DamageMax - cfg.DamageMin);
             if (charge) raw *= BoarChargeFactor;
+            if (EnemyWeak(b, e)) raw *= e.WeakFactor;   // 虚弱（重锤/火力压制）：直接伤害×0.8
             // 主角护甲 = 基础0 + 装备护甲（≤0.9）；先按磨损前的护甲算，再磨损防具（B6 R23、A05 §2）
             var dmg = Math.Max(0, raw - PlayerArmor(s));
             var guarded = false;
             if (b.PlayerGuard && dmg > 0)
             {
                 dmg *= b.PlayerGuardFactor;
-                b.PlayerGuard = false;
+                // 坚守有 2 次格挡，用完才清（B7 shield_10）
+                b.PlayerGuardCharges = Math.Max(0, b.PlayerGuardCharges - 1);
+                if (b.PlayerGuardCharges <= 0) b.PlayerGuard = false;
                 guarded = true;
             }
             if (charge) e.Charged = false;
@@ -873,32 +848,20 @@ namespace Survival.Core.Engine
 
         // ───────────── 指令 ─────────────
 
-        /// <summary>界面指令条：全部指令（含不可用原因），不保留瞄准空位。</summary>
+        /// <summary>界面指令条：本页技能（已解锁的，含不可用原因）、应急拳击、通用指令与医疗物品指令；不保留瞄准空位。</summary>
         public List<BattleCommandOption> BattleOptions(GameState s)
         {
-            var list = new List<BattleCommandOption>();
             var b = s.Battle;
-            if (b == null) return list;
+            if (b == null) return new List<BattleCommandOption>();
+            var list = SkillOptions(s, true);
             var w = CurrentWeapon(s, out _);
-            foreach (var id in AttackActions)
-            {
-                var a = Act(id);
-                if (a == null || !CommandCompatible(s, a, w)) continue;
-                var opt = new BattleCommandOption { Action = id, Label = ActionName(id), Group = id == "basic_attack" || id == "desperate_punch" ? "attack" : "move", Ap = a.ApCost, NeedsTarget = id != "scatter" };
-                opt.Energy = AttackEnergy(s, a, w);
-                foreach (var e in b.Alive) if (CommandBlocked(s, BattleCommand.Of(id, e.Index)) == null) opt.Targets.Add(e.Index);
-                opt.Reason = CommandBlocked(s, BattleCommand.Of(id, opt.Targets.Count > 0 ? opt.Targets[0] : b.Alive.Select(x => (int?)x.Index).FirstOrDefault()));
-                if (id == "scatter") opt.Reason = CommandBlocked(s, BattleCommand.Of(id));
-                opt.Available = opt.Reason == null;
-                list.Add(opt);
-            }
             foreach (var id in new[] { "guard", "breathe", "swap", "reload", "retreat", "end_turn" })
             {
                 var a = Act(id);
                 if (a == null) continue;
                 if (id == "reload" && !w.UsesMagazine) continue;
                 var why = CommandBlocked(s, BattleCommand.Of(id, id == "swap" ? SwapTargets(b).Cast<int?>().FirstOrDefault() : null));
-                list.Add(new BattleCommandOption { Action = id, Label = ActionName(id), Group = "general", Ap = a.ApCost, Energy = id is "retreat" or "swap" ? (a.Energy ?? 0) : 0, Available = why == null, Reason = why });
+                list.Add(new BattleCommandOption { Action = id, Label = ActionName(id), Group = "general", Ap = a.ApCost, Energy = id is "retreat" or "swap" ? (a.Energy ?? 0) : 0, Available = why == null, Reason = why, TargetMode = "self" });
             }
             // 切换武器页不在指令条里：界面用武器Ⅰ/武器Ⅱ页签（SelectWeaponPage，0AP）
             foreach (var id in new[] { "bandage", "use_antibiotics", "use_antiviral_cure" })
@@ -907,27 +870,14 @@ namespace Survival.Core.Engine
                 if (a?.ItemId == null) continue;
                 var why = CommandBlocked(s, BattleCommand.Of(id));
                 var have = s.Items.Where(i => i.IsCarried && i.ItemId == a.ItemId).Sum(i => i.Count);
-                list.Add(new BattleCommandOption { Action = id, Label = $"{ActionName(id)}（随身×{have}）", Group = "item", Ap = a.ApCost, Available = why == null, Reason = why });
+                list.Add(new BattleCommandOption { Action = id, Label = $"{ActionName(id)}（随身×{have}）", Group = "item", Ap = a.ApCost, Available = why == null, Reason = why, TargetMode = "self" });
             }
             return list;
         }
 
         /// <summary>
-        /// 招式与当前武器/技能是否兼容（Q19、R03 §7.4）：武器技能类别、专属武器、技能等级门槛。战斗操作台与系统说明“指令一览”共用，
-        /// 不兼容的不列出；AP、弹药、耐久等暂时不足不在这里过滤（列出并写禁用原因）。
-        /// </summary>
-        public bool CommandCompatible(GameState s, CombatActionConfig a, WeaponConfig w)
-        {
-            var common = a.Id == "basic_attack" || a.Id == "desperate_punch";
-            if (!common && a.Skills.Count > 0 && !a.Skills.Contains(w.SkillId)) return false;
-            if (a.WeaponId != null && a.WeaponId != w.Id) return false;
-            if (!common && a.MinLevel > 0 && SkillLevel(s, w.SkillId) < a.MinLevel) return false;
-            return true;
-        }
-
-        /// <summary>
-        /// 系统说明“指令一览”（Q19）：按当前实际装备武器与技能等级筛出兼容招式，再列通用指令与医疗物品指令；战斗内外都能用。
-        /// 战斗中可用性与原因直接取 CommandBlocked（与操作台同源）；战斗外只写暂时条件（弹仓空、耐久不足、没有随身药品）。只读。
+        /// 系统说明“指令一览”（Q19/Q26）：按当前实际装备武器与技能等级列出本页已解锁技能（与操作台同一函数 SkillOptions），再列通用指令与医疗物品指令；
+        /// 战斗内外都能用。战斗中可用性与原因直接取 CommandBlocked（与操作台同源）；战斗外只写暂时条件。只读。
         /// </summary>
         public List<BattleCommandOption> CompatibleCommands(GameState s)
         {
@@ -936,28 +886,11 @@ namespace Survival.Core.Engine
                 var seen = new HashSet<string>();
                 var inBattle = BattleOptions(s).Where(o => seen.Add(o.Action)).ToList();
                 if (Act("switch_weapon") is CombatActionConfig swb)
-                    inBattle.Add(new BattleCommandOption { Action = "switch_weapon", Label = ActionName("switch_weapon"), Group = "general", Ap = swb.ApCost, Available = true });
+                    inBattle.Add(new BattleCommandOption { Action = "switch_weapon", Label = ActionName("switch_weapon"), Group = "general", Ap = swb.ApCost, Available = true, TargetMode = "self" });
                 return inBattle;
             }
-            var list = new List<BattleCommandOption>();
+            var list = SkillOptions(s, false);
             var w = CurrentWeapon(s, out var wi);
-            foreach (var id in AttackActions)
-            {
-                var a = Act(id);
-                if (a == null || !CommandCompatible(s, a, w)) continue;
-                string? why = null;
-                if (id != "desperate_punch")
-                {
-                    if (!w.CanAttack) why = SkillLockedReason(w);
-                    else if (wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand)) why = $"{w.Name}耐久不足（{DurabilityText(wi)}）";
-                    else if (!AmmoReady(s, w, wi, Math.Max(1, a.AmmoCost))) why = w.UsesMagazine ? "弹仓空了：先装填" : $"随身没有{ItemName(w.AmmoId!)}";
-                }
-                list.Add(new BattleCommandOption
-                {
-                    Action = id, Label = ActionName(id), Group = id == "basic_attack" || id == "desperate_punch" ? "attack" : "move",
-                    Ap = a.ApCost, NeedsTarget = id != "scatter", Energy = AttackEnergy(s, a, w), Available = why == null, Reason = why,
-                });
-            }
             foreach (var id in new[] { "guard", "breathe", "swap", "reload", "switch_weapon", "retreat", "end_turn" })
             {
                 var a = Act(id);
@@ -966,8 +899,8 @@ namespace Survival.Core.Engine
                 string? why = null;
                 if (id == "reload" && wi != null)
                     why = wi.LoadedAmmo >= w.MagazineCapacity ? "弹仓已满" : CarriedCount(s, w.AmmoId!) <= 0 ? $"随身没有{ItemName(w.AmmoId!)}" : null;
-                if (id == "swap") why = "只有你一人在场，没有相邻的队友可换位（队友参战在后续版本）";
-                list.Add(new BattleCommandOption { Action = id, Label = ActionName(id), Group = "general", Ap = a.ApCost, Available = why == null, Reason = why });
+                if (id == "swap") why = SoloReason;
+                list.Add(new BattleCommandOption { Action = id, Label = ActionName(id), Group = "general", Ap = a.ApCost, Available = why == null, Reason = why, TargetMode = "self" });
             }
             foreach (var id in new[] { "bandage", "use_antibiotics", "use_antiviral_cure" })
             {
@@ -977,14 +910,16 @@ namespace Survival.Core.Engine
                 list.Add(new BattleCommandOption
                 {
                     Action = id, Label = $"{ActionName(id)}（随身×{have}）", Group = "item", Ap = a.ApCost,
-                    Available = have > 0, Reason = have > 0 ? null : $"随身没有{ItemName(a.ItemId)}",
+                    Available = have > 0, Reason = have > 0 ? null : $"随身没有{ItemName(a.ItemId)}", TargetMode = "self",
                 });
             }
             return list;
         }
 
-        /// <summary>攻击类指令的实际体力成本：基础/(1+0.025×对应技能L)；勉强拳击为 0。</summary>
-        /// <summary>武器按当前熟练度的普通攻击口径：伤害×(1+0.035L)、命中能力+3L（不含招式、身体、恐慌与站位修正）。界面列表与预览统一用它。</summary>
+        /// <summary>我方只有主角一人时，需要队友的指令（换位、保护、整队、协同）的禁用原因（队友参战在 B8）。</summary>
+        public const string SoloReason = "只有你一人在场，没有相邻的队友可换位（队友参战在后续版本）";
+
+        /// <summary>武器按当前熟练度的普通攻击口径：伤害×(1+0.035L)、命中能力+3L（不含技能、身体、恐慌与站位修正）。界面列表与预览统一用它。</summary>
         public (int Level, double DamageMin, double DamageMax, double Accuracy) WeaponStats(GameState s, WeaponConfig w)
         {
             var lv = SkillLevel(s, w.SkillId);
@@ -992,17 +927,8 @@ namespace Survival.Core.Engine
             return (lv, w.DamageMin * f, w.DamageMax * f, w.AccuracyRating + SkillAccuracyBonus(lv));
         }
 
-        /// <summary>
-        /// 攻击类指令的实际体力成本：基础/(1+0.025×对应技能L)，再乘该武器的“平衡”类词条（combat.energyCost，只作用本武器技能，R01 §3）；应急拳为 0。
-        /// page 为空时按战斗当前页（战外按开战默认页）找该武器的词条。
-        /// </summary>
-        public double AttackEnergy(GameState s, CombatActionConfig a, WeaponConfig w, int? page = null)
-        {
-            if (a.Id == "desperate_punch") return 0;
-            var baseCost = a.EnergySource == "weapon" ? w.EnergyCost : a.Energy ?? 0;
-            var factor = w.IsFists ? 1 : EquipmentEffects(s, GameState.PlayerId, page ?? s.Battle?.ActiveWeaponSlot ?? DefaultWeaponPage(s)).EnergyCostFactor;
-            return SkillEnergyCost(baseCost, SkillLevel(s, w.SkillId)) * factor;
-        }
+        /// <summary>旧接口：普通攻击（本门 1 级技能）与应急拳的体力成本；技能统一用 SkillEnergy。</summary>
+        public double AttackEnergy(GameState s, CombatActionConfig a, WeaponConfig w, int? page = null) => CommandEnergy(s, a.Id, w, page);
 
         private ItemInstance? CarriedItem(GameState s, string itemId, int? instanceId)
         {
@@ -1039,6 +965,12 @@ namespace Survival.Core.Engine
             if (b == null) return "不在战斗中";
             if (DialogueLocked(s)) return DialogueLockedReason;
             if (!b.PlayerActing) return "还没轮到你行动";
+            // 武器技能与应急拳击（B7 R25，A06 §2）：解锁、冷却、AP、体力、耐久、弹药、使用位与目标
+            if (IsSkillAction(c.Action) || c.Action == DesperatePunch)
+            {
+                var sw = CurrentWeapon(s, out var swi);
+                return SkillBlocked(s, b, c, sw, swi);
+            }
             var a = Act(c.Action);
             if (a == null) return c.Action == "aim" ? "瞄准已移除" : "未知指令";
             // 每大回合一次的限制先于行动点判断：本轮已用过就写“本回合已…”，不写“行动点不足”（试玩修复 M137 UX4）
@@ -1056,7 +988,7 @@ namespace Survival.Core.Engine
                 case "swap":
                 {
                     // 相邻换位（R03 §1）：双方存活、相邻、无固定占位锁才原子交换；本批我方只有主角一人
-                    if (b.Allies.Count <= 1) return "只有你一人在场，没有相邻的队友可换位（队友参战在后续版本）";
+                    if (b.Allies.Count <= 1) return SoloReason;
                     if (!c.Target.HasValue || !SwapTargets(b).Contains(c.Target.Value)) return "请选择相邻的我方站位";
                     var cost = a.Energy ?? 0;
                     if (s.Stats.Energy < cost - 1e-9) return $"体力不足（需{Fmt.N(cost)}，现有{Fmt.N(s.Stats.Energy)}）";
@@ -1079,43 +1011,6 @@ namespace Survival.Core.Engine
                     return use == null ? "不能使用" : MedicineBlocked(s, use);
                 }
             }
-            // 攻击类
-            if (c.Action != "desperate_punch" && !w.CanAttack) return SkillLockedReason(w);
-            if (c.Action != "basic_attack" && c.Action != "desperate_punch" && a.Skills.Count > 0 && !a.Skills.Contains(w.SkillId))
-                return $"当前武器（{w.Name}）不能用{ActionName(c.Action)}";
-            if (a.WeaponId != null && a.WeaponId != w.Id) return $"{ActionName(c.Action)}需要{_weapons[a.WeaponId].Name}";
-            if (a.MinLevel > 0 && c.Action != "basic_attack" && c.Action != "desperate_punch")
-            {
-                var lv = SkillLevel(s, w.SkillId);
-                if (lv < a.MinLevel) return $"需要{SkillName(w.SkillId)}{a.MinLevel}级（当前{lv}级）";
-            }
-            var basic = Act("basic_attack")!;
-            if (c.Action == "desperate_punch")
-            {
-                // R03 §3：只有付不起两页已装备攻击技能的最低体力成本时可用；弹仓空、耐久不足时应装填或切页，不放开（试玩修复 L1、Q39）
-                if (s.Stats.Energy >= MinEquippedAttackEnergy(s) - 1e-9)
-                    return "只在体力不足以使用任何已装备攻击技能时可用" + (w.UsesMagazine && !AmmoReady(s, w, wi, 1) ? "；弹仓空请装填或切换武器页" : wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand) ? "；耐久不足请切换武器页" : "");
-            }
-            else
-            {
-                var energy = AttackEnergy(s, a, w);
-                if (s.Stats.Energy < energy - 1e-9) return $"体力不足（需{Fmt.N(energy)}，现有{Fmt.N(s.Stats.Energy)}）；可勉强拳击、防御、调整呼吸或撤退";
-                if (wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand)) return $"{w.Name}耐久不足（{DurabilityText(wi)}），可切换武器页";
-                var ammo = Math.Max(1, a.AmmoCost);
-                if (!AmmoReady(s, w, wi, ammo))
-                    return w.UsesMagazine ? "弹仓空了：先装填" : $"随身没有{ItemName(w.AmmoId!)}";
-            }
-            var weapon = c.Action == "desperate_punch" ? _weapons[Fists] : w;
-            if (!OwnPositionOk(b, weapon)) return $"{weapon.Name}只能在我方{PosList(OwnPositionsOf(weapon))}使用（你在{PosName(PlayerPos(b))}），可换位或切换武器页";
-            if (c.Action == "scatter")
-            {
-                if (ScatterTargets(b, a).Count == 0) return "敌方1、2号位没有目标";
-                return null;
-            }
-            if (!c.Target.HasValue) return "请选择目标";
-            var t = BattleEnemyAt(b, c.Target.Value);
-            if (t == null || !t.Alive) return "目标已不在";
-            if (!CanReach(b, weapon, t)) return $"射程不足：{EnemyName(t)}在{PosName(t.Pos)}，{weapon.Name}只能打{PosList(TargetPositionsOf(weapon))}";
             return null;
         }
 
@@ -1124,40 +1019,6 @@ namespace Survival.Core.Engine
             if (w.AmmoId == null) return true;
             if (w.UsesMagazine) return wi != null && wi.LoadedAmmo >= need;
             return CarriedCount(s, w.AmmoId) >= need;
-        }
-
-        /// <summary>某攻击对某目标的命中、暴击与伤害区间（体力按支付本次成本后；不推进随机）。</summary>
-        /// <summary>
-        /// 某攻击对某目标的命中、暴击与伤害区间（R03 §4；体力按支付本次成本后；不推进随机；预览与结算同源）：
-        /// 攻击能力 A=max(1,(武器A+3L+装备命中)×招式×身体)，命中 P=A/(A+max(1,目标闪避))；暴击 C=max(0,武器C+0.3L+装备暴击)，概率 C/(C+100)；
-        /// 直接伤害=max(0, 抽值×(1+0.035L)×招式×暴击×伤害增益(≤1.5) + 平加 − max(0,护甲−穿透))，再乘格挡。
-        /// 应急拳不吃本页武器的攻击类词条。
-        /// </summary>
-        private BattleTargetPreview TargetCalc(GameState s, BattleState b, CombatActionConfig a, WeaponConfig w, BattleEnemy t, double energyAfter)
-        {
-            var cfg = _enemies[t.EnemyId];
-            var m = Config.CombatMath;
-            var lv = SkillLevel(s, w.SkillId);
-            var gear = EquipmentEffects(s, GameState.PlayerId, a.Id == "desperate_punch" ? 0 : b.ActiveWeaponSlot);
-            var acc = Math.Max(m.MinAccuracy, (w.AccuracyRating + SkillAccuracyBonus(lv) + gear.Accuracy) * a.AccuracyRatingFactor * BodyAccuracyFactor(s, b, energyAfter));
-            var crit = Math.Max(0, w.CritRatingBase + m.CritAccuracyPerLevel * lv + gear.Crit);
-            // 四对四按目标位判射程，取消旧“矛隔前排打后排×0.75”（R03 §1 取代 v0.5 §07）
-            var buff = Math.Min(m.DamageBuffCap, 1 + gear.DamageMultiplier);
-            var mult = SkillDamageFactor(lv) * a.DamageFactor * buff;
-            var pen = gear.ArmorIgnore + (a.Id == "desperate_punch" ? 0 : w.ArmorIgnore);
-            var armor = Math.Max(0, Math.Min(Config.Equipment.Limits.ArmorCap, cfg.Armor) - pen);
-            var flat = FlatAttackFor(s, a, w);
-            double Dmg(double raw, double critF) => AttackDamage(raw * mult * critF, flat, armor, t.Guard, m.GuardFactor);
-            var cf = m.CritFactor;
-            var evasion = Math.Max(m.MinEvasion, cfg.Dodge);
-            return new BattleTargetPreview
-            {
-                Index = t.Index, Name = cfg.Name, Slot = t.Slot, Hp = t.Hp, Armor = cfg.Armor, Guarded = t.Guard, RearPenalty = false,
-                Penetration = pen, DamageBuff = buff, Multiplier = mult, Flat = flat,
-                AccuracyRating = acc, Evasion = evasion, HitChance = HitChance(acc, evasion),
-                CritRating = crit, CritChance = CritChance(crit),
-                DamageMin = Dmg(w.DamageMin, 1), DamageMax = Dmg(w.DamageMax, 1), CritDamageMin = Dmg(w.DamageMin, cf), CritDamageMax = Dmg(w.DamageMax, cf),
-            };
         }
 
         /// <summary>指令预览（右栏）：命中能力值与实际命中率、暴击、伤害区间、体力、弹药、耐久、噪声、撤退率。只读、不推进随机。</summary>
@@ -1169,39 +1030,24 @@ namespace Survival.Core.Engine
             p.Ok = why == null;
             p.Reason = why ?? "";
             if (b == null) return p;
-            var a = Act(c.Action);
-            if (a == null) return p;
-            p.Ap = a.ApCost < 0 ? b.PlayerAp : a.ApCost;
             p.EnergyBefore = s.Stats.Energy;
             p.NoiseBefore = b.Noise;
             p.NoiseAfter = b.Noise;
             var w = CurrentWeapon(s, out var wi);
-            if (AttackActions.Contains(c.Action))
+            if (IsSkillAction(c.Action) || c.Action == DesperatePunch)
             {
-                var weapon = c.Action == "desperate_punch" ? _weapons[Fists] : w;
-                p.EnergyCost = AttackEnergy(s, a, w);
-                p.EnergyAfter = Math.Max(0, s.Stats.Energy - p.EnergyCost);
-                var targets = c.Action == "scatter"
-                    ? ScatterTargets(b, a)
-                    : c.Target.HasValue && BattleEnemyAt(b, c.Target.Value) is BattleEnemy one ? new List<BattleEnemy> { one } : new List<BattleEnemy>();
-                foreach (var t in targets) p.Targets.Add(TargetCalc(s, b, a, weapon, t, p.EnergyAfter));
-                if (c.Action != "desperate_punch")
-                {
-                    if (w.UsesMagazine && wi != null) p.AmmoText = $"弹仓{wi.LoadedAmmo}→{Math.Max(0, wi.LoadedAmmo - Math.Max(1, a.AmmoCost))}/{w.MagazineCapacity}";
-                    else if (w.ConsumesLooseAmmo) p.AmmoText = $"随身{ItemName(w.AmmoId!)}{CarriedCount(s, w.AmmoId!)}→{Math.Max(0, CarriedCount(s, w.AmmoId!) - 1)}";
-                    if (wi?.Durability != null) p.WearText = $"{w.Name}耐久{Fmt.N(wi.Durability.Value)}→{Fmt.N(Math.Max(0, wi.Durability.Value - Config.Wear.PerExecutedAttackCommand))}（命中与否都扣）";
-                    p.NoiseAfter = Math.Min(Config.Noise.Max, b.Noise + AttackNoise(s, w));
-                }
-                else p.Notes.Add("用拳头勉强一击：不磨损原武器，伤害×0.5，命中能力×0.65");
-                if (c.Action == "cut") p.Notes.Add($"命中后施加出血{Fmt.T(a.Bleed)}×{a.BleedTriggers}（丧尸免疫）");
-                if (c.Action == "push") p.Notes.Add("零直接伤害，命中令目标下次攻击失衡（命中能力×0.9）");
-                if (c.Action == "scatter") p.Notes.Add($"前排至多{a.MaxTargets}个目标各判一次，伤害×{Fmt.T(a.DamageFactor)}，只耗1发");
-                var lv = SkillLevel(s, weapon.SkillId);
-                p.Notes.Add($"{SkillName(weapon.SkillId)}{lv}级：伤害×{Fmt.T(SkillDamageFactor(lv))}，命中能力+{Fmt.T(SkillAccuracyBonus(lv))}；每命中一个目标+{Config.Xp.DamagingAttackCommand}经验（含被护甲挡住的命中，每个敌人每技能最多{Config.Xp.MaxHitsPerEncounterEnemySkill}次）");
-                var fl = FlatAttackFor(s, a, weapon);
-                if (fl > 0) p.Notes.Add($"词条攻击力+{Fmt.T(fl)}：在技能/招式/站位/暴击乘算后、扣护甲前平加，防御再×{Fmt.T(Config.CombatMath.GuardFactor)}");
+                var node = SkillOf(c.Action, w);
+                p.Title = c.Action == DesperatePunch ? ActionName(c.Action) : node?.Name ?? ActionName(c.Action);
+                if (node == null && c.Action != DesperatePunch) return p;
+                p.Ap = node?.Ap ?? Act(DesperatePunch)!.ApCost;
+                if (node != null && !_exec[node.Id].IsAttack) NonAttackPreview(s, b, c, p, node, _exec[node.Id], w, wi);
+                else AttackPreview(s, b, c, p, w, wi);
+                p.ConfirmText = p.Ok ? $"执行{p.Title}·{p.Ap}AP" : p.Title;
+                return p;
             }
-            else
+            var a = Act(c.Action);
+            if (a == null) return p;
+            p.Ap = a.ApCost < 0 ? b.PlayerAp : a.ApCost;
             {
                 p.EnergyAfter = s.Stats.Energy;
                 switch (c.Action)
@@ -1266,10 +1112,6 @@ namespace Survival.Core.Engine
             return p;
         }
 
-        /// <summary>散射目标（A05 霰弹枪“散布：散射技能仅作用敌位12”）：敌方 1、2 号位的存活者，至多 maxTargets 个。</summary>
-        private List<BattleEnemy> ScatterTargets(BattleState b, CombatActionConfig a) =>
-            b.Alive.Where(e => e.Pos >= 1 && e.Pos <= 2).OrderBy(e => e.Pos).Take(Math.Max(1, a.MaxTargets)).ToList();
-
         /// <summary>防具槽的装备磨损一次（A05 §2：每次遭到正直接伤害磨损 1，整条多段指令最多 1）；没有防具或已为 0 返回空串。</summary>
         private string WearArmor(GameState s, string actorId)
         {
@@ -1279,10 +1121,10 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 盾、指挥、医疗器具（B4 H2）：可穿进武器槽、占各自 kind，但对应技能在 B5/B7 才上线，现在不能用它攻击；通用指令与勉强拳击规则照旧。
+        /// 指挥、医疗器具（A05 §1“不可直接攻击”）：没有攻击技能，只用本门的指挥/医疗技能（B7）；要攻击请切换武器页。
         /// </summary>
         public static string SkillLockedReason(WeaponConfig w) =>
-            $"{w.Name}是{WeaponKinds.Name(w.WeaponKind)}，它的技能尚未开放，现在不能用它攻击（可切换武器页）";
+            $"{w.Name}是{WeaponKinds.Name(w.WeaponKind)}，不能直接攻击，只能用{WeaponKinds.Name(w.WeaponKind)}技能（要攻击请切换武器页）";
 
         /// <summary>
         /// 一次攻击的噪声增量（B4 H7 配置化）：枪械类按 noise.gunGain（A01 枪 +25），用弩矢的弩按 noise.crossbowGain（A01 弩 +5），
@@ -1324,6 +1166,19 @@ namespace Survival.Core.Engine
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, c.RequestId);
             var b = s.Battle!;
+            // 武器技能与应急拳击（B7 R25）：扣技能 AP 后按类型执行（攻击 / 格挡增益指挥医疗装填）
+            if (IsSkillAction(c.Action) || c.Action == DesperatePunch)
+            {
+                var sw = CurrentWeapon(s, out var swi);
+                var node = SkillOf(c.Action, sw);
+                b.PlayerAp -= node?.Ap ?? Act(DesperatePunch)!.ApCost;
+                if (node != null && !_exec[node.Id].IsAttack) ExecuteNonAttack(s, b, c, node, _exec[node.Id], sw, swi);
+                else PlayerSkillAttack(s, b, c, sw, swi);
+                if (s.Battle == null || s.Progress.Dead) return ActionResult.Success();
+                CompactEnemies(b);
+                if (b.PlayerAp <= 0) EndPlayerActivation(s);
+                return ActionResult.Success();
+            }
             var a = Act(c.Action)!;
             var ap = a.ApCost < 0 ? b.PlayerAp : a.ApCost;
             b.PlayerAp -= ap;
@@ -1337,6 +1192,7 @@ namespace Survival.Core.Engine
                 case "guard":
                 {
                     b.PlayerGuard = true;
+                    b.PlayerGuardCharges = 1;
                     var shield = GuardShield(s);
                     b.PlayerGuardFactor = shield != null ? Config.CombatMath.ShieldGuardFactor : Config.CombatMath.GuardFactor;
                     var wear = shield != null ? Wear(shield, Config.Wear.PerExecutedAttackCommand) : "";
@@ -1399,8 +1255,6 @@ namespace Survival.Core.Engine
                     break;
                 }
                 default:
-                    PlayerAttack(s, b, a, w, wi, c);
-                    if (s.Battle == null || s.Progress.Dead) return ActionResult.Success();
                     break;
             }
             if (s.Battle != null) CompactEnemies(b);
@@ -1421,115 +1275,6 @@ namespace Survival.Core.Engine
                 if (st.Count <= 0) s.Items.Remove(st);
             }
             return count - left;
-        }
-
-        private void PlayerAttack(GameState s, BattleState b, CombatActionConfig a, WeaponConfig w, ItemInstance? wi, BattleCommand c)
-        {
-            var desperate = a.Id == "desperate_punch";
-            var weapon = desperate ? _weapons[Fists] : w;
-            // 1. 原子扣费：体力、弹药、耐久、噪声
-            var energy = AttackEnergy(s, a, w);
-            s.Stats.Add(StatId.Energy, -energy);
-            var spent = new List<string>();
-            if (energy > 0) spent.Add($"体力−{Fmt.N(energy)}");
-            if (!desperate)
-            {
-                if (w.UsesMagazine && wi != null) { wi.LoadedAmmo -= Math.Max(1, a.AmmoCost); spent.Add($"弹仓{wi.LoadedAmmo}/{w.MagazineCapacity}"); b.ShotsFired++; }
-                else if (w.ConsumesLooseAmmo) { TakeCarried(s, w.AmmoId!, 1); spent.Add($"{ItemName(w.AmmoId!)}−1"); b.ShotsFired++; }
-                if (wi?.Durability != null) spent.Add(Wear(wi, Config.Wear.PerExecutedAttackCommand));
-                var gain = AttackNoise(s, w);
-                if (gain > 0)
-                {
-                    b.Noise = Math.Min(Config.Noise.Max, b.Noise + gain);
-                    if (b.Noise >= Config.Noise.Max - 1e-9 && !b.ReinforcementRequested && !b.ReinforcementUsed && Config.Noise.MaxReinforcementsPerBattle > 0)
-                    {
-                        b.ReinforcementRequested = true;
-                        BattleLog(s, "噪声满了：附近的丧尸可能被吸引过来。");
-                    }
-                }
-            }
-            // 2. 结算：每个目标独立判命中 → 暴击 → 伤害
-            var targets = a.Id == "scatter" ? ScatterTargets(b, a) : new List<BattleEnemy> { BattleEnemyAt(b, c.Target!.Value)! };
-            var parts = new List<string>();
-            var hitTargets = new List<BattleEnemy>();
-            var energyAfter = s.Stats.Energy;
-            var flat = FlatAttackFor(s, a, weapon);
-            foreach (var t in targets)
-            {
-                var pv = TargetCalc(s, b, a, weapon, t, energyAfter);
-                var cfg = _enemies[t.EnemyId];
-                // 主动攻击中立雄鹿：转敌对
-                if (!t.Hostile)
-                {
-                    t.Hostile = true;
-                    if (FindWorldEnemy(s, t.WorldId) is WorldEnemy we) we.Hostile = true;
-                    t.Intent = "attack";
-                    t.IntentLabel = IntentLabel(t);
-                    parts.Add($"{cfg.Name}被激怒");
-                }
-                if (s.Rng.NextDouble() >= pv.HitChance)
-                {
-                    parts.Add($"{cfg.Name}未命中（{Fmt.Pct(pv.HitChance)}）");
-                    continue;
-                }
-                hitTargets.Add(t);
-                var crit = s.Rng.NextDouble() < pv.CritChance;
-                var raw = weapon.DamageMin + s.Rng.NextDouble() * (weapon.DamageMax - weapon.DamageMin);
-                // 伤害 = max(0, 抽值×熟练×招式×伤害增益×暴击 + 平加攻击力 − max(0,护甲−穿透))，格挡再×0.5（R03 §4、R07 §4：+0.1 在乘算后、扣甲前，不被暴击再放大）
-                var multiplied = raw * pv.Multiplier * (crit ? Config.CombatMath.CritFactor : 1);
-                var armor = Math.Max(0, Math.Min(Config.Equipment.Limits.ArmorCap, cfg.Armor) - pv.Penetration);
-                var guarded = t.Guard && Math.Max(0, multiplied + flat - armor) > 0;
-                var dmg = AttackDamage(multiplied, flat, armor, guarded, Config.CombatMath.GuardFactor);
-                if (guarded) t.Guard = false;
-                if (a.Id == "push")
-                {
-                    // 失衡是控制：命中后再判 clamp(0.75+0−抗性/100,0.10,0.95)，目标稳态期间抗性+30（R03 §4）
-                    var steady = t.SteadyUntilRound;
-                    if (RollControl(s, b, cfg.ControlResist, ref steady, out var cc))
-                    {
-                        t.SteadyUntilRound = steady;
-                        t.Stagger = true;
-                        t.StaggerRound = b.Round;
-                        parts.Add($"{cfg.Name}被推得失衡（控制{Fmt.Pct(cc)}）");
-                    }
-                    else parts.Add($"{cfg.Name}稳住了，没有失衡（控制{Fmt.Pct(cc)}）");
-                    continue;
-                }
-                if (dmg <= 0)
-                {
-                    parts.Add($"{cfg.Name}被护甲完全挡住");
-                    continue;
-                }
-                t.Hp -= dmg;
-                parts.Add($"{cfg.Name}{(crit ? "暴击" : "命中")}−{Fmt.N(dmg)}{(guarded ? "（防御减半）" : "")}");
-                if (a.Id == "cut" && !cfg.ImmuneBleed && t.Hp > 0)
-                {
-                    t.BleedTriggers = a.BleedTriggers;
-                    t.BleedDamage = a.Bleed;
-                    parts.Add($"{cfg.Name}出血");
-                }
-                if (t.Hp <= 1e-9) { KillEnemy(s, t); parts.Add($"{cfg.Name}倒下"); }
-                else CheckFlee(s, t);
-            }
-            b.PlayerStagger = false;   // 失衡在本次攻击结算后消失
-            // 3. 经验（v1.0 P01，R01 §3）：逐命中目标计——每个命中且该目标该技能未满3次的目标各+2，含护甲完全抵消的0伤命中与推挡命中；
-            //    未命中不计，已满的目标不给但不影响其他目标；计数随 worldEnemyId 保存，撤退、巡游、换 encounterId 都不重置
-            var xpNote = "";
-            var skill = weapon.SkillId;
-            var gained = 0;
-            foreach (var t in hitTargets)
-            {
-                t.XpHits.TryGetValue(skill, out var hits);
-                if (hits >= Config.Xp.MaxHitsPerEncounterEnemySkill) continue;
-                t.XpHits[skill] = hits + 1;
-                if (FindWorldEnemy(s, t.WorldId) is WorldEnemy we) we.XpHits[skill] = hits + 1;
-                if (SkillMaxed(s, skill)) continue;      // Lv10 停止获取该门经验（A06 §1）；计数照记
-                GainXp(s, skill, Config.Xp.DamagingAttackCommand);
-                gained += Config.Xp.DamagingAttackCommand;
-            }
-            if (gained > 0) xpNote = $"；{SkillName(skill)}经验+{gained}";
-            BattleLog(s, $"你{ActionName(a.Id)}{(desperate ? "" : $"（{weapon.Name}）")}：{string.Join("，", parts)}{(spent.Count > 0 ? "；" + string.Join("，", spent) : "")}{xpNote}。");
-            CheckVictory(s);
         }
 
         /// <summary>狼≤1.2、鹿≤2.0 时下次行动逃离（意图随即公开改为逃离）。</summary>
@@ -1693,10 +1438,6 @@ namespace Survival.Core.Engine
 
         /// <summary>人物词条的攻击力平加合计（教学融合的绿色“攻击力+0.1”）。</summary>
         public double FlatAttack(GameState s) => s.Traits.Sum(x => x.FlatAttack);
-
-        /// <summary>本次攻击是否吃平加：只作用于有正基础伤害的直接攻击（含拳）；推挡这类基础0伤动作不加（R07 §4）。</summary>
-        public double FlatAttackFor(GameState s, CombatActionConfig a, WeaponConfig w) =>
-            a.DamageFactor > 0 && w.DamageMax > 0 ? FlatAttack(s) : 0;
 
         /// <summary>
         /// 直接伤害 = max(0, 乘算后伤害 + 平加攻击力 − 护甲)，防御生效时再×0.5（R03 §2 建议公式）。

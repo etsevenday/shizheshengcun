@@ -444,6 +444,8 @@ public class ConfigTests : TestBase
         foreach (var k in new[] { "initiative", "tieBreak" }) ((JObject)d["combatMath"]!).Remove(k);
         ((JObject)d["panic"]!).Remove("penalties");   // R03 §5：恐慌≥60×0.9、≥90×0.8
         foreach (var k in new[] { "satiety", "hydration" }) ((JObject)d["worldTime"]!["hourlyRates"]!).Remove(k);   // R03 §6：战内 N/W 冻结
+        // B7（A06 §2）：v0.5 招式重劈/割伤/精准突刺/推挡/散射由五节点技能取代，配置里删除；新技能由 B7CombatTests 核对
+        foreach (var a in ((JArray)d["actions"]!).Where(a => (string?)a["id"] is "cleave" or "cut" or "precise_thrust" or "push" or "scatter").ToList()) a.Remove();
         var designActionIds = ((JArray)d["actions"]!).Select(a => (string)a["id"]!).ToList();
         mapped["combatActions"] = new JArray(designActionIds.Select(id => ((JArray)mapped["combatActions"]!).First(a => (string?)a["id"] == id)));
         mapped["skills"] = new JArray(((JArray)d["skills"]!).Select(x => ((JArray)mapped["skills"]!).First(m => (string?)m["id"] == (string?)x["id"])));

@@ -78,6 +78,231 @@ public class B7CombatTests : BattleTestBase
         Assert.That(Cfg.AnimalCarcasses.Single(c => c.EnemyId == "feral_boar").CarcassItemId, Is.EqualTo("carcass_boar"));
     }
 
+    // ───────────── M141 攻击技能 ─────────────
+
+    private void Ready(GameState s)
+    {
+        PlayerFirst(s);
+        E.BattleStep(s);
+        Assert.That(E.AwaitingPlayer(s), Is.True);
+    }
+
+    private static double Lv1(double e) => e / 1.025;
+
+    [Test]
+    public void SK07_EnergyByWeaponRatio_PositionsAndTargets()
+    {
+        var s = Fight(701, "feral_dog", "feral_dog", "feral_dog");
+        Ready(s);
+        Arm(s, "machete");                               // 刀剑类，武器E 0.5，基准 0.4
+        s.Skills["blade"].Level = 3;
+        var opts = E.BattleOptions(s);
+        var basic = opts.Single(o => o.Action == "basic_attack");
+        Assert.That((basic.Label, basic.Ap), Is.EqualTo(("斩击", 2)));
+        Assert.That(basic.Energy, Is.EqualTo(E.SkillEnergyCost(0.5, 3)).Within(1e-9), "1级攻击技能=武器基础E");
+        var cut = opts.Single(o => o.Action == "blade_03");
+        Assert.That(cut.Energy, Is.EqualTo(E.SkillEnergyCost(0.5 * 0.5 / 0.4, 3)).Within(1e-9), "割伤 0.5×(0.5÷0.4)÷(1+0.025L)");
+        Assert.That(cut.Targets, Is.EquivalentTo(new[] { 1, 2 }), "割伤 12→12");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("blade_03", 3)), Does.StartWith("射程不足").And.Contain("1、2号位"));
+        // 拳：推挡 12→1（只打 1 号位）
+        Arm(s, "machete").Owner = ItemInstance.Carried;
+        s.Skills["unarmed"].Level = 3;
+        Assert.That(E.CurrentWeapon(s, out _).IsFists, Is.True);
+        Assert.That(E.BattleOptions(s).Single(o => o.Action == "unarmed_03").Targets, Is.EquivalentTo(new[] { 1 }));
+    }
+
+    [Test]
+    public void SK08_CooldownSharedAcrossPages_AndPursuit()
+    {
+        var s = Fight(702, "feral_dog");
+        Ready(s);
+        Arm(s, "kitchen_knife");
+        s.Skills["blade"].Level = 3;
+        s.Battle!.PlayerAp = 5;
+        Enemy(s, 1).Hp = 50;
+        var r = s.Battle.Round;
+        Force(s, AtLeast(0.99));
+        Assert.That(Cmd(s, "blade_03", 1).Ok, Is.True);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("blade_03", 1)), Is.EqualTo($"冷却中（第{r + 2}轮起可用）"));
+        E.SelectWeaponPage(s, 2);
+        E.SelectWeaponPage(s, 1);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("blade_03", 1)), Does.StartWith("冷却中"), "切页不刷新冷却");
+        s.Battle.Round = r + 1;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("blade_03", 1)), Does.StartWith("冷却中"), "CD1：r+1 仍不可用");
+        s.Battle.Round = r + 2;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("blade_03", 1)), Is.Null, "r+2 可用");
+    }
+
+    [Test]
+    public void Cut_BleedWithEdgeTrait_ZombieImmune()
+    {
+        var s = Fight(703, "feral_dog");
+        Ready(s);
+        Arm(s, "kitchen_knife");
+        s.Skills["blade"].Level = 3;
+        Enemy(s, 1).Hp = 50;
+        Force(s, Below(0.01), AtLeast(0.99), Any());
+        Assert.That(Cmd(s, "blade_03", 1).Ok, Is.True);
+        Assert.That(Enemy(s, 1).BleedTriggers, Is.EqualTo(4), "锋口：流血持续+1（3→4，仍不叠强度）");
+        Assert.That(s.Battle!.Log.Last(), Does.Contain("出血"));
+
+        var z = Fight(704, "shambler");
+        Ready(z);
+        Arm(z, "stone_knife");
+        z.Skills["blade"].Level = 3;
+        Enemy(z, 1).Hp = 50;
+        Force(z, Below(0.01), AtLeast(0.99), Any());
+        Assert.That(Cmd(z, "blade_03", 1).Ok, Is.True);
+        Assert.That(Enemy(z, 1).BleedTriggers, Is.EqualTo(0));
+        Assert.That(z.Battle!.Log.Last(), Does.Contain("不会流血"));
+    }
+
+    [Test]
+    public void SK05_MultiHit_XpOncePerTarget_PairHitsTwo()
+    {
+        var s = Fight(705, "worker");
+        Ready(s);
+        s.Skills["unarmed"].Level = 10;
+        s.Skills["unarmed"].Xp = 0;
+        s.Battle!.PlayerAp = 3;
+        Enemy(s, 1).Hp = 50;
+        var xp0 = s.Skills["unarmed"].Xp;
+        Force(s, Below(0.5), AtLeast(0.9), Any(), Below(0.5), AtLeast(0.9), Any());
+        Assert.That(Cmd(s, "unarmed_10", 1).Ok, Is.True);
+        Assert.That(s.Battle.Log.Last(), Does.Contain("第1击").And.Contain("第2击"));
+        Assert.That(Enemy(s, 1).XpHits["unarmed"], Is.EqualTo(1), "连拳对同一目标只计1次");
+
+        var p = Fight(706, "feral_dog", "feral_dog", "feral_dog");
+        Ready(p);
+        Arm(p, "wooden_spear");
+        p.Skills["spear"].Level = 7;
+        foreach (var e in p.Battle!.Alive) e.Hp = 50;
+        var pv = E.PreviewCommand(p, BattleCommand.Of("spear_07", 3));
+        Assert.That(pv.Targets.Select(t => t.Slot), Is.EqualTo(new[] { "2", "3" }), "点3号位打23");
+        Assert.That(E.PreviewCommand(p, BattleCommand.Of("spear_07", 2)).Targets.Select(t => t.Slot), Is.EqualTo(new[] { "1", "2" }), "点2号位打12");
+        Force(p, Below(0.5), AtLeast(0.9), Any(), Below(0.5), AtLeast(0.9), Any());
+        Assert.That(Cmd(p, "spear_07", 3).Ok, Is.True);
+        Assert.That(Enemy(p, 2).XpHits["spear"] + Enemy(p, 3).XpHits["spear"], Is.EqualTo(2), "群攻不同目标独立计");
+    }
+
+    [Test]
+    public void MarkArmorBreakWeak_StatusesApplied()
+    {
+        // 猎标：命中无伤、标记2轮，命中能力+6（稳弓再+5）
+        var s = Fight(707, "worker");
+        Ready(s);
+        Arm(s, "recurve_bow");
+        E.DebugGive(s, "arrow", 5);
+        s.Skills["archery"].Level = 5;
+        var before = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single().AccuracyRating;
+        var hp = Enemy(s, 1).Hp;
+        Force(s, Below(0.01), AtLeast(0.99), Any());
+        Assert.That(Cmd(s, "archery_05", 1).Ok, Is.True);
+        Assert.That(Enemy(s, 1).Hp, Is.EqualTo(hp), "猎标无伤");
+        Assert.That((Enemy(s, 1).MarkBonus, Enemy(s, 1).MarkUntilRound), Is.EqualTo((6.0, s.Battle!.Round + 2)));
+        var after = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single().AccuracyRating;
+        Assert.That(after, Is.GreaterThan(before), "标记后命中能力提高（+6，稳弓+5）");
+
+        // 破甲劈：护甲−0.25（破障斧+0.1）2轮
+        var a = Fight(708, "worker");
+        Ready(a);
+        Arm(a, "breach_axe");
+        a.Skills["axe"].Level = 3;
+        Enemy(a, 1).Hp = 50;
+        Force(a, Below(0.01), AtLeast(0.99), Any());
+        Assert.That(Cmd(a, "axe_03", 1).Ok, Is.True);
+        Assert.That(Enemy(a, 1).ArmorBreak, Is.EqualTo(0.35).Within(1e-9));
+        Assert.That(E.PreviewCommand(a, BattleCommand.Of("basic_attack", 1)).Targets.Single().Armor, Is.EqualTo(0).Within(1e-9), "0.3−0.35 最低0");
+
+        // 重锤：控制成功施加虚弱（敌人直接伤害×0.8）
+        var w = Fight(709, "worker");
+        Ready(w);
+        Arm(w, "crowbar");
+        w.Skills["blunt"].Level = 10;
+        w.Battle!.PlayerAp = 3;
+        Enemy(w, 1).Hp = 50;
+        Force(w, Below(0.01), AtLeast(0.99), Any(), Below(0.01));
+        Assert.That(Cmd(w, "blunt_10", 1).Ok, Is.True);
+        Assert.That(GameEngine.EnemyWeak(w.Battle, Enemy(w, 1)), Is.True);
+        Assert.That(w.Battle.Log.Last(), Does.Contain("虚弱"));
+    }
+
+    [Test]
+    public void KnockbackInterruptExecuteBreakGuard()
+    {
+        // 逼退：控制成功后与身后同伴换位
+        var s = Fight(710, "feral_dog", "wolf");
+        Ready(s);
+        Arm(s, "wooden_spear");
+        s.Skills["spear"].Level = 3;
+        Enemy(s, 1).Hp = 50;
+        Force(s, Below(0.01), AtLeast(0.99), Any(), Below(0.01));
+        Assert.That(Cmd(s, "spear_03", 1).Ok, Is.True);
+        Assert.That((Enemy(s, 1).Pos, Enemy(s, 2).Pos), Is.EqualTo((2, 1)));
+
+        // 打断：取消野猪本轮尚未执行的蓄力，改普通攻击
+        var b = Fight(711, "boar");
+        Ready(b);
+        Arm(b, "crowbar");
+        b.Skills["blunt"].Level = 7;
+        Enemy(b, 1).Hp = 50;
+        Assert.That(Enemy(b, 1).Intent, Is.EqualTo("charge_prepare"));
+        Force(b, Below(0.01), AtLeast(0.99), Any(), Below(0.01));
+        Assert.That(Cmd(b, "blunt_07", 1).Ok, Is.True);
+        Assert.That(Enemy(b, 1).Intent, Is.EqualTo("attack"));
+
+        // 处决：目标 H≤30% 时再×1.2；破阵：先移除格挡
+        var x = Fight(712, "riot");
+        Ready(x);
+        Arm(x, "kitchen_knife");
+        x.Skills["blade"].Level = 10;
+        x.Battle!.PlayerAp = 3;
+        var full = E.PreviewCommand(x, BattleCommand.Of("blade_10", 1)).Targets.Single().Multiplier;
+        Enemy(x, 1).Hp = 2;
+        var low = E.PreviewCommand(x, BattleCommand.Of("blade_10", 1)).Targets.Single().Multiplier;
+        Assert.That(low / full, Is.EqualTo(1.2).Within(1e-9));
+        var g = Fight(713, "riot");
+        Ready(g);
+        Arm(g, "hatchet");
+        g.Skills["axe"].Level = 10;
+        g.Battle!.PlayerAp = 3;
+        Enemy(g, 1).Guard = true;
+        Assert.That(E.PreviewCommand(g, BattleCommand.Of("axe_10", 1)).Targets.Single().Guarded, Is.False, "破阵无视格挡");
+        Assert.That(E.PreviewCommand(g, BattleCommand.Of("basic_attack", 1)).Targets.Single().Guarded, Is.True);
+    }
+
+    [Test]
+    public void RapidShot_SingleShotCrossbowBlocked_AmmoTwo()
+    {
+        var s = Fight(714, "feral_dog");
+        Ready(s);
+        var cb = Arm(s, "crossbow");
+        cb.LoadedAmmo = 1;
+        s.Skills["archery"].Level = 10;
+        s.Battle!.PlayerAp = 3;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("archery_10", 1)), Does.Contain("单发弩"));
+        var bow = Arm(s, "wooden_bow");
+        E.DebugGive(s, "arrow", 1);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("archery_10", 1)), Does.Contain("不足2支"));
+        E.DebugGive(s, "arrow", 3);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("archery_10", 1)), Is.Null);
+        Enemy(s, 1).Hp = 50;
+        Assert.That(Cmd(s, "archery_10", 1).Ok, Is.True);
+        Assert.That(s.Items.Where(i => i.IsCarried && i.ItemId == "arrow").Sum(i => i.Count), Is.EqualTo(2), "连射弹药2");
+    }
+
+    [Test]
+    public void DesperatePunch_ThresholdIsCheapestUnlockedSkill()
+    {
+        var s = Fight(715, "shambler");
+        Ready(s);
+        s.Skills["unarmed"].Level = 3;
+        // 拳页：拳击 0.3、推挡 0.25 → 门槛为推挡
+        Assert.That(E.MinEquippedAttackEnergy(s), Is.EqualTo(E.SkillEnergyCost(0.25, 3)).Within(1e-9));
+        s.Stats.Energy = E.SkillEnergyCost(0.25, 3) - 0.01;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 1)), Is.Null);
+    }
+
     [Test]
     public void NewEnemies_NotInOldSpawnPools()
     {

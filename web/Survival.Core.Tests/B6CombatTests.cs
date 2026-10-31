@@ -442,17 +442,18 @@ public class B6CombatTests : BattleTestBase
 
         // 推挡：命中后再判控制；成功给稳态到下一大回合末，同轮再成功不加第二层
         // B7：厚衣工尸控制抗性按 A09 §1 为 20 → 0.75−0.20=55%，稳态中 25%
+        // B7：推挡改为拳3级技能 unarmed_03（A06 §2，12→1、1AP）
         var s = Fight(18, "worker");
         Ready(s);
-        s.Skills["unarmed"].Level = 1;
+        s.Skills["unarmed"].Level = 3;
         var t = Enemy(s, 1);
         Force(s, Below(0.001), AtLeast(0.999), Any(), Below(0.55));
-        Assert.That(Cmd(s, "push", 1).Ok, Is.True);
+        Assert.That(Cmd(s, "unarmed_03", 1).Ok, Is.True);
         Assert.That((t.Stagger, t.SteadyUntilRound), Is.EqualTo((true, s.Battle!.Round + 1)));
         Assert.That(s.Battle.Log.Last(), Does.Contain("控制55%"));
         t.Stagger = false;
         Force(s, Below(0.001), AtLeast(0.999), Any(), x => x >= 0.25 && x < 0.55);
-        Assert.That(Cmd(s, "push", 1).Ok, Is.True);
+        Assert.That(Cmd(s, "unarmed_03", 1).Ok, Is.True);
         Assert.That(t.Stagger, Is.False, "稳态中只有25%");
         Assert.That(s.Battle.Log.Last(), Does.Contain("稳住了").And.Contain("控制25%"));
         Assert.That(t.SteadyUntilRound, Is.EqualTo(s.Battle.Round + 1), "不加第二层、不延长");

@@ -124,7 +124,7 @@ public class B3aEquipTests : BattleTestBase
         // 武器Ⅰ：坏刀仍是刀页，不是拳页；不出拳的推挡
         Assert.That(E.WeaponOnPage(s, 1, out var w1)!.InstanceId, Is.EqualTo(knife.InstanceId));
         Assert.That(w1.IsFists, Is.False, "损坏不等于空槽");
-        Assert.That(E.BattleOptions(s).Any(o => o.Action == "push"), Is.False, "坏刀页不出现拳/钝器的推挡");
+        Assert.That(E.BattleOptions(s).Any(o => o.NodeId != null && o.NodeId.StartsWith("unarmed")), Is.False, "坏刀页不出现拳的技能（B7：推挡改为拳3级 unarmed_03）");
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("耐久不足"));
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 1)), Does.StartWith("只在体力不足以使用任何已装备攻击技能时可用"), "体力足够时不放开勉强拳击");
 
@@ -134,7 +134,7 @@ public class B3aEquipTests : BattleTestBase
         Assert.That(pi!.InstanceId, Is.EqualTo(pistol.InstanceId));
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("弹仓空"));
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 1)), Does.StartWith("只在体力不足以使用任何已装备攻击技能时可用"));
-        Assert.That(E.BattleOptions(s).Any(o => o.Action == "push"), Is.False, "两槽满不另给拳");
+        Assert.That(E.BattleOptions(s).Any(o => o.NodeId != null && o.NodeId.StartsWith("unarmed")), Is.False, "两槽满不另给拳");
 
         // 原条件：体力不足以普通攻击时才可勉强拳击
         s.Stats.Energy = 0;
@@ -150,7 +150,11 @@ public class B3aEquipTests : BattleTestBase
         Assert.That(E.SelectWeaponPage(s, 2).Ok, Is.True);
         Assert.That(E.CurrentWeapon(s, out var wi).IsFists, Is.True);
         Assert.That(wi, Is.Null, "空槽页不生成拳物品");
-        Assert.That(E.BattleOptions(s).Any(o => o.Action == "push"), Is.True, "空槽页按原徒手技能解锁");
+        // B7（A06 §2）：空槽页列拳的已解锁技能——1级拳击（普通攻击）；推挡是拳3级
+        Assert.That(E.BattleOptions(s).Single(o => o.Action == "basic_attack").Label, Is.EqualTo("拳击"), "空槽页按徒手技能解锁");
+        Assert.That(E.BattleOptions(s).Any(o => o.Action == "unarmed_03"), Is.False);
+        s.Skills["unarmed"].Level = 3;
+        Assert.That(E.BattleOptions(s).Any(o => o.Action == "unarmed_03"), Is.True, "拳3级推挡");
     }
 
     // ───────────── EQ-B3-42：换装时机表 ─────────────

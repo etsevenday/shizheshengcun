@@ -347,7 +347,7 @@ namespace Survival.Core.Engine
                 list.Add(("类型", $"{WeaponKinds.Name(w.WeaponKind)}·T{w.Tier}{(w.Speed != 0 ? $" · 速度修正{Fmt.SignedT(w.Speed)}" : " · 速度修正0")}"));
                 if (w.OwnPositions != null) list.Add(("站位", $"使用位{w.OwnPositions} → 目标位{w.TargetPositions}（我方只剩一人时任何武器都按1号位可用）"));
                 if (w.TraitText != null) list.Add(("固定特性", $"{w.TraitText}{(w.ArmorIgnore > 0 ? "（生效中）" : "（相关技能或多人战斗上线后生效）")}"));
-                if (!w.CanAttack) list.Add(("技能", $"{WeaponKinds.Name(w.WeaponKind)}的技能尚未开放：可以穿进武器槽、占{WeaponKinds.Name(w.WeaponKind)}类，但现在不能用它攻击"));
+                if (!w.CanAttack) list.Add(("技能", $"{WeaponKinds.Name(w.WeaponKind)}不能直接攻击：穿进武器槽后，这一页只列{WeaponKinds.Name(w.WeaponKind)}技能（单人时以自己为目标）"));
             }
             else if (Gear(it.ItemId) is GearConfig g)
             {

@@ -83,15 +83,16 @@ public class B5SkillTests : BattleTestBase
         foreach (var w in Cfg.Weapons.Where(w => w.WeaponKind == "shield")) Assert.That(w.SkillId, Is.EqualTo("shield"), w.Id);
         foreach (var w in Cfg.Weapons.Where(w => w.WeaponKind == "command")) Assert.That(w.SkillId, Is.EqualTo("command"), w.Id);
         foreach (var w in Cfg.Weapons.Where(w => w.WeaponKind == "medical")) Assert.That(w.SkillId, Is.EqualTo("medicine"), w.Id);
-        Assert.That(Cfg.Weapons.Single(w => w.Id == "wooden_shield").CanAttack, Is.False, "盾的技能仍在 B6/B7");
-        Assert.That(Cfg.CombatActions.Single(a => a.Id == "cleave").Skills, Is.EquivalentTo(new[] { "blade", "axe" }), "现行劈砍斧仍可用");
-        // 简易斧的劈砍按斧等级判定
+        // B7（A06 §2）：盾有盾击，v0.5 招式（重劈/割伤……）由五节点技能取代
+        Assert.That(Cfg.Weapons.Single(w => w.Id == "wooden_shield").CanAttack, Is.True, "盾击");
+        Assert.That(Cfg.CombatActions.Any(a => a.Id is "cleave" or "cut" or "push" or "precise_thrust" or "scatter"), Is.False);
+        // 简易斧的斧技能按斧等级判定：破甲劈（斧3级）
         var s = Fight(42, "worker");
         Ready(s);
         Arm(s, "hatchet");
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("cleave", 1)), Is.Not.Null);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("axe_03", 1)), Does.Contain("需要斧3级"));
         s.Skills["axe"].Level = 3;
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("cleave", 1)), Is.Null);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("axe_03", 1)), Is.Null);
     }
 
     [Test]

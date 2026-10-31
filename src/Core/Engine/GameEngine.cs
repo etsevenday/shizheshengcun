@@ -33,6 +33,9 @@ namespace Survival.Core.Engine
             _recipes = config.Recipes.ToDictionary(r => r.Id);
             _weapons = config.Weapons.ToDictionary(w => w.Id);
             _enemies = config.Enemies.ToDictionary(x => x.Id);
+            _nodes = config.SkillNodes.ToDictionary(n => n.Id);
+            _exec = config.SkillExec.ToDictionary(x => x.Id);
+            foreach (var n in config.SkillNodes) SkillNames[n.Id] = n.Name;
         }
 
         /// <summary>该物品（或 "fists"）的武器定义；不是武器为 null。</summary>

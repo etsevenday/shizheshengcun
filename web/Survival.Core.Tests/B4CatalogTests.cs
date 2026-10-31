@@ -146,7 +146,9 @@ public class B4CatalogTests : TestBase
         Assert.That(Cfg.Weapons.Single(w => w.Id == "pike").Targets, Is.EqualTo("all_rear_damage_0.75"));
         Assert.That(Cfg.Weapons.Single(w => w.Id == "service_pistol").Targets, Is.EqualTo("all"));
         Assert.That(Cfg.Weapons.Single(w => w.Id == "machete").Targets, Is.EqualTo("front"));
-        Assert.That(Cfg.Weapons.Where(w => w.WeaponKind is "shield" or "command" or "medical").All(w => !w.CanAttack), Is.True);
+        // B7（A06 §2）：盾有盾击可以攻击；指挥/医疗器具“不可直接攻击”，只用本门技能
+        Assert.That(Cfg.Weapons.Where(w => w.WeaponKind is "command" or "medical").All(w => !w.CanAttack), Is.True);
+        Assert.That(Cfg.Weapons.Where(w => w.WeaponKind is "shield").All(w => w.CanAttack), Is.True);
         Assert.That(Cfg.Weapons.Single(w => w.Id == "field_medkit").SkillId, Is.EqualTo("medicine"), "医疗器具使用 medicine 熟练（A05 §1 末段）");
     }
 

@@ -73,8 +73,8 @@ else
             }
             @if (e.Weapon(cfg.Id) is WeaponConfig { CanAttack: false } lw)
             {
-                @* M120：盾、指挥、医疗器具技能未开放，攻击面板只作说明，不写成现在可用 *@
-                <div><span>攻击面板</span><b>技能上线后才能使用：伤害@(Ui.N(lw.DamageMin))—@(Ui.N(lw.DamageMax)) · 命中能力@(Ui.T(lw.AccuracyRating)) · 基础体力@(Ui.T(lw.EnergyCost))/次</b></div>
+                @* B7：指挥、医疗器具不能直接攻击，只提供本门技能（技能体力按本件基础体力换算） *@
+                <div><span>技能器具</span><b>不能直接攻击；提供@(Survival.Core.State.WeaponKinds.Name(lw.WeaponKind))技能 · 基础体力@(Ui.T(lw.EnergyCost))/次（技能按“本件÷该类基准”换算）</b></div>
             }
             else if (e.Weapon(cfg.Id) is WeaponConfig wp)
             {

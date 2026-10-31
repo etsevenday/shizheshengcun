@@ -74,6 +74,7 @@ public class B4EquipTests : BattleTestBase
     [Test]
     public void H2_SkillLockedTools_CannotAttack_GeneralCommandsStay()
     {
+        // B7（A06 §2、A05 §1）：盾有 1 级盾击；指挥/医疗器具“不可直接攻击”，这一页只列本门技能
         var s = Fight(7, "shambler");
         var shield = Arm(s, "wooden_shield");
         ToPlayer(s);
@@ -81,10 +82,14 @@ public class B4EquipTests : BattleTestBase
         ToPlayer(s);
         Assert.That(E.CurrentWeapon(s, out var wi).Id, Is.EqualTo("wooden_shield"));
         Assert.That(wi!.InstanceId, Is.EqualTo(shield.InstanceId));
+        var bash = E.BattleOptions(s).Single(o => o.Action == "basic_attack");
+        Assert.That((bash.Label, bash.Ap, bash.Available), Is.EqualTo(("盾击", 1, true)), "盾击 1AP");
+        Arm(s, "signal_whistle");
         var why = E.CommandBlocked(s, BattleCommand.Of("basic_attack", s.Battle!.Alive.First().Index));
-        Assert.That(why, Does.Contain("技能尚未开放"));
+        Assert.That(why, Does.Contain("不能直接攻击"));
         var opts = E.BattleOptions(s);
-        Assert.That(opts.Single(o => o.Action == "basic_attack").Reason, Does.Contain("技能尚未开放"));
+        Assert.That(opts.Any(o => o.Action == "basic_attack"), Is.False, "指挥器具没有普通攻击");
+        Assert.That(opts.Single(o => o.Action == "command_01").Label, Is.EqualTo("鼓舞"));
         Assert.That(opts.Single(o => o.Action == "guard").Available, Is.True, "通用指令照旧");
         Assert.That(opts.Single(o => o.Action == "retreat").Available, Is.True);
     }
@@ -586,8 +591,11 @@ public class B4EquipTests : BattleTestBase
         var ring = E.DebugCreateEquipment(s, "steady_ring", "white", ItemInstance.Carried);
         Assert.That(E.EquipDetailLines(s, ring).Single(x => x.Label == "固定效果").Value, Does.Contain("穿戴后生效"));
         Assert.That(E.EquipDetailLines(s, ring).Single(x => x.Label == "拆解").Value, Does.Contain("待策划确认"));
+        // B7：盾有盾击；指挥器具不能直接攻击，只列本门技能
         var shield = E.DebugCreateEquipment(s, "wooden_shield", "white", ItemInstance.Carried);
-        Assert.That(E.EquipDetailLines(s, shield).Any(x => x.Label == "技能" && x.Value.Contains("尚未开放")), Is.True);
+        Assert.That(E.EquipDetailLines(s, shield).Any(x => x.Label == "技能"), Is.False);
+        var whistle = E.DebugCreateEquipment(s, "signal_whistle", "white", ItemInstance.Carried);
+        Assert.That(E.EquipDetailLines(s, whistle).Any(x => x.Label == "技能" && x.Value.Contains("不能直接攻击")), Is.True);
         Assert.That(E.EquipDetailLines(s, s.Items.First(i => i.ItemId == "lighter")), Is.Empty);
         Assert.That(E.AffixText("durable"), Does.Contain("生成时已计入"));
         Assert.That(E.AffixText("craftsman"), Does.Contain("生效中"));

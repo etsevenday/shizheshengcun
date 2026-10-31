@@ -224,7 +224,7 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(s.Battle!.PlayerAp, Is.EqualTo(3));
         Cmd(s, "basic_attack", 1);
         Assert.That(s.Battle!.PlayerAp, Is.EqualTo(1));
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("cleave", 1)), Does.Contain("行动点不足"));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("axe_03", 1)), Does.Contain("行动点不足"), "B7：2AP 的破甲劈（取代重劈）");
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("行动点不足"));
         Cmd(s, "guard");
         Assert.That(E.AwaitingPlayer(s), Is.False, "3AP 用完即结束激活");
@@ -565,17 +565,17 @@ public class CombatV05Tests : BattleTestBase
         Run(s);
         Assert.That(s.Skills["medicine"].Xp, Is.EqualTo(Cfg.Xp.Medical), "真实恢复健康+4，只发一次");
 
-        // 群攻：霰弹散射命中两个前排也只 +2
+        // 群攻：霰弹专长射击（B7 取代散射，枪械7级）命中两个前排各 +2
         var f = Fight(23, "shambler", "shambler");
         Ready(f);
         var sg = Arm(f, "shotgun");
         sg.LoadedAmmo = 4;
-        f.Skills["firearms"].Level = 3;
+        f.Skills["firearms"].Level = 7;
         var xp0 = f.Skills["firearms"].Xp;
         Enemy(f, 1).Hp = 50;   // 不让第一个目标倒下（倒下会抽掉落随机数）
         Enemy(f, 2).Hp = 50;
         Force(f, Below(0.4), AtLeast(0.1), Any(), Below(0.4), AtLeast(0.1), Any());
-        Assert.That(Cmd(f, "scatter").Ok, Is.True);
+        Assert.That(Cmd(f, "firearms_07").Ok, Is.True);
         Assert.That(f.Skills["firearms"].Xp - xp0, Is.EqualTo(2 * Cfg.Xp.DamagingAttackCommand), "v1.0 P01：群攻逐命中目标计，两个都命中+4");
         Assert.That(sg.LoadedAmmo, Is.EqualTo(3), "只耗1发");
         // 同一敌人同技能最多计3次

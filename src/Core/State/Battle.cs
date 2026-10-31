@@ -97,6 +97,36 @@ namespace Survival.Core.State
         /// <summary>各技能已计入经验的命中次数（入战时从世界实例拷入，随时写回；死亡后仍用于本次指令判断）。</summary>
         public Dictionary<string, int> XpHits { get; set; } = new Dictionary<string, int>();
 
+        // ───── B7 技能附带状态（R03 §4）与 A09 敌人意图（R26） ─────
+        /// <summary>破甲：护甲−ArmorBreak 到 ArmorBreakUntilRound 轮末（最低 0）；同名取强。</summary>
+        public double ArmorBreak { get; set; }
+        public int ArmorBreakUntilRound { get; set; }
+        /// <summary>虚弱：直接伤害×WeakFactor 到 WeakUntilRound 轮末。</summary>
+        public double WeakFactor { get; set; } = 1;
+        public int WeakUntilRound { get; set; }
+        /// <summary>标记：我方对它的攻击命中能力+MarkBonus 到 MarkUntilRound 轮末；同名取强、不叠层。</summary>
+        public double MarkBonus { get; set; }
+        public int MarkUntilRound { get; set; }
+        /// <summary>失衡持续到它下次攻击后（钢制钉锤“震荡”），不在轮末清除。</summary>
+        public bool StaggerSticky { get; set; }
+        /// <summary>减速额外值（绝缘警棍“打断成功后下轮速度额外−1”，不叠）。</summary>
+        public double SlowExtra { get; set; }
+        /// <summary>护盔感染者“首次失衡免疫”已用掉。</summary>
+        public bool StaggerImmuneUsed { get; set; }
+        /// <summary>加入本场的轮次（意图循环按 Round−JoinRound 取第几次正常激活；0 视为 1）。</summary>
+        public int JoinRound { get; set; }
+        /// <summary>本轮锁定的意图在意图循环里的序号（opening 与 cycle 合并编号）；−1 为特殊意图（逃离/警戒）。</summary>
+        public int IntentStep { get; set; }
+        /// <summary>正在保护的同伴（本场序号）；到它下次正常激活开始清除。0 为没有。</summary>
+        public int ProtectingIndex { get; set; }
+        /// <summary>本场已执行保护的次数（隔离守卫限 1 次）。</summary>
+        public int ProtectUses { get; set; }
+        /// <summary>下一次攻击伤害×（野犬首领“首轮仅自身下一击×1.2”）；1 为没有。</summary>
+        public double NextHitFactor { get; set; } = 1;
+        /// <summary>流窜枪手：弹仓与本场剩余备弹（弹药计划总数，打空后不补）。−1 为未初始化。</summary>
+        public int Mag { get; set; } = -1;
+        public int Reserve { get; set; }
+
         public bool Alive => !Dead && !Fled;
 
         public BattleEnemy Clone()
@@ -195,6 +225,48 @@ namespace Survival.Core.State
         public bool PlayerSlowPending { get; set; }
         public bool PlayerSlowActive { get; set; }
 
+        // ───── B7 技能（A06 §2、R03 §4） ─────
+        /// <summary>各技能最近一次使用的大回合（冷却：r 使用 CD1 → r+1 不可用、r+2 可用；两武器页与追击共享）。</summary>
+        public Dictionary<string, int> SkillUsedRound { get; set; } = new Dictionary<string, int>();
+        /// <summary>主角格挡剩余次数（坚守 2 次；普通防御/护身/稳固 1 次）；与 PlayerGuard 同时生效。</summary>
+        public int PlayerGuardCharges { get; set; }
+        /// <summary>反击架势：受直接攻击命中后反击 1 次（伤害×CounterFactor），用掉或下次自己正常激活开始清除。CounterPage 为架势所用武器页。</summary>
+        public double CounterFactor { get; set; }
+        public int CounterPage { get; set; }
+        /// <summary>架矛：敌人主动前移后迎击（剩余次数、伤害倍率、武器页），到下次自己正常激活开始清除。</summary>
+        public int BraceCharges { get; set; }
+        public double BraceFactor { get; set; }
+        public int BracePage { get; set; }
+        /// <summary>斧蓄力：下次该斧攻击伤害×ChargeFactor，到 ChargeUntilRound 轮末；ChargeItem 为蓄力的斧实例。</summary>
+        public double ChargeFactor { get; set; }
+        public int ChargeUntilRound { get; set; }
+        public int? ChargeItem { get; set; }
+        /// <summary>鼓舞：下一次攻击命中能力+InspireBonus，到 InspireUntilRound 轮末。</summary>
+        public double InspireBonus { get; set; }
+        public int InspireUntilRound { get; set; }
+        /// <summary>总攻令：下一次攻击伤害×AllOutFactor，到 AllOutUntilRound 轮末；同名不叠。</summary>
+        public double AllOutFactor { get; set; }
+        public int AllOutUntilRound { get; set; }
+        /// <summary>稳固：位移抵抗+到 DisplaceUntilRound 轮末（单人时没有可被移动的位置，只记录）。</summary>
+        public double DisplaceResist { get; set; }
+        public int DisplaceUntilRound { get; set; }
+        /// <summary>主角被破甲（酸液喷吐）：护甲−到轮末。</summary>
+        public double PlayerArmorBreak { get; set; }
+        public int PlayerArmorBreakUntilRound { get; set; }
+        /// <summary>主角虚弱（伤害×，到轮末）。</summary>
+        public double PlayerWeakFactor { get; set; } = 1;
+        public int PlayerWeakUntilRound { get; set; }
+        /// <summary>下一次受到的直接伤害×（救援医疗箱“稳定”）；1 为没有。</summary>
+        public double PlayerNextDamageFactor { get; set; } = 1;
+        /// <summary>稳心：同目标每大回合最多一次（记录用过的轮）。</summary>
+        public int CalmRound { get; set; }
+        /// <summary>本场已发过指挥经验的技能（每场每目标每 skillId 至多 +2，A06 §3）。</summary>
+        public List<string> CommandXp { get; set; } = new List<string>();
+        /// <summary>鼓舞/总攻令的经验待发：增益被攻击实际用掉时才给（A06 §3“有增益后实际消耗”）。</summary>
+        public List<string> PendingCommandXp { get; set; } = new List<string>();
+        /// <summary>便携指挥终端“每场首次号令”已用。</summary>
+        public bool FirstCommandUsed { get; set; }
+
         /// <summary>schema 8 的战内当前武器（随身实例引用）。只供 8→9 迁移读取（迁到武器Ⅰ后清空）；schema 9 起当前武器由 ActiveWeaponSlot 指向武器槽。</summary>
         public int? WeaponInstanceId { get; set; }
 
@@ -227,6 +299,9 @@ namespace Survival.Core.State
             c.Enemies = Enemies.Select(e => e.Clone()).ToList();
             c.Allies = new List<string>(Allies);
             c.Protections = new Dictionary<string, string>(Protections);
+            c.SkillUsedRound = new Dictionary<string, int>(SkillUsedRound);
+            c.CommandXp = new List<string>(CommandXp);
+            c.PendingCommandXp = new List<string>(PendingCommandXp);
             c.Loot = Loot.Select(l => l.Clone()).ToList();
             c.Log = new List<string>(Log);
             return c;

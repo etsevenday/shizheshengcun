@@ -127,13 +127,13 @@ public class V10CombatTests : BattleTestBase
         Ready(f);
         var sg = Arm(f, "shotgun");
         sg.LoadedAmmo = 4;
-        f.Skills["firearms"].Level = 3;
+        f.Skills["firearms"].Level = 7;   // B7：霰弹专长射击（取代散射）
         Enemy(f, 1).Hp = 50;
         Enemy(f, 2).Hp = 50;
         Enemy(f, 2).XpHits["firearms"] = 3;
         var xp0 = f.Skills["firearms"].Xp;
         Force(f, Below(0.4), AtLeast(0.1), Any(), Below(0.4), AtLeast(0.1), Any());
-        Assert.That(Cmd(f, "scatter").Ok, Is.True);
+        Assert.That(Cmd(f, "firearms_07").Ok, Is.True);
         Assert.That(f.Skills["firearms"].Xp - xp0, Is.EqualTo(Cfg.Xp.DamagingAttackCommand), "满额目标不给，另一目标+2");
         Assert.That(Enemy(f, 1).XpHits["firearms"], Is.EqualTo(1));
         Assert.That(Enemy(f, 2).XpHits["firearms"], Is.EqualTo(3));
@@ -148,10 +148,10 @@ public class V10CombatTests : BattleTestBase
         // 推挡命中也计（有命中判定的技能动作）
         var p = Fight(43, "shambler");
         Ready(p);
-        Enemy(p, 1).Hp = 50;   // 推挡：拳/钝器
-
+        Enemy(p, 1).Hp = 50;   // 推挡：B7 起为拳3级 unarmed_03（12→1）
+        p.Skills["unarmed"].Level = 3;
         Force(p, Below(0.01), AtLeast(0.99), Any());
-        var r = Cmd(p, "push", 1);
+        var r = Cmd(p, "unarmed_03", 1);
         Assert.That(r.Ok, Is.True, r.Reason);
         Assert.That(p.Skills["unarmed"].Xp, Is.EqualTo(Cfg.Xp.DamagingAttackCommand), "推挡命中+2");
     }
@@ -188,7 +188,8 @@ public class V10CombatTests : BattleTestBase
         var p = Fight(45, "shambler");
         Ready(p);
         p.Traits.Add(new TraitInstance { EffectId = "tutorial_attack_bonus_001", FlatAttack = 0.1 });
-        var push = E.PreviewCommand(p, BattleCommand.Of("push", 1)).Targets.Single();
+        p.Skills["unarmed"].Level = 3;   // B7：推挡为拳3级
+        var push = E.PreviewCommand(p, BattleCommand.Of("unarmed_03", 1)).Targets.Single();
         Assert.That(push.DamageMax, Is.EqualTo(0), "推挡基础0伤不加0.1");
     }
 

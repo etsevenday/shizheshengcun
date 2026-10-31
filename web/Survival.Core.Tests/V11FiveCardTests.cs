@@ -137,25 +137,26 @@ public class V11FiveCardTests : TestBase
         var s = New();
         var fists = E.CompatibleCommands(s).Select(o => o.Action).ToList();
         Assert.That(fists, Does.Contain("basic_attack").And.Contain("desperate_punch"));
-        Assert.That(fists, Does.Not.Contain("cleave").And.Not.Contain("cut").And.Not.Contain("precise_thrust").And.Not.Contain("scatter"));
-        Assert.That(fists, Does.Contain("push"), "拳的推搡（徒手1级）");
+        // B7（A06 §2）：只列本门已解锁的五节点技能；拳1级只有拳击（普通攻击），推挡拳3级
+        Assert.That(fists, Does.Not.Contain("blade_03").And.Not.Contain("unarmed_03").And.Not.Contain("firearms_07"));
         Assert.That(fists, Does.Contain("guard").And.Contain("end_turn"));
 
         E.DebugGive(s, "stone_knife", 1);
         Assert.That(E.Equip(s, GameState.PlayerId, First(s, "stone_knife").InstanceId, EquipSlots.Weapon1).Ok, Is.True);
         var knife = E.CompatibleCommands(s).Select(o => o.Action).ToList();
-        Assert.That(knife, Does.Not.Contain("push"), "换刀后不再列徒手招式");
-        Assert.That(knife, Does.Not.Contain("cut"), "刀斧1级：劈砍需2级，未满足不列出");
+        Assert.That(E.CompatibleCommands(s).Single(o => o.Action == "basic_attack").Label, Is.EqualTo("斩击"), "换刀后普通攻击是刀剑1级斩击");
+        Assert.That(knife, Does.Not.Contain("blade_03"), "刀剑1级：割伤需3级，未满足不列出");
         s.Skills["blade"].Level = 3;
         knife = E.CompatibleCommands(s).Select(o => o.Action).ToList();
-        Assert.That(knife, Does.Contain("cut").And.Contain("cleave"), "等级满足后列出");
+        Assert.That(knife, Does.Contain("blade_03"), "等级满足后列出");
 
         // 霰弹枪：散射只列给霰弹枪；空弹仓保留并写原因
         E.DebugGive(s, "shotgun", 1);
         Assert.That(E.Equip(s, GameState.PlayerId, First(s, "shotgun").InstanceId, EquipSlots.Weapon1).Ok, Is.True, "同槽替换：石刀退回随身");
-        s.Skills["firearms"].Level = 3;
+        s.Skills["firearms"].Level = 7;
         var gun = E.CompatibleCommands(s);
-        var scatter = gun.Single(o => o.Action == "scatter");
+        var scatter = gun.Single(o => o.Action == "firearms_07");
+        Assert.That(scatter.TargetMode, Is.EqualTo("area"), "霰弹枪的专长射击打敌方1、2号位");
         Assert.That(scatter.Available, Is.False);
         Assert.That(scatter.Reason, Does.Contain("弹仓空"));
         Assert.That(gun.Any(o => o.Action == "reload"), Is.True);
