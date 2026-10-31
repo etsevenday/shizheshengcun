@@ -136,4 +136,132 @@ public class B7bProgressionTests : TestBase
         var loaded = SaveSerializer.Deserialize(SaveSerializer.Serialize(s));
         Assert.That(loaded.Main!.BaseWorkMinutes, Is.EqualTo(12).Within(1e-9), "读档不重套新公式");
     }
+
+    // ───────────── M158：采集/搜集分类与经验、遗迹勘整、合格工具未开放（Q55/Q59） ─────────────
+
+    private GameState At(string loc, int progress = 100, uint seed = 7)
+    {
+        var s = New(seed);
+        E.DebugTeleport(s, loc);
+        E.DebugSetProgress(s, loc, progress);
+        return s;
+    }
+
+    private void Do(GameState s, ActionRequest r)
+    {
+        Start(s, r);
+        s.Main!.HazardHit = false;
+        Run(s);
+    }
+
+    [Test]
+    public void PROG_Q55a_LegacyTwentyRows_Classification_PassiveScopes()
+    {
+        var rows = ((JArray)Contract()["fieldExperience"]!["resourceRows"]!).ToDictionary(r => (string)r["resourceId"]!);
+        Assert.That(rows, Has.Count.EqualTo(116), "合同 116 行（96 行属 v3 地图，只登记）");
+        foreach (var r in Cfg.Resources)
+            Assert.That(GameEngine.GatherSkillOf(r), Is.EqualTo((string)rows[r.NodeId]["proficiencyId"]!), r.NodeId);
+        var heap = E.Resource("metal_heap");
+        Assert.That(GameEngine.GatherSkillOf(heap), Is.EqualTo("scavenging"), "废金属堆改练搜集");
+        var s = At("scrapyard");
+        Lv(s, "gathering", 10);
+        Lv(s, "scavenging", 1);
+        Assert.That(E.WorkFactor(s, ActionType.Gather, null, "metal_heap"), Is.EqualTo(1).Within(1e-12), "工业资源不吃熟练采伐");
+        s.Resources["metal_heap"].Available = 10;
+        Assert.That(E.Preview(s, ActionRequest.Gather("metal_heap")).Outputs.Single().Count, Is.EqualTo(2), "不吃合理取材/精取");
+        Assert.That(GameEngine.IsWoodOrScrapGather(heap), Is.True, "采集手套物理条件仍适用");
+        Lv(s, "scavenging", 3);
+        Assert.That(E.WorkFactor(s, ActionType.Gather, null, "metal_heap"), Is.EqualTo(0.95).Within(1e-12), "分类勘整×0.95");
+        Lv(s, "scavenging", 10);
+        Assert.That(E.WorkFactor(s, ActionType.Gather, null, "metal_heap"), Is.EqualTo(0.90).Within(1e-12), "周密检索×0.90 替代3级");
+    }
+
+    [Test]
+    public void PROG_Q55b_XpFormula_ThreePerNode_SixtyPerSkill_StartDayLocked()
+    {
+        foreach (var r in Cfg.Resources)
+            Assert.That(E.FieldXp(r), Is.EqualTo(Math.Clamp(2 * (int)Math.Ceiling(r.BaseMinutes / 5.0), 2, 12)), r.NodeId);
+        Assert.That((E.FieldXp(E.Resource("water")), E.FieldXp(E.Resource("berries")), E.FieldXp(E.Resource("pot_box"))), Is.EqualTo((4, 8, 12)));
+        // 村庄 4 个箱子 48 + 勘整 12 = 60，第二次勘整日额已满（仍正常完成）
+        var s = At("village");
+        foreach (var id in new[] { "supply_box", "misc_box", "village_weapon_locker", "village_cold_box" }) Do(s, ActionRequest.Gather(id));
+        Assert.That(s.Skills["scavenging"].Xp, Is.EqualTo(48));
+        Do(s, ActionRequest.Survey());
+        Assert.That(s.Skills["scavenging"].Xp, Is.EqualTo(60), "每门每日 60");
+        Assert.That(E.Preview(s, ActionRequest.Survey()).XpGains.Single(), Does.Contain("已满60"));
+        Do(s, ActionRequest.Survey());
+        Assert.That(s.Skills["scavenging"].Xp, Is.EqualTo(60));
+        Assert.That(s.Log.Last(l => l.Text.Contains("遗迹勘整完成")).Text, Does.Contain("今日第2/2次").And.Contain("已满60"));
+        // 开工日锁：23:50 开工、次日完成仍记开工日
+        var t = New(7);
+        E.DebugTeleport(t, "woods");
+        E.DebugSetProgress(t, "woods", 75);
+        E.DebugSetStats(t, 20, 90, 90, 18, 90, 60);
+        AdvanceTo(t, At(1, 23, 50));
+        t.Resources["berries"].Available = 99;
+        Do(t, ActionRequest.Gather("berries"));
+        Assert.That(Clock.Day(t.GameMinute), Is.EqualTo(2));
+        Assert.That(t.Player.DailyCounts.ContainsKey("1|gather|berries"), Is.True, "按开工日记账");
+        Assert.That(t.Player.DailyCounts.ContainsKey("2|gather|berries"), Is.False);
+    }
+
+    [Test]
+    public void PROG_Q55c_Survey_TwoPerDay_TwelveXp_NoOutputs_NoDiscount()
+    {
+        var s = At("hardware", 75);
+        Assert.That(E.CanStart(s, ActionRequest.Survey()), Does.Contain("探索度100%"));
+        E.DebugSetProgress(s, "hardware", 100);
+        Assert.That(E.CanStart(s, ActionRequest.Survey()), Is.Null);
+        var field = At("field");
+        Assert.That(E.CanStart(field, ActionRequest.Survey()), Does.Contain("没有可勘整"));
+        // 装备与搜集被动不缩短；不产物、不动库存与清理次数
+        E.DebugCreateEquipment(s, "scavenge_vest", "white", ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Top));
+        Lv(s, "scavenging", 10);
+        var items0 = s.Items.Select(i => (i.ItemId, i.Count, i.Owner)).ToList();
+        var res0 = s.Resources.ToDictionary(k => k.Key, k => k.Value.Available);
+        var clear0 = s.Locations["hardware"].ClearCharges;
+        var p = E.Preview(s, ActionRequest.Survey());
+        Assert.That(p.EstimatedMinutes, Is.EqualTo(30), "工具/装备/搜集速度被动不缩短");
+        Assert.That(p.Outputs, Is.Empty);
+        var lv = s.Skills["scavenging"];
+        lv.Level = 9; lv.Xp = 0;
+        var t0 = s.GameMinute;
+        Start(s, ActionRequest.Survey());
+        E.Advance(s);
+        Assert.That(E.Cancel(s).Ok, Is.True);
+        Assert.That((lv.Xp, E.SurveyDoneToday(s, "hardware")), Is.EqualTo((0L, 0)), "取消不给经验、不占次数");
+        Do(s, ActionRequest.Survey());
+        Do(s, ActionRequest.Survey());
+        Assert.That(lv.Xp, Is.EqualTo(24), "每次 +12");
+        Assert.That(E.CanStart(s, ActionRequest.Survey()), Does.Contain("今日已在这里勘整2次"));
+        Assert.That(s.Items.Select(i => (i.ItemId, i.Count, i.Owner)).ToList(), Is.EquivalentTo(items0), "0 物品");
+        Assert.That(s.Resources.ToDictionary(k => k.Key, k => k.Value.Available), Is.EqualTo(res0), "不动库存/箱子");
+        Assert.That(s.Locations["hardware"].ClearCharges, Is.EqualTo(clear0), "不扣清理次数");
+        // 风险按点：废料场 10%、危险辨识×0.8
+        var y = At("scrapyard");
+        Assert.That(E.SurveyHazardChance(y, "scrapyard"), Is.EqualTo(0.10).Within(1e-12));
+        Lv(y, "scavenging", 7);
+        Assert.That(E.SurveyHazardChance(y, "scrapyard"), Is.EqualTo(0.08).Within(1e-12));
+        Assert.That(E.SurveyHazardChance(y, "clinic"), Is.Zero);
+        // 存读档后续原动作
+        var z = At("clinic");
+        Start(z, ActionRequest.Survey());
+        E.Advance(z);
+        var loaded = SaveSerializer.Deserialize(SaveSerializer.Serialize(z));
+        Run(loaded);
+        Assert.That(loaded.Skills["scavenging"].Xp, Is.EqualTo(12));
+    }
+
+    [Test]
+    public void PROG_Q59_ToolUse_ShownClosed_NoBonus()
+    {
+        var n = Cfg.SkillNodes.Single(x => x.Id == "scavenging_05");
+        Assert.That(n.Status, Is.EqualTo("closed"));
+        Assert.That(GameEngine.PassiveStatusText(n), Does.Contain("暂未开放"));
+        Assert.That(n.Text, Does.Contain("暂未开放"));
+        var s = At("village");
+        Lv(s, "scavenging", 5);
+        Assert.That(E.WorkFactor(s, ActionType.Gather, null, "misc_box"), Is.EqualTo(0.95).Within(1e-12), "只有分类勘整，工具运用不加成");
+        Assert.That(E.SurvivalPassiveLines(s.Player), Has.Some.Contains("工具运用").And.Some.Contains("暂未开放"));
+    }
 }

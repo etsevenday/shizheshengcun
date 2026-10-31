@@ -11,7 +11,8 @@ namespace Survival.Core.State
     /// WaitCook 等待本火堆当前全部可加工内容完成（S11 §9、S13 §5，按 wait 消耗，时长由目标动态决定）；
     /// Salvage 拆解装备（A05 §5，B4 H9：走配方 salvage_equipment，15 基础分钟按 craft 消耗，产物落当前地面）。
     /// </summary>
-    public enum ActionType { Travel, Explore, Gather, Craft, Build, Wait, Rest, Sleep, Use, Ignite, Clear, Butcher, Repair, Bypass, Fuse, WaitCook, Salvage }
+    /// Survey 遗迹勘整（Q55，B7b：四个旧遗迹的搜集训练，30 基础分钟按搜集消耗，不产物、不消耗库存）。
+    public enum ActionType { Travel, Explore, Gather, Craft, Build, Wait, Rest, Sleep, Use, Ignite, Clear, Butcher, Repair, Bypass, Fuse, WaitCook, Salvage, Survey }
 
     public enum ActionStatus { Running, Paused }
 
@@ -609,6 +610,8 @@ namespace Survival.Core.State
         public int BatchCount { get; set; } = 1;
         /// <summary>箱子的独立稀有附带物（医药补给箱 1% 特效药）是否抽中：开始时锁定，读档不重抽。</summary>
         public bool RareHit { get; set; }
+        /// <summary>采集/搜集/勘整开工的世界日（Q55：经验日额按开工日记账，跨午夜完成仍算开工日）；旧档为 null 时按完成日。</summary>
+        public int? XpDay { get; set; }
         /// <summary>开始时锁定的随机接敌判定值 [0,1)（v0.6 §15）；完成时与按当时敌密度算出的概率比较。预览里置为 1（不接敌）。</summary>
         public double EncounterRoll { get; set; } = 1;
 
@@ -624,7 +627,8 @@ namespace Survival.Core.State
         /// <summary>工作动作吃工作倍率与 0 体力工作伤害；清理也是工作（00 案第 3 节）。</summary>
         public static bool IsWork(ActionType t) => t == ActionType.Travel || t == ActionType.Explore || t == ActionType.Gather
                                                    || t == ActionType.Craft || t == ActionType.Build || t == ActionType.Clear
-                                                   || t == ActionType.Butcher || t == ActionType.Repair || t == ActionType.Salvage;
+                                                   || t == ActionType.Butcher || t == ActionType.Repair || t == ActionType.Salvage
+                                                   || t == ActionType.Survey;
 
         public ActionState Clone()
         {

@@ -37,6 +37,7 @@ namespace Survival.Core.Engine
             ActionType.Repair => "repair",
             ActionType.Salvage => "salvage",
             ActionType.Bypass => "bypass",
+            ActionType.Survey => "gather",   // 遗迹勘整按正常搜集身体费率（Q55）
             _ => "wait",
         };
 
@@ -441,6 +442,8 @@ namespace Survival.Core.Engine
                 }
                 case ActionType.Salvage:
                     return CompleteSalvage(s, a);
+                case ActionType.Survey:
+                    return CompleteSurvey(s, a);
                 case ActionType.Sleep:
                     ClearAction(s, a);
                     Emit(s, GameEventKind.ActionCompleted, $"睡眠结束（{Clock.Duration(a.PlannedMinutes)}）。");
@@ -526,7 +529,7 @@ namespace Survival.Core.Engine
                 }
             }
 
-            var text = $"{string.Join("，", made)}，已放在{LocName(here)}地面；{AwardGatherXp(s, res)}";
+            var text = $"{string.Join("，", made)}，已放在{LocName(here)}地面；{AwardGatherXp(s, res, a)}";
             if (a.ToolInstanceId.HasValue)
             {
                 var tool = s.Items.FirstOrDefault(i => i.InstanceId == a.ToolInstanceId.Value);

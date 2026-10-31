@@ -145,6 +145,7 @@ namespace Survival.Core.Engine
             ActionType.Use => "使用",
             ActionType.Clear => "清理",
             ActionType.Bypass => "绕行",
+            ActionType.Survey => "遗迹勘整",
             ActionType.Butcher => "处理尸体",
             ActionType.Fuse => "吞噬融合",
             ActionType.WaitCook => "等待烹饪",
@@ -284,6 +285,9 @@ namespace Survival.Core.Engine
                 case ActionType.Wait:
                     p.BaseMinutes = r.Minutes;
                     p.ConfirmText = $"等待{Clock.Duration(r.Minutes)}";
+                    break;
+                case ActionType.Survey:
+                    FillSurveyPreview(s, p);
                     break;
                 case ActionType.Butcher:
                 {

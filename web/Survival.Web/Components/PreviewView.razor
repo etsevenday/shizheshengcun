@@ -112,7 +112,7 @@
     {
         <div class="risk none">无额外受伤风险；工具不改变耗时、概率与件数，也不磨损。</div>
     }
-    @if (Request.Type == ActionType.Gather)
+    @if (Request.Type == ActionType.Gather || Request.Type == ActionType.Survey)
     {
         @if (p.HazardProbability > 0)
         {

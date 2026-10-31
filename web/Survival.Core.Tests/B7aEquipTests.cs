@@ -469,7 +469,8 @@ public class B7aEquipTests : BattleTestBase
         var s = New();
         Wear(s, "scavenge_vest", EquipSlots.Top);                 // 搜集基础工作量×0.90
         Assert.That(E.GearWorkFactor(s, P0, ActionType.Gather, "misc_box"), Is.EqualTo(0.9), "一次性箱子算搜集");
-        Assert.That(E.GearWorkFactor(s, P0, ActionType.Gather, "metal_heap"), Is.EqualTo(1), "其余库存点算采集");
+        // B7b 按新规则改写（Q55 取代 Q50“非箱一律采集”）：废金属堆是工业资源，练搜集、吃搜集背心
+        Assert.That(E.GearWorkFactor(s, P0, ActionType.Gather, "metal_heap"), Is.EqualTo(0.9), "废金属堆算搜集（Q55）");
         Assert.That(E.GearWorkFactor(s, P0, ActionType.Gather, "wood"), Is.EqualTo(1));
         // 采集手套：木材主产或产废金属的点；布为主的村庄杂物箱不算
         bool G(string id) => GameEngine.IsWoodOrScrapGather(E.Resource(id));

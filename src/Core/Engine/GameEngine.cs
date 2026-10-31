@@ -511,6 +511,9 @@ namespace Survival.Core.Engine
                     if (plan.IsSub) return "暂停中只能补给、休息或点火维护";
                     return ValidateButcher(s, r, plan);
 
+                case ActionType.Survey:
+                    return ValidateSurvey(s, plan);
+
                 case ActionType.Fuse:
                     return ValidateFuse(s, r, plan, allowGround);
 
@@ -717,6 +720,7 @@ namespace Survival.Core.Engine
                 {
                     var res = p.Res!;
                     var rs = s.Resources[res.NodeId];
+                    a.XpDay = Clock.Day(s.GameMinute);   // Q55：经验日额按开工日记账
                     if (!res.IsUnlimited)
                     {
                         rs.Available = (rs.Available ?? 0) - p.Units;
@@ -796,6 +800,9 @@ namespace Survival.Core.Engine
                 case ActionType.Fuse:
                     StartFuse(s, a, p);
                     break;
+                case ActionType.Survey:
+                    StartSurvey(s, a);
+                    break;
                 case ActionType.WaitCook:
                     a.CookTargets = new List<string>(p.CookTargets);
                     a.CookTargetItems = new List<int>(p.CookTargetItems);
@@ -844,6 +851,7 @@ namespace Survival.Core.Engine
                 ActionType.Sleep => "已提前醒来。",
                 ActionType.Butcher => "已取消处理尸体，尸体返还当前地面，保质期不变，没有产物。",
                 ActionType.Bypass => "已取消绕行。",
+                ActionType.Survey => "已取消遗迹勘整，未获得经验，不占今日勘整次数；已消耗的时间保留。",
                 ActionType.WaitCook => $"已退出等待烹饪（已完成{a.CookDone.Count}项）：火堆、锅与受热进度原样保留，成品留在原位。",
                 _ => $"已结束{a.Label}。",
             };

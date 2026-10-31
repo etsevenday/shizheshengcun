@@ -70,6 +70,18 @@
                     <strong>清理 · @(e.Config.Actions.ClearMinutes)分钟</strong>
                     <small>@(next == null ? $"次数{charges}/{cap}·已满" : $"次数{charges}/{cap} · 恢复还需{Clock.Duration(next.Value)}")@(clearWhy != null && charges > 0 ? $" · {clearWhy}" : "")</small>
                 </button>
+                @if (full && e.HasSurvey(LocationId))
+                {
+                    @* 遗迹勘整（Q55）：探索100%的四个旧遗迹的搜集训练，不产物；每地点每日2次 *@
+                    var sv = e.SurveyRules;
+                    var surveyWhy = busy ? BusyReason() : e.CanStart(s, ActionRequest.Survey());
+                    <button @key="@("survey")" type="button" class="loc-btn" data-survey disabled="@(surveyWhy != null)" title="@(surveyWhy ?? "搜集练习：不产物、不消耗库存；单击直接开始，右侧显示预测")"
+                            @onmouseenter="HoverSurvey" @onfocus="HoverSurvey" @onmouseleave="Unhover" @onblur="Unhover"
+                            @onclick="Survey" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                        <strong>@sv.Name · @(sv.BaseMinutes)分钟</strong>
+                        <small>练习不产物 · 今日@(e.SurveyDoneToday(s, LocationId))/@(sv.DailyPerActorNode)次@(surveyWhy != null && e.SurveyDoneToday(s, LocationId) < sv.DailyPerActorNode ? $" · {surveyWhy}" : "")</small>
+                    </button>
+                }
             </div>
         </div>
     </div>
@@ -144,15 +156,18 @@ else
 
     private void HoverExplore() => G.Hover(ExploreReq, "探索周边");
     private void HoverClear() => G.Hover(ClearReq, "清理");
+    private void HoverSurvey() => G.Hover(SurveyReq, G.E.SurveyRules.Name);
     private void Unhover() => G.Hover(null);
 
     // 同一个请求对象，悬停时右栏不必每次重算
     private static readonly ActionRequest ExploreReq = ActionRequest.Explore();
     private static readonly ActionRequest ClearReq = ActionRequest.Clear();
+    private static readonly ActionRequest SurveyReq = ActionRequest.Survey();
 
     /// <summary>单击直接开始（玩法层再次校验）；请求发出后立即锁定，重复点击不排队。</summary>
     private async Task Explore() => await Go(ActionRequest.Explore(), SelectionKind.Location);
     private async Task Clear() => await Go(ActionRequest.Clear(), SelectionKind.Clear);
+    private async Task Survey() => await Go(ActionRequest.Survey(), SelectionKind.Location);
 
     private async Task Go(ActionRequest r, SelectionKind kind)
     {

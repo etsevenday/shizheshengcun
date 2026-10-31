@@ -24,6 +24,8 @@ namespace Survival.Core.Engine
         public static ActionRequest Travel(string locationId) => new ActionRequest { Type = ActionType.Travel, TargetId = locationId };
         public static ActionRequest Explore() => new ActionRequest { Type = ActionType.Explore };
         public static ActionRequest Clear() => new ActionRequest { Type = ActionType.Clear };
+        /// <summary>遗迹勘整（Q55）：在当前地点做搜集训练。</summary>
+        public static ActionRequest Survey() => new ActionRequest { Type = ActionType.Survey };
         public static ActionRequest Gather(string nodeId, int? toolInstanceId = null) =>
             new ActionRequest { Type = ActionType.Gather, TargetId = nodeId, ToolInstanceId = toolInstanceId };
         public static ActionRequest Craft(string recipeId, int? potInstanceId = null, IEnumerable<int>? preferredInstanceIds = null, int batchCount = 1) =>

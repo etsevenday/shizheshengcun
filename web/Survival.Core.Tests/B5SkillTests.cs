@@ -132,20 +132,21 @@ public class B5SkillTests : BattleTestBase
     {
         var s = AtWoods();
         s.Resources["berries"].Available = 99;
-        Assert.That(E.Preview(s, ActionRequest.Gather("berries")).XpGains, Has.Some.Contains("采集经验+2"));
+        // B7b 按新规则改写（Q55：经验 clamp(2×ceil(原基础分钟/5),2,12)，野果 20 分钟 = 8）
+        Assert.That(E.Preview(s, ActionRequest.Gather("berries")).XpGains, Has.Some.Contains("采集经验+8"));
         for (var k = 0; k < 4; k++) GatherOnce(s, "berries");
-        Assert.That(s.Skills["gathering"].Xp, Is.EqualTo(6), "同资源点同日最多3次");
+        Assert.That(s.Skills["gathering"].Xp, Is.EqualTo(24), "同资源点同日最多3次");
         Assert.That(s.Log.Last(x => x.Text.Contains("野果")).Text, Does.Contain("今日已计3次"));
         Assert.That(E.Preview(s, ActionRequest.Gather("berries")).XpGains.Single(), Does.Contain("不再给经验"));
         s.Resources["woods_fiber"].Available = 99;
         GatherOnce(s, "woods_fiber");
-        Assert.That(s.Skills["gathering"].Xp, Is.EqualTo(8), "另一个资源点单独计");
+        Assert.That(s.Skills["gathering"].Xp, Is.EqualTo(32), "另一个资源点单独计");
         // 次日（世界日）重新计
         E.DebugSetStats(s, 20, 80, 80, 18, 90, 60);
         AdvanceTo(s, At(2, 8, 0));
         s.Resources["berries"].Available = 99;
         GatherOnce(s, "berries");
-        Assert.That(s.Skills["gathering"].Xp, Is.EqualTo(10), "次日重新给经验");
+        Assert.That(s.Skills["gathering"].Xp, Is.EqualTo(40), "次日重新给经验");
         Assert.That(s.Player.DailyCounts.Keys.All(k => k.StartsWith("2|")), Is.True, "只保留当日计数");
         Assert.That(s.Skills["scavenging"].Xp, Is.EqualTo(0));
     }
@@ -163,7 +164,7 @@ public class B5SkillTests : BattleTestBase
         Start(s, ActionRequest.Gather("misc_box"));
         s.Main!.HazardHit = false;
         Run(s);
-        Assert.That(s.Skills["scavenging"].Xp, Is.EqualTo(2), "单次箱子练搜集");
+        Assert.That(s.Skills["scavenging"].Xp, Is.EqualTo(12), "单次箱子练搜集（B7b Q55：30 分钟 = 12）");
         Assert.That(s.Skills["gathering"].Xp, Is.EqualTo(0));
     }
 
@@ -459,7 +460,7 @@ public class B5SkillTests : BattleTestBase
         var s = New(7);
         E.DebugTeleport(s, "village");
         E.DebugSetProgress(s, "village", 100);
-        Assert.That(E.Preview(s, ActionRequest.Gather("supply_box")).XpGains.Single(), Is.EqualTo("搜集经验+2"));
+        Assert.That(E.Preview(s, ActionRequest.Gather("supply_box")).XpGains.Single(), Is.EqualTo("搜集经验+12（今日搜集经验0/60）"), "B7b Q55：箱子不写第N/3次");
         var t = AtWoods();
         Lv(t, "gathering", 7);
         t.Resources["berries"].Available = 10;

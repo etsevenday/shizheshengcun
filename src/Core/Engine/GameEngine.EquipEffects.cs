@@ -163,7 +163,8 @@ namespace Survival.Core.Engine
                     yield return "work.route";      // 只能沿已发现的路线移动，所以每次移动都是“已发现路线”
                     break;
                 case ActionType.Gather:
-                    if (targetId != null && _res.TryGetValue(targetId, out var res) && res.IsCache) yield return "work.scavenge";
+                    // 搜集背心等“搜集工作量”效果管练搜集的资源点（Q55：箱子与人工/工业资源，含废金属堆）；遗迹勘整不吃工作量折减
+                    if (targetId != null && _res.TryGetValue(targetId, out var res) && GatherSkillOf(res) == Scavenging) yield return "work.scavenge";
                     break;
             }
         }
@@ -206,9 +207,10 @@ namespace Survival.Core.Engine
                 case ActionType.Travel: list.Add((StatId.Energy, "rate.move.energy")); break;
                 case ActionType.Clear: list.Add((StatId.Energy, "rate.scavengeClear.energy")); break;
                 case ActionType.Gather:
-                    var cache = targetId != null && _res.TryGetValue(targetId, out var res) && res.IsCache;
+                    var cache = targetId != null && _res.TryGetValue(targetId, out var res) && GatherSkillOf(res) == Scavenging;
                     list.Add((StatId.Energy, cache ? "rate.scavengeClear.energy" : "rate.gather.energy"));
                     break;
+                case ActionType.Survey: list.Add((StatId.Energy, "rate.scavengeClear.energy")); break;   // 正常搜集身体费率
             }
             return list;
         }

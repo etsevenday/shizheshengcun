@@ -125,6 +125,7 @@
         ActionType.Craft or ActionType.Build => "预留材料返还当前地面，不生成半成品。",
         ActionType.Explore => "探索度不变、不给随机物资，已消耗的时间保留。",
         ActionType.Clear => "不给物资，已扣除的1次清理机会不返还，已消耗的时间保留。",
+        ActionType.Survey => "不给经验、不占今日勘整次数，已消耗的时间保留。",
         ActionType.WaitCook => "火堆、锅与受热进度原样保留，成品留在原位。",
         _ => "已流逝的时间与已发生的消耗/恢复不返还。",
     };
