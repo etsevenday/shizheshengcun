@@ -234,8 +234,12 @@
             else if (sel != null)
             {
                 var p = e.PreviewCommand(s, G.CurrentBattleCommand());
-                @if (allyAim) { <span class="bx-hint">点亮起的我方成员指定目标@(p.Ok ? "；直接确认＝对自己" : "")</span> }
-                <span class="bx-hint @(p.Ok ? "" : "warn")" title="@(p.Ok ? string.Join("；", p.Notes) : p.Reason)">@(p.Ok ? (p.RetreatChance.HasValue ? $"成功率{Ui.Pct(p.RetreatChance.Value)}" : p.Notes.FirstOrDefault() ?? ShortName(sel)) : p.Reason)</span>
+                @if (G.BattlePairAiming) { <span class="bx-hint">@PairHint()</span> }
+                else if (allyAim) { <span class="bx-hint">点亮起的我方成员指定目标@(p.Ok ? "；直接确认＝对自己" : "")</span> }
+                @if (!(G.BattlePairAiming && !p.Ok && G.BattleAllyTarget2 == null))
+                {
+                    <span class="bx-hint @(p.Ok ? "" : "warn")" title="@(p.Ok ? string.Join("；", p.Notes) : p.Reason)">@(p.Ok ? (p.RetreatChance.HasValue ? $"成功率{Ui.Pct(p.RetreatChance.Value)}" : p.Notes.FirstOrDefault() ?? ShortName(sel)) : p.Reason)</span>
+                }
                 <button type="button" class="bx-go" id="bt-confirm" disabled="@(!p.Ok || locked)" title="@(p.Ok ? "点击确认才提交；同一指令只提交一次" : p.Reason)"
                         @onclick="() => Exec(token)">@(sel.Action == "end_turn" ? $"确认结束行动 · 剩余{p.Ap}AP清零" : $"确认 · {ShortName(sel)} · {p.Ap}AP")</button>
                 <button type="button" class="bx-x" aria-label="取消（Esc）" title="取消（Esc/右键），不执行" @onclick="G.ClearBattleAction">×</button>
@@ -305,6 +309,17 @@
         _ => "",
     };
 
+    /// <summary>整队（Q105）底部步骤提示：第一步点 A，第二步点 A 的相邻友方 B，选齐后确认；再点已选的人取消该步，Esc/右键取消整条。</summary>
+    private string PairHint()
+    {
+        var s = G.S;
+        var b = s.Battle!;
+        string N(string id) => id == GameState.PlayerId ? "你" : G.E.ActorDisplayName(s, id);
+        if (G.BattleAllyTarget == null) return "整队第1步：点要交换站位的第一名友方（可以是自己）· Esc 取消";
+        if (G.BattleAllyTarget2 == null) return $"整队第2步：已选{N(G.BattleAllyTarget)}（{GameEngine.AllyPos(b, G.BattleAllyTarget)}号位），再点与他相邻、亮起的一名友方 · 再点{N(G.BattleAllyTarget)}重选";
+        return $"整队：{N(G.BattleAllyTarget)} ⇄ {N(G.BattleAllyTarget2)}，确认后交换 · 再点任一人改选";
+    }
+
     private static string AimHint(BattleCommandOption sel) =>
         sel.TargetMode == "area" ? $"点亮起的任一1、2号位目标提交{sel.Label}（1、2号位都打）"
         : sel.TargetMode == "suffix" ? "点起点敌人：从它的号位打到4号位，按离起点的格数×0.65/0.50/0.35/0.25，空位不重排；悬停看右侧逐个预测"
@@ -337,10 +352,12 @@
         var fa = b.Fighter(id);
         var apMax = fa.Acting && fa.ActivationAp > 0 ? fa.ActivationAp : e.NormalActivationAp(s.Actor(id));
         var targetable = allyAim && allyAimSet.Contains(id);
-        var notTarget = allyAim && !targetable;
-        <div class="anc ally @(acting ? "acting" : "") @(viewing ? "selected" : "") @(targetable ? "targetable" : "") @(notTarget ? "unreachable" : "")" data-slot="@pos" data-actor="@id" role="button" tabindex="0" aria-pressed="@viewing"
+        // 整队（Q105）：已选的 A/B 带角标，不算“非目标”变灰
+        var pairMark = G.BattlePairAiming ? (G.BattleAllyTarget == id ? "A" : G.BattleAllyTarget2 == id ? "B" : null) : null;
+        var notTarget = allyAim && !targetable && pairMark == null;
+        <div class="anc ally @(acting ? "acting" : "") @(viewing ? "selected" : "") @(targetable ? "targetable" : "") @(notTarget ? "unreachable" : "") @(pairMark != null ? "pair-picked" : "")" data-slot="@pos" data-actor="@id" role="button" tabindex="0" aria-pressed="@viewing"
              aria-label="@($"我方{pos}号位 {name}，健康{Ui.N(st.Health)}/{Ui.T(st.HealthMax)}，体力{Ui.N(st.Energy)}{(acting ? "，行动中" : "")}{(targetable ? "，可作为目标" : "")}")"
-             title="@(targetable ? "点击即对他执行所选技能" : notTarget ? "不是所选技能的目标" : "点击在右侧查看状态（只查看，不改变行动顺序）")" @onclick="() => ClickAlly(id, token, locked)" @onkeydown="ev => AllyKey(ev, id)">
+             title="@(pairMark != null ? $"整队已选为{(pairMark == "A" ? "第一" : "第二")}名，再点取消这一步" : targetable ? (G.BattlePairAiming ? (G.BattleAllyTarget == null ? "点击选为整队的第一名" : "点击选为与他交换的第二名") : "点击即对他执行所选技能") : notTarget ? "不是所选技能的目标" : "点击在右侧查看状态（只查看，不改变行动顺序）")" @onclick="() => ClickAlly(id, token, locked)" @onkeydown="ev => AllyKey(ev, id)">
             <div class="anc-top" title="@(acting ? $"本次{(b.ActingPursuit ? "追击" : "普通激活")}剩{fa.Ap}AP（不带入下次）" : "还没轮到；行动顺序见上方队列")">
                 <span class="anc-ap">@(acting ? $"{(b.ActingPursuit ? "追击" : "行动中")} {fa.Ap}/{apMax}AP" : "等待")</span>
             </div>
@@ -350,6 +367,7 @@
                 @{ WeaponConfig cw; ItemInstance? cwi; using (e.FocusOn(s, id)) cw = e.CurrentWeapon(s, out cwi); }
                 <span class="anc-weapon" title="@(cwi == null ? "当前页：拳" : $"当前页：{cw.Name}#{cwi.InstanceId}")">@Icons.Markup(cwi?.ItemId ?? "fists")</span>
                 @if (targetable) { <span class="anc-aim" aria-hidden="true">⌖</span> }
+                @if (pairMark != null) { <span class="anc-pair bdg" aria-label="@($"整队已选{pairMark}")">@pairMark</span> }
             </div>
             <div class="anc-foot">
                 <div class="anc-nums"><span title="健康">♥@(Ui.N(st.Health))</span><span title="体力">体@(Ui.N(st.Energy))</span></div>
@@ -413,7 +431,7 @@
         var unreachable = aiming && !aimSet.Contains(idx);
         var reachWhy = unreachable ? (e.CommandBlocked(s, BattleCommand.Of(G.BattleAction!, idx, G.BattleItem)) ?? "不在本指令范围内") : null;
         var picked = G.BattleTarget == idx;
-        var shown = e.IntentShown(b, en);
+        var shown = e.IntentShown(b, en, s);
         var note = e.IntentTargetNote(s, b, en);
         var (ico, brief, range, kind) = IntentBrief(en, shown);
         var tip = reachWhy ?? (targetable ? "点击即对它执行所选技能（右侧是实际预测）" : "点击选中查看（不会攻击）；先选技能再点亮起的目标才执行");

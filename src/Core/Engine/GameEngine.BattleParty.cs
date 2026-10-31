@@ -324,5 +324,32 @@ namespace Survival.Core.Engine
             Emit(s, GameEventKind.Info, text);
             return text;
         }
+
+        /// <summary>
+        /// 开发入口（?dev=1，B10a 试玩 Q103/Q105）：你与每名同行队友武器Ⅰ换成白色木矛、武器Ⅱ换成白色信号哨（原武器放到当前地面），
+        /// 矛术至少 5 级（架矛）、指挥至少 3 级（整队）。只供试玩多人架矛顺延与整队，不改正式来源。战斗中不可用。
+        /// </summary>
+        public string DebugPartyDrill(GameState s)
+        {
+            if (s.Battle != null) return "战斗中不能用";
+            var who = new List<string> { GameState.PlayerId };
+            who.AddRange(ActiveCompanions(s).Select(r => r.ActorId));
+            foreach (var id in who)
+            {
+                foreach (var (slot, item) in new[] { (EquipSlots.Weapon1, "wooden_spear"), (EquipSlots.Weapon2, "signal_whistle") })
+                {
+                    var owner = ItemInstance.EquipOwner(id, slot);
+                    foreach (var old in s.Items.Where(i => i.Owner == owner).ToList()) old.Owner = s.CurrentLocation;
+                    DebugCreateEquipment(s, item, "white", owner);
+                }
+                var a = s.Actor(id);
+                foreach (var (skill, lv) in new[] { ("spear", 5), ("command", 3) })
+                    if (!a.Skills.TryGetValue(skill, out var st) || st.Level < lv) a.Skills[skill] = new SkillState { Level = lv, Xp = 0 };
+            }
+            Normalize(s, s.CurrentLocation);
+            var text = $"开发：{string.Join("、", who.Select(id => ActorDisplayName(s, id)))}武器Ⅰ木矛、武器Ⅱ信号哨（原武器放到{LocName(s.CurrentLocation)}地面），矛术≥5级、指挥≥3级（只供试玩架矛顺延与整队）。";
+            Emit(s, GameEventKind.Info, text);
+            return text;
+        }
     }
 }

@@ -152,6 +152,7 @@
                         <button class="secondary small-btn" @onclick="() => DevParty(st => G.E.DebugQuickParty(st, kk))">组@(kk)人队（C4，直接编入）</button>
                     }
                     <button class="secondary small-btn" @onclick="() => DevParty(st => G.E.DebugGiveCompanionMeds(st))">同行队友各发药品（绷带/纱布/盐水各2）</button>
+                    <button class="secondary small-btn" @onclick="() => DevParty(st => G.E.DebugPartyDrill(st))">全队木矛+信号哨（矛术5/指挥3，试架矛顺延与整队）</button>
                 </div>
                 @foreach (var r in G.S.Roster.Where(r => !r.Dead))
                 {

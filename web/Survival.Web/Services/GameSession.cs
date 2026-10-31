@@ -1341,23 +1341,83 @@ public sealed class GameSession
     /// </summary>
     public int? BattleShownActor { get; private set; }
 
-    /// <summary>B9a：以友方为目标的技能（TargetMode "ally"）当前选中的友方目标（点我方锚点即提交）。</summary>
+    /// <summary>B9a：以友方为目标的技能（TargetMode "ally"）当前选中的友方目标（点我方锚点即提交）；整队（ally_pair）时为第一目标 A。</summary>
     public string? BattleAllyTarget { get; private set; }
+    /// <summary>整队（Q105，TargetMode "ally_pair"）的第二目标 B 与 A/B 选中时的号位快照（提交时内核按快照重验）。</summary>
+    public string? BattleAllyTarget2 { get; private set; }
+    private int? _allyTargetPos;
+    private int? _allyTarget2Pos;
 
-    /// <summary>所选指令要点我方成员当目标（多人时的指挥/医疗/保护，B9a）。</summary>
+    /// <summary>所选指令要点我方成员当目标（多人时的指挥/医疗/保护，B9a；整队两目标，Q105）。</summary>
     public bool BattleAllyAiming => State != null && S.Battle != null && BattleAction != null && AllyOption() != null;
 
+    /// <summary>所选指令是整队（先点友方 A、再点与 A 相邻的友方 B、再确认；两次点选只是草稿，不提交）。</summary>
+    public bool BattlePairAiming => BattleAllyAiming && AllyOption()!.TargetMode == "ally_pair";
+
     private BattleCommandOption? AllyOption() =>
-        E.BattleOptions(S).FirstOrDefault(x => x.Action == BattleAction && x.TargetMode == "ally" && (BattleItem == null || x.ItemInstanceId == BattleItem));
+        E.BattleOptions(S).FirstOrDefault(x => x.Action == BattleAction && x.TargetMode is "ally" or "ally_pair" && (BattleItem == null || x.ItemInstanceId == BattleItem));
 
-    /// <summary>瞄准友方时可点的我方 actorId。</summary>
-    public IReadOnlyCollection<string> AllyAimTargets() => BattleAllyAiming ? AllyOption()!.AllyTargets : Array.Empty<string>();
+    /// <summary>瞄准友方时可点的我方 actorId（整队：第一步为可作 A 的成员，第二步只亮 A 的真实相邻友方，选齐后不再亮）。</summary>
+    public IReadOnlyCollection<string> AllyAimTargets()
+    {
+        if (!BattleAllyAiming) return Array.Empty<string>();
+        var o = AllyOption()!;
+        if (o.TargetMode != "ally_pair") return o.AllyTargets;
+        if (BattleAllyTarget == null) return o.AllyTargets;
+        if (BattleAllyTarget2 != null) return Array.Empty<string>();
+        return GameEngine.ReorderPartners(S.Battle!, BattleAllyTarget)
+            .Where(x => E.CommandBlocked(S, new BattleCommand { Action = BattleAction!, AllyTarget = BattleAllyTarget, AllyTarget2 = x }) == null).ToList();
+    }
 
-    /// <summary>点我方锚点：瞄准友方时点合法目标即提交（一次 requestId）；点非法目标写原因；未瞄准只查看。</summary>
+    private void ClearPairDraft()
+    {
+        BattleAllyTarget = null;
+        BattleAllyTarget2 = null;
+        _allyTargetPos = null;
+        _allyTarget2Pos = null;
+    }
+
+    /// <summary>
+    /// 整队两步点选（Q105，S14/A10 本轮章）：第一次点合法的 A，第二次点 A 的相邻友方 B；再点已选的人取消这一步；选齐后由底部“确认”提交。
+    /// 只改草稿，不扣费、不抽随机、不改站位。
+    /// </summary>
+    private void ClickPairAlly(string actorId)
+    {
+        var b = S.Battle!;
+        Notice = null;
+        if (BattleAllyTarget2 == actorId) { BattleAllyTarget2 = null; _allyTarget2Pos = null; Notify(); return; }
+        if (BattleAllyTarget == actorId) { ClearPairDraft(); Notify(); return; }
+        if (BattleAllyTarget == null || BattleAllyTarget2 != null)
+        {
+            if (!AllyOption()!.AllyTargets.Contains(actorId))
+            {
+                Notice = E.CommandBlocked(S, new BattleCommand { Action = BattleAction!, AllyTarget = actorId }) ?? "这名成员不能作为整队的第一个目标";
+                Notify();
+                return;
+            }
+            ClearPairDraft();
+            BattleAllyTarget = actorId;
+            _allyTargetPos = GameEngine.AllyPos(b, actorId);
+            Notify();
+            return;
+        }
+        if (!AllyAimTargets().Contains(actorId))
+        {
+            Notice = E.CommandBlocked(S, new BattleCommand { Action = BattleAction!, AllyTarget = BattleAllyTarget, AllyTarget2 = actorId }) ?? "这名成员不能和所选的人交换";
+            Notify();
+            return;
+        }
+        BattleAllyTarget2 = actorId;
+        _allyTarget2Pos = GameEngine.AllyPos(b, actorId);
+        Notify();
+    }
+
+    /// <summary>点我方锚点：瞄准友方时点合法目标即提交（一次 requestId）；点非法目标写原因；整队只记两步草稿；未瞄准只查看。</summary>
     public async Task ClickBattleAlly(string actorId, string token)
     {
         if (State == null || S.Battle == null || BattleBusy) return;
         if (!BattleAllyAiming) { ViewBattleAlly(actorId); return; }
+        if (BattlePairAiming) { ClickPairAlly(actorId); return; }
         if (!AllyAimTargets().Contains(actorId))
         {
             Notice = E.CommandBlocked(S, new BattleCommand { Action = BattleAction!, ItemInstanceId = BattleItem, AllyTarget = actorId }) ?? "这名成员不是这个技能的目标";
@@ -1468,7 +1528,7 @@ public sealed class GameSession
         BattleDrawer = null;
         MedTrayOpen = false;
         BattleAllyView = null;
-        BattleAllyTarget = null;
+        ClearPairDraft();
         BattleShownActor = null;
     }
 
@@ -1478,6 +1538,12 @@ public sealed class GameSession
         var c = BattleCommand.Of(BattleAction ?? "", BattleTarget, BattleItem);
         if (S.Battle != null) c.ActorId = GameEngine.ActingAlly(S.Battle);
         if (BattleAllyAiming) c.AllyTarget = BattleAllyTarget;
+        if (BattlePairAiming)
+        {
+            c.AllyTarget2 = BattleAllyTarget2;
+            c.AllyTargetPos = _allyTargetPos;
+            c.AllyTarget2Pos = _allyTarget2Pos;
+        }
         return c;
     }
 
@@ -1510,7 +1576,7 @@ public sealed class GameSession
         if (BattleAction == action && BattleItem == item) { ClearBattleAction(); return; }
         BattleAction = action;
         BattleItem = item;
-        BattleAllyTarget = null;
+        ClearPairDraft();
         DetailTab = DetailTab.Object;
         Notice = null;
         Notify();
@@ -1583,6 +1649,7 @@ public sealed class GameSession
     {
         BattleAction = null;
         BattleItem = null;
+        ClearPairDraft();   // Q105：取消瞄准/Esc/切页丢弃未提交的整队草稿
         Notice = null;   // 试玩修复 B9-3：取消瞄准时清掉上一次点非法目标留下的“射程不足”等原因
         Notify();
     }
@@ -1594,7 +1661,7 @@ public sealed class GameSession
     public string BattleExecToken()
     {
         var b = S.Battle;
-        return b == null ? "" : $"bt:{b.BattleId}:{b.Round}:{b.Cursor}:{b.ActiveAlly}:{b.PlayerAp}:{b.Log.Count}:{BattleAction}:{BattleTarget}:{BattleItem}";
+        return b == null ? "" : $"bt:{b.BattleId}:{b.Round}:{b.Cursor}:{b.ActiveAlly}:{b.PlayerAp}:{b.Log.Count}:{BattleAction}:{BattleTarget}:{BattleItem}:{BattleAllyTarget}:{BattleAllyTarget2}";
     }
 
     /// <summary>执行所选指令（战斗区内的本地“执行”按钮）：执行期间锁定输入；之后逐条展示敌方行动直到轮到玩家或战斗结束。</summary>
@@ -1607,12 +1674,14 @@ public sealed class GameSession
         {
             var res = E.ExecuteCommand(S, cmd);
             Notice = res.Ok ? null : res.Reason;
+            // Q105：整队提交时目标或号位已变化——整条拒绝、清掉草稿让玩家重选，不自动改选别人
+            if (!res.Ok && cmd.AllyTarget2 != null) ClearPairDraft();
             if (res.Ok && !res.Duplicate)
             {
                 // 提交后瞄准收起（R03 §7.4：连点/双击只提交一次，第二击不排队成另一攻击；新目标不复用旧点击）
                 BattleAction = null;
                 BattleItem = null;
-                BattleAllyTarget = null;
+                ClearPairDraft();
                 if (S.Battle != null && BattleTarget != null && S.Battle.Enemies.All(e => e.Index != BattleTarget || !e.Alive)) BattleTarget = null;
                 AutoTarget();
             }
@@ -1964,6 +2033,7 @@ public sealed class GameSession
             BattleAction = null;
             BattleItem = null;
             BattleHover = null;
+            ClearPairDraft();
             Save();
         }
         Notify();
