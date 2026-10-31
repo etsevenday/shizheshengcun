@@ -299,4 +299,39 @@ public class V10StoryTests : BattleTestBase
         Assert.That(s.Battle, Is.Null, "旧档不补首战");
         Assert.That(s.Items.Any(i => i.ItemId == Sub), Is.False);
     }
+
+    /// <summary>
+    /// 试玩修复 B7d-2：首战撤退后，经敌踪“接敌”（不是首战战斗）把保留游荡尸一并打死，也记首战完成并发唯一教学物质；
+    /// 之后其他敌人可以接近，门控不再卡死。
+    /// </summary>
+    [Test]
+    public void PlaytestB7d2_TutorialEnemyKilledInOtherBattle_CountsAsTutorialWon()
+    {
+        var s = NewStory(17);
+        ToField(s);
+        var tid = s.Story.TutorialEnemyId!.Value;
+        for (var i = 0; i < 20 && s.Battle != null && !E.AwaitingPlayer(s); i++) E.BattleStep(s);
+        Force(s, Below(0.0001));
+        Assert.That(Cmd(s, "retreat").Ok, Is.True);
+        if (s.Battle != null) Assert.Inconclusive("强制撤退未成功");
+        Assert.That(s.Story.TutorialWon, Is.False);
+        // 开发入口“本地敌人立即形成敌踪”→“接敌”：普通战斗里把首战游荡尸打死
+        s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = new List<int> { tid }, Source = "explore", Minute = s.GameMinute };
+        Assert.That(E.Engage(s).Ok, Is.True);
+        Assert.That(s.Battle!.Tutorial, Is.False);
+        ReadDialogues(s);
+        for (var k = 0; k < 20 && s.Battle != null; k++)
+        {
+            if (!E.AwaitingPlayer(s)) { E.BattleStep(s); continue; }
+            s.Battle.Enemies[0].Hp = 0.01;
+            Force(s, Below(0.2), AtLeast(0.6), Any(), Any(), Any());
+            Cmd(s, "basic_attack", s.Battle.Enemies[0].Index);
+        }
+        Assert.That(s.Battle, Is.Null);
+        Assert.That(s.Story.TutorialWon, Is.True, "首战敌人在任何战斗中被击杀都算首战完成");
+        Assert.That(GameEngine.TutorialGateOpen(s), Is.False);
+        Assert.That(s.Items.Where(i => i.ItemId == Sub && i.Source?.TutorialReward == true).Sum(i => i.Count), Is.EqualTo(1), "唯一教学物质照发");
+        var other = E.DebugSpawnEnemy(s, "shambler", "field");
+        Assert.That(E.CanApproach(s, other.Id) ?? "", Does.Not.Contain("首战"));
+    }
 }

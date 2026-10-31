@@ -34,7 +34,7 @@ CAPACITY_UNLOCKS = {
     "first_of_church_route_record_or_academy_safety_record": {
         "allOf": [], "anyOf": ["church_route_record", "academy_safety_record"], "text": "教会路线记录或学院安全记录之一"},
     "both_distinct_church_and_academy_records": {
-        "allOf": ["church_route_record", "academy_safety_record"], "anyOf": [], "text": "教会路线记录与学院安全记录都有"},
+        "allOf": ["church_route_record", "academy_safety_record"], "anyOf": [], "text": "教会路线记录与学院安全记录两种"},
 }
 
 

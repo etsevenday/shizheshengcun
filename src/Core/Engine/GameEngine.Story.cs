@@ -186,7 +186,9 @@ namespace Survival.Core.Engine
         private string? GrantTutorialReward(GameState s, BattleState b)
         {
             var st = s.Story;
-            if (!b.Tutorial || !TutorialGateOpen(s)) return null;
+            // 试玩修复 B7d-2：首战敌人在任何一场战斗里被击杀都算首战完成（例：首战撤退后经敌踪“接敌”与别的敌人一起打死），
+            // 否则它已从世界移除、首战门控永远关不上
+            if (!TutorialGateOpen(s) || (!b.Tutorial && !TutorialEnemyKilled(s, b))) return null;
             st.TutorialWon = true;
             if (!string.IsNullOrEmpty(st.TutorialGrantEventId)) return null;
             var sub = Config.ActiveSubstance;
@@ -199,6 +201,10 @@ namespace Survival.Core.Engine
             OpenDialogue(s, EventOf(DialogueTutorialWon));
             return $"{ItemName(sub.ItemId)}+{Math.Max(1, sub.TutorialDrop.Count)}（首战教学）";
         }
+
+        /// <summary>首战保留的那只敌人在这场战斗里倒下了。</summary>
+        private static bool TutorialEnemyKilled(GameState s, BattleState b) =>
+            s.Story.TutorialEnemyId is int tid && b.Enemies.Any(e => e.WorldId == tid && e.Dead);
 
         // ───────────── 吞噬融合（R07 §4） ─────────────
 

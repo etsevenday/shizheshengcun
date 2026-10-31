@@ -753,4 +753,36 @@ public class B7dCombatTests : BattleTestBase
         var pull = Cfg.Enemies.Single(x => x.Id == "z_clinger").Intents.Cycle.Single(x => x.Kind == "pull");
         Assert.That(pull.Factor, Is.EqualTo((double)ea["z_clingerPullDamage"]!));
     }
+
+    // ───────────── M181：B7d 试玩修复（第 1 轮） ─────────────
+
+    /// <summary>试玩修复 B7d-1：攀附感染者追击按普通攻击结算时用抓击的说法，不再叫“拉扯”（拉扯是 0 伤害的位移招）。</summary>
+    [Test]
+    public void PlaytestB7d1_ClingerPursuit_PlainGrabNotPull()
+    {
+        var s = Fight(9601, "z_clinger");
+        Ready(s);
+        var b = s.Battle!;
+        var c = Enemy(s, 1);
+        Place(s, (1, 2));
+        s.Stats.Health = 20;
+        Force(s, Below(0.01), Any());
+        typeof(GameEngine).GetMethod("EnemyActivation", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { s, c, true });
+        Assert.That(b.Log.Last(), Does.Contain("攀附感染者追击抓击命中").And.Not.Contain("拉扯"));
+        Assert.That(s.Stats.Health, Is.LessThan(20), "追击仍按普通攻击结算伤害（结算不变）");
+        Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(1), "追击不判位移");
+    }
+
+    /// <summary>试玩修复 B7d-5：容量说明不再出现“已有……都有”。</summary>
+    [Test]
+    public void PlaytestB7d5_CapacityText_Readable()
+    {
+        var s = Fight(9602, "shambler");
+        s.Battle = null;
+        UnlockCapacity(s, 4);
+        Assert.That(E.CapacityText(s), Is.EqualTo("容量C4（已有教会路线记录与学院安全记录两种）"));
+        s.Progress.Flags.Remove("academy_safety_record");
+        Assert.That(E.CapacityText(s), Does.Contain("取得教会路线记录与学院安全记录两种后C4"));
+    }
 }

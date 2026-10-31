@@ -1317,6 +1317,7 @@ public sealed class GameSession
     {
         if (State == null || S.Battle == null) return;
         ClearBattleAction();
+        DetailTab = DetailTab.Object;   // 试玩修复 B7d-6：右栏切回对象信息，原因显示在最上面
         Notice = $"{label}现在不能用：{reason ?? "条件不满足"}";
         Notify();
     }

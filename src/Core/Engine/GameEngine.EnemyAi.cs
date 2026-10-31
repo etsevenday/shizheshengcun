@@ -70,9 +70,12 @@ namespace Survival.Core.Engine
             return AllSteps(cfg).FirstOrDefault(x => KindMatches(x.Kind, e.Intent)) ?? new EnemyIntentStepConfig { Kind = e.Intent, Verb = AttackVerb(cfg) };
         }
 
-        /// <summary>追击用的普通攻击：意图表里第一个需要够到目标的步骤，按普通攻击执行（倍率1、无附加、不改判咬击）。</summary>
+        /// <summary>
+        /// 追击用的普通攻击：意图表里第一个需要够到目标的步骤，按普通攻击执行（倍率1、无附加、不改判咬击）。
+        /// 拉扯不算（试玩修复 B7d-1：拉扯是 0 伤害的位移招，追击按普通攻击结算时改用它的抓击这类普通攻击说法，Q65/Q79）。
+        /// </summary>
         private EnemyIntentStepConfig PursuitStep(EnemyConfig cfg) =>
-            AllSteps(cfg).FirstOrDefault(x => ReachKinds.Contains(x.Kind)) ?? PlainStep(cfg);
+            AllSteps(cfg).FirstOrDefault(x => ReachKinds.Contains(x.Kind) && x.Kind != "pull") ?? PlainStep(cfg);
 
         private (HashSet<int> own, HashSet<int> target) SlotsOf(EnemyConfig cfg, EnemyIntentStepConfig st) =>
             (Digits(st.OwnSlots ?? cfg.OwnSlots), Digits(st.TargetSlots ?? cfg.TargetSlots));

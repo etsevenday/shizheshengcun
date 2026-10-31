@@ -742,7 +742,7 @@ namespace Survival.Core.Engine
             var c = BattleCapacity(s);
             var met = Config.Scope.Capacity.Unlocks.Where(u => u.Met(s.Progress.Flags)).OrderByDescending(u => u.Capacity).FirstOrDefault();
             var next = Config.Scope.Capacity.Unlocks.Where(u => u.Capacity > c).OrderBy(u => u.Capacity).FirstOrDefault();
-            return $"容量C{c}（{(met != null ? $"已有{met.Text}" : "尚无解锁记录")}{(next != null ? $"；{next.Text}后C{next.Capacity}" : "")}）";
+            return $"容量C{c}（{(met != null ? $"已有{met.Text}" : "尚无解锁记录")}{(next != null ? $"；取得{next.Text}后C{next.Capacity}" : "")}）";
         }
 
         /// <summary>开发入口：加一条容量解锁事实（hub_registered / church_route_record / academy_safety_record）或全部清除。返回说明。</summary>
@@ -1079,8 +1079,8 @@ namespace Survival.Core.Engine
                         p.EnergyCost = a.Energy ?? 0;
                         p.EnergyAfter = Math.Max(0, s.Stats.Energy - p.EnergyCost);
                         var to = SwapDestination(c) ?? SwapTargets(b).FirstOrDefault();
-                        p.Title = $"调整站位：{PosName(PlayerPos(b))}→{PosName(to)}";
-                        p.EffectText = AllyAt(b, to) != null ? $"与{PosName(to)}的同伴交换站位" : $"移到{PosName(to)}（空位）";
+                        p.Title = $"站位→{to}号";   // 与操作台按钮同名（试玩修复 B7d-4）
+                        p.EffectText = AllyAt(b, to) != null ? $"调整站位：{PosName(PlayerPos(b))}→{PosName(to)}，与该号位的同伴交换" : $"调整站位：{PosName(PlayerPos(b))}→{PosName(to)}（空位）";
                         p.Notes.Add(p.EffectText);
                         p.Notes.Add($"{a.ApCost}AP、体力{Fmt.N(p.EnergyCost)}，不得经验；技能按真实站位在使用时判断（可以先换位再出手）");
                         p.Notes.Add(PositionHint(s, b, to));
@@ -1376,6 +1376,8 @@ namespace Survival.Core.Engine
                 }
                 if (GrantTutorialReward(s, b) is string reward) lines.Add(reward);
             }
+            // 首战敌人已在这场倒下、却以撤退收场：也记首战完成并发教学物质（否则它已不在世界上、门控卡死；试玩修复 B7d-2）
+            else if (TutorialEnemyKilled(s, b) && GrantTutorialReward(s, b) is string rr) lines.Add(rr);
             var loss = Math.Min(Config.Panic.MoraleLossMax, b.Panic / Config.Panic.MoraleLossDivisor);
             if (loss > 0) s.Stats.Add(StatId.Morale, -loss);
             s.EncounterGraceUntil = s.GameMinute + Config.Encounters.PostExitRandomEncounterGraceMinutes;
