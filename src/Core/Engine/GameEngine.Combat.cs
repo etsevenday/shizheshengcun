@@ -194,6 +194,26 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
+        /// 主角对某种控制的抗性（Q63）：基础控制抗性 5；拉扯/击退再加“位移抵抗”=max(装备合计（同名取强、不同来源相加、封顶40）, 主动同类状态（稳固）)，
+        /// 失衡/减速等不吃位移抵抗。稳态 +30 在 RollControl 里另加，最终成功率 10%—95%。
+        /// </summary>
+        public double PlayerControlResist(GameState s, BattleState? b, string status)
+        {
+            var r = Config.Scope.BasePlayerControlResist;
+            if (Config.ActorBaseDefense.DisplacementGearOnlyStatuses.Contains(status))
+            {
+                var gear = EquipmentEffects(s, GameState.PlayerId, 0).DisplaceResist;
+                var state = b != null && b.DisplaceUntilRound >= b.Round ? b.DisplaceResist : 0;
+                r += Math.Max(gear, state);
+            }
+            return r;
+        }
+
+        /// <summary>主角对某种控制的成功率（不推进随机；稳态期间+30）：预览与执行同源。</summary>
+        public double PlayerControlChance(GameState s, BattleState b, string status) =>
+            ControlChance(0, PlayerControlResist(s, b, status) + (b.PlayerSteadyUntilRound >= b.Round ? Config.CombatMath.SteadyResistBonus : 0));
+
+        /// <summary>
         /// 命中后判一次控制（R03 §4：击退/拉扯/减速/打断/失衡）：控制能力默认 0；目标抗性 = 基准 + 稳态+30。成功则目标获稳态至下一大回合末，
         /// 同轮重复成功不再加第二层。返回是否成功与成功率（写进日志）。
         /// </summary>

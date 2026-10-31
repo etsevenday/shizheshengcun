@@ -18,6 +18,8 @@ namespace Survival.Core.Engine
         public double Armor;
         public double Accuracy;
         public double Crit;
+        /// <summary>装备位移抵抗：不同来源合计（封顶前）与封顶 40 后（Q63，只防拉扯/击退）。</summary>
+        public double DisplaceResistRaw;
         public double DisplaceResist;
         /// <summary>本页武器的攻击类词条：忽略护甲、直接伤害乘数加值、E 成本倍率、噪声修正（只取本次所用武器，A05 §5）。</summary>
         public double ArmorIgnore;
@@ -75,6 +77,9 @@ namespace Survival.Core.Engine
                 }
                 if (Weapon(it.ItemId) is WeaponConfig w && Math.Abs(w.Speed) > 1e-12)
                     list.Add(new ActiveEffect { Effect = new EquipEffectConfig { Key = "combat.speed", Op = "add", Value = w.Speed }, Source = it });
+                // 武器固定特性里的位移抵抗（防暴盾“稳固”+25，Q63 位移装备来源）：穿着就算，不分页
+                if (Weapon(it.ItemId) is WeaponConfig tw && tw.Trait("displaceResist") is double dr && dr > 0)
+                    list.Add(new ActiveEffect { Effect = new EquipEffectConfig { Key = "combat.displaceResist", Op = "add", Value = dr }, Source = it });
                 if (Gear(it.ItemId) is GearConfig g)
                     foreach (var e in g.Effects) list.Add(new ActiveEffect { Effect = e, Source = it });
                 foreach (var id in it.Affixes ?? new List<string>())
@@ -116,13 +121,17 @@ namespace Survival.Core.Engine
                     case "combat.armor": r.ArmorRaw += v; break;
                     case "combat.accuracy": r.Accuracy += v; break;
                     case "combat.crit": r.Crit += v; break;
-                    case "combat.displaceResist": r.DisplaceResist += v; break;
                     case "combat.armorIgnore": r.ArmorIgnore += v; break;
                     case "combat.damageMultiplier": r.DamageMultiplier += v; break;
                     case "combat.energyCost": if (op == "mul") r.EnergyCostFactor *= v; break;
                     case "combat.noise": r.Noise += v; break;
                 }
             }
+            // 位移抵抗（Q63）：固定来源按装备 ID 同名取强、词条按词条 ID 同名取强，不同来源相加后封顶 40（与主动同类取强、稳态另加在控制判定里）
+            var disp = active.Where(x => x.Effect.Key == "combat.displaceResist").ToList();
+            r.DisplaceResistRaw = disp.Where(x => x.AffixId == null).GroupBy(x => x.Source.ItemId).Sum(gp => gp.Max(x => x.Effect.Value))
+                                + disp.Where(x => x.AffixId != null).GroupBy(x => x.AffixId).Sum(gp => gp.Max(x => x.Effect.Value));
+            r.DisplaceResist = Math.Max(0, Math.Min(Config.ActorBaseDefense.DisplacementGearAggregateCap, r.DisplaceResistRaw));
             r.Speed = Math.Min(lim.PositiveSpeedCap, r.SpeedPositiveRaw) + r.SpeedNegative;
             r.Armor = Math.Max(0, Math.Min(lim.ArmorCap, r.ArmorRaw));
 
@@ -388,6 +397,10 @@ namespace Survival.Core.Engine
             return list;
         }
 
+        /// <summary>角色自己的基础防御（Q63：属于角色、不是可转移物品；本批只有主角）。</summary>
+        public string BaseDefenseLine(string actorId = GameState.PlayerId) =>
+            $"基础防御：控制抗性{Fmt.T(Config.Scope.BasePlayerControlResist)}、闪避{Fmt.T(Config.Scope.BasePlayerDodge)}、护甲{Fmt.T(Config.Scope.BasePlayerArmor)}（装备“位移抵抗”只防拉扯/击退）";
+
         /// <summary>人物页装备区的效果汇总（一行一项）：战斗合计（只显示）、生效中的求生效果、暂停的装备。</summary>
         public List<string> EquipSummaryLines(GameState s, string actorId = GameState.PlayerId)
         {
@@ -403,7 +416,7 @@ namespace Survival.Core.Engine
             if (fx.ArmorIgnore != 0) combat.Add($"忽略护甲{Fmt.T(fx.ArmorIgnore)}");
             if (fx.DamageMultiplier != 0) combat.Add($"直接伤害乘数{Fmt.SignedT(fx.DamageMultiplier)}");
             if (Math.Abs(fx.EnergyCostFactor - 1) > 1e-12) combat.Add($"招式E×{Fmt.T(fx.EnergyCostFactor)}");
-            if (fx.DisplaceResist != 0) combat.Add($"位移抵抗+{Fmt.T(fx.DisplaceResist)}个百分点");
+            if (fx.DisplaceResist != 0) combat.Add($"位移抵抗+{Fmt.T(fx.DisplaceResist)}个百分点（只防拉扯/击退{(fx.DisplaceResistRaw > Config.ActorBaseDefense.DisplacementGearAggregateCap ? $"，合计封顶{Fmt.T(Config.ActorBaseDefense.DisplacementGearAggregateCap)}" : "")}）");
             if (fx.Noise != 0) combat.Add($"噪声{Fmt.SignedT(fx.Noise)}");
             if (combat.Count > 0) lines.Add($"战斗（全身装备合计；攻击类词条只算当前武器页）：{string.Join("，", combat)}{(fx.DisplaceResist != 0 ? "——位移抵抗在我方多人时才有用（只剩你一人不会被移动），其余战斗中生效" : "——战斗中生效")}");
             var names = new Dictionary<string, string>

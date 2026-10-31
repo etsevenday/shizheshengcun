@@ -97,6 +97,7 @@ else
                         </div>
                     }
                     @* B4 H10：装备效果合计（R16 上限）：战斗类只显示，求生类生效中 *@
+                    <div class="ca-note equip-fx">@e.BaseDefenseLine()</div>
                     @foreach (var line in e.EquipSummaryLines(s))
                     {
                         <div class="ca-note equip-fx">@line</div>

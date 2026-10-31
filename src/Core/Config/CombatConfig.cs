@@ -54,7 +54,7 @@ namespace Survival.Core.Config
         public double BasePlayerSpeed { get; set; }
         public double BasePlayerDodge { get; set; }
         public double BasePlayerArmor { get; set; }
-        /// <summary>我方控制抗性基准（开发假设 B6-2：总册没写，取 0，待确认 Q-L）。</summary>
+        /// <summary>主角基础控制抗性（Q63：5，= actorBaseDefense 主角档 p0）。</summary>
         public double BasePlayerControlResist { get; set; }
         public bool HealthUsesExistingSurvivalHealth { get; set; }
     }
@@ -81,6 +81,33 @@ namespace Survival.Core.Config
         public string Text { get; set; } = "";
 
         public bool Met(ICollection<string> facts) => AllOf.All(facts.Contains) && (AnyOf.Count == 0 || AnyOf.Any(facts.Contains));
+    }
+
+    /// <summary>Q63 人物基础防御：固定档、随机候选区间、位移装备抵抗规则。</summary>
+    public sealed class ActorBaseDefenseConfig
+    {
+        public List<ActorDefenseProfileConfig> FixedProfiles { get; set; } = new List<ActorDefenseProfileConfig>();
+        /// <summary>随机候选（B8 招募）：controlResist/evasion/baseSpeed 各 {min,max,step,distribution}，baseArmor 0。只入配置。</summary>
+        public Newtonsoft.Json.Linq.JObject? RandomRecruit { get; set; }
+        public ActorDefenseProfileConfig? Rb01Escort { get; set; }
+        /// <summary>装备“位移抵抗”只作用的控制：拉扯、击退（不防失衡/减速）。</summary>
+        public List<string> DisplacementGearOnlyStatuses { get; set; } = new List<string>();
+        /// <summary>不同固定来源的装备位移抵抗相加后的上限 40（再与主动同类取强）。</summary>
+        public double DisplacementGearAggregateCap { get; set; } = 40;
+        public double SteadyBonus { get; set; } = 30;
+
+        public ActorDefenseProfileConfig? Profile(string actorId) => FixedProfiles.FirstOrDefault(p => p.ActorId == actorId);
+    }
+
+    public sealed class ActorDefenseProfileConfig
+    {
+        public string ActorId { get; set; } = "";
+        public double ControlResist { get; set; }
+        public double Evasion { get; set; }
+        public double BaseArmor { get; set; }
+        public double BaseSpeed { get; set; }
+        public string Role { get; set; } = "";
+        public bool? CanRecruit { get; set; }
     }
 
     public sealed class SkillConfig

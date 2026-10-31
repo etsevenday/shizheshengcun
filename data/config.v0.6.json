@@ -4361,7 +4361,7 @@
     "basePlayerSpeed": 4,
     "basePlayerDodge": 36,
     "basePlayerArmor": 0,
-    "basePlayerControlResist": 0,
+    "basePlayerControlResist": 5,
     "healthUsesExistingSurvivalHealth": true,
     "capacity": {
       "newGame": 1,
@@ -5654,6 +5654,9 @@
         "nonCraftable": true,
         "expertMaterial": "scrap",
         "expertMax": 1
+      },
+      "traitEffects": {
+        "displaceResist": 25
       }
     },
     {
@@ -11479,5 +11482,254 @@
       "maxCredit": 4.9999,
       "roundingDecimals": 4
     }
+  },
+  "actorBaseDefense": {
+    "fixedProfiles": [
+      {
+        "actorId": "p0",
+        "controlResist": 5,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "protagonist"
+      },
+      {
+        "actorId": "npc_lin_zhao",
+        "controlResist": 8,
+        "evasion": 35,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "fixed_companion"
+      },
+      {
+        "actorId": "npc_zhou_yan",
+        "controlResist": 10,
+        "evasion": 33,
+        "baseArmor": 0,
+        "baseSpeed": 3,
+        "role": "fixed_companion"
+      },
+      {
+        "actorId": "npc_shen_he",
+        "controlResist": 4,
+        "evasion": 37,
+        "baseArmor": 0,
+        "baseSpeed": 5,
+        "role": "fixed_companion"
+      },
+      {
+        "actorId": "npc_tang_li",
+        "controlResist": 3,
+        "evasion": 39,
+        "baseArmor": 0,
+        "baseSpeed": 6,
+        "role": "fixed_companion"
+      },
+      {
+        "actorId": "npc_gu_cheng",
+        "controlResist": 12,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "fixed_companion"
+      },
+      {
+        "actorId": "npc_ye_xun",
+        "controlResist": 8,
+        "evasion": 38,
+        "baseArmor": 0,
+        "baseSpeed": 5,
+        "role": "fixed_companion"
+      },
+      {
+        "actorId": "npc_lu_heng",
+        "controlResist": 8,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_xu_an",
+        "controlResist": 7,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_luo_zheng",
+        "controlResist": 10,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_chen_zhi",
+        "controlResist": 5,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_tao_cen",
+        "controlResist": 6,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_du_sui",
+        "controlResist": 7,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_qi_wen",
+        "controlResist": 6,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_bai_ling",
+        "controlResist": 5,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_ji_mu",
+        "controlResist": 10,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_song_zhu",
+        "controlResist": 6,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_fu_heng",
+        "controlResist": 12,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_wen_cheng",
+        "controlResist": 8,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_ji_wen",
+        "controlResist": 5,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_shao_ning",
+        "controlResist": 6,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_he_yuan",
+        "controlResist": 9,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_yin_ke",
+        "controlResist": 10,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "service_only_not_combat_target",
+        "canRecruit": false
+      },
+      {
+        "actorId": "npc_cheng_wang",
+        "controlResist": 6,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4,
+        "role": "persistent_visitor_not_combat_target",
+        "canRecruit": false
+      }
+    ],
+    "randomRecruit": {
+      "controlResist": {
+        "min": 0,
+        "max": 10,
+        "step": 0.5,
+        "distribution": "uniform_discrete"
+      },
+      "evasion": {
+        "min": 34,
+        "max": 38,
+        "step": 0.5,
+        "distribution": "uniform_discrete"
+      },
+      "baseArmor": 0,
+      "baseSpeed": {
+        "min": 3,
+        "max": 5,
+        "step": 0.1,
+        "distribution": "uniform_discrete"
+      },
+      "rolledOncePerCandidate": true,
+      "savedWithCycleAndActor": true,
+      "independentOfAppearanceSexAndName": true
+    },
+    "rb01Escort": {
+      "controlResist": 5,
+      "evasion": 36,
+      "baseArmor": 0,
+      "baseSpeed": 4
+    },
+    "displacementGearOnlyStatuses": [
+      "pull",
+      "knockback"
+    ],
+    "displacementGearAggregateCap": 40,
+    "steadyBonus": 30
   }
 }

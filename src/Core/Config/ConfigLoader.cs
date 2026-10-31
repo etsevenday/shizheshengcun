@@ -337,6 +337,9 @@ namespace Survival.Core.Config
                     e.Add($"敌人 {en.Id} 的附加掉落无效");
             }
             if (c.Scope.BasePlayerDodge <= 0) e.Add("玩家闪避能力须为正");
+            if (c.ActorBaseDefense.Profile("p0") is ActorDefenseProfileConfig p0
+                && (p0.ControlResist != c.Scope.BasePlayerControlResist || p0.Evasion != c.Scope.BasePlayerDodge || p0.BaseArmor != c.Scope.BasePlayerArmor || p0.BaseSpeed != c.Scope.BasePlayerSpeed))
+                e.Add("主角基础防御档（actorBaseDefense p0）与 scope 的主角基准不一致");
             var cap = c.Scope.Capacity;
             if (cap.NewGame < 1 || cap.Max > c.Scope.Slots.Count || cap.NewGame > cap.Max) e.Add("队伍容量（scope.capacity）新局值或上限无效");
             foreach (var u in cap.Unlocks)

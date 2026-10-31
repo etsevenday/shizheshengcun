@@ -139,6 +139,7 @@ else if (b != null)
             <div class="lines">
                 <div><span>恐慌</span><b>@Ui.N(b.Panic)@(e.Config.Panic.PenaltyFor(b.Panic) is PanicPenaltyConfig pp ? $"（≥{Ui.T(pp.Minimum)}：命中能力×{Ui.T(pp.AccuracyRatingFactor)}、撤退×{Ui.T(pp.RetreatFactor)}）" : "")</b></div>
                 <div><span>你的闪避能力</span><b>@Ui.T(e.Config.Scope.BasePlayerDodge)</b></div>
+                <div title="控制成功率=clamp(75%+控制能力−抗性, 10%, 95%)；稳态期间抗性再+30；装备“位移抵抗”只防拉扯/击退，不防失衡/减速"><span>你的控制抗性</span><b>基础@(Ui.T(e.Config.Scope.BasePlayerControlResist)) · 拉扯/击退@(Ui.T(e.PlayerControlResist(s, b, "pull")))@(b.PlayerSteadyUntilRound >= b.Round ? "（稳态另+30）" : "")</b></div>
                 <div><span>本场世界时间</span><b>@Clock.Duration(b.Ticks * e.Config.Time.TickMinutes)（每轮5分钟）</b></div>
             </div>
             @if (b.Log.Count > 0)

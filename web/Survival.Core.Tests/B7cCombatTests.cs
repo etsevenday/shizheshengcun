@@ -118,4 +118,83 @@ public class B7cCombatTests : BattleTestBase
         Assert.That(t.Battle.Enemies.Count(e => e.Alive), Is.EqualTo(3));
         Assert.That(E.BattleCapacity(t), Is.EqualTo(1), "下一场新战斗用真实事实：无事实 C1");
     }
+
+    // ───────────── M165：人物基础防御与位移抵抗限域（Q63） ─────────────
+
+    private ItemInstance Wear(GameState s, string itemId, string slot, params string[] affixes)
+    {
+        var it = E.DebugCreateEquipment(s, itemId, "white", ItemInstance.EquipOwner(GameState.PlayerId, slot));
+        it.Affixes = affixes.Length > 0 ? affixes.ToList() : null;
+        return it;
+    }
+
+    /// <summary>CB-Q63a：24 名固定人物档、随机区间与主角档对合同；主角 5/36/0 同步到 scope（队友与随机人物 B8 才接入）。</summary>
+    [Test]
+    public void CB_Q63a_Profiles_MatchContract_PlayerFiveThirtySixZero()
+    {
+        var d = Adj()["actorBaseDefense"]!;
+        var fixedRows = (JArray)d["fixedProfiles"]!;
+        Assert.That(Cfg.ActorBaseDefense.FixedProfiles, Has.Count.EqualTo(24));
+        foreach (var r in fixedRows)
+        {
+            var p = Cfg.ActorBaseDefense.Profile((string)r["actorId"]!)!;
+            Assert.That((p.ControlResist, p.Evasion, p.BaseArmor, p.BaseSpeed, p.Role), Is.EqualTo(((double)r["controlResist"]!, (double)r["evasion"]!, (double)r["baseArmor"]!, (double)r["baseSpeed"]!, (string)r["role"]!)));
+        }
+        Assert.That((Cfg.Scope.BasePlayerControlResist, Cfg.Scope.BasePlayerDodge, Cfg.Scope.BasePlayerArmor, Cfg.Scope.BasePlayerSpeed), Is.EqualTo((5.0, 36.0, 0.0, 4.0)));
+        var rr = Cfg.ActorBaseDefense.RandomRecruit!;
+        Assert.That(((double)rr["controlResist"]!["min"]!, (double)rr["controlResist"]!["max"]!, (double)rr["controlResist"]!["step"]!), Is.EqualTo((0.0, 10.0, 0.5)));
+        Assert.That(((double)rr["evasion"]!["min"]!, (double)rr["evasion"]!["max"]!, (double)rr["evasion"]!["step"]!), Is.EqualTo((34.0, 38.0, 0.5)));
+        Assert.That(((double)rr["baseSpeed"]!["min"]!, (double)rr["baseSpeed"]!["max"]!, (double)rr["baseSpeed"]!["step"]!), Is.EqualTo((3.0, 5.0, 0.1)));
+        Assert.That(E.BaseDefenseLine(), Does.Contain("控制抗性5").And.Contain("闪避36").And.Contain("护甲0"));
+    }
+
+    /// <summary>CB-Q63c：位移抵抗只防拉扯/击退；不同来源相加封顶 40、同名取强，再与主动稳固取强；稳态另 +30；最终 10%—95%。</summary>
+    [Test]
+    public void CB_Q63c_DisplacementGear_OnlyPullKnockback_Cap40_StrongestWithActive()
+    {
+        var s = Fight(7, "shambler");
+        var b = s.Battle!;
+        Assert.That(E.PlayerControlChance(s, b, "stagger"), Is.EqualTo(0.70).Within(1e-12), "基础抗性5：75%−5%");
+        Wear(s, "heavy_armor", EquipSlots.Armor);
+        Assert.That(E.PlayerControlResist(s, b, "pull"), Is.EqualTo(5 + 15));
+        Assert.That(E.PlayerControlResist(s, b, "stagger"), Is.EqualTo(5), "位移装备不防失衡");
+        Assert.That(E.PlayerControlResist(s, b, "slow"), Is.EqualTo(5), "位移装备不防减速");
+        Wear(s, "riot_shield", EquipSlots.Weapon1);
+        Assert.That(E.PlayerControlResist(s, b, "knockback"), Is.EqualTo(5 + 40), "15+25=40 正好封顶");
+        Wear(s, "steady_ring", EquipSlots.CombatAccessory, "anchored");
+        var fx = E.EquipmentEffects(s);
+        Assert.That((fx.DisplaceResistRaw, fx.DisplaceResist), Is.EqualTo((50.0, 40.0)), "15+25+10 合计 50，封顶 40");
+        Assert.That(E.PlayerControlResist(s, b, "pull"), Is.EqualTo(45));
+        Assert.That(E.EquipSummaryLines(s)[0], Does.Contain("位移抵抗+40个百分点（只防拉扯/击退，合计封顶40）"));
+        // 两面同款防暴盾：同名固定特性取强，只算一面
+        var t = Fight(8, "shambler");
+        Wear(t, "riot_shield", EquipSlots.Weapon1);
+        Wear(t, "riot_shield", EquipSlots.Weapon2);
+        Assert.That(E.EquipmentEffects(t).DisplaceResist, Is.EqualTo(25));
+        // 主动稳固（盾技能状态 25）与装备 15 取强，不相加
+        var u = Fight(9, "shambler");
+        var ub = u.Battle!;
+        Wear(u, "heavy_armor", EquipSlots.Armor);
+        ub.DisplaceResist = 25;
+        ub.DisplaceUntilRound = ub.Round;
+        Assert.That(E.PlayerControlResist(u, ub, "pull"), Is.EqualTo(5 + 25));
+        ub.DisplaceUntilRound = ub.Round - 1;
+        Assert.That(E.PlayerControlResist(u, ub, "pull"), Is.EqualTo(5 + 15), "稳固过期只剩装备");
+    }
+
+    /// <summary>CB-Q63c/Q70 文档样例：控制能力0对主角：普通70%、稳态40%；位移抵抗25时拉扯/击退45%、稳态15%，失衡/减速仍70%/40%；下限10%。</summary>
+    [Test]
+    public void CB_Q63c_DocExample_SeventyFortyFortyFiveFifteen()
+    {
+        var s = Fight(10, "shambler");
+        var b = s.Battle!;
+        Wear(s, "riot_shield", EquipSlots.Weapon1);
+        Assert.That(E.PlayerControlChance(s, b, "stagger"), Is.EqualTo(0.70).Within(1e-12));
+        Assert.That(E.PlayerControlChance(s, b, "pull"), Is.EqualTo(0.45).Within(1e-12));
+        b.PlayerSteadyUntilRound = b.Round;
+        Assert.That(E.PlayerControlChance(s, b, "slow"), Is.EqualTo(0.40).Within(1e-12));
+        Assert.That(E.PlayerControlChance(s, b, "knockback"), Is.EqualTo(0.15).Within(1e-12));
+        Wear(s, "heavy_armor", EquipSlots.Armor);
+        Assert.That(E.PlayerControlChance(s, b, "pull"), Is.EqualTo(0.10).Within(1e-12), "5+40+30 → 下限10%");
+    }
 }

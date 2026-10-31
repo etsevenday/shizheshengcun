@@ -438,9 +438,9 @@ namespace Survival.Core.Engine
             {
                 if (st.Control is "slow" or "stagger")
                 {
-                    // 减速/失衡是控制：命中后再判，我方控制抗性基准 0（开发假设 B6-2），稳态期间+30（R03 §4）
+                    // 减速/失衡是控制：命中后再判，主角基础控制抗性 5（Q63；位移抵抗不防减速/失衡），稳态期间+30（R03 §4）
                     var steady = b.PlayerSteadyUntilRound;
-                    if (RollControl(s, b, Config.Scope.BasePlayerControlResist, ref steady, out var cc))
+                    if (RollControl(s, b, PlayerControlResist(s, b, st.Control), ref steady, out var cc))
                     {
                         b.PlayerSteadyUntilRound = steady;
                         if (st.Control == "slow") { b.PlayerSlowPending = true; extra.Add($"你被{st.Verb}，下轮速度−{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}（控制{Fmt.Pct(cc)}）"); }

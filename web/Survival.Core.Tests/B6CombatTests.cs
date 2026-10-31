@@ -465,15 +465,17 @@ public class B6CombatTests : BattleTestBase
     }
 
     [Test]
-    public void R23_EnemySlowOnHit_IsControl_PlayerResist0()
+    public void R23_EnemySlowOnHit_IsControl_PlayerResist5()
     {
         var s = Fight(19, "crawler");
         var e = s.Battle!.Alive.First();
-        Force(s, Below(0.01), Any(), AtLeast(0.75));
+        // Q63 起主角基础控制抗性 5（取代 B6-2 的 0）：成功率 75%−5% = 70%
+        Force(s, Below(0.01), Any(), AtLeast(0.70));
         typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
-        Assert.That(s.Battle.PlayerSlowPending, Is.False, "控制判定失败（75%）不减速");
-        Force(s, Below(0.01), Any(), Below(0.75));
+        Assert.That(s.Battle.PlayerSlowPending, Is.False, "控制判定失败（70%）不减速");
+        Assert.That(s.Battle.Log.Last(), Does.Contain("控制70%"));
+        Force(s, Below(0.01), Any(), Below(0.70));
         typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
         Assert.That((s.Battle.PlayerSlowPending, s.Battle.PlayerSteadyUntilRound), Is.EqualTo((true, s.Battle.Round + 1)));
