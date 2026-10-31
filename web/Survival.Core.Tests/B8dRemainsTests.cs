@@ -46,6 +46,12 @@ public class B8dRemainsTests : TestBase
     [Test]
     public void SV_Q98_UnknownOriginStaysPut_OnlyExplicitReserveMoves_Idempotent()
     {
+        var lp = (JObject)JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.a12.json")))["partyAdjudications"]!["serviceLocations"]!["legacyEstateProvenance"]!;
+        Assert.That((string)lp["legacyMissing"]!, Is.EqualTo("battle_death_or_outside_camp_active_party_else_nonbattle_camp_unknown"));
+        Assert.That((string)lp["unknown"]!, Is.EqualTo("do_not_move_to_h02_keep_original_location_through_existing_map_mapping_retrievable"));
+        foreach (var k in new[] { "knownProvenancePreserved", "onlyExplicitPublicReserveMigrates", "idempotent", "contentsOwnerExpiryDurabilityClaimsAndLoanReferencesPreserved" })
+            Assert.That((bool)lp[k]!, Is.True, k);
+
         var e = new GameEngine(V3Cfg());
         var s = e.NewGame(9801);
         e.DebugLegacyStory(s);

@@ -1,4 +1,5 @@
 using System.Reflection;
+using Newtonsoft.Json.Linq;
 using Survival.Core.Engine;
 using Survival.Core.State;
 
@@ -11,6 +12,10 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B8dCombatTests : BattleTestBase
 {
+    /// <summary>A12 combatResolutionAdjudications.enemyActivation（= assets/20261031/combat/combat-resolution-adjudications.json）。</summary>
+    private static JObject Act() =>
+        (JObject)JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.a12.json")))["combatResolutionAdjudications"]!["enemyActivation"]!;
+
     private void Ready(GameState s)
     {
         PlayerFirst(s);
@@ -47,6 +52,11 @@ public class B8dCombatTests : BattleTestBase
     [Test]
     public void AI_Q95_01_NonAttackIntentCosts_LeftoverCanAssist_NoExtraAction()
     {
+        var na = (JObject)Act()["nonAttackIntentAP"]!;
+        Assert.That(((int)na["defaultNonAttackMain"]!, (int)na["fallbackGuard"]!, (int)na["reload"]!, (int)na["flee"]!, (int)na["watch"]!), Is.EqualTo((GameEngine.EnemyMainIntentAp, GameEngine.EnemyMainIntentAp, GameEngine.EnemyReloadAp, 0, 0)));
+        Assert.That((bool)na["zeroCostNotAppendedAutomatically"]!, Is.True);
+        Assert.That((string)na["insufficient"]!, Is.EqualTo("end_without_execution_or_charge_no_cheap_intent_substitution"));
+
         // 各意图花费（在 1 号位、你在 1 号位，不涉及够不到）
         foreach (var (enemy, intent, ap) in new[] { ("riot", "guard", 2), ("howler", "howl", 2), ("boar", "charge_prepare", 2), ("z_signal", "signal", 2), ("wild_dog_leader", "buff", 2), ("raider_gunner", "reload", 1) })
         {
@@ -195,6 +205,13 @@ public class B8dCombatTests : BattleTestBase
     [Test]
     public void AI_Q96_01_PlainAttackSlots_HostileAlive_BothSlots()
     {
+        var pe = (JObject)Act()["cooperativeAdvance"]!["plainAttackEligibility"]!;
+        Assert.That((string)pe["selector"]!, Is.EqualTo("first_kind_attack_step_in_opening_then_cycle_else_original_panel_plain_attack"));
+        Assert.That((string)pe["missingSlots"]!, Is.EqualTo("inherit_original_panel_fields"));
+        Assert.That((string)pe["rearTypeWithoutAttackStep"]!, Is.EqualTo("original_plain_melee_own12_target12"));
+        foreach (var k in new[] { "requiresHostileAndAlive", "requiresLegalTargetsBothBeforeAndAfter", "currentSpecialIntentNotUsed", "noAttackOrRngDuringEligibility" })
+            Assert.That((bool)pe[k]!, Is.True, k);
+
         var s = Fight(9601, "z_darter", "shambler");
         Ready(s);
         Reset(s);
@@ -295,6 +312,11 @@ public class B8dCombatTests : BattleTestBase
     [Test]
     public void UI_Q97_01_ApproachTag_FollowsBraceState()
     {
+        var hint = (JObject)Act()["exposureApproach"]!["hint"]!;
+        Assert.That(((string)hint["activeSpearStance"]!, (string)hint["noActiveSpearStance"]!), Is.EqualTo(("触发架矛", "算主动前移")));
+        Assert.That((string)hint["state"]!, Is.EqualTo("existing_stance_with_valid_duration_and_remaining_charges_not_merely_equipped_spear"));
+        Assert.That((bool)hint["previewConsumesNoRng"]!, Is.True);
+
         var s = Exposed(9701, out var z);
         var b = s.Battle!;
         var (intent, step, label) = (z.Intent, z.IntentStep, z.IntentLabel);
