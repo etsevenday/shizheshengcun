@@ -27,7 +27,12 @@
                 @onclick="() => G.SetDetailTab(DetailTab.Character)">人物</button>
     </div>
     <div class="detail-body" role="tabpanel">
-    @if (battlePanel)
+    @if (G.BattleFullscreen)
+    {
+        @* B9：全屏战斗时对象信息在战斗画面内的右栏，这里留在下面不可操作，不重复计算预测 *@
+        <div class="empty-detail">战斗中：对象信息在战斗画面右侧</div>
+    }
+    else if (battlePanel)
     {
         @* 战斗与敌踪：指令预览 → 执行；选中目标详情（v0.5 §16） *@
         <BattlePanel />

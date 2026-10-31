@@ -1,0 +1,83 @@
+/* 全屏四对四战斗（A10 §2.2/§3，开发计划 v0.9 批次 B9）。本文件在 fourrows.css 之后加载，只管战斗全屏视图；
+   敌踪选择仍是两行覆盖层（combat.css / fourrows.css）。
+   布局预算（A10 §3）：外层 8px 安全边距、五条纵区之间 8px 间隔；
+   1600×900：顶条/队列/底反馈 48/64/40，场景/操作台 460/240，右对象栏 300 宽；
+   1280×720：40/48/36，352/196，240 宽；1920×1080 按同一比例给场景与操作台加高（578/302 左右），右栏 360、阅读宽上限 1920。 */
+
+.bfs {
+  position: fixed; inset: 0; z-index: 55;
+  --bfs-pad: 8px; --bfs-gap: 8px;
+  --bfs-top: 48px; --bfs-queue: 64px; --bfs-feed: 40px;
+  --bfs-right: clamp(240px, 18.75vw, 360px);
+  background: linear-gradient(180deg, #0a1216f0, #0b1417f6 60%, #0a1114fa), var(--scene-art) center / cover;
+  color: var(--text); font-size: 16px;
+}
+.bfs-grid {
+  position: relative; box-sizing: border-box; height: 100%; max-width: 1920px; margin: 0 auto; padding: var(--bfs-pad);
+  display: grid; gap: var(--bfs-gap);
+  grid-template-columns: minmax(0, 1fr) var(--bfs-right);
+  grid-template-rows: var(--bfs-top) var(--bfs-queue) minmax(0, 460fr) minmax(0, 240fr) var(--bfs-feed);
+  grid-template-areas: "top top" "queue queue" "scene info" "console log" "feed feed";
+}
+@media (max-height: 800px) {
+  .bfs { --bfs-top: 40px; --bfs-queue: 48px; --bfs-feed: 36px; }
+  .bfs-grid { grid-template-rows: var(--bfs-top) var(--bfs-queue) minmax(0, 352fr) minmax(0, 196fr) var(--bfs-feed); }
+}
+.bfs-grid > * { min-width: 0; min-height: 0; box-sizing: border-box; }
+.bfs-top { grid-area: top; }
+.bfs-queue { grid-area: queue; }
+.bfs-scene { grid-area: scene; }
+.bfs-console { grid-area: console; }
+.bfs-info { grid-area: info; }
+.bfs-log { grid-area: log; }
+.bfs-feed { grid-area: feed; }
+/* 战斗对白与二级抽屉覆盖场景、操作台与右栏（顶条、队列、底反馈仍可见） */
+.bfs-dlg, .bfs-drawer { grid-row: 3 / span 2; grid-column: 1 / -1; position: relative; z-index: 40; }
+.bfs-dlg > .dlg-layer { position: absolute; inset: 0; }
+
+/* ── 顶条 ── */
+.bfs-top { display: flex; align-items: center; gap: 14px; padding: 0 10px; background: #11181bf2; border: 1px solid #6b5c3f; border-radius: 6px; overflow: hidden; }
+.bfs-title { font-size: 20px; white-space: nowrap; font-family: var(--title-font); }
+.bfs-where { color: var(--muted); white-space: nowrap; }
+.bfs-actor { white-space: nowrap; font-weight: 600; padding: 2px 10px; border-radius: 4px; border: 2px solid transparent; }
+.bfs-actor.now { color: var(--accent); border-color: var(--accent); }
+.bfs-actor.wait { color: var(--warn); border-color: #8a4f3a; }
+.bfs-cap { color: var(--muted); white-space: nowrap; }
+.bfs-top .bt-noise { font-size: 16px; color: var(--muted); }
+.bfs-top-btns { margin-left: auto; display: flex; gap: 6px; }
+.bfs-top-btns button { min-height: 36px; padding: 0 12px; font-size: 16px; width: auto; white-space: nowrap; }
+.bfs-top-btns button.on { border-color: var(--accent); color: var(--accent); }
+@media (max-height: 800px) { .bfs-top-btns button { min-height: 32px; } .bfs-title { font-size: 18px; } }
+
+/* ── 队列 ── */
+.bfs-queue { display: flex; align-items: center; gap: 6px; padding: 0 10px; background: #11181bd9; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+
+/* ── 场景、操作台、右栏、底反馈的外框 ── */
+.bfs-scene, .bfs-console { background: #141c1fe6; border: 1px solid #8a4f3a; border-radius: 6px; }
+.bfs-info { padding: 10px 12px; display: flex; flex-direction: column; border-radius: 6px; }
+.bfs-info .detail-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.bfs-log { display: flex; flex-direction: column; gap: 4px; padding: 6px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.bfs-log-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.bfs-log-head button { width: auto; min-height: 32px; padding: 0 10px; font-size: 16px; }
+.bfs-log-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 3px; font-size: 16px; line-height: 1.4; color: var(--muted); }
+.bfs-log-list li:first-child { color: var(--text); }
+.bfs-feed { display: flex; align-items: center; gap: 8px; padding: 0 6px 0 12px; background: #11181bf2; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.bfs-feed .bx-hint, .bfs-feed .bx-last { flex: 1 1 auto; min-width: 0; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bfs-feed .bx-last { color: var(--muted); }
+.bfs-feed .bx-go { min-height: 30px; padding: 0 12px; font-size: 16px; }
+.bfs-feed .bx-x { width: 30px; height: 30px; }
+.bfs-feed-btns { flex: 0 0 auto; display: flex; gap: 6px; margin-left: auto; }
+.bfs-feed-btns button { width: auto; min-height: 30px; padding: 0 12px; font-size: 16px; white-space: nowrap; }
+.bfs-feed-btns button.on { border-color: var(--accent); color: var(--accent); }
+
+/* ── 抽屉 ── */
+.bfs-drawer { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: #121a1dfa; border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 8px 28px #000a; }
+.bfs-drawer > .sub-panel { position: absolute; inset: 0; }
+.bfs-drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.bfs-drawer-head h2 { margin: 0; font-size: 20px; }
+.bfs-drawer-head button { width: auto; min-height: 36px; padding: 0 12px; }
+.bfs-drawer-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.bfs-full-log li { font-size: 16px; line-height: 1.5; }
+
+/* 战斗菜单在全屏战斗之上 */
+.bfs > .overlay { z-index: 60; }

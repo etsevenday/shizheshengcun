@@ -188,6 +188,7 @@ public sealed class GameSession
         HelpTopic = null;
         HelpEntry = null;
         _helpDirect = false;
+        if (BattleDrawer == "help") BattleDrawer = null;   // B9：战斗内的说明抽屉随之收起
         var back = _helpReturn;
         _helpReturn = null;
         Panel = back is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" ? back : null;
@@ -457,6 +458,12 @@ public sealed class GameSession
             StatusPinned = null;
             if (Panel == "menu") Panel = null;
             BattleMenuOpen = false;
+            // B9 战斗对白锁（A10 §6.2）：取消未提交瞄准、医疗确认、抽屉与临时悬停；已提交的指令不撤销，选中查看的对象保留
+            BattleAction = null;
+            BattleItem = null;
+            BattleHover = null;
+            BattleDrawer = null;
+            MedTrayOpen = false;
             if (Selected.Kind == SelectionKind.Action)
             {
                 ClearSelectionSilently();
@@ -1293,8 +1300,70 @@ public sealed class GameSession
     public void ToggleBattleMenu(bool? open = null)
     {
         BattleMenuOpen = open ?? !BattleMenuOpen;
+        if (BattleMenuOpen) MedTrayOpen = false;
         Notify();
     }
+
+    /// <summary>
+    /// 全屏四对四战斗（A10 §1.2/§2.2，批次 B9）：战斗中（不含敌踪选择）用覆盖整个应用内容区的战斗视图，
+    /// 外层顶栏、左右栏、地面/随身与底栏留在下面但不可操作（inert），不随战斗改写；战后原样露出。
+    /// </summary>
+    public bool BattleFullscreen => State != null && S.Battle != null;
+
+    /// <summary>
+    /// 战斗内的二级阅读抽屉（A10 §5、§6.3）：supplies 物资查看（只读五卡与容器内容）、log 完整战斗记录、equip 七槽装备查看（只读）、help 系统说明。
+    /// 同一时刻只开一个；打开不暂停也不推进世界时间，不提交任何指令。
+    /// </summary>
+    public string? BattleDrawer { get; private set; }
+
+    /// <summary>快捷医疗锚定小盘（A10 §5）：列出绷带/抗生素/特效药的真实随身数量、成本与不可用原因；选药后照常就近确认。</summary>
+    public bool MedTrayOpen { get; private set; }
+
+    public void OpenBattleDrawer(string? drawer)
+    {
+        if (State == null || S.Battle == null) return;
+        if (drawer != null && DialogueLocked) return;
+        BattleDrawer = BattleDrawer == drawer ? null : drawer;
+        if (BattleDrawer == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturn = null; _helpReturnStatus = null; }
+        MedTrayOpen = false;
+        Notify();
+    }
+
+    public void ToggleMedTray(bool? open = null)
+    {
+        if (State == null || S.Battle == null) return;
+        MedTrayOpen = open ?? !MedTrayOpen;
+        Notify();
+    }
+
+    /// <summary>
+    /// 全屏战斗的 Esc（A10 §6.3）：每次只关最高可退层——战斗菜单（已开则回战场）→ 数量框 → 医疗小盘/就近浮窗 → 固定的状态说明 →
+    /// 物资/战报/装备/说明抽屉（说明内先逐级返回）→ 取消瞄准 → 清查看对象 → 打开战斗菜单。不关闭战斗、不脱战、不提交指令。
+    /// </summary>
+    public void BattleEscape()
+    {
+        if (State == null || S.Battle == null) return;
+        if (BattleMenuOpen) { ToggleBattleMenu(false); return; }
+        if (PendingDrop != null) { CancelDropQuantity(); return; }
+        if (MedTrayOpen) { ToggleMedTray(false); return; }
+        if (Pop != null) { ClosePop(); return; }
+        if (StatusPinned != null) { PinStatus(null); return; }
+        if (BattleDrawer == "help") { HelpBack(); return; }
+        if (BattleDrawer != null) { OpenBattleDrawer(null); return; }
+        if (BattleAction != null) { ClearBattleAction(); return; }
+        if (BattleTarget != null || BattleHover != null || Selected.Kind != SelectionKind.None)
+        {
+            BattleTarget = null;
+            BattleHover = null;
+            ClearSelectionSilently();
+            Notify();
+            return;
+        }
+        ToggleBattleMenu(true);
+    }
+
+    /// <summary>说明抽屉、战斗菜单打开时是阅读暂停（A10 §6.3）：逐条展示的敌方行动等它们关上再继续，不额外推进。</summary>
+    private bool BattleReadingPause => BattleMenuOpen || BattleDrawer == "help";
 
     private void ResetBattleUi()
     {
@@ -1303,6 +1372,8 @@ public sealed class GameSession
         BattleHover = null;
         BattleItem = null;
         BattleMenuOpen = false;
+        BattleDrawer = null;
+        MedTrayOpen = false;
     }
 
     public BattleCommand CurrentBattleCommand() => BattleCommand.Of(BattleAction ?? "", BattleTarget, BattleItem);
@@ -1499,6 +1570,9 @@ public sealed class GameSession
         {
             while (State != null && S.Battle != null && !S.Progress.Dead && !E.AwaitingPlayer(S))
             {
+                // B9（A10 §6.3）：战斗菜单、系统说明是阅读暂停——逐条展示的下一步敌方行动等它们关上再走，不额外推进
+                while (State != null && S.Battle != null && BattleReadingPause) await Task.Delay(120);
+                if (State == null || S.Battle == null) break;
                 var r = E.BattleStep(S);
                 Drain();
                 Save();

@@ -10,6 +10,8 @@
     var subRunning = s.Sub != null;
     // 战斗与敌踪选择：顶栏地图/制作/休息/日志入口锁定（v0.5 §16），覆盖层替换地块栏两行
     var battleUi = G.InBattleUi;
+    // B9 全屏四对四战斗（A10 §1.2）：战斗中整个应用内容区由 BattleScreen 覆盖，外层顶栏/左右栏/地面随身/底栏留在下面不可操作
+    var fullBattle = G.BattleFullscreen && !s.Progress.Dead;
     // 对话读完锁（Q10、S14 §10.1）：整局游戏输入锁定，未被对话层盖住的区域只保持可见
     var dlgLock = G.DialogueLocked;
     var navOff = battleUi || dlgLock;
@@ -20,7 +22,7 @@
 }
 
 <div class="game wasteland" style="--scene-art: url('@Navigation.ToAbsoluteUri(ArtAssets.Scene(s.CurrentLocation, e.Location(s.CurrentLocation).Scene))')">
-    <header class="top">
+    <header class="top" inert="@fullBattle">
         <div class="brand">
             <b>适者生存</b>
             <em>第@(Clock.Day(s.GameMinute))日 · @e.LocName(s.CurrentLocation)@(main?.Type == ActionType.Travel ? $" → {e.LocName(main.TargetId)}" : "")</em>
@@ -48,7 +50,7 @@
         </nav>
     </header>
 
-    <main class="body">
+    <main class="body" inert="@fullBattle">
         <Hud />
 
         @{
@@ -63,10 +65,11 @@
                 <div class="rows2" data-row="1-2">
                     <div class="rows2-inner" inert="@dlgLock">
                         @* 战斗/敌踪覆盖层替换地块栏两行（组件替换而非叠加，拖拽不会收集到隐藏的落点） *@
-                        @if (battleUi) { <BattleOverlay /> } else { <LocationStrip /> }
+                        @if (G.BattleFullscreen) { <div class="rows2-blank" aria-hidden="true"></div> }
+                        else if (battleUi) { <BattleOverlay /> } else { <LocationStrip /> }
                     </div>
-                    @* 人物对话层覆盖地图与设施两行的完整区域（S14 §10.1），地面/随身与左右栏保持可见 *@
-                    <DialogueLayer />
+                    @* 人物对话层覆盖地图与设施两行的完整区域（S14 §10.1），地面/随身与左右栏保持可见；全屏战斗中的对白在战场内显示（A10 §6.2） *@
+                    @if (!G.BattleFullscreen) { <DialogueLayer /> }
                     @if (centerPanel)
                     {
                         <div class="panel-host" inert="@dlgLock">
@@ -120,11 +123,11 @@
         @if (G.DuplicateWeaponsPending && G.Panel != "menu") { <DuplicateWeaponOverlay /> }
         else if (G.OverflowPending && G.Panel != "menu") { <OverflowOverlay /> }
         @if (G.Panel == "menu") { <MenuOverlay /> }
-        @if (G.BattleMenuOpen && battleUi) { <MenuOverlay Battle="true" /> }
+        @if (G.BattleMenuOpen && battleUi && !G.BattleFullscreen) { <MenuOverlay Battle="true" /> }
         <StatusPop />
 
 
-        @if (G.Toast != null && !s.Progress.Dead)
+        @if (G.Toast != null && !s.Progress.Dead && !fullBattle)
         {
             var bad = G.Toast.Kind is GameEventKind.Hazard or GameEventKind.ActionAborted;
             <div class="toast @(bad ? "bad" : "")" role="status">
@@ -134,7 +137,7 @@
         }
     </main>
 
-    <footer class="footer">
+    <footer class="footer" inert="@fullBattle">
         @{ var last = G.Recent.LastOrDefault(); }
         <div class="event" title="@last?.Text">@if (last != null) {<b>@Clock.HHmm(last.Minute)</b>@last.Text}</div>
         <div>@(G.Running ? "时间流逝中…" : "浏览与整理不推进时间")</div>
@@ -153,6 +156,7 @@
             }
         </div>
     </footer>
+    @if (fullBattle) { <BattleScreen /> }
 </div>
 
 <DropQuantity />
@@ -245,9 +249,15 @@
         if (G.State == null || G.S.Progress.Dead) return;
         // 对话读完锁（Q10、S14 §10.1）：快捷键与 Esc 全部无效，Esc 不转入背后的游戏菜单；只有对话层自己的按钮能推进
         if (G.DialogueLocked) return;
+        if (G.BattleFullscreen)
+        {
+            // 全屏战斗（A10 §6.3）：M/C/R/L 锁定；Esc 每次只退最高可退层，最后才打开战斗菜单（不能关闭战斗脱战）
+            if (key == "Escape") G.BattleEscape();
+            return;
+        }
         if (G.InBattleUi)
         {
-            // 战斗中：M/C/R/L 锁定；Esc 栈：拖拽（drag.js 先拦截）→ 数量框 → 状态浮层 → 人物二级页 → 收起战斗菜单 → 就近浮窗 → 收起指令预览/物品选中 → 战斗菜单（只含继续、保存并返回标题，不能脱战）
+            // 敌踪选择中：M/C/R/L 锁定；Esc 栈：拖拽（drag.js 先拦截）→ 数量框 → 状态浮层 → 人物二级页 → 收起战斗菜单 → 就近浮窗 → 收起指令预览/物品选中 → 战斗菜单（只含继续、保存并返回标题，不能脱战）
             if (key != "Escape") return;
             if (G.PendingDrop != null) G.CancelDropQuantity();
             else if (G.StatusPinned != null) G.PinStatus(null);
