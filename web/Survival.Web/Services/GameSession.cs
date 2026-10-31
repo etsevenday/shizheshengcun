@@ -1592,11 +1592,11 @@ public sealed class GameSession
     {
         if (State == null) return;
         if (E.FormationEditBlocked(S) is string why) { Notice = why; Notify(); return; }
-        OpenPanel("formation");
+        // 先建草稿再开面板（OpenPanel 末尾的 Notify 会关掉没有草稿的编队面板）
         FormationDraft = E.RepairedFormation(S, S.FormationPreset);
         FormationDraftVersion = S.FormationVersion;
         FormationPick = null;
-        Notify();
+        OpenPanel("formation");
     }
 
     /// <summary>取消（含 Esc）：丢弃草稿、关闭面板，已保存的预设不变。</summary>
