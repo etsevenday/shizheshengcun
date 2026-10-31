@@ -167,9 +167,11 @@ public class B4CatalogTests : TestBase
     public void EQ_Gear34_MatchA05Table()
     {
         var a12 = (JArray)A12()["equipment"]!["gear"]!;
-        Assert.That(a12, Has.Count.EqualTo(34));
+        // 策划 6dab1bb（答复 Q51）在 A12 新增“缠拳布”knuckle_wraps，导入排在 B7a；导入前只核对已导入的 34 件
+        var pending = new[] { "knuckle_wraps" };
+        Assert.That(a12.Count(j => !pending.Contains((string)j["id"]!)), Is.EqualTo(34));
         Assert.That(Cfg.Gear, Has.Count.EqualTo(34));
-        foreach (var j in a12)
+        foreach (var j in a12.Where(j => !pending.Contains((string)j["id"]!)))
         {
             var id = (string)j["id"]!;
             var g = Cfg.Gear.Single(x => x.Id == id);

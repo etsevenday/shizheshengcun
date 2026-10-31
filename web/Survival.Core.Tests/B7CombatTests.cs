@@ -833,6 +833,75 @@ public class B7CombatTests : BattleTestBase
         Assert.That(s.Skills["shield"].Level, Is.EqualTo(7));
     }
 
+    // ───────────── M150 试玩修复（B7 线上第 1 轮） ─────────────
+
+    /// <summary>BUG2：致胜那一轮的战斗记录（含死亡喷溅）写进行动日志，战斗结束后仍看得到。</summary>
+    [Test]
+    public void M150_LastRoundLog_KeptInActionLog()
+    {
+        var p = Fight(770, "z_bloater");
+        Ready(p);
+        Enemy(p, 1).Hp = 0.01;
+        Force(p, Below(0.01), AtLeast(0.99), Any(), Any());
+        Assert.That(Cmd(p, "basic_attack", 1).Ok, Is.True);
+        Assert.That(p.Battle, Is.Null);
+        Assert.That(p.Log.Any(l => l.Text.Contains("膨胀感染者死亡喷溅：你健康−0.30（不感染）")), Is.True);
+        Assert.That(p.Log.Last().Text, Does.StartWith("战斗胜利"), "结算仍在最后");
+    }
+
+    /// <summary>BUG3/BUG4：意图文字按锁定意图与当前状态重算——旧档存的“嚎叫（恐慌+8）”显示为 +4；枪手弹仓实时。</summary>
+    [Test]
+    public void M150_IntentText_RecomputedLive()
+    {
+        var s = Fight(771, "howler");
+        var h = Enemy(s, 1);
+        h.IntentLabel = "嚎叫（恐慌+8）";   // B6 旧档锁定时存的文字
+        Assert.That(E.IntentShown(s.Battle!, h), Is.EqualTo("嚎叫（恐慌+4）"));
+        var g = Fight(772, "shambler", "shambler", "raider_gunner");
+        var gun = Enemy(g, 3);
+        Assert.That(E.IntentShown(g.Battle!, gun), Does.Contain("弹仓2，备弹4"));
+        gun.Mag = 1;
+        Assert.That(E.IntentShown(g.Battle!, gun), Does.Contain("弹仓1，备弹4"));
+    }
+
+    /// <summary>UX6：结构性原因（需要队友、弹仓满、没弹药、单发弩、没药品）先于“行动点不足”。</summary>
+    [Test]
+    public void M150_StructuralReasonBeforeAp()
+    {
+        var s = Fight(773, "feral_dog");
+        Ready(s);
+        var pistol = Arm(s, "pistol");
+        pistol.LoadedAmmo = 8;
+        s.Battle!.PlayerAp = 0;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("reload")), Is.EqualTo("弹仓已满"));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("swap")), Is.EqualTo(GameEngine.SoloReason));
+        pistol.LoadedAmmo = 0;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Is.EqualTo("弹仓空了：先装填"));
+        Arm2(s, "signal_whistle");
+        s.Skills["command"].Level = 3;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("command_03")), Does.Contain("没有可交换站位的队友"));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("command_01")), Does.StartWith("行动点不足"));
+    }
+
+    /// <summary>UX7：熟练已满 10 级时预测写“不再获得经验”，与日志同源。</summary>
+    [Test]
+    public void M150_MaxedSkill_PreviewSaysNoXp()
+    {
+        var s = Fight(774, "worker");
+        Ready(s);
+        Arm(s, "kitchen_knife");
+        Arm2(s, "trauma_bag");
+        s.Skills["medicine"].Level = 10;
+        s.Stats.Health = 10;
+        E.DebugGive(s, "saline", 1);
+        var notes = E.PreviewCommand(s, BattleCommand.Of("medicine_05")).Notes;
+        Assert.That(notes.Any(n => n.Contains("医疗已满10级，不再获得经验")), Is.True);
+        Assert.That(notes.Any(n => n.Contains("医疗经验+")), Is.False);
+        E.SelectWeaponPage(s, 1);
+        s.Skills["blade"].Level = 10;
+        Assert.That(E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Notes.Any(n => n.Contains("刀剑已满10级，不再获得经验")), Is.True);
+    }
+
     [Test]
     public void NewEnemies_NotInOldSpawnPools()
     {

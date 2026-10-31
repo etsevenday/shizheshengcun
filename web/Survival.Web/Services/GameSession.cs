@@ -1312,6 +1312,15 @@ public sealed class GameSession
     /// 选择指令（R03 §7.4）：只进入瞄准或待确认，不执行、不自动选第一个目标（取代旧“自动改选第一个可选目标后点执行”）；
     /// 再点同一指令收起。先选敌再点技能也只进入瞄准，仍须一次目标点击。
     /// </summary>
+    /// <summary>点了不可用的指令（试玩修复 M150 UX5）：不选中、不进入瞄准，只在右栏写原因。</summary>
+    public void ExplainBlocked(string label, string? reason)
+    {
+        if (State == null || S.Battle == null) return;
+        ClearBattleAction();
+        Notice = $"{label}现在不能用：{reason ?? "条件不满足"}";
+        Notify();
+    }
+
     public void PickBattleAction(string action, int? item = null)
     {
         if (State == null || S.Battle == null) return;

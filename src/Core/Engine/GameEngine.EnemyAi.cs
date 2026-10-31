@@ -196,7 +196,8 @@ namespace Survival.Core.Engine
         /// <summary>敌卡上显示的意图（与实际执行同源）：够不到时写“前移1位后抓击 …”“前移1位（在4号位够不到）”“弱攻击 …”。</summary>
         public string IntentShown(BattleState b, BattleEnemy e)
         {
-            if (!e.Alive || e.Intent is "flee" or "watch") return e.IntentLabel;
+            // 文字每次按锁定的意图与当前状态重算（弹仓/备弹实时；旧档存的文字不再直接显示，显示与执行同源，试玩修复 M150 BUG3/BUG4）
+            if (!e.Alive || e.Intent is "flee" or "watch") return IntentLabel(e, b);
             var st = StepOf(e);
             var cfg = _enemies[e.EnemyId];
             var verb = e.Intent == "bite" ? "咬击" : st.Verb != "" ? st.Verb : AttackVerb(cfg);
@@ -207,7 +208,7 @@ namespace Survival.Core.Engine
                 case ReachPlan.Weak: return $"弱攻击 {Range(cfg, WeakAttackFactor)}（在{e.Pos}号位，{verb}要在{PosList(SlotsOf(cfg, st).own)}）";
                 case ReachPlan.Guard: return "防御（够不到目标）";
             }
-            return e.IntentLabel;
+            return IntentLabel(e, b);
         }
 
         // ───────────── 执行 ─────────────

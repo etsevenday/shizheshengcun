@@ -232,6 +232,13 @@ namespace Survival.Core.Engine
             var x = _exec[n.Id];
             if (!SkillUnlocked(s, n)) return $"需要{SkillName(n.SkillId)}{n.Level}级（当前{SkillLevel(s, n.SkillId)}级）";
             if (CooldownReadyRound(b, n) is int ready) return $"冷却中（第{ready}轮起可用）";
+            // 结构性原因（需要队友、耐久、单发弩、弹药、随身物资、弹仓满）先于“行动点不足”显示（试玩修复 M150 UX6）
+            var structural = x.IsAttack
+                ? wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand) ? $"{w.Name}耐久不足（{DurabilityText(wi)}），可切换武器页"
+                  : x.NoSingleShot && w.UsesMagazine && w.MagazineCapacity < 2 ? $"{w.Name}是单发弩，不能{n.Name}"
+                  : !AmmoReady(s, w, wi, AmmoNeed(x, w)) ? AmmoReason(w, x) : null
+                : NonAttackStaticReason(s, n, x, w, wi);
+            if (structural != null) return structural;
             if (n.Ap > b.PlayerAp) return $"行动点不足（需{n.Ap}，剩{b.PlayerAp}）";
             var energy = SkillEnergy(s, n, w);
             if (s.Stats.Energy < energy - 1e-9)
@@ -371,7 +378,9 @@ namespace Survival.Core.Engine
             }
             else p.Notes.Add("用拳头勉强一击：不磨损原武器，伤害×0.5，命中能力×0.65，没有技能附加控制");
             var lv = SkillLevel(s, sp.Weapon.SkillId);
-            p.Notes.Add($"{SkillName(sp.Weapon.SkillId)}{lv}级：伤害×{Fmt.T(SkillDamageFactor(lv))}，命中能力+{Fmt.T(SkillAccuracyBonus(lv))}；每命中一个目标+{Config.Xp.DamagingAttackCommand}经验（含被护甲挡住的命中，同一指令多段只计1次，每个敌人每技能最多{Config.Xp.MaxHitsPerEncounterEnemySkill}次）");
+            p.Notes.Add($"{SkillName(sp.Weapon.SkillId)}{lv}级：伤害×{Fmt.T(SkillDamageFactor(lv))}，命中能力+{Fmt.T(SkillAccuracyBonus(lv))}；" +
+                (SkillMaxed(s, sp.Weapon.SkillId) ? XpText(s, sp.Weapon.SkillId, 0)
+                    : $"每命中一个目标+{Config.Xp.DamagingAttackCommand}经验（含被护甲挡住的命中，同一指令多段只计1次，每个敌人每技能最多{Config.Xp.MaxHitsPerEncounterEnemySkill}次）"));
             var fl = sp.DamageFactor > 0 && sp.Weapon.DamageMax > 0 ? FlatAttack(s) : 0;
             if (fl > 0) p.Notes.Add($"词条攻击力+{Fmt.T(fl)}：在技能/熟练/暴击乘算后、扣护甲前平加，防御再×{Fmt.T(Config.CombatMath.GuardFactor)}");
         }

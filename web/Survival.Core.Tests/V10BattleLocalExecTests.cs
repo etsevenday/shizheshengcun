@@ -80,6 +80,8 @@ public class V10BattleLocalExecTests : BattleTestBase
         var s = Ready("shambler");
         var b = s.Battle!;
         var idx = b.Alive.Single().Index;
+        E.DebugGive(s, "bandage", 1);   // M150：随身没有绷带是结构性原因，先于“行动点不足”显示；这里要验 AP，先给一份
+        s.Stats.Health = 10;
         Assert.That(E.PreviewCommand(s, BattleCommand.Of("bandage")).Ap, Is.EqualTo(2));
         // 先花 2AP（B6：3AP 起步），原本 2AP 的用药预览随之禁用（不可用原因来自真实规则）
         Assert.That(Cmd(s, "guard").Ok, Is.True);

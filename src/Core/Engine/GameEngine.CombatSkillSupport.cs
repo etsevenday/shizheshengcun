@@ -183,7 +183,7 @@ namespace Survival.Core.Engine
                         if (x.PanicReduce > 0) p.Notes.Add($"恐慌{Fmt.N(b.Panic)}→{Fmt.N(Math.Max(Config.Panic.Range[0], b.Panic - x.PanicReduce))}；同目标每大回合一次");
                         if (x.AllOutFactor > 0) p.Notes.Add($"下一次攻击伤害×{Fmt.T(x.AllOutFactor)}，到第{b.Round + x.BuffRounds + (int)w.Trait("commandRounds")}轮末；同名不叠");
                         if (w.Trait("firstCommandAccuracy") > 0 && !b.FirstCommandUsed) p.Notes.Add($"{w.Name}“预判”：本场首次号令，另加下一击命中能力+{Fmt.T(w.Trait("firstCommandAccuracy"))}");
-                        p.Notes.Add($"{w.Name}耐久−1（有效时）；增益被实际用掉才得指挥经验+{Config.Xp.DamagingAttackCommand}（每场每技能一次）");
+                        p.Notes.Add($"{w.Name}耐久−1（有效时）；" + (SkillMaxed(s, "command") ? XpText(s, "command", 0) : $"增益被实际用掉才得指挥经验+{Config.Xp.DamagingAttackCommand}（每场每技能一次）"));
                     }
                     break;
                 case "medical":
@@ -200,7 +200,7 @@ namespace Survival.Core.Engine
                         p.EffectText = fx.Count > 0 ? string.Join("；", fx) : why;
                         if (p.EffectText != null) p.Notes.Insert(0, p.EffectText);
                     }
-                    p.Notes.Add($"有效时{ItemName(w.Id)}耐久−1、医疗经验+{Config.Xp.Medical}；治疗不暴击");
+                    p.Notes.Add($"有效时{ItemName(w.Id)}耐久−1、{(SkillMaxed(s, Medicine) ? XpText(s, Medicine, 0) : $"医疗经验+{Config.Xp.Medical}")}；治疗不暴击");
                     break;
                 }
                 case "reload":

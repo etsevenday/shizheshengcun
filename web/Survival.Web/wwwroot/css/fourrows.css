@@ -913,3 +913,33 @@
 @media (max-height: 800px) {
   .bt-scene .foe-body { max-width: 66%; }
 }
+
+/* ───── 试玩修复 M150（B7 线上第 1 轮）：操作台指令区分两行、不再横向溢出 ─────
+   最坏情况：技能5个+勉强拳击（第一行），防御/调息/换位/装填/撤退/结束行动+包扎/抗生素/特效药（第二行，共9个）。
+   1280×720：指令区可见约 584px、行高约 91px → 两行各 40px 高的横排按钮（图+名/AP）；第一行 18+6×81+5×4≈524px，
+   第二行（低屏不画通用指令图标）≈ 18+6×≤56+5×4 + 8 + 18+3×≤48+2×4 ≈ 560px，字号≥12px；不可用原因换掉 AP 行（≤4 个汉字），不截字。
+   1600×900 / 1920×1080 行高更足：按钮 54px 高、通用指令带图；万一更窄则按钮自动换行，不再横向滚动。 */
+.bt-console .bc-groups { flex-wrap: wrap; align-content: flex-start; column-gap: 8px; row-gap: 4px; overflow: hidden; }
+.bt-console .bc-group { flex-direction: row; align-items: center; gap: 4px; }
+.bt-console .bc-group.skills { flex-basis: 100%; }
+.bt-console .bc-group .bc-label { writing-mode: vertical-rl; width: 14px; margin: 0; line-height: 14px; letter-spacing: 1px; flex: 0 0 auto; }
+.bt-console .bc-cmds { flex-wrap: wrap; gap: 4px; }
+.bt-console .bc-cmds .cmdt { width: auto; min-width: 44px; height: 40px; flex: 0 0 auto; flex-direction: row; align-items: center; justify-content: flex-start; gap: 3px; padding: 2px 4px; }
+.bt-console .bc-cmds .cmdt .cmdt-art { width: 22px; height: 22px; }
+.bt-console .bc-cmds .cmdt .cmdt-art svg { width: 20px; height: 20px; }
+.bt-console .bc-cmds .cmdt .cmdt-glyph { right: -5px; bottom: -4px; width: 15px; height: 15px; line-height: 15px; font-size: 12px; }
+.bt-console .cmdt-text { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; line-height: 1.2; }
+.bt-console .cmdt-text .cmdt-name { font-size: 12px; margin: 0; white-space: nowrap; }
+.bt-console .cmdt-text small { font-size: 12px; white-space: nowrap; visibility: visible; }
+.bt-console .cmdt-text .cmdt-why { position: static; display: block; font-size: 12px; line-height: 1.2; padding: 0; background: none; color: #ffb59c; white-space: nowrap; overflow: visible; }
+.bt-console .cmdt.off { opacity: .7; cursor: not-allowed; }
+@media (max-height: 800px) {
+  .bt-console .bc-cmds .cmdt.plain .cmdt-art { display: none; }
+  .bt-console .bc-cmds .cmdt.plain { justify-content: center; }
+}
+@media (min-height: 801px) {
+  .bt-console .bc-cmds .cmdt { height: 54px; padding: 3px 6px; gap: 5px; }
+  .bt-console .bc-cmds .cmdt .cmdt-art { width: 30px; height: 30px; }
+  .bt-console .bc-cmds .cmdt .cmdt-art svg { width: 27px; height: 27px; }
+  .bt-console .cmdt-text .cmdt-name { font-size: 14px; }
+}

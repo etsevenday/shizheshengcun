@@ -262,8 +262,8 @@ else if (b != null)
                     <div class="track"><i style="width:@Ui.Bar(en.Hp, ec.Hp)%"></i></div>
                     @{ var far = G.E.IntentOutOfReach(G.S.Battle!, en); }
                     <div class="intent @(far ? "calm" : en.Intent is "bite" ? "bite" : en.Intent is "flee" or "watch" or "guard" or "protect" or "buff" or "reload" ? "calm" : "")"
-                         title="@(far ? $"本轮公开意图是{en.IntentLabel}，但站在{slot}号位不能照原样出手：{G.E.IntentShown(G.S.Battle!, en)}（敌人{ec.Ap}AP：前移1AP，余下只做一次普通攻击）" : $"本轮公开意图（轮初锁定，不公开伤害抽值）；{ec.Ap}AP{(ec.Elite ? "精英" : "")}，每次激活一个主意图")">
-                        <span class="intent-ico">@(far ? "移" : IntentIcon(en.Intent))</span>@NoBreakRange(G.E.IntentShown(G.S.Battle!, en))
+                         title="@(far ? $"本轮公开意图是{G.E.IntentLabel(en, G.S.Battle)}，但站在{slot}号位不能照原样出手：{G.E.IntentShown(G.S.Battle!, en)}（敌人{ec.Ap}AP：前移1AP，余下只做一次普通攻击）" : $"本轮公开意图（轮初锁定，不公开伤害抽值）；{ec.Ap}AP{(ec.Elite ? "精英" : "")}，每次激活一个主意图")">
+                        <span class="intent-ico">@(far ? FarIcon(G.E.PlanFor(G.S.Battle!, en, G.E.StepOf(en))) : IntentIcon(en.Intent))</span>@NoBreakRange(G.E.IntentShown(G.S.Battle!, en))
                     </div>
                 </div>
             </div>
@@ -315,14 +315,17 @@ else if (b != null)
         var (art, glyph, qty) = CmdArt(o, wi, w);
         var oo = o;
         var range = o.TargetMode == "area" ? "1、2号位群攻" : o.TargetMode == "pair" ? (o.Targets.Count > 0 ? "相邻双位（点12或23）" : "当前没有可选目标") : o.NeedsTarget ? (o.Targets.Count > 0 ? $"可选目标{o.Targets.Count}个" : "当前没有可选目标") : "自用/无目标";
-        <button type="button" id="@($"cmd-{o.Action}{(o.ItemInstanceId is int ii ? "-" + ii : "")}")" class="cmdt @(on ? "on" : "") @(o.Available ? "" : "off")" disabled="@locked"
+        @* 试玩修复 M150：不可用的指令真正禁用（冷却中、AP 不足……都不进入瞄准），点它只在右栏写原因；悬停照样写原因 *@
+        <button type="button" id="@($"cmd-{o.Action}{(o.ItemInstanceId is int ii ? "-" + ii : "")}")" class="cmdt @(on ? "on" : "") @(o.Available ? "" : "off") @(o.NodeId != null || o.Action == "desperate_punch" ? "skill" : "plain")" disabled="@locked" aria-disabled="@(!o.Available)"
                 aria-label="@($"{ShortName(o)}，{ApText(o.Ap)}{(qty != null ? "，" + qty : "")}{(o.Reason != null ? "；不可用：" + o.Reason : "")}")"
                 title="@(o.Reason ?? $"{o.Label}：{ApText(o.Ap)}{(o.Energy > 0 ? $"，体力{Ui.N(o.Energy)}" : "")}{(o.CooldownRounds > 0 ? $"，冷却{o.CooldownRounds}轮" : "")}；{range}。{(o.EffectText != null ? o.EffectText + "。" : "")}{(o.NeedsTarget || o.TargetMode == "area" ? "点选后点亮起的目标执行" : "点选后在旁边确认")}")"
-                @onclick="() => G.PickBattleAction(oo.Action, oo.ItemInstanceId)">
+                @onclick="() => { if (oo.Available) G.PickBattleAction(oo.Action, oo.ItemInstanceId); else G.ExplainBlocked(oo.Label, oo.Reason); }">
             <span class="cmdt-art">@Icons.Markup(art)@if (glyph != null) {<em class="cmdt-glyph">@glyph</em>}</span>
-            <span class="cmdt-name">@ShortName(o)</span>
-            <small>@(qty != null ? qty + " · " : "")@ApText(o.Ap)</small>
-            @if (!o.Available) { <span class="cmdt-why">@ShortWhy(o.Reason)</span> }
+            <span class="cmdt-text">
+                <span class="cmdt-name">@ShortName(o)</span>
+                @if (o.Available) { <small>@(qty != null ? qty + " · " : "")@ApText(o.Ap)</small> }
+                else { <span class="cmdt-why">@ShortWhy(o.Reason)</span> }
+            </span>
         </button>
     };
 
@@ -373,13 +376,15 @@ else if (b != null)
         if (why.StartsWith("还没轮到")) return "等待";
         if (why.StartsWith("只在体力不足")) return "仅缺体力";
         if (why.StartsWith("体力不足")) return "体力不足";
-        if (why.StartsWith("随身没有")) return why.Contains("弹") || why.Contains("箭") ? "无弹药" : "无物品";
+        if (why.StartsWith("随身没有")) return why.Contains("弹") || why.Contains("箭") || why.Contains("矢") ? "无弹药" : "无物品";
+        if (why.StartsWith("随身") && why.Contains("不足")) return "弹药不足";
+        if (why.StartsWith("弹仓不足")) return "需装填";
         if (why.StartsWith("弹仓已满")) return "弹仓满";
         if (why.StartsWith("弹仓空")) return "需装填";
         if (why.Contains("耐久不足")) return "耐久不足";
         if (why.Contains("冷却") || why.Contains("间隔中")) return "冷却中";
         if (why.Contains("没有效果")) return "无效果";
-        if (why.StartsWith("本回合已")) return "本回合已用";
+        if (why.StartsWith("本回合已")) return "本轮已用";
         if (why.StartsWith("已在防御")) return "已防御";
         if (why.StartsWith("需要") && why.Contains("级")) return "等级不足";
         if (why.StartsWith("射程不足")) return "射程不足";
@@ -390,13 +395,25 @@ else if (b != null)
         if (why.StartsWith("健康高于") || why.StartsWith("健康已满") || why.StartsWith("你没有") || why.StartsWith("恐慌已是0")) return "无效果";
         if (why.Contains("只能在我方")) return "站位不符";
         if (why.Contains("不需要装填") || why.Contains("不用装填")) return "无需装填";
-        return why.Length > 5 ? why[..5] : why;
+        if (why.StartsWith("当前武器") && why.Contains("不能用")) return "武器不符";
+        if (why.Contains("不需要装填")) return "无需装填";
+        if (why.StartsWith("冷却中")) return "冷却中";
+        // 试玩修复 M150：不再截原文（曾把“随身箭矢不足2支”截成“随身箭矢不”），没归类的写“不可用”，完整原因在悬停/右栏
+        return why.Length <= 4 ? why : "不可用";
     }
 
     private async Task Exec(string token) => await G.ExecuteBattleCommand(token);
 
     /// <summary>意图里的伤害区间“0.70—1.10”不在破折号处折行（破折号两侧加 U+2060 不断行符，只影响显示，B2a M94）。</summary>
     private static string NoBreakRange(string label) => label.Replace("—", "\u2060—\u2060");
+
+    /// <summary>够不到时的意图图标（试玩修复 M150 UX8）：前移“移”、弱攻击“弱”、改防御“防”。</summary>
+    private static string FarIcon(GameEngine.ReachPlan plan) => plan switch
+    {
+        GameEngine.ReachPlan.Weak => "弱",
+        GameEngine.ReachPlan.Guard => "防",
+        _ => "移",
+    };
 
     private static string IntentIcon(string intent) => intent switch
     {

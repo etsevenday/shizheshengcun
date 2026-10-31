@@ -794,9 +794,19 @@ namespace Survival.Core.Engine
             // 每大回合一次的限制先于行动点判断：本轮已用过就写“本回合已…”，不写“行动点不足”（试玩修复 M137 UX4）
             if (c.Action == "breathe" && b.BreatheUsed) return "本回合已调整过呼吸";
             if (c.Action == "retreat" && b.RetreatUsed) return "本回合已尝试撤退";
+            var w = CurrentWeapon(s, out var wi);
+            // 结构性原因（没有队友、弹仓满/没弹药、随身没有药品）先于“行动点不足”显示（试玩修复 M150 UX6）
+            var structural = c.Action switch
+            {
+                "swap" => b.Allies.Count <= 1 ? SoloReason : null,
+                "reload" => !w.UsesMagazine || wi == null ? (w.ConsumesLooseAmmo ? "弓不需要装填，射击直接消耗随身箭" : "当前武器不用装填")
+                    : wi.LoadedAmmo >= w.MagazineCapacity ? "弹仓已满" : CarriedCount(s, w.AmmoId!) <= 0 ? $"随身没有{ItemName(w.AmmoId!)}" : null,
+                "bandage" or "use_antibiotics" or "use_antiviral_cure" => CarriedItem(s, a.ItemId!, c.ItemInstanceId) == null ? $"随身没有可用的{ItemName(a.ItemId!)}（地面、火堆里的不能在战斗中使用）" : null,
+                _ => null,
+            };
+            if (structural != null) return structural;
             var ap = a.ApCost < 0 ? b.PlayerAp : a.ApCost;
             if (a.ApCost > 0 && ap > b.PlayerAp) return $"行动点不足（需{ap}，剩{b.PlayerAp}）";
-            var w = CurrentWeapon(s, out var wi);
             switch (c.Action)
             {
                 case "end_turn": return null;
@@ -1153,9 +1163,21 @@ namespace Survival.Core.Engine
             FinishBattle(s, "victory");
         }
 
+        /// <summary>
+        /// 战斗结束时把最后一轮的战斗记录写进行动日志（试玩修复 M150 BUG2）：战斗状态随结束清掉，致胜/致死那条指令及其连带结算
+        /// （死亡喷溅、反击、迎击、掉落锁定等）原本只在战斗记录里，结束后玩家看不到。
+        /// </summary>
+        private void EmitLastRoundLog(GameState s, BattleState b)
+        {
+            var prefix = $"第{b.Round}轮 · ";
+            foreach (var line in b.Log.Where(l => l.StartsWith(prefix)).ToList())
+                Emit(s, GameEventKind.Battle, "战斗记录 " + line);
+        }
+
         private void BattleDeath(GameState s, string cause)
         {
             var b = s.Battle;
+            if (b != null) EmitLastRoundLog(s, b);
             Kill(s, cause);
             if (b != null)
             {
@@ -1169,6 +1191,7 @@ namespace Survival.Core.Engine
         private void FinishBattleOnDeath(GameState s)
         {
             var b = s.Battle;
+            if (b != null) EmitLastRoundLog(s, b);
             if (b != null)
                 foreach (var e in b.Enemies.Where(e => e.Alive))
                     if (FindWorldEnemy(s, e.WorldId) is WorldEnemy we) { we.Engaged = false; we.Hp = e.Hp; }
@@ -1183,6 +1206,7 @@ namespace Survival.Core.Engine
         {
             var b = s.Battle!;
             if (tick && !BattleTick(s)) return;
+            EmitLastRoundLog(s, b);
             var loc = b.LocationId;
             foreach (var e in b.Enemies)
             {

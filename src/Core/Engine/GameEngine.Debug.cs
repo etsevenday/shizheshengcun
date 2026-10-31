@@ -143,7 +143,7 @@ namespace Survival.Core.Engine
         /// <summary>开发入口“技能器具一组”的清单（B7）：每类武器各一件（含盾、指挥、医疗器具）与技能耗材。</summary>
         public static readonly (string Id, int Count)[] DevSkillKit =
         {
-            ("kitchen_knife", 1), ("hatchet", 1), ("wooden_spear", 1), ("crowbar", 1), ("wooden_bow", 1), ("arrow", 10),
+            ("kitchen_knife", 1), ("hatchet", 1), ("wooden_spear", 1), ("shock_baton", 1), ("wooden_bow", 1), ("arrow", 10),
             ("pistol", 1), ("ammo_9mm", 16), ("shotgun", 1), ("shell_12g", 8), ("wooden_shield", 1), ("signal_whistle", 1),
             ("trauma_bag", 1), ("bandage", 2), ("medical_gauze", 3), ("saline", 3),
         };
