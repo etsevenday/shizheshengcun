@@ -172,7 +172,7 @@ public static class HelpCatalog
                 },
                 new HelpEntry
                 {
-                    Id = "rest", Title = "休息、睡眠与等待", Icon = "bed",
+                    Id = "rest", Title = "休息与睡眠", Icon = "bed",
                     Paragraphs = (e, s) =>
                     {
                         var c = e.Config;
@@ -181,7 +181,7 @@ public static class HelpCatalog
                         {
                             $"休息（每小时{Rates(hr["rest"])}）只恢复体力，不恢复清醒。可选{string.Join("、", c.Actions.RestMinutes.Select(Dur))}。",
                             $"睡眠是唯一恢复清醒的方式：遮蔽处每小时{Rates(hr["sleep_sheltered"])}；露天每小时{Rates(hr["sleep_exposed"])}。可选{string.Join("、", c.Actions.SleepMinutes.Select(Dur))}，任何时间都能睡。",
-                            $"等待（每小时{Rates(hr["wait"])}）什么也不恢复，只让时间过去，例如等天亮或等火堆加工。",
+                            "恢复只有休息和睡眠两种，任何时间都能用。想等火堆加工完成，在火堆用“等待烹饪”（按等待消耗、什么也不恢复）。",
                             $"室内地点和营地建成遮蔽棚后算“遮蔽”。营地床垫让睡眠的体力每小时额外{ST(c.FacilityEffects.BedExtraSleepEnergyPerHour)}；精神低于提醒线时，休息与睡眠的体力恢复×{T(c.FacilityEffects.LowMoraleEnergyRecoveryFactor)}。",
                             "休息和睡眠满了也不会自动结束；途中越过提醒线会暂停。",
                         };
