@@ -12,7 +12,7 @@
     var where = e.WherePath(s, Item);
     var selected = G.Selected.Kind == SelectionKind.Tool && G.Selected.InstanceId == Item.InstanceId;
     // Q35：紧凑模式卡面不常驻“加工位N”，悬停/键盘聚焦提示写等价全文（名称#实例、所在加工位、加工状态、保质）
-    var tip = $"{name} · {where}{(Slot.HasValue ? $"／加工位{Slot}" : "")}：{e.ContentStatus(s, Item)}{(Item.ExpiresAt.HasValue ? " · " + Ui.FreshOf(e, s, Item) : "")}";
+    var tip = $"{name} · {where}{(Slot.HasValue ? $"／加工位{Slot}" : "")}：{e.ContentStatus(s, Item)}{(Item.ExpiresAt.HasValue ? " · " + Ui.FreshOf(e, s, Item) : "")}{(proc != null && e.CookXpNote(s, proc) is string cx ? " · " + cx : "")}";
 }
 <div class="fc-food @(selected ? "selected" : "") @(spoiled ? "spoiled" : "")" id="@(selected ? "card-sel" : null)" data-card="@key" role="button" tabindex="0"
      title="@tip" data-tip="@tip"

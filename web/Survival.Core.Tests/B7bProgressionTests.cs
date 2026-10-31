@@ -264,4 +264,95 @@ public class B7bProgressionTests : TestBase
         Assert.That(E.WorkFactor(s, ActionType.Gather, null, "misc_box"), Is.EqualTo(0.95).Within(1e-12), "只有分类勘整，工具运用不加成");
         Assert.That(E.SurvivalPassiveLines(s.Player), Has.Some.Contains("工具运用").And.Some.Contains("暂未开放"));
     }
+
+    // ───────────── M159：烹饪经验（Q60） ─────────────
+
+    private (GameState s, ItemInstance pot) PotOnFire(string? water, int units)
+    {
+        var s = New();
+        var pot = First(s, "pot");
+        if (water != null && units > 0)
+        {
+            E.DebugGive(s, water, units, "camp");
+            Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, water, "camp").InstanceId, pot.InstanceId, units)).Ok, Is.True);
+        }
+        Assert.That(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)).Ok, Is.True);
+        var fac = s.Locations["camp"].Facility;
+        fac.FireLit = true;
+        fac.FuelMinutes = 240;
+        return (s, pot);
+    }
+
+    private void Wait(GameState s, int minutes)
+    {
+        var end = s.GameMinute + minutes;
+        while (s.GameMinute < end) { if (s.Main == null) Start(s, ActionRequest.Wait(30)); E.Advance(s); }
+        if (s.Main != null) E.Cancel(s);
+    }
+
+    [Test]
+    public void PROG_Q60a_FourFoods_ThreeEach_Reboil0_DailyCap30()
+    {
+        Assert.That(new[] { "roast_root", "boil_root", "roast_meat", "boil_meat" }.Select(E.CookFoodXpFor), Is.All.EqualTo(3), "30 受热分钟 = 3");
+        Assert.That(E.CookFoodXpFor("reboil_cooked_meat"), Is.Zero, "复煮 0");
+        var (s, pot) = PotOnFire("dirty_water", 2);
+        E.DebugGive(s, "raw_root", 2, "camp");
+        Assert.That(E.DoInstant(s, InstantRequest.PutFoodInPot(First(s, "raw_root", "camp").InstanceId, pot.InstanceId, 2)).Ok, Is.True);
+        Assert.That(E.ProcessOf(s, E.PotFood(s, pot.InstanceId).First())!.InitiatorActorId, Is.EqualTo(GameState.PlayerId), "投料即锁发起者");
+        Wait(s, 45);
+        Assert.That(E.PotFood(s, pot.InstanceId).Select(f => f.ItemId), Is.All.EqualTo("boiled_root"));
+        Assert.That(s.Skills["cooking"].Xp, Is.EqualTo(2 + 3 + 3), "1L 净化 2 + 两份水煮各 3");
+        Assert.That(s.Log.Any(l => l.Text.Contains("已煮成") && l.Text.Contains("烹饪经验+3")), Is.True);
+        // 日 30：已得 28，再烤一份只给 2
+        var t = New();
+        var fac = t.Locations["camp"].Facility;
+        fac.FireLit = true; fac.FuelMinutes = 240;
+        t.Player.DailyCounts[$"{Clock.Day(t.GameMinute)}|xp|cooking"] = 28;
+        E.DebugGive(t, "raw_root", 1, "camp");
+        Assert.That(E.DoInstant(t, InstantRequest.PutInFire(First(t, "raw_root", "camp").InstanceId, 1)).Ok, Is.True);
+        Wait(t, 30);
+        Assert.That(t.Skills["cooking"].Xp, Is.EqualTo(2), "食品每日合计 30");
+    }
+
+    [Test]
+    public void PROG_Q60b_Water_500mlPerXp_DailyFour()
+    {
+        var (s, pot) = PotOnFire("dirty_water", 1);
+        Wait(s, 15);
+        Assert.That(s.Skills["cooking"].Xp, Is.EqualTo(1), "500ml = 1");
+        s.Player.DailyCounts[$"{Clock.Day(s.GameMinute)}|waterXp|cooking"] = 4;
+        var u = E.PotUnits(s, pot.InstanceId);
+        E.DebugGive(s, "dirty_water", 1, "camp");
+        // 倒掉净水再装脏水另做一锅：日 4 已满，不再给
+        foreach (var w in s.Items.Where(i => i.Owner == ItemInstance.ContainerOwner(pot.InstanceId)).ToList()) s.Items.Remove(w);
+        Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 1)).Ok, Is.True);
+        Wait(s, 15);
+        Assert.That(s.Skills["cooking"].Xp, Is.EqualTo(1), "净化每日最多 4");
+        Assert.That(u, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void PROG_Q60c_OldProcessWithoutInitiator_NoXp_CancelAndTakeOutZero()
+    {
+        var s = New();
+        var fac = s.Locations["camp"].Facility;
+        fac.FireLit = true; fac.FuelMinutes = 240;
+        E.DebugGive(s, "raw_root", 1, "camp");
+        Assert.That(E.DoInstant(s, InstantRequest.PutInFire(First(s, "raw_root", "camp").InstanceId, 1)).Ok, Is.True);
+        var root = E.FireContents(s, "camp").Single(i => !E.IsPot(i));
+        E.ProcessOf(s, root)!.InitiatorActorId = null;   // 模拟 B7b 之前建立的旧进程
+        Assert.That(E.CookXpNote(s, E.ProcessOf(s, root)!), Does.Contain("旧进程"));
+        var loaded = SaveSerializer.Deserialize(SaveSerializer.Serialize(s));
+        Wait(loaded, 30);
+        Assert.That(loaded.Items.Single(i => i.InstanceId == root.InstanceId).ItemId, Is.EqualTo("cooked_root"));
+        Assert.That(loaded.Skills["cooking"].Xp, Is.Zero, "旧进程无发起者不补经验");
+        // 投料、点火、等待都不发；未完成就取出也不发
+        var t = New();
+        var tf = t.Locations["camp"].Facility;
+        tf.FireLit = true; tf.FuelMinutes = 240;
+        E.DebugGive(t, "raw_root", 1, "camp");
+        Assert.That(E.DoInstant(t, InstantRequest.PutInFire(First(t, "raw_root", "camp").InstanceId, 1)).Ok, Is.True);
+        Wait(t, 20);
+        Assert.That(t.Skills["cooking"].Xp, Is.Zero, "投料/等待不发");
+    }
 }

@@ -307,6 +307,11 @@ namespace Survival.Core.State
         /// 熄火保留，目标被取出（进程随之移除）即解除。不改写原料的 ExpiresAt；净水批次进程不用。
         /// </summary>
         public bool HeatProtected { get; set; }
+        /// <summary>
+        /// 烹饪经验归属（Q60）：首次投料、建立本进程的角色 actorId，首次有效受热前锁定；完成时该角色存活才给烹饪经验。
+        /// B7b 之前的旧进程没有发起者（null），完成不补经验。
+        /// </summary>
+        public string? InitiatorActorId { get; set; }
 
         public FacilityProcess Clone() => (FacilityProcess)MemberwiseClone();
     }

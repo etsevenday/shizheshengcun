@@ -294,6 +294,8 @@ namespace Survival.Core.Engine
                     RequiredHeatMinutes = d.cfg.HeatMinutes,
                     Status = ProcessStatus.Waiting,
                     LastWorldMinute = s.GameMinute,
+                    // Q60：投料/启用进程的角色（现在只有主角能操作设施）；旧档已有的进程不在这里新建，保持无发起者
+                    InitiatorActorId = GameState.PlayerId,
                 });
             }
 
@@ -683,6 +685,7 @@ namespace Survival.Core.Engine
                 Normalize(s, ItemInstance.ContainerOwner(t.InstanceId));
                 s.Progress.Flags.Add("boiled");
                 text = $"{LocName(loc)}火堆：{ItemName(t.ItemId)}#{t.InstanceId}里的{ItemName(cfg.InputId)}{ml}毫升已烧成{ItemName(cfg.OutputId)}，留在原锅。";
+                if (CookWaterXp(s, p, ml) is string wx) text = text.TrimEnd('。') + $"（{wx}）。";
             }
             else
             {
@@ -699,6 +702,7 @@ namespace Survival.Core.Engine
                 text = pot != null
                     ? $"{LocName(loc)}火堆：{input}#{t.InstanceId}已煮成{outCfg.Name}，留在{ItemName(pot.ItemId)}#{pot.InstanceId}里（{ItemName(cfg.RequiredLiquid ?? "")}−{cfg.WaterCostMl}毫升{potWorn}）。"
                     : $"{LocName(loc)}火堆：{input}#{t.InstanceId}已烤成{outCfg.Name}，留在火堆加工位。";
+                if (CookFoodXp(s, p, cfg, t.Count) is string fx) text = text.TrimEnd('。') + $"（{fx}）。";
             }
             p.Status = ProcessStatus.Done;
             p.HeatProtected = false;
