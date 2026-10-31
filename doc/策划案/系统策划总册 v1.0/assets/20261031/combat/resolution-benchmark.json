@@ -1,7 +1,8 @@
 {
   "date": "2026-10-31",
   "scope": "可复现伤害分层和站位状态实验，非游戏引擎/完整战斗胜率或UI测试",
-  "inputSha256": "9bcafede53abff7a217e01cbcde35fb64f568d1b983b773a80bcd41d099a309d",
+  "inputSha256": "df157e0d8a8687323998582df08bfcb1fb5a7c63824ff29095b589e33d4b848f",
+  "inputSha256Encoding": "JSON.stringify(parsed_contract)_UTF8",
   "stackExamples": [
     {
       "sources": [],
