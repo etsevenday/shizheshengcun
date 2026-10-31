@@ -38,6 +38,7 @@ namespace Survival.Core.Save
         public const string Schema11 = "11";
         public const string Schema12 = "12";
         public const string Schema13 = "13";
+        public const string Schema14 = "14";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -65,6 +66,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema11) From11To12(s, config, notes);
             if (s.SchemaVersion == Schema12) From12To13(s, notes);
             if (s.SchemaVersion == Schema13) From13To14(s, config, notes);
+            if (s.SchemaVersion == Schema14) From14To15(s, notes);
             return notes;
         }
 
@@ -674,7 +676,31 @@ namespace Survival.Core.Save
                 notes.Add(note);
                 s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = note + "。" });
             }
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（真实站位与空位）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema14}（真实站位与空位）。" });
+            s.SchemaVersion = Schema14;
+        }
+
+        // ───────────────────────── 14 → 15 ─────────────────────────
+
+        /// <summary>
+        /// 队伍与共同生存（R08 §5，开发计划 v0.9 B8）：落下名册、战前编成预设、遗物与借用位（空）；预设与同行队伍对齐（主角恒在）；
+        /// 同行里没有名册条目的角色（只可能来自测试注入）补一条。进行中战斗的主角战斗字段已在读档预处理搬进 Fighters.p0，这里只保证存在。
+        /// 不重抽、不补发、不改轮中进度。
+        /// </summary>
+        private static void From14To15(GameState s, List<string> notes)
+        {
+            s.Roster ??= new List<RosterEntry>();
+            s.Remains ??= new Dictionary<string, RemainsState>();
+            s.LoanSlots ??= new Dictionary<string, int>();
+            s.Party ??= new List<string>();
+            if (!s.Party.Contains(GameState.PlayerId)) s.Party.Insert(0, GameState.PlayerId);
+            foreach (var id in s.Party.Where(id => id != GameState.PlayerId && s.Roster.All(r => r.ActorId != id)))
+                s.Roster.Add(new RosterEntry { ActorId = id, Kind = "named", Name = s.Actors.TryGetValue(id, out var a) && a.Name != "" ? a.Name : id, JoinedMinute = s.GameMinute });
+            var preset = (s.FormationPreset ?? new List<string>()).Where(s.Party.Contains).Distinct().ToList();
+            foreach (var id in s.Party) if (!preset.Contains(id)) preset.Add(id);
+            s.FormationPreset = preset;
+            if (s.Battle != null) s.Battle.Fighter(GameState.PlayerId);
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（队伍与候补）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

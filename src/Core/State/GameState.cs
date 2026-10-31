@@ -32,9 +32,10 @@ namespace Survival.Core.State
         /// "10" 起装备实例带品质与附加词条（A05 §4、R02 §2/§3，开发计划 v0.9 B4）；
         /// "11" 起熟练度为十五门、最高 10 级，角色带按世界日的经验计数，记录走过的物理边（A06 §1–§4、R01 §5，开发计划 v0.9 B5）；
         /// "12" 起四对四战斗站位（B6）；"13" 起工作量余额与行动规则版本、设施进程发起者（策划答复 Q53—Q61，开发计划 v0.9 B7b）；
-        /// "14" 起战斗双方保持真实 1—4 槽与空位、不再自动压紧（策划答复 Q80，开发计划 v0.9 B7d）。
+        /// "14" 起战斗双方保持真实 1—4 槽与空位、不再自动压紧（策划答复 Q80，开发计划 v0.9 B7d）；
+        /// "15" 起名册与候补、战前编成预设、遗物与借用位，战斗中我方每人一份战斗状态 Fighters（R08，开发计划 v0.9 B8）。
         /// </summary>
-        public const string CurrentSchema = "14";
+        public const string CurrentSchema = "15";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";

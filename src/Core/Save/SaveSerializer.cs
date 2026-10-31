@@ -61,7 +61,7 @@ namespace Survival.Core.Save
 
         private static bool IsMigratable(string? version) =>
             version == SaveMigrator.LegacySchema || version == SaveMigrator.Schema3 || version == SaveMigrator.Schema4 || version == SaveMigrator.Schema5
-            || version == SaveMigrator.Schema6 || version == SaveMigrator.Schema7 || version == SaveMigrator.Schema8 || version == SaveMigrator.Schema9 || version == SaveMigrator.Schema10 || version == SaveMigrator.Schema11 || version == SaveMigrator.Schema12 || version == SaveMigrator.Schema13;
+            || version == SaveMigrator.Schema6 || version == SaveMigrator.Schema7 || version == SaveMigrator.Schema8 || version == SaveMigrator.Schema9 || version == SaveMigrator.Schema10 || version == SaveMigrator.Schema11 || version == SaveMigrator.Schema12 || version == SaveMigrator.Schema13 || version == SaveMigrator.Schema14;
 
         /// <summary>schema 9 前在顶层的主角个人字段（R08 §5“旧档主角创建 actorId 一次”）。</summary>
         private static readonly string[] LegacyActorFields =
@@ -82,6 +82,7 @@ namespace Survival.Core.Save
             var legacy = new LegacyFields();
             if (obj["EquippedWeaponId"] is JToken eq && eq.Type == JTokenType.Integer) legacy.EquippedWeaponId = eq.Value<int>();
             obj.Remove("EquippedWeaponId");
+            PreprocessBattleFighters(obj);
             if (obj["Actors"] is JObject) return legacy;
             var p0 = new JObject { ["Id"] = GameState.PlayerId };
             foreach (var f in LegacyActorFields)
@@ -92,6 +93,22 @@ namespace Survival.Core.Save
             obj["Actors"] = new JObject { [GameState.PlayerId] = p0 };
             obj["Party"] = new JArray(GameState.PlayerId);
             return legacy;
+        }
+
+        /// <summary>
+        /// schema ≤ 14 进行中战斗的主角战斗字段（PlayerAp、Panic、格挡、冷却、受惊等，BattleState.LegacyFighterFields）原样搬进
+        /// Battle.Fighters.p0（开发计划 v0.9 B8 M186）。已有 Fighters 的不再搬（幂等）。
+        /// </summary>
+        public static void PreprocessBattleFighters(JObject obj)
+        {
+            if (!(obj["Battle"] is JObject b) || b["Fighters"] is JObject) return;
+            var me = new JObject();
+            foreach (var (old, now) in BattleState.LegacyFighterFields)
+            {
+                if (b[old] is JToken v) me[now] = v.DeepClone();
+                b.Remove(old);
+            }
+            b["Fighters"] = new JObject { [GameState.PlayerId] = me };
         }
 
         /// <summary>存档是旧版、读取时会迁移。</summary>

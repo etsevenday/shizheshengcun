@@ -157,6 +157,63 @@ namespace Survival.Core.State
         }
     }
 
+    /// <summary>我方一名参战者的战斗状态（B8-6；字段含义同 BattleState 上的旧名 Player* 属性注释）。</summary>
+    public sealed class AllyCombatState
+    {
+        public double Pursuit { get; set; }
+        public double TieRoll { get; set; }
+        public int Ap { get; set; }
+        public bool Acting { get; set; }
+        public bool BreatheUsed { get; set; }
+        public double RoundStartEnergy { get; set; }
+        public double Panic { get; set; }
+        public double PanicPeak { get; set; }
+        public bool Guard { get; set; }
+        public double GuardFactor { get; set; } = 0.5;
+        public int? GuardSourceId { get; set; }
+        public int ActivationAp { get; set; }
+        public bool Stagger { get; set; }
+        public int StaggerRound { get; set; }
+        public int SteadyUntilRound { get; set; }
+        public bool SlowPending { get; set; }
+        public bool SlowActive { get; set; }
+        public Dictionary<string, int> SkillUsedRound { get; set; } = new Dictionary<string, int>();
+        public int GuardCharges { get; set; }
+        public double CounterFactor { get; set; }
+        public int CounterPage { get; set; }
+        public int BraceCharges { get; set; }
+        public double BraceFactor { get; set; }
+        public int BracePage { get; set; }
+        public double ChargeFactor { get; set; }
+        public int ChargeUntilRound { get; set; }
+        public int? ChargeItem { get; set; }
+        public double InspireBonus { get; set; }
+        public int InspireUntilRound { get; set; }
+        public double AllOutFactor { get; set; }
+        public int AllOutUntilRound { get; set; }
+        public double DisplaceResist { get; set; }
+        public int DisplaceUntilRound { get; set; }
+        public double ArmorBreak { get; set; }
+        public int ArmorBreakUntilRound { get; set; }
+        public double WeakFactor { get; set; } = 1;
+        public int WeakUntilRound { get; set; }
+        public double NextDamageFactor { get; set; } = 1;
+        public int CalmRound { get; set; }
+        public int ActiveWeaponSlot { get; set; } = 1;
+        public double FearMorale { get; set; }
+        public double FearRoll { get; set; }
+        public double FearChance { get; set; }
+        public bool Frightened { get; set; }
+        public double FearPanic { get; set; }
+
+        public AllyCombatState Clone()
+        {
+            var c = (AllyCombatState)MemberwiseClone();
+            c.SkillUsedRound = new Dictionary<string, int>(SkillUsedRound);
+            return c;
+        }
+    }
+
     /// <summary>
     /// 战斗状态（v0.5 §17、v0.6 §07、§16）：battleId、encounterId、地点、轮次、行动队列与游标、玩家 AP、恐慌、噪声与增援、
     /// 双方状态与持续期、掉落计划。每条指令提交、每次敌方行动、轮末 tick 与结束都保存；读档恢复覆盖层与队列游标，敌人不重复行动。
@@ -176,11 +233,11 @@ namespace Survival.Core.State
         public bool Tutorial { get; set; }
         /// <summary>受惊结果（同一 battleId 只判一次，读档不重抽）：主惊吓源、入战精神快照、随机数、概率、是否受惊、附加恐慌。</summary>
         public int? FearSourceWorldId { get; set; }
-        public double FearMorale { get; set; }
-        public double FearRoll { get; set; }
-        public double FearChance { get; set; }
-        public bool Frightened { get; set; }
-        public double FearPanic { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public double FearMorale { get => Me.FearMorale; set => Me.FearMorale = value; }
+        [Newtonsoft.Json.JsonIgnore] public double FearRoll { get => Me.FearRoll; set => Me.FearRoll = value; }
+        [Newtonsoft.Json.JsonIgnore] public double FearChance { get => Me.FearChance; set => Me.FearChance = value; }
+        [Newtonsoft.Json.JsonIgnore] public bool Frightened { get => Me.Frightened; set => Me.Frightened = value; }
+        [Newtonsoft.Json.JsonIgnore] public double FearPanic { get => Me.FearPanic; set => Me.FearPanic = value; }
 
         /// <summary>
         /// 本轮行动队列（R03 §2）：0 为玩家，其余为敌人 Index。前 NormalCount 项是正常激活，按轮初有效速度降序、同速按锁定随机数 u 降序、
@@ -195,76 +252,76 @@ namespace Survival.Core.State
         /// <summary>当前这次激活是追击（固定 2AP，不清防御、不刷新每轮一次的限制）。</summary>
         public bool ActingPursuit { get; set; }
         /// <summary>玩家的追击进度与同速随机数 u（同 BattleEnemy）。</summary>
-        public double PlayerPursuit { get; set; }
-        public double PlayerTieRoll { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public double PlayerPursuit { get => Me.Pursuit; set => Me.Pursuit = value; }
+        [Newtonsoft.Json.JsonIgnore] public double PlayerTieRoll { get => Me.TieRoll; set => Me.TieRoll = value; }
         /// <summary>玩家本次激活的剩余行动点；不在激活中为 0。</summary>
-        public int PlayerAp { get; set; }
-        public bool PlayerActing { get; set; }
-        public bool BreatheUsed { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public int PlayerAp { get => Me.Ap; set => Me.Ap = value; }
+        [Newtonsoft.Json.JsonIgnore] public bool PlayerActing { get => Me.Acting; set => Me.Acting = value; }
+        [Newtonsoft.Json.JsonIgnore] public bool BreatheUsed { get => Me.BreatheUsed; set => Me.BreatheUsed = value; }
         public bool RetreatUsed { get; set; }
         /// <summary>本轮玩家开始激活时的体力（轮初先手按轮初体力，命中按付费后体力）。</summary>
-        public double RoundStartEnergy { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public double RoundStartEnergy { get => Me.RoundStartEnergy; set => Me.RoundStartEnergy = value; }
 
-        public double Panic { get; set; }
-        public double PanicPeak { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public double Panic { get => Me.Panic; set => Me.Panic = value; }
+        [Newtonsoft.Json.JsonIgnore] public double PanicPeak { get => Me.PanicPeak; set => Me.PanicPeak = value; }
         public double Noise { get; set; }
         public bool ReinforcementRequested { get; set; }
         public bool ReinforcementUsed { get; set; }
 
-        public bool PlayerGuard { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public bool PlayerGuard { get => Me.Guard; set => Me.Guard = value; }
         /// <summary>这次防御的直接伤害倍率：普通 0.5，装着未损坏的盾时 0.4（R03 §3）；不叠多个同类格挡。</summary>
-        public double PlayerGuardFactor { get; set; } = 0.5;
+        [Newtonsoft.Json.JsonIgnore] public double PlayerGuardFactor { get => Me.GuardFactor; set => Me.GuardFactor = value; }
         /// <summary>本次格挡的来源盾实例（Q69：提交时当前页的盾；通用防御为 null）。授予时锁定，切页不重算；随存档。</summary>
-        public int? PlayerGuardSourceId { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public int? PlayerGuardSourceId { get => Me.GuardSourceId; set => Me.GuardSourceId = value; }
         /// <summary>本次激活开始时得到的 AP（界面画 AP 格用）：普通激活按训练阶位 3/4/5，追击 2。</summary>
-        public int ActivationAp { get; set; }
-        public bool PlayerStagger { get; set; }
-        public int PlayerStaggerRound { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public int ActivationAp { get => Me.ActivationAp; set => Me.ActivationAp = value; }
+        [Newtonsoft.Json.JsonIgnore] public bool PlayerStagger { get => Me.Stagger; set => Me.Stagger = value; }
+        [Newtonsoft.Json.JsonIgnore] public int PlayerStaggerRound { get => Me.StaggerRound; set => Me.StaggerRound = value; }
         /// <summary>主角的稳态截止轮（同 BattleEnemy.SteadyUntilRound）。</summary>
-        public int PlayerSteadyUntilRound { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public int PlayerSteadyUntilRound { get => Me.SteadyUntilRound; set => Me.SteadyUntilRound = value; }
         /// <summary>
         /// 保护关系（R03 §4）：保护者 actorId → 被保护者 actorId；一名保护者只接一名目标，不允许相互/循环保护。
         /// 保护指令属于 B7 技能、队友参战在 B8；本批只有规则校验（ProtectBlocked），场上不会出现保护。
         /// </summary>
         public Dictionary<string, string> Protections { get; set; } = new Dictionary<string, string>();
-        public bool PlayerSlowPending { get; set; }
-        public bool PlayerSlowActive { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public bool PlayerSlowPending { get => Me.SlowPending; set => Me.SlowPending = value; }
+        [Newtonsoft.Json.JsonIgnore] public bool PlayerSlowActive { get => Me.SlowActive; set => Me.SlowActive = value; }
 
         // ───── B7 技能（A06 §2、R03 §4） ─────
         /// <summary>各技能最近一次使用的大回合（冷却：r 使用 CD1 → r+1 不可用、r+2 可用；两武器页与追击共享）。</summary>
-        public Dictionary<string, int> SkillUsedRound { get; set; } = new Dictionary<string, int>();
+        [Newtonsoft.Json.JsonIgnore] public Dictionary<string, int> SkillUsedRound { get => Me.SkillUsedRound; set => Me.SkillUsedRound = value; }
         /// <summary>主角格挡剩余次数（坚守 2 次；普通防御/护身/稳固 1 次）；与 PlayerGuard 同时生效。</summary>
-        public int PlayerGuardCharges { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public int PlayerGuardCharges { get => Me.GuardCharges; set => Me.GuardCharges = value; }
         /// <summary>反击架势：受直接攻击命中后反击 1 次（伤害×CounterFactor），用掉或下次自己正常激活开始清除。CounterPage 为架势所用武器页。</summary>
-        public double CounterFactor { get; set; }
-        public int CounterPage { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public double CounterFactor { get => Me.CounterFactor; set => Me.CounterFactor = value; }
+        [Newtonsoft.Json.JsonIgnore] public int CounterPage { get => Me.CounterPage; set => Me.CounterPage = value; }
         /// <summary>架矛：敌人主动前移后迎击（剩余次数、伤害倍率、武器页），到下次自己正常激活开始清除。</summary>
-        public int BraceCharges { get; set; }
-        public double BraceFactor { get; set; }
-        public int BracePage { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public int BraceCharges { get => Me.BraceCharges; set => Me.BraceCharges = value; }
+        [Newtonsoft.Json.JsonIgnore] public double BraceFactor { get => Me.BraceFactor; set => Me.BraceFactor = value; }
+        [Newtonsoft.Json.JsonIgnore] public int BracePage { get => Me.BracePage; set => Me.BracePage = value; }
         /// <summary>斧蓄力：下次该斧攻击伤害×ChargeFactor，到 ChargeUntilRound 轮末；ChargeItem 为蓄力的斧实例。</summary>
-        public double ChargeFactor { get; set; }
-        public int ChargeUntilRound { get; set; }
-        public int? ChargeItem { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public double ChargeFactor { get => Me.ChargeFactor; set => Me.ChargeFactor = value; }
+        [Newtonsoft.Json.JsonIgnore] public int ChargeUntilRound { get => Me.ChargeUntilRound; set => Me.ChargeUntilRound = value; }
+        [Newtonsoft.Json.JsonIgnore] public int? ChargeItem { get => Me.ChargeItem; set => Me.ChargeItem = value; }
         /// <summary>鼓舞：下一次攻击命中能力+InspireBonus，到 InspireUntilRound 轮末。</summary>
-        public double InspireBonus { get; set; }
-        public int InspireUntilRound { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public double InspireBonus { get => Me.InspireBonus; set => Me.InspireBonus = value; }
+        [Newtonsoft.Json.JsonIgnore] public int InspireUntilRound { get => Me.InspireUntilRound; set => Me.InspireUntilRound = value; }
         /// <summary>总攻令：下一次攻击伤害×AllOutFactor，到 AllOutUntilRound 轮末；同名不叠。</summary>
-        public double AllOutFactor { get; set; }
-        public int AllOutUntilRound { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public double AllOutFactor { get => Me.AllOutFactor; set => Me.AllOutFactor = value; }
+        [Newtonsoft.Json.JsonIgnore] public int AllOutUntilRound { get => Me.AllOutUntilRound; set => Me.AllOutUntilRound = value; }
         /// <summary>稳固：位移抵抗+到 DisplaceUntilRound 轮末（Q80 起单人被拉扯/击退也会真实移位，判控制时生效）。</summary>
-        public double DisplaceResist { get; set; }
-        public int DisplaceUntilRound { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public double DisplaceResist { get => Me.DisplaceResist; set => Me.DisplaceResist = value; }
+        [Newtonsoft.Json.JsonIgnore] public int DisplaceUntilRound { get => Me.DisplaceUntilRound; set => Me.DisplaceUntilRound = value; }
         /// <summary>主角被破甲（酸液喷吐）：护甲−到轮末。</summary>
-        public double PlayerArmorBreak { get; set; }
-        public int PlayerArmorBreakUntilRound { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public double PlayerArmorBreak { get => Me.ArmorBreak; set => Me.ArmorBreak = value; }
+        [Newtonsoft.Json.JsonIgnore] public int PlayerArmorBreakUntilRound { get => Me.ArmorBreakUntilRound; set => Me.ArmorBreakUntilRound = value; }
         /// <summary>主角虚弱（伤害×，到轮末）。</summary>
-        public double PlayerWeakFactor { get; set; } = 1;
-        public int PlayerWeakUntilRound { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public double PlayerWeakFactor { get => Me.WeakFactor; set => Me.WeakFactor = value; }
+        [Newtonsoft.Json.JsonIgnore] public int PlayerWeakUntilRound { get => Me.WeakUntilRound; set => Me.WeakUntilRound = value; }
         /// <summary>下一次受到的直接伤害×（救援医疗箱“稳定”）；1 为没有。</summary>
-        public double PlayerNextDamageFactor { get; set; } = 1;
+        [Newtonsoft.Json.JsonIgnore] public double PlayerNextDamageFactor { get => Me.NextDamageFactor; set => Me.NextDamageFactor = value; }
         /// <summary>稳心：同目标每大回合最多一次（记录用过的轮）。</summary>
-        public int CalmRound { get; set; }
+        [Newtonsoft.Json.JsonIgnore] public int CalmRound { get => Me.CalmRound; set => Me.CalmRound = value; }
         /// <summary>本场已发过指挥经验的技能（每场每目标每 skillId 至多 +2，A06 §3）。</summary>
         public List<string> CommandXp { get; set; } = new List<string>();
         /// <summary>鼓舞/总攻令的经验待发：增益被攻击实际用掉时才给（A06 §3“有增益后实际消耗”）。</summary>
@@ -276,7 +333,7 @@ namespace Survival.Core.State
         public int? WeaponInstanceId { get; set; }
 
         /// <summary>当前武器页（1=武器Ⅰ、2=武器Ⅱ；A10 §4.2、B3 H6）：开战为 1，切页 0AP；随战斗存档。</summary>
-        public int ActiveWeaponSlot { get; set; } = 1;
+        [Newtonsoft.Json.JsonIgnore] public int ActiveWeaponSlot { get => Me.ActiveWeaponSlot; set => Me.ActiveWeaponSlot = value; }
 
         public List<BattleEnemy> Enemies { get; set; } = new List<BattleEnemy>();
         /// <summary>
@@ -299,6 +356,73 @@ namespace Survival.Core.State
 
         public IEnumerable<BattleEnemy> Alive => Enemies.Where(e => e.Alive);
 
+        /// <summary>
+        /// 我方每名参战者的战斗状态（开发计划 v0.9 B8，schema 15）：AP、激活、格挡/失衡/稳态/减速/破甲/虚弱、追击进度与 u、恐慌与受惊、
+        /// 技能冷却、架势与增益、当前武器页。键为 actorId。撤退次数、噪声、增援、日志与掉落仍全队一份（R03 §5）。
+        /// 旧档进行中战斗的 Player* 字段迁为 Fighters["p0"]（SaveSerializer.PreprocessLegacy）。
+        /// </summary>
+        public Dictionary<string, AllyCombatState> Fighters { get; set; } = new Dictionary<string, AllyCombatState>();
+
+        /// <summary>某名我方参战者的战斗状态（没有就建默认值）。</summary>
+        public AllyCombatState Fighter(string actorId)
+        {
+            if (!Fighters.TryGetValue(actorId, out var f)) Fighters[actorId] = f = new AllyCombatState();
+            return f;
+        }
+
+        /// <summary>主角的战斗状态；下列 Player*/Panic 等旧名属性都转发到它（M186 只重构不改行为）。</summary>
+        [Newtonsoft.Json.JsonIgnore] public AllyCombatState Me => Fighter(GameState.PlayerId);
+
+        /// <summary>旧档（schema ≤ 14）BattleState 顶层字段名 → AllyCombatState 字段名（读档预处理搬进 Fighters.p0）。</summary>
+        public static readonly IReadOnlyList<(string Old, string New)> LegacyFighterFields = new (string, string)[]
+        {
+            ("PlayerPursuit", "Pursuit"),
+            ("PlayerTieRoll", "TieRoll"),
+            ("PlayerAp", "Ap"),
+            ("PlayerActing", "Acting"),
+            ("BreatheUsed", "BreatheUsed"),
+            ("RoundStartEnergy", "RoundStartEnergy"),
+            ("Panic", "Panic"),
+            ("PanicPeak", "PanicPeak"),
+            ("PlayerGuard", "Guard"),
+            ("PlayerGuardFactor", "GuardFactor"),
+            ("PlayerGuardSourceId", "GuardSourceId"),
+            ("ActivationAp", "ActivationAp"),
+            ("PlayerStagger", "Stagger"),
+            ("PlayerStaggerRound", "StaggerRound"),
+            ("PlayerSteadyUntilRound", "SteadyUntilRound"),
+            ("PlayerSlowPending", "SlowPending"),
+            ("PlayerSlowActive", "SlowActive"),
+            ("SkillUsedRound", "SkillUsedRound"),
+            ("PlayerGuardCharges", "GuardCharges"),
+            ("CounterFactor", "CounterFactor"),
+            ("CounterPage", "CounterPage"),
+            ("BraceCharges", "BraceCharges"),
+            ("BraceFactor", "BraceFactor"),
+            ("BracePage", "BracePage"),
+            ("ChargeFactor", "ChargeFactor"),
+            ("ChargeUntilRound", "ChargeUntilRound"),
+            ("ChargeItem", "ChargeItem"),
+            ("InspireBonus", "InspireBonus"),
+            ("InspireUntilRound", "InspireUntilRound"),
+            ("AllOutFactor", "AllOutFactor"),
+            ("AllOutUntilRound", "AllOutUntilRound"),
+            ("DisplaceResist", "DisplaceResist"),
+            ("DisplaceUntilRound", "DisplaceUntilRound"),
+            ("PlayerArmorBreak", "ArmorBreak"),
+            ("PlayerArmorBreakUntilRound", "ArmorBreakUntilRound"),
+            ("PlayerWeakFactor", "WeakFactor"),
+            ("PlayerWeakUntilRound", "WeakUntilRound"),
+            ("PlayerNextDamageFactor", "NextDamageFactor"),
+            ("CalmRound", "CalmRound"),
+            ("ActiveWeaponSlot", "ActiveWeaponSlot"),
+            ("FearMorale", "FearMorale"),
+            ("FearRoll", "FearRoll"),
+            ("FearChance", "FearChance"),
+            ("Frightened", "Frightened"),
+            ("FearPanic", "FearPanic"),
+        };
+
         public BattleState Clone()
         {
             var c = (BattleState)MemberwiseClone();
@@ -307,7 +431,7 @@ namespace Survival.Core.State
             c.Enemies = Enemies.Select(e => e.Clone()).ToList();
             c.Allies = new List<string>(Allies);
             c.Protections = new Dictionary<string, string>(Protections);
-            c.SkillUsedRound = new Dictionary<string, int>(SkillUsedRound);
+            c.Fighters = Fighters.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.CommandXp = new List<string>(CommandXp);
             c.PendingCommandXp = new List<string>(PendingCommandXp);
             c.Loot = Loot.Select(l => l.Clone()).ToList();

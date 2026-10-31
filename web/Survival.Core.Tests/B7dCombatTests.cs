@@ -127,7 +127,7 @@ public class B7dCombatTests : BattleTestBase
         var j = JObject.Parse(SaveSerializer.Serialize(s));
         j["SchemaVersion"] = "13";
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out var notes);
-        Assert.That(m.SchemaVersion, Is.EqualTo("14"));
+        Assert.That(m.SchemaVersion, Is.EqualTo("15"), "13→14→15 一路迁到当前版本");
         Assert.That(m.Battle!.Enemies.Select(e => e.Slot), Is.EqualTo(new[] { "", "2", "3" }), "合法号位与空位原样保留，不压紧");
         Assert.That(notes.Single(), Does.Contain("真实站位").And.Not.Contain("补到空位"));
         Assert.That(E.AwaitingPlayer(m), Is.True, "读档后可以继续");
