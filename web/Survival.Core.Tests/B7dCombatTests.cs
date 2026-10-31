@@ -675,4 +675,82 @@ public class B7dCombatTests : BattleTestBase
         Assert.That(Cmd(s, "firearms_07").Ok, Is.True);
         Assert.That(s.Skills["command"].Xp - xp0, Is.EqualTo(Cfg.Xp.DamagingAttackCommand), "每场每技能一次");
     }
+
+    // ───────────── M178：Q75/Q76/Q79 选 A 核对 ─────────────
+
+    /// <summary>
+    /// RES-Q75：装兼容医疗器具的医疗技能按真实己位（234）治存活友方（现在只有你自己），只扣施术者随身物资、与绷带共享回血冷却；
+    /// 不装器具时 2AP 绷带/抗生素/特效药照样自用（1 号位也行），不远程取物。
+    /// </summary>
+    [Test]
+    public void RES_Q75_MedicalSkillOwnSlotAndSelf_ItemSelfUseWithoutKit_SharedCooldown()
+    {
+        var md = (JObject)Res()["medical"]!;
+        Assert.That(((bool)md["requiresCompatibleMedicalWeaponPageForSkills"]!, (bool)md["materialsFromCasterOnly"]!, (string)md["itemsWithoutMedicalKit"]!, (bool)md["existingTargetCooldownShared"]!),
+            Is.EqualTo((true, true, "self_use_bandage_antibiotics_cure_2AP", true)));
+
+        var s = Fight(9501, "worker");
+        Ready(s);
+        var b = s.Battle!;
+        // 不装医疗器具：绷带物品 2AP 自用，1 号位也可
+        E.DebugGive(s, "bandage", 2);
+        s.Stats.Health = 10;
+        var bd = E.BattleOptions(s).Single(o => o.Action == "bandage");
+        Assert.That((bd.Available, bd.Ap), Is.EqualTo((true, 2)));
+        Assert.That(Cmd(s, "bandage").Ok, Is.True);
+        Assert.That(s.BandageReadyAt, Is.GreaterThan(s.GameMinute), "绷带回血冷却开始");
+        // 装上野战医疗包：医疗技能在 1 号位不可用（使用位234，单人不再兼容1）
+        b.PlayerAp = 6;
+        Arm2(s, "field_medkit");
+        s.Skills["medicine"].Level = 1;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("medicine_01")), Does.Contain("只能在我方2、3、4号位使用（你在1号位）"));
+        StandAt(s, 2);
+        var why = E.CommandBlocked(s, BattleCommand.Of("medicine_01"));
+        Assert.That(why, Does.Contain("冷却").Or.Contain("没有").Or.Contain("随身"), "到 2 号位后只剩物资/冷却这类真实原因：" + why);
+        Assert.That(E.PreviewCommand(s, BattleCommand.Of("medicine_01")).Notes, Has.Some.Contains("目标：你自己"));
+    }
+
+    /// <summary>RES-Q76：泛称持续 N 轮=施加当轮剩余+之后 N 个完整大回合，第 4 轮施加 2 轮到第 6 轮末；蓄力到 r+1；CD1 r+1 禁用 r+2 可用。</summary>
+    [Test]
+    public void RES_Q76_DurationRPlusN_ChargeRPlus1_CooldownSeparate()
+    {
+        var du = (JObject)Res()["duration"]!;
+        Assert.That(((int)du["appliedAtRound"]!, (int)du["twoRoundExpiresEnd"]!), Is.EqualTo((4, 6)));
+
+        var s = Fight(9502, "worker");
+        Ready(s);
+        var b = s.Battle!;
+        b.Round = 4;
+        b.PlayerAp = 6;
+        Arm(s, "hatchet");
+        s.Skills["axe"].Level = 5;
+        Enemy(s, 1).Hp = 50;
+        Force(s, Below(0.01), AtLeast(0.99), Any());
+        Assert.That(Cmd(s, "axe_03", 1).Ok, Is.True);
+        Assert.That(Enemy(s, 1).ArmorBreakUntilRound, Is.EqualTo(6), "破甲 2 轮：第 4 轮施加到第 6 轮末");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("axe_03", 1)), Does.StartWith("冷却中（第6轮起可用）"), "CD1：r+1 禁用、r+2 可用，与持续时间分开");
+        Assert.That(Cmd(s, "axe_05").Ok, Is.True);
+        Assert.That(b.ChargeUntilRound, Is.EqualTo(5), "蓄力“下一大回合末”到 r+1");
+        Assert.That(E.SkillExecOf("command_01")!.BuffRounds, Is.EqualTo(2), "鼓舞持续 2 轮（r+2 轮末，与破甲同口径）");
+    }
+
+    /// <summary>RES-Q79：重装守卫重击面板×1.0；搬运/攀附抓击 80%/咬击 20%；未写咬击的近战不感染；攀附拉扯 0 直接伤害。</summary>
+    [Test]
+    public void RES_Q79_EnemyNumbersMatchContract()
+    {
+        var ea = (JObject)Res()["enemyAssumptions"]!;
+        var guard = Cfg.Enemies.Single(x => x.Id == "z_guard");
+        var heavy = guard.Intents.Cycle.Single(x => x.Verb == "重击");
+        Assert.That(heavy.Factor, Is.EqualTo((double)ea["z_guardHeavyStrikeFactor"]!));
+        foreach (var id in new[] { "z_hauler", "z_clinger" })
+            Assert.That(Cfg.Enemies.Single(x => x.Id == id).Intents.Cycle.Single(x => x.Kind == "attack").BitePct, Is.EqualTo((double)ea["z_haulerAndZ_clingerMixedAttack"]!["bite"]!), id);
+        Assert.That((bool)ea["implicitBiteOnUnspecifiedMelee"]!, Is.False);
+        foreach (var id in new[] { "z_screamer", "z_spitter", "z_bloater" })
+        {
+            var cfg = Cfg.Enemies.Single(x => x.Id == id);
+            Assert.That(cfg.Intents.Opening.Concat(cfg.Intents.Cycle).All(x => x.BitePct == 0), Is.True, $"{id} 没写咬击：不判感染");
+        }
+        var pull = Cfg.Enemies.Single(x => x.Id == "z_clinger").Intents.Cycle.Single(x => x.Kind == "pull");
+        Assert.That(pull.Factor, Is.EqualTo((double)ea["z_clingerPullDamage"]!));
+    }
 }
