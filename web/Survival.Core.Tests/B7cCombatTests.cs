@@ -528,4 +528,81 @@ public class B7cCombatTests : BattleTestBase
         Assert.That(r.chance, Is.EqualTo(1 / (1 + Math.Exp(-((4.04 - 4.0) / 3 + 0.7)))).Within(1e-12), "撤退与追击同源小数速度");
         Assert.That(E.NormalActivationAp(s.Player), Is.EqualTo(3), "AP 仍整数");
     }
+
+    // ───────────── M170：Q65/66/68/70/72/73/74 选 A 的现状核对 ─────────────
+
+    /// <summary>CB-Q65：敌人追击只做一次合法普通攻击——不重复咬击（不判感染）、不重复嚎叫/蓄力等特殊意图、不另推进世界时间。</summary>
+    [Test]
+    public void CB_Q65_EnemyPursuit_PlainAttackOnly_NoBiteNoTick()
+    {
+        var p = Adj()["pursuit"]!;
+        Assert.That(((string)p["enemyAction"]!, (bool)p["biteExposureFromPlainPursuit"]!, (bool)p["extraWorldTick"]!), Is.EqualTo(("one_legal_plain_attack_only", false, false)));
+        var s = Fight(51, "shambler");
+        var b = s.Battle!;
+        var e = Enemy(s, 1);
+        e.Intent = "bite";
+        var minute = s.GameMinute;
+        var ticks = b.Ticks;
+        var log0 = b.Log.Count;
+        Force(s, Below(0.01), Any(), Any(), Any());
+        typeof(GameEngine).GetMethod("EnemyActivation", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { s, e, true });
+        var lines = b.Log.Skip(log0).ToList();
+        Assert.That(lines, Has.Some.Contains("追击"));
+        Assert.That(lines, Has.None.Contains("咬击").And.None.Contains("病毒"), "追击不改判咬击、不判感染");
+        Assert.That(s.Body.Infected, Is.False);
+        Assert.That((s.GameMinute, b.Ticks), Is.EqualTo((minute, ticks)), "追击不额外 tick");
+        // 嚎叫尸当轮意图是嚎叫：追击仍是普通攻击，不再嚎叫加恐慌
+        var t = Fight(52, "howler");
+        var tb = t.Battle!;
+        var h = Enemy(t, 1);
+        h.Intent = "howl";
+        var panic = tb.Panic;
+        Force(t, AtLeast(0.99), Any(), Any());
+        typeof(GameEngine).GetMethod("EnemyActivation", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { t, h, true });
+        Assert.That(tb.Panic, Is.EqualTo(panic), "追击不重复嚎叫");
+        Assert.That(tb.Log.Last(), Does.Contain("追击").And.Contain("落空"));
+    }
+
+    /// <summary>CB-Q66/Q68/Q72/Q73/Q74：合同值与现行配置/规则一致（行为另由 B6 R23_EnemyBleedKillsLast…、CB03、R27_RetreatFormula、CB01_SingleAlly…、B7 技能表用例覆盖）。</summary>
+    [Test]
+    public void CB_Q66_68_72_73_74_ContractMatchesCurrentRules()
+    {
+        var a = Adj();
+        Assert.That((int)a["bleedStartVictory"]!["ifNoEffectiveActionThisRoundTickMinutes"]!, Is.Zero);
+        var br = Cfg.CombatActions.Single(x => x.Id == "breathe");
+        Assert.That((br.RestoreEnergy, br.ReducePanic, br.ApCost), Is.EqualTo(((double)a["breathing"]!["energy"]!, (double)a["breathing"]!["panicReduction"]!, 2)));
+        var rt = Cfg.CombatActions.Single(x => x.Id == "retreat");
+        Assert.That((rt.ApCost, rt.LowEnergyChanceFactor), Is.EqualTo(((int)a["retreat"]!["ap"]!, (double)a["retreat"]!["forcedLowEnergyFactor"]!)));
+        Assert.That(Cfg.Panic.Penalties.Select(x => x.RetreatFactor), Is.EqualTo(new[] { (double)a["retreat"]!["panic60"]!, (double)a["retreat"]!["panic90"]! }));
+        Assert.That((Cfg.Retreat.SpeedDivisor, Cfg.Retreat.Offset), Is.EqualTo((3.0, 0.7)), "sigmoid((己速−敌最高速)/3+0.7)");
+        Assert.That((bool)a["swap"]!["newFixedPositionLockImplemented"]!, Is.False);
+        var sw = Cfg.CombatActions.Single(x => x.Id == "swap");
+        Assert.That((sw.ApCost, sw.Energy), Is.EqualTo((1, (double?)0.1)));
+        var s = Fight(53, "shambler");
+        Ready(s);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("swap")), Does.Contain("只有你一人"), "单人无邻友：换位禁用、原因真实");
+        // Q74：AP 逐 A06 技能表（75 节点），推挡/护身/盾击等 1AP 例外保留，不统一改 2
+        var rows = ((JArray)JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.a12.json")))["equipment"]!["skills"]!).ToDictionary(r => (string)r["id"]!, r => (int)r["ap"]!);
+        Assert.That(Cfg.SkillNodes.ToDictionary(n => n.Id, n => n.Ap), Is.EqualTo(rows));
+        Assert.That((E.SkillNode("unarmed_03")!.Ap, E.SkillNode("shield_01")!.Ap), Is.EqualTo((1, rows["shield_01"])));
+        Assert.That((bool)a["skillAp"]!["allControlsForcedTo2"]!, Is.False);
+    }
+
+    /// <summary>CB-Q70：失衡先命中后判控制（未命中不判、不给稳态）；成功给稳态、同轮不叠第二层。</summary>
+    [Test]
+    public void CB_Q70_StaggerNeedsHitThenControl()
+    {
+        var c = Adj()["control"]!;
+        Assert.That(((bool)c["staggerRequiresHitThenControl"]!, (bool)c["successfulControlGrantsSteady"]!), Is.EqualTo((true, true)));
+        var s = Fight(54, "worker");
+        s.Skills["unarmed"].Level = 3;
+        Ready(s);
+        var e = Enemy(s, 1);
+        Force(s, AtLeast(0.999), Any(), Any(), Any());
+        Assert.That(Cmd(s, "unarmed_03", 1).Ok, Is.True);
+        Assert.That((e.Stagger, e.SteadyUntilRound >= s.Battle!.Round), Is.EqualTo((false, false)), "推空：不判控制、不给稳态");
+        Assert.That(s.Battle.Log.Last(), Does.Contain("落空").Or.Contain("没有打中").Or.Contain("未命中"));
+    }
 }
