@@ -155,6 +155,16 @@ namespace Survival.Core.Engine
             return text;
         }
 
+        /// <summary>开发（B10b，Q110 试医疗台三材料经验）：盐水剂/消毒液/草药浸膏各做一次的原料放当前地面。</summary>
+        public string DebugMedicalMaterialKit(GameState s)
+        {
+            var kit = new (string id, int n)[] { ("clean_water", 3), ("salt", 1), ("lab_reagent", 1), ("herb", 2) };
+            foreach (var (id, n) in kit) if (_items.ContainsKey(id)) CreateItems(s, id, n, s.CurrentLocation);
+            var text = $"开发：医疗台材料加工原料放在{LocName(s.CurrentLocation)}地面（{string.Join("、", kit.Select(k => $"{ItemName(k.id)}×{k.n}"))}，盐水剂/消毒液/草药浸膏各一次）";
+            Emit(s, GameEventKind.Info, text + "。");
+            return text;
+        }
+
         /// <summary>开发：工坊材料包（各类工坊建造与常用装备材料各若干，放当前地面）。</summary>
         public string DebugWorkshopKit(GameState s)
         {
