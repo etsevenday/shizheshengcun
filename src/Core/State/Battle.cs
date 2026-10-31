@@ -61,7 +61,7 @@ namespace Survival.Core.State
         public string EnemyId { get; set; } = "";
         /// <summary>
         /// 敌方站位 "1"—"4"（R03 §1 四对四：1 最靠中央、4 最后；schema 12 起，旧 F1/F2/B1 迁为 1/2/3）；死亡或逃离后清空。
-        /// 每条完整指令（玩家指令或一次敌方行动）后存活者按原顺序从 1 起紧凑重排。
+        /// Q80（schema 14）起不再自动压紧：死亡、指令后、轮初都保留空位；只有新战初次生成按名单紧凑排位。
         /// </summary>
         public string Slot { get; set; } = "";
         /// <summary>站位号 1—4；不在场为 0。</summary>
@@ -252,7 +252,7 @@ namespace Survival.Core.State
         /// <summary>总攻令：下一次攻击伤害×AllOutFactor，到 AllOutUntilRound 轮末；同名不叠。</summary>
         public double AllOutFactor { get; set; }
         public int AllOutUntilRound { get; set; }
-        /// <summary>稳固：位移抵抗+到 DisplaceUntilRound 轮末（单人时没有可被移动的位置，只记录）。</summary>
+        /// <summary>稳固：位移抵抗+到 DisplaceUntilRound 轮末（Q80 起单人被拉扯/击退也会真实移位，判控制时生效）。</summary>
         public double DisplaceResist { get; set; }
         public int DisplaceUntilRound { get; set; }
         /// <summary>主角被破甲（酸液喷吐）：护甲−到轮末。</summary>
@@ -284,7 +284,10 @@ namespace Survival.Core.State
         /// 新战斗按存档里的真实解锁事实计算（Q62 选 B：新局 C1，见 GameEngine.BattleCapacity）；开战后不随事实变化，旧战斗保持已存值到结束。
         /// </summary>
         public int Capacity { get; set; }
-        /// <summary>我方站位（R03 §1）：按 1..实际人数紧凑排列的 actorId；本批只有主角（队友参战在 B8）。</summary>
+        /// <summary>
+        /// 我方真实站位（R03 §1、Q80）：下标=槽号−1 的稀疏表，空位为 ""，末尾空位省略（主角在 1 号位时即 [p0]）；
+        /// 单人也可在 2/3/4 号位，不自动归 1。本批只有主角（队友参战在 B8）。
+        /// </summary>
         public List<string> Allies { get; set; } = new List<string> { GameState.PlayerId };
         public List<BattleLoot> Loot { get; set; } = new List<BattleLoot>();
         /// <summary>战斗日志（最近 80 条），界面逐条展示。</summary>

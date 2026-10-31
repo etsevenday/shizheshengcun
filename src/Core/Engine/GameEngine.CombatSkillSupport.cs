@@ -95,7 +95,7 @@ namespace Survival.Core.Engine
         /// <summary>非攻击技能能否执行（战斗中；CommandBlocked 的分支，已过解锁/冷却/AP/体力/使用位）。</summary>
         private string? NonAttackBlocked(GameState s, BattleState b, BattleCommand c, SkillNodeConfig n, SkillExecConfig x, WeaponConfig w, ItemInstance? wi)
         {
-            if (x.NeedsAllies && b.Allies.Count <= 1) return NeedAlliesReason(n);
+            if (x.NeedsAllies && AllyCount(b) <= 1) return NeedAlliesReason(n);
             switch (x.Type)
             {
                 case "guard":
@@ -152,7 +152,7 @@ namespace Survival.Core.Engine
             p.EnergyCost = SkillEnergy(s, n, w);
             p.EnergyAfter = Math.Max(0, s.Stats.Energy - p.EnergyCost);
             p.Notes.Add($"{n.Name}：{n.Text}");
-            var solo = b.Allies.Count <= 1;
+            var solo = AllyCount(b) <= 1;
             switch (x.Type)
             {
                 case "guard":
@@ -221,7 +221,7 @@ namespace Survival.Core.Engine
             s.Stats.Add(StatId.Energy, -energy);
             b.SkillUsedRound[n.Id] = b.Round;
             var parts = new List<string>();
-            var solo = b.Allies.Count <= 1;
+            var solo = AllyCount(b) <= 1;
             var page = b.ActiveWeaponSlot;
             switch (x.Type)
             {

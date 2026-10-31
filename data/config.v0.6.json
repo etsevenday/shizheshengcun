@@ -7360,13 +7360,19 @@
     "shieldGuardFactor": 0.4,
     "minAccuracy": 1,
     "minEvasion": 1,
-    "damageBuffCap": 1.5,
     "controlBase": 0.75,
     "controlMin": 0.1,
     "controlMax": 0.95,
     "steadyResistBonus": 30,
     "playerAccuracyAssistance": 8,
-    "fatigueAccuracyFactor": 0.95
+    "fatigueAccuracyFactor": 0.95,
+    "damageBuffKnee": 1.35,
+    "damageBuffTail": 0.25,
+    "exposureApproach": {
+      "approachAp": 1,
+      "plainAttackAp": 2,
+      "damageFactor": 0.7
+    }
   },
   "panic": {
     "range": [
@@ -9780,14 +9786,14 @@
       "name": "挣脱",
       "ap": 2,
       "baseEnergy": 0.35,
-      "positions": "123→自身",
-      "effectText": "解除被保护以外的束缚/标记，向后移动1位",
+      "positions": "1234→自身",
+      "effectText": "解除减速/束缚/标记，后移1位；4号位可原地解除；不解保护/感染/出血/失衡/虚弱；完全无收益拒绝",
       "cooldownRounds": 2,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "解除被保护以外的束缚、标记，向后移动1位"
+      "displayText": "解除减速/束缚/标记，后移1位；4号位可原地解除；不解保护/感染/出血/失衡/虚弱；完全无收益拒绝"
     },
     {
       "id": "unarmed_10",
@@ -9860,14 +9866,14 @@
       "name": "突进斩",
       "ap": 2,
       "baseEnergy": 0.65,
-      "positions": "23→12",
-      "effectText": "前移1位后攻击；伤害×1.20，移位失败拒绝整次",
+      "positions": "123→12",
+      "effectText": "前移1位后攻击伤害×1.20；在1号位允许原地攻击；其他站位不由单人兼容绕过，邻友可合法同意交换",
       "cooldownRounds": 1,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "前移1位后攻击；伤害×1.20，移位失败拒绝整次"
+      "displayText": "前移1位后攻击伤害×1.20；在1号位允许原地攻击；其他站位不由单人兼容绕过，邻友可合法同意交换"
     },
     {
       "id": "blade_10",
@@ -10020,14 +10026,14 @@
       "name": "贯穿",
       "ap": 2,
       "baseEnergy": 0.8,
-      "positions": "123→12或23",
-      "effectText": "选择一个相邻双位集合；每个目标独立命中、伤害×0.65",
+      "positions": "123→1234",
+      "effectText": "选择起点k，对真实槽k至4各存活敌独立命中；按槽偏移伤害×0.65/0.50/0.35/0.25，空位不重排",
       "cooldownRounds": 1,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "选择一个相邻双位集合；每个目标独立命中、伤害×0.65"
+      "displayText": "选择起点k，对真实槽k至4各存活敌独立命中；按槽偏移伤害×0.65/0.50/0.35/0.25，空位不重排"
     },
     {
       "id": "spear_10",
@@ -11078,7 +11084,12 @@
       "type": "buff",
       "targetMode": "self",
       "cleanse": true,
-      "moveBack": 1
+      "moveBack": 1,
+      "cleanseStatuses": [
+        "slow",
+        "binding",
+        "mark"
+      ]
     },
     {
       "id": "unarmed_10",
@@ -11188,8 +11199,14 @@
     {
       "id": "spear_07",
       "type": "attack",
-      "targetMode": "pair",
-      "damageFactor": 0.65
+      "targetMode": "suffix",
+      "damageFactor": 0.65,
+      "suffixFactors": [
+        0.65,
+        0.5,
+        0.35,
+        0.25
+      ]
     },
     {
       "id": "spear_10",

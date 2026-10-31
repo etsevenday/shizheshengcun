@@ -65,6 +65,16 @@ public abstract class BattleTestBase : TestBase
         b.PlayerActing = false;
     }
 
+    /// <summary>
+    /// 把主角直接放到我方某个真实号位（Q80 起单人也按真实己位判断使用位；只用于布置场景，不扣 AP/体力）。
+    /// 弓/枪/指挥/医疗器具的旧用例需要在 2—4 号位，原先靠“单人全武器兼容1号位”的豁免。
+    /// </summary>
+    protected static void StandAt(GameState s, int pos)
+    {
+        var b = s.Battle!;
+        b.Allies = Enumerable.Repeat("", pos - 1).Append(GameState.PlayerId).ToList();
+    }
+
     protected ActionResult Cmd(GameState s, string action, int? target = null, int? item = null) =>
         E.ExecuteCommand(s, BattleCommand.Of(action, target, item));
 

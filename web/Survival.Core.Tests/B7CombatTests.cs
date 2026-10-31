@@ -19,14 +19,14 @@ public class B7CombatTests : BattleTestBase
         var combat = Cfg.SkillNodes.Where(n => !n.IsSurvival).Select(n => n.Id).OrderBy(x => x).ToList();
         Assert.That(combat, Has.Count.EqualTo(50), "九门战斗 + 医疗 = 50 个主动技能");
         Assert.That(Cfg.SkillExec.Select(x => x.Id).OrderBy(x => x), Is.EqualTo(combat));
-        // A06 §2 抽样：连拳两击×0.85；割伤×0.65 正伤后流血；猎标无伤标记+6两轮、弹药1；连射两击、弹药2、单发弩不可用；贯穿相邻双位×0.65
+        // A06 §2 抽样：连拳两击×0.85；割伤×0.65 正伤后流血；猎标无伤标记+6两轮、弹药1；连射两击、弹药2、单发弩不可用；贯穿（Q82 起）起点到4号位按槽偏移×0.65/0.50/0.35/0.25
         var ex = Cfg.SkillExec.ToDictionary(x => x.Id);
         Assert.That((ex["unarmed_10"].Hits, ex["unarmed_10"].DamageFactor), Is.EqualTo((2, 0.85)));
         Assert.That(ex["blade_03"].Effects.Single().Status, Is.EqualTo("bleed"));
         Assert.That(ex["blade_03"].Effects.Single().Positive, Is.True);
         Assert.That((ex["archery_05"].DamageFactor, ex["archery_05"].Ammo, ex["archery_05"].Effects.Single().Value, ex["archery_05"].Effects.Single().Rounds), Is.EqualTo((0.0, 1, 6.0, 2)));
         Assert.That((ex["archery_10"].Ammo, ex["archery_10"].MinAmmo, ex["archery_10"].NoSingleShot), Is.EqualTo((2, 2, true)));
-        Assert.That((ex["spear_07"].TargetMode, ex["spear_07"].DamageFactor), Is.EqualTo(("pair", 0.65)));
+        Assert.That((ex["spear_07"].TargetMode, ex["spear_07"].SuffixFactors), Is.EqualTo(("suffix", new List<double> { 0.65, 0.5, 0.35, 0.25 })));
         Assert.That(ex["medicine_10"].Items, Is.EquivalentTo(new Dictionary<string, int> { ["saline"] = 1, ["medical_gauze"] = 1 }));
         // 节点位置拆分：推挡 12→1、按武器为空
         var push = Cfg.SkillNodes.Single(n => n.Id == "unarmed_03");
@@ -159,7 +159,7 @@ public class B7CombatTests : BattleTestBase
     }
 
     [Test]
-    public void SK05_MultiHit_XpOncePerTarget_PairHitsTwo()
+    public void SK05_MultiHit_XpOncePerTarget_PierceHitsSuffix()
     {
         var s = Fight(705, "worker");
         Ready(s);
@@ -178,11 +178,12 @@ public class B7CombatTests : BattleTestBase
         Arm(p, "wooden_spear");
         p.Skills["spear"].Level = 7;
         foreach (var e in p.Battle!.Alive) e.Hp = 50;
-        var pv = E.PreviewCommand(p, BattleCommand.Of("spear_07", 3));
-        Assert.That(pv.Targets.Select(t => t.Slot), Is.EqualTo(new[] { "2", "3" }), "点3号位打23");
-        Assert.That(E.PreviewCommand(p, BattleCommand.Of("spear_07", 2)).Targets.Select(t => t.Slot), Is.EqualTo(new[] { "1", "2" }), "点2号位打12");
+        // 按 Q82 改写（取代 B7-6 相邻双位）：点 k 号位打 k 至 4 号位
+        var pv = E.PreviewCommand(p, BattleCommand.Of("spear_07", 2));
+        Assert.That(pv.Targets.Select(t => t.Slot), Is.EqualTo(new[] { "2", "3" }), "点2号位打2、3（4号位空）");
+        Assert.That(E.PreviewCommand(p, BattleCommand.Of("spear_07", 1)).Targets.Select(t => t.Slot), Is.EqualTo(new[] { "1", "2", "3" }), "点1号位打1—3");
         Force(p, Below(0.5), AtLeast(0.9), Any(), Below(0.5), AtLeast(0.9), Any());
-        Assert.That(Cmd(p, "spear_07", 3).Ok, Is.True);
+        Assert.That(Cmd(p, "spear_07", 2).Ok, Is.True);
         Assert.That(Enemy(p, 2).XpHits["spear"] + Enemy(p, 3).XpHits["spear"], Is.EqualTo(2), "群攻不同目标独立计");
     }
 
@@ -193,6 +194,7 @@ public class B7CombatTests : BattleTestBase
         var s = Fight(707, "worker");
         Ready(s);
         Arm(s, "recurve_bow");
+        StandAt(s, 2);   // Q80：弓使用位234
         E.DebugGive(s, "arrow", 5);
         s.Skills["archery"].Level = 5;
         var before = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single().AccuracyRating;
@@ -277,6 +279,7 @@ public class B7CombatTests : BattleTestBase
     {
         var s = Fight(714, "feral_dog");
         Ready(s);
+        StandAt(s, 2);   // Q80：弓弩使用位234
         var cb = Arm(s, "crossbow");
         cb.LoadedAmmo = 1;
         s.Skills["archery"].Level = 10;
@@ -378,6 +381,7 @@ public class B7CombatTests : BattleTestBase
         Ready(s);
         Arm(s, "kitchen_knife");
         var wh = Arm2(s, "signal_whistle");
+        StandAt(s, 2);   // Q80：指挥器具使用位234，单人也按真实站位
         s.Skills["command"].Level = 9;   // 10 级不再获得经验
         s.Battle!.PlayerAp = 6;
         s.Battle.Panic = 30;
@@ -409,6 +413,7 @@ public class B7CombatTests : BattleTestBase
         Ready(s);
         Arm(s, "kitchen_knife");
         var kit = Arm2(s, "trauma_bag");
+        StandAt(s, 2);   // Q80：医疗器具技能使用位234
         s.Skills["medicine"].Level = 10;
         s.Battle!.PlayerAp = 6;
         s.Stats.Health = 10;
@@ -441,6 +446,7 @@ public class B7CombatTests : BattleTestBase
         var s = Fight(725, "worker");
         Ready(s);
         var p = Arm(s, "pistol");
+        StandAt(s, 2);   // Q80：快速装填使用位234
         p.LoadedAmmo = 1;
         E.DebugGive(s, "ammo_9mm", 10);
         s.Skills["firearms"].Level = 5;
@@ -465,10 +471,12 @@ public class B7CombatTests : BattleTestBase
     {
         var executed = new HashSet<string>();
         foreach (var wid in OneWeaponPerKind)
+        foreach (var pos in new[] { 1, 2, 3 })   // Q80：技能按真实己位，逐个号位都核对一遍
         {
             var s = Fight(730, "feral_dog", "feral_dog", "feral_dog");
             Ready(s);
             if (wid != "fists") Arm(s, wid);
+            StandAt(s, pos);
             foreach (var k in s.Skills.Keys.ToList()) s.Skills[k].Level = 10;
             s.Battle!.PlayerSlowPending = true;   // 挣脱要有可解除的束缚
             E.DebugGive(s, "arrow", 10);
@@ -484,7 +492,7 @@ public class B7CombatTests : BattleTestBase
             foreach (var e in s.Battle.Alive) e.Hp = 50;
             var opts = E.BattleOptions(s);
             var help = E.CompatibleCommands(s);
-            Assert.That(help.Where(o => o.Action != "switch_weapon").Select(o => (o.Action, o.Available, o.Reason)), Is.EqualTo(opts.Select(o => (o.Action, o.Available, o.Reason))), $"{wid}：战斗中指令一览与操作台同源");
+            Assert.That(help.Where(o => o.Action != "switch_weapon").Select(o => (o.Action, o.Available, o.Reason)), Is.EqualTo(opts.Select(o => (o.Action, o.Available, o.Reason))), $"{wid}@{pos}：战斗中指令一览与操作台同源");
             foreach (var o in opts.Where(o => o.NodeId != null))
             {
                 var tgt = o.Targets.Count > 0 ? o.Targets[0] : (int?)null;
@@ -875,7 +883,7 @@ public class B7CombatTests : BattleTestBase
         pistol.LoadedAmmo = 8;
         s.Battle!.PlayerAp = 0;
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("reload")), Is.EqualTo("弹仓已满"));
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("swap")), Is.EqualTo(GameEngine.SoloReason));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("swap", 2)), Does.StartWith("行动点不足"), "Q80：单人也可调整站位，AP 不足才禁用");
         pistol.LoadedAmmo = 0;
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Is.EqualTo("弹仓空了：先装填"));
         Arm2(s, "signal_whistle");

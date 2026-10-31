@@ -178,7 +178,7 @@ namespace Survival.Core.Config
         public string Id { get; set; } = "";
         /// <summary>attack 攻击 / guard 自身格挡类 / buff 自身增益 / ally 友方增益或调整 / medical 医疗 / reload 装填。</summary>
         public string Type { get; set; } = "attack";
-        /// <summary>single 单体 / pair 相邻双位（贯穿）/ self 自身 / ally 友方（单人时即自己）。</summary>
+        /// <summary>single 单体 / suffix 起点到4号位（贯穿，Q82）/ pair 旧相邻双位（已不用）/ self 自身 / ally 友方（单人时即自己）。</summary>
         public string TargetMode { get; set; } = "single";
         public double DamageFactor { get; set; } = 1;
         /// <summary>同一目标的独立命中次数（连拳/连刺/连射 2）。</summary>
@@ -214,7 +214,11 @@ namespace Survival.Core.Config
         public int BuffRounds { get; set; }
         public double TeamGuardFactor { get; set; }
         public bool Cleanse { get; set; }
+        /// <summary>挣脱可解除的状态（Q80：slow 减速 / binding 束缚 / mark 标记；不解感染、出血、破甲、虚弱、失衡、保护）。</summary>
+        public List<string> CleanseStatuses { get; set; } = new List<string>();
         public int MoveBack { get; set; }
+        /// <summary>贯穿（Q82，targetMode "suffix"）：从起点 k 起按槽偏移的伤害倍率 0.65/0.50/0.35/0.25，空位不重排。</summary>
+        public List<double> SuffixFactors { get; set; } = new List<double>();
         public double InspireAccuracy { get; set; }
         public double PanicReduce { get; set; }
         public double AllOutFactor { get; set; }
@@ -533,6 +537,15 @@ namespace Survival.Core.Config
     }
 
     /// <summary>v0.6 combatMath：命中、暴击、伤害、身体修正（§04）。</summary>
+    /// <summary>敌方空前排迫近（Q80，combat-resolution-adjudications.json enemyActivation.exposureApproach）。</summary>
+    public sealed class ExposureApproachConfig
+    {
+        public int ApproachAp { get; set; } = 1;
+        public int PlainAttackAp { get; set; } = 2;
+        public double DamageFactor { get; set; } = 0.7;
+        public int TotalAp => ApproachAp + PlainAttackAp;
+    }
+
     public sealed class CombatMathConfig
     {
         public string Initiative { get; set; } = "";
@@ -569,8 +582,14 @@ namespace Survival.Core.Config
         /// <summary>攻击能力与闪避下限（A=max(1,…)，目标闪避最低1）。</summary>
         public double MinAccuracy { get; set; } = 1;
         public double MinEvasion { get; set; } = 1;
-        /// <summary>不同来源伤害增益乘算的总上限（×1.5，不含技能/熟练/暴击）。</summary>
-        public double DamageBuffCap { get; set; } = 1.5;
+        /// <summary>
+        /// 正伤害增益递减（Q82，取代旧硬上限×1.5）：同名取强、合法不同来源先乘成 rawB；rawB≤拐点原值，
+        /// 以上 B=拐点+尾段×(1−exp(−(rawB−拐点)/尾段))，渐近 拐点+尾段（1.35+0.25=1.6）。成长/技能/处决/暴击/虚弱不进此曲线。
+        /// </summary>
+        public double DamageBuffKnee { get; set; } = 1.35;
+        public double DamageBuffTail { get; set; } = 0.25;
+        /// <summary>敌方空前排迫近（Q80）：迫近 1AP + 一次 2AP 弱普通近袭×0.70（无咬击/控制，不改我方真实槽）。</summary>
+        public ExposureApproachConfig ExposureApproach { get; set; } = new ExposureApproachConfig();
         /// <summary>控制判定 clamp(controlBase + 控制能力/100 − 目标控制抗性/100, controlMin, controlMax)。</summary>
         public double ControlBase { get; set; } = 0.75;
         public double ControlMin { get; set; } = 0.10;

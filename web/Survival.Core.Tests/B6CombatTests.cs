@@ -147,38 +147,40 @@ public class B6CombatTests : BattleTestBase
         foreach (var (weapon, reach) in cases)
         {
             Arm(s, weapon);
+            StandAt(s, weapon == "wooden_bow" ? 2 : 1);   // Q80：弓使用位234，单人也按真实站位
             var opt = E.BattleOptions(s).Single(o => o.Action == "basic_attack");
             Assert.That(opt.Targets, Is.EqualTo(reach), weapon);
         }
     }
 
     [Test]
-    public void CB01_SingleAlly_AllWeaponsUsableFromPos1_SwapBlocked()
+    public void CB01_SingleAlly_RealOwnPosition_AdjustPositionSolo()
     {
+        // 按 Q80 改写（取代 B6“只剩一人时所有武器兼容1号位、单人换位禁用”）：单人也按真实己位；调整站位 1AP/E0.1 单人可用
         var s = Fight(3, "shambler");
         Ready(s);
         var b = s.Battle!;
         var rifle = Arm(s, "rifle");
         rifle.LoadedAmmo = 3;
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Is.Null, "只剩一人时步枪（使用位34）临时兼容1号位");
-        var swap = E.BattleOptions(s).Single(o => o.Action == "swap");
-        Assert.That((swap.Available, swap.Ap, swap.Energy), Is.EqualTo((false, 1, 0.1)));
-        Assert.That(swap.Reason, Does.StartWith("只有你一人在场"));
-        var outside = Fight(30, "shambler");
-        outside.Battle = null;
-        Assert.That(E.CompatibleCommands(outside).Single(o => o.Action == "swap").Reason, Does.StartWith("只有你一人在场"), "系统说明指令一览同源写原因");
-
-        // 我方两人时（队友参战在 B8；这里只往站位表里放一个占位，检验规则本身）：步枪不能在1号位用，相邻换位 1AP、E0.1 后可用
-        b.Allies = new List<string> { GameState.PlayerId, "ally" };
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("只能在我方3、4号位使用"));
-        Assert.That(E.SwapTargets(b), Is.EqualTo(new[] { 2 }));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("只能在我方3、4号位使用"), "步枪使用位34，单人在1号位也不能开火");
+        var swap = E.BattleOptions(s).Where(o => o.Action == "swap").ToList();
+        Assert.That(swap.Select(o => o.ItemInstanceId), Is.EqualTo(new int?[] { 2 }), "1号位只能往后挪到2号位");
+        Assert.That((swap[0].Available, swap[0].Ap, swap[0].Energy), Is.EqualTo((true, 1, 0.1)));
         var e0 = s.Stats.Energy;
         var ap = b.PlayerAp;
         Assert.That(Cmd(s, "swap", 2).Ok, Is.True);
-        Assert.That(b.Allies, Is.EqualTo(new[] { "ally", GameState.PlayerId }));
+        Assert.That(b.Allies, Is.EqualTo(new[] { "", GameState.PlayerId }));
+        Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(2));
         Assert.That(s.Stats.Energy, Is.EqualTo(e0 - 0.1).Within(1e-9));
         Assert.That(b.PlayerAp, Is.EqualTo(ap - 1));
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("swap", 4)), Is.EqualTo("请选择相邻的我方站位"));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("swap", 4)), Is.EqualTo("请选择相邻的我方站位（1—4号位）"));
+
+        // 我方两人时（队友参战在 B8；这里只往站位表里放一个占位，检验规则本身）：相邻同伴为一次原子交换
+        b.Allies = new List<string> { GameState.PlayerId, "ally" };
+        b.PlayerAp = 3;
+        Assert.That(E.SwapTargets(b), Is.EqualTo(new[] { 2 }));
+        Assert.That(Cmd(s, "swap", 2).Ok, Is.True);
+        Assert.That(b.Allies, Is.EqualTo(new[] { "ally", GameState.PlayerId }));
     }
 
     [Test]
@@ -201,7 +203,8 @@ public class B6CombatTests : BattleTestBase
         Assert.That(m.Battle.Capacity, Is.EqualTo(3));
         Assert.That(m.Battle.Allies, Is.EqualTo(new[] { GameState.PlayerId }));
         Assert.That(m.Battle.PlayerAp, Is.EqualTo(s.Battle!.PlayerAp), "轮中进度原样保留");
-        Assert.That(notes.Single(), Does.Contain("四对四"));
+        Assert.That(notes.First(), Does.Contain("四对四"));
+        Assert.That(notes.Last(), Does.Contain("真实站位"), "13→14：保留号位与空位");
         Assert.That(E.AwaitingPlayer(m), Is.True, "读档后可以继续这场战斗");
         var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(m), Cfg, out var notes2);
         Assert.That(notes2, Is.Empty, "再读档不再迁移");
@@ -417,7 +420,7 @@ public class B6CombatTests : BattleTestBase
         t = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
         Assert.That((t.DamageBuff, t.Multiplier), Is.EqualTo((1.06, 1.035 * 1.06)).Within(1e-9));
         Assert.That(t.DamageMin, Is.EqualTo(1.6 * 1.035 * 1.06 - (0.7 - 0.1)).Within(1e-9));
-        Assert.That(Cfg.CombatMath.DamageBuffCap, Is.EqualTo(1.5));
+        Assert.That((Cfg.CombatMath.DamageBuffKnee, Cfg.CombatMath.DamageBuffTail), Is.EqualTo((1.35, 0.25)), "Q82：递减曲线取代旧硬上限×1.5");
         // 实际结算与预览同源
         var hp0 = Enemy(s, 1).Hp;
         Force(s, Below(0.5), AtLeast(0.2), Below(1e-3));

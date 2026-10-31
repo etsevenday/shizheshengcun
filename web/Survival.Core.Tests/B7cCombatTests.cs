@@ -582,7 +582,7 @@ public class B7cCombatTests : BattleTestBase
         Assert.That((sw.ApCost, sw.Energy), Is.EqualTo((1, (double?)0.1)));
         var s = Fight(53, "shambler");
         Ready(s);
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("swap")), Does.Contain("只有你一人"), "单人无邻友：换位禁用、原因真实");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("swap", 2)), Is.Null, "Q80 起单人也可调整站位（取代 Q73 时的单人换位禁用）");
         // Q74：AP 逐 A06 技能表（75 节点），推挡/护身/盾击等 1AP 例外保留，不统一改 2
         var rows = ((JArray)JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.a12.json")))["equipment"]!["skills"]!).ToDictionary(r => (string)r["id"]!, r => (int)r["ap"]!);
         Assert.That(Cfg.SkillNodes.ToDictionary(n => n.Id, n => n.Ap), Is.EqualTo(rows));

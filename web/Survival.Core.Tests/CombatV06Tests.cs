@@ -812,6 +812,7 @@ public class CombatV06Tests : BattleTestBase
         var s = Fight(34, "shambler", "shambler");
         Ready(s);
         var bow = Arm(s, "crossbow");
+        StandAt(s, 2);   // Q80：弓弩使用位234
         Assert.That(E.BattleOptions(s).Select(o => o.Action), Does.Not.Contain("aim"));
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("aim")), Is.EqualTo("瞄准已移除"));
         E.DebugGive(s, "bolt", 3);
@@ -894,6 +895,7 @@ public class CombatV06Tests : BattleTestBase
         var dog = E.DebugSpawnEnemy(s, "feral_dog", "field");
         Ready(s);
         var gun = Arm(s, "pistol");
+        StandAt(s, 2);   // Q80：手枪使用位234
         gun.LoadedAmmo = 8;
         s.Battle!.Noise = 99;
         Force(s, AtLeast(0.999));

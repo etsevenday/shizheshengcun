@@ -37,6 +37,7 @@ namespace Survival.Core.Save
         public const string Schema10 = "10";
         public const string Schema11 = "11";
         public const string Schema12 = "12";
+        public const string Schema13 = "13";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -63,6 +64,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema10) From10To11(s, config, notes);
             if (s.SchemaVersion == Schema11) From11To12(s, config, notes);
             if (s.SchemaVersion == Schema12) From12To13(s, notes);
+            if (s.SchemaVersion == Schema13) From13To14(s, config, notes);
             return notes;
         }
 
@@ -620,7 +622,59 @@ namespace Survival.Core.Save
             // 真实 v12 档没有余额字段；手改或非真实档残留的锁定余额一并清掉，防止结出不存在的余量（B7b 试玩修复）
             foreach (var a in new[] { s.Main, s.Sub })
                 if (a != null) { a.CarryKey = null; a.CarryReserved = 0; }
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（成长经验与工作量余量）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema13}（成长经验与工作量余量）。" });
+            s.SchemaVersion = Schema13;
+        }
+
+        // ───────────────────────── 13 → 14 ─────────────────────────
+
+        /// <summary>
+        /// 策划答复 Q80（开发计划 v0.9 B7d）：双方保持真实 1—4 槽与空位，不再自动压紧。只有进行中的战斗需要处理——
+        /// 已有的合法站位原样保留（旧档本来就是紧凑的，照旧是真实槽）；缺失、越界或重复的才按原顺序补到空槽一次
+        /// （oldSaveRestoreExplicitPositionsPreserved / oldSaveMissingPositionsInitializeOnce）。我方站位表缺主角或格式不对时主角回 1 号位。
+        /// 不重抽、不补发、不改轮中进度。
+        /// </summary>
+        private static void From13To14(GameState s, GameConfig config, List<string> notes)
+        {
+            var b = s.Battle;
+            if (b != null)
+            {
+                var max = Math.Max(1, config.Scope.Slots.Count);
+                var fixedCount = 0;
+                var taken = new HashSet<int>();
+                var pending = new List<BattleEnemy>();
+                foreach (var e in b.Enemies.OrderBy(e => e.Index))
+                {
+                    if (!e.Alive) { e.Slot = ""; continue; }
+                    if (int.TryParse(e.Slot, out var p) && p >= 1 && p <= max && taken.Add(p)) continue;
+                    pending.Add(e);
+                }
+                foreach (var e in pending)
+                {
+                    var free = Enumerable.Range(1, max).FirstOrDefault(p => !taken.Contains(p));
+                    if (free == 0) { e.Slot = ""; continue; }
+                    taken.Add(free);
+                    e.Slot = free.ToString();
+                    fixedCount++;
+                }
+                var allies = b.Allies ?? new List<string>();
+                var valid = allies.Count <= max && allies.Count(a => a == GameState.PlayerId) == 1
+                            && allies.Where(a => !string.IsNullOrEmpty(a)).Distinct().Count() == allies.Count(a => !string.IsNullOrEmpty(a));
+                if (!valid)
+                {
+                    b.Allies = new List<string> { GameState.PlayerId };
+                    fixedCount++;
+                }
+                else
+                {
+                    b.Allies = allies.Select(a => a ?? "").ToList();
+                    while (b.Allies.Count > 0 && string.IsNullOrEmpty(b.Allies[b.Allies.Count - 1])) b.Allies.RemoveAt(b.Allies.Count - 1);
+                }
+                var note = "进行中的战斗改为真实站位：双方保留现在的号位与空位，之后不再自动往前补位" + (fixedCount > 0 ? $"（{fixedCount}处缺失或重复的站位已补到空位）" : "");
+                notes.Add(note);
+                s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = note + "。" });
+            }
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（真实站位与空位）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

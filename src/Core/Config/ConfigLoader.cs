@@ -271,7 +271,7 @@ namespace Survival.Core.Config
                         var node = c.SkillNodes.FirstOrDefault(n => n.Id == x.Id);
                         if (node == null || node.IsSurvival) e.Add($"技能执行 {x.Id} 不是战斗/医疗技能节点");
                         if (!new[] { "attack", "guard", "buff", "ally", "medical", "reload" }.Contains(x.Type)) e.Add($"技能执行 {x.Id} 的类型 {x.Type} 无效");
-                        if (!new[] { "single", "pair", "self", "ally" }.Contains(x.TargetMode)) e.Add($"技能执行 {x.Id} 的目标方式 {x.TargetMode} 无效");
+                        if (!new[] { "single", "suffix", "pair", "self", "ally" }.Contains(x.TargetMode)) e.Add($"技能执行 {x.Id} 的目标方式 {x.TargetMode} 无效");
                         if (x.Hits < 1) e.Add($"技能执行 {x.Id} 的段数须≥1");
                         foreach (var kv in x.Items) if (!items.Contains(kv.Key) || kv.Value <= 0) e.Add($"技能执行 {x.Id} 的物品 {kv.Key} 无效");
                         foreach (var fx in x.Effects)

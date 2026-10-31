@@ -482,7 +482,7 @@ public class B7bProgressionTests : TestBase
         ((JObject)json["Main"]!).Remove("RuleVersion");
         json.Remove("WorkCarry");
         var old = SaveSerializer.Deserialize(json.ToString(), Cfg);
-        Assert.That(old.SchemaVersion, Is.EqualTo("13"));
+        Assert.That(old.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "12→13→14");
         Assert.That(old.Main!.RuleVersion, Is.Zero);
         E.Advance(old);
         Assert.That(old.Main!.WorkDone, Is.EqualTo(5 / 0.95).Within(1e-9), "旧规则：每段 5/(M×装备)");

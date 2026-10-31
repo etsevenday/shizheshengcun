@@ -25,7 +25,7 @@ namespace Survival.Core.Engine
             "guard" => "防御",
             "breathe" => "调整呼吸",
             "switch_weapon" => "切换武器页",
-            "swap" => "换位",
+            "swap" => "调整站位",
             "reload" => "装填",
             "bandage" => "包扎",
             "use_antibiotics" => "用抗生素",
@@ -58,25 +58,40 @@ namespace Survival.Core.Engine
         public static HashSet<int> OwnPositionsOf(WeaponConfig w) =>
             w.IsFists || string.IsNullOrEmpty(w.OwnPositions) ? new HashSet<int> { 1, 2, 3, 4 } : new HashSet<int>(w.OwnPositions!.Where(char.IsDigit).Select(ch => ch - '0'));
 
-        /// <summary>主角在我方的站位（1 起）。</summary>
+        /// <summary>
+        /// 主角在我方的真实站位（1 起）。Q80：我方 Allies 是按槽排的稀疏表（下标=槽号−1，空位为 ""，末尾空位省略），
+        /// 单人也可以在 2/3/4 号位，不自动归 1。
+        /// </summary>
         public static int PlayerPos(BattleState b) => Math.Max(1, b.Allies.IndexOf(GameState.PlayerId) + 1);
 
+        /// <summary>我方某槽上的角色 actorId；空位或越界为 null。</summary>
+        public static string? AllyAt(BattleState b, int pos) =>
+            pos >= 1 && pos <= b.Allies.Count && !string.IsNullOrEmpty(b.Allies[pos - 1]) ? b.Allies[pos - 1] : null;
+
+        /// <summary>我方在场角色数（不数空位）。</summary>
+        public static int AllyCount(BattleState b) => b.Allies.Count(a => !string.IsNullOrEmpty(a));
+
         /// <summary>
-        /// 使用位是否合法（R03 §1）：我方只剩一名存活角色时，所有武器技能的使用位临时兼容 1 号位；否则须在武器使用位里。
-        /// 本批我方只有主角一人（队友参战在 B8），所以总是兼容。
+        /// 我方两槽原子交换（Q80：目的为空直接移入，目的有同侧角色则一次交换）；只改站位，不多激活、不改已锁行动队列。
+        /// 表按需补空位、去掉末尾空位（只有主角在 1 号位时仍是旧档的 [p0]）。
         /// </summary>
-        public bool OwnPositionOk(BattleState b, WeaponConfig w) =>
-            b.Allies.Count <= 1 || OwnPositionsOf(w).Contains(PlayerPos(b));
+        public static void MoveAlly(BattleState b, int from, int to)
+        {
+            var n = Math.Max(from, to);
+            while (b.Allies.Count < n) b.Allies.Add("");
+            (b.Allies[from - 1], b.Allies[to - 1]) = (b.Allies[to - 1], b.Allies[from - 1]);
+            while (b.Allies.Count > 0 && string.IsNullOrEmpty(b.Allies[b.Allies.Count - 1])) b.Allies.RemoveAt(b.Allies.Count - 1);
+        }
+
+        /// <summary>
+        /// 使用位是否合法（R03 §1，Q80 起严格按真实己位）：取消“我方只剩一人时所有武器兼容 1 号位”的总豁免，单人也须在武器使用位里。
+        /// </summary>
+        public bool OwnPositionOk(BattleState b, WeaponConfig w) => OwnPositionsOf(w).Contains(PlayerPos(b));
 
         /// <summary>“1、2号位”。</summary>
         public static string PosList(IEnumerable<int> ps) => string.Join("、", ps.OrderBy(x => x)) + "号位";
 
-        /// <summary>每条完整指令后，存活敌人按原站位顺序从 1 号位起紧凑排位（R03 §1“完整指令后从后往前压紧”；死亡/逃离的已清位）。</summary>
-        private static void CompactEnemies(BattleState b)
-        {
-            var k = 1;
-            foreach (var e in b.Enemies.Where(e => e.Alive).OrderBy(e => e.Pos).ThenBy(e => e.Index).ToList()) e.Slot = (k++).ToString();
-        }
+        // Q80：取消“每条指令后/死亡后/轮初自动压紧”（原 CompactEnemies）。双方保持真实 1—4 槽与空位；只有新战初次生成按名单紧凑排位。
 
         /// <summary>
         /// 当前武器（B3 H6、A10 §4.2、A05 §5）：当前武器页对应武器槽里的那把（战外为开战默认页，见 DefaultWeaponPage）；空槽页即徒手（拳）。
@@ -378,7 +393,7 @@ namespace Survival.Core.Engine
             b.EncounterId = $"enc-{b.BattleId}";
             // 容量 C 锁存（R03 §1、A11：决定敌人数上限，不按实到人数缩怪）；有序名单截前 C 个，从 1 号位起紧凑排位
             b.Capacity = BattleCapacity(s);
-            b.Allies = new List<string> { GameState.PlayerId };   // 队友参战在 B8；我方只有主角时在 1 号位
+            b.Allies = new List<string> { GameState.PlayerId };   // 新战初次生成默认紧凑：主角在 1 号位（队友参战与战前编成在 B8）
             var k = 0;
             var joined = group.Take(Math.Min(b.Capacity, Config.Scope.Slots.Count)).ToList();
             foreach (var w in joined)
@@ -608,7 +623,6 @@ namespace Survival.Core.Engine
                 else CheckFlee(s, e);
                 if (s.Stats.Health <= 0) { BattleDeath(s, s.Progress.LastDamageCause ?? "喷溅"); return false; }   // 膨胀感染者死亡喷溅
             }
-            CompactEnemies(b);
             if (!b.Alive.Any()) { FinishBattle(s, "victory", false); return false; }
             return true;
         }
@@ -657,7 +671,6 @@ namespace Survival.Core.Engine
             b.Cursor++;
             if (e == null || !e.Alive) return new BattleStepResult { Kind = BattleStepKind.EnemyActed, Text = "" };
             EnemyActivation(s, e, chase);
-            if (s.Battle != null) CompactEnemies(s.Battle);
             return new BattleStepResult { Kind = s.Battle == null ? BattleStepKind.Ended : BattleStepKind.EnemyActed, Text = b.Log.LastOrDefault() ?? "" };
         }
 
@@ -801,8 +814,18 @@ namespace Survival.Core.Engine
                 var a = Act(id);
                 if (a == null) continue;
                 if (id == "reload" && !w.UsesMagazine) continue;
-                var why = CommandBlocked(s, BattleCommand.Of(id, id == "swap" ? SwapTargets(b).Cast<int?>().FirstOrDefault() : null));
-                list.Add(new BattleCommandOption { Action = id, Label = ActionName(id), Group = "general", Ap = a.ApCost, Energy = id is "retreat" or "swap" ? (a.Energy ?? 0) : 0, Available = why == null, Reason = why, TargetMode = "self" });
+                if (id == "swap")
+                {
+                    // 调整站位（Q80）：每个相邻目的槽一条（ItemInstanceId 带目的槽号，界面点选后就近确认）
+                    foreach (var to in SwapTargets(b))
+                    {
+                        var sw = CommandBlocked(s, BattleCommand.Of(id, null, to));
+                        list.Add(new BattleCommandOption { Action = id, Label = $"{ActionName(id)}→{PosName(to)}", Group = "general", Ap = a.ApCost, Energy = a.Energy ?? 0, ItemInstanceId = to, Available = sw == null, Reason = sw, TargetMode = "self" });
+                    }
+                    continue;
+                }
+                var why = CommandBlocked(s, BattleCommand.Of(id));
+                list.Add(new BattleCommandOption { Action = id, Label = ActionName(id), Group = "general", Ap = a.ApCost, Energy = id is "retreat" ? (a.Energy ?? 0) : 0, Available = why == null, Reason = why, TargetMode = "self" });
             }
             // 切换武器页不在指令条里：界面用武器Ⅰ/武器Ⅱ页签（SelectWeaponPage，0AP）
             foreach (var id in new[] { "bandage", "use_antibiotics", "use_antiviral_cure" })
@@ -825,7 +848,7 @@ namespace Survival.Core.Engine
             if (s.Battle != null)
             {
                 var seen = new HashSet<string>();
-                var inBattle = BattleOptions(s).Where(o => seen.Add(o.Action)).ToList();
+                var inBattle = BattleOptions(s).Where(o => seen.Add(o.Action + "#" + o.ItemInstanceId)).ToList();
                 if (Act("switch_weapon") is CombatActionConfig swb)
                     inBattle.Add(new BattleCommandOption { Action = "switch_weapon", Label = ActionName("switch_weapon"), Group = "general", Ap = swb.ApCost, Available = true, TargetMode = "self" });
                 return inBattle;
@@ -840,7 +863,6 @@ namespace Survival.Core.Engine
                 string? why = null;
                 if (id == "reload" && wi != null)
                     why = wi.LoadedAmmo >= w.MagazineCapacity ? "弹仓已满" : CarriedCount(s, w.AmmoId!) <= 0 ? $"随身没有{ItemName(w.AmmoId!)}" : null;
-                if (id == "swap") why = SoloReason;
                 list.Add(new BattleCommandOption { Action = id, Label = ActionName(id), Group = "general", Ap = a.ApCost, Available = why == null, Reason = why, TargetMode = "self" });
             }
             foreach (var id in new[] { "bandage", "use_antibiotics", "use_antiviral_cure" })
@@ -857,8 +879,6 @@ namespace Survival.Core.Engine
             return list;
         }
 
-        /// <summary>我方只有主角一人时，需要队友的指令（换位、保护、整队、协同）的禁用原因（队友参战在 B8）。</summary>
-        public const string SoloReason = "只有你一人在场，没有相邻的队友可换位（队友参战在后续版本）";
 
         /// <summary>武器按当前熟练度的普通攻击口径：伤害×(1+0.035L)、命中能力+3L（不含技能、身体、恐慌与站位修正）。界面列表与预览统一用它。</summary>
         public (int Level, double DamageMin, double DamageMax, double Accuracy) WeaponStats(GameState s, WeaponConfig w)
@@ -884,12 +904,17 @@ namespace Survival.Core.Engine
 
         private int CarriedCount(GameState s, string itemId) => s.Items.Where(i => i.IsCarried && i.ItemId == itemId).Sum(i => i.Count);
 
-        /// <summary>主角可以换到的我方站位（相邻且有存活队友）；本批只有主角时为空。</summary>
+        /// <summary>
+        /// 调整站位（Q80，指令 ID 沿用 swap）可去的我方槽：相邻且在 1—4 内（空位直接移入；有同侧角色则双方同意交换）。单人也可用。
+        /// </summary>
         public List<int> SwapTargets(BattleState b)
         {
             var me = PlayerPos(b);
-            return new[] { me - 1, me + 1 }.Where(p => p >= 1 && p <= b.Allies.Count).ToList();
+            return new[] { me - 1, me + 1 }.Where(p => p >= 1 && p <= Config.Scope.Slots.Count).ToList();
         }
+
+        /// <summary>调整站位的目的槽：Target 或（界面）ItemInstanceId。</summary>
+        private static int? SwapDestination(BattleCommand c) => c.Target ?? c.ItemInstanceId;
 
         /// <summary>该武器能否打到这个目标（R03 §1、A05 §1）：目标站位在武器目标位集合里（矛123、刀剑12、斧1、弓枪1234；不是群攻）。</summary>
         public bool CanReach(BattleState b, WeaponConfig w, BattleEnemy t) => t.Alive && TargetPositionsOf(w).Contains(t.Pos);
@@ -921,7 +946,6 @@ namespace Survival.Core.Engine
             // 结构性原因（没有队友、弹仓满/没弹药、随身没有药品）先于“行动点不足”显示（试玩修复 M150 UX6）
             var structural = c.Action switch
             {
-                "swap" => b.Allies.Count <= 1 ? SoloReason : null,
                 "reload" => !w.UsesMagazine || wi == null ? (w.ConsumesLooseAmmo ? "弓不需要装填，射击直接消耗随身箭" : "当前武器不用装填")
                     : wi.LoadedAmmo >= w.MagazineCapacity ? "弹仓已满" : CarriedCount(s, w.AmmoId!) <= 0 ? $"随身没有{ItemName(w.AmmoId!)}" : null,
                 "bandage" or "use_antibiotics" or "use_antiviral_cure" => CarriedItem(s, a.ItemId!, c.ItemInstanceId) == null ? $"随身没有可用的{ItemName(a.ItemId!)}（地面、火堆里的不能在战斗中使用）" : null,
@@ -938,9 +962,8 @@ namespace Survival.Core.Engine
                 case "retreat": return b.RetreatUsed ? "本回合已尝试撤退" : null;
                 case "swap":
                 {
-                    // 相邻换位（R03 §1）：双方存活、相邻、无固定占位锁才原子交换；本批我方只有主角一人
-                    if (b.Allies.Count <= 1) return SoloReason;
-                    if (!c.Target.HasValue || !SwapTargets(b).Contains(c.Target.Value)) return "请选择相邻的我方站位";
+                    // 调整站位（Q80）：1AP/E0.1 到相邻空位，或与相邻同侧角色双方同意交换（无固定占位锁）；单人也可用，0 经验
+                    if (!(SwapDestination(c) is int to) || !SwapTargets(b).Contains(to)) return "请选择相邻的我方站位（1—4号位）";
                     var cost = a.Energy ?? 0;
                     if (s.Stats.Energy < cost - 1e-9) return $"体力不足（需{Fmt.N(cost)}，现有{Fmt.N(s.Stats.Energy)}）";
                     return null;
@@ -1052,10 +1075,17 @@ namespace Survival.Core.Engine
                         p.Notes.Add("效果在确认时应用，不另跳5分钟；本轮结束时统一推进一次世界时间");
                         break;
                     case "swap":
+                    {
                         p.EnergyCost = a.Energy ?? 0;
                         p.EnergyAfter = Math.Max(0, s.Stats.Energy - p.EnergyCost);
-                        p.Notes.Add($"与相邻的存活队友交换站位（{a.ApCost}AP、体力{Fmt.N(p.EnergyCost)}）；只剩你一人时所有武器都按1号位可用，不需要换位");
+                        var to = SwapDestination(c) ?? SwapTargets(b).FirstOrDefault();
+                        p.Title = $"调整站位：{PosName(PlayerPos(b))}→{PosName(to)}";
+                        p.EffectText = AllyAt(b, to) != null ? $"与{PosName(to)}的同伴交换站位" : $"移到{PosName(to)}（空位）";
+                        p.Notes.Add(p.EffectText);
+                        p.Notes.Add($"{a.ApCost}AP、体力{Fmt.N(p.EnergyCost)}，不得经验；技能按真实站位在使用时判断（可以先换位再出手）");
+                        p.Notes.Add(PositionHint(s, b, to));
                         break;
+                    }
                     case "end_turn": p.Notes.Add("剩余行动点清零，不积攒到下轮"); break;
                 }
             }
@@ -1126,7 +1156,6 @@ namespace Survival.Core.Engine
                 if (node != null && !_exec[node.Id].IsAttack) ExecuteNonAttack(s, b, c, node, _exec[node.Id], sw, swi);
                 else PlayerSkillAttack(s, b, c, sw, swi);
                 if (s.Battle == null || s.Progress.Dead) return ActionResult.Success();
-                CompactEnemies(b);
                 if (b.PlayerAp <= 0) EndPlayerActivation(s);
                 return ActionResult.Success();
             }
@@ -1180,12 +1209,13 @@ namespace Survival.Core.Engine
                 }
                 case "swap":
                 {
-                    var me = PlayerPos(b) - 1;
-                    var other = c.Target!.Value - 1;
-                    (b.Allies[me], b.Allies[other]) = (b.Allies[other], b.Allies[me]);
+                    var from = PlayerPos(b);
+                    var to = SwapDestination(c)!.Value;
+                    var mate = AllyAt(b, to);
+                    MoveAlly(b, from, to);
                     var cost = a.Energy ?? 0;
                     s.Stats.Add(StatId.Energy, -cost);
-                    BattleLog(s, $"你与{PosName(other + 1)}换位（体力−{Fmt.N(cost)}），现在在{PosName(PlayerPos(b))}。");
+                    BattleLog(s, $"你调整站位：{PosName(from)}→{PosName(to)}{(mate != null ? "（与同伴交换）" : "")}（体力−{Fmt.N(cost)}）。");
                     break;
                 }
                 case "retreat":
@@ -1206,7 +1236,6 @@ namespace Survival.Core.Engine
                 default:
                     break;
             }
-            if (s.Battle != null) CompactEnemies(b);
             if (s.Battle != null && b.PlayerAp <= 0) EndPlayerActivation(s);
             return ActionResult.Success();
         }
@@ -1389,12 +1418,40 @@ namespace Survival.Core.Engine
                 BattleLog(s, "附近没有被吸引的丧尸。");
                 return;
             }
-            var slot = (b.Alive.Count() + 1).ToString();
+            var slot = ReinforceSlot(b).ToString();
             cand.Engaged = true;
             var idx = b.Enemies.Count == 0 ? 1 : b.Enemies.Max(e => e.Index) + 1;
             b.Enemies.Add(InitBattleEnemy(new BattleEnemy { WorldId = cand.Id, Index = idx, EnemyId = cand.EnemyId, Slot = slot, Hp = cand.Hp, Hostile = true, XpHits = new Dictionary<string, int>(cand.XpHits), TieRoll = s.Rng.NextDouble(), JoinRound = b.Round }));
             LockIntent(s, b, b.Enemies[b.Enemies.Count - 1]);
             BattleLog(s, $"枪声引来了{_enemies[cand.EnemyId].Name}（{PosName(int.Parse(slot))}）。");
+        }
+
+        /// <summary>
+        /// 增援落位（Q80 不再压紧；开发假设 B7d-4）：最后一个存活敌人身后的第一个空槽；身后没有空槽则取最前的空槽。
+        /// </summary>
+        public int ReinforceSlot(BattleState b)
+        {
+            var max = Config.Scope.Slots.Count;
+            var taken = b.Alive.Select(e => e.Pos).ToHashSet();
+            var last = taken.Count > 0 ? taken.Max() : 0;
+            for (var p = last + 1; p <= max; p++) if (!taken.Contains(p)) return p;
+            for (var p = 1; p <= max; p++) if (!taken.Contains(p)) return p;
+            return max;
+        }
+
+        /// <summary>
+        /// 某个我方槽上当前两页武器的可用情况（调整站位预览）：“在2号位：武器Ⅰ石刀可用；武器Ⅱ木弓可用”。
+        /// </summary>
+        public string PositionHint(GameState s, BattleState b, int pos)
+        {
+            var parts = new List<string>();
+            foreach (var page in new[] { 1, 2 })
+            {
+                var it = WeaponOnPage(s, page, out var w);
+                var name = it == null ? "拳" : w.Name;
+                parts.Add($"武器{(page == 1 ? "Ⅰ" : "Ⅱ")}{name}{(OwnPositionsOf(w).Contains(pos) ? "可用" : $"不可用（要在{PosList(OwnPositionsOf(w))}）")}");
+            }
+            return $"到{PosName(pos)}后：{string.Join("；", parts)}";
         }
 
         // ───────────── 战外装备 ─────────────

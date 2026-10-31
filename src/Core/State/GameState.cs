@@ -31,9 +31,10 @@ namespace Survival.Core.State
         /// "9" 起角色个人状态按 actorId 存在 Actors（主角 "p0"，R08 §2/§5、开发计划 v0.9 B3），装备改为穿戴 owner（七槽，S06 全系统更新目标 §1）；
         /// "10" 起装备实例带品质与附加词条（A05 §4、R02 §2/§3，开发计划 v0.9 B4）；
         /// "11" 起熟练度为十五门、最高 10 级，角色带按世界日的经验计数，记录走过的物理边（A06 §1–§4、R01 §5，开发计划 v0.9 B5）；
-        /// "12" 起四对四战斗站位（B6）；"13" 起工作量余额与行动规则版本、设施进程发起者（策划答复 Q53—Q61，开发计划 v0.9 B7b）。
+        /// "12" 起四对四战斗站位（B6）；"13" 起工作量余额与行动规则版本、设施进程发起者（策划答复 Q53—Q61，开发计划 v0.9 B7b）；
+        /// "14" 起战斗双方保持真实 1—4 槽与空位、不再自动压紧（策划答复 Q80，开发计划 v0.9 B7d）。
         /// </summary>
-        public const string CurrentSchema = "13";
+        public const string CurrentSchema = "14";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";

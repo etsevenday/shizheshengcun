@@ -71,6 +71,7 @@ public class CombatV05Tests : BattleTestBase
         var s = Fight(3, "shambler", "shambler");
         Ready(s);
         var gun = Arm(s, "pistol");
+        StandAt(s, 2);   // Q80：手枪使用位234
         gun.LoadedAmmo = 8;
         var d0 = gun.Durability;
         var c = BattleCommand.Of("basic_attack", 1).WithRequestId("shot-1");
@@ -159,8 +160,8 @@ public class CombatV05Tests : BattleTestBase
     }
 
     /// <summary>
-    /// B509 按新规则改写（R03 §1“死亡立即清位，完整指令后从后往前压紧”，取代“轮末压前”）：打倒 1 号位后，后面的敌人在这条指令后立刻往前补；
-    /// 只打 1 号位的简易斧可以直接打补上来的敌人。
+    /// B509 按 Q80 再改写（取代“完整指令后从后往前压紧”）：打倒 1 号位后空位保留，后面的敌人不自动往前补；
+    /// 只打 1 号位的简易斧打不到留在 2 号位的敌人，要等它自己前移（或换能打 12 的武器）。
     /// </summary>
     [Test]
     public void B509_NoBarrier_RearReachable()
@@ -172,19 +173,15 @@ public class CombatV05Tests : BattleTestBase
         Enemy(s, 1).Hp = 0.01;
         Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
         Cmd(s, "basic_attack", 1);
-        Assert.That((Enemy(s, 2).Slot, Enemy(s, 3).Slot), Is.EqualTo(("1", "2")), "完整指令后立即压紧");
-        Enemy(s, 2).Hp = 0.01;
+        Assert.That((Enemy(s, 2).Slot, Enemy(s, 3).Slot), Is.EqualTo(("2", "3")), "Q80：不压紧，空位保留");
         s.Battle!.PlayerActing = true;
         s.Battle.PlayerAp = 2;
-        Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
-        Cmd(s, "basic_attack", 2);
-        Assert.That(Enemy(s, 3).Slot, Is.EqualTo("1"));
-        s.Battle!.PlayerActing = true;
-        s.Battle.PlayerAp = 2;
-        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 3)), Is.Null, "补到1号位后斧可打");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 2)), Does.StartWith("射程不足"), "斧只打1号位，2号位的敌人没有补上来");
+        Arm(s, "stone_knife");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 2)), Is.Null, "刀打12，可以打2号位");
     }
 
-    /// <summary>B510 按新规则改写（压紧在每条完整指令后，不等轮末）：每轮每人只行动一次，队列游标正确，后面的敌人已在 1、2 号位。</summary>
+    /// <summary>B510 按 Q80 再改写（不压紧）：每轮每人只行动一次，队列游标正确；后面的敌人靠自己的激活 1AP 前移，不会被自动补到 1 号位以外的空位。</summary>
     [Test]
     public void B510_RearAdvancesAtRoundEnd_EachActsOnce()
     {
@@ -195,7 +192,7 @@ public class CombatV05Tests : BattleTestBase
         Arm(s, "hatchet");
         Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
         Cmd(s, "basic_attack", 1);
-        Assert.That((Enemy(s, 2).Slot, Enemy(s, 3).Slot), Is.EqualTo(("1", "2")), "指令后立即压紧");
+        Assert.That((Enemy(s, 2).Slot, Enemy(s, 3).Slot), Is.EqualTo(("2", "3")), "Q80：指令后不压紧");
         Cmd(s, "end_turn");
         var round = b.Round;
         var acted = new List<int>();
@@ -206,7 +203,7 @@ public class CombatV05Tests : BattleTestBase
             if (before > 0) acted.Add(before);
         }
         Assert.That(acted, Is.Unique, "每个敌人每轮只激活一次");
-        Assert.That((Enemy(s, 2).Slot, Enemy(s, 3).Slot), Is.EqualTo(("1", "2")));
+        Assert.That(new[] { Enemy(s, 2).Slot, Enemy(s, 3).Slot }, Is.EquivalentTo(new[] { "2", "3" }), "前移只走一格（邻格有同伴则交换），1号位不会被自动补上");
         Assert.That(b.Round, Is.EqualTo(round + 1));
     }
 
@@ -463,6 +460,7 @@ public class CombatV05Tests : BattleTestBase
         var extra2 = E.DebugSpawnEnemy(s, "shambler", "field");
         Ready(s);
         var gun = Arm(s, "pistol");
+        StandAt(s, 2);   // Q80：手枪使用位234
         gun.LoadedAmmo = 8;
         s.Battle!.Noise = 75;
         Force(s, AtLeast(0.999));
@@ -473,7 +471,7 @@ public class CombatV05Tests : BattleTestBase
         var b = s.Battle;
         while (s.Battle != null && b.Round == 1) { if (b.Cursor < b.Queue.Count && b.Queue[b.Cursor] > 0) { b.Cursor++; continue; } Step(s); }
         Assert.That(b.Enemies.Count, Is.EqualTo(3), "下一轮轮初补进");
-        Assert.That(b.Enemies.Last().Slot, Is.EqualTo("3"), "排在最后一个空位");
+        Assert.That(b.Enemies.Last().Slot, Is.EqualTo("3"), "排在最后一个存活敌人身后的空位（B7d-4）");
         Assert.That(b.Enemies.Last().WorldId, Is.EqualTo(extra1.Id), "调用同地现有、最早的丧尸，保留原ID与类型");
         Assert.That(b.Enemies.Last().EnemyId, Is.EqualTo("crawler"));
         Assert.That(E.LiveCount(s), Is.EqualTo(live), "世界活敌总数不增加");
@@ -488,7 +486,7 @@ public class CombatV05Tests : BattleTestBase
         var s = Fight(21, "shambler", "shambler");
         s.Player.TacticalTier = 2;   // B6：5AP 才够两次 2AP 普通攻击
         Ready(s);
-        Arm(s, "hatchet");
+        Arm(s, "kitchen_knife");   // Q80：不再压紧，2号位的敌人要用打12的刀
         Enemy(s, 1).Hp = 0.01;
         Force(s, Below(0.01), AtLeast(0.99), Any(), Any());
         Cmd(s, "basic_attack", 1);
@@ -505,13 +503,13 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(s.CurrentLocation, Is.EqualTo("field"), "回当前地块，不传回营地");
         Assert.That(s.WorldEnemies.Single().Id, Is.EqualTo(wid), "死敌不复生");
         Assert.That(s.WorldEnemies.Single().Hp, Is.EqualTo(Enemy2Hp(hurt, s)).Within(1e-9));
-        Assert.That(s.WorldEnemies.Single().XpHits["axe"], Is.EqualTo(1), "经验计数随 worldEnemyId 保存");
+        Assert.That(s.WorldEnemies.Single().XpHits["blade"], Is.EqualTo(1), "经验计数随 worldEnemyId 保存");
         Assert.That(s.Items.Count(i => i.Owner == "field" && i.ItemId is "cloth" or "scrap"), Is.EqualTo(0), "撤退不领取掉落");
         Assert.That(s.EncounterGraceUntil, Is.EqualTo(s.GameMinute + 60));
         // 主动重进：同一实例、HP 保留
         Assert.That(E.Approach(s, wid).Ok, Is.True, "保护期不挡主动接敌");
         Assert.That(s.Battle!.Enemies.Single().Hp, Is.EqualTo(s.WorldEnemies.Single().Hp));
-        Assert.That(s.Battle.Enemies.Single().XpHits["axe"], Is.EqualTo(1));
+        Assert.That(s.Battle.Enemies.Single().XpHits["blade"], Is.EqualTo(1));
     }
 
     private static double Enemy2Hp(double hurt, GameState s) => hurt;
@@ -569,6 +567,7 @@ public class CombatV05Tests : BattleTestBase
         var f = Fight(23, "shambler", "shambler");
         Ready(f);
         var sg = Arm(f, "shotgun");
+        StandAt(f, 2);   // Q80：霰弹枪使用位23
         sg.LoadedAmmo = 4;
         f.Skills["firearms"].Level = 7;
         var xp0 = f.Skills["firearms"].Xp;

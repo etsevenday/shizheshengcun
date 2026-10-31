@@ -101,12 +101,12 @@ namespace Survival.Core.Engine
         /// <summary>专长射击：霰弹枪改为对敌方 1、2 号位各一击（A06 §2、A05 霰弹枪“散布”）。</summary>
         public static bool IsAreaShot(SkillExecConfig x, WeaponConfig w) => x.AreaWeapons.Contains(w.Id);
 
-        /// <summary>界面目标方式：single 点一个目标 / pair 点一个目标打相邻双位 / area 点任一亮起目标打全部 / self 无目标就近确认。</summary>
+        /// <summary>界面目标方式：single 点一个目标 / suffix 点起点敌人打它所在号位到4号位（贯穿）/ area 点任一亮起目标打全部 / self 无目标就近确认。</summary>
         public static string OptionTargetMode(SkillExecConfig x, WeaponConfig w) =>
-            !x.IsAttack ? "self" : IsAreaShot(x, w) ? "area" : x.TargetMode == "pair" ? "pair" : "single";
+            !x.IsAttack ? "self" : IsAreaShot(x, w) ? "area" : x.TargetMode is "pair" or "suffix" ? x.TargetMode : "single";
 
         /// <summary>
-        /// 这次攻击实际打到的目标（预览与结算同源）：单体=所选；贯穿=所选所在的相邻双位（点 1、2 号位为 12，点 3 号位为 23，开发假设 B7-6）；
+        /// 这次攻击实际打到的目标（预览与结算同源）：单体=所选；贯穿（Q82 suffix）=所选敌人所在号位 k 到 4 号位的全部存活敌；
         /// 专长射击（霰弹枪）=敌方 1、2 号位的全部存活者。
         /// </summary>
         public List<BattleEnemy> SkillTargets(BattleState b, SkillExecConfig x, WeaponConfig w, int? target)
@@ -114,12 +114,24 @@ namespace Survival.Core.Engine
             if (IsAreaShot(x, w)) return b.Alive.Where(e => e.Pos is 1 or 2).OrderBy(e => e.Pos).ToList();
             var t = target.HasValue ? BattleEnemyAt(b, target.Value) : null;
             if (t == null || !t.Alive) return new List<BattleEnemy>();
+            if (x.TargetMode == "suffix") return SuffixTargets(b, t.Pos);
             if (x.TargetMode == "pair")
             {
                 var set = t.Pos <= 2 ? new[] { 1, 2 } : new[] { 2, 3 };
                 return b.Alive.Where(e => set.Contains(e.Pos)).OrderBy(e => e.Pos).ToList();
             }
             return new List<BattleEnemy> { t };
+        }
+
+        /// <summary>贯穿（Q82）：真实槽 k 至 4 的全部存活敌（按号位）；空位跳过但不重排。起点可以是空位，只要后面还有活目标。</summary>
+        public static List<BattleEnemy> SuffixTargets(BattleState b, int start) =>
+            b.Alive.Where(e => e.Pos >= start && e.Pos >= 1).OrderBy(e => e.Pos).ToList();
+
+        /// <summary>贯穿对某目标的伤害倍率：按“目标号位−起点”的槽偏移取 0.65/0.50/0.35/0.25（空位占偏移，不重排）。</summary>
+        public static double SuffixFactor(SkillExecConfig x, int start, int pos)
+        {
+            var k = pos - start;
+            return k >= 0 && k < x.SuffixFactors.Count ? x.SuffixFactors[k] : 0;
         }
 
         /// <summary>一次攻击要用的弹药：A06 写明的（猎标 1、连射 2）；否则有弹药的武器按段数各 1，专长射击霰弹 1 发。</summary>
@@ -164,7 +176,7 @@ namespace Survival.Core.Engine
                 var opt = new BattleCommandOption
                 {
                     Action = id, Label = n.Name, Group = id == BasicAttack ? "attack" : "move", Ap = n.Ap, Energy = SkillEnergy(s, n, w),
-                    NeedsTarget = mode is "single" or "pair", TargetMode = mode, NodeId = n.Id, CooldownRounds = n.CooldownRounds, EffectText = n.Text,
+                    NeedsTarget = mode is "single" or "pair" or "suffix", TargetMode = mode, NodeId = n.Id, CooldownRounds = n.CooldownRounds, EffectText = n.Text,
                 };
                 if (inBattle && b != null)
                 {
@@ -255,7 +267,8 @@ namespace Survival.Core.Engine
             if (s.Stats.Energy < energy - 1e-9)
                 return $"体力不足（需{Fmt.N(energy)}，现有{Fmt.N(s.Stats.Energy)}）" + (x.IsAttack ? "；可勉强拳击、防御、调整呼吸或撤退" : "");
             var own = SkillOwnPositions(n, w);
-            if (b.Allies.Count > 1 && !own.Contains(PlayerPos(b))) return $"{n.Name}只能在我方{PosList(own)}使用（你在{PosName(PlayerPos(b))}），可换位或切换武器页";
+            // Q80：取消单人全武器兼容 1 号位，按真实己位限制（可先“调整站位”或切换武器页）
+            if (!own.Contains(PlayerPos(b))) return $"{n.Name}只能在我方{PosList(own)}使用（你在{PosName(PlayerPos(b))}），可调整站位或切换武器页";
             if (!x.IsAttack) return NonAttackBlocked(s, b, c, n, x, w, wi);
             if (wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand)) return $"{w.Name}耐久不足（{DurabilityText(wi)}），可切换武器页";
             if (x.NoSingleShot && w.UsesMagazine && w.MagazineCapacity < 2) return $"{w.Name}是单发弩，不能{n.Name}";
@@ -294,6 +307,12 @@ namespace Survival.Core.Engine
             public int Hits = 1;
             /// <summary>反击/迎击等反应攻击：不吃鼓舞、总攻令、斧蓄力，不扣成本。</summary>
             public bool Reaction;
+            /// <summary>贯穿（Q82）：提交时锁定的起点号位；各目标倍率按槽偏移取（0 为不是贯穿）。</summary>
+            public int SuffixStart;
+
+            /// <summary>对某目标的技能伤害倍率：贯穿按槽偏移，其余为统一 DamageFactor。</summary>
+            public Dictionary<int, int> SnapPos = new Dictionary<int, int>();
+            public double FactorFor(BattleEnemy t) => SuffixStart > 0 && Exec != null ? SuffixFactor(Exec, SuffixStart, SnapPos.TryGetValue(t.Index, out var p) ? p : t.Pos) : DamageFactor;
         }
 
         private AttackSpec SpecFor(GameState s, string action, WeaponConfig w)
@@ -355,10 +374,11 @@ namespace Survival.Core.Engine
             if (cfg.Family == "animal") buff *= w.Trait("animalDamage", 1);
             if (marked) buff *= w.Trait("markedDamage", 1);
             if (t.ProtectingIndex > 0) buff *= w.Trait("protectorDamage", 1);
-            buff = Math.Min(m.DamageBuffCap, buff);
+            var rawBuff = buff;
+            buff = DamageBuffCurve(rawBuff);   // Q82：递减曲线取代旧硬上限×1.5
             var execF = sp.Exec?.ExecuteHpRatio is double r && t.Hp <= cfg.Hp * r + 1e-9 ? sp.Exec.ExecuteFactor : 1;
             var weak = PlayerWeakActive(b) ? b.PlayerWeakFactor : 1;
-            var mult = SkillDamageFactor(lv) * sp.DamageFactor * buff * execF * weak;
+            var mult = SkillDamageFactor(lv) * sp.FactorFor(t) * buff * execF * weak;
             var pen = gear.ArmorIgnore + (sp.Desperate ? 0 : w.ArmorIgnore) + sp.ExtraPen;
             var baseArmor = Math.Max(0, Math.Min(Config.Equipment.Limits.ArmorCap, cfg.Armor) - ActiveArmorBreak(b, t));
             var armor = Math.Max(0, baseArmor - pen);
@@ -377,6 +397,18 @@ namespace Survival.Core.Engine
             };
         }
 
+        /// <summary>
+        /// 正伤害增益递减（Q82，取代旧硬上限×1.5）：rawB≤1.35 原值；以上 B=1.35+0.25×(1−exp(−(rawB−1.35)/0.25))，渐近 1.6、单调递增，
+        /// 每个合法新增正增益仍有正收益。rawB&lt;1（减益）原值。
+        /// </summary>
+        public double DamageBuffCurve(double rawB)
+        {
+            var knee = Config.CombatMath.DamageBuffKnee;
+            var tail = Config.CombatMath.DamageBuffTail;
+            if (rawB <= knee || tail <= 0) return rawB;
+            return knee + tail * (1 - Math.Exp(-(rawB - knee) / tail));
+        }
+
         /// <summary>攻击类预览：目标、伤害、弹药、耐久、噪声与技能说明（只读）。</summary>
         private void AttackPreview(GameState s, BattleState b, BattleCommand c, BattlePreview p, WeaponConfig w, ItemInstance? wi)
         {
@@ -386,6 +418,7 @@ namespace Survival.Core.Engine
             var targets = sp.Desperate
                 ? (c.Target.HasValue && BattleEnemyAt(b, c.Target.Value) is BattleEnemy one ? new List<BattleEnemy> { one } : new List<BattleEnemy>())
                 : SkillTargets(b, sp.Exec!, w, c.Target);
+            if (!sp.Desperate && sp.Exec!.TargetMode == "suffix" && c.Target.HasValue && BattleEnemyAt(b, c.Target.Value) is BattleEnemy st0) { sp.SuffixStart = st0.Pos; foreach (var t in targets) sp.SnapPos[t.Index] = t.Pos; }
             foreach (var t in targets) p.Targets.Add(TargetCalc(s, b, sp, t, p.EnergyAfter));
             if (!sp.Desperate)
             {
@@ -415,7 +448,10 @@ namespace Survival.Core.Engine
             var notes = new List<string> { $"{n.Name}：{n.Text}" };
             if (x.Hits > 1) notes.Add($"同一目标{x.Hits}次独立命中，每击伤害×{Fmt.T(x.DamageFactor)}（下方区间为每击）");
             if (IsAreaShot(x, w)) notes.Add($"霰弹散布：敌方1、2号位各判一次，伤害×{Fmt.T(x.AreaDamageFactor)}，只耗1发");
-            if (x.TargetMode == "pair") notes.Add("相邻双位各独立命中：点1、2号位打12，点3号位打23");
+            if (x.TargetMode == "suffix")
+                notes.Add(sp.SuffixStart > 0
+                    ? $"贯穿从{PosName(sp.SuffixStart)}打到4号位：" + string.Join("，", targets.Select(t => $"{PosName(t.Pos)}{EnemyName(t)}×{Fmt.T(SuffixFactor(x, sp.SuffixStart, t.Pos))}")) + "；每个目标独立判命中/暴击/护甲，空位不重排，途中倒下不补位"
+                    : "点起点敌人：从它的号位打到4号位，按离起点的格数伤害×" + string.Join("/", x.SuffixFactors.Select(Fmt.T)));
             if (x.ExecuteHpRatio is double r) notes.Add($"目标健康≤上限{Fmt.Pct(r)}时伤害再×{Fmt.T(x.ExecuteFactor)}");
             if (x.RemoveGuard > 0) notes.Add("先移除目标1次格挡，再结算伤害");
             if (x.Advance > 0) notes.Add(b.Allies.Count <= 1 ? "只剩你一人：按1号位出手，不需前移" : "先前移1位再攻击；移位失败整次不执行");
@@ -473,6 +509,12 @@ namespace Survival.Core.Engine
                 if (x.Advance > 0) parts.Add(b.Allies.Count <= 1 ? "只剩你一人，按1号位出手" : AdvancePlayer(b));
             }
             var targets = sp.Desperate ? new List<BattleEnemy> { BattleEnemyAt(b, c.Target!.Value)! } : SkillTargets(b, sp.Exec!, w, c.Target);
+            // 贯穿（Q82）：提交时锁全部目标与起点号位，途中倒下不把后面的目标补到前格刷倍率
+            if (!sp.Desperate && sp.Exec!.TargetMode == "suffix" && targets.Count > 0)
+            {
+                sp.SuffixStart = targets[0].Pos;
+                foreach (var t in targets) sp.SnapPos[t.Index] = t.Pos;
+            }
             // 单体直接攻击打到被保护者：由保护者接下（不拦范围攻击；R03 §4、A09 保护）
             if (targets.Count == 1 && (sp.Desperate || sp.Exec!.TargetMode == "single") && !IsAreaShotSpec(sp) && ProtectorOf(b, targets[0]) is BattleEnemy guard)
             {

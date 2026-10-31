@@ -127,6 +127,7 @@ public class V10CombatTests : BattleTestBase
         var f = Fight(41, "shambler", "shambler");
         Ready(f);
         var sg = Arm(f, "shotgun");
+        StandAt(f, 2);   // Q80：霰弹枪使用位23
         sg.LoadedAmmo = 4;
         f.Skills["firearms"].Level = 7;   // B7：霰弹专长射击（取代散射）
         Enemy(f, 1).Hp = 50;
