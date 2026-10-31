@@ -546,6 +546,13 @@ namespace Survival.Core.Config
         public int TotalAp => ApproachAp + PlainAttackAp;
     }
 
+    /// <summary>敌方协同前压（Q87，combat-resolution-adjudications.json enemyActivation.cooperativeAdvance）：前方同伴补位 1AP、后方跟进 1AP。</summary>
+    public sealed class CooperativeAdvanceConfig
+    {
+        public int HelperAp { get; set; } = 1;
+        public int MoverAp { get; set; } = 1;
+    }
+
     public sealed class CombatMathConfig
     {
         public string Initiative { get; set; } = "";
@@ -590,6 +597,8 @@ namespace Survival.Core.Config
         public double DamageBuffTail { get; set; } = 0.25;
         /// <summary>敌方空前排迫近（Q80）：迫近 1AP + 一次 2AP 弱普通近袭×0.70（无咬击/控制，不改我方真实槽）。</summary>
         public ExposureApproachConfig ExposureApproach { get; set; } = new ExposureApproachConfig();
+        /// <summary>敌方协同前压（Q87）：前方能出手的同伴先付自己本轮 1AP 补到前面空格，后方再付自己 1AP 跟进。</summary>
+        public CooperativeAdvanceConfig CooperativeAdvance { get; set; } = new CooperativeAdvanceConfig();
         /// <summary>控制判定 clamp(controlBase + 控制能力/100 − 目标控制抗性/100, controlMin, controlMax)。</summary>
         public double ControlBase { get; set; } = 0.75;
         public double ControlMin { get; set; } = 0.10;

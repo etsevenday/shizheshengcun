@@ -274,8 +274,8 @@ else if (b != null)
                     <div class="track"><i style="width:@Ui.Bar(en.Hp, ec.Hp)%"></i></div>
                     @{ var far = G.E.IntentOutOfReach(G.S.Battle!, en); }
                     <div class="intent @(far ? "calm" : en.Intent is "bite" ? "bite" : en.Intent is "flee" or "watch" or "guard" or "protect" or "buff" or "reload" ? "calm" : "")"
-                         title="@(far ? $"本轮公开意图是{G.E.IntentLabel(en, G.S.Battle)}，但站在{slot}号位、你在{GameEngine.PlayerPos(G.S.Battle!)}号位，不能照原样出手：{G.E.IntentShown(G.S.Battle!, en)}（敌人{ec.Ap}AP：前移1AP，余下只做一次普通攻击；你躲在后排且前面全空时，它可付1AP迫近再2AP弱近袭×0.7，不咬不控制）" : $"本轮公开意图（轮初锁定，不公开伤害抽值）；{ec.Ap}AP{(ec.Elite ? "精英" : "")}，每次激活一个主意图")">
-                        <span class="intent-ico">@(far ? FarIcon(G.E.PlanFor(G.S.Battle!, en, G.E.StepOf(en))) : IntentIcon(en.Intent))</span>@NoBreakRange(G.E.IntentShown(G.S.Battle!, en))
+                         title="@(far ? $"本轮公开意图是{G.E.IntentLabel(en, G.S.Battle)}，但站在{slot}号位、你在{GameEngine.PlayerPos(G.S.Battle!)}号位，不能照原样出手：{G.E.IntentShown(G.S.Battle!, en)}（敌人{ec.Ap}AP：前移1AP，余下只做一次普通攻击；前面的同伴已能出手且它前面空着时，同伴先花自己本轮1AP补位、它再花1AP跟进，同伴没AP就等待；你躲在后排且前面全空时，它可付1AP迫近（算主动前移，会触发你的架矛）再2AP弱近袭×0.7，不咬不控制）" : $"本轮公开意图（轮初锁定，不公开伤害抽值）；{ec.Ap}AP{(ec.Elite ? "精英" : "")}，每次激活一个主意图")">
+                        <span class="intent-ico">@(far ? (G.E.IntentShown(G.S.Battle!, en).StartsWith("等待") ? "等" : FarIcon(G.E.PlanFor(G.S.Battle!, en, G.E.StepOf(en)))) : IntentIcon(en.Intent))</span>@NoBreakRange(G.E.IntentShown(G.S.Battle!, en))
                     </div>
                 </div>
             </div>
@@ -420,7 +420,7 @@ else if (b != null)
     /// <summary>意图里的伤害区间“0.70—1.10”不在破折号处折行（破折号两侧加 U+2060 不断行符，只影响显示，B2a M94）。</summary>
     private static string NoBreakRange(string label) => label.Replace("—", "\u2060—\u2060");
 
-    /// <summary>够不到时的意图图标（试玩修复 M150 UX8）：前移“移”、弱攻击“弱”、改防御“防”、空前排迫近“迫”（Q80）。</summary>
+    /// <summary>够不到时的意图图标（试玩修复 M150 UX8）：前移“移”、弱攻击“弱”、改防御“防”、空前排迫近“迫”（Q80）；同伴没 AP 补位时等待“等”（Q87，调用处判断）。</summary>
     private static string FarIcon(GameEngine.ReachPlan plan) => plan switch
     {
         GameEngine.ReachPlan.Weak => "弱",

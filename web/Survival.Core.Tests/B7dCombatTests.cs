@@ -191,9 +191,16 @@ public class B7dCombatTests : BattleTestBase
 
     // ───────────── M175：强制位移、攀附拉扯、突进斩与挣脱 ─────────────
 
-    private void EnemyAct(GameState s, BattleEnemy e) =>
+    /// <summary>
+    /// 直接执行一次敌人正常激活。B8a（Q87 AP 账）起同一轮内敌人的正常预算会被记账，这里每次调用都当作它新一轮的正常激活
+    /// （清掉本轮已花 AP），与旧用例“同一只敌人连续演示几次激活”的写法一致。
+    /// </summary>
+    private void EnemyAct(GameState s, BattleEnemy e)
+    {
+        e.RoundApUsed = 0;
         typeof(GameEngine).GetMethod("EnemyActivation", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { s, e, false });
+    }
 
     /// <summary>RES-Q79/RES-Q80b：攀附感染者拉扯 0 直接伤害，但命中后照判控制，成功则单人也真实前移一格；1 号位边界不移、不判控制、不给稳态。</summary>
     [Test]
@@ -394,10 +401,9 @@ public class B7dCombatTests : BattleTestBase
         z.Intent = "bite";   // 即使公开意图是咬击，迫近弱近袭也不咬
         StandAt(s, 3);
         Assert.That(E.PlanFor(b, z, E.StepOf(z)), Is.EqualTo(GameEngine.ReachPlan.Approach));
-        Assert.That(E.IntentShown(b, z), Does.StartWith("迫近你（3号位）弱近袭 0.28—0.56（1+2AP，不咬不控）"));
+        Assert.That(E.IntentShown(b, z), Does.StartWith("迫近你（3号位，触发架矛）→弱近袭 0.28—0.56（1+2AP，不咬不控）"), "B8a Q85：意图写明迫近触发架矛");
         Assert.That(E.PlanFor(b, z, E.StepOf(z), 2), Is.EqualTo(GameEngine.ReachPlan.Guard), "追击 2AP 付不起 1+2AP 的迫近");
-        b.BraceCharges = 1;
-        b.BracePage = 1;
+        // 迫近与架矛（Q85 取代“迫近不触发架矛”）改在 B8aCombatTests POS-Q85-01/02 验收；这里不架矛，只验弱近袭本身
         var h0 = s.Stats.Health;
         var infected = s.Body.Infected;
         Force(s, Below(0.01), AtLeast(0.999));   // 命中、抽值取最高
@@ -406,7 +412,6 @@ public class B7dCombatTests : BattleTestBase
         Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(3), "不改你的真实号位");
         Assert.That(b.PlayerSlowPending, Is.False, "不附扯腿减速");
         Assert.That(s.Body.Infected, Is.EqualTo(infected), "不咬、不判感染");
-        Assert.That(b.BraceCharges, Is.EqualTo(1), "迫近不是主动前移，不触发架矛");
         Assert.That(b.Log.Any(l => l.Contains("迫近3号位的你")), Is.True);
         Assert.That(b.Log.Last(), Does.Contain("弱近袭命中"));
         Assert.That(z.Pos, Is.EqualTo(1), "迫近不移动敌人自己的号位");
@@ -475,7 +480,9 @@ public class B7dCombatTests : BattleTestBase
         Assert.That((string)em["frontMove"]!, Is.EqualTo("adjacent_empty_move_or_adjacent_friendly_swap_cost1AP"));
         Assert.That((bool)em["passivelySwappedAllyDoesNotActivate"]!, Is.True);
 
-        var s = Fight(9304, "shambler", "shambler");
+        // B8a 按 Q87 改写：原场景“1 号位空、2 号位同伴能出手”现在走协同补位（见 B8aCombatTests POS-Q87），
+        // 这里改成 1 号位另有一只敌人（同伴前面没有空格），仍按 Q78 相邻交换
+        var s = Fight(9304, "shambler", "shambler", "shambler");
         Ready(s);
         var b = s.Battle!;
         Arm(s, "pike");
@@ -486,7 +493,7 @@ public class B7dCombatTests : BattleTestBase
         var a = Enemy(s, 1);
         var c = Enemy(s, 2);
         foreach (var e in b.Alive) { e.Hp = 50; e.Intent = "attack"; e.IntentStep = -2; }
-        Place(s, (1, 2), (2, 3));   // 1 号位空
+        Place(s, (3, 1), (1, 2), (2, 3));   // 1 号位有第三只
         var q = b.Queue.ToList();
         var actedA = a.Acted;
         EnemyAct(s, c);
@@ -497,7 +504,7 @@ public class B7dCombatTests : BattleTestBase
         Assert.That(b.Log.Any(l => l.Contains("前移到2号位（游荡尸退到3号位）")), Is.True);
 
         // 前格空：直接移入
-        Place(s, (1, 4), (2, 3));
+        Place(s, (3, 1), (1, 4), (2, 3));
         EnemyAct(s, c);
         Assert.That(c.Pos, Is.EqualTo(2), "前格空：移入");
         Assert.That(b.BraceCharges, Is.EqualTo(0), "次数用完");

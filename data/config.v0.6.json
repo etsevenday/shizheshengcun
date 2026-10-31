@@ -7372,6 +7372,10 @@
       "approachAp": 1,
       "plainAttackAp": 2,
       "damageFactor": 0.7
+    },
+    "cooperativeAdvance": {
+      "helperAp": 1,
+      "moverAp": 1
     }
   },
   "panic": {

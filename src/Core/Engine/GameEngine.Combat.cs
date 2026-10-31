@@ -497,6 +497,7 @@ namespace Survival.Core.Engine
                 e.SlowExtraActive = e.SlowExtra;   // 绝缘警棍“打断成功后下轮速度额外−1”
                 e.SlowExtra = 0;
                 e.Acted = false;
+                e.RoundApUsed = 0;   // Q87：回合结束清本轮 AP 账，下一轮正常初始化
             }
             b.RoundStartEnergy = s.Stats.Energy;
             b.BreatheUsed = false;

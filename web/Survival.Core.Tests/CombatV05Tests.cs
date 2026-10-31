@@ -203,7 +203,9 @@ public class CombatV05Tests : BattleTestBase
             if (before > 0) acted.Add(before);
         }
         Assert.That(acted, Is.Unique, "每个敌人每轮只激活一次");
-        Assert.That(new[] { Enemy(s, 2).Slot, Enemy(s, 3).Slot }, Is.EquivalentTo(new[] { "2", "3" }), "前移只走一格（邻格有同伴则交换），1号位不会被自动补上");
+        // B8a 按 Q87 改写：2 号位的爬行尸已能出手、1 号位空，3 号位的游荡尸前移时由爬行尸花自己本轮 1AP 补到 1、游荡尸再花 1AP 跟进到 2
+        //（原断言“邻格交换、1 号位不补”被 Q87 取代）；仍是每只只走一格、不压紧
+        Assert.That((Enemy(s, 2).Slot, Enemy(s, 3).Slot), Is.EqualTo(("1", "2")), "Q87：前方能出手的同伴先补位、后者跟进");
         Assert.That(b.Round, Is.EqualTo(round + 1));
     }
 

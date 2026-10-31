@@ -42,6 +42,21 @@ namespace Survival.Core.Engine
         /// <summary>敌人每次正常激活的 AP（普通 3、精英 4；R03 敌方资源接口补充）。</summary>
         public int EnemyAp(BattleEnemy e) => _enemies[e.EnemyId].Ap;
 
+        /// <summary>本轮正常激活预算还剩多少（Q87 AP 账：面板 AP − 本轮已花/预扣，最低 0）。未行动的就是轮到它时的可用 AP；已行动的是该次激活没花完的。</summary>
+        public int EnemyApLeft(BattleEnemy e) => Math.Max(0, EnemyAp(e) - e.RoundApUsed);
+
+        /// <summary>敌人装填的 AP（意图文字“装填（1AP…）”）。</summary>
+        public const int EnemyReloadAp = 1;
+
+        /// <summary>每次正常激活的主意图 AP（R03/A09：一个 2AP 主意图；防御、嚎叫、蓄力、保护、鸣响、增益同）。</summary>
+        public const int EnemyMainIntentAp = 2;
+
+        /// <summary>在本轮正常激活预算里记一笔（追击不记）。</summary>
+        private static void SpendAp(BattleEnemy e, int ap, bool pursuit)
+        {
+            if (!pursuit && ap > 0) e.RoundApUsed += ap;
+        }
+
         // ───────────── 意图步骤 ─────────────
 
         private static bool KindMatches(string stepKind, string intent) => stepKind == intent || (stepKind == "attack" && intent == "bite");
@@ -203,7 +218,8 @@ namespace Survival.Core.Engine
             var cfg = _enemies[e.EnemyId];
             var (own, tgt) = SlotsOf(cfg, st);
             var me = PlayerPos(b);
-            var budget = ap ?? EnemyAp(e);
+            // 缺省预算：还没行动的按本轮剩余（Q87 替同伴补位预扣过的要少算），已行动的仍按面板（只用于显示）
+            var budget = ap ?? (e.Acted ? EnemyAp(e) : EnemyApLeft(e));
             var approach = Config.CombatMath.ExposureApproach.TotalAp;
             if (own.Contains(e.Pos) && tgt.Contains(me)) return ReachPlan.Execute;
             if (own.Count > 0 && e.Pos > own.Max() && e.Pos > 1)
@@ -228,16 +244,52 @@ namespace Survival.Core.Engine
             var st = StepOf(e);
             var cfg = _enemies[e.EnemyId];
             var verb = e.Intent == "bite" ? "咬击" : st.Verb != "" ? st.Verb : AttackVerb(cfg);
-            switch (PlanFor(b, e, st))
+            var ea = Config.CombatMath.ExposureApproach;
+            var plan = PlanFor(b, e, st);
+            // Q87：够不到要前移时，前方同伴能出手且它前面空着——先由同伴花自己本轮 1AP 补位，再由它花自己 1AP 跟进；同伴没 AP 就等待
+            BattleEnemy? f = null;
+            var assist = IsAdvance(plan) && !e.Acted ? AssistFor(b, e, out f) : AssistKind.None;
+            if (assist == AssistKind.Wait) return $"等待（{EnemyName(f!)}已能出手、前面有空位，但它本轮没有AP补位；不换位）";
+            var lead = assist == AssistKind.Assist ? $"等{EnemyName(f!)}补到{e.Pos - 2}号位（它花自己1AP），再" : "";
+            switch (plan)
             {
-                case ReachPlan.AdvanceThenAttack: return $"前移到{e.Pos - 1}号位后{verb} {Range(cfg, 1)}{(e.Intent == "bite" ? "（可能感染）" : "")}";
-                case ReachPlan.Advance: return $"前移1位（在{e.Pos}号位够不到）";
+                case ReachPlan.AdvanceThenAttack: return $"{lead}前移到{e.Pos - 1}号位{(lead != "" ? "（1AP）" : "")}后{verb} {Range(cfg, 1)}{(e.Intent == "bite" ? "（可能感染）" : "")}";
+                case ReachPlan.Advance: return assist == AssistKind.Assist ? $"{lead}前移到{e.Pos - 1}号位（1AP；还够不到）" : $"前移1位（在{e.Pos}号位够不到）";
                 case ReachPlan.Weak: return $"弱攻击 {Range(cfg, WeakAttackFactor)}（在{e.Pos}号位，{verb}要在{PosList(SlotsOf(cfg, st).own)}）";
                 case ReachPlan.Guard: return "防御（够不到目标）";
-                case ReachPlan.Approach: return $"迫近你（{PosName(PlayerPos(b))}）弱近袭 {Range(cfg, Config.CombatMath.ExposureApproach.DamageFactor)}（{Config.CombatMath.ExposureApproach.ApproachAp}+{Config.CombatMath.ExposureApproach.PlainAttackAp}AP，不咬不控）";
-                case ReachPlan.AdvanceThenApproach: return $"前移到{e.Pos - 1}号位再迫近你（{PosName(PlayerPos(b))}）弱近袭 {Range(cfg, Config.CombatMath.ExposureApproach.DamageFactor)}（共{1 + Config.CombatMath.ExposureApproach.TotalAp}AP，不咬不控）";
+                case ReachPlan.Approach: return $"迫近你（{PosName(PlayerPos(b))}，触发架矛）→弱近袭 {Range(cfg, ea.DamageFactor)}（{ea.ApproachAp}+{ea.PlainAttackAp}AP，不咬不控）";
+                case ReachPlan.AdvanceThenApproach: return $"{lead}前移到{e.Pos - 1}号位，再迫近你（{PosName(PlayerPos(b))}，触发架矛）→弱近袭 {Range(cfg, ea.DamageFactor)}（共{1 + ea.TotalAp}AP，不咬不控）";
             }
             return IntentLabel(e, b);
+        }
+
+        private static bool IsAdvance(ReachPlan p) => p is ReachPlan.Advance or ReachPlan.AdvanceThenAttack or ReachPlan.AdvanceThenApproach;
+
+        /// <summary>Q87 前方同伴补位的判断结果：不适用（沿 Q78 空移/交换）、补位、等待。</summary>
+        public enum AssistKind { None, Assist, Wait }
+
+        /// <summary>
+        /// Q87 选 C（R03/R05 本轮章）：当前敌在 i，前一格 i−1 有存活同伴 F，F 前一格 i−2 在 1—4 内为空，F 现在已能合法普通攻击至少一名存活对手，
+        /// 补到 i−2 后仍有合法普通攻击目标——满足时由 F 主动补一格（F 本轮剩余正常预算 ≥1 才行，否则当前敌等待、不换位）；不满足为 None（沿 Q78）。
+        /// 只在正常激活够不到、准备前移一格时调用；不递归推动更前的人。
+        /// </summary>
+        public AssistKind AssistFor(BattleState b, BattleEnemy e, out BattleEnemy? f)
+        {
+            f = null;
+            var i = e.Pos;
+            if (i - 2 < 1) return AssistKind.None;
+            var ahead = b.Alive.FirstOrDefault(x => x.Pos == i - 1);
+            if (ahead == null || b.Alive.Any(x => x.Pos == i - 2)) return AssistKind.None;
+            if (!ahead.Hostile || !PlainAttackFrom(b, ahead, i - 1) || !PlainAttackFrom(b, ahead, i - 2)) return AssistKind.None;
+            f = ahead;
+            return EnemyApLeft(ahead) >= Config.CombatMath.CooperativeAdvance.HelperAp ? AssistKind.Assist : AssistKind.Wait;
+        }
+
+        /// <summary>敌人站在 pos 时能否用普通攻击打到至少一名存活对手（我方目前只有主角在场）。</summary>
+        private bool PlainAttackFrom(BattleState b, BattleEnemy e, int pos)
+        {
+            var (own, tgt) = SlotsOf(_enemies[e.EnemyId], PlainStep(_enemies[e.EnemyId]));
+            return own.Contains(pos) && Enumerable.Range(1, 4).Any(p => AllyAt(b, p) != null && tgt.Contains(p));
         }
 
         // ───────────── 执行 ─────────────
@@ -264,6 +316,15 @@ namespace Survival.Core.Engine
             e.Guard = false;
             e.ProtectingIndex = 0;
             var st = StepOf(e);
+            // Q87：本次正常激活的预算 = 面板 AP − 本轮已为同伴补位预扣的（不重置成满额）
+            var budget = EnemyApLeft(e);
+            var cost = e.Intent switch { "flee" or "watch" => 0, "reload" => EnemyReloadAp, _ when !ReachKinds.Contains(st.Kind) => EnemyMainIntentAp, _ => 0 };
+            if (cost > budget)
+            {
+                BattleLog(s, $"{EnemyName(e)}本轮只剩{budget}AP（替同伴补位预扣了{e.RoundApUsed}AP），不够{IntentLabel(e, b)}，结束行动。");
+                return;
+            }
+            SpendAp(e, cost, false);
             switch (e.Intent)
             {
                 case "flee":
@@ -320,42 +381,61 @@ namespace Survival.Core.Engine
                     return;
                 }
             }
-            ExecuteReach(s, b, e, st, EnemyAp(e), false, false);
+            ExecuteReach(s, b, e, st, budget, false, false);
         }
 
         /// <summary>
         /// 攻击类意图：按站位先前移 / 弱攻击 / 迫近 / 防御，再执行（每个主意图 2AP，前移 1AP，迫近 1AP；余 AP 直接结束，
         /// 不另附攻击、不自动防御，Q77）。前移后按剩余 AP 重新判断：够到就一次普通攻击，暴露且 AP 够就迫近。
+        /// 正常激活每花一笔都记进本轮 AP 账（Q87）；追击 2AP 另算。
+        /// 前移前先看 Q87：前方同伴能出手且它前面空着，由同伴付自己本轮 1AP 补一格、它再付自己 1AP 跟进；同伴没 AP 则本次等待、不换位。
         /// </summary>
         private void ExecuteReach(GameState s, BattleState b, BattleEnemy e, EnemyIntentStepConfig st, int ap, bool plain, bool pursuit)
         {
             switch (PlanFor(b, e, st, ap))
             {
                 case ReachPlan.Approach:
-                    DoApproach(s, b, e);
+                    DoApproach(s, b, e, ap, pursuit);
                     return;
                 case ReachPlan.Execute:
-                    if (ap >= 2) DoAttackStep(s, b, e, st, plain, 1, pursuit);
+                    if (ap >= 2) { SpendAp(e, 2, pursuit); DoAttackStep(s, b, e, st, plain, 1, pursuit); }
                     return;
                 case ReachPlan.Weak:
-                    if (ap >= 2) DoAttackStep(s, b, e, st, true, WeakAttackFactor, pursuit);
+                    if (ap >= 2) { SpendAp(e, 2, pursuit); DoAttackStep(s, b, e, st, true, WeakAttackFactor, pursuit); }
                     return;
                 case ReachPlan.AdvanceThenAttack:
                 case ReachPlan.AdvanceThenApproach:
                 case ReachPlan.Advance:
                 {
-                    AdvanceEnemy(s, b, e);
-                    ap -= 1;
+                    BattleEnemy? f = null;
+                    var assist = pursuit ? AssistKind.None : AssistFor(b, e, out f);
+                    if (assist == AssistKind.Wait)
+                    {
+                        BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}够不到；前面的{EnemyName(f!)}已能出手、前方有空位，但它本轮没有AP补位，{EnemyName(e)}等待（不换位）。");
+                        return;
+                    }
+                    if (assist == AssistKind.Assist)
+                    {
+                        if (!AssistedAdvance(s, b, e, f!, ap)) return;
+                        ap -= Config.CombatMath.CooperativeAdvance.MoverAp;
+                    }
+                    else
+                    {
+                        SpendAp(e, 1, pursuit);
+                        AdvanceEnemy(s, b, e);
+                        ap -= 1;
+                    }
                     if (s.Battle == null || s.Progress.Dead || !e.Alive) return;
                     var next = PlanFor(b, e, st, ap);
-                    if (next == ReachPlan.Execute && ap >= 2) DoAttackStep(s, b, e, st, true, 1, pursuit);
-                    else if (next == ReachPlan.Approach && !pursuit) DoApproach(s, b, e);
+                    if (next == ReachPlan.Execute && ap >= 2) { SpendAp(e, 2, pursuit); DoAttackStep(s, b, e, st, true, 1, pursuit); }
+                    else if (next == ReachPlan.Approach && !pursuit) DoApproach(s, b, e, ap, pursuit);
                     else BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}还够不到，结束行动。");
                     return;
                 }
                 default:
                     if (ap >= 1 && !pursuit)
                     {
+                        SpendAp(e, Math.Min(EnemyMainIntentAp, ap), pursuit);
                         e.Guard = true;
                         BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}够不到目标，也无法前压，改为防御。");
                     }
@@ -365,13 +445,53 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 空前排迫近（Q80）：付 1AP 迫近后再付 2AP，对我方最前那名暴露角色做一次普通近袭×0.70——不咬、不感染、不附控制或特殊意图，
-        /// 不移动、不重标任何一方的真实号位（所以不触发架矛迎击）；迫近 AP 已在 PlanFor 里核过。
+        /// Q87 协同前压（R03/R05 本轮章）：前方同伴 F 先花自己本轮正常预算 1AP 主动补到前面的空格（未行动的记预扣、已行动的用剩余），
+        /// 按新槽触发一次架矛；结算后重验当前敌——存活、前格已空、自己还有 1AP 才付自己的 1AP 跟进，也按主动前移触发一次架矛。
+        /// 不改队列/意图/已行动标记，不额外激活，不借追击或下轮 AP；任一步被打断，已发生的不回滚、没执行的不扣。返回当前敌是否完成跟进。
         /// </summary>
-        private void DoApproach(GameState s, BattleState b, BattleEnemy e)
+        private bool AssistedAdvance(GameState s, BattleState b, BattleEnemy e, BattleEnemy f, int ap)
+        {
+            var ca = Config.CombatMath.CooperativeAdvance;
+            var target = e.Pos - 2;
+            var acted = f.Acted;
+            f.RoundApUsed += ca.HelperAp;
+            f.Slot = target.ToString();
+            BattleLog(s, $"{EnemyName(f)}主动补到{PosName(target)}（花它自己本轮{ca.HelperAp}AP，{(acted ? $"行动后还剩{EnemyApLeft(f)}AP" : $"轮到它时只剩{EnemyApLeft(f)}AP")}），给{EnemyName(e)}让出{PosName(target + 1)}。");
+            TryBrace(s, b, f);
+            if (s.Battle == null || s.Progress.Dead || !e.Alive) return false;
+            var front = target + 1;
+            if (b.Alive.Any(x => x.Pos == front) || ap < ca.MoverAp)
+            {
+                BattleLog(s, $"{EnemyName(e)}没能跟进，结束行动。");
+                return false;
+            }
+            SpendAp(e, ca.MoverAp, false);
+            e.Slot = front.ToString();
+            BattleLog(s, $"{EnemyName(e)}跟进到{PosName(front)}（{ca.MoverAp}AP）。");
+            TryBrace(s, b, e);
+            return true;
+        }
+
+        /// <summary>
+        /// 空前排迫近（Q80；Q85 选 B）：先付 1AP 迫近，双方号位都不变，但算一次主动前移、派发一次架矛迎击；迎击结算后重验存活、己位、
+        /// 暴露目标与剩余 2AP，合法才付 2AP 对我方最前那名暴露角色做一次普通近袭×0.70（不咬、不感染、不附控制或特殊意图）。
+        /// 迎击致死或使近袭不合法：已付的 1AP 不返，没发出的 2AP 不扣，余 AP 结束。迫近 AP 已在 PlanFor 里核过。
+        /// </summary>
+        private void DoApproach(GameState s, BattleState b, BattleEnemy e, int ap, bool pursuit)
         {
             var ea = Config.CombatMath.ExposureApproach;
-            BattleLog(s, $"{EnemyName(e)}迫近{PosName(PlayerPos(b))}的你（{ea.ApproachAp}AP；你前面没有人挡）。");
+            SpendAp(e, ea.ApproachAp, pursuit);
+            ap -= ea.ApproachAp;
+            BattleLog(s, $"{EnemyName(e)}迫近{PosName(PlayerPos(b))}的你（{ea.ApproachAp}AP；你前面没有人挡；算主动前移）。");
+            TryBrace(s, b, e);
+            if (s.Battle == null || s.Progress.Dead || !e.Alive) return;
+            var own = SlotsOf(_enemies[e.EnemyId], StepOf(e)).own;
+            if (!own.Contains(e.Pos) || !PlayerExposed(b) || ap < ea.PlainAttackAp)
+            {
+                BattleLog(s, $"{EnemyName(e)}迫近后弱近袭不再成立，结束行动（迫近的{ea.ApproachAp}AP不返，弱近袭的{ea.PlainAttackAp}AP不扣）。");
+                return;
+            }
+            SpendAp(e, ea.PlainAttackAp, pursuit);
             var step = new EnemyIntentStepConfig { Kind = "attack", Verb = "弱近袭" };
             DoAttackStep(s, b, e, step, true, ea.DamageFactor, false, approach: true);
         }

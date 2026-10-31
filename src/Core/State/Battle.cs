@@ -129,6 +129,11 @@ namespace Survival.Core.State
         /// <summary>流窜枪手：弹仓与本场剩余备弹（弹药计划总数，打空后不补）。−1 为未初始化。</summary>
         public int Mag { get; set; } = -1;
         public int Reserve { get; set; }
+        /// <summary>
+        /// 本轮正常激活预算的已花/预扣 AP（Q87 协同补位 AP 账，S01 本轮章）：正常激活里每花一笔就记一笔；还没行动时替后方同伴补位记“预扣 1”，
+        /// 轮到它时可用 = 面板 AP − 已记，不重置成满额；已行动的只剩“面板 AP − 已记”。轮初清零；追击 AP 另算，不进这本账。
+        /// </summary>
+        public int RoundApUsed { get; set; }
 
         public bool Alive => !Dead && !Fled;
 
