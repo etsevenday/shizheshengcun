@@ -350,7 +350,7 @@ namespace Survival.Core.Engine
             var cfg = _enemies[e.EnemyId];
             var bite = !pursuit && e.Intent == "bite";
             var kind = st.Kind;
-            var shoot = kind == "shoot";
+            var shoot = kind == "shoot" && factorOverride >= 1;   // 弱近战（后排型被压到前排、打空后）不耗子弹
             if (shoot)
             {
                 if (e.Mag <= 0) { BattleLog(s, $"{EnemyName(e)}没有子弹了。"); return; }

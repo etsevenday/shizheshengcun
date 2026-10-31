@@ -632,6 +632,12 @@ public class B7CombatTests : BattleTestBase
             shots = s.Battle?.Log.Count(l => l.Contains("流窜枪手射击")) ?? shots;
         }
         Assert.That(g.Mag + g.Reserve, Is.EqualTo(0), "打空后不补");
+        // 被压到 1 号位：射击改弱近战×0.7，不耗子弹
+        var f = Fight(747, "raider_gunner");
+        var fg = Enemy(f, 1);
+        Assert.That(E.IntentShown(f.Battle!, fg), Does.StartWith("弱攻击"));
+        for (var i = 0; i < 20 && !fg.Acted && f.Battle != null; i++) Step(f);
+        Assert.That((fg.Mag, fg.Reserve), Is.EqualTo((2, 4)), "弱近战不耗子弹");
         Assert.That(s.Battle!.Log.Any(l => l.Contains("流窜枪手装填")), Is.True);
     }
 
