@@ -84,8 +84,19 @@ namespace Survival.Core.Engine
         /// <summary>技能的己方使用位（A06“使用位”；“按武器”取武器使用位）。</summary>
         public HashSet<int> SkillOwnPositions(SkillNodeConfig n, WeaponConfig w) => n.OwnPart != "" ? Digits(n.OwnPart) : OwnPositionsOf(w);
 
-        /// <summary>技能的敌方目标位（A06“目标”；“按武器”取武器目标位）。拳击 12→12 与 Q64“拳只打 1、2 号位”一致。</summary>
-        public HashSet<int> SkillTargetPositions(SkillNodeConfig n, WeaponConfig w) => n.TargetPart != "" ? Digits(n.TargetPart) : TargetPositionsOf(w);
+        /// <summary>
+        /// 技能的敌方目标位（A06“目标”；“按武器”取武器目标位）。Q64：拳击 12→1、连拳 12→12；穿着护拳绑带且当前页是空槽（徒手）时，
+        /// 普通拳击 unarmed_01 改为绑带写的 12（应急拳、推挡不变）。
+        /// </summary>
+        public HashSet<int> SkillTargetPositions(GameState s, SkillNodeConfig n, WeaponConfig w) =>
+            w.IsFists && n.Id == UnarmedBasic && WrapsPunchTargets(s) is string wt ? Digits(wt)
+            : n.TargetPart != "" ? Digits(n.TargetPart) : TargetPositionsOf(w);
+
+        public const string UnarmedBasic = "unarmed_01";
+
+        /// <summary>主角穿着的护拳绑带写的普通拳击目标位（"12"）；没穿为 null。只在空槽徒手页由 SkillTargetPositions 使用。</summary>
+        public string? WrapsPunchTargets(GameState s) =>
+            WornItem(s, GameState.PlayerId, EquipSlots.CombatAccessory) is ItemInstance it && Gear(it.ItemId) is GearConfig g ? g.UnarmedBasicTargets : null;
 
         /// <summary>专长射击：霰弹枪改为对敌方 1、2 号位各一击（A06 §2、A05 霰弹枪“散布”）。</summary>
         public static bool IsAreaShot(SkillExecConfig x, WeaponConfig w) => x.AreaWeapons.Contains(w.Id);
@@ -251,7 +262,7 @@ namespace Survival.Core.Engine
             if (!AmmoReady(s, w, wi, AmmoNeed(x, w))) return AmmoReason(w, x);
             // 突进斩：攻击前前移 1 位，移位失败拒绝整次；我方只剩一人时按 1 号位出手、不需前移（开发假设 B7-5）
             if (x.Advance > 0 && b.Allies.Count > 1 && PlayerPos(b) <= 1) return "已在最前排，无法前移";
-            var targets = SkillTargetPositions(n, w);
+            var targets = SkillTargetPositions(s, n, w);
             if (IsAreaShot(x, w)) return SkillTargets(b, x, w, null).Count == 0 ? "敌方1、2号位没有目标" : null;
             return TargetBlocked(b, c, targets, n.Name);
         }

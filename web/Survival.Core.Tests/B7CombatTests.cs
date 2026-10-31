@@ -596,6 +596,7 @@ public class B7CombatTests : BattleTestBase
         for (var i = 0; i < 30 && s.Battle != null && !E.AwaitingPlayer(s); i++) E.BattleStep(s);
         if (!E.AwaitingPlayer(s)) { Assert.Ignore("本轮守卫已再次行动"); return; }
         s.Battle!.PlayerAp = 3;
+        Arm(s, "stone_knife");   // B7c（Q64）起空手普通拳只打 1 号位，改用刀（1、2号位）打后排
         var hpBack = back.Hp;
         Force(s, Below(0.01), AtLeast(0.99), Any());
         Assert.That(Cmd(s, "basic_attack", back.Index).Ok, Is.True);

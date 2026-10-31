@@ -390,6 +390,7 @@ namespace Survival.Core.Config
             foreach (var rc in c.Recipes)
             {
                 foreach (var k in rc.MinSkills.Keys) if (!skills.Contains(k)) e.Add($"配方 {rc.Id} 的技能门槛 {k} 不存在");
+                if (rc.Knowledge != null && c.Knowledge.All(k => k.Id != rc.Knowledge)) e.Add($"配方 {rc.Id} 需要的知识 {rc.Knowledge} 不存在");
                 if (rc.IsRepair && !rc.TargetInstanceRequired) e.Add($"维护配方 {rc.Id} 须指定目标实例");
             }
             foreach (var r in c.Resources)

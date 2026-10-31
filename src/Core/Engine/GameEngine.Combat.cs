@@ -44,8 +44,8 @@ namespace Survival.Core.Engine
         /// <summary>“1号位”。</summary>
         public static string PosName(int pos) => $"{pos}号位";
 
-        /// <summary>拳没有物品，A05 只写“合法己位用拳”；目标位按旧“只打前排”取 12（开发假设 B6-4）。</summary>
-        public const string FistTargetPositions = "12";
+        /// <summary>拳没有物品：基础拳、应急拳、推挡只打敌方 1 号位（Q64，取代 B6-4 的 12）；护拳绑带与 10 级连拳是明确扩展，见 SkillTargetPositions。</summary>
+        public const string FistTargetPositions = "1";
 
         /// <summary>武器可打的敌方站位集合（A05 §1 目标位，数字连写；“友方”等非数字为空集）。</summary>
         public static HashSet<int> TargetPositionsOf(WeaponConfig w)
@@ -697,7 +697,9 @@ namespace Survival.Core.Engine
             var all = Config.Scope.Capacity.Unlocks.SelectMany(u => u.AllOf.Concat(u.AnyOf)).Distinct().ToList();
             if (fact == null) s.Progress.Flags.RemoveWhere(all.Contains);
             else if (all.Contains(fact)) s.Progress.Flags.Add(fact);
-            return $"开发：{(fact == null ? "已清除容量解锁事实" : $"已记下事实 {fact}")}，下一场新战斗{CapacityText(s)}；进行中的战斗不变。";
+            var know = fact == null ? new List<string>() : Config.Knowledge.Where(k => k.GrantedByFacts.Contains(fact)).Select(k => k.Name).ToList();
+            return $"开发：{(fact == null ? "已清除容量解锁事实" : $"已记下事实 {fact}")}，下一场新战斗{CapacityText(s)}；进行中的战斗不变"
+                   + (know.Count > 0 ? $"；获得默认知识：{string.Join("、", know)}" : "") + "。";
         }
 
         /// <summary>本轮唯一一次世界 tick（战斗速率，体力只付招式成本，计入工作类归零损血）。返回 false 表示 tick 内死亡或尸变。</summary>
@@ -822,7 +824,7 @@ namespace Survival.Core.Engine
         {
             var lv = SkillLevel(s, w.SkillId);
             var f = SkillDamageFactor(lv);
-            return (lv, w.DamageMin * f, w.DamageMax * f, w.AccuracyRating + SkillAccuracyBonus(lv));
+            return (lv, w.DamageMin * f, w.DamageMax * f, w.AccuracyRating + SkillAccuracyBonus(lv) + Config.CombatMath.PlayerAccuracyAssistance);   // Q67 +8
         }
 
         /// <summary>旧接口：普通攻击（本门 1 级技能）与应急拳的体力成本；技能统一用 SkillEnergy。</summary>
@@ -987,7 +989,7 @@ namespace Survival.Core.Engine
                         var pageName = EquipSlots.Name(EquipSlots.WeaponSlotOfPage(page) ?? EquipSlots.Weapon1);
                         var toName = to == null ? "空槽（拳）" : $"{tw.Name}#{to.InstanceId}";
                         p.Title = $"切换到{pageName}页：{toName}";
-                        p.Notes.Add($"{toName}：{SkillName(tw.SkillId)}{st.Level}级，伤害{Fmt.N(st.DamageMin)}—{Fmt.N(st.DamageMax)}，命中能力{Fmt.N(st.Accuracy)}，可打敌方{PosList(TargetPositionsOf(tw))}{(to?.Durability != null ? $"，耐久{DurabilityText(to)}" : "")}{(tw.UsesMagazine && to != null ? $"，弹仓{to.LoadedAmmo}/{tw.MagazineCapacity}" : "")}");
+                        p.Notes.Add($"{toName}：{SkillName(tw.SkillId)}{st.Level}级，伤害{Fmt.N(st.DamageMin)}—{Fmt.N(st.DamageMax)}，命中能力{Fmt.N(st.Accuracy)}，可打敌方{PosList(to == null && SkillNode(UnarmedBasic) is SkillNodeConfig un ? SkillTargetPositions(s, un, tw) : TargetPositionsOf(tw))}{(to?.Durability != null ? $"，耐久{DurabilityText(to)}" : "")}{(tw.UsesMagazine && to != null ? $"，弹仓{to.LoadedAmmo}/{tw.MagazineCapacity}" : "")}");
                         p.Notes.Add("切页0AP、不耗体力，只换本次可选技能组；两把武器开战时已锁定，不能从随身换入第三把");
                         break;
                     }

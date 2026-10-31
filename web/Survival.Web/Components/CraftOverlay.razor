@@ -12,14 +12,15 @@
     var fac = s.Locations[here].Facility;
     var procId = G.CraftRecipe != null && G.CraftRecipe.StartsWith(ProcPrefix) ? G.CraftRecipe.Substring(ProcPrefix.Length) : null;
     var proc = procId == null ? null : e.Config.Processes.FirstOrDefault(p => p.Id == procId);
-    var recipeId = G.CraftRecipe != null && e.Config.Recipes.Any(r => r.Id == G.CraftRecipe) ? G.CraftRecipe : "knife";
+    // Q64：需要做法知识的配方（护拳绑带=营区登记默认知识）没学会时不列出
+    var recipeId = G.CraftRecipe != null && e.Config.Recipes.Any(r => r.Id == G.CraftRecipe && e.RecipeKnown(s, r)) ? G.CraftRecipe : "knife";
     var rc = e.Recipe(recipeId);
     var main = s.Main;
     var craftPaused = main != null && main.Status == ActionStatus.Paused && (main.Type == ActionType.Craft || main.Type == ActionType.Build);
     var busy = G.Running || s.Sub != null;
     var candidates = G.CraftCandidates;
     // 拆解（B4）走配方流程但只在选中装备的卡下开始，不进手工制作列表
-    var recipes = (candidates == null ? e.Config.Recipes : e.Config.Recipes.Where(r => candidates.Contains(r.Id))).Where(r => !r.IsSalvage).ToList();
+    var recipes = (candidates == null ? e.Config.Recipes : e.Config.Recipes.Where(r => candidates.Contains(r.Id))).Where(r => !r.IsSalvage && e.RecipeKnown(s, r)).ToList();
     var preferred = G.CraftPreferred.Where(id => s.Items.Any(i => i.InstanceId == id && rc.Inputs.ContainsKey(i.ItemId))).ToList();
     var batchable = !rc.IsBuild && !rc.IsRepair;
     var batch = batchable ? Math.Max(1, G.CraftBatch) : 1;

@@ -12,6 +12,11 @@
     作为位移装备抵抗来源之一（重甲 15、稳固词条 10 已在 gear/affixes）。
   - accuracy → config.combatMath（Q67：我方可控角色攻击能力加基础 8；支付成本后 E<4 或 S≤20 统一一次 ×0.95，双低不叠乘，
     取代旧 lowEnergyAccuracyFactor/lowWakefulnessAccuracyFactor 两条 ×0.85；恐慌 0.9/0.8、失衡 0.9、速度惩罚不变）。
+  - unarmed → skillNodes unarmed_01 目标 12→1、unarmed_10 目标 1→12（A06 全技能主表本轮改行，效果原文同 A12 equipment.skills）；
+    新战斗饰品护拳绑带 knuckle_wraps（合同 unarmed.newGear = A12 equipment.gear、equipment-adjudications.json dismantle.rows）：
+    items/gear 一行（200g、T1、无耐久、unarmedBasicTargets "12"），配方 make_knuckle_wraps（手工、制造3级、45 基础分钟、
+    布2+皮革1+纤维2、知识 blueprint_knuckle_wraps），knowledge 一行（营区登记 hub_registered 时获得的默认知识，不赠实物）；
+    拆解：布，白/绿/蓝各1，标准配方材料价值10，可自制，回收专家同材料最多+1。
 
 可重复运行，结果相同。
 用法：python tools/import-b7c-combat.py
@@ -83,6 +88,71 @@ def accuracy(cfg, adj):
     assert pen == {60: a["panic60"], 90: a["panic90"]}, pen
 
 
+A12 = os.path.join(ROOT, "doc", "策划案", "系统策划总册 v1.0", "04 附录", "A12 全系统策划数据索引.json")
+EQADJ = os.path.join(ROOT, "doc", "策划案", "系统策划总册 v1.0", "assets", "20261031", "equipment", "equipment-adjudications.json")
+
+WRAPS_TEXT = "当前武器页是空槽（徒手）时，普通拳击可打敌方1、2号位；不加伤害、命中，应急拳与推挡仍只打1号位"
+
+
+def unarmed(cfg, adj):
+    u = adj["unarmed"]
+    assert u["ordinaryDefaultTarget"] == [1] and u["emergencyTarget"] == [1] and u["pushTarget"] == [1]
+    assert u["level10ComboTarget"] == [1, 2] and u["basicPunchWithKnuckleWrapsTarget"] == [1, 2]
+    with open(A12, encoding="utf-8") as f:
+        a12 = json.load(f)
+    with open(EQADJ, encoding="utf-8") as f:
+        eqadj = json.load(f)
+    rows = {x["id"]: x for x in a12["equipment"]["skills"]}
+    for n in cfg["skillNodes"]:
+        if n["id"] in ("unarmed_01", "unarmed_03", "unarmed_10"):
+            r = rows[n["id"]]
+            n["positions"] = f'{r["own"]}→{r["target"]}'
+            n["effectText"] = r["effect"]
+    disp = {"unarmed_01": "伤害×1.00；当前空槽徒手页且穿戴护拳绑带时可打1、2号位",
+            "unarmed_10": "两次独立命中，每击伤害×0.85；可打敌方1、2号位，同目标经验最多计1次"}
+    for n in cfg["skillNodes"]:
+        if n["id"] in disp:
+            n["displayText"] = disp[n["id"]]
+    g = u["newGear"]
+    assert g["id"] == "knuckle_wraps" and g["slot"] == "combat_charm" and g["durability"] == "无"
+    gid = g["id"]
+    item = {
+        "id": gid, "name": g["name"], "weightGrams": g["weight_g"], "stackMax": 1, "shelfLifeMinutes": None,
+        "kind": "gear", "equipSlot": "combat_acc", "toolTag": None, "durabilityMaxRange": None, "edible": False,
+        "requiresCooking": False, "use": None, "desc": f'战斗饰品·T{g["tier"]}；{WRAPS_TEXT}',
+    }
+    row = next(r for r in eqadj["dismantle"]["rows"] if r["itemId"] == gid)
+    gear = {
+        "id": gid, "name": g["name"], "slot": "combat_acc", "tier": g["tier"], "weightGrams": g["weight_g"],
+        "durabilityMaxRange": None, "effectText": WRAPS_TEXT, "effects": [], "unarmedBasicTargets": "12",
+        "salvage": {"itemId": row["material"], "counts": {"white": row["white"], "green": row["green"], "blue": row["blue"]},
+                    "recipeValue": row["canonicalRecipeMaterialValue"], "nonCraftable": row["nonCraftableFixedTable"],
+                    "expertMaterial": row["expertBonusMaterial"], "expertMax": row["expertBonusMax"]},
+    }
+
+    def put(coll, obj, after):
+        coll[:] = [x for x in coll if x["id"] != obj["id"]]
+        i = next(k for k, x in enumerate(coll) if x["id"] == after)
+        coll.insert(i + 1, obj)
+
+    put(cfg["items"], item, "tactics_watch")
+    put(cfg["gear"], gear, "tactics_watch")
+    assert g["station"] == "hand"
+    recipe = {
+        "id": "make_knuckle_wraps", "name": g["name"], "kind": "craft", "baseMinutes": g["minutes"], "inputs": g["inputs"],
+        "outputs": {gid: 1}, "catalysts": [], "requirement": None, "facilityResult": None,
+        "minSkills": {"crafting": g["craft_level"]}, "knowledge": "blueprint_knuckle_wraps",
+    }
+    put(cfg["recipes"], recipe, "make_bolts")
+    cfg["knowledge"] = [{
+        "id": "blueprint_knuckle_wraps", "name": "护拳绑带的做法", "grantedByFacts": ["hub_registered"],
+        "source": "营区登记默认知识（h02 广场）",
+    }]
+    for w in cfg["weapons"]:
+        if w["id"] == "fists":
+            w["targetPositions"] = "1"
+
+
 def main():
     with open(CONFIG, encoding="utf-8") as f:
         cfg = json.load(f)
@@ -91,6 +161,7 @@ def main():
     capacity(cfg, adj)
     defense(cfg, adj)
     accuracy(cfg, adj)
+    unarmed(cfg, adj)
     with open(CONFIG, "w", encoding="utf-8") as f:
         f.write(json.dumps(cfg, ensure_ascii=False, indent=2) + "\n")
     print("scope.capacity", cfg["scope"]["capacity"])

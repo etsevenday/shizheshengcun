@@ -109,6 +109,7 @@
                     <button class="secondary" @onclick='() => DevCapacity("church_route_record")'>记下教会路线记录（C3）</button>
                     <button class="secondary" @onclick='() => DevCapacity("academy_safety_record")'>记下学院安全记录（两种都有C4）</button>
                     <button class="secondary" @onclick="() => DevCapacity(null)">清除容量事实（回C1）</button>
+                    <button class="secondary" @onclick="() => DevDone(G.E.DebugGiveWraps(G.S))">护拳绑带1件+制作材料</button>
                 </div>
                 @{
                     // B7（A09 §1）：20 种新敌人只入数据、不进旧刷新池，只能从这里放出来试玩

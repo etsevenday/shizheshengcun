@@ -269,4 +269,118 @@ public class B7cCombatTests : BattleTestBase
         Assert.That(E.OutOfBattleHit(t, shambler).Accuracy, Is.EqualTo(24 + 3 + 8).Within(1e-9), "空手开战页：拳 24+3+8");
         Assert.That(GameEngine.HitChance(shambler.AttackRating, Cfg.Scope.BasePlayerDodge), Is.EqualTo(20.0 / 56).Within(1e-12), "敌人命中不加 8");
     }
+
+    // ───────────── M167：拳只打 1 号位、10 级连拳 12、护拳绑带（Q64） ─────────────
+
+    private static ActionRequest CraftWraps() => new ActionRequest { Type = ActionType.Craft, TargetId = "make_knuckle_wraps" };
+
+    /// <summary>CB-Q64a：基础拳、应急拳、推挡只打 1 号位，10 级连拳 12；预览、指令可选目标与执行同源。</summary>
+    [Test]
+    public void CB_Q64a_PunchOnlyPos1_ComboPos12()
+    {
+        var a = Adj()["unarmed"]!;
+        Assert.That(a["ordinaryDefaultTarget"]!.Select(x => (int)x).ToArray(), Is.EqualTo(new[] { 1 }));
+        var s = Fight(21, "shambler", "shambler");
+        Ready(s);
+        Assert.That(E.CurrentWeapon(s, out var wi).IsFists && wi == null, Is.True, "两槽都空：拳页");
+        var basic = E.BattleOptions(s).Single(o => o.Action == "basic_attack");
+        Assert.That(basic.Targets, Is.EqualTo(new[] { 1 }), "普通拳击只亮 1 号位");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 2)), Does.Contain("射程不足").And.Contain("只能打1号位"));
+        Assert.That(Cmd(s, "basic_attack", 2).Ok, Is.False, "执行同样拒绝");
+        s.Stats.Energy = 0;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 2)), Does.Contain("射程不足"), "应急拳只打1");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 1)), Is.Null);
+        s.Stats.Energy = 18;
+        s.Skills["unarmed"].Level = 10;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("unarmed_03", 2)), Does.Contain("射程不足"), "推挡只打1");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("unarmed_10", 2)), Is.Null, "10级连拳可打2号位");
+        Assert.That(E.SkillNode("unarmed_10")!.Ap, Is.EqualTo(3), "Q64 改射程不改 AP");
+        Assert.That(E.SkillNode("unarmed_01")!.Ap, Is.EqualTo(2));
+        Assert.That(E.PreviewCommand(s, BattleCommand.Of("unarmed_10", 2)).Targets.Single().Index, Is.EqualTo(2));
+    }
+
+    /// <summary>CB-Q64b：护拳绑带只让“当前空槽徒手页”的普通拳击打 12；武器页、应急拳、推挡不变；占战斗饰品槽、200g。</summary>
+    [Test]
+    public void CB_Q64b_Wraps_OnlyEmptySlotBasicPunch()
+    {
+        var s = Fight(22, "shambler", "shambler");
+        Ready(s);
+        var wraps = Wear(s, "knuckle_wraps", EquipSlots.CombatAccessory);
+        Assert.That(Cfg.Items.Single(i => i.Id == "knuckle_wraps").WeightGrams, Is.EqualTo(200));
+        Assert.That(E.BattleOptions(s).Single(o => o.Action == "basic_attack").Targets, Is.EquivalentTo(new[] { 1, 2 }), "空槽拳页 + 绑带：普通拳击 12");
+        var before = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 2)).Targets.Single();
+        Assert.That(Cmd(s, "basic_attack", 2).Ok, Is.True, "执行与预览一致");
+        s.Battle!.PlayerAp = 3;
+        // 不加伤害/命中：与 1 号位同一攻击能力、伤害区间
+        var on1 = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
+        Assert.That((on1.AccuracyRating, on1.DamageMin, on1.DamageMax), Is.EqualTo((before.AccuracyRating, before.DamageMin, before.DamageMax)));
+        Assert.That(on1.AccuracyRating, Is.EqualTo(24 + 3 + 8).Within(1e-9), "绑带不加命中");
+        s.Stats.Energy = 0;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 2)), Does.Contain("射程不足"), "应急拳仍只打1");
+        s.Stats.Energy = 18;
+        s.Skills["unarmed"].Level = 3;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("unarmed_03", 2)), Does.Contain("射程不足"), "推挡仍只打1");
+        // 当前页是武器（坏的也算占槽）：不是拳页，绑带无关
+        var axe = Arm(s, "hatchet");
+        Assert.That(E.CurrentWeapon(s, out _).IsFists, Is.False);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 2)), Does.Contain("射程不足"), "斧只打1，绑带不改武器页");
+        axe.Durability = 0;
+        Assert.That(E.CurrentWeapon(s, out _).IsFists, Is.False, "坏武器仍占槽，不变拳");
+        // 切到空的武器Ⅱ页：又是空槽徒手页，绑带生效
+        Assert.That(E.SelectWeaponPage(s, 2).Ok, Is.True);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 2)), Is.Null);
+        // 两槽都满：没有拳页
+        var t = Fight(23, "shambler", "shambler");
+        Ready(t);
+        Wear(t, "knuckle_wraps", EquipSlots.CombatAccessory);
+        Wear(t, "hatchet", EquipSlots.Weapon1);
+        Wear(t, "wooden_shield", EquipSlots.Weapon2);
+        Assert.That(E.SelectWeaponPage(t, 2).Ok, Is.True);
+        Assert.That(E.CurrentWeapon(t, out _).IsFists, Is.False, "双槽满不另开拳页");
+        // 占战斗饰品槽：与稳手指环互斥（同一槽）
+        Assert.That(E.WornItem(s, GameState.PlayerId, EquipSlots.CombatAccessory)!.InstanceId, Is.EqualTo(wraps.InstanceId));
+        Assert.That(E.EquipSummaryLines(s)[0], Does.Contain("空槽徒手页的普通拳击可打敌方1、2号位"));
+        Assert.That(E.EquipDetailLines(s, wraps).Single(l => l.Label == "固定效果").Value, Does.Contain("（生效中）"));
+    }
+
+    /// <summary>CB-Q64c：73 装备/38 武器/75 节点；做法是营区登记默认知识（不赠实物），制造3级、45 基础分钟、布2+皮革1+纤维2；拆解布1、制造10级专家+布1（≤80%预算）。</summary>
+    [Test]
+    public void CB_Q64c_Catalog_RecipeKnowledge_Salvage()
+    {
+        Assert.That(Cfg.Weapons.Count(w => !w.IsFists) + Cfg.Gear.Count, Is.EqualTo(73));
+        Assert.That(Cfg.Weapons.Count(w => !w.IsFists), Is.EqualTo(38));
+        Assert.That(Cfg.SkillNodes, Has.Count.EqualTo(75));
+        var ng = Adj()["unarmed"]!["newGear"]!;
+        var g = Cfg.Gear.Single(x => x.Id == "knuckle_wraps");
+        Assert.That((g.Slot, g.Tier, g.WeightGrams, g.DurabilityMaxRange), Is.EqualTo(("combat_acc", (int)ng["tier"]!, (int)ng["weight_g"]!, (double[]?)null)));
+        Assert.That(g.Effects, Is.Empty, "不加伤害/命中");
+        var rc = E.Recipe("make_knuckle_wraps");
+        Assert.That((rc.BaseMinutes, rc.MinSkills["crafting"], rc.Outputs["knuckle_wraps"]), Is.EqualTo(((int)ng["minutes"]!, (int)ng["craft_level"]!, 1)));
+        Assert.That(rc.Inputs, Is.EqualTo(new Dictionary<string, int> { ["cloth"] = 2, ["leather"] = 1, ["fiber"] = 2 }));
+        var s = New(24);
+        s.Skills["crafting"].Level = 3;
+        E.DebugGiveCarriedOrGround(s, rc.Inputs.Select(kv => (kv.Key, kv.Value)));
+        Assert.That(E.CanStart(s, CraftWraps()), Does.Contain("还不知道护拳绑带的做法").And.Contain("营区登记"), "未登记不会做");
+        Assert.That(E.RecipeKnown(s, rc), Is.False);
+        var items0 = s.Items.Count(i => i.ItemId == "knuckle_wraps");
+        E.DebugCapacityFact(s, "hub_registered");
+        Assert.That(E.RecipeKnown(s, rc), Is.True, "登记即有默认知识");
+        Assert.That(s.Items.Count(i => i.ItemId == "knuckle_wraps"), Is.EqualTo(items0), "知识不赠实物");
+        s.Skills["crafting"].Level = 2;
+        Assert.That(E.CanStart(s, CraftWraps()), Does.Contain("需要制造3级"));
+        s.Skills["crafting"].Level = 3;
+        var p = E.Preview(s, CraftWraps());
+        Assert.That(p.Ok, Is.True, p.Reason);
+        Assert.That(p.BaseMinutes, Is.EqualTo(45));
+        Start(s, CraftWraps());
+        Run(s);
+        var made = s.Items.Single(i => i.ItemId == "knuckle_wraps");
+        Assert.That(made.Durability, Is.Null, "无耐久");
+        // 拆解：制造3级可拆 T1，布1；制造10级回收专家再+布1（总价值4≤8）
+        Assert.That(E.SalvageYield(s, made), Is.EqualTo(new List<(string, int)> { ("cloth", 1) }));
+        s.Skills["crafting"].Level = 10;
+        Assert.That(E.SalvageYield(s, made), Is.EqualTo(new List<(string, int)> { ("cloth", 2) }));
+        s.Skills["crafting"].Level = 2;
+        Assert.That(E.SalvageBlocked(s, made.InstanceId, out _), Does.Contain("需要制造3级"));
+    }
 }

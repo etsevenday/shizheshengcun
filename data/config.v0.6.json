@@ -2715,6 +2715,21 @@
       "desc": "战斗饰品·T3；每场首次正常激活AP+1；不超过临时AP上限6"
     },
     {
+      "id": "knuckle_wraps",
+      "name": "护拳绑带",
+      "weightGrams": 200,
+      "stackMax": 1,
+      "shelfLifeMinutes": null,
+      "kind": "gear",
+      "equipSlot": "combat_acc",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "战斗饰品·T1；当前武器页是空槽（徒手）时，普通拳击可打敌方1、2号位；不加伤害、命中，应急拳与推挡仍只打1号位"
+    },
+    {
       "id": "work_shirt",
       "name": "耐磨工作衣",
       "weightGrams": 500,
@@ -3885,6 +3900,27 @@
       }
     },
     {
+      "id": "make_knuckle_wraps",
+      "name": "护拳绑带",
+      "kind": "craft",
+      "baseMinutes": 45,
+      "inputs": {
+        "cloth": 2,
+        "leather": 1,
+        "fiber": 2
+      },
+      "outputs": {
+        "knuckle_wraps": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "knowledge": "blueprint_knuckle_wraps"
+    },
+    {
       "id": "salvage_equipment",
       "name": "拆解装备",
       "kind": "salvage",
@@ -4533,7 +4569,8 @@
       "basicApCost": 1,
       "accuracyRating": 24,
       "critRatingBase": 3,
-      "durabilityMaxRange": null
+      "durabilityMaxRange": null,
+      "targetPositions": "1"
     },
     {
       "id": "stone_knife",
@@ -8705,6 +8742,29 @@
       }
     },
     {
+      "id": "knuckle_wraps",
+      "name": "护拳绑带",
+      "slot": "combat_acc",
+      "tier": 1,
+      "weightGrams": 200,
+      "durabilityMaxRange": null,
+      "effectText": "当前武器页是空槽（徒手）时，普通拳击可打敌方1、2号位；不加伤害、命中，应急拳与推挡仍只打1号位",
+      "effects": [],
+      "unarmedBasicTargets": "12",
+      "salvage": {
+        "itemId": "cloth",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 10,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
+      }
+    },
+    {
       "id": "work_shirt",
       "name": "耐磨工作衣",
       "slot": "top",
@@ -9672,14 +9732,14 @@
       "name": "拳击",
       "ap": 2,
       "baseEnergy": 0.3,
-      "positions": "12→12",
-      "effectText": "伤害×1.00",
+      "positions": "12→1",
+      "effectText": "伤害×1.00；当前空槽徒手页且穿戴护拳绑带时目标位扩为12",
       "cooldownRounds": 0,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "伤害×1.00"
+      "displayText": "伤害×1.00；当前空槽徒手页且穿戴护拳绑带时可打1、2号位"
     },
     {
       "id": "unarmed_03",
@@ -9736,14 +9796,14 @@
       "name": "连拳",
       "ap": 3,
       "baseEnergy": 0.7,
-      "positions": "12→1",
-      "effectText": "两次独立命中，每击伤害×0.85；本指令同目标经验最多计1次",
+      "positions": "12→12",
+      "effectText": "两次独立命中，每击伤害×0.85；技能允许敌位12，同目标经验最多计1次",
       "cooldownRounds": 2,
       "extraCost": "无",
       "kind": "combat",
       "status": "combat",
       "effects": [],
-      "displayText": "两次独立命中，每击伤害×0.85；本指令同目标经验最多计1次"
+      "displayText": "两次独立命中，每击伤害×0.85；可打敌方1、2号位，同目标经验最多计1次"
     },
     {
       "id": "blade_01",
@@ -11731,5 +11791,15 @@
     ],
     "displacementGearAggregateCap": 40,
     "steadyBonus": 30
-  }
+  },
+  "knowledge": [
+    {
+      "id": "blueprint_knuckle_wraps",
+      "name": "护拳绑带的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    }
+  ]
 }

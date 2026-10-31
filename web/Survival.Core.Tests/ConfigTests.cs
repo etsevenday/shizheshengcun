@@ -32,11 +32,11 @@ public class ConfigTests : TestBase
     {
         Assert.That(ConfigLoader.Validate(Cfg), Is.Empty);
         Assert.That(Cfg.CombatEnabled, Is.True, "用户 2026-10-26 拍板：直接开启，不做开关");
-        Assert.That(Cfg.Items, Has.Count.EqualTo(19 + 26 + 1 + 70 + 61), "v0.4 的19种加 v0.6 新增武器、弹药、尸体、肉、药与原料，加 v1.0 活性物质，加 B4 物理目录 70 件（A07/A12 physicalItems）与新装备 61 件（27 武器 + 34 防具饰品衣物）");
+        Assert.That(Cfg.Items, Has.Count.EqualTo(19 + 26 + 1 + 70 + 61 + 1), "v0.4 的19种加 v0.6 新增武器、弹药、尸体、肉、药与原料，加 v1.0 活性物质，加 B4 物理目录 70 件（A07/A12 physicalItems）与新装备 61 件（27 武器 + 34 防具饰品衣物），加 B7c 护拳绑带（Q64）");
         Assert.That(Cfg.Locations, Has.Count.EqualTo(8));
         Assert.That(Cfg.Edges, Has.Count.EqualTo(8));
         Assert.That(Cfg.Resources, Has.Count.EqualTo(16 + 4), "新增武器柜、旧储物柜、医药补给箱、废弃冷藏箱");
-        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5 + 3 + 1), "新增木矛、木弓、箭矢、工具维护、病毒特效药；v1.0 新增金属矛、弩、弩矢；B4 拆解装备");
+        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5 + 3 + 1 + 1), "新增木矛、木弓、箭矢、工具维护、病毒特效药；v1.0 新增金属矛、弩、弩矢；B4 拆解装备；B7c 护拳绑带（Q64，营区登记默认知识）");
     }
 
     // ───────────── v0.2–v0.4 未被 v0.6 替换的部分 ─────────────

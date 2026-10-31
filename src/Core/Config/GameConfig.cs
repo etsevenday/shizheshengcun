@@ -88,6 +88,8 @@ namespace Survival.Core.Config
         public ProgressionConfig Progression { get; set; } = new ProgressionConfig();
         /// <summary>人物基础防御档（Q63，combat-adjudications.json actorBaseDefense）：本批只接主角，队友/随机候选在 B8。</summary>
         public ActorBaseDefenseConfig ActorBaseDefense { get; set; } = new ActorBaseDefenseConfig();
+        /// <summary>做法知识（Q64 护拳绑带：营区登记默认知识）。知识是集合、不是实物，由存档里的事实给出。</summary>
+        public List<KnowledgeConfig> Knowledge { get; set; } = new List<KnowledgeConfig>();
     }
 
     public sealed class TimeConfig
@@ -427,6 +429,8 @@ namespace Survival.Core.Config
         public double RestoreOwnDurabilityMaxFraction { get; set; }
         public bool RerollDurability { get; set; }
         public bool RequireEmptyDetachedPotWhenTargetIsPot { get; set; }
+        /// <summary>需要的做法知识（knowledge[].id；护拳绑带 blueprint_knuckle_wraps，Q64）；没有知识的配方不列出、不能开工。null 为不需要。</summary>
+        public string? Knowledge { get; set; }
 
         public bool IsBuild => Kind == "build";
         public bool IsRepair => Kind == "repair";
@@ -434,6 +438,15 @@ namespace Survival.Core.Config
         public bool IsSalvage => Kind == "salvage";
         public bool NeedsExplicitPot => PotCatalyst == "explicit_empty_detached_pot";
         public bool NeedsFire => Requirement != null && Requirement.Facility == "fire";
+    }
+
+    /// <summary>一条做法知识：存档 Progress.Flags 有 grantedByFacts 里任一事实（或直接记下 knowledge:id）即已知。</summary>
+    public sealed class KnowledgeConfig
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public List<string> GrantedByFacts { get; set; } = new List<string>();
+        public string Source { get; set; } = "";
     }
 
     public sealed class HealthRulesConfig

@@ -388,7 +388,8 @@ namespace Survival.Core.Engine
             {
                 list.Add(("类型", $"{EquipSlots.Name(g.Slot)}·T{g.Tier}"));
                 var live = g.Effects.Where(EffectLive).ToList();
-                var shown = g.Effects.Count > live.Count || g.Effects.Count == 0;
+                var shown = g.Effects.Count > live.Count || (g.Effects.Count == 0 && g.UnarmedBasicTargets == null);
+                if (g.UnarmedBasicTargets != null) live.Add(new EquipEffectConfig { Key = "combat.unarmedBasicTargets" });   // 护拳绑带：拳路扩展已接入
                 var on = worn ? "生效中" : "穿戴后生效";
                 list.Add(("固定效果", g.EffectText + (live.Count > 0 && !shown ? $"（{on}）" : live.Count > 0 ? $"（部分{on}；其余在相关技能上线后生效）" : "（相关技能上线后生效，当前只显示）")));
             }
@@ -418,6 +419,7 @@ namespace Survival.Core.Engine
             if (Math.Abs(fx.EnergyCostFactor - 1) > 1e-12) combat.Add($"招式E×{Fmt.T(fx.EnergyCostFactor)}");
             if (fx.DisplaceResist != 0) combat.Add($"位移抵抗+{Fmt.T(fx.DisplaceResist)}个百分点（只防拉扯/击退{(fx.DisplaceResistRaw > Config.ActorBaseDefense.DisplacementGearAggregateCap ? $"，合计封顶{Fmt.T(Config.ActorBaseDefense.DisplacementGearAggregateCap)}" : "")}）");
             if (fx.Noise != 0) combat.Add($"噪声{Fmt.SignedT(fx.Noise)}");
+            if (actorId == GameState.PlayerId && WrapsPunchTargets(s) is string wt) combat.Add($"空槽徒手页的普通拳击可打敌方{PosList(wt.Where(char.IsDigit).Select(ch => ch - '0'))}");
             if (combat.Count > 0) lines.Add($"战斗（全身装备合计；攻击类词条只算当前武器页）：{string.Join("，", combat)}{(fx.DisplaceResist != 0 ? "——位移抵抗在我方多人时才有用（只剩你一人不会被移动），其余战斗中生效" : "——战斗中生效")}");
             var names = new Dictionary<string, string>
             {

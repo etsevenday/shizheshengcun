@@ -46,6 +46,8 @@ namespace Survival.Core.Config
         public double[]? DurabilityMaxRange { get; set; }
         public string EffectText { get; set; } = "";
         public List<EquipEffectConfig> Effects { get; set; } = new List<EquipEffectConfig>();
+        /// <summary>护拳绑带（Q64）：穿着时当前空槽徒手页的普通拳击 unarmed_01 目标位改为这里（"12"）；应急拳、推挡不变。其余装备为 null。</summary>
+        public string? UnarmedBasicTargets { get; set; }
         /// <summary>拆解表没有这一行的装备为 null：拒绝拆解（Q46 unknownNewItem）。</summary>
         public SalvageOutputConfig? Salvage { get; set; }
     }

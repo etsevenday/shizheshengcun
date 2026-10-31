@@ -167,10 +167,10 @@ public class B4CatalogTests : TestBase
     public void EQ_Gear34_MatchA05Table()
     {
         var a12 = (JArray)A12()["equipment"]!["gear"]!;
-        // 策划 6dab1bb（答复 Q51）在 A12 新增“缠拳布”knuckle_wraps，导入排在 B7a；导入前只核对已导入的 34 件
+        // 策划 f58ead8（答复 Q64）新增战斗饰品护拳绑带 knuckle_wraps，B7c 导入（共 35 件）；它的效果原文含内部技能 ID，界面文字另写，由 B7cCombatTests CB-Q64c 核对
         var pending = new[] { "knuckle_wraps" };
         Assert.That(a12.Count(j => !pending.Contains((string)j["id"]!)), Is.EqualTo(34));
-        Assert.That(Cfg.Gear, Has.Count.EqualTo(34));
+        Assert.That(Cfg.Gear, Has.Count.EqualTo(35));
         foreach (var j in a12.Where(j => !pending.Contains((string)j["id"]!)))
         {
             var id = (string)j["id"]!;
@@ -190,7 +190,7 @@ public class B4CatalogTests : TestBase
                 Assert.That(InText(g.EffectText, ef.Value), Is.True, $"{id} {ef.Key}={ef.Value} 不在原文“{g.EffectText}”里");
         }
         Assert.That(Cfg.Gear.Count(g => g.Slot == "armor"), Is.EqualTo(8));
-        Assert.That(Cfg.Gear.Count(g => g.Slot == "combat_acc"), Is.EqualTo(8));
+        Assert.That(Cfg.Gear.Count(g => g.Slot == "combat_acc"), Is.EqualTo(9), "8 件 + B7c 护拳绑带");
         Assert.That(Cfg.Gear.Count(g => g.Slot == "top"), Is.EqualTo(6));
         Assert.That(Cfg.Gear.Count(g => g.Slot == "bottom"), Is.EqualTo(6));
         Assert.That(Cfg.Gear.Count(g => g.Slot == "survival_acc"), Is.EqualTo(6));

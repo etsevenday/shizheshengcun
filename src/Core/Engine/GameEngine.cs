@@ -423,6 +423,7 @@ namespace Survival.Core.Engine
                     var batch = Math.Max(1, r.BatchCount);
                     if (batch > 1 && (rc.IsBuild || rc.IsRepair || rc.IsSalvage)) return "建造、维护与拆解每次只能做1件";
                     plan.Batch = batch;
+                    if (RecipeUnknownReason(s, rc) is string unknown) return unknown;
                     foreach (var kv in rc.MinSkills)
                     {
                         var lv = SkillLevel(s, kv.Key);

@@ -45,7 +45,7 @@ public class B7aEquipTests : BattleTestBase
     {
         var rows = ((JArray)Adj()["dismantle"]!["rows"]!).ToDictionary(r => (string)r["itemId"]!);
         var all = AllEquipment().ToList();
-        Assert.That(all, Has.Count.EqualTo(72), "38 件武器槽 + 34 件其他装备");
+        Assert.That(all, Has.Count.EqualTo(73), "38 件武器槽 + 35 件其他装备（B7c 加护拳绑带，Q64：原72+1=73）");
         foreach (var (id, def) in all)
         {
             Assert.That(def, Is.Not.Null, $"{id} 没有拆解表");
@@ -122,7 +122,7 @@ public class B7aEquipTests : BattleTestBase
             Assert.That(rc.Inputs.Sum(kv => kv.Value * values[kv.Key]), Is.EqualTo(def.RecipeValue), outId);
             checkedIds.Add(outId);
         }
-        Assert.That(checkedIds, Is.EquivalentTo(new[] { "stone_knife", "hatchet", "wooden_spear", "wooden_bow", "metal_spear", "crossbow" }));
+        Assert.That(checkedIds, Is.EquivalentTo(new[] { "stone_knife", "hatchet", "wooden_spear", "wooden_bow", "metal_spear", "crossbow", "knuckle_wraps" }), "B7c 加护拳绑带配方（布2+皮革1+纤维2=10）");
     }
 
     [Test]

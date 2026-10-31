@@ -13,6 +13,24 @@ namespace Survival.Core.Engine
     /// </summary>
     public sealed partial class GameEngine
     {
+        /// <summary>做法知识（Q64）：存档里直接记下 knowledge:id，或有它的授予事实（护拳绑带=营区登记 hub_registered）。</summary>
+        public bool KnowsKnowledge(GameState s, string knowledgeId)
+        {
+            if (s.Progress.Flags.Contains("knowledge:" + knowledgeId)) return true;
+            var k = Config.Knowledge.FirstOrDefault(x => x.Id == knowledgeId);
+            return k != null && k.GrantedByFacts.Any(s.Progress.Flags.Contains);
+        }
+
+        /// <summary>配方需要的做法知识还没有时的原因（制作列表不列出这类配方；直接请求时拒绝）；不需要或已知为 null。</summary>
+        public string? RecipeUnknownReason(GameState s, RecipeConfig rc)
+        {
+            if (rc.Knowledge == null || KnowsKnowledge(s, rc.Knowledge)) return null;
+            var k = Config.Knowledge.FirstOrDefault(x => x.Id == rc.Knowledge);
+            return $"还不知道{k?.Name ?? rc.Name + "的做法"}（{k?.Source ?? "后续解锁"}）";
+        }
+
+        public bool RecipeKnown(GameState s, RecipeConfig rc) => RecipeUnknownReason(s, rc) == null;
+
         public const string Crafting = "crafting";
         public const string Medicine = "medicine";
         public const string Gathering = "gathering";

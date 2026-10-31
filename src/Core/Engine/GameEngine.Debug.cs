@@ -183,6 +183,19 @@ namespace Survival.Core.Engine
             return text;
         }
 
+        /// <summary>开发入口（B7c，Q64）：白色护拳绑带 1 件与一次制作的材料（布2、皮革1、纤维2）放当前地面。返回说明。</summary>
+        public string DebugGiveWraps(GameState s)
+        {
+            DebugCreateEquipment(s, "knuckle_wraps", "white", s.CurrentLocation);
+            var rc = Recipe("make_knuckle_wraps");
+            foreach (var kv in rc.Inputs) CreateItems(s, kv.Key, kv.Value, s.CurrentLocation);
+            Normalize(s, s.CurrentLocation);
+            var text = $"开发：护拳绑带1件（白）与一次制作材料（{string.Join("、", rc.Inputs.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"))}）放在{LocName(s.CurrentLocation)}地面"
+                       + (RecipeKnown(s, rc) ? "" : "；做法要营区登记后才会（可点“记下营区登记”）");
+            Emit(s, GameEventKind.Info, text + "。");
+            return text;
+        }
+
         /// <summary>调试面板：在当前地点地面放一批常用物资，用于检查大量物资时的界面。</summary>
         public void DebugFillGround(GameState s)
         {
