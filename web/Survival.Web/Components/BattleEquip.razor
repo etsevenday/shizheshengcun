@@ -12,7 +12,7 @@
     <div class="beq-list">
         @foreach (var slot in EquipSlots.All)
         {
-            var it = e.WornItem(s, GameState.PlayerId, slot);
+            var it = e.WornItem(s, GameEngine.MeId(s), slot);
             <div class="beq-row @(it == null ? "empty" : "")" data-slot="@slot">
                 <span class="beq-slot">@EquipSlots.Name(slot)</span>
                 @if (it == null)
@@ -47,7 +47,7 @@
         if (e.Weapon(it.ItemId) is { } w)
         {
             if (w.UsesMagazine) parts.Add($"弹仓{it.LoadedAmmo}/{w.MagazineCapacity}");
-            else if (w.ConsumesLooseAmmo && w.AmmoId != null) parts.Add($"随身{e.ItemName(w.AmmoId)}{s.Items.Where(i => i.IsCarried && i.ItemId == w.AmmoId).Sum(i => i.Count)}");
+            else if (w.ConsumesLooseAmmo && w.AmmoId != null) parts.Add($"随身{e.ItemName(w.AmmoId)}{s.Items.Where(i => GameEngine.CarriedByMe(s, i) && i.ItemId == w.AmmoId).Sum(i => i.Count)}");
         }
         parts.Add(Ui.KgText(e.ItemGrams(s, it)));
         return string.Join(" · ", parts);

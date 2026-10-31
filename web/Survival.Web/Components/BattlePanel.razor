@@ -91,7 +91,7 @@ else if (b != null)
             @foreach (var t in p.Targets)
             {
                 @* B9（A10 §4.5）：固定写“行动者 → 实际目标”；被保护者接下时写“瞄准A，实际由B承受” *@
-                <div class="pv-route">你（@(GameEngine.PlayerPos(b))号位）→ @(t.Slot)号位 @t.Name@if (t.AimedIndex is int ai && e.BattleEnemyAt(b, ai) is BattleEnemy aimed) {<em>（瞄准@(aimed.Slot)号位@(e.EnemyName(aimed))，实际由它承受）</em>}</div>
+                <div class="pv-route">@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))（@(GameEngine.PlayerPos(b))号位）→ @(t.Slot)号位 @t.Name@if (t.AimedIndex is int ai && e.BattleEnemyAt(b, ai) is BattleEnemy aimed) {<em>（瞄准@(aimed.Slot)号位@(e.EnemyName(aimed))，实际由它承受）</em>}</div>
                 <div class="facts">
                     <div class="fact"><span>目标</span><strong>@(t.Slot)号位 @t.Name</strong></div>
                     <div class="fact"><span>实际命中率</span><strong>@Ui.Pct(t.HitChance)</strong></div>
@@ -127,19 +127,28 @@ else if (b != null)
     else if (G.BattleAllyView != null && G.BattleHover == null)
     {
         @* B9（A10 §4.1）：点我方锚点/队列头像只查看状态，不夺回合、不替换当前行动者 *@
-        var mySpeed = e.PlayerSpeedParts(s, b);
-        var apMax = b.PlayerActing && b.ActivationAp > 0 ? b.ActivationAp : e.NormalActivationAp(s.Player);
+        // B9a：按被查看的那名成员本人取数（不是当前行动者）
+        var vid = G.BattleAllyView;
+        (double Speed, double Base, double Gear, List<string> Status) mySpeed;
+        using (e.FocusOn(s, vid)) mySpeed = e.PlayerSpeedParts(s, b);
+        var vf = b.Fighter(vid);
+        var va = s.Actor(vid);
+        var vAct = GameEngine.ActingAlly(b) == vid;
+        var apMax = vAct && vf.ActivationAp > 0 ? vf.ActivationAp : e.NormalActivationAp(va);
         <div class="detail-scroll">
             <div class="op-head">
-                <div class="eyebrow">战斗第@(b.Round)轮 · 我方@(GameEngine.PlayerPos(b))号位 · 只查看</div>
-                <h2>@(G.BattleAllyView == GameState.PlayerId ? "你" : e.ActorDisplayName(s, G.BattleAllyView))</h2>
+                <div class="eyebrow">战斗第@(b.Round)轮 · 我方@(GameEngine.AllyPos(b, vid))号位 · 只查看</div>
+                <h2>@(vid == GameState.PlayerId ? "你" : e.ActorDisplayName(s, vid))</h2>
             </div>
             <div class="lines">
-                <div><span>健康 / 体力</span><b>@Ui.N(s.Stats.Health)/@Ui.T(s.Stats.HealthMax) · @Ui.N(s.Stats.Energy)/@Ui.T(s.Stats.EnergyMax)</b></div>
-                <div><span>行动点</span><b>@(b.PlayerActing ? $"本次{(b.ActingPursuit ? "追击" : "普通激活")}剩{b.PlayerAp}/{apMax}" : $"等待；每次普通激活{e.NormalActivationAp(s.Player)}AP（战术训练阶位{s.Player.TacticalTier}）")</b></div>
+                <div><span>健康 / 体力</span><b>@Ui.N(va.Stats.Health)/@Ui.T(va.Stats.HealthMax) · @Ui.N(va.Stats.Energy)/@Ui.T(va.Stats.EnergyMax)</b></div>
+                <div><span>行动点</span><b>@(vAct ? $"本次{(b.ActingPursuit ? "追击" : "普通激活")}剩{vf.Ap}/{apMax}" : $"等待；每次普通激活{e.NormalActivationAp(va)}AP（战术训练阶位{va.TacticalTier}）")</b></div>
                 <div><span>有效速度</span><b>@Ui.Speed(mySpeed.Speed)（基础@(Ui.Speed(mySpeed.Base))、装备@(Ui.SignedT(mySpeed.Gear))@(mySpeed.Status.Count > 0 ? "、" + string.Join("、", mySpeed.Status) : "")）</b></div>
-                <div><span>追击进度</span><b>@Ui.T(b.PlayerPursuit)/100</b></div>
-                <div><span>恐慌</span><b>@Ui.N(b.Panic)@(b.Frightened ? "（受惊）" : "")</b></div>
+                <div><span>追击进度</span><b>@Ui.T(vf.Pursuit)/100</b></div>
+                <div><span>恐慌</span><b>@Ui.N(vf.Panic)@(vf.Frightened ? "（受惊）" : "")</b></div>
+                @if (va.Body.Infected) { <div><span>感染</span><b>病毒@(Ui.N(va.Body.VirusLoad))</b></div> }
+                @if (va.Body.BleedTriggers > 0) { <div><span>出血</span><b>@Ui.T(va.Body.BleedDamage)×@va.Body.BleedTriggers</b></div> }
+                @if (GameEngine.AllyProtector(b, vid) is string pg) { <div><span>保护</span><b>@(pg == GameState.PlayerId ? "你" : e.ActorDisplayName(s, pg))护着（接下一次单体攻击）</b></div> }
             </div>
             @if (G.Notice != null) { <div class="blocked">@G.Notice</div> }
         </div>
@@ -151,7 +160,7 @@ else if (b != null)
         var t = focus.HasValue ? e.BattleEnemyAt(b, focus.Value) : null;
         <div class="detail-scroll">
             <div class="op-head">
-                <div class="eyebrow">战斗第@(b.Round)轮 · @(awaiting ? $"你的行动（剩{b.PlayerAp}AP）" : "敌方行动中")</div>
+                <div class="eyebrow">战斗第@(b.Round)轮 · @(awaiting ? $"{(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))}的行动（剩{b.PlayerAp}AP）" : "敌方行动中")</div>
                 <h2>@(t != null && t.Alive ? $"{t.Slot}号位 {e.EnemyName(t)}" : "选择指令")</h2>
                 @if (t == null || !t.Alive) { <p>先在操作台选技能，再把鼠标移到亮起的目标上看预测、点击目标执行；没选技能时点敌卡只查看。</p> }
             </div>
@@ -169,7 +178,7 @@ else if (b != null)
                     <div><span>攻击能力 / 对你命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
                     @{ var plan = G.E.PlanFor(G.S.Battle!, t, G.E.StepOf(t)); var approach = plan is GameEngine.ReachPlan.Approach or GameEngine.ReachPlan.AdvanceThenApproach; }
                     @* 试玩修复 B7d-3：迫近时不再把原意图（可能是咬击）写成“公开意图”，免得误会迫近会咬；Q97：架矛生效才写“会触发你的架矛迎击”（与敌卡意图同源） *@
-                    <div><span>本轮意图</span><b>@G.E.IntentShown(G.S.Battle!, t)@(approach ? $"（迫近先花1AP、算一次主动前移，{(GameEngine.BraceActive(G.S.Battle!) ? "会触发你的架矛迎击（出手时再按武器、射程、耐久与剩余次数判断）；被迎击打死或打断就不再近袭" : "你现在没有生效的架矛，不会被迎击")}；只做一次弱近袭：不咬、不附控制、不改号位；够得着你时的原意图：{G.E.IntentLabel(t, G.S.Battle)}）" : G.E.IntentOutOfReach(G.S.Battle!, t) ? $"（公开意图：{G.E.IntentLabel(t, G.S.Battle)}）" : "")</b></div>
+                    <div><span>本轮意图</span><b>@G.E.IntentShown(G.S.Battle!, t)@(approach ? $"（迫近先花1AP、算一次主动前移，{(GameEngine.BraceActive(G.S.Battle!) ? $"会触发{(GameEngine.AlliesOnField(G.S.Battle!).Count > 1 ? "我方" : "你的")}架矛迎击（出手时再按武器、射程、耐久与剩余次数判断）；被迎击打死或打断就不再近袭" : $"{(GameEngine.AlliesOnField(G.S.Battle!).Count > 1 ? "我方" : "你")}现在没有生效的架矛，不会被迎击")}；只做一次弱近袭：不咬、不附控制、不改号位；够得着你时的原意图：{G.E.IntentLabel(t, G.S.Battle)}）" : G.E.IntentOutOfReach(G.S.Battle!, t) ? $"（公开意图：{G.E.IntentLabel(t, G.S.Battle)}）" : "")</b></div>
                     @* B8b Q91：意图只公开目标范围与“攻击时随机”，不预先写抽中谁（抽中的人在攻击提交后写进战斗日志） *@
                     @if (G.E.IntentTargetNote(G.S, G.S.Battle!, t) is string tn) { <div><span>目标</span><b>@tn</b></div> }
                 </div>

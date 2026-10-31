@@ -1326,9 +1326,42 @@ public sealed class GameSession
     {
         if (State == null || S.Battle == null) return;
         BattleAllyView = BattleAllyView == actorId ? null : actorId;
-        if (!BattleAiming) Notice = null;   // 试玩修复 B9-3
+        Notice = null;   // 试玩修复 B9-3；B9 遗留 3：瞄准中点队列/锚点换查看对象也清掉旧“射程不足”
         if (BattleAllyView != null) BattleTarget = null;
         Notify();
+    }
+
+    /// <summary>
+    /// 敌方逐条行动展示中“刚刚出手的那一只”（队列编码；B9 遗留 1）：敌人一步结算完游标已指向下一项，顶条/底栏按它点名，
+    /// 不再整段只写“敌方行动中”。轮末与轮到我方时清空。
+    /// </summary>
+    public int? BattleShownActor { get; private set; }
+
+    /// <summary>B9a：以友方为目标的技能（TargetMode "ally"）当前选中的友方目标（点我方锚点即提交）。</summary>
+    public string? BattleAllyTarget { get; private set; }
+
+    /// <summary>所选指令要点我方成员当目标（多人时的指挥/医疗/保护，B9a）。</summary>
+    public bool BattleAllyAiming => State != null && S.Battle != null && BattleAction != null && AllyOption() != null;
+
+    private BattleCommandOption? AllyOption() =>
+        E.BattleOptions(S).FirstOrDefault(x => x.Action == BattleAction && x.TargetMode == "ally" && (BattleItem == null || x.ItemInstanceId == BattleItem));
+
+    /// <summary>瞄准友方时可点的我方 actorId。</summary>
+    public IReadOnlyCollection<string> AllyAimTargets() => BattleAllyAiming ? AllyOption()!.AllyTargets : Array.Empty<string>();
+
+    /// <summary>点我方锚点：瞄准友方时点合法目标即提交（一次 requestId）；点非法目标写原因；未瞄准只查看。</summary>
+    public async Task ClickBattleAlly(string actorId, string token)
+    {
+        if (State == null || S.Battle == null || BattleBusy) return;
+        if (!BattleAllyAiming) { ViewBattleAlly(actorId); return; }
+        if (!AllyAimTargets().Contains(actorId))
+        {
+            Notice = E.CommandBlocked(S, new BattleCommand { Action = BattleAction!, ItemInstanceId = BattleItem, AllyTarget = actorId }) ?? "这名成员不是这个技能的目标";
+            Notify();
+            return;
+        }
+        BattleAllyTarget = actorId;
+        await ExecuteBattleCommand(token);
     }
 
     public void OpenBattleDrawer(string? drawer)
@@ -1431,9 +1464,18 @@ public sealed class GameSession
         BattleDrawer = null;
         MedTrayOpen = false;
         BattleAllyView = null;
+        BattleAllyTarget = null;
+        BattleShownActor = null;
     }
 
-    public BattleCommand CurrentBattleCommand() => BattleCommand.Of(BattleAction ?? "", BattleTarget, BattleItem);
+    /// <summary>当前所选指令（B9a：带下指令的成员 = 正在激活的那一名；友方目标技能带所点的我方成员）。</summary>
+    public BattleCommand CurrentBattleCommand()
+    {
+        var c = BattleCommand.Of(BattleAction ?? "", BattleTarget, BattleItem);
+        if (S.Battle != null) c.ActorId = GameEngine.ActingAlly(S.Battle);
+        if (BattleAllyAiming) c.AllyTarget = BattleAllyTarget;
+        return c;
+    }
 
     /// <summary>场上只剩一个敌人时自动选中它（试玩修复 D2）；目标已倒下时清掉。</summary>
     private void AutoTarget()
@@ -1464,6 +1506,7 @@ public sealed class GameSession
         if (BattleAction == action && BattleItem == item) { ClearBattleAction(); return; }
         BattleAction = action;
         BattleItem = item;
+        BattleAllyTarget = null;
         DetailTab = DetailTab.Object;
         Notice = null;
         Notify();
@@ -1526,7 +1569,7 @@ public sealed class GameSession
     {
         BattleTarget = index;
         BattleAllyView = null;
-        if (!BattleAiming) Notice = null;   // 试玩修复 B9-3：换查看对象时不留旧原因
+        Notice = null;   // 试玩修复 B9-3：换查看对象时不留旧原因（B9 遗留 3：瞄准中点队列里别的对象也清）
         DetailTab = DetailTab.Object;
         Notify();
     }
@@ -1547,7 +1590,7 @@ public sealed class GameSession
     public string BattleExecToken()
     {
         var b = S.Battle;
-        return b == null ? "" : $"bt:{b.BattleId}:{b.Round}:{b.Cursor}:{b.PlayerAp}:{b.Log.Count}:{BattleAction}:{BattleTarget}:{BattleItem}";
+        return b == null ? "" : $"bt:{b.BattleId}:{b.Round}:{b.Cursor}:{b.ActiveAlly}:{b.PlayerAp}:{b.Log.Count}:{BattleAction}:{BattleTarget}:{BattleItem}";
     }
 
     /// <summary>执行所选指令（战斗区内的本地“执行”按钮）：执行期间锁定输入；之后逐条展示敌方行动直到轮到玩家或战斗结束。</summary>
@@ -1565,6 +1608,7 @@ public sealed class GameSession
                 // 提交后瞄准收起（R03 §7.4：连点/双击只提交一次，第二击不排队成另一攻击；新目标不复用旧点击）
                 BattleAction = null;
                 BattleItem = null;
+                BattleAllyTarget = null;
                 if (S.Battle != null && BattleTarget != null && S.Battle.Enemies.All(e => e.Index != BattleTarget || !e.Alive)) BattleTarget = null;
                 AutoTarget();
             }
@@ -1633,7 +1677,10 @@ public sealed class GameSession
                 // B9（A10 §6.3）：战斗菜单、系统说明是阅读暂停——逐条展示的下一步敌方行动等它们关上再走，不额外推进
                 while (State != null && S.Battle != null && BattleReadingPause) await Task.Delay(120);
                 if (State == null || S.Battle == null) break;
+                var at = S.Battle.Cursor < S.Battle.Queue.Count ? S.Battle.Queue[S.Battle.Cursor] : (int?)null;
                 var r = E.BattleStep(S);
+                // B9 遗留 1：敌人这一步结算完游标已经往后走，展示停顿期间按“刚出手的那一只”点名
+                BattleShownActor = r.Kind == BattleStepKind.EnemyActed && at > 0 ? at : null;
                 Drain();
                 Save();
                 Notify();

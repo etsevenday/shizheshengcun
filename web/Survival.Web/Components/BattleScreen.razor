@@ -11,7 +11,11 @@
     var b = s.Battle!;
     var dlg = G.DialogueLocked;
     var w = e.CurrentWeapon(s, out var wi);
-    var activeIdx = b.PlayerActing ? 0 : (b.Cursor < b.Queue.Count ? b.Queue[b.Cursor] : -1);
+    // B9a：正在激活的我方成员（主角 0、队友 −k）；没有人在激活时取队列游标上的那一项（没有为 int.MinValue）
+    var acting = GameEngine.ActingAlly(b);
+    var activeIdx = acting != null ? GameEngine.QueueCode(b, acting) : (b.Cursor < b.Queue.Count ? b.Queue[b.Cursor] : int.MinValue);
+    var actorId = acting ?? (activeIdx <= 0 && activeIdx != int.MinValue ? GameEngine.QueueActor(b, activeIdx) : null);
+    var meName = actorId == null || actorId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, actorId);
     var opts = e.BattleOptions(s);
     var sel = G.BattleAction == null ? null : opts.FirstOrDefault(o => o.Action == G.BattleAction && (G.BattleItem == null || o.ItemInstanceId == G.BattleItem));
     var waiting = !e.AwaitingPlayer(s);
@@ -34,12 +38,17 @@
         if (pv.Ok && pv.Targets.Count > 0) _forecast = pv.Targets.ToDictionary(t => t.Index, t => (t.DamageMin, t.DamageMax));
     }
     // 试玩修复 B9-4：对白锁期间 AwaitingPlayer 为假，但轮到的仍是队列游标上的角色——顶条/底栏写真实行动者，不写“敌方行动中”
-    var turnFoe = activeIdx > 0 ? e.BattleEnemyAt(b, activeIdx) : null;
-    var turnName = activeIdx == 0 ? "你" : turnFoe != null ? $"{turnFoe.Pos}号 {e.EnemyName(turnFoe)}" : "敌方";
+    // B9 遗留 1：敌方逐条展示中，游标已越过刚出手的敌人——按会话记下的“刚出手的那一只”点名（第一只与最后一只也写名字）
+    var shownIdx = waiting && !dlg && G.BattleShownActor is int sa ? sa : activeIdx;
+    var turnFoe = shownIdx > 0 ? e.BattleEnemyAt(b, shownIdx) : null;
+    var allyTurn = activeIdx <= 0 && activeIdx != int.MinValue;
+    var turnName = allyTurn && turnFoe == null ? meName : turnFoe != null ? $"{turnFoe.Pos}号 {e.EnemyName(turnFoe)}" : "敌方";
     var actorText = dlg
-        ? (activeIdx == 0 ? $"你 · {(b.ActingPursuit ? "追击" : "普通激活")} · 读完对话再行动" : $"{turnName} · 对话中，时间未推进")
-        : waiting ? (turnFoe != null ? $"敌方行动中：{turnName}" : "敌方行动中") : $"你 · {(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}";
-    var actorWait = dlg ? activeIdx != 0 : waiting;
+        ? (allyTurn ? $"{meName} · {(b.ActingPursuit ? "追击" : "普通激活")} · 读完对话再行动" : $"{turnName} · 对话中，时间未推进")
+        : waiting ? (turnFoe != null ? $"敌方行动中：{turnName}" : "敌方行动中") : $"{meName} · {(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}";
+    var actorWait = dlg ? !allyTurn : waiting;
+    var allyAim = G.BattleAllyAiming;
+    var allyAimSet = G.AllyAimTargets();
 }
 
 <div class="bfs" role="region" aria-label="@($"战斗 · 第{b.Round}轮")">
@@ -70,22 +79,24 @@
             @for (var k = 0; k < b.Queue.Count; k++)
             {
                 var qi = b.Queue[k];
-                var be = qi == 0 ? null : e.BattleEnemyAt(b, qi);
-                if (qi != 0 && (be == null || !be.Alive)) continue;
+                var qAlly = qi <= 0 ? GameEngine.QueueActor(b, qi) : null;
+                var be = qi <= 0 ? null : e.BattleEnemyAt(b, qi);
+                if (qi > 0 && (be == null || !be.Alive)) continue;
+                if (qi <= 0 && (qAlly == null || !GameEngine.AllyInBattle(b, qAlly))) continue;   // B9a：战死的队友不再列
                 var chase = GameEngine.IsPursuitSlot(b, k);
-                var now = qi == activeIdx && b.Cursor == k;
-                var done = k < b.Cursor;
-                var qName = qi == 0 ? "你" : $"{be!.Pos}号 {e.EnemyName(be)}";
+                var now = (qi == activeIdx && b.Cursor == k) || (waiting && qi > 0 && qi == G.BattleShownActor && b.Cursor == k + 1);
+                var done = k < b.Cursor && !now;
+                var qName = qi <= 0 ? (qAlly == GameState.PlayerId ? "你" : $"{GameEngine.AllyPos(b, qAlly!)}号 {e.ActorDisplayName(s, qAlly!)}") : $"{be!.Pos}号 {e.EnemyName(be)}";
                 var qSpeed = Ui.Speed(b.Initiative.ElementAtOrDefault(k));
                 if (shown >= 8) { hidden.Add($"{(chase ? "追击·" : "")}{qName}（速度{qSpeed}）"); continue; }
                 if (shown > 0) { <span class="bq-arrow" aria-hidden="true">→</span> }
                 shown++;
                 var qIdx = qi;
-                <button type="button" role="listitem" class="q-av @(now ? "now" : "") @(done ? "done" : "") @(qi == 0 ? "me" : "q-foe") @(chase ? "chase" : "")"
-                        title="@($"{qName}：轮初有效速度{qSpeed}{(qi == 0 ? $"（{SpeedSource(mySpeed)}）" : "")}{(chase ? "；追击：速度优势攒满100进度，正常激活之后多一次2AP" : "；正常激活")}{(now ? "；正在行动" : done ? "；已行动" : "")}。点击只查看，不改顺序")"
+                <button type="button" role="listitem" class="q-av @(now ? "now" : "") @(done ? "done" : "") @(qi <= 0 ? "me" : "q-foe") @(chase ? "chase" : "")"
+                        title="@($"{qName}：轮初有效速度{qSpeed}{(qi <= 0 && qAlly == actorId ? $"（{SpeedSource(mySpeed)}）" : "")}{(chase ? "；追击：速度优势攒满100进度，正常激活之后多一次2AP" : "；正常激活")}{(now ? "；正在行动" : done ? "；已行动" : "")}。点击只查看，不改顺序")"
                         aria-label="@($"{(chase ? "追击 " : "")}{qName}{(now ? "，行动中" : done ? "，已行动" : "")}")"
                         @onclick="() => QueueClick(qIdx)">
-                    <span class="q-art" aria-hidden="true">@if (qi == 0) {<img src="img/portraits/protagonist.svg" alt="" />} else { @Icons.Markup("enemy_" + be!.EnemyId) }</span>
+                    <span class="q-art" aria-hidden="true">@if (qi <= 0) {<img src="img/portraits/protagonist.svg" alt="" />} else { @Icons.Markup("enemy_" + be!.EnemyId) }</span>
                     <span class="q-name">@qName</span>
                     @if (chase) { <span class="q-chase bdg" aria-hidden="true">追</span> }
                 </button>
@@ -98,7 +109,7 @@
            按我方真实槽（Allies）与敌人真实号位数据驱动渲染：空位画空锚点，人少、死亡、悬停、读数变长都不重排、不跳位。 *@
         <section class="bfs-scene" inert="@dlg" aria-label="战场：我方从左到右4、3、2、1号位，敌方从左到右1、2、3、4号位">
             <div class="bfs-side ally" aria-label="我方">
-                @for (var p = slotCount; p >= 1; p--) { @AllyAnchor(p, activeIdx) }
+                @for (var p = slotCount; p >= 1; p--) { @AllyAnchor(p, activeIdx, allyAim, allyAimSet, token, locked) }
             </div>
             <div class="bfs-mid" aria-hidden="true"><span>VS</span></div>
             <div class="bfs-side foes" aria-label="敌方">
@@ -113,7 +124,7 @@
             <div class="bc-who" aria-label="当前角色">
                 <div class="bc-who-head">
                     <span class="bc-face" aria-hidden="true"><img src="img/portraits/protagonist.svg" alt="" /></span>
-                    <span class="bc-who-name"><b>你 · @(GameEngine.PlayerPos(b))号位</b><small class="@(actorWait ? "" : "now")">@(actorWait ? "等待轮到你" : dlg ? "读完对话再行动" : $"{(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}")</small></span>
+                    <span class="bc-who-name"><b>@meName · @(GameEngine.PlayerPos(b))号位</b><small class="@(actorWait ? "" : "now")">@(actorWait ? (GameEngine.AlliesOnField(b).Count > 1 ? "等待轮到我方" : "等待轮到你") : dlg ? "读完对话再行动" : $"{(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}")</small></span>
                 </div>
                 <div class="bc-who-lines">
                     <span title="体力">体力 @Ui.N(s.Stats.Energy)/@Ui.T(s.Stats.EnergyMax)</span>
@@ -121,7 +132,7 @@
                     @if (b.PlayerGuard) { <span class="good" title="下一次直接伤害减免">@(b.PlayerGuardSourceId != null ? "盾格挡" : "防御")×@Ui.T(b.PlayerGuardFactor)</span> }
                 </div>
                 <div class="bc-gear" aria-label="战斗装备">
-                    @{ var armor = e.WornItem(s, GameState.PlayerId, EquipSlots.Armor); var trinket = e.WornItem(s, GameState.PlayerId, EquipSlots.CombatAccessory); }
+                    @{ var armor = e.WornItem(s, GameEngine.MeId(s), EquipSlots.Armor); var trinket = e.WornItem(s, GameEngine.MeId(s), EquipSlots.CombatAccessory); }
                     <span class="bc-gear-slot" title="@(wi == null ? "本页：拳" : $"本页武器：{w.Name}#{wi.InstanceId}")">@Icons.Markup(wi?.ItemId ?? "fists")</span>
                     <span class="bc-gear-slot @(armor == null ? "none" : "")" title="@(armor == null ? "防具：空" : $"防具：{e.ItemName(armor.ItemId)}#{armor.InstanceId}{(armor.Durability != null ? $"，耐久{GameEngine.DurabilityText(armor)}" : "")}")">@if (armor != null) { @Icons.Markup(armor.ItemId) } else { <i class="bdg">甲</i> }</span>
                     <span class="bc-gear-slot @(trinket == null ? "none" : "")" title="@(trinket == null ? "战斗饰品：空" : $"战斗饰品：{e.ItemName(trinket.ItemId)}#{trinket.InstanceId}")">@if (trinket != null) { @Icons.Markup(trinket.ItemId) } else { <i class="bdg">饰</i> }</span>
@@ -142,7 +153,7 @@
                             warn,
                             warn == null && pi?.Durability != null ? $"耐久{GameEngine.DurabilityText(pi)}" : null,
                             pw.UsesMagazine && pi != null ? $"弹{pi.LoadedAmmo}/{pw.MagazineCapacity}" : null,
-                            pw.ConsumesLooseAmmo ? $"箭{s.Items.Where(i => i.IsCarried && i.ItemId == pw.AmmoId).Sum(i => i.Count)}" : null,
+                            pw.ConsumesLooseAmmo ? $"箭{s.Items.Where(i => GameEngine.CarriedByMe(s, i) && i.ItemId == pw.AmmoId).Sum(i => i.Count)}" : null,
                             pi == null ? "空槽·拳" : null,
                         }.Where(x => x != null));
                         <button type="button" role="tab" class="bc-tab @(onPage ? "on" : "")" aria-selected="@onPage" data-page="@(page)"
@@ -207,7 +218,7 @@
         <footer class="bfs-feed" inert="@dlg" aria-live="polite">
             @if (dlg)
             {
-                <span class="bx-hint">对话中，时间未推进；读完后@(activeIdx == 0 ? "轮到你行动" : $"{turnName}继续行动")</span>
+                <span class="bx-hint">对话中，时间未推进；读完后@(allyTurn ? $"轮到{meName}行动" : $"{turnName}继续行动")</span>
             }
             else if (waiting)
             {
@@ -220,6 +231,7 @@
             else if (sel != null)
             {
                 var p = e.PreviewCommand(s, G.CurrentBattleCommand());
+                @if (allyAim) { <span class="bx-hint">点亮起的我方成员指定目标@(p.Ok ? "；直接确认＝对自己" : "")</span> }
                 <span class="bx-hint @(p.Ok ? "" : "warn")" title="@(p.Ok ? string.Join("；", p.Notes) : p.Reason)">@(p.Ok ? (p.RetreatChance.HasValue ? $"成功率{Ui.Pct(p.RetreatChance.Value)}" : p.Notes.FirstOrDefault() ?? ShortName(sel)) : p.Reason)</span>
                 <button type="button" class="bx-go" id="bt-confirm" disabled="@(!p.Ok || locked)" title="@(p.Ok ? "点击确认才提交；同一指令只提交一次" : p.Reason)"
                         @onclick="() => Exec(token)">@(sel.Action == "end_turn" ? $"确认结束行动 · 剩余{p.Ap}AP清零" : $"确认 · {ShortName(sel)} · {p.Ap}AP")</button>
@@ -286,7 +298,7 @@
     /// 我方锚点（A10 §2.1/§4.1）：按我方真实槽数据驱动——空槽画空锚点；有人的画立绘、脚下生命/体力与状态。
     /// 现在只有主角会在号位上（队友入场是 B9a）；队友的号位到时由同一个函数渲染，点击只查看、不夺回合。
     /// </summary>
-    private RenderFragment AllyAnchor(int pos, int activeIdx) => __builder =>
+    private RenderFragment AllyAnchor(int pos, int activeIdx, bool allyAim, IReadOnlyCollection<string> allyAimSet, string token, bool locked) => __builder =>
     {
         var s = G.S;
         var e = G.E;
@@ -300,27 +312,33 @@
             return;
         }
         var me = id == GameState.PlayerId;
-        var acting = me && activeIdx == 0;
+        // B9a：每名在场成员一个锚点；正在激活的那一名金框、带 AP；队友显示自己的生命/体力与状态
+        var acting = activeIdx == GameEngine.QueueCode(b, id) && GameEngine.ActingAlly(b) == id;
         var viewing = G.BattleAllyView == id;
         var name = me ? "你" : e.ActorDisplayName(s, id);
-        var st = me ? s.Stats : s.Actors.TryGetValue(id, out var act) ? act.Stats : s.Stats;
-        var apMax = b.PlayerActing && b.ActivationAp > 0 ? b.ActivationAp : e.NormalActivationAp(s.Player);
-        <div class="anc ally @(acting ? "acting" : "") @(viewing ? "selected" : "")" data-slot="@pos" role="button" tabindex="0" aria-pressed="@viewing"
-             aria-label="@($"我方{pos}号位 {name}，健康{Ui.N(st.Health)}/{Ui.T(st.HealthMax)}，体力{Ui.N(st.Energy)}{(acting ? "，行动中" : "")}")"
-             title="点击在右侧查看状态（只查看，不改变行动顺序）" @onclick="() => G.ViewBattleAlly(id)" @onkeydown="ev => AllyKey(ev, id)">
-            <div class="anc-top" title="@(b.PlayerActing && me ? $"本次{(b.ActingPursuit ? "追击" : "普通激活")}剩{b.PlayerAp}AP（不带入下次）" : "还没轮到；行动顺序见上方队列")">
-                @if (me) { <span class="anc-ap">@(acting ? $"{(b.ActingPursuit ? "追击" : "行动中")} {b.PlayerAp}/{apMax}AP" : "等待")</span> }
+        var st = s.Actors.TryGetValue(id, out var act) ? act.Stats : s.Stats;
+        var fa = b.Fighter(id);
+        var apMax = fa.Acting && fa.ActivationAp > 0 ? fa.ActivationAp : e.NormalActivationAp(s.Actor(id));
+        var targetable = allyAim && allyAimSet.Contains(id);
+        var notTarget = allyAim && !targetable;
+        <div class="anc ally @(acting ? "acting" : "") @(viewing ? "selected" : "") @(targetable ? "targetable" : "") @(notTarget ? "unreachable" : "")" data-slot="@pos" data-actor="@id" role="button" tabindex="0" aria-pressed="@viewing"
+             aria-label="@($"我方{pos}号位 {name}，健康{Ui.N(st.Health)}/{Ui.T(st.HealthMax)}，体力{Ui.N(st.Energy)}{(acting ? "，行动中" : "")}{(targetable ? "，可作为目标" : "")}")"
+             title="@(targetable ? "点击即对他执行所选技能" : notTarget ? "不是所选技能的目标" : "点击在右侧查看状态（只查看，不改变行动顺序）")" @onclick="() => ClickAlly(id, token, locked)" @onkeydown="ev => AllyKey(ev, id)">
+            <div class="anc-top" title="@(acting ? $"本次{(b.ActingPursuit ? "追击" : "普通激活")}剩{fa.Ap}AP（不带入下次）" : "还没轮到；行动顺序见上方队列")">
+                <span class="anc-ap">@(acting ? $"{(b.ActingPursuit ? "追击" : "行动中")} {fa.Ap}/{apMax}AP" : "等待")</span>
             </div>
             <div class="anc-head">@if (acting) {<span class="anc-ptr" aria-hidden="true">▼</span>}<span class="anc-slot bdg">@(pos)号</span><b>@name</b></div>
             <div class="anc-art">
                 <img src="img/portraits/protagonist.svg" alt="" draggable="false" />
-                @if (me) { var cw = e.CurrentWeapon(s, out var cwi); <span class="anc-weapon" title="@(cwi == null ? "当前页：拳" : $"当前页：{cw.Name}#{cwi.InstanceId}")">@Icons.Markup(cwi?.ItemId ?? "fists")</span> }
+                @{ WeaponConfig cw; ItemInstance? cwi; using (e.FocusOn(s, id)) cw = e.CurrentWeapon(s, out cwi); }
+                <span class="anc-weapon" title="@(cwi == null ? "当前页：拳" : $"当前页：{cw.Name}#{cwi.InstanceId}")">@Icons.Markup(cwi?.ItemId ?? "fists")</span>
+                @if (targetable) { <span class="anc-aim" aria-hidden="true">⌖</span> }
             </div>
             <div class="anc-foot">
                 <div class="anc-nums"><span title="健康">♥@(Ui.N(st.Health))</span><span title="体力">体@(Ui.N(st.Energy))</span></div>
                 <div class="track hp"><i style="width:@Ui.Bar(st.Health, st.HealthMax)%"></i></div>
                 <div class="track en"><i style="width:@Ui.Bar(st.Energy, st.EnergyMax)%"></i></div>
-                @if (me) { <div class="anc-chips">@AllyChips()</div> }
+                <div class="anc-chips">@AllyChips(id)</div>
             </div>
         </div>
     };
@@ -330,11 +348,19 @@
         if (ev.Key is "Enter" or " ") G.ViewBattleAlly(id);
     }
 
+    /// <summary>点我方锚点：瞄准友方技能时提交（执行锁期间不受理），否则只查看。</summary>
+    private async Task ClickAlly(string id, string token, bool locked)
+    {
+        if (G.BattleAllyAiming && locked) return;
+        await G.ClickBattleAlly(id, token);
+    }
+
     /// <summary>主角脚下的状态角标（短徽标，完整说明在右侧对象信息）：防御/格挡、架矛、蓄力、失衡、减速、出血、感染等。</summary>
-    private RenderFragment AllyChips() => __builder =>
+    private RenderFragment AllyChips(string id) => __builder =>
     {
         var s = G.S;
         var b = s.Battle!;
+        using var _focus = G.E.FocusOn(s, id);   // B9a：按这名成员本人的状态画角标
         if (b.PlayerGuard) { <span class="st good bdg" title="@($"{(b.PlayerGuardSourceId != null ? "盾格挡" : "防御")}：下一次直接伤害×{Ui.T(b.PlayerGuardFactor)}")">@(b.PlayerGuardSourceId != null ? "盾" : "防")×@Ui.T(b.PlayerGuardFactor)</span> }
         if (b.BraceCharges > 0) { <span class="st good bdg" title="架矛：敌人主动前移后迎击">架矛×@b.BraceCharges</span> }
         if (b.CounterFactor > 0) { <span class="st good bdg" title="反击架势">反击</span> }
@@ -473,7 +499,7 @@
     /// <summary>点队列头像：敌人只固定查看，自己/队友在右侧看状态；不改顺序、不夺回合。</summary>
     private void QueueClick(int qi)
     {
-        if (qi == 0) G.ViewBattleAlly(GameState.PlayerId);
+        if (qi <= 0) G.ViewBattleAlly(GameEngine.QueueActor(G.S.Battle!, qi) ?? GameState.PlayerId);
         else G.PickBattleTarget(qi);
     }
 
@@ -484,7 +510,7 @@
     private string PursuitCondition(BattleState b)
     {
         var e = G.E;
-        var parts = new List<string> { $"你{Ui.T(b.PlayerPursuit)}/100" };
+        var parts = GameEngine.AlliesOnField(b).Select(id => $"{(id == GameState.PlayerId ? "你" : G.E.ActorDisplayName(G.S, id))}{Ui.T(b.Fighter(id).Pursuit)}/100").ToList();
         parts.AddRange(b.Alive.OrderBy(x => x.Pos).Select(x => $"{x.Pos}号{e.EnemyName(x)}{Ui.T(x.PursuitProgress)}/100"));
         return "追击条件：每轮初按“自己的轮初速度÷对方最快者−1”×50 攒进度，满100在本轮正常激活之后多一次2AP（每轮至多一次）；速度变化从下轮起算。现在进度：" + string.Join("，", parts);
     }
@@ -504,7 +530,7 @@
     private int CarriedFor(BattleCommandOption o)
     {
         var itemId = G.E.Config.CombatActions.FirstOrDefault(a => a.Id == o.Action)?.ItemId;
-        return itemId == null ? 0 : G.S.Items.Where(i => i.IsCarried && i.ItemId == itemId).Sum(i => i.Count);
+        return itemId == null ? 0 : G.S.Items.Where(i => GameEngine.CarriedByMe(G.S, i) && i.ItemId == itemId).Sum(i => i.Count);
     }
 
     private void CancelAim()
@@ -580,7 +606,7 @@
         var on = sel != null && sel.Action == o.Action && sel.ItemInstanceId == o.ItemInstanceId;
         var (art, glyph, qty) = CmdArt(o, wi, w);
         var oo = o;
-        var range = o.TargetMode == "area" ? "1、2号位群攻" : o.TargetMode == "suffix" ? (o.Targets.Count > 0 ? $"点起点打到4号位（可选起点{o.Targets.Count}个）" : "当前没有可选目标") : o.TargetMode == "pair" ? (o.Targets.Count > 0 ? "相邻双位（点12或23）" : "当前没有可选目标") : o.NeedsTarget ? (o.Targets.Count > 0 ? $"可选目标{o.Targets.Count}个" : "当前没有可选目标") : o.Action == "swap" ? "我方站位" : "自用/无目标";
+        var range = o.TargetMode == "ally" ? (o.AllyTargets.Count > 0 ? $"点我方成员（可选{o.AllyTargets.Count}名）" : "当前没有可选的友方") : o.TargetMode == "area" ? "1、2号位群攻" : o.TargetMode == "suffix" ? (o.Targets.Count > 0 ? $"点起点打到4号位（可选起点{o.Targets.Count}个）" : "当前没有可选目标") : o.TargetMode == "pair" ? (o.Targets.Count > 0 ? "相邻双位（点12或23）" : "当前没有可选目标") : o.NeedsTarget ? (o.Targets.Count > 0 ? $"可选目标{o.Targets.Count}个" : "当前没有可选目标") : o.Action == "swap" ? "我方站位" : "自用/无目标";
         @* 试玩修复 M150：不可用的指令真正禁用（冷却中、AP 不足……都不进入瞄准），点它只在右栏写原因；悬停照样写原因 *@
         <button type="button" id="@($"cmd-{o.Action}{(o.ItemInstanceId is int ii ? "-" + ii : "")}")" class="cmdt @(on ? "on" : "") @(o.Available ? "" : "off") @(o.NodeId != null || o.Action == "desperate_punch" ? "skill" : "plain")" disabled="@locked" aria-disabled="@(!o.Available)" data-level="@(level > 0 ? level : null)"
                 @onmouseenter="() => SetHoverSkill(oo.Action)" @onmouseleave="() => SetHoverSkill(null)" @onfocus="() => SetHoverSkill(oo.Action)" @onblur="() => SetHoverSkill(null)"
@@ -606,7 +632,7 @@
         string? Qty(string id)
         {
             var itemId = e.Config.CombatActions.FirstOrDefault(a => a.Id == id)?.ItemId;
-            return itemId == null ? null : $"×{G.S.Items.Where(i => i.IsCarried && i.ItemId == itemId).Sum(i => i.Count)}";
+            return itemId == null ? null : $"×{G.S.Items.Where(i => GameEngine.CarriedByMe(G.S, i) && i.ItemId == itemId).Sum(i => i.Count)}";
         }
         string ItemArt(string id) => e.Config.CombatActions.FirstOrDefault(a => a.Id == id)?.ItemId ?? "placeholder";
         return o.Action switch

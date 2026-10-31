@@ -276,5 +276,20 @@ namespace Survival.Core.Engine
             Emit(s, GameEventKind.Info, text);
             return text;
         }
+
+        /// <summary>
+        /// 开发入口（B9a）：给每名存活同行队友的随身发药品（绷带、医用纱布、生理盐水各 2），用于试玩队友的医疗技能（R03 §3 只取施术者本人随身）。
+        /// 给队友递物品的正式入口在 B10。不校验五卡与负重。
+        /// </summary>
+        public string DebugGiveCompanionMeds(GameState s)
+        {
+            var who = ActiveCompanions(s).Select(r => r.ActorId).ToList();
+            foreach (var id in who)
+                foreach (var item in new[] { "bandage", "medical_gauze", "saline" })
+                    CreateItems(s, item, 2, ItemInstance.CarriedOwner(id));
+            var text = who.Count == 0 ? "开发：没有同行队友" : $"开发：{string.Join("、", who.Select(id => ActorDisplayName(s, id)))}随身各加绷带、医用纱布、生理盐水各2（只供试玩队友医疗技能）。";
+            Emit(s, GameEventKind.Info, text);
+            return text;
+        }
     }
 }

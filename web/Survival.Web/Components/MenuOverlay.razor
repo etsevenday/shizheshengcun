@@ -137,6 +137,15 @@
                     }
                     <button class="secondary small-btn" @onclick="() => DevParty(st => G.E.DebugAddEscort(st))">加入通用护送员（跳过登记与30分钟）</button>
                 </div>
+                @* B9a：一步组出 2—4 人同行队伍（记下 C4 事实、按配置顺序编入命名角色），下一场战斗全员按编队号位入场 *@
+                <div class="btn-row">
+                    @for (var k = 2; k <= 4; k++)
+                    {
+                        var kk = k;
+                        <button class="secondary small-btn" @onclick="() => DevParty(st => G.E.DebugQuickParty(st, kk))">组@(kk)人队（C4，直接编入）</button>
+                    }
+                    <button class="secondary small-btn" @onclick="() => DevParty(st => G.E.DebugGiveCompanionMeds(st))">同行队友各发药品（绷带/纱布/盐水各2）</button>
+                </div>
                 @foreach (var r in G.S.Roster.Where(r => !r.Dead))
                 {
                     var rid = r.ActorId;

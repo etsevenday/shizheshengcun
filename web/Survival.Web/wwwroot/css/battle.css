@@ -311,9 +311,13 @@
 .q-av.q-foe { background: #331f1b; }
 .q-art { flex: 0 0 auto; }
 /* 6. 发布时注入的构建号固定在右下角：底部按钮让开它 */
-.bfs-feed { padding-right: 76px; }
+.bfs-feed { padding-right: 104px; }   /* B9 遗留 2：线上构建号（“构建 xxxxxxx”约 80px 宽）与“结束行动”下沿仍重叠 4—6px，再让出 28px */
 /* M220：1280 档意图框加宽（锚点左右内距 3px、意图框 2px），图标与短名同一行，伤害区间独占第二行 */
 .anc { padding-left: 3px; padding-right: 3px; }
 .anc-intent { padding: 1px 2px; }
 .anc-intent .intent-ico { width: 16px; height: 16px; font-size: 12px; }
 .anc-brief-row { display: flex; align-items: center; gap: 2px; min-width: 0; }
+/* ── B9a 我方多人：以友方为目标的技能（指挥/医疗/保护）瞄准时，可选的我方成员绿框、不可选的斜线 ── */
+.anc.ally.targetable { border-color: #6fae5a; box-shadow: inset 0 0 0 3px #6fae5a; cursor: crosshair; }
+.anc.ally.targetable .anc-aim { color: #3f8f3a; }
+.anc.ally.unreachable { cursor: not-allowed; background-image: repeating-linear-gradient(135deg, #00000018 0 6px, transparent 6px 12px); }
