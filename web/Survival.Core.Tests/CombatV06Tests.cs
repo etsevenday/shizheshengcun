@@ -766,13 +766,14 @@ public class CombatV06Tests : BattleTestBase
         Ready(s);
         Arm(s, "hatchet");
         var t = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
-        Assert.That(t.AccuracyRating, Is.EqualTo(27));
-        Assert.That(t.HitChance, Is.EqualTo(27.0 / 52).Within(1e-12), "51.92%");
+        // B7c 按 Q67 改写：我方攻击能力另加基础 8（27→35，51.92%→58.33%）
+        Assert.That(t.AccuracyRating, Is.EqualTo(35));
+        Assert.That(t.HitChance, Is.EqualTo(35.0 / 60).Within(1e-12), "58.33%");
         Assert.That(GameEngine.HitChance(20, 36), Is.EqualTo(20.0 / 56).Within(1e-12), "普通尸对玩家35.71%");
         // B5（A06 §1）：熟练度最高10级、简易斧练“斧”；“趋近但不超过1”改按公式核对
         s.Skills["axe"].Level = 100000;
         var hi = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
-        Assert.That(hi.AccuracyRating, Is.EqualTo(24 + 3 * 10), "超过10级按10级");
+        Assert.That(hi.AccuracyRating, Is.EqualTo(24 + 3 * 10 + 8), "超过10级按10级（+8 为 Q67 基础加值）");
         Assert.That(GameEngine.HitChance(24 + 3 * 100000, 25), Is.LessThan(1).And.GreaterThan(0.999));
         Assert.That(hi.CritChance, Is.LessThan(1), "暴击概率 C/(C+100) 也不超过1");
         Assert.That(GameEngine.HitChance(1, 1000), Is.LessThan(0.05), "无5%下限");

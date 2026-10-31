@@ -402,8 +402,8 @@ public class B6CombatTests : BattleTestBase
         var fx = E.EquipmentEffects(s, GameState.PlayerId, 1);
         Assert.That(fx.Accuracy, Is.EqualTo(7), "校准+4（本页武器）+ 稳手指环+3");
         var t = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
-        var acc = 24 + 3 * 1 + fx.Accuracy;
-        Assert.That(t.AccuracyRating, Is.EqualTo(acc).Within(1e-9), "A = 武器A + 3L + 装备命中");
+        var acc = 24 + 3 * 1 + 8 + fx.Accuracy;   // Q67 起我方攻击能力另加基础 8
+        Assert.That(t.AccuracyRating, Is.EqualTo(acc).Within(1e-9), "A = 武器A + 3L + 8 + 装备命中");
         Assert.That(t.HitChance, Is.EqualTo(acc / (acc + 20)).Within(1e-12), "P = A/(A+D)");
         Assert.That(t.CritRating, Is.EqualTo(5 + 0.3 + fx.Crit).Within(1e-9), "C = 武器C + 0.3L + 装备暴击");
         Assert.That(t.CritChance, Is.EqualTo(t.CritRating / (t.CritRating + 100)).Within(1e-12));

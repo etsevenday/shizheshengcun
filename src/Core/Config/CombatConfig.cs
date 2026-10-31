@@ -550,10 +550,12 @@ namespace Survival.Core.Config
         public double EnemyCritRating { get; set; }
         public string RandomDamage { get; set; } = "";
         public double LowEnergyExclusive { get; set; }
-        public double LowEnergyAccuracyFactor { get; set; } = 1;
         public double LowEnergySpeedPenalty { get; set; }
         public double LowWakefulnessInclusive { get; set; }
-        public double LowWakefulnessAccuracyFactor { get; set; } = 1;
+        /// <summary>我方可控角色攻击能力的基础加值 8（Q67：攻击能力项，不是命中率百分点；不加给敌人）。</summary>
+        public double PlayerAccuracyAssistance { get; set; }
+        /// <summary>疲劳系数（Q67）：支付本次成本后 E&lt;4 或 S≤20 时统一一次 ×0.95，双低不叠乘；取代旧两条 ×0.85。</summary>
+        public double FatigueAccuracyFactor { get; set; } = 1;
         public double LowWakefulnessSpeedPenalty { get; set; }
         public double StaggerAccuracyFactor { get; set; } = 1;
         public bool GuardStacks { get; set; }

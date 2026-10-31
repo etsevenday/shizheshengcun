@@ -313,7 +313,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 某攻击对某目标的命中、暴击与伤害区间（R03 §4；体力按支付本次成本后；不推进随机；预览与结算同源）：
-        /// 攻击能力 A=max(1,(武器A+3L+装备命中+技能/标记/鼓舞加成)×招式×身体)，命中 P=A/(A+max(1,目标闪避))；暴击 C=max(0,武器C+0.3L+装备暴击)；
+        /// 攻击能力 A=max(1,(武器A+3L+8+装备命中+技能/标记/鼓舞加成)×招式×疲劳×恐慌×失衡)，命中 P=A/(A+max(1,目标闪避))；暴击 C=max(0,武器C+0.3L+装备暴击)；
         /// 直接伤害=max(0, 抽值×(1+0.035L)×技能倍率×处决×伤害增益(≤1.5)×虚弱 + 平加 − max(0,护甲−破甲−穿透))，再乘格挡。
         /// 伤害增益同名取强、不同来源乘算：装备伤害乘数、总攻令、斧蓄力、武器特性（狩猎/精校/救援）。
         /// </summary>
@@ -326,7 +326,8 @@ namespace Survival.Core.Engine
             var gear = EquipmentEffects(s, GameState.PlayerId, sp.Page);
             var marked = EnemyMarked(b, t);
             var bonus = sp.AccuracyBonus + (marked ? t.MarkBonus + w.Trait("markedAccuracy") : 0) + (!sp.Reaction && InspireActive(b) ? b.InspireBonus : 0);
-            var acc = Math.Max(m.MinAccuracy, (w.AccuracyRating + SkillAccuracyBonus(lv) + gear.Accuracy + bonus) * sp.AccuracyFactor * BodyAccuracyFactor(s, b, energyAfter));
+            // Q67：我方攻击能力另加基础 8（攻击能力项，不是命中率百分点）；疲劳一次×0.95
+            var acc = Math.Max(m.MinAccuracy, (w.AccuracyRating + SkillAccuracyBonus(lv) + m.PlayerAccuracyAssistance + gear.Accuracy + bonus) * sp.AccuracyFactor * BodyAccuracyFactor(s, b, energyAfter));
             var crit = Math.Max(0, w.CritRatingBase + m.CritAccuracyPerLevel * lv + gear.Crit);
             var buff = 1 + gear.DamageMultiplier;
             if (!sp.Reaction && AllOutActive(b)) buff *= b.AllOutFactor;

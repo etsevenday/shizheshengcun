@@ -33,7 +33,8 @@ else
             <div><span>攻击能力 / 对你命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
             <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)</b></div>
             <div><span>开战武器</span><b>@(wi == null ? $"{pageName}空（拳）" : $"{pageName} {weapon.Name}#{wi.InstanceId}")（战前可在右栏人物“装备”区调整，战斗中可切到@(otherName)页）</b></div>
-            <div><span>你的命中率</span><b>@Ui.Pct(GameEngine.HitChance(weapon.AccuracyRating + e.SkillAccuracyBonus(e.SkillLevel(s, weapon.SkillId)), ec.Dodge))（命中能力@(Ui.T(weapon.AccuracyRating + e.SkillAccuracyBonus(e.SkillLevel(s, weapon.SkillId))))）</b></div>
+            @{ var hit = e.OutOfBattleHit(s, ec); }
+            <div title="开战默认页普通攻击：(武器命中+3×熟练等级+8+装备命中)×疲劳；恐慌、失衡开战后才计"><span>你的命中率</span><b>@Ui.Pct(hit.HitChance)（命中能力@(Ui.N(hit.Accuracy))）</b></div>
         </div>
         @if (wi != null && weapon.UsesMagazine && wi.LoadedAmmo <= 0)
         {

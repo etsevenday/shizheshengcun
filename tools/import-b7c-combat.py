@@ -10,6 +10,8 @@
     队友与随机人物在 B8 才参战，本批只进配置不接入。
   - 防暴盾固定特性“稳固：位移抵抗+25个百分点”（A05 武器表原文）写成 weapons[].traitEffects.displaceResist=25，
     作为位移装备抵抗来源之一（重甲 15、稳固词条 10 已在 gear/affixes）。
+  - accuracy → config.combatMath（Q67：我方可控角色攻击能力加基础 8；支付成本后 E<4 或 S≤20 统一一次 ×0.95，双低不叠乘，
+    取代旧 lowEnergyAccuracyFactor/lowWakefulnessAccuracyFactor 两条 ×0.85；恐慌 0.9/0.8、失衡 0.9、速度惩罚不变）。
 
 可重复运行，结果相同。
 用法：python tools/import-b7c-combat.py
@@ -67,6 +69,20 @@ def defense(cfg, adj):
     shield.setdefault("traitEffects", {})["displaceResist"] = 25
 
 
+def accuracy(cfg, adj):
+    a = adj["accuracy"]
+    assert not a["fatiguePenaltyStacks"] and a["playerSideActorsOnly"] and a["enemyAccuracyAssistance"] == 0
+    m = cfg["combatMath"]
+    assert m["staggerAccuracyFactor"] == a["stagger"]
+    m.pop("lowEnergyAccuracyFactor", None)
+    m.pop("lowWakefulnessAccuracyFactor", None)
+    m["playerAccuracyAssistance"] = a["baseAssistance"]
+    m["fatigueAccuracyFactor"] = a["newLowEnergyOrWakefulnessFactor"]
+    m["playerAccuracyRating"] = "(weaponBase+3*L+8+gear+skillMarkInspire)*actionFactor*fatigueFactor*panicFactor*staggerFactor"
+    pen = {p["minimum"]: p["accuracyRatingFactor"] for p in cfg["panic"]["penalties"]}
+    assert pen == {60: a["panic60"], 90: a["panic90"]}, pen
+
+
 def main():
     with open(CONFIG, encoding="utf-8") as f:
         cfg = json.load(f)
@@ -74,6 +90,7 @@ def main():
         adj = json.load(f)
     capacity(cfg, adj)
     defense(cfg, adj)
+    accuracy(cfg, adj)
     with open(CONFIG, "w", encoding="utf-8") as f:
         f.write(json.dumps(cfg, ensure_ascii=False, indent=2) + "\n")
     print("scope.capacity", cfg["scope"]["capacity"])

@@ -171,17 +171,40 @@ namespace Survival.Core.Engine
             return Math.Max(0, Math.Min(m.PursuitThreshold, m.PursuitScale * (own / fastestOpponent - 1)));
         }
 
-        /// <summary>身体修正（乘命中能力）：E&lt;4、S≤20 各×0.85；恐慌≥60 ×0.85、≥90 ×0.7 择一；失衡×0.9。体力按支付本次成本后计算。</summary>
-        public double BodyAccuracyFactor(GameState s, BattleState b, double energyAfter, List<string>? why = null)
+        /// <summary>
+        /// 身体修正（乘命中能力，Q67）：支付本次成本后 E&lt;4 或 S≤20 时疲劳一次 ×0.95（双低不叠乘）；恐慌≥60 ×0.9、≥90 ×0.8 择一；失衡×0.9。
+        /// </summary>
+        public double BodyAccuracyFactor(GameState s, BattleState? b, double energyAfter, List<string>? why = null)
         {
             var m = Config.CombatMath;
             double f = 1;
-            if (energyAfter < m.LowEnergyExclusive) { f *= m.LowEnergyAccuracyFactor; why?.Add($"低体力×{Fmt.T(m.LowEnergyAccuracyFactor)}"); }
-            if (s.Stats.Wakefulness <= m.LowWakefulnessInclusive) { f *= m.LowWakefulnessAccuracyFactor; why?.Add($"低清醒×{Fmt.T(m.LowWakefulnessAccuracyFactor)}"); }
+            var lowE = energyAfter < m.LowEnergyExclusive;
+            var lowS = s.Stats.Wakefulness <= m.LowWakefulnessInclusive;
+            if (lowE || lowS)
+            {
+                f *= m.FatigueAccuracyFactor;
+                why?.Add($"{(lowE && lowS ? "低体力且低清醒" : lowE ? "低体力" : "低清醒")}×{Fmt.T(m.FatigueAccuracyFactor)}（只算一次）");
+            }
+            if (b == null) return f;
             var pp = Config.Panic.PenaltyFor(b.Panic);
             if (pp != null) { f *= pp.AccuracyRatingFactor; why?.Add($"恐慌≥{Fmt.T(pp.Minimum)}×{Fmt.T(pp.AccuracyRatingFactor)}"); }
             if (b.PlayerStagger) { f *= Config.Statuses.Stagger.NextAttackAccuracyFactor; why?.Add($"失衡×{Fmt.T(Config.Statuses.Stagger.NextAttackAccuracyFactor)}"); }
             return f;
+        }
+
+        /// <summary>
+        /// 战斗外对某敌人的命中率估算（接敌浮窗、敌人详情；与战斗中 TargetCalc 同一公式，Q67/A10“预览执行同源”）：
+        /// 开战默认页武器的 (武器A+3L+8+装备命中)×疲劳(按支付该页普通攻击体力后)；入战恐慌/失衡开战后才知道，不计。
+        /// </summary>
+        public (double Accuracy, double HitChance) OutOfBattleHit(GameState s, EnemyConfig enemy)
+        {
+            var page = DefaultWeaponPage(s);
+            WeaponOnPage(s, page, out var w);
+            var cost = SkillOf(BasicAttack, w) is SkillNodeConfig n ? SkillEnergy(s, n, w, page) : 0;
+            var acc = Math.Max(Config.CombatMath.MinAccuracy,
+                (w.AccuracyRating + SkillAccuracyBonus(SkillLevel(s, w.SkillId)) + Config.CombatMath.PlayerAccuracyAssistance + EquipmentEffects(s, GameState.PlayerId, page).Accuracy)
+                * BodyAccuracyFactor(s, null, Math.Max(0, s.Stats.Energy - cost)));
+            return (acc, HitChance(acc, Math.Max(Config.CombatMath.MinEvasion, enemy.Dodge)));
         }
 
         public static double HitChance(double accuracy, double evasion) => accuracy <= 0 ? 0 : accuracy / (accuracy + Math.Max(1, evasion));

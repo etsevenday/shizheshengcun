@@ -7296,7 +7296,7 @@
   "combatMath": {
     "initiative": "max(1,base+gear+status-[E<4]-[S<20])",
     "tieBreak": "roundStartSpeedDesc_thenLockedRandomU_thenWorldActorId",
-    "playerAccuracyRating": "(weaponBase+3*L)*actionFactor*lowEnergyFactor*lowWakefulnessFactor*panicFactor*staggerFactor",
+    "playerAccuracyRating": "(weaponBase+3*L+8+gear+skillMarkInspire)*actionFactor*fatigueFactor*panicFactor*staggerFactor",
     "hitProbability": "attackRating/(attackRating+targetEvasionRating)",
     "critRating": "baseCritRating+0.3*L",
     "critProbability": "critRating/(critRating+100)",
@@ -7309,10 +7309,8 @@
     "enemyCritRating": 0,
     "randomDamage": "uniform_real_from_saved_prng",
     "lowEnergyExclusive": 4,
-    "lowEnergyAccuracyFactor": 0.85,
     "lowEnergySpeedPenalty": 1,
     "lowWakefulnessInclusive": 20,
-    "lowWakefulnessAccuracyFactor": 0.85,
     "lowWakefulnessSpeedPenalty": 1,
     "staggerAccuracyFactor": 0.9,
     "guardStacks": false,
@@ -7329,7 +7327,9 @@
     "controlBase": 0.75,
     "controlMin": 0.1,
     "controlMax": 0.95,
-    "steadyResistBonus": 30
+    "steadyResistBonus": 30,
+    "playerAccuracyAssistance": 8,
+    "fatigueAccuracyFactor": 0.95
   },
   "panic": {
     "range": [

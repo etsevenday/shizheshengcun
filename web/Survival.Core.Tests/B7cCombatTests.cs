@@ -197,4 +197,76 @@ public class B7cCombatTests : BattleTestBase
         Wear(s, "heavy_armor", EquipSlots.Armor);
         Assert.That(E.PlayerControlChance(s, b, "pull"), Is.EqualTo(0.10).Within(1e-12), "5+40+30 → 下限10%");
     }
+
+    // ───────────── M166：命中 +8 与单次疲劳 ×0.95（Q67） ─────────────
+
+    private void Ready(GameState s)
+    {
+        PlayerFirst(s);
+        E.BattleStep(s);
+        Assert.That(E.AwaitingPlayer(s), Is.True);
+    }
+
+    private BattleTargetPreview KnifeOnShambler(GameState s, double energyAfter, double wake, double panic, bool stagger)
+    {
+        var cost = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).EnergyCost;
+        s.Stats.Energy = energyAfter + cost;
+        s.Stats.Wakefulness = wake;
+        s.Battle!.Panic = panic;
+        s.Battle.PlayerStagger = stagger;
+        return E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single();
+    }
+
+    /// <summary>CB-Q67 文档样例：1级石刀对游荡尸 正常53.7%→59.7%、双低45.6%→58.4%、双低+P90+失衡37.6%→50.3%。</summary>
+    [Test]
+    public void CB_Q67_DocSamples_StoneKnifeVsShambler()
+    {
+        var a = Adj()["accuracy"]!;
+        Assert.That(((double)a["baseAssistance"]!, (double)a["newLowEnergyOrWakefulnessFactor"]!), Is.EqualTo((Cfg.CombatMath.PlayerAccuracyAssistance, Cfg.CombatMath.FatigueAccuracyFactor)));
+        var s = Fight(11, "shambler");
+        Ready(s);
+        Arm(s, "stone_knife");
+        Assert.That(E.SkillLevel(s, "blade"), Is.EqualTo(1));
+        var normal = KnifeOnShambler(s, 18, 90, 20, false);
+        Assert.That(normal.AccuracyRating, Is.EqualTo(26 + 3 + 8).Within(1e-9));
+        Assert.That(Math.Round(normal.HitChance * 100, 1), Is.EqualTo(59.7));
+        var both = KnifeOnShambler(s, 3, 20, 20, false);
+        Assert.That(both.AccuracyRating, Is.EqualTo(37 * 0.95).Within(1e-9), "双低只乘一次×0.95");
+        Assert.That(Math.Round(both.HitChance * 100, 1), Is.EqualTo(58.4));
+        var worst = KnifeOnShambler(s, 3, 20, 90, true);
+        Assert.That(worst.AccuracyRating, Is.EqualTo(37 * 0.95 * 0.8 * 0.9).Within(1e-9));
+        Assert.That(Math.Round(worst.HitChance * 100, 1), Is.EqualTo(50.3));
+        // 旧口径对照（无+8、两条×0.85）：53.7% / 45.6% / 37.6%
+        Assert.That(Math.Round(GameEngine.HitChance(29, 25) * 100, 1), Is.EqualTo(53.7));
+        Assert.That(Math.Round(GameEngine.HitChance(29 * 0.85 * 0.85, 25) * 100, 1), Is.EqualTo(45.6));
+        Assert.That(Math.Round(GameEngine.HitChance(29 * 0.85 * 0.85 * 0.8 * 0.9, 25) * 100, 1), Is.EqualTo(37.6));
+    }
+
+    /// <summary>CB-Q67 边界：支付后 E=4 不罚、3.99 罚；S=20 罚、20.01 不罚；单低与双低同为×0.95；恐慌60×0.9；敌人对你的命中不加 8。</summary>
+    [Test]
+    public void CB_Q67_Boundaries_SingleFatigue_EnemyNoAssistance()
+    {
+        var s = Fight(12, "shambler");
+        Ready(s);
+        Arm(s, "stone_knife");
+        Assert.That(KnifeOnShambler(s, 4, 90, 0, false).AccuracyRating, Is.EqualTo(37).Within(1e-9), "支付后 E=4 不算低体力");
+        Assert.That(KnifeOnShambler(s, 3.99, 90, 0, false).AccuracyRating, Is.EqualTo(37 * 0.95).Within(1e-9));
+        Assert.That(KnifeOnShambler(s, 18, 20, 0, false).AccuracyRating, Is.EqualTo(37 * 0.95).Within(1e-9), "S≤20");
+        Assert.That(KnifeOnShambler(s, 18, 20.01, 0, false).AccuracyRating, Is.EqualTo(37).Within(1e-9));
+        Assert.That(KnifeOnShambler(s, 18, 90, 60, false).AccuracyRating, Is.EqualTo(37 * 0.9).Within(1e-9), "恐慌≥60×0.9");
+        var why = new List<string>();
+        E.BodyAccuracyFactor(s, s.Battle!, 3, why);
+        Assert.That(why, Has.Some.Contains("只算一次"));
+        // 应急拳同样吃 +8（我方攻击能力）：(24+3+8)×0.65
+        var dp = (24 + 3 + 8) * Cfg.CombatActions.Single(x => x.Id == "desperate_punch").AccuracyRatingFactor;
+        s.Stats.Energy = 0;
+        s.Stats.Wakefulness = 90;
+        s.Battle!.Panic = 0;
+        Assert.That(E.PreviewCommand(s, BattleCommand.Of("desperate_punch", 1)).Targets.Single().AccuracyRating, Is.EqualTo(dp * 0.95).Within(1e-9), "应急拳：+8、招式×0.65、体力0×0.95");
+        // 战斗外估算与战斗中同源
+        var t = Field(13);
+        var shambler = Cfg.Enemies.Single(x => x.Id == "shambler");
+        Assert.That(E.OutOfBattleHit(t, shambler).Accuracy, Is.EqualTo(24 + 3 + 8).Within(1e-9), "空手开战页：拳 24+3+8");
+        Assert.That(GameEngine.HitChance(shambler.AttackRating, Cfg.Scope.BasePlayerDodge), Is.EqualTo(20.0 / 56).Within(1e-12), "敌人命中不加 8");
+    }
 }

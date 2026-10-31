@@ -63,14 +63,14 @@
             var ec = e.Enemy(w.EnemyId);
             var why = e.CanApproach(s, wid);
             var weapon = e.CurrentWeapon(s, out var wi);
-            var acc = weapon.AccuracyRating + e.SkillAccuracyBonus(e.SkillLevel(s, weapon.SkillId));
+            var hit = e.OutOfBattleHit(s, ec);   // Q67：与战斗中同一公式（+8、疲劳一次×0.95）
             <AnchorPop AnchorId="@pop.AnchorId" Title="@($"接近{ec.Name}")" CssClass="approach"
                        Sub="@($"健康{Ui.N(w.Hp)}/{Ui.N(ec.Hp)} · {(w.Hostile ? "敌对" : "中立")} · 只与这一只交战")" OnClose="G.ClosePop">
                 <Art>@Icons.Markup("enemy_" + ec.Id)</Art>
                 <ChildContent>
                     <div class="apop-facts">
                         <span title="敌人对你的命中率与伤害"><i class="pf-ico">⚔</i>对你@(Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))) · 伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax))</span>
-                        <span title="开战默认页（第一个有武器的页）的命中率（战斗中可切换武器页，0AP）"><span class="pf-weapon" aria-hidden="true">@Icons.Markup(wi?.ItemId ?? "fists")</span>@(e.DefaultWeaponPage(s) == 1 ? "Ⅰ" : "Ⅱ") @(wi == null ? "拳" : weapon.Name) · 命中@(Ui.Pct(GameEngine.HitChance(acc, ec.Dodge)))</span>
+                        <span title="开战默认页（第一个有武器的页）的命中率（战斗中可切换武器页，0AP）"><span class="pf-weapon" aria-hidden="true">@Icons.Markup(wi?.ItemId ?? "fists")</span>@(e.DefaultWeaponPage(s) == 1 ? "Ⅰ" : "Ⅱ") @(wi == null ? "拳" : weapon.Name) · 命中@(Ui.Pct(hit.HitChance))</span>
                     </div>
                     @if (wi != null && weapon.UsesMagazine && wi.LoadedAmmo <= 0)
                     {
