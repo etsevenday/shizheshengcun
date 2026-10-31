@@ -33,8 +33,15 @@ namespace Survival.Core.Engine
         private ProcessConfig? BatchProcess(string liquidId) =>
             Config.Processes.FirstOrDefault(p => p.IsPotBatch && p.InputId == liquidId);
 
+        /// <summary>火堆加工位里一件物品对应的直烤或整批进程（直烤食材 / Q111 煅烧的木材整批）。</summary>
         private ProcessConfig? FireFoodProcess(string itemId) =>
             Config.Processes.FirstOrDefault(p => !p.IsPotBatch && !p.InPot && p.InputId == itemId);
+
+        /// <summary>Q111 火堆煅烧木炭（fire_charcoal，S11/A07 本轮章）：火堆加工位整批被动加工；没配置时为 null。</summary>
+        public ProcessConfig? CharcoalProcess => Config.Processes.FirstOrDefault(p => p.IsSlotBatch);
+
+        /// <summary>加工位里的这件物品是不是一批合法的煅烧原料（木材且份数恰为每批投入数）。</summary>
+        private bool IsSlotBatchInput(ProcessConfig cfg, ItemInstance it) => cfg.IsSlotBatch && it.ItemId == cfg.InputId && it.Count == cfg.InputCount;
 
         private ProcessConfig? PotFoodProcess(string itemId) =>
             Config.Processes.FirstOrDefault(p => !p.IsPotBatch && p.InPot && p.InputId == itemId);
@@ -278,7 +285,7 @@ namespace Survival.Core.Engine
                 else
                 {
                     var rp = FireFoodProcess(c.ItemId);
-                    if (rp != null) desired.Add((rp, c.InstanceId, null));
+                    if (rp != null && (!rp.IsSlotBatch || IsSlotBatchInput(rp, c))) desired.Add((rp, c.InstanceId, null));
                 }
             }
             fac.Processes.RemoveAll(p => !desired.Any(d => d.cfg.Id == p.RecipeId && d.target == p.TargetInstanceId && d.pot == p.PotInstanceId));
@@ -366,6 +373,12 @@ namespace Survival.Core.Engine
                 return 1;
             }
             if (IsLiquid(inst)) { reason = $"{cfg.Name}不能直接倒进火堆（不会产生净水，也不会灭火），请拖进锅里"; return 0; }
+            // Q111：拖木材到火堆仍是添加燃料；煅烧木炭走火堆卡的显式“煅烧木炭”投料（每批4份），不把同一拖动默默改成煅烧
+            if (CharcoalProcess is ProcessConfig cp && inst.ItemId == cp.InputId)
+            {
+                reason = $"{cfg.Name}拖到火堆燃料区是添加燃料；要煅烧木炭请点火堆卡“煅烧木炭”（每批{cp.InputCount}份）";
+                return 0;
+            }
             if (!CanRoast(inst.ItemId))
             {
                 reason = cfg.Kind == "food" ? $"{cfg.Name}没有可用的处理配方，放进火堆也不会再加工" : $"{cfg.Name}不能放进火堆加工位";
@@ -558,6 +571,9 @@ namespace Survival.Core.Engine
             c.CarriedGramsAfter = CarriedGrams(s) + (PlaceOf(s, inst) == ItemInstance.Carried ? 0 : c.Grams);
             c.RootCardsAfter = RootCardsAfter(s, inst, inst.Count, null, 0);
             c.Text = c.Resets.Count > 0 ? $"取出后{string.Join("、", c.Resets)}清零" : "当前没有已受热的加工进度，取出不损失进度";
+            // Q111：取出未完成的煅烧批次退回全部原料（同一批木材），已烧掉的燃料与时间不退
+            if (touched.Any(p => Process(p.RecipeId).IsSlotBatch))
+                c.Text += $"；退回{ItemName(inst.ItemId)}×{inst.Count}，已烧掉的火堆燃料不退";
             if (c.Spoils.Count > 0) c.Text += $"；{string.Join("、", c.Spoils)}已过原保质期，取出即解除烹饪保护并立即腐败";
             return c;
         }
@@ -632,6 +648,8 @@ namespace Survival.Core.Engine
             var owner = FireOwner(loc);
             // v1.0 P02：锅没有耐久，不再因耐久不足拒绝受热
             if (cfg.IsPotBatch) return t.Owner == owner && PotLiquid(s, t.InstanceId) == cfg.InputId;
+            // Q111 煅烧：仍在本火堆加工位、仍是完整一批原料（木材无保质，不判腐败）
+            if (cfg.IsSlotBatch) return t.Owner == owner && IsSlotBatchInput(cfg, t);
             if (t.ItemId != cfg.InputId || (!ignoreSpoil && IsSpoiled(s, t))) return false;
             if (!cfg.InPot) return t.Owner == owner;
             var pot = p.PotInstanceId.HasValue ? FindItem(s, p.PotInstanceId.Value) : null;
@@ -658,7 +676,8 @@ namespace Survival.Core.Engine
                     p.Status = heated ? ProcessStatus.Heating : ProcessStatus.Waiting;
                     if (!heated) continue;
                     p.HeatDoneMinutes += Tick;
-                    if (!Process(p.RecipeId).IsPotBatch) p.HeatProtected = true;
+                    // 烹饪受热保护只给食材（Q16）；净水批次与 Q111 煅烧（木材/木炭无食物腐败保护）不用
+                    if (Process(p.RecipeId).Target == ProcessTargets.SingleFood) p.HeatProtected = true;
                     if (p.HeatDoneMinutes >= p.RequiredHeatMinutes) CompleteProcess(s, l.Id, fac, p);
                 }
             }
@@ -686,6 +705,16 @@ namespace Survival.Core.Engine
                 s.Progress.Flags.Add("boiled");
                 text = $"{LocName(loc)}火堆：{ItemName(t.ItemId)}#{t.InstanceId}里的{ItemName(cfg.InputId)}{ml}毫升已烧成{ItemName(cfg.OutputId)}，留在原锅。";
                 if (CookWaterXp(s, p, ml) is string wx) text = text.TrimEnd('。') + $"（{wx}）。";
+            }
+            else if (cfg.IsSlotBatch)
+            {
+                // Q111：完成原子消费这批4木材、同位生成3木炭（同一实例原地转化，不另生成、不进包、不装燃料），0 经验；
+                // 进程移除并记完成回执（进程号@段号），读档/重试不会再出一次或返原料
+                var before = $"{ItemName(t.ItemId)}×{t.Count}#{t.InstanceId}";
+                t.ItemId = cfg.OutputId;
+                t.Count = cfg.OutputCount;
+                t.ExpiresAt = null;
+                text = $"{LocName(loc)}火堆：{before}已煅烧成{ItemName(cfg.OutputId)}×{cfg.OutputCount}，留在火堆加工位（煅烧不给经验）。";
             }
             else
             {

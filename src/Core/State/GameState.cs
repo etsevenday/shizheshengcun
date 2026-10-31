@@ -717,6 +717,11 @@ namespace Survival.Core.State
         public int StartProgress { get; set; }
         /// <summary>清理已在开始时扣除 1 次数（取消、死亡、空结果都不退）。</summary>
         public bool ChargeSpent { get; set; }
+        /// <summary>
+        /// 制作/建造/维护完成经验的门类（Q110，开工时按配方 xpSkill 快照：医疗台三条材料加工为 medicine，其余 crafting）。
+        /// 旧档在途的为 null，按旧规则给制造经验结束一次（不补发、不回收）。
+        /// </summary>
+        public string? XpSkill { get; set; }
         /// <summary>批量制作件数（同一预留批次一次提交）；普通行动为 1。</summary>
         public int BatchCount { get; set; } = 1;
         /// <summary>箱子的独立稀有附带物（医药补给箱 1% 特效药）是否抽中：开始时锁定，读档不重抽。</summary>

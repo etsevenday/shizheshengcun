@@ -503,10 +503,11 @@ namespace Survival.Core.Engine
                         made.Add($"{ItemName(kv.Key)}+{kv.Value * batch}{QualitySuffix(crafted)}");
                     }
                     if (rc.IsRepair) made.Add(CompleteRepair(s, a));
-                    // 有效制造按实际提交的配方次数发经验（v0.6 §03）
+                    // 有效制造按实际提交的配方次数发经验（v0.6 §03）；门类按开工快照（Q110：医疗台三材料给医疗、不双发制造；旧档在途为 null 按制造）
                     var xp = CraftXp(rc.BaseMinutes) * batch;
-                    made.Add(XpText(s, Crafting, xp));
-                    GainXp(s, Crafting, xp);
+                    var xpSkill = a.XpSkill ?? Crafting;
+                    made.Add(XpText(s, xpSkill, xp));
+                    GainXp(s, xpSkill, xp);
                     if (rc.FacilityResult != null) SetFacility(s.Locations[here].Facility, rc.FacilityResult);
                     ClearAction(s, a);
                     var text = rc.FacilityResult != null

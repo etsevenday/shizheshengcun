@@ -330,6 +330,8 @@ namespace Survival.Core.Config
     {
         public const string PotLiquidBatch = "pot_liquid_batch";
         public const string SingleFood = "single_food_instance";
+        /// <summary>火堆加工位里的一批整料（Q111 火堆煅烧木炭 fire_charcoal：一位一批 wood×4→charcoal×3，非食物、不受热保护、0 经验）。</summary>
+        public const string FireSlotBatch = "fire_slot_batch";
     }
 
     public static class ProcessOwners
@@ -352,8 +354,14 @@ namespace Survival.Core.Config
         public int WaterCostMl { get; set; }
         public string RequiredOwner { get; set; } = "";
         public string? RequiredLiquid { get; set; }
+        /// <summary>整批加工（fire_slot_batch）每批投入的份数（Q111 煅烧：木材4）；其他进程为 1。</summary>
+        public int InputCount { get; set; } = 1;
+        /// <summary>整批加工每批产出份数（Q111 煅烧：木炭3）；其他进程为 1。</summary>
+        public int OutputCount { get; set; } = 1;
 
         public bool IsPotBatch => Target == ProcessTargets.PotLiquidBatch;
+        /// <summary>火堆加工位整批被动加工（Q111 火堆煅烧）：不是食物，不受热保护、不给经验。</summary>
+        public bool IsSlotBatch => Target == ProcessTargets.FireSlotBatch;
         public bool InPot => RequiredOwner == ProcessOwners.PotInFire;
     }
 
@@ -469,6 +477,11 @@ namespace Survival.Core.Config
         public string? Group { get; set; }
         /// <summary>设施燃料（A05 §3/A07：forge 每批 charcoal1），与原料一起按批预留、完成核销，界面分开显示。</summary>
         public Dictionary<string, int> Fuel { get; set; } = new Dictionary<string, int>();
+        /// <summary>
+        /// 完成经验归属的熟练门类（Q110 选 B：医疗台 saline/disinfectant/herb_extract 三条材料加工给 medicine）；null 为制造 crafting。
+        /// 数额仍按 clamp(ceil(原基础分钟/10),1,12)×批次；开工时快照到 ActionState.XpSkill。
+        /// </summary>
+        public string? XpSkill { get; set; }
 
         /// <summary>原料与燃料合计（每批）：校验与预留都按它。</summary>
         public Dictionary<string, int> AllInputs

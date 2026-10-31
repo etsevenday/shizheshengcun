@@ -164,7 +164,7 @@ namespace Survival.Core.Engine
             ActionType.Survey => "遗迹勘整",
             ActionType.Butcher => "处理尸体",
             ActionType.Fuse => "吞噬融合",
-            ActionType.WaitCook => "等待烹饪",
+            ActionType.WaitCook => "等待加工",
             ActionType.Salvage => "拆解",
             _ => "点燃火堆",
         };
@@ -289,7 +289,7 @@ namespace Survival.Core.Engine
                     }
                     else if (rc.IsRepair && plan?.Tool is ItemInstance rt && rt.Durability is double d0 && rt.MaxDurability is double dm)
                         p.Notes.Add($"{ItemName(rt.ItemId)}#{rt.InstanceId}耐久{Fmt.N(d0)}→{Fmt.N(Math.Min(dm, d0 + dm * RepairFraction(s, rc)))}/{Fmt.N(dm)}：恢复自身最大耐久的{Fmt.Pct(RepairFraction(s, rc))}（不超过上限、不重抽最大耐久，品质与词条不变）");
-                    if (!rc.IsSalvage) p.XpGains.Add(XpText(s, Crafting, CraftXp(rc.BaseMinutes) * batch));
+                    if (!rc.IsSalvage) p.XpGains.Add(XpText(s, rc.XpSkill ?? Crafting, CraftXp(rc.BaseMinutes) * batch));
                     if (plan != null) p.Notes.AddRange(plan.Notes);
                     if (rc.NeedsFire)
                     {

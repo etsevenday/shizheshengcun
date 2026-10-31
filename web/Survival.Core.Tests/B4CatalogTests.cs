@@ -43,7 +43,8 @@ public class B4CatalogTests : TestBase
                 Assert.That(it.Use, Is.Null, $"{id} 不导使用效果");
             }
         }
-        Assert.That(Cfg.Items.Count(i => i.Desc.Contains("本版只有物品定义")), Is.EqualTo(70));
+        // B10b（Q111）：木炭有了火堆煅烧来源与锻炉用途，说明改写，不再是“只有物品定义”（70→69）
+        Assert.That(Cfg.Items.Count(i => i.Desc.Contains("本版只有物品定义")), Is.EqualTo(69));
     }
 
     [Test]

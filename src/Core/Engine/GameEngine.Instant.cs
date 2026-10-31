@@ -124,6 +124,8 @@ namespace Survival.Core.Engine
                     return TakeOut(s, r);
                 case InstantKind.Reorder:
                     return Reorder(s, r);
+                case InstantKind.LoadCharcoal:
+                    return LoadCharcoal(s);
             }
             return ActionResult.Fail("未知操作");
         }

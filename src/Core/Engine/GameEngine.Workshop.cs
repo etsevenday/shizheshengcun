@@ -146,6 +146,15 @@ namespace Survival.Core.Engine
             return text;
         }
 
+        /// <summary>开发（B10b，Q111 试煅烧）：木材×10 放当前地面（够两批原料 + 2 份燃料）；不点火、不改燃料。</summary>
+        public string DebugCharcoalKit(GameState s)
+        {
+            CreateItems(s, "wood", 10, s.CurrentLocation);
+            var text = $"开发：木材×10放在{LocName(s.CurrentLocation)}地面（煅烧木炭每批4份，燃料另投）";
+            Emit(s, GameEventKind.Info, text + "。");
+            return text;
+        }
+
         /// <summary>开发：工坊材料包（各类工坊建造与常用装备材料各若干，放当前地面）。</summary>
         public string DebugWorkshopKit(GameState s)
         {

@@ -6,7 +6,9 @@ B10（开发计划 v0.9）：工坊六类设施、配方 station/knowledge 字�
 来源：
 - 04 附录/A12 全系统策划数据索引.json equipment.weapons/gear（inputs/station/craft_level/minutes/acquisition/source）
 - 04 附录/A05 §3（设施／等级／基础分钟；forge 每批另付 charcoal1）、「2026-10-30 B4 蓝图包与旧唯一装备位置迁移」（d01_06→d01_08 等）
-- 04 附录/A07「工坊设施」「材料加工链」（drying_rack 与炭化留 B16，本工具不导）
+- 04 附录/A07「工坊设施」「材料加工链」（drying_rack 不导；木炭行 Q111 已改为火堆被动过程 fire_charcoal，不导成主动 craft）
+- B10b（答复 Q107–Q111）：Q109 军械台蓝图由 d03_08_unique 领取事实（或旧档 communication_power_claimed）授予；
+  Q110 医疗台 saline/disinfectant/herb_extract 完成经验给 medicine（xpSkill）；Q111 火堆煅烧 fire_charcoal 写入 processes
 """
 import json
 import os
@@ -45,6 +47,26 @@ FORGE_FUEL = {"charcoal": 1}
 MIGRATION = os.path.join(BASE, "assets", "20261030", "index", "equipment-acquisition-migration.json")
 UNIQUE_MOVE = {}
 ARMORY_KNOWLEDGE = "blueprint_armory_station"
+# Q109 选 A（A07/A08/A11 本轮章）：d03_08 封存仓终点唯一领取 d03_08_unique 成功时同事务授予；旧档明确已领或原等效 communication_power_claimed 补知识
+ARMORY_GRANT_FACTS = ["claim:d03_08_unique", "communication_power_claimed"]
+# Q110 选 B（A07/S08/A06 本轮章）：这三条医疗台材料加工的完成经验给医疗，不给制造；其他医疗台配方沿原归属
+MEDICAL_XP_OUTPUTS = {"saline", "disinfectant", "herb_extract"}
+# Q111（A07/S09/S11 本轮章，workshop-adjudications.json fireCharcoal）：火堆被动煅烧，取代晾架炭化
+FIRE_CHARCOAL = {
+    "id": "fire_charcoal",
+    "name": "煅烧",
+    "target": "fire_slot_batch",
+    "inputId": "wood",
+    "outputId": "charcoal",
+    "allowedBatchMl": [],
+    "heatMinutes": 60,
+    "waterCostMl": 0,
+    "requiredOwner": "fire_processing_slot",
+    "requiredLiquid": None,
+    "inputCount": 4,
+    "outputCount": 3,
+}
+CHARCOAL_DESC = "锻炉燃料与材料。在火堆卡点“煅烧木炭”：木材×4→木炭×3，占1个加工位、需60有效受热分钟，火堆燃料另计。"
 
 
 def parse_md_table(text, header_prefix):
@@ -132,9 +154,9 @@ def main():
     put_knowledge({
         "id": ARMORY_KNOWLEDGE,
         "name": "军械台蓝图",
-        "grantedByFacts": [],
+        "grantedByFacts": list(ARMORY_GRANT_FACTS),
         "blueprint": True,
-        "source": "蓝图：d03 主线（地图固定箱与任务在后续版本开放）",
+        "source": "蓝图：d03_08 封存仓终点唯一领取（地图在后续版本开放）",
     })
 
     # ── 72 件装备：62 个配方 + 10 件不可自制 ──
@@ -215,6 +237,8 @@ def main():
             "station": station,
             "group": "material",
         }
+        if station == "medical" and oid in MEDICAL_XP_OUTPUTS:
+            rec["xpSkill"] = "medicine"
         if station == "forge":
             rec["fuel"] = dict(FORGE_FUEL)
         for k in list(rec["inputs"]) + [oid]:
@@ -228,6 +252,10 @@ def main():
             n["status"] = "live"
         elif n["id"] == "crafting_10":
             n["status"] = "partial"
+    # Q111：火堆煅烧进程（按 ID 覆盖）与木炭说明
+    procs = cfg["processes"]
+    procs[:] = [x for x in procs if x["id"] != FIRE_CHARCOAL["id"]] + [dict(FIRE_CHARCOAL)]
+    items["charcoal"]["desc"] = CHARCOAL_DESC
     cfg["knowledge"] = list(knowledge.values())
     cfg["workshops"] = {
         "source": "A07「工坊设施」「材料加工链」；A05 §3；S08 X4；S09 X2.7；开发计划 v0.9 B10（tools/import-b10-workshops.py）",

@@ -312,7 +312,7 @@ namespace Survival.Core.Engine
             else if (s.Main.Status == ActionStatus.Paused && s.Sub == null)
             {
                 plan.IsSub = true;
-                if (r.Type == ActionType.WaitCook) return "主行动暂停中：请先退出原行动再等待烹饪";
+                if (r.Type == ActionType.WaitCook) return "主行动暂停中：请先退出原行动再等待加工";
                 if (r.Type != ActionType.Use && r.Type != ActionType.Rest && r.Type != ActionType.Ignite)
                     return "暂停中只能补给、休息或点火维护";
                 plan.TravelPaused = s.Main.Type == ActionType.Travel;
@@ -775,6 +775,8 @@ namespace Survival.Core.Engine
                 {
                     var rc = p.Recipe!;
                     a.BatchCount = p.Batch;
+                    // Q110：完成经验门类开工即快照（医疗台三材料→医疗，其余→制造）；拆解另按拆解经验
+                    if (!rc.IsSalvage) a.XpSkill = rc.XpSkill ?? Crafting;
                     foreach (var kv in rc.AllInputs)
                     {
                         a.ReservedItemIds.AddRange(Reserve(s, kv.Key, kv.Value * p.Batch, a.ActionId, r.PreferredInstanceIds));
@@ -871,7 +873,7 @@ namespace Survival.Core.Engine
                 ActionType.Butcher => "已取消处理尸体，尸体返还当前地面，保质期不变，没有产物。",
                 ActionType.Bypass => "已取消绕行。",
                 ActionType.Survey => "已取消遗迹勘整，未获得经验，不占今日勘整次数；已消耗的时间保留。",
-                ActionType.WaitCook => $"已退出等待烹饪（已完成{a.CookDone.Count}项）：火堆、锅与受热进度原样保留，成品留在原位。",
+                ActionType.WaitCook => $"已退出等待加工（已完成{a.CookDone.Count}项）：火堆、锅与受热进度原样保留，成品留在原位。",
                 _ => $"已结束{a.Label}。",
             };
             Emit(s, GameEventKind.ActionCancelled, text);

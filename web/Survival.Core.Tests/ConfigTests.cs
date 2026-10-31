@@ -334,8 +334,8 @@ public class ConfigTests : TestBase
     {
         var d = V04()["processes"]!.ToList();
         var meat = V06()["passiveCookingExtensions"]!.ToList();
-        // v1.0 T03 追加烤肉复煮
-        Assert.That(Cfg.Processes.Select(p => p.Id), Is.EqualTo(d.Select(x => (string)x["id"]!).Concat(meat.Select(x => (string)x["id"]!)).Concat(new[] { "reboil_cooked_meat" })));
+        // v1.0 T03 追加烤肉复煮；B10b（Q111）追加火堆煅烧木炭
+        Assert.That(Cfg.Processes.Select(p => p.Id), Is.EqualTo(d.Select(x => (string)x["id"]!).Concat(meat.Select(x => (string)x["id"]!)).Concat(new[] { "reboil_cooked_meat", "fire_charcoal" })));
         foreach (var j in d)
         {
             var p = Cfg.Processes.Single(x => x.Id == (string)j["id"]!);

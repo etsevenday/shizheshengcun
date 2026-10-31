@@ -196,6 +196,20 @@
       "waterCostMl": 500,
       "requiredOwner": "pot_inside_lit_fire",
       "requiredLiquid": "clean_water"
+    },
+    {
+      "id": "fire_charcoal",
+      "name": "煅烧",
+      "target": "fire_slot_batch",
+      "inputId": "wood",
+      "outputId": "charcoal",
+      "allowedBatchMl": [],
+      "heatMinutes": 60,
+      "waterCostMl": 0,
+      "requiredOwner": "fire_processing_slot",
+      "requiredLiquid": null,
+      "inputCount": 4,
+      "outputCount": 3
     }
   ],
   "ui": {
@@ -1192,7 +1206,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：燃料。本版只有物品定义，用途在后续版本开放"
+      "desc": "锻炉燃料与材料。在火堆卡点“煅烧木炭”：木材×4→木炭×3，占1个加工位、需60有效受热分钟，火堆燃料另计。"
     },
     {
       "id": "precision_parts",
@@ -5696,7 +5710,8 @@
         "medicine": 5
       },
       "station": "medical",
-      "group": "material"
+      "group": "material",
+      "xpSkill": "medicine"
     },
     {
       "id": "make_saline",
@@ -5717,7 +5732,8 @@
         "medicine": 1
       },
       "station": "medical",
-      "group": "material"
+      "group": "material",
+      "xpSkill": "medicine"
     },
     {
       "id": "make_soap",
@@ -5780,7 +5796,8 @@
         "medicine": 3
       },
       "station": "medical",
-      "group": "material"
+      "group": "material",
+      "xpSkill": "medicine"
     },
     {
       "id": "make_rubber",
@@ -13815,9 +13832,12 @@
     {
       "id": "blueprint_armory_station",
       "name": "军械台蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d03_08_unique",
+        "communication_power_claimed"
+      ],
       "blueprint": true,
-      "source": "蓝图：d03 主线（地图固定箱与任务在后续版本开放）"
+      "source": "蓝图：d03_08 封存仓终点唯一领取（地图在后续版本开放）"
     },
     {
       "id": "blueprint_stone_knife",

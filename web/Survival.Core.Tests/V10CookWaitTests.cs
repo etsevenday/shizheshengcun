@@ -143,7 +143,7 @@ public class V10CookWaitTests : BattleTestBase
         Assert.That(E.ActionProgress(v)!.StopNote, Does.Contain("燃料不足"));
         Assert.That(Run(v), Is.EqualTo(SegmentStatus.Aborted));
         Assert.That(v.Main, Is.Null);
-        Assert.That(v.Log.Last(l => l.Kind == "ActionAborted").Text, Does.Contain("等待烹饪停止").And.Contain("熄灭"));
+        Assert.That(v.Log.Last(l => l.Kind == "ActionAborted").Text, Does.Contain("等待加工停止").And.Contain("熄灭"));
         Assert.That(Count(v, "wood"), Is.EqualTo(woodV), "不自动补木");
         Assert.That(E.PotLiquid(v, vpot.InstanceId), Is.EqualTo("clean_water"), "已完成的净化保留");
         Assert.That(E.PotFood(v, vpot.InstanceId).All(f => f.ItemId == "raw_root" && Proc(v, f).HeatDoneMinutes == 5), Is.True, "受热进度保留，不清零");
@@ -182,7 +182,7 @@ public class V10CookWaitTests : BattleTestBase
         Assert.That(Proc(s, root).ReservedWaterMl, Is.EqualTo(reserved), "水预留保留");
         Assert.That(s.Locations["camp"].Facility.FireLit, Is.True, "不灭火");
         Assert.That(root.Owner, Is.EqualTo(ItemInstance.ContainerOwner(pot.InstanceId)), "不取锅、不领取");
-        Assert.That(s.Log.Last(l => l.Kind == "ActionCancelled").Text, Does.Contain("退出等待烹饪"));
+        Assert.That(s.Log.Last(l => l.Kind == "ActionCancelled").Text, Does.Contain("退出等待加工"));
 
         // 重新等待：从实际剩余20分钟继续
         Assert.That(E.PreviewCookWait(s).EstimatedMinutes, Is.EqualTo(20));

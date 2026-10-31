@@ -183,10 +183,19 @@ namespace Survival.Core.Config
                 if (!items.Contains(p.InputId)) e.Add($"设施进程 {p.Id} 的输入物品 {p.InputId} 不存在");
                 if (!items.Contains(p.OutputId)) e.Add($"设施进程 {p.Id} 的输出物品 {p.OutputId} 不存在");
                 if (p.HeatMinutes <= 0 || p.HeatMinutes % tick != 0) e.Add($"设施进程 {p.Id} 受热分钟须为{tick}的正倍数");
-                if (p.Target != ProcessTargets.PotLiquidBatch && p.Target != ProcessTargets.SingleFood) e.Add($"设施进程 {p.Id} 目标类型未知");
+                if (p.Target != ProcessTargets.PotLiquidBatch && p.Target != ProcessTargets.SingleFood && p.Target != ProcessTargets.FireSlotBatch) e.Add($"设施进程 {p.Id} 目标类型未知");
+                if (p.InputCount < 1 || p.OutputCount < 1) e.Add($"设施进程 {p.Id} 每批投入与产出份数须≥1");
                 if (p.RequiredOwner != ProcessOwners.FireSlot && p.RequiredOwner != ProcessOwners.PotInFire) e.Add($"设施进程 {p.Id} 位置要求未知");
                 if (p.WaterCostMl < 0) e.Add($"设施进程 {p.Id} 耗水不能为负");
-                if (p.IsPotBatch)
+                if (p.IsSlotBatch)
+                {
+                    // Q111 火堆煅烧：占火堆一个加工位的整批非食物加工；投料走显式入口，不能与直烤白名单（拖入加工位）混用
+                    if (p.RequiredOwner != ProcessOwners.FireSlot) e.Add($"设施进程 {p.Id} 整批加工须在火堆加工位");
+                    if (fire.DirectFoodInputIds.Contains(p.InputId)) e.Add($"设施进程 {p.Id} 整批加工的原料不能同时是直烤食材");
+                    if (c.Items.FirstOrDefault(i => i.Id == p.InputId) is ItemConfig ic && ic.StackMax < p.InputCount) e.Add($"设施进程 {p.Id} 每批原料超过堆叠上限");
+                    if (c.Items.FirstOrDefault(i => i.Id == p.OutputId) is ItemConfig oc && oc.StackMax < p.OutputCount) e.Add($"设施进程 {p.Id} 每批产物超过堆叠上限");
+                }
+                else if (p.IsPotBatch)
                 {
                     if (potCt == null || !potCt.Accepts.Contains(p.InputId) || !potCt.Accepts.Contains(p.OutputId))
                         e.Add($"设施进程 {p.Id} 的锅内输入输出须是容器可装物品");
@@ -408,6 +417,7 @@ namespace Survival.Core.Config
                 if (rc.IsRepair && !rc.TargetInstanceRequired) e.Add($"维护配方 {rc.Id} 须指定目标实例");
                 if (rc.Station != "hand" && c.Workshops.Stations.All(x => x.Id != rc.Station)) e.Add($"配方 {rc.Id} 的工坊 {rc.Station} 不存在");
                 foreach (var k in rc.Fuel.Keys) if (!items.Contains(k)) e.Add($"配方 {rc.Id} 的燃料 {k} 不存在");
+                if (rc.XpSkill != null && !skills.Contains(rc.XpSkill)) e.Add($"配方 {rc.Id} 的经验门类 {rc.XpSkill} 不存在");
                 foreach (var k in rc.Inputs.Keys) if (!items.Contains(k)) e.Add($"配方 {rc.Id} 的原料 {k} 不存在");
             }
             foreach (var st in c.Workshops.Stations)

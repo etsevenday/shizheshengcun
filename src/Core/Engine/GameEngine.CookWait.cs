@@ -127,7 +127,7 @@ namespace Survival.Core.Engine
                     string why;
                     if (IsPot(x)) why = PotLiquid(c, x.InstanceId) == null && PotFood(c, x.InstanceId).Count == 0 ? "空锅，不需要烹饪" : "锅里没有需要净化的水";
                     else if (IsSpoiled(c, x)) why = "已腐败，不再加工";
-                    else if (pid == null) why = x.InContainer && PotConfig(ContainerOf(c, x)!).StoreOnlyFoodIds.Contains(x.ItemId) ? "只存放，不再加工" : "已是成品，不需要烹饪";
+                    else if (pid == null) why = x.InContainer && PotConfig(ContainerOf(c, x)!).StoreOnlyFoodIds.Contains(x.ItemId) ? "只存放，不再加工" : "已是成品，不需要加工";
                     else if (idealFail.TryGetValue(pid, out var f)) why = f;
                     else why = "本次无法完成加工";
                     plan.Excluded.Add(new CookExcludedInfo { InstanceId = x.InstanceId, Label = $"{ItemName(x.ItemId)}#{x.InstanceId}", Reason = why });
@@ -211,12 +211,12 @@ namespace Survival.Core.Engine
         /// <summary>Validate 的等待烹饪分支：空闲、本地有燃烧的火堆、下一段燃料有效（开发假设 A8）、至少一个可完成的目标。</summary>
         private string? ValidateCookWait(GameState s, Plan plan)
         {
-            if (plan.IsSub) return "主行动暂停中：请先退出原行动再等待烹饪";
+            if (plan.IsSub) return "主行动暂停中：请先退出原行动再等待加工";
             var here = s.CurrentLocation;
             if (!_locs[here].HasFire) return "这里没有火堆";
             var fac = s.Locations[here].Facility;
-            if (!fac.FireLit) return "火堆未燃烧：请先点火（等待烹饪不会自动点火）";
-            if (fac.FuelMinutes < Tick) return "火堆燃料不够下一段，请先投入木材（等待烹饪不会自动加木）";
+            if (!fac.FireLit) return "火堆未燃烧：请先点火（等待加工不会自动点火）";
+            if (fac.FuelMinutes < Tick) return "火堆燃料不够下一段，请先投入木材（等待加工不会自动加木）";
             var info = new CookWaitPlan { LocationId = here };
             AnalyzeCook(s, here, null, info);
             if (info.Targets.Count == 0)
@@ -227,7 +227,7 @@ namespace Survival.Core.Engine
             plan.Planned = info.EstimatedMinutes ?? info.NeededEffectiveMinutes;
             plan.CookTargets = info.Targets.Select(t => t.ProcessId).ToList();
             plan.CookTargetItems = info.Targets.Select(t => t.TargetInstanceId).ToList();
-            plan.Label = "等待烹饪";
+            plan.Label = "等待加工";
             return null;
         }
 
@@ -259,7 +259,7 @@ namespace Survival.Core.Engine
             if (open.Count == 0)
             {
                 ClearAction(s, a);
-                Emit(s, GameEventKind.ActionCompleted, $"等待烹饪结束：{LocName(loc)}火堆{a.CookTargets.Count}项加工全部完成，成品留在原位（{Clock.Duration(a.ElapsedMinutes)}）。");
+                Emit(s, GameEventKind.ActionCompleted, $"等待加工结束：{LocName(loc)}火堆{a.CookTargets.Count}项加工全部完成，成品留在原位（{Clock.Duration(a.ElapsedMinutes)}）。");
                 completed = true;
                 return true;
             }
@@ -290,7 +290,7 @@ namespace Survival.Core.Engine
         {
             var left = a.CookTargets.Count - a.CookDone.Count;
             ClearAction(s, a);
-            Emit(s, GameEventKind.ActionAborted, $"等待烹饪停止：{reason}。已完成{a.CookDone.Count}项、未完成{left}项，原料与受热进度原样保留。");
+            Emit(s, GameEventKind.ActionAborted, $"等待加工停止：{reason}。已完成{a.CookDone.Count}项、未完成{left}项，原料与受热进度原样保留。");
         }
     }
 }

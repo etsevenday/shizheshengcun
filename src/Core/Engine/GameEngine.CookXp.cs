@@ -76,6 +76,7 @@ namespace Survival.Core.Engine
         public string? CookXpNote(GameState s, FacilityProcess p)
         {
             var c = Config.Progression.Cooking;
+            if (Process(p.RecipeId).IsSlotBatch) return "煅烧不给经验";
             if (p.RecipeId == c.WaterProcess)
                 return p.InitiatorActorId == null ? "旧进程，不给烹饪经验" : $"完成后每500毫升{SkillName(Cooking)}经验+1（每日最多{c.WaterDailyCap}）";
             var per = CookFoodXpFor(p.RecipeId);

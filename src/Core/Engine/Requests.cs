@@ -60,7 +60,7 @@ namespace Survival.Core.Engine
         public static ActionRequest Ignite(int? lighterInstanceId = null) => new ActionRequest { Type = ActionType.Ignite, InstanceId = lighterInstanceId };
     }
 
-    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, PutInFire, PutFoodInPot, TakeOut, Reorder }
+    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, PutInFire, PutFoodInPot, TakeOut, Reorder, LoadCharcoal }
 
     public sealed class InstantRequest
     {
@@ -93,6 +93,8 @@ namespace Survival.Core.Engine
             new InstantRequest { Kind = InstantKind.PutFoodInPot, InstanceId = foodInstanceId, TargetInstanceId = potInstanceId, Count = count };
         /// <summary>从火堆取下锅（整锅）或取出火堆/锅里的一份食材，到随身或当前地面。</summary>
         public static InstantRequest TakeOut(int instanceId, string zone) => new InstantRequest { Kind = InstantKind.TakeOut, InstanceId = instanceId, Zone = zone };
+        /// <summary>Q111 火堆煅烧木炭：从随身与当前地面未预留的木材凑足一批（4份）原子放进当前火堆一个空加工位；0 世界分钟。</summary>
+        public static InstantRequest LoadCharcoal() => new InstantRequest { Kind = InstantKind.LoadCharcoal };
         public static InstantRequest Reorder(string zone, string cardKey, int index) =>
             new InstantRequest { Kind = InstantKind.Reorder, Zone = zone, CardKey = cardKey, Index = index };
 
