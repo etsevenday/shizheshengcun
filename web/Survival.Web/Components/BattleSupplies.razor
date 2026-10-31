@@ -1,0 +1,67 @@
+@inherits GameComponent
+
+@* 战斗内“物资查看”只读抽屉（A10 §5、S14「2026-10-30 全系统更新目标」）：地面与随身折叠到这里——列出真实随身五卡（含容器里的水/食材）
+   与当前地面，可看剩余食物、水、工具与来源；不提供食用/饮水、拾取、转移、制作、换入第三把武器等任何操作（战斗锁不被绕开），
+   用药统一走操作台“医疗”。只读，不选中、不改顺序、不推进时间。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var used = e.RootCardCount(s);
+}
+
+<div class="bsup" aria-label="物资查看（只读）">
+    <div class="bsup-lock">🔒 战斗中只读：不能吃喝、拾取、转移、制作或换入第三把武器；用药请用操作台“医疗”。</div>
+    <section class="bsup-zone" aria-label="随身">
+        <h3>随身 · @(used)/@(e.MaxRootCards)张卡 · @(Ui.Kg(e.CarriedGrams(s)))公斤</h3>
+        <div class="bsup-cards">@Cards(ItemInstance.Carried)</div>
+    </section>
+    <section class="bsup-zone" aria-label="当前地面">
+        <h3>当前地面 · @e.LocName(s.CurrentLocation)</h3>
+        <div class="bsup-cards">@Cards(s.CurrentLocation)</div>
+    </section>
+</div>
+
+@code {
+    private RenderFragment Cards(string owner) => __builder =>
+    {
+        var s = G.S;
+        var e = G.E;
+        var items = s.Items.Where(i => i.Owner == owner).ToList();
+        var any = false;
+        foreach (var key in e.OrderedCards(s, owner))
+        {
+            var parts = key.Split('|');
+            var id = parts[1];
+            if (parts.Length == 2)
+            {
+                var list = items.Where(i => i.ItemId == id).OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
+                if (list.Count == 0) continue;
+                any = true;
+                var head = list[0];
+                var batches = list.Select(i => i.ExpiresAt).Distinct().Count();
+                <div class="bsup-card" tabindex="0" title="@($"{e.ItemName(id)}×{list.Sum(i => i.Count)}：{Ui.ItemLine(e, s, head)}{(batches > 1 ? $"（{batches}批，最早到期在前）" : "")}")">
+                    <span class="bsup-art" aria-hidden="true">@Icons.Markup(id)</span>
+                    <span class="bsup-text"><b>@e.ItemName(id) ×@list.Sum(i => i.Count)</b><small>@(e.IsSpoiled(s, head) ? "已腐败" : Ui.ItemLine(e, s, head))@(batches > 1 ? $" · {batches}批" : "")</small></span>
+                </div>
+            }
+            else
+            {
+                var t = items.FirstOrDefault(i => i.InstanceId.ToString() == parts[2]);
+                if (t == null) continue;
+                any = true;
+                var inner = s.Items.Where(i => i.Owner == ItemInstance.ContainerOwner(t.InstanceId)).ToList();
+                <div class="bsup-card @(inner.Count > 0 ? "has-inner" : "")" tabindex="0" title="@($"{e.ItemName(t.ItemId)}#{t.InstanceId}：{Ui.ItemLine(e, s, t)}")">
+                    <span class="bsup-art" aria-hidden="true">@Icons.Markup(t.ItemId)</span>
+                    <span class="bsup-text"><b>@e.ItemName(t.ItemId)#@t.InstanceId</b><small>@Ui.ItemLine(e, s, t)</small>
+                        @if (inner.Count > 0)
+                        {
+                            <small class="bsup-inner">内有：@string.Join("、", inner.GroupBy(i => i.ItemId).Select(g => $"{e.ItemName(g.Key)}×{g.Sum(i => i.Count)}"))</small>
+                        }
+                        else if (e.Item(t.ItemId).ContainerId != null) { <small class="bsup-inner">空</small> }
+                    </span>
+                </div>
+            }
+        }
+        if (!any) { <div class="bsup-empty">没有物品</div> }
+    };
+}

@@ -153,7 +153,7 @@ else if (b != null)
             <div class="op-head">
                 <div class="eyebrow">战斗第@(b.Round)轮 · @(awaiting ? $"你的行动（剩{b.PlayerAp}AP）" : "敌方行动中")</div>
                 <h2>@(t != null && t.Alive ? $"{t.Slot}号位 {e.EnemyName(t)}" : "选择指令")</h2>
-                <p>先在操作台选技能，再把鼠标移到亮起的目标上看预测、点击目标执行；没选技能时点敌卡只查看。</p>
+                @if (t == null || !t.Alive) { <p>先在操作台选技能，再把鼠标移到亮起的目标上看预测、点击目标执行；没选技能时点敌卡只查看。</p> }
             </div>
             @* 试玩修复 B7d-6：点了不可用的技能/指令，原因放在最上面（原先在最近战斗记录下面，常常看不到） *@
             @if (G.Notice != null) { <div class="blocked">@G.Notice</div> }
@@ -184,14 +184,9 @@ else if (b != null)
                 <div title="控制成功率=clamp(75%+控制能力−抗性, 10%, 95%)；稳态期间抗性再+30；装备“位移抵抗”只防拉扯/击退，不防失衡/减速"><span>你的控制抗性</span><b>基础@(Ui.T(e.Config.Scope.BasePlayerControlResist)) · 拉扯/击退@(Ui.T(e.PlayerControlResist(s, b, "pull")))@(b.PlayerSteadyUntilRound >= b.Round ? "（稳态另+30）" : "")</b></div>
                 <div><span>本场世界时间</span><b>@Clock.Duration(b.Ticks * e.Config.Time.TickMinutes)（每轮5分钟）</b></div>
             </div>
-            @if (b.Log.Count > 0)
-            {
-                @* 操作台只留一行短反馈，完整的最近战斗记录在这里（更早的在行动日志） *@
-                <div class="eyebrow" style="margin-top:8px">最近战斗记录</div>
-                <ul class="notes">@foreach (var line in Enumerable.Reverse(b.Log).Take(6)) { <li>@line</li> }</ul>
-            }
+            @* B9：最近战斗记录移到右下“战报”（完整记录点“查看记录”），这里只放对象信息 *@
         </div>
-        <div class="detail-foot"><div class="under">战斗中地面与随身物品只能查看；切换武器页、装填与用药请用战斗区的页签与指令。</div></div>
+        <div class="detail-foot"><div class="under">地面与随身在底部“物资查看”（只读）；切页、装填与用药在操作台。</div></div>
     }
 }
 

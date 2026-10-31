@@ -1,0 +1,55 @@
+@inherits GameComponent
+
+@* 战斗内“装备查看”只读抽屉（A10 §4.2、§5）：七个装备槽（两武器、防具、战斗饰品、上衣、下衣、求生饰品）与效果汇总；
+   武器槽不接收拖入，没有卸下/装备按钮——第三把武器只能战后合法装备。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+}
+
+<div class="beq" aria-label="装备查看（只读）">
+    <div class="bsup-lock">🔒 战斗中只读：不能换装、卸下或换入第三把武器；两把武器在操作台用Ⅰ/Ⅱ页签切换（0AP）。</div>
+    <div class="beq-list">
+        @foreach (var slot in EquipSlots.All)
+        {
+            var it = e.WornItem(s, GameState.PlayerId, slot);
+            <div class="beq-row @(it == null ? "empty" : "")" data-slot="@slot">
+                <span class="beq-slot">@EquipSlots.Name(slot)</span>
+                @if (it == null)
+                {
+                    <span class="beq-item muted">空</span>
+                }
+                else
+                {
+                    <span class="bsup-art" aria-hidden="true">@Icons.Markup(it.ItemId)</span>
+                    <span class="beq-item"><b class="q-@(it.Quality ?? "white")">@e.ItemName(it.ItemId)#@it.InstanceId</b><small>@Stat(it)</small></span>
+                }
+            </div>
+        }
+    </div>
+    <div class="beq-fx">
+        <div>@e.BaseDefenseLine()</div>
+        @foreach (var line in e.EquipSummaryLines(s)) { <div>@line</div> }
+    </div>
+</div>
+
+@code {
+    /// <summary>品质词条、耐久与弹仓（同人物页装备区第二行）。</summary>
+    private string Stat(ItemInstance it)
+    {
+        var s = G.S;
+        var e = G.E;
+        var parts = new List<string>();
+        if (it.Quality is "green" or "blue")
+            parts.Add(it.Affixes is { Count: > 0 } af ? $"{e.QualityName(it)}·{string.Join("、", af.Select(id => e.Affix(id)?.Name ?? id))}" : $"{e.QualityName(it)}（无附加词条）");
+        if (it.Durability.HasValue && it.MaxDurability.HasValue)
+            parts.Add(it.Durability.Value <= 0 ? "已损坏（效果暂停）" : $"耐久{GameEngine.DurabilityText(it)}");
+        if (e.Weapon(it.ItemId) is { } w)
+        {
+            if (w.UsesMagazine) parts.Add($"弹仓{it.LoadedAmmo}/{w.MagazineCapacity}");
+            else if (w.ConsumesLooseAmmo && w.AmmoId != null) parts.Add($"随身{e.ItemName(w.AmmoId)}{s.Items.Where(i => i.IsCarried && i.ItemId == w.AmmoId).Sum(i => i.Count)}");
+        }
+        parts.Add(Ui.KgText(e.ItemGrams(s, it)));
+        return string.Join(" · ", parts);
+    }
+}

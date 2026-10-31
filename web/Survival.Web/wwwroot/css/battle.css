@@ -70,6 +70,42 @@
 .bfs-feed-btns button { width: auto; min-height: 30px; padding: 0 12px; font-size: 16px; white-space: nowrap; }
 .bfs-feed-btns button.on { border-color: var(--accent); color: var(--accent); }
 
+/* ── 右对象信息栏（窄栏 240—360px）：正文 16px、单列，长数值不挤成竖排 ── */
+.bfs-info .detail-scroll { gap: 8px; }
+.bfs-info .eyebrow { font-size: 16px; letter-spacing: 0; }
+.bfs-info .op-head { padding-bottom: 6px; }
+.bfs-info .op-head h2 { font-size: 20px; margin: 2px 0; }
+.bfs-info .op-head p, .bfs-info .notes, .bfs-info .risk, .bfs-info .blocked, .bfs-info .notice, .bfs-info .under { font-size: 16px; line-height: 1.5; }
+.bfs-info .facts { grid-template-columns: 1fr; gap: 4px; }
+.bfs-info .fact { padding: 4px 8px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.bfs-info .fact span { font-size: 16px; margin: 0; display: inline; }
+.bfs-info .fact strong { font-size: 18px; text-align: right; }
+.bfs-info .lines { font-size: 16px; line-height: 1.45; }
+.bfs-info .lines > div { flex-direction: column; gap: 0; padding: 2px 0; border-bottom: 1px solid #ffffff10; }
+.bfs-info .lines > div > b { text-align: left; font-weight: 500; }
+.bfs-info .detail-foot { margin-top: 6px; }
+
+/* ── 物资查看 / 装备查看（只读） ── */
+.bsup, .beq { display: flex; flex-direction: column; gap: 10px; }
+.bsup-lock { font-size: 16px; color: var(--warn); border: 1px solid #6b5c3f; background: #6f4d2229; padding: 6px 10px; border-radius: 4px; }
+.bsup-zone h3 { margin: 0 0 6px; font-size: 18px; font-weight: 600; }
+.bsup-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+.bsup-card { display: flex; align-items: flex-start; gap: 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 5px; background: #1d2629; }
+.bsup-art { flex: 0 0 auto; width: 40px; height: 40px; border-radius: 4px; background: var(--paper); display: flex; align-items: center; justify-content: center; }
+.bsup-art svg, .bsup-art img { width: 36px; height: 36px; }
+.bsup-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.35; }
+.bsup-text b, .bsup-text small { font-size: 16px; }
+.bsup-text small { color: var(--muted); }
+.bsup-inner { color: #cfd5c6 !important; }
+.bsup-empty { font-size: 16px; color: var(--muted); }
+.beq-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 6px; }
+.beq-row { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 5px; background: #1d2629; }
+.beq-row.empty { border-style: dashed; background: transparent; }
+.beq-slot { flex: 0 0 80px; font-size: 16px; color: var(--muted); }
+.beq-item { display: flex; flex-direction: column; min-width: 0; font-size: 16px; line-height: 1.35; }
+.beq-item small { font-size: 16px; color: var(--muted); }
+.beq-fx { font-size: 16px; line-height: 1.5; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+
 /* ── 抽屉 ── */
 .bfs-drawer { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: #121a1dfa; border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 8px 28px #000a; }
 .bfs-drawer > .sub-panel { position: absolute; inset: 0; }
