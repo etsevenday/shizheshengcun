@@ -1,0 +1,117 @@
+@inherits GameComponent
+
+@* B8（R08 §1—§4、A11 §5—§8；开发计划 v0.9 B8 M189）：右栏人物页顶部的“队伍”块——同行与候补各人的六项/病毒/速度/两件武器，
+   营区（v3 前替身：临时营地）安全空闲时编入/留守、号位前后移、RB01 登记补员与借用矛报失；当前地点的遗物可取出。
+   只读预览与禁用原因都来自内核同名 *Blocked 函数，按钮不另判。正式招募任务在后续批次，名册现在只能经 ?dev=1 加人。
+   多人战斗（队友入场、逐人操作）未做，见开发计划 B8.4。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var cap = e.PartyCapacity(s);
+    var alive = s.Roster.Where(r => !r.Dead).ToList();
+    var dead = s.Roster.Where(r => r.Dead).ToList();
+    var remains = e.RemainsHere(s);
+    var show = s.Roster.Count > 0 || remains.Count > 0;
+    var care = e.Config.Party.ReserveCare;
+}
+@if (show)
+{
+    <section class="party-block" aria-label="队伍">
+        <div class="party-head">
+            <b>队伍 @s.Party.Count/@cap</b>
+            <span class="muted tiny">容量 C@(cap) 含你 · 名册 @alive.Count 人存活@(dead.Count > 0 ? $"、{dead.Count} 人已故" : "")</span>
+        </div>
+        <div class="party-list">
+            @{ var order = s.FormationPreset.Where(s.Party.Contains).ToList(); }
+            @for (var k = 0; k < order.Count; k++)
+            {
+                var id = order[k];
+                var pos = k + 1;
+                @Row(id, $"{pos}号位", true, k > 0, k < order.Count - 1)
+            }
+            @foreach (var r in e.Reserves(s))
+            {
+                @Row(r.ActorId, "候补", false, false, false)
+            }
+        </div>
+        @if (e.Reserves(s).Count > 0)
+        {
+            <div class="ca-note">候补留在@(e.LocName(e.HubLocation))，接受公共照护：饱食/水分每段自然消耗后不低于@(Fmt.T(care.SatietyFloor))（只托底、不生成食水），22:00—06:00 遮蔽睡眠、其余时段等待；伤病与病毒照常发展。</div>
+        }
+        @{
+            var rbWhy = e.EscortRegistrationBlocked(s);
+            var slots = e.LoanSlotIds(s).Where(x => s.LoanSlots.ContainsKey(x)).ToList();
+        }
+        <div class="btn-row party-btns">
+            <button type="button" class="secondary small-btn" disabled="@(rbWhy != null)" title="@(rbWhy ?? "在营区登记一名通用护送员（30分钟等待，全队按等待消耗）：技能均1级、速度4、借用木矛")" @onclick="() => G.StartEscortRegistration()">登记同行补员（30分钟）</button>
+            @foreach (var slot in slots)
+            {
+                var sl = slot;
+                var lostWhy = e.ReportLostLoanBlocked(s, sl);
+                <button type="button" class="secondary small-btn" disabled="@(lostWhy != null)" title="@(lostWhy ?? "借用矛确实已损毁或找不回：旧的作废，新补一件放在营区地面")" @onclick="() => G.ReportLostLoan(sl)">报失借用矛（@sl）</button>
+            }
+        </div>
+        @if (rbWhy != null)
+        {
+            <div class="ca-note tiny">补员：@rbWhy</div>
+        }
+        @foreach (var kv in remains)
+        {
+            var deadId = kv.Key;
+            var rem = kv.Value;
+            var items = e.RemainsItems(s, deadId);
+            <div class="remains-card" data-remains="@deadId">
+                <div><b>@(rem.Name)的遗物</b> <span class="muted tiny">死于@(Clock.DayTime(rem.Minute))（@rem.Cause）</span></div>
+                @foreach (var it in items)
+                {
+                    var iid = it.InstanceId;
+                    var whyCarry = e.TakeFromRemainsBlocked(s, deadId, iid, false);
+                    var whyGround = e.TakeFromRemainsBlocked(s, deadId, iid, true);
+                    <div class="remains-row">
+                        <span>@e.ItemName(it.ItemId)@(it.Count > 1 ? $"×{it.Count}" : "")#@iid@(it.LoanSlot != null ? "（借用）" : "")</span>
+                        <button type="button" class="eq-btn" disabled="@(whyCarry != null)" title="@(whyCarry ?? "取到你的随身（五张卡与30公斤校验）")" @onclick="() => G.TakeRemains(deadId, iid, false)">取到随身</button>
+                        <button type="button" class="eq-btn" disabled="@(whyGround != null)" title="@(whyGround ?? "放到当前地面")" @onclick="() => G.TakeRemains(deadId, iid, true)">放地面</button>
+                    </div>
+                }
+            </div>
+        }
+    </section>
+}
+
+@code {
+    private RenderFragment Row(string id, string where, bool active, bool canUp, bool canDown) => __builder =>
+    {
+        var s = G.S;
+        var e = G.E;
+        var a = s.Actor(id);
+        var st = a.Stats;
+        var isMe = id == GameState.PlayerId;
+        var name = isMe ? "你" : e.ActorDisplayName(s, id);
+        var w1 = e.WornItem(s, id, EquipSlots.Weapon1);
+        var w2 = e.WornItem(s, id, EquipSlots.Weapon2);
+        var weapons = string.Join(" / ", new[] { w1, w2 }.Select(w => w == null ? "空" : e.ItemName(w.ItemId) + (w.LoanSlot != null ? "（借用）" : "")));
+        var toggleWhy = isMe ? null : e.SetActiveBlocked(s, id, !active);
+        var editWhy = e.PartyEditBlocked(s);
+        <div class="party-row @(active ? "" : "reserve")" data-actor="@id">
+            <div class="party-name"><span class="party-pos">@where</span> <b>@name</b> <span class="muted tiny">速度@(Fmt.T(e.ActorBaseSpeed(s, id)))</span></div>
+            <div class="party-stats tiny" title="健康/饱食/水分/体力/清醒/精神/病毒">
+                健@(Fmt.T(st.Health)) 饱@(Fmt.T(st.Satiety)) 水@(Fmt.T(st.Hydration)) 体@(Fmt.T(st.Energy)) 醒@(Fmt.T(st.Wakefulness)) 精@(Fmt.T(st.Morale))@(a.Body.Infected ? $" 病毒{Fmt.N(a.Body.VirusLoad)}" : "")
+            </div>
+            <div class="party-weapons tiny muted">武器：@weapons</div>
+            @if (!isMe || active)
+            {
+                <div class="party-acts">
+                    @if (active)
+                    {
+                        <button type="button" class="eq-btn" disabled="@(!canUp || editWhy != null)" title="@(editWhy ?? "号位前移（战前编成预设）")" @onclick="() => G.MoveInFormation(id, -1)">前移</button>
+                        <button type="button" class="eq-btn" disabled="@(!canDown || editWhy != null)" title="@(editWhy ?? "号位后移（战前编成预设）")" @onclick="() => G.MoveInFormation(id, 1)">后移</button>
+                    }
+                    @if (!isMe)
+                    {
+                        <button type="button" class="eq-btn" disabled="@(toggleWhy != null)" title="@(toggleWhy ?? (active ? "留在营区作候补（公共照护：饱食/水分不低于40，伤病照常）" : "编入同行队伍"))" @onclick="() => G.SetActive(id, !active)">@(active ? "留作候补" : "编入同行")</button>
+                    }
+                </div>
+            }
+        </div>
+    };
+}

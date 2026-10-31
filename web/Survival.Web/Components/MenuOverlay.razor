@@ -111,6 +111,29 @@
                     <button class="secondary" @onclick="() => DevCapacity(null)">清除容量事实（回C1）</button>
                     <button class="secondary" @onclick="() => DevDone(G.E.DebugGiveWraps(G.S))">护拳绑带1件+制作材料</button>
                 </div>
+                @* B8（R08、A11 §6/§7）：正式招募任务（RN01—RN06）在后续批次，这里直接把六名命名角色登记入名册（同行未满 C 时直接编入） *@
+                <div class="eyebrow">队伍（B8）：先记下容量事实再加人；营区＝临时营地</div>
+                <div class="btn-row">
+                    @foreach (var n in G.E.Config.Party.NamedCompanions)
+                    {
+                        var nid = n.ActorId;
+                        <button class="secondary small-btn" @onclick="() => DevParty(st => G.E.DebugRecruit(st, nid))">加入名册：@n.Name</button>
+                    }
+                    <button class="secondary small-btn" @onclick="() => DevParty(st => G.E.DebugAddEscort(st))">加入通用护送员（跳过登记与30分钟）</button>
+                </div>
+                @foreach (var r in G.S.Roster.Where(r => !r.Dead))
+                {
+                    var rid = r.ActorId;
+                    <div class="btn-row">
+                        <span class="tiny">@r.Name（@(G.S.Party.Contains(rid) ? "同行" : "候补")）：</span>
+                        <button class="secondary small-btn" @onclick="() => DevParty(st => G.E.DebugToggleActive(st, rid))">切换在队/候补</button>
+                        <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "health1"))'>健康→1</button>
+                        <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "virus79"))'>病毒→79</button>
+                        <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "food41"))'>饱食水分→41</button>
+                        <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "spear0"))'>武器耐久→0</button>
+                        <button class="secondary small-btn" @onclick='() => DevParty(st => G.E.DebugActor(st, rid, "kill"))'>队友死亡</button>
+                    </div>
+                }
                 @{
                     // B7（A09 §1）：20 种新敌人只入数据、不进旧刷新池，只能从这里放出来试玩
                     var pooled = G.E.Config.WorldEnemies.Pools.Values.SelectMany(p => p.Values).SelectMany(l => l).Select(x => x.EnemyId).ToHashSet();
@@ -179,6 +202,13 @@
     private void DevCapacity(string? fact) => DevDone(G.E.DebugCapacityFact(G.S, fact));
 
     private void DevSkillKit() => DevDone(G.E.DebugGiveSkillKit(G.S));
+
+    private void DevParty(Func<GameState, string> act)
+    {
+        G.DevParty(act);
+        G.Panel = null;
+        G.Notify();
+    }
 
     private void DevSubstance()
     {

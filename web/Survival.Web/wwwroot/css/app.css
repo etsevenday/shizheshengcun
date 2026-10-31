@@ -1222,3 +1222,15 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 }
 .menu-scroll { max-height: calc(100vh - 110px); overflow-y: auto; }
 .menu-scroll::after { bottom: -18px; }
+
+/* B8 队伍块（右栏人物页顶部）：同行/候补各一行，遗物卡 */
+.party-block { border-bottom: 1px solid var(--line); padding: 6px 0 8px; display: flex; flex-direction: column; gap: 6px; }
+.party-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.party-list { display: flex; flex-direction: column; gap: 4px; }
+.party-row { border: 1px solid var(--line); border-radius: 3px; padding: 4px 6px; display: flex; flex-direction: column; gap: 2px; }
+.party-row.reserve { opacity: 0.85; border-style: dashed; }
+.party-pos { font-size: 13px; color: var(--muted); }
+.party-acts { display: flex; gap: 4px; flex-wrap: wrap; }
+.party-btns { gap: 4px; }
+.remains-card { border: 1px solid #7d4f45; border-radius: 3px; padding: 4px 6px; display: flex; flex-direction: column; gap: 3px; }
+.remains-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 14px; }

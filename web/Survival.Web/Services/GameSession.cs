@@ -1557,6 +1557,53 @@ public sealed class GameSession
     public ActionResult ResolveDuplicateWeapons(int keep, IDictionary<int, bool> toGround) =>
         Commit(E.ResolveDuplicateWeapons(S, GameState.PlayerId, keep, toGround, Guid.NewGuid().ToString("N")));
 
+    // ───────────── B8 队伍与共同生存（R08、A11 §5—§8）：编队、预设、遗物、RB01、报失 ─────────────
+
+    /// <summary>编入同行或留作候补（营区安全空闲，0 时间）。</summary>
+    public ActionResult SetActive(string actorId, bool active) =>
+        Commit(E.SetActive(S, actorId, active, Guid.NewGuid().ToString("N")));
+
+    /// <summary>战前号位预设里把某人前移（delta=−1）或后移（+1）一位。</summary>
+    public ActionResult MoveInFormation(string actorId, int delta)
+    {
+        var order = S.FormationPreset.ToList();
+        var i = order.IndexOf(actorId);
+        var j = i + delta;
+        if (i < 0 || j < 0 || j >= order.Count) return ActionResult.Fail("不能再移动");
+        (order[i], order[j]) = (order[j], order[i]);
+        return Commit(E.SetFormation(S, order, Guid.NewGuid().ToString("N")));
+    }
+
+    /// <summary>从遗物取出一件到你的随身或当前地面。</summary>
+    public ActionResult TakeRemains(string deadId, int instanceId, bool toGround) =>
+        Commit(E.TakeFromRemains(S, deadId, instanceId, toGround, Guid.NewGuid().ToString("N")));
+
+    /// <summary>报失某借用位的借用矛。</summary>
+    public ActionResult ReportLostLoan(string slot) =>
+        Commit(E.ReportLostLoan(S, slot, Guid.NewGuid().ToString("N")));
+
+    /// <summary>RB01 登记同行补员：30 分钟 wait 主行动，开始后照常推进。</summary>
+    public async Task<ActionResult> StartEscortRegistration()
+    {
+        if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        var res = E.StartEscortRegistration(S, Guid.NewGuid().ToString("N"));
+        Notice = res.Ok ? null : res.Reason;
+        if (res.Ok) { Drain(); Save(); }
+        Notify();
+        if (res.Ok && !res.Duplicate) await RunLoop();
+        return res;
+    }
+
+    /// <summary>开发入口（?dev=1）：执行一条队伍相关的开发操作并存档。</summary>
+    public void DevParty(Func<GameState, string> act)
+    {
+        if (State == null) return;
+        Notice = act(S);
+        Drain();
+        Save();
+        Notify();
+    }
+
     private ActionResult Commit(ActionResult res)
     {
         Notice = res.Ok ? null : res.Reason;
