@@ -145,49 +145,151 @@ namespace Survival.Core.Engine
             return ActionResult.Success();
         }
 
+        /// <summary>
+        /// 编入同行或留作候补后同步编队预设（Q86 本轮章）：新成员在同一换队事务里补到最前空槽；离开的只清自己的格，其余槽与空位不动；
+        /// 阵容版本 +1。不增加 C、不改角色状态或物品。
+        /// </summary>
         private void ApplySetActive(GameState s, string actorId, bool active)
         {
             if (active)
             {
                 if (!s.Party.Contains(actorId)) s.Party.Add(actorId);
-                if (!s.FormationPreset.Contains(actorId)) s.FormationPreset.Add(actorId);
             }
-            else
+            else s.Party.Remove(actorId);
+            RepairFormation(s);
+            s.FormationVersion++;
+        }
+
+        // ───────────── 战前编队（Q86：R08/S14/S01/R03 本轮章「顶栏编队与真实开战预设」） ─────────────
+
+        /// <summary>编队格数（真实 1—4 槽）。</summary>
+        public int FormationSlotCount => Config.Scope.Slots.Count;
+
+        /// <summary>某人在编队预设里的号位（1—4）；不在为 0。</summary>
+        public static int FormationSlotOf(GameState s, string actorId)
+        {
+            var i = s.FormationPreset.IndexOf(actorId);
+            return i >= 0 ? i + 1 : 0;
+        }
+
+        /// <summary>
+        /// 把一份预设整理成合法的 4 格（不改输入）：去掉越界、空 ID、不在当前同行（含已死/离队）与重复的成员（重复的保留最前那格），
+        /// 合法唯一的槽原样保留；没有槽的同行者（含缺失的主角）按同行顺序依次补到最前空槽，绝不挤走已有合法成员；不压紧、不按武器改位。
+        /// </summary>
+        public List<string> RepairedFormation(GameState s, IList<string>? preset) => RepairedFormation(s, preset, FormationSlotCount);
+
+        /// <summary>同上（存档迁移用的静态版本，n 为格数）。</summary>
+        public static List<string> RepairedFormation(GameState s, IList<string>? preset, int n)
+        {
+            var slots = Enumerable.Repeat("", n).ToList();
+            var alive = s.Party.Distinct().Where(id => id == GameState.PlayerId || (s.Actors.ContainsKey(id) && s.Roster.FirstOrDefault(r => r.ActorId == id)?.Dead != true)).ToList();
+            if (preset != null)
+                for (var k = 0; k < Math.Min(n, preset.Count); k++)
+                {
+                    var id = preset[k];
+                    if (string.IsNullOrEmpty(id) || !alive.Contains(id) || slots.Contains(id)) continue;
+                    slots[k] = id;
+                }
+            foreach (var id in alive)
             {
-                s.Party.Remove(actorId);
-                s.FormationPreset.Remove(actorId);
+                if (slots.Contains(id)) continue;
+                var free = slots.IndexOf("");
+                if (free < 0) break;
+                slots[free] = id;
             }
-            NormalizeFormation(s);
+            return slots;
         }
 
-        /// <summary>预设与 Party 保持同一组人：去掉不在队的、补上缺的（接在末尾），主角恒在。</summary>
-        public void NormalizeFormation(GameState s)
+        /// <summary>把存档里的预设整理合法（成员变更、迁移与读档后调用）；返回是否改动。</summary>
+        public bool RepairFormation(GameState s)
         {
-            s.FormationPreset.RemoveAll(id => !s.Party.Contains(id));
-            foreach (var id in s.Party) if (!s.FormationPreset.Contains(id)) s.FormationPreset.Add(id);
-            s.FormationPreset = s.FormationPreset.Distinct().ToList();
+            var fixedSlots = RepairedFormation(s, s.FormationPreset);
+            if (s.FormationPreset.SequenceEqual(fixedSlots)) return false;
+            s.FormationPreset = fixedSlots;
+            return true;
         }
 
-        public string? SetFormationBlocked(GameState s, IList<string> order)
+        /// <summary>
+        /// 空白操作时期（Q86 R08/S14 本轮章）：主角存活、无战斗、无主行动（含暂停/等待继续，移动也是主行动）、无子行动、无待处理敌踪、
+        /// 无未读强制对白、无旧档强制整理（同类双武器、超五卡）；只有后台设施加工不算。不限地点。null 为可以编队。
+        /// </summary>
+        public string? FormationEditBlocked(GameState s)
         {
-            var why = PartyEditBlocked(s);
-            if (why != null) return why;
-            if (order.Count != s.Party.Count || order.Distinct().Count() != order.Count || order.Any(id => !s.Party.Contains(id)))
-                return "号位顺序必须正好是同行队伍里的每个人各一次";
-            if (order.Count > Config.Scope.Slots.Count) return "超过四个号位";
+            if (s.Progress.Dead) return "本局已结束";
+            if (s.Battle != null) return "战斗中不能编队（战斗里改站位用“调整站位”）";
+            if (s.Encounter != null) return "先处理眼前的敌踪（接敌或绕行）";
+            if (s.Main != null)
+            {
+                if (s.Main.Type == ActionType.Travel) return "移动中不能编队";
+                return s.Main.Status == ActionStatus.Paused ? $"{MainActionName(s.Main.Type)}已暂停：先继续或结束它再编队" : $"正在{MainActionName(s.Main.Type)}，结束后再编队";
+            }
+            if (s.Sub != null) return $"正在{MainActionName(s.Sub.Type)}，结束后再编队";
+            if (DialogueLocked(s)) return "先读完对话";
+            if (DuplicateWeaponsIllegal(s)) return "先整理身上的同类型武器";
+            if (CarriedOverflow(s)) return "先整理超出五张卡的随身物品";
             return null;
         }
 
-        /// <summary>设置战前编成预设（槽序 1..n 紧凑；R03 §1 战前重排、Q80“编成预设与场内真实位置分离”）。0 时间。</summary>
-        public ActionResult SetFormation(GameState s, IList<string> order, string? requestId = null)
+        /// <summary>
+        /// 保存编队的只读预演（提交时同一函数重验）：空闲；草稿基于的阵容版本未变；正好 4 格；每名存活当前同行者恰一格、每格至多一人、
+        /// 主角必在、不含同行以外的人；与当前预设相同为“没有改动”。C 只限制同行人数，不限制可选号位。null 为可以保存。
+        /// </summary>
+        public string? SaveFormationBlocked(GameState s, IList<string> slots, int baseVersion)
+        {
+            var why = FormationEditBlocked(s);
+            if (why != null) return why;
+            if (baseVersion != s.FormationVersion) return "队伍刚有变化，这份编队草稿已过期：请关闭后按最新队伍重新编排";
+            if (slots.Count != FormationSlotCount) return $"编队必须是{FormationSlotCount}个号位";
+            var members = slots.Where(id => !string.IsNullOrEmpty(id)).ToList();
+            if (members.Distinct().Count() != members.Count) return "每人只能占一个号位";
+            if (!members.Contains(GameState.PlayerId)) return "你必须在编队里";
+            var party = RepairedFormation(s, s.FormationPreset).Where(id => id != "").ToList();
+            if (members.Any(id => !party.Contains(id))) return "编队里有不在当前同行队伍里的人";
+            if (party.Any(id => !members.Contains(id))) return "每名当前同行者都要有一个号位";
+            if (slots.Select(x => x ?? "").SequenceEqual(s.FormationPreset)) return "编队没有改动";
+            return null;
+        }
+
+        /// <summary>
+        /// 保存编队（Q86）：原子写入 4 格预设并把阵容版本 +1；0 世界分钟、0AP、0E、0 经验，不治疗、不恢复状态、不重抽、不动工作余额/队列/设施计时。
+        /// 重复请求幂等；任何条件不满足整份不变。下一场战斗按它开局，战斗中的站位变化不反写。
+        /// </summary>
+        public ActionResult SaveFormation(GameState s, IList<string> slots, int baseVersion, string? requestId = null)
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
-            var why = SetFormationBlocked(s, order);
+            var why = SaveFormationBlocked(s, slots, baseVersion);
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, requestId);
-            s.FormationPreset = order.ToList();
-            Emit(s, GameEventKind.Info, "战前号位：" + string.Join("，", order.Select((id, k) => $"{k + 1}号位{ActorDisplayName(s, id)}")) + "。");
+            s.FormationPreset = slots.Select(x => x ?? "").ToList();
+            s.FormationVersion++;
+            Emit(s, GameEventKind.Info, "编队已保存：" + FormationText(s, s.FormationPreset) + "（下一场战斗按此开局）。");
             return ActionResult.Success();
+        }
+
+        /// <summary>“1号位你，2号位空，3号位唐梨，4号位空”。</summary>
+        public string FormationText(GameState s, IList<string> slots) =>
+            string.Join("，", slots.Select((id, k) => $"{k + 1}号位{(string.IsNullOrEmpty(id) ? "空" : ActorDisplayName(s, id))}"));
+
+        /// <summary>
+        /// 某人开战时停在的武器页上的武器与合法使用位（Q86 编队面板参考，不自动更正位置）：武器Ⅰ有武器取Ⅰ，否则Ⅱ，双空为拳。
+        /// </summary>
+        public (WeaponConfig weapon, HashSet<int> own) StartWeaponOf(GameState s, string actorId)
+        {
+            foreach (var page in new[] { 1, 2 })
+            {
+                var slot = EquipSlots.WeaponSlotOfPage(page);
+                var it = slot != null ? WornItem(s, actorId, slot) : null;
+                if (it != null && _weapons.TryGetValue(it.ItemId, out var w)) return (w, OwnPositionsOf(w));
+            }
+            var fists = _weapons[Fists];
+            return (fists, OwnPositionsOf(fists));
+        }
+
+        /// <summary>开局号位：按已保存的合法预设（整理后），主角所在格；单人也生效。</summary>
+        public int PresetPlayerSlot(GameState s)
+        {
+            var slot = RepairedFormation(s, s.FormationPreset).IndexOf(GameState.PlayerId) + 1;
+            return slot <= 0 ? 1 : slot;
         }
 
         // ───────────── 候补公共照护（R08 §3、A11 §5.3；M184） ─────────────

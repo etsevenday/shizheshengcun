@@ -352,7 +352,8 @@ namespace Survival.Core.Engine
             var wasActive = s.Party.Contains(actor.Id);
             var where = wasActive ? (s.Battle?.LocationId ?? s.CurrentLocation) : HubLocation;
             s.Party.Remove(actor.Id);
-            s.FormationPreset.Remove(actor.Id);
+            RepairFormation(s);   // Q86：只清死者那一格，其余槽与空位不动
+            s.FormationVersion++;
             if (s.Battle != null)
             {
                 var b = s.Battle;

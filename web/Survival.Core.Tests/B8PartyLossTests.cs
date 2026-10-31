@@ -48,7 +48,7 @@ public class B8PartyLossTests : TestBase
         Assert.That(r.Dead, Is.True);
         Assert.That(r.DeathLocation, Is.EqualTo("camp"));
         Assert.That(s.Party, Is.EqualTo(new[] { "p0" }));
-        Assert.That(s.FormationPreset, Is.EqualTo(new[] { "p0" }));
+        Assert.That(s.FormationPreset, Is.EqualTo(new[] { "p0", "", "", "" }), "死者那格清空（B8a 预设 4 格）");
         Assert.That(E.PartyCapacity(s), Is.EqualTo(4), "C 不降");
         Assert.That(s.Remains.Keys, Is.EqualTo(new[] { "npc_lin_zhao" }));
         Assert.That(E.RemainsItems(s, "npc_lin_zhao").Select(i => i.InstanceId).OrderBy(x => x), Is.EqualTo(ids), "一件不多不少");

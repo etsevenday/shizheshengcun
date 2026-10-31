@@ -88,7 +88,7 @@ public class B8PartyTests : TestBase
         Assert.That(E.SetActive(s, "npc_tang_li", true).Reason, Does.Contain("同行已满 4/4"));
         Assert.That(E.SetActive(s, "p0", false).Reason, Does.Contain("主角必须在队伍里"));
         Assert.That(E.Reserves(s).Select(r => r.ActorId), Is.EqualTo(Six.Skip(3)));
-        Assert.That(s.FormationPreset, Is.EqualTo(s.Party), "编入时接在预设末尾");
+        Assert.That(s.FormationPreset, Is.EqualTo(s.Party), "编入时补到最前空槽（B8a Q86：预设为 4 格）");
     }
 
     /// <summary>PT09/NP-A12：入队→候补→入队（0 时间反复）：时间、状态、装备都不变，不重发、不重抽、不托底。</summary>
@@ -126,7 +126,10 @@ public class B8PartyTests : TestBase
         Assert.That(E.PartyCapacity(s), Is.EqualTo(3));
     }
 
-    /// <summary>编队限制：只在营区安全空闲；战斗、行动、对白中不行；预设必须正好是同行者各一次。</summary>
+    /// <summary>
+    /// 换人限制：只在营区安全空闲；战斗、行动、对白中不行。B8a 按 Q86 改写号位部分：预设是 4 格（可空位），用 SaveFormation 保存，
+    /// 必须正好是同行者各一格、主角必在；离队只清自己那格，不压紧。
+    /// </summary>
     [Test]
     public void PartyEdit_OnlyAtHubWhenIdle_AndFormationValidated()
     {
@@ -135,9 +138,9 @@ public class B8PartyTests : TestBase
         E.AddNamedToRoster(s, "npc_lin_zhao");
         Assert.That(E.SetActive(s, "npc_tang_li", true).Ok, Is.True);
         Assert.That(E.SetActive(s, "npc_lin_zhao", true).Ok, Is.True);
-        Assert.That(E.SetFormation(s, new[] { "npc_lin_zhao", "npc_tang_li" }).Ok, Is.False, "缺主角");
-        Assert.That(E.SetFormation(s, new[] { "npc_lin_zhao", "npc_tang_li", "p0" }).Ok, Is.True);
-        Assert.That(s.FormationPreset, Is.EqualTo(new[] { "npc_lin_zhao", "npc_tang_li", "p0" }));
+        Assert.That(E.SaveFormation(s, new[] { "npc_lin_zhao", "npc_tang_li", "", "" }, s.FormationVersion).Ok, Is.False, "缺主角");
+        Assert.That(E.SaveFormation(s, new[] { "npc_lin_zhao", "npc_tang_li", "p0", "" }, s.FormationVersion).Ok, Is.True);
+        Assert.That(s.FormationPreset, Is.EqualTo(new[] { "npc_lin_zhao", "npc_tang_li", "p0", "" }));
         Assert.That(s.Party[0], Is.EqualTo("p0"), "Party 主角恒在首位");
         Start(s, ActionRequest.Wait(30));
         Assert.That(E.SetActive(s, "npc_tang_li", false).Reason, Does.Contain("正在行动"));
@@ -145,7 +148,7 @@ public class B8PartyTests : TestBase
         E.DebugTeleport(s, "field");
         Assert.That(E.SetActive(s, "npc_tang_li", false).Reason, Does.Contain("营区"));
         Assert.That(E.DebugToggleActive(s, "npc_tang_li"), Does.Contain("候补"), "开发入口跳过地点限制");
-        Assert.That(s.FormationPreset, Is.EqualTo(new[] { "npc_lin_zhao", "p0" }));
+        Assert.That(s.FormationPreset, Is.EqualTo(new[] { "npc_lin_zhao", "", "p0", "" }), "离队只清她那一格，其余号位与空位不动");
     }
 
     /// <summary>配置：六人两件武器存在且 kind 不同，技能合法；坏配置被拒。</summary>

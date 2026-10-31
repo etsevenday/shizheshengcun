@@ -393,7 +393,10 @@ namespace Survival.Core.Engine
             b.EncounterId = $"enc-{b.BattleId}";
             // 容量 C 锁存（R03 §1、A11：决定敌人数上限，不按实到人数缩怪）；有序名单截前 C 个，从 1 号位起紧凑排位
             b.Capacity = BattleCapacity(s);
-            b.Allies = new List<string> { GameState.PlayerId };   // 新战初次生成默认紧凑：主角在 1 号位（队友参战与战前编成在 B8）
+            // Q86：新战按已保存的编队预设开局（单人也生效）：不压紧、不按武器自动找位、不另收开局站位 AP；
+            // 战内真实槽另存，拉扯/击退/调整/死亡不反写预设。队友目前不入场（多人战斗未做，B8.4），只放主角
+            var start = PresetPlayerSlot(s);
+            b.Allies = Enumerable.Repeat("", start - 1).Append(GameState.PlayerId).ToList();
             var k = 0;
             var joined = group.Take(Math.Min(b.Capacity, Config.Scope.Slots.Count)).ToList();
             foreach (var w in joined)

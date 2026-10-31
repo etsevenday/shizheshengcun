@@ -31,6 +31,11 @@
             <button class="@(G.Panel == "craft" ? "on" : "")" disabled="@navOff" title="@NavTitle("手工制作", "C")" @onclick='() => Toggle("craft")'>手工制作<kbd>C</kbd></button>
             <button class="@(G.Panel == "rest" ? "on" : "")" disabled="@navOff" title="@NavTitle("休息", "R")" @onclick='() => Toggle("rest")'>休息<kbd>R</kbd></button>
             <button class="@(G.Panel == "log" ? "on" : "")" disabled="@navOff" title="@NavTitle("行动日志", "L")" @onclick='() => Toggle("log")'>行动日志<kbd>L</kbd></button>
+            @* Q86（S14 本轮章）：顶栏“编队”只在空白操作时期可用；不可用时不打开，点击/悬停写具体原因（战斗与对白锁同其他入口） *@
+            @{ var formWhy = G.Panel == "formation" ? null : G.FormationBlocked; }
+            <button class="@(G.Panel == "formation" ? "on" : "") @(formWhy != null ? "off" : "")" disabled="@navOff" aria-disabled="@(formWhy != null)" data-nav="formation"
+                    title="@(navOff ? NavTitle("编队", null) : formWhy != null ? $"现在不能编队：{formWhy}" : "编队：安排开战号位（前排1→后排4），保存不花时间")"
+                    @onclick="ToggleFormation">编队</button>
             <span class="nav-sep" aria-hidden="true"></span>
             <button class="@(G.Panel == "goals" ? "on" : "")" disabled="@navOff" title="@NavTitle("本局生存目标与完成情况", null)" @onclick='() => Toggle("goals")'>生存目标</button>
             <button class="@(G.Panel == "tips" ? "on" : "")" disabled="@navOff" title="@NavTitle("当前求生建议", null)" @onclick='() => Toggle("tips")'>生存提示</button>
@@ -74,6 +79,7 @@
                                 case "tips": <TipsOverlay /> break;
                                 case "help": <HelpOverlay /> break;
                                 case "dialogs": <DialogueLogOverlay /> break;
+                                case "formation": <FormationOverlay /> break;
                             }
                         </div>
                     }
@@ -215,6 +221,13 @@
     private void Toggle(string panel)
     {
         G.OpenPanel(G.Panel == panel ? null : panel);
+    }
+
+    /// <summary>编队按钮：开着就取消草稿关闭；不在空白操作时期就只提示原因（OpenFormation 内判断）。</summary>
+    private void ToggleFormation()
+    {
+        if (G.Panel == "formation") G.CancelFormation();
+        else G.OpenFormation();
     }
 
     private string NavTitle(string what, string? key)

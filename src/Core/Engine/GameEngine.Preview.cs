@@ -145,7 +145,10 @@ namespace Survival.Core.Engine
             return list;
         }
 
-        private static string DefaultLabel(ActionRequest r) => r.Type switch
+        private static string DefaultLabel(ActionRequest r) => MainActionName(r.Type);
+
+        /// <summary>行动类型的玩家说法（预演标题、编队禁用原因）。</summary>
+        public static string MainActionName(ActionType type) => type switch
         {
             ActionType.Travel => "移动",
             ActionType.Explore => "探索周边",

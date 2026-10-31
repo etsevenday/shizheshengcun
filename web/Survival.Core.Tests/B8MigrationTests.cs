@@ -14,7 +14,7 @@ public class B8MigrationTests : BattleTestBase
     {
         var j = JObject.Parse(SaveSerializer.Serialize(s));
         j["SchemaVersion"] = "14";
-        foreach (var f in new[] { "Roster", "FormationPreset", "Remains", "LoanSlots", "NextEscortSeq" }) j.Remove(f);
+        foreach (var f in new[] { "Roster", "FormationPreset", "FormationVersion", "FormationMigrated", "Remains", "LoanSlots", "NextEscortSeq" }) j.Remove(f);
         if (j["Battle"] is JObject b)
         {
             var me = (JObject)b["Fighters"]![GameState.PlayerId]!;
@@ -30,9 +30,9 @@ public class B8MigrationTests : BattleTestBase
     {
         var s = E.NewGame(77);
         var m = SaveSerializer.Deserialize(AsSchema14(s), Cfg, out _);
-        Assert.That(m.SchemaVersion, Is.EqualTo("15"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "14→15→16（B8a 编队号位）");
         Assert.That(m.Roster, Is.Empty);
-        Assert.That(m.FormationPreset, Is.EqualTo(new[] { "p0" }));
+        Assert.That(m.FormationPreset, Is.EqualTo(new[] { "p0", "", "", "" }), "B8a：预设为 4 格");
         Assert.That(m.Remains, Is.Empty);
         Assert.That(m.LoanSlots, Is.Empty);
         Assert.That(m.Log.Any(l => l.Text.Contains("存档已升级到版本15（队伍与候补）")), Is.True);
@@ -93,6 +93,6 @@ public class B8MigrationTests : BattleTestBase
         s.Party.Add("c9");
         var m = SaveSerializer.Deserialize(AsSchema14(s), Cfg, out _);
         Assert.That(m.Roster.Single().ActorId, Is.EqualTo("c9"));
-        Assert.That(m.FormationPreset, Is.EqualTo(new[] { "p0", "c9" }));
+        Assert.That(m.FormationPreset, Is.EqualTo(new[] { "p0", "c9", "", "" }));
     }
 }

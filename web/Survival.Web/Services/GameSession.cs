@@ -301,6 +301,8 @@ public sealed class GameSession
         if (panel != null && DialogueLocked) return;
         HoverPreview = null;
         Pop = null;
+        // 离开编队面板（切到别的面板或关闭）就丢弃草稿：关闭不自动保存（Q86）
+        if (panel != "formation") { FormationDraft = null; FormationPick = null; }
         // 只有地图/制作/休息会在右栏显示面板自己的预估，切到“对象信息”；顶栏浏览层（日志、目标、提示、对话记录、说明）不改右栏页签
         if (panel != null) { IgniteMenuOpen = false; if (panel is "map" or "craft" or "rest") DetailTab = DetailTab.Object; }
         if (panel == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturn = null; _helpReturnStatus = null; }
@@ -335,7 +337,7 @@ public sealed class GameSession
 
     /// <summary>替换中部上方的顶栏面板：地图、制作、休息、日志，以及生存目标、生存提示、对话记录、系统说明。</summary>
     public static bool IsTopPanel(string? panel) =>
-        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help";
+        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation";
 
     /// <summary>对话记录浏览层里选中的那一次对话（DialogueSession.Id）；null 为最近一次。</summary>
     public int? DialogLogPick { get; set; }
@@ -429,6 +431,7 @@ public sealed class GameSession
     public void Notify()
     {
         OnDialogueOnset();
+        CloseStaleFormation();
         Version++;
         Changed?.Invoke();
     }
@@ -756,6 +759,7 @@ public sealed class GameSession
     private ActionResult BeginAction(ActionRequest r, string? requestId)
     {
         if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        if (FormationOpen) { Notice = FormationOpenText; Notify(); return ActionResult.Fail(FormationOpenText); }
         var res = E.Start(S, r.WithRequestId(string.IsNullOrEmpty(requestId) ? Guid.NewGuid().ToString("N") : requestId));
         if (res.Duplicate) return res;
         if (!res.Ok)
@@ -808,6 +812,7 @@ public sealed class GameSession
     {
         // 每次界面操作带一个请求号：重复提交（连点、重发）只生效一次
         if (string.IsNullOrEmpty(r.RequestId)) r.RequestId = Guid.NewGuid().ToString("N");
+        if (FormationOpen) return Commit(ActionResult.Fail(FormationOpenText));
         var res = E.DoInstant(S, r);
         Notice = res.Ok ? null : res.Reason;
         if (res.Ok)
@@ -1463,6 +1468,7 @@ public sealed class GameSession
     public async Task ApproachEnemy(int worldEnemyId)
     {
         if (State == null || BattleBusy) return;
+        if (FormationOpen) { Notice = FormationOpenText; Notify(); return; }
         var res = E.Approach(S, worldEnemyId, Guid.NewGuid().ToString("N"));
         Notice = res.Ok ? null : res.Reason;
         if (res.Ok)
@@ -1561,17 +1567,95 @@ public sealed class GameSession
 
     /// <summary>编入同行或留作候补（营区安全空闲，0 时间）。</summary>
     public ActionResult SetActive(string actorId, bool active) =>
-        Commit(E.SetActive(S, actorId, active, Guid.NewGuid().ToString("N")));
+        FormationOpen ? Commit(ActionResult.Fail(FormationOpenText)) : Commit(E.SetActive(S, actorId, active, Guid.NewGuid().ToString("N")));
 
-    /// <summary>战前号位预设里把某人前移（delta=−1）或后移（+1）一位。</summary>
-    public ActionResult MoveInFormation(string actorId, int delta)
+    // ───────────── Q86 顶栏“编队”（R08/S14 本轮章）：四格草稿 → 保存编队/取消 ─────────────
+
+    /// <summary>编队草稿（4 格，下标=号位−1，空位 ""）；面板没开为 null。只改草稿，不自动保存。</summary>
+    public List<string>? FormationDraft { get; private set; }
+    /// <summary>打开草稿时的阵容版本（保存时交给内核比对，队伍已变就拒绝）。</summary>
+    public int FormationDraftVersion { get; private set; }
+    /// <summary>草稿里点选的角色（再点一个号位：空位移入、有人交换）。</summary>
+    public string? FormationPick { get; private set; }
+
+    /// <summary>编队按钮禁用原因（空白操作时期之外）；null 为可用。</summary>
+    public string? FormationBlocked => State == null ? "没有进行中的游戏" : E.FormationEditBlocked(S);
+
+    /// <summary>草稿是否与已保存的预设不同。</summary>
+    public bool FormationDirty => State != null && FormationDraft != null && !FormationDraft.SequenceEqual(S.FormationPreset);
+
+    /// <summary>“保存编队”禁用原因（无改动、草稿过期、不再空闲等，同内核保存校验）；null 为可保存。</summary>
+    public string? FormationSaveBlocked => State == null || FormationDraft == null ? "没有编队草稿" : E.SaveFormationBlocked(S, FormationDraft, FormationDraftVersion);
+
+    /// <summary>打开编队面板：按已保存的合法预设建草稿。不在空白操作时期就不开、提示原因。</summary>
+    public void OpenFormation()
     {
-        var order = S.FormationPreset.ToList();
-        var i = order.IndexOf(actorId);
-        var j = i + delta;
-        if (i < 0 || j < 0 || j >= order.Count) return ActionResult.Fail("不能再移动");
-        (order[i], order[j]) = (order[j], order[i]);
-        return Commit(E.SetFormation(S, order, Guid.NewGuid().ToString("N")));
+        if (State == null) return;
+        if (E.FormationEditBlocked(S) is string why) { Notice = why; Notify(); return; }
+        OpenPanel("formation");
+        FormationDraft = E.RepairedFormation(S, S.FormationPreset);
+        FormationDraftVersion = S.FormationVersion;
+        FormationPick = null;
+        Notify();
+    }
+
+    /// <summary>取消（含 Esc）：丢弃草稿、关闭面板，已保存的预设不变。</summary>
+    public void CancelFormation()
+    {
+        FormationDraft = null;
+        FormationPick = null;
+        if (Panel == "formation") OpenPanel(null);
+        else Notify();
+    }
+
+    /// <summary>点选/取消点选草稿里的一名角色。</summary>
+    public void PickFormationActor(string actorId)
+    {
+        if (FormationDraft == null || !FormationDraft.Contains(actorId)) return;
+        FormationPick = FormationPick == actorId ? null : actorId;
+        Notify();
+    }
+
+    /// <summary>点一个号位（1—4）：已选角色时移入空位或与该格的人交换；没选角色时点有人的格等于选中他。</summary>
+    public void PlaceFormationSlot(int slot)
+    {
+        if (FormationDraft == null || slot < 1 || slot > FormationDraft.Count) return;
+        var here = FormationDraft[slot - 1];
+        if (FormationPick == null)
+        {
+            if (here != "") FormationPick = here;
+            Notify();
+            return;
+        }
+        var from = FormationDraft.IndexOf(FormationPick);
+        if (from >= 0 && from != slot - 1) (FormationDraft[from], FormationDraft[slot - 1]) = (FormationDraft[slot - 1], FormationDraft[from]);
+        FormationPick = null;
+        Notify();
+    }
+
+    /// <summary>保存编队（0 时间/0AP/0E，原子保存）；成功后关闭面板，失败保留草稿并显示原因。</summary>
+    public ActionResult SaveFormation()
+    {
+        if (State == null || FormationDraft == null) return ActionResult.Fail("没有编队草稿");
+        var res = Commit(E.SaveFormation(S, FormationDraft.ToList(), FormationDraftVersion, Guid.NewGuid().ToString("N")));
+        if (res.Ok) CancelFormation();
+        return res;
+    }
+
+    /// <summary>编队面板开着时，其他推进、接敌与换队操作一律先拒绝（Q86：面板与推进操作互斥）。</summary>
+    private const string FormationOpenText = "先保存或取消编队";
+    private bool FormationOpen => Panel == "formation" && FormationDraft != null;
+
+    /// <summary>编队面板开着但已不在空白操作时期（例如突发对白/强制事件）：关闭并丢弃草稿，先处理事件，不覆盖已保存的预设。</summary>
+    private void CloseStaleFormation()
+    {
+        if (Panel != "formation" || State == null) return;
+        if (FormationDraft == null || E.FormationEditBlocked(S) != null)
+        {
+            FormationDraft = null;
+            FormationPick = null;
+            Panel = null;
+        }
     }
 
     /// <summary>从遗物取出一件到你的随身或当前地面。</summary>
@@ -1586,6 +1670,7 @@ public sealed class GameSession
     public async Task<ActionResult> StartEscortRegistration()
     {
         if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        if (FormationOpen) return Commit(ActionResult.Fail(FormationOpenText));
         var res = E.StartEscortRegistration(S, Guid.NewGuid().ToString("N"));
         Notice = res.Ok ? null : res.Reason;
         if (res.Ok) { Drain(); Save(); }

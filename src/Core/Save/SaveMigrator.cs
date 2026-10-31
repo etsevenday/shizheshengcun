@@ -39,6 +39,7 @@ namespace Survival.Core.Save
         public const string Schema12 = "12";
         public const string Schema13 = "13";
         public const string Schema14 = "14";
+        public const string Schema15 = "15";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -67,6 +68,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema12) From12To13(s, notes);
             if (s.SchemaVersion == Schema13) From13To14(s, config, notes);
             if (s.SchemaVersion == Schema14) From14To15(s, notes);
+            if (s.SchemaVersion == Schema15) From15To16(s, config, notes);
             return notes;
         }
 
@@ -700,7 +702,30 @@ namespace Survival.Core.Save
             foreach (var id in s.Party) if (!preset.Contains(id)) preset.Add(id);
             s.FormationPreset = preset;
             if (s.Battle != null) s.Battle.Fighter(GameState.PlayerId);
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（队伍与候补）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema15}（队伍与候补）。" });
+            s.SchemaVersion = Schema15;
+        }
+
+        // ───────────────────────── 15 → 16 ─────────────────────────
+
+        /// <summary>
+        /// 编队真实号位与敌人本轮 AP 账（策划答复 Q86/Q87，S01/R08 本轮章；开发计划 v0.9 B8a）：
+        /// 旧的紧凑预设（第 k 个人在 k 号位）按原顺序原样落到 1..n 号位、其余空位，只迁移一次（缺失/重复/越界/死亡离队的去掉，
+        /// 合法成员保留原槽，缺的人按同行顺序补最前空槽，主角缺失也只补空槽）；阵容版本从 0 起。
+        /// 进行中的战斗保持已存战场槽，不因补预设改变本场；轮中已行动的敌人本轮已花多少 AP 旧档没记，按已用完处理（不能替后方补位），
+        /// 没行动的从 0 起。不重抽、不补发、不改轮中进度。
+        /// </summary>
+        private static void From15To16(GameState s, GameConfig config, List<string> notes)
+        {
+            s.Party ??= new List<string>();
+            if (!s.Party.Contains(GameState.PlayerId)) s.Party.Insert(0, GameState.PlayerId);
+            s.FormationPreset = Engine.GameEngine.RepairedFormation(s, s.FormationPreset, config.Scope.Slots.Count);
+            s.FormationVersion = 0;
+            s.FormationMigrated = true;
+            if (s.Battle != null)
+                foreach (var e in s.Battle.Enemies.Where(e => e.Alive && e.Acted))
+                    e.RoundApUsed = config.Enemies.FirstOrDefault(x => x.Id == e.EnemyId)?.Ap ?? 0;
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（编队号位）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

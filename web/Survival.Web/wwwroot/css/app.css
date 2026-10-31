@@ -1239,3 +1239,25 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .party-btns { gap: 4px; }
 .remains-card { border: 1px solid #7d4f45; border-radius: 3px; padding: 4px 6px; display: flex; flex-direction: column; gap: 3px; }
 .remains-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 14px; }
+
+/* B8a（Q86）顶栏“编队”面板：四格号位 + 同行角色 + 保存/取消；1280×720 起四格一行，按钮不被挤出 */
+.nav button.off { opacity: .55; cursor: not-allowed; }
+.formation-panel .formation-body { flex: 1; min-height: 0; padding: 10px 14px; display: flex; flex-direction: column; gap: 10px; }
+.fm-slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.fm-slot { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 76px; padding: 8px 10px; text-align: left;
+  background: #232a24; border: 1px solid var(--line); border-radius: 6px; color: var(--text); cursor: pointer; min-width: 0; }
+.fm-slot.empty { border-style: dashed; color: var(--muted); }
+.fm-slot.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.fm-slot.target:hover { border-color: var(--accent); background: #2f3a31; }
+.fm-slot.warn .fm-name { color: var(--warn); }
+.fm-num { font-size: 13px; color: var(--muted); }
+.fm-name { font-size: 17px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.fm-weapon { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.fm-members { display: flex; flex-wrap: wrap; gap: 6px; }
+.fm-member { background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 5px 10px; color: var(--text); cursor: pointer; max-width: 100%; }
+.fm-member.on { border-color: var(--accent); color: var(--accent); }
+.fm-foot { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.fm-foot .fm-draft { flex: 1 1 260px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fm-foot .primary { display: inline-block; width: auto; padding: 8px 18px; font-size: 16px; min-height: 40px; }
+.fm-why { padding: 0 14px 8px; }
+@media (max-height: 760px) { .fm-slot { min-height: 60px; padding: 6px 8px; } .formation-panel .formation-body { gap: 6px; padding: 6px 12px; } }

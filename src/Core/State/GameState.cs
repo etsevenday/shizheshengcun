@@ -33,9 +33,10 @@ namespace Survival.Core.State
         /// "11" 起熟练度为十五门、最高 10 级，角色带按世界日的经验计数，记录走过的物理边（A06 §1–§4、R01 §5，开发计划 v0.9 B5）；
         /// "12" 起四对四战斗站位（B6）；"13" 起工作量余额与行动规则版本、设施进程发起者（策划答复 Q53—Q61，开发计划 v0.9 B7b）；
         /// "14" 起战斗双方保持真实 1—4 槽与空位、不再自动压紧（策划答复 Q80，开发计划 v0.9 B7d）；
-        /// "15" 起名册与候补、战前编成预设、遗物与借用位，战斗中我方每人一份战斗状态 Fighters（R08，开发计划 v0.9 B8）。
+        /// "15" 起名册与候补、战前编成预设、遗物与借用位，战斗中我方每人一份战斗状态 Fighters（R08，开发计划 v0.9 B8）；
+        /// "16" 起战前编队是真实 1—4 槽（可空位、可不连续）并带阵容版本与一次迁移标记，敌人带本轮 AP 账（策划答复 Q86/Q87，开发计划 v0.9 B8a）。
         /// </summary>
-        public const string CurrentSchema = "15";
+        public const string CurrentSchema = "16";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -62,8 +63,15 @@ namespace Survival.Core.State
         /// 候补 = 名册里存活且不在 Party 的角色；在营区（替身 camp）接受公共照护。
         /// </summary>
         public List<RosterEntry> Roster { get; set; } = new List<RosterEntry>();
-        /// <summary>战前编成预设（R03 §1、Q80）：新战斗我方按它紧凑排位 1..n；与 Party 是同一组人（主角可不在 1 号位）。</summary>
-        public List<string> FormationPreset { get; set; } = new List<string> { PlayerId };
+        /// <summary>
+        /// 战前编队预设（Q86，R08/S01 本轮章；schema 16 起）：固定 4 格，下标=号位−1，空位为 ""；每名存活当前同行者恰一格、主角必在，
+        /// 允许空位与不连续。下一场战斗按它开局（不压紧、不按武器自动改位），战内真实槽另存、不反写。
+        /// </summary>
+        public List<string> FormationPreset { get; set; } = new List<string> { PlayerId, "", "", "" };
+        /// <summary>阵容版本（Q86）：保存编队、成员加入/离开/死亡时 +1；保存请求带打开草稿时的版本，不一致就拒绝。</summary>
+        public int FormationVersion { get; set; }
+        /// <summary>旧档缺省预设已一次补齐（Q86 迁移标记；新局为 true）。</summary>
+        public bool FormationMigrated { get; set; } = true;
         /// <summary>死亡队友的遗物容器（R08 §4、A11 §8）：键为死者 actorId，每人至多一个；容器内物品 owner 为 "remains:&lt;actorId&gt;"。</summary>
         public Dictionary<string, RemainsState> Remains { get; set; } = new Dictionary<string, RemainsState>();
         /// <summary>借用矛位（A11 §7）：loan_1..loan_{C−1} → 当前有效实例 ID；位只增不减。</summary>

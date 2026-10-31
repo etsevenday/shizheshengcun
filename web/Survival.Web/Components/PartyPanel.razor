@@ -22,18 +22,19 @@
             <span class="muted tiny">容量 C@(cap) 含你 · 名册 @alive.Count 人存活@(dead.Count > 0 ? $"、{dead.Count} 人已故" : "")</span>
         </div>
         <div class="party-list">
-            @{ var order = s.FormationPreset.Where(s.Party.Contains).ToList(); }
-            @for (var k = 0; k < order.Count; k++)
+            @* B8a（Q86）：号位来自 4 格编队预设（可空位、不连续），改号位统一走顶栏“编队”；这里只显示 *@
+            @{ var slotsNow = e.RepairedFormation(s, s.FormationPreset); }
+            @for (var k = 0; k < slotsNow.Count; k++)
             {
-                var id = order[k];
-                var pos = k + 1;
-                @Row(id, $"{pos}号位", true, k > 0, k < order.Count - 1)
+                if (slotsNow[k] == "") continue;
+                @Row(slotsNow[k], $"{k + 1}号位", true)
             }
             @foreach (var r in e.Reserves(s))
             {
-                @Row(r.ActorId, "候补", false, false, false)
+                @Row(r.ActorId, "候补", false)
             }
         </div>
+        <div class="ca-note tiny">开战号位在顶栏“编队”里改（任何地点空闲时都可以）；编入同行/留作候补只在@(e.LocName(e.HubLocation))办理。</div>
         @if (e.Reserves(s).Count > 0)
         {
             <div class="ca-note">候补留在@(e.LocName(e.HubLocation))，接受公共照护：饱食/水分每段自然消耗后不低于@(Fmt.T(care.SatietyFloor))（只托底、不生成食水），22:00—06:00 遮蔽睡眠、其余时段等待；伤病与病毒照常发展。</div>
@@ -79,7 +80,7 @@
 }
 
 @code {
-    private RenderFragment Row(string id, string where, bool active, bool canUp, bool canDown) => __builder =>
+    private RenderFragment Row(string id, string where, bool active) => __builder =>
     {
         var s = G.S;
         var e = G.E;
@@ -91,22 +92,13 @@
         var w2 = e.WornItem(s, id, EquipSlots.Weapon2);
         var weapons = string.Join(" / ", new[] { w1, w2 }.Select(w => w == null ? "空" : e.ItemName(w.ItemId) + (w.LoanSlot != null ? "（借用）" : "")));
         var toggleWhy = isMe ? null : e.SetActiveBlocked(s, id, !active);
-        var editWhy = e.PartyEditBlocked(s);
         <div class="party-row @(active ? "" : "reserve")" data-actor="@id">
             @* M191（B8 试玩）：按钮并到姓名行右侧（窄时折到下一行），每人少占一行，1280×720 下最后一人的按钮不再落到右栏底部说明条下面 *@
             <div class="party-name"><span class="party-pos">@where</span> <b>@name</b> <span class="muted tiny">速度@(Fmt.T(e.ActorBaseSpeed(s, id)))</span>
-            @if (!isMe || active)
+            @if (!isMe)
             {
                 <span class="party-acts">
-                    @if (active)
-                    {
-                        <button type="button" class="eq-btn" disabled="@(!canUp || editWhy != null)" title="@(editWhy ?? "号位前移（战前编成预设）")" @onclick="() => G.MoveInFormation(id, -1)">前移</button>
-                        <button type="button" class="eq-btn" disabled="@(!canDown || editWhy != null)" title="@(editWhy ?? "号位后移（战前编成预设）")" @onclick="() => G.MoveInFormation(id, 1)">后移</button>
-                    }
-                    @if (!isMe)
-                    {
-                        <button type="button" class="eq-btn" disabled="@(toggleWhy != null)" title="@(toggleWhy ?? (active ? "留在营区作候补（公共照护：饱食/水分不低于40，伤病照常）" : "编入同行队伍"))" @onclick="() => G.SetActive(id, !active)">@(active ? "留作候补" : "编入同行")</button>
-                    }
+                    <button type="button" class="eq-btn" disabled="@(toggleWhy != null)" title="@(toggleWhy ?? (active ? "留在营区作候补（公共照护：饱食/水分不低于40，伤病照常）" : "编入同行队伍"))" @onclick="() => G.SetActive(id, !active)">@(active ? "留作候补" : "编入同行")</button>
                 </span>
             }
             </div>
