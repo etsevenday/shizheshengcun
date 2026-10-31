@@ -358,8 +358,7 @@ namespace Survival.Core.Engine
                 list.Add(("固定效果", g.EffectText + (live.Count > 0 && !shown ? $"（{on}）" : live.Count > 0 ? $"（部分{on}；其余在相关技能上线后生效）" : "（相关技能上线后生效，当前只显示）")));
             }
             if (it.Durability.HasValue && it.Durability.Value <= 1e-9) list.Add(("状态", "耐久为0：效果暂停（仍占槽、计重），维护后恢复"));
-            var sal = SalvageOutput(it);
-            list.Add(("拆解", sal is (string oid, int cnt) ? $"{ItemName(oid)}×{cnt}（{SalvageRecipe?.BaseMinutes ?? 0}基础分钟，产物落当前地面）" : "拆解产出待策划确认，暂不能拆解"));
+            list.Add(("拆解", SalvageText(it)));
             return list;
         }
 

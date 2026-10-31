@@ -361,7 +361,8 @@ public class B5SkillTests : BattleTestBase
         Assert.That(s.Items.Where(i => i.ItemId == "scrap").Sum(i => i.Count) - scrap0, Is.EqualTo(2));
         var shirt = E.DebugCreateEquipment(s, "work_shirt", "white", ItemInstance.Carried);
         var p2 = E.Preview(s, new ActionRequest { Type = ActionType.Craft, TargetId = "salvage_equipment", InstanceId = shirt.InstanceId });
-        Assert.That(p2.Outputs.Select(o => (o.ItemId, o.Count)), Is.EquivalentTo(new[] { ("cloth", 1), ("scrap", 1) }), "布料装备另得废金属1");
+        // B7a 按新规则改写（Q46：回收专家追加同材料且受 80% 预算，不凭空返废金属）：耐磨工作衣 I7，布料1+1 价值4，5×4≤4×7
+        Assert.That(p2.Outputs.Select(o => (o.ItemId, o.Count)), Is.EquivalentTo(new[] { ("cloth", 2) }), "布料装备追加布料1");
     }
 
     [Test]
@@ -429,7 +430,8 @@ public class B5SkillTests : BattleTestBase
         }
         Assert.That(Cfg.SkillNodes.Single(x => x.Id == "medicine_10").Text, Does.StartWith("消耗盐水剂×1+医用纱布×1；健康≤25%上限时健康+1.5×(1+0.02×医疗等级)"));
         Assert.That(Cfg.SkillNodes.Single(x => x.Id == "athletics_05").Text, Is.EqualTo("≤20公斤时移动基础工作量×0.95"));
-        Assert.That(Cfg.SkillNodes.Single(x => x.Id == "scavenging_10").Text, Does.Contain("废金属×1").And.Contain("80%上限暂未实装"));
+        // B7a 按新规则改写（Q46：回收专家改同材料追加且受 80% 预算）
+        Assert.That(Cfg.SkillNodes.Single(x => x.Id == "scavenging_10").Text, Does.Contain("同种回收材料").And.Contain("80%"));
         Assert.That(Cfg.SkillNodes.Single(x => x.Id == "cooking_10").Text, Does.Contain("饱食额外+3"));
         Assert.That(Cfg.SkillNodes.Single(x => x.Id == "medicine_01").EffectText, Does.Contain("bandage1"), "原文保留");
     }

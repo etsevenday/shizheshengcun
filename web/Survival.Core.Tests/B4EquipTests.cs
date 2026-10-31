@@ -131,8 +131,9 @@ public class B4EquipTests : BattleTestBase
         Assert.That(E.AffixPool("machete").Select(a => a.Id), Is.EquivalentTo(new[] { "accurate", "keen", "piercing", "balanced", "swift", "durable" }));
         Assert.That(E.AffixPool("work_shirt").Select(a => a.Id), Is.EquivalentTo(new[] { "craftsman", "economical", "patient" }));
         Assert.That(E.AffixPool("work_trousers").Select(a => a.Id), Is.EquivalentTo(new[] { "economical", "patient", "surefoot" }));
-        Assert.That(E.AffixPool("steady_ring"), Is.Empty, "战斗饰品没有兼容池 → 0 条");
-        Assert.That(E.RollAffixes(s, "steady_ring", 2), Is.Empty);
+        // B7a 按新规则改写（Q51 取代 A05 §4“饰品无兼容池”）：战斗饰品池 accurate/swift/anchored，求生饰品池四条（EQ-Q51 见 B7aEquipTests）
+        Assert.That(E.AffixPool("steady_ring").Select(a => a.Id), Is.EquivalentTo(new[] { "accurate", "swift", "anchored" }));
+        Assert.That(E.AffixPool("gather_gloves").Select(a => a.Id), Is.EquivalentTo(new[] { "craftsman", "economical", "patient", "surefoot" }));
         // 池不足少条：指挥器具只有 swift、tactical、durable，其中 durable 与 swift 不同组 → 2 条都能抽到
         Assert.That(E.AffixPool("signal_whistle").Select(a => a.Id), Is.EquivalentTo(new[] { "swift", "tactical", "durable" }));
     }
@@ -536,9 +537,10 @@ public class B4EquipTests : BattleTestBase
         Assert.That(E.SalvageOutput(shirt), Is.EqualTo(("cloth", 1)));
         Assert.That(E.SalvageOutput(Ground(s, "craft_coat")), Is.EqualTo(("leather", 1)), "主材皮革");
         Assert.That(E.SalvageOutput(Ground(s, "field_radio")), Is.EqualTo(("electronics", 1)));
+        // B7a 按新规则改写（Q46 72 件拆解表）：饰品与金属防具也有产出；拒绝改用不是装备、穿戴中、弹仓有弹等
         var ring = Ground(s, "steady_ring");
-        Assert.That(E.SalvageBlocked(s, ring.InstanceId, out _), Does.Contain("拆解产出待策划确认"));
-        Assert.That(E.SalvageBlocked(s, Ground(s, "scrap_armor").InstanceId, out _), Does.Contain("待策划确认"), "主材不是布/皮");
+        Assert.That(E.SalvageOutput(ring), Is.EqualTo(("scrap", 1)));
+        Assert.That(E.SalvageOutput(Ground(s, "scrap_armor")), Is.EqualTo(("scrap", 1)));
         var wood = s.Items.First(i => i.ItemId == "wood");
         Assert.That(E.SalvageBlocked(s, wood.InstanceId, out _), Does.Contain("不是装备"));
         var worn = Wear(s, "machete", EquipSlots.Weapon1);
@@ -550,7 +552,7 @@ public class B4EquipTests : BattleTestBase
         Assert.That(E.SalvageBlocked(s, away.InstanceId, out _), Does.Contain("随身或当前地面"));
         // 失败不改状态
         var before = Survival.Core.Save.SaveSerializer.Serialize(s);
-        Assert.That(E.Start(s, Salvage(ring.InstanceId)).Ok, Is.False);
+        Assert.That(E.Start(s, Salvage(wood.InstanceId)).Ok, Is.False);
         Assert.That(Survival.Core.Save.SaveSerializer.Serialize(s), Is.EqualTo(before));
         Assert.That(E.Start(s, new ActionRequest { Type = ActionType.Craft, TargetId = "salvage_equipment", InstanceId = shirt.InstanceId, BatchCount = 2 }).Reason, Does.Contain("每次只能做1件"));
     }
@@ -590,7 +592,7 @@ public class B4EquipTests : BattleTestBase
         // B6 按新规则改写：战斗类效果（命中、速度、护甲……）在四对四内核里生效，没穿写“穿戴后生效”；位移抵抗仍只显示
         var ring = E.DebugCreateEquipment(s, "steady_ring", "white", ItemInstance.Carried);
         Assert.That(E.EquipDetailLines(s, ring).Single(x => x.Label == "固定效果").Value, Does.Contain("穿戴后生效"));
-        Assert.That(E.EquipDetailLines(s, ring).Single(x => x.Label == "拆解").Value, Does.Contain("待策划确认"));
+        Assert.That(E.EquipDetailLines(s, ring).Single(x => x.Label == "拆解").Value, Does.StartWith("废金属×1"), "B7a Q46：饰品有拆解表");
         // B7：盾有盾击；指挥器具不能直接攻击，只列本门技能
         var shield = E.DebugCreateEquipment(s, "wooden_shield", "white", ItemInstance.Carried);
         Assert.That(E.EquipDetailLines(s, shield).Any(x => x.Label == "技能"), Is.False);

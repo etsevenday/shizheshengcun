@@ -439,15 +439,9 @@ namespace Survival.Core.Engine
                         var why = SalvageBlocked(s, r.InstanceId, out var target);
                         if (why != null) return why;
                         plan.Tool = target;
-                        var (oid, n) = SalvageOutput(target!)!.Value;
-                        var extra = SalvageExtraScrap(s);   // B5 回收专家：多返废金属1
-                        if (extra > 0 && oid == "scrap") plan.Outputs.Add(Line(oid, n + extra));
-                        else
-                        {
-                            plan.Outputs.Add(Line(oid, n));
-                            if (extra > 0) plan.Outputs.Add(Line("scrap", extra));
-                        }
-                        if (extra > 0) plan.Notes.Add($"搜集10级·回收专家：拆解多得废金属×{extra}");
+                        foreach (var (oid, n) in SalvageYield(s, target!)) plan.Outputs.Add(Line(oid, n));
+                        var (_, expertNote) = SalvageExpertBonus(s, target!);   // Q46：同材料追加，可自制件受 80% 预算
+                        if (expertNote != null) plan.Notes.Add($"搜集10级·{expertNote}");
                     }
                     if (rc.NeedsExplicitPot)
                     {

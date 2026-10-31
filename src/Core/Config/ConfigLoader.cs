@@ -465,13 +465,26 @@ namespace Survival.Core.Config
                 if (!(it.DurabilityMaxRange ?? new double[0]).SequenceEqual(g.DurabilityMaxRange ?? new double[0])) e.Add($"装备 {g.Id} 的最大耐久区间与物品不一致");
                 if (it.EquipSlot != g.Slot) e.Add($"装备 {g.Id} 的物品须写 equipSlot {g.Slot}");
             }
-            foreach (var s in c.Gear.Select(g => g.Salvage).Concat(c.Weapons.Select(w => w.Salvage)).Where(x => x != null))
-                if (!items.Contains(s!.ItemId) || (!s.ByQuality && s.Count <= 0)) e.Add($"拆解产出 {s.ItemId} 无效");
+            // Q46 拆解表：回收材料须有物品定义与材料价值；可自制件每档品质基础产出须 5R≤4I，不可自制件不写 I
+            foreach (var (id, s) in c.Gear.Select(g => (g.Id, g.Salvage)).Concat(c.Weapons.Select(w => (w.Id, w.Salvage))).Where(x => x.Salvage != null))
+            {
+                if (!items.Contains(s!.ItemId) || !items.Contains(s.ExpertMaterial)) { e.Add($"装备 {id} 的拆解材料无效"); continue; }
+                if (!eq.Salvage.MaterialValues.TryGetValue(s.ItemId, out var v) || v <= 0) { e.Add($"装备 {id} 的拆解材料 {s.ItemId} 没有材料价值"); continue; }
+                if (s.NonCraftable == s.RecipeValue.HasValue) e.Add($"装备 {id} 的拆解表须二选一：可自制写标准配方材料价值，不可自制不写");
+                foreach (var q in eq.QualityOrder)
+                {
+                    if (!s.Counts.TryGetValue(q, out var n) || n <= 0) { e.Add($"装备 {id} 的拆解表缺少品质 {q}"); continue; }
+                    if (s.RecipeValue is int i && n * v * eq.Salvage.CapDenominator > i * eq.Salvage.CapNumerator)
+                        e.Add($"装备 {id} 的{q}拆解产出超过标准配方材料价值上限");
+                }
+            }
             if (c.Gear.Count == 0) return;
             foreach (var a in c.Affixes)
             {
                 if (string.IsNullOrEmpty(a.Group)) e.Add($"词条 {a.Id} 缺少互斥组");
                 if (a.Pools.Count == 0) e.Add($"词条 {a.Id} 没有兼容池");
+                foreach (var kv in a.SlotGroups ?? new Dictionary<string, string>())
+                    if (!a.Pools.Contains("slot:" + kv.Key) || string.IsNullOrEmpty(kv.Value)) e.Add($"词条 {a.Id} 的槽专用互斥组 {kv.Key} 无效");
                 foreach (var p in a.Pools)
                 {
                     var ok = p == "durable"
@@ -491,7 +504,7 @@ namespace Survival.Core.Config
             if (eq.CraftOrigin != "" && !eq.QualityOrigins.ContainsKey(eq.CraftOrigin)) e.Add("制造品质来源未定义");
             if (eq.DurabilityRounding <= 0) e.Add("最大耐久取整精度须为正");
             if (!c.Recipes.Any(r => r.Id == eq.Salvage.RecipeId && r.IsSalvage)) e.Add($"拆解配方 {eq.Salvage.RecipeId} 不存在");
-            foreach (var q in eq.QualityOrder) if (!eq.Salvage.ScrapByQuality.ContainsKey(q)) e.Add($"拆解缺少品质 {q} 的废金属数");
+            if (eq.Salvage.CapNumerator <= 0 || eq.Salvage.CapDenominator <= 0) e.Add("拆解价值上限比例须为正");
         }
 
         private static void Dup<T>(IEnumerable<T> list, Func<T, string> key, string what, List<string> e)

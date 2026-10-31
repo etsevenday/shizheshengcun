@@ -112,8 +112,8 @@ namespace Survival.Core.Engine
             return Math.Min(cap, baseFraction + bonus);
         }
 
-        /// <summary>回收专家（搜集10级）：拆解固定多返废金属 1。</summary>
-        public int SalvageExtraScrap(GameState s) => (int)PassiveAdd(s.Player, "salvage.extraScrap");
+        /// <summary>回收专家（搜集10级）：拆解后尝试追加同材料的份数上限（B7a Q46：可自制件受 80% 材料价值预算，见 SalvageExpertBonus）。</summary>
+        public int SalvageExpertLevel(GameState s) => (int)PassiveAdd(s.Player, "salvage.expertBonus");
 
         /// <summary>人物页“已获得的求生被动”一行一个：“采集3级·稳手采集：采集划伤概率×0.9（生效中）”。</summary>
         public List<string> SurvivalPassiveLines(ActorState actor) =>

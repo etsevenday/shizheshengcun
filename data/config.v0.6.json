@@ -4509,8 +4509,16 @@
       "targetPositions": "12",
       "traitText": "轻巧：首次相邻换位体力−0.1（每轮一次）",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "stone",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 2,
+        "nonCraftable": false,
+        "expertMaterial": "stone",
+        "expertMax": 1
       }
     },
     {
@@ -4539,7 +4547,15 @@
       "traitText": "锋口：流血持续轮数+1（仍不叠层）",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": null,
+        "nonCraftable": true,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       },
       "traitEffects": {
         "bleedTriggers": 1
@@ -4571,8 +4587,16 @@
       "traitText": "劈砍：该武器直接攻击忽略护甲0.1",
       "armorIgnore": 0.1,
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "stone",
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 5,
+        "nonCraftable": false,
+        "expertMaterial": "stone",
+        "expertMax": 1
       }
     },
     {
@@ -4601,7 +4625,15 @@
       "traitText": "撬动：撬取类搜集工作量−10%",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": null,
+        "nonCraftable": true,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       }
     },
     {
@@ -4629,8 +4661,16 @@
       "targetPositions": "123",
       "traitText": "长柄：基础射程123",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "wood",
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 5,
+        "nonCraftable": false,
+        "expertMaterial": "wood",
+        "expertMax": 1
       }
     },
     {
@@ -4659,7 +4699,15 @@
       "traitText": "金属尖：迎击伤害×1.1",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 8,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       },
       "traitEffects": {
         "braceDamage": 1.1
@@ -4690,8 +4738,16 @@
       "targetPositions": "1234",
       "traitText": "无声：本武器攻击噪声0",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "wood",
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 8,
+        "nonCraftable": false,
+        "expertMaterial": "wood",
+        "expertMax": 1
       }
     },
     {
@@ -4721,7 +4777,15 @@
       "armorIgnore": 0.15,
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 21,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       }
     },
     {
@@ -4750,7 +4814,15 @@
       "traitText": "短枪：允许我方2号位使用",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": null,
+        "nonCraftable": true,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       }
     },
     {
@@ -4779,7 +4851,15 @@
       "traitText": "散布：散射技能仅作用敌位12",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": null,
+        "nonCraftable": true,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       }
     },
     {
@@ -4809,7 +4889,15 @@
       "armorIgnore": 0.2,
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": null,
+        "nonCraftable": true,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       }
     },
     {
@@ -4838,7 +4926,15 @@
       "traitText": "扫切：本武器流血命中能力+4",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 13,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       },
       "traitEffects": {
         "bleedAccuracy": 4
@@ -4870,7 +4966,15 @@
       "traitText": "反击：反击技能伤害×1.15",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 22,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       },
       "traitEffects": {
         "counterDamage": 1.15
@@ -4902,7 +5006,15 @@
       "traitText": "破门：搜集锁闭点工作量−10%（仅实际选为工具）",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": null,
+        "nonCraftable": true,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       }
     },
     {
@@ -4931,7 +5043,15 @@
       "traitText": "破甲：破甲技能减甲量+0.1",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 34,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       },
       "traitEffects": {
         "armorBreakBonus": 0.1
@@ -4963,7 +5083,15 @@
       "traitText": "救援：攻击正保护队友的目标时伤害×1.15",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 32,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       },
       "traitEffects": {
         "protectorDamage": 1.15
@@ -4995,7 +5123,15 @@
       "traitText": "架阵：每轮迎击额外触发次数+1（最多2）",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 26,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       },
       "traitEffects": {
         "braceExtra": 1
@@ -5027,7 +5163,15 @@
       "traitText": "钩刺：逼退命中能力+8",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 32,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       },
       "traitEffects": {
         "knockbackAccuracy": 8
@@ -5058,8 +5202,16 @@
       "targetPositions": "12",
       "traitText": "朴素：无需附加词条也可使用全部钝器技能",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "wood",
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 2
+        },
+        "recipeValue": 3,
+        "nonCraftable": false,
+        "expertMaterial": "wood",
+        "expertMax": 1
       }
     },
     {
@@ -5088,7 +5240,15 @@
       "traitText": "震荡：失衡持续到目标下次攻击后",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 21,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       },
       "traitEffects": {
         "staggerUntilAttack": 1
@@ -5120,7 +5280,15 @@
       "traitText": "压制：打断成功后目标下轮速度额外−1（不叠）",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 26,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       },
       "traitEffects": {
         "interruptSlow": 1
@@ -5151,8 +5319,16 @@
       "targetPositions": "1234",
       "traitText": "稳弓：对标记目标命中能力+5",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "plank",
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 14,
+        "nonCraftable": false,
+        "expertMaterial": "plank",
+        "expertMax": 1
       },
       "traitEffects": {
         "markedAccuracy": 5
@@ -5183,8 +5359,16 @@
       "targetPositions": "1234",
       "traitText": "狩猎：对动物伤害×1.15",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "plank",
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 24,
+        "nonCraftable": false,
+        "expertMaterial": "plank",
+        "expertMax": 1
       },
       "traitEffects": {
         "animalDamage": 1.15
@@ -5216,7 +5400,15 @@
       "traitText": "快装：每次装填最多2发",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 47,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       },
       "traitEffects": {
         "reloadMax": 2
@@ -5248,7 +5440,15 @@
       "traitText": "稳枪：压制命中能力+6",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": null,
+        "nonCraftable": true,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       },
       "traitEffects": {
         "suppressAccuracy": 6
@@ -5280,7 +5480,15 @@
       "traitText": "精校：对标记目标伤害×1.15",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": null,
+        "nonCraftable": true,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       },
       "traitEffects": {
         "markedDamage": 1.15
@@ -5311,8 +5519,16 @@
       "targetPositions": "1",
       "traitText": "盾面：盾类格挡减伤60%，不被动增加护甲",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "wood",
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 7,
+        "nonCraftable": false,
+        "expertMaterial": "wood",
+        "expertMax": 1
       }
     },
     {
@@ -5341,7 +5557,15 @@
       "traitText": "包铁：被保护者所受直接伤害转移后再减10%",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 20,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       }
     },
     {
@@ -5370,7 +5594,15 @@
       "traitText": "稳固：位移抵抗+25个百分点",
       "salvage": {
         "itemId": "scrap",
-        "byQuality": true
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": null,
+        "nonCraftable": true,
+        "expertMaterial": "scrap",
+        "expertMax": 1
       }
     },
     {
@@ -5398,8 +5630,16 @@
       "targetPositions": "1",
       "traitText": "护送：保护技能可指定任一友位",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "ballistic_fiber",
+        "counts": {
+          "white": 1,
+          "green": 2,
+          "blue": 3
+        },
+        "recipeValue": 46,
+        "nonCraftable": false,
+        "expertMaterial": "ballistic_fiber",
+        "expertMax": 1
       }
     },
     {
@@ -5427,8 +5667,16 @@
       "targetPositions": "友方",
       "traitText": "号令：提供指挥技能，不可直接攻击",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "fiber",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 3,
+        "nonCraftable": false,
+        "expertMaterial": "fiber",
+        "expertMax": 1
       }
     },
     {
@@ -5456,8 +5704,16 @@
       "targetPositions": "友方",
       "traitText": "集合：位置调整技能体力−0.1",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "cloth",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 10,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
       }
     },
     {
@@ -5486,7 +5742,15 @@
       "traitText": "协同：指挥增益持续多1轮；同名不叠",
       "salvage": {
         "itemId": "electronics",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 32,
+        "nonCraftable": false,
+        "expertMaterial": "electronics",
+        "expertMax": 1
       },
       "traitEffects": {
         "commandRounds": 1
@@ -5517,8 +5781,16 @@
       "targetPositions": "友方",
       "traitText": "预判：每场首次号令额外赋予目标下一击命中能力+4",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "electronics",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 62,
+        "nonCraftable": false,
+        "expertMaterial": "electronics",
+        "expertMax": 1
       },
       "traitEffects": {
         "firstCommandAccuracy": 4
@@ -5549,8 +5821,16 @@
       "targetPositions": "友方",
       "traitText": "医疗：开放战地医疗技能；药物另付",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "cloth",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 13,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
       }
     },
     {
@@ -5578,8 +5858,16 @@
       "targetPositions": "友方",
       "traitText": "创伤处置：非病毒医疗恢复+0.2H",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "leather",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 19,
+        "nonCraftable": false,
+        "expertMaterial": "leather",
+        "expertMax": 1
       },
       "traitEffects": {
         "medicalHealBonus": 0.2
@@ -5610,8 +5898,16 @@
       "targetPositions": "友方",
       "traitText": "稳定：有效医疗后目标获下一次直接伤害−10%",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "plastic",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 22,
+        "nonCraftable": false,
+        "expertMaterial": "plastic",
+        "expertMax": 1
       },
       "traitEffects": {
         "postMedicalDamage": 0.9
@@ -5642,8 +5938,16 @@
       "targetPositions": "友方",
       "traitText": "分诊：危急救护的回血额外+0.3H",
       "salvage": {
-        "itemId": "scrap",
-        "byQuality": true
+        "itemId": "leather",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 36,
+        "nonCraftable": false,
+        "expertMaterial": "leather",
+        "expertMax": 1
       },
       "traitEffects": {
         "criticalCareBonus": 0.3
@@ -7888,7 +8192,15 @@
       ],
       "salvage": {
         "itemId": "cloth",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 10,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
       }
     },
     {
@@ -7911,7 +8223,15 @@
       ],
       "salvage": {
         "itemId": "leather",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 22,
+        "nonCraftable": false,
+        "expertMaterial": "leather",
+        "expertMax": 1
       }
     },
     {
@@ -7937,7 +8257,18 @@
           "value": -2
         }
       ],
-      "salvage": null
+      "salvage": {
+        "itemId": "scrap",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 34,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
+      }
     },
     {
       "id": "guard_armor",
@@ -7962,7 +8293,18 @@
           "value": -1
         }
       ],
-      "salvage": null
+      "salvage": {
+        "itemId": "scrap",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": null,
+        "nonCraftable": true,
+        "expertMaterial": "scrap",
+        "expertMax": 1
+      }
     },
     {
       "id": "scout_armor",
@@ -7987,7 +8329,18 @@
           "value": 1
         }
       ],
-      "salvage": null
+      "salvage": {
+        "itemId": "ballistic_fiber",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 30,
+        "nonCraftable": false,
+        "expertMaterial": "ballistic_fiber",
+        "expertMax": 1
+      }
     },
     {
       "id": "heavy_armor",
@@ -8017,7 +8370,18 @@
           "value": 15
         }
       ],
-      "salvage": null
+      "salvage": {
+        "itemId": "ballistic_fiber",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 68,
+        "nonCraftable": false,
+        "expertMaterial": "ballistic_fiber",
+        "expertMax": 1
+      }
     },
     {
       "id": "medic_armor",
@@ -8039,7 +8403,15 @@
       ],
       "salvage": {
         "itemId": "leather",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 24,
+        "nonCraftable": false,
+        "expertMaterial": "leather",
+        "expertMax": 1
       }
     },
     {
@@ -8060,7 +8432,18 @@
           "value": 0.4
         }
       ],
-      "salvage": null
+      "salvage": {
+        "itemId": "ballistic_fiber",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 50,
+        "nonCraftable": false,
+        "expertMaterial": "ballistic_fiber",
+        "expertMax": 1
+      }
     },
     {
       "id": "steady_ring",
@@ -8077,7 +8460,18 @@
           "value": 3
         }
       ],
-      "salvage": null
+      "salvage": {
+        "itemId": "scrap",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 4,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
+      }
     },
     {
       "id": "swift_pendant",
@@ -8099,7 +8493,18 @@
           "value": -0.05
         }
       ],
-      "salvage": null
+      "salvage": {
+        "itemId": "leather",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 6,
+        "nonCraftable": false,
+        "expertMaterial": "leather",
+        "expertMax": 1
+      }
     },
     {
       "id": "guard_badge",
@@ -8110,7 +8515,18 @@
       "durabilityMaxRange": null,
       "effectText": "保护转移伤害额外×0.90；不作用他人伤害",
       "effects": [],
-      "salvage": null
+      "salvage": {
+        "itemId": "scrap",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 7,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
+      }
     },
     {
       "id": "hunter_token",
@@ -8121,7 +8537,18 @@
       "durabilityMaxRange": null,
       "effectText": "对动物命中能力+6",
       "effects": [],
-      "salvage": null
+      "salvage": {
+        "itemId": "wood",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 5,
+        "nonCraftable": false,
+        "expertMaterial": "wood",
+        "expertMax": 1
+      }
     },
     {
       "id": "focus_lens",
@@ -8143,7 +8570,18 @@
           "value": -1
         }
       ],
-      "salvage": null
+      "salvage": {
+        "itemId": "plastic",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 14,
+        "nonCraftable": false,
+        "expertMaterial": "plastic",
+        "expertMax": 1
+      }
     },
     {
       "id": "aid_badge",
@@ -8154,7 +8592,18 @@
       "durabilityMaxRange": null,
       "effectText": "主动非病毒治疗量+0.15H",
       "effects": [],
-      "salvage": null
+      "salvage": {
+        "itemId": "iron_plate",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 8,
+        "nonCraftable": false,
+        "expertMaterial": "iron_plate",
+        "expertMax": 1
+      }
     },
     {
       "id": "resolve_medal",
@@ -8165,7 +8614,18 @@
       "durabilityMaxRange": null,
       "effectText": "入场恐慌最终值−5，最低0",
       "effects": [],
-      "salvage": null
+      "salvage": {
+        "itemId": "scrap",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 10,
+        "nonCraftable": false,
+        "expertMaterial": "scrap",
+        "expertMax": 1
+      }
     },
     {
       "id": "tactics_watch",
@@ -8176,7 +8636,18 @@
       "durabilityMaxRange": null,
       "effectText": "每场首次正常激活AP+1；不超过临时AP上限6",
       "effects": [],
-      "salvage": null
+      "salvage": {
+        "itemId": "electronics",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 34,
+        "nonCraftable": false,
+        "expertMaterial": "electronics",
+        "expertMax": 1
+      }
     },
     {
       "id": "work_shirt",
@@ -8195,7 +8666,15 @@
       ],
       "salvage": {
         "itemId": "cloth",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 7,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
       }
     },
     {
@@ -8215,7 +8694,15 @@
       ],
       "salvage": {
         "itemId": "cloth",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 13,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
       }
     },
     {
@@ -8235,7 +8722,15 @@
       ],
       "salvage": {
         "itemId": "cloth",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 12,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
       }
     },
     {
@@ -8255,7 +8750,15 @@
       ],
       "salvage": {
         "itemId": "leather",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 18,
+        "nonCraftable": false,
+        "expertMaterial": "leather",
+        "expertMax": 1
       }
     },
     {
@@ -8275,7 +8778,15 @@
       ],
       "salvage": {
         "itemId": "cloth",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 10,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
       }
     },
     {
@@ -8300,7 +8811,15 @@
       ],
       "salvage": {
         "itemId": "cloth",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 20,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
       }
     },
     {
@@ -8320,7 +8839,15 @@
       ],
       "salvage": {
         "itemId": "cloth",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 7,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
       }
     },
     {
@@ -8340,7 +8867,15 @@
       ],
       "salvage": {
         "itemId": "cloth",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 11,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
       }
     },
     {
@@ -8360,7 +8895,15 @@
       ],
       "salvage": {
         "itemId": "cloth",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 10,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
       }
     },
     {
@@ -8380,7 +8923,15 @@
       ],
       "salvage": {
         "itemId": "cloth",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 16,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
       }
     },
     {
@@ -8400,7 +8951,15 @@
       ],
       "salvage": {
         "itemId": "cloth",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 10,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
       }
     },
     {
@@ -8420,7 +8979,15 @@
       ],
       "salvage": {
         "itemId": "cloth",
-        "count": 1
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 20,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
       }
     },
     {
@@ -8438,7 +9005,18 @@
           "value": 0.8
         }
       ],
-      "salvage": null
+      "salvage": {
+        "itemId": "cloth",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 5,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
+      }
     },
     {
       "id": "route_compass",
@@ -8455,7 +9033,18 @@
           "value": 0.95
         }
       ],
-      "salvage": null
+      "salvage": {
+        "itemId": "wire",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 14,
+        "nonCraftable": false,
+        "expertMaterial": "wire",
+        "expertMax": 1
+      }
     },
     {
       "id": "filter_token",
@@ -8472,7 +9061,18 @@
           "value": 0.9
         }
       ],
-      "salvage": null
+      "salvage": {
+        "itemId": "cloth",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 6,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
+      }
     },
     {
       "id": "repair_manual",
@@ -8489,7 +9089,18 @@
           "value": 0.25
         }
       ],
-      "salvage": null
+      "salvage": {
+        "itemId": "cloth",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 6,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
+      }
     },
     {
       "id": "medical_notes",
@@ -8506,7 +9117,18 @@
           "value": 0.2
         }
       ],
-      "salvage": null
+      "salvage": {
+        "itemId": "cloth",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 5,
+        "nonCraftable": false,
+        "expertMaterial": "cloth",
+        "expertMax": 1
+      }
     },
     {
       "id": "ration_pouch",
@@ -8523,7 +9145,18 @@
           "value": 1.05
         }
       ],
-      "salvage": null
+      "salvage": {
+        "itemId": "leather",
+        "counts": {
+          "white": 1,
+          "green": 1,
+          "blue": 1
+        },
+        "recipeValue": 10,
+        "nonCraftable": false,
+        "expertMaterial": "leather",
+        "expertMax": 1
+      }
     }
   ],
   "affixes": [
@@ -8537,7 +9170,8 @@
         "kind:spear",
         "kind:blunt",
         "kind:archery",
-        "kind:firearms"
+        "kind:firearms",
+        "slot:combat_acc"
       ],
       "effectText": "命中能力+4",
       "group": "offense",
@@ -8548,7 +9182,10 @@
           "value": 4,
           "scope": "attack"
         }
-      ]
+      ],
+      "slotGroups": {
+        "combat_acc": "offense"
+      }
     },
     {
       "id": "keen",
@@ -8630,7 +9267,8 @@
         "kind:shield",
         "kind:command",
         "kind:medical",
-        "slot:armor"
+        "slot:armor",
+        "slot:combat_acc"
       ],
       "effectText": "装备速度+1",
       "group": "speed",
@@ -8640,7 +9278,10 @@
           "op": "add",
           "value": 1
         }
-      ]
+      ],
+      "slotGroups": {
+        "combat_acc": "speed"
+      }
     },
     {
       "id": "heavy",
@@ -8681,7 +9322,8 @@
       "poolText": "盾/防具",
       "pools": [
         "kind:shield",
-        "slot:armor"
+        "slot:armor",
+        "slot:combat_acc"
       ],
       "effectText": "位移抵抗+10个百分点",
       "group": "defense",
@@ -8691,7 +9333,10 @@
           "op": "add",
           "value": 10
         }
-      ]
+      ],
+      "slotGroups": {
+        "combat_acc": "defense"
+      }
     },
     {
       "id": "tactical",
@@ -8779,7 +9424,8 @@
       "name": "熟作",
       "poolText": "求生上衣",
       "pools": [
-        "slot:top"
+        "slot:top",
+        "slot:survival_acc"
       ],
       "effectText": "制造基础工作量额外×0.97",
       "group": "survival",
@@ -8789,7 +9435,10 @@
           "op": "mul",
           "value": 0.97
         }
-      ]
+      ],
+      "slotGroups": {
+        "survival_acc": "charm_work"
+      }
     },
     {
       "id": "economical",
@@ -8797,7 +9446,8 @@
       "poolText": "求生衣物",
       "pools": [
         "slot:top",
-        "slot:bottom"
+        "slot:bottom",
+        "slot:survival_acc"
       ],
       "effectText": "非战斗负W小时率×0.97",
       "group": "survival",
@@ -8807,7 +9457,10 @@
           "op": "mul",
           "value": 0.97
         }
-      ]
+      ],
+      "slotGroups": {
+        "survival_acc": "charm_consumption"
+      }
     },
     {
       "id": "patient",
@@ -8815,7 +9468,8 @@
       "poolText": "求生衣物",
       "pools": [
         "slot:top",
-        "slot:bottom"
+        "slot:bottom",
+        "slot:survival_acc"
       ],
       "effectText": "遮蔽休息正E额外+0.1/h",
       "group": "survival",
@@ -8825,14 +9479,18 @@
           "op": "add",
           "value": 0.1
         }
-      ]
+      ],
+      "slotGroups": {
+        "survival_acc": "charm_recovery"
+      }
     },
     {
       "id": "surefoot",
       "name": "稳步",
       "poolText": "求生下衣",
       "pools": [
-        "slot:bottom"
+        "slot:bottom",
+        "slot:survival_acc"
       ],
       "effectText": "移动负E小时率额外×0.95",
       "group": "survival",
@@ -8842,7 +9500,10 @@
           "op": "mul",
           "value": 0.95
         }
-      ]
+      ],
+      "slotGroups": {
+        "survival_acc": "charm_travel"
+      }
     }
   ],
   "equipment": {
@@ -8896,11 +9557,34 @@
     },
     "salvage": {
       "recipeId": "salvage_equipment",
-      "scrapByQuality": {
-        "white": 1,
-        "green": 2,
-        "blue": 3
-      }
+      "materialValues": {
+        "stone": 1,
+        "fiber": 1,
+        "wood": 1,
+        "cloth": 2,
+        "scrap": 2,
+        "parts": 4,
+        "iron_plate": 5,
+        "steel": 8,
+        "plank": 3,
+        "rope": 2,
+        "leather": 4,
+        "fastener": 2,
+        "rubber": 3,
+        "precision_parts": 12,
+        "electronics": 10,
+        "wire": 2,
+        "plastic": 2,
+        "battery": 4,
+        "medical_gauze": 3,
+        "thread": 1,
+        "ballistic_fiber": 10,
+        "disinfectant": 4,
+        "saline": 4,
+        "charcoal": 1
+      },
+      "capNumerator": 4,
+      "capDenominator": 5
     },
     "armorWearPerHit": 1
   },
@@ -9991,12 +10675,12 @@
       "status": "live",
       "effects": [
         {
-          "key": "salvage.extraScrap",
+          "key": "salvage.expertBonus",
           "op": "add",
           "value": 1
         }
       ],
-      "displayText": "拆解固定多返废金属×1；总回收不得超过配方投入价值80%（80%上限暂未实装）"
+      "displayText": "拆解完成后尝试追加1份同种回收材料：可自制装备只在总回收价值仍不超过标准配方材料价值80%时追加，否则不追加；不可自制装备按固定表追加1"
     },
     {
       "id": "cooking_01",

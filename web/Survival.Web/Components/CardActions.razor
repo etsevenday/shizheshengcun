@@ -242,8 +242,9 @@
                 @if (swhy != null) { <div class="ca-note bad">拆解：@swhy</div> }
                 @if (sreq != null && swhy == null && e.SalvageOutput(kInst) is (string so, int sn))
                 {
-                    var xs = e.SalvageExtraScrap(s);
-                    <div class="ca-note">拆解得@(e.ItemName(so))×@(sn)@(xs > 0 ? $"，另得{e.ItemName("scrap")}×{xs}（搜集10级·回收专家）" : "")，放在当前地面；原装备移除，不给经验</div>
+                    var sy = e.SalvageYield(s, kInst);
+                    var xnote = e.SalvageExpertBonus(s, kInst).note;
+                    <div class="ca-note">拆解得@(string.Join("、", sy.Select(x => $"{e.ItemName(x.itemId)}×{x.count}")))，放在当前地面；原装备移除，不给经验@(xnote != null ? $"（搜集10级·{xnote}）" : "")</div>
                 }
             }
         }

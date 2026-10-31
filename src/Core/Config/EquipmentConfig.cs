@@ -20,12 +20,19 @@ namespace Survival.Core.Config
         [JsonIgnore] public bool AttackScoped => Scope == "attack";
     }
 
-    /// <summary>拆解产出（A05 §5）：ByQuality 为真时按品质取 equipment.salvage.scrapByQuality（白/绿/蓝 1/2/3），否则固定 Count。</summary>
+    /// <summary>
+    /// 拆解表一行（A05「2026-10-31 Q44—Q52装备裁定」§拆解价值与完整产出，Q46；数据 equipment-adjudications.json dismantle.rows）：
+    /// 回收材料 ItemId、白/绿/蓝基础数量 Counts；可自制件 RecipeValue 为标准配方材料价值 I（回收价值 R 须 5R≤4I），不可自制件为 null 并按固定表；
+    /// 回收专家最多追加 ExpertMax 份 ExpertMaterial（可自制件仍受同一预算）。
+    /// </summary>
     public sealed class SalvageOutputConfig
     {
         public string ItemId { get; set; } = "";
-        public int Count { get; set; }
-        public bool ByQuality { get; set; }
+        public Dictionary<string, int> Counts { get; set; } = new Dictionary<string, int>();
+        public int? RecipeValue { get; set; }
+        public bool NonCraftable { get; set; }
+        public string ExpertMaterial { get; set; } = "";
+        public int ExpertMax { get; set; }
     }
 
     /// <summary>防具、战斗饰品、上衣、下衣、求生饰品（A05 §2，34 件）。Slot 写代码槽名（combat_acc/survival_acc 对应 A05 combat_charm/survival_charm）。</summary>
@@ -39,11 +46,11 @@ namespace Survival.Core.Config
         public double[]? DurabilityMaxRange { get; set; }
         public string EffectText { get; set; } = "";
         public List<EquipEffectConfig> Effects { get; set; } = new List<EquipEffectConfig>();
-        /// <summary>A05 §5 没有写产出的类别为 null：拒绝拆解（开发假设 H9）。</summary>
+        /// <summary>拆解表没有这一行的装备为 null：拒绝拆解（Q46 unknownNewItem）。</summary>
         public SalvageOutputConfig? Salvage { get; set; }
     }
 
-    /// <summary>18 条附加词条（A05 §4）。Pools：kind:&lt;武器类型&gt;、slot:&lt;代码槽&gt;、durable（有耐久的装备）。</summary>
+    /// <summary>18 条附加词条（A05 §4）。Pools：kind:&lt;武器类型&gt;、slot:&lt;代码槽&gt;（含 Q51 的 slot:combat_acc / slot:survival_acc 饰品池）、durable（有耐久的装备）。</summary>
     public sealed class AffixConfig
     {
         public string Id { get; set; } = "";
@@ -52,7 +59,11 @@ namespace Survival.Core.Config
         public List<string> Pools { get; set; } = new List<string>();
         public string EffectText { get; set; } = "";
         public string Group { get; set; } = "";
+        /// <summary>饰品专用互斥组（Q51）：代码槽名 → 组；不在表里的槽用 Group（原衣物 survival 组不变）。</summary>
+        public Dictionary<string, string>? SlotGroups { get; set; }
         public List<EquipEffectConfig> Effects { get; set; } = new List<EquipEffectConfig>();
+
+        public string GroupFor(string? slot) => slot != null && SlotGroups != null && SlotGroups.TryGetValue(slot, out var g) ? g : Group;
     }
 
     /// <summary>装备效果合成上限（A05 §4 末段、R01 §4）。</summary>
@@ -64,10 +75,13 @@ namespace Survival.Core.Config
         public double NegativeRateFloor { get; set; } = 0.75;
     }
 
+    /// <summary>拆解规则（Q46）：材料价值只是拆解预算单位，不是交易报价；总回收价值×CapDenominator ≤ 标准配方材料价值×CapNumerator（5R≤4I）。</summary>
     public sealed class SalvageRulesConfig
     {
         public string RecipeId { get; set; } = "";
-        public Dictionary<string, int> ScrapByQuality { get; set; } = new Dictionary<string, int>();
+        public Dictionary<string, int> MaterialValues { get; set; } = new Dictionary<string, int>();
+        public int CapNumerator { get; set; } = 4;
+        public int CapDenominator { get; set; } = 5;
     }
 
     /// <summary>装备品质与生成规则（A05 §4 正文；R02 §2、§3）。</summary>

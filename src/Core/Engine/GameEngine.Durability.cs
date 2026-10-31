@@ -93,22 +93,81 @@ namespace Survival.Core.Engine
             return null;
         }
 
-        // ───────────── 拆解（A05 §5，B4 H9） ─────────────
+        // ───────────── 拆解（A05 §5，B4 H9；B7a Q46 72 件拆解表与 80% 材料价值预算） ─────────────
 
         public RecipeConfig? SalvageRecipe => Config.Recipes.FirstOrDefault(r => r.IsSalvage);
 
-        /// <summary>这件装备拆解得什么：武器白/绿/蓝 scrap1/2/3（按实例品质），电台 electronics1，布皮装备 cloth1 或 leather1；A05 没写产出的为 null。</summary>
+        /// <summary>这件装备的拆解表行（Q46）；表里没有的装备为 null（拒绝拆解）。</summary>
+        public SalvageOutputConfig? SalvageDef(string itemId) => Weapon(itemId)?.Salvage ?? Gear(itemId)?.Salvage;
+
+        /// <summary>基础产出：拆解表回收材料 × 本实例品质的白/绿/蓝基础数量（Q46；品质不是价值倍增器，可能同产出）。表里没有为 null。</summary>
         public (string itemId, int count)? SalvageOutput(ItemInstance it)
         {
-            var def = Weapon(it.ItemId)?.Salvage ?? Gear(it.ItemId)?.Salvage;
+            var def = SalvageDef(it.ItemId);
             if (def == null) return null;
-            if (!def.ByQuality) return (def.ItemId, def.Count);
-            return Config.Equipment.Salvage.ScrapByQuality.TryGetValue(it.Quality ?? "white", out var n) ? (def.ItemId, n) : ((string, int)?)null;
+            return def.Counts.TryGetValue(it.Quality ?? "white", out var n) ? (def.ItemId, n) : ((string, int)?)null;
+        }
+
+        /// <summary>材料的拆解预算价值（Q46 materialValues；只是预算单位，不是交易报价）。</summary>
+        public int SalvageValue(string itemId) => Config.Equipment.Salvage.MaterialValues.TryGetValue(itemId, out var v) ? v : 0;
+
+        /// <summary>
+        /// 回收专家追加（Q46 取代 B5“固定多返废金属1”）：基础产出后尝试追加同表回收材料，最多 ExpertMax 份；
+        /// 可自制件只在总回收价值 R 仍满足 5R≤4I 时追加（否则 0，不向下拆分原料）；不可自制件按固定表追加。
+        /// 返回追加份数与说明（没有回收专家时为 (0, null)）。被动等级仍在搜集10级（Q54 迁到制造10级属 B7b）。
+        /// </summary>
+        public (int extra, string? note) SalvageExpertBonus(GameState s, ItemInstance it)
+        {
+            var lv = SalvageExpertLevel(s);
+            var def = SalvageDef(it.ItemId);
+            if (lv <= 0 || def == null || SalvageOutput(it) is not (string oid, int n)) return (0, null);
+            var max = Math.Min(lv, def.ExpertMax);
+            var mat = ItemName(def.ExpertMaterial);
+            if (def.NonCraftable || def.RecipeValue is not int i)
+                return (max, $"回收专家：追加{mat}×{max}（不可自制装备按固定表）");
+            var rules = Config.Equipment.Salvage;
+            var baseValue = n * SalvageValue(oid);
+            var v = SalvageValue(def.ExpertMaterial);
+            var extra = 0;
+            while (extra < max && (baseValue + (extra + 1) * v) * rules.CapDenominator <= i * rules.CapNumerator) extra++;
+            var cap = $"标准配方材料价值{i}的{Fmt.Pct((double)rules.CapNumerator / rules.CapDenominator)}";
+            return extra > 0
+                ? (extra, $"回收专家：追加{mat}×{extra}（回收价值{baseValue + extra * v}，不超过{cap}）")
+                : (0, $"回收专家：再追加{mat}会使回收价值{baseValue + v}超过{cap}，不追加");
+        }
+
+        /// <summary>拆解总产出（基础 + 回收专家追加，同材料合并），预估与完成同源。</summary>
+        public List<(string itemId, int count)> SalvageYield(GameState s, ItemInstance it)
+        {
+            var list = new List<(string itemId, int count)>();
+            if (SalvageOutput(it) is not (string oid, int n)) return list;
+            list.Add((oid, n));
+            var (extra, _) = SalvageExpertBonus(s, it);
+            if (extra > 0)
+            {
+                var mat = SalvageDef(it.ItemId)!.ExpertMaterial;
+                var k = list.FindIndex(x => x.itemId == mat);
+                if (k >= 0) list[k] = (mat, list[k].count + extra);
+                else list.Add((mat, extra));
+            }
+            return list;
+        }
+
+        /// <summary>对象信息栏/卡下的拆解说明：“废金属×3（15基础分钟，产物落当前地面；不可自制：按固定表）”。</summary>
+        public string SalvageText(ItemInstance it)
+        {
+            var def = SalvageDef(it.ItemId);
+            if (SalvageOutput(it) is not (string oid, int cnt) || def == null) return $"{ItemName(it.ItemId)}没有拆解表，暂不能拆解";
+            var rules = Config.Equipment.Salvage;
+            var budget = def.RecipeValue is int i
+                ? $"标准配方材料价值{i}，回收价值不超过{Fmt.Pct((double)rules.CapNumerator / rules.CapDenominator)}"
+                : "不可自制：按固定表";
+            return $"{ItemName(oid)}×{cnt}（{SalvageRecipe?.BaseMinutes ?? 0}基础分钟，产物落当前地面；{budget}）";
         }
 
         /// <summary>
-        /// 能否拆解（只读）：须是本人随身或当前地面的装备、未穿戴、未被预留或行动占用、有拆解定义；弹仓里还有弹药的先打空（不吞弹药）。
-        /// 战斗、敌踪待选、其他行动进行中由通用开始校验拦截。
+        /// 能否拆解（只读）：须是本人随身或当前地面的装备、未穿戴、未被预留或行动占用、在拆解表里；弹仓里还有弹药的先打空（不吞弹药）。
+        /// 耐久 0 仍可拆。战斗、敌踪待选、其他行动进行中由通用开始校验拦截。拆解熟练门槛等 Q54（B7b），现在不设。
         /// </summary>
         public string? SalvageBlocked(GameState s, int? instanceId, out ItemInstance? target)
         {
@@ -122,34 +181,29 @@ namespace Survival.Core.Engine
             if (!(target.IsCarried || target.Owner == s.CurrentLocation)) return "只能拆解随身或当前地面的装备";
             if (target.ReservedBy != null || IsLocked(s, target)) return "行动占用：这件装备正被使用";
             if (target.LoadedAmmo > 0) return $"弹仓里还有{target.LoadedAmmo}发{ItemName(target.LoadedAmmoId ?? "")}，打空后再拆解";
-            if (SalvageOutput(target) == null) return $"{cfg.Name}的拆解产出待策划确认，暂不能拆解";
+            if (SalvageOutput(target) == null) return $"{cfg.Name}没有拆解表，暂不能拆解";
             return null;
         }
 
-        /// <summary>拆解完成：原装备移除，产物落当前地面；目标已不在则不产出、不改其他状态。不给制造经验。</summary>
+        /// <summary>拆解完成：原装备原子移除，产物（基础+回收专家）落当前地面；目标已不在则不产出、不改其他状态。不给经验（Q46；Q54 的制造经验2属 B7b）。</summary>
         private bool CompleteSalvage(GameState s, ActionState a)
         {
             var here = s.CurrentLocation;
             var t = a.ToolInstanceId.HasValue ? FindItem(s, a.ToolInstanceId.Value) : null;
-            var output = t != null ? SalvageOutput(t) : null;
+            var yield = t != null ? SalvageYield(s, t) : new List<(string itemId, int count)>();
+            var note = t != null ? SalvageExpertBonus(s, t).note : null;
             ClearAction(s, a);
-            if (t == null || output == null)
+            if (t == null || yield.Count == 0)
             {
                 Emit(s, GameEventKind.ActionCompleted, "要拆解的装备已不在，没有产出。");
                 return true;
             }
             var name = $"{ItemName(t.ItemId)}#{t.InstanceId}（{QualityName(t)}）";
             s.Items.Remove(t);
-            var (oid, n) = output.Value;
-            CreateItems(s, oid, n, here);
-            var got = $"{ItemName(oid)}+{n}";
-            var extra = SalvageExtraScrap(s);   // B5 回收专家（搜集10级）：多返废金属1；80% 回收上限无价值口径，不实装
-            if (extra > 0)
-            {
-                CreateItems(s, "scrap", extra, here);
-                got += $"，{ItemName("scrap")}+{extra}（回收专家）";
-            }
-            Emit(s, GameEventKind.ActionCompleted, $"拆解{name}：{got}，已放在{LocName(here)}地面。", null, new[] { oid });
+            foreach (var (oid, n) in yield) CreateItems(s, oid, n, here);
+            var got = string.Join("，", yield.Select(x => $"{ItemName(x.itemId)}+{x.count}"));
+            if (note != null) got += $"（{note}）";
+            Emit(s, GameEventKind.ActionCompleted, $"拆解{name}：{got}，已放在{LocName(here)}地面。", null, yield.Select(x => x.itemId).ToArray());
             UpdateFlags(s);
             return true;
         }

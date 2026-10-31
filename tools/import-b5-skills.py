@@ -52,7 +52,7 @@ SURVIVAL = {
     "scavenging_03": ("pending", []), # “低阶装备”未定义；拆解现状不设熟练门槛（待确认）
     "scavenging_05": ("dormant", [{"key": "work.scavengeTool", "op": "mul", "value": 0.9}]),  # 现有搜集点都没有工具加成
     "scavenging_07": ("live", [{"key": "hazard.scavengeChance", "op": "mul", "value": 0.8}]),
-    "scavenging_10": ("live", [{"key": "salvage.extraScrap", "op": "add", "value": 1}]),  # 80% 上限无价值口径，不实装
+    "scavenging_10": ("live", [{"key": "salvage.expertBonus", "op": "add", "value": 1}]),  # B7a Q46：同材料追加且受 80% 预算；displayText 由 import-b7a-equipment.py 覆盖
     "cooking_01": ("baseline", []),
     "cooking_03": ("dormant", [{"key": "work.cookNew", "op": "mul", "value": 0.95}]),
     "cooking_05": ("dormant", []),

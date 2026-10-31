@@ -211,7 +211,10 @@ public class B4CatalogTests : TestBase
         }
         Assert.That(Cfg.Affixes.Single(a => a.Id == "accurate").Pools, Does.Not.Contain("kind:shield"), "攻击武器不含盾/指挥/医疗");
         Assert.That(Cfg.Affixes.Single(a => a.Id == "durable").Pools, Is.EqualTo(new[] { "durable" }));
-        Assert.That(Cfg.Affixes.Single(a => a.Id == "economical").Pools, Is.EqualTo(new[] { "slot:top", "slot:bottom" }));
+        // B7a（Q51）：求生衣物池之后追加求生饰品池，饰品专用互斥组 charm_consumption，原衣物组 survival 不变
+        Assert.That(Cfg.Affixes.Single(a => a.Id == "economical").Pools, Is.EqualTo(new[] { "slot:top", "slot:bottom", "slot:survival_acc" }));
+        Assert.That(Cfg.Affixes.Single(a => a.Id == "economical").GroupFor("survival_acc"), Is.EqualTo("charm_consumption"));
+        Assert.That(Cfg.Affixes.Single(a => a.Id == "economical").GroupFor("top"), Is.EqualTo("survival"));
     }
 
     [Test]
@@ -224,7 +227,8 @@ public class B4CatalogTests : TestBase
         Assert.That(q.QualityOrigins["dungeon_boss"], Is.EqualTo(new Dictionary<string, double> { ["green"] = 0.8, ["blue"] = 0.2 }));
         Assert.That(q.QualityOrigins["craft"], Is.EqualTo(new Dictionary<string, double> { ["green"] = 1 }), "普通制造默认绿色1条");
         Assert.That((q.Limits.PositiveSpeedCap, q.Limits.ArmorCap, q.Limits.SurvivalWorkFloor, q.Limits.NegativeRateFloor), Is.EqualTo((3.0, 0.9, 0.7, 0.75)));
-        Assert.That(q.Salvage.ScrapByQuality, Is.EqualTo(new Dictionary<string, int> { ["white"] = 1, ["green"] = 2, ["blue"] = 3 }));
+        // B7a 按新规则改写（Q46 取代 A05 §5“武器按品质废金属1/2/3”）：拆解按材料价值预算 5R≤4I，逐件表见 B7aEquipTests
+        Assert.That((q.Salvage.MaterialValues["scrap"], q.Salvage.CapNumerator, q.Salvage.CapDenominator), Is.EqualTo((2, 4, 5)));
         var salvage = Cfg.Recipes.Single(r => r.Id == q.Salvage.RecipeId);
         Assert.That((salvage.IsSalvage, salvage.BaseMinutes), Is.EqualTo((true, 15)));
     }
