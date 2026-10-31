@@ -19,6 +19,40 @@ namespace Survival.Core.Engine
         public string StationName(string stationId) =>
             Config.Workshops.Stations.FirstOrDefault(x => x.Id == stationId)?.Name ?? (stationId == "hand" ? "手工" : stationId);
 
+        /// <summary>
+        /// Q112 选 A（S08/A05/A07 本轮章、workshop-adjudications.json forgeBatchFuel）：配方里某物品按 N 份配方的分账——
+        /// 原料 = 单份原料数×N，燃料 = 单份燃料数×N（锻炉每份配方另需木炭1；N 是配方执行份数，不是成品件数），总数 = 两项合计。
+        /// 校验与预留都按总数一次合并（同一份炭不能同时算原料和燃料）；燃料不计入拆解预算，也不按时间另烧。
+        /// </summary>
+        public static (int Ingredient, int Fuel, int Total) RecipeItemSplit(RecipeConfig rc, string itemId, int portions)
+        {
+            var n = Math.Max(0, portions);
+            var ing = (rc.Inputs.TryGetValue(itemId, out var a) ? a : 0) * n;
+            var fuel = (rc.Fuel.TryGetValue(itemId, out var b) ? b : 0) * n;
+            return (ing, fuel, ing + fuel);
+        }
+
+        /// <summary>Q112：燃料说明“锻炉每份配方另需木炭1”（多种燃料逐项写）；无燃料为 null。</summary>
+        public string? RecipeFuelRule(RecipeConfig rc) => rc.Fuel.Count == 0 ? null
+            : $"{StationName(rc.Station)}每份配方另需{string.Join("、", rc.Fuel.Select(kv => $"{ItemName(kv.Key)}{kv.Value}"))}";
+
+        /// <summary>
+        /// Q112 预览分账（S14 本轮章）：“执行N份 · 成品… · 原料木炭a＋燃料木炭b＝共c”。只读、不预留；无燃料配方为 null。
+        /// </summary>
+        public string? RecipeFuelSummary(RecipeConfig rc, int portions)
+        {
+            if (rc.Fuel.Count == 0) return null;
+            var n = Math.Max(1, portions);
+            var outs = string.Join("、", rc.Outputs.Select(kv => $"{ItemName(kv.Key)}{kv.Value * n}"));
+            var parts = rc.Fuel.Keys.Select(id =>
+            {
+                var (ing, fuel, total) = RecipeItemSplit(rc, id, n);
+                var name = ItemName(id);
+                return ing > 0 ? $"原料{name}{ing}＋燃料{name}{fuel}＝共{total}" : $"燃料{name}{fuel}（原料无{name}）";
+            });
+            return $"执行{n}份配方 · 成品{outs} · {string.Join("；", parts)}（{RecipeFuelRule(rc)}）";
+        }
+
         /// <summary>某地点是否已建成该工坊（hand 永远可用）。</summary>
         public bool WorkshopBuilt(GameState s, string locationId, string stationId) =>
             stationId == "hand" || (s.Locations.TryGetValue(locationId, out var l) && l.Facility.Workshops.Contains(stationId));
@@ -161,6 +195,16 @@ namespace Survival.Core.Engine
             var kit = new (string id, int n)[] { ("clean_water", 3), ("salt", 1), ("lab_reagent", 1), ("herb", 2) };
             foreach (var (id, n) in kit) if (_items.ContainsKey(id)) CreateItems(s, id, n, s.CurrentLocation);
             var text = $"开发：医疗台材料加工原料放在{LocName(s.CurrentLocation)}地面（{string.Join("、", kit.Select(k => $"{ItemName(k.id)}×{k.n}"))}，盐水剂/消毒液/草药浸膏各一次）";
+            Emit(s, GameEventKind.Info, text + "。");
+            return text;
+        }
+
+        /// <summary>开发（B10c，Q112）：钢材×3份原料——铁矿料×9、木炭×6（原料炭3＋燃料炭3），放当前地面，供试玩核对锻炉分账。</summary>
+        public string DebugForgeSteelKit(GameState s)
+        {
+            var kit = new (string id, int n)[] { ("iron_ore", 9), ("charcoal", 6) };
+            foreach (var (id, n) in kit) if (_items.ContainsKey(id)) CreateItems(s, id, n, s.CurrentLocation);
+            var text = $"开发：锻炉钢材3份原料放在{LocName(s.CurrentLocation)}地面（{string.Join("、", kit.Select(k => $"{ItemName(k.id)}×{k.n}"))}；原料木炭3＋燃料木炭3，产钢材6）";
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }

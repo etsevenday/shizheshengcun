@@ -124,7 +124,7 @@ public class B10WorkshopTests : TestBase
         E.DebugBuildAllWorkshops(s);
         s.Skills["crafting"].Level = 7;
         Give(s, ("steel", 2), ("leather", 1), ("fastener", 1));
-        Assert.That(E.CanStart(s, Craft("make_guard_sword")), Does.Contain("缺少燃料木炭").And.Contain("锻炉每批1"));
+        Assert.That(E.CanStart(s, Craft("make_guard_sword")), Does.Contain("缺少燃料木炭").And.Contain("锻炉每份配方另需木炭1"));
         Give(s, ("charcoal", 1));
         Start(s, Craft("make_guard_sword"));
         Assert.That(s.Items.Where(i => i.ItemId == "charcoal").All(i => i.ReservedBy != null), Is.True, "木炭已预留");

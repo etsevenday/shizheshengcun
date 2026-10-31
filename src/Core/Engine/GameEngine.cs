@@ -431,7 +431,9 @@ namespace Survival.Core.Engine
                     if (!_recipes.TryGetValue(r.TargetId, out var rc)) return "配方不存在";
                     plan.Recipe = rc;
                     plan.Type = rc.IsBuild ? ActionType.Build : rc.IsRepair ? ActionType.Repair : rc.IsSalvage ? ActionType.Salvage : ActionType.Craft;
-                    var batch = Math.Max(1, r.BatchCount);
+                    // Q112（S08 本轮章）：N 是合法正整数配方份数，N≤0 拒绝，不静默改成 1；上限沿原规则（材料够几份）
+                    if (r.BatchCount < 1) return "配方份数须为正整数（至少1份）";
+                    var batch = r.BatchCount;
                     if (batch > 1 && (rc.IsBuild || rc.IsRepair || rc.IsSalvage)) return "建造、维护与拆解每次只能做1件";
                     plan.Batch = batch;
                     if (RecipeUnknownReason(s, rc) is string unknown) return unknown;
@@ -497,13 +499,18 @@ namespace Survival.Core.Engine
                         }
                         plan.Catalysts.Add(cat);
                     }
+                    // Q112：原料与燃料按同一实际库存合计校验（同一份炭不能既算原料又算燃料）；不够时整批拒绝、不先扣，原因里写分账与缺几个
                     foreach (var kv in rc.AllInputs)
                     {
                         var have = AvailableCount(s, kv.Key, true);
                         var need = kv.Value * batch;
-                        if (have < need) return rc.Fuel.ContainsKey(kv.Key) && !rc.Inputs.ContainsKey(kv.Key)
-                            ? $"缺少燃料{ItemName(kv.Key)}（{have}/{need}，{StationName(rc.Station)}每批{rc.Fuel[kv.Key]}）"
-                            : $"缺少{ItemName(kv.Key)}（{have}/{need}）";
+                        if (have >= need) continue;
+                        if (!rc.Fuel.ContainsKey(kv.Key)) return $"缺少{ItemName(kv.Key)}（{have}/{need}）";
+                        var (ing, fuel, _) = RecipeItemSplit(rc, kv.Key, batch);
+                        var name = ItemName(kv.Key);
+                        return ing > 0
+                            ? $"缺少{name}（现有{have}/需{need}：原料{name}{ing}＋燃料{name}{fuel}，缺{need - have}；{RecipeFuelRule(rc)}）"
+                            : $"缺少燃料{name}（现有{have}/需{need}，缺{need - have}；{RecipeFuelRule(rc)}）";
                     }
                     // 材料槽里手工指定的批次：仍须可用且属于本配方，否则要求刷新重选
                     foreach (var id in r.PreferredInstanceIds)
@@ -518,7 +525,7 @@ namespace Survival.Core.Engine
                     plan.BaseWork = rc.BaseMinutes * batch;
                     plan.Label = rc.IsBuild ? rc.Name : rc.IsRepair ? $"维护{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
                         : rc.IsSalvage ? $"拆解{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
-                        : batch > 1 ? $"制作{rc.Name}×{batch}" : $"制作{rc.Name}";
+                        : batch > 1 ? $"制作{rc.Name}×{batch}份" : $"制作{rc.Name}";
                     return null;
                 }
 

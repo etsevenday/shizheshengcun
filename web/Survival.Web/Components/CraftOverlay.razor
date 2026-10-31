@@ -151,12 +151,32 @@
                         {
                             var enough = rc.AllInputs.Count == 0 ? 1 : rc.AllInputs.Min(kv => e.AvailableCount(s, kv.Key, true) / Math.Max(1, kv.Value));
                             var maxBatch = Math.Max(1, enough);
+                            @* Q112（S08/S14 本轮章）：数量是“配方份数”（执行一次配方的输入→输出），不是成品件数；钢材一份产2件 *@
                             <div class="batch-row">
-                                <span class="tiny muted">批量制作</span>
-                                <button type="button" class="tbar-step" aria-label="减少件数" disabled="@(batch <= 1)" @onclick="() => SetBatch(batch - 1)">−</button>
+                                <span class="tiny muted" title="N是配方执行份数，不是成品件数；同批次合并工作量">配方份数</span>
+                                <button type="button" class="tbar-step" aria-label="减少份数" disabled="@(batch <= 1)" @onclick="() => SetBatch(batch - 1)">−</button>
                                 <b>@batch</b>
-                                <button type="button" class="tbar-step" aria-label="增加件数" disabled="@(batch >= maxBatch)" @onclick="() => SetBatch(batch + 1)">+</button>
-                                <span class="tiny @(enough == 0 ? "warn-text" : "muted")" title="同批次合并工作量，高熟练度一段可做多件">@(enough == 0 ? "材料不足，一件也不够" : $"材料最多够{enough}件")</span>
+                                <button type="button" class="tbar-step" aria-label="增加份数" disabled="@(batch >= maxBatch)" @onclick="() => SetBatch(batch + 1)">+</button>
+                                <span class="tiny @(enough == 0 ? "warn-text" : "muted")" title="同批次合并工作量，高熟练度一段可做多份">@(enough == 0 ? "材料不足，一份也不够" : $"执行{batch}份 · 材料最多够{enough}份")</span>
+                            </div>
+                        }
+                        @if (rc.Fuel.Count > 0)
+                        {
+                            @* Q112：锻炉每份配方另需木炭1；分列份数/成品/原料炭/燃料炭/总炭，原料与燃料按同一库存合计校验 *@
+                            <div class="forge-fuel" data-forge-fuel>
+                                <span>份数<b>@batch</b></span>
+                                <span>成品<b>@string.Join("、", rc.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value * batch}"))</b></span>
+                                @foreach (var fid in rc.Fuel.Keys)
+                                {
+                                    var (fing, ffuel, ftotal) = GameEngine.RecipeItemSplit(rc, fid, batch);
+                                    var fhave = e.AvailableCount(s, fid, true);
+                                    var fn = fid == "charcoal" ? "炭" : e.ItemName(fid);
+                                    <span>原料@(fn)<b>@fing</b></span>
+                                    <span>燃料@(fn)<b>@ffuel</b></span>
+                                    <span>总@(fn)<b>@ftotal</b></span>
+                                    <span class="@(fhave < ftotal ? "warn-text" : "muted")">现有@(fhave)@(fhave < ftotal ? $" · 缺少{ftotal - fhave}" : "")</span>
+                                }
+                                <span class="muted">@e.RecipeFuelRule(rc)</span>
                             </div>
                         }
                         <div class="mat-scroll" data-wheel="y">
@@ -164,12 +184,12 @@
                         <div class="mat-grid">
                         @foreach (var kv in rc.Fuel)
                         {
-                            @* A05 §3：锻炉每批另付木炭1作燃料，与原料一起预留；原料里也有同种物品时合计校验 *@
+                            @* Q112（A05/A07/S08 本轮章）：锻炉每份配方另需木炭1作燃料（N份扣N），与原料一起预留、完成一次核销；原料里也有木炭时合计校验 *@
                             var fneed = kv.Value * batch;
                             var fall = rc.AllInputs[kv.Key] * batch;
                             var fhave = e.AvailableCount(s, kv.Key, true);
                             <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"燃料{fneed}")" Missing="@(fhave < fall)" CssClass="mat-row"
-                                     Status="@($"{e.StationName(rc.Station)}每批{kv.Value} · 现有{fhave}{(fall != fneed ? $"（连同原料共需{fall}）" : "")}{(fhave < fall ? $" · 缺少{fall - fhave}" : "")}")" />
+                                     Status="@($"每份配方{kv.Value}×{batch}份 · 现有{fhave}{(fall != fneed ? $"（连同原料共需{fall}）" : "")}{(fhave < fall ? $" · 缺少{fall - fhave}" : "")}")" />
                         }
                         @foreach (var kv in rc.Inputs)
                         {
@@ -213,7 +233,7 @@
                             <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"×{kv.Value * batch}")" Status="@($"完成后放在{lc.Name}地面")" />
                         }
                         </div>
-                        @* 唯一“开始制作/开始建造”入口在所选配方卡内（S08 §5、S14 §14.1）：选配方、改件数、指定批次/锅只预览，不扣物不预留；
+                        @* 唯一“开始制作/开始建造”入口在所选配方卡内（S08 §5、S14 §14.1）：选配方、改份数、指定批次/锅只预览，不扣物不预留；
                            点开始才交内核按真实材料/工具/锅/占用重验并预留开工（E.Start），执行中锁住按钮，重复点击不重复制作。右栏只作可选详细预测。 *@
                         @{
                             var p = G.Preview(request);
