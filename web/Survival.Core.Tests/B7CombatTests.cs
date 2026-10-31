@@ -303,6 +303,153 @@ public class B7CombatTests : BattleTestBase
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("desperate_punch", 1)), Is.Null);
     }
 
+    // ───────────── M142 格挡/增益/指挥/医疗/装填与反应 ─────────────
+
+    /// <summary>武器Ⅱ穿上指定器具并切到这一页（武器Ⅰ留着原武器）。</summary>
+    private ItemInstance Arm2(GameState s, string id)
+    {
+        var slot = ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Weapon2);
+        foreach (var old in s.Items.Where(i => i.Owner == slot)) old.Owner = ItemInstance.Carried;
+        var it = E.CreateItems(s, id, 1, slot).Single();
+        s.Battle!.ActiveWeaponSlot = 2;
+        return it;
+    }
+
+    [Test]
+    public void GuardSkills_StandTwoCharges_CounterStance()
+    {
+        // 坚守：自己格挡2次（盾类×0.4），两次敌人命中都减伤
+        var s = Fight(720, "shambler", "shambler");
+        Ready(s);
+        var sh = Arm(s, "wooden_shield");
+        s.Skills["shield"].Level = 10;
+        s.Battle!.PlayerAp = 3;
+        Assert.That(Cmd(s, "shield_10").Ok, Is.True);
+        Assert.That((s.Battle.PlayerGuard, s.Battle.PlayerGuardCharges, s.Battle.PlayerGuardFactor), Is.EqualTo((true, 2, 0.4)));
+        Assert.That(s.Battle.Log.Last(), Does.Contain("格挡2次"));
+        s.Battle.PlayerGuardCharges = 2;
+        foreach (var e in s.Battle.Alive) { e.Intent = "attack"; }
+        // 第一只命中：还剩 1 次；第二只命中：用完
+        var h0 = s.Stats.Health;
+        Force(s, Below(0.01), AtLeast(0.99), Below(0.01), AtLeast(0.99));
+        while (s.Battle != null && !E.AwaitingPlayer(s) && s.Battle.Alive.Any(e => !e.Acted)) E.BattleStep(s);
+        Assert.That(s.Battle!.PlayerGuard, Is.False, "两次格挡都用完");
+
+        // 反击架势：受到直接攻击命中后反击1次
+        var c = Fight(721, "shambler");
+        Ready(c);
+        Arm(c, "guard_sword");
+        c.Skills["blade"].Level = 5;
+        Assert.That(Cmd(c, "blade_05").Ok, Is.True);
+        Assert.That(c.Battle!.CounterFactor, Is.EqualTo(0.70 * 1.15).Within(1e-9), "守备短剑“反击”×1.15");
+        Cmd(c, "end_turn");
+        Enemy(c, 1).Intent = "attack";
+        Enemy(c, 1).Hp = 50;
+        Force(c, Below(0.01), Any(), Below(0.01), AtLeast(0.99), Any());
+        ToPlayer(c);
+        Assert.That(c.Battle!.Log.Any(l => l.Contains("你反击")), Is.True);
+        Assert.That(c.Battle.CounterFactor, Is.EqualTo(0), "只反击1次");
+    }
+
+    [Test]
+    public void AxeCharge_NextAxeAttackOnly_Consumed()
+    {
+        var s = Fight(722, "worker");
+        Ready(s);
+        Arm(s, "hatchet");
+        s.Skills["axe"].Level = 5;
+        s.Battle!.PlayerAp = 4;
+        var m0 = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single().Multiplier;
+        Assert.That(Cmd(s, "axe_05").Ok, Is.True);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("axe_05")), Does.StartWith("冷却中").Or.Contain("已蓄力"));
+        var m1 = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single().Multiplier;
+        Assert.That(m1 / m0, Is.EqualTo(1.35).Within(1e-9));
+        Enemy(s, 1).Hp = 50;
+        Force(s, AtLeast(0.99));
+        Assert.That(Cmd(s, "basic_attack", 1).Ok, Is.True);
+        Assert.That(GameEngine.AxeChargeOn(s.Battle!), Is.False, "蓄力被用掉");
+    }
+
+    [Test]
+    public void Command_InspireCalmAllOut_SoloTargetsSelf_NeedsAlliesDisabled()
+    {
+        var s = Fight(723, "worker");
+        Ready(s);
+        Arm(s, "kitchen_knife");
+        var wh = Arm2(s, "signal_whistle");
+        s.Skills["command"].Level = 9;   // 10 级不再获得经验
+        s.Battle!.PlayerAp = 6;
+        s.Battle.Panic = 30;
+        var opts = E.BattleOptions(s);
+        Assert.That(opts.Where(o => o.NodeId != null).Select(o => o.Label), Is.EqualTo(new[] { "鼓舞", "整队", "稳心", "协同" }), "9级：总攻令未解锁不列");
+        Assert.That(opts.Single(o => o.Action == "command_03").Reason, Does.Contain("没有可交换站位的队友"));
+        Assert.That(opts.Single(o => o.Action == "command_07").Reason, Does.Contain("没有可协同的队友"));
+        // 稳心：恐慌−8，同目标每大回合一次，有效即+2指挥经验
+        var xp0 = s.Skills["command"].Xp;
+        Assert.That(Cmd(s, "command_05").Ok, Is.True);
+        Assert.That(s.Battle.Panic, Is.EqualTo(22).Within(1e-9));
+        Assert.That(s.Skills["command"].Xp - xp0, Is.EqualTo(2));
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("command_05")), Does.StartWith("冷却中").Or.Contain("本回合已对你用过稳心"));
+        // 鼓舞：下一次攻击命中能力+6；被用掉才给经验
+        Assert.That(Cmd(s, "command_01").Ok, Is.True);
+        Assert.That(GameEngine.InspireActive(s.Battle), Is.True);
+        Assert.That(wh.Durability, Is.LessThan(wh.MaxDurability), "指挥器具有效技能磨损1");
+        E.SelectWeaponPage(s, 1);
+        var acc = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single().AccuracyRating;
+        s.Battle.InspireBonus = 0;
+        var acc0 = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1)).Targets.Single().AccuracyRating;
+        Assert.That(acc, Is.GreaterThan(acc0));
+    }
+
+    [Test]
+    public void Medical_SelfTarget_SharedCooldown_CriticalOnlyWhenLow()
+    {
+        var s = Fight(724, "worker");
+        Ready(s);
+        Arm(s, "kitchen_knife");
+        var kit = Arm2(s, "trauma_bag");
+        s.Skills["medicine"].Level = 10;
+        s.Battle!.PlayerAp = 6;
+        s.Stats.Health = 10;
+        E.ApplyPlayerBleed(s);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("medicine_03")), Does.StartWith("随身没有医用纱布"));
+        E.DebugGive(s, "medical_gauze", 2);
+        E.DebugGive(s, "saline", 2);
+        var pv = E.PreviewCommand(s, BattleCommand.Of("medicine_03"));
+        Assert.That(pv.EffectText, Does.Contain("止血").And.Contain("健康10.00→"));
+        Assert.That(Cmd(s, "medicine_03").Ok, Is.True);
+        var heal = E.MedicalHeal(0.6, 10) + 0.2;   // 创伤救护包“创伤处置”+0.2H
+        Assert.That(s.Stats.Health, Is.EqualTo(10 + heal).Within(1e-9));
+        Assert.That(s.Body.BleedTriggers, Is.EqualTo(0));
+        Assert.That(s.Battle.Log.Last(), Does.Contain("医疗已满10级"), "有效医疗给医疗经验（10级已满只写说明）");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("medicine_05")), Does.Contain("回血冷却中"), "与绷带共享60分钟回血冷却");
+        s.BandageReadyAt = 0;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("medicine_10")), Does.Contain("健康高于上限的25"), "危急救护只在 H≤25%");
+        s.Stats.Health = 4;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("medicine_10")), Is.Null);
+        // 应急护理：解除失衡
+        s.Battle.PlayerStagger = true;
+        s.BandageReadyAt = 0;
+        Assert.That(Cmd(s, "medicine_07").Ok, Is.True);
+        Assert.That(s.Battle.PlayerStagger, Is.False);
+    }
+
+    [Test]
+    public void QuickReload_FillsMagazine_NoGeneralReload()
+    {
+        var s = Fight(725, "worker");
+        Ready(s);
+        var p = Arm(s, "pistol");
+        p.LoadedAmmo = 1;
+        E.DebugGive(s, "ammo_9mm", 10);
+        s.Skills["firearms"].Level = 5;
+        var ap0 = s.Battle!.PlayerAp;
+        Assert.That(Cmd(s, "firearms_05").Ok, Is.True);
+        Assert.That(p.LoadedAmmo, Is.EqualTo(8));
+        Assert.That(s.Battle.PlayerAp, Is.EqualTo(ap0 - 1), "快速装填 1AP");
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("firearms_05")), Does.StartWith("冷却中"));
+    }
+
     [Test]
     public void NewEnemies_NotInOldSpawnPools()
     {

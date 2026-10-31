@@ -629,8 +629,11 @@ namespace Survival.Core.Engine
                 BattleLog(s, $"你追击：{b.PlayerAp}AP（速度优势带来的额外激活）。");
                 return;
             }
-            // 出血改在大回合开始结算（R03 §4，见 RoundStartBleed）；这里只清旧防御、恢复 AP
+            // 出血改在大回合开始结算（R03 §4，见 RoundStartBleed）；这里只清旧防御、反击架势与架矛（持续到下一正常激活）、恢复 AP
             b.PlayerGuard = false;
+            b.PlayerGuardCharges = 0;
+            b.CounterFactor = 0;
+            b.BraceCharges = 0;
             b.PlayerAp = NormalActivationAp(s.Player);
             b.ActivationAp = b.PlayerAp;
             b.PlayerActing = true;
@@ -784,8 +787,9 @@ namespace Survival.Core.Engine
             var raw = cfg.DamageMin + s.Rng.NextDouble() * (cfg.DamageMax - cfg.DamageMin);
             if (charge) raw *= BoarChargeFactor;
             if (EnemyWeak(b, e)) raw *= e.WeakFactor;   // 虚弱（重锤/火力压制）：直接伤害×0.8
-            // 主角护甲 = 基础0 + 装备护甲（≤0.9）；先按磨损前的护甲算，再磨损防具（B6 R23、A05 §2）
-            var dmg = Math.Max(0, raw - PlayerArmor(s));
+            // 主角护甲 = 基础0 + 装备护甲（≤0.9）− 被破甲（最低0）；先按磨损前的护甲算，再磨损防具（B6 R23、A05 §2）
+            var dmg = Math.Max(0, raw - Math.Max(0, PlayerArmor(s) - (PlayerArmorBroken(b) ? b.PlayerArmorBreak : 0)));
+            if (dmg > 0 && b.PlayerNextDamageFactor < 1) { dmg *= b.PlayerNextDamageFactor; b.PlayerNextDamageFactor = 1; }   // 救援医疗箱“稳定”
             var guarded = false;
             if (b.PlayerGuard && dmg > 0)
             {
@@ -801,6 +805,7 @@ namespace Survival.Core.Engine
             if (dmg <= 0)
             {
                 BattleLog(s, $"{EnemyName(e)}{verb}被完全挡住{(armorWear != "" ? "（" + armorWear + "）" : "")}。");
+                TryCounter(s, b, e);
                 return;
             }
             s.Stats.Add(StatId.Health, -dmg);
@@ -844,6 +849,7 @@ namespace Survival.Core.Engine
                 }
             }
             BattleLog(s, $"{EnemyName(e)}{verb}命中，健康−{Fmt.N(dmg)}（恐慌{Fmt.N(b.Panic)}）{(extra.Count > 0 ? "：" + string.Join("，", extra) : "")}。");
+            TryCounter(s, b, e);
         }
 
         // ───────────── 指令 ─────────────

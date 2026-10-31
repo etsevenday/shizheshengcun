@@ -239,7 +239,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>药物效果在确认时应用（战外 5 分钟 wait、战内 2AP），各冷却只在对应效果实际生效时启动；有效才给医疗经验，同次只发一次。</summary>
-        private void ApplyMedicine(GameState s, ItemUseConfig u, List<string> parts)
+        private bool ApplyMedicine(GameState s, ItemUseConfig u, List<string> parts)
         {
             var b = s.Body;
             var effective = false;
@@ -297,6 +297,7 @@ namespace Survival.Core.Engine
                 parts.Add(XpText(s, Medicine, Config.Xp.Medical));
                 GainXp(s, Medicine, Config.Xp.Medical);
             }
+            return effective;
         }
 
         /// <summary>
