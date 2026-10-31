@@ -342,15 +342,32 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 队友在世界 tick 中健康归零或尸变（R08 §4“队友同条件永久退出可控名册”）：本批只把他移出同行队伍并记录；
-        /// 遗物容器、名册与补员在后续批次（B8）实现。主角不走这里。
+        /// 队友（同行或候补）健康归零或尸变（R08 §4、A11 §8，B8）：永久退出可控名册（名称、技能与死亡记录保留），离开同行与预设、
+        /// 战斗中清出号位（不压紧）；穿戴与随身一次原子迁到死亡地点的遗物容器（owner 唯一、保质/耐久不变）。容量 C 不降。主角不走这里。
         /// </summary>
         private void CompanionDown(GameState s, ActorState actor, string cause)
         {
             if (actor.IsPlayer) return;
             if (cause != ZombifiedCause) actor.Stats.Health = 0;
+            var wasActive = s.Party.Contains(actor.Id);
+            var where = wasActive ? (s.Battle?.LocationId ?? s.CurrentLocation) : HubLocation;
             s.Party.Remove(actor.Id);
-            Emit(s, GameEventKind.Alert, $"{ActorLabel(actor)}倒下了（{cause}），已离开队伍。");
+            s.FormationPreset.Remove(actor.Id);
+            if (s.Battle != null)
+            {
+                var b = s.Battle;
+                for (var k = 0; k < b.Allies.Count; k++) if (b.Allies[k] == actor.Id) b.Allies[k] = "";
+                while (b.Allies.Count > 0 && string.IsNullOrEmpty(b.Allies[b.Allies.Count - 1])) b.Allies.RemoveAt(b.Allies.Count - 1);
+            }
+            if (RosterOf(s, actor.Id) is RosterEntry r && !r.Dead)
+            {
+                r.Dead = true;
+                r.DeathMinute = s.GameMinute;
+                r.DeathLocation = where;
+                r.DeathCause = cause;
+            }
+            var moved = MoveToRemains(s, actor, where, cause, wasActive ? s.Battle?.BattleId : null);
+            Emit(s, GameEventKind.Alert, $"{ActorLabel(actor)}死了（{cause}）" + (moved > 0 ? $"，遗物留在{LocName(where)}。" : "。"));
         }
 
         /// <summary>角色在文案里的称呼：主角为“你”，队友为名册名（B8）；没有名字的测试注入角色为“队友&lt;id&gt;”。</summary>
@@ -509,6 +526,7 @@ namespace Survival.Core.Engine
                     return true;
                 case ActionType.Wait:
                     ClearAction(s, a);
+                    if (a.TargetId == EscortRegistrationTarget) { CompleteEscortRegistration(s, a); return true; }
                     Emit(s, GameEventKind.ActionCompleted, $"等待结束（{Clock.Duration(a.PlannedMinutes)}）。");
                     return true;
                 case ActionType.Butcher:
@@ -604,7 +622,7 @@ namespace Survival.Core.Engine
             return true;
         }
 
-        /// <summary>某角色死亡：主角终局（同 Kill(s, cause)）；队友移出同行队伍（R08 §4，遗物在后续批次）。</summary>
+        /// <summary>某角色死亡：主角终局（同 Kill(s, cause)）；队友死亡留遗物（R08 §4，CompanionDown）。</summary>
         private void Kill(GameState s, ActorState actor, string cause)
         {
             if (actor.IsPlayer) Kill(s, cause);

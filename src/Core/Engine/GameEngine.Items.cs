@@ -264,6 +264,7 @@ namespace Survival.Core.Engine
         public List<ItemInstance> UsableBatches(GameState s, string itemId, bool allowGround, bool includeContainers = false) =>
             Accessible(s, allowGround, includeContainers)
                 .Where(i => i.ItemId == itemId && i.ReservedBy == null && !IsSpoiled(s, i))
+                .Where(i => i.LoanSlot == null)   // 借用矛不能作配方材料或燃料（A11 §7）
                 .Where(i => !i.InContainer || PotFreeWaterUnits(s, i) > 0)
                 .OrderBy(i => i.ExpiresAt ?? int.MaxValue)
                 .ThenBy(i => PlaceOf(s, i) == ItemInstance.Carried ? 0 : 1)

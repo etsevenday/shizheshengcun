@@ -178,6 +178,7 @@ namespace Survival.Core.Engine
             if (target == null) return "这件装备已不在，请重新选择";
             var cfg = _items[target.ItemId];
             if (!cfg.IsEquipment) return $"{cfg.Name}不是装备，不能拆解";
+            if (target.LoanSlot != null) return $"借用的{cfg.Name}不能拆解（RB01 借用物，不产出材料）";
             if (target.IsWorn) return target.IsWornBy(GameState.PlayerId) ? "穿戴中：先在装备区卸下再拆解" : "穿在别人身上，不能拆解";
             if (!(target.IsCarried || target.Owner == s.CurrentLocation)) return "只能拆解随身或当前地面的装备";
             if (target.ReservedBy != null || IsLocked(s, target)) return "行动占用：这件装备正被使用";
