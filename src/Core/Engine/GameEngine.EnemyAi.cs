@@ -172,21 +172,45 @@ namespace Survival.Core.Engine
 
         // ───────────── 站位与够不到 ─────────────
 
-        public enum ReachPlan { Execute, AdvanceThenAttack, Advance, Weak, Guard }
+        public enum ReachPlan { Execute, AdvanceThenAttack, Advance, Weak, Guard, Approach, AdvanceThenApproach }
 
         /// <summary>
-        /// 攻击类意图在当前站位怎么执行（显示与执行同源）：在己位且主角在目标位 → 执行；站得太靠后 → 前移 1 位（前移后进己位就再普通攻击）；
-        /// 后排型被压到前排 → 弱攻击×0.7；都不行 → 防御。
+        /// 我方暴露（Q80 空前排迫近的条件之一）：我方最前的存活角色前面全是空位（最前者不在 1 号位）。
+        /// 后面有同伴挡住的角色不算暴露——迫近只打最前的那一个。
         /// </summary>
-        public ReachPlan PlanFor(BattleState b, BattleEnemy e, EnemyIntentStepConfig st)
+        public static bool AlliesExposed(BattleState b)
+        {
+            var front = Enumerable.Range(1, 4).FirstOrDefault(p => AllyAt(b, p) != null);
+            return front > 1;
+        }
+
+        /// <summary>迫近的对象是主角：我方暴露且最前的存活者就是主角（敌人的攻击对象目前只有主角，队友参战在 B8）。</summary>
+        public static bool PlayerExposed(BattleState b) =>
+            AlliesExposed(b) && Enumerable.Range(1, 4).Select(p => AllyAt(b, p)).First(a => a != null) == GameState.PlayerId;
+
+        /// <summary>
+        /// 攻击类意图在当前站位怎么执行（显示与执行同源；ap 为本次可用 AP，缺省按正常激活）：
+        /// 在己位且主角在目标位 → 执行；站得太靠后 → 前移 1 格（前格空则移、有同伴则交换；前移后够到就再普通攻击）；
+        /// 后排型被压到前排 → 弱攻击×0.7；在合法己位但我方最前者躲在后排、前面全空 → 迫近 1AP + 2AP 弱近袭×0.7（Q80，AP 不够就不做）；
+        /// 都不行 → 防御（只在正常激活、无合法攻击且不能合法前移时）。
+        /// </summary>
+        public ReachPlan PlanFor(BattleState b, BattleEnemy e, EnemyIntentStepConfig st, int? ap = null)
         {
             if (!ReachKinds.Contains(st.Kind)) return ReachPlan.Execute;
             var cfg = _enemies[e.EnemyId];
             var (own, tgt) = SlotsOf(cfg, st);
             var me = PlayerPos(b);
+            var budget = ap ?? EnemyAp(e);
+            var approach = Config.CombatMath.ExposureApproach.TotalAp;
             if (own.Contains(e.Pos) && tgt.Contains(me)) return ReachPlan.Execute;
-            if (own.Count > 0 && e.Pos > own.Max() && e.Pos > 1) return own.Contains(e.Pos - 1) && tgt.Contains(me) ? ReachPlan.AdvanceThenAttack : ReachPlan.Advance;
+            if (own.Count > 0 && e.Pos > own.Max() && e.Pos > 1)
+            {
+                if (own.Contains(e.Pos - 1) && tgt.Contains(me)) return ReachPlan.AdvanceThenAttack;
+                if (own.Contains(e.Pos - 1) && PlayerExposed(b) && budget >= 1 + approach) return ReachPlan.AdvanceThenApproach;
+                return ReachPlan.Advance;
+            }
             if (own.Count > 0 && e.Pos < own.Min() && e.Pos <= 2 && me <= 2) return ReachPlan.Weak;
+            if (own.Contains(e.Pos) && PlayerExposed(b) && budget >= approach) return ReachPlan.Approach;
             return ReachPlan.Guard;
         }
 
@@ -207,6 +231,8 @@ namespace Survival.Core.Engine
                 case ReachPlan.Advance: return $"前移1位（在{e.Pos}号位够不到）";
                 case ReachPlan.Weak: return $"弱攻击 {Range(cfg, WeakAttackFactor)}（在{e.Pos}号位，{verb}要在{PosList(SlotsOf(cfg, st).own)}）";
                 case ReachPlan.Guard: return "防御（够不到目标）";
+                case ReachPlan.Approach: return $"迫近你（{PosName(PlayerPos(b))}）1AP后弱近袭 {Range(cfg, Config.CombatMath.ExposureApproach.DamageFactor)}（2AP，不咬、不附控制）";
+                case ReachPlan.AdvanceThenApproach: return $"前移到{e.Pos - 1}号位，再迫近你（{PosName(PlayerPos(b))}）弱近袭 {Range(cfg, Config.CombatMath.ExposureApproach.DamageFactor)}（共{1 + Config.CombatMath.ExposureApproach.TotalAp}AP，不咬、不附控制）";
             }
             return IntentLabel(e, b);
         }
@@ -294,11 +320,17 @@ namespace Survival.Core.Engine
             ExecuteReach(s, b, e, st, EnemyAp(e), false, false);
         }
 
-        /// <summary>攻击类意图：按站位先前移 / 弱攻击 / 防御，再执行（每个主意图 2AP，前移 1AP；余 AP 不另附攻击）。</summary>
+        /// <summary>
+        /// 攻击类意图：按站位先前移 / 弱攻击 / 迫近 / 防御，再执行（每个主意图 2AP，前移 1AP，迫近 1AP；余 AP 直接结束，
+        /// 不另附攻击、不自动防御，Q77）。前移后按剩余 AP 重新判断：够到就一次普通攻击，暴露且 AP 够就迫近。
+        /// </summary>
         private void ExecuteReach(GameState s, BattleState b, BattleEnemy e, EnemyIntentStepConfig st, int ap, bool plain, bool pursuit)
         {
-            switch (PlanFor(b, e, st))
+            switch (PlanFor(b, e, st, ap))
             {
+                case ReachPlan.Approach:
+                    DoApproach(s, b, e);
+                    return;
                 case ReachPlan.Execute:
                     if (ap >= 2) DoAttackStep(s, b, e, st, plain, 1, pursuit);
                     return;
@@ -306,14 +338,16 @@ namespace Survival.Core.Engine
                     if (ap >= 2) DoAttackStep(s, b, e, st, true, WeakAttackFactor, pursuit);
                     return;
                 case ReachPlan.AdvanceThenAttack:
+                case ReachPlan.AdvanceThenApproach:
                 case ReachPlan.Advance:
                 {
-                    var then = PlanFor(b, e, st) == ReachPlan.AdvanceThenAttack;
                     AdvanceEnemy(s, b, e);
                     ap -= 1;
                     if (s.Battle == null || s.Progress.Dead || !e.Alive) return;
-                    if (then && ap >= 2) DoAttackStep(s, b, e, st, true, 1, pursuit);
-                    else if (!then) BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}还够不到，结束行动。");
+                    var next = PlanFor(b, e, st, ap);
+                    if (next == ReachPlan.Execute && ap >= 2) DoAttackStep(s, b, e, st, true, 1, pursuit);
+                    else if (next == ReachPlan.Approach && !pursuit) DoApproach(s, b, e);
+                    else BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}还够不到，结束行动。");
                     return;
                 }
                 default:
@@ -327,7 +361,19 @@ namespace Survival.Core.Engine
             }
         }
 
-        /// <summary>敌人前移 1 位：与前一位同伴换位（R03 §1 相邻换位；A09“不满足则本激活1AP前移”）；触发架矛迎击。</summary>
+        /// <summary>
+        /// 空前排迫近（Q80）：付 1AP 迫近后再付 2AP，对我方最前那名暴露角色做一次普通近袭×0.70——不咬、不感染、不附控制或特殊意图，
+        /// 不移动、不重标任何一方的真实号位（所以不触发架矛迎击）；迫近 AP 已在 PlanFor 里核过。
+        /// </summary>
+        private void DoApproach(GameState s, BattleState b, BattleEnemy e)
+        {
+            var ea = Config.CombatMath.ExposureApproach;
+            BattleLog(s, $"{EnemyName(e)}迫近{PosName(PlayerPos(b))}的你（{ea.ApproachAp}AP；你前面没有人挡）。");
+            var step = new EnemyIntentStepConfig { Kind = "attack", Verb = "弱近袭" };
+            DoAttackStep(s, b, e, step, true, ea.DamageFactor, false, approach: true);
+        }
+
+        /// <summary>敌人前移 1 位：前格空则移入、有同伴则与它交换（Q78；被换的同伴不多激活、不改锁定队列）；主动前移触发架矛迎击。</summary>
         private void AdvanceEnemy(GameState s, BattleState b, BattleEnemy e)
         {
             var ahead = b.Alive.FirstOrDefault(x => x.Pos == e.Pos - 1);
@@ -346,10 +392,10 @@ namespace Survival.Core.Engine
         /// 只有丧尸咬击命中且正伤才判感染；扯腿/扑击/敲击失衡是需命中的控制；野犬/狼 25% 出血；喷吐破甲；扫击对我方 1、2 号位逐个判；
         /// 拉扯/击退在我方只剩一人时没有位置可移动。plain=true 为普通攻击（倍率 1、无附加、追击不改判咬击）。
         /// </summary>
-        private void DoAttackStep(GameState s, BattleState b, BattleEnemy e, EnemyIntentStepConfig st, bool plain, double factorOverride, bool pursuit)
+        private void DoAttackStep(GameState s, BattleState b, BattleEnemy e, EnemyIntentStepConfig st, bool plain, double factorOverride, bool pursuit, bool approach = false)
         {
             var cfg = _enemies[e.EnemyId];
-            var bite = !pursuit && e.Intent == "bite";
+            var bite = !pursuit && !approach && e.Intent == "bite";   // 迫近弱近袭不咬（Q80）
             var kind = st.Kind;
             var shoot = kind == "shoot" && factorOverride >= 1;   // 弱近战（后排型被压到前排、打空后）不耗子弹
             if (shoot)
@@ -357,7 +403,7 @@ namespace Survival.Core.Engine
                 if (e.Mag <= 0) { BattleLog(s, $"{EnemyName(e)}没有子弹了。"); return; }
                 e.Mag--;
             }
-            var verb = (pursuit ? "追击" : "") + (bite ? "咬击" : factorOverride < 1 ? "弱攻击" : st.Verb != "" ? st.Verb : AttackVerb(cfg));
+            var verb = (pursuit ? "追击" : "") + (bite ? "咬击" : approach ? st.Verb : factorOverride < 1 ? "弱攻击" : st.Verb != "" ? st.Verb : AttackVerb(cfg));
             var factor = plain ? factorOverride : st.Factor * factorOverride;
             // 扫击：我方 1、2 号位逐个判（只有主角时只打主角）
             if (!plain && kind == "sweep" && !(new[] { 1, 2 }.Contains(PlayerPos(b)))) { BattleLog(s, $"{EnemyName(e)}{verb}落在空处。"); return; }

@@ -267,7 +267,7 @@ public class B7dCombatTests : BattleTestBase
         Force(s, Below(0.01), Any());
         var rng = s.Rng.State;
         typeof(GameEngine).GetMethod("DoAttackStep", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
-            .Invoke(E, new object[] { s, b, h, E.StepOf(h), false, 1.0, false });
+            .Invoke(E, new object[] { s, b, h, E.StepOf(h), false, 1.0, false, false });
         Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(4));
         Assert.That(s.Stats.Health, Is.LessThan(20), "其他伤害照算");
         Assert.That(b.PlayerSteadyUntilRound, Is.EqualTo(0));
@@ -370,5 +370,144 @@ public class B7dCombatTests : BattleTestBase
         b.SkillUsedRound.Clear();
         b.PlayerAp = 6;
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("unarmed_07")), Is.Null);
+    }
+
+    // ───────────── M176：空前排迫近、敌人前移与余 AP ─────────────
+
+    /// <summary>
+    /// RES-Q80e：敌在合法己位、够不到躲在 3 号位的单人、你前面全空 → 1AP 迫近 + 2AP 一次 ×0.70 弱近袭；不咬（即使意图是咬击）、不附控制、
+    /// 不改你的真实号位、不触发架矛；你在 1 号位时照常攻击；追击 2AP 付不起迫近。
+    /// </summary>
+    [Test]
+    public void RES_Q80e_ExposureApproach_WeakNoBite_KeepsSlot_ApBudget()
+    {
+        var ea = (JObject)Res()["enemyActivation"]!["exposureApproach"]!;
+        var cfgA = Cfg.CombatMath.ExposureApproach;
+        Assert.That((cfgA.ApproachAp, cfgA.PlainAttackAp, cfgA.DamageFactor), Is.EqualTo(((int)ea["approachAp"]!, (int)ea["plainAttackAp"]!, (double)ea["damageFactor"]!)));
+        Assert.That((bool)ea["biteOrControlOrOtherSpecialIntent"]!, Is.False);
+        Assert.That((bool)ea["changesOpponentActualSlot"]!, Is.False);
+
+        var s = Fight(9301, "crawler");
+        Ready(s);
+        var b = s.Battle!;
+        var z = Enemy(s, 1);
+        z.Intent = "bite";   // 即使公开意图是咬击，迫近弱近袭也不咬
+        StandAt(s, 3);
+        Assert.That(E.PlanFor(b, z, E.StepOf(z)), Is.EqualTo(GameEngine.ReachPlan.Approach));
+        Assert.That(E.IntentShown(b, z), Does.StartWith("迫近你（3号位）1AP后弱近袭 0.28—0.56"));
+        Assert.That(E.PlanFor(b, z, E.StepOf(z), 2), Is.EqualTo(GameEngine.ReachPlan.Guard), "追击 2AP 付不起 1+2AP 的迫近");
+        b.BraceCharges = 1;
+        b.BracePage = 1;
+        var h0 = s.Stats.Health;
+        var infected = s.Body.Infected;
+        Force(s, Below(0.01), AtLeast(0.999));   // 命中、抽值取最高
+        EnemyAct(s, z);
+        Assert.That(h0 - s.Stats.Health, Is.EqualTo(0.8 * 0.7).Within(2e-3), "伤害×0.70（扯腿 0.4—0.8）");
+        Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(3), "不改你的真实号位");
+        Assert.That(b.PlayerSlowPending, Is.False, "不附扯腿减速");
+        Assert.That(s.Body.Infected, Is.EqualTo(infected), "不咬、不判感染");
+        Assert.That(b.BraceCharges, Is.EqualTo(1), "迫近不是主动前移，不触发架矛");
+        Assert.That(b.Log.Any(l => l.Contains("迫近3号位的你")), Is.True);
+        Assert.That(b.Log.Last(), Does.Contain("弱近袭命中"));
+        Assert.That(z.Pos, Is.EqualTo(1), "迫近不移动敌人自己的号位");
+
+        // 你在 1 号位：有正常目标，照常攻击；你在 3 号位但前面有同伴挡住：不算暴露
+        StandAt(s, 1);
+        Assert.That(E.PlanFor(b, z, E.StepOf(z)), Is.EqualTo(GameEngine.ReachPlan.Execute));
+        b.Allies = new List<string> { "", "", GameState.PlayerId, "ally" };
+        Assert.That(GameEngine.AlliesExposed(b), Is.True, "最前者（你）前面全空");
+        b.Allies = new List<string> { "", "ally", GameState.PlayerId };
+        Assert.That(E.PlanFor(b, z, E.StepOf(z)), Is.Not.EqualTo(GameEngine.ReachPlan.Approach), "最前的是 2 号位同伴（不是暴露的你）：你不是迫近对象");
+    }
+
+    /// <summary>RES-Q80e：站太靠后的敌人先 1AP 前移；之后剩余 AP 不够 1+2 就结束（普通 3AP），精英 4AP 才能前移后再迫近。</summary>
+    [Test]
+    public void RES_Q80e_AdvanceThenApproach_CountsAdvanceAp()
+    {
+        var s = Fight(9302, "shambler");
+        Ready(s);
+        var b = s.Battle!;
+        var z = Enemy(s, 1);
+        z.Intent = "attack";
+        Place(s, (1, 3));
+        StandAt(s, 3);
+        Assert.That(E.PlanFor(b, z, E.StepOf(z), 3), Is.EqualTo(GameEngine.ReachPlan.Advance), "普通 3AP：前移 1 后只剩 2AP");
+        Assert.That(E.PlanFor(b, z, E.StepOf(z), 4), Is.EqualTo(GameEngine.ReachPlan.AdvanceThenApproach), "4AP：前移 1 + 迫近 1 + 弱近袭 2");
+        var h0 = s.Stats.Health;
+        EnemyAct(s, z);
+        Assert.That(z.Pos, Is.EqualTo(2), "前移一格（前格空直接移入）");
+        Assert.That(s.Stats.Health, Is.EqualTo(h0), "AP 不够迫近：不攻击");
+        Assert.That(b.Log.Last(), Does.Contain("还够不到，结束行动"));
+        Assert.That(z.Guard, Is.False, "余 AP 不自动防御（Q77）");
+    }
+
+    /// <summary>RES-Q77：每次正常激活最多一个主意图，够得到就一次攻击，余 AP 直接结束，不自动防御、不追加第二击。</summary>
+    [Test]
+    public void RES_Q77_OneMainIntent_RemainingApEnds_NoAutoGuard()
+    {
+        var ea = (JObject)Res()["enemyActivation"]!;
+        Assert.That((string)ea["remainingAp"]!, Is.EqualTo("end_without_auto_defend"));
+        foreach (var id in new[] { "shambler", "z_pump_foreman" })
+        {
+            var s = Fight(9303, id);
+            Ready(s);
+            var b = s.Battle!;
+            var z = Enemy(s, 1);
+            z.Intent = "attack";
+            z.IntentStep = -2;
+            s.Stats.Health = 20;
+            var n0 = b.Log.Count;
+            EnemyAct(s, z);
+            var lines = b.Log.Skip(n0).Where(l => l.Contains(E.EnemyName(z))).ToList();
+            Assert.That(lines, Has.Count.EqualTo(1), $"{id}（{E.EnemyAp(z)}AP）只出手一次：{string.Join(" | ", lines)}");
+            Assert.That(z.Guard, Is.False, $"{id} 余 AP 不自动防御");
+        }
+    }
+
+    /// <summary>
+    /// RES-Q78：前移一格——前格空则移入、有同侧存活同伴则相邻交换（1AP）；被换的同伴不多激活、不改锁定队列；
+    /// 主动前移触发架矛（次数有界），被换下去的同伴与强制位移不触发。
+    /// </summary>
+    [Test]
+    public void RES_Q78_AdvanceEmptyOrSwap_PassiveNoActivation_BraceOnlyActive()
+    {
+        var em = (JObject)Res()["enemyActivation"]!;
+        Assert.That((string)em["frontMove"]!, Is.EqualTo("adjacent_empty_move_or_adjacent_friendly_swap_cost1AP"));
+        Assert.That((bool)em["passivelySwappedAllyDoesNotActivate"]!, Is.True);
+
+        var s = Fight(9304, "shambler", "shambler");
+        Ready(s);
+        var b = s.Battle!;
+        Arm(s, "pike");
+        s.Skills["spear"].Level = 5;
+        b.PlayerAp = 3;
+        Assert.That(Cmd(s, "spear_05").Ok, Is.True);
+        Assert.That(b.BraceCharges, Is.EqualTo(2), "加固长枪架阵：迎击最多 2 次");
+        var a = Enemy(s, 1);
+        var c = Enemy(s, 2);
+        foreach (var e in b.Alive) { e.Hp = 50; e.Intent = "attack"; e.IntentStep = -2; }
+        Place(s, (1, 2), (2, 3));   // 1 号位空
+        var q = b.Queue.ToList();
+        var actedA = a.Acted;
+        EnemyAct(s, c);
+        Assert.That((a.Pos, c.Pos), Is.EqualTo((3, 2)), "前格有同伴：相邻交换");
+        Assert.That(a.Acted, Is.EqualTo(actedA), "被换下去的同伴不多激活");
+        Assert.That(b.Queue, Is.EqualTo(q), "锁定队列不变");
+        Assert.That(b.BraceCharges, Is.EqualTo(1), "主动前移触发一次迎击（被换下去的不触发）");
+        Assert.That(b.Log.Any(l => l.Contains("前移到2号位（游荡尸退到3号位）")), Is.True);
+
+        // 前格空：直接移入
+        Place(s, (1, 4), (2, 3));
+        EnemyAct(s, c);
+        Assert.That(c.Pos, Is.EqualTo(2), "前格空：移入");
+        Assert.That(b.BraceCharges, Is.EqualTo(0), "次数用完");
+        // 我方逼退造成的强制位移不触发迎击
+        b.BraceCharges = 1;
+        b.PlayerAp = 3;
+        b.SkillUsedRound.Clear();
+        s.Skills["spear"].Level = 3;
+        Force(s, Below(0.01), AtLeast(0.99), Any(), Below(0.01));
+        Assert.That(Cmd(s, "spear_03", c.Index).Ok, Is.True);
+        Assert.That(b.BraceCharges, Is.EqualTo(1), "强制位移不触发架矛");
     }
 }
