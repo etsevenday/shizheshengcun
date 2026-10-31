@@ -163,7 +163,8 @@ namespace Survival.Core.Engine
             var slot = s.Locations[here].Facility.ProcessingSlots.IndexOf(batch.InstanceId) + 1;
             Emit(s, GameEventKind.Info,
                 $"把{ItemName(cp.InputId)}×{cp.InputCount}（{string.Join("、", info.Sources)}）放进{LocName(here)}火堆加工位{slot}煅烧木炭："
-                + $"需{cp.HeatMinutes}有效受热分钟，完成得{ItemName(cp.OutputId)}×{cp.OutputCount}，燃料另计；{info.FuelNote}。");
+                + $"需{cp.HeatMinutes}有效受热分钟，完成得{ItemName(cp.OutputId)}×{cp.OutputCount}；燃料另计（现有燃料可给这一批受热{info.HeatAvailable}分钟"
+                + (info.FuelWoodShort > 0 ? $"，还差{info.FuelWoodShort}份燃料木材）。" : "）。"));
             UpdateFlags(s);
             return ActionResult.Success();
         }

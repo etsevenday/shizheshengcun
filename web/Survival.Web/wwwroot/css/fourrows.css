@@ -955,3 +955,14 @@
 /* B10 试玩修复 7：手工制作面板加高到①②③三行（④随身仍可见、可拖入材料槽），原料区独立滚动、开工条固定在下方 */
 .center-scroll.four.tall-panel > * { grid-column: 1; }
 .center-scroll.four.tall-panel > .rows2 { grid-row: 1 / span 3; z-index: 31; }
+/* B10b（Q111）：第一个空加工位里的“煅烧木炭”入口（显式投料，卡旁浮窗确认）；底部仍只放投入木材与点燃/熄灭 */
+.slot-empty .slot-charcoal { display: flex; flex-direction: column; align-items: center; gap: 0; margin-top: 4px; padding: 2px 6px; min-height: 32px; border: 1px solid #6b5c3f; border-radius: 4px; background: #4a4238; color: #f2ecd8; font-size: 13px; font-weight: 600; line-height: 1.2; cursor: pointer; }
+.slot-empty .slot-charcoal small { font-size: 11px; font-weight: 400; opacity: .9; white-space: nowrap; }
+.slot-empty .slot-charcoal:hover, .slot-empty .slot-charcoal.on { background: #5d5345; }
+.apop.charcoal { width: clamp(300px, 30vw, 400px); }
+.slot-empty .slot-charcoal { white-space: nowrap; flex: 0 0 auto; }
+@media (max-height: 800px) {
+  .center-scroll.four .fire-card .slot-empty:has(.slot-charcoal) > svg { display: none; }
+  .center-scroll.four .fire-card .slot-empty .slot-charcoal { margin-top: 0; min-height: 28px; }
+  .center-scroll.four .fire-card .slot-empty .slot-charcoal small { display: none; }
+}

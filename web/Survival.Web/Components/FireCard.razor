@@ -3,7 +3,8 @@
 @* 火堆卡（基础UI布局与操作修订案 v0.7 第 3.1 节）：不再有内容物层级菜单，内容直接嵌在卡内——
    头部：火堆图、燃烧状态、燃料 n/上限与进度条（燃料区热区 fuel:，木材投料、打火器点火）；
    两个加工位：锅位渲染共用 PotCard，直烤位渲染 FoodCard，空位保留 fireslot: 热区；
-   底部：投入木材、点燃/熄灭。点火堆主图或卡面空白只选中火堆（Facility）并刷新右栏；锅、水、食材各自阻止冒泡。
+   底部：投入木材、点燃/熄灭。第一个空加工位里有“煅烧木炭”（Q111：显式投料入口，点开卡旁浮窗写原料来源/空位/60有效分钟/燃料另计，确认才投入这一位；拖木仍是加燃料）。
+   点火堆主图或卡面空白只选中火堆（Facility）并刷新右栏；锅、水、食材各自阻止冒泡。
    整张卡面是 fire: 落点（锅与生块根进空加工位，打火器点火，木材投料）。 *@
 @{
     var s = G.S;
@@ -20,6 +21,8 @@
     var wood = e.AvailableCount(s, "wood", true);
     var room = e.MaxWoodForFire(fac);
     var hasContent = slots.Any(x => x != null);
+    var charcoal = G.CharcoalPreview();
+    var charcoalOpen = G.Pop is { Kind: "charcoal" };
     var woodWhy = maintBlocked ? "行动进行中，暂不能维护火堆" : room < 1 ? $"至少需要{e.Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{maxFuel}分钟）" : wood < 1 ? "随身和当前地面没有木材" : null;
 }
 <div class="ocard fire-card @(fac.FireLit ? "lit" : "") @(selected ? "selected" : "")" data-drop="@($"fire:{here}")" data-drop-level="card"
@@ -55,29 +58,38 @@
     </div>
     @if (hasContent)
     {
-        @* 等待烹饪（S14 §11.3、S09 §7、S11 §9）：火堆里有内容时出现，绑定本火堆；悬停/聚焦在右栏预览目标、未纳入项原因、预计剩余、身体消耗与燃料提示；
+        @* 等待加工（原“等待烹饪”，Q111 起含煅烧；S14 §11.3、S09 §7、S11 §9）：火堆里有内容时出现，绑定本火堆；悬停/聚焦在右栏预览目标、未纳入项原因、预计剩余、身体消耗与燃料提示；
            点击直接开始，不另加确认；不可开始时禁用并在按钮上写明原因。不会自动点火、加木、补水或开第二个主行动。 *@
         var plan = G.CookWaitPreview();
         var cookWhy = plan.Ok ? null : plan.Reason;
         <div class="fc-cook" @onclick:stopPropagation="true">
             <button type="button" class="fc-btn cook" disabled="@(cookWhy != null || cooking)" title="@(cookWhy ?? "点击直接开始：等本火堆当前全部可加工内容完成；右侧显示预览")"
                     @onmouseenter="HoverCook" @onfocus="HoverCook" @onmouseleave="Unhover" @onblur="Unhover" @onclick="StartCook">
-                <span>等待烹饪<small>@(cookWhy != null ? ShortReason(cookWhy) : plan.EstimatedMinutes is int m ? $"预计{Clock.Duration(m)} · {plan.Targets.Count}项" : "燃料不足，耗尽时停止")</small></span>
+                <span>等待加工<small>@(cookWhy != null ? ShortReason(cookWhy) : plan.EstimatedMinutes is int m ? $"预计{Clock.Duration(m)} · {plan.Targets.Count}项" : "燃料不足，耗尽时停止")</small></span>
             </button>
         </div>
     }
     @* 点火工具菜单改为锚定浮窗，在 GameScreen 的浮窗层渲染（试玩修复 B1） *@
     </div>
     <div class="fc-slots">
+        @{ var firstEmpty = slots.FindIndex(x => x == null); }
         @for (var k = 0; k < slots.Count; k++)
         {
             var it = slots[k];
             if (it == null)
             {
-                <div @key="@("empty" + k)" class="slot-empty" data-drop="@($"fireslot:{here}")" data-drop-level="hot" title="空加工位：拖入金属锅（最多1口）或生块根（每份占1位）"
+                <div @key="@("empty" + k)" class="slot-empty" data-drop="@($"fireslot:{here}")" data-drop-level="hot" title="空加工位：拖入金属锅（最多1口）或生块根（每份占1位）；或点“煅烧木炭”投一批木材×4"
                      @onclick:stopPropagation="true">
                     @Icons.Markup("slot_empty")
                     <span>空加工位@(k + 1)</span>
+                    @if (k == firstEmpty && charcoal.InputCount > 0)
+                    {
+                        @* Q111 煅烧木炭：只在第一个空位出现（投料进的就是这一位）；点开卡旁浮窗确认，按钮本身不投料 *@
+                        <button type="button" id="fc-charcoal" class="slot-charcoal @(charcoalOpen ? "on" : "")" aria-haspopup="dialog" aria-expanded="@charcoalOpen"
+                                title="@($"煅烧木炭：{G.E.CharcoalRuleText()}。点开看原料来源与燃料，确认后投料{(charcoal.Ok ? "" : "（现在不能：" + charcoal.Reason + "）")}")" @onclick="ToggleCharcoal">
+                            煅烧木炭<small>@(charcoal.InputCount)木→@(charcoal.OutputCount)炭</small>
+                        </button>
+                    }
                 </div>
             }
             else if (e.IsPot(it))
@@ -111,7 +123,13 @@
     }
     private bool cooking;
 
-    private void HoverCook() => G.Hover(CookReq, "等待烹饪");
+    private void HoverCook() => G.Hover(CookReq, "等待加工");
+
+    private void ToggleCharcoal()
+    {
+        if (G.Pop is { Kind: "charcoal" }) G.ClosePop();
+        else G.OpenPop("charcoal", G.S.CurrentLocation, "fc-charcoal");
+    }
     private void Unhover() => G.Hover(null);
 
     private async Task StartCook()

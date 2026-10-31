@@ -2,7 +2,8 @@
 
 @* 就近执行浮窗（S14 §14.1、S02 §5、R05 §7、S08 §5）：一个时刻只有一个当前操作上下文（G.Pop）。
    travel/mapnode：相邻地图卡或区域地图节点旁预览基础时间、预计完成、负重与入夜影响，“确认移动”一次确认；
-   approach：敌踪卡旁对象/风险预览，“接近并开战”才按 R05 接敌；gather：拖工具到资源卡后在卡旁确认开始。
+   approach：敌踪卡旁对象/风险预览，“接近并开战”才按 R05 接敌；gather：拖工具到资源卡后在卡旁确认开始；
+   charcoal：火堆卡“煅烧木炭”旁的投料确认（Q111，S14 本轮章）：4木→3炭、原料来源、空位、60有效分钟、燃料另计与冷火55提示，“确认投料”才投（0分钟）。
    每次渲染都从内核现算预览；目标失效（不再相邻、敌人离开、预览被替换）时直接收起，不保留失效按钮。
    点击执行再交给内核按真实 ID/所在地/占用重验（E.Start、E.Approach），执行中锁住按钮，重复点击不重复提交。 *@
 @if (G.State != null && G.Pop is GameSession.PopContext pop && !G.DialogueLocked && Valid(pop))
@@ -88,6 +89,32 @@
             </AnchorPop>
             break;
         }
+        case "charcoal":
+        {
+            var info = G.CharcoalPreview();
+            var shortFuel = info.FuelWoodShort > 0;
+            <AnchorPop AnchorId="@pop.AnchorId" Title="煅烧木炭" CssClass="charcoal" Place="above,below,right,left"
+                       Sub="@($"{e.ItemName(info.InputId)}×{info.InputCount}→{e.ItemName(info.OutputId)}×{info.OutputCount} · 不耗时投料 · 不给经验")" OnClose="G.ClosePop">
+                <Art>@Icons.Markup("charcoal")</Art>
+                <ChildContent>
+                    <div class="apop-facts">
+                        <span title="原料只取你随身与当前地面未预留的木材（随身优先），不取队友或别处的"><span class="pf-weapon" aria-hidden="true">@Icons.Markup("wood")</span>原料@(e.ItemName(info.InputId))@(info.InputCount)份（可用@(info.WoodAvailable)）</span>
+                        <span title="每批占火堆2个加工位中的1位；可与1口锅或另一批并存"><i class="pf-ico">▣</i>占1个加工位（空@(info.FreeSlots)/@(info.Slots)）</span>
+                        <span title="只在火堆燃烧且本段有完整5分钟燃料时计热；不受熟练度或装备加速"><i class="pf-ico">⏱</i>需@(info.HeatMinutes)有效受热分钟</span>
+                    </div>
+                    @if (info.Sources.Count > 0 && info.Ok) { <div class="apop-note">将取：@string.Join("、", info.Sources)</div> }
+                    <div class="@(shortFuel ? "apop-risk" : "apop-note")">燃料另计：@info.FuelNote</div>
+                    <div class="apop-note">熄火保留进度；取出未完成的一批退回@(info.InputCount)份木材、清进度，已烧燃料不退；完成后木炭留在加工位，取出才进包。</div>
+                    @if (!info.Ok) { <div class="apop-risk">@info.Reason</div> }
+                    @if (G.Notice != null && _tried) { <div class="apop-risk">@G.Notice</div> }
+                </ChildContent>
+                <Actions>
+                    <button type="button" class="primary apop-go" disabled="@(!info.Ok || busy)" @onclick="LoadCharcoal">@(info.Ok ? "确认投料" : "无法投料")</button>
+                    <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消</button>
+                </Actions>
+            </AnchorPop>
+            break;
+        }
         case "gather":
         {
             var req = G.PendingAction!;
@@ -141,6 +168,7 @@
             "travel" => s.Battle == null && s.Encounter == null && G.Panel == null && e.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == pop.Id),
             "mapnode" => G.Panel == "map" && e.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == pop.Id),
             "approach" => s.Battle == null && s.Encounter == null && int.TryParse(pop.Id, out var wid) && e.VisibleEnemiesAt(s, s.CurrentLocation).Any(w => w.Id == wid),
+            "charcoal" => s.Battle == null && s.Encounter == null && G.Panel == null && pop.Id == s.CurrentLocation && e.Location(s.CurrentLocation).HasFire,
             "gather" => G.Selected.Kind == SelectionKind.Action && G.PendingAction != null && G.PendingAction.Type == ActionType.Gather && G.PendingAction.TargetId == pop.Id,
             _ => true,
         };
@@ -169,6 +197,19 @@
         _go = true;
         _tried = true;
         try { await G.ApproachEnemy(wid); }
+        finally { _go = false; }
+    }
+
+    private void LoadCharcoal()
+    {
+        if (_go) return;
+        _go = true;
+        _tried = true;
+        try
+        {
+            var res = G.Instant(InstantRequest.LoadCharcoal());
+            if (res.Ok) G.ClosePop();
+        }
         finally { _go = false; }
     }
 

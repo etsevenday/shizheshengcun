@@ -1,11 +1,11 @@
 @inherits GameComponent
 
-@* 火堆直烤位里的一份食材（v0.7 第 3.1 节）：真实实例卡——图标（拖拽把手）、名称#实例、加工状态与受热进度、三角箭头。
+@* 火堆直烤位里的一份食材（v0.7 第 3.1 节），或 Q111 煅烧的一批木材/成品木炭（名称带×份数）：真实实例卡——图标（拖拽把手）、名称#实例、加工状态与受热进度、三角箭头。
    点击只选中这份食材（不冒泡选中火堆）；已完成的成品仍占原加工位并保持可见。 *@
 @{
     var s = G.S;
     var e = G.E;
-    var name = $"{e.ItemName(Item.ItemId)}#{Item.InstanceId}";
+    var name = Item.Count > 1 ? $"{e.ItemName(Item.ItemId)}×{Item.Count}#{Item.InstanceId}" : $"{e.ItemName(Item.ItemId)}#{Item.InstanceId}";
     var proc = e.ProcessOf(s, Item);
     var spoiled = e.IsSpoiled(s, Item);
     var key = $"{Item.Owner}|{Item.ItemId}|{Item.InstanceId}";

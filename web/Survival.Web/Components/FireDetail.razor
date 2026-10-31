@@ -23,18 +23,27 @@
         <div><span>每份木材</span><b>+@(e.Config.Fire.BurnMinutesPerWood)分钟</b></div>
         <div><span>加工位</span><b>@slots.Count(x => x != null)/@slots.Count</b></div>
         <div><span>本段受热</span><b class="@(hot ? "" : "warn-text")">@(hot ? "可以" : "火堆未燃烧，加工暂停")</b></div>
+        @if (e.CharcoalProcess != null)
+        {
+            <div><span>煅烧木炭</span><b>@e.CharcoalRuleText()</b></div>
+        }
     </div>
+    @if (e.CharcoalProcess != null)
+    {
+        var ci = G.CharcoalPreview();
+        <div class="risk @(ci.FuelWoodShort > 0 ? "" : "none")">煅烧燃料：@ci.FuelNote。拖木材到火堆仍是添加燃料；煅烧要点火堆卡“煅烧木炭”投一批。</div>
+    }
     <div class="outputs">
         @for (var k = 0; k < slots.Count; k++)
         {
             var it = slots[k];
             if (it == null)
             {
-                <ItemRow Icon="slot_empty" Name="@($"加工位{k + 1}")" Status="空位 · 拖入金属锅或生块根" />
+                <ItemRow Icon="slot_empty" Name="@($"加工位{k + 1}")" Status="空位 · 拖入金属锅或生块根，或煅烧一批木材×4" />
             }
             else
             {
-                <ItemRow Icon="@it.ItemId" Name="@($"{e.ItemName(it.ItemId)}#{it.InstanceId}")" Qty="@($"加工位{k + 1}")"
+                <ItemRow Icon="@it.ItemId" Name="@(it.Count > 1 ? $"{e.ItemName(it.ItemId)}×{it.Count}#{it.InstanceId}" : $"{e.ItemName(it.ItemId)}#{it.InstanceId}")" Qty="@($"加工位{k + 1}")"
                          Status="@(e.IsPot(it) ? $"{e.PotLabel(s, it)} · 食材{e.PotFood(s, it.InstanceId).Count}/{e.PotConfig(it).FoodSlots} · {e.ContentStatus(s, it)}" : e.ContentStatus(s, it))" />
             }
         }

@@ -1061,7 +1061,18 @@ public sealed class GameSession
 
     private (int ver, string loc, CookWaitPlan? plan) _cookCache = (-1, "", null);
 
-    /// <summary>当前地点火堆“等待烹饪”的只读解析（S11 §9）：悬停预览与按钮禁用原因共用；每次界面版本只算一次。</summary>
+    private (int ver, string loc, CharcoalLoadInfo? info) _charcoalCache = (-1, "", null);
+
+    /// <summary>火堆“煅烧木炭”投料说明（Q111）：按钮提示与卡旁确认浮窗共用；每次界面版本只算一次。</summary>
+    public CharcoalLoadInfo CharcoalPreview()
+    {
+        if (_charcoalCache.ver == Version && _charcoalCache.loc == S.CurrentLocation && _charcoalCache.info != null) return _charcoalCache.info;
+        var info = E.CharcoalLoadPreview(S);
+        _charcoalCache = (Version, S.CurrentLocation, info);
+        return info;
+    }
+
+    /// <summary>当前地点火堆“等待加工”（原等待烹饪，Q111 起含煅烧）的只读解析（S11 §9）：悬停预览与按钮禁用原因共用；每次界面版本只算一次。</summary>
     public CookWaitPlan CookWaitPreview()
     {
         if (_cookCache.ver == Version && _cookCache.loc == S.CurrentLocation && _cookCache.plan != null) return _cookCache.plan;

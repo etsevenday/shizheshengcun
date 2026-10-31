@@ -366,8 +366,9 @@
                 var it = e.FindItem(s, id);
                 if (it == null || !Here(it)) return null;
                 var name = $"{e.ItemName(it.ItemId)}#{it.InstanceId}";
+                // 设施里的一批（Q111 煅烧的木材×4 / 成品木炭×3）整批取出：份数照实显示
                 if (it.InFacility || (it.InContainer && !e.IsLiquid(it)))
-                    return new Model($"take:{id}", it.ItemId, it.ItemId, name, e.WherePath(s, it), 1, Mode.TakeOut)
+                    return new Model($"take:{id}", it.ItemId, it.ItemId, it.Count > 1 ? $"{e.ItemName(it.ItemId)}×{it.Count}#{it.InstanceId}" : name, e.WherePath(s, it), it.Count, Mode.TakeOut)
                     { Instance = it, UseId = UseOf(it), Owner = it.Owner };
                 if (it.Owner != ItemInstance.Carried && it.Owner != here) return null;
                 var toCarried = it.Owner != ItemInstance.Carried;

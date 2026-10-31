@@ -535,7 +535,7 @@ namespace Survival.Core.Engine
             var lost = touched.Where(p => p.HeatProtected).Select(p => FindItem(s, p.TargetInstanceId))
                 .Where(t => t != null && t.ExpiresAt.HasValue && t.ExpiresAt.Value <= s.GameMinute)
                 .Select(t => $"{ItemName(t!.ItemId)}#{t.InstanceId}").ToList();
-            var name = IsPot(inst) ? $"{ItemName(inst.ItemId)}#{inst.InstanceId}" : $"{ItemName(inst.ItemId)}#{inst.InstanceId}";
+            var name = IsPot(inst) || inst.Count <= 1 ? $"{ItemName(inst.ItemId)}#{inst.InstanceId}" : $"{ItemName(inst.ItemId)}×{inst.Count}#{inst.InstanceId}";
             inst.Owner = zone;
             inst.PlacedOrder = null;
             Normalize(s, zone);
