@@ -1411,6 +1411,9 @@ namespace Survival.Core.Engine
             if (b.Tutorial && Config.Story.TutorialBattle.NoReinforcement) { b.ReinforcementUsed = true; BattleLog(s, "首战不会引来其他丧尸。"); return; }
             // 容量 C（R05 §4）：场上存活加增援、本场累计投入（含已死/逃离）都不超过 C；没有空位就等下一轮
             if (b.Alive.Count() >= b.Capacity || b.Enemies.Count >= b.Capacity) return;
+            // Q84：四格都没有空槽就不生成、不占累计名额、不核销这次增援请求（按原流程等下一轮）
+            var at = ReinforceSlot(b);
+            if (at <= 0) return;
             b.ReinforcementUsed = true;
             var cand = s.WorldEnemies.Where(w => w.LocationId == b.LocationId && !w.Engaged && !Hidden(s, w)
                                                  && _enemies[w.EnemyId].Family == Config.Noise.ExistingEnemyFamilyFilter)
@@ -1420,7 +1423,7 @@ namespace Survival.Core.Engine
                 BattleLog(s, "附近没有被吸引的丧尸。");
                 return;
             }
-            var slot = ReinforceSlot(b).ToString();
+            var slot = at.ToString();
             cand.Engaged = true;
             var idx = b.Enemies.Count == 0 ? 1 : b.Enemies.Max(e => e.Index) + 1;
             b.Enemies.Add(InitBattleEnemy(new BattleEnemy { WorldId = cand.Id, Index = idx, EnemyId = cand.EnemyId, Slot = slot, Hp = cand.Hp, Hostile = true, XpHits = new Dictionary<string, int>(cand.XpHits), TieRoll = s.Rng.NextDouble(), JoinRound = b.Round }));
@@ -1429,16 +1432,18 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 增援落位（Q80 不再压紧；开发假设 B7d-4）：最后一个存活敌人身后的第一个空槽；身后没有空槽则取最前的空槽。
+        /// 增援落位（Q84 选 A，R03/R05 本轮章）：号位最大的存活敌人身后向 4 号位找第一个空槽；身后没有空槽才取全场最前的空槽；
+        /// 没有存活敌人取 1 号位；四格全满返回 0（不生成）。不压紧其他人、不算任何人的主动前移、不触发架矛。
+        /// 例：仅 2 有人→3；仅 4 有人→1；1/3 有人→4。
         /// </summary>
         public int ReinforceSlot(BattleState b)
         {
             var max = Config.Scope.Slots.Count;
-            var taken = b.Alive.Select(e => e.Pos).ToHashSet();
+            var taken = b.Alive.Select(e => e.Pos).Where(p => p > 0).ToHashSet();
             var last = taken.Count > 0 ? taken.Max() : 0;
             for (var p = last + 1; p <= max; p++) if (!taken.Contains(p)) return p;
             for (var p = 1; p <= max; p++) if (!taken.Contains(p)) return p;
-            return max;
+            return 0;
         }
 
         /// <summary>
