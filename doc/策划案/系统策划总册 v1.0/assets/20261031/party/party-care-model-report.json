@@ -1,0 +1,18 @@
+{
+  "status": "abstract_recovery_and_uniform_target_mapping_only_not_game_engine_or_ui",
+  "cases": {
+    "recoveryBoundaryCombinations": 43200,
+    "legalTargetSlotMasks": 16,
+    "consecutiveFiveMinuteSegments": 576
+  },
+  "fortyEightHoursExposedExample": {
+    "mode": "rest",
+    "E": 20,
+    "S": 83.83333333333444,
+    "M": 78.56666666666702,
+    "N": 80,
+    "W": 80,
+    "transitions": 8
+  },
+  "limits": "No disease/death processing order, RNG implementation, live save crash/retry or UI is exercised; rate and policy model only."
+}

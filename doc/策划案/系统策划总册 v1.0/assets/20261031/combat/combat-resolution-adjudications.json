@@ -1,5 +1,5 @@
 {
-  "version": "q75_q87_20261031",
+  "version": "q75_q94_20261031",
   "status": "approved_planning_target_not_engine_verified",
   "sourceQuestions": [
     "Q75",
@@ -14,7 +14,8 @@
     "Q84",
     "Q85",
     "Q86",
-    "Q87"
+    "Q87",
+    "Q91"
   ],
   "precedence": {
     "baseline": "assets/20261031/combat/combat-adjudications.json",
@@ -1684,5 +1685,24 @@
     "memberRemoved": "remove_only_preserve_other_slots_and_holes",
     "memberAdded": "original_legal_roster_transaction_fill_frontmost_empty_increment_revision",
     "ongoingBattleDoesNotWritePreset": true
+  },
+  "enemyTargetSelection": {
+    "sourceQuestion": "Q91",
+    "scope": "enemy_independent_single_target_attack_command",
+    "selection": "uniform_from_current_legal_living_actorIds_sorted_by_actual_slot",
+    "timing": "after_cost_and_candidate_validation_at_attack_commit",
+    "redrawEveryIndependentAttack": true,
+    "repeatsAllowed": true,
+    "singletonConsumesOneTargetDraw": true,
+    "emptyConsumesNoTargetDraw": true,
+    "preview": "intent_name_current_legal_range_random_at_attack_no_promised_actor",
+    "persistence": "save_drawn_actor_and_existing_battle_rng_cursor_atomic_with_costs_retry_reuses",
+    "invalidAfterDraw": "abort_unexecuted_parts_no_retarget",
+    "explicitSameTargetMultiHit": "one_draw_for_whole_command_independent_hit_checks",
+    "aoe": "original_full_range_no_single_target_draw",
+    "protection": "original_interception_after_original_target_draw_no_redraw",
+    "exposureApproach": "original_foremost_exposed_target_constraint_singleton_after_approach_reactions",
+    "reaction": "explicit_source_actor_not_random",
+    "nonAttackSupport": "original_own_skill_rules"
   }
 }

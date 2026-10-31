@@ -1,0 +1,114 @@
+{
+  "version": "q88_q94_20261031",
+  "status": "approved_planning_target_not_engine_verified",
+  "sourceQuestions": [
+    "Q88",
+    "Q89",
+    "Q90",
+    "Q91",
+    "Q92",
+    "Q93",
+    "Q94"
+  ],
+  "serviceLocations": {
+    "preV3": "camp",
+    "rb01AndLoanLossV3": "h06_shelter",
+    "reserveHousingAndRosterV3": "h02_square",
+    "currentPartySlotEditing": "any_Q86_idle_location",
+    "publicReserveEstateMigration": "camp_public_reserve_estates_only_to_h02_square_same_container_ids_no_duplicate",
+    "ongoingRegistration": "preserve_original_transaction_until_complete_or_cancel_then_new_requests_new_location"
+  },
+  "reserveCare": {
+    "playerScheduling": false,
+    "modes": [
+      "rest",
+      "sleep"
+    ],
+    "clockSchedule": false,
+    "enterSleep": {
+      "SBelow": 60,
+      "EBelow": 6,
+      "operator": "or"
+    },
+    "exitSleep": {
+      "SAtLeast": 90,
+      "EAtLeast": 14,
+      "operator": "and"
+    },
+    "default": "sleep_if_enter_condition_else_rest",
+    "publicNutritionPerHour": {
+      "N": 5.2,
+      "W": 6.4,
+      "target": 80,
+      "ordinaryNConsumption": -1.2,
+      "ordinaryWConsumption": -2.4,
+      "netWithoutOtherDiseaseEach": 4
+    },
+    "publicMoralePerHour": {
+      "M": 1,
+      "target": 80,
+      "addToOrdinaryModeAndFacilityRates": true
+    },
+    "instantFloor": false,
+    "chargesPlayerInventory": false,
+    "createsItems": false,
+    "offlineRecovery": false,
+    "appliesTo": "living_registered_reserves_in_public_housing_only",
+    "mainActorAndActivePartyExcluded": true,
+    "facilities": "actual_current_location_zone_completed_usable_no_implicit_camp_roof_or_bed_no_remote_bonus",
+    "facilityCompletedAtSegmentEnd": "effective_next_segment",
+    "healthEligibility": "segment_start_existing_conditions_no_retroactive_eligibility_from_current_public_topup",
+    "diseaseAndInfectionUnchanged": true,
+    "joinLeave": "preserve_state_no_zero_time_topup_public_rates_only_real_reserve_tick",
+    "migration": "initialize_mode_once_preserve_values_no_historical_recovery_remove_old_schedule_and_instant_floor"
+  },
+  "recoveryUI": {
+    "modules": [
+      "rest",
+      "sleep"
+    ],
+    "ordinaryWaitModule": false,
+    "restSleepAllHours": true,
+    "internalWaitRatesPreserved": true,
+    "goalDrivenCookingWaitPreserved": true,
+    "existingWaitAction": "old_saved_rule_finish_or_cancel_once"
+  },
+  "outOfCombatWork": {
+    "executor": "p0_only",
+    "explorationLeader": "p0_only",
+    "activeAllies": "existing_wait_no_work_xp",
+    "futureCampAssignments": "not_implemented_separate_design_not_B10_executor_promise",
+    "oldNonPlayerInProgress": "original_saved_rule_finish_or_cancel_once"
+  },
+  "loanReplacement": {
+    "location": "actual_service_ground_camp_or_h06_shelter",
+    "item": "wooden_spear",
+    "quality": "white",
+    "affixes": 0,
+    "durability": 30,
+    "autoEquip": false,
+    "autoPutInBag": false,
+    "transaction": "revoke_old_references_create_one_new_bind_same_loan_slot_and_ground_atomic_idempotent",
+    "eligibilityUnchanged": true,
+    "extraTimeOrMaterials": 0
+  },
+  "precedence": {
+    "overrides": [
+      "fixed_22_06_reserve_schedule",
+      "reserve_wait_awake",
+      "instant_NW40_floor",
+      "implicit_reserve_shelter",
+      "player_recovery_ordinary_wait_module",
+      "active_ally_survival_work_executor",
+      "camp_only_current_party_position_editing"
+    ],
+    "preserves": [
+      "Q85_interception",
+      "Q87_AP_budgets",
+      "C_and_roster_limits",
+      "infection_and_death",
+      "private_safehouse_no_reserves",
+      "normal_internal_wait_rates"
+    ]
+  }
+}

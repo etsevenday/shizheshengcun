@@ -1,0 +1,160 @@
+{
+  "date": "2026-10-31",
+  "status": "static_document_checks_and_abstract_model_only_not_engine_or_ui",
+  "checks": [
+    {
+      "name": "保留所有实现同步和修改记录 02 参考扩展/R08 队伍招募、编成与共同生存系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文完整保留 02 参考扩展/R08 队伍招募、编成与共同生存系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留所有实现同步和修改记录 04 附录/A11 主线任务、势力与队伍角色目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文完整保留 04 附录/A11 主线任务、势力与队伍角色目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留所有实现同步和修改记录 02 参考扩展/R03 回合制战斗系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文完整保留 02 参考扩展/R03 回合制战斗系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留所有实现同步和修改记录 04 附录/A09 敌人、遭遇组合与掉落目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文完整保留 04 附录/A09 敌人、遭遇组合与掉落目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留所有实现同步和修改记录 04 附录/A06 十级熟练度与全技能目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文完整保留 04 附录/A06 十级熟练度与全技能目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留所有实现同步和修改记录 01 基础系统/S01 世界时间、行动与存档系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文完整保留 01 基础系统/S01 世界时间、行动与存档系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留所有实现同步和修改记录 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文完整保留 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留所有实现同步和修改记录 00 总则/02 开发方待确认问题.md",
+      "passed": true
+    },
+    {
+      "name": "问题文件仅填Q88—Q94答复",
+      "passed": true
+    },
+    {
+      "name": "保留所有实现同步和修改记录 01 基础系统/S13 休息、睡眠与恢复系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文完整保留 01 基础系统/S13 休息、睡眠与恢复系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留所有实现同步和修改记录 01 基础系统/S12 基础状态、饮食与医疗系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文完整保留 01 基础系统/S12 基础状态、饮食与医疗系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留所有实现同步和修改记录 01 基础系统/S09 营地建造与火堆系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文完整保留 01 基础系统/S09 营地建造与火堆系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留所有实现同步和修改记录 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "原正文完整保留 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "保留所有实现同步和修改记录 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "原正文完整保留 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "所有策划JSON解析通过",
+      "passed": true
+    },
+    {
+      "name": "合同嵌入一致且其余数据不变 04 附录/A12 全系统策划数据索引.json",
+      "passed": true
+    },
+    {
+      "name": "合同嵌入一致且其余数据不变 assets/20261030/index/joint-expansion-data.json",
+      "passed": true
+    },
+    {
+      "name": "原迫近/协同AP/伤害/喷溅合同保持",
+      "passed": true
+    },
+    {
+      "name": "候补自主模式/全天/慢恢复/同行排除",
+      "passed": true
+    },
+    {
+      "name": "七项均已答且无待定字段",
+      "passed": true
+    },
+    {
+      "name": "本轮13验收编号存在",
+      "passed": true
+    },
+    {
+      "name": "相对链接有效",
+      "passed": true
+    }
+  ],
+  "model": {
+    "status": "abstract_recovery_and_uniform_target_mapping_only_not_game_engine_or_ui",
+    "cases": {
+      "recoveryBoundaryCombinations": 43200,
+      "legalTargetSlotMasks": 16,
+      "consecutiveFiveMinuteSegments": 576
+    },
+    "fortyEightHoursExposedExample": {
+      "mode": "rest",
+      "E": 20,
+      "S": 83.83333333333444,
+      "M": 78.56666666666702,
+      "N": 80,
+      "W": 80,
+      "transitions": 8
+    },
+    "limits": "No disease/death processing order, RNG implementation, live save crash/retry or UI is exercised; rate and policy model only."
+  }
+}
