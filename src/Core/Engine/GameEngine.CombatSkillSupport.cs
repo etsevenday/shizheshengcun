@@ -159,7 +159,7 @@ namespace Survival.Core.Engine
                 {
                     var shield = GuardShield(s);
                     var f = shield != null ? Config.CombatMath.ShieldGuardFactor : Config.CombatMath.GuardFactor;
-                    p.Notes.Add($"格挡{x.GuardCharges}次：下一次受到的直接伤害×{Fmt.T(f)}{(shield != null ? $"（盾类格挡，{ItemName(shield.ItemId)}耐久−{Fmt.T(Config.Wear.PerExecutedAttackCommand)}）" : "")}，到你下次正常行动开始清除");
+                    p.Notes.Add($"格挡{x.GuardCharges}次：下一次受到的直接伤害×{Fmt.T(f)}{(shield != null ? $"（盾类格挡：当前页{ItemName(shield.ItemId)}耐久−{Fmt.T(Config.Wear.PerExecutedAttackCommand)}）" : GuardShieldMissingReason(s) is string gw ? $"（{gw}）" : "")}，到你下次正常行动开始清除");
                     if (x.CounterFactor > 0) p.Notes.Add($"反击：受到直接攻击命中后，用{w.Name}反击1次，伤害×{Fmt.T(x.CounterFactor * w.Trait("counterDamage", 1))}（反击不再触发反应）");
                     if (x.DisplaceResist > 0) p.Notes.Add($"位移抵抗+{Fmt.T(x.DisplaceResist)}个百分点，到第{b.Round + x.BuffRounds}轮末（只剩你一人时没有可被移动的位置）");
                     if (x.TeamGuardFactor > 0 && solo) p.Notes.Add("其他队员的减伤：现在只有你一人，没有效果");
@@ -227,12 +227,9 @@ namespace Survival.Core.Engine
             {
                 case "guard":
                 {
-                    b.PlayerGuard = true;
-                    b.PlayerGuardCharges = Math.Max(1, x.GuardCharges);
-                    var shield = GuardShield(s);
-                    b.PlayerGuardFactor = shield != null ? Config.CombatMath.ShieldGuardFactor : Config.CombatMath.GuardFactor;
+                    var wear = GrantGuard(s, b, x.GuardCharges);
                     parts.Add($"格挡{b.PlayerGuardCharges}次（直接伤害×{Fmt.T(b.PlayerGuardFactor)}）");
-                    if (shield != null) parts.Add(Wear(shield, Config.Wear.PerExecutedAttackCommand));
+                    if (wear != "") parts.Add(wear);
                     if (x.CounterFactor > 0)
                     {
                         b.CounterFactor = x.CounterFactor * w.Trait("counterDamage", 1);

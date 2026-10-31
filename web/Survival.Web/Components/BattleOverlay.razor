@@ -180,7 +180,7 @@ else if (b != null)
             <span class="bc-label">状态</span>
             <div class="st-chips">
                 <span class="st" title="恐慌越高命中能力越低">恐慌@(Ui.N(b.Panic))@(b.Frightened ? "·受惊" : "")</span>
-                @if (b.PlayerGuard) { <span class="st good">@(b.PlayerGuardFactor < 0.5 ? "盾格挡" : "防御")×@Ui.T(b.PlayerGuardFactor)</span> }
+                @if (b.PlayerGuard) { <span class="st good" title="@(b.PlayerGuardSourceId is int gsid ? $"盾类格挡：防御时当前页的{e.ItemName(e.FindItem(s, gsid)?.ItemId ?? "")}，已锁定，切页不改" : "普通防御：防御时当前页不是可用的盾")">@(b.PlayerGuardSourceId != null ? "盾格挡" : "防御")×@Ui.T(b.PlayerGuardFactor)@(b.PlayerGuardCharges > 1 ? $"（{b.PlayerGuardCharges}次）" : "")</span> }
                 @if (b.PlayerSteadyUntilRound >= b.Round) { <span class="st good" title="控制成功后至下一大回合末，控制抗性+30个百分点">稳态</span> }
                 @if (b.PlayerStagger) { <span class="st bad">失衡</span> }
                 @if (b.PlayerSlowActive || b.PlayerSlowPending) { <span class="st bad">减速</span> }

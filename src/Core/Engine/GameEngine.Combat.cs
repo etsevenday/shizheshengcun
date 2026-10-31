@@ -530,16 +530,41 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 主角装着的盾（任一武器槽、耐久未归零）：防御按盾类格挡×0.4 并磨损盾 1（A05 §2“盾执行格挡指令磨损1”）。没有为 null。
+        /// 盾类格挡的盾（Q69 选 B）：提交防御时“当前武器页”绑定的、本人可付 1 耐久的盾，才授本次 ×0.4 并磨损盾 1；
+        /// 另一页的盾不算，耐久不足 1 的盾不算（都按通用防御 ×0.5、不磨备用盾）。没有为 null。
         /// </summary>
         public ItemInstance? GuardShield(GameState s)
         {
-            foreach (var page in new[] { 1, 2 })
-            {
-                var it = WeaponOnPage(s, page, out var w);
-                if (it != null && w.WeaponKind == "shield" && HasWear(it, Config.Wear.PerExecutedAttackCommand)) return it;
-            }
+            var page = s.Battle?.ActiveWeaponSlot ?? DefaultWeaponPage(s);
+            var it = WeaponOnPage(s, page, out var w);
+            return it != null && w.WeaponKind == "shield" && HasWear(it, Config.Wear.PerExecutedAttackCommand) ? it : null;
+        }
+
+        /// <summary>防御/格挡类指令没有盾类格挡时的原因（预览用）：另一页有盾、当前盾耐久不足；都没有为 null。</summary>
+        public string? GuardShieldMissingReason(GameState s)
+        {
+            var page = s.Battle?.ActiveWeaponSlot ?? DefaultWeaponPage(s);
+            var cur = WeaponOnPage(s, page, out var cw);
+            if (cur != null && cw.WeaponKind == "shield" && !HasWear(cur, Config.Wear.PerExecutedAttackCommand))
+                return $"{cw.Name}耐久不足1（{DurabilityText(cur)}），按普通防御";
+            var other = WeaponOnPage(s, page == 1 ? 2 : 1, out var ow);
+            if (other != null && ow.WeaponKind == "shield")
+                return $"{ow.Name}在另一页：盾类格挡要先切到盾所在的页再防御";
             return null;
+        }
+
+        /// <summary>
+        /// 授予一次格挡（Q69）：按提交时的当前页锁定来源盾与系数（之后切页、浏览、盾耐久归零都不改这次已付的格挡），盾类格挡磨损 1。
+        /// 返回盾的磨损文字（不是盾为空串）。
+        /// </summary>
+        private string GrantGuard(GameState s, BattleState b, int charges)
+        {
+            var shield = GuardShield(s);
+            b.PlayerGuard = true;
+            b.PlayerGuardCharges = Math.Max(1, charges);
+            b.PlayerGuardFactor = shield != null ? Config.CombatMath.ShieldGuardFactor : Config.CombatMath.GuardFactor;
+            b.PlayerGuardSourceId = shield?.InstanceId;
+            return shield != null ? Wear(shield, Config.Wear.PerExecutedAttackCommand) : "";
         }
 
         /// <summary>
@@ -638,6 +663,7 @@ namespace Survival.Core.Engine
             // 出血改在大回合开始结算（R03 §4，见 RoundStartBleed）；这里只清旧防御、反击架势与架矛（持续到下一正常激活）、恢复 AP
             b.PlayerGuard = false;
             b.PlayerGuardCharges = 0;
+            b.PlayerGuardSourceId = null;
             b.CounterFactor = 0;
             b.BraceCharges = 0;
             b.PlayerAp = NormalActivationAp(s.Player);
@@ -966,8 +992,8 @@ namespace Survival.Core.Engine
                     {
                         var shield = GuardShield(s);
                         p.Notes.Add(shield != null
-                            ? $"盾类格挡（{ItemName(shield.ItemId)}）：下一次受到的直接伤害×{Fmt.T(Config.CombatMath.ShieldGuardFactor)}，只挡一次，下次自己正常行动开始时清除；{ItemName(shield.ItemId)}耐久−{Fmt.T(Config.Wear.PerExecutedAttackCommand)}"
-                            : $"下一次受到的直接伤害×{Fmt.T(Config.CombatMath.GuardFactor)}，只挡一次，下次自己正常行动开始时清除（追击不清）");
+                            ? $"盾类格挡（当前页{ItemName(shield.ItemId)}）：下一次受到的直接伤害×{Fmt.T(Config.CombatMath.ShieldGuardFactor)}，只挡一次，下次自己正常行动开始时清除；{ItemName(shield.ItemId)}耐久−{Fmt.T(Config.Wear.PerExecutedAttackCommand)}（{DurabilityText(shield)}）；之后切页不改这次格挡"
+                            : $"普通防御：下一次受到的直接伤害×{Fmt.T(Config.CombatMath.GuardFactor)}，只挡一次，下次自己正常行动开始时清除（追击不清）" + (GuardShieldMissingReason(s) is string gw ? $"；{gw}" : ""));
                         break;
                     }
                     case "breathe":
@@ -1101,12 +1127,10 @@ namespace Survival.Core.Engine
                     break;
                 case "guard":
                 {
-                    b.PlayerGuard = true;
-                    b.PlayerGuardCharges = 1;
-                    var shield = GuardShield(s);
-                    b.PlayerGuardFactor = shield != null ? Config.CombatMath.ShieldGuardFactor : Config.CombatMath.GuardFactor;
-                    var wear = shield != null ? Wear(shield, Config.Wear.PerExecutedAttackCommand) : "";
-                    BattleLog(s, shield != null ? $"你举起{ItemName(shield.ItemId)}格挡（下一次直接伤害×{Fmt.T(b.PlayerGuardFactor)}；{wear}）。" : "你摆出防御姿态。");
+                    var noShield = GuardShieldMissingReason(s);
+                    var wear = GrantGuard(s, b, 1);
+                    BattleLog(s, b.PlayerGuardSourceId is int sid ? $"你举起{ItemName(FindItem(s, sid)?.ItemId ?? "")}格挡（下一次直接伤害×{Fmt.T(b.PlayerGuardFactor)}；{wear}）。"
+                        : $"你摆出防御姿态（下一次直接伤害×{Fmt.T(b.PlayerGuardFactor)}{(noShield != null ? "；" + noShield : "")}）。");
                     break;
                 }
                 case "breathe":

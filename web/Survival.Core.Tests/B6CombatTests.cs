@@ -352,9 +352,12 @@ public class B6CombatTests : BattleTestBase
         var shield = Wear(t, "wooden_shield", EquipSlots.Weapon2);
         var d0 = shield.Durability!.Value;
         Ready(t);
-        Assert.That(E.PreviewCommand(t, BattleCommand.Of("guard")).Notes.Single(), Does.StartWith("盾类格挡（木盾）").And.Contain("×0.4"));
+        // B7c 按 Q69 选 B 改写：盾在另一页不算，要当前页是盾才是盾类格挡
+        Assert.That(E.PreviewCommand(t, BattleCommand.Of("guard")).Notes.Single(), Does.StartWith("普通防御").And.Contain("木盾在另一页"));
+        Assert.That(E.SelectWeaponPage(t, 2).Ok, Is.True);
+        Assert.That(E.PreviewCommand(t, BattleCommand.Of("guard")).Notes.Single(), Does.StartWith("盾类格挡（当前页木盾）").And.Contain("×0.4"));
         Assert.That(Cmd(t, "guard").Ok, Is.True);
-        Assert.That(t.Battle!.PlayerGuardFactor, Is.EqualTo(0.4), "装着盾（另一页也算）：盾类格挡×0.4");
+        Assert.That(t.Battle!.PlayerGuardFactor, Is.EqualTo(0.4), "当前页是盾：盾类格挡×0.4");
         Assert.That(shield.Durability, Is.EqualTo(d0 - 1).Within(1e-9), "盾执行格挡指令磨损1");
         // 敌人命中时按 0.4 减伤，触发格挡不再重复磨损盾
         var e = t.Battle.Alive.First();

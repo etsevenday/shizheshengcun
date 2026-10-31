@@ -383,4 +383,75 @@ public class B7cCombatTests : BattleTestBase
         s.Skills["crafting"].Level = 2;
         Assert.That(E.SalvageBlocked(s, made.InstanceId, out _), Does.Contain("需要制造3级"));
     }
+
+    // ───────────── M168：当前盾页格挡（Q69 选 B） ─────────────
+
+    /// <summary>CB-Q69：当前页盾 0.4 并磨 1；备用页盾 0.5 不磨；0.9 耐久按 0.5；1 耐久可提交、磨到 0 仍保留本次 0.4；提交后切页/读档不改；触发不再磨。</summary>
+    [Test]
+    public void CB_Q69_CurrentPageShieldOnly_SnapshotAtCommand()
+    {
+        var sg = Adj()["shieldGuard"]!;
+        Assert.That(((double)sg["factor"]!, (double)sg["otherwiseFactor"]!), Is.EqualTo((Cfg.CombatMath.ShieldGuardFactor, Cfg.CombatMath.GuardFactor)));
+        // 备用页盾：通用 0.5，不磨备用盾
+        var s = Fight(31, "worker");
+        var shield = Wear(s, "wooden_shield", EquipSlots.Weapon2);
+        var d0 = shield.Durability!.Value;
+        Ready(s);
+        Assert.That(s.Battle!.ActiveWeaponSlot, Is.EqualTo(1));
+        Assert.That(Cmd(s, "guard").Ok, Is.True);
+        Assert.That((s.Battle.PlayerGuardFactor, s.Battle.PlayerGuardSourceId), Is.EqualTo((0.5, (int?)null)));
+        Assert.That(shield.Durability, Is.EqualTo(d0), "不磨备用盾");
+        Assert.That(s.Battle.Log.Last(), Does.Contain("木盾在另一页"));
+        // 切到盾页后才防御：0.4、磨 1、锁来源；之后切回拳页、存读档都不变
+        var t = Fight(32, "worker");
+        var sh = Wear(t, "wooden_shield", EquipSlots.Weapon2);
+        Ready(t);
+        Assert.That(E.SelectWeaponPage(t, 2).Ok, Is.True);
+        var d1 = sh.Durability!.Value;
+        Assert.That(Cmd(t, "guard").Ok, Is.True);
+        Assert.That((t.Battle!.PlayerGuardFactor, t.Battle.PlayerGuardSourceId), Is.EqualTo((0.4, (int?)sh.InstanceId)));
+        Assert.That(sh.Durability, Is.EqualTo(d1 - 1).Within(1e-9));
+        Assert.That(E.SelectWeaponPage(t, 1).Ok, Is.True);
+        var u = SaveSerializer.Deserialize(SaveSerializer.Serialize(t), Cfg);
+        Assert.That((u.Battle!.PlayerGuardFactor, u.Battle.PlayerGuardSourceId), Is.EqualTo((0.4, (int?)sh.InstanceId)), "切页、读档不改已授格挡");
+        // 0.9 耐久付不起 1：普通 0.5
+        var v = Fight(33, "worker");
+        var weak = Wear(v, "wooden_shield", EquipSlots.Weapon1);
+        weak.Durability = 0.9;
+        Ready(v);
+        v.Battle!.ActiveWeaponSlot = 1;
+        Assert.That(E.PreviewCommand(v, BattleCommand.Of("guard")).Notes.Single(), Does.Contain("耐久不足1"));
+        Assert.That(Cmd(v, "guard").Ok, Is.True);
+        Assert.That(v.Battle.PlayerGuardFactor, Is.EqualTo(0.5));
+        Assert.That(weak.Durability, Is.EqualTo(0.9).Within(1e-9));
+        // 正好 1 耐久：可提交，磨到 0 仍保留本次 0.4；命中触发不再磨
+        var w = Fight(34, "worker");
+        var one = Wear(w, "wooden_shield", EquipSlots.Weapon1);
+        one.Durability = 1;
+        Ready(w);
+        w.Battle!.ActiveWeaponSlot = 1;
+        Assert.That(Cmd(w, "guard").Ok, Is.True);
+        Assert.That((w.Battle.PlayerGuardFactor, one.Durability), Is.EqualTo((0.4, (double?)0.0)));
+        var e = w.Battle.Alive.First();
+        var hp = w.Stats.Health;
+        Force(w, Below(0.01), Below(0.0001));
+        typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { w, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
+        Assert.That(hp - w.Stats.Health, Is.EqualTo(Cfg.Enemies.Single(x => x.Id == "worker").DamageMin * 0.4).Within(1e-3), "已授 0.4 不因盾归零回收");
+        Assert.That(one.Durability, Is.EqualTo(0.0));
+    }
+
+    /// <summary>CB-Q69：格挡类技能同口径——拳页“护身”时另一页的盾不算（0.5、不磨盾）。</summary>
+    [Test]
+    public void CB_Q69_GuardSkill_OnFistPage_IgnoresOtherPageShield()
+    {
+        var s = Fight(35, "worker");
+        var shield = Wear(s, "wooden_shield", EquipSlots.Weapon2);
+        var d0 = shield.Durability!.Value;
+        s.Skills["unarmed"].Level = 5;
+        Ready(s);
+        Assert.That(E.PreviewCommand(s, BattleCommand.Of("unarmed_05")).Notes.Any(n => n.Contains("木盾在另一页")), Is.True);
+        Assert.That(Cmd(s, "unarmed_05").Ok, Is.True);
+        Assert.That((s.Battle!.PlayerGuardFactor, s.Battle.PlayerGuardSourceId, shield.Durability), Is.EqualTo((0.5, (int?)null, (double?)d0)));
+    }
 }
