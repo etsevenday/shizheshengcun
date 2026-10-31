@@ -344,6 +344,19 @@ namespace Survival.Core.Config
             if (cap.NewGame < 1 || cap.Max > c.Scope.Slots.Count || cap.NewGame > cap.Max) e.Add("队伍容量（scope.capacity）新局值或上限无效");
             foreach (var u in cap.Unlocks)
                 if (u.Capacity <= cap.NewGame || u.Capacity > cap.Max || (u.AllOf.Count == 0 && u.AnyOf.Count == 0)) e.Add($"队伍容量解锁档 C{u.Capacity} 无效");
+            // B8（A11 §6/§7）：六名命名队友两件武器 ID 存在、kind 不同；技能 ID 合法；护送员借用武器存在
+            var skillIds = new HashSet<string>(c.Skills.Select(k => k.Id));
+            var weaponKinds = c.Weapons.ToDictionary(w => w.Id, w => w.WeaponKind);
+            foreach (var n in c.Party.NamedCompanions)
+            {
+                if (!weaponKinds.ContainsKey(n.Weapon1) || !weaponKinds.ContainsKey(n.Weapon2)) e.Add($"队友 {n.ActorId} 的初始武器不存在");
+                else if (weaponKinds[n.Weapon1] == weaponKinds[n.Weapon2]) e.Add($"队友 {n.ActorId} 的两件初始武器类型相同");
+                foreach (var kv in n.Skills)
+                    if (!skillIds.Contains(kv.Key) || kv.Value < 1 || kv.Value > 10) e.Add($"队友 {n.ActorId} 的初始技能 {kv.Key}{kv.Value} 无效");
+                if (c.ActorBaseDefense.Profile(n.ActorId) == null) e.Add($"队友 {n.ActorId} 缺少人物基础防御档");
+            }
+            if (c.Party.NamedCompanions.Count > 0 && !weaponKinds.ContainsKey(c.Party.EscortTemplate.LoanWeapon)) e.Add("护送员借用武器不存在");
+            if (c.Party.NamedCompanions.Count > 0 && !locs.Contains(c.Party.HubStandIn)) e.Add($"营区替身地点 {c.Party.HubStandIn} 不存在");
             if (c.Scope.ApByTier.Count == 0 || c.Scope.ApByTier.Any(x => x <= 0 || x > c.Scope.ApCap)) e.Add("战术训练阶位的行动点（scope.apByTier）无效");
 
             var we = c.WorldEnemies;

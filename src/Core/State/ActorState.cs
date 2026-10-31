@@ -32,6 +32,11 @@ namespace Survival.Core.State
         /// </summary>
         public int TacticalTier { get; set; }
 
+        /// <summary>显示名（队友为名册姓名或“护送员#n”；主角为空，文案称“你”）。</summary>
+        public string Name { get; set; } = "";
+        /// <summary>候补红线锁存（A11 §5.3）：health（H≤5）、virus（V≥80）；离开阈值后清除，可再提示。</summary>
+        public Dictionary<string, bool> RedLatched { get; set; } = new Dictionary<string, bool>();
+
         public bool IsPlayer => Id == GameState.PlayerId;
 
         public ActorState Clone()
@@ -43,6 +48,7 @@ namespace Survival.Core.State
             c.AlertLatched = new Dictionary<StatId, bool>(AlertLatched);
             c.ZeroLatched = new Dictionary<StatId, bool>(ZeroLatched);
             c.DailyCounts = new Dictionary<string, int>(DailyCounts);
+            c.RedLatched = new Dictionary<string, bool>(RedLatched);
             return c;
         }
     }

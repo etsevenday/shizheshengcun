@@ -11818,5 +11818,121 @@
       ],
       "source": "营区登记默认知识（h02 广场）"
     }
-  ]
+  ],
+  "party": {
+    "namedCompanions": [
+      {
+        "actorId": "npc_lin_zhao",
+        "name": "林昭",
+        "background": "临时营区物资搬运与巡路员；前排新人，不替主角作决定",
+        "skills": {
+          "spear": 3,
+          "shield": 2,
+          "crafting": 2
+        },
+        "baseSpeed": 4.0,
+        "weapon1": "wooden_spear",
+        "weapon2": "wooden_shield",
+        "recruitTask": "RN01"
+      },
+      {
+        "actorId": "npc_zhou_yan",
+        "name": "周砚",
+        "background": "工务维修工；以工具与安全步骤看待问题，近身钝器与制作",
+        "skills": {
+          "blunt": 4,
+          "crafting": 4,
+          "command": 2
+        },
+        "baseSpeed": 3.0,
+        "weapon1": "crowbar",
+        "weapon2": "signal_whistle",
+        "recruitTask": "RN02"
+      },
+      {
+        "actorId": "npc_shen_he",
+        "name": "沈禾",
+        "background": "灯塔转运护理员；重视知情同意，兼战斗与非战斗医疗",
+        "skills": {
+          "medicine": 4,
+          "blade": 2
+        },
+        "baseSpeed": 5.0,
+        "weapon1": "stone_knife",
+        "weapon2": "field_medkit",
+        "recruitTask": "RN03"
+      },
+      {
+        "actorId": "npc_tang_li",
+        "name": "唐梨",
+        "background": "近郊搜集者，灾后学习弓具与路线记录；后排点射",
+        "skills": {
+          "archery": 4,
+          "crafting": 2
+        },
+        "baseSpeed": 6.0,
+        "weapon1": "wooden_bow",
+        "weapon2": "stone_knife",
+        "recruitTask": "RN04"
+      },
+      {
+        "actorId": "npc_gu_cheng",
+        "name": "顾承",
+        "background": "曾任设施巡防，负责联合远征；非灾变知情者",
+        "skills": {
+          "firearms": 5,
+          "spear": 3,
+          "command": 3
+        },
+        "baseSpeed": 4.0,
+        "weapon1": "wooden_spear",
+        "weapon2": "signal_whistle",
+        "recruitTask": "RN05"
+      },
+      {
+        "actorId": "npc_ye_xun",
+        "name": "叶洵",
+        "background": "通信楼外围志愿记录员，以近身防护与工具求生",
+        "skills": {
+          "blade": 4,
+          "medicine": 2,
+          "crafting": 3,
+          "shield": 3
+        },
+        "baseSpeed": 5.0,
+        "weapon1": "stone_knife",
+        "weapon2": "wooden_shield",
+        "recruitTask": "RN06"
+      }
+    ],
+    "escortTemplate": {
+      "namePrefix": "护送员",
+      "skillLevel": 1,
+      "baseSpeed": 4,
+      "loanWeapon": "wooden_spear",
+      "registrationMinutes": 30,
+      "maxAlive": 3
+    },
+    "recruitInitialStats": {
+      "health": 20,
+      "healthMax": 20,
+      "satiety": 85,
+      "hydration": 85,
+      "energy": 18,
+      "wakefulness": 90,
+      "morale": 70,
+      "immunity": 70,
+      "virusLoad": 0
+    },
+    "reserveCare": {
+      "satietyFloor": 40,
+      "hydrationFloor": 40,
+      "sleepStartMinute": 1320,
+      "sleepEndMinute": 360,
+      "awakeAction": "wait",
+      "redHealth": 5,
+      "redVirus": 80
+    },
+    "hubStandIn": "camp"
+  }
 }

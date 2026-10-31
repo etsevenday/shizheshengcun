@@ -307,8 +307,8 @@ namespace Survival.Core.Engine
             Emit(s, GameEventKind.Alert, $"{ActorLabel(actor)}倒下了（{cause}），已离开队伍。");
         }
 
-        /// <summary>角色在文案里的称呼：主角为“你”，队友暂用 actorId（命名在后续批次）。</summary>
-        public static string ActorLabel(ActorState actor) => actor.IsPlayer ? "你" : $"队友{actor.Id}";
+        /// <summary>角色在文案里的称呼：主角为“你”，队友为名册名（B8）；没有名字的测试注入角色为“队友&lt;id&gt;”。</summary>
+        public static string ActorLabel(ActorState actor) => actor.IsPlayer ? "你" : !string.IsNullOrEmpty(actor.Name) ? actor.Name : $"队友{actor.Id}";
 
         /// <summary>队友提示前缀（主角为空，保持单人版文案不变）。</summary>
         private static string ActorPrefix(ActorState actor) => actor.IsPlayer ? "" : $"{ActorLabel(actor)}：";

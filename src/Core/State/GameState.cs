@@ -56,6 +56,19 @@ namespace Survival.Core.State
         public Dictionary<string, ActorState> Actors { get; set; } = new Dictionary<string, ActorState> { [PlayerId] = new ActorState { Id = PlayerId } };
         /// <summary>当前同行队伍的 actorId（主角在首位）。世界 tick 对其中每人各结算一次身体，同一个 5 分钟只推进一次世界（R08 §2、COMP04）。</summary>
         public List<string> Party { get; set; } = new List<string> { PlayerId };
+        /// <summary>
+        /// 名册（R08 §1/§2/§5、A11 §5，开发计划 v0.9 B8）：全部入册角色（不含主角），含在队、候补与已死亡；按加入顺序。
+        /// 候补 = 名册里存活且不在 Party 的角色；在营区（替身 camp）接受公共照护。
+        /// </summary>
+        public List<RosterEntry> Roster { get; set; } = new List<RosterEntry>();
+        /// <summary>战前编成预设（R03 §1、Q80）：新战斗我方按它紧凑排位 1..n；与 Party 是同一组人（主角可不在 1 号位）。</summary>
+        public List<string> FormationPreset { get; set; } = new List<string> { PlayerId };
+        /// <summary>死亡队友的遗物容器（R08 §4、A11 §8）：键为死者 actorId，每人至多一个；容器内物品 owner 为 "remains:&lt;actorId&gt;"。</summary>
+        public Dictionary<string, RemainsState> Remains { get; set; } = new Dictionary<string, RemainsState>();
+        /// <summary>借用矛位（A11 §7）：loan_1..loan_{C−1} → 当前有效实例 ID；位只增不减。</summary>
+        public Dictionary<string, int> LoanSlots { get; set; } = new Dictionary<string, int>();
+        /// <summary>通用护送员流水号（“护送员#n”，不复用）。</summary>
+        public int NextEscortSeq { get; set; } = 1;
 
         /// <summary>按 actorId 取角色；不存在时建空角色（只在迁移与测试注入时发生）。</summary>
         public ActorState Actor(string actorId)
@@ -145,6 +158,10 @@ namespace Survival.Core.State
             c.Rng = new Rng { State = Rng.State };
             c.Actors = Actors.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.Party = new List<string>(Party);
+            c.Roster = Roster.Select(r => r.Clone()).ToList();
+            c.FormationPreset = new List<string>(FormationPreset);
+            c.Remains = Remains.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
+            c.LoanSlots = new Dictionary<string, int>(LoanSlots);
             c.Locations = Locations.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.UnlockedEdges = new HashSet<string>(UnlockedEdges);
             c.TraveledEdges = new HashSet<string>(TraveledEdges);
@@ -388,6 +405,8 @@ namespace Survival.Core.State
         /// 装备品质（schema 10，A05 §4）：white/green/blue；非装备为 null，旧档装备迁移为 white。生成时抽一次，维修、穿脱、读档都不重抽。
         /// </summary>
         public string? Quality { get; set; }
+        /// <summary>借用矛位（A11 §7）：非空时为 RB01 借用物，不能拆解、作配方材料、作燃料或出售。</summary>
+        public string? LoanSlot { get; set; }
         /// <summary>附加词条 ID（白 0 条、绿 1 条、蓝 2 条；生成时按兼容池等权抽取、同互斥组最多 1 条）；没有词条为 null。</summary>
         public List<string>? Affixes { get; set; }
 
@@ -424,6 +443,10 @@ namespace Survival.Core.State
 
         public static string ContainerOwner(int containerInstanceId) => ContainerPrefix + containerInstanceId;
         public static string FacilityOwner(string facilityId) => FacilityPrefix + facilityId;
+        /// <summary>死亡队友遗物容器的 owner 前缀（R08 §4）："remains:&lt;actorId&gt;"。</summary>
+        public const string RemainsPrefix = "remains:";
+        public static string RemainsOwner(string actorId) => RemainsPrefix + actorId;
+        public bool InRemains => Owner.StartsWith(RemainsPrefix);
 
         public static bool TryFacilityId(string owner, out string facilityId)
         {
@@ -446,6 +469,37 @@ namespace Survival.Core.State
             c.Affixes = Affixes == null ? null : new List<string>(Affixes);
             return c;
         }
+    }
+
+    /// <summary>名册条目（R08 §2/§5）：命名队友或通用护送员；死亡后保留名称与死亡记录。</summary>
+    public sealed class RosterEntry
+    {
+        public string ActorId { get; set; } = "";
+        /// <summary>named（A11 §6 命名角色）/ escort（RB01 通用护送员）。</summary>
+        public string Kind { get; set; } = "named";
+        public string Name { get; set; } = "";
+        public int JoinedMinute { get; set; }
+        public bool Dead { get; set; }
+        public int? DeathMinute { get; set; }
+        public string? DeathLocation { get; set; }
+        public string? DeathCause { get; set; }
+        /// <summary>护送员绑定的借用矛位（loan_k）；命名角色为 null。</summary>
+        public string? LoanSlot { get; set; }
+
+        public bool IsEscort => Kind == "escort";
+        public RosterEntry Clone() => (RosterEntry)MemberwiseClone();
+    }
+
+    /// <summary>遗物容器（R08 §4、A11 §8）：死亡地点、时刻与原因；物品本身按 owner 归属。</summary>
+    public sealed class RemainsState
+    {
+        public string Name { get; set; } = "";
+        public string LocationId { get; set; } = "";
+        public int Minute { get; set; }
+        public string Cause { get; set; } = "";
+        /// <summary>死于这场战斗中：本场战斗结束前不能取（R08 §4）。</summary>
+        public int? BattleId { get; set; }
+        public RemainsState Clone() => (RemainsState)MemberwiseClone();
     }
 
     /// <summary>物品来源（R07 §2）：sourceWorldEnemyId、sourceBattleId、grantEventId、tutorialReward。合堆键含 GrantEventId，教学与普通实例不合并。</summary>

@@ -90,6 +90,8 @@ namespace Survival.Core.Config
         public ActorBaseDefenseConfig ActorBaseDefense { get; set; } = new ActorBaseDefenseConfig();
         /// <summary>做法知识（Q64 护拳绑带：营区登记默认知识）。知识是集合、不是实物，由存档里的事实给出。</summary>
         public List<KnowledgeConfig> Knowledge { get; set; } = new List<KnowledgeConfig>();
+        /// <summary>队伍与共同生存（R08、A11 §5—§7；开发计划 v0.9 B8，tools/import-b8-party.py）。</summary>
+        public PartyConfig Party { get; set; } = new PartyConfig();
     }
 
     public sealed class TimeConfig
