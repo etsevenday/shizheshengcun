@@ -151,6 +151,16 @@ window.survival = {
       if (ev.ctrlKey || ev.altKey || ev.metaKey) return;
       var k = ev.key;
       if (window.FeedbackWidget && FeedbackWidget.isOpen()) return;
+      // 全屏战斗（A10 §6.4）：1—5 只选本页技能位、Q/E 切武器Ⅰ/Ⅱ页（0AP）、←/→ 在合法目标间移动预测、回车提交当前预测的目标；
+      // 焦点在按钮或可点锚点上时回车/空格交给它自己（浏览器原生），不重复提交
+      if (document.querySelector('.bfs') && t !== 'INPUT' && t !== 'TEXTAREA') {
+        var onCtl = document.activeElement && document.activeElement.closest && document.activeElement.closest('button, [role=button]');
+        if (/^[1-5]$/.test(k) || k === 'q' || k === 'Q' || k === 'e' || k === 'E' || k === 'ArrowLeft' || k === 'ArrowRight' || (k === 'Enter' && !onCtl)) {
+          ev.preventDefault();
+          dotnet.invokeMethodAsync('OnKey', k.length === 1 ? k.toUpperCase() : k);
+          return;
+        }
+      }
       // 数量框等弹窗自己处理按键（回车确认、Esc 取消），不再触发游戏快捷键
       if (ev.target && ev.target.closest && ev.target.closest('.modal')) return;
       if (['m', 'M', 'c', 'C', 'r', 'R', 'l', 'L', 'f', 'F', 'Escape'].indexOf(k) >= 0) {

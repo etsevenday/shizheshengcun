@@ -90,6 +90,8 @@ else if (b != null)
             </div>
             @foreach (var t in p.Targets)
             {
+                @* B9（A10 §4.5）：固定写“行动者 → 实际目标”；被保护者接下时写“瞄准A，实际由B承受” *@
+                <div class="pv-route">你（@(GameEngine.PlayerPos(b))号位）→ @(t.Slot)号位 @t.Name@if (t.AimedIndex is int ai && e.BattleEnemyAt(b, ai) is BattleEnemy aimed) {<em>（瞄准@(aimed.Slot)号位@(e.EnemyName(aimed))，实际由它承受）</em>}</div>
                 <div class="facts">
                     <div class="fact"><span>目标</span><strong>@(t.Slot)号位 @t.Name</strong></div>
                     <div class="fact"><span>实际命中率</span><strong>@Ui.Pct(t.HitChance)</strong></div>

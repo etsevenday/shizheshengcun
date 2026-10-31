@@ -90,6 +90,8 @@ namespace Survival.Core.Engine
         public bool Guarded { get; set; }
         public bool RearPenalty { get; set; }
         public double Hp { get; set; }
+        /// <summary>保护重定向（B9，A10 §4.1）：玩家瞄准的是另一名敌人（本场序号），这一击实际由本目标承受；没有重定向为 null。</summary>
+        public int? AimedIndex { get; set; }
     }
 
     /// <summary>战斗指令预览：只读，不推进随机、不改状态（v0.5 B503）。</summary>

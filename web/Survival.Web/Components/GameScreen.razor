@@ -252,7 +252,16 @@
         if (G.BattleFullscreen)
         {
             // 全屏战斗（A10 §6.3）：M/C/R/L 锁定；Esc 每次只退最高可退层，最后才打开战斗菜单（不能关闭战斗脱战）
-            if (key == "Escape") G.BattleEscape();
+            switch (key)
+            {
+                case "Escape": G.BattleEscape(); break;
+                case "1" or "2" or "3" or "4" or "5": G.BattleHotkeySkill(key[0] - '0'); break;
+                case "Q": G.SelectWeaponPage(1); break;
+                case "E": G.SelectWeaponPage(2); break;
+                case "ArrowLeft": G.BattleCycleTarget(-1); break;
+                case "ArrowRight": G.BattleCycleTarget(1); break;
+                case "Enter": _ = G.BattleConfirmHover(); break;
+            }
             return;
         }
         if (G.InBattleUi)

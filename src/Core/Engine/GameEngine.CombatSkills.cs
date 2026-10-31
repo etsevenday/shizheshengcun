@@ -418,7 +418,17 @@ namespace Survival.Core.Engine
                 ? (c.Target.HasValue && BattleEnemyAt(b, c.Target.Value) is BattleEnemy one ? new List<BattleEnemy> { one } : new List<BattleEnemy>())
                 : SkillTargets(b, sp.Exec!, w, c.Target);
             if (!sp.Desperate && sp.Exec!.TargetMode == "suffix" && c.Target.HasValue && BattleEnemyAt(b, c.Target.Value) is BattleEnemy st0) { sp.SuffixStart = st0.Pos; foreach (var t in targets) sp.SnapPos[t.Index] = t.Pos; }
-            foreach (var t in targets) p.Targets.Add(TargetCalc(s, b, sp, t, p.EnergyAfter));
+            // B9（A10 §4.1/§4.5）：单体攻击会被保护者接下时，预测改按真实承伤者算，并写明“瞄准A，实际由B承受”
+            if (ProtectRedirect(b, sp, targets) is BattleEnemy guard)
+            {
+                var aimed = targets[0];
+                p.Notes.Add($"瞄准{PosName(aimed.Pos)}{EnemyName(aimed)}，实际由{PosName(guard.Pos)}{EnemyName(guard)}承受（它在保护{EnemyName(aimed)}，单体攻击由它接下）");
+                targets = new List<BattleEnemy> { guard };
+                var tp = TargetCalc(s, b, sp, guard, p.EnergyAfter);
+                tp.AimedIndex = aimed.Index;
+                p.Targets.Add(tp);
+            }
+            else foreach (var t in targets) p.Targets.Add(TargetCalc(s, b, sp, t, p.EnergyAfter));
             if (!sp.Desperate)
             {
                 var x = sp.Exec!;
@@ -517,7 +527,7 @@ namespace Survival.Core.Engine
                 foreach (var t in targets) sp.SnapPos[t.Index] = t.Pos;
             }
             // 单体直接攻击打到被保护者：由保护者接下（不拦范围攻击；R03 §4、A09 保护）
-            if (targets.Count == 1 && (sp.Desperate || sp.Exec!.TargetMode == "single") && !IsAreaShotSpec(sp) && ProtectorOf(b, targets[0]) is BattleEnemy guard)
+            if (ProtectRedirect(b, sp, targets) is BattleEnemy guard)
             {
                 parts.Add($"{EnemyName(guard)}挡在{EnemyName(targets[0])}前面接下了这一击");
                 guard.ProtectingIndex = 0;
@@ -577,6 +587,13 @@ namespace Survival.Core.Engine
         }
 
         private bool IsAreaShotSpec(AttackSpec sp) => sp.Exec != null && IsAreaShot(sp.Exec, sp.Weapon);
+
+        /// <summary>
+        /// 单体直接攻击打到被保护者时接下这一击的保护者（R03 §4、A09 保护；不拦范围攻击）。执行与预览共用（A10 §4.1/§4.5：
+        /// 预览写“瞄准A，实际由B承受”，与实际同源）；没有重定向返回 null。
+        /// </summary>
+        private BattleEnemy? ProtectRedirect(BattleState b, AttackSpec sp, List<BattleEnemy> targets) =>
+            targets.Count == 1 && (sp.Desperate || sp.Exec!.TargetMode == "single") && !IsAreaShotSpec(sp) ? ProtectorOf(b, targets[0]) : null;
 
         /// <summary>噪声增加（满 100 时请求一次增援；v0.6 §15）。</summary>
         private void AddNoise(GameState s, BattleState b, double gain)

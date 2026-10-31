@@ -1374,6 +1374,40 @@ public sealed class GameSession
         ToggleBattleMenu(true);
     }
 
+    /// <summary>
+    /// 全屏战斗快捷键 1—5（A10 §6.4）：只选本页对应 1/3/5/7/10 级的技能位（进入瞄准或待确认），不直接攻击；
+    /// 该位未解锁、是被动或不可用时只写原因。
+    /// </summary>
+    public void BattleHotkeySkill(int slot)
+    {
+        if (State == null || S.Battle == null || DialogueLocked || BattleMenuOpen || slot < 1 || slot > 5) return;
+        var lv = new[] { 1, 3, 5, 7, 10 }[slot - 1];
+        var w = E.CurrentWeapon(S, out _);
+        var node = E.Config.SkillNodes.FirstOrDefault(n => n.SkillId == w.SkillId && n.Level == lv && !n.IsSurvival);
+        var o = node == null ? null : E.BattleOptions(S).FirstOrDefault(x => x.NodeId == node.Id);
+        if (o == null) { Notice = node != null && E.SkillUnlocked(S, node) ? $"{node.Name}是被动，自动生效" : $"本页第{slot}个技能位（{lv}级）还没解锁"; Notify(); return; }
+        if (o.Available) PickBattleAction(o.Action, o.ItemInstanceId);
+        else ExplainBlocked(o.Label, o.Reason);
+    }
+
+    /// <summary>←/→：瞄准中在合法目标间按号位移动预测（只悬停，不提交）。</summary>
+    public void BattleCycleTarget(int dir)
+    {
+        if (State == null || S.Battle == null || !BattleAiming || DialogueLocked) return;
+        var list = AimTargets().Select(i => S.Battle.Enemies.First(x => x.Index == i)).OrderBy(x => x.Pos).Select(x => x.Index).ToList();
+        if (list.Count == 0) return;
+        var at = BattleHover is int h ? list.IndexOf(h) : -1;
+        var next = at < 0 ? (dir > 0 ? 0 : list.Count - 1) : (at + dir + list.Count) % list.Count;
+        HoverBattleTarget(list[next]);
+    }
+
+    /// <summary>回车：瞄准中提交当前预测的合法目标（与点击同一路径与请求号去重）。</summary>
+    public async Task BattleConfirmHover()
+    {
+        if (State == null || S.Battle == null || !BattleAiming || BattleBusy || DialogueLocked || BattleMenuOpen) return;
+        if (BattleHover is int h && AimTargets().Contains(h)) await ClickBattleTarget(h, BattleExecToken());
+    }
+
     /// <summary>说明抽屉、战斗菜单打开时是阅读暂停（A10 §6.3）：逐条展示的敌方行动等它们关上再继续，不额外推进。</summary>
     private bool BattleReadingPause => BattleMenuOpen || BattleDrawer == "help";
 

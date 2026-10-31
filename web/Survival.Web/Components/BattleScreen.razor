@@ -26,6 +26,13 @@
     var skills = opts.Where(o => o.Group is "attack" or "move").ToList();
     var general = opts.Where(o => o.Group == "general").ToList();
     var items = opts.Where(o => o.Group == "item" && CarriedFor(o) > 0).ToList();
+    // B9（A10 §4.5）：瞄准中悬停合法目标时，目标生命条上画“预计”条纹——与右栏同一次 PreviewCommand（只读、不抽随机）
+    _forecast = null;
+    if (aiming && G.BattleHover is int hov && aimSet.Contains(hov))
+    {
+        var pv = e.PreviewCommand(s, BattleCommand.Of(G.BattleAction!, G.AreaAction ? null : hov, G.BattleItem));
+        if (pv.Ok && pv.Targets.Count > 0) _forecast = pv.Targets.ToDictionary(t => t.Index, t => (t.DamageMin, t.DamageMax));
+    }
     var actorText = waiting ? "敌方行动中" : $"你 · {(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}";
 }
 
@@ -370,7 +377,7 @@
                 @if (unreachable) { <span class="anc-no" aria-hidden="true"></span> }
             </div>
             <div class="anc-foot">
-                <div class="anc-nums"><span title="健康">♥@(Ui.N(en.Hp))/@(Ui.N(ec.Hp))</span></div>
+                <div class="anc-nums @(ForecastText(en) != null ? "fc-on" : "")">@if (ForecastText(en) is string fct) {<span class="fc-tag" title="预计剩余生命（未暴击；暴击见右侧）">预计</span><span title="预计剩余生命（未暴击；暴击见右侧）">@fct</span>} else {<span title="健康">♥@(Ui.N(en.Hp))/@(Ui.N(ec.Hp))</span>}</div>
                 <div class="track hp">@HpForecast(en, ec)<i style="width:@Ui.Bar(en.Hp, ec.Hp)%"></i></div>
                 <div class="anc-chips">
                     @if (en.Guard) { <span class="st good bdg">防御</span> }
@@ -389,8 +396,23 @@
         </div>
     };
 
-    /// <summary>目标生命条上的预计伤害（M217 起瞄准时填充）。</summary>
-    private RenderFragment HpForecast(BattleEnemy en, EnemyConfig ec) => __builder => { };
+    private Dictionary<int, (double Min, double Max)>? _forecast;
+
+    /// <summary>
+    /// 目标生命条上的预计伤害（A10 §4.5）：悬停合法目标时，从“打满最大值后剩余”到当前生命之间画条纹（不写入真实生命）；
+    /// 区间来自与右栏、实际结算同源的 PreviewCommand（未暴击，护甲/防御已扣）。
+    /// </summary>
+    private RenderFragment HpForecast(BattleEnemy en, EnemyConfig ec) => __builder =>
+    {
+        if (_forecast == null || !_forecast.TryGetValue(en.Index, out var f) || ec.Hp <= 0) return;
+        var lo = Math.Max(0, en.Hp - f.Max);
+        var l = Math.Clamp(lo / ec.Hp * 100, 0, 100);
+        var r = Math.Clamp(en.Hp / ec.Hp * 100, 0, 100);
+        <s class="fc" style="@(FormattableString.Invariant($"left:{l:0.##}%;width:{Math.Max(0, r - l):0.##}%"))" aria-hidden="true"></s>
+    };
+
+    private string? ForecastText(BattleEnemy en) =>
+        _forecast != null && _forecast.TryGetValue(en.Index, out var f) ? $"♥{Ui.N(Math.Max(0, en.Hp - f.Max))}—{Ui.N(Math.Max(0, en.Hp - f.Min))}" : null;
 
     /// <summary>
     /// 意图图标 + 短名 + 伤害区间（与 IntentShown 同源，只截短显示）：够不到时按真实计划写“迫近→弱袭”“前移”“弱攻击”“防御·够不到”“等待”。
