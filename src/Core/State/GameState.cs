@@ -102,8 +102,8 @@ namespace Survival.Core.State
             return a;
         }
 
-        /// <summary>主角（p0）。</summary>
-        [JsonIgnore] public ActorState Player => Actor(PlayerId);
+        /// <summary>主角（p0）；战斗中为当前视角成员（轮到的队友、被结算的我方，B9a，见 BattleState.FocusId）。</summary>
+        [JsonIgnore] public ActorState Player => Actor(Battle?.FocusId ?? PlayerId);
 
         /// <summary>同行队伍里的全部角色（主角在前），按 Party 顺序；缺失的 actorId 跳过。</summary>
         [JsonIgnore] public IEnumerable<ActorState> PartyActors => Party.Where(Actors.ContainsKey).Select(id => Actors[id]);

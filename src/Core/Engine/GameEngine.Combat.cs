@@ -62,7 +62,7 @@ namespace Survival.Core.Engine
         /// 主角在我方的真实站位（1 起）。Q80：我方 Allies 是按槽排的稀疏表（下标=槽号−1，空位为 ""，末尾空位省略），
         /// 单人也可以在 2/3/4 号位，不自动归 1。
         /// </summary>
-        public static int PlayerPos(BattleState b) => Math.Max(1, b.Allies.IndexOf(GameState.PlayerId) + 1);
+        public static int PlayerPos(BattleState b) => Math.Max(1, b.Allies.IndexOf(b.FocusId) + 1);
 
         /// <summary>我方某槽上的角色 actorId；空位或越界为 null。</summary>
         public static string? AllyAt(BattleState b, int pos) =>
@@ -118,7 +118,7 @@ namespace Survival.Core.Engine
         {
             weapon = _weapons[Fists];
             var slot = EquipSlots.WeaponSlotOfPage(page);
-            var it = slot != null ? WornItem(s, GameState.PlayerId, slot) : null;
+            var it = slot != null ? WornItem(s, MeId(s), slot) : null;
             if (it == null || !_weapons.TryGetValue(it.ItemId, out var w)) return null;
             weapon = w;
             return it;
@@ -165,8 +165,8 @@ namespace Survival.Core.Engine
             var m = Config.CombatMath;
             var e = energy ?? s.Stats.Energy;
             var status = new List<string>();
-            var baseSp = Config.Scope.BasePlayerSpeed;
-            var gear = EquipmentEffects(s, GameState.PlayerId, b?.ActiveWeaponSlot).Speed;
+            var baseSp = ActorBaseSpeed(s, MeId(s));   // B9a：主角 4，队友按 A11 §6 基础速度
+            var gear = EquipmentEffects(s, MeId(s), b?.ActiveWeaponSlot).Speed;
             var sp = baseSp + gear;
             if (e < m.LowEnergyExclusive) { sp -= m.LowEnergySpeedPenalty; status.Add($"体力<{Fmt.T(m.LowEnergyExclusive)} −{Fmt.T(m.LowEnergySpeedPenalty)}"); }
             if (s.Stats.Wakefulness < m.LowWakefulnessSpeedExclusive) { sp -= m.LowWakefulnessSpeedPenalty; status.Add($"清醒<{Fmt.T(m.LowWakefulnessSpeedExclusive)} −{Fmt.T(m.LowWakefulnessSpeedPenalty)}"); }
@@ -228,7 +228,7 @@ namespace Survival.Core.Engine
             WeaponOnPage(s, page, out var w);
             var cost = SkillOf(BasicAttack, w) is SkillNodeConfig n ? SkillEnergy(s, n, w, page) : 0;
             var acc = Math.Max(Config.CombatMath.MinAccuracy,
-                (w.AccuracyRating + SkillAccuracyBonus(SkillLevel(s, w.SkillId)) + Config.CombatMath.PlayerAccuracyAssistance + EquipmentEffects(s, GameState.PlayerId, page).Accuracy)
+                (w.AccuracyRating + SkillAccuracyBonus(SkillLevel(s, w.SkillId)) + Config.CombatMath.PlayerAccuracyAssistance + EquipmentEffects(s, MeId(s), page).Accuracy)
                 * BodyAccuracyFactor(s, null, Math.Max(0, s.Stats.Energy - cost)));
             return (acc, HitChance(acc, Math.Max(Config.CombatMath.MinEvasion, enemy.Dodge)));
         }
@@ -248,10 +248,10 @@ namespace Survival.Core.Engine
         /// </summary>
         public double PlayerControlResist(GameState s, BattleState? b, string status)
         {
-            var r = Config.Scope.BasePlayerControlResist;
+            var r = MyBaseControlResist(s);
             if (Config.ActorBaseDefense.DisplacementGearOnlyStatuses.Contains(status))
             {
-                var gear = EquipmentEffects(s, GameState.PlayerId, 0).DisplaceResist;
+                var gear = EquipmentEffects(s, MeId(s), 0).DisplaceResist;
                 var state = b != null && b.DisplaceUntilRound >= b.Round ? b.DisplaceResist : 0;
                 r += Math.Max(gear, state);
             }
@@ -296,7 +296,7 @@ namespace Survival.Core.Engine
 
         /// <summary>主角护甲：基础 0 + 装备护甲（总上限 0.9，耐久 0 的防具暂停；A05 §2）。</summary>
         public double PlayerArmor(GameState s) =>
-            Math.Max(0, Math.Min(Config.Equipment.Limits.ArmorCap, Config.Scope.BasePlayerArmor + EquipmentEffects(s, GameState.PlayerId, 0).Armor));
+            Math.Max(0, Math.Min(Config.Equipment.Limits.ArmorCap, MyBaseArmor(s) + EquipmentEffects(s, MeId(s), 0).Armor));
 
         public double CritChance(double critRating) => critRating <= 0 ? 0 : critRating / (critRating + Config.CombatMath.CritDenominator);
 
@@ -394,9 +394,17 @@ namespace Survival.Core.Engine
             // 容量 C 锁存（R03 §1、A11：决定敌人数上限，不按实到人数缩怪）；有序名单截前 C 个，从 1 号位起紧凑排位
             b.Capacity = BattleCapacity(s);
             // Q86：新战按已保存的编队预设开局（单人也生效）：不压紧、不按武器自动找位、不另收开局站位 AP；
-            // 战内真实槽另存，拉扯/击退/调整/死亡不反写预设。队友目前不入场（多人战斗未做，B8.4），只放主角
-            var start = PresetPlayerSlot(s);
-            b.Allies = Enumerable.Repeat("", start - 1).Append(GameState.PlayerId).ToList();
+            // 战内真实槽另存，拉扯/击退/调整/死亡不反写预设。B9a：存活的同行队友按预设一起入场（同行人数受 C 限制）
+            b.Allies = EntryAllies(s, b.Capacity);
+            b.Members = new List<string> { GameState.PlayerId };
+            b.Members.AddRange(b.Allies.Where(a => a != "" && a != GameState.PlayerId));
+            // 每名成员开战停在自己第一个有武器的页（B3a H3）
+            foreach (var id in b.Members.Skip(1))
+            {
+                s.Battle = b;
+                using (FocusOn(s, id)) b.ActiveWeaponSlot = DefaultWeaponPage(s);
+            }
+            s.Battle = null;
             var k = 0;
             var joined = group.Take(Math.Min(b.Capacity, Config.Scope.Slots.Count)).ToList();
             foreach (var w in joined)
@@ -409,19 +417,31 @@ namespace Survival.Core.Engine
             var pc = Config.Panic;
             // 受惊（R03 §2.1、R05 §6.3）：同一 battleId 只判一次并锁存；恐慌基础值 (100−M)/2，受惊才加主惊吓源的惊吓值
             RollFear(s, b, joined, context);
-            b.Panic = Math.Max(pc.Range[0], Math.Min(pc.Range[1], (pc.InitialBase - s.Stats.Morale) / pc.InitialDivisor + b.FearPanic));
-            b.PanicPeak = b.Panic;
             s.Battle = b;
+            // R03 §5：每名角色恐慌入场按 (100−M)/2，再按 T01 受惊一次（B9a：队友用同一主惊吓源与同一随机数 u，按各自精神算概率）
+            foreach (var id in b.Members)
+                using (FocusOn(s, id))
+                {
+                    if (id != GameState.PlayerId) CopyFear(s, b, joined, context);
+                    b.Panic = Math.Max(pc.Range[0], Math.Min(pc.Range[1], (pc.InitialBase - s.Stats.Morale) / pc.InitialDivisor + b.FearPanic));
+                    b.PanicPeak = b.Panic;
+                }
             var names = string.Join("、", b.Enemies.Select(e => $"{PosName(e.Pos)}{EnemyName(e)}"));
             var fearText = !b.FearSourceWorldId.HasValue ? ""
                 : b.Frightened ? $"（受惊：{_enemies[joined.First(w => w.Id == b.FearSourceWorldId).EnemyId].Name}，受惊率{Fmt.Pct(b.FearChance)}，恐慌+{Fmt.T(b.FearPanic)}）"
                 : $"（未受惊，受惊率{Fmt.Pct(b.FearChance)}）";
             var left = group.Count - joined.Count;
-            BattleLog(s, $"{source}：{names}。恐慌{Fmt.N(b.Panic)}{fearText}。" + (left > 0 ? $"本场容量C{b.Capacity}，另有{left}只留在原地。" : ""));
+            var mates = b.Members.Skip(1).Select(id =>
+            {
+                var f = b.Fighter(id);
+                return $"{ActorDisplayName(s, id)}（{PosName(AllyPos(b, id))}）恐慌{Fmt.N(f.Panic)}{(f.Frightened ? $"·受惊+{Fmt.T(f.FearPanic)}" : "")}";
+            }).ToList();
+            BattleLog(s, $"{source}：{names}。恐慌{Fmt.N(b.Panic)}{fearText}。" + (mates.Count > 0 ? $"同行入场：{string.Join("、", mates)}。" : "") + (left > 0 ? $"本场容量C{b.Capacity}，另有{left}只留在原地。" : ""));
             Emit(s, GameEventKind.Battle, $"战斗开始：{names}。", null, b.Enemies.Select(e => $"enemy:{e.WorldId}"));
             // 同速排序用的锁定随机数 u（R03 §2）：入场时各抽一次并存档（在受惊判定之后抽，不改受惊结果）
             b.PlayerTieRoll = s.Rng.NextDouble();
             foreach (var be in b.Enemies) be.TieRoll = s.Rng.NextDouble();
+            foreach (var id in b.Members.Skip(1)) b.Fighter(id).TieRoll = s.Rng.NextDouble();   // B9a：队友的同速随机数在敌人之后抽（单人随机序列不变）
             BeginRound(s);
         }
 
@@ -461,6 +481,24 @@ namespace Survival.Core.Engine
             b.FearPanic = b.Frightened ? cfg.FearValue : 0;
         }
 
+        /// <summary>
+        /// 队友的受惊（B9a）：沿用主角这次判定的主惊吓源与随机数 u（60 分钟复用规则不变、不另抽随机），按队友自己的精神算 p=q×(1−M/100)×K。
+        /// 调用时视角已切到该队友。
+        /// </summary>
+        private void CopyFear(GameState s, BattleState b, List<WorldEnemy> group, string context)
+        {
+            if (!b.FearSourceWorldId.HasValue) return;
+            var main = group.FirstOrDefault(w => w.Id == b.FearSourceWorldId.Value);
+            if (main == null) return;
+            var cfg = _enemies[main.EnemyId];
+            var u = b.Fighter(GameState.PlayerId).FearRoll;
+            b.FearMorale = s.Stats.Morale;
+            b.FearRoll = u;
+            b.FearChance = FearChance(cfg.FearChance, s.Stats.Morale, context);
+            b.Frightened = u < b.FearChance;
+            b.FearPanic = b.Frightened ? cfg.FearValue : 0;
+        }
+
         /// <summary>入战前的受惊说明（敌踪选择、接近详情）：“可能受惊：游荡尸受惊率14.00%，受惊时恐慌+6”。</summary>
         public string FearNote(GameState s, IEnumerable<WorldEnemy> group, string context)
         {
@@ -489,10 +527,19 @@ namespace Survival.Core.Engine
         private void BeginRound(GameState s)
         {
             var b = s.Battle!;
+            SyncMembers(b);
             if (!RoundStartBleed(s)) return;
             TryReinforce(s);
-            b.PlayerSlowActive = b.PlayerSlowPending;
-            b.PlayerSlowPending = false;
+            var allies = AlliesOnField(b);
+            // B9a：我方每名在场成员各自轮初生效减速、记轮初体力、刷新调息（每角色每大回合一次）
+            foreach (var id in allies)
+                using (FocusOn(s, id))
+                {
+                    b.PlayerSlowActive = b.PlayerSlowPending;
+                    b.PlayerSlowPending = false;
+                    b.RoundStartEnergy = s.Stats.Energy;
+                    b.BreatheUsed = false;
+                }
             foreach (var e in b.Alive)
             {
                 e.SlowActive = e.SlowPending;
@@ -502,32 +549,32 @@ namespace Survival.Core.Engine
                 e.Acted = false;
                 e.RoundApUsed = 0;   // Q87：回合结束清本轮 AP 账，下一轮正常初始化
             }
-            b.RoundStartEnergy = s.Stats.Energy;
-            b.BreatheUsed = false;
             b.RetreatUsed = false;
-            var entries = new List<(int idx, double speed, double u, int actor)>
-            {
-                (0, PlayerEffectiveSpeed(s, b), b.PlayerTieRoll, 0),
-            };
+            var entries = new List<(int idx, double speed, double u, int actor)>();
+            foreach (var id in allies)
+                using (FocusOn(s, id))
+                    entries.Add((QueueCode(b, id), PlayerEffectiveSpeed(s, b), b.PlayerTieRoll, QueueCode(b, id)));
+            var allyCount = entries.Count;
             foreach (var e in b.Alive.OrderBy(e => e.Index)) entries.Add((e.Index, EnemyEffectiveSpeed(e), e.TieRoll, e.WorldId));
             List<(int idx, double speed, double u, int actor)> Sort(IEnumerable<(int idx, double speed, double u, int actor)> xs) =>
                 xs.OrderByDescending(x => SpeedHundredths(x.speed)).ThenByDescending(x => x.u).ThenBy(x => x.actor).ToList();   // Q71：百分速度降序→u降序→ID升序
             var ordered = Sort(entries);
-            // 追击：对方阵营最快存活角色的轮初速度为基准
-            var playerSpeed = entries[0].speed;
-            var fastestEnemy = entries.Skip(1).Select(x => x.speed).DefaultIfEmpty(0).Max();
+            // 追击：对方阵营最快存活角色的轮初速度为基准（B9a：敌人以我方最快的在场成员为基准）
+            var fastestAlly = entries.Take(allyCount).Select(x => x.speed).DefaultIfEmpty(0).Max();
+            var fastestEnemy = entries.Skip(allyCount).Select(x => x.speed).DefaultIfEmpty(0).Max();
             var pursuit = new List<(int idx, double speed, double u, int actor)>();
             var th = Config.CombatMath.PursuitThreshold;
             foreach (var x in entries)
             {
-                if (x.idx == 0)
+                if (x.idx <= 0)
                 {
-                    b.PlayerPursuit = RoundPursuit(b.PlayerPursuit + PursuitGain(x.speed, fastestEnemy));
-                    if (b.PlayerPursuit >= th - 1e-9) { b.PlayerPursuit = RoundPursuit(b.PlayerPursuit - th); pursuit.Add(x); }
+                    var f = b.Fighter(QueueActor(b, x.idx)!);
+                    f.Pursuit = RoundPursuit(f.Pursuit + PursuitGain(x.speed, fastestEnemy));
+                    if (f.Pursuit >= th - 1e-9) { f.Pursuit = RoundPursuit(f.Pursuit - th); pursuit.Add(x); }
                 }
                 else if (BattleEnemyAt(b, x.idx) is BattleEnemy e && !b.Tutorial)
                 {
-                    e.PursuitProgress = RoundPursuit(e.PursuitProgress + PursuitGain(x.speed, playerSpeed));
+                    e.PursuitProgress = RoundPursuit(e.PursuitProgress + PursuitGain(x.speed, fastestAlly));
                     if (e.PursuitProgress >= th - 1e-9) { e.PursuitProgress = RoundPursuit(e.PursuitProgress - th); pursuit.Add(x); }
                 }
             }
@@ -536,11 +583,16 @@ namespace Survival.Core.Engine
             b.Initiative = ordered.Concat(chase).Select(x => x.speed).ToList();
             b.NormalCount = ordered.Count;
             b.Cursor = 0;
-            b.PlayerActing = false;
+            foreach (var id in MemberIds(b))
+            {
+                var f = b.Fighter(id);
+                f.Acting = false;
+                f.Ap = 0;
+            }
+            b.ActiveAlly = "";
             b.ActingPursuit = false;
-            b.PlayerAp = 0;
             foreach (var e in b.Alive) LockIntent(s, b, e);
-            string Name(int idx) => idx == 0 ? "你" : EnemyName(BattleEnemyAt(b, idx)!);
+            string Name(int idx) => idx <= 0 ? ActorDisplayName(s, QueueActor(b, idx) ?? GameState.PlayerId) : EnemyName(BattleEnemyAt(b, idx)!);
             BattleLog(s, "行动顺序（速度）：" + string.Join(" → ", ordered.Select(x => $"{Name(x.idx)}({Fmt.Speed(x.speed)})"))
                          + (chase.Count > 0 ? "；追击：" + string.Join(" → ", chase.Select(x => Name(x.idx))) : ""));
         }
@@ -609,15 +661,18 @@ namespace Survival.Core.Engine
         private bool RoundStartBleed(GameState s)
         {
             var b = s.Battle!;
-            var body = s.Body;
-            if (body.BleedTriggers > 0)
-            {
-                s.Stats.Add(StatId.Health, -body.BleedDamage);
-                body.BleedTriggers--;
-                BattleLog(s, $"你流血，健康−{Fmt.N(body.BleedDamage)}（还剩{body.BleedTriggers}次）。");
-                if (body.BleedTriggers == 0) body.BleedDamage = 0;
-                if (s.Stats.Health <= 0) { BattleDeath(s, "出血"); return false; }
-            }
+            // B9a：我方每名在场成员各自流血（号位从前到后）；队友流血致死按队友战死，战斗继续
+            foreach (var id in AlliesOnField(b))
+                using (FocusOn(s, id))
+                {
+                    var body = s.Body;
+                    if (body.BleedTriggers <= 0) continue;
+                    s.Stats.Add(StatId.Health, -body.BleedDamage);
+                    body.BleedTriggers--;
+                    BattleLog(s, $"{Who(s)}流血，健康−{Fmt.N(body.BleedDamage)}（还剩{body.BleedTriggers}次）。");
+                    if (body.BleedTriggers == 0) body.BleedDamage = 0;
+                    if (s.Stats.Health <= 0) { BattleDeath(s, "出血"); if (s.Battle == null || s.Progress.Dead) return false; }
+                }
             foreach (var e in b.Alive.Where(e => e.BleedTriggers > 0).OrderBy(e => e.Pos).ToList())
             {
                 e.Hp -= e.BleedDamage;
@@ -625,7 +680,7 @@ namespace Survival.Core.Engine
                 BattleLog(s, $"{EnemyName(e)}流血，−{Fmt.N(e.BleedDamage)}。");
                 if (e.Hp <= 1e-9) KillEnemy(s, e);
                 else CheckFlee(s, e);
-                if (s.Stats.Health <= 0) { BattleDeath(s, s.Progress.LastDamageCause ?? "喷溅"); return false; }   // 膨胀感染者死亡喷溅
+                if (PlayerDownAfterSplash(s) || s.Battle == null) return false;   // 膨胀感染者死亡喷溅
             }
             if (!b.Alive.Any()) { FinishBattle(s, "victory", false); return false; }
             return true;
@@ -666,9 +721,12 @@ namespace Survival.Core.Engine
             }
             var idx = b.Queue[b.Cursor];
             var chase = IsPursuitSlot(b, b.Cursor);
-            if (idx == 0)
+            if (idx <= 0)
             {
-                StartPlayerActivation(s, chase);
+                // B9a：我方成员的激活；已战死（不在号位上）的跳过
+                var who = QueueActor(b, idx);
+                if (who == null || !AllyInBattle(b, who)) { b.Cursor++; return new BattleStepResult { Kind = BattleStepKind.EnemyActed, Text = "" }; }
+                StartPlayerActivation(s, who, chase);
                 return new BattleStepResult { Kind = s.Battle == null ? BattleStepKind.Ended : BattleStepKind.PlayerTurnStarted, Text = b.Log.LastOrDefault() ?? "" };
             }
             var e = BattleEnemyAt(b, idx);
@@ -679,17 +737,18 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>玩家激活开始：自己的出血 → 判死 → 清旧防御 → 恢复本次 AP。追击激活固定 2AP，不扣出血、不清防御（R03 §2）。</summary>
-        private void StartPlayerActivation(GameState s, bool pursuit = false)
+        private void StartPlayerActivation(GameState s, string actorId, bool pursuit = false)
         {
             var b = s.Battle!;
-            var body = s.Body;
+            // B9a：轮到谁，战斗视角（Player*/Stats/Skills 等）就切到谁，直到这次激活结束
+            b.ActiveAlly = actorId;
             b.ActingPursuit = pursuit;
             if (pursuit)
             {
                 b.PlayerAp = Config.CombatMath.PursuitAp;
                 b.ActivationAp = b.PlayerAp;
                 b.PlayerActing = true;
-                BattleLog(s, $"你追击：{b.PlayerAp}AP（速度优势带来的额外激活）。");
+                BattleLog(s, $"{Who(s)}追击：{b.PlayerAp}AP（速度优势带来的额外激活）。");
                 return;
             }
             // 出血改在大回合开始结算（R03 §4，见 RoundStartBleed）；这里只清旧防御、反击架势与架矛（持续到下一正常激活）、恢复 AP
@@ -698,10 +757,15 @@ namespace Survival.Core.Engine
             b.PlayerGuardSourceId = null;
             b.CounterFactor = 0;
             b.BraceCharges = 0;
-            b.PlayerAp = NormalActivationAp(s.Player);
+            b.Protections.Remove(actorId);   // B9a：保护/掩护到保护者下次正常激活开始清除
+            // 协同（command_07，B9a）：这次正常激活 AP+n（总数不超过 6），用掉即给施术者指挥经验
+            var bonus = b.Me.ApBonusNext;
+            b.Me.ApBonusNext = 0;
+            b.PlayerAp = NormalActivationAp(s.Player, bonus);
+            if (bonus > 0) GrantPendingCommandXp(s, b, "command_07");
             b.ActivationAp = b.PlayerAp;
             b.PlayerActing = true;
-            BattleLog(s, $"轮到你行动：{b.PlayerAp}AP。");
+            BattleLog(s, $"轮到{Who(s)}行动：{b.PlayerAp}AP。");
         }
 
         private void EndPlayerActivation(GameState s)
@@ -711,6 +775,7 @@ namespace Survival.Core.Engine
             b.PlayerAp = 0;
             b.PlayerActing = false;
             b.ActingPursuit = false;
+            b.ActiveAlly = "";
             b.Cursor++;
         }
 
@@ -720,8 +785,12 @@ namespace Survival.Core.Engine
         private void EndRound(GameState s)
         {
             var b = s.Battle!;
-            if (b.PlayerStagger && b.PlayerStaggerRound < b.Round) b.PlayerStagger = false;
-            b.PlayerSlowActive = false;
+            foreach (var id in MemberIds(b))
+            {
+                var f = b.Fighter(id);
+                if (f.Stagger && f.StaggerRound < b.Round) f.Stagger = false;
+                f.SlowActive = false;
+            }
             foreach (var e in b.Alive)
             {
                 e.SlowActive = false;
@@ -765,8 +834,9 @@ namespace Survival.Core.Engine
         {
             var b = s.Battle!;
             b.Ticks++;
-            // 每个同行角色按自己的段首状态计战斗段速率，世界只推进一次（B3 H10、COMP04）
-            var alive = WorldTick(s, actor => BattleSegment(s, actor), null, true);
+            // 每个同行角色按自己的段首状态计战斗段速率，世界只推进一次（B3 H10、COMP04）；世界 tick 按主角视角（B9a）
+            bool alive;
+            using (FocusOn(s, GameState.PlayerId)) alive = WorldTick(s, actor => BattleSegment(s, actor), null, true);
             if (!alive)
             {
                 // tick 本身致死：该 tick 已发生，不回滚、不补第二段；不提交胜利掉落
@@ -837,7 +907,7 @@ namespace Survival.Core.Engine
                 var a = Act(id);
                 if (a?.ItemId == null) continue;
                 var why = CommandBlocked(s, BattleCommand.Of(id));
-                var have = s.Items.Where(i => i.IsCarried && i.ItemId == a.ItemId).Sum(i => i.Count);
+                var have = s.Items.Where(i => CarriedByMe(s, i) && i.ItemId == a.ItemId).Sum(i => i.Count);
                 list.Add(new BattleCommandOption { Action = id, Label = $"{ActionName(id)}（随身×{have}）", Group = "item", Ap = a.ApCost, Available = why == null, Reason = why, TargetMode = "self" });
             }
             return list;
@@ -873,7 +943,7 @@ namespace Survival.Core.Engine
             {
                 var a = Act(id);
                 if (a?.ItemId == null) continue;
-                var have = s.Items.Where(i => i.IsCarried && i.ItemId == a.ItemId).Sum(i => i.Count);
+                var have = s.Items.Where(i => CarriedByMe(s, i) && i.ItemId == a.ItemId).Sum(i => i.Count);
                 list.Add(new BattleCommandOption
                 {
                     Action = id, Label = $"{ActionName(id)}（随身×{have}）", Group = "item", Ap = a.ApCost,
@@ -900,13 +970,13 @@ namespace Survival.Core.Engine
             if (instanceId.HasValue)
             {
                 var it = FindItem(s, instanceId.Value);
-                return it != null && it.IsCarried && it.ItemId == itemId && !IsSpoiled(s, it) ? it : null;
+                return it != null && CarriedByMe(s, it) && it.ItemId == itemId && !IsSpoiled(s, it) ? it : null;
             }
-            return s.Items.Where(i => i.IsCarried && i.ItemId == itemId && i.ReservedBy == null && !IsSpoiled(s, i))
+            return s.Items.Where(i => CarriedByMe(s, i) && i.ItemId == itemId && i.ReservedBy == null && !IsSpoiled(s, i))
                 .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).FirstOrDefault();
         }
 
-        private int CarriedCount(GameState s, string itemId) => s.Items.Where(i => i.IsCarried && i.ItemId == itemId).Sum(i => i.Count);
+        private int CarriedCount(GameState s, string itemId) => s.Items.Where(i => CarriedByMe(s, i) && i.ItemId == itemId).Sum(i => i.Count);
 
         /// <summary>
         /// 调整站位（Q80，指令 ID 沿用 swap）可去的我方槽：相邻且在 1—4 内（空位直接移入；有同侧角色则双方同意交换）。单人也可用。
@@ -934,7 +1004,8 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) return "角色已死亡";
             if (b == null) return "不在战斗中";
             if (DialogueLocked(s)) return DialogueLockedReason;
-            if (!b.PlayerActing) return "还没轮到你行动";
+            if (!b.PlayerActing) return ActingAlly(b) is string other && other != b.FocusId ? $"现在轮到{ActorDisplayName(s, other)}行动" : $"还没轮到{(b.FocusId == GameState.PlayerId ? "你" : ActorDisplayName(s, b.FocusId))}行动";
+            if (c.ActorId != null && c.ActorId != b.FocusId) return ActingAlly(b) is string act ? $"现在轮到{ActorDisplayName(s, act)}行动，不能替{ActorDisplayName(s, c.ActorId)}下指令" : "还没轮到你行动";
             // 武器技能与应急拳击（B7 R25，A06 §2）：解锁、冷却、AP、体力、耐久、弹药、使用位与目标
             if (IsSkillAction(c.Action) || c.Action == DesperatePunch)
             {
@@ -1122,7 +1193,7 @@ namespace Survival.Core.Engine
 
         /// <summary>本次攻击的实际噪声增量：武器噪声 + 本页武器“隐声”类词条（combat.noise），不低于 0（B6 R23）。</summary>
         public double AttackNoise(GameState s, WeaponConfig w) =>
-            Math.Max(0, NoiseGain(w) + (w.IsFists ? 0 : EquipmentEffects(s, GameState.PlayerId, s.Battle?.ActiveWeaponSlot).Noise));
+            Math.Max(0, NoiseGain(w) + (w.IsFists ? 0 : EquipmentEffects(s, MeId(s), s.Battle?.ActiveWeaponSlot).Noise));
 
         /// <summary>撤退率 sigmoid((己方有效速度−敌方最高有效速度)/3+0.7)×恐慌惩罚×低体力惩罚，结果自然在0—1。</summary>
         public (double chance, double energy, bool lowEnergy) RetreatChance(GameState s, BattleState b, CombatActionConfig? a = null)
@@ -1151,6 +1222,9 @@ namespace Survival.Core.Engine
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, c.RequestId);
             var b = s.Battle!;
+            // B9a：这条指令属于正在激活的成员；结算途中他若战死（例如击倒膨胀感染者被喷溅），激活已在 AllyDownInBattle 里结束
+            var actor = b.FocusId;
+            bool StillActing() => s.Battle != null && !s.Progress.Dead && ActingAlly(b) == actor;
             // 武器技能与应急拳击（B7 R25）：扣技能 AP 后按类型执行（攻击 / 格挡增益指挥医疗装填）
             if (IsSkillAction(c.Action) || c.Action == DesperatePunch)
             {
@@ -1159,7 +1233,7 @@ namespace Survival.Core.Engine
                 b.PlayerAp -= node?.Ap ?? Act(DesperatePunch)!.ApCost;
                 if (node != null && !_exec[node.Id].IsAttack) ExecuteNonAttack(s, b, c, node, _exec[node.Id], sw, swi);
                 else PlayerSkillAttack(s, b, c, sw, swi);
-                if (s.Battle == null || s.Progress.Dead) return ActionResult.Success();
+                if (!StillActing()) return ActionResult.Success();
                 if (b.PlayerAp <= 0) EndPlayerActivation(s);
                 return ActionResult.Success();
             }
@@ -1170,15 +1244,15 @@ namespace Survival.Core.Engine
             switch (c.Action)
             {
                 case "end_turn":
-                    BattleLog(s, "你结束了行动。");
+                    BattleLog(s, $"{Who(s)}结束了行动。");
                     b.PlayerAp = 0;
                     break;
                 case "guard":
                 {
                     var noShield = GuardShieldMissingReason(s);
                     var wear = GrantGuard(s, b, 1);
-                    BattleLog(s, b.PlayerGuardSourceId is int sid ? $"你举起{ItemName(FindItem(s, sid)?.ItemId ?? "")}格挡（下一次直接伤害×{Fmt.T(b.PlayerGuardFactor)}；{wear}）。"
-                        : $"你摆出防御姿态（下一次直接伤害×{Fmt.T(b.PlayerGuardFactor)}{(noShield != null ? "；" + noShield : "")}）。");
+                    BattleLog(s, b.PlayerGuardSourceId is int sid ? $"{Who(s)}举起{ItemName(FindItem(s, sid)?.ItemId ?? "")}格挡（下一次直接伤害×{Fmt.T(b.PlayerGuardFactor)}；{wear}）。"
+                        : $"{Who(s)}摆出防御姿态（下一次直接伤害×{Fmt.T(b.PlayerGuardFactor)}{(noShield != null ? "；" + noShield : "")}）。");
                     break;
                 }
                 case "breathe":
@@ -1187,7 +1261,7 @@ namespace Survival.Core.Engine
                     var e0 = s.Stats.Energy;
                     s.Stats.Add(StatId.Energy, a.RestoreEnergy);
                     b.Panic = Math.Max(Config.Panic.Range[0], b.Panic - a.ReducePanic);
-                    BattleLog(s, $"你调整呼吸：体力{Fmt.N(e0)}→{Fmt.N(s.Stats.Energy)}，恐慌{Fmt.N(b.Panic)}。");
+                    BattleLog(s, $"{Who(s)}调整呼吸：体力{Fmt.N(e0)}→{Fmt.N(s.Stats.Energy)}，恐慌{Fmt.N(b.Panic)}。");
                     break;
                 }
                 case "reload":
@@ -1196,7 +1270,7 @@ namespace Survival.Core.Engine
                     var took = TakeCarried(s, w.AmmoId!, need);
                     wi.LoadedAmmo += took;
                     wi.LoadedAmmoId = w.AmmoId;
-                    BattleLog(s, $"你装填{ItemName(w.AmmoId!)}{took}发（弹仓{wi.LoadedAmmo}/{w.MagazineCapacity}）。");
+                    BattleLog(s, $"{Who(s)}装填{ItemName(w.AmmoId!)}{took}发（弹仓{wi.LoadedAmmo}/{w.MagazineCapacity}）。");
                     break;
                 }
                 case "bandage":
@@ -1208,7 +1282,7 @@ namespace Survival.Core.Engine
                     ConsumeOne(s, it);
                     var parts = new List<string>();
                     ApplyMedicine(s, use, parts);
-                    BattleLog(s, $"你{ActionName(c.Action)}：{string.Join("，", parts)}。");
+                    BattleLog(s, $"{Who(s)}{ActionName(c.Action)}：{string.Join("，", parts)}。");
                     break;
                 }
                 case "swap":
@@ -1219,7 +1293,7 @@ namespace Survival.Core.Engine
                     MoveAlly(b, from, to);
                     var cost = a.Energy ?? 0;
                     s.Stats.Add(StatId.Energy, -cost);
-                    BattleLog(s, $"你调整站位：{PosName(from)}→{PosName(to)}{(mate != null ? "（与同伴交换）" : "")}（体力−{Fmt.N(cost)}）。");
+                    BattleLog(s, $"{Who(s)}调整站位：{PosName(from)}→{PosName(to)}{(mate != null ? "（与同伴交换）" : "")}（体力−{Fmt.N(cost)}）。");
                     break;
                 }
                 case "retreat":
@@ -1229,7 +1303,7 @@ namespace Survival.Core.Engine
                     s.Stats.Add(StatId.Energy, -energy);
                     if (s.Rng.NextDouble() < chance)
                     {
-                        BattleLog(s, $"撤退成功（{Fmt.Pct(chance)}）。");
+                        BattleLog(s, $"{(actor == GameState.PlayerId ? "" : ActorDisplayName(s, actor) + "带领全队")}撤退成功（{Fmt.Pct(chance)}）。");
                         FinishBattle(s, "retreat");
                         return ActionResult.Success();
                     }
@@ -1240,7 +1314,7 @@ namespace Survival.Core.Engine
                 default:
                     break;
             }
-            if (s.Battle != null && b.PlayerAp <= 0) EndPlayerActivation(s);
+            if (StillActing() && b.PlayerAp <= 0) EndPlayerActivation(s);
             return ActionResult.Success();
         }
 
@@ -1248,7 +1322,7 @@ namespace Survival.Core.Engine
         private int TakeCarried(GameState s, string itemId, int count)
         {
             var left = count;
-            foreach (var st in s.Items.Where(i => i.IsCarried && i.ItemId == itemId && i.ReservedBy == null).OrderBy(i => i.InstanceId).ToList())
+            foreach (var st in s.Items.Where(i => CarriedByMe(s, i) && i.ItemId == itemId && i.ReservedBy == null).OrderBy(i => i.InstanceId).ToList())
             {
                 if (left <= 0) break;
                 var n = Math.Min(left, st.Count);
@@ -1331,6 +1405,8 @@ namespace Survival.Core.Engine
         private void BattleDeath(GameState s, string cause)
         {
             var b = s.Battle;
+            // B9a：当前视角是队友时只是这名队友战死（遗物、其余恐慌+8），战斗继续；主角倒下才终局
+            if (b != null && b.FocusId != GameState.PlayerId) { AllyDownInBattle(s, b.FocusId, string.IsNullOrEmpty(cause) ? "伤势过重" : cause); return; }
             if (b != null) EmitLastRoundLog(s, b);
             Kill(s, cause);
             if (b != null)
@@ -1359,6 +1435,8 @@ namespace Survival.Core.Engine
         private void FinishBattle(GameState s, string outcome, bool tick = true)
         {
             var b = s.Battle!;
+            b.FocusOverride = null;
+            b.ActiveAlly = "";
             if (tick && !BattleTick(s)) return;
             EmitLastRoundLog(s, b);
             var loc = b.LocationId;
@@ -1382,14 +1460,24 @@ namespace Survival.Core.Engine
             }
             // 首战敌人已在这场倒下、却以撤退收场：也记首战完成并发教学物质（否则它已不在世界上、门控卡死；试玩修复 B7d-2）
             else if (TutorialEnemyKilled(s, b) && GrantTutorialReward(s, b) is string rr) lines.Add(rr);
-            var loss = Math.Min(Config.Panic.MoraleLossMax, b.Panic / Config.Panic.MoraleLossDivisor);
-            if (loss > 0) s.Stats.Add(StatId.Morale, -loss);
+            var me = b.Fighter(GameState.PlayerId);
+            var loss = Math.Min(Config.Panic.MoraleLossMax, me.Panic / Config.Panic.MoraleLossDivisor);
+            if (loss > 0) s.Actor(GameState.PlayerId).Stats.Add(StatId.Morale, -loss);
+            // B9a：每名存活参战队友按自己的恐慌峰值口径同样掉精神（R03 §5“每名角色”）
+            var mateLoss = new List<string>();
+            foreach (var id in AlliesOnField(b).Where(x => x != GameState.PlayerId))
+            {
+                var ml = Math.Min(Config.Panic.MoraleLossMax, b.Fighter(id).Panic / Config.Panic.MoraleLossDivisor);
+                if (ml <= 1e-9 || !s.Actors.TryGetValue(id, out var ma)) continue;
+                ma.Stats.Add(StatId.Morale, -ml);
+                mateLoss.Add($"{ActorDisplayName(s, id)}精神−{Fmt.N(ml)}");
+            }
             s.EncounterGraceUntil = s.GameMinute + Config.Encounters.PostExitRandomEncounterGraceMinutes;
             var head = outcome == "victory" ? "战斗胜利" : "撤退成功";
             // 撤退：只有场上确有倒下敌人的掉落/尸体时才写“放弃”（试玩修复 L3）
             var loot = outcome == "victory" ? (lines.Count > 0 ? $"战利品{string.Join("、", lines)}已放在{LocName(loc)}地面" : "没有战利品")
                 : b.Loot.Any(l => l.ItemId != null && l.Count > 0) ? "放弃了场上的尸体与掉落" : null;
-            var text = $"{head}：共{b.Round}轮（世界时间{Clock.Duration(b.Ticks * Tick)}）{(loss > 1e-9 ? $"，精神−{Fmt.N(loss)}" : "")}{(loot != null ? "；" + loot : "")}。";   // 试玩修复 B7c-1：精神没变时不写“精神−0.00”
+            var text = $"{head}：共{b.Round}轮（世界时间{Clock.Duration(b.Ticks * Tick)}）{(loss > 1e-9 ? $"，精神−{Fmt.N(loss)}" : "")}{(mateLoss.Count > 0 ? "，" + string.Join("、", mateLoss) : "")}{(loot != null ? "；" + loot : "")}。";   // 试玩修复 B7c-1：精神没变时不写“精神−0.00”
             BattleLog(s, text);
             s.Battle = null;
             Emit(s, GameEventKind.BattleEnd, text, null, outcome == "victory" ? b.Loot.Where(l => l.ItemId != null).Select(l => l.ItemId!) : null);

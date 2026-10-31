@@ -639,6 +639,8 @@ namespace Survival.Core.Config
         public bool PenaltiesSelectHighestOnly { get; set; }
         /// <summary>"min(5,panic/20)"。</summary>
         public string PostBattleMoraleLoss { get; set; } = "";
+        /// <summary>队友战死时其余参战我方的恐慌增量（R03 §5“队友死亡使其余队员恐慌+8，一次事件只触发一次”；B9a）。</summary>
+        public double AllyDeathGain { get; set; }
         public bool ClearAfterBattle { get; set; }
 
         [JsonIgnore] public double InitialBase => Formula.Num(Initial, 0);

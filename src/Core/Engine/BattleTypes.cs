@@ -11,6 +11,12 @@ namespace Survival.Core.Engine
         /// <summary>切换武器页（switch_weapon）的目标页号 1/2；用药的物品实例（为空时取随身最早一份）。</summary>
         public int? ItemInstanceId { get; set; }
         public string? RequestId { get; set; }
+        /// <summary>
+        /// 下指令的我方成员（B9a，R113；BattleCommand.ActorId）：必须是正在激活的那一名；为 null 时按当前激活者（旧调用与测试）。
+        /// </summary>
+        public string? ActorId { get; set; }
+        /// <summary>以友方为目标的指挥/医疗/保护技能的目标 actorId（B9a）；为 null 时以自己为目标。</summary>
+        public string? AllyTarget { get; set; }
 
         public static BattleCommand Of(string action, int? target = null, int? item = null) =>
             new BattleCommand { Action = action, Target = target, ItemInstanceId = item };
@@ -48,7 +54,9 @@ namespace Survival.Core.Engine
         public int? ItemInstanceId { get; set; }
         /// <summary>该指令当前可以选的目标序号。</summary>
         public List<int> Targets { get; set; } = new List<int>();
-        /// <summary>single 点一个目标 / pair 点一个目标打相邻双位 / area 点任一亮起目标打全部 / self 无目标就近确认（B7）。</summary>
+        /// <summary>以友方为目标的技能（TargetMode "ally"，B9a）当前可以选的我方 actorId（按号位）。</summary>
+        public List<string> AllyTargets { get; set; } = new List<string>();
+        /// <summary>single 点一个目标 / pair 点一个目标打相邻双位 / area 点任一亮起目标打全部 / self 无目标就近确认（B7）/ ally 点我方一名成员（B9a，多人时的指挥/医疗/保护）。</summary>
         public string TargetMode { get; set; } = "single";
         /// <summary>技能节点 ID（A06 §2）；通用指令为 null。</summary>
         public string? NodeId { get; set; }

@@ -210,6 +210,11 @@ namespace Survival.Core.State
         public double FearChance { get; set; }
         public bool Frightened { get; set; }
         public double FearPanic { get; set; }
+        /// <summary>掩护/坚守给的“下一次直接伤害×CoverFactor”到 CoverUntilRound 轮末（B9a；shield_07/shield_10）；1 为没有。</summary>
+        public double CoverFactor { get; set; } = 1;
+        public int CoverUntilRound { get; set; }
+        /// <summary>协同（command_07）：下一次正常激活 AP+ApBonusNext（总数不超过 6、不加追击；B9a）。</summary>
+        public int ApBonusNext { get; set; }
 
         public AllyCombatState Clone()
         {
@@ -375,8 +380,26 @@ namespace Survival.Core.State
             return f;
         }
 
-        /// <summary>主角的战斗状态；下列 Player*/Panic 等旧名属性都转发到它（M186 只重构不改行为）。</summary>
-        [Newtonsoft.Json.JsonIgnore] public AllyCombatState Me => Fighter(GameState.PlayerId);
+        /// <summary>
+        /// 本场入战的我方成员（B9a，R113）：按入场顺序，主角在首位；队列里主角编码 0、第 k 名（k≥1）编码 −k（GameEngine.QueueCode）。
+        /// 旧档为空，视为只有主角。死亡后仍留在表里（编码不变），只从 Allies 号位清出。
+        /// </summary>
+        public List<string> Members { get; set; } = new List<string>();
+
+        /// <summary>正在激活（等待指令）的我方成员 actorId；没有人在激活为 ""（旧档主角激活时也是 ""，按主角）。</summary>
+        public string ActiveAlly { get; set; } = "";
+
+        /// <summary>引擎内部临时“当前视角”（结算某名我方受击、出血、治疗目标时设定；不存档）。null 时取激活中的成员，否则主角。</summary>
+        [Newtonsoft.Json.JsonIgnore] public string? FocusOverride { get; set; }
+
+        /// <summary>
+        /// 当前视角的我方成员（B9a）：Player*/Panic 等旧名属性、GameState.Player 与 Stats/Body/Skills 都转发到它——
+        /// 轮到哪名队友，界面与指令就作用于谁；没有人在激活时为主角。
+        /// </summary>
+        [Newtonsoft.Json.JsonIgnore] public string FocusId => FocusOverride ?? (string.IsNullOrEmpty(ActiveAlly) ? GameState.PlayerId : ActiveAlly);
+
+        /// <summary>当前视角成员的战斗状态；下列 Player*/Panic 等旧名属性都转发到它（M186 起；B9a 起随激活者切换）。</summary>
+        [Newtonsoft.Json.JsonIgnore] public AllyCombatState Me => Fighter(FocusId);
 
         /// <summary>旧档（schema ≤ 14）BattleState 顶层字段名 → AllyCombatState 字段名（读档预处理搬进 Fighters.p0）。</summary>
         public static readonly IReadOnlyList<(string Old, string New)> LegacyFighterFields = new (string, string)[]
@@ -435,6 +458,7 @@ namespace Survival.Core.State
             c.Initiative = new List<double>(Initiative);
             c.Enemies = Enemies.Select(e => e.Clone()).ToList();
             c.Allies = new List<string>(Allies);
+            c.Members = new List<string>(Members);
             c.Protections = new Dictionary<string, string>(Protections);
             c.Fighters = Fighters.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.CommandXp = new List<string>(CommandXp);

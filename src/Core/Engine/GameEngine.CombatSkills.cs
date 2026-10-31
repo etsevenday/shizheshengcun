@@ -63,7 +63,7 @@ namespace Survival.Core.Engine
         {
             var kindBase = Config.SkillKindBaseEnergy.TryGetValue(w.SkillId, out var kb) && kb > 0 ? kb : 0;
             var baseCost = kindBase > 0 ? n.BaseEnergy * w.EnergyCost / kindBase : n.BaseEnergy;
-            var factor = w.IsFists ? 1 : EquipmentEffects(s, GameState.PlayerId, page ?? s.Battle?.ActiveWeaponSlot ?? DefaultWeaponPage(s)).EnergyCostFactor;
+            var factor = w.IsFists ? 1 : EquipmentEffects(s, MeId(s), page ?? s.Battle?.ActiveWeaponSlot ?? DefaultWeaponPage(s)).EnergyCostFactor;
             return SkillEnergyCost(baseCost, SkillLevel(s, w.SkillId)) * factor;
         }
 
@@ -96,7 +96,7 @@ namespace Survival.Core.Engine
 
         /// <summary>主角穿着的护拳绑带写的普通拳击目标位（"12"）；没穿为 null。只在空槽徒手页由 SkillTargetPositions 使用。</summary>
         public string? WrapsPunchTargets(GameState s) =>
-            WornItem(s, GameState.PlayerId, EquipSlots.CombatAccessory) is ItemInstance it && Gear(it.ItemId) is GearConfig g ? g.UnarmedBasicTargets : null;
+            WornItem(s, MeId(s), EquipSlots.CombatAccessory) is ItemInstance it && Gear(it.ItemId) is GearConfig g ? g.UnarmedBasicTargets : null;
 
         /// <summary>专长射击：霰弹枪改为对敌方 1、2 号位各一击（A06 §2、A05 霰弹枪“散布”）。</summary>
         public static bool IsAreaShot(SkillExecConfig x, WeaponConfig w) => x.AreaWeapons.Contains(w.Id);
@@ -178,7 +178,17 @@ namespace Survival.Core.Engine
                     Action = id, Label = n.Name, Group = id == BasicAttack ? "attack" : "move", Ap = n.Ap, Energy = SkillEnergy(s, n, w),
                     NeedsTarget = mode is "single" or "pair" or "suffix", TargetMode = mode, NodeId = n.Id, CooldownRounds = n.CooldownRounds, EffectText = n.Text,
                 };
-                if (inBattle && b != null)
+                if (inBattle && b != null && TargetsAlly(x) && AllyCount(b) > 1)
+                {
+                    // B9a：多人时指挥/医疗/保护点我方成员当目标（单人仍按自用就近确认）
+                    opt.TargetMode = "ally";
+                    foreach (var a in AllyTargetsOf(s, b, x))
+                        if (CommandBlocked(s, new BattleCommand { Action = id, AllyTarget = a }) == null) opt.AllyTargets.Add(a);
+                    opt.Reason = opt.AllyTargets.Count > 0 ? null
+                        : CommandBlocked(s, new BattleCommand { Action = id, AllyTarget = AllyTargetsOf(s, b, x).FirstOrDefault() ?? (SelfTargetAllowed(x) ? b.FocusId : null) });
+                    if (opt.AllyTargets.Count == 0 && opt.Reason == null) opt.Reason = "没有可选的友方目标";
+                }
+                else if (inBattle && b != null)
                 {
                     if (mode == "area")
                     {
@@ -352,7 +362,7 @@ namespace Survival.Core.Engine
             var m = Config.CombatMath;
             var w = sp.Weapon;
             var lv = SkillLevel(s, w.SkillId);
-            var gear = EquipmentEffects(s, GameState.PlayerId, sp.Page);
+            var gear = EquipmentEffects(s, MeId(s), sp.Page);
             var marked = EnemyMarked(b, t);
             var bonus = sp.AccuracyBonus + (marked ? t.MarkBonus + w.Trait("markedAccuracy") : 0) + (!sp.Reaction && InspireActive(b) ? b.InspireBonus : 0);
             // Q67：我方攻击能力另加基础 8（攻击能力项，不是命中率百分点）；疲劳一次×0.95
@@ -586,9 +596,9 @@ namespace Survival.Core.Engine
             var xpNote = AttackXp(s, weapon.SkillId, hitTargets);
             var midLines = logMark <= b.Log.Count ? b.Log.GetRange(logMark, b.Log.Count - logMark) : new List<string>();
             if (midLines.Count > 0) b.Log.RemoveRange(logMark, midLines.Count);
-            BattleLog(s, $"你{(sp.Desperate ? ActionName(DesperatePunch) : sp.Node!.Name)}{(sp.Desperate ? "" : $"（{weapon.Name}）")}：{string.Join("，", parts)}{(spent.Count > 0 ? "；" + string.Join("，", spent) : "")}{xpNote}。");
+            BattleLog(s, $"{Who(s)}{(sp.Desperate ? ActionName(DesperatePunch) : sp.Node!.Name)}{(sp.Desperate ? "" : $"（{weapon.Name}）")}：{string.Join("，", parts)}{(spent.Count > 0 ? "；" + string.Join("，", spent) : "")}{xpNote}。");
             b.Log.AddRange(midLines);
-            if (s.Stats.Health <= 0) { BattleDeath(s, s.Progress.LastDamageCause ?? "喷溅"); return; }
+            if (PlayerDownAfterSplash(s) || s.Battle == null) return;
             CheckVictory(s);
         }
 
@@ -740,7 +750,7 @@ namespace Survival.Core.Engine
             var me = PlayerPos(b);
             var mate = AllyAt(b, me - 1);
             MoveAlly(b, me, me - 1);
-            return $"你前移到{PosName(PlayerPos(b))}{(mate != null ? "（与同伴交换）" : "")}";
+            return $"{(b.FocusId == GameState.PlayerId ? "你" : "")}前移到{PosName(PlayerPos(b))}{(mate != null ? "（与同伴交换）" : "")}";
         }
     }
 }

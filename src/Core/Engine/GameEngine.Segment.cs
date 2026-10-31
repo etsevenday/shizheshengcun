@@ -642,7 +642,7 @@ namespace Survival.Core.Engine
                 if (a != null) Release(s, a, loc);
             s.Main = null;
             s.Sub = null;
-            s.Stats.Health = 0;
+            s.Actor(GameState.PlayerId).Stats.Health = 0;   // B9a：战斗中 s.Stats 可能指向当前视角的队友，主角终局只改主角
             s.Progress.Dead = true;
             s.Progress.Death = new DeathInfo
             {

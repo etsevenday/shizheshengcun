@@ -340,7 +340,7 @@ namespace Survival.Core.Engine
         /// Q97 选 A（R03/A06 本轮章）：相关我方架矛状态当前是否生效——与执行时 TryBrace 同一个状态：架势还有剩余迎击次数
         /// （到你下次正常激活开始清除，或次数用完）。不看背包/武器槽里有没有矛；真正能否迎击仍在事件发生时按来源页、己位/射程、耐久、次数、存活重验。
         /// </summary>
-        public static bool BraceActive(BattleState b) => b.BraceCharges > 0;
+        public static bool BraceActive(BattleState b) => MemberIds(b).Any(id => AllyInBattle(b, id) && b.Fighter(id).BraceCharges > 0);
 
         /// <summary>Q97：迫近意图的括注——架矛生效写“触发架矛”，否则写“算主动前移”（迫近照旧算一次主动前移，只改显示）。</summary>
         public static string ApproachBraceTag(BattleState b) => BraceActive(b) ? "触发架矛" : "算主动前移";
@@ -427,10 +427,19 @@ namespace Survival.Core.Engine
                     BattleLog(s, $"{EnemyName(e)}举盾防御（下一次受到的直接伤害×{Fmt.T(Config.CombatMath.GuardFactor)}）。");
                     return;
                 case "howl":
-                    b.Panic = Math.Min(Config.Panic.Range[1], b.Panic + st.Panic);
-                    b.PanicPeak = Math.Max(b.PanicPeak, b.Panic);
-                    BattleLog(s, $"{EnemyName(e)}{(st.Verb != "" ? st.Verb : "嚎叫")}，你的恐慌+{Fmt.T(st.Panic)}（{Fmt.N(b.Panic)}）。");
+                {
+                    // B9a：嚎叫没有单体目标，在场的我方每人恐慌各+（待确认 Q101）；单人时文字与原来相同
+                    var heard = new List<string>();
+                    foreach (var id in AlliesOnField(b))
+                        using (FocusOn(s, id))
+                        {
+                            b.Panic = Math.Min(Config.Panic.Range[1], b.Panic + st.Panic);
+                            b.PanicPeak = Math.Max(b.PanicPeak, b.Panic);
+                            heard.Add(id == GameState.PlayerId ? $"你的恐慌+{Fmt.T(st.Panic)}（{Fmt.N(b.Panic)}）" : $"{Who(s)}恐慌+{Fmt.T(st.Panic)}（{Fmt.N(b.Panic)}）");
+                        }
+                    BattleLog(s, $"{EnemyName(e)}{(st.Verb != "" ? st.Verb : "嚎叫")}，{string.Join("，", heard)}。");
                     return;
+                }
                 case "charge_prepare":
                     e.Charged = true;
                     BattleLog(s, $"{EnemyName(e)}蓄力，下轮{(AllSteps(cfg).FirstOrDefault(x => x.Kind == "charge")?.Verb is string v && v != "" ? v : "冲撞")}。");
@@ -636,13 +645,45 @@ namespace Survival.Core.Engine
             if (shoot) e.Mag--;
             var a = Math.Max(Config.CombatMath.MinAccuracy, cfg.AttackRating);
             if (e.Stagger) { a *= Config.Statuses.Stagger.NextAttackAccuracyFactor; e.Stagger = false; e.StaggerSticky = false; }
-            // 打到队友（本批只有多人构造的测试会走到：队友入场随 B9 多人战斗）：命中/伤害/护甲/死亡按本人，附加效果随多人战斗再做
-            foreach (var id in targets.Where(x => x != GameState.PlayerId)) AttackCompanion(s, b, e, cfg, id, st, plain, factor, verb, a);
-            if (!targets.Contains(GameState.PlayerId) || s.Battle == null) return;
-            var p = HitChance(a, Config.Scope.BasePlayerDodge);
+            // B9a：抽中（或扫到）谁就按谁本人结算——命中、伤害、护甲、格挡、磨损、感染、控制、出血、破甲、位移、恐慌与反击（B8b-9 未做部分）
+            foreach (var id in targets)
+            {
+                if (s.Battle == null || s.Progress.Dead || !e.Alive) return;
+                if (!AllyInBattle(b, id)) continue;
+                var hit = id;
+                // 我方保护（shield_03 保护，R03 §4）：单体攻击抽定原目标后由保护者接下；范围攻击（扫击）不转移、不为保护者二次抽签
+                if (!sweep && AllyProtector(b, id) is string guard)
+                {
+                    b.Protections.Remove(guard);
+                    BattleLog(s, $"{ActorDisplayName(s, guard)}挡在{ActorDisplayName(s, id)}前面，接下{EnemyName(e)}的{verb}。");
+                    GrantSupportXp(s, b, "shield_03", guard, id, "shield");   // A06 §3：发生有效拦截才得保护经验（每场每目标一次）
+                    hit = guard;
+                }
+                using (FocusOn(s, hit)) AttackOneAlly(s, b, e, cfg, st, plain, factor, verb, a, bite, kind);
+            }
+        }
+
+        /// <summary>正在保护某名我方的我方保护者（存活在场）；没有为 null。</summary>
+        public static string? AllyProtector(BattleState b, string target)
+        {
+            foreach (var kv in b.Protections)
+                if (kv.Value == target && kv.Key != target && AllyInBattle(b, kv.Key)) return kv.Key;
+            return null;
+        }
+
+        /// <summary>
+        /// 敌人这一击打在当前视角的我方成员身上（调用时已 FocusOn 该成员；主角时文字与 B8b 前完全相同）：
+        /// 命中按本人闪避档、伤害−本人护甲（被破甲时减）再乘格挡；防具磨损；丧尸咬击正伤判本人感染；减速/失衡按本人控制抗性；出血、破甲、拉扯/击退按本人；
+        /// 恐慌按本人；健康归零：主角终局，队友战死（遗物、其余恐慌+8）；命中后本人架着反击就反击。
+        /// </summary>
+        private void AttackOneAlly(GameState s, BattleState b, BattleEnemy e, EnemyConfig cfg, EnemyIntentStepConfig st, bool plain, double factor, string verb, double a, bool bite, string kind)
+        {
+            var me = MeId(s) == GameState.PlayerId;
+            var tn = me ? "" : Who(s);
+            var p = HitChance(a, MyBaseDodge(s));
             if (s.Rng.NextDouble() >= p)
             {
-                BattleLog(s, $"{EnemyName(e)}{verb}落空（命中率{Fmt.Pct(p)}）。");
+                BattleLog(s, $"{EnemyName(e)}{verb}{tn}落空（命中率{Fmt.Pct(p)}）。");
                 e.NextHitFactor = 1;
                 return;
             }
@@ -657,13 +698,17 @@ namespace Survival.Core.Engine
                 // 拉扯（A09 攀附感染者，Q79/Q80）：0 直接伤害，但合法命中后照判控制，成功则真实前移一格（单人也移；1 号位边界不移、不判控制）
                 var px = new List<string>();
                 DisplacePlayer(s, b, -Math.Max(1, st.Pull), "pull", px);
-                BattleLog(s, $"{EnemyName(e)}{verb}命中（不造成伤害）：{string.Join("，", px)}。");
+                BattleLog(s, $"{EnemyName(e)}{verb}{tn}命中（不造成伤害）：{string.Join("，", px)}。");
                 TryCounter(s, b, e);
                 return;
             }
-            // 主角护甲 = 基础0 + 装备护甲（≤0.9）− 被破甲（最低0）；先按磨损前的护甲算，再磨损防具（B6 R23、A05 §2）
+            // 护甲 = 基础（主角 0，队友人物档）+ 装备护甲（≤0.9）− 被破甲（最低0）；先按磨损前的护甲算，再磨损防具（B6 R23、A05 §2）
             var dmg = Math.Max(0, raw - Math.Max(0, PlayerArmor(s) - (PlayerArmorBroken(b) ? b.PlayerArmorBreak : 0)));
             if (dmg > 0 && b.PlayerNextDamageFactor < 1) { dmg *= b.PlayerNextDamageFactor; b.PlayerNextDamageFactor = 1; }   // 救援医疗箱“稳定”
+            var covered = false;
+            if (dmg > 0 && b.Me.CoverFactor < 1 && b.Me.CoverUntilRound >= b.Round) { dmg *= b.Me.CoverFactor; covered = true; }   // 掩护/坚守（B9a）：下一次直接伤害×0.8
+            var coverFactor = b.Me.CoverFactor;
+            if (covered) { b.Me.CoverFactor = 1; b.Me.CoverUntilRound = 0; }
             var guarded = false;
             if (b.PlayerGuard && dmg > 0)
             {
@@ -674,98 +719,69 @@ namespace Survival.Core.Engine
                 guarded = true;
             }
             // 防具受到正直接伤害（扣甲前）磨损 1（A05 §2，B4 H7）；耐久 0 时防具效果暂停但仍穿着
-            var armorWear = raw > 0 ? WearArmor(s, GameState.PlayerId) : "";
+            var armorWear = raw > 0 ? WearArmor(s, MeId(s)) : "";
             if (!plain && st.ArmorBreak > 0)
             {
                 var on = PlayerArmorBroken(b);
                 b.PlayerArmorBreak = on ? Math.Max(b.PlayerArmorBreak, st.ArmorBreak) : st.ArmorBreak;
                 b.PlayerArmorBreakUntilRound = Math.Max(on ? b.PlayerArmorBreakUntilRound : 0, b.Round + st.ArmorBreakRounds);
-                extra.Add($"你被破甲（护甲−{Fmt.T(b.PlayerArmorBreak)}，到第{b.PlayerArmorBreakUntilRound}轮末）");
+                extra.Add($"{Who(s)}被破甲（护甲−{Fmt.T(b.PlayerArmorBreak)}，到第{b.PlayerArmorBreakUntilRound}轮末）");
             }
             // 击退（Q80）：命中（含被护甲完全挡住）后判控制，成功则真实后移一格；4 号位边界不移、不判控制，伤害照算
             if (!plain && st.Knockback > 0) DisplacePlayer(s, b, st.Knockback, "knockback", extra);
             if (dmg <= 0)
             {
                 if (armorWear != "") extra.Add(armorWear);
-                BattleLog(s, $"{EnemyName(e)}{verb}被完全挡住{(extra.Count > 0 ? "（" + string.Join("，", extra) + "）" : "")}。");
+                BattleLog(s, $"{EnemyName(e)}{verb}{tn}被完全挡住{(extra.Count > 0 ? "（" + string.Join("，", extra) + "）" : "")}。");
                 TryCounter(s, b, e);
                 return;
             }
             s.Stats.Add(StatId.Health, -dmg);
-            s.Progress.LastDamageCause = $"被{EnemyName(e)}{verb}";
+            var cause = $"被{EnemyName(e)}{verb}";
+            if (me) s.Progress.LastDamageCause = cause;
             b.Panic = Math.Min(Config.Panic.Range[1], b.Panic + dmg * Config.Panic.DamageGainFactor);
             b.PanicPeak = Math.Max(b.PanicPeak, b.Panic);
             if (guarded) extra.Insert(0, $"格挡×{Fmt.T(b.PlayerGuardFactor)}");
+            if (covered) extra.Insert(0, $"掩护×{Fmt.T(coverFactor)}");
             if (armorWear != "") extra.Add(armorWear);
             if (s.Stats.Health <= 0)
             {
-                BattleLog(s, $"{EnemyName(e)}{verb}命中，健康−{Fmt.N(dmg)}。");
-                BattleDeath(s, s.Progress.LastDamageCause);
+                BattleLog(s, $"{EnemyName(e)}{verb}命中{tn}，健康−{Fmt.N(dmg)}。");
+                BattleDeath(s, cause);
                 return;
             }
             if (bite)
             {
-                // 只有丧尸咬击命中且造成正直接伤害才判一次病毒暴露，结果随事务保存（v0.6 §09、A09 §4）
+                // 只有丧尸咬击命中且造成正直接伤害才判一次病毒暴露，结果随事务保存（v0.6 §09、A09 §4）；队友按本人免疫判，不复制饱饱（R03 §5）
                 if (cfg.IsZombie)
                 {
                     var infectedBefore = s.Body.Infected;
                     var hit = ExposeToVirus(s, out var chance);
-                    extra.Add(hit ? (infectedBefore ? $"病毒暴露成功（{Fmt.Pct(chance)}），病毒+{Fmt.T(Config.Infection.OnRepeatedSuccessfulExposure.LoadDelta)}" : $"病毒暴露成功（{Fmt.Pct(chance)}），你被感染了") : $"病毒暴露判定未感染（{Fmt.Pct(chance)}）");
+                    extra.Add(hit ? (infectedBefore ? $"病毒暴露成功（{Fmt.Pct(chance)}），{tn}病毒+{Fmt.T(Config.Infection.OnRepeatedSuccessfulExposure.LoadDelta)}" : $"病毒暴露成功（{Fmt.Pct(chance)}），{Who(s)}被感染了") : $"病毒暴露判定未感染（{Fmt.Pct(chance)}）");
                 }
             }
             else if (!plain)
             {
                 if (st.Control is "slow" or "stagger")
                 {
-                    // 减速/失衡是控制：命中后再判，主角基础控制抗性 5（Q63；位移抵抗不防减速/失衡），稳态期间+30（R03 §4）
+                    // 减速/失衡是控制：命中后再判，基础控制抗性（主角 5，队友人物档；位移抵抗不防减速/失衡），稳态期间+30（R03 §4）
                     var steady = b.PlayerSteadyUntilRound;
                     if (RollControl(s, b, PlayerControlResist(s, b, st.Control), ref steady, out var cc))
                     {
                         b.PlayerSteadyUntilRound = steady;
-                        if (st.Control == "slow") { b.PlayerSlowPending = true; extra.Add($"你被{st.Verb}，下轮速度−{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}（控制{Fmt.Pct(cc)}）"); }
-                        else { b.PlayerStagger = true; b.PlayerStaggerRound = b.Round; extra.Add($"你失衡了（控制{Fmt.Pct(cc)}）"); }
+                        if (st.Control == "slow") { b.PlayerSlowPending = true; extra.Add($"{Who(s)}被{st.Verb}，下轮速度−{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}（控制{Fmt.Pct(cc)}）"); }
+                        else { b.PlayerStagger = true; b.PlayerStaggerRound = b.Round; extra.Add($"{Who(s)}失衡了（控制{Fmt.Pct(cc)}）"); }
                     }
-                    else extra.Add($"你稳住了，没有被{(st.Control == "slow" ? "扯慢" : "打得失衡")}（控制{Fmt.Pct(cc)}）");
+                    else extra.Add($"{Who(s)}稳住了，没有被{(st.Control == "slow" ? "扯慢" : "打得失衡")}（控制{Fmt.Pct(cc)}）");
                 }
                 if (st.BleedPct > 0 && s.Rng.NextDouble() * 100 < st.BleedPct)
                 {
                     ApplyPlayerBleed(s);
-                    extra.Add($"你开始出血（{Fmt.T(s.Body.BleedDamage)}×{s.Body.BleedTriggers}）");
+                    extra.Add($"{Who(s)}开始出血（{Fmt.T(s.Body.BleedDamage)}×{s.Body.BleedTriggers}）");
                 }
             }
-            BattleLog(s, $"{EnemyName(e)}{verb}命中，健康−{Fmt.N(dmg)}（恐慌{Fmt.N(b.Panic)}）{(extra.Count > 0 ? "：" + string.Join("，", extra) : "")}。");
+            BattleLog(s, $"{EnemyName(e)}{verb}命中{tn}，健康−{Fmt.N(dmg)}（{(me ? "" : tn + "剩" + Fmt.N(Math.Max(0, s.Stats.Health)) + "，")}恐慌{Fmt.N(b.Panic)}）{(extra.Count > 0 ? "：" + string.Join("，", extra) : "")}。");
             TryCounter(s, b, e);
-        }
-
-        /// <summary>
-        /// 敌人这次攻击抽中（或扫到）的是队友（Q91；队友入场随 B9 多人战斗，本批只有多人构造的测试会走到）：
-        /// 命中率按本人闪避档、伤害=抽值×倍率×下一击增益×虚弱−本人护甲（基础档+装备），防具照常磨损；健康归零按队友死亡（遗物等）处理。
-        /// 咬击感染、控制、出血、破甲、拉扯/击退的位移、恐慌与反击只对主角实现，打到队友时不结算（开发计划 v0.9 B8b.4）。
-        /// </summary>
-        private void AttackCompanion(GameState s, BattleState b, BattleEnemy e, EnemyConfig cfg, string id, EnemyIntentStepConfig st, bool plain, double factor, string verb, double accuracy)
-        {
-            if (!s.Actors.TryGetValue(id, out var actor) || actor.Stats.Health <= 0) return;
-            var name = ActorDisplayName(s, id);
-            var prof = ActorProfile(s, id);
-            var p = HitChance(accuracy, prof?.Evasion ?? Config.Scope.BasePlayerDodge);
-            if (s.Rng.NextDouble() >= p)
-            {
-                BattleLog(s, $"{EnemyName(e)}{verb}{name}落空（命中率{Fmt.Pct(p)}）。");
-                e.NextHitFactor = 1;
-                return;
-            }
-            if (!plain && st.Kind == "pull") { BattleLog(s, $"{EnemyName(e)}{verb}命中{name}（不造成伤害）。"); return; }
-            var raw = (cfg.DamageMin + s.Rng.NextDouble() * (cfg.DamageMax - cfg.DamageMin)) * factor;
-            if (e.NextHitFactor > 1) { raw *= e.NextHitFactor; e.NextHitFactor = 1; }
-            if (EnemyWeak(b, e)) raw *= e.WeakFactor;
-            if (st.Kind == "charge") e.Charged = false;
-            var armor = Math.Max(0, Math.Min(Config.Equipment.Limits.ArmorCap, (prof?.BaseArmor ?? Config.Scope.BasePlayerArmor) + EquipmentEffects(s, id, 0).Armor));
-            var dmg = Math.Max(0, raw - armor);
-            var wear = raw > 0 ? WearArmor(s, id) : "";
-            if (dmg <= 0) { BattleLog(s, $"{EnemyName(e)}{verb}{name}被完全挡住{(wear != "" ? "（" + wear + "）" : "")}。"); return; }
-            actor.Stats.Add(StatId.Health, -dmg);
-            BattleLog(s, $"{EnemyName(e)}{verb}命中{name}，健康−{Fmt.N(dmg)}（{name}剩{Fmt.N(Math.Max(0, actor.Stats.Health))}）{(wear != "" ? "：" + wear : "")}。");
-            if (actor.Stats.Health <= 0) CompanionDown(s, actor, $"被{EnemyName(e)}{verb}");
         }
 
         /// <summary>
@@ -780,30 +796,39 @@ namespace Survival.Core.Engine
             var verb = delta < 0 ? "拉动" : "击退";
             if (to < 1 || to > Config.Scope.Slots.Count)
             {
-                extra.Add($"你已在{PosName(from)}，无法再被{verb}（不判控制）");
+                extra.Add($"{Who(s)}已在{PosName(from)}，无法再被{verb}（不判控制）");
                 return;
             }
             var steady = b.PlayerSteadyUntilRound;
             if (!RollControl(s, b, PlayerControlResist(s, b, status), ref steady, out var cc))
             {
-                extra.Add($"你稳住了，没有被{verb}（控制{Fmt.Pct(cc)}）");
+                extra.Add($"{Who(s)}稳住了，没有被{verb}（控制{Fmt.Pct(cc)}）");
                 return;
             }
             b.PlayerSteadyUntilRound = steady;
             var mate = AllyAt(b, to);
             MoveAlly(b, from, to);
-            extra.Add($"你被{verb}到{PosName(to)}{(mate != null ? "（与同伴交换）" : "")}（控制{Fmt.Pct(cc)}）");
+            extra.Add($"{Who(s)}被{verb}到{PosName(to)}{(mate != null ? "（与同伴交换）" : "")}（控制{Fmt.Pct(cc)}）");
         }
 
         /// <summary>膨胀感染者死亡时喷溅我方 1、2 号位：各 H−值，护甲照算，不判感染（A09 §1）。</summary>
         private void DeathSplash(GameState s, BattleState b, BattleEnemy e, EnemyConfig cfg)
         {
-            if (cfg.DeathSplash <= 0 || s.Progress.Dead || PlayerPos(b) > 2) return;
-            var dmg = Math.Max(0, cfg.DeathSplash - Math.Max(0, PlayerArmor(s) - (PlayerArmorBroken(b) ? b.PlayerArmorBreak : 0)));
-            if (dmg <= 0) { BattleLog(s, $"{cfg.Name}死亡喷溅被护甲挡住。"); return; }
-            s.Stats.Add(StatId.Health, -dmg);
-            s.Progress.LastDamageCause = $"{cfg.Name}死亡喷溅";
-            BattleLog(s, $"{cfg.Name}死亡喷溅：你健康−{Fmt.N(dmg)}（不感染）。");
+            if (cfg.DeathSplash <= 0 || s.Progress.Dead) return;
+            // B9a：我方 1、2 号位上的每名成员各受一次（护甲各自算）；队友因此倒下按队友战死，主角倒下由调用方终局（PlayerDownAfterSplash）
+            foreach (var id in EnemyTargetCandidates(b, FrontSlots))
+            {
+                if (s.Battle == null || s.Progress.Dead) return;
+                using (FocusOn(s, id))
+                {
+                    var dmg = Math.Max(0, cfg.DeathSplash - Math.Max(0, PlayerArmor(s) - (PlayerArmorBroken(b) ? b.PlayerArmorBreak : 0)));
+                    if (dmg <= 0) { BattleLog(s, $"{cfg.Name}死亡喷溅被{(id == GameState.PlayerId ? "" : Who(s) + "的")}护甲挡住。"); continue; }
+                    s.Stats.Add(StatId.Health, -dmg);
+                    if (id == GameState.PlayerId) s.Progress.LastDamageCause = $"{cfg.Name}死亡喷溅";
+                    BattleLog(s, $"{cfg.Name}死亡喷溅：{Who(s)}健康−{Fmt.N(dmg)}（不感染）。");
+                    if (s.Stats.Health <= 0 && id != GameState.PlayerId) BattleDeath(s, $"{cfg.Name}死亡喷溅");   // 主角倒下由调用方在本次结算写完后终局
+                }
+            }
         }
     }
 }

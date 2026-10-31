@@ -199,11 +199,11 @@ namespace Survival.Core.Engine
 
         /// <summary>绷带一次的健康恢复量 1×(1+0.02×医疗L)（未扣除已满部分）。</summary>
         /// <summary>包扎回血：1×(1+0.02×医疗L)；非战斗再加护理笔记的 +0.2（A05 §2“非战斗有效包扎H恢复额外+0.2；不改冷却/病毒”，B4）。</summary>
-        public double BandageHeal(GameState s) =>
-            MedicalHeal(BandageItem?.Use?.Health ?? 0, SkillLevel(s, Medicine)) + (s.Battle == null ? EquipmentEffects(s).Add("bandage.health") : 0);
+        public double BandageHeal(GameState s, int? medLevel = null) =>
+            MedicalHeal(BandageItem?.Use?.Health ?? 0, medLevel ?? SkillLevel(s, Medicine)) + (s.Battle == null ? EquipmentEffects(s).Add("bandage.health") : 0);
 
         /// <summary>绷带一次的病毒减量 2×(1+0.01×医疗L)。</summary>
-        public double BandageVirusReduction(GameState s) => Inf.Bandage.Base * (1 + Inf.Bandage.PerLevel * SkillLevel(s, Medicine));
+        public double BandageVirusReduction(GameState s, int? medLevel = null) => Inf.Bandage.Base * (1 + Inf.Bandage.PerLevel * (medLevel ?? SkillLevel(s, Medicine)));
 
         private double SuppressMin => Inf.AllSuppressantsMinLoad;
 
@@ -239,7 +239,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>药物效果在确认时应用（战外 5 分钟 wait、战内 2AP），各冷却只在对应效果实际生效时启动；有效才给医疗经验，同次只发一次。</summary>
-        private bool ApplyMedicine(GameState s, ItemUseConfig u, List<string> parts)
+        private bool ApplyMedicine(GameState s, ItemUseConfig u, List<string> parts, int? medLevel = null, bool grantXp = true)
         {
             var b = s.Body;
             var effective = false;
@@ -252,7 +252,7 @@ namespace Survival.Core.Engine
                     parts.Add("已止血");
                     effective = true;
                 }
-                var heal = s.BandageReadyAt <= s.GameMinute ? Math.Min(BandageHeal(s), s.Stats.HealthMax - s.Stats.Health) : 0;
+                var heal = s.BandageReadyAt <= s.GameMinute ? Math.Min(BandageHeal(s, medLevel), s.Stats.HealthMax - s.Stats.Health) : 0;
                 if (heal > 0)
                 {
                     s.Stats.Add(StatId.Health, heal);
@@ -265,7 +265,7 @@ namespace Survival.Core.Engine
                 if (BandageVirusUseful(s))
                 {
                     var before = b.VirusLoad;
-                    b.VirusLoad = Math.Max(SuppressMin, b.VirusLoad - BandageVirusReduction(s));
+                    b.VirusLoad = Math.Max(SuppressMin, b.VirusLoad - BandageVirusReduction(s, medLevel));
                     b.BandageVirusReadyAt = s.GameMinute + Inf.Bandage.VirusCooldownMinutes;
                     parts.Add($"病毒{Fmt.N(before)}→{Fmt.N(b.VirusLoad)}（仍感染）");
                     effective = true;
@@ -292,7 +292,7 @@ namespace Survival.Core.Engine
                 effective = true;
             }
             // 有效治疗给医疗经验，同次只发一次（v0.6 §03、§11）；特效药清除感染同样是有效医疗（开发假设 26，试玩修复 L2）
-            if (effective)
+            if (effective && grantXp)
             {
                 parts.Add(XpText(s, Medicine, Config.Xp.Medical));
                 GainXp(s, Medicine, Config.Xp.Medical);
@@ -304,19 +304,19 @@ namespace Survival.Core.Engine
         /// 草药绷带这一次的实际效果（与 ApplyMedicine 同一判定）：出血时止血；回血冷却中写“本次不回血”，否则写健康前后；
         /// 已感染且病毒减量就绪时写病毒前后，冷却中写剩余时间（试玩修复 G4：预估与实际一致）。
         /// </summary>
-        public string BandageEffectText(GameState s)
+        public string BandageEffectText(GameState s, int? medLevel = null)
         {
             var b = s.Body;
             var parts = new List<string>();
             if (b.BleedTriggers > 0) parts.Add("止血");
             var healReady = s.BandageReadyAt <= s.GameMinute;
-            var heal = healReady ? Math.Min(BandageHeal(s), s.Stats.HealthMax - s.Stats.Health) : 0;
+            var heal = healReady ? Math.Min(BandageHeal(s, medLevel), s.Stats.HealthMax - s.Stats.Health) : 0;
             if (!healReady) parts.Add($"回血冷却中（还需{Clock.Duration(s.BandageReadyAt - s.GameMinute)}），本次不回血");
             else if (heal > 0) parts.Add($"健康{Fmt.N(s.Stats.Health)}→{Fmt.N(s.Stats.Health + heal)}");
             else parts.Add("健康已满，本次不回血");
             if (b.Infected)
             {
-                if (BandageVirusUseful(s)) parts.Add($"病毒{Fmt.N(b.VirusLoad)}→{Fmt.N(Math.Max(SuppressMin, b.VirusLoad - BandageVirusReduction(s)))}（仍感染）");
+                if (BandageVirusUseful(s)) parts.Add($"病毒{Fmt.N(b.VirusLoad)}→{Fmt.N(Math.Max(SuppressMin, b.VirusLoad - BandageVirusReduction(s, medLevel)))}（仍感染）");
                 else if (b.BandageVirusReadyAt > s.GameMinute) parts.Add($"病毒减量冷却中（还需{Clock.Duration(b.BandageVirusReadyAt - s.GameMinute)}）");
                 else parts.Add("病毒已到最低值，不再减量");
             }
@@ -324,10 +324,10 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>药品这一次的实际效果文字（绷带、抗生素、特效药），卡下操作条、右栏详情与战斗预览共用；非药品返回 null。</summary>
-        public string? MedicineEffectText(GameState s, ItemUseConfig u)
+        public string? MedicineEffectText(GameState s, ItemUseConfig u, int? medLevel = null)
         {
             var b = s.Body;
-            if (u.IsBandage) return BandageEffectText(s);
+            if (u.IsBandage) return BandageEffectText(s, medLevel);
             if (u.IsAntibiotic)
                 return b.Infected
                     ? $"病毒{Fmt.N(b.VirusLoad)}→{Fmt.N(Math.Max(SuppressMin, b.VirusLoad - Inf.Antibiotics.InstantLoadReduction))}（仍感染），之后{Clock.Duration(Inf.Antibiotics.DurationMinutes)}病毒正增长×{Fmt.T(Inf.Antibiotics.PositiveProgressFactor)}"

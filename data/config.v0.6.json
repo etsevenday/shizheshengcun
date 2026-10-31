@@ -7399,6 +7399,7 @@
     ],
     "penaltiesSelectHighestOnly": true,
     "postBattleMoraleLoss": "min(5,panic/20)",
+    "allyDeathGain": 8,
     "clearAfterBattle": true,
     "fear": {
       "chance": "q*(1-clamp(M,0,100)/100)*K",
