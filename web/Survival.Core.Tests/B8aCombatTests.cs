@@ -383,6 +383,56 @@ public class B8aCombatTests : BattleTestBase
         Assert.That(f3.Pos, Is.EqualTo(1));
     }
 
+    /// <summary>
+    /// 试玩修复 B8a 第 1 轮 B8（B8a-1）：本轮 AP 账已用完的敌人不前移、不叫同伴补位、不出手；意图写“等待（…）”；
+    /// 余 1AP 时能前移但不够攻击；追击的 2AP 不进这本账，照常前移。
+    /// </summary>
+    [Test]
+    public void B8a1_SpentBudget_NoAdvanceNoAssistNoAttack_PursuitSeparate()
+    {
+        // 单只游荡尸在 3 号位、你在 1：账已记 3（面板 3AP）→ 不前移
+        var s = Fight(8731, "shambler");
+        Ready(s);
+        var b = s.Battle!;
+        var z = Enemy(s, 1);
+        z.Hp = 50; z.Intent = "attack"; z.IntentStep = -2; z.Acted = false;
+        Place(s, (1, 3));
+        StandAt(s, 1);
+        z.RoundApUsed = E.EnemyAp(z);
+        Assert.That(E.IntentShown(b, z), Does.StartWith("等待（"), "显示与执行同源");
+        var n0 = b.Log.Count;
+        EnemyAct(s, z);
+        Assert.That(z.Pos, Is.EqualTo(3), "没 AP 不前移：" + string.Join(" | ", b.Log.Skip(n0)));
+        Assert.That(z.RoundApUsed, Is.EqualTo(E.EnemyAp(z)), "账不超过面板 AP");
+        Assert.That(b.Log.Last(), Does.Contain("本轮没有AP前移"));
+
+        // 余 1AP：前移到 2 号位后不够 2AP 攻击
+        var h0 = s.Stats.Health;
+        z.Slot = "3"; z.Acted = false; z.RoundApUsed = E.EnemyAp(z) - 1;
+        EnemyAct(s, z);
+        Assert.That((z.Pos, z.RoundApUsed), Is.EqualTo((2, E.EnemyAp(z))));
+        Assert.That(s.Stats.Health, Is.EqualTo(h0), "余 AP 不够攻击");
+
+        // 在己位够得到但账已用完：不出手
+        z.Slot = "1"; z.Acted = false; z.RoundApUsed = E.EnemyAp(z) - 1;
+        Assert.That(E.IntentShown(b, z), Does.StartWith("等待（本轮只剩1AP"));
+        EnemyAct(s, z);
+        Assert.That(z.RoundApUsed, Is.EqualTo(E.EnemyAp(z) - 1), "付不起 2AP 不扣");
+        Assert.That(s.Stats.Health, Is.EqualTo(h0));
+
+        // 追击 2AP 另算：账已满照样前移，不进账
+        z.Slot = "3"; z.RoundApUsed = E.EnemyAp(z);
+        EnemyActPursuit(s, z);
+        Assert.That((z.Pos, z.RoundApUsed), Is.EqualTo((2, E.EnemyAp(z))), "追击不受本轮账限制");
+
+        // 协同补位几何：当前敌账已满 → 不叫前方同伴补位、F 不花 AP
+        var t = Column(8732, out var f, out var e);
+        e.RoundApUsed = E.EnemyAp(e);
+        EnemyAct(t, e);
+        Assert.That((f.Pos, e.Pos), Is.EqualTo((2, 3)), "不补位、不换位");
+        Assert.That(f.RoundApUsed, Is.EqualTo(0), "F 不为没 AP 的后方花自己的 AP");
+    }
+
     /// <summary>POS-Q87-04：不满足补位条件（F 现在不能普通攻击，例如中立未激怒）时沿 Q78 相邻交换，被动交换不触发架矛、不花 F 的 AP。</summary>
     [Test]
     public void POS_Q87_04_GeometryNotMet_FallsBackToQ78Swap_PassiveNoBrace()

@@ -246,6 +246,10 @@ namespace Survival.Core.Engine
             var verb = e.Intent == "bite" ? "咬击" : st.Verb != "" ? st.Verb : AttackVerb(cfg);
             var ea = Config.CombatMath.ExposureApproach;
             var plan = PlanFor(b, e, st);
+            // B8a-1：本轮账已用完（没行动的剩余 <1AP）时不前移、不叫补位；够不到又付不起 2AP 兜底防御时也不防御（与 ExecuteReach 同源）
+            if (!e.Acted && IsAdvance(plan) && EnemyApLeft(e) < 1) return "等待（够不到，本轮没有AP前移）";
+            if (!e.Acted && plan == ReachPlan.Guard && EnemyApLeft(e) < EnemyMainIntentAp) return $"等待（够不到，本轮只剩{EnemyApLeft(e)}AP，不够防御）";
+            if (!e.Acted && plan is ReachPlan.Execute or ReachPlan.Weak && ReachKinds.Contains(st.Kind) && EnemyApLeft(e) < 2) return $"等待（本轮只剩{EnemyApLeft(e)}AP，不够出手）";
             // Q87：够不到要前移时，前方同伴能出手且它前面空着——先由同伴花自己本轮 1AP 补位，再由它花自己 1AP 跟进；同伴没 AP 就等待
             BattleEnemy? f = null;
             var assist = IsAdvance(plan) && !e.Acted ? AssistFor(b, e, out f) : AssistKind.None;
@@ -399,14 +403,22 @@ namespace Survival.Core.Engine
                     return;
                 case ReachPlan.Execute:
                     if (ap >= 2) { SpendAp(e, 2, pursuit); DoAttackStep(s, b, e, st, plain, 1, pursuit); }
+                    else BattleLog(s, $"{EnemyName(e)}本轮只剩{ap}AP，不够出手，结束行动。");
                     return;
                 case ReachPlan.Weak:
                     if (ap >= 2) { SpendAp(e, 2, pursuit); DoAttackStep(s, b, e, st, true, WeakAttackFactor, pursuit); }
+                    else BattleLog(s, $"{EnemyName(e)}本轮只剩{ap}AP，不够出手，结束行动。");
                     return;
                 case ReachPlan.AdvanceThenAttack:
                 case ReachPlan.AdvanceThenApproach:
                 case ReachPlan.Advance:
                 {
+                    // B8a-1：前移也先看本次剩余 AP（正常激活=本轮账剩余，追击=2AP），不够 1AP 不前移、不叫同伴补位（试玩修复 B8a 第 1 轮 B8）
+                    if (ap < 1)
+                    {
+                        BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}够不到，本轮没有AP前移，结束行动。");
+                        return;
+                    }
                     BattleEnemy? f = null;
                     var assist = pursuit ? AssistKind.None : AssistFor(b, e, out f);
                     if (assist == AssistKind.Wait)
@@ -429,17 +441,17 @@ namespace Survival.Core.Engine
                     var next = PlanFor(b, e, st, ap);
                     if (next == ReachPlan.Execute && ap >= 2) { SpendAp(e, 2, pursuit); DoAttackStep(s, b, e, st, true, 1, pursuit); }
                     else if (next == ReachPlan.Approach && !pursuit) DoApproach(s, b, e, ap, pursuit);
-                    else BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}还够不到，结束行动。");
+                    else BattleLog(s, next == ReachPlan.Execute ? $"{EnemyName(e)}在{PosName(e.Pos)}够得到了，但只剩{ap}AP，不够出手，结束行动。" : $"{EnemyName(e)}在{PosName(e.Pos)}还够不到，结束行动。");
                     return;
                 }
                 default:
-                    if (ap >= 1 && !pursuit)
+                    if (ap >= EnemyMainIntentAp && !pursuit)
                     {
-                        SpendAp(e, Math.Min(EnemyMainIntentAp, ap), pursuit);
+                        SpendAp(e, EnemyMainIntentAp, pursuit);
                         e.Guard = true;
                         BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}够不到目标，也无法前压，改为防御。");
                     }
-                    else BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}够不到目标。");
+                    else BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}够不到目标{(pursuit ? "" : $"（本轮只剩{ap}AP，不够防御），结束行动")}。");
                     return;
             }
         }

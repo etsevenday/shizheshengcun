@@ -70,6 +70,27 @@ public class B8aFormationTests : BattleTestBase
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Is.Not.Null, "技能仍按真实己位校验（手斧在 4 号位不可用）");
     }
 
+    /// <summary>
+    /// 试玩修复 B8a 第 1 轮 B2：空手（两页都空）时编队面板参考的可用号位与战斗里拳击的己位判断同源——拳击只能 1、2 号位，
+    /// 存到 3/4 号位照存（面板标“此位用不了”），开战拳击按真实号位禁用；调整站位预览也写拳在 3 号位不可用。
+    /// </summary>
+    [Test]
+    public void POS_Q86_01_Unarmed_FistPositionsMatchBattle()
+    {
+        var s = Camp(1, 8606);
+        s.Items.RemoveAll(i => i.Owner == ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Weapon1) || i.Owner == ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Weapon2));
+        var (w, own) = E.StartWeaponOf(s, GameState.PlayerId);
+        Assert.That(w.IsFists, Is.True, "双空为拳");
+        Assert.That(own, Is.EquivalentTo(new[] { 1, 2 }), "拳击 unarmed_01 只能在我方1、2号位（不是拳的 1—4）");
+        Assert.That(E.SaveFormation(s, Slots("", "", "p0", ""), s.FormationVersion).Ok, Is.True, "用不了的号位也照存");
+        FightFrom(s, "shambler");
+        Assert.That(GameEngine.PlayerPos(s.Battle!), Is.EqualTo(3));
+        ToPlayer(s);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("basic_attack", 1)), Does.Contain("只能在我方1、2号位"), "与面板同源：拳击在 3 号位不可用");
+        Assert.That(E.PositionHint(s, s.Battle!, 3), Does.Contain("拳不可用（要在1、2号位）"));
+        Assert.That(E.PositionHint(s, s.Battle!, 2), Does.Contain("拳可用"));
+    }
+
     // ───────────── POS-Q86-02：空白操作时期之外一律拒绝，只有后台加工不阻断 ─────────────
 
     [Test]
@@ -264,7 +285,8 @@ public class B8aFormationTests : BattleTestBase
         E.DebugTeleport(s, "field");
         Assert.That(E.FormationEditBlocked(s), Is.Null, "当前同行站位不受地点限制");
         Assert.That(E.SaveFormation(s, Slots("", "p0", "", "npc_zhou_yan"), s.FormationVersion).Ok, Is.True);
-        Assert.That(E.SetActive(s, "npc_zhou_yan", false).Reason, Does.Contain("营区"), "留作候补仍只在营区");
+        Assert.That(E.SetActive(s, "npc_zhou_yan", false).Reason, Does.Contain("营区").And.EndsWith("安全空闲时留作候补").And.Not.Contain("编队"), "留作候补仍只在营区；原因用按钮自己的动词，不和顶栏“编队”混淆（B8a 第 1 轮 B7）");
+        Assert.That(E.SetActiveBlocked(s, "npc_shen_he", true), Does.EndWith("安全空闲时编入同行").Or.Contain("同行已满"));
         Assert.That(E.SetActive(s, "npc_shen_he", true).Reason, Does.Contain("营区").Or.Contain("同行已满"), "不远程召回候补");
         Assert.That(E.SaveFormationBlocked(s, Slots("npc_shen_he", "p0", "", "npc_zhou_yan"), s.FormationVersion), Does.Contain("不在当前同行"), "候补不能经编队换入");
 

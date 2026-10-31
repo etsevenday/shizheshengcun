@@ -432,6 +432,7 @@ public sealed class GameSession
     {
         OnDialogueOnset();
         CloseStaleFormation();
+        ClearStaleFormationNotice();
         Version++;
         Changed?.Invoke();
     }
@@ -1591,7 +1592,7 @@ public sealed class GameSession
     public void OpenFormation()
     {
         if (State == null) return;
-        if (E.FormationEditBlocked(S) is string why) { Notice = why; Notify(); return; }
+        if (E.FormationEditBlocked(S) is string why) { Notice = why; _formationNotice = why; Notify(); return; }
         // 先建草稿再开面板（OpenPanel 末尾的 Notify 会关掉没有草稿的编队面板）
         FormationDraft = E.RepairedFormation(S, S.FormationPreset);
         FormationDraftVersion = S.FormationVersion;
@@ -1645,6 +1646,22 @@ public sealed class GameSession
     /// <summary>编队面板开着时，其他推进、接敌与换队操作一律先拒绝（Q86：面板与推进操作互斥）。</summary>
     private const string FormationOpenText = "先保存或取消编队";
     private bool FormationOpen => Panel == "formation" && FormationDraft != null;
+
+    /// <summary>点灰的“编队”时写进右栏的锁定原因（如“移动中不能编队”）；被别的提示替换后为 null。</summary>
+    private string? _formationNotice;
+
+    /// <summary>
+    /// 锁定原因只在原因不变时有效（试玩修复 B8a 第 1 轮 B6）：移动结束、进入敌踪/战斗、行动结束等让编队锁定原因改变或解除时，
+    /// 清掉这条右栏提示，不挂到下一场战斗；其他操作照常用自己的提示替换它。
+    /// </summary>
+    private void ClearStaleFormationNotice()
+    {
+        if (_formationNotice == null) return;
+        if (Notice != _formationNotice) { _formationNotice = null; return; }
+        if (State != null && E.FormationEditBlocked(S) == _formationNotice) return;
+        Notice = null;
+        _formationNotice = null;
+    }
 
     /// <summary>编队面板开着但已不在空白操作时期（例如突发对白/强制事件）：关闭并丢弃草稿，先处理事件，不覆盖已保存的预设。</summary>
     private void CloseStaleFormation()

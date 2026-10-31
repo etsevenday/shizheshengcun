@@ -120,8 +120,9 @@ namespace Survival.Core.Engine
             var r = RosterOf(s, actorId);
             if (r == null) return "名册里没有这名角色";
             if (r.Dead) return $"{r.Name}已经死亡";
+            // 各按钮用自己的动词，不与顶栏“编队”混淆（试玩修复 B8a 第 1 轮 B7；同登记补员/报失的做法）
             var why = PartyEditBlocked(s);
-            if (why != null) return why;
+            if (why != null) return why.Replace("编队", active ? "编入同行" : "留作候补");
             var inParty = s.Party.Contains(actorId);
             if (active && inParty) return $"{r.Name}已在同行队伍里";
             if (!active && !inParty) return $"{r.Name}已是候补";
@@ -272,6 +273,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 某人开战时停在的武器页上的武器与合法使用位（Q86 编队面板参考，不自动更正位置）：武器Ⅰ有武器取Ⅰ，否则Ⅱ，双空为拳。
+        /// 使用位取 BasicAttackPositions（与战斗里普通攻击技能的己位判断同源：拳击 unarmed_01 只能 1、2 号位）。
         /// </summary>
         public (WeaponConfig weapon, HashSet<int> own) StartWeaponOf(GameState s, string actorId)
         {
@@ -279,11 +281,18 @@ namespace Survival.Core.Engine
             {
                 var slot = EquipSlots.WeaponSlotOfPage(page);
                 var it = slot != null ? WornItem(s, actorId, slot) : null;
-                if (it != null && _weapons.TryGetValue(it.ItemId, out var w)) return (w, OwnPositionsOf(w));
+                if (it != null && _weapons.TryGetValue(it.ItemId, out var w)) return (w, BasicAttackPositions(w));
             }
             var fists = _weapons[Fists];
-            return (fists, OwnPositionsOf(fists));
+            return (fists, BasicAttackPositions(fists));
         }
+
+        /// <summary>
+        /// 武器普通攻击（本门 1 级攻击技能）实际能出手的己方号位：技能写了使用位按技能（拳击 12），“按武器”取武器使用位；
+        /// 没有普通攻击的（指挥/医疗器具）取武器使用位。与 SkillBlocked 的己位判断同一来源（SkillOwnPositions）。
+        /// </summary>
+        public HashSet<int> BasicAttackPositions(WeaponConfig w) =>
+            SkillOf(BasicAttack, w) is SkillNodeConfig n ? SkillOwnPositions(n, w) : OwnPositionsOf(w);
 
         /// <summary>开局号位：按已保存的合法预设（整理后），主角所在格；单人也生效。</summary>
         public int PresetPlayerSlot(GameState s)

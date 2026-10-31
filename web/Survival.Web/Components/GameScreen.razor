@@ -31,10 +31,11 @@
             <button class="@(G.Panel == "craft" ? "on" : "")" disabled="@navOff" title="@NavTitle("手工制作", "C")" @onclick='() => Toggle("craft")'>手工制作<kbd>C</kbd></button>
             <button class="@(G.Panel == "rest" ? "on" : "")" disabled="@navOff" title="@NavTitle("休息", "R")" @onclick='() => Toggle("rest")'>休息<kbd>R</kbd></button>
             <button class="@(G.Panel == "log" ? "on" : "")" disabled="@navOff" title="@NavTitle("行动日志", "L")" @onclick='() => Toggle("log")'>行动日志<kbd>L</kbd></button>
-            @* Q86（S14 本轮章）：顶栏“编队”只在空白操作时期可用；不可用时不打开，点击/悬停写具体原因（战斗与对白锁同其他入口） *@
+            @* Q86（S14 本轮章）：顶栏“编队”只在空白操作时期可用；不可用时不打开，点击/悬停写具体原因（战斗与对白锁同其他入口）。
+               敌踪/战斗中按钮照样禁用，但悬停写内核 FormationEditBlocked 的原因（“先处理眼前的敌踪”），不用统一的“战斗中锁定”（试玩修复 B8a 第 1 轮 B1） *@
             @{ var formWhy = G.Panel == "formation" ? null : G.FormationBlocked; }
             <button class="@(G.Panel == "formation" ? "on" : "") @(formWhy != null ? "off" : "")" disabled="@navOff" aria-disabled="@(formWhy != null)" data-nav="formation"
-                    title="@(navOff ? NavTitle("编队", null) : formWhy != null ? $"现在不能编队：{formWhy}" : "编队：安排开战号位（前排1→后排4），保存不花时间")"
+                    title="@(G.DialogueLocked ? NavTitle("编队", null) : formWhy != null ? $"现在不能编队：{formWhy}" : navOff ? NavTitle("编队", null) : "编队：安排开战号位（前排1→后排4），保存不花时间")"
                     @onclick="ToggleFormation">编队</button>
             <span class="nav-sep" aria-hidden="true"></span>
             <button class="@(G.Panel == "goals" ? "on" : "")" disabled="@navOff" title="@NavTitle("本局生存目标与完成情况", null)" @onclick='() => Toggle("goals")'>生存目标</button>

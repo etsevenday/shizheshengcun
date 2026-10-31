@@ -1460,7 +1460,8 @@ namespace Survival.Core.Engine
             {
                 var it = WeaponOnPage(s, page, out var w);
                 var name = it == null ? "拳" : w.Name;
-                parts.Add($"武器{(page == 1 ? "Ⅰ" : "Ⅱ")}{name}{(OwnPositionsOf(w).Contains(pos) ? "可用" : $"不可用（要在{PosList(OwnPositionsOf(w))}）")}");
+                var own = BasicAttackPositions(w);   // 与普通攻击的己位判断同源（拳击只能 1、2 号位；试玩修复 B8a 第 1 轮 B2）
+                parts.Add($"武器{(page == 1 ? "Ⅰ" : "Ⅱ")}{name}{(own.Contains(pos) ? "可用" : $"不可用（要在{PosList(own)}）")}");
             }
             return $"到{PosName(pos)}后：{string.Join("；", parts)}";
         }

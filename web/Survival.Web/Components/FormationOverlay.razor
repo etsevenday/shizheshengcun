@@ -17,7 +17,7 @@
 
 <div class="sub-panel formation-panel" role="dialog" aria-label="编队">
     <div class="sub-head">
-        <div><h2>编队</h2><span class="sub">开战号位 · 前排1号位 → 后排4号位 · 同行@(members.Count)/C@(cap)（C只限人数，不限号位）· 保存不花时间、AP和体力</span></div>
+        <div><h2>编队</h2><span class="sub">开战号位 · 前排1号位→后排4号位 · 同行@(members.Count)/C@(cap)（C只限人数，不限号位）· 保存不花时间、AP和体力</span></div>
         <button class="secondary" @onclick="G.CancelFormation">取消<kbd>Esc</kbd></button>
     </div>
     <div class="sub-body formation-body" data-wheel="y">
@@ -33,12 +33,17 @@
                         aria-pressed="@on"
                         title="@SlotTitle(slot, who, pick)"
                         @onclick="() => G.PlaceFormationSlot(slot)">
-                    <span class="fm-num">@(slot)号位<small>@(slot == 1 ? "（前排）" : slot == 4 ? "（后排）" : "")</small></span>
-                    <b class="fm-name">@(who == "" ? "空位" : e.ActorDisplayName(s, who))</b>
+                    @* 号位与名字同一行（1280×720 下压缩行高，底部说明不被挤出；试玩修复 B8a 第 1 轮 B5） *@
+                    <span class="fm-top">
+                        <span class="fm-num">@(slot)号位<small>@(slot == 1 ? "（前排）" : slot == 4 ? "（后排）" : "")</small></span>
+                        <b class="fm-name">@(who == "" ? "空位" : e.ActorDisplayName(s, who))</b>
+                    </span>
                     @if (who != "")
                     {
                         var (w, own) = e.StartWeaponOf(s, who);
-                        <span class="fm-weapon tiny @(ok ? "muted" : "warn-text")">@w.Name：可用@(PosText(own))@(ok ? "" : "（此位用不了）")</span>
+                        @* 允许换行，“此位用不了”单独一行（1280/1600 下不再被省略号截断；试玩修复 B8a 第 1 轮 B3） *@
+                        <span class="fm-weapon tiny @(ok ? "muted" : "warn-text")">@w.Name：可用@(PosText(own))</span>
+                        @if (!ok) { <span class="fm-weapon-bad tiny warn-text">（此位用不了）</span> }
                     }
                 </button>
             }
@@ -50,9 +55,10 @@
                 var (w, own) = e.StartWeaponOf(s, id);
                 var at = draft.IndexOf(id) + 1;
                 <button type="button" class="fm-member @(aid == pick ? "on" : "")" aria-pressed="@(aid == pick)" data-actor="@aid"
-                        title="@(aid == pick ? "再点一次取消选择；点一个号位把他移过去（有人则交换）" : "选中后点一个号位")"
+                        title="@($"在{at}号位 · 开战武器{w.Name}可用{PosText(own)}；" + (aid == pick ? "再点一次取消选择；点一个号位把他移过去（有人则交换）" : "选中后点一个号位"))"
                         @onclick="() => G.PickFormationActor(aid)">
-                    <b>@e.ActorDisplayName(s, aid)</b> <span class="tiny muted">在@(at)号位 · 开战武器@(w.Name)可用@(PosText(own))</span>
+                    @* 武器与可用号位已写在号位格里，这里只留名字与号位，四人一行放得下（B8a 第 1 轮 B5；完整信息在悬停） *@
+                    <b>@e.ActorDisplayName(s, aid)</b> <span class="tiny muted">在@(at)号位</span>
                 </button>
             }
         </div>

@@ -1244,7 +1244,12 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .nav button.off { opacity: .55; cursor: not-allowed; }
 .formation-panel .formation-body { flex: 1; min-height: 0; padding: 10px 14px; display: flex; flex-direction: column; gap: 10px; }
 .fm-slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.fm-slot { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 76px; padding: 8px 10px; text-align: left;
+.formation-panel .sub-head { padding: 6px 14px; }
+.formation-panel .sub-head > div { min-width: 0; }
+.formation-panel .sub-head .sub { font-size: 12px; margin-left: 8px; }
+.formation-panel .sub-head > button { flex: none; white-space: nowrap; }
+.fm-top { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; max-width: 100%; min-width: 0; }
+.fm-slot { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 64px; padding: 6px 10px; text-align: left;
   background: #232a24; border: 1px solid var(--line); border-radius: 6px; color: var(--text); cursor: pointer; min-width: 0; }
 .fm-slot.empty { border-style: dashed; color: var(--muted); }
 .fm-slot.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
@@ -1252,12 +1257,14 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .fm-slot.warn .fm-name { color: var(--warn); }
 .fm-num { font-size: 13px; color: var(--muted); }
 .fm-name { font-size: 17px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
-.fm-weapon { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+/* 试玩修复 B8a 第 1 轮 B3/B5：格内武器说明允许换行（不再省略号截断），“此位用不了”单独一行 */
+.fm-weapon, .fm-weapon-bad { max-width: 100%; white-space: normal; overflow-wrap: anywhere; line-height: 1.3; }
 .fm-members { display: flex; flex-wrap: wrap; gap: 6px; }
-.fm-member { background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 5px 10px; color: var(--text); cursor: pointer; max-width: 100%; }
+.fm-member { background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 3px 10px; color: var(--text); cursor: pointer; max-width: 100%; }
+.formation-body .ca-note { line-height: 1.35; }
 .fm-member.on { border-color: var(--accent); color: var(--accent); }
-.fm-foot { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.fm-foot { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-top: 1px solid var(--line); flex-wrap: wrap; }
 .fm-foot .fm-draft { flex: 1 1 260px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fm-foot .primary { display: inline-block; width: auto; padding: 8px 18px; font-size: 16px; min-height: 40px; }
 .fm-why { padding: 0 14px 8px; }
-@media (max-height: 760px) { .fm-slot { min-height: 60px; padding: 6px 8px; } .formation-panel .formation-body { gap: 6px; padding: 6px 12px; } }
+@media (max-height: 760px) { .fm-slot { min-height: 0; padding: 5px 8px; } .formation-panel .formation-body { gap: 6px; padding: 6px 12px; } .fm-foot .primary { min-height: 34px; padding: 5px 16px; } .fm-foot .secondary { padding-top: 5px; padding-bottom: 5px; } }
