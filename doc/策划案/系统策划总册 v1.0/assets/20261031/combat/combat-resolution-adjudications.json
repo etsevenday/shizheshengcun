@@ -1,5 +1,5 @@
 {
-  "version": "q75_q94_20261031",
+  "version": "q75_q98_20261031",
   "status": "approved_planning_target_not_engine_verified",
   "sourceQuestions": [
     "Q75",
@@ -15,7 +15,10 @@
     "Q85",
     "Q86",
     "Q87",
-    "Q91"
+    "Q91",
+    "Q95",
+    "Q96",
+    "Q97"
   ],
   "precedence": {
     "baseline": "assets/20261031/combat/combat-adjudications.json",
@@ -71,7 +74,15 @@
       "triggersSpearInterception": true,
       "eventTiming": "after_pay_1AP_before_revalidate_and_pay_2AP_attack",
       "interrupted": "keep_spent_approach_AP_do_not_charge_unexecuted_attack_AP_end",
-      "oneEventPerApproach": true
+      "oneEventPerApproach": true,
+      "hint": {
+        "sourceQuestion": "Q97",
+        "activeSpearStance": "触发架矛",
+        "noActiveSpearStance": "算主动前移",
+        "state": "existing_stance_with_valid_duration_and_remaining_charges_not_merely_equipped_spear",
+        "execution": "existing_source_slot_range_durability_life_and_charge_revalidation",
+        "previewConsumesNoRng": true
+      }
     },
     "reinforcementPlacement": {
       "sourceQuestion": "Q84",
@@ -96,7 +107,28 @@
       "extraActivation": false,
       "queueOrderChanges": false,
       "extraWorldTick": false,
-      "interrupted": "revalidate_after_each_reaction_no_refund_executed_steps_no_charge_unexecuted_steps"
+      "interrupted": "revalidate_after_each_reaction_no_refund_executed_steps_no_charge_unexecuted_steps",
+      "plainAttackEligibility": {
+        "sourceQuestion": "Q96",
+        "selector": "first_kind_attack_step_in_opening_then_cycle_else_original_panel_plain_attack",
+        "missingSlots": "inherit_original_panel_fields",
+        "rearTypeWithoutAttackStep": "original_plain_melee_own12_target12",
+        "requiresHostileAndAlive": true,
+        "requiresLegalTargetsBothBeforeAndAfter": true,
+        "currentSpecialIntentNotUsed": true,
+        "noAttackOrRngDuringEligibility": true
+      }
+    },
+    "nonAttackIntentAP": {
+      "sourceQuestion": "Q95",
+      "defaultNonAttackMain": 2,
+      "fallbackGuard": 2,
+      "reload": 1,
+      "flee": 0,
+      "watch": 0,
+      "insufficient": "end_without_execution_or_charge_no_cheap_intent_substitution",
+      "budget": "current_round_normal_AP_minus_spent_and_assist_reservations",
+      "zeroCostNotAppendedAutomatically": true
     }
   },
   "enemyAssumptions": {

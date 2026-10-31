@@ -1,0 +1,188 @@
+{
+  "date": "2026-10-31",
+  "status": "static_document_checks_only_not_engine_or_ui",
+  "questionsAsked": 4,
+  "answers": "Q95/Q96/Q97/Q98 all A",
+  "remainingPending": [],
+  "delegatedToDeveloper": [],
+  "checks": [
+    {
+      "name": "实现同步与修改记录完整保留 02 参考扩展/R03 回合制战斗系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文原样保留 02 参考扩展/R03 回合制战斗系统.md",
+      "passed": true
+    },
+    {
+      "name": "实现同步与修改记录完整保留 02 参考扩展/R05 敌人卡、种群刷新与遭遇系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文原样保留 02 参考扩展/R05 敌人卡、种群刷新与遭遇系统.md",
+      "passed": true
+    },
+    {
+      "name": "实现同步与修改记录完整保留 04 附录/A09 敌人、遭遇组合与掉落目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文原样保留 04 附录/A09 敌人、遭遇组合与掉落目录.md",
+      "passed": true
+    },
+    {
+      "name": "实现同步与修改记录完整保留 04 附录/A06 十级熟练度与全技能目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文原样保留 04 附录/A06 十级熟练度与全技能目录.md",
+      "passed": true
+    },
+    {
+      "name": "实现同步与修改记录完整保留 02 参考扩展/R08 队伍招募、编成与共同生存系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文原样保留 02 参考扩展/R08 队伍招募、编成与共同生存系统.md",
+      "passed": true
+    },
+    {
+      "name": "实现同步与修改记录完整保留 04 附录/A11 主线任务、势力与队伍角色目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文原样保留 04 附录/A11 主线任务、势力与队伍角色目录.md",
+      "passed": true
+    },
+    {
+      "name": "实现同步与修改记录完整保留 01 基础系统/S01 世界时间、行动与存档系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文原样保留 01 基础系统/S01 世界时间、行动与存档系统.md",
+      "passed": true
+    },
+    {
+      "name": "实现同步与修改记录完整保留 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "原正文原样保留 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "实现同步与修改记录完整保留 00 总则/02 开发方待确认问题.md",
+      "passed": true
+    },
+    {
+      "name": "仅答复Q95—Q98字段",
+      "passed": true
+    },
+    {
+      "name": "实现同步与修改记录完整保留 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "原正文原样保留 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "全部策划JSON可解析",
+      "passed": true
+    },
+    {
+      "name": "合同嵌入一致且其余字段不变 04 附录/A12 全系统策划数据索引.json",
+      "passed": true
+    },
+    {
+      "name": "合同嵌入一致且其余字段不变 assets/20261030/index/joint-expansion-data.json",
+      "passed": true
+    },
+    {
+      "name": "原伤害/位移/目标/架矛合同不改",
+      "passed": true
+    },
+    {
+      "name": "原候补Q90与服务规则不改",
+      "passed": true
+    },
+    {
+      "name": "AP子项与不足结束完整",
+      "passed": true
+    },
+    {
+      "name": "补位资格含中立/前后槽与无随机",
+      "passed": true
+    },
+    {
+      "name": "Q97显示不改主动前移",
+      "passed": true
+    },
+    {
+      "name": "遗物三态与未知保留",
+      "passed": true
+    },
+    {
+      "name": "8类验收编号存在",
+      "passed": true
+    },
+    {
+      "name": "全部问题无待定答复",
+      "passed": true
+    },
+    {
+      "name": "相对链接有效",
+      "passed": true
+    }
+  ],
+  "preUploadAudit": [
+    {
+      "category": "数值",
+      "result": "已核对；本轮确认既有口径/显示与旧档分支，无未定义新增规则"
+    },
+    {
+      "category": "名词",
+      "result": "已核对；本轮确认既有口径/显示与旧档分支，无未定义新增规则"
+    },
+    {
+      "category": "作用范围",
+      "result": "已核对；本轮确认既有口径/显示与旧档分支，无未定义新增规则"
+    },
+    {
+      "category": "时机与持续",
+      "result": "已核对；本轮确认既有口径/显示与旧档分支，无未定义新增规则"
+    },
+    {
+      "category": "边界情况",
+      "result": "已核对；本轮确认既有口径/显示与旧档分支，无未定义新增规则"
+    },
+    {
+      "category": "敌人与自动行为",
+      "result": "已核对；本轮确认既有口径/显示与旧档分支，无未定义新增规则"
+    },
+    {
+      "category": "入口与条件",
+      "result": "已核对；本轮确认既有口径/显示与旧档分支，无未定义新增规则"
+    },
+    {
+      "category": "来源与解锁",
+      "result": "已核对；本轮确认既有口径/显示与旧档分支，无未定义新增规则"
+    },
+    {
+      "category": "和现有内容冲突",
+      "result": "已核对；本轮确认既有口径/显示与旧档分支，无未定义新增规则"
+    },
+    {
+      "category": "依赖未完成的系统",
+      "result": "已核对；本轮确认既有口径/显示与旧档分支，无未定义新增规则"
+    },
+    {
+      "category": "旧存档与进行中的局",
+      "result": "已核对；本轮确认既有口径/显示与旧档分支，无未定义新增规则"
+    },
+    {
+      "category": "验收",
+      "result": "已核对；本轮确认既有口径/显示与旧档分支，无未定义新增规则"
+    }
+  ]
+}

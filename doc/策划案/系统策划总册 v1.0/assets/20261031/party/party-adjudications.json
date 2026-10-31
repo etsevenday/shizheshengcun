@@ -1,5 +1,5 @@
 {
-  "version": "q88_q94_20261031",
+  "version": "q88_q98_20261031",
   "status": "approved_planning_target_not_engine_verified",
   "sourceQuestions": [
     "Q88",
@@ -8,7 +8,8 @@
     "Q91",
     "Q92",
     "Q93",
-    "Q94"
+    "Q94",
+    "Q98"
   ],
   "serviceLocations": {
     "preV3": "camp",
@@ -16,7 +17,22 @@
     "reserveHousingAndRosterV3": "h02_square",
     "currentPartySlotEditing": "any_Q86_idle_location",
     "publicReserveEstateMigration": "camp_public_reserve_estates_only_to_h02_square_same_container_ids_no_duplicate",
-    "ongoingRegistration": "preserve_original_transaction_until_complete_or_cancel_then_new_requests_new_location"
+    "ongoingRegistration": "preserve_original_transaction_until_complete_or_cancel_then_new_requests_new_location",
+    "legacyEstateProvenance": {
+      "sourceQuestion": "Q98",
+      "values": [
+        "public_reserve",
+        "active_party",
+        "unknown"
+      ],
+      "newEstate": "actual_reserve_identity_at_death",
+      "legacyMissing": "battle_death_or_outside_camp_active_party_else_nonbattle_camp_unknown",
+      "knownProvenancePreserved": true,
+      "unknown": "do_not_move_to_h02_keep_original_location_through_existing_map_mapping_retrievable",
+      "onlyExplicitPublicReserveMigrates": true,
+      "idempotent": true,
+      "contentsOwnerExpiryDurabilityClaimsAndLoanReferencesPreserved": true
+    }
   },
   "reserveCare": {
     "playerScheduling": false,
