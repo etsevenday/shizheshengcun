@@ -1,5 +1,5 @@
 {
-  "version": "q44_q52_20261031",
+  "version": "q44_q61_20261031",
   "status": "approved_planning_target_not_engine_verification",
   "sourceQuestions": [
     "Q44",
@@ -10,7 +10,11 @@
     "Q49",
     "Q50",
     "Q51",
-    "Q52"
+    "Q52",
+    "Q54",
+    "Q55",
+    "Q57",
+    "Q61"
   ],
   "quality": {
     "unspecifiedSource": "white_zero_affixes_no_rng",
@@ -48,7 +52,7 @@
   },
   "dismantle": {
     "baseMinutes": 15,
-    "xp": 0,
+    "xp": 2,
     "outputOwner": "current_accessible_ground",
     "sourceConsumedAtomically": true,
     "loadedMagazineMustBeEmpty": true,
@@ -82,9 +86,9 @@
     "cap": "sum(output_quantity*material_value)*5 <= canonical_recipe_material_value*4",
     "fuelRepairAndPrecisionSelectionCostsExcludedFromCap": true,
     "craftableCapAppliesRegardlessOfAcquisitionSource": true,
-    "expertBonus": "append_at_most_one_same_recovery_material_if_within_cap;_noncraft_fixed_table_allows_one",
+    "expertBonus": "crafting10_append_at_most_one_same_recovery_material_if_within_cap;noncraft_fixed_table_allows_one",
     "unknownNewItem": "reject_until_explicit_row",
-    "proficiencyGate": "pending_Q54_no_new_ruling_here",
+    "proficiencyGate": "crafting_1_T0_3_T1_7_T2_10_T3",
     "rows": [
       {
         "itemId": "stone_knife",
@@ -1166,7 +1170,10 @@
         "expertBonusMax": 1,
         "nonCraftableFixedTable": false
       }
-    ]
+    ],
+    "xpProficiencyId": "crafting",
+    "expertBonusProficiencyId": "crafting",
+    "expertBonusRequiredLevel": 10
   },
   "weaponSkillBindings": [
     {
@@ -1750,12 +1757,15 @@
   },
   "survival": {
     "singleUseBoxIsScavenging": true,
-    "otherStockResourceIsGathering": true,
+    "otherStockResourceIsGathering": false,
     "gloves": "wood_primary_or_scrap_output_except_cloth_primary_village_box",
     "compass": "all_legal_discovered_route_movement",
     "negativeNWRatesIncludeRestSleepWait": true,
     "sameFixedEffectStrongestOnly": true,
     "duplicateAffixStrongestOnly": true,
-    "manufacturingWorkIncludesRepairAndDismantle": true
+    "manufacturingWorkIncludesRepairAndDismantle": true,
+    "resourceClassificationContract": "assets/20261031/progression/progression-adjudications.json",
+    "manufacturingLevelWorkMultiplier": 1,
+    "workRoundingContract": "assets/20261031/progression/progression-adjudications.json#workCarry"
   }
 }

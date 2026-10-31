@@ -1,0 +1,673 @@
+{
+  "date": "2026-10-31",
+  "scope": "可复现纸面数值模拟；非游戏执行、非路径/战斗/饮食生存通关验证",
+  "inputSha256": "70b27a9bb42a1af02548897a052ba0aa9e9ac36925bbe2acba32f2b43b0324aa",
+  "requiredXp": 2700,
+  "thresholds": [
+    {
+      "level": 2,
+      "totalXp": 100
+    },
+    {
+      "level": 3,
+      "totalXp": 250
+    },
+    {
+      "level": 4,
+      "totalXp": 450
+    },
+    {
+      "level": 5,
+      "totalXp": 700
+    },
+    {
+      "level": 6,
+      "totalXp": 1000
+    },
+    {
+      "level": 7,
+      "totalXp": 1350
+    },
+    {
+      "level": 8,
+      "totalXp": 1750
+    },
+    {
+      "level": 9,
+      "totalXp": 2200
+    },
+    {
+      "level": 10,
+      "totalXp": 2700
+    }
+  ],
+  "assumptions": [
+    "单角色，旧八地点已发现且可达；不计解锁、移动、战斗、饮食休息耗时与划伤后果",
+    "每天可分配60/120/180基础工作分钟；无工具/装备/被动折减、无夜间负重低体力倍率",
+    "保留旧库存及日补；当次库存不足允许采尽且耗时不减；每资源点每日前三次经验",
+    "搜集改版仅用四个旧遗迹每点每日两次勘整做持续来源下界，不依赖一次箱和新增地图",
+    "改版两门每次clamp(2*ceil(baseMinutes/5),2,12)，每门每角色每日60上限"
+  ],
+  "baselineScavenging": {
+    "singleUseCaches": 11,
+    "totalXpMaximum": 22,
+    "level3RequiredXp": 250,
+    "reaches3": false,
+    "reason": "箱搜空后无可再生来源，不能靠其达到3级"
+  },
+  "newResourceClassCounts": {
+    "gathering": 42,
+    "scavenging": 65,
+    "excluded": 9
+  },
+  "newRenewableResourceCounts": {
+    "gathering": 29,
+    "scavenging": 24
+  },
+  "scenarios": [
+    {
+      "version": "old",
+      "skill": "gathering",
+      "baseWorkBudgetPerDay": 180,
+      "levelDays": {
+        "2": 5,
+        "3": 13,
+        "4": 23,
+        "5": 35,
+        "6": 50,
+        "7": 68,
+        "8": 88,
+        "9": 110,
+        "10": 135
+      },
+      "reaches10": true,
+      "days": 135,
+      "totalXp": 2700,
+      "baseWorkMinutes": 22950,
+      "completedActions": 1350,
+      "firstFiveDays": [
+        {
+          "day": 1,
+          "xp": 20,
+          "baseWorkMinutes": 170
+        },
+        {
+          "day": 2,
+          "xp": 20,
+          "baseWorkMinutes": 170
+        },
+        {
+          "day": 3,
+          "xp": 20,
+          "baseWorkMinutes": 170
+        },
+        {
+          "day": 4,
+          "xp": 20,
+          "baseWorkMinutes": 170
+        },
+        {
+          "day": 5,
+          "xp": 20,
+          "baseWorkMinutes": 170
+        }
+      ]
+    },
+    {
+      "version": "new",
+      "skill": "gathering",
+      "baseWorkBudgetPerDay": 60,
+      "levelDays": {
+        "2": 5,
+        "3": 11,
+        "4": 19,
+        "5": 30,
+        "6": 42,
+        "7": 57,
+        "8": 73,
+        "9": 92,
+        "10": 113
+      },
+      "reaches10": true,
+      "days": 113,
+      "totalXp": 2700,
+      "baseWorkMinutes": 6760,
+      "completedActions": 338,
+      "firstFiveDays": [
+        {
+          "day": 1,
+          "xp": 24,
+          "baseWorkMinutes": 60
+        },
+        {
+          "day": 2,
+          "xp": 24,
+          "baseWorkMinutes": 60
+        },
+        {
+          "day": 3,
+          "xp": 24,
+          "baseWorkMinutes": 60
+        },
+        {
+          "day": 4,
+          "xp": 24,
+          "baseWorkMinutes": 60
+        },
+        {
+          "day": 5,
+          "xp": 24,
+          "baseWorkMinutes": 60
+        }
+      ]
+    },
+    {
+      "version": "new",
+      "skill": "scavenging",
+      "baseWorkBudgetPerDay": 60,
+      "levelDays": {
+        "2": 5,
+        "3": 11,
+        "4": 19,
+        "5": 30,
+        "6": 42,
+        "7": 57,
+        "8": 73,
+        "9": 92,
+        "10": 113
+      },
+      "reaches10": true,
+      "days": 113,
+      "totalXp": 2700,
+      "baseWorkMinutes": 6750,
+      "completedActions": 225,
+      "firstFiveDays": [
+        {
+          "day": 1,
+          "xp": 24,
+          "baseWorkMinutes": 60
+        },
+        {
+          "day": 2,
+          "xp": 24,
+          "baseWorkMinutes": 60
+        },
+        {
+          "day": 3,
+          "xp": 24,
+          "baseWorkMinutes": 60
+        },
+        {
+          "day": 4,
+          "xp": 24,
+          "baseWorkMinutes": 60
+        },
+        {
+          "day": 5,
+          "xp": 24,
+          "baseWorkMinutes": 60
+        }
+      ]
+    },
+    {
+      "version": "new",
+      "skill": "gathering",
+      "baseWorkBudgetPerDay": 120,
+      "levelDays": {
+        "2": 3,
+        "3": 6,
+        "4": 10,
+        "5": 15,
+        "6": 21,
+        "7": 29,
+        "8": 37,
+        "9": 46,
+        "10": 57
+      },
+      "reaches10": true,
+      "days": 57,
+      "totalXp": 2700,
+      "baseWorkMinutes": 6760,
+      "completedActions": 385,
+      "firstFiveDays": [
+        {
+          "day": 1,
+          "xp": 48,
+          "baseWorkMinutes": 120
+        },
+        {
+          "day": 2,
+          "xp": 48,
+          "baseWorkMinutes": 120
+        },
+        {
+          "day": 3,
+          "xp": 48,
+          "baseWorkMinutes": 120
+        },
+        {
+          "day": 4,
+          "xp": 48,
+          "baseWorkMinutes": 120
+        },
+        {
+          "day": 5,
+          "xp": 48,
+          "baseWorkMinutes": 120
+        }
+      ]
+    },
+    {
+      "version": "new",
+      "skill": "scavenging",
+      "baseWorkBudgetPerDay": 120,
+      "levelDays": {
+        "2": 3,
+        "3": 6,
+        "4": 10,
+        "5": 15,
+        "6": 21,
+        "7": 29,
+        "8": 37,
+        "9": 46,
+        "10": 57
+      },
+      "reaches10": true,
+      "days": 57,
+      "totalXp": 2700,
+      "baseWorkMinutes": 6750,
+      "completedActions": 225,
+      "firstFiveDays": [
+        {
+          "day": 1,
+          "xp": 48,
+          "baseWorkMinutes": 120
+        },
+        {
+          "day": 2,
+          "xp": 48,
+          "baseWorkMinutes": 120
+        },
+        {
+          "day": 3,
+          "xp": 48,
+          "baseWorkMinutes": 120
+        },
+        {
+          "day": 4,
+          "xp": 48,
+          "baseWorkMinutes": 120
+        },
+        {
+          "day": 5,
+          "xp": 48,
+          "baseWorkMinutes": 120
+        }
+      ]
+    },
+    {
+      "version": "new",
+      "skill": "gathering",
+      "baseWorkBudgetPerDay": 180,
+      "levelDays": {
+        "2": 2,
+        "3": 5,
+        "4": 8,
+        "5": 12,
+        "6": 17,
+        "7": 23,
+        "8": 30,
+        "9": 37,
+        "10": 45
+      },
+      "reaches10": true,
+      "days": 45,
+      "totalXp": 2700,
+      "baseWorkMinutes": 7200,
+      "completedActions": 317,
+      "firstFiveDays": [
+        {
+          "day": 1,
+          "xp": 60,
+          "baseWorkMinutes": 160
+        },
+        {
+          "day": 2,
+          "xp": 60,
+          "baseWorkMinutes": 160
+        },
+        {
+          "day": 3,
+          "xp": 60,
+          "baseWorkMinutes": 160
+        },
+        {
+          "day": 4,
+          "xp": 60,
+          "baseWorkMinutes": 160
+        },
+        {
+          "day": 5,
+          "xp": 60,
+          "baseWorkMinutes": 160
+        }
+      ]
+    },
+    {
+      "version": "new",
+      "skill": "scavenging",
+      "baseWorkBudgetPerDay": 180,
+      "levelDays": {
+        "2": 2,
+        "3": 5,
+        "4": 8,
+        "5": 12,
+        "6": 17,
+        "7": 23,
+        "8": 30,
+        "9": 37,
+        "10": 45
+      },
+      "reaches10": true,
+      "days": 45,
+      "totalXp": 2700,
+      "baseWorkMinutes": 6750,
+      "completedActions": 225,
+      "firstFiveDays": [
+        {
+          "day": 1,
+          "xp": 60,
+          "baseWorkMinutes": 150
+        },
+        {
+          "day": 2,
+          "xp": 60,
+          "baseWorkMinutes": 150
+        },
+        {
+          "day": 3,
+          "xp": 60,
+          "baseWorkMinutes": 150
+        },
+        {
+          "day": 4,
+          "xp": 60,
+          "baseWorkMinutes": 150
+        },
+        {
+          "day": 5,
+          "xp": 60,
+          "baseWorkMinutes": 150
+        }
+      ]
+    }
+  ],
+  "workCarryCases": [
+    {
+      "requiredWork": 9,
+      "actions": 5,
+      "M": 1,
+      "worldMinutes": 45,
+      "previousRoundedMinutes": 50,
+      "finalCredit": 0,
+      "details": [
+        {
+          "action": 1,
+          "ticks": 2,
+          "credit": 1
+        },
+        {
+          "action": 2,
+          "ticks": 2,
+          "credit": 2
+        },
+        {
+          "action": 3,
+          "ticks": 2,
+          "credit": 3
+        },
+        {
+          "action": 4,
+          "ticks": 2,
+          "credit": 4
+        },
+        {
+          "action": 5,
+          "ticks": 1,
+          "credit": 0
+        }
+      ]
+    },
+    {
+      "requiredWork": 9.5,
+      "actions": 10,
+      "M": 1,
+      "worldMinutes": 95,
+      "previousRoundedMinutes": 100,
+      "finalCredit": 0,
+      "details": [
+        {
+          "action": 1,
+          "ticks": 2,
+          "credit": 0.5
+        },
+        {
+          "action": 2,
+          "ticks": 2,
+          "credit": 1
+        },
+        {
+          "action": 3,
+          "ticks": 2,
+          "credit": 1.5
+        },
+        {
+          "action": 4,
+          "ticks": 2,
+          "credit": 2
+        },
+        {
+          "action": 5,
+          "ticks": 2,
+          "credit": 2.5
+        },
+        {
+          "action": 6,
+          "ticks": 2,
+          "credit": 3
+        },
+        {
+          "action": 7,
+          "ticks": 2,
+          "credit": 3.5
+        },
+        {
+          "action": 8,
+          "ticks": 2,
+          "credit": 4
+        },
+        {
+          "action": 9,
+          "ticks": 2,
+          "credit": 4.5
+        },
+        {
+          "action": 10,
+          "ticks": 1,
+          "credit": 0
+        }
+      ]
+    },
+    {
+      "requiredWork": 9,
+      "actions": 10,
+      "M": 1.5,
+      "worldMinutes": 140,
+      "previousRoundedMinutes": 150,
+      "finalCredit": 3.3332,
+      "details": [
+        {
+          "action": 1,
+          "ticks": 3,
+          "credit": 1
+        },
+        {
+          "action": 2,
+          "ticks": 3,
+          "credit": 2
+        },
+        {
+          "action": 3,
+          "ticks": 3,
+          "credit": 3
+        },
+        {
+          "action": 4,
+          "ticks": 2,
+          "credit": 0.6666
+        },
+        {
+          "action": 5,
+          "ticks": 3,
+          "credit": 1.6666
+        },
+        {
+          "action": 6,
+          "ticks": 3,
+          "credit": 2.6666
+        },
+        {
+          "action": 7,
+          "ticks": 2,
+          "credit": 0.3332
+        },
+        {
+          "action": 8,
+          "ticks": 3,
+          "credit": 1.3332
+        },
+        {
+          "action": 9,
+          "ticks": 3,
+          "credit": 2.3332
+        },
+        {
+          "action": 10,
+          "ticks": 3,
+          "credit": 3.3332
+        }
+      ]
+    },
+    {
+      "requiredWork": 3.5,
+      "actions": 20,
+      "M": 1,
+      "worldMinutes": 100,
+      "previousRoundedMinutes": 100,
+      "finalCredit": 4.9999,
+      "details": [
+        {
+          "action": 1,
+          "ticks": 1,
+          "credit": 1.5
+        },
+        {
+          "action": 2,
+          "ticks": 1,
+          "credit": 3
+        },
+        {
+          "action": 3,
+          "ticks": 1,
+          "credit": 4.5
+        },
+        {
+          "action": 4,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 5,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 6,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 7,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 8,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 9,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 10,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 11,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 12,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 13,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 14,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 15,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 16,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 17,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 18,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 19,
+          "ticks": 1,
+          "credit": 4.9999
+        },
+        {
+          "action": 20,
+          "ticks": 1,
+          "credit": 4.9999
+        }
+      ]
+    }
+  ],
+  "conclusion": "旧搜集有有限经验硬上限；统一按基础工作量计经验并加有日额的遗迹勘整后，两门在相同基础工作预算下均可持续升10级。不是强迫每日训练或正式通关时长承诺。"
+}
