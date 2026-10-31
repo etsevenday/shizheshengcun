@@ -188,4 +188,187 @@ public class B7dCombatTests : BattleTestBase
         Assert.That(spear.Durability, Is.EqualTo(d0 - 1).Within(1e-9), "整条指令耐久 −1");
         Assert.That(b.SkillUsedRound["spear_07"], Is.EqualTo(b.Round), "CD1");
     }
+
+    // ───────────── M175：强制位移、攀附拉扯、突进斩与挣脱 ─────────────
+
+    private void EnemyAct(GameState s, BattleEnemy e) =>
+        typeof(GameEngine).GetMethod("EnemyActivation", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { s, e, false });
+
+    /// <summary>RES-Q79/RES-Q80b：攀附感染者拉扯 0 直接伤害，但命中后照判控制，成功则单人也真实前移一格；1 号位边界不移、不判控制、不给稳态。</summary>
+    [Test]
+    public void RES_Q79_Q80b_ClingerPull_ZeroDamage_RealMove_BoundaryNoRoll()
+    {
+        var fm = (JObject)Res()["positions"]!["forcedMove"]!;
+        Assert.That(((int)fm["pull"]!, (int)fm["knockback"]!), Is.EqualTo((-1, 1)));
+        Assert.That((double)Res()["enemyAssumptions"]!["z_clingerPullDamage"]!, Is.EqualTo(0));
+
+        var s = Fight(9201, "z_clinger");
+        Ready(s);
+        var b = s.Battle!;
+        var c = Enemy(s, 1);
+        Assert.That(c.Intent, Is.EqualTo("pull"));
+        Place(s, (1, 2));
+        StandAt(s, 2);
+        var h0 = s.Stats.Health;
+        var q = b.Queue.ToList();
+        Force(s, Below(0.01), Any(), Below(0.01));   // 命中、抽值（倍率0）、控制成功
+        EnemyAct(s, c);
+        Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(1), "单人也被拉到 1 号位，不归位、不忽略：" + string.Join(" | ", b.Log.TakeLast(3)));
+        Assert.That(s.Stats.Health, Is.EqualTo(h0), "拉扯 0 直接伤害");
+        Assert.That(b.PlayerSteadyUntilRound, Is.EqualTo(b.Round + 1), "控制成功得稳态");
+        Assert.That(b.Log.Last(), Does.Contain("不造成伤害").And.Contain("你被拉动到1号位"));
+        Assert.That(b.Queue, Is.EqualTo(q), "强制位移不改已锁行动队列");
+
+        // 1 号位再拉：边界，不移动、不判控制（只抽命中一次）
+        b.PlayerSteadyUntilRound = 0;
+        Force(s, Below(0.01), Any());
+        var rng = s.Rng.State;
+        EnemyAct(s, c);
+        Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(1));
+        Assert.That(b.PlayerSteadyUntilRound, Is.EqualTo(0), "无效位移不给稳态");
+        Assert.That(b.Log.Last(), Does.Contain("你已在1号位，无法再被拉动（不判控制）"));
+        var probe = new Rng { State = rng };
+        probe.NextDouble();
+        probe.NextDouble();
+        Assert.That(s.Rng.State, Is.EqualTo(probe.State), "边界只抽了命中与抽值，没有抽控制");
+
+        // 控制失败：命中但稳住
+        StandAt(s, 3);
+        Force(s, Below(0.01), Any(), AtLeast(0.99));
+        EnemyAct(s, c);
+        Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(3));
+        Assert.That(b.Log.Last(), Does.Contain("你稳住了，没有被拉动"));
+    }
+
+    /// <summary>RES-Q80b：搬运感染者推撞击退：命中后判控制，成功则单人后移一格（伤害照算）；4 号位边界不移、不判控制。</summary>
+    [Test]
+    public void RES_Q80b_HaulerKnockback_MovesSolo_BoundaryKeepsDamage()
+    {
+        var s = Fight(9202, "z_hauler");
+        Ready(s);
+        var b = s.Battle!;
+        var h = Enemy(s, 1);
+        h.Intent = "charge";
+        h.IntentStep = 1;
+        var h0 = s.Stats.Health;
+        Force(s, Below(0.01), Any(), Below(0.01));   // 命中、抽值、控制成功
+        EnemyAct(s, h);
+        Assert.That(s.Stats.Health, Is.LessThan(h0), "推撞伤害照算");
+        Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(2), "被击退到 2 号位（空位直接移入）");
+        Assert.That(b.Log.Last(), Does.Contain("你被击退到2号位"));
+
+        // 4 号位边界：直接调攻击步骤（4 号位本不在推撞目标位里），伤害照算、不移、不判控制
+        StandAt(s, 4);
+        h.Intent = "charge";
+        h.IntentStep = 1;
+        b.PlayerSteadyUntilRound = 0;
+        s.Stats.Health = 20;
+        Force(s, Below(0.01), Any());
+        var rng = s.Rng.State;
+        typeof(GameEngine).GetMethod("DoAttackStep", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { s, b, h, E.StepOf(h), false, 1.0, false });
+        Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(4));
+        Assert.That(s.Stats.Health, Is.LessThan(20), "其他伤害照算");
+        Assert.That(b.PlayerSteadyUntilRound, Is.EqualTo(0));
+        Assert.That(b.Log.Last(), Does.Contain("你已在4号位，无法再被击退（不判控制）"));
+        var probe = new Rng { State = rng };
+        probe.NextDouble();
+        probe.NextDouble();
+        Assert.That(s.Rng.State, Is.EqualTo(probe.State), "只抽了命中与抽值");
+    }
+
+    /// <summary>RES-Q80b：我方逼退把敌人往后推一格：后格空则移入、有同伴则交换（不另判控制）。</summary>
+    [Test]
+    public void RES_Q80b_PlayerKnockback_EmptyMove_AllySwap()
+    {
+        var s = Fight(9203, "worker", "shambler");
+        Ready(s);
+        var b = s.Battle!;
+        Arm(s, "wooden_spear");
+        s.Skills["spear"].Level = 3;
+        Place(s, (1, 1), (2, 3));
+        foreach (var e in b.Alive) e.Hp = 50;
+        Force(s, Below(0.01), AtLeast(0.99), Any(), Below(0.01));
+        Assert.That(Cmd(s, "spear_03", 1).Ok, Is.True);
+        Assert.That((Enemy(s, 1).Slot, Enemy(s, 2).Slot), Is.EqualTo(("2", "3")), "后格空：移入");
+        b.PlayerAp = 3;
+        b.SkillUsedRound.Clear();
+        Enemy(s, 1).SteadyUntilRound = 0;
+        Force(s, Below(0.01), AtLeast(0.99), Any(), Below(0.01));
+        Assert.That(Cmd(s, "spear_03", 1).Ok, Is.True);
+        Assert.That((Enemy(s, 1).Slot, Enemy(s, 2).Slot), Is.EqualTo(("3", "2")), "后格有同伴：一次原子交换");
+        Assert.That(b.Log.Last(), Does.Contain("被击退到3号位（游荡尸到2号位）"));
+    }
+
+    /// <summary>RES-Q80d：突进斩 123→12：1 号位原地出手，2/3 号位前移一格再攻，4 号位不可用（不靠单人兼容绕过）。</summary>
+    [Test]
+    public void RES_Q80d_Lunge_InPlaceAt1_AdvanceFrom3_RejectedAt4()
+    {
+        var bs = (JObject)Res()["positions"]!["boundarySkillException"]!["blade_07"]!;
+        Assert.That(((JArray)bs["ownSlots"]!).Select(x => (int)x!), Is.EqualTo(new[] { 1, 2, 3 }));
+        Assert.That(E.SkillNode("blade_07")!.Positions, Is.EqualTo("123→12"));
+
+        var s = Fight(9204, "worker");
+        Ready(s);
+        var b = s.Battle!;
+        Arm(s, "stone_knife");
+        s.Skills["blade"].Level = 7;
+        Enemy(s, 1).Hp = 50;
+        Assert.That(E.PreviewCommand(s, BattleCommand.Of("blade_07", 1)).Notes, Has.Some.Contains("在1号位：原地出手"));
+        Force(s, Below(0.01), AtLeast(0.99), Any());
+        Assert.That(Cmd(s, "blade_07", 1).Ok, Is.True);
+        Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(1));
+        Assert.That(b.Log.Last(), Does.Contain("在1号位原地出手"));
+
+        b.PlayerActing = true;
+        b.PlayerAp = 3;
+        b.SkillUsedRound.Clear();
+        StandAt(s, 4);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("blade_07", 1)), Does.Contain("只能在我方1、2、3号位使用（你在4号位）"));
+        StandAt(s, 3);
+        Assert.That(E.PreviewCommand(s, BattleCommand.Of("blade_07", 1)).Notes, Has.Some.Contains("先前移到2号位再攻击"));
+        Force(s, Below(0.01), AtLeast(0.99), Any());
+        Assert.That(Cmd(s, "blade_07", 1).Ok, Is.True);
+        Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(2), "前移一格");
+        Assert.That(b.PlayerAp, Is.EqualTo(1), "技能 2AP，自带移动不另收调整站位的 AP");
+    }
+
+    /// <summary>RES-Q80d：挣脱 1234→自身：清减速并后移一格；4 号位原地清；无可解状态且在 4 号位整条拒绝（不扣成本/冷却）；不解失衡/出血。</summary>
+    [Test]
+    public void RES_Q80d_Struggle_BackOne_InPlaceAt4_NoBenefitRejected()
+    {
+        var u = (JObject)Res()["positions"]!["boundarySkillException"]!["unarmed_07"]!;
+        Assert.That(E.SkillExecOf("unarmed_07")!.CleanseStatuses, Is.EqualTo(((JArray)u["clears"]!).Select(x => (string)x!)));
+        Assert.That(E.SkillNode("unarmed_07")!.Positions, Is.EqualTo("1234→自身"));
+
+        var s = Fight(9205, "worker");
+        Ready(s);
+        var b = s.Battle!;
+        s.Skills["unarmed"].Level = 7;
+        b.PlayerAp = 6;
+        StandAt(s, 4);
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("unarmed_07")), Does.Contain("整条无收益"));
+        var e0 = s.Stats.Energy;
+        Assert.That(Cmd(s, "unarmed_07").Ok, Is.False);
+        Assert.That((b.PlayerAp, s.Stats.Energy, b.SkillUsedRound.ContainsKey("unarmed_07")), Is.EqualTo((6, e0, false)), "拒绝不扣成本、不进冷却");
+        b.PlayerSlowActive = true;
+        Assert.That(E.PreviewCommand(s, BattleCommand.Of("unarmed_07")).EffectText, Is.EqualTo("解除减速；已在4号位，原地不移"));
+        Assert.That(Cmd(s, "unarmed_07").Ok, Is.True);
+        Assert.That((b.PlayerSlowActive, GameEngine.PlayerPos(b)), Is.EqualTo((false, 4)), "4 号位原地清");
+
+        b.SkillUsedRound.Clear();
+        b.PlayerAp = 6;
+        StandAt(s, 2);
+        b.PlayerSlowPending = true;
+        b.PlayerStagger = true;
+        E.ApplyPlayerBleed(s);
+        Assert.That(Cmd(s, "unarmed_07").Ok, Is.True);
+        Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(3), "后移一格");
+        Assert.That((b.PlayerSlowPending, b.PlayerStagger, s.Body.BleedTriggers > 0), Is.EqualTo((false, true, true)), "只解减速，不解失衡、出血");
+        // 没有可解状态但还能后移：仍有收益，可用
+        b.SkillUsedRound.Clear();
+        b.PlayerAp = 6;
+        Assert.That(E.CommandBlocked(s, BattleCommand.Of("unarmed_07")), Is.Null);
+    }
 }

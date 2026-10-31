@@ -273,8 +273,7 @@ namespace Survival.Core.Engine
             if (wi != null && !HasWear(wi, Config.Wear.PerExecutedAttackCommand)) return $"{w.Name}耐久不足（{DurabilityText(wi)}），可切换武器页";
             if (x.NoSingleShot && w.UsesMagazine && w.MagazineCapacity < 2) return $"{w.Name}是单发弩，不能{n.Name}";
             if (!AmmoReady(s, w, wi, AmmoNeed(x, w))) return AmmoReason(w, x);
-            // 突进斩：攻击前前移 1 位，移位失败拒绝整次；我方只剩一人时按 1 号位出手、不需前移（开发假设 B7-5）
-            if (x.Advance > 0 && b.Allies.Count > 1 && PlayerPos(b) <= 1) return "已在最前排，无法前移";
+            // 突进斩（Q80）：使用位 123；1 号位原地出手，2/3 号位前移一格（前格空则移、有同伴则交换）后攻击；4 号位由使用位拒绝
             var targets = SkillTargetPositions(s, n, w);
             if (IsAreaShot(x, w)) return SkillTargets(b, x, w, null).Count == 0 ? "敌方1、2号位没有目标" : null;
             return TargetBlocked(b, c, targets, n.Name);
@@ -454,7 +453,7 @@ namespace Survival.Core.Engine
                     : "点起点敌人：从它的号位打到4号位，按离起点的格数伤害×" + string.Join("/", x.SuffixFactors.Select(Fmt.T)));
             if (x.ExecuteHpRatio is double r) notes.Add($"目标健康≤上限{Fmt.Pct(r)}时伤害再×{Fmt.T(x.ExecuteFactor)}");
             if (x.RemoveGuard > 0) notes.Add("先移除目标1次格挡，再结算伤害");
-            if (x.Advance > 0) notes.Add(b.Allies.Count <= 1 ? "只剩你一人：按1号位出手，不需前移" : "先前移1位再攻击；移位失败整次不执行");
+            if (x.Advance > 0) notes.Add(PlayerPos(b) <= 1 ? "在1号位：原地出手，不前移" : $"先前移到{PosName(PlayerPos(b) - 1)}再攻击（{(AllyAt(b, PlayerPos(b) - 1) != null ? "与前面的同伴交换" : "前面空着，直接移过去")}；不另付调整站位的AP）");
             foreach (var fx in x.Effects)
             {
                 var t0 = targets.FirstOrDefault();
@@ -476,7 +475,7 @@ namespace Survival.Core.Engine
             "weak" => $"虚弱：目标直接伤害×{Fmt.T(fx.Value)}，{fx.Rounds}轮",
             "mark" => $"标记：我方对它攻击命中能力+{Fmt.T(fx.Value)}，{fx.Rounds}轮",
             "armor_break" => $"破甲：护甲−{Fmt.T(fx.Value + w.Trait("armorBreakBonus"))}，{fx.Rounds}轮（最低0）",
-            "knockback" => "击退：目标与身后的同伴换位（身后没有同伴则不动）",
+            "knockback" => "击退：目标往后移1格（后面空着就移过去，有同伴就互换；已在4号位不移、不判控制）",
             "cancel_charge" => "打断：取消目标本轮还没执行的蓄力，改为普通攻击" + (w.Trait("interruptSlow") > 0 ? $"，下轮速度额外−{Fmt.T(w.Trait("interruptSlow"))}" : ""),
             "bleed" => $"流血：每大回合开始−{Fmt.T(Config.Statuses.Bleed.DamagePerOwnActivation)}，共{Config.Statuses.Bleed.RefreshMaxTriggers + (int)w.Trait("bleedTriggers")}次（丧尸免疫）",
             _ => fx.Status,
@@ -506,7 +505,7 @@ namespace Survival.Core.Engine
                 if (wi?.Durability != null) spent.Add(Wear(wi, Config.Wear.PerExecutedAttackCommand));
                 AddNoise(s, b, AttackNoise(s, w));
                 b.SkillUsedRound[sp.Node!.Id] = b.Round;
-                if (x.Advance > 0) parts.Add(b.Allies.Count <= 1 ? "只剩你一人，按1号位出手" : AdvancePlayer(b));
+                if (x.Advance > 0) parts.Add(PlayerPos(b) <= 1 ? "在1号位原地出手" : AdvancePlayer(b));
             }
             var targets = sp.Desperate ? new List<BattleEnemy> { BattleEnemyAt(b, c.Target!.Value)! } : SkillTargets(b, sp.Exec!, w, c.Target);
             // 贯穿（Q82）：提交时锁全部目标与起点号位，途中倒下不把后面的目标补到前格刷倍率
@@ -623,6 +622,8 @@ namespace Survival.Core.Engine
                     parts.Add($"{cfg.Name}出血（{Fmt.T(t.BleedDamage)}×{t.BleedTriggers}）");
                     continue;
                 }
+                // 击退（Q80）：目标已在 4 号位时没有可去的格，不移动、不判控制、不给稳态
+                if (fx.Status == "knockback" && t.Pos >= Config.Scope.Slots.Count) { parts.Add($"{cfg.Name}已在{PosName(t.Pos)}，无法再被击退（不判控制）"); continue; }
                 var ctl = "";
                 if (fx.Control)
                 {
@@ -669,10 +670,12 @@ namespace Survival.Core.Engine
                     }
                     case "knockback":
                     {
-                        var behind = b.Alive.FirstOrDefault(e => e.Pos == t.Pos + 1);
-                        if (behind == null) { parts.Add($"{cfg.Name}身后没有同伴，没有被击退{ctl}"); break; }
-                        (t.Slot, behind.Slot) = (behind.Slot, t.Slot);
-                        parts.Add($"{cfg.Name}被击退到{PosName(t.Pos)}（{EnemyName(behind)}到{PosName(behind.Pos)}）{ctl}");
+                        // Q80：后移一格——后格空则移入，有同侧存活同伴则一次原子交换（被换的同伴不另判控制、不多激活）
+                        var from = t.Pos;
+                        var behind = b.Alive.FirstOrDefault(e => e.Pos == from + 1);
+                        if (behind != null) behind.Slot = from.ToString();
+                        t.Slot = (from + 1).ToString();
+                        parts.Add($"{cfg.Name}被击退到{PosName(t.Pos)}{(behind != null ? $"（{EnemyName(behind)}到{PosName(from)}）" : "")}{ctl}");
                         break;
                     }
                     case "cancel_charge":
@@ -702,12 +705,13 @@ namespace Survival.Core.Engine
             _ => "受影响",
         };
 
-        /// <summary>突进斩（多人时）：与前一位队友换位。单人时不调用。</summary>
+        /// <summary>突进斩（Q80）：前移一格——前格空则移入，有同伴则交换；在 1 号位时不调用（原地出手）。</summary>
         private string AdvancePlayer(BattleState b)
         {
-            var me = PlayerPos(b) - 1;
-            (b.Allies[me], b.Allies[me - 1]) = (b.Allies[me - 1], b.Allies[me]);
-            return $"你前移到{PosName(PlayerPos(b))}";
+            var me = PlayerPos(b);
+            var mate = AllyAt(b, me - 1);
+            MoveAlly(b, me, me - 1);
+            return $"你前移到{PosName(PlayerPos(b))}{(mate != null ? "（与同伴交换）" : "")}";
         }
     }
 }

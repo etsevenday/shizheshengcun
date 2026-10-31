@@ -13,7 +13,7 @@ namespace Survival.Core.Engine
     /// - AP：普通 3、精英 4、追击 2；每次正常激活执行一个 2AP 主意图。攻击类意图先满足己位/射程：
     ///   站得太靠后 → 1AP 前移（与前一位同伴换位），余 AP 只做一次普通攻击；后排型（己位 34）被压到 1、2 号位 → 通用弱攻击（伤害×0.7）；
     ///   余下的 AP 不另附攻击、不自动防御（开发假设 B7-9）。追击 2AP 只做一次普通攻击或前移，不放主意图群招。
-    /// - 敌方攻击默认目标我方 1、2 号位（主角在 1 号位）；我方只有一人时，拉扯/击退没有可移动的位置。
+    /// - 敌方攻击按我方真实号位判断能否够到；拉扯/击退命中后判控制，成功则真实移一格（Q80，单人也移）。
     /// </summary>
     public sealed partial class GameEngine
     {
@@ -378,8 +378,10 @@ namespace Survival.Core.Engine
             var extra = new List<string>();
             if (!plain && kind == "pull")
             {
-                // 拉扯（A09 攀附感染者）：命中后把目标往前拉；我方只剩一人时没有可移动的位置，不判控制、不造成伤害
-                BattleLog(s, $"{EnemyName(e)}{verb}命中：{(b.Allies.Count <= 1 ? "只剩你一人，没有被拉动位置" : "多人位移在后续版本")}。");
+                // 拉扯（A09 攀附感染者，Q79/Q80）：0 直接伤害，但合法命中后照判控制，成功则真实前移一格（单人也移；1 号位边界不移、不判控制）
+                var px = new List<string>();
+                DisplacePlayer(s, b, -Math.Max(1, st.Pull), "pull", px);
+                BattleLog(s, $"{EnemyName(e)}{verb}命中（不造成伤害）：{string.Join("，", px)}。");
                 TryCounter(s, b, e);
                 return;
             }
@@ -404,7 +406,8 @@ namespace Survival.Core.Engine
                 b.PlayerArmorBreakUntilRound = Math.Max(on ? b.PlayerArmorBreakUntilRound : 0, b.Round + st.ArmorBreakRounds);
                 extra.Add($"你被破甲（护甲−{Fmt.T(b.PlayerArmorBreak)}，到第{b.PlayerArmorBreakUntilRound}轮末）");
             }
-            if (!plain && st.Knockback > 0) extra.Add(b.Allies.Count <= 1 ? "只剩你一人，没有被击退位置" : "击退（多人位移在后续版本）");
+            // 击退（Q80）：命中（含被护甲完全挡住）后判控制，成功则真实后移一格；4 号位边界不移、不判控制，伤害照算
+            if (!plain && st.Knockback > 0) DisplacePlayer(s, b, st.Knockback, "knockback", extra);
             if (dmg <= 0)
             {
                 if (armorWear != "") extra.Add(armorWear);
@@ -456,6 +459,33 @@ namespace Survival.Core.Engine
             }
             BattleLog(s, $"{EnemyName(e)}{verb}命中，健康−{Fmt.N(dmg)}（恐慌{Fmt.N(b.Panic)}）{(extra.Count > 0 ? "：" + string.Join("，", extra) : "")}。");
             TryCounter(s, b, e);
+        }
+
+        /// <summary>
+        /// 主角被强制位移（Q80：拉扯 −1、击退 +1）：目的格越界（1 号位再拉、4 号位再退）不移动、不判控制、不给稳态；
+        /// 否则按 Q63 控制抗性（含位移抵抗）判一次控制，成功则空格移入或与该格同伴一次原子交换（不再给被动同伴判控制），
+        /// 不多激活、不改已锁行动队列与追击进度。说明写进 extra。
+        /// </summary>
+        private void DisplacePlayer(GameState s, BattleState b, int delta, string status, List<string> extra)
+        {
+            var from = PlayerPos(b);
+            var to = from + delta;
+            var verb = delta < 0 ? "拉动" : "击退";
+            if (to < 1 || to > Config.Scope.Slots.Count)
+            {
+                extra.Add($"你已在{PosName(from)}，无法再被{verb}（不判控制）");
+                return;
+            }
+            var steady = b.PlayerSteadyUntilRound;
+            if (!RollControl(s, b, PlayerControlResist(s, b, status), ref steady, out var cc))
+            {
+                extra.Add($"你稳住了，没有被{verb}（控制{Fmt.Pct(cc)}）");
+                return;
+            }
+            b.PlayerSteadyUntilRound = steady;
+            var mate = AllyAt(b, to);
+            MoveAlly(b, from, to);
+            extra.Add($"你被{verb}到{PosName(to)}{(mate != null ? "（与同伴交换）" : "")}（控制{Fmt.Pct(cc)}）");
         }
 
         /// <summary>膨胀感染者死亡时喷溅我方 1、2 号位：各 H−值，护甲照算，不判感染（A09 §1）。</summary>

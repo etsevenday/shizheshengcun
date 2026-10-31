@@ -105,7 +105,7 @@ namespace Survival.Core.Engine
                 case "buff":
                     if (x.ChargeFactor > 0 && AxeChargeOn(b)) return "已蓄力（不叠）";
                     if (x.BraceCharges > 0 && b.BraceCharges > 0) return "已架矛（不叠）";
-                    if (x.Cleanse && !b.PlayerSlowPending && !b.PlayerSlowActive && b.Allies.Count <= 1) return "你没有被扯腿/拉扯等束缚，只剩你一人也无法后移";
+                    if (x.Cleanse && StruggleOutcome(b, x) is var so && !so.cleanse && so.to == 0) return "你在4号位不能再后移，也没有可解除的减速/束缚/标记（整条无收益，不扣成本）";
                     return null;
                 case "ally":
                     if (x.InspireAccuracy > 0 && InspireActive(b) && b.InspireBonus >= x.InspireAccuracy) return "已有鼓舞（同名不叠）";
@@ -161,7 +161,7 @@ namespace Survival.Core.Engine
                     var f = shield != null ? Config.CombatMath.ShieldGuardFactor : Config.CombatMath.GuardFactor;
                     p.Notes.Add($"格挡{x.GuardCharges}次：下一次受到的直接伤害×{Fmt.T(f)}{(shield != null ? $"（盾类格挡：当前页{ItemName(shield.ItemId)}耐久−{Fmt.T(Config.Wear.PerExecutedAttackCommand)}）" : GuardShieldMissingReason(s) is string gw ? $"（{gw}）" : "")}，到你下次正常行动开始清除");
                     if (x.CounterFactor > 0) p.Notes.Add($"反击：受到直接攻击命中后，用{w.Name}反击1次，伤害×{Fmt.T(x.CounterFactor * w.Trait("counterDamage", 1))}（反击不再触发反应）");
-                    if (x.DisplaceResist > 0) p.Notes.Add($"位移抵抗+{Fmt.T(x.DisplaceResist)}个百分点，到第{b.Round + x.BuffRounds}轮末（只剩你一人时没有可被移动的位置）");
+                    if (x.DisplaceResist > 0) p.Notes.Add($"位移抵抗+{Fmt.T(x.DisplaceResist)}个百分点，到第{b.Round + x.BuffRounds}轮末（被拉扯/击退判控制时生效，与装备位移抵抗取强）");
                     if (x.TeamGuardFactor > 0 && solo) p.Notes.Add("其他队员的减伤：现在只有你一人，没有效果");
                     break;
                 }
@@ -172,7 +172,13 @@ namespace Survival.Core.Engine
                         var charges = Math.Min(Math.Max(x.BraceMax, 1), x.BraceCharges + (int)w.Trait("braceExtra"));
                         p.Notes.Add($"迎击{charges}次：敌人主动前移后，用{w.Name}迎击，伤害×{Fmt.T(x.BraceFactor * w.Trait("braceDamage", 1))}，到你下次正常行动开始清除");
                     }
-                    if (x.Cleanse) p.Notes.Add(solo ? "解除扯腿/拉扯造成的减速；只剩你一人，不能后移" : "解除束缚/标记并后移1位");
+                    if (x.Cleanse)
+                    {
+                        var (cl, to) = StruggleOutcome(b, x);
+                        p.EffectText = (cl ? "解除减速" : "没有可解除的减速/束缚/标记") + "；" + (to > 0 ? $"后移到{PosName(to)}{(AllyAt(b, to) != null ? "（与同伴交换）" : "")}" : "已在4号位，原地不移");
+                        p.Notes.Insert(0, p.EffectText);
+                        p.Notes.Add("只解减速/束缚/标记；不解失衡、虚弱、出血、破甲、感染、保护");
+                    }
                     break;
                 case "ally":
                     if (x.NeedsAllies) p.Notes.Add(NeedAlliesReason(n));
@@ -262,11 +268,18 @@ namespace Survival.Core.Engine
                     }
                     if (x.Cleanse)
                     {
-                        var had = b.PlayerSlowPending || b.PlayerSlowActive;
-                        b.PlayerSlowPending = false;
-                        b.PlayerSlowActive = false;
+                        // 挣脱（Q80）：清减速/束缚/标记（现在主角身上只有减速会出现）并后移一格；4 号位原地清
+                        var (had, to) = StruggleOutcome(b, x);
+                        if (had) { b.PlayerSlowPending = false; b.PlayerSlowActive = false; }
                         parts.Add(had ? "挣脱了束缚（减速解除）" : "没有束缚");
-                        parts.Add(solo ? "只剩你一人，不后移" : "后移需队友换位（后续版本）");
+                        if (to > 0)
+                        {
+                            var from = PlayerPos(b);
+                            var mate = AllyAt(b, to);
+                            MoveAlly(b, from, to);
+                            parts.Add($"后移到{PosName(to)}{(mate != null ? "（与同伴交换）" : "")}");
+                        }
+                        else parts.Add("已在4号位，原地挣脱");
                     }
                     break;
                 case "ally":
@@ -356,6 +369,18 @@ namespace Survival.Core.Engine
             }
             if (energy > 0) parts.Add($"体力−{Fmt.N(energy)}");
             BattleLog(s, $"你{n.Name}（{w.Name}）：{string.Join("，", parts)}。");
+        }
+
+        /// <summary>
+        /// 挣脱的效果（预览、判定、执行同源）：能否清掉可解状态（合同 cleanseStatuses：减速/束缚/标记；主角目前只会有减速），
+        /// 后移的目的槽（4 号位为 0：原地清）。两样都没有即“整条无收益”。
+        /// </summary>
+        private (bool cleanse, int to) StruggleOutcome(BattleState b, SkillExecConfig x)
+        {
+            var slow = (x.CleanseStatuses.Count == 0 || x.CleanseStatuses.Contains("slow")) && (b.PlayerSlowPending || b.PlayerSlowActive);
+            var me = PlayerPos(b);
+            var to = x.MoveBack > 0 && me + x.MoveBack <= Config.Scope.Slots.Count ? me + x.MoveBack : 0;
+            return (slow, to);
         }
 
         /// <summary>从随身取用未变质的物资（按先到期），返回实际取到的数量。</summary>
