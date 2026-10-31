@@ -16,6 +16,9 @@
     var activeIdx = acting != null ? GameEngine.QueueCode(b, acting) : (b.Cursor < b.Queue.Count ? b.Queue[b.Cursor] : int.MinValue);
     var actorId = acting ?? (activeIdx <= 0 && activeIdx != int.MinValue ? GameEngine.QueueActor(b, activeIdx) : null);
     var meName = actorId == null || actorId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, actorId);
+    // B9a 试玩修复 3：操作台摘要写这名成员自己的号位、体力、恐慌（等待中轮到的队友也一样，不借主角的）
+    var whoId = actorId ?? GameState.PlayerId;
+    var whoF = b.Fighter(whoId);
     var opts = e.BattleOptions(s);
     var sel = G.BattleAction == null ? null : opts.FirstOrDefault(o => o.Action == G.BattleAction && (G.BattleItem == null || o.ItemInstanceId == G.BattleItem));
     var waiting = !e.AwaitingPlayer(s);
@@ -45,7 +48,7 @@
     var turnName = allyTurn && turnFoe == null ? meName : turnFoe != null ? $"{turnFoe.Pos}号 {e.EnemyName(turnFoe)}" : "敌方";
     var actorText = dlg
         ? (allyTurn ? $"{meName} · {(b.ActingPursuit ? "追击" : "普通激活")} · 读完对话再行动" : $"{turnName} · 对话中，时间未推进")
-        : waiting ? (turnFoe != null ? $"敌方行动中：{turnName}" : "敌方行动中") : $"{meName} · {(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}";
+        : waiting ? WaitText(turnFoe, turnName) : $"{meName} · {(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}";
     var actorWait = dlg ? !allyTurn : waiting;
     var allyAim = G.BattleAllyAiming;
     var allyAimSet = G.AllyAimTargets();
@@ -124,12 +127,12 @@
             <div class="bc-who" aria-label="当前角色">
                 <div class="bc-who-head">
                     <span class="bc-face" aria-hidden="true"><img src="img/portraits/protagonist.svg" alt="" /></span>
-                    <span class="bc-who-name"><b>@meName · @(GameEngine.PlayerPos(b))号位</b><small class="@(actorWait ? "" : "now")">@(actorWait ? (GameEngine.AlliesOnField(b).Count > 1 ? "等待轮到我方" : "等待轮到你") : dlg ? "读完对话再行动" : $"{(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}")</small></span>
+                    <span class="bc-who-name"><b>@meName · @(Math.Max(1, GameEngine.AllyPos(b, whoId)))号位</b><small class="@(actorWait ? "" : "now")">@(actorWait ? (GameEngine.AlliesOnField(b).Count > 1 ? "等待轮到我方" : "等待轮到你") : dlg ? "读完对话再行动" : $"{(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}")</small></span>
                 </div>
                 <div class="bc-who-lines">
-                    <span title="体力">体力 @Ui.N(s.Stats.Energy)/@Ui.T(s.Stats.EnergyMax)</span>
-                    <span title="恐慌越高命中能力越低">恐慌 @Ui.N(b.Panic)@(b.Frightened ? "·受惊" : "")</span>
-                    @if (b.PlayerGuard) { <span class="good" title="下一次直接伤害减免">@(b.PlayerGuardSourceId != null ? "盾格挡" : "防御")×@Ui.T(b.PlayerGuardFactor)</span> }
+                    <span title="体力">体力 @Ui.N(s.Actor(whoId).Stats.Energy)/@Ui.T(s.Actor(whoId).Stats.EnergyMax)</span>
+                    <span title="恐慌越高命中能力越低">恐慌 @Ui.N(whoF.Panic)@(whoF.Frightened ? "·受惊" : "")</span>
+                    @if (whoF.Guard) { <span class="good" title="下一次直接伤害减免">@(whoF.GuardSourceId != null ? "盾格挡" : "防御")×@Ui.T(whoF.GuardFactor)</span> }
                 </div>
                 <div class="bc-gear" aria-label="战斗装备">
                     @{ var armor = e.WornItem(s, GameEngine.MeId(s), EquipSlots.Armor); var trinket = e.WornItem(s, GameEngine.MeId(s), EquipSlots.CombatAccessory); }
@@ -222,7 +225,7 @@
             }
             else if (waiting)
             {
-                <span class="bx-hint warn">@(turnFoe != null ? $"敌方行动中：{turnName}…" : "敌方行动中…")</span>
+                <span class="bx-hint warn">@(WaitText(turnFoe, turnName))…</span>
             }
             else if (sel != null && aiming)
             {
@@ -279,6 +282,20 @@
 </div>
 
 @code {
+    /// <summary>
+    /// 等待中的顶条/底栏文字（B9a 试玩修复 2）：有敌人在出手写“敌方行动中：N号 名字”；队列游标停在我方下一名（激活马上开始）写“轮到××”；
+    /// 本轮队列走完、正在推进轮末 5 分钟写“轮末结算”。不再出现光秃的“敌方行动中”。
+    /// </summary>
+    private string WaitText(BattleEnemy? turnFoe, string turnName)
+    {
+        var b = G.S.Battle!;
+        if (turnFoe != null) return $"敌方行动中：{turnName}";
+        if (b.Cursor >= b.Queue.Count) return "轮末结算（本轮推进5分钟）";
+        var q = b.Queue[b.Cursor];
+        if (q <= 0 && GameEngine.QueueActor(b, q) is string next) return $"轮到{(next == GameState.PlayerId ? "你" : G.E.ActorDisplayName(G.S, next))}";
+        return "轮末结算（本轮推进5分钟）";
+    }
+
     private static string DrawerTitle(string? d) => d switch
     {
         "supplies" => "物资查看（只读）",

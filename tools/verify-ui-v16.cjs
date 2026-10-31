@@ -195,7 +195,7 @@ const near = (a, b, tol = 2) => Math.abs(a - b) <= tol;
     if (!await waitFor(`!!document.querySelector('.title-screen') || !!document.querySelector('.game')`, 90000)) throw new Error('页面加载超时');
     // 发布流程（.github/workflows/pages.yml）在 body 末尾注入右下角构建号；本地没有就照样注入一个，用来检查底部按钮让位
     await ev(`(() => { if (document.getElementById('v16-watermark')) return; const d = document.createElement('div'); d.id = 'v16-watermark';
-      d.style.cssText = 'position:fixed;right:6px;bottom:2px;font-size:11px;color:#6d7466;pointer-events:none'; d.textContent = '构建 0000000'; document.body.appendChild(d); })()`);
+      d.style.cssText = 'position:fixed;right:6px;bottom:2px;font-size:11px;color:#6d7466;pointer-events:none'; d.textContent = '构建 2026-11-01 · 0000000'; document.body.appendChild(d); })()`);
     await domClick('新游戏');
     if (!await waitFor(`!!document.querySelector('.game .center-scroll')`, 30000)) throw new Error('没进入主界面');
     await readDialogues();

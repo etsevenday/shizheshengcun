@@ -29,7 +29,7 @@
             }
             <div class="lines enemy-lines">
                 <div><span>@ec.Name</span><b>健康@(Ui.N(w.Hp))/@(Ui.N(ec.Hp)) · 甲@(Ui.T(ec.Armor))</b></div>
-                <div><span>对你命中率</span><b>@Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))（攻击能力@(Ui.T(ec.AttackRating))对闪避@(Ui.T(e.Config.Scope.BasePlayerDodge))）</b></div>
+                <div><span>对@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))命中率</span><b>@Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.MyBaseDodge(s)))（攻击能力@(Ui.T(ec.AttackRating))对闪避@(Ui.T(e.MyBaseDodge(s)))）</b></div>
                 <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)@(ec.IsZombie ? BiteText(ec) : "")</b></div>
             </div>
         }
@@ -108,7 +108,7 @@ else if (b != null)
             @if (p.RetreatChance.HasValue)
             {
                 <div class="facts"><div class="fact"><span>撤退成功率</span><strong>@Ui.Pct(p.RetreatChance.Value)</strong></div>
-                    <div class="fact"><span>速度（你/敌方最高）</span><strong>@Ui.Speed(e.PlayerEffectiveSpeed(s, b)) / @Ui.Speed(b.Alive.Where(x => x.Hostile).Select(e.EnemyEffectiveSpeed).DefaultIfEmpty(0).Max())</strong></div></div>
+                    <div class="fact"><span>速度（@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))/敌方最高）</span><strong>@Ui.Speed(e.PlayerEffectiveSpeed(s, b)) / @Ui.Speed(b.Alive.Where(x => x.Hostile).Select(e.EnemyEffectiveSpeed).DefaultIfEmpty(0).Max())</strong></div></div>
             }
             <div class="lines">
                 @if (p.AmmoText != null) { <div><span>弹药</span><b>@p.AmmoText</b></div> }
@@ -160,7 +160,7 @@ else if (b != null)
         var t = focus.HasValue ? e.BattleEnemyAt(b, focus.Value) : null;
         <div class="detail-scroll">
             <div class="op-head">
-                <div class="eyebrow">战斗第@(b.Round)轮 · @(awaiting ? $"{(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))}的行动（剩{b.PlayerAp}AP）" : "敌方行动中")</div>
+                <div class="eyebrow">战斗第@(b.Round)轮 · @(awaiting ? $"{(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))}的行动（剩{b.PlayerAp}AP）" : G.BattleShownActor > 0 ? "敌方行动中" : b.Cursor >= b.Queue.Count ? "轮末结算" : b.Queue[b.Cursor] <= 0 ? "等待我方行动" : "敌方行动中")</div>
                 <h2>@(t != null && t.Alive ? $"{t.Slot}号位 {e.EnemyName(t)}" : "选择指令")</h2>
                 @if (t == null || !t.Alive) { <p>先在操作台选技能，再把鼠标移到亮起的目标上看预测、点击目标执行；没选技能时点敌卡只查看。</p> }
             </div>
@@ -175,7 +175,7 @@ else if (b != null)
                     @* 试玩修复 M150 UX9：被破甲时写有效护甲（基础与破甲量在括号里） *@
                     <div><span>护甲 / 闪避 / 速度</span><b>@(brk > 0 ? $"{Ui.T(Math.Max(0, ec.Armor - brk))}（基础{Ui.T(ec.Armor)}，破甲−{Ui.T(brk)}）" : Ui.T(ec.Armor)) / @Ui.T(ec.Dodge) / @Ui.Speed(e.EnemyEffectiveSpeed(t))</b></div>
                     <div><span>行动点 / 站位</span><b>@(ec.Ap)AP@(ec.Elite ? "（精英）" : "") · 己位@(ec.OwnSlots)→目标@(ec.TargetSlots) · 控制抗性@(Ui.T(ec.ControlResist))%</b></div>
-                    <div><span>攻击能力 / 对你命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
+                    <div><span>攻击能力 / 对@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.MyBaseDodge(s)))</b></div>
                     @{ var plan = G.E.PlanFor(G.S.Battle!, t, G.E.StepOf(t)); var approach = plan is GameEngine.ReachPlan.Approach or GameEngine.ReachPlan.AdvanceThenApproach; }
                     @* 试玩修复 B7d-3：迫近时不再把原意图（可能是咬击）写成“公开意图”，免得误会迫近会咬；Q97：架矛生效才写“会触发你的架矛迎击”（与敌卡意图同源） *@
                     <div><span>本轮意图</span><b>@G.E.IntentShown(G.S.Battle!, t)@(approach ? $"（迫近先花1AP、算一次主动前移，{(GameEngine.BraceActive(G.S.Battle!) ? $"会触发{(GameEngine.AlliesOnField(G.S.Battle!).Count > 1 ? "我方" : "你的")}架矛迎击（出手时再按武器、射程、耐久与剩余次数判断）；被迎击打死或打断就不再近袭" : $"{(GameEngine.AlliesOnField(G.S.Battle!).Count > 1 ? "我方" : "你")}现在没有生效的架矛，不会被迎击")}；只做一次弱近袭：不咬、不附控制、不改号位；够得着你时的原意图：{G.E.IntentLabel(t, G.S.Battle)}）" : G.E.IntentOutOfReach(G.S.Battle!, t) ? $"（公开意图：{G.E.IntentLabel(t, G.S.Battle)}）" : "")</b></div>
@@ -189,8 +189,8 @@ else if (b != null)
             }
             <div class="lines">
                 <div><span>恐慌</span><b>@Ui.N(b.Panic)@(e.Config.Panic.PenaltyFor(b.Panic) is PanicPenaltyConfig pp ? $"（≥{Ui.T(pp.Minimum)}：命中能力×{Ui.T(pp.AccuracyRatingFactor)}、撤退×{Ui.T(pp.RetreatFactor)}）" : "")</b></div>
-                <div><span>你的闪避能力</span><b>@Ui.T(e.Config.Scope.BasePlayerDodge)</b></div>
-                <div title="控制成功率=clamp(75%+控制能力−抗性, 10%, 95%)；稳态期间抗性再+30；装备“位移抵抗”只防拉扯/击退，不防失衡/减速"><span>你的控制抗性</span><b>基础@(Ui.T(e.Config.Scope.BasePlayerControlResist)) · 拉扯/击退@(Ui.T(e.PlayerControlResist(s, b, "pull")))@(b.PlayerSteadyUntilRound >= b.Round ? "（稳态另+30）" : "")</b></div>
+                <div><span>@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))的闪避能力</span><b>@Ui.T(e.MyBaseDodge(s))</b></div>
+                <div title="控制成功率=clamp(75%+控制能力−抗性, 10%, 95%)；稳态期间抗性再+30；装备“位移抵抗”只防拉扯/击退，不防失衡/减速"><span>@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))的控制抗性</span><b>基础@(Ui.T(e.MyBaseControlResist(s))) · 拉扯/击退@(Ui.T(e.PlayerControlResist(s, b, "pull")))@(b.PlayerSteadyUntilRound >= b.Round ? "（稳态另+30）" : "")</b></div>
                 <div><span>本场世界时间</span><b>@Clock.Duration(b.Ticks * e.Config.Time.TickMinutes)（每轮5分钟）</b></div>
             </div>
             @* B9：最近战斗记录移到右下“战报”（完整记录点“查看记录”），这里只放对象信息 *@

@@ -311,7 +311,7 @@
 .q-av.q-foe { background: #331f1b; }
 .q-art { flex: 0 0 auto; }
 /* 6. 发布时注入的构建号固定在右下角：底部按钮让开它 */
-.bfs-feed { padding-right: 104px; }   /* B9 遗留 2：线上构建号（“构建 xxxxxxx”约 80px 宽）与“结束行动”下沿仍重叠 4—6px，再让出 28px */
+.bfs-feed { padding-right: 176px; }   /* B9 遗留 2 / B9a 试玩修复 1：线上构建号“构建 YYYY-MM-DD · xxxxxxx”约 140px 宽（right 6px），按钮右沿要在它左边 */
 /* M220：1280 档意图框加宽（锚点左右内距 3px、意图框 2px），图标与短名同一行，伤害区间独占第二行 */
 .anc { padding-left: 3px; padding-right: 3px; }
 .anc-intent { padding: 1px 2px; }
