@@ -1233,6 +1233,8 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .party-name { display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; row-gap: 2px; }
 .party-acts { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; }
 .party-acts .eq-btn { min-height: 26px; padding: 0 6px; }
+/* B8b 试玩第 1 轮：队伍块里的“留作候补/编入同行”和遗物按钮禁用时与“登记补员/报失”一样灰字（同 .secondary:disabled 与装备行 .eq-btn:disabled：去底色、虚线框），不再像能点 */
+.party-block .eq-btn:disabled { background: transparent; color: #7d8578; border: 1px dashed var(--line); }
 .party-row .tiny { font-size: 13px; line-height: 1.3; }
 /* 右栏人物页滚动区末尾留白：最后一行按钮滚到底时不贴着底部说明条（M191） */
 .char-panel { padding-bottom: 10px; scroll-padding-bottom: 16px; }
