@@ -14,10 +14,6 @@ namespace Survival.Core.Engine
     public sealed partial class GameEngine
     {
         public const string Fists = "fists";
-        /// <summary>嚎叫尸奇数轮使玩家恐慌+8（v0.5 §10、v0.6 §06 正文；参考配置未单列字段）。</summary>
-        private const double HowlPanic = 8;
-        /// <summary>野猪偶数轮冲撞伤害×1.5（v0.5 §10、v0.6 §06 正文）。</summary>
-        private const double BoarChargeFactor = 1.5;
         private const double PlayerIndex = 0;
 
         private CombatActionConfig? Act(string id) => Config.CombatActions.FirstOrDefault(a => a.Id == id);
@@ -47,21 +43,6 @@ namespace Survival.Core.Engine
 
         /// <summary>“1号位”。</summary>
         public static string PosName(int pos) => $"{pos}号位";
-
-        /// <summary>
-        /// 敌方能在哪些站位发起攻击（开发假设 B6-3）：敌人 ownSlots/targetSlots 字段属于 B7（R26、A09）；本批敌人全是近战，1、2 号位可攻击，
-        /// 3、4 号位前压/等待（同旧后排“不隔人抓咬”）。
-        /// </summary>
-        public const int EnemyMeleeMaxPos = 2;
-
-        /// <summary>
-        /// 这个敌人本轮的公开意图是近战攻击（抓击/咬击/扑击/冲撞……），但它在 3、4 号位够不到，实际只会前压/等待（开发假设 B6-3、M137）。
-        /// 嚎叫、防御、蓄力、逃离、警戒不需要够到目标，照常执行（旧 R03 §1“远程/嚎叫可按合法意图行动”、A09 嚎叫尸“奇数轮恐慌”）。
-        /// </summary>
-        public static bool IntentOutOfReach(BattleEnemy e) => e.Alive && e.Pos > EnemyMeleeMaxPos && e.Intent is "attack" or "bite" or "charge";
-
-        /// <summary>敌卡上显示的意图（与实际执行同源）：够不到时写“前压/等待（在3号位够不到）”，其余为轮初公开的意图。</summary>
-        public static string IntentShown(BattleEnemy e) => IntentOutOfReach(e) ? $"前压/等待（在{e.Pos}号位够不到）" : e.IntentLabel;
 
         /// <summary>拳没有物品，A05 只写“合法己位用拳”；目标位按旧“只打前排”取 12（开发假设 B6-4）。</summary>
         public const string FistTargetPositions = "12";
@@ -180,7 +161,7 @@ namespace Survival.Core.Engine
 
         /// <summary>敌人有效速度：max(1, A09 面板速度 − 减速)。</summary>
         public double EnemyEffectiveSpeed(BattleEnemy e) =>
-            Math.Max(Config.CombatMath.MinSpeed, _enemies[e.EnemyId].Speed - (e.SlowActive ? Config.Statuses.Slow.NextRoundSpeedPenalty : 0));
+            Math.Max(Config.CombatMath.MinSpeed, _enemies[e.EnemyId].Speed - (e.SlowActive ? Config.Statuses.Slow.NextRoundSpeedPenalty : 0) - e.SlowExtraActive);
 
         /// <summary>追击进度增量 q=clamp(50×(自己的轮初有效速度/敌方最快存活角色轮初有效速度−1), 0, 100)（R03 §2）。</summary>
         public double PursuitGain(double own, double fastestOpponent)
@@ -330,7 +311,7 @@ namespace Survival.Core.Engine
             foreach (var w in joined)
             {
                 w.Engaged = true;
-                b.Enemies.Add(new BattleEnemy { WorldId = w.Id, Index = k + 1, EnemyId = w.EnemyId, Slot = (k + 1).ToString(), Hp = w.Hp, Hostile = w.Hostile, XpHits = new Dictionary<string, int>(w.XpHits) });
+                b.Enemies.Add(InitBattleEnemy(new BattleEnemy { WorldId = w.Id, Index = k + 1, EnemyId = w.EnemyId, Slot = (k + 1).ToString(), Hp = w.Hp, Hostile = w.Hostile, XpHits = new Dictionary<string, int>(w.XpHits), JoinRound = 1 }));
                 k++;
             }
 
@@ -424,6 +405,8 @@ namespace Survival.Core.Engine
             {
                 e.SlowActive = e.SlowPending;
                 e.SlowPending = false;
+                e.SlowExtraActive = e.SlowExtra;   // 绝缘警棍“打断成功后下轮速度额外−1”
+                e.SlowExtra = 0;
                 e.Acted = false;
             }
             b.RoundStartEnergy = s.Stats.Energy;
@@ -524,6 +507,7 @@ namespace Survival.Core.Engine
                 BattleLog(s, $"{EnemyName(e)}流血，−{Fmt.N(e.BleedDamage)}。");
                 if (e.Hp <= 1e-9) KillEnemy(s, e);
                 else CheckFlee(s, e);
+                if (s.Stats.Health <= 0) { BattleDeath(s, s.Progress.LastDamageCause ?? "喷溅"); return false; }   // 膨胀感染者死亡喷溅
             }
             CompactEnemies(b);
             if (!b.Alive.Any()) { FinishBattle(s, "victory", false); return false; }
@@ -532,25 +516,6 @@ namespace Survival.Core.Engine
 
         /// <summary>队列第 k 项是不是追击激活。</summary>
         public static bool IsPursuitSlot(BattleState b, int k) => b.NormalCount > 0 && k >= b.NormalCount;
-
-        /// <summary>轮初锁定并公开敌人意图（不公开伤害抽值）；丧尸准备普通伤害动作时 20% 选咬击。</summary>
-        private void LockIntent(GameState s, BattleState b, BattleEnemy e)
-        {
-            var cfg = _enemies[e.EnemyId];
-            string intent;
-            if (e.WillFlee) intent = "flee";
-            else if (!e.Hostile) intent = "watch";
-            else switch (cfg.Behavior)
-            {
-                case "guard_first_round" when b.Round == 1: intent = "guard"; break;
-                case "howl_odd_rounds" when b.Round % 2 == 1: intent = "howl"; break;
-                case "charge_prepare_odd_attack_even": intent = b.Round % 2 == 1 ? "charge_prepare" : "charge"; break;
-                default: intent = "attack"; break;
-            }
-            if (intent == "attack" && cfg.BiteIntentWeightPct > 0 && s.Rng.NextDouble() * 100 < cfg.BiteIntentWeightPct) intent = "bite";
-            e.Intent = intent;
-            e.IntentLabel = IntentLabel(e);
-        }
 
         public string AttackVerb(EnemyConfig cfg) => cfg.Behavior switch
         {
@@ -563,24 +528,6 @@ namespace Survival.Core.Engine
             "neutral_until_attacked" => "顶撞",
             _ => "抓击",
         };
-
-        public string IntentLabel(BattleEnemy e)
-        {
-            var cfg = _enemies[e.EnemyId];
-            var dmg = $"{Fmt.N(cfg.DamageMin)}—{Fmt.N(cfg.DamageMax)}";
-            return e.Intent switch
-            {
-                "attack" => $"{AttackVerb(cfg)} {dmg}",
-                "bite" => $"咬击 {dmg}（可能感染）",
-                "charge_prepare" => "蓄力（下轮冲撞）",
-                "charge" => $"冲撞 {Fmt.N(cfg.DamageMin * BoarChargeFactor)}—{Fmt.N(cfg.DamageMax * BoarChargeFactor)}",
-                "guard" => "防御",
-                "howl" => $"嚎叫（恐慌+{Fmt.T(HowlPanic)}）",
-                "flee" => "逃离",
-                "watch" => "警戒（不主动攻击）",
-                _ => e.Intent,
-            };
-        }
 
         /// <summary>等待玩家输入指令。</summary>
         public bool AwaitingPlayer(GameState s) => s.Battle != null && s.Battle.PlayerActing && !s.Progress.Dead;
@@ -661,7 +608,9 @@ namespace Survival.Core.Engine
             foreach (var e in b.Alive)
             {
                 e.SlowActive = false;
-                if (e.Stagger && e.StaggerRound < b.Round) e.Stagger = false;
+                e.SlowExtraActive = 0;
+                // 钢制钉锤“震荡”：失衡持续到目标下次攻击后，不在轮末清除
+                if (e.Stagger && !e.StaggerSticky && e.StaggerRound < b.Round) e.Stagger = false;
             }
             if (!BattleTick(s)) return;
             b.Round++;
@@ -713,143 +662,6 @@ namespace Survival.Core.Engine
             if (causes.Count > 0) ctx.DamageCause = causes[0];
             ctx.HealthPerHour = health;
             return ctx;
-        }
-
-        // ───────────── 敌方行动 ─────────────
-
-        /// <summary>
-        /// 敌人一次激活：公开意图执行一个动作（敌人 AP 与意图循环在 B7）。追击激活（开发假设 B6-5）：敌对的敌人做一次普通攻击，
-        /// 不重复蓄力/冲撞/嚎叫/防御、不改判咬击；中立警戒的仍只警戒；不扣出血、不清防御。
-        /// </summary>
-        private void EnemyActivation(GameState s, BattleEnemy e, bool pursuit = false)
-        {
-            var b = s.Battle!;
-            var cfg = _enemies[e.EnemyId];
-            e.Acted = true;
-            if (pursuit)
-            {
-                if (!e.Hostile || e.Intent is "watch" or "flee") { BattleLog(s, $"{EnemyName(e)}（追击）警戒地观察，没有攻击。"); return; }
-                if (e.Pos > EnemyMeleeMaxPos) { BattleLog(s, $"{EnemyName(e)}（追击）在{PosName(e.Pos)}前压/等待（近战攻击只能从1、2号位出手）。"); return; }
-                EnemyAttack(s, e, cfg, true);
-                return;
-            }
-            // 出血改在大回合开始结算（R03 §4，见 RoundStartBleed）
-            e.Guard = false;
-            // 3、4 号位的近战敌人前压/等待（开发假设 B6-3；敌方站位字段在 B7）
-            var outOfReach = e.Pos > EnemyMeleeMaxPos;
-            switch (e.Intent)
-            {
-                case "flee":
-                    e.Fled = true;
-                    e.Slot = "";
-                    BattleLog(s, $"{EnemyName(e)}逃离了战斗（没有尸体，不算击杀）。");
-                    CheckVictory(s);
-                    return;
-                case "watch":
-                    BattleLog(s, $"{EnemyName(e)}警戒地观察，没有攻击。");
-                    return;
-                case "guard":
-                    e.Guard = true;
-                    BattleLog(s, $"{EnemyName(e)}举盾防御（下一次受到的直接伤害×{Fmt.T(Config.CombatMath.GuardFactor)}）。");
-                    return;
-                case "howl":
-                    b.Panic = Math.Min(Config.Panic.Range[1], b.Panic + HowlPanic);
-                    b.PanicPeak = Math.Max(b.PanicPeak, b.Panic);
-                    BattleLog(s, $"{EnemyName(e)}嚎叫，你的恐慌+{Fmt.T(HowlPanic)}（{Fmt.N(b.Panic)}）。");
-                    return;
-                case "charge_prepare":
-                    e.Charged = true;
-                    BattleLog(s, $"{EnemyName(e)}蓄力，下轮冲撞。");
-                    return;
-            }
-            if (outOfReach)
-            {
-                BattleLog(s, $"{EnemyName(e)}在{PosName(e.Pos)}前压/等待（近战攻击只能从1、2号位出手）。");
-                return;
-            }
-            EnemyAttack(s, e, cfg);
-        }
-
-        private void EnemyAttack(GameState s, BattleEnemy e, EnemyConfig cfg, bool pursuit = false)
-        {
-            var b = s.Battle!;
-            var bite = !pursuit && e.Intent == "bite";
-            var charge = !pursuit && e.Intent == "charge";
-            var verb = (pursuit ? "追击" : "") + (bite ? "咬击" : charge ? "冲撞" : AttackVerb(cfg));
-            var a = Math.Max(Config.CombatMath.MinAccuracy, cfg.AttackRating);
-            if (e.Stagger) { a *= Config.Statuses.Stagger.NextAttackAccuracyFactor; e.Stagger = false; }
-            var p = HitChance(a, Config.Scope.BasePlayerDodge);
-            if (s.Rng.NextDouble() >= p)
-            {
-                BattleLog(s, $"{EnemyName(e)}{verb}落空（命中率{Fmt.Pct(p)}）。");
-                return;
-            }
-            var raw = cfg.DamageMin + s.Rng.NextDouble() * (cfg.DamageMax - cfg.DamageMin);
-            if (charge) raw *= BoarChargeFactor;
-            if (EnemyWeak(b, e)) raw *= e.WeakFactor;   // 虚弱（重锤/火力压制）：直接伤害×0.8
-            // 主角护甲 = 基础0 + 装备护甲（≤0.9）− 被破甲（最低0）；先按磨损前的护甲算，再磨损防具（B6 R23、A05 §2）
-            var dmg = Math.Max(0, raw - Math.Max(0, PlayerArmor(s) - (PlayerArmorBroken(b) ? b.PlayerArmorBreak : 0)));
-            if (dmg > 0 && b.PlayerNextDamageFactor < 1) { dmg *= b.PlayerNextDamageFactor; b.PlayerNextDamageFactor = 1; }   // 救援医疗箱“稳定”
-            var guarded = false;
-            if (b.PlayerGuard && dmg > 0)
-            {
-                dmg *= b.PlayerGuardFactor;
-                // 坚守有 2 次格挡，用完才清（B7 shield_10）
-                b.PlayerGuardCharges = Math.Max(0, b.PlayerGuardCharges - 1);
-                if (b.PlayerGuardCharges <= 0) b.PlayerGuard = false;
-                guarded = true;
-            }
-            if (charge) e.Charged = false;
-            // 防具受到正直接伤害（扣甲前）磨损 1（A05 §2，B4 H7）；耐久 0 时防具效果暂停但仍穿着
-            var armorWear = raw > 0 ? WearArmor(s, GameState.PlayerId) : "";
-            if (dmg <= 0)
-            {
-                BattleLog(s, $"{EnemyName(e)}{verb}被完全挡住{(armorWear != "" ? "（" + armorWear + "）" : "")}。");
-                TryCounter(s, b, e);
-                return;
-            }
-            s.Stats.Add(StatId.Health, -dmg);
-            s.Progress.LastDamageCause = $"被{EnemyName(e)}{verb}";
-            b.Panic = Math.Min(Config.Panic.Range[1], b.Panic + dmg * Config.Panic.DamageGainFactor);
-            b.PanicPeak = Math.Max(b.PanicPeak, b.Panic);
-            var extra = new List<string>();
-            if (guarded) extra.Add($"格挡×{Fmt.T(b.PlayerGuardFactor)}");
-            if (armorWear != "") extra.Add(armorWear);
-            if (s.Stats.Health <= 0)
-            {
-                BattleLog(s, $"{EnemyName(e)}{verb}命中，健康−{Fmt.N(dmg)}。");
-                BattleDeath(s, s.Progress.LastDamageCause);
-                return;
-            }
-            if (bite)
-            {
-                // 只有丧尸咬击命中且造成正直接伤害才判一次病毒暴露，结果随事务保存（v0.6 §09）
-                var infectedBefore = s.Body.Infected;
-                var hit = ExposeToVirus(s, out var chance);
-                extra.Add(hit ? (infectedBefore ? $"病毒暴露成功（{Fmt.Pct(chance)}），病毒+{Fmt.T(Config.Infection.OnRepeatedSuccessfulExposure.LoadDelta)}" : $"病毒暴露成功（{Fmt.Pct(chance)}），你被感染了") : $"病毒暴露判定未感染（{Fmt.Pct(chance)}）");
-            }
-            else
-            {
-                if (cfg.Behavior is "slow_on_hit" or "stagger_on_hit")
-                {
-                    // 减速/失衡是控制：命中后再判，我方控制抗性基准 0（开发假设 B6-2），稳态期间+30（R03 §4）
-                    var steady = b.PlayerSteadyUntilRound;
-                    if (RollControl(s, b, Config.Scope.BasePlayerControlResist, ref steady, out var cc))
-                    {
-                        b.PlayerSteadyUntilRound = steady;
-                        if (cfg.Behavior == "slow_on_hit") { b.PlayerSlowPending = true; extra.Add($"你被扯腿，下轮速度−{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}（控制{Fmt.Pct(cc)}）"); }
-                        else { b.PlayerStagger = true; b.PlayerStaggerRound = b.Round; extra.Add($"你失衡了（控制{Fmt.Pct(cc)}）"); }
-                    }
-                    else extra.Add($"你稳住了，没有被{(cfg.Behavior == "slow_on_hit" ? "扯慢" : "扑倒失衡")}（控制{Fmt.Pct(cc)}）");
-                }
-                if (cfg.Behavior.StartsWith("bleed_on_hit_") && s.Rng.NextDouble() * 100 < Formula.Num(cfg.Behavior, 0))
-                {
-                    ApplyPlayerBleed(s);
-                    extra.Add($"你开始出血（{Fmt.T(s.Body.BleedDamage)}×{s.Body.BleedTriggers}）");
-                }
-            }
-            BattleLog(s, $"{EnemyName(e)}{verb}命中，健康−{Fmt.N(dmg)}（恐慌{Fmt.N(b.Panic)}）{(extra.Count > 0 ? "：" + string.Join("，", extra) : "")}。");
-            TryCounter(s, b, e);
         }
 
         // ───────────── 指令 ─────────────
@@ -1326,7 +1138,11 @@ namespace Survival.Core.Engine
                 var carcass = Config.AnimalCarcasses.FirstOrDefault(x => x.EnemyId == e.EnemyId);
                 if (carcass != null) b.Loot.Add(new BattleLoot { WorldId = e.WorldId, ItemId = carcass.CarcassItemId, Count = carcass.Count });
             }
+            // A09 §1 附加掉落：独立额外判一次（“固定”为必掉），首次死亡锁定、胜利才落地
+            if (cfg.ExtraDrop is EnemyDropConfig xd && (xd.Chance >= 1 || s.Rng.NextDouble() < xd.Chance))
+                b.Loot.Add(new BattleLoot { WorldId = e.WorldId, ItemId = xd.ItemId, Count = xd.Count });
             s.WorldEnemies.RemoveAll(w => w.Id == e.WorldId);
+            DeathSplash(s, b, e, cfg);
         }
 
         private void CheckVictory(GameState s)
@@ -1431,7 +1247,7 @@ namespace Survival.Core.Engine
             var slot = (b.Alive.Count() + 1).ToString();
             cand.Engaged = true;
             var idx = b.Enemies.Count == 0 ? 1 : b.Enemies.Max(e => e.Index) + 1;
-            b.Enemies.Add(new BattleEnemy { WorldId = cand.Id, Index = idx, EnemyId = cand.EnemyId, Slot = slot, Hp = cand.Hp, Hostile = true, XpHits = new Dictionary<string, int>(cand.XpHits), TieRoll = s.Rng.NextDouble() });
+            b.Enemies.Add(InitBattleEnemy(new BattleEnemy { WorldId = cand.Id, Index = idx, EnemyId = cand.EnemyId, Slot = slot, Hp = cand.Hp, Hostile = true, XpHits = new Dictionary<string, int>(cand.XpHits), TieRoll = s.Rng.NextDouble(), JoinRound = b.Round }));
             LockIntent(s, b, b.Enemies[b.Enemies.Count - 1]);
             BattleLog(s, $"枪声引来了{_enemies[cand.EnemyId].Name}（{PosName(int.Parse(slot))}）。");
         }

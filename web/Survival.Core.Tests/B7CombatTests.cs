@@ -517,6 +517,179 @@ public class B7CombatTests : BattleTestBase
         Assert.That(50 - Enemy(s, 1).Hp, Is.EqualTo(pv.DamageMax).Within(0.01), "震击 ×0.70 预览上限=实际");
     }
 
+    // ───────────── M144/M145 敌人意图与行动 ─────────────
+
+    /// <summary>每种敌人单挑 8 轮（玩家只防御/结束），不报错、意图都有文字；精英 4AP。</summary>
+    [Test]
+    public void EN_AllThirtyEnemies_RunEightRounds()
+    {
+        foreach (var en in Cfg.Enemies)
+        {
+            var s = Fight(740, en.Id, "shambler");
+            s.Stats.Health = 20;
+            Assert.That(E.EnemyAp(s.Battle!.Enemies[0]), Is.EqualTo(en.Elite ? 4 : 3), en.Id);
+            for (var i = 0; i < 400 && s.Battle != null && s.Battle.Round <= 8 && !s.Progress.Dead; i++)
+            {
+                foreach (var e in s.Battle.Alive) Assert.That(E.IntentShown(s.Battle, e), Is.Not.Empty, en.Id);
+                if (E.AwaitingPlayer(s)) { s.Stats.Health = 20; Cmd(s, "end_turn"); }
+                else E.BattleStep(s);
+            }
+        }
+    }
+
+    [Test]
+    public void Advance_RearEnemySwapsForwardAndAttacks_BraceIntercepts()
+    {
+        var s = Fight(741, "shambler", "shambler", "shambler");
+        var b = s.Battle!;
+        var rear = Enemy(s, 3);
+        rear.Intent = "attack";
+        rear.IntentStep = 0;
+        rear.IntentLabel = E.IntentLabel(rear, b);
+        Assert.That(E.IntentShown(b, rear), Does.StartWith("前移到2号位后抓击"));
+        // 架矛：敌人主动前移后迎击
+        PlayerFirst(s);
+        E.BattleStep(s);
+        Arm(s, "wooden_spear");
+        s.Skills["spear"].Level = 5;
+        Assert.That(Cmd(s, "spear_05").Ok, Is.True);
+        Assert.That(b.BraceCharges, Is.EqualTo(1));
+        Cmd(s, "end_turn");
+        rear.Hp = 50;
+        for (var i = 0; i < 20 && !rear.Acted && s.Battle != null; i++) Step(s);
+        Assert.That(b.Log.Any(l => l.Contains("游荡尸前移到2号位")), Is.True, string.Join("\n", b.Log));
+        Assert.That(b.Log.Any(l => l.Contains("你迎击")), Is.True);
+        Assert.That(b.BraceCharges, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void Spitter_RangedFromRear_ArmorBreak_WeakAttackAtFront_NoInfection()
+    {
+        var s = Fight(742, "shambler", "shambler", "z_spitter");
+        var b = s.Battle!;
+        var sp = Enemy(s, 3);
+        Assert.That(sp.Intent, Is.EqualTo("spit"), "第1次正常激活：喷吐");
+        Assert.That(E.IntentOutOfReach(b, sp), Is.False, "3号位可喷吐（34→1234）");
+        Assert.That(sp.IntentLabel, Does.Contain("破甲0.15（2轮）").And.Contain("不感染"));
+        var v0 = s.Body.VirusLoad;
+        for (var i = 0; i < 30 && !sp.Acted && s.Battle != null; i++) { if (E.AwaitingPlayer(s)) Cmd(s, "end_turn"); else { if (b.Queue[b.Cursor] == sp.Index) Force(s, Below(0.01), Any()); E.BattleStep(s); } }
+        Assert.That(b.PlayerArmorBreak, Is.EqualTo(0.15).Within(1e-9));
+        Assert.That(b.PlayerArmorBreakUntilRound, Is.EqualTo(b.Round + 2));
+        Assert.That(s.Body.VirusLoad, Is.EqualTo(v0));
+        // 被压到 1 号位：喷吐改通用弱攻击×0.7
+        var f = Fight(743, "z_spitter");
+        Assert.That(E.IntentShown(f.Battle!, Enemy(f, 1)), Does.StartWith("弱攻击").And.Contain("3、4号位"));
+    }
+
+    [Test]
+    public void Protect_RedirectsSingleTargetAttack_NoCycle_LimitOnce()
+    {
+        var s = Fight(744, "z_guard", "shambler");
+        var b = s.Battle!;
+        var guard = Enemy(s, 1);
+        var back = Enemy(s, 2);
+        Assert.That(guard.Intent, Is.EqualTo("protect"));
+        Assert.That(guard.IntentLabel, Does.Contain("替游荡尸挡下一次单体攻击"));
+        for (var i = 0; i < 30 && !guard.Acted && s.Battle != null; i++) Step(s);
+        Assert.That(guard.ProtectingIndex, Is.EqualTo(back.Index));
+        // 下一次轮到玩家：打后排游荡尸被守卫接下
+        for (var i = 0; i < 30 && s.Battle != null && !E.AwaitingPlayer(s); i++) E.BattleStep(s);
+        if (!E.AwaitingPlayer(s)) { Assert.Ignore("本轮守卫已再次行动"); return; }
+        s.Battle!.PlayerAp = 3;
+        var hpBack = back.Hp;
+        Force(s, Below(0.01), AtLeast(0.99), Any());
+        Assert.That(Cmd(s, "basic_attack", back.Index).Ok, Is.True);
+        Assert.That(back.Hp, Is.EqualTo(hpBack), "被保护者没受伤");
+        Assert.That(b.Log.Last(), Does.Contain("重装守卫感染者挡在游荡尸前面"));
+        Assert.That(guard.ProtectingIndex, Is.EqualTo(0), "保护只接一次");
+
+        // 隔离守卫：保护限1次，第二轮起循环到保护时改普通攻击
+        var t = Fight(745, "z_isolation_guard", "shambler");
+        var ig = Enemy(t, 1);
+        Assert.That(ig.Intent, Is.EqualTo("protect"));
+        ig.ProtectUses = 1;
+        var bb = t.Battle!;
+        bb.Round = 4;   // 第4次正常激活 = 循环第1项“保护”
+        typeof(GameEngine).GetMethod("LockIntent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(E, new object[] { t, bb, ig });
+        Assert.That(ig.Intent, Is.Not.EqualTo("protect"), "保护限1次");
+    }
+
+    [Test]
+    public void Gunner_ShootShootReload_SixRoundsThenMelee()
+    {
+        var s = Fight(746, "shambler", "shambler", "raider_gunner");
+        var g = Enemy(s, 3);
+        Assert.That((g.Mag, g.Reserve), Is.EqualTo((2, 4)), "弹药计划总6发、弹仓2");
+        Assert.That(g.Intent, Is.EqualTo("shoot"));
+        Assert.That(E.IntentOutOfReach(s.Battle!, g), Is.False, "3号位射击 1234");
+        var shots = 0;
+        for (var i = 0; i < 2000 && s.Battle != null && s.Battle.Round <= 12; i++)
+        {
+            foreach (var e in s.Battle.Alive.Where(e => e.EnemyId == "shambler")) e.Hp = 50;
+            s.Stats.Health = 20;
+            if (E.AwaitingPlayer(s)) { Cmd(s, "end_turn"); continue; }
+            E.BattleStep(s);
+            shots = s.Battle?.Log.Count(l => l.Contains("流窜枪手射击")) ?? shots;
+        }
+        Assert.That(g.Mag + g.Reserve, Is.EqualTo(0), "打空后不补");
+        Assert.That(s.Battle!.Log.Any(l => l.Contains("流窜枪手装填")), Is.True);
+    }
+
+    [Test]
+    public void Signal_RequestsReinforcementOnce_Bloater_Splash_HelmetStaggerImmune_ExtraDrop()
+    {
+        var s = Fight(747, "z_signal");
+        var b = s.Battle!;
+        Assert.That(Enemy(s, 1).Intent, Is.EqualTo("signal"));
+        for (var i = 0; i < 20 && !Enemy(s, 1).Acted && s.Battle != null; i++) Step(s);
+        Assert.That(b.ReinforcementRequested, Is.True, "首轮鸣响请求现有增援1次");
+
+        // 膨胀感染者：死亡时喷溅 0.3（护甲照算）
+        var p = Fight(748, "z_bloater");
+        Ready(p);
+        Enemy(p, 1).Hp = 0.01;
+        var h0 = p.Stats.Health;
+        Force(p, Below(0.01), AtLeast(0.99), Any(), Any());
+        Assert.That(Cmd(p, "basic_attack", 1).Ok, Is.True);
+        Assert.That(h0 - p.Stats.Health, Is.EqualTo(0.3).Within(1e-9));
+        Assert.That(p.Battle?.Log.Any(l => l.Contains("死亡喷溅")) ?? true, Is.True);
+
+        // 护盔感染者：首次失衡免疫
+        var h = Fight(749, "z_helmet");
+        Ready(h);
+        h.Skills["unarmed"].Level = 3;
+        Enemy(h, 1).Hp = 50;
+        Force(h, Below(0.01), AtLeast(0.99), Any(), Below(0.01));
+        Assert.That(Cmd(h, "unarmed_03", 1).Ok, Is.True);
+        Assert.That((Enemy(h, 1).Stagger, Enemy(h, 1).StaggerImmuneUsed), Is.EqualTo((false, true)));
+        Assert.That(h.Battle!.Log.Last(), Does.Contain("首次失衡免疫"));
+
+        // 附加掉落：天线守卫固定精密零件×2，胜利落地
+        var r = Fight(750, "z_relay_guard");
+        Ready(r);
+        Enemy(r, 1).Hp = 0.01;
+        Force(r, Below(0.01), AtLeast(0.99), Any(), Any(), Any(), Any(), Any());
+        Assert.That(Cmd(r, "basic_attack", 1).Ok, Is.True);
+        Assert.That(r.Battle, Is.Null);
+        Assert.That(r.Items.Where(i => i.Owner == "field" && i.ItemId == "precision_parts").Sum(i => i.Count), Is.EqualTo(2));
+    }
+
+    [Test]
+    public void HowlerPanicFour_DogLeaderBuff_Pursuit()
+    {
+        var s = Fight(751, "howler");
+        var b = s.Battle!;
+        Assert.That(Enemy(s, 1).IntentLabel, Is.EqualTo("嚎叫（恐慌+4）"), "A09 §1 嚎叫尸恐慌+4（取代旧 +8）");
+        var p0 = b.Panic;
+        for (var i = 0; i < 20 && !Enemy(s, 1).Acted && s.Battle != null; i++) Step(s);
+        Assert.That(b.Panic - p0, Is.EqualTo(4).Within(1e-9));
+
+        var d = Fight(752, "wild_dog_leader");
+        Assert.That(Enemy(d, 1).Intent, Is.EqualTo("buff"));
+        for (var i = 0; i < 20 && !Enemy(d, 1).Acted && d.Battle != null; i++) Step(d);
+        Assert.That(Enemy(d, 1).NextHitFactor, Is.EqualTo(1.2).Within(1e-9));
+    }
+
     [Test]
     public void NewEnemies_NotInOldSpawnPools()
     {

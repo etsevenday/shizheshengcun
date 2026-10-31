@@ -85,16 +85,20 @@ public class B6CombatTests : BattleTestBase
         Assert.That(howler.Slot, Is.EqualTo("3"));
         z.Intent = "bite";
         z.IntentLabel = E.IntentLabel(z);
-        Assert.That(GameEngine.IntentOutOfReach(z), Is.False, "2号位够得到");
-        Assert.That(GameEngine.IntentShown(z), Does.StartWith("咬击"));
+        Assert.That(E.IntentOutOfReach(b, z), Is.False, "2号位够得到");
+        Assert.That(E.IntentShown(b, z), Does.StartWith("咬击"));
+        // B7 按新规则改写（A09 §1“攻击意图先满足己位/射程，不满足则本激活1AP前移，余AP仅可一次普通攻击”）：
+        // 4号位前移一位仍够不到；3号位前移到2号位后出手（取代 B6-3 的“前压/等待”）
         z.Slot = "4";
-        Assert.That(GameEngine.IntentOutOfReach(z), Is.True);
-        Assert.That(GameEngine.IntentShown(z), Is.EqualTo("前压/等待（在4号位够不到）"));
+        Assert.That(E.IntentOutOfReach(b, z), Is.True);
+        Assert.That(E.IntentShown(b, z), Is.EqualTo("前移1位（在4号位够不到）"));
+        z.Slot = "3";
+        Assert.That(E.IntentShown(b, z), Does.StartWith("前移到2号位后咬击"));
         z.Slot = "2";
-        // 嚎叫尸第1轮（奇数轮）在3号位：意图仍显示嚎叫，并照常嚎叫
+        // 嚎叫尸第1次正常激活在3号位：意图仍显示嚎叫，并照常嚎叫（A09 §1 嚎叫尸 34→12、奇数轮恐慌+4）
         Assert.That(howler.Intent, Is.EqualTo("howl"));
-        Assert.That(GameEngine.IntentOutOfReach(howler), Is.False);
-        Assert.That(GameEngine.IntentShown(howler), Does.StartWith("嚎叫"));
+        Assert.That(E.IntentOutOfReach(b, howler), Is.False);
+        Assert.That(E.IntentShown(b, howler), Does.StartWith("嚎叫"));
         var panic = b.Panic;
         for (var i = 0; i < 20 && !howler.Acted && s.Battle != null; i++) Step(s);
         Assert.That(b.Panic, Is.GreaterThan(panic), "3号位嚎叫照常（不是近战攻击）");

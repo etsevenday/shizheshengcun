@@ -241,7 +241,7 @@ else if (b != null)
         var picked = G.BattleTarget == idx;
         var tip = reachWhy ?? (targetable ? "点击即对它执行所选技能（右侧是实际预测）" : "点击选中查看（不会攻击）；先选技能再点亮起的目标才执行");
         <div @key="@("foe" + idx)" id="@($"foe-{idx}")" class="foe @(idx == activeIdx ? "acting" : "") @(targetable ? "targetable" : "") @(unreachable ? "unreachable" : "") @(en.Acted ? "acted-done" : "") @(picked ? "selected" : "") @(G.BattleHover == idx ? "hover" : "")"
-             role="button" tabindex="0" aria-pressed="@picked" aria-disabled="@(unreachable || (targetable && locked))" aria-label="@($"{slot}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}，意图{GameEngine.IntentShown(en)}{(reachWhy != null ? "；" + reachWhy : "")}")"
+             role="button" tabindex="0" aria-pressed="@picked" aria-disabled="@(unreachable || (targetable && locked))" aria-label="@($"{slot}号位 {ec.Name}，健康{Ui.N(en.Hp)}/{Ui.N(ec.Hp)}，意图{G.E.IntentShown(G.S.Battle!, en)}{(reachWhy != null ? "；" + reachWhy : "")}")"
              title="@tip" @onclick="() => ClickFoe(idx, token, locked)" @onkeydown="ev => FoeKey(ev, idx, token, locked)"
              @onmouseenter="() => G.HoverBattleTarget(idx)" @onmouseleave="() => G.HoverBattleTarget(null)">
             <div class="foe-head"><span class="slot-tag">@(slot)号</span><b>@ec.Name</b>@if (en.Acted) {<span class="acted-mark">已行动</span>}</div>
@@ -250,10 +250,10 @@ else if (b != null)
                 <div class="foe-body">
                     <div class="hp-line" title="健康"><span>♥</span><b>@Ui.N(en.Hp)/@Ui.N(ec.Hp)</b></div>
                     <div class="track"><i style="width:@Ui.Bar(en.Hp, ec.Hp)%"></i></div>
-                    @{ var far = GameEngine.IntentOutOfReach(en); }
+                    @{ var far = G.E.IntentOutOfReach(G.S.Battle!, en); }
                     <div class="intent @(far ? "calm" : en.Intent is "bite" ? "bite" : en.Intent is "flee" or "watch" or "guard" ? "calm" : "")"
                          title="@(far ? $"本轮公开意图是{en.IntentLabel}，但站在{slot}号位够不到，实际只往前挤；前面的位置空出来、被压到1、2号位后才会出手" : "本轮公开意图（轮初锁定，不公开伤害抽值）")">
-                        <span class="intent-ico">@(far ? "等" : IntentIcon(en.Intent))</span>@NoBreakRange(GameEngine.IntentShown(en))
+                        <span class="intent-ico">@(far ? "等" : IntentIcon(en.Intent))</span>@NoBreakRange(G.E.IntentShown(G.S.Battle!, en))
                     </div>
                 </div>
             </div>

@@ -109,14 +109,17 @@ namespace Survival.Core.State
         public int MarkUntilRound { get; set; }
         /// <summary>失衡持续到它下次攻击后（钢制钉锤“震荡”），不在轮末清除。</summary>
         public bool StaggerSticky { get; set; }
-        /// <summary>减速额外值（绝缘警棍“打断成功后下轮速度额外−1”，不叠）。</summary>
+        /// <summary>减速额外值（绝缘警棍“打断成功后下轮速度额外−1”，不叠）：本轮施加，下一轮生效（SlowExtraActive），轮末清除。</summary>
         public double SlowExtra { get; set; }
+        public double SlowExtraActive { get; set; }
         /// <summary>护盔感染者“首次失衡免疫”已用掉。</summary>
         public bool StaggerImmuneUsed { get; set; }
         /// <summary>加入本场的轮次（意图循环按 Round−JoinRound 取第几次正常激活；0 视为 1）。</summary>
         public int JoinRound { get; set; }
         /// <summary>本轮锁定的意图在意图循环里的序号（opening 与 cycle 合并编号）；−1 为特殊意图（逃离/警戒）。</summary>
         public int IntentStep { get; set; }
+        /// <summary>本轮意图的对象（保护意图要保护的同伴本场序号）；0 为没有。</summary>
+        public int IntentTarget { get; set; }
         /// <summary>正在保护的同伴（本场序号）；到它下次正常激活开始清除。0 为没有。</summary>
         public int ProtectingIndex { get; set; }
         /// <summary>本场已执行保护的次数（隔离守卫限 1 次）。</summary>
