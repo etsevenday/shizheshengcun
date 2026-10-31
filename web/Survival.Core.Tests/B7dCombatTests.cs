@@ -510,4 +510,169 @@ public class B7dCombatTests : BattleTestBase
         Assert.That(Cmd(s, "spear_03", c.Index).Ok, Is.True);
         Assert.That(b.BraceCharges, Is.EqualTo(1), "强制位移不触发架矛");
     }
+
+    // ───────────── M177：伤害增益递减、教学平加、反应与指挥经验 ─────────────
+
+    /// <summary>RES-Q82b：rawB≤1.35 原值，以上 1.35+0.25×(1−exp(−(rawB−1.35)/0.25))，渐近 1.6、单调、每个新增正增益仍有正收益；不先 cap 1.5。</summary>
+    [Test]
+    public void RES_Q82b_DamageBuffSoftCap_Curve_AndInPreview()
+    {
+        var sc = (JObject)Res()["damage"]!["softCap"]!;
+        Assert.That(((double)sc["knee"]!, (double)sc["tail"]!, (double)sc["asymptote"]!), Is.EqualTo((Cfg.CombatMath.DamageBuffKnee, Cfg.CombatMath.DamageBuffTail, 1.6)));
+        Assert.That(E.DamageBuffCurve(1.0), Is.EqualTo(1.0));
+        Assert.That(E.DamageBuffCurve(1.35), Is.EqualTo(1.35).Within(1e-12));
+        Assert.That(E.DamageBuffCurve(1.35 * 1.15 * 1.15 * 1.06), Is.EqualTo(1.5715).Within(1e-4), "现有合法顶组合 rawB≈1.8925 → B≈1.5715（旧 cap 1.5）");
+        var prev = 0.0;
+        for (var r = 1.0; r < 4; r += 0.01)
+        {
+            var v = E.DamageBuffCurve(r);
+            Assert.That(v, Is.GreaterThan(prev), $"单调递增 r={r}");
+            Assert.That(v, Is.LessThan(1.6));
+            prev = v;
+        }
+
+        var s = Fight(9401, "shambler");
+        Ready(s);
+        var b = s.Battle!;
+        var axe = Arm(s, "hatchet");
+        b.AllOutFactor = 1.3;
+        b.AllOutUntilRound = b.Round + 1;
+        b.ChargeFactor = 1.3;
+        b.ChargeUntilRound = b.Round + 1;
+        b.ChargeItem = axe.InstanceId;
+        var pv = E.PreviewCommand(s, BattleCommand.Of("basic_attack", 1));
+        var t = pv.Targets.Single();
+        Assert.That(t.RawDamageBuff, Is.EqualTo(1.69).Within(1e-9), "总攻令×1.3、斧蓄力×1.3 先乘成 rawB");
+        Assert.That(t.DamageBuff, Is.EqualTo(E.DamageBuffCurve(1.69)).Within(1e-12));
+        Assert.That(t.DamageBuff, Is.GreaterThan(1.5), "不再先 cap 1.5");
+        Assert.That(pv.Notes, Has.Some.Contains("伤害增益合计×1.69，超过×1.35的部分递减"));
+    }
+
+    /// <summary>RES-Q82d：教学 +0.1 在乘算后、扣甲前，每个目标每条指令只在第一下命中加一次；第一下未命中可留到第二下。</summary>
+    [Test]
+    public void RES_Q82d_TutorialFlat_OncePerTargetPerCommand()
+    {
+        var ft = (JObject)Res()["damage"]!["flatTutorial"]!;
+        Assert.That(((double)ft["amount"]!, (bool)ft["multiHitSameTargetFirstSuccessfulHitOnly"]!), Is.EqualTo((0.1, true)));
+
+        var s = Fight(9402, "shambler");
+        Ready(s);
+        var b = s.Battle!;
+        s.Traits.Add(new TraitInstance { EffectId = "tutorial_attack_bonus_001", Quality = "green", Label = "攻击力+0.1", FlatAttack = 0.1 });
+        s.Skills["unarmed"].Level = 10;
+        b.PlayerAp = 6;
+        Enemy(s, 1).Hp = 50;
+        var t = E.PreviewCommand(s, BattleCommand.Of("unarmed_10", 1)).Targets.Single();
+        Assert.That(t.Flat, Is.EqualTo(0.1));
+        Force(s, Below(0.3), AtLeast(0.2), Below(0.01), Below(0.3), AtLeast(0.2), Below(0.01));   // 两下都命中、不暴击、抽值近最低
+        Assert.That(Cmd(s, "unarmed_10", 1).Ok, Is.True);
+        Assert.That(50 - Enemy(s, 1).Hp, Is.EqualTo(2 * t.DamageMin - 0.1).Within(0.02), "连拳两下只加一次 +0.1（不是 +0.2）");
+
+        b.PlayerAp = 6;
+        b.SkillUsedRound.Clear();
+        Enemy(s, 1).Hp = 50;
+        Force(s, AtLeast(0.99), Below(0.3), AtLeast(0.2), Below(0.01));
+        Assert.That(Cmd(s, "unarmed_10", 1).Ok, Is.True);
+        Assert.That(50 - Enemy(s, 1).Hp, Is.EqualTo(t.DamageMin).Within(0.01), "第一下未命中：+0.1 留给第二下");
+    }
+
+    /// <summary>
+    /// RES-Q82e：反击/迎击用架势那一页的武器，按当前真实己位/射程重验；不合法不出手也不扣次数；
+    /// 不另扣体力/耐久，不吃也不消耗鼓舞/总攻令/斧蓄力。
+    /// </summary>
+    [Test]
+    public void RES_Q82e_Reaction_RevalidatesOwnSlot_NoCost_NoBuffUse()
+    {
+        var rx = (JObject)Res()["reactions"]!;
+        Assert.That(((int)rx["additionalEnergyAmmoWear"]!, (bool)rx["benefitOrConsumeInspireAllOutAxeCharge"]!, (bool)rx["noReactionChains"]!), Is.EqualTo((0, false, true)));
+
+        var s = Fight(9403, "shambler");
+        Ready(s);
+        var b = s.Battle!;
+        var knife = Arm(s, "stone_knife");
+        s.Skills["blade"].Level = 5;
+        Assert.That(Cmd(s, "blade_05").Ok, Is.True);
+        Assert.That(b.CounterFactor, Is.GreaterThan(0));
+        var z = Enemy(s, 1);
+        z.Hp = 50;
+        z.Intent = "attack";
+        z.IntentStep = -2;
+        StandAt(s, 3);   // 刀使用位12：在 3 号位反击不合法
+        s.Stats.Health = 20;
+        Force(s, Below(0.01), Any());
+        typeof(GameEngine).GetMethod("DoAttackStep", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { s, b, z, E.StepOf(z), true, 1.0, false, false });
+        Assert.That(b.Log.Last(), Does.Contain("你的反击没有出手：石刀要在我方1、2号位（你在3号位）（架势保留）"));
+        Assert.That(b.CounterFactor, Is.GreaterThan(0), "不合法不扣反击");
+
+        StandAt(s, 1);
+        b.InspireBonus = 6;
+        b.InspireUntilRound = b.Round + 1;
+        b.AllOutFactor = 1.2;
+        b.AllOutUntilRound = b.Round + 1;
+        var e0 = s.Stats.Energy;
+        var d0 = knife.Durability;
+        Force(s, Below(0.01), Any(), Below(0.01), AtLeast(0.99), Any());
+        typeof(GameEngine).GetMethod("DoAttackStep", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(E, new object[] { s, b, z, E.StepOf(z), true, 1.0, false, false });
+        Assert.That(b.Log.Last(), Does.StartWith($"第{b.Round}轮 · 你反击（石刀）"));
+        Assert.That(b.CounterFactor, Is.EqualTo(0), "反击用掉");
+        Assert.That((s.Stats.Energy, knife.Durability), Is.EqualTo((e0, d0)), "不另扣体力、耐久");
+        Assert.That((GameEngine.InspireActive(b), GameEngine.AllOutActive(b)), Is.EqualTo((true, true)), "反应不消耗鼓舞/总攻令");
+
+        // 架矛：站在 4 号位（矛使用位123）迎击不合法，不扣次数
+        var p = Fight(9404, "shambler");
+        Ready(p);
+        var pb = p.Battle!;
+        Arm(p, "wooden_spear");
+        p.Skills["spear"].Level = 5;
+        Assert.That(Cmd(p, "spear_05").Ok, Is.True);
+        var charges = pb.BraceCharges;
+        StandAt(p, 4);
+        var pz = Enemy(p, 1);
+        pz.Intent = "attack";
+        pz.IntentStep = -2;
+        Place(p, (1, 3));
+        EnemyAct(p, pz);
+        Assert.That(pb.BraceCharges, Is.EqualTo(charges), "无合法反应目标不白扣迎击次数");
+        Assert.That(pb.Log.Any(l => l.Contains("你的迎击没有出手") && l.Contains("不扣次数")), Is.True);
+    }
+
+    /// <summary>RES-Q82f：指挥经验真实使用才发：鼓舞被下一次攻击用掉（未命中也算）才 +2，每场每技能一次；群攻整条指令只消费一次增益。</summary>
+    [Test]
+    public void RES_Q82f_CommandXp_RealUseOnly_OncePerBattle_AreaConsumesOnce()
+    {
+        var cx = (JObject)Res()["commandXp"]!;
+        Assert.That((bool)cx["areaCommandConsumesEffectOnceNotPerTarget"]!, Is.True);
+
+        var s = Fight(9405, "shambler", "shambler");
+        Ready(s);
+        var b = s.Battle!;
+        var sg = Arm(s, "shotgun");
+        sg.LoadedAmmo = 4;
+        Arm2(s, "signal_whistle");
+        StandAt(s, 2);
+        s.Skills["command"].Level = 1;
+        s.Skills["firearms"].Level = 7;
+        b.PlayerAp = 6;
+        var xp0 = s.Skills["command"].Xp;
+        Assert.That(Cmd(s, "command_01").Ok, Is.True);
+        Assert.That(s.Skills["command"].Xp, Is.EqualTo(xp0), "施放鼓舞时不发经验");
+        b.ActiveWeaponSlot = 1;
+        foreach (var e in b.Alive) e.Hp = 50;
+        Force(s, AtLeast(0.99), AtLeast(0.99));   // 两个目标都未命中
+        Assert.That(Cmd(s, "firearms_07").Ok, Is.True, "专长射击打 1、2 号位");
+        Assert.That(GameEngine.InspireActive(b), Is.False, "群攻整条指令消费一次鼓舞");
+        Assert.That(s.Skills["command"].Xp - xp0, Is.EqualTo(Cfg.Xp.DamagingAttackCommand), "攻击未命中也是真实使用：+2");
+        // 同场再鼓舞再用掉：不再发
+        b.PlayerAp = 6;
+        b.SkillUsedRound.Clear();
+        b.ActiveWeaponSlot = 2;
+        Assert.That(Cmd(s, "command_01").Ok, Is.True);
+        b.ActiveWeaponSlot = 1;
+        sg.LoadedAmmo = 4;
+        Force(s, AtLeast(0.99), AtLeast(0.99));
+        Assert.That(Cmd(s, "firearms_07").Ok, Is.True);
+        Assert.That(s.Skills["command"].Xp - xp0, Is.EqualTo(Cfg.Xp.DamagingAttackCommand), "每场每技能一次");
+    }
 }

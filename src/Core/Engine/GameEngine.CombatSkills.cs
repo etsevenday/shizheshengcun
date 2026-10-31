@@ -374,7 +374,7 @@ namespace Survival.Core.Engine
             if (marked) buff *= w.Trait("markedDamage", 1);
             if (t.ProtectingIndex > 0) buff *= w.Trait("protectorDamage", 1);
             var rawBuff = buff;
-            buff = DamageBuffCurve(rawBuff);   // Q82：递减曲线取代旧硬上限×1.5
+            buff = DamageBuffCurve(rawBuff);   // Q82：同名取强、不同来源先乘成 rawB，再走递减曲线（取代旧硬上限×1.5）
             var execF = sp.Exec?.ExecuteHpRatio is double r && t.Hp <= cfg.Hp * r + 1e-9 ? sp.Exec.ExecuteFactor : 1;
             var weak = PlayerWeakActive(b) ? b.PlayerWeakFactor : 1;
             var mult = SkillDamageFactor(lv) * sp.FactorFor(t) * buff * execF * weak;
@@ -389,7 +389,7 @@ namespace Survival.Core.Engine
             return new BattleTargetPreview
             {
                 Index = t.Index, Name = cfg.Name, Slot = t.Slot, Hp = t.Hp, Armor = baseArmor, Guarded = guarded, RearPenalty = false,
-                Penetration = pen, DamageBuff = buff, Multiplier = mult, Flat = flat,
+                Penetration = pen, DamageBuff = buff, RawDamageBuff = rawBuff, Multiplier = mult, Flat = flat,
                 AccuracyRating = acc, AccuracyText = accText, Evasion = evasion, HitChance = HitChance(acc, evasion),
                 CritRating = crit, CritChance = CritChance(crit),
                 DamageMin = Dmg(w.DamageMin, 1), DamageMax = Dmg(w.DamageMax, 1), CritDamageMin = Dmg(w.DamageMin, cf), CritDamageMax = Dmg(w.DamageMax, cf),
@@ -435,7 +435,9 @@ namespace Survival.Core.Engine
                 (SkillMaxed(s, sp.Weapon.SkillId) ? XpText(s, sp.Weapon.SkillId, 0)
                     : $"每命中一个目标+{Config.Xp.DamagingAttackCommand}经验（含被护甲挡住的命中，同一指令多段只计1次，每个敌人每技能最多{Config.Xp.MaxHitsPerEncounterEnemySkill}次）"));
             var fl = sp.DamageFactor > 0 && sp.Weapon.DamageMax > 0 ? FlatAttack(s) : 0;
-            if (fl > 0) p.Notes.Add($"词条攻击力+{Fmt.T(fl)}：在技能/熟练/暴击乘算后、扣护甲前平加，防御再×{Fmt.T(Config.CombatMath.GuardFactor)}");
+            if (fl > 0) p.Notes.Add($"词条攻击力+{Fmt.T(fl)}：在技能/熟练/暴击/增益乘算后、扣护甲前平加（不被倍率放大），同一目标每条指令只加在第一下命中{(sp.Hits > 1 ? "（下方区间按第一下；第二下不再加）" : "")}，防御再×{Fmt.T(Config.CombatMath.GuardFactor)}");
+            if (p.Targets.FirstOrDefault(x => x.RawDamageBuff > Config.CombatMath.DamageBuffKnee + 1e-9) is BattleTargetPreview hb)
+                p.Notes.Add($"伤害增益合计×{Fmt.T(hb.RawDamageBuff)}，超过×{Fmt.T(Config.CombatMath.DamageBuffKnee)}的部分递减，实际×{Fmt.T(hb.DamageBuff)}（最多接近×{Fmt.T(Config.CombatMath.DamageBuffKnee + Config.CombatMath.DamageBuffTail)}）");
         }
 
         /// <summary>技能效果说明（预览）：段数、目标方式、附带状态与控制率、冷却、增益消耗。</summary>
@@ -536,6 +538,8 @@ namespace Survival.Core.Engine
                 }
                 var anyHit = false;
                 var positive = false;
+                // 教学攻击力 +0.1（Q82）：每个目标每条指令只在第一次命中时平加一次（未命中不结、护甲挡成 0 也算用过），连击不变 +0.2
+                var flatUsed = false;
                 for (var hit = 0; hit < sp.Hits && t.Alive; hit++)
                 {
                     var seg = sp.Hits > 1 ? $"第{hit + 1}击" : "";
@@ -547,8 +551,10 @@ namespace Survival.Core.Engine
                     var raw = weapon.DamageMin + s.Rng.NextDouble() * (weapon.DamageMax - weapon.DamageMin);
                     var multiplied = raw * pv.Multiplier * (crit ? Config.CombatMath.CritFactor : 1);
                     var armor = Math.Max(0, pv.Armor - pv.Penetration);
-                    var guarded = pv.Guarded && Math.Max(0, multiplied + pv.Flat - armor) > 0;
-                    var dmg = AttackDamage(multiplied, pv.Flat, armor, guarded, Config.CombatMath.GuardFactor);
+                    var flat = flatUsed ? 0 : pv.Flat;
+                    flatUsed = true;
+                    var guarded = pv.Guarded && Math.Max(0, multiplied + flat - armor) > 0;
+                    var dmg = AttackDamage(multiplied, flat, armor, guarded, Config.CombatMath.GuardFactor);
                     if (guarded) t.Guard = false;
                     if (sp.DamageFactor <= 0) { parts.Add($"{cfg.Name}{seg}被命中"); continue; }
                     if (dmg <= 0) { parts.Add($"{cfg.Name}{seg}被护甲完全挡住"); continue; }

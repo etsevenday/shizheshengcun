@@ -407,14 +407,25 @@ namespace Survival.Core.Engine
         // ───────────── 反应攻击：反击、迎击 ─────────────
 
         /// <summary>
+        /// 反应攻击此刻能否出手（Q82：来源页武器按当前真实己位/射程重验）：耐久、使用位、目标位。不能出手为原因，否则 null。
+        /// 不能出手时不扣反应次数（无合法反应目标不白扣），架势按原期限继续。
+        /// </summary>
+        private string? ReactionBlocked(GameState s, BattleState b, int page, BattleEnemy t)
+        {
+            var it = WeaponOnPage(s, page, out var w);
+            if (it != null && !HasWear(it, Config.Wear.PerExecutedAttackCommand)) return $"{w.Name}耐久不足";
+            if (!OwnPositionsOf(w).Contains(PlayerPos(b))) return $"{w.Name}要在我方{PosList(OwnPositionsOf(w))}（你在{PosName(PlayerPos(b))}）";
+            if (!TargetPositionsOf(w).Contains(t.Pos)) return $"够不到{EnemyName(t)}（{PosName(t.Pos)}）";
+            return null;
+        }
+
+        /// <summary>
         /// 一次反应攻击（反击/迎击；R03 §4“反应动作不再触发反应链”）：用架势/架矛时那一页的武器，单段、独立判命中暴击；
-        /// 不扣体力、弹药与耐久（A06 只写主动攻击的成本），不吃鼓舞/总攻令/斧蓄力；命中计攻击经验。目标须在该武器目标位内。
+        /// 不扣体力、弹药与耐久（Q82），不吃也不消耗鼓舞/总攻令/斧蓄力；静态装备特性与教学平加照常；命中计攻击经验。调用前已过 ReactionBlocked。
         /// </summary>
         private void ReactionStrike(GameState s, BattleState b, int page, double factor, BattleEnemy t, string label)
         {
-            var it = WeaponOnPage(s, page, out var w);
-            if (it != null && !HasWear(it, Config.Wear.PerExecutedAttackCommand)) { BattleLog(s, $"你的{label}没有出手：{w.Name}耐久不足。"); return; }
-            if (!TargetPositionsOf(w).Contains(t.Pos)) { BattleLog(s, $"你的{label}够不到{EnemyName(t)}（{PosName(t.Pos)}）。"); return; }
+            WeaponOnPage(s, page, out var w);
             var sp = new AttackSpec { Action = label, Weapon = w, Page = page, DamageFactor = factor, Reaction = true };
             var cfg = _enemies[t.EnemyId];
             var pv = TargetCalc(s, b, sp, t, s.Stats.Energy);
@@ -436,19 +447,21 @@ namespace Survival.Core.Engine
             CheckVictory(s);
         }
 
-        /// <summary>反击架势：受到直接攻击命中后反击 1 次（主角存活、攻击者存活）。</summary>
+        /// <summary>反击架势：受到直接攻击命中（含护甲挡成 0）后反击 1 次（主角存活、攻击者存活、来源页此刻合法）。</summary>
         private void TryCounter(GameState s, BattleState b, BattleEnemy attacker)
         {
             if (b.CounterFactor <= 0 || s.Progress.Dead || !attacker.Alive) return;
+            if (ReactionBlocked(s, b, b.CounterPage, attacker) is string why) { BattleLog(s, $"你的反击没有出手：{why}（架势保留）。"); return; }
             var f = b.CounterFactor;
             b.CounterFactor = 0;
             ReactionStrike(s, b, b.CounterPage, f, attacker, "反击");
         }
 
-        /// <summary>架矛：敌人主动前移后迎击（每次前移消耗 1 次，次数用完或下次正常激活开始清除）。</summary>
+        /// <summary>架矛：敌人主动前移后迎击（每次合法迎击消耗 1 次；够不到不扣次数；次数用完或下次正常激活开始清除）。</summary>
         private void TryBrace(GameState s, BattleState b, BattleEnemy mover)
         {
             if (b.BraceCharges <= 0 || s.Progress.Dead || !mover.Alive) return;
+            if (ReactionBlocked(s, b, b.BracePage, mover) is string why) { BattleLog(s, $"你的迎击没有出手：{why}（不扣次数）。"); return; }
             b.BraceCharges--;
             ReactionStrike(s, b, b.BracePage, b.BraceFactor, mover, "迎击");
         }

@@ -81,6 +81,8 @@ namespace Survival.Core.Engine
         public double Penetration { get; set; }
         /// <summary>伤害增益（装备“直接伤害乘数”合计，乘算总上限×1.5；不含技能/熟练/暴击）。</summary>
         public double DamageBuff { get; set; } = 1;
+        /// <summary>递减前的合法正增益乘积 rawB（Q82）；DamageBuff 为递减后的 B。</summary>
+        public double RawDamageBuff { get; set; } = 1;
         /// <summary>未暴击时的总乘数：熟练(1+0.035L)×招式×伤害增益（结算与预览同源）。</summary>
         public double Multiplier { get; set; } = 1;
         /// <summary>平加攻击力（R07 词条）。</summary>
