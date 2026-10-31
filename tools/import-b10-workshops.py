@@ -125,8 +125,9 @@ def main():
                          "note": "锻造每批另付木炭1作燃料" if sid == "forge" else ""})
     put_knowledge({
         "id": ARMORY_KNOWLEDGE,
-        "name": "军械台的建法",
+        "name": "军械台蓝图",
         "grantedByFacts": [],
+        "blueprint": True,
         "source": "d03 主线军械蓝图（A07；地图与任务在后续版本开放，现在只能用开发入口学会）",
     })
 

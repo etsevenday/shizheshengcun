@@ -127,6 +127,13 @@
                     <button class="secondary" @onclick="() => DevCapacity(null)">清除容量事实（回C1）</button>
                     <button class="secondary" @onclick="() => DevDone(G.E.DebugGiveWraps(G.S))">护拳绑带1件+制作材料</button>
                 </div>
+                @* B10（A07 工坊、A05 §3）：工坊只能建在营地；蓝图的正常获取（地图固定箱/任务）在 B11 起，这里供试玩 *@
+                <div class="eyebrow">工坊与装备制作（B10）</div>
+                <div class="btn-row">
+                    <button class="secondary" @onclick="() => DevDone(G.E.DebugBuildAllWorkshops(G.S))">建全部工坊（营地）</button>
+                    <button class="secondary" @onclick="() => DevDone(G.E.DebugLearnAllKnowledge(G.S))">学会全部做法与蓝图</button>
+                    <button class="secondary" @onclick="() => DevDone(G.E.DebugWorkshopKit(G.S))">工坊材料包（放当前地面）</button>
+                </div>
                 @* B8（R08、A11 §6/§7）：正式招募任务（RN01—RN06）在后续批次，这里直接把六名命名角色登记入名册（同行未满 C 时直接编入） *@
                 <div class="eyebrow">队伍（B8）：先记下容量事实再加人；营区＝临时营地</div>
                 <div class="btn-row">

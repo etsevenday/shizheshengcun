@@ -85,7 +85,7 @@ else
                                                 var rto = Math.Min(it.MaxDurability.Value, (it.Durability ?? 0) + it.MaxDurability.Value * rf);
                                                 <button type="button" class="eq-btn" disabled="@(rwhy != null)" title="@(rwhy ?? $"维修{name}：耐久{Ui.N(it.Durability ?? 0)}→{Ui.N(rto)}（恢复最大耐久{Ui.Pct(rf)}），消耗废金属1、零件1；单击直接开始")"
                                                         @onclick="() => Repair(rreq)">维修·@(rrc.BaseMinutes)分钟</button>
-                                                @if (rwhy != null && !rwhy.Contains("耐久已满")) { <small class="eq-stat eq-why">维修：@rwhy</small> }
+                                                @if (rwhy != null) { <small class="eq-stat eq-why">维修：@rwhy</small> }
                                                 else if (rwhy == null) { <small class="eq-stat">维修后耐久@(Ui.N(rto))</small> }
                                             }
                                             @if (why != null && groundWhy == null)

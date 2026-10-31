@@ -39,6 +39,8 @@
             <button class="@(G.Panel == "formation" ? "on" : "") @(formWhy != null ? "off" : "")" disabled="@navOff" aria-disabled="@(formWhy != null)" data-nav="formation"
                     title="@(G.DialogueLocked ? NavTitle("编队", null) : formWhy != null ? $"现在不能编队：{formWhy}" : navOff ? NavTitle("编队", null) : "编队：安排开战号位（前排1→后排4），保存不花时间")"
                     @onclick="ToggleFormation">编队</button>
+            <button class="@(G.Panel == "gear" ? "on" : "")" disabled="@navOff" data-nav="gear" title="@NavTitle("整备：七槽装备、随身五卡与队员交接（不花时间）", null)" @onclick='() => Toggle("gear")'>整备</button>
+            <button class="@(G.Panel == "growth" ? "on" : "")" disabled="@navOff" data-nav="growth" title="@NavTitle("成长：十五门熟练度的十级轨道与技能节点（只浏览）", null)" @onclick='() => Toggle("growth")'>成长</button>
             <span class="nav-sep" aria-hidden="true"></span>
             <button class="@(G.Panel == "goals" ? "on" : "")" disabled="@navOff" title="@NavTitle("本局生存目标与完成情况", null)" @onclick='() => Toggle("goals")'>生存目标</button>
             <button class="@(G.Panel == "tips" ? "on" : "")" disabled="@navOff" title="@NavTitle("当前求生建议", null)" @onclick='() => Toggle("tips")'>生存提示</button>
@@ -61,7 +63,7 @@
         @* 固定四行（S14 §18.1）：中部净高均分四份——①地图/场景 ②设施/资源 ③当前地面 ④随身；选卡、展开锅、悬停、开面板、对白、
            战斗都不改行高，行内放不下的在行内滚动（随身五张卡不滚动）。对白/战斗/面板只占①②合并区域。 *@
         <section class="center" aria-label="当前地点">
-            <div class="center-scroll four @(centerPanel ? "locked" : "") @(G.Panel == "craft" ? "craft-panel" : "") @(battleUi ? "battle" : "")">
+            <div class="center-scroll four @(centerPanel ? "locked" : "") @(G.Panel == "craft" ? "craft-panel" : "") @(G.Panel is "gear" or "growth" ? "full-panel" : "") @(battleUi ? "battle" : "")">
                 <div class="rows2" data-row="1-2">
                     <div class="rows2-inner" inert="@dlgLock">
                         @* 战斗/敌踪覆盖层替换地块栏两行（组件替换而非叠加，拖拽不会收集到隐藏的落点） *@
@@ -84,6 +86,8 @@
                                 case "help": <HelpOverlay /> break;
                                 case "dialogs": <DialogueLogOverlay /> break;
                                 case "formation": <FormationOverlay /> break;
+                                case "gear": <GearOverlay /> break;
+                                case "growth": <GrowthOverlay /> break;
                             }
                         </div>
                     }

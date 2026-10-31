@@ -88,7 +88,7 @@ public class B10WorkshopTests : TestBase
         Assert.That(E.CanStart(s, Craft("build_forge")), Is.Null);
         // 军械台另需军械蓝图
         s.Skills["crafting"].Level = 7;
-        Assert.That(E.CanStart(s, Craft("build_armory")), Does.Contain("军械台的建法"));
+        Assert.That(E.CanStart(s, Craft("build_armory")), Does.Contain("未掌握：需要军械台蓝图"));
         // 工作台配方：在营地可做（登记后才会砍刀）
         s.Progress.Flags.Add("hub_registered");
         Give(s, ("iron_plate", 2), ("wood", 1), ("cloth", 1));

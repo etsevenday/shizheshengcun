@@ -1270,3 +1270,52 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .fm-foot .primary { display: inline-block; width: auto; padding: 8px 18px; font-size: 16px; min-height: 40px; }
 .fm-why { padding: 0 14px 8px; }
 @media (max-height: 760px) { .fm-slot { min-height: 0; padding: 5px 8px; } .formation-panel .formation-body { gap: 6px; padding: 6px 12px; } .fm-foot .primary { min-height: 34px; padding: 5px 16px; } .fm-foot .secondary { padding-top: 5px; padding-bottom: 5px; } }
+
+/* B10 工坊分类标签与配方来源（A10 §9.1）：标签换行排、不撑高配方卡 */
+.craft-grid.tabbed { grid-template-rows: auto minmax(0, 1fr); }
+.craft-tabs { grid-column: 1 / -1; display: flex; flex-wrap: nowrap; gap: 4px; overflow-x: auto; scrollbar-width: thin; }
+.craft-tab { flex: 0 0 auto; padding: 2px 7px; font-size: 14px; border: 1px solid var(--line); border-radius: 4px; background: #1f2721; color: inherit; }
+.craft-tab.on { border-color: var(--accent); background: #2c3427; }
+.craft-tab.unbuilt { color: var(--muted); border-style: dashed; }
+.craft-source { display: flex; flex-direction: column; gap: 2px; font-size: 14px; margin: 2px 0 6px; }
+
+/* B10 整备面板与成长页（A10 §7.1/§8）：覆盖①②两行，三列/两列，列内局部滚动 */
+.gear-members { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 0 12px 6px; }
+.gear-member { display: flex; flex-direction: column; align-items: flex-start; padding: 4px 10px; border: 1px solid var(--line); border-radius: 4px; background: #1f2721; color: inherit; }
+.gear-member.on { border-color: var(--accent); background: #2c3427; }
+.gear-member small { color: var(--muted); font-size: 13px; }
+.gear-cap { margin-left: auto; }
+.gear-body { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr) minmax(0, 1fr); gap: 10px; min-height: 0; overflow: hidden; }
+.gear-col { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; min-height: 0; padding-right: 2px; }
+.gear-slot, .gear-card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 8px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px; background: #1b221c; }
+.gear-card { grid-template-columns: minmax(0, 1fr); }
+.gear-slot.empty { opacity: .75; border-style: dashed; }
+.gs-name { color: var(--muted); font-size: 14px; min-width: 64px; }
+.gs-item { display: flex; align-items: center; gap: 6px; min-width: 0; flex-wrap: wrap; }
+.gs-item small { color: var(--muted); font-size: 13px; }
+.gs-item .eq-ico svg { width: 24px; height: 24px; }
+.gs-btns { display: flex; flex-wrap: wrap; gap: 4px; grid-column: 1 / -1; }
+.gs-why { grid-column: 1 / -1; font-size: 13px; }
+.eq-btn.give { border-color: #6d8a5a; }
+.growth-body { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 12px; min-height: 0; overflow: hidden; }
+.growth-list, .growth-detail { overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 4px; }
+.growth-skill { display: flex; justify-content: space-between; gap: 6px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: #1f2721; color: inherit; text-align: left; }
+.growth-skill span { color: var(--muted); font-size: 13px; }
+.growth-skill.on { border-color: var(--accent); background: #2c3427; }
+.growth-head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.growth-track { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 3px; margin: 4px 0; }
+.gt-cell { border: 1px solid var(--line); border-radius: 3px; padding: 2px; text-align: center; font-size: 13px; background: #1b221c; min-height: 34px; }
+.gt-cell.node { border-color: #8a7a4a; }
+.gt-cell.reached { background: #2f3a26; }
+.gt-cell small { display: block; font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.growth-nodes { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+.growth-node { border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; background: #1b221c; display: flex; flex-direction: column; gap: 2px; }
+.growth-node.locked { opacity: .8; border-style: dashed; }
+.growth-node header { display: flex; justify-content: space-between; gap: 6px; }
+.growth-node p { margin: 0; font-size: 14px; }
+.growth-node small { font-size: 13px; }
+.growth-node em.ok { color: var(--accent); font-style: normal; }
+.gear-slot { grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; padding: 2px 6px; }
+.gear-slot .gs-btns { grid-column: auto; }
+.gear-slot .gs-item small { flex-basis: 100%; }
+.gear-slot .gs-why { grid-column: 1 / -1; }

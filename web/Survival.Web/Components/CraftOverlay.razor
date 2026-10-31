@@ -12,16 +12,19 @@
     var fac = s.Locations[here].Facility;
     var procId = G.CraftRecipe != null && G.CraftRecipe.StartsWith(ProcPrefix) ? G.CraftRecipe.Substring(ProcPrefix.Length) : null;
     var proc = procId == null ? null : e.Config.Processes.FirstOrDefault(p => p.Id == procId);
-    // Q64：需要做法知识的配方（护拳绑带=营区登记默认知识）没学会时不列出
-    var recipeId = G.CraftRecipe != null && e.Config.Recipes.Any(r => r.Id == G.CraftRecipe && e.RecipeKnown(s, r)) ? G.CraftRecipe : "knife";
+    // B10（A10 §9.1）：未掌握的做法也列出、写“未掌握”与来源（取代 Q64 时“不列出”的做法），开工校验仍拒绝
+    var recipeId = G.CraftRecipe != null && e.Config.Recipes.Any(r => r.Id == G.CraftRecipe && !r.IsSalvage) ? G.CraftRecipe : "knife";
     var rc = e.Recipe(recipeId);
+    var tab = procId != null ? AutoTab : G.CraftTab ?? TabOf(rc);
     var main = s.Main;
     var craftPaused = main != null && main.Status == ActionStatus.Paused && (main.Type == ActionType.Craft || main.Type == ActionType.Build);
     var busy = G.Running || s.Sub != null;
     var candidates = G.CraftCandidates;
     // 拆解（B4）走配方流程但只在选中装备的卡下开始，不进手工制作列表
-    var recipes = (candidates == null ? e.Config.Recipes : e.Config.Recipes.Where(r => candidates.Contains(r.Id))).Where(r => !r.IsSalvage && e.RecipeKnown(s, r)).ToList();
-    var preferred = G.CraftPreferred.Where(id => s.Items.Any(i => i.InstanceId == id && rc.Inputs.ContainsKey(i.ItemId))).ToList();
+    var recipes = (candidates == null ? e.Config.Recipes.Where(r => TabOf(r) == tab) : e.Config.Recipes.Where(r => candidates.Contains(r.Id) && e.RecipeKnown(s, r)))
+        .Where(r => !r.IsSalvage).OrderBy(r => e.RecipeLocks(s, r).Count > 0 ? 1 : 0).ToList();
+    var preferred = G.CraftPreferred.Where(id => s.Items.Any(i => i.InstanceId == id && rc.AllInputs.ContainsKey(i.ItemId))).ToList();
+    var locks = e.RecipeLocks(s, rc);
     var batchable = !rc.IsBuild && !rc.IsRepair;
     var batch = batchable ? Math.Max(1, G.CraftBatch) : 1;
     var request = ActionRequest.Craft(recipeId, rc.NeedsExplicitPot ? G.CraftPot : null, preferred, batch);
@@ -33,10 +36,24 @@
     <div class="sub-panel" role="dialog" aria-label="手工制作与营地设施">
         <div class="sub-head">
             @* 试玩修复 M77-B7（Q21）：材料来源等教学短文移进悬浮说明 *@
-            <div><h2>手工制作</h2><span class="sub" title="@($"材料来自随身与{lc.Name}地面（火堆与锅里的物资要先取出）；配方全部已知；在配方卡下方开始，详细预估在右栏对象信息。")">配方 · 详细预估在右栏 ⓘ</span></div>
+            <div><h2>手工制作</h2><span class="sub" title="@($"材料来自随身与{lc.Name}地面（火堆与锅里的物资要先取出）；按工坊分类；未掌握的做法也列出并写来源；在配方卡下方开始，详细预估在右栏对象信息。")">配方 · 详细预估在右栏 ⓘ</span></div>
             <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
         </div>
-        <div class="sub-body craft-grid">
+        <div class="sub-body craft-grid @(candidates == null ? "tabbed" : "")">
+            @if (candidates == null)
+            {
+                    @* B10（A10 §9.1）：一级按工坊分类控制数量，长列表只在二级局部滚动；标签写本地工坊是否建成 *@
+                    <div class="craft-tabs" role="tablist" aria-label="工坊分类">
+                        @foreach (var (tid, tname) in Tabs())
+                        {
+                            var t = tid;
+                            var st = e.Config.Workshops.Stations.FirstOrDefault(x => x.Id == t && x.BuildRecipe != null);
+                            var builtSt = st == null || e.WorkshopBuilt(s, here, t);
+                            <button type="button" role="tab" aria-selected="@(tab == t)" class="craft-tab @(tab == t ? "on" : "") @(builtSt ? "" : "unbuilt")" data-tab="@t"
+                                    title="@(st == null ? tname : builtSt ? $"{tname}：{lc.Name}已建成" : $"{tname}：{lc.Name}还没有（可浏览配方与门槛）")" @onclick="() => PickTab(t)">@tname@(builtSt ? "" : "·未建")</button>
+                        }
+                    </div>
+            }
             <div class="recipe-list">
                 @if (candidates != null)
                 {
@@ -45,15 +62,16 @@
                 @foreach (var r in recipes)
                 {
                     var id = r.Id;
-                    var built = r.FacilityResult != null && lc.CanBuildShelter && (r.FacilityResult == "shelterBuilt" ? fac.ShelterBuilt : fac.BedBuilt);
-                    var icon = r.FacilityResult == "shelterBuilt" ? "shelter" : r.FacilityResult == "bedBuilt" ? "bed" : r.IsRepair ? "repair" : r.Outputs.Keys.First();
-                    var why = candidates != null ? e.CanStart(s, ActionRequest.Craft(id)) : null;
-                    <button class="recipe @(id == recipeId && proc == null ? "on" : "") @(why != null ? "missing" : "")" @onclick="() => Pick(id)" title="@why">
+                    var built = e.FacilityBuiltHere(s, r);
+                    var icon = RecipeIcon(r);
+                    var rl = e.RecipeLocks(s, r);
+                    var why = candidates != null ? e.CanStart(s, ActionRequest.Craft(id)) : rl.FirstOrDefault();
+                    <button class="recipe @(id == recipeId && proc == null ? "on" : "") @(why != null && !built ? "missing" : "")" @onclick="() => Pick(id)" title="@(why ?? RecipeMeta(r))" data-recipe="@id">
                         @Icons.Markup(icon)
-                        <span>@r.Name<small>@(built ? "已建造" : why != null ? why : $"{r.BaseMinutes}分钟{(r.IsBuild ? " · 营地" : "")}")</small></span>
+                        <span>@r.Name<small>@(built ? "已建成" : why != null ? ShortLock(why) : RecipeMeta(r))</small></span>
                     </button>
                 }
-                @if (candidates == null)
+                @if (candidates == null && tab == AutoTab)
                 {
                     <div class="tiny muted candidates-head">火堆自动加工 · 处理说明</div>
                     @foreach (var p in e.Config.Processes)
@@ -88,7 +106,13 @@
                 else
                 {
                     <div class="panel craft-mats">
-                        <div class="eyebrow" title="@RecipeHint(rc)">@(rc.IsBuild ? "营地设施" : "配方") · @rc.Name ⓘ</div>
+                        <div class="eyebrow" title="@RecipeHint(rc)">@(rc.IsBuild ? (rc.Group == "workshop" ? "工坊建造" : "营地设施") : e.StationName(rc.Station)) · @rc.Name ⓘ</div>
+                        @* B10（A10 §9.1）：来源、工坊与门槛一次写全；不满足的标出原因（不是缺料） *@
+                        <div class="craft-source" data-craft-source>
+                            <span>@RecipeMeta(rc)</span>
+                            @if (SourceText(rc) is string src) { <span class="muted">来源：@src</span> }
+                            @foreach (var l in locks) { <span class="warn-text">@l</span> }
+                        </div>
                         @if (rc.IsRepair)
                         {
                             var cands = e.RepairCandidates(s);
@@ -125,7 +149,7 @@
                         }
                         @if (batchable)
                         {
-                            var maxBatch = rc.Inputs.Count == 0 ? 1 : Math.Max(1, rc.Inputs.Min(kv => e.AvailableCount(s, kv.Key, true) / Math.Max(1, kv.Value)));
+                            var maxBatch = rc.AllInputs.Count == 0 ? 1 : Math.Max(1, rc.AllInputs.Min(kv => e.AvailableCount(s, kv.Key, true) / Math.Max(1, kv.Value)));
                             <div class="batch-row">
                                 <span class="tiny muted">批量制作</span>
                                 <button type="button" class="tbar-step" aria-label="减少件数" disabled="@(batch <= 1)" @onclick="() => SetBatch(batch - 1)">−</button>
@@ -159,6 +183,15 @@
                                 </span>
                             </ItemRow>
                         }
+                        @foreach (var kv in rc.Fuel)
+                        {
+                            @* A05 §3：锻炉每批另付木炭1作燃料，与原料一起预留；原料里也有同种物品时合计校验 *@
+                            var fneed = kv.Value * batch;
+                            var fall = rc.AllInputs[kv.Key] * batch;
+                            var fhave = e.AvailableCount(s, kv.Key, true);
+                            <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"燃料{fneed}")" Missing="@(fhave < fall)" CssClass="mat-row"
+                                     Status="@($"{e.StationName(rc.Station)}每批{kv.Value} · 现有{fhave}{(fall != fneed ? $"（连同原料共需{fall}）" : "")}{(fhave < fall ? $" · 缺少{fall - fhave}" : "")}")" />
+                        }
                         @foreach (var tag in rc.Catalysts)
                         {
                             var cfg = e.Config.Items.First(i => i.ToolTag == tag);
@@ -169,8 +202,7 @@
                         <div class="tiny muted" style="margin-top:8px">产物</div>
                         @if (rc.FacilityResult != null)
                         {
-                            var icon = rc.FacilityResult == "shelterBuilt" ? "shelter" : "bed";
-                            <ItemRow Icon="@icon" Name="@rc.Name.Replace("建", "").Replace("铺", "")" Qty="×1" Status="@($"建在{lc.Name}，不可搬动")" />
+                            <ItemRow Icon="@RecipeIcon(rc)" Name="@rc.Name.Replace("建", "").Replace("铺", "")" Qty="×1" Status="@($"建在{lc.Name}，不可搬动{(rc.Group == "workshop" ? "，每类每地一座" : "")}")" />
                         }
                         @foreach (var kv in rc.Outputs)
                         {
@@ -313,6 +345,65 @@ else
 
     private bool _starting;
 
+    private const string AutoTab = "auto";
+    private const string CampTab = "camp";
+
+    /// <summary>分类标签：六类工坊（含手工）、营地建造（棚/床/五类工坊）、火堆自动加工。</summary>
+    private IEnumerable<(string id, string name)> Tabs()
+    {
+        foreach (var st in G.E.Config.Workshops.Stations) yield return (st.Id, st.Name);
+        yield return (CampTab, "营地建造");
+        yield return (AutoTab, "自动加工");
+    }
+
+    private static string TabOf(RecipeConfig r) => r.IsBuild ? CampTab : r.Station;
+
+    private void PickTab(string t)
+    {
+        G.CraftTab = t;
+        if (t == AutoTab) { Pick(ProcPrefix + G.E.Config.Processes[0].Id, true); return; }
+        var first = G.E.Config.Recipes.Where(r => !r.IsSalvage && TabOf(r) == t).OrderBy(r => G.E.RecipeLocks(G.S, r).Count > 0 ? 1 : 0).FirstOrDefault();
+        if (first != null) Pick(first.Id, true);
+        G.Notify();
+    }
+
+    private string RecipeIcon(RecipeConfig r) => r.FacilityResult switch
+    {
+        "shelterBuilt" => "shelter",
+        "bedBuilt" => "bed",
+        "workshop:workbench" => "parts",
+        "workshop:forge" => "fire_lit",
+        "workshop:sewing" => "cloth",
+        "workshop:medical" => "bandage",
+        "workshop:armory" => "crossbow",
+        _ => r.IsRepair ? "repair" : r.Outputs.Keys.FirstOrDefault() ?? "stone",
+    };
+
+    /// <summary>配方短元信息：基础分钟 · 门槛等级（按配方的技能门槛，医疗台加工读医疗）。</summary>
+    private string RecipeMeta(RecipeConfig r)
+    {
+        var lv = r.MinSkills.Count == 0 ? "" : " · " + string.Join("、", r.MinSkills.Select(kv => $"{G.E.SkillName(kv.Key)}{kv.Value}级"));
+        return $"{r.BaseMinutes}分钟{lv}{(r.IsBuild ? " · 营地" : "")}";
+    }
+
+    /// <summary>列表里的锁定短句（详细原因在悬停与配方卡）。</summary>
+    private static string ShortLock(string why)
+    {
+        if (why.StartsWith("未掌握")) return "未掌握：需要蓝图";
+        if (why.StartsWith("还不知道")) return "未掌握：营区登记后学会";
+        var cut = why.IndexOf('\uff1a');
+        return why.StartsWith("需要") && cut > 0 ? why.Substring(0, cut) : why;
+    }
+
+    /// <summary>配方需要的知识与来源（A05 §3 默认知识/蓝图）。</summary>
+    private string? SourceText(RecipeConfig r)
+    {
+        var e = G.E;
+        if (r.Knowledge != null && e.Config.Knowledge.FirstOrDefault(k => k.Id == r.Knowledge) is { } k)
+            return $"{k.Name}（{(e.KnowsKnowledge(G.S, k.Id) ? "已掌握" : "未掌握")}）· {k.Source}";
+        return null;
+    }
+
     private static string StartLabel(RecipeConfig r) => r.IsBuild ? "开始建造" : r.IsRepair ? "开始维护" : "开始制作";
 
     /// <summary>开始制作/建造/维护：内核再校验并预留；开始成功后保持面板（与原右栏确认一致），中央推进条接管进度与退出。</summary>
@@ -324,8 +415,11 @@ else
         finally { _starting = false; }
     }
 
-    private void Pick(string id)
+    private void Pick(string id) => Pick(id, false);
+
+    private void Pick(string id, bool keepTab)
     {
+        if (!keepTab && !id.StartsWith(ProcPrefix)) G.CraftTab = null;
         if (G.CraftRecipe != id)
         {
             G.CraftBatch = 1;

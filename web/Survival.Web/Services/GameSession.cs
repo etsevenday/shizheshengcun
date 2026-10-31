@@ -208,6 +208,8 @@ public sealed class GameSession
     public string? Panel { get; set; }
     /// <summary>从设施卡打开加工面板时要预选的配方；面板读取一次后清空。</summary>
     public string? CraftRecipe { get; set; }
+    /// <summary>手工制作当前分类标签（B10：工坊/营地建造/自动加工）；null 时按所选配方的工坊。</summary>
+    public string? CraftTab { get; set; }
     /// <summary>从材料拖拽打开加工面板时的候选配方（配置顺序）；为空表示列出全部配方。</summary>
     public List<string>? CraftCandidates { get; set; }
     /// <summary>材料槽里手工指定的批次与指定的锅，随确认一起传给 Craft 请求。</summary>
@@ -319,6 +321,7 @@ public sealed class GameSession
         CraftTarget = null;
         if (panel == "craft" && State != null)
         {
+            CraftTab = null;
             var main = S.Main;
             if (main != null && (main.Type == ActionType.Craft || main.Type == ActionType.Build)) CraftRecipe = main.TargetId;
             else if (recipe != null) CraftRecipe = recipe;
@@ -338,7 +341,7 @@ public sealed class GameSession
 
     /// <summary>替换中部上方的顶栏面板：地图、制作、休息、日志，以及生存目标、生存提示、对话记录、系统说明。</summary>
     public static bool IsTopPanel(string? panel) =>
-        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation";
+        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth";
 
     /// <summary>对话记录浏览层里选中的那一次对话（DialogueSession.Id）；null 为最近一次。</summary>
     public int? DialogLogPick { get; set; }
@@ -1720,6 +1723,27 @@ public sealed class GameSession
     /// <summary>卸下某槽：toGround=false 回本人随身（卡位不够时拒绝），toGround=true 是玩家明确选的“放当前地面”。</summary>
     public ActionResult Unequip(string slot, bool toGround) =>
         Commit(E.Unequip(S, GameState.PlayerId, slot, toGround, Guid.NewGuid().ToString("N")));
+
+    // ───────────── B10 整备面板与成长页（A10 §7/§8） ─────────────
+
+    /// <summary>整备/成长页当前查看的角色（只查看，不转移物品）；null 或已不在同行时为主角。</summary>
+    public string? GearActor { get; set; }
+
+    public string GearActorId => GearActor != null && State != null && S.Party.Contains(GearActor) ? GearActor : GameState.PlayerId;
+
+    /// <summary>成长页当前选中的熟练门类。</summary>
+    public string? GrowthSkill { get; set; }
+
+    /// <summary>为某名同行角色穿上随身或当前地面的装备（0 时间，内核原子校验）。</summary>
+    public ActionResult EquipFor(string actorId, int instanceId, string slot, bool oldToGround = false) =>
+        Commit(E.Equip(S, actorId, instanceId, slot, Guid.NewGuid().ToString("N"), oldToGround));
+
+    public ActionResult UnequipFor(string actorId, string slot, bool toGround) =>
+        Commit(E.Unequip(S, actorId, slot, toGround, Guid.NewGuid().ToString("N")));
+
+    /// <summary>队员交接（A10 §7.2）：0 时间、原子，双方卡数/重量由内核一次校验。</summary>
+    public ActionResult GiveTo(string fromId, string toId, int instanceId, int count) =>
+        Commit(E.Give(S, fromId, toId, instanceId, count, Guid.NewGuid().ToString("N")));
 
     /// <summary>旧档非法同类双武器：已在安全空闲，弹整理窗（先于超五卡整理，B3 H8）。</summary>
     public bool DuplicateWeaponsPending => State != null && E.DuplicateWeaponsIllegal(S) && E.OverflowResolvable(S);

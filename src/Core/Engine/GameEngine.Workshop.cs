@@ -23,6 +23,10 @@ namespace Survival.Core.Engine
         public bool WorkshopBuilt(GameState s, string locationId, string stationId) =>
             stationId == "hand" || (s.Locations.TryGetValue(locationId, out var l) && l.Facility.Workshops.Contains(stationId));
 
+        /// <summary>建造配方的设施在当前地点是否已建成（棚、床、工坊）。</summary>
+        public bool FacilityBuiltHere(GameState s, RecipeConfig rc) =>
+            rc.FacilityResult != null && FacilityFlag(s.Locations[s.CurrentLocation].Facility, rc.FacilityResult);
+
         /// <summary>这个地点能不能建工坊（B10-1：配置 workshops.buildLocations，现在只有 camp）。</summary>
         public bool CanBuildWorkshopsAt(string locationId) => Config.Workshops.BuildLocations.Contains(locationId);
 

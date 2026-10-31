@@ -1,0 +1,117 @@
+@inherits GameComponent
+
+@* B10 成长页（A10 §8、A06「Q26 成长页与当前指令页分界」、验收 A06-U26/UI-E08/UI-E28）：先选角色再选门类，
+   每门十级轨道，1/3/5/7/10 五个技能节点；未解锁的也显示（只写已公开的解锁条件“达到N级”），当前指令页仍只列已解锁的。
+   只浏览：不推进时间、不改经验；技能长说明点节点固定阅读。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var me = G.GearActorId;
+    var actor = s.Actors.TryGetValue(me, out var a) ? a : s.Player;
+    var views = e.SkillViews(actor);
+    var cur = views.FirstOrDefault(v => v.Id == G.GrowthSkill) ?? views.First();
+}
+
+<div class="sub-panel growth-panel" role="dialog" aria-label="成长">
+    <div class="sub-head">
+        <div>
+            <h2>成长</h2>
+            <span class="sub" title="熟练度属于每名角色，不是全队共享；未解锁的技能只在这里预览，战斗操作台只列已解锁的（Q26）">@e.ActorDisplayName(s, me) · 十五门熟练度 · 只浏览 ⓘ</span>
+        </div>
+        <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
+    </div>
+    @if (s.Party.Count > 1)
+    {
+        <div class="gear-members" role="tablist" aria-label="选角色">
+            @foreach (var id in s.Party)
+            {
+                var aid = id;
+                <button type="button" role="tab" aria-selected="@(aid == me)" class="gear-member @(aid == me ? "on" : "")" data-actor="@aid" @onclick="() => PickActor(aid)"><b>@e.ActorDisplayName(s, aid)</b></button>
+            }
+        </div>
+    }
+    <div class="sub-body growth-body">
+        <div class="growth-list" data-wheel="y">
+            @foreach (var grp in new[] { ("combat", "战斗"), ("both", "医疗（战内外）"), ("survival", "求生") })
+            {
+                <div class="skill-group muted">@grp.Item2</div>
+                @foreach (var sk in views.Where(x => x.Category == grp.Item1))
+                {
+                    var sid = sk.Id;
+                    var unlocked = sk.Nodes.Count(n => sk.Level >= n.Level);
+                    <button type="button" class="growth-skill @(sid == cur.Id ? "on" : "")" data-skill="@sid" @onclick="() => PickSkill(sid)">
+                        <b>@sk.Name</b><span>@(sk.Level)/@(sk.Cap)级 · 技能@(unlocked)/@(sk.Nodes.Count)</span>
+                    </button>
+                }
+            }
+        </div>
+        <div class="growth-detail" data-wheel="y">
+            <div class="eyebrow">@e.ActorDisplayName(s, me) · @cur.Name</div>
+            <div class="growth-head">
+                <b>@(cur.Level)/@(cur.Cap)级</b>
+                <span class="muted">@(cur.Maxed ? "满级，不再获得经验" : $"经验{cur.Xp}/{cur.NextXp}，升到{cur.Level + 1}级")</span>
+                @if (NextNode(cur) is { } nx) { <span>下一节点：@(nx.Level)级 @nx.Name</span> }
+            </div>
+            @* 十级轨道：1—10 格，五个节点格有技能名；已达到的点亮 *@
+            <div class="growth-track" aria-label="十级轨道">
+                @for (var lv = 1; lv <= Math.Min(10, cur.Cap); lv++)
+                {
+                    var l = lv;
+                    var node = cur.Nodes.FirstOrDefault(n => n.Level == l);
+                    <div class="gt-cell @(cur.Level >= l ? "reached" : "") @(node != null ? "node" : "")" title="@(node == null ? $"{l}级" : $"{l}级 {node.Name}")">
+                        <span>@l</span>@if (node != null) { <small>@node.Name</small> }
+                    </div>
+                }
+            </div>
+            <div class="growth-nodes">
+                @foreach (var n in cur.Nodes)
+                {
+                    var on = cur.Level >= n.Level;
+                    <div class="growth-node @(on ? "unlocked" : "locked")" data-node="@n.Id">
+                        <header><b>@(n.Level)级 · @n.Name</b><em class="@(on ? "ok" : "muted")">@(on ? "已解锁" : "未解锁")</em></header>
+                        <p>@n.Text</p>
+                        <small class="muted">@NodeMeta(n)</small>
+                        <small class="@(on ? "muted" : "warn-text")">@(on ? Status(actor, cur, n) : $"解锁条件：{cur.Name}达到{n.Level}级（当前{cur.Level}级）")</small>
+                    </div>
+                }
+            </div>
+            <div class="tiny muted">经验只给实际出手/工作的本人；两件同门类武器不叠经验、不多解锁技能。命中、伤害等公式见系统说明。</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void Close() => G.OpenPanel(null);
+
+    private void PickActor(string id)
+    {
+        G.GearActor = id;
+        G.Notify();
+    }
+
+    private void PickSkill(string id)
+    {
+        G.GrowthSkill = id;
+        G.Notify();
+    }
+
+    private static SkillNodeConfig? NextNode(SkillView sk) => sk.Nodes.FirstOrDefault(n => n.Level > sk.Level);
+
+    private static string NodeMeta(SkillNodeConfig n)
+    {
+        if (n.IsSurvival) return "求生被动";
+        var parts = new List<string>();
+        if (n.Ap > 0) parts.Add($"{n.Ap}AP");
+        if (n.Positions != "") parts.Add(n.Positions);
+        if (n.CooldownRounds > 0) parts.Add($"冷却{n.CooldownRounds}轮");
+        return parts.Count == 0 ? "战斗技能" : string.Join(" · ", parts);
+    }
+
+    private string Status(ActorState actor, SkillView sk, SkillNodeConfig n)
+    {
+        var e = G.E;
+        if (n.IsSurvival) return e.PassiveStatus(actor, n);
+        if (e.SkillExecOf(n.Id) is { NeedsAllies: true } && G.S.Party.Count < 2) return "已解锁，需要同行队友";
+        return "已解锁，装上这一类武器后在该武器页使用";
+    }
+}
