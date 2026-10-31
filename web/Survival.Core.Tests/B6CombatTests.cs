@@ -365,7 +365,7 @@ public class B6CombatTests : BattleTestBase
         // 敌人命中时按 0.4 减伤，触发格挡不再重复磨损盾
         var e = t.Battle.Alive.First();
         var hp = t.Stats.Health;
-        Force(t, Below(0.01), Below(0.0001));
+        Force(t, Draw(), Below(0.01), Below(0.0001));
         typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { t, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
         var raw = Cfg.Enemies.Single(x => x.Id == "worker").DamageMin;
@@ -436,7 +436,7 @@ public class B6CombatTests : BattleTestBase
         Assert.That(E.PlayerArmor(s), Is.EqualTo(0.2).Within(1e-9));
         var e = s.Battle!.Alive.First();
         var hp = s.Stats.Health;
-        Force(s, Below(0.01), Below(1e-3));
+        Force(s, Draw(), Below(0.01), Below(1e-3));
         typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
         Assert.That(hp - s.Stats.Health, Is.EqualTo(1.0 - 0.2).Within(1e-3), "敌人伤害扣主角装备护甲");
@@ -476,12 +476,12 @@ public class B6CombatTests : BattleTestBase
         var s = Fight(19, "crawler");
         var e = s.Battle!.Alive.First();
         // Q63 起主角基础控制抗性 5（取代 B6-2 的 0）：成功率 75%−5% = 70%
-        Force(s, Below(0.01), Any(), AtLeast(0.70));
+        Force(s, Draw(), Below(0.01), Any(), AtLeast(0.70));
         typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
         Assert.That(s.Battle.PlayerSlowPending, Is.False, "控制判定失败（70%）不减速");
         Assert.That(s.Battle.Log.Last(), Does.Contain("控制70%"));
-        Force(s, Below(0.01), Any(), Below(0.70));
+        Force(s, Draw(), Below(0.01), Any(), Below(0.70));
         typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
         Assert.That((s.Battle.PlayerSlowPending, s.Battle.PlayerSteadyUntilRound), Is.EqualTo((true, s.Battle.Round + 1)));

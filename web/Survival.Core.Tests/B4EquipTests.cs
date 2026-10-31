@@ -433,7 +433,7 @@ public class B4EquipTests : BattleTestBase
         var e = s.Battle!.Alive.First();
         var hp = s.Stats.Health;
         // 敌人命中：强制命中判定与伤害抽签
-        Force(s, Below(0.01), Any());
+        Force(s, Draw(), Below(0.01), Any());
         typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
         Assert.That(s.Stats.Health, Is.LessThan(hp));

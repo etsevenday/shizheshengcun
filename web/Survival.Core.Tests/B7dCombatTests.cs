@@ -219,7 +219,7 @@ public class B7dCombatTests : BattleTestBase
         StandAt(s, 2);
         var h0 = s.Stats.Health;
         var q = b.Queue.ToList();
-        Force(s, Below(0.01), Any(), Below(0.01));   // 命中、抽值（倍率0）、控制成功
+        Force(s, Draw(), Below(0.01), Any(), Below(0.01));   // 命中、抽值（倍率0）、控制成功
         EnemyAct(s, c);
         Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(1), "单人也被拉到 1 号位，不归位、不忽略：" + string.Join(" | ", b.Log.TakeLast(3)));
         Assert.That(s.Stats.Health, Is.EqualTo(h0), "拉扯 0 直接伤害");
@@ -229,7 +229,7 @@ public class B7dCombatTests : BattleTestBase
 
         // 1 号位再拉：边界，不移动、不判控制（只抽命中一次）
         b.PlayerSteadyUntilRound = 0;
-        Force(s, Below(0.01), Any());
+        Force(s, Draw(), Below(0.01), Any());
         var rng = s.Rng.State;
         EnemyAct(s, c);
         Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(1));
@@ -238,11 +238,12 @@ public class B7dCombatTests : BattleTestBase
         var probe = new Rng { State = rng };
         probe.NextDouble();
         probe.NextDouble();
-        Assert.That(s.Rng.State, Is.EqualTo(probe.State), "边界只抽了命中与抽值，没有抽控制");
+        probe.NextDouble();
+        Assert.That(s.Rng.State, Is.EqualTo(probe.State), "边界只抽了目标（Q91）、命中与抽值，没有抽控制");
 
         // 控制失败：命中但稳住
         StandAt(s, 3);
-        Force(s, Below(0.01), Any(), AtLeast(0.99));
+        Force(s, Draw(), Below(0.01), Any(), AtLeast(0.99));
         EnemyAct(s, c);
         Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(3));
         Assert.That(b.Log.Last(), Does.Contain("你稳住了，没有被拉动"));
@@ -259,22 +260,22 @@ public class B7dCombatTests : BattleTestBase
         h.Intent = "charge";
         h.IntentStep = 1;
         var h0 = s.Stats.Health;
-        Force(s, Below(0.01), Any(), Below(0.01));   // 命中、抽值、控制成功
+        Force(s, Draw(), Below(0.01), Any(), Below(0.01));   // 命中、抽值、控制成功
         EnemyAct(s, h);
         Assert.That(s.Stats.Health, Is.LessThan(h0), "推撞伤害照算");
         Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(2), "被击退到 2 号位（空位直接移入）");
         Assert.That(b.Log.Last(), Does.Contain("你被击退到2号位"));
 
-        // 4 号位边界：直接调攻击步骤（4 号位本不在推撞目标位里），伤害照算、不移、不判控制
+        // 4 号位边界：直接调攻击步骤（4 号位本不在推撞目标位里；B8b Q91 起敌人只打目标位里的人，这里把目标位临时放宽到 1—4 才能打到），伤害照算、不移、不判控制
         StandAt(s, 4);
         h.Intent = "charge";
         h.IntentStep = 1;
         b.PlayerSteadyUntilRound = 0;
         s.Stats.Health = 20;
-        Force(s, Below(0.01), Any());
+        Force(s, Draw(), Below(0.01), Any());
         var rng = s.Rng.State;
         typeof(GameEngine).GetMethod("DoAttackStep", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
-            .Invoke(E, new object[] { s, b, h, E.StepOf(h), false, 1.0, false, false });
+            .Invoke(E, new object[] { s, b, h, AnySlot(E.StepOf(h)), false, 1.0, false, false });
         Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(4));
         Assert.That(s.Stats.Health, Is.LessThan(20), "其他伤害照算");
         Assert.That(b.PlayerSteadyUntilRound, Is.EqualTo(0));
@@ -282,7 +283,8 @@ public class B7dCombatTests : BattleTestBase
         var probe = new Rng { State = rng };
         probe.NextDouble();
         probe.NextDouble();
-        Assert.That(s.Rng.State, Is.EqualTo(probe.State), "只抽了命中与抽值");
+        probe.NextDouble();
+        Assert.That(s.Rng.State, Is.EqualTo(probe.State), "只抽了目标（Q91）、命中与抽值");
     }
 
     /// <summary>RES-Q80b：我方逼退把敌人往后推一格：后格空则移入、有同伴则交换（不另判控制）。</summary>
@@ -406,7 +408,7 @@ public class B7dCombatTests : BattleTestBase
         // 迫近与架矛（Q85 取代“迫近不触发架矛”）改在 B8aCombatTests POS-Q85-01/02 验收；这里不架矛，只验弱近袭本身
         var h0 = s.Stats.Health;
         var infected = s.Body.Infected;
-        Force(s, Below(0.01), AtLeast(0.999));   // 命中、抽值取最高
+        Force(s, Draw(), Below(0.01), AtLeast(0.999));   // 命中、抽值取最高
         EnemyAct(s, z);
         Assert.That(h0 - s.Stats.Health, Is.EqualTo(0.8 * 0.7).Within(2e-3), "伤害×0.70（扯腿 0.4—0.8）");
         Assert.That(GameEngine.PlayerPos(b), Is.EqualTo(3), "不改你的真实号位");
@@ -604,11 +606,11 @@ public class B7dCombatTests : BattleTestBase
         z.Hp = 50;
         z.Intent = "attack";
         z.IntentStep = -2;
-        StandAt(s, 3);   // 刀使用位12：在 3 号位反击不合法
+        StandAt(s, 3);   // 刀使用位12：在 3 号位反击不合法（B8b Q91 起敌人只打目标位里的人：把这次抓击的目标位临时放宽到 1—4）
         s.Stats.Health = 20;
-        Force(s, Below(0.01), Any());
+        Force(s, Draw(), Below(0.01), Any());
         typeof(GameEngine).GetMethod("DoAttackStep", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
-            .Invoke(E, new object[] { s, b, z, E.StepOf(z), true, 1.0, false, false });
+            .Invoke(E, new object[] { s, b, z, AnySlot(E.StepOf(z)), true, 1.0, false, false });
         Assert.That(b.Log.Last(), Does.Contain("你的反击没有出手：石刀要在我方1、2号位（你在3号位）（架势保留）"));
         Assert.That(b.CounterFactor, Is.GreaterThan(0), "不合法不扣反击");
 
@@ -619,7 +621,7 @@ public class B7dCombatTests : BattleTestBase
         b.AllOutUntilRound = b.Round + 1;
         var e0 = s.Stats.Energy;
         var d0 = knife.Durability;
-        Force(s, Below(0.01), Any(), Below(0.01), AtLeast(0.99), Any());
+        Force(s, Draw(), Below(0.01), Any(), Below(0.01), AtLeast(0.99), Any());
         typeof(GameEngine).GetMethod("DoAttackStep", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { s, b, z, E.StepOf(z), true, 1.0, false, false });
         Assert.That(b.Log.Last(), Does.StartWith($"第{b.Round}轮 · 你反击（石刀）"));
@@ -773,7 +775,7 @@ public class B7dCombatTests : BattleTestBase
         var c = Enemy(s, 1);
         Place(s, (1, 2));
         s.Stats.Health = 20;
-        Force(s, Below(0.01), Any());
+        Force(s, Draw(), Below(0.01), Any());
         typeof(GameEngine).GetMethod("EnemyActivation", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { s, c, true });
         Assert.That(b.Log.Last(), Does.Contain("攀附感染者追击抓击命中").And.Not.Contain("拉扯"));

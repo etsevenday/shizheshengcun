@@ -434,7 +434,7 @@ public class B7cCombatTests : BattleTestBase
         Assert.That((w.Battle.PlayerGuardFactor, one.Durability), Is.EqualTo((0.4, (double?)0.0)));
         var e = w.Battle.Alive.First();
         var hp = w.Stats.Health;
-        Force(w, Below(0.01), Below(0.0001));
+        Force(w, Draw(), Below(0.01), Below(0.0001));
         typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { w, e, Cfg.Enemies.Single(x => x.Id == e.EnemyId), false });
         Assert.That(hp - w.Stats.Health, Is.EqualTo(Cfg.Enemies.Single(x => x.Id == "worker").DamageMin * 0.4).Within(1e-3), "已授 0.4 不因盾归零回收");
@@ -544,7 +544,7 @@ public class B7cCombatTests : BattleTestBase
         var minute = s.GameMinute;
         var ticks = b.Ticks;
         var log0 = b.Log.Count;
-        Force(s, Below(0.01), Any(), Any(), Any());
+        Force(s, Draw(), Below(0.01), Any(), Any(), Any());
         typeof(GameEngine).GetMethod("EnemyActivation", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { s, e, true });
         var lines = b.Log.Skip(log0).ToList();
@@ -558,7 +558,7 @@ public class B7cCombatTests : BattleTestBase
         var h = Enemy(t, 1);
         h.Intent = "howl";
         var panic = tb.Panic;
-        Force(t, AtLeast(0.99), Any(), Any());
+        Force(t, Draw(), AtLeast(0.99), Any(), Any());
         typeof(GameEngine).GetMethod("EnemyActivation", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
             .Invoke(E, new object[] { t, h, true });
         Assert.That(tb.Panic, Is.EqualTo(panic), "追击不重复嚎叫");

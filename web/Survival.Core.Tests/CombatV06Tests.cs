@@ -833,32 +833,32 @@ public class CombatV06Tests : BattleTestBase
     {
         // 抓击命中：不暴露（即使暴露判定值很小）
         var s = Fight(35, "shambler");
-        Force(s, Below(0.01), Any(), Below(0.0001));
+        Force(s, Draw(), Below(0.01), Any(), Below(0.0001));
         EnemyActsNow(s, 1, "attack");
         Assert.That(s.Stats.Health, Is.LessThan(20), "抓击命中");
         Assert.That(s.Body.Infected, Is.False, "抓击不判病毒");
         // 咬击未命中：不判
         var t = Fight(36, "shambler");
-        Force(t, AtLeast(0.999), Below(0.0001));
+        Force(t, Draw(), AtLeast(0.999), Below(0.0001));
         EnemyActsNow(t, 1, "bite");
         Assert.That(t.Body.Infected, Is.False);
         Assert.That(t.Stats.Health, Is.EqualTo(20));
         // 咬击命中有伤害：一次暴露判定（判定值小于概率 → 感染 V=20）
         var u = Fight(37, "shambler");
         u.Body.Immunity = 70;
-        Force(u, Below(0.01), Any(), Below(0.215 - 0.001));
+        Force(u, Draw(), Below(0.01), Any(), Below(0.215 - 0.001));
         EnemyActsNow(u, 1, "bite");
         Assert.That(u.Body.Infected, Is.True);
         Assert.That(u.Body.VirusLoad, Is.EqualTo(20));
         // 同样的咬击，判定值高于概率 → 不感染；免疫越低概率越高
         var v = Fight(38, "shambler");
         v.Body.Immunity = 70;
-        Force(v, Below(0.01), Any(), AtLeast(0.215 + 0.001));
+        Force(v, Draw(), Below(0.01), Any(), AtLeast(0.215 + 0.001));
         EnemyActsNow(v, 1, "bite");
         Assert.That(v.Body.Infected, Is.False);
         var w = Fight(39, "shambler");
         w.Body.Immunity = 0;
-        Force(w, Below(0.01), Any(), x => x > 0.3 && x < 0.59);
+        Force(w, Draw(), Below(0.01), Any(), x => x > 0.3 && x < 0.59);
         EnemyActsNow(w, 1, "bite");
         Assert.That(w.Body.Infected, Is.True, "免疫0时60%");
         // 意图20%：多场统计丧尸咬击意图约占20%
@@ -879,7 +879,7 @@ public class CombatV06Tests : BattleTestBase
     {
         var s = Fight(40, "feral_dog");
         s.Body.Immunity = 0;
-        Force(s, Below(0.01), Any(), Below(0.2));
+        Force(s, Draw(), Below(0.01), Any(), Below(0.2));
         EnemyActsNow(s, 1, "attack");
         Assert.That(s.Body.Infected, Is.False, "动物撕咬不判僵尸病毒");
         Assert.That(s.Body.BleedTriggers, Is.EqualTo(3), "25%出血 0.4×3");

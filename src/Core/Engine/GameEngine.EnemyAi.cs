@@ -202,9 +202,62 @@ namespace Survival.Core.Engine
             return front > 1;
         }
 
-        /// <summary>迫近的对象是主角：我方暴露且最前的存活者就是主角（敌人的攻击对象目前只有主角，队友参战在 B8）。</summary>
-        public static bool PlayerExposed(BattleState b) =>
-            AlliesExposed(b) && Enumerable.Range(1, 4).Select(p => AllyAt(b, p)).First(a => a != null) == GameState.PlayerId;
+        /// <summary>迫近的对象是主角：我方暴露且最前的存活者就是主角。</summary>
+        public static bool PlayerExposed(BattleState b) => AlliesExposed(b) && FrontmostAlly(b) == GameState.PlayerId;
+
+        /// <summary>我方最前的存活参战者（没有为 null）。</summary>
+        public static string? FrontmostAlly(BattleState b) => Enumerable.Range(1, 4).Select(p => AllyAt(b, p)).FirstOrDefault(a => a != null);
+
+        // ───────────── 敌方单体攻击目标（Q91，R03/A09 本轮章；合同 combatResolutionAdjudications.enemyTargetSelection） ─────────────
+
+        /// <summary>通用弱攻击（后排型被压到前排）与扫击的目标位：我方 1、2 号位。</summary>
+        private static readonly HashSet<int> FrontSlots = new HashSet<int> { 1, 2 };
+
+        /// <summary>目标位里有没有存活的我方（号位不连续时只看实际有人的格；死者已清出号位）。</summary>
+        public static bool AnyAllyIn(BattleState b, HashSet<int> slots) => Enumerable.Range(1, 4).Any(p => slots.Contains(p) && AllyAt(b, p) != null);
+
+        /// <summary>
+        /// 一次独立单体攻击的合法候选：目标位里存活的我方 actorId，按真实槽升序稳定排序（Q91）。空位不算候选。
+        /// 迫近只打最前的暴露者（Q80），候选至多 1 人。
+        /// </summary>
+        public static List<string> EnemyTargetCandidates(BattleState b, HashSet<int> slots) =>
+            Enumerable.Range(1, 4).Where(p => slots.Contains(p)).Select(p => AllyAt(b, p)).Where(a => a != null).Select(a => a!).ToList();
+
+        /// <summary>
+        /// Q91：在攻击提交时（成本已重验并支付后）从候选里等概率抽一名，用本局存档里的持久随机源（GameState.Rng，游标随存档保存）：
+        /// 只有 1 名也抽一次（消耗一次随机），0 名不抽、返回 null。每次独立攻击各抽一次、允许重复；预览、意图文字都不调用这里。
+        /// 一次敌人激活整次提交（S01 允许），读档重试从同一游标重放，抽到的仍是同一人。候选 ≥2 时写日志公开抽中的人与号位。
+        /// </summary>
+        private string? DrawEnemyTarget(GameState s, BattleState b, BattleEnemy e, List<string> candidates, string verb)
+        {
+            if (candidates.Count == 0) return null;
+            var k = Math.Min(candidates.Count - 1, (int)(s.Rng.NextDouble() * candidates.Count));
+            var id = candidates[k];
+            if (candidates.Count > 1)
+                BattleLog(s, $"{EnemyName(e)}{verb}随机选中{ActorDisplayName(s, id)}（{PosName(b.Allies.IndexOf(id) + 1)}；{string.Join("、", candidates.Select(c => ActorDisplayName(s, c)))}各1/{candidates.Count}）。");
+            return id;
+        }
+
+        /// <summary>
+        /// 敌卡意图的目标说明（Q91：公开范围与“攻击时随机”，不预先承诺人物；与执行同源，不抽随机）：
+        /// 单体攻击写“攻击时在N、M号位的存活我方中随机选一名（现在可选：…）”；迫近写只打最前的那一名；扫击写打 1、2 号位全体；非攻击意图为 null。
+        /// </summary>
+        public string? IntentTargetNote(GameState s, BattleState b, BattleEnemy e)
+        {
+            if (!e.Alive || e.Intent is "flee" or "watch") return null;
+            var st = StepOf(e);
+            if (!ReachKinds.Contains(st.Kind)) return null;
+            var cfg = _enemies[e.EnemyId];
+            var plan = PlanFor(b, e, st);
+            if (plan is ReachPlan.Approach or ReachPlan.AdvanceThenApproach)
+                return FrontmostAlly(b) is string f ? $"迫近只打最前的{ActorDisplayName(s, f)}（{PosName(b.Allies.IndexOf(f) + 1)}）" : null;
+            if (plan == ReachPlan.Guard) return null;
+            if (st.Kind == "sweep" && plan != ReachPlan.Weak) return "扫击打1、2号位的全部我方（范围攻击，不随机）";
+            var slots = plan == ReachPlan.Weak ? FrontSlots : SlotsOf(cfg, st).target;
+            var cands = EnemyTargetCandidates(b, slots);
+            var now = cands.Count == 0 ? "现在没有人在范围内" : cands.Count == 1 ? $"现在可选：{ActorDisplayName(s, cands[0])}" : $"现在可选：{string.Join("、", cands.Select(c => ActorDisplayName(s, c)))}，各1/{cands.Count}";
+            return $"攻击时在{PosList(slots)}的存活我方中随机选一名（{now}）";
+        }
 
         /// <summary>
         /// 攻击类意图在当前站位怎么执行（显示与执行同源；ap 为本次可用 AP，缺省按正常激活）：
@@ -217,19 +270,20 @@ namespace Survival.Core.Engine
             if (!ReachKinds.Contains(st.Kind)) return ReachPlan.Execute;
             var cfg = _enemies[e.EnemyId];
             var (own, tgt) = SlotsOf(cfg, st);
-            var me = PlayerPos(b);
+            // Q91：目标位里有任一存活我方即可出手（具体打谁在攻击提交时随机），单人时与原来“主角在目标位”相同
+            var reach = AnyAllyIn(b, tgt);
             // 缺省预算：还没行动的按本轮剩余（Q87 替同伴补位预扣过的要少算），已行动的仍按面板（只用于显示）
             var budget = ap ?? (e.Acted ? EnemyAp(e) : EnemyApLeft(e));
             var approach = Config.CombatMath.ExposureApproach.TotalAp;
-            if (own.Contains(e.Pos) && tgt.Contains(me)) return ReachPlan.Execute;
+            if (own.Contains(e.Pos) && reach) return ReachPlan.Execute;
             if (own.Count > 0 && e.Pos > own.Max() && e.Pos > 1)
             {
-                if (own.Contains(e.Pos - 1) && tgt.Contains(me)) return ReachPlan.AdvanceThenAttack;
-                if (own.Contains(e.Pos - 1) && PlayerExposed(b) && budget >= 1 + approach) return ReachPlan.AdvanceThenApproach;
+                if (own.Contains(e.Pos - 1) && reach) return ReachPlan.AdvanceThenAttack;
+                if (own.Contains(e.Pos - 1) && AlliesExposed(b) && budget >= 1 + approach) return ReachPlan.AdvanceThenApproach;
                 return ReachPlan.Advance;
             }
-            if (own.Count > 0 && e.Pos < own.Min() && e.Pos <= 2 && me <= 2) return ReachPlan.Weak;
-            if (own.Contains(e.Pos) && PlayerExposed(b) && budget >= approach) return ReachPlan.Approach;
+            if (own.Count > 0 && e.Pos < own.Min() && e.Pos <= 2 && AnyAllyIn(b, FrontSlots)) return ReachPlan.Weak;
+            if (own.Contains(e.Pos) && AlliesExposed(b) && budget >= approach) return ReachPlan.Approach;
             return ReachPlan.Guard;
         }
 
@@ -261,11 +315,15 @@ namespace Survival.Core.Engine
                 case ReachPlan.Advance: return assist == AssistKind.Assist ? $"{lead}前移到{e.Pos - 1}号位（1AP；还够不到）" : $"前移1位（在{e.Pos}号位够不到）";
                 case ReachPlan.Weak: return $"弱攻击 {Range(cfg, WeakAttackFactor)}（在{e.Pos}号位，{verb}要在{PosList(SlotsOf(cfg, st).own)}）";
                 case ReachPlan.Guard: return "防御（够不到目标）";
-                case ReachPlan.Approach: return $"迫近你（{PosName(PlayerPos(b))}，触发架矛）→弱近袭 {Range(cfg, ea.DamageFactor)}（{ea.ApproachAp}+{ea.PlainAttackAp}AP，不咬不控）";
-                case ReachPlan.AdvanceThenApproach: return $"{lead}前移到{e.Pos - 1}号位，再迫近你（{PosName(PlayerPos(b))}，触发架矛）→弱近袭 {Range(cfg, ea.DamageFactor)}（共{1 + ea.TotalAp}AP，不咬不控）";
+                case ReachPlan.Approach: return $"迫近{FrontName(b)}（{PosName(FrontPos(b))}，触发架矛）→弱近袭 {Range(cfg, ea.DamageFactor)}（{ea.ApproachAp}+{ea.PlainAttackAp}AP，不咬不控）";
+                case ReachPlan.AdvanceThenApproach: return $"{lead}前移到{e.Pos - 1}号位，再迫近{FrontName(b)}（{PosName(FrontPos(b))}，触发架矛）→弱近袭 {Range(cfg, ea.DamageFactor)}（共{1 + ea.TotalAp}AP，不咬不控）";
             }
             return IntentLabel(e, b);
         }
+
+        /// <summary>迫近对象（我方最前的暴露者）的称呼与号位：主角为“你”（单人时与原文字相同），队友写名册名。</summary>
+        private static string FrontName(BattleState b) => FrontmostAlly(b) is string f && f != GameState.PlayerId ? "最前的同伴" : "你";
+        private static int FrontPos(BattleState b) => Math.Max(1, Enumerable.Range(1, 4).FirstOrDefault(p => AllyAt(b, p) != null));
 
         private static bool IsAdvance(ReachPlan p) => p is ReachPlan.Advance or ReachPlan.AdvanceThenAttack or ReachPlan.AdvanceThenApproach;
 
@@ -494,11 +552,13 @@ namespace Survival.Core.Engine
             var ea = Config.CombatMath.ExposureApproach;
             SpendAp(e, ea.ApproachAp, pursuit);
             ap -= ea.ApproachAp;
-            BattleLog(s, $"{EnemyName(e)}迫近{PosName(PlayerPos(b))}的你（{ea.ApproachAp}AP；你前面没有人挡；算主动前移）。");
+            var front = FrontmostAlly(b);
+            var who = front == null ? "你" : ActorDisplayName(s, front);
+            BattleLog(s, $"{EnemyName(e)}迫近{PosName(FrontPos(b))}的{who}（{ea.ApproachAp}AP；{who}前面没有人挡；算主动前移）。");
             TryBrace(s, b, e);
             if (s.Battle == null || s.Progress.Dead || !e.Alive) return;
             var own = SlotsOf(_enemies[e.EnemyId], StepOf(e)).own;
-            if (!own.Contains(e.Pos) || !PlayerExposed(b) || ap < ea.PlainAttackAp)
+            if (!own.Contains(e.Pos) || !AlliesExposed(b) || ap < ea.PlainAttackAp)
             {
                 BattleLog(s, $"{EnemyName(e)}迫近后弱近袭不再成立，结束行动（迫近的{ea.ApproachAp}AP不返，弱近袭的{ea.PlainAttackAp}AP不扣）。");
                 return;
@@ -533,17 +593,28 @@ namespace Survival.Core.Engine
             var bite = !pursuit && !approach && e.Intent == "bite";   // 迫近弱近袭不咬（Q80）
             var kind = st.Kind;
             var shoot = kind == "shoot" && factorOverride >= 1;   // 弱近战（后排型被压到前排、打空后）不耗子弹
-            if (shoot)
-            {
-                if (e.Mag <= 0) { BattleLog(s, $"{EnemyName(e)}没有子弹了。"); return; }
-                e.Mag--;
-            }
+            if (shoot && e.Mag <= 0) { BattleLog(s, $"{EnemyName(e)}没有子弹了。"); return; }
             var verb = (pursuit ? "追击" : "") + (bite ? "咬击" : approach ? st.Verb : factorOverride < 1 ? "弱攻击" : st.Verb != "" ? st.Verb : AttackVerb(cfg));
             var factor = plain ? factorOverride : st.Factor * factorOverride;
-            // 扫击：我方 1、2 号位逐个判（只有主角时只打主角）
-            if (!plain && kind == "sweep" && !(new[] { 1, 2 }.Contains(PlayerPos(b)))) { BattleLog(s, $"{EnemyName(e)}{verb}落在空处。"); return; }
+            // Q91：先定这次攻击打谁。扫击是范围攻击，按原范围（我方 1、2 号位）全体逐个判，不抽签；
+            // 其余每次独立单体攻击在提交时（成本已付）从当前合法存活目标里等概率抽一名（迫近只有最前那一名；只有 1 名也抽一次；0 名不抽）
+            var sweep = !plain && kind == "sweep";
+            List<string> targets;
+            if (sweep) targets = EnemyTargetCandidates(b, FrontSlots);
+            else
+            {
+                var slots = approach ? (FrontmostAlly(b) is string f ? new HashSet<int> { b.Allies.IndexOf(f) + 1 } : new HashSet<int>())
+                    : factorOverride < 1 ? FrontSlots : SlotsOf(cfg, st).target;
+                var drawn = DrawEnemyTarget(s, b, e, EnemyTargetCandidates(b, slots), verb);
+                targets = drawn == null ? new List<string>() : new List<string> { drawn };
+            }
+            if (targets.Count == 0) { BattleLog(s, $"{EnemyName(e)}{verb}落在空处。"); return; }
+            if (shoot) e.Mag--;
             var a = Math.Max(Config.CombatMath.MinAccuracy, cfg.AttackRating);
             if (e.Stagger) { a *= Config.Statuses.Stagger.NextAttackAccuracyFactor; e.Stagger = false; e.StaggerSticky = false; }
+            // 打到队友（本批只有多人构造的测试会走到：队友入场随 B9 多人战斗）：命中/伤害/护甲/死亡按本人，附加效果随多人战斗再做
+            foreach (var id in targets.Where(x => x != GameState.PlayerId)) AttackCompanion(s, b, e, cfg, id, st, plain, factor, verb, a);
+            if (!targets.Contains(GameState.PlayerId) || s.Battle == null) return;
             var p = HitChance(a, Config.Scope.BasePlayerDodge);
             if (s.Rng.NextDouble() >= p)
             {
@@ -640,6 +711,37 @@ namespace Survival.Core.Engine
             }
             BattleLog(s, $"{EnemyName(e)}{verb}命中，健康−{Fmt.N(dmg)}（恐慌{Fmt.N(b.Panic)}）{(extra.Count > 0 ? "：" + string.Join("，", extra) : "")}。");
             TryCounter(s, b, e);
+        }
+
+        /// <summary>
+        /// 敌人这次攻击抽中（或扫到）的是队友（Q91；队友入场随 B9 多人战斗，本批只有多人构造的测试会走到）：
+        /// 命中率按本人闪避档、伤害=抽值×倍率×下一击增益×虚弱−本人护甲（基础档+装备），防具照常磨损；健康归零按队友死亡（遗物等）处理。
+        /// 咬击感染、控制、出血、破甲、拉扯/击退的位移、恐慌与反击只对主角实现，打到队友时不结算（开发计划 v0.9 B8b.4）。
+        /// </summary>
+        private void AttackCompanion(GameState s, BattleState b, BattleEnemy e, EnemyConfig cfg, string id, EnemyIntentStepConfig st, bool plain, double factor, string verb, double accuracy)
+        {
+            if (!s.Actors.TryGetValue(id, out var actor) || actor.Stats.Health <= 0) return;
+            var name = ActorDisplayName(s, id);
+            var prof = ActorProfile(s, id);
+            var p = HitChance(accuracy, prof?.Evasion ?? Config.Scope.BasePlayerDodge);
+            if (s.Rng.NextDouble() >= p)
+            {
+                BattleLog(s, $"{EnemyName(e)}{verb}{name}落空（命中率{Fmt.Pct(p)}）。");
+                e.NextHitFactor = 1;
+                return;
+            }
+            if (!plain && st.Kind == "pull") { BattleLog(s, $"{EnemyName(e)}{verb}命中{name}（不造成伤害）。"); return; }
+            var raw = (cfg.DamageMin + s.Rng.NextDouble() * (cfg.DamageMax - cfg.DamageMin)) * factor;
+            if (e.NextHitFactor > 1) { raw *= e.NextHitFactor; e.NextHitFactor = 1; }
+            if (EnemyWeak(b, e)) raw *= e.WeakFactor;
+            if (st.Kind == "charge") e.Charged = false;
+            var armor = Math.Max(0, Math.Min(Config.Equipment.Limits.ArmorCap, (prof?.BaseArmor ?? Config.Scope.BasePlayerArmor) + EquipmentEffects(s, id, 0).Armor));
+            var dmg = Math.Max(0, raw - armor);
+            var wear = raw > 0 ? WearArmor(s, id) : "";
+            if (dmg <= 0) { BattleLog(s, $"{EnemyName(e)}{verb}{name}被完全挡住{(wear != "" ? "（" + wear + "）" : "")}。"); return; }
+            actor.Stats.Add(StatId.Health, -dmg);
+            BattleLog(s, $"{EnemyName(e)}{verb}命中{name}，健康−{Fmt.N(dmg)}（{name}剩{Fmt.N(Math.Max(0, actor.Stats.Health))}）{(wear != "" ? "：" + wear : "")}。");
+            if (actor.Stats.Health <= 0) CompanionDown(s, actor, $"被{EnemyName(e)}{verb}");
         }
 
         /// <summary>

@@ -103,6 +103,16 @@ public abstract class BattleTestBase : TestBase
     protected static Func<double, bool> Below(double p) => x => x < p;
     protected static Func<double, bool> AtLeast(double p) => x => x >= p;
     protected static Func<double, bool> Any() => _ => true;
+    /// <summary>敌人每次独立单体攻击提交时先抽一次目标（Q91，B8b：只有 1 名合法目标也抽一次），之后才是命中、伤害等判定。</summary>
+    protected static Func<double, bool> Draw() => _ => true;
+
+    /// <summary>敌人意图步骤的副本，目标位放宽到 1—4（直接调攻击步骤测边界时用；B8b Q91 起敌人只打目标位里的存活我方）。</summary>
+    protected static Survival.Core.Config.EnemyIntentStepConfig AnySlot(Survival.Core.Config.EnemyIntentStepConfig st)
+    {
+        var c = Newtonsoft.Json.Linq.JObject.FromObject(st).ToObject<Survival.Core.Config.EnemyIntentStepConfig>()!;
+        c.TargetSlots = "1234";
+        return c;
+    }
 
     /// <summary>
     /// 给主角一把武器并直接穿进武器Ⅰ（B3：装备是 owner "equip:p0:weapon1"；原武器Ⅰ里的武器退回随身）。只用于布置场景，不校验同类与卡位。

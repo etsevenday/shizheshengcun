@@ -335,7 +335,7 @@ public class B7CombatTests : BattleTestBase
         foreach (var e in s.Battle.Alive) { e.Intent = "attack"; }
         // 第一只命中：还剩 1 次；第二只命中：用完
         var h0 = s.Stats.Health;
-        Force(s, Below(0.01), AtLeast(0.99), Below(0.01), AtLeast(0.99));
+        Force(s, Draw(), Below(0.01), AtLeast(0.99), Draw(), Below(0.01), AtLeast(0.99));
         while (s.Battle != null && !E.AwaitingPlayer(s) && s.Battle.Alive.Any(e => !e.Acted)) E.BattleStep(s);
         Assert.That(s.Battle!.PlayerGuard, Is.False, "两次格挡都用完");
 
@@ -580,7 +580,7 @@ public class B7CombatTests : BattleTestBase
         Assert.That(E.IntentOutOfReach(b, sp), Is.False, "3号位可喷吐（34→1234）");
         Assert.That(sp.IntentLabel, Does.Contain("破甲0.15（2轮）").And.Contain("不感染"));
         var v0 = s.Body.VirusLoad;
-        for (var i = 0; i < 30 && !sp.Acted && s.Battle != null; i++) { if (E.AwaitingPlayer(s)) Cmd(s, "end_turn"); else { if (b.Queue[b.Cursor] == sp.Index) Force(s, Below(0.01), Any()); E.BattleStep(s); } }
+        for (var i = 0; i < 30 && !sp.Acted && s.Battle != null; i++) { if (E.AwaitingPlayer(s)) Cmd(s, "end_turn"); else { if (b.Queue[b.Cursor] == sp.Index) Force(s, Draw(), Below(0.01), Any()); E.BattleStep(s); } }
         Assert.That(b.PlayerArmorBreak, Is.EqualTo(0.15).Within(1e-9));
         Assert.That(b.PlayerArmorBreakUntilRound, Is.EqualTo(b.Round + 2));
         Assert.That(s.Body.VirusLoad, Is.EqualTo(v0));
