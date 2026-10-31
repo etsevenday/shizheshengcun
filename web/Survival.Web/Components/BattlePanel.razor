@@ -145,8 +145,8 @@ else if (b != null)
                     <div><span>行动点 / 站位</span><b>@(ec.Ap)AP@(ec.Elite ? "（精英）" : "") · 己位@(ec.OwnSlots)→目标@(ec.TargetSlots) · 控制抗性@(Ui.T(ec.ControlResist))%</b></div>
                     <div><span>攻击能力 / 对你命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
                     @{ var plan = G.E.PlanFor(G.S.Battle!, t, G.E.StepOf(t)); var approach = plan is GameEngine.ReachPlan.Approach or GameEngine.ReachPlan.AdvanceThenApproach; }
-                    @* 试玩修复 B7d-3：迫近时不再把原意图（可能是咬击）写成“公开意图”，免得误会迫近会咬 *@
-                    <div><span>本轮意图</span><b>@G.E.IntentShown(G.S.Battle!, t)@(approach ? $"（迫近先花1AP、算一次主动前移，会触发你的架矛迎击；被迎击打死或打断就不再近袭；只做一次弱近袭：不咬、不附控制、不改号位；够得着你时的原意图：{G.E.IntentLabel(t, G.S.Battle)}）" : G.E.IntentOutOfReach(G.S.Battle!, t) ? $"（公开意图：{G.E.IntentLabel(t, G.S.Battle)}）" : "")</b></div>
+                    @* 试玩修复 B7d-3：迫近时不再把原意图（可能是咬击）写成“公开意图”，免得误会迫近会咬；Q97：架矛生效才写“会触发你的架矛迎击”（与敌卡意图同源） *@
+                    <div><span>本轮意图</span><b>@G.E.IntentShown(G.S.Battle!, t)@(approach ? $"（迫近先花1AP、算一次主动前移，{(GameEngine.BraceActive(G.S.Battle!) ? "会触发你的架矛迎击（出手时再按武器、射程、耐久与剩余次数判断）；被迎击打死或打断就不再近袭" : "你现在没有生效的架矛，不会被迎击")}；只做一次弱近袭：不咬、不附控制、不改号位；够得着你时的原意图：{G.E.IntentLabel(t, G.S.Battle)}）" : G.E.IntentOutOfReach(G.S.Battle!, t) ? $"（公开意图：{G.E.IntentLabel(t, G.S.Battle)}）" : "")</b></div>
                     @* B8b Q91：意图只公开目标范围与“攻击时随机”，不预先写抽中谁（抽中的人在攻击提交后写进战斗日志） *@
                     @if (G.E.IntentTargetNote(G.S, G.S.Battle!, t) is string tn) { <div><span>目标</span><b>@tn</b></div> }
                 </div>

@@ -170,7 +170,7 @@ public class B8bTargetTests : BattleTestBase
         var z = Ready(a, 1, 1);
         var ab = a.Battle!;
         Assert.That(E.PlanFor(ab, z, E.StepOf(z)), Is.EqualTo(GameEngine.ReachPlan.Approach));
-        Assert.That(E.IntentShown(ab, z), Does.StartWith("迫近最前的同伴（3号位，触发架矛）"));
+        Assert.That(E.IntentShown(ab, z), Does.StartWith("迫近最前的同伴（3号位，算主动前移）"), "B8d Q97：你没架矛");
         Assert.That(E.IntentTargetNote(a, ab, z), Is.EqualTo("迫近只打最前的林昭（3号位）"));
         var hp = a.Stats.Health;
         var lin0 = a.Actors[Lin].Stats.Health;

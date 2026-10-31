@@ -51,6 +51,13 @@ namespace Survival.Core.Engine
         /// <summary>每次正常激活的主意图 AP（R03/A09：一个 2AP 主意图；防御、嚎叫、蓄力、保护、鸣响、增益同）。</summary>
         public const int EnemyMainIntentAp = 2;
 
+        /// <summary>
+        /// Q95 选 A：正常激活里不需要够到目标的主意图费用——逃离/警戒 0、装填 1、防御/嚎叫/蓄力/保护/鸣响/增益 2；
+        /// 攻击类（含迫近、前移、兜底防御）在 ExecuteReach 里按步骤另算，这里记 0。
+        /// </summary>
+        private static int MainIntentCost(BattleEnemy e, EnemyIntentStepConfig st) =>
+            e.Intent switch { "flee" or "watch" => 0, "reload" => EnemyReloadAp, _ when !ReachKinds.Contains(st.Kind) => EnemyMainIntentAp, _ => 0 };
+
         /// <summary>在本轮正常激活预算里记一笔（追击不记）。</summary>
         private static void SpendAp(BattleEnemy e, int ap, bool pursuit)
         {
@@ -296,6 +303,9 @@ namespace Survival.Core.Engine
             // 文字每次按锁定的意图与当前状态重算（弹仓/备弹实时；旧档存的文字不再直接显示，显示与执行同源，试玩修复 M150 BUG3/BUG4）
             if (!e.Alive || e.Intent is "flee" or "watch") return IntentLabel(e, b);
             var st = StepOf(e);
+            // Q95：不需要够到目标的主意图（防御/嚎叫/蓄力/保护/鸣响/增益 2AP、装填 1AP）先扣本轮已花与补位预扣再重验，付不起就本次结束（与 EnemyActivation 同源）
+            if (!e.Acted && !ReachKinds.Contains(st.Kind) && MainIntentCost(e, st) > EnemyApLeft(e))
+                return $"等待（本轮只剩{EnemyApLeft(e)}AP，替同伴补位预扣了{e.RoundApUsed}AP，不够{IntentLabel(e, b)}）";
             var cfg = _enemies[e.EnemyId];
             var verb = e.Intent == "bite" ? "咬击" : st.Verb != "" ? st.Verb : AttackVerb(cfg);
             var ea = Config.CombatMath.ExposureApproach;
@@ -315,11 +325,20 @@ namespace Survival.Core.Engine
                 case ReachPlan.Advance: return assist == AssistKind.Assist ? $"{lead}前移到{e.Pos - 1}号位（1AP；还够不到）" : $"前移1位（在{e.Pos}号位够不到）";
                 case ReachPlan.Weak: return $"弱攻击 {Range(cfg, WeakAttackFactor)}（在{e.Pos}号位，{verb}要在{PosList(SlotsOf(cfg, st).own)}）";
                 case ReachPlan.Guard: return "防御（够不到目标）";
-                case ReachPlan.Approach: return $"迫近{FrontName(b)}（{PosName(FrontPos(b))}，触发架矛）→弱近袭 {Range(cfg, ea.DamageFactor)}（{ea.ApproachAp}+{ea.PlainAttackAp}AP，不咬不控）";
-                case ReachPlan.AdvanceThenApproach: return $"{lead}前移到{e.Pos - 1}号位，再迫近{FrontName(b)}（{PosName(FrontPos(b))}，触发架矛）→弱近袭 {Range(cfg, ea.DamageFactor)}（共{1 + ea.TotalAp}AP，不咬不控）";
+                case ReachPlan.Approach: return $"迫近{FrontName(b)}（{PosName(FrontPos(b))}，{ApproachBraceTag(b)}）→弱近袭 {Range(cfg, ea.DamageFactor)}（{ea.ApproachAp}+{ea.PlainAttackAp}AP，不咬不控）";
+                case ReachPlan.AdvanceThenApproach: return $"{lead}前移到{e.Pos - 1}号位，再迫近{FrontName(b)}（{PosName(FrontPos(b))}，{ApproachBraceTag(b)}）→弱近袭 {Range(cfg, ea.DamageFactor)}（共{1 + ea.TotalAp}AP，不咬不控）";
             }
             return IntentLabel(e, b);
         }
+
+        /// <summary>
+        /// Q97 选 A（R03/A06 本轮章）：相关我方架矛状态当前是否生效——与执行时 TryBrace 同一个状态：架势还有剩余迎击次数
+        /// （到你下次正常激活开始清除，或次数用完）。不看背包/武器槽里有没有矛；真正能否迎击仍在事件发生时按来源页、己位/射程、耐久、次数、存活重验。
+        /// </summary>
+        public static bool BraceActive(BattleState b) => b.BraceCharges > 0;
+
+        /// <summary>Q97：迫近意图的括注——架矛生效写“触发架矛”，否则写“算主动前移”（迫近照旧算一次主动前移，只改显示）。</summary>
+        public static string ApproachBraceTag(BattleState b) => BraceActive(b) ? "触发架矛" : "算主动前移";
 
         /// <summary>迫近对象（我方最前的暴露者）的称呼与号位：主角为“你”（单人时与原文字相同），队友写名册名。</summary>
         private static string FrontName(BattleState b) => FrontmostAlly(b) is string f && f != GameState.PlayerId ? "最前的同伴" : "你";
@@ -380,7 +399,7 @@ namespace Survival.Core.Engine
             var st = StepOf(e);
             // Q87：本次正常激活的预算 = 面板 AP − 本轮已为同伴补位预扣的（不重置成满额）
             var budget = EnemyApLeft(e);
-            var cost = e.Intent switch { "flee" or "watch" => 0, "reload" => EnemyReloadAp, _ when !ReachKinds.Contains(st.Kind) => EnemyMainIntentAp, _ => 0 };
+            var cost = MainIntentCost(e, st);
             if (cost > budget)
             {
                 BattleLog(s, $"{EnemyName(e)}本轮只剩{budget}AP（替同伴补位预扣了{e.RoundApUsed}AP），不够{IntentLabel(e, b)}，结束行动。");

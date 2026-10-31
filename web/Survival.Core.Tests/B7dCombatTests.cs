@@ -403,7 +403,7 @@ public class B7dCombatTests : BattleTestBase
         z.Intent = "bite";   // 即使公开意图是咬击，迫近弱近袭也不咬
         StandAt(s, 3);
         Assert.That(E.PlanFor(b, z, E.StepOf(z)), Is.EqualTo(GameEngine.ReachPlan.Approach));
-        Assert.That(E.IntentShown(b, z), Does.StartWith("迫近你（3号位，触发架矛）→弱近袭 0.28—0.56（1+2AP，不咬不控）"), "B8a Q85：意图写明迫近触发架矛");
+        Assert.That(E.IntentShown(b, z), Does.StartWith("迫近你（3号位，算主动前移）→弱近袭 0.28—0.56（1+2AP，不咬不控）"), "B8d Q97：没架矛时迫近意图写“算主动前移”（架矛生效才写“触发架矛”）");
         Assert.That(E.PlanFor(b, z, E.StepOf(z), 2), Is.EqualTo(GameEngine.ReachPlan.Guard), "追击 2AP 付不起 1+2AP 的迫近");
         // 迫近与架矛（Q85 取代“迫近不触发架矛”）改在 B8aCombatTests POS-Q85-01/02 验收；这里不架矛，只验弱近袭本身
         var h0 = s.Stats.Health;
