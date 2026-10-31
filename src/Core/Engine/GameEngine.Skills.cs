@@ -116,11 +116,6 @@ namespace Survival.Core.Engine
         public double SkillEnergyCost(double baseCost, int level) =>
             baseCost / (Config.SkillGrowth.EnergyBase + Config.SkillGrowth.EnergyPerLevel * level);
 
-        /// <summary>制造工作量倍率 1/(1+0.025L)。设施被动受热与处理尸体不吃。</summary>
-        public double CraftWorkFactor(int level) => 1 / (1 + Config.Crafting.PerLevel * level);
-
-        public double CraftWorkFactor(GameState s) => CraftWorkFactor(SkillLevel(s, Crafting));
-
         /// <summary>制造经验 clamp(ceil(原始基础分钟/10),1,12)。</summary>
         public long CraftXp(int originalBaseMinutes)
         {

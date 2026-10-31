@@ -10,8 +10,7 @@
 - config.equipment.salvage.materialValues 与 capNumerator/capDenominator（5R≤4I）：同上 dismantle.materialValues / cap；
 - config.affixes：战斗饰品池 accurate/swift/anchored、求生饰品池 craftsman/economical/patient/surefoot
   （A12 equipment.affixes 的 additionalCompatibleSlots/additionalSlotGroups，Q51）；只加池与饰品专用互斥组，原衣物组不变；
-- config.skillNodes scavenging_10 回收专家：Q46 改为“同材料追加1且受预算”（取代固定额外废金属1）。
-  Q54 把它迁到制造10级、拆解给制造经验2、按制造等级开放 T0—T3 拆解，属下一批 B7b，这里不动等级与门槛。
+- （B7b 起不再改 skillNodes：回收专家迁到制造10级，规则在 progression.dismantle，由 import-b7b-progression.py 写。）
 本脚本取代 import-b4-catalog.py 写的旧拆解字段（byQuality/count、scrapByQuality）：重跑 B4 脚本后须再跑本脚本。
 可重复运行，结果相同。
 用法：python tools/import-b7a-equipment.py
@@ -38,8 +37,6 @@ CHARM_TEXT = {
     "surefoot": "移动负体力小时率×0.95",
 }
 
-EXPERT_TEXT = ("拆解完成后尝试追加1份同种回收材料：可自制装备只在总回收价值仍不超过标准配方材料价值80%时追加，"
-               "否则不追加；不可自制装备按固定表追加1")
 
 
 def main():
@@ -99,9 +96,7 @@ def main():
         a["slotEffectText"] = {SLOT[sl]: CHARM_TEXT[a["id"]] for sl in extra}
         a["poolText"] = base_text   # 保持 A05/A12 原池文字；饰品池在界面另写（Q51）
 
-    node = next(n for n in cfg["skillNodes"] if n["id"] == "scavenging_10")
-    node["effects"] = [{"key": "salvage.expertBonus", "op": "add", "value": 1}]
-    node["displayText"] = EXPERT_TEXT
+    # B7b（Q54）起回收专家迁到制造10级、不再是 scavenging_10 节点（scavenging_10 改“周密检索”），节点由 import-b7b-progression.py 写
 
     with open(CONFIG, "w", encoding="utf-8", newline="\n") as f:
         f.write(json.dumps(cfg, ensure_ascii=False, indent=2) + "\n")

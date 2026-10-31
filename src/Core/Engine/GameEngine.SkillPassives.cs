@@ -53,10 +53,12 @@ namespace Survival.Core.Engine
             switch (type)
             {
                 case ActionType.Gather:
-                    if (targetId != null && _res.TryGetValue(targetId, out var res) && !res.IsCache)
+                    if (targetId != null && _res.TryGetValue(targetId, out var res))
                     {
-                        var f = PassiveFactor(actor, "work.gather");
-                        return (f, f < 1 ? PassiveSource(actor, "work.gather") : null);
+                        // 采集被动只管练采集的资源点（熟练采伐），搜集被动只管练搜集的（分类勘整/周密检索，Q54/Q55）；遗迹勘整不吃
+                        var key = GatherSkillOf(res) == Gathering ? "work.gather" : "work.scavenge";
+                        var f = PassiveFactor(actor, key);
+                        return (f, f < 1 ? PassiveSource(actor, key) : null);
                     }
                     break;
                 case ActionType.Travel:
@@ -75,9 +77,9 @@ namespace Survival.Core.Engine
             return (1, null);
         }
 
-        /// <summary>采集划伤概率的被动倍率：非箱子资源点稳手采集×0.9，单次箱子（危险搜集）危险辨识×0.8。</summary>
+        /// <summary>采集划伤概率的被动倍率：练采集的资源点稳手采集×0.9，练搜集的（危险搜集）危险辨识×0.8。</summary>
         public double PassiveHazardFactor(ActorState actor, ResourceConfig res) =>
-            PassiveFactor(actor, res.IsCache ? "hazard.scavengeChance" : "hazard.gatherChance");
+            PassiveFactor(actor, GatherSkillOf(res) == Scavenging ? "hazard.scavengeChance" : "hazard.gatherChance");
 
         /// <summary>
         /// 定向采集的被动加产（只对按库存的资源点，仍受库存限制）：合理取材（木/石/纤维）+1；精取（该资源点今日第一次采集，非工业材料）+1。
@@ -85,7 +87,7 @@ namespace Survival.Core.Engine
         /// </summary>
         public int PassiveGatherBonus(GameState s, ActorState actor, ResourceConfig res, string itemId, List<string>? notes = null)
         {
-            if (!res.IsUnits) return 0;
+            if (!res.IsUnits || GatherSkillOf(res) != Gathering) return 0;   // 采集加产只管自然采出的资源点（Q55）
             var bonus = 0;
             var rules = Config.SkillPassiveRules;
             var basic = (int)PassiveAdd(actor, "yield.gatherBasic");
@@ -112,12 +114,38 @@ namespace Survival.Core.Engine
             return Math.Min(cap, baseFraction + bonus);
         }
 
-        /// <summary>回收专家（搜集10级）：拆解后尝试追加同材料的份数上限（B7a Q46：可自制件受 80% 材料价值预算，见 SalvageExpertBonus）。</summary>
-        public int SalvageExpertLevel(GameState s) => (int)PassiveAdd(s.Player, "salvage.expertBonus");
+        /// <summary>
+        /// 回收专家（Q54：由搜集10级迁到制造10级，常驻被动、不是节点）：拆解后尝试追加同材料的份数上限（Q46：可自制件受 80% 材料价值预算，见 SalvageExpertBonus）。
+        /// </summary>
+        public int SalvageExpertLevel(GameState s)
+        {
+            var d = Config.Progression.Dismantle;
+            return d.ExpertCraftingLevel > 0 && SkillLevel(s, Crafting) >= d.ExpertCraftingLevel ? d.ExpertBonus : 0;
+        }
+
+        /// <summary>回收专家的来源说明：“制造10级·回收专家”。</summary>
+        public string SalvageExpertSource => $"{SkillName(Crafting)}{Config.Progression.Dismantle.ExpertCraftingLevel}级·回收专家";
 
         /// <summary>人物页“已获得的求生被动”一行一个：“采集3级·稳手采集：采集划伤概率×0.9（生效中）”。</summary>
         public List<string> SurvivalPassiveLines(ActorState actor) =>
             SurvivalPassives(actor).Select(n => $"{SkillName(n.SkillId)}{n.Level}级·{n.Name}：{n.Text}（{PassiveStatus(actor, n)}）").ToList();
+
+        /// <summary>
+        /// 制造的常驻被动（Q54：拆解许可按制造 1/3/7/10 级开放 T0—T3、10 级回收专家；不是第六个节点），人物页逐条写。
+        /// </summary>
+        public List<string> CraftingStandingLines(ActorState actor)
+        {
+            var lv = SkillLevel(actor, Crafting);
+            var d = Config.Progression.Dismantle;
+            var lines = new List<string>();
+            var stages = string.Join("、", d.Stages.OrderBy(x => x.CraftingLevel).Select(x => $"{x.CraftingLevel}级{x.MaxTier}阶"));
+            lines.Add(SalvageMaxTier(lv) is int t
+                ? $"{SkillName(Crafting)}常驻·拆解许可：可拆解0—{t}阶装备，每件完成制造经验+{d.Xp}（{stages}）"
+                : $"{SkillName(Crafting)}常驻·拆解许可：尚未开放（{stages}）");
+            if (d.ExpertCraftingLevel > 0)
+                lines.Add($"{SkillName(Crafting)}{d.ExpertCraftingLevel}级常驻·回收专家：拆解后尝试追加1份同种回收材料，可自制装备仍不超过标准配方材料价值80%（{(lv >= d.ExpertCraftingLevel ? "生效中" : "未解锁")}）");
+            return lines;
+        }
 
         /// <summary>
         /// 已生效的被动是否被同门更高级的节点替代（同一效果键全部由更高级的已获得节点提供，如节奏行进被耐力行进替代）。返回替代它的等级，没有为 null。
@@ -140,6 +168,7 @@ namespace Survival.Core.Engine
             "baseline" => "原有内容，已开放",
             "pending" => "部分内容待策划确认，暂未生效",
             "dormant" => "相关配方/内容尚未上线，暂未生效",
+            "closed" => "暂未开放：不加成、不磨损",
             _ => "四对四战斗上线后生效",
         };
     }

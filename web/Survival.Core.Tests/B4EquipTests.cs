@@ -511,18 +511,19 @@ public class B4EquipTests : BattleTestBase
         foreach (var (q, n) in new[] { ("white", 1), ("green", 2), ("blue", 3) })
         {
             var s = New();
+            s.Skills["crafting"].Level = 3;   // B7b Q54：砍刀 T1，制造3级才可拆
             var it = E.DebugCreateEquipment(s, "machete", q, ItemInstance.Carried);
             var scrap0 = s.Items.Where(i => i.ItemId == "scrap").Sum(i => i.Count);
             var p = E.Preview(s, Salvage(it.InstanceId));
             Assert.That(p.Ok, Is.True, p.Reason);
             Assert.That(p.BaseMinutes, Is.EqualTo(15));
             Assert.That(p.Outputs.Single().Count, Is.EqualTo(n));
-            Assert.That(p.XpGains, Is.Empty, "拆解不给制造经验");
+            Assert.That(p.XpGains, Is.EqualTo(new[] { "制造经验+2" }), "B7b Q54：拆解完成制造经验+2");
             var t0 = s.GameMinute;
             Start(s, Salvage(it.InstanceId));
             Assert.That(E.IsLocked(s, it), Is.True, "开工锁定目标");
             Run(s);
-            Assert.That(s.GameMinute - t0, Is.EqualTo(15), "制造 1 级、白天无倍率时 15 分钟");
+            Assert.That(s.GameMinute - t0, Is.EqualTo(15), "白天无倍率时 15 分钟（制造等级不折减，Q57）");
             Assert.That(s.Items.Any(i => i.InstanceId == it.InstanceId), Is.False, "原物移除");
             Assert.That(s.Items.Where(i => i.ItemId == "scrap" && i.Owner == s.CurrentLocation).Sum(i => i.Count), Is.EqualTo(n), q);
             Assert.That(s.Items.Where(i => i.ItemId == "scrap").Sum(i => i.Count) - scrap0, Is.EqualTo(n));
@@ -561,6 +562,7 @@ public class B4EquipTests : BattleTestBase
     public void H9_SalvageCancelled_TargetStays()
     {
         var s = New();
+        s.Skills["crafting"].Level = 3;
         var it = E.DebugCreateEquipment(s, "machete", "green", ItemInstance.Carried);
         Start(s, Salvage(it.InstanceId));
         E.Advance(s);

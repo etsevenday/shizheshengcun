@@ -441,7 +441,7 @@ namespace Survival.Core.Engine
                         plan.Tool = target;
                         foreach (var (oid, n) in SalvageYield(s, target!)) plan.Outputs.Add(Line(oid, n));
                         var (_, expertNote) = SalvageExpertBonus(s, target!);   // Q46：同材料追加，可自制件受 80% 预算
-                        if (expertNote != null) plan.Notes.Add($"搜集10级·{expertNote}");
+                        if (expertNote != null) plan.Notes.Add(expertNote);
                     }
                     if (rc.NeedsExplicitPot)
                     {
@@ -498,8 +498,9 @@ namespace Survival.Core.Engine
                             return "指定的材料批次已失效，请重新选择";
                     }
                     foreach (var kv in rc.Outputs) plan.Outputs.Add(Line(kv.Key, kv.Value * batch));
-                    // 制造熟练度在开始时折减基础工作量（v0.6 §03）；同批次多件合并成一个工作量，段内结转余量
-                    plan.BaseWork = rc.BaseMinutes * batch * CraftWorkFactor(s);
+                    // Q57 选 B：取消制造等级工作量倍率 1/(1+0.025L)，制造/建造/维修/拆解只用配方基础工作量（再乘装备与节点效果）；
+                    // 同批次多件合并成一个工作量。已在进行中的旧动作按开工时保存的工作量结束（BaseWorkMinutes 已存档）
+                    plan.BaseWork = rc.BaseMinutes * batch;
                     plan.Label = rc.IsBuild ? rc.Name : rc.IsRepair ? $"维护{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
                         : rc.IsSalvage ? $"拆解{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
                         : batch > 1 ? $"制作{rc.Name}×{batch}" : $"制作{rc.Name}";

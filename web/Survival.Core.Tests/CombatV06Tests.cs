@@ -127,13 +127,12 @@ public class CombatV06Tests : BattleTestBase
             Assert.That(Hit(l), Is.EqualTo(hit).Within(5e-5), $"L{l} 斧命中游荡尸");
             Assert.That(E.SkillDamageFactor(l), Is.EqualTo(dmg).Within(1e-9), $"L{l} 伤害倍率");
             Assert.That(E.SkillEnergyCost(axe.EnergyCost, l), Is.EqualTo(energy).Within(5e-5), $"L{l} 单击体力");
-            Assert.That(E.CraftWorkFactor(l), Is.EqualTo(craft).Within(5e-5), $"L{l} 制造工作量倍率");
+            // B7b Q57 选 B：制造等级工作量倍率 1/(1+0.025L) 已取消（craft 列只作历史对照）
         }
         // L1000：伤害继续增长、命中概率<1、成本仍为正且更小
         Assert.That(E.SkillDamageFactor(1000), Is.GreaterThan(E.SkillDamageFactor(100)));
         Assert.That(Hit(1000), Is.LessThan(1).And.GreaterThan(Hit(100)), "概率趋近但不超过1，无95%夹紧");
         Assert.That(E.SkillEnergyCost(axe.EnergyCost, 1000), Is.GreaterThan(0).And.LessThan(E.SkillEnergyCost(axe.EnergyCost, 100)));
-        Assert.That(E.CraftWorkFactor(1000), Is.GreaterThan(0).And.LessThan(E.CraftWorkFactor(100)));
 
         // B5（A06 §1，取代 v0.6“无10级上限”）：经验逐级扣门槛、可多级提升，到10级停；溢出报错不回零
         var s = New();
@@ -239,7 +238,7 @@ public class CombatV06Tests : BattleTestBase
         var req = ActionRequest.Craft("repair_selected_tool");
         req.InstanceId = lt.InstanceId;
         Start(t, req);
-        Assert.That(t.Main!.BaseWorkMinutes, Is.EqualTo(30 * E.CraftWorkFactor(1)).Within(1e-9), "制造熟练影响维护工作量");
+        Assert.That(t.Main!.BaseWorkMinutes, Is.EqualTo(30).Within(1e-9), "B7b Q57：制造等级不再折减维护工作量");
         Run(t);
         Assert.That(lt.Durability, Is.EqualTo(1 + max * 0.2).Within(1e-9));
         Assert.That(lt.MaxDurability, Is.EqualTo(max), "不重抽最大值");

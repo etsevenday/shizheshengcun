@@ -505,6 +505,18 @@ namespace Survival.Core.Config
             if (eq.DurabilityRounding <= 0) e.Add("最大耐久取整精度须为正");
             if (!c.Recipes.Any(r => r.Id == eq.Salvage.RecipeId && r.IsSalvage)) e.Add($"拆解配方 {eq.Salvage.RecipeId} 不存在");
             if (eq.Salvage.CapNumerator <= 0 || eq.Salvage.CapDenominator <= 0) e.Add("拆解价值上限比例须为正");
+
+            // B7b（Q54/Q55）：拆解许可阶梯须按制造等级升序、阶不降；资源点熟练归属只能是采集/搜集或不发经验
+            var pr = c.Progression;
+            var st = pr.Dismantle.Stages;
+            for (var k = 1; k < st.Count; k++)
+                if (st[k].CraftingLevel <= st[k - 1].CraftingLevel || st[k].MaxTier < st[k - 1].MaxTier) e.Add("拆解许可阶梯须按制造等级升序且阶不降");
+            foreach (var r in c.Resources)
+                if (r.ProficiencyId != null && r.ProficiencyId != "gathering" && r.ProficiencyId != "scavenging") e.Add($"资源点 {r.NodeId} 的熟练归属 {r.ProficiencyId} 未知");
+            foreach (var id in pr.Survey.NodeIds)
+                if (!c.Locations.Any(l => l.Id == id)) e.Add($"遗迹勘整地点 {id} 不存在");
+            foreach (var id in pr.Cooking.FoodProcesses.Append(pr.Cooking.WaterProcess).Where(x => x != ""))
+                if (!c.Processes.Any(p => p.Id == id)) e.Add($"烹饪经验进程 {id} 不存在");
         }
 
         private static void Dup<T>(IEnumerable<T> list, Func<T, string> key, string what, List<string> e)

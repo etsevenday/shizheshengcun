@@ -267,6 +267,8 @@ namespace Survival.Core.Config
         public bool AffectsButchering { get; set; }
         public bool BatchOverflowWithinSameReservedBatch { get; set; }
         public bool CarryOverflowToOtherAction { get; set; }
+        /// <summary>Q57 选 B（B7b）：制造等级工作量倍率已取消，WorkFactor 只作历史记录，程序不再读。</summary>
+        public bool LegacyLevelWorkFactorRemoved { get; set; }
 
         [JsonIgnore] public double PerLevel => Formula.Num(WorkFactor, 2);
     }

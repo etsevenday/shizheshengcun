@@ -266,7 +266,8 @@ public class B5SkillTests : BattleTestBase
         Assert.That(E.HazardChance(s, misc), Is.EqualTo(misc.Hazard!.Probability).Within(1e-12), "箱子不吃采集被动");
         Lv(s, "scavenging", 7);
         Assert.That(E.HazardChance(s, misc), Is.EqualTo(misc.Hazard!.Probability * 0.8).Within(1e-12), "危险辨识×0.8");
-        Assert.That(E.WorkFactor(s, ActionType.Gather, null, "misc_box"), Is.EqualTo(w1).Within(1e-12), "箱子不吃熟练采伐");
+        // B7b 按新规则改写（Q54：搜集3级分类勘整×0.95 作用于练搜集的资源点）：箱子不吃熟练采伐，吃分类勘整
+        Assert.That(E.WorkFactor(s, ActionType.Gather, null, "misc_box"), Is.EqualTo(w1 * 0.95).Within(1e-12), "箱子不吃熟练采伐，吃搜集3级分类勘整");
     }
 
     [Test]
@@ -353,6 +354,8 @@ public class B5SkillTests : BattleTestBase
         var req = new ActionRequest { Type = ActionType.Craft, TargetId = "salvage_equipment", InstanceId = it.InstanceId };
         Assert.That(E.Preview(s, req).Outputs.Single().Count, Is.EqualTo(1));
         Lv(s, "scavenging", 10);
+        Assert.That(E.Preview(s, req).Outputs.Single().Count, Is.EqualTo(1), "B7b Q54：搜集10级不再有回收专家");
+        Lv(s, "crafting", 10);   // B7b 按新规则改写（Q54：回收专家迁到制造10级）
         var p = E.Preview(s, req);
         Assert.That(p.Outputs.Single().Count, Is.EqualTo(2), "回收专家多返废金属1");
         var scrap0 = s.Items.Where(i => i.ItemId == "scrap").Sum(i => i.Count);
@@ -397,8 +400,9 @@ public class B5SkillTests : BattleTestBase
         var lines = E.SurvivalPassiveLines(s.Player);
         Assert.That(lines, Has.Count.EqualTo(9));
         Assert.That(lines, Has.Some.EqualTo("采集3级·稳手采集：采集划伤概率×0.9（生效中）"));
-        Assert.That(lines.Single(x => x.StartsWith("制造1级")), Does.Contain("待策划确认"));
-        Assert.That(Cfg.SkillNodes.Count(n => n.IsSurvival && n.IsLive), Is.EqualTo(11));
+        // B7b 按新规则改写（Q53：W0 是 T0 误记，基础手作=原有内容；Q54：分类勘整/周密检索接入，回收专家迁出）
+        Assert.That(lines.Single(x => x.StartsWith("制造1级")), Does.Contain("原有内容，已开放"));
+        Assert.That(Cfg.SkillNodes.Count(n => n.IsSurvival && n.IsLive), Is.EqualTo(12));
     }
 
     // ───────────── M125：人物页与开发入口（H10） ─────────────
@@ -430,8 +434,8 @@ public class B5SkillTests : BattleTestBase
         }
         Assert.That(Cfg.SkillNodes.Single(x => x.Id == "medicine_10").Text, Does.StartWith("消耗盐水剂×1+医用纱布×1；健康≤25%上限时健康+1.5×(1+0.02×医疗等级)"));
         Assert.That(Cfg.SkillNodes.Single(x => x.Id == "athletics_05").Text, Is.EqualTo("≤20公斤时移动基础工作量×0.95"));
-        // B7a 按新规则改写（Q46：回收专家改同材料追加且受 80% 预算）
-        Assert.That(Cfg.SkillNodes.Single(x => x.Id == "scavenging_10").Text, Does.Contain("同种回收材料").And.Contain("80%"));
+        // B7b 按新规则改写（Q54：搜集10级改“周密检索”，回收专家迁到制造10级常驻被动）
+        Assert.That(Cfg.SkillNodes.Single(x => x.Id == "scavenging_10").Text, Does.Contain("搜集基础工作量×0.90"));
         Assert.That(Cfg.SkillNodes.Single(x => x.Id == "cooking_10").Text, Does.Contain("饱食额外+3"));
         Assert.That(Cfg.SkillNodes.Single(x => x.Id == "medicine_01").EffectText, Does.Contain("bandage1"), "原文保留");
     }

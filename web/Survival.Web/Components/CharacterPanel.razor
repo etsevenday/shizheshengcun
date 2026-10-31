@@ -136,6 +136,10 @@ else
                     {
                         <div class="skill-passive" data-passive>@line</div>
                     }
+                    @foreach (var line in e.CraftingStandingLines(s.Player))
+                    {
+                        <div class="skill-passive" data-standing>@line</div>
+                    }
                 </div>
             }
         </section>

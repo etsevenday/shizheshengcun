@@ -73,7 +73,7 @@ public class B7aEquipTests : BattleTestBase
                 foreach (var expert in new[] { false, true })
                 {
                     var s = New();
-                    if (expert) Lv(s, "scavenging", 10);
+                    if (expert) Lv(s, "crafting", 10);
                     var it = Make(s, id, q);
                     var yield = E.SalvageYield(s, it);
                     var value = yield.Sum(x => x.count * E.SalvageValue(x.itemId));
@@ -91,7 +91,7 @@ public class B7aEquipTests : BattleTestBase
     public void EQ_Q46b_StoneKnife_NoExpertBonus_GreenWoodenSpear_Three()
     {
         var s = New();
-        Lv(s, "scavenging", 10);
+        Lv(s, "crafting", 10);
         var knife = Make(s, "stone_knife");
         Assert.That(E.SalvageYield(s, knife), Is.EqualTo(new List<(string, int)> { ("stone", 1) }), "石刀 I2 只返石1");
         var (extra, note) = E.SalvageExpertBonus(s, knife);
@@ -129,7 +129,7 @@ public class B7aEquipTests : BattleTestBase
     public void EQ_Q46c_NonCraftable_FixedTable_RepairAndDurabilityDontMatter_MagazineMustBeEmpty()
     {
         var s = New();
-        Lv(s, "scavenging", 10);
+        Lv(s, "crafting", 10);
         var kitchen = Make(s, "kitchen_knife", "blue");
         Assert.That(E.SalvageYield(s, kitchen), Is.EqualTo(new List<(string, int)> { ("scrap", 4) }), "不可自制：固定3+专家1，不受百分比");
         // 耐久 0 仍可拆，产出与满耐久相同；维修不提高回收
@@ -173,6 +173,7 @@ public class B7aEquipTests : BattleTestBase
     public void EQ_Q46d_LockCancelStaleDoubleSave_NoDuplication_15Minutes_NoXp()
     {
         var s = New();
+        Lv(s, "crafting", 3);   // B7b Q54：砍刀 T1 需制造3级
         var it = Make(s, "machete", "blue");
         var xp0 = s.Skills.ToDictionary(k => k.Key, k => k.Value.Xp);
         var scrap0 = Sum(s, "scrap");
@@ -185,11 +186,15 @@ public class B7aEquipTests : BattleTestBase
         Run(loaded);
         Assert.That(Sum(loaded, "scrap") - scrap0, Is.EqualTo(3));
         Assert.That(loaded.Items.Any(i => i.InstanceId == it.InstanceId), Is.False);
-        Assert.That(loaded.Skills.ToDictionary(k => k.Key, k => k.Value.Xp), Is.EqualTo(xp0), "拆解无经验（Q54 的制造经验2属 B7b）");
+        // B7b 按新规则改写（Q54 取代 Q46 无经验）：每件完成制造经验+2，存读档后只发一次
+        Assert.That(loaded.Skills["crafting"].Xp - xp0["crafting"], Is.EqualTo(2), "拆解完成制造经验+2");
+        Assert.That(loaded.Skills.Where(k => k.Key != "crafting").ToDictionary(k => k.Key, k => k.Value.Xp),
+            Is.EqualTo(xp0.Where(k => k.Key != "crafting").ToDictionary(k => k.Key, k => k.Value)), "其他门类不变");
         // 取消：原物不变、无产出
         Assert.That(E.Cancel(s).Ok, Is.True);
         Assert.That(s.Items.Single(i => i.InstanceId == it.InstanceId).Quality, Is.EqualTo("blue"));
         Assert.That(Sum(s, "scrap"), Is.EqualTo(scrap0));
+        Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(xp0["crafting"]), "取消无经验");
         // 陈旧请求：目标已不在
         var gone = Make(s, "machete");
         var id = gone.InstanceId;
@@ -209,6 +214,7 @@ public class B7aEquipTests : BattleTestBase
         var s = New();
         Wear(s, "work_shirt", EquipSlots.Top);                       // 制造/建造工作量×0.95
         Wear(s, "repair_manual", EquipSlots.SurvivalAccessory, "green", "craftsman");   // 饰品熟作×0.97（Q51）
+        Lv(s, "crafting", 3);   // B7b Q54：砍刀 T1 需制造3级
         var it = Make(s, "machete");
         var p = E.Preview(s, Salvage(it.InstanceId));
         Assert.That(p.FactorAtStart, Is.EqualTo(0.95 * 0.97).Within(1e-12));

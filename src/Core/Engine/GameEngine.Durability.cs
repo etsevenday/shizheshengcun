@@ -114,7 +114,7 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 回收专家追加（Q46 取代 B5“固定多返废金属1”）：基础产出后尝试追加同表回收材料，最多 ExpertMax 份；
         /// 可自制件只在总回收价值 R 仍满足 5R≤4I 时追加（否则 0，不向下拆分原料）；不可自制件按固定表追加。
-        /// 返回追加份数与说明（没有回收专家时为 (0, null)）。被动等级仍在搜集10级（Q54 迁到制造10级属 B7b）。
+        /// 返回追加份数与说明（没有回收专家时为 (0, null)）。回收专家在制造10级（Q54，取代搜集10级）。
         /// </summary>
         public (int extra, string? note) SalvageExpertBonus(GameState s, ItemInstance it)
         {
@@ -124,7 +124,7 @@ namespace Survival.Core.Engine
             var max = Math.Min(lv, def.ExpertMax);
             var mat = ItemName(def.ExpertMaterial);
             if (def.NonCraftable || def.RecipeValue is not int i)
-                return (max, $"回收专家：追加{mat}×{max}（不可自制装备按固定表）");
+                return (max, $"{SalvageExpertSource}：追加{mat}×{max}（不可自制装备按固定表）");
             var rules = Config.Equipment.Salvage;
             var baseValue = n * SalvageValue(oid);
             var v = SalvageValue(def.ExpertMaterial);
@@ -132,8 +132,8 @@ namespace Survival.Core.Engine
             while (extra < max && (baseValue + (extra + 1) * v) * rules.CapDenominator <= i * rules.CapNumerator) extra++;
             var cap = $"标准配方材料价值{i}的{Fmt.Pct((double)rules.CapNumerator / rules.CapDenominator)}";
             return extra > 0
-                ? (extra, $"回收专家：追加{mat}×{extra}（回收价值{baseValue + extra * v}，不超过{cap}）")
-                : (0, $"回收专家：再追加{mat}会使回收价值{baseValue + v}超过{cap}，不追加");
+                ? (extra, $"{SalvageExpertSource}：追加{mat}×{extra}（回收价值{baseValue + extra * v}，不超过{cap}）")
+                : (0, $"{SalvageExpertSource}：再追加{mat}会使回收价值{baseValue + v}超过{cap}，不追加");
         }
 
         /// <summary>拆解总产出（基础 + 回收专家追加，同材料合并），预估与完成同源。</summary>
@@ -167,7 +167,8 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 能否拆解（只读）：须是本人随身或当前地面的装备、未穿戴、未被预留或行动占用、在拆解表里；弹仓里还有弹药的先打空（不吞弹药）。
-        /// 耐久 0 仍可拆。战斗、敌踪待选、其他行动进行中由通用开始校验拦截。拆解熟练门槛等 Q54（B7b），现在不设。
+        /// 耐久 0 仍可拆。战斗、敌踪待选、其他行动进行中由通用开始校验拦截。
+        /// Q54：拆解归制造，制造 1/3/7/10 级开放 T0/T1/T2/T3（按装备表的阶，不按名称、品质；没有阶的拒绝），不看搜集等级。
         /// </summary>
         public string? SalvageBlocked(GameState s, int? instanceId, out ItemInstance? target)
         {
@@ -182,10 +183,30 @@ namespace Survival.Core.Engine
             if (target.ReservedBy != null || IsLocked(s, target)) return "行动占用：这件装备正被使用";
             if (target.LoadedAmmo > 0) return $"弹仓里还有{target.LoadedAmmo}发{ItemName(target.LoadedAmmoId ?? "")}，打空后再拆解";
             if (SalvageOutput(target) == null) return $"{cfg.Name}没有拆解表，暂不能拆解";
+            var tier = EquipTier(target.ItemId);
+            if (tier == null) return $"{cfg.Name}没有装备阶级，不能拆解";
+            var need = SalvageCraftingLevel(tier.Value);
+            if (need == null) return $"{cfg.Name}（{tier}阶）暂无可拆解的制造等级";
+            var lv = SkillLevel(s, Crafting);
+            if (lv < need) return $"拆解{tier}阶装备需要{SkillName(Crafting)}{need}级（当前{lv}级）";
             return null;
         }
 
-        /// <summary>拆解完成：原装备原子移除，产物（基础+回收专家）落当前地面；目标已不在则不产出、不改其他状态。不给经验（Q46；Q54 的制造经验2属 B7b）。</summary>
+        /// <summary>装备的阶 T0—T3（武器表 tier、防具/饰品/衣物表 tier）；不是装备或没写为 null。</summary>
+        public int? EquipTier(string itemId) => Weapon(itemId)?.Tier ?? Gear(itemId)?.Tier;
+
+        /// <summary>拆解该阶装备所需的制造等级（Q54：制造1/3/7/10 开放 T0/T1/T2/T3）；没有对应档为 null。</summary>
+        public int? SalvageCraftingLevel(int tier) =>
+            Config.Progression.Dismantle.Stages.Where(x => x.MaxTier >= tier).OrderBy(x => x.CraftingLevel).Select(x => (int?)x.CraftingLevel).FirstOrDefault();
+
+        /// <summary>某制造等级可拆的最高阶（Q54 常驻被动，不是第六个节点）；一档都没开为 null。</summary>
+        public int? SalvageMaxTier(int craftingLevel) =>
+            Config.Progression.Dismantle.Stages.Where(x => craftingLevel >= x.CraftingLevel).Select(x => (int?)x.MaxTier).DefaultIfEmpty(null).Max();
+
+        /// <summary>
+        /// 拆解完成：原装备原子移除，产物（基础+回收专家）落当前地面，同一事务给制造经验 +2（Q54，取代 Q46 不给经验）；
+        /// 目标已不在则不产出、不给经验、不改其他状态。取消与重复请求本来就不走这里。
+        /// </summary>
         private bool CompleteSalvage(GameState s, ActionState a)
         {
             var here = s.CurrentLocation;
@@ -203,6 +224,12 @@ namespace Survival.Core.Engine
             foreach (var (oid, n) in yield) CreateItems(s, oid, n, here);
             var got = string.Join("，", yield.Select(x => $"{ItemName(x.itemId)}+{x.count}"));
             if (note != null) got += $"（{note}）";
+            var xp = Config.Progression.Dismantle.Xp;
+            if (xp > 0)
+            {
+                got += "；" + XpText(s, Crafting, xp);
+                GainXp(s, Crafting, xp);
+            }
             Emit(s, GameEventKind.ActionCompleted, $"拆解{name}：{got}，已放在{LocName(here)}地面。", null, yield.Select(x => x.itemId).ToArray());
             UpdateFlags(s);
             return true;

@@ -257,15 +257,18 @@ namespace Survival.Core.Engine
                     if (!_recipes.TryGetValue(r.TargetId, out var rc)) break;
                     var batch = Math.Max(1, r.BatchCount);
                     p.BaseMinutes = rc.BaseMinutes * batch;
-                    var lv = SkillLevel(s, Crafting);
-                    p.WorkMinutes = rc.BaseMinutes * batch * CraftWorkFactor(lv);
                     p.Outputs = rc.Outputs.Select(kv => Line(kv.Key, kv.Value * batch)).ToList();
                     p.ConfirmText = rc.IsBuild ? "开始建造" : rc.IsRepair ? "开始维护" : rc.IsSalvage ? "开始拆解" : batch > 1 ? $"开始制作×{batch}" : "开始制作";
-                    p.Notes.Add($"制造{lv}级：基础工作量{rc.BaseMinutes * batch}分钟×{CraftWorkFactor(lv).ToString("0.####", System.Globalization.CultureInfo.InvariantCulture)}={Fmt.N(p.WorkMinutes)}分钟；按5分钟段推进，同批次余量结转");
+                    // Q57 选 B：制造等级不再折减工作量，只看装备与节点效果（见工作倍率行）
+                    p.Notes.Add($"基础工作量{rc.BaseMinutes * batch}分钟（制造等级不改变工作量）");
                     if (rc.IsSalvage)
                     {
                         if (plan != null) p.Outputs = plan.Outputs;
-                        p.Notes.Add("完成后原装备移除，产物放在当前地点地面；拆解不给制造经验");
+                        var tgt = plan?.Tool ?? (r.InstanceId.HasValue ? FindItem(s, r.InstanceId.Value) : null);
+                        if (tgt != null && EquipTier(tgt.ItemId) is int tier && SalvageCraftingLevel(tier) is int need)
+                            p.Notes.Add($"{tier}阶装备：{SkillName(Crafting)}{need}级可拆（当前{SkillLevel(s, Crafting)}级）");
+                        p.Notes.Add("完成后原装备移除，产物放在当前地点地面");
+                        p.XpGains.Add(XpText(s, Crafting, Config.Progression.Dismantle.Xp));
                     }
                     else if (rc.IsRepair && plan?.Tool is ItemInstance rt && rt.Durability is double d0 && rt.MaxDurability is double dm)
                         p.Notes.Add($"{ItemName(rt.ItemId)}#{rt.InstanceId}耐久{Fmt.N(d0)}→{Fmt.N(Math.Min(dm, d0 + dm * RepairFraction(s, rc)))}/{Fmt.N(dm)}：恢复自身最大耐久的{Fmt.Pct(RepairFraction(s, rc))}（不超过上限、不重抽最大耐久，品质与词条不变）");

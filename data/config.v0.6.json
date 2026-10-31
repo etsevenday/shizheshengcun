@@ -3261,7 +3261,8 @@
         "raw_root": 2
       },
       "toolBonus": null,
-      "hazard": null
+      "hazard": null,
+      "proficiencyId": "gathering"
     },
     {
       "nodeId": "field_fiber",
@@ -3281,7 +3282,8 @@
         "outputMultiplier": 1,
         "baseMinutesOverride": 10
       },
-      "hazard": null
+      "hazard": null,
+      "proficiencyId": "gathering"
     },
     {
       "nodeId": "water",
@@ -3297,7 +3299,8 @@
         "dirty_water": 2
       },
       "toolBonus": null,
-      "hazard": null
+      "hazard": null,
+      "proficiencyId": "gathering"
     },
     {
       "nodeId": "herbs",
@@ -3313,7 +3316,8 @@
         "herb": 1
       },
       "toolBonus": null,
-      "hazard": null
+      "hazard": null,
+      "proficiencyId": "gathering"
     },
     {
       "nodeId": "wood",
@@ -3337,7 +3341,8 @@
         "probability": 0.05,
         "healthLoss": 0.6,
         "label": "划伤"
-      }
+      },
+      "proficiencyId": "gathering"
     },
     {
       "nodeId": "stones",
@@ -3353,7 +3358,8 @@
         "stone": 2
       },
       "toolBonus": null,
-      "hazard": null
+      "hazard": null,
+      "proficiencyId": "gathering"
     },
     {
       "nodeId": "berries",
@@ -3369,7 +3375,8 @@
         "berry": 2
       },
       "toolBonus": null,
-      "hazard": null
+      "hazard": null,
+      "proficiencyId": "gathering"
     },
     {
       "nodeId": "woods_fiber",
@@ -3389,7 +3396,8 @@
         "outputMultiplier": 1,
         "baseMinutesOverride": 10
       },
-      "hazard": null
+      "hazard": null,
+      "proficiencyId": "gathering"
     },
     {
       "nodeId": "supply_box",
@@ -3406,7 +3414,8 @@
         "clean_water": 1
       },
       "toolBonus": null,
-      "hazard": null
+      "hazard": null,
+      "proficiencyId": "scavenging"
     },
     {
       "nodeId": "misc_box",
@@ -3427,7 +3436,8 @@
         "probability": 0.05,
         "healthLoss": 0.4,
         "label": "划伤"
-      }
+      },
+      "proficiencyId": "scavenging"
     },
     {
       "nodeId": "pot_box",
@@ -3445,7 +3455,8 @@
       },
       "toolBonus": null,
       "hazard": null,
-      "scavenged": true
+      "scavenged": true,
+      "proficiencyId": "scavenging"
     },
     {
       "nodeId": "tool_box",
@@ -3463,7 +3474,8 @@
       },
       "toolBonus": null,
       "hazard": null,
-      "scavenged": true
+      "scavenged": true,
+      "proficiencyId": "scavenging"
     },
     {
       "nodeId": "med_cabinet",
@@ -3480,7 +3492,8 @@
         "herb": 2
       },
       "toolBonus": null,
-      "hazard": null
+      "hazard": null,
+      "proficiencyId": "scavenging"
     },
     {
       "nodeId": "cloth_bag",
@@ -3496,7 +3509,8 @@
         "cloth": 4
       },
       "toolBonus": null,
-      "hazard": null
+      "hazard": null,
+      "proficiencyId": "scavenging"
     },
     {
       "nodeId": "metal_heap",
@@ -3516,7 +3530,8 @@
         "probability": 0.1,
         "healthLoss": 1.2,
         "label": "擦伤"
-      }
+      },
+      "proficiencyId": "scavenging"
     },
     {
       "nodeId": "parts_box",
@@ -3537,7 +3552,8 @@
         "probability": 0.1,
         "healthLoss": 1.2,
         "label": "擦伤"
-      }
+      },
+      "proficiencyId": "scavenging"
     },
     {
       "nodeId": "hardware_weapon_cache",
@@ -3555,7 +3571,8 @@
       },
       "toolBonus": null,
       "hazard": null,
-      "scavenged": true
+      "scavenged": true,
+      "proficiencyId": "scavenging"
     },
     {
       "nodeId": "village_weapon_locker",
@@ -3573,7 +3590,8 @@
       },
       "toolBonus": null,
       "hazard": null,
-      "scavenged": true
+      "scavenged": true,
+      "proficiencyId": "scavenging"
     },
     {
       "nodeId": "clinic_medical_supply",
@@ -3595,7 +3613,8 @@
         "itemId": "antiviral_cure",
         "count": 1,
         "chance": 0.01
-      }
+      },
+      "proficiencyId": "scavenging"
     },
     {
       "nodeId": "village_cold_box",
@@ -3621,7 +3640,8 @@
           "count": 2,
           "weight": 80
         }
-      ]
+      ],
+      "proficiencyId": "scavenging"
     }
   ],
   "recipes": [
@@ -7236,7 +7256,8 @@
     "affectsPassiveCooking": false,
     "affectsButchering": false,
     "batchOverflowWithinSameReservedBatch": true,
-    "carryOverflowToOtherAction": false
+    "carryOverflowToOtherAction": false,
+    "legacyLevelWorkFactorRemoved": true
   },
   "combatMath": {
     "initiative": "max(1,base+gear+status-[E<4]-[S<20])",
@@ -10418,13 +10439,13 @@
       "ap": 0,
       "baseEnergy": 0.0,
       "positions": "战外→对应活动",
-      "effectText": "原新手配方与W0装备许可",
+      "effectText": "保留既有手工配方原门槛；新增T0装备制造1级许可；W0废弃误记，不新增穿戴限制",
       "cooldownRounds": 0,
       "extraCost": "无",
       "kind": "survival",
-      "status": "pending",
+      "status": "baseline",
       "effects": [],
-      "displayText": "原新手配方与0阶（W0）装备许可（含义待策划确认）"
+      "displayText": "保留既有手工配方原门槛；新增0阶装备制造1级许可（不新增穿戴限制）"
     },
     {
       "id": "crafting_03",
@@ -10625,17 +10646,23 @@
       "id": "scavenging_03",
       "skillId": "scavenging",
       "level": 3,
-      "name": "分类拆卸",
+      "name": "分类勘整",
       "ap": 0,
       "baseEnergy": 0.0,
       "positions": "战外→对应活动",
-      "effectText": "开放拆解低阶装备；不增加固定箱数量",
+      "effectText": "普通遗迹与工业资源搜集基础工作量×0.95；不改变固定箱数量，不作用于勘整训练",
       "cooldownRounds": 0,
       "extraCost": "无",
       "kind": "survival",
-      "status": "pending",
-      "effects": [],
-      "displayText": "开放拆解低阶装备；不增加固定箱数量"
+      "status": "live",
+      "effects": [
+        {
+          "key": "work.scavenge",
+          "op": "mul",
+          "value": 0.95
+        }
+      ],
+      "displayText": "普通遗迹与工业资源搜集基础工作量×0.95；不改变固定箱数量，不作用于遗迹勘整"
     },
     {
       "id": "scavenging_05",
@@ -10649,7 +10676,7 @@
       "cooldownRounds": 0,
       "extraCost": "无",
       "kind": "survival",
-      "status": "dormant",
+      "status": "closed",
       "effects": [
         {
           "key": "work.scavengeTool",
@@ -10657,7 +10684,7 @@
           "value": 0.9
         }
       ],
-      "displayText": "选择合格工具时搜集工作量×0.9"
+      "displayText": "选择合格工具时搜集工作量×0.9（暂未开放：新地图逐个搜集点标明合格工具后生效）"
     },
     {
       "id": "scavenging_07",
@@ -10685,23 +10712,23 @@
       "id": "scavenging_10",
       "skillId": "scavenging",
       "level": 10,
-      "name": "回收专家",
+      "name": "周密检索",
       "ap": 0,
       "baseEnergy": 0.0,
       "positions": "战外→对应活动",
-      "effectText": "拆解固定多返scrap1；总回收不得超过配方投入价值80%",
+      "effectText": "普通遗迹与工业资源搜集基础工作量×0.90（替代3级）；不改变固定箱数量，不作用于勘整训练",
       "cooldownRounds": 0,
       "extraCost": "无",
       "kind": "survival",
       "status": "live",
       "effects": [
         {
-          "key": "salvage.expertBonus",
-          "op": "add",
-          "value": 1
+          "key": "work.scavenge",
+          "op": "mul",
+          "value": 0.9
         }
       ],
-      "displayText": "拆解完成后尝试追加1份同种回收材料：可自制装备只在总回收价值仍不超过标准配方材料价值80%时追加，否则不追加；不可自制装备按固定表追加1"
+      "displayText": "普通遗迹与工业资源搜集基础工作量×0.90（替代3级）；不改变固定箱数量，不作用于遗迹勘整"
     },
     {
       "id": "cooking_01",
@@ -11330,5 +11357,96 @@
       "heal": 1.5,
       "healMaxRatio": 0.25
     }
-  ]
+  ],
+  "progression": {
+    "source": "q53_q61_20261031",
+    "dismantle": {
+      "stages": [
+        {
+          "craftingLevel": 1,
+          "maxTier": 0
+        },
+        {
+          "craftingLevel": 3,
+          "maxTier": 1
+        },
+        {
+          "craftingLevel": 7,
+          "maxTier": 2
+        },
+        {
+          "craftingLevel": 10,
+          "maxTier": 3
+        }
+      ],
+      "xp": 2,
+      "expertCraftingLevel": 10,
+      "expertBonus": 1
+    },
+    "fieldXp": {
+      "formulaText": "clamp(2*ceil(originalBaseMinutes/5),2,12)",
+      "stepXp": 2,
+      "stepMinutes": 5,
+      "min": 2,
+      "max": 12,
+      "perResourceDaily": 3,
+      "dailyPerActorSkill": 60
+    },
+    "survey": {
+      "id": "ruin_survey_practice",
+      "name": "遗迹勘整",
+      "nodeIds": [
+        "village",
+        "hardware",
+        "clinic",
+        "scrapyard"
+      ],
+      "baseMinutes": 30,
+      "xp": 12,
+      "proficiencyId": "scavenging",
+      "dailyPerActorNode": 2,
+      "requiresExplorePercent": 100,
+      "hazardByNode": {
+        "village": {
+          "probability": 0.05,
+          "healthLoss": 0.4,
+          "label": "划伤"
+        },
+        "hardware": {
+          "probability": 0,
+          "healthLoss": 0,
+          "label": "划伤"
+        },
+        "clinic": {
+          "probability": 0,
+          "healthLoss": 0,
+          "label": "划伤"
+        },
+        "scrapyard": {
+          "probability": 0.1,
+          "healthLoss": 1.2,
+          "label": "划伤"
+        }
+      }
+    },
+    "cooking": {
+      "foodProcesses": [
+        "roast_root",
+        "boil_root",
+        "roast_meat",
+        "boil_meat"
+      ],
+      "foodHeatStepMinutes": 10,
+      "foodMin": 1,
+      "foodMax": 12,
+      "foodDailyCap": 30,
+      "waterProcess": "boil_water",
+      "waterMlPerXp": 500,
+      "waterDailyCap": 4
+    },
+    "workCarry": {
+      "maxCredit": 4.9999,
+      "roundingDecimals": 4
+    }
+  }
 }

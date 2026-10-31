@@ -36,6 +36,8 @@ KIND_BASE_E = {"unarmed": 0.30, "blade": 0.40, "axe": 0.65, "spear": 0.50, "blun
 #   baseline  1 级“开放原有内容”，现有内容本来就开放，无额外数值；
 #   dormant   效果明确但现在没有挂点（新食品配方、制作等级3/7/10 配方、合格搜集工具等后续批次才有），只存数据；
 #   pending   有未定义的词，待策划确认（开发计划 v0.9 B5.4、待确认 Q53 起）。
+# B7b（策划答复 Q53/Q54/Q59）起 crafting_01、scavenging_03/05/10 的状态、名称与效果由 tools/import-b7b-progression.py 覆盖，
+# 重跑本脚本后须再跑 import-b7a-equipment.py 与 import-b7b-progression.py。
 SURVIVAL = {
     "crafting_01": ("pending", []),   # “原新手配方”=现有配方，1 级本就可做；“W0装备许可”未定义（待确认）
     "crafting_03": ("dormant", []),   # 制作等级3配方与工作台/缝纫台在 B10

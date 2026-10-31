@@ -602,12 +602,12 @@ public class CombatV05Tests : BattleTestBase
         var s = New();
         E.DebugGive(s, "cloth", 10);
         E.DebugGive(s, "herb", 10);
-        // B5（A06 §1）：熟练度最高10级，制造10级倍率 1/(1+0.025×10)=0.8；原“40级/100级单件不足5分钟”的场景已不可达
+        // B7b 按新规则改写（Q57 选 B：取消制造等级工作量倍率 1/(1+0.025L)）：制造10级整批仍是 15×4=60 分钟
         s.Skills["crafting"].Level = 10;
         Start(s, ActionRequest.Craft("bandage", batchCount: 4));
-        Assert.That(s.Main!.BaseWorkMinutes, Is.EqualTo(15 * 4 * 0.8).Within(1e-9), "整批48分钟工作量");
+        Assert.That(s.Main!.BaseWorkMinutes, Is.EqualTo(15 * 4).Within(1e-9), "整批60分钟工作量，制造等级不折减");
         Run(s);
-        Assert.That(s.GameMinute - 480, Is.EqualTo(50), "4件合计48分钟按5分钟段推进为50分钟，余量在同批内结转");
+        Assert.That(s.GameMinute - 480, Is.EqualTo(60), "4件合计60分钟");
         Assert.That(Count(s, "bandage"), Is.EqualTo(4));
         var t = New();
         var b = ActionRequest.Craft("shelter");

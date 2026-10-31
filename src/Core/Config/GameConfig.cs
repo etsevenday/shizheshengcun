@@ -84,6 +84,8 @@ namespace Survival.Core.Config
         // ───── 系统策划总册 v1.0 答复（N01/R07/S15） ─────
         public ActiveSubstanceConfig ActiveSubstance { get; set; } = new ActiveSubstanceConfig();
         public StoryConfig Story { get; set; } = new StoryConfig();
+        /// <summary>策划答复 Q53—Q61 成长与行动合同（开发计划 v0.9 B7b）。</summary>
+        public ProgressionConfig Progression { get; set; } = new ProgressionConfig();
     }
 
     public sealed class TimeConfig
@@ -385,6 +387,10 @@ namespace Survival.Core.Config
         public IndependentRareConfig? IndependentRare { get; set; }
         /// <summary>互斥抽取（废弃冷藏箱），开始搜集时锁定；与 Outputs 二选一。</summary>
         public List<CacheLootEntry>? ExclusiveLoot { get; set; }
+        /// <summary>
+        /// 练哪门熟练（Q55：116 行逐项归属，自然采出 gathering、人工/工业资源与箱 scavenging）。未写时按旧口径（箱子搜集、其余采集）。
+        /// </summary>
+        public string? ProficiencyId { get; set; }
 
         public bool IsCache => PoolMode == PoolModes.SingleCache;
         public bool IsUnlimited => PoolMode == PoolModes.Unlimited;
