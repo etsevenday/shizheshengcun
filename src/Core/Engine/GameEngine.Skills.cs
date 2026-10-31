@@ -18,7 +18,7 @@ namespace Survival.Core.Engine
         {
             if (s.Progress.Flags.Contains("knowledge:" + knowledgeId)) return true;
             var k = Config.Knowledge.FirstOrDefault(x => x.Id == knowledgeId);
-            return k != null && k.GrantedByFacts.Any(s.Progress.Flags.Contains);
+            return k != null && (k.Initial || k.GrantedByFacts.Any(s.Progress.Flags.Contains));
         }
 
         /// <summary>配方需要的做法知识还没有时的原因（制作列表不列出这类配方；直接请求时拒绝）；不需要或已知为 null。</summary>
@@ -26,6 +26,7 @@ namespace Survival.Core.Engine
         {
             if (rc.Knowledge == null || KnowsKnowledge(s, rc.Knowledge)) return null;
             var k = Config.Knowledge.FirstOrDefault(x => x.Id == rc.Knowledge);
+            if (k != null && k.Blueprint) return $"未掌握：需要{k.Name}（{k.Source}）";
             return $"还不知道{k?.Name ?? rc.Name + "的做法"}（{k?.Source ?? "后续解锁"}）";
         }
 

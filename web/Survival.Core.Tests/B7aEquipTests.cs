@@ -122,7 +122,9 @@ public class B7aEquipTests : BattleTestBase
             Assert.That(rc.Inputs.Sum(kv => kv.Value * values[kv.Key]), Is.EqualTo(def.RecipeValue), outId);
             checkedIds.Add(outId);
         }
-        Assert.That(checkedIds, Is.EquivalentTo(new[] { "stone_knife", "hatchet", "wooden_spear", "wooden_bow", "metal_spear", "crossbow", "knuckle_wraps" }), "B7c 加护拳绑带配方（布2+皮革1+纤维2=10）");
+        // B10：A05 §3 全部 62 件可自制装备 + Q64 护拳绑带都有配方，材料价值逐件与拆解表一致
+        Assert.That(checkedIds, Is.EquivalentTo(Cfg.Workshops.EquipmentSources.Where(x => x.Craftable).Select(x => x.ItemId)), "B10 全部 63 个装备配方");
+        Assert.That(checkedIds, Has.Count.EqualTo(63));
     }
 
     [Test]

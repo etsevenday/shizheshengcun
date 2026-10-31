@@ -139,11 +139,16 @@ namespace Survival.Core.Engine
         /// 一次转移后的随身根卡数（只读预演，H2）：add 为将进入随身的物品（addCount 份；锅/工具等整件进入时按 1 张），
         /// remove 为将离开随身的物品（removeCount 份）。
         /// </summary>
-        public int RootCardsAfter(GameState s, ItemInstance? add, int addCount, ItemInstance? remove, int removeCount)
+        public int RootCardsAfter(GameState s, ItemInstance? add, int addCount, ItemInstance? remove, int removeCount) =>
+            RootCardsAfterOf(s, GameState.PlayerId, add, addCount, remove, removeCount);
+
+        /// <summary>某角色（队友随身 owner 为 carried:&lt;id&gt;）一次转移后的随身根卡数；口径同主角（B10 交接与队友换装）。</summary>
+        public int RootCardsAfterOf(GameState s, string actorId, ItemInstance? add, int addCount, ItemInstance? remove, int removeCount)
         {
+            var owner = ItemInstance.CarriedOwner(actorId);
             var stacks = new Dictionary<(string, int?, string?), int>();
             var singles = 0;
-            foreach (var i in s.Items.Where(i => i.IsCarried))
+            foreach (var i in s.Items.Where(i => i.Owner == owner))
             {
                 var n = i.Count;
                 if (remove != null && i.InstanceId == remove.InstanceId) n -= Math.Min(n, removeCount);
@@ -151,7 +156,7 @@ namespace Survival.Core.Engine
                 if (StacksAsBatch(i)) { var k = StackKey(i); stacks[k] = (stacks.TryGetValue(k, out var c) ? c : 0) + n; }
                 else singles++;
             }
-            if (add != null && addCount > 0 && !add.IsCarried)
+            if (add != null && addCount > 0 && add.Owner != owner)
             {
                 if (StacksAsBatch(add)) { var k = StackKey(add); stacks[k] = (stacks.TryGetValue(k, out var c) ? c : 0) + addCount; }
                 else singles++;
@@ -163,6 +168,12 @@ namespace Survival.Core.Engine
 
         /// <summary>这次进入随身后根卡数是否允许：不超过上限；旧档已超限时不得再增加（S06 §8）。</summary>
         public bool RootCardsAllow(GameState s, int after) => after <= Math.Max(MaxRootCards, RootCardCount(s));
+
+        /// <summary>某角色随身根卡数（B10）。</summary>
+        public int RootCardCountOf(GameState s, string actorId) => RootCardsAfterOf(s, actorId, null, 0, null, 0);
+
+        /// <summary>某角色这次进入随身后根卡数是否允许（旧档已超限时不得再增加）。</summary>
+        public bool RootCardsAllowOf(GameState s, string actorId, int after) => after <= Math.Max(MaxRootCards, RootCardCountOf(s, actorId));
 
         /// <summary>“随身卡位已满（5/5张），……”拒绝原因。</summary>
         public string RootCardsFullText(GameState s) =>

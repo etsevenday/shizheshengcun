@@ -465,8 +465,9 @@ namespace Survival.Core.Engine
                     if (rc.FacilityResult != null)
                     {
                         if (!hereCfg.CanBuildShelter) return "只能在营地建造";
-                        if (FacilityFlag(hereState.Facility, rc.FacilityResult)) return "已建造";
+                        if (FacilityFlag(hereState.Facility, rc.FacilityResult)) return rc.Group == "workshop" ? $"{LocName(here)}已有{rc.Name.Replace("建", "")}（每类每地一座）" : "已建造";
                     }
+                    if (StationBlocked(s, rc) is string station) return station;
                     if (rc.Requirement != null)
                     {
                         switch (rc.Requirement.Facility)
@@ -496,17 +497,19 @@ namespace Survival.Core.Engine
                         }
                         plan.Catalysts.Add(cat);
                     }
-                    foreach (var kv in rc.Inputs)
+                    foreach (var kv in rc.AllInputs)
                     {
                         var have = AvailableCount(s, kv.Key, true);
                         var need = kv.Value * batch;
-                        if (have < need) return $"缺少{ItemName(kv.Key)}（{have}/{need}）";
+                        if (have < need) return rc.Fuel.ContainsKey(kv.Key) && !rc.Inputs.ContainsKey(kv.Key)
+                            ? $"缺少燃料{ItemName(kv.Key)}（{have}/{need}，{StationName(rc.Station)}每批{rc.Fuel[kv.Key]}）"
+                            : $"缺少{ItemName(kv.Key)}（{have}/{need}）";
                     }
                     // 材料槽里手工指定的批次：仍须可用且属于本配方，否则要求刷新重选
                     foreach (var id in r.PreferredInstanceIds)
                     {
                         var b = FindItem(s, id);
-                        if (b == null || !rc.Inputs.ContainsKey(b.ItemId) || !UsableBatches(s, b.ItemId, true).Contains(b))
+                        if (b == null || !rc.AllInputs.ContainsKey(b.ItemId) || !UsableBatches(s, b.ItemId, true).Contains(b))
                             return "指定的材料批次已失效，请重新选择";
                     }
                     foreach (var kv in rc.Outputs) plan.Outputs.Add(Line(kv.Key, kv.Value * batch));
@@ -667,6 +670,7 @@ namespace Survival.Core.Engine
         {
             "shelterBuilt" => f.ShelterBuilt,
             "bedBuilt" => f.BedBuilt,
+            _ when key.StartsWith(WorkshopPrefix) => f.Workshops.Contains(key.Substring(WorkshopPrefix.Length)),
             _ => false,
         };
 
@@ -674,6 +678,8 @@ namespace Survival.Core.Engine
         {
             if (key == "shelterBuilt") f.ShelterBuilt = true;
             else if (key == "bedBuilt") f.BedBuilt = true;
+            else if (key.StartsWith(WorkshopPrefix) && !f.Workshops.Contains(key.Substring(WorkshopPrefix.Length)))
+                f.Workshops.Add(key.Substring(WorkshopPrefix.Length));
         }
 
         // ───────────────────────── 开始 / 取消 / 继续 ─────────────────────────
@@ -769,7 +775,7 @@ namespace Survival.Core.Engine
                 {
                     var rc = p.Recipe!;
                     a.BatchCount = p.Batch;
-                    foreach (var kv in rc.Inputs)
+                    foreach (var kv in rc.AllInputs)
                     {
                         a.ReservedItemIds.AddRange(Reserve(s, kv.Key, kv.Value * p.Batch, a.ActionId, r.PreferredInstanceIds));
                     }

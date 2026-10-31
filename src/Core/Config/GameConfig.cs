@@ -92,6 +92,36 @@ namespace Survival.Core.Config
         public List<KnowledgeConfig> Knowledge { get; set; } = new List<KnowledgeConfig>();
         /// <summary>队伍与共同生存（R08、A11 §5—§7；开发计划 v0.9 B8，tools/import-b8-party.py）。</summary>
         public PartyConfig Party { get; set; } = new PartyConfig();
+        /// <summary>工坊六类与装备来源（A07「工坊设施」、A05 §3；开发计划 v0.9 B10，tools/import-b10-workshops.py）。</summary>
+        public WorkshopsConfig Workshops { get; set; } = new WorkshopsConfig();
+    }
+
+    /// <summary>工坊（A07「工坊设施」；B10）：hand 不是设施；其余每类每地一座，只在 buildLocations 建（B10-1：只开放 camp，待确认 Q107）。</summary>
+    public sealed class WorkshopsConfig
+    {
+        public string Source { get; set; } = "";
+        public List<string> BuildLocations { get; set; } = new List<string>();
+        public List<StationConfig> Stations { get; set; } = new List<StationConfig>();
+        /// <summary>73 件装备的制作与来源（A05 §3；62 件 + Q64 护拳绑带可自制，10 件不可自制）。</summary>
+        public List<EquipmentSourceConfig> EquipmentSources { get; set; } = new List<EquipmentSourceConfig>();
+    }
+
+    public sealed class StationConfig
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        /// <summary>建造这类工坊的配方 ID；hand 为 null。</summary>
+        public string? BuildRecipe { get; set; }
+        public string Note { get; set; } = "";
+    }
+
+    public sealed class EquipmentSourceConfig
+    {
+        public string ItemId { get; set; } = "";
+        public bool Craftable { get; set; }
+        public string? RecipeId { get; set; }
+        public string? Knowledge { get; set; }
+        public string Text { get; set; } = "";
     }
 
     public sealed class TimeConfig
@@ -433,6 +463,24 @@ namespace Survival.Core.Config
         public bool RequireEmptyDetachedPotWhenTargetIsPot { get; set; }
         /// <summary>需要的做法知识（knowledge[].id；护拳绑带 blueprint_knuckle_wraps，Q64）；没有知识的配方不列出、不能开工。null 为不需要。</summary>
         public string? Knowledge { get; set; }
+        /// <summary>制作所在工坊（A07/A05 §3；B10）：hand 不需工坊；其余须在当前地点已建成该工坊。</summary>
+        public string Station { get; set; } = "hand";
+        /// <summary>制作列表分组：equipment 装备、material 材料加工、workshop 工坊建造、camp 营地设施；旧配方为 null（物资）。</summary>
+        public string? Group { get; set; }
+        /// <summary>设施燃料（A05 §3/A07：forge 每批 charcoal1），与原料一起按批预留、完成核销，界面分开显示。</summary>
+        public Dictionary<string, int> Fuel { get; set; } = new Dictionary<string, int>();
+
+        /// <summary>原料与燃料合计（每批）：校验与预留都按它。</summary>
+        public Dictionary<string, int> AllInputs
+        {
+            get
+            {
+                if (Fuel.Count == 0) return Inputs;
+                var d = new Dictionary<string, int>(Inputs);
+                foreach (var kv in Fuel) d[kv.Key] = (d.TryGetValue(kv.Key, out var n) ? n : 0) + kv.Value;
+                return d;
+            }
+        }
 
         public bool IsBuild => Kind == "build";
         public bool IsRepair => Kind == "repair";
@@ -449,6 +497,10 @@ namespace Survival.Core.Config
         public string Name { get; set; } = "";
         public List<string> GrantedByFacts { get; set; } = new List<string>();
         public string Source { get; set; } = "";
+        /// <summary>开局已会（原石刀/斧/木矛/木弓/金属矛/弩，S08 2026-10-30）。</summary>
+        public bool Initial { get; set; }
+        /// <summary>蓝图类知识（地图固定箱/任务授予，B11 起；B10 只做显示与开发入口）。</summary>
+        public bool Blueprint { get; set; }
     }
 
     public sealed class HealthRulesConfig

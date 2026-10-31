@@ -299,6 +299,8 @@ namespace Survival.Core.State
     {
         public bool ShelterBuilt { get; set; }
         public bool BedBuilt { get; set; }
+        /// <summary>本地已建成的工坊（workbench/forge/sewing/medical/armory，B10；每类最多一座）；旧存档缺省为空。</summary>
+        public List<string> Workshops { get; set; } = new List<string>();
         public bool FireLit { get; set; }
         public int FuelMinutes { get; set; }
         /// <summary>火堆点燃后熄灭过（燃尽或手动熄灭）。未燃烧时界面据此写“熄灭”而不是“未点燃”；旧存档缺省为否。</summary>
@@ -319,6 +321,7 @@ namespace Survival.Core.State
         {
             var c = (FacilityState)MemberwiseClone();
             c.ProcessingSlots = new List<int?>(ProcessingSlots);
+            c.Workshops = new List<string>(Workshops);
             c.Processes = Processes.Select(p => p.Clone()).ToList();
             c.Completed = new List<string>(Completed);
             return c;

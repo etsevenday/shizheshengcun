@@ -36,7 +36,7 @@ public class ConfigTests : TestBase
         Assert.That(Cfg.Locations, Has.Count.EqualTo(8));
         Assert.That(Cfg.Edges, Has.Count.EqualTo(8));
         Assert.That(Cfg.Resources, Has.Count.EqualTo(16 + 4), "新增武器柜、旧储物柜、医药补给箱、废弃冷藏箱");
-        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5 + 3 + 1 + 1), "新增木矛、木弓、箭矢、工具维护、病毒特效药；v1.0 新增金属矛、弩、弩矢；B4 拆解装备；B7c 护拳绑带（Q64，营区登记默认知识）");
+        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5 + 3 + 1 + 1 + 56 + 26 + 5), "新增木矛、木弓、箭矢、工具维护、病毒特效药；v1.0 新增金属矛、弩、弩矢；B4 拆解装备；B7c 护拳绑带（Q64，营区登记默认知识）；B10 新装备配方 56、材料加工链 26、工坊建造 5");
     }
 
     // ───────────── v0.2–v0.4 未被 v0.6 替换的部分 ─────────────

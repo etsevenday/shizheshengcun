@@ -3674,7 +3674,13 @@
       },
       "catalysts": [],
       "requirement": null,
-      "facilityResult": null
+      "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_stone_knife",
+      "minSkills": {
+        "crafting": 1
+      }
     },
     {
       "id": "axe",
@@ -3691,7 +3697,13 @@
       },
       "catalysts": [],
       "requirement": null,
-      "facilityResult": null
+      "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_hatchet",
+      "minSkills": {
+        "crafting": 1
+      }
     },
     {
       "id": "bandage",
@@ -3707,7 +3719,8 @@
       },
       "catalysts": [],
       "requirement": null,
-      "facilityResult": null
+      "facilityResult": null,
+      "station": "hand"
     },
     {
       "id": "shelter",
@@ -3723,7 +3736,9 @@
       "requirement": {
         "facility": "camp"
       },
-      "facilityResult": "shelterBuilt"
+      "facilityResult": "shelterBuilt",
+      "station": "hand",
+      "group": "camp"
     },
     {
       "id": "bed",
@@ -3739,7 +3754,9 @@
       "requirement": {
         "facility": "shelter"
       },
-      "facilityResult": "bedBuilt"
+      "facilityResult": "bedBuilt",
+      "station": "hand",
+      "group": "camp"
     },
     {
       "id": "make_wooden_spear",
@@ -3756,7 +3773,13 @@
       },
       "catalysts": [],
       "requirement": null,
-      "facilityResult": null
+      "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_wooden_spear",
+      "minSkills": {
+        "crafting": 1
+      }
     },
     {
       "id": "make_wooden_bow",
@@ -3773,7 +3796,13 @@
       },
       "catalysts": [],
       "requirement": null,
-      "facilityResult": null
+      "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_wooden_bow",
+      "minSkills": {
+        "crafting": 1
+      }
     },
     {
       "id": "make_arrows",
@@ -3790,7 +3819,8 @@
       },
       "catalysts": [],
       "requirement": null,
-      "facilityResult": null
+      "facilityResult": null,
+      "station": "hand"
     },
     {
       "id": "repair_selected_tool",
@@ -3808,7 +3838,8 @@
       "targetInstanceRequired": true,
       "restoreOwnDurabilityMaxFraction": 0.2,
       "rerollDurability": false,
-      "requireEmptyDetachedPotWhenTargetIsPot": true
+      "requireEmptyDetachedPotWhenTargetIsPot": true,
+      "station": "hand"
     },
     {
       "id": "make_antiviral_cure",
@@ -3835,7 +3866,8 @@
         "crafting": 10
       },
       "potCatalyst": "explicit_empty_detached_pot",
-      "autoFillPot": false
+      "autoFillPot": false,
+      "station": "hand"
     },
     {
       "id": "make_metal_spear",
@@ -3853,6 +3885,9 @@
       "catalysts": [],
       "requirement": null,
       "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_metal_spear",
       "minSkills": {
         "crafting": 1
       }
@@ -3875,6 +3910,9 @@
       "catalysts": [],
       "requirement": null,
       "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_crossbow",
       "minSkills": {
         "crafting": 1
       }
@@ -3897,7 +3935,8 @@
       "facilityResult": null,
       "minSkills": {
         "crafting": 1
-      }
+      },
+      "station": "hand"
     },
     {
       "id": "make_knuckle_wraps",
@@ -3915,10 +3954,12 @@
       "catalysts": [],
       "requirement": null,
       "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_knuckle_wraps",
       "minSkills": {
         "crafting": 3
-      },
-      "knowledge": "blueprint_knuckle_wraps"
+      }
     },
     {
       "id": "salvage_equipment",
@@ -3933,7 +3974,1954 @@
       "targetInstanceRequired": true,
       "restoreOwnDurabilityMaxFraction": 0,
       "rerollDurability": false,
-      "requireEmptyDetachedPotWhenTargetIsPot": false
+      "requireEmptyDetachedPotWhenTargetIsPot": false,
+      "station": "hand"
+    },
+    {
+      "id": "build_workbench",
+      "name": "建工作台",
+      "kind": "build",
+      "baseMinutes": 120,
+      "inputs": {
+        "plank": 4,
+        "fastener": 4,
+        "parts": 2
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": {
+        "facility": "camp"
+      },
+      "facilityResult": "workshop:workbench",
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "hand",
+      "group": "workshop"
+    },
+    {
+      "id": "build_forge",
+      "name": "建锻炉",
+      "kind": "build",
+      "baseMinutes": 180,
+      "inputs": {
+        "stone": 8,
+        "iron_plate": 4,
+        "parts": 2
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": {
+        "facility": "camp"
+      },
+      "facilityResult": "workshop:forge",
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "hand",
+      "group": "workshop"
+    },
+    {
+      "id": "build_sewing",
+      "name": "建缝纫台",
+      "kind": "build",
+      "baseMinutes": 120,
+      "inputs": {
+        "plank": 3,
+        "parts": 2,
+        "thread": 2
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": {
+        "facility": "camp"
+      },
+      "facilityResult": "workshop:sewing",
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "hand",
+      "group": "workshop"
+    },
+    {
+      "id": "build_medical",
+      "name": "建医疗台",
+      "kind": "build",
+      "baseMinutes": 150,
+      "inputs": {
+        "plank": 3,
+        "iron_plate": 2,
+        "medical_gauze": 4
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": {
+        "facility": "camp"
+      },
+      "facilityResult": "workshop:medical",
+      "minSkills": {
+        "crafting": 5
+      },
+      "station": "hand",
+      "group": "workshop"
+    },
+    {
+      "id": "build_armory",
+      "name": "建军械台",
+      "kind": "build",
+      "baseMinutes": 240,
+      "inputs": {
+        "iron_plate": 6,
+        "steel": 4,
+        "precision_parts": 2
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": {
+        "facility": "camp"
+      },
+      "facilityResult": "workshop:armory",
+      "minSkills": {
+        "crafting": 7
+      },
+      "station": "hand",
+      "group": "workshop",
+      "knowledge": "blueprint_armory_station"
+    },
+    {
+      "id": "make_machete",
+      "name": "砍刀",
+      "kind": "craft",
+      "baseMinutes": 75,
+      "inputs": {
+        "iron_plate": 2,
+        "wood": 1,
+        "cloth": 1
+      },
+      "outputs": {
+        "machete": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_machete",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_guard_sword",
+      "name": "守备短剑",
+      "kind": "craft",
+      "baseMinutes": 120,
+      "inputs": {
+        "steel": 2,
+        "leather": 1,
+        "fastener": 1
+      },
+      "outputs": {
+        "guard_sword": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "forge",
+      "group": "equipment",
+      "knowledge": "blueprint_guard_sword",
+      "fuel": {
+        "charcoal": 1
+      },
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_breach_axe",
+      "name": "破障斧",
+      "kind": "craft",
+      "baseMinutes": 150,
+      "inputs": {
+        "steel": 3,
+        "plank": 1,
+        "rubber": 1,
+        "fastener": 2
+      },
+      "outputs": {
+        "breach_axe": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "forge",
+      "group": "equipment",
+      "knowledge": "blueprint_breach_axe",
+      "fuel": {
+        "charcoal": 1
+      },
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_rescue_axe",
+      "name": "救援短斧",
+      "kind": "craft",
+      "baseMinutes": 150,
+      "inputs": {
+        "steel": 2,
+        "precision_parts": 1,
+        "leather": 1
+      },
+      "outputs": {
+        "rescue_axe": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "forge",
+      "group": "equipment",
+      "knowledge": "blueprint_rescue_axe",
+      "fuel": {
+        "charcoal": 1
+      },
+      "minSkills": {
+        "crafting": 10
+      }
+    },
+    {
+      "id": "make_pike",
+      "name": "加固长枪",
+      "kind": "craft",
+      "baseMinutes": 120,
+      "inputs": {
+        "steel": 2,
+        "plank": 2,
+        "fastener": 2
+      },
+      "outputs": {
+        "pike": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "forge",
+      "group": "equipment",
+      "knowledge": "blueprint_pike",
+      "fuel": {
+        "charcoal": 1
+      },
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_barbed_spear",
+      "name": "倒刺短矛",
+      "kind": "craft",
+      "baseMinutes": 135,
+      "inputs": {
+        "steel": 2,
+        "leather": 1,
+        "precision_parts": 1
+      },
+      "outputs": {
+        "barbed_spear": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "forge",
+      "group": "equipment",
+      "knowledge": "blueprint_barbed_spear",
+      "fuel": {
+        "charcoal": 1
+      },
+      "minSkills": {
+        "crafting": 10
+      }
+    },
+    {
+      "id": "make_wooden_club",
+      "name": "木棍",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "wood": 2,
+        "fiber": 1
+      },
+      "outputs": {
+        "wooden_club": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_wooden_club",
+      "minSkills": {
+        "crafting": 1
+      }
+    },
+    {
+      "id": "make_steel_mace",
+      "name": "钢制钉锤",
+      "kind": "craft",
+      "baseMinutes": 105,
+      "inputs": {
+        "steel": 2,
+        "wood": 1,
+        "fastener": 2
+      },
+      "outputs": {
+        "steel_mace": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "forge",
+      "group": "equipment",
+      "knowledge": "blueprint_steel_mace",
+      "fuel": {
+        "charcoal": 1
+      },
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_shock_baton",
+      "name": "绝缘警棍",
+      "kind": "craft",
+      "baseMinutes": 120,
+      "inputs": {
+        "steel": 1,
+        "rubber": 2,
+        "precision_parts": 1
+      },
+      "outputs": {
+        "shock_baton": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_shock_baton",
+      "minSkills": {
+        "crafting": 10
+      }
+    },
+    {
+      "id": "make_recurve_bow",
+      "name": "复合木弓",
+      "kind": "craft",
+      "baseMinutes": 90,
+      "inputs": {
+        "plank": 2,
+        "rope": 2,
+        "leather": 1
+      },
+      "outputs": {
+        "recurve_bow": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_recurve_bow",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_hunter_bow",
+      "name": "猎手弓",
+      "kind": "craft",
+      "baseMinutes": 120,
+      "inputs": {
+        "steel": 1,
+        "plank": 2,
+        "leather": 2,
+        "thread": 2
+      },
+      "outputs": {
+        "hunter_bow": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_hunter_bow",
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_repeater_crossbow",
+      "name": "轻型战术弩",
+      "kind": "craft",
+      "baseMinutes": 180,
+      "inputs": {
+        "steel": 2,
+        "precision_parts": 2,
+        "plank": 1,
+        "rope": 2
+      },
+      "outputs": {
+        "repeater_crossbow": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "armory",
+      "group": "equipment",
+      "knowledge": "blueprint_repeater_crossbow",
+      "minSkills": {
+        "crafting": 10
+      }
+    },
+    {
+      "id": "make_wooden_shield",
+      "name": "木盾",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "wood": 3,
+        "fiber": 2,
+        "cloth": 1
+      },
+      "outputs": {
+        "wooden_shield": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_wooden_shield",
+      "minSkills": {
+        "crafting": 1
+      }
+    },
+    {
+      "id": "make_scrap_shield",
+      "name": "包铁盾",
+      "kind": "craft",
+      "baseMinutes": 90,
+      "inputs": {
+        "plank": 2,
+        "iron_plate": 2,
+        "fastener": 2
+      },
+      "outputs": {
+        "scrap_shield": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_scrap_shield",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_rescue_shield",
+      "name": "救援盾",
+      "kind": "craft",
+      "baseMinutes": 150,
+      "inputs": {
+        "steel": 2,
+        "ballistic_fiber": 2,
+        "rubber": 2,
+        "fastener": 2
+      },
+      "outputs": {
+        "rescue_shield": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_rescue_shield",
+      "minSkills": {
+        "crafting": 10
+      }
+    },
+    {
+      "id": "make_signal_whistle",
+      "name": "信号哨",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "scrap": 1,
+        "fiber": 1
+      },
+      "outputs": {
+        "signal_whistle": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_signal_whistle",
+      "minSkills": {
+        "crafting": 1
+      }
+    },
+    {
+      "id": "make_signal_flag",
+      "name": "战术旗",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "plank": 1,
+        "cloth": 3,
+        "thread": 1
+      },
+      "outputs": {
+        "signal_flag": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_signal_flag",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_field_radio",
+      "name": "战术电台",
+      "kind": "craft",
+      "baseMinutes": 120,
+      "inputs": {
+        "electronics": 2,
+        "wire": 2,
+        "plastic": 2,
+        "battery": 1
+      },
+      "outputs": {
+        "field_radio": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_field_radio",
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_command_terminal",
+      "name": "便携指挥终端",
+      "kind": "craft",
+      "baseMinutes": 180,
+      "inputs": {
+        "electronics": 3,
+        "precision_parts": 2,
+        "wire": 2,
+        "battery": 1
+      },
+      "outputs": {
+        "command_terminal": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_command_terminal",
+      "minSkills": {
+        "crafting": 10
+      }
+    },
+    {
+      "id": "make_field_medkit",
+      "name": "随行医疗包",
+      "kind": "craft",
+      "baseMinutes": 45,
+      "inputs": {
+        "cloth": 3,
+        "medical_gauze": 2,
+        "thread": 1
+      },
+      "outputs": {
+        "field_medkit": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_field_medkit",
+      "minSkills": {
+        "crafting": 1
+      }
+    },
+    {
+      "id": "make_trauma_bag",
+      "name": "创伤救护包",
+      "kind": "craft",
+      "baseMinutes": 75,
+      "inputs": {
+        "leather": 2,
+        "medical_gauze": 3,
+        "thread": 2
+      },
+      "outputs": {
+        "trauma_bag": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_trauma_bag",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_rescue_medkit",
+      "name": "救援医疗箱",
+      "kind": "craft",
+      "baseMinutes": 120,
+      "inputs": {
+        "plastic": 2,
+        "medical_gauze": 4,
+        "disinfectant": 1,
+        "fastener": 1
+      },
+      "outputs": {
+        "rescue_medkit": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "medical",
+      "group": "equipment",
+      "knowledge": "blueprint_rescue_medkit",
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_triage_kit",
+      "name": "分诊器材组",
+      "kind": "craft",
+      "baseMinutes": 150,
+      "inputs": {
+        "precision_parts": 1,
+        "medical_gauze": 4,
+        "leather": 2,
+        "saline": 1
+      },
+      "outputs": {
+        "triage_kit": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "medical",
+      "group": "equipment",
+      "knowledge": "blueprint_triage_kit",
+      "minSkills": {
+        "crafting": 10
+      }
+    },
+    {
+      "id": "make_padded_vest",
+      "name": "衬垫护具",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "cloth": 4,
+        "fiber": 2
+      },
+      "outputs": {
+        "padded_vest": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_padded_vest",
+      "minSkills": {
+        "crafting": 1
+      }
+    },
+    {
+      "id": "make_leather_armor",
+      "name": "皮革护具",
+      "kind": "craft",
+      "baseMinutes": 90,
+      "inputs": {
+        "leather": 4,
+        "thread": 2,
+        "cloth": 2
+      },
+      "outputs": {
+        "leather_armor": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_leather_armor",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_scrap_armor",
+      "name": "拼接铁甲",
+      "kind": "craft",
+      "baseMinutes": 120,
+      "inputs": {
+        "iron_plate": 4,
+        "leather": 2,
+        "fastener": 3
+      },
+      "outputs": {
+        "scrap_armor": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_scrap_armor",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_scout_armor",
+      "name": "侦察护具",
+      "kind": "craft",
+      "baseMinutes": 120,
+      "inputs": {
+        "ballistic_fiber": 2,
+        "leather": 2,
+        "thread": 2
+      },
+      "outputs": {
+        "scout_armor": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_scout_armor",
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_heavy_armor",
+      "name": "重型防护甲",
+      "kind": "craft",
+      "baseMinutes": 180,
+      "inputs": {
+        "steel": 3,
+        "ballistic_fiber": 3,
+        "leather": 2,
+        "fastener": 3
+      },
+      "outputs": {
+        "heavy_armor": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_heavy_armor",
+      "minSkills": {
+        "crafting": 10
+      }
+    },
+    {
+      "id": "make_medic_armor",
+      "name": "救护防护背心",
+      "kind": "craft",
+      "baseMinutes": 105,
+      "inputs": {
+        "leather": 2,
+        "ballistic_fiber": 1,
+        "medical_gauze": 2
+      },
+      "outputs": {
+        "medic_armor": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_medic_armor",
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_balanced_armor",
+      "name": "均衡战术甲",
+      "kind": "craft",
+      "baseMinutes": 150,
+      "inputs": {
+        "ballistic_fiber": 3,
+        "precision_parts": 1,
+        "leather": 2
+      },
+      "outputs": {
+        "balanced_armor": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_balanced_armor",
+      "minSkills": {
+        "crafting": 10
+      }
+    },
+    {
+      "id": "make_steady_ring",
+      "name": "稳手指环",
+      "kind": "craft",
+      "baseMinutes": 25,
+      "inputs": {
+        "scrap": 1,
+        "cloth": 1
+      },
+      "outputs": {
+        "steady_ring": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_steady_ring",
+      "minSkills": {
+        "crafting": 1
+      }
+    },
+    {
+      "id": "make_swift_pendant",
+      "name": "轻捷吊坠",
+      "kind": "craft",
+      "baseMinutes": 35,
+      "inputs": {
+        "wire": 1,
+        "leather": 1
+      },
+      "outputs": {
+        "swift_pendant": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_swift_pendant",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_guard_badge",
+      "name": "守护徽记",
+      "kind": "craft",
+      "baseMinutes": 35,
+      "inputs": {
+        "iron_plate": 1,
+        "cloth": 1
+      },
+      "outputs": {
+        "guard_badge": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_guard_badge",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_hunter_token",
+      "name": "猎手护符",
+      "kind": "craft",
+      "baseMinutes": 35,
+      "inputs": {
+        "leather": 1,
+        "wood": 1
+      },
+      "outputs": {
+        "hunter_token": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_hunter_token",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_focus_lens",
+      "name": "聚焦镜片",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "precision_parts": 1,
+        "plastic": 1
+      },
+      "outputs": {
+        "focus_lens": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_focus_lens",
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_aid_badge",
+      "name": "救护徽章",
+      "kind": "craft",
+      "baseMinutes": 45,
+      "inputs": {
+        "medical_gauze": 1,
+        "iron_plate": 1
+      },
+      "outputs": {
+        "aid_badge": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "medical",
+      "group": "equipment",
+      "knowledge": "blueprint_aid_badge",
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_resolve_medal",
+      "name": "镇定勋章",
+      "kind": "craft",
+      "baseMinutes": 50,
+      "inputs": {
+        "steel": 1,
+        "cloth": 1
+      },
+      "outputs": {
+        "resolve_medal": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_resolve_medal",
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_tactics_watch",
+      "name": "战术计时表",
+      "kind": "craft",
+      "baseMinutes": 90,
+      "inputs": {
+        "precision_parts": 2,
+        "electronics": 1
+      },
+      "outputs": {
+        "tactics_watch": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_tactics_watch",
+      "minSkills": {
+        "crafting": 10
+      }
+    },
+    {
+      "id": "make_work_shirt",
+      "name": "耐磨工作衣",
+      "kind": "craft",
+      "baseMinutes": 45,
+      "inputs": {
+        "cloth": 3,
+        "thread": 1
+      },
+      "outputs": {
+        "work_shirt": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_work_shirt",
+      "minSkills": {
+        "crafting": 1
+      }
+    },
+    {
+      "id": "make_forage_jacket",
+      "name": "采集外套",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "cloth": 4,
+        "leather": 1,
+        "thread": 1
+      },
+      "outputs": {
+        "forage_jacket": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_forage_jacket",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_scavenge_vest",
+      "name": "搜集背心",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "cloth": 3,
+        "leather": 1,
+        "fastener": 1
+      },
+      "outputs": {
+        "scavenge_vest": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_scavenge_vest",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_craft_coat",
+      "name": "工匠围衣",
+      "kind": "craft",
+      "baseMinutes": 90,
+      "inputs": {
+        "leather": 3,
+        "cloth": 2,
+        "thread": 2
+      },
+      "outputs": {
+        "craft_coat": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_craft_coat",
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_rest_coat",
+      "name": "休养外衣",
+      "kind": "craft",
+      "baseMinutes": 75,
+      "inputs": {
+        "cloth": 4,
+        "thread": 2
+      },
+      "outputs": {
+        "rest_coat": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_rest_coat",
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_expedition_coat",
+      "name": "远征上衣",
+      "kind": "craft",
+      "baseMinutes": 120,
+      "inputs": {
+        "ballistic_fiber": 1,
+        "cloth": 4,
+        "thread": 2
+      },
+      "outputs": {
+        "expedition_coat": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_expedition_coat",
+      "minSkills": {
+        "crafting": 10
+      }
+    },
+    {
+      "id": "make_work_trousers",
+      "name": "工作长裤",
+      "kind": "craft",
+      "baseMinutes": 45,
+      "inputs": {
+        "cloth": 3,
+        "thread": 1
+      },
+      "outputs": {
+        "work_trousers": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_work_trousers",
+      "minSkills": {
+        "crafting": 1
+      }
+    },
+    {
+      "id": "make_trail_trousers",
+      "name": "行路裤",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "cloth": 3,
+        "leather": 1,
+        "thread": 1
+      },
+      "outputs": {
+        "trail_trousers": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_trail_trousers",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_utility_trousers",
+      "name": "作业长裤",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "cloth": 4,
+        "fastener": 1
+      },
+      "outputs": {
+        "utility_trousers": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_utility_trousers",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_reinforced_trousers",
+      "name": "加固长裤",
+      "kind": "craft",
+      "baseMinutes": 90,
+      "inputs": {
+        "leather": 2,
+        "cloth": 3,
+        "thread": 2
+      },
+      "outputs": {
+        "reinforced_trousers": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_reinforced_trousers",
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_recovery_trousers",
+      "name": "休养长裤",
+      "kind": "craft",
+      "baseMinutes": 75,
+      "inputs": {
+        "cloth": 4,
+        "thread": 2
+      },
+      "outputs": {
+        "recovery_trousers": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_recovery_trousers",
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_expedition_trousers",
+      "name": "远征下衣",
+      "kind": "craft",
+      "baseMinutes": 120,
+      "inputs": {
+        "ballistic_fiber": 1,
+        "leather": 1,
+        "cloth": 3
+      },
+      "outputs": {
+        "expedition_trousers": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_expedition_trousers",
+      "minSkills": {
+        "crafting": 10
+      }
+    },
+    {
+      "id": "make_gather_gloves",
+      "name": "采集手套",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "cloth": 2,
+        "fiber": 1
+      },
+      "outputs": {
+        "gather_gloves": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "hand",
+      "group": "equipment",
+      "knowledge": "blueprint_gather_gloves",
+      "minSkills": {
+        "crafting": 1
+      }
+    },
+    {
+      "id": "make_route_compass",
+      "name": "路线罗盘",
+      "kind": "craft",
+      "baseMinutes": 45,
+      "inputs": {
+        "precision_parts": 1,
+        "wire": 1
+      },
+      "outputs": {
+        "route_compass": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_route_compass",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_filter_token",
+      "name": "净水操作套件",
+      "kind": "craft",
+      "baseMinutes": 45,
+      "inputs": {
+        "cloth": 2,
+        "plastic": 1
+      },
+      "outputs": {
+        "filter_token": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_filter_token",
+      "minSkills": {
+        "crafting": 3
+      }
+    },
+    {
+      "id": "make_repair_manual",
+      "name": "维护手册",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "cloth": 1,
+        "parts": 1
+      },
+      "outputs": {
+        "repair_manual": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "workbench",
+      "group": "equipment",
+      "knowledge": "blueprint_repair_manual",
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_medical_notes",
+      "name": "护理笔记",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "cloth": 1,
+        "medical_gauze": 1
+      },
+      "outputs": {
+        "medical_notes": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "medical",
+      "group": "equipment",
+      "knowledge": "blueprint_medical_notes",
+      "minSkills": {
+        "crafting": 7
+      }
+    },
+    {
+      "id": "make_ration_pouch",
+      "name": "配给袋",
+      "kind": "craft",
+      "baseMinutes": 90,
+      "inputs": {
+        "leather": 2,
+        "thread": 2
+      },
+      "outputs": {
+        "ration_pouch": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "station": "sewing",
+      "group": "equipment",
+      "knowledge": "blueprint_ration_pouch",
+      "minSkills": {
+        "crafting": 10
+      }
+    },
+    {
+      "id": "make_plank",
+      "name": "木板",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "wood": 3
+      },
+      "outputs": {
+        "plank": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "hand",
+      "group": "material"
+    },
+    {
+      "id": "make_rope",
+      "name": "绳索",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "fiber": 3
+      },
+      "outputs": {
+        "rope": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "hand",
+      "group": "material"
+    },
+    {
+      "id": "make_thread",
+      "name": "缝线",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "fiber": 2
+      },
+      "outputs": {
+        "thread": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "hand",
+      "group": "material"
+    },
+    {
+      "id": "make_iron_plate",
+      "name": "铁片",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "scrap": 3
+      },
+      "outputs": {
+        "iron_plate": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "workbench",
+      "group": "material"
+    },
+    {
+      "id": "make_fastener",
+      "name": "紧固件",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "scrap": 1
+      },
+      "outputs": {
+        "fastener": 4
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "workbench",
+      "group": "material"
+    },
+    {
+      "id": "make_steel",
+      "name": "钢材",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "iron_ore": 3,
+        "charcoal": 1
+      },
+      "outputs": {
+        "steel": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "forge",
+      "group": "material",
+      "fuel": {
+        "charcoal": 1
+      }
+    },
+    {
+      "id": "make_leather",
+      "name": "皮革",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "hide": 1,
+        "salt": 1
+      },
+      "outputs": {
+        "leather": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "sewing",
+      "group": "material"
+    },
+    {
+      "id": "make_canvas",
+      "name": "帆布",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "cloth": 3,
+        "thread": 1
+      },
+      "outputs": {
+        "canvas": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "sewing",
+      "group": "material"
+    },
+    {
+      "id": "make_metal_tube",
+      "name": "金属管",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "iron_plate": 2
+      },
+      "outputs": {
+        "metal_tube": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "workbench",
+      "group": "material"
+    },
+    {
+      "id": "make_spring",
+      "name": "弹簧",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "steel": 1
+      },
+      "outputs": {
+        "spring": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 5
+      },
+      "station": "forge",
+      "group": "material",
+      "fuel": {
+        "charcoal": 1
+      }
+    },
+    {
+      "id": "make_precision_parts",
+      "name": "精密零件",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "parts": 2,
+        "steel": 1
+      },
+      "outputs": {
+        "precision_parts": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 5
+      },
+      "station": "workbench",
+      "group": "material"
+    },
+    {
+      "id": "make_weapon_parts",
+      "name": "武器组件",
+      "kind": "craft",
+      "baseMinutes": 90,
+      "inputs": {
+        "precision_parts": 2,
+        "steel": 2,
+        "spring": 2
+      },
+      "outputs": {
+        "weapon_parts": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 7
+      },
+      "station": "armory",
+      "group": "material"
+    },
+    {
+      "id": "make_repair_kit",
+      "name": "维修包",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "parts": 2,
+        "adhesive": 1,
+        "cloth": 1
+      },
+      "outputs": {
+        "repair_kit": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "workbench",
+      "group": "material"
+    },
+    {
+      "id": "make_gun_service_kit",
+      "name": "枪械养护包",
+      "kind": "craft",
+      "baseMinutes": 40,
+      "inputs": {
+        "oil": 1,
+        "cloth": 2,
+        "precision_parts": 1
+      },
+      "outputs": {
+        "gun_service_kit": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 5
+      },
+      "station": "armory",
+      "group": "material"
+    },
+    {
+      "id": "make_disinfectant",
+      "name": "消毒液",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "lab_reagent": 1,
+        "clean_water": 1
+      },
+      "outputs": {
+        "disinfectant": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "medicine": 5
+      },
+      "station": "medical",
+      "group": "material"
+    },
+    {
+      "id": "make_saline",
+      "name": "盐水剂",
+      "kind": "craft",
+      "baseMinutes": 15,
+      "inputs": {
+        "clean_water": 1,
+        "salt": 1
+      },
+      "outputs": {
+        "saline": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "medicine": 1
+      },
+      "station": "medical",
+      "group": "material"
+    },
+    {
+      "id": "make_soap",
+      "name": "肥皂",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "cooking_oil": 1,
+        "herb": 1
+      },
+      "outputs": {
+        "soap": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "workbench",
+      "group": "material"
+    },
+    {
+      "id": "make_filter_media",
+      "name": "滤材",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "charcoal": 1,
+        "cloth": 1
+      },
+      "outputs": {
+        "filter_media": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "hand",
+      "group": "material"
+    },
+    {
+      "id": "make_herb_extract",
+      "name": "草药浸膏",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "herb": 2,
+        "clean_water": 1
+      },
+      "outputs": {
+        "herb_extract": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "medicine": 3
+      },
+      "station": "medical",
+      "group": "material"
+    },
+    {
+      "id": "make_rubber",
+      "name": "橡胶",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "parts": 2
+      },
+      "outputs": {
+        "rubber": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "workbench",
+      "group": "material"
+    },
+    {
+      "id": "make_plastic",
+      "name": "塑料",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "parts": 1
+      },
+      "outputs": {
+        "plastic": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "workbench",
+      "group": "material"
+    },
+    {
+      "id": "make_wire",
+      "name": "导线",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "electronics": 1
+      },
+      "outputs": {
+        "wire": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "workbench",
+      "group": "material"
+    },
+    {
+      "id": "make_battery",
+      "name": "电池",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "electronics": 1,
+        "parts": 1
+      },
+      "outputs": {
+        "battery": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "workbench",
+      "group": "material"
+    },
+    {
+      "id": "make_grain",
+      "name": "谷物",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "canned_food": 2
+      },
+      "outputs": {
+        "grain": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "workbench",
+      "group": "material"
+    },
+    {
+      "id": "make_salt",
+      "name": "盐",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "canned_food": 1
+      },
+      "outputs": {
+        "salt": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "workbench",
+      "group": "material"
+    },
+    {
+      "id": "make_cooking_oil",
+      "name": "食用油",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "canned_food": 1
+      },
+      "outputs": {
+        "cooking_oil": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "workbench",
+      "group": "material"
     }
   ],
   "lootTables": {
@@ -11822,6 +13810,471 @@
         "hub_registered"
       ],
       "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_armory_station",
+      "name": "军械台的建法",
+      "grantedByFacts": [],
+      "source": "d03 主线军械蓝图（A07；地图与任务在后续版本开放，现在只能用开发入口学会）"
+    },
+    {
+      "id": "blueprint_stone_knife",
+      "name": "石刀的做法",
+      "grantedByFacts": [],
+      "initial": true,
+      "source": "开局已会（原有配方）"
+    },
+    {
+      "id": "blueprint_machete",
+      "name": "砍刀的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_guard_sword",
+      "name": "守备短剑蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d03_08（势力守备路线技术委托；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_hatchet",
+      "name": "简易斧的做法",
+      "grantedByFacts": [],
+      "initial": true,
+      "source": "开局已会（原有配方）"
+    },
+    {
+      "id": "blueprint_breach_axe",
+      "name": "破障斧蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d01_08（工业路线图纸；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_rescue_axe",
+      "name": "救援短斧蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d01_08（工业副本首通图纸；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_wooden_spear",
+      "name": "木矛的做法",
+      "grantedByFacts": [],
+      "initial": true,
+      "source": "开局已会（原有配方）"
+    },
+    {
+      "id": "blueprint_metal_spear",
+      "name": "金属矛的做法",
+      "grantedByFacts": [],
+      "initial": true,
+      "source": "开局已会（原有配方）"
+    },
+    {
+      "id": "blueprint_pike",
+      "name": "加固长枪蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d03_08（守备路线图纸；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_barbed_spear",
+      "name": "倒刺短矛蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：w03_quarry（林地副本图纸；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_wooden_club",
+      "name": "木棍的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_steel_mace",
+      "name": "钢制钉锤蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d01_08（工业路线图纸；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_shock_baton",
+      "name": "绝缘警棍蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d03_08（守备副本图纸；无电击耗材机制；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_wooden_bow",
+      "name": "木弓的做法",
+      "grantedByFacts": [],
+      "initial": true,
+      "source": "开局已会（原有配方）"
+    },
+    {
+      "id": "blueprint_recurve_bow",
+      "name": "复合木弓的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_hunter_bow",
+      "name": "猎手弓蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：w03_quarry（林地支线图纸；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_crossbow",
+      "name": "弩的做法",
+      "grantedByFacts": [],
+      "initial": true,
+      "source": "开局已会（原有配方）"
+    },
+    {
+      "id": "blueprint_repeater_crossbow",
+      "name": "轻型战术弩蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d03_08（拾荒路线终点图纸；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_wooden_shield",
+      "name": "木盾的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_scrap_shield",
+      "name": "包铁盾的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_rescue_shield",
+      "name": "救援盾蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d03_08（守备副本图纸；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_signal_whistle",
+      "name": "信号哨的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_signal_flag",
+      "name": "战术旗的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_field_radio",
+      "name": "战术电台蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d03_08（拾荒路线通信点图纸；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_command_terminal",
+      "name": "便携指挥终端蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d04_07（终章通信副本图纸；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_field_medkit",
+      "name": "随行医疗包的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_trauma_bag",
+      "name": "创伤救护包的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_rescue_medkit",
+      "name": "救援医疗箱蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d02_08（医疗副本图纸；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_triage_kit",
+      "name": "分诊器材组蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d02_08（医疗路线终点图纸；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_padded_vest",
+      "name": "衬垫护具的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_leather_armor",
+      "name": "皮革护具的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_scrap_armor",
+      "name": "拼接铁甲的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_scout_armor",
+      "name": "侦察护具蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：w03_quarry（营区；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_heavy_armor",
+      "name": "重型防护甲蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d01_08（营区；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_medic_armor",
+      "name": "救护防护背心蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d02_08（营区；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_balanced_armor",
+      "name": "均衡战术甲蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d04_07（营区；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_steady_ring",
+      "name": "稳手指环的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_swift_pendant",
+      "name": "轻捷吊坠的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_guard_badge",
+      "name": "守护徽记的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_hunter_token",
+      "name": "猎手护符的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_focus_lens",
+      "name": "聚焦镜片蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d03_08（拾荒路线；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_aid_badge",
+      "name": "救护徽章蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d02_08（医疗副本；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_resolve_medal",
+      "name": "镇定勋章蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d03_08（守备支线；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_tactics_watch",
+      "name": "战术计时表蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d04_07（通信副本；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_work_shirt",
+      "name": "耐磨工作衣的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_forage_jacket",
+      "name": "采集外套的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_scavenge_vest",
+      "name": "搜集背心的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_craft_coat",
+      "name": "工匠围衣蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d01_08（工业；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_rest_coat",
+      "name": "休养外衣蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d02_08（医疗；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_expedition_coat",
+      "name": "远征上衣蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d04_07（主线终点；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_work_trousers",
+      "name": "工作长裤的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_trail_trousers",
+      "name": "行路裤的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_utility_trousers",
+      "name": "作业长裤的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_reinforced_trousers",
+      "name": "加固长裤蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d01_08（工业；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_recovery_trousers",
+      "name": "休养长裤蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d02_08（医疗；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_expedition_trousers",
+      "name": "远征下衣蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d04_07（主线终点；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_gather_gloves",
+      "name": "采集手套的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_route_compass",
+      "name": "路线罗盘的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_filter_token",
+      "name": "净水操作套件的做法",
+      "grantedByFacts": [
+        "hub_registered"
+      ],
+      "source": "营区登记默认知识（h02 广场）"
+    },
+    {
+      "id": "blueprint_repair_manual",
+      "name": "维护手册蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d01_08（工业委托；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_medical_notes",
+      "name": "护理笔记蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d02_08（医疗支线；地图固定箱与任务在后续版本开放）"
+    },
+    {
+      "id": "blueprint_ration_pouch",
+      "name": "配给袋蓝图",
+      "grantedByFacts": [],
+      "blueprint": true,
+      "source": "蓝图：d04_07（主线终点；地图固定箱与任务在后续版本开放）"
     }
   ],
   "party": {
@@ -11947,5 +14400,561 @@
     "shelterStandIn": "camp",
     "hubV3": "h02_square",
     "shelterV3": "h06_shelter"
+  },
+  "workshops": {
+    "source": "A07「工坊设施」「材料加工链」；A05 §3；S08 X4；S09 X2.7；开发计划 v0.9 B10（tools/import-b10-workshops.py）",
+    "buildLocations": [
+      "camp"
+    ],
+    "stations": [
+      {
+        "id": "hand",
+        "name": "手工",
+        "note": "无工坊，随身即可"
+      },
+      {
+        "id": "workbench",
+        "name": "工作台",
+        "buildRecipe": "build_workbench",
+        "note": ""
+      },
+      {
+        "id": "forge",
+        "name": "锻炉",
+        "buildRecipe": "build_forge",
+        "note": "锻造每批另付木炭1作燃料"
+      },
+      {
+        "id": "sewing",
+        "name": "缝纫台",
+        "buildRecipe": "build_sewing",
+        "note": ""
+      },
+      {
+        "id": "medical",
+        "name": "医疗台",
+        "buildRecipe": "build_medical",
+        "note": ""
+      },
+      {
+        "id": "armory",
+        "name": "军械台",
+        "buildRecipe": "build_armory",
+        "note": ""
+      }
+    ],
+    "equipmentSources": [
+      {
+        "itemId": "stone_knife",
+        "craftable": true,
+        "recipeId": "knife",
+        "knowledge": "blueprint_stone_knife",
+        "text": "手工／制造1／30分钟；开局已会（原有配方）"
+      },
+      {
+        "itemId": "kitchen_knife",
+        "craftable": false,
+        "recipeId": null,
+        "knowledge": null,
+        "text": "不可自制：新手hardware武器柜（hardware；hardware_weapon_cache：kitchen_knife1（原箱））"
+      },
+      {
+        "itemId": "machete",
+        "craftable": true,
+        "recipeId": "make_machete",
+        "knowledge": "blueprint_machete",
+        "text": "工作台／制造3／75分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "guard_sword",
+        "craftable": true,
+        "recipeId": "make_guard_sword",
+        "knowledge": "blueprint_guard_sword",
+        "text": "锻炉／制造7／120分钟；蓝图：d03_08（势力守备路线技术委托；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "hatchet",
+        "craftable": true,
+        "recipeId": "axe",
+        "knowledge": "blueprint_hatchet",
+        "text": "手工／制造1／60分钟；开局已会（原有配方）"
+      },
+      {
+        "itemId": "fire_axe",
+        "craftable": false,
+        "recipeId": null,
+        "knowledge": null,
+        "text": "不可自制：主线消防车／消防站保底（m01_road；firetruck_cache：fire_axe1）"
+      },
+      {
+        "itemId": "breach_axe",
+        "craftable": true,
+        "recipeId": "make_breach_axe",
+        "knowledge": "blueprint_breach_axe",
+        "text": "锻炉／制造7／150分钟；蓝图：d01_08（工业路线图纸；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "rescue_axe",
+        "craftable": true,
+        "recipeId": "make_rescue_axe",
+        "knowledge": "blueprint_rescue_axe",
+        "text": "锻炉／制造10／150分钟；蓝图：d01_08（工业副本首通图纸；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "wooden_spear",
+        "craftable": true,
+        "recipeId": "make_wooden_spear",
+        "knowledge": "blueprint_wooden_spear",
+        "text": "手工／制造1／45分钟；开局已会（原有配方）"
+      },
+      {
+        "itemId": "metal_spear",
+        "craftable": true,
+        "recipeId": "make_metal_spear",
+        "knowledge": "blueprint_metal_spear",
+        "text": "手工／制造1／90分钟；开局已会（原有配方）"
+      },
+      {
+        "itemId": "pike",
+        "craftable": true,
+        "recipeId": "make_pike",
+        "knowledge": "blueprint_pike",
+        "text": "锻炉／制造7／120分钟；蓝图：d03_08（守备路线图纸；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "barbed_spear",
+        "craftable": true,
+        "recipeId": "make_barbed_spear",
+        "knowledge": "blueprint_barbed_spear",
+        "text": "锻炉／制造10／135分钟；蓝图：w03_quarry（林地副本图纸；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "wooden_club",
+        "craftable": true,
+        "recipeId": "make_wooden_club",
+        "knowledge": "blueprint_wooden_club",
+        "text": "手工／制造1／30分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "crowbar",
+        "craftable": false,
+        "recipeId": null,
+        "knowledge": null,
+        "text": "不可自制：新手hardware保底／营区工具委托（hardware；hardware_weapon_cache：crowbar1（同箱，不另发））"
+      },
+      {
+        "itemId": "steel_mace",
+        "craftable": true,
+        "recipeId": "make_steel_mace",
+        "knowledge": "blueprint_steel_mace",
+        "text": "锻炉／制造7／105分钟；蓝图：d01_08（工业路线图纸；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "shock_baton",
+        "craftable": true,
+        "recipeId": "make_shock_baton",
+        "knowledge": "blueprint_shock_baton",
+        "text": "工作台／制造10／120分钟；蓝图：d03_08（守备副本图纸；无电击耗材机制；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "wooden_bow",
+        "craftable": true,
+        "recipeId": "make_wooden_bow",
+        "knowledge": "blueprint_wooden_bow",
+        "text": "手工／制造1／90分钟；开局已会（原有配方）"
+      },
+      {
+        "itemId": "recurve_bow",
+        "craftable": true,
+        "recipeId": "make_recurve_bow",
+        "knowledge": "blueprint_recurve_bow",
+        "text": "工作台／制造3／90分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "hunter_bow",
+        "craftable": true,
+        "recipeId": "make_hunter_bow",
+        "knowledge": "blueprint_hunter_bow",
+        "text": "工作台／制造7／120分钟；蓝图：w03_quarry（林地支线图纸；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "crossbow",
+        "craftable": true,
+        "recipeId": "make_crossbow",
+        "knowledge": "blueprint_crossbow",
+        "text": "手工／制造1／120分钟；开局已会（原有配方）"
+      },
+      {
+        "itemId": "repeater_crossbow",
+        "craftable": true,
+        "recipeId": "make_repeater_crossbow",
+        "knowledge": "blueprint_repeater_crossbow",
+        "text": "军械台／制造10／180分钟；蓝图：d03_08（拾荒路线终点图纸；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "pistol",
+        "craftable": false,
+        "recipeId": null,
+        "knowledge": null,
+        "text": "不可自制：新手village旧储物柜；保留既有手枪（village；village_weapon_locker：pistol1+9mm12（原箱））"
+      },
+      {
+        "itemId": "service_pistol",
+        "craftable": false,
+        "recipeId": null,
+        "knowledge": null,
+        "text": "不可自制：守备技术委托固定奖励；不可制造（d03_05；officer_cache：service_pistol1）"
+      },
+      {
+        "itemId": "shotgun",
+        "craftable": false,
+        "recipeId": null,
+        "knowledge": null,
+        "text": "不可自制：守备路线军械箱保底；新手不开放（d03_08；shotgun_cache：shotgun1（独立箱））"
+      },
+      {
+        "itemId": "rifle",
+        "craftable": false,
+        "recipeId": null,
+        "knowledge": null,
+        "text": "不可自制：拾荒路线警备仓保底；新手不开放（d03_08；rifle_cache：rifle1）"
+      },
+      {
+        "itemId": "marksman_rifle",
+        "craftable": false,
+        "recipeId": null,
+        "knowledge": null,
+        "text": "不可自制：末章军械委托以步枪1+precision_parts2+gun_service_kit1交换；不可自行制造（h03_workshop；一次性交换：rifle1+precision_parts2+gun_service_kit1→marksman_rifle1；确认后原子扣料）"
+      },
+      {
+        "itemId": "wooden_shield",
+        "craftable": true,
+        "recipeId": "make_wooden_shield",
+        "knowledge": "blueprint_wooden_shield",
+        "text": "手工／制造1／60分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "scrap_shield",
+        "craftable": true,
+        "recipeId": "make_scrap_shield",
+        "knowledge": "blueprint_scrap_shield",
+        "text": "工作台／制造3／90分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "riot_shield",
+        "craftable": false,
+        "recipeId": null,
+        "knowledge": null,
+        "text": "不可自制：守备路线保底装备箱（d03_03；shield_cache：riot_shield1）"
+      },
+      {
+        "itemId": "rescue_shield",
+        "craftable": true,
+        "recipeId": "make_rescue_shield",
+        "knowledge": "blueprint_rescue_shield",
+        "text": "工作台／制造10／150分钟；蓝图：d03_08（守备副本图纸；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "signal_whistle",
+        "craftable": true,
+        "recipeId": "make_signal_whistle",
+        "knowledge": "blueprint_signal_whistle",
+        "text": "手工／制造1／20分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "signal_flag",
+        "craftable": true,
+        "recipeId": "make_signal_flag",
+        "knowledge": "blueprint_signal_flag",
+        "text": "缝纫台／制造3／60分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "field_radio",
+        "craftable": true,
+        "recipeId": "make_field_radio",
+        "knowledge": "blueprint_field_radio",
+        "text": "工作台／制造7／120分钟；蓝图：d03_08（拾荒路线通信点图纸；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "command_terminal",
+        "craftable": true,
+        "recipeId": "make_command_terminal",
+        "knowledge": "blueprint_command_terminal",
+        "text": "工作台／制造10／180分钟；蓝图：d04_07（终章通信副本图纸；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "field_medkit",
+        "craftable": true,
+        "recipeId": "make_field_medkit",
+        "knowledge": "blueprint_field_medkit",
+        "text": "手工／制造1／45分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "trauma_bag",
+        "craftable": true,
+        "recipeId": "make_trauma_bag",
+        "knowledge": "blueprint_trauma_bag",
+        "text": "缝纫台／制造3／75分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "rescue_medkit",
+        "craftable": true,
+        "recipeId": "make_rescue_medkit",
+        "knowledge": "blueprint_rescue_medkit",
+        "text": "医疗台／制造7／120分钟；蓝图：d02_08（医疗副本图纸；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "triage_kit",
+        "craftable": true,
+        "recipeId": "make_triage_kit",
+        "knowledge": "blueprint_triage_kit",
+        "text": "医疗台／制造10／150分钟；蓝图：d02_08（医疗路线终点图纸；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "padded_vest",
+        "craftable": true,
+        "recipeId": "make_padded_vest",
+        "knowledge": "blueprint_padded_vest",
+        "text": "手工／制造1／60分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "leather_armor",
+        "craftable": true,
+        "recipeId": "make_leather_armor",
+        "knowledge": "blueprint_leather_armor",
+        "text": "缝纫台／制造3／90分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "scrap_armor",
+        "craftable": true,
+        "recipeId": "make_scrap_armor",
+        "knowledge": "blueprint_scrap_armor",
+        "text": "工作台／制造3／120分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "guard_armor",
+        "craftable": false,
+        "recipeId": null,
+        "knowledge": null,
+        "text": "不可自制：守备路线固定委托奖励（d03_08；armor_cache：guard_armor1）"
+      },
+      {
+        "itemId": "scout_armor",
+        "craftable": true,
+        "recipeId": "make_scout_armor",
+        "knowledge": "blueprint_scout_armor",
+        "text": "缝纫台／制造7／120分钟；蓝图：w03_quarry（营区；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "heavy_armor",
+        "craftable": true,
+        "recipeId": "make_heavy_armor",
+        "knowledge": "blueprint_heavy_armor",
+        "text": "工作台／制造10／180分钟；蓝图：d01_08（营区；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "medic_armor",
+        "craftable": true,
+        "recipeId": "make_medic_armor",
+        "knowledge": "blueprint_medic_armor",
+        "text": "缝纫台／制造7／105分钟；蓝图：d02_08（营区；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "balanced_armor",
+        "craftable": true,
+        "recipeId": "make_balanced_armor",
+        "knowledge": "blueprint_balanced_armor",
+        "text": "缝纫台／制造10／150分钟；蓝图：d04_07（营区；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "steady_ring",
+        "craftable": true,
+        "recipeId": "make_steady_ring",
+        "knowledge": "blueprint_steady_ring",
+        "text": "手工／制造1／25分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "swift_pendant",
+        "craftable": true,
+        "recipeId": "make_swift_pendant",
+        "knowledge": "blueprint_swift_pendant",
+        "text": "工作台／制造3／35分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "guard_badge",
+        "craftable": true,
+        "recipeId": "make_guard_badge",
+        "knowledge": "blueprint_guard_badge",
+        "text": "工作台／制造3／35分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "hunter_token",
+        "craftable": true,
+        "recipeId": "make_hunter_token",
+        "knowledge": "blueprint_hunter_token",
+        "text": "手工／制造3／35分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "focus_lens",
+        "craftable": true,
+        "recipeId": "make_focus_lens",
+        "knowledge": "blueprint_focus_lens",
+        "text": "工作台／制造7／60分钟；蓝图：d03_08（拾荒路线；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "aid_badge",
+        "craftable": true,
+        "recipeId": "make_aid_badge",
+        "knowledge": "blueprint_aid_badge",
+        "text": "医疗台／制造7／45分钟；蓝图：d02_08（医疗副本；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "resolve_medal",
+        "craftable": true,
+        "recipeId": "make_resolve_medal",
+        "knowledge": "blueprint_resolve_medal",
+        "text": "工作台／制造7／50分钟；蓝图：d03_08（守备支线；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "tactics_watch",
+        "craftable": true,
+        "recipeId": "make_tactics_watch",
+        "knowledge": "blueprint_tactics_watch",
+        "text": "工作台／制造10／90分钟；蓝图：d04_07（通信副本；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "work_shirt",
+        "craftable": true,
+        "recipeId": "make_work_shirt",
+        "knowledge": "blueprint_work_shirt",
+        "text": "手工／制造1／45分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "forage_jacket",
+        "craftable": true,
+        "recipeId": "make_forage_jacket",
+        "knowledge": "blueprint_forage_jacket",
+        "text": "缝纫台／制造3／60分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "scavenge_vest",
+        "craftable": true,
+        "recipeId": "make_scavenge_vest",
+        "knowledge": "blueprint_scavenge_vest",
+        "text": "缝纫台／制造3／60分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "craft_coat",
+        "craftable": true,
+        "recipeId": "make_craft_coat",
+        "knowledge": "blueprint_craft_coat",
+        "text": "缝纫台／制造7／90分钟；蓝图：d01_08（工业；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "rest_coat",
+        "craftable": true,
+        "recipeId": "make_rest_coat",
+        "knowledge": "blueprint_rest_coat",
+        "text": "缝纫台／制造7／75分钟；蓝图：d02_08（医疗；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "expedition_coat",
+        "craftable": true,
+        "recipeId": "make_expedition_coat",
+        "knowledge": "blueprint_expedition_coat",
+        "text": "缝纫台／制造10／120分钟；蓝图：d04_07（主线终点；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "work_trousers",
+        "craftable": true,
+        "recipeId": "make_work_trousers",
+        "knowledge": "blueprint_work_trousers",
+        "text": "手工／制造1／45分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "trail_trousers",
+        "craftable": true,
+        "recipeId": "make_trail_trousers",
+        "knowledge": "blueprint_trail_trousers",
+        "text": "缝纫台／制造3／60分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "utility_trousers",
+        "craftable": true,
+        "recipeId": "make_utility_trousers",
+        "knowledge": "blueprint_utility_trousers",
+        "text": "缝纫台／制造3／60分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "reinforced_trousers",
+        "craftable": true,
+        "recipeId": "make_reinforced_trousers",
+        "knowledge": "blueprint_reinforced_trousers",
+        "text": "缝纫台／制造7／90分钟；蓝图：d01_08（工业；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "recovery_trousers",
+        "craftable": true,
+        "recipeId": "make_recovery_trousers",
+        "knowledge": "blueprint_recovery_trousers",
+        "text": "缝纫台／制造7／75分钟；蓝图：d02_08（医疗；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "expedition_trousers",
+        "craftable": true,
+        "recipeId": "make_expedition_trousers",
+        "knowledge": "blueprint_expedition_trousers",
+        "text": "缝纫台／制造10／120分钟；蓝图：d04_07（主线终点；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "gather_gloves",
+        "craftable": true,
+        "recipeId": "make_gather_gloves",
+        "knowledge": "blueprint_gather_gloves",
+        "text": "手工／制造1／30分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "route_compass",
+        "craftable": true,
+        "recipeId": "make_route_compass",
+        "knowledge": "blueprint_route_compass",
+        "text": "工作台／制造3／45分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "filter_token",
+        "craftable": true,
+        "recipeId": "make_filter_token",
+        "knowledge": "blueprint_filter_token",
+        "text": "工作台／制造3／45分钟；营区登记默认知识（h02 广场）"
+      },
+      {
+        "itemId": "repair_manual",
+        "craftable": true,
+        "recipeId": "make_repair_manual",
+        "knowledge": "blueprint_repair_manual",
+        "text": "工作台／制造7／60分钟；蓝图：d01_08（工业委托；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "medical_notes",
+        "craftable": true,
+        "recipeId": "make_medical_notes",
+        "knowledge": "blueprint_medical_notes",
+        "text": "医疗台／制造7／60分钟；蓝图：d02_08（医疗支线；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "ration_pouch",
+        "craftable": true,
+        "recipeId": "make_ration_pouch",
+        "knowledge": "blueprint_ration_pouch",
+        "text": "缝纫台／制造10／90分钟；蓝图：d04_07（主线终点；地图固定箱与任务在后续版本开放）"
+      },
+      {
+        "itemId": "knuckle_wraps",
+        "craftable": true,
+        "recipeId": "make_knuckle_wraps",
+        "knowledge": "blueprint_knuckle_wraps",
+        "text": "手工／制造3／45分钟；营区登记默认知识（h02 广场）"
+      }
+    ]
   }
 }

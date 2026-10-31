@@ -406,7 +406,12 @@ namespace Survival.Core.Config
                 foreach (var k in rc.MinSkills.Keys) if (!skills.Contains(k)) e.Add($"配方 {rc.Id} 的技能门槛 {k} 不存在");
                 if (rc.Knowledge != null && c.Knowledge.All(k => k.Id != rc.Knowledge)) e.Add($"配方 {rc.Id} 需要的知识 {rc.Knowledge} 不存在");
                 if (rc.IsRepair && !rc.TargetInstanceRequired) e.Add($"维护配方 {rc.Id} 须指定目标实例");
+                if (rc.Station != "hand" && c.Workshops.Stations.All(x => x.Id != rc.Station)) e.Add($"配方 {rc.Id} 的工坊 {rc.Station} 不存在");
+                foreach (var k in rc.Fuel.Keys) if (!items.Contains(k)) e.Add($"配方 {rc.Id} 的燃料 {k} 不存在");
+                foreach (var k in rc.Inputs.Keys) if (!items.Contains(k)) e.Add($"配方 {rc.Id} 的原料 {k} 不存在");
             }
+            foreach (var st in c.Workshops.Stations)
+                if (st.BuildRecipe != null && c.Recipes.All(r => r.Id != st.BuildRecipe)) e.Add($"工坊 {st.Id} 的建造配方 {st.BuildRecipe} 不存在");
             foreach (var r in c.Resources)
             {
                 if (r.IndependentRare != null && !items.Contains(r.IndependentRare.ItemId)) e.Add($"资源点 {r.NodeId} 稀有附带物不存在");

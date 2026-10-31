@@ -73,7 +73,7 @@ namespace Survival.Core.Engine
             var grams = CarriedGramsOf(s, actorId);
             if (!fromCarried && !it.IsWornBy(actorId)) grams += ItemGrams(s, it);
             if (old != null && oldToGround) grams -= ItemGrams(s, old);
-            var cards = RootCardsAfter(s, old != null && !oldToGround ? old : null, 1, fromCarried ? it : null, fromCarried ? it.Count : 0);
+            var cards = RootCardsAfterOf(s, actorId, old != null && !oldToGround ? old : null, 1, fromCarried ? it : null, fromCarried ? it.Count : 0);
             return (grams, cards);
         }
 
@@ -121,7 +121,7 @@ namespace Survival.Core.Engine
             {
                 if (old.ReservedBy != null || IsLocked(s, old)) return $"{EquipSlots.Name(slot)}里的{ItemName(old.ItemId)}正被行动使用，不能换下";
                 // 交换：按交换后的最终卡数校验（不因中间瞬态误拒，也不因“先拾取会六张”误拒）
-                if (!oldToGround && !RootCardsAllow(s, cards))
+                if (!oldToGround && !RootCardsAllowOf(s, actorId, cards))
                 {
                     // 只在“旧件放当前地面”本身合法时才提这个选项（B3a 试玩修复 2：会超 30 公斤、行动中等情况不再误导）
                     var alt = EquipBlocked(s, actorId, instanceId, slot, oldToGround: true);
@@ -163,7 +163,7 @@ namespace Survival.Core.Engine
             var name = $"{ItemName(it.ItemId)}#{it.InstanceId}";
             var src = fromGround ? $"从{LocName(here)}地面" : "";
             var oldText = old == null ? "" : $"，换下的{ItemName(old.ItemId)}#{old.InstanceId}{(oldToGround ? $"放在{LocName(here)}地面" : "回到随身")}";
-            Emit(s, GameEventKind.Info, $"{src}装备{name}到{EquipSlots.Name(slot)}{oldText}。");
+            Emit(s, GameEventKind.Info, $"{ActorPrefix(s, actorId)}{src}装备{name}到{EquipSlots.Name(slot)}{oldText}。");
             UpdateFlags(s);
             return ActionResult.Success();
         }
@@ -188,12 +188,12 @@ namespace Survival.Core.Engine
                 if (IsBusy(s)) return "行动进行中，不能放到地面";
                 return null;
             }
-            var after = RootCardsAfter(s, it, 1, null, 0);
-            if (!RootCardsAllow(s, after))
+            var after = RootCardsAfterOf(s, actorId, it, 1, null, 0);
+            if (!RootCardsAllowOf(s, actorId, after))
             {
                 // 按实际能否放地写（B3a 试玩修复 3：行动中、敌踪待选时没有放地按钮）
                 var g = UnequipBlocked(s, actorId, slot, true);
-                return $"随身卡位已满（{RootCardCount(s)}/{MaxRootCards}张）：卸下会多出一张卡，" +
+                return $"随身卡位已满（{RootCardCountOf(s, actorId)}/{MaxRootCards}张）：卸下会多出一张卡，" +
                        (g == null ? "可以选择放当前地面" : $"请先腾出一张卡（现在不能放当前地面：{g}）");
             }
             return null;
@@ -211,7 +211,7 @@ namespace Survival.Core.Engine
             it.Owner = dest;
             it.PlacedOrder = null;
             Normalize(s, dest);
-            Emit(s, GameEventKind.Info, $"卸下{EquipSlots.Name(slot)}的{ItemName(it.ItemId)}#{it.InstanceId}，{(toGround ? $"放在{LocName(s.CurrentLocation)}地面" : "放回随身")}。");
+            Emit(s, GameEventKind.Info, $"{ActorPrefix(s, actorId)}卸下{EquipSlots.Name(slot)}的{ItemName(it.ItemId)}#{it.InstanceId}，{(toGround ? $"放在{LocName(s.CurrentLocation)}地面" : "放回随身")}。");
             UpdateFlags(s);
             return ActionResult.Success();
         }
