@@ -1,5 +1,5 @@
 {
-  "version": "q44_q61_20261031",
+  "version": "q44_q74_20261031",
   "status": "approved_planning_target_not_engine_verification",
   "sourceQuestions": [
     "Q44",
@@ -14,7 +14,12 @@
     "Q54",
     "Q55",
     "Q57",
-    "Q61"
+    "Q61",
+    "Q63",
+    "Q64",
+    "Q67",
+    "Q69",
+    "Q71"
   ],
   "quality": {
     "unspecifiedSource": "white_zero_affixes_no_rng",
@@ -1169,6 +1174,21 @@
         "expertBonusMaterial": "leather",
         "expertBonusMax": 1,
         "nonCraftableFixedTable": false
+      },
+      {
+        "itemId": "knuckle_wraps",
+        "name": "护拳绑带",
+        "tier": 1,
+        "material": "cloth",
+        "white": 1,
+        "green": 1,
+        "blue": 1,
+        "canonicalRecipeMaterialValue": 10,
+        "capNumerator": 4,
+        "capDenominator": 5,
+        "expertBonusMaterial": "cloth",
+        "expertBonusMax": 1,
+        "nonCraftableFixedTable": false
       }
     ],
     "xpProficiencyId": "crafting",
@@ -1767,5 +1787,6 @@
     "resourceClassificationContract": "assets/20261031/progression/progression-adjudications.json",
     "manufacturingLevelWorkMultiplier": 1,
     "workRoundingContract": "assets/20261031/progression/progression-adjudications.json#workCarry"
-  }
+  },
+  "combatRuleContract": "assets/20261031/combat/combat-adjudications.json"
 }

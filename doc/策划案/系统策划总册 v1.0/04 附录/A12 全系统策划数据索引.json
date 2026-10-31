@@ -1954,6 +1954,29 @@
           "milestone_time": "100%/10",
           "grant": "blueprint_ration_pouch"
         }
+      },
+      {
+        "id": "knuckle_wraps",
+        "name": "护拳绑带",
+        "slot": "combat_charm",
+        "tier": 1,
+        "weight_g": 200,
+        "effect": "仅当前空槽徒手页的普通拳击unarmed_01目标位由1扩为12；不增伤/命中，不开放第三拳页；应急拳/推挡仍仅1",
+        "inputs": {
+          "cloth": 2,
+          "leather": 1,
+          "fiber": 2
+        },
+        "station": "hand",
+        "craft_level": 3,
+        "minutes": 45,
+        "source": "h02登记默认知识",
+        "durability": "无",
+        "acquisition": {
+          "node": "h02_square",
+          "milestone_time": "登记/0",
+          "grant": "blueprint_knuckle_wraps（默认知识）"
+        }
       }
     ],
     "affixes": [
@@ -2156,8 +2179,8 @@
         "ap": 2,
         "energy": 0.3,
         "own": "12",
-        "target": "12",
-        "effect": "伤害×1.00",
+        "target": "1",
+        "effect": "伤害×1.00；当前空槽徒手页且穿戴护拳绑带时目标位扩为12",
         "cooldown_rounds": 0,
         "cost": "无"
       },
@@ -2208,8 +2231,8 @@
         "ap": 3,
         "energy": 0.7,
         "own": "12",
-        "target": "1",
-        "effect": "两次独立命中，每击伤害×0.85；本指令同目标经验最多计1次",
+        "target": "12",
+        "effect": "两次独立命中，每击伤害×0.85；技能允许敌位12，同目标经验最多计1次",
         "cooldown_rounds": 2,
         "cost": "无"
       },
@@ -13253,6 +13276,11 @@
       "grant": "blueprint_ration_pouch",
       "legacySourceNode": "d04_06",
       "claimMigration": "只迁来源位置，保留旧claim与领取工时；旧已领取不再发"
+    },
+    "knuckle_wraps": {
+      "node": "h02_square",
+      "milestone_time": "登记/0",
+      "grant": "blueprint_knuckle_wraps（默认知识）"
     }
   },
   "mainlineEnemyPools": {
@@ -30093,6 +30121,22 @@
       "Q59": "A_wait_B11_explicit_tools",
       "Q60": "B_current_passive_cooking_xp_with_lineage_and_daily_caps",
       "Q61": "A_work_credit_same_actor_and_family"
+    },
+    "combatQ62Q74": {
+      "date": "2026-10-31",
+      "Q62": "B_C1_until_actual_unlocks",
+      "Q63": "controller_low_base_resist_and_bounded_random_profiles_with_formula_benchmark",
+      "Q64": "base_punch_slot1_combo_skill_and_one_combat_charm_reach_exception",
+      "Q65": "A_plain_enemy_pursuit",
+      "Q66": "A_no_tick_without_effective_action",
+      "Q67": "controller_accuracy_plus8_fatigue_once_times0_95",
+      "Q68": "A_panic_minus10",
+      "Q69": "B_active_shield_page_at_defense_commit",
+      "Q70": "A_hit_then_control",
+      "Q71": "controller_decimal_speed_with_locked_u_desc_id_asc_ties",
+      "Q72": "A",
+      "Q73": "A_no_undefined_position_lock",
+      "Q74": "A_individual_skill_AP"
     }
   },
   "gateContract": {
@@ -49467,7 +49511,7 @@
     }
   },
   "equipmentAdjudications": {
-    "version": "q44_q61_20261031",
+    "version": "q44_q74_20261031",
     "status": "approved_planning_target_not_engine_verification",
     "sourceQuestions": [
       "Q44",
@@ -49482,7 +49526,12 @@
       "Q54",
       "Q55",
       "Q57",
-      "Q61"
+      "Q61",
+      "Q63",
+      "Q64",
+      "Q67",
+      "Q69",
+      "Q71"
     ],
     "quality": {
       "unspecifiedSource": "white_zero_affixes_no_rng",
@@ -50637,6 +50686,21 @@
           "expertBonusMaterial": "leather",
           "expertBonusMax": 1,
           "nonCraftableFixedTable": false
+        },
+        {
+          "itemId": "knuckle_wraps",
+          "name": "护拳绑带",
+          "tier": 1,
+          "material": "cloth",
+          "white": 1,
+          "green": 1,
+          "blue": 1,
+          "canonicalRecipeMaterialValue": 10,
+          "capNumerator": 4,
+          "capDenominator": 5,
+          "expertBonusMaterial": "cloth",
+          "expertBonusMax": 1,
+          "nonCraftableFixedTable": false
         }
       ],
       "xpProficiencyId": "crafting",
@@ -51235,7 +51299,8 @@
       "resourceClassificationContract": "assets/20261031/progression/progression-adjudications.json",
       "manufacturingLevelWorkMultiplier": 1,
       "workRoundingContract": "assets/20261031/progression/progression-adjudications.json#workCarry"
-    }
+    },
+    "combatRuleContract": "assets/20261031/combat/combat-adjudications.json"
   },
   "progressionAdjudications": {
     "version": "q53_q61_20261031",
@@ -53554,5 +53619,1273 @@
     "oldScavengingMaxXp": 22,
     "xpToLevel3": 250,
     "balanced180BaseMinutesPerDayToLevel10": 45
+  },
+  "combatAdjudications": {
+    "version": "q62_q74_20261031",
+    "status": "approved_planning_target_not_engine_verified",
+    "sourceQuestions": [
+      "Q62",
+      "Q63",
+      "Q64",
+      "Q65",
+      "Q66",
+      "Q67",
+      "Q68",
+      "Q69",
+      "Q70",
+      "Q71",
+      "Q72",
+      "Q73",
+      "Q74"
+    ],
+    "capacity": {
+      "newAndNoMilestoneDefault": 1,
+      "max": 4,
+      "unlockEvents": [
+        {
+          "capacity": 2,
+          "fact": "hub_registered"
+        },
+        {
+          "capacity": 3,
+          "fact": "first_of_church_route_record_or_academy_safety_record"
+        },
+        {
+          "capacity": 4,
+          "fact": "both_distinct_church_and_academy_records"
+        }
+      ],
+      "newBattleCapacityLocked": true,
+      "activeLegacyBattleCapacityPreserved": true,
+      "oldNoFactsDefault3Removed": true,
+      "actualPartyCountDoesNotReduceCapacity": true,
+      "fixedEncounterSelection": "persist_exact_ordered_prefix_first_C_not_rewrite_template",
+      "selectedGuardianFirst": true,
+      "unselectedWorldActorsNotKilledOrRewarded": true,
+      "reinforcementCumulativeAdmissionsAtMostC": true
+    },
+    "actorBaseDefense": {
+      "fixedProfiles": [
+        {
+          "actorId": "p0",
+          "name": "主角",
+          "controlResist": 5,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "protagonist"
+        },
+        {
+          "actorId": "npc_lin_zhao",
+          "name": "林昭",
+          "controlResist": 8,
+          "evasion": 35,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "fixed_companion"
+        },
+        {
+          "actorId": "npc_zhou_yan",
+          "name": "周砚",
+          "controlResist": 10,
+          "evasion": 33,
+          "baseArmor": 0,
+          "baseSpeed": 3,
+          "role": "fixed_companion"
+        },
+        {
+          "actorId": "npc_shen_he",
+          "name": "沈禾",
+          "controlResist": 4,
+          "evasion": 37,
+          "baseArmor": 0,
+          "baseSpeed": 5,
+          "role": "fixed_companion"
+        },
+        {
+          "actorId": "npc_tang_li",
+          "name": "唐梨",
+          "controlResist": 3,
+          "evasion": 39,
+          "baseArmor": 0,
+          "baseSpeed": 6,
+          "role": "fixed_companion"
+        },
+        {
+          "actorId": "npc_gu_cheng",
+          "name": "顾承",
+          "controlResist": 12,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "fixed_companion"
+        },
+        {
+          "actorId": "npc_ye_xun",
+          "name": "叶洵",
+          "controlResist": 8,
+          "evasion": 38,
+          "baseArmor": 0,
+          "baseSpeed": 5,
+          "role": "fixed_companion"
+        },
+        {
+          "actorId": "npc_lu_heng",
+          "name": "陆衡",
+          "controlResist": 8,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_xu_an",
+          "name": "许安",
+          "controlResist": 7,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_luo_zheng",
+          "name": "罗铮",
+          "controlResist": 10,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_chen_zhi",
+          "name": "陈芷",
+          "controlResist": 5,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_tao_cen",
+          "name": "陶岑",
+          "controlResist": 6,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_du_sui",
+          "name": "杜穗",
+          "controlResist": 7,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_qi_wen",
+          "name": "祁闻",
+          "controlResist": 6,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_bai_ling",
+          "name": "白苓",
+          "controlResist": 5,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_ji_mu",
+          "name": "纪牧",
+          "controlResist": 10,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_song_zhu",
+          "name": "宋烛",
+          "controlResist": 6,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_fu_heng",
+          "name": "傅珩",
+          "controlResist": 12,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_wen_cheng",
+          "name": "温澄",
+          "controlResist": 8,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_ji_wen",
+          "name": "季闻",
+          "controlResist": 5,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_shao_ning",
+          "name": "邵宁",
+          "controlResist": 6,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_he_yuan",
+          "name": "何远",
+          "controlResist": 9,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_yin_ke",
+          "name": "尹珂",
+          "controlResist": 10,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "service_only_not_combat_target",
+          "canRecruit": false
+        },
+        {
+          "actorId": "npc_cheng_wang",
+          "name": "程望",
+          "controlResist": 6,
+          "evasion": 36,
+          "baseArmor": 0,
+          "baseSpeed": 4,
+          "role": "persistent_visitor_not_combat_target",
+          "canRecruit": false
+        }
+      ],
+      "randomRecruit": {
+        "controlResist": {
+          "min": 0,
+          "max": 10,
+          "step": 0.5,
+          "distribution": "uniform_discrete"
+        },
+        "evasion": {
+          "min": 34,
+          "max": 38,
+          "step": 0.5,
+          "distribution": "uniform_discrete"
+        },
+        "baseArmor": 0,
+        "baseSpeed": {
+          "min": 3,
+          "max": 5,
+          "step": 0.1,
+          "distribution": "uniform_discrete"
+        },
+        "rolledOncePerCandidate": true,
+        "savedWithCycleAndActor": true,
+        "independentOfAppearanceSexAndName": true
+      },
+      "rb01Escort": {
+        "controlResist": 5,
+        "evasion": 36,
+        "baseArmor": 0,
+        "baseSpeed": 4
+      },
+      "baseResistIsNotImmunityOrVirusResistance": true,
+      "controlFormula": "clamp(0.75+controlAbility/100-(baseControlResist+eligibleGearResist+steady30)/100,0.10,0.95)",
+      "displacementGearOnlyStatuses": [
+        "pull",
+        "knockback"
+      ],
+      "displacementGearAggregateCap": 40,
+      "displacementGearAndSameNamedStateTakeStrongest": true,
+      "steadyBonus": 30,
+      "steadyDoesNotStack": true,
+      "baseArmorCapWithEquipment": 0.9,
+      "serviceProfilesDoNotEnableCombatOrRecruitment": true,
+      "displacementAggregation": "different_fixed_ids_add_after_same_id_strongest_then_cap40;max_with_strongest_active_displacement_state;never_add_same_named_state_twice"
+    },
+    "unarmed": {
+      "ordinaryDefaultTarget": [
+        1
+      ],
+      "emergencyTarget": [
+        1
+      ],
+      "pushTarget": [
+        1
+      ],
+      "level10ComboTarget": [
+        1,
+        2
+      ],
+      "basicPunchWithKnuckleWrapsTarget": [
+        1,
+        2
+      ],
+      "wrapsRequireVirtualUnarmedPage": true,
+      "thirdOrdinaryUnarmedPageAdded": false,
+      "brokenOrUnloadedWeaponsStillOccupied": true,
+      "gloveDecision": "one_worn_combat_charm_wraps_preserves_bare_hand_identity_no_new_weapon_kind",
+      "newGear": {
+        "id": "knuckle_wraps",
+        "name": "护拳绑带",
+        "slot": "combat_charm",
+        "tier": 1,
+        "weight_g": 200,
+        "effect": "仅当前空槽徒手页的普通拳击unarmed_01目标位由1扩为12；不增伤/命中，不开放第三拳页；应急拳/推挡仍仅1",
+        "inputs": {
+          "cloth": 2,
+          "leather": 1,
+          "fiber": 2
+        },
+        "station": "hand",
+        "craft_level": 3,
+        "minutes": 45,
+        "source": "h02登记默认知识",
+        "durability": "无",
+        "acquisition": {
+          "node": "h02_square",
+          "milestone_time": "登记/0",
+          "grant": "blueprint_knuckle_wraps（默认知识）"
+        }
+      }
+    },
+    "accuracy": {
+      "baseAssistance": 8,
+      "abilityFormula": "max(1,(weaponA+3*L+8+gearAccuracy+skillMarkInspireBonus)*actionFactor*fatigueFactor*panicFactor*staggerFactor)",
+      "hitProbability": "A/(A+max(1,targetEvasion))",
+      "fatigueFactor": "0.95_if_energy_after_payment_lt_4_OR_wakefulness_le_20_else_1",
+      "fatiguePenaltyStacks": false,
+      "oldLowEnergyFactor": 0.85,
+      "oldLowWakefulnessFactor": 0.85,
+      "newLowEnergyOrWakefulnessFactor": 0.95,
+      "panic60": 0.9,
+      "panic90": 0.8,
+      "stagger": 0.9,
+      "enemyAccuracyAssistance": 0,
+      "speedLowStatePenaltiesUnchanged": true,
+      "playerSideActorsOnly": true,
+      "noHiddenPityOrGuaranteedHit": true
+    },
+    "pursuit": {
+      "enemyAction": "one_legal_plain_attack_only",
+      "repeatSpecialIntent": false,
+      "biteExposureFromPlainPursuit": false,
+      "extraWorldTick": false
+    },
+    "bleedStartVictory": {
+      "ifNoEffectiveActionThisRoundTickMinutes": 0,
+      "existingPendingTickSettledAtMostOnce": true
+    },
+    "breathing": {
+      "energy": 1.2,
+      "panicReduction": 10,
+      "perActorPerRoundLimit": 1,
+      "pursuitDoesNotRefresh": true
+    },
+    "shieldGuard": {
+      "requiresCurrentActiveWeaponPageShield": true,
+      "requiresAtLeastOneWearDurability": true,
+      "factor": 0.4,
+      "otherwiseFactor": 0.5,
+      "wearAtDefenseCommand": 1,
+      "wearOnHitTrigger": 0,
+      "snapshotFactorAndInstanceAtCommand": true,
+      "switchingPageAfterDefenseDoesNotUpgradeOrDowngradeGuard": true,
+      "shieldSkillRequiresOwnPage": true,
+      "doesNotStackGuardMultipliers": true
+    },
+    "control": {
+      "staggerRequiresHitThenControl": true,
+      "successfulControlGrantsSteady": true,
+      "noEntireActivationCancellationFromStagger": true,
+      "armorNegationDoesNotGrantImplicitControlImmunity": true,
+      "positiveDamageRequirementOnlyWhenExplicit": true
+    },
+    "numericPrecision": {
+      "speedStep": 0.01,
+      "randomBaseSpeedStep": 0.1,
+      "speedFormula": "max(1,round_half_up_2dp(base+gear+status))",
+      "sort": "effective_speed_desc_then_locked_u_desc_then_world_actor_id_asc",
+      "speedSortUsesFixedHundredths": true,
+      "randomTieRollOncePerBattle": true,
+      "uSavedAndNotRerolled": true,
+      "pursuitProgressStoredPrecision": 0.0001,
+      "hitAndControlProbabilityInternalRounding": false,
+      "displaySpeedMinimumDecimals": 1,
+      "displaySpeedMaximumDecimals": 2,
+      "integerOnly": [
+        "AP",
+        "C",
+        "item_quantity",
+        "skill_level",
+        "xp",
+        "round_index"
+      ],
+      "existingDurabilityTenthRoundingPreserved": true,
+      "bodyStatsInternalNoNewRounding": true,
+      "existingActorBaseSpeedNotRerolled": true
+    },
+    "retreat": {
+      "ap": 2,
+      "formula": "sigmoid((actor_effective_speed-max_enemy_effective_speed)/3+0.7)*panicFactor*forcedLowEnergyFactor",
+      "panic60": 0.9,
+      "panic90": 0.8,
+      "forcedLowEnergyFactor": 0.75,
+      "perRoundTeamLimit": 1
+    },
+    "swap": {
+      "newFixedPositionLockImplemented": false,
+      "checks": [
+        "adjacent",
+        "both_alive",
+        "consent",
+        "legal_positions",
+        "AP",
+        "E",
+        "battle_input_permissions"
+      ]
+    },
+    "skillAp": {
+      "authority": "A06_per_skill_table",
+      "allControlsForcedTo2": false,
+      "unlistedSkillMustBeExplicitlyDefined": true
+    },
+    "benchmarkInput": {
+      "enemies": [
+        {
+          "id": "shambler",
+          "name": "游荡尸",
+          "hp": 3.6,
+          "armor": 0,
+          "evasion": 25,
+          "accuracy": 20,
+          "speed": 2,
+          "controlResist": 10,
+          "controlStatuses": [],
+          "intentText": "抓击80%／咬击20%"
+        },
+        {
+          "id": "crawler",
+          "name": "爬行尸",
+          "hp": 2.8,
+          "armor": 0,
+          "evasion": 28,
+          "accuracy": 18,
+          "speed": 1,
+          "controlResist": 10,
+          "controlStatuses": [
+            "slow"
+          ],
+          "intentText": "扯腿80%／咬击20%；扯腿下轮速度−2"
+        },
+        {
+          "id": "runner",
+          "name": "狂奔尸",
+          "hp": 3.2,
+          "armor": 0,
+          "evasion": 34,
+          "accuracy": 23,
+          "speed": 6,
+          "controlResist": 15,
+          "controlStatuses": [
+            "stagger"
+          ],
+          "intentText": "扑击80%／咬击20%；扑击失衡"
+        },
+        {
+          "id": "worker",
+          "name": "厚衣工尸",
+          "hp": 5.6,
+          "armor": 0.3,
+          "evasion": 22,
+          "accuracy": 18,
+          "speed": 2,
+          "controlResist": 20,
+          "controlStatuses": [],
+          "intentText": "抓击80%／咬击20%"
+        },
+        {
+          "id": "riot",
+          "name": "防护尸",
+          "hp": 7,
+          "armor": 0.7,
+          "evasion": 20,
+          "accuracy": 16,
+          "speed": 1,
+          "controlResist": 30,
+          "controlStatuses": [],
+          "intentText": "首轮防御，之后抓击80%／咬击20%"
+        },
+        {
+          "id": "howler",
+          "name": "嚎叫尸",
+          "hp": 4,
+          "armor": 0,
+          "evasion": 28,
+          "accuracy": 16,
+          "speed": 3,
+          "controlResist": 15,
+          "controlStatuses": [],
+          "intentText": "奇数轮全队恐慌+4；偶数轮近战/前移"
+        },
+        {
+          "id": "feral_dog",
+          "name": "野犬",
+          "hp": 3.2,
+          "armor": 0,
+          "evasion": 32,
+          "accuracy": 22,
+          "speed": 5,
+          "controlResist": 15,
+          "controlStatuses": [],
+          "intentText": "撕咬，正伤后25%流血"
+        },
+        {
+          "id": "wolf",
+          "name": "灰狼",
+          "hp": 4.8,
+          "armor": 0,
+          "evasion": 34,
+          "accuracy": 24,
+          "speed": 5,
+          "controlResist": 20,
+          "controlStatuses": [],
+          "intentText": "撕咬25%流血；H≤1.2下次逃离"
+        },
+        {
+          "id": "boar",
+          "name": "野猪",
+          "hp": 6.8,
+          "armor": 0.2,
+          "evasion": 25,
+          "accuracy": 20,
+          "speed": 3,
+          "controlResist": 30,
+          "controlStatuses": [],
+          "intentText": "奇数蓄力偶数冲撞×1.5；意图提前公开"
+        },
+        {
+          "id": "stag",
+          "name": "警戒雄鹿",
+          "hp": 5.2,
+          "armor": 0,
+          "evasion": 32,
+          "accuracy": 18,
+          "speed": 4,
+          "controlResist": 20,
+          "controlStatuses": [],
+          "intentText": "不随机攻击；H≤2下次逃离"
+        },
+        {
+          "id": "z_slow",
+          "name": "迟缓感染者",
+          "hp": 4.2,
+          "armor": 0,
+          "evasion": 22,
+          "accuracy": 21,
+          "speed": 2,
+          "controlResist": 10,
+          "controlStatuses": [],
+          "intentText": "抓击80%／咬击20%"
+        },
+        {
+          "id": "z_helmet",
+          "name": "护盔感染者",
+          "hp": 5.8,
+          "armor": 0.35,
+          "evasion": 22,
+          "accuracy": 22,
+          "speed": 3,
+          "controlResist": 25,
+          "controlStatuses": [
+            "stagger"
+          ],
+          "intentText": "抓击80%／咬击20%；首次失衡免疫"
+        },
+        {
+          "id": "z_spitter",
+          "name": "酸液感染者",
+          "hp": 4.2,
+          "armor": 0,
+          "evasion": 28,
+          "accuracy": 24,
+          "speed": 4,
+          "controlResist": 20,
+          "controlStatuses": [],
+          "intentText": "奇数喷吐伤害×0.8并破甲0.15两轮；偶数近战或前移；喷吐不感染"
+        },
+        {
+          "id": "z_hauler",
+          "name": "搬运感染者",
+          "hp": 6.2,
+          "armor": 0.2,
+          "evasion": 20,
+          "accuracy": 22,
+          "speed": 2,
+          "controlResist": 25,
+          "controlStatuses": [
+            "knockback"
+          ],
+          "intentText": "首轮蓄力，次轮推撞伤害×1.3并击退1；其他抓击/咬击"
+        },
+        {
+          "id": "z_darter",
+          "name": "迅捷感染者",
+          "hp": 3.8,
+          "armor": 0,
+          "evasion": 36,
+          "accuracy": 25,
+          "speed": 8,
+          "controlResist": 15,
+          "controlStatuses": [],
+          "intentText": "扑击80%／咬击20%；无免费连续攻击"
+        },
+        {
+          "id": "z_screamer",
+          "name": "尖啸感染者",
+          "hp": 4.8,
+          "armor": 0,
+          "evasion": 28,
+          "accuracy": 20,
+          "speed": 4,
+          "controlResist": 20,
+          "controlStatuses": [],
+          "intentText": "奇数尖啸全队恐慌+5；偶数对12近战或前移"
+        },
+        {
+          "id": "z_guard",
+          "name": "重装守卫感染者",
+          "hp": 9,
+          "armor": 0.65,
+          "evasion": 20,
+          "accuracy": 23,
+          "speed": 2,
+          "controlResist": 40,
+          "controlStatuses": [],
+          "intentText": "首轮保护相邻后排1次，次轮重击；第三轮起交替"
+        },
+        {
+          "id": "z_clinger",
+          "name": "攀附感染者",
+          "hp": 4.6,
+          "armor": 0.1,
+          "evasion": 32,
+          "accuracy": 24,
+          "speed": 6,
+          "controlResist": 25,
+          "controlStatuses": [
+            "pull"
+          ],
+          "intentText": "奇数拉扯使目标前移1；偶数抓击/咬击"
+        },
+        {
+          "id": "z_bloater",
+          "name": "膨胀感染者",
+          "hp": 7.2,
+          "armor": 0.1,
+          "evasion": 18,
+          "accuracy": 20,
+          "speed": 1,
+          "controlResist": 35,
+          "controlStatuses": [],
+          "intentText": "死亡时预告范围喷溅对我方12各H−0.3，护甲照算；非咬不感染"
+        },
+        {
+          "id": "z_nurse",
+          "name": "制服感染者",
+          "hp": 4.4,
+          "armor": 0,
+          "evasion": 27,
+          "accuracy": 23,
+          "speed": 4,
+          "controlResist": 15,
+          "controlStatuses": [],
+          "intentText": "抓击80%／咬击20%；无医疗/病毒魔法"
+        },
+        {
+          "id": "z_engineer",
+          "name": "机修感染者",
+          "hp": 6,
+          "armor": 0.35,
+          "evasion": 24,
+          "accuracy": 24,
+          "speed": 3,
+          "controlResist": 25,
+          "controlStatuses": [
+            "stagger"
+          ],
+          "intentText": "敲击80%／咬击20%；敲击命中后失衡"
+        },
+        {
+          "id": "z_signal",
+          "name": "鸣响感染者",
+          "hp": 5,
+          "armor": 0,
+          "evasion": 28,
+          "accuracy": 22,
+          "speed": 5,
+          "controlResist": 20,
+          "controlStatuses": [],
+          "intentText": "首轮鸣响请求现有增援1次；其后近战/前移，空池不造敌"
+        },
+        {
+          "id": "z_pump_foreman",
+          "name": "泵室领班",
+          "hp": 10,
+          "armor": 0.3,
+          "evasion": 24,
+          "accuracy": 26,
+          "speed": 4,
+          "controlResist": 45,
+          "controlStatuses": [],
+          "intentText": "循环：蓄力→重击×1.4→抓击；有效咬击仍仅明确咬意图"
+        },
+        {
+          "id": "z_isolation_guard",
+          "name": "隔离守卫",
+          "hp": 10,
+          "armor": 0.4,
+          "evasion": 25,
+          "accuracy": 25,
+          "speed": 4,
+          "controlResist": 45,
+          "controlStatuses": [],
+          "intentText": "保护同伴→抓击→单体咬击；保护限1次"
+        },
+        {
+          "id": "z_power_guard",
+          "name": "配电守卫",
+          "hp": 12,
+          "armor": 0.55,
+          "evasion": 25,
+          "accuracy": 27,
+          "speed": 4,
+          "controlResist": 50,
+          "controlStatuses": [
+            "knockback"
+          ],
+          "intentText": "蓄力→冲撞×1.4击退→防御；不免疫全部控制"
+        },
+        {
+          "id": "z_relay_guard",
+          "name": "天线守卫",
+          "hp": 14,
+          "armor": 0.45,
+          "evasion": 28,
+          "accuracy": 28,
+          "speed": 5,
+          "controlResist": 50,
+          "controlStatuses": [],
+          "intentText": "预告扫击12各×0.6→单体重击×1.3→防御"
+        },
+        {
+          "id": "raider_melee",
+          "name": "流窜掠夺者",
+          "hp": 5.6,
+          "armor": 0.15,
+          "evasion": 30,
+          "accuracy": 27,
+          "speed": 5,
+          "controlResist": 25,
+          "controlStatuses": [],
+          "intentText": "斩击→保护→斩击；不传播病毒"
+        },
+        {
+          "id": "raider_gunner",
+          "name": "流窜枪手",
+          "hp": 5,
+          "armor": 0.1,
+          "evasion": 29,
+          "accuracy": 26,
+          "speed": 4,
+          "controlResist": 20,
+          "controlStatuses": [],
+          "intentText": "射击两次后1AP装填；弹药计划总6发，无无限弹"
+        },
+        {
+          "id": "wild_dog_leader",
+          "name": "野犬首领",
+          "hp": 6.4,
+          "armor": 0.1,
+          "evasion": 34,
+          "accuracy": 25,
+          "speed": 7,
+          "controlResist": 30,
+          "controlStatuses": [],
+          "intentText": "撕咬25%流血；首轮仅自身下一击×1.2"
+        },
+        {
+          "id": "feral_boar",
+          "name": "暴躁野猪",
+          "hp": 8,
+          "armor": 0.25,
+          "evasion": 24,
+          "accuracy": 23,
+          "speed": 4,
+          "controlResist": 35,
+          "controlStatuses": [],
+          "intentText": "蓄力→冲撞×1.4；H≤2不逃离"
+        },
+        {
+          "id": "ec_cantor",
+          "name": "低吟感染者",
+          "hp": 4.6,
+          "armor": 0,
+          "evasion": 28,
+          "accuracy": 22,
+          "speed": 4,
+          "controlResist": 20,
+          "controlStatuses": [],
+          "intentText": "正常激活1：鼓动至多两名同伴下一击伤害×1.10，不叠层；激活2：普通抓击；在后排则先前移1位；循环"
+        },
+        {
+          "id": "ec_labwalker",
+          "name": "试制区感染者",
+          "hp": 5.4,
+          "armor": 0.15,
+          "evasion": 29,
+          "accuracy": 24,
+          "speed": 5,
+          "controlResist": 20,
+          "controlStatuses": [
+            "stagger"
+          ],
+          "intentText": "普通抓击；命中后目标下一次攻击失衡；无合法目标先前移；不施加毒素/病毒值"
+        },
+        {
+          "id": "ec_cablecrawler",
+          "name": "缠线爬行者",
+          "hp": 4.4,
+          "armor": 0.1,
+          "evasion": 30,
+          "accuracy": 23,
+          "speed": 3,
+          "controlResist": 20,
+          "controlStatuses": [
+            "pull"
+          ],
+          "intentText": "奇数激活：低伤×0.6拉扯，控制成功后目标前移1位；偶数激活：抓击80%/咬击20%；不同时拉扯与咬伤"
+        },
+        {
+          "id": "ec_stockbracer",
+          "name": "货架护卫感染者",
+          "hp": 6.4,
+          "armor": 0.3,
+          "evasion": 23,
+          "accuracy": 24,
+          "speed": 3,
+          "controlResist": 30,
+          "controlStatuses": [],
+          "intentText": "奇数激活保护相邻同伴1次，不形成循环保护；偶数激活普通抓击80%/咬击20%"
+        },
+        {
+          "id": "ec_boss_crypt",
+          "name": "封锁祭室守卫",
+          "hp": 10.5,
+          "armor": 0.25,
+          "evasion": 24,
+          "accuracy": 26,
+          "speed": 3,
+          "controlResist": 40,
+          "controlStatuses": [],
+          "intentText": "格挡1次→重击×1.3→普通抓击，三激活循环"
+        },
+        {
+          "id": "ec_boss_lab",
+          "name": "隔离核心守卫",
+          "hp": 11,
+          "armor": 0.2,
+          "evasion": 28,
+          "accuracy": 26,
+          "speed": 5,
+          "controlResist": 40,
+          "controlStatuses": [],
+          "intentText": "标记我方1人→对该目标普通攻击→格挡，目标失效不暗换未预告大招"
+        },
+        {
+          "id": "ec_boss_armory",
+          "name": "军械库守卫",
+          "hp": 12,
+          "armor": 0.55,
+          "evasion": 24,
+          "accuracy": 27,
+          "speed": 3,
+          "controlResist": 45,
+          "controlStatuses": [],
+          "intentText": "蓄力→重击×1.4→保护相邻同伴1次"
+        },
+        {
+          "id": "ec_boss_relay",
+          "name": "天线台守卫",
+          "hp": 13,
+          "armor": 0.4,
+          "evasion": 28,
+          "accuracy": 28,
+          "speed": 5,
+          "controlResist": 45,
+          "controlStatuses": [],
+          "intentText": "公开扫击我方12各×0.6→单体重击×1.3→防御"
+        },
+        {
+          "id": "ec_boss_water",
+          "name": "泵房推挤者",
+          "hp": 11,
+          "armor": 0.3,
+          "evasion": 25,
+          "accuracy": 26,
+          "speed": 4,
+          "controlResist": 40,
+          "controlStatuses": [
+            "knockback"
+          ],
+          "intentText": "推挤伤害×0.7并击退1位→普通抓击→保护同伴"
+        },
+        {
+          "id": "ec_boss_mine",
+          "name": "深井重击者",
+          "hp": 13.5,
+          "armor": 0.5,
+          "evasion": 21,
+          "accuracy": 27,
+          "speed": 2,
+          "controlResist": 45,
+          "controlStatuses": [],
+          "intentText": "蓄力→重击×1.4并破甲0.2两轮→普通抓击"
+        },
+        {
+          "id": "ec_boss_mall",
+          "name": "扶梯拦截者",
+          "hp": 11.5,
+          "armor": 0.25,
+          "evasion": 28,
+          "accuracy": 27,
+          "speed": 5,
+          "controlResist": 40,
+          "controlStatuses": [],
+          "intentText": "保护相邻后排1次→普通抓击→公开12扫击各×0.55"
+        },
+        {
+          "id": "ec_boss_cold",
+          "name": "仓管守卫",
+          "hp": 12,
+          "armor": 0.3,
+          "evasion": 28,
+          "accuracy": 27,
+          "speed": 4,
+          "controlResist": 45,
+          "controlStatuses": [
+            "pull"
+          ],
+          "intentText": "标记我方后排1人→拉扯低伤×0.7→对12普通抓击；无温度伤害"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "stone_knife",
+          "accuracy": 26,
+          "energy": 0.4,
+          "damage": "1.00–1.50"
+        },
+        {
+          "id": "kitchen_knife",
+          "accuracy": 28,
+          "energy": 0.4,
+          "damage": "1.20–1.80"
+        },
+        {
+          "id": "machete",
+          "accuracy": 29,
+          "energy": 0.5,
+          "damage": "1.50–2.10"
+        },
+        {
+          "id": "guard_sword",
+          "accuracy": 31,
+          "energy": 0.5,
+          "damage": "1.60–2.30"
+        },
+        {
+          "id": "hatchet",
+          "accuracy": 24,
+          "energy": 0.65,
+          "damage": "1.60–2.40"
+        },
+        {
+          "id": "fire_axe",
+          "accuracy": 25,
+          "energy": 0.8,
+          "damage": "2.00–2.80"
+        },
+        {
+          "id": "breach_axe",
+          "accuracy": 26,
+          "energy": 0.9,
+          "damage": "2.20–3.00"
+        },
+        {
+          "id": "rescue_axe",
+          "accuracy": 30,
+          "energy": 0.65,
+          "damage": "1.90–2.70"
+        },
+        {
+          "id": "wooden_spear",
+          "accuracy": 27,
+          "energy": 0.5,
+          "damage": "1.40–2.10"
+        },
+        {
+          "id": "metal_spear",
+          "accuracy": 29,
+          "energy": 0.5,
+          "damage": "1.80–2.70"
+        },
+        {
+          "id": "pike",
+          "accuracy": 29,
+          "energy": 0.65,
+          "damage": "2.00–2.80"
+        },
+        {
+          "id": "barbed_spear",
+          "accuracy": 32,
+          "energy": 0.55,
+          "damage": "1.80–2.60"
+        },
+        {
+          "id": "wooden_club",
+          "accuracy": 27,
+          "energy": 0.45,
+          "damage": "1.00–1.60"
+        },
+        {
+          "id": "crowbar",
+          "accuracy": 26,
+          "energy": 0.6,
+          "damage": "1.40–2.10"
+        },
+        {
+          "id": "steel_mace",
+          "accuracy": 28,
+          "energy": 0.75,
+          "damage": "1.80–2.50"
+        },
+        {
+          "id": "shock_baton",
+          "accuracy": 32,
+          "energy": 0.55,
+          "damage": "1.60–2.30"
+        },
+        {
+          "id": "wooden_bow",
+          "accuracy": 25,
+          "energy": 0.4,
+          "damage": "1.40–2.30"
+        },
+        {
+          "id": "recurve_bow",
+          "accuracy": 28,
+          "energy": 0.45,
+          "damage": "1.70–2.50"
+        },
+        {
+          "id": "hunter_bow",
+          "accuracy": 30,
+          "energy": 0.5,
+          "damage": "1.90–2.70"
+        },
+        {
+          "id": "crossbow",
+          "accuracy": 31,
+          "energy": 0.3,
+          "damage": "2.00–3.10"
+        },
+        {
+          "id": "repeater_crossbow",
+          "accuracy": 33,
+          "energy": 0.3,
+          "damage": "1.90–2.80"
+        },
+        {
+          "id": "pistol",
+          "accuracy": 25,
+          "energy": 0.25,
+          "damage": "2.40–3.60"
+        },
+        {
+          "id": "service_pistol",
+          "accuracy": 29,
+          "energy": 0.25,
+          "damage": "2.50–3.60"
+        },
+        {
+          "id": "shotgun",
+          "accuracy": 23,
+          "energy": 0.4,
+          "damage": "3.60–5.20"
+        },
+        {
+          "id": "rifle",
+          "accuracy": 32,
+          "energy": 0.35,
+          "damage": "3.20–4.80"
+        },
+        {
+          "id": "marksman_rifle",
+          "accuracy": 36,
+          "energy": 0.4,
+          "damage": "3.40–4.80"
+        },
+        {
+          "id": "wooden_shield",
+          "accuracy": 30,
+          "energy": 0.3,
+          "damage": "0.30–0.50"
+        },
+        {
+          "id": "scrap_shield",
+          "accuracy": 31,
+          "energy": 0.35,
+          "damage": "0.40–0.70"
+        },
+        {
+          "id": "riot_shield",
+          "accuracy": 33,
+          "energy": 0.35,
+          "damage": "0.40–0.70"
+        },
+        {
+          "id": "rescue_shield",
+          "accuracy": 34,
+          "energy": 0.4,
+          "damage": "0.50–0.80"
+        },
+        {
+          "id": "signal_whistle",
+          "accuracy": 0,
+          "energy": 0.2,
+          "damage": "0–0"
+        },
+        {
+          "id": "signal_flag",
+          "accuracy": 0,
+          "energy": 0.25,
+          "damage": "0–0"
+        },
+        {
+          "id": "field_radio",
+          "accuracy": 0,
+          "energy": 0.2,
+          "damage": "0–0"
+        },
+        {
+          "id": "command_terminal",
+          "accuracy": 0,
+          "energy": 0.2,
+          "damage": "0–0"
+        },
+        {
+          "id": "field_medkit",
+          "accuracy": 0,
+          "energy": 0.2,
+          "damage": "0–0"
+        },
+        {
+          "id": "trauma_bag",
+          "accuracy": 0,
+          "energy": 0.2,
+          "damage": "0–0"
+        },
+        {
+          "id": "rescue_medkit",
+          "accuracy": 0,
+          "energy": 0.25,
+          "damage": "0–0"
+        },
+        {
+          "id": "triage_kit",
+          "accuracy": 0,
+          "energy": 0.25,
+          "damage": "0–0"
+        }
+      ],
+      "hourlyRates": {
+        "gather": {
+          "energy": -1.92,
+          "wakefulness": -4
+        },
+        "travel": {
+          "energy": -1.28,
+          "wakefulness": -4
+        },
+        "craft": {
+          "energy": -0.96,
+          "wakefulness": -4
+        },
+        "wait": {
+          "energy": 0,
+          "wakefulness": -4
+        },
+        "rest": {
+          "energy": 6,
+          "wakefulness": -4
+        },
+        "sleep": {
+          "energy": 4,
+          "wakefulness": 12
+        }
+      },
+      "initialEnergy": 18,
+      "initialWakefulness": 90
+    }
+  },
+  "combatBalanceBenchmark": {
+    "reportFile": "assets/20261031/combat/combat-balance-benchmark.json",
+    "reproduceScript": "assets/20261031/combat/benchmark-combat.cjs",
+    "enemies": 42,
+    "attackCases": 204288,
+    "controlCases": 176,
+    "scope": "依据策划面板及已读B6/B7公式的可复现数值实验；非引擎执行、非玩家遥测、非完整回合战斗胜率"
   }
 }
