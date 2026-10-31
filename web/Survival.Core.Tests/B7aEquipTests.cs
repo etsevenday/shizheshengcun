@@ -221,7 +221,9 @@ public class B7aEquipTests : BattleTestBase
         Assert.That(p.FactorReasons.Any(r => r.Contains("装备工作量×")), Is.True);
         Start(s, Salvage(it.InstanceId));
         E.Advance(s);
-        Assert.That(s.Main!.WorkDone, Is.EqualTo(5 / (0.95 * 0.97)).Within(1e-9), "推进与预估同源");
+        // B7b 按新规则改写（Q61：装备/节点倍率开工时乘进需求工作量，段内按 5/M 推进）
+        Assert.That(s.Main!.BaseWorkMinutes, Is.EqualTo(15 * 0.95 * 0.97).Within(1e-9), "需求工作量与预估同源");
+        Assert.That(s.Main!.WorkDone, Is.EqualTo(5).Within(1e-9), "白天 M=1 每段推进 5");
         E.Cancel(s);
         it.Durability = it.MaxDurability!.Value / 2;
         E.DebugGive(s, "scrap", 1);

@@ -823,6 +823,7 @@ namespace Survival.Core.Engine
                 }
             }
 
+            if (a.IsWorkType) ReserveCarry(s, a, p.BaseWork);
             if (p.IsSub) s.Sub = a; else s.Main = a;
             if (p.Type != ActionType.Use && p.Type != ActionType.Fuse)
                 Emit(s, GameEventKind.ActionStarted, $"开始{a.Label}。");
@@ -876,6 +877,7 @@ namespace Survival.Core.Engine
         /// <summary>释放行动的全部预留：资源库存归还，预留的物品返还指定地点地面。</summary>
         private void Release(GameState s, ActionState a, string groundLocation)
         {
+            RestoreCarry(s, a);   // Q61：取消/中断/死亡退回原锁余额，本次不结新余额
             if (a.Type == ActionType.Gather && a.ReservedResourceUnits > 0)
             {
                 var rs = s.Resources[a.TargetId];

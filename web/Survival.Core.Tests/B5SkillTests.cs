@@ -464,8 +464,9 @@ public class B5SkillTests : BattleTestBase
         var t = AtWoods();
         Lv(t, "gathering", 7);
         t.Resources["berries"].Available = 10;
-        Assert.That(E.Preview(t, ActionRequest.Gather("berries")).Notes, Has.Some.Contains("省下的时间不足5分钟时，实际耗时不缩短"));
+        // B7b 按新规则改写（Q61 选 A 取代 C“只在预估注明”）：预估写需求工作量、已有余量与完成后余量
+        Assert.That(E.Preview(t, ActionRequest.Gather("berries")).Notes, Has.Some.Contains("需求工作量18.00分钟，已有同类余量0.00分钟；预计20分钟，完成后余量2.00分钟"));
         Lv(t, "gathering", 1);
-        Assert.That(E.Preview(t, ActionRequest.Gather("berries")).Notes, Has.None.Contains("不足5分钟"));
+        Assert.That(E.Preview(t, ActionRequest.Gather("berries")).Notes, Has.Some.Contains("完成后余量0.00分钟"));
     }
 }

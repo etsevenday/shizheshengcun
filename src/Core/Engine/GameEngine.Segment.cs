@@ -98,7 +98,10 @@ namespace Survival.Core.Engine
 
             if (ctx.IsWork)
             {
-                ctx.Factor = WorkFactor(s, actor, a.Type, ctx.FactorReasons, a.TargetId);
+                // Q61：新规则装备/节点倍率已在开工时乘进需求工作量，段内只按 S01 倍率 M 推进；旧在途动作照旧逐段乘装备倍率
+                ctx.Factor = a.RuleVersion >= WorkRuleVersion
+                    ? TimeFactor(s, actor, a.Type, ctx.FactorReasons)
+                    : WorkFactor(s, actor, a.Type, ctx.FactorReasons, a.TargetId);
             }
             return ctx;
         }
@@ -120,7 +123,11 @@ namespace Survival.Core.Engine
         /// M = min(上限, 夜间×负重×低体力)。移动始终视为无照明；其他工作在火堆燃烧的地点不吃夜间系数。负重与体力按该角色本人。
         /// 再乘装备的求生工作量倍率（B4：A05 §4 末段“求生同类工作量合成下限×0.70，后乘现行S01工作倍率”，等价于基础工作量先乘装备倍率）。
         /// </summary>
-        public double WorkFactor(GameState s, ActorState actor, ActionType type, List<string>? reasons = null, string? targetId = null)
+        public double WorkFactor(GameState s, ActorState actor, ActionType type, List<string>? reasons = null, string? targetId = null) =>
+            TimeFactor(s, actor, type, reasons) * GearWorkFactor(s, actor.Id, type, targetId, reasons);
+
+        /// <summary>S01 时间倍率 M = min(上限, 夜间×负重×低体力)（不含装备与熟练节点的工作量倍率）。</summary>
+        public double TimeFactor(GameState s, ActorState actor, ActionType type, List<string>? reasons = null)
         {
             var c = Config.WorkFactors;
             double f = 1;
@@ -147,7 +154,7 @@ namespace Survival.Core.Engine
                 f = c.Cap;
                 reasons?.Add($"倍率封顶 {c.Cap}");
             }
-            return f * GearWorkFactor(s, actor.Id, type, targetId, reasons);
+            return f;
         }
 
         /// <summary>
@@ -185,7 +192,8 @@ namespace Survival.Core.Engine
             {
                 a.WorkDone += Tick / ctx.Factor;
                 a.ElapsedMinutes += Tick;
-                done = a.WorkDone >= a.BaseWorkMinutes - Eps;
+                // Q61：原锁余额 C + 本次已做工作 ≥ 需求工作量即完成（旧在途动作 C=0）；每次至少推进一个真实 5 分钟段
+                done = a.CarryReserved + a.WorkDone >= a.BaseWorkMinutes - Eps;
             }
             else if (a.Type == ActionType.WaitCook)
             {
@@ -206,6 +214,7 @@ namespace Survival.Core.Engine
             {
                 // 5. 提交结果（含末尾环境伤害）；探索/清理先提交原产物，再按密度检查随机接敌（v0.6 §15）
                 var ok = Complete(s, a);
+                if (ok) SettleCarry(s, a); else RestoreCarry(s, a);
                 if (s.Progress.Dead) return new SegmentResult(SegmentStatus.Dead);
                 status = ok ? SegmentStatus.Completed : SegmentStatus.Aborted;
                 if (ok) CheckRandomEncounter(s, a);

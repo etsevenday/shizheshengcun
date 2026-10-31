@@ -53,6 +53,10 @@ namespace Survival.Core.Engine
                 a.HazardHit = false;
                 a.EncounterRoll = 1;   // 预览不触发接敌、不推进真实随机
             }
+            // Q61：余额与需求工作量（在副本上开工后读出，预览不花真实余额）
+            var carryKey = a?.CarryKey;
+            var needWork = a?.BaseWorkMinutes ?? 0;
+            var heldCarry = a?.CarryReserved ?? 0;
 
             var alerts = new HashSet<StatId>();
             c.PendingEvents.Clear();
@@ -92,6 +96,15 @@ namespace Survival.Core.Engine
             p.StatsAfter = c.Stats.Clone();
             p.EstimatedEndMinute = c.GameMinute;
             p.EstimatedMinutes = c.GameMinute - s.GameMinute;
+            if (carryKey != null && !c.Progress.Dead)
+            {
+                var done = (plan.IsSub ? c.Sub : c.Main)?.ActionId != id;
+                p.WorkMinutes = needWork;
+                p.CarryBefore = heldCarry;
+                p.CarryAfter = done ? CarryOf(c, carryKey) : (double?)null;
+                var after = p.CarryAfter is double ca ? $"，完成后余量{Fmt.N(ca)}分钟" : "";
+                p.Notes.Add($"需求工作量{Fmt.N(needWork)}分钟，已有同类余量{Fmt.N(heldCarry)}分钟；预计{p.EstimatedMinutes}分钟{after}（不足5分钟的余量留给下次同类工作）");
+            }
             p.FacilityChanges = FacilityChanges(s, c);
             if (plan.Type == ActionType.Ignite)
             {
@@ -379,9 +392,6 @@ namespace Survival.Core.Engine
                 p.Notes.Add($"当前工作倍率×{p.FactorAtStart:0.##}：{string.Join("，", p.FactorReasons)}");
             // B4 试玩修复：装备的负小时率效果也写一行（与“装备工作量×…”同样写法），右栏状态预估已按它计算
             if (p.IsWork && GearRateNote(s, r.Type, r.TargetId) is string gr) p.Notes.Add(gr);
-            // B5 试玩修复（待确认 Q61）：装备/熟练的工作量倍率被 5 分钟段取整，省下的不足 5 分钟时耗时不变
-            if (p.IsWork && p.FactorReasons.Any(x => x.StartsWith("装备工作量") || x.StartsWith("熟练（")))
-                p.Notes.Add("装备与熟练的工作量倍率按5分钟段推进：省下的时间不足5分钟时，实际耗时不缩短");
         }
 
         /// <summary>即时效果超过该项上限的部分（两位小数）：“饱食溢出12.00”“健康溢出0.30”。健康用实际恢复量（含医疗加成）。</summary>

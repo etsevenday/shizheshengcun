@@ -355,4 +355,166 @@ public class B7bProgressionTests : TestBase
         Wait(t, 20);
         Assert.That(t.Skills["cooking"].Xp, Is.Zero, "投料/等待不发");
     }
+
+    // ───────────── M160：工作量余额结转、行旅已走边、特效药过渡许可（Q61/Q56/Q58） ─────────────
+
+    private int Timed(GameState s, ActionRequest r)
+    {
+        var t0 = s.GameMinute;
+        Start(s, r);
+        s.Main!.HazardHit = false;
+        Run(s);
+        return s.GameMinute - t0;
+    }
+
+    [Test]
+    public void TIME_Q61a_W9_FiveTimes45_Bandage14_25_SevenTimes100()
+    {
+        var s = At("stream");
+        Lv(s, "gathering", 7);                     // 熟练采伐：脏水 10×0.9 = 9
+        var mins = new List<int>();
+        var credits = new List<double>();
+        for (var k = 0; k < 5; k++)
+        {
+            SetStats(s, 20, 90, 90, 18, 90, 80);
+            mins.Add(Timed(s, ActionRequest.Gather("water")));
+            credits.Add(E.CarryOf(s, "p0|gathering"));
+        }
+        Assert.That(mins, Is.EqualTo(new[] { 10, 10, 10, 10, 5 }), "前4次各10分钟，第5次5分钟，共45而非50");
+        Assert.That(credits, Is.EqualTo(new[] { 1.0, 2.0, 3.0, 4.0, 0.0 }).Within(1e-9));
+        // 耐磨工作衣：绷带 15×0.95 = 14.25，七次 6×15+10 = 100（而非105）
+        var b = New();
+        E.DebugCreateEquipment(b, "work_shirt", "white", ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Top));
+        var total = 0;
+        for (var k = 0; k < 7; k++)
+        {
+            SetStats(b, 20, 90, 90, 18, 90, 80);
+            E.DebugGive(b, "cloth", 1);
+            E.DebugGive(b, "herb", 1);
+            var p = E.Preview(b, ActionRequest.Craft("bandage"));
+            var m = Timed(b, ActionRequest.Craft("bandage"));
+            Assert.That(p.EstimatedMinutes, Is.EqualTo(m), $"第{k + 1}次预估与实际一致");
+            total += m;
+        }
+        Assert.That(total, Is.EqualTo(100));
+        Assert.That(E.CarryOf(b, "p0|crafting"), Is.EqualTo(0.25).Within(1e-9));
+        Assert.That(E.CarryClamp(5.7), Is.EqualTo(4.9999), "上限 4.9999");
+        Assert.That(E.CarryClamp(1.23456), Is.EqualTo(1.2345), "截到 0.0001");
+    }
+
+    [Test]
+    public void TIME_Q61b_NightFactor_PerSegmentRealM()
+    {
+        // 夜间无照明 M=1.5：每段只推进 5/1.5；需求 9 要 3 段（15 分钟），余 1
+        var s = At("stream");
+        Lv(s, "gathering", 7);
+        SetStats(s, 20, 90, 90, 18, 90, 80);
+        AdvanceTo(s, At(1, 22, 0));
+        SetStats(s, 20, 90, 90, 18, 90, 80);
+        Assert.That(Timed(s, ActionRequest.Gather("water")), Is.EqualTo(15));
+        Assert.That(E.CarryOf(s, "p0|gathering"), Is.EqualTo(1.0).Within(1e-4));
+    }
+
+    [Test]
+    public void TIME_Q61c_FamiliesAndBucketsDontMix()
+    {
+        var s = At("stream");
+        Lv(s, "gathering", 7);
+        Timed(s, ActionRequest.Gather("water"));
+        Assert.That(E.CarryOf(s, "p0|gathering"), Is.EqualTo(1).Within(1e-9));
+        // 制造不借采集余额
+        E.DebugGive(s, "cloth", 1);
+        E.DebugGive(s, "herb", 1);
+        Assert.That(Timed(s, ActionRequest.Craft("bandage")), Is.EqualTo(15));
+        Assert.That(E.CarryOf(s, "p0|gathering"), Is.EqualTo(1).Within(1e-9), "采集余额不被制造花掉");
+        Assert.That(E.CarryKeyOf(s, ActionType.Gather, "supply_box"), Is.EqualTo("p0|scavenging"), "搜集另一桶");
+        Assert.That(E.CarryKeyOf(s, ActionType.Survey, null), Is.EqualTo("p0|ruin_survey_practice"));
+        Assert.That(E.CarryKeyOf(s, ActionType.Travel, "field"), Is.EqualTo("travel|p0"), "移动按同行集合");
+        s.Party.Add("a1");
+        Assert.That(E.CarryKeyOf(s, ActionType.Travel, "field"), Is.EqualTo("travel|a1,p0"), "换队另起一桶");
+    }
+
+    [Test]
+    public void TIME_Q61d_PreviewNoSpend_CancelRestores_SaveLoadContinues()
+    {
+        var s = At("stream");
+        Lv(s, "gathering", 7);
+        Timed(s, ActionRequest.Gather("water"));
+        Timed(s, ActionRequest.Gather("water"));   // 余 2
+        var p = E.Preview(s, ActionRequest.Gather("water"));
+        Assert.That((p.CarryBefore, p.CarryAfter, p.EstimatedMinutes), Is.EqualTo((2.0, (double?)3.0, 10)));
+        Assert.That(E.CarryOf(s, "p0|gathering"), Is.EqualTo(2).Within(1e-9), "预览不花余额");
+        Start(s, ActionRequest.Gather("water"));
+        Assert.That((s.Main!.CarryReserved, E.CarryOf(s, "p0|gathering")), Is.EqualTo((2.0, 0.0)), "开工整笔锁住");
+        E.Advance(s);
+        E.Cancel(s);
+        Assert.That(E.CarryOf(s, "p0|gathering"), Is.EqualTo(2).Within(1e-9), "取消退回原余额，本次不结新余额");
+        Start(s, ActionRequest.Gather("water"));
+        E.Advance(s);
+        var loaded = SaveSerializer.Deserialize(SaveSerializer.Serialize(s));
+        Assert.That(loaded.Main!.CarryReserved, Is.EqualTo(2).Within(1e-9), "读档续原锁，不再锁第二次");
+        Run(loaded);
+        Assert.That(E.CarryOf(loaded, "p0|gathering"), Is.EqualTo(3).Within(1e-9));
+        Assert.That(E.Start(loaded, ActionRequest.Gather("water").WithRequestId("x")).Ok, Is.True);
+        var (id, held) = (loaded.Main!.ActionId, loaded.Main.CarryReserved);
+        E.Start(loaded, ActionRequest.Gather("water").WithRequestId("x"));
+        Assert.That((loaded.Main!.ActionId, loaded.Main.CarryReserved, E.CarryOf(loaded, "p0|gathering")), Is.EqualTo((id, held, 0.0)), "重复请求不再开工、不再锁");
+    }
+
+    [Test]
+    public void TIME_Q61e_FixedDurationNoCarry_OldActionOldRule_MigrationZero()
+    {
+        var s = New();
+        Start(s, ActionRequest.Wait(30));
+        Assert.That(s.Main!.CarryKey, Is.Null, "等待/休息等固定时长不结转");
+        E.Cancel(s);
+        // 旧档在途（RuleVersion 0）：装备倍率逐段算、无余额
+        var t = New();
+        E.DebugCreateEquipment(t, "work_shirt", "white", ItemInstance.EquipOwner(GameState.PlayerId, EquipSlots.Top));
+        E.DebugGive(t, "cloth", 1);
+        E.DebugGive(t, "herb", 1);
+        Start(t, ActionRequest.Craft("bandage"));
+        var a = t.Main!;
+        a.RuleVersion = 0; a.CarryKey = null; a.CarryReserved = 0; a.BaseWorkMinutes = 15;
+        var json = JObject.Parse(SaveSerializer.Serialize(t));
+        json["SchemaVersion"] = "12";
+        ((JObject)json["Main"]!).Remove("RuleVersion");
+        json.Remove("WorkCarry");
+        var old = SaveSerializer.Deserialize(json.ToString(), Cfg);
+        Assert.That(old.SchemaVersion, Is.EqualTo("13"));
+        Assert.That(old.Main!.RuleVersion, Is.Zero);
+        E.Advance(old);
+        Assert.That(old.Main!.WorkDone, Is.EqualTo(5 / 0.95).Within(1e-9), "旧规则：每段 5/(M×装备)");
+        Run(old);
+        Assert.That(old.WorkCarry, Is.Empty, "旧在途完成不结余额");
+        Assert.That(old.Log.Any(l => l.Text.Contains("按开工时的规则完成")), Is.True);
+    }
+
+    [Test]
+    public void PROG_Q56_VisitedEdgeNoWeightGate_UnvisitedLevel5()
+    {
+        var s = New(7);
+        E.DebugTeleport(s, "field");
+        E.DebugUnlockEdge(s, "field__stream");
+        Lv(s, "athletics", 10);
+        E.DebugGive(s, "stone", 50);   // 超过 20 公斤
+        var heavy = E.WorkFactor(s, ActionType.Travel, null, "stream");
+        Assert.That(heavy, Is.EqualTo(Cfg.WorkFactors.Overweight).Within(1e-12), "没走过+超重：不吃轻装步伐");
+        s.TraveledEdges.Add("field__stream");
+        Assert.That(E.WorkFactor(s, ActionType.Travel, null, "stream"), Is.EqualTo(Cfg.WorkFactors.Overweight * 0.9).Within(1e-12), "走过的边×0.90 不看重量");
+    }
+
+    [Test]
+    public void PROG_Q58_CureCraftableAtTenTen_NoBlueprintYet()
+    {
+        var rc = Cfg.Recipes.Single(r => r.Id == "make_antiviral_cure");
+        Assert.That(rc.MinSkills, Is.EquivalentTo(new Dictionary<string, int> { ["medicine"] = 10, ["crafting"] = 10 }));
+        Assert.That(Cfg.Recipes.Count(r => r.Outputs.ContainsKey("antiviral_cure")), Is.EqualTo(1), "不加第三条治愈路线");
+        var u = New();
+        foreach (var kv in rc.Inputs) E.DebugGive(u, kv.Key, kv.Value, "camp");
+        Lv(u, "medicine", 10);
+        Lv(u, "crafting", 10);
+        var req = ActionRequest.Craft("make_antiviral_cure", First(u, "pot").InstanceId);
+        Assert.That(E.CanStart(u, req), Is.Null, "蓝图系统上线前：满级+材料+场地+空锅即可");
+    }
 }

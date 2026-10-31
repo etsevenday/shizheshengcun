@@ -61,7 +61,7 @@ namespace Survival.Core.Save
 
         private static bool IsMigratable(string? version) =>
             version == SaveMigrator.LegacySchema || version == SaveMigrator.Schema3 || version == SaveMigrator.Schema4 || version == SaveMigrator.Schema5
-            || version == SaveMigrator.Schema6 || version == SaveMigrator.Schema7 || version == SaveMigrator.Schema8 || version == SaveMigrator.Schema9 || version == SaveMigrator.Schema10 || version == SaveMigrator.Schema11;
+            || version == SaveMigrator.Schema6 || version == SaveMigrator.Schema7 || version == SaveMigrator.Schema8 || version == SaveMigrator.Schema9 || version == SaveMigrator.Schema10 || version == SaveMigrator.Schema11 || version == SaveMigrator.Schema12;
 
         /// <summary>schema 9 前在顶层的主角个人字段（R08 §5“旧档主角创建 actorId 一次”）。</summary>
         private static readonly string[] LegacyActorFields =

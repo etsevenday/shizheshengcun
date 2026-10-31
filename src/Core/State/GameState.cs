@@ -30,9 +30,10 @@ namespace Survival.Core.State
         /// "8" 起设施加工进程带烹饪受热保护标记（策划提交 5493951：Q16、S11 §10），随身最多五张根物品卡（S06 §8）；
         /// "9" 起角色个人状态按 actorId 存在 Actors（主角 "p0"，R08 §2/§5、开发计划 v0.9 B3），装备改为穿戴 owner（七槽，S06 全系统更新目标 §1）；
         /// "10" 起装备实例带品质与附加词条（A05 §4、R02 §2/§3，开发计划 v0.9 B4）；
-        /// "11" 起熟练度为十五门、最高 10 级，角色带按世界日的经验计数，记录走过的物理边（A06 §1–§4、R01 §5，开发计划 v0.9 B5）。
+        /// "11" 起熟练度为十五门、最高 10 级，角色带按世界日的经验计数，记录走过的物理边（A06 §1–§4、R01 §5，开发计划 v0.9 B5）；
+        /// "12" 起四对四战斗站位（B6）；"13" 起工作量余额与行动规则版本、设施进程发起者（策划答复 Q53—Q61，开发计划 v0.9 B7b）。
         /// </summary>
-        public const string CurrentSchema = "12";
+        public const string CurrentSchema = "13";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -89,6 +90,11 @@ namespace Survival.Core.State
         public HashSet<string> UnlockedEdges { get; set; } = new HashSet<string>();
         /// <summary>完整走过（任一方向）的物理边 ID（athletics_10“已访问物理边”，开发计划 v0.9 B5 H7；schema 11 起记录，旧档从空开始）。</summary>
         public HashSet<string> TraveledEdges { get; set; } = new HashSet<string>();
+        /// <summary>
+        /// 工作量余额（Q61 选 A，S01 本轮章；开发计划 v0.9 B7b）：键“actorId|动作族”（移动为“travel|同行角色ID排序集合”），值为小于 5 的基础工作分钟。
+        /// 开工时整笔锁进行动（从这里移除），成功后写回新余额，取消/中断原样退回。schema 13 起记录，旧档从 0 开始。
+        /// </summary>
+        public Dictionary<string, double> WorkCarry { get; set; } = new Dictionary<string, double>();
         public Dictionary<string, ResourceState> Resources { get; set; } = new Dictionary<string, ResourceState>();
         public List<ItemInstance> Items { get; set; } = new List<ItemInstance>();
 
@@ -141,6 +147,7 @@ namespace Survival.Core.State
             c.Locations = Locations.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.UnlockedEdges = new HashSet<string>(UnlockedEdges);
             c.TraveledEdges = new HashSet<string>(TraveledEdges);
+            c.WorkCarry = new Dictionary<string, double>(WorkCarry);
             c.Resources = Resources.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.Items = Items.Select(i => i.Clone()).ToList();
             c.Main = Main?.Clone();
@@ -578,8 +585,17 @@ namespace Survival.Core.State
         public string SourceLocation { get; set; } = "";
         public int StartMinute { get; set; }
 
+        /// <summary>
+        /// 需求工作量。RuleVersion ≥ 1（B7b 起开工）为开工快照的基础工作分钟×装备与熟练节点倍率（S01 倍率 M 之前），每段推进 5/M；
+        /// RuleVersion 0（旧档在途）为原始基础工作分钟，每段推进 5/(M×装备倍率)。
+        /// </summary>
         public double BaseWorkMinutes { get; set; }
         public double WorkDone { get; set; }
+        /// <summary>行动规则版本：0 = B7b 之前开工（无余额、装备倍率逐段算）；1 = Q61 余额结转（装备倍率开工快照）。</summary>
+        public int RuleVersion { get; set; }
+        /// <summary>Q61：本行动使用的余额桶与开工时锁住的原余额 C（完成条件 C+已做工作≥需求；取消退回 C）。</summary>
+        public string? CarryKey { get; set; }
+        public double CarryReserved { get; set; }
         public int ElapsedMinutes { get; set; }
         public int PlannedMinutes { get; set; }
 

@@ -119,7 +119,7 @@ public sealed class FeedbackBridge
 
     private static string ActionText(ActionState a)
     {
-        var progress = a.IsWorkType ? $"{Ui.T(a.WorkDone)}/{Ui.T(a.BaseWorkMinutes)}工作分钟" : $"{a.ElapsedMinutes}/{a.PlannedMinutes}分钟";
+        var progress = a.IsWorkType ? $"{Ui.T(a.CarryReserved + a.WorkDone)}/{Ui.T(a.BaseWorkMinutes)}工作分钟（含余量{Ui.T(a.CarryReserved)}）" : $"{a.ElapsedMinutes}/{a.PlannedMinutes}分钟";
         var status = a.Status == ActionStatus.Paused ? $"已暂停（{a.PauseReason}{(a.PauseStat.HasValue ? " " + GameEngine.StatName(a.PauseStat.Value) : "")}）" : "进行中";
         return $"{a.Label}（{status}，{progress}）";
     }

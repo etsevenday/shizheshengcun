@@ -98,7 +98,7 @@ namespace Survival.Core.Engine
                 var end = EstimateEndMinute(s);
                 info.Estimated = true;
                 info.RemainingMinutes = end.HasValue ? end.Value - s.GameMinute : (int?)null;
-                info.Fraction = a.BaseWorkMinutes <= 0 ? 0 : Math.Min(1, a.WorkDone / a.BaseWorkMinutes);
+                info.Fraction = a.BaseWorkMinutes <= 0 ? 0 : Math.Min(1, (a.CarryReserved + a.WorkDone) / a.BaseWorkMinutes);
             }
             var why = ExitBlocked(s);
             info.Exit = why != null ? ExitKind.None : IsSingleTransaction(a.Type) ? ExitKind.CompletesCurrentTransaction : ExitKind.StopAtBoundary;

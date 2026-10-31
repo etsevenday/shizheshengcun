@@ -814,7 +814,7 @@ public class B7CombatTests : BattleTestBase
         foreach (var e in (Newtonsoft.Json.Linq.JArray)bj["Enemies"]!)
             foreach (var k in new[] { "JoinRound", "IntentStep", "WeakFactor", "NextHitFactor", "Mag", "Reserve", "IntentTarget" }) ((Newtonsoft.Json.Linq.JObject)e).Remove(k);
         var t = SaveSerializer.Deserialize(json.ToString(), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("12"));
+        Assert.That(t.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "B7b 起 schema 13：只缺 B7 字段的当前版本档照常读入");
         Assert.That((t.Battle!.PlayerWeakFactor, t.Battle.PlayerNextDamageFactor, t.Battle.Enemies[0].WeakFactor, t.Battle.Enemies[0].NextHitFactor, t.Battle.Enemies[0].Mag), Is.EqualTo((1.0, 1.0, 1.0, 1.0, -1)));
         for (var i = 0; i < 40 && t.Battle != null && t.Battle.Round < 3; i++) { t.Stats.Health = 20; if (E.AwaitingPlayer(t)) E.ExecuteCommand(t, BattleCommand.Of("end_turn")); else E.BattleStep(t); }
         Assert.That(t.Battle == null || t.Battle.Round >= 3, Is.True);

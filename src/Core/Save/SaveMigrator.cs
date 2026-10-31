@@ -36,6 +36,7 @@ namespace Survival.Core.Save
         public const string Schema9 = "9";
         public const string Schema10 = "10";
         public const string Schema11 = "11";
+        public const string Schema12 = "12";
 
         /// <summary>升级到当前版本，返回给玩家看的迁移说明（无变化时为空）。冲突时抛 SaveMigrationConflictException，状态不变。</summary>
         public static List<string> Migrate(GameState s, GameConfig config)
@@ -59,6 +60,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema9) From9To10(s, config, notes);
             if (s.SchemaVersion == Schema10) From10To11(s, config, notes);
             if (s.SchemaVersion == Schema11) From11To12(s, config, notes);
+            if (s.SchemaVersion == Schema12) From12To13(s, notes);
             return notes;
         }
 
@@ -594,7 +596,26 @@ namespace Survival.Core.Save
                 notes.Add(note);
                 s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = note + "。" });
             }
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（四对四战斗内核）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema12}（四对四战斗内核）。" });
+            s.SchemaVersion = Schema12;
+        }
+
+        // ───────────────────────── 12 → 13 ─────────────────────────
+
+        /// <summary>
+        /// 策划答复 Q53—Q61（开发计划 v0.9 B7b）：工作量余额从 0 开始、不补历史；进行中的行动保留规则版本 0，按开工时保存的工作量与旧规则结束
+        /// （不读档重套新公式）；已有设施进程没有发起者，完成不补烹饪经验；当日经验计数与走过的路照旧保留。无须改数据，只升版本号。
+        /// </summary>
+        private static void From12To13(GameState s, List<string> notes)
+        {
+            if (s.Main != null && s.Main.IsWorkType)
+            {
+                var note = $"进行中的“{s.Main.Label}”按开工时的规则完成；之后的同类工作才开始结转不足5分钟的工作量余量";
+                notes.Add(note);
+                s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = note + "。" });
+            }
+            s.WorkCarry.Clear();
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（成长经验与工作量余量）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

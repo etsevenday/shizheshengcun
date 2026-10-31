@@ -155,8 +155,11 @@ namespace Survival.Core.Engine
         public bool AsSubAction { get; set; }
 
         public int BaseMinutes { get; set; }
-        /// <summary>按熟练度折减后的工作量（制造）；其他行动等于 BaseMinutes。</summary>
+        /// <summary>需求工作量：基础分钟×装备与熟练节点倍率（Q61 开工快照，S01 倍率 M 之前）；非工作行动等于 BaseMinutes。</summary>
         public double WorkMinutes { get; set; }
+        /// <summary>Q61：开工时可用的同类余量与完成后的新余量（基础工作分钟；非工作行动为 0/null）。</summary>
+        public double CarryBefore { get; set; }
+        public double? CarryAfter { get; set; }
         /// <summary>完成后获得的经验，如“制造+3”；没有为空。</summary>
         public List<string> XpGains { get; set; } = new List<string>();
         public int EstimatedMinutes { get; set; }
