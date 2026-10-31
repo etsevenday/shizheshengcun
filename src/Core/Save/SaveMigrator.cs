@@ -41,6 +41,7 @@ namespace Survival.Core.Save
         public const string Schema14 = "14";
         public const string Schema15 = "15";
         public const string Schema16 = "16";
+        public const string Schema17 = "17";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -71,6 +72,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema14) From14To15(s, notes);
             if (s.SchemaVersion == Schema15) From15To16(s, config, notes);
             if (s.SchemaVersion == Schema16) From16To17(s, config, notes);
+            if (s.SchemaVersion == Schema17) From17To18(s, config, notes);
             return notes;
         }
 
@@ -744,7 +746,29 @@ namespace Survival.Core.Save
             s.ServiceMapMigrated = false;
             foreach (var rem in s.Remains.Values)
                 rem.PublicReserve = rem.BattleId != null || rem.LocationId != config.Party.HubStandIn ? false : (bool?)null;
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（服务地点）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema17}（服务地点）。" });
+            s.SchemaVersion = Schema17;
+        }
+
+        // ───────────────────────── 17 → 18 ─────────────────────────
+
+        /// <summary>
+        /// 候补自主照护（策划答复 Q90，R08/S13/S01 本轮章；开发计划 v0.9 B8c）：照护规则版本记为 2，每名存活候补按自身 S/E 初始化 rest/sleep 模式一次
+        /// （S&lt;60 或 E&lt;6 → sleep，否则 rest）；同行者与死者不设模式。不补历史恢复、不开离线恢复、不把已有 N/W/M 截到 80、不改病伤与 owner。
+        /// 旧 22—06 时段与 N/W 托底 40 的入口随代码移除，不再并行。在办的旧普通 wait 主行动按原快照继续完成或取消。
+        /// </summary>
+        private static void From17To18(GameState s, GameConfig config, List<string> notes)
+        {
+            var care = config.Party.ReserveCare;
+            s.ReserveCareRule = care.RuleVersion;
+            s.Party ??= new List<string>();
+            foreach (var r in s.Roster.Where(r => !r.Dead && !s.Party.Contains(r.ActorId)))
+            {
+                if (!s.Actors.TryGetValue(r.ActorId, out var a)) continue;
+                a.ReserveMode = a.Stats.Wakefulness < care.EnterSleepWakefulnessBelow - 1e-9 || a.Stats.Energy < care.EnterSleepEnergyBelow - 1e-9 ? "sleep" : "rest";
+            }
+            foreach (var id in s.Party) if (s.Actors.TryGetValue(id, out var p)) p.ReserveMode = null;
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（候补自主照护）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

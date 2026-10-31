@@ -222,7 +222,7 @@ public class B8bServiceTests : TestBase
         Assert.That(m.ServiceMapMigrated, Is.False);
         Assert.That(m.Remains["npc_lin_zhao"].PublicReserve, Is.Null, "camp 非战斗死亡：旧档分不清候补还是同行，不迁");
         Assert.That(m.Remains["npc_tang_li"].PublicReserve, Is.False, "死在 camp 以外的是同行者");
-        Assert.That(m.Log.Last().Text, Does.Contain($"存档已升级到版本{GameState.CurrentSchema}（服务地点）"));
+        Assert.That(m.Log.Any(l => l.Text.Contains("存档已升级到版本17（服务地点）")), Is.True);
         var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(m), Cfg, out var notes2);
         Assert.That(notes2, Is.Empty);
         Assert.That(again.Remains["npc_lin_zhao"].PublicReserve, Is.Null);

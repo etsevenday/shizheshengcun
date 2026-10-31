@@ -35,9 +35,10 @@ namespace Survival.Core.State
         /// "14" 起战斗双方保持真实 1—4 槽与空位、不再自动压紧（策划答复 Q80，开发计划 v0.9 B7d）；
         /// "15" 起名册与候补、战前编成预设、遗物与借用位，战斗中我方每人一份战斗状态 Fighters（R08，开发计划 v0.9 B8）；
         /// "16" 起战前编队是真实 1—4 槽（可空位、可不连续）并带阵容版本与一次迁移标记，敌人带本轮 AP 账（策划答复 Q86/Q87，开发计划 v0.9 B8a）；
-        /// "17" 起记服务地点迁址标记（v3 地图营区公共居所/收容所）与遗物是否公共候补遗物（策划答复 Q88/Q89，开发计划 v0.9 B8b）。
+        /// "17" 起记服务地点迁址标记（v3 地图营区公共居所/收容所）与遗物是否公共候补遗物（策划答复 Q88/Q89，开发计划 v0.9 B8b）；
+        /// "18" 起记候补照护规则版本与每名候补的自主 rest/sleep 模式（策划答复 Q90，开发计划 v0.9 B8c）。
         /// </summary>
-        public const string CurrentSchema = "17";
+        public const string CurrentSchema = "18";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -84,6 +85,11 @@ namespace Survival.Core.State
         /// 地图导入后由 GameEngine.MigrateServiceLocations 一次置 true（幂等），此后营区服务在 h02_square、收容所服务在 h06_shelter。
         /// </summary>
         public bool ServiceMapMigrated { get; set; }
+        /// <summary>
+        /// 候补照护规则版本（Q90，schema 18）：2 = 按自身 S/E 自主 rest/sleep、N/W/M 慢速公共补给到 80（取代 22—06 固定作息与 N/W 托底 40）。
+        /// 新局与迁移后的旧档都是 2；每名候补的当前模式存在 ActorState.ReserveMode。
+        /// </summary>
+        public int ReserveCareRule { get; set; } = 2;
 
         /// <summary>按 actorId 取角色；不存在时建空角色（只在迁移与测试注入时发生）。</summary>
         public ActorState Actor(string actorId)

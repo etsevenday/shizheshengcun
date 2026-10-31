@@ -11929,11 +11929,16 @@
       "virusLoad": 0
     },
     "reserveCare": {
-      "satietyFloor": 40,
-      "hydrationFloor": 40,
-      "sleepStartMinute": 1320,
-      "sleepEndMinute": 360,
-      "awakeAction": "wait",
+      "ruleVersion": 2,
+      "enterSleepWakefulnessBelow": 60,
+      "enterSleepEnergyBelow": 6,
+      "exitSleepWakefulnessAtLeast": 90,
+      "exitSleepEnergyAtLeast": 14,
+      "publicSatietyPerHour": 5.2,
+      "publicHydrationPerHour": 6.4,
+      "publicNutritionTarget": 80,
+      "publicMoralePerHour": 1,
+      "publicMoraleTarget": 80,
       "redHealth": 5,
       "redVirus": 80
     },

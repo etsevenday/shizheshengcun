@@ -69,6 +69,15 @@ namespace Survival.Core.Engine
             return cfg.IsIndoor || (cfg.CanBuildShelter && fac.ShelterBuilt);
         }
 
+        /// <summary>
+        /// 主角恢复面板的模块（Q90 PTY-Q90a，S13/S14 本轮章）：只有休息（rest）与睡眠（sleep），全天可用、效果不按钟点限制。
+        /// 普通“等待30/60分钟”模块已取消；作为结算费率的 wait（RB01 登记、同行非执行者、敌方等待）与火堆“等待烹饪”照旧，
+        /// 内核的 ActionRequest.Wait 只作这类内部等待与旧档在办 wait 的完成/取消，界面不再提供入口。
+        /// </summary>
+        public static readonly IReadOnlyList<string> RecoveryModules = new[] { "rest", "sleep" };
+
+        public static bool IsRecoveryModule(string? kind) => kind != null && RecoveryModules.Contains(kind);
+
         /// <summary>角色忙碌：有主/子行动、战斗中或敌踪待选（世界交互、拖拽、即时操作统一拒绝）。</summary>
         public bool IsBusy(GameState s) => s.Main != null || s.Sub != null || s.Battle != null || s.Encounter != null;
 

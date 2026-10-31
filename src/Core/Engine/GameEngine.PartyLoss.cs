@@ -264,6 +264,10 @@ namespace Survival.Core.Engine
                 case "health1": a.Stats.Health = 1; return $"{r.Name}健康→1";
                 case "virus79": a.Body.Infected = true; a.Body.VirusLoad = 79; return $"{r.Name}病毒→79";
                 case "food41": a.Stats.Satiety = 41; a.Stats.Hydration = 41; return $"{r.Name}饱食与水分→41";
+                // Q90（B8c）：造自主睡眠/回休息的条件（只改数值，模式在下一真实世界 tick 段首按阈值判定）
+                case "wake50": a.Stats.Wakefulness = 50; return $"{r.Name}清醒→50（下一段起候补自主睡眠）";
+                case "rested": a.Stats.Wakefulness = 95; a.Stats.Energy = a.Stats.EnergyMax; return $"{r.Name}清醒→95、体力→{Fmt.T(a.Stats.EnergyMax)}（睡眠中的候补下一段改回休息）";
+                case "food85": a.Stats.Satiety = 85; a.Stats.Hydration = 85; a.Stats.Morale = 85; return $"{r.Name}饱食、水分、精神→85（高于80不被截降）";
                 case "kill": CompanionDown(s, a, "开发入口"); return $"{r.Name}已死亡";
                 case "spear0":
                     var w = s.Items.FirstOrDefault(i => i.LoanSlot != null && (i.IsWornBy(actorId) || i.Owner == ItemInstance.CarriedOwner(actorId)))

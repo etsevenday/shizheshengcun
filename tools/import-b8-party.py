@@ -7,7 +7,9 @@
 - A11 §7 RB01 行 → config.party.escortTemplate：15 门技能均 1、基础速度 4、借用 wooden_spear 1 件、30 分钟 wait 登记；
   同时存活通用护送员最多 C−1（R08 RC1 写 min(3,C−1)，C≤4 时同值）。
 - A11 §5.2 / R08 §2 → config.party.recruitInitialStats：H20 且 H 上限 20、N85/W85/E18/S90/M70/I70/V0 未感染。
-- R08 §3 / A11 §5.3 → config.party.reserveCare：N/W 托底 40；22:00—06:00 遮蔽睡眠，其余时段 wait（待确认 Q90，按 R08 §3）。
+- R08 §3 / A11 §5.3 → config.party.reserveCare。B8c（策划答复 Q90，R08/S13 「Q90 休息睡眠与候补自主恢复」本轮章、
+  assets/20261031/party/party-adjudications.json reserveCare）取代原 N/W 托底 40 与 22:00—06:00 固定作息：候补按自身 S/E 自动 rest/sleep
+  （段首 S<60 或 E<6 进 sleep，S≥90 且 E≥14 回 rest），公共补给 N+5.2/W+6.4/M+1 每小时、只补到 80；规则版本 2。
 - 营区替身（待确认 Q89）：v3 地图（B11）前编队、候补居住、RB01 与报失都在 camp 办理（hubStandIn），B11 导入后改为 h02/h06。
 
 可重复运行，结果相同。
@@ -70,11 +72,17 @@ def main():
             "wakefulness": 90, "morale": 70, "immunity": 70, "virusLoad": 0,
         },
         "reserveCare": {
-            "satietyFloor": 40,
-            "hydrationFloor": 40,
-            "sleepStartMinute": 1320,
-            "sleepEndMinute": 360,
-            "awakeAction": "wait",
+            # Q90（B8c）：照护规则版本（存档记录，旧档迁移时初始化模式一次）
+            "ruleVersion": 2,
+            "enterSleepWakefulnessBelow": 60,
+            "enterSleepEnergyBelow": 6,
+            "exitSleepWakefulnessAtLeast": 90,
+            "exitSleepEnergyAtLeast": 14,
+            "publicSatietyPerHour": 5.2,
+            "publicHydrationPerHour": 6.4,
+            "publicNutritionTarget": 80,
+            "publicMoralePerHour": 1,
+            "publicMoraleTarget": 80,
             "redHealth": 5,
             "redVirus": 80,
         },

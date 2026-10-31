@@ -45,11 +45,16 @@ namespace Survival.Core.Engine
         public SegmentContext ComputeSegment(GameState s, ActionState a) => ComputeSegment(s, a, s.Player);
 
         /// <summary>按某角色的段首状态计算本段速率（R08 §2：各角色身体各自结算；同行者的行动类型见 CompanionAction）。</summary>
-        public SegmentContext ComputeSegment(GameState s, ActionState a, ActorState actor)
+        public SegmentContext ComputeSegment(GameState s, ActionState a, ActorState actor) => ComputeSegment(s, a, actor, s.CurrentLocation);
+
+        /// <summary>
+        /// 按角色实际所在地点 loc 的已完工设施计算本段速率（Q90 PTY-Q90d、S09 本轮章：主角、同行者、候补同一设施判定；
+        /// 候补用营区地点，主角与同行者用当前地点）。设施按段首状态，本段末完工的下一段才生效。
+        /// </summary>
+        public SegmentContext ComputeSegment(GameState s, ActionState a, ActorState actor, string loc)
         {
             var ctx = new SegmentContext();
             var st = actor.Stats;
-            var loc = s.CurrentLocation;
             var locCfg = _locs[loc];
             var fac = s.Locations[loc].Facility;
             var c = Config;
@@ -266,7 +271,7 @@ namespace Survival.Core.Engine
         {
             var party = s.PartyActors.ToList();
             var ctxs = party.Select(ctxOf).ToList();
-            // 候补（B8，R08 §3、A11 §5.3）：同一世界 tick 里按营区公共照护各结算一次（战斗轮末也一样，不吃战斗 N/W 冻结）
+            // 候补（B8，R08 §3、A11 §5.3；Q90/B8c）：同一世界 tick 里按自主 rest/sleep 与营区实际设施各结算一次（战斗轮末也一样，不吃战斗 N/W 冻结）
             var reserves = ReserveActors(s);
             var rctxs = reserves.Select(a => ReserveSegment(s, a)).ToList();
             // 段首：火堆加工资格与身体快照（免疫、病毒按段首状态计算）
@@ -277,11 +282,11 @@ namespace Survival.Core.Engine
 
             // 身体变化（每小时速率 × 5/60），按项上限夹紧
             for (var k = 0; k < party.Count; k++) ApplyRates(s, party[k], ctxs[k]);
-            // 候补：先结算该段自然消耗，再把 N/W 托到不低于 40（高于 40 不提高，不生成任何物品）
+            // 候补（Q90）：先结算该段 rest/sleep 自然变化，再加公共 N/W/M 补给增量（每项只补到 80、高值不截降、不生成任何物品）
             for (var k = 0; k < reserves.Count; k++)
             {
                 ApplyRates(s, reserves[k], rctxs[k]);
-                ReserveFloor(reserves[k]);
+                ApplyReserveCare(reserves[k]);
             }
 
             s.GameMinute += Tick;

@@ -37,7 +37,8 @@
         <div class="ca-note tiny">开战号位在顶栏“编队”里改（任何地点空闲时都可以）；编入同行/留作候补只在@(e.LocName(e.HubLocation(s)))办理。</div>
         @if (e.Reserves(s).Count > 0)
         {
-            <div class="ca-note">候补留在@(e.LocName(e.HubLocation(s)))，接受公共照护：饱食/水分每段自然消耗后不低于@(Fmt.T(care.SatietyFloor))（只托底、不生成食水），22:00—06:00 遮蔽睡眠、其余时段等待；伤病与病毒照常发展。</div>
+            @* Q90（B8c，S14 本轮章）：候补只读显示自主休息/睡眠与营区实际设施；慢速公共恢复放悬停（二级），不出现投喂/排班/逐人切模式按钮 *@
+            <div class="ca-note" title="@ReserveCareDetail()">候补留在@(e.LocName(e.HubLocation(s)))自主休息或睡眠（按各自体力与清醒自动切换），饱食、水分、精神由营区慢慢补到@(Fmt.T(care.PublicNutritionTarget))，不用你送食水、不扣你的物资；伤病与病毒照常发展。同行队员仍要你自己补给。</div>
         }
         @{
             var rbWhy = e.EscortRegistrationBlocked(s);
@@ -98,14 +99,29 @@
             @if (!isMe)
             {
                 <span class="party-acts">
-                    <button type="button" class="eq-btn" disabled="@(toggleWhy != null)" title="@(toggleWhy ?? (active ? "留在营区作候补（公共照护：饱食/水分不低于40，伤病照常）" : "编入同行队伍"))" @onclick="() => G.SetActive(id, !active)">@(active ? "留作候补" : "编入同行")</button>
+                    <button type="button" class="eq-btn" disabled="@(toggleWhy != null)" title="@(toggleWhy ?? (active ? "留在营区作候补（下一段起自主休息/睡眠，饱食/水分/精神慢慢回到80，伤病照常；切换本身不恢复）" : "编入同行队伍（立即停止营区公共补给，之后要你补给）"))" @onclick="() => G.SetActive(id, !active)">@(active ? "留作候补" : "编入同行")</button>
                 </span>
             }
             </div>
             <div class="party-stats tiny" title="健康/饱食/水分/体力/清醒/精神/病毒">
                 健@(Fmt.T(st.Health)) 饱@(Fmt.T(st.Satiety)) 水@(Fmt.T(st.Hydration)) 体@(Fmt.T(st.Energy)) 醒@(Fmt.T(st.Wakefulness)) 精@(Fmt.T(st.Morale))@(a.Body.Infected ? $" 病毒{Fmt.N(a.Body.VirusLoad)}" : "")
             </div>
+            @if (!active)
+            {
+                <div class="party-care tiny" data-reserve-mode="@e.ReserveModeOf(a)" title="@ReserveCareDetail()">@e.ReserveCareLabel(s, a)</div>
+            }
             <div class="party-weapons tiny muted">武器：@weapons</div>
         </div>
     };
+
+    /// <summary>候补慢速公共恢复的二级说明（悬停）：数值读配置。</summary>
+    private string ReserveCareDetail()
+    {
+        var c = G.E.Config.Party.ReserveCare;
+        var rest = G.E.Config.HourlyRates["rest"];
+        var hr = G.E.Config.HealthRules;
+        return $"自主作息：清醒低于{Fmt.T(c.EnterSleepWakefulnessBelow)}或体力低于{Fmt.T(c.EnterSleepEnergyBelow)}时去睡，睡到清醒≥{Fmt.T(c.ExitSleepWakefulnessAtLeast)}且体力≥{Fmt.T(c.ExitSleepEnergyAtLeast)}再改休息，不看钟点。"
+            + $"营区公共补给（叠在休息/睡眠的自然消耗上）：饱食每小时+{Fmt.T(c.PublicSatietyPerHour)}、水分+{Fmt.T(c.PublicHydrationPerHour)}（无病时净+{Fmt.T(c.PublicSatietyPerHour + rest.Satiety)}/+{Fmt.T(c.PublicHydrationPerHour + rest.Hydration)}）、精神+{Fmt.T(c.PublicMoralePerHour)}，各只补到{Fmt.T(c.PublicNutritionTarget)}，高于它照常自然下降。"
+            + $"遮蔽棚、床垫只认营区实际建成的；健康只在遮蔽处且饱食/水分≥{Fmt.T(hr.RecoveryMinSatiety)}、精神≥{Fmt.T(hr.RecoveryMinMorale)}时自然恢复。不治病、不清病毒。";
+    }
 }

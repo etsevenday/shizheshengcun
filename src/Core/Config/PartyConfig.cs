@@ -72,13 +72,22 @@ namespace Survival.Core.Config
 
     public sealed class ReserveCareConfig
     {
-        public double SatietyFloor { get; set; } = 40;
-        public double HydrationFloor { get; set; } = 40;
-        /// <summary>遮蔽睡眠时段（日内分钟，跨午夜）：22:00—06:00。</summary>
-        public int SleepStartMinute { get; set; } = 1320;
-        public int SleepEndMinute { get; set; } = 360;
-        /// <summary>其余时段按什么结算：wait（R08 §3，待确认 Q90 选 A）或 rest（A11 §5.3）。</summary>
-        public string AwakeAction { get; set; } = "wait";
+        // Q90（策划答复，R08/S13「Q90 休息睡眠与候补自主恢复」本轮章，开发计划 v0.9 B8c）：取代原 N/W 托底 40 与 22:00—06:00 固定作息。
+        /// <summary>照护规则版本（存档 GameState.ReserveCareRule；2 = Q90 自主 rest/sleep 与慢速公共补给）。</summary>
+        public int RuleVersion { get; set; } = 2;
+        /// <summary>段首 S（清醒）低于它或 E（体力）低于 EnterSleepEnergyBelow 时进入睡眠。</summary>
+        public double EnterSleepWakefulnessBelow { get; set; } = 60;
+        public double EnterSleepEnergyBelow { get; set; } = 6;
+        /// <summary>睡眠中段首 S ≥ 它且 E ≥ ExitSleepEnergyAtLeast 才回休息。</summary>
+        public double ExitSleepWakefulnessAtLeast { get; set; } = 90;
+        public double ExitSleepEnergyAtLeast { get; set; } = 14;
+        /// <summary>公共补给（每小时，叠在 rest/sleep 自然消耗上）：N+5.2、W+6.4，该项只补到 PublicNutritionTarget。</summary>
+        public double PublicSatietyPerHour { get; set; } = 5.2;
+        public double PublicHydrationPerHour { get; set; } = 6.4;
+        public double PublicNutritionTarget { get; set; } = 80;
+        /// <summary>营区公共关怀 M+1/h，该项只补到 PublicMoraleTarget。</summary>
+        public double PublicMoralePerHour { get; set; } = 1;
+        public double PublicMoraleTarget { get; set; } = 80;
         /// <summary>红线：H 首次降到 ≤ 它、V 首次升到 ≥ 它各提示一次（A11 §5.3）。</summary>
         public double RedHealth { get; set; } = 5;
         public double RedVirus { get; set; } = 80;

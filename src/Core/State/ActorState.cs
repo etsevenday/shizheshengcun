@@ -36,6 +36,11 @@ namespace Survival.Core.State
         public string Name { get; set; } = "";
         /// <summary>候补红线锁存（A11 §5.3）：health（H≤5）、virus（V≥80）；离开阈值后清除，可再提示。</summary>
         public Dictionary<string, bool> RedLatched { get; set; } = new Dictionary<string, bool>();
+        /// <summary>
+        /// 候补自主照护当前模式（Q90，schema 18）："rest"/"sleep"；null = 尚未判定（不在候补、刚留作候补或旧档未初始化），
+        /// 下一真实世界 tick 段首按自身 S/E 阈值判定。编入同行时清空。
+        /// </summary>
+        public string? ReserveMode { get; set; }
 
         public bool IsPlayer => Id == GameState.PlayerId;
 

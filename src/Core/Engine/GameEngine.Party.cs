@@ -185,7 +185,7 @@ namespace Survival.Core.Engine
             RememberRequest(s, requestId);
             ApplySetActive(s, actorId, active);
             var name = RosterOf(s, actorId)!.Name;
-            Emit(s, GameEventKind.Info, active ? $"{name}编入同行队伍。" : $"{name}留在{LocName(HubLocation(s))}作候补（公共照护：饱食/水分不低于{Fmt.T(Config.Party.ReserveCare.SatietyFloor)}，伤病照常）。");
+            Emit(s, GameEventKind.Info, active ? $"{name}编入同行队伍。" : $"{name}留在{LocName(HubLocation(s))}作候补（自主休息/睡眠，饱食/水分/精神慢慢回到{Fmt.T(Config.Party.ReserveCare.PublicNutritionTarget)}，伤病照常）。");
             return ActionResult.Success();
         }
 
@@ -200,6 +200,8 @@ namespace Survival.Core.Engine
                 if (!s.Party.Contains(actorId)) s.Party.Add(actorId);
             }
             else s.Party.Remove(actorId);
+            // Q90：切换本身 0 时间、不恢复；候补模式只在候补期间有效，编入同行即清空（再留作候补时下一真实 tick 重新判定）
+            if (s.Actors.TryGetValue(actorId, out var moved)) moved.ReserveMode = null;
             RepairFormation(s);
             s.FormationVersion++;
         }
@@ -344,66 +346,79 @@ namespace Survival.Core.Engine
             return slot <= 0 ? 1 : slot;
         }
 
-        // ───────────── 候补公共照护（R08 §3、A11 §5.3；M184） ─────────────
+        // ───────────── 候补公共照护（R08 §3、A11 §5.3；M184）→ Q90 自主照护（R08/S13/A11 本轮章；B8c M205） ─────────────
 
         /// <summary>本段要按公共照护结算的候补（存活、在名册、不在同行）。</summary>
         private List<ActorState> ReserveActors(GameState s) => Reserves(s).Select(r => s.Actors[r.ActorId]).ToList();
 
-        /// <summary>候补此刻（日内分钟）是否在遮蔽睡眠时段（22:00—06:00）。</summary>
-        public bool ReserveSleeping(int minute)
+        /// <summary>
+        /// 候补按自身状态选模式（Q90：PTY-Q90b）：段首 S&lt;60 或 E&lt;6 进 sleep；sleep 中段首 S≥90 且 E≥14 才回 rest，其余保持原模式；
+        /// 缺模式（首次/刚留作候补/旧档）按同一进入条件判定，不满足则 rest。只看自身状态，不看钟点（22:00/06:00/午夜不强制切换）。
+        /// </summary>
+        public string NextReserveMode(ActorState actor)
         {
             var care = Config.Party.ReserveCare;
-            var m = ((minute % Clock.MinutesPerDay) + Clock.MinutesPerDay) % Clock.MinutesPerDay;
-            return care.SleepStartMinute > care.SleepEndMinute
-                ? m >= care.SleepStartMinute || m < care.SleepEndMinute
-                : m >= care.SleepStartMinute && m < care.SleepEndMinute;
+            var st = actor.Stats;
+            var enter = st.Wakefulness < care.EnterSleepWakefulnessBelow - 1e-9 || st.Energy < care.EnterSleepEnergyBelow - 1e-9;
+            if (actor.ReserveMode == "sleep")
+                return st.Wakefulness >= care.ExitSleepWakefulnessAtLeast - 1e-9 && st.Energy >= care.ExitSleepEnergyAtLeast - 1e-9 ? "rest" : "sleep";
+            return enter ? "sleep" : "rest";
+        }
+
+        /// <summary>候补当前（或下一段将要）的模式：已存模式；没有时按阈值预判（只读，不写回）。</summary>
+        public string ReserveModeOf(ActorState actor) => actor.ReserveMode ?? NextReserveMode(actor);
+
+        /// <summary>
+        /// 候补所在地点实际已完工的恢复设施（Q90 PTY-Q90d，S09 本轮章）：none（无遮蔽）/shelter（遮蔽：室内地点或已建成的遮蔽棚）/bed（遮蔽且已建成床垫）。
+        /// 读营区（现为替身 camp）真实设施，不因“营区/候补”虚构棚或床，也不读别的地点。
+        /// </summary>
+        public string ReserveFacility(GameState s)
+        {
+            var loc = HubLocation(s);
+            if (!_locs.ContainsKey(loc) || !s.Locations.ContainsKey(loc)) return "none";
+            if (!IsSheltered(s, loc)) return "none";
+            return s.Locations[loc].Facility.BedBuilt ? "bed" : "shelter";
         }
 
         /// <summary>
-        /// 候补本段速率：营区强制遮蔽、无火堆与床垫加成；22—06 按遮蔽睡眠，其余按 wait（待确认 Q90 选 A；配置 awakeAction=rest 时按休息）。
-        /// 装备求生效果、低精神折半、腹泻、归零伤害与自然恢复条件同主行动（S13 现有速率）。
+        /// 候补本段速率（Q90）：段首按自身 S/E 定 rest/sleep 并存回模式；速率、设施（营区实际已完工的遮蔽棚/床垫，与主角同一判定 ComputeSegment）、
+        /// 装备求生效果、低精神折半全部正 E、腹泻、归零伤害与遮蔽 rest/sleep 的健康自然恢复都与主角同一函数。公共 N/W/M 补给另在 ApplyReserveCare 里加。
         /// </summary>
         private SegmentContext ReserveSegment(GameState s, ActorState actor)
         {
-            var c = Config;
-            var st = actor.Stats;
-            var sleep = ReserveSleeping(s.GameMinute);
-            var type = sleep ? ActionType.Sleep : c.Party.ReserveCare.AwakeAction == "rest" ? ActionType.Rest : ActionType.Wait;
-            var a = new ActionState { Type = type, TargetId = "" };
-            var ctx = new SegmentContext { Sheltered = true, IsWork = false, ActionType = type };
-            string key;
-            if (sleep) key = "sleep_sheltered";
-            else
-            {
-                var raw = RateKey(type);
-                key = c.Actions.RateAliases.TryGetValue(raw, out var alias) ? alias : raw;
-            }
-            ctx.Rates = c.HourlyRates[key].Copy();
-            ApplyGearRates(s, actor, a, ctx);
-            if ((type == ActionType.Rest || type == ActionType.Sleep) && ctx.Rates.Energy > 0 && c.Thresholds["morale"].IsBelow(st.Morale))
-                ctx.Rates.Energy *= c.FacilityEffects.LowMoraleEnergyRecoveryFactor;
-            if (actor.DiarrheaUntil.HasValue && actor.DiarrheaUntil.Value > s.GameMinute)
-                ctx.Rates.Hydration += c.ItemActions.DiarrheaExtraHydrationPerHour;
-            var hr = c.HealthRules;
-            var causes = new List<string>();
-            double health = 0;
-            if (st.Satiety <= 0) { health += hr.ZeroSatietyPerHour; causes.Add("饥饿"); }
-            if (st.Hydration <= 0) { health += hr.ZeroHydrationPerHour; causes.Add("缺水"); }
-            if (st.Wakefulness <= 0) { health += hr.ZeroWakefulnessPerHour; causes.Add("缺乏睡眠"); }
-            if (causes.Count > 0) ctx.DamageCause = causes[0];
-            if ((type == ActionType.Rest || type == ActionType.Sleep)
-                && st.Satiety >= hr.RecoveryMinSatiety && st.Hydration >= hr.RecoveryMinHydration && st.Morale >= hr.RecoveryMinMorale)
-                health += hr.ShelteredRestRecoveryPerHour;
-            ctx.HealthPerHour = health;
-            return ctx;
+            var mode = NextReserveMode(actor);
+            actor.ReserveMode = mode;
+            var a = new ActionState { Type = mode == "sleep" ? ActionType.Sleep : ActionType.Rest, TargetId = "" };
+            var loc = HubLocation(s);
+            return ComputeSegment(s, a, actor, _locs.ContainsKey(loc) && s.Locations.ContainsKey(loc) ? loc : s.CurrentLocation);
         }
 
-        /// <summary>N/W 托底：低于 40 只补到 40，高于 40 保持（R08 §3）。</summary>
-        private void ReserveFloor(ActorState actor)
+        /// <summary>
+        /// 公共补给（Q90 PTY-Q90c）：作为当段速率增量，在自然消耗之后按 1/12 小时提交：N+5.2/h、W+6.4/h、M+1/h；
+        /// 每项只补到 80（且不超过角色上限），已高于 80 不截降（自然消耗照常）。不生成物品、不扣玩家库存。
+        /// </summary>
+        private void ApplyReserveCare(ActorState actor)
         {
             var care = Config.Party.ReserveCare;
-            if (actor.Stats.Satiety < care.SatietyFloor) actor.Stats.Satiety = care.SatietyFloor;
-            if (actor.Stats.Hydration < care.HydrationFloor) actor.Stats.Hydration = care.HydrationFloor;
+            var h = Tick / 60.0;
+            var st = actor.Stats;
+            void Top(StatId id, double perHour, double target)
+            {
+                var cap = Math.Min(target, st.Max(id));
+                var v = st.Get(id);
+                if (perHour <= 0 || v >= cap) return;
+                st.Set(id, Math.Min(cap, v + perHour * h));
+            }
+            Top(StatId.Satiety, care.PublicSatietyPerHour, care.PublicNutritionTarget);
+            Top(StatId.Hydration, care.PublicHydrationPerHour, care.PublicNutritionTarget);
+            Top(StatId.Morale, care.PublicMoralePerHour, care.PublicMoraleTarget);
+        }
+
+        /// <summary>候补本段的一行说明（右栏只读）：自主休息/自主睡眠 + 营区实际设施。</summary>
+        public string ReserveCareLabel(GameState s, ActorState actor)
+        {
+            var fac = ReserveFacility(s) switch { "bed" => "床垫", "shelter" => "遮蔽", _ => "无设施" };
+            return $"{(ReserveModeOf(actor) == "sleep" ? "自主睡眠" : "自主休息")} · {fac}";
         }
 
         /// <summary>候补红线（A11 §5.3、NP-A21、TX06）：H 首次 ≤5、V 首次 ≥80 各提示一次；离开阈值后清锁存，可再提示。不暂停主行动。</summary>
