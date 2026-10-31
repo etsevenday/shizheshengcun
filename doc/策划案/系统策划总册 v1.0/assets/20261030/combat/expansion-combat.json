@@ -146,7 +146,7 @@
         1,
         2
       ],
-      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+      "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
     },
     {
       "id": "ec_labwalker",
@@ -177,7 +177,7 @@
         1,
         2
       ],
-      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+      "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
     },
     {
       "id": "ec_cablecrawler",
@@ -208,7 +208,7 @@
         1,
         2
       ],
-      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+      "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
     },
     {
       "id": "ec_stockbracer",
@@ -239,7 +239,7 @@
         1,
         2
       ],
-      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+      "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
     },
     {
       "id": "ec_boss_crypt",
@@ -267,7 +267,7 @@
         1,
         2
       ],
-      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+      "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
     },
     {
       "id": "ec_boss_lab",
@@ -296,7 +296,7 @@
         2
       ],
       "specialTargetRule": "标记可选任意存活目标；冷链守卫标记最靠后存活者，意图锁定后公开；基础近战仍12",
-      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+      "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
     },
     {
       "id": "ec_boss_armory",
@@ -324,7 +324,7 @@
         1,
         2
       ],
-      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+      "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
     },
     {
       "id": "ec_boss_relay",
@@ -352,7 +352,7 @@
         1,
         2
       ],
-      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+      "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
     },
     {
       "id": "ec_boss_water",
@@ -380,7 +380,7 @@
         1,
         2
       ],
-      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+      "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
     },
     {
       "id": "ec_boss_mine",
@@ -408,7 +408,7 @@
         1,
         2
       ],
-      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+      "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
     },
     {
       "id": "ec_boss_mall",
@@ -436,7 +436,7 @@
         1,
         2
       ],
-      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+      "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
     },
     {
       "id": "ec_boss_cold",
@@ -465,7 +465,7 @@
         2
       ],
       "specialTargetRule": "标记可选任意存活目标；冷链守卫标记最靠后存活者，意图锁定后公开；基础近战仍12",
-      "activationBudgetRule": "正常激活一个2AP主意图；剩余AP仅防御/相邻换位，不附加第二攻击。追击仅普通攻击一次或移动，不重复主招。"
+      "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
     }
   ],
   "enemySets": [
@@ -1701,7 +1701,9 @@
     "all3TacticalItemsHaveOwnerApprovedPhysicalRecipes": true,
     "campaignClaimsReuseMapResourceIds": true,
     "realGameplayTestsRun": false,
-    "eightRepeatableFixedTotalsComputed": true
+    "eightRepeatableFixedTotalsComputed": true,
+    "optional5UnsafeOverworldNodes": true,
+    "optional5RewardsNotDungeonRewards": true
   },
   "repeatableTotals": [
     {
@@ -1887,5 +1889,179 @@
     "q26": "未解锁在当前操作台和指令说明隐藏，成长页可见",
     "q23": "保护中原本可食允许食用；原子消费取消该份加工，取出解除保护按原期腐败"
   },
-  "mapSource": "../narrative-map/map-v3-normalized.json"
+  "mapSource": "../narrative-map/map-v3-normalized.json",
+  "optionalLegacyEliteEncounters": [
+    {
+      "id": "legacy_elite_z_pump_foreman",
+      "enemyId": "z_pump_foreman",
+      "nodeId": "w33_waterworks",
+      "nodeName": "荒废水厂",
+      "legacyNode": "d01_05",
+      "enemyOrder": [
+        "z_pump_foreman"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "precision_parts": 1
+        },
+        "chance": 1,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_pump_foreman",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    },
+    {
+      "id": "legacy_elite_z_isolation_guard",
+      "enemyId": "z_isolation_guard",
+      "nodeId": "w31_suburb",
+      "nodeName": "城郊棚户",
+      "legacyNode": "d02_05",
+      "enemyOrder": [
+        "z_isolation_guard"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "medical_gauze": 2
+        },
+        "chance": 1,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_isolation_guard",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    },
+    {
+      "id": "legacy_elite_z_power_guard",
+      "enemyId": "z_power_guard",
+      "nodeId": "w20_powercut",
+      "nodeName": "高压走廊",
+      "legacyNode": "d03_05",
+      "enemyOrder": [
+        "z_power_guard"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "electronics": 1
+        },
+        "chance": 1,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_power_guard",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    },
+    {
+      "id": "legacy_elite_z_relay_guard",
+      "enemyId": "z_relay_guard",
+      "nodeId": "w27_relay",
+      "nodeName": "废中继营",
+      "legacyNode": "d04_05",
+      "enemyOrder": [
+        "z_relay_guard"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "precision_parts": 2
+        },
+        "chance": 1,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_relay_guard",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    },
+    {
+      "id": "legacy_elite_z_guard",
+      "enemyId": "z_guard",
+      "nodeId": "w32_railcut",
+      "nodeName": "铁路线切口",
+      "legacyNode": null,
+      "enemyOrder": [
+        "z_guard"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "steel": 1
+        },
+        "chance": 0.4,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_guard",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    }
+  ],
+  "combatResolutionContract": "assets/20261031/combat/combat-resolution-adjudications.json",
+  "legacyElitePlacementVersion": "q75_q82_20261031"
 }

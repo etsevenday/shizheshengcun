@@ -1,0 +1,176 @@
+{
+  "version": "q75_q82_20261031",
+  "status": "approved_planning_target_not_engine_verified",
+  "encounters": [
+    {
+      "id": "legacy_elite_z_pump_foreman",
+      "enemyId": "z_pump_foreman",
+      "nodeId": "w33_waterworks",
+      "nodeName": "荒废水厂",
+      "legacyNode": "d01_05",
+      "enemyOrder": [
+        "z_pump_foreman"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "precision_parts": 1
+        },
+        "chance": 1,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_pump_foreman",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    },
+    {
+      "id": "legacy_elite_z_isolation_guard",
+      "enemyId": "z_isolation_guard",
+      "nodeId": "w31_suburb",
+      "nodeName": "城郊棚户",
+      "legacyNode": "d02_05",
+      "enemyOrder": [
+        "z_isolation_guard"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "medical_gauze": 2
+        },
+        "chance": 1,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_isolation_guard",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    },
+    {
+      "id": "legacy_elite_z_power_guard",
+      "enemyId": "z_power_guard",
+      "nodeId": "w20_powercut",
+      "nodeName": "高压走廊",
+      "legacyNode": "d03_05",
+      "enemyOrder": [
+        "z_power_guard"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "electronics": 1
+        },
+        "chance": 1,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_power_guard",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    },
+    {
+      "id": "legacy_elite_z_relay_guard",
+      "enemyId": "z_relay_guard",
+      "nodeId": "w27_relay",
+      "nodeName": "废中继营",
+      "legacyNode": "d04_05",
+      "enemyOrder": [
+        "z_relay_guard"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "precision_parts": 2
+        },
+        "chance": 1,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_relay_guard",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    },
+    {
+      "id": "legacy_elite_z_guard",
+      "enemyId": "z_guard",
+      "nodeId": "w32_railcut",
+      "nodeName": "铁路线切口",
+      "legacyNode": null,
+      "enemyOrder": [
+        "z_guard"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "steel": 1
+        },
+        "chance": 0.4,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_guard",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    }
+  ]
+}

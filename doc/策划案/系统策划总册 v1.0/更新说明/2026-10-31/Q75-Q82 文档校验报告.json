@@ -1,0 +1,380 @@
+{
+  "date": "2026-10-31",
+  "scope": "策划文档静态检查；不代表新程序实现或兼容性工程自测已通过",
+  "checks": [
+    {
+      "name": "Q文件只改策划答复字段",
+      "passed": true
+    },
+    {
+      "name": "Q23-Q28均已答",
+      "passed": true
+    },
+    {
+      "name": "143节点180边",
+      "passed": true
+    },
+    {
+      "name": "所有边端点/时间",
+      "passed": true
+    },
+    {
+      "name": "全图物理可达",
+      "passed": true
+    },
+    {
+      "name": "八地牢守卫不可绕到记录点",
+      "passed": true
+    },
+    {
+      "name": "记录与出口字段正确",
+      "passed": true
+    },
+    {
+      "name": "许可54/禁22/副本67",
+      "passed": true
+    },
+    {
+      "name": "全部许可为非势力主世界",
+      "passed": true
+    },
+    {
+      "name": "72h公式JSON",
+      "passed": true
+    },
+    {
+      "name": "D5 08批准/18序章目标",
+      "passed": true
+    },
+    {
+      "name": "70%与攻击后/隐藏技能",
+      "passed": true
+    },
+    {
+      "name": "19配方输入输出燃料都有定义",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "96资源节点有效",
+      "passed": true
+    },
+    {
+      "name": "42敌/31遭遇引用",
+      "passed": true
+    },
+    {
+      "name": "73装备75技能保留",
+      "passed": true
+    },
+    {
+      "name": "73来源节点有效",
+      "passed": true
+    },
+    {
+      "name": "随机报价保守有界且普通品质",
+      "passed": true
+    },
+    {
+      "name": "报价整表锁定/读档取消不重抽",
+      "passed": true
+    },
+    {
+      "name": "索引与同源文件一致",
+      "passed": true
+    },
+    {
+      "name": "原开发记录及修改记录保持",
+      "passed": true
+    },
+    {
+      "name": "本地链接有效",
+      "passed": true,
+      "details": {
+        "links": 967
+      }
+    },
+    {
+      "name": "全部JSON可读",
+      "passed": true
+    },
+    {
+      "name": "27原gate/26规范/180边合同",
+      "passed": true
+    },
+    {
+      "name": "135新增规则且旧8不覆盖",
+      "passed": true
+    },
+    {
+      "name": "普通30+25/副本15+50/公共到访100",
+      "passed": true
+    },
+    {
+      "name": "新增清理全部明确/九池100",
+      "passed": true
+    },
+    {
+      "name": "现役城市与副本无随机",
+      "passed": true
+    },
+    {
+      "name": "副本每代1次不世界补充",
+      "passed": true
+    },
+    {
+      "name": "完整16岗位18教学8支线253集",
+      "passed": true
+    },
+    {
+      "name": "对白非空且ID唯一",
+      "passed": true
+    },
+    {
+      "name": "NPC文本入口与全部状态有效",
+      "passed": true
+    },
+    {
+      "name": "18教学三类文本均存在",
+      "passed": true
+    },
+    {
+      "name": "16岗位19服务均绑定",
+      "passed": true
+    },
+    {
+      "name": "服务输入输出物品有效",
+      "passed": true
+    },
+    {
+      "name": "服务与门槛关键事实同名",
+      "passed": true
+    },
+    {
+      "name": "Q29-Q33均已答",
+      "passed": true
+    },
+    {
+      "name": "Q34-Q36已答且字段合同一致",
+      "passed": true
+    },
+    {
+      "name": "Q37A及按钮宽度合同",
+      "passed": true
+    },
+    {
+      "name": "Q38-Q42均有答复",
+      "passed": true
+    },
+    {
+      "name": "Q40直接地面最终事务",
+      "passed": true
+    },
+    {
+      "name": "Q38工具锁与Q39空槽规则",
+      "passed": true
+    },
+    {
+      "name": "Q41/Q42阶段时机数据",
+      "passed": true
+    },
+    {
+      "name": "Q43已答和默认页同源规则",
+      "passed": true
+    },
+    {
+      "name": "Q44-Q52九项已答",
+      "passed": true
+    },
+    {
+      "name": "Q75-Q82全部已答",
+      "passed": true
+    },
+    {
+      "name": "73拆解表及引用",
+      "passed": true
+    },
+    {
+      "name": "438种品质/专家拆解预算组合",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "38武器全部五技能/十五门75节点未增加",
+      "passed": true
+    },
+    {
+      "name": "饰品池合法且蓝色有两独立组",
+      "passed": true
+    },
+    {
+      "name": "新增合同和A12联合数据一致",
+      "passed": true
+    },
+    {
+      "name": "旧饰品实例不重抽",
+      "passed": true
+    },
+    {
+      "name": "Q53-Q61九项已答",
+      "passed": true
+    },
+    {
+      "name": "116资源逐项映射且96资源库存原样",
+      "passed": true
+    },
+    {
+      "name": "42采集65搜集9排除",
+      "passed": true
+    },
+    {
+      "name": "制造拆解阶级及经验唯一归属",
+      "passed": true
+    },
+    {
+      "name": "旧制造公式取消且不改战斗成长",
+      "passed": true
+    },
+    {
+      "name": "仍75节点及搜集3/10明确替换",
+      "passed": true
+    },
+    {
+      "name": "四旧遗迹训练不产物不刷新claim",
+      "passed": true
+    },
+    {
+      "name": "烹饪谱系与日额/旧档",
+      "passed": true
+    },
+    {
+      "name": "余量事务隔离和最小tick",
+      "passed": true
+    },
+    {
+      "name": "模拟旧22硬上限与改版同预算可达",
+      "passed": true
+    },
+    {
+      "name": "余量数值模拟45/95及小工作不零时",
+      "passed": true
+    },
+    {
+      "name": "成长合同及联合索引同源",
+      "passed": true
+    },
+    {
+      "name": "Q62-Q74全部已答",
+      "passed": true
+    },
+    {
+      "name": "C1及原31名单/8守卫首项完整",
+      "passed": true
+    },
+    {
+      "name": "24固定档及随机范围持久化",
+      "passed": true
+    },
+    {
+      "name": "控制抗性限域不成为病毒免疫",
+      "passed": true
+    },
+    {
+      "name": "普通拳1连拳12及绑带例外",
+      "passed": true
+    },
+    {
+      "name": "绑带材料/来源/拆解/槽完整",
+      "passed": true
+    },
+    {
+      "name": "新命中和疲劳仅我方不叠乘",
+      "passed": true
+    },
+    {
+      "name": "盾当前页快照且磨损一次",
+      "passed": true
+    },
+    {
+      "name": "小数速度同源和排序保存",
+      "passed": true
+    },
+    {
+      "name": "确认项不多tick/追击/技能价",
+      "passed": true
+    },
+    {
+      "name": "204288命中176控制实验有完整输入",
+      "passed": true
+    },
+    {
+      "name": "位移装备不改变失衡/减速概率",
+      "passed": true
+    },
+    {
+      "name": "双疲劳命中实验有提升且无必中",
+      "passed": true
+    },
+    {
+      "name": "战斗合同A12联合文件完全同源",
+      "passed": true
+    },
+    {
+      "name": "真实稀疏槽与单人不回1",
+      "passed": true
+    },
+    {
+      "name": "单人有成本调整与边界技能",
+      "passed": true
+    },
+    {
+      "name": "空前排迫近不扩大拳范围/不加隐藏控制",
+      "passed": true
+    },
+    {
+      "name": "医疗与持续/AP/前移裁定",
+      "passed": true
+    },
+    {
+      "name": "五可选精英节点/奖励引用合法",
+      "passed": true
+    },
+    {
+      "name": "31地牢及五野外分账，不进随机/不刷新",
+      "passed": true
+    },
+    {
+      "name": "贯穿后缀与真实槽衰减",
+      "passed": true
+    },
+    {
+      "name": "递减伤害与教学平加独立",
+      "passed": true
+    },
+    {
+      "name": "反应不连锁/不吃主动buff，经验防刷",
+      "passed": true
+    },
+    {
+      "name": "伤害1862784/位移128/贯穿60可复现数学条件",
+      "passed": true
+    },
+    {
+      "name": "实验输入hash与合同一致",
+      "passed": true
+    },
+    {
+      "name": "全结算/可选投放/战斗同源",
+      "passed": true
+    }
+  ],
+  "brokenLinks": [],
+  "preservationErrors": [],
+  "jsonErrors": [],
+  "gameplayTested": false,
+  "codeOrRuntimeChanged": false,
+  "linkCount": 967,
+  "perDocumentNotes": 51,
+  "classificationCompatibilityCases": 19,
+  "errors": []
+}

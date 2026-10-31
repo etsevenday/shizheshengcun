@@ -1,0 +1,1591 @@
+{
+  "version": "q75_q82_20261031",
+  "status": "approved_planning_target_not_engine_verified",
+  "sourceQuestions": [
+    "Q75",
+    "Q76",
+    "Q77",
+    "Q78",
+    "Q79",
+    "Q80",
+    "Q81",
+    "Q82"
+  ],
+  "precedence": {
+    "baseline": "assets/20261031/combat/combat-adjudications.json",
+    "overrides": [
+      "automatic_post_command_compression",
+      "single_survivor_all_own_positions_compatible_with_slot1",
+      "single_survivor_displacement_ignored",
+      "old_pierce_pair_target",
+      "global_damage_buff_hard_cap1_5",
+      "legacy_elites_without_placement"
+    ]
+  },
+  "medical": {
+    "skillsTarget": "any_living_friendly_including_self_within_explicit_skill_position_rules",
+    "requiresCompatibleMedicalWeaponPageForSkills": true,
+    "materialsFromCasterOnly": true,
+    "itemsWithoutMedicalKit": "self_use_bandage_antibiotics_cure_2AP",
+    "existingTargetCooldownShared": true,
+    "noThirdVirusCureRoute": true
+  },
+  "duration": {
+    "genericNFullRounds": "remaining_current_round_plus_N_full_rounds_expire_end_r_plus_N",
+    "appliedAtRound": 4,
+    "twoRoundExpiresEnd": 6,
+    "charge": "end_r_plus1",
+    "slow": "next_round_only",
+    "cooldownUnchanged": "CD1_r_cast_r_plus1_unavailable_r_plus2_available",
+    "pursuitDoesNotAdvanceDuration": true,
+    "sameNamedStrongestNoLayer": true
+  },
+  "enemyActivation": {
+    "oneMainIntentPerNormalActivation": true,
+    "remainingAp": "end_without_auto_defend",
+    "cannotAttackAndCannotMoveFallback": "one_defense_if_legal",
+    "frontMove": "adjacent_empty_move_or_adjacent_friendly_swap_cost1AP",
+    "oneNormalAttackAtMostAfterMove": true,
+    "passivelySwappedAllyDoesNotActivate": true,
+    "exposureApproach": {
+      "onlyIfNoValidTargetAndTargetFrontVacancies": true,
+      "target": "foremost_living_opponent_with_no_living_actor_ahead",
+      "requiresAttackerOwnSlotLegal": true,
+      "approachAp": 1,
+      "plainAttackAp": 2,
+      "damageFactor": 0.7,
+      "onlyIfTotalAPAffordable": true,
+      "biteOrControlOrOtherSpecialIntent": false,
+      "changesOpponentActualSlot": false,
+      "doesNotChangePlayerFistTargetRule": true,
+      "nonhostileNotConverted": true,
+      "reason": "avoid_indefinite_solo_back_slot_immunity_while_preserving_actual_own_slot_restrictions"
+    }
+  },
+  "enemyAssumptions": {
+    "z_guardHeavyStrikeFactor": 1,
+    "z_haulerAndZ_clingerMixedAttack": {
+      "grab": 80,
+      "bite": 20
+    },
+    "implicitBiteOnUnspecifiedMelee": false,
+    "z_clingerPullDamage": 0
+  },
+  "positions": {
+    "slots": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "sameForBothSides": true,
+    "realSlotsPersistWithHoles": true,
+    "automaticCompressionAfterCommandDeathOrRound": false,
+    "initialSpawnStillCompactUnlessSavedFormation": true,
+    "soleSurvivorNotTeleportedTo1": true,
+    "blanketSoloOwnSlotBypass": false,
+    "forcedMove": {
+      "pull": -1,
+      "knockback": 1,
+      "requiresHitAndControlWhenEligible": true,
+      "emptyDestination": "move_to_adjacent_slot",
+      "friendlyOccupiedDestination": "swap_with_adjacent_alive_friendly_no_second_control_roll",
+      "boundary": "no_move_no_position_control_roll_no_steady_from_noop;other_explicit_damage_effects_continue",
+      "moveDoesNotGrantActivationOrChangeLockedRoundOrder": true,
+      "passiveSwapDoesNotTriggerInterception": true
+    },
+    "voluntaryMove": {
+      "id": "position_adjust",
+      "ap": 1,
+      "energy": 0.1,
+      "adjacentEmpty": "move",
+      "adjacentFriendly": "mutual_legal_consent_swap",
+      "allowSolo": true,
+      "worldTick": "normal_battle_pending_tick_only",
+      "xp": 0
+    },
+    "boundarySkillException": {
+      "blade_07": {
+        "ownSlots": [
+          1,
+          2,
+          3
+        ],
+        "atFront1": "attack_in_place_no_forward_move",
+        "at4": "not_eligible_from_original_own_slots"
+      },
+      "unarmed_07": {
+        "ownSlots": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "atBack4": "cleanse_legal_status_in_place",
+        "clears": [
+          "slow",
+          "binding",
+          "mark"
+        ],
+        "doesNotClear": [
+          "infection",
+          "virus",
+          "bleed",
+          "armor_break",
+          "weak",
+          "stagger",
+          "protection"
+        ],
+        "noMoveAndNoCleanse": "reject_no_cost_no_cooldown"
+      }
+    },
+    "otherOwnAndTargetSlotsStrict": true,
+    "pursuitAndReactionAndRetreatRevalidatePositions": true,
+    "oldSaveRestoreExplicitPositionsPreserved": true,
+    "oldSaveMissingPositionsInitializeOnce": true
+  },
+  "legacyEliteEncounters": [
+    {
+      "id": "legacy_elite_z_pump_foreman",
+      "enemyId": "z_pump_foreman",
+      "nodeId": "w33_waterworks",
+      "nodeName": "荒废水厂",
+      "legacyNode": "d01_05",
+      "enemyOrder": [
+        "z_pump_foreman"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "precision_parts": 1
+        },
+        "chance": 1,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_pump_foreman",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    },
+    {
+      "id": "legacy_elite_z_isolation_guard",
+      "enemyId": "z_isolation_guard",
+      "nodeId": "w31_suburb",
+      "nodeName": "城郊棚户",
+      "legacyNode": "d02_05",
+      "enemyOrder": [
+        "z_isolation_guard"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "medical_gauze": 2
+        },
+        "chance": 1,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_isolation_guard",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    },
+    {
+      "id": "legacy_elite_z_power_guard",
+      "enemyId": "z_power_guard",
+      "nodeId": "w20_powercut",
+      "nodeName": "高压走廊",
+      "legacyNode": "d03_05",
+      "enemyOrder": [
+        "z_power_guard"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "electronics": 1
+        },
+        "chance": 1,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_power_guard",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    },
+    {
+      "id": "legacy_elite_z_relay_guard",
+      "enemyId": "z_relay_guard",
+      "nodeId": "w27_relay",
+      "nodeName": "废中继营",
+      "legacyNode": "d04_05",
+      "enemyOrder": [
+        "z_relay_guard"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "precision_parts": 2
+        },
+        "chance": 1,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_relay_guard",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    },
+    {
+      "id": "legacy_elite_z_guard",
+      "enemyId": "z_guard",
+      "nodeId": "w32_railcut",
+      "nodeName": "铁路线切口",
+      "legacyNode": null,
+      "enemyOrder": [
+        "z_guard"
+      ],
+      "scope": "campaign_once",
+      "revealAtExplorePercent": 100,
+      "requiresHubRegistered": true,
+      "optional": true,
+      "unacceptedNoticeDoesNotBlockResourcesTravelSafehouseOrMainline": true,
+      "randomPoolAdded": false,
+      "reinforcements": false,
+      "worldPopulationSlotsConsumed": 0,
+      "sideChallengeIndependentOfPopulation": true,
+      "hpAndRngPersistAcrossRetreat": true,
+      "resetAfter72Hours": false,
+      "reward": {
+        "items": {
+          "steel": 1
+        },
+        "chance": 0.4,
+        "seedLockedAtFirstAcceptance": true,
+        "claimKey": "campaignId:legacy_elite:z_guard",
+        "replaceExistingEnemySpecialDrop": true,
+        "extraDungeonBossReward": false,
+        "extraFirstClearReward": false,
+        "grantsMainlineFactOrCapacity": false
+      },
+      "oldSaveMigration": "migrate_exact_enemy_settlement_or_grant_receipt_to_same_claim;never_guess_from_inventory;if_ambiguous_suppress_only_special_reward_and_show_before_acceptance"
+    }
+  ],
+  "pierce": {
+    "skillId": "spear_07",
+    "ownSlots": [
+      1,
+      2,
+      3
+    ],
+    "targetStartSlots": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "affectedSlots": "selected_slot_through4_inclusive",
+    "damageFactorsBySlotOffset": [
+      0.65,
+      0.5,
+      0.35,
+      0.25
+    ],
+    "emptySlotsSkippedButNotRenumbered": true,
+    "selectEmptyStartAllowedIfSuffixHasLiveTarget": true,
+    "allTargetIdsAndSlotsSnapshottedAtSubmit": true,
+    "perTargetHitCritArmorIndependent": true,
+    "weaponDurabilityPerCommand": 1,
+    "xpPerTargetFollowsExistingCap": true,
+    "ap": 2,
+    "cooldown": 1,
+    "baseEnergy": 0.8
+  },
+  "damage": {
+    "growth": "1+0.035L",
+    "skillMultiplierIndependent": true,
+    "executeConditionalMultiplierIndependent": true,
+    "critIndependent": true,
+    "sameNamedBonusStrongestOnly": true,
+    "validDistinctMultipliersMultiplyToRawB": true,
+    "rawBuffSources": [
+      "used_weapon_and_legal_gear_damage_affixes",
+      "legal_conditional_weapon_traits",
+      "all_out_command",
+      "same_weapon_axe_charge"
+    ],
+    "softCap": {
+      "knee": 1.35,
+      "tail": 0.25,
+      "asymptote": 1.6,
+      "formula": "B=rawB_if_rawB<=1.35_else_1.35+0.25*(1-exp(-(rawB-1.35)/0.25))",
+      "oldGlobalHardCap1_5Removed": true,
+      "legalAdditionalBonusAlwaysPositiveBeforeDisplayRounding": true
+    },
+    "formula": "max(0,U_weapon*growth*skillFactor*executeFactor*B*critFactor*weakFactor+flatTutorialOncePerTargetCommand-max(0,armor-armorBreak-penetration))*guard*explicitDamageReduction",
+    "flatTutorial": {
+      "amount": 0.1,
+      "protagonistOnly": true,
+      "tutorialUniqueOnly": true,
+      "normalWhiteGrantsNoAttack": true,
+      "afterSkillCritBuffBeforeArmor": true,
+      "notMultipliedByCritOrBuffs": true,
+      "atMostOncePerTargetPerCommand": true,
+      "multiHitSameTargetFirstSuccessfulHitOnly": true,
+      "zeroDamageControlOrDotGetsNone": true,
+      "areaEachDistinctHitTargetOnce": true
+    },
+    "newUnapprovedActiveSubstanceTraitsAdded": false,
+    "noUniversalMinimumDamageFloor": true
+  },
+  "reactions": {
+    "sourceWeaponSnapshotFromStancePage": true,
+    "oneSegmentPerReaction": true,
+    "additionalEnergyAmmoWear": 0,
+    "benefitOrConsumeInspireAllOutAxeCharge": false,
+    "staticGearTraitAndExistingTutorialFlatEligible": true,
+    "hitXpFollowsWorldEnemyProficiencyCap": true,
+    "counterTrigger": "direct_hit_including_zero_health_damage_from_armor",
+    "counterAtMostOncePerStance": true,
+    "interceptionTrigger": "opponent_initiated_forward_move_only",
+    "baseInterceptionLimit": 1,
+    "pikeLimit": 2,
+    "noReactionChains": true,
+    "noAdditionalWorldTick": true
+  },
+  "commandXp": {
+    "authority": "A06_per_caster_target_skill_once_per_battle",
+    "steadyMind": "actual_panic_reduced",
+    "inspireAndAllOut": "real_eligible_attack_consumes_effect_once_even_if_miss;no_reaction_consumption",
+    "areaCommandConsumesEffectOnceNotPerTarget": true,
+    "emptyOrFailedCommandXp": 0,
+    "scopeChange": "retain_A06_per_caster_per_target_per_skill_once;B7_global_per_skill_only_overridden_when_multiple_friends_available"
+  },
+  "benchmarkInput": {
+    "weapons": [
+      {
+        "id": "stone_knife",
+        "kind": "blade",
+        "damage": "1.00–1.50",
+        "accuracy": 26,
+        "crit": 5,
+        "trait": "轻巧：首次相邻换位体力−0.1（每轮一次）"
+      },
+      {
+        "id": "kitchen_knife",
+        "kind": "blade",
+        "damage": "1.20–1.80",
+        "accuracy": 28,
+        "crit": 6,
+        "trait": "锋口：流血持续轮数+1（仍不叠层）"
+      },
+      {
+        "id": "machete",
+        "kind": "blade",
+        "damage": "1.50–2.10",
+        "accuracy": 29,
+        "crit": 5,
+        "trait": "扫切：本武器流血命中能力+4"
+      },
+      {
+        "id": "guard_sword",
+        "kind": "blade",
+        "damage": "1.60–2.30",
+        "accuracy": 31,
+        "crit": 6,
+        "trait": "反击：反击技能伤害×1.15"
+      },
+      {
+        "id": "hatchet",
+        "kind": "axe",
+        "damage": "1.60–2.40",
+        "accuracy": 24,
+        "crit": 5,
+        "trait": "劈砍：该武器直接攻击忽略护甲0.1"
+      },
+      {
+        "id": "fire_axe",
+        "kind": "axe",
+        "damage": "2.00–2.80",
+        "accuracy": 25,
+        "crit": 5,
+        "trait": "破门：搜集锁闭点工作量−10%（仅实际选为工具）"
+      },
+      {
+        "id": "breach_axe",
+        "kind": "axe",
+        "damage": "2.20–3.00",
+        "accuracy": 26,
+        "crit": 5,
+        "trait": "破甲：破甲技能减甲量+0.1"
+      },
+      {
+        "id": "rescue_axe",
+        "kind": "axe",
+        "damage": "1.90–2.70",
+        "accuracy": 30,
+        "crit": 6,
+        "trait": "救援：攻击正保护队友的目标时伤害×1.15"
+      },
+      {
+        "id": "wooden_spear",
+        "kind": "spear",
+        "damage": "1.40–2.10",
+        "accuracy": 27,
+        "crit": 5,
+        "trait": "长柄：基础射程123"
+      },
+      {
+        "id": "metal_spear",
+        "kind": "spear",
+        "damage": "1.80–2.70",
+        "accuracy": 29,
+        "crit": 5,
+        "trait": "金属尖：迎击伤害×1.1"
+      },
+      {
+        "id": "pike",
+        "kind": "spear",
+        "damage": "2.00–2.80",
+        "accuracy": 29,
+        "crit": 5,
+        "trait": "架阵：每轮迎击额外触发次数+1（最多2）"
+      },
+      {
+        "id": "barbed_spear",
+        "kind": "spear",
+        "damage": "1.80–2.60",
+        "accuracy": 32,
+        "crit": 7,
+        "trait": "钩刺：逼退命中能力+8"
+      },
+      {
+        "id": "wooden_club",
+        "kind": "blunt",
+        "damage": "1.00–1.60",
+        "accuracy": 27,
+        "crit": 2,
+        "trait": "朴素：无需附加词条也可使用全部钝器技能"
+      },
+      {
+        "id": "crowbar",
+        "kind": "blunt",
+        "damage": "1.40–2.10",
+        "accuracy": 26,
+        "crit": 3,
+        "trait": "撬动：撬取类搜集工作量−10%"
+      },
+      {
+        "id": "steel_mace",
+        "kind": "blunt",
+        "damage": "1.80–2.50",
+        "accuracy": 28,
+        "crit": 3,
+        "trait": "震荡：失衡持续到目标下次攻击后"
+      },
+      {
+        "id": "shock_baton",
+        "kind": "blunt",
+        "damage": "1.60–2.30",
+        "accuracy": 32,
+        "crit": 4,
+        "trait": "压制：打断成功后目标下轮速度额外−1（不叠）"
+      },
+      {
+        "id": "wooden_bow",
+        "kind": "archery",
+        "damage": "1.40–2.30",
+        "accuracy": 25,
+        "crit": 8,
+        "trait": "无声：本武器攻击噪声0"
+      },
+      {
+        "id": "recurve_bow",
+        "kind": "archery",
+        "damage": "1.70–2.50",
+        "accuracy": 28,
+        "crit": 8,
+        "trait": "稳弓：对标记目标命中能力+5"
+      },
+      {
+        "id": "hunter_bow",
+        "kind": "archery",
+        "damage": "1.90–2.70",
+        "accuracy": 30,
+        "crit": 10,
+        "trait": "狩猎：对动物伤害×1.15"
+      },
+      {
+        "id": "crossbow",
+        "kind": "archery",
+        "damage": "2.00–3.10",
+        "accuracy": 31,
+        "crit": 8,
+        "trait": "劲弩：忽略护甲0.15"
+      },
+      {
+        "id": "repeater_crossbow",
+        "kind": "archery",
+        "damage": "1.90–2.80",
+        "accuracy": 33,
+        "crit": 8,
+        "trait": "快装：每次装填最多2发"
+      },
+      {
+        "id": "pistol",
+        "kind": "firearms",
+        "damage": "2.40–3.60",
+        "accuracy": 25,
+        "crit": 8,
+        "trait": "短枪：允许我方2号位使用"
+      },
+      {
+        "id": "service_pistol",
+        "kind": "firearms",
+        "damage": "2.50–3.60",
+        "accuracy": 29,
+        "crit": 8,
+        "trait": "稳枪：压制命中能力+6"
+      },
+      {
+        "id": "shotgun",
+        "kind": "firearms",
+        "damage": "3.60–5.20",
+        "accuracy": 23,
+        "crit": 5,
+        "trait": "散布：散射技能仅作用敌位12"
+      },
+      {
+        "id": "rifle",
+        "kind": "firearms",
+        "damage": "3.20–4.80",
+        "accuracy": 32,
+        "crit": 10,
+        "trait": "穿甲：忽略护甲0.2"
+      },
+      {
+        "id": "marksman_rifle",
+        "kind": "firearms",
+        "damage": "3.40–4.80",
+        "accuracy": 36,
+        "crit": 10,
+        "trait": "精校：对标记目标伤害×1.15"
+      },
+      {
+        "id": "wooden_shield",
+        "kind": "shield",
+        "damage": "0.30–0.50",
+        "accuracy": 30,
+        "crit": 0,
+        "trait": "盾面：盾类格挡减伤60%，不被动增加护甲"
+      },
+      {
+        "id": "scrap_shield",
+        "kind": "shield",
+        "damage": "0.40–0.70",
+        "accuracy": 31,
+        "crit": 0,
+        "trait": "包铁：被保护者所受直接伤害转移后再减10%"
+      },
+      {
+        "id": "riot_shield",
+        "kind": "shield",
+        "damage": "0.40–0.70",
+        "accuracy": 33,
+        "crit": 0,
+        "trait": "稳固：位移抵抗+25个百分点"
+      },
+      {
+        "id": "rescue_shield",
+        "kind": "shield",
+        "damage": "0.50–0.80",
+        "accuracy": 34,
+        "crit": 0,
+        "trait": "护送：保护技能可指定任一友位"
+      },
+      {
+        "id": "signal_whistle",
+        "kind": "command",
+        "damage": "0–0",
+        "accuracy": 0,
+        "crit": 0,
+        "trait": "号令：提供指挥技能，不可直接攻击"
+      },
+      {
+        "id": "signal_flag",
+        "kind": "command",
+        "damage": "0–0",
+        "accuracy": 0,
+        "crit": 0,
+        "trait": "集合：位置调整技能体力−0.1"
+      },
+      {
+        "id": "field_radio",
+        "kind": "command",
+        "damage": "0–0",
+        "accuracy": 0,
+        "crit": 0,
+        "trait": "协同：指挥增益持续多1轮；同名不叠"
+      },
+      {
+        "id": "command_terminal",
+        "kind": "command",
+        "damage": "0–0",
+        "accuracy": 0,
+        "crit": 0,
+        "trait": "预判：每场首次号令额外赋予目标下一击命中能力+4"
+      },
+      {
+        "id": "field_medkit",
+        "kind": "medical",
+        "damage": "0–0",
+        "accuracy": 0,
+        "crit": 0,
+        "trait": "医疗：开放战地医疗技能；药物另付"
+      },
+      {
+        "id": "trauma_bag",
+        "kind": "medical",
+        "damage": "0–0",
+        "accuracy": 0,
+        "crit": 0,
+        "trait": "创伤处置：非病毒医疗恢复+0.2H"
+      },
+      {
+        "id": "rescue_medkit",
+        "kind": "medical",
+        "damage": "0–0",
+        "accuracy": 0,
+        "crit": 0,
+        "trait": "稳定：有效医疗后目标获下一次直接伤害−10%"
+      },
+      {
+        "id": "triage_kit",
+        "kind": "medical",
+        "damage": "0–0",
+        "accuracy": 0,
+        "crit": 0,
+        "trait": "分诊：危急救护的回血额外+0.3H"
+      },
+      {
+        "id": "unarmed_virtual",
+        "kind": "unarmed",
+        "damage": [
+          0.6,
+          0.9
+        ],
+        "accuracy": 24,
+        "crit": 3,
+        "trait": ""
+      }
+    ],
+    "enemies": [
+      {
+        "id": "shambler",
+        "hp": 3.6,
+        "armor": 0,
+        "evasion": 25
+      },
+      {
+        "id": "crawler",
+        "hp": 2.8,
+        "armor": 0,
+        "evasion": 28
+      },
+      {
+        "id": "runner",
+        "hp": 3.2,
+        "armor": 0,
+        "evasion": 34
+      },
+      {
+        "id": "worker",
+        "hp": 5.6,
+        "armor": 0.3,
+        "evasion": 22
+      },
+      {
+        "id": "riot",
+        "hp": 7,
+        "armor": 0.7,
+        "evasion": 20
+      },
+      {
+        "id": "howler",
+        "hp": 4,
+        "armor": 0,
+        "evasion": 28
+      },
+      {
+        "id": "feral_dog",
+        "hp": 3.2,
+        "armor": 0,
+        "evasion": 32
+      },
+      {
+        "id": "wolf",
+        "hp": 4.8,
+        "armor": 0,
+        "evasion": 34
+      },
+      {
+        "id": "boar",
+        "hp": 6.8,
+        "armor": 0.2,
+        "evasion": 25
+      },
+      {
+        "id": "stag",
+        "hp": 5.2,
+        "armor": 0,
+        "evasion": 32
+      },
+      {
+        "id": "z_slow",
+        "hp": 4.2,
+        "armor": 0,
+        "evasion": 22
+      },
+      {
+        "id": "z_helmet",
+        "hp": 5.8,
+        "armor": 0.35,
+        "evasion": 22
+      },
+      {
+        "id": "z_spitter",
+        "hp": 4.2,
+        "armor": 0,
+        "evasion": 28
+      },
+      {
+        "id": "z_hauler",
+        "hp": 6.2,
+        "armor": 0.2,
+        "evasion": 20
+      },
+      {
+        "id": "z_darter",
+        "hp": 3.8,
+        "armor": 0,
+        "evasion": 36
+      },
+      {
+        "id": "z_screamer",
+        "hp": 4.8,
+        "armor": 0,
+        "evasion": 28
+      },
+      {
+        "id": "z_guard",
+        "hp": 9,
+        "armor": 0.65,
+        "evasion": 20
+      },
+      {
+        "id": "z_clinger",
+        "hp": 4.6,
+        "armor": 0.1,
+        "evasion": 32
+      },
+      {
+        "id": "z_bloater",
+        "hp": 7.2,
+        "armor": 0.1,
+        "evasion": 18
+      },
+      {
+        "id": "z_nurse",
+        "hp": 4.4,
+        "armor": 0,
+        "evasion": 27
+      },
+      {
+        "id": "z_engineer",
+        "hp": 6,
+        "armor": 0.35,
+        "evasion": 24
+      },
+      {
+        "id": "z_signal",
+        "hp": 5,
+        "armor": 0,
+        "evasion": 28
+      },
+      {
+        "id": "z_pump_foreman",
+        "hp": 10,
+        "armor": 0.3,
+        "evasion": 24
+      },
+      {
+        "id": "z_isolation_guard",
+        "hp": 10,
+        "armor": 0.4,
+        "evasion": 25
+      },
+      {
+        "id": "z_power_guard",
+        "hp": 12,
+        "armor": 0.55,
+        "evasion": 25
+      },
+      {
+        "id": "z_relay_guard",
+        "hp": 14,
+        "armor": 0.45,
+        "evasion": 28
+      },
+      {
+        "id": "raider_melee",
+        "hp": 5.6,
+        "armor": 0.15,
+        "evasion": 30
+      },
+      {
+        "id": "raider_gunner",
+        "hp": 5,
+        "armor": 0.1,
+        "evasion": 29
+      },
+      {
+        "id": "wild_dog_leader",
+        "hp": 6.4,
+        "armor": 0.1,
+        "evasion": 34
+      },
+      {
+        "id": "feral_boar",
+        "hp": 8,
+        "armor": 0.25,
+        "evasion": 24
+      },
+      {
+        "id": "ec_cantor",
+        "hp": 4.6,
+        "armor": 0,
+        "evasion": 28
+      },
+      {
+        "id": "ec_labwalker",
+        "hp": 5.4,
+        "armor": 0.15,
+        "evasion": 29
+      },
+      {
+        "id": "ec_cablecrawler",
+        "hp": 4.4,
+        "armor": 0.1,
+        "evasion": 30
+      },
+      {
+        "id": "ec_stockbracer",
+        "hp": 6.4,
+        "armor": 0.3,
+        "evasion": 23
+      },
+      {
+        "id": "ec_boss_crypt",
+        "hp": 10.5,
+        "armor": 0.25,
+        "evasion": 24
+      },
+      {
+        "id": "ec_boss_lab",
+        "hp": 11,
+        "armor": 0.2,
+        "evasion": 28
+      },
+      {
+        "id": "ec_boss_armory",
+        "hp": 12,
+        "armor": 0.55,
+        "evasion": 24
+      },
+      {
+        "id": "ec_boss_relay",
+        "hp": 13,
+        "armor": 0.4,
+        "evasion": 28
+      },
+      {
+        "id": "ec_boss_water",
+        "hp": 11,
+        "armor": 0.3,
+        "evasion": 25
+      },
+      {
+        "id": "ec_boss_mine",
+        "hp": 13.5,
+        "armor": 0.5,
+        "evasion": 21
+      },
+      {
+        "id": "ec_boss_mall",
+        "hp": 11.5,
+        "armor": 0.25,
+        "evasion": 28
+      },
+      {
+        "id": "ec_boss_cold",
+        "hp": 12,
+        "armor": 0.3,
+        "evasion": 28
+      }
+    ],
+    "damageBonuses": {
+      "keen": 1.06,
+      "axeCharge": 1.35,
+      "allOut": 1.15,
+      "conditionalTrait": 1.15
+    },
+    "tutorialFlat": 0.1,
+    "skillCatalog": [
+      {
+        "id": "unarmed_01",
+        "kind": "unarmed",
+        "ap": 2,
+        "own": "12",
+        "target": "1",
+        "effect": "伤害×1.00；当前空槽徒手页且穿戴护拳绑带时目标位扩为12"
+      },
+      {
+        "id": "unarmed_03",
+        "kind": "unarmed",
+        "ap": 1,
+        "own": "12",
+        "target": "1",
+        "effect": "伤害0；命中后目标失衡"
+      },
+      {
+        "id": "unarmed_05",
+        "kind": "unarmed",
+        "ap": 1,
+        "own": "1234",
+        "target": "自身",
+        "effect": "获得格挡1次"
+      },
+      {
+        "id": "unarmed_07",
+        "kind": "unarmed",
+        "ap": 2,
+        "own": "1234",
+        "target": "自身",
+        "effect": "解除减速/束缚/标记，后移1位；4号位可原地解除；不解保护/感染/出血/失衡/虚弱；完全无收益拒绝"
+      },
+      {
+        "id": "unarmed_10",
+        "kind": "unarmed",
+        "ap": 3,
+        "own": "12",
+        "target": "12",
+        "effect": "两次独立命中，每击伤害×0.85；技能允许敌位12，同目标经验最多计1次"
+      },
+      {
+        "id": "blade_01",
+        "kind": "blade",
+        "ap": 2,
+        "own": "12",
+        "target": "12",
+        "effect": "伤害×1.00"
+      },
+      {
+        "id": "blade_03",
+        "kind": "blade",
+        "ap": 2,
+        "own": "12",
+        "target": "12",
+        "effect": "伤害×0.65；命中正伤后施加流血"
+      },
+      {
+        "id": "blade_05",
+        "kind": "blade",
+        "ap": 2,
+        "own": "12",
+        "target": "自身",
+        "effect": "格挡1次；受直接攻击后反击1次，伤害×0.70"
+      },
+      {
+        "id": "blade_07",
+        "kind": "blade",
+        "ap": 2,
+        "own": "123",
+        "target": "12",
+        "effect": "前移1位后攻击伤害×1.20；在1号位允许原地攻击；其他站位不由单人兼容绕过，邻友可合法同意交换"
+      },
+      {
+        "id": "blade_10",
+        "kind": "blade",
+        "ap": 3,
+        "own": "12",
+        "target": "12",
+        "effect": "伤害×1.70；目标H≤30%上限时再×1.20"
+      },
+      {
+        "id": "axe_01",
+        "kind": "axe",
+        "ap": 2,
+        "own": "12",
+        "target": "1",
+        "effect": "伤害×1.00"
+      },
+      {
+        "id": "axe_03",
+        "kind": "axe",
+        "ap": 2,
+        "own": "12",
+        "target": "1",
+        "effect": "伤害×0.80；护甲−0.25持续2轮"
+      },
+      {
+        "id": "axe_05",
+        "kind": "axe",
+        "ap": 1,
+        "own": "12",
+        "target": "自身",
+        "effect": "下次该斧攻击伤害×1.35，持续至下一大回合末；不叠"
+      },
+      {
+        "id": "axe_07",
+        "kind": "axe",
+        "ap": 2,
+        "own": "12",
+        "target": "1",
+        "effect": "伤害×0.90；控制成功后目标后移1位"
+      },
+      {
+        "id": "axe_10",
+        "kind": "axe",
+        "ap": 3,
+        "own": "12",
+        "target": "1",
+        "effect": "伤害×1.75；移除目标1次格挡后结算伤害"
+      },
+      {
+        "id": "spear_01",
+        "kind": "spear",
+        "ap": 2,
+        "own": "123",
+        "target": "123",
+        "effect": "单体伤害×1.00"
+      },
+      {
+        "id": "spear_03",
+        "kind": "spear",
+        "ap": 2,
+        "own": "123",
+        "target": "12",
+        "effect": "伤害×0.60；控制成功后目标后移1位"
+      },
+      {
+        "id": "spear_05",
+        "kind": "spear",
+        "ap": 1,
+        "own": "123",
+        "target": "自身",
+        "effect": "本轮至下一正常激活前，敌主动前移后迎击1次，伤害×0.75"
+      },
+      {
+        "id": "spear_07",
+        "kind": "spear",
+        "ap": 2,
+        "own": "123",
+        "target": "1234",
+        "effect": "选择起点k，对真实槽k至4各存活敌独立命中；按槽偏移伤害×0.65/0.50/0.35/0.25，空位不重排"
+      },
+      {
+        "id": "spear_10",
+        "kind": "spear",
+        "ap": 3,
+        "own": "123",
+        "target": "123",
+        "effect": "单体两击，各伤害×0.85；经验每目标至多1次"
+      },
+      {
+        "id": "blunt_01",
+        "kind": "blunt",
+        "ap": 2,
+        "own": "12",
+        "target": "12",
+        "effect": "伤害×1.00"
+      },
+      {
+        "id": "blunt_03",
+        "kind": "blunt",
+        "ap": 2,
+        "own": "12",
+        "target": "12",
+        "effect": "伤害×0.70；命中后失衡"
+      },
+      {
+        "id": "blunt_05",
+        "kind": "blunt",
+        "ap": 2,
+        "own": "12",
+        "target": "12",
+        "effect": "伤害×0.50；控制成功后目标下轮速度−2"
+      },
+      {
+        "id": "blunt_07",
+        "kind": "blunt",
+        "ap": 2,
+        "own": "12",
+        "target": "12",
+        "effect": "伤害×0.50；控制成功取消目标本轮尚未执行的蓄力意图，改普通攻击"
+      },
+      {
+        "id": "blunt_10",
+        "kind": "blunt",
+        "ap": 3,
+        "own": "12",
+        "target": "1",
+        "effect": "伤害×1.60；控制成功施加虚弱（伤害×0.8）2轮"
+      },
+      {
+        "id": "archery_01",
+        "kind": "archery",
+        "ap": 2,
+        "own": "234",
+        "target": "1234",
+        "effect": "伤害×1.00；弩使用本武器基础E成本"
+      },
+      {
+        "id": "archery_03",
+        "kind": "archery",
+        "ap": 2,
+        "own": "234",
+        "target": "1234",
+        "effect": "伤害×0.75；正伤且控制成功后下轮速度−2"
+      },
+      {
+        "id": "archery_05",
+        "kind": "archery",
+        "ap": 1,
+        "own": "234",
+        "target": "1234",
+        "effect": "命中无伤；标记目标2轮，全队对其攻击命中能力+6"
+      },
+      {
+        "id": "archery_07",
+        "kind": "archery",
+        "ap": 2,
+        "own": "234",
+        "target": "1234",
+        "effect": "单体伤害×1.20；忽略护甲0.25"
+      },
+      {
+        "id": "archery_10",
+        "kind": "archery",
+        "ap": 3,
+        "own": "234",
+        "target": "1234",
+        "effect": "两击伤害各×0.85；需弹仓或箭数量≥2，单发弩不可用"
+      },
+      {
+        "id": "firearms_01",
+        "kind": "firearms",
+        "ap": 2,
+        "own": "按武器",
+        "target": "按武器",
+        "effect": "伤害×1.00；E使用武器基础成本"
+      },
+      {
+        "id": "firearms_03",
+        "kind": "firearms",
+        "ap": 2,
+        "own": "按武器",
+        "target": "按武器",
+        "effect": "单体伤害×0.70；命中后虚弱2轮"
+      },
+      {
+        "id": "firearms_05",
+        "kind": "firearms",
+        "ap": 1,
+        "own": "234",
+        "target": "自身",
+        "effect": "装入本武器完整弹仓可容数量；本技能激活后本次装填不再另付通用装填"
+      },
+      {
+        "id": "firearms_07",
+        "kind": "firearms",
+        "ap": 2,
+        "own": "按武器",
+        "target": "按武器",
+        "effect": "手枪/步枪单体×1.35；霰弹枪对12双位各×0.65"
+      },
+      {
+        "id": "firearms_10",
+        "kind": "firearms",
+        "ap": 3,
+        "own": "按武器",
+        "target": "按武器",
+        "effect": "单体×1.80；额外命中能力+6"
+      },
+      {
+        "id": "shield_01",
+        "kind": "shield",
+        "ap": 1,
+        "own": "12",
+        "target": "1",
+        "effect": "伤害×1.00；命中后失衡"
+      },
+      {
+        "id": "shield_03",
+        "kind": "shield",
+        "ap": 2,
+        "own": "12",
+        "target": "相邻友方",
+        "effect": "接下指定友方下一次单体直接攻击；不拦范围伤害/持续伤害，持续至下一正常激活"
+      },
+      {
+        "id": "shield_05",
+        "kind": "shield",
+        "ap": 1,
+        "own": "12",
+        "target": "自身",
+        "effect": "格挡1次且位移抵抗+25个百分点，2轮"
+      },
+      {
+        "id": "shield_07",
+        "kind": "shield",
+        "ap": 2,
+        "own": "12",
+        "target": "相邻友方",
+        "effect": "保护1次；双方获得下一次直接伤害×0.8，2轮"
+      },
+      {
+        "id": "shield_10",
+        "kind": "shield",
+        "ap": 3,
+        "own": "1",
+        "target": "全队",
+        "effect": "自己格挡2次；其他队员下一次直接伤害×0.8，持续1轮"
+      },
+      {
+        "id": "command_01",
+        "kind": "command",
+        "ap": 1,
+        "own": "234",
+        "target": "任一友方",
+        "effect": "目标下一次攻击命中能力+6；持续2轮"
+      },
+      {
+        "id": "command_03",
+        "kind": "command",
+        "ap": 2,
+        "own": "234",
+        "target": "任一友方",
+        "effect": "目标与相邻友方交换站位；必须二者合法且存活"
+      },
+      {
+        "id": "command_05",
+        "kind": "command",
+        "ap": 2,
+        "own": "234",
+        "target": "任一友方",
+        "effect": "恐慌−8；同目标每大回合最多一次"
+      },
+      {
+        "id": "command_07",
+        "kind": "command",
+        "ap": 2,
+        "own": "234",
+        "target": "任一其他友方",
+        "effect": "目标下一正常激活AP+1；不超过6，不加追击"
+      },
+      {
+        "id": "command_10",
+        "kind": "command",
+        "ap": 3,
+        "own": "234",
+        "target": "全队",
+        "effect": "全队下一次攻击伤害×1.15，最多持续2轮；同名不叠"
+      },
+      {
+        "id": "medicine_01",
+        "kind": "medicine",
+        "ap": 2,
+        "own": "234",
+        "target": "任一友方",
+        "effect": "消耗bandage1；完全按R04绷带效果/目标冷却；基础专属技战外亦可"
+      },
+      {
+        "id": "medicine_03",
+        "kind": "medicine",
+        "ap": 2,
+        "own": "234",
+        "target": "任一友方",
+        "effect": "消耗medical_gauze1；止血并H+0.6×(1+0.02L)，与绷带共享60分钟回血冷却"
+      },
+      {
+        "id": "medicine_05",
+        "kind": "medicine",
+        "ap": 2,
+        "own": "234",
+        "target": "任一友方",
+        "effect": "消耗saline1；H+0.8×(1+0.02L)，共享回血冷却；不回生、不改V"
+      },
+      {
+        "id": "medicine_07",
+        "kind": "medicine",
+        "ap": 2,
+        "own": "234",
+        "target": "任一友方",
+        "effect": "消耗medical_gauze1；解除失衡/虚弱二者之一，若均有优先虚弱；不解除感染"
+      },
+      {
+        "id": "medicine_10",
+        "kind": "medicine",
+        "ap": 3,
+        "own": "234",
+        "target": "任一友方",
+        "effect": "消耗saline1+medical_gauze1；H≤25%上限时H+1.5×(1+0.02L)，共享回血冷却；目标必须存活"
+      },
+      {
+        "id": "crafting_01",
+        "kind": "crafting",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "保留既有手工配方原门槛；新增T0装备制造1级许可；W0废弃误记，不新增穿戴限制"
+      },
+      {
+        "id": "crafting_03",
+        "kind": "crafting",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "开放制作等级3配方与工作台/缝纫台"
+      },
+      {
+        "id": "crafting_05",
+        "kind": "crafting",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "维护恢复量在原基础额外+5个百分点；最高30%，与维护手册取较高值"
+      },
+      {
+        "id": "crafting_07",
+        "kind": "crafting",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "开放制作等级7配方和对应工坊许可"
+      },
+      {
+        "id": "crafting_10",
+        "kind": "crafting",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "开放制作等级10配方；可从该装备合法附加池定向选1词条，仍付精密零件1"
+      },
+      {
+        "id": "gathering_01",
+        "kind": "gathering",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "开放原有植物/木石定向采集"
+      },
+      {
+        "id": "gathering_03",
+        "kind": "gathering",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "采集划伤概率×0.9"
+      },
+      {
+        "id": "gathering_05",
+        "kind": "gathering",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "每次木/石/纤维定向采集产量+1，受库存限制"
+      },
+      {
+        "id": "gathering_07",
+        "kind": "gathering",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "定向采集基础工作量×0.9"
+      },
+      {
+        "id": "gathering_10",
+        "kind": "gathering",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "每个资源点每日首次采集额外+1，仍扣库存，不生产工业材料"
+      },
+      {
+        "id": "scavenging_01",
+        "kind": "scavenging",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "开放普通遗迹搜集"
+      },
+      {
+        "id": "scavenging_03",
+        "kind": "scavenging",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "普通遗迹与工业资源搜集基础工作量×0.95；不改变固定箱数量，不作用于勘整训练"
+      },
+      {
+        "id": "scavenging_05",
+        "kind": "scavenging",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "选择合格工具时搜集工作量×0.9"
+      },
+      {
+        "id": "scavenging_07",
+        "kind": "scavenging",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "危险搜集划伤概率×0.8，不影响战斗接敌"
+      },
+      {
+        "id": "scavenging_10",
+        "kind": "scavenging",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "普通遗迹与工业资源搜集基础工作量×0.90（替代3级）；不改变固定箱数量，不作用于勘整训练"
+      },
+      {
+        "id": "cooking_01",
+        "kind": "cooking",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "开放本轮普通食品配方，旧火堆烹饪不倒锁"
+      },
+      {
+        "id": "cooking_03",
+        "kind": "cooking",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "新食品主动制作基础工作量×0.95"
+      },
+      {
+        "id": "cooking_05",
+        "kind": "cooking",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "开放腌肉/干粮配方，按配方消耗盐和燃料"
+      },
+      {
+        "id": "cooking_07",
+        "kind": "cooking",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "新食品主动制作工作量×0.90（替代3级倍率）"
+      },
+      {
+        "id": "cooking_10",
+        "kind": "cooking",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "新制远征口粮正N额外+3，实例保存，不给旧食物追补"
+      },
+      {
+        "id": "athletics_01",
+        "kind": "athletics",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "开放行旅预估；无初始数值加成"
+      },
+      {
+        "id": "athletics_03",
+        "kind": "athletics",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "移动负E小时率×0.95"
+      },
+      {
+        "id": "athletics_05",
+        "kind": "athletics",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "≤20kg时移动基础工作量×0.95"
+      },
+      {
+        "id": "athletics_07",
+        "kind": "athletics",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "移动负E小时率×0.90（替代3级）"
+      },
+      {
+        "id": "athletics_10",
+        "kind": "athletics",
+        "ap": 0,
+        "own": "战外",
+        "target": "对应活动",
+        "effect": "已访问物理边移动基础工作量×0.90（替代5级）；不免费传送"
+      }
+    ]
+  }
+}
