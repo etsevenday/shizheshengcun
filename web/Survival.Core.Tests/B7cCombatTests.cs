@@ -605,4 +605,39 @@ public class B7cCombatTests : BattleTestBase
         Assert.That((e.Stagger, e.SteadyUntilRound >= s.Battle!.Round), Is.EqualTo((false, false)), "推空：不判控制、不给稳态");
         Assert.That(s.Battle.Log.Last(), Does.Contain("落空").Or.Contain("没有打中").Or.Contain("未命中"));
     }
+
+    // ───────────── M172：B7c 线上试玩第 1 轮修复 ─────────────
+
+    /// <summary>修复1：攻击预测写出命中能力构成（武器+熟练+基础8+装备）与疲劳“只算一次”，数值与 AccuracyRating 同源。</summary>
+    [Test]
+    public void Fix_B7c_AccuracyText_ShowsBaseEightAndFatigue()
+    {
+        var s = Fight(61, "shambler");
+        Ready(s);
+        Arm(s, "stone_knife");
+        var t = KnifeOnShambler(s, 3, 90, 0, false);
+        Assert.That(t.AccuracyText, Does.StartWith("武器26＋熟练3＋基础8").And.Contain("低体力×0.95（只算一次）"));
+        var u = KnifeOnShambler(s, 18, 90, 0, false);
+        Assert.That(u.AccuracyText, Is.EqualTo("武器26＋熟练3＋基础8"));
+    }
+
+    /// <summary>修复2：容量说明有不带“本场容量C”前缀的版本，右栏不重复；修复4：精神没变时胜利日志不写“精神−0.00”。</summary>
+    [Test]
+    public void Fix_B7c_StayNoteNoPrefix_NoZeroMoraleText()
+    {
+        var s = Field(62);
+        Spot(s, "shambler", "crawler");
+        Assert.That(E.EncounterStayNote(s), Does.StartWith("只有排在最前的1只接战").And.Not.Contain("容量C"));
+        Assert.That(E.EncounterCapacityNote(s), Does.StartWith("本场容量C1：只有排在最前的1只接战"));
+        Assert.That(E.Engage(s).Ok, Is.True);
+        Enemy(s, 1).Hp = 0.01;
+        s.Battle!.Panic = 0;
+        ToPlayer(s);
+        s.Battle!.Panic = 0;
+        Force(s, Below(0.001), AtLeast(0.99), Any(), Any(), Any());
+        Cmd(s, "basic_attack", 1);
+        Assert.That(s.Battle, Is.Null);
+        var last = s.Log.Last(l => l.Text.Contains("战斗胜利")).Text;
+        Assert.That(last, Does.Not.Contain("精神−0.00").And.Not.Contain("精神"), last);
+    }
 }

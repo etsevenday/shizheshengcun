@@ -64,6 +64,8 @@ namespace Survival.Core.Engine
         public string Name { get; set; } = "";
         public string Slot { get; set; } = "";
         public double AccuracyRating { get; set; }
+        /// <summary>命中能力的构成（试玩修复 B7c-1）：“武器26＋熟练3＋基础8＋装备3 ×低体力×0.95（只算一次）”，与 AccuracyRating 同一次计算。</summary>
+        public string AccuracyText { get; set; } = "";
         public double Evasion { get; set; }
         public double HitChance { get; set; }
         public double CritRating { get; set; }

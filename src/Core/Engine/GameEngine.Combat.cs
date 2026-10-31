@@ -346,11 +346,15 @@ namespace Survival.Core.Engine
         public List<WorldEnemy> EncounterJoiners(GameState s) => EncounterGroup(s).Take(BattleCapacity(s)).ToList();
 
         /// <summary>敌踪名单超过容量时的说明：“本场容量C1：只有排在最前的1只接战，其余2只留在原地”；不超过为 null。</summary>
-        public string? EncounterCapacityNote(GameState s)
+        public string? EncounterCapacityNote(GameState s) =>
+            EncounterStayNote(s) is string n ? $"本场容量C{BattleCapacity(s)}：{n}" : null;
+
+        /// <summary>同上，不带“本场容量C”前缀（右栏已另写容量时用，避免重复）：“只有排在最前的1只接战，其余2只留在原地……”。</summary>
+        public string? EncounterStayNote(GameState s)
         {
             var all = EncounterGroup(s).Count;
             var c = BattleCapacity(s);
-            return all > c ? $"本场容量C{c}：只有排在最前的{c}只接战，其余{all - c}只留在原地（不算击杀、没有战利品）" : null;
+            return all > c ? $"只有排在最前的{c}只接战，其余{all - c}只留在原地（不算击杀、没有战利品）" : null;
         }
 
         /// <summary>入战情境（R03 §2.1）：主动接近、探索/清理接敌、剧情首战。</summary>
@@ -1350,7 +1354,7 @@ namespace Survival.Core.Engine
             // 撤退：只有场上确有倒下敌人的掉落/尸体时才写“放弃”（试玩修复 L3）
             var loot = outcome == "victory" ? (lines.Count > 0 ? $"战利品{string.Join("、", lines)}已放在{LocName(loc)}地面" : "没有战利品")
                 : b.Loot.Any(l => l.ItemId != null && l.Count > 0) ? "放弃了场上的尸体与掉落" : null;
-            var text = $"{head}：共{b.Round}轮（世界时间{Clock.Duration(b.Ticks * Tick)}），精神−{Fmt.N(loss)}{(loot != null ? "；" + loot : "")}。";
+            var text = $"{head}：共{b.Round}轮（世界时间{Clock.Duration(b.Ticks * Tick)}）{(loss > 1e-9 ? $"，精神−{Fmt.N(loss)}" : "")}{(loot != null ? "；" + loot : "")}。";   // 试玩修复 B7c-1：精神没变时不写“精神−0.00”
             BattleLog(s, text);
             s.Battle = null;
             Emit(s, GameEventKind.BattleEnd, text, null, outcome == "victory" ? b.Loot.Where(l => l.ItemId != null).Select(l => l.ItemId!) : null);

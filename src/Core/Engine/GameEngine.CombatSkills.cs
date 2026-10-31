@@ -338,7 +338,16 @@ namespace Survival.Core.Engine
             var marked = EnemyMarked(b, t);
             var bonus = sp.AccuracyBonus + (marked ? t.MarkBonus + w.Trait("markedAccuracy") : 0) + (!sp.Reaction && InspireActive(b) ? b.InspireBonus : 0);
             // Q67：我方攻击能力另加基础 8（攻击能力项，不是命中率百分点）；疲劳一次×0.95
-            var acc = Math.Max(m.MinAccuracy, (w.AccuracyRating + SkillAccuracyBonus(lv) + m.PlayerAccuracyAssistance + gear.Accuracy + bonus) * sp.AccuracyFactor * BodyAccuracyFactor(s, b, energyAfter));
+            var why = new List<string>();
+            var body = BodyAccuracyFactor(s, b, energyAfter, why);
+            var acc = Math.Max(m.MinAccuracy, (w.AccuracyRating + SkillAccuracyBonus(lv) + m.PlayerAccuracyAssistance + gear.Accuracy + bonus) * sp.AccuracyFactor * body);
+            var parts = new List<string> { $"武器{Fmt.T(w.AccuracyRating)}", $"熟练{Fmt.T(SkillAccuracyBonus(lv))}", $"基础{Fmt.T(m.PlayerAccuracyAssistance)}" };
+            if (Math.Abs(gear.Accuracy) > 1e-12) parts.Add($"装备{Fmt.T(gear.Accuracy)}");
+            if (Math.Abs(bonus) > 1e-12) parts.Add($"技能/标记/鼓舞{Fmt.T(bonus)}");
+            var mults = new List<string>();
+            if (Math.Abs(sp.AccuracyFactor - 1) > 1e-12) mults.Add($"招式×{Fmt.T(sp.AccuracyFactor)}");
+            mults.AddRange(why);
+            var accText = string.Join("＋", parts) + (mults.Count > 0 ? "，再乘" + string.Join("、", mults) : "");
             var crit = Math.Max(0, w.CritRatingBase + m.CritAccuracyPerLevel * lv + gear.Crit);
             var buff = 1 + gear.DamageMultiplier;
             if (!sp.Reaction && AllOutActive(b)) buff *= b.AllOutFactor;
@@ -362,7 +371,7 @@ namespace Survival.Core.Engine
             {
                 Index = t.Index, Name = cfg.Name, Slot = t.Slot, Hp = t.Hp, Armor = baseArmor, Guarded = guarded, RearPenalty = false,
                 Penetration = pen, DamageBuff = buff, Multiplier = mult, Flat = flat,
-                AccuracyRating = acc, Evasion = evasion, HitChance = HitChance(acc, evasion),
+                AccuracyRating = acc, AccuracyText = accText, Evasion = evasion, HitChance = HitChance(acc, evasion),
                 CritRating = crit, CritChance = CritChance(crit),
                 DamageMin = Dmg(w.DamageMin, 1), DamageMax = Dmg(w.DamageMax, 1), CritDamageMin = Dmg(w.DamageMin, cf), CritDamageMax = Dmg(w.DamageMax, cf),
             };
