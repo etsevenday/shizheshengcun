@@ -126,8 +126,34 @@ namespace Survival.Core.Engine
         public double WorkFactor(GameState s, ActorState actor, ActionType type, List<string>? reasons = null, string? targetId = null) =>
             TimeFactor(s, actor, type, reasons) * GearWorkFactor(s, actor.Id, type, targetId, reasons);
 
-        /// <summary>S01 时间倍率 M = min(上限, 夜间×负重×低体力)（不含装备与熟练节点的工作量倍率）。</summary>
+        /// <summary>
+        /// S01 时间倍率 M = min(上限, 夜间×负重×低体力)（不含装备与熟练节点的工作量倍率）。
+        /// 多人移动（S01 多角色段、TX01，B8）：主角带队移动时取同行者里最大（最慢）的倍率，原因写最慢的人。
+        /// </summary>
         public double TimeFactor(GameState s, ActorState actor, ActionType type, List<string>? reasons = null)
+        {
+            if (type == ActionType.Travel && actor.IsPlayer && s.Party.Count > 1)
+            {
+                var best = actor;
+                var bestF = TimeFactorOf(s, actor, type, null);
+                foreach (var other in s.PartyActors.Where(a => !a.IsPlayer))
+                {
+                    var f = TimeFactorOf(s, other, type, null);
+                    if (f > bestF + 1e-12) { best = other; bestF = f; }
+                }
+                var own = new List<string>();
+                var res = TimeFactorOf(s, best, type, own);
+                if (reasons != null)
+                {
+                    if (!best.IsPlayer) reasons.Add($"按最慢的同行者{ActorLabel(best)}");
+                    reasons.AddRange(own);
+                }
+                return res;
+            }
+            return TimeFactorOf(s, actor, type, reasons);
+        }
+
+        private double TimeFactorOf(GameState s, ActorState actor, ActionType type, List<string>? reasons)
         {
             var c = Config.WorkFactors;
             double f = 1;
@@ -240,18 +266,29 @@ namespace Survival.Core.Engine
         {
             var party = s.PartyActors.ToList();
             var ctxs = party.Select(ctxOf).ToList();
+            // 候补（B8，R08 §3、A11 §5.3）：同一世界 tick 里按营区公共照护各结算一次（战斗轮末也一样，不吃战斗 N/W 冻结）
+            var reserves = ReserveActors(s);
+            var rctxs = reserves.Select(a => ReserveSegment(s, a)).ToList();
             // 段首：火堆加工资格与身体快照（免疫、病毒按段首状态计算）
             SyncFacilities(s);
             var snap = SnapshotFacilities(s, running);
             var starts = party.Select(actor => TickStart.Capture(s, actor)).ToList();
+            var rstarts = reserves.Select(actor => TickStart.Capture(s, actor)).ToList();
 
             // 身体变化（每小时速率 × 5/60），按项上限夹紧
             for (var k = 0; k < party.Count; k++) ApplyRates(s, party[k], ctxs[k]);
+            // 候补：先结算该段自然消耗，再把 N/W 托到不低于 40（高于 40 不提高，不生成任何物品）
+            for (var k = 0; k < reserves.Count; k++)
+            {
+                ApplyRates(s, reserves[k], rctxs[k]);
+                ReserveFloor(reserves[k]);
+            }
 
             s.GameMinute += Tick;
             s.SegmentCount++;
             BurnFires(s);
             for (var k = 0; k < party.Count; k++) TickBody(s, party[k], starts[k], ctxs[k], battle);
+            for (var k = 0; k < reserves.Count; k++) TickBody(s, reserves[k], rstarts[k], rctxs[k], false);
 
             // 终局：健康归零先于尸变，二者都先于自然治愈与本段未提交的设施产物
             for (var k = 0; k < party.Count; k++)
@@ -271,6 +308,15 @@ namespace Survival.Core.Engine
             }
             for (var k = 0; k < party.Count; k++)
                 if (s.Party.Contains(party[k].Id)) TickNaturalCure(s, party[k], starts[k]);
+            // 候补终局（到达死亡条件立即判死，同段不靠自然恢复复活）→ 自然治愈 → 红线提示（不暂停主行动）
+            for (var k = 0; k < reserves.Count; k++)
+            {
+                var actor = reserves[k];
+                if (actor.Stats.Health <= 0) { CompanionDown(s, actor, string.IsNullOrEmpty(rctxs[k].DamageCause) ? "伤势过重" : rctxs[k].DamageCause); continue; }
+                if (Zombified(actor)) { CompanionDown(s, actor, ZombifiedCause); continue; }
+                TickNaturalCure(s, actor, rstarts[k]);
+                ReserveRedLines(s, actor);
+            }
 
             UpdateAllClearCharges(s);
             if (s.GameMinute % Clock.MinutesPerDay == 0) NewDay(s);

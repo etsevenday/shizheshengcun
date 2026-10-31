@@ -159,6 +159,142 @@ public class B8PartyTests : TestBase
         Assert.That(ConfigLoader.Validate(bad), Has.Some.Contains("两件初始武器类型相同"));
     }
 
+    // ───────────── M184：每人生存消耗与候补公共照护 ─────────────
+
+    /// <summary>四人同行 + 三名候补（C4）。</summary>
+    private GameState FullCamp(uint seed = 12345)
+    {
+        var s = Camp(4, seed);
+        foreach (var id in Six) E.DebugRecruit(s, id);
+        Assert.That(s.Party.Count, Is.EqualTo(4));
+        Assert.That(E.Reserves(s).Count, Is.EqualTo(3));
+        return s;
+    }
+
+    /// <summary>PT02/COMP04：四人同行 + 三候补跨 12 段：时间只 +60 分钟，每人各结算一次（不是 n 倍）。</summary>
+    [Test]
+    public void PT02_COMP04_FourActiveThreeReserve_OneHourOnce()
+    {
+        var s = FullCamp();
+        s.GameMinute = At(1, 10, 0);
+        var before = s.Actors.ToDictionary(kv => kv.Key, kv => kv.Value.Stats.Clone());
+        var seg = s.SegmentCount;
+        Start(s, ActionRequest.Wait(60));
+        Run(s);
+        Assert.That(s.GameMinute, Is.EqualTo(At(1, 11, 0)));
+        Assert.That(s.SegmentCount - seg, Is.EqualTo(12));
+        foreach (var id in s.Actors.Keys)
+        {
+            Assert.That(s.Actors[id].Stats.Satiety, Is.EqualTo(before[id].Satiety - 1.2).Within(1e-6), $"{id} 饱食按 wait 一小时只扣一次");
+            Assert.That(s.Actors[id].Stats.Hydration, Is.EqualTo(before[id].Hydration - 2.4).Within(1e-6), id);
+        }
+    }
+
+    /// <summary>TX01：四人移动 30 分钟只推进 30 分钟；某同行者超重时整队按最慢者（×1.25）。</summary>
+    [Test]
+    public void TX01_TravelTimeFactorIsSlowestMember()
+    {
+        var s = FullCamp();
+        s.GameMinute = At(1, 10, 0);
+        var p = E.Config.Party;
+        Assert.That(E.TimeFactor(s, s.Player, ActionType.Travel), Is.EqualTo(1));
+        E.CreateItems(s, "heavy_armor", 4, ItemInstance.CarriedOwner("npc_shen_he"));
+        var reasons = new List<string>();
+        Assert.That(E.TimeFactor(s, s.Player, ActionType.Travel, reasons), Is.EqualTo(1.25));
+        Assert.That(reasons, Has.Some.Contains("沈禾"));
+        Assert.That(E.TimeFactor(s, s.Player, ActionType.Craft), Is.EqualTo(1), "非移动只看执行者本人");
+        var t0 = s.GameMinute;
+        Start(s, ActionRequest.Travel("field"));
+        Run(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo("field"));
+        Assert.That(s.GameMinute - t0, Is.EqualTo(20), "15 分钟路程 ×1.25 → 18.75，按段推进到 20");
+        Assert.That(p.HubStandIn, Is.EqualTo("camp"));
+    }
+
+    /// <summary>PT03/NP-A13/NP-A23：候补两日：N/W 只托到 40、不生成任何物品、主队库存不变；夜里睡眠回 E/S，白天 wait 不回 E；V 照常进展。</summary>
+    [Test]
+    public void PT03_NP_A13_ReserveCare_FloorOnly_NoItems_ScheduleAndDiseaseContinue()
+    {
+        var s = FullCamp();
+        s.GameMinute = At(1, 10, 0);
+        var gu = s.Actors["npc_gu_cheng"];
+        Assert.That(E.IsReserve(s, "npc_gu_cheng"), Is.True);
+        gu.Stats.Satiety = 41; gu.Stats.Hydration = 41; gu.Stats.Energy = 5; gu.Stats.Wakefulness = 50;
+        gu.Body.Infected = true; gu.Body.VirusLoad = 30; gu.Body.Immunity = 30;
+        var itemsBefore = s.Items.Select(i => (i.InstanceId, i.Owner, i.Count)).ToList();
+        // 白天 10:00—12:00 等待：E 不回、S 降
+        for (var k = 0; k < 2; k++) { Start(s, ActionRequest.Wait(60)); Run(s); s.Main = null; }
+        Assert.That(gu.Stats.Energy, Is.EqualTo(5).Within(1e-9), "白天按 wait：体力不回");
+        Assert.That(gu.Stats.Wakefulness, Is.EqualTo(42).Within(1e-6));
+        Assert.That(gu.Stats.Satiety, Is.EqualTo(40), "低于 40 只托到 40");
+        Assert.That(gu.Stats.Hydration, Is.EqualTo(40));
+        Assert.That(gu.Body.VirusLoad, Is.GreaterThan(30), "公共照护不清病毒");
+        // 推到第二天 06:00：夜里 22—06 遮蔽睡眠回体力与清醒
+        s.Main = null;
+        while (s.GameMinute < At(1, 22, 0)) { Start(s, ActionRequest.Wait(60)); Run(s); s.Main = null; }
+        var e22 = gu.Stats.Energy;
+        while (s.GameMinute < At(2, 6, 0)) { Start(s, ActionRequest.Wait(60)); Run(s); s.Main = null; }
+        Assert.That(gu.Stats.Energy, Is.GreaterThan(e22), "夜间睡眠回体力");
+        Assert.That(gu.Stats.Satiety, Is.EqualTo(40)); Assert.That(gu.Stats.Hydration, Is.EqualTo(40));
+        Assert.That(s.Items.Where(i => itemsBefore.All(b => b.InstanceId != i.InstanceId)), Is.Empty, "照护不生成任何物品");
+        Assert.That(s.Items.Count, Is.EqualTo(itemsBefore.Count));
+        Assert.That(s.Actors["npc_ye_xun"].Body.VirusLoad, Is.EqualTo(0), "新招 V0 候补没有饱饱输入");
+    }
+
+    /// <summary>NP-A13：H 只在睡眠（遮蔽、N/W≥40、M≥20）时自然恢复 +0.2/h；白天 wait 不回。</summary>
+    [Test]
+    public void NP_A13_ReserveHealth_RecoversOnlyWhenSleepingWithConditions()
+    {
+        var s = FullCamp();
+        var gu = s.Actors["npc_gu_cheng"];
+        gu.Stats.Health = 10;
+        s.GameMinute = At(1, 10, 0);
+        Start(s, ActionRequest.Wait(60)); Run(s); s.Main = null;
+        Assert.That(gu.Stats.Health, Is.EqualTo(10).Within(1e-9), "白天 wait 不自然恢复");
+        s.GameMinute = At(1, 23, 0);
+        s.Player.Stats.Wakefulness = 100;
+        Start(s, ActionRequest.Wait(60)); Run(s); s.Main = null;
+        Assert.That(gu.Stats.Health, Is.EqualTo(10.2).Within(1e-6), "夜间遮蔽睡眠 +0.2/h");
+    }
+
+    /// <summary>NP-A21/TX06：候补 H 跨 5、V 跨 80 各提示一次，不暂停主行动；离开阈值再进入再提示。</summary>
+    [Test]
+    public void NP_A21_TX06_ReserveRedLines_OncePerCrossing_NoPause()
+    {
+        var s = FullCamp();
+        s.GameMinute = At(1, 10, 0);
+        var gu = s.Actors["npc_gu_cheng"];
+        gu.Stats.Health = 5.1;
+        gu.Stats.Hydration = 40; gu.Stats.Satiety = 40;
+        gu.Stats.Wakefulness = 0; // 缺乏睡眠 −0.4/h
+        Start(s, ActionRequest.Wait(60));
+        Run(s);
+        Assert.That(s.Main, Is.Null, "主行动照常完成，不被候补红线暂停");
+        Assert.That(s.Log.Count(l => l.Text.Contains("候补顾承健康降到")), Is.EqualTo(1));
+        gu.Stats.Health = 8; gu.Stats.Wakefulness = 50;
+        Start(s, ActionRequest.Wait(30)); Run(s); s.Main = null;
+        gu.Stats.Health = 5.05; gu.Stats.Wakefulness = 0;
+        Start(s, ActionRequest.Wait(30)); Run(s); s.Main = null;
+        Assert.That(s.Log.Count(l => l.Text.Contains("候补顾承健康降到")), Is.EqualTo(2), "离开阈值后再跨入再提示");
+        gu.Body.Infected = true; gu.Body.VirusLoad = 79.9; gu.Body.Immunity = 0;
+        Start(s, ActionRequest.Wait(30)); Run(s); s.Main = null;
+        Assert.That(s.Log.Count(l => l.Text.Contains("候补顾承病毒程度到")), Is.EqualTo(1));
+    }
+
+    /// <summary>TX02：同行者不得工作经验（制作只主角得），队友按 wait 结算。</summary>
+    [Test]
+    public void TX02_OnlyExecutorGetsCraftXp()
+    {
+        var s = FullCamp();
+        var before = s.Actors.Where(kv => kv.Key != "p0").ToDictionary(kv => kv.Key, kv => kv.Value.Skills["crafting"].Xp);
+        E.CreateItems(s, "stone", 1, s.CurrentLocation);
+        E.CreateItems(s, "fiber", 1, s.CurrentLocation);
+        Start(s, ActionRequest.Craft("knife"));
+        Run(s);
+        Assert.That(s.Skills["crafting"].Xp, Is.GreaterThan(0));
+        foreach (var kv in before) Assert.That(s.Actors[kv.Key].Skills["crafting"].Xp, Is.EqualTo(kv.Value), kv.Key);
+    }
+
     /// <summary>开发入口：同一人加两次只一次；超 C 时进候补。</summary>
     [Test]
     public void Debug_Recruit_JoinsUntilFull_ThenReserve()

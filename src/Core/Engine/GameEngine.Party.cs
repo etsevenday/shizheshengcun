@@ -190,6 +190,87 @@ namespace Survival.Core.Engine
             return ActionResult.Success();
         }
 
+        // ───────────── 候补公共照护（R08 §3、A11 §5.3；M184） ─────────────
+
+        /// <summary>本段要按公共照护结算的候补（存活、在名册、不在同行）。</summary>
+        private List<ActorState> ReserveActors(GameState s) => Reserves(s).Select(r => s.Actors[r.ActorId]).ToList();
+
+        /// <summary>候补此刻（日内分钟）是否在遮蔽睡眠时段（22:00—06:00）。</summary>
+        public bool ReserveSleeping(int minute)
+        {
+            var care = Config.Party.ReserveCare;
+            var m = ((minute % Clock.MinutesPerDay) + Clock.MinutesPerDay) % Clock.MinutesPerDay;
+            return care.SleepStartMinute > care.SleepEndMinute
+                ? m >= care.SleepStartMinute || m < care.SleepEndMinute
+                : m >= care.SleepStartMinute && m < care.SleepEndMinute;
+        }
+
+        /// <summary>
+        /// 候补本段速率：营区强制遮蔽、无火堆与床垫加成；22—06 按遮蔽睡眠，其余按 wait（待确认 Q90 选 A；配置 awakeAction=rest 时按休息）。
+        /// 装备求生效果、低精神折半、腹泻、归零伤害与自然恢复条件同主行动（S13 现有速率）。
+        /// </summary>
+        private SegmentContext ReserveSegment(GameState s, ActorState actor)
+        {
+            var c = Config;
+            var st = actor.Stats;
+            var sleep = ReserveSleeping(s.GameMinute);
+            var type = sleep ? ActionType.Sleep : c.Party.ReserveCare.AwakeAction == "rest" ? ActionType.Rest : ActionType.Wait;
+            var a = new ActionState { Type = type, TargetId = "" };
+            var ctx = new SegmentContext { Sheltered = true, IsWork = false, ActionType = type };
+            string key;
+            if (sleep) key = "sleep_sheltered";
+            else
+            {
+                var raw = RateKey(type);
+                key = c.Actions.RateAliases.TryGetValue(raw, out var alias) ? alias : raw;
+            }
+            ctx.Rates = c.HourlyRates[key].Copy();
+            ApplyGearRates(s, actor, a, ctx);
+            if ((type == ActionType.Rest || type == ActionType.Sleep) && ctx.Rates.Energy > 0 && c.Thresholds["morale"].IsBelow(st.Morale))
+                ctx.Rates.Energy *= c.FacilityEffects.LowMoraleEnergyRecoveryFactor;
+            if (actor.DiarrheaUntil.HasValue && actor.DiarrheaUntil.Value > s.GameMinute)
+                ctx.Rates.Hydration += c.ItemActions.DiarrheaExtraHydrationPerHour;
+            var hr = c.HealthRules;
+            var causes = new List<string>();
+            double health = 0;
+            if (st.Satiety <= 0) { health += hr.ZeroSatietyPerHour; causes.Add("饥饿"); }
+            if (st.Hydration <= 0) { health += hr.ZeroHydrationPerHour; causes.Add("缺水"); }
+            if (st.Wakefulness <= 0) { health += hr.ZeroWakefulnessPerHour; causes.Add("缺乏睡眠"); }
+            if (causes.Count > 0) ctx.DamageCause = causes[0];
+            if ((type == ActionType.Rest || type == ActionType.Sleep)
+                && st.Satiety >= hr.RecoveryMinSatiety && st.Hydration >= hr.RecoveryMinHydration && st.Morale >= hr.RecoveryMinMorale)
+                health += hr.ShelteredRestRecoveryPerHour;
+            ctx.HealthPerHour = health;
+            return ctx;
+        }
+
+        /// <summary>N/W 托底：低于 40 只补到 40，高于 40 保持（R08 §3）。</summary>
+        private void ReserveFloor(ActorState actor)
+        {
+            var care = Config.Party.ReserveCare;
+            if (actor.Stats.Satiety < care.SatietyFloor) actor.Stats.Satiety = care.SatietyFloor;
+            if (actor.Stats.Hydration < care.HydrationFloor) actor.Stats.Hydration = care.HydrationFloor;
+        }
+
+        /// <summary>候补红线（A11 §5.3、NP-A21、TX06）：H 首次 ≤5、V 首次 ≥80 各提示一次；离开阈值后清锁存，可再提示。不暂停主行动。</summary>
+        private void ReserveRedLines(GameState s, ActorState actor)
+        {
+            var care = Config.Party.ReserveCare;
+            void Line(string key, bool on, string text)
+            {
+                actor.RedLatched.TryGetValue(key, out var latched);
+                if (on && !latched)
+                {
+                    actor.RedLatched[key] = true;
+                    Emit(s, GameEventKind.Alert, text);
+                }
+                else if (!on && latched) actor.RedLatched[key] = false;
+            }
+            var name = ActorLabel(actor);
+            Line("health", actor.Stats.Health <= care.RedHealth + 1e-9, $"候补{name}健康降到{Fmt.T(actor.Stats.Health)}（≤{Fmt.T(care.RedHealth)}），留在{LocName(HubLocation)}，需要你回去救治。");
+            Line("virus", actor.Body.VirusLoad >= care.RedVirus - 1e-9, $"候补{name}病毒程度到{Fmt.T(actor.Body.VirusLoad)}（≥{Fmt.T(care.RedVirus)}），公共照护不治病，需要你回去处理。");
+        }
+
         // ───────────── 开发入口（B8-19；不改正式条件函数） ─────────────
 
         /// <summary>开发入口：命名角色直接登记入名册；同行未满 C 时直接编入（跳过营区限制）。返回说明。</summary>
