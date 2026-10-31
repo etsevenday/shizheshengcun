@@ -1,0 +1,190 @@
+{
+  "date": "2026-11-01",
+  "status": "static_checks_and_abstract_model_not_game_or_ui",
+  "questionsAsked": 6,
+  "supplementalQuestions": 2,
+  "answers": {
+    "Q101": "A",
+    "Q102": "A",
+    "Q103": "final_supplement_front_to_back_first_legal_one_per_event",
+    "Q104": "B_migration_A",
+    "Q105": "A",
+    "Q106": "A"
+  },
+  "pending": [],
+  "developerDelegations": [],
+  "checks": [
+    {
+      "name": "开发同步与修改记录完整保留 02 参考扩展/R03 回合制战斗系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文保留仅明确替换 02 参考扩展/R03 回合制战斗系统.md",
+      "passed": true
+    },
+    {
+      "name": "开发同步与修改记录完整保留 04 附录/A06 十级熟练度与全技能目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文保留仅明确替换 04 附录/A06 十级熟练度与全技能目录.md",
+      "passed": true
+    },
+    {
+      "name": "开发同步与修改记录完整保留 04 附录/A09 敌人、遭遇组合与掉落目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文保留仅明确替换 04 附录/A09 敌人、遭遇组合与掉落目录.md",
+      "passed": true
+    },
+    {
+      "name": "开发同步与修改记录完整保留 00 总则/02 开发方待确认问题.md",
+      "passed": true
+    },
+    {
+      "name": "仅填六项答复字段",
+      "passed": true
+    },
+    {
+      "name": "开发同步与修改记录完整保留 02 参考扩展/R08 队伍招募、编成与共同生存系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文保留仅明确替换 02 参考扩展/R08 队伍招募、编成与共同生存系统.md",
+      "passed": true
+    },
+    {
+      "name": "开发同步与修改记录完整保留 01 基础系统/S01 世界时间、行动与存档系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文保留仅明确替换 01 基础系统/S01 世界时间、行动与存档系统.md",
+      "passed": true
+    },
+    {
+      "name": "开发同步与修改记录完整保留 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文保留仅明确替换 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "开发同步与修改记录完整保留 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "原正文保留仅明确替换 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "开发同步与修改记录完整保留 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "原正文保留仅明确替换 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "所有策划JSON解析",
+      "passed": true
+    },
+    {
+      "name": "原战斗合同仅本轮授权字段变更",
+      "passed": true
+    },
+    {
+      "name": "合同副本一致其余数据不变 04 附录/A12 全系统策划数据索引.json",
+      "passed": true
+    },
+    {
+      "name": "合同副本一致其余数据不变 assets/20261030/index/joint-expansion-data.json",
+      "passed": true
+    },
+    {
+      "name": "最终顺延而非全队迎击",
+      "passed": true
+    },
+    {
+      "name": "个人XP及旧计数继承",
+      "passed": true
+    },
+    {
+      "name": "整队与分层成本明确",
+      "passed": true
+    },
+    {
+      "name": "12类验收编号均存在",
+      "passed": true
+    },
+    {
+      "name": "无待定答复和草稿阻断文字",
+      "passed": true
+    },
+    {
+      "name": "相对链接有效",
+      "passed": true
+    }
+  ],
+  "model": {
+    "status": "independent_selection_and_xp_model_not_engine_or_ui",
+    "cases": {
+      "bracePresenceLegalityMasks": 256,
+      "sixHitFourActorSequences": 4096,
+      "legacyMigrationCombinations": 320,
+      "reductionProducts": 2
+    },
+    "limitations": "No real stance/source/weapon range resolver, target selection UI, game RNG, world event ordering, save crash handling or combat victory tests."
+  },
+  "preUploadAudit": [
+    {
+      "category": "数值",
+      "result": "已核对，补充2项已答并写正文，无遗留缺口"
+    },
+    {
+      "category": "名词",
+      "result": "已核对，补充2项已答并写正文，无遗留缺口"
+    },
+    {
+      "category": "范围",
+      "result": "已核对，补充2项已答并写正文，无遗留缺口"
+    },
+    {
+      "category": "时机",
+      "result": "已核对，补充2项已答并写正文，无遗留缺口"
+    },
+    {
+      "category": "边界",
+      "result": "已核对，补充2项已答并写正文，无遗留缺口"
+    },
+    {
+      "category": "自动行为",
+      "result": "已核对，补充2项已答并写正文，无遗留缺口"
+    },
+    {
+      "category": "入口",
+      "result": "已核对，补充2项已答并写正文，无遗留缺口"
+    },
+    {
+      "category": "来源",
+      "result": "已核对，补充2项已答并写正文，无遗留缺口"
+    },
+    {
+      "category": "冲突",
+      "result": "已核对，补充2项已答并写正文，无遗留缺口"
+    },
+    {
+      "category": "未完成依赖",
+      "result": "已核对，补充2项已答并写正文，无遗留缺口"
+    },
+    {
+      "category": "旧档",
+      "result": "已核对，补充2项已答并写正文，无遗留缺口"
+    },
+    {
+      "category": "验收",
+      "result": "已核对，补充2项已答并写正文，无遗留缺口"
+    }
+  ]
+}

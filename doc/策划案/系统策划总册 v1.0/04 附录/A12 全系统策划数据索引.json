@@ -55089,7 +55089,7 @@
     "scope": "依据策划面板及已读B6/B7公式的可复现数值实验；非引擎执行、非玩家遥测、非完整回合战斗胜率"
   },
   "combatResolutionAdjudications": {
-    "version": "q75_q98_20261031",
+    "version": "q75_q106_20261101",
     "status": "approved_planning_target_not_engine_verified",
     "sourceQuestions": [
       "Q75",
@@ -55108,7 +55108,13 @@
       "Q91",
       "Q95",
       "Q96",
-      "Q97"
+      "Q97",
+      "Q101",
+      "Q102",
+      "Q103",
+      "Q104",
+      "Q105",
+      "Q106"
     ],
     "precedence": {
       "baseline": "assets/20261031/combat/combat-adjudications.json",
@@ -55166,10 +55172,10 @@
         "interrupted": "keep_spent_approach_AP_do_not_charge_unexecuted_attack_AP_end",
         "oneEventPerApproach": true,
         "hint": {
-          "sourceQuestion": "Q97",
+          "sourceQuestion": "Q97_with_Q103_final_supplement",
           "activeSpearStance": "触发架矛",
           "noActiveSpearStance": "算主动前移",
-          "state": "existing_stance_with_valid_duration_and_remaining_charges_not_merely_equipped_spear",
+          "state": "Q103_first_legal_candidate_scanned_from_front_actual_slots",
           "execution": "existing_source_slot_range_durability_life_and_charge_revalidation",
           "previewConsumesNoRng": true
         }
@@ -56479,7 +56485,7 @@
           "ap": 2,
           "own": "234",
           "target": "任一友方",
-          "effect": "目标与相邻友方交换站位；必须二者合法且存活"
+          "effect": "先选目标A再选相邻存活友方B并确认，原子交换；不额外激活/改预设，换位无经验"
         },
         {
           "id": "command_05",
@@ -56826,6 +56832,88 @@
       "exposureApproach": "original_foremost_exposed_target_constraint_singleton_after_approach_reactions",
       "reaction": "explicit_source_actor_not_random",
       "nonAttackSupport": "original_own_skill_rules"
+    },
+    "multiplayer": {
+      "panic": {
+        "sourceQuestion": "Q101",
+        "untargetedHowlThreat": "original_value_to_all_living_on_field_allies_no_target_rng_no_reserves"
+      },
+      "entryFear": {
+        "sourceQuestion": "Q102",
+        "u": "one_shared_cached_main_fear_source_u",
+        "perActor": "own_entry_M_initialP_and_p_q_times_1_minus_Mdiv100_times_K",
+        "cacheMinutes": 60,
+        "inclusiveReuse": true,
+        "sameBattle": "lock_each_result_once_no_extra_rng"
+      },
+      "brace": {
+        "sourceQuestion": "Q103_final_user_supplement",
+        "events": [
+          "enemy_active_forward_move",
+          "enemy_exposure_approach"
+        ],
+        "selection": "first_legal_living_on_field_actor_by_actual_slot_ascending_skip_inactive_or_illegal",
+        "maxStrikesPerEvent": 1,
+        "consume": "only_selected_actor_one_charge",
+        "noLegal": "no_strike_no_charge",
+        "separateQ87EventsReevaluate": true,
+        "sameEventNoFollowupAfterHitOrMiss": true,
+        "sourceRangeDurabilityAndOtherReactionRulesUnchanged": true
+      },
+      "attackXp": {
+        "sourceQuestion": "Q104",
+        "key": [
+          "actorId",
+          "worldEnemyId",
+          "skillId"
+        ],
+        "maxTimes": 3,
+        "xpPerEffectiveTarget": 2,
+        "multiHit": "one_count_per_target_per_command",
+        "aoe": "count_each_effective_target",
+        "reactionsShareActorBudget": true,
+        "level10": "no_xp_but_increment_effective_count_as_before",
+        "persistence": "stable_actor_world_enemy_ids_never_reset_for_retreat_or_party_changes",
+        "legacyMigration": {
+          "rosterSnapshot": "existing_roster_actorIds_plus_p0_once",
+          "inherit": "each_existing_actor_inherits_legacy_used_count_per_worldEnemy_skill",
+          "worldAndBattleCopies": "max_legacy_count_per_enemy_skill_keep_existing_personal_counts",
+          "futureActorsAndNewWorldEnemies": 0,
+          "noRetroactiveXp": true,
+          "idempotent": true,
+          "legacySharedBudgetNoLongerConsumed": true
+        }
+      },
+      "reorder": {
+        "sourceQuestion": "Q105",
+        "skill": "command_03",
+        "selection": "select_A_then_adjacent_different_living_ally_B_then_explicit_confirm",
+        "AIncludesCaster": true,
+        "BIncludesCaster": true,
+        "ownSlotsAtCommit": [
+          2,
+          3,
+          4
+        ],
+        "postSwapWeaponSlotCompatibilityNotRequired": true,
+        "ap": 2,
+        "baseEnergy": 0.3,
+        "cooldownRounds": 1,
+        "effectiveWeaponWear": 1,
+        "xp": 0,
+        "targetsPayMovementCost": false,
+        "staleTargetSlotOrCaster": "reject_whole_no_retarget_no_cost",
+        "commit": "atomic_swap_cost_cooldown_wear_idempotent_no_extra_activation_no_preset_write"
+      },
+      "coverGuard": {
+        "sourceQuestion": "Q106",
+        "coverAndHoldSameLayer": "strongest_single_0_8_original_expiry_rules",
+        "guardSeparateMultiplicative": true,
+        "normalProduct": 0.4,
+        "shieldProduct": 0.32,
+        "consume": "one_cover_and_one_guard_when_original_positive_post_armor_direct_damage_conditions_hold",
+        "armorZeroOrMissOrNonDamage": "do_not_consume_cover_guard_original_armor_wear_rules_unchanged"
+      }
     }
   },
   "combatResolutionBenchmark": {

@@ -1,0 +1,10 @@
+{
+  "status": "independent_selection_and_xp_model_not_engine_or_ui",
+  "cases": {
+    "bracePresenceLegalityMasks": 256,
+    "sixHitFourActorSequences": 4096,
+    "legacyMigrationCombinations": 320,
+    "reductionProducts": 2
+  },
+  "limitations": "No real stance/source/weapon range resolver, target selection UI, game RNG, world event ordering, save crash handling or combat victory tests."
+}
