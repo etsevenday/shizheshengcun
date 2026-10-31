@@ -27,6 +27,8 @@
 .battle-overlay { position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: 6px; padding: 8px 10px;
   flex: 1 1 0; height: auto; min-height: 0; border-color: #8a4f3a; background: linear-gradient(#2a221e, #252e27 40%); }
 .battle-overlay.encounter { border-color: var(--warn); }
+/* Q62：容量 C 以外、留在原地的敌踪成员（不接战）淡化 */
+.battle-overlay.encounter .enemy-card.stays { opacity: .55; filter: grayscale(.6); }
 .bt-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .bt-head > b { font-size: 17px; white-space: nowrap; }
 .bt-queue { display: flex; gap: 4px; flex-wrap: nowrap; overflow: hidden; flex: 1 1 auto; min-width: 0; }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -39,8 +40,11 @@ namespace Survival.Core.Config
         public int MaxEnemies { get; set; } = 3;
         /// <summary>每侧站位 "1"—"4"（R03 §1 四对四）。</summary>
         public List<string> Slots { get; set; } = new List<string>();
-        /// <summary>队伍容量 C 的默认值（开发假设 B6-1：容量随主线解锁在 B8/R31 之前，取现行单场敌人上限 3）。</summary>
-        public int DefaultCapacity { get; set; } = 3;
+        /// <summary>
+        /// 队伍容量 C 的解锁规则（Q62 选 B、R03 2026-10-31 Q62—Q74 章）：新局及没有真实解锁事实时 C1；按存档里的真实事实（Progress.Flags）取已满足档的最大值，只增不减。
+        /// 取代 B6 开发假设 B6-1 的临时 defaultCapacity=3。
+        /// </summary>
+        public CapacityRulesConfig Capacity { get; set; } = new CapacityRulesConfig();
         public int HumanApPerActivation { get; set; } = 2;
         /// <summary>战术训练阶位 0/1/2 的普通激活 AP（R03 §3：3/4/5）。</summary>
         public List<int> ApByTier { get; set; } = new List<int>();
@@ -53,6 +57,30 @@ namespace Survival.Core.Config
         /// <summary>我方控制抗性基准（开发假设 B6-2：总册没写，取 0，待确认 Q-L）。</summary>
         public double BasePlayerControlResist { get; set; }
         public bool HealthUsesExistingSurvivalHealth { get; set; }
+    }
+
+    /// <summary>容量 C 规则（combat-adjudications.json capacity）。</summary>
+    public sealed class CapacityRulesConfig
+    {
+        /// <summary>新局及无已解锁事实者的 C（1）。</summary>
+        public int NewGame { get; set; } = 1;
+        public int Max { get; set; } = 4;
+        public List<CapacityUnlockConfig> Unlocks { get; set; } = new List<CapacityUnlockConfig>();
+
+        /// <summary>按存档里的真实事实算 C：已满足档取最大，至少 NewGame、至多 Max（事实只加不删，所以只增不减）。</summary>
+        public int CapacityFor(ICollection<string> facts) =>
+            Math.Max(1, Math.Min(Max, Unlocks.Where(u => u.Met(facts)).Select(u => u.Capacity).DefaultIfEmpty(NewGame).Max()));
+    }
+
+    /// <summary>一档容量解锁：allOf 全部成立且 anyOf（非空时）至少一条成立，C 至少为 capacity。</summary>
+    public sealed class CapacityUnlockConfig
+    {
+        public int Capacity { get; set; }
+        public List<string> AllOf { get; set; } = new List<string>();
+        public List<string> AnyOf { get; set; } = new List<string>();
+        public string Text { get; set; } = "";
+
+        public bool Met(ICollection<string> facts) => AllOf.All(facts.Contains) && (AnyOf.Count == 0 || AnyOf.Any(facts.Contains));
     }
 
     public sealed class SkillConfig

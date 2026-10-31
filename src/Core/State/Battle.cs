@@ -279,7 +279,7 @@ namespace Survival.Core.State
         public List<BattleEnemy> Enemies { get; set; } = new List<BattleEnemy>();
         /// <summary>
         /// 队伍容量 C（R03 §1、A11：1—4，含主角）：本场敌人数上限（入战与噪声增援累计都不超过它），战斗建立时锁存。
-        /// 容量随主线解锁在后续批次（B8/R31）；本批按配置 scope.defaultCapacity（开发假设 B6-1）。
+        /// 新战斗按存档里的真实解锁事实计算（Q62 选 B：新局 C1，见 GameEngine.BattleCapacity）；开战后不随事实变化，旧战斗保持已存值到结束。
         /// </summary>
         public int Capacity { get; set; }
         /// <summary>我方站位（R03 §1）：按 1..实际人数紧凑排列的 actorId；本批只有主角（队友参战在 B8）。</summary>

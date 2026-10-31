@@ -15,6 +15,8 @@
 @if (b == null && s.Encounter != null)
 {
     var group = e.EncounterEnemies(s);
+    var joinIds = e.EncounterJoiners(s).Select(x => x.Id).ToHashSet();
+    var capNote = e.EncounterCapacityNote(s);
     <div class="panel battle-overlay encounter" role="region" aria-label="发现敌踪">
         <div class="bt-head">
             <b>发现敌踪</b>
@@ -24,7 +26,8 @@
             @foreach (var w in group)
             {
                 var ec = e.Enemy(w.EnemyId);
-                <ObjectCard @key="w.Id" CssClass="enemy-card" Title="@ec.Name" Badge="@(ec.FamilyName + (ec.Elite ? "·精英" : ""))" OnClick="() => {}">
+                var stays = !joinIds.Contains(w.Id);
+                <ObjectCard @key="w.Id" CssClass="@(stays ? "enemy-card stays" : "enemy-card")" Title="@ec.Name" Badge="@(stays ? "留在原地" : ec.FamilyName + (ec.Elite ? "·精英" : ""))" OnClick="() => {}">
                     <Art>@Icons.Markup("enemy_" + ec.Id)</Art>
                     <ChildContent>
                         <div class="hp-line"><span>健康</span><b>@Ui.N(w.Hp)/@Ui.N(ec.Hp)</b></div>
@@ -37,7 +40,7 @@
         </div>
         <div class="enc-actions">
             <button type="button" class="enc-go fight" disabled="@G.BattleBusy" @onclick="G.EngageEncounter">
-                <strong>接敌</strong><small>@e.FearNote(s, e.EncounterEnemies(s), GameEngine.FearEncounter)</small>
+                <strong>接敌</strong><small>@e.FearNote(s, e.EncounterJoiners(s), GameEngine.FearEncounter)@(capNote != null ? "；" + capNote : "")</small>
             </button>
             <button type="button" class="enc-go" disabled="@(e.CanStart(s, ActionRequest.Bypass()) != null)"
                     @onmouseenter="() => G.Hover(BypassReq, BypassTitle)" @onfocus="() => G.Hover(BypassReq, BypassTitle)" @onmouseleave="() => G.Hover(null)" @onblur="() => G.Hover(null)"

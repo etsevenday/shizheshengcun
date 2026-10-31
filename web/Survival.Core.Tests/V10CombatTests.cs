@@ -82,6 +82,7 @@ public class V10CombatTests : BattleTestBase
         Assert.That(E.FearSource(new[] { e2, a })!.Id, Is.EqualTo(Math.Min(a.Id, e2.Id)), "再平手按 worldEnemyId");
         // 多敌只判一次，不对每敌叠加
         s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = { a.Id, b.Id, c.Id }, Source = "explore", Minute = s.GameMinute };
+        UnlockCapacity(s, 3);   // Q62：三只都入场需要 C3（新局 C1 只有排第一的入场、受惊只看入场者）
         s.Stats.Morale = 0;
         Force(s, Below(0.5));
         Assert.That(E.Engage(s).Ok, Is.True);

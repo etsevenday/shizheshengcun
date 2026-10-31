@@ -103,6 +103,13 @@
                     <button class="secondary" @onclick="() => DevTier(1)">战术训练阶位1（4AP）</button>
                     <button class="secondary" @onclick="() => DevTier(2)">战术训练阶位2（5AP）</button>
                 </div>
+                @* B7c（Q62）：容量 C 来自存档里的真实解锁事实；营区登记、两种关键记录的系统在后续批次，这里只供试玩造事实 *@
+                <div class="btn-row">
+                    <button class="secondary" @onclick='() => DevCapacity("hub_registered")'>记下营区登记（C2）</button>
+                    <button class="secondary" @onclick='() => DevCapacity("church_route_record")'>记下教会路线记录（C3）</button>
+                    <button class="secondary" @onclick='() => DevCapacity("academy_safety_record")'>记下学院安全记录（两种都有C4）</button>
+                    <button class="secondary" @onclick="() => DevCapacity(null)">清除容量事实（回C1）</button>
+                </div>
                 @{
                     // B7（A09 §1）：20 种新敌人只入数据、不进旧刷新池，只能从这里放出来试玩
                     var pooled = G.E.Config.WorldEnemies.Pools.Values.SelectMany(p => p.Values).SelectMany(l => l).Select(x => x.EnemyId).ToHashSet();
@@ -167,6 +174,8 @@
     private void DevSkills(int level, bool survivalOnly) => DevDone(G.E.DebugSetSkillLevels(G.S, level, survivalOnly));
 
     private void DevTier(int tier) => DevDone(G.E.DebugSetTacticalTier(G.S, tier));
+
+    private void DevCapacity(string? fact) => DevDone(G.E.DebugCapacityFact(G.S, fact));
 
     private void DevSkillKit() => DevDone(G.E.DebugGiveSkillKit(G.S));
 

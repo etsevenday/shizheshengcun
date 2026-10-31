@@ -59,9 +59,10 @@ public class B6CombatTests : BattleTestBase
         s.WorldEnemies.Clear();
         var ids = new[] { "shambler", "crawler", "shambler", "worker" }.Select(id => E.DebugSpawnEnemy(s, id, "field").Id).ToList();
         s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = ids, Source = "explore", Minute = s.GameMinute };
+        UnlockCapacity(s, 3);   // Q62 起 C 来自真实事实（取代 B6-1 的默认 3）：营区登记+一种关键记录 = C3
         Assert.That(E.Engage(s).Ok, Is.True);
         var b = s.Battle!;
-        Assert.That(b.Capacity, Is.EqualTo(3), "开发假设 B6-1：容量 C 默认 3");
+        Assert.That(b.Capacity, Is.EqualTo(3), "登记+一种关键记录：C3");
         Assert.That(b.Enemies.Select(e => (e.WorldId, e.Slot)), Is.EqualTo(ids.Take(3).Select((id, k) => (id, (k + 1).ToString()))), "有序名单截前 C 个，从1号位紧凑排");
         Assert.That(s.WorldEnemies.Single(w => w.Id == ids[3]).Engaged, Is.False, "超出容量的敌人不入场");
         Assert.That(b.Allies, Is.EqualTo(new[] { GameState.PlayerId }), "我方只有主角，在1号位");

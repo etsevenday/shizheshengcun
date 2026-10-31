@@ -6,10 +6,28 @@ namespace Survival.Core.Tests;
 /// <summary>战斗用例的公共工具：在指定地点放敌人入战、推进到玩家行动、强制下一串随机数满足条件。</summary>
 public abstract class BattleTestBase : TestBase
 {
-    /// <summary>在农野荒地（第2日白天、冻结刷新巡游、清掉原有敌人）放下指定敌人并以敌踪方式入战。</summary>
-    protected GameState Fight(uint seed, params string[] enemyIds)
+    /// <summary>
+    /// 在农野荒地（第2日白天、冻结刷新巡游、清掉原有敌人）放下指定敌人并以敌踪方式入战。
+    /// B6/B7 的旧用例按“单场最多 3 敌”写，Q62 起容量 C 来自真实解锁事实：这里先记下营区登记与一种关键记录（C3）再入战；
+    /// 要测新局 C1 的用 <see cref="FightC1"/>。
+    /// </summary>
+    protected GameState Fight(uint seed, params string[] enemyIds) => FightWith(seed, 3, enemyIds);
+
+    /// <summary>新局容量 C1（没有任何解锁事实）入战。</summary>
+    protected GameState FightC1(uint seed, params string[] enemyIds) => FightWith(seed, 1, enemyIds);
+
+    /// <summary>容量事实：C2 营区登记；C3 再加教会路线记录；C4 再加学院安全记录。</summary>
+    protected static void UnlockCapacity(GameState s, int c)
+    {
+        if (c >= 2) s.Progress.Flags.Add("hub_registered");
+        if (c >= 3) s.Progress.Flags.Add("church_route_record");
+        if (c >= 4) s.Progress.Flags.Add("academy_safety_record");
+    }
+
+    protected GameState FightWith(uint seed, int capacity, params string[] enemyIds)
     {
         var s = New(seed);
+        UnlockCapacity(s, capacity);
         E.DebugTeleport(s, "field");
         s.GameMinute = At(2, 9, 0);
         s.SpawnNextCheck = int.MaxValue;

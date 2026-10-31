@@ -37,6 +37,8 @@ namespace Survival.Core.Save
         public const string Schema10 = "10";
         public const string Schema11 = "11";
         public const string Schema12 = "12";
+        /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
+        public const int LegacyBattleCapacity = 3;
 
         /// <summary>升级到当前版本，返回给玩家看的迁移说明（无变化时为空）。冲突时抛 SaveMigrationConflictException，状态不变。</summary>
         public static List<string> Migrate(GameState s, GameConfig config)
@@ -589,8 +591,8 @@ namespace Survival.Core.Save
                 foreach (var e in b.Enemies.Where(e => !e.Dead && !e.Fled).OrderBy(e => map.TryGetValue(e.Slot, out var p) ? p : 9).ThenBy(e => e.Index))
                     e.Slot = (k++).ToString();
                 foreach (var e in b.Enemies.Where(e => e.Dead || e.Fled)) e.Slot = "";
-                var cap = Math.Max(1, Math.Min(config.Scope.Slots.Count, config.Scope.DefaultCapacity));
-                b.Capacity = Math.Max(cap, b.Enemies.Count);
+                // 旧战斗保持旧口径直到结束（Q62：activeLegacyBattleCapacityPreserved）：schema 11 时单场最多 3 敌
+                b.Capacity = Math.Max(LegacyBattleCapacity, b.Enemies.Count);
                 b.Allies = new List<string> { GameState.PlayerId };
                 var note = "进行中的战斗改为四对四站位：敌人按原顺序排到1—" + (k - 1) + "号位，本轮照旧走完，下一轮起按新的速度与行动点规则";
                 notes.Add(note);

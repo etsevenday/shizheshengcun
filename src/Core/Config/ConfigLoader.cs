@@ -337,6 +337,10 @@ namespace Survival.Core.Config
                     e.Add($"敌人 {en.Id} 的附加掉落无效");
             }
             if (c.Scope.BasePlayerDodge <= 0) e.Add("玩家闪避能力须为正");
+            var cap = c.Scope.Capacity;
+            if (cap.NewGame < 1 || cap.Max > c.Scope.Slots.Count || cap.NewGame > cap.Max) e.Add("队伍容量（scope.capacity）新局值或上限无效");
+            foreach (var u in cap.Unlocks)
+                if (u.Capacity <= cap.NewGame || u.Capacity > cap.Max || (u.AllOf.Count == 0 && u.AnyOf.Count == 0)) e.Add($"队伍容量解锁档 C{u.Capacity} 无效");
             if (c.Scope.ApByTier.Count == 0 || c.Scope.ApByTier.Any(x => x <= 0 || x > c.Scope.ApCap)) e.Add("战术训练阶位的行动点（scope.apByTier）无效");
 
             var we = c.WorldEnemies;

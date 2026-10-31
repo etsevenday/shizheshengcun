@@ -271,7 +271,7 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
             if (DialogueLocked(s)) return ActionResult.Fail(DialogueLockedReason);
             if (s.Encounter == null) return ActionResult.Fail("当前没有敌踪");
-            var group = EncounterEnemies(s).Where(w => !w.Engaged && w.LocationId == s.CurrentLocation).ToList();
+            var group = EncounterGroup(s);
             RememberRequest(s, requestId);
             if (group.Count == 0)
             {
@@ -282,6 +282,21 @@ namespace Survival.Core.Engine
             s.Encounter = null;
             StartBattle(s, group, true, "遭遇", FearEncounter);
             return ActionResult.Success();
+        }
+
+        /// <summary>敌踪里还在本地、未交战的有序名单（接敌时按它截前 C 个）。</summary>
+        public List<WorldEnemy> EncounterGroup(GameState s) =>
+            EncounterEnemies(s).Where(w => !w.Engaged && w.LocationId == s.CurrentLocation).ToList();
+
+        /// <summary>接敌时实际入战的敌人：有序名单的前 C 个（Q62：未选的留在原地、不判死亡与奖励）。受惊判定也只看这几只。</summary>
+        public List<WorldEnemy> EncounterJoiners(GameState s) => EncounterGroup(s).Take(BattleCapacity(s)).ToList();
+
+        /// <summary>敌踪名单超过容量时的说明：“本场容量C1：只有排在最前的1只接战，其余2只留在原地”；不超过为 null。</summary>
+        public string? EncounterCapacityNote(GameState s)
+        {
+            var all = EncounterGroup(s).Count;
+            var c = BattleCapacity(s);
+            return all > c ? $"本场容量C{c}：只有排在最前的{c}只接战，其余{all - c}只留在原地（不算击杀、没有战利品）" : null;
         }
 
         /// <summary>入战情境（R03 §2.1）：主动接近、探索/清理接敌、剧情首战。</summary>
@@ -325,7 +340,8 @@ namespace Survival.Core.Engine
             var fearText = !b.FearSourceWorldId.HasValue ? ""
                 : b.Frightened ? $"（受惊：{_enemies[joined.First(w => w.Id == b.FearSourceWorldId).EnemyId].Name}，受惊率{Fmt.Pct(b.FearChance)}，恐慌+{Fmt.T(b.FearPanic)}）"
                 : $"（未受惊，受惊率{Fmt.Pct(b.FearChance)}）";
-            BattleLog(s, $"{source}：{names}。恐慌{Fmt.N(b.Panic)}{fearText}。");
+            var left = group.Count - joined.Count;
+            BattleLog(s, $"{source}：{names}。恐慌{Fmt.N(b.Panic)}{fearText}。" + (left > 0 ? $"本场容量C{b.Capacity}，另有{left}只留在原地。" : ""));
             Emit(s, GameEventKind.Battle, $"战斗开始：{names}。", null, b.Enemies.Select(e => $"enemy:{e.WorldId}"));
             // 同速排序用的锁定随机数 u（R03 §2）：入场时各抽一次并存档（在受惊判定之后抽，不改受惊结果）
             b.PlayerTieRoll = s.Rng.NextDouble();
@@ -617,8 +633,29 @@ namespace Survival.Core.Engine
             BeginRound(s);
         }
 
-        /// <summary>本场容量 C（开发假设 B6-1：容量系统在 B8，本批取配置 scope.defaultCapacity，夹在 1—4）。</summary>
-        public int BattleCapacity(GameState s) => Math.Max(1, Math.Min(Config.Scope.Slots.Count, Config.Scope.DefaultCapacity));
+        /// <summary>
+        /// 新战斗的容量 C（Q62 选 B）：按存档里的真实解锁事实（营区登记 C2、教会路线/学院安全记录之一 C3、二者都有 C4），
+        /// 新局及没有这些事实的旧局为 C1；不把 B6 临时的 3 当解锁。进行中的战斗用开战时锁存的 BattleState.Capacity，不随事实变化。
+        /// </summary>
+        public int BattleCapacity(GameState s) => Math.Min(Config.Scope.Slots.Count, Config.Scope.Capacity.CapacityFor(s.Progress.Flags));
+
+        /// <summary>容量 C 的来源说明：“容量C1（新局：营区登记后C2）”。</summary>
+        public string CapacityText(GameState s)
+        {
+            var c = BattleCapacity(s);
+            var met = Config.Scope.Capacity.Unlocks.Where(u => u.Met(s.Progress.Flags)).OrderByDescending(u => u.Capacity).FirstOrDefault();
+            var next = Config.Scope.Capacity.Unlocks.Where(u => u.Capacity > c).OrderBy(u => u.Capacity).FirstOrDefault();
+            return $"容量C{c}（{(met != null ? $"已有{met.Text}" : "尚无解锁记录")}{(next != null ? $"；{next.Text}后C{next.Capacity}" : "")}）";
+        }
+
+        /// <summary>开发入口：加一条容量解锁事实（hub_registered / church_route_record / academy_safety_record）或全部清除。返回说明。</summary>
+        public string DebugCapacityFact(GameState s, string? fact)
+        {
+            var all = Config.Scope.Capacity.Unlocks.SelectMany(u => u.AllOf.Concat(u.AnyOf)).Distinct().ToList();
+            if (fact == null) s.Progress.Flags.RemoveWhere(all.Contains);
+            else if (all.Contains(fact)) s.Progress.Flags.Add(fact);
+            return $"开发：{(fact == null ? "已清除容量解锁事实" : $"已记下事实 {fact}")}，下一场新战斗{CapacityText(s)}；进行中的战斗不变。";
+        }
 
         /// <summary>本轮唯一一次世界 tick（战斗速率，体力只付招式成本，计入工作类归零损血）。返回 false 表示 tick 内死亡或尸变。</summary>
         private bool BattleTick(GameState s)
