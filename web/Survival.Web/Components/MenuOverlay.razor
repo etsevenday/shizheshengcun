@@ -21,6 +21,17 @@
             <button class="secondary" @onclick="() => G.ToggleBattleMenu(false)">继续</button>
             @if (G.S.Battle != null)
             {
+                @* 试玩修复 B9.6（A10 §6.3 战斗菜单含“设置”）：现有唯一设置项动画速度（敌方行动逐条展示的间隔），只改呈现，不改结算 *@
+                <div>
+                    <div class="eyebrow" style="margin-bottom:6px">设置 · 动画速度（敌方行动逐条展示）</div>
+                    <div class="btn-row">
+                        @foreach (var (label, ms) in new[] { ("快", 40), ("标准", 120), ("慢", 250) })
+                        {
+                            var v = ms;
+                            <button class="secondary @(G.SegmentDelayMs == ms ? "on" : "")" style="@(G.SegmentDelayMs == ms ? "border-color:var(--accent);color:var(--accent)" : "")" @onclick="() => SetSpeed(v)">@label</button>
+                        }
+                    </div>
+                </div>
                 @* B9（A10 §6.3）：战斗菜单含系统说明（阅读暂停，不触发敌方行动、不推进世界时间） *@
                 <button class="secondary" @onclick='() => { G.ToggleBattleMenu(false); G.OpenBattleDrawer("help"); }'>系统说明</button>
             }

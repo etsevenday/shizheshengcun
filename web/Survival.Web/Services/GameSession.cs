@@ -1326,6 +1326,7 @@ public sealed class GameSession
     {
         if (State == null || S.Battle == null) return;
         BattleAllyView = BattleAllyView == actorId ? null : actorId;
+        if (!BattleAiming) Notice = null;   // 试玩修复 B9-3
         if (BattleAllyView != null) BattleTarget = null;
         Notify();
     }
@@ -1367,6 +1368,7 @@ public sealed class GameSession
             BattleTarget = null;
             BattleAllyView = null;
             BattleHover = null;
+            Notice = null;
             ClearSelectionSilently();
             Notify();
             return;
@@ -1401,11 +1403,19 @@ public sealed class GameSession
         HoverBattleTarget(list[next]);
     }
 
-    /// <summary>回车：瞄准中提交当前预测的合法目标（与点击同一路径与请求号去重）。</summary>
+    /// <summary>
+    /// 回车：瞄准中提交当前预测的合法目标；选了自用/无目标指令（防御、架矛、调息、结束行动……）时等同点底部“确认”。
+    /// 与点击同一路径、同一请求号去重（试玩修复 B9-7）。
+    /// </summary>
     public async Task BattleConfirmHover()
     {
-        if (State == null || S.Battle == null || !BattleAiming || BattleBusy || DialogueLocked || BattleMenuOpen) return;
-        if (BattleHover is int h && AimTargets().Contains(h)) await ClickBattleTarget(h, BattleExecToken());
+        if (State == null || S.Battle == null || BattleAction == null || BattleBusy || DialogueLocked || BattleMenuOpen || !E.AwaitingPlayer(S)) return;
+        if (BattleAiming)
+        {
+            if (BattleHover is int h && AimTargets().Contains(h)) await ClickBattleTarget(h, BattleExecToken());
+            return;
+        }
+        if (E.PreviewCommand(S, CurrentBattleCommand()).Ok) await ExecuteBattleCommand(BattleExecToken());
     }
 
     /// <summary>说明抽屉、战斗菜单打开时是阅读暂停（A10 §6.3）：逐条展示的敌方行动等它们关上再继续，不额外推进。</summary>
@@ -1516,6 +1526,7 @@ public sealed class GameSession
     {
         BattleTarget = index;
         BattleAllyView = null;
+        if (!BattleAiming) Notice = null;   // 试玩修复 B9-3：换查看对象时不留旧原因
         DetailTab = DetailTab.Object;
         Notify();
     }
@@ -1525,6 +1536,7 @@ public sealed class GameSession
     {
         BattleAction = null;
         BattleItem = null;
+        Notice = null;   // 试玩修复 B9-3：取消瞄准时清掉上一次点非法目标留下的“射程不足”等原因
         Notify();
     }
 

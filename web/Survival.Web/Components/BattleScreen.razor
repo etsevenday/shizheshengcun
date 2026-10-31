@@ -33,7 +33,13 @@
         var pv = e.PreviewCommand(s, BattleCommand.Of(G.BattleAction!, G.AreaAction ? null : hov, G.BattleItem));
         if (pv.Ok && pv.Targets.Count > 0) _forecast = pv.Targets.ToDictionary(t => t.Index, t => (t.DamageMin, t.DamageMax));
     }
-    var actorText = waiting ? "敌方行动中" : $"你 · {(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}";
+    // 试玩修复 B9-4：对白锁期间 AwaitingPlayer 为假，但轮到的仍是队列游标上的角色——顶条/底栏写真实行动者，不写“敌方行动中”
+    var turnFoe = activeIdx > 0 ? e.BattleEnemyAt(b, activeIdx) : null;
+    var turnName = activeIdx == 0 ? "你" : turnFoe != null ? $"{turnFoe.Pos}号 {e.EnemyName(turnFoe)}" : "敌方";
+    var actorText = dlg
+        ? (activeIdx == 0 ? $"你 · {(b.ActingPursuit ? "追击" : "普通激活")} · 读完对话再行动" : $"{turnName} · 对话中，时间未推进")
+        : waiting ? (turnFoe != null ? $"敌方行动中：{turnName}" : "敌方行动中") : $"你 · {(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}";
+    var actorWait = dlg ? activeIdx != 0 : waiting;
 }
 
 <div class="bfs" role="region" aria-label="@($"战斗 · 第{b.Round}轮")">
@@ -42,7 +48,7 @@
         <header class="bfs-top" inert="@dlg">
             <b class="bfs-title">@(b.Tutorial ? "首战" : "战斗") · 第@(b.Round)轮</b>
             <span class="bfs-where">@e.LocName(b.LocationId)</span>
-            <span class="bfs-actor @(waiting ? "wait" : "now")" aria-live="polite">@actorText</span>
+            <span class="bfs-actor @(actorWait ? "wait" : "now")" aria-live="polite">@actorText</span>
             <span class="bfs-cap" title="@e.CapacityText(s)">容量@(b.Capacity) · 敌人最多@(b.Capacity)只</span>
             <span class="bt-noise" title="枪声+@(Ui.T(cfg.Noise.GunGain))、弩+@(Ui.T(cfg.Noise.CrossbowGain))；满@(Ui.T(cfg.Noise.Max))可能引来同地丧尸（每场最多1次）">
                 噪声<span class="track thin"><i style="width:@Ui.Bar(b.Noise, cfg.Noise.Max)%"></i></span>@Ui.T(b.Noise)/@Ui.T(cfg.Noise.Max)
@@ -75,7 +81,7 @@
                 if (shown > 0) { <span class="bq-arrow" aria-hidden="true">→</span> }
                 shown++;
                 var qIdx = qi;
-                <button type="button" role="listitem" class="q-av @(now ? "now" : "") @(done ? "done" : "") @(qi == 0 ? "me" : "foe") @(chase ? "chase" : "")"
+                <button type="button" role="listitem" class="q-av @(now ? "now" : "") @(done ? "done" : "") @(qi == 0 ? "me" : "q-foe") @(chase ? "chase" : "")"
                         title="@($"{qName}：轮初有效速度{qSpeed}{(qi == 0 ? $"（{SpeedSource(mySpeed)}）" : "")}{(chase ? "；追击：速度优势攒满100进度，正常激活之后多一次2AP" : "；正常激活")}{(now ? "；正在行动" : done ? "；已行动" : "")}。点击只查看，不改顺序")"
                         aria-label="@($"{(chase ? "追击 " : "")}{qName}{(now ? "，行动中" : done ? "，已行动" : "")}")"
                         @onclick="() => QueueClick(qIdx)">
@@ -107,7 +113,7 @@
             <div class="bc-who" aria-label="当前角色">
                 <div class="bc-who-head">
                     <span class="bc-face" aria-hidden="true"><img src="img/portraits/protagonist.svg" alt="" /></span>
-                    <span class="bc-who-name"><b>你 · @(GameEngine.PlayerPos(b))号位</b><small class="@(waiting ? "" : "now")">@(waiting ? "等待轮到你" : $"{(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}")</small></span>
+                    <span class="bc-who-name"><b>你 · @(GameEngine.PlayerPos(b))号位</b><small class="@(actorWait ? "" : "now")">@(actorWait ? "等待轮到你" : dlg ? "读完对话再行动" : $"{(b.ActingPursuit ? "追击" : "普通激活")} · AP {b.PlayerAp}/{apMax}")</small></span>
                 </div>
                 <div class="bc-who-lines">
                     <span title="体力">体力 @Ui.N(s.Stats.Energy)/@Ui.T(s.Stats.EnergyMax)</span>
@@ -180,7 +186,7 @@
                                     title="@(m.Reason ?? $"{ShortName(m)}：{ApText(m.Ap)}，随身{have}份；选中后在底部确认")"
                                     @onclick="() => { G.ToggleMedTray(false); if (mo.Available) G.PickBattleAction(mo.Action, mo.ItemInstanceId); else G.ExplainBlocked(ShortName(mo), mo.Reason); }">
                                 <span class="cmdt-art">@Icons.Markup(MedItem(m.Action))</span>
-                                <span class="bc-med-text"><b>@ShortName(m) ×@have</b><small>@(m.Available ? ApText(m.Ap) : ShortWhy(m.Reason))</small></span>
+                                <span class="bc-med-text"><b>@G.E.ItemName(MedItem(m.Action)) ×@have</b><small>@(m.Available ? ApText(m.Ap) : ShortWhy(m.Reason))</small></span>
                             </button>
                         }
                     </div>
@@ -199,9 +205,13 @@
 
         @* 底部：一条最新短反馈/瞄准提示 + 物资查看 + 结束行动（A10 §2.2、§5） *@
         <footer class="bfs-feed" inert="@dlg" aria-live="polite">
-            @if (waiting)
+            @if (dlg)
             {
-                <span class="bx-hint warn">敌方行动中…</span>
+                <span class="bx-hint">对话中，时间未推进；读完后@(activeIdx == 0 ? "轮到你行动" : $"{turnName}继续行动")</span>
+            }
+            else if (waiting)
+            {
+                <span class="bx-hint warn">@(turnFoe != null ? $"敌方行动中：{turnName}…" : "敌方行动中…")</span>
             }
             else if (sel != null && aiming)
             {
@@ -212,7 +222,7 @@
                 var p = e.PreviewCommand(s, G.CurrentBattleCommand());
                 <span class="bx-hint @(p.Ok ? "" : "warn")" title="@(p.Ok ? string.Join("；", p.Notes) : p.Reason)">@(p.Ok ? (p.RetreatChance.HasValue ? $"成功率{Ui.Pct(p.RetreatChance.Value)}" : p.Notes.FirstOrDefault() ?? ShortName(sel)) : p.Reason)</span>
                 <button type="button" class="bx-go" id="bt-confirm" disabled="@(!p.Ok || locked)" title="@(p.Ok ? "点击确认才提交；同一指令只提交一次" : p.Reason)"
-                        @onclick="() => Exec(token)">确认 · @ShortName(sel) · @(p.Ap)AP</button>
+                        @onclick="() => Exec(token)">@(sel.Action == "end_turn" ? $"确认结束行动 · 剩余{p.Ap}AP清零" : $"确认 · {ShortName(sel)} · {p.Ap}AP")</button>
                 <button type="button" class="bx-x" aria-label="取消（Esc）" title="取消（Esc/右键），不执行" @onclick="G.ClearBattleAction">×</button>
             }
             else
@@ -370,11 +380,12 @@
              title="@tip" @onclick="() => ClickFoe(idx, token, locked)" @onkeydown="ev => FoeKey(ev, idx, token, locked)"
              @onmouseenter="() => G.HoverBattleTarget(idx)" @onmouseleave="() => G.HoverBattleTarget(null)">
             <div class="anc-top anc-intent @kind" title="@($"本轮公开意图（轮初锁定，不公开伤害抽值）：{shown}{(note != null ? "；" + note : "")}")">
-                <span class="intent-ico" aria-hidden="true">@ico</span><span class="anc-intent-text"><b>@brief</b>@if (range != null) {<small>@range</small>}</span>
+                <span class="anc-brief-row"><span class="intent-ico" aria-hidden="true">@ico</span><b class="anc-brief">@brief</b></span>@if (range != null) {<span class="anc-intent-row"><small>@range</small></span>}
             </div>
-            <div class="anc-head">@if (idx == activeIdx) {<span class="anc-ptr" aria-hidden="true">▼</span>}<span class="anc-slot bdg">@(pos)号</span><b title="@ec.Name">@ec.Name</b>@if (en.Acted) {<span class="anc-done bdg">已动</span>}</div>
+            <div class="anc-head">@if (idx == activeIdx) {<span class="anc-ptr" aria-hidden="true">▼</span>}<span class="anc-slot bdg">@(pos)号</span><b title="@ec.Name">@ec.Name</b></div>
             <div class="anc-art">
                 @Icons.Markup("enemy_" + ec.Id)
+                @if (en.Acted) { <span class="anc-done bdg" title="本轮已行动">已动</span> }
                 @if (targetable) { <span class="anc-aim" aria-hidden="true">⌖</span> }
                 @if (unreachable) { <span class="anc-no" aria-hidden="true"></span> }
             </div>
@@ -634,7 +645,7 @@
         if (string.IsNullOrEmpty(why)) return "";
         if (why.StartsWith("行动点不足")) return "AP不足";
         if (why.StartsWith("还没轮到")) return "等待";
-        if (why.StartsWith("只在体力不足")) return "体力够用";
+        if (why.StartsWith("只在体力不足")) return "体力足";
         if (why.StartsWith("体力不足")) return "体力不足";
         if (why.StartsWith("随身没有")) return why.Contains("弹") || why.Contains("箭") || why.Contains("矢") ? "无弹药" : "无物品";
         if (why.StartsWith("随身") && why.Contains("不足")) return "弹药不足";

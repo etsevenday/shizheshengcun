@@ -117,8 +117,13 @@ const MEASURE = `(() => {
   const order = ancs.map(a => (a.side === 'ally' ? 'A' : 'F') + a.slot).join(',');
   const intents = [...document.querySelectorAll('.anc.foe:not(.empty)')].map(a => {
     const box = a.getBoundingClientRect();
-    return [...a.querySelectorAll('.anc-intent-text b, .anc-intent-text small, .anc-nums span')].map(t => { const b = t.getBoundingClientRect();
-      return { text: t.innerText, clipped: t.scrollWidth > t.clientWidth + 1 || b.bottom > box.bottom + 1 || b.right > box.right + 1 }; }); }).flat();
+    return [...a.querySelectorAll('.anc-brief, .anc-intent-row small, .anc-nums span, .anc-head b')].map(t => { const b = t.getBoundingClientRect();
+      return { text: t.innerText, clipped: t.scrollWidth > t.clientWidth + 1 || t.scrollHeight > t.clientHeight + 1 || b.bottom > box.bottom + 1 || b.right > box.right + 1 }; }); }).flat();
+  // M220：操作台按钮名与短原因不被省略；队列头像不被压扁；底部按钮不压在发布时注入的构建号水印上
+  const cmdClip = [...document.querySelectorAll('.bfs-console .cmdt-name, .bfs-console .cmdt-why, .bc-tab-text b, .bc-tab-text small')].filter(t => t.getBoundingClientRect().width > 0 && (t.scrollWidth > t.clientWidth + 1 || t.scrollHeight > t.clientHeight + 1)).map(t => t.innerText);
+  const qArts = [...document.querySelectorAll('.q-art')].map(e => Math.round(e.getBoundingClientRect().height));
+  const wm = document.getElementById('v16-watermark'); const wr = wm && wm.getBoundingClientRect();
+  const wmHit = !wr ? [] : [...document.querySelectorAll('.bfs-feed button')].filter(b => { const r = b.getBoundingClientRect(); return r.width > 0 && r.right > wr.left && r.left < wr.right && r.bottom > wr.top && r.top < wr.bottom; }).map(b => b.innerText);
   const small = []; const tw = document.createTreeWalker(document.querySelector('.bfs'), NodeFilter.SHOW_TEXT);
   while (tw.nextNode()) { const n = tw.currentNode; if (!n.textContent.trim()) continue; const el = n.parentElement;
     if (el.closest('.bdg, kbd, [aria-hidden=true]')) continue; const b = el.getBoundingClientRect(); if (b.width === 0 || b.height === 0) continue;
@@ -128,7 +133,7 @@ const MEASURE = `(() => {
   const vis = s => { const e = document.querySelector(s); if (!e) return false; const b = e.getBoundingClientRect(); return b.width > 0 && b.y >= 0 && b.bottom <= innerHeight && b.x >= 0 && b.right <= innerWidth; };
   const overflowZones = ['top', 'queue', 'console', 'feed', 'scene'].filter(z => zones[z] && zones[z].sw > zones[z].cw + 1);
   return { vw: innerWidth, vh: innerHeight, pageOverflow: document.scrollingElement.scrollWidth > innerWidth, zones, ancs: ancs.length, inScene, order, intents, small: small.slice(0, 15), smallCount: small.length, skills,
-    tabs: document.querySelectorAll('.bc-tab').length, med: vis('#cmd-med'), end: vis('.bfs-end'), supplies: [...document.querySelectorAll('.bfs-feed-btns button')].some(b => b.innerText.includes('物资查看')), overflowZones };
+    tabs: document.querySelectorAll('.bc-tab').length, med: vis('#cmd-med'), end: vis('.bfs-end'), supplies: [...document.querySelectorAll('.bfs-feed-btns button')].some(b => b.innerText.includes('物资查看')), overflowZones, cmdClip, qArts, wmHit };
 })()`;
 
 function budget(w, h) {
@@ -170,7 +175,11 @@ const near = (a, b, tol = 2) => Math.abs(a - b) <= tol;
     await check('八锚点在场景内且顺序为我方4321/敌方1234', m.ancs === 8 && m.inScene && m.order === 'A4,A3,A2,A1,F1,F2,F3,F4', { ancs: m.ancs, inScene: m.inScene, order: m.order });
     await check('五技能位、两页签、医疗、结束行动、物资查看首屏可见', m.skills.length === 5 && m.tabs === 2 && m.med && m.end && m.supplies, { skills: m.skills.length, tabs: m.tabs, med: m.med, end: m.end, supplies: m.supplies });
     await check('无横向溢出', !m.pageOverflow && m.overflowZones.length === 0, { page: m.pageOverflow, zones: m.overflowZones });
-    await check('敌方意图与生命数字不被裁切', m.intents.length > 0 && m.intents.every(t => !t.clipped), m.intents.filter(t => t.clipped));
+    await check('敌方名字、意图与生命数字不被裁切（含长名）', m.intents.length > 0 && m.intents.every(t => !t.clipped), m.intents.filter(t => t.clipped));
+    await check('操作台按钮名/短原因/页签不被省略', m.cmdClip.length === 0, m.cmdClip);
+    const qMin = (h <= 800 ? 48 : 64) - 22 - 1;
+    await check('队列头像不被压扁', m.qArts.length > 0 && m.qArts.every(x => x >= qMin), m.qArts);
+    await check('底部按钮不压在构建号水印上', m.wmHit.length === 0, m.wmHit);
     await check('正文≥16px（短徽标/键帽除外）', m.smallCount === 0, m.small);
     const minHot = h <= 800 ? 48 : 56;
     const live = m.skills.filter(s => !/locked-slot/.test(s.cls));
@@ -184,6 +193,9 @@ const near = (a, b, tol = 2) => Math.abs(a - b) <= tol;
     await ev(`localStorage.removeItem(${JSON.stringify(SAVE_KEY)})`);
     await send('Page.navigate', { url }); await sleep(800);
     if (!await waitFor(`!!document.querySelector('.title-screen') || !!document.querySelector('.game')`, 90000)) throw new Error('页面加载超时');
+    // 发布流程（.github/workflows/pages.yml）在 body 末尾注入右下角构建号；本地没有就照样注入一个，用来检查底部按钮让位
+    await ev(`(() => { if (document.getElementById('v16-watermark')) return; const d = document.createElement('div'); d.id = 'v16-watermark';
+      d.style.cssText = 'position:fixed;right:6px;bottom:2px;font-size:11px;color:#6d7466;pointer-events:none'; d.textContent = '构建 0000000'; document.body.appendChild(d); })()`);
     await domClick('新游戏');
     if (!await waitFor(`!!document.querySelector('.game .center-scroll')`, 30000)) throw new Error('没进入主界面');
     await readDialogues();
@@ -231,7 +243,9 @@ const near = (a, b, tol = 2) => Math.abs(a - b) <= tol;
     if (await ev(`!!document.querySelector('.bfs')`)) throw new Error('首战没打完');
     // 三敌
     await devButton('记下营区登记（C2）'); await devButton('记下教会路线记录（C3）');
-    for (let i = 0; i < 3; i++) await devButton('放游荡尸');
+    // M220：长名敌人（重装守卫感染者）+ 两只游荡尸
+    await devButton('放重装守卫感染者');
+    for (let i = 0; i < 2; i++) await devButton('放游荡尸');
     await devButton('本地敌人立即形成敌踪'); await closeMenu();
     await domClick('接敌');
     if (!await waitFor(`!!document.querySelector('.bfs')`, 20000)) throw new Error('三敌没进入战斗');
@@ -240,6 +254,31 @@ const near = (a, b, tol = 2) => Math.abs(a - b) <= tol;
       await size(w, h); tag = `${w}x${h}-三敌`;
       await layoutChecks(w, h);
     }
+    // M220：旧“射程不足”不残留——拳击点 2 号位（拳只打 1 号位）→ Esc 取消瞄准 → 点队列里的敌人/自己
+    await size(1280, 720); tag = '1280x720-交互';
+    for (let i = 0; i < 40 && !await ev(`(document.querySelector('.bfs-actor') || {}).className?.includes('now')`); i++) await sleep(500);
+    await key('1');
+    await clickSel('.anc.foe[data-slot="2"]');
+    const before = await ev(`/射程不足|只能打/.test(document.querySelector('.bfs-info').innerText)`);
+    await key('Escape');
+    await clickSel('.q-av.q-foe');
+    const afterFoe = await ev(`/射程不足|只能打/.test(document.querySelector('.bfs-info').innerText)`);
+    await clickSel('.q-av.me');
+    const afterMe = await ev(`/射程不足|只能打/.test(document.querySelector('.bfs-info').innerText)`);
+    await check('取消瞄准、换查看对象后不残留“射程不足”', before && !afterFoe && !afterMe, { before, afterFoe, afterMe });
+    // M220：自用指令按回车提交（点按钮后焦点仍在按钮上）——调整站位两次到 3 号位，让敌人出现“迫近”长意图
+    for (const to of [2, 3]) {
+      if (await ev("!!document.querySelector('.bfs > .overlay')")) await key('Escape');
+      for (let i = 0; i < 40 && !await ev("(document.querySelector('.bfs-actor') || {}).className?.includes('now')"); i++) await sleep(500);
+      const pos0 = await ev(`(document.querySelector('.bc-who-name b') || {}).innerText || ''`);
+      await clickSel(`#cmd-swap-${to}`); await sleep(200);
+      await key('Enter'); await sleep(700);
+      const pos1 = await ev(`(document.querySelector('.bc-who-name b') || {}).innerText || ''`);
+      await check(`选“→${to}号位”后按回车即提交`, pos1.includes(`${to}号位`) && pos1 !== pos0, { pos0, pos1 });
+    }
+    const briefs = await ev(`[...document.querySelectorAll('.anc-brief')].map(b => b.innerText)`);
+    const m2 = await ev(MEASURE);
+    await check('你在3号位时长意图（迫近→弱袭等）完整', briefs.length > 0 && m2.intents.every(t => !t.clipped), { briefs, clipped: m2.intents.filter(t => t.clipped) });
     const errs = await ev(`(window.__pt && window.__pt.errs) || []`);
     report.consoleErrors = errs;
     const failed = report.checks.filter(c => !c.pass).length;

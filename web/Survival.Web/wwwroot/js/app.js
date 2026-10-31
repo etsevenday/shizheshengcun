@@ -155,6 +155,8 @@ window.survival = {
       // 焦点在按钮或可点锚点上时回车/空格交给它自己（浏览器原生），不重复提交
       if (document.querySelector('.bfs') && t !== 'INPUT' && t !== 'TEXTAREA') {
         var onCtl = document.activeElement && document.activeElement.closest && document.activeElement.closest('button, [role=button]');
+        // 试玩修复 B9-7：刚点过的技能/指令按钮仍带焦点时，已有待确认指令或正在瞄准，回车是“提交”而不是再点一次该按钮（会把选择收起）
+        if (k === 'Enter' && onCtl && onCtl.closest('.bfs-console') && document.querySelector('#bt-confirm, .bfs .anc.targetable')) onCtl = null;
         if (/^[1-5]$/.test(k) || k === 'q' || k === 'Q' || k === 'e' || k === 'E' || k === 'ArrowLeft' || k === 'ArrowRight' || (k === 'Enter' && !onCtl)) {
           ev.preventDefault();
           dotnet.invokeMethodAsync('OnKey', k.length === 1 ? k.toUpperCase() : k);

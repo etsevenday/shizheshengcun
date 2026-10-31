@@ -296,3 +296,24 @@
   .bc-general .cmdt-art, .bc-general .cmdt-art svg { width: 34px; height: 34px; }
   .bc-face { width: 52px; height: 52px; }
 }
+
+/* ── 试玩修复 M220（B9.6） ── */
+/* 1. 长敌名最多两行、不省略；意图短名独占第一行，图标与伤害区间在第二行；“已动”放到立绘角上不挤名字 */
+.anc-head { align-items: flex-start; }
+.anc-head b { white-space: normal; overflow: visible; text-overflow: clip; line-height: 18px; word-break: break-all; }
+.anc-intent { display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 1px; padding: 1px 4px; }
+.anc-brief { font-size: 16px; line-height: 18px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.anc-intent-row { display: flex; align-items: center; gap: 3px; min-width: 0; }
+.anc-intent-row small { font-size: 16px; line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.anc-intent .intent-ico { width: 18px; height: 18px; font-size: 13px; }
+.anc-art .anc-done { position: absolute; right: 2px; top: 2px; z-index: 1; }
+/* 2. 队列敌人头像（旧 .foe 规则不再套到队列上） */
+.q-av.q-foe { background: #331f1b; }
+.q-art { flex: 0 0 auto; }
+/* 6. 发布时注入的构建号固定在右下角：底部按钮让开它 */
+.bfs-feed { padding-right: 76px; }
+/* M220：1280 档意图框加宽（锚点左右内距 3px、意图框 2px），图标与短名同一行，伤害区间独占第二行 */
+.anc { padding-left: 3px; padding-right: 3px; }
+.anc-intent { padding: 1px 2px; }
+.anc-intent .intent-ico { width: 16px; height: 16px; font-size: 12px; }
+.anc-brief-row { display: flex; align-items: center; gap: 2px; min-width: 0; }
