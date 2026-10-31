@@ -13,7 +13,7 @@ namespace Survival.Core.Engine
         // ───────────── 死亡与遗物（R08 §4、A11 §8） ─────────────
 
         /// <summary>把死者全部穿戴与随身实例一次改 owner 为 remains:&lt;id&gt;（锅内内容随锅）；有物品才建遗物容器。返回迁移件数。</summary>
-        private int MoveToRemains(GameState s, ActorState actor, string where, string cause, int? battleId)
+        private int MoveToRemains(GameState s, ActorState actor, string where, string cause, int? battleId, bool publicReserve = false)
         {
             var carried = ItemInstance.CarriedOwner(actor.Id);
             var owner = ItemInstance.RemainsOwner(actor.Id);
@@ -25,7 +25,7 @@ namespace Survival.Core.Engine
             }
             if (items.Count == 0) return 0;
             if (!s.Remains.ContainsKey(actor.Id))
-                s.Remains[actor.Id] = new RemainsState { Name = ActorLabel(actor), LocationId = where, Minute = s.GameMinute, Cause = cause, BattleId = battleId };
+                s.Remains[actor.Id] = new RemainsState { Name = ActorLabel(actor), LocationId = where, Minute = s.GameMinute, Cause = cause, BattleId = battleId, PublicReserve = publicReserve };
             return items.Count;
         }
 
@@ -92,7 +92,8 @@ namespace Survival.Core.Engine
             return null;
         }
 
-        public string? EscortRegistrationBlocked(GameState s) => PartyEditBlocked(s)?.Replace("编队", "登记补员") ?? EscortConditionBlocked(s);
+        /// <summary>RB01 在收容所办理（Q88 选 A；Q89 迁址前在替身地点）。</summary>
+        public string? EscortRegistrationBlocked(GameState s) => ServiceBlocked(s, true, "登记补员") ?? EscortConditionBlocked(s);
 
         /// <summary>开始 RB01 登记：主行动 30 分钟 wait（全队按 wait 消耗），完成时重验条件并只建一人；中途取消不建人。</summary>
         public ActionResult StartEscortRegistration(GameState s, string? requestId = null)
@@ -111,7 +112,9 @@ namespace Survival.Core.Engine
 
         private void CompleteEscortRegistration(GameState s, ActionState a)
         {
-            var why = s.Progress.Dead ? "本局已结束" : !AtHub(s) ? "不在营区" : EscortConditionBlocked(s);
+            // Q89：按开始时的事务快照完成——在开始地点（SourceLocation）完成，迁址后也不要求瞬移到新址、不在新址另开一笔
+            var site = a.SourceLocation != "" ? a.SourceLocation : Config.Party.ShelterStandIn;
+            var why = s.Progress.Dead ? "本局已结束" : s.CurrentLocation != site ? $"不在{LocName(site)}" : EscortConditionBlocked(s);
             if (why != null)
             {
                 Emit(s, GameEventKind.ActionCompleted, $"同行补员登记没有完成：{why}。");
@@ -203,8 +206,8 @@ namespace Survival.Core.Engine
         /// </summary>
         public string? ReportLostLoanBlocked(GameState s, string slot)
         {
-            var why = PartyEditBlocked(s);
-            if (why != null) return why.Replace("编队", "报失");
+            var why = ServiceBlocked(s, true, "报失");   // Q88 选 A：报失在收容所（Q89 迁址前在替身地点）
+            if (why != null) return why;
             if (!s.LoanSlots.TryGetValue(slot, out var iid)) return "这个借用位还没有发过借用矛";
             var it = FindItem(s, iid);
             if (it == null) return null;
@@ -215,7 +218,11 @@ namespace Survival.Core.Engine
             return null;
         }
 
-        /// <summary>报失：同一事务撤销旧实例（之后任何拾取/拆解/出售入口都不认）并按固定模板补发一件到营区地面；requestId 重放不双发。</summary>
+        /// <summary>
+        /// 报失（Q94 选 A）：同一事务撤销旧实例（之后任何拾取/拆解/出售入口都不认）、按固定模板（白色无词条、满耐久 30）补发一件、
+        /// loan_slot 改指新实例，新矛放在实际办理地点（收容所；迁址前替身 camp）的地面——不进任何人的五卡或武器槽、不自动装备；
+        /// requestId 重放不双发；不额外花时间或材料。
+        /// </summary>
         public ActionResult ReportLostLoan(GameState s, string slot, string? requestId = null)
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
@@ -228,9 +235,10 @@ namespace Survival.Core.Engine
                 s.Items.Remove(old);
                 foreach (var kv in s.Remains.Where(kv => RemainsItems(s, kv.Key).Count == 0).ToList()) s.Remains.Remove(kv.Key);
             }
-            var spear = NewLoanSpear(s, slot, s.CurrentLocation);
+            var site = ShelterLocation(s);   // 预演已保证人在这里
+            var spear = NewLoanSpear(s, slot, site);
             s.LoanSlots[slot] = spear.InstanceId;
-            Emit(s, GameEventKind.Info, $"借用矛（{slot}）已报失：旧的作废，新的一件放在{LocName(s.CurrentLocation)}地面。");
+            Emit(s, GameEventKind.Info, $"借用矛（{slot}）已报失：旧的作废，新的一件放在{LocName(site)}地面。");
             return ActionResult.Success();
         }
 

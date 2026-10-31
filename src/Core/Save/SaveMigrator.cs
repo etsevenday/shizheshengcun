@@ -40,6 +40,7 @@ namespace Survival.Core.Save
         public const string Schema13 = "13";
         public const string Schema14 = "14";
         public const string Schema15 = "15";
+        public const string Schema16 = "16";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -69,6 +70,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema13) From13To14(s, config, notes);
             if (s.SchemaVersion == Schema14) From14To15(s, notes);
             if (s.SchemaVersion == Schema15) From15To16(s, config, notes);
+            if (s.SchemaVersion == Schema16) From16To17(s, config, notes);
             return notes;
         }
 
@@ -725,7 +727,24 @@ namespace Survival.Core.Save
             if (s.Battle != null)
                 foreach (var e in s.Battle.Enemies.Where(e => e.Alive && e.Acted))
                     e.RoundApUsed = config.Enemies.FirstOrDefault(x => x.Id == e.EnemyId)?.Ap ?? 0;
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（编队号位）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema16}（编队号位）。" });
+            s.SchemaVersion = Schema16;
+        }
+
+        // ───────────────────────── 16 → 17 ─────────────────────────
+
+        /// <summary>
+        /// 服务地点迁址标记与公共候补遗物（策划答复 Q88/Q89，R08/A11/S01 本轮章；开发计划 v0.9 B8b）：
+        /// 旧档服务都在替身地点（camp），迁址标记为 false（地图导入后由 GameEngine.MigrateServiceLocations 一次迁移）。
+        /// 遗物是否公共候补遗物旧档没记：战斗中死亡的、或不在替身地点的必是同行者（false）；在替身地点、非战斗中死亡的分不清，记 null（迁址时不迁，B8b-3、待确认 Q98）。
+        /// 在办的 RB01 登记已在行动里记着开始地点（SourceLocation），不用补字段。不重抽、不补发、不改物品。
+        /// </summary>
+        private static void From16To17(GameState s, GameConfig config, List<string> notes)
+        {
+            s.ServiceMapMigrated = false;
+            foreach (var rem in s.Remains.Values)
+                rem.PublicReserve = rem.BattleId != null || rem.LocationId != config.Party.HubStandIn ? false : (bool?)null;
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（服务地点）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

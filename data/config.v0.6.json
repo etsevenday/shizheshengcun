@@ -11937,6 +11937,9 @@
       "redHealth": 5,
       "redVirus": 80
     },
-    "hubStandIn": "camp"
+    "hubStandIn": "camp",
+    "shelterStandIn": "camp",
+    "hubV3": "h02_square",
+    "shelterV3": "h06_shelter"
   }
 }

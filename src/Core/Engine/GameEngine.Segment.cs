@@ -350,7 +350,7 @@ namespace Survival.Core.Engine
             if (actor.IsPlayer) return;
             if (cause != ZombifiedCause) actor.Stats.Health = 0;
             var wasActive = s.Party.Contains(actor.Id);
-            var where = wasActive ? (s.Battle?.LocationId ?? s.CurrentLocation) : HubLocation;
+            var where = wasActive ? (s.Battle?.LocationId ?? s.CurrentLocation) : HubLocation(s);   // 候补死在营区公共居所（Q89：迁址前为替身地点）
             s.Party.Remove(actor.Id);
             RepairFormation(s);   // Q86：只清死者那一格，其余槽与空位不动
             s.FormationVersion++;
@@ -367,7 +367,7 @@ namespace Survival.Core.Engine
                 r.DeathLocation = where;
                 r.DeathCause = cause;
             }
-            var moved = MoveToRemains(s, actor, where, cause, wasActive ? s.Battle?.BattleId : null);
+            var moved = MoveToRemains(s, actor, where, cause, wasActive ? s.Battle?.BattleId : null, !wasActive);
             Emit(s, GameEventKind.Alert, $"{ActorLabel(actor)}死了（{cause}）" + (moved > 0 ? $"，遗物留在{LocName(where)}。" : "。"));
         }
 

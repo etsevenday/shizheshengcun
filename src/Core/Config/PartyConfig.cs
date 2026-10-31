@@ -21,6 +21,14 @@ namespace Survival.Core.Config
         /// 营区替身地点（待确认 Q89 选 A）：v3 地图（B11）前编队、候补居住与照护、RB01、借用矛报失都在这里安全空闲办理。
         /// </summary>
         public string HubStandIn { get; set; } = "camp";
+        /// <summary>
+        /// 收容所服务的替身地点（Q88/Q89 选 A，开发计划 v0.9 B8b）：v3 地图前 RB01 登记与借用矛报失在这里办理；与营区公共居所分成两个配置位。
+        /// </summary>
+        public string ShelterStandIn { get; set; } = "camp";
+        /// <summary>v3 地图的营区公共居所节点（Q88：候补居住与照护、成员换入/留守、公共候补遗物）。地图里有它与 <see cref="ShelterV3"/> 时才迁址。</summary>
+        public string HubV3 { get; set; } = "h02_square";
+        /// <summary>v3 地图的收容所节点（Q88/Q94：RB01 与借用矛报失、报失补发落地）。</summary>
+        public string ShelterV3 { get; set; } = "h06_shelter";
 
         public NamedCompanionConfig? Named(string actorId) => NamedCompanions.FirstOrDefault(n => n.ActorId == actorId);
     }

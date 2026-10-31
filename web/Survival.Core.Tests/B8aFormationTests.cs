@@ -217,7 +217,7 @@ public class B8aFormationTests : BattleTestBase
         Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
         Assert.That(m.FormationPreset, Is.EqualTo(Slots("npc_tang_li", "p0", "npc_lin_zhao", "")));
         Assert.That(m.FormationMigrated, Is.True);
-        Assert.That(m.Log.Last().Text, Does.Contain($"存档已升级到版本{GameState.CurrentSchema}（编队号位）"));
+        Assert.That(m.Log.Any(l => l.Text.Contains("存档已升级到版本16（编队号位）")), Is.True, "16→17（B8b 服务地点）接着升级");
         var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(m), Cfg, out var notes2);
         Assert.That(notes2, Is.Empty, "只迁移一次");
         Assert.That(again.FormationPreset, Is.EqualTo(m.FormationPreset));

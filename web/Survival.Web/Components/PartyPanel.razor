@@ -34,22 +34,22 @@
                 @Row(r.ActorId, "候补", false)
             }
         </div>
-        <div class="ca-note tiny">开战号位在顶栏“编队”里改（任何地点空闲时都可以）；编入同行/留作候补只在@(e.LocName(e.HubLocation))办理。</div>
+        <div class="ca-note tiny">开战号位在顶栏“编队”里改（任何地点空闲时都可以）；编入同行/留作候补只在@(e.LocName(e.HubLocation(s)))办理。</div>
         @if (e.Reserves(s).Count > 0)
         {
-            <div class="ca-note">候补留在@(e.LocName(e.HubLocation))，接受公共照护：饱食/水分每段自然消耗后不低于@(Fmt.T(care.SatietyFloor))（只托底、不生成食水），22:00—06:00 遮蔽睡眠、其余时段等待；伤病与病毒照常发展。</div>
+            <div class="ca-note">候补留在@(e.LocName(e.HubLocation(s)))，接受公共照护：饱食/水分每段自然消耗后不低于@(Fmt.T(care.SatietyFloor))（只托底、不生成食水），22:00—06:00 遮蔽睡眠、其余时段等待；伤病与病毒照常发展。</div>
         }
         @{
             var rbWhy = e.EscortRegistrationBlocked(s);
             var slots = e.LoanSlotIds(s).Where(x => s.LoanSlots.ContainsKey(x)).ToList();
         }
         <div class="btn-row party-btns">
-            <button type="button" class="secondary small-btn" disabled="@(rbWhy != null)" title="@(rbWhy ?? "在营区登记一名通用护送员（30分钟等待，全队按等待消耗）：技能均1级、速度4、借用木矛")" @onclick="() => G.StartEscortRegistration()">登记同行补员（30分钟）</button>
+            <button type="button" class="secondary small-btn" disabled="@(rbWhy != null)" title="@(rbWhy ?? $"在{e.LocName(e.ShelterLocation(s))}（收容所服务）登记一名通用护送员（30分钟等待，全队按等待消耗）：技能均1级、速度4、借用木矛")" @onclick="() => G.StartEscortRegistration()">登记同行补员（30分钟）</button>
             @foreach (var slot in slots)
             {
                 var sl = slot;
                 var lostWhy = e.ReportLostLoanBlocked(s, sl);
-                <button type="button" class="secondary small-btn" disabled="@(lostWhy != null)" title="@(lostWhy ?? "借用矛确实已损毁或找不回：旧的作废，新补一件放在营区地面")" @onclick="() => G.ReportLostLoan(sl)">报失借用矛（@sl）</button>
+                <button type="button" class="secondary small-btn" disabled="@(lostWhy != null)" title="@(lostWhy ?? $"借用矛确实已损毁或找不回：旧的作废，按固定模板（白色无词条、耐久30）新补一件，放在{e.LocName(e.ShelterLocation(s))}地面（不自动装备、不进谁的随身）")" @onclick="() => G.ReportLostLoan(sl)">报失借用矛（@sl）</button>
             }
         </div>
         @if (rbWhy != null)

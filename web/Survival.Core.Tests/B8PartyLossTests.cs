@@ -150,7 +150,7 @@ public class B8PartyLossTests : TestBase
         Assert.That(E.EscortRegistrationBlocked(s), Does.Contain("同行没有空位"));
         Assert.That(E.DebugAddEscort(s), Does.Contain("上限 1"), "C2 时护送员最多 1 名");
         E.DebugTeleport(s, "field");
-        Assert.That(E.EscortRegistrationBlocked(s), Does.Contain("营区"));
+        Assert.That(E.EscortRegistrationBlocked(s), Does.Contain("暂代收容所"), "B8b：RB01 是收容所服务（Q88），迁址前在 camp 代办");
     }
 
     /// <summary>PT05/NP-A07/NP-A20：借用矛不能拆解、不作配方材料/燃料；活人持有/地面/遗物里报失被拒并指路；耐久 0 才原子撤销补一件；新护送员沿用已有有效矛。</summary>

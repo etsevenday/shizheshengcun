@@ -490,6 +490,8 @@ public sealed class GameSession
             if (migrate) _store.Backup(json);
             State = SaveSerializer.Deserialize(json, Config, out var notes);
             E.SyncFacilities(S);
+            // Q89（B8b）：地图导入 v3 营区/收容所节点后一次迁址（没有这两个节点时什么也不做；迁过的不再迁）
+            if (E.MigrateServiceLocations(S) && !migrate) Save();
             ResetUi();
             foreach (var l in S.Log.TakeLast(8))
                 Recent.Add(new GameEvent { Minute = l.Minute, Text = l.Text, Kind = GameEventKind.Info });

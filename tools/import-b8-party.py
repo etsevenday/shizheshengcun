@@ -79,6 +79,10 @@ def main():
             "redVirus": 80,
         },
         "hubStandIn": "camp",
+        # Q88/Q89 选 A（B8b）：收容所服务（RB01、报失）另一个配置位；v3 地图有 h02_square/h06_shelter 时迁址
+        "shelterStandIn": "camp",
+        "hubV3": "h02_square",
+        "shelterV3": "h06_shelter",
     }
     with open(CONFIG, "w", encoding="utf-8", newline="\n") as f:
         json.dump(cfg, f, ensure_ascii=False, indent=2)

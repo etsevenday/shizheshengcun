@@ -29,9 +29,45 @@ namespace Survival.Core.Engine
         public string ActorDisplayName(GameState s, string actorId) =>
             actorId == GameState.PlayerId ? "你" : s.Actors.TryGetValue(actorId, out var a) ? ActorLabel(a) : RosterOf(s, actorId)?.Name ?? $"队友{actorId}";
 
-        /// <summary>营区（v3 地图前用替身地点，待确认 Q89 选 A）。</summary>
-        public string HubLocation => Config.Party.HubStandIn;
-        public bool AtHub(GameState s) => s.CurrentLocation == HubLocation;
+        /// <summary>
+        /// 营区公共居所（Q88/Q89 选 A，B8b）：候补居住与照护、成员换入/留守、公共候补遗物。v3 地图迁址前为替身地点（camp），迁址后为 h02_square。
+        /// </summary>
+        public string HubLocation(GameState s) => s.ServiceMapMigrated ? Config.Party.HubV3 : Config.Party.HubStandIn;
+        public bool AtHub(GameState s) => s.CurrentLocation == HubLocation(s);
+
+        /// <summary>收容所（Q88/Q94 选 A，B8b）：RB01 登记与借用矛报失、报失补发落地。v3 地图迁址前为替身地点（camp），迁址后为 h06_shelter。</summary>
+        public string ShelterLocation(GameState s) => s.ServiceMapMigrated ? Config.Party.ShelterV3 : Config.Party.ShelterStandIn;
+        public bool AtShelter(GameState s) => s.CurrentLocation == ShelterLocation(s);
+
+        /// <summary>地图里已有 v3 的营区公共居所与收容所两个节点（B11 导入后才有；没有就不迁址）。</summary>
+        public bool ServiceMapV3Available => _locs.ContainsKey(Config.Party.HubV3) && _locs.ContainsKey(Config.Party.ShelterV3);
+
+        /// <summary>服务地点的称呼：迁址前替身地点写“暂代营区/暂代收容所”，迁址后写“营区/收容所”。</summary>
+        private string ServicePlace(GameState s, bool shelter) =>
+            s.ServiceMapMigrated ? (shelter ? "收容所" : "营区") : (shelter ? "暂代收容所" : "营区");
+
+        /// <summary>
+        /// 地图导入后的服务迁址（Q89 选 A，R08/A11/S01 本轮章；B8b）：地图里有 h02_square 与 h06_shelter 且还没迁过时，一次把服务改到新址：
+        /// 公共候补遗物（RemainsState.PublicReserve == true 且在替身地点）的位置引用改到 h02_square——只改容器位置，内容物实例、owner、保质、耐久不动；
+        /// 替身地点的普通地面物、玩家设施、同行者在那里死亡的当地遗物、旧档分不清来源的遗物（null）都不迁。
+        /// 在办的 RB01 登记按开始地点（ActionState.SourceLocation）完成或取消，不在新址另开一笔。迁移标记持久化，重复调用不再迁（幂等）。
+        /// 地图里没有这两个节点时什么也不做，返回 false。
+        /// </summary>
+        public bool MigrateServiceLocations(GameState s)
+        {
+            if (s.ServiceMapMigrated || !ServiceMapV3Available) return false;
+            var from = Config.Party.HubStandIn;
+            var moved = 0;
+            foreach (var rem in s.Remains.Values.Where(r => r.PublicReserve == true && r.LocationId == from))
+            {
+                rem.LocationId = Config.Party.HubV3;
+                moved++;
+            }
+            s.ServiceMapMigrated = true;
+            Emit(s, GameEventKind.Info, $"营区服务迁到{LocName(Config.Party.HubV3)}、收容所服务迁到{LocName(Config.Party.ShelterV3)}" +
+                 (moved > 0 ? $"；{moved}份候补遗物随营区迁到{LocName(Config.Party.HubV3)}。" : "。"));
+            return true;
+        }
 
         /// <summary>人物基础档（Q63）：命名队友与主角按固定档，护送员按 rb01Escort；都没有时为 null。</summary>
         public ActorDefenseProfileConfig? ActorProfile(GameState s, string actorId)
@@ -96,20 +132,27 @@ namespace Survival.Core.Engine
             GrantWorn(s, actorId, EquipSlots.Weapon1, cfg.Weapon1, "recruit:" + actorId);
             GrantWorn(s, actorId, EquipSlots.Weapon2, cfg.Weapon2, "recruit:" + actorId);
             s.Roster.Add(new RosterEntry { ActorId = actorId, Kind = "named", Name = cfg.Name, JoinedMinute = s.GameMinute });
-            if (announce) Emit(s, GameEventKind.Info, $"{cfg.Name}登记入名册（候补，在{LocName(HubLocation)}留守）。");
+            if (announce) Emit(s, GameEventKind.Info, $"{cfg.Name}登记入名册（候补，在{LocName(HubLocation(s))}留守）。");
             return ActionResult.Success();
         }
 
         // ───────────── 编队（R08 §1、A11 §5.1、待确认 Q93 选 A） ─────────────
 
         /// <summary>现在能不能换人或重排：营区（替身）安全空闲——不在战斗/敌踪、没有主/子行动、没有未读对白、未终局。</summary>
-        public string? PartyEditBlocked(GameState s)
+        public string? PartyEditBlocked(GameState s) => ServiceBlocked(s, false, "编队");
+
+        /// <summary>
+        /// 有地点限制的队伍服务能不能办（Q88：营区公共居所办换入/留守，收容所办 RB01 与报失；Q89 迁址前两者都在替身地点）：
+        /// 安全空闲且人在对应地点。原因文字里用按钮自己的动词。
+        /// </summary>
+        public string? ServiceBlocked(GameState s, bool shelter, string verb)
         {
             if (s.Progress.Dead) return "本局已结束";
-            if (InCombatFlow(s)) return "战斗中不能编队";
-            if (s.Main != null || s.Sub != null) return "正在行动，不能编队";
+            if (InCombatFlow(s)) return $"战斗中不能{verb}";
+            if (s.Main != null || s.Sub != null) return $"正在行动，不能{verb}";
             if (DialogueLocked(s)) return "先读完对话";
-            if (!AtHub(s)) return $"只能在{LocName(HubLocation)}（营区）安全空闲时编队";
+            var loc = shelter ? ShelterLocation(s) : HubLocation(s);
+            if (s.CurrentLocation != loc) return $"只能在{LocName(loc)}（{ServicePlace(s, shelter)}）安全空闲时{verb}";
             return null;
         }
 
@@ -142,7 +185,7 @@ namespace Survival.Core.Engine
             RememberRequest(s, requestId);
             ApplySetActive(s, actorId, active);
             var name = RosterOf(s, actorId)!.Name;
-            Emit(s, GameEventKind.Info, active ? $"{name}编入同行队伍。" : $"{name}留在{LocName(HubLocation)}作候补（公共照护：饱食/水分不低于{Fmt.T(Config.Party.ReserveCare.SatietyFloor)}，伤病照常）。");
+            Emit(s, GameEventKind.Info, active ? $"{name}编入同行队伍。" : $"{name}留在{LocName(HubLocation(s))}作候补（公共照护：饱食/水分不低于{Fmt.T(Config.Party.ReserveCare.SatietyFloor)}，伤病照常）。");
             return ActionResult.Success();
         }
 
@@ -378,7 +421,7 @@ namespace Survival.Core.Engine
                 else if (!on && latched) actor.RedLatched[key] = false;
             }
             var name = ActorLabel(actor);
-            Line("health", actor.Stats.Health <= care.RedHealth + 1e-9, $"候补{name}健康降到{Fmt.T(actor.Stats.Health)}（≤{Fmt.T(care.RedHealth)}），留在{LocName(HubLocation)}，需要你回去救治。");
+            Line("health", actor.Stats.Health <= care.RedHealth + 1e-9, $"候补{name}健康降到{Fmt.T(actor.Stats.Health)}（≤{Fmt.T(care.RedHealth)}），留在{LocName(HubLocation(s))}，需要你回去救治。");
             Line("virus", actor.Body.VirusLoad >= care.RedVirus - 1e-9, $"候补{name}病毒程度到{Fmt.T(actor.Body.VirusLoad)}（≥{Fmt.T(care.RedVirus)}），公共照护不治病，需要你回去处理。");
         }
 
@@ -397,7 +440,7 @@ namespace Survival.Core.Engine
                 ApplySetActive(s, actorId, true);
                 text = $"{name}登记入名册并编入同行（{s.Party.Count}/{PartyCapacity(s)}）";
             }
-            else text = $"{name}登记入名册，同行已满 {s.Party.Count}/{PartyCapacity(s)}，留作候补（在{LocName(HubLocation)}）";
+            else text = $"{name}登记入名册，同行已满 {s.Party.Count}/{PartyCapacity(s)}，留作候补（在{LocName(HubLocation(s))}）";
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }

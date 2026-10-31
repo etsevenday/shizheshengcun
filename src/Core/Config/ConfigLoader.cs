@@ -357,6 +357,7 @@ namespace Survival.Core.Config
             }
             if (c.Party.NamedCompanions.Count > 0 && !weaponKinds.ContainsKey(c.Party.EscortTemplate.LoanWeapon)) e.Add("护送员借用武器不存在");
             if (c.Party.NamedCompanions.Count > 0 && !locs.Contains(c.Party.HubStandIn)) e.Add($"营区替身地点 {c.Party.HubStandIn} 不存在");
+            if (c.Party.NamedCompanions.Count > 0 && !locs.Contains(c.Party.ShelterStandIn)) e.Add($"收容所替身地点 {c.Party.ShelterStandIn} 不存在");
             if (c.Scope.ApByTier.Count == 0 || c.Scope.ApByTier.Any(x => x <= 0 || x > c.Scope.ApCap)) e.Add("战术训练阶位的行动点（scope.apByTier）无效");
 
             var we = c.WorldEnemies;

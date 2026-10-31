@@ -227,6 +227,8 @@ namespace Survival.Core.Engine
             Emit(s, GameEventKind.Info, $"{Clock.DayTime(s.GameMinute)}，你在{LocName(s.CurrentLocation)}醒来。目标：活过七天。");
             UpdateFlags(s);
             s.PendingEvents.Clear();
+            // Q89（B8b）：地图已有 v3 营区公共居所与收容所时，新档直接用新址服务，不保留替身入口
+            s.ServiceMapMigrated = ServiceMapV3Available;
             return s;
         }
 

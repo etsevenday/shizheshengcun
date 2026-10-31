@@ -34,9 +34,10 @@ namespace Survival.Core.State
         /// "12" 起四对四战斗站位（B6）；"13" 起工作量余额与行动规则版本、设施进程发起者（策划答复 Q53—Q61，开发计划 v0.9 B7b）；
         /// "14" 起战斗双方保持真实 1—4 槽与空位、不再自动压紧（策划答复 Q80，开发计划 v0.9 B7d）；
         /// "15" 起名册与候补、战前编成预设、遗物与借用位，战斗中我方每人一份战斗状态 Fighters（R08，开发计划 v0.9 B8）；
-        /// "16" 起战前编队是真实 1—4 槽（可空位、可不连续）并带阵容版本与一次迁移标记，敌人带本轮 AP 账（策划答复 Q86/Q87，开发计划 v0.9 B8a）。
+        /// "16" 起战前编队是真实 1—4 槽（可空位、可不连续）并带阵容版本与一次迁移标记，敌人带本轮 AP 账（策划答复 Q86/Q87，开发计划 v0.9 B8a）；
+        /// "17" 起记服务地点迁址标记（v3 地图营区公共居所/收容所）与遗物是否公共候补遗物（策划答复 Q88/Q89，开发计划 v0.9 B8b）。
         /// </summary>
-        public const string CurrentSchema = "16";
+        public const string CurrentSchema = "17";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -78,6 +79,11 @@ namespace Survival.Core.State
         public Dictionary<string, int> LoanSlots { get; set; } = new Dictionary<string, int>();
         /// <summary>通用护送员流水号（“护送员#n”，不复用）。</summary>
         public int NextEscortSeq { get; set; } = 1;
+        /// <summary>
+        /// 服务地点已迁到 v3 地图（Q88/Q89 选 A，schema 17）：false 时营区公共居所与收容所服务都在替身地点（camp）办理；
+        /// 地图导入后由 GameEngine.MigrateServiceLocations 一次置 true（幂等），此后营区服务在 h02_square、收容所服务在 h06_shelter。
+        /// </summary>
+        public bool ServiceMapMigrated { get; set; }
 
         /// <summary>按 actorId 取角色；不存在时建空角色（只在迁移与测试注入时发生）。</summary>
         public ActorState Actor(string actorId)
@@ -508,6 +514,11 @@ namespace Survival.Core.State
         public string Cause { get; set; } = "";
         /// <summary>死于这场战斗中：本场战斗结束前不能取（R08 §4）。</summary>
         public int? BattleId { get; set; }
+        /// <summary>
+        /// 公共候补遗物（Q89：候补在营区公共居所死亡留下的，地图导入时随营区迁址）：true 是、false 不是（同行者死亡的当地遗物，不迁）；
+        /// null 为 schema 16 及以前的旧档在替身地点、非战斗中留下的，分不清候补还是同行，按“不迁”处理（开发计划 v0.9 B8b-3）。
+        /// </summary>
+        public bool? PublicReserve { get; set; }
         public RemainsState Clone() => (RemainsState)MemberwiseClone();
     }
 
