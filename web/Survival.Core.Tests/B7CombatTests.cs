@@ -690,6 +690,130 @@ public class B7CombatTests : BattleTestBase
         Assert.That(Enemy(d, 1).NextHitFactor, Is.EqualTo(1.2).Within(1e-9));
     }
 
+    // ───────────── M145 R27 旧规则回归（R03 §5—§7） ─────────────
+
+    /// <summary>EN08/CB03：一大回合里多段技能、敌人前移、迎击、追击都只推进一次 5 分钟世界 tick。</summary>
+    [Test]
+    public void R27_OneTickPerRound_WithSkillsAdvanceAndReactions()
+    {
+        var s = Fight(760, "shambler", "shambler", "z_darter");
+        var b = s.Battle!;
+        PlayerFirst(s);
+        E.BattleStep(s);
+        Arm(s, "wooden_spear");
+        s.Skills["spear"].Level = 10;
+        b.PlayerAp = 4;
+        foreach (var e in b.Alive) e.Hp = 50;
+        var m0 = s.GameMinute;
+        var t0 = b.Ticks;
+        var r0 = b.Round;
+        Assert.That(Cmd(s, "spear_10", 1).Ok, Is.True);
+        Assert.That(Cmd(s, "spear_05").Ok, Is.True);
+        for (var i = 0; i < 60 && s.Battle != null && s.Battle.Round == r0; i++)
+        {
+            foreach (var e in b.Alive) e.Hp = 50;
+            s.Stats.Health = 20;
+            Step(s);
+        }
+        Assert.That(b.Round, Is.EqualTo(r0 + 1));
+        Assert.That(b.Ticks - t0, Is.EqualTo(1));
+        Assert.That(s.GameMinute - m0, Is.EqualTo(5));
+    }
+
+    /// <summary>R03 §5 撤退公式（B6-17 保留）对新敌人照算：sigmoid((己速−敌方最高速)/3+0.7)×恐慌×低体力。</summary>
+    [Test]
+    public void R27_RetreatFormula_UnchangedWithNewEnemies()
+    {
+        var s = Fight(761, "z_darter", "z_slow");
+        Ready(s);
+        s.Battle!.Panic = 0;
+        var (chance, _, _) = E.RetreatChance(s, s.Battle);
+        var x = (4 - 8) / Cfg.Retreat.SpeedDivisor + Cfg.Retreat.Offset;
+        Assert.That(chance, Is.EqualTo(1 / (1 + Math.Exp(-x))).Within(1e-9), "迅捷感染者速度8");
+    }
+
+    /// <summary>噪声增援与鸣响共用“每场至多 1 次、本场累计≤C、只调用同地现有丧尸”（A09 §3、R05）。</summary>
+    [Test]
+    public void R27_ReinforcementOncePerBattle_SignalAndNoiseShare()
+    {
+        var s = Fight(762, "z_signal");
+        var extra1 = E.DebugSpawnEnemy(s, "shambler", "field");
+        var extra2 = E.DebugSpawnEnemy(s, "shambler", "field");
+        for (var i = 0; i < 40 && s.Battle != null && s.Battle.Round < 3; i++) { s.Stats.Health = 20; Step(s); }
+        var b = s.Battle!;
+        Assert.That(b.ReinforcementUsed, Is.True);
+        Assert.That(b.Enemies.Count, Is.EqualTo(2), "鸣响只引来 1 只");
+        // 之后噪声满也不再增援
+        b.Noise = Cfg.Noise.Max;
+        b.ReinforcementRequested = true;
+        for (var i = 0; i < 40 && s.Battle != null && s.Battle.Round < 5; i++) { s.Stats.Health = 20; Step(s); }
+        Assert.That(b.Enemies.Count, Is.EqualTo(2), "每场至多一次增援");
+        Assert.That(new[] { extra1, extra2 }.Count(w => w.Engaged), Is.LessThanOrEqualTo(1));
+    }
+
+    /// <summary>EN05、R03 §5：首死锁定的掉落（含 A09 附加掉落）只在胜利落地，撤退放弃；存活敌人 HP 与经验计数跟着世界实例。</summary>
+    [Test]
+    public void R27_FirstDeathLootLocked_RetreatForfeits_PersistentHpXp()
+    {
+        var s = Fight(763, "raider_melee", "raider_gunner");
+        Ready(s);
+        Enemy(s, 1).Hp = 0.01;
+        Force(s, Below(0.01), AtLeast(0.99), Any());
+        Assert.That(Cmd(s, "basic_attack", 1).Ok, Is.True);
+        var b = s.Battle!;
+        Assert.That(b.Loot.Any(l => l.ItemId == "cloth"), Is.True, "掠夺者固定布料 1，首死锁定");
+        Assert.That(s.Items.Any(i => i.Owner == "field" && i.ItemId == "cloth"), Is.False, "未胜利不落地");
+        var gunner = Enemy(s, 2);
+        gunner.Hp = 3;
+        var wid = gunner.WorldId;
+        Cmd(s, "end_turn");
+        ToPlayer(s);
+        Assert.That(s.Battle, Is.Not.Null);
+        s.Battle!.RetreatUsed = false;
+        s.Battle.PlayerAp = 3;
+        Force(s, Below(0.0001));
+        Assert.That(Cmd(s, "retreat").Ok, Is.True);
+        Assert.That(s.Battle, Is.Null);
+        Assert.That(s.Items.Any(i => i.Owner == "field" && i.ItemId == "cloth"), Is.False, "撤退放弃本场掉落");
+        var we = s.WorldEnemies.Single(w => w.Id == wid);
+        Assert.That(we.Hp, Is.EqualTo(3).Within(1e-9), "存活敌人 HP 保留");
+    }
+
+    /// <summary>EN03、A09 §4：只有丧尸咬击正伤才判感染；人类、动物、喷吐、尖啸都不加病毒。</summary>
+    [Test]
+    public void R27_OnlyZombieBiteInfects()
+    {
+        foreach (var id in new[] { "raider_melee", "wild_dog_leader", "z_spitter" })
+        {
+            var s = Fight(764, id);
+            var e = Enemy(s, 1);
+            e.Intent = "bite";
+            var v0 = s.Body.VirusLoad;
+            Force(s, Below(0.01), Any(), Any(), Any());
+            typeof(GameEngine).GetMethod("EnemyAttack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+                .Invoke(E, new object[] { s, e, Cfg.Enemies.Single(x => x.Id == id), false });
+            Assert.That(s.Body.Infected, Is.False, id);
+            Assert.That(s.Body.VirusLoad, Is.EqualTo(v0), id);
+        }
+    }
+
+    /// <summary>B7 只加字段、不升 schema：B6（schema 12）的战斗中存档读入后，新字段取缺省值，战斗照常继续。</summary>
+    [Test]
+    public void R27_Schema12BattleSave_LoadsWithDefaults_Continues()
+    {
+        var s = Fight(765, "shambler", "howler");
+        var json = Newtonsoft.Json.Linq.JObject.Parse(SaveSerializer.Serialize(s));
+        var bj = (Newtonsoft.Json.Linq.JObject)json["Battle"]!;
+        foreach (var k in new[] { "SkillUsedRound", "PlayerGuardCharges", "CounterFactor", "BraceCharges", "PlayerWeakFactor", "PlayerNextDamageFactor", "CommandXp", "PendingCommandXp" }) bj.Remove(k);
+        foreach (var e in (Newtonsoft.Json.Linq.JArray)bj["Enemies"]!)
+            foreach (var k in new[] { "JoinRound", "IntentStep", "WeakFactor", "NextHitFactor", "Mag", "Reserve", "IntentTarget" }) ((Newtonsoft.Json.Linq.JObject)e).Remove(k);
+        var t = SaveSerializer.Deserialize(json.ToString(), Cfg);
+        Assert.That(t.SchemaVersion, Is.EqualTo("12"));
+        Assert.That((t.Battle!.PlayerWeakFactor, t.Battle.PlayerNextDamageFactor, t.Battle.Enemies[0].WeakFactor, t.Battle.Enemies[0].NextHitFactor, t.Battle.Enemies[0].Mag), Is.EqualTo((1.0, 1.0, 1.0, 1.0, -1)));
+        for (var i = 0; i < 40 && t.Battle != null && t.Battle.Round < 3; i++) { t.Stats.Health = 20; if (E.AwaitingPlayer(t)) E.ExecuteCommand(t, BattleCommand.Of("end_turn")); else E.BattleStep(t); }
+        Assert.That(t.Battle == null || t.Battle.Round >= 3, Is.True);
+    }
+
     [Test]
     public void NewEnemies_NotInOldSpawnPools()
     {
