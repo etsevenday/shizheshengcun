@@ -121,7 +121,10 @@ namespace Survival.Core.Engine
             Emit(s, GameEventKind.ActionCompleted, $"{r.Name}登记完成，编入同行（技能均1级、速度{Fmt.T(Config.Party.EscortTemplate.BaseSpeed)}）。{LoanNote(s, r)}");
         }
 
-        /// <summary>建一名通用护送员（RB01）：通用初值、15 门技能均 1、绑定第一个没有存活护送员的借用位；该位已有有效矛则不另发。</summary>
+        /// <summary>
+        /// 建一名通用护送员（RB01）：通用初值、15 门技能均 1、绑定第一个没有存活护送员的借用位。该位从没发过矛才发一件；
+        /// 发过的不再由补员另发——有效时只指路，已损毁或找不到时要在营区报失补发（A11 §7“确实无法回收或实例已损毁时，只能…报失”）。
+        /// </summary>
         private RosterEntry CreateEscort(GameState s, bool joinParty)
         {
             var t = Config.Party.EscortTemplate;
@@ -133,7 +136,7 @@ namespace Survival.Core.Engine
             var slot = LoanSlotIds(s).FirstOrDefault(x => !used.Contains(x)) ?? "loan_1";
             var entry = new RosterEntry { ActorId = id, Kind = "escort", Name = name, JoinedMinute = s.GameMinute, LoanSlot = slot };
             s.Roster.Add(entry);
-            if (ValidLoan(s, slot) == null)
+            if (!s.LoanSlots.ContainsKey(slot))
             {
                 var spear = NewLoanSpear(s, slot, ItemInstance.EquipOwner(id, EquipSlots.Weapon1));
                 s.LoanSlots[slot] = spear.InstanceId;
@@ -174,7 +177,7 @@ namespace Survival.Core.Engine
         {
             if (r.LoanSlot == null) return "";
             var it = ValidLoan(s, r.LoanSlot);
-            if (it == null) return "";
+            if (it == null) return s.LoanSlots.ContainsKey(r.LoanSlot) ? $"该借用位（{r.LoanSlot}）的木矛已损毁或找不到，请在营区报失补发。" : "";
             if (it.IsWornBy(r.ActorId)) return $"武器Ⅰ为借用{ItemName(it.ItemId)}（{r.LoanSlot}）。";
             return $"该借用位的{ItemName(it.ItemId)}已有一件，在{LoanWhere(s, it)}，请去取回，不另发。";
         }

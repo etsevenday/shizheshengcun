@@ -185,11 +185,29 @@ public class B8PartyLossTests : TestBase
         Assert.That(s.Items.Count(i => i.LoanSlot == "loan_1"), Is.EqualTo(1));
         var fresh = s.Items.Single(i => i.LoanSlot == "loan_1");
         Assert.That(fresh.Owner, Is.EqualTo("camp"));
+        Assert.That(s.Items.Count(i => i.ItemId == "wooden_spear"), Is.EqualTo(before), "撤销一件、补一件");
         Assert.That(fresh.Durability, Is.EqualTo(30));
         Assert.That(s.Remains.ContainsKey(esc.ActorId), Is.False, "遗物只剩作废的矛时随之移除");
         // 新矛又在活人身上 → 不能借报失偷走
         fresh.Owner = ItemInstance.Carried;
         Assert.That(E.ReportLostLoanBlocked(s, "loan_1"), Does.Contain("你的随身"));
+    }
+
+    /// <summary>借用位发过的矛已损毁：新护送员不另发，提示去报失（不能借补员绕过报失）。</summary>
+    [Test]
+    public void Rb01_BrokenLoanSpear_NotReissuedByNewEscort()
+    {
+        var s = Camp(3);
+        E.DebugAddEscort(s);
+        var first = E.AliveEscorts(s).Single();
+        var spear = s.Items.Single(i => i.LoanSlot == "loan_1");
+        spear.Durability = 0;
+        E.DebugActor(s, first.ActorId, "kill");
+        var n = s.Items.Count(i => i.ItemId == "wooden_spear");
+        E.DebugAddEscort(s);
+        Assert.That(s.Items.Count(i => i.ItemId == "wooden_spear"), Is.EqualTo(n), "不另发");
+        Assert.That(E.LoanSlotIds(s), Is.EqualTo(new[] { "loan_1", "loan_2" }));
+        Assert.That(E.ReportLostLoanBlocked(s, "loan_1"), Is.Null, "损毁的矛在遗物里：可以报失");
     }
 
     private void Advance(GameState s, int segments)
