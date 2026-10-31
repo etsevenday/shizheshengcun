@@ -51423,5 +51423,94 @@
         "normal_internal_wait_rates"
       ]
     }
+  },
+  "battleUiAdjudications": {
+    "version": "q99_q100_20261031",
+    "status": "approved_document_target_not_engine_or_ui_verification",
+    "sourceQuestions": [
+      "Q99",
+      "Q100"
+    ],
+    "anchors": {
+      "ownScreenOrder": [
+        4,
+        3,
+        2,
+        1
+      ],
+      "enemyScreenOrder": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "states": [
+        "occupied",
+        "empty"
+      ],
+      "positionLocks": false,
+      "emptyStyle": "dashed_border_and_空位_label_no_fake_actor",
+      "capacityLimitsCountNotSlot": true,
+      "soloCanUseSlots": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "capacityHeader": "容量C · 敌人最多C只",
+      "realSlotsAndVacanciesPreserved": true,
+      "skillLocksAndMapLocksUnchanged": true
+    },
+    "fullscreen": {
+      "outerAppInputDisabled": true,
+      "detail": "battle_internal_object_info",
+      "supplies": "readonly_drawer",
+      "noBattleInventoryMutation": true,
+      "encounterChoiceOverlay": "existing_two_rows_unchanged",
+      "ordinaryDialogue": "S14_top_two_rows_only_lower_rows_unchanged",
+      "battleDialogue": "A10_6_2_battle_overlay_input_lock_no_queue_AP_enemy_or_tick_progress_death_first"
+    },
+    "legacyAcceptance": [
+      {
+        "id": "S14-A60",
+        "superseded": "battle_lower_inventory_rows_visible_external_detail_layout",
+        "preserved": "characters_key_numbers_and_local_explicit_confirmation",
+        "replacedBy": [
+          "UI-E01",
+          "UI-E03",
+          "UI-E16",
+          "existing_corresponding_functional_cases"
+        ]
+      },
+      {
+        "id": "S14-A65",
+        "superseded": "battle_only_two_rows_fixed_party_console_rows",
+        "preserved": "ordinary_dialogue_top_two_rows_lower_rows_unchanged",
+        "replacedBy": [
+          "UI-E01",
+          "UI-E03",
+          "UI-E16",
+          "UI-E17"
+        ]
+      },
+      {
+        "id": "R03-A15",
+        "superseded": "party_first_row_console_second_row_lower_inventory_visible_external_detail",
+        "preserved": "legal_targets_explicit_confirmation_key_information",
+        "replacedBy": [
+          "UI-E01",
+          "UI-E03",
+          "UI-E16",
+          "existing_corresponding_functional_cases"
+        ]
+      }
+    ],
+    "saveCompatibility": "no_gameplay_or_save_schema_changes_restore_view_from_actual_battle_and_formation",
+    "historicalImplementationRecordsPreserved": true,
+    "acceptance": [
+      "UI-Q99-01",
+      "UI-Q100-01",
+      "UI-Q100-02"
+    ]
   }
 }

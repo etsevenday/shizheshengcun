@@ -1,0 +1,139 @@
+{
+  "date": "2026-10-31",
+  "status": "static_document_checks_only_not_game_or_ui_test",
+  "questionsAsked": 2,
+  "answers": {
+    "Q99": "A",
+    "Q100": "A"
+  },
+  "pending": [],
+  "developerDelegations": [],
+  "checks": [
+    {
+      "name": "实现同步/修改记录原文保留 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "正文仅指定替换与新增本轮章 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "实现同步/修改记录原文保留 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "正文仅指定替换与新增本轮章 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "实现同步/修改记录原文保留 02 参考扩展/R03 回合制战斗系统.md",
+      "passed": true
+    },
+    {
+      "name": "正文仅指定替换与新增本轮章 02 参考扩展/R03 回合制战斗系统.md",
+      "passed": true
+    },
+    {
+      "name": "实现同步/修改记录原文保留 00 总则/02 开发方待确认问题.md",
+      "passed": true
+    },
+    {
+      "name": "仅填Q99/Q100两答复字段",
+      "passed": true
+    },
+    {
+      "name": "实现同步/修改记录原文保留 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "正文仅指定替换与新增本轮章 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "全部策划JSON解析",
+      "passed": true
+    },
+    {
+      "name": "UI合同一致且其余数据不变 04 附录/A12 全系统策划数据索引.json",
+      "passed": true
+    },
+    {
+      "name": "UI合同一致且其余数据不变 assets/20261030/index/joint-expansion-data.json",
+      "passed": true
+    },
+    {
+      "name": "八锚点与容量只限人数",
+      "passed": true
+    },
+    {
+      "name": "三旧验收仅布局替换",
+      "passed": true
+    },
+    {
+      "name": "有效UI正文无旧锁位指令",
+      "passed": true
+    },
+    {
+      "name": "新增三验收有正文",
+      "passed": true
+    },
+    {
+      "name": "无待定答复",
+      "passed": true
+    },
+    {
+      "name": "所有相对链接可达",
+      "passed": true
+    }
+  ],
+  "preUploadAudit": [
+    {
+      "category": "数值",
+      "result": "通过；本轮收口已定展示规则，无未定义新增参数或行为"
+    },
+    {
+      "category": "名词",
+      "result": "通过；本轮收口已定展示规则，无未定义新增参数或行为"
+    },
+    {
+      "category": "范围",
+      "result": "通过；本轮收口已定展示规则，无未定义新增参数或行为"
+    },
+    {
+      "category": "时机",
+      "result": "通过；本轮收口已定展示规则，无未定义新增参数或行为"
+    },
+    {
+      "category": "边界",
+      "result": "通过；本轮收口已定展示规则，无未定义新增参数或行为"
+    },
+    {
+      "category": "自动行为",
+      "result": "通过；本轮收口已定展示规则，无未定义新增参数或行为"
+    },
+    {
+      "category": "入口",
+      "result": "通过；本轮收口已定展示规则，无未定义新增参数或行为"
+    },
+    {
+      "category": "来源",
+      "result": "通过；本轮收口已定展示规则，无未定义新增参数或行为"
+    },
+    {
+      "category": "冲突",
+      "result": "通过；本轮收口已定展示规则，无未定义新增参数或行为"
+    },
+    {
+      "category": "未完成依赖",
+      "result": "通过；本轮收口已定展示规则，无未定义新增参数或行为"
+    },
+    {
+      "category": "旧档",
+      "result": "通过；本轮收口已定展示规则，无未定义新增参数或行为"
+    },
+    {
+      "category": "验收",
+      "result": "通过；本轮收口已定展示规则，无未定义新增参数或行为"
+    }
+  ]
+}
