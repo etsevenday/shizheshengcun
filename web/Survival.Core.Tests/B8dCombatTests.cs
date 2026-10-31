@@ -314,7 +314,7 @@ public class B8dCombatTests : BattleTestBase
     {
         var hint = (JObject)Act()["exposureApproach"]!["hint"]!;
         Assert.That(((string)hint["activeSpearStance"]!, (string)hint["noActiveSpearStance"]!), Is.EqualTo(("触发架矛", "算主动前移")));
-        Assert.That((string)hint["state"]!, Is.EqualTo("existing_stance_with_valid_duration_and_remaining_charges_not_merely_equipped_spear"));
+        Assert.That((string)hint["state"]!, Is.EqualTo("Q103_first_legal_candidate_scanned_from_front_actual_slots"));
         Assert.That((bool)hint["previewConsumesNoRng"]!, Is.True);
 
         var s = Exposed(9701, out var z);
