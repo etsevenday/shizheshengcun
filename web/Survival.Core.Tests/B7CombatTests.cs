@@ -1,5 +1,6 @@
 using Survival.Core.Config;
 using Survival.Core.Engine;
+using Survival.Core.Save;
 using Survival.Core.State;
 
 namespace Survival.Core.Tests;
@@ -448,6 +449,72 @@ public class B7CombatTests : BattleTestBase
         Assert.That(p.LoadedAmmo, Is.EqualTo(8));
         Assert.That(s.Battle.PlayerAp, Is.EqualTo(ap0 - 1), "快速装填 1AP");
         Assert.That(E.CommandBlocked(s, BattleCommand.Of("firearms_05")), Does.StartWith("冷却中"));
+    }
+
+    // ───────────── M143 指令一览、操作台、预览与执行同源 ─────────────
+
+    private static readonly string[] OneWeaponPerKind =
+        { "fists", "kitchen_knife", "hatchet", "wooden_spear", "crowbar", "wooden_bow", "pistol", "shotgun", "wooden_shield", "signal_whistle", "field_medkit" };
+
+    /// <summary>
+    /// 每类武器 10 级：操作台每个技能的“可用/原因”= CommandBlocked = PreviewCommand.Ok；战斗中的指令一览与操作台同一份；
+    /// 每个可用技能都能执行（不抛异常、扣到 AP）。覆盖 50 个技能里除需要队友的 4 个之外的全部。
+    /// </summary>
+    [Test]
+    public void Q19Q26_OptionsPreviewExecute_SameSource_AllSkills()
+    {
+        var executed = new HashSet<string>();
+        foreach (var wid in OneWeaponPerKind)
+        {
+            var s = Fight(730, "feral_dog", "feral_dog", "feral_dog");
+            Ready(s);
+            if (wid != "fists") Arm(s, wid);
+            foreach (var k in s.Skills.Keys.ToList()) s.Skills[k].Level = 10;
+            s.Battle!.PlayerSlowPending = true;   // 挣脱要有可解除的束缚
+            E.DebugGive(s, "arrow", 10);
+            E.DebugGive(s, "ammo_9mm", 10);
+            E.DebugGive(s, "shell_12g", 4);
+            E.DebugGive(s, "bandage", 1);
+            E.DebugGive(s, "medical_gauze", 3);
+            E.DebugGive(s, "saline", 3);
+            if (E.CurrentWeapon(s, out var wi).UsesMagazine) wi!.LoadedAmmo = E.CurrentWeapon(s, out _).MagazineCapacity - 1;
+            s.Stats.Health = 4;
+            s.Battle!.Panic = 30;
+            s.Battle.PlayerStagger = true;
+            foreach (var e in s.Battle.Alive) e.Hp = 50;
+            var opts = E.BattleOptions(s);
+            var help = E.CompatibleCommands(s);
+            Assert.That(help.Where(o => o.Action != "switch_weapon").Select(o => (o.Action, o.Available, o.Reason)), Is.EqualTo(opts.Select(o => (o.Action, o.Available, o.Reason))), $"{wid}：战斗中指令一览与操作台同源");
+            foreach (var o in opts.Where(o => o.NodeId != null))
+            {
+                var tgt = o.Targets.Count > 0 ? o.Targets[0] : (int?)null;
+                var cmd = BattleCommand.Of(o.Action, o.NeedsTarget ? tgt ?? 1 : null);
+                var pv = E.PreviewCommand(s, cmd);
+                Assert.That(pv.Ok, Is.EqualTo(o.Available || (o.NeedsTarget && tgt != null && E.CommandBlocked(s, cmd) == null)), $"{wid} {o.Label}：预览与操作台同源（{o.Reason}）");
+                if (!pv.Ok) continue;
+                var copy = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+                copy.Battle!.PlayerAp = 6;
+                var r = E.ExecuteCommand(copy, cmd);
+                Assert.That(r.Ok, Is.True, $"{wid} {o.Label}：{r.Reason}");
+                executed.Add(o.NodeId!);
+            }
+        }
+        var needAllies = new[] { "shield_03", "shield_07", "command_03", "command_07" };
+        Assert.That(Cfg.SkillExec.Select(x => x.Id).Except(needAllies).Except(executed), Is.Empty, "除需要队友的 4 个外全部可执行");
+    }
+
+    [Test]
+    public void Preview_DamageRange_MatchesExecution()
+    {
+        var s = Fight(731, "worker");
+        Ready(s);
+        Arm(s, "crowbar");
+        s.Skills["blunt"].Level = 3;
+        Enemy(s, 1).Hp = 50;
+        var pv = E.PreviewCommand(s, BattleCommand.Of("blunt_03", 1)).Targets.Single();
+        Force(s, Below(0.3), AtLeast(0.96), AtLeast(0.999), Any());
+        Assert.That(Cmd(s, "blunt_03", 1).Ok, Is.True);
+        Assert.That(50 - Enemy(s, 1).Hp, Is.EqualTo(pv.DamageMax).Within(0.01), "震击 ×0.70 预览上限=实际");
     }
 
     [Test]
