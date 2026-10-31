@@ -1,0 +1,11 @@
+{
+  "status": "independent_slot_and_AP_model_only_not_game_engine_or_UI",
+  "contractVersion": "q75_q87_20261031",
+  "cases": {
+    "reinforcementLayouts": 16,
+    "legalPartySlotMaps": 64,
+    "helperAndMoverBudgetBoundaries": 360,
+    "approachBudgetAndInterruption": 20
+  },
+  "limits": "Abstract model checks slot uniqueness, preset isolation and AP conservation only; no combat RNG, AI runtime, save transaction crash test, win rate or browser rendering."
+}

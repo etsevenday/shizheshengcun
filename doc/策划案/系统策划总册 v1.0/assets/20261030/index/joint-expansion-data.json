@@ -49550,7 +49550,7 @@
     "scope": "依据策划面板及已读B6/B7公式的可复现数值实验；非引擎执行、非玩家遥测、非完整回合战斗胜率"
   },
   "combatResolutionAdjudications": {
-    "version": "q75_q83_20261031",
+    "version": "q75_q87_20261031",
     "status": "approved_planning_target_not_engine_verified",
     "sourceQuestions": [
       "Q75",
@@ -49561,7 +49561,11 @@
       "Q80",
       "Q81",
       "Q82",
-      "Q83"
+      "Q83",
+      "Q84",
+      "Q85",
+      "Q86",
+      "Q87"
     ],
     "precedence": {
       "baseline": "assets/20261031/combat/combat-adjudications.json",
@@ -49611,7 +49615,38 @@
         "changesOpponentActualSlot": false,
         "doesNotChangePlayerFistTargetRule": true,
         "nonhostileNotConverted": true,
-        "reason": "avoid_indefinite_solo_back_slot_immunity_while_preserving_actual_own_slot_restrictions"
+        "reason": "avoid_indefinite_solo_back_slot_immunity_while_preserving_actual_own_slot_restrictions",
+        "changesAttackerActualSlot": false,
+        "countsAsActiveForwardMove": true,
+        "triggersSpearInterception": true,
+        "eventTiming": "after_pay_1AP_before_revalidate_and_pay_2AP_attack",
+        "interrupted": "keep_spent_approach_AP_do_not_charge_unexecuted_attack_AP_end",
+        "oneEventPerApproach": true
+      },
+      "reinforcementPlacement": {
+        "sourceQuestion": "Q84",
+        "priority": "first_empty_slot_after_rearmost_living_else_frontmost_empty",
+        "noLiving": "slot1_if_other_existing_spawn_rules_allow",
+        "noEmpty": "reject_spawn_without_consuming_count_or_trigger",
+        "capacityAndLifetimeCountUnchanged": true,
+        "triggersActiveForwardMove": false
+      },
+      "cooperativeAdvance": {
+        "sourceQuestion": "Q87",
+        "trigger": "cannot_attack_and_front_neighbor_F_can_basic_attack_now_and_after_advance_and_slot_ahead_of_F_empty",
+        "helperAP": 1,
+        "helperBudget": "own_current_round_normal_AP_remaining_or_reserved_before_activation_never_reset_at_activation",
+        "moverAP": 1,
+        "helperUnavailable": "mover_waits_no_swap",
+        "otherGeometry": "original_Q78_adjacent_move_or_swap",
+        "maxHelperRequestsPerActivation": 1,
+        "recursive": false,
+        "eachVoluntaryStepTriggersInterception": true,
+        "passiveSwapTriggersInterception": false,
+        "extraActivation": false,
+        "queueOrderChanges": false,
+        "extraWorldTick": false,
+        "interrupted": "revalidate_after_each_reaction_no_refund_executed_steps_no_charge_unexecuted_steps"
       }
     },
     "enemyAssumptions": {
@@ -51153,6 +51188,53 @@
       "armorWear": 0,
       "infects": false,
       "sourceQuestion": "Q83"
+    },
+    "formation": {
+      "sourceQuestion": "Q86",
+      "entry": "top_menu_编队",
+      "availableBeforeRecruitment": true,
+      "actorScope": "current_living_party_including_mandatory_p0",
+      "slots": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "capacityLimitsCountNotSlot": true,
+      "holesAllowed": true,
+      "weaponAutoPlacement": false,
+      "weaponSlotWarningsInformational": true,
+      "editLocation": "any_location_when_idle_for_current_party_positions_only",
+      "rosterChanges": "original_h02_public_lodging_rules",
+      "blockedBy": [
+        "death",
+        "battle",
+        "main_action_including_paused",
+        "sub_action",
+        "travel",
+        "pending_encounter",
+        "unread_forced_dialogue",
+        "mandatory_event",
+        "unresolved_loot_or_service_transaction",
+        "mandatory_legacy_cleanup"
+      ],
+      "backgroundFacilityAloneBlocks": false,
+      "interaction": "select_actor_then_slot_empty_move_or_occupied_swap_optional_drag",
+      "draft": "explicit_save_cancel_Esc_cancel_no_autosave_no_change_save_disabled",
+      "cost": {
+        "worldMinutes": 0,
+        "AP": 0,
+        "E": 0,
+        "xp": 0
+      },
+      "commit": "revalidate_idle_party_capacity_slot_uniqueness_revision_atomic_idempotent_save",
+      "stateChangeDuringDraft": "close_discard_draft_for_forced_event_reject_stale_revision",
+      "presetAndBattleSlotsSeparate": true,
+      "nextBattle": "use_saved_valid_slots_no_compression_or_weapon_auto_adjust",
+      "migration": "preserve_ongoing_battle_slots_initialize_missing_preset_once_keep_valid_unique_members_then_fill_frontmost_empty_in_party_order",
+      "memberRemoved": "remove_only_preserve_other_slots_and_holes",
+      "memberAdded": "original_legal_roster_transaction_fill_frontmost_empty_increment_revision",
+      "ongoingBattleDoesNotWritePreset": true
     }
   },
   "combatResolutionBenchmark": {

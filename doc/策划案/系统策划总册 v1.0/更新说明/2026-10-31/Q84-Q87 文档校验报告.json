@@ -1,0 +1,135 @@
+{
+  "date": "2026-10-31",
+  "status": "static_document_checks_passed_not_engine_or_ui_verified",
+  "questions": [
+    "Q84",
+    "Q85",
+    "Q86",
+    "Q87"
+  ],
+  "checks": [
+    {
+      "name": "保留全部实现同步与原修改记录 02 参考扩展/R03 回合制战斗系统.md",
+      "passed": true
+    },
+    {
+      "name": "原文完整保留 02 参考扩展/R03 回合制战斗系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部实现同步与原修改记录 02 参考扩展/R08 队伍招募、编成与共同生存系统.md",
+      "passed": true
+    },
+    {
+      "name": "原文完整保留 02 参考扩展/R08 队伍招募、编成与共同生存系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部实现同步与原修改记录 02 参考扩展/R05 敌人卡、种群刷新与遭遇系统.md",
+      "passed": true
+    },
+    {
+      "name": "原文完整保留 02 参考扩展/R05 敌人卡、种群刷新与遭遇系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部实现同步与原修改记录 04 附录/A09 敌人、遭遇组合与掉落目录.md",
+      "passed": true
+    },
+    {
+      "name": "原文完整保留 04 附录/A09 敌人、遭遇组合与掉落目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部实现同步与原修改记录 04 附录/A06 十级熟练度与全技能目录.md",
+      "passed": true
+    },
+    {
+      "name": "原文完整保留 04 附录/A06 十级熟练度与全技能目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部实现同步与原修改记录 01 基础系统/S01 世界时间、行动与存档系统.md",
+      "passed": true
+    },
+    {
+      "name": "原文完整保留 01 基础系统/S01 世界时间、行动与存档系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部实现同步与原修改记录 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "原文完整保留 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部实现同步与原修改记录 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "原文完整保留 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部实现同步与原修改记录 00 总则/02 开发方待确认问题.md",
+      "passed": true
+    },
+    {
+      "name": "问题文件仅填Q84—Q87四个字段",
+      "passed": true
+    },
+    {
+      "name": "保留全部实现同步与原修改记录 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "原文完整保留 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "全部策划JSON可解析",
+      "passed": true
+    },
+    {
+      "name": "嵌入合同一致且无其他数据修改 04 附录/A12 全系统策划数据索引.json",
+      "passed": true
+    },
+    {
+      "name": "嵌入合同一致且无其他数据修改 assets/20261030/index/joint-expansion-data.json",
+      "passed": true
+    },
+    {
+      "name": "历史战斗合同其余字段保持",
+      "passed": true
+    },
+    {
+      "name": "原Q83死亡喷溅免磨与伤害规则保持",
+      "passed": true
+    },
+    {
+      "name": "本轮全部验收编号存在",
+      "passed": true
+    },
+    {
+      "name": "新增相对链接存在",
+      "passed": true
+    },
+    {
+      "name": "无未答字段",
+      "passed": true
+    }
+  ],
+  "model": {
+    "status": "independent_slot_and_AP_model_only_not_game_engine_or_UI",
+    "contractVersion": "q75_q87_20261031",
+    "cases": {
+      "reinforcementLayouts": 16,
+      "legalPartySlotMaps": 64,
+      "helperAndMoverBudgetBoundaries": 360,
+      "approachBudgetAndInterruption": 20
+    },
+    "limits": "Abstract model checks slot uniqueness, preset isolation and AP conservation only; no combat RNG, AI runtime, save transaction crash test, win rate or browser rendering."
+  }
+}
