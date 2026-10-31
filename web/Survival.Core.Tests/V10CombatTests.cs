@@ -132,13 +132,13 @@ public class V10CombatTests : BattleTestBase
         f.Skills["firearms"].Level = 7;   // B7：霰弹专长射击（取代散射）
         Enemy(f, 1).Hp = 50;
         Enemy(f, 2).Hp = 50;
-        Enemy(f, 2).XpHits["firearms"] = 3;
+        Enemy(f, 2).ActorXpHits[AttackXpKeys.Key(GameState.PlayerId, "firearms")] = 3;
         var xp0 = f.Skills["firearms"].Xp;
         Force(f, Below(0.4), AtLeast(0.1), Any(), Below(0.4), AtLeast(0.1), Any());
         Assert.That(Cmd(f, "firearms_07").Ok, Is.True);
         Assert.That(f.Skills["firearms"].Xp - xp0, Is.EqualTo(Cfg.Xp.DamagingAttackCommand), "满额目标不给，另一目标+2");
-        Assert.That(Enemy(f, 1).XpHits["firearms"], Is.EqualTo(1));
-        Assert.That(Enemy(f, 2).XpHits["firearms"], Is.EqualTo(3));
+        Assert.That(AttackXpKeys.Hits(Enemy(f, 1).ActorXpHits, GameState.PlayerId, "firearms"), Is.EqualTo(1));
+        Assert.That(AttackXpKeys.Hits(Enemy(f, 2).ActorXpHits, GameState.PlayerId, "firearms"), Is.EqualTo(3));
 
         // 未命中不计
         var m = Fight(42, "shambler");

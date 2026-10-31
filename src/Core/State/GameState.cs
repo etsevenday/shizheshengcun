@@ -38,7 +38,7 @@ namespace Survival.Core.State
         /// "17" 起记服务地点迁址标记（v3 地图营区公共居所/收容所）与遗物是否公共候补遗物（策划答复 Q88/Q89，开发计划 v0.9 B8b）；
         /// "18" 起记候补照护规则版本与每名候补的自主 rest/sleep 模式（策划答复 Q90，开发计划 v0.9 B8c）。
         /// </summary>
-        public const string CurrentSchema = "18";
+        public const string CurrentSchema = "19";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -90,6 +90,11 @@ namespace Survival.Core.State
         /// 新局与迁移后的旧档都是 2；每名候补的当前模式存在 ActorState.ReserveMode。
         /// </summary>
         public int ReserveCareRule { get; set; } = 2;
+        /// <summary>
+        /// Q104 旧共享攻击经验计数迁移（schema 19，A06/R03/S01 本轮章）：升级时冻结的“当时名册 actorId + 主角”快照，迁移只执行一次；
+        /// 新局（没有旧账）为 null。此后新加入的角色从 0 建个人账，不再套用旧共享数。
+        /// </summary>
+        public List<string>? AttackXpLegacyRoster { get; set; }
 
         /// <summary>按 actorId 取角色；不存在时建空角色（只在迁移与测试注入时发生）。</summary>
         public ActorState Actor(string actorId)
@@ -181,6 +186,7 @@ namespace Survival.Core.State
             c.Party = new List<string>(Party);
             c.Roster = Roster.Select(r => r.Clone()).ToList();
             c.FormationPreset = new List<string>(FormationPreset);
+            c.AttackXpLegacyRoster = AttackXpLegacyRoster == null ? null : new List<string>(AttackXpLegacyRoster);
             c.Remains = Remains.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.LoanSlots = new Dictionary<string, int>(LoanSlots);
             c.Locations = Locations.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());

@@ -353,7 +353,7 @@ public class B8cReserveCareTests : TestBase
         j.Remove("ReserveCareRule");
         foreach (var a in ((JObject)j["Actors"]!).Properties()) ((JObject)a.Value).Remove("ReserveMode");
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out _);
-        Assert.That(m.SchemaVersion, Is.EqualTo("18"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "17→18→19（B10a 起 19）");
         Assert.That(m.ReserveCareRule, Is.EqualTo(2));
         Assert.That(m.Actors[Gu].ReserveMode, Is.EqualTo("sleep"), "S<60 → sleep");
         Assert.That(m.Actors["npc_ye_xun"].ReserveMode, Is.EqualTo("rest"));
@@ -362,7 +362,7 @@ public class B8cReserveCareTests : TestBase
         Assert.That(m.Actors[Gu].Stats.Satiety, Is.EqualTo(85), "不把既有 N 截到 80");
         Assert.That(m.Actors[Gu].Stats.Hydration, Is.EqualTo(30), "不瞬补 W");
         Assert.That(m.Actors[Gu].Stats.Morale, Is.EqualTo(90));
-        Assert.That(m.Log.Last().Text, Does.Contain("存档已升级到版本18（候补自主照护）"));
+        Assert.That(m.Log.Any(l => l.Text.Contains("存档已升级到版本18（候补自主照护）")), Is.True);
         var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(m), Cfg, out var notes2);
         Assert.That(notes2, Is.Empty);
         Assert.That(again.Actors[Gu].ReserveMode, Is.EqualTo("sleep"));

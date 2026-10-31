@@ -226,6 +226,8 @@ namespace Survival.Core.Config
         public bool Protect { get; set; }
         /// <summary>需要相邻/其他队友（保护、掩护、整队、协同）；我方只有一人时禁用（队友参战在 B8）。</summary>
         public bool NeedsAllies { get; set; }
+        /// <summary>整队（command_03，Q105 选 A）：先选友方 A、再选与 A 真实相邻的另一存活友方 B，确认后原子交换两人号位。</summary>
+        public bool Reorder { get; set; }
 
         public Dictionary<string, int> Items { get; set; } = new Dictionary<string, int>();
         /// <summary>完全按 R04 绷带效果（战地包扎）。</summary>

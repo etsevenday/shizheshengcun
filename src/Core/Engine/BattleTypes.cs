@@ -17,6 +17,13 @@ namespace Survival.Core.Engine
         public string? ActorId { get; set; }
         /// <summary>以友方为目标的指挥/医疗/保护技能的目标 actorId（B9a）；为 null 时以自己为目标。</summary>
         public string? AllyTarget { get; set; }
+        /// <summary>整队（command_03，Q105）的第二名友方 B（须与 AllyTarget 真实相邻）；其他技能为 null。</summary>
+        public string? AllyTarget2 { get; set; }
+        /// <summary>
+        /// 整队选目标时看到的 A/B 号位快照（Q105：提交时按稳定 actorId 与预览槽重验，任一变化整条拒绝、不自动改选）；null 为不校验快照。
+        /// </summary>
+        public int? AllyTargetPos { get; set; }
+        public int? AllyTarget2Pos { get; set; }
 
         public static BattleCommand Of(string action, int? target = null, int? item = null) =>
             new BattleCommand { Action = action, Target = target, ItemInstanceId = item };
@@ -56,7 +63,7 @@ namespace Survival.Core.Engine
         public List<int> Targets { get; set; } = new List<int>();
         /// <summary>以友方为目标的技能（TargetMode "ally"，B9a）当前可以选的我方 actorId（按号位）。</summary>
         public List<string> AllyTargets { get; set; } = new List<string>();
-        /// <summary>single 点一个目标 / pair 点一个目标打相邻双位 / area 点任一亮起目标打全部 / self 无目标就近确认（B7）/ ally 点我方一名成员（B9a，多人时的指挥/医疗/保护）。</summary>
+        /// <summary>single 点一个目标 / pair 点一个目标打相邻双位 / area 点任一亮起目标打全部 / self 无目标就近确认（B7）/ ally 点我方一名成员（B9a，多人时的指挥/医疗/保护）/ ally_pair 先点友方 A 再点与 A 相邻的友方 B，确认后提交（整队，Q105）。</summary>
         public string TargetMode { get; set; } = "single";
         /// <summary>技能节点 ID（A06 §2）；通用指令为 null。</summary>
         public string? NodeId { get; set; }

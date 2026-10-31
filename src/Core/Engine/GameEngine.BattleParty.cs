@@ -184,14 +184,12 @@ namespace Survival.Core.Engine
         /// <summary>这个非攻击技能要不要选友方目标（指挥/医疗/保护，config skillExec.targetMode = "ally"）。</summary>
         public static bool TargetsAlly(SkillExecConfig x) => x.TargetMode == "ally" && (x.Type == "ally" || x.Type == "medical");
 
-        /// <summary>本批还没做的友方技能：整队（目标与相邻友方交换，要再选一名相邻友方）。</summary>
-        private static bool AllySkillNotDone(SkillExecConfig x) => x.Type == "ally" && x.NeedsAllies && !x.Protect && x.ApBonus <= 0;
-
-        /// <summary>目标可以是自己吗：保护/掩护（相邻友方）与协同（任一其他友方）不行，其余“任一友方”含自己。</summary>
+        /// <summary>目标可以是自己吗：保护/掩护（相邻友方）与协同（任一其他友方）不行，其余“任一友方”含自己（整队的 A/B 也可以是施术者）。</summary>
         private static bool SelfTargetAllowed(SkillExecConfig x) => !x.Protect && x.ApBonus <= 0;
 
         /// <summary>
         /// 技能当前可选的友方目标（按号位升序）：保护/掩护 = 与施术者相邻的在场队友（A06“相邻友方”）；协同 = 其他在场队友；
+        /// 整队 = 第一目标 A 的候选（在场存活、至少有一名真实相邻的存活友方，含施术者）；
         /// 鼓舞/稳心/总攻令与医疗 = 任一在场友方含自己（Q75）。调用时视角为施术者。
         /// </summary>
         public List<string> AllyTargetsOf(GameState s, BattleState b, SkillExecConfig x)
@@ -199,25 +197,60 @@ namespace Survival.Core.Engine
             var me = b.FocusId;
             var mp = AllyPos(b, me);
             var all = AlliesOnField(b);
+            if (x.Reorder) return all.Where(a => ReorderPartners(b, a).Count > 0).ToList();
             if (x.Protect) return all.Where(a => a != me && Math.Abs(AllyPos(b, a) - mp) == 1).ToList();
             if (!SelfTargetAllowed(x)) return all.Where(a => a != me).ToList();
             return all;
         }
 
-        /// <summary>指令里的友方目标：写了就用它，没写且可以对自己用就是自己；否则 null。</summary>
+        /// <summary>
+        /// 整队（Q105）第二目标 B 的候选：与 A 真实槽号差恰为 1 的在场存活友方（不同 actorId，可以是施术者；空格不算相邻、不跨空位找更远的人），按号位升序。
+        /// </summary>
+        public static List<string> ReorderPartners(BattleState b, string a)
+        {
+            var list = new List<string>();
+            var pa = AllyPos(b, a);
+            if (pa <= 0) return list;
+            foreach (var p in new[] { pa - 1, pa + 1 })
+                if (AllyAt(b, p) is string o && o != a) list.Add(o);
+            return list;
+        }
+
+        /// <summary>指令里的友方目标：写了就用它，没写且可以对自己用就是自己；否则 null。整队必须明确点 A，不默认自己。</summary>
         private static string? AllyTargetOf(BattleState b, BattleCommand c, SkillExecConfig x) =>
-            c.AllyTarget ?? (SelfTargetAllowed(x) ? b.FocusId : null);
+            c.AllyTarget ?? (SelfTargetAllowed(x) && !x.Reorder ? b.FocusId : null);
 
         /// <summary>友方目标是否合法（只读）：没选、不在场、不在可选范围都写原因。</summary>
         private string? AllyTargetBlocked(GameState s, BattleState b, BattleCommand c, SkillNodeConfig n, SkillExecConfig x)
         {
-            if (AllySkillNotDone(x)) return $"{n.Name}（目标与相邻友方交换站位）多人战斗里还没做（开发计划 B9a.4）";
+            if (x.Reorder) return ReorderBlocked(s, b, c, n);
             var t = AllyTargetOf(b, c, x);
             if (t == null) return x.Protect ? $"请选择与{Who(s)}相邻的一名队友" : "请选择一名其他队友";
             if (!AllyInBattle(b, t)) return $"{ActorDisplayName(s, t)}不在场上";
             if (!AllyTargetsOf(s, b, x).Contains(t))
                 return x.Protect ? $"{n.Name}只能给相邻的队友（{ActorDisplayName(s, t)}在{PosName(AllyPos(b, t))}，{Who(s)}在{PosName(PlayerPos(b))}）"
                     : t == b.FocusId ? $"{n.Name}不能对自己用" : $"{ActorDisplayName(s, t)}不是{n.Name}的合法目标";
+            return null;
+        }
+
+        /// <summary>
+        /// 整队两目标的合法性（Q105 选 A，R03/A06 本轮章；只读）：A 在场存活；B 与 A 不同、在场存活且真实槽号差恰为 1；
+        /// 带了预览时的槽快照就按快照重验，任一变化整条拒绝、不自动改选。两目标的武器使用位不影响合法性。
+        /// </summary>
+        private string? ReorderBlocked(GameState s, BattleState b, BattleCommand c, SkillNodeConfig n)
+        {
+            var a = c.AllyTarget;
+            if (a == null) return $"请先点要交换站位的第一名友方（可以是{Who(s)}自己）";
+            if (!AllyInBattle(b, a)) return $"{ActorDisplayName(s, a)}不在场上（不能选空位、倒下或候补的人）";
+            if (c.AllyTargetPos is int pa && pa != AllyPos(b, a)) return $"{ActorDisplayName(s, a)}的号位已变化（{PosName(pa)}→{PosName(AllyPos(b, a))}），请重新选择";
+            var partners = ReorderPartners(b, a);
+            if (partners.Count == 0) return $"{ActorDisplayName(s, a)}（{PosName(AllyPos(b, a))}）两侧没有相邻的存活友方，不能整队（不跨空位找更远的人）";
+            var bb = c.AllyTarget2;
+            if (bb == null) return $"再点与{ActorDisplayName(s, a)}相邻的一名友方（{string.Join("或", partners.Select(o => $"{ActorDisplayName(s, o)}·{PosName(AllyPos(b, o))}"))}）";
+            if (bb == a) return "两个目标不能是同一人";
+            if (!AllyInBattle(b, bb)) return $"{ActorDisplayName(s, bb)}不在场上（不能选空位、倒下或候补的人）";
+            if (c.AllyTarget2Pos is int pb && pb != AllyPos(b, bb)) return $"{ActorDisplayName(s, bb)}的号位已变化（{PosName(pb)}→{PosName(AllyPos(b, bb))}），请重新选择";
+            if (!partners.Contains(bb)) return $"{ActorDisplayName(s, bb)}（{PosName(AllyPos(b, bb))}）与{ActorDisplayName(s, a)}（{PosName(AllyPos(b, a))}）不相邻，{n.Name}只能交换相邻的两人";
             return null;
         }
 

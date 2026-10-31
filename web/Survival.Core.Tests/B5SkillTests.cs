@@ -73,7 +73,7 @@ public class B5SkillTests : BattleTestBase
         Enemy(s, 1).Hp = 50;
         Assert.That(Cmd(s, "basic_attack", 1).Ok, Is.True);
         Assert.That(s.Skills["axe"].Xp, Is.EqualTo(0), "满级攻击命中不再加经验");
-        Assert.That(s.Battle!.Enemies[0].XpHits["axe"], Is.EqualTo(1), "防刷计数照记");
+        Assert.That(AttackXpKeys.Hits(s.Battle!.Enemies[0].ActorXpHits, GameState.PlayerId, "axe"), Is.EqualTo(1), "防刷计数照记");
     }
 
     [Test]

@@ -178,7 +178,17 @@ namespace Survival.Core.Engine
                     Action = id, Label = n.Name, Group = id == BasicAttack ? "attack" : "move", Ap = n.Ap, Energy = SkillEnergy(s, n, w),
                     NeedsTarget = mode is "single" or "pair" or "suffix", TargetMode = mode, NodeId = n.Id, CooldownRounds = n.CooldownRounds, EffectText = n.Text,
                 };
-                if (inBattle && b != null && TargetsAlly(x) && AllyCount(b) > 1)
+                if (inBattle && b != null && x.Reorder && AllyCount(b) > 1)
+                {
+                    // 整队（Q105）：先点友方 A（可选自己），再点与 A 相邻的友方 B，确认后提交；AllyTargets 为可作 A 的成员
+                    opt.TargetMode = "ally_pair";
+                    foreach (var a in AllyTargetsOf(s, b, x))
+                        if (CommandBlocked(s, new BattleCommand { Action = id, AllyTarget = a, AllyTarget2 = ReorderPartners(b, a).First() }) == null) opt.AllyTargets.Add(a);
+                    opt.Reason = opt.AllyTargets.Count > 0 ? null
+                        : CommandBlocked(s, new BattleCommand { Action = id, AllyTarget = b.FocusId, AllyTarget2 = ReorderPartners(b, b.FocusId).FirstOrDefault() });
+                    if (opt.AllyTargets.Count == 0 && opt.Reason == null) opt.Reason = "没有相邻的两名存活友方可交换";
+                }
+                else if (inBattle && b != null && TargetsAlly(x) && AllyCount(b) > 1)
                 {
                     // B9a：多人时指挥/医疗/保护点我方成员当目标（单人仍按自用就近确认）
                     opt.TargetMode = "ally";
@@ -453,7 +463,8 @@ namespace Survival.Core.Engine
             var lv = SkillLevel(s, sp.Weapon.SkillId);
             p.Notes.Add($"{SkillName(sp.Weapon.SkillId)}{lv}级：伤害×{Fmt.T(SkillDamageFactor(lv))}，命中能力+{Fmt.T(SkillAccuracyBonus(lv))}；" +
                 (SkillMaxed(s, sp.Weapon.SkillId) ? XpText(s, sp.Weapon.SkillId, 0)
-                    : $"每命中一个目标+{Config.Xp.DamagingAttackCommand}经验（含被护甲挡住的命中，同一指令多段只计1次，每个敌人每技能最多{Config.Xp.MaxHitsPerEncounterEnemySkill}次）"));
+                    : $"每命中一个目标+{Config.Xp.DamagingAttackCommand}经验（含被护甲挡住的命中，同一指令多段只计1次，{Who(s)}对每个敌人每门最多{Config.Xp.MaxHitsPerEncounterEnemySkill}次，每人各自计、不与队友共用" +
+                      (targets.Count == 1 ? $"；对{EnemyName(targets[0])}还可计{AttackXpLeft(s, targets[0], sp.Weapon.SkillId)}次" : "") + "）"));
             var fl = sp.DamageFactor > 0 && sp.Weapon.DamageMax > 0 ? FlatAttack(s) : 0;
             if (fl > 0) p.Notes.Add($"词条攻击力+{Fmt.T(fl)}：在技能/熟练/暴击/增益乘算后、扣护甲前平加（不被倍率放大），同一目标每条指令只加在第一下命中{(sp.Hits > 1 ? "（下方区间按第一下；第二下不再加）" : "")}，防御再×{Fmt.T(Config.CombatMath.GuardFactor)}");
             if (p.Targets.FirstOrDefault(x => x.RawDamageBuff > Config.CombatMath.DamageBuffKnee + 1e-9) is BattleTargetPreview hb)
@@ -624,23 +635,37 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 攻击经验（A06 §3、R01 §3）：逐命中目标计——每个命中且该目标该门未满 3 次的目标各 +2（含护甲全抵的 0 伤、无伤控制命中），
-        /// 同一指令多段对同目标只计 1 次；计数随 worldEnemyId 保存，撤退、巡游、换 encounterId 都不重置。返回日志后缀。
+        /// 攻击经验（A06 §3、R01 §3；Q104 选 B）：逐命中目标计——每个命中且“本人对该目标该门”未满 3 次的目标各 +2（含护甲全抵的 0 伤、无伤控制命中），
+        /// 同一指令多段对同目标只计 1 次；计数键 actorId+worldEnemyId+门类，每人独立、队友互不占用，反击/迎击与主动攻击共用本人额度；
+        /// 随 worldEnemyId 保存，撤退、巡游、换 encounterId、换队都不重置。旧全队共享账（XpHits）不再增加。经验只给实际出手者。返回日志后缀。
         /// </summary>
         private string AttackXp(GameState s, string skill, IEnumerable<BattleEnemy> hitTargets)
         {
             var gained = 0;
+            var me = MeId(s);
+            var key = AttackXpKeys.Key(me, skill);
             foreach (var t in hitTargets.Distinct())
             {
-                t.XpHits.TryGetValue(skill, out var hits);
+                var we = FindWorldEnemy(s, t.WorldId);
+                // 世界敌人与在途副本是同一逻辑计数：取较大者，防一份落后拷贝恢复额度
+                var hits = Math.Max(AttackXpKeys.Hits(t.ActorXpHits, me, skill), we == null ? 0 : AttackXpKeys.Hits(we.ActorXpHits, me, skill));
                 if (hits >= Config.Xp.MaxHitsPerEncounterEnemySkill) continue;
-                t.XpHits[skill] = hits + 1;
-                if (FindWorldEnemy(s, t.WorldId) is WorldEnemy we) we.XpHits[skill] = hits + 1;
+                t.ActorXpHits[key] = hits + 1;
+                if (we != null) we.ActorXpHits[key] = hits + 1;
                 if (SkillMaxed(s, skill)) continue;      // Lv10 停止获取该门经验（A06 §1）；计数照记
                 GainXp(s, skill, Config.Xp.DamagingAttackCommand);
                 gained += Config.Xp.DamagingAttackCommand;
             }
             return gained > 0 ? $"；{SkillName(skill)}经验+{gained}" : "";
+        }
+
+        /// <summary>Q104：当前视角成员对这个敌人这一门还能计几次攻击经验（每人独立 3 次）。</summary>
+        public int AttackXpLeft(GameState s, BattleEnemy t, string skill)
+        {
+            var me = MeId(s);
+            var we = FindWorldEnemy(s, t.WorldId);
+            var hits = Math.Max(AttackXpKeys.Hits(t.ActorXpHits, me, skill), we == null ? 0 : AttackXpKeys.Hits(we.ActorXpHits, me, skill));
+            return Math.Max(0, Config.Xp.MaxHitsPerEncounterEnemySkill - hits);
         }
 
         /// <summary>技能附带状态（命中后；需控制的再判控制，R03 §4）。</summary>

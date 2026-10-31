@@ -505,13 +505,13 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(s.CurrentLocation, Is.EqualTo("field"), "回当前地块，不传回营地");
         Assert.That(s.WorldEnemies.Single().Id, Is.EqualTo(wid), "死敌不复生");
         Assert.That(s.WorldEnemies.Single().Hp, Is.EqualTo(Enemy2Hp(hurt, s)).Within(1e-9));
-        Assert.That(s.WorldEnemies.Single().XpHits["blade"], Is.EqualTo(1), "经验计数随 worldEnemyId 保存");
+        Assert.That(AttackXpKeys.Hits(s.WorldEnemies.Single().ActorXpHits, GameState.PlayerId, "blade"), Is.EqualTo(1), "经验计数随 worldEnemyId 保存");
         Assert.That(s.Items.Count(i => i.Owner == "field" && i.ItemId is "cloth" or "scrap"), Is.EqualTo(0), "撤退不领取掉落");
         Assert.That(s.EncounterGraceUntil, Is.EqualTo(s.GameMinute + 60));
         // 主动重进：同一实例、HP 保留
         Assert.That(E.Approach(s, wid).Ok, Is.True, "保护期不挡主动接敌");
         Assert.That(s.Battle!.Enemies.Single().Hp, Is.EqualTo(s.WorldEnemies.Single().Hp));
-        Assert.That(s.Battle.Enemies.Single().XpHits["blade"], Is.EqualTo(1));
+        Assert.That(AttackXpKeys.Hits(s.Battle.Enemies.Single().ActorXpHits, GameState.PlayerId, "blade"), Is.EqualTo(1));
     }
 
     private static double Enemy2Hp(double hurt, GameState s) => hurt;

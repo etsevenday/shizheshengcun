@@ -13391,7 +13391,8 @@
       "id": "command_03",
       "type": "ally",
       "targetMode": "ally",
-      "needsAllies": true
+      "needsAllies": true,
+      "reorder": true
     },
     {
       "id": "command_05",

@@ -76,7 +76,7 @@ namespace Survival.Core.Engine
 
         // ───────────── 非攻击技能：能否执行 ─────────────
 
-        private static string NeedAlliesReason(SkillNodeConfig n) => $"只有你一人在场，没有可{(n.Id.StartsWith("shield") ? "保护" : n.Id == "command_03" ? "交换站位" : "协同")}的队友（队友参战在后续版本）";
+        private static string NeedAlliesReason(SkillNodeConfig n) => $"只有你一人在场，没有可{(n.Id.StartsWith("shield") ? "保护" : n.Id == "command_03" ? "交换站位" : "协同")}的队友";
 
         /// <summary>医疗技能缺的随身物资（只取本人随身、未变质的；地面/营区的不能在战斗中用）。</summary>
         private string? MissingMedicalItem(GameState s, SkillExecConfig x)
@@ -171,7 +171,8 @@ namespace Survival.Core.Engine
         /// <summary>非攻击技能的战外条件（系统说明）：需要队友、随身物资、弹仓。</summary>
         private string? NonAttackStaticReason(GameState s, SkillNodeConfig n, SkillExecConfig x, WeaponConfig w, ItemInstance? wi)
         {
-            if (x.NeedsAllies) return NeedAlliesReason(n);
+            // B10a 修 B9a 遗留：多人时保护/掩护/协同/整队不再被“只有你一人在场”结构性原因挡住（战斗中按在场人数，战斗外按同行人数）
+            if (x.NeedsAllies && (s.Battle != null ? AllyCount(s.Battle) <= 1 : s.Party.Count <= 1)) return NeedAlliesReason(n);
             if (x.Type == "medical") return MissingMedicalItem(s, x);
             if (x.Type == "reload" && wi != null && w.UsesMagazine)
                 return wi.LoadedAmmo >= w.MagazineCapacity ? "弹仓已满" : CarriedCount(s, w.AmmoId!) <= 0 ? $"随身没有{ItemName(w.AmmoId!)}" : null;
@@ -215,7 +216,21 @@ namespace Survival.Core.Engine
                     break;
                 case "ally":
                     if (x.NeedsAllies && solo) p.Notes.Add(NeedAlliesReason(n));
-                    else if (AllySkillNotDone(x)) p.Notes.Add($"{n.Name}（目标与相邻友方交换站位）多人战斗里还没做（开发计划 B9a.4）");
+                    else if (x.Reorder)
+                    {
+                        // 整队（Q105）：两次点选只做预览，不扣费/冷却/耐久、不抽随机、不改站位；选齐后写 A/B 姓名与前后槽号和施术成本，确认才提交
+                        var ra = c.AllyTarget;
+                        var rb = c.AllyTarget2;
+                        if (ra != null && rb != null && AllyInBattle(b, ra) && AllyInBattle(b, rb))
+                        {
+                            int pa = AllyPos(b, ra), pb = AllyPos(b, rb);
+                            p.EffectText = $"整队：{ActorDisplayName(s, ra)} {PosName(pa)}→{PosName(pb)}，{ActorDisplayName(s, rb)} {PosName(pb)}→{PosName(pa)}";
+                            p.Notes.Insert(0, p.EffectText);
+                        }
+                        else p.Notes.Add(ra == null ? "先点要交换的第一名友方A（可以是自己），再点与A相邻的友方B，然后确认" : $"已选{ActorDisplayName(s, ra)}（{PosName(AllyPos(b, ra))}）；再点与他相邻的一名友方");
+                        p.Notes.Add($"由{Who(s)}付一次成本（{n.Ap}AP、体力、冷却{n.CooldownRounds}轮{(wi?.Durability != null ? $"、{w.Name}耐久−1" : "")}），两人不另付调整站位费；只交换号位，不多激活、不改行动顺序、不改战前编队；换位无经验，也不触发架矛迎击");
+                        p.Notes.Add("交换后两人的技能仍按真实号位判断（可能暂时站在不适合自己武器的号位）");
+                    }
                     else if (x.Protect || x.ApBonus > 0)
                     {
                         var pt = AllyTargetOf(b, c, x);
@@ -337,6 +352,19 @@ namespace Survival.Core.Engine
                         else parts.Add("已在4号位，原地挣脱");
                     }
                     break;
+                case "ally" when x.Reorder:
+                {
+                    // 整队（command_03，Q105 选 A）：已在 CommandBlocked 里按稳定 actorId 与槽快照重验，这里一次原子交换两真实槽；
+                    // 成本只由施术者付一次（AP 已扣、体力与冷却在上方），成功有效指挥器具磨 1；不多激活、不改队列/预设、无经验、不触发架矛
+                    var ra = c.AllyTarget!;
+                    var rb = c.AllyTarget2!;
+                    int pa = AllyPos(b, ra), pb = AllyPos(b, rb);
+                    MoveAlly(b, pa, pb);
+                    parts.Add($"{ActorDisplayName(s, ra)}{PosName(pa)}→{PosName(pb)}，{ActorDisplayName(s, rb)}{PosName(pb)}→{PosName(pa)}");
+                    if (wi?.Durability != null) parts.Add(Wear(wi, 1));
+                    parts.Add("换位无经验");
+                    break;
+                }
                 case "ally":
                 {
                     var effective = false;
@@ -508,12 +536,13 @@ namespace Survival.Core.Engine
         /// 反应攻击此刻能否出手（Q82：来源页武器按当前真实己位/射程重验）：耐久、使用位、目标位。不能出手为原因，否则 null。
         /// 不能出手时不扣反应次数（无合法反应目标不白扣），架势按原期限继续。
         /// </summary>
-        private string? ReactionBlocked(GameState s, BattleState b, int page, BattleEnemy t)
+        private string? ReactionBlocked(GameState s, BattleState b, int page, BattleEnemy t, int? targetPos = null)
         {
             var it = WeaponOnPage(s, page, out var w);
+            var tp = targetPos ?? t.Pos;
             if (it != null && !HasWear(it, Config.Wear.PerExecutedAttackCommand)) return $"{w.Name}耐久不足";
             if (!OwnPositionsOf(w).Contains(PlayerPos(b))) return $"{w.Name}要在我方{PosList(OwnPositionsOf(w))}（{Who(s)}在{PosName(PlayerPos(b))}）";
-            if (!TargetPositionsOf(w).Contains(t.Pos)) return $"够不到{EnemyName(t)}（{PosName(t.Pos)}）";
+            if (!TargetPositionsOf(w).Contains(tp)) return $"够不到{EnemyName(t)}（{PosName(tp)}）";
             return null;
         }
 
@@ -555,13 +584,17 @@ namespace Survival.Core.Engine
             ReactionStrike(s, b, b.CounterPage, f, attacker, "反击");
         }
 
-        /// <summary>架矛：敌人主动前移后迎击（每次合法迎击消耗 1 次；够不到不扣次数；次数用完或下次正常激活开始清除）。</summary>
+        /// <summary>
+        /// 架矛（Q103 最终补充，R03/A06 本轮章）：一次敌人主动前移/迫近事件，从我方真实号位小到大检查在场存活者，跳过没有架矛、
+        /// 次数用尽或来源页/己位/射程/耐久不合法的，由第一名全部合法者迎击一次、只扣他自己 1 次；前者不合法可顺延后排。
+        /// 同一事件最多一次迎击（击中、未中、敌死都不再递补第二人）；整场无人合法时不出手、不扣任何次数。
+        /// Q87 补位与跟进是两件独立事件，各自调用一次、分别重验。
+        /// </summary>
         private void TryBrace(GameState s, BattleState b, BattleEnemy mover)
         {
-            // B9a（B8d-1 多人口径）：在场每名架着矛的我方各自按自己的来源页、号位、射程、耐久与剩余次数重验，合法就各迎击一次（号位从前到后）
+            if (s.Battle == null || s.Progress.Dead || !mover.Alive) return;
             foreach (var id in AlliesOnField(b))
             {
-                if (s.Battle == null || s.Progress.Dead || !mover.Alive) return;
                 if (b.Fighter(id).BraceCharges <= 0) continue;
                 using (FocusOn(s, id))
                 {
@@ -569,7 +602,23 @@ namespace Survival.Core.Engine
                     b.BraceCharges--;
                     ReactionStrike(s, b, b.BracePage, b.BraceFactor, mover, "迎击");
                 }
+                return;
             }
+        }
+
+        /// <summary>
+        /// Q103/Q97 提示与执行同源（只读、不抽随机、不扣次数）：敌人在 moverPos（缺省为当前号位）发生一次主动前移/迫近时，
+        /// 按号位从前到后第一名有有效架矛且来源页/己位/射程/耐久都合法的我方；没有为 null。执行前仍按当时状态重验。
+        /// </summary>
+        public string? BraceResponder(GameState s, BattleState b, BattleEnemy mover, int? moverPos = null)
+        {
+            foreach (var id in AlliesOnField(b))
+            {
+                if (b.Fighter(id).BraceCharges <= 0) continue;
+                using (FocusOn(s, id))
+                    if (ReactionBlocked(s, b, b.BracePage, mover, moverPos) == null) return id;
+            }
+            return null;
         }
     }
 }

@@ -171,7 +171,7 @@ public class B7CombatTests : BattleTestBase
         Force(s, Below(0.5), AtLeast(0.9), Any(), Below(0.5), AtLeast(0.9), Any());
         Assert.That(Cmd(s, "unarmed_10", 1).Ok, Is.True);
         Assert.That(s.Battle.Log.Last(), Does.Contain("第1击").And.Contain("第2击"));
-        Assert.That(Enemy(s, 1).XpHits["unarmed"], Is.EqualTo(1), "连拳对同一目标只计1次");
+        Assert.That(AttackXpKeys.Hits(Enemy(s, 1).ActorXpHits, GameState.PlayerId, "unarmed"), Is.EqualTo(1), "连拳对同一目标只计1次");
 
         var p = Fight(706, "feral_dog", "feral_dog", "feral_dog");
         Ready(p);
@@ -184,7 +184,7 @@ public class B7CombatTests : BattleTestBase
         Assert.That(E.PreviewCommand(p, BattleCommand.Of("spear_07", 1)).Targets.Select(t => t.Slot), Is.EqualTo(new[] { "1", "2", "3" }), "点1号位打1—3");
         Force(p, Below(0.5), AtLeast(0.9), Any(), Below(0.5), AtLeast(0.9), Any());
         Assert.That(Cmd(p, "spear_07", 2).Ok, Is.True);
-        Assert.That(Enemy(p, 2).XpHits["spear"] + Enemy(p, 3).XpHits["spear"], Is.EqualTo(2), "群攻不同目标独立计");
+        Assert.That(AttackXpKeys.Hits(Enemy(p, 2).ActorXpHits, GameState.PlayerId, "spear") + AttackXpKeys.Hits(Enemy(p, 3).ActorXpHits, GameState.PlayerId, "spear"), Is.EqualTo(2), "群攻不同目标独立计");
     }
 
     [Test]

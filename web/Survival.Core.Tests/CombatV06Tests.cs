@@ -926,7 +926,7 @@ public class CombatV06Tests : BattleTestBase
         Cmd(s, "retreat");
         Assert.That(s.Battle, Is.Null);
         Assert.That(w.Hp, Is.EqualTo(hp).Within(1e-9), "撤退后HP保留");
-        Assert.That(w.XpHits["axe"], Is.EqualTo(1));
+        Assert.That(AttackXpKeys.Hits(w.ActorXpHits, GameState.PlayerId, "axe"), Is.EqualTo(1));
         // 巡游走到别处再走回来：同一实例
         w.LocationId = "stream";
         w.LocationId = "field";
@@ -935,7 +935,7 @@ public class CombatV06Tests : BattleTestBase
         E.Engage(s);
         Assert.That(s.Battle!.Enemies[0].WorldId, Is.EqualTo(w.Id));
         Assert.That(s.Battle.Enemies[0].Hp, Is.EqualTo(hp).Within(1e-9), "换 encounterId 也不刷满血");
-        Assert.That(s.Battle.Enemies[0].XpHits["axe"], Is.EqualTo(1), "经验计数不重置");
+        Assert.That(AttackXpKeys.Hits(s.Battle.Enemies[0].ActorXpHits, GameState.PlayerId, "axe"), Is.EqualTo(1), "经验计数不重置");
     }
 
     /// <summary>R615（战斗部分）：战斗每轮只推进一次 tick，体力自然率0，只付招式成本，不双扣采集消耗。</summary>

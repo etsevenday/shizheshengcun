@@ -298,7 +298,7 @@ namespace Survival.Core.Engine
         public bool IntentOutOfReach(BattleState b, BattleEnemy e) => e.Alive && e.Intent is not ("flee" or "watch") && PlanFor(b, e, StepOf(e)) != ReachPlan.Execute;
 
         /// <summary>敌卡上显示的意图（与实际执行同源）：够不到时写“前移1位后抓击 …”“前移1位（在4号位够不到）”“弱攻击 …”。</summary>
-        public string IntentShown(BattleState b, BattleEnemy e)
+        public string IntentShown(BattleState b, BattleEnemy e, GameState? s = null)
         {
             // 文字每次按锁定的意图与当前状态重算（弹仓/备弹实时；旧档存的文字不再直接显示，显示与执行同源，试玩修复 M150 BUG3/BUG4）
             if (!e.Alive || e.Intent is "flee" or "watch") return IntentLabel(e, b);
@@ -330,8 +330,8 @@ namespace Survival.Core.Engine
                     var (own, tgt) = SlotsOf(cfg, st);
                     return $"防御（够不到目标：{verb}要在{PosList(own)}打{PosList(tgt)}，它在{e.Pos}号位{(own.Contains(e.Pos) ? "，目标位里没有我方" : "")}，不能前移或迫近时只防御）";
                 }
-                case ReachPlan.Approach: return $"迫近{FrontName(b)}（{PosName(FrontPos(b))}，{ApproachBraceTag(b)}）→弱近袭 {Range(cfg, ea.DamageFactor)}（{ea.ApproachAp}+{ea.PlainAttackAp}AP，不咬不控）";
-                case ReachPlan.AdvanceThenApproach: return $"{lead}前移到{e.Pos - 1}号位，再迫近{FrontName(b)}（{PosName(FrontPos(b))}，{ApproachBraceTag(b)}）→弱近袭 {Range(cfg, ea.DamageFactor)}（共{1 + ea.TotalAp}AP，不咬不控）";
+                case ReachPlan.Approach: return $"迫近{FrontName(b)}（{PosName(FrontPos(b))}，{ApproachBraceTag(s, b, e, e.Pos)}）→弱近袭 {Range(cfg, ea.DamageFactor)}（{ea.ApproachAp}+{ea.PlainAttackAp}AP，不咬不控）";
+                case ReachPlan.AdvanceThenApproach: return $"{lead}前移到{e.Pos - 1}号位，再迫近{FrontName(b)}（{PosName(FrontPos(b))}，{ApproachBraceTag(s, b, e, e.Pos - 1)}）→弱近袭 {Range(cfg, ea.DamageFactor)}（共{1 + ea.TotalAp}AP，不咬不控）";
             }
             return IntentLabel(e, b);
         }
@@ -342,8 +342,15 @@ namespace Survival.Core.Engine
         /// </summary>
         public static bool BraceActive(BattleState b) => MemberIds(b).Any(id => AllyInBattle(b, id) && b.Fighter(id).BraceCharges > 0);
 
-        /// <summary>Q97：迫近意图的括注——架矛生效写“触发架矛”，否则写“算主动前移”（迫近照旧算一次主动前移，只改显示）。</summary>
+        /// <summary>Q97：迫近意图的括注——架矛生效写“触发架矛”，否则写“算主动前移”（迫近照旧算一次主动前移，只改显示）。旧接口：只看架势次数。</summary>
         public static string ApproachBraceTag(BattleState b) => BraceActive(b) ? "触发架矛" : "算主动前移";
+
+        /// <summary>
+        /// Q103 最终补充（与 TryBrace 同源）：敌人在 pos 迫近时，按号位从前到后能找到合法迎击者（有架矛、次数、来源页己位/射程/耐久都合法）
+        /// 才写“触发架矛”，否则“算主动前移”；只读、不抽随机。没有 GameState 时退回只看架势次数。
+        /// </summary>
+        public string ApproachBraceTag(GameState? s, BattleState b, BattleEnemy e, int pos) =>
+            (s == null ? BraceActive(b) : BraceResponder(s, b, e, pos) != null) ? "触发架矛" : "算主动前移";
 
         /// <summary>迫近对象（我方最前的暴露者）的称呼与号位：主角为“你”（单人时与原文字相同），队友写名册名。</summary>
         private static string FrontName(BattleState b) => FrontmostAlly(b) is string f && f != GameState.PlayerId ? "最前的同伴" : "你";

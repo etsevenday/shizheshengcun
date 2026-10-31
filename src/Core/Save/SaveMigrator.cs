@@ -42,6 +42,7 @@ namespace Survival.Core.Save
         public const string Schema15 = "15";
         public const string Schema16 = "16";
         public const string Schema17 = "17";
+        public const string Schema18 = "18";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -73,6 +74,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema15) From15To16(s, config, notes);
             if (s.SchemaVersion == Schema16) From16To17(s, config, notes);
             if (s.SchemaVersion == Schema17) From17To18(s, config, notes);
+            if (s.SchemaVersion == Schema18) From18To19(s, config, notes);
             return notes;
         }
 
@@ -768,8 +770,76 @@ namespace Survival.Core.Save
                 a.ReserveMode = a.Stats.Wakefulness < care.EnterSleepWakefulnessBelow - 1e-9 || a.Stats.Energy < care.EnterSleepEnergyBelow - 1e-9 ? "sleep" : "rest";
             }
             foreach (var id in s.Party) if (s.Actors.TryGetValue(id, out var p)) p.ReserveMode = null;
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（候补自主照护）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema18}（候补自主照护）。" });
+            s.SchemaVersion = Schema18;
+        }
+
+        // ───────────────────────── 18 → 19 ─────────────────────────
+
+        /// <summary>
+        /// Q104 选 B + 旧档补充选 A（A06/R03/S01 本轮章）：攻击经验计数从“每世界敌每门全队共享”改为“每人每世界敌每门独立 3 次”。
+        /// 冻结“当时名册 actorId（含已死亡）+ 主角”快照；每个当时存在的世界敌人（及只在在途战斗里的敌人）每门旧共享已用次数 h（合法整数 0—3，
+        /// 世界与在途副本逐门取大）给快照里每人继承为个人已用次数；已有的个人计数优先保留不被覆盖（幂等）。不补发、不倒扣历史经验；
+        /// 旧账保留作来源证据、此后不再参与计数。进行中战斗的位置、队列、生命与随机计划不动。
+        /// </summary>
+        private static void From18To19(GameState s, GameConfig config, List<string> notes)
+        {
+            MigrateAttackXp(s, config);
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（攻击经验次数改为每人各自计）。" });
             s.SchemaVersion = GameState.CurrentSchema;
+        }
+
+        /// <summary>Q104 旧共享攻击经验计数一次迁移（幂等：已有快照不重冻、已有个人计数不覆盖）。测试可直接调用。</summary>
+        public static void MigrateAttackXp(GameState s, GameConfig config)
+        {
+            var cap = Math.Max(0, config.Xp.MaxHitsPerEncounterEnemySkill);
+            var roster = s.AttackXpLegacyRoster;
+            if (roster == null)
+            {
+                roster = new List<string> { GameState.PlayerId };
+                foreach (var r in s.Roster) if (!string.IsNullOrEmpty(r.ActorId) && !roster.Contains(r.ActorId)) roster.Add(r.ActorId);
+                s.AttackXpLegacyRoster = roster;
+            }
+            int Legal(int h) => Math.Max(0, Math.Min(cap, h));
+            // 逐世界敌 ID 汇总旧共享账（世界与在途副本逐门取大）
+            var legacy = new Dictionary<int, Dictionary<string, int>>();
+            void Collect(int id, Dictionary<string, int>? hits)
+            {
+                if (hits == null) return;
+                if (!legacy.TryGetValue(id, out var m)) legacy[id] = m = new Dictionary<string, int>();
+                foreach (var kv in hits) m[kv.Key] = Math.Max(m.TryGetValue(kv.Key, out var o) ? o : 0, Legal(kv.Value));
+            }
+            foreach (var w in s.WorldEnemies) Collect(w.Id, w.XpHits);
+            if (s.Battle != null) foreach (var e in s.Battle.Enemies) Collect(e.WorldId, e.XpHits);
+            void Apply(int id, Dictionary<string, int> personal)
+            {
+                if (!legacy.TryGetValue(id, out var m)) return;
+                foreach (var kv in m)
+                {
+                    if (kv.Value <= 0) continue;
+                    foreach (var actor in roster)
+                    {
+                        var key = AttackXpKeys.Key(actor, kv.Key);
+                        if (!personal.ContainsKey(key)) personal[key] = kv.Value;   // 已有个人计数优先保留
+                    }
+                }
+            }
+            foreach (var w in s.WorldEnemies) { w.ActorXpHits ??= new Dictionary<string, int>(); Apply(w.Id, w.ActorXpHits); }
+            if (s.Battle != null)
+                foreach (var e in s.Battle.Enemies) { e.ActorXpHits ??= new Dictionary<string, int>(); Apply(e.WorldId, e.ActorXpHits); }
+            // 世界与在途副本的个人账逐键取大，避免一份落后拷贝恢复额度
+            if (s.Battle != null)
+                foreach (var e in s.Battle.Enemies)
+                {
+                    var w = s.WorldEnemies.FirstOrDefault(x => x.Id == e.WorldId);
+                    if (w == null) continue;
+                    foreach (var k in e.ActorXpHits.Keys.Union(w.ActorXpHits.Keys).ToList())
+                    {
+                        var v = Math.Max(e.ActorXpHits.TryGetValue(k, out var a) ? a : 0, w.ActorXpHits.TryGetValue(k, out var bb) ? bb : 0);
+                        e.ActorXpHits[k] = v;
+                        w.ActorXpHits[k] = v;
+                    }
+                }
         }
 
         private static void ClearAction(GameState s, ActionState a)

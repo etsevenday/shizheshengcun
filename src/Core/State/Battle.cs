@@ -20,8 +20,16 @@ namespace Survival.Core.State
         /// <summary>狼/鹿逃离却没有合法相邻空位时，原地隐藏到此刻（不可见、不接敌、不巡游）。</summary>
         public int? HiddenUntil { get; set; }
         public int SpawnMinute { get; set; }
-        /// <summary>反刷：每个技能对该敌人已计入经验的命中次数（最多 3 次，撤退、巡游、重接都不重置）。</summary>
+        /// <summary>
+        /// 旧全队共享反刷账：每个技能对该敌人已计入经验的命中次数（schema 18 及以前使用）。Q104（schema 19）起只作迁移来源证据保留，
+        /// 不再增加、也不参与新计数；新计数见 ActorXpHits。
+        /// </summary>
         public Dictionary<string, int> XpHits { get; set; } = new Dictionary<string, int>();
+        /// <summary>
+        /// Q104 选 B（A06 §3、R03/S01 本轮章，schema 19）：每名角色对该敌人每门已计入经验的命中次数，键 "actorId|skillId"（AttackXpKeys.Key），
+        /// 每人每门最多 3 次，撤退、巡游、换队、读档都不重置；队友互不占用。
+        /// </summary>
+        public Dictionary<string, int> ActorXpHits { get; set; } = new Dictionary<string, int>();
         /// <summary>受惊随机数 u 与生成的世界分钟（R03 §2.1：60 游戏分钟内再入战复用同一个 u，防撤退重接刷受惊）。</summary>
         public double FearRoll { get; set; }
         public int? FearRollMinute { get; set; }
@@ -30,8 +38,18 @@ namespace Survival.Core.State
         {
             var c = (WorldEnemy)MemberwiseClone();
             c.XpHits = new Dictionary<string, int>(XpHits);
+            c.ActorXpHits = new Dictionary<string, int>(ActorXpHits);
             return c;
         }
+    }
+
+    /// <summary>Q104 个人攻击经验计数的键（"actorId|skillId"）与读取。</summary>
+    public static class AttackXpKeys
+    {
+        public static string Key(string actorId, string skillId) => actorId + "|" + skillId;
+
+        public static int Hits(Dictionary<string, int> map, string actorId, string skillId) =>
+            map.TryGetValue(Key(actorId, skillId), out var h) ? h : 0;
     }
 
     /// <summary>探索/清理完成后发现的敌踪（v0.6 §15）：等待玩家选“接敌”或“绕行10分钟”。敌人是同地已有实例，不另造。</summary>
@@ -94,8 +112,10 @@ namespace Survival.Core.State
         public double PursuitProgress { get; set; }
         /// <summary>同速排序用的本局锁定随机数 u（入场时抽一次，读档不重抽）。</summary>
         public double TieRoll { get; set; }
-        /// <summary>各技能已计入经验的命中次数（入战时从世界实例拷入，随时写回；死亡后仍用于本次指令判断）。</summary>
+        /// <summary>旧全队共享反刷账（入战时从世界实例拷入）；Q104（schema 19）起只作迁移来源，不再增加、不参与新计数。</summary>
         public Dictionary<string, int> XpHits { get; set; } = new Dictionary<string, int>();
+        /// <summary>Q104：每名角色每门已计入经验的命中次数（键 "actorId|skillId"；入战时从世界实例拷入，随时写回；死亡后仍用于本次指令判断）。</summary>
+        public Dictionary<string, int> ActorXpHits { get; set; } = new Dictionary<string, int>();
 
         // ───── B7 技能附带状态（R03 §4）与 A09 敌人意图（R26） ─────
         /// <summary>破甲：护甲−ArmorBreak 到 ArmorBreakUntilRound 轮末（最低 0）；同名取强。</summary>
@@ -141,6 +161,7 @@ namespace Survival.Core.State
         {
             var c = (BattleEnemy)MemberwiseClone();
             c.XpHits = new Dictionary<string, int>(XpHits);
+            c.ActorXpHits = new Dictionary<string, int>(ActorXpHits);
             return c;
         }
     }

@@ -410,7 +410,7 @@ namespace Survival.Core.Engine
             foreach (var w in joined)
             {
                 w.Engaged = true;
-                b.Enemies.Add(InitBattleEnemy(new BattleEnemy { WorldId = w.Id, Index = k + 1, EnemyId = w.EnemyId, Slot = (k + 1).ToString(), Hp = w.Hp, Hostile = w.Hostile, XpHits = new Dictionary<string, int>(w.XpHits), JoinRound = 1 }));
+                b.Enemies.Add(InitBattleEnemy(new BattleEnemy { WorldId = w.Id, Index = k + 1, EnemyId = w.EnemyId, Slot = (k + 1).ToString(), Hp = w.Hp, Hostile = w.Hostile, XpHits = new Dictionary<string, int>(w.XpHits), ActorXpHits = new Dictionary<string, int>(w.ActorXpHits), JoinRound = 1 }));
                 k++;
             }
 
@@ -1518,7 +1518,7 @@ namespace Survival.Core.Engine
             var slot = at.ToString();
             cand.Engaged = true;
             var idx = b.Enemies.Count == 0 ? 1 : b.Enemies.Max(e => e.Index) + 1;
-            b.Enemies.Add(InitBattleEnemy(new BattleEnemy { WorldId = cand.Id, Index = idx, EnemyId = cand.EnemyId, Slot = slot, Hp = cand.Hp, Hostile = true, XpHits = new Dictionary<string, int>(cand.XpHits), TieRoll = s.Rng.NextDouble(), JoinRound = b.Round }));
+            b.Enemies.Add(InitBattleEnemy(new BattleEnemy { WorldId = cand.Id, Index = idx, EnemyId = cand.EnemyId, Slot = slot, Hp = cand.Hp, Hostile = true, XpHits = new Dictionary<string, int>(cand.XpHits), ActorXpHits = new Dictionary<string, int>(cand.ActorXpHits), TieRoll = s.Rng.NextDouble(), JoinRound = b.Round }));
             LockIntent(s, b, b.Enemies[b.Enemies.Count - 1]);
             BattleLog(s, $"枪声引来了{_enemies[cand.EnemyId].Name}（{PosName(int.Parse(slot))}）。");
         }
