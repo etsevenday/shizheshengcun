@@ -262,7 +262,7 @@ namespace Survival.Core.Engine
                     }
                     p.Notes.Add("产物先放在当前地点地面，不会自动拾取");
                     p.XpGains.Add(GatherXpPreview(s, res));
-                    p.ConfirmText = res.IsCache ? "开始搜集" : "开始采集";
+                    p.ConfirmText = $"开始{GatherVerb(res)}";
                     break;
                 }
                 case ActionType.Craft:

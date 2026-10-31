@@ -105,6 +105,7 @@ else
                     <div><span>水量</span><b>@e.PotLabel(s, inst)</b></div>
                     <div><span>食材位</span><b>@foods.Count/@pc.FoodSlots</b></div>
                     <div><span>状态</span><b>@e.ContentStatus(s, inst)</b></div>
+                    @if (e.CookXpLine(s, inst) is string pcx) { <div><span>净化经验</span><b>@pcx</b></div> }
                 </div>
                 @if (liquids.Count == 0 && foods.Count == 0)
                 {
@@ -117,7 +118,7 @@ else
                 }
                 @foreach (var f in foods)
                 {
-                    <ItemRow Icon="@f.ItemId" Name="@($"{e.ItemName(f.ItemId)}#{f.InstanceId}")" Qty="×1" Status="@e.ContentStatus(s, f)" />
+                    <ItemRow Icon="@f.ItemId" Name="@($"{e.ItemName(f.ItemId)}#{f.InstanceId}")" Qty="×1" Status="@($"{e.ContentStatus(s, f)}{(e.CookXpLine(s, f) is string fcx ? " · " + fcx : "")}")" />
                 }
                 @if (inst.InFacility)
                 {
@@ -129,7 +130,8 @@ else
         else if (inst.InFacility || inst.InContainer)
         {
             <div class="pot-detail">
-                <div class="lines"><div><span>加工</span><b>@(inst.InContainer && e.IsLiquid(inst) ? e.ContentStatus(s, e.ContainerOf(s, inst) ?? inst) : e.ContentStatus(s, inst))</b></div></div>
+                <div class="lines"><div><span>加工</span><b>@(inst.InContainer && e.IsLiquid(inst) ? e.ContentStatus(s, e.ContainerOf(s, inst) ?? inst) : e.ContentStatus(s, inst))</b></div>
+                    @if (e.CookXpLine(s, inst) is string icx) { <div><span>烹饪经验</span><b>@icx</b></div> }</div>
                 @if (!e.IsLiquid(inst)) { <div class="risk none">取出：@e.TakeOutConsequenceOf(s, inst).Text</div> }
                 @if (cfg.Use != null && e.UseCookNote(s, inst) is string cookNote) { <div class="risk none">直接@(GameEngine.UseVerb(cfg))：@cookNote</div> }
             </div>

@@ -79,7 +79,8 @@
                             @onmouseenter="HoverSurvey" @onfocus="HoverSurvey" @onmouseleave="Unhover" @onblur="Unhover"
                             @onclick="Survey" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
                         <strong>@sv.Name · @(sv.BaseMinutes)分钟</strong>
-                        <small>练习不产物 · 今日@(e.SurveyDoneToday(s, LocationId))/@(sv.DailyPerActorNode)次@(surveyWhy != null && e.SurveyDoneToday(s, LocationId) < sv.DailyPerActorNode ? $" · {surveyWhy}" : "")</small>
+                        @* 1280 下小字会截断：今日次数放最前，“练习不产物”缩成“不产物”（B7b 试玩修复） *@
+                        <small>今日@(e.SurveyDoneToday(s, LocationId))/@(sv.DailyPerActorNode)次 · 不产物@(surveyWhy != null && e.SurveyDoneToday(s, LocationId) < sv.DailyPerActorNode ? $" · {surveyWhy}" : "")</small>
                     </button>
                 }
             </div>

@@ -70,7 +70,7 @@
             <span class="pc-sum-label">食材@(foods.Count)/@(c.FoodSlots)</span>
             @foreach (var (f, fp) in foodHeat)
             {
-                <span class="pc-sum-food @(e.IsSpoiled(s, f) ? "spoiled" : "")" title="@($"{e.ItemName(f.ItemId)}#{f.InstanceId}：{e.ContentStatus(s, f)}")">@Icons.Markup(f.ItemId)@if (fp != null) {<i style="width:@(Math.Min(100, fp.HeatDoneMinutes * 100 / Math.Max(1, fp.RequiredHeatMinutes)))%"></i>}</span>
+                <span class="pc-sum-food @(e.IsSpoiled(s, f) ? "spoiled" : "")" title="@($"{e.ItemName(f.ItemId)}#{f.InstanceId}：{e.ContentStatus(s, f)}{(e.CookXpLine(s, f) is string cx ? " · " + cx : "")}")">@Icons.Markup(f.ItemId)@if (fp != null) {<i style="width:@(Math.Min(100, fp.HeatDoneMinutes * 100 / Math.Max(1, fp.RequiredHeatMinutes)))%"></i>}</span>
             }
         </div>
     </div>
@@ -105,12 +105,13 @@ else
             var spoiled = e.IsSpoiled(s, f);
             var fname = $"{e.ItemName(f.ItemId)}#{fid}";
             <div class="pc-row food @(fsel ? "selected" : "") @(spoiled ? "spoiled" : "")" role="button" tabindex="0"
-                 title="@($"{fname} · {where}／{name}：{e.ContentStatus(s, f)}")"
+                 title="@($"{fname} · {where}／{name}：{e.ContentStatus(s, f)}{(e.CookXpLine(s, f) is string cx ? " · " + cx : "")}")"
                  @onclick="() => SelectFood(f)" @onclick:stopPropagation="true" @onkeydown="ev => Key(ev, () => SelectFood(f))" @onkeydown:stopPropagation="true">
                 <span class="pc-ico" data-drag="@($"potchild:{fid}")" data-drag-title="@fname" data-drag-from="@($"{where}／{name}")">@Icons.Markup(f.ItemId)</span>
                 <span class="pc-text">
                     <span class="pc-name">@fname</span>
                     <span class="pc-status">@e.ContentStatus(s, f)</span>
+                    @if (!spoiled && e.CookXpLine(s, f) is string fcx) { <span class="pc-status">@fcx</span> }
                     @if (p != null && !spoiled)
                     {
                         <span class="heat-track"><i style="width:@(Math.Min(100, p.HeatDoneMinutes * 100 / Math.Max(1, p.RequiredHeatMinutes)))%"></i></span>

@@ -57,6 +57,11 @@ namespace Survival.Core.Engine
         /// </summary>
         public static string GatherSkillOf(ResourceConfig res) => res.ProficiencyId ?? (res.IsCache ? Scavenging : Gathering);
 
+        /// <summary>按熟练归属的动词（B7b 试玩修复：废金属堆写“搜集”）：练搜集的“搜集”，其余“采集”。</summary>
+        public static string GatherVerb(ResourceConfig res) => GatherSkillOf(res) == Scavenging ? "搜集" : "采集";
+
+        private string GatherVerbOf(string? nodeId) => nodeId != null && _res.TryGetValue(nodeId, out var r) ? GatherVerb(r) : "采集";
+
         /// <summary>采集/搜集完成经验 clamp(2×ceil(原基础分钟/5),2,12)（Q55；工具/装备/节点折减不降低，用资源点原基础分钟）。</summary>
         public int FieldXp(ResourceConfig res)
         {
@@ -97,6 +102,7 @@ namespace Survival.Core.Engine
             var f = Config.Progression.FieldXp;
             var day = a.XpDay ?? Clock.Day(s.GameMinute);
             var n = BumpDaily(s, s.Player, DailyGather, res.NodeId, day, 1);
+            if (SkillMaxed(s, skill)) return XpText(s, skill, FieldXp(res));   // 满级优先于次数说明（B7b 试玩修复）
             if (n > f.PerResourceDaily) return $"此处今日已计{f.PerResourceDaily}次{SkillName(skill)}经验";
             return AwardFieldXp(s, skill, FieldXp(res), day, f.DailyPerActorSkill);
         }

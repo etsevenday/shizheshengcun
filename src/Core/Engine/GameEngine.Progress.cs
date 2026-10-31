@@ -113,7 +113,7 @@ namespace Survival.Core.Engine
         {
             ActionType.Explore => "退出将放弃本次探索：探索度不变、不获得物资（已耗时间不退）",
             ActionType.Clear => "退出将放弃本次清理：不获得物资，已扣的1次清理机会不返还（已耗时间不退）",
-            ActionType.Gather => "退出将放弃本次采集：不获得产物（已耗时间不退）",
+            ActionType.Gather => $"退出将放弃本次{GatherVerbOf(a.TargetId)}：不获得产物（已耗时间不退）",
             ActionType.Survey => "退出将放弃本次遗迹勘整：不获得经验，不占今日次数（已耗时间不退）",
             ActionType.Craft or ActionType.Build => "退出将放弃本次制作：材料返还当前地面，不得半成品（已耗时间不退）",
             ActionType.Butcher => "退出将放弃本次处理：尸体返还当前地面，没有产物（已耗时间不退）",

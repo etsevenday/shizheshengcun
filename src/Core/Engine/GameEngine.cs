@@ -410,7 +410,7 @@ namespace Survival.Core.Engine
                     var minutes = res.BaseMinutes;
                     if (tool != null && res.ToolBonus?.BaseMinutesOverride != null) minutes = res.ToolBonus.BaseMinutesOverride.Value;
                     plan.BaseWork = minutes;
-                    plan.Label = res.IsCache ? $"搜集{res.Name}" : $"采集{res.Name}";
+                    plan.Label = $"{GatherVerb(res)}{res.Name}";
                     return null;
                 }
 
@@ -847,7 +847,7 @@ namespace Survival.Core.Engine
                 ActionType.Travel => $"已取消移动，留在{LocName(a.SourceLocation)}；已经流逝的时间与身体消耗保留。",
                 ActionType.Explore => "已取消探索，探索度不变，未获得物资；已消耗的时间保留。",
                 ActionType.Clear => "已取消清理，未获得物资；已扣除的1次清理机会不返还，已消耗的时间保留。",
-                ActionType.Gather => "已取消搜集，未获得产物，预留库存已释放。",
+                ActionType.Gather => $"已取消{GatherVerbOf(a.TargetId)}，未获得产物，预留库存已释放。",
                 ActionType.Craft or ActionType.Build => "已取消制作，预留材料已返还当前地面，未生成半成品。",
                 ActionType.Sleep => "已提前醒来。",
                 ActionType.Butcher => "已取消处理尸体，尸体返还当前地面，保质期不变，没有产物。",

@@ -258,11 +258,12 @@ public class B7bProgressionTests : TestBase
         var n = Cfg.SkillNodes.Single(x => x.Id == "scavenging_05");
         Assert.That(n.Status, Is.EqualTo("closed"));
         Assert.That(GameEngine.PassiveStatusText(n), Does.Contain("暂未开放"));
-        Assert.That(n.Text, Does.Contain("暂未开放"));
+        Assert.That(n.Text, Does.Not.Contain("暂未开放"), "B7b 试玩修复：说明不再重复状态");
         var s = At("village");
         Lv(s, "scavenging", 5);
         Assert.That(E.WorkFactor(s, ActionType.Gather, null, "misc_box"), Is.EqualTo(0.95).Within(1e-12), "只有分类勘整，工具运用不加成");
-        Assert.That(E.SurvivalPassiveLines(s.Player), Has.Some.Contains("工具运用").And.Some.Contains("暂未开放"));
+        var line = E.SurvivalPassiveLines(s.Player).Single(x => x.Contains("工具运用"));
+        Assert.That(line.Split("暂未开放").Length - 1, Is.EqualTo(1), "“暂未开放”只出现一次：" + line);
     }
 
     // ───────────── M159：烹饪经验（Q60） ─────────────
@@ -516,5 +517,71 @@ public class B7bProgressionTests : TestBase
         Lv(u, "crafting", 10);
         var req = ActionRequest.Craft("make_antiviral_cure", First(u, "pot").InstanceId);
         Assert.That(E.CanStart(u, req), Is.Null, "蓝图系统上线前：满级+材料+场地+空锅即可");
+    }
+
+    // ───────────── M162：B7b 线上第 1 轮试玩修复 ─────────────
+
+    [Test]
+    public void Fix1_PotFoodCookXpLine_ReboilZero()
+    {
+        var (s, pot) = PotOnFire("clean_water", 2);
+        E.DebugGive(s, "raw_root", 1, "camp");
+        Assert.That(E.DoInstant(s, InstantRequest.PutFoodInPot(First(s, "raw_root", "camp").InstanceId, pot.InstanceId, 1)).Ok, Is.True);
+        var f = E.PotFood(s, pot.InstanceId).Single();
+        Assert.That(E.CookXpLine(s, f), Is.EqualTo("完成后烹饪经验+3（每日最多30）"));
+        E.DebugGive(s, "cooked_meat", 1, "camp");
+        Assert.That(E.DoInstant(s, InstantRequest.PutFoodInPot(First(s, "cooked_meat", "camp").InstanceId, pot.InstanceId, 1)).Ok, Is.True);
+        var meat = E.PotFood(s, pot.InstanceId).Single(x => x.ItemId == "cooked_meat");
+        Assert.That(E.CookXpLine(s, meat), Is.EqualTo("复煮不给烹饪经验"));
+        var (w, wp) = PotOnFire("dirty_water", 2);
+        Assert.That(E.CookXpLine(w, wp), Does.Contain("每500毫升烹饪经验+1"));
+        Assert.That(E.CookXpLine(w, E.PotLiquids(w, wp.InstanceId).Single()), Does.Contain("每500毫升"), "锅内液体同锅的净化批次");
+    }
+
+    [Test]
+    public void Fix2_Fix5_GatherVerbFollowsProficiency()
+    {
+        var y = At("scrapyard");
+        y.Resources["metal_heap"].Available = 10;
+        var p = E.Preview(y, ActionRequest.Gather("metal_heap"));
+        Assert.That((p.Label, p.ConfirmText), Is.EqualTo(("搜集废金属堆", "开始搜集")));
+        Start(y, ActionRequest.Gather("metal_heap"));
+        Assert.That(E.ActionProgress(y)!.ExitNote, Does.Contain("放弃本次搜集"));
+        E.Cancel(y);
+        Assert.That(y.Log.Last().Text, Does.StartWith("已取消搜集"));
+        var h = At("stream");
+        Start(h, ActionRequest.Gather("herbs"));
+        E.Cancel(h);
+        Assert.That(h.Log.Last().Text, Does.StartWith("已取消采集"));
+    }
+
+    [Test]
+    public void Fix3_MaxedTextBeatsDailyCount()
+    {
+        var s = At("stream");
+        Lv(s, "gathering", 10);
+        for (var k = 0; k < 4; k++) Do(s, ActionRequest.Gather("water"));
+        Assert.That(s.Log.Where(l => l.Text.StartsWith("脏水+")).Select(l => l.Text).ToList(), Has.Count.EqualTo(4).And.All.Contains("采集已满10级").And.None.Contains("今日已计"));
+    }
+
+    [Test]
+    public void Fix6_SalvageLogOrder_Fix9_MigrationClearsStaleCarry()
+    {
+        var s = New();
+        var it = E.DebugCreateEquipment(s, "wooden_shield", "white", ItemInstance.Carried);
+        Do(s, Salvage(it.InstanceId));
+        Assert.That(s.Log.Last(l => l.Text.StartsWith("拆解")).Text, Does.Match(@"：木材\+\d+，已放在.+地面；制造经验\+2。$"));
+        var t = New();
+        E.DebugGive(t, "cloth", 1);
+        E.DebugGive(t, "herb", 1);
+        Start(t, ActionRequest.Craft("bandage"));
+        var json = JObject.Parse(SaveSerializer.Serialize(t));
+        json["SchemaVersion"] = "12";
+        json["Main"]!["CarryKey"] = "p0|crafting";
+        json["Main"]!["CarryReserved"] = 3.5;
+        var old = SaveSerializer.Deserialize(json.ToString(), Cfg);
+        Assert.That((old.Main!.CarryKey, old.Main.CarryReserved), Is.EqualTo(((string?)null, 0.0)));
+        Run(old);
+        Assert.That(old.WorkCarry, Is.Empty);
     }
 }

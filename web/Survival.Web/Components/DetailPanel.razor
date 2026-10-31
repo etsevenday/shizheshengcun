@@ -82,7 +82,7 @@
                 break;
             case SelectionKind.Resource:
                 var r = e.Resource(sel.Id);
-                <PreviewView Request="ActionRequest.Gather(sel.Id)" Eyebrow="@($"已选中 · {r.Name}")" Title="@(r.IsCache ? $"搜集{r.Name}" : $"采集{r.Name}")" Confirmable="false"
+                <PreviewView Request="ActionRequest.Gather(sel.Id)" Eyebrow="@($"已选中 · {r.Name}")" Title="@($"{GameEngine.GatherVerb(r)}{r.Name}")" Confirmable="false"
                              Subtitle="工具与成本已计入本次预估。" />
                 break;
             case SelectionKind.ItemGroup:

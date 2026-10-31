@@ -244,7 +244,7 @@
                 {
                     var sy = e.SalvageYield(s, kInst);
                     var xnote = e.SalvageExpertBonus(s, kInst).note;
-                    <div class="ca-note">拆解得@(string.Join("、", sy.Select(x => $"{e.ItemName(x.itemId)}×{x.count}")))，放在当前地面；原装备移除，完成后制造经验+@(e.Config.Progression.Dismantle.Xp)@(xnote != null ? $"（{xnote}）" : "")</div>
+                    <div class="ca-note">拆解得@(string.Join("、", sy.Select(x => $"{e.ItemName(x.itemId)}×{x.count}")))，放在当前地面；原装备移除@(xnote != null ? $"（{xnote}）" : "")；完成后@(e.XpText(s, GameEngine.Crafting, e.Config.Progression.Dismantle.Xp))</div>
                 }
             }
         }

@@ -64,6 +64,14 @@ namespace Survival.Core.Engine
             return $"{ActorPrefix(actor)}{SkillName(Cooking)}经验+{due}";
         }
 
+        /// <summary>某实例（直烤食材、锅内食材，或锅/锅内液体＝净化批次）正在进行的加工完成后的烹饪经验说明；没有进程为 null。</summary>
+        public string? CookXpLine(GameState s, ItemInstance inst)
+        {
+            var p = ProcessOf(s, inst);
+            if (p == null && inst.InContainer && ContainerOf(s, inst) is ItemInstance pot) p = ProcessOf(s, pot);
+            return p == null ? null : CookXpNote(s, p);
+        }
+
         /// <summary>火堆/锅卡与预估用：这一项完成后的烹饪经验说明（旧进程写不补）。</summary>
         public string? CookXpNote(GameState s, FacilityProcess p)
         {

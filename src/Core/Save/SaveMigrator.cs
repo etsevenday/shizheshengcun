@@ -615,6 +615,9 @@ namespace Survival.Core.Save
                 s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = note + "。" });
             }
             s.WorkCarry.Clear();
+            // 真实 v12 档没有余额字段；手改或非真实档残留的锁定余额一并清掉，防止结出不存在的余量（B7b 试玩修复）
+            foreach (var a in new[] { s.Main, s.Sub })
+                if (a != null) { a.CarryKey = null; a.CarryReserved = 0; }
             s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（成长经验与工作量余量）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }

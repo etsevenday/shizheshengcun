@@ -222,7 +222,8 @@ namespace Survival.Core.Engine
             var name = $"{ItemName(t.ItemId)}#{t.InstanceId}（{QualityName(t)}）";
             s.Items.Remove(t);
             foreach (var (oid, n) in yield) CreateItems(s, oid, n, here);
-            var got = string.Join("，", yield.Select(x => $"{ItemName(x.itemId)}+{x.count}"));
+            // 语序（B7b 试玩修复）：产物 → 放置地点 → 回收专家说明 → 经验
+            var got = string.Join("，", yield.Select(x => $"{ItemName(x.itemId)}+{x.count}")) + $"，已放在{LocName(here)}地面";
             if (note != null) got += $"（{note}）";
             var xp = Config.Progression.Dismantle.Xp;
             if (xp > 0)
@@ -230,7 +231,7 @@ namespace Survival.Core.Engine
                 got += "；" + XpText(s, Crafting, xp);
                 GainXp(s, Crafting, xp);
             }
-            Emit(s, GameEventKind.ActionCompleted, $"拆解{name}：{got}，已放在{LocName(here)}地面。", null, yield.Select(x => x.itemId).ToArray());
+            Emit(s, GameEventKind.ActionCompleted, $"拆解{name}：{got}。", null, yield.Select(x => x.itemId).ToArray());
             UpdateFlags(s);
             return true;
         }
