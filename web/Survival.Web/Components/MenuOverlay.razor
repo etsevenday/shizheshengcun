@@ -97,11 +97,23 @@
                     <button class="secondary" @onclick="() => DevTier(1)">战术训练阶位1（4AP）</button>
                     <button class="secondary" @onclick="() => DevTier(2)">战术训练阶位2（5AP）</button>
                 </div>
+                @{
+                    // B7（A09 §1）：20 种新敌人只入数据、不进旧刷新池，只能从这里放出来试玩
+                    var pooled = G.E.Config.WorldEnemies.Pools.Values.SelectMany(p => p.Values).SelectMany(l => l).Select(x => x.EnemyId).ToHashSet();
+                }
                 <div class="btn-row">
-                    @foreach (var en in G.E.Config.Enemies)
+                    @foreach (var en in G.E.Config.Enemies.Where(x => pooled.Contains(x.Id)))
                     {
                         var id = en.Id;
                         <button class="secondary small-btn" @onclick="() => DevSpawn(id)">放@(en.Name)</button>
+                    }
+                </div>
+                <div class="eyebrow">新敌人（A09，暂不刷新，只能从这里放）</div>
+                <div class="btn-row">
+                    @foreach (var en in G.E.Config.Enemies.Where(x => !pooled.Contains(x.Id)))
+                    {
+                        var id = en.Id;
+                        <button class="secondary small-btn" @onclick="() => DevSpawn(id)" title="@($"{en.FamilyName}{(en.Elite ? "精英" : "")} · {en.Ap}AP · 己位{en.OwnSlots}→目标{en.TargetSlots}")">放@(en.Name)</button>
                     }
                 </div>
             </div>

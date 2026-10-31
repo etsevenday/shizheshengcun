@@ -81,8 +81,21 @@ public static partial class Icons
 
     public static bool Has(string key) => ArtAssets.Sprites.ContainsKey(key) || Extracted.ContainsKey(key) || Extra.ContainsKey(key) || Combat.ContainsKey(key) || Status.ContainsKey(key);
 
+    /// <summary>B7 新敌人（A09 §1）还没有美术：暂借形象相近的旧敌人图（缺图清单见开发计划 v0.9 B7.4）。</summary>
+    private static readonly Dictionary<string, string> EnemyArtAlias = new()
+    {
+        ["enemy_z_slow"] = "enemy_shambler", ["enemy_z_helmet"] = "enemy_riot", ["enemy_z_spitter"] = "enemy_howler",
+        ["enemy_z_hauler"] = "enemy_worker", ["enemy_z_darter"] = "enemy_runner", ["enemy_z_screamer"] = "enemy_howler",
+        ["enemy_z_guard"] = "enemy_riot", ["enemy_z_clinger"] = "enemy_crawler", ["enemy_z_bloater"] = "enemy_worker",
+        ["enemy_z_nurse"] = "enemy_shambler", ["enemy_z_engineer"] = "enemy_worker", ["enemy_z_signal"] = "enemy_howler",
+        ["enemy_z_pump_foreman"] = "enemy_riot", ["enemy_z_isolation_guard"] = "enemy_riot", ["enemy_z_power_guard"] = "enemy_riot",
+        ["enemy_z_relay_guard"] = "enemy_riot", ["enemy_raider_melee"] = "enemy_worker", ["enemy_raider_gunner"] = "enemy_worker",
+        ["enemy_wild_dog_leader"] = "enemy_wolf", ["enemy_feral_boar"] = "enemy_boar",
+    };
+
     public static string Svg(string key)
     {
+        if (EnemyArtAlias.TryGetValue(key, out var alias)) { Placeholder.Add(key); key = alias; }
         if (ArtAssets.Sprite(key) is { } sprite) return sprite;
         if (!Extracted.TryGetValue(key, out var inner) && !Extra.TryGetValue(key, out inner) && !Combat.TryGetValue(key, out inner) && !Status.TryGetValue(key, out inner)
             && CategoryOf.TryGetValue(key, out var cat) && CategoryArt.TryGetValue(cat, out inner))

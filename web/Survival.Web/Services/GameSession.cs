@@ -1323,22 +1323,25 @@ public sealed class GameSession
         Notify();
     }
 
-    /// <summary>当前选中的指令是否处于瞄准（需要点击目标提交）：单体攻击类与群攻（散射：点受影响集合中任一目标提交一次）。</summary>
+    /// <summary>当前选中的指令是否处于瞄准（需要点击目标提交）：单体/双位攻击与群攻（霰弹专长射击：点受影响集合中任一目标提交一次）。</summary>
     public bool BattleAiming => State != null && S.Battle != null && BattleAction != null && AimOption() != null;
 
     private BattleCommandOption? AimOption()
     {
         var o = E.BattleOptions(S).FirstOrDefault(x => x.Action == BattleAction && (BattleItem == null || x.ItemInstanceId == BattleItem));
-        return o != null && (o.NeedsTarget || o.Action == "scatter") ? o : null;
+        return o != null && (o.NeedsTarget || o.TargetMode == "area") ? o : null;
     }
+
+    /// <summary>所选指令是群攻（不带目标提交；B7 霰弹专长射击）。</summary>
+    public bool AreaAction => State != null && S.Battle != null && BattleAction != null && E.BattleOptions(S).FirstOrDefault(x => x.Action == BattleAction)?.TargetMode == "area";
 
     /// <summary>瞄准中可点击提交的目标：单体为合法目标；群攻为预览里真实受影响的集合。</summary>
     public IReadOnlyCollection<int> AimTargets()
     {
         var o = BattleAiming ? AimOption() : null;
         if (o == null) return Array.Empty<int>();
-        if (o.Action == "scatter")
-            return E.PreviewCommand(S, BattleCommand.Of("scatter")) is { Ok: true } p ? p.Targets.Select(t => t.Index).ToList() : new List<int>();
+        if (o.TargetMode == "area")
+            return E.PreviewCommand(S, BattleCommand.Of(o.Action)) is { Ok: true } p ? p.Targets.Select(t => t.Index).ToList() : new List<int>();
         return o.Targets;
     }
 
@@ -1368,7 +1371,7 @@ public sealed class GameSession
             Notify();
             return;
         }
-        if (BattleAction != "scatter") BattleTarget = index;
+        if (!AreaAction) BattleTarget = index;
         await ExecuteBattleCommand(token);
     }
 

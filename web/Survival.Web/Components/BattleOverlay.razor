@@ -24,13 +24,13 @@
             @foreach (var w in group)
             {
                 var ec = e.Enemy(w.EnemyId);
-                <ObjectCard @key="w.Id" CssClass="enemy-card" Title="@ec.Name" Badge="@(ec.IsZombie ? "丧尸" : "动物")" OnClick="() => {}">
+                <ObjectCard @key="w.Id" CssClass="enemy-card" Title="@ec.Name" Badge="@(ec.FamilyName + (ec.Elite ? "·精英" : ""))" OnClick="() => {}">
                     <Art>@Icons.Markup("enemy_" + ec.Id)</Art>
                     <ChildContent>
                         <div class="hp-line"><span>健康</span><b>@Ui.N(w.Hp)/@Ui.N(ec.Hp)</b></div>
                         <div class="track"><i style="width:@Ui.Bar(w.Hp, ec.Hp)%"></i></div>
                         <div class="oc-line">护甲@(Ui.T(ec.Armor)) · 闪避@(Ui.T(ec.Dodge)) · 速度@(Ui.T(ec.Speed))</div>
-                        <div class="oc-line">伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax))</div>
+                        <div class="oc-line">伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax)) · @(ec.Ap)AP</div>
                     </ChildContent>
                 </ObjectCard>
             }
@@ -181,6 +181,16 @@ else if (b != null)
                 @if (b.PlayerSteadyUntilRound >= b.Round) { <span class="st good" title="控制成功后至下一大回合末，控制抗性+30个百分点">稳态</span> }
                 @if (b.PlayerStagger) { <span class="st bad">失衡</span> }
                 @if (b.PlayerSlowActive || b.PlayerSlowPending) { <span class="st bad">减速</span> }
+                @* B7 技能状态（A06 §2、R03 §4） *@
+                @if (b.PlayerGuard && b.PlayerGuardCharges > 1) { <span class="st good" title="坚守：格挡次数">格挡×@b.PlayerGuardCharges</span> }
+                @if (b.CounterFactor > 0) { <span class="st good" title="受到直接攻击命中后反击1次">反击架势</span> }
+                @if (b.BraceCharges > 0) { <span class="st good" title="敌人主动前移后迎击">架矛×@b.BraceCharges</span> }
+                @if (GameEngine.AxeChargeOn(b)) { <span class="st good" title="@($"下次用这把斧攻击伤害×{Ui.T(b.ChargeFactor)}，到第{b.ChargeUntilRound}轮末")">蓄力×@Ui.T(b.ChargeFactor)</span> }
+                @if (GameEngine.InspireActive(b)) { <span class="st good" title="@($"下一次攻击命中能力+{Ui.T(b.InspireBonus)}，到第{b.InspireUntilRound}轮末")">鼓舞+@Ui.T(b.InspireBonus)</span> }
+                @if (GameEngine.AllOutActive(b)) { <span class="st good" title="@($"下一次攻击伤害×{Ui.T(b.AllOutFactor)}，到第{b.AllOutUntilRound}轮末")">总攻令</span> }
+                @if (b.DisplaceResist > 0 && b.DisplaceUntilRound >= b.Round) { <span class="st good" title="位移抵抗（只剩你一人时没有可被移动的位置）">稳固</span> }
+                @if (GameEngine.PlayerArmorBroken(b)) { <span class="st bad" title="@($"护甲−{Ui.T(b.PlayerArmorBreak)}，到第{b.PlayerArmorBreakUntilRound}轮末")">破甲−@Ui.T(b.PlayerArmorBreak)</span> }
+                @if (GameEngine.PlayerWeakActive(b)) { <span class="st bad">虚弱</span> }
                 @if (s.Body.BleedTriggers > 0) { <span class="st bad">出血×@s.Body.BleedTriggers</span> }
                 @if (s.Body.Infected) { <span class="st bad">感染@(Ui.N(s.Body.VirusLoad))</span> }
             </div>
@@ -193,7 +203,7 @@ else if (b != null)
             }
             else if (sel != null && aiming)
             {
-                <span class="bx-hint">@(sel.Action == "scatter" ? "点亮起的任一1、2号位目标提交散射" : "把鼠标移到亮起的目标上看右侧预测，点击目标执行") · 右键/Esc 取消</span>
+                <span class="bx-hint">@(sel.TargetMode == "area" ? $"点亮起的任一1、2号位目标提交{sel.Label}（1、2号位都打）" : sel.TargetMode == "pair" ? "点1、2号位打12，点3号位打23；悬停看右侧预测" : "把鼠标移到亮起的目标上看右侧预测，点击目标执行") · 右键/Esc 取消</span>
             }
             else if (sel != null)
             {
@@ -251,9 +261,9 @@ else if (b != null)
                     <div class="hp-line" title="健康"><span>♥</span><b>@Ui.N(en.Hp)/@Ui.N(ec.Hp)</b></div>
                     <div class="track"><i style="width:@Ui.Bar(en.Hp, ec.Hp)%"></i></div>
                     @{ var far = G.E.IntentOutOfReach(G.S.Battle!, en); }
-                    <div class="intent @(far ? "calm" : en.Intent is "bite" ? "bite" : en.Intent is "flee" or "watch" or "guard" ? "calm" : "")"
-                         title="@(far ? $"本轮公开意图是{en.IntentLabel}，但站在{slot}号位够不到，实际只往前挤；前面的位置空出来、被压到1、2号位后才会出手" : "本轮公开意图（轮初锁定，不公开伤害抽值）")">
-                        <span class="intent-ico">@(far ? "等" : IntentIcon(en.Intent))</span>@NoBreakRange(G.E.IntentShown(G.S.Battle!, en))
+                    <div class="intent @(far ? "calm" : en.Intent is "bite" ? "bite" : en.Intent is "flee" or "watch" or "guard" or "protect" or "buff" or "reload" ? "calm" : "")"
+                         title="@(far ? $"本轮公开意图是{en.IntentLabel}，但站在{slot}号位不能照原样出手：{G.E.IntentShown(G.S.Battle!, en)}（敌人{ec.Ap}AP：前移1AP，余下只做一次普通攻击）" : $"本轮公开意图（轮初锁定，不公开伤害抽值）；{ec.Ap}AP{(ec.Elite ? "精英" : "")}，每次激活一个主意图")">
+                        <span class="intent-ico">@(far ? "移" : IntentIcon(en.Intent))</span>@NoBreakRange(G.E.IntentShown(G.S.Battle!, en))
                     </div>
                 </div>
             </div>
@@ -265,6 +275,11 @@ else if (b != null)
                 @if (en.SlowActive || en.SlowPending) { <span class="st bad">减速</span> }
                 @if (en.BleedTriggers > 0) { <span class="st bad">出血×@en.BleedTriggers</span> }
                 @if (!en.Hostile) { <span class="st">中立</span> }
+                @if (ec.Elite) { <span class="st" title="精英：每次正常激活4AP">精英</span> }
+                @if (GameEngine.EnemyMarked(b, en)) { <span class="st bad" title="@($"被标记：我方对它命中能力+{Ui.T(en.MarkBonus)}，到第{en.MarkUntilRound}轮末")">标记</span> }
+                @if (en.ArmorBreak > 0 && en.ArmorBreakUntilRound >= b.Round) { <span class="st bad" title="@($"护甲−{Ui.T(en.ArmorBreak)}，到第{en.ArmorBreakUntilRound}轮末")">破甲</span> }
+                @if (GameEngine.EnemyWeak(b, en)) { <span class="st bad" title="@($"伤害×{Ui.T(en.WeakFactor)}，到第{en.WeakUntilRound}轮末")">虚弱</span> }
+                @if (en.ProtectingIndex > 0) { <span class="st good" title="对同伴的单体攻击由它接下">保护中</span> }
                 @if (unreachable && reachWhy != null) { <span class="st bad">@(reachWhy.StartsWith("射程不足") ? "射程不足" : "不可选")</span> }
             </div>
         </div>
@@ -299,10 +314,10 @@ else if (b != null)
         var on = sel != null && sel.Action == o.Action && sel.ItemInstanceId == o.ItemInstanceId;
         var (art, glyph, qty) = CmdArt(o, wi, w);
         var oo = o;
-        var range = o.NeedsTarget ? (o.Targets.Count > 0 ? $"可选目标{o.Targets.Count}个" : "当前没有可选目标") : o.Action == "scatter" ? "1、2号位群攻" : "自用/无目标";
+        var range = o.TargetMode == "area" ? "1、2号位群攻" : o.TargetMode == "pair" ? (o.Targets.Count > 0 ? "相邻双位（点12或23）" : "当前没有可选目标") : o.NeedsTarget ? (o.Targets.Count > 0 ? $"可选目标{o.Targets.Count}个" : "当前没有可选目标") : "自用/无目标";
         <button type="button" id="@($"cmd-{o.Action}{(o.ItemInstanceId is int ii ? "-" + ii : "")}")" class="cmdt @(on ? "on" : "") @(o.Available ? "" : "off")" disabled="@locked"
                 aria-label="@($"{ShortName(o)}，{ApText(o.Ap)}{(qty != null ? "，" + qty : "")}{(o.Reason != null ? "；不可用：" + o.Reason : "")}")"
-                title="@(o.Reason ?? $"{o.Label}：{ApText(o.Ap)}{(o.Energy > 0 ? $"，体力{Ui.N(o.Energy)}" : "")}；{range}。{(o.NeedsTarget || o.Action == "scatter" ? "点选后点亮起的目标执行" : "点选后在旁边确认")}")"
+                title="@(o.Reason ?? $"{o.Label}：{ApText(o.Ap)}{(o.Energy > 0 ? $"，体力{Ui.N(o.Energy)}" : "")}{(o.CooldownRounds > 0 ? $"，冷却{o.CooldownRounds}轮" : "")}；{range}。{(o.EffectText != null ? o.EffectText + "。" : "")}{(o.NeedsTarget || o.TargetMode == "area" ? "点选后点亮起的目标执行" : "点选后在旁边确认")}")"
                 @onclick="() => G.PickBattleAction(oo.Action, oo.ItemInstanceId)">
             <span class="cmdt-art">@Icons.Markup(art)@if (glyph != null) {<em class="cmdt-glyph">@glyph</em>}</span>
             <span class="cmdt-name">@ShortName(o)</span>
@@ -326,11 +341,8 @@ else if (b != null)
         {
             "basic_attack" => (weaponArt, null, null),
             "desperate_punch" => ("fists", "勉", null),
-            "cleave" => (weaponArt, "劈", null),
-            "cut" => (weaponArt, "割", null),
-            "precise_thrust" => (weaponArt, "刺", null),
-            "push" => (weaponArt, "推", null),
-            "scatter" => (weaponArt, "散", null),
+            // B7：五节点技能用当前武器图 + 技能名首字角标
+            _ when o.NodeId != null => (weaponArt, o.Label.Length > 0 ? o.Label[..1] : null, null),
             "guard" => ("cmd_guard", null, null),
             "swap" => ("cmd_switch", "换", null),
             "breathe" => ("cmd_breathe", null, null),
@@ -347,7 +359,7 @@ else if (b != null)
         "bandage" => "包扎",
         "use_antibiotics" => "抗生素",
         "use_antiviral_cure" => "特效药",
-        "basic_attack" => "攻击",
+        _ when o.NodeId != null => o.Label,   // B7：拳击/斩击/割伤……（1级攻击技能即普通攻击）
         _ => GameEngine.ActionName(o.Action),
     };
 
@@ -372,6 +384,10 @@ else if (b != null)
         if (why.StartsWith("需要") && why.Contains("级")) return "等级不足";
         if (why.StartsWith("射程不足")) return "射程不足";
         if (why.StartsWith("只有你一人")) return "无队友";
+        if (why.StartsWith("已在") || why.StartsWith("已蓄力") || why.StartsWith("已架矛") || why.StartsWith("已有")) return "已生效";
+        if (why.Contains("单发弩")) return "单发弩";
+        if (why.Contains("不能直接攻击")) return "不能攻击";
+        if (why.StartsWith("健康高于") || why.StartsWith("健康已满") || why.StartsWith("你没有") || why.StartsWith("恐慌已是0")) return "无效果";
         if (why.Contains("只能在我方")) return "站位不符";
         if (why.Contains("不需要装填") || why.Contains("不用装填")) return "无需装填";
         return why.Length > 5 ? why[..5] : why;
@@ -392,6 +408,14 @@ else if (b != null)
         "howl" => "嚎",
         "flee" => "逃",
         "watch" => "望",
+        "protect" => "护",
+        "signal" => "鸣",
+        "buff" => "势",
+        "sweep" => "扫",
+        "spit" => "喷",
+        "pull" => "拉",
+        "shoot" => "射",
+        "reload" => "装",
         _ => "·",
     };
 }

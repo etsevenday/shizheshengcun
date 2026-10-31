@@ -23,7 +23,7 @@
             <div class="lines enemy-lines">
                 <div><span>@ec.Name</span><b>健康@(Ui.N(w.Hp))/@(Ui.N(ec.Hp)) · 甲@(Ui.T(ec.Armor))</b></div>
                 <div><span>对你命中率</span><b>@Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))（攻击能力@(Ui.T(ec.AttackRating))对闪避@(Ui.T(e.Config.Scope.BasePlayerDodge))）</b></div>
-                <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)@(ec.IsZombie ? $" · {Ui.T(ec.BiteIntentWeightPct)}%意图为咬击" : "")</b></div>
+                <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)@(ec.IsZombie ? BiteText(ec) : "")</b></div>
             </div>
         }
         <div class="risk">咬击命中且造成伤害时按免疫判定感染：当前免疫@(Ui.N(s.Body.Immunity))，一次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。</div>
@@ -42,7 +42,7 @@ else if (b != null)
     // 瞄准中：只在悬停合法目标时给出对它的预测（不预选目标、不自动攻击）；自用/无目标指令按所选指令预测
     int? hoverTarget = aiming && G.BattleHover is int hv && aimSet.Contains(hv) ? hv : null;
     var cmd = aiming
-        ? BattleCommand.Of(G.BattleAction!, G.BattleAction == "scatter" ? null : hoverTarget, G.BattleItem)
+        ? BattleCommand.Of(G.BattleAction!, G.AreaAction ? null : hoverTarget, G.BattleItem)
         : G.CurrentBattleCommand();
     @if (G.BattleAction == null && G.Selected.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid)
     {
@@ -50,14 +50,16 @@ else if (b != null)
         <ItemDetail />
     }
     @* B3：旧“换武器对照页”已删除，改为战斗区武器Ⅰ/武器Ⅱ页签（0AP） *@
-    else if (G.BattleAction != null && aiming && hoverTarget == null && G.BattleAction != "scatter")
+    else if (G.BattleAction != null && aiming && hoverTarget == null && !G.AreaAction)
     {
         var o = e.BattleOptions(s).FirstOrDefault(x => x.Action == G.BattleAction);
         <div class="detail-scroll">
             <div class="op-head">
                 <div class="eyebrow">战斗第@(b.Round)轮 · 瞄准中</div>
-                <h2>@GameEngine.ActionName(G.BattleAction)</h2>
-                <p>@(o == null ? "" : $"{(o.Ap < 0 ? "剩余AP" : o.Ap + "AP")}{(o.Energy > 0 ? $" · 体力{Ui.N(o.Energy)}" : "")} · 可选目标{aimSet.Count}个")</p>
+                <h2>@(o?.Label ?? GameEngine.ActionName(G.BattleAction))</h2>
+                <p>@(o == null ? "" : $"{(o.Ap < 0 ? "剩余AP" : o.Ap + "AP")}{(o.Energy > 0 ? $" · 体力{Ui.N(o.Energy)}" : "")} · 可选目标{aimSet.Count}个{(o.CooldownRounds > 0 ? $" · 冷却{o.CooldownRounds}轮" : "")}")</p>
+                @if (o?.EffectText != null) { <p class="muted">@o.EffectText</p> }
+                @if (o?.TargetMode == "pair") { <p class="muted">相邻双位：点1、2号位的敌人打1、2号位，点3号位的敌人打2、3号位，每个目标独立命中。</p> }
             </div>
             <div class="risk none">把鼠标移到亮起的目标上，这里显示对它的实际命中率与伤害；点击亮起的目标即执行。右键或 Esc 取消，不耗AP。</div>
             @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
@@ -122,11 +124,14 @@ else if (b != null)
                 <div class="lines">
                     <div><span>健康</span><b>@Ui.N(t.Hp)/@Ui.N(ec.Hp)</b></div>
                     <div><span>护甲 / 闪避 / 速度</span><b>@Ui.T(ec.Armor) / @Ui.T(ec.Dodge) / @Ui.T(ec.Speed)</b></div>
+                    <div><span>行动点 / 站位</span><b>@(ec.Ap)AP@(ec.Elite ? "（精英）" : "") · 己位@(ec.OwnSlots)→目标@(ec.TargetSlots) · 控制抗性@(Ui.T(ec.ControlResist))%</b></div>
                     <div><span>攻击能力 / 对你命中率</span><b>@Ui.T(ec.AttackRating) / @Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.Config.Scope.BasePlayerDodge))</b></div>
                     <div><span>本轮意图</span><b>@G.E.IntentShown(G.S.Battle!, t)@(G.E.IntentOutOfReach(G.S.Battle!, t) ? $"（公开意图：{t.IntentLabel}）" : "")</b></div>
                 </div>
-                @if (ec.IsZombie) { <div class="risk">丧尸咬击命中且造成伤害时可能感染（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）。抓击不会感染。</div> }
-                else { <div class="risk none">动物撕咬不会传染僵尸病毒，@(ec.Behavior.StartsWith("bleed_on_hit_") ? "但命中有概率出血" : "但仍会造成伤害")。</div> }
+                @if (ec.IsZombie) { <div class="risk">丧尸咬击命中且造成伤害时可能感染（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）。抓击、喷吐、尖啸不会感染。</div> }
+                else if (ec.IsHuman) { <div class="risk none">敌对人类的攻击不会传染僵尸病毒。</div> }
+                else { <div class="risk none">动物撕咬不会传染僵尸病毒，@(ec.Intents.Cycle.Any(x => x.BleedPct > 0) ? "但命中有概率出血" : "但仍会造成伤害")。</div> }
+                @if (B7Status(b, t) is string est) { <div class="risk none">@est</div> }
             }
             <div class="lines">
                 <div><span>恐慌</span><b>@Ui.N(b.Panic)@(e.Config.Panic.PenaltyFor(b.Panic) is PanicPenaltyConfig pp ? $"（≥{Ui.T(pp.Minimum)}：命中能力×{Ui.T(pp.AccuracyRatingFactor)}、撤退×{Ui.T(pp.RetreatFactor)}）" : "")</b></div>
@@ -142,5 +147,28 @@ else if (b != null)
             @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
         </div>
         <div class="detail-foot"><div class="under">战斗中地面与随身物品只能查看；切换武器页、装填与用药请用战斗区的页签与指令。</div></div>
+    }
+}
+
+@code {
+    /// <summary>丧尸的咬击口径（A09 §1 意图循环）：抓击类的咬击改判概率，或循环里固定的一次咬击；没有咬击写明。</summary>
+    private static string BiteText(EnemyConfig ec)
+    {
+        var steps = ec.Intents.Opening.Concat(ec.Intents.Cycle).ToList();
+        var pct = steps.Where(x => x.Kind == "attack").Select(x => x.BitePct).DefaultIfEmpty(0).Max();
+        if (pct > 0) return $" · 攻击时{Ui.T(pct)}%改为咬击";
+        return steps.Any(x => x.Kind == "bite") ? " · 循环里有一次咬击" : " · 不咬击";
+    }
+
+    /// <summary>敌人身上的技能状态（B7）：标记、破甲、虚弱、保护、弹药。</summary>
+    private static string? B7Status(BattleState b, BattleEnemy t)
+    {
+        var parts = new List<string>();
+        if (GameEngine.EnemyMarked(b, t)) parts.Add($"被标记：命中能力+{Ui.T(t.MarkBonus)}（到第{t.MarkUntilRound}轮末）");
+        if (t.ArmorBreak > 0 && t.ArmorBreakUntilRound >= b.Round) parts.Add($"破甲−{Ui.T(t.ArmorBreak)}（到第{t.ArmorBreakUntilRound}轮末）");
+        if (GameEngine.EnemyWeak(b, t)) parts.Add($"虚弱：伤害×{Ui.T(t.WeakFactor)}（到第{t.WeakUntilRound}轮末）");
+        if (t.ProtectingIndex > 0) parts.Add("正在保护同伴：对同伴的单体攻击由它接下");
+        if (t.Mag >= 0) parts.Add($"弹仓{t.Mag}，备弹{t.Reserve}（打空不补）");
+        return parts.Count == 0 ? null : string.Join("；", parts);
     }
 }

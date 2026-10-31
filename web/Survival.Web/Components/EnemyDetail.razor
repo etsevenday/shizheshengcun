@@ -24,7 +24,7 @@ else
         <div class="op-head">
             <div class="eyebrow">敌踪 · @e.LocName(w.LocationId)</div>
             <h2>@ec.Name</h2>
-            <p>@(ec.IsZombie ? "丧尸" : "动物")@(w.Hostile ? "" : " · 中立（被攻击才转敌对）") · 稀有层级@(ec.Rarity switch { "common" => "普通", "rare" => "稀有", _ => "强敌" })</p>
+            <p>@ec.FamilyName@(ec.Elite ? "精英" : "")@(w.Hostile ? "" : " · 中立（被攻击才转敌对）") · 稀有层级@(ec.Rarity switch { "common" => "普通", "rare" => "稀有", _ => "强敌" }) · @(ec.Ap)AP · 己位@(ec.OwnSlots)→目标@(ec.TargetSlots) · 控制抗性@(Ui.T(ec.ControlResist))%</p>
         </div>
         <div class="detail-icon">@Icons.Markup("enemy_" + ec.Id)</div>
         <div class="lines">

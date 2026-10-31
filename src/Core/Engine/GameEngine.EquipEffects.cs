@@ -328,7 +328,7 @@ namespace Survival.Core.Engine
             if (a == null) return id;
             var live = a.Effects.Count > 0 && a.Effects.All(EffectLive);
             var note = a.Effects.Any(x => x.Key == "durability.max") ? "（生成时已计入最大耐久）"
-                : live ? (worn ? "（生效中）" : "（穿戴后生效）") : "（位移类技能上线后生效，当前只显示）";
+                : live ? (worn ? "（生效中）" : "（穿戴后生效）") : "（我方多人时才会被拉扯/击退，当前只显示）";
             return $"{a.Name}：{a.EffectText}{note}";
         }
 
@@ -380,7 +380,7 @@ namespace Survival.Core.Engine
             if (Math.Abs(fx.EnergyCostFactor - 1) > 1e-12) combat.Add($"招式E×{Fmt.T(fx.EnergyCostFactor)}");
             if (fx.DisplaceResist != 0) combat.Add($"位移抵抗+{Fmt.T(fx.DisplaceResist)}个百分点");
             if (fx.Noise != 0) combat.Add($"噪声{Fmt.SignedT(fx.Noise)}");
-            if (combat.Count > 0) lines.Add($"战斗（全身装备合计；攻击类词条只算当前武器页）：{string.Join("，", combat)}{(fx.DisplaceResist != 0 ? "——位移抵抗要等位移类技能上线，其余战斗中生效" : "——战斗中生效")}");
+            if (combat.Count > 0) lines.Add($"战斗（全身装备合计；攻击类词条只算当前武器页）：{string.Join("，", combat)}{(fx.DisplaceResist != 0 ? "——位移抵抗在我方多人时才有用（只剩你一人不会被移动），其余战斗中生效" : "——战斗中生效")}");
             var names = new Dictionary<string, string>
             {
                 ["work.craft"] = "制造/建造工作量", ["work.scavenge"] = "搜集工作量", ["work.move"] = "移动工作量", ["work.route"] = "已发现路线移动工作量",
