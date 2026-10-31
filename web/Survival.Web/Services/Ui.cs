@@ -15,6 +15,9 @@ public static class Ui
     /// <summary>阈值、速率、规则常量：至多两位小数。</summary>
     public static string T(double v) => Fmt.T(v);
 
+    /// <summary>速度：至少1位、至多2位小数（Q71）。</summary>
+    public static string Speed(double v) => Fmt.Speed(v);
+
     /// <summary>进度条宽度百分比（0—100），按该项上限换算。</summary>
     public static string Bar(double v, double max) => (max <= 0 ? 0 : Math.Clamp(v / max * 100, 0, 100)).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
 

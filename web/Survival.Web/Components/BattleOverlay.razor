@@ -32,7 +32,7 @@
                     <ChildContent>
                         <div class="hp-line"><span>健康</span><b>@Ui.N(w.Hp)/@Ui.N(ec.Hp)</b></div>
                         <div class="track"><i style="width:@Ui.Bar(w.Hp, ec.Hp)%"></i></div>
-                        <div class="oc-line">护甲@(Ui.T(ec.Armor)) · 闪避@(Ui.T(ec.Dodge)) · 速度@(Ui.T(ec.Speed))</div>
+                        <div class="oc-line">护甲@(Ui.T(ec.Armor)) · 闪避@(Ui.T(ec.Dodge)) · 速度@(Ui.Speed(ec.Speed))</div>
                         <div class="oc-line">伤害@(Ui.N(ec.DamageMin))—@(Ui.N(ec.DamageMax)) · @(ec.Ap)AP</div>
                     </ChildContent>
                 </ObjectCard>
@@ -89,7 +89,7 @@ else if (b != null)
                     var now = qi == activeIdx && (b.Cursor == k || (qi == 0 && b.PlayerActing && b.Cursor == k));
                     var done = k < b.Cursor && !(qi == 0 && b.PlayerActing && b.Cursor == k);
                     <span class="q-chip @(now ? "now" : "") @(done ? "done" : "") @(qi == 0 ? "me" : "") @(chase ? "chase" : "")"
-                          title="@($"速度{Ui.T(b.Initiative.ElementAtOrDefault(k))}{(chase ? "；追击：速度优势带来的额外2AP激活" : "")}")">@(chase ? "追·" : "")@(qi == 0 ? "你" : $"{be!.Slot}号 {e.EnemyName(be)}")</span>
+                          title="@($"速度{Ui.Speed(b.Initiative.ElementAtOrDefault(k))}{(chase ? "；追击：速度优势带来的额外2AP激活" : "")}")">@(chase ? "追·" : "")@(qi == 0 ? "你" : $"{be!.Slot}号 {e.EnemyName(be)}")</span>
                 }
             </div>
             <span class="bt-noise" title="枪声+@(Ui.T(cfg.Noise.GunGain))、弩+@(Ui.T(cfg.Noise.CrossbowGain))；满@(Ui.T(cfg.Noise.Max))可能引来同地丧尸（每场最多1次）">
@@ -113,7 +113,7 @@ else if (b != null)
                         <div class="track" title="@($"健康{Ui.N(s.Stats.Health)}/{Ui.T(s.Stats.HealthMax)}")"><i style="width:@Ui.Bar(s.Stats.Health, s.Stats.HealthMax)%"></i></div>
                         <div class="track en" title="@($"体力{Ui.N(s.Stats.Energy)}/{Ui.T(s.Stats.EnergyMax)}")"><i style="width:@Ui.Bar(s.Stats.Energy, s.Stats.EnergyMax)%"></i></div>
                         <div class="hp-line"><span>健康@(Ui.N(s.Stats.Health))</span><b>体力@(Ui.N(s.Stats.Energy))</b></div>
-                        <div class="hp-line speed-line" title="@($"有效速度=max(1, 基础{Ui.T(mySpeed.Base)}+装备{Ui.SignedT(mySpeed.Gear)}{(mySpeed.Status.Count > 0 ? "，" + string.Join("，", mySpeed.Status) : "")})；追击进度{Ui.T(b.PlayerPursuit)}/100")"><span>速度@(Ui.T(mySpeed.Speed))</span><b>追击@(Ui.T(b.PlayerPursuit))/100</b></div>
+                        <div class="hp-line speed-line" title="@($"有效速度=max(1, 基础{Ui.Speed(mySpeed.Base)}+装备{Ui.SignedT(mySpeed.Gear)}{(mySpeed.Status.Count > 0 ? "，" + string.Join("，", mySpeed.Status) : "")})，四舍五入到0.01；追击进度{Ui.T(b.PlayerPursuit)}/100")"><span>速度@(Ui.Speed(mySpeed.Speed))</span><b>追击@(Ui.T(b.PlayerPursuit))/100</b></div>
                     </div>
                 </div>
             </div>
@@ -271,7 +271,7 @@ else if (b != null)
                 </div>
             </div>
             <div class="st-chips">
-                <span class="st" title="@($"护甲 · 闪避 · 有效速度；追击进度{Ui.T(en.PursuitProgress)}/100")">甲@(Ui.T(ec.Armor)) 闪@(Ui.T(ec.Dodge)) 速@(Ui.T(e.EnemyEffectiveSpeed(en)))</span>
+                <span class="st" title="@($"护甲 · 闪避 · 有效速度；追击进度{Ui.T(en.PursuitProgress)}/100")">甲@(Ui.T(ec.Armor)) 闪@(Ui.T(ec.Dodge)) 速@(Ui.Speed(e.EnemyEffectiveSpeed(en)))</span>
                 @if (en.Guard) { <span class="st good">防御</span> }
                 @if (en.Stagger) { <span class="st bad">失衡</span> }
                 @if (en.SteadyUntilRound >= b.Round) { <span class="st" title="控制成功后至下一大回合末，控制抗性+30个百分点">稳态</span> }

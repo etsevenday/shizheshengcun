@@ -156,12 +156,23 @@ namespace Survival.Core.Engine
             if (e < m.LowEnergyExclusive) { sp -= m.LowEnergySpeedPenalty; status.Add($"体力<{Fmt.T(m.LowEnergyExclusive)} −{Fmt.T(m.LowEnergySpeedPenalty)}"); }
             if (s.Stats.Wakefulness < m.LowWakefulnessSpeedExclusive) { sp -= m.LowWakefulnessSpeedPenalty; status.Add($"清醒<{Fmt.T(m.LowWakefulnessSpeedExclusive)} −{Fmt.T(m.LowWakefulnessSpeedPenalty)}"); }
             if (b != null && b.PlayerSlowActive) { sp -= Config.Statuses.Slow.NextRoundSpeedPenalty; status.Add($"减速 −{Fmt.T(Config.Statuses.Slow.NextRoundSpeedPenalty)}"); }
-            return (Math.Max(m.MinSpeed, sp), baseSp, gear, status);
+            return (QuantizeSpeed(sp), baseSp, gear, status);
         }
 
-        /// <summary>敌人有效速度：max(1, A09 面板速度 − 减速)。</summary>
+        /// <summary>敌人有效速度：max(1, 四舍五入到0.01(A09 面板速度 − 减速))（Q71）。</summary>
         public double EnemyEffectiveSpeed(BattleEnemy e) =>
-            Math.Max(Config.CombatMath.MinSpeed, _enemies[e.EnemyId].Speed - (e.SlowActive ? Config.Statuses.Slow.NextRoundSpeedPenalty : 0) - e.SlowExtraActive);
+            QuantizeSpeed(_enemies[e.EnemyId].Speed - (e.SlowActive ? Config.Statuses.Slow.NextRoundSpeedPenalty : 0) - e.SlowExtraActive);
+
+        /// <summary>
+        /// 有效速度的统一量化（Q71）：max(1, 四舍五入到 0.01(基础+装备+状态))，不先取整；只在这里量化一次，排序按整数百分速度比较。
+        /// </summary>
+        public double QuantizeSpeed(double raw) => Math.Max(SpeedHundredths(Config.CombatMath.MinSpeed), SpeedHundredths(raw)) / 100.0;
+
+        /// <summary>速度的整数百分值（四舍五入、半数远离零；先吸附 1e-7 消除 4.005 这类浮点误差）。</summary>
+        public static int SpeedHundredths(double v) => (int)Math.Floor(Math.Abs(v) * 100 + 0.5 + 1e-7) * Math.Sign(v);
+
+        /// <summary>追击进度按 0.0001 保存（Q71：不每轮取整、不清小数）。</summary>
+        public static double RoundPursuit(double v) => Math.Round(v, 4, MidpointRounding.AwayFromZero);
 
         /// <summary>追击进度增量 q=clamp(50×(自己的轮初有效速度/敌方最快存活角色轮初有效速度−1), 0, 100)（R03 §2）。</summary>
         public double PursuitGain(double own, double fastestOpponent)
@@ -477,7 +488,7 @@ namespace Survival.Core.Engine
             };
             foreach (var e in b.Alive.OrderBy(e => e.Index)) entries.Add((e.Index, EnemyEffectiveSpeed(e), e.TieRoll, e.WorldId));
             List<(int idx, double speed, double u, int actor)> Sort(IEnumerable<(int idx, double speed, double u, int actor)> xs) =>
-                xs.OrderByDescending(x => x.speed).ThenByDescending(x => x.u).ThenBy(x => x.actor).ToList();
+                xs.OrderByDescending(x => SpeedHundredths(x.speed)).ThenByDescending(x => x.u).ThenBy(x => x.actor).ToList();   // Q71：百分速度降序→u降序→ID升序
             var ordered = Sort(entries);
             // 追击：对方阵营最快存活角色的轮初速度为基准
             var playerSpeed = entries[0].speed;
@@ -488,13 +499,13 @@ namespace Survival.Core.Engine
             {
                 if (x.idx == 0)
                 {
-                    b.PlayerPursuit += PursuitGain(x.speed, fastestEnemy);
-                    if (b.PlayerPursuit >= th - 1e-9) { b.PlayerPursuit -= th; pursuit.Add(x); }
+                    b.PlayerPursuit = RoundPursuit(b.PlayerPursuit + PursuitGain(x.speed, fastestEnemy));
+                    if (b.PlayerPursuit >= th - 1e-9) { b.PlayerPursuit = RoundPursuit(b.PlayerPursuit - th); pursuit.Add(x); }
                 }
                 else if (BattleEnemyAt(b, x.idx) is BattleEnemy e && !b.Tutorial)
                 {
-                    e.PursuitProgress += PursuitGain(x.speed, playerSpeed);
-                    if (e.PursuitProgress >= th - 1e-9) { e.PursuitProgress -= th; pursuit.Add(x); }
+                    e.PursuitProgress = RoundPursuit(e.PursuitProgress + PursuitGain(x.speed, playerSpeed));
+                    if (e.PursuitProgress >= th - 1e-9) { e.PursuitProgress = RoundPursuit(e.PursuitProgress - th); pursuit.Add(x); }
                 }
             }
             var chase = Sort(pursuit);
@@ -507,7 +518,7 @@ namespace Survival.Core.Engine
             b.PlayerAp = 0;
             foreach (var e in b.Alive) LockIntent(s, b, e);
             string Name(int idx) => idx == 0 ? "你" : EnemyName(BattleEnemyAt(b, idx)!);
-            BattleLog(s, "行动顺序（速度）：" + string.Join(" → ", ordered.Select(x => $"{Name(x.idx)}({Fmt.T(x.speed)})"))
+            BattleLog(s, "行动顺序（速度）：" + string.Join(" → ", ordered.Select(x => $"{Name(x.idx)}({Fmt.Speed(x.speed)})"))
                          + (chase.Count > 0 ? "；追击：" + string.Join(" → ", chase.Select(x => Name(x.idx))) : ""));
         }
 

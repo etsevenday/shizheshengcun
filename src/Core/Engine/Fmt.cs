@@ -37,6 +37,9 @@ namespace Survival.Core.Engine
             return v < 0 && t > 0 ? "−" + s : s;
         }
 
+        /// <summary>速度（Q71）：至少 1 位、至多 2 位小数，如 4.0、3.5、4.05。</summary>
+        public static string Speed(double v) => (Math.Floor(Math.Abs(v) * 100 + 0.5 + Snap) / 100 * Math.Sign(v)).ToString("0.0#", CultureInfo.InvariantCulture);
+
         /// <summary>带符号的变化量：“+0.40”“−1.20”；为 0 写“0.00”。</summary>
         public static string Delta(double v) => v > 0 ? "+" + N(v) : N(v);
 

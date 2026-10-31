@@ -454,4 +454,78 @@ public class B7cCombatTests : BattleTestBase
         Assert.That(Cmd(s, "unarmed_05").Ok, Is.True);
         Assert.That((s.Battle!.PlayerGuardFactor, s.Battle.PlayerGuardSourceId, shield.Durability), Is.EqualTo((0.5, (int?)null, (double?)d0)));
     }
+
+    // ───────────── M169：小数速度（Q71） ─────────────
+
+    /// <summary>另起一个引擎：主角基础速度与游荡尸面板速度改成小数（现有数据都是整数，小数来源在 B8 随机人物）。</summary>
+    private void DecimalSpeeds(double player, double shambler)
+    {
+        var cfg = ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));
+        cfg.Scope.BasePlayerSpeed = player;
+        cfg.Enemies.Single(x => x.Id == "shambler").Speed = shambler;
+        E = new GameEngine(cfg);
+    }
+
+    private void BeginRound(GameState s) =>
+        typeof(GameEngine).GetMethod("BeginRound", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(E, new object[] { s });
+
+    /// <summary>CB-Q71a：4.01 与 4.02 按小数排；真同速 4.0 按锁定 u 降序、再 worldActorId 升序，u 存档不重抽。</summary>
+    [Test]
+    public void CB_Q71a_DecimalOrder_TrueTieByLockedU()
+    {
+        var np = Adj()["numericPrecision"]!;
+        Assert.That(((double)np["speedStep"]!, (double)np["pursuitProgressStoredPrecision"]!), Is.EqualTo((0.01, 0.0001)));
+        DecimalSpeeds(4.01, 4.02);
+        var s = Fight(41, "shambler");
+        var b = s.Battle!;
+        Assert.That((E.PlayerEffectiveSpeed(s, b), E.EnemyEffectiveSpeed(b.Enemies[0])), Is.EqualTo((4.01, 4.02)));
+        Assert.That(b.Queue.Take(2), Is.EqualTo(new[] { 1, 0 }), "4.02 先于 4.01，不先取整成同速");
+        Assert.That(b.Log.Last(), Does.Contain("游荡尸(4.02) → 你(4.01)"));
+        DecimalSpeeds(4.0, 4.0);
+        var t = Fight(42, "shambler", "shambler");
+        var tb = t.Battle!;
+        tb.PlayerTieRoll = 0.5;
+        tb.Enemies[0].TieRoll = 0.7;
+        tb.Enemies[1].TieRoll = 0.5;
+        BeginRound(t);
+        Assert.That(tb.Queue.Take(3), Is.EqualTo(new[] { 1, 0, 2 }), "u 降序；主角与 2 号 u 同为 0.5 时 worldActorId 升序（主角记 0）");
+        var u = SaveSerializer.Deserialize(SaveSerializer.Serialize(t), E.Config);
+        Assert.That((u.Battle!.PlayerTieRoll, u.Battle.Enemies[0].TieRoll), Is.EqualTo((0.5, 0.7)), "u 随存档不重抽");
+    }
+
+    /// <summary>CB-Q71b：4.5 对 3.0 每轮 q=25；4.04 对 4.0 每轮 q=0.5，按 0.0001 累计、不取整也不清小数。</summary>
+    [Test]
+    public void CB_Q71b_PursuitProgress_KeepsDecimals()
+    {
+        Assert.That(E.PursuitGain(4.5, 3.0), Is.EqualTo(25).Within(1e-12));
+        Assert.That(E.PursuitGain(4.04, 4.0), Is.EqualTo(0.5).Within(1e-9));
+        DecimalSpeeds(4.04, 4.0);
+        var s = Fight(43, "shambler");
+        var b = s.Battle!;
+        Assert.That(b.PlayerPursuit, Is.EqualTo(0.5).Within(1e-12), "第1轮轮初 +0.5");
+        BeginRound(s);
+        BeginRound(s);
+        Assert.That(b.PlayerPursuit, Is.EqualTo(1.5).Within(1e-12), "累计，不每轮取整");
+        Assert.That(b.PlayerPursuit * 10000, Is.EqualTo(Math.Round(b.PlayerPursuit * 10000)).Within(1e-6), "按 0.0001 保存");
+        DecimalSpeeds(4.0, 3.0);
+        var t = Fight(44, "shambler");
+        Assert.That(t.Battle!.PlayerPursuit, Is.EqualTo(16.6667).Within(1e-12), "50×(4/3−1)=16.666…→0.0001 精度");
+    }
+
+    /// <summary>CB-Q71c：量化与显示——0.01 四舍五入、最低1；显示1—2位小数；撤退用同一小数速度；AP 仍整数。</summary>
+    [Test]
+    public void CB_Q71c_Quantize_Display_RetreatSameSource()
+    {
+        Assert.That(E.QuantizeSpeed(4.005), Is.EqualTo(4.01));
+        Assert.That(E.QuantizeSpeed(4.004), Is.EqualTo(4.0));
+        Assert.That(E.QuantizeSpeed(0.3), Is.EqualTo(1.0), "最低1");
+        Assert.That((Fmt.Speed(4), Fmt.Speed(3.5), Fmt.Speed(4.05), Fmt.Speed(4.04)), Is.EqualTo(("4.0", "3.5", "4.05", "4.04")));
+        DecimalSpeeds(4.04, 4.0);
+        var s = Fight(45, "shambler");
+        var b = s.Battle!;
+        b.Panic = 0;
+        var r = E.RetreatChance(s, b);
+        Assert.That(r.chance, Is.EqualTo(1 / (1 + Math.Exp(-((4.04 - 4.0) / 3 + 0.7)))).Within(1e-12), "撤退与追击同源小数速度");
+        Assert.That(E.NormalActivationAp(s.Player), Is.EqualTo(3), "AP 仍整数");
+    }
 }
