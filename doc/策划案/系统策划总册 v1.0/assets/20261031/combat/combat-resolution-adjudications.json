@@ -1,5 +1,5 @@
 {
-  "version": "q75_q82_20261031",
+  "version": "q75_q83_20261031",
   "status": "approved_planning_target_not_engine_verified",
   "sourceQuestions": [
     "Q75",
@@ -9,7 +9,8 @@
     "Q79",
     "Q80",
     "Q81",
-    "Q82"
+    "Q82",
+    "Q83"
   ],
   "precedence": {
     "baseline": "assets/20261031/combat/combat-adjudications.json",
@@ -1587,5 +1588,19 @@
         "effect": "已访问物理边移动基础工作量×0.90（替代5级）；不免费传送"
       }
     ]
+  },
+  "deathSplash": {
+    "enemyId": "z_bloater",
+    "targetSlots": [
+      1,
+      2
+    ],
+    "damagePerTarget": 0.3,
+    "hitCheck": false,
+    "countsAsAttackHit": false,
+    "armorApplies": true,
+    "armorWear": 0,
+    "infects": false,
+    "sourceQuestion": "Q83"
   }
 }

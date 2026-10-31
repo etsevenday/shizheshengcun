@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-31",
+  "question": "Q83",
+  "answer": "A",
+  "status": "document_checks_passed_not_engine_or_ui_verification",
+  "checks": [
+    {
+      "name": "全部策划JSON可解析",
+      "passed": true
+    },
+    {
+      "name": "完整保留实现同步与修改记录 00 总则/02 开发方待确认问题.md",
+      "passed": true
+    },
+    {
+      "name": "问题文件仅填Q83答复",
+      "passed": true
+    },
+    {
+      "name": "完整保留实现同步与修改记录 04 附录/A05 装备、词条与具体装备目录.md",
+      "passed": true
+    },
+    {
+      "name": "完整保留实现同步与修改记录 04 附录/A09 敌人、遭遇组合与掉落目录.md",
+      "passed": true
+    },
+    {
+      "name": "完整保留实现同步与修改记录 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "完整保留实现同步与修改记录 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "合同副本一致 04 附录/A12 全系统策划数据索引.json",
+      "passed": true
+    },
+    {
+      "name": "合同副本一致 assets/20261030/index/joint-expansion-data.json",
+      "passed": true
+    },
+    {
+      "name": "喷溅合同不改范围伤害与护甲且免磨",
+      "passed": true
+    },
+    {
+      "name": "相对链接有效",
+      "passed": true
+    },
+    {
+      "name": "无待定答复字段",
+      "passed": true
+    }
+  ],
+  "acceptanceIds": [
+    "EQ-Q83-01",
+    "EQ-Q83-02",
+    "EQ-Q83-03",
+    "EQ-Q83-04",
+    "EQ-Q83-05"
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "version": "q44_q82_20261031",
+  "version": "q44_q83_20261031",
   "status": "approved_planning_target_not_engine_verification",
   "sourceQuestions": [
     "Q44",
@@ -21,7 +21,8 @@
     "Q69",
     "Q71",
     "Q80",
-    "Q82"
+    "Q82",
+    "Q83"
   ],
   "quality": {
     "unspecifiedSource": "white_zero_affixes_no_rng",
@@ -49,7 +50,16 @@
     "rounding": "nearest_tenth_half_up_positive",
     "armorWearBasis": "positive_direct_damage_before_armor_after_hit",
     "perMultiHitCommandWearMax": 1,
-    "zeroDurabilityEffectsDisabled": true
+    "zeroDurabilityEffectsDisabled": true,
+    "deathSplashWear": {
+      "enemyId": "z_bloater",
+      "hitCheck": false,
+      "countsAsAttackHit": false,
+      "armorApplies": true,
+      "armorWear": 0,
+      "includesFullyBlockedAndPositiveFinalDamage": true,
+      "sourceQuestion": "Q83"
+    }
   },
   "combatEquipment": {
     "bothEquippedWeaponSpeedModifiersCount": true,

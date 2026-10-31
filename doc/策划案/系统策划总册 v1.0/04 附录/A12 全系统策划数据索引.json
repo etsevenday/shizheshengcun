@@ -49698,7 +49698,7 @@
     }
   },
   "equipmentAdjudications": {
-    "version": "q44_q82_20261031",
+    "version": "q44_q83_20261031",
     "status": "approved_planning_target_not_engine_verification",
     "sourceQuestions": [
       "Q44",
@@ -49720,7 +49720,8 @@
       "Q69",
       "Q71",
       "Q80",
-      "Q82"
+      "Q82",
+      "Q83"
     ],
     "quality": {
       "unspecifiedSource": "white_zero_affixes_no_rng",
@@ -49748,7 +49749,16 @@
       "rounding": "nearest_tenth_half_up_positive",
       "armorWearBasis": "positive_direct_damage_before_armor_after_hit",
       "perMultiHitCommandWearMax": 1,
-      "zeroDurabilityEffectsDisabled": true
+      "zeroDurabilityEffectsDisabled": true,
+      "deathSplashWear": {
+        "enemyId": "z_bloater",
+        "hitCheck": false,
+        "countsAsAttackHit": false,
+        "armorApplies": true,
+        "armorWear": 0,
+        "includesFullyBlockedAndPositiveFinalDamage": true,
+        "sourceQuestion": "Q83"
+      }
     },
     "combatEquipment": {
       "bothEquippedWeaponSpeedModifiersCount": true,
@@ -55079,7 +55089,7 @@
     "scope": "依据策划面板及已读B6/B7公式的可复现数值实验；非引擎执行、非玩家遥测、非完整回合战斗胜率"
   },
   "combatResolutionAdjudications": {
-    "version": "q75_q82_20261031",
+    "version": "q75_q83_20261031",
     "status": "approved_planning_target_not_engine_verified",
     "sourceQuestions": [
       "Q75",
@@ -55089,7 +55099,8 @@
       "Q79",
       "Q80",
       "Q81",
-      "Q82"
+      "Q82",
+      "Q83"
     ],
     "precedence": {
       "baseline": "assets/20261031/combat/combat-adjudications.json",
@@ -56667,6 +56678,20 @@
           "effect": "已访问物理边移动基础工作量×0.90（替代5级）；不免费传送"
         }
       ]
+    },
+    "deathSplash": {
+      "enemyId": "z_bloater",
+      "targetSlots": [
+        1,
+        2
+      ],
+      "damagePerTarget": 0.3,
+      "hitCheck": false,
+      "countsAsAttackHit": false,
+      "armorApplies": true,
+      "armorWear": 0,
+      "infects": false,
+      "sourceQuestion": "Q83"
     }
   },
   "combatResolutionBenchmark": {
