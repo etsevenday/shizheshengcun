@@ -277,7 +277,10 @@ namespace Survival.Core.Engine
                     p.Outputs = rc.Outputs.Select(kv => Line(kv.Key, kv.Value * batch)).ToList();
                     p.ConfirmText = rc.IsBuild ? "开始建造" : rc.IsRepair ? "开始维护" : rc.IsSalvage ? "开始拆解" : batch > 1 ? $"开始制作×{batch}" : "开始制作";
                     // Q57 选 B：制造等级不再折减工作量，只看装备与节点效果（见工作倍率行）
-                    p.Notes.Add($"基础工作量{rc.BaseMinutes * batch}分钟（制造等级不改变工作量）");
+                    // B10b 试玩修复：经验归医疗的配方不写“制造等级”，免得误以为看制造
+                    p.Notes.Add(rc.XpSkill == null
+                        ? $"基础工作量{rc.BaseMinutes * batch}分钟（制造等级不改变工作量）"
+                        : $"基础工作量{rc.BaseMinutes * batch}分钟（完成经验给{SkillName(rc.XpSkill)}，不给制造）");
                     if (rc.IsSalvage)
                     {
                         if (plan != null) p.Outputs = plan.Outputs;

@@ -1252,8 +1252,17 @@ public sealed class GameSession
             var movedItem = inst.ItemId;
             var zone = toZone ?? S.CurrentLocation;
             var wasSelected = Selected.InstanceId == id && Selected.Kind == SelectionKind.Tool;
+            // B10b 试玩修复：煅烧批次（木材×4 / 成品木炭×3）取出后不跟到合并堆、不再弹操作窗，免得盖住火堆加工位的“煅烧木炭”入口
+            var cp = E.CharcoalProcess;
+            var charcoalBatch = cp != null && inst.InFacility && (inst.ItemId == cp.InputId || inst.ItemId == cp.OutputId);
             var res = Instant(InstantRequest.TakeOut(id, zone));
-            if (res.Ok)
+            if (res.Ok && charcoalBatch)
+            {
+                ClearSelectionSilently();
+                Pop = null;
+                Notify();
+            }
+            else if (res.Ok)
             {
                 ReconcileSelection();
                 // 取出的那份并进了目标区已有的同类堆（实例被合并掉）：选中跟到那一堆，卡下操作条与右栏不落空（试玩修复 B1）

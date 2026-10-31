@@ -301,7 +301,17 @@ namespace Survival.Core.Engine
         {
             if (loc != s.CurrentLocation || !_locs[loc].HasFire) return DropIntent.No("异地不能操作火堆");
             if (src.Kind == DropSourceKind.Card && IsLighter(head) && !head.InFacility) return IgniteFor(s, head);
-            if (head.ItemId == "wood" && src.Kind == DropSourceKind.Card && !head.InFacility) return DropOnFuel(s, head, loc);
+            if (head.ItemId == "wood" && src.Kind == DropSourceKind.Card && !head.InFacility)
+            {
+                // Q111：木材落在火堆任何位置都是添加燃料；落在加工位/卡面时提示煅烧要走显式入口（不默默改成煅烧）
+                var fuel = DropOnFuel(s, head, loc);
+                if (fuel.Ok && CharcoalProcess != null && fuel.Instant != null)
+                {
+                    fuel.Label += "（作燃料；要煅烧木炭请点“煅烧木炭”）";
+                    fuel.Instant.FuelViaSlot = true;
+                }
+                return fuel;
+            }
             var max = MaxPutInFire(s, head, out var why);
             if (why != null) return DropIntent.No(why);
             var name = ItemName(head.ItemId);

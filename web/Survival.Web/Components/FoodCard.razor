@@ -23,7 +23,19 @@
         <button type="button" class="row-arrow" aria-label="@($"把{name}取到随身")" title="取到随身（不打开操作窗；点图标可选目的地）"
                 disabled="@(G.E.IsBusy(s) || G.Running)" @onclick="Take" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">▼</button>
     </div>
-    <div class="ff-status">@e.ContentStatus(s, Item)</div>
+    @* B10b 试玩修复：1280×720 加工位只有一行，状态另备短写（“煅烧暂停 0/60（未燃）”），全文在悬停提示与宽屏 *@
+    @{
+        var full = e.ContentStatus(s, Item);
+        string? brief = null;
+        if (proc != null && !spoiled && !proc.HeatProtected)
+        {
+            var verb = e.Process(proc.RecipeId).Name;
+            brief = e.FireHot(s, s.CurrentLocation)
+                ? $"{verb}中 {proc.HeatDoneMinutes}/{proc.RequiredHeatMinutes}分"
+                : $"{verb}暂停 {proc.HeatDoneMinutes}/{proc.RequiredHeatMinutes}（未燃）";
+        }
+    }
+    <div class="ff-status">@if (brief != null) {<span class="st-long">@full</span><span class="st-short">@brief</span>} else {@full}</div>
     @if (proc != null && !spoiled)
     {
         <div class="heat-track"><i style="width:@(Math.Min(100, proc.HeatDoneMinutes * 100 / Math.Max(1, proc.RequiredHeatMinutes)))%"></i></div>

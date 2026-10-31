@@ -75,6 +75,8 @@ namespace Survival.Core.Engine
         /// <summary>排序：被移动的卡片键与插入位置（在去掉该卡后的列表里的下标）。</summary>
         public string CardKey { get; set; } = "";
         public int Index { get; set; }
+        /// <summary>B10b 试玩修复（Q111）：木材是落在火堆加工位/卡面而不是燃料区投的燃料，日志补一句“要煅烧木炭请点‘煅烧木炭’”。</summary>
+        public bool FuelViaSlot { get; set; }
         /// <summary>幂等请求号：同一请求重复提交只生效一次（拖拽与容器案 9）。</summary>
         public string? RequestId { get; set; }
 

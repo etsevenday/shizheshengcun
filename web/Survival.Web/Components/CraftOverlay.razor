@@ -258,17 +258,26 @@ else if (proc != null)
             <div><span>有效受热</span><b>@(proc.HeatMinutes)分钟</b></div>
             <div><span>占用角色</span><b>不占用</b></div>
             @if (proc.WaterCostMl > 0) { <div><span>耗水</span><b>每份@(e.ItemName(proc.RequiredLiquid ?? ""))@(proc.WaterCostMl)毫升</b></div> }
-            <div><span>成品留在</span><b>@(proc.IsPotBatch ? "原锅" : proc.InPot ? "原锅食材位" : "原火堆加工位")</b></div>
+            <div><span>成品留在</span><b>@(proc.IsPotBatch ? "原锅" : proc.InPot ? "原锅食材位" : proc.IsSlotBatch ? "原火堆加工位（取出才进包）" : "原火堆加工位")</b></div>
+            @if (proc.IsSlotBatch)
+            {
+                <div><span>每批</span><b>@(e.ItemName(proc.InputId))×@(proc.InputCount) → @(e.ItemName(proc.OutputId))×@(proc.OutputCount)，占1个加工位</b></div>
+                <div><span>燃料</span><b>火堆燃料另计，两批并行不倍扣</b></div>
+                <div><span>经验</span><b>不给经验</b></div>
+            }
         </div>
         @if (!proc.IsPotBatch)
         {
+            // B10b 试玩修复：木炭等没有使用效果、不会腐败的产物不再按食物写（原来对 Use 为空的产物会崩）
             var o = e.Item(proc.OutputId);
-            <ItemRow Icon="@o.Id" Name="@o.Name" Qty="×1" Status="@($"{GameEngine.UseEffectText(o.Use!)} · 保质{o.ShelfLifeMinutes / 60}小时")" />
+            var use = o.Use != null ? GameEngine.UseEffectText(o.Use) : o.Kind == "material" ? "材料" : o.Name;
+            var shelf = o.ShelfLifeMinutes is int sl ? $"保质{sl / 60}小时" : "不会腐败";
+            <ItemRow Icon="@o.Id" Name="@o.Name" Qty="@($"×{proc.OutputCount}")" Status="@($"{use} · {shelf}")" />
         }
     </div>
     <div class="detail-foot">
         <button class="primary" disabled="@(!lc.HasFire)" @onclick="G.SelectFire">查看火堆 ▸</button>
-        <div class="under">没有开始按钮：放进燃烧的火堆即自动加工</div>
+        <div class="under">@(proc.IsSlotBatch ? "没有开始按钮：在火堆卡空加工位点“煅烧木炭”投料" : "没有开始按钮：放进燃烧的火堆即自动加工")</div>
     </div>
 }
 else
@@ -304,11 +313,14 @@ else
         };
     }
 
-    private string ProcTitle(ProcessConfig p) => p.IsPotBatch ? "烧水" : $"{p.Name}{G.E.ItemName(p.InputId).Replace("生", "")}";
+    private string ProcTitle(ProcessConfig p) => p.IsPotBatch ? "烧水" : p.IsSlotBatch ? $"{p.Name}{G.E.ItemName(p.OutputId)}" : $"{p.Name}{G.E.ItemName(p.InputId).Replace("生", "")}";
 
     private string ProcHint(ProcessConfig p)
     {
         var e = G.E;
+        if (p.IsSlotBatch)
+            return $"在火堆卡空加工位点“煅烧木炭”投料：每批{e.ItemName(p.InputId)}×{p.InputCount}占1个加工位，{p.HeatMinutes}有效受热分钟后原位变成{e.ItemName(p.OutputId)}×{p.OutputCount}。"
+                   + $"火堆燃料另计（两批并行不倍扣，点火那5分钟不计热）；把{e.ItemName(p.InputId)}拖到火堆是添加燃料，不是煅烧。不给经验。";
         return (p.IsPotBatch ? "boil_water" : p.InPot ? "boil_root" : "roast_root") switch
         {
             "boil_water" => $"装了{e.ItemName(p.InputId)}的金属锅放进燃烧的火堆，0.5升或1升都是{p.HeatMinutes}分钟原地烧成{e.ItemName(p.OutputId)}；不自动补水。",
@@ -323,6 +335,14 @@ else
     {
         var e = G.E;
         var heat = $"受热{p.HeatMinutes}分钟";
+        if (p.IsSlotBatch)
+            return new()
+            {
+                (p.InputId, e.ItemName(p.InputId), $"1. 随身或当前地面备好{e.ItemName(p.InputId)}×{p.InputCount}（拖到火堆是加燃料）"),
+                ("slot_empty", "空加工位", $"2. 点火堆卡空加工位里的“煅烧木炭”，确认投料（占1位，不耗时）"),
+                ("fire_lit", "燃烧的火堆", $"3. 点火并保持燃料，{p.HeatMinutes}有效受热分钟；燃料另计，熄火保留进度"),
+                (p.OutputId, e.ItemName(p.OutputId), $"4. 原位变成{e.ItemName(p.OutputId)}×{p.OutputCount}，取出才进包；不给经验"),
+            };
         return (p.IsPotBatch ? "boil_water" : p.InPot ? "boil_root" : "roast_root") switch
         {
             "boil_water" => new()

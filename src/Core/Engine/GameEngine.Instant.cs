@@ -97,7 +97,9 @@ namespace Survival.Core.Engine
                         left -= take;
                     }
                     fac.FuelMinutes += r.Count * Config.Fire.BurnMinutesPerWood;
-                    Emit(s, GameEventKind.Info, $"投入{r.Count}木材，火堆燃料{fac.FuelMinutes}分钟。");
+                    Emit(s, GameEventKind.Info, $"投入{r.Count}木材，火堆燃料{fac.FuelMinutes}分钟。"
+                        + (r.FuelViaSlot && CharcoalProcess is ProcessConfig cp
+                            ? $"已作为燃料添加；要煅烧木炭请点火堆卡“煅烧木炭”（每批{ItemName(cp.InputId)}×{cp.InputCount}）。" : ""));
                     UpdateFlags(s);
                     return ActionResult.Success();
                 }

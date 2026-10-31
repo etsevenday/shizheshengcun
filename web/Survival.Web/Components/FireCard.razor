@@ -36,7 +36,7 @@
              @onclick="SelectFire" @onclick:stopPropagation="true" @onkeydown="Key">
             <span class="fc-art">@Icons.Markup(fac.FireLit ? "fire_lit" : "fire_out")</span>
             <span class="fc-info">
-                <span class="fc-title"><b>火堆</b><span class="oc-badge @(fac.FireLit ? "lit" : "")">@state</span></span>
+                <span class="fc-title"><b>火堆</b><span class="oc-badge @(fac.FireLit ? "lit" : "")">@state</span>@if (slots.Count > 0 && slots.All(x => x != null)) {<span class="oc-badge full" title="@($"火堆加工位已满（{slots.Count}/{slots.Count}）：取出成品或半成品后才能再煅烧木炭、放锅或直烤")">加工位满</span>}</span>
                 <span class="fuel-line"><span>燃料</span><b>@(fac.FuelMinutes)/@(maxFuel)分钟</b></span>
                 <span class="fuel-track"><i style="width:@(fac.FuelMinutes * 100 / Math.Max(1, maxFuel))%"></i></span>
             </span>
@@ -115,11 +115,13 @@
 
     private static readonly ActionRequest CookReq = ActionRequest.WaitCook();
 
-    /// <summary>按钮上只放原因主句（括号里的补充说明在悬停提示里看全文）。</summary>
+    /// <summary>按钮上只放原因主句（括号与冒号后的补充说明在悬停提示里看全文；B10b 试玩修复：1280 下“火堆未燃烧：请先点火”被截）。</summary>
     private static string ShortReason(string why)
     {
         var k = why.IndexOf('（');
-        return k > 0 ? why[..k] : why;
+        if (k > 0) why = why[..k];
+        var c = why.IndexOf('：');
+        return c > 0 ? why[..c] : why;
     }
     private bool cooking;
 

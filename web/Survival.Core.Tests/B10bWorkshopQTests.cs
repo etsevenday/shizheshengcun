@@ -428,4 +428,47 @@ public class B10bWorkshopQTests : TestBase
         Assert.That(E.KnowsKnowledge(legacy, armory.Id), Is.True, "旧档原等效领取事实补知识");
         Assert.That(legacy.Items.Any(i => i.ItemId == "battery"), Is.False, "不补电源/箱奖");
     }
+
+    /// <summary>B10b 试玩修复：木材拖到加工位/卡面仍是加燃料，提示与日志补“要煅烧木炭请点‘煅烧木炭’”；拖到燃料区不加这句。</summary>
+    [Test]
+    public void Fix_WoodOnSlot_IsFuel_WithCharcoalHint()
+    {
+        var s = WithWood(0, 3);
+        foreach (var target in new[] { "fireslot:camp", "fire:camp" })
+        {
+            var i = E.ResolveDrop(s, DropSource.Parse("card:camp|wood")!, DropTarget.Parse(target)!);
+            Assert.That(i.Verb, Is.EqualTo(DropVerb.AddFuel), target);
+            Assert.That(i.Label, Does.Contain("要煅烧木炭请点“煅烧木炭”"), target);
+            Assert.That(i.Instant!.FuelViaSlot, Is.True);
+        }
+        var fuel = E.ResolveDrop(s, DropSource.Parse("card:camp|wood")!, DropTarget.Parse("fuel:camp")!);
+        Assert.That(fuel.Label, Does.Not.Contain("煅烧"));
+        var slot = E.ResolveDrop(s, DropSource.Parse("card:camp|wood")!, DropTarget.Parse("fireslot:camp")!);
+        Ok(s, slot.Instant!);
+        Assert.That(Fac(s).FuelMinutes, Is.EqualTo(60));
+        Assert.That(Burns(s), Is.Empty, "没有变成煅烧");
+        Assert.That(s.Log.Last().Text, Does.Contain("已作为燃料添加；要煅烧木炭请点火堆卡“煅烧木炭”"));
+        Ok(s, InstantRequest.AddFuel(1));
+        Assert.That(s.Log.Last().Text, Does.Not.Contain("煅烧"));
+    }
+
+    /// <summary>B10b 试玩修复：成品木炭取出预览写成品口径；医疗配方工作量说明不写“制造等级”。</summary>
+    [Test]
+    public void Fix_CharcoalTakeOutText_MedicalWorkNote()
+    {
+        var s = WithWood(0, 4);
+        Ok(s, InstantRequest.LoadCharcoal());
+        Lit(s, 60);
+        Pass(s, 60);
+        var done = E.FireContents(s, "camp").Single();
+        Assert.That(E.TakeOutConsequenceOf(s, done).Text, Is.EqualTo("取出成品木炭×3，空出这个加工位"));
+
+        var m = New();
+        E.DebugBuildAllWorkshops(m);
+        E.CreateItems(m, "clean_water", 1, "camp");
+        E.CreateItems(m, "salt", 1, "camp");
+        var notes = E.Preview(m, Craft("make_saline")).Notes;
+        Assert.That(notes, Has.Some.Contains("完成经验给医疗，不给制造"));
+        Assert.That(notes, Has.None.Contains("制造等级不改变工作量"));
+    }
 }

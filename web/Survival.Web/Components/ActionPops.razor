@@ -208,7 +208,8 @@
         try
         {
             var res = G.Instant(InstantRequest.LoadCharcoal());
-            if (res.Ok) G.ClosePop();
+            // B10b 试玩修复：投料后收起浮窗并清掉选中（被取走一部分的木材堆不再弹操作窗盖住火堆）
+            if (res.Ok) G.ClearSelection();
         }
         finally { _go = false; }
     }

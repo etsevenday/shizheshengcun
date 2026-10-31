@@ -571,6 +571,9 @@ namespace Survival.Core.Engine
             c.CarriedGramsAfter = CarriedGrams(s) + (PlaceOf(s, inst) == ItemInstance.Carried ? 0 : c.Grams);
             c.RootCardsAfter = RootCardsAfter(s, inst, inst.Count, null, 0);
             c.Text = c.Resets.Count > 0 ? $"取出后{string.Join("、", c.Resets)}清零" : "当前没有已受热的加工进度，取出不损失进度";
+            // B10b 试玩修复：已完成的煅烧成品（木炭）取出是收取成品，不写“没有受热进度”
+            if (CharcoalProcess is ProcessConfig cpo && inst.InFacility && inst.ItemId == cpo.OutputId && touched.Count() == 0)
+                c.Text = $"取出成品{ItemName(inst.ItemId)}×{inst.Count}，空出这个加工位";
             // Q111：取出未完成的煅烧批次退回全部原料（同一批木材），已烧掉的燃料与时间不退
             if (touched.Any(p => Process(p.RecipeId).IsSlotBatch))
                 c.Text += $"；退回{ItemName(inst.ItemId)}×{inst.Count}，已烧掉的火堆燃料不退";
