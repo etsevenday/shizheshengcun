@@ -61,9 +61,13 @@ namespace Survival.Core.Config
         public string Group { get; set; } = "";
         /// <summary>饰品专用互斥组（Q51）：代码槽名 → 组；不在表里的槽用 Group（原衣物 survival 组不变）。</summary>
         public Dictionary<string, string>? SlotGroups { get; set; }
+        /// <summary>饰品上的生效域说明（Q51，A05 原文）：代码槽名 → 文字；如校准在战斗饰品上作用于佩戴者全部合法攻击（含空槽拳）。</summary>
+        public Dictionary<string, string>? SlotEffectText { get; set; }
         public List<EquipEffectConfig> Effects { get; set; } = new List<EquipEffectConfig>();
 
         public string GroupFor(string? slot) => slot != null && SlotGroups != null && SlotGroups.TryGetValue(slot, out var g) ? g : Group;
+
+        public string EffectTextFor(string? slot) => slot != null && SlotEffectText != null && SlotEffectText.TryGetValue(slot, out var t) ? t : EffectText;
     }
 
     /// <summary>装备效果合成上限（A05 §4 末段、R01 §4）。</summary>

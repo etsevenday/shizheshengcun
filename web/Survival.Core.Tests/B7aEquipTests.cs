@@ -224,4 +224,116 @@ public class B7aEquipTests : BattleTestBase
         Assert.That(rp.FactorAtStart, Is.EqualTo(0.95 * 0.97).Within(1e-12), "维修也吃制造类工作量");
         Assert.That(rp.XpGains, Has.Count.EqualTo(1), "经验不因装备改变");
     }
+
+    // ───────────── M153：饰品兼容池（R96，Q51） ─────────────
+
+    [Test]
+    public void EQ_Q51a_CharmPools_WhiteZeroGreenOneBlueTwo_EqualWeight_NoDurable_SlotGroups()
+    {
+        Assert.That(E.AffixPool("steady_ring").Select(a => a.Id), Is.EquivalentTo(new[] { "accurate", "swift", "anchored" }));
+        Assert.That(E.AffixPool("gather_gloves").Select(a => a.Id), Is.EquivalentTo(new[] { "craftsman", "economical", "patient", "surefoot" }));
+        foreach (var id in Cfg.Gear.Where(g => g.Slot is "combat_acc" or "survival_acc").Select(g => g.Id))
+            Assert.That(E.AffixPool(id).Any(a => a.Id == "durable"), Is.False, $"{id} 无耐久饰品不能耐用");
+        var s = New();
+        var first = new Dictionary<string, int>();
+        for (var k = 0; k < 3000; k++)
+        {
+            foreach (var id in new[] { "steady_ring", "gather_gloves" })
+            {
+                var a = E.RollAffixes(s, id, 2);
+                var slot = Cfg.Items.Single(i => i.Id == id).EquipSlot;
+                Assert.That(a, Has.Count.EqualTo(2), id);
+                Assert.That(a.Distinct().Count(), Is.EqualTo(2), $"{id} 不放回");
+                Assert.That(a.Select(x => E.Affix(x)!.GroupFor(slot)).Distinct().Count(), Is.EqualTo(2), $"{id} 饰品专用组最多1条");
+                Assert.That(a.All(x => E.AffixPool(id).Any(p => p.Id == x)), Is.True, $"{id} 不跨池");
+                if (id == "gather_gloves") first[a[0]] = first.TryGetValue(a[0], out var c) ? c + 1 : 1;
+            }
+        }
+        Assert.That(first.Keys, Is.EquivalentTo(new[] { "craftsman", "economical", "patient", "surefoot" }));
+        Assert.That(first.Values.All(v => Math.Abs(v - 750) < 120), Is.True, "等权：" + string.Join(",", first.Select(kv => kv.Key + kv.Value)));
+        foreach (var (q, n) in new[] { ("white", 0), ("green", 1), ("blue", 2) })
+        {
+            var it = Make(s, "focus_lens", q);
+            Assert.That(it.Affixes?.Count ?? 0, Is.EqualTo(n), q);
+            Assert.That(it.MaxDurability, Is.Null);
+        }
+        // 原衣物组不变：上衣池三条同属 survival 组，蓝色上衣仍只得 1 条
+        Assert.That(E.RollAffixes(s, "work_shirt", 2), Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public void EQ_Q51a_LegacyCharm_ZeroAffixes_KeptOnLoad_NotRerolled()
+    {
+        var s = New();
+        var old = Make(s, "steady_ring", "green");
+        old.Affixes = null;                    // 饰品池上线前生成的绿色饰品
+        var rng = SaveSerializer.Serialize(s);
+        var loaded = SaveSerializer.Deserialize(rng);
+        var it = loaded.Items.Single(i => i.InstanceId == old.InstanceId);
+        Assert.That((it.Quality, it.Affixes), Is.EqualTo(("green", (List<string>?)null)), "读档不补抽");
+        Assert.That(E.EquipDetailLines(loaded, it).Single(x => x.Label == "品质").Value, Does.Contain("旧实例，无附加词条"));
+        Assert.That(E.Equip(loaded, P0, it.InstanceId, EquipSlots.CombatAccessory).Ok, Is.True);
+        Assert.That(E.Unequip(loaded, P0, EquipSlots.CombatAccessory, false).Ok, Is.True);
+        Assert.That(it.Affixes, Is.Null, "穿脱不洗词条");
+        var fresh = Make(s, "steady_ring", "green");
+        Assert.That(E.EquipDetailLines(s, fresh).Single(x => x.Label == "品质").Value, Is.EqualTo("绿（附加词条1条）"));
+    }
+
+    [Test]
+    public void EQ_Q51b_CharmAccurate_AppliesToFists_WeaponAffixNotBorrowed_Duplicate_Strongest()
+    {
+        var s = New();
+        Wear(s, "steady_ring", EquipSlots.CombatAccessory, "green", "accurate");
+        // 武器Ⅰ空（拳），武器Ⅱ一把带校准的砍刀：用武器Ⅰ页时砍刀词条不借，但饰品校准照样 +4
+        Wear(s, "machete", EquipSlots.Weapon2, "green", "accurate");
+        var fx1 = E.EquipmentEffects(s, P0, 1);
+        Assert.That(fx1.Accuracy, Is.EqualTo(3 + 4), "稳手指环固定+3 + 饰品校准+4（含空槽拳）");
+        var fx2 = E.EquipmentEffects(s, P0, 2);
+        Assert.That(fx2.Accuracy, Is.EqualTo(3 + 4), "砍刀页：同名校准只取强，不叠成+8");
+        var lines = E.EquipDetailLines(s, s.Items.Single(i => i.ItemId == "steady_ring"));
+        Assert.That(lines.Single(x => x.Label == "附加词条").Value, Does.StartWith("校准：佩戴者全部合法攻击命中能力+4（含空槽拳击）"));
+        // 实战：空手拳击的命中能力含饰品 +4
+        var b = Fight(7, "feral_dog");
+        Wear(b, "steady_ring", EquipSlots.CombatAccessory, "green", "accurate");
+        var with = E.EquipmentEffects(b, P0, b.Battle!.ActiveWeaponSlot).Accuracy;
+        Assert.That(with, Is.EqualTo(7));
+    }
+
+    [Test]
+    public void EQ_Q51b_CharmSwift_SpeedCap3_Anchored_DisplaceResist_DuplicateStrongest()
+    {
+        var s = New();
+        Wear(s, "swift_pendant", EquipSlots.CombatAccessory, "blue", "swift", "anchored");   // 固定速度+1 + 轻量+1
+        Wear(s, "scout_armor", EquipSlots.Armor, "green", "swift");                          // 固定+1；轻量重复只取强
+        Wear(s, "shock_baton", EquipSlots.Weapon1);                                          // 武器速度+1
+        var fx = E.EquipmentEffects(s, P0, 1);
+        Assert.That(fx.SpeedPositiveRaw, Is.EqualTo(1 + 1 + 1 + 1), "两件轻量只算一次");
+        Assert.That(fx.Speed, Is.EqualTo(3), "正速度封顶+3");
+        Assert.That(fx.DisplaceResist, Is.EqualTo(10));
+        Wear(s, "heavy_armor", EquipSlots.Armor);
+        s.Items.RemoveAll(i => i.ItemId == "scout_armor");
+        Assert.That(E.EquipmentEffects(s, P0, 1).DisplaceResist, Is.EqualTo(25), "重型防护甲15 + 饰品稳固10");
+    }
+
+    [Test]
+    public void EQ_Q51c_SurvivalCharm_FourEffects_InOriginalScenes()
+    {
+        var s = New();
+        var charm = Wear(s, "gather_gloves", EquipSlots.SurvivalAccessory, "blue", "craftsman", "surefoot");
+        Assert.That(E.GearWorkFactor(s, P0, ActionType.Craft, "knife"), Is.EqualTo(0.97).Within(1e-12));
+        Assert.That(E.GearWorkFactor(s, P0, ActionType.Build, "shelter"), Is.EqualTo(0.97).Within(1e-12));
+        Assert.That(E.GearWorkFactor(s, P0, ActionType.Repair, "repair_selected_tool"), Is.EqualTo(0.97).Within(1e-12));
+        Assert.That(E.GearWorkFactor(s, P0, ActionType.Salvage, "salvage_equipment"), Is.EqualTo(0.97).Within(1e-12));
+        Assert.That(E.EquipmentEffects(s).Factor("rate.move.energy"), Is.EqualTo(0.95));
+        charm.Affixes = new List<string> { "economical", "patient" };
+        var fx = E.EquipmentEffects(s);
+        Assert.That(fx.Factor("rate.nonCombat.hydration"), Is.EqualTo(0.97));
+        Assert.That(fx.Add("pos.shelteredRest.energy"), Is.EqualTo(0.1));
+        // 与衣物上的同名词条只取强，不相乘
+        Wear(s, "work_shirt", EquipSlots.Top, "green", "economical");
+        Assert.That(E.EquipmentEffects(s).Factor("rate.nonCombat.hydration"), Is.EqualTo(0.97));
+        // 存读档与穿脱不洗词条
+        var loaded = SaveSerializer.Deserialize(SaveSerializer.Serialize(s));
+        Assert.That(loaded.Items.Single(i => i.InstanceId == charm.InstanceId).Affixes, Is.EqualTo(new[] { "economical", "patient" }));
+    }
 }

@@ -9185,6 +9185,9 @@
       ],
       "slotGroups": {
         "combat_acc": "offense"
+      },
+      "slotEffectText": {
+        "combat_acc": "佩戴者全部合法攻击命中能力+4（含空槽拳击）"
       }
     },
     {
@@ -9281,6 +9284,9 @@
       ],
       "slotGroups": {
         "combat_acc": "speed"
+      },
+      "slotEffectText": {
+        "combat_acc": "装备速度+1"
       }
     },
     {
@@ -9336,6 +9342,9 @@
       ],
       "slotGroups": {
         "combat_acc": "defense"
+      },
+      "slotEffectText": {
+        "combat_acc": "位移抵抗+10个百分点"
       }
     },
     {
@@ -9438,6 +9447,9 @@
       ],
       "slotGroups": {
         "survival_acc": "charm_work"
+      },
+      "slotEffectText": {
+        "survival_acc": "制造/建造/维护/拆解工作量×0.97"
       }
     },
     {
@@ -9460,6 +9472,9 @@
       ],
       "slotGroups": {
         "survival_acc": "charm_consumption"
+      },
+      "slotEffectText": {
+        "survival_acc": "非战斗负水分小时率×0.97"
       }
     },
     {
@@ -9482,6 +9497,9 @@
       ],
       "slotGroups": {
         "survival_acc": "charm_recovery"
+      },
+      "slotEffectText": {
+        "survival_acc": "遮蔽休息正体力恢复+0.1/小时"
       }
     },
     {
@@ -9503,6 +9521,9 @@
       ],
       "slotGroups": {
         "survival_acc": "charm_travel"
+      },
+      "slotEffectText": {
+        "survival_acc": "移动负体力小时率×0.95"
       }
     }
   ],

@@ -84,13 +84,16 @@ namespace Survival.Core.Engine
                     foreach (var e in a.Effects)
                     {
                         if (e.Key == "durability.max") continue;          // 只在生成时作用
-                        if (e.AttackScoped && slot != pageSlot) continue;   // 攻击附加不跨武器借用
+                        // 攻击附加不跨武器借用；饰品上的词条作用于佩戴者全部合法攻击（Q51：战斗饰品校准含空槽拳，不绑定某把武器）
+                        if (e.AttackScoped && slot != pageSlot && !IsCharmSlot(slot)) continue;
                         list.Add(new ActiveEffect { Effect = e, Source = it, AffixId = id });
                     }
                 }
             }
             return list;
         }
+
+        private static bool IsCharmSlot(string slot) => slot == EquipSlots.CombatAccessory || slot == EquipSlots.SurvivalAccessory;
 
         /// <summary>合成某角色的装备效果（见类注释的上限与取强规则）。</summary>
         public GearEffects EquipmentEffects(GameState s, string actorId = GameState.PlayerId, int? attackPage = null)
@@ -322,14 +325,15 @@ namespace Survival.Core.Engine
         public static bool EffectLive(EquipEffectConfig e) => e.Key != "combat.displaceResist" && e.Key != "work.purificationTablet";
 
         /// <summary>“校准：命中能力+4（生效中）”；位移抵抗写“位移类技能上线后生效”；没穿写“穿戴后生效”（M120、B6）。</summary>
-        public string AffixText(string id, bool worn = true)
+        public string AffixText(string id, bool worn = true, string? slot = null)
         {
             var a = Affix(id);
             if (a == null) return id;
+            var text = a.EffectTextFor(slot);
             var live = a.Effects.Count > 0 && a.Effects.All(EffectLive);
             var note = a.Effects.Any(x => x.Key == "durability.max") ? "（生成时已计入最大耐久）"
                 : live ? (worn ? "（生效中）" : "（穿戴后生效）") : "（我方多人时才会被拉扯/击退，当前只显示）";
-            return $"{a.Name}：{a.EffectText}{note}";
+            return $"{a.Name}：{text}{note}";
         }
 
         /// <summary>对象信息栏的装备行：品质、附加词条、类型与阶、速度修正、使用位→目标位、固定特性/效果、生效情况、拆解产出。非装备为空表。</summary>
@@ -339,9 +343,11 @@ namespace Survival.Core.Engine
             var cfg = _items[it.ItemId];
             if (!cfg.IsEquipment) return list;
             var n = it.Affixes?.Count ?? 0;
-            list.Add(("品质", $"{QualityName(it)}（附加词条{n}条）"));
+            // Q51：饰品词条池上线前生成的绿/蓝饰品 0 条，保留历史实例、不补抽（新生成的绿/蓝饰品必有 1/2 条）
+            var legacyCharm = n == 0 && IsCharmSlot(cfg.EquipSlot ?? "") && (it.Quality ?? "white") != "white";
+            list.Add(("品质", legacyCharm ? $"{QualityName(it)}（旧实例，无附加词条：饰品词条池上线前生成，不补抽）" : $"{QualityName(it)}（附加词条{n}条）"));
             var worn = it.IsWorn;
-            foreach (var id in it.Affixes ?? new List<string>()) list.Add(("附加词条", AffixText(id, worn)));
+            foreach (var id in it.Affixes ?? new List<string>()) list.Add(("附加词条", AffixText(id, worn, cfg.EquipSlot)));
             if (Weapon(it.ItemId) is WeaponConfig w)
             {
                 list.Add(("类型", $"{WeaponKinds.Name(w.WeaponKind)}·T{w.Tier}{(w.Speed != 0 ? $" · 速度修正{Fmt.SignedT(w.Speed)}" : " · 速度修正0")}"));

@@ -27,6 +27,17 @@ A12 = os.path.join(ROOT, "doc", "策划案", "系统策划总册 v1.0", "04 附�
 # A05 槽名 → 代码槽名（B4 H2）
 SLOT = {"combat_charm": "combat_acc", "survival_charm": "survival_acc"}
 
+# 饰品上的生效域（A05 Q44—Q52 章 §饰品兼容池原文；E/W 写成体力/水分以免界面出现内部字母）
+CHARM_TEXT = {
+    "accurate": "佩戴者全部合法攻击命中能力+4（含空槽拳击）",
+    "swift": "装备速度+1",
+    "anchored": "位移抵抗+10个百分点",
+    "craftsman": "制造/建造/维护/拆解工作量×0.97",
+    "economical": "非战斗负水分小时率×0.97",
+    "patient": "遮蔽休息正体力恢复+0.1/小时",
+    "surefoot": "移动负体力小时率×0.95",
+}
+
 EXPERT_TEXT = ("拆解完成后尝试追加1份同种回收材料：可自制装备只在总回收价值仍不超过标准配方材料价值80%时追加，"
                "否则不追加；不可自制装备按固定表追加1")
 
@@ -79,11 +90,13 @@ def main():
         base_text = a["poolText"].split("；")[0]
         if not extra:
             a.pop("slotGroups", None)
+            a.pop("slotEffectText", None)
             a["pools"] = base_pools
             a["poolText"] = base_text
             continue
         a["pools"] = base_pools + ["slot:" + SLOT[sl] for sl in extra]
         a["slotGroups"] = {SLOT[sl]: src["additionalSlotGroups"][sl] for sl in extra}
+        a["slotEffectText"] = {SLOT[sl]: CHARM_TEXT[a["id"]] for sl in extra}
         a["poolText"] = base_text   # 保持 A05/A12 原池文字；饰品池在界面另写（Q51）
 
     node = next(n for n in cfg["skillNodes"] if n["id"] == "scavenging_10")

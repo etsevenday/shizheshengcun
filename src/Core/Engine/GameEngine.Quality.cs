@@ -30,7 +30,7 @@ namespace Survival.Core.Engine
         public string QualityName(ItemInstance it) =>
             _items.TryGetValue(it.ItemId, out var c) && c.IsEquipment ? Config.Equipment.QualityName(it.Quality ?? "white") : "";
 
-        /// <summary>该装备能抽到的词条（按配置顺序；兼容池 kind:/slot:/durable）。</summary>
+        /// <summary>该装备能抽到的词条（按配置顺序；兼容池 kind:/slot:/durable；Q51 起战斗饰品/求生饰品各有 slot: 池，无耐久饰品自然没有耐用）。</summary>
         public List<AffixConfig> AffixPool(string itemId)
         {
             var cfg = _items[itemId];
@@ -58,14 +58,18 @@ namespace Survival.Core.Engine
             return ordered[ordered.Count - 1];
         }
 
-        /// <summary>抽 n 条词条：每次从“未抽过、互斥组未占用”的兼容词条里等权抽 1 条，池空即止（少条，不跨池）。</summary>
+        /// <summary>
+        /// 抽 n 条词条：每次从“未抽过、互斥组未占用”的兼容词条里等权抽 1 条，池空即止（少条，不跨池）。
+        /// 互斥组按本装备的槽取（Q51：饰品用 charm_* 专用组，原衣物 survival 组不变），所以蓝色求生饰品可得两种不同效果。
+        /// </summary>
         public List<string> RollAffixes(GameState s, string itemId, int n)
         {
             var picked = new List<AffixConfig>();
             var pool = AffixPool(itemId);
+            var slot = _items[itemId].EquipSlot;
             for (var k = 0; k < n; k++)
             {
-                var cand = pool.Where(a => picked.All(p => p.Id != a.Id && p.Group != a.Group)).ToList();
+                var cand = pool.Where(a => picked.All(p => p.Id != a.Id && p.GroupFor(slot) != a.GroupFor(slot))).ToList();
                 if (cand.Count == 0) break;
                 var i = (int)Math.Floor(s.Rng.NextDouble() * cand.Count);
                 if (i >= cand.Count) i = cand.Count - 1;
