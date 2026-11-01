@@ -206,7 +206,7 @@ def main():
         "gates": [{"id": g["id"], "predicate": g["predicate"], "unlockScope": g["unlockScope"]} for g in gc["definitions"]],
         "factLabels": FACT_LABELS,
         "arrivalFacts": ARRIVAL_FACTS,
-        "clueText": "找到一条安全线索：附近的路况与危险迹象已记下（不另发物资）",
+        "clueText": "一条安全线索：附近的路况与危险迹象已记下（不另发物资）",
         "resourceMarkers": [
             {"id": r["id"], "nodeId": r["nodeId"], "reveal": r["reveal"], "items": r["items"], "scope": r["scope"]}
             for r in mp["resources"]

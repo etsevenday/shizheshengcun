@@ -23797,7 +23797,7 @@
         "academy_contacted"
       ]
     },
-    "clueText": "找到一条安全线索：附近的路况与危险迹象已记下（不另发物资）",
+    "clueText": "一条安全线索：附近的路况与危险迹象已记下（不另发物资）",
     "resourceMarkers": [
       {
         "id": "w11_orchard_a",

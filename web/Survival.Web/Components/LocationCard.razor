@@ -45,7 +45,7 @@
             }
         </svg>
         <div class="mc-top">
-            <span class="mc-chip name"><b>@lc.Name</b><em>当前地点</em></span>
+            <span class="mc-chip name" title="@lc.Name"><b>@lc.Name</b><em>当前地点</em></span>
             <span class="mc-chip">@(lc.IsIndoor ? "室内" : "露天") · @light.Phase</span>
             @if (lc.Danger is int danger)
             {

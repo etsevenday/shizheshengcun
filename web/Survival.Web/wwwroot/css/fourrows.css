@@ -845,7 +845,7 @@
     display: block; -webkit-line-clamp: unset; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25;
   }
   .center-scroll.four .facility-row .enemy-card.world .oc-body .hp-line { display: flex; }
-  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world) .oc-body .oc-line.warn-line {
+  .center-scroll.four :is(.facility-row .res-card, .facility-row .enemy-card.world, .map-adjacent .loc-card.neighbor) .oc-body .oc-line.warn-line {
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; word-break: break-all;
   }
 }
