@@ -723,7 +723,9 @@ namespace Survival.Core.Engine
             {
                 case ActionType.Explore:
                     a.StartProgress = s.Locations[s.CurrentLocation].Progress;
-                    PlanLoot(s, a, s.CurrentLocation);
+                    // Q31：地牢 01 缓冲房等 explorationLootEnabled=false 的节点探索不抽物资（不扣也不显示空结果）
+                    if (_locs[s.CurrentLocation].ExplorationLootEnabled) PlanLoot(s, a, s.CurrentLocation);
+                    else a.LegacyNoLoot = true;
                     // 随机接敌判定开始时锁定（v0.6 §15），完成时按当时的本地敌对密度比较；读档不重抽
                     a.EncounterRoll = s.Rng.NextDouble();
                     break;

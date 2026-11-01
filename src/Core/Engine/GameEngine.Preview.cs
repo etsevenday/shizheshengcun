@@ -202,11 +202,16 @@ namespace Survival.Core.Engine
                         var next = System.Math.Min(100, ls.Progress + ExploreIncrementAt(s.CurrentLocation));
                         p.Notes.Add($"完成后探索度{ls.Progress}%→{next}%");
                         p.Notes.Add(NextMilestoneHasContent(s, s.CurrentLocation) ? "本次可能发现新线索" : "本次没有新线索，仍会推进探索度");
-                        p.Notes.Add("探索推进地块调查，并有机会取得零散物资");
-                        p.Notes.Add("完成时按下表抽取1次本地物资，产物留在当前地面，不会自动拾取");
+                        var lootOn = _locs[s.CurrentLocation].ExplorationLootEnabled;
+                        if (lootOn)
+                        {
+                            p.Notes.Add("探索推进地块调查，并有机会取得零散物资");
+                            p.Notes.Add("完成时按下表抽取1次本地物资，产物留在当前地面，不会自动拾取");
+                        }
+                        else p.Notes.Add("探索推进地块调查；这里探索不出零散物资");
                         p.Notes.Add("探索不扣清理次数");
                         if (Config.CombatEnabled) p.Notes.Add(EncounterNote(s, s.CurrentLocation, ActionType.Explore));
-                        p.LootOdds = LootOdds(s.CurrentLocation);
+                        if (lootOn) p.LootOdds = LootOdds(s.CurrentLocation);
                     }
                     else p.Notes.Add("该地点不再探索，可清理或搜集已发现资源");
                     p.ConfirmText = "开始探索";
