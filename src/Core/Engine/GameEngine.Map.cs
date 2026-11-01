@@ -351,6 +351,29 @@ namespace Survival.Core.Engine
             return $"开发：已{(on ? "记下" : "清除")}地图事实 {key}（{FactLabel(key)}）" + (routes.Count > 0 ? "；" + string.Join("、", routes) : "") + "。";
         }
 
+        /// <summary>开发入口（?dev=1）：直接传送到任一地点（按实际到达处理：记到访、公开地点自动 100、接触事实、门槛重判）。忙碌时拒绝。</summary>
+        public string DebugMapTeleport(GameState s, string locationId)
+        {
+            if (!_locs.ContainsKey(locationId)) return "开发：地点不存在";
+            if (IsBusy(s)) return "开发：行动进行中或有敌踪/战斗，先结束再传送";
+            var notes = new List<string>();
+            s.CurrentLocation = locationId;
+            Visit(s, locationId, notes);
+            UpdateFlags(s);
+            return $"开发：已传送到{LocName(locationId)}" + (notes.Count > 0 ? "；" + string.Join("；", notes) : "") + "。";
+        }
+
+        /// <summary>开发入口（?dev=1）：当前地点探索度直接到 100%（结算里程碑与路线揭示，不发探索物资）。</summary>
+        public string DebugExploreHere100(GameState s)
+        {
+            var here = s.CurrentLocation;
+            if (!_locs[here].ExploreEnabled) return $"开发：{LocName(here)}不需要探索";
+            DebugSetProgress(s, here, 100);   // 内含里程碑与门槛重判
+            RevealMarkers(s, here, 0, 100);
+            var locked = AdjacentLocked(s).Select(x => $"{LocName(x.Target)}（{x.Reason}）").ToList();
+            return $"开发：{LocName(here)}探索度已到100%" + (locked.Count > 0 ? "；未开通：" + string.Join("、", locked) : "") + "。";
+        }
+
         /// <summary>开发入口与测试：给当前（或指定）地牢实例记下实例事实（guardianDefeated / recordClaimedAndClear）并重判。</summary>
         public string DebugInstanceFact(GameState s, string dungeonId, string key)
         {

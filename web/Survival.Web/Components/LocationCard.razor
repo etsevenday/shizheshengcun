@@ -47,6 +47,11 @@
         <div class="mc-top">
             <span class="mc-chip name"><b>@lc.Name</b><em>当前地点</em></span>
             <span class="mc-chip">@(lc.IsIndoor ? "室内" : "露天") · @light.Phase</span>
+            @if (lc.Danger is int danger)
+            {
+                @* B11（Q31）：危险度 0—3 只作提示，不改接敌率与敌人强度 *@
+                <span class="mc-chip" title="@GameEngine.DangerText(danger)">危险@(danger)</span>
+            }
             <span class="mc-chip" title="天气玩法待独立立项：现在只是占位，没有任何数值效果">天气：待接入</span>
         </div>
         <div class="mc-bottom">
@@ -60,16 +65,27 @@
                     <button @key="@("explore")" type="button" class="loc-btn" disabled="@(exploreWhy != null)" title="@(exploreWhy ?? "单击直接开始；右侧显示预测")"
                             @onmouseenter="HoverExplore" @onfocus="HoverExplore" @onmouseleave="Unhover" @onblur="Unhover"
                             @onclick="Explore" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
-                        <strong>探索 · @(e.Config.Actions.ExploreMinutes)分钟</strong>
+                        <strong>探索 · @(e.ExploreMinutesAt(LocationId))分钟</strong>
                         @if (exploreWhy != null) { <small>@exploreWhy</small> }
                     </button>
                 }
-                <button @key="@("clear")" type="button" class="loc-btn" disabled="@(clearWhy != null)" title="@(clearWhy ?? "单击直接开始；右侧显示预测")"
-                        @onmouseenter="HoverClear" @onfocus="HoverClear" @onmouseleave="Unhover" @onblur="Unhover"
-                        @onclick="Clear" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
-                    <strong>清理 · @(e.Config.Actions.ClearMinutes)分钟</strong>
-                    <small>@(next == null ? $"次数{charges}/{cap}·已满" : $"次数{charges}/{cap} · 恢复还需{Clock.Duration(next.Value)}")@(clearWhy != null && charges > 0 ? $" · {clearWhy}" : "")</small>
-                </button>
+                @if (lc.ClearEnabled)
+                {
+                    <button @key="@("clear")" type="button" class="loc-btn" disabled="@(clearWhy != null)" title="@(clearWhy ?? "单击直接开始；右侧显示预测")"
+                            @onmouseenter="HoverClear" @onfocus="HoverClear" @onmouseleave="Unhover" @onblur="Unhover"
+                            @onclick="Clear" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                        <strong>清理 · @(e.Config.Actions.ClearMinutes)分钟</strong>
+                        <small>@(next == null ? $"次数{charges}/{cap}·已满" : $"次数{charges}/{cap} · 恢复还需{Clock.Duration(next.Value)}")@(clearWhy != null && charges > 0 ? $" · {clearWhy}" : "")</small>
+                    </button>
+                }
+                else
+                {
+                    @* B11：新增地点的清理参数已导入，资源点与清理在后续版本（B12）开放 *@
+                    <button @key="@("clear")" type="button" class="loc-btn" disabled title="这里的清理在后续版本开放">
+                        <strong>清理</strong>
+                        <small>后续版本开放</small>
+                    </button>
+                }
                 @if (full && e.HasSurvey(LocationId))
                 {
                     @* 遗迹勘整（Q55）：探索100%的四个旧遗迹的搜集训练，不产物；每地点每日2次 *@
@@ -86,6 +102,28 @@
             </div>
         </div>
     </div>
+}
+else if (LockReason != null)
+{
+    @* B11（S03、EXP30-01）：已揭示、门槛未满足的路线：显示名称与原因，不能前往（不打开移动浮窗、不耗时） *@
+    var ldir = e.DirectionFromHere(s, LocationId);
+    var lhint = GameEngine.DirectionHint(ldir);
+    <ObjectCard Id="@($"lock-{LocationId}")" CssClass="loc-card neighbor locked" Title="@lc.Name" Badge="未开通" BadgeClass="unbuilt" Dim="true" Dashed="true"
+                AriaLabel="@($"{lc.Name}，路线未开通：{LockReason}")" Tooltip="@($"路线未开通：{LockReason}")">
+        <Art>
+            <div class="loc-art" style="background-image:url('@scene')" role="img" aria-label="@($"{lc.Name}图片")"></div>
+            @if (ldir != MapDirection.None)
+            {
+                <span class="dir-badge" role="img" aria-label="@lhint" title="@($"{lhint}（方位图标，只作展示）")">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(@(((int)ldir - 1) * 45)deg)"><path d="M12 2.5 19.5 11h-4.6v10.5H9.1V11H4.5Z" /></svg>
+                </span>
+            }
+        </Art>
+        <ChildContent>
+            <div class="oc-line" title="@($"单程{LockMinutes}分钟")">单程@(LockMinutes)分钟 · 未开通</div>
+            <div class="oc-line warn-line lock-why" title="@LockReason">@LockReason</div>
+        </ChildContent>
+    </ObjectCard>
 }
 else
 {
@@ -124,6 +162,9 @@ else
 @code {
     [Parameter, EditorRequired] public string LocationId { get; set; } = "";
     [Parameter] public bool Current { get; set; }
+    /// <summary>B11：已揭示但门槛未满足的相邻路线——显示原因，不能前往。</summary>
+    [Parameter] public string? LockReason { get; set; }
+    [Parameter] public int LockMinutes { get; set; }
 
     private bool starting;
 

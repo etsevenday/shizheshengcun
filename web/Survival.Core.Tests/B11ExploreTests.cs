@@ -167,4 +167,24 @@ public class B11ExploreTests : TestBase
         Assert.That(s.Log.Skip(log).Any(l => l.Text.Contains("资源点线索")), Is.False, "重复到访不重发");
         Assert.That(s.Locations["w11_orchard"].TriggeredMilestones, Is.EquivalentTo(new[] { 25, 50 }));
     }
+
+    /// <summary>试玩路线用的开发入口：传送按实际到达处理（忙碌拒绝）；当前地点探索到 100 结算里程碑与揭边并列出未开通原因。</summary>
+    [Test]
+    public void DevTools_TeleportAndExplore100()
+    {
+        var s = New();
+        Start(s, ActionRequest.Travel("field"));
+        Assert.That(E.DebugMapTeleport(s, "c02_church"), Does.Contain("行动进行中"));
+        Run(s);
+        Assert.That(E.DebugMapTeleport(s, "c02_church"), Does.Contain("建立公开接触"));
+        Assert.That(s.Progress.Flags, Does.Contain("church_contacted"));
+        E.DebugMapTeleport(s, "w11_orchard");
+        E.DebugExploreHere100(s);
+        Assert.That(E.RevealedMarkersAt(s, "w11_orchard"), Has.Count.EqualTo(2));
+        Assert.That(s.UnlockedEdges, Does.Contain("w11_orchard__w12_canal"));
+        E.DebugMapTeleport(s, "m02_checkpoint");
+        Assert.That(E.DebugExploreHere100(s), Does.Contain("营门（需要：解决检查哨"));
+        E.DebugMapTeleport(s, "h02_square");
+        Assert.That(E.DebugExploreHere100(s), Does.Contain("不需要探索"));
+    }
 }

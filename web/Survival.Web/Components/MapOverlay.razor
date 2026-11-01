@@ -11,11 +11,17 @@
 
 @if (Part == "center")
 {
-    var known = e.Config.Locations.Where(l => s.Locations[l.Id].Discovered).ToList();
-    var edges = e.Config.Edges.Where(x => s.UnlockedEdges.Contains(x.Id)).ToList();
+    // B11：v3 地图 143 个节点。地牢房间用地牢内局部坐标，按“图层”分开画：在地牢里只画这座地牢的已知房间，在外面只画世界与城内的已知地点
+    // （开发假设 B11-7；分层地图界面在 B12）。只画已发现地点、已开通路线与已揭示的未开通路线（红色虚线），未知不泄露。
+    var layer = e.Location(here).Layer;
+    var known = e.Config.Locations.Where(l => l.Layer == layer && s.Locations[l.Id].Discovered).ToList();
+    var knownIds = known.Select(l => l.Id).ToHashSet();
+    var edges = e.Config.Edges.Where(x => knownIds.Contains(x.A) && knownIds.Contains(x.B) && e.EdgeOpen(s, x)).ToList();
+    var lockedEdges = e.Config.Edges.Where(x => knownIds.Contains(x.A) && knownIds.Contains(x.B) && !e.EdgeOpen(s, x) && e.EdgeRevealed(s, x)).ToList();
+    var layerName = layer == "world" ? "区域地图" : $"{e.Config.Map.Dungeons.FirstOrDefault(d => d.Id == layer)?.Name ?? layer}（地牢内）";
     <div class="sub-panel" role="dialog" aria-label="区域地图">
         <div class="sub-head">
-            <div><h2>区域地图</h2><span class="sub">已发现@(known.Count)处 · 只显示已知路线 · 点相邻地点在旁边确认移动</span></div>
+            <div><h2>@layerName</h2><span class="sub">已发现@(known.Count)处 · 只显示已知路线 · 点相邻地点在旁边确认移动</span></div>
             <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
         </div>
         <div class="sub-body map-only">
@@ -28,6 +34,17 @@
                 var viewBox = FormattableString.Invariant($"{vx:0} {vy:0} {w:0} {h:0}");
             }
             <svg class="map-canvas" viewBox="@viewBox" preserveAspectRatio="xMidYMid meet" role="img" aria-label="地点与路线">
+                <defs><marker id="oneway" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#d6b779" /></marker></defs>
+                @foreach (var ed in lockedEdges)
+                {
+                    var a = e.Location(ed.A);
+                    var b = e.Location(ed.B);
+                    var mx = (a.MapX + b.MapX) / 2;
+                    var my = (a.MapY + b.MapY) / 2;
+                    <line x1="@a.MapX" y1="@a.MapY" x2="@b.MapX" y2="@b.MapY" stroke="#9a4a3c" stroke-width="3" stroke-dasharray="4 8"><title>@($"未开通：{e.GateBlockedReason(s, ed)}")</title></line>
+                    <rect x="@(mx - 34)" y="@(my - 15)" width="68" height="28" rx="4" fill="#2a1d1a" />
+                    @SvgText(mx, my + 6, 16, "#d9a08f", "未开通")
+                }
                 @foreach (var ed in edges)
                 {
                     var a = e.Location(ed.A);
@@ -35,7 +52,7 @@
                     var mx = (a.MapX + b.MapX) / 2;
                     var my = (a.MapY + b.MapY) / 2;
                     var near = ed.Touches(here);
-                    <line x1="@a.MapX" y1="@a.MapY" x2="@b.MapX" y2="@b.MapY" stroke="@(near ? "#d6b779" : "#6b7a68")" stroke-width="@(near ? 5 : 3)" stroke-dasharray="@(near ? "" : "10 7")" />
+                    <line x1="@a.MapX" y1="@a.MapY" x2="@b.MapX" y2="@b.MapY" stroke="@(near ? "#d6b779" : "#6b7a68")" stroke-width="@(near ? 5 : 3)" stroke-dasharray="@(near ? "" : "10 7")" marker-end="@(ed.Bidirectional ? "" : "url(#oneway)")" />
                     <rect x="@(mx - 30)" y="@(my - 15)" width="60" height="28" rx="4" fill="#1b221e" />
                     @SvgText(mx, my + 6, 17, "#c9cfbf", $"{ed.BaseMinutes}分")
                 }
@@ -66,7 +83,7 @@
                     </g>
                 }
             </svg>
-            <div class="map-legend"><span>金色实线：当前地点的可走路线</span><span>虚线框：已发现未访问</span><span>浏览地图不推进时间</span></div>
+            <div class="map-legend"><span>金色实线：当前地点的可走路线</span><span>红色虚线：已发现但未开通</span><span>虚线框：已发现未访问</span><span>浏览地图不推进时间</span></div>
         </div>
     </div>
 }
@@ -86,9 +103,21 @@ else
             <div class="lines">
                 @foreach (var ed in e.AdjacentUnlocked(s))
                 {
-                    <div><span>→ @e.LocName(ed.Other(here))</span><b>@(ed.BaseMinutes)分钟</b></div>
+                    <div><span>→ @e.LocName(ed.Other(here))@(ed.Bidirectional ? "" : "（单向出口）")</span><b>@(ed.BaseMinutes)分钟</b></div>
                 }
             </div>
+            @{ var lockedHere = e.AdjacentLocked(s); }
+            @if (lockedHere.Count > 0)
+            {
+                <div class="eyebrow">未开通的路线</div>
+                <div class="lines">
+                    @foreach (var lk in lockedHere)
+                    {
+                        <div title="@lk.Reason"><span>✕ @e.LocName(lk.Target)</span><b>@(lk.Edge.BaseMinutes)分钟</b></div>
+                        <div class="tiny muted">@lk.Reason</div>
+                    }
+                </div>
+            }
             <div class="tiny muted">在地图上点选相邻地点：地点旁出现移动确认，这里显示详细预估。</div>
         </div>
     }
@@ -100,13 +129,14 @@ else
     }
     else
     {
+        var lockHere = e.AdjacentLocked(s).FirstOrDefault(x => x.Target == target);
         <div class="detail-scroll">
             <div class="op-head">
                 <div class="eyebrow">区域地图 · @(ts.Visited ? $"探索度{ts.Progress}%" : "已发现 · 待访问")</div>
                 <h2>@tl.Name</h2>
-                <p>@(tl.IsIndoor ? "室内" : "露天")</p>
+                <p>@(tl.IsIndoor ? "室内" : "露天")@(tl.Danger is int dg ? $" · 危险{dg}" : "")</p>
             </div>
-            <div class="blocked">@(e.IsBusy(s) ? "行动进行中，地图只能浏览" : "请先前往相邻地点")</div>
+            <div class="blocked">@(e.IsBusy(s) ? "行动进行中，地图只能浏览" : lockHere.Edge != null ? $"路线未开通，{lockHere.Reason}" : "请先前往相邻地点")</div>
         </div>
     }
 }

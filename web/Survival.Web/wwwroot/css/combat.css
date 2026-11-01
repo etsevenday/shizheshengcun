@@ -104,6 +104,7 @@
 .small-btn { padding: 5px 8px; font-size: 13px; min-height: 40px; }
 .overlay { max-height: calc(100vh - 28px); overflow-y: auto; }
 .dev-box .btn-row > button { flex: 0 0 auto; width: auto; white-space: nowrap; }
+.dev-box .dev-select { max-width: 280px; min-height: 32px; font-size: 13px; }
 
 .nav button:disabled { opacity: .45; cursor: not-allowed; }
 .enemy-lines div { flex-wrap: wrap; }

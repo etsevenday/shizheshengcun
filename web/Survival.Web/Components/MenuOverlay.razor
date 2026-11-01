@@ -137,6 +137,31 @@
                     <button class="secondary" @onclick="() => DevDone(G.E.DebugMedicalMaterialKit(G.S))">医疗台三材料原料（盐水剂/消毒液/草药浸膏各一次）</button>
                     <button class="secondary" @onclick="() => DevDone(G.E.DebugForgeSteelKit(G.S))">锻炉钢材3份原料（铁矿料×9、木炭×6）</button>
                 </div>
+                @* B11（R33—R35）：v3 地图。出新手区与城市/地牢的多数门槛事实要等序章、营区登记、任务、地牢等后续系统，这里直接记事实或传送试玩 *@
+                <div class="eyebrow">地图（B11）：门槛事实与传送（正式来源在后续批次）</div>
+                <div class="btn-row">
+                    @foreach (var (key, label) in MapFacts)
+                    {
+                        var k = key;
+                        var on = G.S.Progress.Flags.Contains(k);
+                        <button class="secondary small-btn" title="@k" @onclick="() => DevDone(G.E.DebugMapFact(G.S, k, !on))">@(on ? "✓ " : "")@label</button>
+                    }
+                </div>
+                <div class="btn-row">
+                    <button class="secondary small-btn" @onclick="() => DevDone(G.E.DebugExploreHere100(G.S))">当前地点探索度→100%</button>
+                    @if (G.E.Location(G.S.CurrentLocation).DungeonId is string dgn)
+                    {
+                        <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugInstanceFact(G.S, dgn, "guardianDefeated"))'>本地牢守卫已击败（当前实例）</button>
+                        <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugInstanceFact(G.S, dgn, "recordClaimedAndClear"))'>本地牢核心已领取（当前实例）</button>
+                    }
+                    <select class="dev-select" aria-label="传送目标" @bind="teleportTo">
+                        @foreach (var l in G.E.Config.Locations)
+                        {
+                            <option value="@l.Id">@l.Name（@l.Id）</option>
+                        }
+                    </select>
+                    <button class="secondary small-btn" @onclick="() => DevDone(G.E.DebugMapTeleport(G.S, teleportTo))">传送（按实际到达处理）</button>
+                </div>
                 @* B8（R08、A11 §6/§7）：正式招募任务（RN01—RN06）在后续批次，这里直接把六名命名角色登记入名册（同行未满 C 时直接编入） *@
                 <div class="eyebrow">队伍（B8）：先记下容量事实再加人；营区＝临时营地</div>
                 <div class="btn-row">
@@ -205,6 +230,23 @@
     private static readonly bool DebugBuild = false;
 #endif
     private bool confirmNew;
+    private string teleportTo = "m01_road";
+
+    /// <summary>B11 开发入口可记的地图门槛事实（gate-contract factProducers；正式来源在 B13—B21）。再点一次清除。</summary>
+    private static readonly (string Key, string Label)[] MapFacts =
+    {
+        ("camp_route_known", "来客路线已知（序章）"),
+        ("checkpoint_obstruction_cleared", "检查哨路障已解决"),
+        ("registration_authorized", "营门登记已授权"),
+        ("hub_registered", "营区已登记"),
+        ("FA02_route_briefed", "教会公开路线"),
+        ("FA03_environment_briefed", "科学院环境路线"),
+        ("academy_observation_pass", "观察通道确认"),
+        ("FA02_record_credit", "教会记录资格"),
+        ("FA03_record_credit", "科学院记录资格"),
+        ("FA04_merged", "两份记录已合并"),
+        ("communication_power_claimed", "通信电源已领取"),
+    };
 
     [Parameter] public bool Battle { get; set; }
     [Inject] private NavigationManager Nav { get; set; } = null!;
