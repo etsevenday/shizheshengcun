@@ -79,6 +79,8 @@ namespace Survival.Core.Engine
         public bool FuelViaSlot { get; set; }
         /// <summary>幂等请求号：同一请求重复提交只生效一次（拖拽与容器案 9）。</summary>
         public string? RequestId { get; set; }
+        /// <summary>Q113 煅烧投料：玩家在浮窗里看到并确认的逐堆明细；带上时确认前重验，来源有任何变化整条拒绝。null = 内部/旧调用，按当时自动分配。</summary>
+        public CharcoalPlan? CharcoalPlan { get; set; }
 
         public static InstantRequest Pickup(int instanceId, int count) => new InstantRequest { Kind = InstantKind.Pickup, InstanceId = instanceId, Count = count };
         public static InstantRequest Drop(int instanceId, int count) => new InstantRequest { Kind = InstantKind.Drop, InstanceId = instanceId, Count = count };
@@ -96,7 +98,9 @@ namespace Survival.Core.Engine
         /// <summary>从火堆取下锅（整锅）或取出火堆/锅里的一份食材，到随身或当前地面。</summary>
         public static InstantRequest TakeOut(int instanceId, string zone) => new InstantRequest { Kind = InstantKind.TakeOut, InstanceId = instanceId, Zone = zone };
         /// <summary>Q111 火堆煅烧木炭：从随身与当前地面未预留的木材凑足一批（4份）原子放进当前火堆一个空加工位；0 世界分钟。</summary>
-        public static InstantRequest LoadCharcoal() => new InstantRequest { Kind = InstantKind.LoadCharcoal };
+        /// <summary>Q113：plan 为浮窗展示的明细（<see cref="CharcoalLoadInfo.Plan"/>），确认时内核逐堆重验。</summary>
+        public static InstantRequest LoadCharcoal(CharcoalPlan? plan = null) =>
+            new InstantRequest { Kind = InstantKind.LoadCharcoal, CharcoalPlan = plan?.Clone() };
         public static InstantRequest Reorder(string zone, string cardKey, int index) =>
             new InstantRequest { Kind = InstantKind.Reorder, Zone = zone, CardKey = cardKey, Index = index };
 

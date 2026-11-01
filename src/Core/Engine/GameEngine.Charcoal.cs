@@ -24,6 +24,8 @@ namespace Survival.Core.Engine
         public int WoodAvailable { get; set; }
         /// <summary>这次会取的木材：“随身木材#3×2”“地面木材#9×2”（随身优先，再按实例号）。</summary>
         public List<string> Sources { get; set; } = new List<string>();
+        /// <summary>Q113：同一份明细的结构化形式（预览地点 + 逐堆实例号/取用数/随身或地面/预览时该堆数量）；确认投料时原样带回，供内核重验。</summary>
+        public CharcoalPlan Plan { get; set; } = new CharcoalPlan();
         public int FreeSlots { get; set; }
         public int Slots { get; set; }
         public bool FireLit { get; set; }
@@ -34,6 +36,33 @@ namespace Survival.Core.Engine
         public int FuelWoodShort { get; set; }
         /// <summary>燃料说明：已燃足 60 / 冷火点燃后只余 55 不够一批 / 还需另投几份木材作燃料。</summary>
         public string FuelNote { get; set; } = "";
+    }
+
+    /// <summary>Q113 煅烧投料明细里的一堆：实例号、这次取几份、随身还是当前地面、预览时这堆共几份（确认时数量变了即视为来源失效）。</summary>
+    public sealed class CharcoalPick
+    {
+        public int InstanceId { get; set; }
+        public int Take { get; set; }
+        public bool Carried { get; set; }
+        public int Had { get; set; }
+    }
+
+    /// <summary>Q113 玩家在浮窗里看到并确认的投料明细：预览时主角所在地点 + 逐堆来源（系统自动分配，玩家不能改）。</summary>
+    public sealed class CharcoalPlan
+    {
+        public string Location { get; set; } = "";
+        public List<CharcoalPick> Picks { get; set; } = new List<CharcoalPick>();
+
+        /// <summary>地点与逐堆（实例号、取用数、来源、预览时数量）完全一致。</summary>
+        public bool SameAs(CharcoalPlan? o) =>
+            o != null && o.Location == Location && o.Picks.Count == Picks.Count
+            && Picks.Zip(o.Picks, (a, b) => a.InstanceId == b.InstanceId && a.Take == b.Take && a.Carried == b.Carried && a.Had == b.Had).All(x => x);
+
+        public CharcoalPlan Clone() => new CharcoalPlan
+        {
+            Location = Location,
+            Picks = Picks.Select(p => new CharcoalPick { InstanceId = p.InstanceId, Take = p.Take, Carried = p.Carried, Had = p.Had }).ToList(),
+        };
     }
 
     public sealed partial class GameEngine
@@ -90,6 +119,11 @@ namespace Survival.Core.Engine
             var sources = CharcoalSources(s, cp);
             info.WoodAvailable = UsableBatches(s, cp.InputId, true).Where(w => !IsLocked(s, w)).Sum(w => w.Count);
             info.Sources = sources.Select(x => $"{(x.inst.IsCarried ? "随身" : "地面")}{ItemName(x.inst.ItemId)}#{x.inst.InstanceId}×{x.take}").ToList();
+            info.Plan = new CharcoalPlan
+            {
+                Location = here,
+                Picks = sources.Select(x => new CharcoalPick { InstanceId = x.inst.InstanceId, Take = x.take, Carried = x.inst.IsCarried, Had = x.inst.Count }).ToList(),
+            };
 
             info.HeatAvailable = CharcoalHeatAvailable(s, here);
             var unit = Config.Fire.BurnMinutesPerWood;
@@ -125,14 +159,45 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
+        /// Q113 确认时重验玩家看到的明细（S11/S14/A07 Q113 章）：预览地点、逐堆实例仍是本人随身/当前地面未预留未占用的木材且数量与预览时相同，
+        /// 并且按现在的木材重新自动分配仍得到同一份明细（随身优先、同来源按实例号）。任一不符返回拒绝原因（整条拒绝，不取其中几份、不换另一堆）；全符返回 null。
+        /// </summary>
+        private string? CharcoalPlanStale(GameState s, ProcessConfig cp, CharcoalPlan plan, CharcoalLoadInfo now)
+        {
+            const string tail = "，请重新查看明细后再确认；本次未投料";
+            if (plan.Location != s.CurrentLocation)
+                return $"已不在预览时的地点（{(_locs.ContainsKey(plan.Location) ? LocName(plan.Location) : plan.Location)}）{tail}";
+            if (plan.Picks.Count == 0 || plan.Picks.Any(p => p.Take < 1) || plan.Picks.Sum(p => p.Take) != cp.InputCount
+                || plan.Picks.Select(p => p.InstanceId).Distinct().Count() != plan.Picks.Count)
+                return $"投料明细不完整（须合计{ItemName(cp.InputId)}×{cp.InputCount}）{tail}";
+            var usable = new HashSet<int>(UsableBatches(s, cp.InputId, true).Where(w => !IsLocked(s, w)).Select(w => w.InstanceId));
+            foreach (var p in plan.Picks)
+            {
+                var label = $"{(p.Carried ? "随身" : "地面")}{ItemName(cp.InputId)}#{p.InstanceId}";
+                var w = FindItem(s, p.InstanceId);
+                var placeOk = w != null && (p.Carried ? w.IsCarried : w.Owner == plan.Location);
+                if (w == null || w.ItemId != cp.InputId || !placeOk || !usable.Contains(w.InstanceId))
+                    return $"木材来源已变化（{label}已不可用）{tail}";
+                if (w.Count != p.Had)
+                    return $"木材来源已变化（{label}由{p.Had}份变为{w.Count}份）{tail}";
+            }
+            if (!plan.SameAs(now.Plan))
+                return $"木材来源已变化（现在会取：{string.Join("、", now.Sources)}）{tail}";
+            return null;
+        }
+
+        /// <summary>
         /// Q111 投料（S11/S01 本轮章）：0 世界分钟；从随身与当前地面未预留的木材原子取足 4 份，合成一批放进当前火堆一个空加工位，
         /// 立即建立 fire_charcoal 进程（受热 0/60）。缺料、无空位、来源失效整次拒绝，什么都不变。不加燃料、不点火。
+        /// Q113：带上玩家确认的明细时先重验（<see cref="CharcoalPlanStale"/>），不符整条拒绝、不静默改取别的堆；
+        /// 不带明细的内部/旧调用按当时自动分配取料（同样先整体校验再一次迁移）。
         /// </summary>
-        private ActionResult LoadCharcoal(GameState s)
+        private ActionResult LoadCharcoal(GameState s, CharcoalPlan? plan)
         {
             var info = CharcoalLoadPreview(s);
             if (!info.Ok) return ActionResult.Fail(info.Reason ?? "不能投料");
             var cp = CharcoalProcess!;
+            if (plan != null && CharcoalPlanStale(s, cp, plan, info) is string stale) return ActionResult.Fail(stale);
             var here = s.CurrentLocation;
             var owner = FireOwner(here);
             var sources = CharcoalSources(s, cp);

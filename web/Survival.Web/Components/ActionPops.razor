@@ -92,6 +92,7 @@
         case "charcoal":
         {
             var info = G.CharcoalPreview();
+            var shown = G.CharcoalShown();
             var shortFuel = info.FuelWoodShort > 0;
             <AnchorPop AnchorId="@pop.AnchorId" Title="煅烧木炭" CssClass="charcoal" Place="above,below,right,left"
                        Sub="@($"{e.ItemName(info.InputId)}×{info.InputCount}→{e.ItemName(info.OutputId)}×{info.OutputCount} · 不耗时投料 · 不给经验")" OnClose="G.ClosePop">
@@ -102,7 +103,15 @@
                         <span title="每批占火堆2个加工位中的1位；可与1口锅或另一批并存"><i class="pf-ico">▣</i>占1个加工位（空@(info.FreeSlots)/@(info.Slots)）</span>
                         <span title="只在火堆燃烧且本段有完整5分钟燃料时计热；不受熟练度或装备加速"><i class="pf-ico">⏱</i>需@(info.HeatMinutes)有效受热分钟</span>
                     </div>
-                    @if (info.Sources.Count > 0 && info.Ok) { <div class="apop-note">将取：@string.Join("、", info.Sources)</div> }
+                    @if (shown.Sources.Count > 0 && info.Ok)
+                    {
+                        @* Q113：系统自动分配（随身优先，不足再取当前地面），逐堆列来源/实例/数量；无来源切换控件 *@
+                        <div class="apop-note" title="系统自动取料：先取你随身的木材，不够再取当前地面的；不取队友、别处或被预留/占用的木材">将取：@string.Join("、", shown.Sources)</div>
+                        @if (!shown.Plan.SameAs(info.Plan))
+                        {
+                            <div class="apop-note">木材有变动：确认时会按上面的明细核对，来源不一致将不投料并刷新明细</div>
+                        }
+                    }
                     <div class="@(shortFuel ? "apop-risk" : "apop-note")">燃料另计：@info.FuelNote</div>
                     <div class="apop-note">熄火保留进度；取出未完成的一批退回@(info.InputCount)份木材、清进度，已烧燃料不退；完成后木炭留在加工位，取出才进包。</div>
                     @if (!info.Ok) { <div class="apop-risk">@info.Reason</div> }
@@ -207,7 +216,8 @@
         _tried = true;
         try
         {
-            var res = G.Instant(InstantRequest.LoadCharcoal());
+            // Q113：带上浮窗展示的明细确认；来源已变化时整条拒绝，浮窗留着、刷新明细并显示原因，玩家再点确认
+            var res = G.ConfirmCharcoal();
             // B10b 试玩修复：投料后收起浮窗并清掉选中（被取走一部分的木材堆不再弹操作窗盖住火堆）
             if (res.Ok) G.ClearSelection();
         }

@@ -1072,6 +1072,35 @@ public sealed class GameSession
         return info;
     }
 
+    private (PopContext? pop, CharcoalLoadInfo? info) _charcoalShown;
+
+    /// <summary>
+    /// Q113：煅烧浮窗展示给玩家的那份投料明细——浮窗打开时拍下，之后木材变动也不暗改（确认时由内核按这份重验）；
+    /// 拍下时还不能投（缺料等）则每次重拍，确认被拒后也重拍，让玩家看着新明细再确认。
+    /// </summary>
+    public CharcoalLoadInfo CharcoalShown()
+    {
+        var live = CharcoalPreview();
+        if (Pop is not { Kind: "charcoal" } p) return live;
+        if (!ReferenceEquals(_charcoalShown.pop, p) || _charcoalShown.info is not { Ok: true }) _charcoalShown = (p, live);
+        return _charcoalShown.info!;
+    }
+
+    /// <summary>
+    /// Q113 浮窗“确认投料”：带上浮窗展示的明细提交；来源有变化时内核整条拒绝，浮窗保持打开、刷新明细并显示原因，由玩家重新确认。
+    /// </summary>
+    public ActionResult ConfirmCharcoal()
+    {
+        var shown = CharcoalShown();
+        var res = Instant(InstantRequest.LoadCharcoal(shown.Plan));
+        if (!res.Ok && Pop is { Kind: "charcoal" } p)
+        {
+            _charcoalShown = (p, E.CharcoalLoadPreview(S));
+            Notify();
+        }
+        return res;
+    }
+
     /// <summary>当前地点火堆“等待加工”（原等待烹饪，Q111 起含煅烧）的只读解析（S11 §9）：悬停预览与按钮禁用原因共用；每次界面版本只算一次。</summary>
     public CookWaitPlan CookWaitPreview()
     {
