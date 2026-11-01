@@ -57,7 +57,7 @@ public sealed class FeedbackBridge
         ctx["carriedKg"] = (double)Math.Round(e.CarriedGrams(s) / 1000m, 2, MidpointRounding.AwayFromZero);
         ctx["fires"] = s.Locations.Where(kv => e.Location(kv.Key).HasFire)
             .ToDictionary(kv => kv.Key, kv => new { lit = kv.Value.Facility.FireLit, fuel = kv.Value.Facility.FuelMinutes, shelter = kv.Value.Facility.ShelterBuilt, bed = kv.Value.Facility.BedBuilt });
-        ctx["clear"] = s.Locations.Where(kv => kv.Value.Visited)
+        ctx["clear"] = s.Locations.Where(kv => kv.Value.Visited && e.Location(kv.Key).ClearEnabled)
             .ToDictionary(kv => kv.Key, kv => e.ClearChargesText(s, kv.Key));
         ctx["pots"] = s.Items.Where(i => e.IsPot(i))
             .Select(p => $"{e.ItemName(p.ItemId)}#{p.InstanceId}@{p.Owner}：{e.PotLabel(s, p)}，食材{e.PotFood(s, p.InstanceId).Count}，{e.ContentStatus(s, p)}")
