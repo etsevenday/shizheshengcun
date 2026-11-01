@@ -464,13 +464,15 @@ namespace Survival.Core.Engine
                 case ActionType.Travel:
                 {
                     var from = s.CurrentLocation;
-                    var walked = Config.Edges.FirstOrDefault(e => e.Touches(from) && e.Other(from) == a.TargetId);
+                    var walked = EdgeBetween(from, a.TargetId);
                     if (walked != null) s.TraveledEdges.Add(walked.Id);
                     s.CurrentLocation = a.TargetId;
-                    var revealed = Visit(s, a.TargetId);
+                    var mapNotes = new List<string>();
+                    var revealed = Visit(s, a.TargetId, mapNotes);
                     ClearAction(s, a);
                     var t = $"到达{LocName(a.TargetId)}（{AwardTravelXp(s, from, a.TargetId)}）。";
                     if (revealed.Count > 0) t += $"发现{string.Join("、", revealed.Select(id => _res[id].Name))}。";
+                    foreach (var n in mapNotes) t += n + "。";
                     Emit(s, GameEventKind.ActionCompleted, t, null, revealed);
                     // 首次 camp→field：落点并提交到达后，由保留游荡尸触发一次剧情首战（S15 §5、S02 §7）
                     TryStartTutorialBattle(s, a);
@@ -766,7 +768,8 @@ namespace Survival.Core.Engine
                 f.Add("visitedStreamOrWoods");
             if (s.Locations.TryGetValue("village", out var vg) && vg.Visited) f.Add("visitedVillage");
             if (s.Locations.Values.Any(l => l.Facility.ShelterBuilt)) f.Add("shelterBuilt");
-            if (s.Locations.Values.All(l => l.Visited)) f.Add("allVisited");
+            // 引导“走遍新手区”只数旧 8 地点（v3 地图导入后其余 135 个节点不计，B11）
+            if (Config.Locations.Where(l => l.IsStarter).All(l => s.Locations.TryGetValue(l.Id, out var ls) && ls.Visited)) f.Add("allVisited");
 
             var camp = Config.Locations.FirstOrDefault(l => l.CanBuildShelter)?.Id ?? "camp";
             // 按根位置计入：随身、营地地面，以及营地火堆与锅里的有效物品；每个实例只算一次（设施与烹饪案 5.3）

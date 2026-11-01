@@ -310,7 +310,7 @@ public class B10aMultiplayerQTests : BattleTestBase
         foreach (var we in (Newtonsoft.Json.Linq.JArray)j["WorldEnemies"]!) ((Newtonsoft.Json.Linq.JObject)we).Remove("ActorXpHits");
         foreach (var be in (Newtonsoft.Json.Linq.JArray)j["Battle"]!["Enemies"]!) ((Newtonsoft.Json.Linq.JObject)be).Remove("ActorXpHits");
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out _);
-        Assert.That(m.SchemaVersion, Is.EqualTo("19"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "18 → 19 → 20 链式升级");
         Assert.That(m.AttackXpLegacyRoster, Is.EquivalentTo(new[] { Me }.Concat(m.Roster.Select(r => r.ActorId))));
         var mw = m.WorldEnemies.Single(x => x.Id == w.Id);
         var me = m.Battle!.Enemies.Single();

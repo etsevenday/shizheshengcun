@@ -38,7 +38,7 @@ namespace Survival.Core.State
         /// "17" 起记服务地点迁址标记（v3 地图营区公共居所/收容所）与遗物是否公共候补遗物（策划答复 Q88/Q89，开发计划 v0.9 B8b）；
         /// "18" 起记候补照护规则版本与每名候补的自主 rest/sleep 模式（策划答复 Q90，开发计划 v0.9 B8c）。
         /// </summary>
-        public const string CurrentSchema = "19";
+        public const string CurrentSchema = "20";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -131,6 +131,13 @@ namespace Survival.Core.State
         /// <summary>完整走过（任一方向）的物理边 ID（athletics_10“已访问物理边”，开发计划 v0.9 B5 H7；schema 11 起记录，旧档从空开始）。</summary>
         public HashSet<string> TraveledEdges { get; set; } = new HashSet<string>();
         /// <summary>
+        /// v3 地牢实例（B11 R34：门槛 instance_from_explore100 / guardian_defeated / instance_complete 的读取面）：键为地牢 ID，值为当前代的
+        /// 实例边锁存与实例事实。B11 只建第 1 代、没有重置与守卫/领取（B21/B22）；schema 20 起记录。
+        /// </summary>
+        public Dictionary<string, DungeonInstanceState> DungeonInstances { get; set; } = new Dictionary<string, DungeonInstanceState>();
+        /// <summary>已揭示的 v3 新增资源点标记（config.map.resourceMarkers 的 ID）：B11 只记发现与日志，采集在 B12。schema 20 起记录。</summary>
+        public HashSet<string> RevealedResourceMarkers { get; set; } = new HashSet<string>();
+        /// <summary>
         /// 工作量余额（Q61 选 A，S01 本轮章；开发计划 v0.9 B7b）：键“actorId|动作族”（移动为“travel|同行角色ID排序集合”），值为小于 5 的基础工作分钟。
         /// 开工时整笔锁进行动（从这里移除），成功后写回新余额，取消/中断原样退回。schema 13 起记录，旧档从 0 开始。
         /// </summary>
@@ -192,6 +199,8 @@ namespace Survival.Core.State
             c.Locations = Locations.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.UnlockedEdges = new HashSet<string>(UnlockedEdges);
             c.TraveledEdges = new HashSet<string>(TraveledEdges);
+            c.DungeonInstances = DungeonInstances.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
+            c.RevealedResourceMarkers = new HashSet<string>(RevealedResourceMarkers);
             c.WorkCarry = new Dictionary<string, double>(WorkCarry);
             c.Resources = Resources.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.Items = Items.Select(i => i.Clone()).ToList();
@@ -389,6 +398,22 @@ namespace Survival.Core.State
             var c = (LocationState)MemberwiseClone();
             c.TriggeredMilestones = new HashSet<int>(TriggeredMilestones);
             c.Facility = Facility.Clone();
+            return c;
+        }
+    }
+
+    /// <summary>一座地牢的当前实例（B11）：代号、实例内边锁存（换代丢弃）与实例事实（guardianDefeated / recordClaimedAndClear，B21 起产生）。</summary>
+    public sealed class DungeonInstanceState
+    {
+        public int Generation { get; set; } = 1;
+        public HashSet<string> UnlockedEdges { get; set; } = new HashSet<string>();
+        public HashSet<string> Facts { get; set; } = new HashSet<string>();
+
+        public DungeonInstanceState Clone()
+        {
+            var c = (DungeonInstanceState)MemberwiseClone();
+            c.UnlockedEdges = new HashSet<string>(UnlockedEdges);
+            c.Facts = new HashSet<string>(Facts);
             return c;
         }
     }

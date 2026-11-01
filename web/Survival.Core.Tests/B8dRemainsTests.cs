@@ -13,21 +13,11 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B8dRemainsTests : TestBase
 {
-    /// <summary>测试用配置：在现行地图上临时加 h02_square / h06_shelter 两个节点（复制农野荒地的数据，只改 ID 与名字）。</summary>
+    /// <summary>测试用配置：B11 起 h02_square / h06_shelter 已在 v3 地图里，这里打开迁址开关 map.servicesAtV3Nodes（B14 前为 false）。</summary>
     private static GameConfig V3Cfg()
     {
         var j = JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));
-        var locs = (JArray)j["locations"]!;
-        var field = (JObject)locs.First(l => (string)l["id"]! == "field");
-        foreach (var (id, name) in new[] { ("h02_square", "营区广场"), ("h06_shelter", "收容所") })
-        {
-            var c = (JObject)field.DeepClone();
-            c["id"] = id;
-            c["name"] = name;
-            c["initiallyVisited"] = false;
-            c["initiallyDiscovered"] = false;
-            locs.Add(c);
-        }
+        j["map"]!["servicesAtV3Nodes"] = true;
         return ConfigLoader.FromJson(j.ToString());
     }
 

@@ -30,6 +30,40 @@ namespace Survival.Core.Config
             return cfg;
         }
 
+        /// <summary>v3 地图门槛（B11）：门槛谓词只用表达式语言 v1 的已知 op，变量只能是 $authoredFrom/$dungeonParent/$dungeonId，节点必须存在。</summary>
+        private static void ValidateMap(GameConfig c, HashSet<string> locs, List<string> e)
+        {
+            var known = new HashSet<string> { "literal", "and", "or", "fact", "visited", "exploreAtLeast", "instanceFact", "contextEquals", "if" };
+            void Check(string gate, GatePredicate? p)
+            {
+                if (p == null) { e.Add($"门槛 {gate} 缺少谓词"); return; }
+                if (!known.Contains(p.Op)) e.Add($"门槛 {gate} 有未知运算 {p.Op}");
+                if (p.Node != null && !p.Node.StartsWith("$") && !locs.Contains(p.Node)) e.Add($"门槛 {gate} 引用了不存在的地点 {p.Node}");
+                if (p.Node != null && p.Node.StartsWith("$") && p.Node != "$authoredFrom" && p.Node != "$dungeonParent") e.Add($"门槛 {gate} 有未知变量 {p.Node}");
+                if ((p.Op == "fact" || p.Op == "instanceFact" || p.Op == "contextEquals") && string.IsNullOrEmpty(p.Key)) e.Add($"门槛 {gate} 的 {p.Op} 缺少 key");
+                if ((p.Op == "visited" || p.Op == "exploreAtLeast") && string.IsNullOrEmpty(p.Node)) e.Add($"门槛 {gate} 的 {p.Op} 缺少 node");
+                foreach (var a in p.Args) Check(gate, a);
+                if (p.Op == "if") { Check(gate, p.Condition); Check(gate, p.Then); Check(gate, p.Else); }
+            }
+            foreach (var g in c.Map.Gates.GroupBy(g => g.Id).Where(g => g.Count() > 1)) e.Add($"门槛 ID 重复：{g.Key}");
+            foreach (var g in c.Map.Gates)
+            {
+                Check(g.Id, g.Predicate);
+                if (g.UnlockScope != GateScopes.Campaign && g.UnlockScope != GateScopes.CurrentInstance && g.UnlockScope != GateScopes.RevalidateCurrentInstance)
+                    e.Add($"门槛 {g.Id} 的解锁生命周期 {g.UnlockScope} 未知");
+            }
+            var dungeons = new HashSet<string>(c.Map.Dungeons.Select(d => d.Id));
+            foreach (var ed in c.Edges)
+            {
+                if (ed.DungeonId != null && !dungeons.Contains(ed.DungeonId)) e.Add($"连接 {ed.Id} 的地牢 {ed.DungeonId} 未定义");
+                if (ed.DungeonParent != null && !locs.Contains(ed.DungeonParent)) e.Add($"连接 {ed.Id} 的地牢父地点 {ed.DungeonParent} 不存在");
+            }
+            foreach (var l in c.Locations.Where(l => l.DungeonId != null && !dungeons.Contains(l.DungeonId)))
+                e.Add($"地点 {l.Id} 的地牢 {l.DungeonId} 未定义");
+            foreach (var kv in c.Map.ArrivalFacts) if (!locs.Contains(kv.Key)) e.Add($"到达事实地点 {kv.Key} 不存在");
+            foreach (var m in c.Map.ResourceMarkers) if (!locs.Contains(m.NodeId)) e.Add($"资源标记 {m.Id} 的地点 {m.NodeId} 不存在");
+        }
+
         public static List<string> Validate(GameConfig c)
         {
             var e = new List<string>();
@@ -64,13 +98,19 @@ namespace Survival.Core.Config
             {
                 if (!locs.Contains(ed.A) || !locs.Contains(ed.B)) e.Add($"连接 {ed.Id} 引用了不存在的地点");
                 if (ed.BaseMinutes <= 0 || ed.BaseMinutes % tick != 0) e.Add($"连接 {ed.Id} 时长须为{tick}的正倍数");
-                if (!ed.InitiallyUnlocked && ed.UnlockAny.Count == 0) e.Add($"连接 {ed.Id} 既非开局解锁也无解锁条件");
+                if (!ed.InitiallyUnlocked && ed.UnlockAny.Count == 0 && string.IsNullOrEmpty(ed.Gate)) e.Add($"连接 {ed.Id} 既非开局解锁也无解锁条件");
+                if (!string.IsNullOrEmpty(ed.Gate) && !c.Map.Gates.Any(g => g.Id == ed.Gate)) e.Add($"连接 {ed.Id} 的门槛 {ed.Gate} 未定义");
+                if (ed.A == ed.B) e.Add($"连接 {ed.Id} 两端相同");
                 foreach (var u in ed.UnlockAny)
                 {
                     if (!locs.Contains(u.Location)) e.Add($"连接 {ed.Id} 解锁条件引用了不存在的地点 {u.Location}");
                     if (!milestoneSet.Contains(u.Progress)) e.Add($"连接 {ed.Id} 解锁阈值 {u.Progress} 不在 25/50/75/100 中");
                 }
             }
+
+            foreach (var g in c.Edges.GroupBy(x => string.CompareOrdinal(x.A, x.B) < 0 ? x.A + "|" + x.B : x.B + "|" + x.A).Where(g => g.Count() > 1))
+                e.Add($"地点对 {g.Key} 之间有多条连接");
+            ValidateMap(c, locs, e);
 
             foreach (var r in c.Resources)
             {
@@ -117,6 +157,9 @@ namespace Survival.Core.Config
             {
                 if (string.IsNullOrEmpty(l.LootTableId)) e.Add($"地点 {l.Id} 缺少 lootTableId");
                 else if (!c.LootTables.ContainsKey(l.LootTableId)) e.Add($"地点 {l.Id} 的掉落表 {l.LootTableId} 不存在");
+                if (l.ExploreMinutes.HasValue && (l.ExploreMinutes.Value <= 0 || l.ExploreMinutes.Value % tick != 0)) e.Add($"地点 {l.Id} 探索时长须为{tick}的正倍数");
+                if (l.ExploreIncrement.HasValue && (l.ExploreIncrement.Value <= 0 || l.ExploreIncrement.Value > 100)) e.Add($"地点 {l.Id} 探索增量须在1到100之间");
+                if (!l.ClearEnabled) continue;   // 新节点清理参数已导入但本批不开放（B12），不校验
                 var cl = l.Clear;
                 if (cl.Cap < 1) e.Add($"地点 {l.Id} 清理次数上限须≥1");
                 if (cl.RefillIntervalMinutes <= 0 || cl.RefillIntervalMinutes % tick != 0) e.Add($"地点 {l.Id} 清理恢复间隔须为{tick}的正倍数");

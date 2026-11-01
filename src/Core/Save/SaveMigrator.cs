@@ -43,6 +43,7 @@ namespace Survival.Core.Save
         public const string Schema16 = "16";
         public const string Schema17 = "17";
         public const string Schema18 = "18";
+        public const string Schema19 = "19";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -50,7 +51,8 @@ namespace Survival.Core.Save
         public static List<string> Migrate(GameState s, GameConfig config)
         {
             var notes = new List<string>();
-            if (s.SchemaVersion == GameState.CurrentSchema) return notes;
+            // 配置新增地点时（B11 v3 地图起）当前版本的档也补地点状态；只补缺的，已有的不动（幂等）
+            if (s.SchemaVersion == GameState.CurrentSchema) { EnsureLocationStates(s, config); return notes; }
             if (s.SchemaVersion == LegacySchema)
             {
                 // 先在副本上整条链试跑：3→4 有冲突时原状态一点不改
@@ -75,6 +77,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema16) From16To17(s, config, notes);
             if (s.SchemaVersion == Schema17) From17To18(s, config, notes);
             if (s.SchemaVersion == Schema18) From18To19(s, config, notes);
+            if (s.SchemaVersion == Schema19) From19To20(s, config, notes);
             return notes;
         }
 
@@ -785,8 +788,47 @@ namespace Survival.Core.Save
         private static void From18To19(GameState s, GameConfig config, List<string> notes)
         {
             MigrateAttackXp(s, config);
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（攻击经验次数改为每人各自计）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema19}（攻击经验次数改为每人各自计）。" });
+            s.SchemaVersion = Schema19;
+        }
+
+        // ───────────────────────── 19 → 20 ─────────────────────────
+
+        /// <summary>
+        /// v3 地图（开发计划 v0.9 B11，R33/R34；S02「地牢、位置与旧档」、gate-contract stateRules.legacy）：为新增的 135 个节点补地点状态
+        /// （未发现、未到访、探索 0、清理次数按配置初值）；已开的世界边原样保留、不回退，不补旧奖励、不伪造事实；
+        /// 然后按门槛契约重判一次（例如旧档村庄已 100% 时揭示通往旧公路的未开通路线）。地牢实例与资源标记从空开始。
+        /// </summary>
+        private static void From19To20(GameState s, GameConfig config, List<string> notes)
+        {
+            var added = EnsureLocationStates(s, config);
+            s.DungeonInstances ??= new Dictionary<string, DungeonInstanceState>();
+            s.RevealedResourceMarkers ??= new HashSet<string>();
+            new Engine.GameEngine(config).RefreshGates(s);
+            if (added > 0) notes.Add($"地图扩展到{config.Locations.Count}个地点，已走过的路线保留");
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（v3 地图：新增{added}个地点，已开路线不回退）。" });
             s.SchemaVersion = GameState.CurrentSchema;
+        }
+
+        /// <summary>为配置里有、存档里没有的地点补状态（未发现、未到访、探索度取初值、清理次数取初值）。返回补了几个。幂等。</summary>
+        public static int EnsureLocationStates(GameState s, GameConfig config)
+        {
+            var added = 0;
+            foreach (var l in config.Locations)
+            {
+                if (s.Locations.ContainsKey(l.Id)) continue;
+                s.Locations[l.Id] = new LocationState
+                {
+                    Discovered = l.InitiallyDiscovered,
+                    Visited = false,
+                    Progress = l.InitialProgress,
+                    ClearCharges = l.Clear.InitialCharges,
+                    ClearRefillProgress = 0,
+                    ClearUpdatedMinute = s.GameMinute,
+                };
+                added++;
+            }
+            return added;
         }
 
         /// <summary>Q104 旧共享攻击经验计数一次迁移（幂等：已有快照不重冻、已有个人计数不覆盖）。测试可直接调用。</summary>

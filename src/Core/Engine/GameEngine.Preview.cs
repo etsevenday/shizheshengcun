@@ -184,7 +184,7 @@ namespace Survival.Core.Engine
             {
                 case ActionType.Travel:
                 {
-                    var edge = Config.Edges.FirstOrDefault(e => e.Touches(s.CurrentLocation) && e.Other(s.CurrentLocation) == r.TargetId);
+                    var edge = EdgeBetween(s.CurrentLocation, r.TargetId);
                     if (edge != null) p.BaseMinutes = edge.BaseMinutes;
                     if (edge != null) p.XpGains.Add(TravelXpPreview(s, s.CurrentLocation, r.TargetId));
                     p.ConfirmText = "确认移动";
@@ -195,11 +195,11 @@ namespace Survival.Core.Engine
                 }
                 case ActionType.Explore:
                 {
-                    p.BaseMinutes = Config.Actions.ExploreMinutes;
+                    p.BaseMinutes = ExploreMinutesAt(s.CurrentLocation);
                     var ls = s.Locations[s.CurrentLocation];
                     if (ls.Progress < 100)
                     {
-                        var next = System.Math.Min(100, ls.Progress + Config.Actions.ExploreProgress);
+                        var next = System.Math.Min(100, ls.Progress + ExploreIncrementAt(s.CurrentLocation));
                         p.Notes.Add($"完成后探索度{ls.Progress}%→{next}%");
                         p.Notes.Add(NextMilestoneHasContent(s, s.CurrentLocation) ? "本次可能发现新线索" : "本次没有新线索，仍会推进探索度");
                         p.Notes.Add("探索推进地块调查，并有机会取得零散物资");

@@ -94,6 +94,8 @@ namespace Survival.Core.Config
         public PartyConfig Party { get; set; } = new PartyConfig();
         /// <summary>工坊六类与装备来源（A07「工坊设施」、A05 §3；开发计划 v0.9 B10，tools/import-b10-workshops.py）。</summary>
         public WorkshopsConfig Workshops { get; set; } = new WorkshopsConfig();
+        /// <summary>v3 地图门槛与探索（开发计划 v0.9 B11，tools/import-b11-map.py）。</summary>
+        public MapConfig Map { get; set; } = new MapConfig();
     }
 
     /// <summary>工坊（A07「工坊设施」；B10）：hand 不是设施；其余每类每地一座，只在 buildLocations 建（B10-1：只开放 camp，待确认 Q107）。</summary>
@@ -286,6 +288,56 @@ namespace Survival.Core.Config
         public ClearConfig Clear { get; set; } = new ClearConfig();
 
         public bool IsIndoor => Exposure == "indoor";
+
+        // ───── v3 地图字段（A08「全143节点」、map-v3-normalized.json；B11 R33） ─────
+        /// <summary>区域：starter（旧 8 地点）/wild/hub/church/academy/d01…d08 等。</summary>
+        public string Zone { get; set; } = "starter";
+        /// <summary>world / city_building / dungeon。</summary>
+        public string NodeKind { get; set; } = "world";
+        public string? ParentCity { get; set; }
+        public string WorldKind { get; set; } = "overworld";
+        public string LandOwner { get; set; } = "unclaimed";
+        /// <summary>永久安全屋许可（A08 白名单 54 处；安全屋本身在 B17）。</summary>
+        public bool BuildAllowedSafehouse { get; set; }
+        /// <summary>临时营地许可（8 处）。</summary>
+        public bool TemporaryCamp { get; set; }
+        /// <summary>危险度 0—3：只作显示，不乘接敌率、伤害或敌属性（node-expansion-rules contracts.danger）；旧 8 地点没有。</summary>
+        public int? Danger { get; set; }
+        /// <summary>v3 网格坐标（地牢节点为地牢内局部坐标）。区域图 mapX/mapY 由它换算。</summary>
+        public int GridX { get; set; }
+        public int GridY { get; set; }
+
+        // ───── 新区探索（S03「新区探索与发现」、node-expansion-rules.json；B11 R35） ─────
+        public bool ExploreEnabled { get; set; } = true;
+        /// <summary>公共城市/服务节点：首次实际到访自动探索 100，不发里程碑物资、不随机接敌。</summary>
+        public bool ExploreAuto100OnVisit { get; set; }
+        /// <summary>每次探索基础分钟；null 用全局 actions.exploreMinutes（旧 8 地点）。</summary>
+        public int? ExploreMinutes { get; set; }
+        /// <summary>每次探索增量；null 用全局 actions.exploreProgress（旧 8 地点）。</summary>
+        public int? ExploreIncrement { get; set; }
+        public bool ExplorationLootEnabled { get; set; } = true;
+        public bool RandomEncounterEnabled { get; set; } = true;
+        /// <summary>新节点完成探索/清理后的满人口接敌基础百分比；null 用全局 encounters（旧 8 地点）。</summary>
+        public double? EncounterBaseExplorePercent { get; set; }
+        public double? EncounterBaseClearPercent { get; set; }
+        /// <summary>新节点所属人口区的本地上限（接敌概率分母）；旧 8 地点用 worldEnemies.localCaps。人口区刷新在 B20。</summary>
+        public int PopulationLocalCap { get; set; }
+        public string? PopulationRegionId { get; set; }
+        /// <summary>地牢节点所属地牢（d01…d08）；非地牢为 null。</summary>
+        public string? DungeonId { get; set; }
+        /// <summary>外部明示安全（h05_homestead）。</summary>
+        public bool SafeExterior { get; set; }
+
+        /// <summary>清理是否开放：新节点清理参数已导入，但资源点与清理在 B12 接入，本批为 false。</summary>
+        public bool ClearEnabled { get; set; } = true;
+        public int? ClearMinutes { get; set; }
+        public string? ClearRefillMode { get; set; }
+
+        /// <summary>区域图图层：地牢节点按所属地牢分层（局部坐标），其余同在世界图层。</summary>
+        public string Layer => NodeKind == "dungeon" ? (DungeonId ?? Zone) : "world";
+        public bool IsDungeon => NodeKind == "dungeon";
+        /// <summary>旧 8 地点（新手区）。</summary>
+        public bool IsStarter => Zone == "starter";
     }
 
     /// <summary>地点清理次数：上限、初始与串行恢复间隔（地图清理案表 2）。</summary>
@@ -383,10 +435,25 @@ namespace Survival.Core.Config
         public string B { get; set; } = "";
         public int BaseMinutes { get; set; }
         public bool InitiallyUnlocked { get; set; }
+        /// <summary>旧式解锁条件（任一地点探索度≥X）。v3 起由 <see cref="Gate"/> 取代；只在 Gate 为空时使用。</summary>
         public List<UnlockCondition> UnlockAny { get; set; } = new List<UnlockCondition>();
+
+        // ───── v3 边字段（A08「全180边」、gate-contract.json；B11 R33/R34） ─────
+        /// <summary>false 为单向出口（只能从 A 走到 B，8 条地牢出口）。</summary>
+        public bool Bidirectional { get; set; } = true;
+        /// <summary>规范门槛 ID（config.map.gates）；A 是数据原 from（门槛锚点），不随当前位置改变。</summary>
+        public string? Gate { get; set; }
+        /// <summary>原标签（from_explore_100 等别名）。</summary>
+        public string? GateAlias { get; set; }
+        /// <summary>gateContext.edgeRole：normal / hub_registration_boundary。</summary>
+        public string Role { get; set; } = "normal";
+        public string? DungeonId { get; set; }
+        public string? DungeonParent { get; set; }
 
         public bool Touches(string loc) => A == loc || B == loc;
         public string Other(string loc) => A == loc ? B : A;
+        /// <summary>能否从 loc 出发走这条边：双向边两端都可，单向边只从 A。</summary>
+        public bool TraversableFrom(string loc) => A == loc || (Bidirectional && B == loc);
     }
 
     public sealed class ToolBonusConfig

@@ -39,8 +39,11 @@ namespace Survival.Core.Engine
         public string ShelterLocation(GameState s) => s.ServiceMapMigrated ? Config.Party.ShelterV3 : Config.Party.ShelterStandIn;
         public bool AtShelter(GameState s) => s.CurrentLocation == ShelterLocation(s);
 
-        /// <summary>地图里已有 v3 的营区公共居所与收容所两个节点（B11 导入后才有；没有就不迁址）。</summary>
-        public bool ServiceMapV3Available => _locs.ContainsKey(Config.Party.HubV3) && _locs.ContainsKey(Config.Party.ShelterV3);
+        /// <summary>
+        /// 地图里已有 v3 的营区公共居所与收容所两个节点，且配置允许迁址（config.map.servicesAtV3Nodes）。B11 已导入节点，但营区登记
+        /// （register 门槛事实）在 B14，迁过去玩家走不到，所以 B11 保持 false、服务继续在 camp 代办（开发假设 B11-9）。
+        /// </summary>
+        public bool ServiceMapV3Available => Config.Map.ServicesAtV3Nodes && _locs.ContainsKey(Config.Party.HubV3) && _locs.ContainsKey(Config.Party.ShelterV3);
 
         /// <summary>服务地点的称呼：迁址前替身地点写“暂代营区/暂代收容所”，迁址后写“营区/收容所”。</summary>
         private string ServicePlace(GameState s, bool shelter) =>

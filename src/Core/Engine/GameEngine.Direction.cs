@@ -39,6 +39,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 某地点相对主角当前所在地的方位（S14 §16）：参照点是 s.CurrentLocation——移动途中、暂停、取消或死亡都仍是起点，
+        /// 坐标为 v3 网格换算的区域图 mapX/mapY（B11，待确认 Q-E：旧 8 地点按新网格重算），
         /// 到达提交后才换参照；当前地点自身、未发现地点（不泄露）以及方位无法判定时返回 None。只读，不推进时间、不需存档字段。
         /// </summary>
         public MapDirection DirectionFromHere(GameState s, string locationId)
@@ -46,6 +47,8 @@ namespace Survival.Core.Engine
             if (locationId == s.CurrentLocation) return MapDirection.None;
             if (!_locs.TryGetValue(locationId, out var to) || !_locs.TryGetValue(s.CurrentLocation, out var from)) return MapDirection.None;
             if (!s.Locations.TryGetValue(locationId, out var ls) || !ls.Discovered) return MapDirection.None;
+            // v3：地牢房间用地牢内局部坐标，和世界图层不在同一坐标系，跨图层不判方位（不编造箭头，B11）
+            if (from.Layer != to.Layer) return MapDirection.None;
             return DirectionBetween(from, to);
         }
 

@@ -58,10 +58,6 @@ namespace Survival.Core.Engine
 
         public bool IsDaylight(int minute) => Clock.IsDaylight(minute, Config.Time.DaylightStartMinute, Config.Time.DaylightEndMinute);
 
-        /// <summary>当前地点已解锁的相邻连接。</summary>
-        public IEnumerable<EdgeConfig> AdjacentUnlocked(GameState s) =>
-            Config.Edges.Where(e => e.Touches(s.CurrentLocation) && s.UnlockedEdges.Contains(e.Id));
-
         public bool IsSheltered(GameState s, string locationId)
         {
             var cfg = _locs[locationId];
@@ -333,11 +329,15 @@ namespace Survival.Core.Engine
                 {
                     if (!_locs.ContainsKey(r.TargetId)) return "目标地点不存在";
                     if (r.TargetId == here) return "已在此地";
-                    var edge = Config.Edges.FirstOrDefault(e => e.Touches(here) && e.Other(here) == r.TargetId);
-                    if (edge == null || !s.UnlockedEdges.Contains(edge.Id))
+                    var edge = EdgeBetween(here, r.TargetId);
+                    if (edge == null || !EdgeOpen(s, edge))
                     {
                         var target = s.Locations[r.TargetId];
+                        // 单向出口（B11：8 条地牢出口）不能反走
+                        if (edge == null && EdgesAt(here).Any(e => e.Other(here) == r.TargetId) && target.Discovered) return "这是单向出口，不能从这边走";
                         if (edge == null && target.Discovered) return "请先前往相邻地点";
+                        // 已揭示但门槛未满足（B11 R34）：写明原因，不耗时
+                        if (edge != null && EdgeRevealed(s, edge)) return "路线未开通，" + GateBlockedReason(s, edge);
                         return "尚未发现路线";
                     }
                     plan.BaseWork = edge.BaseMinutes;
@@ -347,15 +347,17 @@ namespace Survival.Core.Engine
 
                 case ActionType.Explore:
                 {
+                    if (!hereCfg.ExploreEnabled) return "公开地点到达即已全部知晓，不需要探索";
                     if (hereState.Progress >= 100) return "已充分探索，可清理或搜集已发现资源";
                     plan.TargetId = here;
-                    plan.BaseWork = Config.Actions.ExploreMinutes;
+                    plan.BaseWork = ExploreMinutesAt(here);
                     plan.Label = "探索周边";
                     return null;
                 }
 
                 case ActionType.Clear:
                 {
+                    if (!hereCfg.ClearEnabled) return "这里的清理在后续版本开放";
                     if (!hereState.Visited) return "只能清理已访问的当前地点";
                     var cap = hereCfg.Clear.Cap;
                     var (charges, progress) = ClearChargesAt(s, here);

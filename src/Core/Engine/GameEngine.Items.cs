@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using Survival.Core.Config;
 using Survival.Core.State;
 
@@ -550,8 +551,11 @@ namespace Survival.Core.Engine
 
         // ───────────────────────── 世界（地图案 04–07） ─────────────────────────
 
-        /// <summary>到达地点：标记已访问，揭示进入即显示的资源点。返回新发现的资源点 ID。</summary>
-        private List<string> Visit(GameState s, string locationId)
+        /// <summary>
+        /// 到达地点：标记已访问，揭示进入即显示的资源点；再做 v3 地图到达事务（公开地点自动 100、c02/r02 接触事实、门槛重判，B11）。
+        /// 返回新发现的资源点 ID；mapNotes 收集给日志的地图短语。
+        /// </summary>
+        private List<string> Visit(GameState s, string locationId, List<string>? mapNotes = null)
         {
             var ls = s.Locations[locationId];
             ls.Visited = true;
@@ -567,15 +571,23 @@ namespace Survival.Core.Engine
                     revealed.Add(r.NodeId);
                 }
             }
+            var notes = ArriveMap(s, locationId);
+            var markers = RevealMarkers(s, locationId, 0, 0);
+            if (markers.Count > 0) notes.Add("发现" + string.Join("、", markers));
+            mapNotes?.AddRange(notes);
             return revealed;
         }
 
-        /// <summary>探索完成：+25 探索度，按 25→50→75→100 顺序处理新跨过的里程碑，每个只触发一次。</summary>
+        /// <summary>
+        /// 探索完成：按地点增量（旧 8 地点 +25；新区普通 +25、地牢房间 +50，S03/Q31）推进探索度，按 25→50→75→100 顺序处理新跨过的里程碑，
+        /// 每个只触发一次。v3 新节点：25/50 揭对应资源点标记（采集在 B12）、75 给安全线索（不发物资）、100 揭出边（门槛也要满足）。
+        /// </summary>
         private (int old, int now, List<string> found, List<string> ids) ApplyExplore(GameState s, string locationId)
         {
             var ls = s.Locations[locationId];
+            var lc = _locs[locationId];
             var old = ls.Progress;
-            var now = Math.Min(100, old + Config.Actions.ExploreProgress);
+            var now = Math.Min(100, old + ExploreIncrementAt(locationId));
             ls.Progress = now;
 
             var found = new List<string>();
@@ -592,41 +604,84 @@ namespace Survival.Core.Engine
                     found.Add(r.Name);
                     ids.Add(r.NodeId);
                 }
+                found.AddRange(RevealMarkers(s, locationId, t, t));
+                if (t == 75 && HasClue(lc)) found.Add(Config.Map.ClueText);
             }
-            foreach (var e in UnlockEdges(s))
-            {
-                found.Add($"通往{LocName(e.Touches(locationId) ? e.Other(locationId) : e.B)}的路线");
-                ids.Add(e.Id);
-            }
+            var r2 = RefreshGates(s);
+            found.AddRange(RouteNotes(s, r2, locationId));
+            ids.AddRange(r2.Unlocked.Select(e => e.Id));
 
             return (old, now, found, ids);
         }
 
-        /// <summary>检查所有未解锁连接，任一条件满足即解锁并发现两端地点。</summary>
-        private List<Config.EdgeConfig> UnlockEdges(GameState s)
+        /// <summary>75% 安全线索只给 v3 新增普通野外（旧 8 地点照旧、地牢房间没有 25/75 里程碑，S03/Q31）。</summary>
+        private bool HasClue(Config.LocationConfig lc) => !lc.IsStarter && !lc.IsDungeon && !string.IsNullOrEmpty(Config.Map.ClueText);
+
+        /// <summary>重判门槛并返回本次新开通的边（v3 门槛求值器，B11；旧式 unlockAny 边同样处理）。</summary>
+        private List<Config.EdgeConfig> UnlockEdges(GameState s) => RefreshGates(s).Unlocked;
+
+        /// <summary>
+        /// 揭示该地点揭示度在 [from, to] 内的 v3 资源点标记（reveal 0 = 到访即见）：B11 只记“已发现”与日志，采集在 B12。返回日志短语。
+        /// </summary>
+        private List<string> RevealMarkers(GameState s, string locationId, int from, int to)
         {
-            var list = new List<Config.EdgeConfig>();
-            foreach (var e in Config.Edges)
-            {
-                if (s.UnlockedEdges.Contains(e.Id)) continue;
-                if (!e.UnlockAny.Any(u => s.Locations[u.Location].Progress >= u.Progress)) continue;
-                s.UnlockedEdges.Add(e.Id);
-                s.Locations[e.A].Discovered = true;
-                s.Locations[e.B].Discovered = true;
-                list.Add(e);
-            }
+            var list = new List<string>();
+            foreach (var m in Config.Map.ResourceMarkers.Where(m => m.NodeId == locationId && m.Reveal >= from && m.Reveal <= to))
+                if (s.RevealedResourceMarkers.Add(m.Id)) list.Add($"资源点线索：{MarkerText(m)}（采集在后续版本开放）");
             return list;
         }
+
+        /// <summary>资源点标记的产物短语：“野果×2”；不是物品的知识/记录写“特殊记录”。</summary>
+        public string MarkerText(Config.ResourceMarkerConfig m) =>
+            string.Join("、", m.Items.Select(kv => _items.ContainsKey(kv.Key) ? $"{ItemName(kv.Key)}×{kv.Value}" : "特殊记录"));
+
+        /// <summary>该地点已揭示的资源点标记（界面“资源点线索”提示用）。</summary>
+        public List<Config.ResourceMarkerConfig> RevealedMarkersAt(GameState s, string locationId) =>
+            Config.Map.ResourceMarkers.Where(m => m.NodeId == locationId && s.RevealedResourceMarkers.Contains(m.Id)).ToList();
+
+        /// <summary>每次探索的基础分钟：v3 新节点按逐点配置（普通 30、地牢房间 15），旧 8 地点用全局 actions.exploreMinutes。</summary>
+        public int ExploreMinutesAt(string locationId) => _locs[locationId].ExploreMinutes ?? Config.Actions.ExploreMinutes;
+
+        /// <summary>每次探索的增量：v3 新节点按逐点配置（普通 +25、地牢房间 +50），旧 8 地点用全局 actions.exploreProgress。</summary>
+        public int ExploreIncrementAt(string locationId) => _locs[locationId].ExploreIncrement ?? Config.Actions.ExploreProgress;
 
         /// <summary>某地点下一次探索将跨过的里程碑是否有新内容（不泄露具体内容）。</summary>
         public bool NextMilestoneHasContent(GameState s, string locationId)
         {
             var ls = s.Locations[locationId];
-            var next = Math.Min(100, ls.Progress + Config.Actions.ExploreProgress);
-            var t = next;
-            if (ls.TriggeredMilestones.Contains(t)) return false;
-            if (Config.Resources.Any(r => r.LocationId == locationId && r.RevealAt == t && !s.Resources[r.NodeId].Discovered)) return true;
-            return Config.Edges.Any(e => !s.UnlockedEdges.Contains(e.Id) && e.UnlockAny.Any(u => u.Location == locationId && u.Progress == t));
+            var lc = _locs[locationId];
+            var next = Math.Min(100, ls.Progress + ExploreIncrementAt(locationId));
+            foreach (var t in new[] { 25, 50, 75, 100 })
+            {
+                if (t <= ls.Progress || t > next || ls.TriggeredMilestones.Contains(t)) continue;
+                if (Config.Resources.Any(r => r.LocationId == locationId && r.RevealAt == t && !s.Resources[r.NodeId].Discovered)) return true;
+                if (Config.Map.ResourceMarkers.Any(m => m.NodeId == locationId && m.Reveal == t && !s.RevealedResourceMarkers.Contains(m.Id))) return true;
+                if (t == 75 && HasClue(lc)) return true;
+                // 100% 揭出边：还有从这里出发、远端尚未发现的边
+                if (t == 100 && EdgesAt(locationId).Any(e => e.TraversableFrom(locationId) && !EdgeOpen(s, e) && !s.Locations[e.Other(locationId)].Discovered)) return true;
+                // 门槛是“本地探索度≥t”的未开通边（field25 等、旧式 unlockAny）
+                if (EdgesAt(locationId).Any(e => !EdgeOpen(s, e) && LocalThreshold(e, locationId) == t)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>门槛只看“本地探索度≥t”时返回 t（预告是否可能发现新路线用，不泄露内容）；否则 null。</summary>
+        private int? LocalThreshold(Config.EdgeConfig e, string locationId)
+        {
+            var u = e.UnlockAny.FirstOrDefault(x => x.Location == locationId);
+            if (string.IsNullOrEmpty(e.Gate)) return u?.Progress;
+            int? Find(Config.GatePredicate p)
+            {
+                if (p.Op == "exploreAtLeast")
+                {
+                    var node = p.Node == "$authoredFrom" ? e.A : p.Node == "$dungeonParent" ? e.DungeonParent : p.Node;
+                    if (node == locationId) return p.Value?.Value<int>();
+                }
+                foreach (var a in p.Args) { var v = Find(a); if (v != null) return v; }
+                return null;
+            }
+            var g = GateOf(e);
+            return g == null ? null : Find(g.Predicate);
         }
     }
 }

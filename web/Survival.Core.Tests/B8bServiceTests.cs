@@ -17,18 +17,9 @@ public class B8bServiceTests : TestBase
     /// <summary>测试用配置：在现行地图上临时加 h02_square / h06_shelter 两个节点（复制农野荒地的数据，只改 ID 与名字）。</summary>
     private static GameConfig V3Cfg()
     {
+        // B11 起 h02/h06 已在 v3 地图里；迁址开关 config.map.servicesAtV3Nodes 在营区登记（B14）上线前为 false，这里打开模拟迁址后
         var j = JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));
-        var locs = (JArray)j["locations"]!;
-        var field = (JObject)locs.First(l => (string)l["id"]! == "field");
-        foreach (var (id, name) in new[] { ("h02_square", "营区广场"), ("h06_shelter", "收容所") })
-        {
-            var c = (JObject)field.DeepClone();
-            c["id"] = id;
-            c["name"] = name;
-            c["initiallyVisited"] = false;
-            c["initiallyDiscovered"] = false;
-            locs.Add(c);
-        }
+        j["map"]!["servicesAtV3Nodes"] = true;
         return ConfigLoader.FromJson(j.ToString());
     }
 
@@ -61,7 +52,8 @@ public class B8bServiceTests : TestBase
         Assert.That(Cfg.Party.ShelterStandIn, Is.EqualTo("camp"));
 
         var s = Camp();
-        Assert.That(E.ServiceMapV3Available, Is.False, "现行地图没有 h02/h06");
+        Assert.That(E.ServiceMapV3Available, Is.False, "营区登记（B14）上线前服务不迁址（B11 开发假设 B11-9）");
+        Assert.That(E.Config.Locations.Any(l => l.Id == "h02_square") && E.Config.Locations.Any(l => l.Id == "h06_shelter"), Is.True, "v3 节点已入图");
         Assert.That(s.ServiceMapMigrated, Is.False);
         Assert.That(E.HubLocation(s), Is.EqualTo("camp"));
         Assert.That(E.ShelterLocation(s), Is.EqualTo("camp"));

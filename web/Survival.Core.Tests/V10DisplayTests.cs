@@ -33,7 +33,10 @@ public class V10DisplayTests : TestBase
         Assert.That(E.IsOverweight(s), Is.EqualTo(E.CarriedGrams(s) > Cfg.Carry.SoftGrams), "阈值按克比较");
     }
 
-    /// <summary>S02-A07：现行 8 条连接往返方位与 §3.1 表一致、反向相反；不改连通性。</summary>
+    /// <summary>
+    /// S02-A07：旧 8 条连接往返方位、反向相反；不改连通性。B11（待确认 Q-E）起坐标按 v3 网格重算：village→clinic 由 ← 变 ↙、
+    /// hardware→scrapyard 由 ↗ 变 →，其余 6 条与 §3.1 表相同。
+    /// </summary>
     [Test]
     public void S02_A07_EightEdgesRoundTrip()
     {
@@ -44,11 +47,11 @@ public class V10DisplayTests : TestBase
             ("field", "woods", MapDirection.Right, MapDirection.Left),
             ("field", "village", MapDirection.Down, MapDirection.Up),
             ("village", "hardware", MapDirection.Right, MapDirection.Left),
-            ("village", "clinic", MapDirection.Left, MapDirection.Right),
+            ("village", "clinic", MapDirection.DownLeft, MapDirection.UpRight),
             ("woods", "scrapyard", MapDirection.DownRight, MapDirection.UpLeft),
-            ("hardware", "scrapyard", MapDirection.UpRight, MapDirection.DownLeft),
+            ("hardware", "scrapyard", MapDirection.Right, MapDirection.Left),
         };
-        Assert.That(Cfg.Edges, Has.Count.EqualTo(8));
+        Assert.That(Cfg.Edges.Count(e => E.Location(e.A).IsStarter && E.Location(e.B).IsStarter), Is.EqualTo(8));
         foreach (var (a, b, ab, ba) in table)
         {
             Assert.That(Cfg.Edges.Any(e => e.Touches(a) && e.Other(a) == b), Is.True, $"{a}—{b} 是现行连接");

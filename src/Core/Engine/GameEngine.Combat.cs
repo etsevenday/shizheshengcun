@@ -824,6 +824,7 @@ namespace Survival.Core.Engine
             var all = Config.Scope.Capacity.Unlocks.SelectMany(u => u.AllOf.Concat(u.AnyOf)).Distinct().ToList();
             if (fact == null) s.Progress.Flags.RemoveWhere(all.Contains);
             else if (all.Contains(fact)) s.Progress.Flags.Add(fact);
+            RefreshGates(s);   // B11：hub_registered 同时是 register 门槛事实
             var know = fact == null ? new List<string>() : Config.Knowledge.Where(k => k.GrantedByFacts.Contains(fact)).Select(k => k.Name).ToList();
             return $"开发：{(fact == null ? "已清除容量解锁事实" : $"已记下事实 {fact}")}，下一场新战斗{CapacityText(s)}；进行中的战斗不变"
                    + (know.Count > 0 ? $"；获得默认知识：{string.Join("、", know)}" : "") + "。";

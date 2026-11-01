@@ -52,7 +52,7 @@ namespace Survival.Core.Engine
         private void UpdateAllClearCharges(GameState s)
         {
             foreach (var id in s.Locations.Keys.ToList())
-                if (_locs.ContainsKey(id)) UpdateClearCharges(s, id);
+                if (_locs.TryGetValue(id, out var lc) && lc.ClearEnabled) UpdateClearCharges(s, id);
         }
 
         /// <summary>“次数3/4 · 距恢复1次3小时40分”；已满为“4/4·已满”。</summary>

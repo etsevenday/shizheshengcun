@@ -32,7 +32,8 @@ namespace Survival.Core.Engine
         public void DebugUnlockEdge(GameState s, string edgeId)
         {
             var e = _edges[edgeId];
-            s.UnlockedEdges.Add(edgeId);
+            if (GateScope(e) == Survival.Core.Config.GateScopes.CurrentInstance && e.DungeonId != null) EnsureInstance(s, e.DungeonId).UnlockedEdges.Add(edgeId);
+            else s.UnlockedEdges.Add(edgeId);
             s.Locations[e.A].Discovered = true;
             s.Locations[e.B].Discovered = true;
         }

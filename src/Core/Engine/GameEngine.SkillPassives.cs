@@ -64,7 +64,7 @@ namespace Survival.Core.Engine
                 case ActionType.Travel:
                 {
                     if (targetId == null) break;
-                    var edge = Config.Edges.FirstOrDefault(e => e.Touches(s.CurrentLocation) && e.Other(s.CurrentLocation) == targetId);
+                    var edge = EdgeBetween(s.CurrentLocation, targetId);
                     var visited = PassiveFactor(actor, "work.moveVisited");
                     if (edge != null && visited < 1 && s.TraveledEdges.Contains(edge.Id))
                         return (visited, PassiveSource(actor, "work.moveVisited") + "（走过的路）");
