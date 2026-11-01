@@ -338,6 +338,9 @@ namespace Survival.Core.Engine
             return notes;
         }
 
+        /// <summary>危险度说明（Q31 contracts.danger：0—3 只作预告，不乘接敌率、伤害或敌属性）。</summary>
+        public static string DangerText(int danger) => $"危险等级{danger}（0—3，只作提示，不改变遇敌概率与敌人强度）";
+
         /// <summary>开发入口（?dev=1）与测试：记下或清除一条门槛事实并重判。返回说明。</summary>
         public string DebugMapFact(GameState s, string key, bool on = true)
         {

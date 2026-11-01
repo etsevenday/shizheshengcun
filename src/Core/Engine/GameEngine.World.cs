@@ -64,6 +64,16 @@ namespace Survival.Core.Engine
 
         public int LocalCount(GameState s, string loc) => s.WorldEnemies.Count(w => w.LocationId == loc);
 
+        /// <summary>
+        /// 本地上限（接敌概率分母）：旧 8 地点用 worldEnemies.localCaps（R05 原值不变）；v3 新节点用所属人口区的本地上限
+        /// （node-expansion-rules worldPopulation.localCap，野外 4、城市/地牢 0）。新人口区的刷新与巡游在 B20。
+        /// </summary>
+        public int LocalCapOf(string loc) =>
+            WE.LocalCaps.ContainsKey(loc) ? WE.CapOf(loc) : _locs.TryGetValue(loc, out var lc) ? lc.PopulationLocalCap : 0;
+
+        /// <summary>旧 8 地点的全局种群（R05 全局 12）覆盖的地点；新人口区不与它共享（node-expansion-rules legacyStarterPopulation）。</summary>
+        private bool InLegacyPopulation(string loc) => WE.LocalCaps.ContainsKey(loc);
+
         /// <summary>某地可见的世界敌人（不含隐藏、不含交战中），按最早出现在前。</summary>
         public List<WorldEnemy> VisibleEnemiesAt(GameState s, string loc) =>
             s.WorldEnemies.Where(w => w.LocationId == loc && !w.Engaged && !Hidden(s, w)).OrderBy(w => w.Id).ToList();
@@ -76,6 +86,8 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 完成探索/清理后的接敌概率：基础风险×(本地未交战敌对数/本地上限)；第1日、安全地点、无敌对、保护期内为 0。
+        /// v3 新节点（B11，Q31）：基础风险取逐点 encounterBase*Percent、分母取人口区本地上限；城市/公共城内与地牢房间不随机接敌
+        /// （地牢只有固定实例遭遇）；危险度只作显示，不乘概率。旧 8 地点参数不变。
         /// </summary>
         public double EncounterChance(GameState s, string loc, ActionType type)
         {
@@ -84,10 +96,14 @@ namespace Survival.Core.Engine
             if (TutorialGateOpen(s)) return 0;   // 首战未胜利：不随机接敌（R05 §4）
             if (Clock.Day(s.GameMinute) < en.NoRandomBeforeDay) return 0;
             if (en.SafeLocations.Contains(loc)) return 0;
+            if (_locs.TryGetValue(loc, out var lc) && (!lc.RandomEncounterEnabled || lc.SafeExterior)) return 0;
             if (s.GameMinute < s.EncounterGraceUntil) return 0;
             var key = type == ActionType.Explore ? "explore" : type == ActionType.Clear ? "clear" : "";
-            if (!en.FullLocalPopulationActionRisk.TryGetValue(key, out var risk)) return 0;
-            var cap = WE.CapOf(loc);
+            double risk;
+            var nodePct = lc == null ? null : type == ActionType.Explore ? lc.EncounterBaseExplorePercent : type == ActionType.Clear ? lc.EncounterBaseClearPercent : null;
+            if (nodePct.HasValue) risk = nodePct.Value / 100.0;
+            else if (!en.FullLocalPopulationActionRisk.TryGetValue(key, out risk)) return 0;
+            var cap = LocalCapOf(loc);
             if (cap <= 0) return 0;
             var n = LocalHostiles(s, loc).Count;
             return risk * n / cap;
@@ -100,9 +116,11 @@ namespace Survival.Core.Engine
             if (TutorialGateOpen(s)) return "首战（农野荒地的游荡尸）胜利前不会随机遇敌";
             if (Clock.Day(s.GameMinute) < en.NoRandomBeforeDay) return $"第{en.NoRandomBeforeDay}日起完成后才可能遇到本地敌人（今天不会）";
             if (en.SafeLocations.Contains(loc)) return "营地是安全区，不会遇敌";
+            if (_locs.TryGetValue(loc, out var lc) && (!lc.RandomEncounterEnabled || lc.SafeExterior))
+                return lc.IsDungeon ? "地牢房间只有固定遭遇，不会随机遇敌" : "城市与公共地点不会随机遇敌";
             if (s.GameMinute < s.EncounterGraceUntil) return $"随机接敌保护期还剩{Clock.Duration(s.EncounterGraceUntil - s.GameMinute)}";
             var p = EncounterChance(s, loc, type);
-            return $"完成后接敌概率{Fmt.Pct(p)}（本地敌对{LocalHostiles(s, loc).Count}/上限{WE.CapOf(loc)}）；只会遇到这里已有的敌人，可选择绕行";
+            return $"完成后接敌概率{Fmt.Pct(p)}（本地敌对{LocalHostiles(s, loc).Count}/上限{LocalCapOf(loc)}）；只会遇到这里已有的敌人，可选择绕行";
         }
 
         // ───────────── 世界 tick：刷新与巡游 ─────────────
@@ -178,6 +196,8 @@ namespace Survival.Core.Engine
             foreach (var w in s.WorldEnemies.OrderBy(w => w.Id).ToList())
             {
                 if (w.Engaged || Hidden(s, w)) continue;
+                // v3 新人口区（B20）的巡游未接入：不在旧 8 地点种群里的敌人不巡游，也不抽随机数（B11）
+                if (!InLegacyPopulation(w.LocationId)) continue;
                 // 首战保留游荡尸胜利前不巡游（R05 §5），也不抽巡游随机数
                 if (IsTutorialEnemy(s, w.Id)) continue;
                 if (s.Rng.NextDouble() >= WE.PatrolMoveProbabilityPerEnemy) continue;
@@ -244,7 +264,8 @@ namespace Survival.Core.Engine
         public string? DebugSpawnBlocked(GameState s, string locationId)
         {
             if (Config.Encounters.SafeLocations.Contains(locationId)) return $"{LocName(locationId)}是安全区，不放敌人";
-            var cap = WE.CapOf(locationId);
+            if (_locs.TryGetValue(locationId, out var lc) && (!lc.RandomEncounterEnabled || lc.SafeExterior)) return $"{LocName(locationId)}没有随机敌人种群，不放敌人";
+            var cap = LocalCapOf(locationId);
             if (LocalCount(s, locationId) >= cap) return $"{LocName(locationId)}敌人已达上限{cap}";
             if (LiveCount(s) >= WE.GlobalCap) return $"全局敌人已达上限{WE.GlobalCap}";
             return null;

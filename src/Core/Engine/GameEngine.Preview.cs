@@ -210,6 +210,7 @@ namespace Survival.Core.Engine
                         }
                         else p.Notes.Add("探索推进地块调查；这里探索不出零散物资");
                         p.Notes.Add("探索不扣清理次数");
+                        if (_locs[s.CurrentLocation].Danger is int danger) p.Notes.Add(DangerText(danger));
                         if (Config.CombatEnabled) p.Notes.Add(EncounterNote(s, s.CurrentLocation, ActionType.Explore));
                         if (lootOn) p.LootOdds = LootOdds(s.CurrentLocation);
                     }
