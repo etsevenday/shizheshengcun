@@ -1,0 +1,140 @@
+{
+  "date": "2026-11-01",
+  "status": "static_documents_and_data_only_not_game_or_ui",
+  "questionsAsked": 1,
+  "answer": "Q113 A",
+  "pending": [],
+  "developerDelegations": [],
+  "checks": [
+    {
+      "name": "保留原开发同步/修改记录 01 基础系统/S11 设施加工与烹饪系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文仅明确替换/新增章 01 基础系统/S11 设施加工与烹饪系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步/修改记录 04 附录/A07 材料、制作工坊与求生物资目录.md",
+      "passed": true
+    },
+    {
+      "name": "原正文仅明确替换/新增章 04 附录/A07 材料、制作工坊与求生物资目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步/修改记录 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "原正文仅明确替换/新增章 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步/修改记录 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "原正文仅明确替换/新增章 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步/修改记录 00 总则/02 开发方待确认问题.md",
+      "passed": true
+    },
+    {
+      "name": "仅填Q113答复",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步/修改记录 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "原正文仅明确替换/新增章 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "所有策划JSON解析",
+      "passed": true
+    },
+    {
+      "name": "工坊合同其余规则保持",
+      "passed": true
+    },
+    {
+      "name": "合同嵌入一致其余字段保持 04 附录/A12 全系统策划数据索引.json",
+      "passed": true
+    },
+    {
+      "name": "合同嵌入一致其余字段保持 assets/20261030/index/joint-expansion-data.json",
+      "passed": true
+    },
+    {
+      "name": "自动来源顺序与4份确认",
+      "passed": true
+    },
+    {
+      "name": "四类验收存在",
+      "passed": true
+    },
+    {
+      "name": "无待定答复",
+      "passed": true
+    },
+    {
+      "name": "相对链接有效",
+      "passed": true
+    }
+  ],
+  "preUploadAudit": [
+    {
+      "category": "数值",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "名词",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "范围",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "时机",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "边界",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "自动行为",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "入口",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "来源",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "冲突",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "未完成依赖",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "旧档",
+      "result": "已核对，无遗留缺口"
+    },
+    {
+      "category": "验收",
+      "result": "已核对，无遗留缺口"
+    }
+  ]
+}

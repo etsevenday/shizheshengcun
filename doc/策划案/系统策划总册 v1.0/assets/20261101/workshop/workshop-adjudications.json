@@ -1,5 +1,5 @@
 {
-  "version": "q107_q112_20261101",
+  "version": "q107_q113_20261101",
   "status": "approved_planning_target_not_engine_verified",
   "sourceQuestions": [
     "Q107",
@@ -7,7 +7,8 @@
     "Q109",
     "Q110",
     "Q111",
-    "Q112"
+    "Q112",
+    "Q113"
   ],
   "workshopPlacement": {
     "selfBuild": [
@@ -94,7 +95,7 @@
     "catalyst": null,
     "tools": null,
     "xp": 0,
-    "source": "p0_carried_or_current_accessible_ground_only",
+    "source": "automatic_p0_carried_first_then_current_accessible_ground_only",
     "fuel": "original_fire_fuel_separate_from_input_once_per_fire_not_per_batch",
     "woodFuelMinutes": 60,
     "maxFuelMinutes": 240,
@@ -113,7 +114,24 @@
     "legacy": "new_process_empty_no_historical_charcoal_existing_fuel_food_unchanged",
     "supersedes": "drying_rack_charcoal_route_and_included_heat_or_stone_catalyst",
     "dryingRack": "original_drying_only_not_advanced_this_batch",
-    "existingMapCharcoalSourcesPreserved": true
+    "existingMapCharcoalSourcesPreserved": true,
+    "sourceAllocation": {
+      "sourceQuestion": "Q113",
+      "requiredWood": 4,
+      "priority": [
+        "p0_carried",
+        "current_accessible_ground"
+      ],
+      "withinSource": "existing_stable_instance_order",
+      "exclude": "all_original_reserved_busy_locked_or_otherwise_unusable",
+      "take": "up_to_remaining_required_quantity_no_extra",
+      "playerPriorityOrPerStackSelection": false,
+      "preview": "each_actual_source_instance_quantity_plus_original_heat_slot_and_fuel_notes",
+      "commit": "explicit_confirmation_revalidate_preview_sources_and_permissions_and_free_slot_atomically",
+      "stalePreview": "reject_whole_no_silent_substitution_refresh_then_require_confirmation",
+      "cancelOrPreview": "no_item_movement_no_slot_reservation_no_time_no_ignition",
+      "retry": "same_request_no_second_batch"
+    }
   },
   "precedence": "explicit_scope_overrides_A07_old_charcoal_and_medical_material_xp_and_h03_self_build_only_preserve_original_implementation_history",
   "forgeBatchFuel": {
