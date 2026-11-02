@@ -6,6 +6,15 @@ using Survival.Core.State;
 
 namespace Survival.Core.Engine
 {
+    /// <summary>设施栏的一张公共工坊站卡（B14b，Q141）：能用时 Blocked 为 null。</summary>
+    public sealed class PublicStationView
+    {
+        public string Id { get; set; } = "";
+        public string StationId { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string? Blocked { get; set; }
+    }
+
     /// <summary>
     /// 工坊、装备配方与队员交接（A07「工坊设施」「材料加工链」、A05 §3、A10 §7.2/§9、S08 X4；开发计划 v0.9 B10）。
     /// 工坊 = 地点设施 FacilityState.Workshops（每类每地一座，固定在地点、不进包）；hand 不需工坊。
@@ -64,13 +73,62 @@ namespace Survival.Core.Engine
         /// <summary>这个地点能不能建工坊（B10-1：配置 workshops.buildLocations，现在只有 camp）。</summary>
         public bool CanBuildWorkshopsAt(string locationId) => Config.Workshops.BuildLocations.Contains(locationId);
 
-        /// <summary>配方所需工坊不在当前地点时的原因；hand 或已建成为 null（A05 §3“其他工坊须在当前地点”）。</summary>
+        // ───────────── 公共工坊站（B14b，Q141 选 B；city-adjudications.json publicStations） ─────────────
+
+        /// <summary>某地点配置的公共工坊站（未列出的站不提供：h03 只有工作台/锻炉/军械台，r07 只有工作台，h02 缝纫台，h04 医疗台）。</summary>
+        public IEnumerable<PublicStationConfig> PublicStationsAt(string locationId) => Config.City.PublicStations.Where(p => p.LocationId == locationId);
+
+        /// <summary>
+        /// 公共站现在不能用的原因；能用为 null。须实际在该地点（当前地点且已到访），AllFacts 全有，AnyFacts 有其一（锻炉/军械台：
+        /// FA02 记录资格或可信旧 QMAP02 完成；任务接取、公开路线已领、手里有枪都不算）。0 额外使用费、不需自建蓝图。
+        /// </summary>
+        public string? PublicStationBlocked(GameState s, PublicStationConfig ps)
+        {
+            if (s.CurrentLocation != ps.LocationId || !s.Locations.TryGetValue(ps.LocationId, out var ls) || !ls.Visited)
+                return $"须实际到达{LocName(ps.LocationId)}";
+            var f = s.Progress.Flags;
+            var miss = ps.AllFacts.FirstOrDefault(x => !f.Contains(x));
+            if (miss != null) return $"需要：{PublicFactLabel(miss)}";
+            if (ps.AnyFacts.Count > 0 && !ps.AnyFacts.Any(f.Contains))
+                return "需要：" + string.Join("，或", ps.AnyFacts.Select(PublicFactLabel));
+            return null;
+        }
+
+        /// <summary>公共站条件的中文说法（地图事实说明；可信旧 QMAP02 完成没有地图说明，写成旧存档的工业支援委托，不出内部任务编号）。</summary>
+        private string PublicFactLabel(string fact) => fact == "trusted_legacy_QMAP02_completed"
+            ? "旧存档里已完成营区工业支援委托"
+            : Config.Map.FactLabels.TryGetValue(fact, out var t) ? t : fact;
+
+        /// <summary>当前地点这一类公共站已开放（实际在场且条件满足）。</summary>
+        public bool PublicStationOpenHere(GameState s, string stationId) =>
+            PublicStationsAt(s.CurrentLocation).Any(p => p.StationId == stationId && PublicStationBlocked(s, p) == null);
+
+        /// <summary>当前地点能不能用这一类工坊：hand、本地自建已建成，或本地公共站已开放。</summary>
+        public bool StationUsableHere(GameState s, string stationId) =>
+            WorkshopBuilt(s, s.CurrentLocation, stationId) || PublicStationOpenHere(s, stationId);
+
+        /// <summary>当前地点的公共站（设施栏卡片与工坊入口说明用）：名称、工坊类型、能不能用与原因。</summary>
+        public List<PublicStationView> PublicStationsHere(GameState s)
+        {
+            if (!s.Locations.TryGetValue(s.CurrentLocation, out var ls) || !ls.Visited) return new List<PublicStationView>();
+            return PublicStationsAt(s.CurrentLocation)
+                .Select(p => new PublicStationView { Id = p.Id, StationId = p.StationId, Name = p.Name, Blocked = PublicStationBlocked(s, p) }).ToList();
+        }
+
+        /// <summary>配方所需工坊不在当前地点时的原因；hand、已建成或本地公共站已开放为 null（A05 §3“其他工坊须在当前地点”；Q141 公共站）。</summary>
         public string? StationBlocked(GameState s, RecipeConfig rc)
         {
             if (rc.Station == "hand") return null;
             var here = s.CurrentLocation;
             if (WorkshopBuilt(s, here, rc.Station)) return null;
             var name = StationName(rc.Station);
+            var pub = PublicStationsAt(here).FirstOrDefault(p => p.StationId == rc.Station);
+            if (pub != null)
+            {
+                var why = PublicStationBlocked(s, pub);
+                if (why == null) return null;
+                return $"需要{name}：{pub.Name}还没开放（{why}）";
+            }
             return CanBuildWorkshopsAt(here)
                 ? $"需要{name}：{LocName(here)}还没有建成{name}（在“营地建造”里建）"
                 : $"需要{name}：{LocName(here)}没有{name}，工坊只能建在{string.Join("、", Config.Workshops.BuildLocations.Select(LocName))}";

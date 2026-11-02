@@ -16,8 +16,27 @@ namespace Survival.Core.Config
         public List<CityNoticeConfig> Notices { get; set; } = new List<CityNoticeConfig>();
         public List<CityNpcConfig> Npcs { get; set; } = new List<CityNpcConfig>();
         public List<CityServiceConfig> Services { get; set; } = new List<CityServiceConfig>();
+        /// <summary>
+        /// 公共工坊站（B14b，Q141 选 B；city-adjudications.json publicStations）：固定公共设施，实际在该地点且事实满足才开放，
+        /// 0 额外使用费；不需自建、不占私人限额、不可拆取。未列出的站不提供。
+        /// </summary>
+        public List<PublicStationConfig> PublicStations { get; set; } = new List<PublicStationConfig>();
         /// <summary>对话记录用的对白组名称。</summary>
         public List<PrologueDialogueSetConfig> DialogueSets { get; set; } = new List<PrologueDialogueSetConfig>();
+    }
+
+    /// <summary>一个公共工坊站（Q141）：地点 + 工坊类型，开放条件 = AllFacts 全有且（AnyFacts 为空或有其一）。</summary>
+    public sealed class PublicStationConfig
+    {
+        public string Id { get; set; } = "";
+        public string LocationId { get; set; } = "";
+        /// <summary>workbench/forge/sewing/medical/armory（与 workshops.stations 同 ID）。</summary>
+        public string StationId { get; set; } = "";
+        /// <summary>显示名（“营区工坊工作台”等，策划给定）。</summary>
+        public string Name { get; set; } = "";
+        public List<string> AllFacts { get; set; } = new List<string>();
+        /// <summary>任一即可的资格（锻炉/军械台：FA02_record_credit 或可信旧 QMAP02 完成 trusted_legacy_QMAP02_completed）；空为不要求。</summary>
+        public List<string> AnyFacts { get; set; } = new List<string>();
     }
 
     /// <summary>营区登记（S02 门槛规则 3、A11 Q33 hub_registration_existing）：h01 0 分钟登记写授权，真实走到 h02 才写 hub_registered/C2。</summary>
@@ -77,8 +96,10 @@ namespace Survival.Core.Config
     public sealed class CityServiceConfig
     {
         public string Id { get; set; } = "";
-        /// <summary>显示名（开发方措辞，策划只给 serviceId）。</summary>
+        /// <summary>正式中文名（B14b，Q145 选 B：city-services.json displayName）。</summary>
         public string Title { get; set; } = "";
+        /// <summary>玩家摘要（Q145：playerSummary；不带内部任务编号）。真实工时、费用与可办原因仍看运行时预览。</summary>
+        public string Summary { get; set; } = "";
         public string LocationId { get; set; } = "";
         public string Kind { get; set; } = "";
         /// <summary>工时（世界分钟）；null 为沿所引原契约。</summary>
@@ -93,9 +114,11 @@ namespace Survival.Core.Config
         public string? Target { get; set; }
         /// <summary>NPC 代办的有效熟练等级（clinic_dressing：medicine 1）。</summary>
         public int? ActorSkillLevel { get; set; }
-        /// <summary>本批是否实装；未实装的界面写 PendingText（开发假设 B14-6）。</summary>
+        /// <summary>
+        /// 是否已实装。未实装的从“事项”面板、事项数与岗位卡里隐藏（B14b，Q146 选 B）；直接请求拒绝且零扣费零效果。
+        /// 后续批次实装同 ID 后改为 true 即自然出现。
+        /// </summary>
         public bool Implemented { get; set; }
-        public string? PendingText { get; set; }
     }
 
     /// <summary>施济配给的一项选择：目标某项状态低于 Below 才可选，完成时产出 Outputs。</summary>

@@ -28903,7 +28903,7 @@
       {
         "actorId": "npc_lin_zhao",
         "name": "林昭",
-        "background": "临时营区物资搬运与巡路员；前排新人，不替主角作决定",
+        "background": "营区的物资搬运与巡路人员，仍是前排协作的新人；愿意分担沿途的负重与警戒，但不替主角作决定。",
         "skills": {
           "spear": 3,
           "shield": 2,
@@ -28918,7 +28918,7 @@
       {
         "actorId": "npc_zhou_yan",
         "name": "周砚",
-        "background": "工务维修工；以工具与安全步骤看待问题，近身钝器与制作",
+        "background": "营区的工务维修人员，习惯先检查工具和安全步骤；面对陌生设备宁愿耐心核对，也不凭猜测动手。",
         "skills": {
           "blunt": 4,
           "crafting": 4,
@@ -28933,7 +28933,7 @@
       {
         "actorId": "npc_shen_he",
         "name": "沈禾",
-        "background": "灯塔转运护理员；重视知情同意，兼战斗与非战斗医疗",
+        "background": "营区的医疗转运人员，重视知情同意；照护前会说明当前状况与风险，再由当事人决定是否接受。",
         "skills": {
           "medicine": 4,
           "blade": 2
@@ -28947,7 +28947,7 @@
       {
         "actorId": "npc_tang_li",
         "name": "唐梨",
-        "background": "近郊搜集者，灾后学习弓具与路线记录；后排点射",
+        "background": "在近郊活动的自由搜集者，灾后逐渐学会使用弓具、记录旧路；出发时总会留意可以退回的方向。",
         "skills": {
           "archery": 4,
           "crafting": 2
@@ -28961,7 +28961,7 @@
       {
         "actorId": "npc_gu_cheng",
         "name": "顾承",
-        "background": "曾任设施巡防，负责联合远征；非灾变知情者",
+        "background": "曾做过设施巡防，如今参与营区外勤协作；重视出发前的整备与分工，并不掌握灾变的内幕。",
         "skills": {
           "firearms": 5,
           "spear": 3,
@@ -28976,7 +28976,7 @@
       {
         "actorId": "npc_ye_xun",
         "name": "叶洵",
-        "background": "通信楼外围志愿记录员，以近身防护与工具求生",
+        "background": "在通信设施外围收集与核对记录的独立记录者，以近身防护和随手工具求生；会把亲眼所见与未经证实的猜测分开记下。",
         "skills": {
           "blade": 4,
           "medicine": 2,
@@ -31257,12 +31257,13 @@
     "services": [
       {
         "id": "hub_registration_existing",
-        "title": "营门登记",
+        "title": "营区入营登记",
+        "summary": "在营门确认登记意愿，再到营区广场完成登记。",
         "locationId": "h01_gate",
         "kind": "registration",
         "worldMinutes": 0,
         "inputs": {},
-        "effect": "在h01明确登记意愿与规则后只授registration_authorized通行授权；沿真实h01→h02边到达提交才写hub_registered/C2及原一次配给，不在h01预发，不重复发旧已领。",
+        "effect": "在h01明确登记意愿与规则后只授registration_authorized；沿真实h01→h02边到达提交才写hub_registered/C2并补缺原26项登记默认知识。不额外发任何物品；原配给只指广场既有公共配给点，独立领取且不重置库存/领取账。",
         "questId": null,
         "facts": [
           "registration_authorized"
@@ -31272,12 +31273,12 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": true,
-        "pendingText": null
+        "implemented": true
       },
       {
         "id": "hub_affairs_record",
-        "title": "整合两份记录（FA04）",
+        "title": "整理调查记录",
+        "summary": "交接并整理已取得的两份调查记录。",
         "locationId": "h02_square",
         "kind": "quest_record",
         "worldMinutes": 10,
@@ -31290,12 +31291,12 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false,
-        "pendingText": "主线任务后续版本开放"
+        "implemented": false
       },
       {
         "id": "hub_workshop_access",
-        "title": "使用公共工坊",
+        "title": "使用营区工坊",
+        "summary": "查看并使用这里已开放的公共制作设施。",
         "locationId": "h03_workshop",
         "kind": "facility_menu",
         "worldMinutes": 0,
@@ -31308,12 +31309,12 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": true,
-        "pendingText": null
+        "implemented": true
       },
       {
         "id": "copy_public_knowledge",
-        "title": "抄录公开资料包",
+        "title": "查抄公开资料",
+        "summary": "查抄已公开且尚未掌握的资料。",
         "locationId": "h03_workshop",
         "kind": "knowledge_copy",
         "worldMinutes": 30,
@@ -31326,12 +31327,12 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false,
-        "pendingText": "可选地牢任务后续版本开放"
+        "implemented": false
       },
       {
         "id": "clinic_consult",
-        "title": "医疗咨询",
+        "title": "伤病咨询",
+        "summary": "查看一名同行者的伤病与用药情况。",
         "locationId": "h04_infirmary",
         "kind": "information",
         "worldMinutes": 0,
@@ -31344,12 +31345,12 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": true,
-        "pendingText": null
+        "implemented": true
       },
       {
         "id": "clinic_dressing",
         "title": "换药包扎",
+        "summary": "自带绷带1份、布1份，为一名同行者换药包扎。",
         "locationId": "h04_infirmary",
         "kind": "medical_item",
         "worldMinutes": 10,
@@ -31357,7 +31358,7 @@
           "bandage": 1,
           "cloth": 1
         },
-        "effect": "完成时消耗自带绷带1+机构换药耗材布1，NPC有效medicine=1无装备增益；对指定存活同行者调用R04原草药绷带函数（止血/原公式回血/V抑制最低1），目标共享H60分钟与V6小时冷却不绕过；没有任何实际收益则开始前拒绝",
+        "effect": "完成时消耗玩家自带绷带1+布1（仅主角随身或医务室当地地面；不设机构库存），NPC有效medicine=1无装备增益；对指定存活同行者调用R04原草药绷带函数（止血/原公式回血/V抑制最低1），目标共享H60分钟与V6小时冷却不绕过；没有任何实际收益则开始前拒绝",
         "questId": null,
         "facts": [],
         "choices": [],
@@ -31365,12 +31366,12 @@
         "mode": null,
         "target": "one_present_party_actor",
         "actorSkillLevel": 1,
-        "implemented": true,
-        "pendingText": null
+        "implemented": true
       },
       {
         "id": "clinic_observation_rest",
-        "title": "观察休息",
+        "title": "留观休息",
+        "summary": "让同行队伍在医务室休息30分钟。",
         "locationId": "h04_infirmary",
         "kind": "sheltered_rest",
         "worldMinutes": 30,
@@ -31383,12 +31384,12 @@
         "mode": "rest",
         "target": null,
         "actorSkillLevel": null,
-        "implemented": true,
-        "pendingText": null
+        "implemented": true
       },
       {
         "id": "appraisal_white_v1",
-        "title": "样本鉴定",
+        "title": "活性样本鉴定",
+        "summary": "查看活性样本鉴定的费用和结果预览。",
         "locationId": "h05_appraisal",
         "kind": "delegated_appraisal",
         "worldMinutes": null,
@@ -31401,12 +31402,12 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false,
-        "pendingText": "鉴定与交易后续版本开放"
+        "implemented": false
       },
       {
         "id": "shelter_recruitment",
-        "title": "同行登记与名册",
+        "title": "同行者名册",
+        "summary": "查看候选同行者、同行登记及补员事项。",
         "locationId": "h06_shelter",
         "kind": "delegated_recruitment",
         "worldMinutes": null,
@@ -31419,12 +31420,12 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": true,
-        "pendingText": null
+        "implemented": true
       },
       {
         "id": "church_reception_existing",
-        "title": "领取公开路线（FA02）",
+        "title": "询问教会公开路线",
+        "summary": "询问可公开查阅的路线，不要求宣誓。",
         "locationId": "c02_church",
         "kind": "information",
         "worldMinutes": 0,
@@ -31440,12 +31441,12 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false,
-        "pendingText": "教会任务后续版本开放"
+        "implemented": false
       },
       {
         "id": "church_relief_ration",
-        "title": "施济配给",
+        "title": "领取救助配给",
+        "summary": "符合条件时，选择领取一份食物或净水。",
         "locationId": "c04_alms",
         "kind": "limited_relief",
         "worldMinutes": 5,
@@ -31477,12 +31478,12 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": true,
-        "pendingText": null
+        "implemented": true
       },
       {
         "id": "church_public_mediation",
-        "title": "公开资料交接（CH02）",
+        "title": "交接公开资料",
+        "summary": "交接公开资料，不要求宣誓。",
         "locationId": "c05_admonition",
         "kind": "quest_record",
         "worldMinutes": 10,
@@ -31495,12 +31496,12 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false,
-        "pendingText": "教会支线后续版本开放"
+        "implemented": false
       },
       {
         "id": "church_archive_copy",
-        "title": "抄录路线备份（CH02）",
+        "title": "抄录路线备份",
+        "summary": "查阅或抄录已公开的路线备份。",
         "locationId": "c06_archive",
         "kind": "quest_record",
         "worldMinutes": 10,
@@ -31513,12 +31514,12 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false,
-        "pendingText": "教会支线后续版本开放"
+        "implemented": false
       },
       {
         "id": "church_quiet_rest",
-        "title": "安静休息",
+        "title": "静处休息",
+        "summary": "让同行队伍在有遮蔽的静处休息30分钟。",
         "locationId": "c07_sanctuary",
         "kind": "sheltered_rest",
         "worldMinutes": 30,
@@ -31531,12 +31532,12 @@
         "mode": "rest",
         "target": null,
         "actorSkillLevel": null,
-        "implemented": true,
-        "pendingText": null
+        "implemented": true
       },
       {
         "id": "academy_reception_existing",
-        "title": "领取环境调查路线（FA03）",
+        "title": "询问环境调查路线",
+        "summary": "询问环境调查的公开路线，可拒绝身体检测。",
         "locationId": "r04_reception",
         "kind": "information",
         "worldMinutes": 0,
@@ -31552,12 +31553,12 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false,
-        "pendingText": "科学院任务后续版本开放"
+        "implemented": false
       },
       {
         "id": "academy_noninvasive_observation",
-        "title": "非侵入观察核对（AC01）",
+        "title": "观察范围核对",
+        "summary": "核对观察范围，选择允许的观察方式。",
         "locationId": "r05_testing",
         "kind": "quest_record",
         "worldMinutes": 10,
@@ -31570,12 +31571,12 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false,
-        "pendingText": "科学院支线后续版本开放"
+        "implemented": false
       },
       {
         "id": "academy_report_compare",
-        "title": "报告比对（AC02）",
+        "title": "比对观察报告",
+        "summary": "核对已有的观察报告与记录。",
         "locationId": "r06_archive",
         "kind": "quest_record",
         "worldMinutes": 10,
@@ -31588,17 +31589,17 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false,
-        "pendingText": "科学院支线后续版本开放"
+        "implemented": false
       },
       {
         "id": "academy_workshop_access",
         "title": "使用试制工坊",
+        "summary": "查看并使用这里已开放的公共制作设施。",
         "locationId": "r07_workshop",
         "kind": "facility_menu",
         "worldMinutes": 0,
         "inputs": {},
-        "effect": "打开当前已开放普通工坊菜单与公共通道说明；进入r08的观察/拒实验选择均可登记；制造材料/门槛/时间仍沿A07/S08，不提供免费高级工坊或军械蓝图",
+        "effect": "0分钟打开r07当地公共工作台与随身手工配方，实际制作沿原规则；不因打开菜单自动写academy_observation_pass，公开通道告示沿原独立选择办理。",
         "questId": null,
         "facts": [
           "academy_observation_pass"
@@ -31608,12 +31609,12 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": true,
-        "pendingText": null
+        "implemented": true
       },
       {
         "id": "academy_observation_record",
-        "title": "查看观察记录",
+        "title": "查阅观察记录",
+        "summary": "查阅已有观察记录，不自动进行检测。",
         "locationId": "r08_observation",
         "kind": "information",
         "worldMinutes": 0,
@@ -31626,8 +31627,75 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": true,
-        "pendingText": null
+        "implemented": true
+      }
+    ],
+    "publicStations": [
+      {
+        "id": "public:h03_workshop:workbench",
+        "locationId": "h03_workshop",
+        "stationId": "workbench",
+        "name": "营区工坊工作台",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyFacts": []
+      },
+      {
+        "id": "public:h03_workshop:forge",
+        "locationId": "h03_workshop",
+        "stationId": "forge",
+        "name": "营区工坊锻炉",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyFacts": [
+          "FA02_record_credit",
+          "trusted_legacy_QMAP02_completed"
+        ]
+      },
+      {
+        "id": "public:h03_workshop:armory",
+        "locationId": "h03_workshop",
+        "stationId": "armory",
+        "name": "营区工坊军械台",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyFacts": [
+          "FA02_record_credit",
+          "trusted_legacy_QMAP02_completed"
+        ]
+      },
+      {
+        "id": "public:r07_workshop:workbench",
+        "locationId": "r07_workshop",
+        "stationId": "workbench",
+        "name": "试制工坊工作台",
+        "allFacts": [
+          "academy_contacted"
+        ],
+        "anyFacts": []
+      },
+      {
+        "id": "public:h02_square:sewing",
+        "locationId": "h02_square",
+        "stationId": "sewing",
+        "name": "营区公共缝纫台",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyFacts": []
+      },
+      {
+        "id": "public:h04_infirmary:medical",
+        "locationId": "h04_infirmary",
+        "stationId": "medical",
+        "name": "医务室公共医疗台",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyFacts": []
       }
     ],
     "dialogueSets": [
@@ -32209,7 +32277,7 @@
       },
       {
         "id": "gate_h01_registration",
-        "title": "营门登记"
+        "title": "营区入营登记"
       },
       {
         "id": "academy_public_observation_notice",

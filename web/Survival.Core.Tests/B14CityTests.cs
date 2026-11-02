@@ -249,7 +249,10 @@ public class B14CityTests : TestBase
         Assert.That(aff.Values.All(v => v.Length > 0), Is.True);
     }
 
-    /// <summary>FN07/CITY-N06：首次交谈播初次见面+岗位说明，之后播闲谈（或名下事项都未开放时“暂不可办”）；交谈 0 分钟、不改身体/物品/事实，回看不重奖。</summary>
+    /// <summary>
+    /// FN07/CITY-N06：首次交谈播初次见面+岗位说明，之后播闲谈；交谈 0 分钟、不改身体/物品/事实，回看不重奖。
+    /// B14b（Q146 选 B）：名下事项全未实装的岗位不再因此播“暂不可办”，也没有事项。
+    /// </summary>
     [Test]
     public void FN07_TalkStates_NoEffects()
     {
@@ -266,13 +269,14 @@ public class B14CityTests : TestBase
         Assert.That((s.GameMinute, s.Items.Sum(i => i.Count), s.Progress.Flags.Count, s.Stats.Health, s.Body.VirusLoad), Is.EqualTo(before));
         Assert.That(s.City.Talks["npc_chen_zhi"], Is.EqualTo(3));
 
-        E.DebugMapTeleport(s, "h02_square");   // 许安：FA04 未开放 → 暂不可办
+        E.DebugMapTeleport(s, "h02_square");   // 许安：名下只有未实装的整理调查记录 → 闲谈，不播“暂不可办”（Q146）
         Ok(E.TalkNpc(s, "npc_xu_an"));
         ReadDialogues(s);
         Ok(E.TalkNpc(s, "npc_xu_an"));
         ReadDialogues(s);
-        Assert.That(s.Story.DialogueLog.Any(d => d.EventId.StartsWith("npc_xu_an_dialogue_locked")), Is.True);
-        Assert.That(E.CityServicesOf(s, "npc_xu_an").Single().Blocked, Does.StartWith("暂未开放"));
+        Assert.That(s.Story.DialogueLog.Any(d => d.EventId.StartsWith("npc_xu_an_dialogue_locked")), Is.False);
+        Assert.That(s.Story.DialogueLog.Any(d => d.EventId.StartsWith("npc_xu_an_dialogue_idle")), Is.True);
+        Assert.That(E.CityServicesOf(s, "npc_xu_an"), Is.Empty);
     }
 
     /// <summary>CITY-N05/TXT08：命名岗位退场由机构当班接续员代班，不复活原人物；服务照办、日配额与已领账沿用。</summary>
@@ -440,7 +444,7 @@ public class B14CityTests : TestBase
         Assert.That(s.Items.Count(i => i.Owner == loc), Is.EqualTo(0), "不发物");
     }
 
-    /// <summary>CS06/CS01：咨询 0 分钟只读；未实装的服务只注册入口并写“暂未开放”；收容所沿用原入口。</summary>
+    /// <summary>CS06/CS01：咨询 0 分钟只读；未实装的服务只注册（B14b 起从事项里隐藏，直接请求中性拒绝）；收容所沿用原入口。</summary>
     [Test]
     public void CS06_InfoServices_AndPendingEntries()
     {
@@ -448,7 +452,7 @@ public class B14CityTests : TestBase
         var before = (s.GameMinute, s.Stats.Health, s.Body.VirusLoad);
         Ok(E.StartCityService(s, "clinic_consult", GameState.PlayerId));
         Assert.That((s.GameMinute, s.Stats.Health, s.Body.VirusLoad), Is.EqualTo(before));
-        Assert.That(s.Log.Last().Text, Does.Contain("医疗咨询"));
+        Assert.That(s.Log.Last().Text, Does.Contain("伤病咨询"));
         foreach (var id in new[] { "hub_affairs_record", "copy_public_knowledge", "appraisal_white_v1", "church_reception_existing", "church_public_mediation",
                      "church_archive_copy", "academy_reception_existing", "academy_noninvasive_observation", "academy_report_compare" })
         {
@@ -456,8 +460,9 @@ public class B14CityTests : TestBase
             E.DebugMapTeleport(s, svc.LocationId);
             var v = E.CityServicePreview(s, id)!;
             Assert.That(v.Implemented, Is.False, id);
-            Assert.That(v.Blocked, Does.StartWith("暂未开放"), id);
+            Assert.That(v.Blocked, Is.EqualTo("这里现在不办理这项事项"), id);
             Assert.That(E.StartCityService(s, id).Ok, Is.False, id);
+            Assert.That(E.NpcsHere(s).SelectMany(n => E.CityServicesOf(s, n.NpcId)).Any(x => x.Id == id), Is.False, id);
         }
         E.DebugMapTeleport(s, "h06_shelter");
         Assert.That(E.CityServicePreview(s, "shelter_recruitment")!.Blocked, Is.Null);

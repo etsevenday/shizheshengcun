@@ -505,6 +505,13 @@ namespace Survival.Core.Config
             }
             foreach (var st in c.Workshops.Stations)
                 if (st.BuildRecipe != null && c.Recipes.All(r => r.Id != st.BuildRecipe)) e.Add($"工坊 {st.Id} 的建造配方 {st.BuildRecipe} 不存在");
+            // B14b（Q141）：公共工坊站的工坊类型与地点必须存在，同一地点同类站只有一个
+            foreach (var ps in c.City.PublicStations)
+            {
+                if (ps.StationId == "hand" || c.Workshops.Stations.All(x => x.Id != ps.StationId)) e.Add($"公共站 {ps.Id} 的工坊 {ps.StationId} 不存在");
+                if (c.Locations.All(l => l.Id != ps.LocationId)) e.Add($"公共站 {ps.Id} 的地点 {ps.LocationId} 不存在");
+            }
+            if (c.City.PublicStations.GroupBy(p => (p.LocationId, p.StationId)).Any(g => g.Count() > 1)) e.Add("同一地点同类公共站重复");
             foreach (var r in c.Resources)
             {
                 if (r.IndependentRare != null && !items.Contains(r.IndependentRare.ItemId)) e.Add($"资源点 {r.NodeId} 稀有附带物不存在");

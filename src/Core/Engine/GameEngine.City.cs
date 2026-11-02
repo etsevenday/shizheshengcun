@@ -11,6 +11,8 @@ namespace Survival.Core.Engine
     {
         public string Id { get; set; } = "";
         public string Title { get; set; } = "";
+        /// <summary>玩家摘要（Q145 playerSummary）。</summary>
+        public string Summary { get; set; } = "";
         /// <summary>工时说明（“0分钟”“10分钟”“沿原契约”）。</summary>
         public string TimeText { get; set; } = "";
         /// <summary>费用说明（“无额外耗材/费用”或“草药绷带×1、布料×1”）。</summary>
@@ -19,7 +21,7 @@ namespace Survival.Core.Engine
         public string EffectText { get; set; } = "";
         /// <summary>岗位对这项服务说的一句（narrative-texts serviceOfferLines）。</summary>
         public string NpcLine { get; set; } = "";
-        /// <summary>本批已实装；未实装的 Blocked 写“暂未开放（…）”。</summary>
+        /// <summary>已实装（未实装的不进事项列表，Q146 选 B；只有直接请求时预览才会出现，Blocked 为中性拒绝）。</summary>
         public bool Implemented { get; set; }
         /// <summary>现在不能办的原因（与目标/选项无关的部分）；能办为 null。</summary>
         public string? Blocked { get; set; }
@@ -54,7 +56,8 @@ namespace Survival.Core.Engine
     /// quest:ID:accepted/completed/declined_deed；永不写 joined_faction（旧档有的改记 legacy_service）。</item>
     /// <item>登记：h01 值守登记员 0 分钟登记写 registration_authorized（开 h01↔h02），真实走到 h02 才写 hub_registered（C2、登记默认知识）。</item>
     /// <item>岗位 NPC：实际到达该地点才在设施栏出现人物卡；不可招募；命名人物退场由同机构当班接续员代班，服务、配额与任务账不变，不复活。</item>
-    /// <item>服务：统一预览→校验→开工（预留材料/配额与事务号）→5 分钟段→完成时原子核销；未实装的只注册入口并写“暂未开放”。</item>
+    /// <item>服务：统一预览→校验→开工（预留材料/配额与事务号）→5 分钟段→完成时原子核销；未实装的只注册，从事项列表与计数里隐藏（B14b，Q146 选 B）。</item>
+    /// <item>名称：19 项服务、知识与两份告示用策划正式名（Q145 选 B），玩家文字不带内部任务编号。</item>
     /// </list>
     /// </summary>
     public sealed partial class GameEngine
@@ -135,8 +138,9 @@ namespace Survival.Core.Engine
             foreach (var n in Config.City.Npcs.Where(n => n.LocationId == s.CurrentLocation))
             {
                 var absent = s.City.Absent.Contains(n.NpcId);
-                var services = n.ServiceIds.Select(CityService).Where(x => x != null).ToList();
-                var open = services.Count(x => x!.Implemented);
+                // Q146 选 B：只统计已实装的事项；可办数按当前资格（分母不含未实装）；没有已实装事项不显示事项数占位
+                var services = CityServicesOf(s, n.NpcId);
+                var canDo = services.Count(CityServiceDoable);
                 yield return new NpcCardView
                 {
                     NpcId = n.NpcId,
@@ -146,9 +150,10 @@ namespace Survival.Core.Engine
                     Kind = "post",
                     KindLabel = absent ? "代班" : "岗位",
                     Substitute = absent,
-                    Status = open > 0 ? $"可交谈 · 事项 {open}/{services.Count} 项可办" : "可交谈 · 事项暂未开放",
+                    Status = services.Count > 0 ? $"可交谈 · 事项 {canDo}/{services.Count} 项可办" : "可交谈",
                     ServiceCount = services.Count,
-                    QuestText = n.QuestIds.Count > 0 ? $"相关委托 {string.Join("、", n.QuestIds)}：后续版本开放" : "",
+                    // Q146：相关委托（任务系统未实装）不写占位，也不出内部任务编号
+                    QuestText = "",
                     RecruitText = "岗位人物，不可招募",
                     HasNews = !s.City.Greeted.Contains(n.NpcId) && !absent,
                     TalkBlocked = TalkBlocked(s),
@@ -156,11 +161,12 @@ namespace Survival.Core.Engine
             }
         }
 
-        /// <summary>岗位人物“暂不可办”（locked 状态）：名下事项本版本全部未开放。</summary>
-        private bool CityNpcLocked(CityNpcConfig n) => !n.ServiceIds.Select(CityService).Any(x => x != null && x.Implemented);
+        /// <summary>一项事项现在能不能办（卡面“可办数”）：没有通用阻拦，要目标的至少有一名合法目标。</summary>
+        private static bool CityServiceDoable(CityServiceView v) => v.Blocked == null && (!v.NeedsTarget || v.Targets.Any(t => t.Blocked == null));
 
         /// <summary>
-        /// 与岗位人物交谈（0 分钟，不扣物、不恢复、不改身体、不写事实）：首次播“初次见面”与“岗位说明”；之后按状态播“暂不可办”或“闲谈”；
+        /// 与岗位人物交谈（0 分钟，不扣物、不恢复、不改身体、不写事实）：首次播“初次见面”与“岗位说明”；之后播“闲谈”
+        /// （B14b，Q146 选 B：未实装本身不触发“暂不可办”；目前没有已实装且剧情条件不足的事项，locked 组暂不使用）；
         /// 命名人物退场时播“岗位接续”（代班员，不复活原人物）。回看只回放台词。
         /// </summary>
         private ActionResult TalkCityNpc(GameState s, CityNpcConfig n)
@@ -181,7 +187,7 @@ namespace Survival.Core.Engine
                 OpenReplay(s, StateSet(n, "role"));
                 return ActionResult.Success();
             }
-            OpenReplay(s, StateSet(n, CityNpcLocked(n) ? "locked" : "idle"));
+            OpenReplay(s, StateSet(n, "idle"));
             return ActionResult.Success();
         }
 
@@ -192,12 +198,16 @@ namespace Survival.Core.Engine
 
         // ───────────────────────── 服务预览（preview 0 分钟） ─────────────────────────
 
-        /// <summary>某岗位名下全部服务的当前预览（含未实装的入口）。不在该地点时全部写“须实际到达”。</summary>
+        /// <summary>
+        /// 某岗位名下已实装服务的当前预览（Q146 选 B：未实装的不列出、不计数；已实装但条件不足的照常列出并写真实原因）。
+        /// 不在该地点时全部写“须实际到达”。
+        /// </summary>
         public List<CityServiceView> CityServicesOf(GameState s, string npcId)
         {
             var n = CityNpc(npcId);
             if (n == null) return new List<CityServiceView>();
-            return n.ServiceIds.Select(id => CityServicePreview(s, id, n)).Where(v => v != null).Select(v => v!).ToList();
+            return n.ServiceIds.Select(CityService).Where(x => x != null && x.Implemented)
+                .Select(x => CityServicePreview(s, x!.Id, n)).Where(v => v != null).Select(v => v!).ToList();
         }
 
         /// <summary>服务面板开头岗位说的一句（service_offer 组首句；代班时同句由当班接续员说）。</summary>
@@ -210,7 +220,8 @@ namespace Survival.Core.Engine
 
         private string? CityCommonBlocked(GameState s, CityServiceConfig svc)
         {
-            if (!svc.Implemented) return $"暂未开放（{svc.PendingText ?? "后续版本开放"}）";
+            // Q146：隐藏后的旧入口/直接请求拒绝，零扣费零效果；不写“后续版本开放”
+            if (!svc.Implemented) return "这里现在不办理这项事项";
             if (s.Progress.Dead) return "角色已死亡";
             if (s.CurrentLocation != svc.LocationId) return $"须实际到达{LocName(svc.LocationId)}才能办理";
             if (DialogueLocked(s)) return DialogueLockedReason;
@@ -229,7 +240,7 @@ namespace Survival.Core.Engine
             npc ??= Config.City.Npcs.FirstOrDefault(n => n.ServiceIds.Contains(serviceId));
             var v = new CityServiceView
             {
-                Id = svc.Id, Title = svc.Title, Implemented = svc.Implemented, CostText = CostOf(svc),
+                Id = svc.Id, Title = svc.Title, Summary = svc.Summary, Implemented = svc.Implemented, CostText = CostOf(svc),
                 TimeText = svc.WorldMinutes is int m ? $"{m}分钟" : "沿原契约",
                 NpcLine = npc != null && npc.ServiceOfferLines.TryGetValue(svc.Id, out var line) ? line : "",
                 Blocked = CityCommonBlocked(s, svc),
@@ -246,8 +257,7 @@ namespace Survival.Core.Engine
                 case "hub_workshop_access":
                 case "academy_workshop_access":
                     v.OpensCraft = true;
-                    v.EffectText = "打开当地已开放的制作配方；这里没有已开放的公共工坊站，现可做手工（随身即可）的配方。制作照常按执行者、材料、工时与熟练门槛，不免耗材"
-                        + (svc.Id == "academy_workshop_access" ? "；观察区通行另看门旁的“观察区公开通道告示”" : "");
+                    v.EffectText = WorkshopAccessText(s, svc);
                     break;
                 case "clinic_consult":
                     v.NeedsTarget = true;
@@ -275,23 +285,44 @@ namespace Survival.Core.Engine
                     var day = Clock.Day(s.GameMinute);
                     var used = CityQuotaUsed(s, svc.Id, day);
                     v.EffectText = $"{svc.WorldMinutes}分钟后在这里地面领到一份普通食物或净水（不自动吃喝）：目标饱食低于40可领熟块根1份，或水分低于40可领净水1份，只选一项；全队每世界日合计最多{svc.DailyPartyQuota}份（今天已领{used}份）";
-                    if (v.Blocked == null && svc.DailyPartyQuota is int q && used >= q) v.Blocked = $"今天（第{day}日）的施济额度已用完（全队每日{q}份，代班或换人来问不会多出一份）";
+                    if (v.Blocked == null && svc.DailyPartyQuota is int q && used >= q) v.Blocked = $"今天（第{day}日）的救助配给额度已用完（全队每日{q}份，代班或换人来问不会多出一份）";
                     v.Targets = PresentTargets(s, a => svc.Choices.Any(c => ReliefChoiceOk(a, c)) ? null : "饱食与水分都不低于40，没有可领的一项", a => $"饱食{Fmt.N(a.Stats.Satiety)}、水分{Fmt.N(a.Stats.Hydration)}");
                     v.Choices = svc.Choices.Select(c => new CityChoiceView { Id = c.Id, Label = c.Label }).ToList();
                     break;
                 }
                 case "academy_observation_record":
+                    // Q146：不指向未实装的事项、不写“后续版本开放”或内部任务编号
                     v.EffectText = "查看已有的观察范围与记录（0分钟，不开始检测、不改身体）：" + (f.Contains(QuestFact("AC01", "completed"))
-                        ? "已有观察核对记录" : "还没有观察核对记录；在检测室办理非侵入观察核对（科学院支线后续版本开放）");
+                        ? "已有观察核对记录" : "还没有观察核对记录");
                     break;
                 case "shelter_recruitment":
-                    v.EffectText = "沿用收容所原有入口：同行补员登记（30分钟）、借用矛报失与名册在“队伍”面板办理；查看名册不耗时，不会替你招人；周期候选在后续版本开放";
+                    v.EffectText = "沿用收容所原有入口：同行补员登记（30分钟）、借用矛报失与名册在“队伍”面板办理；查看名册不耗时，不会替你招人";
                     break;
                 default:
-                    v.EffectText = svc.Effect;
+                    // Q145：不把内部 effect 原文拼给玩家，用玩家摘要
+                    v.EffectText = svc.Summary;
                     break;
             }
             return v;
+        }
+
+        /// <summary>
+        /// 公共工坊入口的说明（Q141 选 B）：0 分钟、0 额外费用、0 经验打开制作面板；逐站写当地公共站能不能用及真实原因；
+        /// 随身手工配方照常；实际制作按原配方材料、工时、知识、熟练与锻炉燃料（每份配方另需木炭1）。
+        /// </summary>
+        private string WorkshopAccessText(GameState s, CityServiceConfig svc)
+        {
+            var stations = PublicStationsAt(svc.LocationId).ToList();
+            var parts = new List<string>();
+            var open = stations.Where(p => PublicStationBlocked(s, p) == null).Select(p => p.Name).ToList();
+            if (open.Count > 0) parts.Add($"已开放：{string.Join("、", open)}");
+            foreach (var g in stations.Where(p => !open.Contains(p.Name)).GroupBy(p => PublicStationBlocked(s, p) ?? ""))
+                parts.Add($"{string.Join("、", g.Select(p => p.Name))}未开放（{g.Key}）");
+            var text = "打开制作面板（0分钟，无额外费用、不给经验）：" + (parts.Count > 0 ? string.Join("；", parts) + "；" : "")
+                + "随身手工配方照常。实际制作仍按配方的材料（只取随身与当地地面）、工时、做法知识与熟练门槛，由你执行"
+                + (stations.Any(p => p.StationId == "forge") ? "；锻炉每份配方另需木炭1" : "");
+            if (svc.Id == "academy_workshop_access") text += "；观察区通行另看门旁的“观察区公开通道告示”，打开工坊不代办";
+            return text;
         }
 
         private List<CityTargetView> PresentTargets(GameState s, Func<ActorState, string?> blocked, Func<ActorState, string> detail) =>
@@ -410,14 +441,14 @@ namespace Survival.Core.Engine
                     s.Progress.Flags.Add(reg.AuthorizedFact);
                     var r = RefreshGates(s);
                     var routes = RouteNotes(s, r, s.CurrentLocation);
-                    Emit(s, GameEventKind.Info, $"营门登记已授权：沿通道实际走到{LocName(reg.SquareLocation)}才完成营区登记（不预发任何物资）" + (routes.Count > 0 ? "；发现" + string.Join("与", routes) : "") + "。");
+                    Emit(s, GameEventKind.Info, $"{svc.Title}：已在营门确认登记意愿，沿通道实际走到{LocName(reg.SquareLocation)}才完成营区登记（不预发任何物资）" + (routes.Count > 0 ? "；发现" + string.Join("与", routes) : "") + "。");
                     return ActionResult.Success();
                 }
                 case "clinic_consult":
                 {
                     RememberRequest(s, requestId);
                     var a = s.Actors[t!.ActorId];
-                    Emit(s, GameEventKind.Info, $"医疗咨询（{t.Name}）：{ConsultText(a)}；{ConsultCooldowns(s, a)}。医务室只说明现有记录，不新抽诊断、不处理伤口、不清除感染。");
+                    Emit(s, GameEventKind.Info, $"{svc.Title}（{t.Name}）：{ConsultText(a)}；{ConsultCooldowns(s, a)}。医务室只说明现有记录，不新抽诊断、不处理伤口、不清除感染。");
                     return ActionResult.Success();
                 }
                 case "hub_workshop_access":
@@ -430,7 +461,7 @@ namespace Survival.Core.Engine
             }
             // 计时服务
             var minutes = svc.WorldMinutes ?? 0;
-            if (minutes <= 0) return ActionResult.Fail("这项事项暂未开放");
+            if (minutes <= 0) return ActionResult.Fail("这里现在不办理这项事项");
             var req = svc.Mode == "rest" ? ActionRequest.Rest(minutes) : ActionRequest.Wait(minutes);
             req.TargetId = CityServicePrefix + svc.Id;
             req.RequestId = requestId;
@@ -504,7 +535,7 @@ namespace Survival.Core.Engine
                         if (c == null || !ReliefChoiceOk(target!, c)) { fail = $"{ActorDisplayName(s, target!.Id)}已不符合这一项"; break; }
                         var key = QuotaKey(svc.Id, p.StartDay);
                         var used = s.City.QuotaUsed.TryGetValue(key, out var u) ? u : 0;
-                        if (svc.DailyPartyQuota is int q && used >= q) { fail = "当日施济额度已用完"; break; }
+                        if (svc.DailyPartyQuota is int q && used >= q) { fail = "当日救助配给额度已用完"; break; }
                         s.City.QuotaUsed[key] = used + 1;
                         foreach (var kv in c.Outputs) CreateItems(s, kv.Key, kv.Value, s.CurrentLocation);
                         made.Add($"{string.Join("、", c.Outputs.Select(kv => $"{ItemName(kv.Key)}+{kv.Value}"))}，已放在{LocName(s.CurrentLocation)}地面（不自动吃喝）");
@@ -600,7 +631,7 @@ namespace Survival.Core.Engine
             if (n.KnowledgeId != null)
             {
                 var k = Config.Knowledge.FirstOrDefault(x => x.Id == n.KnowledgeId);
-                Emit(s, GameEventKind.Info, $"已从{n.Title}学会做法知识：{k?.Name ?? n.KnowledgeId}（0分钟，不发物、不给经验；相关配方在后续版本开放）。");
+                Emit(s, GameEventKind.Info, $"已从{n.Title}学会做法知识：{k?.Name ?? n.KnowledgeId}（0分钟，不发物、不给经验）。");
             }
             else
             {
