@@ -289,6 +289,17 @@ public sealed class GameSession
 
     /// <summary>地图上当前选中的地点（地图面板的右栏详情据此显示移动预估）。</summary>
     public string? MapPicked { get; set; }
+
+    // ───── 分层地图阅读状态（B12 R38，A10-EXUI §1、EXUI13）：只存在会话里、不进存档；当前位置没变就恢复，变了回默认层居中 ─────
+    /// <summary>正在看的层键（world / city:父城 / dungeon:地牢）；null 为按当前位置的默认层。</summary>
+    public string? MapLayer { get; set; }
+    /// <summary>缩放档序号（见 MapOverlay.Zooms；0 为“总览”只画点）。</summary>
+    public int MapZoom { get; set; } = MapDefaultZoom;
+    public const int MapDefaultZoom = 2;
+    /// <summary>上次设定阅读状态时的当前位置。</summary>
+    public string? MapAnchor { get; set; }
+    /// <summary>图例浮窗是否展开。</summary>
+    public bool MapLegend { get; set; }
     public string RestKind { get; set; } = "rest";
     public int RestMinutes { get; set; } = 60;
 
@@ -335,7 +346,13 @@ public sealed class GameSession
             RestKind = sleepy ? "sleep" : "rest";
             RestMinutes = sleepy ? 480 : 60;
         }
-        if (panel == "map") MapPicked = null;
+        if (panel == "map")
+        {
+            MapPicked = null;
+            MapLegend = false;
+            // 阅读状态：当前位置没变就恢复上次的层与缩放，变了回默认层（EXUI13）
+            if (State != null && MapAnchor != S.CurrentLocation) { MapLayer = null; MapZoom = MapDefaultZoom; MapAnchor = S.CurrentLocation; }
+        }
         Panel = panel;
         Notify();
     }

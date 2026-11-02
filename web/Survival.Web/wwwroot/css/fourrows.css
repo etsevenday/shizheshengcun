@@ -978,3 +978,67 @@
   .center-scroll.four .fire-card .fc-title:has(.oc-badge.full) { flex-wrap: wrap; white-space: normal; row-gap: 1px; }
   .center-scroll.four .fire-card .fc-title .oc-badge.full { font-size: 11px; line-height: 1.2; }
 }
+
+/* ───── 分层地图（开发计划 v0.9 B12，R38；A10-EXUI §1）：一行工具条 + 可拖动视口；可见文字一律 ≥14px（S14 §1.2） ───── */
+.map-panel { display: flex; flex-direction: column; }
+.map-bar { display: flex; align-items: center; gap: 10px; padding: 4px 10px; min-height: 40px; border-bottom: 1px solid var(--line); flex-wrap: nowrap; }
+.map-crumbs { display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1; overflow: hidden; white-space: nowrap; font-size: 15px; }
+.map-crumbs .sep { color: var(--muted); }
+.map-crumbs .crumb { font-size: 15px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; max-width: 16em; flex: 0 1 auto; min-width: 3em; }
+.map-crumbs .crumb:first-child { flex: none; }
+.map-crumbs .crumb.now { color: #e7ce94; }
+.map-crumbs button.crumb { background: none; border: 0; padding: 2px 4px; color: #d6b779; text-decoration: underline; cursor: pointer; min-height: 0; }
+.map-tools { display: flex; align-items: center; gap: 6px; flex: none; }
+.map-tools .secondary { min-height: 32px; padding: 4px 10px; font-size: 14px; white-space: nowrap; }
+.map-tools .secondary.on { border-color: #d8ba78; color: #f0d9a0; }
+.map-tools .map-layer { font-size: 14px; min-height: 32px; max-width: 11em; background: #1d211c; color: var(--text); border: 1px solid var(--line); border-radius: 4px; }
+.map-stage { position: relative; flex: 1; min-height: 0; }
+.map-viewport { position: absolute; inset: 0; overflow: auto; cursor: grab; outline: none; }
+.map-viewport:focus-visible { box-shadow: inset 0 0 0 2px #d6b77988; }
+.map-viewport.dragging { cursor: grabbing; user-select: none; }
+.map-viewport .map-canvas { display: block; margin: auto; width: auto; height: auto; min-height: 0; }
+.map-canvas .map-edge line { stroke: #6f7f6a; stroke-width: 3; }
+.map-canvas .map-edge.near line { stroke: #d6b779; stroke-width: 4; }
+.map-canvas .map-edge.locked line { stroke: #b0584a; stroke-width: 3; stroke-dasharray: 5 7; }
+.map-canvas .map-edge rect { fill: #1b221e; }
+.map-canvas .map-edge.locked rect { fill: #2a1d1a; }
+.map-canvas .map-edge text { font-size: 14px; fill: #c9cfbf; }
+.map-canvas .map-edge.locked text { fill: #e0a796; }
+.map-canvas .map-node { cursor: pointer; outline: none; }
+.map-canvas .map-node rect, .map-canvas .map-node circle { fill: #222b24; stroke: #5d6b58; stroke-width: 2; stroke-dasharray: 7 4; }
+.map-canvas .map-node.visited rect, .map-canvas .map-node.visited circle { fill: #2b3a2e; stroke-dasharray: none; }
+.map-canvas .map-node.here rect, .map-canvas .map-node.here circle { fill: #3a4a33; stroke: #d6b779; stroke-width: 3; stroke-dasharray: none; }
+.map-canvas .map-node .ring { fill: none; stroke: #d6b779; stroke-width: 2; }
+.map-canvas .map-node.picked rect, .map-canvas .map-node.picked circle { stroke: #f0d9a0; stroke-width: 4; }
+.map-canvas .map-node:focus-visible rect, .map-canvas .map-node:focus-visible circle { stroke: #f0d9a0; stroke-width: 4; }
+.map-canvas .map-node text.nm { font-size: 15px; fill: #eee9db; }
+.map-canvas .map-node text.st { font-size: 14px; fill: #aab2a4; }
+.map-canvas .map-node.here text.st { fill: #e7ce94; }
+.map-canvas .map-role rect { fill: #3b2c1c; stroke: #a7824c; stroke-width: 1; }
+.map-canvas .map-role text { font-size: 14px; fill: #f0d9a0; }
+.map-canvas .map-pill { cursor: pointer; outline: none; }
+.map-canvas .map-pill rect { fill: #24302a; stroke: #8fa486; stroke-width: 1.5; }
+.map-canvas .map-pill:hover rect, .map-canvas .map-pill:focus-visible rect { stroke: #f0d9a0; }
+.map-canvas .map-pill text { font-size: 14px; fill: #dfe6d4; }
+.map-legend-pop { position: absolute; top: 6px; right: 8px; z-index: 3; max-width: 420px; background: #1b201b; border: 1px solid #796544; border-radius: 6px; padding: 8px 12px; font-size: 14px; color: var(--text); box-shadow: 0 4px 16px #0008; display: grid; gap: 4px; }
+.map-legend-pop i { display: inline-block; width: 28px; margin-right: 6px; vertical-align: middle; font-style: normal; text-align: center; }
+.map-legend-pop .lg-line { height: 0; border-top: 3px solid #d6b779; }
+.map-legend-pop .lg-line.locked { border-top: 3px dashed #b0584a; }
+.map-legend-pop .lg-arrow { color: #e2c27e; }
+.map-legend-pop .lg-box { height: 14px; border: 2px dashed #5d6b58; }
+.map-legend-pop .lg-pill { height: 14px; border: 1.5px solid #8fa486; border-radius: 7px; }
+.map-mini { position: absolute; right: 10px; bottom: 10px; z-index: 2; background: #141914e6; border: 1px solid #5d6b58; border-radius: 5px; cursor: pointer; opacity: .85; }
+.map-mini:hover { opacity: 1; }
+/* 1280×720 档 ①② 合并区只有约 240px 高：缩略导航会盖住节点，改由拖动/滚动/“回到当前位置”导航；工具条按钮收紧，给面包屑让位 */
+@media (max-height: 800px) { .map-mini { display: none; } }
+@media (max-width: 1400px) { .map-tools { gap: 4px; } .map-tools .secondary { padding: 4px 7px; } .map-tools kbd { display: none; } .map-tools .map-layer { max-width: 8.5em; } }
+.map-mini circle { fill: #6f7f6a; }
+.map-mini circle.visited { fill: #9fb198; }
+.map-mini circle.here { fill: #f0d9a0; }
+
+/* B12（B11 遗留）：相邻栏同因未开通叠卡与逐条列表 */
+.lock-stack .oc-art, .lock-stack .loc-art { display: none; }
+.apop.lockstack .lockstack-list { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; font-size: 14px; max-height: 240px; overflow-y: auto; }
+.apop.lockstack .lockstack-list li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.apop.lockstack .lockstack-list li span { flex: none; white-space: nowrap; }
+.apop.lockstack .lockstack-list small { font-size: 14px; color: var(--muted); text-align: right; }

@@ -142,4 +142,24 @@ public class B12ClaimTests : TestBase
         foreach (var kv in Cfg.Map.RecordNodes)
             Assert.That(Cfg.Resources.Single(r => r.IsCampaign && E.Location(r.LocationId).DungeonId == kv.Key).LocationId, Is.EqualTo(kv.Value), "八记录固定在 recordNode");
     }
+
+    /// <summary>S14「四类账」卡面角标：日补“n/cap”、finite“·不补/搜空不补”、flowing“无限”、普通箱“本代剩余/本代已搜空”、核心记录“可领取/本局已领·可核对/已领取”。</summary>
+    [Test]
+    public void ResourceStockBadges_PerLedger()
+    {
+        var s = New();
+        Assert.That(E.ResourceStock(s, E.Resource("w11_orchard_a")).Badge, Is.EqualTo("12/12"));
+        Assert.That(E.ResourceStock(s, E.Resource("w34_depot_bottles")).Badge, Is.EqualTo("8/8·不补"));
+        s.Resources["w34_depot_bottles"].Available = 0;
+        Assert.That(E.ResourceStock(s, E.Resource("w34_depot_bottles")), Is.EqualTo(("搜空不补", true)));
+        Assert.That(E.ResourceStock(s, E.Resource("w12_canal_water")).Badge, Is.EqualTo("无限"));
+        Assert.That(E.ResourceStock(s, E.Resource("d05_04_cache0")).Badge, Is.EqualTo("本代剩余2/2"));
+        Go(s, "d05_07");
+        Assert.That(E.ResourceStock(s, E.Resource("d05_07_unique")).Badge, Is.EqualTo("可领取"));
+        Do(s, "d05_07_unique");
+        Assert.That(E.ResourceStock(s, E.Resource("d05_07_unique")), Is.EqualTo(("已领取", true)));
+        E.DebugMapTeleport(s, "w33_waterworks");
+        E.NewDungeonGeneration(s, "d05");
+        Assert.That(E.ResourceStock(s, E.Resource("d05_07_unique")).Badge, Is.EqualTo("本局已领·可核对"));
+    }
 }

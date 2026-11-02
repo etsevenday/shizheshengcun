@@ -138,13 +138,14 @@
                     <button class="secondary" @onclick="() => DevDone(G.E.DebugForgeSteelKit(G.S))">锻炉钢材3份原料（铁矿料×9、木炭×6）</button>
                 </div>
                 @* B11（R33—R35）：v3 地图。出新手区与城市/地牢的多数门槛事实要等序章、营区登记、任务、地牢等后续系统，这里直接记事实或传送试玩 *@
-                <div class="eyebrow">地图（B11）：门槛事实与传送（正式来源在后续批次）</div>
+                <div class="eyebrow">地图（B11/B12）：门槛事实只能记下（campaign 锁存，已开路线不回退）；传送、地牢换代</div>
                 <div class="btn-row">
                     @foreach (var (key, label) in MapFacts)
                     {
                         var k = key;
                         var on = G.S.Progress.Flags.Contains(k);
-                        <button class="secondary small-btn" title="@k" @onclick="() => DevDone(G.E.DebugMapFact(G.S, k, !on))">@(on ? "✓ " : "")@label</button>
+                        <button class="secondary small-btn" title="@(on ? $"{k}：已记下。门槛事实是 campaign 锁存，已开路线不回退，这里不能清除" : k)" disabled="@on"
+                                @onclick="() => DevDone(G.E.DebugMapFact(G.S, k))">@(on ? "✓ 已记下：" : "")@label</button>
                     }
                 </div>
                 <div class="btn-row">
@@ -154,6 +155,15 @@
                         <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugInstanceFact(G.S, dgn, "guardianDefeated"))'>本地牢守卫已击败（当前实例）</button>
                         <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugInstanceFact(G.S, dgn, "recordClaimedAndClear"))'>本地牢核心已领取（当前实例）</button>
                     }
+                    @* B12（R36，H3）：地牢换代只给试玩用；正式的 72 小时重置与撤出在后续批次。人在该地牢里时被拒 *@
+                    <select class="dev-select" aria-label="换代的地牢" @bind="genDungeon">
+                        @foreach (var d in G.E.Config.Map.Dungeons)
+                        {
+                            var gen = G.S.DungeonInstances.TryGetValue(d.Id, out var inst) ? $"第{inst.Generation}代" : "未进入";
+                            <option value="@d.Id">@d.Name（@d.Id，@gen）</option>
+                        }
+                    </select>
+                    <button class="secondary small-btn" @onclick="() => DevDone(G.E.DebugNewDungeonGeneration(G.S, genDungeon))">地牢换代（箱子补满、房间重置）</button>
                     <select class="dev-select" aria-label="传送目标" @bind="teleportTo">
                         @foreach (var l in G.E.Config.Locations)
                         {
@@ -252,6 +262,7 @@
     [Inject] private NavigationManager Nav { get; set; } = null!;
 
     private bool DevMode => Nav.Uri.Contains("dev=1");
+    private string genDungeon = "d01";
 
     private void DevDone(string text)
     {

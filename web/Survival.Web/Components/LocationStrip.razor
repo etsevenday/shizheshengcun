@@ -29,9 +29,38 @@
         {
             <LocationCard @key="to" LocationId="@to" />
         }
-        @foreach (var lk in locked)
+        @{
+            // B12（B11 遗留）：有同一原因 ≥3 条的未开通路线时，全部未开通路线收成一张“N 条路线未开通”叠卡（原因各写一次），
+            // 点开在卡旁按原因逐条列名称/方位/分钟；营区广场 10 条未开通不再长横滚。否则仍一条一张卡。
+            var lockGroups = e.AdjacentLockedGroups(s);
+            var stackAll = lockGroups.Any(g => g.Routes.Count >= 3);
+        }
+        @if (stackAll)
         {
-            <LocationCard @key="@("lock-" + lk.Target)" LocationId="@lk.Target" LockReason="@lk.Reason" LockMinutes="@lk.Edge.BaseMinutes" />
+            var all = lockGroups.SelectMany(g => g.Routes).ToList();
+            var names = string.Join("、", all.Select(x => e.LocName(x.Target)));
+            var why = lockGroups.Count == 1 ? lockGroups[0].Reason : $"需要的条件有{lockGroups.Count}种，点开按条件逐条查看";
+            var open = G.Pop?.Kind == "lockstack";
+            <ObjectCard @key="@("lockstack")" Id="lockstack" CssClass="loc-card neighbor locked lock-stack" Title="@($"{all.Count}条路线未开通")" Badge="未开通" BadgeClass="unbuilt" Dim="true" Dashed="true"
+                        AriaLabel="@($"{all.Count}条路线未开通：{names}；{why}")" Tooltip="@($"{names}；{why}")" OnClick="OpenStack">
+                <ChildContent>
+                    <div class="oc-line" title="@names">@names</div>
+                    <div class="oc-line warn-line lock-why" title="@why">@why</div>
+                </ChildContent>
+                <Footer>
+                    <button type="button" class="loc-btn res-btn @(open ? "on" : "")" aria-expanded="@open" title="在卡旁按条件逐条列出这些路线"
+                            @onclick="OpenStack" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                        <strong>逐条查看 ▸</strong>
+                    </button>
+                </Footer>
+            </ObjectCard>
+        }
+        else
+        {
+            foreach (var lk in locked)
+            {
+                <LocationCard @key="@("lock-" + lk.Target)" LocationId="@lk.Target" LockReason="@lk.Reason" LockMinutes="@lk.Edge.BaseMinutes" />
+            }
         }
         @if (entrances.Count == 0 && locked.Count == 0)
         {
@@ -96,21 +125,23 @@
             <div class="dg-cards">
                 @foreach (var r in resources)
                 {
-                    var rs = s.Resources[r.NodeId];
-                    var empty = !r.IsUnlimited && (rs.Available ?? 0) <= 0;
+                    var (stock, empty) = e.ResourceStock(s, r);   // B12：四账角标（日补/不补/无限/本代剩余/已领取）
                     var nodeId = r.NodeId;
                     var tool = r.ToolBonus != null ? e.BestTool(s, r.ToolBonus.ToolTag) : null;
                     var minutes = tool != null && r.ToolBonus?.BaseMinutesOverride != null ? r.ToolBonus.BaseMinutesOverride.Value : r.BaseMinutes;
                     var req = ActionRequest.Gather(r.NodeId);
                     var why = busy ? (s.Main?.Status == ActionStatus.Paused ? "行动暂停中" : "行动进行中") : e.CanStart(s, req);
-                    var stock = r.IsCache ? (empty ? "已搜空" : "可搜1次") : r.IsUnlimited ? "不限量" : $"{rs.Available}/{r.Cap}";
                     <ObjectCard @key="r.NodeId" Id="@($"res-{nodeId}")" CssClass="res-card" Title="@r.Name" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
                                 Selected="@(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId)" Fresh="@G.Highlights.Contains(r.NodeId)"
-                                DataDrop="@($"res:{nodeId}")" Tooltip="资源点：点击查看采集预估；把对应工具拖到这里指定使用" OnClick="() => SelectResource(nodeId)">
+                                DataDrop="@($"res:{nodeId}")" Tooltip="@(r.IsCampaign ? "核心记录：点击查看领取预估" : "资源点：点击查看采集预估；把对应工具拖到这里指定使用")" OnClick="() => SelectResource(nodeId)">
                         <Art>@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</Art>
                         <ChildContent>
                             @* M84：耗时只写在按钮上（“采集/搜集 + N分钟”），状态行不再重复，给名称和产出留位 *@
-                            @if (r.IsCache)
+                            @if (r.IsCampaign)
+                            {
+                                <div class="oc-line" title="核心记录：本局唯一一次，地牢换代后也不再发放；记作记录，不占物资卡">核心记录 · 本局唯一</div>
+                            }
+                            else if (r.IsCache)
                             {
                                 var cacheLine = string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}"));
                                 <div class="oc-line" title="@cacheLine">@cacheLine</div>
@@ -147,6 +178,8 @@
 </div>
 
 @code {
+    private void OpenStack() => G.OpenPop("lockstack", "all", "lockstack");
+
     private void SelectResource(string id) => G.Select(new Selection { Kind = SelectionKind.Resource, Id = id });
 
     private void SelectEnemy(int worldId) => G.Select(new Selection { Kind = SelectionKind.Enemy, Id = worldId.ToString(), InstanceId = worldId });

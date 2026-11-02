@@ -1,6 +1,12 @@
 @inherits GameComponent
+@implements IDisposable
+@inject IJSRuntime JS
 
-@* 区域地图。Part="center"：中部的地图画布（相邻地点旁锚定“确认移动”浮窗）；Part="detail"：右栏的地点信息与详细移动预估（只读）。 *@
+@* 分层地图（开发计划 v0.9 批次 B12，R38；A10「A10-EXUI」§1「分层导航与发现权限」、S14「地图、来源与四类账」、S02「最新地图与道路」）。
+   Part="center"：中部 ①② 合并区的地图（相邻地点旁锚定“确认移动”浮窗）；Part="detail"：右栏的地点信息、远处路径预览与详细移动预估（只读）。
+   三层：主世界 → 城内/地牢；面包屑与层切换只换阅读，不移动、不退出地牢；“回到当前位置”只平移视口。
+   缩放档的地名 15px、状态 14px 不随缩放变小；“总览”档只画点（悬停看名称），不画小于 14px 的字（S14 §1.2）。
+   视图数据全部来自 GameEngine.BuildMapView（只读，未知节点不泄露）；缩放、拖图、切层不耗时。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -11,79 +17,156 @@
 
 @if (Part == "center")
 {
-    // B11：v3 地图 143 个节点。地牢房间用地牢内局部坐标，按“图层”分开画：在地牢里只画这座地牢的已知房间，在外面只画世界与城内的已知地点
-    // （开发假设 B11-7；分层地图界面在 B12）。只画已发现地点、已开通路线与已揭示的未开通路线（红色虚线），未知不泄露。
-    var layer = e.Location(here).Layer;
-    var known = e.Config.Locations.Where(l => l.Layer == layer && s.Locations[l.Id].Discovered).ToList();
-    var knownIds = known.Select(l => l.Id).ToHashSet();
-    var edges = e.Config.Edges.Where(x => knownIds.Contains(x.A) && knownIds.Contains(x.B) && e.EdgeOpen(s, x)).ToList();
-    var lockedEdges = e.Config.Edges.Where(x => knownIds.Contains(x.A) && knownIds.Contains(x.B) && !e.EdgeOpen(s, x) && e.EdgeRevealed(s, x)).ToList();
-    var layerName = layer == "world" ? "区域地图" : $"{e.Config.Map.Dungeons.FirstOrDefault(d => d.Id == layer)?.Name ?? layer}（地牢内）";
-    <div class="sub-panel" role="dialog" aria-label="区域地图">
-        <div class="sub-head">
-            <div><h2>@layerName</h2><span class="sub">已发现@(known.Count)处 · 只显示已知路线 · 点相邻地点在旁边确认移动</span></div>
-            <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
+    var v = e.BuildMapView(s, G.MapLayer);
+    var layers = e.KnownMapLayers(s);
+    var k = Zooms[Math.Clamp(G.MapZoom, 0, Zooms.Length - 1)];
+    var overview = G.MapZoom == 0;
+    var labels = k >= 0.75;
+    var w = (v.MaxX - v.MinX) * k + 2 * PadX;
+    var h = (v.MaxY - v.MinY) * k + 2 * PadY;
+    var nodeAt = v.Nodes.ToDictionary(n => n.Id);
+    _view = v; _k = k;
+    <div class="sub-panel map-panel" role="dialog" aria-label="区域地图">
+        <div class="map-bar">
+            <nav class="map-crumbs" aria-label="地图层级">
+                @for (var i = 0; i < v.Breadcrumb.Count; i++)
+                {
+                    var crumb = v.Breadcrumb[i];
+                    if (i > 0) { <span class="sep" aria-hidden="true">/</span> }
+                    if (i == 0 && v.LayerKey != GameEngine.WorldLayer)
+                    {
+                        <button type="button" class="crumb" title="返回主世界（只切换查看，不移动）" @onclick="() => SwitchLayer(GameEngine.WorldLayer)">@crumb</button>
+                    }
+                    else
+                    {
+                        <span class="crumb @(i == v.Breadcrumb.Count - 1 ? "now" : "")" title="@crumb">@crumb</span>
+                    }
+                }
+            </nav>
+            <div class="map-tools">
+                @if (layers.Count > 1)
+                {
+                    <select class="map-layer" aria-label="切换地图层" title="切换查看的层（不移动）" value="@v.LayerKey" @onchange="OnLayer">
+                        @foreach (var (key, name) in layers) { <option value="@key">@name</option> }
+                    </select>
+                }
+                <button type="button" class="secondary" title="缩小（−）" disabled="@(G.MapZoom <= 1)" @onclick="() => Zoom(G.MapZoom - 1)">−</button>
+                <button type="button" class="secondary" title="放大（+）" disabled="@(G.MapZoom >= Zooms.Length - 1)" @onclick="() => Zoom(G.MapZoom + 1)">+</button>
+                <button type="button" class="secondary @(overview ? "on" : "")" title="总览：只画点，悬停看地名" @onclick="() => Zoom(overview ? GameSession.MapDefaultZoom : 0)">总览</button>
+                <button type="button" class="secondary" title="视口回到当前位置（只平移，不移动，0）" @onclick="BackToHere">回到当前位置</button>
+                <button type="button" class="secondary @(G.MapLegend ? "on" : "")" aria-expanded="@G.MapLegend" @onclick="ToggleLegend">图例</button>
+                <button type="button" class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
+            </div>
         </div>
-        <div class="sub-body map-only">
-            @{
-                // 视野按已发现地点缩放：前期只有两三个地点时不会缩成一角
-                var minX = known.Min(l => l.MapX) - 130; var maxX = known.Max(l => l.MapX) + 130;
-                var minY = known.Min(l => l.MapY) - 80; var maxY = known.Max(l => l.MapY) + 80;
-                var w = Math.Max(maxX - minX, 620); var h = Math.Max(maxY - minY, 300);
-                var vx = (minX + maxX - w) / 2; var vy = (minY + maxY - h) / 2;
-                var viewBox = FormattableString.Invariant($"{vx:0} {vy:0} {w:0} {h:0}");
-            }
-            <svg class="map-canvas" viewBox="@viewBox" preserveAspectRatio="xMidYMid meet" role="img" aria-label="地点与路线">
-                <defs><marker id="oneway" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#d6b779" /></marker></defs>
-                @foreach (var ed in lockedEdges)
-                {
-                    var a = e.Location(ed.A);
-                    var b = e.Location(ed.B);
-                    var mx = (a.MapX + b.MapX) / 2;
-                    var my = (a.MapY + b.MapY) / 2;
-                    <line x1="@a.MapX" y1="@a.MapY" x2="@b.MapX" y2="@b.MapY" stroke="#9a4a3c" stroke-width="3" stroke-dasharray="4 8"><title>@($"未开通：{e.GateBlockedReason(s, ed)}")</title></line>
-                    <rect x="@(mx - 34)" y="@(my - 15)" width="68" height="28" rx="4" fill="#2a1d1a" />
-                    @SvgText(mx, my + 6, 16, "#d9a08f", "未开通")
-                }
-                @foreach (var ed in edges)
-                {
-                    var a = e.Location(ed.A);
-                    var b = e.Location(ed.B);
-                    var mx = (a.MapX + b.MapX) / 2;
-                    var my = (a.MapY + b.MapY) / 2;
-                    var near = ed.Touches(here);
-                    <line x1="@a.MapX" y1="@a.MapY" x2="@b.MapX" y2="@b.MapY" stroke="@(near ? "#d6b779" : "#6b7a68")" stroke-width="@(near ? 5 : 3)" stroke-dasharray="@(near ? "" : "10 7")" marker-end="@(ed.Bidirectional ? "" : "url(#oneway)")" />
-                    <rect x="@(mx - 30)" y="@(my - 15)" width="60" height="28" rx="4" fill="#1b221e" />
-                    @SvgText(mx, my + 6, 17, "#c9cfbf", $"{ed.BaseMinutes}分")
-                }
-                @foreach (var l in known)
-                {
-                    var st = s.Locations[l.Id];
-                    var isHere = l.Id == here;
-                    var isPicked = l.Id == picked;
-                    var id = l.Id;
-                    <g class="map-node" id="@($"mn-{id}")" @onclick="() => Pick(id)" role="button" aria-label="@l.Name">
-                        <rect x="@(l.MapX - 95)" y="@(l.MapY - 34)" width="190" height="68" rx="8"
-                              fill="@(isHere ? "#3a4a33" : st.Visited ? "#2b3a2e" : "#222b24")"
-                              stroke="@(isPicked ? "#f0d9a0" : isHere ? "#d6b779" : "#5d6b58")" stroke-width="@(isPicked || isHere ? 4 : 2)"
-                              stroke-dasharray="@(st.Visited ? "" : "8 5")" />
-                        @SvgText(l.MapX, l.MapY + 2, 22, "#eee9db", l.Name)
-                        @SvgText(l.MapX, l.MapY + 24, 14, "#aab2a4", isHere ? "● 当前位置" : st.Visited ? $"探索度{st.Progress}%" : "待访问")
-                        @{ var nd = isHere ? MapDirection.None : e.DirectionFromHere(s, id); }
-                        @if (nd != MapDirection.None)
+        <div class="map-stage">
+            <div class="map-viewport" @ref="_vp" tabindex="0" aria-label="@($"{v.LayerName}，已知{v.Nodes.Count}处；拖动平移，+ − 缩放，0 回到当前位置")"
+                 data-map-key="@MapKey(v.LayerKey)" @onkeydown="Key">
+                <svg class="map-canvas" width="@F(w)" height="@F(h)" viewBox="@($"0 0 {F(w)} {F(h)}")" role="img" aria-label="地点与路线">
+                    <defs><marker id="oneway" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#e2c27e" /></marker></defs>
+                    @foreach (var ed in v.Edges)
+                    {
+                        var a = nodeAt[ed.A]; var b = nodeAt[ed.B];
+                        var (x1, y1) = P(v, a, k); var (x2, y2) = P(v, b, k);
+                        // 线端留出节点框，箭头落在框边
+                        var (sx, sy, tx, ty) = Trim(x1, y1, x2, y2, overview ? 10 : 30);
+                        var oneWay = ed.OneWayFrom != null;
+                        if (oneWay && ed.OneWayFrom == ed.B) { (sx, sy, tx, ty) = (tx, ty, sx, sy); }
+                        var mx = (x1 + x2) / 2; var my = (y1 + y2) / 2;
+                        var tip = ed.Open ? $"{e.LocName(ed.A)}—{e.LocName(ed.B)} · {ed.Minutes}分钟{(oneWay ? " · 单向出口" : "")}" : $"未开通：{ed.Reason}";
+                        <g class="map-edge @(ed.Open ? "open" : "locked") @(ed.Near ? "near" : "")">
+                            <title>@tip</title>
+                            <line x1="@F(sx)" y1="@F(sy)" x2="@F(tx)" y2="@F(ty)" marker-end="@(oneWay ? "url(#oneway)" : null)" />
+                            @if (labels)
+                            {
+                                var text = ed.Open ? $"{ed.Minutes}分{(oneWay ? "·单向" : "")}" : "未开通";
+                                var tw = 16 + 14 * text.Length;
+                                <rect x="@F(mx - tw / 2.0)" y="@F(my - 12)" width="@tw" height="24" rx="4" />
+                                @T(mx, my + 5, null, text)
+                            }
+                        </g>
+                    }
+                    @foreach (var n in v.Nodes)
+                    {
+                        var (x, y) = P(v, n, k);
+                        var id = n.Id;
+                        var isPicked = id == picked;
+                        var state = n.IsHere || n.HereInside ? "here" : n.Visited ? "visited" : "known";
+                        var status = n.IsHere ? "● 当前位置" : n.HereInside ? "● 你在城内" : n.Visited ? $"探索度{n.Progress}%" : "待访问";
+                        var tip = $"{n.Name} · {status}{(n.Danger is int dg ? $" · 危险{dg}" : "")}{(n.Roles.Count > 0 ? " · " + string.Join("、", n.Roles) : "")}";
+                        <g class="map-node @state @(isPicked ? "picked" : "")" id="@($"mn-{id}")" tabindex="0" role="button" aria-label="@tip"
+                           @onclick="() => Pick(id)" @onkeydown="ev => NodeKey(ev, id)" @onkeydown:stopPropagation="true">
+                            <title>@tip</title>
+                            @if (overview)
+                            {
+                                <circle cx="@F(x)" cy="@F(y)" r="9" />
+                                @if (state == "here") { <circle class="ring" cx="@F(x)" cy="@F(y)" r="15" /> }
+                            }
+                            else
+                            {
+                                <rect x="@F(x - NodeW / 2)" y="@F(y - NodeH / 2)" width="@NodeW" height="@NodeH" rx="7" />
+                                @T(x, y - 3, "nm", Short(n.Name))
+                                @T(x, y + 17, "st", status)
+                                @if (n.Roles.Count > 0)
+                                {
+                                    var rt = string.Join("·", n.Roles);
+                                    var rw = 16 + 14 * rt.Length;
+                                    <g class="map-role"><rect x="@F(x - rw / 2.0)" y="@F(y - NodeH / 2 - 24)" width="@rw" height="22" rx="4" /><text x="@F(x)" y="@F(y - NodeH / 2 - 8)" text-anchor="middle">@rt</text></g>
+                                }
+                                @if (labels && !n.IsHere)
+                                {
+                                    var nd = e.DirectionFromHere(s, id);
+                                    @if (nd != MapDirection.None)
+                                    {
+                                        @* Q22（S02、S14 §19）：已知非当前节点的八方向徽标，与地块卡同一数据；只作展示 *@
+                                        <g class="map-dir" transform="@($"translate({F(x - NodeW / 2 - 6)},{F(y - NodeH / 2 - 10)})")" pointer-events="none">
+                                            <circle cx="11" cy="11" r="11" fill="#20271d" stroke="#e9d9ad" stroke-width="1.5" />
+                                            <g transform="@($"translate(2,2) scale(0.75) rotate({((int)nd - 1) * 45} 12 12)")"><path d="M12 2.5 19.5 11h-4.6v10.5H9.1V11H4.5Z" fill="#f0d9a0" /></g>
+                                        </g>
+                                    }
+                                }
+                            }
+                        </g>
+                        var pills = overview ? new List<(string, string, string)>() : Pills(v, n);   // 总览只画点
+                        var py = y + (overview ? 14 : NodeH / 2 + 4);
+                        @foreach (var (label, layer, title) in pills)
                         {
-                            @* Q22（S02、S14 §19）：已显示的非当前已知节点加相对主角的八方向徽标，与地块卡同一数据（DirectionFromHere）；
-                               只作展示，不改变可达性；未知节点不在 known 里，不泄露 *@
-                            <g class="map-dir" transform="@($"translate({l.MapX - 95 + 4},{l.MapY - 34 - 14})")" pointer-events="none">
-                                <title>@GameEngine.DirectionHint(nd)（方位图标，只作展示）</title>
-                                <circle cx="16" cy="16" r="16" fill="#20271d" stroke="#e9d9ad" stroke-width="2" />
-                                <g transform="@($"translate(4,4) rotate({((int)nd - 1) * 45} 12 12)")"><path d="M12 2.5 19.5 11h-4.6v10.5H9.1V11H4.5Z" fill="#f0d9a0" /></g>
+                            var pw = 16 + 14 * label.Length;
+                            var targetLayer = layer;
+                            <g class="map-pill" role="button" tabindex="0" aria-label="@title" @onclick="() => SwitchLayer(targetLayer)" @onclick:stopPropagation="true"
+                               @onkeydown="ev => PillKey(ev, targetLayer)" @onkeydown:stopPropagation="true">
+                                <title>@title</title>
+                                <rect x="@F(x - pw / 2.0)" y="@F(py)" width="@pw" height="22" rx="11" />
+                                <text x="@F(x)" y="@F(py + 16)" text-anchor="middle">@label</text>
                             </g>
+                            py += 25;
                         }
-                    </g>
-                }
-            </svg>
-            <div class="map-legend"><span>金色实线：当前地点的可走路线</span><span>红色虚线：已发现但未开通</span><span>虚线框：已发现未访问</span><span>浏览地图不推进时间</span></div>
+                    }
+                </svg>
+            </div>
+            @if (G.MapLegend)
+            {
+                <div class="map-legend-pop" role="note">
+                    <div><i class="lg-line open"></i>实线：已开通的路线（金色为当前地点相连）</div>
+                    <div><i class="lg-line locked"></i>红色虚线“未开通”：已发现但门槛未满足，悬停看原因</div>
+                    <div><i class="lg-arrow">➜</i>箭头：单向出口，只能从箭尾一侧走</div>
+                    <div><i class="lg-box dashed"></i>虚线框：已发现、还没去过</div>
+                    <div><i class="lg-pill"></i>圆角标签：进入城内/地牢查看，或通往其他层的路口（只切换查看）</div>
+                    <div>浏览、拖动、缩放和切层都不推进时间，也不会发现新地点；一次只移动一段相邻路线</div>
+                </div>
+            }
+            @if (!overview && v.Nodes.Count >= 6)
+            {
+                var mw = 168.0; var mh = 96.0;
+                var sw = Math.Max(1, v.MaxX - v.MinX); var shh = Math.Max(1, v.MaxY - v.MinY);
+                var m = Math.Min((mw - 16) / sw, (mh - 16) / shh);
+                <svg class="map-mini" width="@mw" height="@mh" role="img" aria-label="缩略导航：点一下把视口移到那里" @onclick="MiniClick">
+                    @foreach (var n in v.Nodes)
+                    {
+                        <circle cx="@F(8 + (n.X - v.MinX) * m)" cy="@F(8 + (n.Y - v.MinY) * m)" r="@(n.IsHere || n.HereInside ? 4.5 : 3)" class="@(n.IsHere || n.HereInside ? "here" : n.Visited ? "visited" : "")" />
+                    }
+                </svg>
+                _mini = m;
+            }
         </div>
     </div>
 }
@@ -106,19 +189,22 @@ else
                     <div><span>→ @e.LocName(ed.Other(here))@(ed.Bidirectional ? "" : "（单向出口）")</span><b>@(ed.BaseMinutes)分钟</b></div>
                 }
             </div>
-            @{ var lockedHere = e.AdjacentLocked(s); }
-            @if (lockedHere.Count > 0)
+            @{ var groups = e.AdjacentLockedGroups(s); }
+            @if (groups.Count > 0)
             {
                 <div class="eyebrow">未开通的路线</div>
                 <div class="lines">
-                    @foreach (var lk in lockedHere)
+                    @foreach (var (reason, routes) in groups)
                     {
-                        <div title="@lk.Reason"><span>✕ @e.LocName(lk.Target)</span><b>@(lk.Edge.BaseMinutes)分钟</b></div>
-                        <div class="tiny muted">@lk.Reason</div>
+                        @foreach (var lk in routes)
+                        {
+                            <div title="@reason"><span>✕ @e.LocName(lk.Target)</span><b>@(lk.Edge.BaseMinutes)分钟</b></div>
+                        }
+                        <div class="tiny muted">@reason</div>
                     }
                 </div>
             }
-            <div class="tiny muted">在地图上点选相邻地点：地点旁出现移动确认，这里显示详细预估。</div>
+            <div class="tiny muted">在地图上点选相邻地点：地点旁出现移动确认，这里显示详细预估。点远处地点可看实际路线。</div>
         </div>
     }
     else if (adjacent.Contains(target) && !e.IsBusy(s))
@@ -130,13 +216,39 @@ else
     else
     {
         var lockHere = e.AdjacentLocked(s).FirstOrDefault(x => x.Target == target);
+        var path = lockHere.Edge == null ? e.MapPathTo(s, target) : null;
         <div class="detail-scroll">
             <div class="op-head">
                 <div class="eyebrow">区域地图 · @(ts.Visited ? $"探索度{ts.Progress}%" : "已发现 · 待访问")</div>
                 <h2>@tl.Name</h2>
-                <p>@(tl.IsIndoor ? "室内" : "露天")@(tl.Danger is int dg ? $" · 危险{dg}" : "")</p>
+                <p>@(tl.IsIndoor ? "室内" : "露天")@(tl.Danger is int dg ? $" · 危险{dg}" : "") · @e.MapLayerName(e.MapLayerOf(target))</p>
             </div>
-            <div class="blocked">@(e.IsBusy(s) ? "行动进行中，地图只能浏览" : lockHere.Edge != null ? $"路线未开通，{lockHere.Reason}" : "请先前往相邻地点")</div>
+            @if (e.IsBusy(s))
+            {
+                <div class="blocked">行动进行中，地图只能浏览</div>
+            }
+            else if (lockHere.Edge != null)
+            {
+                <div class="blocked">路线未开通，@lockHere.Reason</div>
+            }
+            else if (path != null && path.Count > 0)
+            {
+                @* A10-EXUI §1：远处节点显示实际可达路径与分段时间，只能确认下一段相邻路 *@
+                <div class="eyebrow">实际路线（共@(path.Count)段，基础@(path.Sum(p => p.Minutes))分钟）</div>
+                <div class="lines">
+                    @foreach (var st in path)
+                    {
+                        <div><span>@e.LocName(st.From) → @e.LocName(st.To)</span><b>@(st.Minutes)分钟</b></div>
+                    }
+                </div>
+                var next = path[0].To;
+                <div class="tiny muted">不提供自动寻路：一次只能确认下一段。</div>
+                <button type="button" class="primary small-btn" @onclick="() => PickNext(next)">选中下一段：前往@(e.LocName(next))</button>
+            }
+            else
+            {
+                <div class="blocked">目前没有已开通的路线能走到这里</div>
+            }
         </div>
     }
 }
@@ -144,10 +256,150 @@ else
 @code {
     [Parameter] public string Part { get; set; } = "center";
 
-    private static MarkupString SvgText(double x, double y, int size, string fill, string content) =>
-        new($"<text x=\"{x}\" y=\"{y}\" text-anchor=\"middle\" font-size=\"{size}\" fill=\"{fill}\">{System.Net.WebUtility.HtmlEncode(content)}</text>");
+    /// <summary>缩放档：0 为“总览”（只画点，不画字），其余档地名 15px、状态 14px 固定，不随缩放变小。</summary>
+    public static readonly double[] Zooms = { 0.3, 0.55, 0.75, 1.0 };
+    private const double PadX = 110, PadY = 76, NodeW = 136, NodeH = 50;
 
-    /// <summary>点地图节点：右栏显示详细预估；相邻且空闲时在节点旁打开移动确认浮窗（S02 §5、S14 §14.1），本身不移动。</summary>
+    private ElementReference _vp;
+    private MapView? _view;
+    private double _k = 0.75;
+    private double _mini = 1;
+    private bool _needCenter = true;
+    private (double X, double Y)? _centerWorld;
+    private string _lastHere = "";
+    private string _lastLayer = "";
+
+    private static string F(double v) => v.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
+
+    private static (double, double) P(MapView v, MapViewNode n, double k) => ((n.X - v.MinX) * k + PadX, (n.Y - v.MinY) * k + PadY);
+
+    private static (double, double, double, double) Trim(double x1, double y1, double x2, double y2, double r)
+    {
+        var dx = x2 - x1; var dy = y2 - y1; var len = Math.Sqrt(dx * dx + dy * dy);
+        if (len < 2 * r + 1) return (x1, y1, x2, y2);
+        // 节点框 136×50：沿方向收到框边（横向收得多、纵向收得少）
+        var fx = dx / len; var fy = dy / len;
+        var cut = r <= 10 ? r : Math.Min(NodeW / 2 / Math.Max(Math.Abs(fx), 1e-6), NodeH / 2 / Math.Max(Math.Abs(fy), 1e-6)) + 2;
+        return (x1 + fx * cut, y1 + fy * cut, x2 - fx * cut, y2 - fy * cut);
+    }
+
+    /// <summary>SVG 文字（Razor 代码块里不能直接写带属性的 text 标签）。</summary>
+    private const string SvgTextTag = "te" + "xt";
+
+    private static MarkupString T(double x, double y, string? cls, string content) =>
+        new("<" + SvgTextTag + (cls != null ? " class=\"" + cls + "\"" : "") + " x=\"" + F(x) + "\" y=\"" + F(y) + "\" text-anchor=\"middle\">"
+            + System.Net.WebUtility.HtmlEncode(content) + "</" + SvgTextTag + ">");
+
+    private static string Short(string name) => name.Length > 8 ? name.Substring(0, 7) + "…" : name;
+
+    private string MapKey(string layer) => $"{G.S.CurrentLocation}|{layer}|{G.MapZoom}";
+
+    /// <summary>节点下的圆角标签：可进入的城内/地牢、跨层路口（多于 2 个时合成一张）。</summary>
+    private List<(string Label, string Layer, string Title)> Pills(MapView v, MapViewNode n)
+    {
+        var list = new List<(string, string, string)>();
+        if (n.SubLayer != null) list.Add((n.SubLabel!, n.SubLayer, $"查看{G.E.MapLayerName(n.SubLayer)}（只切换查看，不移动）"));
+        var ports = v.Portals.Where(p => p.FromNode == n.Id).ToList();
+        string Port(MapPortal p) => $"{(p.OneWayOut ? "出口" : "")}→{p.TargetName}{(p.Open ? "" : "（未开通）")}";
+        string PortTitle(MapPortal p) => $"通往{p.TargetName}（{p.TargetLayerName}）· {p.Minutes}分钟{(p.OneWayOut ? " · 单向出口" : "")}{(p.Open ? "" : $" · 未开通：{p.Reason}")}；点一下切到{p.TargetLayerName}查看";
+        if (ports.Count <= 2) list.AddRange(ports.Select(p => (Port(p), p.TargetLayer, PortTitle(p))));
+        else list.Add(($"通往{ports[0].TargetLayerName}{ports.Count}处 ▸", ports[0].TargetLayer, string.Join("\n", ports.Select(PortTitle))));
+        return list;
+    }
+
+    private void OnLayer(ChangeEventArgs ev) => SwitchLayer(ev.Value?.ToString() ?? GameEngine.WorldLayer);
+
+    /// <summary>切换查看的层：只换阅读，不移动、不退出地牢；当前位置在该层就居中到当前位置，否则居中到该层已知范围。</summary>
+    private void SwitchLayer(string layer)
+    {
+        G.MapLayer = layer;
+        G.MapAnchor = G.S.CurrentLocation;
+        G.ClosePop();
+        _centerWorld = null;
+        _needCenter = true;
+        G.Notify();
+    }
+
+    private async Task Zoom(int idx)
+    {
+        idx = Math.Clamp(idx, 0, Zooms.Length - 1);
+        if (idx == G.MapZoom || _view == null) return;
+        try
+        {
+            var c = await JS.InvokeAsync<double[]>("survivalMap.getCenter", _vp);
+            _centerWorld = ((c[0] - PadX) / _k + _view.MinX, (c[1] - PadY) / _k + _view.MinY);
+        }
+        catch (JSException) { _centerWorld = null; }
+        G.MapZoom = idx;
+        G.MapAnchor = G.S.CurrentLocation;
+        G.ClosePop();
+        _needCenter = true;
+        G.Notify();
+    }
+
+    /// <summary>“回到当前位置”：当前位置不在正在看的层就切回默认层，然后把视口平移到当前位置（不移动角色）。</summary>
+    private void BackToHere()
+    {
+        if (_view?.HereNode == null) G.MapLayer = null;
+        _centerWorld = null;
+        _needCenter = true;
+        G.Notify();
+    }
+
+    private void ToggleLegend()
+    {
+        G.MapLegend = !G.MapLegend;
+        G.Notify();
+    }
+
+    private async Task Key(KeyboardEventArgs ev)
+    {
+        if (ev.Key is "+" or "=") await Zoom(G.MapZoom + 1);
+        else if (ev.Key is "-" or "_") await Zoom(Math.Max(1, G.MapZoom - 1));
+        else if (ev.Key == "0") BackToHere();
+    }
+
+    private void NodeKey(KeyboardEventArgs ev, string id)
+    {
+        if (ev.Key is "Enter" or " ") Pick(id);
+    }
+
+    private void PillKey(KeyboardEventArgs ev, string layer)
+    {
+        if (ev.Key is "Enter" or " ") SwitchLayer(layer);
+    }
+
+    private async Task MiniClick(MouseEventArgs ev)
+    {
+        if (_view == null || _mini <= 0) return;
+        var wx = (ev.OffsetX - 8) / _mini + _view.MinX;
+        var wy = (ev.OffsetY - 8) / _mini + _view.MinY;
+        try { await JS.InvokeVoidAsync("survivalMap.center", _vp, (wx - _view.MinX) * _k + PadX, (wy - _view.MinY) * _k + PadY); }
+        catch (JSException) { }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Part != "center" || G.State == null || _view == null) return;
+        var here = G.S.CurrentLocation;
+        if (here != _lastHere) { _lastHere = here; _needCenter = true; _centerWorld = null; }
+        if (_view.LayerKey != _lastLayer) { _lastLayer = _view.LayerKey; _needCenter = true; }
+        if (!_needCenter) return;
+        _needCenter = false;
+        try
+        {
+            if (_centerWorld == null && firstRender && await JS.InvokeAsync<bool>("survivalMap.restore", _vp, MapKey(_view.LayerKey))) return;
+            double wx, wy;
+            if (_centerWorld is (double cx, double cy)) { wx = cx; wy = cy; }
+            else if (_view.HereNode != null) { var n = _view.Nodes.First(x => x.Id == _view.HereNode); wx = n.X; wy = n.Y; }
+            else { wx = (_view.MinX + _view.MaxX) / 2; wy = (_view.MinY + _view.MaxY) / 2; }
+            _centerWorld = null;
+            await JS.InvokeVoidAsync("survivalMap.center", _vp, (wx - _view.MinX) * _k + PadX, (wy - _view.MinY) * _k + PadY);
+        }
+        catch (JSException) { /* 旧缓存的脚本没有 survivalMap 时只是不居中 */ }
+    }
+
+    /// <summary>点地图节点：右栏显示详细预估或远处路线；相邻且空闲时在节点旁打开移动确认浮窗（S02 §5、S14 §14.1），本身不移动。</summary>
     private void Pick(string id)
     {
         G.MapPicked = id;
@@ -158,9 +410,20 @@ else
         G.Notify();
     }
 
+    /// <summary>右栏“选中下一段”：切到下一段目的地所在层并选中它（只确认下一段相邻路，A10-EXUI §1）。</summary>
+    private void PickNext(string id)
+    {
+        var layer = G.E.MapLayerOf(id);
+        var v = G.E.BuildMapView(G.S, G.MapLayer);
+        if (!v.Nodes.Any(n => n.Id == id)) { G.MapLayer = layer.StartsWith("city:") && !G.S.Locations[layer.Substring(5)].Discovered ? GameEngine.WorldLayer : layer; _needCenter = true; }
+        Pick(id);
+    }
+
     private Task Close()
     {
         G.OpenPanel(null);
         return Task.CompletedTask;
     }
+
+    public void Dispose() { }
 }

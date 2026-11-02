@@ -102,6 +102,27 @@ namespace Survival.Core.Engine
             return true;
         }
 
+        /// <summary>
+        /// 资源卡角标（S14「地图、来源与四类账」：不同账写清楚）：日补“10/12”；finite“6/8·不补”/“搜空不补”；flowing“无限”；
+        /// 地牢普通箱“本代剩余2/2”/“本代已搜空”；核心记录“可领取”/“本局已领·可核对”/“已领取”；单次箱“可搜1次”/“已搜空”。Empty 为灰显。
+        /// </summary>
+        public (string Badge, bool Empty) ResourceStock(GameState s, ResourceConfig r)
+        {
+            var rs = s.Resources[r.NodeId];
+            var avail = rs.Available ?? 0;
+            if (r.IsCampaign)
+            {
+                if (!CampaignClaimed(s, r.NodeId)) return ("可领取", false);
+                var d = DungeonOf(r);
+                return d != null && !InstanceFact(s, d, RecordClaimedFact) ? ("本局已领·可核对", false) : ("已领取", true);
+            }
+            if (r.IsUnlimited) return ("无限", false);
+            if (r.IsInstance) return avail > 0 ? ($"本代剩余{avail}/{r.Cap}", false) : ("本代已搜空", true);
+            if (r.IsCache) return avail > 0 ? ("可搜1次", false) : ("已搜空", true);
+            if (!r.Refills) return avail > 0 ? ($"{avail}/{r.Cap}·不补", false) : ("搜空不补", true);
+            return ($"{avail}/{r.Cap}", avail <= 0);
+        }
+
         // ───────────────────────── 地牢实例代号 ─────────────────────────
 
         /// <summary>某地牢的全部房间（配置顺序）。</summary>

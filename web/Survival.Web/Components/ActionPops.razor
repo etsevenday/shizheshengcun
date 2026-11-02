@@ -89,6 +89,31 @@
             </AnchorPop>
             break;
         }
+        case "lockstack":
+        {
+            @* B12（B11 遗留）：相邻栏未开通叠卡的逐条列表：按条件分组，原因写一次，每条写名称、方位、单程分钟；只看，不移动 *@
+            var groups = e.AdjacentLockedGroups(s);
+            var total = groups.Sum(g => g.Routes.Count);
+            <AnchorPop AnchorId="@pop.AnchorId" Title="@($"{total}条路线未开通")" Sub="@(groups.Count == 1 ? "同一条件，满足后一起开通" : $"{groups.Count}种条件")" CssClass="lockstack" OnClose="G.ClosePop">
+                <ChildContent>
+                    @foreach (var (reason, routes) in groups)
+                    {
+                        <div class="apop-risk">路线未开通，@reason</div>
+                        <ul class="lockstack-list">
+                            @foreach (var lk in routes)
+                            {
+                                var d = e.DirectionFromHere(s, lk.Target);
+                                <li><span>@e.LocName(lk.Target)</span><small>@(d == MapDirection.None ? "" : GameEngine.DirectionHint(d) + " · ")单程@(lk.Edge.BaseMinutes)分钟</small></li>
+                            }
+                        </ul>
+                    }
+                </ChildContent>
+                <Actions>
+                    <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">关闭</button>
+                </Actions>
+            </AnchorPop>
+            break;
+        }
         case "charcoal":
         {
             var info = G.CharcoalPreview();
@@ -178,6 +203,7 @@
             "mapnode" => G.Panel == "map" && e.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == pop.Id),
             "approach" => s.Battle == null && s.Encounter == null && int.TryParse(pop.Id, out var wid) && e.VisibleEnemiesAt(s, s.CurrentLocation).Any(w => w.Id == wid),
             "charcoal" => s.Battle == null && s.Encounter == null && G.Panel == null && pop.Id == s.CurrentLocation && e.Location(s.CurrentLocation).HasFire,
+            "lockstack" => s.Battle == null && G.Panel == null && e.AdjacentLockedGroups(s).Any(g => g.Routes.Count >= 3),
             "gather" => G.Selected.Kind == SelectionKind.Action && G.PendingAction != null && G.PendingAction.Type == ActionType.Gather && G.PendingAction.TargetId == pop.Id,
             _ => true,
         };
