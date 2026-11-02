@@ -26,11 +26,12 @@ MAPDIR = os.path.join(ROOT, "doc", "策划案", "系统策划总册 v1.0", "asse
 # 本批实装的任务（RN02—RN06 前置待策划确认，只注册不显示；见开发假设 B15-3）
 IMPLEMENTED = {
     "FA01": True, "FA02": True, "FA03": True, "FA04": True, "FA05": True,
-    "HU01": False, "HU02": False, "HU03": False, "HU04": False, "CH01": False, "CH02": False, "AC01": False, "AC02": False,
+    "HU01": True, "HU02": True, "HU03": True, "HU04": True, "CH01": True, "CH02": True, "AC01": True, "AC02": True,
     "RN01": False, "RN02": False, "RN03": False, "RN04": False, "RN05": False, "RN06": False,
 }
 # 本批开放的任务类城市服务（Q146：实装后同 ID 自然出现）
-SERVICES_ON = ["hub_affairs_record", "church_reception_existing", "academy_reception_existing"]
+SERVICES_ON = ["hub_affairs_record", "church_reception_existing", "church_public_mediation", "church_archive_copy",
+               "academy_reception_existing", "academy_noninvasive_observation", "academy_report_compare"]
 # h03 战术训练入口（R03 §3）
 TRAINING = False
 

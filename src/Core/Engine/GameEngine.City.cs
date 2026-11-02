@@ -156,6 +156,7 @@ namespace Survival.Core.Engine
                     Substitute = absent,
                     Status = services.Count > 0 ? $"可交谈 · 事项 {canDo}/{services.Count} 项可办" : "可交谈",
                     ServiceCount = services.Count,
+                    QuestCount = QuestsOfNpc(s, n.NpcId).Count,
                     // B15：只写已实装且已显示的委托（正式名 + 状态），不出内部任务编号（Q145/Q146）
                     QuestText = QuestCardText(s, n.NpcId),
                     RecruitText = "岗位人物，不可招募",
@@ -554,9 +555,9 @@ namespace Survival.Core.Engine
             s.City.Pending = txn;
             if (quest != null)
             {
-                // FA04 开始整理即接取（播接取对白，对话本身不替代工作提交）；有工作提示的委托首次开工播一次
+                // FA04 开始整理即接取（播接取对白，对话本身不替代工作提交）。支线的工作提示（XX_work“请查看本任务领域预览后确认”）
+                // 是预览说明，显示在事项面板里，开工时不再弹对白（开发假设 B15-7）
                 if (!QuestAccepted(s, quest.Id)) AcceptCore(s, quest, true, choice?.Id);
-                else if (!string.IsNullOrEmpty(quest.WorkDialogue)) OpenDialogue(s, quest.WorkDialogue!);
                 if (choice != null) s.Quests.Of(quest.Id).Choice ??= choice.Id;
             }
             return res;

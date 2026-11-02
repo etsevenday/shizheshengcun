@@ -32018,12 +32018,29 @@
         "effect": "CH02公开资料交接或拒宣誓的公开备份流程；与CH02原10分钟抄录同一事务，拒绝不扣M/I、不封主线；已完成再聊0分钟",
         "questId": "CH02",
         "facts": [],
-        "choices": [],
+        "choices": [
+          {
+            "id": "CH02_copy_public",
+            "label": "协商抄录公开路线",
+            "stat": "",
+            "below": 0.0,
+            "outputs": {},
+            "facts": []
+          },
+          {
+            "id": "CH02_backup_hub",
+            "label": "以已有实地记录回营区备份",
+            "stat": "",
+            "below": 0.0,
+            "outputs": {},
+            "facts": []
+          }
+        ],
         "dailyPartyQuota": null,
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false
+        "implemented": true
       },
       {
         "id": "church_archive_copy",
@@ -32041,7 +32058,7 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false
+        "implemented": true
       },
       {
         "id": "church_quiet_rest",
@@ -32114,12 +32131,29 @@
         "effect": "AC01当前已有状态只读核对或环境记录核对10分钟，两选择共任务账，绝不生成身体新效果；无需提交活性物质/抽血/实验",
         "questId": "AC01",
         "facts": [],
-        "choices": [],
+        "choices": [
+          {
+            "id": "AC01_environment",
+            "label": "仅核对环境记录",
+            "stat": "",
+            "below": 0.0,
+            "outputs": {},
+            "facts": []
+          },
+          {
+            "id": "AC01_noninvasive",
+            "label": "同意只读现有状态的非侵入观察",
+            "stat": "",
+            "below": 0.0,
+            "outputs": {},
+            "facts": []
+          }
+        ],
         "dailyPartyQuota": null,
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false
+        "implemented": true
       },
       {
         "id": "academy_report_compare",
@@ -32137,7 +32171,7 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false
+        "implemented": true
       },
       {
         "id": "academy_workshop_access",
@@ -33018,7 +33052,7 @@
         "kind": "side",
         "npcId": "npc_tao_cen",
         "locationId": "h05_appraisal",
-        "implemented": false,
+        "implemented": true,
         "showAny": [
           "hub_registered"
         ],
@@ -33051,7 +33085,7 @@
         "kind": "side",
         "npcId": "npc_tao_cen",
         "locationId": "h05_appraisal",
-        "implemented": false,
+        "implemented": true,
         "showAny": [
           "quest:HU01:completed"
         ],
@@ -33084,7 +33118,7 @@
         "kind": "side",
         "npcId": "npc_du_sui",
         "locationId": "h06_shelter",
-        "implemented": false,
+        "implemented": true,
         "showAny": [
           "hub_registered"
         ],
@@ -33117,7 +33151,7 @@
         "kind": "side",
         "npcId": "npc_du_sui",
         "locationId": "h06_shelter",
-        "implemented": false,
+        "implemented": true,
         "showAny": [
           "hub_registered"
         ],
@@ -33150,7 +33184,7 @@
         "kind": "side",
         "npcId": "npc_bai_ling",
         "locationId": "c04_alms",
-        "implemented": false,
+        "implemented": true,
         "showAny": [
           "quest:FA02:accepted"
         ],
@@ -33185,7 +33219,7 @@
         "kind": "side",
         "npcId": "npc_ji_mu",
         "locationId": "c05_admonition",
-        "implemented": false,
+        "implemented": true,
         "showAny": [
           "quest:CH01:completed"
         ],
@@ -33221,7 +33255,7 @@
         "kind": "side",
         "npcId": "npc_ji_wen",
         "locationId": "r05_testing",
-        "implemented": false,
+        "implemented": true,
         "showAny": [
           "quest:FA03:accepted"
         ],
@@ -33256,7 +33290,7 @@
         "kind": "side",
         "npcId": "npc_shao_ning",
         "locationId": "r06_archive",
-        "implemented": false,
+        "implemented": true,
         "showAny": [
           "FA03_record_credit"
         ],

@@ -39,6 +39,8 @@ namespace Survival.Core.Engine
         public bool CanReview { get; set; }
         /// <summary>AC02 外部医疗线索可回看。</summary>
         public bool HasNote { get; set; }
+        /// <summary>进行中时的工作提示（narrative-texts XX_work 系统句，预览说明，不弹对白）。</summary>
+        public string WorkHint { get; set; } = "";
     }
 
     /// <summary>
@@ -129,6 +131,7 @@ namespace Survival.Core.Engine
                 v.Status = "active";
                 v.StatusText = q.WorkMinutes > 0 && v.WorkDone > 0 ? $"进行中（已完成{v.WorkDone}/{q.WorkMinutes}分钟）" : "进行中";
                 v.Step = q.StepActive;
+                v.WorkHint = string.IsNullOrEmpty(q.WorkDialogue) ? "" : string.Join("", Config.Story.Dialogues.Where(d => d.Event == q.WorkDialogue).Select(d => d.Text));
             }
             else
             {
@@ -228,6 +231,22 @@ namespace Survival.Core.Engine
             if (!res.Ok) return res;
             s.Progress.Flags.Add(QuestFact(q.Id, "accepted"));
             CompleteQuest(s, q, false);
+            return ActionResult.Success();
+        }
+
+        /// <summary>
+        /// 回看已完成任务的对白（0 分钟，只回放台词，不重算时间、奖励或事实；narrative-texts replay “history_read_only_no_effect”）。
+        /// note：回看 AC02 外部医疗线索。
+        /// </summary>
+        public ActionResult ReviewQuest(GameState s, string questId, bool note = false)
+        {
+            var q = Quest(questId);
+            if (q == null || !q.Implemented || !QuestDone(s, q.Id)) return ActionResult.Fail("还没有可回看的记录");
+            var why = TalkBlocked(s);
+            if (why != null) return ActionResult.Fail(why);
+            var set = note ? q.NoteDialogue : q.RepeatDialogue ?? q.CompleteDialogue ?? q.OfferDialogue;
+            if (string.IsNullOrEmpty(set)) return ActionResult.Fail("没有可回看的对白");
+            OpenReplay(s, set!);
             return ActionResult.Success();
         }
 

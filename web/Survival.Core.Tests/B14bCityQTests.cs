@@ -17,9 +17,8 @@ public class B14bCityQTests : TestBase
 
     private static readonly string[] Hidden =
     {
-        // B15 起整理调查记录与两处接待路线已实装（主线），其余仍按 Q146 隐藏
-        "copy_public_knowledge", "appraisal_white_v1", "church_public_mediation",
-        "church_archive_copy", "academy_noninvasive_observation", "academy_report_compare",
+        // B15 起主线与城市支线的 7 项任务类服务已实装，其余仍按 Q146 隐藏
+        "copy_public_knowledge", "appraisal_white_v1",
     };
     /// <summary>B14 快照（Q146 的 b14UnimplementedSnapshot，只是版本快照，不是永久隐藏表）。</summary>
     private static readonly string[] B14Snapshot =
@@ -437,8 +436,8 @@ public class B14bCityQTests : TestBase
             }
             else Assert.That(card.Status, Does.Match($@"事项 \d+/{impl} 项可办"));
         }
-        // B15：许安（整理调查记录）、祁闻/温澄（接待路线）已有实装事项
-        Assert.That(noButton, Is.EquivalentTo(new[] { "陶岑", "纪牧", "宋烛", "季闻", "邵宁" }));
+        // B15：许安（整理调查记录）、祁闻/温澄（接待路线）、纪牧/宋烛（CH02）、季闻（AC01）、邵宁（AC02）已有实装事项
+        Assert.That(noButton, Is.EquivalentTo(new[] { "陶岑" }));
     }
 
     /// <summary>
