@@ -5875,7 +5875,7 @@
         {
           "lineId": "NTL_0304",
           "speaker": "npc_yin_ke",
-          "text": "这里只接续你已选的观察范围，不再收一次AC01工作时间。"
+          "text": "这里只接续你已选的观察范围，不再收一次观察协作工作时间。"
         }
       ],
       "timeCostSource": "none_read_only",
@@ -6752,7 +6752,7 @@
         {
           "serviceId": "academy_observation_record",
           "speaker": "npc_yin_ke",
-          "text": "这里只读你已经同意的范围和现有观察记录；不再办理第二次AC01收费。",
+          "text": "这里只读你已经同意的范围和现有观察记录；不再办理第二次观察协作收费。",
           "previewVariable": "servicePreview.academy_observation_record"
         }
       ],
