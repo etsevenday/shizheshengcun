@@ -18,6 +18,31 @@ namespace Survival.Core.Engine
         public string? TaskId { get; set; }
     }
 
+    /// <summary>前进类主目标下一真实路段的玩家可知状态（Q139）。</summary>
+    public enum TravelSegmentKind
+    {
+        /// <summary>下一段已知且已开通。</summary>
+        KnownOpen,
+        /// <summary>下一段已揭示（那一端已发现）但未开通。</summary>
+        KnownBlocked,
+        /// <summary>下一段未知，当前地点可探索且未满 100%。</summary>
+        UnknownExplore,
+        /// <summary>下一段未知，当前地点已满 100% 或不能探索。</summary>
+        UnknownNoExplore,
+    }
+
+    /// <summary>前进类主目标的下一真实路段（只读视图）。NodeId 只在已知时给，未知时不泄露。</summary>
+    public sealed class TravelSegmentView
+    {
+        public TravelSegmentKind Kind { get; set; }
+        /// <summary>下一段的另一端（已知时）；未知为 null。</summary>
+        public string? NodeId { get; set; }
+        /// <summary>主目标此刻指向的地点（内部用，界面不显示）。</summary>
+        public string Target { get; set; } = "";
+        /// <summary>已知未开通时的领域可公开原因（与相邻栏同一句）。</summary>
+        public string Reason { get; set; } = "";
+    }
+
     /// <summary>任务册里的一项任务状态。</summary>
     public sealed class PrologueTaskView
     {
@@ -430,7 +455,7 @@ namespace Survival.Core.Engine
                 if (p.GuideSeen.Contains(id) || p.GuideMissed.ContainsKey(id) || !GuideOpen(s, id)) continue;
                 var ok = id switch
                 {
-                    "PRO01" => !s.Story.Legacy && p.MigratedAt == null && (s.Story.AwakeningDone || !StoryActive(s)),
+                    "PRO01" => !PrePrologueRun(s) && (s.Story.AwakeningDone || !StoryActive(s)),
                     "PRO06" => s.CurrentLocation == "stream" && !p.DrewWater,
                     // 旧档（Legacy/迁移档）由是否主动点“交谈”选择接续（Q132），人物卡出现时不自动弹短句；系统提示仍随主目标显示
                     "PRO16" => s.CurrentLocation == Config.Prologue.Visitor.LocationId && !OptInVisitor(s),
@@ -467,8 +492,15 @@ namespace Survival.Core.Engine
 
         public static bool VisitorRegistered(GameState s) => s.Progress.Flags.Contains(FactVisitorAvailable);
 
-        /// <summary>旧档“可选择接续”：Legacy 或从 schema 21 及以前迁移进来的存档，来客不自动弹抵达对白，点“交谈”才接续。</summary>
-        public static bool OptInVisitor(GameState s) => s.Story.Legacy || s.Prologue.MigratedAt != null;
+        /// <summary>
+        /// 这一局开局时是否还没有序章系统（Q138 选 A）：只认可信来源标记——Legacy（0.2 原型档、schema 5 及以前迁入剧情系统的档），
+        /// 或 <see cref="PrologueState.MigratedAt"/>（从 schema 21 及以前迁入序章系统，21→22 迁移时写入）。B13 序章上线后新开的局（存档 22 起）
+        /// 两个标记都没有，之后升级到 25、26 或未来版本也不会补写，所以不按“读档时升过版本/当前 schema 编号”判断。
+        /// </summary>
+        public static bool PrePrologueRun(GameState s) => s.Story.Legacy || s.Prologue.MigratedAt != null;
+
+        /// <summary>旧档“可选择接续”（Q132，经 Q138 细化）：序章前开局的档来客不自动弹抵达对白与 PRO16 短句，点“交谈”才接续；序章后新局照常自动抵达。</summary>
+        public static bool OptInVisitor(GameState s) => PrePrologueRun(s);
 
         private void CheckVisitor(GameState s)
         {
@@ -485,8 +517,8 @@ namespace Survival.Core.Engine
                                 || (s.Story.TutorialWonMinute == null && p.MigratedAt is int mig && mig >= v.NotBeforeWorldMinute);
             }
             if (p.VisitorArrivalShown || s.Progress.Flags.Contains(FactVisitorMet)) return;
-            // 旧档“可选择接续序章”（S15 §7）：Legacy 与所有从旧版本迁移进来的存档都不自动弹抵达对白，营地设施栏出现人物卡，
-            // 玩家点“交谈”时才播（开发假设 B13-H6；试玩修复 M269 P4 统一到迁移档）
+            // 旧档“可选择接续序章”（S15 §7；Q138 细化）：Legacy 与从 schema 21 及以前迁入序章系统的档不自动弹抵达对白，营地设施栏出现人物卡，
+            // 玩家点“交谈”时才播（开发假设 B13-H6；试玩修复 M269 P4）。序章后新开的局（22 起）升级到 25/26 仍照常自动抵达
             if (OptInVisitor(s))
             {
                 if (s.CurrentLocation != v.LocationId && !p.VisitorNotified && !InCombatFlow(s))
@@ -786,6 +818,16 @@ namespace Survival.Core.Engine
         /// <summary>当前主目标（存档里的 ObjectiveId 展开成文字）。序章没配置为 null。</summary>
         public PrologueObjectiveView? CurrentObjective(GameState s)
         {
+            var o = BaseObjective(s);
+            if (o == null) return null;
+            // Q139 选 B：主目标指引实际前进时，按下一真实路段的状态替换“下一步”（保留标题；只读、0 分钟）
+            var step = TravelStepText(s, NextTravelSegment(s));
+            if (step != null) o.Step = step;
+            return o;
+        }
+
+        private PrologueObjectiveView? BaseObjective(GameState s)
+        {
             if (!PrologueEnabled) return null;
             var p = s.Prologue;
             switch (p.ObjectiveId)
@@ -868,6 +910,9 @@ namespace Survival.Core.Engine
             var id = s.Prologue.GuideActive;
             if (!GuideActiveValid(s)) id = CurrentObjective(s)?.TaskId;
             if (id == null || TaskDone(s, id) || s.Prologue.DismissedHints.Contains(id)) return null;
+            // Q140 选 B：战斗类操作提示（PRO04）只在实际首战内给；战外（营地空闲、休息、开场对白、战前敌踪）回退主目标时只显示标题与下一步，
+            // 离开/结束战斗后也不残留
+            if (Config.Prologue.BattleOnlyHintTaskIds.Contains(id) && s.Battle?.Tutorial != true) return null;
             var t = ProTask(id);
             return t == null || string.IsNullOrEmpty(t.Hint) ? ((string, string)?)null : (id, t.Hint);
         }
@@ -903,48 +948,88 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 当前主目标要轻量点亮的对象（每次最多一个）：npc:ID、doc:ID、loc:ID；没有为 null。地点指向真实的下一路段
         /// （Q131：沿已开通的已知道路走向目标的第一段；出区不再指向南口路标，路标只是可选阅读）。
+        /// Q139 选 B：下一段已知（可走或未开通）点亮那一端；下一段未知且当前地点还能探索（未满 100%）点亮当前地点卡（探索入口）；
+        /// 未知且不能再探索不点亮（不点亮未知目标、不暗示重复探索）。只读。
         /// </summary>
         public string? ObjectiveFocus(GameState s)
         {
-            var p = s.Prologue;
-            var exit = Config.Prologue.Exit;
-            switch (p.ObjectiveId)
+            switch (s.Prologue.ObjectiveId)
             {
                 case "visitor_talk": return "npc:" + Config.Prologue.Visitor.NpcId;
-                case "visitor_return": return LocFocus(s, Config.Prologue.Visitor.LocationId);
-                case "exit_go": return LocFocus(s, s.CurrentLocation == exit.From ? exit.To : exit.From);
+                case "PRO15" when s.CurrentLocation == "village": return "doc:relief_page_village";
+            }
+            var seg = NextTravelSegment(s);
+            switch (seg?.Kind)
+            {
+                case TravelSegmentKind.KnownOpen:
+                case TravelSegmentKind.KnownBlocked: return "loc:" + seg.NodeId;
+                case TravelSegmentKind.UnknownExplore: return "loc:" + s.CurrentLocation;
+                default: return null;
+            }
+        }
+
+        /// <summary>主目标正在指引实际前进时的目标地点（Q131/Q139）；不是前进类主目标、或已在目标处为 null。</summary>
+        private string? TravelTarget(GameState s)
+        {
+            var exit = Config.Prologue.Exit;
+            var here = s.CurrentLocation;
+            string? target;
+            switch (s.Prologue.ObjectiveId)
+            {
+                case "visitor_return": target = Config.Prologue.Visitor.LocationId; break;
+                case "exit_go": target = here == exit.From ? exit.To : exit.From; break;
                 case "exit_need":
-                    if (!s.Story.TutorialWon && !s.Story.Legacy) return LocFocus(s, Config.Story.TutorialBattle.LocationId);
-                    if (!s.Progress.Flags.Contains(FactCampRouteKnown)) return LocFocus(s, Config.Prologue.Visitor.LocationId);
-                    return LocFocus(s, exit.From);
+                    if (!s.Story.TutorialWon && !s.Story.Legacy) target = Config.Story.TutorialBattle.LocationId;
+                    else if (!s.Progress.Flags.Contains(FactCampRouteKnown)) target = Config.Prologue.Visitor.LocationId;
+                    else target = exit.From;
+                    break;
                 case "route_onward":
                 {
                     var leg = Config.Prologue.Journey.Legs.FirstOrDefault(l => !Visited(s, l.To));
-                    return leg == null ? null : LocFocus(s, s.CurrentLocation == leg.From ? leg.To : leg.From);
+                    target = leg == null ? null : here == leg.From ? leg.To : leg.From;
+                    break;
                 }
-                case "PRO04": return LocFocus(s, Config.Story.TutorialBattle.LocationId);
-                case "PRO15": return s.CurrentLocation == "village" ? "doc:relief_page_village" : LocFocus(s, "village");
+                case "PRO04": target = Config.Story.TutorialBattle.LocationId; break;
+                case "PRO15": target = here == "village" ? null : "village"; break;
+                default: target = null; break;
             }
-            return null;
+            return string.IsNullOrEmpty(target) || target == here ? null : target;
         }
 
         /// <summary>
-        /// 走向 target 的真实下一路段：已开通、已知的边上最短路的第一段；中途还有未开通的边时，按已知地点之间的边（不论开通）取最少段数路线的第一段
-        /// （例：荒地→村庄未开通时，从营地仍指向荒地；相邻栏会写所需条件）。已在目标或完全不连通为 null。只读。
+        /// 前进类主目标的下一真实路段（Q139 选 B，只读）：先找已开通、两端已知的路（<see cref="MapPathTo"/>）的第一段；没有时沿真实物理连接
+        /// （全部可从这一端出发的边，最少段数，同段数按配置顺序；不按屏幕方位猜）取第一段，再按玩家是否已知分类——
+        /// 边已揭示且那一端已发现：已开通为 KnownOpen，未开通为 KnownBlocked（原因用相邻栏同一句领域可公开原因）；
+        /// 否则未知：当前地点可探索且未满 100% 为 UnknownExplore，不能再探索为 UnknownNoExplore。不是前进类主目标或不连通为 null。
         /// </summary>
-        private string? LocFocus(GameState s, string target)
+        public TravelSegmentView? NextTravelSegment(GameState s)
         {
-            if (string.IsNullOrEmpty(target) || s.CurrentLocation == target) return null;
-            var path = MapPathTo(s, target);
-            if (path != null && path.Count > 0) return "loc:" + path[0].To;
+            if (!PrologueEnabled) return null;
+            var target = TravelTarget(s);
+            if (target == null) return null;
             var here = s.CurrentLocation;
-            // 试玩修复 M298：下一段的地点还没发现（也没揭示通往它的路线）时不泄露它：直接相邻的，点亮当前地点卡（探索入口；
-            // 按现有发现规则，从这一端探索到 100% 才揭示外出路线与门槛条件）；不相邻的不点亮
-            if (!Known(s, target))
-                return EdgesAt(here).Any(e => e.TraversableFrom(here) && e.Other(here) == target) ? "loc:" + here : null;
-            var prev = new Dictionary<string, string> { [here] = "" };
+            var path = MapPathTo(s, target);
+            if (path != null && path.Count > 0) return new TravelSegmentView { Kind = TravelSegmentKind.KnownOpen, NodeId = path[0].To, Target = target };
+            var first = PhysicalFirstStep(here, target);
+            if (first == null) return null;
+            var (edge, node) = first.Value;
+            if (EdgeRevealed(s, edge) && Known(s, node))
+            {
+                return EdgeOpen(s, edge)
+                    ? new TravelSegmentView { Kind = TravelSegmentKind.KnownOpen, NodeId = node, Target = target }
+                    : new TravelSegmentView { Kind = TravelSegmentKind.KnownBlocked, NodeId = node, Target = target, Reason = GateBlockedReason(s, edge) };
+            }
+            var explorable = _locs.TryGetValue(here, out var lc) && lc.ExploreEnabled && s.Locations.TryGetValue(here, out var ls) && ls.Progress < 100;
+            return new TravelSegmentView { Kind = explorable ? TravelSegmentKind.UnknownExplore : TravelSegmentKind.UnknownNoExplore, Target = target };
+        }
+
+        /// <summary>真实物理连接上从 from 到 target 最少段数路线的第一段（边与下一端）；不连通为 null。只读，不看玩家是否已知。</summary>
+        private (EdgeConfig Edge, string Node)? PhysicalFirstStep(string from, string target)
+        {
+            var prev = new Dictionary<string, (string From, EdgeConfig Edge)>();
+            var seen = new HashSet<string> { from };
             var queue = new Queue<string>();
-            queue.Enqueue(here);
+            queue.Enqueue(from);
             while (queue.Count > 0)
             {
                 var u = queue.Dequeue();
@@ -953,15 +1038,45 @@ namespace Survival.Core.Engine
                 {
                     if (!e.TraversableFrom(u)) continue;
                     var v = e.Other(u);
-                    if (prev.ContainsKey(v) || !Known(s, v)) continue;
-                    prev[v] = u;
+                    if (!seen.Add(v)) continue;
+                    prev[v] = (u, e);
                     queue.Enqueue(v);
                 }
             }
             if (!prev.ContainsKey(target)) return null;
             var at = target;
-            while (prev[at] != here) at = prev[at];
-            return "loc:" + at;
+            while (prev[at].From != from) at = prev[at].From;
+            return (prev[at].Edge, at);
+        }
+
+        /// <summary>
+        /// Q139 的下一步句（策划原文）：未知且可探索 →“先探索当前地点，找到通往下一段的路。”；未知且不能探索 →“查看当前已知路线与通行条件。”
+        /// （所有前进类主目标）。已知可走/已知未开通两句只替换出区之后“沿旧公路、检查哨、营门逐段前进”（route_onward）那句泛指的下一步，
+        /// 其余前进类主目标在下一段已知时保留 Q129 原下一步（开发假设 B14a-3）。不替换时为 null。
+        /// </summary>
+        private string? TravelStepText(GameState s, TravelSegmentView? seg)
+        {
+            var ts = Config.Prologue.TravelStep;
+            if (seg == null) return null;
+            switch (seg.Kind)
+            {
+                case TravelSegmentKind.UnknownExplore: return NonEmpty(ts.Explore);
+                case TravelSegmentKind.UnknownNoExplore: return NonEmpty(ts.UnknownNoExplore);
+                case TravelSegmentKind.KnownOpen when s.Prologue.ObjectiveId == "route_onward":
+                    return NonEmpty(ts.KnownOpen)?.Replace("{实际下一相邻地点名}", LocName(seg.NodeId!));
+                case TravelSegmentKind.KnownBlocked when s.Prologue.ObjectiveId == "route_onward":
+                    return NonEmpty(ts.KnownBlocked)?.Replace("{已发现地点名}", LocName(seg.NodeId!)).Replace("{领域可公开原因}", PublicReason(seg.Reason));
+                default: return null;
+            }
+        }
+
+        private static string? NonEmpty(string t) => string.IsNullOrEmpty(t) ? null : t;
+
+        /// <summary>相邻栏的未开通原因“需要：A；B”放进“……的路线条件：{原因}。”时去掉“需要：”前缀与句末句号，避免重复标点。</summary>
+        private static string PublicReason(string reason)
+        {
+            var r = reason.StartsWith("需要：") ? reason.Substring(3) : reason;
+            return r.TrimEnd('。');
         }
 
         // ───────────────────────── 开发入口 ─────────────────────────

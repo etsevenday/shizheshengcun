@@ -20,6 +20,11 @@ namespace Survival.Core.Config
         public List<PrologueSpecialObjectiveConfig> SpecialObjectives { get; set; } = new List<PrologueSpecialObjectiveConfig>();
         /// <summary>按实际缺项替换的下一步短句（Q129 objectivePolicy.adaptiveSteps：PRO06、PRO14、exit_need）。</summary>
         public List<PrologueAdaptiveStepConfig> AdaptiveSteps { get; set; } = new List<PrologueAdaptiveStepConfig>();
+        /// <summary>主目标指引实际前进时按下一真实路段状态替换的下一步（Q139 选 B，objectivePolicy.travelNextStep）。</summary>
+        public PrologueTravelStepConfig TravelStep { get; set; } = new PrologueTravelStepConfig();
+        /// <summary>只在实际战斗内给操作提示的任务（Q140 选 B，guidancePolicy.nonContextFallback.battleOnlyHintTaskIds：PRO04）：
+        /// 战斗外没有有效上下文而回退主目标时，任务框只显示标题与下一步，不显示这些任务的系统提示。</summary>
+        public List<string> BattleOnlyHintTaskIds { get; set; } = new List<string>();
         public List<PrologueTaskConfig> Tasks { get; set; } = new List<PrologueTaskConfig>();
         public List<PrologueDialogueSetConfig> DialogueSets { get; set; } = new List<PrologueDialogueSetConfig>();
     }
@@ -116,6 +121,18 @@ namespace Survival.Core.Config
         public string Objective { get; set; } = "";
         public string When { get; set; } = "";
         public string Step { get; set; } = "";
+    }
+
+    /// <summary>
+    /// Q139 动态下一步的四句（策划原文，含占位符）：Explore 下一段未知且当前可探索未满 100；KnownOpen 下一段已知可走（{实际下一相邻地点名}）；
+    /// KnownBlocked 下一段已知未开通（{已发现地点名}、{领域可公开原因}）；UnknownNoExplore 下一段未知且当前不能再探索。
+    /// </summary>
+    public sealed class PrologueTravelStepConfig
+    {
+        public string Explore { get; set; } = "";
+        public string KnownOpen { get; set; } = "";
+        public string KnownBlocked { get; set; } = "";
+        public string UnknownNoExplore { get; set; } = "";
     }
 
     /// <summary>一项 PRO 教学目标（S15 §3 表、prologue-data tasks、narrative-texts taskTexts）。</summary>

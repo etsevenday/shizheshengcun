@@ -30114,7 +30114,7 @@
     }
   },
   "prologue": {
-    "source": "prologue-data.json + narrative-texts.json（Q32B 定稿）+ prologue-adjudications.json（Q128—Q133）；S15 §2—§8、A10-TUTOR",
+    "source": "prologue-data.json + narrative-texts.json（Q32B 定稿）+ prologue-adjudications.json（Q128—Q133、Q138—Q140）；S15 §2—§8、A10-TUTOR",
     "visitor": {
       "npcId": "npc_cheng_wang",
       "name": "程望",
@@ -30283,6 +30283,15 @@
         "when": "not_visited_village",
         "step": "先沿已知道路到访废弃村庄。"
       }
+    ],
+    "travelStep": {
+      "explore": "先探索当前地点，找到通往下一段的路。",
+      "knownOpen": "沿已知路线前往{实际下一相邻地点名}。",
+      "knownBlocked": "查看通往{已发现地点名}的路线条件：{领域可公开原因}。",
+      "unknownNoExplore": "查看当前已知路线与通行条件。"
+    },
+    "battleOnlyHintTaskIds": [
+      "PRO04"
     ],
     "tasks": [
       {

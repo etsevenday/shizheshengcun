@@ -536,9 +536,8 @@ public class B13PrologueTests : TestBase
         var h = E.CurrentHint(s);
         Assert.That(h, Is.Not.Null);
         E.DismissHint(s, h!.Value.TaskId);
-        Assert.That(E.CurrentHint(s)?.TaskId, Is.Not.EqualTo(h.Value.TaskId), "关闭后不再出这条（退回主目标的提示）");
-        E.DismissHint(s, E.CurrentHint(s)!.Value.TaskId);
-        Assert.That(E.CurrentHint(s), Is.Null);
+        // Q140 选 B（B14a）：退回主目标时主目标是首战（PRO04）而人在战斗外，只显示标题与下一步，不显示战斗操作提示
+        Assert.That(E.CurrentHint(s), Is.Null, "关闭后不再出这条；退回的主目标是战外 PRO04，不显示战斗提示");
         Assert.That(GameEngine.TaskDone(s, h.Value.TaskId), Is.False, "关闭不等于完成");
         Assert.That(E.PrologueTasks(s).Single(t => t.Config.Id == h.Value.TaskId).HintDismissed, Is.True);
         s.Prologue.DismissedHints.Clear();

@@ -12,6 +12,10 @@
 - B13d（Q128 选 C、Q129 选 B，2026-11-02）：prologue-data.json 的 goal（玩家“下一步”短句）、stageTexts（6 阶段标题与重点）、
   specialObjectiveTexts（6 种特殊主目标）直接导入，不再用本脚本里的静态表覆盖；prologue-adjudications.json 的 objectivePolicy.adaptiveSteps
   （PRO06/PRO14/exit_need 按实际缺项的下一步）一并导入，并断言 guides 的标题/hint/nextStep/done 与 prologue-data、narrative-texts 逐字一致。
+- B14a（Q139 选 B、Q140 选 B，2026-11-02）：objectivePolicy.travelNextStep（下一真实路段未知/已知可走/已知未开通/未知且不能探索四句）
+  与 guidancePolicy.nonContextFallback.battleOnlyHintTaskIds（战外不作主目标回退提示的战斗类任务，PRO04）导入，断言与 prologue-data
+  的 objectiveTravelNextStep、guideNonContextFallback 同源；Q138 的来源分类（legacyPolicy.originClassification = visitor.runOriginPolicy）
+  只断言同源，引擎按可信来源标记（Legacy / 从 schema 21 及以前迁入的 MigratedAt）判定，不需要配置。
 
 可重复运行，结果相同（先删掉本脚本上次写入的对白再追加）。
 用法：python tools/import-b13-prologue.py
@@ -64,6 +68,11 @@ def main():
     guides = {g["taskId"]: g for g in adj["guides"]}
     assert len(guides) == 18
     assert pro["stageTexts"] == adj["stages"] and pro["specialObjectiveTexts"] == adj["specialObjectives"]
+    # Q138—Q140（B14a）：合同与主数据同源
+    travel = adj["objectivePolicy"]["travelNextStep"]
+    fallback = adj["guidancePolicy"]["nonContextFallback"]
+    assert travel == pro["objectiveTravelNextStep"] and fallback == pro["guideNonContextFallback"]
+    assert adj["legacyPolicy"]["originClassification"] == pro["visitor"]["runOriginPolicy"]
 
     def lines_of(set_id):
         return [{"lineId": l["lineId"], "speaker": SPEAKER[l["speaker"]], "text": l["text"]} for l in sets[set_id]["lines"]]
@@ -111,7 +120,7 @@ def main():
     assert exit_edge["gate"] == "QMAP01" and exit_edge["baseMinutes"] == 30
 
     cfg["prologue"] = {
-        "source": "prologue-data.json + narrative-texts.json（Q32B 定稿）+ prologue-adjudications.json（Q128—Q133）；S15 §2—§8、A10-TUTOR",
+        "source": "prologue-data.json + narrative-texts.json（Q32B 定稿）+ prologue-adjudications.json（Q128—Q133、Q138—Q140）；S15 §2—§8、A10-TUTOR",
         "visitor": {
             "npcId": v["npcId"],
             "name": v["name"],
@@ -148,6 +157,13 @@ def main():
         "specialObjectives": [{"id": x["id"], "title": x["title"], "step": x["step"]} for x in pro["specialObjectiveTexts"]],
         "adaptiveSteps": [{"objective": k, "when": w["when"], "step": w["step"]}
                           for k, ws in adj["objectivePolicy"]["adaptiveSteps"].items() for w in ws],
+        "travelStep": {
+            "explore": travel["step"],
+            "knownOpen": travel["knownAndOpenStep"],
+            "knownBlocked": travel["knownButBlockedStep"],
+            "unknownNoExplore": travel["unknownAndCannotExploreStep"],
+        },
+        "battleOnlyHintTaskIds": list(fallback["battleOnlyHintTaskIds"]),
         "tasks": tasks,
         "dialogueSets": [{"id": k, "title": SET_TITLES.get(k, "序章"), "repeatable": k in REPEATABLE}
                          for k in list(SET_TITLES.keys()) + [t["reactionSet"] for t in tasks]],
@@ -157,8 +173,13 @@ def main():
             if d["id"] == t["reactionSet"]:
                 d["title"] = t["title"]
 
-    # story.dialogues：先去掉上次导入的（id 以 NTL_ 开头），再按 set 追加；eventId = dialogueSetId
-    dl = [d for d in cfg["story"]["dialogues"] if not d["id"].startswith("NTL_")]
+    # story.dialogues：先去掉本脚本上次导入的（id 以 NTL_ 开头且属本脚本的对白组；B14 城市对白同为 NTL_ 编号，不能一并删掉），
+    # 再按 set 追加；eventId = dialogueSetId
+    own = set(SET_TITLES.keys()) | {t["reactionSet"] for t in tasks}
+    old_dl = cfg["story"]["dialogues"]
+    mine = [i for i, d in enumerate(old_dl) if d["id"].startswith("NTL_") and d["eventId"] in own]
+    at = mine[0] if mine else len(old_dl)   # 放回原位置（不打乱其他脚本导入的对白顺序）
+    dl = []
     for sid in SET_TITLES.keys():
         if sid == "visitor_arrival_away":
             continue
@@ -167,14 +188,17 @@ def main():
     for t in tasks:
         for l in lines_of(t["reactionSet"]):
             dl.append({"id": l["lineId"], "eventId": t["reactionSet"], "speaker": l["speaker"], "text": l["text"], "note": ""})
-    cfg["story"]["dialogues"] = dl
+    rest = [d for i, d in enumerate(old_dl) if i not in set(mine)]
+    head = [d for i, d in enumerate(old_dl[:at]) if i not in set(mine)]
+    cfg["story"]["dialogues"] = head + dl + rest[len(head):]
 
     # B11 写的“后续版本开放”说明改为真实来源
     cfg["map"]["factLabels"]["camp_route_known"] = "在临时营地与来客程望交谈，得知营区路线"
 
     with open(CONFIG, "w", encoding="utf-8", newline="\n") as f:
         json.dump(cfg, f, ensure_ascii=False, indent=2)
-    print(f"prologue：{len(tasks)} 项任务、{len(dl)} 条对白（含原 7 条）、路线 {cfg['prologue']['journey']['baseMinutesTotal']} 分钟")
+        f.write("\n")
+    print(f"prologue：{len(tasks)} 项任务、{len(dl)} 条序章对白、路线 {cfg['prologue']['journey']['baseMinutesTotal']} 分钟")
 
 
 if __name__ == "__main__":

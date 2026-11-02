@@ -303,7 +303,7 @@ public class B13dGuideTests : BattleTestBase
         ReadDialogues(w);
         o = E.CurrentObjective(w)!;
         Assert.That((o.Id, o.Title, o.Step), Is.EqualTo(("exit_need", "前往幸存者营区寻找医疗帮助", "先沿已知道路到访废弃村庄。")), "按实际缺项，不显示“按真实缺项显示”这句说明");
-        Assert.That(E.ObjectiveFocus(w), Is.Null, "村庄还没发现、也不与营地相邻：不点亮、不泄露（M298）");
+        Assert.That(E.ObjectiveFocus(w), Is.EqualTo("loc:field"), "村庄还没发现：沿真实物理段，下一段营地→荒地已知可走，点亮荒地（Q139 选 B，B14a 取代 M298 的“不相邻不点亮”）；不点亮未知的村庄");
         w.Locations["village"].Discovered = true;
         Assert.That(E.ObjectiveFocus(w), Is.EqualTo("loc:field"), "村庄已知而荒地—村庄未开通：指向真实下一路段");
     }
