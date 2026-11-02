@@ -274,6 +274,8 @@
 
     private void DevDone(string text)
     {
+        // 试玩修复 M269 P8：先把内核事件（来客 Notice 等）送进结果提示，开发说明另写在 Notice，两条都能看到
+        G.FlushEvents();
         G.Notice = text;
         G.Save();
         G.Panel = null;

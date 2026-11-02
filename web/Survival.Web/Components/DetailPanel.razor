@@ -26,6 +26,8 @@
         <button type="button" role="tab" aria-selected="@(shownTab == DetailTab.Character)" class="@(shownTab == DetailTab.Character ? "on" : "")"
                 @onclick="() => G.SetDetailTab(DetailTab.Character)">人物</button>
     </div>
+    @* B13 序章任务框（试玩修复 M269：从地图卡内移到这里，三档都能直接看到、不压任何按钮） *@
+    <TaskCorner />
     <div class="detail-body" role="tabpanel">
     @if (G.BattleFullscreen)
     {

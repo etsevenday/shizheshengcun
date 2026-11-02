@@ -1,8 +1,10 @@
 @inherits GameComponent
 
 @* 设施栏的人物组与可查看对象（开发计划 v0.9 B13，S15 §5、A10-TUTOR §6）：
-   人物卡（首个 NPC 卡框架：B13 只有来客程望，B14 城市岗位在内核 NpcsHere 里扩展）与火堆/棚/床同栏共存，卡内明确“交谈”（0 分钟），不占物资卡与队伍容量；
-   固定文书/路标卡（PRO15 救助残页、村庄南口路标）“查看”0 分钟，可重读。当前主目标指向的那张卡轻量点亮（细金框，不遮按钮）。 *@
+   人物卡（首个 NPC 卡框架：B13 只有来客程望，B14 城市岗位在内核 NpcsHere 里扩展）与火堆/棚/床同栏共存，“交谈”0 分钟，不占物资卡与队伍容量；
+   固定文书/路标卡（PRO15 救助残页、村庄南口路标）“查看”0 分钟，可重读。当前主目标指向的那张卡轻量点亮（细金框，不遮按钮）。
+   试玩修复 M269：两种卡改用资源卡同一套设施行布局（res-card：上图下文、右侧单个主按钮，卡高跟设施行），不再超出设施行被当前地面栏盖住；
+   点卡片本身也直接交谈/查看；“远行准备”入口移到任务框与任务册。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -20,26 +22,17 @@
             {
                 var why = busy ? "行动进行中" : n.TalkBlocked;
                 var id = n.NpcId;
-                <ObjectCard @key="@("npc-" + id)" Id="@($"npc-{id}")" CssClass="@($"npc-card{(focus == "npc:" + id ? " tut-lit" : "")}")" Title="@n.Name" Badge="@(n.HasNews ? "来客" : "可交谈")" BadgeClass="@(n.HasNews ? "new" : "")"
-                            Tooltip="@($"{n.Name}：{n.Role}。交谈不耗时，不赠物资、不改变身体状态；不是队友")">
+                <ObjectCard @key="@("npc-" + id)" Id="@($"npc-{id}")" CssClass="@($"res-card npc-card{(focus == "npc:" + id ? " tut-lit" : "")}")" Title="@n.Name" Badge="@(n.HasNews ? "来客" : "可交谈")" BadgeClass="@(n.HasNews ? "new" : "")"
+                            Tooltip="@($"{n.Name}：{n.Role}。{n.Status}。点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；不是队友）")" OnClick="() => Talk(id, why)">
                     <Art><img class="npc-portrait" src="img/portraits/unknown.svg" alt="@($"{n.Name}（临时形象）")" draggable="false" /></Art>
                     <ChildContent>
-                        <div class="oc-line" title="@n.Role">@n.Role</div>
-                        <div class="oc-line @(n.HasNews ? "good-line" : "")" title="@n.Status">@n.Status</div>
-                        @if (why != null) { <div class="oc-line warn-line" title="@why">@why</div> }
+                        <div class="oc-line" title="@($"{n.Role} · {n.Status}")">@(why ?? n.Status)</div>
                     </ChildContent>
                     <Footer>
                         <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? "交谈（0分钟）")"
-                                @onclick="() => G.TalkNpc(id)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                @onclick="() => Talk(id, why)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
                             <strong>交谈</strong><small>0分钟</small>
                         </button>
-                        @if (s.Progress.Flags.Contains(GameEngine.FactCampRouteKnown))
-                        {
-                            <button type="button" class="loc-btn res-btn" disabled="@G.DialogueLocked" title="查看路线、当前状态与随身预览，确认远行准备（不耗时）"
-                                    @onclick='() => G.OpenPanel("journey")' @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
-                                <strong>远行准备</strong>
-                            </button>
-                        }
                     </Footer>
                 </ObjectCard>
             }
@@ -55,16 +48,15 @@
             {
                 var why = busy ? "行动进行中" : d.ReadBlocked;
                 var id = d.Id;
-                <ObjectCard @key="@("doc-" + id)" Id="@($"doc-{id}")" CssClass="@($"doc-card{(focus == "doc:" + id ? " tut-lit" : "")}")" Title="@d.Title" Badge="0分钟"
-                            Tooltip="@($"{d.Title}：查看不耗时，不移动、不揭开未知地点；可重读")">
+                <ObjectCard @key="@("doc-" + id)" Id="@($"doc-{id}")" CssClass="@($"res-card doc-card{(focus == "doc:" + id ? " tut-lit" : "")}")" Title="@d.Title"
+                            Tooltip="@($"{d.Title}：{d.Status}。点卡片或“查看”阅读（不耗时，不移动、不揭开未知地点；可重读）")" OnClick="() => Read(id, why)">
                     <Art>@Icons.Markup(id == "village_south_sign" ? "route" : "placeholder")</Art>
                     <ChildContent>
-                        <div class="oc-line" title="@d.Status">@d.Status</div>
-                        @if (why != null) { <div class="oc-line warn-line" title="@why">@why</div> }
+                        <div class="oc-line" title="@d.Status">@(why ?? d.Status)</div>
                     </ChildContent>
                     <Footer>
                         <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? "查看（0分钟）")"
-                                @onclick="() => G.ReadDocument(id)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                @onclick="() => Read(id, why)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
                             <strong>查看</strong><small>0分钟</small>
                         </button>
                     </Footer>
@@ -72,4 +64,18 @@
             }
         </div>
     </div>
+}
+
+@code {
+    private void Talk(string id, string? why)
+    {
+        if (why != null) { G.Notice = why; G.Notify(); return; }
+        G.TalkNpc(id);
+    }
+
+    private void Read(string id, string? why)
+    {
+        if (why != null) { G.Notice = why; G.Notify(); return; }
+        G.ReadDocument(id);
+    }
 }

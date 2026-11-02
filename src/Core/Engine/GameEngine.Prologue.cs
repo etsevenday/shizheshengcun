@@ -290,6 +290,9 @@ namespace Survival.Core.Engine
 
         public static bool VisitorRegistered(GameState s) => s.Progress.Flags.Contains(FactVisitorAvailable);
 
+        /// <summary>旧档“可选择接续”：Legacy 或从 schema 21 及以前迁移进来的存档，来客不自动弹抵达对白，点“交谈”才接续。</summary>
+        public static bool OptInVisitor(GameState s) => s.Story.Legacy || s.Prologue.MigratedAt != null;
+
         private void CheckVisitor(GameState s)
         {
             var v = Config.Prologue.Visitor;
@@ -300,11 +303,14 @@ namespace Survival.Core.Engine
                 if (InCombatFlow(s) || !VisitorConditionsMet(s)) return;
                 s.Progress.Flags.Add(FactVisitorAvailable);
                 p.VisitorAvailableAt = s.GameMinute;
-                p.VisitorLate = s.Story.Legacy || (s.Story.TutorialWonMinute is int won && won > v.NotBeforeWorldMinute);
+                // 晚到：首战胜利晚于阈值；旧档等效；或迁移档在迁移时已过阈值（胜利时刻没有记录，来客是“迟来”的）
+                p.VisitorLate = s.Story.Legacy || (s.Story.TutorialWonMinute is int won && won > v.NotBeforeWorldMinute)
+                                || (s.Story.TutorialWonMinute == null && p.MigratedAt is int mig && mig >= v.NotBeforeWorldMinute);
             }
             if (p.VisitorArrivalShown || s.Progress.Flags.Contains(FactVisitorMet)) return;
-            // 旧档“可选择接续序章”（S15 §7）：不自动弹抵达对白，营地设施栏出现人物卡，玩家点“交谈”时才播（开发假设 B13-H6）
-            if (s.Story.Legacy)
+            // 旧档“可选择接续序章”（S15 §7）：Legacy 与所有从旧版本迁移进来的存档都不自动弹抵达对白，营地设施栏出现人物卡，
+            // 玩家点“交谈”时才播（开发假设 B13-H6；试玩修复 M269 P4 统一到迁移档）
+            if (OptInVisitor(s))
             {
                 if (s.CurrentLocation != v.LocationId && !p.VisitorNotified && !InCombatFlow(s))
                 {
@@ -604,14 +610,14 @@ namespace Survival.Core.Engine
             {
                 case "visitor_talk": return new PrologueObjectiveView { Id = p.ObjectiveId, TaskId = "PRO16", Title = $"与来客{v.Name}交谈", Step = $"在设施栏的人物卡上点“交谈”（不耗时）" };
                 case "visitor_return": return new PrologueObjectiveView { Id = p.ObjectiveId, TaskId = "PRO16", Title = $"回{LocName(v.LocationId)}，与来客交谈", Step = $"有人在{LocName(v.LocationId)}等候；沿已知道路返回（不会传送，来客不会离开）" };
-                case "exit_go": return new PrologueObjectiveView { Id = p.ObjectiveId, TaskId = "PRO18", Title = "前往幸存者营区寻找医疗帮助", Step = $"沿{LocName(exit.From)}南口前往{LocName(exit.To)}（需真实移动）" };
+                case "exit_go": return new PrologueObjectiveView { Id = p.ObjectiveId, TaskId = "PRO18", Title = "前往幸存者营区寻找医疗帮助", Step = $"沿{LocName(exit.From)}南口前往{LocName(exit.To)}（要实际走过去）" };
                 case "exit_need": return new PrologueObjectiveView { Id = p.ObjectiveId, TaskId = "PRO18", Title = "前往幸存者营区寻找医疗帮助", Step = ExitNeedText(s) };
-                case "route_onward": return new PrologueObjectiveView { Id = p.ObjectiveId, Title = "前往幸存者营区寻找医疗帮助", Step = "旧公路→检查哨→营门→营区：按原边逐段走，探清前路" };
+                case "route_onward": return new PrologueObjectiveView { Id = p.ObjectiveId, Title = "前往幸存者营区寻找医疗帮助", Step = "旧公路→检查哨→营门→营区：沿道路一段一段走，边走边探清前路" };
                 case "settle": return new PrologueObjectiveView { Id = p.ObjectiveId, Title = StageOf("D5")?.Headline ?? "", Step = "继续整备与可选探索" };
             }
             var t = ProTask(p.ObjectiveId);
             if (t == null) return null;
-            return new PrologueObjectiveView { Id = t.Id, TaskId = t.Id, Title = StageOf(p.StageId)?.Headline ?? t.Title, Step = $"{t.Title}：{t.CompletionRule}" };
+            return new PrologueObjectiveView { Id = t.Id, TaskId = t.Id, Title = StageOf(p.StageId)?.Headline ?? t.Title, Step = $"{t.Title}：{GoalText(t)}" };
         }
 
         /// <summary>出区还缺哪项（A10-TUTOR §6“日志显示缺哪项”）。</summary>
@@ -629,7 +635,10 @@ namespace Survival.Core.Engine
         /// <summary>当前建议（最多两条）。</summary>
         public List<PrologueObjectiveView> CurrentSuggestions(GameState s) =>
             s.Prologue.Suggestions.Select(ProTask).Where(t => t != null)
-                .Select(t => new PrologueObjectiveView { Id = t!.Id, TaskId = t.Id, Title = t.Title, Step = t.CompletionRule }).ToList();
+                .Select(t => new PrologueObjectiveView { Id = t!.Id, TaskId = t.Id, Title = t.Title, Step = GoalText(t) }).ToList();
+
+        /// <summary>任务的玩家可读说明（白话；旧配置没有时退回策划原句）。</summary>
+        public static string GoalText(PrologueTaskConfig t) => string.IsNullOrEmpty(t.Goal) ? t.CompletionRule : t.Goal;
 
         /// <summary>
         /// 当前要显示的那一条中性系统提示（同一时刻最多一条）：主目标对应任务的 PROxx_hint，已关闭或已暂停提示时为 null。

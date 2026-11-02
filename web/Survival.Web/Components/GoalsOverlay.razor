@@ -65,11 +65,11 @@
                         {
                             var c = t.Config;
                             var mark = t.Done ? "✓" : t.Relevant ? "○" : "·";
-                            <li class="@(t.Done ? "done" : "") @(t.Relevant || t.Done ? "" : "later")" title="@($"{c.Guidance}；{c.ExitGateText}")">
+                            <li class="@(t.Done ? "done" : "") @(t.Relevant || t.Done ? "" : "later")">
                                 <span class="goal-mark" aria-hidden="true">@mark</span>
                                 <span class="goal-task">
-                                    <b>@c.Id @c.Title</b>@if (c.ExitGate) {<em class="goal-gate">出区条件</em>}
-                                    <small>@c.CompletionRule</small>
+                                    <b>@c.Title</b>@if (c.ExitGate) {<em class="goal-gate">出区相关</em>}
+                                    <small>@GameEngine.GoalText(c)</small>
                                     @if (t.Done)
                                     {
                                         <small class="good-text">@(t.Retro ? "旧档追认" : $"已完成 · {Clock.DayTime(t.CompletedAt ?? 0)}")</small>

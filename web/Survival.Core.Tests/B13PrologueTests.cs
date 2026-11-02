@@ -544,4 +544,66 @@ public class B13PrologueTests : TestBase
         E.SetHintsPaused(s, false);
         Assert.That(E.CurrentHint(s), Is.Not.Null);
     }
+
+    // ───────────── 试玩修复 M269 ─────────────
+
+    /// <summary>P5：任务角/任务册给玩家看的文字不含内部 ID 与规则缩写（地点用显示名）。</summary>
+    [Test]
+    public void M269_P5_PlayerTextsHaveNoInternalIds()
+    {
+        var bad = new System.Text.RegularExpressions.Regex(@"[A-Za-z_]{3,}|tick|S15|R07|N或W");
+        foreach (var t in Cfg.Prologue.Tasks)
+            Assert.That(bad.IsMatch(GameEngine.GoalText(t)), Is.False, t.Id + "：" + GameEngine.GoalText(t));
+        var s = NewStory();
+        ReadDialogues(s);
+        Assert.That(E.CurrentObjective(s)!.Step, Does.Contain("农野荒地").And.Not.Contain("S15"));
+        Assert.That(E.CurrentSuggestions(s).All(x => !bad.IsMatch(x.Step)), Is.True);
+    }
+
+    /// <summary>P4：非 Legacy 的 schema 21 旧档在营地、已过第5日08:00：迁移后不自动弹抵达对白；点交谈才接续，用晚到对白；有饱饱时照常有饱饱台词。</summary>
+    [Test]
+    public void M269_P4_MigratedSave_NoAutoArrival_TalkContinues()
+    {
+        var s = Won();
+        s.GameMinute = 6300;
+        s.Story.TutorialWonMinute = null;   // schema 21 没有这个字段
+        var j = JObject.Parse(SaveSerializer.Serialize(s));
+        j["SchemaVersion"] = "21";
+        j.Remove("Prologue");
+        var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out _);
+        Assert.That(m.Prologue.MigratedAt, Is.EqualTo(6300));
+        Assert.That(m.Progress.Flags.Contains(GameEngine.FactVisitorAvailable), Is.True);
+        Assert.That(E.DialogueLocked(m), Is.False, "迁移档不自动弹抵达对白");
+        E.PrologueBoundary(m);
+        Assert.That(E.DialogueLocked(m), Is.False);
+        Assert.That(E.NpcsHere(m), Has.Count.EqualTo(1));
+        Assert.That(E.TalkNpc(m, "npc_cheng_wang").Ok, Is.True);
+        Assert.That(E.ActiveDialogue(m)!.EventId, Is.EqualTo("visitor_late_or_legacy"));
+        ReadDialogues(m);
+        Assert.That(m.Progress.Flags.Contains(GameEngine.FactCampRouteKnown), Is.True);
+        Assert.That(m.Story.DialogueLog.Any(d => d.EventId == "visitor_after_route_baobao"), Is.True, "原局饱饱在体内：交谈后照常有饱饱台词");
+    }
+
+    /// <summary>P7：真实走到村庄与开发入口“按实际到达处理”的传送都触发 PRO15 到达反应（各自一次）。</summary>
+    [Test]
+    public void M269_P7_VillageArrivalReaction_RealAndDevTeleport()
+    {
+        var s = Won();
+        E.DebugUnlockEdge(s, "field__village");
+        Start(s, ActionRequest.Travel("field"));
+        Run(s);
+        ReadDialogues(s);
+        Start(s, ActionRequest.Travel("village"));
+        Run(s);
+        Assert.That(E.ActiveDialogue(s)?.EventId, Is.EqualTo("PRO15_reaction"), "真实到达");
+        ReadDialogues(s);
+
+        var t = Won();
+        E.DebugMapTeleport(t, "village");
+        Assert.That(E.ActiveDialogue(t)?.EventId, Is.EqualTo("PRO15_reaction"), "按实际到达处理的传送");
+        ReadDialogues(t);
+        E.DebugMapTeleport(t, "camp");
+        ReadDialogues(t);
+        Assert.That(GameEngine.TaskDone(t, "PRO14"), Is.True, "传送也走往返钩子");
+    }
 }

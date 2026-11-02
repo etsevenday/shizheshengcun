@@ -1344,33 +1344,31 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .mat-grid .irow.mat-row { padding-top: 3px; padding-bottom: 3px; }
 .give-confirm .btn-row button { white-space: nowrap; width: auto; min-width: 0; padding: 4px 14px; }
 
-/* B13 序章任务角（A10-TUTOR §3）：当前地图卡内右上角（地名条下方），1 主目标 + 建议入口 + 至多一条系统提示；不新增行、不撑高、不遮相邻卡 */
-.task-corner { position: absolute; right: 12px; top: 48px; z-index: 3; width: min(46%, 330px); max-height: calc(100% - 120px); overflow-y: auto;
-  background: #0d1714e6; border: 1px solid #93815e; border-radius: 4px; padding: 6px 8px; font-size: 14px; line-height: 1.45; color: #e6e1cf; cursor: default; box-shadow: 0 2px 6px #000a; }
-.task-corner.folded { width: auto; padding: 0; overflow: visible; background: transparent; border: none; box-shadow: none; }
-.task-corner .tc-fold { display: inline-flex; align-items: center; gap: 4px; background: #0d1714e6; border: 1px solid #93815e; color: var(--accent); border-radius: 4px; padding: 3px 8px; font-size: 14px; cursor: pointer; }
-.task-corner .tc-fold em { font-style: normal; font-size: 12px; background: var(--accent); color: #111; border-radius: 8px; padding: 0 5px; }
-.task-corner .tc-head { display: flex; justify-content: space-between; align-items: center; }
-.task-corner .tc-tag { font-size: 12px; color: var(--accent); letter-spacing: .05em; }
-.task-corner .tc-min { background: none; border: none; color: var(--muted); font-size: 16px; line-height: 1; cursor: pointer; padding: 0 4px; }
-.task-corner .tc-title { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.task-corner .tc-step { color: #cfd5c6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.task-corner .tc-row { display: flex; gap: 10px; margin-top: 3px; }
-.task-corner .tc-link { background: none; border: none; padding: 0; color: var(--accent); font-size: 13px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
-.task-corner .tc-link:disabled { color: var(--muted); cursor: not-allowed; }
-.task-corner .tc-sugg { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
-.task-corner .tc-sugg li { border-left: 2px solid #93815e; padding-left: 6px; }
-.task-corner .tc-sugg li span { display: block; color: #b9bfae; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.task-corner .tc-hint, .task-corner .tc-done { margin-top: 5px; border-top: 1px dashed #5d6656; padding-top: 4px; font-size: 13px; color: #cfd5c6; }
-.task-corner .tc-done { color: var(--good); }
+/* B13 序章任务框（A10-TUTOR §3；试玩修复 M269 从地图卡内移到右栏页签下方）：占布局、不浮在卡上；1 主目标 + 下一步 + 建议/任务册/远行准备 + 至多一条系统提示 */
+.task-box { flex: 0 0 auto; border: 1px solid #93815e; border-radius: 4px; padding: 5px 8px 6px; background: #0d1714; font-size: 14px; line-height: 1.4; color: #e6e1cf; }
+.task-box .tc-head { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.task-box .tc-tag { flex: 0 0 auto; font-size: 12px; color: var(--accent); letter-spacing: .05em; }
+.task-box .tc-title { flex: 1 1 auto; min-width: 0; font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.task-box .tc-min { flex: 0 0 auto; background: none; border: 1px solid #5d6656; border-radius: 3px; color: var(--muted); font-size: 14px; line-height: 1; cursor: pointer; padding: 1px 6px; }
+.task-box .tc-step { color: #cfd5c6; font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.task-box .tc-row { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 2px; }
+.task-box .tc-link { background: none; border: none; padding: 0; min-height: 0; color: var(--accent); font-size: 13px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.task-box .tc-link:disabled { color: var(--muted); cursor: not-allowed; }
+.task-box .tc-count { font-size: 12px; color: var(--muted); }
+.task-box .tc-sugg { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.task-box .tc-sugg li { border-left: 2px solid #93815e; padding-left: 6px; font-size: 13px; }
+.task-box .tc-sugg li span { display: block; color: #b9bfae; font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.task-box .tc-hint, .task-box .tc-done { margin-top: 4px; border-top: 1px dashed #5d6656; padding-top: 3px; font-size: 13px; color: #cfd5c6; }
+.task-box .tc-done { color: var(--good); }
 .tc-sys { display: inline-block; font-size: 11px; border: 1px solid #6f7a68; color: #b9c4b0; border-radius: 3px; padding: 0 4px; margin-right: 5px; vertical-align: 1px; }
-.task-corner .tc-hint-text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.task-corner .tc-hint-btns { display: flex; gap: 10px; margin-top: 2px; }
+.task-box .tc-hint-text { }
+.task-box .tc-hint-btns { display: flex; gap: 12px; margin-top: 1px; }
 /* 轻量点亮（A10-TUTOR §3）：细金框 + 柔和亮边，不加遮罩、不放大点击区，减少动态模式用静态框 */
 .ocard.tut-lit { outline: 2px solid #e1b665; outline-offset: 1px; box-shadow: 0 0 10px #e1b66588; animation: tutLit 2.4s ease-in-out 2; }
 @keyframes tutLit { 50% { box-shadow: 0 0 2px #e1b66533; } }
 @media (prefers-reduced-motion: reduce) { .ocard.tut-lit { animation: none; } }
-.npc-card .npc-portrait { width: 100%; height: 100%; object-fit: contain; }
+/* 人物卡/可查看卡沿用资源卡的设施行布局（res-card），高度跟设施行走（试玩修复 M269） */
+.npc-card .npc-portrait { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .npc-card .good-line, .goal-now .good-text { color: var(--good); }
 /* 任务册（生存目标） */
 .goal-now { border: 1px solid var(--accent); border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; }

@@ -844,6 +844,7 @@ namespace Survival.Core.Save
         private static void From21To22(GameState s, GameConfig config, List<string> notes)
         {
             s.Prologue ??= new PrologueState();
+            s.Prologue.MigratedAt ??= s.GameMinute;
             var engine = new Engine.GameEngine(config);
             var retro = engine.RetroPrologue(s);
             s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（新手序章：七日目标改为任务册" +

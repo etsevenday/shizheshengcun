@@ -48,6 +48,8 @@ namespace Survival.Core.State
         public bool HintsPaused { get; set; }
         /// <summary>重复打开的对白组计数（路线日志、路标、再问路线……），用于生成每次回看的独立对话记录编号。</summary>
         public int ReplaySeq { get; set; }
+        /// <summary>从 schema 21 及以前迁移进来时的世界分钟（新局为 null）：迁移档的来客不自动弹抵达对白（H6）。</summary>
+        public int? MigratedAt { get; set; }
         /// <summary>最近一项新完成的任务与世界分钟（任务角显示一次 PROxx_done 中性反馈）。</summary>
         public string LastDoneTask { get; set; } = "";
         public int LastDoneAt { get; set; }

@@ -366,6 +366,9 @@ public sealed class GameSession
     /// <summary>任务角已显示过的“最近完成”键（任务ID@分钟），会话内记住，任务角重建不重复闪。</summary>
     public string? TaskDoneSeen { get; set; }
 
+    /// <summary>开发入口等直接改状态后，把内核待发事件（如来客 Notice）送进结果提示与页脚（试玩修复 M269 P8）。</summary>
+    public void FlushEvents() => Drain();
+
     /// <summary>当前主目标要轻量点亮的对象（npc:ID、doc:ID、loc:ID），每次最多一个；没有为 null。</summary>
     public string? TutorialFocus => State == null || S.Progress.Dead ? null : E.ObjectiveFocus(S);
 

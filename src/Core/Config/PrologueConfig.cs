@@ -106,6 +106,8 @@ namespace Survival.Core.Config
         /// <summary>归并后的阶段 ID（D1—D5、mainline）。</summary>
         public string Stage { get; set; } = "";
         public string CompletionRule { get; set; } = "";
+        /// <summary>给玩家看的“要做什么”（开发方按 CompletionRule 改写的白话，地点用显示名；试玩修复 M269）。</summary>
+        public string Goal { get; set; } = "";
         public string Guidance { get; set; } = "";
         /// <summary>是不是离开门槛（PRO04 首战、PRO16 路线、PRO18 实际抵达）。</summary>
         public bool ExitGate { get; set; }

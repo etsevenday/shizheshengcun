@@ -378,8 +378,10 @@ namespace Survival.Core.Engine
             if (!_locs.ContainsKey(locationId)) return "开发：地点不存在";
             if (IsBusy(s)) return "开发：行动进行中或有敌踪/战斗，先结束再传送";
             var notes = new List<string>();
+            var from = s.CurrentLocation;
             s.CurrentLocation = locationId;
             Visit(s, locationId, notes);
+            NoteArrive(s, from, locationId);   // B13 试玩修复 P7：与真实到达同一序章钩子（往返、到达反应、出区抵达）
             UpdateFlags(s);
             return $"开发：已传送到{LocName(locationId)}" + (notes.Count > 0 ? "；" + string.Join("；", notes) : "") + "。";
         }

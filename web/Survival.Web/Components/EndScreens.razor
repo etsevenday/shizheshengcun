@@ -5,8 +5,16 @@
     var s = G.S;
     var e = G.E;
     var f = s.Progress.Flags;
-    // B13：七日检查退役（S15 §7），死亡结算列序章任务完成情况；七日成功窗不再出现
+    // B13：七日检查退役（S15 §7），死亡结算列序章任务完成情况；七日成功窗不再出现。
+    // 试玩修复 M269 P9：“出区条件”按 QMAP01 三条件（首战胜利或旧档等效、得知营区路线、到过废弃村庄），不再列 PRO04/16/18
     var proTasks = e.PrologueTasks(s);
+    var exitFrom = e.Config.Prologue.Exit.From;
+    var exitConds = new (string Label, bool Ok)[]
+    {
+        ("赢下首战（农野荒地的游荡尸）", s.Story.TutorialWon || s.Story.Legacy),
+        ("从来客处得知营区路线", f.Contains(GameEngine.FactCampRouteKnown)),
+        ($"到过{e.LocName(exitFrom)}", s.Locations.TryGetValue(exitFrom, out var exl) && exl.Visited),
+    };
     // B11：v3 地图有 143 个地点，“走遍”只数新手区 8 地点；总数不泄露未知地点（S02 §4）
     var starter = G.E.Config.Locations.Where(l => l.IsStarter).Select(l => l.Id).ToList();
     var visited = starter.Count(id => s.Locations.TryGetValue(id, out var ls) && ls.Visited);
@@ -31,9 +39,9 @@
                 <div><span>已访问地点</span><b>@(visitedAll)处（新手区@(visited)/@(starter.Count)）</b></div>
                 <div><span>种子</span><b>@s.Seed</b></div>
             </div>
-            <div class="eyebrow">序章任务 @(proTasks.Count(t => t.Done))/@(proTasks.Count)</div>
+            <div class="eyebrow">序章任务 @(proTasks.Count(t => t.Done))/@(proTasks.Count) · 出区条件</div>
             <ul class="checklist">
-                @foreach (var t in proTasks.Where(t => t.Config.ExitGate)) { <li class="@(t.Done ? "done" : "")">@t.Config.Title</li> }
+                @foreach (var c in exitConds) { <li class="@(c.Ok ? "done" : "")">@c.Label</li> }
             </ul>
             <div class="btn-row">
                 <button class="primary" @onclick="Restart">重新开始</button>

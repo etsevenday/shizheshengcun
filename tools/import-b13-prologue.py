@@ -51,6 +51,29 @@ SET_TITLES = {
 REPEATABLE = {"visitor_route_repeat", "visitor_not_ready", "PRO15_relief_note", "village_south_sign",
               "village_south_sign_route_unknown", "camp_route_log"}
 
+# 任务角/任务册给玩家看的“要做什么”（试玩修复 M269 P5）：策划 completionRule 是规则口径（含 S15/R07/tick/N/W/地点 ID 等内部写法），
+# 这里按同一规则改写成白话，地点用显示名，不改判定。系统提示仍用策划定稿的 PROxx_hint 原文。
+GOALS = {
+    "PRO01": "第一次选中地面或随身的一张物资卡，看看能做什么（只看不耗时）",
+    "PRO02": "吃或喝一次，让饱食或水分实际回升（满了不必硬吃）",
+    "PRO03": "拿到一件能造成伤害的武器并装备上（已经装备的直接算）",
+    "PRO04": "打赢农野荒地那只游荡尸，并在战斗结束时活着（撤退后可以回去接着打）",
+    "PRO05": "自愿吞噬融合首战得到的教学活性物质（不融合也不影响求医与主线）",
+    "PRO06": "到溪流浅滩，并实际取一次水",
+    "PRO07": "给火堆添燃料，并成功点燃一次",
+    "PRO08": "用火堆把锅里的脏水真正烧成净水",
+    "PRO09": "把生块根烤熟或水煮熟一次（吃罐头不算）",
+    "PRO10": "亲手做出一件工具或武器（做防身武器那次也算）",
+    "PRO11": "在地面和随身之间实际转移一次物资",
+    "PRO12": "实际睡眠累计满2小时（等待和休息不算）",
+    "PRO13": "建成遮蔽棚（已有的也算）",
+    "PRO14": "从临时营地出发，到废弃村庄或诊所，再走回临时营地",
+    "PRO15": "到废弃村庄，查看公开救助残页（不耗时）",
+    "PRO16": "在临时营地和来客交谈，问到营区路线",
+    "PRO17": "看过路线、身体状态和随身物品后，确认“准备好了”（缺建议物也可以）",
+    "PRO18": "在废弃村庄看清南口路标，再实际走到旧公路",
+}
+
 JOURNEY = [("village", "m01_road"), ("m01_road", "m02_checkpoint"), ("m02_checkpoint", "h01_gate"), ("h01_gate", "h02_square")]
 
 
@@ -84,6 +107,7 @@ def main():
             "suggestedStage": t["suggestedStage"],
             "stage": STAGE_OF[t["suggestedStage"]],
             "completionRule": t["completionRule"],
+            "goal": GOALS[t["id"]],
             "guidance": t["guidance"],
             "exitGate": t["exitGate"].startswith("是"),
             "exitGateText": t["exitGate"],
