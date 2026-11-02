@@ -303,7 +303,9 @@ public class B13dGuideTests : BattleTestBase
         ReadDialogues(w);
         o = E.CurrentObjective(w)!;
         Assert.That((o.Id, o.Title, o.Step), Is.EqualTo(("exit_need", "前往幸存者营区寻找医疗帮助", "先沿已知道路到访废弃村庄。")), "按实际缺项，不显示“按真实缺项显示”这句说明");
-        Assert.That(E.ObjectiveFocus(w), Is.EqualTo("loc:field"), "指向真实下一路段");
+        Assert.That(E.ObjectiveFocus(w), Is.Null, "村庄还没发现、也不与营地相邻：不点亮、不泄露（M298）");
+        w.Locations["village"].Discovered = true;
+        Assert.That(E.ObjectiveFocus(w), Is.EqualTo("loc:field"), "村庄已知而荒地—村庄未开通：指向真实下一路段");
     }
 
     /// <summary>TUT-Q129-02：D1—D4 教学提前做完而来客未到：整备下一次出行，不泄露 6240/第5日/D5，不把普通等待加回建议。</summary>
@@ -351,7 +353,7 @@ public class B13dGuideTests : BattleTestBase
         Assert.That(s.Prologue.Tasks["PRO18"].Retro, Is.False);
         Assert.That(s.Progress.Flags.Contains(GameEngine.FactSouthSignKnown), Is.False, "不伪造路标已读");
         Assert.That(s.Prologue.ObjectiveId, Is.EqualTo("route_onward"));
-        Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:m02_checkpoint"), "主线逐段：下一段");
+        Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:m01_road"), "检查哨还没发现：点亮当前地点（探索入口），不泄露（M298）");
     }
 
     // ───────────── TUT-Q133-03 / 存档 25 ─────────────
@@ -403,5 +405,110 @@ public class B13dGuideTests : BattleTestBase
         var tm = SaveSerializer.Deserialize(tj.ToString(), Cfg, out _);
         Assert.That(GameEngine.TaskDone(tm, "PRO18"), Is.False);
         Assert.That(GameEngine.TaskDone(tm, "PRO06") || GameEngine.TaskDone(tm, "PRO10") || GameEngine.TaskDone(tm, "PRO14"), Is.False, "取水/制作/返营没有证据不追认");
+    }
+
+    // ───────────── 试玩修复 M298 ─────────────
+
+    /// <summary>M298-1：到旧公路后检查哨尚未发现：定位落在当前地点卡（探索入口），不点亮未发现的地点；按现有规则探索到 100% 揭示后指向检查哨。</summary>
+    [Test]
+    public void M298_1_UndiscoveredNextLeg_FocusCurrentCard_ThenNextLeg()
+    {
+        var s = Won();
+        s.Progress.Flags.Add(GameEngine.FactCampRouteKnown);
+        s.Progress.Flags.Add(GameEngine.FactVisitorMet);
+        E.DebugMapTeleport(s, "m01_road");
+        ReadDialogues(s);
+        E.PrologueBoundary(s);
+        ReadDialogues(s);
+        Assert.That(s.Prologue.ObjectiveId, Is.EqualTo("route_onward"));
+        Assert.That(s.Locations["m02_checkpoint"].Discovered, Is.False);
+        Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:m01_road"), "点亮当前地点卡");
+        Assert.That(s.Locations["m02_checkpoint"].Discovered, Is.False, "只读，不揭示");
+        E.DebugSetProgress(s, "m01_road", 100);
+        E.RefreshGates(s);
+        E.PrologueBoundary(s);
+        Assert.That(s.Locations["m02_checkpoint"].Discovered, Is.True, "按现有发现规则：探索 100% 揭示外出路线");
+        Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:m02_checkpoint"), "揭示后指向真实下一段");
+    }
+
+    /// <summary>M298-2：暂停期间错过的状态上下文不积压——恢复后在别处不补弹 PRO05，只给当前上下文；地点类错过的离开后再到达才是新上下文。</summary>
+    [Test]
+    public void M298_2_MissedWhilePaused_NotReplayedElsewhere()
+    {
+        var s = Fresh();
+        E.SetHintsPaused(s, true);
+        Start(s, ActionRequest.Travel("field"));
+        Run(s);
+        ReadDialogues(s);
+        for (var k = 0; k < 20 && s.Battle != null; k++)
+        {
+            if (E.DialogueLocked(s)) { ReadDialogues(s); continue; }
+            if (!E.AwaitingPlayer(s)) { E.BattleStep(s); continue; }
+            s.Battle.Enemies[0].Hp = 0.01;
+            Force(s, Below(0.2), AtLeast(0.6), Any());
+            Cmd(s, "basic_attack", s.Battle.Enemies[0].Index);
+        }
+        ReadDialogues(s);
+        Assert.That(s.Story.TutorialWon, Is.True);
+        Assert.That(Played(s, "PRO05_reaction"), Is.False, "暂停中不播");
+        E.DebugMapTeleport(s, "w12_canal");
+        ReadDialogues(s);
+        E.SetHintsPaused(s, false);
+        E.PrologueBoundary(s);
+        Assert.That(E.DialogueLocked(s), Is.False, "恢复后不在别处补弹 PRO05");
+        E.DebugGive(s, "dirty_water", 1, "w12_canal");
+        Assert.That(E.GuideContext(s, "item", "dirty_water", "w12_canal"), Is.True);
+        Assert.That(E.ActiveDialogue(s)?.EventId, Is.EqualTo("PRO11_reaction"), "只给当前上下文");
+        ReadDialogues(s);
+        Assert.That(Played(s, "PRO05_reaction"), Is.False);
+
+        // 地点类：暂停时到村庄错过 PRO15，原地恢复不补；离开再来是新的上下文
+        var t = Won();
+        E.SetHintsPaused(t, true);
+        E.DebugMapTeleport(t, "village");
+        ReadDialogues(t);
+        E.SetHintsPaused(t, false);
+        E.PrologueBoundary(t);
+        Assert.That(E.DialogueLocked(t), Is.False, "原地恢复不补");
+        E.DebugMapTeleport(t, "camp");
+        ReadDialogues(t);
+        E.DebugMapTeleport(t, "village");
+        Assert.That(E.ActiveDialogue(t)?.EventId, Is.EqualTo("PRO15_reaction"), "再次到达是新的上下文");
+    }
+
+    /// <summary>M298-3：上下文给的提示在离开该地点或主目标切换时让位，任务框回到当前主目标对应项（迁移/Legacy 档到第 5 日换成 PRO16）。</summary>
+    [Test]
+    public void M298_3_ContextHintYields_OnLeaveOrObjectiveChange()
+    {
+        var s = Won();
+        Assert.That(E.GuideContext(s, "rest"), Is.True);
+        ReadDialogues(s);
+        Assert.That(E.CurrentHint(s)!.Value.TaskId, Is.EqualTo("PRO12"));
+        E.DebugMapTeleport(s, "field");
+        ReadDialogues(s);
+        Assert.That(E.CurrentHint(s)?.TaskId, Is.Not.EqualTo("PRO12"), "离开给出提示的地点即失效");
+
+        var legacy = New();
+        Assert.That(E.GuideContext(legacy, "rest"), Is.True);
+        Assert.That(E.CurrentHint(legacy)!.Value.TaskId, Is.EqualTo("PRO12"));
+        legacy.GameMinute = D5 + 60;
+        E.PrologueBoundary(legacy);
+        Assert.That(legacy.Prologue.ObjectiveId, Is.EqualTo("visitor_talk"));
+        Assert.That(E.DialogueLocked(legacy), Is.False);
+        Assert.That(E.CurrentHint(legacy)!.Value.TaskId, Is.EqualTo("PRO16"), "主目标切换时让位，提示回到 PRO16");
+    }
+
+    /// <summary>M298-4：任务框主目标标题允许换行，不再单行截断（“前往幸存者营区寻找医疗帮助”完整显示）。</summary>
+    [Test]
+    public void M298_4_TaskTitle_Wraps_NotEllipsized()
+    {
+        var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "web", "Survival.Web", "wwwroot", "css", "app.css"))) dir = dir.Parent;
+        Assert.That(dir, Is.Not.Null, "找到仓库根目录");
+        var css = File.ReadAllLines(Path.Combine(dir!.FullName, "web", "Survival.Web", "wwwroot", "css", "app.css"));
+        var rule = css.Single(l => l.StartsWith(".task-box .tc-title {"));
+        Assert.That(rule, Does.Not.Contain("nowrap").And.Not.Contain("ellipsis"));
+        Assert.That(rule, Does.Contain("white-space: normal"));
+        Assert.That(Cfg.Prologue.SpecialObjectives.Single(x => x.Id == "route_onward").Title, Is.EqualTo("前往幸存者营区寻找医疗帮助"));
     }
 }

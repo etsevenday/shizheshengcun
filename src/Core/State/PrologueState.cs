@@ -39,6 +39,13 @@ namespace Survival.Core.State
         public HashSet<string> GuideSeen { get; set; } = new HashSet<string>();
         /// <summary>当前真实上下文触发的那一条引导（任务 ID；同一时刻最多一条）。完成、换到新的相关上下文时替换，为空时任务框退回主目标的提示。</summary>
         public string GuideActive { get; set; } = "";
+        /// <summary>给出当前引导时所在地点（试玩修复 M298：离开该地点即失效，任务框回到主目标的提示）；空 = 不限地点（M298 以前的存档）。</summary>
+        public string GuideActiveAt { get; set; } = "";
+        /// <summary>
+        /// 试玩修复 M298：提示暂停期间到来而错过的状态上下文（任务 ID → 错过时的地点；空串 = 一次性、永久错过）。恢复提示后不在别处补弹；
+        /// 地点类的离开那里后清除，之后再到达是新的上下文。
+        /// </summary>
+        public Dictionary<string, string> GuideMissed { get; set; } = new Dictionary<string, string>();
         /// <summary>上下文触发时正忙（行动中、对话读完锁、敌踪/战斗）而暂存的引导；下一安全边界重新校验仍相关才呈现，已完成/失效即丢弃。</summary>
         public string GuidePending { get; set; } = "";
         /// <summary>暂存时所在地点（换了地点即视为上下文已失效）。</summary>
@@ -77,6 +84,7 @@ namespace Survival.Core.State
             c.PendingReactions = new List<string>(PendingReactions);
             c.DismissedHints = new HashSet<string>(DismissedHints);
             c.GuideSeen = new HashSet<string>(GuideSeen);
+            c.GuideMissed = new Dictionary<string, string>(GuideMissed);
             return c;
         }
     }

@@ -22,7 +22,8 @@
     var light = Ui.Light(Clock.MinuteOfDay(s.GameMinute), lc.IsIndoor);
     var fireOn = lc.HasFire && s.Locations[LocationId].Facility.FireLit && lc.SceneFireX.HasValue && lc.SceneFireY.HasValue;
     var picked = sel.Kind is SelectionKind.Location or SelectionKind.Clear;
-    <div class="map-card @(picked ? "selected" : "") @(lc.IsIndoor ? "indoor" : "")" data-drop="@($"loc:{LocationId}")" data-drop-level="card"
+    @* 试玩修复 M298：主目标的下一段还没发现时点亮当前地点卡（探索入口），不泄露未发现的地点 *@
+    <div class="map-card @(picked ? "selected" : "") @(lc.IsIndoor ? "indoor" : "") @(G.TutorialFocus == "loc:" + LocationId ? "tut-lit" : "")" data-drop="@($"loc:{LocationId}")" data-drop-level="card"
          role="button" tabindex="0" aria-label="@($"当前地点{lc.Name}，探索{ls.Progress}%")"
          title="当前地点：点卡片查看探索预估；把建材拖到营地地点卡可查看营地设施" @onclick="SelectLocation" @onkeydown="CardKey">
         <div class="mc-art" style="background-image:url('@scene');filter:brightness(@F(light.Brightness)) saturate(@F(light.Saturate))" role="img" aria-label="@($"{lc.Name}场景图")"></div>

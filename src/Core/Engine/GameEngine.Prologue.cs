@@ -250,8 +250,8 @@ namespace Survival.Core.Engine
             if (!PrologueEnabled || s.Progress.Dead) return;
             SyncPrologueTasks(s);
             CheckVisitor(s);
-            if (guides && GuideSafe(s) && !FlushPendingGuide(s)) StateGuide(s);
             RefreshObjective(s);
+            if (guides && GuideSafe(s) && !FlushPendingGuide(s)) StateGuide(s);
         }
 
         // ───────────────────────── 操作前引导（Q128 选 C） ─────────────────────────
@@ -281,7 +281,7 @@ namespace Survival.Core.Engine
                 p.GuidePendingAt = s.CurrentLocation;
                 return true;
             }
-            if (p.GuideActive == pick && p.GuideSeen.Contains(pick)) return false;
+            if (p.GuideActive == pick && p.GuideActiveAt == s.CurrentLocation && p.GuideSeen.Contains(pick)) return false;
             ActivateGuide(s, pick);
             return true;
         }
@@ -377,6 +377,7 @@ namespace Survival.Core.Engine
         {
             var p = s.Prologue;
             p.GuideActive = id;
+            p.GuideActiveAt = s.CurrentLocation;
             if (p.GuidePending == id) { p.GuidePending = ""; p.GuidePendingAt = ""; }
             if (!p.GuideSeen.Add(id)) return;
             var t = ProTask(id);
@@ -406,10 +407,11 @@ namespace Survival.Core.Engine
         private void StateGuide(GameState s)
         {
             var p = s.Prologue;
-            if (p.HintsPaused) return;
+            // 地点类上下文错过后，离开那里才算失效（之后再到达是新的上下文）
+            foreach (var k in p.GuideMissed.Where(kv => kv.Value != "" && kv.Value != s.CurrentLocation).Select(kv => kv.Key).ToList()) p.GuideMissed.Remove(k);
             foreach (var id in new[] { "PRO01", "PRO05", "PRO06", "PRO15", "PRO16" })
             {
-                if (p.GuideSeen.Contains(id) || !GuideOpen(s, id)) continue;
+                if (p.GuideSeen.Contains(id) || p.GuideMissed.ContainsKey(id) || !GuideOpen(s, id)) continue;
                 var ok = id switch
                 {
                     "PRO01" => !s.Story.Legacy && p.MigratedAt == null && (s.Story.AwakeningDone || !StoryActive(s)),
@@ -419,6 +421,13 @@ namespace Survival.Core.Engine
                     _ => true,
                 };
                 if (!ok) continue;
+                if (p.HintsPaused)
+                {
+                    // 试玩修复 M298（Q128“暂停……不积压”）：暂停期间到来的状态上下文记为错过，恢复后不在别处补弹；
+                    // 地点类（溪流/村庄/营地人物卡）到离开那里为止，开场与首战奖励这类一次性的永久错过
+                    p.GuideMissed[id] = id is "PRO06" or "PRO15" or "PRO16" ? s.CurrentLocation : "";
+                    continue;
+                }
                 ActivateGuide(s, id);
                 return;
             }
@@ -741,6 +750,8 @@ namespace Survival.Core.Engine
                 obj = first?.Id ?? "settle";
             }
             p.StageId = stage;
+            // 试玩修复 M298：主目标切换时，上一个上下文给的提示让位（之后新的真实上下文再给）
+            if (p.ObjectiveId != obj && !string.IsNullOrEmpty(p.ObjectiveId)) p.GuideActive = "";
             p.ObjectiveId = obj;
             var curIdx = Array.IndexOf(StageOrder, stage);
             p.Suggestions = open.Where(t => t.Id != obj && t.Id != "PRO16" && t.Id != "PRO18")
@@ -834,10 +845,21 @@ namespace Survival.Core.Engine
         {
             if (!PrologueEnabled || s.Prologue.HintsPaused || s.Progress.Dead) return null;
             var id = s.Prologue.GuideActive;
-            if (string.IsNullOrEmpty(id) || !GuideOpen(s, id)) id = CurrentObjective(s)?.TaskId;
+            if (!GuideActiveValid(s)) id = CurrentObjective(s)?.TaskId;
             if (id == null || TaskDone(s, id) || s.Prologue.DismissedHints.Contains(id)) return null;
             var t = ProTask(id);
             return t == null || string.IsNullOrEmpty(t.Hint) ? ((string, string)?)null : (id, t.Hint);
+        }
+
+        /// <summary>
+        /// 上下文给的那条引导还算数：未完成、未关闭、仍相关，且人还在给出它的地点（试玩修复 M298：离开即失效，提示回到当前主目标对应项；
+        /// 主目标切换时也让位，见 <see cref="RefreshObjective"/>）。
+        /// </summary>
+        private bool GuideActiveValid(GameState s)
+        {
+            var p = s.Prologue;
+            if (string.IsNullOrEmpty(p.GuideActive) || !GuideOpen(s, p.GuideActive)) return false;
+            return string.IsNullOrEmpty(p.GuideActiveAt) || p.GuideActiveAt == s.CurrentLocation;
         }
 
         /// <summary>
@@ -895,6 +917,10 @@ namespace Survival.Core.Engine
             var path = MapPathTo(s, target);
             if (path != null && path.Count > 0) return "loc:" + path[0].To;
             var here = s.CurrentLocation;
+            // 试玩修复 M298：下一段的地点还没发现（也没揭示通往它的路线）时不泄露它：直接相邻的，点亮当前地点卡（探索入口；
+            // 按现有发现规则，从这一端探索到 100% 才揭示外出路线与门槛条件）；不相邻的不点亮
+            if (!Known(s, target))
+                return EdgesAt(here).Any(e => e.TraversableFrom(here) && e.Other(here) == target) ? "loc:" + here : null;
             var prev = new Dictionary<string, string> { [here] = "" };
             var queue = new Queue<string>();
             queue.Enqueue(here);
@@ -906,7 +932,7 @@ namespace Survival.Core.Engine
                 {
                     if (!e.TraversableFrom(u)) continue;
                     var v = e.Other(u);
-                    if (prev.ContainsKey(v) || (v != target && !Known(s, v))) continue;
+                    if (prev.ContainsKey(v) || !Known(s, v)) continue;
                     prev[v] = u;
                     queue.Enqueue(v);
                 }
@@ -946,7 +972,8 @@ namespace Survival.Core.Engine
                 case "guides_reset":
                     s.Prologue.GuideSeen.Clear();
                     s.Prologue.DismissedHints.Clear();
-                    s.Prologue.GuideActive = s.Prologue.GuidePending = s.Prologue.GuidePendingAt = "";
+                    s.Prologue.GuideActive = s.Prologue.GuideActiveAt = s.Prologue.GuidePending = s.Prologue.GuidePendingAt = "";
+                    s.Prologue.GuideMissed.Clear();
                     s.Prologue.HintsPaused = false;
                     PrologueBoundary(s);
                     return "开发：已清空操作引导的已示/关闭记录（任务完成不变；播过的饱饱短句按对白去重不再播）。";
