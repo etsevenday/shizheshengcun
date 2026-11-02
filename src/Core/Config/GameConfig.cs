@@ -584,6 +584,11 @@ namespace Survival.Core.Config
         public List<string> UnlockAnyFacts { get; set; } = new List<string>();
         /// <summary>唯一领取的实物装备品质（white_zero_affixes_random_template_max_current_full：白色、无词条，最大耐久按模板区间 0.1 步长正常抽一次、当前=最大，Q136 选 A）。</summary>
         public string? EquipmentQuality { get; set; }
+        /// <summary>
+        /// 揭示与领取条件是本代地牢实例事实（Q122：officer_cache 守卫战利品箱读 d03 当前代 guardianDefeated，B13c）：本代有此事实且到过该地点才显示；
+        /// 已发现后换代仍显示，但须本代再有此事实才可领。null 为不要求。
+        /// </summary>
+        public string? RevealInstanceFact { get; set; }
 
         public bool IsCampaign => PoolMode == PoolModes.CampaignClaim;
         /// <summary>8 份核心记录（有记录 ID）：领取写事实、不发物资卡；其余唯一领取（支援包、消防斧箱、知识包）没有记录 ID。</summary>

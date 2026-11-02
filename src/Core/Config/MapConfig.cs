@@ -28,11 +28,16 @@ namespace Survival.Core.Config
         public string ClueText { get; set; } = "";
         /// <summary>旧核心节点 → 新核心节点（legacy-node-claim-migration.json：d01_06→d01_08 等；按 claim 身份迁移，不对同号侧室全局替换，B12 R37）。</summary>
         public Dictionary<string, string> LegacyCoreNodes { get; set; } = new Dictionary<string, string>();
-        /// <summary>6 个旧唯一箱的 claimId → 新领取节点（claimId 原样、已领不补；B12 只建账，领取动作待 Q122）。</summary>
+        /// <summary>6 个旧唯一箱的 claimId → 新领取节点（claimId 原样、已领不补；B12 建账，B13c 起按 Q122 在资源表里可领取，officer_cache 改在 d03_07）。</summary>
         public List<LegacyClaimConfig> LegacyClaims { get; set; } = new List<LegacyClaimConfig>();
         /// <summary>地牢 → 核心记录节点。</summary>
         public Dictionary<string, string> RecordNodes { get; set; } = new Dictionary<string, string>();
         public List<DungeonConfig> Dungeons { get; set; } = new List<DungeonConfig>();
+        /// <summary>
+        /// 13 个世界分区（地点 zone）→ 正式中文名（Q124 选 A，resource-adjudications.json regionNames，B13c）：面包屑与主世界分区导航同源；
+        /// 地牢按父入口地点的分区。只是显示名，不改土地归属或建屋许可。
+        /// </summary>
+        public Dictionary<string, string> RegionNames { get; set; } = new Dictionary<string, string>();
     }
 
     public static class GateScopes
@@ -77,7 +82,7 @@ namespace Survival.Core.Config
         public string ClaimId { get; set; } = "";
         public string Node { get; set; } = "";
         public Dictionary<string, int> Grants { get; set; } = new Dictionary<string, int>();
-        /// <summary>Q125 正式名（“器材室防暴盾箱”等）；领取规则（Q122）在 B13c 接入，本批只登记名称。</summary>
+        /// <summary>Q125 正式名（“器材室防暴盾箱”等）；领取在资源表里同 ID 的唯一领取（Q122，B13c）。</summary>
         public string? Name { get; set; }
     }
 

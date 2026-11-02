@@ -47,6 +47,7 @@ namespace Survival.Core.Save
         public const string Schema20 = "20";
         public const string Schema21 = "21";
         public const string Schema22 = "22";
+        public const string Schema23 = "23";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -84,6 +85,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema20) From20To21(s, config, notes);
             if (s.SchemaVersion == Schema21) From21To22(s, config, notes);
             if (s.SchemaVersion == Schema22) From22To23(s, config, notes);
+            if (s.SchemaVersion == Schema23) From23To24(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -877,7 +879,30 @@ namespace Survival.Core.Save
         {
             var added = EnsureResourceStates(s, config);
             if (added > 0) notes.Add($"资源点扩展到{config.Resources.Count}处（补回营区净水配给等旧来源），已到过且探索够的地点直接显示");
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（资源来源补齐：新增{added}处资源点；部分资源点可用石刀/简易斧/撬棍省5分钟）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema23}（资源来源补齐：新增{added}处资源点；部分资源点可用石刀/简易斧/撬棍省5分钟）。" });
+            s.SchemaVersion = Schema23;
+        }
+
+        // ───────────────────────── 23 → 24 ─────────────────────────
+
+        /// <summary>
+        /// 旧唯一箱与核心同授知识（开发计划 v0.9 B13c，R130；A08/S05 Q122/Q123 本轮章、resource-adjudications.json legacyMigration）：
+        /// 6 个旧 d03 唯一箱入资源表——旧档从未有过它们的领取账，一律按未领（不凭背包里的枪猜，已持有的不收回、不复制）；到过且探索够的只补卡片可见。
+        /// 四份核心记录同授的 28 张蓝图按可信领取事实（campaignId:/claim:&lt;核心&gt;，d03 另认 communication_power_claimed）读档即会，
+        /// 这里只记一条升级日志写明补学了几张；不补物资/经验/容量，不写本代守卫或 recordClaimedAndClear（出口仍须本代真实核对）。幂等。
+        /// </summary>
+        private static void From23To24(GameState s, GameConfig config, List<string> notes)
+        {
+            var added = EnsureResourceStates(s, config);
+            var engine = new Engine.GameEngine(config);
+            var packs = config.Resources.Where(r => r.IsRecord)
+                .Select(r => (Res: r, Know: config.Knowledge.Where(k => k.Id != "blueprint_armory_station" && k.GrantedByFacts.Contains(Engine.GameEngine.ClaimKey(r.NodeId))).ToList()))
+                .Where(x => x.Know.Count > 0 && x.Know.Any(k => engine.KnowsKnowledge(s, k.Id)))
+                .ToList();
+            var learned = packs.Sum(x => x.Know.Count(k => engine.KnowsKnowledge(s, k.Id)));
+            if (added > 0) notes.Add($"资源点扩展到{config.Resources.Count}处（旧城警备仓的6个旧唯一箱可以领取）");
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（旧城警备仓6个旧唯一箱可领取；核心记录领取同时授予蓝图" +
+                (learned > 0 ? $"：已领取的{string.Join("、", packs.Select(x => x.Res.Name))}补学{learned}张蓝图，不补物资与经验" : "") + "）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 
@@ -902,9 +927,11 @@ namespace Survival.Core.Save
                 if (s.Resources.ContainsKey(r.NodeId)) continue;
                 var ls = s.Locations.TryGetValue(r.LocationId, out var l) ? l : null;
                     var unlocked = r.UnlockAnyFacts.Count == 0 || r.UnlockAnyFacts.Any(s.Progress.Flags.Contains);
-                var seen = unlocked && ((s.RevealedResourceMarkers?.Contains(r.NodeId) ?? false)
-                           || (ls != null && ls.Visited && (r.RevealOnVisit || (r.RevealAt.HasValue && ls.Progress >= r.RevealAt.Value))));
                 var dungeon = config.Locations.FirstOrDefault(x => x.Id == r.LocationId)?.DungeonId;
+                // B13c（Q122）：守卫战利品箱看本代实例事实
+                var factMet = r.RevealInstanceFact != null && dungeon != null && s.DungeonInstances.TryGetValue(dungeon, out var di) && di.Facts.Contains(r.RevealInstanceFact);
+                var seen = unlocked && ((s.RevealedResourceMarkers?.Contains(r.NodeId) ?? false)
+                           || (ls != null && ls.Visited && (r.RevealOnVisit || (r.RevealAt.HasValue && ls.Progress >= r.RevealAt.Value) || factMet)));
                 s.Resources[r.NodeId] = new ResourceState
                 {
                     Available = r.IsUnlimited ? (int?)null : r.Cap,

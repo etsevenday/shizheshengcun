@@ -406,7 +406,9 @@ namespace Survival.Core.Engine
             EnsureInstance(s, dungeonId).Facts.Add(key);
             var r = RefreshGates(s);
             var routes = RouteNotes(s, r, s.CurrentLocation);
-            return $"开发：{dungeonId} 当前实例已记下 {key}（{FactLabel(key)}）" + (routes.Count > 0 ? "；" + string.Join("、", routes) : "") + "。";
+            var shown = RevealByInstanceFacts(s);   // B13c（Q122）：守卫战利品箱当场出现
+            return $"开发：{dungeonId} 当前实例已记下 {key}（{FactLabel(key)}）" + (routes.Count > 0 ? "；" + string.Join("、", routes) : "")
+                + (shown.Count > 0 ? "；" + string.Join("、", shown) + "已出现，可当场领取" : "") + "。";
         }
     }
 }

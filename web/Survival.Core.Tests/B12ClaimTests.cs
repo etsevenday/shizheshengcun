@@ -123,7 +123,7 @@ public class B12ClaimTests : TestBase
         Assert.That(First(s, "dried_meat", "d08_03").ExpiresAt, Is.EqualTo(expires), "重置不刷新已持有物保质");
     }
 
-    /// <summary>旧档迁移账（R37）：旧核心节点映射与 6 个旧唯一箱 claimId→新节点按数据导入；不对 v3 同号侧室全局替换。</summary>
+    /// <summary>旧档迁移账（R37）：旧核心节点映射与 6 个旧唯一箱 claimId→新节点按数据导入（B13c 起 officer_cache 改在 d03_07，Q122）；不对 v3 同号侧室全局替换。</summary>
     [Test]
     public void R37_LegacyClaimLedger()
     {
@@ -133,7 +133,7 @@ public class B12ClaimTests : TestBase
         var claims = Cfg.Map.LegacyClaims.ToDictionary(c => c.ClaimId, c => c.Node);
         Assert.That(claims, Is.EquivalentTo(new Dictionary<string, string>
         {
-            ["shield_cache"] = "d03_03", ["officer_cache"] = "d03_04", ["rifle_cache"] = "d03_08",
+            ["shield_cache"] = "d03_03", ["officer_cache"] = "d03_07", ["rifle_cache"] = "d03_08",
             ["shotgun_cache"] = "d03_08", ["armor_cache"] = "d03_08", ["ammo_reserve_cache"] = "d03_08",
         }));
         Assert.That(Cfg.Map.LegacyClaims.First(c => c.ClaimId == "ammo_reserve_cache").Grants, Has.Count.EqualTo(3));
@@ -141,7 +141,7 @@ public class B12ClaimTests : TestBase
         Assert.That(E.Resource("d01_06_cache1").LocationId, Is.EqualTo("d01_06"));
         Assert.That(E.Resource("d01_08_unique").LocationId, Is.EqualTo(Cfg.Map.RecordNodes["d01"]));
         foreach (var kv in Cfg.Map.RecordNodes)
-            Assert.That(Cfg.Resources.Single(r => r.IsCampaign && E.Location(r.LocationId).DungeonId == kv.Key).LocationId, Is.EqualTo(kv.Value), "八记录固定在 recordNode");
+            Assert.That(Cfg.Resources.Single(r => r.IsRecord && E.Location(r.LocationId).DungeonId == kv.Key).LocationId, Is.EqualTo(kv.Value), "八记录固定在 recordNode");
     }
 
     /// <summary>S14「四类账」卡面角标：日补“n/cap”、finite“·不补/搜空不补”、flowing“无限”、普通箱“本代剩余/本代已搜空”、核心记录“可领取/本局已领·可核对/已领取”。</summary>

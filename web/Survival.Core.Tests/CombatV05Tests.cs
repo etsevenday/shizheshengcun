@@ -735,13 +735,13 @@ public class CombatV05Tests : BattleTestBase
         Assert.That(Count(v, "ammo_9mm", "village"), Is.EqualTo(12));
         Assert.That(E.CanStart(v, ActionRequest.Gather("village_weapon_locker")), Does.Contain("搜空"));
 
-        // v1.0 P05/T04：金属矛、弩、弩矢可正常制作；霰弹枪、步枪仍不开放正常来源
+        // v1.0 P05/T04：金属矛、弩、弩矢可正常制作；霰弹枪、步枪没有配方，正常来源只有旧城警备仓封存仓的唯一箱（B13c，Q122）
         foreach (var id in new[] { "metal_spear", "crossbow", "bolt" })
             Assert.That(Cfg.Recipes.Any(r => r.Outputs.ContainsKey(id)), Is.True, id + " 有正常配方");
         foreach (var id in new[] { "shotgun", "rifle" })
         {
             Assert.That(Cfg.Recipes.Any(r => r.Outputs.ContainsKey(id)), Is.False, id + " 无正常配方");
-            Assert.That(Cfg.Resources.Any(r => r.Outputs.ContainsKey(id)), Is.False, id + " 无正常箱子");
+            Assert.That(Cfg.Resources.Where(r => r.Outputs.ContainsKey(id)).Select(r => r.IsCampaignPhysical && r.LocationId == "d03_08"), Is.EqualTo(new[] { true }), id + " 只有 d03_08 本局唯一箱");
             Assert.That(Cfg.DevKit.Items.ContainsKey(id), Is.True, id + " 只在开发测试箱");
         }
         var d = New();

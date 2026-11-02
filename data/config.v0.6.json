@@ -13831,7 +13831,7 @@
     },
     {
       "nodeId": "d01_08_unique",
-      "name": "教会路线记录",
+      "name": "圣所旧路档册",
       "locationId": "d01_08",
       "revealAt": 100,
       "revealOnVisit": false,
@@ -13949,7 +13949,7 @@
     },
     {
       "nodeId": "d02_08_unique",
-      "name": "学院安全记录",
+      "name": "封存区安全规程",
       "locationId": "d02_08",
       "revealAt": 100,
       "revealOnVisit": false,
@@ -14072,7 +14072,7 @@
     },
     {
       "nodeId": "d03_08_unique",
-      "name": "通信电源",
+      "name": "警备仓备用电源",
       "locationId": "d03_08",
       "revealAt": 100,
       "revealOnVisit": false,
@@ -14195,7 +14195,7 @@
     },
     {
       "nodeId": "d04_07_unique",
-      "name": "分会联络记录",
+      "name": "通信站联络日志",
       "locationId": "d04_07",
       "revealAt": 100,
       "revealOnVisit": false,
@@ -14316,7 +14316,7 @@
     },
     {
       "nodeId": "d05_07_unique",
-      "name": "水厂运行记录",
+      "name": "水厂阀控记录",
       "locationId": "d05_07",
       "revealAt": 100,
       "revealOnVisit": false,
@@ -14437,7 +14437,7 @@
     },
     {
       "nodeId": "d06_08_unique",
-      "name": "矿道工作方法包",
+      "name": "矿道作业手册",
       "locationId": "d06_08",
       "revealAt": 100,
       "revealOnVisit": false,
@@ -14553,7 +14553,7 @@
     },
     {
       "nodeId": "d07_07_unique",
-      "name": "民用储备记录",
+      "name": "商场避难物资簿",
       "locationId": "d07_07",
       "revealAt": 100,
       "revealOnVisit": false,
@@ -14669,7 +14669,7 @@
     },
     {
       "nodeId": "d08_08_unique",
-      "name": "冷链仓储记录",
+      "name": "冷链调度档案",
       "locationId": "d08_08",
       "revealAt": 100,
       "revealOnVisit": false,
@@ -16100,6 +16100,141 @@
       "legacyAliases": [
         "bp_wild_pack"
       ]
+    },
+    {
+      "nodeId": "shield_cache",
+      "name": "器材室防暴盾箱",
+      "locationId": "d03_03",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "riot_shield": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign_physical",
+      "xpAllowed": false,
+      "legacyAliases": [],
+      "equipmentQuality": "white_zero_affixes_full_template_durability"
+    },
+    {
+      "nodeId": "officer_cache",
+      "name": "守卫战利品箱",
+      "locationId": "d03_07",
+      "revealAt": null,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "service_pistol": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign_physical",
+      "xpAllowed": false,
+      "legacyAliases": [],
+      "equipmentQuality": "white_zero_affixes_full_template_durability",
+      "revealInstanceFact": "guardianDefeated"
+    },
+    {
+      "nodeId": "shotgun_cache",
+      "name": "封存仓霰弹枪箱",
+      "locationId": "d03_08",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "shotgun": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign_physical",
+      "xpAllowed": false,
+      "legacyAliases": [],
+      "equipmentQuality": "white_zero_affixes_full_template_durability"
+    },
+    {
+      "nodeId": "rifle_cache",
+      "name": "封存仓步枪箱",
+      "locationId": "d03_08",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "rifle": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign_physical",
+      "xpAllowed": false,
+      "legacyAliases": [],
+      "equipmentQuality": "white_zero_affixes_full_template_durability"
+    },
+    {
+      "nodeId": "armor_cache",
+      "name": "封存仓防护装备箱",
+      "locationId": "d03_08",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "guard_armor": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign_physical",
+      "xpAllowed": false,
+      "legacyAliases": [],
+      "equipmentQuality": "white_zero_affixes_full_template_durability"
+    },
+    {
+      "nodeId": "ammo_reserve_cache",
+      "name": "封存仓备用弹药箱",
+      "locationId": "d03_08",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "ammo_9mm": 24,
+        "shell_12g": 12,
+        "ammo_rifle": 15
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign_physical",
+      "xpAllowed": false,
+      "legacyAliases": [],
+      "equipmentQuality": "white_zero_affixes_full_template_durability"
     }
   ],
   "recipes": [
@@ -19087,7 +19222,7 @@
             "church_route_record",
             "academy_safety_record"
           ],
-          "text": "教会路线记录或学院安全记录之一"
+          "text": "圣所旧路档册或封存区安全规程之一"
         },
         {
           "capacity": 4,
@@ -19096,7 +19231,7 @@
             "academy_safety_record"
           ],
           "anyOf": [],
-          "text": "教会路线记录与学院安全记录两种"
+          "text": "圣所旧路档册与封存区安全规程两种"
         }
       ]
     }
@@ -27040,7 +27175,7 @@
         "communication_power_claimed"
       ],
       "blueprint": true,
-      "source": "蓝图：d03_08 封存仓终点核心记录领取"
+      "source": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q109）"
     },
     {
       "id": "blueprint_stone_knife",
@@ -27060,9 +27195,13 @@
     {
       "id": "blueprint_guard_sword",
       "name": "守备短剑蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d03_08_unique",
+        "campaignId:d03_08_unique",
+        "communication_power_claimed"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d03_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
     },
     {
       "id": "blueprint_hatchet",
@@ -27074,16 +27213,22 @@
     {
       "id": "blueprint_breach_axe",
       "name": "破障斧蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d01_08_unique",
+        "campaignId:d01_08_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d01_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）"
     },
     {
       "id": "blueprint_rescue_axe",
       "name": "救援短斧蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d01_08_unique",
+        "campaignId:d01_08_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d01_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）"
     },
     {
       "id": "blueprint_wooden_spear",
@@ -27102,9 +27247,13 @@
     {
       "id": "blueprint_pike",
       "name": "加固长枪蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d03_08_unique",
+        "campaignId:d03_08_unique",
+        "communication_power_claimed"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d03_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
     },
     {
       "id": "blueprint_barbed_spear",
@@ -27126,16 +27275,23 @@
     {
       "id": "blueprint_steel_mace",
       "name": "钢制钉锤蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d01_08_unique",
+        "campaignId:d01_08_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d01_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）"
     },
     {
       "id": "blueprint_shock_baton",
       "name": "绝缘警棍蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d03_08_unique",
+        "campaignId:d03_08_unique",
+        "communication_power_claimed"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d03_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
     },
     {
       "id": "blueprint_wooden_bow",
@@ -27171,9 +27327,13 @@
     {
       "id": "blueprint_repeater_crossbow",
       "name": "轻型战术弩蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d03_08_unique",
+        "campaignId:d03_08_unique",
+        "communication_power_claimed"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d03_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
     },
     {
       "id": "blueprint_wooden_shield",
@@ -27194,9 +27354,13 @@
     {
       "id": "blueprint_rescue_shield",
       "name": "救援盾蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d03_08_unique",
+        "campaignId:d03_08_unique",
+        "communication_power_claimed"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d03_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
     },
     {
       "id": "blueprint_signal_whistle",
@@ -27217,16 +27381,23 @@
     {
       "id": "blueprint_field_radio",
       "name": "战术电台蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d03_08_unique",
+        "campaignId:d03_08_unique",
+        "communication_power_claimed"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d03_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
     },
     {
       "id": "blueprint_command_terminal",
       "name": "便携指挥终端蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d04_07_unique",
+        "campaignId:d04_07_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d04_07，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：深野通信站·联络台（d04_07）领取核心记录“通信站联络日志”时一并获得（Q123）"
     },
     {
       "id": "blueprint_field_medkit",
@@ -27247,16 +27418,22 @@
     {
       "id": "blueprint_rescue_medkit",
       "name": "救援医疗箱蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d02_08_unique",
+        "campaignId:d02_08_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d02_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：灰塔封存区·流程终端（d02_08）领取核心记录“封存区安全规程”时一并获得（Q123）"
     },
     {
       "id": "blueprint_triage_kit",
       "name": "分诊器材组蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d02_08_unique",
+        "campaignId:d02_08_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d02_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：灰塔封存区·流程终端（d02_08）领取核心记录“封存区安全规程”时一并获得（Q123）"
     },
     {
       "id": "blueprint_padded_vest",
@@ -27294,23 +27471,32 @@
     {
       "id": "blueprint_heavy_armor",
       "name": "重型防护甲蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d01_08_unique",
+        "campaignId:d01_08_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d01_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）"
     },
     {
       "id": "blueprint_medic_armor",
       "name": "救护防护背心蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d02_08_unique",
+        "campaignId:d02_08_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d02_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：灰塔封存区·流程终端（d02_08）领取核心记录“封存区安全规程”时一并获得（Q123）"
     },
     {
       "id": "blueprint_balanced_armor",
       "name": "均衡战术甲蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d04_07_unique",
+        "campaignId:d04_07_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d04_07，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：深野通信站·联络台（d04_07）领取核心记录“通信站联络日志”时一并获得（Q123）"
     },
     {
       "id": "blueprint_steady_ring",
@@ -27347,30 +27533,44 @@
     {
       "id": "blueprint_focus_lens",
       "name": "聚焦镜片蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d03_08_unique",
+        "campaignId:d03_08_unique",
+        "communication_power_claimed"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d03_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
     },
     {
       "id": "blueprint_aid_badge",
       "name": "救护徽章蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d02_08_unique",
+        "campaignId:d02_08_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d02_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：灰塔封存区·流程终端（d02_08）领取核心记录“封存区安全规程”时一并获得（Q123）"
     },
     {
       "id": "blueprint_resolve_medal",
       "name": "镇定勋章蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d03_08_unique",
+        "campaignId:d03_08_unique",
+        "communication_power_claimed"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d03_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：旧城警备仓·封存仓（d03_08）领取核心记录“警备仓备用电源”时一并获得（Q123）"
     },
     {
       "id": "blueprint_tactics_watch",
       "name": "战术计时表蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d04_07_unique",
+        "campaignId:d04_07_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d04_07，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：深野通信站·联络台（d04_07）领取核心记录“通信站联络日志”时一并获得（Q123）"
     },
     {
       "id": "blueprint_work_shirt",
@@ -27399,23 +27599,32 @@
     {
       "id": "blueprint_craft_coat",
       "name": "工匠围衣蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d01_08_unique",
+        "campaignId:d01_08_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d01_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）"
     },
     {
       "id": "blueprint_rest_coat",
       "name": "休养外衣蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d02_08_unique",
+        "campaignId:d02_08_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d02_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：灰塔封存区·流程终端（d02_08）领取核心记录“封存区安全规程”时一并获得（Q123）"
     },
     {
       "id": "blueprint_expedition_coat",
       "name": "远征上衣蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d04_07_unique",
+        "campaignId:d04_07_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d04_07，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：深野通信站·联络台（d04_07）领取核心记录“通信站联络日志”时一并获得（Q123）"
     },
     {
       "id": "blueprint_work_trousers",
@@ -27444,23 +27653,32 @@
     {
       "id": "blueprint_reinforced_trousers",
       "name": "加固长裤蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d01_08_unique",
+        "campaignId:d01_08_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d01_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）"
     },
     {
       "id": "blueprint_recovery_trousers",
       "name": "休养长裤蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d02_08_unique",
+        "campaignId:d02_08_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d02_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：灰塔封存区·流程终端（d02_08）领取核心记录“封存区安全规程”时一并获得（Q123）"
     },
     {
       "id": "blueprint_expedition_trousers",
       "name": "远征下衣蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d04_07_unique",
+        "campaignId:d04_07_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d04_07，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：深野通信站·联络台（d04_07）领取核心记录“通信站联络日志”时一并获得（Q123）"
     },
     {
       "id": "blueprint_gather_gloves",
@@ -27489,23 +27707,32 @@
     {
       "id": "blueprint_repair_manual",
       "name": "维护手册蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d01_08_unique",
+        "campaignId:d01_08_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d01_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）"
     },
     {
       "id": "blueprint_medical_notes",
       "name": "护理笔记蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d02_08_unique",
+        "campaignId:d02_08_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d02_08，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：灰塔封存区·流程终端（d02_08）领取核心记录“封存区安全规程”时一并获得（Q123）"
     },
     {
       "id": "blueprint_ration_pouch",
       "name": "配给袋蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:d04_07_unique",
+        "campaignId:d04_07_unique"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 d04_07，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：深野通信站·联络台（d04_07）领取核心记录“通信站联络日志”时一并获得（Q123）"
     }
   ],
   "party": {
@@ -28507,10 +28734,10 @@
       "FA02_route_briefed": "在教会接待庭领取公开路线（教会任务后续版本开放）",
       "FA03_environment_briefed": "在科学院接待处领取环境调查路线（科学院任务后续版本开放）",
       "academy_observation_pass": "在试制工坊门旁确认只沿观察通道（后续版本开放）",
-      "FA02_record_credit": "在教会地下圣所核心领取路线记录",
-      "FA03_record_credit": "在封存实验楼核心领取流程记录",
+      "FA02_record_credit": "在教会地下圣所核心领取圣所旧路档册",
+      "FA03_record_credit": "在灰塔封存区核心领取封存区安全规程",
       "FA04_merged": "在营区广场完成两份记录的合并（主线后续版本开放）",
-      "communication_power_claimed": "在警备仓封存仓核心领取通信电源",
+      "communication_power_claimed": "在警备仓封存仓核心领取警备仓备用电源",
       "guardianDefeated": "击败本次地牢的守卫（地牢守卫战后续版本开放）",
       "recordClaimedAndClear": "领取（或核对）本次地牢的核心记录"
     },
@@ -28650,7 +28877,7 @@
       },
       {
         "claimId": "officer_cache",
-        "node": "d03_04",
+        "node": "d03_07",
         "grants": {
           "service_pistol": 1
         },
@@ -28700,6 +28927,21 @@
       "d06": "d06_08",
       "d07": "d07_07",
       "d08": "d08_08"
+    },
+    "regionNames": {
+      "starter": "初醒荒野",
+      "hub": "幸存者营区",
+      "city": "旧城废墟",
+      "church": "教会辖区",
+      "academy": "灰塔院区",
+      "wild": "近郊荒野",
+      "deep_wild": "深野腹地",
+      "church_approach": "朝圣沿途",
+      "academy_approach": "灰塔山路",
+      "city_approach": "旧城外缘",
+      "works": "铁路工务区",
+      "aid": "救援安置区",
+      "utility": "公共设施区"
     }
   },
   "prologue": {

@@ -602,7 +602,8 @@ namespace Survival.Core.Engine
             {
                 var rs = s.Resources[r.NodeId];
                 if (rs.Discovered || !ResourceUnlocked(s, r)) continue;   // B13b：有领取资格才显示（工坊首次支援包）
-                if (r.RevealOnVisit || (r.RevealAt.HasValue && r.RevealAt.Value <= ls.Progress))
+                // B13c（Q122）：守卫战利品箱在本代守卫胜利后到这里即显示
+                if (r.RevealOnVisit || (r.RevealAt.HasValue && r.RevealAt.Value <= ls.Progress) || (r.RevealInstanceFact != null && InstanceConditionMet(s, r)))
                 {
                     rs.Discovered = true;
                     revealed.Add(r.NodeId);

@@ -63,6 +63,10 @@ namespace Survival.Core.Config
             foreach (var kv in c.Map.ArrivalFacts) if (!locs.Contains(kv.Key)) e.Add($"到达事实地点 {kv.Key} 不存在");
             foreach (var lc in c.Map.LegacyClaims) if (!locs.Contains(lc.Node)) e.Add($"旧唯一箱 {lc.ClaimId} 的新节点 {lc.Node} 不存在");
             foreach (var kv in c.Map.LegacyCoreNodes) if (!locs.Contains(kv.Value)) e.Add($"旧核心节点 {kv.Key} 的新节点 {kv.Value} 不存在");
+            // Q124（B13c）：有分区名表时，世界层每个地点的分区都要有名字
+            if (c.Map.RegionNames.Count > 0)
+                foreach (var z in c.Locations.Where(l => l.NodeKind != "dungeon").Select(l => l.Zone).Distinct())
+                    if (!c.Map.RegionNames.ContainsKey(z)) e.Add($"分区 {z} 没有正式名");
         }
 
         public static List<string> Validate(GameConfig c)
@@ -120,7 +124,9 @@ namespace Survival.Core.Config
                 if (r.BaseMinutes < 0 || r.BaseMinutes % tick != 0 || (r.BaseMinutes == 0 && !(r.IsCampaign && !r.IsRecord)))
                     e.Add($"资源点 {r.NodeId} 时长须为{tick}的正倍数");
                 if (r.RevealAt.HasValue && !milestoneSet.Contains(r.RevealAt.Value)) e.Add($"资源点 {r.NodeId} revealAt 不在 25/50/75/100 中");
-                if (!r.RevealAt.HasValue && !r.RevealOnVisit) e.Add($"资源点 {r.NodeId} 没有发现条件");
+                if (!r.RevealAt.HasValue && !r.RevealOnVisit && r.RevealInstanceFact == null) e.Add($"资源点 {r.NodeId} 没有发现条件");
+                if (r.RevealInstanceFact != null && (!r.IsCampaign || c.Locations.FirstOrDefault(l => l.Id == r.LocationId)?.DungeonId == null))
+                    e.Add($"资源点 {r.NodeId} 的实例事实条件只用于地牢里的唯一领取");
                 if (r.IsCampaign)
                 {
                     // 核心记录不是物品（不发物资卡当凭证，S05 四生命周期）

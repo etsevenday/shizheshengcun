@@ -162,7 +162,7 @@ public class B7bProgressionTests : TestBase
         var rows = ((JArray)Contract()["fieldExperience"]!["resourceRows"]!).ToDictionary(r => (string)r["resourceId"]!);
         // 策划提交 01fd54d（答复 Q120）把合同扩到 169 行；B13b 导入其中 47 行恢复来源（6 个旧唯一箱的领取在 B13c），全部已导入行逐行核对
         Assert.That(rows, Has.Count.GreaterThanOrEqualTo(116), "合同至少 116 行（96 行属 v3 地图）");
-        Assert.That(Cfg.Resources, Has.Count.EqualTo(163), "B13b：116 + 47 条恢复来源（6 个旧唯一箱在 B13c）");
+        Assert.That(Cfg.Resources, Has.Count.EqualTo(169), "B13b：116 + 47 条恢复来源；B13c：6 个旧唯一箱，与合同 169 行齐");
         foreach (var r in Cfg.Resources)
         {
             // B12：96 行并入资源表；proficiencyId 为空的 9 行（核心记录与城市配给）不给经验（xpAllowed=false）

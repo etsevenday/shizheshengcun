@@ -37,10 +37,34 @@ namespace Survival.Core.Engine
 
         /// <summary>按当前状态的动词：本局已领的核心记录写“核对”（新一代只补写本代实例事实），其余同 <see cref="GatherVerb"/>。</summary>
         public string GatherVerbNow(GameState s, ResourceConfig res) =>
-            res.IsCampaign && CampaignClaimed(s, res.NodeId) ? "核对" : GatherVerb(res);
+            res.IsRecord && CampaignClaimed(s, res.NodeId) ? "核对" : GatherVerb(res);
 
         /// <summary>资源点所在地牢；不在地牢为 null。</summary>
         public string? DungeonOf(ResourceConfig res) => _locs.TryGetValue(res.LocationId, out var lc) ? lc.DungeonId : null;
+
+        /// <summary>
+        /// 实例事实条件（Q122：守卫战利品箱读 d03 当前代 guardianDefeated，B13c）是否满足；没有此条件为满足。
+        /// 只读当前代实例事实：换代后须本代再次满足，旧代或别的地牢不算。
+        /// </summary>
+        public bool InstanceConditionMet(GameState s, ResourceConfig res) =>
+            res.RevealInstanceFact == null || (DungeonOf(res) is string d && InstanceFact(s, d, res.RevealInstanceFact));
+
+        /// <summary>
+        /// 实例事实条件的资源点（守卫战利品箱）：本代有该事实、且到过该地点时显示（守卫胜利后当场出现可领取入口，不必折返别的房间；B13c，Q122）。
+        /// 只显示，不写领取账、不生成物品。返回新显示的资源点名。守卫战（B20）提交胜利事实后也调它；现在由开发入口记事实时调。
+        /// </summary>
+        private List<string> RevealByInstanceFacts(GameState s)
+        {
+            var list = new List<string>();
+            foreach (var r in Config.Resources.Where(r => r.RevealInstanceFact != null))
+            {
+                var rs = s.Resources[r.NodeId];
+                if (rs.Discovered || !s.Locations[r.LocationId].Visited || !ResourceUnlocked(s, r) || !InstanceConditionMet(s, r)) continue;
+                rs.Discovered = true;
+                list.Add(r.Name);
+            }
+            return list;
+        }
 
         /// <summary>核心记录现在不能领取/核对的原因；可以为 null。</summary>
         private string? ClaimBlocked(GameState s, ResourceConfig res)
@@ -49,6 +73,8 @@ namespace Survival.Core.Engine
             var claimed = CampaignClaimed(s, res.NodeId);
             if (!res.IsRecord && claimed) return "已领取（本局唯一，不再重复发放）";
             if (!ResourceUnlocked(s, res)) return "还没有领取资格";
+            // Q122：守卫战利品箱须本代守卫胜利（换代后未领的要本代再胜一次）
+            if (!claimed && !InstanceConditionMet(s, res)) return "需要：" + FactLabel(res.RevealInstanceFact!) + "（本代）";
             if (!claimed) return null;
             if (d == null || InstanceFact(s, d, RecordClaimedFact)) return "已领取（本局唯一，不再重复发放）";
             return null;
@@ -58,6 +84,11 @@ namespace Survival.Core.Engine
         private List<string> ClaimNotes(GameState s, ResourceConfig res)
         {
             var notes = new List<string>();
+            if (CampaignClaimed(s, res.NodeId) && !res.IsRecord)
+            {
+                notes.Add($"{res.Name}本局已领取，不再重复发放");
+                return notes;
+            }
             if (CampaignClaimed(s, res.NodeId))
             {
                 notes.Add($"{res.Name}本局已领取：这次只核对本次地牢的记录（打开本代出口），不再重复发放");
@@ -67,6 +98,8 @@ namespace Survival.Core.Engine
             {
                 // B13b（Q120）：工坊首次支援包、消防车器材箱（实物整包落当地地面）、采石坡图册（知识包，不发纸卡或成品）
                 notes.Add($"领取{res.Name}：本局唯一一次" + (res.IsCampaignPhysical ? "，产物整包放在当前地点地面" : "，只记作知识，不发纸卡或成品"));
+                if (res.IsCampaignPhysical) notes.Add("包满也能领：放在地面后再逐人拾取（照常受随身五卡与负重限制）；不计采集/搜集经验，不能用工具加速");
+                if (res.RevealInstanceFact != null) notes.Add("本代守卫战胜利后出现；领过以后地牢换代也不会再出现");
                 // Q136 选 A（EQ-Q136-01）：预览只写区间，不消耗真实随机、不预生成；领取时按模板区间 0.1 步长正常抽一次最大耐久，当前=最大
                 if (res.EquipmentQuality != null)
                     foreach (var id in res.Outputs.Keys.Where(k => _items[k].IsEquipment))
@@ -84,7 +117,12 @@ namespace Survival.Core.Engine
             var know = KnowledgeGrantedBy(s, ClaimFactsOf(res));
             if (know.Count > 0) notes.Add("同时获得做法知识：" + string.Join("、", know));
             if (res.RecordId != null && Config.Scope.Capacity.Unlocks.Any(u => u.AllOf.Contains(res.RecordId) || u.AnyOf.Contains(res.RecordId)))
-                notes.Add("这份记录计入战斗容量解锁（教会路线记录、学院安全记录）");
+            {
+                // Q125：容量说明用正式记录名（旧名“教会路线记录/学院安全记录”只是同一份记录 ID 的旧称）
+                var names = Config.Resources.Where(r => r.RecordId != null && Config.Scope.Capacity.Unlocks.Any(u => u.AllOf.Contains(r.RecordId) || u.AnyOf.Contains(r.RecordId)))
+                    .Select(r => r.Name).Distinct();
+                notes.Add($"这份记录计入战斗容量解锁（{string.Join("、", names)}）");
+            }
             return notes;
         }
 
@@ -160,9 +198,10 @@ namespace Survival.Core.Engine
             var avail = rs.Available ?? 0;
             if (r.IsCampaign)
             {
-                if (!CampaignClaimed(s, r.NodeId)) return ("可领取", false);
+                if (!CampaignClaimed(s, r.NodeId)) return InstanceConditionMet(s, r) ? ("可领取", false) : ("待本代守卫胜利", true);
                 var d = DungeonOf(r);
-                return d != null && !InstanceFact(s, d, RecordClaimedFact) ? ("本局已领·可核对", false) : ("已领取", true);
+                // 只有核心记录在新一代可“核对”；唯一实物箱（B13c 旧 d03 箱等）领过就是已领取，跨代不复活
+                return r.IsRecord && d != null && !InstanceFact(s, d, RecordClaimedFact) ? ("本局已领·可核对", false) : ("已领取", true);
             }
             if (r.IsUnlimited) return ("无限", false);
             if (r.IsInstance) return avail > 0 ? ($"本代剩余{avail}/{r.Cap}", false) : ("本代已搜空", true);

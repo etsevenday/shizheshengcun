@@ -58,7 +58,7 @@ public class B12ResourceTests : TestBase
         Assert.That(Cfg.Resources.Count(r => r.Scope == ResourceScopes.WorldStock), Is.EqualTo(20 + 64 + 43), "B13b：44 条主世界恢复来源里 43 条 world_stock（检查哨值勤补给箱是单局唯一）");
         Assert.That(Cfg.Resources.Count(r => r.IsInstance), Is.EqualTo(24));
         Assert.That(Cfg.Resources.Count(r => r.IsRecord), Is.EqualTo(8));
-        Assert.That(Cfg.Resources.Count(r => r.IsCampaign), Is.EqualTo(8 + 4), "B13b：检查哨值勤补给箱、工坊首次支援包、消防车器材箱、采石坡图册");
+        Assert.That(Cfg.Resources.Count(r => r.IsCampaign), Is.EqualTo(8 + 4 + 6), "B13b：检查哨值勤补给箱、工坊首次支援包、消防车器材箱、采石坡图册；B13c：6 个旧 d03 唯一箱");
         Assert.That(Cfg.Resources.Where(r => r.IsInstance).All(r => r.Cap == 2 && !r.Refills && E.Location(r.LocationId).DungeonId != null), Is.True, "普通箱每箱 2/0、在地牢房间");
     }
 
@@ -246,7 +246,7 @@ public class B12ResourceTests : TestBase
         j["RevealedResourceMarkers"] = new JArray("w11_orchard_a");
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out var notes);
         Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "20→21→22→23（B13b 起再升到 23）");
-        Assert.That(m.Resources, Has.Count.EqualTo(Cfg.Resources.Count), "B13b 起 163 条（另 47 条恢复来源）");
+        Assert.That(m.Resources, Has.Count.EqualTo(Cfg.Resources.Count), "B13c 起 169 条（B13b 另 47 条恢复来源、B13c 6 个旧唯一箱）");
         Assert.That(m.Resources["w11_orchard_a"].Discovered, Is.True);
         Assert.That(m.Resources["w11_orchard_a"].Available, Is.EqualTo(12));
         Assert.That(m.Resources["w11_orchard_b"].Discovered, Is.False, "50% 未到");

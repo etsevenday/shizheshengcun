@@ -806,8 +806,8 @@ public class B7dCombatTests : BattleTestBase
         var s = Fight(9602, "shambler");
         s.Battle = null;
         UnlockCapacity(s, 4);
-        Assert.That(E.CapacityText(s), Is.EqualTo("容量C4（已有教会路线记录与学院安全记录两种）"));
+        Assert.That(E.CapacityText(s), Is.EqualTo("容量C4（已有圣所旧路档册与封存区安全规程两种）"));
         s.Progress.Flags.Remove("academy_safety_record");
-        Assert.That(E.CapacityText(s), Does.Contain("取得教会路线记录与学院安全记录两种后C4"));
+        Assert.That(E.CapacityText(s), Does.Contain("取得圣所旧路档册与封存区安全规程两种后C4"));
     }
 }

@@ -40,8 +40,8 @@ public class B13bResourceTests : TestBase
         var add = ((JArray)adj["resources"]!["additionalSources"]!).Cast<JObject>().ToList();
         Assert.That(add, Has.Count.EqualTo(53));
         var unique = ((JArray)adj["resources"]!["uniqueEquipmentCaches"]!).Select(u => (string)u["id"]!).ToHashSet();
-        Assert.That(Cfg.Resources, Has.Count.EqualTo(116 + 47));
-        Assert.That(Cfg.Resources.Select(r => r.NodeId).Distinct().Count(), Is.EqualTo(163), "资源 ID 不重复");
+        Assert.That(Cfg.Resources, Has.Count.EqualTo(116 + 47 + 6), "B13c 起 6 个旧唯一箱也入表");
+        Assert.That(Cfg.Resources.Select(r => r.NodeId).Distinct().Count(), Is.EqualTo(169), "资源 ID 不重复");
         var aliases = Cfg.Resources.SelectMany(r => r.LegacyAliases).ToList();
         Assert.That(aliases.Distinct().Count(), Is.EqualTo(aliases.Count), "旧别名不重复");
         foreach (var j in add)
@@ -49,7 +49,7 @@ public class B13bResourceTests : TestBase
             var id = (string)j["id"]!;
             if (unique.Contains(id))
             {
-                Assert.That(Cfg.Resources.Any(r => r.NodeId == id), Is.False, $"{id}：旧唯一箱领取在 B13c，本批不建资源点");
+                Assert.That(E.Resource(id).Name, Is.EqualTo((string)j["displayName"]!), $"{id}：B13c 起入资源表（Q122）");
                 Assert.That(Cfg.Map.LegacyClaims.Single(c => c.ClaimId == id).Name, Is.EqualTo((string)j["displayName"]!), "名称已登记");
                 continue;
             }
@@ -95,9 +95,9 @@ public class B13bResourceTests : TestBase
         var res = (JObject)j["Resources"]!;
         foreach (var r in Cfg.Resources.Skip(116)) res.Remove(r.NodeId);
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out var notes);
-        Assert.That(m.SchemaVersion, Is.EqualTo("23"));
-        Assert.That(m.Resources, Has.Count.EqualTo(163));
-        Assert.That(notes, Has.Some.Contains("163"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "22→23→24（B13c 起 24）");
+        Assert.That(m.Resources, Has.Count.EqualTo(Cfg.Resources.Count));
+        Assert.That(notes, Has.Some.Contains(Cfg.Resources.Count.ToString()));
         Assert.That(m.Resources["m01_road_crate"].Discovered, Is.True, "25% 已到：补可见");
         Assert.That(m.Resources["m01_road_crate"].Available, Is.EqualTo(6), "初始=cap");
         Assert.That(m.Resources["firetruck_cache"].Discovered, Is.True, "50% 已到：消防车器材箱可见");
@@ -275,11 +275,11 @@ public class B13bResourceTests : TestBase
         foreach (var r in Cfg.Resources)
         {
             if (!names.TryGetValue(r.NodeId, out var n)) continue;
-            if (r.IsRecord) { Assert.That(r.Name, Is.Not.EqualTo(n), $"{r.NodeId}：核心记录正式名在 B13c"); continue; }
+            if (r.IsRecord) { Assert.That(r.Name, Is.EqualTo(n), $"{r.NodeId}：B13c 起核心记录也用正式名"); continue; }
             Assert.That(r.Name, Is.EqualTo(n), r.NodeId);
             applied++;
         }
-        Assert.That(applied, Is.EqualTo(135));
+        Assert.That(applied, Is.EqualTo(135 + 6), "B13b 135 条 + B13c 6 个旧唯一箱");
         Assert.That(E.Resource("roots").Name, Is.EqualTo("块根地"), "旧 20 原名保留");
         Assert.That(E.Resource("w12_canal_b").Name, Is.EqualTo("渠边旧密封件"));
     }
