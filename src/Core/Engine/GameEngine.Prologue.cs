@@ -348,7 +348,7 @@ namespace Survival.Core.Engine
                     if (id == null || !_items.TryGetValue(id, out var ic)) yield break;
                     var u = ic.Use;
                     // PRO02：可直接食用/饮用（脏水等会致病的不算，交给 PRO08“先处理”）
-                    if (u != null && !u.IsMedicine && !u.CausesDiarrhea && !ic.RequiresCooking && (u.Satiety > 0 || u.Hydration > 0)) yield return "PRO02";
+                    if (u != null && !u.IsMedicine && !u.IsCare && !u.CausesDiarrhea && !ic.RequiresCooking && (u.Satiety > 0 || u.Hydration > 0)) yield return "PRO02";
                     var groundOrCarried = owner == ItemInstance.Carried || owner == here;
                     // PRO03：随身/地面上的伤害型武器卡（卡下有装备入口）
                     if (groundOrCarried && _weapons.TryGetValue(id, out var w) && (w.WeaponKind == null || !NonDamageKinds.Contains(w.WeaponKind))) yield return "PRO03";
@@ -703,7 +703,7 @@ namespace Survival.Core.Engine
                 pv.Legs.Add((l.From, l.To, l.BaseMinutes, _edges.TryGetValue(l.EdgeId, out var e) && EdgeOpen(s, e)));
             var carried = s.Items.Where(i => PlaceOf(s, i) == ItemInstance.Carried && !IsSpoiled(s, i)).ToList();
             pv.CleanWater = carried.Where(i => i.ItemId == "clean_water").Sum(i => i.Count);
-            pv.Food = carried.Where(i => _items.TryGetValue(i.ItemId, out var c) && c.Use != null && !c.Use.IsMedicine && c.Use.Satiety > 0 && !c.RequiresCooking).Sum(i => i.Count);
+            pv.Food = carried.Where(i => _items.TryGetValue(i.ItemId, out var c) && c.Use != null && !c.Use.IsMedicine && !c.Use.IsCare && c.Use.Satiety > 0 && !c.RequiresCooking).Sum(i => i.Count);
             pv.HasWeapon = HasDamageWeaponEquipped(s);
             if (pv.CleanWater < j.SuggestedCleanWater) pv.Missing.Add($"净水{j.SuggestedCleanWater}份（现有{pv.CleanWater}）");
             if (pv.Food < j.SuggestedFood) pv.Missing.Add($"可直接吃的食物{j.SuggestedFood}份（现有{pv.Food}）");

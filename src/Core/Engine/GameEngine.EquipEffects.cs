@@ -350,7 +350,9 @@ namespace Survival.Core.Engine
 
         /// <summary>工具维护恢复比例：配方 20% 与装备替代比例（维护手册 25%）取较高者，不相加（A05 §2、§5）。</summary>
         public double RepairFraction(GameState s, RecipeConfig rc) =>
-            Math.Max(PassiveRepairFraction(s.Player, rc.RestoreOwnDurabilityMaxFraction), EquipmentEffects(s).Set("repair.fraction") ?? 0);
+            // B16 野外修补包：固定恢复最大耐久 10%，不吃维修装备与熟练加成（A07 X1.6“不与现有维修包同次叠加”，开发假设 B16-6）
+            rc.RepairFilter != null ? rc.RestoreOwnDurabilityMaxFraction
+            : Math.Max(PassiveRepairFraction(s.Player, rc.RestoreOwnDurabilityMaxFraction), EquipmentEffects(s).Set("repair.fraction") ?? 0);
 
         /// <summary>非战斗食用的正饱食收益 × 装备 eat.satiety（配给袋 ×1.05）；负值与战斗中不变。</summary>
         public double UseSatiety(GameState s, ItemUseConfig u) =>

@@ -486,7 +486,7 @@ namespace Survival.Core.Engine
                     }
                     if (rc.IsRepair)
                     {
-                        var why = RepairBlocked(s, r.InstanceId, out var target);
+                        var why = RepairBlocked(s, r.InstanceId, out var target, rc);
                         if (why != null) return why;
                         plan.Tool = target;
                     }
@@ -656,6 +656,8 @@ namespace Survival.Core.Engine
                     // Q23 选 B（S11 X4、S10 X4、S01 2026-10-30 裁定）：仍在本次有效受热保护中、原物本来可食的实例，过了原保质期也可直接食用，
                     // 按原物类型结算；食用即终止它自己的加工、释放它自己的预留，见 Start 的 Use 分支与 UseCookNote。
                     if (cfg.Use.IsMedicine && MedicineBlocked(s, cfg.Use) is string medWhy) return medWhy;
+                    // B16 护理品（止泻药粉、口服补液、应急恢复剂）：无收益或冷却中拒绝
+                    if (cfg.Use.IsCare && CareBlocked(s, cfg.Use) is string careWhy) return careWhy;
                     plan.UseItem = inst;
                     plan.TargetId = inst.ItemId;
                     plan.Planned = Config.ItemActions.UseMinutes;
@@ -716,7 +718,7 @@ namespace Survival.Core.Engine
         }
 
         public static string UseVerb(ItemConfig cfg) =>
-            cfg.Use != null && cfg.Use.IsMedicine ? "使用" : cfg.Kind == "water" ? "饮用" : "食用";
+            cfg.Use != null && (cfg.Use.IsMedicine || cfg.Use.IsCare) ? "使用" : cfg.Kind == "water" ? "饮用" : "食用";
 
         /// <summary>自用带既有风险（配置 causesDiarrhea，脏水）：按钮写“饮用1份（风险）”（v0.7 第 7 节）。</summary>
         public static bool UseRisky(ItemConfig cfg) => cfg.Use != null && cfg.Use.CausesDiarrhea;
@@ -896,6 +898,7 @@ namespace Survival.Core.Engine
                     }
                     // 绷带、抗生素、特效药：效果在确认时应用，各自冷却只在对应效果实际生效时启动（v0.6 §11）
                     if (u.IsMedicine) ApplyMedicine(s, u, parts);
+                    if (u.IsCare) ApplyCare(s, u, parts);
                     // 效果在开始时一次结清、不可取消，所以按“行动完成”发事件，界面的结果提示条才会跟着更新
                     Emit(s, GameEventKind.ActionCompleted, $"{p.Label}：{string.Join("，", parts)}。{(cookNote != null ? cookNote + "。" : "")}");
                     NoteUse(s, a, satBefore, hydBefore);   // B13 PRO02

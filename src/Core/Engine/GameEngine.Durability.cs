@@ -71,12 +71,26 @@ namespace Survival.Core.Engine
         public RecipeConfig? RepairRecipe => Config.Recipes.FirstOrDefault(r => r.IsRepair);
 
         /// <summary>可维护的目标：随身或当前地面（不在火堆、不在锅里）、有耐久且未满、未被预留或锁定。</summary>
-        public List<ItemInstance> RepairCandidates(GameState s) =>
+        public List<ItemInstance> RepairCandidates(GameState s, RecipeConfig? rc = null) =>
             s.Items.Where(i => i.Durability.HasValue && i.MaxDurability.HasValue && (OnPlayer(i) || i.Owner == s.CurrentLocation))
+                .Where(i => rc?.RepairFilter == null || RepairFilterOk(rc, i.ItemId))
                 .OrderBy(i => OnPlayer(i) ? 0 : 1).ThenBy(i => Condition(i)).ThenBy(i => i.InstanceId).ToList();
 
+        /// <summary>
+        /// 野外修补包（B16，A07 X1.6、R02 X4）只修“非枪金属武器/工具”：开发方按拆解回收材料判定金属（废金属/钢材/铁片），
+        /// 枪械（weaponKind firearms）、木/石/布皮/塑料类、防具与锅一律不修（开发假设 B16-6，待确认）。
+        /// </summary>
+        public bool RepairFilterOk(RecipeConfig rc, string itemId)
+        {
+            if (rc.RepairFilter != "metal_non_gun") return true;
+            var w = Weapon(itemId);
+            if (w == null || w.WeaponKind == "firearms") return false;
+            var mat = SalvageDef(itemId)?.ItemId;
+            return mat == "scrap" || mat == "steel" || mat == "iron_plate";
+        }
+
         /// <summary>维护目标是否合法；合法时返回 null 并给出实例。</summary>
-        public string? RepairBlocked(GameState s, int? instanceId, out ItemInstance? target)
+        public string? RepairBlocked(GameState s, int? instanceId, out ItemInstance? target, RecipeConfig? rc = null)
         {
             target = null;
             if (!instanceId.HasValue) return "请先选择要维护的工具";
@@ -87,6 +101,7 @@ namespace Survival.Core.Engine
             if (!(OnPlayer(target) || target.Owner == s.CurrentLocation))
                 return target.InFacility ? $"先把{cfg.Name}从火堆取下" : "只能维护随身或当前地面的工具";
             if (target.ReservedBy != null || IsLocked(s, target)) return "行动占用：这件工具正被使用";
+            if (rc != null && !RepairFilterOk(rc, target.ItemId)) return $"{rc.Name}只修非枪的金属武器/工具，{cfg.Name}不能用它修（枪、布皮、木石器具与锅不修）";
             if (target.Durability.Value >= target.MaxDurability.Value - 1e-9) return $"{cfg.Name}#{target.InstanceId}耐久已满";
             if (IsPot(target) && PotContents(s, target.InstanceId).Count > 0 && RepairRecipe?.RequireEmptyDetachedPotWhenTargetIsPot == true)
                 return "锅须先取下并清空才能维护";

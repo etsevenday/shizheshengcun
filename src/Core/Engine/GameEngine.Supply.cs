@@ -48,6 +48,70 @@ namespace Survival.Core.Engine
             return XpText(s, xpSkill, xp);
         }
 
+        // ───────────── 护理品（B16 R51；A07 X1.2/X1.6、「二十种食品用品」口服补液） ─────────────
+
+        /// <summary>护理品现在不能用的原因（冷却中、没有腹泻、体力已满、水分满且没有腹泻收益）；能用为 null。</summary>
+        public string? CareBlocked(GameState s, ItemUseConfig u)
+        {
+            var a = s.Player;
+            if (u.OutOfBattleOnly && s.Battle != null) return "战斗中不能使用";
+            if (u.CooldownGroup != null && a.Cooldowns.TryGetValue(u.CooldownGroup, out var ready) && ready > s.GameMinute)
+                return $"{CareGroupName(u.CooldownGroup)}冷却中，还需{Clock.Duration(ready - s.GameMinute)}";
+            var diarrhea = a.DiarrheaUntil.HasValue && a.DiarrheaUntil.Value > s.GameMinute;
+            if (u.RequiresDiarrhea && !diarrhea) return "没有腹泻，用了没有效果";
+            if (u.BlockWhenEnergyFull && a.Stats.Energy >= a.Stats.EnergyMax - 1e-9) return "体力已满，用了没有效果";
+            if (u.BlockWhenNoHydrationOrDiarrheaGain && !diarrhea && a.Stats.Hydration >= a.Stats.Max(StatId.Hydration) - 1e-9)
+                return "水分已满且没有腹泻，用了没有效果";
+            return null;
+        }
+
+        private static string CareGroupName(string group) => group switch
+        {
+            "relief" => "缓解（止泻药粉与口服补液共用）",
+            "tonic" => "应急恢复剂给药",
+            _ => "护理",
+        };
+
+        /// <summary>护理品效果（Use 开始时一次结清；饱食/水分/精神由通用食用结算）：体力、清醒、腹泻剩余减少，并启动冷却。</summary>
+        private void ApplyCare(GameState s, ItemUseConfig u, List<string> parts)
+        {
+            var a = s.Player;
+            if (u.Energy != 0) { s.Stats.Add(StatId.Energy, u.Energy); parts.Add(Signed("体力", u.Energy)); }
+            if (u.Wakefulness != 0) { s.Stats.Add(StatId.Wakefulness, u.Wakefulness); parts.Add(Signed("清醒", u.Wakefulness)); }
+            if (u.DiarrheaReduceMinutes > 0 && a.DiarrheaUntil.HasValue && a.DiarrheaUntil.Value > s.GameMinute)
+            {
+                var left = a.DiarrheaUntil.Value - s.GameMinute;
+                var cut = Math.Min(left, u.DiarrheaReduceMinutes);
+                a.DiarrheaUntil = left - cut <= 0 ? (int?)null : a.DiarrheaUntil.Value - cut;
+                parts.Add(a.DiarrheaUntil == null ? "腹泻已止住" : $"腹泻剩余减{cut}分钟（还剩{Clock.Duration(a.DiarrheaUntil.Value - s.GameMinute)}）");
+            }
+            if (u.CooldownGroup != null && u.CooldownMinutes > 0)
+            {
+                a.Cooldowns[u.CooldownGroup] = s.GameMinute + u.CooldownMinutes;
+                parts.Add($"{CareGroupName(u.CooldownGroup)}冷却{Clock.Duration(u.CooldownMinutes)}");
+            }
+        }
+
+        /// <summary>
+        /// 开发入口（?dev=1，B16）：学会远行基础做法与基础陶工做法，并把试新配方/水壶/锅食谱/护理品/小修用的材料放到当前地面
+        /// （件数是测试用，不是玩法数值）。
+        /// </summary>
+        public string DebugSupplyKit(GameState s)
+        {
+            s.Progress.Flags.Add("knowledge:expedition_basics");
+            s.Progress.Flags.Add("knowledge:ceramic_methods");
+            var kit = new (string id, int n)[]
+            {
+                ("dirty_water", 4), ("clean_water", 2), ("purification_tablet", 1), ("filter_cartridge", 1), ("water_filter", 1), ("ration_canteen", 1),
+                ("grain", 3), ("salt", 2), ("raw_meat", 1), ("dried_meat", 1), ("dried_berries", 1), ("disinfectant", 1),
+                ("antidiarrheal_powder", 1), ("oral_rehydration", 1), ("emergency_tonic", 1), ("field_patch", 2),
+            };
+            foreach (var (id, n) in kit) CreateItems(s, id, n, s.CurrentLocation);
+            var text = "开发：学会远行基础做法、基础陶工做法，B16 材料（脏水4、净水2、净水片、滤芯、滤水器、分量水壶、谷物3、盐2、生肉、肉干、果干、消毒液、止泻药粉、口服补液、应急恢复剂、野外修补包2）放在当前地面";
+            Emit(s, GameEventKind.Info, text + "。");
+            return text;
+        }
+
         /// <summary>配方模式的玩家说法：“主动制作（吃熟练加速）”“固定等待20分钟（不吃加速）”“被动加工（不吃加速）”。</summary>
         public string RecipeModeText(RecipeConfig rc) => rc.ModeOrDefault switch
         {
