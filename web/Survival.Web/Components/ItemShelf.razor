@@ -86,7 +86,7 @@
                 }
                 @* Q35：长名一行省略时，键盘聚焦提示（data-tip）与名称悬停提示写全名、数量与效果行 *@
                 <div id="@(gSel ? "card-sel" : null)" data-tip="@($"{e.ItemName(id)} ×{total} · {infoLine}{(span > 1 ? $" · 占{span}格" : "")}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drop="@($"card:{key}")" data-drop-level="card"
-                     class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel && (!stacked || pickedKey == kb![0].Key) ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "")"
+                     class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel && (!stacked || pickedKey == kb![0].Key) ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "") @(!carried && G.HeldHighlight(id) ? "held" : "")"
                      role="button" tabindex="0" @onclick="() => SelectFront(id, kb)" @onkeydown="ev => OnCardKey(ev, () => SelectFront(id, kb))" title="@e.Item(id).Desc">
                     <div class="ctitle"><span title="@e.ItemName(id)">@e.ItemName(id)</span><span class="qty" title="@(stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : reservedN > 0 ? $"共{total}份，其中{reservedN}份已被预留（不能拾取或另用）" : null)">@qtyText</span></div>
                     <div class="art">@Icons.Markup(id)</div>

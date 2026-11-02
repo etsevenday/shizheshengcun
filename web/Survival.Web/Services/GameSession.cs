@@ -61,6 +61,13 @@ public sealed class GameSession
     public List<GameEvent> Recent { get; } = new();
     public GameEvent? Toast { get; private set; }
     public HashSet<string> Highlights { get; } = new();
+    /// <summary>保持的高亮（B18 试玩修复 M372：换物产物落地后描边保持到离开该处地面或下一批新高亮）。</summary>
+    public HashSet<string> HeldHighlights { get; } = new();
+    /// <summary>保持高亮所属的地面 owner（GameState.Ground）。</summary>
+    public string? HeldHighlightAt { get; private set; }
+
+    /// <summary>某张地面物品卡是否该显示保持的落地高亮。</summary>
+    public bool HeldHighlight(string itemId) => State != null && HeldHighlightAt == S.Ground && HeldHighlights.Contains(itemId);
     public bool SevenDayPending { get; set; }
     public string? Notice { get; set; }
 
@@ -822,6 +829,8 @@ public sealed class GameSession
         Recent.Clear();
         Toast = null;
         Highlights.Clear();
+        HeldHighlights.Clear();
+        HeldHighlightAt = null;
         SevenDayPending = false;
         TaskDoneSeen = null;
         Notice = null;
@@ -1513,6 +1522,13 @@ public sealed class GameSession
             {
                 Highlights.Clear();
                 foreach (var id in ev.HighlightIds) Highlights.Add(id);
+                HeldHighlights.Clear();
+                HeldHighlightAt = null;
+                if (ev.HoldHighlight)
+                {
+                    foreach (var id in ev.HighlightIds) HeldHighlights.Add(id);
+                    HeldHighlightAt = S.Ground;
+                }
             }
         }
         if (Recent.Count > 60) Recent.RemoveRange(0, Recent.Count - 60);

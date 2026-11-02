@@ -516,4 +516,55 @@ public class B18AppraisalTests : TestBase
         Assert.That(E.DebugAppraisal(s, "t2355"), Does.Contain("23:55"));
         Assert.That(Clock.MinuteOfDay(s.GameMinute), Is.EqualTo(23 * 60 + 55));
     }
+
+    // ───────────── 试玩修复 M372 ─────────────
+
+    /// <summary>
+    /// AT13（试玩修复 M372，R07 X3.3“每档独立等概率”）：多种子多日下各档两两独立——废金属档与净水档份数不同的比例约 1/2，
+    /// 布料档与另两档的联合分布约为各自概率之积；单档仍均匀。原 FNV 直接取模时废=水恒成立。
+    /// </summary>
+    [Test]
+    public void AT13_M372_OffersIndependent()
+    {
+        var a = Cfg.Appraisal;
+        var cloth = a.Offers.Single(o => o.Id == "white_for_cloth");
+        var scrap = a.Offers.Single(o => o.Id == "white_for_scrap");
+        var water = a.Offers.Single(o => o.Id == "white_for_water");
+        int total = 0, diff = 0, scrapOdd = 0;
+        var joint = new Dictionary<(int, int), int>();
+        foreach (var seed in Enumerable.Range(1, 20).Select(x => (x * 7919).ToString()))
+            for (var d = 1; d <= 300; d++)
+            {
+                var c = GameEngine.QuoteQuantity(seed, a.ServiceId, d, cloth, a.QuoteVersion);
+                var sc = GameEngine.QuoteQuantity(seed, a.ServiceId, d, scrap, a.QuoteVersion);
+                var w = GameEngine.QuoteQuantity(seed, a.ServiceId, d, water, a.QuoteVersion);
+                total++;
+                if (sc != w) diff++;
+                if (sc == 1 && d % 2 == 1) scrapOdd++;
+                joint[(c, sc)] = joint.TryGetValue((c, sc), out var k) ? k + 1 : 1;
+            }
+        Assert.That(diff / (double)total, Is.InRange(0.45, 0.55), "废金属与净水两档独立：份数不同约一半");
+        Assert.That(scrapOdd / (double)(total / 2), Is.InRange(0.45, 0.55), "不按日期单双交替");
+        Assert.That(joint.Count, Is.EqualTo(6));
+        foreach (var kv in joint) Assert.That(kv.Value / (double)total, Is.InRange(1 / 6.0 * 0.85, 1 / 6.0 * 1.15), $"布料{kv.Key.Item1}×废金属{kv.Key.Item2}");
+    }
+
+    /// <summary>R07 X3.4（试玩修复 M372）：换物完成事件高亮产物且要求保持（界面描边到离开当地或下一批高亮）；鉴定完成不带高亮。</summary>
+    [Test]
+    public void AT07_M372_TradeOutputHighlightHeld()
+    {
+        var s = AtOffice(1);
+        var a = Ordinary(s, ItemInstance.Carried, "g-a");
+        var b = Ordinary(s, ItemInstance.Carried, "g-b");
+        Ok(E.StartAppraise(s, b.InstanceId));
+        Run(s);
+        var ap = E.DrainEvents(s).Single(e => e.Text.StartsWith("详细鉴定完成"));
+        Assert.That((ap.HighlightIds.Count, ap.HoldHighlight), Is.EqualTo((0, false)));
+        ReadDialogues(s);
+        Ok(E.StartAppraisalTrade(s, a.InstanceId, "white_for_scrap"));
+        Run(s);
+        var ev = E.DrainEvents(s).Single(e => e.Text.StartsWith("换物完成"));
+        Assert.That(ev.HighlightIds, Is.EqualTo(new[] { "scrap" }));
+        Assert.That(ev.HoldHighlight, Is.True);
+    }
 }

@@ -353,6 +353,7 @@ namespace Survival.Core.Engine
             }
             s.City.Completed++;
             Emit(s, GameEventKind.ActionCompleted, $"{what}完成：{made}。", null, p.OutputItemId != null ? new[] { p.OutputItemId } : null);
+            if (p.OutputItemId != null) s.PendingEvents[s.PendingEvents.Count - 1].HoldHighlight = true;   // 换物产物落地高亮保持（R07 X3.4）
             CityServiceEnd(s, p.NpcId);
         }
 

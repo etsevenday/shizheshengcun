@@ -1041,6 +1041,11 @@ namespace Survival.Core.State
         public string Text { get; set; } = "";
         public StatId? Stat { get; set; }
         public List<string> HighlightIds { get; set; } = new List<string>();
+        /// <summary>
+        /// 高亮保持到离开当地或下一批新高亮（B18 试玩修复 M372：鉴定所换物产物“落当前服务区地面并高亮”，R07 X3.4；
+        /// 普通高亮只闪两下，完成时常被岗位台词盖住）。
+        /// </summary>
+        public bool HoldHighlight { get; set; }
     }
 
     /// <summary>可序列化的 xorshift32，读档后继续同一序列。</summary>

@@ -1429,3 +1429,5 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .appraisal-panel .ap-samples .small { color: #cfd5c6; }
 .appraisal-panel .ap-tabs { flex-wrap: nowrap; }
 .appraisal-panel .ap-tabs > button { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* B18 试玩修复 M372：鉴定所换物产物落地后保持金色描边（R07 X3.4“落当前服务区地面并高亮”），离开该处或下一批新高亮时取消 */
+.card.held { box-shadow: 0 0 0 3px #e8cf8f, 0 0 10px 2px #e8cf8f88; }

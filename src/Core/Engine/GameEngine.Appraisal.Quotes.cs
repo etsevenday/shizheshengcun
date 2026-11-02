@@ -27,11 +27,23 @@ namespace Survival.Core.Engine
             return h;
         }
 
-        /// <summary>一档的确切份数：种子字段按 contract seedFields 顺序拼接后哈希，下界 + 哈希 mod 区间长度（闭区间内每个整数等概率）。</summary>
+        /// <summary>splitmix64 终混（雪崩）：让哈希的每一位都依赖输入的全部位。</summary>
+        private static ulong Mix64(ulong z)
+        {
+            z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL;
+            z = (z ^ (z >> 27)) * 0x94D049BB133111EBUL;
+            return z ^ (z >> 31);
+        }
+
+        /// <summary>
+        /// 一档的确切份数：种子字段按 contract seedFields 顺序拼接后 FNV-1a 64 位哈希，再经 splitmix64 终混，下界 + 结果 mod 区间长度
+        /// （闭区间内每个整数等概率，各档之间独立）。试玩修复 M372：原先没有终混，FNV 低位只取决于字符奇偶，区间长 2 的废金属档与净水档
+        /// 份数永远相同且按日期单双交替（违反 R07 X3.3“每档独立等概率”）。已锁定存档的旧报价表不重算，只影响之后新生成的表。
+        /// </summary>
         public static int QuoteQuantity(string campaignId, string serviceId, int worldDay, AppraisalOfferConfig offer, string quoteVersion)
         {
             var span = (ulong)(offer.Max - offer.Min + 1);
-            var h = Fnv64($"{campaignId}|{serviceId}|{worldDay}|{offer.Id}|{quoteVersion}");
+            var h = Mix64(Fnv64($"{campaignId}|{serviceId}|{worldDay}|{offer.Id}|{quoteVersion}"));
             return offer.Min + (int)(h % span);
         }
 
