@@ -15224,13 +15224,19 @@
         "nodeId": "w19_survey",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w20_powercut_a",
@@ -15280,13 +15286,19 @@
         "nodeId": "w20_powercut",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w21_pine_a",
@@ -15644,13 +15656,19 @@
         "nodeId": "w27_relay",
         "originalBaseMinutes": 25,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w27_relay_b",
@@ -15672,13 +15690,19 @@
         "nodeId": "w27_relay",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w28_highland_a",
@@ -15980,13 +16004,19 @@
         "nodeId": "w33_waterworks",
         "originalBaseMinutes": 25,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w33_waterworks_b",
@@ -16008,13 +16038,19 @@
         "nodeId": "w33_waterworks",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w34_depot_a",
@@ -16036,13 +16072,19 @@
         "nodeId": "w34_depot",
         "originalBaseMinutes": 25,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w34_depot_b",
@@ -16064,13 +16106,19 @@
         "nodeId": "w34_depot",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w12_canal_water",
@@ -16577,13 +16625,19 @@
         "nodeId": "d02_06",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d02_04_cache2",
@@ -16605,13 +16659,19 @@
         "nodeId": "d02_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d02_08_unique",
@@ -16668,13 +16728,19 @@
         "nodeId": "d03_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d03_06_cache1",
@@ -16696,13 +16762,19 @@
         "nodeId": "d03_06",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d03_04_cache2",
@@ -16724,13 +16796,19 @@
         "nodeId": "d03_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d03_08_unique",
@@ -16788,13 +16866,19 @@
         "nodeId": "d04_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d04_05_cache1",
@@ -16816,13 +16900,19 @@
         "nodeId": "d04_05",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d04_03_cache2",
@@ -16844,13 +16934,19 @@
         "nodeId": "d04_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d04_07_unique",
@@ -16906,13 +17002,19 @@
         "nodeId": "d05_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d05_07_cache1",
@@ -16934,13 +17036,19 @@
         "nodeId": "d05_07",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d05_04_cache2",
@@ -16962,13 +17070,19 @@
         "nodeId": "d05_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d05_07_unique",
@@ -17016,13 +17130,19 @@
         "nodeId": "d06_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d06_06_cache1",
@@ -17044,13 +17164,19 @@
         "nodeId": "d06_06",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d06_03_cache2",
@@ -17072,13 +17198,19 @@
         "nodeId": "d06_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d06_08_unique",
@@ -17126,13 +17258,19 @@
         "nodeId": "d07_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d07_07_cache1",
@@ -17182,13 +17320,19 @@
         "nodeId": "d07_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d07_07_unique",
@@ -17236,13 +17380,19 @@
         "nodeId": "d08_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d08_06_cache1",
@@ -17292,13 +17442,19 @@
         "nodeId": "d08_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d08_08_unique",
@@ -17470,5 +17626,6 @@
   },
   "resourceAdjudicationsFile": "assets/20261102/map/resource-adjudications.json",
   "restoredResourceCount": 53,
-  "totalResourceEntriesWithLegacy20": 169
+  "totalResourceEntriesWithLegacy20": 169,
+  "fireAxeAdjudicationsFile": "assets/20261102/equipment/fire-axe-adjudications.json"
 }

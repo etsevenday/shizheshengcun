@@ -1,5 +1,5 @@
 {
-  "version": "q44_q83_20261031",
+  "version": "q44_q137_20261102",
   "status": "approved_planning_target_not_engine_verification",
   "sourceQuestions": [
     "Q44",
@@ -22,7 +22,9 @@
     "Q71",
     "Q80",
     "Q82",
-    "Q83"
+    "Q83",
+    "Q136",
+    "Q137"
   ],
   "quality": {
     "unspecifiedSource": "white_zero_affixes_no_rng",
@@ -59,6 +61,24 @@
       "armorWear": 0,
       "includesFullyBlockedAndPositiveFinalDamage": true,
       "sourceQuestion": "Q83"
+    },
+    "firetruckReward": {
+      "sourceQuestion": "Q136_A",
+      "itemId": "fire_axe",
+      "rewardResourceId": "firetruck_cache",
+      "quality": "white",
+      "affixCount": 0,
+      "templateMaxRange": [
+        40,
+        52
+      ],
+      "generationStep": 0.1,
+      "sampling": "normal_R02_uniform_inclusive_template_once_on_real_creation",
+      "current": "equal_to_own_sampled_max",
+      "fixedMax52": false,
+      "preview": "range_only_no_real_rng_or_item_creation",
+      "retriesLoadTransferRepair": "same_existing_instance_max_not_rerolled",
+      "existingInstances": "preserve_current_max_and_wear_no_free_repair_or_replacement"
     }
   },
   "combatEquipment": {
@@ -1798,7 +1818,47 @@
     "manufacturingWorkIncludesRepairAndDismantle": true,
     "resourceClassificationContract": "assets/20261031/progression/progression-adjudications.json",
     "manufacturingLevelWorkMultiplier": 1,
-    "workRoundingContract": "assets/20261031/progression/progression-adjudications.json#workCarry"
+    "workRoundingContract": "assets/20261031/progression/progression-adjudications.json#workCarry",
+    "fireAxeBreakDoor": {
+      "contractFile": "assets/20261102/equipment/fire-axe-adjudications.json",
+      "itemId": "fire_axe",
+      "workMultiplier": 0.75,
+      "lockedResourceIds": [
+        "m01_road_crate",
+        "w01_farm_barn",
+        "a01_yard_fastener",
+        "a03_foundry_weapon_parts",
+        "w19_survey_b",
+        "w20_powercut_b",
+        "w27_relay_a",
+        "w27_relay_b",
+        "w33_waterworks_a",
+        "w33_waterworks_b",
+        "w34_depot_a",
+        "w34_depot_b",
+        "d02_06_cache1",
+        "d02_04_cache2",
+        "d03_04_cache0",
+        "d03_06_cache1",
+        "d03_04_cache2",
+        "d04_03_cache0",
+        "d04_05_cache1",
+        "d04_03_cache2",
+        "d05_04_cache0",
+        "d05_07_cache1",
+        "d05_04_cache2",
+        "d06_03_cache0",
+        "d06_06_cache1",
+        "d06_03_cache2",
+        "d07_04_cache0",
+        "d07_04_cache2",
+        "d08_03_cache0",
+        "d08_03_cache2"
+      ],
+      "actualSelectedToolOnly": true,
+      "compositionFloor": 0.7,
+      "successWear": 1
+    }
   },
   "combatRuleContract": "assets/20261031/combat/combat-adjudications.json",
   "latestCombatResolutionContract": "assets/20261031/combat/combat-resolution-adjudications.json"

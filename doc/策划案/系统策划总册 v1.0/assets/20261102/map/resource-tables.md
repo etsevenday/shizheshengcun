@@ -1,5 +1,8 @@
 # Q120—Q127 资源、工具、名称与知识完整表
 
+Q137补充：下方工具表仅30个明确锁闭点额外允许消防斧，沿原工具后基础分钟/产量1/成功磨1，再按破门×0.75与熟练装备共同受×0.70下限；不把所有撬棍行都算锁闭。Q136消防斧最大耐久正常抽40—52、当前等于该实例max。[完整消防斧合同](<../equipment/fire-axe-adjudications.json>)。
+
+
 2026-11-02；总控按用户授权补齐的初值，原始ID与领取账稳定。完整执行边界见S05/A08本轮章。[机器数据](<resource-adjudications.json>)。
 
 ## 53条恢复及唯一来源
@@ -83,9 +86,9 @@
 | w18_tunnel_a | w18_tunnel | 洞外露矿 | crowbar | 20 | 1 | 1 | 否 |
 | w18_tunnel_b | w18_tunnel | 隧道维护紧固件 | crowbar | 25 | 1 | 1 | 是 |
 | w19_survey_a | w19_survey | 测绘设备旧件 | crowbar | 20 | 1 | 1 | 是 |
-| w19_survey_b | w19_survey | 测绘营备用电池 | crowbar | 25 | 1 | 1 | 是 |
+| w19_survey_b | w19_survey | 测绘营备用电池 | crowbar,fire_axe | 25 | 1 | 1 | 是 |
 | w20_powercut_a | w20_powercut | 塔基旧导线 | crowbar | 20 | 1 | 1 | 是 |
-| w20_powercut_b | w20_powercut | 高压走廊旧电器 | crowbar | 25 | 1 | 1 | 是 |
+| w20_powercut_b | w20_powercut | 高压走廊旧电器 | crowbar,fire_axe | 25 | 1 | 1 | 是 |
 | w21_pine_a | w21_pine | 针叶林倒木 | hatchet | 20 | 1 | 1 | 否 |
 | w21_pine_b | w21_pine | 针叶林纤维草丛 | stone_knife | 25 | 1 | 1 | 否 |
 | w22_ravine_a | w22_ravine | 沟谷露矿 | crowbar | 20 | 1 | 1 | 否 |
@@ -98,8 +101,8 @@
 | w25_wetland_b | w25_wetland | 湿地纤维草丛 | stone_knife | 25 | 1 | 1 | 否 |
 | w26_island_a | w26_island | 陆洲块根地 | stone_knife | 20 | 1 | 1 | 否 |
 | w26_island_b | w26_island | 陆洲盐晶 | crowbar | 25 | 1 | 1 | 否 |
-| w27_relay_a | w27_relay | 中继设备遗件 | crowbar | 20 | 1 | 1 | 是 |
-| w27_relay_b | w27_relay | 中继营精密机件 | crowbar | 25 | 1 | 1 | 是 |
+| w27_relay_a | w27_relay | 中继设备遗件 | crowbar,fire_axe | 20 | 1 | 1 | 是 |
+| w27_relay_b | w27_relay | 中继营精密机件 | crowbar,fire_axe | 25 | 1 | 1 | 是 |
 | w28_highland_a | w28_highland | 高地碎石带 | crowbar | 20 | 1 | 1 | 否 |
 | w28_highland_b | w28_highland | 高地草药丛 | stone_knife | 25 | 1 | 1 | 否 |
 | w29_riverbend_a | w29_riverbend | 河弯纤维草丛 | stone_knife | 20 | 1 | 1 | 否 |
@@ -110,10 +113,10 @@
 | w31_suburb_b | w31_suburb | 棚户医用纱布余存 | stone_knife | 25 | 1 | 1 | 是 |
 | w32_railcut_a | w32_railcut | 铁路废钢料 | crowbar | 20 | 1 | 1 | 是 |
 | w32_railcut_b | w32_railcut | 铁路维护紧固件 | crowbar | 25 | 1 | 1 | 是 |
-| w33_waterworks_a | w33_waterworks | 水厂黏合剂余存 | crowbar | 20 | 1 | 1 | 是 |
-| w33_waterworks_b | w33_waterworks | 水厂消毒液余存 | crowbar | 25 | 1 | 1 | 是 |
-| w34_depot_a | w34_depot | 应急仓豆罐头存货 | crowbar | 20 | 1 | 1 | 是 |
-| w34_depot_b | w34_depot | 应急仓盐水剂存货 | crowbar | 25 | 1 | 1 | 是 |
+| w33_waterworks_a | w33_waterworks | 水厂黏合剂余存 | crowbar,fire_axe | 20 | 1 | 1 | 是 |
+| w33_waterworks_b | w33_waterworks | 水厂消毒液余存 | crowbar,fire_axe | 25 | 1 | 1 | 是 |
+| w34_depot_a | w34_depot | 应急仓豆罐头存货 | crowbar,fire_axe | 20 | 1 | 1 | 是 |
+| w34_depot_b | w34_depot | 应急仓盐水剂存货 | crowbar,fire_axe | 25 | 1 | 1 | 是 |
 | w12_canal_water | w12_canal | 灌溉渠岸取水口 | 无 | 原值 | 1 | 0 | 否 |
 | w25_wetland_water | w25_wetland | 黑水湿地取水口 | 无 | 原值 | 1 | 0 | 否 |
 | w29_riverbend_water | w29_riverbend | 河道弯口取水口 | 无 | 原值 | 1 | 0 | 否 |
@@ -132,37 +135,37 @@
 | d01_04_cache2 | d01_04 | 藏书密室·皮革箱 | stone_knife | 15 | 1 | 1 | 是 |
 | d01_08_unique | d01_08 | 圣所旧路档册 | 无 | 原值 | 1 | 0 | 否 |
 | d02_04_cache0 | d02_04 | 控制室·医用纱布箱 | stone_knife | 15 | 1 | 1 | 是 |
-| d02_06_cache1 | d02_06 | 检修竖井·实验室试剂箱 | crowbar | 15 | 1 | 1 | 是 |
-| d02_04_cache2 | d02_04 | 控制室·电子组件箱 | crowbar | 15 | 1 | 1 | 是 |
+| d02_06_cache1 | d02_06 | 检修竖井·实验室试剂箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
+| d02_04_cache2 | d02_04 | 控制室·电子组件箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
 | d02_08_unique | d02_08 | 封存区安全规程 | 无 | 原值 | 1 | 0 | 否 |
-| d03_04_cache0 | d03_04 | 值勤室·武器组件箱 | crowbar | 15 | 1 | 1 | 是 |
-| d03_06_cache1 | d03_06 | 配电房·钢材箱 | crowbar | 15 | 1 | 1 | 是 |
-| d03_04_cache2 | d03_04 | 值勤室·紧固件箱 | crowbar | 15 | 1 | 1 | 是 |
+| d03_04_cache0 | d03_04 | 值勤室·武器组件箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
+| d03_06_cache1 | d03_06 | 配电房·钢材箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
+| d03_04_cache2 | d03_04 | 值勤室·紧固件箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
 | d03_08_unique | d03_08 | 警备仓备用电源 | 无 | 原值 | 1 | 0 | 否 |
-| d04_03_cache0 | d04_03 | 蓄电室·导线箱 | crowbar | 15 | 1 | 1 | 是 |
-| d04_05_cache1 | d04_05 | 屋顶梯井·电池箱 | crowbar | 15 | 1 | 1 | 是 |
-| d04_03_cache2 | d04_03 | 蓄电室·电子组件箱 | crowbar | 15 | 1 | 1 | 是 |
+| d04_03_cache0 | d04_03 | 蓄电室·导线箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
+| d04_05_cache1 | d04_05 | 屋顶梯井·电池箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
+| d04_03_cache2 | d04_03 | 蓄电室·电子组件箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
 | d04_07_unique | d04_07 | 通信站联络日志 | 无 | 原值 | 1 | 0 | 否 |
-| d05_04_cache0 | d05_04 | 滤料库·橡胶箱 | crowbar | 15 | 1 | 1 | 是 |
-| d05_07_cache1 | d05_07 | 阀控室·消毒液箱 | crowbar | 15 | 1 | 1 | 是 |
-| d05_04_cache2 | d05_04 | 滤料库·黏合剂箱 | crowbar | 15 | 1 | 1 | 是 |
+| d05_04_cache0 | d05_04 | 滤料库·橡胶箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
+| d05_07_cache1 | d05_07 | 阀控室·消毒液箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
+| d05_04_cache2 | d05_04 | 滤料库·黏合剂箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
 | d05_07_unique | d05_07 | 水厂阀控记录 | 无 | 原值 | 1 | 0 | 否 |
-| d06_03_cache0 | d06_03 | 浅矿脉·铁矿料箱 | crowbar | 15 | 1 | 1 | 是 |
-| d06_06_cache1 | d06_06 | 矿工营室·铁片箱 | crowbar | 15 | 1 | 1 | 是 |
-| d06_03_cache2 | d06_03 | 浅矿脉·木炭箱 | crowbar | 15 | 1 | 1 | 是 |
+| d06_03_cache0 | d06_03 | 浅矿脉·铁矿料箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
+| d06_06_cache1 | d06_06 | 矿工营室·铁片箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
+| d06_03_cache2 | d06_03 | 浅矿脉·木炭箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
 | d06_08_unique | d06_08 | 矿道作业手册 | 无 | 原值 | 1 | 0 | 否 |
-| d07_04_cache0 | d07_04 | 服装层·豆罐头箱 | crowbar | 15 | 1 | 1 | 是 |
+| d07_04_cache0 | d07_04 | 服装层·豆罐头箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
 | d07_07_cache1 | d07_07 | 屋顶避难点·布料箱 | stone_knife | 15 | 1 | 1 | 是 |
-| d07_04_cache2 | d07_04 | 服装层·塑料箱 | crowbar | 15 | 1 | 1 | 是 |
+| d07_04_cache2 | d07_04 | 服装层·塑料箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
 | d07_07_unique | d07_07 | 商场避难物资簿 | 无 | 原值 | 1 | 0 | 否 |
-| d08_03_cache0 | d08_03 | 干货库·盐水剂箱 | crowbar | 15 | 1 | 1 | 是 |
+| d08_03_cache0 | d08_03 | 干货库·盐水剂箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
 | d08_06_cache1 | d08_06 | 备用电房·医用纱布箱 | stone_knife | 15 | 1 | 1 | 是 |
-| d08_03_cache2 | d08_03 | 干货库·肉干箱 | crowbar | 15 | 1 | 1 | 是 |
+| d08_03_cache2 | d08_03 | 干货库·肉干箱 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
 | d08_08_unique | d08_08 | 冷链调度档案 | 无 | 原值 | 1 | 0 | 否 |
 | h03_workshop_supply_disinfectant | h03_workshop | 公共工坊消毒液配给柜 | 无 | 原值 | 1 | 0 | 否 |
 | w13_mill_supply_salt | w13_mill | 磨坊食盐存货 | crowbar | 20 | 1 | 1 | 否 |
 | w15_shrinewoods_supply_berry | w15_shrinewoods | 祈祷林野果丛 | stone_knife | 20 | 1 | 1 | 否 |
-| m01_road_crate | m01_road | 路旁旧货箱 | stone_knife | 15 | 1 | 1 | 是 |
+| m01_road_crate | m01_road | 路旁旧货箱 | stone_knife,fire_axe | 15 | 1 | 1 | 是 |
 | m01_road_barrier | m01_road | 路障金属堆 | crowbar | 15 | 1 | 1 | 是 |
 | m02_checkpoint_duty | m02_checkpoint | 检查哨值勤补给箱 | 无 | 原值 | 1 | 0 | 否 |
 | m02_checkpoint_bench | m02_checkpoint | 哨站维修台遗料 | crowbar | 20 | 1 | 1 | 是 |
@@ -171,13 +174,13 @@
 | h03_workshop_scrap | h03_workshop | 公共工坊旧件回收台 | 无 | 原值 | 1 | 0 | 否 |
 | h04_infirmary_dressing | h04_infirmary | 医务室纱布配给柜 | 无 | 原值 | 1 | 0 | 否 |
 | w01_farm_crop | w01_farm | 农场块根畦 | stone_knife | 25 | 1 | 1 | 否 |
-| w01_farm_barn | w01_farm | 农场旧谷仓布料 | stone_knife | 20 | 1 | 1 | 是 |
+| w01_farm_barn | w01_farm | 农场旧谷仓布料 | stone_knife,fire_axe | 20 | 1 | 1 | 是 |
 | w02_forest_wood | w02_forest | 林间倒木 | hatchet | 25 | 1 | 1 | 否 |
 | w02_forest_fiber | w02_forest | 林间纤维草丛 | stone_knife | 15 | 1 | 1 | 否 |
 | w03_quarry_stone | w03_quarry | 坡脚碎石带 | crowbar | 20 | 1 | 1 | 否 |
 | w03_quarry_ore | w03_quarry | 采石坡露矿 | crowbar | 25 | 1 | 1 | 否 |
 | a01_yard_steel | a01_yard | 货场废钢垛 | crowbar | 25 | 1 | 1 | 是 |
-| a01_yard_fastener | a01_yard | 货场紧固件匣 | crowbar | 15 | 1 | 1 | 是 |
+| a01_yard_fastener | a01_yard | 货场紧固件匣 | crowbar,fire_axe | 15 | 1 | 1 | 是 |
 | a02_pump_seal | a02_pump | 泵站密封件架 | crowbar | 20 | 1 | 1 | 是 |
 | a02_pump_fuel | a02_pump | 泵站机油余存 | crowbar | 25 | 1 | 1 | 是 |
 | a03_foundry_steel | a03_foundry | 厂外钢料垛 | crowbar | 25 | 1 | 1 | 是 |
@@ -198,7 +201,7 @@
 | b02_station_battery | b02_station | 转运站备用电池柜 | 无 | 原值 | 1 | 0 | 否 |
 | b02_station_disinfectant | b02_station | 转运站消毒液配给柜 | 无 | 原值 | 1 | 0 | 否 |
 | h04_infirmary_saline | h04_infirmary | 医务室盐水剂配给柜 | 无 | 原值 | 1 | 0 | 否 |
-| a03_foundry_weapon_parts | a03_foundry | 厂外武器组件箱 | crowbar | 20 | 1 | 1 | 是 |
+| a03_foundry_weapon_parts | a03_foundry | 厂外武器组件箱 | crowbar,fire_axe | 20 | 1 | 1 | 是 |
 | b03_hospital_ballistic_fiber | b03_hospital | 外院防护纤维存货 | stone_knife | 20 | 1 | 1 | 是 |
 | w01_farm_grain | w01_farm | 农场谷物畦 | stone_knife | 25 | 1 | 1 | 否 |
 | h02_square_beans | h02_square | 营区豆罐头配给处 | 无 | 原值 | 1 | 0 | 否 |

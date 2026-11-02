@@ -1,5 +1,5 @@
 {
-  "version": "q53_q121_20261102",
+  "version": "q53_q137_20261102",
   "status": "approved_planning_target_not_engine_verified",
   "sourceQuestions": [
     "Q53",
@@ -13,7 +13,8 @@
     "Q61",
     "Q120",
     "Q121",
-    "Q122"
+    "Q122",
+    "Q137"
   ],
   "basicCraftPermission": {
     "W0": "retired_typo_for_T0_not_new_system",
@@ -3413,12 +3414,17 @@
         "nodeId": "w19_survey",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "w20_powercut_a",
@@ -3437,12 +3443,17 @@
         "nodeId": "w20_powercut",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "w21_pine_a",
@@ -3593,24 +3604,34 @@
         "nodeId": "w27_relay",
         "originalBaseMinutes": 25,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "w27_relay_b",
         "nodeId": "w27_relay",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "w28_highland_a",
@@ -3737,48 +3758,68 @@
         "nodeId": "w33_waterworks",
         "originalBaseMinutes": 25,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "w33_waterworks_b",
         "nodeId": "w33_waterworks",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "w34_depot_a",
         "nodeId": "w34_depot",
         "originalBaseMinutes": 25,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "w34_depot_b",
         "nodeId": "w34_depot",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "w12_canal_water",
@@ -3973,24 +4014,34 @@
         "nodeId": "d02_06",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d02_04_cache2",
         "nodeId": "d02_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d02_08_unique",
@@ -4007,36 +4058,51 @@
         "nodeId": "d03_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d03_06_cache1",
         "nodeId": "d03_06",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d03_04_cache2",
         "nodeId": "d03_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d03_08_unique",
@@ -4053,36 +4119,51 @@
         "nodeId": "d04_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d04_05_cache1",
         "nodeId": "d04_05",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d04_03_cache2",
         "nodeId": "d04_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d04_07_unique",
@@ -4099,36 +4180,51 @@
         "nodeId": "d05_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d05_07_cache1",
         "nodeId": "d05_07",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d05_04_cache2",
         "nodeId": "d05_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d05_07_unique",
@@ -4145,36 +4241,51 @@
         "nodeId": "d06_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d06_06_cache1",
         "nodeId": "d06_06",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d06_03_cache2",
         "nodeId": "d06_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d06_08_unique",
@@ -4191,12 +4302,17 @@
         "nodeId": "d07_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d07_07_cache1",
@@ -4215,12 +4331,17 @@
         "nodeId": "d07_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d07_07_unique",
@@ -4237,12 +4358,17 @@
         "nodeId": "d08_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d08_06_cache1",
@@ -4261,12 +4387,17 @@
         "nodeId": "d08_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "d08_08_unique",
@@ -4319,12 +4450,17 @@
         "nodeId": "m01_road",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "stone_knife"
+          "stone_knife",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "m01_road_barrier",
@@ -4417,12 +4553,17 @@
         "nodeId": "w01_farm",
         "originalBaseMinutes": 25,
         "itemIds": [
-          "stone_knife"
+          "stone_knife",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "w02_forest_wood",
@@ -4489,12 +4630,17 @@
         "nodeId": "a01_yard",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "a02_pump_seal",
@@ -4725,12 +4871,17 @@
         "nodeId": "a03_foundry",
         "originalBaseMinutes": 25,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
         "successWear": 1,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       {
         "resourceId": "b03_hospital_ballistic_fiber",
@@ -5138,7 +5289,9 @@
       "workMultiplier": 0.9,
       "requiresActualSelectedQualifiedTool": true,
       "scope": "xp_allowed_scavenging_resource_actions_only_not_survey_claims_services_or_combat"
-    }
+    },
+    "fireAxeContractFile": "assets/20261102/equipment/fire-axe-adjudications.json",
+    "breakDoorWorkMultiplier": 0.75
   },
   "cooking": {
     "creditActor": "initiating_actor_captured_before_first_effective_heat",

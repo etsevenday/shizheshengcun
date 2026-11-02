@@ -1,0 +1,246 @@
+{
+  "date": "2026-11-02",
+  "status": "static_document_and_data_checks_plus_independent_paper_examples_no_engine_or_browser",
+  "questionsAsked": 2,
+  "answers": {
+    "Q136": "A",
+    "Q137": "C_总控30点及提高至减免25%可调初值"
+  },
+  "checks": [
+    {
+      "name": "原开发同步与修改记录完整 01 基础系统/S05 定向采集与遗迹搜集系统.md",
+      "passed": true
+    },
+    {
+      "name": "原开发同步与修改记录完整 04 附录/A08 主线地图、资源与副本目录.md",
+      "passed": true
+    },
+    {
+      "name": "原开发同步与修改记录完整 04 附录/A05 装备、词条与具体装备目录.md",
+      "passed": true
+    },
+    {
+      "name": "原开发同步与修改记录完整 02 参考扩展/R02 武器装备、弹药与随机耐久.md",
+      "passed": true
+    },
+    {
+      "name": "原开发同步与修改记录完整 04 附录/A06 十级熟练度与全技能目录.md",
+      "passed": true
+    },
+    {
+      "name": "原开发同步与修改记录完整 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "原开发同步与修改记录完整 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "原开发同步与修改记录完整 assets/20261102/map/resource-tables.md",
+      "passed": true
+    },
+    {
+      "name": "原开发同步与修改记录完整 00 总则/02 开发方待确认问题.md",
+      "passed": true
+    },
+    {
+      "name": "原开发同步与修改记录完整 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "原开发同步与修改记录完整 04 附录/A07 材料、制作工坊与求生物资目录.md",
+      "passed": true
+    },
+    {
+      "name": "只填Q136/Q137两项答复",
+      "passed": true
+    },
+    {
+      "name": "全部总册JSON解析",
+      "passed": true
+    },
+    {
+      "name": "30锁闭点唯一存在且26新+4恢复",
+      "passed": true
+    },
+    {
+      "name": "仅30行新增消防斧资格，原工具参数保持",
+      "passed": true
+    },
+    {
+      "name": "所有名单均为可计搜集，唯一奖励/记录/服务和原20排除",
+      "passed": true
+    },
+    {
+      "name": "Q136正常抽最大/当前满，不固定52，无质量词条改变",
+      "passed": true
+    },
+    {
+      "name": "倍率增强25%且只实际选择有效，层次明确",
+      "passed": true
+    },
+    {
+      "name": "资源合同除明确资格/生成/合同元数据外不变",
+      "passed": true
+    },
+    {
+      "name": "地图原143/180/96与库存/产出/探索字段不变",
+      "passed": true
+    },
+    {
+      "name": "耐久/装备其他合同原值保持",
+      "passed": true
+    },
+    {
+      "name": "原169经验/工具经验上限/其他成长不变",
+      "passed": true
+    },
+    {
+      "name": "A12/联合当前合同一致及无其他字段误改 04 附录/A12 全系统策划数据索引.json",
+      "passed": true
+    },
+    {
+      "name": "A12/联合当前合同一致及无其他字段误改 assets/20261030/index/joint-expansion-data.json",
+      "passed": true
+    },
+    {
+      "name": "30名单/工具表/物品正文与8验收同源",
+      "passed": true
+    },
+    {
+      "name": "6组独立纸面算例：合成下限和5分钟余额位置",
+      "passed": true
+    },
+    {
+      "name": "本轮链接有效、问题单无待答",
+      "passed": true
+    }
+  ],
+  "paperExampleAssumptions": "M=1，所列已知倍率，无额外E/负重/夜晚变化，非实际游戏运行",
+  "paperExamples": [
+    {
+      "name": "30基时_原工具_1级",
+      "base": 25,
+      "gear": 1,
+      "skill": 1,
+      "skillTool": 1,
+      "trait": 1,
+      "credit": 0,
+      "expectedWork": 25,
+      "expectedWorld": 25,
+      "expectedCarry": 0
+    },
+    {
+      "name": "30基时_消防斧_1级",
+      "base": 25,
+      "gear": 1,
+      "skill": 1,
+      "skillTool": 1,
+      "trait": 0.75,
+      "credit": 0,
+      "expectedWork": 18.75,
+      "expectedWorld": 20,
+      "expectedCarry": 1.25
+    },
+    {
+      "name": "30基时_原工具_搜集5含3级",
+      "base": 25,
+      "gear": 1,
+      "skill": 0.95,
+      "skillTool": 0.9,
+      "trait": 1,
+      "credit": 0,
+      "expectedWork": 21.375,
+      "expectedWorld": 25,
+      "expectedCarry": 3.625
+    },
+    {
+      "name": "30基时_消防斧_搜集5触底",
+      "base": 25,
+      "gear": 1,
+      "skill": 0.95,
+      "skillTool": 0.9,
+      "trait": 0.75,
+      "credit": 0,
+      "expectedWork": 17.5,
+      "expectedWorld": 20,
+      "expectedCarry": 2.5
+    },
+    {
+      "name": "20基时_消防斧_第1笔",
+      "base": 15,
+      "gear": 1,
+      "skill": 1,
+      "skillTool": 1,
+      "trait": 0.75,
+      "credit": 0,
+      "expectedWork": 11.25,
+      "expectedWorld": 15,
+      "expectedCarry": 3.75
+    },
+    {
+      "name": "20基时_消防斧_第2笔余额",
+      "base": 15,
+      "gear": 1,
+      "skill": 1,
+      "skillTool": 1,
+      "trait": 0.75,
+      "credit": 3.75,
+      "expectedWork": 11.25,
+      "expectedWorld": 10,
+      "expectedCarry": 2.5
+    }
+  ],
+  "pending": [],
+  "delegated": [],
+  "audit": [
+    {
+      "category": "数值",
+      "result": "已明确；Q137名单/参数由用户C授权总控补，25%作为提高后的可调初值"
+    },
+    {
+      "category": "名词",
+      "result": "已明确；Q137名单/参数由用户C授权总控补，25%作为提高后的可调初值"
+    },
+    {
+      "category": "范围",
+      "result": "已明确；Q137名单/参数由用户C授权总控补，25%作为提高后的可调初值"
+    },
+    {
+      "category": "时机",
+      "result": "已明确；Q137名单/参数由用户C授权总控补，25%作为提高后的可调初值"
+    },
+    {
+      "category": "边界",
+      "result": "已明确；Q137名单/参数由用户C授权总控补，25%作为提高后的可调初值"
+    },
+    {
+      "category": "自动行为",
+      "result": "已明确；Q137名单/参数由用户C授权总控补，25%作为提高后的可调初值"
+    },
+    {
+      "category": "入口",
+      "result": "已明确；Q137名单/参数由用户C授权总控补，25%作为提高后的可调初值"
+    },
+    {
+      "category": "来源",
+      "result": "已明确；Q137名单/参数由用户C授权总控补，25%作为提高后的可调初值"
+    },
+    {
+      "category": "冲突",
+      "result": "已明确；Q137名单/参数由用户C授权总控补，25%作为提高后的可调初值"
+    },
+    {
+      "category": "依赖",
+      "result": "已明确；Q137名单/参数由用户C授权总控补，25%作为提高后的可调初值"
+    },
+    {
+      "category": "旧档",
+      "result": "已明确；Q137名单/参数由用户C授权总控补，25%作为提高后的可调初值"
+    },
+    {
+      "category": "验收",
+      "result": "已明确；Q137名单/参数由用户C授权总控补，25%作为提高后的可调初值"
+    }
+  ]
+}

@@ -176,7 +176,7 @@
         "durability": "40–52",
         "own": "12",
         "target": "1",
-        "trait": "破门：搜集锁闭点工作量−10%（仅实际选为工具）",
+        "trait": "破门：锁闭资源点工作量−25%（仅实际选为工具，名单见Q137）",
         "inputs": {},
         "station": "hand",
         "craft_level": 1,
@@ -188,7 +188,8 @@
           "node": "m01_road",
           "milestone_time": "50%/20",
           "grant": "firetruck_cache：fire_axe1"
-        }
+        },
+        "fireAxeContractFile": "assets/20261102/equipment/fire-axe-adjudications.json"
       },
       {
         "id": "breach_axe",
@@ -22703,13 +22704,19 @@
         "nodeId": "w19_survey",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w20_powercut_a",
@@ -22759,13 +22766,19 @@
         "nodeId": "w20_powercut",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w21_pine_a",
@@ -23123,13 +23136,19 @@
         "nodeId": "w27_relay",
         "originalBaseMinutes": 25,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w27_relay_b",
@@ -23151,13 +23170,19 @@
         "nodeId": "w27_relay",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w28_highland_a",
@@ -23459,13 +23484,19 @@
         "nodeId": "w33_waterworks",
         "originalBaseMinutes": 25,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w33_waterworks_b",
@@ -23487,13 +23518,19 @@
         "nodeId": "w33_waterworks",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w34_depot_a",
@@ -23515,13 +23552,19 @@
         "nodeId": "w34_depot",
         "originalBaseMinutes": 25,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w34_depot_b",
@@ -23543,13 +23586,19 @@
         "nodeId": "w34_depot",
         "originalBaseMinutes": 30,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "w12_canal_water",
@@ -24056,13 +24105,19 @@
         "nodeId": "d02_06",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d02_04_cache2",
@@ -24084,13 +24139,19 @@
         "nodeId": "d02_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d02_08_unique",
@@ -24147,13 +24208,19 @@
         "nodeId": "d03_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d03_06_cache1",
@@ -24175,13 +24242,19 @@
         "nodeId": "d03_06",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d03_04_cache2",
@@ -24203,13 +24276,19 @@
         "nodeId": "d03_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d03_08_unique",
@@ -24267,13 +24346,19 @@
         "nodeId": "d04_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d04_05_cache1",
@@ -24295,13 +24380,19 @@
         "nodeId": "d04_05",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d04_03_cache2",
@@ -24323,13 +24414,19 @@
         "nodeId": "d04_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d04_07_unique",
@@ -24385,13 +24482,19 @@
         "nodeId": "d05_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d05_07_cache1",
@@ -24413,13 +24516,19 @@
         "nodeId": "d05_07",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d05_04_cache2",
@@ -24441,13 +24550,19 @@
         "nodeId": "d05_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d05_07_unique",
@@ -24495,13 +24610,19 @@
         "nodeId": "d06_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d06_06_cache1",
@@ -24523,13 +24644,19 @@
         "nodeId": "d06_06",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d06_03_cache2",
@@ -24551,13 +24678,19 @@
         "nodeId": "d06_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d06_08_unique",
@@ -24605,13 +24738,19 @@
         "nodeId": "d07_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d07_07_cache1",
@@ -24661,13 +24800,19 @@
         "nodeId": "d07_04",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d07_07_unique",
@@ -24715,13 +24860,19 @@
         "nodeId": "d08_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d08_06_cache1",
@@ -24771,13 +24922,19 @@
         "nodeId": "d08_03",
         "originalBaseMinutes": 20,
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
         "successWear": 1,
-        "toolUsePassive": true
-      }
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
+      },
+      "lockedSearch": true
     },
     {
       "id": "d08_08_unique",
@@ -51962,7 +52119,7 @@
     }
   },
   "equipmentAdjudications": {
-    "version": "q44_q83_20261031",
+    "version": "q44_q137_20261102",
     "status": "approved_planning_target_not_engine_verification",
     "sourceQuestions": [
       "Q44",
@@ -51985,7 +52142,9 @@
       "Q71",
       "Q80",
       "Q82",
-      "Q83"
+      "Q83",
+      "Q136",
+      "Q137"
     ],
     "quality": {
       "unspecifiedSource": "white_zero_affixes_no_rng",
@@ -52022,6 +52181,24 @@
         "armorWear": 0,
         "includesFullyBlockedAndPositiveFinalDamage": true,
         "sourceQuestion": "Q83"
+      },
+      "firetruckReward": {
+        "sourceQuestion": "Q136_A",
+        "itemId": "fire_axe",
+        "rewardResourceId": "firetruck_cache",
+        "quality": "white",
+        "affixCount": 0,
+        "templateMaxRange": [
+          40,
+          52
+        ],
+        "generationStep": 0.1,
+        "sampling": "normal_R02_uniform_inclusive_template_once_on_real_creation",
+        "current": "equal_to_own_sampled_max",
+        "fixedMax52": false,
+        "preview": "range_only_no_real_rng_or_item_creation",
+        "retriesLoadTransferRepair": "same_existing_instance_max_not_rerolled",
+        "existingInstances": "preserve_current_max_and_wear_no_free_repair_or_replacement"
       }
     },
     "combatEquipment": {
@@ -53761,13 +53938,53 @@
       "manufacturingWorkIncludesRepairAndDismantle": true,
       "resourceClassificationContract": "assets/20261031/progression/progression-adjudications.json",
       "manufacturingLevelWorkMultiplier": 1,
-      "workRoundingContract": "assets/20261031/progression/progression-adjudications.json#workCarry"
+      "workRoundingContract": "assets/20261031/progression/progression-adjudications.json#workCarry",
+      "fireAxeBreakDoor": {
+        "contractFile": "assets/20261102/equipment/fire-axe-adjudications.json",
+        "itemId": "fire_axe",
+        "workMultiplier": 0.75,
+        "lockedResourceIds": [
+          "m01_road_crate",
+          "w01_farm_barn",
+          "a01_yard_fastener",
+          "a03_foundry_weapon_parts",
+          "w19_survey_b",
+          "w20_powercut_b",
+          "w27_relay_a",
+          "w27_relay_b",
+          "w33_waterworks_a",
+          "w33_waterworks_b",
+          "w34_depot_a",
+          "w34_depot_b",
+          "d02_06_cache1",
+          "d02_04_cache2",
+          "d03_04_cache0",
+          "d03_06_cache1",
+          "d03_04_cache2",
+          "d04_03_cache0",
+          "d04_05_cache1",
+          "d04_03_cache2",
+          "d05_04_cache0",
+          "d05_07_cache1",
+          "d05_04_cache2",
+          "d06_03_cache0",
+          "d06_06_cache1",
+          "d06_03_cache2",
+          "d07_04_cache0",
+          "d07_04_cache2",
+          "d08_03_cache0",
+          "d08_03_cache2"
+        ],
+        "actualSelectedToolOnly": true,
+        "compositionFloor": 0.7,
+        "successWear": 1
+      }
     },
     "combatRuleContract": "assets/20261031/combat/combat-adjudications.json",
     "latestCombatResolutionContract": "assets/20261031/combat/combat-resolution-adjudications.json"
   },
   "progressionAdjudications": {
-    "version": "q53_q121_20261102",
+    "version": "q53_q137_20261102",
     "status": "approved_planning_target_not_engine_verified",
     "sourceQuestions": [
       "Q53",
@@ -53781,7 +53998,8 @@
       "Q61",
       "Q120",
       "Q121",
-      "Q122"
+      "Q122",
+      "Q137"
     ],
     "basicCraftPermission": {
       "W0": "retired_typo_for_T0_not_new_system",
@@ -57181,12 +57399,17 @@
           "nodeId": "w19_survey",
           "originalBaseMinutes": 30,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 25,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w20_powercut_a",
@@ -57205,12 +57428,17 @@
           "nodeId": "w20_powercut",
           "originalBaseMinutes": 30,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 25,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w21_pine_a",
@@ -57361,24 +57589,34 @@
           "nodeId": "w27_relay",
           "originalBaseMinutes": 25,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 20,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w27_relay_b",
           "nodeId": "w27_relay",
           "originalBaseMinutes": 30,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 25,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w28_highland_a",
@@ -57505,48 +57743,68 @@
           "nodeId": "w33_waterworks",
           "originalBaseMinutes": 25,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 20,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w33_waterworks_b",
           "nodeId": "w33_waterworks",
           "originalBaseMinutes": 30,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 25,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w34_depot_a",
           "nodeId": "w34_depot",
           "originalBaseMinutes": 25,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 20,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w34_depot_b",
           "nodeId": "w34_depot",
           "originalBaseMinutes": 30,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 25,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w12_canal_water",
@@ -57741,24 +57999,34 @@
           "nodeId": "d02_06",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d02_04_cache2",
           "nodeId": "d02_04",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d02_08_unique",
@@ -57775,36 +58043,51 @@
           "nodeId": "d03_04",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d03_06_cache1",
           "nodeId": "d03_06",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d03_04_cache2",
           "nodeId": "d03_04",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d03_08_unique",
@@ -57821,36 +58104,51 @@
           "nodeId": "d04_03",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d04_05_cache1",
           "nodeId": "d04_05",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d04_03_cache2",
           "nodeId": "d04_03",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d04_07_unique",
@@ -57867,36 +58165,51 @@
           "nodeId": "d05_04",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d05_07_cache1",
           "nodeId": "d05_07",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d05_04_cache2",
           "nodeId": "d05_04",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d05_07_unique",
@@ -57913,36 +58226,51 @@
           "nodeId": "d06_03",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d06_06_cache1",
           "nodeId": "d06_06",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d06_03_cache2",
           "nodeId": "d06_03",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d06_08_unique",
@@ -57959,12 +58287,17 @@
           "nodeId": "d07_04",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d07_07_cache1",
@@ -57983,12 +58316,17 @@
           "nodeId": "d07_04",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d07_07_unique",
@@ -58005,12 +58343,17 @@
           "nodeId": "d08_03",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d08_06_cache1",
@@ -58029,12 +58372,17 @@
           "nodeId": "d08_03",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d08_08_unique",
@@ -58087,12 +58435,17 @@
           "nodeId": "m01_road",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "stone_knife"
+            "stone_knife",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "m01_road_barrier",
@@ -58185,12 +58538,17 @@
           "nodeId": "w01_farm",
           "originalBaseMinutes": 25,
           "itemIds": [
-            "stone_knife"
+            "stone_knife",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 20,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w02_forest_wood",
@@ -58257,12 +58615,17 @@
           "nodeId": "a01_yard",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "a02_pump_seal",
@@ -58493,12 +58856,17 @@
           "nodeId": "a03_foundry",
           "originalBaseMinutes": 25,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 20,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "b03_hospital_ballistic_fiber",
@@ -58906,7 +59274,9 @@
         "workMultiplier": 0.9,
         "requiresActualSelectedQualifiedTool": true,
         "scope": "xp_allowed_scavenging_resource_actions_only_not_survey_claims_services_or_combat"
-      }
+      },
+      "fireAxeContractFile": "assets/20261102/equipment/fire-axe-adjudications.json",
+      "breakDoorWorkMultiplier": 0.75
     },
     "cooking": {
       "creditActor": "initiating_actor_captured_before_first_effective_heat",
@@ -64280,7 +64650,7 @@
     ]
   },
   "resourceAdjudications": {
-    "version": "q120_q127_20261102",
+    "version": "q120_q137_20261102",
     "status": "approved_designed_initial_values_document_only_not_runtime_validation",
     "questions": [
       "Q120",
@@ -64290,7 +64660,9 @@
       "Q124",
       "Q125",
       "Q126",
-      "Q127"
+      "Q127",
+      "Q136",
+      "Q137"
     ],
     "resources": {
       "baseCounts": {
@@ -64321,7 +64693,8 @@
           "proficiencyId": "scavenging",
           "xpAllowed": true,
           "claimId": null,
-          "hazard": null
+          "hazard": null,
+          "lockedSearch": true
         },
         {
           "id": "m01_road_barrier",
@@ -64529,7 +64902,8 @@
           "proficiencyId": "scavenging",
           "xpAllowed": true,
           "claimId": null,
-          "hazard": null
+          "hazard": null,
+          "lockedSearch": true
         },
         {
           "id": "w02_forest_wood",
@@ -64667,7 +65041,8 @@
           "proficiencyId": "scavenging",
           "xpAllowed": true,
           "claimId": null,
-          "hazard": null
+          "hazard": null,
+          "lockedSearch": true
         },
         {
           "id": "a02_pump_seal",
@@ -65150,7 +65525,8 @@
           "proficiencyId": "scavenging",
           "xpAllowed": true,
           "claimId": null,
-          "hazard": null
+          "hazard": null,
+          "lockedSearch": true
         },
         {
           "id": "b03_hospital_ballistic_fiber",
@@ -65361,8 +65737,26 @@
         "proficiencyId": null,
         "xpAllowed": false,
         "claimId": "firetruck_cache",
-        "equipmentQuality": "white_zero_affixes_full_template_durability",
-        "hazard": null
+        "equipmentQuality": "white_zero_affixes_random_template_max_current_full",
+        "hazard": null,
+        "durabilityGeneration": {
+          "sourceQuestion": "Q136_A",
+          "itemId": "fire_axe",
+          "rewardResourceId": "firetruck_cache",
+          "quality": "white",
+          "affixCount": 0,
+          "templateMaxRange": [
+            40,
+            52
+          ],
+          "generationStep": 0.1,
+          "sampling": "normal_R02_uniform_inclusive_template_once_on_real_creation",
+          "current": "equal_to_own_sampled_max",
+          "fixedMax52": false,
+          "preview": "range_only_no_real_rng_or_item_creation",
+          "retriesLoadTransferRepair": "same_existing_instance_max_not_rerolled",
+          "existingInstances": "preserve_current_max_and_wear_no_free_repair_or_replacement"
+        }
       },
       "quarryKnowledge": {
         "id": "w03_quarry_blueprints",
@@ -65548,7 +65942,8 @@
           "proficiencyId": "scavenging",
           "xpAllowed": true,
           "claimId": null,
-          "hazard": null
+          "hazard": null,
+          "lockedSearch": true
         },
         {
           "id": "m01_road_barrier",
@@ -65756,7 +66151,8 @@
           "proficiencyId": "scavenging",
           "xpAllowed": true,
           "claimId": null,
-          "hazard": null
+          "hazard": null,
+          "lockedSearch": true
         },
         {
           "id": "w02_forest_wood",
@@ -65894,7 +66290,8 @@
           "proficiencyId": "scavenging",
           "xpAllowed": true,
           "claimId": null,
-          "hazard": null
+          "hazard": null,
+          "lockedSearch": true
         },
         {
           "id": "a02_pump_seal",
@@ -66377,7 +66774,8 @@
           "proficiencyId": "scavenging",
           "xpAllowed": true,
           "claimId": null,
-          "hazard": null
+          "hazard": null,
+          "lockedSearch": true
         },
         {
           "id": "b03_hospital_ballistic_fiber",
@@ -66587,8 +66985,26 @@
           "proficiencyId": null,
           "xpAllowed": false,
           "claimId": "firetruck_cache",
-          "equipmentQuality": "white_zero_affixes_full_template_durability",
-          "hazard": null
+          "equipmentQuality": "white_zero_affixes_random_template_max_current_full",
+          "hazard": null,
+          "durabilityGeneration": {
+            "sourceQuestion": "Q136_A",
+            "itemId": "fire_axe",
+            "rewardResourceId": "firetruck_cache",
+            "quality": "white",
+            "affixCount": 0,
+            "templateMaxRange": [
+              40,
+              52
+            ],
+            "generationStep": 0.1,
+            "sampling": "normal_R02_uniform_inclusive_template_once_on_real_creation",
+            "current": "equal_to_own_sampled_max",
+            "fixedMax52": false,
+            "preview": "range_only_no_real_rng_or_item_creation",
+            "retriesLoadTransferRepair": "same_existing_instance_max_not_rerolled",
+            "existingInstances": "preserve_current_max_and_wear_no_free_repair_or_replacement"
+          }
         },
         {
           "id": "w03_quarry_blueprints",
@@ -66994,12 +67410,17 @@
           "nodeId": "w19_survey",
           "originalBaseMinutes": 30,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 25,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w20_powercut_a",
@@ -67018,12 +67439,17 @@
           "nodeId": "w20_powercut",
           "originalBaseMinutes": 30,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 25,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w21_pine_a",
@@ -67174,24 +67600,34 @@
           "nodeId": "w27_relay",
           "originalBaseMinutes": 25,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 20,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w27_relay_b",
           "nodeId": "w27_relay",
           "originalBaseMinutes": 30,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 25,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w28_highland_a",
@@ -67318,48 +67754,68 @@
           "nodeId": "w33_waterworks",
           "originalBaseMinutes": 25,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 20,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w33_waterworks_b",
           "nodeId": "w33_waterworks",
           "originalBaseMinutes": 30,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 25,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w34_depot_a",
           "nodeId": "w34_depot",
           "originalBaseMinutes": 25,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 20,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w34_depot_b",
           "nodeId": "w34_depot",
           "originalBaseMinutes": 30,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 25,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w12_canal_water",
@@ -67554,24 +68010,34 @@
           "nodeId": "d02_06",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d02_04_cache2",
           "nodeId": "d02_04",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d02_08_unique",
@@ -67588,36 +68054,51 @@
           "nodeId": "d03_04",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d03_06_cache1",
           "nodeId": "d03_06",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d03_04_cache2",
           "nodeId": "d03_04",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d03_08_unique",
@@ -67634,36 +68115,51 @@
           "nodeId": "d04_03",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d04_05_cache1",
           "nodeId": "d04_05",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d04_03_cache2",
           "nodeId": "d04_03",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d04_07_unique",
@@ -67680,36 +68176,51 @@
           "nodeId": "d05_04",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d05_07_cache1",
           "nodeId": "d05_07",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d05_04_cache2",
           "nodeId": "d05_04",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d05_07_unique",
@@ -67726,36 +68237,51 @@
           "nodeId": "d06_03",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d06_06_cache1",
           "nodeId": "d06_06",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d06_03_cache2",
           "nodeId": "d06_03",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d06_08_unique",
@@ -67772,12 +68298,17 @@
           "nodeId": "d07_04",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d07_07_cache1",
@@ -67796,12 +68327,17 @@
           "nodeId": "d07_04",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d07_07_unique",
@@ -67818,12 +68354,17 @@
           "nodeId": "d08_03",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d08_06_cache1",
@@ -67842,12 +68383,17 @@
           "nodeId": "d08_03",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "d08_08_unique",
@@ -67900,12 +68446,17 @@
           "nodeId": "m01_road",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "stone_knife"
+            "stone_knife",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "m01_road_barrier",
@@ -67998,12 +68549,17 @@
           "nodeId": "w01_farm",
           "originalBaseMinutes": 25,
           "itemIds": [
-            "stone_knife"
+            "stone_knife",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 20,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "w02_forest_wood",
@@ -68070,12 +68626,17 @@
           "nodeId": "a01_yard",
           "originalBaseMinutes": 20,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 15,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "a02_pump_seal",
@@ -68306,12 +68867,17 @@
           "nodeId": "a03_foundry",
           "originalBaseMinutes": 25,
           "itemIds": [
-            "crowbar"
+            "crowbar",
+            "fire_axe"
           ],
           "outputMultiplier": 1,
           "baseMinutesOverride": 20,
           "successWear": 1,
-          "toolUsePassive": true
+          "toolUsePassive": true,
+          "lockedSearch": true,
+          "conditionalToolWorkFactors": {
+            "fire_axe": 0.75
+          }
         },
         {
           "resourceId": "b03_hospital_ballistic_fiber",
@@ -68726,7 +69292,11 @@
       "cancelWear": 0,
       "successWearOnce": true,
       "noYieldBonusOnNewRows": true,
-      "experienceUsesOriginalUnmodifiedBaseMinutes": true
+      "experienceUsesOriginalUnmodifiedBaseMinutes": true,
+      "additionalQualifiedItemIds": [
+        "fire_axe_on_Q137_exact_locked_whitelist_only"
+      ],
+      "breakDoorContractFile": "assets/20261102/equipment/fire-axe-adjudications.json"
     },
     "coreBlueprintPacks": [
       {
@@ -69612,6 +70182,514 @@
       "oldOfficerNode": "d03_04",
       "newOfficerNode": "d03_07",
       "sameClaim": "officer_cache"
+    },
+    "fireAxeAdjudications": {
+      "version": "q136_q137_20261102",
+      "status": "approved_planning_initial_values_not_engine_or_ui_verified",
+      "questions": [
+        "Q136",
+        "Q137"
+      ],
+      "durability": {
+        "sourceQuestion": "Q136_A",
+        "itemId": "fire_axe",
+        "rewardResourceId": "firetruck_cache",
+        "quality": "white",
+        "affixCount": 0,
+        "templateMaxRange": [
+          40,
+          52
+        ],
+        "generationStep": 0.1,
+        "sampling": "normal_R02_uniform_inclusive_template_once_on_real_creation",
+        "current": "equal_to_own_sampled_max",
+        "fixedMax52": false,
+        "preview": "range_only_no_real_rng_or_item_creation",
+        "retriesLoadTransferRepair": "same_existing_instance_max_not_rerolled",
+        "existingInstances": "preserve_current_max_and_wear_no_free_repair_or_replacement"
+      },
+      "trait": {
+        "itemId": "fire_axe",
+        "name": "破门",
+        "previousWorkMultiplier": 0.9,
+        "workMultiplier": 0.75,
+        "reductionPercent": 25,
+        "authority": "Q137_C_user_authorized_specific_locked_sources_and_stronger_coefficient",
+        "scope": "exact_locked_resource_whitelist_and_actual_selected_tool_instance_only",
+        "lockedResourceIds": [
+          "m01_road_crate",
+          "w01_farm_barn",
+          "a01_yard_fastener",
+          "a03_foundry_weapon_parts",
+          "w19_survey_b",
+          "w20_powercut_b",
+          "w27_relay_a",
+          "w27_relay_b",
+          "w33_waterworks_a",
+          "w33_waterworks_b",
+          "w34_depot_a",
+          "w34_depot_b",
+          "d02_06_cache1",
+          "d02_04_cache2",
+          "d03_04_cache0",
+          "d03_06_cache1",
+          "d03_04_cache2",
+          "d04_03_cache0",
+          "d04_05_cache1",
+          "d04_03_cache2",
+          "d05_04_cache0",
+          "d05_07_cache1",
+          "d05_04_cache2",
+          "d06_03_cache0",
+          "d06_06_cache1",
+          "d06_03_cache2",
+          "d07_04_cache0",
+          "d07_04_cache2",
+          "d08_03_cache0",
+          "d08_03_cache2"
+        ],
+        "lockedRows": [
+          {
+            "resourceId": "m01_road_crate",
+            "nodeId": "m01_road",
+            "name": "路旁旧货箱",
+            "reason": "路旁旧货箱内封闭取物",
+            "originalTools": [
+              "stone_knife"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "w01_farm_barn",
+            "nodeId": "w01_farm",
+            "name": "农场旧谷仓布料",
+            "reason": "谷仓内封闭布料储柜",
+            "originalTools": [
+              "stone_knife"
+            ],
+            "toolBaseMinutes": 20,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "a01_yard_fastener",
+            "nodeId": "a01_yard",
+            "name": "货场紧固件匣",
+            "reason": "封闭紧固件匣",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "a03_foundry_weapon_parts",
+            "nodeId": "a03_foundry",
+            "name": "厂外武器组件箱",
+            "reason": "封闭武器组件箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 20,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "w19_survey_b",
+            "nodeId": "w19_survey",
+            "name": "测绘营备用电池",
+            "reason": "测绘营封闭备用电池柜",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 25,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "w20_powercut_b",
+            "nodeId": "w20_powercut",
+            "name": "高压走廊旧电器",
+            "reason": "旧电器的封闭检修腔",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 25,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "w27_relay_a",
+            "nodeId": "w27_relay",
+            "name": "中继设备遗件",
+            "reason": "中继设备封闭电控箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 20,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "w27_relay_b",
+            "nodeId": "w27_relay",
+            "name": "中继营精密机件",
+            "reason": "中继营上锁机件箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 25,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "w33_waterworks_a",
+            "nodeId": "w33_waterworks",
+            "name": "水厂黏合剂余存",
+            "reason": "水厂封闭维修耗材柜",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 20,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "w33_waterworks_b",
+            "nodeId": "w33_waterworks",
+            "name": "水厂消毒液余存",
+            "reason": "水厂上锁消毒用品柜",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 25,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "w34_depot_a",
+            "nodeId": "w34_depot",
+            "name": "应急仓豆罐头存货",
+            "reason": "应急仓封闭食品柜",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 20,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "w34_depot_b",
+            "nodeId": "w34_depot",
+            "name": "应急仓盐水剂存货",
+            "reason": "应急仓封闭医用柜",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 25,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d02_06_cache1",
+            "nodeId": "d02_06",
+            "name": "检修竖井·实验室试剂箱",
+            "reason": "封闭普通试剂箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d02_04_cache2",
+            "nodeId": "d02_04",
+            "name": "控制室·电子组件箱",
+            "reason": "封闭普通电子组件箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d03_04_cache0",
+            "nodeId": "d03_04",
+            "name": "值勤室·武器组件箱",
+            "reason": "封闭普通武器组件箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d03_06_cache1",
+            "nodeId": "d03_06",
+            "name": "配电房·钢材箱",
+            "reason": "封闭普通钢材箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d03_04_cache2",
+            "nodeId": "d03_04",
+            "name": "值勤室·紧固件箱",
+            "reason": "封闭普通紧固件箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d04_03_cache0",
+            "nodeId": "d04_03",
+            "name": "蓄电室·导线箱",
+            "reason": "封闭普通导线箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d04_05_cache1",
+            "nodeId": "d04_05",
+            "name": "屋顶梯井·电池箱",
+            "reason": "封闭普通电池箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d04_03_cache2",
+            "nodeId": "d04_03",
+            "name": "蓄电室·电子组件箱",
+            "reason": "封闭普通电子组件箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d05_04_cache0",
+            "nodeId": "d05_04",
+            "name": "滤料库·橡胶箱",
+            "reason": "封闭普通橡胶箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d05_07_cache1",
+            "nodeId": "d05_07",
+            "name": "阀控室·消毒液箱",
+            "reason": "封闭普通消毒液箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d05_04_cache2",
+            "nodeId": "d05_04",
+            "name": "滤料库·黏合剂箱",
+            "reason": "封闭普通黏合剂箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d06_03_cache0",
+            "nodeId": "d06_03",
+            "name": "浅矿脉·铁矿料箱",
+            "reason": "封闭普通矿料箱（不是露矿采集）",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d06_06_cache1",
+            "nodeId": "d06_06",
+            "name": "矿工营室·铁片箱",
+            "reason": "封闭普通铁片箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d06_03_cache2",
+            "nodeId": "d06_03",
+            "name": "浅矿脉·木炭箱",
+            "reason": "封闭普通木炭箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d07_04_cache0",
+            "nodeId": "d07_04",
+            "name": "服装层·豆罐头箱",
+            "reason": "封闭普通豆罐头箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d07_04_cache2",
+            "nodeId": "d07_04",
+            "name": "服装层·塑料箱",
+            "reason": "封闭普通塑料箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d08_03_cache0",
+            "nodeId": "d08_03",
+            "name": "干货库·盐水剂箱",
+            "reason": "封闭普通盐水剂箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          },
+          {
+            "resourceId": "d08_03_cache2",
+            "nodeId": "d08_03",
+            "name": "干货库·肉干箱",
+            "reason": "封闭普通肉干箱",
+            "originalTools": [
+              "crowbar"
+            ],
+            "toolBaseMinutes": 15,
+            "successWear": 1,
+            "outputMultiplier": 1,
+            "fireAxeWorkMultiplier": 0.75
+          }
+        ],
+        "listedToolsAddFireAxe": true,
+        "allOtherRowsFireAxeAllowed": false,
+        "previousRowToolParametersPreserved": true,
+        "outputMultiplier": 1,
+        "successWear": 1,
+        "cancelFailureWear": 0,
+        "baseTime": "same_Q121_tool_override_original_minus_5",
+        "selectedToolEffectNotEquippedAura": true,
+        "multipleAxesDoNotStack": true,
+        "otherToolTraitsNotBorrowed": true,
+        "mapDoorsOrLocksOpened": false,
+        "persistentDoorStateAdded": false,
+        "lockedMeaning": "每次定向搜集的封闭取物作业类型；不是永久可破坏门实体，不新增钥匙/解锁账/掉落损失/划伤",
+        "bareHandsAndOriginalToolsStillAllowed": true
+      },
+      "composition": {
+        "formula": "B_tool * max(0.70,F_gear * F_scavenge_base * F_scavenge_05_tool * F_break_door)",
+        "breakDoorWhenActualFireAxeAtListedSource": 0.75,
+        "otherwise": 1,
+        "scavenge5Tool": 0.9,
+        "allWorkDiscountsCombinedFloor": 0.7,
+        "baseOverrideBeforeCombinedFloor": true,
+        "worldFactorAndCarry": "after_required_work_use_existing_S01_M_and_Q61_work_carry",
+        "xp": "original_unmodified_base_minutes_and_original_daily_limits",
+        "sameFamilyNoNewCarryBucket": true,
+        "rateOrOutputOrCombatChanges": false
+      },
+      "migration": {
+        "oldRunningActions": "keep_opening_snapshot_of_tool_base_multiplier_xp_and_existing_progress_no_reprice_rewear",
+        "newRequests": "new_whitelist_factor_apply_only_after_update",
+        "noItemRewardOrRepairRetroactively": true,
+        "noResourceOrGenerationOrClaimReset": true
+      },
+      "ui": {
+        "knownListedSource": "show_locked_source_label_qualified_fire_axe_and_actual_selected_tool",
+        "preview": "show_original_tool_base_break_door_0.75_other_factors_floor_required_work_actual_minutes_and_wear",
+        "nonListed": "explicit_fire_axe_tool_rejected_no_silent_crowbar_substitute",
+        "toolSelection": "same_p0_carried_or_equipped_real_instance_lock_and_original_auto_order_no_ground_or_teammate_borrow",
+        "inventoryDescription": "selected_tool_only_do_not_show_as_always_active"
+      },
+      "acceptanceIds": [
+        "EQ-Q136-01",
+        "EQ-Q136-02",
+        "TOOL-Q137-01",
+        "TOOL-Q137-02",
+        "TOOL-Q137-03",
+        "TOOL-Q137-04",
+        "TOOL-Q137-05",
+        "TOOL-Q137-06"
+      ]
     }
   },
   "restoredMapResources": [
@@ -69636,7 +70714,8 @@
       "proficiencyId": "scavenging",
       "xpAllowed": true,
       "claimId": null,
-      "hazard": null
+      "hazard": null,
+      "lockedSearch": true
     },
     {
       "id": "m01_road_barrier",
@@ -69844,7 +70923,8 @@
       "proficiencyId": "scavenging",
       "xpAllowed": true,
       "claimId": null,
-      "hazard": null
+      "hazard": null,
+      "lockedSearch": true
     },
     {
       "id": "w02_forest_wood",
@@ -69982,7 +71062,8 @@
       "proficiencyId": "scavenging",
       "xpAllowed": true,
       "claimId": null,
-      "hazard": null
+      "hazard": null,
+      "lockedSearch": true
     },
     {
       "id": "a02_pump_seal",
@@ -70465,7 +71546,8 @@
       "proficiencyId": "scavenging",
       "xpAllowed": true,
       "claimId": null,
-      "hazard": null
+      "hazard": null,
+      "lockedSearch": true
     },
     {
       "id": "b03_hospital_ballistic_fiber",
@@ -70675,8 +71757,26 @@
       "proficiencyId": null,
       "xpAllowed": false,
       "claimId": "firetruck_cache",
-      "equipmentQuality": "white_zero_affixes_full_template_durability",
-      "hazard": null
+      "equipmentQuality": "white_zero_affixes_random_template_max_current_full",
+      "hazard": null,
+      "durabilityGeneration": {
+        "sourceQuestion": "Q136_A",
+        "itemId": "fire_axe",
+        "rewardResourceId": "firetruck_cache",
+        "quality": "white",
+        "affixCount": 0,
+        "templateMaxRange": [
+          40,
+          52
+        ],
+        "generationStep": 0.1,
+        "sampling": "normal_R02_uniform_inclusive_template_once_on_real_creation",
+        "current": "equal_to_own_sampled_max",
+        "fixedMax52": false,
+        "preview": "range_only_no_real_rng_or_item_creation",
+        "retriesLoadTransferRepair": "same_existing_instance_max_not_rerolled",
+        "existingInstances": "preserve_current_max_and_wear_no_free_repair_or_replacement"
+      }
     },
     {
       "id": "w03_quarry_blueprints",
@@ -71456,6 +72556,514 @@
       "TUT-Q133-01",
       "TUT-Q133-02",
       "TUT-Q133-03"
+    ]
+  },
+  "fireAxeAdjudications": {
+    "version": "q136_q137_20261102",
+    "status": "approved_planning_initial_values_not_engine_or_ui_verified",
+    "questions": [
+      "Q136",
+      "Q137"
+    ],
+    "durability": {
+      "sourceQuestion": "Q136_A",
+      "itemId": "fire_axe",
+      "rewardResourceId": "firetruck_cache",
+      "quality": "white",
+      "affixCount": 0,
+      "templateMaxRange": [
+        40,
+        52
+      ],
+      "generationStep": 0.1,
+      "sampling": "normal_R02_uniform_inclusive_template_once_on_real_creation",
+      "current": "equal_to_own_sampled_max",
+      "fixedMax52": false,
+      "preview": "range_only_no_real_rng_or_item_creation",
+      "retriesLoadTransferRepair": "same_existing_instance_max_not_rerolled",
+      "existingInstances": "preserve_current_max_and_wear_no_free_repair_or_replacement"
+    },
+    "trait": {
+      "itemId": "fire_axe",
+      "name": "破门",
+      "previousWorkMultiplier": 0.9,
+      "workMultiplier": 0.75,
+      "reductionPercent": 25,
+      "authority": "Q137_C_user_authorized_specific_locked_sources_and_stronger_coefficient",
+      "scope": "exact_locked_resource_whitelist_and_actual_selected_tool_instance_only",
+      "lockedResourceIds": [
+        "m01_road_crate",
+        "w01_farm_barn",
+        "a01_yard_fastener",
+        "a03_foundry_weapon_parts",
+        "w19_survey_b",
+        "w20_powercut_b",
+        "w27_relay_a",
+        "w27_relay_b",
+        "w33_waterworks_a",
+        "w33_waterworks_b",
+        "w34_depot_a",
+        "w34_depot_b",
+        "d02_06_cache1",
+        "d02_04_cache2",
+        "d03_04_cache0",
+        "d03_06_cache1",
+        "d03_04_cache2",
+        "d04_03_cache0",
+        "d04_05_cache1",
+        "d04_03_cache2",
+        "d05_04_cache0",
+        "d05_07_cache1",
+        "d05_04_cache2",
+        "d06_03_cache0",
+        "d06_06_cache1",
+        "d06_03_cache2",
+        "d07_04_cache0",
+        "d07_04_cache2",
+        "d08_03_cache0",
+        "d08_03_cache2"
+      ],
+      "lockedRows": [
+        {
+          "resourceId": "m01_road_crate",
+          "nodeId": "m01_road",
+          "name": "路旁旧货箱",
+          "reason": "路旁旧货箱内封闭取物",
+          "originalTools": [
+            "stone_knife"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "w01_farm_barn",
+          "nodeId": "w01_farm",
+          "name": "农场旧谷仓布料",
+          "reason": "谷仓内封闭布料储柜",
+          "originalTools": [
+            "stone_knife"
+          ],
+          "toolBaseMinutes": 20,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "a01_yard_fastener",
+          "nodeId": "a01_yard",
+          "name": "货场紧固件匣",
+          "reason": "封闭紧固件匣",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "a03_foundry_weapon_parts",
+          "nodeId": "a03_foundry",
+          "name": "厂外武器组件箱",
+          "reason": "封闭武器组件箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 20,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "w19_survey_b",
+          "nodeId": "w19_survey",
+          "name": "测绘营备用电池",
+          "reason": "测绘营封闭备用电池柜",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 25,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "w20_powercut_b",
+          "nodeId": "w20_powercut",
+          "name": "高压走廊旧电器",
+          "reason": "旧电器的封闭检修腔",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 25,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "w27_relay_a",
+          "nodeId": "w27_relay",
+          "name": "中继设备遗件",
+          "reason": "中继设备封闭电控箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 20,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "w27_relay_b",
+          "nodeId": "w27_relay",
+          "name": "中继营精密机件",
+          "reason": "中继营上锁机件箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 25,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "w33_waterworks_a",
+          "nodeId": "w33_waterworks",
+          "name": "水厂黏合剂余存",
+          "reason": "水厂封闭维修耗材柜",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 20,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "w33_waterworks_b",
+          "nodeId": "w33_waterworks",
+          "name": "水厂消毒液余存",
+          "reason": "水厂上锁消毒用品柜",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 25,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "w34_depot_a",
+          "nodeId": "w34_depot",
+          "name": "应急仓豆罐头存货",
+          "reason": "应急仓封闭食品柜",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 20,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "w34_depot_b",
+          "nodeId": "w34_depot",
+          "name": "应急仓盐水剂存货",
+          "reason": "应急仓封闭医用柜",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 25,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d02_06_cache1",
+          "nodeId": "d02_06",
+          "name": "检修竖井·实验室试剂箱",
+          "reason": "封闭普通试剂箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d02_04_cache2",
+          "nodeId": "d02_04",
+          "name": "控制室·电子组件箱",
+          "reason": "封闭普通电子组件箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d03_04_cache0",
+          "nodeId": "d03_04",
+          "name": "值勤室·武器组件箱",
+          "reason": "封闭普通武器组件箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d03_06_cache1",
+          "nodeId": "d03_06",
+          "name": "配电房·钢材箱",
+          "reason": "封闭普通钢材箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d03_04_cache2",
+          "nodeId": "d03_04",
+          "name": "值勤室·紧固件箱",
+          "reason": "封闭普通紧固件箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d04_03_cache0",
+          "nodeId": "d04_03",
+          "name": "蓄电室·导线箱",
+          "reason": "封闭普通导线箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d04_05_cache1",
+          "nodeId": "d04_05",
+          "name": "屋顶梯井·电池箱",
+          "reason": "封闭普通电池箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d04_03_cache2",
+          "nodeId": "d04_03",
+          "name": "蓄电室·电子组件箱",
+          "reason": "封闭普通电子组件箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d05_04_cache0",
+          "nodeId": "d05_04",
+          "name": "滤料库·橡胶箱",
+          "reason": "封闭普通橡胶箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d05_07_cache1",
+          "nodeId": "d05_07",
+          "name": "阀控室·消毒液箱",
+          "reason": "封闭普通消毒液箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d05_04_cache2",
+          "nodeId": "d05_04",
+          "name": "滤料库·黏合剂箱",
+          "reason": "封闭普通黏合剂箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d06_03_cache0",
+          "nodeId": "d06_03",
+          "name": "浅矿脉·铁矿料箱",
+          "reason": "封闭普通矿料箱（不是露矿采集）",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d06_06_cache1",
+          "nodeId": "d06_06",
+          "name": "矿工营室·铁片箱",
+          "reason": "封闭普通铁片箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d06_03_cache2",
+          "nodeId": "d06_03",
+          "name": "浅矿脉·木炭箱",
+          "reason": "封闭普通木炭箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d07_04_cache0",
+          "nodeId": "d07_04",
+          "name": "服装层·豆罐头箱",
+          "reason": "封闭普通豆罐头箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d07_04_cache2",
+          "nodeId": "d07_04",
+          "name": "服装层·塑料箱",
+          "reason": "封闭普通塑料箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d08_03_cache0",
+          "nodeId": "d08_03",
+          "name": "干货库·盐水剂箱",
+          "reason": "封闭普通盐水剂箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        },
+        {
+          "resourceId": "d08_03_cache2",
+          "nodeId": "d08_03",
+          "name": "干货库·肉干箱",
+          "reason": "封闭普通肉干箱",
+          "originalTools": [
+            "crowbar"
+          ],
+          "toolBaseMinutes": 15,
+          "successWear": 1,
+          "outputMultiplier": 1,
+          "fireAxeWorkMultiplier": 0.75
+        }
+      ],
+      "listedToolsAddFireAxe": true,
+      "allOtherRowsFireAxeAllowed": false,
+      "previousRowToolParametersPreserved": true,
+      "outputMultiplier": 1,
+      "successWear": 1,
+      "cancelFailureWear": 0,
+      "baseTime": "same_Q121_tool_override_original_minus_5",
+      "selectedToolEffectNotEquippedAura": true,
+      "multipleAxesDoNotStack": true,
+      "otherToolTraitsNotBorrowed": true,
+      "mapDoorsOrLocksOpened": false,
+      "persistentDoorStateAdded": false,
+      "lockedMeaning": "每次定向搜集的封闭取物作业类型；不是永久可破坏门实体，不新增钥匙/解锁账/掉落损失/划伤",
+      "bareHandsAndOriginalToolsStillAllowed": true
+    },
+    "composition": {
+      "formula": "B_tool * max(0.70,F_gear * F_scavenge_base * F_scavenge_05_tool * F_break_door)",
+      "breakDoorWhenActualFireAxeAtListedSource": 0.75,
+      "otherwise": 1,
+      "scavenge5Tool": 0.9,
+      "allWorkDiscountsCombinedFloor": 0.7,
+      "baseOverrideBeforeCombinedFloor": true,
+      "worldFactorAndCarry": "after_required_work_use_existing_S01_M_and_Q61_work_carry",
+      "xp": "original_unmodified_base_minutes_and_original_daily_limits",
+      "sameFamilyNoNewCarryBucket": true,
+      "rateOrOutputOrCombatChanges": false
+    },
+    "migration": {
+      "oldRunningActions": "keep_opening_snapshot_of_tool_base_multiplier_xp_and_existing_progress_no_reprice_rewear",
+      "newRequests": "new_whitelist_factor_apply_only_after_update",
+      "noItemRewardOrRepairRetroactively": true,
+      "noResourceOrGenerationOrClaimReset": true
+    },
+    "ui": {
+      "knownListedSource": "show_locked_source_label_qualified_fire_axe_and_actual_selected_tool",
+      "preview": "show_original_tool_base_break_door_0.75_other_factors_floor_required_work_actual_minutes_and_wear",
+      "nonListed": "explicit_fire_axe_tool_rejected_no_silent_crowbar_substitute",
+      "toolSelection": "same_p0_carried_or_equipped_real_instance_lock_and_original_auto_order_no_ground_or_teammate_borrow",
+      "inventoryDescription": "selected_tool_only_do_not_show_as_always_active"
+    },
+    "acceptanceIds": [
+      "EQ-Q136-01",
+      "EQ-Q136-02",
+      "TOOL-Q137-01",
+      "TOOL-Q137-02",
+      "TOOL-Q137-03",
+      "TOOL-Q137-04",
+      "TOOL-Q137-05",
+      "TOOL-Q137-06"
     ]
   }
 }
