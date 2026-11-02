@@ -1407,4 +1407,4 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .city-summary { font-size: 14px; color: #cfd5c6; }
 .city-targets { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
 .city-targets label { display: flex; align-items: baseline; gap: 6px; cursor: pointer; }
-.npc-card.post-card .oc-line:first-child { color: var(--muted); }
+.npc-card.post-card .oc-line:first-child { color: #5d5a45; }   /* M315：职务在纸色卡面上用深色，原 --muted 浅灰几乎看不见 */

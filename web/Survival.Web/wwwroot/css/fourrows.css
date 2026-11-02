@@ -1050,3 +1050,14 @@
 .center-scroll.four .dg-cards > .res-card.choice-card .oc-foot .res-btn { flex: 1 1 0; min-width: 0; min-height: 40px; padding: 2px 4px; }
 .center-scroll.four .dg-cards > .res-card.choice-card .oc-foot .res-btn strong { font-size: 13px; white-space: nowrap; }
 .center-scroll.four .dg-cards > .res-card.choice-card .oc-foot .res-btn small { font-size: 11px; }
+
+/* B14b 试玩修复 M315：岗位人物卡有“交谈/事项”两个按钮，屏高 >800（1600×900、1920×1080）时按钮原在右列跨两行，
+   文字列只剩约 46px，职务折两行、“可交谈 · 事项 a/b 项可办”被截。改为与告示选项卡同样：职务与状态整宽，两个按钮单独占卡底一行平分。
+   屏高 ≤800（1280×720）沿用 Q36 的“按钮在主图右侧、文字整宽”布局。 */
+@media (min-height: 801px) {
+  .center-scroll.four .dg-cards > .res-card.post-card { grid-template-rows: minmax(0, 1fr) auto auto auto; }
+  .center-scroll.four .dg-cards > .res-card.post-card :is(.oc-head, .oc-body) { grid-column: 1 / -1; padding-right: 14px; }
+  .center-scroll.four .dg-cards > .res-card.post-card .oc-body { padding-bottom: 2px; }
+  .center-scroll.four .dg-cards > .res-card.post-card .oc-foot { grid-column: 1 / -1; grid-row: 4; align-self: end; display: flex; gap: 4px; padding: 0 12px 12px; }
+  .center-scroll.four .dg-cards > .res-card.post-card .oc-foot .res-btn { flex: 1 1 0; min-width: 0; min-height: 40px; padding: 2px 4px; }
+}

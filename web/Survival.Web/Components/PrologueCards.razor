@@ -24,7 +24,7 @@
                 var id = n.NpcId;
                 var post = n.Kind == "post";
                 var tip = post
-                    ? $"{n.Name}：{n.FactionName}·{n.Role}（{n.KindLabel}）。{n.Status}。{n.RecruitText}。{(n.QuestText.Length > 0 ? n.QuestText + "。" : "")}点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态）；“事项”查看可办的服务"
+                    ? $"{n.Name}：{n.FactionName}·{n.Role}（{n.KindLabel}）。{n.Status}。{n.RecruitText}。{(n.QuestText.Length > 0 ? n.QuestText + "。" : "")}点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态）{(n.ServiceCount > 0 ? "；“事项”查看可办的服务" : "")}"
                     : $"{n.Name}：{n.Role}。{n.Status}。点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；不是队友）";
                 <ObjectCard @key="@("npc-" + id)" Id="@($"npc-{id}")" CssClass="@($"res-card npc-card{(post ? " post-card" : "")}{(focus == "npc:" + id ? " tut-lit" : "")}")" Title="@n.Name" Badge="@(post ? n.KindLabel : n.HasNews ? "来客" : "可交谈")" BadgeClass="@(n.HasNews ? "new" : "")"
                             Tooltip="@tip" OnClick="() => Talk(id, why)">
