@@ -59,8 +59,11 @@ namespace Survival.Core.Engine
 
         public bool Hidden(GameState s, WorldEnemy w) => w.HiddenUntil.HasValue && w.HiddenUntil.Value > s.GameMinute;
 
-        /// <summary>全世界存活敌数（含交战中、中立鹿）。</summary>
-        public int LiveCount(GameState s) => s.WorldEnemies.Count;
+        /// <summary>
+        /// 旧 8 地点全局种群的存活敌数（含交战中、中立鹿；R05 全局 12）。B20 起只数旧 8 地点的种群：9 个人口区各有自己的上限
+        /// （<see cref="RegionLiveCount"/>），固定战与旧精英挑战不计（取代原“全世界只算一个 12”的口径）。
+        /// </summary>
+        public int LiveCount(GameState s) => s.WorldEnemies.Count(w => w.FixedOf == null && InLegacyPopulation(w.LocationId));
 
         /// <summary>某地的种群敌数（B20：固定战与旧精英挑战的固定实例不计种群上限）。</summary>
         public int LocalCount(GameState s, string loc) => s.WorldEnemies.Count(w => w.LocationId == loc && w.FixedOf == null);
@@ -133,6 +136,7 @@ namespace Survival.Core.Engine
             if (s.GameMinute >= s.SpawnNextCheck)
             {
                 SpawnCheck(s);
+                RegionSpawnChecks(s);   // B20：已进入的人口区各判一次（同一格点，在旧 8 地点之后）
                 // 只处理到达的这一个检查点，不补欠账
                 s.SpawnNextCheck = NextGrid(s.GameMinute + 1, WE.SpawnChecksBeginAbsoluteMinute, WE.SpawnCheckIntervalMinutes);
             }
@@ -197,7 +201,16 @@ namespace Survival.Core.Engine
             foreach (var w in s.WorldEnemies.OrderBy(w => w.Id).ToList())
             {
                 if (w.Engaged || Hidden(s, w) || w.FixedOf != null) continue;
-                // v3 新人口区（B20）的巡游未接入：不在旧 8 地点种群里的敌人不巡游，也不抽随机数（B11）
+                // B20：人口区的敌人只在同区物理相邻、有空位的节点间巡游（不跨区、不进城市/地牢）
+                if (PopRegionOf(w.LocationId) != null)
+                {
+                    if (s.Rng.NextDouble() >= PopRegionOf(w.LocationId)!.PatrolAttempt) continue;
+                    var rt = RegionPatrolTargets(s, w.LocationId);
+                    if (rt.Count == 0) continue;
+                    MovePatrol(s, w, rt[(int)Math.Min(rt.Count - 1, Math.Floor(s.Rng.NextDouble() * rt.Count))]);
+                    continue;
+                }
+                // 不在旧 8 地点种群、也不在人口区的（开发入口放进地牢/城市的）不巡游，也不抽随机数（B11）
                 if (!InLegacyPopulation(w.LocationId)) continue;
                 // 首战保留游荡尸胜利前不巡游（R05 §5），也不抽巡游随机数
                 if (IsTutorialEnemy(s, w.Id)) continue;
@@ -207,14 +220,19 @@ namespace Survival.Core.Engine
                     .Where(l => WE.CapOf(l) > 0 && LocalCount(s, l) < WE.CapOf(l))
                     .Distinct().OrderBy(l => l).ToList();
                 if (targets.Count == 0) continue;
-                var to = targets[(int)Math.Min(targets.Count - 1, Math.Floor(s.Rng.NextDouble() * targets.Count))];
-                var from = w.LocationId;
-                w.LocationId = to;
-                if (to == s.CurrentLocation)
-                    Emit(s, GameEventKind.Info, $"新的敌踪出现：{_enemies[w.EnemyId].Name}来到了{LocName(to)}。", null, new[] { $"enemy:{w.Id}" });
-                else if (from == s.CurrentLocation)
-                    Emit(s, GameEventKind.Info, $"{_enemies[w.EnemyId].Name}离开了{LocName(from)}。");
+                MovePatrol(s, w, targets[(int)Math.Min(targets.Count - 1, Math.Floor(s.Rng.NextDouble() * targets.Count))]);
             }
+        }
+
+        /// <summary>巡游走一条边（原子：原地点扣 1、新地点加 1）；进出玩家当前地点时提示。</summary>
+        private void MovePatrol(GameState s, WorldEnemy w, string to)
+        {
+            var from = w.LocationId;
+            w.LocationId = to;
+            if (to == s.CurrentLocation)
+                Emit(s, GameEventKind.Info, $"新的敌踪出现：{_enemies[w.EnemyId].Name}来到了{LocName(to)}。", null, new[] { $"enemy:{w.Id}" });
+            else if (from == s.CurrentLocation)
+                Emit(s, GameEventKind.Info, $"{_enemies[w.EnemyId].Name}离开了{LocName(from)}。");
         }
 
         // ───────────── 接敌 ─────────────
@@ -268,7 +286,9 @@ namespace Survival.Core.Engine
             if (_locs.TryGetValue(locationId, out var lc) && (!lc.RandomEncounterEnabled || lc.SafeExterior)) return $"{LocName(locationId)}没有随机敌人种群，不放敌人";
             var cap = LocalCapOf(locationId);
             if (LocalCount(s, locationId) >= cap) return $"{LocName(locationId)}敌人已达上限{cap}";
-            if (LiveCount(s) >= WE.GlobalCap) return $"全局敌人已达上限{WE.GlobalCap}";
+            // B20：新人口区按本区总上限；旧 8 地点按旧全局 12
+            if (PopRegionOf(locationId) is PopulationRegionConfig reg) { if (RegionLiveCount(s, reg) >= reg.Cap) return $"人口区敌人已达上限{reg.Cap}"; }
+            else if (InLegacyPopulation(locationId) && LiveCount(s) >= WE.GlobalCap) return $"新手区敌人已达上限{WE.GlobalCap}";
             return null;
         }
     }

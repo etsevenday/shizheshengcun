@@ -354,6 +354,7 @@ namespace Survival.Core.Engine
                     if (s.Progress.Flags.Add(f)) notes.Add($"已与{lc.Name}建立公开接触");
             ArriveCity(s, locationId, notes);   // B14：持登记授权实际走到营区广场才完成营区登记
             RevealFixedBattle(s, locationId, notes);   // B20：固定战首次揭示（按当时容量 C 截名单并锁存）
+            PopulateOnArrival(s, locationId, notes);   // B20：人口区节点首次到达生成本地敌人，记该区已进入
             var r = RefreshGates(s);
             var routes = RouteNotes(s, r, locationId);
             if (routes.Count > 0) notes.Add("发现" + string.Join("与", routes));

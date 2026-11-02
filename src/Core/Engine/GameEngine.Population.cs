@@ -1,0 +1,135 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Survival.Core.Config;
+using Survival.Core.State;
+
+namespace Survival.Core.Engine
+{
+    /// <summary>
+    /// B20 R64 人口区（A09「E5 二十四新增野外敌池」「最终敌方资源/人口接口」「主线普通敌池具体权重」、R05/A09「Q31 新增135节点…」、
+    /// node-expansion-rules.json worldPopulation）：9 个人口区（mainline 4 区 12/12/12/12、ex_pop 5 区 12/12/16/12/8），每地本地上限 4。
+    /// - 首次实际到达某节点：按该节点 firstPopulation（多数 2，m02 为 0）补到目标只数，同时受人口区剩余上限与本地上限约束；该区记为已进入。
+    /// - 已进入的区：与旧 8 地点同一刷新格点（第2日00:00起每120分钟）各判一次 25%，避开玩家当前节点，等概率选有空位的节点、按池内权重选种；
+    ///   mainline 区先按 96/3.5/0.5 抽强度层（节点池都算普通层，抽到稀有/强敌层本次不刷，开发假设 B20-7）；失败不积欠，未进入的区不追补。
+    /// - 巡游：每180分钟每只未交战敌 20% 沿物理边走到同区、有空位的相邻节点（不进城市/地牢、不跨区），无合法边原地。
+    /// - 旧 8 地点的全局 12、本地上限、初始 6 只与刷新池不变，与新区互不共享上限（node-expansion-rules legacyStarterPopulation）。
+    /// </summary>
+    public sealed partial class GameEngine
+    {
+        private Dictionary<string, PopulationRegionConfig>? _regions;
+        private Dictionary<string, PopulationRegionConfig> Regions => _regions ??= WE.Regions.ToDictionary(r => r.Id);
+
+        /// <summary>某节点所属的人口区（有敌池、在该区节点表里）；不属于任何新人口区为 null（旧 8 地点、城市、地牢）。</summary>
+        public PopulationRegionConfig? PopRegionOf(string loc) =>
+            _locs.TryGetValue(loc, out var lc) && lc.PopulationRegionId != null && lc.PopulationWeights != null && lc.PopulationWeights.Count > 0
+            && Regions.TryGetValue(lc.PopulationRegionId, out var r) && r.Nodes.Contains(loc) ? r : null;
+
+        /// <summary>某人口区里的种群敌数（含交战中；固定战与旧精英挑战不计）。</summary>
+        public int RegionLiveCount(GameState s, PopulationRegionConfig r) =>
+            s.WorldEnemies.Count(w => w.FixedOf == null && r.Nodes.Contains(w.LocationId));
+
+        /// <summary>按节点池内部权重抽一种敌人（r∈[0,1)；权重不是刷新概率）。</summary>
+        private string PickWeighted(Dictionary<string, int> weights, double r)
+        {
+            var total = weights.Values.Sum();
+            var x = r * total;
+            var acc = 0.0;
+            foreach (var kv in weights)
+            {
+                acc += kv.Value;
+                if (x < acc) return kv.Key;
+            }
+            return weights.Keys.Last();
+        }
+
+        /// <summary>
+        /// 首次实际到达人口区节点：记该区已进入；节点第一次到达时补到 firstPopulation 只（目标上限，受区剩余上限与本地上限约束，
+        /// 不把全区各点 2 只预生成到突破总上限）。返回给到达日志的短语。
+        /// </summary>
+        private void PopulateOnArrival(GameState s, string loc, List<string> notes)
+        {
+            if (!Config.CombatEnabled) return;
+            var r = PopRegionOf(loc);
+            if (r == null) return;
+            s.Population.EnteredRegions.Add(r.Id);
+            if (!s.Population.InitializedNodes.Add(loc)) return;
+            var lc = _locs[loc];
+            var added = new List<WorldEnemy>();
+            while (LocalCount(s, loc) < lc.FirstPopulation && LocalCount(s, loc) < lc.PopulationLocalCap && RegionLiveCount(s, r) < r.Cap)
+                added.Add(AddWorldEnemy(s, PickWeighted(lc.PopulationWeights!, s.Rng.NextDouble()), loc));
+            if (added.Count > 0)
+                notes.Add($"这里游荡着{string.Join("、", added.GroupBy(w => w.EnemyId).Select(g => $"{_enemies[g.Key].Name}×{g.Count()}"))}（本地敌踪，可以接近，也可以避开）");
+        }
+
+        /// <summary>新人口区的一次刷新检查（与旧 8 地点同一格点、在其后判）：只处理已进入、到了起始分钟的区，每区各判一次。</summary>
+        private void RegionSpawnChecks(GameState s)
+        {
+            foreach (var r in WE.Regions)
+            {
+                if (!s.Population.EnteredRegions.Contains(r.Id) || s.GameMinute < r.SpawnStartWorldMinute) continue;
+                RegionSpawnCheck(s, r);
+            }
+        }
+
+        /// <summary>候选刷新节点：区内有敌池、本地未满、不是玩家当前节点，且区总数未满（含未知节点，不向玩家泄露）。</summary>
+        public List<string> RegionSpawnCandidates(GameState s, PopulationRegionConfig r)
+        {
+            if (RegionLiveCount(s, r) >= r.Cap) return new List<string>();
+            return r.Nodes.Where(n => PopRegionOf(n) == r)
+                .Where(n => LocalCount(s, n) < _locs[n].PopulationLocalCap)
+                .Where(n => n != s.CurrentLocation)
+                .ToList();
+        }
+
+        /// <summary>mainline 区的强度层（与旧 8 地点同口径：96/3.5/0.5，第1/3/7日开放）；r∈[0,1)。</summary>
+        public static string RollLayer(Dictionary<string, double> weights, double r)
+        {
+            var total = weights.Values.Sum();
+            var acc = 0.0;
+            foreach (var kv in weights)
+            {
+                acc += kv.Value / total;
+                if (r < acc) return kv.Key;
+            }
+            return weights.Keys.Last();
+        }
+
+        private void RegionSpawnCheck(GameState s, PopulationRegionConfig r)
+        {
+            if (s.Rng.NextDouble() >= r.SpawnAttempt) return;
+            if (r.LayerWeights != null)
+            {
+                var layer = RollLayer(r.LayerWeights, s.Rng.NextDouble());
+                // 未开放层抽中本次无刷新、不重抽（unopenedLayer no_spawn_no_reroll）；节点池都是普通层，抽到稀有/强敌层也无刷新（开发假设 B20-7）
+                if (r.LayerOpenWorldDay != null && r.LayerOpenWorldDay.TryGetValue(layer, out var day) && Clock.Day(s.GameMinute) < day) return;
+                if (layer != "ordinary") return;
+            }
+            var cands = RegionSpawnCandidates(s, r);
+            if (cands.Count == 0) return;
+            var loc = cands[(int)Math.Min(cands.Count - 1, Math.Floor(s.Rng.NextDouble() * cands.Count))];
+            AddWorldEnemy(s, PickWeighted(_locs[loc].PopulationWeights!, s.Rng.NextDouble()), loc);
+        }
+
+        /// <summary>人口区敌人的巡游目标：物理相邻、同一人口区、本地未满的节点（不进城市/地牢、不跨区）。</summary>
+        public List<string> RegionPatrolTargets(GameState s, string from)
+        {
+            var r = PopRegionOf(from);
+            if (r == null) return new List<string>();
+            return PhysicalNeighbors(from).Where(l => PopRegionOf(l) == r && LocalCount(s, l) < _locs[l].PopulationLocalCap)
+                .Distinct().OrderBy(l => l, StringComparer.Ordinal).ToList();
+        }
+
+        /// <summary>开发入口：人口区计数（已进入的区写“已进入”，其余“未进入（不刷新）”）。</summary>
+        public List<(PopulationRegionConfig Region, int Live, bool Entered)> RegionSummary(GameState s) =>
+            WE.Regions.Select(r => (r, RegionLiveCount(s, r), s.Population.EnteredRegions.Contains(r.Id))).ToList();
+
+        /// <summary>开发与测试：立即对已进入的人口区做一次刷新检查（用存档内随机数），返回新生成的敌人。</summary>
+        public List<WorldEnemy> DebugRegionSpawnCheck(GameState s)
+        {
+            var before = s.WorldEnemies.Select(w => w.Id).ToHashSet();
+            RegionSpawnChecks(s);
+            return s.WorldEnemies.Where(w => !before.Contains(w.Id)).ToList();
+        }
+    }
+}
