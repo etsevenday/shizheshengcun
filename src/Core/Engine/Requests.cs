@@ -69,7 +69,7 @@ namespace Survival.Core.Engine
         public static ActionRequest Ignite(int? lighterInstanceId = null) => new ActionRequest { Type = ActionType.Ignite, InstanceId = lighterInstanceId };
     }
 
-    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, PutInFire, PutFoodInPot, TakeOut, Reorder, LoadCharcoal, FillCanteen, PourCanteen, LoadPotRecipe }
+    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, PutInFire, PutFoodInPot, TakeOut, Reorder, LoadCharcoal, FillCanteen, PourCanteen, LoadPotRecipe, StoreCabinet, TakeCabinet }
 
     public sealed class InstantRequest
     {
@@ -119,6 +119,11 @@ namespace Survival.Core.Engine
         /// <summary>B16 复合锅食谱：在当前火堆里的锅中投料开做（ProcessId 为锅食谱进程，如 pot_hardtack；TargetInstanceId 为锅）。</summary>
         public static InstantRequest LoadPotRecipe(string processId, int potInstanceId) =>
             new InstantRequest { Kind = InstantKind.LoadPotRecipe, CardKey = processId, TargetInstanceId = potInstanceId };
+        /// <summary>B17 安全屋柜子：随身/屋内地面 → 柜子（0 分钟）。</summary>
+        public static InstantRequest StoreCabinet(int instanceId, int count = 1) => new InstantRequest { Kind = InstantKind.StoreCabinet, InstanceId = instanceId, Count = count };
+        /// <summary>B17 安全屋柜子：柜子 → 随身（zone 为空或 carried）或屋内地面（zone = 屋内地面 owner）。</summary>
+        public static InstantRequest TakeCabinet(int instanceId, int count = 1, string? zone = null) =>
+            new InstantRequest { Kind = InstantKind.TakeCabinet, InstanceId = instanceId, Count = count, Zone = zone ?? "" };
         public static InstantRequest Reorder(string zone, string cardKey, int index) =>
             new InstantRequest { Kind = InstantKind.Reorder, Zone = zone, CardKey = cardKey, Index = index };
 
