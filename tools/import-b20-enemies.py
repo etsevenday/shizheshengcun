@@ -188,6 +188,11 @@ def main():
         })
     we["legacyElites"] = le
 
+    # B20 起检查哨拦路战与地牢守卫战已上线：门槛未满足原因去掉“（后续版本开放）”（B11 措辞，开发方拟）
+    fl = cfg["map"]["factLabels"]
+    fl["checkpoint_obstruction_cleared"] = "解决检查哨的固定拦路战（在检查哨接战取胜）"
+    fl["guardianDefeated"] = "击败本次地牢的守卫（在守卫房接战取胜）"
+
     with open(CONFIG, "w", encoding="utf-8", newline="\n") as f:
         f.write(json.dumps(cfg, ensure_ascii=False, indent=2) + "\n")
     print(f"enemies {len(cfg['enemies'])}, regions {len(out)}, pooled nodes {pooled}, fixedBattles {len(fixed)}, legacyElites {len(le)}")

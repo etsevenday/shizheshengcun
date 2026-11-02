@@ -80,6 +80,13 @@ namespace Survival.Core.Engine
             notes.Add($"{(f.Guardian ? "守卫拦在这里" : "发现固定敌踪")}：{names}{cut}——可以接战，也可以离开");
         }
 
+        /// <summary>B20 试玩修复：固定战撤退后卡上写“已交过手：守卫 健康7.20/10.50、…”（只列受过伤的；都满血为 null）。</summary>
+        public string? FixedHurtNote(GameState s, string nodeId)
+        {
+            var hurt = FixedEnemiesAt(s, nodeId).Where(w => w.Hp < _enemies[w.EnemyId].Hp - 1e-9).ToList();
+            return hurt.Count == 0 ? null : "已交过手：" + string.Join("、", hurt.Select(w => $"{_enemies[w.EnemyId].Name} 健康{Fmt.N(w.Hp)}/{Fmt.N(_enemies[w.EnemyId].Hp)}"));
+        }
+
         /// <summary>
         /// 开发假设 B20-5：固定战敌人还在这里时，本节点不能探索、清理翻找或采集（“必经路线须胜利或走已存在的绕路”；可以离开）。返回原因，没有为 null。
         /// </summary>

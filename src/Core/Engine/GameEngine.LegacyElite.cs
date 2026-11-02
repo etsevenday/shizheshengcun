@@ -128,6 +128,7 @@ namespace Survival.Core.Engine
         {
             var c = EliteConfig(id);
             if (c == null) return "开发：没有这项挑战";
+            if (s.Population.Elites.TryGetValue(id, out var done) && done.Settled) return $"开发：{_enemies[c.EnemyId].Name}的挑战已结算，本局不再出现。";
             if (IsBusy(s)) return "开发：行动进行中或有敌踪/战斗，先结束再传送";
             if (c.RequiresFact != null && !MapFact(s, c.RequiresFact)) DebugMapFact(s, c.RequiresFact);
             DebugMapTeleport(s, c.NodeId);

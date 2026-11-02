@@ -380,7 +380,7 @@
     private void DevRegionSpawn()
     {
         var added = G.E.DebugRegionSpawnCheck(G.S);
-        DevDone((added.Count > 0 ? "人口区刷新：" + string.Join("、", added.Select(w => $"{G.E.Enemy(w.EnemyId).Name}（{G.E.LocName(w.LocationId)}）")) : "人口区这次没有刷新（25%未中、区满或没有已进入的区）") + "。" + G.E.DebugPopulationText(G.S));
+        DevDone((added.Count > 0 ? "人口区刷新：" + string.Join("、", added.Select(w => $"{G.E.Enemy(w.EnemyId).Name}（{G.E.LocName(w.LocationId)}）")) : $"人口区这次没有刷新：{G.E.RegionSpawnIdleReason(G.S)}") + "。" + G.E.DebugPopulationText(G.S));
     }
 
     /// <summary>B14 城市开发传送点（岗位所在地；r02 为科学院外院、没有岗位）。</summary>

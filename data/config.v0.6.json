@@ -32883,7 +32883,7 @@
       "tutorialBattleWon": "赢下第一场战斗（荒地的游荡尸）",
       "legacyTutorialEquivalent": "赢下第一场战斗（荒地的游荡尸）",
       "camp_route_known": "在临时营地与来客程望交谈，得知营区路线",
-      "checkpoint_obstruction_cleared": "解决检查哨的固定拦路战（后续版本开放）",
+      "checkpoint_obstruction_cleared": "解决检查哨的固定拦路战（在检查哨接战取胜）",
       "registration_authorized": "在营门向值守登记员办理登记",
       "hub_registered": "完成营区登记（在营门办理登记后走到营区广场）",
       "church_contacted": "先到达教会接待庭",
@@ -32895,7 +32895,7 @@
       "FA03_record_credit": "在灰塔封存区核心领取封存区安全规程",
       "FA04_merged": "在营区广场整理两份调查记录",
       "communication_power_claimed": "在警备仓封存仓核心领取警备仓备用电源",
-      "guardianDefeated": "击败本次地牢的守卫（地牢守卫战后续版本开放）",
+      "guardianDefeated": "击败本次地牢的守卫（在守卫房接战取胜）",
       "recordClaimedAndClear": "领取（或核对）本次地牢的核心记录",
       "chapter_contact": "在深野通信站联络台完成联络"
     },

@@ -183,7 +183,8 @@ else if (b != null)
                     @* B8b Q91：意图只公开目标范围与“攻击时随机”，不预先写抽中谁（抽中的人在攻击提交后写进战斗日志） *@
                     @if (G.E.IntentTargetNote(G.S, G.S.Battle!, t) is string tn) { <div><span>目标</span><b>@tn</b></div> }
                 </div>
-                @if (ec.IsZombie) { <div class="risk">丧尸咬击命中且造成伤害时可能感染（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）。抓击、喷吐、尖啸不会感染。</div> }
+                @if (ec.IsZombie && !e.CanBite(ec)) { <div class="risk none">它的意图里没有咬击，不会咬伤，攻击不传播病毒。</div> }
+                else if (ec.IsZombie) { <div class="risk">丧尸咬击命中且造成伤害时可能感染（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）。抓击、喷吐、尖啸不会感染。</div> }
                 else if (ec.IsHuman) { <div class="risk none">敌对人类的攻击不会传染僵尸病毒。</div> }
                 else { <div class="risk none">动物撕咬不会传染僵尸病毒，@(ec.Intents.Cycle.Any(x => x.BleedPct > 0) ? "但命中有概率出血" : "但仍会造成伤害")。</div> }
                 @if (B7Status(b, t) is string est) { <div class="risk none">@est</div> }

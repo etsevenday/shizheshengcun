@@ -124,6 +124,16 @@ namespace Survival.Core.Engine
         public List<(PopulationRegionConfig Region, int Live, bool Entered)> RegionSummary(GameState s) =>
             WE.Regions.Select(r => (r, RegionLiveCount(s, r), s.Population.EnteredRegions.Contains(r.Id))).ToList();
 
+        /// <summary>开发入口：刷新检查没出敌人时的原因（没有已进入的区 / 第2日00:00之前不刷新 / 25%未中或区满）。</summary>
+        public string RegionSpawnIdleReason(GameState s)
+        {
+            var entered = WE.Regions.Where(r => s.Population.EnteredRegions.Contains(r.Id)).ToList();
+            if (entered.Count == 0) return "还没有进入任何人口区（到过区内任一节点才开始刷新）";
+            if (entered.All(r => s.GameMinute < r.SpawnStartWorldMinute))
+                return $"人口区从第{Clock.Day(entered.Min(r => r.SpawnStartWorldMinute))}日00:00起才判刷新（现在{Clock.DayTime(s.GameMinute)}）";
+            return "25%未中，或区内节点都满/只剩你所在的节点";
+        }
+
         /// <summary>开发与测试：立即对已进入的人口区做一次刷新检查（用存档内随机数），返回新生成的敌人。</summary>
         public List<WorldEnemy> DebugRegionSpawnCheck(GameState s)
         {

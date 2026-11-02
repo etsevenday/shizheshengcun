@@ -142,7 +142,8 @@
                             <Art>@Icons.Markup("enemy_" + lead.Id)</Art>
                             <ChildContent>
                                 <div class="oc-line" title="@names">@names</div>
-                                <div class="oc-line" title="@tip">@($"{fixedHere.Count}只 · 名单已锁定 · 不增援")</div>
+                                @if (e.FixedHurtNote(s, here) is string hurt) { <div class="oc-line" title="@hurt">@hurt</div> }
+                                else { <div class="oc-line" title="@tip">@($"{fixedHere.Count}只 · 名单已锁定 · 不增援")</div> }
                             </ChildContent>
                             <Footer>
                                 <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? $"全名单一起入场（从1号位起）；{fear}")"

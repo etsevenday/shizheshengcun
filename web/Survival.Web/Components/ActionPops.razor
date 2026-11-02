@@ -77,7 +77,8 @@
                     {
                         <div class="apop-risk">@($"{weapon.Name}#{wi.InstanceId}")弹仓为0：开战后需先装填（1AP）</div>
                     }
-                    @if (ec.IsZombie) { <div class="apop-risk">咬伤可能感染（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）</div> }
+                    @if (e.CanBite(ec)) { <div class="apop-risk">咬伤可能感染（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）</div> }
+                    else if (ec.IsZombie) { <div class="apop-note">它的意图里没有咬击，不会咬伤（攻击不传播病毒）</div> }
                     <div class="apop-note">@e.FearNote(s, new[] { w }, GameEngine.FearApproach)</div>
                     @if (why != null) { <div class="apop-risk">@why</div> }
                     @if (G.Notice != null && _tried) { <div class="apop-risk">@G.Notice</div> }

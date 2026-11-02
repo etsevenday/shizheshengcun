@@ -1104,3 +1104,12 @@
   .center-scroll.four .facility-row .fac-card.sh-card .oc-badge { top: 6px; }
   .center-scroll.four .facility-row .fac-card.sh-card .oc-body .oc-line { display: block; -webkit-line-clamp: unset; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
+
+/* B20 试玩修复：敌踪/固定战/可选强敌卡的“接近/接战”按钮可见高度 ≥40px（1280×720 档原为 34px 加伪元素热区）；
+   宽屏下固定战与可选强敌卡加宽，名单不再挤成三行 */
+@media (max-height: 800px) {
+  .center-scroll.four .facility-row .enemy-card.world .oc-foot :is(.loc-btn, .oc-btn) { min-height: 40px; }
+}
+@media (min-width: 1600px) and (min-height: 801px) {
+  .center-scroll.four .facility-row .enemy-card.world:is(.fixed, .elite) { width: 280px; }
+}

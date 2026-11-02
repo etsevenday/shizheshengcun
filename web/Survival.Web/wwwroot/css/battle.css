@@ -7,7 +7,7 @@
 .bfs {
   position: fixed; inset: 0; z-index: 55;
   --bfs-pad: 8px; --bfs-gap: 8px;
-  --bfs-top: 48px; --bfs-queue: 64px; --bfs-feed: 40px;
+  --bfs-top: 48px; --bfs-queue: 64px; --bfs-feed: 44px;
   --bfs-right: clamp(240px, 18.75vw, 360px);
   background: linear-gradient(180deg, #0a1216f0, #0b1417f6 60%, #0a1114fa), var(--scene-art) center / cover;
   color: var(--text); font-size: 16px;
@@ -20,7 +20,7 @@
   grid-template-areas: "top top" "queue queue" "scene info" "console log" "feed feed";
 }
 @media (max-height: 800px) {
-  .bfs { --bfs-top: 40px; --bfs-queue: 48px; --bfs-feed: 36px; }
+  .bfs { --bfs-top: 40px; --bfs-queue: 48px; --bfs-feed: 42px; }
   .bfs-grid { grid-template-rows: var(--bfs-top) var(--bfs-queue) minmax(0, 352fr) minmax(0, 196fr) var(--bfs-feed); }
 }
 .bfs-grid > * { min-width: 0; min-height: 0; box-sizing: border-box; }
@@ -64,8 +64,8 @@
 .bfs-feed { display: flex; align-items: center; gap: 8px; padding: 0 6px 0 12px; background: #11181bf2; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
 .bfs-feed .bx-hint, .bfs-feed .bx-last { flex: 1 1 auto; min-width: 0; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bfs-feed .bx-last { color: var(--muted); }
-.bfs-feed .bx-go { min-height: 30px; padding: 0 12px; font-size: 16px; }
-.bfs-feed .bx-x { width: 30px; height: 30px; }
+.bfs-feed .bx-go { min-height: 40px; padding: 0 12px; font-size: 16px; }   /* B20 试玩修复：确认条热区 ≥40px（原 30px） */
+.bfs-feed .bx-x { width: 40px; height: 40px; }
 .bfs-feed-btns { flex: 0 0 auto; display: flex; gap: 6px; margin-left: auto; }
 .bfs-feed-btns button { width: auto; min-height: 30px; padding: 0 12px; font-size: 16px; white-space: nowrap; }
 .bfs-feed-btns button.on { border-color: var(--accent); color: var(--accent); }
