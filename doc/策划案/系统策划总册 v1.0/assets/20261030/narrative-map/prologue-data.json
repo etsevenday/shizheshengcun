@@ -16,7 +16,22 @@
     "teleportPlayer": false,
     "approvedDay": 5,
     "approvedTime": "08:00",
-    "timingApproved": true
+    "timingApproved": true,
+    "runOriginPolicy": {
+      "sourceQuestion": "Q138_A",
+      "basis": "whether_run_was_created_with_prologue_not_whether_save_schema_was_upgraded",
+      "manualOnly": "Legacy_or_trusted_pre_prologue_run_or_migration_from_schema_21_and_earlier",
+      "keepOriginalAutoArrival": "run_created_with_prologue_schema22_and_later_even_after_schema_upgrade",
+      "examples": {
+        "prePrologue": "Legacy及序章上线前开局、之后迁入序章系统的旧档",
+        "withPrologue": "B13后新开的22—24档升级25/26及以后仍是有序章的新局"
+      },
+      "trustedOriginMarkersOverrideCurrentSchema": true,
+      "neverReplayAlreadyShownArrival": true,
+      "doNotResetVisitorTalkRouteOrGuideSeen": true,
+      "arrivalTimeAndConditionsUnchanged": true,
+      "newRunUpgradeDoesNotCreateBaobaoOrRetroStory": true
+    }
   },
   "exit": {
     "from": "village",
@@ -345,5 +360,36 @@
     "PRO10": "主角在hand手工制作成功完成至少一件产物为工具或武器的配方，含木盾；不含箭矢/绷带、维修/拆解/建造与工坊配方；PRO03同次制作可追认本项，PRO03另须实际装备伤害武器",
     "PRO14": "本局实际到访过village或clinic，之后在成功移动到达camp的事务完成；不另要求camp出发记录，不要求诊所和村庄都去过",
     "PRO18": "本局沿合法真实移动成功到达m01_road即完成；south_sign_known不是条件，路标仅可选阅读"
+  },
+  "objectiveTravelNextStep": {
+    "sourceQuestion": "Q139_B",
+    "context": "current_objective_requires_real_forward_travel_and_has_actual_next_route_segment",
+    "replaceWhen": "next_edge_or_node_not_yet_discovered_and_current_location_explore_enabled_and_progress_below100",
+    "step": "先探索当前地点，找到通往下一段的路。",
+    "focus": "current_location_explore_entry",
+    "knownButBlockedStep": "查看通往{已发现地点名}的路线条件：{领域可公开原因}。",
+    "knownAndOpenStep": "沿已知路线前往{实际下一相邻地点名}。",
+    "unknownAndCannotExploreStep": "查看当前已知路线与通行条件。",
+    "unknownAndCannotExploreFocus": "keep_current_location_no_unknown_node_focus_no_repeat_exploration",
+    "priority": "real_danger_dialogue_battle_and_action_locks_first_then_dynamic_step",
+    "recompute": "after_committed_discovery_exploration_arrival_fact_change_or_load_at_original_safe_boundary",
+    "revealSideEffects": false,
+    "hiddenLocationNamesOrGateFactsShown": false,
+    "readTimeCost": 0,
+    "autoExploreOrTravel": false,
+    "originalGoalTitleAndRoutePermissionsUnchanged": true
+  },
+  "guideNonContextFallback": {
+    "sourceQuestion": "Q140_B",
+    "battleOnlyHintTaskIds": [
+      "PRO04"
+    ],
+    "validActualContextFirst": true,
+    "noActualContextOutOfBattle": "show_existing_objective_title_and_nextStep_only_no_PRO04_combat_hint",
+    "inBattle": "use_original_first_battle_hint_in_fullscreen_battle_context",
+    "outOfBattleEncounterOrRestIsNotCombatContext": true,
+    "otherNormalGoalHintsUnchanged": true,
+    "doesNotResetGuideSeenOrReplayReaction": true,
+    "noAutomaticAttackAPTimeOrStateChanges": true
   }
 }
