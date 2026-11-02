@@ -39,8 +39,9 @@ namespace Survival.Core.State
         /// "18" 起记候补照护规则版本与每名候补的自主 rest/sleep 模式（策划答复 Q90，开发计划 v0.9 B8c）；
         /// "29" 起安全屋与分区设施：地点带安全屋（屋内区设施、柜子记录），队伍记当前所在区与收藏的安全屋，设施带屋内火堆与折叠柴炉（开发计划 v0.9 B17）。
         /// "30" 起鉴定交易：物品实例带可空鉴定记录，城市状态带鉴定所世界日报价表，服务事务带报价/样本锁字段（开发计划 v0.9 B18）。
+        /// "31" 起周期招募：收容所开放时刻、当前周期候选快照、在办登记与流水号（Recruit），名册条目带随机角色人物档与退役记录，遗物容器带认领箱类别（开发计划 v0.9 B19）。
         /// </summary>
-        public const string CurrentSchema = "30";
+        public const string CurrentSchema = "31";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -215,6 +216,8 @@ namespace Survival.Core.State
         public CityState City { get; set; } = new CityState();
         /// <summary>主线与支线任务账（开发计划 v0.9 B15；schema 27 起）。</summary>
         public QuestState Quests { get; set; } = new QuestState();
+        /// <summary>收容所周期招募（开发计划 v0.9 B19；schema 31 起）。</summary>
+        public RecruitState Recruit { get; set; } = new RecruitState();
 
         [JsonIgnore] public List<GameEvent> PendingEvents { get; set; } = new List<GameEvent>();
 
@@ -251,6 +254,7 @@ namespace Survival.Core.State
             c.Prologue = Prologue.Clone();
             c.City = City.Clone();
             c.Quests = Quests.Clone();
+            c.Recruit = Recruit.Clone();
             c.PendingEvents = new List<GameEvent>();
             return c;
         }
@@ -721,7 +725,29 @@ namespace Survival.Core.State
         /// <summary>护送员绑定的借用矛位（loan_k）；命名角色为 null。</summary>
         public string? LoanSlot { get; set; }
 
+        // ── 周期招募（B19，R08 RC2—RC4/Q62）：Kind = "random" 的随机候选招入者 ──
+        /// <summary>招入时的候选 ID 与周期号（退役后同周期不能再招回）。</summary>
+        public string? CandidateId { get; set; }
+        public int? Cycle { get; set; }
+        /// <summary>职业模板 ID（只是初始熟练组合）。</summary>
+        public string? TemplateId { get; set; }
+        /// <summary>候选快照里的人物档（Q62：控制抗性、闪避、基础甲、基础速度；生成后固定、不重抽）。</summary>
+        public double? ControlResist { get; set; }
+        public double? Evasion { get; set; }
+        public double? BaseArmor { get; set; }
+        public double? BaseSpeed { get; set; }
+        /// <summary>已退役（RC4：生成角色永久离开名册，保留历史 actorId；不占名额、不结算身体）。</summary>
+        public bool Retired { get; set; }
+        public int? RetiredMinute { get; set; }
+        public int? RetiredCycle { get; set; }
+
         public bool IsEscort => Kind == "escort";
+        /// <summary>周期候选招入的随机角色（B19）。</summary>
+        public bool IsRandom => Kind == "random";
+        /// <summary>生成角色（随机 + RB01 保底）：共享名额 K、可退役；固定六人不是。</summary>
+        public bool IsGenerated => IsEscort || IsRandom;
+        /// <summary>仍在名册（未死亡、未退役）。</summary>
+        public bool Present => !Dead && !Retired;
         public RosterEntry Clone() => (RosterEntry)MemberwiseClone();
     }
 

@@ -54,6 +54,7 @@ namespace Survival.Core.Save
         public const string Schema27 = "27";
         public const string Schema28 = "28";
         public const string Schema29 = "29";
+        public const string Schema30 = "30";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -98,6 +99,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema27) From27To28(s, config, notes);
             if (s.SchemaVersion == Schema28) From28To29(s, config, notes);
             if (s.SchemaVersion == Schema29) From29To30(s, config, notes);
+            if (s.SchemaVersion == Schema30) From30To31(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1023,7 +1025,20 @@ namespace Survival.Core.Save
         {
             s.City ??= new CityState();
             s.City.Quotes ??= new List<AppraisalQuoteSnapshot>();
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（营区鉴定所开放详细鉴定与以物换物；原有活性物质记为未鉴定，来源与教学标记原样保留）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema30}（营区鉴定所开放详细鉴定与以物换物；原有活性物质记为未鉴定，来源与教学标记原样保留）。" });
+            s.SchemaVersion = Schema30;
+        }
+
+        /// <summary>
+        /// 周期招募（开发计划 v0.9 B19，R60/R61；R08 RC7、S01 本轮章）：补空的招募状态——旧档的收容所开放时刻不按过去推算，
+        /// 等 QMAP01 登记后首次实际安全到达收容所时才记（不补历史周期、不补抽离线候选）。旧名册条目原样（命名/护送员），没有退役记录。
+        /// 旧档不可能有进行中的随机登记（本版本前未开放）。不发物、不改名额。幂等。
+        /// </summary>
+        private static void From30To31(GameState s, GameConfig config, List<string> notes)
+        {
+            s.Recruit ??= new RecruitState();
+            s.Recruit.Candidates ??= new List<RecruitCandidate>();
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（收容所开放周期招募：营区登记后第一次实际到达收容所时开始计周期，每72小时3名候选；不补算之前的周期）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

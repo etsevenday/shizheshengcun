@@ -83,7 +83,13 @@ namespace Survival.Core.Engine
         public ActorDefenseProfileConfig? ActorProfile(GameState s, string actorId)
         {
             var abd = Config.ActorBaseDefense;
-            if (RosterOf(s, actorId) is RosterEntry r && r.IsEscort) return abd.Rb01Escort;
+            if (RosterOf(s, actorId) is RosterEntry r)
+            {
+                if (r.IsEscort) return abd.Rb01Escort;
+                // B19（Q62）：随机招入者按候选快照里的人物档（生成后固定，同队/候补/升级不重抽）
+                if (r.IsRandom && r.BaseSpeed != null)
+                    return new ActorDefenseProfileConfig { ActorId = actorId, ControlResist = r.ControlResist ?? 0, Evasion = r.Evasion ?? 0, BaseArmor = r.BaseArmor ?? 0, BaseSpeed = r.BaseSpeed.Value, Role = "random_recruit" };
+            }
             return abd.Profile(actorId);
         }
 
@@ -92,6 +98,7 @@ namespace Survival.Core.Engine
         {
             if (actorId == GameState.PlayerId) return Config.Scope.BasePlayerSpeed;
             if (RosterOf(s, actorId) is RosterEntry r && r.IsEscort) return Config.Party.EscortTemplate.BaseSpeed;
+            if (RosterOf(s, actorId) is RosterEntry rr && rr.IsRandom && rr.BaseSpeed != null) return rr.BaseSpeed.Value;
             return Config.Party.Named(actorId)?.BaseSpeed ?? ActorProfile(s, actorId)?.BaseSpeed ?? Config.Scope.BasePlayerSpeed;
         }
 

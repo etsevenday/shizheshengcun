@@ -126,6 +126,8 @@ namespace Survival.Core.Engine
         {
             // B18：当日首次安全到达鉴定所时锁定当日报价表（R07 X3.3、开发假设 B18-1）
             if (locationId == Ap.LocationId) EnsureAppraisalQuotes(s);
+            // B19：营区登记后首次实际安全到达收容所时开放周期候选（R08 RC1、v3 校准）；之后每次到达只确保当前批已生成
+            if (locationId == Rc.LocationId && !TryOpenShelterRecruitment(s, notes)) EnsureRecruitCycle(s);
             var reg = Config.City.Registration;
             if (string.IsNullOrEmpty(reg.SquareLocation) || locationId != reg.SquareLocation) return;
             var f = s.Progress.Flags;
@@ -344,7 +346,7 @@ namespace Survival.Core.Engine
                         ? "已有观察核对记录" : "还没有观察核对记录");
                     break;
                 case "shelter_recruitment":
-                    v.EffectText = "沿用收容所原有入口：同行补员登记（30分钟）、借用矛报失与名册在“队伍”面板办理；查看名册不耗时，不会替你招人";
+                    v.EffectText = $"周期候选（每{Clock.Duration(Rc.RefreshMinutes)}一批{Rc.CandidatesPerCycle}名，0材料、{Clock.Duration(Rc.RegistrationMinutes)}登记）与生成角色退役在本面板办理；同行补员（RB01，{Clock.Duration(Config.Party.EscortTemplate.RegistrationMinutes)}）与借用矛报失在“队伍”面板；查看名册不耗时，不会替你招人";
                     break;
                 case "church_reception_existing":
                 case "academy_reception_existing":

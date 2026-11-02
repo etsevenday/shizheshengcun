@@ -331,6 +331,7 @@ namespace Survival.Core.Engine
 
             UpdateAllClearCharges(s);
             if (s.GameMinute % Clock.MinutesPerDay == 0) NewDay(s);
+            RecruitTick(s);   // B19：周期交界换批（死亡已优先判过；在办登记的候选与名额随事务保留）
 
             // 设施自动加工：按段首快照给合格目标 +5 受热分钟，达标即原地转化；不替换、不暂停角色主行动
             AdvanceFacilities(s, snap);
@@ -555,6 +556,7 @@ namespace Survival.Core.Engine
                 case ActionType.Wait:
                     ClearAction(s, a);
                     if (a.TargetId == EscortRegistrationTarget) { CompleteEscortRegistration(s, a); return true; }
+                    if (a.TargetId.StartsWith(RecruitTargetPrefix)) { CompleteRecruit(s, a); return true; }
                     if (a.TargetId.StartsWith(CityServicePrefix)) { CompleteCityService(s, a); return true; }
                     if (IsCampingTarget(a.TargetId)) { CompleteCamping(s, a); return true; }
                     Emit(s, GameEventKind.ActionCompleted, $"等待结束（{Clock.Duration(a.PlannedMinutes)}）。");

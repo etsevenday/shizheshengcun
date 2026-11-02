@@ -605,6 +605,13 @@ namespace Survival.Core.Engine
                         plan.Label = $"办理事项{Clock.Duration(r.Minutes)}";
                         return null;
                     }
+                    // B19 收容所周期登记（10 分钟，两段）：由 StartRecruit 校验名额与候选后发起
+                    if (r.TargetId.StartsWith(RecruitTargetPrefix) && r.Minutes > 0 && r.Minutes % 5 == 0)
+                    {
+                        plan.Planned = r.Minutes;
+                        plan.Label = $"登记同行{Clock.Duration(r.Minutes)}";
+                        return null;
+                    }
                     // B17 野营布/折叠柴炉部署与收起（A07 X1.6）：按等待结算身体消耗
                     if (IsCampingTarget(r.TargetId)) return ValidateCamping(s, r, plan);
                     if (!Config.Actions.WaitMinutes.Contains(r.Minutes)) return "等待时长无效";
@@ -974,6 +981,7 @@ namespace Survival.Core.Engine
             // B14 城市计时服务：预留的材料原物原处（不搬到地面）、配额预留随事务作废（city-services common.cancel）
             var apTxn = s.City.Pending is CityServiceTxn cp && cp.ActionId == a.ActionId && cp.AppraisalMode != null ? cp : null;   // B18
             if (a.TargetId.StartsWith(CityServicePrefix)) ReleaseCityService(s, a);
+            if (a.TargetId.StartsWith(RecruitTargetPrefix)) ReleaseRecruit(s, a);   // B19：只释放候选与名额锁，已耗时间不退
             Release(s, a, s.Ground);
             if (a.IsSub) s.Sub = null; else s.Main = null;
 
@@ -992,6 +1000,7 @@ namespace Survival.Core.Engine
                 ActionType.WaitCook => $"已退出等待加工（已完成{a.CookDone.Count}项）：火堆、锅与受热进度原样保留，成品留在原位。",
                 // B15 试玩修复 M333：城市事项/委托工作写实际进行的时长，不写计划工时
                 _ when apTxn != null => AppraisalCancelText(a, apTxn),
+                _ when a.TargetId.StartsWith(RecruitTargetPrefix) => RecruitCancelText(a),
                 _ when a.TargetId.StartsWith(CityServicePrefix) =>
                     $"已停止{CityService(a.TargetId.Substring(CityServicePrefix.Length))?.Title ?? a.Label}（实际进行了{Clock.Duration(a.ElapsedMinutes)}）。",
                 _ => $"已结束{a.Label}。",

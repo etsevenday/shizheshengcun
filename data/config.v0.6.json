@@ -30406,7 +30406,148 @@
     "hubStandIn": "camp",
     "shelterStandIn": "camp",
     "hubV3": "h02_square",
-    "shelterV3": "h06_shelter"
+    "shelterV3": "h06_shelter",
+    "recruitment": {
+      "source": "R08 RC1—RC4（2026-10-30 B3 实体收容所、周期招募）、Q62—Q74 当前优先节（防御档在 actorBaseDefense.randomRecruit）；B19",
+      "serviceId": "shelter_recruitment",
+      "contractServiceId": "service_shelter_recruitment",
+      "locationId": "h06_shelter",
+      "openedByFact": "hub_registered",
+      "refreshMinutes": 4320,
+      "candidatesPerCycle": 3,
+      "registrationMinutes": 10,
+      "sharedRosterMax": 3,
+      "rosterAliveCap": 10,
+      "mainLevelWeights": {
+        "2": 70,
+        "3": 30
+      },
+      "subLevelWeights": {
+        "1": 50,
+        "2": 50
+      },
+      "otherLevel": 1,
+      "body": {
+        "health": [
+          14,
+          20
+        ],
+        "healthMax": 20,
+        "energy": [
+          10,
+          16
+        ],
+        "energyMax": 20,
+        "satiety": 40,
+        "hydration": 40,
+        "wakefulness": [
+          50,
+          75
+        ],
+        "morale": [
+          40,
+          65
+        ],
+        "immunity": [
+          60,
+          75
+        ],
+        "virus": 0
+      },
+      "namePrefix": "幸存者·",
+      "templates": [
+        {
+          "id": "front_guard",
+          "name": "前排护卫",
+          "main": "shield",
+          "subs": [
+            "spear",
+            "blunt"
+          ],
+          "use": "保护、前排承伤"
+        },
+        {
+          "id": "blade_hand",
+          "name": "刀具熟手",
+          "main": "blade",
+          "subs": [
+            "unarmed",
+            "athletics"
+          ],
+          "use": "近身稳定输出"
+        },
+        {
+          "id": "breaker",
+          "name": "破障工",
+          "main": "axe",
+          "subs": [
+            "crafting",
+            "gathering"
+          ],
+          "use": "破甲与工具作业"
+        },
+        {
+          "id": "spear_walker",
+          "name": "长柄巡路员",
+          "main": "spear",
+          "subs": [
+            "athletics",
+            "shield"
+          ],
+          "use": "范围打击、控位"
+        },
+        {
+          "id": "salvager",
+          "name": "回收工",
+          "main": "blunt",
+          "subs": [
+            "scavenging",
+            "crafting"
+          ],
+          "use": "控制与搜集"
+        },
+        {
+          "id": "hunter",
+          "name": "猎行者",
+          "main": "archery",
+          "subs": [
+            "gathering",
+            "athletics"
+          ],
+          "use": "远程与野外采集"
+        },
+        {
+          "id": "old_service",
+          "name": "旧勤务员",
+          "main": "firearms",
+          "subs": [
+            "blade",
+            "scavenging"
+          ],
+          "use": "枪械操作，需玩家自备枪弹"
+        },
+        {
+          "id": "coordinator",
+          "name": "随行协调员",
+          "main": "command",
+          "subs": [
+            "medicine",
+            "cooking"
+          ],
+          "use": "战斗支援与日常照料"
+        },
+        {
+          "id": "camp_nurse",
+          "name": "营地护理员",
+          "main": "medicine",
+          "subs": [
+            "cooking",
+            "crafting"
+          ],
+          "use": "医疗与加工"
+        }
+      ]
+    }
   },
   "workshops": {
     "source": "A07「工坊设施」「材料加工链」；A05 §3；S08 X4；S09 X2.7；开发计划 v0.9 B10（tools/import-b10-workshops.py）",

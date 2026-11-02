@@ -29,6 +29,8 @@ namespace Survival.Core.Config
         public string HubV3 { get; set; } = "h02_square";
         /// <summary>v3 地图的收容所节点（Q88/Q94：RB01 与借用矛报失、报失补发落地）。</summary>
         public string ShelterV3 { get; set; } = "h06_shelter";
+        /// <summary>收容所周期招募（R08 RC1—RC4，开发计划 v0.9 B19，需求 R60/R61）。由 tools/import-b19-recruitment.py 写入。</summary>
+        public RecruitmentConfig Recruitment { get; set; } = new RecruitmentConfig();
 
         public NamedCompanionConfig? Named(string actorId) => NamedCompanions.FirstOrDefault(n => n.ActorId == actorId);
     }
@@ -93,5 +95,65 @@ namespace Survival.Core.Config
         /// <summary>红线：H 首次降到 ≤ 它、V 首次升到 ≥ 它各提示一次（A11 §5.3）。</summary>
         public double RedHealth { get; set; } = 5;
         public double RedVirus { get; set; } = 80;
+    }
+
+    /// <summary>
+    /// 收容所周期招募（R08「2026-10-30 B3 实体收容所、周期招募与战利品owner」RC1—RC4；B19）。
+    /// 候选的控制抗性/闪避/基础甲/基础速度读 actorBaseDefense.randomRecruit（R08「Q62—Q74」当前优先节），这里不复制。
+    /// </summary>
+    public sealed class RecruitmentConfig
+    {
+        /// <summary>城市服务表里的服务 ID（A11 Q33）。</summary>
+        public string ServiceId { get; set; } = "shelter_recruitment";
+        /// <summary>策划数据 expansion-combat.json recruitment.serviceId（只作对照）。</summary>
+        public string ContractServiceId { get; set; } = "";
+        public string LocationId { get; set; } = "h06_shelter";
+        /// <summary>开放条件：QMAP01 登记（hub_registered）后首次实际到达收容所。</summary>
+        public string OpenedByFact { get; set; } = "hub_registered";
+        /// <summary>一期世界分钟（72 小时）。</summary>
+        public int RefreshMinutes { get; set; } = 4320;
+        public int CandidatesPerCycle { get; set; } = 3;
+        /// <summary>登记 wait 分钟（两个 5 分钟段）。</summary>
+        public int RegistrationMinutes { get; set; } = 10;
+        /// <summary>随机 + RB01 共享名额 K = min(SharedRosterMax, C−1)。</summary>
+        public int SharedRosterMax { get; set; } = 3;
+        /// <summary>全名册存活硬上限（主角 1 + 固定 6 + 共享 3）。</summary>
+        public int RosterAliveCap { get; set; } = 10;
+        /// <summary>主熟练等级权重（Lv → 权重）。</summary>
+        public Dictionary<string, int> MainLevelWeights { get; set; } = new Dictionary<string, int>();
+        /// <summary>副熟练等级权重。</summary>
+        public Dictionary<string, int> SubLevelWeights { get; set; } = new Dictionary<string, int>();
+        public int OtherLevel { get; set; } = 1;
+        public RecruitBodyConfig Body { get; set; } = new RecruitBodyConfig();
+        /// <summary>候选名前缀（开发假设 B19-2：仓库没有姓名池，名字 = 前缀 + 模板名 + 三位流水号）。</summary>
+        public string NamePrefix { get; set; } = "";
+        public List<RecruitTemplateConfig> Templates { get; set; } = new List<RecruitTemplateConfig>();
+
+        public RecruitTemplateConfig? Template(string id) => Templates.FirstOrDefault(t => t.Id == id);
+    }
+
+    /// <summary>RC3 候选身体：区间为闭区间整数均匀。</summary>
+    public sealed class RecruitBodyConfig
+    {
+        public int[] Health { get; set; } = { 14, 20 };
+        public double HealthMax { get; set; } = 20;
+        public int[] Energy { get; set; } = { 10, 16 };
+        public double EnergyMax { get; set; } = 20;
+        public double Satiety { get; set; } = 40;
+        public double Hydration { get; set; } = 40;
+        public int[] Wakefulness { get; set; } = { 50, 75 };
+        public int[] Morale { get; set; } = { 40, 65 };
+        public int[] Immunity { get; set; } = { 60, 75 };
+        public double Virus { get; set; }
+    }
+
+    /// <summary>RC2 职业模板：主熟练 + 两个副熟练候选（二选一等权）。</summary>
+    public sealed class RecruitTemplateConfig
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Main { get; set; } = "";
+        public List<string> Subs { get; set; } = new List<string>();
+        public string Use { get; set; } = "";
     }
 }
