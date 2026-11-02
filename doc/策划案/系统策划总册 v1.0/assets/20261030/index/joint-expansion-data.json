@@ -26329,7 +26329,21 @@
       "hiddenLocationNamesOrGateFactsShown": false,
       "readTimeCost": 0,
       "autoExploreOrTravel": false,
-      "originalGoalTitleAndRoutePermissionsUnchanged": true
+      "originalGoalTitleAndRoutePermissionsUnchanged": true,
+      "knownStepScope": {
+        "sourceQuestion": "Q147_A",
+        "knownSentenceObjectiveIds": [
+          "route_onward"
+        ],
+        "knownSentencePhase": "出区后逐段前进：已真实到达旧公路后，主目标为前往幸存者营区寻找医疗帮助",
+        "otherTravelObjectivesKnown": "preserve_Q129_original_specific_step_for_both_known_open_and_known_blocked",
+        "unknownSentenceScope": "all_forward_travel_objectives_with_an_actual_next_segment",
+        "independentOfEarlierExplorationHint": true,
+        "arrivalOrNoNextSegment": "preserve_original_objective_action_step_not_force_travel_sentence",
+        "focusUnchanged": true,
+        "doesNotAppendOrReplaceOtherTaskActions": true,
+        "savePolicy": "read_only_recompute_at_original_safe_boundary_no_new_save_fields_no_progress_or_seen_reset"
+      }
     },
     "guideNonContextFallback": {
       "sourceQuestion": "Q140_B",
@@ -65429,7 +65443,8 @@
       "Q133",
       "Q138",
       "Q139",
-      "Q140"
+      "Q140",
+      "Q147"
     ],
     "guides": [
       {
@@ -66024,7 +66039,21 @@
         "hiddenLocationNamesOrGateFactsShown": false,
         "readTimeCost": 0,
         "autoExploreOrTravel": false,
-        "originalGoalTitleAndRoutePermissionsUnchanged": true
+        "originalGoalTitleAndRoutePermissionsUnchanged": true,
+        "knownStepScope": {
+          "sourceQuestion": "Q147_A",
+          "knownSentenceObjectiveIds": [
+            "route_onward"
+          ],
+          "knownSentencePhase": "出区后逐段前进：已真实到达旧公路后，主目标为前往幸存者营区寻找医疗帮助",
+          "otherTravelObjectivesKnown": "preserve_Q129_original_specific_step_for_both_known_open_and_known_blocked",
+          "unknownSentenceScope": "all_forward_travel_objectives_with_an_actual_next_segment",
+          "independentOfEarlierExplorationHint": true,
+          "arrivalOrNoNextSegment": "preserve_original_objective_action_step_not_force_travel_sentence",
+          "focusUnchanged": true,
+          "doesNotAppendOrReplaceOtherTaskActions": true,
+          "savePolicy": "read_only_recompute_at_original_safe_boundary_no_new_save_fields_no_progress_or_seen_reset"
+        }
       }
     },
     "exitPolicy": {
@@ -66084,7 +66113,9 @@
       "TUT-Q139-02",
       "TUT-Q139-03",
       "TUT-Q140-01",
-      "TUT-Q140-02"
+      "TUT-Q140-02",
+      "TUT-Q147-01",
+      "TUT-Q147-02"
     ]
   },
   "fireAxeAdjudications": {

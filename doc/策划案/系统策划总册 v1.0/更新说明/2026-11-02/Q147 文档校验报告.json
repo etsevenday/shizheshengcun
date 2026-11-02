@@ -1,0 +1,136 @@
+{
+  "date": "2026-11-02",
+  "mode": "static_document_json_only_no_engine_or_ui",
+  "answer": {
+    "Q147": "A"
+  },
+  "checks": [
+    {
+      "name": "保留原实现同步与完整修改记录 01 基础系统/S15 开局、引导目标与终局系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留原实现同步与完整修改记录 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留原实现同步与完整修改记录 01 基础系统/S02 地图结构与移动系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留原实现同步与完整修改记录 01 基础系统/S03 探索与发现系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留原实现同步与完整修改记录 04 附录/A08 主线地图、资源与副本目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留原实现同步与完整修改记录 04 附录/A11 主线任务、势力与队伍角色目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留原实现同步与完整修改记录 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "保留原实现同步与完整修改记录 00 总则/02 开发方待确认问题.md",
+      "passed": true
+    },
+    {
+      "name": "保留原实现同步与完整修改记录 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "问题单只改Q147答复",
+      "passed": true
+    },
+    {
+      "name": "已知句只适用route_onward，其他目标保留原具体句",
+      "passed": true
+    },
+    {
+      "name": "未知分支/四句文案/数值/来客/任务判定与已示状态不变",
+      "passed": true
+    },
+    {
+      "name": "序章主数据只同步路线范围，其余十八任务/文字/来源不改",
+      "passed": true
+    },
+    {
+      "name": "索引同源且无无关变化 04 附录/A12 全系统策划数据索引.json",
+      "passed": true
+    },
+    {
+      "name": "索引同源且无无关变化 assets/20261030/index/joint-expansion-data.json",
+      "passed": true
+    },
+    {
+      "name": "七处旧泛称统一细化、A10旧验收同步、两新验收齐全",
+      "passed": true
+    },
+    {
+      "name": "本批相对链接有效",
+      "passed": true
+    },
+    {
+      "name": "所有策划JSON可解析",
+      "passed": true
+    },
+    {
+      "name": "仅策划路径修改且无空白错误",
+      "passed": true
+    }
+  ],
+  "pendingQuestions": [],
+  "audit": [
+    {
+      "category": "数值",
+      "result": "已明确；仅文案适用范围细化，与当前B14a实现一致；无本批待定"
+    },
+    {
+      "category": "名词",
+      "result": "已明确；仅文案适用范围细化，与当前B14a实现一致；无本批待定"
+    },
+    {
+      "category": "范围",
+      "result": "已明确；仅文案适用范围细化，与当前B14a实现一致；无本批待定"
+    },
+    {
+      "category": "时机",
+      "result": "已明确；仅文案适用范围细化，与当前B14a实现一致；无本批待定"
+    },
+    {
+      "category": "边界",
+      "result": "已明确；仅文案适用范围细化，与当前B14a实现一致；无本批待定"
+    },
+    {
+      "category": "自动行为",
+      "result": "已明确；仅文案适用范围细化，与当前B14a实现一致；无本批待定"
+    },
+    {
+      "category": "入口",
+      "result": "已明确；仅文案适用范围细化，与当前B14a实现一致；无本批待定"
+    },
+    {
+      "category": "来源",
+      "result": "已明确；仅文案适用范围细化，与当前B14a实现一致；无本批待定"
+    },
+    {
+      "category": "冲突",
+      "result": "已明确；仅文案适用范围细化，与当前B14a实现一致；无本批待定"
+    },
+    {
+      "category": "未完成依赖",
+      "result": "已明确；仅文案适用范围细化，与当前B14a实现一致；无本批待定"
+    },
+    {
+      "category": "旧档/在制动作",
+      "result": "已明确；仅文案适用范围细化，与当前B14a实现一致；无本批待定"
+    },
+    {
+      "category": "验收",
+      "result": "已明确；仅文案适用范围细化，与当前B14a实现一致；无本批待定"
+    }
+  ]
+}
