@@ -94,6 +94,43 @@
             @if (why != null) { <div class="ca-note bad">@(GameEngine.UseButtonText(cfg))：@why</div> }
         }
 
+        @if (m.Instance is ItemInstance cInst && e.IsCanteen(cInst))
+        {
+            @* B16（R49，S10 X4、A07 X1.5）：分量水壶——壶内直接喝 250 毫升；装入/倒出按 500 毫升整份水卡；只装同一种水 *@
+            var cid = cInst.InstanceId;
+            var cc = e.Item(cInst.ItemId).Canteen!;
+            var sipReq = ActionRequest.UseInstance(cid);
+            var sipWhy = G.Running ? "行动进行中" : e.CanStart(s, sipReq);
+            <div class="ca-note" data-canteen>@e.CanteenLabel(cInst)</div>
+            <div class="ca-use-row">
+                <button type="button" class="ca-use @(cInst.LiquidId == "dirty_water" ? "risky" : "")" disabled="@(sipWhy != null || using_)"
+                        title="@(sipWhy ?? $"喝{cc.SipMl}毫升：5分钟，水分+{cc.SipHydration}{(cInst.LiquidId == "dirty_water" ? "；脏水必定腹泻12小时" : "")}")"
+                        @onclick="() => Use(cid)">@e.CanteenSipText(cInst)</button>
+                <span class="ca-use-note">水分+@cc.SipHydration · @(e.Config.ItemActions.UseMinutes)分钟@(cInst.LiquidId == "dirty_water" ? " · ⚠ 脏水必定腹泻12小时" : "")</span>
+            </div>
+            @if (sipWhy != null && cInst.LiquidMl > 0) { <div class="ca-note bad">喝一口：@sipWhy</div> }
+            <div class="tbar-row keep-row">
+                @foreach (var wid in cc.Accepts)
+                {
+                    var src = s.Items.Where(i => i.ItemId == wid && (i.IsCarried || i.Owner == s.CurrentLocation) && i.ReservedBy == null)
+                        .OrderBy(i => i.IsCarried ? 0 : 1).ThenBy(i => i.InstanceId).FirstOrDefault();
+                    if (src == null) continue;
+                    var fmax = e.MaxFillCanteen(s, src, cInst, out var fwhy);
+                    var srcId = src.InstanceId;
+                    <button type="button" class="tbar-go alt" disabled="@(fwhy != null || moveBusy)" title="@(fwhy ?? $"从{(src.IsCarried ? "随身" : "地面")}{e.ItemName(wid)}#{srcId}装入1份（500毫升），不耗时")"
+                            @onclick="() => G.Instant(InstantRequest.FillCanteen(srcId, cid, 1))">装入@(e.ItemName(wid))500毫升</button>
+                }
+                @foreach (var zone in new[] { ItemInstance.Carried, s.CurrentLocation })
+                {
+                    var z = zone;
+                    var pmax = e.MaxPourCanteen(s, cInst, z, out var pwhy);
+                    <button type="button" class="tbar-go alt" disabled="@(pwhy != null || moveBusy)" title="@(pwhy ?? "倒出1份500毫升水卡，不耗时")"
+                            @onclick="() => G.Instant(InstantRequest.PourCanteen(cid, z, 1))">倒出500毫升到@(z == ItemInstance.Carried ? "随身" : "地面")</button>
+                }
+            </div>
+            <div class="ca-note">只装同一种水，不混装；壶里不足500毫升时只能直接喝；不能放进火堆或锅里</div>
+        }
+
         @if (e.IsSubstance(m.ItemId))
         {
             var subs = (m.Instance != null ? new List<ItemInstance> { m.Instance } : s.Items.Where(i => i.Owner == m.Owner && i.ItemId == m.ItemId).ToList())
@@ -230,6 +267,15 @@
                         <button type="button" class="tbar-go alt" disabled="@(rwhy != null)" title="@(rwhy ?? "单击直接开始；右侧显示预测")"
                                 @onmouseenter="() => G.Hover(rreq, RepairTitle)" @onmouseleave="() => G.Hover(null)"
                                 @onclick="() => StartKeep(rreq)">维修·@(repairRc!.BaseMinutes)分钟</button>
+                    }
+                    @if (e.Config.Recipes.FirstOrDefault(r => r.Id == "field_patch_repair") is RecipeConfig fpRc && kInst.MaxDurability.HasValue && e.RepairFilterOk(fpRc, kInst.ItemId))
+                    {
+                        @* B16（A07 X1.6、R02 X4）：野外修补包现场小修，只修非枪金属武器/工具，恢复最大耐久 10% *@
+                        var fpReq = new ActionRequest { Type = ActionType.Craft, TargetId = fpRc.Id, InstanceId = kid };
+                        var fpWhy = G.Running ? "行动进行中" : e.CanStart(s, fpReq);
+                        <button type="button" class="tbar-go alt" disabled="@(fpWhy != null)" title="@(fpWhy ?? "消耗野外修补包1份，恢复最大耐久的10%；单击直接开始；右侧显示预测")"
+                                @onmouseenter="() => G.Hover(fpReq, RepairTitle)" @onmouseleave="() => G.Hover(null)"
+                                @onclick="() => StartKeep(fpReq)">现场小修·@(fpRc.BaseMinutes)分钟</button>
                     }
                     @if (sreq != null)
                     {

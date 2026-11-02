@@ -126,6 +126,27 @@ else
             <div class="pc-slot" title="空位可拖入生块根、生肉、烤肉或水煮肉">食材 @foods.Count/@c.FoodSlots · 拖入食材</div>
         }
     </div>
+    @* B16（R50，S10 X4、A07 X1.5）：锅在当前火堆里时可投料做复合锅食谱；辅料锁在锅里、不占食材位 *@
+    @{
+        var aux = e.PotContents(s, Pot.InstanceId).Where(i => e.IsPotAux(s, i)).ToList();
+    }
+    @if (aux.Count > 0)
+    {
+        <div class="pc-status" title="锅食谱的辅料随进程锁在锅里、计重量，不占食材位；取出食材或取下锅会作废这份食谱并把辅料退回地面">辅料：@string.Join("、", aux.GroupBy(i => i.ItemId).Select(g => $"{e.ItemName(g.Key)}×{g.Count()}"))（锁在锅里，不占食材位）</div>
+    }
+    @if (loc != null && loc == s.CurrentLocation)
+    {
+        <div class="pc-recipes" data-pot-recipes>
+            <div class="tiny muted">锅食谱（只用锅里的净水；投料不耗时，之后随火堆受热被动加工）</div>
+            @foreach (var o in e.PotRecipeOptions(s, Pot))
+            {
+                var opt = o;
+                <button type="button" class="secondary small-btn" disabled="@(!opt.Ok || busy)"
+                        title="@($"{opt.Name}：{opt.InputText} → {opt.OutputText}；{opt.Note}{(opt.Ok ? $"；将取：{string.Join("、", opt.Sources)}" : $"；现在不能做：{opt.Reason}")}")"
+                        @onclick="() => LoadRecipe(opt.ProcessId)" @onclick:stopPropagation="true">做@(opt.Name)@(opt.Ok ? "" : $"（{opt.Reason}）")</button>
+            }
+        </div>
+    }
     </div>
 }
 
@@ -150,6 +171,8 @@ else
     private void TakeFood(ItemInstance f) => G.TransferOne(f.Owner, f.ItemId, f.InstanceId, ItemInstance.Carried);
 
     private void TakeWater(ItemInstance w) => G.Instant(InstantRequest.Decant(w.InstanceId, ItemInstance.Carried, 1));
+
+    private void LoadRecipe(string processId) => G.Instant(InstantRequest.LoadPotRecipe(processId, Pot.InstanceId));
 
     private static void Key(KeyboardEventArgs ev, Action act)
     {

@@ -137,6 +137,15 @@
                     <button class="secondary" @onclick="() => DevDone(G.E.DebugMedicalMaterialKit(G.S))">医疗台三材料原料（盐水剂/消毒液/草药浸膏各一次）</button>
                     <button class="secondary" @onclick="() => DevDone(G.E.DebugForgeSteelKit(G.S))">锻炉钢材3份原料（铁矿料×9、木炭×6）</button>
                 </div>
+                @* B16（R48—R51）：新配方、净水片/滤芯、分量水壶、锅食谱、护理品与野外修补包 *@
+                <div class="eyebrow">配方、水壶与复合锅（B16）</div>
+                <div class="btn-row">
+                    <button class="secondary" @onclick="() => DevDone(G.E.DebugSupplyKit(G.S))">B16 材料包（学会两种做法，放当前地面）</button>
+                    <button class="secondary" @onclick="() => DevDone(G.E.DebugPotRecipeKit(G.S))">锅食谱材料（谷物3、盐1、生肉1）</button>
+                    <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "cooking", 5))'>烹饪熟练设为5级</button>
+                    <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "crafting", 3))'>制造熟练设为3级</button>
+                    <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "medicine", 5))'>医疗熟练设为5级</button>
+                </div>
                 @* B13（R39—R43）：新手序章各阶段。只改剧情/时钟标记，不结算身体；来客在条件满足的安全边界登记 *@
                 <div class="eyebrow">序章（B13）：首战记胜 → 跳到第5日08:00（来客登记）→ 回营地交谈 → 去村庄看路标</div>
                 <div class="btn-row">

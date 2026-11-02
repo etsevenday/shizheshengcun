@@ -117,19 +117,19 @@
                         </div>
                         @if (rc.IsRepair)
                         {
-                            var cands = e.RepairCandidates(s);
-                            <div class="tiny muted">选择要维护的工具或装备（随身、穿戴中或当前地面；锅须先取下并清空）</div>
+                            var cands = e.RepairCandidates(s, rc);
+                            <div class="tiny muted">@(rc.RepairFilter != null ? "选择要小修的非枪金属武器或工具（随身、穿戴中或当前地面）；恢复其最大耐久的10%" : "选择要维护的工具或装备（随身、穿戴中或当前地面；锅须先取下并清空）")</div>
                             <div class="repair-list">
                                 @foreach (var t in cands)
                                 {
                                     var tid = t.InstanceId;
-                                    var why = e.RepairBlocked(s, tid, out _);
+                                    var why = e.RepairBlocked(s, tid, out _, rc);
                                     <button type="button" class="repair-pick @(G.CraftTarget == tid ? "on" : "") @(why != null ? "missing" : "")" title="@(why ?? "选择这件工具")" @onclick="() => PickTarget(tid)">
                                         <span class="ir-icon">@Icons.Markup(t.ItemId)</span>
                                         <span><b>@e.ItemName(t.ItemId)#@tid</b><small>@e.WherePath(s, t) · 耐久@(GameEngine.DurabilityText(t))@(why != null ? $" · {why}" : "")</small></span>
                                     </button>
                                 }
-                                @if (cands.Count == 0) { <div class="risk none">随身、穿戴中和当前地面都没有带耐久的工具或装备。</div> }
+                                @if (cands.Count == 0) { <div class="risk none">@(rc.RepairFilter != null ? "随身、穿戴中和当前地面都没有可小修的非枪金属武器或工具。" : "随身、穿戴中和当前地面都没有带耐久的工具或装备。")</div> }
                             </div>
                         }
                         @if (rc.NeedsExplicitPot)
