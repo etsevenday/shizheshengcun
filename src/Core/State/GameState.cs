@@ -38,7 +38,7 @@ namespace Survival.Core.State
         /// "17" 起记服务地点迁址标记（v3 地图营区公共居所/收容所）与遗物是否公共候补遗物（策划答复 Q88/Q89，开发计划 v0.9 B8b）；
         /// "18" 起记候补照护规则版本与每名候补的自主 rest/sleep 模式（策划答复 Q90，开发计划 v0.9 B8c）。
         /// </summary>
-        public const string CurrentSchema = "26";
+        public const string CurrentSchema = "27";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -195,6 +195,8 @@ namespace Survival.Core.State
         public PrologueState Prologue { get; set; } = new PrologueState();
         /// <summary>城市岗位 NPC 与服务（开发计划 v0.9 B14；schema 26 起）。</summary>
         public CityState City { get; set; } = new CityState();
+        /// <summary>主线与支线任务账（开发计划 v0.9 B15；schema 27 起）。</summary>
+        public QuestState Quests { get; set; } = new QuestState();
 
         [JsonIgnore] public List<GameEvent> PendingEvents { get; set; } = new List<GameEvent>();
 
@@ -230,6 +232,7 @@ namespace Survival.Core.State
             c.Story = Story.Clone();
             c.Prologue = Prologue.Clone();
             c.City = City.Clone();
+            c.Quests = Quests.Clone();
             c.PendingEvents = new List<GameEvent>();
             return c;
         }

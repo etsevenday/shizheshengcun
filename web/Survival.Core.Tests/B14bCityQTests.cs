@@ -17,6 +17,13 @@ public class B14bCityQTests : TestBase
 
     private static readonly string[] Hidden =
     {
+        // B15 起整理调查记录与两处接待路线已实装（主线），其余仍按 Q146 隐藏
+        "copy_public_knowledge", "appraisal_white_v1", "church_public_mediation",
+        "church_archive_copy", "academy_noninvasive_observation", "academy_report_compare",
+    };
+    /// <summary>B14 快照（Q146 的 b14UnimplementedSnapshot，只是版本快照，不是永久隐藏表）。</summary>
+    private static readonly string[] B14Snapshot =
+    {
         "hub_affairs_record", "copy_public_knowledge", "appraisal_white_v1", "church_reception_existing", "church_public_mediation",
         "church_archive_copy", "academy_reception_existing", "academy_noninvasive_observation", "academy_report_compare",
     };
@@ -309,6 +316,7 @@ public class B14bCityQTests : TestBase
         var before = Nodes(s);
         Start(s, ActionRequest.Travel("h02_square"));
         Run(s);
+        ReadDialogues(s);
         Assert.That(E.BattleCapacity(s), Is.EqualTo(2));
         Assert.That(know.All(k => E.KnowsKnowledge(s, k.Id)), Is.True);
         Assert.That(E.KnowsKnowledge(s, "expedition_basics"), Is.False);
@@ -378,9 +386,10 @@ public class B14bCityQTests : TestBase
         foreach (var n in Cfg.City.Npcs)
         {
             E.DebugMapTeleport(s, n.LocationId);
-            var card = E.NpcsHere(s).Single();
+            ReadDialogues(s);
+            var card = E.NpcsHere(s).Single(c => c.Kind == "post");
             Assert.That(InternalId.IsMatch(card.Status + card.QuestText + card.Role), Is.False, n.NpcId);
-            Assert.That(card.QuestText, Is.Empty, "不写相关委托占位");
+            Assert.That(card.QuestText, Does.Not.Contain("后续版本开放"), "B15：只写已实装委托的正式名与状态，不写占位");
             foreach (var v in E.CityServicesOf(s, n.NpcId))
             {
                 var text = string.Join("|", new[] { v.Title, v.Summary, v.EffectText, v.CostText, v.TimeText, v.Blocked ?? "" }
@@ -403,14 +412,14 @@ public class B14bCityQTests : TestBase
     {
         Assert.That(Cfg.City.Services.Where(x => !x.Implemented).Select(x => x.Id), Is.EquivalentTo(Hidden));
         var d = Design("design.city-adjudications.json");
-        Assert.That(d["displayPolicy"]!["b14UnimplementedSnapshot"]!.Select(x => (string)x!), Is.EquivalentTo(Hidden));
+        Assert.That(d["displayPolicy"]!["b14UnimplementedSnapshot"]!.Select(x => (string)x!), Is.EquivalentTo(B14Snapshot));
 
         var s = New();
         var noButton = new List<string>();
         foreach (var n in Cfg.City.Npcs)
         {
             E.DebugMapTeleport(s, n.LocationId);
-            var card = E.NpcsHere(s).Single();
+            var card = E.NpcsHere(s).Single(c => c.Kind == "post");
             var list = E.CityServicesOf(s, n.NpcId);
             Assert.That(list.Select(v => v.Id).Intersect(Hidden), Is.Empty, n.NpcId);
             var impl = n.ServiceIds.Count(id => !Hidden.Contains(id));
@@ -428,7 +437,8 @@ public class B14bCityQTests : TestBase
             }
             else Assert.That(card.Status, Does.Match($@"事项 \d+/{impl} 项可办"));
         }
-        Assert.That(noButton, Is.EquivalentTo(new[] { "许安", "陶岑", "祁闻", "纪牧", "宋烛", "温澄", "季闻", "邵宁" }));
+        // B15：许安（整理调查记录）、祁闻/温澄（接待路线）已有实装事项
+        Assert.That(noButton, Is.EquivalentTo(new[] { "陶岑", "纪牧", "宋烛", "季闻", "邵宁" }));
     }
 
     /// <summary>
@@ -446,9 +456,9 @@ public class B14bCityQTests : TestBase
         Assert.That(E.NpcsHere(s).Single().Status, Is.EqualTo("可交谈 · 事项 2/3 项可办"));
 
         // 直接请求隐藏事项：拒绝，状态完全不变
-        E.DebugMapTeleport(s, "h02_square");
+        E.DebugMapTeleport(s, "h03_workshop");
         var json = SaveSerializer.Serialize(s);
-        var r = E.StartCityService(s, "hub_affairs_record");
+        var r = E.StartCityService(s, "copy_public_knowledge");
         Assert.That(r.Ok, Is.False);
         Assert.That(r.Reason, Does.Not.Contain("后续版本"));
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(json), "零扣费零效果");
@@ -464,13 +474,13 @@ public class B14bCityQTests : TestBase
         Assert.That(E.NpcsHere(t).Single().ServiceCount, Is.EqualTo(1));
 
         // 后续实装同 ID：自然出现在列表里（配额账不动）
-        var svc = Cfg.City.Services.Single(x => x.Id == "church_reception_existing");
+        var svc = Cfg.City.Services.Single(x => x.Id == "appraisal_white_v1");
         var quota = new Dictionary<string, int>(t.City.QuotaUsed);
         try
         {
             svc.Implemented = true;
-            E.DebugMapTeleport(t, "c02_church");
-            Assert.That(E.CityServicesOf(t, "npc_qi_wen").Select(v => v.Id), Is.EqualTo(new[] { "church_reception_existing" }));
+            E.DebugMapTeleport(t, "h05_appraisal");
+            Assert.That(E.CityServicesOf(t, "npc_tao_cen").Select(v => v.Id), Is.EqualTo(new[] { "appraisal_white_v1" }));
             Assert.That(E.NpcsHere(t).Single().ServiceCount, Is.EqualTo(1));
             Assert.That(t.City.QuotaUsed, Is.EqualTo(quota));
         }

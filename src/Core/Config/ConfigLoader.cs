@@ -512,6 +512,21 @@ namespace Survival.Core.Config
                 if (c.Locations.All(l => l.Id != ps.LocationId)) e.Add($"公共站 {ps.Id} 的地点 {ps.LocationId} 不存在");
             }
             if (c.City.PublicStations.GroupBy(p => (p.LocationId, p.StationId)).Any(g => g.Count() > 1)) e.Add("同一地点同类公共站重复");
+            // B15：任务的地点、对白组、工作服务与工时（5 分钟段）
+            var dialogueEvents = new HashSet<string>(c.Story.Dialogues.Select(d => d.Event));
+            foreach (var q in c.Quests.List)
+            {
+                if (c.Locations.All(l => l.Id != q.LocationId)) e.Add($"任务 {q.Id} 的地点 {q.LocationId} 不存在");
+                foreach (var d in new[] { q.OfferDialogue, q.WorkDialogue, q.TurninDialogue, q.RepeatDialogue, q.CompleteDialogue, q.HubTurninDialogue, q.NoteDialogue })
+                    if (!string.IsNullOrEmpty(d) && !dialogueEvents.Contains(d!)) e.Add($"任务 {q.Id} 的对白组 {d} 没有台词");
+                foreach (var sv in q.WorkServiceIds) if (c.City.Services.All(x => x.Id != sv)) e.Add($"任务 {q.Id} 的工作服务 {sv} 不存在");
+                if (q.WorkMinutes < 0 || q.WorkMinutes % 5 != 0) e.Add($"任务 {q.Id} 的工时须为 5 分钟的整数倍");
+            }
+            foreach (var t in c.Scope.Training.Tiers)
+            {
+                foreach (var k in t.Inputs.Keys) if (!items.Contains(k)) e.Add($"战术训练阶位{t.Tier} 的材料 {k} 不存在");
+                if (t.Tier <= 0 || t.Tier >= c.Scope.ApByTier.Count || t.Minutes <= 0 || t.Minutes % 5 != 0) e.Add($"战术训练阶位{t.Tier} 无效");
+            }
             foreach (var r in c.Resources)
             {
                 if (r.IndependentRare != null && !items.Contains(r.IndependentRare.ItemId)) e.Add($"资源点 {r.NodeId} 稀有附带物不存在");

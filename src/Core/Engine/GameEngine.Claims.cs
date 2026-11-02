@@ -151,6 +151,7 @@ namespace Survival.Core.Engine
             var d = DungeonOf(res);
             var first = !CampaignClaimed(s, res.NodeId);
             var text = new List<string>();
+            var capBefore = BattleCapacity(s);
             if (first && !res.IsRecord)
             {
                 // B13b（Q120 RES-Q120-03/04）：实物包整包生成在当地地面（装备白色无词条满耐久），知识包只补缺；与领取账同一事务
@@ -177,6 +178,8 @@ namespace Survival.Core.Engine
                 s.Resources[res.NodeId].Available = 0;
                 text.Add($"已领取{res.Name}（本局唯一，记作记录，不占物资卡）");
                 if (know.Count > 0) text.Add("获得做法知识：" + string.Join("、", know));
+                // B15（A11 §4/R46）：首次拿到不同种类的关键记录时容量升档（同一种记录重置后再领不再加）
+                if (BattleCapacity(s) > capBefore) text.Add($"队伍容量升到 C{BattleCapacity(s)}");
             }
             else text.Add($"已核对本次地牢的{res.Name}（本局早已领取，不再重复发放）");
             if (d != null) EnsureInstance(s, d).Facts.Add(RecordClaimedFact);

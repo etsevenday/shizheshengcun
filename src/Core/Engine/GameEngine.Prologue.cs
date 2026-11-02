@@ -84,6 +84,10 @@ namespace Survival.Core.Engine
         public int ServiceCount { get; set; }
         public string QuestText { get; set; } = "";
         public string RecruitText { get; set; } = "";
+        /// <summary>主按钮的字（默认“交谈”；B15 同行邀约卡为“登记同行”）。</summary>
+        public string ActionLabel { get; set; } = "交谈";
+        /// <summary>悬停说明里的人物背景（同行邀约卡：固定队友正式背景句）。</summary>
+        public string Background { get; set; } = "";
     }
 
     /// <summary>设施栏的固定文书/路标卡（PRO15 救助残页、南口路标）。</summary>
@@ -549,6 +553,7 @@ namespace Survival.Core.Engine
         public List<NpcCardView> NpcsHere(GameState s)
         {
             var list = CityNpcsHere(s).ToList();
+            list.AddRange(RecruitCardsHere(s));
             var v = Config.Prologue.Visitor;
             if (!PrologueEnabled || string.IsNullOrEmpty(v.NpcId) || !VisitorRegistered(s) || s.CurrentLocation != v.LocationId) return list;
             var known = s.Progress.Flags.Contains(FactCampRouteKnown);
@@ -578,6 +583,7 @@ namespace Survival.Core.Engine
         public ActionResult TalkNpc(GameState s, string npcId)
         {
             if (CityNpc(npcId) is CityNpcConfig cn) return TalkCityNpc(s, cn);
+            if (RecruitQuestOf(npcId) is QuestConfig rq) return AcceptQuest(s, rq.Id);
             var v = Config.Prologue.Visitor;
             if (!PrologueEnabled || npcId != v.NpcId) return ActionResult.Fail("这里没有这个人");
             if (!VisitorRegistered(s) || s.CurrentLocation != v.LocationId) return ActionResult.Fail($"{v.Name}不在这里");

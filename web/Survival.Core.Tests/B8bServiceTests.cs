@@ -123,6 +123,7 @@ public class B8bServiceTests : TestBase
         Assert.That(e.SetActiveBlocked(s, "npc_tang_li", false), Does.Contain("临时营地已不再代办；要到营区广场（营区）安全空闲时留作候补"));
         Assert.That(e.FormationEditBlocked(s), Is.Null, "当前同行号位编辑不限地点（Q86/Q93）");
         e.DebugTeleport(s, "h02_square");
+        ReadDialogues(s);   // B15：已登记到广场时播一次“营区之外”公开说明
         Assert.That(e.SetActiveBlocked(s, "npc_tang_li", false), Is.Null);
         Assert.That(e.EscortRegistrationBlocked(s), Does.Contain("收容所"));
         e.DebugTeleport(s, "h06_shelter");

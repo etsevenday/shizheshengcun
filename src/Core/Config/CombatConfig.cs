@@ -50,6 +50,8 @@ namespace Survival.Core.Config
         public List<int> ApByTier { get; set; } = new List<int>();
         /// <summary>所有临时 +AP 效果下单次激活 AP 上限（R03 §3：6）。</summary>
         public int ApCap { get; set; } = 6;
+        /// <summary>战术训练入口（R03 §3；B15：h03，阶位 1 要 C3、阶位 2 要 QMAP04 完成）。</summary>
+        public TacticalTrainingConfig Training { get; set; } = new TacticalTrainingConfig();
         public int EnemyActionsPerActivation { get; set; } = 1;
         public double BasePlayerSpeed { get; set; }
         public double BasePlayerDodge { get; set; }

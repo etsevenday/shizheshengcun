@@ -121,7 +121,10 @@ namespace Survival.Core.Config
         public bool Implemented { get; set; }
     }
 
-    /// <summary>施济配给的一项选择：目标某项状态低于 Below 才可选，完成时产出 Outputs。</summary>
+    /// <summary>
+    /// 服务的一项选择：施济配给为目标某项状态低于 Below 才可选、完成时产出 Outputs；
+    /// 任务类服务（B15：接待路线、观察范围、CH02 两条路）Stat 为空，只记选择与 Facts。
+    /// </summary>
     public sealed class CityServiceChoiceConfig
     {
         public string Id { get; set; } = "";
@@ -130,5 +133,7 @@ namespace Survival.Core.Config
         public string Stat { get; set; } = "";
         public double Below { get; set; }
         public Dictionary<string, int> Outputs { get; set; } = new Dictionary<string, int>();
+        /// <summary>选这一项首次明确提交时写入的事实（B15：FA02/FA03 两个选择同写同一路线事实）；空为不写。</summary>
+        public List<string> Facts { get; set; } = new List<string>();
     }
 }

@@ -50,6 +50,7 @@ namespace Survival.Core.Save
         public const string Schema23 = "23";
         public const string Schema24 = "24";
         public const string Schema25 = "25";
+        public const string Schema26 = "26";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -90,6 +91,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema23) From23To24(s, config, notes);
             if (s.SchemaVersion == Schema24) From24To25(s, config, notes);
             if (s.SchemaVersion == Schema25) From25To26(s, config, notes);
+            if (s.SchemaVersion == Schema26) From26To27(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -944,8 +946,24 @@ namespace Survival.Core.Save
         {
             s.City ??= new CityState();
             var legacy = Engine.GameEngine.MigrateFactionFacts(s, config);
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（三城岗位人物与服务上线：营门登记、医务室、施济处等实地办理" +
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema26}（三城岗位人物与服务上线：营门登记、医务室、施济处等实地办理" +
                 (legacy.Count > 0 ? $"；{string.Join("、", legacy)}" : "") + "）。" });
+            s.SchemaVersion = Schema26;
+        }
+
+        // ───────────────────────── 26 → 27 ─────────────────────────
+
+        /// <summary>
+        /// 主线与支线任务账（开发计划 v0.9 B15，R46/R47；A11 §6.3“旧玩家仍可做新故事，容量不再加、原一次物资奖不重发”）：建任务账；
+        /// 按已有可靠事实无声追认（已领公开路线记 FA02/FA03 已接、首次核心记录记完成、FA04_merged 记完成、已领通信电源记 FA05 已接、
+        /// 联络日志记完成、林昭已在名册记 RN01 完成），标“旧档追认”，不播对白、不补奖励。到营区广场的 FA01 说明照常在下一次到达时播。幂等。
+        /// </summary>
+        private static void From26To27(GameState s, GameConfig config, List<string> notes)
+        {
+            s.Quests ??= new QuestState();
+            var retro = new Engine.GameEngine(config).RetroQuests(s);
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（主线与城市委托上线" +
+                (retro.Count > 0 ? $"；已按现有记录追认{string.Join("、", retro)}" : "") + "）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

@@ -24769,6 +24769,510 @@
         "speaker": "你",
         "text": "只记录我现在选的范围。",
         "note": ""
+      },
+      {
+        "id": "NTL_0320",
+        "eventId": "FA01_public_brief",
+        "speaker": "许安",
+        "text": "外面的路分向教会和科学院。你可以都去，也可以先挑一边，没有人替你选归属。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0321",
+        "eventId": "FA01_public_brief",
+        "speaker": "你",
+        "text": "我先找能核实的记录和能看病的人。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0322",
+        "eventId": "FA01_public_brief",
+        "speaker": "许安",
+        "text": "可以。沿公开路线问，别把口头承诺当已经开通的路。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0314",
+        "eventId": "FA02_route_choice",
+        "speaker": "祁闻",
+        "text": "封锁区留下了旧路线记录。我们希望有人取回，也希望有人讲述新生。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0315",
+        "eventId": "FA02_route_choice",
+        "speaker": "你",
+        "text": "调查路线可以。怎么理解我看到的事，由我自己决定。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0316",
+        "eventId": "FA03_environment_choice",
+        "speaker": "温澄",
+        "text": "公开封存流程可以调查。身体观察要另行说明，你可以现在就拒绝。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0317",
+        "eventId": "FA03_environment_choice",
+        "speaker": "你",
+        "text": "我先要一条可查的路线，不签空白同意。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0323",
+        "eventId": "FA04_merge_accept",
+        "speaker": "许安",
+        "text": "两边的路线和流程都齐了。把能相互核对的部分合起来，才好往旧城后段走。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0324",
+        "eventId": "FA04_merge_accept",
+        "speaker": "你",
+        "text": "只合并记录，不把谁的说法写成我的誓言。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0325",
+        "eventId": "FA04_merge_accept",
+        "speaker": "",
+        "text": "将按FA04原工作预览整理记录；对话本身不替代工作提交。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0326",
+        "eventId": "FA04_merge_complete",
+        "speaker": "许安",
+        "text": "整理完成。后段通行按这份记录办理，已经获得的容量和物资不再发第二次。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0327",
+        "eventId": "FA04_merge_complete",
+        "speaker": "你",
+        "text": "把回来的那条也记好。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0328",
+        "eventId": "FA05_power_contact",
+        "speaker": "罗铮",
+        "text": "电源领取记录还在，后续整备按原技术流程走。实物是否已经消耗，不会抹掉你完成过的事实。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0329",
+        "eventId": "FA05_power_contact",
+        "speaker": "你",
+        "text": "先把联络接上，别把一次接通说成所有问题都解决。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0330",
+        "eventId": "FA05_contact_complete",
+        "speaker": "",
+        "text": "联络记录已保存。当前章节的通信目标完成；它不提供根治药、永久免疫或新的一次扩容。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0331",
+        "eventId": "FA05_contact_complete",
+        "speaker": "你",
+        "text": "有人回答了。接下来听清楚，再决定。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0332",
+        "eventId": "FA05_contact_complete",
+        "speaker": "饱饱",
+        "text": "他们听得见我吗？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0333",
+        "eventId": "FA05_contact_complete",
+        "speaker": "你",
+        "text": "我还没打算把你告诉每一个人。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0115",
+        "eventId": "HU01_offer",
+        "speaker": "陶岑",
+        "text": "先把三件事分开：原料是什么品质，融合后得到什么结果，以及它是不是那份教学样本。没有样本，也可以先听说明。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0116",
+        "eventId": "HU01_offer",
+        "speaker": "你",
+        "text": "说明我听明白了。是否鉴定哪一份，由我自己选。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0117",
+        "eventId": "HU01_work",
+        "speaker": "",
+        "text": "请查看本任务领域预览后确认。耗时、可用记录和当前进度按现有规则显示；工作未完成前不会自动结算。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0118",
+        "eventId": "HU01_turnin",
+        "speaker": "陶岑",
+        "text": "你没有交出任何样本。这次只记录说明已读，真正服务另看预览。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0119",
+        "eventId": "HU01_turnin",
+        "speaker": "",
+        "text": "任务记录已保存。回看不再扣时、不发第二份奖励。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0120",
+        "eventId": "HU01_repeat",
+        "speaker": "陶岑",
+        "text": "这项记录已经归档。你可以再读，原有结论和领取账不会重新算一次。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0121",
+        "eventId": "HU02_offer",
+        "speaker": "陶岑",
+        "text": "普通样本可以保留、按规则融合，或查看今日交易；教学那份不进入普通交易。了解选项，不等于必须选一次。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0122",
+        "eventId": "HU02_offer",
+        "speaker": "你",
+        "text": "我先保留决定，等看过具体对象再说。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0123",
+        "eventId": "HU02_work",
+        "speaker": "",
+        "text": "请查看本任务领域预览后确认。耗时、可用记录和当前进度按现有规则显示；工作未完成前不会自动结算。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0124",
+        "eventId": "HU02_turnin",
+        "speaker": "陶岑",
+        "text": "可以。了解过就够了，没人要求你用一次交易证明听懂。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0125",
+        "eventId": "HU02_turnin",
+        "speaker": "",
+        "text": "任务记录已保存。回看不再扣时、不发第二份奖励。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0126",
+        "eventId": "HU02_repeat",
+        "speaker": "陶岑",
+        "text": "这项记录已经归档。你可以再读，原有结论和领取账不会重新算一次。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0127",
+        "eventId": "HU03_offer",
+        "speaker": "杜穗",
+        "text": "固定同行者、这一期愿意同行的人和应急补员，是三种登记。跟你走不等于加入哪个组织，候选也不是一出现就算你的队员。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0128",
+        "eventId": "HU03_offer",
+        "speaker": "你",
+        "text": "先让我看看名册和当前同行位。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0129",
+        "eventId": "HU03_work",
+        "speaker": "",
+        "text": "请查看本任务领域预览后确认。耗时、可用记录和当前进度按现有规则显示；工作未完成前不会自动结算。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0130",
+        "eventId": "HU03_turnin",
+        "speaker": "杜穗",
+        "text": "资料在这里。查看不招人、不刷新名单，也不会替你扩大队伍。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0131",
+        "eventId": "HU03_turnin",
+        "speaker": "",
+        "text": "任务记录已保存。回看不再扣时、不发第二份奖励。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0132",
+        "eventId": "HU03_repeat",
+        "speaker": "杜穗",
+        "text": "这项记录已经归档。你可以再读，原有结论和领取账不会重新算一次。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0133",
+        "eventId": "HU04_offer",
+        "speaker": "杜穗",
+        "text": "先看每个人的状态再决定留守。公共照护有边界，感染和伤病不会因为名字进了名册就消失。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0134",
+        "eventId": "HU04_offer",
+        "speaker": "你",
+        "text": "这次我可以不让任何人留守。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0135",
+        "eventId": "HU04_work",
+        "speaker": "",
+        "text": "请查看本任务领域预览后确认。耗时、可用记录和当前进度按现有规则显示；工作未完成前不会自动结算。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0136",
+        "eventId": "HU04_turnin",
+        "speaker": "杜穗",
+        "text": "当然。记录你已读过说明，不改队伍。真要换人时，再确认具体的人和物。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0137",
+        "eventId": "HU04_turnin",
+        "speaker": "",
+        "text": "任务记录已保存。回看不再扣时、不发第二份奖励。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0138",
+        "eventId": "HU04_repeat",
+        "speaker": "杜穗",
+        "text": "这项记录已经归档。你可以再读，原有结论和领取账不会重新算一次。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0139",
+        "eventId": "CH01_offer",
+        "speaker": "白苓",
+        "text": "你带回的路线记录里有物资去向。请帮我和公开清单核对，先记事实，不用替任何人说好话。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0140",
+        "eventId": "CH01_offer",
+        "speaker": "你",
+        "text": "记录和清单有几处对不上。我只写能核实的部分。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0141",
+        "eventId": "CH01_work",
+        "speaker": "",
+        "text": "请查看本任务领域预览后确认。耗时、可用记录和当前进度按现有规则显示；工作未完成前不会自动结算。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0142",
+        "eventId": "CH01_turnin",
+        "speaker": "白苓",
+        "text": "我收下核对结果。这里确实有人需要帮助，也确实有人把帮助当绳子。这份账不会再变出一箱物资。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0143",
+        "eventId": "CH01_turnin",
+        "speaker": "",
+        "text": "任务记录已保存。回看不再扣时、不发第二份奖励。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0144",
+        "eventId": "CH01_repeat",
+        "speaker": "白苓",
+        "text": "这项记录已经归档。你可以再读，原有结论和领取账不会重新算一次。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0145",
+        "eventId": "CH02_offer",
+        "speaker": "纪牧",
+        "text": "路线抄本留在这里，是为了免得人乱传。你若肯照我们的说法公开讲一次，手续会方便。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0146",
+        "eventId": "CH02_offer",
+        "speaker": "你",
+        "text": "我不会替你们作见证。我可以核对公开抄本，或者把已经取得的实地记录带回营区备份。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0147",
+        "eventId": "CH02_work",
+        "speaker": "",
+        "text": "请查看本任务领域预览后确认。耗时、可用记录和当前进度按现有规则显示；工作未完成前不会自动结算。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0148",
+        "eventId": "CH02_turnin",
+        "speaker": "纪牧",
+        "text": "你的资料保存记录已收到。你选择的那条路有效；这里不记录你宣过誓。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0149",
+        "eventId": "CH02_turnin",
+        "speaker": "",
+        "text": "任务记录已保存。回看不再扣时、不发第二份奖励。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0150",
+        "eventId": "CH02_repeat",
+        "speaker": "纪牧",
+        "text": "这项记录已经归档。你可以再读，原有结论和领取账不会重新算一次。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0350",
+        "eventId": "CH02_hub_backup_turnin",
+        "speaker": "许安",
+        "text": "实地记录已经在营区备份。你没有在教会宣誓，也没有交出任何人；保存资料这件事已办成。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0351",
+        "eventId": "CH02_hub_backup_turnin",
+        "speaker": "你",
+        "text": "让需要走路的人能查得到就好。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0151",
+        "eventId": "AC01_offer",
+        "speaker": "季闻",
+        "text": "我们先把允许做的事写清：你可以只交环境记录，也可以同意只读现有指标的非侵入观察。拒绝身体观察，不妨碍公开路线。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0152",
+        "eventId": "AC01_offer",
+        "speaker": "你",
+        "text": "只按我明确同意的范围做。没有写进去的，不算我同意。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0153",
+        "eventId": "AC01_work",
+        "speaker": "",
+        "text": "请查看本任务领域预览后确认。耗时、可用记录和当前进度按现有规则显示；工作未完成前不会自动结算。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0154",
+        "eventId": "AC01_turnin",
+        "speaker": "季闻",
+        "text": "范围和结果已归档。观察不是治疗，这次也没有取走样本或改变你的身体数值。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0155",
+        "eventId": "AC01_turnin",
+        "speaker": "",
+        "text": "任务记录已保存。回看不再扣时、不发第二份奖励。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0156",
+        "eventId": "AC01_repeat",
+        "speaker": "季闻",
+        "text": "这项记录已经归档。你可以再读，原有结论和领取账不会重新算一次。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0157",
+        "eventId": "AC02_offer",
+        "speaker": "邵宁",
+        "text": "两份报告用的是不同观察范围，却都写了“安全”。请和带回的流程记录对照，把证据和猜测分开。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0158",
+        "eventId": "AC02_offer",
+        "speaker": "你",
+        "text": "能核实的是流程和记录，不是病因，更不能据此说已经找到治法。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0159",
+        "eventId": "AC02_work",
+        "speaker": "",
+        "text": "请查看本任务领域预览后确认。耗时、可用记录和当前进度按现有规则显示；工作未完成前不会自动结算。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0160",
+        "eventId": "AC02_turnin",
+        "speaker": "邵宁",
+        "text": "核对笔记完成。我把能实际问诊的去处和该带的记录抄在后面，不许诺那里有万能药。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0161",
+        "eventId": "AC02_turnin",
+        "speaker": "",
+        "text": "任务记录已保存。回看不再扣时、不发第二份奖励。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0162",
+        "eventId": "AC02_repeat",
+        "speaker": "邵宁",
+        "text": "这项记录已经归档。你可以再读，原有结论和领取账不会重新算一次。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0163",
+        "eventId": "AC02_external_medical_note",
+        "speaker": "",
+        "text": "外部医疗线索：回幸存者营区医务室，向值班医师陈芷说明症状出现的时间、近期咬伤及用药记录。若陈芷不当班，由同岗位值班员接续；不要求某位同行者到场。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0164",
+        "eventId": "AC02_external_medical_note",
+        "speaker": "",
+        "text": "可带上的证据：自己已记录的症状与用药时间、已有药品标签信息、村庄诊所可公开阅读的旧记录。没有某件药品或未探索诊所，也可先到医务室咨询，不增加随机材料门槛。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0165",
+        "eventId": "AC02_external_medical_note",
+        "speaker": "",
+        "text": "已核实：科学院封存区记录只能说明当时的操作流程；它不证明当前所有感染者适用同一治疗。现有感染处理仍以已定义医疗规则为准。未核实：体内声音的来源、灾变起因及永久根治方案。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0166",
+        "eventId": "AC02_external_medical_note",
+        "speaker": "你",
+        "text": "至少知道下一次该问什么，而不是再赌一个说法。",
+        "note": ""
       }
     ]
   },
@@ -29900,15 +30404,17 @@
       "hub_registered": "完成营区登记（在营门办理登记后走到营区广场）",
       "church_contacted": "先到达教会接待庭",
       "academy_contacted": "先到达科学院外院",
-      "FA02_route_briefed": "在教会接待庭领取公开路线（教会任务后续版本开放）",
-      "FA03_environment_briefed": "在科学院接待处领取环境调查路线（科学院任务后续版本开放）",
+      "FA02_route_briefed": "在教会接待庭询问公开路线",
+      "FA03_environment_briefed": "在科学院接待处询问环境调查路线",
       "academy_observation_pass": "在试制工坊查看观察区公开通道告示并确认通行范围",
       "FA02_record_credit": "在教会地下圣所核心领取圣所旧路档册",
       "FA03_record_credit": "在灰塔封存区核心领取封存区安全规程",
-      "FA04_merged": "在营区广场完成两份记录的合并（主线后续版本开放）",
+      "FA04_merged": "在营区广场整理两份调查记录",
       "communication_power_claimed": "在警备仓封存仓核心领取警备仓备用电源",
       "guardianDefeated": "击败本次地牢的守卫（地牢守卫战后续版本开放）",
-      "recordClaimedAndClear": "领取（或核对）本次地牢的核心记录"
+      "recordClaimedAndClear": "领取（或核对）本次地牢的核心记录",
+      "chapter_contact": "在深野通信站联络台完成联络",
+      "quest:QMAP04:completed": "完成主线“为远行供电”（这项主线暂未开放）"
     },
     "arrivalFacts": {
       "c02_church": [
@@ -31291,7 +31797,7 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false
+        "implemented": true
       },
       {
         "id": "hub_workshop_access",
@@ -31436,12 +31942,33 @@
           "church_contacted",
           "FA02_route_briefed"
         ],
-        "choices": [],
+        "choices": [
+          {
+            "id": "FA02_accept_investigation",
+            "label": "接受公开路线调查，不作身份承诺",
+            "stat": "",
+            "below": 0.0,
+            "outputs": {},
+            "facts": [
+              "FA02_route_briefed"
+            ]
+          },
+          {
+            "id": "FA02_accept_no_oath",
+            "label": "拒绝宣誓，仍领取公开路线",
+            "stat": "",
+            "below": 0.0,
+            "outputs": {},
+            "facts": [
+              "FA02_route_briefed"
+            ]
+          }
+        ],
         "dailyPartyQuota": null,
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false
+        "implemented": true
       },
       {
         "id": "church_relief_ration",
@@ -31548,12 +32075,33 @@
           "academy_contacted",
           "FA03_environment_briefed"
         ],
-        "choices": [],
+        "choices": [
+          {
+            "id": "FA03_environment_only",
+            "label": "仅调查环境记录",
+            "stat": "",
+            "below": 0.0,
+            "outputs": {},
+            "facts": [
+              "FA03_environment_briefed"
+            ]
+          },
+          {
+            "id": "FA03_decline_body_keep_route",
+            "label": "拒绝检测，仍领取公开路线",
+            "stat": "",
+            "below": 0.0,
+            "outputs": {},
+            "facts": [
+              "FA03_environment_briefed"
+            ]
+          }
+        ],
         "dailyPartyQuota": null,
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false
+        "implemented": true
       },
       {
         "id": "academy_noninvasive_observation",
@@ -32282,6 +32830,818 @@
       {
         "id": "academy_public_observation_notice",
         "title": "观察区公开通道告示"
+      }
+    ]
+  },
+  "quests": {
+    "source": "A11「4 主线任务骨架修订与容量」「5 支线委托最小表」「7 招募与补充任务表」；narrative-texts.json（Q32 选 B）；A08 门槛规则 6/7；S15 gate事实接口",
+    "list": [
+      {
+        "id": "FA01",
+        "title": "营区之外",
+        "kind": "main",
+        "npcId": "npc_xu_an",
+        "locationId": "h02_square",
+        "implemented": true,
+        "showAny": [
+          "hub_registered"
+        ],
+        "requiresAll": [
+          "hub_registered"
+        ],
+        "requiresRosterMember": false,
+        "accept": "auto",
+        "acceptServiceId": null,
+        "offerDialogue": "FA01_public_brief",
+        "workDialogue": null,
+        "turninDialogue": null,
+        "repeatDialogue": null,
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "在营区广场听许安说外面的路。",
+        "stepActive": "在营区广场听许安说外面的路。",
+        "result": "两方接触线索已记入日志：外面的路分向新生教会与灰塔科学院，可以都去，也可以先挑一边，不选效忠对象（不发第二份登记物资）"
+      },
+      {
+        "id": "FA02",
+        "title": "被称作新生的人",
+        "kind": "main",
+        "npcId": "npc_qi_wen",
+        "locationId": "c02_church",
+        "implemented": true,
+        "showAny": [
+          "quest:FA01:completed",
+          "church_contacted"
+        ],
+        "requiresAll": [],
+        "requiresRosterMember": false,
+        "accept": "service",
+        "acceptServiceId": "church_reception_existing",
+        "offerDialogue": "FA02_route_choice",
+        "workDialogue": null,
+        "turninDialogue": null,
+        "repeatDialogue": null,
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "",
+        "completeByAny": [
+          "FA02_record_credit"
+        ],
+        "completeFacts": [],
+        "stepOffer": "到教会接待庭向祁闻询问公开路线（可拒绝宣誓）。",
+        "stepActive": "从教堂墓园进入教会地下圣所，在核心领取圣所旧路档册。",
+        "result": "已取得圣所旧路档册（首次关键记录）"
+      },
+      {
+        "id": "FA03",
+        "title": "样本之外",
+        "kind": "main",
+        "npcId": "npc_wen_cheng",
+        "locationId": "r04_reception",
+        "implemented": true,
+        "showAny": [
+          "quest:FA01:completed",
+          "academy_contacted"
+        ],
+        "requiresAll": [],
+        "requiresRosterMember": false,
+        "accept": "service",
+        "acceptServiceId": "academy_reception_existing",
+        "offerDialogue": "FA03_environment_choice",
+        "workDialogue": null,
+        "turninDialogue": null,
+        "repeatDialogue": null,
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "",
+        "completeByAny": [
+          "FA03_record_credit"
+        ],
+        "completeFacts": [],
+        "stepOffer": "到科学院接待处向温澄询问环境调查路线（可拒绝身体检测）。",
+        "stepActive": "从封存实验楼进入灰塔封存区，在核心领取封存区安全规程。",
+        "result": "已取得封存区安全规程（首次关键记录）"
+      },
+      {
+        "id": "FA04",
+        "title": "同一条归路",
+        "kind": "main",
+        "npcId": "npc_xu_an",
+        "locationId": "h02_square",
+        "implemented": true,
+        "showAny": [
+          "quest:FA02:completed",
+          "quest:FA03:completed"
+        ],
+        "requiresAll": [
+          "FA02_record_credit",
+          "FA03_record_credit"
+        ],
+        "requiresRosterMember": false,
+        "accept": "work",
+        "acceptServiceId": null,
+        "offerDialogue": "FA04_merge_accept",
+        "workDialogue": null,
+        "turninDialogue": null,
+        "repeatDialogue": null,
+        "completeDialogue": "FA04_merge_complete",
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 10,
+        "workServiceIds": [
+          "hub_affairs_record"
+        ],
+        "workRequiresAll": [],
+        "workLabel": "",
+        "completeByAny": [],
+        "completeFacts": [
+          "FA04_merged"
+        ],
+        "stepOffer": "两份调查记录到齐后，到营区广场请许安整理调查记录（10分钟）。",
+        "stepActive": "在营区广场整理调查记录（10分钟，两段都完成才算完成；中途停下保留已完成的段）。",
+        "result": "调查记录整理完成，旧城后段（警备仓）通行已按这份记录办理"
+      },
+      {
+        "id": "FA05",
+        "title": "联络仍在继续",
+        "kind": "main",
+        "npcId": "npc_luo_zheng",
+        "locationId": "h03_workshop",
+        "implemented": true,
+        "showAny": [
+          "quest:FA04:completed",
+          "communication_power_claimed"
+        ],
+        "requiresAll": [
+          "communication_power_claimed"
+        ],
+        "requiresRosterMember": false,
+        "accept": "talk",
+        "acceptServiceId": null,
+        "offerDialogue": "FA05_power_contact",
+        "workDialogue": null,
+        "turninDialogue": null,
+        "repeatDialogue": null,
+        "completeDialogue": "FA05_contact_complete",
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "",
+        "completeByAny": [
+          "chapter_contact"
+        ],
+        "completeFacts": [],
+        "stepOffer": "从警备仓外进入旧城警备仓，在封存仓领取警备仓备用电源，再到营区工坊和罗铮交谈。",
+        "stepActive": "从山顶瞭望台进入深野通信站，在联络台完成联络。",
+        "result": "联络记录已保存，本章通信目标完成（不提供根治药、永久免疫或新的扩容）"
+      },
+      {
+        "id": "HU01",
+        "title": "鉴定之前",
+        "kind": "side",
+        "npcId": "npc_tao_cen",
+        "locationId": "h05_appraisal",
+        "implemented": false,
+        "showAny": [
+          "hub_registered"
+        ],
+        "requiresAll": [
+          "hub_registered"
+        ],
+        "requiresRosterMember": false,
+        "accept": "talk",
+        "acceptServiceId": null,
+        "offerDialogue": "HU01_offer",
+        "workDialogue": "HU01_work",
+        "turninDialogue": "HU01_turnin",
+        "repeatDialogue": "HU01_repeat",
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "阅读说明",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "到鉴定所和陶岑交谈。",
+        "stepActive": "在鉴定所阅读鉴定说明（0分钟，不用交出样本）。",
+        "result": "鉴定说明已读（不发物、不交样本）"
+      },
+      {
+        "id": "HU02",
+        "title": "样本去向",
+        "kind": "side",
+        "npcId": "npc_tao_cen",
+        "locationId": "h05_appraisal",
+        "implemented": false,
+        "showAny": [
+          "quest:HU01:completed"
+        ],
+        "requiresAll": [
+          "quest:HU01:completed"
+        ],
+        "requiresRosterMember": false,
+        "accept": "talk",
+        "acceptServiceId": null,
+        "offerDialogue": "HU02_offer",
+        "workDialogue": "HU02_work",
+        "turninDialogue": "HU02_turnin",
+        "repeatDialogue": "HU02_repeat",
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "了解范围",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "再到鉴定所和陶岑交谈。",
+        "stepActive": "在鉴定所了解样本保留、融合与交易的范围（0分钟，不要求交易一次）。",
+        "result": "交易说明已读（不奖励可回卖物）"
+      },
+      {
+        "id": "HU03",
+        "title": "同行不是归属",
+        "kind": "side",
+        "npcId": "npc_du_sui",
+        "locationId": "h06_shelter",
+        "implemented": false,
+        "showAny": [
+          "hub_registered"
+        ],
+        "requiresAll": [
+          "hub_registered"
+        ],
+        "requiresRosterMember": false,
+        "accept": "talk",
+        "acceptServiceId": null,
+        "offerDialogue": "HU03_offer",
+        "workDialogue": "HU03_work",
+        "turninDialogue": "HU03_turnin",
+        "repeatDialogue": "HU03_repeat",
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "阅读说明",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "到收容所和杜穗交谈。",
+        "stepActive": "在收容所阅读固定同行者、周期候选与同行补员的区别（0分钟）。",
+        "result": "招募说明已读（不招人、不刷新名单、不扩大队伍）"
+      },
+      {
+        "id": "HU04",
+        "title": "留守之前",
+        "kind": "side",
+        "npcId": "npc_du_sui",
+        "locationId": "h06_shelter",
+        "implemented": false,
+        "showAny": [
+          "hub_registered"
+        ],
+        "requiresAll": [
+          "hub_registered"
+        ],
+        "requiresRosterMember": true,
+        "accept": "talk",
+        "acceptServiceId": null,
+        "offerDialogue": "HU04_offer",
+        "workDialogue": "HU04_work",
+        "turninDialogue": "HU04_turnin",
+        "repeatDialogue": "HU04_repeat",
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "查看说明",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "名册里有一名同行者后，到收容所和杜穗交谈。",
+        "stepActive": "在收容所查看候补照护与伤病风险说明（0分钟，可以不让任何人留守）。",
+        "result": "留守说明已读（不改队伍、不清伤病）"
+      },
+      {
+        "id": "CH01",
+        "title": "施济清单",
+        "kind": "side",
+        "npcId": "npc_bai_ling",
+        "locationId": "c04_alms",
+        "implemented": false,
+        "showAny": [
+          "quest:FA02:accepted"
+        ],
+        "requiresAll": [
+          "quest:FA02:accepted"
+        ],
+        "requiresRosterMember": false,
+        "accept": "talk",
+        "acceptServiceId": null,
+        "offerDialogue": "CH01_offer",
+        "workDialogue": "CH01_work",
+        "turninDialogue": "CH01_turnin",
+        "repeatDialogue": "CH01_repeat",
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 10,
+        "workServiceIds": [],
+        "workRequiresAll": [
+          "FA02_record_credit"
+        ],
+        "workLabel": "核对物资账",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "到施济处和白苓交谈。",
+        "stepActive": "取得圣所旧路档册后，在施济处核对物资账（10分钟）。",
+        "result": "公开账核对记录已保存（不领取另一份地牢箱）"
+      },
+      {
+        "id": "CH02",
+        "title": "被扣下的记录",
+        "kind": "side",
+        "npcId": "npc_ji_mu",
+        "locationId": "c05_admonition",
+        "implemented": false,
+        "showAny": [
+          "quest:CH01:completed"
+        ],
+        "requiresAll": [
+          "quest:CH01:completed"
+        ],
+        "requiresRosterMember": false,
+        "accept": "talk",
+        "acceptServiceId": null,
+        "offerDialogue": "CH02_offer",
+        "workDialogue": "CH02_work",
+        "turninDialogue": "CH02_turnin",
+        "repeatDialogue": "CH02_repeat",
+        "completeDialogue": null,
+        "hubTurninDialogue": "CH02_hub_backup_turnin",
+        "noteDialogue": null,
+        "workMinutes": 10,
+        "workServiceIds": [
+          "church_public_mediation",
+          "church_archive_copy"
+        ],
+        "workRequiresAll": [],
+        "workLabel": "",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "到训诫堂和纪牧交谈。",
+        "stepActive": "在训诫堂交接公开资料（选抄录或回营区备份），或到典藏室抄录路线备份（10分钟）。",
+        "result": "路线备份日志已保存（不宣誓、不交出任何人）"
+      },
+      {
+        "id": "AC01",
+        "title": "观察的边界",
+        "kind": "side",
+        "npcId": "npc_ji_wen",
+        "locationId": "r05_testing",
+        "implemented": false,
+        "showAny": [
+          "quest:FA03:accepted"
+        ],
+        "requiresAll": [
+          "quest:FA03:accepted"
+        ],
+        "requiresRosterMember": false,
+        "accept": "talk",
+        "acceptServiceId": null,
+        "offerDialogue": "AC01_offer",
+        "workDialogue": "AC01_work",
+        "turninDialogue": "AC01_turnin",
+        "repeatDialogue": "AC01_repeat",
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 10,
+        "workServiceIds": [
+          "academy_noninvasive_observation"
+        ],
+        "workRequiresAll": [],
+        "workLabel": "",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "到检测室和季闻交谈。",
+        "stepActive": "在检测室核对观察范围，选只核对环境记录或只读现有状态（10分钟，不改身体数值）。",
+        "result": "同意范围日志与已知指标说明已保存（拒绝身体观察不影响主线）"
+      },
+      {
+        "id": "AC02",
+        "title": "相互矛盾的报告",
+        "kind": "side",
+        "npcId": "npc_shao_ning",
+        "locationId": "r06_archive",
+        "implemented": false,
+        "showAny": [
+          "FA03_record_credit"
+        ],
+        "requiresAll": [
+          "FA03_record_credit"
+        ],
+        "requiresRosterMember": false,
+        "accept": "talk",
+        "acceptServiceId": null,
+        "offerDialogue": "AC02_offer",
+        "workDialogue": "AC02_work",
+        "turninDialogue": "AC02_turnin",
+        "repeatDialogue": "AC02_repeat",
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": "AC02_external_medical_note",
+        "workMinutes": 10,
+        "workServiceIds": [
+          "academy_report_compare"
+        ],
+        "workRequiresAll": [],
+        "workLabel": "",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "到档案室和邵宁交谈。",
+        "stepActive": "在档案室比对观察报告（10分钟）。",
+        "result": "核对笔记与外部医疗线索已保存（不授新药、永久免疫或容量）"
+      },
+      {
+        "id": "RN01",
+        "title": "相互照应",
+        "kind": "recruit",
+        "npcId": "npc_lin_zhao",
+        "locationId": "h02_square",
+        "implemented": false,
+        "showAny": [
+          "hub_registered"
+        ],
+        "requiresAll": [
+          "hub_registered"
+        ],
+        "requiresRosterMember": false,
+        "accept": "roster",
+        "acceptServiceId": null,
+        "offerDialogue": null,
+        "workDialogue": null,
+        "turninDialogue": null,
+        "repeatDialogue": null,
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "登记同行",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "在营区广场和林昭谈谈同行。",
+        "stepActive": "在营区广场和林昭谈谈同行。",
+        "result": "林昭登记入名册（首次装备随登记一次生成）"
+      },
+      {
+        "id": "RN02",
+        "title": "检修交接",
+        "kind": "recruit",
+        "npcId": "npc_zhou_yan",
+        "locationId": "h03_workshop",
+        "implemented": false,
+        "showAny": [],
+        "requiresAll": [
+          "quest:QMAP02:accepted",
+          "a01_explore100"
+        ],
+        "requiresRosterMember": false,
+        "accept": "roster",
+        "acceptServiceId": null,
+        "offerDialogue": null,
+        "workDialogue": null,
+        "turninDialogue": null,
+        "repeatDialogue": null,
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "",
+        "stepActive": "",
+        "result": "周砚登记入名册"
+      },
+      {
+        "id": "RN03",
+        "title": "转运手册",
+        "kind": "recruit",
+        "npcId": "npc_shen_he",
+        "locationId": "h04_infirmary",
+        "implemented": false,
+        "showAny": [],
+        "requiresAll": [
+          "quest:QMAP03:accepted",
+          "b01_explore100"
+        ],
+        "requiresRosterMember": false,
+        "accept": "roster",
+        "acceptServiceId": null,
+        "offerDialogue": null,
+        "workDialogue": null,
+        "turninDialogue": null,
+        "repeatDialogue": null,
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "",
+        "stepActive": "",
+        "result": "沈禾登记入名册"
+      },
+      {
+        "id": "RN04",
+        "title": "林间归路",
+        "kind": "recruit",
+        "npcId": "npc_tang_li",
+        "locationId": "h02_square",
+        "implemented": false,
+        "showAny": [],
+        "requiresAll": [
+          "quest:QMAP03:completed",
+          "w02_explore100"
+        ],
+        "requiresRosterMember": false,
+        "accept": "roster",
+        "acceptServiceId": null,
+        "offerDialogue": null,
+        "workDialogue": null,
+        "turninDialogue": null,
+        "repeatDialogue": null,
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "",
+        "stepActive": "",
+        "result": "唐梨登记入名册"
+      },
+      {
+        "id": "RN05",
+        "title": "封存清单",
+        "kind": "recruit",
+        "npcId": "npc_gu_cheng",
+        "locationId": "h03_workshop",
+        "implemented": false,
+        "showAny": [],
+        "requiresAll": [
+          "quest:QMAP04:completed"
+        ],
+        "requiresRosterMember": false,
+        "accept": "roster",
+        "acceptServiceId": null,
+        "offerDialogue": null,
+        "workDialogue": null,
+        "turninDialogue": null,
+        "repeatDialogue": null,
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "",
+        "stepActive": "",
+        "result": "顾承登记入名册"
+      },
+      {
+        "id": "RN06",
+        "title": "值守记录",
+        "kind": "recruit",
+        "npcId": "npc_ye_xun",
+        "locationId": "h02_square",
+        "implemented": false,
+        "showAny": [],
+        "requiresAll": [
+          "quest:QMAP04:completed",
+          "b03_explore100"
+        ],
+        "requiresRosterMember": false,
+        "accept": "roster",
+        "acceptServiceId": null,
+        "offerDialogue": null,
+        "workDialogue": null,
+        "turninDialogue": null,
+        "repeatDialogue": null,
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "",
+        "completeByAny": [],
+        "completeFacts": [],
+        "stepOffer": "",
+        "stepActive": "",
+        "result": "叶洵登记入名册"
+      }
+    ],
+    "dialogueSets": [
+      {
+        "id": "FA01_public_brief",
+        "title": "营区之外：公开说明"
+      },
+      {
+        "id": "FA02_route_choice",
+        "title": "被称作新生的人：公开路线"
+      },
+      {
+        "id": "FA03_environment_choice",
+        "title": "样本之外：环境调查路线"
+      },
+      {
+        "id": "FA04_merge_accept",
+        "title": "同一条归路：整理记录"
+      },
+      {
+        "id": "FA04_merge_complete",
+        "title": "同一条归路：完成"
+      },
+      {
+        "id": "FA05_power_contact",
+        "title": "联络仍在继续：电源与联络"
+      },
+      {
+        "id": "FA05_contact_complete",
+        "title": "联络仍在继续：完成"
+      },
+      {
+        "id": "HU01_offer",
+        "title": "鉴定之前：接取"
+      },
+      {
+        "id": "HU01_work",
+        "title": "鉴定之前：工作"
+      },
+      {
+        "id": "HU01_turnin",
+        "title": "鉴定之前：交付"
+      },
+      {
+        "id": "HU01_repeat",
+        "title": "鉴定之前：回看"
+      },
+      {
+        "id": "HU02_offer",
+        "title": "样本去向：接取"
+      },
+      {
+        "id": "HU02_work",
+        "title": "样本去向：工作"
+      },
+      {
+        "id": "HU02_turnin",
+        "title": "样本去向：交付"
+      },
+      {
+        "id": "HU02_repeat",
+        "title": "样本去向：回看"
+      },
+      {
+        "id": "HU03_offer",
+        "title": "同行不是归属：接取"
+      },
+      {
+        "id": "HU03_work",
+        "title": "同行不是归属：工作"
+      },
+      {
+        "id": "HU03_turnin",
+        "title": "同行不是归属：交付"
+      },
+      {
+        "id": "HU03_repeat",
+        "title": "同行不是归属：回看"
+      },
+      {
+        "id": "HU04_offer",
+        "title": "留守之前：接取"
+      },
+      {
+        "id": "HU04_work",
+        "title": "留守之前：工作"
+      },
+      {
+        "id": "HU04_turnin",
+        "title": "留守之前：交付"
+      },
+      {
+        "id": "HU04_repeat",
+        "title": "留守之前：回看"
+      },
+      {
+        "id": "CH01_offer",
+        "title": "施济清单：接取"
+      },
+      {
+        "id": "CH01_work",
+        "title": "施济清单：工作"
+      },
+      {
+        "id": "CH01_turnin",
+        "title": "施济清单：交付"
+      },
+      {
+        "id": "CH01_repeat",
+        "title": "施济清单：回看"
+      },
+      {
+        "id": "CH02_offer",
+        "title": "被扣下的记录：接取"
+      },
+      {
+        "id": "CH02_work",
+        "title": "被扣下的记录：工作"
+      },
+      {
+        "id": "CH02_turnin",
+        "title": "被扣下的记录：交付"
+      },
+      {
+        "id": "CH02_repeat",
+        "title": "被扣下的记录：回看"
+      },
+      {
+        "id": "CH02_hub_backup_turnin",
+        "title": "被扣下的记录：营区备份"
+      },
+      {
+        "id": "AC01_offer",
+        "title": "观察的边界：接取"
+      },
+      {
+        "id": "AC01_work",
+        "title": "观察的边界：工作"
+      },
+      {
+        "id": "AC01_turnin",
+        "title": "观察的边界：交付"
+      },
+      {
+        "id": "AC01_repeat",
+        "title": "观察的边界：回看"
+      },
+      {
+        "id": "AC02_offer",
+        "title": "相互矛盾的报告：接取"
+      },
+      {
+        "id": "AC02_work",
+        "title": "相互矛盾的报告：工作"
+      },
+      {
+        "id": "AC02_turnin",
+        "title": "相互矛盾的报告：交付"
+      },
+      {
+        "id": "AC02_repeat",
+        "title": "相互矛盾的报告：回看"
+      },
+      {
+        "id": "AC02_external_medical_note",
+        "title": "相互矛盾的报告：外部医疗线索"
       }
     ]
   }

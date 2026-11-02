@@ -780,6 +780,8 @@ namespace Survival.Core.Engine
             // “熟制块根”按烤熟与水煮合计
             if (Count("clean_water") >= 3 && Count(CookedFoodIds) >= 2) f.Add("supplyReady");
             SyncLayout(s);
+            // B15 任务安全边界：核心记录到手的主线完成、营区广场的公开说明与备份回报（幂等，不推进时间）
+            QuestBoundary(s);
             // B13 序章安全边界：任务追认、来客登记/通知/抵达、排队的反应、主目标重算（幂等，不推进时间）
             PrologueBoundary(s);
         }

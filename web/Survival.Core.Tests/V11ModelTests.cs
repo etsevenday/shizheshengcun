@@ -19,7 +19,7 @@ public class V11ModelTests : TestBase
         Assert.That(note, Is.EqualTo("轮到你时可使用行动点（AP）。先选技能，再把鼠标移到亮起的目标上看右侧预测，点击目标就会执行。自用或无目标指令按旁边的明确按钮确认；用完行动点或点‘结束行动’后继续战斗。"),
             "N01 §3.1 首战操作附注原文");
         Assert.That(note, Does.Not.Contain("执行”"), "不再要求另点“执行”");
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("26"), "B14 城市岗位与服务（B13d 为 25、B13c 为 24、B13b 为 23、B13 为 22、B12 为 21、B11 为 20、B10a 为 19、B8c 为 18、B8b 为 17、B8a 为 16、B8 为 15、B7d 为 14、B7b 为 13、B6 为 12）");
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("27"), "B15 主线与支线任务（B14 为 26、B13d 为 25、B13c 为 24、B13b 为 23、B13 为 22、B12 为 21、B11 为 20、B10a 为 19、B8c 为 18、B8b 为 17、B8a 为 16、B8 为 15、B7d 为 14、B7b 为 13、B6 为 12）");
     }
 
     [Test]

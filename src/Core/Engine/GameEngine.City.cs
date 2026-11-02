@@ -30,6 +30,8 @@ namespace Survival.Core.Engine
         public List<CityChoiceView> Choices { get; set; } = new List<CityChoiceView>();
         /// <summary>办理后界面打开制作面板（公共工坊入口）。</summary>
         public bool OpensCraft { get; set; }
+        /// <summary>办理按钮上的字（为空时界面按工时写“办理（0分钟）”/“开始（N分钟）”）。</summary>
+        public string? StartLabel { get; set; }
     }
 
     public sealed class CityTargetView
@@ -111,7 +113,9 @@ namespace Survival.Core.Engine
 
         public CityNpcConfig? CityNpc(string npcId) => Config.City.Npcs.FirstOrDefault(n => n.NpcId == npcId);
 
-        public CityServiceConfig? CityService(string serviceId) => Config.City.Services.FirstOrDefault(x => x.Id == serviceId);
+        /// <summary>城市服务（含 B15 借同一事务通道的任务工作与战术训练条目）。</summary>
+        public CityServiceConfig? CityService(string serviceId) =>
+            Config.City.Services.FirstOrDefault(x => x.Id == serviceId) ?? (ExtraServices.TryGetValue(serviceId, out var e) ? e : null);
 
         public string FactionName(string factionId) => Config.City.Factions.TryGetValue(factionId, out var n) ? n : factionId;
 
@@ -152,8 +156,8 @@ namespace Survival.Core.Engine
                     Substitute = absent,
                     Status = services.Count > 0 ? $"可交谈 · 事项 {canDo}/{services.Count} 项可办" : "可交谈",
                     ServiceCount = services.Count,
-                    // Q146：相关委托（任务系统未实装）不写占位，也不出内部任务编号
-                    QuestText = "",
+                    // B15：只写已实装且已显示的委托（正式名 + 状态），不出内部任务编号（Q145/Q146）
+                    QuestText = QuestCardText(s, n.NpcId),
                     RecruitText = "岗位人物，不可招募",
                     HasNews = !s.City.Greeted.Contains(n.NpcId) && !absent,
                     TalkBlocked = TalkBlocked(s),
@@ -176,25 +180,36 @@ namespace Survival.Core.Engine
             if (why != null) return ActionResult.Fail(why);
             var c = s.City;
             c.Talks[n.NpcId] = (c.Talks.TryGetValue(n.NpcId, out var k) ? k : 0) + 1;
+            // B15：可接的委托在交谈时接取（播该委托的接取对白；narrative-texts offer 触发“quest eligible, local safe talk”）
+            var offer = TalkOffer(s, n.NpcId);
             if (c.Absent.Contains(n.NpcId))
             {
+                // 联系人退场不锁任务：代班员接续，委托照接（不播原人物的接取台词）
                 OpenReplay(s, StateSet(n, "institution_substitute"));
+                if (offer != null) AcceptCore(s, offer, false);
                 return ActionResult.Success();
             }
-            if (c.Greeted.Add(n.NpcId))
+            var first = c.Greeted.Add(n.NpcId);
+            if (first)
             {
                 OpenReplay(s, StateSet(n, "first_greeting"));
                 OpenReplay(s, StateSet(n, "role"));
+            }
+            if (offer != null)
+            {
+                AcceptCore(s, offer, true);
                 return ActionResult.Success();
             }
-            OpenReplay(s, StateSet(n, "idle"));
+            if (first) return ActionResult.Success();
+            OpenReplay(s, StateSet(n, QuestTalkState(s, n) ?? "idle"));
             return ActionResult.Success();
         }
 
         private static string StateSet(CityNpcConfig n, string state) => n.States.TryGetValue(state, out var id) ? id : "";
 
         /// <summary>城市对白组在对话记录里的名称；不是城市组为 null。</summary>
-        private string? CityDialogueSetTitle(string id) => Config.City.DialogueSets.FirstOrDefault(d => d.Id == id)?.Title;
+        private string? CityDialogueSetTitle(string id) =>
+            Config.City.DialogueSets.FirstOrDefault(d => d.Id == id)?.Title ?? Config.Quests.DialogueSets.FirstOrDefault(d => d.Id == id)?.Title;
 
         // ───────────────────────── 服务预览（preview 0 分钟） ─────────────────────────
 
@@ -206,7 +221,10 @@ namespace Survival.Core.Engine
         {
             var n = CityNpc(npcId);
             if (n == null) return new List<CityServiceView>();
-            return n.ServiceIds.Select(CityService).Where(x => x != null && x.Implemented)
+            var ids = n.ServiceIds.ToList();
+            // B15：h03 战术训练（R03 §3）挂在当地岗位的事项里
+            if (Config.Scope.Training.NpcId == npcId && ExtraServices.ContainsKey(TrainingServiceId)) ids.Add(TrainingServiceId);
+            return ids.Select(CityService).Where(x => x != null && x.Implemented)
                 .Select(x => CityServicePreview(s, x!.Id, n)).Where(v => v != null).Select(v => v!).ToList();
         }
 
@@ -298,12 +316,48 @@ namespace Survival.Core.Engine
                 case "shelter_recruitment":
                     v.EffectText = "沿用收容所原有入口：同行补员登记（30分钟）、借用矛报失与名册在“队伍”面板办理；查看名册不耗时，不会替你招人";
                     break;
+                case "church_reception_existing":
+                case "academy_reception_existing":
+                {
+                    // B15（A08 规则 6、S15 gate事实接口）：两个选择同写同一路线事实，不宣誓/不检测也照样领到路线
+                    var route = svc.Choices.SelectMany(c => c.Facts).FirstOrDefault() ?? "";
+                    v.EffectText = svc.Id == "church_reception_existing"
+                        ? "询问封锁区的公开路线（0分钟）：接受公开路线调查或拒绝宣誓，都领到同一条公开路线；不入教、不捐献、不作见证"
+                        : "询问环境调查的公开路线（0分钟）：只调查环境记录或拒绝检测，都领到同一条公开路线；不做身体检测、不签空白同意";
+                    v.Choices = svc.Choices.Select(c => new CityChoiceView { Id = c.Id, Label = c.Label }).ToList();
+                    if (v.Blocked == null && f.Contains(route)) v.Blocked = "已领取公开路线（再问只回看，不再写入）";
+                    break;
+                }
+                case TrainingServiceId:
+                    TrainingPreview(s, svc, v);
+                    break;
                 default:
                     // Q145：不把内部 effect 原文拼给玩家，用玩家摘要
                     v.EffectText = svc.Summary;
                     break;
             }
+            if (QuestOfService(svc) is QuestConfig wq) QuestServicePreview(s, svc, wq, v);
             return v;
+        }
+
+        /// <summary>任务类服务的预览（B15）：剩余工时（保留已完成的段）、效果说明、选项与真实阻拦原因。</summary>
+        private void QuestServicePreview(GameState s, CityServiceConfig svc, QuestConfig q, CityServiceView v)
+        {
+            var left = QuestWorkLeft(s, q);
+            var done = q.WorkMinutes - left;
+            var going = done > 0 && !QuestDone(s, q.Id);
+            v.TimeText = going ? $"{left}分钟" : $"{q.WorkMinutes}分钟";
+            v.EffectText = svc.Id switch
+            {
+                "hub_affairs_record" => "交接并整理圣所旧路档册与封存区安全规程两份调查记录（固定等待10分钟，按两段5分钟提交，两段都完成才算整理完成；中途停下保留已完成的段）；完成后旧城后段（警备仓）的通行按这份记录办理，已获得的容量与物资不再发第二次",
+                "church_public_mediation" => "协商抄录公开路线，或以已有实地记录回营区备份（固定等待10分钟，两条路同一份委托记录）；不宣誓、不交出任何人，拒绝不扣精神或免疫、不封主线",
+                "church_archive_copy" => "抄录已公开的路线备份（固定等待10分钟）；已在训诫堂完成同一归档的只回看，不再收时间、不加知识或物资",
+                "academy_noninvasive_observation" => "按你选的范围核对：只核对环境记录，或只读你现有的状态（固定等待10分钟，两种选择同一份委托记录）；不抽血、不提交样本、不改变任何身体数值",
+                "academy_report_compare" => "对照两份观察报告与带回的流程记录，把证据和猜测分开（固定等待10分钟）；完成后得到核对笔记与外部医疗线索，不授新药、永久免疫或容量",
+                _ => q.StepActive,
+            } + (going ? $"；已完成{done}分钟，续做剩余{left}分钟" : "");
+            if (svc.Choices.Count > 0 && v.Choices.Count == 0) v.Choices = svc.Choices.Select(c => new CityChoiceView { Id = c.Id, Label = c.Label }).ToList();
+            if (v.Blocked == null) v.Blocked = QuestServiceBlocked(s, svc, q);
         }
 
         /// <summary>
@@ -428,7 +482,7 @@ namespace Survival.Core.Engine
             {
                 choice = svc.Choices.FirstOrDefault(c => c.Id == choiceId);
                 if (choice == null) return ActionResult.Fail("先选一项");
-                if (!ReliefChoiceOk(s.Actors[t!.ActorId], choice)) return ActionResult.Fail($"{t.Name}不符合这一项（{choice.Label}）");
+                if (!string.IsNullOrEmpty(choice.Stat) && !ReliefChoiceOk(s.Actors[t!.ActorId], choice)) return ActionResult.Fail($"{t.Name}不符合这一项（{choice.Label}）");
             }
             var npc = Config.City.Npcs.FirstOrDefault(n => n.ServiceIds.Contains(serviceId));
             switch (svc.Id)
@@ -458,9 +512,26 @@ namespace Survival.Core.Engine
                     RememberRequest(s, requestId);
                     Emit(s, GameEventKind.Info, $"{svc.Title}：{v.EffectText}。");
                     return ActionResult.Success();
+                case "church_reception_existing":
+                case "academy_reception_existing":
+                {
+                    // B15：FA02/FA03 接取——两个选择同写同一路线事实（只首次明确提交写入），重判门槛
+                    RememberRequest(s, requestId);
+                    var rq = Config.Quests.List.FirstOrDefault(x => x.AcceptServiceId == svc.Id && x.Implemented);
+                    foreach (var fact in choice!.Facts) s.Progress.Flags.Add(fact);
+                    if (rq != null) AcceptCore(s, rq, true, choice.Id);
+                    var routes = RouteNotes(s, RefreshGates(s), s.CurrentLocation);
+                    Emit(s, GameEventKind.Info, $"{svc.Title}：已领取公开路线（{choice.Label}）" + (routes.Count > 0 ? "；发现" + string.Join("与", routes) : "") + "。");
+                    return ActionResult.Success();
+                }
+                case TrainingServiceId:
+                    return StartTraining(s, svc, t!, npc, requestId);
             }
             // 计时服务
             var minutes = svc.WorldMinutes ?? 0;
+            var quest = QuestOfService(svc);
+            // B15：任务工作只补剩余的段（中断保留已完成的段）
+            if (quest != null) minutes = QuestWorkLeft(s, quest);
             if (minutes <= 0) return ActionResult.Fail("这里现在不办理这项事项");
             var req = svc.Mode == "rest" ? ActionRequest.Rest(minutes) : ActionRequest.Wait(minutes);
             req.TargetId = CityServicePrefix + svc.Id;
@@ -481,6 +552,13 @@ namespace Survival.Core.Engine
                 txn.ReservedItemIds.AddRange(ids);
             }
             s.City.Pending = txn;
+            if (quest != null)
+            {
+                // FA04 开始整理即接取（播接取对白，对话本身不替代工作提交）；有工作提示的委托首次开工播一次
+                if (!QuestAccepted(s, quest.Id)) AcceptCore(s, quest, true, choice?.Id);
+                else if (!string.IsNullOrEmpty(quest.WorkDialogue)) OpenDialogue(s, quest.WorkDialogue!);
+                if (choice != null) s.Quests.Of(quest.Id).Choice ??= choice.Id;
+            }
             return res;
         }
 
@@ -541,9 +619,25 @@ namespace Survival.Core.Engine
                         made.Add($"{string.Join("、", c.Outputs.Select(kv => $"{ItemName(kv.Key)}+{kv.Value}"))}，已放在{LocName(s.CurrentLocation)}地面（不自动吃喝）");
                         break;
                     }
+                    case TrainingServiceId:
+                        fail = CompleteTraining(s, p, target!, reserved, made);
+                        break;
                     default:
                         Release();
                         break;
+                }
+            }
+            if (fail == null && QuestOfService(svc) is QuestConfig wq)
+            {
+                // B15 任务工作：重验仍可做（未被别处完成），记满工作并写完成（交付对白代替“办完事项”）
+                var why = QuestServiceBlocked(s, svc, wq);
+                if (why != null) fail = why;
+                else
+                {
+                    s.City.Completed++;
+                    Emit(s, GameEventKind.ActionCompleted, $"{svc.Title}完成（{Clock.Duration(a.PlannedMinutes)}）。");
+                    CompleteQuestWork(s, wq, p);
+                    return;
                 }
             }
             if (fail != null)
@@ -562,6 +656,8 @@ namespace Survival.Core.Engine
         {
             foreach (var i in s.Items.Where(i => i.ReservedBy == a.ActionId)) i.ReservedBy = null;
             a.ReservedItemIds.Clear();
+            // B15：任务工作中断保留已提交的整段（A11 §5“工作中断按剩余段续算”、FA04“离开保留已完成段”）
+            if (s.City.Pending is CityServiceTxn p && p.ActionId == a.ActionId) KeepQuestWorkSegments(s, a, p);
             if (s.City.Pending?.ActionId == a.ActionId) s.City.Pending = null;
         }
 

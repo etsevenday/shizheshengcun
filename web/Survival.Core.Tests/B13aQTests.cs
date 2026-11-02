@@ -386,6 +386,7 @@ public class B13aQTests : TestBase
         s.Locations["camp"].Facility.ShelterBuilt = true;
         s.Locations["camp"].Facility.BedBuilt = true;
         E.DebugTeleport(s, "h02_square");
+        ReadDialogues(s);   // B15：已登记到广场时播一次“营区之外”公开说明
         E.DebugRecruit(s, "npc_lin_zhao");
         Assert.That(E.SetActive(s, "npc_lin_zhao", false).Ok, Is.True);
         Assert.That(E.ReserveFacility(s), Is.EqualTo("none"), "h02 广场露天，camp 的棚床不远程生效");

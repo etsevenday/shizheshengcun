@@ -26,6 +26,7 @@ public class B14CityTests : TestBase
     {
         Start(s, ActionRequest.Travel(to));
         Run(s);
+        ReadDialogues(s);   // B15：已登记到广场时播一次“营区之外”公开说明
         Assert.That(s.CurrentLocation, Is.EqualTo(to));
     }
 
@@ -269,14 +270,15 @@ public class B14CityTests : TestBase
         Assert.That((s.GameMinute, s.Items.Sum(i => i.Count), s.Progress.Flags.Count, s.Stats.Health, s.Body.VirusLoad), Is.EqualTo(before));
         Assert.That(s.City.Talks["npc_chen_zhi"], Is.EqualTo(3));
 
-        E.DebugMapTeleport(s, "h02_square");   // 许安：名下只有未实装的整理调查记录 → 闲谈，不播“暂不可办”（Q146）
+        E.DebugMapTeleport(s, "h02_square");   // 许安：没有可接的委托 → 闲谈，不播“暂不可办”（Q146）
         Ok(E.TalkNpc(s, "npc_xu_an"));
         ReadDialogues(s);
         Ok(E.TalkNpc(s, "npc_xu_an"));
         ReadDialogues(s);
         Assert.That(s.Story.DialogueLog.Any(d => d.EventId.StartsWith("npc_xu_an_dialogue_locked")), Is.False);
         Assert.That(s.Story.DialogueLog.Any(d => d.EventId.StartsWith("npc_xu_an_dialogue_idle")), Is.True);
-        Assert.That(E.CityServicesOf(s, "npc_xu_an"), Is.Empty);
+        // B15：整理调查记录已实装，两份记录没齐时照常列出并写真实原因
+        Assert.That(E.CityServicesOf(s, "npc_xu_an").Single().Blocked, Does.StartWith("需要："));
     }
 
     /// <summary>CITY-N05/TXT08：命名岗位退场由机构当班接续员代班，不复活原人物；服务照办、日配额与已领账沿用。</summary>
@@ -453,8 +455,9 @@ public class B14CityTests : TestBase
         Ok(E.StartCityService(s, "clinic_consult", GameState.PlayerId));
         Assert.That((s.GameMinute, s.Stats.Health, s.Body.VirusLoad), Is.EqualTo(before));
         Assert.That(s.Log.Last().Text, Does.Contain("伤病咨询"));
-        foreach (var id in new[] { "hub_affairs_record", "copy_public_knowledge", "appraisal_white_v1", "church_reception_existing", "church_public_mediation",
-                     "church_archive_copy", "academy_reception_existing", "academy_noninvasive_observation", "academy_report_compare" })
+        // B15 起整理调查记录与两处接待路线已实装（见 B15QuestTests）
+        foreach (var id in new[] { "copy_public_knowledge", "appraisal_white_v1", "church_public_mediation",
+                     "church_archive_copy", "academy_noninvasive_observation", "academy_report_compare" })
         {
             var svc = Cfg.City.Services.Single(x => x.Id == id);
             E.DebugMapTeleport(s, svc.LocationId);
