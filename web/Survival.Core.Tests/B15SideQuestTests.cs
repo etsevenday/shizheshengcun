@@ -93,21 +93,24 @@ public class B15SideQuestTests : TestBase
         Assert.That(s.Party, Is.EqualTo(party), "不把队员强移候补");
     }
 
-    /// <summary>CH01：FA02 已接才可接；取得圣所旧路档册后才能核对（wait10）；完成播交付、不领另一份箱。</summary>
+    /// <summary>
+    /// CH01：FA02 已接且已领圣所旧路档册才可接（B15b，Q162 选 A；原“FA02 已接即可接”已取代，见 B15bTests.QUEST_Q162_01_*）；
+    /// 核对 wait10；完成播交付、不领另一份箱。
+    /// </summary>
     [Test]
     public void CH01_NeedsRecord_Wait10()
     {
         var s = At("c04_alms");
         Assert.That(E.QuestViewOf(s, "CH01"), Is.Null, "FA02 未接前不显示");
         s.Progress.Flags.Add(Q("FA02", "accepted"));
+        Assert.That(E.QuestViewOf(s, "CH01"), Is.Null, "Q162：未领档册仍不显示");
+        E.DebugClaimRecord(s, "d01_08_unique");
+        ReadDialogues(s);
         Ok(E.TalkNpc(s, "npc_bai_ling"));
         ReadDialogues(s);
         Assert.That(s.Progress.Flags, Does.Contain(Q("CH01", "accepted")));
         var v = E.QuestViewOf(s, "CH01")!;
-        Assert.That(v.WorkLabel, Is.EqualTo("核对物资账（10分钟）"));
-        Assert.That(v.WorkBlocked, Is.EqualTo("需要：在教会地下圣所核心领取圣所旧路档册"));
-        E.DebugClaimRecord(s, "d01_08_unique");
-        ReadDialogues(s);
+        Assert.That((v.WorkLabel, v.WorkBlocked), Is.EqualTo(("核对物资账（10分钟）", (string?)null)));
         var items = s.Items.Sum(i => i.Count);
         var t0 = s.GameMinute;
         Ok(E.StartQuestWork(s, "CH01"));

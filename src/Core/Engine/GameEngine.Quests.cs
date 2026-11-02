@@ -39,7 +39,7 @@ namespace Survival.Core.Engine
         public bool CanReview { get; set; }
         /// <summary>AC02 外部医疗线索可回看。</summary>
         public bool HasNote { get; set; }
-        /// <summary>进行中时的工作提示（narrative-texts XX_work 系统句，预览说明，不弹对白）。</summary>
+        /// <summary>进行中时的工作提示（narrative-texts XX_work 系统句，预览说明，不弹对白；B15b Q161 选 C：八条委托各自的定稿句，任务册与岗位事项同显）。</summary>
         public string WorkHint { get; set; } = "";
     }
 

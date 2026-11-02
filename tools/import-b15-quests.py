@@ -6,6 +6,7 @@
 - A11「5 支线委托最小表」HU01—HU04、CH01—CH02、AC01—AC02（对话 0 分钟；抄录/核对 wait10；奖励只有日志或信息）。
 - A11「7 招募与补充任务表」RN01—RN06；B15a（策划答复 Q152 选 A）：RN02—RN06 前置改为 FA 对应（取代旧 QMAP02—04）；
   Q156 选 B：六人逐字邀约对白取 narrative-texts recruitInvitations（交谈打开对白，读完选“登记同行”/“暂不登记”）。
+- B15b（Q160—Q162）：FA04 系统句与八条 XX_work 工作提示随 narrative-texts 定稿重导（Q160 选 A、Q161 选 C）；CH01 接取加档册前置（Q162 选 A）。
 - narrative-texts.json（Q32 选 B 定稿）：8 支线接取/工作/交付/回看对白、CH02_hub_backup_turnin、AC02_external_medical_note、
   FA02_route_choice、FA03_environment_choice、FA01_public_brief、FA04_merge_accept/complete、FA05_power_contact/contact_complete。
   speaker：system → 空（中性叙述）、protagonist → “你”、baobao → “饱饱”（只在饱饱在体内时播放）、npc_xxx → 人物名。
@@ -97,8 +98,10 @@ QUESTS = [
          showAny=["hub_registered"], requiresAll=["hub_registered"], requiresRosterMember=True, accept="talk", workMinutes=0,
          stepOffer="到收容所和杜穗交谈。", stepActive="在收容所查看候补照护与伤病风险说明（0分钟，可以不让任何人留守）。",
          workLabel="查看说明", result="留守说明已读（不改队伍、不清伤病）"),
+    # B15b（Q162 选 A）：在原“FA02 已接”之外须已领圣所旧路档册（FA02_record_credit）才开放接取；showAny 留空＝前置满足才显示，
+    # 未领时任务册与岗位都不提这条委托；工作仍读原档册条件（旧档已接无档册者保留进度、不能跳过）
     dict(id="CH01", title="施济清单", kind="side", npcId="npc_bai_ling", locationId="c04_alms",
-         showAny=[qf("FA02", "accepted")], requiresAll=[qf("FA02", "accepted")], accept="talk",
+         showAny=[], requiresAll=[qf("FA02", "accepted"), "FA02_record_credit"], accept="talk",
          workMinutes=10, workRequiresAll=["FA02_record_credit"],
          stepOffer="到施济处和白苓交谈。", stepActive="取得圣所旧路档册后，在施济处核对物资账（10分钟）。",
          workLabel="核对物资账", result="公开账核对记录已保存（不领取另一份地牢箱）"),

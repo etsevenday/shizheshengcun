@@ -582,7 +582,7 @@ namespace Survival.Core.Engine
             s.City.Pending = txn;
             if (quest != null)
             {
-                // FA04 开始整理即接取（播接取对白，对话本身不替代工作提交）。支线的工作提示（XX_work“请查看本任务领域预览后确认”）
+                // FA04 开始整理即接取（播接取对白，对话本身不替代工作提交）。支线的工作提示（XX_work，B15b Q161 选 C 起为八条各自的定稿句）
                 // 是预览说明，显示在事项面板里，开工时不再弹对白（开发假设 B15-7）
                 if (!QuestAccepted(s, quest.Id)) AcceptCore(s, quest, true, choice?.Id);
                 if (choice != null) s.Quests.Of(quest.Id).Choice ??= choice.Id;
