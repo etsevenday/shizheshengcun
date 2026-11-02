@@ -577,6 +577,7 @@ namespace Survival.Core.Engine
         {
             var here = s.CurrentLocation;
             var res = _res[a.TargetId];
+            if (res.IsCampaign) return CompleteClaim(s, a, res);
             var rs = s.Resources[res.NodeId];
             var made = new List<string>();
             if (res.IsUnits)

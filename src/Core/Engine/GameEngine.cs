@@ -377,8 +377,17 @@ namespace Survival.Core.Engine
                     if (res.LocationId != here) return "该资源点不在当前地点";
                     var rs = s.Resources[res.NodeId];
                     if (!rs.Discovered) return "该资源点尚未发现";
-                    if (res.IsCampaign) return "核心记录领取在后续版本开放";
                     plan.Res = res;
+                    if (res.IsCampaign)
+                    {
+                        // 核心记录（campaignClaimId，B12 R36）：单局永久一次；新一代只补写本代实例事实，不重发（H4）
+                        var why = ClaimBlocked(s, res);
+                        if (why != null) return why;
+                        plan.Notes.AddRange(ClaimNotes(s, res));
+                        plan.BaseWork = res.BaseMinutes;
+                        plan.Label = CampaignClaimed(s, res.NodeId) ? $"核对{res.Name}" : $"领取{res.Name}";
+                        return null;
+                    }
 
                     ItemInstance? tool = null;
                     if (r.ToolInstanceId.HasValue)
@@ -396,6 +405,7 @@ namespace Survival.Core.Engine
                     else if (res.ToolBonus != null) tool = BestTool(s, res.ToolBonus.ToolTag);
                     plan.Tool = tool;
 
+                    if (res.IsInstance && (rs.Available ?? 0) <= 0) return "本代已搜空（地牢换代后恢复）";
                     if (res.IsCache)
                     {
                         if ((rs.Available ?? 0) <= 0) return "该容器已搜空，不再补充";

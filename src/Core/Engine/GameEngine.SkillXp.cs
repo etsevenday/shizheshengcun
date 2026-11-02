@@ -58,7 +58,8 @@ namespace Survival.Core.Engine
         public static string GatherSkillOf(ResourceConfig res) => res.ProficiencyId ?? (res.IsCache ? Scavenging : Gathering);
 
         /// <summary>按熟练归属的动词（B7b 试玩修复：废金属堆写“搜集”）：练搜集的“搜集”，其余“采集”。</summary>
-        public static string GatherVerb(ResourceConfig res) => GatherSkillOf(res) == Scavenging ? "搜集" : "采集";
+        public static string GatherVerb(ResourceConfig res) =>
+            res.IsCampaign || !res.XpAllowed ? "领取" : GatherSkillOf(res) == Scavenging ? "搜集" : "采集";   // B12：核心记录与城市配给写“领取”
 
         private string GatherVerbOf(string? nodeId) => nodeId != null && _res.TryGetValue(nodeId, out var r) ? GatherVerb(r) : "采集";
 

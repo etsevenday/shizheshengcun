@@ -275,9 +275,10 @@ namespace Survival.Core.Engine
                         p.Outputs = plan.Outputs;
                         p.Notes.AddRange(plan.Notes);
                     }
-                    p.Notes.Add("产物先放在当前地点地面，不会自动拾取");
+                    if (!res.IsCampaign) p.Notes.Add("产物先放在当前地点地面，不会自动拾取");
+                    if (res.IsInstance) p.Notes.Add("地牢物资箱按本次地牢记账：搜空后要等地牢换代才恢复，不随午夜补充");
                     p.XpGains.Add(GatherXpPreview(s, res));
-                    p.ConfirmText = $"开始{GatherVerb(res)}";
+                    p.ConfirmText = res.IsCampaign && CampaignClaimed(s, res.NodeId) ? "开始核对" : $"开始{GatherVerb(res)}";
                     break;
                 }
                 case ActionType.Craft:

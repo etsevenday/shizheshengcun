@@ -192,11 +192,14 @@ namespace Survival.Core.Engine
         public bool InstanceFact(GameState s, string dungeonId, string key) =>
             s.DungeonInstances.TryGetValue(dungeonId, out var inst) && inst.Facts.Contains(key);
 
-        /// <summary>地牢当前实例；没有就建第 1 代（B11 只在实际到达地牢房间或锁存实例边时建，重置在 B22）。</summary>
+        /// <summary>地牢当前实例；没有就建第 1 代并把本地牢普通箱记到这一代（实际到达地牢房间或锁存实例边时建；换代见 NewDungeonGeneration，B12）。</summary>
         private DungeonInstanceState EnsureInstance(GameState s, string dungeonId)
         {
             if (!s.DungeonInstances.TryGetValue(dungeonId, out var inst))
+            {
                 s.DungeonInstances[dungeonId] = inst = new DungeonInstanceState { Generation = 1 };
+                BindInstanceResources(s, dungeonId, 1);
+            }
             return inst;
         }
 
