@@ -263,6 +263,8 @@ namespace Survival.Core.Engine
                     if (dungeonCfg.RecordNode == id) n.Roles.Add("核心记录");
                     if (dungeonCfg.ExitNode == id) n.Roles.Add("出口");
                 }
+                // B17（S09 X2.5/X2.9）：已建成的安全屋与收藏的“常用屋”在地图上标出，只是定位，不是捷径
+                if (SafehouseBuilt(s, id)) n.Roles.Add(s.FavoriteSafehouse == id ? "常用安全屋" : "安全屋");
                 view.Nodes.Add(n);
             }
 

@@ -224,5 +224,45 @@ namespace Survival.Core.Engine
                 .ToList();
             sh.LastRecordMinute = s.GameMinute;
         }
+        // ───────────────────────── 收藏、改名与返程定位（S09 X2.5、X2.9，R55） ─────────────────────────
+
+        /// <summary>收藏/取消收藏“常用安全屋”：0 分钟、只改展示（不改开局点、复活点或地图边）。</summary>
+        public ActionResult SetFavoriteSafehouse(GameState s, string? locationId)
+        {
+            if (locationId != null && !SafehouseBuilt(s, locationId)) return ActionResult.Fail("只能收藏已建成的安全屋");
+            s.FavoriteSafehouse = locationId;
+            Emit(s, GameEventKind.Info, locationId == null ? "已取消常用安全屋。" : $"已把{SafehouseName(s, locationId)}设为常用安全屋（只是收藏，不改出生/复活点，回去仍要沿路线步行）。");
+            return ActionResult.Success();
+        }
+
+        /// <summary>给安全屋改名：0 分钟、只改展示；空名恢复默认。</summary>
+        public ActionResult RenameSafehouse(GameState s, string locationId, string name)
+        {
+            var sh = SafehouseAt(s, locationId);
+            if (sh == null || !sh.Built) return ActionResult.Fail("只能给已建成的安全屋改名");
+            name = (name ?? "").Trim();
+            if (name.Length > 12) return ActionResult.Fail("名字最多12个字");
+            sh.Name = name;
+            Emit(s, GameEventKind.Info, $"安全屋改名为“{SafehouseName(s, locationId)}”。");
+            return ActionResult.Success();
+        }
+
+        /// <summary>
+        /// 回安全屋的已知物理路线（只读）：沿已开通、两端已知的边按基础分钟最短；不自动寻路、不传送、不省时间（S09 X2.5）。
+        /// 已在当地为空表；走不到为 null。
+        /// </summary>
+        public List<MapPathStep>? SafehouseRoute(GameState s, string locationId) =>
+            SafehouseBuilt(s, locationId) ? MapPathTo(s, locationId) : null;
+
+        /// <summary>返程定位文字：“××安全屋：已在这里”“路线：A→B（30分钟）→C（20分钟），合计约50基础分钟；要自己沿路线逐段走”或走不到的原因。</summary>
+        public string SafehouseRouteText(GameState s, string locationId)
+        {
+            var name = SafehouseName(s, locationId);
+            var path = SafehouseRoute(s, locationId);
+            if (path == null) return $"{name}：现在没有已知可走的路线";
+            if (path.Count == 0) return $"{name}：就在当前地点" + (s.CurrentZone == SafehouseZone ? "（已在屋内）" : "（点“进入安全屋”，0分钟）");
+            var legs = string.Join("", path.Select(p => $"→{LocName(p.To)}（{p.Minutes}分钟）"));
+            return $"{name}：路线 {LocName(path[0].From)}{legs}，合计约{path.Sum(p => p.Minutes)}基础分钟（实际按负重、夜间等折算）；要自己沿路线逐段走，不会自动寻路或传送";
+        }
     }
 }

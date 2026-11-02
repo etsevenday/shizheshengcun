@@ -330,4 +330,34 @@ public class B17SafehouseTests : TestBase
         var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(m), Cfg);
         Assert.That(again.Log.Count(l => l.Text.Contains($"版本{GameState.CurrentSchema}")), Is.EqualTo(1));
     }
+    // ───────────── SH14 收藏、改名与返程定位 ─────────────
+
+    [Test]
+    public void SH14_FavoriteRenameRoute_NoTeleportNoFreeTime()
+    {
+        var s = Built("camp");
+        Assert.That(E.SetFavoriteSafehouse(s, "field").Ok, Is.False, "未建成不能收藏");
+        Ok(E.SetFavoriteSafehouse(s, "camp"));
+        Ok(E.RenameSafehouse(s, "camp", "老窝"));
+        Assert.That(E.SafehouseName(s, "camp"), Is.EqualTo("老窝"));
+        Assert.That(E.SafehouseRouteText(s, "camp"), Does.Contain("就在当前地点"));
+        var start = s.CurrentLocation;
+        // 去别处后：只给路线与预计时间，不移动、不花时间
+        var next = E.AdjacentUnlocked(s).First().Other("camp");
+        Start(s, ActionRequest.Travel(next));
+        Run(s);
+        var t0 = s.GameMinute;
+        var edges = s.UnlockedEdges.Count;
+        var route = E.SafehouseRoute(s, "camp")!;
+        Assert.That(route.Last().To, Is.EqualTo("camp"));
+        Assert.That(E.SafehouseRouteText(s, "camp"), Does.Contain("老窝").And.Contain("不会自动寻路或传送"));
+        Assert.That((s.GameMinute, s.CurrentLocation, s.UnlockedEdges.Count), Is.EqualTo((t0, next, edges)));
+        var node = E.BuildMapView(s).Nodes.Single(n => n.Id == "camp");
+        Assert.That(node.Roles, Does.Contain("常用安全屋"));
+        // 远处不能存取，也没有门
+        Assert.That(E.SafehouseDoorBlocked(s, true), Is.Not.Null);
+        Ok(E.SetFavoriteSafehouse(s, null));
+        Assert.That(s.FavoriteSafehouse, Is.Null);
+        Assert.That(start, Is.EqualTo("camp"));
+    }
 }
