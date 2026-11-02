@@ -46,6 +46,11 @@ namespace Survival.Core.State
         /// tonic = 应急恢复剂 6 小时给药冷却。只在实际生效时写入。
         /// </summary>
         public Dictionary<string, int> Cooldowns { get; set; } = new Dictionary<string, int>();
+        /// <summary>
+        /// 惊魂未定截止世界分钟（R03 D5.1、S12 B4，开发计划 v0.9 B21，schema 33）：主动终止远征时写 max(原截止, 现在+360)；截止前第一次入战
+        /// 恐慌初值 +10 后清除（开发假设 B21-6，待确认 Q197）。没有为 null。
+        /// </summary>
+        public int? ShakenUntil { get; set; }
 
         public bool IsPlayer => Id == GameState.PlayerId;
 

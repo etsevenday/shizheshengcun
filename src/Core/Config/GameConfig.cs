@@ -106,6 +106,8 @@ namespace Survival.Core.Config
         public AppraisalConfig Appraisal { get; set; } = new AppraisalConfig();
         /// <summary>主线与支线任务（开发计划 v0.9 B15，tools/import-b15-quests.py）。</summary>
         public QuestsConfig Quests { get; set; } = new QuestsConfig();
+        /// <summary>地牢远征：终止惩罚包、惊魂未定、撤出时长、预告警告线与入口缓冲（开发计划 v0.9 B21，tools/import-b21-expedition.py）。</summary>
+        public DungeonExpeditionConfig DungeonExpedition { get; set; } = new DungeonExpeditionConfig();
     }
 
     /// <summary>工坊（A07「工坊设施」；B10）：hand 不是设施；其余每类每地一座，只在 buildLocations 建（B10-1：只开放 camp，待确认 Q107）。</summary>

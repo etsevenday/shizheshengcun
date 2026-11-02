@@ -235,12 +235,15 @@ namespace Survival.Core.Engine
             if (!Config.Map.Dungeons.Any(x => x.Id == dungeonId)) return "地牢不存在";
             if (IsBusy(s)) return "行动进行中或有敌踪/战斗，先结束再换代";
             if (_locs[s.CurrentLocation].DungeonId == dungeonId) return "人在这座地牢里，先离开再换代";
+            if (s.Expedition?.DungeonId == dungeonId) return "这座地牢还有进行中的远征，先结束远征再换代";
             var inst = EnsureInstance(s, dungeonId);
             // 路线知识是 campaign 的（instanceLatch）：旧代已开通或已揭示的本地牢路线记为已知，只退回开通状态
             foreach (var e in Config.Edges.Where(e => e.DungeonId == dungeonId && EdgeRevealed(s, e))) inst.KnownEdges.Add(e.Id);
             inst.Generation += 1;
             inst.UnlockedEdges.Clear();
             inst.Facts.Clear();
+            inst.VisitedRooms.Clear();   // B21：新一代从未到过任何房间、尚未提交远征
+            if (inst.Status != DungeonStatuses.CampaignEnded) inst.Status = DungeonStatuses.Unopened;
             foreach (var l in DungeonRooms(dungeonId))
             {
                 var ls = s.Locations[l.Id];

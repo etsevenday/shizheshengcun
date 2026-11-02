@@ -342,7 +342,7 @@ namespace Survival.Core.Engine
             var notes = new List<string>();
             var lc = _locs[locationId];
             var ls = s.Locations[locationId];
-            if (lc.DungeonId != null) EnsureInstance(s, lc.DungeonId);
+            if (lc.DungeonId != null) EnsureInstance(s, lc.DungeonId).VisitedRooms.Add(locationId);   // B21：本代到过的房间（返程路径用）
             if (lc.ExploreAuto100OnVisit && ls.Progress < 100)
             {
                 ls.Progress = 100;

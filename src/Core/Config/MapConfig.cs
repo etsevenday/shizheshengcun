@@ -96,4 +96,49 @@ namespace Survival.Core.Config
         public string ExitNode { get; set; } = "";
         public List<string> SafeNodes { get; set; } = new List<string>();
     }
+
+    /// <summary>
+    /// 地牢远征（开发计划 v0.9 B21，R65/R66；R03「2026-10-30 B4」D3/D5.1/D5.2、S12「B4 撤出事件包」、A01 B4 表；tools/import-b21-expedition.py）。
+    /// 旧测试配置没有本块时 BufferNodes 为空，远征逻辑整体不生效。
+    /// </summary>
+    public sealed class DungeonExpeditionConfig
+    {
+        public string Source { get; set; } = "";
+        public AbortPenaltyConfig AbortPenalty { get; set; } = new AbortPenaltyConfig();
+        /// <summary>惊魂未定持续世界分钟（R03 D5.1：6 世界小时）。</summary>
+        public int ShakenMinutes { get; set; } = 360;
+        /// <summary>惊魂未定：下一次入战恐慌初值加值（夹紧 0—100）。</summary>
+        public double ShakenPanic { get; set; } = 10;
+        /// <summary>撤出最少分钟（R03 D5.2：T=max(30, …)）。</summary>
+        public int ExtractMinMinutes { get; set; } = 30;
+        /// <summary>撤出时长向上取整的粒度（R03 D5.2：向上取 5 分钟整数）。</summary>
+        public int ExtractRoundMinutes { get; set; } = 5;
+        public ExpeditionWarnConfig Warn { get; set; } = new ExpeditionWarnConfig();
+        /// <summary>每座地牢的入口缓冲房（R03 D3“01 是实例内安全缓冲”）：地牢 ID → 节点 ID。</summary>
+        public Dictionary<string, string> BufferNodes { get; set; } = new Dictionary<string, string>();
+    }
+
+    /// <summary>主动终止远征的单次惩罚包（每名仍存活同行各一次）：五项负值（最低 0），健康实扣 min(HealthMax, max(0, H−HealthKeep))。</summary>
+    public sealed class AbortPenaltyConfig
+    {
+        public double Satiety { get; set; }
+        public double Hydration { get; set; }
+        public double Energy { get; set; }
+        public double Wakefulness { get; set; }
+        public double Morale { get; set; }
+        public double HealthMax { get; set; }
+        public double HealthKeep { get; set; }
+    }
+
+    /// <summary>进入预告的警告线（R03 D3）：N/W&lt;40、E&lt;8、S&lt;40、M&lt;30、H≤5、V≥80。</summary>
+    public sealed class ExpeditionWarnConfig
+    {
+        public double SatietyBelow { get; set; }
+        public double HydrationBelow { get; set; }
+        public double EnergyBelow { get; set; }
+        public double WakefulnessBelow { get; set; }
+        public double MoraleBelow { get; set; }
+        public double HealthAtMost { get; set; }
+        public double VirusAtLeast { get; set; }
+    }
 }

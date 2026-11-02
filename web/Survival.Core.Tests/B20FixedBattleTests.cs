@@ -232,7 +232,7 @@ public class B20FixedBattleTests : BattleTestBase
         j.Remove("Population");
         foreach (var w in (JArray)j["WorldEnemies"]!) { ((JObject)w).Remove("FixedOf"); ((JObject)w).Remove("Generation"); }
         var t = SaveSerializer.Deserialize(j.ToString(), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("32"));
+        Assert.That(t.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "31→32→33（B21 起 33）");
         Assert.That(t.Population, Is.Not.Null);
         Assert.That(t.Population.Fixed, Is.Empty, "不追补");
         Assert.That(t.Log.Last(l => l.Text.Contains("存档已升级到版本32")).Text, Does.Contain("下一次到达时才揭示固定战"));

@@ -56,6 +56,7 @@ namespace Survival.Core.Save
         public const string Schema29 = "29";
         public const string Schema30 = "30";
         public const string Schema31 = "31";
+        public const string Schema32 = "32";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -102,6 +103,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema29) From29To30(s, config, notes);
             if (s.SchemaVersion == Schema30) From30To31(s, config, notes);
             if (s.SchemaVersion == Schema31) From31To32(s, config, notes);
+            if (s.SchemaVersion == Schema32) From32To33(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1040,8 +1042,8 @@ namespace Survival.Core.Save
         {
             s.Recruit ??= new RecruitState();
             s.Recruit.Candidates ??= new List<RecruitCandidate>();
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（收容所开放周期招募：营区登记后第一次实际到达收容所时开始计周期，每72小时3名候选；不补算之前的周期）。" });
-            s.SchemaVersion = GameState.CurrentSchema;
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema31}（收容所开放周期招募：营区登记后第一次实际到达收容所时开始计周期，每72小时3名候选；不补算之前的周期）。" });
+            s.SchemaVersion = Schema31;
         }
 
         /// <summary>
@@ -1053,7 +1055,22 @@ namespace Survival.Core.Save
         private static void From31To32(GameState s, GameConfig config, List<string> notes)
         {
             s.Population ??= new PopulationState();
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（新增12种敌人、地牢固定战、9个人口区与五处可选强敌挑战：新野外第一次实际到达时才生成本地敌人，地牢房间下一次到达时才揭示固定战；不补算之前的刷新）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema32}（新增12种敌人、地牢固定战、9个人口区与五处可选强敌挑战：新野外第一次实际到达时才生成本地敌人，地牢房间下一次到达时才揭示固定战；不补算之前的刷新）。" });
+            s.SchemaVersion = Schema32;
+        }
+
+        /// <summary>
+        /// 32→33（开发计划 v0.9 B21，开发假设 B21-13）：地牢实例补状态与本代到过的房间；存档时人在地牢危险房间的按已开始的远征补建一次（成员=当前同行，
+        /// 轨迹=01 到当前的已走通最短路），人在 01 不建；不补扣终止惩罚、不加世界时间、没有惊魂未定。幂等。
+        /// </summary>
+        private static void From32To33(GameState s, GameConfig config, List<string> notes)
+        {
+            s.ExpeditionLog ??= new List<ExpeditionRecord>();
+            s.AppliedEventKeys ??= new HashSet<string>();
+            EnsureLocationStates(s, config);
+            var extra = new Engine.GameEngine(config).MigrateExpeditions32(s);
+            notes.AddRange(extra);
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（地牢远征：从入口缓冲第一次确认走进危险房间才开始远征，未通关离开要在安全点终止远征并承受惩罚与至少30分钟的撤出；战斗撤退会退回来路上没有敌人的房间）。" + (extra.Count > 0 ? string.Join("；", extra) + "。" : "") });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

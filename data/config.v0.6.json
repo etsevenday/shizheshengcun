@@ -36348,5 +36348,40 @@
         "maxGrams": 1000
       }
     ]
+  },
+  "dungeonExpedition": {
+    "source": "R03 D3/D5.1/D5.2、S12 B4 撤出事件包、A01 B4 事件属性索引（策划已批准可调初值）",
+    "abortPenalty": {
+      "satiety": -25,
+      "hydration": -30,
+      "energy": -8,
+      "wakefulness": -20,
+      "morale": -15,
+      "healthMax": 2,
+      "healthKeep": 1
+    },
+    "shakenMinutes": 360,
+    "shakenPanic": 10,
+    "extractMinMinutes": 30,
+    "extractRoundMinutes": 5,
+    "warn": {
+      "satietyBelow": 40,
+      "hydrationBelow": 40,
+      "energyBelow": 8,
+      "wakefulnessBelow": 40,
+      "moraleBelow": 30,
+      "healthAtMost": 5,
+      "virusAtLeast": 80
+    },
+    "bufferNodes": {
+      "d01": "d01_01",
+      "d02": "d02_01",
+      "d03": "d03_01",
+      "d04": "d04_01",
+      "d05": "d05_01",
+      "d06": "d06_01",
+      "d07": "d07_01",
+      "d08": "d08_01"
+    }
   }
 }

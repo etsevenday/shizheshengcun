@@ -12,7 +12,8 @@ namespace Survival.Core.State
     /// Salvage 拆解装备（A05 §5，B4 H9：走配方 salvage_equipment，15 基础分钟按 craft 消耗，产物落当前地面）。
     /// </summary>
     /// Survey 遗迹勘整（Q55，B7b：四个旧遗迹的搜集训练，30 基础分钟按搜集消耗，不产物、不消耗库存）。
-    public enum ActionType { Travel, Explore, Gather, Craft, Build, Wait, Rest, Sleep, Use, Ignite, Clear, Butcher, Repair, Bypass, Fuse, WaitCook, Salvage, Survey }
+    /// Extract 地牢撤出（R03 D5.2，B21）：终止远征确认后按锁定的 T 分钟逐 5 分钟推进，不可取消、不因阈值暂停，抵达父地点结束远征。
+    public enum ActionType { Travel, Explore, Gather, Craft, Build, Wait, Rest, Sleep, Use, Ignite, Clear, Butcher, Repair, Bypass, Fuse, WaitCook, Salvage, Survey, Extract }
 
     public enum ActionStatus { Running, Paused }
 
@@ -41,8 +42,10 @@ namespace Survival.Core.State
         /// "30" 起鉴定交易：物品实例带可空鉴定记录，城市状态带鉴定所世界日报价表，服务事务带报价/样本锁字段（开发计划 v0.9 B18）。
         /// "31" 起周期招募：收容所开放时刻、当前周期候选快照、在办登记与流水号（Recruit），名册条目带随机角色人物档与退役记录，遗物容器带认领箱类别（开发计划 v0.9 B19）。
         /// "32" 起新敌人、固定战与人口区：人口区已进入/节点首次人口、固定战名单、旧精英挑战账（Population），世界敌人带固定实例标记与实例代号，战斗带固定战键（开发计划 v0.9 B20）。
+        /// "33" 起地牢远征：实例带状态与远征流水号，进行中的远征（成员快照、来路轨迹、撤出锁定路径/倍率/T/已推进分钟）、已结束远征记录、
+        /// 一次性事件去重键，角色带惊魂未定截止（开发计划 v0.9 B21）。
         /// </summary>
-        public const string CurrentSchema = "32";
+        public const string CurrentSchema = "33";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -161,6 +164,15 @@ namespace Survival.Core.State
         /// </summary>
         public Dictionary<string, DungeonInstanceState> DungeonInstances { get; set; } = new Dictionary<string, DungeonInstanceState>();
         /// <summary>
+        /// 进行中的地牢远征（R03 D2/D3，开发计划 v0.9 B21，schema 33）：全队同地，至多一个；从 01 第一次确认走向危险房间时提交，
+        /// 通关离开、撤出抵达父地点或主角终局时结束并移入 <see cref="ExpeditionLog"/>。没有为 null。
+        /// </summary>
+        public ExpeditionState? Expedition { get; set; }
+        /// <summary>已结束的远征（ID、地牢、结束方式、起止分钟；B23 远征界面用）。</summary>
+        public List<ExpeditionRecord> ExpeditionLog { get; set; } = new List<ExpeditionRecord>();
+        /// <summary>已应用过的一次性事件去重键（R03 D5.1 冷却式去重键 expeditionId+abortPenalty 等）：重试/读档/双击只应用一次。</summary>
+        public HashSet<string> AppliedEventKeys { get; set; } = new HashSet<string>();
+        /// <summary>
         /// schema 20 的 v3 资源点“揭示标记”（B11）。B12 起 96 条增量资源并入资源表、发现记在 <see cref="Resources"/>，
         /// 本字段只供 20→21 迁移读取，迁移后置空、不再写出（schema 21）。
         /// </summary>
@@ -239,6 +251,9 @@ namespace Survival.Core.State
             c.UnlockedEdges = new HashSet<string>(UnlockedEdges);
             c.TraveledEdges = new HashSet<string>(TraveledEdges);
             c.DungeonInstances = DungeonInstances.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
+            c.Expedition = Expedition?.Clone();
+            c.ExpeditionLog = ExpeditionLog.Select(x => x.Clone()).ToList();
+            c.AppliedEventKeys = new HashSet<string>(AppliedEventKeys);
             c.RevealedResourceMarkers = RevealedResourceMarkers == null ? null : new HashSet<string>(RevealedResourceMarkers);
             c.WorkCarry = new Dictionary<string, double>(WorkCarry);
             c.Resources = Resources.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
@@ -544,6 +559,15 @@ namespace Survival.Core.State
         /// 新一代仍显示（未开通画红虚线、相邻栏写原因），开通状态要按本代门槛重新满足。旧档没有此字段时为空，等同于没换过代。
         /// </summary>
         public HashSet<string> KnownEdges { get; set; } = new HashSet<string>();
+        /// <summary>
+        /// 实例状态（R03 D2，B21，schema 33）：UNOPENED / ACTIVE / EXTRACTING / CAMPAIGN_ENDED 存这里；CLEARED 按本代“核心记录已领取/核对”事实叠加，
+        /// RESET_READY 由 B22 的重置判定给出，都不单独存。到达任一房间只建实例记录，第一次提交远征才 UNOPENED→ACTIVE；读取请用 GameEngine.DungeonStatus。
+        /// </summary>
+        public string Status { get; set; } = DungeonStatuses.Unopened;
+        /// <summary>本实例已提交过的远征数（expeditionId 序号，同实例每次提交 +1；换代不清零，保证唯一）。</summary>
+        public int ExpeditionSeq { get; set; }
+        /// <summary>本代实际到过的房间（撤出返程只走两端本代都到过的边，开发假设 B21-4；换代清空）。</summary>
+        public HashSet<string> VisitedRooms { get; set; } = new HashSet<string>();
 
         public DungeonInstanceState Clone()
         {
@@ -551,6 +575,91 @@ namespace Survival.Core.State
             c.UnlockedEdges = new HashSet<string>(UnlockedEdges);
             c.Facts = new HashSet<string>(Facts);
             c.KnownEdges = new HashSet<string>(KnownEdges);
+            c.VisitedRooms = new HashSet<string>(VisitedRooms);
+            return c;
+        }
+    }
+
+    /// <summary>地牢实例状态名（R03 D2 表）。</summary>
+    public static class DungeonStatuses
+    {
+        public const string Unopened = "UNOPENED";
+        public const string Active = "ACTIVE";
+        public const string Extracting = "EXTRACTING";
+        public const string Cleared = "CLEARED";
+        public const string ResetReady = "RESET_READY";
+        public const string CampaignEnded = "CAMPAIGN_ENDED";
+    }
+
+    /// <summary>
+    /// 一次地牢远征（R03 D2/D3/D5，开发计划 v0.9 B21）：从 01 第一次确认走向危险房间时提交，记成员快照与来路轨迹；主动终止后进入撤出阶段，
+    /// 锁定返程路径、S01 倍率与总分钟 T，逐 5 分钟推进（读档续剩余，不重扣包）。
+    /// </summary>
+    public sealed class ExpeditionState
+    {
+        public const string Committed = "committed";
+        public const string Extracting = "extracting";
+
+        /// <summary>expeditionId = instanceId + ":e" + 序号。</summary>
+        public string Id { get; set; } = "";
+        public string DungeonId { get; set; } = "";
+        /// <summary>instanceId = 局种子8位十六进制 + ":" + dungeonId + ":g" + generation（开发假设 B21-1）。</summary>
+        public string InstanceId { get; set; } = "";
+        public int Generation { get; set; }
+        public int StartedMinute { get; set; }
+        /// <summary>提交时的同行成员快照（actorId，主角在前）。</summary>
+        public List<string> Members { get; set; } = new List<string>();
+        /// <summary>来路轨迹：从 01 起，每到一个房间追加，回到轨迹上已有房间时截掉其后部分（开发假设 B21-5）。</summary>
+        public List<string> Trail { get; set; } = new List<string>();
+        /// <summary>committed 进行中 / extracting 撤出中。</summary>
+        public string Phase { get; set; } = Committed;
+        /// <summary>迁移/开发补建的远征（"migrated32" 存档 32 人已在危险房间、"dev" 开发传送）；正常提交为 null。</summary>
+        public string? Origin { get; set; }
+
+        // ── 撤出（主动终止确认后锁定，R03 D5.2/D10） ──
+        public string? AbortRequestId { get; set; }
+        public int? AbortMinute { get; set; }
+        /// <summary>锁定的返程：起点在前、父地点在末（含 01）。</summary>
+        public List<string> ExtractRoute { get; set; } = new List<string>();
+        /// <summary>与 ExtractRoute 相邻两点对应的各段基础分钟。</summary>
+        public List<int> ExtractLegMinutes { get; set; } = new List<int>();
+        /// <summary>锁定的全队最慢 S01 移动倍率 M（确认时，含夜间/负重/低E与封顶）。</summary>
+        public double LockedFactor { get; set; } = 1;
+        /// <summary>撤出总分钟 T = max(30, 向上取 5(Σ基础分钟×M))。</summary>
+        public int TotalMinutes { get; set; }
+        /// <summary>已推进的撤出分钟（每 5 分钟段提交后 +5）。</summary>
+        public int ElapsedMinutes { get; set; }
+        /// <summary>本次终止惩罚包已扣（去重键 Id+":abortPenalty" 同时记在 GameState.AppliedEventKeys）。</summary>
+        public bool PenaltyApplied { get; set; }
+
+        [JsonIgnore] public bool IsExtracting => Phase == Extracting;
+
+        public ExpeditionState Clone()
+        {
+            var c = (ExpeditionState)MemberwiseClone();
+            c.Members = new List<string>(Members);
+            c.Trail = new List<string>(Trail);
+            c.ExtractRoute = new List<string>(ExtractRoute);
+            c.ExtractLegMinutes = new List<int>(ExtractLegMinutes);
+            return c;
+        }
+    }
+
+    /// <summary>已结束的远征记录（结束方式：cleared_exit 通关离开 / abort 主动终止抵达 / death 主角终局 / dev 开发结束）。</summary>
+    public sealed class ExpeditionRecord
+    {
+        public string Id { get; set; } = "";
+        public string DungeonId { get; set; } = "";
+        public int Generation { get; set; }
+        public int StartedMinute { get; set; }
+        public int EndedMinute { get; set; }
+        public string EndKind { get; set; } = "";
+        public List<string> Members { get; set; } = new List<string>();
+
+        public ExpeditionRecord Clone()
+        {
+            var c = (ExpeditionRecord)MemberwiseClone();
+            c.Members = new List<string>(Members);
             return c;
         }
     }
