@@ -150,6 +150,8 @@
                 <div class="btn-row">
                     <button class="secondary small-btn" @onclick="() => DevDone(G.E.DebugGiveResourceTools(G.S))">石刀、简易斧、撬棍各1（随身）</button>
                     <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "scavenging", 5))'>搜集熟练设为5级（工具运用）</button>
+                    @* B13a2（Q137）：30 个锁闭储物点可选消防斧，破门工作量×0.75 *@
+                    <button class="secondary small-btn" @onclick="() => DevDone(G.E.DebugGiveFireAxe(G.S))">消防斧1（随身，试锁闭点破门）</button>
                 </div>
                 @* B11（R33—R35）：v3 地图。出新手区与城市/地牢的多数门槛事实要等序章、营区登记、任务、地牢等后续系统，这里直接记事实或传送试玩 *@
                 <div class="eyebrow">地图（B11/B12）：门槛事实只能记下（campaign 锁存，已开路线不回退）；传送、地牢换代</div>

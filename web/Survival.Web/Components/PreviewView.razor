@@ -22,7 +22,7 @@
             @if (p.IsWork)
             {
                 <div class="fact"><span>基础工作量</span><strong>@(p.BaseMinutes)分钟</strong></div>
-                <div class="fact"><span>当前倍率</span><strong>×@p.FactorAtStart.ToString("0.##")</strong></div>
+                <div class="fact" title="@string.Join("；", p.FactorReasons)"><span>当前倍率</span><strong>×@p.FactorAtStart.ToString("0.##")</strong></div>
                 @if (p.CarryBefore > 0 || p.CarryAfter is > 0)
                 {
                     @* Q61 工作量余量结转：同类工作不足5分钟的余量 *@
@@ -41,6 +41,12 @@
         <div class="lines">
             <div><span>清理次数</span><b>@p.ClearCharges/@p.ClearCap@(p.NextRefillMinutes.HasValue ? $" · 距恢复1次{Clock.Duration(p.NextRefillMinutes.Value)}" : " · 已满")</b></div>
         </div>
+    }
+
+    @if (p.Ok && p.IsWork && Request.Type == ActionType.Gather && p.FactorReasons.Count > 0)
+    {
+        @* B13a2（Q137，S14 本轮章）：采集/搜集逐项写倍率构成（熟练、工具运用、破门×0.75、是否触及合成下限×0.70、夜间等） *@
+        <div class="tiny muted factor-parts">倍率构成：@string.Join("；", p.FactorReasons)</div>
     }
 
     @if (p.Ok && p.Outputs.Count > 0)
@@ -89,6 +95,17 @@
                 var bp = G.Preview(bare);
                 <button type="button" class="secondary tiny-btn" disabled="@(!bp.Ok || busy || starting)" title="不用随身工具，按原工时徒手进行，工具不磨损"
                         @onclick="() => StartBare(bare)">改用徒手开始（@(bp.BaseMinutes)分钟）</button>
+            }
+            @if (p.ToolChoice && !p.ToolExplicit && !Confirmable && Request.Type == ActionType.Gather && Request.TargetId != null)
+            {
+                @* B13a2（Q137，S05/S14 本轮章）：身上另有别种合格工具（如锁闭储物点的消防斧，含已装备在武器页的）时可明确改用，锁定那一件 *@
+                foreach (var alt in e.QualifiedToolChoices(s, e.Resource(Request.TargetId)).Where(t => t.ItemId != p.ToolItemId))
+                {
+                    var areq = ActionRequest.Gather(Request.TargetId, alt.InstanceId);
+                    var ap = G.Preview(areq);
+                    <button type="button" class="secondary tiny-btn" disabled="@(!ap.Ok || busy || starting)" title="@(ap.Ok ? string.Join("；", ap.FactorReasons.DefaultIfEmpty("工作倍率×1")) : ap.Reason)"
+                            @onclick="() => StartBare(areq)">改用@(e.ItemName(alt.ItemId))开始（预计@(ap.EstimatedMinutes)分钟）</button>
+                }
             }
         </div>
     }
