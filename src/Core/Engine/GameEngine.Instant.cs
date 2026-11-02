@@ -49,6 +49,7 @@ namespace Survival.Core.Engine
                     if (r.Count > max)
                         return ActionResult.Fail(PickupBlockedText(s, inst, r.Count) ?? $"最多可取{max}份", max);
                     MoveItems(s, inst, r.Count, ItemInstance.Carried);
+                    NoteTransfer(s);   // B13 PRO11
                     UpdateFlags(s);
                     return ActionResult.Success();
                 }
@@ -61,6 +62,7 @@ namespace Survival.Core.Engine
                     if (inst.ReservedBy != null) return ActionResult.Fail("该物品已被预留");
                     if (r.Count < 1 || r.Count > inst.Count) return ActionResult.Fail("数量无效");
                     MoveItems(s, inst, r.Count, here);
+                    NoteTransfer(s);   // B13 PRO11
                     UpdateFlags(s);
                     return ActionResult.Success();
                 }

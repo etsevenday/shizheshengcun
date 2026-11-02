@@ -49,6 +49,9 @@ namespace Survival.Core.Engine
         /// <summary>主角在对白里的发言者名：配置里写这个名字的台词归左侧；其他发言者归右侧，发言者为空的是中性叙述。</summary>
         public const string ProtagonistSpeaker = "你";
 
+        /// <summary>饱饱的发言者名（只在 baobaoPresent 时播放）。</summary>
+        public const string BaobaoSpeaker = "饱饱";
+
         public DialogueConfig? Dialogue(string id) => Config.Story.Dialogues.FirstOrDefault(d => d.Id == id);
 
         private string EventOf(string lineId) => Dialogue(lineId)?.Event ?? lineId;
@@ -86,15 +89,18 @@ namespace Survival.Core.Engine
         /// 打开一次对话：配置里同一 eventId 的台词按顺序连成一次对话。同一事件只记一次，已读/待读的台词不重复入队（读档、重复回调都不重复）。
         /// 前面没有未结束的对话时首句立即展示并登记时间地点；否则排在后面，前一次结束后再展示。不推进时间、不发奖励。
         /// </summary>
-        private void OpenDialogue(GameState s, string eventId)
+        private void OpenDialogue(GameState s, string eventId, string? replayId = null)
         {
             var st = s.Story;
-            if (st.DialogueLog.Any(d => d.EventId == eventId)) return;
-            var ids = Config.Story.Dialogues.Where(d => d.Event == eventId).Select(d => d.Id)
-                .Where(id => !st.PendingDialogues.Contains(id) && !st.SeenDialogues.Contains(id)).ToList();
+            var sessionId = replayId ?? eventId;
+            if (st.DialogueLog.Any(d => d.EventId == sessionId)) return;
+            // B13：饱饱只在主角体内（baobaoPresent）时发声；旧档/无饱饱的局跳过饱饱台词（narrative-texts baobaoOnlyIfPresent）。
+            // 重读（replayId）只回放台词：不过滤已读，也不改任何剧情标记。
+            var ids = Config.Story.Dialogues.Where(d => d.Event == eventId && (st.BaobaoPresent || d.Speaker != BaobaoSpeaker)).Select(d => d.Id)
+                .Where(id => replayId != null || (!st.PendingDialogues.Contains(id) && !st.SeenDialogues.Contains(id))).ToList();
             if (ids.Count == 0) return;
             var counterpart = Config.Story.Dialogues.Where(d => ids.Contains(d.Id) && SideOf(d) == DialogueSide.Right).Select(d => d.Speaker).FirstOrDefault() ?? "";
-            var session = new DialogueSession { Id = st.NextDialogueSessionId++, EventId = eventId, Counterpart = counterpart, Pending = ids };
+            var session = new DialogueSession { Id = st.NextDialogueSessionId++, EventId = sessionId, Counterpart = counterpart, Pending = ids };
             st.DialogueLog.Add(session);
             st.PendingDialogues.AddRange(ids);
             if (ReferenceEquals(ActiveDialogue(s), session)) ShowNextLine(s, session);
@@ -142,6 +148,8 @@ namespace Survival.Core.Engine
                 d.Ended = true;
                 for (var next = ActiveDialogue(s); next != null && next.Lines.Count == 0; next = ActiveDialogue(s))
                     ShowNextLine(s, next);
+                // B13：对话结束是序章安全边界（排队的饱饱反应、营地来客抵达）
+                if (!DialogueLocked(s)) PrologueBoundary(s);
             }
             return ActionResult.Success();
         }
@@ -176,6 +184,7 @@ namespace Survival.Core.Engine
             StartBattle(s, new List<WorldEnemy> { w }, false, "首战", FearTutorial, tutorial: true);
             // 首战建立并保存后先展示警告对白，读完才接受第一条战斗指令（R03 §7.1）
             OpenDialogue(s, EventOf(DialogueTutorialArrive));
+            PlayReactionNow(s, "PRO04");   // B13：饱饱“它过来了”排在首战警告之后
             st.TutorialBattleId = s.Battle?.BattleId;
         }
 
@@ -189,6 +198,7 @@ namespace Survival.Core.Engine
             // 试玩修复 B7d-2：首战敌人在任何一场战斗里被击杀都算首战完成（例：首战撤退后经敌踪“接敌”与别的敌人一起打死），
             // 否则它已从世界移除、首战门控永远关不上
             if (!TutorialGateOpen(s) || (!b.Tutorial && !TutorialEnemyKilled(s, b))) return null;
+            if (!st.TutorialWon) st.TutorialWonMinute = s.GameMinute;
             st.TutorialWon = true;
             if (!string.IsNullOrEmpty(st.TutorialGrantEventId)) return null;
             var sub = Config.ActiveSubstance;
@@ -199,6 +209,7 @@ namespace Survival.Core.Engine
             CreateItems(s, sub.ItemId, Math.Max(1, sub.TutorialDrop.Count), b.LocationId, false,
                 new ItemSource { WorldEnemyId = wid, BattleId = b.BattleId, GrantEventId = grant, TutorialReward = true });
             OpenDialogue(s, EventOf(DialogueTutorialWon));
+            PlayReactionNow(s, "PRO05");   // B13：饱饱“那个东西，让我有点想靠近”在教学物质落地时
             return $"{ItemName(sub.ItemId)}+{Math.Max(1, sub.TutorialDrop.Count)}（首战教学）";
         }
 

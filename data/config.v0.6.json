@@ -20837,6 +20837,545 @@
         "speaker": "饱饱",
         "text": "也可能有不好的变化……这次运气不错。",
         "note": ""
+      },
+      {
+        "id": "NTL_0001",
+        "eventId": "visitor_arrival_camp",
+        "speaker": "",
+        "text": "脚步声在营地外停住了。一个背着旧挎包的人先举起手，等你看向他。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0002",
+        "eventId": "visitor_arrival_camp",
+        "speaker": "程望",
+        "text": "别紧张。我叫程望，替营区跑腿。看见这边有人活动，过来问一声。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0003",
+        "eventId": "visitor_arrival_camp",
+        "speaker": "你",
+        "text": "你说的营区，离这里多远？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0004",
+        "eventId": "visitor_arrival_camp",
+        "speaker": "程望",
+        "text": "隔着村庄和一段旧公路。先别急着走，你要问路，我就在这里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0028",
+        "eventId": "visitor_late_or_legacy",
+        "speaker": "程望",
+        "text": "总算见到人了。我路过时看见营地有人活动，就在这儿等等。你要去营区，我可以把走法说清楚。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0029",
+        "eventId": "visitor_late_or_legacy",
+        "speaker": "你",
+        "text": "我耽搁了一阵。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0030",
+        "eventId": "visitor_late_or_legacy",
+        "speaker": "程望",
+        "text": "路标还在，不是错过一个时辰就不认人。先看看你自己能不能走。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0006",
+        "eventId": "visitor_route_first",
+        "speaker": "你",
+        "text": "你是从有人住的地方来的？那里有医生吗？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0007",
+        "eventId": "visitor_route_first",
+        "speaker": "程望",
+        "text": "有个幸存者营区，医务室有人值守。你受伤了？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0008",
+        "eventId": "visitor_route_first",
+        "speaker": "你",
+        "text": "身体出了些状况。我想找个懂这个的人。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0009",
+        "eventId": "visitor_route_first",
+        "speaker": "程望",
+        "text": "那就先去问问。能不能治、要不要治，我都替医生答不了。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0010",
+        "eventId": "visitor_route_first",
+        "speaker": "你",
+        "text": "怎么走？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0011",
+        "eventId": "visitor_route_first",
+        "speaker": "程望",
+        "text": "到废弃村庄，找南口那根歪木桩。旧路牌背面刻着向南的箭头。认准旧公路，经过检查哨，再到营门登记。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0012",
+        "eventId": "visitor_route_first",
+        "speaker": "程望",
+        "text": "南口路标能帮你认第一段路。没去过的地方还得自己探，别照着几句话就闭眼往前跑。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0013",
+        "eventId": "visitor_route_first",
+        "speaker": "你",
+        "text": "营门要我加入你们？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0014",
+        "eventId": "visitor_route_first",
+        "speaker": "程望",
+        "text": "先登记来处和去向，守营里的规矩。愿不愿替谁做事，到了再谈。问医生不需要先发誓。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0015",
+        "eventId": "visitor_route_first",
+        "speaker": "程望",
+        "text": "带能喝的水和能吃的东西，留出回来的力气。这里的锅、火堆和物资都不会因为你出门就消失。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0016",
+        "eventId": "visitor_route_first",
+        "speaker": "你",
+        "text": "我记下了。谢谢。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0017",
+        "eventId": "visitor_route_first",
+        "speaker": "",
+        "text": "已记录营区路线：废弃村庄南口→旧公路→检查哨→营门。对话不耗世界时间，不赠物资、不改变身体状态。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0018",
+        "eventId": "visitor_after_route_baobao",
+        "speaker": "饱饱",
+        "text": "你要找的人……会把我弄走吗？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0019",
+        "eventId": "visitor_after_route_baobao",
+        "speaker": "你",
+        "text": "我还不知道你是什么，也不知道我怎么了。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0020",
+        "eventId": "visitor_after_route_baobao",
+        "speaker": "饱饱",
+        "text": "我只知道，饿的时候很难受。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0021",
+        "eventId": "visitor_after_route_baobao",
+        "speaker": "你",
+        "text": "先弄清楚。现在别替我决定。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0022",
+        "eventId": "visitor_after_route_without_baobao",
+        "speaker": "你",
+        "text": "先去问清楚身体的事。路上留意退路，别把猜想当答案。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0023",
+        "eventId": "visitor_route_repeat",
+        "speaker": "程望",
+        "text": "还是那条路：村庄南口、旧公路、检查哨、营门。没看清路标就别急着赶远路。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0024",
+        "eventId": "visitor_route_repeat",
+        "speaker": "你",
+        "text": "我可以回这里？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0025",
+        "eventId": "visitor_route_repeat",
+        "speaker": "程望",
+        "text": "当然。路能走通就能回来。别指望一出门，后头的锅就自己跟上你。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0026",
+        "eventId": "visitor_not_ready",
+        "speaker": "你",
+        "text": "我先把东西收拾好。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0027",
+        "eventId": "visitor_not_ready",
+        "speaker": "程望",
+        "text": "不赶你。带多少、什么时候走，你自己看身体和天色。路线已经记下，不会因你晚一点出发就作废。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0031",
+        "eventId": "PRO15_relief_note",
+        "speaker": "",
+        "text": "残页上写着：去往南侧营区的伤者，请先在营门说明来路。医务室按伤情和现有物资安排，不保证每一种病都能处理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0032",
+        "eventId": "PRO15_relief_note",
+        "speaker": "",
+        "text": "页角被水浸过，路线图已糊成一团，只剩“南口旧路牌”几个字。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0033",
+        "eventId": "PRO15_relief_note",
+        "speaker": "你",
+        "text": "至少，不是只有我一个人在这里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0034",
+        "eventId": "PRO15_relief_note",
+        "speaker": "饱饱",
+        "text": "这上面的字，能当吃的吗？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0035",
+        "eventId": "PRO15_relief_note",
+        "speaker": "你",
+        "text": "不能。也许能帮我们找到人。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0036",
+        "eventId": "village_south_sign",
+        "speaker": "",
+        "text": "歪木桩背面刻着一道旧箭头：“旧公路→检查哨→营门”。牌脚旁还有一句：“先看路，再看天色。”",
+        "note": ""
+      },
+      {
+        "id": "NTL_0037",
+        "eventId": "village_south_sign",
+        "speaker": "你",
+        "text": "是程望说的路标。走到哪儿，认到哪儿。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0038",
+        "eventId": "village_south_sign_route_unknown",
+        "speaker": "",
+        "text": "木桩上隐约能辨出“旧公路”和一个箭头，余下的路线缺乏可靠说明。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0039",
+        "eventId": "village_south_sign_route_unknown",
+        "speaker": "你",
+        "text": "有人走过这里。先把周围弄清楚，再找人问路。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0040",
+        "eventId": "camp_route_log",
+        "speaker": "",
+        "text": "求医路线：从废弃村庄南口按路标前往旧公路，探清前路后到检查哨，再到营门登记。这里只记录线索；阅读不会移动角色、揭开未知资源或替你探索。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0041",
+        "eventId": "camp_route_log",
+        "speaker": "",
+        "text": "返程：沿已走通的真实道路逐段返回。临时营地及原有设施、库存、发现和未完成目标保留；“查看路线”不提供传送。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0042",
+        "eventId": "camp_route_log",
+        "speaker": "",
+        "text": "旅途中可停下补给或回头。来客没有限时离开条件；教学未全清、未融合样本不禁止符合资格者出区。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0044",
+        "eventId": "PRO01_reaction",
+        "speaker": "饱饱",
+        "text": "东西在地上，还是在你身上？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0045",
+        "eventId": "PRO01_reaction",
+        "speaker": "你",
+        "text": "先看清，再动。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0048",
+        "eventId": "PRO02_reaction",
+        "speaker": "饱饱",
+        "text": "肚子空的时候，声音都变响了。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0049",
+        "eventId": "PRO02_reaction",
+        "speaker": "你",
+        "text": "吃多少我自己来。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0052",
+        "eventId": "PRO03_reaction",
+        "speaker": "饱饱",
+        "text": "前面的东西，会咬人吗？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0053",
+        "eventId": "PRO03_reaction",
+        "speaker": "你",
+        "text": "有备无患。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0056",
+        "eventId": "PRO04_reaction",
+        "speaker": "饱饱",
+        "text": "它过来了。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0057",
+        "eventId": "PRO04_reaction",
+        "speaker": "你",
+        "text": "看住它的动作。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0060",
+        "eventId": "PRO05_reaction",
+        "speaker": "饱饱",
+        "text": "那个东西，让我有点想靠近。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0061",
+        "eventId": "PRO05_reaction",
+        "speaker": "你",
+        "text": "想吃不等于该吃。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0064",
+        "eventId": "PRO06_reaction",
+        "speaker": "饱饱",
+        "text": "有水的声音。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0065",
+        "eventId": "PRO06_reaction",
+        "speaker": "你",
+        "text": "装起来之前，先看能不能喝。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0068",
+        "eventId": "PRO07_reaction",
+        "speaker": "饱饱",
+        "text": "亮起来了。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0069",
+        "eventId": "PRO07_reaction",
+        "speaker": "你",
+        "text": "火也要有东西烧。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0072",
+        "eventId": "PRO08_reaction",
+        "speaker": "饱饱",
+        "text": "这次喝下去，会好些吗？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0073",
+        "eventId": "PRO08_reaction",
+        "speaker": "你",
+        "text": "先等它处理完。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0076",
+        "eventId": "PRO09_reaction",
+        "speaker": "饱饱",
+        "text": "闻到了。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0077",
+        "eventId": "PRO09_reaction",
+        "speaker": "你",
+        "text": "留一点路上吃。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0080",
+        "eventId": "PRO10_reaction",
+        "speaker": "饱饱",
+        "text": "这个能让你少费力气？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0081",
+        "eventId": "PRO10_reaction",
+        "speaker": "你",
+        "text": "好工具也得留意损耗。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0084",
+        "eventId": "PRO11_reaction",
+        "speaker": "饱饱",
+        "text": "还拿得动吗？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0085",
+        "eventId": "PRO11_reaction",
+        "speaker": "你",
+        "text": "背得动也得放得下。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0088",
+        "eventId": "PRO12_reaction",
+        "speaker": "饱饱",
+        "text": "你的眼睛快合上了。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0089",
+        "eventId": "PRO12_reaction",
+        "speaker": "你",
+        "text": "找个合适的地方睡。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0092",
+        "eventId": "PRO13_reaction",
+        "speaker": "饱饱",
+        "text": "头顶不用一直漏风了。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0093",
+        "eventId": "PRO13_reaction",
+        "speaker": "你",
+        "text": "能休息，不等于哪里都安全。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0096",
+        "eventId": "PRO14_reaction",
+        "speaker": "饱饱",
+        "text": "又回来了。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0097",
+        "eventId": "PRO14_reaction",
+        "speaker": "你",
+        "text": "认得回来的路，才敢走远。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0100",
+        "eventId": "PRO15_reaction",
+        "speaker": "饱饱",
+        "text": "还有别的人？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0101",
+        "eventId": "PRO15_reaction",
+        "speaker": "你",
+        "text": "去看看他们留下的话。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0104",
+        "eventId": "PRO16_reaction",
+        "speaker": "饱饱",
+        "text": "他知道你身体怎么了吗？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0105",
+        "eventId": "PRO16_reaction",
+        "speaker": "你",
+        "text": "他只知道路。先问路。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0108",
+        "eventId": "PRO17_reaction",
+        "speaker": "饱饱",
+        "text": "这些够吃吗？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0109",
+        "eventId": "PRO17_reaction",
+        "speaker": "你",
+        "text": "先算去路，也留回程。",
+        "note": ""
+      },
+      {
+        "id": "NTL_0112",
+        "eventId": "PRO18_reaction",
+        "speaker": "饱饱",
+        "text": "还会回这里吗？",
+        "note": ""
+      },
+      {
+        "id": "NTL_0113",
+        "eventId": "PRO18_reaction",
+        "speaker": "你",
+        "text": "路还在。先去找人。",
+        "note": ""
       }
     ]
   },
@@ -25850,7 +26389,7 @@
     "factLabels": {
       "tutorialBattleWon": "赢下第一场战斗（荒地的游荡尸）",
       "legacyTutorialEquivalent": "赢下第一场战斗（荒地的游荡尸）",
-      "camp_route_known": "从来客程望处得知营区路线（序章来客后续版本开放）",
+      "camp_route_known": "在临时营地与来客程望交谈，得知营区路线",
       "checkpoint_obstruction_cleared": "解决检查哨的固定拦路战（后续版本开放）",
       "registration_authorized": "在营门向登记人办理登记（营区登记后续版本开放）",
       "hub_registered": "完成营区登记（营区登记后续版本开放）",
@@ -26047,5 +26586,496 @@
       "d07": "d07_07",
       "d08": "d08_08"
     }
+  },
+  "prologue": {
+    "source": "prologue-data.json + narrative-texts.json（Q32B 定稿）；S15 §2—§8、A10-TUTOR",
+    "visitor": {
+      "npcId": "npc_cheng_wang",
+      "name": "程望",
+      "locationId": "camp",
+      "notBeforeWorldMinute": 6240,
+      "needsTutorialBattleWon": true,
+      "role": "幸存者营区的传讯跑腿"
+    },
+    "exit": {
+      "edgeId": "village__m01_road",
+      "from": "village",
+      "to": "m01_road"
+    },
+    "documents": [
+      {
+        "id": "relief_page_village",
+        "locationId": "village",
+        "title": "公开救助残页",
+        "dialogueSet": "PRO15_relief_note",
+        "taskId": "PRO15"
+      },
+      {
+        "id": "village_south_sign",
+        "locationId": "village",
+        "title": "南口路标",
+        "dialogueSet": "village_south_sign",
+        "unknownDialogueSet": "village_south_sign_route_unknown",
+        "fact": "south_sign_known"
+      }
+    ],
+    "talk": {
+      "arrivalCamp": "visitor_arrival_camp",
+      "arrivalLate": "visitor_late_or_legacy",
+      "arrivalAwayText": "临时营地出现了来客。回到营地后可与他交谈；当前行动和所在地点不变。",
+      "routeFirst": "visitor_route_first",
+      "afterRouteBaobao": "visitor_after_route_baobao",
+      "afterRouteWithoutBaobao": "visitor_after_route_without_baobao",
+      "routeRepeat": "visitor_route_repeat",
+      "notReady": "visitor_not_ready",
+      "routeLog": "camp_route_log"
+    },
+    "journey": {
+      "legs": [
+        {
+          "from": "village",
+          "to": "m01_road",
+          "edgeId": "village__m01_road",
+          "baseMinutes": 30
+        },
+        {
+          "from": "m01_road",
+          "to": "m02_checkpoint",
+          "edgeId": "m01_road__m02_checkpoint",
+          "baseMinutes": 20
+        },
+        {
+          "from": "m02_checkpoint",
+          "to": "h01_gate",
+          "edgeId": "m02_checkpoint__h01_gate",
+          "baseMinutes": 15
+        },
+        {
+          "from": "h01_gate",
+          "to": "h02_square",
+          "edgeId": "h01_gate__h02_square",
+          "baseMinutes": 5
+        }
+      ],
+      "baseMinutesTotal": 70,
+      "suggestedCleanWater": 2,
+      "suggestedFood": 2,
+      "suggestedWeapon": true
+    },
+    "stages": [
+      {
+        "id": "D1",
+        "label": "第1日",
+        "headline": "先活下来，弄清声音从哪来"
+      },
+      {
+        "id": "D2",
+        "label": "第2日",
+        "headline": "手里的补给会吃完"
+      },
+      {
+        "id": "D3",
+        "label": "第3日",
+        "headline": "怎样活得省力一些"
+      },
+      {
+        "id": "D4",
+        "label": "第4日",
+        "headline": "周围还剩什么人和地方"
+      },
+      {
+        "id": "D5",
+        "label": "第5日起",
+        "headline": "也许有人能告诉我身体怎么了"
+      },
+      {
+        "id": "mainline",
+        "label": "主线接续",
+        "headline": "前往幸存者营区寻找医疗帮助"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "PRO01",
+        "title": "看清眼前",
+        "suggestedStage": "D1",
+        "stage": "D1",
+        "completionRule": "首次实际选中地面/物资对象并展开一次合法操作预览",
+        "guidance": "中性系统提示四行的地图/设施/地面/随身归属；关闭说明不扣时间",
+        "exitGate": false,
+        "exitGateText": "否，关闭教学可继续",
+        "hint": "选中地面物品，查看合法操作和预估；只看不耗时。",
+        "reactionSet": "PRO01_reaction",
+        "done": "看清眼前：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO02",
+        "title": "留住力气",
+        "suggestedStage": "D1",
+        "stage": "D1",
+        "completionRule": "开局补给中至少一次食用或饮水实际改善N或W",
+        "guidance": "饱饱只表达饿/渴；系统说明选择数量、费用和提交，满值不强迫浪费",
+        "exitGate": false,
+        "exitGateText": "否",
+        "hint": "用已有补给实际改善饱食或水分；满值时不必浪费。",
+        "reactionSet": "PRO02_reaction",
+        "done": "留住力气：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO03",
+        "title": "带点防身物",
+        "suggestedStage": "D1",
+        "stage": "D1",
+        "completionRule": "获得并装备任一合法伤害型武器；已有合法装备直接算",
+        "guidance": "指向已知可制作的低阶配方及所缺材料来源，不要求新增专属配方",
+        "exitGate": false,
+        "exitGateText": "否；无武器仍可用拳，首次离营前警告风险",
+        "hint": "取得并装备一件合法伤害型武器；缺料来源只显示已知地点。",
+        "reactionSet": "PRO03_reaction",
+        "done": "带点防身物：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO04",
+        "title": "第一次交手",
+        "suggestedStage": "D1",
+        "stage": "D1",
+        "completionRule": "沿原S15保留游荡尸，最终胜利且唯一轮末tick存活",
+        "guidance": "保留首次强制、撤退后主动续战与同敌HP；教选技能/合法目标/预测/AP/防御/结束行动",
+        "exitGate": true,
+        "exitGateText": "是，沿用既有首战门控",
+        "hint": "选技能后查看合法目标，点目标提交；撤退后可主动续战同一敌人。",
+        "reactionSet": "PRO04_reaction",
+        "done": "第一次交手：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO05",
+        "title": "身体里的变化",
+        "suggestedStage": "D1以后",
+        "stage": "D1",
+        "completionRule": "自愿融合唯一教学实例，完成原R07事务",
+        "guidance": "显示真实白色物质/绿色攻击+0.1；主角可疑虑，饱饱不保证绝对安全",
+        "exitGate": false,
+        "exitGateText": "否，不融合也能求医和进主线",
+        "hint": "可自愿融合唯一教学物质；此目标不作为离境条件。",
+        "reactionSet": "PRO05_reaction",
+        "done": "身体里的变化：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO06",
+        "title": "找到水源",
+        "suggestedStage": "D2",
+        "stage": "D2",
+        "completionRule": "到访stream，且完成一次从合法水源取水",
+        "guidance": "说明脏水与净水、容器/重量/owner，不靠“看起来清”判断",
+        "exitGate": false,
+        "exitGateText": "否",
+        "hint": "到溪流浅滩并完成一次合法取水；脏水不能看外观当净水。",
+        "reactionSet": "PRO06_reaction",
+        "done": "找到水源：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO07",
+        "title": "火要有燃料",
+        "suggestedStage": "D2",
+        "stage": "D2",
+        "completionRule": "合法给火堆添燃料并成功点火一次",
+        "guidance": "选卡预览/磨损/耗时；使用真实木材与打火器，不赠免费火",
+        "exitGate": false,
+        "exitGateText": "否",
+        "hint": "为火堆投入真实燃料并用合法工具点火，核对费用与受热。",
+        "reactionSet": "PRO07_reaction",
+        "done": "火要有燃料：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO08",
+        "title": "一份安全的水",
+        "suggestedStage": "D2",
+        "stage": "D2",
+        "completionRule": "设施完成一次脏水→净水并真实生成",
+        "guidance": "提示锅里内容、受热进度、等待烹饪与“退出保留已做工作”，不废止现有配方",
+        "exitGate": false,
+        "exitGateText": "否",
+        "hint": "让设施实际完成一次脏水变净水；等待烹饪可在原子段后停止。",
+        "reactionSet": "PRO08_reaction",
+        "done": "一份安全的水：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO09",
+        "title": "能再做的食物",
+        "suggestedStage": "D2",
+        "stage": "D2",
+        "completionRule": "生块根烤制或水煮真实完成一次",
+        "guidance": "指向确定采集/搜集来源和腐败风险；罐头食用不冒充制作完成",
+        "exitGate": false,
+        "exitGateText": "否；新手只选一条简单食物链",
+        "hint": "把确定来源的生块根烤制或水煮完成；吃罐头不算制作。",
+        "reactionSet": "PRO09_reaction",
+        "done": "能再做的食物：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO10",
+        "title": "工具换来效率",
+        "suggestedStage": "D3",
+        "stage": "D3",
+        "completionRule": "完成一件当前已知基础工具/武器配方；PRO03已自行制作可追认",
+        "guidance": "对照材料、工作量、设施与成品，工具属性按既有案",
+        "exitGate": false,
+        "exitGateText": "否",
+        "hint": "完成一件当前已知的基础工具或武器配方；已做可追认。",
+        "reactionSet": "PRO10_reaction",
+        "done": "工具换来效率：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO11",
+        "title": "五格不是五份",
+        "suggestedStage": "D3",
+        "stage": "D3",
+        "completionRule": "一次实际地面↔随身物资转移成功",
+        "guidance": "系统提示批次/数量与五卡、七装备槽分开；不替Q24选择批次显示方案",
+        "exitGate": false,
+        "exitGateText": "否，不要求故意超重或丢弃物品",
+        "hint": "完成一次真实地面与随身转移；批次占格与数量分开计算。",
+        "reactionSet": "PRO11_reaction",
+        "done": "五格不是五份：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO12",
+        "title": "不要硬撑",
+        "suggestedStage": "D3",
+        "stage": "D3",
+        "completionRule": "实际睡眠累计120游戏分钟；按已提交睡眠段计",
+        "guidance": "提示E/S/遮蔽差异，睡眠优先推荐4—6小时但不强制固定一觉",
+        "exitGate": false,
+        "exitGateText": "否；等待不冒充睡眠，未睡也不锁主线",
+        "hint": "实际睡眠累计达到已定义目标；等待不替代睡眠。",
+        "reactionSet": "PRO12_reaction",
+        "done": "不要硬撑：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO13",
+        "title": "留个能回的地方",
+        "suggestedStage": "D3",
+        "stage": "D3",
+        "completionRule": "建棚完成；有合格旧棚也算",
+        "guidance": "说明遮蔽是恢复条件而非无敌；不把新安全屋完整体系提前塞进序章",
+        "exitGate": false,
+        "exitGateText": "否，材料不足仍可露天休息",
+        "hint": "建成遮蔽棚或已有合格棚；遮蔽不是战斗无敌。",
+        "reactionSet": "PRO13_reaction",
+        "done": "留个能回的地方：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO14",
+        "title": "走一趟再回来",
+        "suggestedStage": "D4",
+        "stage": "D4",
+        "completionRule": "从camp出发，到village或clinic后实际回camp一次",
+        "guidance": "认识边/耗时/发现与探索区别，往返补给和真实回程；village100才开clinic规则仍保持",
+        "exitGate": false,
+        "exitGateText": "否，不强迫先开诊所",
+        "hint": "从临时营地到村庄或诊所，再沿真实道路回营。",
+        "reactionSet": "PRO14_reaction",
+        "done": "走一趟再回来：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO15",
+        "title": "找一条求医线索",
+        "suggestedStage": "D4",
+        "stage": "D4",
+        "completionRule": "首次到访village并查看固定公开救助残页",
+        "guidance": "给“可能还有组织在救助幸存者”的背景；不是地图钥匙、无医院定位或根治承诺",
+        "exitGate": false,
+        "exitGateText": "否，查看0分钟；已访问可在下一次到访补读",
+        "hint": "到村庄查看公开救助残页；不授予完整路线或根治承诺。",
+        "reactionSet": "PRO15_reaction",
+        "done": "找一条求医线索：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO16",
+        "title": "来客与路",
+        "suggestedStage": "D5以后",
+        "stage": "D5",
+        "completionRule": "到camp与来客交谈，取得营区路线日志",
+        "guidance": "详见§5，真正把个人求生接向主线",
+        "exitGate": true,
+        "exitGateText": "是，新的路线信息门槛",
+        "hint": "在营地与程望实际交谈，取得营区路线；来客不会因晚回错过。",
+        "reactionSet": "PRO16_reaction",
+        "done": "来客与路：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO17",
+        "title": "为远行打包",
+        "suggestedStage": "D5以后",
+        "stage": "D5",
+        "completionRule": "看真实路线与当前全员状态/携物预览后选择“准备好了”",
+        "guidance": "建议净水2份+可食2份+防身物；列出缺项但可明确继续，不偷赠或强吃",
+        "exitGate": false,
+        "exitGateText": "否，知情确认不是物资硬钥匙",
+        "hint": "查看真实路线、当前状态与携物预览，确认准备；缺建议物可知情继续。",
+        "reactionSet": "PRO17_reaction",
+        "done": "为远行打包：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      },
+      {
+        "id": "PRO18",
+        "title": "走向有人烟的地方",
+        "suggestedStage": "主线接续",
+        "stage": "mainline",
+        "completionRule": "到village南口识别固定路标，解锁并真实移动至m01_road",
+        "guidance": "任务目标更新旧公路→检查哨→营门→营区；按原边逐段走",
+        "exitGate": true,
+        "exitGateText": "是，实际抵达不靠读图代替",
+        "hint": "满足首战、来客路线、村庄到访三条件后，真实移动到旧公路。",
+        "reactionSet": "PRO18_reaction",
+        "done": "走向有人烟的地方：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+      }
+    ],
+    "dialogueSets": [
+      {
+        "id": "visitor_arrival_camp",
+        "title": "来客抵达",
+        "repeatable": false
+      },
+      {
+        "id": "visitor_late_or_legacy",
+        "title": "来客抵达",
+        "repeatable": false
+      },
+      {
+        "id": "visitor_route_first",
+        "title": "程望：营区路线",
+        "repeatable": false
+      },
+      {
+        "id": "visitor_after_route_baobao",
+        "title": "交谈之后",
+        "repeatable": false
+      },
+      {
+        "id": "visitor_after_route_without_baobao",
+        "title": "交谈之后",
+        "repeatable": false
+      },
+      {
+        "id": "visitor_route_repeat",
+        "title": "程望：再问路线",
+        "repeatable": true
+      },
+      {
+        "id": "visitor_not_ready",
+        "title": "程望：先准备",
+        "repeatable": true
+      },
+      {
+        "id": "PRO15_relief_note",
+        "title": "公开救助残页",
+        "repeatable": true
+      },
+      {
+        "id": "village_south_sign",
+        "title": "南口路标",
+        "repeatable": true
+      },
+      {
+        "id": "village_south_sign_route_unknown",
+        "title": "南口路标",
+        "repeatable": true
+      },
+      {
+        "id": "camp_route_log",
+        "title": "求医路线日志",
+        "repeatable": true
+      },
+      {
+        "id": "PRO01_reaction",
+        "title": "看清眼前",
+        "repeatable": false
+      },
+      {
+        "id": "PRO02_reaction",
+        "title": "留住力气",
+        "repeatable": false
+      },
+      {
+        "id": "PRO03_reaction",
+        "title": "带点防身物",
+        "repeatable": false
+      },
+      {
+        "id": "PRO04_reaction",
+        "title": "第一次交手",
+        "repeatable": false
+      },
+      {
+        "id": "PRO05_reaction",
+        "title": "身体里的变化",
+        "repeatable": false
+      },
+      {
+        "id": "PRO06_reaction",
+        "title": "找到水源",
+        "repeatable": false
+      },
+      {
+        "id": "PRO07_reaction",
+        "title": "火要有燃料",
+        "repeatable": false
+      },
+      {
+        "id": "PRO08_reaction",
+        "title": "一份安全的水",
+        "repeatable": false
+      },
+      {
+        "id": "PRO09_reaction",
+        "title": "能再做的食物",
+        "repeatable": false
+      },
+      {
+        "id": "PRO10_reaction",
+        "title": "工具换来效率",
+        "repeatable": false
+      },
+      {
+        "id": "PRO11_reaction",
+        "title": "五格不是五份",
+        "repeatable": false
+      },
+      {
+        "id": "PRO12_reaction",
+        "title": "不要硬撑",
+        "repeatable": false
+      },
+      {
+        "id": "PRO13_reaction",
+        "title": "留个能回的地方",
+        "repeatable": false
+      },
+      {
+        "id": "PRO14_reaction",
+        "title": "走一趟再回来",
+        "repeatable": false
+      },
+      {
+        "id": "PRO15_reaction",
+        "title": "找一条求医线索",
+        "repeatable": false
+      },
+      {
+        "id": "PRO16_reaction",
+        "title": "来客与路",
+        "repeatable": false
+      },
+      {
+        "id": "PRO17_reaction",
+        "title": "为远行打包",
+        "repeatable": false
+      },
+      {
+        "id": "PRO18_reaction",
+        "title": "走向有人烟的地方",
+        "repeatable": false
+      }
+    ]
   }
 }

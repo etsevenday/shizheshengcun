@@ -84,6 +84,8 @@ namespace Survival.Core.Config
         // ───── 系统策划总册 v1.0 答复（N01/R07/S15） ─────
         public ActiveSubstanceConfig ActiveSubstance { get; set; } = new ActiveSubstanceConfig();
         public StoryConfig Story { get; set; } = new StoryConfig();
+        /// <summary>新手序章（开发计划 v0.9 B13，S15「2026-10-30 分类联动本地更新」§3—§8、prologue-data.json、narrative-texts.json）。</summary>
+        public PrologueConfig Prologue { get; set; } = new PrologueConfig();
         /// <summary>策划答复 Q53—Q61 成长与行动合同（开发计划 v0.9 B7b）。</summary>
         public ProgressionConfig Progression { get; set; } = new ProgressionConfig();
         /// <summary>人物基础防御档（Q63，combat-adjudications.json actorBaseDefense）：本批只接主角，队友/随机候选在 B8。</summary>

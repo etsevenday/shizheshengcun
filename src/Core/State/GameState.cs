@@ -38,7 +38,7 @@ namespace Survival.Core.State
         /// "17" 起记服务地点迁址标记（v3 地图营区公共居所/收容所）与遗物是否公共候补遗物（策划答复 Q88/Q89，开发计划 v0.9 B8b）；
         /// "18" 起记候补照护规则版本与每名候补的自主 rest/sleep 模式（策划答复 Q90，开发计划 v0.9 B8c）。
         /// </summary>
-        public const string CurrentSchema = "21";
+        public const string CurrentSchema = "22";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -186,6 +186,8 @@ namespace Survival.Core.State
         public List<TraitInstance> Traits { get; set; } = new List<TraitInstance>();
         /// <summary>开场、饱饱、首战与教学融合的持久进度（N01 §6、S15 §5、R07 §5）。</summary>
         public StoryState Story { get; set; } = new StoryState();
+        /// <summary>新手序章：PRO 任务账、阶段与主目标、来客与系统提示（开发计划 v0.9 B13；schema 22 起）。</summary>
+        public PrologueState Prologue { get; set; } = new PrologueState();
 
         [JsonIgnore] public List<GameEvent> PendingEvents { get; set; } = new List<GameEvent>();
 
@@ -219,6 +221,7 @@ namespace Survival.Core.State
             c.Battle = Battle?.Clone();
             c.Traits = Traits.Select(x => x.Clone()).ToList();
             c.Story = Story.Clone();
+            c.Prologue = Prologue.Clone();
             c.PendingEvents = new List<GameEvent>();
             return c;
         }
@@ -607,6 +610,8 @@ namespace Survival.Core.State
         public int? TutorialBattleId { get; set; }
         /// <summary>首战最终胜利且存活（唯一）。</summary>
         public bool TutorialWon { get; set; }
+        /// <summary>首战胜利锁存的世界分钟（B13：判断来客是否“晚到”）；旧档与 B13 以前的局为 null。</summary>
+        public int? TutorialWonMinute { get; set; }
         /// <summary>教学活性物质的唯一发放事件 ID；已发过即不再发。</summary>
         public string TutorialGrantEventId { get; set; } = "";
         /// <summary>教学融合完成（绿色“攻击力+0.1”已登记）。</summary>
@@ -838,7 +843,9 @@ namespace Survival.Core.State
         Encounter,
         /// <summary>战斗事件：开始、指令结果、敌方行动、轮末与结束（v0.5 §16）。</summary>
         Battle,
-        BattleEnd
+        BattleEnd,
+        /// <summary>非阻断短通知（B13：来客在营地等候）：只提示并写日志，不打断行动。</summary>
+        Notice
     }
 
     public sealed class GameEvent

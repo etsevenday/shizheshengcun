@@ -185,16 +185,17 @@ public class AlertDeathSaveTests : TestBase
     }
 
     [Test]
-    public void SevenDayCheck_FiresOnceAtDay8_0800()
+    public void SevenDayCheck_Retired_NoPopupAtDay8_0800()
     {
+        // B13（S15 §7、SP12）：七日检查退役，第8日08:00不再记“七日完成”、不发七日事件（不弹成功窗）
         var s = New();
         s.GameMinute = At(8, 7, 0);
         SetStats(s, 100, 80, 80, 90, 90, 60);
         Start(s, ActionRequest.Wait(60));
         Run(s);
-        Assert.That(s.Progress.SevenDayShown, Is.True);
+        Assert.That(s.Progress.SevenDayShown, Is.False);
         var evs = E.DrainEvents(s);
-        Assert.That(evs.Count(e => e.Kind == GameEventKind.SevenDay), Is.EqualTo(1));
+        Assert.That(evs.Count(e => e.Kind == GameEventKind.SevenDay), Is.EqualTo(0));
     }
 
     [Test]

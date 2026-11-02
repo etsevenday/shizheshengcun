@@ -229,7 +229,7 @@ namespace Survival.Core.Engine
             // 有火堆的地点初始化设施 ID 与空加工位（营地 camp:fire）
             SyncFacilities(s);
 
-            Emit(s, GameEventKind.Info, $"{Clock.DayTime(s.GameMinute)}，你在{LocName(s.CurrentLocation)}醒来。目标：活过七天。");
+            Emit(s, GameEventKind.Info, $"{Clock.DayTime(s.GameMinute)}，你在{LocName(s.CurrentLocation)}醒来。");   // B13：七日目标退役（S15 §7），开场不再写“目标：活过七天”
             UpdateFlags(s);
             s.PendingEvents.Clear();
             // Q89（B8b）：地图已有 v3 营区公共居所与收容所时，新档直接用新址服务，不保留替身入口
@@ -825,6 +825,8 @@ namespace Survival.Core.Engine
                     if (inst.InContainer || inst.InFacility) SyncFacilities(s);
                     var parts = new List<string>();
                     // 即时效果先应用并夹紧 0—100，再按 wait 推进 5 分钟；负数如实写“水分−2”（设施与烹饪案 5.3）
+                    var satBefore = s.Stats.Satiety;
+                    var hydBefore = s.Stats.Hydration;
                     var sat = UseSatiety(s, u);   // 配给袋：非战斗食用正饱食×1.05（B4）
                     if (sat != 0) { s.Stats.Add(StatId.Satiety, sat); parts.Add(Signed("饱食", sat)); }
                     if (u.Hydration != 0) { s.Stats.Add(StatId.Hydration, u.Hydration); parts.Add(Signed("水分", u.Hydration)); }
@@ -839,6 +841,7 @@ namespace Survival.Core.Engine
                     if (u.IsMedicine) ApplyMedicine(s, u, parts);
                     // 效果在开始时一次结清、不可取消，所以按“行动完成”发事件，界面的结果提示条才会跟着更新
                     Emit(s, GameEventKind.ActionCompleted, $"{p.Label}：{string.Join("，", parts)}。{(cookNote != null ? cookNote + "。" : "")}");
+                    NoteUse(s, a, satBefore, hydBefore);   // B13 PRO02
                     break;
                 }
                 case ActionType.Fuse:
@@ -871,6 +874,8 @@ namespace Survival.Core.Engine
             if (p.IsSub) s.Sub = a; else s.Main = a;
             if (p.Type != ActionType.Use && p.Type != ActionType.Fuse)
                 Emit(s, GameEventKind.ActionStarted, $"开始{a.Label}。");
+            if (p.Type == ActionType.Sleep) PlayReactionNow(s, "PRO12");   // B13：饱饱“眼睛快合上了”在开始睡眠时
+            else if (p.Type == ActionType.Use) PrologueBoundary(s);
             return ActionResult.Success(a.ActionId);
         }
 

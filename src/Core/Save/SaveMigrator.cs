@@ -45,6 +45,7 @@ namespace Survival.Core.Save
         public const string Schema18 = "18";
         public const string Schema19 = "19";
         public const string Schema20 = "20";
+        public const string Schema21 = "21";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -80,6 +81,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema18) From18To19(s, config, notes);
             if (s.SchemaVersion == Schema19) From19To20(s, config, notes);
             if (s.SchemaVersion == Schema20) From20To21(s, config, notes);
+            if (s.SchemaVersion == Schema21) From21To22(s, config, notes);
             return notes;
         }
 
@@ -828,6 +830,24 @@ namespace Survival.Core.Save
             if (added > 0) notes.Add($"资源点扩展到{config.Resources.Count}处，已发现的资源点线索可以直接采集");
             s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（资源四账：新增{added}处资源点" +
                 (claimed.Count > 0 ? $"；已持有的{string.Join("、", claimed)}记为已领取，不再重复领取" : "") + "）。" });
+            s.SchemaVersion = Schema21;
+        }
+
+        // ───────────────────────── 21 → 22 ─────────────────────────
+
+        /// <summary>
+        /// 新手序章（开发计划 v0.9 B13，R39/R42；S15 §7 七日检查与旧档、§8、A10-TUTOR §7）：建序章状态；按可靠记录追认任务
+        /// （首战胜利或旧档等效、教学融合、净水 boiled、块根熟食 cooked、已建棚、当前已装备的伤害型武器），标为“旧档追认”，不发反馈、不播反应、
+        /// 不补任何奖励；取水、睡眠累计、往返、残页等没有可靠记录的不猜。七日检查已记过的只作历史统计（不撤、不重播）。已开的出区路线不反锁。
+        /// 当前世界分钟已过来客阈值且首战已胜（或旧档等效）的，来客在读档后的下一安全边界登记，不再等五天。幂等。
+        /// </summary>
+        private static void From21To22(GameState s, GameConfig config, List<string> notes)
+        {
+            s.Prologue ??= new PrologueState();
+            var engine = new Engine.GameEngine(config);
+            var retro = engine.RetroPrologue(s);
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（新手序章：七日目标改为任务册" +
+                (retro.Count > 0 ? $"，已追认{string.Join("、", retro)}" : "") + (s.Progress.SevenDayShown ? "；七日检查记录保留为历史" : "") + "）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

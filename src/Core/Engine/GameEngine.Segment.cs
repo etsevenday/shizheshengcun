@@ -237,7 +237,7 @@ namespace Survival.Core.Engine
                 a.ElapsedMinutes += Tick;
                 done = a.ElapsedMinutes >= a.PlannedMinutes;
             }
-            if (a.Type == ActionType.Sleep) s.Progress.Flags.Add("sleptOnce");
+            if (a.Type == ActionType.Sleep) { s.Progress.Flags.Add("sleptOnce"); NoteSleepSegment(s, Tick); }
 
             var status = SegmentStatus.Running;
             if (cookEnded != null) status = cookEnded.Value;
@@ -255,8 +255,8 @@ namespace Survival.Core.Engine
             if (CheckAlerts(s, a, done) && status == SegmentStatus.Running)
                 status = SegmentStatus.Paused;
 
+            // B13：七日检查退役（S15 §7），不再弹七日成功窗；序章边界在 UpdateFlags 末尾
             UpdateFlags(s);
-            CheckSevenDay(s);
             return new SegmentResult(status);
         }
 
@@ -474,6 +474,7 @@ namespace Survival.Core.Engine
                     if (revealed.Count > 0) t += $"发现{string.Join("、", revealed.Select(id => _res[id].Name))}。";
                     foreach (var n in mapNotes) t += n + "。";
                     Emit(s, GameEventKind.ActionCompleted, t, null, revealed);
+                    NoteArrive(s, from, a.TargetId);   // B13：PRO14 往返、到达反应、出区抵达
                     // 首次 camp→field：落点并提交到达后，由保留游荡尸触发一次剧情首战（S15 §5、S02 §7）
                     TryStartTutorialBattle(s, a);
                     return true;
@@ -511,6 +512,7 @@ namespace Survival.Core.Engine
                     made.Add(XpText(s, xpSkill, xp));
                     GainXp(s, xpSkill, xp);
                     if (rc.FacilityResult != null) SetFacility(s.Locations[here].Facility, rc.FacilityResult);
+                    NoteCraft(s, a, rc);   // B13 PRO10
                     ClearAction(s, a);
                     var text = rc.FacilityResult != null
                         ? $"{rc.Name.Replace("建", "").Replace("铺", "")}已完成（{made.Last()}）。"
@@ -558,6 +560,7 @@ namespace Survival.Core.Engine
                     Emit(s, GameEventKind.ActionCompleted, f.FireLit
                         ? $"火堆已点燃，剩余燃料{f.FuelMinutes}分钟{worn}。"
                         : $"火堆点燃后燃料随即耗尽{worn}。");
+                    NoteIgnite(s, a);   // B13 PRO07
                     return true;
                 }
                 default:
@@ -620,6 +623,7 @@ namespace Survival.Core.Engine
             }
             ClearAction(s, a);
             Emit(s, GameEventKind.ActionCompleted, text + "。", null, res.Outputs.Keys);
+            NoteGather(s, res);   // B13 PRO06
 
             if (a.HazardHit && res.Hazard != null)
             {
@@ -749,14 +753,6 @@ namespace Survival.Core.Engine
             }
         }
 
-        private void CheckSevenDay(GameState s)
-        {
-            if (s.Progress.SevenDayShown || s.Progress.Dead) return;
-            if (s.GameMinute < Config.Progress.SevenDayCheckMinute) return;
-            s.Progress.SevenDayShown = true;
-            Emit(s, GameEventKind.SevenDay, "七日基础生存检查完成。你可以继续生存下去。");
-        }
-
         /// <summary>引导“熟制块根”接受的物品（设施与烹饪案 5.3 goals.acceptedIds）。</summary>
         public static readonly string[] CookedFoodIds = { "cooked_root", "boiled_root" };
 
@@ -781,6 +777,8 @@ namespace Survival.Core.Engine
             // “熟制块根”按烤熟与水煮合计
             if (Count("clean_water") >= 3 && Count(CookedFoodIds) >= 2) f.Add("supplyReady");
             SyncLayout(s);
+            // B13 序章安全边界：任务追认、来客登记/通知/抵达、排队的反应、主目标重算（幂等，不推进时间）
+            PrologueBoundary(s);
         }
     }
 }

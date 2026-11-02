@@ -242,7 +242,7 @@ public class B12ResourceTests : TestBase
         foreach (var r in Cfg.Resources.Skip(20)) res.Remove(r.NodeId);
         j["RevealedResourceMarkers"] = new JArray("w11_orchard_a");
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out var notes);
-        Assert.That(m.SchemaVersion, Is.EqualTo("21"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "20→21→22（B13 起再升到 22）");
         Assert.That(m.Resources, Has.Count.EqualTo(116));
         Assert.That(m.Resources["w11_orchard_a"].Discovered, Is.True);
         Assert.That(m.Resources["w11_orchard_a"].Available, Is.EqualTo(12));

@@ -1,3 +1,4 @@
+using Survival.Core.Engine;
 using Survival.Core.State;
 
 namespace Survival.Core.Tests;
@@ -33,7 +34,9 @@ public class PlaythroughTests : TestBase
         var s = Play(route, seed);
         Assert.That(s.Progress.Dead, Is.False, "七日内死亡");
         Assert.That(s.GameMinute, Is.GreaterThanOrEqualTo(Cfg.Progress.SevenDayCheckMinute));
-        Assert.That(s.Progress.SevenDayShown, Is.True);
+        // B13：七日检查退役（不再弹成功窗）；第5日08:00后首战已胜则来客已登记
+        Assert.That(s.Progress.SevenDayShown, Is.False);
+        Assert.That(s.Progress.Flags.Contains(GameEngine.FactVisitorAvailable), Is.EqualTo(s.Story.TutorialWon));
     }
 
     /// <summary>
