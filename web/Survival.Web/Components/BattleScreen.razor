@@ -209,6 +209,17 @@
         </section>
 
         <aside class="bfs-info detail" inert="@dlg" aria-label="对象信息">
+            @* B13d（Q128 PRO04）：首战教学上下文的系统提示放在战内对象信息区顶部（常态任务框被全屏战斗盖住）；不给 AP、不替你行动 *@
+            @if (G.E.BattleHint(s) is { } bh)
+            {
+                <div class="tc-hint bfs-hint" role="note">
+                    <span class="tc-sys">系统提示</span><span class="tc-hint-text" title="@bh.Text">@bh.Text</span>
+                    <span class="tc-hint-btns">
+                        <button type="button" class="tc-link" @onclick="() => G.DismissHint(bh.TaskId)">关闭这条</button>
+                        <button type="button" class="tc-link" title="只关闭中性操作提示与教学短句；剧情、危险提示与任务不受影响，可在任务册恢复" @onclick="() => G.SetHintsPaused(true)">暂停后续提示</button>
+                    </span>
+                </div>
+            }
             <div class="detail-body"><BattlePanel /></div>
         </aside>
 

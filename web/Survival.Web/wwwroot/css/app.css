@@ -1363,6 +1363,10 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .tc-sys { display: inline-block; font-size: 11px; border: 1px solid #6f7a68; color: #b9c4b0; border-radius: 3px; padding: 0 4px; margin-right: 5px; vertical-align: 1px; }
 .task-box .tc-hint-text { }
 .task-box .tc-hint-btns { display: flex; gap: 12px; margin-top: 1px; }
+/* B13d（Q128 PRO04）：首战内的系统提示，放在全屏战斗对象信息区顶部，样式同任务框提示 */
+.bfs-hint { flex: 0 0 auto; margin: 0 0 6px; padding: 4px 8px; border: 1px dashed #6f7a68; border-radius: 4px; font-size: 13px; line-height: 1.4; color: #cfd5c6; background: #0d1714; }
+.bfs-hint .tc-hint-btns { display: flex; gap: 12px; margin-top: 1px; }
+.bfs-hint .tc-link { background: none; border: none; padding: 0; min-height: 0; color: var(--accent); font-size: 13px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 /* 轻量点亮（A10-TUTOR §3）：细金框 + 柔和亮边，不加遮罩、不放大点击区，减少动态模式用静态框 */
 .ocard.tut-lit { outline: 2px solid #e1b665; outline-offset: 1px; box-shadow: 0 0 10px #e1b66588; animation: tutLit 2.4s ease-in-out 2; }
 @keyframes tutLit { 50% { box-shadow: 0 0 2px #e1b66533; } }

@@ -3,7 +3,8 @@
 @* 顶栏“生存目标”= 序章任务册（S15 §3/§4、S14「序章引导」、A10-TUTOR §1/§5；开发计划 v0.9 B13 R39/R43）。
    前台七日目标、倒计时与七日成功窗已退役；这里列当前主目标与最多两条建议、完整 PRO01—18（按建议阶段分组，已完成写完成时间，旧档追认另标），
    每项的完成条件与中性系统提示（关闭过的也可回看），求医路线日志与远行准备入口，以及旧档的七日检查历史记录。
-   只浏览：打开/关闭/Esc 不推进时间、不领奖、不重播剧情；建议日程不是失败倒计时。任务角与本入口并存（开发假设 B13-H10）。 *@
+   只浏览：打开/关闭/Esc 不推进时间、不领奖、不重播剧情；建议日程不是失败倒计时。任务角与本入口并存（开发假设 B13-H10）。
+   B13d（Q129 选 B）：分组标题用策划 6 阶段短句（标题+重点），每项写任务标题与“下一步”短句（按实际缺项替换），已完成另写简短结果；不显示内部完成条件。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -69,10 +70,10 @@
                                 <span class="goal-mark" aria-hidden="true">@mark</span>
                                 <span class="goal-task">
                                     <b>@c.Title</b>@if (c.ExitGate) {<em class="goal-gate">出区相关</em>}
-                                    <small>@GameEngine.GoalText(c)</small>
+                                    <small>@e.StepText(s, c)</small>
                                     @if (t.Done)
                                     {
-                                        <small class="good-text">@(t.Retro ? "旧档追认" : $"已完成 · {Clock.DayTime(t.CompletedAt ?? 0)}")</small>
+                                        <small class="good-text">@(t.Retro ? "旧档追认" : $"{c.Done} · {Clock.DayTime(t.CompletedAt ?? 0)}")</small>
                                     }
                                     else if (t.Note != null)
                                     {

@@ -483,6 +483,9 @@ else
             G.CraftPot = null;
         }
         G.CraftRecipe = id;
+        // B13d（Q128）：选中一件配方/自动加工的预览即操作前引导的上下文（制作提交前）
+        if (id.StartsWith(ProcPrefix)) G.Guide("process", id.Substring(ProcPrefix.Length));
+        else G.Guide("recipe", id);
         G.Notify();
     }
 

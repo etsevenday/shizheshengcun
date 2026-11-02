@@ -456,9 +456,10 @@ else
     private void Pick(string id)
     {
         G.MapPicked = id;
+        G.Guide("location", id);   // B13d（Q128）：在地图上查看外出/返营/出区路线是操作前引导的上下文
         var s = G.S;
         var adjacent = G.E.AdjacentUnlocked(s).Any(x => x.Other(s.CurrentLocation) == id);
-        if (adjacent && !G.E.IsBusy(s) && !G.Running) G.OpenPop("mapnode", id, $"mn-{id}");
+        if (adjacent && !G.E.IsBusy(s) && !G.Running && !G.DialogueLocked) G.OpenPop("mapnode", id, $"mn-{id}");
         else G.ClosePop();
         G.Notify();
     }

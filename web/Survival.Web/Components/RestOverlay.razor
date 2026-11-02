@@ -86,6 +86,8 @@ else
     {
         G.RestKind = k;
         G.RestMinutes = m;
+        // B13d（Q128）：选睡眠计划是 PRO12 的操作前上下文（打开恢复面板时已给过的不重复）
+        if (k == "sleep") G.Guide("rest");
         G.Notify();
     }
 

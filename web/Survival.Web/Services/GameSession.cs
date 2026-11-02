@@ -354,7 +354,25 @@ public sealed class GameSession
             if (State != null && MapAnchor != S.CurrentLocation) { MapLayer = null; MapZoom = MapDefaultZoom; MapAnchor = S.CurrentLocation; }
         }
         Panel = panel;
+        // B13d（Q128）：打开相关面板即操作前引导的上下文（手工制作看当前配方、整备、恢复、远行准备）
+        switch (panel)
+        {
+            case "craft": Guide("recipe", CraftRecipe); break;
+            case "gear": Guide("gear"); break;
+            case "rest": Guide("rest"); break;
+            case "journey": Guide("journey"); break;
+        }
         Notify();
+    }
+
+    /// <summary>
+    /// 操作前引导的上下文（B13d，Q128 选 C）：界面打开/选中相关对象、动作提交前报给内核，内核决定给哪一项系统提示与饱饱/主角短句（0 分钟）。
+    /// 状态有变（给了提示、播了短句或忙时暂存）才存档；不通知界面，由调用方统一 Notify。
+    /// </summary>
+    public void Guide(string ctx, string? id = null, string? owner = null)
+    {
+        if (State == null || S.Progress.Dead) return;
+        if (E.GuideContext(S, ctx, id, owner)) { Drain(); Save(); }
     }
 
     /// <summary>替换中部上方的顶栏面板：地图、制作、休息、日志，以及生存目标、生存提示、对话记录、系统说明。</summary>
@@ -722,6 +740,28 @@ public sealed class GameSession
         {
             E.NoteObjectInspected(S);
             if (GameEngine.TaskDone(S, "PRO01")) { Drain(); Save(); }
+        }
+        // B13d（Q128）：选中卡片是操作前引导的上下文（物资、火堆、资源点、地点；同次选卡可接着给 PRO01 之后的一项）
+        if (State != null)
+        {
+            switch (sel.Kind)
+            {
+                case SelectionKind.ItemGroup:
+                case SelectionKind.Tool:
+                case SelectionKind.PotLiquid:
+                    Guide("item", sel.Id, sel.Owner);
+                    break;
+                case SelectionKind.Facility:
+                    if (sel.Id == GameEngine.FireIdOf(S.CurrentLocation)) Guide("fire");
+                    break;
+                case SelectionKind.Resource:
+                    Guide("resource", sel.Id);
+                    break;
+                case SelectionKind.Location:
+                case SelectionKind.Entrance:
+                    Guide("location", sel.Id);
+                    break;
+            }
         }
         Notify();
     }
