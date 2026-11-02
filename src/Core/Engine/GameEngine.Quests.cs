@@ -51,7 +51,8 @@ namespace Survival.Core.Engine
     /// <item>主线：FA01 到营区广场且已登记即说明；FA02/FA03 在接待处两选择同写路线事实；首次核心记录（FA02/FA03_record_credit）即完成，
     /// 容量 C3/C4 沿原记录事实；FA04 两份记录到齐后营区广场 wait10（两段，中断保段）写 FA04_merged；FA05 已领通信电源后与罗铮交谈接取，联络日志（chapter_contact）完成。</item>
     /// <item>支线：与岗位交谈接取（播 offer）；0 分钟的阅读当场完成，10 分钟的核对/抄录走城市服务或任务条目里的 wait，按 5 分钟段，完成播交付对白；回看不重奖。</item>
-    /// <item>招募：RN01 已登记后在营区广场选择登记林昭（入名册，首次两件装备）；RN02—RN06 前置是被取代的旧 QMAP02—04，未实装（待确认）。</item>
+    /// <item>招募（B15a，Q152 选 A、Q156 选 B）：RN01—RN06 各在自己的地点、前置满足时出同行邀约卡；“交谈”打开本人逐字邀约，读完选“登记同行”
+    /// （原子完成任务、入名册候补、首次两件装备只生成一次、不自动编队、满员也能登记）或“暂不登记”（不完成、可再谈）；0 分钟 0 物资、不计经验。</item>
     /// </list>
     /// </summary>
     public sealed partial class GameEngine
@@ -87,8 +88,30 @@ namespace Survival.Core.Engine
         {
             var miss = q.RequiresAll.FirstOrDefault(f => !s.Progress.Flags.Contains(f));
             if (miss != null) return "需要：" + RequirementText(miss);
+            if (q.RequiresAny.Count > 0 && !q.RequiresAny.Any(s.Progress.Flags.Contains)) return "需要：" + AnyRequirementText(q.RequiresAny);
+            foreach (var kv in q.RequiresExplore)
+            {
+                var now = ExploreOf(s, kv.Key, null);
+                if (now < kv.Value) return $"需要：把{LocName(kv.Key)}探索到{kv.Value}%（现在{now}%）";
+            }
             if (q.RequiresRosterMember && !s.Roster.Any(r => !r.Dead)) return "需要：名册里有一名同行者";
             return null;
+        }
+
+        /// <summary>“任一成立”前置的玩家说法：同一任务的接取/完成两条合并为“接取或完成「任务名」”，其余用“，或”连接。</summary>
+        private string AnyRequirementText(List<string> any)
+        {
+            var parts = new List<string>();
+            foreach (var f in any)
+            {
+                var p = f.Split(':');
+                var isQuest = p.Length == 3 && f.StartsWith(QuestFactPrefix, StringComparison.Ordinal);
+                if (isQuest && p[2] == "completed" && any.Contains(QuestFact(p[1], "accepted"))) continue;
+                if (isQuest && p[2] == "accepted" && any.Contains(QuestFact(p[1], "completed")) && Quest(p[1]) is QuestConfig q)
+                    parts.Add($"接取或完成“{q.Title}”");
+                else parts.Add(RequirementText(f));
+            }
+            return string.Join("，或", parts);
         }
 
         private bool QuestShown(GameState s, QuestConfig q)
@@ -198,6 +221,8 @@ namespace Survival.Core.Engine
             if (q == null || !q.Implemented) return ActionResult.Fail("没有这项委托");
             if (QuestDone(s, q.Id)) return ActionResult.Fail("这项已经完成");
             if (QuestAccepted(s, q.Id) && q.Accept != "roster") return ActionResult.Fail("已经接取");
+            if (q.Accept == "roster" && RosterOf(s, q.NpcId) is RosterEntry old)
+                return ActionResult.Fail(old.Dead ? $"{old.Name}已经死亡，命名角色不会复活" : $"{old.Name}已在名册里");
             var why = QuestRequiresBlocked(s, q) ?? AcceptBlocked(s, q);
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, requestId);
@@ -207,7 +232,7 @@ namespace Survival.Core.Engine
                     AcceptCore(s, q, true);
                     return ActionResult.Success();
                 case "roster":
-                    return RecruitByQuest(s, q);
+                    return TalkRecruit(s, q);
                 default:
                     return ActionResult.Fail("这项要在相应事项里办理");
             }
@@ -222,9 +247,12 @@ namespace Survival.Core.Engine
             if (dialogue && !string.IsNullOrEmpty(q.OfferDialogue)) OpenDialogue(s, q.OfferDialogue!);
             if (!QuestDone(s, q.Id))
                 Emit(s, GameEventKind.Info, $"{(q.Kind == "main" ? "主线" : "委托")}“{q.Title}”已接取：{q.StepActive}");
+            // B15a（Q157 选 A）：须先接取才完成的（FA05），接取时完成事实已在手（先领了联络日志）——接取后这一安全边界追认完成：
+            // 写完成与日志，不补播联络完成场景（场景属于 d04_07 联络提交那一刻，见待确认 Q163）、不加奖励
+            if (q.CompleteRequiresAccepted && q.CompleteByAny.Any(s.Progress.Flags.Contains)) CompleteQuest(s, q, false, quiet: true);
         }
 
-        /// <summary>招募任务（RN01）：选择登记 → 命名队友入名册（首次两件装备随登记一次生成），任务完成；0 分钟 0 物资。</summary>
+        /// <summary>招募任务：选择登记 → 命名队友入名册候补（首次两件装备随登记一次生成，不自动编队、不看队伍是否满员），任务完成；0 分钟 0 物资。</summary>
         private ActionResult RecruitByQuest(GameState s, QuestConfig q)
         {
             var res = AddNamedToRoster(s, q.NpcId);
@@ -232,6 +260,58 @@ namespace Survival.Core.Engine
             s.Progress.Flags.Add(QuestFact(q.Id, "accepted"));
             CompleteQuest(s, q, false);
             return ActionResult.Success();
+        }
+
+        /// <summary>
+        /// 同行邀约“交谈”（B15a，Q156 选 B）：前置满足、在任务地点安全空闲、本人未登记且未死亡时，打开本人的逐字邀约对白（每次一段新对话记录，可重读）；
+        /// 不写任务事实、不推进时间、不扣物、不计经验。读完由 <see cref="AnswerRecruit"/> 选“登记同行”或“暂不登记”。
+        /// </summary>
+        private ActionResult TalkRecruit(GameState s, QuestConfig q)
+        {
+            if (string.IsNullOrEmpty(q.OfferDialogue)) return RecruitByQuest(s, q);
+            OpenReplay(s, q.OfferDialogue!);
+            return ActionResult.Success();
+        }
+
+        /// <summary>当前正在显示末句的那段对话是某招募任务的邀约、且仍可登记时返回任务 ID（对白层把“结束对话”换成“登记同行”“暂不登记”）；否则 null。</summary>
+        public string? RecruitOfferPending(GameState s)
+        {
+            var d = ActiveDialogue(s);
+            if (d == null || d.Lines.Count == 0 || d.Pending.Count > 0) return null;
+            var ev = d.EventId.Split('#')[0];
+            var q = LiveQuests.FirstOrDefault(x => x.Kind == "recruit" && x.OfferDialogue == ev);
+            if (q == null || QuestDone(s, q.Id) || RosterOf(s, q.NpcId) != null) return null;
+            return q.Id;
+        }
+
+        /// <summary>
+        /// 读完邀约后的选择（B15a，Q156 选 B）：lineId 须是邀约正在显示的末句（防双击）。register=true“登记同行”：前置、地点、空闲重验后
+        /// 同一事务完成任务并入名册候补（首次两件装备只生成一次，不自动编队，队伍满员也能登记），再结束对话；
+        /// register=false“暂不登记”：只结束对话，不完成、不永久拒招，以后可再谈。都是 0 分钟 0 物资、不计经验。
+        /// </summary>
+        public ActionResult AnswerRecruit(GameState s, string questId, string lineId, bool register)
+        {
+            var q = Quest(questId);
+            if (q == null || !q.Implemented || q.Accept != "roster") return ActionResult.Fail("没有这项同行邀约");
+            var d = ActiveDialogue(s);
+            var cur = d?.Lines.LastOrDefault();
+            if (d == null || cur == null || cur.LineId != lineId || RecruitOfferPending(s) != q.Id) return ActionResult.Repeated();
+            string? why = null;
+            if (register)
+            {
+                why = QuestRequiresBlocked(s, q)
+                      ?? (s.CurrentLocation != q.LocationId ? $"须实际到达{LocName(q.LocationId)}" : null)
+                      ?? (s.Battle != null || s.Encounter != null ? "先处理眼前的敌踪" : s.Main != null || s.Sub != null ? "行动进行中" : null);
+                if (why == null)
+                {
+                    var res = RecruitByQuest(s, q);
+                    if (!res.Ok) why = res.Reason;
+                }
+            }
+            AckDialogue(s, lineId);
+            if (!register)
+                Emit(s, GameEventKind.Info, $"暂不登记{NpcNameOf(q.NpcId)}：以后可以再到{LocName(q.LocationId)}和{NpcNameOf(q.NpcId)}交谈。");
+            return why == null ? ActionResult.Success() : ActionResult.Fail(why);
         }
 
         /// <summary>
@@ -339,7 +419,7 @@ namespace Survival.Core.Engine
         /// 写完成（同一事务：quest:ID:accepted/completed、完成事实、时间），重判门槛，播交付/完成对白与附加线索，日志写结果。
         /// retro：旧档追认，只写事实与“旧档追认”标记，不播对白、不写日志、不补奖励。幂等。
         /// </summary>
-        private void CompleteQuest(GameState s, QuestConfig q, bool retro)
+        private void CompleteQuest(GameState s, QuestConfig q, bool retro, bool quiet = false)
         {
             if (QuestDone(s, q.Id)) return;
             var rec = s.Quests.Of(q.Id);
@@ -352,9 +432,12 @@ namespace Survival.Core.Engine
             if (q.WorkMinutes > 0 && !retro) rec.WorkMinutes = q.WorkMinutes;
             if (retro) { if (q.CompleteFacts.Count > 0) RefreshGates(s); return; }
             var routes = q.CompleteFacts.Count > 0 ? RouteNotes(s, RefreshGates(s), s.CurrentLocation) : new List<string>();
-            if (!string.IsNullOrEmpty(q.TurninDialogue)) OpenDialogue(s, q.TurninDialogue!);
-            if (!string.IsNullOrEmpty(q.CompleteDialogue)) OpenDialogue(s, q.CompleteDialogue!);
-            if (!string.IsNullOrEmpty(q.NoteDialogue)) OpenDialogue(s, q.NoteDialogue!);
+            if (!quiet)
+            {
+                if (!string.IsNullOrEmpty(q.TurninDialogue)) OpenDialogue(s, q.TurninDialogue!);
+                if (!string.IsNullOrEmpty(q.CompleteDialogue)) OpenDialogue(s, q.CompleteDialogue!);
+                if (!string.IsNullOrEmpty(q.NoteDialogue)) OpenDialogue(s, q.NoteDialogue!);
+            }
             var extra = QuestCompletionDetail(s, q);
             Emit(s, GameEventKind.Info, $"{(q.Kind == "main" ? "主线" : q.Kind == "recruit" ? "同行邀约" : "委托")}“{q.Title}”完成：{q.Result}" +
                 (extra != null ? "；" + extra : "") + (routes.Count > 0 ? "；发现" + string.Join("与", routes) : "") + "。");
@@ -392,7 +475,11 @@ namespace Survival.Core.Engine
             foreach (var q in LiveQuests)
             {
                 if (QuestDone(s, q.Id)) continue;
-                if (q.CompleteByAny.Count > 0 && q.CompleteByAny.Any(s.Progress.Flags.Contains)) CompleteQuest(s, q, false);
+                if (q.CompleteByAny.Count > 0 && q.CompleteByAny.Any(s.Progress.Flags.Contains))
+                {
+                    // B15a（Q157）：FA05 须先接取；没接取时联络日志先留着，接取那一刻追认（AcceptCore）
+                    if (!q.CompleteRequiresAccepted || QuestAccepted(s, q.Id)) CompleteQuest(s, q, false);
+                }
                 else if (q.Accept == "roster" && RosterOf(s, q.NpcId) != null) CompleteQuest(s, q, true);
                 else if (q.Accept == "auto" && s.CurrentLocation == q.LocationId && QuestRequiresBlocked(s, q) == null)
                 {
@@ -460,14 +547,14 @@ namespace Survival.Core.Engine
             return null;
         }
 
-        // ───────────────────────── 同行邀约卡（RN01） ─────────────────────────
+        // ───────────────────────── 同行邀约卡（RN01—RN06） ─────────────────────────
 
         /// <summary>某命名队友的招募任务（已实装）；没有为 null。</summary>
         private QuestConfig? RecruitQuestOf(string actorId) => LiveQuests.FirstOrDefault(q => q.Kind == "recruit" && q.NpcId == actorId);
 
         /// <summary>
-        /// 当前地点的同行邀约卡（A11 §6“可在相应建筑作可见访客卡，但不会替代该建筑岗位”）：招募任务可接、本人不在名册时，
-        /// 在任务地点的设施栏“人物”组出现；按钮“登记同行”0 分钟（读邀约即选择登记）。
+        /// 当前地点的同行邀约卡（A11 §6“可在相应建筑作可见访客卡，但不会替代该建筑岗位”）：招募任务前置满足、本人不在名册（未登记、未死亡）时，
+        /// 在任务地点的设施栏“人物”组出现；按钮“交谈”0 分钟打开本人逐字邀约，读完选“登记同行”或“暂不登记”（B15a，Q156 选 B）。
         /// </summary>
         private IEnumerable<NpcCardView> RecruitCardsHere(GameState s)
         {
@@ -480,8 +567,8 @@ namespace Survival.Core.Engine
                 yield return new NpcCardView
                 {
                     NpcId = q.NpcId, Name = c.Name, Role = c.Affiliation, Kind = "companion", KindLabel = "固定队友",
-                    Status = "可邀约同行 · 不耗时", HasNews = true, ActionLabel = "登记同行", Background = c.Background,
-                    RecruitText = "选择登记后进名册（候补，在营区公共居所留守），首次两件装备随登记一次生成；不登记也可以以后再来",
+                    Status = "可邀约同行 · 不耗时", HasNews = true, ActionLabel = "交谈", Background = c.Background,
+                    RecruitText = "交谈读完邀约后可选“登记同行”或“暂不登记”；登记后进名册（候补，在营区公共居所留守，不自动编队，队伍满员也能登记），首次两件装备随登记一次生成；暂不登记可以以后再来",
                     TalkBlocked = TalkBlocked(s),
                 };
             }

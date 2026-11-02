@@ -7,7 +7,8 @@ namespace Survival.Core.Engine
 {
     /// <summary>
     /// h03 战术训练（开发计划 v0.9 B15，R46 接 R22；R03 §3“阶位1：C3解锁后在h03花parts2+cloth2，60基础工作分钟，每角色一次；
-    /// 阶位2：QMAP04完成后在h03花precision_parts2+steel2，90分钟，每角色一次”）。
+    /// 阶位2：QMAP04完成后在h03花precision_parts2+steel2，90分钟，每角色一次”；B15a Q153 选 A：阶位2 的旧 QMAP04 前置改为“已领警备仓备用电源或 FA04 完成”，
+    /// 不单设 10 分钟接口检测；Q158 选 A：入口在 h03 罗铮事项、不计入 19 项城市服务，60/90 分钟全队固定等待、不吃技能或制造加速）。
     /// 选一名当前同行者（含你）训练到下一阶；材料取你随身或当地地面，开工预留、完成核销；全队按等待度过（开发假设 B15-7）；
     /// 取消不扣材料、不升阶，已过时间不退。训练不是熟练度、不给经验。
     /// </summary>
@@ -29,6 +30,7 @@ namespace Survival.Core.Engine
                 return $"阶位{t.Tier}需要：队伍容量达到C{t.MinCapacity}（{Config.Scope.Capacity.Unlocks.FirstOrDefault(u => u.Capacity == t.MinCapacity)?.Text ?? ""}）";
             var miss = t.RequiresAll.FirstOrDefault(f => !s.Progress.Flags.Contains(f));
             if (miss != null) return $"阶位{t.Tier}需要：{RequirementText(miss)}";
+            if (t.RequiresAny.Count > 0 && !t.RequiresAny.Any(s.Progress.Flags.Contains)) return $"阶位{t.Tier}需要：{AnyRequirementText(t.RequiresAny)}";
             var lack = t.Inputs.Where(kv => AvailableCount(s, kv.Key, true) < kv.Value).Select(kv => $"{ItemName(kv.Key)}{AvailableCount(s, kv.Key, true)}/{kv.Value}").ToList();
             if (lack.Count > 0) return $"阶位{t.Tier}材料不足（随身或当地地面）：{string.Join("、", lack)}";
             return null;
@@ -43,7 +45,7 @@ namespace Survival.Core.Engine
             v.StartLabel = "开始训练";
             v.EffectText = "选一名当前同行者（含你）训练到下一阶：阶位0/1/2 每次普通行动分别有"
                 + string.Join("/", Config.Scope.ApByTier) + "个行动点；"
-                + string.Join("；", tiers.Select(t => $"阶位{t.Tier}{(t.MinCapacity > 0 ? $"在队伍容量C{t.MinCapacity}后" : "")}{(t.RequiresAll.Count > 0 ? "在" + string.Join("、", t.RequiresAll.Select(RequirementText)) + "后" : "")}花{TierCost(t)}、{t.Minutes}分钟"))
+                + string.Join("；", tiers.Select(t => $"阶位{t.Tier}{(t.MinCapacity > 0 ? $"在队伍容量C{t.MinCapacity}后" : "")}{(t.RequiresAll.Count > 0 ? "在" + string.Join("、", t.RequiresAll.Select(RequirementText)) + "后" : "")}{(t.RequiresAny.Count > 0 ? "在" + AnyRequirementText(t.RequiresAny) + "后" : "")}花{TierCost(t)}、{t.Minutes}分钟"))
                 + "，每人每阶一次。材料取你随身或当地地面，完成时扣；全队一起等待，中途停下不扣材料、不升阶。训练不是熟练度，不给经验";
             v.Targets = PresentTargets(s, a => TrainingBlocked(s, a), a =>
             {

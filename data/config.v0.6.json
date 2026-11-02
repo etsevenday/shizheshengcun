@@ -19246,6 +19246,7 @@
           "tier": 1,
           "minCapacity": 3,
           "requiresAll": [],
+          "requiresAny": [],
           "inputs": {
             "parts": 2,
             "cloth": 2
@@ -19255,8 +19256,10 @@
         {
           "tier": 2,
           "minCapacity": 0,
-          "requiresAll": [
-            "quest:QMAP04:completed"
+          "requiresAll": [],
+          "requiresAny": [
+            "communication_power_claimed",
+            "quest:FA04:completed"
           ],
           "inputs": {
             "precision_parts": 2,
@@ -25304,6 +25307,48 @@
         "speaker": "你",
         "text": "至少知道下一次该问什么，而不是再赌一个说法。",
         "note": ""
+      },
+      {
+        "id": "NTL_RN_01",
+        "eventId": "RN01_recruit_offer",
+        "speaker": "林昭",
+        "text": "你带回的道路记录我看过了。我平时搬运物资，也跟着巡路，还算不上老手。要是你愿意，我们就登记同行，路上一起分担负重和警戒。",
+        "note": ""
+      },
+      {
+        "id": "NTL_RN_02",
+        "eventId": "RN02_recruit_offer",
+        "speaker": "周砚",
+        "text": "道路记录和检修分工都在这里。遇到陌生设备，我会先检查工具，再核对安全步骤，不靠猜。如果你愿意照这个办法配合，我们可以登记同行。",
+        "note": ""
+      },
+      {
+        "id": "NTL_RN_03",
+        "eventId": "RN03_recruit_offer",
+        "speaker": "沈禾",
+        "text": "这份转运说明，先请你看清楚。需要照护时，我会把能做的事和风险讲明白，由你决定接不接受。你愿意的话，我们就登记同行，路上互相照应。",
+        "note": ""
+      },
+      {
+        "id": "NTL_RN_04",
+        "eventId": "RN04_recruit_offer",
+        "speaker": "唐梨",
+        "text": "林间这段归路，我已经把走过的地方记下来了。我用弓，也做搜集，出发前总要先看看退路。要一起走吗？愿意的话，就登记同行。",
+        "note": ""
+      },
+      {
+        "id": "NTL_RN_05",
+        "eventId": "RN05_recruit_offer",
+        "speaker": "顾承",
+        "text": "封存清单先核对清楚，出发前还得检查装备、分好各自的事。我以前做设施巡防，现在跟营区外勤协作。你若愿意，我们就登记同行，一起把准备做扎实。",
+        "note": ""
+      },
+      {
+        "id": "NTL_RN_06",
+        "eventId": "RN06_recruit_offer",
+        "speaker": "叶洵",
+        "text": "值守记录在这里，亲眼见过的和听来的，我分开记了。我在通信设施外围收集过记录，但没见过的事不会替它下结论。你愿意的话，我们可以登记同行。",
+        "note": ""
       }
     ]
   },
@@ -30444,8 +30489,7 @@
       "communication_power_claimed": "在警备仓封存仓核心领取警备仓备用电源",
       "guardianDefeated": "击败本次地牢的守卫（地牢守卫战后续版本开放）",
       "recordClaimedAndClear": "领取（或核对）本次地牢的核心记录",
-      "chapter_contact": "在深野通信站联络台完成联络",
-      "quest:QMAP04:completed": "完成主线“为远行供电”（这项主线暂未开放）"
+      "chapter_contact": "在深野通信站联络台完成联络"
     },
     "arrivalFacts": {
       "c02_church": [
@@ -30787,6 +30831,16 @@
         "id": "settle",
         "title": "整备下一次出行",
         "step": "补充食水、休息或探索已知地点，留意营地的新消息。"
+      },
+      {
+        "id": "main_quest_none",
+        "title": "查看主线与委托",
+        "step": "打开任务册，查看当前主线进度与接取条件。"
+      },
+      {
+        "id": "main_quest_done",
+        "title": "保持联络，继续求生",
+        "step": "本轮主线已完成，可在任务册回看记录，继续探索与求生。"
       }
     ],
     "adaptiveSteps": [
@@ -32914,6 +32968,8 @@
         "requiresAll": [
           "hub_registered"
         ],
+        "requiresAny": [],
+        "requiresExplore": {},
         "requiresRosterMember": false,
         "accept": "auto",
         "acceptServiceId": null,
@@ -32929,6 +32985,7 @@
         "workRequiresAll": [],
         "workLabel": "",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "在营区广场听许安说外面的路。",
         "stepActive": "在营区广场听许安说外面的路。",
@@ -32946,6 +33003,8 @@
           "church_contacted"
         ],
         "requiresAll": [],
+        "requiresAny": [],
+        "requiresExplore": {},
         "requiresRosterMember": false,
         "accept": "service",
         "acceptServiceId": "church_reception_existing",
@@ -32963,6 +33022,7 @@
         "completeByAny": [
           "FA02_record_credit"
         ],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到教会接待庭向祁闻询问公开路线（可拒绝宣誓）。",
         "stepActive": "从教堂墓园进入教会地下圣所，在核心领取圣所旧路档册。",
@@ -32980,6 +33040,8 @@
           "academy_contacted"
         ],
         "requiresAll": [],
+        "requiresAny": [],
+        "requiresExplore": {},
         "requiresRosterMember": false,
         "accept": "service",
         "acceptServiceId": "academy_reception_existing",
@@ -32997,6 +33059,7 @@
         "completeByAny": [
           "FA03_record_credit"
         ],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到科学院接待处向温澄询问环境调查路线（可拒绝身体检测）。",
         "stepActive": "从封存实验楼进入灰塔封存区，在核心领取封存区安全规程。",
@@ -33017,6 +33080,8 @@
           "FA02_record_credit",
           "FA03_record_credit"
         ],
+        "requiresAny": [],
+        "requiresExplore": {},
         "requiresRosterMember": false,
         "accept": "work",
         "acceptServiceId": null,
@@ -33034,6 +33099,7 @@
         "workRequiresAll": [],
         "workLabel": "",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [
           "FA04_merged"
         ],
@@ -33055,6 +33121,8 @@
         "requiresAll": [
           "communication_power_claimed"
         ],
+        "requiresAny": [],
+        "requiresExplore": {},
         "requiresRosterMember": false,
         "accept": "talk",
         "acceptServiceId": null,
@@ -33072,6 +33140,7 @@
         "completeByAny": [
           "chapter_contact"
         ],
+        "completeRequiresAccepted": true,
         "completeFacts": [],
         "stepOffer": "从警备仓外进入旧城警备仓，在封存仓领取警备仓备用电源，再到营区工坊和罗铮交谈。",
         "stepActive": "从山顶瞭望台进入深野通信站，在联络台完成联络。",
@@ -33090,6 +33159,8 @@
         "requiresAll": [
           "hub_registered"
         ],
+        "requiresAny": [],
+        "requiresExplore": {},
         "requiresRosterMember": false,
         "accept": "talk",
         "acceptServiceId": null,
@@ -33105,6 +33176,7 @@
         "workRequiresAll": [],
         "workLabel": "阅读说明",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到鉴定所和陶岑交谈。",
         "stepActive": "在鉴定所阅读鉴定说明（0分钟，不用交出样本）。",
@@ -33123,6 +33195,8 @@
         "requiresAll": [
           "quest:HU01:completed"
         ],
+        "requiresAny": [],
+        "requiresExplore": {},
         "requiresRosterMember": false,
         "accept": "talk",
         "acceptServiceId": null,
@@ -33138,6 +33212,7 @@
         "workRequiresAll": [],
         "workLabel": "了解范围",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "再到鉴定所和陶岑交谈。",
         "stepActive": "在鉴定所了解样本保留、融合与交易的范围（0分钟，不要求交易一次）。",
@@ -33156,6 +33231,8 @@
         "requiresAll": [
           "hub_registered"
         ],
+        "requiresAny": [],
+        "requiresExplore": {},
         "requiresRosterMember": false,
         "accept": "talk",
         "acceptServiceId": null,
@@ -33171,6 +33248,7 @@
         "workRequiresAll": [],
         "workLabel": "阅读说明",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到收容所和杜穗交谈。",
         "stepActive": "在收容所阅读固定同行者、周期候选与同行补员的区别（0分钟）。",
@@ -33189,6 +33267,8 @@
         "requiresAll": [
           "hub_registered"
         ],
+        "requiresAny": [],
+        "requiresExplore": {},
         "requiresRosterMember": true,
         "accept": "talk",
         "acceptServiceId": null,
@@ -33204,6 +33284,7 @@
         "workRequiresAll": [],
         "workLabel": "查看说明",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到收容所和杜穗交谈。",
         "stepActive": "在收容所查看候补照护与伤病风险说明（0分钟，可以不让任何人留守）。",
@@ -33222,6 +33303,8 @@
         "requiresAll": [
           "quest:FA02:accepted"
         ],
+        "requiresAny": [],
+        "requiresExplore": {},
         "requiresRosterMember": false,
         "accept": "talk",
         "acceptServiceId": null,
@@ -33239,6 +33322,7 @@
         ],
         "workLabel": "核对物资账",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到施济处和白苓交谈。",
         "stepActive": "取得圣所旧路档册后，在施济处核对物资账（10分钟）。",
@@ -33257,6 +33341,8 @@
         "requiresAll": [
           "quest:CH01:completed"
         ],
+        "requiresAny": [],
+        "requiresExplore": {},
         "requiresRosterMember": false,
         "accept": "talk",
         "acceptServiceId": null,
@@ -33275,6 +33361,7 @@
         "workRequiresAll": [],
         "workLabel": "",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到训诫堂和纪牧交谈。",
         "stepActive": "在训诫堂交接公开资料（选抄录或回营区备份），或到典藏室抄录路线备份（10分钟）。",
@@ -33293,6 +33380,8 @@
         "requiresAll": [
           "quest:FA03:accepted"
         ],
+        "requiresAny": [],
+        "requiresExplore": {},
         "requiresRosterMember": false,
         "accept": "talk",
         "acceptServiceId": null,
@@ -33310,6 +33399,7 @@
         "workRequiresAll": [],
         "workLabel": "",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到检测室和季闻交谈。",
         "stepActive": "在检测室核对观察范围，选只核对环境记录或只读现有状态（10分钟，不改身体数值）。",
@@ -33328,6 +33418,8 @@
         "requiresAll": [
           "FA03_record_credit"
         ],
+        "requiresAny": [],
+        "requiresExplore": {},
         "requiresRosterMember": false,
         "accept": "talk",
         "acceptServiceId": null,
@@ -33345,6 +33437,7 @@
         "workRequiresAll": [],
         "workLabel": "",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到档案室和邵宁交谈。",
         "stepActive": "在档案室比对观察报告（10分钟）。",
@@ -33357,16 +33450,16 @@
         "npcId": "npc_lin_zhao",
         "locationId": "h02_square",
         "implemented": true,
-        "showAny": [
-          "hub_registered"
-        ],
+        "showAny": [],
         "requiresAll": [
           "hub_registered"
         ],
+        "requiresAny": [],
+        "requiresExplore": {},
         "requiresRosterMember": false,
         "accept": "roster",
         "acceptServiceId": null,
-        "offerDialogue": null,
+        "offerDialogue": "RN01_recruit_offer",
         "workDialogue": null,
         "turninDialogue": null,
         "repeatDialogue": null,
@@ -33376,11 +33469,12 @@
         "workMinutes": 0,
         "workServiceIds": [],
         "workRequiresAll": [],
-        "workLabel": "登记同行",
+        "workLabel": "交谈",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
-        "stepOffer": "在营区广场和林昭谈谈同行。",
-        "stepActive": "在营区广场和林昭谈谈同行。",
+        "stepOffer": "在营区广场和林昭交谈，读完邀约后选择是否登记同行。",
+        "stepActive": "在营区广场和林昭交谈，读完邀约后选择是否登记同行。",
         "result": "林昭登记入名册（首次装备随登记一次生成）"
       },
       {
@@ -33389,16 +33483,20 @@
         "kind": "recruit",
         "npcId": "npc_zhou_yan",
         "locationId": "h03_workshop",
-        "implemented": false,
+        "implemented": true,
         "showAny": [],
-        "requiresAll": [
-          "quest:QMAP02:accepted",
-          "a01_explore100"
+        "requiresAll": [],
+        "requiresAny": [
+          "quest:FA02:accepted",
+          "quest:FA02:completed"
         ],
+        "requiresExplore": {
+          "a01_yard": 100
+        },
         "requiresRosterMember": false,
         "accept": "roster",
         "acceptServiceId": null,
-        "offerDialogue": null,
+        "offerDialogue": "RN02_recruit_offer",
         "workDialogue": null,
         "turninDialogue": null,
         "repeatDialogue": null,
@@ -33408,12 +33506,13 @@
         "workMinutes": 0,
         "workServiceIds": [],
         "workRequiresAll": [],
-        "workLabel": "",
+        "workLabel": "交谈",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
-        "stepOffer": "",
-        "stepActive": "",
-        "result": "周砚登记入名册"
+        "stepOffer": "在营区工坊和周砚交谈，读完邀约后选择是否登记同行。",
+        "stepActive": "在营区工坊和周砚交谈，读完邀约后选择是否登记同行。",
+        "result": "周砚登记入名册（首次装备随登记一次生成）"
       },
       {
         "id": "RN03",
@@ -33421,16 +33520,20 @@
         "kind": "recruit",
         "npcId": "npc_shen_he",
         "locationId": "h04_infirmary",
-        "implemented": false,
+        "implemented": true,
         "showAny": [],
-        "requiresAll": [
-          "quest:QMAP03:accepted",
-          "b01_explore100"
+        "requiresAll": [],
+        "requiresAny": [
+          "quest:FA03:accepted",
+          "quest:FA03:completed"
         ],
+        "requiresExplore": {
+          "b01_school": 100
+        },
         "requiresRosterMember": false,
         "accept": "roster",
         "acceptServiceId": null,
-        "offerDialogue": null,
+        "offerDialogue": "RN03_recruit_offer",
         "workDialogue": null,
         "turninDialogue": null,
         "repeatDialogue": null,
@@ -33440,12 +33543,13 @@
         "workMinutes": 0,
         "workServiceIds": [],
         "workRequiresAll": [],
-        "workLabel": "",
+        "workLabel": "交谈",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
-        "stepOffer": "",
-        "stepActive": "",
-        "result": "沈禾登记入名册"
+        "stepOffer": "在营区医务室和沈禾交谈，读完邀约后选择是否登记同行。",
+        "stepActive": "在营区医务室和沈禾交谈，读完邀约后选择是否登记同行。",
+        "result": "沈禾登记入名册（首次装备随登记一次生成）"
       },
       {
         "id": "RN04",
@@ -33453,16 +33557,19 @@
         "kind": "recruit",
         "npcId": "npc_tang_li",
         "locationId": "h02_square",
-        "implemented": false,
+        "implemented": true,
         "showAny": [],
         "requiresAll": [
-          "quest:QMAP03:completed",
-          "w02_explore100"
+          "quest:FA03:completed"
         ],
+        "requiresAny": [],
+        "requiresExplore": {
+          "w02_forest": 100
+        },
         "requiresRosterMember": false,
         "accept": "roster",
         "acceptServiceId": null,
-        "offerDialogue": null,
+        "offerDialogue": "RN04_recruit_offer",
         "workDialogue": null,
         "turninDialogue": null,
         "repeatDialogue": null,
@@ -33472,12 +33579,13 @@
         "workMinutes": 0,
         "workServiceIds": [],
         "workRequiresAll": [],
-        "workLabel": "",
+        "workLabel": "交谈",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
-        "stepOffer": "",
-        "stepActive": "",
-        "result": "唐梨登记入名册"
+        "stepOffer": "在营区广场和唐梨交谈，读完邀约后选择是否登记同行。",
+        "stepActive": "在营区广场和唐梨交谈，读完邀约后选择是否登记同行。",
+        "result": "唐梨登记入名册（首次装备随登记一次生成）"
       },
       {
         "id": "RN05",
@@ -33485,15 +33593,18 @@
         "kind": "recruit",
         "npcId": "npc_gu_cheng",
         "locationId": "h03_workshop",
-        "implemented": false,
+        "implemented": true,
         "showAny": [],
-        "requiresAll": [
-          "quest:QMAP04:completed"
+        "requiresAll": [],
+        "requiresAny": [
+          "communication_power_claimed",
+          "quest:FA04:completed"
         ],
+        "requiresExplore": {},
         "requiresRosterMember": false,
         "accept": "roster",
         "acceptServiceId": null,
-        "offerDialogue": null,
+        "offerDialogue": "RN05_recruit_offer",
         "workDialogue": null,
         "turninDialogue": null,
         "repeatDialogue": null,
@@ -33503,12 +33614,13 @@
         "workMinutes": 0,
         "workServiceIds": [],
         "workRequiresAll": [],
-        "workLabel": "",
+        "workLabel": "交谈",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
-        "stepOffer": "",
-        "stepActive": "",
-        "result": "顾承登记入名册"
+        "stepOffer": "在营区工坊和顾承交谈，读完邀约后选择是否登记同行。",
+        "stepActive": "在营区工坊和顾承交谈，读完邀约后选择是否登记同行。",
+        "result": "顾承登记入名册（首次装备随登记一次生成）"
       },
       {
         "id": "RN06",
@@ -33516,16 +33628,20 @@
         "kind": "recruit",
         "npcId": "npc_ye_xun",
         "locationId": "h02_square",
-        "implemented": false,
+        "implemented": true,
         "showAny": [],
-        "requiresAll": [
-          "quest:QMAP04:completed",
-          "b03_explore100"
+        "requiresAll": [],
+        "requiresAny": [
+          "communication_power_claimed",
+          "quest:FA04:completed"
         ],
+        "requiresExplore": {
+          "b03_hospital": 100
+        },
         "requiresRosterMember": false,
         "accept": "roster",
         "acceptServiceId": null,
-        "offerDialogue": null,
+        "offerDialogue": "RN06_recruit_offer",
         "workDialogue": null,
         "turninDialogue": null,
         "repeatDialogue": null,
@@ -33535,12 +33651,13 @@
         "workMinutes": 0,
         "workServiceIds": [],
         "workRequiresAll": [],
-        "workLabel": "",
+        "workLabel": "交谈",
         "completeByAny": [],
+        "completeRequiresAccepted": false,
         "completeFacts": [],
-        "stepOffer": "",
-        "stepActive": "",
-        "result": "叶洵登记入名册"
+        "stepOffer": "在营区广场和叶洵交谈，读完邀约后选择是否登记同行。",
+        "stepActive": "在营区广场和叶洵交谈，读完邀约后选择是否登记同行。",
+        "result": "叶洵登记入名册（首次装备随登记一次生成）"
       }
     ],
     "dialogueSets": [
@@ -33707,6 +33824,30 @@
       {
         "id": "AC02_external_medical_note",
         "title": "相互矛盾的报告：外部医疗线索"
+      },
+      {
+        "id": "RN01_recruit_offer",
+        "title": "相互照应：邀约"
+      },
+      {
+        "id": "RN02_recruit_offer",
+        "title": "检修交接：邀约"
+      },
+      {
+        "id": "RN03_recruit_offer",
+        "title": "转运手册：邀约"
+      },
+      {
+        "id": "RN04_recruit_offer",
+        "title": "林间归路：邀约"
+      },
+      {
+        "id": "RN05_recruit_offer",
+        "title": "封存清单：邀约"
+      },
+      {
+        "id": "RN06_recruit_offer",
+        "title": "值守记录：邀约"
       }
     ]
   }

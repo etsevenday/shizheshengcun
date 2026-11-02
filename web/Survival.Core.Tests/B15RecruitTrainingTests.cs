@@ -26,7 +26,7 @@ public class B15RecruitTrainingTests : TestBase
 
     // ───────────── RN01 ─────────────
 
-    /// <summary>RN01：登记后营区广场出现林昭同行邀约卡（不替代许安岗位卡）；“登记同行”0 分钟入名册（候补）并生成首次两件装备，任务完成、卡消失；再请求不重发。</summary>
+    /// <summary>RN01：登记后营区广场出现林昭同行邀约卡（不替代许安岗位卡）；“交谈”读完邀约后“登记同行”0 分钟入名册（候补）并生成首次两件装备，任务完成、卡消失；再请求不重发。</summary>
     [Test]
     public void RN01_InviteCard_RegisterOnce()
     {
@@ -34,12 +34,15 @@ public class B15RecruitTrainingTests : TestBase
         var cards = E.NpcsHere(s);
         Assert.That(cards.Select(c => c.Kind), Is.EquivalentTo(new[] { "post", "companion" }));
         var lin = cards.Single(c => c.Kind == "companion");
-        Assert.That((lin.Name, lin.Role, lin.KindLabel, lin.ActionLabel), Is.EqualTo(("林昭", "营区巡路", "固定队友", "登记同行")));
+        Assert.That((lin.Name, lin.Role, lin.KindLabel, lin.ActionLabel), Is.EqualTo(("林昭", "营区巡路", "固定队友", "交谈")));
         Assert.That(lin.Background, Does.StartWith("营区的物资搬运与巡路人员"));
         Assert.That(E.QuestViewOf(s, "RN01")!.KindLabel, Is.EqualTo("同行邀约"));
         var minute = s.GameMinute;
         var items = s.Items.Count;
         Ok(E.TalkNpc(s, "npc_lin_zhao"));
+        // B15a（Q156 选 B）：交谈打开邀约对白，读完选“登记同行”才入名册
+        Assert.That(E.RosterOf(s, "npc_lin_zhao"), Is.Null);
+        Ok(E.AnswerRecruit(s, "RN01", E.CurrentDialogueLine(s)!.LineId, true));
         Assert.That(s.GameMinute, Is.EqualTo(minute), "0 分钟 0 物资");
         Assert.That(E.RosterOf(s, "npc_lin_zhao"), Is.Not.Null);
         Assert.That(s.Party, Does.Not.Contain("npc_lin_zhao"), "进名册候补，不自动编入");
@@ -51,7 +54,7 @@ public class B15RecruitTrainingTests : TestBase
         Assert.That(s.Items.Count - items, Is.EqualTo(2));
     }
 
-    /// <summary>RN01 未登记不出现；开发入口已登记过林昭的，安全边界记 RN01 完成（旧档追认），不出邀约卡、不重发；RN02—RN06 不显示。</summary>
+    /// <summary>RN01 未登记不出现；开发入口已登记过林昭的，安全边界记 RN01 完成（旧档追认），不出邀约卡、不重发；RN02—RN06 前置未满足时不显示。</summary>
     [Test]
     public void RN01_NotRegistered_NoCard_DevRecruitedRetro_OthersHidden()
     {
@@ -65,6 +68,7 @@ public class B15RecruitTrainingTests : TestBase
         Assert.That(t.Progress.Flags, Does.Contain(Q("RN01", "completed")));
         Assert.That(t.Quests.Records["RN01"].Retro, Is.True);
         Assert.That(E.NpcsHere(t).Any(c => c.Kind == "companion"), Is.False);
+        // B15a（Q152）：RN02—RN06 已开放，但前置未满足时不显示
         foreach (var id in new[] { "RN02", "RN03", "RN04", "RN05", "RN06" })
             Assert.That(E.QuestViewOf(t, id), Is.Null, id);
         Assert.That(E.QuestBook(t).Select(v => v.Id), Does.Not.Contain("RN02"));
@@ -102,7 +106,7 @@ public class B15RecruitTrainingTests : TestBase
         Assert.That(E.NormalActivationAp(s.Player), Is.EqualTo(4));
         Assert.That(s.Items.Where(i => i.ItemId is "parts" or "cloth").Sum(i => i.Count), Is.EqualTo(0), "完成时扣材料");
         Assert.That(s.Skills.Values.Sum(k => k.Xp), Is.EqualTo(xp), "训练不是熟练度，不给经验");
-        Assert.That(E.CityServicePreview(s, GameEngine.TrainingServiceId)!.Targets.Single().Blocked, Is.EqualTo("阶位2需要：完成主线“为远行供电”（这项主线暂未开放）"));
+        Assert.That(E.CityServicePreview(s, GameEngine.TrainingServiceId)!.Targets.Single().Blocked, Is.EqualTo("阶位2需要：在警备仓封存仓核心领取警备仓备用电源，或完成“同一条归路”"), "B15a Q153：阶位2 前置改为已领备用电源或 FA04 完成");
     }
 
     /// <summary>取消训练：材料原物原处、阶位不变；队友也能训练（各自一次），冷却/阶位记在本人。</summary>

@@ -268,7 +268,7 @@ public class B13dGuideTests : BattleTestBase
     {
         var p = Cfg.Prologue;
         Assert.That(p.Stages.Select(x => x.Headline), Is.EqualTo(new[] { "先在附近站稳脚跟", "建立食水补给", "安排工具与休息", "探清周围与退路", "寻找求医的方向", "前往幸存者营区寻找医疗帮助" }));
-        Assert.That(p.SpecialObjectives.Select(x => x.Id), Is.EqualTo(new[] { "visitor_talk", "visitor_return", "exit_go", "exit_need", "route_onward", "settle" }));
+        Assert.That(p.SpecialObjectives.Select(x => x.Id), Is.EqualTo(new[] { "visitor_talk", "visitor_return", "exit_go", "exit_need", "route_onward", "settle", "main_quest_none", "main_quest_done" }));  // B15a（Q155）：登记后主线的两句
         var bad = new System.Text.RegularExpressions.Regex(@"[A-Za-z_]{2,}|tick|owner|S15|R07");
         foreach (var t in p.Tasks) Assert.That(bad.IsMatch(t.Goal) || bad.IsMatch(t.Title), Is.False, t.Id + "：" + t.Goal);
         foreach (var x in p.SpecialObjectives.Where(x => x.Id != "exit_need")) Assert.That(bad.IsMatch(x.Title + x.Step), Is.False, x.Id);

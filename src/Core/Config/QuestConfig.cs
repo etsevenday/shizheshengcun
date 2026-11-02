@@ -30,6 +30,10 @@ namespace Survival.Core.Config
         public List<string> ShowAny { get; set; } = new List<string>();
         /// <summary>接取前置（全部成立）。</summary>
         public List<string> RequiresAll { get; set; } = new List<string>();
+        /// <summary>接取前置（任一成立；空 = 不要求）。B15a Q152：RN02“已接或已完成 FA02”、RN05/RN06“已领警备仓备用电源或 FA04 完成”。</summary>
+        public List<string> RequiresAny { get; set; } = new List<string>();
+        /// <summary>接取前置：地点探索度至少到这个百分比（B15a Q152：RN02 a01、RN03 b01、RN04 w02、RN06 b03 探索 100%）。</summary>
+        public Dictionary<string, int> RequiresExplore { get; set; } = new Dictionary<string, int>();
         /// <summary>HU04“已有一名同行”：名册里至少有一名存活的同行者（不含主角）。</summary>
         public bool RequiresRosterMember { get; set; }
         /// <summary>auto（到达即触发）/ talk（与岗位交谈接取）/ service（办理 AcceptServiceId 接取）/ work（开始工作即接取）/ roster（选择登记）。</summary>
@@ -55,6 +59,8 @@ namespace Survival.Core.Config
         public string WorkLabel { get; set; } = "";
         /// <summary>任一事实出现即完成（FA02/FA03 首次核心记录、FA05 联络日志）。</summary>
         public List<string> CompleteByAny { get; set; } = new List<string>();
+        /// <summary>CompleteByAny 只在已接取后才算完成（B15a Q157：FA05 先领联络日志的，接取后安全边界完成）。</summary>
+        public bool CompleteRequiresAccepted { get; set; }
         /// <summary>完成同一事务写入的事实（FA04_merged）。</summary>
         public List<string> CompleteFacts { get; set; } = new List<string>();
         /// <summary>可接时的“下一步”。</summary>
@@ -84,6 +90,8 @@ namespace Survival.Core.Config
         /// <summary>须达到的队伍容量 C（阶位 1：C3 解锁后）；0 为不要求。</summary>
         public int MinCapacity { get; set; }
         public List<string> RequiresAll { get; set; } = new List<string>();
+        /// <summary>任一成立（B15a Q153：阶位 2“已领警备仓备用电源或 FA04 完成”）；空 = 不要求。</summary>
+        public List<string> RequiresAny { get; set; } = new List<string>();
         public Dictionary<string, int> Inputs { get; set; } = new Dictionary<string, int>();
         public int Minutes { get; set; }
     }

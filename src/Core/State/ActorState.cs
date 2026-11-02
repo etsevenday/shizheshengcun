@@ -27,7 +27,7 @@ namespace Survival.Core.State
         /// </summary>
         public Dictionary<string, int> DailyCounts { get; set; } = new Dictionary<string, int>();
         /// <summary>
-        /// 战术训练阶位 0/1/2（R03 §3）：每次普通激活 3/4/5AP。训练入口（h03，C3/QMAP04 后花材料）在后续批次；本批默认 0，开发入口可设。
+        /// 战术训练阶位 0/1/2（R03 §3）：每次普通激活 3/4/5AP。训练入口在 h03 罗铮事项（B15：阶位 1 要 C3；B15a：阶位 2 要已领警备仓备用电源或 FA04 完成），开发入口可设。
         /// 不是熟练度，不跨局继承。
         /// </summary>
         public int TacticalTier { get; set; }

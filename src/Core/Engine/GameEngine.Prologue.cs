@@ -9,7 +9,7 @@ namespace Survival.Core.Engine
     /// <summary>主界面任务角/任务册的一条（主目标或建议）。只读视图，不改状态。</summary>
     public sealed class PrologueObjectiveView
     {
-        /// <summary>稳定 ID：任务 ID（PRO01—PRO18）或 visitor_talk / visitor_return / exit_go / exit_need / route_onward / settle。</summary>
+        /// <summary>稳定 ID：任务 ID（PRO01—PRO18）或 visitor_talk / visitor_return / exit_go / exit_need / route_onward / settle / main_quest（B15a：营区登记后的当前主线）。</summary>
         public string Id { get; set; } = "";
         public string Title { get; set; } = "";
         /// <summary>下一步可做的具体动作（中性说明）。</summary>
@@ -794,6 +794,12 @@ namespace Survival.Core.Engine
                 stage = "D5";
                 obj = s.CurrentLocation == Config.Prologue.Visitor.LocationId ? "visitor_talk" : "visitor_return";
             }
+            else if (MainQuestObjectiveOn(s))
+            {
+                // B15a（Q155 选 A）：营区登记完成后主目标接续到当前主线（取代 S15 登记后仍显示 route_onward 的冲突部分）
+                stage = "mainline";
+                obj = MainQuestObjectiveId;
+            }
             else if (f.Contains(FactCampRouteKnown))
             {
                 stage = "mainline";
@@ -859,6 +865,8 @@ namespace Survival.Core.Engine
                 case "route_onward":
                 case "settle":
                     return Special(p.ObjectiveId, null);
+                case MainQuestObjectiveId:
+                    return MainQuestObjective(s);
             }
             var t = ProTask(p.ObjectiveId);
             if (t == null) return null;
@@ -868,10 +876,39 @@ namespace Survival.Core.Engine
 
         public PrologueSpecialObjectiveConfig? SpecialOf(string id) => Config.Prologue.SpecialObjectives.FirstOrDefault(x => x.Id == id);
 
-        private PrologueObjectiveView Special(string id, string? taskId)
+        /// <summary>营区登记后的主目标 ID（B15a，Q155 选 A）。</summary>
+        public const string MainQuestObjectiveId = "main_quest";
+
+        /// <summary>主线显示顺序（Q155 显示算法：FA01→FA02→FA03→FA04→FA05 固定顺序）。</summary>
+        private static readonly string[] MainQuestOrder = { "FA01", "FA02", "FA03", "FA04", "FA05" };
+
+        /// <summary>营区登记已完成、且主线已实装：主目标接续到当前主线。</summary>
+        private bool MainQuestObjectiveOn(GameState s)
+        {
+            var reg = Config.City.Registration.RegisteredFact;
+            return !string.IsNullOrEmpty(reg) && s.Progress.Flags.Contains(reg) && MainQuestOrder.Any(id => Quest(id)?.Implemented == true);
+        }
+
+        /// <summary>
+        /// 登记后的主目标（B15a，Q155 选 A 显示算法，只读、不自动接取、不伪造已发现路线）：按 FA01→FA05 固定顺序，在任务册已显示的未完成主线里
+        /// 先取进行中的、再取可接的（平行 FA02/FA03 都已接时 FA02 优先，完成后自然切到另一条）；标题用正式任务名，下一步用任务册同状态的短句。
+        /// 暂无可显示的未完成主线 →“查看主线与委托”；FA01—FA05 全部完成 →“保持联络，继续求生”（不强制终局）。
+        /// 危险提示、战斗、对白与动作锁照旧优先（任务框在战斗界面隐藏，对白层覆盖在上）。
+        /// </summary>
+        private PrologueObjectiveView MainQuestObjective(GameState s)
+        {
+            var live = MainQuestOrder.Where(id => Quest(id)?.Implemented == true).ToList();
+            if (live.All(id => QuestDone(s, id))) return Special("main_quest_done", null, MainQuestObjectiveId);
+            var views = live.Select(id => QuestViewOf(s, id)).Where(v => v != null && v.Status != "done").Select(v => v!).ToList();
+            var pick = views.FirstOrDefault(v => v.Status == "active") ?? views.FirstOrDefault(v => v.Status == "available");
+            if (pick == null) return Special("main_quest_none", null, MainQuestObjectiveId);
+            return new PrologueObjectiveView { Id = MainQuestObjectiveId, Title = pick.Title, Step = pick.Step };
+        }
+
+        private PrologueObjectiveView Special(string id, string? taskId, string? viewId = null)
         {
             var sp = SpecialOf(id);
-            return new PrologueObjectiveView { Id = id, TaskId = taskId, Title = sp?.Title ?? "", Step = sp?.Step ?? "" };
+            return new PrologueObjectiveView { Id = viewId ?? id, TaskId = taskId, Title = sp?.Title ?? "", Step = sp?.Step ?? "" };
         }
 
         /// <summary>
