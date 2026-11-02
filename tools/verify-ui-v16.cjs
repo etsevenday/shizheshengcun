@@ -242,7 +242,7 @@ const near = (a, b, tol = 2) => Math.abs(a - b) <= tol;
     await readDialogues();
     if (await ev(`!!document.querySelector('.bfs')`)) throw new Error('首战没打完');
     // 三敌
-    await devButton('记下营区登记（C2）'); await devButton('记下教会路线记录（C3）');
+    await devButton('记下营区登记（C2）'); await devButton('记下圣所旧路档册（C3）');
     // M220：长名敌人（重装守卫感染者）+ 两只游荡尸
     await devButton('放重装守卫感染者');
     for (let i = 0; i < 2; i++) await devButton('放游荡尸');

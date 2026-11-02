@@ -122,8 +122,8 @@
                 @* B7c（Q62）：容量 C 来自存档里的真实解锁事实；营区登记、两种关键记录的系统在后续批次，这里只供试玩造事实 *@
                 <div class="btn-row">
                     <button class="secondary" @onclick='() => DevCapacity("hub_registered")'>记下营区登记（C2）</button>
-                    <button class="secondary" @onclick='() => DevCapacity("church_route_record")'>记下教会路线记录（C3）</button>
-                    <button class="secondary" @onclick='() => DevCapacity("academy_safety_record")'>记下学院安全记录（两种都有C4）</button>
+                    <button class="secondary" @onclick='() => DevCapacity("church_route_record")'>记下圣所旧路档册（C3）</button>
+                    <button class="secondary" @onclick='() => DevCapacity("academy_safety_record")'>记下封存区安全规程（两种都有C4）</button>
                     <button class="secondary" @onclick="() => DevCapacity(null)">清除容量事实（回C1）</button>
                     <button class="secondary" @onclick="() => DevDone(G.E.DebugGiveWraps(G.S))">护拳绑带1件+制作材料</button>
                 </div>
@@ -271,7 +271,7 @@
         ("FA02_record_credit", "教会记录资格"),
         ("FA03_record_credit", "科学院记录资格"),
         ("FA04_merged", "两份记录已合并"),
-        ("communication_power_claimed", "通信电源已领取"),
+        ("communication_power_claimed", "警备仓备用电源已领取"),
     };
 
     [Parameter] public bool Battle { get; set; }

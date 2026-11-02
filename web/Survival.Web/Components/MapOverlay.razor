@@ -19,6 +19,7 @@
 {
     var v = e.BuildMapView(s, G.MapLayer);
     var layers = e.KnownMapLayers(s);
+    var regions = e.KnownMapRegions(s);   // Q124（B13c）：主世界分区导航，只列有已知地点的分区
     var k = Zooms[Math.Clamp(G.MapZoom, 0, Zooms.Length - 1)];
     var overview = G.MapZoom == 0;
     var labels = k >= 0.75;
@@ -44,12 +45,22 @@
                 }
             </nav>
             <div class="map-tools">
-                @if (layers.Count > 1)
-                {
-                    <select class="map-layer" aria-label="切换地图层" title="切换查看的层（不移动）" value="@v.LayerKey" @onchange="OnLayer">
-                        @foreach (var (key, name) in layers) { <option value="@key">@name</option> }
-                    </select>
-                }
+                @* 层切换与主世界分区导航合在一个下拉里（1280 档工具条放不下第二个下拉）；选分区＝切到主世界并把视口移到该分区已知地点中间，0 分钟、不移动 *@
+                <select class="map-layer" @key="_selectKey" aria-label="切换地图层或定位主世界分区" title="切换查看的层，或定位到主世界的某个分区（只切换查看，不移动，0分钟）" value="@v.LayerKey" @onchange="OnLayer">
+                    @if (layers.Count > 1)
+                    {
+                        <optgroup label="地图层">
+                            @foreach (var (key, name) in layers) { <option value="@key">@name</option> }
+                        </optgroup>
+                    }
+                    else { <option value="@GameEngine.WorldLayer">主世界</option> }
+                    <optgroup label="主世界分区（定位）">
+                        @foreach (var r in regions)
+                        {
+                            <option value="@("region:" + r.Key)">@r.Name@(r.HasHere ? "·当前" : "")（已知@(r.Known)处）</option>
+                        }
+                    </optgroup>
+                </select>
                 <button type="button" class="secondary" title="缩小（−）" disabled="@(G.MapZoom <= 1)" @onclick="() => Zoom(G.MapZoom - 1)">−</button>
                 <button type="button" class="secondary" title="放大（+）" disabled="@(G.MapZoom >= Zooms.Length - 1)" @onclick="() => Zoom(G.MapZoom + 1)">+</button>
                 <button type="button" class="secondary @(overview ? "on" : "")" title="总览：只画点，悬停看地名" @onclick="() => Zoom(overview ? GameSession.MapDefaultZoom : 0)">总览</button>
@@ -181,7 +192,7 @@ else
             <div class="op-head">
                 <div class="eyebrow">区域地图 · 当前位置</div>
                 <h2>@tl.Name</h2>
-                <p>@(tl.IsIndoor ? "室内，可遮蔽睡眠" : "露天")@(tl.CanBuildShelter ? " · 营地" : "") · 探索度@(ts.Progress)%</p>
+                <p>@(tl.IsIndoor ? "室内，可遮蔽睡眠" : "露天")@(tl.CanBuildShelter ? " · 营地" : "") · 探索度@(ts.Progress)% · @e.RegionName(e.RegionOf(target))</p>
             </div>
             <div class="lines">
                 @foreach (var ed in e.AdjacentUnlocked(s))
@@ -221,7 +232,7 @@ else
             <div class="op-head">
                 <div class="eyebrow">区域地图 · @(ts.Visited ? $"探索度{ts.Progress}%" : "已发现 · 待访问")</div>
                 <h2>@tl.Name</h2>
-                <p>@(tl.IsIndoor ? "室内" : "露天")@(tl.Danger is int dg ? $" · 危险{dg}" : "") · @e.MapLayerName(e.MapLayerOf(target))</p>
+                <p>@(tl.IsIndoor ? "室内" : "露天")@(tl.Danger is int dg ? $" · 危险{dg}" : "") · @e.RegionName(e.RegionOf(target)) · @e.MapLayerName(e.MapLayerOf(target))</p>
             </div>
             @if (e.IsBusy(s))
             {
@@ -310,7 +321,31 @@ else
         return list;
     }
 
-    private void OnLayer(ChangeEventArgs ev) => SwitchLayer(ev.Value?.ToString() ?? GameEngine.WorldLayer);
+    private int _selectKey;
+
+    private void OnLayer(ChangeEventArgs ev)
+    {
+        var value = ev.Value?.ToString() ?? GameEngine.WorldLayer;
+        if (value.StartsWith("region:")) GoRegion(value.Substring(7));
+        else SwitchLayer(value);
+    }
+
+    /// <summary>
+    /// 主世界分区导航（Q124 选 A，A10-EXUI §1、NAME-Q124-01）：切到主世界层，把视口平移到该分区已知地点的中间；只读，不移动、不发现、不耗时。
+    /// 下拉随后回到显示当前层（换 key 重建，避免停在分区项上）。
+    /// </summary>
+    private void GoRegion(string key)
+    {
+        var r = G.E.KnownMapRegions(G.S).FirstOrDefault(x => x.Key == key);
+        _selectKey++;
+        if (r == null) { G.Notify(); return; }
+        G.MapLayer = GameEngine.WorldLayer;
+        G.MapAnchor = G.S.CurrentLocation;
+        G.ClosePop();
+        _centerWorld = (r.CenterX, r.CenterY);
+        _needCenter = true;
+        G.Notify();
+    }
 
     /// <summary>切换查看的层：只换阅读，不移动、不退出地牢；当前位置在该层就居中到当前位置，否则居中到该层已知范围。</summary>
     private void SwitchLayer(string layer)

@@ -12,7 +12,10 @@ namespace Survival.Core.Engine
         /// <summary>层键：world / city:&lt;父城节点&gt; / dungeon:&lt;地牢ID&gt;。</summary>
         public string LayerKey { get; set; } = "world";
         public string LayerName { get; set; } = "";
-        /// <summary>面包屑：“主世界 / 营区广场城内 / 营区工坊”（当前位置在本层时末段是当前地点）。</summary>
+        /// <summary>
+        /// 面包屑（Q124，B13c）：主世界“主世界 / 分区 / 当前地点”；城内“主世界 / 分区 / 当前地点”（人不在该城时末段是“X城内”）；
+        /// 地牢“主世界 / 父入口分区 / 地牢 / 当前房间”。当前位置不在本层时不写当前地点。
+        /// </summary>
         public List<string> Breadcrumb { get; set; } = new List<string>();
         public List<MapViewNode> Nodes { get; set; } = new List<MapViewNode>();
         public List<MapViewEdge> Edges { get; set; } = new List<MapViewEdge>();
@@ -73,6 +76,17 @@ namespace Survival.Core.Engine
         public string Reason { get; set; } = "";
     }
 
+    /// <summary>主世界分区导航的一项（Q124，B13c）：只列至少有一个已知地点的分区；中心与外框按本分区已知节点算，点选只平移视口。</summary>
+    public sealed class MapRegion
+    {
+        public string Key { get; set; } = "";
+        public string Name { get; set; } = "";
+        public int Known { get; set; }
+        public double CenterX { get; set; }
+        public double CenterY { get; set; }
+        public bool HasHere { get; set; }
+    }
+
     public sealed class MapPathStep
     {
         public string From { get; set; } = "";
@@ -89,6 +103,43 @@ namespace Survival.Core.Engine
     public sealed partial class GameEngine
     {
         public const string WorldLayer = "world";
+
+        /// <summary>
+        /// 地点所在世界分区（Q124，A08/S14 本轮章）：世界与城内节点读自身 zone；地牢房间按父入口地点的分区（“地牢通过父入口归属显示其分区”）。
+        /// </summary>
+        public string RegionOf(string locationId)
+        {
+            var l = _locs[locationId];
+            if (l.NodeKind == "dungeon" && l.DungeonId != null)
+            {
+                var d = Config.Map.Dungeons.FirstOrDefault(x => x.Id == l.DungeonId);
+                if (d != null && _locs.TryGetValue(d.Parent, out var p)) return p.Zone;
+            }
+            return l.Zone;
+        }
+
+        /// <summary>分区正式名（regionNames 字典，面包屑与分区导航同源）；没有名字时退回分区键。</summary>
+        public string RegionName(string zone) => Config.Map.RegionNames.TryGetValue(zone, out var n) ? n : zone;
+
+        /// <summary>
+        /// 主世界分区导航（Q124 选 A，A10-EXUI §1、S14 本轮章 NAME-Q124-01）：按 regionNames 顺序列出至少有一个已发现地点的分区（未知分区不出现、不泄露名字），
+        /// 中心取本分区在主世界层的已知节点平均位置。只读：点选只平移视口，0 分钟，不发现、不移动。
+        /// </summary>
+        public List<MapRegion> KnownMapRegions(GameState s)
+        {
+            var view = BuildMapView(s, WorldLayer);
+            var here = view.HereNode;
+            var list = new List<MapRegion>();
+            var order = Config.Map.RegionNames.Keys.ToList();
+            foreach (var g in view.Nodes.GroupBy(n => RegionOf(n.Id)).OrderBy(g => order.IndexOf(g.Key) < 0 ? int.MaxValue : order.IndexOf(g.Key)))
+                list.Add(new MapRegion
+                {
+                    Key = g.Key, Name = RegionName(g.Key), Known = g.Count(),
+                    CenterX = g.Average(n => n.X), CenterY = g.Average(n => n.Y),
+                    HasHere = here != null && g.Any(n => n.Id == here),
+                });
+            return list;
+        }
 
         /// <summary>地点所在图层：地牢房间 dungeon:dXX；城内建筑 city:父城；其余 world。</summary>
         public string MapLayerOf(string locationId)
@@ -267,9 +318,23 @@ namespace Survival.Core.Engine
                 view.MinX = view.Nodes.Min(n => n.X); view.MaxX = view.Nodes.Max(n => n.X);
                 view.MinY = view.Nodes.Min(n => n.Y); view.MaxY = view.Nodes.Max(n => n.Y);
             }
+            // Q124（B13c）：中间一级是分区名；城内不再写重复的“营区广场城内 / 营区广场”
             view.Breadcrumb.Add(MapLayerName(WorldLayer));
-            if (layer != WorldLayer) view.Breadcrumb.Add(view.LayerName);
-            if (view.HereNode != null) view.Breadcrumb.Add(LocName(here));
+            if (layer == WorldLayer)
+            {
+                if (view.HereNode != null) { view.Breadcrumb.Add(RegionName(RegionOf(here))); view.Breadcrumb.Add(LocName(here)); }
+            }
+            else if (layer.StartsWith("city:"))
+            {
+                view.Breadcrumb.Add(RegionName(RegionOf(layer.Substring(5))));
+                view.Breadcrumb.Add(view.HereNode != null ? LocName(here) : view.LayerName);
+            }
+            else
+            {
+                view.Breadcrumb.Add(RegionName(RegionOf(DungeonRooms(layer.Substring(8)).First().Id)));
+                view.Breadcrumb.Add(view.LayerName);
+                if (view.HereNode != null) view.Breadcrumb.Add(LocName(here));
+            }
             return view;
         }
 

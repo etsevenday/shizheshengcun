@@ -23,7 +23,7 @@ public class B12MapViewTests : TestBase
         Assert.That(v.Nodes.All(n => s.Locations[n.Id].Discovered), Is.True);
         Assert.That(v.Edges.All(e => s.Locations[e.A].Discovered && s.Locations[e.B].Discovered), Is.True);
         Assert.That(E.KnownMapLayers(s).Select(x => x.Key), Is.EqualTo(new[] { GameEngine.WorldLayer }), "没有已知城内/地牢就没有这些层");
-        Assert.That(v.Breadcrumb, Is.EqualTo(new[] { "主世界", E.LocName("camp") }));
+        Assert.That(v.Breadcrumb, Is.EqualTo(new[] { "主世界", "初醒荒野", E.LocName("camp") }), "B13c（Q124）：中间一级是分区名");
         // 请求一个不认识的层退回主世界，不泄露
         Assert.That(E.BuildMapView(s, "dungeon:d01").LayerKey, Is.EqualTo(GameEngine.WorldLayer));
     }
@@ -37,7 +37,7 @@ public class B12MapViewTests : TestBase
         Assert.That(s.Locations["h02_square"].Discovered, Is.True, "公开地点 100 揭出边，父城已知");
         Assert.That(E.DefaultMapLayer(s), Is.EqualTo("city:h02_square"));
         var city = E.BuildMapView(s);
-        Assert.That(city.Breadcrumb, Is.EqualTo(new[] { "主世界", E.LocName("h02_square") + "城内", E.LocName("h03_workshop") }));
+        Assert.That(city.Breadcrumb, Is.EqualTo(new[] { "主世界", "幸存者营区", E.LocName("h03_workshop") }), "B13c（Q124）：城内写分区，不写重复的“营区广场城内”");
         Assert.That(city.Nodes.Select(n => n.Id), Does.Contain("h02_square").And.Contain("h03_workshop"));
         Assert.That(E.MapLayerOf("h05_appraisal"), Is.EqualTo("city:h02_square"));
         Assert.That(E.MapLayerOf("h05_homestead"), Is.EqualTo(GameEngine.WorldLayer), "MAP30-04：安全屋地块不与鉴定所混同");
