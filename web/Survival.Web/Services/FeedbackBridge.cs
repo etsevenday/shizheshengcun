@@ -63,7 +63,7 @@ public sealed class FeedbackBridge
             .Select(p => $"{e.ItemName(p.ItemId)}#{p.InstanceId}@{p.Owner}：{e.PotLabel(s, p)}，食材{e.PotFood(s, p.InstanceId).Count}，{e.ContentStatus(s, p)}")
             .ToList();
         ctx["carried"] = Summarize(s, e, ItemInstance.Carried);
-        ctx["ground"] = Summarize(s, e, s.CurrentLocation);
+        ctx["ground"] = Summarize(s, e, s.Ground);
         ctx["flags"] = s.Progress.Flags.OrderBy(x => x).ToList();
         ctx["dead"] = s.Progress.Dead ? s.Progress.Death?.Cause : null;
         ctx["seed"] = s.Seed;

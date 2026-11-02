@@ -90,11 +90,12 @@
                                 case "formation": <FormationOverlay /> break;
                                 case "gear": <GearOverlay /> break;
                                 case "growth": <GrowthOverlay /> break;
+                                case "safehouse": <SafehouseOverlay /> break;
                             }
                         </div>
                     }
                 </div>
-                <ItemShelf Owner="@s.CurrentLocation" Title="当前地面" Sub="@e.LocName(s.CurrentLocation)" />
+                <ItemShelf Owner="@s.Ground" Title="@(s.CurrentZone == GameState.SafehouseZone ? "屋内地面" : "当前地面")" Sub="@e.LocName(s.Ground)" />
                 <ItemShelf Owner="@ItemInstance.Carried" Title="随身物品" />
             </div>
 
@@ -122,7 +123,7 @@
             @* 选卡操作（S14 §18.3）：锚定在所选卡片下方的紧凑浮窗，脱离文档流，不撑高所在行；同屏只有一个 *@
             <CardPop />
             @* 点火工具菜单：锚定在火堆卡“点燃”按钮旁的浮窗，不在卡内撑高设施行（试玩修复 B1） *@
-            @if (G.IgniteMenuOpen && !battleUi && e.Location(s.CurrentLocation).HasFire && !s.Locations[s.CurrentLocation].Facility.FireLit) { <IgniteMenu /> }
+            @if (G.IgniteMenuOpen && !battleUi && e.HasFireAt(s, s.Ground) && !e.FacOf(s, s.Ground)!.FireLit) { <IgniteMenu /> }
         </div>
 
         @* 旧档非法同类双武器整理先于超五卡整理（B3 H8）；两者都只在安全空闲出现 *@

@@ -88,11 +88,11 @@
 
         @* 暂停层点火（系统策划总册 v1.0 Q5-3，S01 §7、S09 §6）：主行动暂停、不在移动途中、当地火堆未燃烧时，选一把具体打火器开始 5 分钟点火维护；
            结束仍回到暂停，主行动要明确继续。移动途中、战斗中不提供。 *@
-        @if (!travel && e.Location(s.CurrentLocation).HasFire && !s.Locations[s.CurrentLocation].Facility.FireLit)
+        @if (!travel && e.HasFireAt(s, s.Ground) && !e.FacOf(s, s.Ground)!.FireLit)
         {
-            var fac = s.Locations[s.CurrentLocation].Facility;
+            var fac = e.FacOf(s, s.Ground)!;
             var opts = e.IgniteToolOptions(s);
-            <h3 style="margin:4px 0 0;font-weight:500">点燃火堆 · @(e.LocName(s.CurrentLocation))（燃料@(fac.FuelMinutes)分钟）</h3>
+            <h3 style="margin:4px 0 0;font-weight:500">点燃火堆 · @(e.LocName(s.Ground))（燃料@(fac.FuelMinutes)分钟）</h3>
             <div class="supply-grid">
                 @foreach (var o in opts)
                 {

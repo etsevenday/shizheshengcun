@@ -10,7 +10,7 @@
     var members = s.Party.ToList();
     var carriedOwner = ItemInstance.CarriedOwner(me);
     var carried = s.Items.Where(i => i.Owner == carriedOwner).OrderBy(i => i.InstanceId).ToList();
-    var ground = s.Items.Where(i => i.Owner == s.CurrentLocation && e.IsWearable(i.ItemId)).OrderBy(i => i.InstanceId).ToList();
+    var ground = s.Items.Where(i => i.Owner == s.Ground && e.IsWearable(i.ItemId)).OrderBy(i => i.InstanceId).ToList();
     var timing = e.EquipTimingBlocked(s, me);
 }
 
@@ -124,7 +124,7 @@
         </section>
 
         <section class="gear-col" aria-label="当前地面的装备">
-            <div class="eyebrow">@e.LocName(s.CurrentLocation)地面 · 可穿装备 @ground.Count</div>
+            <div class="eyebrow">@e.LocName(s.Ground)地面 · 可穿装备 @ground.Count</div>
             @if (timing != null) { <div class="warn-text tiny">@timing</div> }
             @if (ground.Count == 0) { <div class="muted tiny">当前地面没有可穿的装备</div> }
             @foreach (var it in ground)

@@ -1,0 +1,48 @@
+@inherits GameComponent
+
+@* 陶窑 / 固定净水台卡（A07 X1.4、S11 X4；开发计划 v0.9 B17 R56）：当前区已建成时出现在设施组。
+   空闲时“投料”（0 分钟、不占行动，原料从随身/当前地面取，移到本区地面锁定）；加工中显示进度与“取消”（退料、时间不退）。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var rc = e.Config.Recipes.First(r => e.IsStationBatchRecipe(r) && r.Station == Station);
+    var batch = e.StationBatchHere(s, Station);
+    var why = batch == null ? e.StationBatchBlocked(s, rc) : null;
+    var name = e.StationName(Station);
+    var line = batch != null ? $"加工中 {batch.DoneMinutes}/{batch.RequiredMinutes}分钟" : why == null ? "可以投料" : why;
+}
+<ObjectCard CssClass="fac-card station-card" Title="@name" Badge="@(batch != null ? "加工中" : "已建成")" BadgeClass="built"
+            Tooltip="@($"{name}：{e.StationBatchSummary(rc)}")" OnClick="Craft">
+    <Art>@Icons.Markup(Station == "kiln" ? "ceramic_shell" : "clean_water")</Art>
+    <ChildContent>
+        <div class="oc-line" title="@line">@line</div>
+        @if (batch != null) { <div class="track"><i style="width:@(batch.DoneMinutes * 100 / Math.Max(1, batch.RequiredMinutes))%"></i></div> }
+    </ChildContent>
+    <Footer>
+        @if (batch == null)
+        {
+            <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? e.StationBatchSummary(rc))"
+                    @onclick="Load" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>投料 · 被动@(rc.BaseMinutes)分</strong></button>
+        }
+        else
+        {
+            <button type="button" class="loc-btn res-btn" title="取消这一批：原料退回本区地面，已过时间不退，没有产物"
+                    @onclick="CancelBatch" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>取消这一批</strong></button>
+        }
+    </Footer>
+</ObjectCard>
+
+@code {
+    /// <summary>kiln 或 water_station。</summary>
+    [Parameter, EditorRequired] public string Station { get; set; } = "kiln";
+
+    private void Craft() => G.OpenCraftStation(Station);
+
+    private void Load()
+    {
+        var rc = G.E.Config.Recipes.First(r => G.E.IsStationBatchRecipe(r) && r.Station == Station);
+        G.EngineDo(() => G.E.StartStationBatch(G.S, rc.Id, Guid.NewGuid().ToString("N")));
+    }
+
+    private void CancelBatch() => G.EngineDo(() => G.E.CancelStationBatch(G.S, Station));
+}

@@ -264,5 +264,63 @@ namespace Survival.Core.Engine
             var legs = string.Join("", path.Select(p => $"→{LocName(p.To)}（{p.Minutes}分钟）"));
             return $"{name}：路线 {LocName(path[0].From)}{legs}，合计约{path.Sum(p => p.Minutes)}基础分钟（实际按负重、夜间等折算）；要自己沿路线逐段走，不会自动寻路或传送";
         }
+        // ───────────────────────── 开发入口（?dev=1，B17） ─────────────────────────
+
+        /// <summary>开发：传送到营外安全屋地块 h05_homestead（按实际到达处理，到访即探索 100），并记下营区登记（只为建屋资格，不发物资）。</summary>
+        public string DebugSafehouseSite(GameState s, string locationId = "h05_homestead")
+        {
+            if (IsBusy(s)) return "开发：行动进行中或有敌踪/战斗，先结束再传送";
+            var text = s.CurrentLocation == locationId ? $"开发：已在{LocName(locationId)}" : DebugMapTeleport(s, locationId).TrimEnd('。');
+            s.CurrentZone = ExteriorZone;
+            if (s.Locations[locationId].Progress < Config.Safehouse.RequiredExplore) DebugSetProgress(s, locationId, Config.Safehouse.RequiredExplore);
+            var fresh = s.Progress.Flags.Add(Config.Safehouse.RegisteredFact);
+            if (fresh) RefreshGates(s);
+            s.WorldEnemies.RemoveAll(w => w.LocationId == locationId && !w.Engaged);
+            if (s.Skills.TryGetValue(Crafting, out var cr) && cr.Level < 1) cr.Level = 1;
+            UpdateFlags(s);
+            return text + $"；探索度{s.Locations[locationId].Progress}%、已记营区登记、清掉当地敌踪：{(SafehouseSiteReasons(s, locationId).FirstOrDefault() ?? "可以建安全屋")}。";
+        }
+
+        /// <summary>开发：放下一间安全屋＋屋内床垫＋屋内火堆的全部材料（当前地面）。</summary>
+        public string DebugSafehouseKit(GameState s)
+        {
+            var kit = new[] { ("wood", 10), ("fiber", 10), ("cloth", 4), ("stone", 8) };
+            foreach (var (id, n) in kit) CreateItems(s, id, n, s.Ground);
+            Normalize(s, s.Ground);
+            return $"开发：安全屋基础＋床垫＋火堆材料放在{LocName(s.Ground)}地面（木材10、纤维10、布料4、石块8）";
+        }
+
+        /// <summary>开发：直接建成当前地点的安全屋（不扣材料、不花时间、不给经验；地点仍须在许可名单里）。</summary>
+        public string DebugBuildSafehouse(GameState s)
+        {
+            var loc = s.CurrentLocation;
+            if (SafehousePermissionBlocked(loc) is string why) return "开发：" + why;
+            if (SafehouseBuilt(s, loc)) return $"开发：{LocName(loc)}已有安全屋";
+            s.Locations[loc].Safehouse = new SafehouseState { Id = ItemInstance.SafehouseIdOf(loc), Built = true, BuiltMinute = s.GameMinute };
+            UpdateFlags(s);
+            return $"开发：在{LocName(loc)}直接建成安全屋（不扣材料、不花时间）";
+        }
+
+        /// <summary>开发：陶窑与固定净水台的建造与一批加工材料，制造设为 3 级、学会基础陶工做法。</summary>
+        public string DebugStationKit(GameState s)
+        {
+            if (s.Skills.TryGetValue(Crafting, out var cr) && cr.Level < 3) cr.Level = 3;
+            s.Progress.Flags.Add("h03_ceramic_notice_read");
+            var kit = new[] { ("stone", 8), ("clay", 8), ("iron_plate", 2), ("charcoal", 1), ("ceramic_shell", 4), ("plank", 2), ("cloth", 2), ("dirty_water", 4), ("filter_media", 1) };
+            foreach (var (id, n) in kit) CreateItems(s, id, n, s.Ground);
+            Normalize(s, s.Ground);
+            UpdateFlags(s);
+            return $"开发：制造3级、学会基础陶工做法；陶窑与净水台建造及各一批材料放在{LocName(s.Ground)}地面";
+        }
+
+        /// <summary>开发：野营遮雨布、折叠柴炉各一（当前地面）与木材2。</summary>
+        public string DebugCampingKit(GameState s)
+        {
+            CreateItems(s, Config.Safehouse.Camping.TarpItemId, 1, s.Ground);
+            CreateItems(s, Config.Safehouse.Camping.StoveItemId, 1, s.Ground);
+            CreateItems(s, "wood", 2, s.Ground);
+            Normalize(s, s.Ground);
+            return $"开发：野营遮雨布、折叠柴炉各1与木材2放在{LocName(s.Ground)}地面（只能在临时露营许可点部署）";
+        }
     }
 }

@@ -377,7 +377,7 @@ public sealed class GameSession
 
     /// <summary>替换中部上方的顶栏面板：地图、制作、休息、日志，以及生存目标、生存提示、对话记录、系统说明。</summary>
     public static bool IsTopPanel(string? panel) =>
-        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth" or "journey" or "city";
+        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth" or "journey" or "city" or "safehouse";
 
     // ───────────── 新手序章（B13，S15 §3—§8、A10-TUTOR） ─────────────
 
@@ -408,6 +408,9 @@ public sealed class GameSession
     }
 
     public ActionResult TalkNpc(string npcId) => PrologueDo(() => E.TalkNpc(S, npcId));
+
+    /// <summary>B17 安全屋/工坊批次等 0 分钟内核操作：失败写提示，成功存档并刷新（不收起面板）。</summary>
+    public ActionResult EngineDo(Func<ActionResult> f) => PrologueDo(f, closePanel: false);
     public ActionResult ReadDocument(string docId, string? choiceId = null) => PrologueDo(() => E.ReadDocument(S, docId, choiceId));
 
     // ───────────── 城市岗位事项（B14，A11 Q33 服务表） ─────────────
@@ -850,7 +853,7 @@ public sealed class GameSession
                     Guide("item", sel.Id, sel.Owner);
                     break;
                 case SelectionKind.Facility:
-                    if (sel.Id == GameEngine.FireIdOf(S.CurrentLocation)) Guide("fire");
+                    if (sel.Id == GameEngine.FireIdOf(S.Ground)) Guide("fire");
                     break;
                 case SelectionKind.Resource:
                     Guide("resource", sel.Id);
@@ -913,10 +916,10 @@ public sealed class GameSession
     /// </summary>
     public void SelectFire()
     {
-        if (State == null || !E.Location(S.CurrentLocation).HasFire) return;
+        if (State == null || !E.HasFireAt(S, S.Ground)) return;
         Panel = null;
         HoverPreview = null;
-        Select(new Selection { Kind = SelectionKind.Facility, Id = GameEngine.FireIdOf(S.CurrentLocation) });
+        Select(new Selection { Kind = SelectionKind.Facility, Id = GameEngine.FireIdOf(S.Ground) });
     }
 
     private int _hoverSeq;
@@ -1127,7 +1130,7 @@ public sealed class GameSession
                 return;
             }
             case SelectionKind.Facility:
-                if (E.FacilityLocation(Selected.Id) != S.CurrentLocation) ClearSelectionSilently();
+                if (E.FacilityLocation(Selected.Id) != S.Ground) ClearSelectionSilently();
                 return;
             case SelectionKind.Enemy:
                 if (!(Selected.InstanceId is int wid && E.VisibleEnemiesAt(S, S.CurrentLocation).Any(w => w.Id == wid))) ClearSelectionSilently();
@@ -1151,7 +1154,7 @@ public sealed class GameSession
 
     /// <summary>当前地面该物品最早到期、未预留的一堆（与转移同一顺序）。</summary>
     private ItemInstance? GroundHead(string itemId) =>
-        S.Items.Where(i => i.Owner == S.CurrentLocation && i.ItemId == itemId && i.ReservedBy == null)
+        S.Items.Where(i => i.Owner == S.Ground && i.ItemId == itemId && i.ReservedBy == null)
             .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).FirstOrDefault();
 
     // ───────────── 拖拽落点（交互与地图扩展 v0.3 · 01 案） ─────────────
@@ -1280,9 +1283,9 @@ public sealed class GameSession
     /// <summary>火堆“煅烧木炭”投料说明（Q111）：按钮提示与卡旁确认浮窗共用；每次界面版本只算一次。</summary>
     public CharcoalLoadInfo CharcoalPreview()
     {
-        if (_charcoalCache.ver == Version && _charcoalCache.loc == S.CurrentLocation && _charcoalCache.info != null) return _charcoalCache.info;
+        if (_charcoalCache.ver == Version && _charcoalCache.loc == S.Ground && _charcoalCache.info != null) return _charcoalCache.info;
         var info = E.CharcoalLoadPreview(S);
-        _charcoalCache = (Version, S.CurrentLocation, info);
+        _charcoalCache = (Version, S.Ground, info);
         return info;
     }
 
@@ -1318,9 +1321,9 @@ public sealed class GameSession
     /// <summary>当前地点火堆“等待加工”（原等待烹饪，Q111 起含煅烧）的只读解析（S11 §9）：悬停预览与按钮禁用原因共用；每次界面版本只算一次。</summary>
     public CookWaitPlan CookWaitPreview()
     {
-        if (_cookCache.ver == Version && _cookCache.loc == S.CurrentLocation && _cookCache.plan != null) return _cookCache.plan;
+        if (_cookCache.ver == Version && _cookCache.loc == S.Ground && _cookCache.plan != null) return _cookCache.plan;
         var plan = E.PreviewCookWait(S);
-        _cookCache = (Version, S.CurrentLocation, plan);
+        _cookCache = (Version, S.Ground, plan);
         return plan;
     }
 
@@ -1498,7 +1501,7 @@ public sealed class GameSession
         {
             var id = inst.InstanceId;
             var movedItem = inst.ItemId;
-            var zone = toZone ?? S.CurrentLocation;
+            var zone = toZone ?? S.Ground;
             var wasSelected = Selected.InstanceId == id && Selected.Kind == SelectionKind.Tool;
             // B10b 试玩修复：煅烧批次（木材×4 / 成品木炭×3）取出后不跟到合并堆、不再弹操作窗，免得盖住火堆加工位的“煅烧木炭”入口
             var cp = E.CharcoalProcess;

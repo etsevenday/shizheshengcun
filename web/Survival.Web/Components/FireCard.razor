@@ -9,11 +9,11 @@
 @{
     var s = G.S;
     var e = G.E;
-    var here = s.CurrentLocation;
-    var fac = s.Locations[here].Facility;
+    var here = s.Ground;   // B17：当前所在区（外部或安全屋屋内）的火堆
+    var fac = e.FacOf(s, here)!;
     var slots = e.FireSlots(s, here);
     var state = fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃";
-    var maxFuel = e.Config.Fire.MaxFuelMinutes;
+    var maxFuel = e.FuelCapOf(fac);   // 折叠柴炉 60，固定火堆 240
     var fireId = GameEngine.FireIdOf(here);
     var selected = G.Selected.Kind == SelectionKind.Facility && G.Selected.Id == fireId;
     // 火堆维护（投料、熄灭、点火）：空闲或主行动暂停时可做，移动途中与执行中不可（拖拽与容器案 8）
@@ -36,7 +36,7 @@
              @onclick="SelectFire" @onclick:stopPropagation="true" @onkeydown="Key">
             <span class="fc-art">@Icons.Markup(fac.FireLit ? "fire_lit" : "fire_out")</span>
             <span class="fc-info">
-                <span class="fc-title"><b>火堆</b><span class="oc-badge @(fac.FireLit ? "lit" : "")">@state</span>@if (slots.Count > 0 && slots.All(x => x != null)) {<span class="oc-badge full" title="@($"火堆加工位已满（{slots.Count}/{slots.Count}）：取出成品或半成品后才能再煅烧木炭、放锅或直烤")">加工位满</span>}</span>
+                <span class="fc-title" title="@(fac.StoveInstanceId.HasValue ? "折叠柴炉：收起请选中地面上的柴炉卡（先取空、熄火；剩余燃料要明确放弃）" : null)"><b>@(fac.StoveInstanceId.HasValue ? "折叠柴炉" : s.CurrentZone == GameState.SafehouseZone ? "屋内火堆" : "火堆")</b><span class="oc-badge @(fac.FireLit ? "lit" : "")">@state</span>@if (slots.Count > 0 && slots.All(x => x != null)) {<span class="oc-badge full" title="@($"火堆加工位已满（{slots.Count}/{slots.Count}）：取出成品或半成品后才能再煅烧木炭、放锅或直烤")">加工位满</span>}</span>
                 <span class="fuel-line"><span>燃料</span><b>@(fac.FuelMinutes)/@(maxFuel)分钟</b></span>
                 <span class="fuel-track"><i style="width:@(fac.FuelMinutes * 100 / Math.Max(1, maxFuel))%"></i></span>
             </span>
@@ -106,6 +106,7 @@
 </div>
 
 @code {
+
     private void SelectFire() => G.SelectFire();
 
     private void Key(KeyboardEventArgs ev)
@@ -130,7 +131,7 @@
     private void ToggleCharcoal()
     {
         if (G.Pop is { Kind: "charcoal" }) G.ClosePop();
-        else G.OpenPop("charcoal", G.S.CurrentLocation, "fc-charcoal");
+        else G.OpenPop("charcoal", G.S.Ground, "fc-charcoal");
     }
     private void Unhover() => G.Hover(null);
 

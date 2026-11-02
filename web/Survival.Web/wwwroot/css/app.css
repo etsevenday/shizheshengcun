@@ -1412,3 +1412,13 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .city-targets { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
 .city-targets label { display: flex; align-items: baseline; gap: 6px; cursor: pointer; }
 .npc-card.post-card .oc-line:first-child { color: #5d5a45; }   /* M315：职务在纸色卡面上用深色，原 --muted 浅灰几乎看不见 */
+
+/* B17 安全屋面板（S09 X2.5/X2.6）：柜内与随身/屋内地面左右两列，已建安全屋逐行写路线与上次记录 */
+.safehouse-panel .sh-body { display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+.safehouse-panel h3 { margin: 0 0 6px; font-weight: 500; }
+.safehouse-panel .sh-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+.safehouse-panel .sh-cols > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.safehouse-panel .irow .ir-extra { display: flex; gap: 6px; flex-wrap: wrap; }
+.safehouse-panel .sh-row { border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; margin-bottom: 6px; display: flex; flex-direction: column; gap: 3px; }
+.safehouse-panel .sh-row-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.safehouse-panel .sh-name { width: 9em; background: transparent; border: 1px solid var(--line); color: var(--text); border-radius: 3px; padding: 2px 4px; }

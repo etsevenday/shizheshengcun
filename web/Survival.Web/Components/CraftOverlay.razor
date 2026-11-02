@@ -9,7 +9,7 @@
     var e = G.E;
     var here = s.CurrentLocation;
     var lc = e.Location(here);
-    var fac = s.Locations[here].Facility;
+    var fac = e.FacOf(s, s.Ground) ?? s.Locations[here].Facility;
     var procId = G.CraftRecipe != null && G.CraftRecipe.StartsWith(ProcPrefix) ? G.CraftRecipe.Substring(ProcPrefix.Length) : null;
     var proc = procId == null ? null : e.Config.Processes.FirstOrDefault(p => p.Id == procId);
     // B10（A10 §9.1）：未掌握的做法也列出、写“未掌握”与来源（取代 Q64 时“不列出”的做法），开工校验仍拒绝
@@ -50,7 +50,7 @@
                             var st = e.Config.Workshops.Stations.FirstOrDefault(x => x.Id == t && x.BuildRecipe != null);
                             // B14b（Q141）：本地公共工坊站已开放也算可用（标签写“公共”）
                             var builtSt = st == null || e.StationUsableHere(s, t);
-                            var pubSt = st != null && !e.WorkshopBuilt(s, here, t) && e.PublicStationOpenHere(s, t);
+                            var pubSt = st != null && !e.WorkshopBuilt(s, s.Ground, t) && s.CurrentZone == GameState.ExteriorZone && e.PublicStationOpenHere(s, t);
                             <button type="button" role="tab" aria-selected="@(tab == t)" class="craft-tab @(tab == t ? "on" : "") @(builtSt ? "" : "unbuilt")" data-tab="@t"
                                     title="@(st == null ? tname : pubSt ? $"{tname}：{lc.Name}的公共{tname}已开放（0额外费用）" : builtSt ? $"{tname}：{lc.Name}已建成" : $"{tname}：{lc.Name}{TabSuffix(t).TrimStart('·')}（可浏览配方与门槛）")" @onclick="() => PickTab(t)">@tname@(pubSt ? "·公共" : builtSt ? "" : TabSuffix(t))</button>
                         }
@@ -100,7 +100,7 @@
                             }
                         </div>
                         <div class="btn-row" style="margin-top:10px">
-                            <button class="secondary" disabled="@(!lc.HasFire)" title="@(lc.HasFire ? "关闭手工制作，在地块栏第二行选中火堆" : $"{lc.Name}没有火堆，回到营地才能加工")"
+                            <button class="secondary" disabled="@(!e.HasFireAt(s, s.Ground))" title="@(e.HasFireAt(s, s.Ground) ? "关闭手工制作，在地块栏第二行选中火堆" : $"{lc.Name}没有火堆，回到营地才能加工")"
                                     @onclick="G.SelectFire">查看火堆 ▸</button>
                         </div>
                     </div>
@@ -134,7 +134,7 @@
                         }
                         @if (rc.NeedsExplicitPot)
                         {
-                            var pots = s.Items.Where(i => e.IsPot(i) && e.PlaceOf(s, i) is var pl && (pl == ItemInstance.Carried || pl == here)).ToList();
+                            var pots = s.Items.Where(i => e.IsPot(i) && e.PlaceOf(s, i) is var pl && (pl == ItemInstance.Carried || pl == s.Ground)).ToList();
                             <div class="tiny muted">指定一口取下并清空的锅（不消耗；不会自动装锅或倒出原锅内容）</div>
                             <div class="repair-list">
                                 @foreach (var pot in pots)
@@ -210,7 +210,7 @@
                             var need = kv.Value * batch;
                             var have = e.AvailableCount(s, item, true);
                             var carried = e.UsableBatches(s, item, false).Sum(i => i.Count);
-                            var reserved = s.Items.Where(i => i.ItemId == item && i.ReservedBy != null && (i.IsCarried || i.Owner == here)).Sum(i => i.Count);
+                            var reserved = s.Items.Where(i => i.ItemId == item && i.ReservedBy != null && (i.IsCarried || i.Owner == s.Ground)).Sum(i => i.Count);
                             var plan = Fill(item, need, preferred);
                             var lack = Math.Max(0, need - have);
                             <ItemRow Icon="@item" Name="@e.ItemName(item)" Qty="@($"需{need}")" Missing="@(lack > 0)" CssClass="mat-row"
@@ -239,16 +239,32 @@
                         <div class="tiny muted" style="margin-top:8px">产物</div>
                         @if (rc.FacilityResult != null)
                         {
-                            <ItemRow Icon="@RecipeIcon(rc)" Name="@rc.Name.Replace("建", "").Replace("铺", "")" Qty="×1" Status="@($"建在{lc.Name}，不可搬动{(rc.Group == "workshop" ? "，每类每地一座" : "")}")" />
+                            <ItemRow Icon="@RecipeIcon(rc)" Name="@rc.Name.Replace("建", "").Replace("铺", "")" Qty="×1" Status="@($"建在{e.LocName(s.Ground)}，不可搬动{(rc.Group == "workshop" ? "，每区每类一座" : "")}")" />
                         }
                         @foreach (var kv in rc.Outputs)
                         {
-                            <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"×{kv.Value * batch}")" Status="@($"完成后放在{lc.Name}地面")" />
+                            <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"×{kv.Value * batch}")" Status="@($"完成后放在{e.LocName(s.Ground)}地面")" />
                         }
                         </div>
                         @* 唯一“开始制作/开始建造”入口在所选配方卡内（S08 §5、S14 §14.1）：选配方、改份数、指定批次/锅只预览，不扣物不预留；
                            点开始才交内核按真实材料/工具/锅/占用重验并预留开工（E.Start），执行中锁住按钮，重复点击不重复制作。右栏只作可选详细预测。 *@
-                        @{
+                        @if (e.IsStationBatchRecipe(rc))
+                        {
+                            @* B17（A07 X1.4）：陶窑/固定净水台是被动批次：投料0分钟、不占行动，原料移到本区地面锁定，离开也继续 *@
+                            var sb = e.StationBatchHere(s, rc.Station);
+                            var sbWhy = busy ? "行动进行中" : e.StationBatchBlocked(s, rc);
+                            <div class="craft-go">
+                                <span class="cg-facts">
+                                    @if (sb != null) { <b>加工中</b><small>@(sb.DoneMinutes)/@(sb.RequiredMinutes)分钟 · 完成后放在@(e.LocName(s.Ground))地面</small> }
+                                    else if (sbWhy == null) { <b>被动@(rc.BaseMinutes)分钟</b><small>@e.StationBatchSummary(rc)</small> }
+                                    else { <small class="warn-text">@sbWhy</small> }
+                                </span>
+                                <button type="button" class="primary cg-start" disabled="@(sbWhy != null)" title="@(sbWhy ?? e.StationBatchSummary(rc))"
+                                        @onclick="() => LoadStation(rc.Id)">投料（被动）</button>
+                            </div>
+                        }
+                        else
+                        {
                             var p = G.Preview(request);
                             var startBusy = busy || (main != null && !p.AsSubAction) || _starting;
                             <div class="craft-go">
@@ -269,12 +285,12 @@
                     </div>
                 }
                 @* B10 试玩修复 7：火堆摘要只在“自动加工”里显示，让出配方卡的原料区 *@
-                @if (lc.HasFire && proc != null)
+                @if (e.HasFireAt(s, s.Ground) && proc != null)
                 {
-                    var used = e.FireContents(s, here).Count;
+                    var used = e.FireContents(s, s.Ground).Count;
                     <div class="panel fire-box">
                         <ItemRow Icon="@(fac.FireLit ? "fire_lit" : "fire_out")" Name="营地火堆" Qty="@(fac.FireLit ? "燃烧中" : fac.WentOut ? "熄灭" : "未点燃")"
-                                 Status="@($"燃料{fac.FuelMinutes}/{e.Config.Fire.MaxFuelMinutes}分钟 · 内容物{used}/{e.Config.Fire.ProcessingSlots}")">
+                                 Status="@($"燃料{fac.FuelMinutes}/{e.FuelCapOf(fac)}分钟 · 内容物{used}/{e.Config.Fire.ProcessingSlots}")">
                             <button class="secondary" @onclick="G.SelectFire">查看火堆 ▸</button>
                         </ItemRow>
                     </div>
@@ -309,7 +325,7 @@ else if (proc != null)
         }
     </div>
     <div class="detail-foot">
-        <button class="primary" disabled="@(!lc.HasFire)" @onclick="G.SelectFire">查看火堆 ▸</button>
+        <button class="primary" disabled="@(!G.E.HasFireAt(G.S, G.S.Ground))" @onclick="G.SelectFire">查看火堆 ▸</button>
         <div class="under">@(proc.IsSlotBatch ? "没有开始按钮：在火堆卡空加工位点“煅烧木炭”投料" : "没有开始按钮：放进燃烧的火堆即自动加工")</div>
     </div>
 }
@@ -422,7 +438,7 @@ else
     {
         var e = G.E;
         var here = G.S.CurrentLocation;
-        if (e.CanBuildWorkshopsAt(here)) return "·未建";
+        if (e.CanBuildWorkshopsHere(G.S)) return "·未建";
         if (e.PublicStationsAt(here).Any(p => p.StationId == station)) return "·未开放";
         var camp = e.Config.Workshops.BuildLocations.FirstOrDefault();
         return camp != null && e.WorkshopBuilt(G.S, camp, station) ? "·营地已建" : "·本地无";
@@ -446,6 +462,10 @@ else
         "workshop:sewing" => "cloth",
         "workshop:medical" => "bandage",
         "workshop:armory" => "crossbow",
+        "workshop:kiln" => "ceramic_shell",
+        "workshop:water_station" => "clean_water",
+        "safehouse" => "shelter",
+        "fireBuilt" => "fire_out",
         _ => r.IsRepair ? "repair" : r.Outputs.Keys.FirstOrDefault() ?? "stone",
     };
 
@@ -473,6 +493,8 @@ else
             return $"{k.Name}（{(e.KnowsKnowledge(G.S, k.Id) ? "已掌握" : "未掌握")}）· {k.Source}";
         return null;
     }
+
+    private void LoadStation(string recipeId) => G.EngineDo(() => G.E.StartStationBatch(G.S, recipeId, Guid.NewGuid().ToString("N")));
 
     private static string StartLabel(RecipeConfig r) => r.IsBuild ? "开始建造" : r.IsRepair ? "开始维护" : "开始制作";
 

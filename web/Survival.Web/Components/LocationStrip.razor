@@ -18,8 +18,16 @@
     var busy = e.IsBusy(s) || G.Running;
     // B14b（Q141）：营区工坊、试制工坊、营区广场、医务室的公共工坊站卡与火堆/棚/床同在“设施”组
     var publicStations = e.PublicStationsHere(s);
-    var hasFacilities = lc.HasFire || lc.CanBuildShelter || publicStations.Count > 0;
-    var enemies = e.VisibleEnemiesAt(s, here);
+    // B17（S09 X2）：当前所在区（外部区 / 安全屋屋内）的设施；屋内不显示外部的棚/床/公共站/资源/敌踪
+    var inside = s.CurrentZone == GameState.SafehouseZone;
+    var place = s.Ground;
+    var zfac = e.FacOf(s, place) ?? s.Locations[here].Facility;
+    var showSafehouse = e.SafehousePermissionBlocked(here) == null || e.SafehouseBuilt(s, here);
+    var stationCards = new[] { "kiln", "water_station" }.Where(st => e.WorkshopBuilt(s, place, st)).ToList();
+    var tarp = !inside && zfac.TarpInstanceId is int tarpId ? e.FindItem(s, tarpId) : null;
+    var hasFacilities = e.HasFireAt(s, place) || (!inside && lc.CanBuildShelter) || (!inside && publicStations.Count > 0) || showSafehouse || stationCards.Count > 0 || tarp != null;
+    var enemies = inside ? new List<WorldEnemy>() : e.VisibleEnemiesAt(s, here);
+    if (inside) resources = new List<ResourceConfig>();
 }
 
 @* 四区同屏（S14 §1.3）：两行高度按中部可用高度分配，不再固定 180/220 或 220—300 起始高度；行首竖排区标题常驻可见 *@
@@ -79,17 +87,34 @@
             <div class="desk-group facilities">
                 <div class="dg-title">设施</div>
                 <div class="dg-cards">
-                    @if (lc.HasFire) { <FireCard /> }
-                    @if (lc.CanBuildShelter)
+                    @if (e.HasFireAt(s, place)) { <FireCard /> }
+                    @if (!inside && lc.CanBuildShelter)
                     {
                         <FacilityCard Kind="shelter" />
                         <FacilityCard Kind="bed" />
                     }
-                    @* B10 试玩修复 9：营地设施栏显示已建工坊（只在可建工坊的地点） *@
-                    @if (G.E.CanBuildWorkshopsAt(G.S.CurrentLocation)) { <FacilityCard Kind="workshops" /> }
-                    @foreach (var ps in publicStations)
+                    @if (showSafehouse) { <SafehouseCard /> }
+                    @* B10 试玩修复 9：营地设施栏显示已建工坊（只在可建工坊的地点；B17 起含已完工安全屋屋内） *@
+                    @if (G.E.CanBuildWorkshopsHere(G.S)) { <FacilityCard Kind="workshops" /> }
+                    @foreach (var st in stationCards) { <StationCard @key="@("st-" + st)" Station="@st" /> }
+                    @if (tarp != null)
                     {
-                        <PublicStationCard @key="@("ps-" + ps.Id)" Station="ps" />
+                        var packWhy = G.Running || s.Main != null ? "行动进行中" : e.CanStart(s, GameEngine.Pack(tarp));
+                        <ObjectCard @key="@("tarp")" CssClass="fac-card" Title="野营遮雨布" Badge="已铺开" BadgeClass="built" Tooltip="铺开期间在这里睡眠算遮蔽（至多4人）；不挡遭遇，没有安全屋休息加成">
+                            <Art>@Icons.Markup("field_tarp")</Art>
+                            <ChildContent><div class="oc-line">睡眠遮蔽 · 不挡遭遇</div></ChildContent>
+                            <Footer>
+                                <button type="button" class="loc-btn res-btn" disabled="@(packWhy != null)" title="@(packWhy ?? $"收起野营遮雨布（{e.Config.Safehouse.Camping.TarpPackMinutes}分钟）")"
+                                        @onclick="() => PackTarp(tarp)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>收起 · @(e.Config.Safehouse.Camping.TarpPackMinutes)分</strong></button>
+                            </Footer>
+                        </ObjectCard>
+                    }
+                    @if (!inside)
+                    {
+                        foreach (var ps in publicStations)
+                        {
+                            <PublicStationCard @key="@("ps-" + ps.Id)" Station="ps" />
+                        }
                     }
                 </div>
             </div>
@@ -194,6 +219,8 @@
 @code {
     private void OpenStack() => G.OpenPop("lockstack", "all", "lockstack");
 
+    private async Task PackTarp(ItemInstance tarp) => await G.StartAction(GameEngine.Pack(tarp));
+
     private void SelectResource(string id) => G.Select(new Selection { Kind = SelectionKind.Resource, Id = id });
 
     private void SelectEnemy(int worldId) => G.Select(new Selection { Kind = SelectionKind.Enemy, Id = worldId.ToString(), InstanceId = worldId });
@@ -218,7 +245,7 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (G.State == null) return;
-        var here = G.S.CurrentLocation;
+        var here = G.S.Ground;
         if (here == _lastLocation) return;
         _lastLocation = here;
         try { await JS.InvokeVoidAsync("survival.resetDesk"); }

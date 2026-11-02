@@ -31,7 +31,7 @@ else
         @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
         <div class="char-top">
             <b>人物</b>
-            <span class="muted">@(day ? "白昼" : "夜间") · @(e.LocName(s.CurrentLocation))@(e.IsSheltered(s, s.CurrentLocation) ? "（遮蔽）" : "（露天）")</span>
+            <span class="muted">@(day ? "白昼" : "夜间") · @(e.LocName(s.Ground))@(e.IsSheltered(s, s.Ground) ? "（遮蔽）" : "（露天）")</span>
         </div>
         @* B8：队伍（同行/候补/遗物/补员），没有名册与遗物时不显示 *@
         <PartyPanel />
@@ -90,7 +90,7 @@ else
                                             }
                                             @if (why != null && groundWhy == null)
                                             {
-                                                <button type="button" class="eq-btn alt" title="@($"把{name}放到{e.LocName(s.CurrentLocation)}地面")" @onclick="() => G.Unequip(slot, true)">放当前地面</button>
+                                                <button type="button" class="eq-btn alt" title="@($"把{name}放到{e.LocName(s.Ground)}地面")" @onclick="() => G.Unequip(slot, true)">放当前地面</button>
                                             }
                                         </span>
                                     }

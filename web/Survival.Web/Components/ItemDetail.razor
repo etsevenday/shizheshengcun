@@ -5,7 +5,7 @@
     var e = G.E;
     var sel = G.Selected;
     var cfg = e.Item(sel.Id);
-    var here = s.CurrentLocation;
+    var here = s.Ground;
     var carried = sel.Owner == ItemInstance.Carried;
     // 设施与锅里的物品按根位置判断：仍在随身或当前地点（含当前火堆与锅）才可操作
     var probe = s.Items.FirstOrDefault(i => i.Owner == sel.Owner);

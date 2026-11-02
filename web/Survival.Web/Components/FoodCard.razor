@@ -30,7 +30,7 @@
         if (proc != null && !spoiled && !proc.HeatProtected)
         {
             var verb = e.Process(proc.RecipeId).Name;
-            brief = e.FireHot(s, s.CurrentLocation)
+            brief = e.FireHot(s, s.Ground)
                 ? $"{verb}中 {proc.HeatDoneMinutes}/{proc.RequiredHeatMinutes}分"
                 : $"{verb}暂停 {proc.HeatDoneMinutes}/{proc.RequiredHeatMinutes}（未燃）";
         }

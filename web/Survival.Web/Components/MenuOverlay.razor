@@ -146,6 +146,17 @@
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "crafting", 3))'>制造熟练设为3级</button>
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "medicine", 5))'>医疗熟练设为5级</button>
                 </div>
+                @* B17（R52—R56）：安全屋与分区设施——选址、材料、直接建成、陶窑/净水台、野营布与柴炉 *@
+                <div class="eyebrow">安全屋与分区设施（B17）</div>
+                <div class="btn-row">
+                    <button class="secondary" title="传送到营外安全屋地块（到访即探索100），记营区登记、清当地敌踪、制造至少1级" @onclick='() => DevDone(G.E.DebugSafehouseSite(G.S, "h05_homestead"))'>到营外安全屋地块（可建）</button>
+                    <button class="secondary" title="当前地点（须在许可名单）探索100、记营区登记、清当地敌踪" @onclick="() => DevDone(G.E.DebugSafehouseSite(G.S, G.S.CurrentLocation))">当前地点设为可建（探索100/登记/清敌）</button>
+                    <button class="secondary" @onclick="() => DevDone(G.E.DebugSafehouseKit(G.S))">安全屋＋床垫＋火堆材料（放当前地面）</button>
+                    <button class="secondary" title="不扣材料、不花时间、不给经验" @onclick="() => DevDone(G.E.DebugBuildSafehouse(G.S))">直接建成本地安全屋</button>
+                    <button class="secondary" @onclick="() => DevDone(G.E.DebugStationKit(G.S))">陶窑/净水台材料（制造3级、学会陶工）</button>
+                    <button class="secondary" @onclick="() => DevDone(G.E.DebugCampingKit(G.S))">野营布＋折叠柴炉＋木材2</button>
+                    <button class="secondary" title="临时露营许可点之一（野外勘测点），可部署野营布与柴炉" @onclick='() => DevDone(G.E.DebugMapTeleport(G.S, "w19_survey"))'>传送到露营许可点（w19）</button>
+                </div>
                 @* B13（R39—R43）：新手序章各阶段。只改剧情/时钟标记，不结算身体；来客在条件满足的安全边界登记 *@
                 <div class="eyebrow">序章（B13）：首战记胜 → 跳到第5日08:00（来客登记）→ 回营地交谈 → 去村庄看路标</div>
                 <div class="btn-row">

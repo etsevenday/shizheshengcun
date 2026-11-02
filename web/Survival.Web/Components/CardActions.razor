@@ -112,7 +112,7 @@
             <div class="tbar-row keep-row canteen-ops">
                 @foreach (var wid in cc.Accepts)
                 {
-                    var src = s.Items.Where(i => i.ItemId == wid && (i.IsCarried || i.Owner == s.CurrentLocation) && i.ReservedBy == null)
+                    var src = s.Items.Where(i => i.ItemId == wid && (i.IsCarried || i.Owner == s.Ground) && i.ReservedBy == null)
                         .OrderBy(i => i.IsCarried ? 0 : 1).ThenBy(i => i.InstanceId).FirstOrDefault();
                     if (src == null) continue;
                     var fmax = e.MaxFillCanteen(s, src, cInst, out var fwhy);
@@ -120,7 +120,7 @@
                     <button type="button" class="tbar-go alt" disabled="@(fwhy != null || moveBusy)" title="@(fwhy ?? $"从{(src.IsCarried ? "随身" : "地面")}{e.ItemName(wid)}#{srcId}装入1份（500毫升），不耗时")"
                             @onclick="() => G.Instant(InstantRequest.FillCanteen(srcId, cid, 1))">装入@(e.ItemName(wid))500</button>
                 }
-                @foreach (var zone in new[] { ItemInstance.Carried, s.CurrentLocation })
+                @foreach (var zone in new[] { ItemInstance.Carried, s.Ground })
                 {
                     var z = zone;
                     var pmax = e.MaxPourCanteen(s, cInst, z, out var pwhy);
@@ -189,7 +189,7 @@
                     </div>
                     @if (bwhy != null) { <div class="ca-note bad">处理尸体：@bwhy</div> }
                 }
-                @if (m.PotInstance is ItemInstance pot && e.Location(s.CurrentLocation).HasFire)
+                @if (m.PotInstance is ItemInstance pot && e.HasFireAt(s, s.Ground))
                 {
                     e.MaxPutInFire(s, pot, out var fireWhy);
                     <div class="tbar-row">
@@ -202,7 +202,7 @@
                 else { <div class="ca-note @(after > e.Config.Carry.SoftGrams ? "warn" : "")">@(verb)后随身@(Ui.Kg(after))公斤@(after > e.Config.Carry.SoftGrams ? $"，超过{e.Config.Carry.SoftGrams / 1000}公斤会减速" : "")@(m.ToCarried ? $" · 随身{e.RootCardsAfter(s, m.Instance ?? m.Head, invalid ? 0 : n, null, 0)}/{e.MaxRootCards}张卡" : "") · 不耗时</div> }
             }
             @if (m.Instance is ItemInstance wInst && e.IsWearable(wInst.ItemId) && s.Battle == null
-                 && ((wInst.IsCarried && (m.Available > 0 || moveBusy)) || (wInst.Owner == s.CurrentLocation && !moveBusy && m.Available > 0)))
+                 && ((wInst.IsCarried && (m.Available > 0 || moveBusy)) || (wInst.Owner == s.Ground && !moveBusy && m.Available > 0)))
             {
                 @* B3（R02 §1、A05 §5、A10 §7.2；开发计划 v0.9 B3 H5/H9）与 B3a（Q40 选 B、Q42 选 A）：随身或当前地面的武器“装备到武器Ⅰ/武器Ⅱ”，
                    0 时间、按最终状态原子校验；同类型最多1件，不合法时按钮禁用并写原因。随身↔穿戴在行动进行中、敌踪待选时也可（被行动占用的除外）；
@@ -238,17 +238,17 @@
                     var (gg, gc) = e.EquipOutcome(s, GameState.PlayerId, wInst, slot, true);
                     var curName = $"{e.ItemName(cur.ItemId)}#{cur.InstanceId}";
                     <div class="tbar-row equip-to">
-                        <button type="button" class="tbar-go alt wrap" title="@($"装备到{EquipSlots.Name(slot)}，换下的{curName}放到{e.LocName(s.CurrentLocation)}地面 · 装备后本人{Ui.Kg(gg)}公斤 · 随身{gc}/{e.MaxRootCards}张 · 不耗时")"
+                        <button type="button" class="tbar-go alt wrap" title="@($"装备到{EquipSlots.Name(slot)}，换下的{curName}放到{e.LocName(s.Ground)}地面 · 装备后本人{Ui.Kg(gg)}公斤 · 随身{gc}/{e.MaxRootCards}张 · 不耗时")"
                                 @onclick="() => G.Equip(wid, slot, true)">装备到@(EquipSlots.Name(slot))·旧件@(e.ItemName(cur.ItemId))放当前地面</button>
                     </div>
-                    <div class="ca-note @(gg > e.Config.Carry.SoftGrams ? "warn" : "")">@(EquipSlots.Name(slot))：@(curName)放到@(e.LocName(s.CurrentLocation))地面，装备后本人@(Ui.Kg(gg))公斤 · 随身@(gc)/@(e.MaxRootCards)张 · 不耗时；不选就是取消</div>
+                    <div class="ca-note @(gg > e.Config.Carry.SoftGrams ? "warn" : "")">@(EquipSlots.Name(slot))：@(curName)放到@(e.LocName(s.Ground))地面，装备后本人@(Ui.Kg(gg))公斤 · 随身@(gc)/@(e.MaxRootCards)张 · 不耗时；不选就是取消</div>
                 }
                 @if (choices.Any(c => c.reason == null))
                 {
                     <div class="ca-note">@(fromGround ? "从地面直接穿上，不经随身卡位；" : "")@(e.Weapon(wInst.ItemId) != null ? "开战停在第一个有武器的页，战斗中切换武器页0AP；同类型武器最多装备1件" : "穿戴不占随身卡位，重量计本人")</div>
                 }
             }
-            @if (m.Instance is ItemInstance kInst && s.Battle == null && (kInst.IsCarried || kInst.Owner == s.CurrentLocation)
+            @if (m.Instance is ItemInstance kInst && s.Battle == null && (kInst.IsCarried || kInst.Owner == s.Ground)
                  && (kInst.MaxDurability.HasValue || e.Item(kInst.ItemId).IsEquipment))
             {
                 @* B4（A05 §5；开发计划 v0.9 B4 H8/H9/H10）：选中有耐久的工具/装备时卡下给“维修·30分钟”，选中装备时给“拆解·15分钟”；
@@ -292,6 +292,25 @@
                     <div class="ca-note">拆解得@(string.Join("、", sy.Select(x => $"{e.ItemName(x.itemId)}×{x.count}")))，放在当前地面；原装备移除@(xnote != null ? $"（{xnote}）" : "")；完成后@(e.XpText(s, GameEngine.Crafting, e.Config.Progression.Dismantle.Xp))</div>
                 }
             }
+            @if ((m.Instance ?? m.Head) is ItemInstance tsInst && s.Battle == null && (e.IsTarp(tsInst) || e.IsStove(tsInst)) && (tsInst.IsCarried || tsInst.Owner == s.Ground))
+            {
+                @* B17（A07 X1.6）：野营遮雨布/折叠柴炉在临时露营许可点部署或收起；单击直接开始 *@
+                var stoveSel = e.IsStove(tsInst);
+                var deployed = e.IsDeployed(s, tsInst);
+                var cfac = e.FacOf(s, s.Ground);
+                var abandon = deployed && stoveSel && cfac != null && !cfac.FireLit && cfac.FuelMinutes > 0;
+                var creq = deployed ? GameEngine.Pack(tsInst, abandon) : GameEngine.Deploy(tsInst);
+                var cwhy = G.Running ? "行动进行中" : e.CanStart(s, creq);
+                var camp = e.Config.Safehouse.Camping;
+                var mins = stoveSel ? (deployed ? camp.StovePackMinutes : camp.StoveDeployMinutes) : (deployed ? camp.TarpPackMinutes : camp.TarpDeployMinutes);
+                var tsVerb = deployed ? (abandon ? "放弃燃料并收起" : "收起") : stoveSel ? "部署" : "铺开";
+                <div class="tbar-row keep-row">
+                    <button type="button" class="tbar-go alt" disabled="@(cwhy != null)" title="@(cwhy ?? (abandon ? $"柴炉里还剩燃料{cfac!.FuelMinutes}分钟：收起即放弃（不退木材）" : "单击直接开始"))"
+                            @onclick="() => StartKeep(creq)">@tsVerb·@(mins)分钟</button>
+                </div>
+                @if (cwhy != null) { <div class="ca-note bad">@cwhy</div> }
+                else { <div class="ca-note">@(stoveSel ? "部署后当作这里的一处火堆：2个加工位、最多1口锅、燃料上限60分钟；收起前要取空、熄火" : "铺开后在这里睡眠算遮蔽（至多4人）；不挡遭遇、没有安全屋休息加成")</div> }
+            }
         }
         else if (m.Mode == Mode.TakeOut)
         {
@@ -300,7 +319,7 @@
             var why = moveBusy ? "行动进行中，暂不能整理物品" : e.TakeOutBlocked(s, it, zone);
             var c = e.TakeOutConsequenceOf(s, it);
             var verb = e.IsPot(it) ? (zone == ItemInstance.Carried ? "拾取" : "取下") : "取出";
-            <TargetPicker Value="@zone" Here="@s.CurrentLocation" OnPick="v => target = v" />
+            <TargetPicker Value="@zone" Here="@s.Ground" OnPick="v => target = v" />
             <div class="tbar-row">
                 <button type="button" class="tbar-go" disabled="@(why != null)" title="@why" @onclick="() => Take(it, zone)">@(verb)@(m.Name)@(e.IsPot(it) ? "（含内容）" : "")到@(zone == ItemInstance.Carried ? "随身" : "地面")</button>
             </div>
@@ -318,7 +337,7 @@
             if (moveBusy) why = "行动进行中，暂不能整理物品";
             var n = Parse();
             var invalid = n < 1 || n > Math.Max(1, max);
-            <TargetPicker Value="@zone" Here="@s.CurrentLocation" OnPick="v => target = v" />
+            <TargetPicker Value="@zone" Here="@s.Ground" OnPick="v => target = v" />
             @if (why == null)
             {
                 <div class="tbar-row">
@@ -391,7 +410,7 @@
         var s = G.S;
         var e = G.E;
         var sel = G.Selected;
-        var here = s.CurrentLocation;
+        var here = s.Ground;
         bool Here(ItemInstance i) { var p = e.PlaceOf(s, i); return p == ItemInstance.Carried || p == here; }
         int? UseOf(ItemInstance i) => GameEngine.CanSelfUse(e.Item(i.ItemId)) ? i.InstanceId : null;
 
@@ -453,7 +472,7 @@
     }
 
     private string Target(Model m) => target ?? (m.Mode == Mode.Decant || m.Mode == Mode.TakeOut
-        ? (m.Instance != null && G.E.PlaceOf(G.S, m.Instance) == ItemInstance.Carried ? G.S.CurrentLocation : ItemInstance.Carried)
+        ? (m.Instance != null && G.E.PlaceOf(G.S, m.Instance) == ItemInstance.Carried ? G.S.Ground : ItemInstance.Carried)
         : ItemInstance.Carried);
 
     /// <summary>选中的对象或它的可转移数量一变，就把数量与目标重置为默认（数量对转移生效，自用永远是1份）。</summary>

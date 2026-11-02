@@ -5,9 +5,9 @@
     var s = G.S;
     var e = G.E;
     var cfg = e.Config;
-    var here = s.CurrentLocation;
+    var here = s.Ground;   // B17：按所在区（安全屋屋内有遮蔽/床）
     var sheltered = e.IsSheltered(s, here);
-    var fac = s.Locations[here].Facility;
+    var fac = e.FacOf(s, here) ?? s.Locations[s.CurrentLocation].Facility;
     var lowMorale = cfg.Thresholds["morale"].IsBelow(s.Stats.Morale);
     var kind = GameEngine.IsRecoveryModule(G.RestKind) ? G.RestKind : "rest";
     var restE = cfg.HourlyRates["rest"].Energy;
