@@ -52,6 +52,7 @@ namespace Survival.Core.Save
         public const string Schema25 = "25";
         public const string Schema26 = "26";
         public const string Schema27 = "27";
+        public const string Schema28 = "28";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -94,6 +95,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema25) From25To26(s, config, notes);
             if (s.SchemaVersion == Schema26) From26To27(s, config, notes);
             if (s.SchemaVersion == Schema27) From27To28(s, config, notes);
+            if (s.SchemaVersion == Schema28) From28To29(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -980,7 +982,33 @@ namespace Survival.Core.Save
             foreach (var it in s.Items)
                 if (!canteens.Contains(it.ItemId) || it.LiquidMl <= 0 || it.LiquidId == null) { it.LiquidId = null; it.LiquidMl = 0; }
             foreach (var a in s.Actors.Values) a.Cooldowns ??= new Dictionary<string, int>();
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（新配方、分量水壶与复合锅上线；进行中的加工原样保留）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema28}（新配方、分量水壶与复合锅上线；进行中的加工原样保留）。" });
+            s.SchemaVersion = Schema28;
+        }
+
+        // ───────────────────────── 28 → 29 ─────────────────────────
+
+        /// <summary>
+        /// 安全屋与分区设施（开发计划 v0.9 B17，R52—R56；S09 X2.8、验收 SH15）：队伍记当前所在区（旧档一律在外部区）与收藏的安全屋（无），
+        /// 地点加安全屋（旧档一律未建；许可按新地图逐点 buildAllowed.safehouse）。火堆 ID 按“地点+区”生成：旧档只有外部区火堆，
+        /// 其 ID 仍是 &lt;地点&gt;:fire、锅与直烤/煅烧/锅食谱进程、受热进度与受热保护原样归入外部区，不改 owner；旧营地设施、地面与随身不动，
+        /// 不补柜、不补建筑或材料；登记只解锁建屋资格。幂等。
+        /// </summary>
+        private static void From28To29(GameState s, GameConfig config, List<string> notes)
+        {
+            if (s.CurrentZone != GameState.ExteriorZone && s.CurrentZone != GameState.SafehouseZone) s.CurrentZone = GameState.ExteriorZone;
+            foreach (var kv in s.Locations)
+            {
+                var f = kv.Value.Facility;
+                // 外部区火堆 ID 显式落成“地点+外部区”（与旧 ID 相同），进程与锅 owner 不需改写
+                if (config.Locations.Any(l => l.Id == kv.Key && l.HasFire) && string.IsNullOrEmpty(f.FacilityId))
+                    f.FacilityId = Engine.GameEngine.FireIdOf(kv.Key, GameState.ExteriorZone);
+                // 旧档不可能有安全屋：缺省未建（只有本版本新建的才写）
+                if (kv.Value.Safehouse != null && !kv.Value.Safehouse.Built) kv.Value.Safehouse = null;
+            }
+            if (s.CurrentZone == GameState.SafehouseZone && s.Locations.TryGetValue(s.CurrentLocation, out var here) && here.Safehouse?.Built != true)
+                s.CurrentZone = GameState.ExteriorZone;
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（安全屋与分区设施上线：原营地火堆、锅与加工进程归入营地外部区，原样保留；旧营地不补储物柜）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

@@ -36,9 +36,10 @@ namespace Survival.Core.State
         /// "15" 起名册与候补、战前编成预设、遗物与借用位，战斗中我方每人一份战斗状态 Fighters（R08，开发计划 v0.9 B8）；
         /// "16" 起战前编队是真实 1—4 槽（可空位、可不连续）并带阵容版本与一次迁移标记，敌人带本轮 AP 账（策划答复 Q86/Q87，开发计划 v0.9 B8a）；
         /// "17" 起记服务地点迁址标记（v3 地图营区公共居所/收容所）与遗物是否公共候补遗物（策划答复 Q88/Q89，开发计划 v0.9 B8b）；
-        /// "18" 起记候补照护规则版本与每名候补的自主 rest/sleep 模式（策划答复 Q90，开发计划 v0.9 B8c）。
+        /// "18" 起记候补照护规则版本与每名候补的自主 rest/sleep 模式（策划答复 Q90，开发计划 v0.9 B8c）；
+        /// "29" 起安全屋与分区设施：地点带安全屋（屋内区设施、柜子记录），队伍记当前所在区与收藏的安全屋，设施带屋内火堆与折叠柴炉（开发计划 v0.9 B17）。
         /// </summary>
-        public const string CurrentSchema = "28";
+        public const string CurrentSchema = "29";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -140,7 +141,13 @@ namespace Survival.Core.State
         /// 当前地面的 owner（= 当前所在区的 place，B17）：外部区就是地点 ID（旧档不变），安全屋屋内是 safehouseFloor:&lt;safehouseId&gt;。
         /// 放下、拾取、制作产物、取消返料都落在这里。
         /// </summary>
-        [JsonIgnore] public string Ground => CurrentLocation;
+        [JsonIgnore] public string Ground => CurrentZone == SafehouseZone
+            ? ItemInstance.SafehouseFloorOwner(ItemInstance.SafehouseIdOf(CurrentLocation)) : CurrentLocation;
+
+        /// <summary>全队当前所在区（S09 X2.5：全部同行一起切区）：exterior 外部区、safehouse 当前地点安全屋屋内。旧档缺省为外部区。</summary>
+        public string CurrentZone { get; set; } = ExteriorZone;
+        /// <summary>收藏的“常用安全屋”所在地点（S09 X2.5：只是收藏，不改开局点、复活点或地图边）；没有为 null。</summary>
+        public string? FavoriteSafehouse { get; set; }
         public Dictionary<string, LocationState> Locations { get; set; } = new Dictionary<string, LocationState>();
         public HashSet<string> UnlockedEdges { get; set; } = new HashSet<string>();
         /// <summary>完整走过（任一方向）的物理边 ID（athletics_10“已访问物理边”，开发计划 v0.9 B5 H7；schema 11 起记录，旧档从空开始）。</summary>
@@ -344,6 +351,15 @@ namespace Survival.Core.State
         public bool BedBuilt { get; set; }
         /// <summary>本地已建成的工坊（workbench/forge/sewing/medical/armory，B10；每类最多一座）；旧存档缺省为空。</summary>
         public List<string> Workshops { get; set; } = new List<string>();
+        /// <summary>屋内固定火堆已建成（S09 X2.3；只用于安全屋屋内区，外部火堆仍看地点配置 hasFire）。</summary>
+        public bool FireBuilt { get; set; }
+        /// <summary>
+        /// 当地外部区部署着的折叠柴炉实例（A07 X1.6、S11 X4，B17）：部署后当作本区火堆（燃料上限 60），柴炉实例留在当地地面并被锁定；
+        /// 没有为 null。
+        /// </summary>
+        public int? StoveInstanceId { get; set; }
+        /// <summary>当地外部区铺开着的野营遮雨布实例（A07 X1.6）：铺开期间本区睡眠算遮蔽，不给安全屋休息加成、不挡遭遇；没有为 null。</summary>
+        public int? TarpInstanceId { get; set; }
         public bool FireLit { get; set; }
         public int FuelMinutes { get; set; }
         /// <summary>火堆点燃后熄灭过（燃尽或手动熄灭）。未燃烧时界面据此写“熄灭”而不是“未点燃”；旧存档缺省为否。</summary>
@@ -425,6 +441,8 @@ namespace Survival.Core.State
         public int Progress { get; set; }
         public HashSet<int> TriggeredMilestones { get; set; } = new HashSet<int>();
         public FacilityState Facility { get; set; } = new FacilityState();
+        /// <summary>本地点的玩家安全屋（S09 X2，B17）；没有建成为 null（施工中由进行中的建造行动表示，取消即无）。</summary>
+        public SafehouseState? Safehouse { get; set; }
 
         /// <summary>清理剩余次数、当前恢复累计分钟与上次按世界时间更新的分钟（地图清理案 3.1）。</summary>
         public int ClearCharges { get; set; }
@@ -436,8 +454,48 @@ namespace Survival.Core.State
             var c = (LocationState)MemberwiseClone();
             c.TriggeredMilestones = new HashSet<int>(TriggeredMilestones);
             c.Facility = Facility.Clone();
+            c.Safehouse = Safehouse?.Clone();
             return c;
         }
+    }
+
+    /// <summary>
+    /// 一间玩家安全屋（S09 X2.1/X2.3/X2.6）：地点内的固定设施区，不是地图节点；全队共同产权（player_party）。
+    /// 完工即有门、遮蔽与 200kg 固定柜；床、火堆、工坊另建在屋内区设施 Interior 上。本期不拆屋、不拆柜。
+    /// </summary>
+    public sealed class SafehouseState
+    {
+        /// <summary>安全屋实例 ID：sh_&lt;地点ID&gt;（每地点最多一间、不拆除，全局唯一）。</summary>
+        public string Id { get; set; } = "";
+        public bool Built { get; set; }
+        public int BuiltMinute { get; set; }
+        /// <summary>玩家改的名字（只改展示，0 分钟）；空为默认“××安全屋”。</summary>
+        public string Name { get; set; } = "";
+        /// <summary>屋内区设施：床垫、固定火堆（加工位/燃料/进程）、自建工坊（Q107 每区每类一座）。</summary>
+        public FacilityState Interior { get; set; } = new FacilityState();
+        /// <summary>柜内容的“上次记录”（S09 X2.6：远处只能看上次记录，不能取放）：最后一次在屋内时的柜内根实例概要。</summary>
+        public List<SafehouseRecordLine> LastRecord { get; set; } = new List<SafehouseRecordLine>();
+        /// <summary>“上次记录”的世界分钟；从没记录过为 null。</summary>
+        public int? LastRecordMinute { get; set; }
+
+        public SafehouseState Clone()
+        {
+            var c = (SafehouseState)MemberwiseClone();
+            c.Interior = Interior.Clone();
+            c.LastRecord = LastRecord.Select(x => x.Clone()).ToList();
+            return c;
+        }
+    }
+
+    /// <summary>柜子上次记录的一行：物品、份数、批次说明（只读快照，不是可用材料）。</summary>
+    public sealed class SafehouseRecordLine
+    {
+        public string ItemId { get; set; } = "";
+        public string Name { get; set; } = "";
+        public int Count { get; set; }
+        public int Grams { get; set; }
+
+        public SafehouseRecordLine Clone() => (SafehouseRecordLine)MemberwiseClone();
     }
 
     /// <summary>一座地牢的当前实例（B11）：代号、实例内边锁存（换代丢弃）与实例事实（guardianDefeated / recordClaimedAndClear，B21 起产生）。</summary>

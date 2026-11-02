@@ -52,14 +52,16 @@ namespace Survival.Core.Engine
         {
             if (!TryPlace(place, out var loc, out var zone)) return null;
             if (!s.Locations.TryGetValue(loc, out var ls)) return null;
-            return zone == ExteriorZone ? ls.Facility : null;
+            if (zone == ExteriorZone) return ls.Facility;
+            return ls.Safehouse?.Interior;
         }
 
         /// <summary>这个区有没有可用的火堆：外部区看地点配置（临时营地），屋内区看屋内火堆已建成。</summary>
         public bool HasFireAt(GameState s, string place)
         {
             if (!TryPlace(place, out var loc, out var zone)) return false;
-            return zone == ExteriorZone && _locs[loc].HasFire;
+            if (zone == ExteriorZone) return _locs[loc].HasFire || (s.Locations.TryGetValue(loc, out var ls) && ls.Facility.StoveInstanceId.HasValue);
+            return s.Locations.TryGetValue(loc, out var l2) && l2.Safehouse != null && l2.Safehouse.Built && l2.Safehouse.Interior.FireBuilt;
         }
 
         /// <summary>所有现在有火堆的区（世界时钟统一推进：离开后照样燃烧、加工）。</summary>
@@ -69,6 +71,8 @@ namespace Survival.Core.Engine
             {
                 if (!_locs.ContainsKey(kv.Key)) continue;
                 if (HasFireAt(s, kv.Key)) yield return kv.Key;
+                var inner = ZonePlace(kv.Key, SafehouseZone);
+                if (kv.Value.Safehouse != null && HasFireAt(s, inner)) yield return inner;
             }
         }
 
@@ -78,6 +82,7 @@ namespace Survival.Core.Engine
             foreach (var kv in s.Locations)
             {
                 yield return (kv.Key, kv.Value.Facility);
+                if (kv.Value.Safehouse != null) yield return (ZonePlace(kv.Key, SafehouseZone), kv.Value.Safehouse.Interior);
             }
         }
 

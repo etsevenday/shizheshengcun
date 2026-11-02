@@ -37,7 +37,7 @@ public class ConfigTests : TestBase
         Assert.That(Cfg.Locations, Has.Count.EqualTo(143));
         Assert.That(Cfg.Edges, Has.Count.EqualTo(180));
         Assert.That(Cfg.Resources, Has.Count.EqualTo(16 + 4 + 96 + 47 + 6), "新增武器柜、旧储物柜、医药补给箱、废弃冷藏箱；B12 并入 v3 的 96 条增量资源（R36）；B13b 补 47 条恢复来源（R129）；B13c 补 6 个旧 d03 唯一箱（R130）");
-        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5 + 3 + 1 + 1 + 56 + 26 + 5 + 19 + 1), "B16 新增 19 条与现场小修；新增木矛、木弓、箭矢、工具维护、病毒特效药；v1.0 新增金属矛、弩、弩矢；B4 拆解装备；B7c 护拳绑带（Q64，营区登记默认知识）；B10 新装备配方 56、材料加工链 26、工坊建造 5");
+        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5 + 3 + 1 + 1 + 56 + 26 + 5 + 19 + 1 + 5), "B17 新增安全屋基础/屋内床垫/屋内火堆与陶窑、固定净水台建造；B16 新增 19 条与现场小修；新增木矛、木弓、箭矢、工具维护、病毒特效药；v1.0 新增金属矛、弩、弩矢；B4 拆解装备；B7c 护拳绑带（Q64，营区登记默认知识）；B10 新装备配方 56、材料加工链 26、工坊建造 5");
     }
 
     // ───────────── v0.2–v0.4 未被 v0.6 替换的部分 ─────────────

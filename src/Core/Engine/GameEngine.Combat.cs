@@ -314,6 +314,7 @@ namespace Survival.Core.Engine
             var w = FindWorldEnemy(s, worldEnemyId);
             if (w == null) return "这个敌人已不在";
             if (w.LocationId != s.CurrentLocation || Hidden(s, w)) return "只能接近当前地点可见的敌人";
+            if (s.CurrentZone == SafehouseZone) return "在安全屋屋内：先出门再接近敌人";
             if (w.Engaged) return "这个敌人正在交战";
             // 首战胜利前只开放保留的游荡尸（S15 §5：第一次接敌必须由首战承接）
             if (TutorialGateOpen(s) && s.Story.TutorialEnemyId != w.Id) return "先完成农野荒地的首战（游荡尸），再接近其他敌人";
@@ -855,7 +856,7 @@ namespace Survival.Core.Engine
         {
             var c = Config;
             var ctx = new SegmentContext { Rates = c.BattleTime.HourlyRates.Copy(), IsWork = c.BattleTime.CountsAsWorkingForZeroEnergyDamage, ActionType = null };
-            ctx.Sheltered = IsSheltered(s, s.CurrentLocation);
+            ctx.Sheltered = IsSheltered(s, s.Ground);
             if (actor.DiarrheaUntil.HasValue && actor.DiarrheaUntil.Value > s.GameMinute) ctx.Rates.Hydration += c.ItemActions.DiarrheaExtraHydrationPerHour;
             if (c.BattleTime.FreezeNegativeSatietyHydration)
             {

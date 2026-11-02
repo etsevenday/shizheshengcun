@@ -279,10 +279,13 @@ public class B13aQTests : TestBase
             {
                 var r = E.Start(s, ActionRequest.Craft(rid));
                 Assert.That(r.Ok, Is.False, $"{loc}/{rid}");
-                Assert.That(r.Reason, Is.EqualTo("只能在临时营地建造"), $"{loc}/{rid}");
+                // Q134：棚/床只写“只能在临时营地建造”；B17 起工坊按 Q107 真实范围写“只能在临时营地或已建成的安全屋屋内建造”
+                Assert.That(r.Reason, Is.EqualTo(rid == "build_workbench" ? GameEngine.WorkshopBuildOnly : "只能在临时营地建造"), $"{loc}/{rid}");
                 Assert.That(r.Reason, Does.Not.Contain("私人住宅"), $"{loc}/{rid}");
-                Assert.That(Cfg.Locations.First(l => l.Id == loc).PrivateBuildForbidden, Is.EqualTo(why), "住宅禁建原因仍在，留给 B17 住宅入口");
+                Assert.That(Cfg.Locations.First(l => l.Id == loc).PrivateBuildForbidden, Is.EqualTo(why), "住宅禁建原因仍在地点数据上");
             }
+            // B17 住宅入口（安全屋基础）按实际禁建原因写（Q134）
+            Assert.That(E.CanStart(s, ActionRequest.Craft("safehouse_base")), Is.EqualTo(why), $"{loc} 住宅入口");
             Assert.That((s.GameMinute, s.Items.Count, s.Main), Is.EqualTo((minute, items, (ActionState?)null)), "不扣费、不花时间");
         }
         E.DebugTeleport(s, "w13_mill");
@@ -299,8 +302,10 @@ public class B13aQTests : TestBase
         {
             var f = s.Locations[l.Id].Facility;
             Assert.That((f.ShelterBuilt, f.BedBuilt, l.CanBuildShelter, l.HasFire), Is.EqualTo((false, false, false, false)), l.Id);
+            Assert.That(s.Locations[l.Id].Safehouse, Is.Null, $"{l.Id}：室内标签不产生安全屋");
         }
-        Assert.That(Cfg.Recipes.Any(r => r.Id.Contains("safehouse") || r.Name.Contains("住宅") || r.Name.Contains("安全屋")), Is.False, "本批没有住宅配方（B17）");
+        // B17 起住宅（安全屋）有了正式建造入口，许可只看节点 buildAllowed.safehouse 与开工条件，不看室内标签
+        Assert.That(Cfg.Recipes.Single(r => r.Id == "safehouse_base").Requirement!.Facility, Is.EqualTo("safehouse_site"));
     }
 
     // ───────────── R128 / Q119 ─────────────

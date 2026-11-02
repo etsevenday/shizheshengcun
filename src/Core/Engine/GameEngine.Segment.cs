@@ -45,7 +45,7 @@ namespace Survival.Core.Engine
         public SegmentContext ComputeSegment(GameState s, ActionState a) => ComputeSegment(s, a, s.Player);
 
         /// <summary>按某角色的段首状态计算本段速率（R08 §2：各角色身体各自结算；同行者的行动类型见 CompanionAction）。</summary>
-        public SegmentContext ComputeSegment(GameState s, ActionState a, ActorState actor) => ComputeSegment(s, a, actor, s.CurrentLocation);
+        public SegmentContext ComputeSegment(GameState s, ActionState a, ActorState actor) => ComputeSegment(s, a, actor, s.Ground);
 
         /// <summary>
         /// 按角色实际所在地点 loc 的已完工设施计算本段速率（Q90 PTY-Q90d、S09 本轮章：主角、同行者、候补同一设施判定；
@@ -55,8 +55,10 @@ namespace Survival.Core.Engine
         {
             var ctx = new SegmentContext();
             var st = actor.Stats;
-            var locCfg = _locs[loc];
-            var fac = s.Locations[loc].Facility;
+            // B17：loc 是角色所在区（place）——外部区为地点 ID，安全屋屋内为屋内地面 owner
+            var inside = !_locs.ContainsKey(loc);
+            var locCfg = _locs[inside ? LocationOfPlace(loc) : loc];
+            var fac = FacOf(s, loc) ?? s.Locations[locCfg.Id].Facility;
             var c = Config;
 
             ctx.Sheltered = !a.ForceOutdoor && IsSheltered(s, loc);
@@ -73,7 +75,8 @@ namespace Survival.Core.Engine
             }
             ctx.Rates = c.HourlyRates[key].Copy();
 
-            if (a.Type == ActionType.Rest && !a.ForceOutdoor && locCfg.CanBuildShelter && fac.ShelterBuilt)
+            // 棚/安全屋休息精神额外 +2/小时（S09 X2.7 复用旧营地棚效果）：营地外部已建棚，或已完工安全屋屋内
+            if (a.Type == ActionType.Rest && !a.ForceOutdoor && (inside ? ctx.Sheltered : locCfg.CanBuildShelter && fac.ShelterBuilt))
                 ctx.Rates.Morale += c.FacilityEffects.ShelteredCampRestMoralePerHour;
             if (a.Type == ActionType.Sleep && ctx.Sheltered && fac.BedBuilt)
                 ctx.Rates.Energy += c.FacilityEffects.BedExtraSleepEnergyPerHour;
@@ -468,6 +471,7 @@ namespace Survival.Core.Engine
                     var walked = EdgeBetween(from, a.TargetId);
                     if (walked != null) s.TraveledEdges.Add(walked.Id);
                     s.CurrentLocation = a.TargetId;
+                    s.CurrentZone = ExteriorZone;   // B17：移动只从外部区出发、到达外部区
                     var mapNotes = new List<string>();
                     var revealed = Visit(s, a.TargetId, mapNotes);
                     ClearAction(s, a);
@@ -498,6 +502,14 @@ namespace Survival.Core.Engine
                     var rc = _recipes[a.TargetId];
                     var batch = Math.Max(1, a.BatchCount);
                     // B16（S11 X4、R06 X4）：口粮棒/应急恢复剂成品不晚于原料里最早的截止（非热组装不刷新原料寿命）
+                    // B17（Q107、S09 X2.4）：建造完工时重验地点与所在区，失败不扣料、不多建、不给经验，预留材料返回当前地面
+                    if (rc.FacilityResult != null && BuildSiteBlockedAtCompletion(s, rc) is string siteWhy)
+                    {
+                        Release(s, a, s.Ground);
+                        if (a.IsSub) s.Sub = null; else s.Main = null;
+                        Emit(s, GameEventKind.ActionAborted, $"{rc.Name}没有完成：{siteWhy}；预留材料已返还当前地面，没有经验。");
+                        return true;
+                    }
                     var expiresCap = rc.ShelfRule == "min_inputs" ? EarliestExpiry(s, a.ReservedItemIds) : null;
                     foreach (var id in a.ReservedItemIds) s.Items.RemoveAll(i => i.InstanceId == id);
                     a.ReservedItemIds.Clear();
@@ -505,20 +517,21 @@ namespace Survival.Core.Engine
                     foreach (var kv in rc.Outputs)
                     {
                         // 制造产物按“普通制造”来源定品质（A05 §4：普通制造默认绿色1条，B4 H4）
-                        var crafted = CreateItems(s, kv.Key, kv.Value * batch, here, false, null, Config.Equipment.CraftOrigin == "" ? null : Config.Equipment.CraftOrigin, expiresCap);
+                        var crafted = CreateItems(s, kv.Key, kv.Value * batch, s.Ground, false, null, Config.Equipment.CraftOrigin == "" ? null : Config.Equipment.CraftOrigin, expiresCap);
                         made.Add($"{ItemName(kv.Key)}+{kv.Value * batch}{QualitySuffix(crafted)}");
                     }
                     if (rc.IsRepair) made.Add(CompleteRepair(s, a));
                     // 有效制造按实际提交的配方次数发经验（v0.6 §03）；门类按开工快照（Q110：医疗台三材料给医疗、不双发制造；旧档在途为 null 按制造）
                     var xpSkill = a.XpSkill ?? Crafting;
                     made.Add(CraftCompleteXp(s, a, rc, xpSkill, batch));
-                    if (rc.FacilityResult != null) SetFacility(s.Locations[here].Facility, rc.FacilityResult);
+                    if (rc.FacilityResult != null) CommitFacility(s, rc);
                     NoteCraft(s, a, rc);   // B13 PRO10
                     ClearAction(s, a);
                     var text = rc.FacilityResult != null
                         ? $"{rc.Name.Replace("建", "").Replace("铺", "")}已完成（{made.Last()}）。"
                         : rc.IsRepair ? $"{string.Join("，", made)}。"
-                        : $"{string.Join("，", made)}；产物已放在{LocName(here)}地面。";
+                        : $"{string.Join("，", made)}；产物已放在{LocName(s.Ground)}地面。";
+                    if (rc.FacilityResult != null && FacilityDoneText(s, rc) is string doneText) text = doneText + $"（{made.Last()}）";
                     if (rc.Id == "shelter") text = "遮蔽棚建成：营地可遮蔽睡眠，休息时额外恢复精神。";
                     if (rc.Id == "bed") text = $"床垫铺好：营地睡眠体力恢复每小时额外{Fmt.SignedT(Config.FacilityEffects.BedExtraSleepEnergyPerHour)}。";
                     Emit(s, GameEventKind.ActionCompleted, text, null, rc.Outputs.Keys);

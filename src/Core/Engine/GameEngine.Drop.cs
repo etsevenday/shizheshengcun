@@ -119,7 +119,7 @@ namespace Survival.Core.Engine
 
         /// <summary>同时用到这些物品的配方（配置顺序）。</summary>
         public List<string> RecipeCandidates(params string[] itemIds) =>
-            Config.Recipes.Where(r => itemIds.All(r.Inputs.ContainsKey)).Select(r => r.Id).ToList();
+            Config.Recipes.Where(r => r.Group != "safehouse" && itemIds.All(r.Inputs.ContainsKey)).Select(r => r.Id).ToList();   // 安全屋三项走“建设”入口（B17）
 
         /// <summary>卡片代表的实例：工具/锅就是该实例；堆叠组取最早到期、未预留的一堆（与点击转移同一顺序）。</summary>
         public ItemInstance? CardHead(GameState s, DropSource src)
@@ -389,7 +389,7 @@ namespace Survival.Core.Engine
             if (loc != s.CurrentLocation) return DropIntent.No("只能对当前地点操作");
             if (src.Kind != DropSourceKind.Card || !_locs[loc].CanBuildShelter) return DropIntent.No(Unsupported);
             // 原料拖至营地地点卡：列出营地设施配方（遮蔽棚、床垫）
-            var rec = Config.Recipes.Where(r => r.FacilityResult != null && r.Inputs.ContainsKey(head.ItemId)).Select(r => r.Id).ToList();
+            var rec = Config.Recipes.Where(r => r.FacilityResult != null && r.Group != "safehouse" && r.Inputs.ContainsKey(head.ItemId)).Select(r => r.Id).ToList();
             if (rec.Count == 0) return DropIntent.No(Unsupported);
             return new DropIntent { Ok = true, Verb = DropVerb.PreviewRecipe, Label = "查看营地设施", Recipes = rec };
         }

@@ -1,0 +1,228 @@
+using System.Collections.Generic;
+using System.Linq;
+using Survival.Core.Config;
+using Survival.Core.State;
+
+namespace Survival.Core.Engine
+{
+    /// <summary>
+    /// 安全屋（S09 X2.1—X2.9、S13「安全屋设施恢复与候补照护边界」、A08 永久安全屋白名单 54 地点；开发计划 v0.9 B17，R52—R55）：
+    /// 许可只读节点显式 buildAllowed.safehouse（未配置为 false），土地/地牢禁建原因按 Q118/Q134 在住宅入口写；
+    /// 开工须已到访、探索 100、营区已登记、当地没有存活敌踪、每地点一间、全队在外部区；状态 not_started→building→built；
+    /// 完工即有门（0 分钟进出）、屋内遮蔽、休息精神额外+2/小时与 200kg 固定柜，床/火堆/工坊另建在屋内区。
+    /// </summary>
+    public sealed partial class GameEngine
+    {
+        public const string SafehouseNotStarted = "not_started";
+        public const string SafehouseBuildingStatus = "building";
+        public const string SafehouseBuiltStatus = "built";
+
+        public RecipeConfig SafehouseRecipe => _recipes[Config.Safehouse.BuildRecipe];
+
+        public SafehouseState? SafehouseAt(GameState s, string locationId) =>
+            s.Locations.TryGetValue(locationId, out var l) ? l.Safehouse : null;
+
+        public bool SafehouseBuilt(GameState s, string locationId) => SafehouseAt(s, locationId)?.Built == true;
+
+        /// <summary>该地点正在建安全屋：主行动是安全屋基础的建造且在此地开工（暂停也算）；取消即回到未开工。</summary>
+        public bool SafehouseBuilding(GameState s, string locationId) =>
+            s.Main is ActionState a && a.Type == ActionType.Build && a.TargetId == Config.Safehouse.BuildRecipe && a.SourceLocation == locationId;
+
+        /// <summary>not_started / building / built（S09 X2.4）。</summary>
+        public string SafehouseStatus(GameState s, string locationId) =>
+            SafehouseBuilt(s, locationId) ? SafehouseBuiltStatus : SafehouseBuilding(s, locationId) ? SafehouseBuildingStatus : SafehouseNotStarted;
+
+        /// <summary>安全屋显示名：玩家改过名用改的，否则“××安全屋”。</summary>
+        public string SafehouseName(GameState s, string locationId)
+        {
+            var sh = SafehouseAt(s, locationId);
+            return sh != null && !string.IsNullOrWhiteSpace(sh.Name) ? sh.Name : LocName(locationId) + "安全屋";
+        }
+
+        /// <summary>
+        /// 地点本身的建屋许可（与人、时间无关）：地牢内/势力/公共/任务保留地写 Q118 原因（Q134：住宅入口按实际禁建原因显示）；
+        /// 其余只认节点显式 buildAllowed.safehouse=true（A08 白名单 54 处，未配置一律 false），不凭室内/安全/区域名推定。可建为 null。
+        /// </summary>
+        public string? SafehousePermissionBlocked(string locationId)
+        {
+            if (!_locs.TryGetValue(locationId, out var lc)) return "地点不存在";
+            if (lc.PrivateBuildForbidden is string forbidden) return forbidden;
+            if (lc.WorldKind != "overworld") return "只能在普通主世界地点建安全屋";
+            if (!lc.BuildAllowedSafehouse) return "这里不在可建安全屋的地点名单里";
+            return null;
+        }
+
+        /// <summary>
+        /// 在当前地点开工建安全屋的全部不合格原因（S09 X2.2，按地点许可→到访→探索→登记→已有/施工→敌踪→所在区的顺序；界面一次列全）。合格为空表。
+        /// 只查地点与世界条件；材料、制造等级、行动占用由开工校验另报。
+        /// </summary>
+        public List<string> SafehouseSiteReasons(GameState s, string locationId)
+        {
+            var list = new List<string>();
+            if (SafehousePermissionBlocked(locationId) is string perm) { list.Add(perm); return list; }
+            var ls = s.Locations[locationId];
+            if (!ls.Visited) list.Add($"要先实际到访{LocName(locationId)}");
+            var need = Config.Safehouse.RequiredExplore;
+            if (ls.Progress < need) list.Add($"{LocName(locationId)}探索度{ls.Progress}%，要先探索到{need}%");
+            if (!s.Progress.Flags.Contains(Config.Safehouse.RegisteredFact)) list.Add("要先在幸存者营区登记（解锁安全屋建造）");
+            if (SafehouseBuilt(s, locationId)) list.Add($"{LocName(locationId)}已有安全屋（每个地点最多一间）");
+            else if (SafehouseBuilding(s, locationId)) list.Add($"{LocName(locationId)}的安全屋正在施工");
+            var hostiles = LocalHostiles(s, locationId).Count;
+            if (hostiles > 0) list.Add($"先清掉{LocName(locationId)}的敌踪（还有{hostiles}个）");
+            if (s.CurrentLocation == locationId && s.CurrentZone == SafehouseZone) list.Add("在屋内不能再建安全屋，先出门");
+            return list;
+        }
+
+        /// <summary>
+        /// 建造配方（有 facilityResult 的：遮蔽棚、床垫、工坊、安全屋与屋内床/火）在当前地点与所在区的位置原因；可建为 null。
+        /// 开工与完工都调用（Q107“地点/区校验开工与完工都重验”）。
+        /// </summary>
+        public string? BuildSiteBlocked(GameState s, RecipeConfig rc)
+        {
+            var loc = s.CurrentLocation;
+            var lc = _locs[loc];
+            var inside = s.CurrentZone == SafehouseZone;
+            var place = s.Ground;
+            var fac = FacOf(s, place) ?? s.Locations[loc].Facility;
+            var result = rc.FacilityResult!;
+            if (result == "safehouse")
+            {
+                var reasons = SafehouseSiteReasons(s, loc);
+                return reasons.Count > 0 ? reasons[0] : null;
+            }
+            if (rc.Group == "safehouse")
+            {
+                if (!inside || !SafehouseBuilt(s, loc)) return "只能在已建成的安全屋屋内建造（先进入安全屋）";
+                if (FacilityFlag(fac, result)) return result == "fireBuilt" ? $"{PlaceName(place)}已有火堆（每区一处）" : $"{PlaceName(place)}已铺好床垫";
+                return null;
+            }
+            if (rc.Group == "workshop")
+            {
+                if (inside ? !SafehouseBuilt(s, loc) : !CanBuildWorkshopsAt(loc)) return WorkshopBuildOnly;
+                if (FacilityFlag(fac, result)) return $"{PlaceName(place)}已有{rc.Name.Replace("建", "")}（每区每类一座）";
+                return null;
+            }
+            // 遮蔽棚、营地床垫：只在临时营地外部区（屋内已有遮蔽，另铺屋内床垫）
+            if (inside || !lc.CanBuildShelter) return BuildOnlyAtCamp(lc);
+            if (FacilityFlag(fac, result)) return "已建造";
+            return null;
+        }
+
+        /// <summary>完工时的位置重验：安全屋只验许可、未重复建与仍在外部区（施工中的敌踪变化不让完工失败）；其余同开工。</summary>
+        private string? BuildSiteBlockedAtCompletion(GameState s, RecipeConfig rc)
+        {
+            if (rc.FacilityResult != "safehouse") return BuildSiteBlocked(s, rc);
+            var loc = s.CurrentLocation;
+            if (SafehouseBuilt(s, loc)) return $"{LocName(loc)}已经有安全屋（未重复建造）";
+            if (s.CurrentZone == SafehouseZone) return "不在外部区";
+            return SafehousePermissionBlocked(loc);
+        }
+
+        /// <summary>自建工坊（含陶窑、固定净水台）的位置说明（Q107 选 A、Q134：屋内工坊开放后按真实可用范围提示）。</summary>
+        public const string WorkshopBuildOnly = "只能在临时营地或已建成的安全屋屋内建造";
+
+        /// <summary>完工时提交建造设施（安全屋基础建屋与首个柜；其他写在当前区设施上）。幂等：已有的不重复建。</summary>
+        private void CommitFacility(GameState s, RecipeConfig rc)
+        {
+            var loc = s.CurrentLocation;
+            if (rc.FacilityResult == "safehouse")
+            {
+                var ls = s.Locations[loc];
+                if (ls.Safehouse?.Built == true) return;
+                ls.Safehouse = new SafehouseState { Id = ItemInstance.SafehouseIdOf(loc), Built = true, BuiltMinute = s.GameMinute };
+                return;
+            }
+            var fac = FacOf(s, s.Ground) ?? s.Locations[loc].Facility;
+            SetFacility(fac, rc.FacilityResult!);
+            if (rc.FacilityResult == "fireBuilt")
+            {
+                fac.FacilityId = FireIdOf(s.Ground);
+                SyncFacilities(s);
+            }
+        }
+
+        /// <summary>建成提示。</summary>
+        private string? FacilityDoneText(GameState s, RecipeConfig rc) => rc.FacilityResult switch
+        {
+            "safehouse" => $"{SafehouseName(s, s.CurrentLocation)}建成：可以“进入安全屋”（0分钟）；屋内遮蔽，休息时精神每小时额外{Fmt.SignedT(Config.FacilityEffects.ShelteredCampRestMoralePerHour)}，" +
+                           $"有{Config.Safehouse.StorageCapacityGrams / 1000}公斤固定储物柜；床垫、火堆与工坊要在屋内另建。",
+            "fireBuilt" => $"{PlaceName(s.Ground)}火堆建成：初始熄灭、燃料0、没有锅，点火仍需打火器。",
+            "bedBuilt" when rc.Group == "safehouse" => $"{PlaceName(s.Ground)}床垫铺好：屋内睡眠体力恢复每小时额外{Fmt.SignedT(Config.FacilityEffects.BedExtraSleepEnergyPerHour)}。",
+            _ => null,
+        };
+
+        // ───────────────────────── 门：0 分钟进出（S09 X2.5） ─────────────────────────
+
+        /// <summary>现在能不能进/出当前地点的安全屋；能为 null。门不是撤退按钮：战斗、敌踪待选、行动中、未读对白都不行。</summary>
+        public string? SafehouseDoorBlocked(GameState s, bool enter)
+        {
+            if (s.Progress.Dead) return "本局已结束";
+            var loc = s.CurrentLocation;
+            if (enter)
+            {
+                if (s.CurrentZone == SafehouseZone) return "已在安全屋屋内";
+                if (!SafehouseBuilt(s, loc)) return SafehouseBuilding(s, loc) ? "安全屋还在施工，完工后才能进入" : $"{LocName(loc)}没有建成的安全屋";
+            }
+            else if (s.CurrentZone != SafehouseZone) return "不在安全屋屋内";
+            if (DialogueLocked(s)) return DialogueLockedReason;
+            if (s.Battle != null) return "战斗中不能进出安全屋（门不是撤退按钮）";
+            if (s.Encounter != null) return "敌踪待处理：先接敌或绕行，不能靠进出门跳过";
+            if (s.Main != null || s.Sub != null) return "行动进行中，先完成或取消再进出安全屋";
+            return null;
+        }
+
+        /// <summary>进入安全屋：0 分钟，全队一起切到屋内区（S09 X2.5）。</summary>
+        public ActionResult EnterSafehouse(GameState s)
+        {
+            if (SafehouseDoorBlocked(s, true) is string why) return ActionResult.Fail(why);
+            s.CurrentZone = SafehouseZone;
+            RecordSafehouse(s, s.CurrentLocation);
+            Emit(s, GameEventKind.Info, $"进入{SafehouseName(s, s.CurrentLocation)}（0分钟）：屋内不会遇到普通遭遇；时间、饮食与伤病照常推进。");
+            UpdateFlags(s);
+            return ActionResult.Success();
+        }
+
+        /// <summary>出门：0 分钟，全队一起回到外部区；外部敌踪、资源照常（S09 X2.5）。</summary>
+        public ActionResult ExitSafehouse(GameState s)
+        {
+            if (SafehouseDoorBlocked(s, false) is string why) return ActionResult.Fail(why);
+            RecordSafehouse(s, s.CurrentLocation);
+            s.CurrentZone = ExteriorZone;
+            var hostiles = LocalHostiles(s, s.CurrentLocation).Count;
+            Emit(s, GameEventKind.Info, $"走出{SafehouseName(s, s.CurrentLocation)}，回到{LocName(s.CurrentLocation)}外部（0分钟）" +
+                (hostiles > 0 ? $"；外面有{hostiles}个敌踪。" : "。"));
+            UpdateFlags(s);
+            return ActionResult.Success();
+        }
+
+        /// <summary>在屋内时只能做屋内的事：移动、探索、采集/搜集、清理、勘整、绕行要先出门（S09 X2.5）。可以做为 null。</summary>
+        public string? InsideSafehouseBlocked(GameState s, ActionType type)
+        {
+            if (s.CurrentZone != SafehouseZone) return null;
+            string? verb = type switch
+            {
+                ActionType.Travel => "离开",
+                ActionType.Explore => "探索",
+                ActionType.Gather => "采集或搜集",
+                ActionType.Clear => "清理",
+                ActionType.Survey => "勘整",
+                ActionType.Bypass => "绕行",
+                _ => null,
+            };
+            return verb == null ? null : $"在安全屋屋内：先出门再{verb}";
+        }
+
+        /// <summary>更新柜子的“上次记录”（在屋内时随时刷新；远处只读这份快照）。</summary>
+        public void RecordSafehouse(GameState s, string locationId)
+        {
+            var sh = SafehouseAt(s, locationId);
+            if (sh == null || !sh.Built) return;
+            var owner = ItemInstance.SafehouseStorageOwner(sh.Id);
+            sh.LastRecord = s.Items.Where(i => i.Owner == owner).OrderBy(i => i.ItemId).ThenBy(i => i.InstanceId)
+                .GroupBy(i => i.ItemId)
+                .Select(g => new SafehouseRecordLine { ItemId = g.Key, Name = ItemName(g.Key), Count = g.Sum(i => i.Count), Grams = g.Sum(i => ItemGrams(s, i)) })
+                .ToList();
+            sh.LastRecordMinute = s.GameMinute;
+        }
+    }
+}

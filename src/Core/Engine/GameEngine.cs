@@ -72,6 +72,8 @@ namespace Survival.Core.Engine
         /// </summary>
         public bool IsSheltered(GameState s, string locationId)
         {
+            // B17：安全屋屋内区（place）——完工即遮蔽（S09 X2.7、S13）
+            if (!_locs.ContainsKey(locationId)) return TryPlace(locationId, out var shLoc, out var zone) && zone == SafehouseZone && SafehouseBuilt(s, shLoc);
             var cfg = _locs[locationId];
             var fac = s.Locations[locationId].Facility;
             return cfg.IsIndoor || (cfg.CanBuildShelter && fac.ShelterBuilt);
@@ -339,6 +341,8 @@ namespace Survival.Core.Engine
             var ground = s.Ground;
             var groundFac = FacOf(s, ground) ?? hereState.Facility;
             var allowGround = !plan.TravelPaused;
+            // B17（S09 X2.5）：屋内不做外部探索、采集、搜集、清理与移动，要先出门
+            if (InsideSafehouseBlocked(s, r.Type) is string insideWhy) return insideWhy;
 
             switch (r.Type)
             {
@@ -510,11 +514,8 @@ namespace Survival.Core.Engine
                         if (why != null) return why;
                         plan.Catalysts.Add(pot!);
                     }
-                    if (rc.FacilityResult != null)
-                    {
-                        if (!hereCfg.CanBuildShelter) return BuildOnlyAtCamp(hereCfg);
-                        if (FacilityFlag(hereState.Facility, rc.FacilityResult)) return rc.Group == "workshop" ? $"{LocName(here)}已有{rc.Name.Replace("建", "")}（每类每地一座）" : "已建造";
-                    }
+                    // 建造（棚/床/工坊/安全屋/屋内床与火）：按当前地点与所在区判位置与唯一性（S09 X2.2/X2.7、Q107、Q134）
+                    if (rc.FacilityResult != null && BuildSiteBlocked(s, rc) is string site) return site;
                     if (StationBlocked(s, rc) is string station) return station;
                     if (rc.IsPassive) return $"{StationName(rc.Station)}的被动加工在后续版本开放";
                     if (rc.Requirement != null)
@@ -527,6 +528,7 @@ namespace Survival.Core.Engine
                                 if (groundFac.FuelMinutes < Tick) return "火堆燃料不足，请先投入木材";
                                 break;
                             case "camp":
+                                if (rc.Group == "workshop" && rc.FacilityResult != null) break;   // 工坊建造的位置已由 BuildSiteBlocked 判（camp 外部或安全屋屋内）
                                 if (!hereCfg.CanBuildShelter) return rc.IsBuild ? BuildOnlyAtCamp(hereCfg) : "只能在营地制作";
                                 break;
                             case "shelter":
@@ -745,6 +747,7 @@ namespace Survival.Core.Engine
         {
             "shelterBuilt" => f.ShelterBuilt,
             "bedBuilt" => f.BedBuilt,
+            "fireBuilt" => f.FireBuilt,
             _ when key.StartsWith(WorkshopPrefix) => f.Workshops.Contains(key.Substring(WorkshopPrefix.Length)),
             _ => false,
         };
@@ -753,6 +756,7 @@ namespace Survival.Core.Engine
         {
             if (key == "shelterBuilt") f.ShelterBuilt = true;
             else if (key == "bedBuilt") f.BedBuilt = true;
+            else if (key == "fireBuilt") f.FireBuilt = true;
             else if (key.StartsWith(WorkshopPrefix) && !f.Workshops.Contains(key.Substring(WorkshopPrefix.Length)))
                 f.Workshops.Add(key.Substring(WorkshopPrefix.Length));
         }

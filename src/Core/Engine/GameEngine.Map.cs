@@ -385,6 +385,7 @@ namespace Survival.Core.Engine
             var notes = new List<string>();
             var from = s.CurrentLocation;
             s.CurrentLocation = locationId;
+            s.CurrentZone = ExteriorZone;
             Visit(s, locationId, notes);
             NoteArrive(s, from, locationId);   // B13 试玩修复 P7：与真实到达同一序章钩子（往返、到达反应、出区抵达）
             UpdateFlags(s);

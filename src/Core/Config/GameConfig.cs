@@ -26,6 +26,8 @@ namespace Survival.Core.Config
         public Dictionary<string, ThresholdConfig> Thresholds { get; set; } = new Dictionary<string, ThresholdConfig>();
         public ItemActionsConfig ItemActions { get; set; } = new ItemActionsConfig();
         public FacilityEffectsConfig FacilityEffects { get; set; } = new FacilityEffectsConfig();
+        /// <summary>安全屋与野营部署（S09 X2、A07 X1.4/X1.6，B17）。</summary>
+        public SafehouseConfig Safehouse { get; set; } = new SafehouseConfig();
         public ToolEffectsConfig ToolEffects { get; set; } = new ToolEffectsConfig();
         public ProgressConfig Progress { get; set; } = new ProgressConfig();
         /// <summary>清理与探索共用的地块掉落表（地图清理案 5.1），键为 lootTableId。</summary>
@@ -787,6 +789,32 @@ namespace Survival.Core.Config
         public double BedExtraSleepEnergyPerHour { get; set; }
         public double ShelteredCampRestMoralePerHour { get; set; }
         public double LowMoraleEnergyRecoveryFactor { get; set; } = 0.5;
+    }
+
+    /// <summary>
+    /// 安全屋（S09 X2.1—X2.6）：建造配方、开工须有的营区登记事实与探索度、每屋固定柜容量；野营布与折叠柴炉部署参数（A07 X1.6、
+    /// expansion-supply.json operationalRules.camping）。
+    /// </summary>
+    public sealed class SafehouseConfig
+    {
+        public string Source { get; set; } = "";
+        public string BuildRecipe { get; set; } = "safehouse_base";
+        public string RegisteredFact { get; set; } = "hub_registered";
+        public int RequiredExplore { get; set; } = 100;
+        public int StorageCapacityGrams { get; set; } = 200000;
+        public CampingConfig Camping { get; set; } = new CampingConfig();
+    }
+
+    public sealed class CampingConfig
+    {
+        public string TarpItemId { get; set; } = "field_tarp";
+        public int TarpDeployMinutes { get; set; } = 10;
+        public int TarpPackMinutes { get; set; } = 10;
+        public int TarpPartyCapacity { get; set; } = 4;
+        public string StoveItemId { get; set; } = "folding_stove";
+        public int StoveDeployMinutes { get; set; } = 5;
+        public int StovePackMinutes { get; set; } = 5;
+        public int StoveMaxFuelMinutes { get; set; } = 60;
     }
 
     public sealed class ToolEffectsConfig

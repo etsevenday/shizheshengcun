@@ -12,6 +12,7 @@ namespace Survival.Core.Engine
         public void DebugTeleport(GameState s, string locationId)
         {
             s.CurrentLocation = locationId;
+            s.CurrentZone = ExteriorZone;
             Visit(s, locationId);
             UpdateFlags(s);
         }

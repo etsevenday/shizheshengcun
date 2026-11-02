@@ -369,10 +369,10 @@ namespace Survival.Core.Engine
                 {
                     p.BaseMinutes = r.Minutes;
                     p.ConfirmText = $"睡眠{Clock.Duration(r.Minutes)}";
-                    var sheltered = IsSheltered(s, s.CurrentLocation);
+                    var sheltered = IsSheltered(s, s.Ground);
                     var sr = Config.HourlyRates[sheltered ? "sleep_sheltered" : "sleep_exposed"];
                     p.Notes.Add($"{(sheltered ? "遮蔽" : "露天")}睡眠：每小时清醒度{Fmt.SignedT(sr.Wakefulness)}、体力{Fmt.SignedT(sr.Energy)}、精神{Fmt.SignedT(sr.Morale)}");
-                    if (sheltered && s.Locations[s.CurrentLocation].Facility.BedBuilt)
+                    if (sheltered && (FacOf(s, s.Ground) ?? s.Locations[s.CurrentLocation].Facility).BedBuilt)
                         p.Notes.Add($"床垫：睡眠体力每小时额外{Fmt.SignedT(Config.FacilityEffects.BedExtraSleepEnergyPerHour)}");
                     p.Notes.Add("睡眠中仍会消耗饱食、水分和火堆燃料");
                     break;

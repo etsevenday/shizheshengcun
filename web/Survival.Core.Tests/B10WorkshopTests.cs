@@ -41,8 +41,8 @@ public class B10WorkshopTests : TestBase
             Assert.That(eq.Any(r => r.Id == id), Is.True, id);
         Assert.That(eq.Where(r => r.Station == "forge").All(r => r.Fuel.Count == 1 && r.Fuel["charcoal"] == 1), Is.True);
         Assert.That(eq.Where(r => r.Station != "forge").All(r => r.Fuel.Count == 0), Is.True);
-        // 工坊建造五类 + 加工链
-        Assert.That(Cfg.Recipes.Count(r => r.Group == "workshop"), Is.EqualTo(5));
+        // 工坊建造五类 + 加工链；B17 起陶窑、固定净水台也可建（A07 X1.4，共 7 类自建）
+        Assert.That(Cfg.Recipes.Count(r => r.Group == "workshop"), Is.EqualTo(7));
         Assert.That(Cfg.Workshops.Stations.Select(x => x.Id), Is.EqualTo(new[] { "hand", "workbench", "forge", "sewing", "medical", "armory", "kiln", "water_station" }), "B16 登记陶窑、固定净水台（建造在 B17）");
         Assert.That(Cfg.Recipes.Count(r => r.Group == "material" && !r.Id.StartsWith("ex_")), Is.EqualTo(26));
         Assert.That(Cfg.Recipes.Single(r => r.Id == "make_saline").MinSkills.Keys.Single(), Is.EqualTo("medicine"), "A07：医疗台加工读医疗");
@@ -80,7 +80,7 @@ public class B10WorkshopTests : TestBase
         Start(s, Craft("build_workbench"));
         Run(s);
         Assert.That(s.Locations["camp"].Facility.Workshops, Is.EqualTo(new[] { "workbench" }));
-        Assert.That(E.CanStart(s, Craft("build_workbench")), Does.Contain("已有工作台").And.Contain("每类每地一座"));
+        Assert.That(E.CanStart(s, Craft("build_workbench")), Does.Contain("已有工作台").And.Contain("每区每类一座"));
         // 锻炉要制造3级
         Give(s, ("stone", 8), ("iron_plate", 4), ("parts", 2));
         Assert.That(E.CanStart(s, Craft("build_forge")), Does.Contain("需要制造3级"));
@@ -111,7 +111,7 @@ public class B10WorkshopTests : TestBase
         Assert.That(E.CanStart(s, Craft("make_machete")), Is.Null);
         s.CurrentLocation = "field";
         Give(s, ("iron_plate", 2), ("wood", 1), ("cloth", 1));
-        Assert.That(E.CanStart(s, Craft("make_machete")), Does.Contain("需要工作台").And.Contain("工坊只能建在临时营地"));
+        Assert.That(E.CanStart(s, Craft("make_machete")), Does.Contain("需要工作台").And.Contain("工坊只能建在临时营地或已建成的安全屋屋内"));
         Assert.That(E.CanStart(s, Craft("knife")), Does.Contain("缺少").Or.Null, "手工配方不看工坊");
     }
 

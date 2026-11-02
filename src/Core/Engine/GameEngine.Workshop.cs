@@ -62,13 +62,18 @@ namespace Survival.Core.Engine
             return $"执行{n}份配方 · 成品{outs} · {string.Join("；", parts)}（{RecipeFuelRule(rc)}）";
         }
 
-        /// <summary>某地点是否已建成该工坊（hand 永远可用）。</summary>
-        public bool WorkshopBuilt(GameState s, string locationId, string stationId) =>
-            stationId == "hand" || (s.Locations.TryGetValue(locationId, out var l) && l.Facility.Workshops.Contains(stationId));
+        /// <summary>某区（place：外部区为地点 ID，安全屋屋内为屋内地面）是否已建成该工坊（hand 永远可用）；Q107 唯一键 地点+区+类别。</summary>
+        public bool WorkshopBuilt(GameState s, string place, string stationId) =>
+            stationId == "hand" || (FacOf(s, place)?.Workshops.Contains(stationId) ?? false);
 
-        /// <summary>建造配方的设施在当前地点是否已建成（棚、床、工坊）。</summary>
+        /// <summary>建造配方的设施在当前地点当前区是否已建成（棚、床、工坊、屋内火堆）；安全屋看本地点是否已建成。</summary>
         public bool FacilityBuiltHere(GameState s, RecipeConfig rc) =>
-            rc.FacilityResult != null && FacilityFlag(s.Locations[s.CurrentLocation].Facility, rc.FacilityResult);
+            rc.FacilityResult == "safehouse" ? SafehouseBuilt(s, s.CurrentLocation)
+            : rc.FacilityResult != null && FacilityFlag(FacOf(s, s.Ground) ?? s.Locations[s.CurrentLocation].Facility, rc.FacilityResult);
+
+        /// <summary>当前所在区能不能自建工坊：临时营地外部，或已完工安全屋屋内（Q107 选 A）。</summary>
+        public bool CanBuildWorkshopsHere(GameState s) =>
+            s.CurrentZone == SafehouseZone ? SafehouseBuilt(s, s.CurrentLocation) : CanBuildWorkshopsAt(s.CurrentLocation);
 
         /// <summary>这个地点能不能建工坊（B10-1：配置 workshops.buildLocations，现在只有 camp）。</summary>
         public bool CanBuildWorkshopsAt(string locationId) => Config.Workshops.BuildLocations.Contains(locationId);
@@ -110,7 +115,7 @@ namespace Survival.Core.Engine
 
         /// <summary>当前地点能不能用这一类工坊：hand、本地自建已建成，或本地公共站已开放。</summary>
         public bool StationUsableHere(GameState s, string stationId) =>
-            WorkshopBuilt(s, s.CurrentLocation, stationId) || PublicStationOpenHere(s, stationId);
+            WorkshopBuilt(s, s.Ground, stationId) || (s.CurrentZone == ExteriorZone && PublicStationOpenHere(s, stationId));
 
         /// <summary>当前地点的公共站（设施栏卡片与工坊入口说明用）：名称、工坊类型、能不能用与原因。</summary>
         public List<PublicStationView> PublicStationsHere(GameState s)
@@ -125,7 +130,7 @@ namespace Survival.Core.Engine
         {
             if (rc.Station == "hand") return null;
             var here = s.CurrentLocation;
-            if (WorkshopBuilt(s, here, rc.Station)) return null;
+            if (WorkshopBuilt(s, s.Ground, rc.Station)) return null;
             var name = StationName(rc.Station);
             // B16：陶窑、固定净水台（A07 X1.4）先登记配方，建造随 B17 安全屋与分区设施
             if (Config.Workshops.Stations.FirstOrDefault(x => x.Id == rc.Station) is StationConfig sc && sc.BuildRecipe == null
@@ -138,9 +143,10 @@ namespace Survival.Core.Engine
                 if (why == null) return null;
                 return $"需要{name}：{pub.Name}还没开放（{why}）";
             }
-            return CanBuildWorkshopsAt(here)
-                ? $"需要{name}：{LocName(here)}还没有建成{name}（在“营地建造”里建）"
-                : $"需要{name}：{LocName(here)}没有{name}，工坊只能建在{string.Join("、", Config.Workshops.BuildLocations.Select(LocName))}";
+            // Q107（B17）：自建工坊在临时营地外部或已完工安全屋屋内，每区每类一座；别处的工坊不远程可用
+            return CanBuildWorkshopsHere(s)
+                ? $"需要{name}：{LocName(s.Ground)}还没有建成{name}（在“营地建造”里建）"
+                : $"需要{name}：{LocName(s.Ground)}没有{name}，工坊只能建在{string.Join("、", Config.Workshops.BuildLocations.Select(LocName))}或已建成的安全屋屋内";
         }
 
         /// <summary>

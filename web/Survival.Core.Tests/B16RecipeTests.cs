@@ -123,8 +123,9 @@ public class B16RecipeTests : TestBase
         Assert.That(Count(s, "purification_tablet"), Is.EqualTo(4));
         Assert.That(s.Skills["medicine"].Xp - med, Is.EqualTo(3));
         Assert.That(E.CanStart(s, ActionRequest.Craft("ex_hardtack")), Does.Contain("锅卡“锅食谱”"));
-        Assert.That(E.CanStart(s, ActionRequest.Craft("ex_ceramic_shell")), Does.Contain("陶窑建造在后续版本开放"));
-        Assert.That(E.RecipeLocks(s, Rc("ex_station_water")), Has.Some.Contains("固定净水台建造在后续版本开放"));
+        // B17：陶窑、固定净水台可以建了（A07 X1.4）；没建时写“需要陶窑/固定净水台”
+        Assert.That(E.CanStart(s, ActionRequest.Craft("ex_ceramic_shell")), Does.Contain("陶窑"));
+        Assert.That(E.RecipeLocks(s, Rc("ex_station_water")), Is.Empty, "开发入口“建全部工坊”已含固定净水台");
     }
 
     /// <summary>ES08/SUP05：口粮棒非热组装，保质 = min(完成+168h, 两原料最早截止)；原料新鲜时按 168h。烹饪经验计入每日 30。</summary>

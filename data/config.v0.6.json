@@ -2047,7 +2047,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：铺取各10分钟，提供睡眠遮蔽不提供遭遇安全、不叠安全屋。本版只有物品定义，用途在后续版本开放"
+      "desc": "野营遮雨布：在普通野外临时营地许可点铺开10分钟、收起10分钟；铺开后当地睡眠算遮蔽（至多4人），不给安全屋休息精神加成，也不挡遭遇。"
     },
     {
       "id": "folding_stove",
@@ -2061,7 +2061,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：地面部署5分钟，沿火堆两位一锅但燃料上限60；收起5分钟须清空熄火且燃料0。本版只有物品定义，用途在后续版本开放"
+      "desc": "折叠柴炉：在普通野外临时营地许可点部署5分钟，当作一处火堆（2个加工位、最多1口锅、燃料上限60分钟）；收起5分钟，须先取空、熄火、燃料清0。"
     },
     {
       "id": "field_patch",
@@ -19181,6 +19181,117 @@
         "crafting": 1
       },
       "repairFilter": "metal_non_gun"
+    },
+    {
+      "id": "safehouse_base",
+      "name": "建安全屋",
+      "kind": "build",
+      "baseMinutes": 240,
+      "inputs": {
+        "wood": 8,
+        "fiber": 6,
+        "cloth": 2,
+        "stone": 4
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": {
+        "facility": "safehouse_site"
+      },
+      "facilityResult": "safehouse",
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "hand",
+      "group": "safehouse"
+    },
+    {
+      "id": "safehouse_bed",
+      "name": "铺屋内床垫",
+      "kind": "build",
+      "baseMinutes": 60,
+      "inputs": {
+        "fiber": 4,
+        "cloth": 2
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": {
+        "facility": "safehouse_interior"
+      },
+      "facilityResult": "bedBuilt",
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "hand",
+      "group": "safehouse"
+    },
+    {
+      "id": "safehouse_fire",
+      "name": "建屋内火堆",
+      "kind": "build",
+      "baseMinutes": 30,
+      "inputs": {
+        "stone": 4,
+        "wood": 2
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": {
+        "facility": "safehouse_interior"
+      },
+      "facilityResult": "fireBuilt",
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "hand",
+      "group": "safehouse"
+    },
+    {
+      "id": "build_kiln",
+      "name": "建陶窑",
+      "kind": "build",
+      "baseMinutes": 180,
+      "inputs": {
+        "stone": 8,
+        "clay": 6,
+        "iron_plate": 2
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": {
+        "facility": "camp"
+      },
+      "facilityResult": "workshop:kiln",
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "hand",
+      "group": "workshop",
+      "knowledge": "ceramic_methods"
+    },
+    {
+      "id": "build_water_station",
+      "name": "建固定净水台",
+      "kind": "build",
+      "baseMinutes": 90,
+      "inputs": {
+        "ceramic_shell": 4,
+        "plank": 2,
+        "cloth": 2
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": {
+        "facility": "camp"
+      },
+      "facilityResult": "workshop:water_station",
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "hand",
+      "group": "workshop",
+      "knowledge": "ceramic_methods"
     }
   ],
   "lootTables": {
@@ -30341,12 +30452,14 @@
       {
         "id": "kiln",
         "name": "陶窑",
-        "note": "陶窑建造在后续版本开放（B17）"
+        "note": "每批另耗木炭1；只烧陶壳",
+        "buildRecipe": "build_kiln"
       },
       {
         "id": "water_station",
         "name": "固定净水台",
-        "note": "净水台建造在后续版本开放（B17）"
+        "note": "每批耗过滤材料1，无火；一批脏水4份/2L",
+        "buildRecipe": "build_water_station"
       }
     ],
     "equipmentSources": [
@@ -34580,5 +34693,22 @@
         "title": "值守记录：邀约"
       }
     ]
+  },
+  "safehouse": {
+    "source": "S09 X2.1—X2.9、A07 X1.4/X1.6、expansion-supply.json operationalRules.camping（B17）",
+    "buildRecipe": "safehouse_base",
+    "registeredFact": "hub_registered",
+    "requiredExplore": 100,
+    "storageCapacityGrams": 200000,
+    "camping": {
+      "tarpItemId": "field_tarp",
+      "tarpDeployMinutes": 10,
+      "tarpPackMinutes": 10,
+      "tarpPartyCapacity": 4,
+      "stoveItemId": "folding_stove",
+      "stoveDeployMinutes": 5,
+      "stovePackMinutes": 5,
+      "stoveMaxFuelMinutes": 60
+    }
   }
 }
