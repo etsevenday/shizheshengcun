@@ -45,7 +45,9 @@
     "itemId": "service_pistol",
     "grant": "officer_cache：service_pistol1",
     "from": "d03_05",
-    "to": "d03_04"
+    "to": "d03_07",
+    "preQ122Destination": "d03_04",
+    "claimId": "officer_cache"
   },
   {
     "itemId": "shotgun",

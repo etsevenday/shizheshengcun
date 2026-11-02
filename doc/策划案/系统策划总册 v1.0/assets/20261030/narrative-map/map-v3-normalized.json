@@ -14741,7 +14741,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "果园块根地",
+      "qualifiedTool": {
+        "resourceId": "w11_orchard_a",
+        "nodeId": "w11_orchard",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w11_orchard_b",
@@ -14756,7 +14769,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "果园旧布堆",
+      "qualifiedTool": {
+        "resourceId": "w11_orchard_b",
+        "nodeId": "w11_orchard",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w12_canal_a",
@@ -14771,7 +14797,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "渠岸纤维草丛",
+      "qualifiedTool": {
+        "resourceId": "w12_canal_a",
+        "nodeId": "w12_canal",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w12_canal_b",
@@ -14786,7 +14825,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "渠边旧密封件",
+      "qualifiedTool": {
+        "resourceId": "w12_canal_b",
+        "nodeId": "w12_canal",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w13_mill_a",
@@ -14801,7 +14853,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "磨坊遗留谷物",
+      "qualifiedTool": {
+        "resourceId": "w13_mill_a",
+        "nodeId": "w13_mill",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w13_mill_b",
@@ -14816,7 +14881,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "磨坊旧木板",
+      "qualifiedTool": {
+        "resourceId": "w13_mill_b",
+        "nodeId": "w13_mill",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w14_cemeteryroad_a",
@@ -14831,7 +14909,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "荒径碎石带",
+      "qualifiedTool": {
+        "resourceId": "w14_cemeteryroad_a",
+        "nodeId": "w14_cemeteryroad",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w14_cemeteryroad_b",
@@ -14846,7 +14937,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "荒径弃衣堆",
+      "qualifiedTool": {
+        "resourceId": "w14_cemeteryroad_b",
+        "nodeId": "w14_cemeteryroad",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w15_shrinewoods_a",
@@ -14861,7 +14965,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "林下草药丛",
+      "qualifiedTool": {
+        "resourceId": "w15_shrinewoods_a",
+        "nodeId": "w15_shrinewoods",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w15_shrinewoods_b",
@@ -14876,7 +14993,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "祈祷林倒木",
+      "qualifiedTool": {
+        "resourceId": "w15_shrinewoods_b",
+        "nodeId": "w15_shrinewoods",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "hatchet"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w16_service_a",
@@ -14891,7 +15021,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "服务站废金属堆",
+      "qualifiedTool": {
+        "resourceId": "w16_service_a",
+        "nodeId": "w16_service",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w16_service_b",
@@ -14906,7 +15049,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "服务站塑料遗料",
+      "qualifiedTool": {
+        "resourceId": "w16_service_b",
+        "nodeId": "w16_service",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w17_switchback_a",
@@ -14921,7 +15077,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "山路碎石带",
+      "qualifiedTool": {
+        "resourceId": "w17_switchback_a",
+        "nodeId": "w17_switchback",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w17_switchback_b",
@@ -14936,7 +15105,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "山路废导线",
+      "qualifiedTool": {
+        "resourceId": "w17_switchback_b",
+        "nodeId": "w17_switchback",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w18_tunnel_a",
@@ -14951,7 +15133,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "洞外露矿",
+      "qualifiedTool": {
+        "resourceId": "w18_tunnel_a",
+        "nodeId": "w18_tunnel",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w18_tunnel_b",
@@ -14966,7 +15161,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "隧道维护紧固件",
+      "qualifiedTool": {
+        "resourceId": "w18_tunnel_b",
+        "nodeId": "w18_tunnel",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w19_survey_a",
@@ -14981,7 +15189,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "测绘设备旧件",
+      "qualifiedTool": {
+        "resourceId": "w19_survey_a",
+        "nodeId": "w19_survey",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w19_survey_b",
@@ -14996,7 +15217,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "测绘营备用电池",
+      "qualifiedTool": {
+        "resourceId": "w19_survey_b",
+        "nodeId": "w19_survey",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w20_powercut_a",
@@ -15011,7 +15245,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "塔基旧导线",
+      "qualifiedTool": {
+        "resourceId": "w20_powercut_a",
+        "nodeId": "w20_powercut",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w20_powercut_b",
@@ -15026,7 +15273,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "高压走廊旧电器",
+      "qualifiedTool": {
+        "resourceId": "w20_powercut_b",
+        "nodeId": "w20_powercut",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w21_pine_a",
@@ -15041,7 +15301,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "针叶林倒木",
+      "qualifiedTool": {
+        "resourceId": "w21_pine_a",
+        "nodeId": "w21_pine",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "hatchet"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w21_pine_b",
@@ -15056,7 +15329,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "针叶林纤维草丛",
+      "qualifiedTool": {
+        "resourceId": "w21_pine_b",
+        "nodeId": "w21_pine",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w22_ravine_a",
@@ -15071,7 +15357,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "沟谷露矿",
+      "qualifiedTool": {
+        "resourceId": "w22_ravine_a",
+        "nodeId": "w22_ravine",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w22_ravine_b",
@@ -15086,7 +15385,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "沟谷碎石带",
+      "qualifiedTool": {
+        "resourceId": "w22_ravine_b",
+        "nodeId": "w22_ravine",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w23_hunting_a",
@@ -15101,7 +15413,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "旧营皮料",
+      "qualifiedTool": {
+        "resourceId": "w23_hunting_a",
+        "nodeId": "w23_hunting",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w23_hunting_b",
@@ -15116,7 +15441,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "旧营绳卷",
+      "qualifiedTool": {
+        "resourceId": "w23_hunting_b",
+        "nodeId": "w23_hunting",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w24_cave_a",
@@ -15131,7 +15469,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "洞口矿料堆",
+      "qualifiedTool": {
+        "resourceId": "w24_cave_a",
+        "nodeId": "w24_cave",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w24_cave_b",
@@ -15146,7 +15497,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "洞口旧炭袋",
+      "qualifiedTool": {
+        "resourceId": "w24_cave_b",
+        "nodeId": "w24_cave",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w25_wetland_a",
@@ -15161,7 +15525,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "湿地草药丛",
+      "qualifiedTool": {
+        "resourceId": "w25_wetland_a",
+        "nodeId": "w25_wetland",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w25_wetland_b",
@@ -15176,7 +15553,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "湿地纤维草丛",
+      "qualifiedTool": {
+        "resourceId": "w25_wetland_b",
+        "nodeId": "w25_wetland",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w26_island_a",
@@ -15191,7 +15581,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "陆洲块根地",
+      "qualifiedTool": {
+        "resourceId": "w26_island_a",
+        "nodeId": "w26_island",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w26_island_b",
@@ -15206,7 +15609,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "陆洲盐晶",
+      "qualifiedTool": {
+        "resourceId": "w26_island_b",
+        "nodeId": "w26_island",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w27_relay_a",
@@ -15221,7 +15637,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "中继设备遗件",
+      "qualifiedTool": {
+        "resourceId": "w27_relay_a",
+        "nodeId": "w27_relay",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w27_relay_b",
@@ -15236,7 +15665,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "中继营精密机件",
+      "qualifiedTool": {
+        "resourceId": "w27_relay_b",
+        "nodeId": "w27_relay",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w28_highland_a",
@@ -15251,7 +15693,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "高地碎石带",
+      "qualifiedTool": {
+        "resourceId": "w28_highland_a",
+        "nodeId": "w28_highland",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w28_highland_b",
@@ -15266,7 +15721,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "高地草药丛",
+      "qualifiedTool": {
+        "resourceId": "w28_highland_b",
+        "nodeId": "w28_highland",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w29_riverbend_a",
@@ -15281,7 +15749,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "河弯纤维草丛",
+      "qualifiedTool": {
+        "resourceId": "w29_riverbend_a",
+        "nodeId": "w29_riverbend",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w29_riverbend_b",
@@ -15296,7 +15777,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "河弯黏土层",
+      "qualifiedTool": {
+        "resourceId": "w29_riverbend_b",
+        "nodeId": "w29_riverbend",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w30_truckstop_a",
@@ -15311,7 +15805,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "休息区机油余存",
+      "qualifiedTool": {
+        "resourceId": "w30_truckstop_a",
+        "nodeId": "w30_truckstop",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w30_truckstop_b",
@@ -15326,7 +15833,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "休息区旧胶料",
+      "qualifiedTool": {
+        "resourceId": "w30_truckstop_b",
+        "nodeId": "w30_truckstop",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w31_suburb_a",
@@ -15341,7 +15861,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "棚户旧布堆",
+      "qualifiedTool": {
+        "resourceId": "w31_suburb_a",
+        "nodeId": "w31_suburb",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w31_suburb_b",
@@ -15356,7 +15889,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "棚户医用纱布余存",
+      "qualifiedTool": {
+        "resourceId": "w31_suburb_b",
+        "nodeId": "w31_suburb",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w32_railcut_a",
@@ -15371,7 +15917,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "铁路废钢料",
+      "qualifiedTool": {
+        "resourceId": "w32_railcut_a",
+        "nodeId": "w32_railcut",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w32_railcut_b",
@@ -15386,7 +15945,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "铁路维护紧固件",
+      "qualifiedTool": {
+        "resourceId": "w32_railcut_b",
+        "nodeId": "w32_railcut",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w33_waterworks_a",
@@ -15401,7 +15973,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "水厂黏合剂余存",
+      "qualifiedTool": {
+        "resourceId": "w33_waterworks_a",
+        "nodeId": "w33_waterworks",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w33_waterworks_b",
@@ -15416,7 +16001,20 @@
       "scope": "world_stock",
       "kind": "renewable",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "水厂消毒液余存",
+      "qualifiedTool": {
+        "resourceId": "w33_waterworks_b",
+        "nodeId": "w33_waterworks",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w34_depot_a",
@@ -15431,7 +16029,20 @@
       "scope": "world_stock",
       "kind": "finite",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "应急仓豆罐头存货",
+      "qualifiedTool": {
+        "resourceId": "w34_depot_a",
+        "nodeId": "w34_depot",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w34_depot_b",
@@ -15446,7 +16057,20 @@
       "scope": "world_stock",
       "kind": "finite",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "应急仓盐水剂存货",
+      "qualifiedTool": {
+        "resourceId": "w34_depot_b",
+        "nodeId": "w34_depot",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "w12_canal_water",
@@ -15461,7 +16085,18 @@
       "scope": "world_stock",
       "kind": "flowing",
       "reveal": 0,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "灌溉渠岸取水口",
+      "qualifiedTool": {
+        "resourceId": "w12_canal_water",
+        "nodeId": "w12_canal",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w25_wetland_water",
@@ -15476,7 +16111,18 @@
       "scope": "world_stock",
       "kind": "flowing",
       "reveal": 0,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "黑水湿地取水口",
+      "qualifiedTool": {
+        "resourceId": "w25_wetland_water",
+        "nodeId": "w25_wetland",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w29_riverbend_water",
@@ -15491,7 +16137,18 @@
       "scope": "world_stock",
       "kind": "flowing",
       "reveal": 0,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "河道弯口取水口",
+      "qualifiedTool": {
+        "resourceId": "w29_riverbend_water",
+        "nodeId": "w29_riverbend",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w33_waterworks_water",
@@ -15506,7 +16163,18 @@
       "scope": "world_stock",
       "kind": "flowing",
       "reveal": 0,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "荒废水厂取水口",
+      "qualifiedTool": {
+        "resourceId": "w33_waterworks_water",
+        "nodeId": "w33_waterworks",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w08_reservoir_water",
@@ -15521,7 +16189,18 @@
       "scope": "world_stock",
       "kind": "flowing",
       "reveal": 0,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "旧水库取水口",
+      "qualifiedTool": {
+        "resourceId": "w08_reservoir_water",
+        "nodeId": "w08_reservoir",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w16_service_cistern",
@@ -15536,7 +16215,18 @@
       "scope": "world_stock",
       "kind": "cistern",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "山间服务站蓄水池",
+      "qualifiedTool": {
+        "resourceId": "w16_service_cistern",
+        "nodeId": "w16_service",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w19_survey_cistern",
@@ -15551,7 +16241,18 @@
       "scope": "world_stock",
       "kind": "cistern",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "测绘营址蓄水池",
+      "qualifiedTool": {
+        "resourceId": "w19_survey_cistern",
+        "nodeId": "w19_survey",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w23_hunting_cistern",
@@ -15566,7 +16267,18 @@
       "scope": "world_stock",
       "kind": "cistern",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "猎人旧营蓄水池",
+      "qualifiedTool": {
+        "resourceId": "w23_hunting_cistern",
+        "nodeId": "w23_hunting",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w27_relay_cistern",
@@ -15581,7 +16293,18 @@
       "scope": "world_stock",
       "kind": "cistern",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "废中继营蓄水池",
+      "qualifiedTool": {
+        "resourceId": "w27_relay_cistern",
+        "nodeId": "w27_relay",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w30_truckstop_cistern",
@@ -15596,7 +16319,18 @@
       "scope": "world_stock",
       "kind": "cistern",
       "reveal": 25,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "货车休息区蓄水池",
+      "qualifiedTool": {
+        "resourceId": "w30_truckstop_cistern",
+        "nodeId": "w30_truckstop",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w13_mill_bottles",
@@ -15611,7 +16345,18 @@
       "scope": "world_stock",
       "kind": "finite",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "旧磨坊瓶装净水",
+      "qualifiedTool": {
+        "resourceId": "w13_mill_bottles",
+        "nodeId": "w13_mill",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w31_suburb_bottles",
@@ -15626,7 +16371,18 @@
       "scope": "world_stock",
       "kind": "finite",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "城郊棚户瓶装净水",
+      "qualifiedTool": {
+        "resourceId": "w31_suburb_bottles",
+        "nodeId": "w31_suburb",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w34_depot_bottles",
@@ -15641,7 +16397,18 @@
       "scope": "world_stock",
       "kind": "finite",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "应急仓外瓶装净水",
+      "qualifiedTool": {
+        "resourceId": "w34_depot_bottles",
+        "nodeId": "w34_depot",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "d01_04_cache0",
@@ -15656,7 +16423,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "藏书密室·布料箱",
+      "qualifiedTool": {
+        "resourceId": "d01_04_cache0",
+        "nodeId": "d01_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d01_06_cache1",
@@ -15671,7 +16451,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "骨龛回道·缝线箱",
+      "qualifiedTool": {
+        "resourceId": "d01_06_cache1",
+        "nodeId": "d01_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d01_04_cache2",
@@ -15686,7 +16479,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "藏书密室·皮革箱",
+      "qualifiedTool": {
+        "resourceId": "d01_04_cache2",
+        "nodeId": "d01_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d01_08_unique",
@@ -15701,7 +16507,27 @@
       "scope": "campaignClaimId",
       "kind": "campaign",
       "reveal": 100,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "圣所旧路档册",
+      "qualifiedTool": {
+        "resourceId": "d01_08_unique",
+        "nodeId": "d01_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      "knowledgeGrantedWithClaim": [
+        "blueprint_breach_axe",
+        "blueprint_rescue_axe",
+        "blueprint_steel_mace",
+        "blueprint_heavy_armor",
+        "blueprint_craft_coat",
+        "blueprint_reinforced_trousers",
+        "blueprint_repair_manual"
+      ]
     },
     {
       "id": "d02_04_cache0",
@@ -15716,7 +16542,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "控制室·医用纱布箱",
+      "qualifiedTool": {
+        "resourceId": "d02_04_cache0",
+        "nodeId": "d02_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d02_06_cache1",
@@ -15731,7 +16570,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "检修竖井·实验室试剂箱",
+      "qualifiedTool": {
+        "resourceId": "d02_06_cache1",
+        "nodeId": "d02_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d02_04_cache2",
@@ -15746,7 +16598,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "控制室·电子组件箱",
+      "qualifiedTool": {
+        "resourceId": "d02_04_cache2",
+        "nodeId": "d02_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d02_08_unique",
@@ -15761,7 +16626,27 @@
       "scope": "campaignClaimId",
       "kind": "campaign",
       "reveal": 100,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "封存区安全规程",
+      "qualifiedTool": {
+        "resourceId": "d02_08_unique",
+        "nodeId": "d02_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      "knowledgeGrantedWithClaim": [
+        "blueprint_rescue_medkit",
+        "blueprint_triage_kit",
+        "blueprint_medic_armor",
+        "blueprint_aid_badge",
+        "blueprint_rest_coat",
+        "blueprint_recovery_trousers",
+        "blueprint_medical_notes"
+      ]
     },
     {
       "id": "d03_04_cache0",
@@ -15776,7 +16661,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "值勤室·武器组件箱",
+      "qualifiedTool": {
+        "resourceId": "d03_04_cache0",
+        "nodeId": "d03_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d03_06_cache1",
@@ -15791,7 +16689,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "配电房·钢材箱",
+      "qualifiedTool": {
+        "resourceId": "d03_06_cache1",
+        "nodeId": "d03_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d03_04_cache2",
@@ -15806,7 +16717,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "值勤室·紧固件箱",
+      "qualifiedTool": {
+        "resourceId": "d03_04_cache2",
+        "nodeId": "d03_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d03_08_unique",
@@ -15821,7 +16745,28 @@
       "scope": "campaignClaimId",
       "kind": "campaign",
       "reveal": 100,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "警备仓备用电源",
+      "qualifiedTool": {
+        "resourceId": "d03_08_unique",
+        "nodeId": "d03_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      "knowledgeGrantedWithClaim": [
+        "blueprint_guard_sword",
+        "blueprint_pike",
+        "blueprint_shock_baton",
+        "blueprint_repeater_crossbow",
+        "blueprint_rescue_shield",
+        "blueprint_field_radio",
+        "blueprint_focus_lens",
+        "blueprint_resolve_medal"
+      ]
     },
     {
       "id": "d04_03_cache0",
@@ -15836,7 +16781,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "蓄电室·导线箱",
+      "qualifiedTool": {
+        "resourceId": "d04_03_cache0",
+        "nodeId": "d04_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d04_05_cache1",
@@ -15851,7 +16809,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "屋顶梯井·电池箱",
+      "qualifiedTool": {
+        "resourceId": "d04_05_cache1",
+        "nodeId": "d04_05",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d04_03_cache2",
@@ -15866,7 +16837,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "蓄电室·电子组件箱",
+      "qualifiedTool": {
+        "resourceId": "d04_03_cache2",
+        "nodeId": "d04_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d04_07_unique",
@@ -15881,7 +16865,26 @@
       "scope": "campaignClaimId",
       "kind": "campaign",
       "reveal": 100,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "通信站联络日志",
+      "qualifiedTool": {
+        "resourceId": "d04_07_unique",
+        "nodeId": "d04_07",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      "knowledgeGrantedWithClaim": [
+        "blueprint_command_terminal",
+        "blueprint_balanced_armor",
+        "blueprint_tactics_watch",
+        "blueprint_expedition_coat",
+        "blueprint_expedition_trousers",
+        "blueprint_ration_pouch"
+      ]
     },
     {
       "id": "d05_04_cache0",
@@ -15896,7 +16899,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "滤料库·橡胶箱",
+      "qualifiedTool": {
+        "resourceId": "d05_04_cache0",
+        "nodeId": "d05_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d05_07_cache1",
@@ -15911,7 +16927,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "阀控室·消毒液箱",
+      "qualifiedTool": {
+        "resourceId": "d05_07_cache1",
+        "nodeId": "d05_07",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d05_04_cache2",
@@ -15926,7 +16955,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "滤料库·黏合剂箱",
+      "qualifiedTool": {
+        "resourceId": "d05_04_cache2",
+        "nodeId": "d05_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d05_07_unique",
@@ -15941,7 +16983,18 @@
       "scope": "campaignClaimId",
       "kind": "campaign",
       "reveal": 100,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "水厂阀控记录",
+      "qualifiedTool": {
+        "resourceId": "d05_07_unique",
+        "nodeId": "d05_07",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "d06_03_cache0",
@@ -15956,7 +17009,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "浅矿脉·铁矿料箱",
+      "qualifiedTool": {
+        "resourceId": "d06_03_cache0",
+        "nodeId": "d06_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d06_06_cache1",
@@ -15971,7 +17037,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "矿工营室·铁片箱",
+      "qualifiedTool": {
+        "resourceId": "d06_06_cache1",
+        "nodeId": "d06_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d06_03_cache2",
@@ -15986,7 +17065,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "浅矿脉·木炭箱",
+      "qualifiedTool": {
+        "resourceId": "d06_03_cache2",
+        "nodeId": "d06_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d06_08_unique",
@@ -16001,7 +17093,18 @@
       "scope": "campaignClaimId",
       "kind": "campaign",
       "reveal": 100,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "矿道作业手册",
+      "qualifiedTool": {
+        "resourceId": "d06_08_unique",
+        "nodeId": "d06_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "d07_04_cache0",
@@ -16016,7 +17119,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "服装层·豆罐头箱",
+      "qualifiedTool": {
+        "resourceId": "d07_04_cache0",
+        "nodeId": "d07_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d07_07_cache1",
@@ -16031,7 +17147,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "屋顶避难点·布料箱",
+      "qualifiedTool": {
+        "resourceId": "d07_07_cache1",
+        "nodeId": "d07_07",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d07_04_cache2",
@@ -16046,7 +17175,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "服装层·塑料箱",
+      "qualifiedTool": {
+        "resourceId": "d07_04_cache2",
+        "nodeId": "d07_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d07_07_unique",
@@ -16061,7 +17203,18 @@
       "scope": "campaignClaimId",
       "kind": "campaign",
       "reveal": 100,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "商场避难物资簿",
+      "qualifiedTool": {
+        "resourceId": "d07_07_unique",
+        "nodeId": "d07_07",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "d08_03_cache0",
@@ -16076,7 +17229,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "干货库·盐水剂箱",
+      "qualifiedTool": {
+        "resourceId": "d08_03_cache0",
+        "nodeId": "d08_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d08_06_cache1",
@@ -16091,7 +17257,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "备用电房·医用纱布箱",
+      "qualifiedTool": {
+        "resourceId": "d08_06_cache1",
+        "nodeId": "d08_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d08_03_cache2",
@@ -16106,7 +17285,20 @@
       "scope": "instanceId",
       "kind": "instance",
       "reveal": 50,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "干货库·肉干箱",
+      "qualifiedTool": {
+        "resourceId": "d08_03_cache2",
+        "nodeId": "d08_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      }
     },
     {
       "id": "d08_08_unique",
@@ -16121,7 +17313,18 @@
       "scope": "campaignClaimId",
       "kind": "campaign",
       "reveal": 100,
-      "source": "map-v3-data.json"
+      "source": "map-v3-data.json",
+      "displayName": "冷链调度档案",
+      "qualifiedTool": {
+        "resourceId": "d08_08_unique",
+        "nodeId": "d08_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "h03_workshop_supply_disinfectant",
@@ -16136,7 +17339,18 @@
       "scope": "world_stock",
       "kind": "world_addition",
       "reveal": 100,
-      "source": "expansion-supply.json"
+      "source": "expansion-supply.json",
+      "displayName": "公共工坊消毒液配给柜",
+      "qualifiedTool": {
+        "resourceId": "h03_workshop_supply_disinfectant",
+        "nodeId": "h03_workshop",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w13_mill_supply_salt",
@@ -16151,7 +17365,20 @@
       "scope": "world_stock",
       "kind": "world_addition",
       "reveal": 50,
-      "source": "expansion-supply.json"
+      "source": "expansion-supply.json",
+      "displayName": "磨坊食盐存货",
+      "qualifiedTool": {
+        "resourceId": "w13_mill_supply_salt",
+        "nodeId": "w13_mill",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     },
     {
       "id": "w15_shrinewoods_supply_berry",
@@ -16166,7 +17393,20 @@
       "scope": "world_stock",
       "kind": "world_addition",
       "reveal": 50,
-      "source": "expansion-supply.json"
+      "source": "expansion-supply.json",
+      "displayName": "祈祷林野果丛",
+      "qualifiedTool": {
+        "resourceId": "w15_shrinewoods_supply_berry",
+        "nodeId": "w15_shrinewoods",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
     }
   ],
   "resourceTableScope": "96新增规范化补丁，旧S05/A08主世界资源保持；旧地牢资源迁移替换，不叠发",
@@ -16212,5 +17452,23 @@
     "from_explore_100": "from_explore100"
   },
   "currentMapAdjudicationsFile": "assets/20261102/map/map-adjudications.json",
-  "currentMapAdjudicationsVersion": "q114_q119_20261102"
+  "currentMapAdjudicationsVersion": "q114_q119_20261102",
+  "regionNames": {
+    "starter": "初醒荒野",
+    "hub": "幸存者营区",
+    "city": "旧城废墟",
+    "church": "教会辖区",
+    "academy": "灰塔院区",
+    "wild": "近郊荒野",
+    "deep_wild": "深野腹地",
+    "church_approach": "朝圣沿途",
+    "academy_approach": "灰塔山路",
+    "city_approach": "旧城外缘",
+    "works": "铁路工务区",
+    "aid": "救援安置区",
+    "utility": "公共设施区"
+  },
+  "resourceAdjudicationsFile": "assets/20261102/map/resource-adjudications.json",
+  "restoredResourceCount": 53,
+  "totalResourceEntriesWithLegacy20": 169
 }

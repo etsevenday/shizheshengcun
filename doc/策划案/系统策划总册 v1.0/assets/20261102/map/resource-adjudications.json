@@ -1,0 +1,5335 @@
+{
+  "version": "q120_q127_20261102",
+  "status": "approved_designed_initial_values_document_only_not_runtime_validation",
+  "questions": [
+    "Q120",
+    "Q121",
+    "Q122",
+    "Q123",
+    "Q124",
+    "Q125",
+    "Q126",
+    "Q127"
+  ],
+  "resources": {
+    "baseCounts": {
+      "legacyStarter": 20,
+      "normalizedExpansion": 96
+    },
+    "additionalCount": 53,
+    "totalResourceEntries": 169,
+    "worldSources": [
+      {
+        "id": "m01_road_crate",
+        "legacyAliases": [
+          "m01/crate"
+        ],
+        "nodeId": "m01_road",
+        "displayName": "路旁旧货箱",
+        "items": {
+          "cloth": 2
+        },
+        "workMinutes": 20,
+        "initial": 6,
+        "cap": 6,
+        "dailyRefill": 0,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "finite",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "m01_road_barrier",
+        "legacyAliases": [
+          "m01/barrier"
+        ],
+        "nodeId": "m01_road",
+        "displayName": "路障金属堆",
+        "items": {
+          "scrap": 2
+        },
+        "workMinutes": 20,
+        "initial": 8,
+        "cap": 8,
+        "dailyRefill": 0,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "finite",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "m02_checkpoint_duty",
+        "legacyAliases": [
+          "m02/duty"
+        ],
+        "nodeId": "m02_checkpoint",
+        "displayName": "检查哨值勤补给箱",
+        "items": {
+          "canned_food": 2,
+          "clean_water": 2
+        },
+        "workMinutes": 15,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 100,
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "m02_checkpoint_duty",
+        "hazard": null
+      },
+      {
+        "id": "m02_checkpoint_bench",
+        "legacyAliases": [
+          "m02/bench"
+        ],
+        "nodeId": "m02_checkpoint",
+        "displayName": "哨站维修台遗料",
+        "items": {
+          "fastener": 2
+        },
+        "workMinutes": 25,
+        "initial": 8,
+        "cap": 8,
+        "dailyRefill": 2,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h02_square_water",
+        "legacyAliases": [
+          "h02/water"
+        ],
+        "nodeId": "h02_square",
+        "displayName": "营区净水配给处",
+        "items": {
+          "clean_water": 2
+        },
+        "workMinutes": 10,
+        "initial": 16,
+        "cap": 16,
+        "dailyRefill": 12,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h02_square_ration",
+        "legacyAliases": [
+          "h02/ration"
+        ],
+        "nodeId": "h02_square",
+        "displayName": "营区罐头配给处",
+        "items": {
+          "canned_food": 2
+        },
+        "workMinutes": 10,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 2,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h03_workshop_scrap",
+        "legacyAliases": [
+          "h03/scrap"
+        ],
+        "nodeId": "h03_workshop",
+        "displayName": "公共工坊旧件回收台",
+        "items": {
+          "parts": 1
+        },
+        "workMinutes": 30,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h04_infirmary_dressing",
+        "legacyAliases": [
+          "h04/dressing"
+        ],
+        "nodeId": "h04_infirmary",
+        "displayName": "医务室纱布配给柜",
+        "items": {
+          "medical_gauze": 1
+        },
+        "workMinutes": 15,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w01_farm_crop",
+        "legacyAliases": [
+          "w01/crop"
+        ],
+        "nodeId": "w01_farm",
+        "displayName": "农场块根畦",
+        "items": {
+          "raw_root": 2
+        },
+        "workMinutes": 30,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 6,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "gathering",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w01_farm_barn",
+        "legacyAliases": [
+          "w01/barn"
+        ],
+        "nodeId": "w01_farm",
+        "displayName": "农场旧谷仓布料",
+        "items": {
+          "cloth": 2
+        },
+        "workMinutes": 25,
+        "initial": 8,
+        "cap": 8,
+        "dailyRefill": 2,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w02_forest_wood",
+        "legacyAliases": [
+          "w02/wood"
+        ],
+        "nodeId": "w02_forest",
+        "displayName": "林间倒木",
+        "items": {
+          "wood": 2
+        },
+        "workMinutes": 30,
+        "initial": 20,
+        "cap": 20,
+        "dailyRefill": 10,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "gathering",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w02_forest_fiber",
+        "legacyAliases": [
+          "w02/fiber"
+        ],
+        "nodeId": "w02_forest",
+        "displayName": "林间纤维草丛",
+        "items": {
+          "fiber": 2
+        },
+        "workMinutes": 20,
+        "initial": 16,
+        "cap": 16,
+        "dailyRefill": 8,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "gathering",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w03_quarry_stone",
+        "legacyAliases": [
+          "w03/stone"
+        ],
+        "nodeId": "w03_quarry",
+        "displayName": "坡脚碎石带",
+        "items": {
+          "stone": 2
+        },
+        "workMinutes": 25,
+        "initial": 20,
+        "cap": 20,
+        "dailyRefill": 4,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "gathering",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w03_quarry_ore",
+        "legacyAliases": [
+          "w03/ore"
+        ],
+        "nodeId": "w03_quarry",
+        "displayName": "采石坡露矿",
+        "items": {
+          "iron_ore": 2
+        },
+        "workMinutes": 30,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 2,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "gathering",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a01_yard_steel",
+        "legacyAliases": [
+          "a01/steel"
+        ],
+        "nodeId": "a01_yard",
+        "displayName": "货场废钢垛",
+        "items": {
+          "steel": 2
+        },
+        "workMinutes": 30,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 2,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a01_yard_fastener",
+        "legacyAliases": [
+          "a01/fastener"
+        ],
+        "nodeId": "a01_yard",
+        "displayName": "货场紧固件匣",
+        "items": {
+          "fastener": 2
+        },
+        "workMinutes": 20,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 4,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a02_pump_seal",
+        "legacyAliases": [
+          "a02/seal"
+        ],
+        "nodeId": "a02_pump",
+        "displayName": "泵站密封件架",
+        "items": {
+          "rubber": 1
+        },
+        "workMinutes": 25,
+        "initial": 6,
+        "cap": 6,
+        "dailyRefill": 1,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a02_pump_fuel",
+        "legacyAliases": [
+          "a02/fuel"
+        ],
+        "nodeId": "a02_pump",
+        "displayName": "泵站机油余存",
+        "items": {
+          "oil": 1
+        },
+        "workMinutes": 30,
+        "initial": 6,
+        "cap": 6,
+        "dailyRefill": 1,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a03_foundry_steel",
+        "legacyAliases": [
+          "a03/steel"
+        ],
+        "nodeId": "a03_foundry",
+        "displayName": "厂外钢料垛",
+        "items": {
+          "steel": 2
+        },
+        "workMinutes": 30,
+        "initial": 16,
+        "cap": 16,
+        "dailyRefill": 4,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a03_foundry_machine",
+        "legacyAliases": [
+          "a03/machine"
+        ],
+        "nodeId": "a03_foundry",
+        "displayName": "厂外机件堆",
+        "items": {
+          "precision_parts": 1
+        },
+        "workMinutes": 40,
+        "initial": 6,
+        "cap": 6,
+        "dailyRefill": 1,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b01_school_fabric",
+        "legacyAliases": [
+          "b01/fabric"
+        ],
+        "nodeId": "b01_school",
+        "displayName": "安置学校旧布架",
+        "items": {
+          "cloth": 2
+        },
+        "workMinutes": 25,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 4,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b01_school_leather",
+        "legacyAliases": [
+          "b01/leather"
+        ],
+        "nodeId": "b01_school",
+        "displayName": "安置学校旧皮料",
+        "items": {
+          "leather": 1
+        },
+        "workMinutes": 30,
+        "initial": 6,
+        "cap": 6,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b02_station_medical",
+        "legacyAliases": [
+          "b02/medical"
+        ],
+        "nodeId": "b02_station",
+        "displayName": "转运站纱布配给柜",
+        "items": {
+          "medical_gauze": 2
+        },
+        "workMinutes": 30,
+        "initial": 8,
+        "cap": 8,
+        "dailyRefill": 2,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b02_station_electronic",
+        "legacyAliases": [
+          "b02/electronic"
+        ],
+        "nodeId": "b02_station",
+        "displayName": "转运站退役设备",
+        "items": {
+          "electronics": 1
+        },
+        "workMinutes": 35,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b03_hospital_medical",
+        "legacyAliases": [
+          "b03/medical"
+        ],
+        "nodeId": "b03_hospital",
+        "displayName": "外院医用纱布箱",
+        "items": {
+          "medical_gauze": 2
+        },
+        "workMinutes": 30,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 4,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b03_hospital_electronic",
+        "legacyAliases": [
+          "b03/electronic"
+        ],
+        "nodeId": "b03_hospital",
+        "displayName": "外院旧设备间",
+        "items": {
+          "electronics": 1
+        },
+        "workMinutes": 35,
+        "initial": 6,
+        "cap": 6,
+        "dailyRefill": 2,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w02_forest_plank",
+        "legacyAliases": [
+          "w02/plank"
+        ],
+        "nodeId": "w02_forest",
+        "displayName": "林间旧木板堆",
+        "items": {
+          "plank": 2
+        },
+        "workMinutes": 30,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 4,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w02_forest_rope",
+        "legacyAliases": [
+          "w02/rope"
+        ],
+        "nodeId": "w02_forest",
+        "displayName": "林间旧绳卷",
+        "items": {
+          "rope": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b01_school_thread",
+        "legacyAliases": [
+          "b01/thread"
+        ],
+        "nodeId": "b01_school",
+        "displayName": "安置学校缝线配给柜",
+        "items": {
+          "thread": 2
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "m01_road_plastic",
+        "legacyAliases": [
+          "m01/plastic"
+        ],
+        "nodeId": "m01_road",
+        "displayName": "公路塑料遗料",
+        "items": {
+          "plastic": 2
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a01_yard_wire",
+        "legacyAliases": [
+          "a01/wire"
+        ],
+        "nodeId": "a01_yard",
+        "displayName": "货场旧导线卷",
+        "items": {
+          "wire": 2
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a02_pump_adhesive",
+        "legacyAliases": [
+          "a02/adhesive"
+        ],
+        "nodeId": "a02_pump",
+        "displayName": "泵站黏合剂余存",
+        "items": {
+          "adhesive": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a02_pump_charcoal",
+        "legacyAliases": [
+          "a02/charcoal"
+        ],
+        "nodeId": "a02_pump",
+        "displayName": "泵站旧炭袋",
+        "items": {
+          "charcoal": 2
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b02_station_battery",
+        "legacyAliases": [
+          "b02/battery"
+        ],
+        "nodeId": "b02_station",
+        "displayName": "转运站备用电池柜",
+        "items": {
+          "battery": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b02_station_disinfectant",
+        "legacyAliases": [
+          "b02/disinfectant"
+        ],
+        "nodeId": "b02_station",
+        "displayName": "转运站消毒液配给柜",
+        "items": {
+          "disinfectant": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h04_infirmary_saline",
+        "legacyAliases": [
+          "h04/saline"
+        ],
+        "nodeId": "h04_infirmary",
+        "displayName": "医务室盐水剂配给柜",
+        "items": {
+          "saline": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a03_foundry_weapon_parts",
+        "legacyAliases": [
+          "a03/weapon_parts"
+        ],
+        "nodeId": "a03_foundry",
+        "displayName": "厂外武器组件箱",
+        "items": {
+          "weapon_parts": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b03_hospital_ballistic_fiber",
+        "legacyAliases": [
+          "b03/ballistic_fiber"
+        ],
+        "nodeId": "b03_hospital",
+        "displayName": "外院防护纤维存货",
+        "items": {
+          "ballistic_fiber": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w01_farm_grain",
+        "legacyAliases": [
+          "w01/grain"
+        ],
+        "nodeId": "w01_farm",
+        "displayName": "农场谷物畦",
+        "items": {
+          "grain": 2
+        },
+        "workMinutes": 30,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 4,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "gathering",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h02_square_beans",
+        "legacyAliases": [
+          "h02/beans"
+        ],
+        "nodeId": "h02_square",
+        "displayName": "营区豆罐头配给处",
+        "items": {
+          "canned_beans": 1
+        },
+        "workMinutes": 10,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 2,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w01_farm_salt",
+        "legacyAliases": [
+          "w01/salt"
+        ],
+        "nodeId": "w01_farm",
+        "displayName": "农场食盐存货",
+        "items": {
+          "salt": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w01_farm_cooking_oil",
+        "legacyAliases": [
+          "w01/cooking_oil"
+        ],
+        "nodeId": "w01_farm",
+        "displayName": "农场食用油存货",
+        "items": {
+          "cooking_oil": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h01_gate_raw_water",
+        "legacyAliases": [
+          "h01/raw_water"
+        ],
+        "nodeId": "h01_gate",
+        "displayName": "营门蓄水渠",
+        "items": {
+          "dirty_water": 4
+        },
+        "workMinutes": 10,
+        "initial": -1,
+        "cap": -1,
+        "dailyRefill": 0,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "flowing",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w03_quarry_plate",
+        "legacyAliases": [
+          "w03/plate"
+        ],
+        "nodeId": "w03_quarry",
+        "displayName": "采石坡铁片回收堆",
+        "items": {
+          "iron_plate": 2
+        },
+        "workMinutes": 25,
+        "initial": 8,
+        "cap": 8,
+        "dailyRefill": 2,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      }
+    ],
+    "taskSupply": {
+      "id": "h03_workshop_contract",
+      "legacyAliases": [
+        "h03/contract"
+      ],
+      "nodeId": "h03_workshop",
+      "displayName": "工坊首次支援包",
+      "items": {
+        "fastener": 4,
+        "precision_parts": 2
+      },
+      "workMinutes": 0,
+      "initial": 1,
+      "cap": 1,
+      "dailyRefill": 0,
+      "reveal": 0,
+      "unit": "batch_count",
+      "scope": "campaignClaimId",
+      "kind": "campaign_physical",
+      "proficiencyId": null,
+      "xpAllowed": false,
+      "claimId": "h03_workshop_contract",
+      "unlockAnyFacts": [
+        "FA02_record_credit",
+        "trusted_legacy_QMAP02_completed"
+      ],
+      "hazard": null
+    },
+    "firetruckCache": {
+      "id": "firetruck_cache",
+      "legacyAliases": [],
+      "nodeId": "m01_road",
+      "displayName": "消防车器材箱",
+      "items": {
+        "fire_axe": 1
+      },
+      "workMinutes": 20,
+      "initial": 1,
+      "cap": 1,
+      "dailyRefill": 0,
+      "reveal": 50,
+      "unit": "batch_count",
+      "scope": "campaignClaimId",
+      "kind": "campaign_physical",
+      "proficiencyId": null,
+      "xpAllowed": false,
+      "claimId": "firetruck_cache",
+      "equipmentQuality": "white_zero_affixes_full_template_durability",
+      "hazard": null
+    },
+    "quarryKnowledge": {
+      "id": "w03_quarry_blueprints",
+      "legacyAliases": [
+        "bp_wild_pack"
+      ],
+      "nodeId": "w03_quarry",
+      "displayName": "采石坡野外装备图册",
+      "items": {},
+      "knowledgeIds": [
+        "blueprint_barbed_spear",
+        "blueprint_hunter_bow",
+        "blueprint_scout_armor"
+      ],
+      "workMinutes": 10,
+      "initial": 1,
+      "cap": 1,
+      "dailyRefill": 0,
+      "reveal": 100,
+      "unit": "knowledge_package",
+      "scope": "campaignClaimId",
+      "kind": "campaign_knowledge",
+      "proficiencyId": null,
+      "xpAllowed": false,
+      "claimId": "w03_quarry_blueprints",
+      "hazard": null
+    },
+    "uniqueEquipmentCaches": [
+      {
+        "id": "shield_cache",
+        "nodeId": "d03_03",
+        "displayName": "器材室防暴盾箱",
+        "items": {
+          "riot_shield": 1
+        },
+        "workMinutes": 20,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 100,
+        "revealCondition": "explore_at_least_100",
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "shield_cache",
+        "equipmentQuality": "white_zero_affixes_full_template_durability",
+        "hazard": null
+      },
+      {
+        "id": "officer_cache",
+        "nodeId": "d03_07",
+        "displayName": "守卫战利品箱",
+        "items": {
+          "service_pistol": 1
+        },
+        "workMinutes": 20,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": null,
+        "revealCondition": "current_d03_generation_guard_victory_committed_player_alive",
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "officer_cache",
+        "equipmentQuality": "white_zero_affixes_full_template_durability",
+        "hazard": null
+      },
+      {
+        "id": "shotgun_cache",
+        "nodeId": "d03_08",
+        "displayName": "封存仓霰弹枪箱",
+        "items": {
+          "shotgun": 1
+        },
+        "workMinutes": 20,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 100,
+        "revealCondition": "explore_at_least_100",
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "shotgun_cache",
+        "equipmentQuality": "white_zero_affixes_full_template_durability",
+        "hazard": null
+      },
+      {
+        "id": "rifle_cache",
+        "nodeId": "d03_08",
+        "displayName": "封存仓步枪箱",
+        "items": {
+          "rifle": 1
+        },
+        "workMinutes": 20,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 100,
+        "revealCondition": "explore_at_least_100",
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "rifle_cache",
+        "equipmentQuality": "white_zero_affixes_full_template_durability",
+        "hazard": null
+      },
+      {
+        "id": "armor_cache",
+        "nodeId": "d03_08",
+        "displayName": "封存仓防护装备箱",
+        "items": {
+          "guard_armor": 1
+        },
+        "workMinutes": 20,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 100,
+        "revealCondition": "explore_at_least_100",
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "armor_cache",
+        "equipmentQuality": "white_zero_affixes_full_template_durability",
+        "hazard": null
+      },
+      {
+        "id": "ammo_reserve_cache",
+        "nodeId": "d03_08",
+        "displayName": "封存仓备用弹药箱",
+        "items": {
+          "ammo_9mm": 24,
+          "shell_12g": 12,
+          "ammo_rifle": 15
+        },
+        "workMinutes": 20,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 100,
+        "revealCondition": "explore_at_least_100",
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "ammo_reserve_cache",
+        "equipmentQuality": "white_zero_affixes_full_template_durability",
+        "hazard": null
+      }
+    ],
+    "additionalSources": [
+      {
+        "id": "m01_road_crate",
+        "legacyAliases": [
+          "m01/crate"
+        ],
+        "nodeId": "m01_road",
+        "displayName": "路旁旧货箱",
+        "items": {
+          "cloth": 2
+        },
+        "workMinutes": 20,
+        "initial": 6,
+        "cap": 6,
+        "dailyRefill": 0,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "finite",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "m01_road_barrier",
+        "legacyAliases": [
+          "m01/barrier"
+        ],
+        "nodeId": "m01_road",
+        "displayName": "路障金属堆",
+        "items": {
+          "scrap": 2
+        },
+        "workMinutes": 20,
+        "initial": 8,
+        "cap": 8,
+        "dailyRefill": 0,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "finite",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "m02_checkpoint_duty",
+        "legacyAliases": [
+          "m02/duty"
+        ],
+        "nodeId": "m02_checkpoint",
+        "displayName": "检查哨值勤补给箱",
+        "items": {
+          "canned_food": 2,
+          "clean_water": 2
+        },
+        "workMinutes": 15,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 100,
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "m02_checkpoint_duty",
+        "hazard": null
+      },
+      {
+        "id": "m02_checkpoint_bench",
+        "legacyAliases": [
+          "m02/bench"
+        ],
+        "nodeId": "m02_checkpoint",
+        "displayName": "哨站维修台遗料",
+        "items": {
+          "fastener": 2
+        },
+        "workMinutes": 25,
+        "initial": 8,
+        "cap": 8,
+        "dailyRefill": 2,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h02_square_water",
+        "legacyAliases": [
+          "h02/water"
+        ],
+        "nodeId": "h02_square",
+        "displayName": "营区净水配给处",
+        "items": {
+          "clean_water": 2
+        },
+        "workMinutes": 10,
+        "initial": 16,
+        "cap": 16,
+        "dailyRefill": 12,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h02_square_ration",
+        "legacyAliases": [
+          "h02/ration"
+        ],
+        "nodeId": "h02_square",
+        "displayName": "营区罐头配给处",
+        "items": {
+          "canned_food": 2
+        },
+        "workMinutes": 10,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 2,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h03_workshop_scrap",
+        "legacyAliases": [
+          "h03/scrap"
+        ],
+        "nodeId": "h03_workshop",
+        "displayName": "公共工坊旧件回收台",
+        "items": {
+          "parts": 1
+        },
+        "workMinutes": 30,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h04_infirmary_dressing",
+        "legacyAliases": [
+          "h04/dressing"
+        ],
+        "nodeId": "h04_infirmary",
+        "displayName": "医务室纱布配给柜",
+        "items": {
+          "medical_gauze": 1
+        },
+        "workMinutes": 15,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w01_farm_crop",
+        "legacyAliases": [
+          "w01/crop"
+        ],
+        "nodeId": "w01_farm",
+        "displayName": "农场块根畦",
+        "items": {
+          "raw_root": 2
+        },
+        "workMinutes": 30,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 6,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "gathering",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w01_farm_barn",
+        "legacyAliases": [
+          "w01/barn"
+        ],
+        "nodeId": "w01_farm",
+        "displayName": "农场旧谷仓布料",
+        "items": {
+          "cloth": 2
+        },
+        "workMinutes": 25,
+        "initial": 8,
+        "cap": 8,
+        "dailyRefill": 2,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w02_forest_wood",
+        "legacyAliases": [
+          "w02/wood"
+        ],
+        "nodeId": "w02_forest",
+        "displayName": "林间倒木",
+        "items": {
+          "wood": 2
+        },
+        "workMinutes": 30,
+        "initial": 20,
+        "cap": 20,
+        "dailyRefill": 10,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "gathering",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w02_forest_fiber",
+        "legacyAliases": [
+          "w02/fiber"
+        ],
+        "nodeId": "w02_forest",
+        "displayName": "林间纤维草丛",
+        "items": {
+          "fiber": 2
+        },
+        "workMinutes": 20,
+        "initial": 16,
+        "cap": 16,
+        "dailyRefill": 8,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "gathering",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w03_quarry_stone",
+        "legacyAliases": [
+          "w03/stone"
+        ],
+        "nodeId": "w03_quarry",
+        "displayName": "坡脚碎石带",
+        "items": {
+          "stone": 2
+        },
+        "workMinutes": 25,
+        "initial": 20,
+        "cap": 20,
+        "dailyRefill": 4,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "gathering",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w03_quarry_ore",
+        "legacyAliases": [
+          "w03/ore"
+        ],
+        "nodeId": "w03_quarry",
+        "displayName": "采石坡露矿",
+        "items": {
+          "iron_ore": 2
+        },
+        "workMinutes": 30,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 2,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "gathering",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a01_yard_steel",
+        "legacyAliases": [
+          "a01/steel"
+        ],
+        "nodeId": "a01_yard",
+        "displayName": "货场废钢垛",
+        "items": {
+          "steel": 2
+        },
+        "workMinutes": 30,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 2,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a01_yard_fastener",
+        "legacyAliases": [
+          "a01/fastener"
+        ],
+        "nodeId": "a01_yard",
+        "displayName": "货场紧固件匣",
+        "items": {
+          "fastener": 2
+        },
+        "workMinutes": 20,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 4,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a02_pump_seal",
+        "legacyAliases": [
+          "a02/seal"
+        ],
+        "nodeId": "a02_pump",
+        "displayName": "泵站密封件架",
+        "items": {
+          "rubber": 1
+        },
+        "workMinutes": 25,
+        "initial": 6,
+        "cap": 6,
+        "dailyRefill": 1,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a02_pump_fuel",
+        "legacyAliases": [
+          "a02/fuel"
+        ],
+        "nodeId": "a02_pump",
+        "displayName": "泵站机油余存",
+        "items": {
+          "oil": 1
+        },
+        "workMinutes": 30,
+        "initial": 6,
+        "cap": 6,
+        "dailyRefill": 1,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a03_foundry_steel",
+        "legacyAliases": [
+          "a03/steel"
+        ],
+        "nodeId": "a03_foundry",
+        "displayName": "厂外钢料垛",
+        "items": {
+          "steel": 2
+        },
+        "workMinutes": 30,
+        "initial": 16,
+        "cap": 16,
+        "dailyRefill": 4,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a03_foundry_machine",
+        "legacyAliases": [
+          "a03/machine"
+        ],
+        "nodeId": "a03_foundry",
+        "displayName": "厂外机件堆",
+        "items": {
+          "precision_parts": 1
+        },
+        "workMinutes": 40,
+        "initial": 6,
+        "cap": 6,
+        "dailyRefill": 1,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b01_school_fabric",
+        "legacyAliases": [
+          "b01/fabric"
+        ],
+        "nodeId": "b01_school",
+        "displayName": "安置学校旧布架",
+        "items": {
+          "cloth": 2
+        },
+        "workMinutes": 25,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 4,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b01_school_leather",
+        "legacyAliases": [
+          "b01/leather"
+        ],
+        "nodeId": "b01_school",
+        "displayName": "安置学校旧皮料",
+        "items": {
+          "leather": 1
+        },
+        "workMinutes": 30,
+        "initial": 6,
+        "cap": 6,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b02_station_medical",
+        "legacyAliases": [
+          "b02/medical"
+        ],
+        "nodeId": "b02_station",
+        "displayName": "转运站纱布配给柜",
+        "items": {
+          "medical_gauze": 2
+        },
+        "workMinutes": 30,
+        "initial": 8,
+        "cap": 8,
+        "dailyRefill": 2,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b02_station_electronic",
+        "legacyAliases": [
+          "b02/electronic"
+        ],
+        "nodeId": "b02_station",
+        "displayName": "转运站退役设备",
+        "items": {
+          "electronics": 1
+        },
+        "workMinutes": 35,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b03_hospital_medical",
+        "legacyAliases": [
+          "b03/medical"
+        ],
+        "nodeId": "b03_hospital",
+        "displayName": "外院医用纱布箱",
+        "items": {
+          "medical_gauze": 2
+        },
+        "workMinutes": 30,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 4,
+        "reveal": 25,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b03_hospital_electronic",
+        "legacyAliases": [
+          "b03/electronic"
+        ],
+        "nodeId": "b03_hospital",
+        "displayName": "外院旧设备间",
+        "items": {
+          "electronics": 1
+        },
+        "workMinutes": 35,
+        "initial": 6,
+        "cap": 6,
+        "dailyRefill": 2,
+        "reveal": 50,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w02_forest_plank",
+        "legacyAliases": [
+          "w02/plank"
+        ],
+        "nodeId": "w02_forest",
+        "displayName": "林间旧木板堆",
+        "items": {
+          "plank": 2
+        },
+        "workMinutes": 30,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 4,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w02_forest_rope",
+        "legacyAliases": [
+          "w02/rope"
+        ],
+        "nodeId": "w02_forest",
+        "displayName": "林间旧绳卷",
+        "items": {
+          "rope": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b01_school_thread",
+        "legacyAliases": [
+          "b01/thread"
+        ],
+        "nodeId": "b01_school",
+        "displayName": "安置学校缝线配给柜",
+        "items": {
+          "thread": 2
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "m01_road_plastic",
+        "legacyAliases": [
+          "m01/plastic"
+        ],
+        "nodeId": "m01_road",
+        "displayName": "公路塑料遗料",
+        "items": {
+          "plastic": 2
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a01_yard_wire",
+        "legacyAliases": [
+          "a01/wire"
+        ],
+        "nodeId": "a01_yard",
+        "displayName": "货场旧导线卷",
+        "items": {
+          "wire": 2
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a02_pump_adhesive",
+        "legacyAliases": [
+          "a02/adhesive"
+        ],
+        "nodeId": "a02_pump",
+        "displayName": "泵站黏合剂余存",
+        "items": {
+          "adhesive": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a02_pump_charcoal",
+        "legacyAliases": [
+          "a02/charcoal"
+        ],
+        "nodeId": "a02_pump",
+        "displayName": "泵站旧炭袋",
+        "items": {
+          "charcoal": 2
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b02_station_battery",
+        "legacyAliases": [
+          "b02/battery"
+        ],
+        "nodeId": "b02_station",
+        "displayName": "转运站备用电池柜",
+        "items": {
+          "battery": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b02_station_disinfectant",
+        "legacyAliases": [
+          "b02/disinfectant"
+        ],
+        "nodeId": "b02_station",
+        "displayName": "转运站消毒液配给柜",
+        "items": {
+          "disinfectant": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h04_infirmary_saline",
+        "legacyAliases": [
+          "h04/saline"
+        ],
+        "nodeId": "h04_infirmary",
+        "displayName": "医务室盐水剂配给柜",
+        "items": {
+          "saline": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "a03_foundry_weapon_parts",
+        "legacyAliases": [
+          "a03/weapon_parts"
+        ],
+        "nodeId": "a03_foundry",
+        "displayName": "厂外武器组件箱",
+        "items": {
+          "weapon_parts": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "b03_hospital_ballistic_fiber",
+        "legacyAliases": [
+          "b03/ballistic_fiber"
+        ],
+        "nodeId": "b03_hospital",
+        "displayName": "外院防护纤维存货",
+        "items": {
+          "ballistic_fiber": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w01_farm_grain",
+        "legacyAliases": [
+          "w01/grain"
+        ],
+        "nodeId": "w01_farm",
+        "displayName": "农场谷物畦",
+        "items": {
+          "grain": 2
+        },
+        "workMinutes": 30,
+        "initial": 12,
+        "cap": 12,
+        "dailyRefill": 4,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "gathering",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h02_square_beans",
+        "legacyAliases": [
+          "h02/beans"
+        ],
+        "nodeId": "h02_square",
+        "displayName": "营区豆罐头配给处",
+        "items": {
+          "canned_beans": 1
+        },
+        "workMinutes": 10,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 2,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w01_farm_salt",
+        "legacyAliases": [
+          "w01/salt"
+        ],
+        "nodeId": "w01_farm",
+        "displayName": "农场食盐存货",
+        "items": {
+          "salt": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w01_farm_cooking_oil",
+        "legacyAliases": [
+          "w01/cooking_oil"
+        ],
+        "nodeId": "w01_farm",
+        "displayName": "农场食用油存货",
+        "items": {
+          "cooking_oil": 1
+        },
+        "workMinutes": 25,
+        "initial": 4,
+        "cap": 4,
+        "dailyRefill": 1,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h01_gate_raw_water",
+        "legacyAliases": [
+          "h01/raw_water"
+        ],
+        "nodeId": "h01_gate",
+        "displayName": "营门蓄水渠",
+        "items": {
+          "dirty_water": 4
+        },
+        "workMinutes": 10,
+        "initial": -1,
+        "cap": -1,
+        "dailyRefill": 0,
+        "reveal": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "flowing",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "w03_quarry_plate",
+        "legacyAliases": [
+          "w03/plate"
+        ],
+        "nodeId": "w03_quarry",
+        "displayName": "采石坡铁片回收堆",
+        "items": {
+          "iron_plate": 2
+        },
+        "workMinutes": 25,
+        "initial": 8,
+        "cap": 8,
+        "dailyRefill": 2,
+        "reveal": 100,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "kind": "renewable",
+        "proficiencyId": "scavenging",
+        "xpAllowed": true,
+        "claimId": null,
+        "hazard": null
+      },
+      {
+        "id": "h03_workshop_contract",
+        "legacyAliases": [
+          "h03/contract"
+        ],
+        "nodeId": "h03_workshop",
+        "displayName": "工坊首次支援包",
+        "items": {
+          "fastener": 4,
+          "precision_parts": 2
+        },
+        "workMinutes": 0,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 0,
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "h03_workshop_contract",
+        "unlockAnyFacts": [
+          "FA02_record_credit",
+          "trusted_legacy_QMAP02_completed"
+        ],
+        "hazard": null
+      },
+      {
+        "id": "firetruck_cache",
+        "legacyAliases": [],
+        "nodeId": "m01_road",
+        "displayName": "消防车器材箱",
+        "items": {
+          "fire_axe": 1
+        },
+        "workMinutes": 20,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 50,
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "firetruck_cache",
+        "equipmentQuality": "white_zero_affixes_full_template_durability",
+        "hazard": null
+      },
+      {
+        "id": "w03_quarry_blueprints",
+        "legacyAliases": [
+          "bp_wild_pack"
+        ],
+        "nodeId": "w03_quarry",
+        "displayName": "采石坡野外装备图册",
+        "items": {},
+        "knowledgeIds": [
+          "blueprint_barbed_spear",
+          "blueprint_hunter_bow",
+          "blueprint_scout_armor"
+        ],
+        "workMinutes": 10,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 100,
+        "unit": "knowledge_package",
+        "scope": "campaignClaimId",
+        "kind": "campaign_knowledge",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "w03_quarry_blueprints",
+        "hazard": null
+      },
+      {
+        "id": "shield_cache",
+        "nodeId": "d03_03",
+        "displayName": "器材室防暴盾箱",
+        "items": {
+          "riot_shield": 1
+        },
+        "workMinutes": 20,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 100,
+        "revealCondition": "explore_at_least_100",
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "shield_cache",
+        "equipmentQuality": "white_zero_affixes_full_template_durability",
+        "hazard": null
+      },
+      {
+        "id": "officer_cache",
+        "nodeId": "d03_07",
+        "displayName": "守卫战利品箱",
+        "items": {
+          "service_pistol": 1
+        },
+        "workMinutes": 20,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": null,
+        "revealCondition": "current_d03_generation_guard_victory_committed_player_alive",
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "officer_cache",
+        "equipmentQuality": "white_zero_affixes_full_template_durability",
+        "hazard": null
+      },
+      {
+        "id": "shotgun_cache",
+        "nodeId": "d03_08",
+        "displayName": "封存仓霰弹枪箱",
+        "items": {
+          "shotgun": 1
+        },
+        "workMinutes": 20,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 100,
+        "revealCondition": "explore_at_least_100",
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "shotgun_cache",
+        "equipmentQuality": "white_zero_affixes_full_template_durability",
+        "hazard": null
+      },
+      {
+        "id": "rifle_cache",
+        "nodeId": "d03_08",
+        "displayName": "封存仓步枪箱",
+        "items": {
+          "rifle": 1
+        },
+        "workMinutes": 20,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 100,
+        "revealCondition": "explore_at_least_100",
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "rifle_cache",
+        "equipmentQuality": "white_zero_affixes_full_template_durability",
+        "hazard": null
+      },
+      {
+        "id": "armor_cache",
+        "nodeId": "d03_08",
+        "displayName": "封存仓防护装备箱",
+        "items": {
+          "guard_armor": 1
+        },
+        "workMinutes": 20,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 100,
+        "revealCondition": "explore_at_least_100",
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "armor_cache",
+        "equipmentQuality": "white_zero_affixes_full_template_durability",
+        "hazard": null
+      },
+      {
+        "id": "ammo_reserve_cache",
+        "nodeId": "d03_08",
+        "displayName": "封存仓备用弹药箱",
+        "items": {
+          "ammo_9mm": 24,
+          "shell_12g": 12,
+          "ammo_rifle": 15
+        },
+        "workMinutes": 20,
+        "initial": 1,
+        "cap": 1,
+        "dailyRefill": 0,
+        "reveal": 100,
+        "revealCondition": "explore_at_least_100",
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "kind": "campaign_physical",
+        "proficiencyId": null,
+        "xpAllowed": false,
+        "claimId": "ammo_reserve_cache",
+        "equipmentQuality": "white_zero_affixes_full_template_durability",
+        "hazard": null
+      }
+    ],
+    "existing96RemainsSeparate": true,
+    "sourceNote": "旧28主表中的26资源纳入worldSources；h03/contract为taskSupply，h04/boil为service；12材料+4食物+1脏水+1铁片补充纳入worldSources。"
+  },
+  "services": [
+    {
+      "serviceId": "h04_public_boil",
+      "legacyAlias": "h04/boil",
+      "nodeId": "h04_infirmary",
+      "name": "公共锅煮水",
+      "totalWorldMinutes": 20,
+      "steps": 2,
+      "stepMinutes": 10,
+      "inputs": {
+        "dirty_water": 4,
+        "wood": 1
+      },
+      "perStepInputs": {
+        "dirty_water": 2
+      },
+      "perStepOutputs": {
+        "clean_water": 2
+      },
+      "fuelWholeRequest": 1,
+      "playerXp": 0,
+      "requires": "p0_present_idle_hub_registered_legal_materials",
+      "rates": "wait_for_service_party_nonexecutors_wait",
+      "outputLocation": "current_local_ground",
+      "cancel": "已完成批产物及已用原水/燃料不退；第一批成功一次核销木1，开工先预留木1与水4，第一批未完成取消全退，后续取消只退未用原水，不重新收整组燃料；各批存稳定回执，完成/取消重放不双扣不双发",
+      "capacity": "沿公共1000ml锅，分2批，不发锅/空瓶，不占私人火堆两位",
+      "registration": "沿原公共锅使用权，服务随营区城市批次接入，不提前伪造登记"
+    }
+  ],
+  "tools": {
+    "new96": [
+      {
+        "resourceId": "w11_orchard_a",
+        "nodeId": "w11_orchard",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w11_orchard_b",
+        "nodeId": "w11_orchard",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w12_canal_a",
+        "nodeId": "w12_canal",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w12_canal_b",
+        "nodeId": "w12_canal",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w13_mill_a",
+        "nodeId": "w13_mill",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w13_mill_b",
+        "nodeId": "w13_mill",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w14_cemeteryroad_a",
+        "nodeId": "w14_cemeteryroad",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w14_cemeteryroad_b",
+        "nodeId": "w14_cemeteryroad",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w15_shrinewoods_a",
+        "nodeId": "w15_shrinewoods",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w15_shrinewoods_b",
+        "nodeId": "w15_shrinewoods",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "hatchet"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w16_service_a",
+        "nodeId": "w16_service",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w16_service_b",
+        "nodeId": "w16_service",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w17_switchback_a",
+        "nodeId": "w17_switchback",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w17_switchback_b",
+        "nodeId": "w17_switchback",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w18_tunnel_a",
+        "nodeId": "w18_tunnel",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w18_tunnel_b",
+        "nodeId": "w18_tunnel",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w19_survey_a",
+        "nodeId": "w19_survey",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w19_survey_b",
+        "nodeId": "w19_survey",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w20_powercut_a",
+        "nodeId": "w20_powercut",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w20_powercut_b",
+        "nodeId": "w20_powercut",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w21_pine_a",
+        "nodeId": "w21_pine",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "hatchet"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w21_pine_b",
+        "nodeId": "w21_pine",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w22_ravine_a",
+        "nodeId": "w22_ravine",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w22_ravine_b",
+        "nodeId": "w22_ravine",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w23_hunting_a",
+        "nodeId": "w23_hunting",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w23_hunting_b",
+        "nodeId": "w23_hunting",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w24_cave_a",
+        "nodeId": "w24_cave",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w24_cave_b",
+        "nodeId": "w24_cave",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w25_wetland_a",
+        "nodeId": "w25_wetland",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w25_wetland_b",
+        "nodeId": "w25_wetland",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w26_island_a",
+        "nodeId": "w26_island",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w26_island_b",
+        "nodeId": "w26_island",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w27_relay_a",
+        "nodeId": "w27_relay",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w27_relay_b",
+        "nodeId": "w27_relay",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w28_highland_a",
+        "nodeId": "w28_highland",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w28_highland_b",
+        "nodeId": "w28_highland",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w29_riverbend_a",
+        "nodeId": "w29_riverbend",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w29_riverbend_b",
+        "nodeId": "w29_riverbend",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w30_truckstop_a",
+        "nodeId": "w30_truckstop",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w30_truckstop_b",
+        "nodeId": "w30_truckstop",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w31_suburb_a",
+        "nodeId": "w31_suburb",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w31_suburb_b",
+        "nodeId": "w31_suburb",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w32_railcut_a",
+        "nodeId": "w32_railcut",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w32_railcut_b",
+        "nodeId": "w32_railcut",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w33_waterworks_a",
+        "nodeId": "w33_waterworks",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w33_waterworks_b",
+        "nodeId": "w33_waterworks",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w34_depot_a",
+        "nodeId": "w34_depot",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w34_depot_b",
+        "nodeId": "w34_depot",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w12_canal_water",
+        "nodeId": "w12_canal",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w25_wetland_water",
+        "nodeId": "w25_wetland",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w29_riverbend_water",
+        "nodeId": "w29_riverbend",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w33_waterworks_water",
+        "nodeId": "w33_waterworks",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w08_reservoir_water",
+        "nodeId": "w08_reservoir",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w16_service_cistern",
+        "nodeId": "w16_service",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w19_survey_cistern",
+        "nodeId": "w19_survey",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w23_hunting_cistern",
+        "nodeId": "w23_hunting",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w27_relay_cistern",
+        "nodeId": "w27_relay",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w30_truckstop_cistern",
+        "nodeId": "w30_truckstop",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w13_mill_bottles",
+        "nodeId": "w13_mill",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w31_suburb_bottles",
+        "nodeId": "w31_suburb",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w34_depot_bottles",
+        "nodeId": "w34_depot",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d01_04_cache0",
+        "nodeId": "d01_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d01_06_cache1",
+        "nodeId": "d01_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d01_04_cache2",
+        "nodeId": "d01_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d01_08_unique",
+        "nodeId": "d01_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d02_04_cache0",
+        "nodeId": "d02_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d02_06_cache1",
+        "nodeId": "d02_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d02_04_cache2",
+        "nodeId": "d02_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d02_08_unique",
+        "nodeId": "d02_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d03_04_cache0",
+        "nodeId": "d03_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d03_06_cache1",
+        "nodeId": "d03_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d03_04_cache2",
+        "nodeId": "d03_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d03_08_unique",
+        "nodeId": "d03_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d04_03_cache0",
+        "nodeId": "d04_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d04_05_cache1",
+        "nodeId": "d04_05",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d04_03_cache2",
+        "nodeId": "d04_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d04_07_unique",
+        "nodeId": "d04_07",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d05_04_cache0",
+        "nodeId": "d05_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d05_07_cache1",
+        "nodeId": "d05_07",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d05_04_cache2",
+        "nodeId": "d05_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d05_07_unique",
+        "nodeId": "d05_07",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d06_03_cache0",
+        "nodeId": "d06_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d06_06_cache1",
+        "nodeId": "d06_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d06_03_cache2",
+        "nodeId": "d06_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d06_08_unique",
+        "nodeId": "d06_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d07_04_cache0",
+        "nodeId": "d07_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d07_07_cache1",
+        "nodeId": "d07_07",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d07_04_cache2",
+        "nodeId": "d07_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d07_07_unique",
+        "nodeId": "d07_07",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d08_03_cache0",
+        "nodeId": "d08_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d08_06_cache1",
+        "nodeId": "d08_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d08_03_cache2",
+        "nodeId": "d08_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d08_08_unique",
+        "nodeId": "d08_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "h03_workshop_supply_disinfectant",
+        "nodeId": "h03_workshop",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w13_mill_supply_salt",
+        "nodeId": "w13_mill",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w15_shrinewoods_supply_berry",
+        "nodeId": "w15_shrinewoods",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
+    ],
+    "restored": [
+      {
+        "resourceId": "m01_road_crate",
+        "nodeId": "m01_road",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "m01_road_barrier",
+        "nodeId": "m01_road",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "m02_checkpoint_duty",
+        "nodeId": "m02_checkpoint",
+        "originalBaseMinutes": 15,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "m02_checkpoint_bench",
+        "nodeId": "m02_checkpoint",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "h02_square_water",
+        "nodeId": "h02_square",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "h02_square_ration",
+        "nodeId": "h02_square",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "h03_workshop_scrap",
+        "nodeId": "h03_workshop",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "h04_infirmary_dressing",
+        "nodeId": "h04_infirmary",
+        "originalBaseMinutes": 15,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w01_farm_crop",
+        "nodeId": "w01_farm",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w01_farm_barn",
+        "nodeId": "w01_farm",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w02_forest_wood",
+        "nodeId": "w02_forest",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "hatchet"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w02_forest_fiber",
+        "nodeId": "w02_forest",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w03_quarry_stone",
+        "nodeId": "w03_quarry",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w03_quarry_ore",
+        "nodeId": "w03_quarry",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "a01_yard_steel",
+        "nodeId": "a01_yard",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a01_yard_fastener",
+        "nodeId": "a01_yard",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a02_pump_seal",
+        "nodeId": "a02_pump",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a02_pump_fuel",
+        "nodeId": "a02_pump",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a03_foundry_steel",
+        "nodeId": "a03_foundry",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a03_foundry_machine",
+        "nodeId": "a03_foundry",
+        "originalBaseMinutes": 40,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 35,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "b01_school_fabric",
+        "nodeId": "b01_school",
+        "originalBaseMinutes": 25,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "b01_school_leather",
+        "nodeId": "b01_school",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "b02_station_medical",
+        "nodeId": "b02_station",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "b02_station_electronic",
+        "nodeId": "b02_station",
+        "originalBaseMinutes": 35,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "b03_hospital_medical",
+        "nodeId": "b03_hospital",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "b03_hospital_electronic",
+        "nodeId": "b03_hospital",
+        "originalBaseMinutes": 35,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 30,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w02_forest_plank",
+        "nodeId": "w02_forest",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w02_forest_rope",
+        "nodeId": "w02_forest",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "b01_school_thread",
+        "nodeId": "b01_school",
+        "originalBaseMinutes": 25,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "m01_road_plastic",
+        "nodeId": "m01_road",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a01_yard_wire",
+        "nodeId": "a01_yard",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a02_pump_adhesive",
+        "nodeId": "a02_pump",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a02_pump_charcoal",
+        "nodeId": "a02_pump",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "b02_station_battery",
+        "nodeId": "b02_station",
+        "originalBaseMinutes": 25,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "b02_station_disinfectant",
+        "nodeId": "b02_station",
+        "originalBaseMinutes": 25,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "h04_infirmary_saline",
+        "nodeId": "h04_infirmary",
+        "originalBaseMinutes": 25,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "a03_foundry_weapon_parts",
+        "nodeId": "a03_foundry",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "b03_hospital_ballistic_fiber",
+        "nodeId": "b03_hospital",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w01_farm_grain",
+        "nodeId": "w01_farm",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "h02_square_beans",
+        "nodeId": "h02_square",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w01_farm_salt",
+        "nodeId": "w01_farm",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w01_farm_cooking_oil",
+        "nodeId": "w01_farm",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "h01_gate_raw_water",
+        "nodeId": "h01_gate",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w03_quarry_plate",
+        "nodeId": "w03_quarry",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "h03_workshop_contract",
+        "nodeId": "h03_workshop",
+        "originalBaseMinutes": 0,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "firetruck_cache",
+        "nodeId": "m01_road",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w03_quarry_blueprints",
+        "nodeId": "w03_quarry",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "shield_cache",
+        "nodeId": "d03_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "officer_cache",
+        "nodeId": "d03_07",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "shotgun_cache",
+        "nodeId": "d03_08",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "rifle_cache",
+        "nodeId": "d03_08",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "armor_cache",
+        "nodeId": "d03_08",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "ammo_reserve_cache",
+        "nodeId": "d03_08",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
+    ],
+    "legacy20": [
+      {
+        "resourceId": "roots",
+        "nodeId": "field",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "field_fiber",
+        "nodeId": "field",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 10,
+        "successWear": 1,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "water",
+        "nodeId": "stream",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "herbs",
+        "nodeId": "stream",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "wood",
+        "nodeId": "woods",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "hatchet"
+        ],
+        "outputMultiplier": 2,
+        "baseMinutesOverride": null,
+        "successWear": 1,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "stones",
+        "nodeId": "woods",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "berries",
+        "nodeId": "woods",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "woods_fiber",
+        "nodeId": "woods",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 10,
+        "successWear": 1,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "supply_box",
+        "nodeId": "village",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "misc_box",
+        "nodeId": "village",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "pot_box",
+        "nodeId": "hardware",
+        "originalBaseMinutes": 45,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "tool_box",
+        "nodeId": "hardware",
+        "originalBaseMinutes": 45,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "med_cabinet",
+        "nodeId": "clinic",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "cloth_bag",
+        "nodeId": "clinic",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "metal_heap",
+        "nodeId": "scrapyard",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "parts_box",
+        "nodeId": "scrapyard",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "hardware_weapon_cache",
+        "nodeId": "hardware",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "village_weapon_locker",
+        "nodeId": "village",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "clinic_medical_supply",
+        "nodeId": "clinic",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "village_cold_box",
+        "nodeId": "village",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      }
+    ],
+    "extraTimeReductionMinutes": 5,
+    "selection": "explicit_qualified_item_instance_id_from_p0_carried_or_equipped_not_nearby_or_other_actor",
+    "bareHandAlwaysAllowed": true,
+    "toolUsePassive": {
+      "id": "scavenging_05",
+      "skill": "scavenging",
+      "level": 5,
+      "workMultiplier": 0.9,
+      "requiresActualSelectedQualifiedTool": true,
+      "scope": "xp_allowed_scavenging_resource_actions_only_not_survey_claims_services_or_combat"
+    },
+    "cancelWear": 0,
+    "successWearOnce": true,
+    "noYieldBonusOnNewRows": true,
+    "experienceUsesOriginalUnmodifiedBaseMinutes": true
+  },
+  "coreBlueprintPacks": [
+    {
+      "resourceId": "d03_08_unique",
+      "nodeId": "d03_08",
+      "knowledgeIds": [
+        "blueprint_guard_sword",
+        "blueprint_pike",
+        "blueprint_shock_baton",
+        "blueprint_repeater_crossbow",
+        "blueprint_rescue_shield",
+        "blueprint_field_radio",
+        "blueprint_focus_lens",
+        "blueprint_resolve_medal"
+      ],
+      "grantWithCoreClaim": true,
+      "extraTime": 0,
+      "extraXp": 0,
+      "physicalBlueprint": false,
+      "missingOnly": true
+    },
+    {
+      "resourceId": "d01_08_unique",
+      "nodeId": "d01_08",
+      "knowledgeIds": [
+        "blueprint_breach_axe",
+        "blueprint_rescue_axe",
+        "blueprint_steel_mace",
+        "blueprint_heavy_armor",
+        "blueprint_craft_coat",
+        "blueprint_reinforced_trousers",
+        "blueprint_repair_manual"
+      ],
+      "grantWithCoreClaim": true,
+      "extraTime": 0,
+      "extraXp": 0,
+      "physicalBlueprint": false,
+      "missingOnly": true
+    },
+    {
+      "resourceId": "d04_07_unique",
+      "nodeId": "d04_07",
+      "knowledgeIds": [
+        "blueprint_command_terminal",
+        "blueprint_balanced_armor",
+        "blueprint_tactics_watch",
+        "blueprint_expedition_coat",
+        "blueprint_expedition_trousers",
+        "blueprint_ration_pouch"
+      ],
+      "grantWithCoreClaim": true,
+      "extraTime": 0,
+      "extraXp": 0,
+      "physicalBlueprint": false,
+      "missingOnly": true
+    },
+    {
+      "resourceId": "d02_08_unique",
+      "nodeId": "d02_08",
+      "knowledgeIds": [
+        "blueprint_rescue_medkit",
+        "blueprint_triage_kit",
+        "blueprint_medic_armor",
+        "blueprint_aid_badge",
+        "blueprint_rest_coat",
+        "blueprint_recovery_trousers",
+        "blueprint_medical_notes"
+      ],
+      "grantWithCoreClaim": true,
+      "extraTime": 0,
+      "extraXp": 0,
+      "physicalBlueprint": false,
+      "missingOnly": true
+    }
+  ],
+  "regionNames": {
+    "starter": "初醒荒野",
+    "hub": "幸存者营区",
+    "city": "旧城废墟",
+    "church": "教会辖区",
+    "academy": "灰塔院区",
+    "wild": "近郊荒野",
+    "deep_wild": "深野腹地",
+    "church_approach": "朝圣沿途",
+    "academy_approach": "灰塔山路",
+    "city_approach": "旧城外缘",
+    "works": "铁路工务区",
+    "aid": "救援安置区",
+    "utility": "公共设施区"
+  },
+  "recordNames": {
+    "church_route_record": "圣所旧路档册",
+    "academy_safety_record": "封存区安全规程",
+    "communication_power": "警备仓备用电源",
+    "chapter_contact": "通信站联络日志",
+    "waterworks_record": "水厂阀控记录",
+    "mining_blueprint_pack": "矿道作业手册",
+    "civilian_cache_knowledge": "商场避难物资簿",
+    "coldchain_knowledge": "冷链调度档案"
+  },
+  "resourceDisplayNames": [
+    {
+      "resourceId": "w11_orchard_a",
+      "nodeId": "w11_orchard",
+      "name": "果园块根地"
+    },
+    {
+      "resourceId": "w11_orchard_b",
+      "nodeId": "w11_orchard",
+      "name": "果园旧布堆"
+    },
+    {
+      "resourceId": "w12_canal_a",
+      "nodeId": "w12_canal",
+      "name": "渠岸纤维草丛"
+    },
+    {
+      "resourceId": "w12_canal_b",
+      "nodeId": "w12_canal",
+      "name": "渠边旧密封件"
+    },
+    {
+      "resourceId": "w13_mill_a",
+      "nodeId": "w13_mill",
+      "name": "磨坊遗留谷物"
+    },
+    {
+      "resourceId": "w13_mill_b",
+      "nodeId": "w13_mill",
+      "name": "磨坊旧木板"
+    },
+    {
+      "resourceId": "w14_cemeteryroad_a",
+      "nodeId": "w14_cemeteryroad",
+      "name": "荒径碎石带"
+    },
+    {
+      "resourceId": "w14_cemeteryroad_b",
+      "nodeId": "w14_cemeteryroad",
+      "name": "荒径弃衣堆"
+    },
+    {
+      "resourceId": "w15_shrinewoods_a",
+      "nodeId": "w15_shrinewoods",
+      "name": "林下草药丛"
+    },
+    {
+      "resourceId": "w15_shrinewoods_b",
+      "nodeId": "w15_shrinewoods",
+      "name": "祈祷林倒木"
+    },
+    {
+      "resourceId": "w16_service_a",
+      "nodeId": "w16_service",
+      "name": "服务站废金属堆"
+    },
+    {
+      "resourceId": "w16_service_b",
+      "nodeId": "w16_service",
+      "name": "服务站塑料遗料"
+    },
+    {
+      "resourceId": "w17_switchback_a",
+      "nodeId": "w17_switchback",
+      "name": "山路碎石带"
+    },
+    {
+      "resourceId": "w17_switchback_b",
+      "nodeId": "w17_switchback",
+      "name": "山路废导线"
+    },
+    {
+      "resourceId": "w18_tunnel_a",
+      "nodeId": "w18_tunnel",
+      "name": "洞外露矿"
+    },
+    {
+      "resourceId": "w18_tunnel_b",
+      "nodeId": "w18_tunnel",
+      "name": "隧道维护紧固件"
+    },
+    {
+      "resourceId": "w19_survey_a",
+      "nodeId": "w19_survey",
+      "name": "测绘设备旧件"
+    },
+    {
+      "resourceId": "w19_survey_b",
+      "nodeId": "w19_survey",
+      "name": "测绘营备用电池"
+    },
+    {
+      "resourceId": "w20_powercut_a",
+      "nodeId": "w20_powercut",
+      "name": "塔基旧导线"
+    },
+    {
+      "resourceId": "w20_powercut_b",
+      "nodeId": "w20_powercut",
+      "name": "高压走廊旧电器"
+    },
+    {
+      "resourceId": "w21_pine_a",
+      "nodeId": "w21_pine",
+      "name": "针叶林倒木"
+    },
+    {
+      "resourceId": "w21_pine_b",
+      "nodeId": "w21_pine",
+      "name": "针叶林纤维草丛"
+    },
+    {
+      "resourceId": "w22_ravine_a",
+      "nodeId": "w22_ravine",
+      "name": "沟谷露矿"
+    },
+    {
+      "resourceId": "w22_ravine_b",
+      "nodeId": "w22_ravine",
+      "name": "沟谷碎石带"
+    },
+    {
+      "resourceId": "w23_hunting_a",
+      "nodeId": "w23_hunting",
+      "name": "旧营皮料"
+    },
+    {
+      "resourceId": "w23_hunting_b",
+      "nodeId": "w23_hunting",
+      "name": "旧营绳卷"
+    },
+    {
+      "resourceId": "w24_cave_a",
+      "nodeId": "w24_cave",
+      "name": "洞口矿料堆"
+    },
+    {
+      "resourceId": "w24_cave_b",
+      "nodeId": "w24_cave",
+      "name": "洞口旧炭袋"
+    },
+    {
+      "resourceId": "w25_wetland_a",
+      "nodeId": "w25_wetland",
+      "name": "湿地草药丛"
+    },
+    {
+      "resourceId": "w25_wetland_b",
+      "nodeId": "w25_wetland",
+      "name": "湿地纤维草丛"
+    },
+    {
+      "resourceId": "w26_island_a",
+      "nodeId": "w26_island",
+      "name": "陆洲块根地"
+    },
+    {
+      "resourceId": "w26_island_b",
+      "nodeId": "w26_island",
+      "name": "陆洲盐晶"
+    },
+    {
+      "resourceId": "w27_relay_a",
+      "nodeId": "w27_relay",
+      "name": "中继设备遗件"
+    },
+    {
+      "resourceId": "w27_relay_b",
+      "nodeId": "w27_relay",
+      "name": "中继营精密机件"
+    },
+    {
+      "resourceId": "w28_highland_a",
+      "nodeId": "w28_highland",
+      "name": "高地碎石带"
+    },
+    {
+      "resourceId": "w28_highland_b",
+      "nodeId": "w28_highland",
+      "name": "高地草药丛"
+    },
+    {
+      "resourceId": "w29_riverbend_a",
+      "nodeId": "w29_riverbend",
+      "name": "河弯纤维草丛"
+    },
+    {
+      "resourceId": "w29_riverbend_b",
+      "nodeId": "w29_riverbend",
+      "name": "河弯黏土层"
+    },
+    {
+      "resourceId": "w30_truckstop_a",
+      "nodeId": "w30_truckstop",
+      "name": "休息区机油余存"
+    },
+    {
+      "resourceId": "w30_truckstop_b",
+      "nodeId": "w30_truckstop",
+      "name": "休息区旧胶料"
+    },
+    {
+      "resourceId": "w31_suburb_a",
+      "nodeId": "w31_suburb",
+      "name": "棚户旧布堆"
+    },
+    {
+      "resourceId": "w31_suburb_b",
+      "nodeId": "w31_suburb",
+      "name": "棚户医用纱布余存"
+    },
+    {
+      "resourceId": "w32_railcut_a",
+      "nodeId": "w32_railcut",
+      "name": "铁路废钢料"
+    },
+    {
+      "resourceId": "w32_railcut_b",
+      "nodeId": "w32_railcut",
+      "name": "铁路维护紧固件"
+    },
+    {
+      "resourceId": "w33_waterworks_a",
+      "nodeId": "w33_waterworks",
+      "name": "水厂黏合剂余存"
+    },
+    {
+      "resourceId": "w33_waterworks_b",
+      "nodeId": "w33_waterworks",
+      "name": "水厂消毒液余存"
+    },
+    {
+      "resourceId": "w34_depot_a",
+      "nodeId": "w34_depot",
+      "name": "应急仓豆罐头存货"
+    },
+    {
+      "resourceId": "w34_depot_b",
+      "nodeId": "w34_depot",
+      "name": "应急仓盐水剂存货"
+    },
+    {
+      "resourceId": "w12_canal_water",
+      "nodeId": "w12_canal",
+      "name": "灌溉渠岸取水口"
+    },
+    {
+      "resourceId": "w25_wetland_water",
+      "nodeId": "w25_wetland",
+      "name": "黑水湿地取水口"
+    },
+    {
+      "resourceId": "w29_riverbend_water",
+      "nodeId": "w29_riverbend",
+      "name": "河道弯口取水口"
+    },
+    {
+      "resourceId": "w33_waterworks_water",
+      "nodeId": "w33_waterworks",
+      "name": "荒废水厂取水口"
+    },
+    {
+      "resourceId": "w08_reservoir_water",
+      "nodeId": "w08_reservoir",
+      "name": "旧水库取水口"
+    },
+    {
+      "resourceId": "w16_service_cistern",
+      "nodeId": "w16_service",
+      "name": "山间服务站蓄水池"
+    },
+    {
+      "resourceId": "w19_survey_cistern",
+      "nodeId": "w19_survey",
+      "name": "测绘营址蓄水池"
+    },
+    {
+      "resourceId": "w23_hunting_cistern",
+      "nodeId": "w23_hunting",
+      "name": "猎人旧营蓄水池"
+    },
+    {
+      "resourceId": "w27_relay_cistern",
+      "nodeId": "w27_relay",
+      "name": "废中继营蓄水池"
+    },
+    {
+      "resourceId": "w30_truckstop_cistern",
+      "nodeId": "w30_truckstop",
+      "name": "货车休息区蓄水池"
+    },
+    {
+      "resourceId": "w13_mill_bottles",
+      "nodeId": "w13_mill",
+      "name": "旧磨坊瓶装净水"
+    },
+    {
+      "resourceId": "w31_suburb_bottles",
+      "nodeId": "w31_suburb",
+      "name": "城郊棚户瓶装净水"
+    },
+    {
+      "resourceId": "w34_depot_bottles",
+      "nodeId": "w34_depot",
+      "name": "应急仓外瓶装净水"
+    },
+    {
+      "resourceId": "d01_04_cache0",
+      "nodeId": "d01_04",
+      "name": "藏书密室·布料箱"
+    },
+    {
+      "resourceId": "d01_06_cache1",
+      "nodeId": "d01_06",
+      "name": "骨龛回道·缝线箱"
+    },
+    {
+      "resourceId": "d01_04_cache2",
+      "nodeId": "d01_04",
+      "name": "藏书密室·皮革箱"
+    },
+    {
+      "resourceId": "d01_08_unique",
+      "nodeId": "d01_08",
+      "name": "圣所旧路档册"
+    },
+    {
+      "resourceId": "d02_04_cache0",
+      "nodeId": "d02_04",
+      "name": "控制室·医用纱布箱"
+    },
+    {
+      "resourceId": "d02_06_cache1",
+      "nodeId": "d02_06",
+      "name": "检修竖井·实验室试剂箱"
+    },
+    {
+      "resourceId": "d02_04_cache2",
+      "nodeId": "d02_04",
+      "name": "控制室·电子组件箱"
+    },
+    {
+      "resourceId": "d02_08_unique",
+      "nodeId": "d02_08",
+      "name": "封存区安全规程"
+    },
+    {
+      "resourceId": "d03_04_cache0",
+      "nodeId": "d03_04",
+      "name": "值勤室·武器组件箱"
+    },
+    {
+      "resourceId": "d03_06_cache1",
+      "nodeId": "d03_06",
+      "name": "配电房·钢材箱"
+    },
+    {
+      "resourceId": "d03_04_cache2",
+      "nodeId": "d03_04",
+      "name": "值勤室·紧固件箱"
+    },
+    {
+      "resourceId": "d03_08_unique",
+      "nodeId": "d03_08",
+      "name": "警备仓备用电源"
+    },
+    {
+      "resourceId": "d04_03_cache0",
+      "nodeId": "d04_03",
+      "name": "蓄电室·导线箱"
+    },
+    {
+      "resourceId": "d04_05_cache1",
+      "nodeId": "d04_05",
+      "name": "屋顶梯井·电池箱"
+    },
+    {
+      "resourceId": "d04_03_cache2",
+      "nodeId": "d04_03",
+      "name": "蓄电室·电子组件箱"
+    },
+    {
+      "resourceId": "d04_07_unique",
+      "nodeId": "d04_07",
+      "name": "通信站联络日志"
+    },
+    {
+      "resourceId": "d05_04_cache0",
+      "nodeId": "d05_04",
+      "name": "滤料库·橡胶箱"
+    },
+    {
+      "resourceId": "d05_07_cache1",
+      "nodeId": "d05_07",
+      "name": "阀控室·消毒液箱"
+    },
+    {
+      "resourceId": "d05_04_cache2",
+      "nodeId": "d05_04",
+      "name": "滤料库·黏合剂箱"
+    },
+    {
+      "resourceId": "d05_07_unique",
+      "nodeId": "d05_07",
+      "name": "水厂阀控记录"
+    },
+    {
+      "resourceId": "d06_03_cache0",
+      "nodeId": "d06_03",
+      "name": "浅矿脉·铁矿料箱"
+    },
+    {
+      "resourceId": "d06_06_cache1",
+      "nodeId": "d06_06",
+      "name": "矿工营室·铁片箱"
+    },
+    {
+      "resourceId": "d06_03_cache2",
+      "nodeId": "d06_03",
+      "name": "浅矿脉·木炭箱"
+    },
+    {
+      "resourceId": "d06_08_unique",
+      "nodeId": "d06_08",
+      "name": "矿道作业手册"
+    },
+    {
+      "resourceId": "d07_04_cache0",
+      "nodeId": "d07_04",
+      "name": "服装层·豆罐头箱"
+    },
+    {
+      "resourceId": "d07_07_cache1",
+      "nodeId": "d07_07",
+      "name": "屋顶避难点·布料箱"
+    },
+    {
+      "resourceId": "d07_04_cache2",
+      "nodeId": "d07_04",
+      "name": "服装层·塑料箱"
+    },
+    {
+      "resourceId": "d07_07_unique",
+      "nodeId": "d07_07",
+      "name": "商场避难物资簿"
+    },
+    {
+      "resourceId": "d08_03_cache0",
+      "nodeId": "d08_03",
+      "name": "干货库·盐水剂箱"
+    },
+    {
+      "resourceId": "d08_06_cache1",
+      "nodeId": "d08_06",
+      "name": "备用电房·医用纱布箱"
+    },
+    {
+      "resourceId": "d08_03_cache2",
+      "nodeId": "d08_03",
+      "name": "干货库·肉干箱"
+    },
+    {
+      "resourceId": "d08_08_unique",
+      "nodeId": "d08_08",
+      "name": "冷链调度档案"
+    },
+    {
+      "resourceId": "h03_workshop_supply_disinfectant",
+      "nodeId": "h03_workshop",
+      "name": "公共工坊消毒液配给柜"
+    },
+    {
+      "resourceId": "w13_mill_supply_salt",
+      "nodeId": "w13_mill",
+      "name": "磨坊食盐存货"
+    },
+    {
+      "resourceId": "w15_shrinewoods_supply_berry",
+      "nodeId": "w15_shrinewoods",
+      "name": "祈祷林野果丛"
+    },
+    {
+      "resourceId": "m01_road_crate",
+      "nodeId": "m01_road",
+      "name": "路旁旧货箱"
+    },
+    {
+      "resourceId": "m01_road_barrier",
+      "nodeId": "m01_road",
+      "name": "路障金属堆"
+    },
+    {
+      "resourceId": "m02_checkpoint_duty",
+      "nodeId": "m02_checkpoint",
+      "name": "检查哨值勤补给箱"
+    },
+    {
+      "resourceId": "m02_checkpoint_bench",
+      "nodeId": "m02_checkpoint",
+      "name": "哨站维修台遗料"
+    },
+    {
+      "resourceId": "h02_square_water",
+      "nodeId": "h02_square",
+      "name": "营区净水配给处"
+    },
+    {
+      "resourceId": "h02_square_ration",
+      "nodeId": "h02_square",
+      "name": "营区罐头配给处"
+    },
+    {
+      "resourceId": "h03_workshop_scrap",
+      "nodeId": "h03_workshop",
+      "name": "公共工坊旧件回收台"
+    },
+    {
+      "resourceId": "h04_infirmary_dressing",
+      "nodeId": "h04_infirmary",
+      "name": "医务室纱布配给柜"
+    },
+    {
+      "resourceId": "w01_farm_crop",
+      "nodeId": "w01_farm",
+      "name": "农场块根畦"
+    },
+    {
+      "resourceId": "w01_farm_barn",
+      "nodeId": "w01_farm",
+      "name": "农场旧谷仓布料"
+    },
+    {
+      "resourceId": "w02_forest_wood",
+      "nodeId": "w02_forest",
+      "name": "林间倒木"
+    },
+    {
+      "resourceId": "w02_forest_fiber",
+      "nodeId": "w02_forest",
+      "name": "林间纤维草丛"
+    },
+    {
+      "resourceId": "w03_quarry_stone",
+      "nodeId": "w03_quarry",
+      "name": "坡脚碎石带"
+    },
+    {
+      "resourceId": "w03_quarry_ore",
+      "nodeId": "w03_quarry",
+      "name": "采石坡露矿"
+    },
+    {
+      "resourceId": "a01_yard_steel",
+      "nodeId": "a01_yard",
+      "name": "货场废钢垛"
+    },
+    {
+      "resourceId": "a01_yard_fastener",
+      "nodeId": "a01_yard",
+      "name": "货场紧固件匣"
+    },
+    {
+      "resourceId": "a02_pump_seal",
+      "nodeId": "a02_pump",
+      "name": "泵站密封件架"
+    },
+    {
+      "resourceId": "a02_pump_fuel",
+      "nodeId": "a02_pump",
+      "name": "泵站机油余存"
+    },
+    {
+      "resourceId": "a03_foundry_steel",
+      "nodeId": "a03_foundry",
+      "name": "厂外钢料垛"
+    },
+    {
+      "resourceId": "a03_foundry_machine",
+      "nodeId": "a03_foundry",
+      "name": "厂外机件堆"
+    },
+    {
+      "resourceId": "b01_school_fabric",
+      "nodeId": "b01_school",
+      "name": "安置学校旧布架"
+    },
+    {
+      "resourceId": "b01_school_leather",
+      "nodeId": "b01_school",
+      "name": "安置学校旧皮料"
+    },
+    {
+      "resourceId": "b02_station_medical",
+      "nodeId": "b02_station",
+      "name": "转运站纱布配给柜"
+    },
+    {
+      "resourceId": "b02_station_electronic",
+      "nodeId": "b02_station",
+      "name": "转运站退役设备"
+    },
+    {
+      "resourceId": "b03_hospital_medical",
+      "nodeId": "b03_hospital",
+      "name": "外院医用纱布箱"
+    },
+    {
+      "resourceId": "b03_hospital_electronic",
+      "nodeId": "b03_hospital",
+      "name": "外院旧设备间"
+    },
+    {
+      "resourceId": "w02_forest_plank",
+      "nodeId": "w02_forest",
+      "name": "林间旧木板堆"
+    },
+    {
+      "resourceId": "w02_forest_rope",
+      "nodeId": "w02_forest",
+      "name": "林间旧绳卷"
+    },
+    {
+      "resourceId": "b01_school_thread",
+      "nodeId": "b01_school",
+      "name": "安置学校缝线配给柜"
+    },
+    {
+      "resourceId": "m01_road_plastic",
+      "nodeId": "m01_road",
+      "name": "公路塑料遗料"
+    },
+    {
+      "resourceId": "a01_yard_wire",
+      "nodeId": "a01_yard",
+      "name": "货场旧导线卷"
+    },
+    {
+      "resourceId": "a02_pump_adhesive",
+      "nodeId": "a02_pump",
+      "name": "泵站黏合剂余存"
+    },
+    {
+      "resourceId": "a02_pump_charcoal",
+      "nodeId": "a02_pump",
+      "name": "泵站旧炭袋"
+    },
+    {
+      "resourceId": "b02_station_battery",
+      "nodeId": "b02_station",
+      "name": "转运站备用电池柜"
+    },
+    {
+      "resourceId": "b02_station_disinfectant",
+      "nodeId": "b02_station",
+      "name": "转运站消毒液配给柜"
+    },
+    {
+      "resourceId": "h04_infirmary_saline",
+      "nodeId": "h04_infirmary",
+      "name": "医务室盐水剂配给柜"
+    },
+    {
+      "resourceId": "a03_foundry_weapon_parts",
+      "nodeId": "a03_foundry",
+      "name": "厂外武器组件箱"
+    },
+    {
+      "resourceId": "b03_hospital_ballistic_fiber",
+      "nodeId": "b03_hospital",
+      "name": "外院防护纤维存货"
+    },
+    {
+      "resourceId": "w01_farm_grain",
+      "nodeId": "w01_farm",
+      "name": "农场谷物畦"
+    },
+    {
+      "resourceId": "h02_square_beans",
+      "nodeId": "h02_square",
+      "name": "营区豆罐头配给处"
+    },
+    {
+      "resourceId": "w01_farm_salt",
+      "nodeId": "w01_farm",
+      "name": "农场食盐存货"
+    },
+    {
+      "resourceId": "w01_farm_cooking_oil",
+      "nodeId": "w01_farm",
+      "name": "农场食用油存货"
+    },
+    {
+      "resourceId": "h01_gate_raw_water",
+      "nodeId": "h01_gate",
+      "name": "营门蓄水渠"
+    },
+    {
+      "resourceId": "w03_quarry_plate",
+      "nodeId": "w03_quarry",
+      "name": "采石坡铁片回收堆"
+    },
+    {
+      "resourceId": "h03_workshop_contract",
+      "nodeId": "h03_workshop",
+      "name": "工坊首次支援包"
+    },
+    {
+      "resourceId": "firetruck_cache",
+      "nodeId": "m01_road",
+      "name": "消防车器材箱"
+    },
+    {
+      "resourceId": "w03_quarry_blueprints",
+      "nodeId": "w03_quarry",
+      "name": "采石坡野外装备图册"
+    },
+    {
+      "resourceId": "shield_cache",
+      "nodeId": "d03_03",
+      "name": "器材室防暴盾箱"
+    },
+    {
+      "resourceId": "officer_cache",
+      "nodeId": "d03_07",
+      "name": "守卫战利品箱"
+    },
+    {
+      "resourceId": "shotgun_cache",
+      "nodeId": "d03_08",
+      "name": "封存仓霰弹枪箱"
+    },
+    {
+      "resourceId": "rifle_cache",
+      "nodeId": "d03_08",
+      "name": "封存仓步枪箱"
+    },
+    {
+      "resourceId": "armor_cache",
+      "nodeId": "d03_08",
+      "name": "封存仓防护装备箱"
+    },
+    {
+      "resourceId": "ammo_reserve_cache",
+      "nodeId": "d03_08",
+      "name": "封存仓备用弹药箱"
+    }
+  ],
+  "generation": {
+    "exploreResetTo": 0,
+    "exploreMilestonesReset": true,
+    "knownRoomsResourcesAndRoutesPersist": true,
+    "unlockedInstanceEdgesAndGuardAndCompletionReset": true,
+    "normalCachesRefillOnlyOnLegalGeneration": true,
+    "campaignClaimsAndKnowledgePersist": true,
+    "legalTriggerUnchanged": "B21_B22_72_world_hour_contract_no_real_time_or_player_reset_added"
+  },
+  "exit": {
+    "recordOrCheckCommitsCurrentGenerationCompletion": true,
+    "extraFullClearRequirement": false,
+    "currentGenerationRevalidateEveryTraversal": true,
+    "guardDoorStillRequired": true,
+    "recordTimeUnchanged": 10
+  },
+  "acceptanceIds": [
+    "RES-Q120-01",
+    "RES-Q120-02",
+    "RES-Q120-03",
+    "RES-Q120-04",
+    "TOOL-Q121-01",
+    "TOOL-Q121-02",
+    "TOOL-Q121-03",
+    "CLAIM-Q122-01",
+    "CLAIM-Q122-02",
+    "KNOW-Q123-01",
+    "KNOW-Q123-02",
+    "NAME-Q124-01",
+    "NAME-Q125-01",
+    "GEN-Q126-01",
+    "EXIT-Q127-01"
+  ],
+  "legacyMigration": {
+    "rules": "旧资源与claim兼容：已有resourceId/legacyAlias账优先复用，若同源存在多份旧账，唯一claim按已领OR合并，按件库存取保守较小的有效余量、日补时间取较新已结算点，不能相加或回满；经验日计数同actor/resource/day取已用最大值，不为换ID刷新额度。新导入而从未存在的world来源初始=表cap（无限为-1），从升级时当前世界分钟开始计日补、不追补漏过天数；旧已探索达揭示值只补资源卡可见，不免费发物品。已有claim/知识包已领只迁显示位置/缺知识，不发实物；明确旧领取事实可映射，不能靠背包猜没领过。原在办事务按快照只完成/取消一次。警官箱旧领取账原样保留；已生成并搬走的枪不收回、不复制。新来源/首次支援包与登记、首通材料包是分账，不重复同名claim奖励。",
+    "oldOfficerNode": "d03_04",
+    "newOfficerNode": "d03_07",
+    "sameClaim": "officer_cache"
+  }
+}

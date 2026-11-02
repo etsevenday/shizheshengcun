@@ -14,7 +14,7 @@
   },
   "claimNodes": {
     "shield_cache": "d03_03",
-    "officer_cache": "d03_04",
+    "officer_cache": "d03_07",
     "rifle_cache": "d03_08",
     "shotgun_cache": "d03_08",
     "armor_cache": "d03_08",
@@ -30,5 +30,12 @@
     "d07": "d07_07",
     "d08": "d08_08"
   },
-  "note": "唯一装备claimId保持，已领不补。旧A12的blueprint_breach_axe/rescue_axe/steel_mace等工业包归d01_08，医疗包d02_08，武备包d03_08，通信包d04_07。"
+  "note": "唯一装备claimId保持，已领不补。旧A12的blueprint_breach_axe/rescue_axe/steel_mace等工业包归d01_08，医疗包d02_08，武备包d03_08，通信包d04_07。",
+  "q122OfficerCache": {
+    "supersedesNode": "d03_04",
+    "newNode": "d03_07",
+    "sameClaimId": true,
+    "condition": "current_generation_guard_victory",
+    "doNotApplyGenericOldCoreNodeMapping": true
+  }
 }

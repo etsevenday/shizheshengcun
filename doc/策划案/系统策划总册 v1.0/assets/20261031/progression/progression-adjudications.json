@@ -1,5 +1,5 @@
 {
-  "version": "q53_q61_20261031",
+  "version": "q53_q121_20261102",
   "status": "approved_planning_target_not_engine_verified",
   "sourceQuestions": [
     "Q53",
@@ -10,7 +10,10 @@
     "Q58",
     "Q59",
     "Q60",
-    "Q61"
+    "Q61",
+    "Q120",
+    "Q121",
+    "Q122"
   ],
   "basicCraftPermission": {
     "W0": "retired_typo_for_T0_not_new_system",
@@ -2160,6 +2163,962 @@
         "classificationReason": "natural_extraction",
         "xpAllowed": true,
         "legacyCounterKeyAlias": null
+      },
+      {
+        "resourceId": "m01_road_crate",
+        "nodeId": "m01_road",
+        "items": {
+          "cloth": 2
+        },
+        "baseMinutes": 20,
+        "cap": 6,
+        "dailyRefill": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "finite",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "m01/crate"
+      },
+      {
+        "resourceId": "m01_road_barrier",
+        "nodeId": "m01_road",
+        "items": {
+          "scrap": 2
+        },
+        "baseMinutes": 20,
+        "cap": 8,
+        "dailyRefill": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "finite",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "m01/barrier"
+      },
+      {
+        "resourceId": "m02_checkpoint_duty",
+        "nodeId": "m02_checkpoint",
+        "items": {
+          "canned_food": 2,
+          "clean_water": 2
+        },
+        "baseMinutes": 15,
+        "cap": 1,
+        "dailyRefill": 0,
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "poolMode": "campaign_physical",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "m02/duty"
+      },
+      {
+        "resourceId": "m02_checkpoint_bench",
+        "nodeId": "m02_checkpoint",
+        "items": {
+          "fastener": 2
+        },
+        "baseMinutes": 25,
+        "cap": 8,
+        "dailyRefill": 2,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "m02/bench"
+      },
+      {
+        "resourceId": "h02_square_water",
+        "nodeId": "h02_square",
+        "items": {
+          "clean_water": 2
+        },
+        "baseMinutes": 10,
+        "cap": 16,
+        "dailyRefill": 12,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "h02/water"
+      },
+      {
+        "resourceId": "h02_square_ration",
+        "nodeId": "h02_square",
+        "items": {
+          "canned_food": 2
+        },
+        "baseMinutes": 10,
+        "cap": 4,
+        "dailyRefill": 2,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "h02/ration"
+      },
+      {
+        "resourceId": "h03_workshop_scrap",
+        "nodeId": "h03_workshop",
+        "items": {
+          "parts": 1
+        },
+        "baseMinutes": 30,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "h03/scrap"
+      },
+      {
+        "resourceId": "h04_infirmary_dressing",
+        "nodeId": "h04_infirmary",
+        "items": {
+          "medical_gauze": 1
+        },
+        "baseMinutes": 15,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "h04/dressing"
+      },
+      {
+        "resourceId": "w01_farm_crop",
+        "nodeId": "w01_farm",
+        "items": {
+          "raw_root": 2
+        },
+        "baseMinutes": 30,
+        "cap": 12,
+        "dailyRefill": 6,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "gathering",
+        "classificationReason": "natural_extraction",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "w01/crop"
+      },
+      {
+        "resourceId": "w01_farm_barn",
+        "nodeId": "w01_farm",
+        "items": {
+          "cloth": 2
+        },
+        "baseMinutes": 25,
+        "cap": 8,
+        "dailyRefill": 2,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "w01/barn"
+      },
+      {
+        "resourceId": "w02_forest_wood",
+        "nodeId": "w02_forest",
+        "items": {
+          "wood": 2
+        },
+        "baseMinutes": 30,
+        "cap": 20,
+        "dailyRefill": 10,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "gathering",
+        "classificationReason": "natural_extraction",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "w02/wood"
+      },
+      {
+        "resourceId": "w02_forest_fiber",
+        "nodeId": "w02_forest",
+        "items": {
+          "fiber": 2
+        },
+        "baseMinutes": 20,
+        "cap": 16,
+        "dailyRefill": 8,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "gathering",
+        "classificationReason": "natural_extraction",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "w02/fiber"
+      },
+      {
+        "resourceId": "w03_quarry_stone",
+        "nodeId": "w03_quarry",
+        "items": {
+          "stone": 2
+        },
+        "baseMinutes": 25,
+        "cap": 20,
+        "dailyRefill": 4,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "gathering",
+        "classificationReason": "natural_extraction",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "w03/stone"
+      },
+      {
+        "resourceId": "w03_quarry_ore",
+        "nodeId": "w03_quarry",
+        "items": {
+          "iron_ore": 2
+        },
+        "baseMinutes": 30,
+        "cap": 12,
+        "dailyRefill": 2,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "gathering",
+        "classificationReason": "natural_extraction",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "w03/ore"
+      },
+      {
+        "resourceId": "a01_yard_steel",
+        "nodeId": "a01_yard",
+        "items": {
+          "steel": 2
+        },
+        "baseMinutes": 30,
+        "cap": 12,
+        "dailyRefill": 2,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "a01/steel"
+      },
+      {
+        "resourceId": "a01_yard_fastener",
+        "nodeId": "a01_yard",
+        "items": {
+          "fastener": 2
+        },
+        "baseMinutes": 20,
+        "cap": 12,
+        "dailyRefill": 4,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "a01/fastener"
+      },
+      {
+        "resourceId": "a02_pump_seal",
+        "nodeId": "a02_pump",
+        "items": {
+          "rubber": 1
+        },
+        "baseMinutes": 25,
+        "cap": 6,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "a02/seal"
+      },
+      {
+        "resourceId": "a02_pump_fuel",
+        "nodeId": "a02_pump",
+        "items": {
+          "oil": 1
+        },
+        "baseMinutes": 30,
+        "cap": 6,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "a02/fuel"
+      },
+      {
+        "resourceId": "a03_foundry_steel",
+        "nodeId": "a03_foundry",
+        "items": {
+          "steel": 2
+        },
+        "baseMinutes": 30,
+        "cap": 16,
+        "dailyRefill": 4,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "a03/steel"
+      },
+      {
+        "resourceId": "a03_foundry_machine",
+        "nodeId": "a03_foundry",
+        "items": {
+          "precision_parts": 1
+        },
+        "baseMinutes": 40,
+        "cap": 6,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "a03/machine"
+      },
+      {
+        "resourceId": "b01_school_fabric",
+        "nodeId": "b01_school",
+        "items": {
+          "cloth": 2
+        },
+        "baseMinutes": 25,
+        "cap": 12,
+        "dailyRefill": 4,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "b01/fabric"
+      },
+      {
+        "resourceId": "b01_school_leather",
+        "nodeId": "b01_school",
+        "items": {
+          "leather": 1
+        },
+        "baseMinutes": 30,
+        "cap": 6,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "b01/leather"
+      },
+      {
+        "resourceId": "b02_station_medical",
+        "nodeId": "b02_station",
+        "items": {
+          "medical_gauze": 2
+        },
+        "baseMinutes": 30,
+        "cap": 8,
+        "dailyRefill": 2,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "b02/medical"
+      },
+      {
+        "resourceId": "b02_station_electronic",
+        "nodeId": "b02_station",
+        "items": {
+          "electronics": 1
+        },
+        "baseMinutes": 35,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "b02/electronic"
+      },
+      {
+        "resourceId": "b03_hospital_medical",
+        "nodeId": "b03_hospital",
+        "items": {
+          "medical_gauze": 2
+        },
+        "baseMinutes": 30,
+        "cap": 12,
+        "dailyRefill": 4,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "b03/medical"
+      },
+      {
+        "resourceId": "b03_hospital_electronic",
+        "nodeId": "b03_hospital",
+        "items": {
+          "electronics": 1
+        },
+        "baseMinutes": 35,
+        "cap": 6,
+        "dailyRefill": 2,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "b03/electronic"
+      },
+      {
+        "resourceId": "w02_forest_plank",
+        "nodeId": "w02_forest",
+        "items": {
+          "plank": 2
+        },
+        "baseMinutes": 30,
+        "cap": 12,
+        "dailyRefill": 4,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "w02/plank"
+      },
+      {
+        "resourceId": "w02_forest_rope",
+        "nodeId": "w02_forest",
+        "items": {
+          "rope": 1
+        },
+        "baseMinutes": 25,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "w02/rope"
+      },
+      {
+        "resourceId": "b01_school_thread",
+        "nodeId": "b01_school",
+        "items": {
+          "thread": 2
+        },
+        "baseMinutes": 25,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "b01/thread"
+      },
+      {
+        "resourceId": "m01_road_plastic",
+        "nodeId": "m01_road",
+        "items": {
+          "plastic": 2
+        },
+        "baseMinutes": 25,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "m01/plastic"
+      },
+      {
+        "resourceId": "a01_yard_wire",
+        "nodeId": "a01_yard",
+        "items": {
+          "wire": 2
+        },
+        "baseMinutes": 25,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "a01/wire"
+      },
+      {
+        "resourceId": "a02_pump_adhesive",
+        "nodeId": "a02_pump",
+        "items": {
+          "adhesive": 1
+        },
+        "baseMinutes": 25,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "a02/adhesive"
+      },
+      {
+        "resourceId": "a02_pump_charcoal",
+        "nodeId": "a02_pump",
+        "items": {
+          "charcoal": 2
+        },
+        "baseMinutes": 25,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "a02/charcoal"
+      },
+      {
+        "resourceId": "b02_station_battery",
+        "nodeId": "b02_station",
+        "items": {
+          "battery": 1
+        },
+        "baseMinutes": 25,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "b02/battery"
+      },
+      {
+        "resourceId": "b02_station_disinfectant",
+        "nodeId": "b02_station",
+        "items": {
+          "disinfectant": 1
+        },
+        "baseMinutes": 25,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "b02/disinfectant"
+      },
+      {
+        "resourceId": "h04_infirmary_saline",
+        "nodeId": "h04_infirmary",
+        "items": {
+          "saline": 1
+        },
+        "baseMinutes": 25,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "h04/saline"
+      },
+      {
+        "resourceId": "a03_foundry_weapon_parts",
+        "nodeId": "a03_foundry",
+        "items": {
+          "weapon_parts": 1
+        },
+        "baseMinutes": 25,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "a03/weapon_parts"
+      },
+      {
+        "resourceId": "b03_hospital_ballistic_fiber",
+        "nodeId": "b03_hospital",
+        "items": {
+          "ballistic_fiber": 1
+        },
+        "baseMinutes": 25,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "b03/ballistic_fiber"
+      },
+      {
+        "resourceId": "w01_farm_grain",
+        "nodeId": "w01_farm",
+        "items": {
+          "grain": 2
+        },
+        "baseMinutes": 30,
+        "cap": 12,
+        "dailyRefill": 4,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "gathering",
+        "classificationReason": "natural_extraction",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "w01/grain"
+      },
+      {
+        "resourceId": "h02_square_beans",
+        "nodeId": "h02_square",
+        "items": {
+          "canned_beans": 1
+        },
+        "baseMinutes": 10,
+        "cap": 4,
+        "dailyRefill": 2,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "h02/beans"
+      },
+      {
+        "resourceId": "w01_farm_salt",
+        "nodeId": "w01_farm",
+        "items": {
+          "salt": 1
+        },
+        "baseMinutes": 25,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "w01/salt"
+      },
+      {
+        "resourceId": "w01_farm_cooking_oil",
+        "nodeId": "w01_farm",
+        "items": {
+          "cooking_oil": 1
+        },
+        "baseMinutes": 25,
+        "cap": 4,
+        "dailyRefill": 1,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "w01/cooking_oil"
+      },
+      {
+        "resourceId": "h01_gate_raw_water",
+        "nodeId": "h01_gate",
+        "items": {
+          "dirty_water": 4
+        },
+        "baseMinutes": 10,
+        "cap": -1,
+        "dailyRefill": 0,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "flowing",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "h01/raw_water"
+      },
+      {
+        "resourceId": "w03_quarry_plate",
+        "nodeId": "w03_quarry",
+        "items": {
+          "iron_plate": 2
+        },
+        "baseMinutes": 25,
+        "cap": 8,
+        "dailyRefill": 2,
+        "unit": "item_count",
+        "scope": "world_stock",
+        "poolMode": "renewable",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": "scavenging",
+        "classificationReason": "industrial_salvage",
+        "xpAllowed": true,
+        "legacyCounterKeyAlias": "w03/plate"
+      },
+      {
+        "resourceId": "h03_workshop_contract",
+        "nodeId": "h03_workshop",
+        "items": {
+          "fastener": 4,
+          "precision_parts": 2
+        },
+        "baseMinutes": 0,
+        "cap": 1,
+        "dailyRefill": 0,
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "poolMode": "campaign_physical",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "h03/contract"
+      },
+      {
+        "resourceId": "firetruck_cache",
+        "nodeId": "m01_road",
+        "items": {
+          "fire_axe": 1
+        },
+        "baseMinutes": 20,
+        "cap": 1,
+        "dailyRefill": 0,
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "poolMode": "campaign_physical",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "firetruck_cache"
+      },
+      {
+        "resourceId": "w03_quarry_blueprints",
+        "nodeId": "w03_quarry",
+        "items": {},
+        "baseMinutes": 10,
+        "cap": 1,
+        "dailyRefill": 0,
+        "unit": "knowledge_package",
+        "scope": "campaignClaimId",
+        "poolMode": "campaign_knowledge",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "bp_wild_pack"
+      },
+      {
+        "resourceId": "shield_cache",
+        "nodeId": "d03_03",
+        "items": {
+          "riot_shield": 1
+        },
+        "baseMinutes": 20,
+        "cap": 1,
+        "dailyRefill": 0,
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "poolMode": "campaign_physical",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "shield_cache"
+      },
+      {
+        "resourceId": "officer_cache",
+        "nodeId": "d03_07",
+        "items": {
+          "service_pistol": 1
+        },
+        "baseMinutes": 20,
+        "cap": 1,
+        "dailyRefill": 0,
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "poolMode": "campaign_physical",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "officer_cache"
+      },
+      {
+        "resourceId": "shotgun_cache",
+        "nodeId": "d03_08",
+        "items": {
+          "shotgun": 1
+        },
+        "baseMinutes": 20,
+        "cap": 1,
+        "dailyRefill": 0,
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "poolMode": "campaign_physical",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "shotgun_cache"
+      },
+      {
+        "resourceId": "rifle_cache",
+        "nodeId": "d03_08",
+        "items": {
+          "rifle": 1
+        },
+        "baseMinutes": 20,
+        "cap": 1,
+        "dailyRefill": 0,
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "poolMode": "campaign_physical",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "rifle_cache"
+      },
+      {
+        "resourceId": "armor_cache",
+        "nodeId": "d03_08",
+        "items": {
+          "guard_armor": 1
+        },
+        "baseMinutes": 20,
+        "cap": 1,
+        "dailyRefill": 0,
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "poolMode": "campaign_physical",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "armor_cache"
+      },
+      {
+        "resourceId": "ammo_reserve_cache",
+        "nodeId": "d03_08",
+        "items": {
+          "ammo_9mm": 24,
+          "shell_12g": 12,
+          "ammo_rifle": 15
+        },
+        "baseMinutes": 20,
+        "cap": 1,
+        "dailyRefill": 0,
+        "unit": "batch_count",
+        "scope": "campaignClaimId",
+        "poolMode": "campaign_physical",
+        "origin": "Q120_Q122_restored",
+        "proficiencyId": null,
+        "classificationReason": "supply_claim_or_knowledge_no_field_xp",
+        "xpAllowed": false,
+        "legacyCounterKeyAlias": "ammo_reserve_cache"
       }
     ],
     "survey": {
@@ -2239,9 +3198,1947 @@
     "newCureRouteAdded": false
   },
   "qualifiedTools": {
-    "enabledWhen": "B11_explicit_resource_tool_table",
+    "enabledWhen": "Q121_explicit_tables_imported_and_executor_support_deployed",
     "inferFromNameOrNearbyTool": false,
-    "dormantUntilMapping": true
+    "dormantUntilMapping": false,
+    "tableFile": "assets/20261102/map/resource-adjudications.json",
+    "resourceCount": 169,
+    "new96": [
+      {
+        "resourceId": "w11_orchard_a",
+        "nodeId": "w11_orchard",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w11_orchard_b",
+        "nodeId": "w11_orchard",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w12_canal_a",
+        "nodeId": "w12_canal",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w12_canal_b",
+        "nodeId": "w12_canal",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w13_mill_a",
+        "nodeId": "w13_mill",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w13_mill_b",
+        "nodeId": "w13_mill",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w14_cemeteryroad_a",
+        "nodeId": "w14_cemeteryroad",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w14_cemeteryroad_b",
+        "nodeId": "w14_cemeteryroad",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w15_shrinewoods_a",
+        "nodeId": "w15_shrinewoods",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w15_shrinewoods_b",
+        "nodeId": "w15_shrinewoods",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "hatchet"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w16_service_a",
+        "nodeId": "w16_service",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w16_service_b",
+        "nodeId": "w16_service",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w17_switchback_a",
+        "nodeId": "w17_switchback",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w17_switchback_b",
+        "nodeId": "w17_switchback",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w18_tunnel_a",
+        "nodeId": "w18_tunnel",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w18_tunnel_b",
+        "nodeId": "w18_tunnel",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w19_survey_a",
+        "nodeId": "w19_survey",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w19_survey_b",
+        "nodeId": "w19_survey",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w20_powercut_a",
+        "nodeId": "w20_powercut",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w20_powercut_b",
+        "nodeId": "w20_powercut",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w21_pine_a",
+        "nodeId": "w21_pine",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "hatchet"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w21_pine_b",
+        "nodeId": "w21_pine",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w22_ravine_a",
+        "nodeId": "w22_ravine",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w22_ravine_b",
+        "nodeId": "w22_ravine",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w23_hunting_a",
+        "nodeId": "w23_hunting",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w23_hunting_b",
+        "nodeId": "w23_hunting",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w24_cave_a",
+        "nodeId": "w24_cave",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w24_cave_b",
+        "nodeId": "w24_cave",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w25_wetland_a",
+        "nodeId": "w25_wetland",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w25_wetland_b",
+        "nodeId": "w25_wetland",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w26_island_a",
+        "nodeId": "w26_island",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w26_island_b",
+        "nodeId": "w26_island",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w27_relay_a",
+        "nodeId": "w27_relay",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w27_relay_b",
+        "nodeId": "w27_relay",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w28_highland_a",
+        "nodeId": "w28_highland",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w28_highland_b",
+        "nodeId": "w28_highland",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w29_riverbend_a",
+        "nodeId": "w29_riverbend",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w29_riverbend_b",
+        "nodeId": "w29_riverbend",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w30_truckstop_a",
+        "nodeId": "w30_truckstop",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w30_truckstop_b",
+        "nodeId": "w30_truckstop",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w31_suburb_a",
+        "nodeId": "w31_suburb",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w31_suburb_b",
+        "nodeId": "w31_suburb",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w32_railcut_a",
+        "nodeId": "w32_railcut",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w32_railcut_b",
+        "nodeId": "w32_railcut",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w33_waterworks_a",
+        "nodeId": "w33_waterworks",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w33_waterworks_b",
+        "nodeId": "w33_waterworks",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w34_depot_a",
+        "nodeId": "w34_depot",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w34_depot_b",
+        "nodeId": "w34_depot",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w12_canal_water",
+        "nodeId": "w12_canal",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w25_wetland_water",
+        "nodeId": "w25_wetland",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w29_riverbend_water",
+        "nodeId": "w29_riverbend",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w33_waterworks_water",
+        "nodeId": "w33_waterworks",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w08_reservoir_water",
+        "nodeId": "w08_reservoir",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w16_service_cistern",
+        "nodeId": "w16_service",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w19_survey_cistern",
+        "nodeId": "w19_survey",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w23_hunting_cistern",
+        "nodeId": "w23_hunting",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w27_relay_cistern",
+        "nodeId": "w27_relay",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w30_truckstop_cistern",
+        "nodeId": "w30_truckstop",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w13_mill_bottles",
+        "nodeId": "w13_mill",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w31_suburb_bottles",
+        "nodeId": "w31_suburb",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w34_depot_bottles",
+        "nodeId": "w34_depot",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d01_04_cache0",
+        "nodeId": "d01_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d01_06_cache1",
+        "nodeId": "d01_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d01_04_cache2",
+        "nodeId": "d01_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d01_08_unique",
+        "nodeId": "d01_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d02_04_cache0",
+        "nodeId": "d02_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d02_06_cache1",
+        "nodeId": "d02_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d02_04_cache2",
+        "nodeId": "d02_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d02_08_unique",
+        "nodeId": "d02_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d03_04_cache0",
+        "nodeId": "d03_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d03_06_cache1",
+        "nodeId": "d03_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d03_04_cache2",
+        "nodeId": "d03_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d03_08_unique",
+        "nodeId": "d03_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d04_03_cache0",
+        "nodeId": "d04_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d04_05_cache1",
+        "nodeId": "d04_05",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d04_03_cache2",
+        "nodeId": "d04_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d04_07_unique",
+        "nodeId": "d04_07",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d05_04_cache0",
+        "nodeId": "d05_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d05_07_cache1",
+        "nodeId": "d05_07",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d05_04_cache2",
+        "nodeId": "d05_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d05_07_unique",
+        "nodeId": "d05_07",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d06_03_cache0",
+        "nodeId": "d06_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d06_06_cache1",
+        "nodeId": "d06_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d06_03_cache2",
+        "nodeId": "d06_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d06_08_unique",
+        "nodeId": "d06_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d07_04_cache0",
+        "nodeId": "d07_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d07_07_cache1",
+        "nodeId": "d07_07",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d07_04_cache2",
+        "nodeId": "d07_04",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d07_07_unique",
+        "nodeId": "d07_07",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "d08_03_cache0",
+        "nodeId": "d08_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d08_06_cache1",
+        "nodeId": "d08_06",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d08_03_cache2",
+        "nodeId": "d08_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "d08_08_unique",
+        "nodeId": "d08_08",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "h03_workshop_supply_disinfectant",
+        "nodeId": "h03_workshop",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w13_mill_supply_salt",
+        "nodeId": "w13_mill",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w15_shrinewoods_supply_berry",
+        "nodeId": "w15_shrinewoods",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      }
+    ],
+    "restored53": [
+      {
+        "resourceId": "m01_road_crate",
+        "nodeId": "m01_road",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "m01_road_barrier",
+        "nodeId": "m01_road",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "m02_checkpoint_duty",
+        "nodeId": "m02_checkpoint",
+        "originalBaseMinutes": 15,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "m02_checkpoint_bench",
+        "nodeId": "m02_checkpoint",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "h02_square_water",
+        "nodeId": "h02_square",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "h02_square_ration",
+        "nodeId": "h02_square",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "h03_workshop_scrap",
+        "nodeId": "h03_workshop",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "h04_infirmary_dressing",
+        "nodeId": "h04_infirmary",
+        "originalBaseMinutes": 15,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w01_farm_crop",
+        "nodeId": "w01_farm",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w01_farm_barn",
+        "nodeId": "w01_farm",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w02_forest_wood",
+        "nodeId": "w02_forest",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "hatchet"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w02_forest_fiber",
+        "nodeId": "w02_forest",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w03_quarry_stone",
+        "nodeId": "w03_quarry",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w03_quarry_ore",
+        "nodeId": "w03_quarry",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "a01_yard_steel",
+        "nodeId": "a01_yard",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a01_yard_fastener",
+        "nodeId": "a01_yard",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a02_pump_seal",
+        "nodeId": "a02_pump",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a02_pump_fuel",
+        "nodeId": "a02_pump",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a03_foundry_steel",
+        "nodeId": "a03_foundry",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a03_foundry_machine",
+        "nodeId": "a03_foundry",
+        "originalBaseMinutes": 40,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 35,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "b01_school_fabric",
+        "nodeId": "b01_school",
+        "originalBaseMinutes": 25,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "b01_school_leather",
+        "nodeId": "b01_school",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "b02_station_medical",
+        "nodeId": "b02_station",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "b02_station_electronic",
+        "nodeId": "b02_station",
+        "originalBaseMinutes": 35,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "b03_hospital_medical",
+        "nodeId": "b03_hospital",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "b03_hospital_electronic",
+        "nodeId": "b03_hospital",
+        "originalBaseMinutes": 35,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 30,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w02_forest_plank",
+        "nodeId": "w02_forest",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w02_forest_rope",
+        "nodeId": "w02_forest",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "b01_school_thread",
+        "nodeId": "b01_school",
+        "originalBaseMinutes": 25,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "m01_road_plastic",
+        "nodeId": "m01_road",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a01_yard_wire",
+        "nodeId": "a01_yard",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a02_pump_adhesive",
+        "nodeId": "a02_pump",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "a02_pump_charcoal",
+        "nodeId": "a02_pump",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "b02_station_battery",
+        "nodeId": "b02_station",
+        "originalBaseMinutes": 25,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "b02_station_disinfectant",
+        "nodeId": "b02_station",
+        "originalBaseMinutes": 25,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "h04_infirmary_saline",
+        "nodeId": "h04_infirmary",
+        "originalBaseMinutes": 25,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "a03_foundry_weapon_parts",
+        "nodeId": "a03_foundry",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "b03_hospital_ballistic_fiber",
+        "nodeId": "b03_hospital",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w01_farm_grain",
+        "nodeId": "w01_farm",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "successWear": 1,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "h02_square_beans",
+        "nodeId": "h02_square",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w01_farm_salt",
+        "nodeId": "w01_farm",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "w01_farm_cooking_oil",
+        "nodeId": "w01_farm",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "h01_gate_raw_water",
+        "nodeId": "h01_gate",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w03_quarry_plate",
+        "nodeId": "w03_quarry",
+        "originalBaseMinutes": 25,
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "successWear": 1,
+        "toolUsePassive": true
+      },
+      {
+        "resourceId": "h03_workshop_contract",
+        "nodeId": "h03_workshop",
+        "originalBaseMinutes": 0,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "firetruck_cache",
+        "nodeId": "m01_road",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "w03_quarry_blueprints",
+        "nodeId": "w03_quarry",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "shield_cache",
+        "nodeId": "d03_03",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "officer_cache",
+        "nodeId": "d03_07",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "shotgun_cache",
+        "nodeId": "d03_08",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "rifle_cache",
+        "nodeId": "d03_08",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "armor_cache",
+        "nodeId": "d03_08",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      },
+      {
+        "resourceId": "ammo_reserve_cache",
+        "nodeId": "d03_08",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false
+      }
+    ],
+    "legacy20Unchanged": [
+      {
+        "resourceId": "roots",
+        "nodeId": "field",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "field_fiber",
+        "nodeId": "field",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 10,
+        "successWear": 1,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "water",
+        "nodeId": "stream",
+        "originalBaseMinutes": 10,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "herbs",
+        "nodeId": "stream",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "wood",
+        "nodeId": "woods",
+        "originalBaseMinutes": 30,
+        "itemIds": [
+          "hatchet"
+        ],
+        "outputMultiplier": 2,
+        "baseMinutesOverride": null,
+        "successWear": 1,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "stones",
+        "nodeId": "woods",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "berries",
+        "nodeId": "woods",
+        "originalBaseMinutes": 20,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "woods_fiber",
+        "nodeId": "woods",
+        "originalBaseMinutes": 20,
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 10,
+        "successWear": 1,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "supply_box",
+        "nodeId": "village",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "misc_box",
+        "nodeId": "village",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "pot_box",
+        "nodeId": "hardware",
+        "originalBaseMinutes": 45,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "tool_box",
+        "nodeId": "hardware",
+        "originalBaseMinutes": 45,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "med_cabinet",
+        "nodeId": "clinic",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "cloth_bag",
+        "nodeId": "clinic",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "metal_heap",
+        "nodeId": "scrapyard",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "parts_box",
+        "nodeId": "scrapyard",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "hardware_weapon_cache",
+        "nodeId": "hardware",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "village_weapon_locker",
+        "nodeId": "village",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "clinic_medical_supply",
+        "nodeId": "clinic",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      },
+      {
+        "resourceId": "village_cold_box",
+        "nodeId": "village",
+        "originalBaseMinutes": 30,
+        "itemIds": [],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": null,
+        "successWear": 0,
+        "toolUsePassive": false,
+        "policy": "unchanged_legacy_20"
+      }
+    ],
+    "toolUsePassive": {
+      "id": "scavenging_05",
+      "skill": "scavenging",
+      "level": 5,
+      "workMultiplier": 0.9,
+      "requiresActualSelectedQualifiedTool": true,
+      "scope": "xp_allowed_scavenging_resource_actions_only_not_survey_claims_services_or_combat"
+    }
   },
   "cooking": {
     "creditActor": "initiating_actor_captured_before_first_effective_heat",

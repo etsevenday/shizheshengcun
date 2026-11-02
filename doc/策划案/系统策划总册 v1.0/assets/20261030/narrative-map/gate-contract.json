@@ -5454,7 +5454,7 @@
   ],
   "stateRules": {
     "campaignLatch": "Q115_B：正式门槛首次满足即写campaignId+edgeId.unlocked并揭示边及两端，不要求端点visited；正反共享。所有事实/探索/到达/新局/加载后按实际谓词重判；仅发现不写到访/探索/奖励，旧世界锁不倒锁。",
-    "instanceLatch": "当前instanceId+edgeId.unlocked，generation变化丢弃旧代房间探索/守卫/clear；campaign知识/路线/唯一claim仍保留。",
+    "instanceLatch": "Q126：当前instanceId+edgeId开通仅本代有效；合法generation变化清房间探索至0及里程碑、实例边开通/守卫/本代核心核对，保留campaign已发现房间/资源/路线知识、世界锁、知识和唯一claim。",
     "revalidation": "每次走边都检查真实当前位置、角色存活/终局、队伍同行、空闲事务、目标/边发现和实例归属；不取消固定时长，不绕战斗/撤出惩罚。instance_complete每次查当前代clear，无反向。",
     "reverse": "原from是数据锚，不是运行时currentLocation；成功走正向后逆向重用同一解锁。未满足锁的逆向也用原锚检查，不额外查原to探索；地图环从别路抵达不创造不存在的边。",
     "legacy": "只承接可信旧世界已开边/任务完成/记录等效。当前实例重置后不按旧代通关放守卫门。世界进度缺键不补奖励/新对白；可在明确地点重做免费公开对话补路线事实。",
@@ -5463,7 +5463,8 @@
       "openingRevealsEndpoints": true,
       "discoveryDoesNotWriteVisitedOrExplore": true,
       "noRemoteInstanceCreation": true
-    }
+    },
+    "completion": "Q127：本代核心领取/核对原10分钟事务成功写recordClaimedAndClear即开放本代出口，不另全图清场；只胜守卫不算。每次走出口重验当前代，原守卫门与移动成本继续。"
   },
   "factProducers": {
     "checkpoint_obstruction_cleared": "m02固定任务路障战最终胜利且主角存活提交，不使用S04随机清理次数",

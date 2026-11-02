@@ -1,0 +1,202 @@
+{
+  "date": "2026-11-02",
+  "status": "static_documents_and_data_only_no_game_or_browser",
+  "questionsAnswered": 8,
+  "answers": "Q120 B/Q121 A/Q122 A按补充取消折返/Q123 A/Q124 A/Q125 B/Q126 A/Q127 A",
+  "checks": [
+    {
+      "name": "保留原开发同步与完整修改记录 01 基础系统/S05 定向采集与遗迹搜集系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步与完整修改记录 01 基础系统/S04 地块清理与共享掉落系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步与完整修改记录 01 基础系统/S03 探索与发现系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步与完整修改记录 01 基础系统/S02 地图结构与移动系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步与完整修改记录 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步与完整修改记录 04 附录/A06 十级熟练度与全技能目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步与完整修改记录 04 附录/A07 材料、制作工坊与求生物资目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步与完整修改记录 04 附录/A08 主线地图、资源与副本目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步与完整修改记录 04 附录/A09 敌人、遭遇组合与掉落目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步与完整修改记录 04 附录/A11 主线任务、势力与队伍角色目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步与完整修改记录 02 参考扩展/R03 回合制战斗系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步与完整修改记录 02 参考扩展/R05 敌人卡、种群刷新与遭遇系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步与完整修改记录 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步与完整修改记录 00 总则/02 开发方待确认问题.md",
+      "passed": true
+    },
+    {
+      "name": "保留原开发同步与完整修改记录 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "问题单仅修改Q120—Q127八项答复",
+      "passed": true
+    },
+    {
+      "name": "全部总册JSON可解析",
+      "passed": true
+    },
+    {
+      "name": "116加53总169资源ID无重复/节点产物存在",
+      "passed": true
+    },
+    {
+      "name": "旧别名唯一、同源去重、public水16/12保留",
+      "passed": true
+    },
+    {
+      "name": "来源三类不可混：44常规/支援包/煮水服务",
+      "passed": true
+    },
+    {
+      "name": "消防斧和3知识完整且不发复制物",
+      "passed": true
+    },
+    {
+      "name": "新96工具表逐行覆盖74可用50可触发搜集5",
+      "passed": true
+    },
+    {
+      "name": "旧20工具含3原加成未变",
+      "passed": true
+    },
+    {
+      "name": "六claim旧ID及产物保持，警官本房，20分钟0XP",
+      "passed": true
+    },
+    {
+      "name": "28知识包7/7/8/6及真实ID无重复",
+      "passed": true
+    },
+    {
+      "name": "地图旧数值/旧8点/拓扑/96资源参数保留",
+      "passed": true
+    },
+    {
+      "name": "53追加经验行，旧116逐行及限额原样",
+      "passed": true
+    },
+    {
+      "name": "135节点fixed引用合并，无人口/clear/探索数值改动",
+      "passed": true
+    },
+    {
+      "name": "13分区8记录149资源新名齐全且不重ID",
+      "passed": true
+    },
+    {
+      "name": "换代探索0已发现保留/核对开出口且原门槛不变",
+      "passed": true
+    },
+    {
+      "name": "A12/联合数据当前镜像一致 04 附录/A12 全系统策划数据索引.json",
+      "passed": true
+    },
+    {
+      "name": "A12/联合数据当前镜像一致 assets/20261030/index/joint-expansion-data.json",
+      "passed": true
+    },
+    {
+      "name": "完整附表含全部来源/名称/知识及15验收",
+      "passed": true
+    },
+    {
+      "name": "本轮Markdown相对链接可达",
+      "passed": true
+    }
+  ],
+  "remainingOutsideBatch": [
+    "Q128",
+    "Q129",
+    "Q130",
+    "Q131",
+    "Q132",
+    "Q133"
+  ],
+  "audit": [
+    {
+      "category": "数值",
+      "result": "已补齐或沿明确既有合同；总控授权初值在本轮逐行表明示"
+    },
+    {
+      "category": "名词",
+      "result": "已补齐或沿明确既有合同；总控授权初值在本轮逐行表明示"
+    },
+    {
+      "category": "范围",
+      "result": "已补齐或沿明确既有合同；总控授权初值在本轮逐行表明示"
+    },
+    {
+      "category": "时机",
+      "result": "已补齐或沿明确既有合同；总控授权初值在本轮逐行表明示"
+    },
+    {
+      "category": "边界",
+      "result": "已补齐或沿明确既有合同；总控授权初值在本轮逐行表明示"
+    },
+    {
+      "category": "自动行为",
+      "result": "已补齐或沿明确既有合同；总控授权初值在本轮逐行表明示"
+    },
+    {
+      "category": "入口",
+      "result": "已补齐或沿明确既有合同；总控授权初值在本轮逐行表明示"
+    },
+    {
+      "category": "来源",
+      "result": "已补齐或沿明确既有合同；总控授权初值在本轮逐行表明示"
+    },
+    {
+      "category": "冲突",
+      "result": "已补齐或沿明确既有合同；总控授权初值在本轮逐行表明示"
+    },
+    {
+      "category": "未完成依赖",
+      "result": "已补齐或沿明确既有合同；总控授权初值在本轮逐行表明示"
+    },
+    {
+      "category": "旧档",
+      "result": "已补齐或沿明确既有合同；总控授权初值在本轮逐行表明示"
+    },
+    {
+      "category": "验收",
+      "result": "已补齐或沿明确既有合同；总控授权初值在本轮逐行表明示"
+    }
+  ]
+}

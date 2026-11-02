@@ -1597,16 +1597,24 @@
         "riot_shield": 1
       },
       "scope": "campaign_once",
-      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim"
+      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim",
+      "workMinutes": 20,
+      "revealCondition": "explore_at_least_100",
+      "revealPercent": 100,
+      "fieldExperience": 0
     },
     {
       "campaignClaimId": "officer_cache",
-      "nodeId": "d03_04",
+      "nodeId": "d03_07",
       "items": {
         "service_pistol": 1
       },
       "scope": "campaign_once",
-      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim"
+      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim",
+      "workMinutes": 20,
+      "revealCondition": "current_d03_generation_guard_victory_committed_player_alive",
+      "revealPercent": null,
+      "fieldExperience": 0
     },
     {
       "campaignClaimId": "shotgun_cache",
@@ -1615,7 +1623,11 @@
         "shotgun": 1
       },
       "scope": "campaign_once",
-      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim"
+      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim",
+      "workMinutes": 20,
+      "revealCondition": "explore_at_least_100",
+      "revealPercent": 100,
+      "fieldExperience": 0
     },
     {
       "campaignClaimId": "rifle_cache",
@@ -1624,7 +1636,11 @@
         "rifle": 1
       },
       "scope": "campaign_once",
-      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim"
+      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim",
+      "workMinutes": 20,
+      "revealCondition": "explore_at_least_100",
+      "revealPercent": 100,
+      "fieldExperience": 0
     },
     {
       "campaignClaimId": "armor_cache",
@@ -1633,7 +1649,11 @@
         "guard_armor": 1
       },
       "scope": "campaign_once",
-      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim"
+      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim",
+      "workMinutes": 20,
+      "revealCondition": "explore_at_least_100",
+      "revealPercent": 100,
+      "fieldExperience": 0
     },
     {
       "campaignClaimId": "ammo_reserve_cache",
@@ -1644,7 +1664,11 @@
         "ammo_rifle": 15
       },
       "scope": "campaign_once",
-      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim"
+      "condition": "旧claim原样保留，仅搬领取位置；旧已领不再发、野外不得补同claim",
+      "workMinutes": 20,
+      "revealCondition": "explore_at_least_100",
+      "revealPercent": 100,
+      "fieldExperience": 0
     }
   ],
   "tacticalItems": [

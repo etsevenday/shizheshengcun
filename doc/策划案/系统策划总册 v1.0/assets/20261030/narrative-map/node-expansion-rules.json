@@ -532,7 +532,12 @@
         "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
         "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "m01_road_crate",
+        "m01_road_barrier",
+        "m01_road_plastic",
+        "firetruck_cache"
+      ],
       "resourceFallback": "shared_loot_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -582,7 +587,10 @@
         "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
         "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "m02_checkpoint_duty",
+        "m02_checkpoint_bench"
+      ],
       "resourceFallback": "shared_loot_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -624,7 +632,9 @@
         "patrol": false,
         "scriptedBattlesAllowed": true
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "h01_gate_raw_water"
+      ],
       "resourceFallback": "clear_small_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -665,7 +675,11 @@
         "patrol": false,
         "scriptedBattlesAllowed": true
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "h02_square_water",
+        "h02_square_ration",
+        "h02_square_beans"
+      ],
       "resourceFallback": "clear_small_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -707,7 +721,9 @@
         "scriptedBattlesAllowed": true
       },
       "fixedResourceIds": [
-        "h03_workshop_supply_disinfectant"
+        "h03_workshop_supply_disinfectant",
+        "h03_workshop_scrap",
+        "h03_workshop_contract"
       ],
       "resourceFallback": "clear_small_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
@@ -749,7 +765,10 @@
         "patrol": false,
         "scriptedBattlesAllowed": true
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "h04_infirmary_dressing",
+        "h04_infirmary_saline"
+      ],
       "resourceFallback": "clear_small_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -841,7 +860,13 @@
         "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
         "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "w01_farm_crop",
+        "w01_farm_barn",
+        "w01_farm_grain",
+        "w01_farm_salt",
+        "w01_farm_cooking_oil"
+      ],
       "resourceFallback": "shared_loot_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -894,7 +919,12 @@
         "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
         "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "w02_forest_wood",
+        "w02_forest_fiber",
+        "w02_forest_plank",
+        "w02_forest_rope"
+      ],
       "resourceFallback": "shared_loot_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -946,7 +976,12 @@
         "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
         "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "w03_quarry_stone",
+        "w03_quarry_ore",
+        "w03_quarry_plate",
+        "w03_quarry_blueprints"
+      ],
       "resourceFallback": "shared_loot_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -1371,7 +1406,11 @@
         "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
         "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "a01_yard_steel",
+        "a01_yard_fastener",
+        "a01_yard_wire"
+      ],
       "resourceFallback": "shared_loot_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -1423,7 +1462,12 @@
         "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
         "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "a02_pump_seal",
+        "a02_pump_fuel",
+        "a02_pump_adhesive",
+        "a02_pump_charcoal"
+      ],
       "resourceFallback": "shared_loot_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -1476,7 +1520,11 @@
         "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
         "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "a03_foundry_steel",
+        "a03_foundry_machine",
+        "a03_foundry_weapon_parts"
+      ],
       "resourceFallback": "shared_loot_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -1518,7 +1566,11 @@
         "patrol": false,
         "scriptedBattlesAllowed": true
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "b01_school_fabric",
+        "b01_school_leather",
+        "b01_school_thread"
+      ],
       "resourceFallback": "clear_small_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -1559,7 +1611,12 @@
         "patrol": false,
         "scriptedBattlesAllowed": true
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "b02_station_medical",
+        "b02_station_electronic",
+        "b02_station_battery",
+        "b02_station_disinfectant"
+      ],
       "resourceFallback": "clear_small_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -1610,7 +1667,11 @@
         "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
         "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "b03_hospital_medical",
+        "b03_hospital_electronic",
+        "b03_hospital_ballistic_fiber"
+      ],
       "resourceFallback": "shared_loot_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -4726,7 +4787,9 @@
         "source": "combatExpansion.enemySets",
         "generationScoped": true
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "shield_cache"
+      ],
       "resourceFallback": "shared_loot_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -4899,7 +4962,9 @@
         "source": "combatExpansion.enemySets",
         "generationScoped": true
       },
-      "fixedResourceIds": [],
+      "fixedResourceIds": [
+        "officer_cache"
+      ],
       "resourceFallback": "shared_loot_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
       "inheritExistingFixedResources": true,
@@ -4942,7 +5007,11 @@
         "generationScoped": true
       },
       "fixedResourceIds": [
-        "d03_08_unique"
+        "d03_08_unique",
+        "shotgun_cache",
+        "rifle_cache",
+        "armor_cache",
+        "ammo_reserve_cache"
       ],
       "resourceFallback": "shared_loot_common_salvage",
       "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
@@ -6761,9 +6830,10 @@
     "persistence": "cancel_death_empty_do_not_refund_charge; save_locked_roll_work_progress_generation; reload_no_reroll; legacy_completed_explore_keep_percent_no_retroactive_reward",
     "populationInitialization": "所有首次2只均为目标上限，首次节点进入时在区剩余cap内生成，不把12个点2只提前生成成24只；已有存活worldEnemyId照旧计区/本地上限，不因Q31删除重抽。",
     "exploreCompletion": "23城市/明示safe仅首次真实到访100；45普通野外30基础分钟/+25共四次；67副本15基础分钟/+50共两次。25/50/75/100里程碑仅A08已有事件，副本不凭不存在的25/75触发额外物资。100后探索禁用，清理仍可。",
-    "fixedResources": "fixedResourceIds列规范化新增表；inheritExistingFixedResources=true合并旧S05/A08同节点固定源，空列表不是删除旧资源。",
+    "fixedResources": "规范96+原20+Q120/Q122另表53=169；fixedResourceIds合并既有固定源与增量，不替换共享碎料池，不从空列表删除旧源",
     "reveal100": "Q116 all_outgoing_incident_bidirectional_plus_from_only_one_way; gate_conditions_still_apply",
     "clue75": "45_new_explorable_overworld_node_specific_flavor_once_only_no_extra_items_xp_or_reveals"
   },
-  "currentMapAdjudicationsFile": "assets/20261102/map/map-adjudications.json"
+  "currentMapAdjudicationsFile": "assets/20261102/map/map-adjudications.json",
+  "resourceAdjudicationsFile": "assets/20261102/map/resource-adjudications.json"
 }
