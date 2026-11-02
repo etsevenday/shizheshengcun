@@ -105,6 +105,13 @@ namespace Survival.Core.Engine
                 .ToList();
         }
 
+        /// <summary>
+        /// 相邻栏用：未开通路线按原因分组（B12 B11 遗留：同一原因 ≥3 条收成一张“N 条路线未开通”叠卡，原因写一次）。
+        /// 组内按配置顺序；组的顺序按首条出现顺序。
+        /// </summary>
+        public List<(string Reason, List<(EdgeConfig Edge, string Target)> Routes)> AdjacentLockedGroups(GameState s) =>
+            AdjacentLocked(s).GroupBy(x => x.Reason).Select(g => (g.Key, g.Select(x => (x.Edge, x.Target)).ToList())).ToList();
+
         // ───────────────────────── 谓词求值 ─────────────────────────
 
         /// <summary>门槛谓词当前是否满足（不改状态、不锁存）。无门槛的旧式边按 unlockAny（任一地点探索度≥X）。</summary>
@@ -307,12 +314,16 @@ namespace Survival.Core.Engine
             if (s.Locations.TryGetValue(id, out var l)) l.Discovered = true;
         }
 
-        /// <summary>重判结果写成日志短语：“通往X的路线”“通往Y的路线（未开通：需要……）”。from 为空时写两端。</summary>
+        /// <summary>
+        /// 重判结果写成日志短语：“通往X的路线”“通往Y的路线（未开通，需要……）”；同一原因的多条未开通路线合成一句
+        /// “通往A、B、C的路线（未开通，需要……）”，原因只写一次（B12 B11 遗留：营区广场 9 条同因路线）。from 为空时写两端。
+        /// </summary>
         private List<string> RouteNotes(GameState s, (List<EdgeConfig> Unlocked, List<EdgeConfig> Revealed) r, string? from)
         {
             string Far(EdgeConfig e) => from != null && e.Touches(from) ? LocName(e.Other(from)) : $"{LocName(e.A)}—{LocName(e.B)}";
             var list = r.Unlocked.Select(e => $"通往{Far(e)}的路线").ToList();
-            list.AddRange(r.Revealed.Select(e => $"通往{Far(e)}的路线（未开通，{GateBlockedReason(s, e)}）"));
+            foreach (var g in r.Revealed.GroupBy(e => GateBlockedReason(s, e)))
+                list.Add($"通往{string.Join("、", g.Select(Far))}的路线（未开通，{g.Key}）");
             return list;
         }
 
@@ -344,10 +355,15 @@ namespace Survival.Core.Engine
         /// <summary>危险度说明（Q31 contracts.danger：0—3 只作预告，不乘接敌率、伤害或敌属性）。</summary>
         public static string DangerText(int danger) => $"危险等级{danger}（0—3，只作提示，不改变遇敌概率与敌人强度）";
 
-        /// <summary>开发入口（?dev=1）与测试：记下或清除一条门槛事实并重判。返回说明。</summary>
+        /// <summary>
+        /// 开发入口（?dev=1）与测试：记下一条门槛事实并重判。返回说明。门槛事实是 campaign 锁存（已开路线不回退），
+        /// 记下后不能从这里清除（B12 B11 遗留：原 ✓ 按钮像能切换，清掉事实路线却不关，容易误会）。
+        /// </summary>
         public string DebugMapFact(GameState s, string key, bool on = true)
         {
-            if (on) s.Progress.Flags.Add(key); else s.Progress.Flags.Remove(key);
+            if (!on) return $"开发：地图事实 {key} 是 campaign 锁存，记下后不能清除（已开路线不回退）。";
+            if (s.Progress.Flags.Contains(key)) return $"开发：地图事实 {key}（{FactLabel(key)}）已记下。";
+            s.Progress.Flags.Add(key);
             var r = RefreshGates(s);
             var routes = RouteNotes(s, r, s.CurrentLocation);
             UpdateFlags(s);
