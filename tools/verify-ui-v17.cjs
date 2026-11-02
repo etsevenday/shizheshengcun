@@ -234,6 +234,16 @@ const cardTexts = `[...document.querySelectorAll('.res-card')].map(c => c.innerT
     const gen = await ev(`(() => { const s = JSON.parse(localStorage.getItem(${JSON.stringify(SAVE_KEY)})); return s.DungeonInstances.d05.Generation; })()`);
     await check('开发入口地牢换代：第2代', gen === 2, { gen });
     await closeMenu();
+    // 远处路径预览：回到营区广场，打开地图点远处已知地点，右栏列出实际路线（不可达时写明）
+    await teleport('h02_square'); await closeMenu();
+    await key('m'); await sleep(600);
+    await ev(`(() => { const s = document.querySelector('.map-layer'); s.value = 'world'; s.dispatchEvent(new Event('change', { bubbles: true })); })()`); await sleep(500);
+    await ev(`(() => { const n = document.getElementById('mn-w33_waterworks'); if (n) n.dispatchEvent(new MouseEvent('click', { bubbles: true })); return !!n; })()`); await sleep(500);
+    const far = await ev(`(document.querySelector('.detail-scroll') || {}).innerText || ''`);
+    await check('点远处地点右栏只读说明（路线或不可达）', /实际路线|没有已开通的路线|未开通/.test(far), far.slice(0, 200));
+    await closeMap();
+    const crashed = await ev(`(() => { const e = document.getElementById('blazor-error-ui'); return !!e && getComputedStyle(e).display !== 'none'; })()`);
+    await check('页面没有出现 Blazor 未处理异常条', !crashed, { crashed });
     report.finishedAt = new Date().toISOString(); save();
     if (failed) process.exitCode = 1;
   } catch (e) {
