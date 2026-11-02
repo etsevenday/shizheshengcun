@@ -267,7 +267,7 @@ public class B14bCityQTests : TestBase
         s.Progress.Flags.Add("hub_registered");
         Assert.That(E.PublicStationsHere(s).Single(v => v.StationId == "workbench").Blocked, Is.Null);
         Assert.That(E.CanStart(s, Craft("make_machete")), Is.Null, "满足后按原规则可用");
-        Assert.That(E.CityServicesOf(s, "npc_luo_zheng").Select(v => v.Id), Is.EqualTo(new[] { "hub_workshop_access" }), "未实装的查抄公开资料仍隐藏");
+        Assert.That(E.CityServicesOf(s, "npc_luo_zheng").Select(v => v.Id), Is.EqualTo(new[] { "hub_workshop_access", GameEngine.TrainingServiceId }), "未实装的查抄公开资料仍隐藏（B15：h03 另有战术训练）");
     }
 
     // ───────────── Q142 换药 / Q144 登记 ─────────────
@@ -421,7 +421,7 @@ public class B14bCityQTests : TestBase
             var card = E.NpcsHere(s).Single(c => c.Kind == "post");
             var list = E.CityServicesOf(s, n.NpcId);
             Assert.That(list.Select(v => v.Id).Intersect(Hidden), Is.Empty, n.NpcId);
-            var impl = n.ServiceIds.Count(id => !Hidden.Contains(id));
+            var impl = n.ServiceIds.Count(id => !Hidden.Contains(id)) + (n.NpcId == Cfg.Scope.Training.NpcId ? 1 : 0);   // B15：h03 战术训练挂在罗铮事项里
             Assert.That(card.ServiceCount, Is.EqualTo(impl), n.NpcId);
             if (impl == 0)
             {

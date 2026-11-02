@@ -608,7 +608,7 @@ namespace Survival.Core.Engine
             return Math.Min(sc.ApCap, sc.ApByTier[tier] + Math.Max(0, tempBonus));
         }
 
-        /// <summary>开发入口：设主角战术训练阶位（0/1/2）。训练入口在后续批次。</summary>
+        /// <summary>开发入口：设主角战术训练阶位（0/1/2）。正式入口在 h03 罗铮事项“战术训练”（B15）。</summary>
         public string DebugSetTacticalTier(GameState s, int tier)
         {
             s.Player.TacticalTier = Math.Max(0, Math.Min(Config.Scope.ApByTier.Count - 1, tier));

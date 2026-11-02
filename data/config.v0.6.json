@@ -19234,6 +19234,37 @@
           "text": "圣所旧路档册与封存区安全规程两种"
         }
       ]
+    },
+    "training": {
+      "source": "R03 §3 AP成长与通用动作",
+      "locationId": "h03_workshop",
+      "npcId": "npc_luo_zheng",
+      "title": "战术训练",
+      "summary": "为一名同行者做战术训练，提高每次普通行动的行动点。",
+      "tiers": [
+        {
+          "tier": 1,
+          "minCapacity": 3,
+          "requiresAll": [],
+          "inputs": {
+            "parts": 2,
+            "cloth": 2
+          },
+          "minutes": 60
+        },
+        {
+          "tier": 2,
+          "minCapacity": 0,
+          "requiresAll": [
+            "quest:QMAP04:completed"
+          ],
+          "inputs": {
+            "precision_parts": 2,
+            "steel": 2
+          },
+          "minutes": 90
+        }
+      ]
     }
   },
   "skills": [
@@ -33325,7 +33356,7 @@
         "kind": "recruit",
         "npcId": "npc_lin_zhao",
         "locationId": "h02_square",
-        "implemented": false,
+        "implemented": true,
         "showAny": [
           "hub_registered"
         ],
