@@ -476,4 +476,34 @@ public class B14bCityQTests : TestBase
         }
         finally { svc.Implemented = false; }
     }
+
+    // ───────────── Q151 尹珂台词 ─────────────
+
+    /// <summary>CITY-Q151-01/02 数据：观察记录服务台词与 NTL_0304 逐字对照 city-adjudications.json dialogueQ151，尹珂玩家文字没有内部任务编号（科学院支线未实装，NTL_0304 只验数据）。</summary>
+    [Category("DesignSync")]
+    [Test]
+    public void CITY_Q151_00_YinKeLinesFromDesign()
+    {
+        var q = Design("design.city-adjudications.json")["dialogueQ151"]!;
+        var npc = Cfg.City.Npcs.Single(n => n.NpcId == "npc_yin_ke");
+        Assert.That(npc.ServiceOfferLines[(string)q["serviceId"]!], Is.EqualTo((string)q["serviceText"]!));
+        Assert.That(Cfg.Story.Dialogues.Single(d => d.Id == (string)q["lineId"]!).Text, Is.EqualTo((string)q["questText"]!));
+        foreach (var d in Cfg.Story.Dialogues.Where(d => d.Event.StartsWith("npc_yin_ke_")))
+            Assert.That(InternalId.IsMatch(d.Text), Is.False, d.Id);
+        Assert.That(npc.ServiceOfferLines.Values.Any(InternalId.IsMatch), Is.False);
+    }
+
+    /// <summary>CITY-Q151-01：r08 观察区事项面板显示新台词；观察记录仍 0 分钟只读、不收费，开始后状态只多一条提示。</summary>
+    [Test]
+    public void CITY_Q151_01_ObservationRecordPanel_RulesUnchanged()
+    {
+        var s = At("r08_observation");
+        var v = E.CityServicesOf(s, "npc_yin_ke").Single(x => x.Id == "academy_observation_record");
+        Assert.That(v.NpcLine, Is.EqualTo("这里只读你已经同意的范围和现有观察记录；不再办理第二次观察协作收费。"));
+        Assert.That(v.EffectText, Does.Contain("0分钟").And.Not.Match(InternalId.ToString()));
+        var minutes = s.GameMinute;
+        var items = s.Items.Sum(i => i.Count);
+        Ok(E.StartCityService(s, "academy_observation_record"));
+        Assert.That((s.GameMinute, s.Items.Sum(i => i.Count)), Is.EqualTo((minutes, items)), "不耗时、不收费");
+    }
 }
