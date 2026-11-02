@@ -86,6 +86,20 @@ def main():
     items["field_tarp"]["desc"] = "野营遮雨布：在普通野外临时营地许可点铺开10分钟、收起10分钟；铺开后当地睡眠算遮蔽（至多4人），不给安全屋休息精神加成，也不挡遭遇。"
     items["folding_stove"]["desc"] = "折叠柴炉：在普通野外临时营地许可点部署5分钟，当作一处火堆（2个加工位、最多1口锅、燃料上限60分钟）；收起5分钟，须先取空、熄火、燃料清0。"
 
+    # B17 试玩修复 M362（B4）：已有配方用到的物品，悬停说明不再写“本版只有物品定义”，改写现有用途（配方名，最多 4 个）
+    placeholder = "本版只有物品定义，用途在后续版本开放"
+    uses = {}
+    for r in cfg["recipes"]:
+        for k in list(r.get("inputs", {})) + list((r.get("fuel") or {})):
+            uses.setdefault(k, [])
+            if r["name"] not in uses[k]:
+                uses[k].append(r["name"])
+    for it in cfg["items"]:
+        names = uses.get(it["id"])
+        if names and placeholder in it.get("desc", ""):
+            shown = "、".join(names[:4]) + ("等" if len(names) > 4 else "")
+            it["desc"] = it["desc"].replace(placeholder, f"现在可用于：{shown}")
+
     with open(CONFIG, "w", encoding="utf-8", newline="\n") as f:
         f.write(json.dumps(cfg, ensure_ascii=False, indent=2) + "\n")
     print("B17: safehouse config, recipes", sorted(gen))

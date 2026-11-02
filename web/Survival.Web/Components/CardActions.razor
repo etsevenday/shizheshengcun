@@ -163,7 +163,7 @@
             }
             else if (m.Available == 0)
             {
-                <div class="ca-note">该物品正被当前行动预留，不能@(verb)</div>
+                <div class="ca-note">@(m.Instance is ItemInstance dpi && e.IsDeployed(s, dpi) ? "已部署：先收起才能拾取（拾取已禁用）" : $"该物品正被当前行动预留，不能{verb}")</div>
             }
             else
             {
@@ -238,10 +238,10 @@
                     var (gg, gc) = e.EquipOutcome(s, GameState.PlayerId, wInst, slot, true);
                     var curName = $"{e.ItemName(cur.ItemId)}#{cur.InstanceId}";
                     <div class="tbar-row equip-to">
-                        <button type="button" class="tbar-go alt wrap" title="@($"装备到{EquipSlots.Name(slot)}，换下的{curName}放到{e.LocName(s.Ground)}地面 · 装备后本人{Ui.Kg(gg)}公斤 · 随身{gc}/{e.MaxRootCards}张 · 不耗时")"
+                        <button type="button" class="tbar-go alt wrap" title="@($"装备到{EquipSlots.Name(slot)}，换下的{curName}放到{e.ZoneName(s, s.Ground)}地面 · 装备后本人{Ui.Kg(gg)}公斤 · 随身{gc}/{e.MaxRootCards}张 · 不耗时")"
                                 @onclick="() => G.Equip(wid, slot, true)">装备到@(EquipSlots.Name(slot))·旧件@(e.ItemName(cur.ItemId))放当前地面</button>
                     </div>
-                    <div class="ca-note @(gg > e.Config.Carry.SoftGrams ? "warn" : "")">@(EquipSlots.Name(slot))：@(curName)放到@(e.LocName(s.Ground))地面，装备后本人@(Ui.Kg(gg))公斤 · 随身@(gc)/@(e.MaxRootCards)张 · 不耗时；不选就是取消</div>
+                    <div class="ca-note @(gg > e.Config.Carry.SoftGrams ? "warn" : "")">@(EquipSlots.Name(slot))：@(curName)放到@(e.ZoneName(s, s.Ground))地面，装备后本人@(Ui.Kg(gg))公斤 · 随身@(gc)/@(e.MaxRootCards)张 · 不耗时；不选就是取消</div>
                 }
                 @if (choices.Any(c => c.reason == null))
                 {
@@ -436,8 +436,10 @@
                     { Instance = it, UseId = UseOf(it), Owner = it.Owner };
                 if (it.Owner != ItemInstance.Carried && it.Owner != here) return null;
                 var toCarried = it.Owner != ItemInstance.Carried;
-                var free = it.ReservedBy == null && !e.IsLocked(s, it) ? 1 : 0;
-                return new Model($"one:{id}", it.ItemId, it.ItemId, name, e.WherePath(s, it), free, Mode.Single)
+                // B17 试玩修复 E3：已部署的野营布/柴炉不能拾取（先收起）
+                var deployedIt = e.IsDeployed(s, it);
+                var free = it.ReservedBy == null && !e.IsLocked(s, it) && !deployedIt ? 1 : 0;
+                return new Model($"one:{id}", it.ItemId, it.ItemId, name, deployedIt ? "已部署 · 先收起才能拾取" : e.WherePath(s, it), free, Mode.Single)
                 {
                     Instance = it, Owner = it.Owner, ToCarried = toCarried, UnitGrams = e.ItemGrams(s, it),
                     Max = toCarried ? G.MaxPickup(it.ItemId, free, it) : free, PotInstance = e.IsPot(it) ? it : null, UseId = UseOf(it),

@@ -360,4 +360,30 @@ public class B17SafehouseTests : TestBase
         Assert.That(s.FavoriteSafehouse, Is.Null);
         Assert.That(start, Is.EqualTo("camp"));
     }
+    // ───────────── 试玩修复 M362 ─────────────
+
+    [Test]
+    public void M362_ReasonsListedAll_RegistrationFirst_BuildCancelText_DisplayName()
+    {
+        var s = New();
+        E.DebugTeleport(s, "w13_mill");
+        s.Locations["w13_mill"].Progress = 40;
+        E.DebugSpawnEnemy(s, "shambler", "w13_mill");
+        var reasons = E.SafehouseSiteReasons(s, "w13_mill");
+        Assert.That(reasons[0], Does.Contain("营区登记"), "未登记时登记排第一（S09 X2.1）");
+        var why = E.CanStart(s, Craft("safehouse_base"))!;
+        foreach (var r in reasons) Assert.That(why, Does.Contain(r), "开工原因一次列全");
+
+        var b = Site();
+        Start(b, Craft("safehouse_base"));
+        Steps(b, 2);
+        Ok(E.Cancel(b));
+        Assert.That(b.Log.Last().Text, Does.StartWith("已取消建造"));
+
+        var h = Built("camp");
+        Ok(E.RenameSafehouse(h, "camp", "老窝"));
+        Ok(E.EnterSafehouse(h));
+        Assert.That(E.ZoneName(h, h.Ground), Is.EqualTo("老窝"));
+        Assert.That(E.LocName(h.Ground), Is.EqualTo("临时营地安全屋"), "无状态的旧名接口不变");
+    }
 }

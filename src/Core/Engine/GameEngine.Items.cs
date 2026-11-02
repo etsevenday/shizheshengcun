@@ -249,7 +249,7 @@ namespace Survival.Core.Engine
             Normalize(s, ItemInstance.Carried);
             RememberRequest(s, requestId);
             var names = moved.GroupBy(i => i.ItemId).Select(g => $"{ItemName(g.Key)}×{g.Sum(i => i.Count)}");
-            Emit(s, GameEventKind.Info, $"整理随身：保留{RootCardCount(s)}张卡，{string.Join("、", names)}放到{LocName(here)}地面。");
+            Emit(s, GameEventKind.Info, $"整理随身：保留{RootCardCount(s)}张卡，{string.Join("、", names)}放到{ZoneName(s, here)}地面。");
             UpdateFlags(s);
             return ActionResult.Success();
         }

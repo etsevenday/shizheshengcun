@@ -96,7 +96,7 @@ namespace Survival.Core.Engine
                 RequiredMinutes = rc.BaseMinutes, StartMinute = s.GameMinute, InitiatorActorId = GameState.PlayerId,
             });
             RememberRequest(s, requestId);
-            Emit(s, GameEventKind.Info, $"{PlaceName(place)}{StationName(rc.Station)}投料：{StationBatchSummary(rc)}。");
+            Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}{StationName(rc.Station)}投料：{StationBatchSummary(rc)}。");
             UpdateFlags(s);
             return ActionResult.Success(id);
         }
@@ -113,7 +113,7 @@ namespace Survival.Core.Engine
             fac.StationBatches.Remove(b);
             foreach (var it in s.Items.Where(i => i.ReservedBy == b.BatchId)) it.ReservedBy = null;
             Normalize(s, place);
-            Emit(s, GameEventKind.ActionCancelled, $"已取消{PlaceName(place)}{StationName(stationId)}的这一批（已进行{b.DoneMinutes}分钟，不退时间）：原料退回{PlaceName(place)}地面，没有产物。");
+            Emit(s, GameEventKind.ActionCancelled, $"已取消{ZoneName(s, place)}{StationName(stationId)}的这一批（已进行{b.DoneMinutes}分钟，不退时间）：原料退回{ZoneName(s, place)}地面，没有产物。");
             UpdateFlags(s);
             return ActionResult.Success();
         }
@@ -135,7 +135,7 @@ namespace Survival.Core.Engine
                     {
                         foreach (var it in inputs) it.ReservedBy = null;
                         Normalize(s, place);
-                        Emit(s, GameEventKind.Info, $"{PlaceName(place)}{StationName(b.StationId)}：原料不全，这一批没有产物，剩下的原料已解锁。");
+                        Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}{StationName(b.StationId)}：原料不全，这一批没有产物，剩下的原料已解锁。");
                         continue;
                     }
                     foreach (var it in inputs) s.Items.Remove(it);
@@ -146,7 +146,7 @@ namespace Survival.Core.Engine
                         made.Add($"{ItemName(kv.Key)}×{kv.Value}");
                     }
                     Normalize(s, place);
-                    Emit(s, GameEventKind.FacilityDone, $"{PlaceName(place)}{StationName(b.StationId)}：{string.Join("、", made)}已完成，放在{PlaceName(place)}地面（被动加工不给经验）。");
+                    Emit(s, GameEventKind.FacilityDone, $"{ZoneName(s, place)}{StationName(b.StationId)}：{string.Join("、", made)}已完成，放在{ZoneName(s, place)}地面（被动加工不给经验）。");
                 }
             }
         }

@@ -644,7 +644,7 @@ namespace Survival.Core.Engine
                         if (svc.DailyPartyQuota is int q && used >= q) { fail = "当日救助配给额度已用完"; break; }
                         s.City.QuotaUsed[key] = used + 1;
                         foreach (var kv in c.Outputs) CreateItems(s, kv.Key, kv.Value, s.Ground);
-                        made.Add($"{string.Join("、", c.Outputs.Select(kv => $"{ItemName(kv.Key)}+{kv.Value}"))}，已放在{LocName(s.Ground)}地面（不自动吃喝）");
+                        made.Add($"{string.Join("、", c.Outputs.Select(kv => $"{ItemName(kv.Key)}+{kv.Value}"))}，已放在{ZoneName(s, s.Ground)}地面（不自动吃喝）");
                         break;
                     }
                     case TrainingServiceId:

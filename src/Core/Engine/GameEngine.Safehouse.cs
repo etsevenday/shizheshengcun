@@ -53,7 +53,8 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 在当前地点开工建安全屋的全部不合格原因（S09 X2.2，按地点许可→到访→探索→登记→已有/施工→敌踪→所在区的顺序；界面一次列全）。合格为空表。
+        /// 在当前地点开工建安全屋的全部不合格原因（S09 X2.1/X2.2，按地点许可→营区登记（首次登记解锁安全屋知识，B17 试玩修复 E2 排第一）→到访→探索→已有/施工→敌踪→所在区；
+        /// 界面与开工校验一次列全）。合格为空表。
         /// 只查地点与世界条件；材料、制造等级、行动占用由开工校验另报。
         /// </summary>
         public List<string> SafehouseSiteReasons(GameState s, string locationId)
@@ -61,10 +62,10 @@ namespace Survival.Core.Engine
             var list = new List<string>();
             if (SafehousePermissionBlocked(locationId) is string perm) { list.Add(perm); return list; }
             var ls = s.Locations[locationId];
+            if (!s.Progress.Flags.Contains(Config.Safehouse.RegisteredFact)) list.Add("要先在幸存者营区登记（解锁安全屋建造）");
             if (!ls.Visited) list.Add($"要先实际到访{LocName(locationId)}");
             var need = Config.Safehouse.RequiredExplore;
             if (ls.Progress < need) list.Add($"{LocName(locationId)}探索度{ls.Progress}%，要先探索到{need}%");
-            if (!s.Progress.Flags.Contains(Config.Safehouse.RegisteredFact)) list.Add("要先在幸存者营区登记（解锁安全屋建造）");
             if (SafehouseBuilt(s, locationId)) list.Add($"{LocName(locationId)}已有安全屋（每个地点最多一间）");
             else if (SafehouseBuilding(s, locationId)) list.Add($"{LocName(locationId)}的安全屋正在施工");
             var hostiles = LocalHostiles(s, locationId).Count;
@@ -88,18 +89,18 @@ namespace Survival.Core.Engine
             if (result == "safehouse")
             {
                 var reasons = SafehouseSiteReasons(s, loc);
-                return reasons.Count > 0 ? reasons[0] : null;
+                return reasons.Count > 0 ? string.Join("；", reasons) : null;   // B17 试玩修复 E1：一次列全
             }
             if (rc.Group == "safehouse")
             {
                 if (!inside || !SafehouseBuilt(s, loc)) return "只能在已建成的安全屋屋内建造（先进入安全屋）";
-                if (FacilityFlag(fac, result)) return result == "fireBuilt" ? $"{PlaceName(place)}已有火堆（每区一处）" : $"{PlaceName(place)}已铺好床垫";
+                if (FacilityFlag(fac, result)) return result == "fireBuilt" ? $"{ZoneName(s, place)}已有火堆（每区一处）" : $"{ZoneName(s, place)}已铺好床垫";
                 return null;
             }
             if (rc.Group == "workshop")
             {
                 if (inside ? !SafehouseBuilt(s, loc) : !CanBuildWorkshopsAt(loc)) return WorkshopBuildOnly;
-                if (FacilityFlag(fac, result)) return $"{PlaceName(place)}已有{rc.Name.Replace("建", "")}（每区每类一座）";
+                if (FacilityFlag(fac, result)) return $"{ZoneName(s, place)}已有{rc.Name.Replace("建", "")}（每区每类一座）";
                 return null;
             }
             // 遮蔽棚、营地床垫：只在临时营地外部区（屋内已有遮蔽，另铺屋内床垫）
@@ -146,8 +147,8 @@ namespace Survival.Core.Engine
         {
             "safehouse" => $"{SafehouseName(s, s.CurrentLocation)}建成：可以“进入安全屋”（0分钟）；屋内遮蔽，休息时精神每小时额外{Fmt.SignedT(Config.FacilityEffects.ShelteredCampRestMoralePerHour)}，" +
                            $"有{Config.Safehouse.StorageCapacityGrams / 1000}公斤固定储物柜；床垫、火堆与工坊要在屋内另建。",
-            "fireBuilt" => $"{PlaceName(s.Ground)}火堆建成：初始熄灭、燃料0、没有锅，点火仍需打火器。",
-            "bedBuilt" when rc.Group == "safehouse" => $"{PlaceName(s.Ground)}床垫铺好：屋内睡眠体力恢复每小时额外{Fmt.SignedT(Config.FacilityEffects.BedExtraSleepEnergyPerHour)}。",
+            "fireBuilt" => $"{ZoneName(s, s.Ground)}火堆建成：初始熄灭、燃料0、没有锅，点火仍需打火器。",
+            "bedBuilt" when rc.Group == "safehouse" => $"{ZoneName(s, s.Ground)}床垫铺好：屋内睡眠体力恢复每小时额外{Fmt.SignedT(Config.FacilityEffects.BedExtraSleepEnergyPerHour)}。",
             _ => null,
         };
 
@@ -287,7 +288,7 @@ namespace Survival.Core.Engine
             var kit = new[] { ("wood", 10), ("fiber", 10), ("cloth", 4), ("stone", 8) };
             foreach (var (id, n) in kit) CreateItems(s, id, n, s.Ground);
             Normalize(s, s.Ground);
-            return $"开发：安全屋基础＋床垫＋火堆材料放在{LocName(s.Ground)}地面（木材10、纤维10、布料4、石块8）";
+            return $"开发：安全屋基础＋床垫＋火堆材料放在{ZoneName(s, s.Ground)}地面（木材10、纤维10、布料4、石块8）";
         }
 
         /// <summary>开发：直接建成当前地点的安全屋（不扣材料、不花时间、不给经验；地点仍须在许可名单里）。</summary>
@@ -310,7 +311,7 @@ namespace Survival.Core.Engine
             foreach (var (id, n) in kit) CreateItems(s, id, n, s.Ground);
             Normalize(s, s.Ground);
             UpdateFlags(s);
-            return $"开发：制造3级、学会基础陶工做法；陶窑与净水台建造及各一批材料放在{LocName(s.Ground)}地面";
+            return $"开发：制造3级、学会基础陶工做法；陶窑与净水台建造及各一批材料放在{ZoneName(s, s.Ground)}地面";
         }
 
         /// <summary>开发：野营遮雨布、折叠柴炉各一（当前地面）与木材2。</summary>
@@ -320,7 +321,7 @@ namespace Survival.Core.Engine
             CreateItems(s, Config.Safehouse.Camping.StoveItemId, 1, s.Ground);
             CreateItems(s, "wood", 2, s.Ground);
             Normalize(s, s.Ground);
-            return $"开发：野营遮雨布、折叠柴炉各1与木材2放在{LocName(s.Ground)}地面（只能在临时露营许可点部署）";
+            return $"开发：野营遮雨布、折叠柴炉各1与木材2放在{ZoneName(s, s.Ground)}地面（只能在临时露营许可点部署）";
         }
     }
 }

@@ -180,7 +180,7 @@ namespace Survival.Core.Engine
                 p.FactorAtStart = WorkFactor(s, r.Type, reasons, r.TargetId, r.Type == ActionType.Gather && plan?.Tool != null, r.Type == ActionType.Gather ? plan?.Tool?.ItemId : null);
                 p.FactorReasons = reasons;
             }
-            p.OutputPlace = $"{LocName(s.Ground)}地面";
+            p.OutputPlace = $"{ZoneName(s, s.Ground)}地面";
 
             switch (r.Type)
             {

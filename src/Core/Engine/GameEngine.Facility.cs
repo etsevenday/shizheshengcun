@@ -156,9 +156,9 @@ namespace Survival.Core.Engine
             if (ItemInstance.TryFacilityId(i.Owner, out var fid))
             {
                 var loc = FacilityLocation(fid);
-                return loc == null ? "设施里" : $"{PlaceName(loc)}／火堆";
+                return loc == null ? "设施里" : $"{ZoneName(s, loc)}／火堆";
             }
-            return IsGroundOwner(i.Owner) ? $"{PlaceName(i.Owner)}地面" : i.Owner;
+            return IsGroundOwner(i.Owner) ? $"{ZoneName(s, i.Owner)}地面" : i.Owner;
         }
 
         /// <summary>
@@ -444,12 +444,12 @@ namespace Survival.Core.Engine
             {
                 inst.Owner = owner;
                 inst.PlacedOrder = s.NextProcessSeq++;
-                text = $"把{PotDesc(s, inst)}放进{PlaceName(here)}火堆加工位。";
+                text = $"把{PotDesc(s, inst)}放进{ZoneName(s, here)}火堆加工位。";
             }
             else
             {
                 for (var k = 0; k < n; k++) MoveOne(s, inst, owner);
-                text = $"把{n}份{name}放进{PlaceName(here)}火堆加工位直接烤制。";
+                text = $"把{n}份{name}放进{ZoneName(s, here)}火堆加工位直接烤制。";
             }
             SyncFacility(s, here);
             Emit(s, GameEventKind.Info, text);
@@ -754,7 +754,7 @@ namespace Survival.Core.Engine
                 }
                 Normalize(s, ItemInstance.ContainerOwner(t.InstanceId));
                 s.Progress.Flags.Add("boiled");
-                text = $"{PlaceName(loc)}火堆：{ItemName(t.ItemId)}#{t.InstanceId}里的{ItemName(cfg.InputId)}{ml}毫升已烧成{ItemName(cfg.OutputId)}，留在原锅。";
+                text = $"{ZoneName(s, loc)}火堆：{ItemName(t.ItemId)}#{t.InstanceId}里的{ItemName(cfg.InputId)}{ml}毫升已烧成{ItemName(cfg.OutputId)}，留在原锅。";
                 if (CookWaterXp(s, p, ml) is string wx) text = text.TrimEnd('。') + $"（{wx}）。";
             }
             else if (cfg.IsSlotBatch)
@@ -765,7 +765,7 @@ namespace Survival.Core.Engine
                 t.ItemId = cfg.OutputId;
                 t.Count = cfg.OutputCount;
                 t.ExpiresAt = null;
-                text = $"{PlaceName(loc)}火堆：{before}已煅烧成{ItemName(cfg.OutputId)}×{cfg.OutputCount}，留在火堆加工位（煅烧不给经验）。";
+                text = $"{ZoneName(s, loc)}火堆：{before}已煅烧成{ItemName(cfg.OutputId)}×{cfg.OutputCount}，留在火堆加工位（煅烧不给经验）。";
             }
             else
             {
@@ -780,8 +780,8 @@ namespace Survival.Core.Engine
                 // 第2日目标“完成一次块根烹饪”与七日检查“完成食物加工”都来自 v0.2（当时只有块根）：只认块根烤制/水煮，烤肉煮肉不算（试玩修复 L7）
                 if (cfg.InputId == RootItemId) s.Progress.Flags.Add("cooked");
                 text = pot != null
-                    ? $"{PlaceName(loc)}火堆：{input}#{t.InstanceId}已煮成{outCfg.Name}，留在{ItemName(pot.ItemId)}#{pot.InstanceId}里（{ItemName(cfg.RequiredLiquid ?? "")}−{cfg.WaterCostMl}毫升{potWorn}）。"
-                    : $"{PlaceName(loc)}火堆：{input}#{t.InstanceId}已烤成{outCfg.Name}，留在火堆加工位。";
+                    ? $"{ZoneName(s, loc)}火堆：{input}#{t.InstanceId}已煮成{outCfg.Name}，留在{ItemName(pot.ItemId)}#{pot.InstanceId}里（{ItemName(cfg.RequiredLiquid ?? "")}−{cfg.WaterCostMl}毫升{potWorn}）。"
+                    : $"{ZoneName(s, loc)}火堆：{input}#{t.InstanceId}已烤成{outCfg.Name}，留在火堆加工位。";
                 if (CookFoodXp(s, p, cfg, t.Count) is string fx) text = text.TrimEnd('。') + $"（{fx}）。";
             }
             p.Status = ProcessStatus.Done;
@@ -807,7 +807,7 @@ namespace Survival.Core.Engine
                 var pot = p.PotInstanceId.HasValue ? FindItem(s, p.PotInstanceId.Value) : null;
                 var loc = pot == null ? null : PotFireLocation(pot);
                 parts.Add($"{nm}整份作废{(p.HeatDoneMinutes > 0 ? $"（已受热{p.HeatDoneMinutes}分钟清零）" : "")}"
-                          + (aux.Count > 0 ? $"，辅料{string.Join("、", aux)}退回{(loc == null ? "火堆" : PlaceName(loc))}地面" : ""));
+                          + (aux.Count > 0 ? $"，辅料{string.Join("、", aux)}退回{(loc == null ? "火堆" : ZoneName(s, loc))}地面" : ""));
             }
             return parts.Count == 0 ? null : string.Join("；", parts);
         }

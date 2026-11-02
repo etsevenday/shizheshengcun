@@ -92,7 +92,7 @@
         {
             var fac = e.FacOf(s, s.Ground)!;
             var opts = e.IgniteToolOptions(s);
-            <h3 style="margin:4px 0 0;font-weight:500">点燃火堆 · @(e.LocName(s.Ground))（燃料@(fac.FuelMinutes)分钟）</h3>
+            <h3 style="margin:4px 0 0;font-weight:500">点燃火堆 · @(e.ZoneName(s, s.Ground))（燃料@(fac.FuelMinutes)分钟）</h3>
             <div class="supply-grid">
                 @foreach (var o in opts)
                 {

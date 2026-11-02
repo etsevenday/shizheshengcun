@@ -17,7 +17,7 @@
     <div class="panel overflow-box">
         <div class="ov-head">
             <h2>整理同类型武器</h2>
-            <span class="muted">两个武器槽里装着同类型（@(kind)）武器：每人同类型最多装备1件。选一把留在原槽，其余的明确选择放回随身或放到@(e.LocName(s.Ground))地面，不会丢失或重抽属性。</span>
+            <span class="muted">两个武器槽里装着同类型（@(kind)）武器：每人同类型最多装备1件。选一把留在原槽，其余的明确选择放回随身或放到@(e.ZoneName(s, s.Ground))地面，不会丢失或重抽属性。</span>
         </div>
         <div class="ov-list" data-wheel="y">
             @foreach (var it in dup)

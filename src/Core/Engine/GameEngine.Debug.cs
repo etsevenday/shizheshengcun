@@ -181,7 +181,7 @@ namespace Survival.Core.Engine
                 else CreateItems(s, id, n, s.Ground);
             }
             Normalize(s, s.Ground);
-            var text = $"开发：技能器具一组放在{LocName(s.Ground)}地面：" + string.Join("、", DevSkillKit.Select(x => ItemName(x.Id) + (x.Count > 1 ? $"×{x.Count}" : "")));
+            var text = $"开发：技能器具一组放在{ZoneName(s, s.Ground)}地面：" + string.Join("、", DevSkillKit.Select(x => ItemName(x.Id) + (x.Count > 1 ? $"×{x.Count}" : "")));
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }
@@ -190,7 +190,7 @@ namespace Survival.Core.Engine
         {
             var made = DevEquipmentSet.Select(id => DebugCreateEquipment(s, id, quality, s.Ground)).ToList();
             Normalize(s, s.Ground);
-            var text = $"开发：{Config.Equipment.QualityName(quality)}色装备{made.Count}件放在{LocName(s.Ground)}地面：" +
+            var text = $"开发：{Config.Equipment.QualityName(quality)}色装备{made.Count}件放在{ZoneName(s, s.Ground)}地面：" +
                        string.Join("、", made.Select(i => ItemName(i.ItemId) + (i.Affixes is { Count: > 0 } a ? "（" + string.Join("、", a.Select(x => Affix(x)?.Name ?? x)) + "）" : "")));
             Emit(s, GameEventKind.Info, text + "。");
             return text;
@@ -199,10 +199,10 @@ namespace Survival.Core.Engine
         /// <summary>开发入口（B4）：B4 新导入、只有定义的某类物品（material/food/medical）各 1 份放在当前地面。</summary>
         public string DebugGiveNewItems(GameState s, string kind)
         {
-            var ids = Config.Items.Where(i => i.Kind == kind && !i.IsEquipment && i.Desc.Contains("本版只有物品定义")).Select(i => i.Id).ToList();
+            var ids = Config.Items.Where(i => i.Kind == kind && !i.IsEquipment && (i.Desc.Contains("本版只有物品定义") || i.Desc.Contains("现在可用于："))).Select(i => i.Id).ToList();
             foreach (var id in ids) CreateItems(s, id, 1, s.Ground);
             var name = kind switch { "material" => "材料", "food" => "食品", "medical" => "医疗", _ => kind };
-            var text = $"开发：新物品（{name}）{ids.Count}种各1份放在{LocName(s.Ground)}地面";
+            var text = $"开发：新物品（{name}）{ids.Count}种各1份放在{ZoneName(s, s.Ground)}地面";
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }
@@ -214,7 +214,7 @@ namespace Survival.Core.Engine
             var rc = Recipe("make_knuckle_wraps");
             foreach (var kv in rc.Inputs) CreateItems(s, kv.Key, kv.Value, s.Ground);
             Normalize(s, s.Ground);
-            var text = $"开发：护拳绑带1件（白）与一次制作材料（{string.Join("、", rc.Inputs.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"))}）放在{LocName(s.Ground)}地面"
+            var text = $"开发：护拳绑带1件（白）与一次制作材料（{string.Join("、", rc.Inputs.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"))}）放在{ZoneName(s, s.Ground)}地面"
                        + (RecipeKnown(s, rc) ? "" : "；做法要营区登记后才会（可点“记下营区登记”）");
             Emit(s, GameEventKind.Info, text + "。");
             return text;

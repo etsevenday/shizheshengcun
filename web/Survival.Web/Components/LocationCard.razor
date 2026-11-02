@@ -45,7 +45,7 @@
         </svg>
         <div class="mc-top">
             <span class="mc-chip name" title="@lc.Name"><b>@lc.Name</b><em>当前地点</em></span>
-            <span class="mc-chip">@(lc.IsIndoor ? "室内" : "露天") · @light.Phase</span>
+            <span class="mc-chip">@(Current && s.CurrentZone == GameState.SafehouseZone ? "屋内·遮蔽" : lc.IsIndoor ? "室内" : "露天") · @light.Phase</span>
             @if (lc.Danger is int danger)
             {
                 @* B11（Q31）：危险度 0—3 只作提示，不改接敌率与敌人强度 *@

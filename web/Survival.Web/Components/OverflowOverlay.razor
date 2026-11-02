@@ -16,7 +16,7 @@
     <div class="panel overflow-box">
         <div class="ov-head">
             <h2>整理随身物品</h2>
-            <span class="muted">随身最多@(max)张物品卡，这份存档现在有@(e.RootCardCount(s))张。勾选要留在身上的，其余放到@(e.LocName(s.Ground))地面，不会丢失。</span>
+            <span class="muted">随身最多@(max)张物品卡，这份存档现在有@(e.RootCardCount(s))张。勾选要留在身上的，其余放到@(e.ZoneName(s, s.Ground))地面，不会丢失。</span>
         </div>
         <div class="ov-list" data-wheel="y">
             @foreach (var it in roots)

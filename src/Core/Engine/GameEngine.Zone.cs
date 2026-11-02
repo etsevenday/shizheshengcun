@@ -86,6 +86,10 @@ namespace Survival.Core.Engine
             }
         }
 
+        /// <summary>区的显示名（带状态）：屋内区用安全屋显示名（玩家改过名用改的），外部区为地点名（B17 试玩修复 B3）。</summary>
+        public string ZoneName(GameState s, string place) =>
+            TryPlace(place, out var loc, out var zone) && zone == SafehouseZone ? SafehouseName(s, loc) : LocName(place);
+
         /// <summary>区的显示名：外部区为地点名，屋内区为“××安全屋”。</summary>
         public string PlaceName(string place)
         {

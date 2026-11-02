@@ -532,7 +532,7 @@ namespace Survival.Core.Engine
                     var text = rc.FacilityResult != null
                         ? $"{rc.Name.Replace("建", "").Replace("铺", "")}已完成（{made.Last()}）。"
                         : rc.IsRepair ? $"{string.Join("，", made)}。"
-                        : $"{string.Join("，", made)}；产物已放在{LocName(s.Ground)}地面。";
+                        : $"{string.Join("，", made)}；产物已放在{ZoneName(s, s.Ground)}地面。";
                     if (rc.FacilityResult != null && FacilityDoneText(s, rc) is string doneText) text = doneText + $"（{made.Last()}）";
                     if (rc.Id == "shelter") text = "遮蔽棚建成：营地可遮蔽睡眠，休息时额外恢复精神。";
                     if (rc.Id == "bed") text = $"床垫铺好：营地睡眠体力恢复每小时额外{Fmt.SignedT(Config.FacilityEffects.BedExtraSleepEnergyPerHour)}。";
@@ -634,7 +634,7 @@ namespace Survival.Core.Engine
                 }
             }
 
-            var text = $"{string.Join("，", made)}，已放在{LocName(here)}地面；{AwardGatherXp(s, res, a)}";
+            var text = $"{string.Join("，", made)}，已放在{ZoneName(s, here)}地面；{AwardGatherXp(s, res, a)}";
             if (a.ToolInstanceId.HasValue)
             {
                 var tool = s.Items.FirstOrDefault(i => i.InstanceId == a.ToolInstanceId.Value);

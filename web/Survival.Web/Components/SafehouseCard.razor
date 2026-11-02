@@ -1,8 +1,9 @@
 @inherits GameComponent
 
 @* 安全屋卡（S09 X2.2—X2.6、S14 设施栏；开发计划 v0.9 B17）：设施栏“设施”组。
-   屋外：未建写选址条件（逐条）与“建安全屋”（打开营地建造并选中安全屋基础）；施工中写“施工中”；已建写“进入安全屋”（0 分钟）。
-   屋内：写屋内设施（床垫/火堆/工坊）与柜子容量，“出门”（0 分钟）、“柜子与收藏”（打开安全屋面板）。 *@
+   B17 试玩修复 B1：名称+角标一行（长名省略，悬停看全名），状态一行，两个短按钮单独占卡底一行平分（不再挤在右列竖排、角标不压按钮）。
+   屋外：未建写第一条不合格原因（悬停列全），点卡打开“营地建造·建安全屋”；已建“进入”（0 分钟）与“面板”。
+   屋内：屋内设施与柜子容量，“出门”与“柜子”。别处有已建安全屋时，未建卡另给“返程 ▸”（只看路线，不传送，B2）。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -15,35 +16,43 @@
     var doorWhy = built ? e.SafehouseDoorBlocked(s, !inside) : null;
     var interior = s.Locations[here].Safehouse?.Interior;
     var fav = s.FavoriteSafehouse == here;
+    var elsewhere = e.BuiltSafehouses(s).Any(l => l != here);
     string badge = inside ? "屋内" : built ? "已建成" : status == GameEngine.SafehouseBuildingStatus ? "施工中" : "未建造";
     string line;
     if (inside)
     {
-        var parts = new List<string> { interior?.BedBuilt == true ? "床垫" : "无床", interior?.FireBuilt == true ? "火堆" : "无火堆" };
-        if (interior != null && interior.Workshops.Count > 0) parts.Add(string.Join("、", interior.Workshops.Select(e.StationName)));
-        line = $"{string.Join(" · ", parts)} · 柜{Ui.Kg(e.CabinetGrams(s, here))}/{Ui.Kg(e.CabinetCapacityGrams)}公斤";
+        var parts = new List<string> { interior?.BedBuilt == true ? "有床" : "无床", interior?.FireBuilt == true ? "有火" : "无火" };
+        line = $"{string.Join("·", parts)}·柜{(e.CabinetGrams(s, here) / 1000.0):0.#}/{e.CabinetCapacityGrams / 1000}公斤";
     }
-    else if (built) line = "屋内遮蔽、休息精神额外+2/小时、200公斤柜子；进出门0分钟";
-    else if (status == GameEngine.SafehouseBuildingStatus) line = "正在施工：完工后才有门、遮蔽与柜子";
-    else line = reasons.Count == 0 ? $"可以建：{string.Join("、", e.SafehouseRecipe.Inputs.Select(kv => $"{e.ItemName(kv.Key)}{kv.Value}"))}，{e.SafehouseRecipe.BaseMinutes}分钟" : reasons[0];
-    var tip = inside ? $"{name}屋内：不会遇到普通遭遇，时间、饮食与伤病照常推进；出门0分钟"
+    else if (built) line = "遮蔽·休息精神+2·200公斤柜";
+    else if (status == GameEngine.SafehouseBuildingStatus) line = "施工中：完工后才有门与柜子";
+    else line = reasons.Count == 0 ? $"可以建：{e.SafehouseRecipe.BaseMinutes}分钟" : reasons[0];
+    // 卡名：地点名已在场景卡上，这里只写“安全屋”或玩家改的名字（全名在悬停），★ 表示常用
+    var custom = s.Locations[here].Safehouse?.Name;
+    var title = (built && !string.IsNullOrWhiteSpace(custom) ? custom! : "安全屋") + (fav ? " ★" : "");
+    var tip = inside ? $"{name}屋内：{line}。不会遇到普通遭遇，时间、饮食与伤病照常推进；出门0分钟"
         : built ? $"{name}：点“进入”0分钟进屋（战斗、敌踪待处理、行动中不能进出）"
-        : reasons.Count == 0 ? "点击打开营地建造查看“建安全屋”" : "建安全屋还差：" + string.Join("；", reasons);
+        : reasons.Count == 0 ? $"可以建：{string.Join("、", e.SafehouseRecipe.Inputs.Select(kv => $"{e.ItemName(kv.Key)}{kv.Value}"))}，{e.SafehouseRecipe.BaseMinutes}分钟；点击打开营地建造"
+        : "建安全屋还差：" + string.Join("；", reasons);
 }
-<ObjectCard CssClass="fac-card safehouse-card" Title="@(built ? name + (fav ? " ★" : "") : "安全屋")" Badge="@badge" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
-            Tooltip="@tip" OnClick="Open" AriaLabel="@($"安全屋，{badge}：{line}")">
+<ObjectCard CssClass="fac-card sh-card" Title="@title" Badge="@badge" BadgeClass="@(built ? "built" : "unbuilt")" Dashed="@(!built)"
+            Tooltip="@tip" OnClick="Open" AriaLabel="@($"{title}，{badge}：{line}")">
     <Art>@Icons.Markup("shelter")</Art>
     <ChildContent>
-        <div class="oc-line" title="@line">@line</div>
-        @if (!built && reasons.Count > 1) { <div class="oc-line warn-line" title="@string.Join("；", reasons)">还有@(reasons.Count - 1)条条件 ⓘ</div> }
+        <div class="oc-line" title="@tip">@line@(!built && reasons.Count > 1 ? $"（另{reasons.Count - 1}条）" : "")</div>
     </ChildContent>
     <Footer>
         @if (built)
         {
             <button type="button" class="loc-btn res-btn" disabled="@(doorWhy != null)" title="@(doorWhy ?? (inside ? "出门回到外部（0分钟）" : "进入安全屋（0分钟）"))"
-                    @onclick="Door" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>@(inside ? "出门" : "进入安全屋")</strong></button>
+                    @onclick="Door" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>@(inside ? "出门" : "进入")</strong></button>
             <button type="button" class="loc-btn res-btn" title="@(inside ? "柜子存取、改名、收藏与返程路线" : "收藏、改名与返程路线（柜子只能在屋内存取）")"
-                    @onclick="Panel" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>@(inside ? "柜子 ▸" : "安全屋 ▸")</strong></button>
+                    @onclick="Panel" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>@(inside ? "柜子" : "面板")</strong></button>
+        }
+        else if (elsewhere)
+        {
+            <button type="button" class="loc-btn res-btn" title="查看回已建安全屋的路线与合计分钟（只定位，不传送）"
+                    @onclick="Panel" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true"><strong>返程 ▸</strong></button>
         }
     </Footer>
 </ObjectCard>

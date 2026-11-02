@@ -161,8 +161,8 @@ namespace Survival.Core.Engine
             Normalize(s, carried);
             if (fromGround || (old != null && oldToGround)) Normalize(s, here);
             var name = $"{ItemName(it.ItemId)}#{it.InstanceId}";
-            var src = fromGround ? $"从{LocName(here)}地面" : "";
-            var oldText = old == null ? "" : $"，换下的{ItemName(old.ItemId)}#{old.InstanceId}{(oldToGround ? $"放在{LocName(here)}地面" : "回到随身")}";
+            var src = fromGround ? $"从{ZoneName(s, here)}地面" : "";
+            var oldText = old == null ? "" : $"，换下的{ItemName(old.ItemId)}#{old.InstanceId}{(oldToGround ? $"放在{ZoneName(s, here)}地面" : "回到随身")}";
             Emit(s, GameEventKind.Info, $"{ActorPrefix(s, actorId)}{src}装备{name}到{EquipSlots.Name(slot)}{oldText}。");
             UpdateFlags(s);
             return ActionResult.Success();
@@ -211,7 +211,7 @@ namespace Survival.Core.Engine
             it.Owner = dest;
             it.PlacedOrder = null;
             Normalize(s, dest);
-            Emit(s, GameEventKind.Info, $"{ActorPrefix(s, actorId)}卸下{EquipSlots.Name(slot)}的{ItemName(it.ItemId)}#{it.InstanceId}，{(toGround ? $"放在{LocName(s.Ground)}地面" : "放回随身")}。");
+            Emit(s, GameEventKind.Info, $"{ActorPrefix(s, actorId)}卸下{EquipSlots.Name(slot)}的{ItemName(it.ItemId)}#{it.InstanceId}，{(toGround ? $"放在{ZoneName(s, s.Ground)}地面" : "放回随身")}。");
             UpdateFlags(s);
             return ActionResult.Success();
         }
@@ -269,7 +269,7 @@ namespace Survival.Core.Engine
                 var ground = toGround[o.InstanceId];
                 o.Owner = ground ? s.Ground : ItemInstance.CarriedOwner(actorId);
                 o.PlacedOrder = null;
-                parts.Add($"{ItemName(o.ItemId)}#{o.InstanceId}{(ground ? $"放在{LocName(s.Ground)}地面" : "放回随身")}");
+                parts.Add($"{ItemName(o.ItemId)}#{o.InstanceId}{(ground ? $"放在{ZoneName(s, s.Ground)}地面" : "放回随身")}");
             }
             Normalize(s, s.Ground);
             Normalize(s, ItemInstance.CarriedOwner(actorId));

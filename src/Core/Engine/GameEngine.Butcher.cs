@@ -72,7 +72,7 @@ namespace Survival.Core.Engine
             var tool = a.ToolInstanceId.HasValue ? FindItem(s, a.ToolInstanceId.Value) : null;
             if (tool != null && c != null) made.Add(Wear(tool, c.ToolWearOnSuccess));
             ClearAction(s, a);
-            Emit(s, GameEventKind.ActionCompleted, $"{a.Label}完成：{string.Join("，", made)}；产物已放在{LocName(here)}地面。", null, c?.Outputs.Keys);
+            Emit(s, GameEventKind.ActionCompleted, $"{a.Label}完成：{string.Join("，", made)}；产物已放在{ZoneName(s, here)}地面。", null, c?.Outputs.Keys);
             return true;
         }
     }

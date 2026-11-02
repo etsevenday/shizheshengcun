@@ -347,7 +347,7 @@ namespace Survival.Core.Engine
                     if (!a.Skills.TryGetValue(skill, out var st) || st.Level < lv) a.Skills[skill] = new SkillState { Level = lv, Xp = 0 };
             }
             Normalize(s, s.Ground);
-            var text = $"开发：{string.Join("、", who.Select(id => ActorDisplayName(s, id)))}武器Ⅰ木矛、武器Ⅱ信号哨（原武器放到{LocName(s.Ground)}地面），矛术≥5级、指挥≥3级（只供试玩架矛顺延与整队）。";
+            var text = $"开发：{string.Join("、", who.Select(id => ActorDisplayName(s, id)))}武器Ⅰ木矛、武器Ⅱ信号哨（原武器放到{ZoneName(s, s.Ground)}地面），矛术≥5级、指挥≥3级（只供试玩架矛顺延与整队）。";
             Emit(s, GameEventKind.Info, text);
             return text;
         }

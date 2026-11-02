@@ -1075,3 +1075,24 @@
 .apop.card-pop:has([data-canteen]) { max-height: min(calc(100vh - 140px), 640px); }
 .cact .canteen-ops { display: flex; flex-wrap: wrap; gap: 4px 6px; }
 .cact .canteen-ops .tbar-go { flex: 1 1 calc(50% - 6px); min-width: 0; white-space: nowrap; padding-left: 6px; padding-right: 6px; }
+
+/* ───── B17 试玩修复 M362（B1）：安全屋卡——名称与角标一行（角标不再压在按钮上），状态一行，两个短按钮单独占卡底一行平分 ─────
+   陶窑/净水台不再单独占卡（进度写在工坊卡上），1280 设施行不因本批多出横向滚动。“屋内火堆”名称不折行。 */
+.center-scroll.four .facility-row .fac-card.sh-card { width: 128px; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto auto auto; }
+@media (min-height: 1000px) { .center-scroll.four .facility-row .fac-card.sh-card { width: 190px; } }
+.center-scroll.four .facility-row .fac-card.sh-card .oc-head { grid-column: 1; grid-row: 2; display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; padding: 0 10px 0 12px; }
+.wasteland .center-scroll.four .facility-row .fac-card.sh-card .oc-head b { display: block; -webkit-line-clamp: unset; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
+/* 角标放在主图右上（不占名称行、不压按钮），名称整行可见 */
+.center-scroll.four .facility-row .fac-card.sh-card .oc-badge { position: absolute; top: 8px; right: 8px; }
+.center-scroll.four .facility-row .fac-card.sh-card .oc-body { grid-column: 1; grid-row: 3; padding: 0 10px 2px 12px; }
+.center-scroll.four .facility-row .fac-card.sh-card .oc-body .oc-line { display: block; -webkit-line-clamp: unset; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.center-scroll.four .facility-row .fac-card.sh-card .oc-art { margin: 6px 8px 0; min-height: 0; }
+.center-scroll.four .facility-row .fac-card.sh-card .oc-foot { grid-column: 1; grid-row: 4; align-self: end; display: flex; gap: 4px; padding: 0 10px 10px; }
+.center-scroll.four .facility-row .fac-card.sh-card:not(:has(> .oc-foot)) .oc-body { padding-bottom: 12px; }
+.center-scroll.four .facility-row .fac-card.sh-card .oc-foot .res-btn { flex: 1 1 0; min-width: 0; width: auto; min-height: 32px; padding: 2px 4px; align-items: center; text-align: center; }
+.center-scroll.four .facility-row .fac-card.sh-card .oc-foot .res-btn strong { font-size: 13px; white-space: nowrap; }
+.center-scroll.four .fire-card .fc-title b { white-space: nowrap; flex: 0 0 auto; }
+@media (max-height: 800px) { .center-scroll.four .facility-row .fac-card.sh-card { width: 108px; } .center-scroll.four .facility-row .fac-card.sh-card .oc-foot .res-btn strong { font-size: 12px; } }
+/* 安全屋卡状态行：最多两行（“无床·有火·柜0.1/200公斤”在 1280/1600 不再被省略），宽 106px 让 1280 设施行不出横向滚动 */
+.center-scroll.four .facility-row .fac-card.sh-card .oc-body .oc-line { white-space: normal; word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
+@media (max-height: 800px) { .center-scroll.four .facility-row .fac-card.sh-card { width: 106px; } }

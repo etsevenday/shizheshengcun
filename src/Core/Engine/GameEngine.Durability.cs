@@ -239,7 +239,7 @@ namespace Survival.Core.Engine
             s.Items.Remove(t);
             foreach (var (oid, n) in yield) CreateItems(s, oid, n, here);
             // 语序（B7b 试玩修复）：产物 → 放置地点 → 回收专家说明 → 经验
-            var got = string.Join("，", yield.Select(x => $"{ItemName(x.itemId)}+{x.count}")) + $"，已放在{LocName(here)}地面";
+            var got = string.Join("，", yield.Select(x => $"{ItemName(x.itemId)}+{x.count}")) + $"，已放在{ZoneName(s, here)}地面";
             if (note != null) got += $"（{note}）";
             var xp = Config.Progression.Dismantle.Xp;
             if (xp > 0)

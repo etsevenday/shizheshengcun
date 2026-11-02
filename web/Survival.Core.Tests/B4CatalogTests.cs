@@ -47,7 +47,9 @@ public class B4CatalogTests : TestBase
         // B10b（Q111）：木炭有了火堆煅烧来源与锻炉用途，说明改写，不再是“只有物品定义”（70→69）
         // B16：13 种食品、3 种护理品、水壶/净水片/滤芯/滤水器/修补包有了用法（69→48）
         // B17：野营遮雨布、折叠柴炉可以铺设/部署（48→46）
-        Assert.That(Cfg.Items.Count(i => i.Desc.Contains("本版只有物品定义")), Is.EqualTo(46));
+        // B17 试玩修复 M362：已有配方用到的物品改写“现在可用于：…”（46→15，剩下的确无配方用途）
+        Assert.That(Cfg.Items.Count(i => i.Desc.Contains("本版只有物品定义")), Is.EqualTo(15));
+        Assert.That(Cfg.Items.Where(i => i.Desc.Contains("本版只有物品定义")).All(i => !Cfg.Recipes.Any(r => r.Inputs.ContainsKey(i.Id) || r.Fuel.ContainsKey(i.Id))), Is.True);
     }
 
     [Category("DesignSync")]

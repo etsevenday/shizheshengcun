@@ -1051,7 +1051,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：建设。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：建设。现在可用于：建工作台、建缝纫台、建医疗台、破障斧等"
     },
     {
       "id": "rope",
@@ -1065,7 +1065,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：建设。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：建设。现在可用于：复合木弓、轻型战术弩、野营遮雨布、支撑护带包"
     },
     {
       "id": "iron_plate",
@@ -1079,7 +1079,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：装配。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：装配。现在可用于：建锻炉、建医疗台、建军械台、砍刀等"
     },
     {
       "id": "steel",
@@ -1093,7 +1093,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：高级装备。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：高级装备。现在可用于：建军械台、守备短剑、破障斧、救援短斧等"
     },
     {
       "id": "fastener",
@@ -1107,7 +1107,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：装配。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：装配。现在可用于：建工作台、守备短剑、破障斧、加固长枪等"
     },
     {
       "id": "leather",
@@ -1121,7 +1121,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：护具。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：护具。现在可用于：护拳绑带、守备短剑、救援短斧、倒刺短矛等"
     },
     {
       "id": "thread",
@@ -1135,7 +1135,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：缝纫。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：缝纫。现在可用于：建缝纫台、猎手弓、战术旗、随行医疗包等"
     },
     {
       "id": "rubber",
@@ -1149,7 +1149,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：密封。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：密封。现在可用于：破障斧、绝缘警棍、救援盾、分量水壶等"
     },
     {
       "id": "plastic",
@@ -1163,7 +1163,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：用品。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：用品。现在可用于：战术电台、救援医疗箱、聚焦镜片、净水操作套件等"
     },
     {
       "id": "wire",
@@ -1177,7 +1177,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：电子。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：电子。现在可用于：战术电台、便携指挥终端、轻捷吊坠、路线罗盘等"
     },
     {
       "id": "electronics",
@@ -1191,7 +1191,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：电子。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：电子。现在可用于：战术电台、便携指挥终端、战术计时表、导线等"
     },
     {
       "id": "battery",
@@ -1205,7 +1205,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：照明。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：照明。现在可用于：战术电台、便携指挥终端、闪光标记器"
     },
     {
       "id": "adhesive",
@@ -1219,7 +1219,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：维护。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：维护。现在可用于：维修包、野外修补包"
     },
     {
       "id": "oil",
@@ -1233,7 +1233,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：非食用。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：非食用。现在可用于：枪械养护包"
     },
     {
       "id": "charcoal",
@@ -1261,7 +1261,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：高级装配。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：高级装配。现在可用于：建军械台、救援短斧、倒刺短矛、绝缘警棍等"
     },
     {
       "id": "weapon_parts",
@@ -1289,7 +1289,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：护具。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：护具。现在可用于：救援盾、侦察护具、重型防护甲、救护防护背心等"
     },
     {
       "id": "medical_gauze",
@@ -1303,7 +1303,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：医疗。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：医疗。现在可用于：建医疗台、随行医疗包、创伤救护包、救援医疗箱等"
     },
     {
       "id": "disinfectant",
@@ -1317,7 +1317,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：医疗材料。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：医疗材料。现在可用于：救援医疗箱、净水片"
     },
     {
       "id": "saline",
@@ -1331,7 +1331,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：口服非注射。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：口服非注射。现在可用于：分诊器材组"
     },
     {
       "id": "repair_kit",
@@ -1373,7 +1373,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：食品。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：食品。现在可用于：远行硬饼、谷肉炖食、止泻药粉"
     },
     {
       "id": "salt",
@@ -1387,7 +1387,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：腌制。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：腌制。现在可用于：皮革、盐水剂、净水片、远行硬饼"
     },
     {
       "id": "cooking_oil",
@@ -1401,7 +1401,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：食品。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：食品。现在可用于：肥皂"
     },
     {
       "id": "canned_beans",
@@ -1461,7 +1461,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：冶炼。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：冶炼。现在可用于：钢材"
     },
     {
       "id": "soap",
@@ -1489,7 +1489,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：净水。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：净水。现在可用于：净水台处理脏水"
     },
     {
       "id": "herb_extract",
@@ -1503,7 +1503,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：医疗。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：医疗。现在可用于：止泻药粉、应急恢复剂"
     },
     {
       "id": "metal_tube",
@@ -1517,7 +1517,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：装配。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：装配。现在可用于：折叠柴炉"
     },
     {
       "id": "spring",
@@ -1531,7 +1531,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：装配。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：装配。现在可用于：武器组件"
     },
     {
       "id": "canvas",
@@ -1545,7 +1545,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：缝纫。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：缝纫。现在可用于：野营遮雨布、支撑护带包"
     },
     {
       "id": "root_porridge",
@@ -1897,7 +1897,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：陶壳、烧窑设施。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：陶壳、烧窑设施。现在可用于：陶壳、建陶窑"
     },
     {
       "id": "ceramic_shell",
@@ -1911,7 +1911,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：滤芯骨架、固定净水台。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：滤芯骨架、固定净水台。现在可用于：长效滤芯、建固定净水台"
     },
     {
       "id": "purification_tablet",
@@ -2089,7 +2089,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：标记器与灯具维修用中间件，不产生电量。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：标记器与灯具维修用中间件，不产生电量。现在可用于：闪光标记器"
     },
     {
       "id": "flash_marker",

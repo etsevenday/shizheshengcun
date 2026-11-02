@@ -168,7 +168,7 @@ namespace Survival.Core.Engine
                 s.Resources[res.NodeId].Available = 0;
                 text.Add($"已领取{res.Name}（本局唯一）");
                 if (res.Outputs.Count > 0)
-                    text.Add(string.Join("，", res.Outputs.Select(kv => $"{ItemName(kv.Key)}+{kv.Value}")) + QualitySuffix(made) + $"，已放在{LocName(s.Ground)}地面");
+                    text.Add(string.Join("，", res.Outputs.Select(kv => $"{ItemName(kv.Key)}+{kv.Value}")) + QualitySuffix(made) + $"，已放在{ZoneName(s, s.Ground)}地面");
                 if (know.Count > 0) text.Add("获得做法知识：" + string.Join("、", know));
             }
             else if (first)
