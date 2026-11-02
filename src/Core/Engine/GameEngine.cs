@@ -517,6 +517,7 @@ namespace Survival.Core.Engine
                     // 建造（棚/床/工坊/安全屋/屋内床与火）：按当前地点与所在区判位置与唯一性（S09 X2.2/X2.7、Q107、Q134）
                     if (rc.FacilityResult != null && BuildSiteBlocked(s, rc) is string site) return site;
                     if (StationBlocked(s, rc) is string station) return station;
+                    if (IsStationBatchRecipe(rc)) return StationBatchBlocked(s, rc) ?? $"{StationName(rc.Station)}是被动加工：在{StationName(rc.Station)}点“投料”开始（不占行动）";
                     if (rc.IsPassive) return $"{StationName(rc.Station)}的被动加工在后续版本开放";
                     if (rc.Requirement != null)
                     {

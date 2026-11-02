@@ -375,6 +375,8 @@ namespace Survival.Core.State
         public List<FacilityProcess> Processes { get; set; } = new List<FacilityProcess>();
         /// <summary>最近完成的加工记录（进程号@完成段号），读档后据此不重复发放。</summary>
         public List<string> Completed { get; set; } = new List<string>();
+        /// <summary>本区固定工坊的被动批次（陶窑烧陶壳、固定净水台净水，A07 X1.4、S11 X4，B17）：每座每次一批，随世界时间推进。</summary>
+        public List<StationBatch> StationBatches { get; set; } = new List<StationBatch>();
 
         public FacilityState Clone()
         {
@@ -383,11 +385,35 @@ namespace Survival.Core.State
             c.Workshops = new List<string>(Workshops);
             c.Processes = Processes.Select(p => p.Clone()).ToList();
             c.Completed = new List<string>(Completed);
+            c.StationBatches = StationBatches.Select(b => b.Clone()).ToList();
             return c;
         }
     }
 
     public enum ProcessStatus { Waiting, Heating, Done }
+
+    /// <summary>
+    /// 固定工坊的一批被动加工（陶窑：黏土×2＋燃料木炭×1→陶壳×2，60 分钟；固定净水台：脏水×4＋过滤材料×1→净水×4，30 分钟）。
+    /// 投料时原料移到该区地面并锁定（ReservedBy = BatchId），按世界时间推进、离开也继续；完成一次核销、产物落该区地面；取消释放原料、时间不退。
+    /// </summary>
+    public sealed class StationBatch
+    {
+        public int BatchId { get; set; }
+        public string StationId { get; set; } = "";
+        public string RecipeId { get; set; } = "";
+        public List<int> InputInstanceIds { get; set; } = new List<int>();
+        public int DoneMinutes { get; set; }
+        public int RequiredMinutes { get; set; }
+        public int StartMinute { get; set; }
+        public string? InitiatorActorId { get; set; }
+
+        public StationBatch Clone()
+        {
+            var c = (StationBatch)MemberwiseClone();
+            c.InputInstanceIds = new List<int>(InputInstanceIds);
+            return c;
+        }
+    }
 
     /// <summary>
     /// 一个设施自动加工目标（设施与烹饪案第 8 节）：烧水以锅为目标（整锅液体批次），烤制与水煮以单份食材为目标。

@@ -124,7 +124,7 @@ public class B16RecipeTests : TestBase
         Assert.That(s.Skills["medicine"].Xp - med, Is.EqualTo(3));
         Assert.That(E.CanStart(s, ActionRequest.Craft("ex_hardtack")), Does.Contain("锅卡“锅食谱”"));
         // B17：陶窑、固定净水台可以建了（A07 X1.4）；没建时写“需要陶窑/固定净水台”
-        Assert.That(E.CanStart(s, ActionRequest.Craft("ex_ceramic_shell")), Does.Contain("陶窑"));
+        Assert.That(E.CanStart(s, ActionRequest.Craft("ex_ceramic_shell")), Does.Contain("黏土"), "陶窑已建（开发入口）：被动投料按原料校验");
         Assert.That(E.RecipeLocks(s, Rc("ex_station_water")), Is.Empty, "开发入口“建全部工坊”已含固定净水台");
     }
 
