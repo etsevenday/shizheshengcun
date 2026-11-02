@@ -246,8 +246,8 @@ public class B13aQTests : TestBase
     }
 
     /// <summary>
-    /// HOUSE-Q118-01：地牢 67 点及势力/公共/任务保留地都不许私人住宅（与策划表 safehouseAllowed 一致）；现有营地建造入口在这些地点预览即拒绝并写具体原因，
-    /// 不扣材料、不花时间；允许的野外仍只能在营地建造（住宅本身在 B17）。
+    /// HOUSE-Q118-01：地牢 67 点及势力/公共/任务保留地都不许私人住宅（与策划表 safehouseAllowed 一致，禁建原因留给 B17 住宅入口）；
+    /// UI-Q134-01：现有营地建造入口（棚/床垫/工坊）在这些地点与普通野外预览即拒绝，原因只写“只能在临时营地建造”、不挂“不可建设私人住宅”，不扣材料、不花时间。
     /// </summary>
     [Test]
     public void HOUSE_Q118_01_ForbiddenLand_BuildRefusedWithReason()
@@ -275,13 +275,15 @@ public class B13aQTests : TestBase
             {
                 var r = E.Start(s, ActionRequest.Craft(rid));
                 Assert.That(r.Ok, Is.False, $"{loc}/{rid}");
-                Assert.That(r.Reason, Does.Contain(why), $"{loc}/{rid}");
+                Assert.That(r.Reason, Is.EqualTo("只能在临时营地建造"), $"{loc}/{rid}");
+                Assert.That(r.Reason, Does.Not.Contain("私人住宅"), $"{loc}/{rid}");
+                Assert.That(Cfg.Locations.First(l => l.Id == loc).PrivateBuildForbidden, Is.EqualTo(why), "住宅禁建原因仍在，留给 B17 住宅入口");
             }
             Assert.That((s.GameMinute, s.Items.Count, s.Main), Is.EqualTo((minute, items, (ActionState?)null)), "不扣费、不花时间");
         }
         E.DebugTeleport(s, "w13_mill");
         var ok = E.Start(s, ActionRequest.Craft("shelter"));
-        Assert.That(ok.Reason, Is.EqualTo("只能在营地建造"), "允许地块也没有住宅入口（B17）");
+        Assert.That(ok.Reason, Is.EqualTo("只能在临时营地建造"), "允许地块也没有住宅入口（B17）");
     }
 
     /// <summary>HOUSE-Q118-02（本批可判定部分）：给新节点加室内标签不会产生住宅/棚/床/柜；营地棚不会自动升级或赠屋。住宅本身在 B17。</summary>

@@ -59,11 +59,11 @@ namespace Survival.Core.Engine
         public bool IsDaylight(int minute) => Clock.IsDaylight(minute, Config.Time.DaylightStartMinute, Config.Time.DaylightEndMinute);
 
         /// <summary>
-        /// 营地建造（遮蔽棚、床垫、工坊等）在非营地的拒绝原因；地牢内、势力/公共/任务保留地先写明禁建私人住宅（Q118，S14 本轮章“不能只写未解锁”）。
+        /// 营地建造（遮蔽棚、床垫、工坊等）在非营地的拒绝原因：一律“只能在临时营地建造”（Q134 选 B，S09/S14 本轮 Q134 章）；
+        /// 棚/床/工坊不是住宅，不挂“不可建设私人住宅”——那句（<see cref="LocationConfig.PrivateBuildForbidden"/>）留给 B17 住宅入口。
         /// 预览即拒绝，不扣材料、不花时间。
         /// </summary>
-        private static string BuildOnlyAtCamp(LocationConfig lc) =>
-            lc.PrivateBuildForbidden is string why ? $"{why}；遮蔽棚、床垫与工坊只能在营地建造" : "只能在营地建造";
+        private static string BuildOnlyAtCamp(LocationConfig lc) => "只能在临时营地建造";
 
         /// <summary>
         /// 该地点现在是否遮蔽：天然完整室内（exposure=indoor，Q118 补充选 A 只给 S13 基础睡眠遮蔽），或营地已建成遮蔽棚。
