@@ -8,7 +8,8 @@
     "Q110",
     "Q111",
     "Q112",
-    "Q113"
+    "Q113",
+    "Q141"
   ],
   "workshopPlacement": {
     "selfBuild": [
@@ -48,7 +49,7 @@
       "grant": "same_successful_original_claim_transaction_alive_no_extra_cost_or_time",
       "legacyEquivalentFact": "communication_power_claimed",
       "legacy": "grant_missing_knowledge_only_once_no_reward_reissue",
-      "publicArmory": "unchanged_QMAP02"
+      "publicArmory": "h03实际在场且hub_registered，并有FA02_record_credit或可信旧QMAP02完成；不需自建台蓝图，见Q141"
     }
   },
   "medicalMaterialXp": {
@@ -177,5 +178,129 @@
         "springOutput": 6
       }
     ]
+  },
+  "publicStations": {
+    "stations": [
+      {
+        "id": "public:h03_workshop:workbench",
+        "locationId": "h03_workshop",
+        "stationId": "workbench",
+        "displayName": "营区工坊工作台",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyQualification": null,
+        "requireActualPresence": true,
+        "accessFee": {
+          "currency": 0,
+          "items": {},
+          "worldMinutes": 0,
+          "xp": 0
+        }
+      },
+      {
+        "id": "public:h03_workshop:forge",
+        "locationId": "h03_workshop",
+        "stationId": "forge",
+        "displayName": "营区工坊锻炉",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyQualification": [
+          "FA02_record_credit",
+          "legacy_QMAP02_completed"
+        ],
+        "requireActualPresence": true,
+        "accessFee": {
+          "currency": 0,
+          "items": {},
+          "worldMinutes": 0,
+          "xp": 0
+        }
+      },
+      {
+        "id": "public:h03_workshop:armory",
+        "locationId": "h03_workshop",
+        "stationId": "armory",
+        "displayName": "营区工坊军械台",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyQualification": [
+          "FA02_record_credit",
+          "legacy_QMAP02_completed"
+        ],
+        "requireActualPresence": true,
+        "accessFee": {
+          "currency": 0,
+          "items": {},
+          "worldMinutes": 0,
+          "xp": 0
+        }
+      },
+      {
+        "id": "public:r07_workshop:workbench",
+        "locationId": "r07_workshop",
+        "stationId": "workbench",
+        "displayName": "试制工坊工作台",
+        "allFacts": [
+          "academy_contacted"
+        ],
+        "anyQualification": null,
+        "requireActualPresence": true,
+        "accessFee": {
+          "currency": 0,
+          "items": {},
+          "worldMinutes": 0,
+          "xp": 0
+        }
+      },
+      {
+        "id": "public:h02_square:sewing",
+        "locationId": "h02_square",
+        "stationId": "sewing",
+        "displayName": "营区公共缝纫台",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyQualification": null,
+        "requireActualPresence": true,
+        "accessFee": {
+          "currency": 0,
+          "items": {},
+          "worldMinutes": 0,
+          "xp": 0
+        }
+      },
+      {
+        "id": "public:h04_infirmary:medical",
+        "locationId": "h04_infirmary",
+        "stationId": "medical",
+        "displayName": "医务室公共医疗台",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyQualification": null,
+        "requireActualPresence": true,
+        "accessFee": {
+          "currency": 0,
+          "items": {},
+          "worldMinutes": 0,
+          "xp": 0
+        }
+      }
+    ],
+    "qualificationAliases": {
+      "legacy_QMAP02_completed": "仅可信旧QMAP02完成事实；映射原工业支援资格，不因看到任务/有武器/接取FA02而成立"
+    },
+    "unlistedStations": "各地点仅列出的公共站；hand仍随身可用，h03不新增缝纫/医疗，r07不新增锻炉/军械/缝纫/医疗",
+    "ownership": "固定公共设施，不需玩家建造、不占私人建造限额、不可拆取或带走；地牢与势力地块私人住宅禁建沿Q118",
+    "recipeAuthority": "S08/A07既有配方、知识、等级、主角执行、工时、经验、材料和磨损；开菜单0分钟不制造；公共军械台不要求自建军械台蓝图，但所做装备仍需其配方知识",
+    "materials": "仅主角随身与实际当地地面，预览明确来源并依原制作事务预留；不借其他建筑、候补背包或机构库存",
+    "forgeFuel": "Q112每执行1份锻炉配方额外木炭1；配方原料木炭另算；公共站不免燃料",
+    "access": "实际在对应地点，原战斗/对白/进行中主行动限制沿用；h03/r07的NPC工坊事项或当地设施卡进入同一制作面板，h02/h04当地设施卡进入，不增第20项城市服务",
+    "noExtraSystems": "无额外租金、耗材、经验、排队、日配额；正常制作本身消耗仍依原规则",
+    "r07Consent": "不要求academy_observation_pass、身体检测/试验同意、宣誓或加入势力；使用菜单不写这些事实，告示原独立选择另办",
+    "delivery": "站点接入后才提供对应配方；未接入服务沿Q146隐藏，已实装但站点未接入的旧菜单只能如实显示手工，不冒充公共站已可用"
   }
 }

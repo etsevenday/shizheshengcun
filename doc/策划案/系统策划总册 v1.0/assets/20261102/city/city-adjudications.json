@@ -1,0 +1,395 @@
+{
+  "version": "city_q141_q146_v1",
+  "date": "2026-11-02",
+  "status": "用户已裁定的策划目标；待开发接入，非实机结果",
+  "sourceQuestions": [
+    "Q141",
+    "Q142",
+    "Q143",
+    "Q144",
+    "Q145",
+    "Q146"
+  ],
+  "publicStations": {
+    "stations": [
+      {
+        "id": "public:h03_workshop:workbench",
+        "locationId": "h03_workshop",
+        "stationId": "workbench",
+        "displayName": "营区工坊工作台",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyQualification": null,
+        "requireActualPresence": true,
+        "accessFee": {
+          "currency": 0,
+          "items": {},
+          "worldMinutes": 0,
+          "xp": 0
+        }
+      },
+      {
+        "id": "public:h03_workshop:forge",
+        "locationId": "h03_workshop",
+        "stationId": "forge",
+        "displayName": "营区工坊锻炉",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyQualification": [
+          "FA02_record_credit",
+          "legacy_QMAP02_completed"
+        ],
+        "requireActualPresence": true,
+        "accessFee": {
+          "currency": 0,
+          "items": {},
+          "worldMinutes": 0,
+          "xp": 0
+        }
+      },
+      {
+        "id": "public:h03_workshop:armory",
+        "locationId": "h03_workshop",
+        "stationId": "armory",
+        "displayName": "营区工坊军械台",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyQualification": [
+          "FA02_record_credit",
+          "legacy_QMAP02_completed"
+        ],
+        "requireActualPresence": true,
+        "accessFee": {
+          "currency": 0,
+          "items": {},
+          "worldMinutes": 0,
+          "xp": 0
+        }
+      },
+      {
+        "id": "public:r07_workshop:workbench",
+        "locationId": "r07_workshop",
+        "stationId": "workbench",
+        "displayName": "试制工坊工作台",
+        "allFacts": [
+          "academy_contacted"
+        ],
+        "anyQualification": null,
+        "requireActualPresence": true,
+        "accessFee": {
+          "currency": 0,
+          "items": {},
+          "worldMinutes": 0,
+          "xp": 0
+        }
+      },
+      {
+        "id": "public:h02_square:sewing",
+        "locationId": "h02_square",
+        "stationId": "sewing",
+        "displayName": "营区公共缝纫台",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyQualification": null,
+        "requireActualPresence": true,
+        "accessFee": {
+          "currency": 0,
+          "items": {},
+          "worldMinutes": 0,
+          "xp": 0
+        }
+      },
+      {
+        "id": "public:h04_infirmary:medical",
+        "locationId": "h04_infirmary",
+        "stationId": "medical",
+        "displayName": "医务室公共医疗台",
+        "allFacts": [
+          "hub_registered"
+        ],
+        "anyQualification": null,
+        "requireActualPresence": true,
+        "accessFee": {
+          "currency": 0,
+          "items": {},
+          "worldMinutes": 0,
+          "xp": 0
+        }
+      }
+    ],
+    "qualificationAliases": {
+      "legacy_QMAP02_completed": "仅可信旧QMAP02完成事实；映射原工业支援资格，不因看到任务/有武器/接取FA02而成立"
+    },
+    "unlistedStations": "各地点仅列出的公共站；hand仍随身可用，h03不新增缝纫/医疗，r07不新增锻炉/军械/缝纫/医疗",
+    "ownership": "固定公共设施，不需玩家建造、不占私人建造限额、不可拆取或带走；地牢与势力地块私人住宅禁建沿Q118",
+    "recipeAuthority": "S08/A07既有配方、知识、等级、主角执行、工时、经验、材料和磨损；开菜单0分钟不制造；公共军械台不要求自建军械台蓝图，但所做装备仍需其配方知识",
+    "materials": "仅主角随身与实际当地地面，预览明确来源并依原制作事务预留；不借其他建筑、候补背包或机构库存",
+    "forgeFuel": "Q112每执行1份锻炉配方额外木炭1；配方原料木炭另算；公共站不免燃料",
+    "access": "实际在对应地点，原战斗/对白/进行中主行动限制沿用；h03/r07的NPC工坊事项或当地设施卡进入同一制作面板，h02/h04当地设施卡进入，不增第20项城市服务",
+    "noExtraSystems": "无额外租金、耗材、经验、排队、日配额；正常制作本身消耗仍依原规则",
+    "r07Consent": "不要求academy_observation_pass、身体检测/试验同意、宣誓或加入势力；使用菜单不写这些事实，告示原独立选择另办",
+    "delivery": "站点接入后才提供对应配方；未接入服务沿Q146隐藏，已实装但站点未接入的旧菜单只能如实显示手工，不冒充公共站已可用"
+  },
+  "dressing": {
+    "serviceId": "clinic_dressing",
+    "inputs": {
+      "bandage": 1,
+      "cloth": 1
+    },
+    "supplier": "player",
+    "owners": [
+      "p0_carried",
+      "ground:h04_infirmary"
+    ],
+    "institutionStock": false,
+    "reserve": "start_exact_instances_and_owners",
+    "consume": "completion_after_survival_check",
+    "cancel": "release_original_instances_in_place_no_cost_effect; elapsed_world_minutes_not_refunded",
+    "unchanged": "10分钟、NPC医疗1、主角0经验、原治疗公式/冷却/目标合法性不变"
+  },
+  "registration": {
+    "serviceId": "hub_registration_existing",
+    "gate": "h01明确意愿只授registration_authorized",
+    "commit": "沿真实边到达h02后的原登记事务",
+    "grants": [
+      "hub_registered",
+      "capacity_C2",
+      "existing_26_registered_default_knowledge_missing_only"
+    ],
+    "itemOutputs": {},
+    "ration": "原广场公共配给点独立领取；不改其原登记要求/库存/日补/领取账，不新增登记包，不补历史包",
+    "expeditionBasics": "不是26项中的新增第27项；仍须登记后在h03明确查看制作告示才学原知识"
+  },
+  "companionBackgrounds": [
+    {
+      "actorId": "npc_lin_zhao",
+      "name": "林昭",
+      "affiliation": "营区巡路",
+      "background": "营区的物资搬运与巡路人员，仍是前排协作的新人；愿意分担沿途的负重与警戒，但不替主角作决定。"
+    },
+    {
+      "actorId": "npc_zhou_yan",
+      "name": "周砚",
+      "affiliation": "营区工务维修人员",
+      "background": "营区的工务维修人员，习惯先检查工具和安全步骤；面对陌生设备宁愿耐心核对，也不凭猜测动手。"
+    },
+    {
+      "actorId": "npc_shen_he",
+      "name": "沈禾",
+      "affiliation": "营区医疗转运人员",
+      "background": "营区的医疗转运人员，重视知情同意；照护前会说明当前状况与风险，再由当事人决定是否接受。"
+    },
+    {
+      "actorId": "npc_tang_li",
+      "name": "唐梨",
+      "affiliation": "自由搜集者",
+      "background": "在近郊活动的自由搜集者，灾后逐渐学会使用弓具、记录旧路；出发时总会留意可以退回的方向。"
+    },
+    {
+      "actorId": "npc_gu_cheng",
+      "name": "顾承",
+      "affiliation": "营区外勤协作人员",
+      "background": "曾做过设施巡防，如今参与营区外勤协作；重视出发前的整备与分工，并不掌握灾变的内幕。"
+    },
+    {
+      "actorId": "npc_ye_xun",
+      "name": "叶洵",
+      "affiliation": "独立通信记录者",
+      "background": "在通信设施外围收集与核对记录的独立记录者，以近身防护和随手工具求生；会把亲眼所见与未经证实的猜测分开记下。"
+    }
+  ],
+  "serviceNames": [
+    {
+      "serviceId": "hub_registration_existing",
+      "displayName": "营区入营登记",
+      "playerSummary": "在营门确认登记意愿，再到营区广场完成登记。"
+    },
+    {
+      "serviceId": "hub_affairs_record",
+      "displayName": "整理调查记录",
+      "playerSummary": "交接并整理已取得的两份调查记录。"
+    },
+    {
+      "serviceId": "hub_workshop_access",
+      "displayName": "使用营区工坊",
+      "playerSummary": "查看并使用这里已开放的公共制作设施。"
+    },
+    {
+      "serviceId": "copy_public_knowledge",
+      "displayName": "查抄公开资料",
+      "playerSummary": "查抄已公开且尚未掌握的资料。"
+    },
+    {
+      "serviceId": "clinic_consult",
+      "displayName": "伤病咨询",
+      "playerSummary": "查看一名同行者的伤病与用药情况。"
+    },
+    {
+      "serviceId": "clinic_dressing",
+      "displayName": "换药包扎",
+      "playerSummary": "自带绷带1份、布1份，为一名同行者换药包扎。"
+    },
+    {
+      "serviceId": "clinic_observation_rest",
+      "displayName": "留观休息",
+      "playerSummary": "让同行队伍在医务室休息30分钟。"
+    },
+    {
+      "serviceId": "appraisal_white_v1",
+      "displayName": "活性样本鉴定",
+      "playerSummary": "查看活性样本鉴定的费用和结果预览。"
+    },
+    {
+      "serviceId": "shelter_recruitment",
+      "displayName": "同行者名册",
+      "playerSummary": "查看候选同行者、同行登记及补员事项。"
+    },
+    {
+      "serviceId": "church_reception_existing",
+      "displayName": "询问教会公开路线",
+      "playerSummary": "询问可公开查阅的路线，不要求宣誓。"
+    },
+    {
+      "serviceId": "church_relief_ration",
+      "displayName": "领取救助配给",
+      "playerSummary": "符合条件时，选择领取一份食物或净水。"
+    },
+    {
+      "serviceId": "church_public_mediation",
+      "displayName": "交接公开资料",
+      "playerSummary": "交接公开资料，不要求宣誓。"
+    },
+    {
+      "serviceId": "church_archive_copy",
+      "displayName": "抄录路线备份",
+      "playerSummary": "查阅或抄录已公开的路线备份。"
+    },
+    {
+      "serviceId": "church_quiet_rest",
+      "displayName": "静处休息",
+      "playerSummary": "让同行队伍在有遮蔽的静处休息30分钟。"
+    },
+    {
+      "serviceId": "academy_reception_existing",
+      "displayName": "询问环境调查路线",
+      "playerSummary": "询问环境调查的公开路线，可拒绝身体检测。"
+    },
+    {
+      "serviceId": "academy_noninvasive_observation",
+      "displayName": "观察范围核对",
+      "playerSummary": "核对观察范围，选择允许的观察方式。"
+    },
+    {
+      "serviceId": "academy_report_compare",
+      "displayName": "比对观察报告",
+      "playerSummary": "核对已有的观察报告与记录。"
+    },
+    {
+      "serviceId": "academy_workshop_access",
+      "displayName": "使用试制工坊",
+      "playerSummary": "查看并使用这里已开放的公共制作设施。"
+    },
+    {
+      "serviceId": "academy_observation_record",
+      "displayName": "查阅观察记录",
+      "playerSummary": "查阅已有观察记录，不自动进行检测。"
+    }
+  ],
+  "knowledgeNames": [
+    {
+      "id": "expedition_basics",
+      "displayName": "远行基础做法"
+    }
+  ],
+  "notices": [
+    {
+      "locationId": "h03_workshop",
+      "displayName": "制作告示",
+      "effect": "登记后0分钟明确阅读，沿原h03_notice_read授expedition_basics，不另赠物品"
+    },
+    {
+      "locationId": "r07_workshop",
+      "displayName": "观察区公开通道告示",
+      "effect": "沿原公开/拒试验选择授academy_observation_pass，不因开工坊菜单自动选择"
+    }
+  ],
+  "displayPolicy": {
+    "unimplemented": "hidden",
+    "implementedButIneligible": "visible_disabled_with_real_reason",
+    "postWithNoImplementedServices": "hide_service_button_keep_character_and_dialogue",
+    "count": "只统计已实装可见事项；可办数按当前资格，分母不含未实装项；没有已实装项不显示事项数占位",
+    "text": "玩家名称/摘要/按钮/条件/目标文字不用FA04/CH02/AC01等内部任务ID；内部判定与日志技术字段保留稳定ID",
+    "source": "serviceNames统一提供displayName/playerSummary；工时/费用/选项/可办原因仍用实时预览，不把内部effect原文直接拼给玩家",
+    "dialogue": "未实装本身不触发locked；沿首次见面/岗位/idle闲谈。已实装且真正剧情条件未达的原locked对白可保留",
+    "b14UnimplementedSnapshot": [
+      "hub_affairs_record",
+      "copy_public_knowledge",
+      "appraisal_white_v1",
+      "church_reception_existing",
+      "church_public_mediation",
+      "church_archive_copy",
+      "academy_reception_existing",
+      "academy_noninvasive_observation",
+      "academy_report_compare"
+    ],
+    "snapshotIsPermanentHideList": false,
+    "enable": "按实际服务实现能力开放；后续接入同ID自然出现，不发解锁奖、不重置任务/配额/冷却",
+    "staleRequest": "隐藏后旧入口/直接请求不能办理，拒绝且不扣费不写事实；既有合法进行中事务沿原快照完成或取消"
+  },
+  "savePolicy": {
+    "preserve": "全部人物ID/名字/数值/技能/速度/装备/伤病/死亡/招募资格、任务事实、知识、claim、库存、冷却、配额和动作快照",
+    "background": "六个同ID模板与现有名册的当前背景显示更新；不重生角色、不改自定义名字，不回写旧日志对白",
+    "stations": "按可信原事实计算开放；无事实保留锁定，不伪造FA02或登记，不补物品/经验；现有私人台与在制动作不改归属或重算",
+    "names": "只换当前显示与新文本；已产生的历史文本保留，稳定ID/事务/知识/领取键不变"
+  },
+  "acceptance": [
+    {
+      "id": "CITY-Q141-01",
+      "expected": "登记后实到h03工作台可用；未有FA02_record_credit或可信旧QMAP02完成时锻炉/军械台不可用，有任一资格后可用，任务接取不冒充完成。"
+    },
+    {
+      "id": "CITY-Q141-02",
+      "expected": "实到r07且academy_contacted可用工作台；不要求身体检测、宣誓、试验同意或公开通道证，不提供高级站，不因打开菜单写通道事实。"
+    },
+    {
+      "id": "CITY-Q141-03",
+      "expected": "登记后实到h02缝纫台和h04医疗台可用；h03/r07不远程提供这两站，其他未列公共站不生成。"
+    },
+    {
+      "id": "CITY-Q141-04",
+      "expected": "公共站菜单0分钟0额外费用0经验；实际锻炉N份配方照扣N木炭额外燃料及原料，自建蓝图不是公共军械台门槛，装备知识门槛仍在。"
+    },
+    {
+      "id": "CITY-Q141-05",
+      "expected": "异地/战斗/忙碌不能远程开工；仅p0及当地材料；公共站不可拆取，不新增私人限额或费用系统，旧在制动作按原快照。"
+    },
+    {
+      "id": "CITY-Q142-01",
+      "expected": "h04换药预览玩家绷带1+布1，缺任一拒绝；不得从机构或其他地点补布；开工预留，末段存活校验后扣，取消释放原实例原owner，已耗时间不退。"
+    },
+    {
+      "id": "CITY-Q143-01",
+      "expected": "六名同ID固定队友当前背景逐字匹配表；旧档亦更新显示；名字、所有数值技能装备/存亡/招募状态与原档一致，不重生不补物。"
+    },
+    {
+      "id": "CITY-Q144-01",
+      "expected": "h01授权不提前给C2；真实到h02提交登记得C2与原26知识补缺，物品增量0；重复登记/读档不重发或重置配给点。"
+    },
+    {
+      "id": "CITY-Q145-01",
+      "expected": "19服务、1知识与2告示当前名称符合表；玩家摘要无内部任务编号；只改名字不改ID/时间/费用/知识来源，不重写历史日志。"
+    },
+    {
+      "id": "CITY-Q146-01",
+      "expected": "B14九项未实装从事项列表和计数消失；全部未实装岗位无事项按钮，仍可交谈；不因未实装播locked或写后续版本开放占位。"
+    },
+    {
+      "id": "CITY-Q146-02",
+      "expected": "已实装但缺材料/未达条件/冷却中服务仍显示真实禁用原因；实现后同ID自然出现、不重置配额；旧隐藏入口请求零扣费零效果，合法已启动动作沿原快照。"
+    }
+  ]
+}

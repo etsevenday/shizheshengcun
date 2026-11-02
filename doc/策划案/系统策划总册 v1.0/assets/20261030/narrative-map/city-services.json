@@ -1,7 +1,7 @@
 {
-  "version": "city_services_q33_v1",
-  "date": "2026-10-30",
-  "status": "用户授权补齐的可调实装初值，未实现/未实机验证",
+  "version": "city_services_q141_q146_v2",
+  "date": "2026-11-02",
+  "status": "用户已确认策划目标；Q141公共站待开发接入，未实机验证",
   "services": [
     {
       "id": "hub_registration_existing",
@@ -10,12 +10,14 @@
       "worldMinutes": 0,
       "inputs": {},
       "outputs": {},
-      "effect": "在h01明确登记意愿与规则后只授registration_authorized通行授权；沿真实h01→h02边到达提交才写hub_registered/C2及原一次配给，不在h01预发，不重复发旧已领。",
+      "effect": "在h01明确登记意愿与规则后只授registration_authorized；沿真实h01→h02边到达提交才写hub_registered/C2并补缺原26项登记默认知识。不额外发任何物品；原配给只指广场既有公共配给点，独立领取且不重置库存/领取账。",
       "claimScope": "campaign",
       "delegate": "A11 QMAP01",
       "facts": [
         "registration_authorized"
-      ]
+      ],
+      "displayName": "营区入营登记",
+      "playerSummary": "在营门确认登记意愿，再到营区广场完成登记。"
     },
     {
       "id": "hub_affairs_record",
@@ -26,7 +28,9 @@
       "outputs": {},
       "effect": "FA04两份首次核心记录到齐后10分钟整合，原任务同一事务，不另扣第二次10分钟",
       "questId": "FA04",
-      "claimScope": "campaign"
+      "claimScope": "campaign",
+      "displayName": "整理调查记录",
+      "playerSummary": "交接并整理已取得的两份调查记录。"
     },
     {
       "id": "hub_workshop_access",
@@ -35,7 +39,9 @@
       "worldMinutes": 0,
       "inputs": {},
       "outputs": {},
-      "effect": "打开当地真实已开放工坊配方；后续制作独立按执行者/设施/配方预留及工时，不自动制造、不免耗材"
+      "effect": "打开当地真实已开放工坊配方；后续制作独立按执行者/设施/配方预留及工时，不自动制造、不免耗材",
+      "displayName": "使用营区工坊",
+      "playerSummary": "查看并使用这里已开放的公共制作设施。"
     },
     {
       "id": "copy_public_knowledge",
@@ -46,7 +52,9 @@
       "outputs": {},
       "effect": "按EXQ05/06的已公开固定替代知识包复制，已知包禁用；只授知识不伪造调查记录/通关/容量",
       "claimScope": "knowledgeSet",
-      "delegate": "A11 kp_waterworks/kp_mining；其他包在其原场所办理"
+      "delegate": "A11 kp_waterworks/kp_mining；其他包在其原场所办理",
+      "displayName": "查抄公开资料",
+      "playerSummary": "查抄已公开且尚未掌握的资料。"
     },
     {
       "id": "clinic_consult",
@@ -55,7 +63,9 @@
       "worldMinutes": 0,
       "inputs": {},
       "outputs": {},
-      "effect": "选一名当前同行者，显示本人现有H/I/V、出血与用药/回血冷却和公开医疗说明；不新抽诊断、不恢复、不触发治愈"
+      "effect": "选一名当前同行者，显示本人现有H/I/V、出血与用药/回血冷却和公开医疗说明；不新抽诊断、不恢复、不触发治愈",
+      "displayName": "伤病咨询",
+      "playerSummary": "查看一名同行者的伤病与用药情况。"
     },
     {
       "id": "clinic_dressing",
@@ -67,12 +77,14 @@
         "cloth": 1
       },
       "outputs": {},
-      "effect": "完成时消耗自带绷带1+机构换药耗材布1，NPC有效medicine=1无装备增益；对指定存活同行者调用R04原草药绷带函数（止血/原公式回血/V抑制最低1），目标共享H60分钟与V6小时冷却不绕过；没有任何实际收益则开始前拒绝",
+      "effect": "完成时消耗玩家自带绷带1+布1（仅主角随身或医务室当地地面；不设机构库存），NPC有效medicine=1无装备增益；对指定存活同行者调用R04原草药绷带函数（止血/原公式回血/V抑制最低1），目标共享H60分钟与V6小时冷却不绕过；没有任何实际收益则开始前拒绝",
       "actorSkillLevel": 1,
       "playerXp": 0,
       "target": "one_present_party_actor",
       "medicalAuthority": "R04 §7.2与R01医疗公式；不是新增清感染入口",
-      "effectAt": "after_last_tick_survival_check"
+      "effectAt": "after_last_tick_survival_check",
+      "displayName": "换药包扎",
+      "playerSummary": "自带绷带1份、布1份，为一名同行者换药包扎。"
     },
     {
       "id": "clinic_observation_rest",
@@ -83,7 +95,9 @@
       "outputs": {},
       "effect": "全体当前同行者按S13普通有遮蔽rest逐段恢复，床额外E不提供、无额外H/I/V效果；正常N/W/药期/感染照推，30分钟不是一次性补满",
       "canCancelAtTickBoundary": true,
-      "mode": "rest"
+      "mode": "rest",
+      "displayName": "留观休息",
+      "playerSummary": "让同行队伍在医务室休息30分钟。"
     },
     {
       "id": "appraisal_white_v1",
@@ -93,7 +107,9 @@
       "inputs": {},
       "outputs": {},
       "effect": "使用R07 appraisal-service-contract.json既有三服务；具体报价/10或5分钟/耗材/日总2包全部同一契约，不叠收本表费用",
-      "delegateFile": "../facilities/appraisal-service-contract.json"
+      "delegateFile": "../facilities/appraisal-service-contract.json",
+      "displayName": "活性样本鉴定",
+      "playerSummary": "查看活性样本鉴定的费用和结果预览。"
     },
     {
       "id": "shelter_recruitment",
@@ -103,7 +119,9 @@
       "inputs": {},
       "outputs": {},
       "effect": "使用R08既有72h周期、3候选、10min登记或RB01的30min；候补照护不因此免费新增，查看名册0min",
-      "delegate": "R08 RC1—RC8与B3招募契约"
+      "delegate": "R08 RC1—RC8与B3招募契约",
+      "displayName": "同行者名册",
+      "playerSummary": "查看候选同行者、同行登记及补员事项。"
     },
     {
       "id": "church_reception_existing",
@@ -116,7 +134,9 @@
       "facts": [
         "church_contacted",
         "FA02_route_briefed"
-      ]
+      ],
+      "displayName": "询问教会公开路线",
+      "playerSummary": "询问可公开查阅的路线，不要求宣誓。"
     },
     {
       "id": "church_relief_ration",
@@ -153,7 +173,9 @@
       "expiry": "从完成生成时按S06原物品保质，不给旧物刷新",
       "membershipRequired": false,
       "eligibilityRecheck": "start_and_completion",
-      "quotaRule": "预留/跨日/取消同R07日桶；未完成不扣额，完成只能一次"
+      "quotaRule": "预留/跨日/取消同R07日桶；未完成不扣额，完成只能一次",
+      "displayName": "领取救助配给",
+      "playerSummary": "符合条件时，选择领取一份食物或净水。"
     },
     {
       "id": "church_public_mediation",
@@ -167,7 +189,9 @@
       "claimScope": "campaign",
       "noDoubleChargeWith": [
         "church_archive_copy"
-      ]
+      ],
+      "displayName": "交接公开资料",
+      "playerSummary": "交接公开资料，不要求宣誓。"
     },
     {
       "id": "church_archive_copy",
@@ -181,7 +205,9 @@
       "claimScope": "campaign",
       "noDoubleChargeWith": [
         "church_public_mediation"
-      ]
+      ],
+      "displayName": "抄录路线备份",
+      "playerSummary": "查阅或抄录已公开的路线备份。"
     },
     {
       "id": "church_quiet_rest",
@@ -192,7 +218,9 @@
       "outputs": {},
       "effect": "公开安静角落30分钟普通有遮蔽rest，全体同行按S13原率逐段；无专属M/H加成、无床、无宣誓，不清伤病/病毒，正常饮食与时间代价",
       "mode": "rest",
-      "canCancelAtTickBoundary": true
+      "canCancelAtTickBoundary": true,
+      "displayName": "静处休息",
+      "playerSummary": "让同行队伍在有遮蔽的静处休息30分钟。"
     },
     {
       "id": "academy_reception_existing",
@@ -205,7 +233,9 @@
       "facts": [
         "academy_contacted",
         "FA03_environment_briefed"
-      ]
+      ],
+      "displayName": "询问环境调查路线",
+      "playerSummary": "询问环境调查的公开路线，可拒绝身体检测。"
     },
     {
       "id": "academy_noninvasive_observation",
@@ -219,7 +249,9 @@
       "claimScope": "campaign",
       "noDoubleChargeWith": [
         "academy_observation_record"
-      ]
+      ],
+      "displayName": "观察范围核对",
+      "playerSummary": "核对观察范围，选择允许的观察方式。"
     },
     {
       "id": "academy_report_compare",
@@ -230,7 +262,9 @@
       "outputs": {},
       "effect": "AC02原报告比对10分钟，完成输出确定的核对笔记与外部医疗线索文本；不授新药/永久免疫/容量或另一个知识箱",
       "questId": "AC02",
-      "claimScope": "campaign"
+      "claimScope": "campaign",
+      "displayName": "比对观察报告",
+      "playerSummary": "核对已有的观察报告与记录。"
     },
     {
       "id": "academy_workshop_access",
@@ -239,10 +273,12 @@
       "worldMinutes": 0,
       "inputs": {},
       "outputs": {},
-      "effect": "打开当前已开放普通工坊菜单与公共通道说明；进入r08的观察/拒实验选择均可登记；制造材料/门槛/时间仍沿A07/S08，不提供免费高级工坊或军械蓝图",
+      "effect": "0分钟打开r07当地公共工作台与随身手工配方，实际制作沿原规则；不因打开菜单自动写academy_observation_pass，公开通道告示沿原独立选择办理。",
       "facts": [
         "academy_observation_pass"
-      ]
+      ],
+      "displayName": "使用试制工坊",
+      "playerSummary": "查看并使用这里已开放的公共制作设施。"
     },
     {
       "id": "academy_observation_record",
@@ -252,7 +288,9 @@
       "inputs": {},
       "outputs": {},
       "effect": "查看AC01已有观察范围/记录，若尚未做则指向r05对应10分钟事务；观察区本身不再扣10分钟、不自动开始检测",
-      "delegate": "AC01同一claim，拒绝仍有公开路线"
+      "delegate": "AC01同一claim，拒绝仍有公开路线",
+      "displayName": "查阅观察记录",
+      "playerSummary": "查阅已有观察记录，不自动进行检测。"
     }
   ],
   "npcBindings": {
@@ -333,6 +371,78 @@
       "completionSerial"
     ],
     "institutionFallback": "岗位不在由同机构代班/公开记录接续，不复活人物，不重置任务/配额",
-    "servicesDoNotAdvance": "首次招募周期起点/副本clear/reset计时不因普通服务重设"
+    "servicesDoNotAdvance": "首次招募周期起点/副本clear/reset计时不因普通服务重设",
+    "publicStationContract": "assets/20261102/city/city-adjudications.json",
+    "materialSupply": {
+      "serviceId": "clinic_dressing",
+      "inputs": {
+        "bandage": 1,
+        "cloth": 1
+      },
+      "supplier": "player",
+      "owners": [
+        "p0_carried",
+        "ground:h04_infirmary"
+      ],
+      "institutionStock": false,
+      "reserve": "start_exact_instances_and_owners",
+      "consume": "completion_after_survival_check",
+      "cancel": "release_original_instances_in_place_no_cost_effect; elapsed_world_minutes_not_refunded",
+      "unchanged": "10分钟、NPC医疗1、主角0经验、原治疗公式/冷却/目标合法性不变"
+    },
+    "displayPolicy": {
+      "unimplemented": "hidden",
+      "implementedButIneligible": "visible_disabled_with_real_reason",
+      "postWithNoImplementedServices": "hide_service_button_keep_character_and_dialogue",
+      "count": "只统计已实装可见事项；可办数按当前资格，分母不含未实装项；没有已实装项不显示事项数占位",
+      "text": "玩家名称/摘要/按钮/条件/目标文字不用FA04/CH02/AC01等内部任务ID；内部判定与日志技术字段保留稳定ID",
+      "source": "serviceNames统一提供displayName/playerSummary；工时/费用/选项/可办原因仍用实时预览，不把内部effect原文直接拼给玩家",
+      "dialogue": "未实装本身不触发locked；沿首次见面/岗位/idle闲谈。已实装且真正剧情条件未达的原locked对白可保留",
+      "b14UnimplementedSnapshot": [
+        "hub_affairs_record",
+        "copy_public_knowledge",
+        "appraisal_white_v1",
+        "church_reception_existing",
+        "church_public_mediation",
+        "church_archive_copy",
+        "academy_reception_existing",
+        "academy_noninvasive_observation",
+        "academy_report_compare"
+      ],
+      "snapshotIsPermanentHideList": false,
+      "enable": "按实际服务实现能力开放；后续接入同ID自然出现，不发解锁奖、不重置任务/配额/冷却",
+      "staleRequest": "隐藏后旧入口/直接请求不能办理，拒绝且不扣费不写事实；既有合法进行中事务沿原快照完成或取消"
+    },
+    "registration": {
+      "serviceId": "hub_registration_existing",
+      "gate": "h01明确意愿只授registration_authorized",
+      "commit": "沿真实边到达h02后的原登记事务",
+      "grants": [
+        "hub_registered",
+        "capacity_C2",
+        "existing_26_registered_default_knowledge_missing_only"
+      ],
+      "itemOutputs": {},
+      "ration": "原广场公共配给点独立领取；不改其原登记要求/库存/日补/领取账，不新增登记包，不补历史包",
+      "expeditionBasics": "不是26项中的新增第27项；仍须登记后在h03明确查看制作告示才学原知识"
+    },
+    "knowledgeNames": [
+      {
+        "id": "expedition_basics",
+        "displayName": "远行基础做法"
+      }
+    ],
+    "notices": [
+      {
+        "locationId": "h03_workshop",
+        "displayName": "制作告示",
+        "effect": "登记后0分钟明确阅读，沿原h03_notice_read授expedition_basics，不另赠物品"
+      },
+      {
+        "locationId": "r07_workshop",
+        "displayName": "观察区公开通道告示",
+        "effect": "沿原公开/拒试验选择授academy_observation_pass，不因开工坊菜单自动选择"
+      }
+    ]
   }
 }
