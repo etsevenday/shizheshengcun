@@ -76,6 +76,8 @@
                                     else
                                     {
                                         <small>下一步：@v.Step</small>
+                                        @* B15b（Q161 选 C）：进行中委托的工作提示与岗位事项同句（八条各自的定稿句） *@
+                                        @if (!string.IsNullOrEmpty(v.WorkHint)) { <small class="muted">@v.WorkHint</small> }
                                         @if (v.Retro) { <small class="good-text">旧档追认（已接取）</small> }
                                         @if (v.Status == "locked" && v.AcceptBlocked != null) { <small class="muted">@v.AcceptBlocked</small> }
                                     }
