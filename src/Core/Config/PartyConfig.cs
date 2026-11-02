@@ -44,6 +44,8 @@ namespace Survival.Core.Config
         public string Weapon1 { get; set; } = "";
         public string Weapon2 { get; set; } = "";
         public string RecruitTask { get; set; } = "";
+        /// <summary>营区工作职能标签（N01 §5、A11 §5，B14）：只改标签，不改名字、速度、武器与技能。</summary>
+        public string Affiliation { get; set; } = "";
     }
 
     public sealed class EscortTemplateConfig

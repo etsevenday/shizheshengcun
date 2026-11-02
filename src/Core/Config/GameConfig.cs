@@ -98,6 +98,8 @@ namespace Survival.Core.Config
         public WorkshopsConfig Workshops { get; set; } = new WorkshopsConfig();
         /// <summary>v3 地图门槛与探索（开发计划 v0.9 B11，tools/import-b11-map.py）。</summary>
         public MapConfig Map { get; set; } = new MapConfig();
+        /// <summary>势力事实、营区登记与城市岗位 NPC/服务（开发计划 v0.9 B14，tools/import-b14-city.py）。</summary>
+        public CityConfig City { get; set; } = new CityConfig();
     }
 
     /// <summary>工坊（A07「工坊设施」；B10）：hand 不是设施；其余每类每地一座，只在 buildLocations 建（B10-1：只开放 camp，待确认 Q107）。</summary>

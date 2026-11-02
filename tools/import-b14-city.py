@@ -1,0 +1,187 @@
+# -*- coding: utf-8 -*-
+"""B14 势力事实、营区登记与城市岗位 NPC 框架的配置导入（开发计划 v0.9 批次 B14，R44、R45；并入 Q32/Q33 答复）。
+
+数值与文字逐条取自策划数据，不自补：
+- city-npc-data.json：16 名岗位 NPC（npcId/displayName/role/factionId/locationId/questIds/serviceIds/recruitmentType/canRecruit/dialogueSet）。
+- city-services.json（Q33 选 B）：19 项服务（地点、kind、worldMinutes、inputs、facts、choices、dailyPartyQuota、mode）与 npcBindings。
+- narrative-texts.json（Q32 选 B 定稿）：16 组岗位对白（九种状态各一组）、serviceOfferLines（服务面板里的岗位短句）、
+  gate_h01_registration（营门登记）、academy_public_observation_notice（r07 观察区公开通道告示，两个选项同写 academy_observation_pass）。
+  speaker：system → 空（中性叙述）、protagonist → “你”、npc_xxx → 人物名、*_duty_staff → “机构当班接续员”。
+- N01 §5 / A11 §5：六名固定队友改标营区工作职能（affiliation，只加标签，不洗背景与数值）。
+- A07「expedition_basics：h03_workshop，营区登记后免费查看制作告示0分钟」：加一条知识（授予事实 h03_notice_read）。
+
+本批实装的服务（不依赖后续批次）在 implemented 里标 true；其余只注册入口，界面写“暂未开放”和所属后续批次（开发假设 B14-6）。
+服务与告示的中文名是开发方措辞（策划只给了 serviceId），见开发计划 B14 开发假设 B14-7。
+
+可重复运行，结果相同（先删掉本脚本上次写入的对白与知识再追加）。
+用法：python tools/import-b14-city.py
+"""
+import json
+import os
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONFIG = os.path.join(ROOT, "data", "config.v0.6.json")
+MAPDIR = os.path.join(ROOT, "doc", "策划案", "系统策划总册 v1.0", "assets", "20261030", "narrative-map")
+
+FACTIONS = {"hub_survivor": "幸存者营区", "faction_church": "新生教会", "faction_academy": "灰塔科学院"}
+DUTY = {"hub_survivor": "hub_survivor_duty_staff", "faction_church": "faction_church_duty_staff", "faction_academy": "faction_academy_duty_staff"}
+
+# 服务显示名（开发方措辞）与本批是否实装；未实装的写所属后续批次
+SERVICES = {
+    "hub_registration_existing": ("营门登记", True, None),
+    "hub_affairs_record": ("整合两份记录（FA04）", False, "主线任务后续版本开放"),
+    "hub_workshop_access": ("使用公共工坊", True, None),
+    "copy_public_knowledge": ("抄录公开资料包", False, "可选地牢任务后续版本开放"),
+    "clinic_consult": ("医疗咨询", True, None),
+    "clinic_dressing": ("换药包扎", True, None),
+    "clinic_observation_rest": ("观察休息", True, None),
+    "appraisal_white_v1": ("样本鉴定", False, "鉴定与交易后续版本开放"),
+    "shelter_recruitment": ("同行登记与名册", True, None),
+    "church_reception_existing": ("领取公开路线（FA02）", False, "教会任务后续版本开放"),
+    "church_relief_ration": ("施济配给", True, None),
+    "church_public_mediation": ("公开资料交接（CH02）", False, "教会支线后续版本开放"),
+    "church_archive_copy": ("抄录路线备份（CH02）", False, "教会支线后续版本开放"),
+    "church_quiet_rest": ("安静休息", True, None),
+    "academy_reception_existing": ("领取环境调查路线（FA03）", False, "科学院任务后续版本开放"),
+    "academy_noninvasive_observation": ("非侵入观察核对（AC01）", False, "科学院支线后续版本开放"),
+    "academy_report_compare": ("报告比对（AC02）", False, "科学院支线后续版本开放"),
+    "academy_workshop_access": ("使用试制工坊", True, None),
+    "academy_observation_record": ("查看观察记录", True, None),
+}
+CHOICE_LABELS = {"relief_food": "熟块根1份（饱食低于40）", "relief_water": "净水1份（水分低于40）"}
+
+STATE_TITLES = {
+    "first_greeting": "初次见面", "role": "岗位说明", "quest_offer": "委托", "quest_return": "委托回报", "idle": "闲谈",
+    "locked": "暂不可办", "service_end": "办完事项", "institution_substitute": "岗位接续", "service_offer": "办理事项",
+}
+
+AFFILIATION = {  # N01 §5 / A11 §5（营区工作职能；不改名字、速度、武器、技能）
+    "npc_lin_zhao": "营区巡路", "npc_zhou_yan": "营区工务维修人员", "npc_shen_he": "营区医疗转运人员",
+    "npc_tang_li": "自由搜集者", "npc_gu_cheng": "营区外勤协作人员", "npc_ye_xun": "独立通信记录者",
+}
+
+
+def load(path):
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def main():
+    cfg = load(CONFIG)
+    npcd = load(os.path.join(MAPDIR, "city-npc-data.json"))
+    svcd = load(os.path.join(MAPDIR, "city-services.json"))
+    nt = load(os.path.join(MAPDIR, "narrative-texts.json"))
+    sets = {d["dialogueSetId"]: d for d in nt["dialogueSets"]}
+    locs = {l["id"]: l for l in cfg["locations"]}
+    items = {i["id"] for i in cfg["items"]}
+
+    assert len(npcd["npcs"]) == 16 and len(svcd["services"]) == 19
+    assert set(SERVICES) == {s["id"] for s in svcd["services"]}
+    speaker = {"system": "", "protagonist": "你", "baobao": "饱饱"}
+    for n in npcd["npcs"]:
+        speaker[n["npcId"]] = n["displayName"]
+    for d in DUTY.values():
+        speaker[d] = "机构当班接续员"
+    names = {r["id"]: r["name"] for r in nt["speakerRegistry"]}
+    for n in npcd["npcs"]:
+        assert names[n["npcId"]] == n["displayName"], n["npcId"]
+
+    npc_sets = {x["npcId"]: x for x in nt["npcDialogueSets"]}
+    npcs = []
+    dialogue_sets = []
+    for n in npcd["npcs"]:
+        assert n["locationId"] in locs, n
+        assert n["recruitmentType"] == "service_only" and not n["canRecruit"]
+        assert svcd["npcBindings"][n["npcId"]] == n["serviceIds"], n["npcId"]
+        ns = npc_sets[n["npcId"]]
+        assert ns["dialogueSetId"] == n["dialogueSet"] and ns["locationId"] == n["locationId"]
+        offer = sets[ns["states"]["service_offer"]]
+        lines = {o["serviceId"]: o["text"] for o in offer.get("serviceOfferLines", [])}
+        npcs.append({
+            "npcId": n["npcId"], "name": n["displayName"], "role": n["role"], "factionId": n["factionId"],
+            "locationId": n["locationId"], "questIds": n["questIds"], "serviceIds": n["serviceIds"],
+            "recruitmentType": n["recruitmentType"], "canRecruit": n["canRecruit"], "dialogueSet": n["dialogueSet"],
+            "states": ns["states"], "serviceOfferLines": lines, "dutySpeaker": "机构当班接续员",
+        })
+        for st, sid in ns["states"].items():
+            dialogue_sets.append({"id": sid, "title": f"{n['displayName']}：{STATE_TITLES[st]}"})
+
+    services = []
+    for s in svcd["services"]:
+        title, impl, pending = SERVICES[s["id"]]
+        assert s["locationId"] in locs, s["id"]
+        for k in s.get("inputs", {}):
+            assert k in items, k
+        choices = []
+        for c in s.get("choices", []):
+            for k in c["outputs"]:
+                assert k in items, k
+            pred = c["targetPredicate"]
+            stat, op, val = (pred.split("<")[0], "<", float(pred.split("<")[1]))
+            choices.append({"id": c["id"], "label": CHOICE_LABELS[c["id"]], "stat": stat, "below": val, "outputs": c["outputs"]})
+        services.append({
+            "id": s["id"], "title": title, "locationId": s["locationId"], "kind": s["kind"],
+            "worldMinutes": s.get("worldMinutes"), "inputs": s.get("inputs", {}), "effect": s["effect"],
+            "questId": s.get("questId"), "facts": s.get("facts", []), "choices": choices,
+            "dailyPartyQuota": s.get("dailyPartyQuota"), "mode": s.get("mode"), "target": s.get("target"),
+            "actorSkillLevel": s.get("actorSkillLevel"), "implemented": impl, "pendingText": pending,
+        })
+
+    reg = sets["gate_h01_registration"]
+    assert reg["flagsOnFirstSubmit"] == ["registration_authorized"]
+    notice = sets["academy_public_observation_notice"]
+    assert all(c["flags"] == ["academy_observation_pass"] for c in notice["choices"])
+
+    cfg["city"] = {
+        "source": "city-npc-data.json + city-services.json（Q33 选 B）+ narrative-texts.json（Q32 选 B）；A11「城市建筑、岗位NPC与八支线」§1—§6、N01 §3/§6、S02 门槛规则 3/5/6",
+        "factions": FACTIONS,
+        "registration": {"serviceId": "hub_registration_existing", "gateLocation": "h01_gate", "squareLocation": "h02_square",
+                         "dialogueSet": "gate_h01_registration", "authorizedFact": "registration_authorized", "registeredFact": "hub_registered",
+                         "questId": "QMAP01"},
+        "notices": [
+            {"id": "h03_craft_notice", "locationId": "h03_workshop", "title": "制作告示", "requiresFact": "hub_registered",
+             "grantsFact": "h03_notice_read", "knowledgeId": "expedition_basics", "dialogueSet": None, "choices": []},
+            {"id": "r07_observation_notice", "locationId": "r07_workshop", "title": "观察区公开通道告示", "requiresFact": None,
+             "grantsFact": "academy_observation_pass", "knowledgeId": None, "dialogueSet": "academy_public_observation_notice",
+             "choices": [{"id": c["choiceId"], "label": c["label"]} for c in notice["choices"]]},
+        ],
+        "npcs": npcs,
+        "services": services,
+        "dialogueSets": dialogue_sets + [
+            {"id": "gate_h01_registration", "title": "营门登记"},
+            {"id": "academy_public_observation_notice", "title": "观察区公开通道告示"},
+        ],
+    }
+
+    # story.dialogues：先去掉上次导入的城市对白，再追加（eventId = dialogueSetId，lineId 原样）
+    city_sets = [d["id"] for d in cfg["city"]["dialogueSets"]]
+    city_line_ids = {l["lineId"] for sid in city_sets for l in sets[sid]["lines"]}
+    dl = [d for d in cfg["story"]["dialogues"] if d["id"] not in city_line_ids]
+    for sid in city_sets:
+        for l in sets[sid]["lines"]:
+            dl.append({"id": l["lineId"], "eventId": sid, "speaker": speaker[l["speaker"]], "text": l["text"], "note": ""})
+    cfg["story"]["dialogues"] = dl
+
+    # 知识：expedition_basics（A07：营区登记后 h03 免费查看制作告示 0 分钟；中文名为开发方措辞）
+    cfg["knowledge"] = [k for k in cfg["knowledge"] if k["id"] != "expedition_basics"]
+    cfg["knowledge"].append({"id": "expedition_basics", "name": "远行基础做法", "grantedByFacts": ["h03_notice_read"],
+                             "source": "营区登记后在营区工坊查看制作告示（0分钟）"})
+
+    # 六名固定队友改标营区工作职能（只加标签）
+    for c in cfg["party"]["namedCompanions"]:
+        c["affiliation"] = AFFILIATION[c["actorId"]]
+
+    # B11 写的“后续版本开放”说明改为真实来源
+    fl = cfg["map"]["factLabels"]
+    fl["registration_authorized"] = "在营门向值守登记员办理登记"
+    fl["hub_registered"] = "完成营区登记（在营门办理登记后走到营区广场）"
+    fl["academy_observation_pass"] = "在试制工坊查看观察区公开通道告示并确认通行范围"
+
+    with open(CONFIG, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(cfg, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    print(f"city：{len(npcs)} 名岗位、{len(services)} 项服务（实装 {sum(1 for s in services if s['implemented'])}）、{len(city_line_ids)} 句对白")
+
+
+if __name__ == "__main__":
+    main()
