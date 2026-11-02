@@ -361,5 +361,53 @@ namespace Survival.Core.Engine
             p?.AppraisalMode == TradeMode
                 ? $"已停止换物（实际进行了{Clock.Duration(a.ElapsedMinutes)}）：样本未交出、仍在原处，日额度已释放，没有产物。"
                 : $"已停止详细鉴定（实际进行了{Clock.Duration(a.ElapsedMinutes)}）：样本与植物纤维都未扣、仍在原处，没有写鉴定记录。";
+    
+
+        // ───────────────────────── 开发入口（?dev=1） ─────────────────────────
+
+        /// <summary>
+        /// 开发入口“鉴定交易（B18）”：go 传送到鉴定所（记营区登记，按实际到达处理，锁当日报价）；ordinary 当前地面放 2 份普通样本（各自开发来源）；
+        /// tutorial 当前地面放 1 份教学标记样本（只供试禁售与免费说明；未做过教学融合时融合会得 +0.1）；fiber 植物纤维 2；
+        /// t2355 空闲时把时间拨到当日 23:55（不结算身体，试跨午夜）。
+        /// </summary>
+        public string DebugAppraisal(GameState s, string kind)
+        {
+            switch (kind)
+            {
+                case "go":
+                {
+                    var reg = Config.City.Registration;
+                    s.Progress.Flags.Add(reg.AuthorizedFact);
+                    s.Progress.Flags.Add(reg.RegisteredFact);
+                    RefreshGates(s);
+                    return DebugMapTeleport(s, Ap.LocationId) + "（开发：已记营区登记）";
+                }
+                case "ordinary":
+                {
+                    var made = new List<int>();
+                    for (var k = 0; k < 2; k++)
+                    {
+                        var grant = $"dev-substance-{s.NextInstanceId}";
+                        made.AddRange(CreateItems(s, Ap.SampleItemId, 1, s.Ground, false, new ItemSource { GrantEventId = grant }).Select(i => i.InstanceId));
+                    }
+                    return $"开发：{ZoneName(s, s.Ground)}地面放了普通白色活性物质2份（各自来源，可鉴定/可交易）。";
+                }
+                case "tutorial":
+                    CreateItems(s, Ap.SampleItemId, 1, s.Ground, false, new ItemSource { GrantEventId = $"dev-tutorial-{s.NextInstanceId}", TutorialReward = true });
+                    return $"开发：{ZoneName(s, s.Ground)}地面放了1份教学标记样本（只供试禁售与免费说明）。";
+                case "fiber":
+                    return "开发：植物纤维2——" + DebugGiveCarriedOrGround(s, new[] { ("fiber", 2) });
+                case "t2355":
+                {
+                    if (s.Main != null || s.Sub != null || s.Battle != null) return "开发：行动或战斗进行中，不能拨时间";
+                    var day = Clock.Day(s.GameMinute);
+                    var to = day * Clock.MinutesPerDay - 5;
+                    if (to <= s.GameMinute) return "开发：已过当日 23:55";
+                    s.GameMinute = to;
+                    return $"开发：时间拨到{Clock.DayTime(to)}（不结算身体；当日报价表与额度不变）。";
+                }
+            }
+            return "开发：未知操作";
+        }
     }
 }

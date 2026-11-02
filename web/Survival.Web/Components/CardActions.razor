@@ -142,7 +142,7 @@
                     <button type="button" class="ca-use fuse" disabled="@(fwhy != null || using_)" title="@(fwhy ?? "饱饱吞噬融合这1份，确认后立即结算，之后5分钟不可取消")"
                             @onmouseenter="() => G.Hover(freq, FuseTitle)" @onmouseleave="() => G.Hover(null)"
                             @onclick="() => Fuse(freq)">吞噬融合1份·@(e.Config.ActiveSubstance.Fusion.Minutes)分钟</button>
-                    <span class="ca-use-note">@e.SubstanceLabel(it)#@it.InstanceId（×@it.Count）→ @e.FusionOutcomeText(s, it)</span>
+                    <span class="ca-use-note">@e.SubstanceLabel(it)#@it.InstanceId（×@it.Count）→ @e.FusionOutcomeText(s, it) · 来源：@GameEngine.SampleSourceText(it) · @e.AppraisalStateText(it)</span>
                 </div>
                 @if (fwhy != null) { <div class="ca-note bad">吞噬融合：@fwhy</div> }
             }

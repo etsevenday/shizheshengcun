@@ -433,11 +433,52 @@ public sealed class GameSession
     /// <summary>城市事项面板当前对应的岗位 npcId。</summary>
     public string? CityNpcId { get; set; }
 
+    /// <summary>B18：鉴定所的事项面板内容多（三页签、样本与报价列表），与制作面板一样占前三行高。</summary>
+    public bool CityPanelTall => State != null && CityNpcId != null && E.CityNpc(CityNpcId)?.ServiceIds.Any(E.IsAppraisalService) == true;
+
     /// <summary>打开某岗位的“事项”面板（预览 0 分钟，只看不提交）。</summary>
     public void OpenCityServices(string npcId)
     {
         CityNpcId = npcId;
+        // B18：在鉴定所安全时打开面板 = 当日首次安全访问的兜底（到达时通常已锁定）；锁定后存档，之后开关窗都只读存档里的表
+        if (State != null && E.CityNpc(npcId)?.ServiceIds.Any(E.IsAppraisalService) == true && E.QuoteSnapshot(S, Clock.Day(S.GameMinute)) == null
+            && E.EnsureAppraisalQuotes(S) != null)
+            Save();
         OpenPanel("city");
+    }
+
+    // ───────────── 鉴定所（B18，R07 X3） ─────────────
+
+    /// <summary>开始详细鉴定所选样本（10 分钟 wait；完成才扣纤维、写记录）。</summary>
+    public Task<ActionResult> StartAppraise(int instanceId) => RunService(() => E.StartAppraise(S, instanceId, Guid.NewGuid().ToString("N")));
+
+    /// <summary>交出所选样本 1 份换当日一档报价（5 分钟 wait；完成才交样、产物落地面）。</summary>
+    public Task<ActionResult> StartAppraisalTrade(int instanceId, string offerId) =>
+        RunService(() => E.StartAppraisalTrade(S, instanceId, offerId, Guid.NewGuid().ToString("N")));
+
+    /// <summary>教学样本免费说明（0 分钟，不扣纤维）。</summary>
+    public ActionResult AppraisalTutorialNote(int instanceId)
+    {
+        if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        return Commit(E.AppraisalTutorialNote(S, instanceId, Guid.NewGuid().ToString("N")));
+    }
+
+    private async Task<ActionResult> RunService(Func<ActionResult> start)
+    {
+        if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        if (FormationOpen) return Commit(ActionResult.Fail(FormationOpenText));
+        var res = start();
+        Notice = res.Ok ? null : res.Reason;
+        if (res.Ok)
+        {
+            if (S.Main != null || E.DialogueLocked(S)) { Panel = null; Pop = null; }
+            Drain();
+            ReconcileSelection();
+            Save();
+        }
+        Notify();
+        if (res.Ok && !res.Duplicate && S.Main != null) await RunLoop();
+        return res;
     }
 
     /// <summary>

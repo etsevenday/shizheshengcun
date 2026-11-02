@@ -1422,3 +1422,10 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .safehouse-panel .sh-row { border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; margin-bottom: 6px; display: flex; flex-direction: column; gap: 3px; }
 .safehouse-panel .sh-row-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .safehouse-panel .sh-name { width: 9em; background: transparent; border: 1px solid var(--line); color: var(--text); border-radius: 3px; padding: 2px 4px; }
+
+/* B18 鉴定所鉴定交易面板（R07 X3.6）：三页签、样本与报价单选列表 */
+
+.appraisal-panel .ap-samples label, .appraisal-panel .ap-offers label { flex-wrap: wrap; }
+.appraisal-panel .ap-samples .small { color: #cfd5c6; }
+.appraisal-panel .ap-tabs { flex-wrap: nowrap; }
+.appraisal-panel .ap-tabs > button { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

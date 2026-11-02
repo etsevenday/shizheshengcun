@@ -493,4 +493,27 @@ public class B18AppraisalTests : TestBase
         Assert.That(Cfg.Appraisal.Offers.Any(x => x.ItemId == Sub), Is.False, "没有买回样本的报价");
         Assert.That(Cfg.City.Services.SelectMany(x => x.Choices).SelectMany(c => c.Outputs.Keys).Contains(Sub), Is.False, "城市其他服务也不出样本");
     }
+
+    /// <summary>开发入口（B18）：到鉴定所即锁当日报价；普通样本可鉴定可交易，教学样本禁售；23:55 拨时只在空闲时。CITY-N04：没有样本也能看面板说明。</summary>
+    [Test]
+    public void Dev_AppraisalEntry_And_NoSampleReading()
+    {
+        var s = New();
+        Assert.That(E.DebugAppraisal(s, "go"), Does.Contain("开发：已记营区登记"));
+        ReadDialogues(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo("h05_appraisal"));
+        var v0 = E.AppraisalPreview(s);
+        Assert.That(v0.QuoteLocked, Is.True);
+        Assert.That(v0.Samples, Is.Empty, "CITY-N04：没有样本也能打开面板读说明");
+        Assert.That(v0.Offers, Has.Count.EqualTo(3));
+        E.DebugAppraisal(s, "ordinary");
+        E.DebugAppraisal(s, "tutorial");
+        E.DebugAppraisal(s, "fiber");
+        var v = E.AppraisalPreview(s);
+        Assert.That(v.Samples.Count(x => x.Ordinary && x.AppraiseBlocked == null && x.TradeBlocked == null), Is.EqualTo(2));
+        Assert.That(v.Samples.Single(x => x.Tutorial).TradeBlocked, Is.EqualTo("教学样本不可交易"));
+        Assert.That(v.FiberBlocked, Is.Null);
+        Assert.That(E.DebugAppraisal(s, "t2355"), Does.Contain("23:55"));
+        Assert.That(Clock.MinuteOfDay(s.GameMinute), Is.EqualTo(23 * 60 + 55));
+    }
 }

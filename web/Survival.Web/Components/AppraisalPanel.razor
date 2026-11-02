@@ -1,0 +1,113 @@
+@inherits GameComponent
+
+@* 鉴定所鉴定交易面板（开发计划 v0.9 B18；R07 X3.6 玩家界面必要字段）：挂在陶岑“事项”面板里“活性样本鉴定”一项下（三城鸟瞰随 B24）。
+   服务所在地/可用状态/执行者、免费说明/详细鉴定/换物三页；样本列表（白色品质、来源类别、数量1、持有处、预留、鉴定状态）；
+   既定融合预览；鉴定耗时与耗材真实来源；当日报价v2（份数/普通品质/重量/落点/报价日/下次午夜）与剩余包数；不可用写具体原因。
+   浏览、换样本、换报价都 0 分钟、不提交；只有按“开始鉴定”“交出1份并换取……”才开工。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var v = e.AppraisalPreview(s);
+    var sample = v.Samples.FirstOrDefault(x => x.InstanceId == _sample) ?? v.Samples.FirstOrDefault(x => !x.Reserved) ?? v.Samples.FirstOrDefault();
+    var busy = G.Running ? "行动进行中" : null;
+}
+
+<section class="city-svc appraisal-panel">
+    <h3>@Title <small>@v.LocationName · 执行者：@v.ActorName · @v.Status</small></h3>
+    @if (!string.IsNullOrEmpty(NpcLine)) { <p class="city-line">“@NpcLine”</p> }
+    <div class="btn-row ap-tabs" role="tablist">
+        <button class="@(_tab == "info" ? "primary" : "secondary")" role="tab" @onclick='() => _tab = "info"'>免费说明 · 0分钟</button>
+        <button class="@(_tab == "appraise" ? "primary" : "secondary")" role="tab" @onclick='() => _tab = "appraise"'>详细鉴定 · @(v.AppraiseMinutes)分钟</button>
+        <button class="@(_tab == "trade" ? "primary" : "secondary")" role="tab" @onclick='() => _tab = "trade"'>以物换物 · @(v.TradeMinutes)分钟</button>
+    </div>
+    @if (v.PendingText != null) { <p class="warn-text small">@v.PendingText</p> }
+
+    @if (v.Samples.Count == 0)
+    {
+        <p class="small muted">随身和@(v.OutputPlace.Split('（')[0])都没有活性物质。没有样本也可以先听说明（陶岑的委托“鉴定之前”“样本去向”），不用交样本。</p>
+    }
+    else
+    {
+        <div class="city-targets ap-samples">
+            @foreach (var x in v.Samples)
+            {
+                var id = x.InstanceId;
+                <label class="@(x.Reserved ? "muted" : "")" title="@($"来源事件（开发核验）：{(x.DevSource == "" ? "无" : x.DevSource)}")">
+                    <input type="radio" name="ap-sample" checked="@(sample?.InstanceId == id)" @onchange="() => _sample = id" />
+                    <b>@x.Name</b>
+                    <span class="small">@x.QualityText · @x.SourceText · 所选数量1@(x.Count > 1 ? $"（这一堆{x.Count}份）" : "") · @x.HolderText@(x.Reserved ? " · 已预留" : "") · @x.AppraisalText</span>
+                </label>
+            }
+        </div>
+    }
+
+    @if (_tab == "info")
+    {
+        <p class="small">说明不耗时、不扣东西，也不要求先鉴定；只想判断能不能融合，看这里就够了。</p>
+        @if (sample != null)
+        {
+            <p class="small">@sample.FusionText</p>
+            @if (sample.Tutorial)
+            {
+                var sid = sample.InstanceId;
+                <div class="btn-row">
+                    <button class="primary" disabled="@(busy != null)" title="0分钟、不扣植物纤维；首次查看记入鉴定记录" @onclick="() => G.AppraisalTutorialNote(sid)">看教学样本免费说明（0分钟）</button>
+                    <span class="muted small">教学样本不需要付费鉴定，也不可交易</span>
+                </div>
+            }
+        }
+    }
+    else if (_tab == "appraise")
+    {
+        <p class="small">耗时@(v.AppraiseMinutes)分钟（固定等待，同行者一起等）· 耗材：@v.AppraiseCost · 来源：@v.FiberSourceText</p>
+        <p class="small">详细鉴定只为普通白色写一份档案：不会提升品质、不会产生新词条，也不改变融合结果；不给经验。已鉴定的再看免费、不重复收费。</p>
+        var why = v.Blocked ?? (sample == null ? "先选一份样本" : sample.AppraiseBlocked) ?? v.FiberBlocked ?? busy;
+        var sid = sample?.InstanceId ?? 0;
+        <div class="btn-row">
+            <button class="primary" disabled="@(why != null)" title="@(why ?? "开始后中途停下：已过时间保留，样本与纤维都不扣")" @onclick="() => G.StartAppraise(sid)">
+                开始鉴定（@(v.AppraiseMinutes)分钟，完成扣@(v.AppraiseCost.Split('（')[0])）
+            </button>
+            @if (why != null) { <span class="muted small">@why</span> }
+        </div>
+    }
+    else
+    {
+        <p class="small"><b>@v.QuoteTitle</b>（第@(v.QuoteDay)日@(v.QuoteLocked ? "已锁定，同日不变" : "未锁定")）：交出所选样本1份 → 换下面一包；产物落在@(v.OutputPlace)。没有货币，换到的物资不能回售或换回样本。</p>
+        @if (v.Offers.Count > 0)
+        {
+            var offer = v.Offers.FirstOrDefault(o => o.OfferId == _offer) ?? v.Offers[0];
+            <div class="city-targets ap-offers">
+                @foreach (var o in v.Offers)
+                {
+                    var oid = o.OfferId;
+                    <label title="@o.RangeText">
+                        <input type="radio" name="ap-offer" checked="@(offer.OfferId == oid)" @onchange="() => _offer = oid" />
+                        <b>@o.Text</b> <span class="small muted">@o.RangeText</span>
+                    </label>
+                }
+            </div>
+            <p class="small">今天剩余：可用@(v.QuotaAvailable) / 预留@(v.QuotaReserved) / 已用@(v.QuotaUsed)（全队每日共@(v.QuotaTotal)包，三档合计）。@v.NextRefreshText。</p>
+            var why = v.Blocked ?? v.TradeBlocked ?? (sample == null ? "先选一份样本" : sample.TradeBlocked) ?? busy;
+            var sid = sample?.InstanceId ?? 0;
+            var oid2 = offer.OfferId;
+            <div class="btn-row">
+                <button class="primary" disabled="@(why != null)" title="@(why ?? $"交出{sample?.Name}1份（{sample?.HolderText}），{v.TradeMinutes}分钟后{offer.Text}落在{v.OutputPlace}；中途停下不交样")"
+                        @onclick="() => G.StartAppraisalTrade(sid, oid2)">交出1份并换取@(offer.ItemName)×@(offer.Quantity)（@(v.TradeMinutes)分钟）</button>
+                @if (why != null) { <span class="muted small">@why</span> }
+            </div>
+        }
+        else
+        {
+            <p class="small muted">@(v.TradeBlocked ?? "当日报价表还没锁定")</p>
+        }
+    }
+</section>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string NpcLine { get; set; } = "";
+
+    private string _tab = "info";
+    private int _sample;
+    private string _offer = "";
+}

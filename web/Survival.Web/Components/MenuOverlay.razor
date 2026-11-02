@@ -177,6 +177,15 @@
                     <button class="secondary small-btn" title="当前地点的命名岗位人物离岗（由机构当班接续员代班）或回岗；只供测试岗位接续" @onclick="() => DevDone(G.E.DebugToggleCityPostAbsent(G.S))">当前地点岗位离岗/回岗</button>
                     <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugGiveCarriedOrGround(G.S, new[] { ("bandage", 1), ("cloth", 1) }))'>草药绷带1+布料1（试换药）</button>
                 </div>
+                @* B18（R57—R59）：鉴定所。传送按实际到达处理并锁当日报价；样本放当前地面 *@
+                <div class="eyebrow">鉴定交易（B18）：传送鉴定所 → 设施栏陶岑“事项”→ 活性样本鉴定（免费说明/详细鉴定/以物换物）</div>
+                <div class="btn-row">
+                    <button class="secondary small-btn" title="记营区登记，传送到鉴定所（按实际到达处理，锁定当日报价）" @onclick='() => DevDone(G.E.DebugAppraisal(G.S, "go"))'>到鉴定所（记登记）</button>
+                    <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugAppraisal(G.S, "ordinary"))'>普通样本2份（当前地面）</button>
+                    <button class="secondary small-btn" title="带教学标记，只供试禁售与免费说明；未做过教学融合时融合会得+0.1" @onclick='() => DevDone(G.E.DebugAppraisal(G.S, "tutorial"))'>教学样本1份（当前地面）</button>
+                    <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugAppraisal(G.S, "fiber"))'>植物纤维2</button>
+                    <button class="secondary small-btn" title="空闲时把时间拨到当日23:55（不结算身体），试跨午夜换物" @onclick='() => DevDone(G.E.DebugAppraisal(G.S, "t2355"))'>拨到当日23:55</button>
+                </div>
                 @* B15（R46/R47）：主线与城市委托。地牢实例（B21）前，核心记录用“记下领取”按原领取事务写事实，验证主线推进与容量 *@
                 <div class="eyebrow">任务（B15）：记下核心记录领取（主线推进、容量 C3/C4）；支线地点；战术训练材料</div>
                 <div class="btn-row">

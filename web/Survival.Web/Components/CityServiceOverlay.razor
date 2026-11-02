@@ -4,6 +4,7 @@
    列出该岗位名下全部事项的实时预览（工时、费用、效果、现在能否办），需要目标的选一名当前同行者，施济另选一项；
    预览与浏览 0 分钟、不提交。B14b（Q146 选 B）：未实装的事项不列出；已实装但条件不足的照常列出并写真实原因。
    名称与摘要用策划正式名（Q145 选 B）。
+   B18：鉴定所“活性样本鉴定”换成专用的鉴定交易面板（AppraisalPanel）。
    B15：顶部列这名岗位名下的主线与委托（接取、阅读/核对、回看、AC02 外部医疗线索）；任务类服务（整理调查记录、CH02/AC01/AC02）照常在下面办理。 *@
 @{
     var s = G.S;
@@ -62,7 +63,12 @@
                 </div>
             </section>
         }
-        @foreach (var v in services)
+        @foreach (var v in services.Where(x => e.IsAppraisalService(x.Id)))
+        {
+            @* B18：鉴定所三项在专用面板里分页办理（R07 X3.6） *@
+            <AppraisalPanel Title="@v.Title" NpcLine="@v.NpcLine" />
+        }
+        @foreach (var v in services.Where(x => !e.IsAppraisalService(x.Id)))
         {
             var id = v.Id;
             var pickTarget = PickedTarget(v);
