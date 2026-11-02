@@ -210,6 +210,9 @@ public class B13bResourceTests : TestBase
         Assert.That((p.ToolName, p.BaseMinutes, p.ToolChoice), Is.EqualTo(("撬棍", 25, true)));
         var bare = E.Preview(s, ActionRequest.Gather("w12_canal_b", null, true));
         Assert.That((bare.ToolName, bare.BaseMinutes, bare.BareHands), Is.EqualTo(((string?)null, 30, true)), "可明确改徒手");
+        // B13b 试玩修复（M279）：网页按 PreviewKey 缓存预估，徒手请求的键须与默认（自动选工具）不同，否则“改用徒手开始”显示带工具的 25 分钟
+        Assert.That(ActionRequest.Gather("w12_canal_b", null, true).PreviewKey, Is.Not.EqualTo(ActionRequest.Gather("w12_canal_b").PreviewKey));
+        Assert.That(ActionRequest.Gather("w12_canal_b").PreviewKey, Is.EqualTo(ActionRequest.Gather("w12_canal_b").PreviewKey), "同一请求键稳定，缓存照常命中");
         Assert.That(bar.Durability, Is.Not.Null);
     }
 

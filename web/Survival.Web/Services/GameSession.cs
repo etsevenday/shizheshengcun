@@ -826,7 +826,7 @@ public sealed class GameSession
 
     public ActionPreview Preview(ActionRequest r)
     {
-        var key = $"{r.Type}|{r.TargetId}|{r.InstanceId}|{r.Minutes}|{r.ToolInstanceId}|{r.PotInstanceId}|{r.BatchCount}|{string.Join(",", r.PreferredInstanceIds)}";
+        var key = r.PreviewKey;   // B13b 试玩修复：键含 BareHands，徒手预估不再读到带工具的缓存
         if (_previewCache.TryGetValue(key, out var c) && c.ver == Version) return c.p;
         var p = E.Preview(S, r);
         _previewCache[key] = (Version, p);

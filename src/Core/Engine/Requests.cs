@@ -16,6 +16,13 @@ namespace Survival.Core.Engine
         public int? ToolInstanceId { get; set; }
         /// <summary>采集/搜集明确徒手：不自动候选随身合格工具（Q121，S05 本轮章“可明确改徒手”）。显式 ToolInstanceId 优先。</summary>
         public bool BareHands { get; set; }
+
+        /// <summary>
+        /// 预估缓存键（网页 GameSession.Preview 按它缓存）：凡是会改变预估结果的请求字段都要在内。
+        /// B13b 试玩修复：原键漏了 BareHands，“改用徒手开始”按钮读到带工具的缓存预估，显示了用工具后的工时。
+        /// </summary>
+        public string PreviewKey =>
+            $"{Type}|{TargetId}|{InstanceId}|{Minutes}|{ToolInstanceId}|{PotInstanceId}|{BatchCount}|{string.Join(",", PreferredInstanceIds)}|{(BareHands ? "bare" : "")}";
         /// <summary>配方材料槽里手工指定的批次，先于自动补齐使用。</summary>
         public List<int> PreferredInstanceIds { get; set; } = new List<int>();
         /// <summary>批量制作件数（v0.6 §03 同一预留批次结转余工作量）；建造与维护只能 1。</summary>
