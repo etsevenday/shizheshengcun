@@ -248,6 +248,28 @@ public class B15SideQuestTests : TestBase
         Assert.That(s.Progress.Flags, Does.Contain(Q("AC02", "completed")));
     }
 
+    /// <summary>
+    /// CITY-Q151-02：科学院支线实装后，观察范围委托可接时与尹珂交谈播 NTL_0304（逐字定稿、不含内部编号），0 分钟、不收费不计时；
+    /// 已接未完成时播“委托回报”；旧对白不重播奖励。
+    /// </summary>
+    [Test]
+    public void CITY_Q151_02_YinKeQuestLinePlays()
+    {
+        var s = At("r08_observation", Q("FA03", "accepted"), "academy_observation_pass");
+        Ok(E.TalkNpc(s, "npc_yin_ke"));
+        ReadDialogues(s);
+        var before = (s.GameMinute, s.Items.Sum(i => i.Count), s.Progress.Flags.Count);
+        Ok(E.TalkNpc(s, "npc_yin_ke"));
+        ReadDialogues(s);
+        Assert.That(s.Story.DialogueLog.Any(d => d.EventId.StartsWith("npc_yin_ke_dialogue_quest_offer")), Is.True);
+        Assert.That(Cfg.Story.Dialogues.Single(d => d.Id == "NTL_0304").Text, Is.EqualTo("这里只接续你已选的观察范围，不再收一次观察协作工作时间。"));
+        Assert.That((s.GameMinute, s.Items.Sum(i => i.Count), s.Progress.Flags.Count), Is.EqualTo(before), "不收费、不计时、不写事实");
+        s.Progress.Flags.Add(Q("AC01", "accepted"));
+        Ok(E.TalkNpc(s, "npc_yin_ke"));
+        ReadDialogues(s);
+        Assert.That(s.Story.DialogueLog.Last().EventId, Does.StartWith("npc_yin_ke_dialogue_quest_return"));
+    }
+
     /// <summary>CITY-N06：工作进行中存档读档，续完只完成一次；读档后再请求不重复奖励。</summary>
     [Test]
     public void CITYN06_SaveLoadMidWork_Idempotent()

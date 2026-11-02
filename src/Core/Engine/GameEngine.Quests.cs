@@ -448,11 +448,15 @@ namespace Survival.Core.Engine
             LiveQuests.FirstOrDefault(q => q.NpcId == npcId && q.Accept == "talk" && !QuestAccepted(s, q.Id) && !QuestDone(s, q.Id)
                                            && QuestShown(s, q) && QuestRequiresBlocked(s, q) == null);
 
-        /// <summary>这名岗位有可接但要办事项的主线（接待处路线）或进行中的任务：交谈播“委托”/“委托回报”一组。</summary>
+        /// <summary>
+        /// 交谈时岗位的委托状态（narrative-texts“npc slot state quest_offer/quest_return”）：名下或岗位资料里关联的已实装任务（city-npc-data questIds）
+        /// 有可接未接的播“委托”一组，有进行中的播“委托回报”一组；都没有为 null（闲谈）。可在交谈中直接接取的已先接取，不走这里。
+        /// </summary>
         private string? QuestTalkState(GameState s, CityNpcConfig n)
         {
-            if (LiveQuests.Any(q => q.NpcId == n.NpcId && q.Accept == "service" && !QuestAccepted(s, q.Id) && QuestShown(s, q))) return "quest_offer";
-            if (LiveQuests.Any(q => q.NpcId == n.NpcId && QuestAccepted(s, q.Id) && !QuestDone(s, q.Id))) return "quest_return";
+            var related = LiveQuests.Where(q => q.NpcId == n.NpcId || n.QuestIds.Contains(q.Id)).ToList();
+            if (related.Any(q => !QuestAccepted(s, q.Id) && !QuestDone(s, q.Id) && QuestShown(s, q) && QuestRequiresBlocked(s, q) == null)) return "quest_offer";
+            if (related.Any(q => QuestAccepted(s, q.Id) && !QuestDone(s, q.Id))) return "quest_return";
             return null;
         }
 
