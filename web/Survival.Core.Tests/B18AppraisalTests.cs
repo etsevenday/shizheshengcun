@@ -245,4 +245,72 @@ public class B18AppraisalTests : TestBase
         Assert.That(subs.Single(i => i.Appraisal == null).Count, Is.EqualTo(2));
         Assert.That(subs.All(i => i.Source!.GrantEventId == "dev-substance-1" && i.Owner == s.Ground), Is.True);
     }
+
+    // ───────────── R58 世界日报价表 ─────────────
+
+    /// <summary>AT13：三档输出只落在闭整数区间，每档各值近似等概率（按世界日统计），种子相同则结果相同。</summary>
+    [Test]
+    public void AT13_QuoteBoundsAndUniform()
+    {
+        foreach (var o in Cfg.Appraisal.Offers)
+        {
+            var counts = new Dictionary<int, int>();
+            const int days = 1200;
+            for (var d = 1; d <= days; d++)
+            {
+                var n = GameEngine.QuoteQuantity("12345", Cfg.Appraisal.ServiceId, d, o, Cfg.Appraisal.QuoteVersion);
+                Assert.That(n, Is.InRange(o.Min, o.Max), o.Id);
+                counts[n] = counts.TryGetValue(n, out var c) ? c + 1 : 1;
+                Assert.That(GameEngine.QuoteQuantity("12345", Cfg.Appraisal.ServiceId, d, o, Cfg.Appraisal.QuoteVersion), Is.EqualTo(n), "同种子同结果");
+            }
+            var k = o.Max - o.Min + 1;
+            Assert.That(counts.Keys.OrderBy(x => x), Is.EqualTo(Enumerable.Range(o.Min, k)), o.Id);
+            foreach (var kv in counts) Assert.That(kv.Value, Is.InRange(days / k * 0.85, days / k * 1.15), $"{o.Id} 数量{kv.Key}");
+        }
+    }
+
+    /// <summary>
+    /// AT14/COMP13：当日首次安全到达即锁完整三档并存档；之后开窗、读档、离开再来、代班都只读存档里的表（用改过的存档值验证没有重算）；
+    /// 午夜后不自动换表，下一次安全访问才生成新一日的表，旧表不被改写。
+    /// </summary>
+    [Test]
+    public void AT14_COMP13_QuoteLockedOnFirstSafeVisit_NoReroll()
+    {
+        var s = New();
+        Assert.That(s.City.Quotes, Is.Empty);
+        E.DebugMapTeleport(s, "h05_appraisal");
+        ReadDialogues(s);
+        var day = Clock.Day(s.GameMinute);
+        var snap = s.City.Quotes.Single();
+        Assert.That((snap.Day, snap.QuoteVersion, snap.ServiceId, snap.CampaignId), Is.EqualTo((day, "white_barter_v2", "appraisal_white_v1", s.Seed.ToString())));
+        Assert.That(snap.Offers.Keys, Is.EquivalentTo(new[] { "white_for_cloth", "white_for_scrap", "white_for_water" }));
+        // 把存档里的值改成区间外的哨兵：之后任何途径都只回放它
+        snap.Offers["white_for_cloth"] = 99;
+        Assert.That(E.AppraisalPreview(s).Offers.Single(o => o.OfferId == "white_for_cloth").Quantity, Is.EqualTo(99), "开窗只读存档");
+        E.EnsureAppraisalQuotes(s);
+        var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        E.EnsureAppraisalQuotes(m);
+        Assert.That(m.City.Quotes.Single().Offers["white_for_cloth"], Is.EqualTo(99), "读档不重抽");
+        E.DebugToggleCityPostAbsent(m);
+        Assert.That(E.AppraisalPreview(m).Offers.Single(o => o.OfferId == "white_for_cloth").Quantity, Is.EqualTo(99), "代班不重抽");
+        E.DebugMapTeleport(m, "h02_square");
+        E.DebugMapTeleport(m, "h05_appraisal");
+        ReadDialogues(m);
+        Assert.That(m.City.Quotes.Single().Offers["white_for_cloth"], Is.EqualTo(99), "同日离开再来不重抽");
+        // 跨午夜留在鉴定所：不自动换表；下一次安全访问（打开面板）才生成新日表
+        Start(m, ActionRequest.Wait(60));
+        m.GameMinute = day * Clock.MinutesPerDay - 30;
+        Run(m);
+        Assert.That(Clock.Day(m.GameMinute), Is.EqualTo(day + 1));
+        Assert.That(m.City.Quotes.Count, Is.EqualTo(1), "午夜不自动生成");
+        Assert.That(E.AppraisalPreview(m).QuoteLocked, Is.False);
+        var next = E.EnsureAppraisalQuotes(m)!;
+        Assert.That(next.Day, Is.EqualTo(day + 1));
+        Assert.That(m.City.Quotes.Single(q => q.Day == day).Offers["white_for_cloth"], Is.EqualTo(99), "新日表不改旧表");
+        Assert.That(next.Offers.Values.All(n => n is >= 1 and <= 3), Is.True);
+        // 不在鉴定所时不生成
+        var far = New();
+        Assert.That(E.EnsureAppraisalQuotes(far), Is.Null);
+        Assert.That(far.City.Quotes, Is.Empty);
+    }
 }

@@ -9,6 +9,7 @@ namespace Survival.Core.Engine
 
         private void FillTradePreview(GameState s, AppraisalView v)
         {
+            FillQuotePreview(s, v);
             v.TradeBlocked = "以物换物尚未开放";
         }
 

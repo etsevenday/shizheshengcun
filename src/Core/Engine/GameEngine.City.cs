@@ -124,6 +124,8 @@ namespace Survival.Core.Engine
         /// <summary>实际到达成功后的城市事务：持登记授权真实走到广场，写 hub_registered（C2、登记默认知识）与 QMAP01 完成；幂等。</summary>
         private void ArriveCity(GameState s, string locationId, List<string> notes)
         {
+            // B18：当日首次安全到达鉴定所时锁定当日报价表（R07 X3.3、开发假设 B18-1）
+            if (locationId == Ap.LocationId) EnsureAppraisalQuotes(s);
             var reg = Config.City.Registration;
             if (string.IsNullOrEmpty(reg.SquareLocation) || locationId != reg.SquareLocation) return;
             var f = s.Progress.Flags;
