@@ -10,7 +10,10 @@
 @{
     var s = G.S;
     var e = G.E;
-    var obj = e.CurrentObjective(s);
+    // B15a 试玩修复 M339（Q155“对白锁仍优先”）：对白显示期间右栏保持对白开始前的主目标，读完再换
+    var live = e.CurrentObjective(s);
+    if (G.DialogueLocked && _held != null) live = _held; else _held = live;
+    var obj = live;
     var open = G.IsFoldOpen(FoldKey);
 }
 @if (obj != null && !s.Progress.Dead && !G.InBattleUi)
@@ -74,6 +77,7 @@
     public const string FoldKey = "task_corner";
 
     private bool showSugg;
+    private PrologueObjectiveView? _held;
     private string? flash;
     private string? _pending;
     private int _flashSeq;

@@ -794,7 +794,8 @@ namespace Survival.Core.Engine
                 stage = "D5";
                 obj = s.CurrentLocation == Config.Prologue.Visitor.LocationId ? "visitor_talk" : "visitor_return";
             }
-            else if (MainQuestObjectiveOn(s))
+            // B15a 试玩修复 M339（Q155“对白锁仍优先”）：登记那次到达的对白还没读完时不切，读完对白（安全边界）再切到当前主线
+            else if (MainQuestObjectiveOn(s) && !(DialogueLocked(s) && p.ObjectiveId != MainQuestObjectiveId))
             {
                 // B15a（Q155 选 A）：营区登记完成后主目标接续到当前主线（取代 S15 登记后仍显示 route_onward 的冲突部分）
                 stage = "mainline";

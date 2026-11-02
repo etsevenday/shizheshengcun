@@ -32988,6 +32988,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "在营区广场听许安说外面的路。",
+        "stepLocked": "",
         "stepActive": "在营区广场听许安说外面的路。",
         "result": "两方接触线索已记入日志：外面的路分向新生教会与灰塔科学院，可以都去，也可以先挑一边，不选效忠对象（不发第二份登记物资）"
       },
@@ -33025,6 +33026,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到教会接待庭向祁闻询问公开路线（可拒绝宣誓）。",
+        "stepLocked": "",
         "stepActive": "从教堂墓园进入教会地下圣所，在核心领取圣所旧路档册。",
         "result": "已取得圣所旧路档册（首次关键记录）"
       },
@@ -33062,6 +33064,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到科学院接待处向温澄询问环境调查路线（可拒绝身体检测）。",
+        "stepLocked": "",
         "stepActive": "从封存实验楼进入灰塔封存区，在核心领取封存区安全规程。",
         "result": "已取得封存区安全规程（首次关键记录）"
       },
@@ -33104,6 +33107,7 @@
           "FA04_merged"
         ],
         "stepOffer": "两份调查记录到齐后，到营区广场请许安整理调查记录（10分钟）。",
+        "stepLocked": "",
         "stepActive": "在营区广场整理调查记录（10分钟，两段都完成才算完成；中途停下保留已完成的段）。",
         "result": "调查记录整理完成，旧城后段（警备仓）通行已按这份记录办理"
       },
@@ -33142,7 +33146,8 @@
         ],
         "completeRequiresAccepted": true,
         "completeFacts": [],
-        "stepOffer": "从警备仓外进入旧城警备仓，在封存仓领取警备仓备用电源，再到营区工坊和罗铮交谈。",
+        "stepOffer": "到营区工坊和罗铮交谈，接取联络任务。",
+        "stepLocked": "从警备仓外进入旧城警备仓，在封存仓领取警备仓备用电源，再到营区工坊和罗铮交谈。",
         "stepActive": "从山顶瞭望台进入深野通信站，在联络台完成联络。",
         "result": "联络记录已保存，本章通信目标完成（不提供根治药、永久免疫或新的扩容）"
       },
@@ -33179,6 +33184,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到鉴定所和陶岑交谈。",
+        "stepLocked": "",
         "stepActive": "在鉴定所阅读鉴定说明（0分钟，不用交出样本）。",
         "result": "鉴定说明已读（不发物、不交样本）"
       },
@@ -33215,6 +33221,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "再到鉴定所和陶岑交谈。",
+        "stepLocked": "",
         "stepActive": "在鉴定所了解样本保留、融合与交易的范围（0分钟，不要求交易一次）。",
         "result": "交易说明已读（不奖励可回卖物）"
       },
@@ -33251,6 +33258,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到收容所和杜穗交谈。",
+        "stepLocked": "",
         "stepActive": "在收容所阅读固定同行者、周期候选与同行补员的区别（0分钟）。",
         "result": "招募说明已读（不招人、不刷新名单、不扩大队伍）"
       },
@@ -33287,6 +33295,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到收容所和杜穗交谈。",
+        "stepLocked": "",
         "stepActive": "在收容所查看候补照护与伤病风险说明（0分钟，可以不让任何人留守）。",
         "result": "留守说明已读（不改队伍、不清伤病）"
       },
@@ -33325,6 +33334,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到施济处和白苓交谈。",
+        "stepLocked": "",
         "stepActive": "取得圣所旧路档册后，在施济处核对物资账（10分钟）。",
         "result": "公开账核对记录已保存（不领取另一份地牢箱）"
       },
@@ -33364,6 +33374,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到训诫堂和纪牧交谈。",
+        "stepLocked": "",
         "stepActive": "在训诫堂交接公开资料（选抄录或回营区备份），或到典藏室抄录路线备份（10分钟）。",
         "result": "路线备份日志已保存（不宣誓、不交出任何人）"
       },
@@ -33402,6 +33413,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到检测室和季闻交谈。",
+        "stepLocked": "",
         "stepActive": "在检测室核对观察范围，选只核对环境记录或只读现有状态（10分钟，不改身体数值）。",
         "result": "同意范围日志与已知指标说明已保存（拒绝身体观察不影响主线）"
       },
@@ -33440,6 +33452,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "到档案室和邵宁交谈。",
+        "stepLocked": "",
         "stepActive": "在档案室比对观察报告（10分钟）。",
         "result": "核对笔记与外部医疗线索已保存（不授新药、永久免疫或容量）"
       },
@@ -33474,6 +33487,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "在营区广场和林昭交谈，读完邀约后选择是否登记同行。",
+        "stepLocked": "",
         "stepActive": "在营区广场和林昭交谈，读完邀约后选择是否登记同行。",
         "result": "林昭登记入名册（首次装备随登记一次生成）"
       },
@@ -33511,6 +33525,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "在营区工坊和周砚交谈，读完邀约后选择是否登记同行。",
+        "stepLocked": "",
         "stepActive": "在营区工坊和周砚交谈，读完邀约后选择是否登记同行。",
         "result": "周砚登记入名册（首次装备随登记一次生成）"
       },
@@ -33548,6 +33563,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "在营区医务室和沈禾交谈，读完邀约后选择是否登记同行。",
+        "stepLocked": "",
         "stepActive": "在营区医务室和沈禾交谈，读完邀约后选择是否登记同行。",
         "result": "沈禾登记入名册（首次装备随登记一次生成）"
       },
@@ -33584,6 +33600,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "在营区广场和唐梨交谈，读完邀约后选择是否登记同行。",
+        "stepLocked": "",
         "stepActive": "在营区广场和唐梨交谈，读完邀约后选择是否登记同行。",
         "result": "唐梨登记入名册（首次装备随登记一次生成）"
       },
@@ -33619,6 +33636,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "在营区工坊和顾承交谈，读完邀约后选择是否登记同行。",
+        "stepLocked": "",
         "stepActive": "在营区工坊和顾承交谈，读完邀约后选择是否登记同行。",
         "result": "顾承登记入名册（首次装备随登记一次生成）"
       },
@@ -33656,6 +33674,7 @@
         "completeRequiresAccepted": false,
         "completeFacts": [],
         "stepOffer": "在营区广场和叶洵交谈，读完邀约后选择是否登记同行。",
+        "stepLocked": "",
         "stepActive": "在营区广场和叶洵交谈，读完邀约后选择是否登记同行。",
         "result": "叶洵登记入名册（首次装备随登记一次生成）"
       }

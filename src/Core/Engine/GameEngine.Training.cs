@@ -19,6 +19,9 @@ namespace Survival.Core.Engine
         /// <summary>某人下一阶的训练档；已到最高阶为 null。</summary>
         private TrainingTierConfig? NextTrainingTier(ActorState a) => Training.Tiers.FirstOrDefault(t => t.Tier == a.TacticalTier + 1);
 
+        /// <summary>“在…后”的“在”：条件说法本身已以“在”开头（门槛说明表如“在警备仓封存仓核心领取…”）时不再重复（B15a 试玩修复 M339）。</summary>
+        private static string AtPhrase(string cond) => cond.StartsWith("在", System.StringComparison.Ordinal) ? cond : "在" + cond;
+
         private string TierCost(TrainingTierConfig t) => string.Join("、", t.Inputs.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"));
 
         /// <summary>某人现在不能训练下一阶的原因；可以为 null。</summary>
@@ -45,7 +48,7 @@ namespace Survival.Core.Engine
             v.StartLabel = "开始训练";
             v.EffectText = "选一名当前同行者（含你）训练到下一阶：阶位0/1/2 每次普通行动分别有"
                 + string.Join("/", Config.Scope.ApByTier) + "个行动点；"
-                + string.Join("；", tiers.Select(t => $"阶位{t.Tier}{(t.MinCapacity > 0 ? $"在队伍容量C{t.MinCapacity}后" : "")}{(t.RequiresAll.Count > 0 ? "在" + string.Join("、", t.RequiresAll.Select(RequirementText)) + "后" : "")}{(t.RequiresAny.Count > 0 ? "在" + AnyRequirementText(t.RequiresAny) + "后" : "")}花{TierCost(t)}、{t.Minutes}分钟"))
+                + string.Join("；", tiers.Select(t => $"阶位{t.Tier}{(t.MinCapacity > 0 ? $"在队伍容量C{t.MinCapacity}后" : "")}{(t.RequiresAll.Count > 0 ? AtPhrase(string.Join("、", t.RequiresAll.Select(RequirementText))) + "后" : "")}{(t.RequiresAny.Count > 0 ? AtPhrase(AnyRequirementText(t.RequiresAny)) + "后" : "")}花{TierCost(t)}、{t.Minutes}分钟"))
                 + "，每人每阶一次。材料取你随身或当地地面，完成时扣；全队一起等待，中途停下不扣材料、不升阶。训练不是熟练度，不给经验";
             v.Targets = PresentTargets(s, a => TrainingBlocked(s, a), a =>
             {

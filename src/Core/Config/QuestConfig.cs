@@ -65,6 +65,8 @@ namespace Survival.Core.Config
         public List<string> CompleteFacts { get; set; } = new List<string>();
         /// <summary>可接时的“下一步”。</summary>
         public string StepOffer { get; set; } = "";
+        /// <summary>已显示但前置未满足时的“下一步”（空 = 同 StepOffer）。B15a 试玩修复 M339：FA05 未领电源/已领电源分两句。</summary>
+        public string StepLocked { get; set; } = "";
         /// <summary>进行中的“下一步”。</summary>
         public string StepActive { get; set; } = "";
         /// <summary>完成结果短句（日志与任务册）。</summary>

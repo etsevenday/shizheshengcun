@@ -160,7 +160,7 @@ namespace Survival.Core.Engine
             {
                 v.Status = req == null ? "available" : "locked";
                 v.StatusText = req == null ? "可接" : "未满足条件";
-                v.Step = q.StepOffer;
+                v.Step = req != null && !string.IsNullOrEmpty(q.StepLocked) ? q.StepLocked : q.StepOffer;
                 v.AcceptBlocked = req;
                 if (req == null && (q.Accept == "talk"))
                 {

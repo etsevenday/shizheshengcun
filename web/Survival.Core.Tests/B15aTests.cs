@@ -432,4 +432,52 @@ public class B15aTests : TestBase
         Go(s, "h02_square");
         Assert.That(s.Story.DialogueLog.Count(d => d.EventId.StartsWith("CH02_hub_backup_turnin")), Is.EqualTo(1));
     }
+
+    // ───────────── 试玩修复 M339 ─────────────
+
+    /// <summary>M339：训练说明里条件已以“在”开头时不重复“在”（“阶位2在警备仓封存仓核心领取…后”）。</summary>
+    [Test]
+    public void M339_TrainingEffectText_NoDoubleZai()
+    {
+        var s = At("h03_workshop", Registered);
+        var v = E.CityServicePreview(s, GameEngine.TrainingServiceId)!;
+        Assert.That(v.EffectText, Does.Not.Contain("在在"));
+        Assert.That(v.EffectText, Does.Contain("阶位2在警备仓封存仓核心领取警备仓备用电源，或完成“同一条归路”后花"));
+        Assert.That(v.EffectText, Does.Contain("阶位1在队伍容量C3后"));
+    }
+
+    /// <summary>M339（Q155“对白锁仍优先”）：登记那次到达广场时许安对白还在播，主目标保持原目标；读完对白后才切到当前主线。</summary>
+    [Test]
+    public void M339_MainQuestObjective_WaitsForDialogue()
+    {
+        var s = At("h01_gate", "camp_route_known");
+        Ok(E.StartCityService(s, "hub_registration_existing"));
+        ReadDialogues(s);
+        var before = E.CurrentObjective(s)!.Title;
+        Assert.That(before, Is.Not.EqualTo("被称作新生的人"));
+        Start(s, ActionRequest.Travel("h02_square"));
+        Run(s);
+        Assert.That(s.Progress.Flags, Does.Contain("hub_registered"));
+        Assert.That(E.DialogueLocked(s), Is.True, "许安公开说明在播");
+        Assert.That(s.Prologue.ObjectiveId, Is.Not.EqualTo(GameEngine.MainQuestObjectiveId));
+        Assert.That(E.CurrentObjective(s)!.Title, Is.EqualTo(before), "对白期间保持原目标");
+        ReadDialogues(s);
+        Assert.That(s.Prologue.ObjectiveId, Is.EqualTo(GameEngine.MainQuestObjectiveId));
+        Assert.That(E.CurrentObjective(s)!.Title, Is.EqualTo("被称作新生的人"), "读完再切");
+    }
+
+    /// <summary>M339：FA05 未领电源（未满足条件）与已领电源（可接）的下一步分两句；主目标同步。</summary>
+    [Test]
+    public void M339_Fa05StepByStatus()
+    {
+        var s = At("h03_workshop", Registered.Concat(new[] { Q("FA01", "completed"), Q("FA02", "completed"), Q("FA03", "completed"), Q("FA04", "completed") }).ToArray());
+        var v = E.QuestViewOf(s, "FA05")!;
+        Assert.That((v.Status, v.Step), Is.EqualTo(("locked", "从警备仓外进入旧城警备仓，在封存仓领取警备仓备用电源，再到营区工坊和罗铮交谈。")));
+        E.DebugClaimRecord(s, "d03_08_unique");
+        ReadDialogues(s);
+        v = E.QuestViewOf(s, "FA05")!;
+        Assert.That((v.Status, v.Step), Is.EqualTo(("available", "到营区工坊和罗铮交谈，接取联络任务。")));
+        E.PrologueBoundary(s);
+        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("到营区工坊和罗铮交谈，接取联络任务。"));
+    }
 }

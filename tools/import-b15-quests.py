@@ -75,7 +75,9 @@ QUESTS = [
     dict(id="FA05", title="联络仍在继续", kind="main", npcId="npc_luo_zheng", locationId="h03_workshop",
          showAny=[qf("FA04", "completed"), "communication_power_claimed"], requiresAll=["communication_power_claimed"], accept="talk",
          offerDialogue="FA05_power_contact", completeDialogue="FA05_contact_complete", completeByAny=["chapter_contact"], completeRequiresAccepted=True,
-         stepOffer="从警备仓外进入旧城警备仓，在封存仓领取警备仓备用电源，再到营区工坊和罗铮交谈。",
+         # B15a 试玩修复 M339：未领电源（未满足条件）与已领电源（可接）分两句，开发方措辞（策划未给逐字下一步，B15-6）
+         stepLocked="从警备仓外进入旧城警备仓，在封存仓领取警备仓备用电源，再到营区工坊和罗铮交谈。",
+         stepOffer="到营区工坊和罗铮交谈，接取联络任务。",
          stepActive="从山顶瞭望台进入深野通信站，在联络台完成联络。",
          result="联络记录已保存，本章通信目标完成（不提供根治药、永久免疫或新的扩容）"),
     # ───────── 支线（A11 §5）─────────
@@ -237,7 +239,7 @@ def main():
             "workRequiresAll": q.get("workRequiresAll", []), "workLabel": q.get("workLabel", ""),
             "completeByAny": q.get("completeByAny", []), "completeRequiresAccepted": q.get("completeRequiresAccepted", False),
             "completeFacts": q.get("completeFacts", []),
-            "stepOffer": q["stepOffer"], "stepActive": q["stepActive"], "result": q["result"],
+            "stepOffer": q["stepOffer"], "stepLocked": q.get("stepLocked", ""), "stepActive": q["stepActive"], "result": q["result"],
         })
 
     # 任务类服务开放，选项取同一任务对白的 choices（两种选择共一本任务账）
