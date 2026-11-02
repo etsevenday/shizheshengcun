@@ -61,7 +61,8 @@ namespace Survival.Core.Config
             foreach (var l in c.Locations.Where(l => l.DungeonId != null && !dungeons.Contains(l.DungeonId)))
                 e.Add($"地点 {l.Id} 的地牢 {l.DungeonId} 未定义");
             foreach (var kv in c.Map.ArrivalFacts) if (!locs.Contains(kv.Key)) e.Add($"到达事实地点 {kv.Key} 不存在");
-            foreach (var m in c.Map.ResourceMarkers) if (!locs.Contains(m.NodeId)) e.Add($"资源标记 {m.Id} 的地点 {m.NodeId} 不存在");
+            foreach (var lc in c.Map.LegacyClaims) if (!locs.Contains(lc.Node)) e.Add($"旧唯一箱 {lc.ClaimId} 的新节点 {lc.Node} 不存在");
+            foreach (var kv in c.Map.LegacyCoreNodes) if (!locs.Contains(kv.Value)) e.Add($"旧核心节点 {kv.Key} 的新节点 {kv.Value} 不存在");
         }
 
         public static List<string> Validate(GameConfig c)
@@ -118,8 +119,16 @@ namespace Survival.Core.Config
                 if (r.BaseMinutes <= 0 || r.BaseMinutes % tick != 0) e.Add($"资源点 {r.NodeId} 时长须为{tick}的正倍数");
                 if (r.RevealAt.HasValue && !milestoneSet.Contains(r.RevealAt.Value)) e.Add($"资源点 {r.NodeId} revealAt 不在 25/50/75/100 中");
                 if (!r.RevealAt.HasValue && !r.RevealOnVisit) e.Add($"资源点 {r.NodeId} 没有发现条件");
-                foreach (var o in r.Outputs.Keys)
+                if (r.IsCampaign)
+                {
+                    // 核心记录不是物品（不发物资卡当凭证，S05 四生命周期）
+                    if (string.IsNullOrEmpty(r.RecordId)) e.Add($"资源点 {r.NodeId} 是唯一领取却没有记录 ID");
+                    if (r.Scope != ResourceScopes.Campaign) e.Add($"资源点 {r.NodeId} 唯一领取的 scope 须为 campaignClaimId");
+                }
+                else foreach (var o in r.Outputs.Keys)
                     if (!items.Contains(o)) e.Add($"资源点 {r.NodeId} 产出物品 {o} 不存在");
+                if (r.IsInstance && (r.Refills || !locs.Contains(r.LocationId) || c.Locations.First(l => l.Id == r.LocationId).DungeonId == null))
+                    e.Add($"资源点 {r.NodeId} 是地牢普通箱，须在地牢房间且不日补");
                 if (r.IsUnits && r.Outputs.Count != 1) e.Add($"资源点 {r.NodeId} 按件数计库存时只能有一种产物");
                 if (!r.IsUnlimited && !r.Cap.HasValue) e.Add($"资源点 {r.NodeId} 缺少上限");
                 if (r.ToolBonus != null && !c.Items.Any(i => i.ToolTag == r.ToolBonus.ToolTag))
@@ -159,10 +168,12 @@ namespace Survival.Core.Config
                 else if (!c.LootTables.ContainsKey(l.LootTableId)) e.Add($"地点 {l.Id} 的掉落表 {l.LootTableId} 不存在");
                 if (l.ExploreMinutes.HasValue && (l.ExploreMinutes.Value <= 0 || l.ExploreMinutes.Value % tick != 0)) e.Add($"地点 {l.Id} 探索时长须为{tick}的正倍数");
                 if (l.ExploreIncrement.HasValue && (l.ExploreIncrement.Value <= 0 || l.ExploreIncrement.Value > 100)) e.Add($"地点 {l.Id} 探索增量须在1到100之间");
-                if (!l.ClearEnabled) continue;   // 新节点清理参数已导入但本批不开放（B12），不校验
+                if (!l.ClearEnabled) continue;
                 var cl = l.Clear;
                 if (cl.Cap < 1) e.Add($"地点 {l.Id} 清理次数上限须≥1");
-                if (cl.RefillIntervalMinutes <= 0 || cl.RefillIntervalMinutes % tick != 0) e.Add($"地点 {l.Id} 清理恢复间隔须为{tick}的正倍数");
+                if (l.ClearPerGeneration) { if (l.DungeonId == null) e.Add($"地点 {l.Id} 每代清理只用于地牢房间"); }
+                else if (cl.RefillIntervalMinutes <= 0 || cl.RefillIntervalMinutes % tick != 0) e.Add($"地点 {l.Id} 清理恢复间隔须为{tick}的正倍数");
+                if (l.ClearMinutes.HasValue && (l.ClearMinutes.Value <= 0 || l.ClearMinutes.Value % tick != 0)) e.Add($"地点 {l.Id} 清理时长须为{tick}的正倍数");
                 if (cl.InitialCharges < 0 || cl.InitialCharges > cl.Cap) e.Add($"地点 {l.Id} 初始清理次数须在0到上限之间");
             }
             foreach (var kv in c.LootTables)

@@ -56,14 +56,14 @@ namespace Survival.Core.Save
                 throw new SaveVersionException(version ?? "未知");
             var s = JsonConvert.DeserializeObject<GameState>(json, Settings)
                     ?? throw new SaveVersionException("损坏");
-            // 配置新增地点（B11 v3 地图起）时当前版本的档也补地点状态，只补缺的（幂等）
-            if (config != null) SaveMigrator.EnsureLocationStates(s, config);
+            // 配置新增地点（B11 v3 地图起）或资源点（B12）时当前版本的档也补状态，只补缺的（幂等）
+            if (config != null) SaveMigrator.EnsureStates(s, config);
             return s;
         }
 
         private static bool IsMigratable(string? version) =>
             version == SaveMigrator.LegacySchema || version == SaveMigrator.Schema3 || version == SaveMigrator.Schema4 || version == SaveMigrator.Schema5
-            || version == SaveMigrator.Schema6 || version == SaveMigrator.Schema7 || version == SaveMigrator.Schema8 || version == SaveMigrator.Schema9 || version == SaveMigrator.Schema10 || version == SaveMigrator.Schema11 || version == SaveMigrator.Schema12 || version == SaveMigrator.Schema13 || version == SaveMigrator.Schema14 || version == SaveMigrator.Schema15 || version == SaveMigrator.Schema16 || version == SaveMigrator.Schema17 || version == SaveMigrator.Schema18 || version == SaveMigrator.Schema19;
+            || version == SaveMigrator.Schema6 || version == SaveMigrator.Schema7 || version == SaveMigrator.Schema8 || version == SaveMigrator.Schema9 || version == SaveMigrator.Schema10 || version == SaveMigrator.Schema11 || version == SaveMigrator.Schema12 || version == SaveMigrator.Schema13 || version == SaveMigrator.Schema14 || version == SaveMigrator.Schema15 || version == SaveMigrator.Schema16 || version == SaveMigrator.Schema17 || version == SaveMigrator.Schema18 || version == SaveMigrator.Schema19 || version == SaveMigrator.Schema20;
 
         /// <summary>schema 9 前在顶层的主角个人字段（R08 §5“旧档主角创建 actorId 一次”）。</summary>
         private static readonly string[] LegacyActorFields =

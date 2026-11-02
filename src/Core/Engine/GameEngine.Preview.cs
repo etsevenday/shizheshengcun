@@ -221,21 +221,27 @@ namespace Survival.Core.Engine
                 case ActionType.Clear:
                 {
                     var here = s.CurrentLocation;
-                    var cfg = _locs[here].Clear;
+                    var lc = _locs[here];
+                    var cfg = lc.Clear;
+                    var label = ClearLabelAt(here);
                     var (charges, _) = ClearChargesAt(s, here);
-                    p.BaseMinutes = Config.Actions.ClearMinutes;
+                    p.BaseMinutes = ClearMinutesAt(here);
                     p.ClearCharges = charges;
                     p.ClearCap = cfg.Cap;
                     p.NextRefillMinutes = NextClearRefillMinutes(s, here);
                     p.LootOdds = LootOdds(here);
-                    p.Notes.Add($"开始时扣1次清理机会（当前{charges}/{cfg.Cap}）；取消、中途死亡或未找到物资都不返还");
-                    p.Notes.Add(p.NextRefillMinutes.HasValue
-                        ? $"次数随世界时间串行恢复：每{Clock.Duration(cfg.RefillIntervalMinutes)}恢复1次，距下一次{Clock.Duration(p.NextRefillMinutes.Value)}"
-                        : $"次数已满；用掉后每{Clock.Duration(cfg.RefillIntervalMinutes)}恢复1次");
+                    p.Notes.Add($"开始时扣1次{label}机会（当前{charges}/{cfg.Cap}）；取消、中途死亡或未找到物资都不返还");
+                    if (lc.ClearPerGeneration)
+                        p.Notes.Add($"地牢房间每代{cfg.Cap}次：不随世界时间恢复，地牢换代后才恢复；不领物资箱、守卫或核心记录");
+                    else
+                        p.Notes.Add(p.NextRefillMinutes.HasValue
+                            ? $"次数随世界时间串行恢复：每{Clock.Duration(cfg.RefillIntervalMinutes)}恢复1次，距下一次{Clock.Duration(p.NextRefillMinutes.Value)}"
+                            : $"次数已满；用掉后每{Clock.Duration(cfg.RefillIntervalMinutes)}恢复1次");
                     p.Notes.Add("不增加探索度，不发现新路线或资源点，不消耗资源点库存");
                     p.Notes.Add("产物留在当前地面，不会自动拾取");
+                    if (lc.Danger is int danger) p.Notes.Add(DangerText(danger));
                     if (Config.CombatEnabled) p.Notes.Add(EncounterNote(s, here, ActionType.Clear));
-                    p.ConfirmText = $"开始清理·{Config.Actions.ClearMinutes}分钟";
+                    p.ConfirmText = $"开始{label}·{p.BaseMinutes}分钟";
                     break;
                 }
                 case ActionType.Gather:

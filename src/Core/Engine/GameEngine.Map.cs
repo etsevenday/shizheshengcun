@@ -368,8 +368,7 @@ namespace Survival.Core.Engine
         {
             var here = s.CurrentLocation;
             if (!_locs[here].ExploreEnabled) return $"开发：{LocName(here)}不需要探索";
-            DebugSetProgress(s, here, 100);   // 内含里程碑与门槛重判
-            RevealMarkers(s, here, 0, 100);
+            DebugSetProgress(s, here, 100);   // 内含里程碑、资源点揭示与门槛重判
             var locked = AdjacentLocked(s).Select(x => $"{LocName(x.Target)}（{x.Reason}）").ToList();
             return $"开发：{LocName(here)}探索度已到100%" + (locked.Count > 0 ? "；未开通：" + string.Join("、", locked) : "") + "。";
         }

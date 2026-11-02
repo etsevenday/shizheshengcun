@@ -44,6 +44,7 @@ namespace Survival.Core.Save
         public const string Schema17 = "17";
         public const string Schema18 = "18";
         public const string Schema19 = "19";
+        public const string Schema20 = "20";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -52,7 +53,7 @@ namespace Survival.Core.Save
         {
             var notes = new List<string>();
             // 配置新增地点时（B11 v3 地图起）当前版本的档也补地点状态；只补缺的，已有的不动（幂等）
-            if (s.SchemaVersion == GameState.CurrentSchema) { EnsureLocationStates(s, config); return notes; }
+            if (s.SchemaVersion == GameState.CurrentSchema) { EnsureStates(s, config); return notes; }
             if (s.SchemaVersion == LegacySchema)
             {
                 // 先在副本上整条链试跑：3→4 有冲突时原状态一点不改
@@ -78,6 +79,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema17) From17To18(s, config, notes);
             if (s.SchemaVersion == Schema18) From18To19(s, config, notes);
             if (s.SchemaVersion == Schema19) From19To20(s, config, notes);
+            if (s.SchemaVersion == Schema20) From20To21(s, config, notes);
             return notes;
         }
 
@@ -806,8 +808,83 @@ namespace Survival.Core.Save
             s.RevealedResourceMarkers ??= new HashSet<string>();
             new Engine.GameEngine(config).RefreshGates(s);
             if (added > 0) notes.Add($"地图扩展到{config.Locations.Count}个地点，已走过的路线保留");
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（v3 地图：新增{added}个地点，已开路线不回退）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema20}（v3 地图：新增{added}个地点，已开路线不回退）。" });
+            s.SchemaVersion = Schema20;
+        }
+
+        // ───────────────────────── 20 → 21 ─────────────────────────
+
+        /// <summary>
+        /// 资源四账（开发计划 v0.9 B12，R36/R37；S05「定量采集与四生命周期」、A08「来源、知识与旧档迁移」）：96 条增量资源并入资源表，
+        /// 补资源状态（库存取 cap，flowing 不限量）；B11 已揭示的资源点标记与“到访过且揭示度已到”的资源点记为已发现（不补物、不扣库存）；
+        /// 旧档已持有的核心记录/领取事实（church_route_record、academy_safety_record、communication_power_claimed 等）记为对应
+        /// campaignId 已领，已领不补；地牢实例普通箱库存记在当前代。幂等：再跑一次不改任何东西。
+        /// </summary>
+        private static void From20To21(GameState s, GameConfig config, List<string> notes)
+        {
+            var added = EnsureResourceStates(s, config);
+            var claimed = SyncLegacyClaims(s, config);
+            s.RevealedResourceMarkers = null;
+            if (added > 0) notes.Add($"资源点扩展到{config.Resources.Count}处，已发现的资源点线索可以直接采集");
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（资源四账：新增{added}处资源点" +
+                (claimed.Count > 0 ? $"；已持有的{string.Join("、", claimed)}记为已领取，不再重复领取" : "") + "）。" });
             s.SchemaVersion = GameState.CurrentSchema;
+        }
+
+        /// <summary>当前版本读档也补配置新增的地点与资源点状态（幂等）。</summary>
+        public static void EnsureStates(GameState s, GameConfig config)
+        {
+            EnsureLocationStates(s, config);
+            EnsureResourceStates(s, config);
+        }
+
+        /// <summary>
+        /// 为配置里有、存档里没有的资源点补状态：库存取 cap（不限量为 null）、日补日记为今天；已揭示的旧标记或“到访过且探索度已到揭示点”的
+        /// 记为已发现。地牢普通箱的代号取该地牢当前实例代号（没有实例为 0，建实例时补满）。返回补了几个。幂等。
+        /// </summary>
+        public static int EnsureResourceStates(GameState s, GameConfig config)
+        {
+            var added = 0;
+            var day = s.GameMinute / Engine.Clock.MinutesPerDay;
+            foreach (var r in config.Resources)
+            {
+                if (s.Resources.ContainsKey(r.NodeId)) continue;
+                var ls = s.Locations.TryGetValue(r.LocationId, out var l) ? l : null;
+                var seen = (s.RevealedResourceMarkers?.Contains(r.NodeId) ?? false)
+                           || (ls != null && ls.Visited && (r.RevealOnVisit || (r.RevealAt.HasValue && ls.Progress >= r.RevealAt.Value)));
+                var dungeon = config.Locations.FirstOrDefault(x => x.Id == r.LocationId)?.DungeonId;
+                s.Resources[r.NodeId] = new ResourceState
+                {
+                    Available = r.IsUnlimited ? (int?)null : r.Cap,
+                    Reserved = 0,
+                    LastRefillDay = day,
+                    Discovered = seen,
+                    Generation = r.IsInstance && dungeon != null && s.DungeonInstances.TryGetValue(dungeon, out var inst) ? inst.Generation : 0,
+                };
+                added++;
+            }
+            return added;
+        }
+
+        /// <summary>
+        /// 旧档领取账（R37，A08「来源、知识与旧档迁移」、gate-contract factProducers）：存档已有某份核心记录（记录 ID 事实，如容量用的
+        /// church_route_record）或其领取事实（communication_power_claimed 等）时，记该 campaignId 已领，已领不补。返回本次新记的记录名。幂等。
+        /// </summary>
+        public static List<string> SyncLegacyClaims(GameState s, GameConfig config)
+        {
+            var list = new List<string>();
+            foreach (var r in config.Resources.Where(r => r.IsCampaign))
+            {
+                var key = Engine.GameEngine.CampaignKey(r.NodeId);
+                if (s.Progress.Flags.Contains(key)) continue;
+                var held = (r.RecordId != null && s.Progress.Flags.Contains(r.RecordId)) || r.ClaimFacts.Any(s.Progress.Flags.Contains);
+                if (!held) continue;
+                s.Progress.Flags.Add(key);
+                s.Progress.Flags.Add(Engine.GameEngine.ClaimKey(r.NodeId));
+                if (s.Resources.TryGetValue(r.NodeId, out var rs)) rs.Available = 0;
+                list.Add(r.Name);
+            }
+            return list;
         }
 
         /// <summary>为配置里有、存档里没有的地点补状态（未发现、未到访、探索度取初值、清理次数取初值）。返回补了几个。幂等。</summary>

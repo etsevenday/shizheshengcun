@@ -19,8 +19,6 @@
     var exploreWhy = busy ? BusyReason() : e.CanStart(s, ActionRequest.Explore());
     var clearWhy = busy ? BusyReason() : e.CanStart(s, ActionRequest.Clear());
     var (charges, _) = e.ClearChargesAt(s, LocationId);
-    var cap = lc.Clear.Cap;
-    var next = e.NextClearRefillMinutes(s, LocationId);
     var light = Ui.Light(Clock.MinuteOfDay(s.GameMinute), lc.IsIndoor);
     var fireOn = lc.HasFire && s.Locations[LocationId].Facility.FireLit && lc.SceneFireX.HasValue && lc.SceneFireY.HasValue;
     var picked = sel.Kind is SelectionKind.Location or SelectionKind.Clear;
@@ -71,19 +69,13 @@
                 }
                 @if (lc.ClearEnabled)
                 {
+                    @* B12（Q31）：新节点清理开放，按钮写 clearLabel（“清理翻找”/城市“整理搜集”）与逐点分钟；地牢房间每代 1 次 *@
+                    var clearLabel = e.ClearLabelAt(LocationId);
                     <button @key="@("clear")" type="button" class="loc-btn" disabled="@(clearWhy != null)" title="@(clearWhy ?? "单击直接开始；右侧显示预测")"
                             @onmouseenter="HoverClear" @onfocus="HoverClear" @onmouseleave="Unhover" @onblur="Unhover"
                             @onclick="Clear" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
-                        <strong>清理 · @(e.Config.Actions.ClearMinutes)分钟</strong>
-                        <small>@(next == null ? $"次数{charges}/{cap}·已满" : $"次数{charges}/{cap} · 恢复还需{Clock.Duration(next.Value)}")@(clearWhy != null && charges > 0 ? $" · {clearWhy}" : "")</small>
-                    </button>
-                }
-                else
-                {
-                    @* B11：新增地点的清理参数已导入，资源点与清理在后续版本（B12）开放 *@
-                    <button @key="@("clear")" type="button" class="loc-btn" disabled title="这里的清理在后续版本开放">
-                        <strong>清理</strong>
-                        <small>后续版本开放</small>
+                        <strong>@clearLabel · @(e.ClearMinutesAt(LocationId))分钟</strong>
+                        <small>@e.ClearCountText(s, LocationId)@(clearWhy != null && charges > 0 ? $" · {clearWhy}" : "")</small>
                     </button>
                 }
                 @if (full && e.HasSurvey(LocationId))
@@ -197,7 +189,7 @@ else
     }
 
     private void HoverExplore() => G.Hover(ExploreReq, "探索周边");
-    private void HoverClear() => G.Hover(ClearReq, "清理");
+    private void HoverClear() => G.Hover(ClearReq, G.E.ClearLabelAt(LocationId));
     private void HoverSurvey() => G.Hover(SurveyReq, G.E.SurveyRules.Name);
     private void Unhover() => G.Hover(null);
 

@@ -53,7 +53,7 @@ namespace Survival.Core.Engine
             switch (type)
             {
                 case ActionType.Gather:
-                    if (targetId != null && _res.TryGetValue(targetId, out var res))
+                    if (targetId != null && _res.TryGetValue(targetId, out var res) && res.XpAllowed)
                     {
                         // 采集被动只管练采集的资源点（熟练采伐），搜集被动只管练搜集的（分类勘整/周密检索，Q54/Q55）；遗迹勘整不吃
                         var key = GatherSkillOf(res) == Gathering ? "work.gather" : "work.scavenge";
@@ -78,7 +78,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>采集划伤概率的被动倍率：练采集的资源点稳手采集×0.9，练搜集的（危险搜集）危险辨识×0.8。</summary>
-        public double PassiveHazardFactor(ActorState actor, ResourceConfig res) =>
+        public double PassiveHazardFactor(ActorState actor, ResourceConfig res) => !res.XpAllowed ? 1 :
             PassiveFactor(actor, GatherSkillOf(res) == Scavenging ? "hazard.scavengeChance" : "hazard.gatherChance");
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace Survival.Core.Engine
         /// </summary>
         public int PassiveGatherBonus(GameState s, ActorState actor, ResourceConfig res, string itemId, List<string>? notes = null)
         {
-            if (!res.IsUnits || GatherSkillOf(res) != Gathering) return 0;   // 采集加产只管自然采出的资源点（Q55）
+            if (!res.IsUnits || !res.XpAllowed || GatherSkillOf(res) != Gathering) return 0;   // 城市配给/记录不吃熟练被动（gatheringPassivesOnlyNaturalRows）   // 采集加产只管自然采出的资源点（Q55）
             var bonus = 0;
             var rules = Config.SkillPassiveRules;
             var basic = (int)PassiveAdd(actor, "yield.gatherBasic");

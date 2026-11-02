@@ -15,7 +15,6 @@
     var entrances = e.AdjacentUnlocked(s).Select(x => x.Other(here)).ToList();
     // B11（S03、EXP30-01）：已揭示但门槛未满足的路线显示为“未开通”卡并写明原因，不能前往
     var locked = e.AdjacentLocked(s);
-    var markers = e.RevealedMarkersAt(s, here);
     var busy = e.IsBusy(s) || G.Running;
     var hasFacilities = lc.HasFire || lc.CanBuildShelter;
     var enemies = e.VisibleEnemiesAt(s, here);
@@ -138,12 +137,7 @@
                         </Footer>
                     </ObjectCard>
                 }
-                @if (markers.Count > 0)
-                {
-                    @* B11：v3 新增资源点只揭示线索与日志，采集、库存与日补在后续版本（B12） *@
-                    <div class="desk-hint" title="这些资源点已经发现，采集在后续版本开放">资源点线索：@string.Join("；", markers.Select(m => e.MarkerText(m)))（采集在后续版本开放）</div>
-                }
-                @if (resources.Count == 0 && markers.Count == 0)
+                @if (resources.Count == 0)
                 {
                     <div class="desk-hint">@(s.Locations[here].Progress < 100 ? "这里还没有发现资源点，探索周边可能找到线索" : "这里没有可采集的资源")</div>
                 }

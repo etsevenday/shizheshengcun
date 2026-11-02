@@ -552,7 +552,8 @@ namespace Survival.Core.Engine
         // ───────────────────────── 世界（地图案 04–07） ─────────────────────────
 
         /// <summary>
-        /// 到达地点：标记已访问，揭示进入即显示的资源点；再做 v3 地图到达事务（公开地点自动 100、c02/r02 接触事实、门槛重判，B11）。
+        /// 到达地点：标记已访问；先做 v3 地图到达事务（公开地点自动 100、c02/r02 接触事实、门槛重判，B11），再揭示进入即显示
+        /// 与揭示度已到的资源点（B12：96 条增量资源与旧 20 条同一张资源表；公开地点到访 100 时揭它 100% 的资源点，H6）。
         /// 返回新发现的资源点 ID；mapNotes 收集给日志的地图短语。
         /// </summary>
         private List<string> Visit(GameState s, string locationId, List<string>? mapNotes = null)
@@ -560,6 +561,7 @@ namespace Survival.Core.Engine
             var ls = s.Locations[locationId];
             ls.Visited = true;
             ls.Discovered = true;
+            var notes = ArriveMap(s, locationId);
             var revealed = new List<string>();
             foreach (var r in Config.Resources.Where(r => r.LocationId == locationId))
             {
@@ -571,16 +573,13 @@ namespace Survival.Core.Engine
                     revealed.Add(r.NodeId);
                 }
             }
-            var notes = ArriveMap(s, locationId);
-            var markers = RevealMarkers(s, locationId, 0, 0);
-            if (markers.Count > 0) notes.Add("发现" + string.Join("、", markers));
             mapNotes?.AddRange(notes);
             return revealed;
         }
 
         /// <summary>
         /// 探索完成：按地点增量（旧 8 地点 +25；新区普通 +25、地牢房间 +50，S03/Q31）推进探索度，按 25→50→75→100 顺序处理新跨过的里程碑，
-        /// 每个只触发一次。v3 新节点：25/50 揭对应资源点标记（采集在 B12）、75 给安全线索（不发物资）、100 揭出边（门槛也要满足）。
+        /// 每个只触发一次。v3 新节点：25/50 揭对应资源点（B12 起可采集）、75 给安全线索（不发物资）、100 揭出边（门槛也要满足）。
         /// </summary>
         private (int old, int now, List<string> found, List<string> ids) ApplyExplore(GameState s, string locationId)
         {
@@ -604,7 +603,6 @@ namespace Survival.Core.Engine
                     found.Add(r.Name);
                     ids.Add(r.NodeId);
                 }
-                found.AddRange(RevealMarkers(s, locationId, t, t));
                 if (t == 75 && HasClue(lc)) found.Add(Config.Map.ClueText);
             }
             var r2 = RefreshGates(s);
@@ -619,25 +617,6 @@ namespace Survival.Core.Engine
 
         /// <summary>重判门槛并返回本次新开通的边（v3 门槛求值器，B11；旧式 unlockAny 边同样处理）。</summary>
         private List<Config.EdgeConfig> UnlockEdges(GameState s) => RefreshGates(s).Unlocked;
-
-        /// <summary>
-        /// 揭示该地点揭示度在 [from, to] 内的 v3 资源点标记（reveal 0 = 到访即见）：B11 只记“已发现”与日志，采集在 B12。返回日志短语。
-        /// </summary>
-        private List<string> RevealMarkers(GameState s, string locationId, int from, int to)
-        {
-            var list = new List<string>();
-            foreach (var m in Config.Map.ResourceMarkers.Where(m => m.NodeId == locationId && m.Reveal >= from && m.Reveal <= to))
-                if (s.RevealedResourceMarkers.Add(m.Id)) list.Add($"资源点线索：{MarkerText(m)}（采集在后续版本开放）");
-            return list;
-        }
-
-        /// <summary>资源点标记的产物短语：“野果×2”；不是物品的知识/记录写“特殊记录”。</summary>
-        public string MarkerText(Config.ResourceMarkerConfig m) =>
-            string.Join("、", m.Items.Select(kv => _items.ContainsKey(kv.Key) ? $"{ItemName(kv.Key)}×{kv.Value}" : "特殊记录"));
-
-        /// <summary>该地点已揭示的资源点标记（界面“资源点线索”提示用）。</summary>
-        public List<Config.ResourceMarkerConfig> RevealedMarkersAt(GameState s, string locationId) =>
-            Config.Map.ResourceMarkers.Where(m => m.NodeId == locationId && s.RevealedResourceMarkers.Contains(m.Id)).ToList();
 
         /// <summary>每次探索的基础分钟：v3 新节点按逐点配置（普通 30、地牢房间 15），旧 8 地点用全局 actions.exploreMinutes。</summary>
         public int ExploreMinutesAt(string locationId) => _locs[locationId].ExploreMinutes ?? Config.Actions.ExploreMinutes;
@@ -655,7 +634,6 @@ namespace Survival.Core.Engine
             {
                 if (t <= ls.Progress || t > next || ls.TriggeredMilestones.Contains(t)) continue;
                 if (Config.Resources.Any(r => r.LocationId == locationId && r.RevealAt == t && !s.Resources[r.NodeId].Discovered)) return true;
-                if (Config.Map.ResourceMarkers.Any(m => m.NodeId == locationId && m.Reveal == t && !s.RevealedResourceMarkers.Contains(m.Id))) return true;
                 if (t == 75 && HasClue(lc)) return true;
                 // 100% 揭出边：还有从这里出发、远端尚未发现的边
                 if (t == 100 && EdgesAt(locationId).Any(e => e.TraversableFrom(locationId) && !EdgeOpen(s, e) && !s.Locations[e.Other(locationId)].Discovered)) return true;

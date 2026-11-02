@@ -77,8 +77,8 @@
                 <div class="empty-detail">@e.LocName(s.CurrentLocation)已充分探索<br />点清理按钮或资源卡查看预测</div>
                 break;
             case SelectionKind.Clear:
-                <PreviewView Request="ActionRequest.Clear()" Eyebrow="@($"已选中 · {e.LocName(s.CurrentLocation)}")" Title="清理" Confirmable="false"
-                             Subtitle="翻找、整理地块表层的零散基础物资。每地有独立次数，随游戏世界时间恢复；不增加探索度。" />
+                <PreviewView Request="ActionRequest.Clear()" Eyebrow="@($"已选中 · {e.LocName(s.CurrentLocation)}")" Title="@e.ClearLabelAt(s.CurrentLocation)" Confirmable="false"
+                             Subtitle="@(e.Location(s.CurrentLocation).ClearPerGeneration ? "翻找地牢房间里的零散物资。每代只能做1次，不随时间恢复；不领物资箱、守卫或核心记录，不增加探索度。" : "翻找、整理地块表层的零散基础物资。每地有独立次数，随游戏世界时间恢复；不增加探索度。")" />
                 break;
             case SelectionKind.Entrance:
                 <PreviewView Request="ActionRequest.Travel(sel.Id)" Eyebrow="@($"已选中 · 前往{e.LocName(sel.Id)}")" Title="@($"前往{e.LocName(sel.Id)}")" Confirmable="false"

@@ -160,7 +160,12 @@ public class B7bProgressionTests : TestBase
         var rows = ((JArray)Contract()["fieldExperience"]!["resourceRows"]!).ToDictionary(r => (string)r["resourceId"]!);
         Assert.That(rows, Has.Count.EqualTo(116), "合同 116 行（96 行属 v3 地图，只登记）");
         foreach (var r in Cfg.Resources)
-            Assert.That(GameEngine.GatherSkillOf(r), Is.EqualTo((string)rows[r.NodeId]["proficiencyId"]!), r.NodeId);
+        {
+            // B12：96 行并入资源表；proficiencyId 为空的 9 行（核心记录与城市配给）不给经验（xpAllowed=false）
+            Assert.That(r.ProficiencyId, Is.EqualTo((string?)rows[r.NodeId]["proficiencyId"]), r.NodeId);
+            Assert.That(r.XpAllowed, Is.EqualTo((bool)rows[r.NodeId]["xpAllowed"]!), r.NodeId);
+            if (r.ProficiencyId != null) Assert.That(GameEngine.GatherSkillOf(r), Is.EqualTo(r.ProficiencyId), r.NodeId);
+        }
         var heap = E.Resource("metal_heap");
         Assert.That(GameEngine.GatherSkillOf(heap), Is.EqualTo("scavenging"), "废金属堆改练搜集");
         var s = At("scrapyard");

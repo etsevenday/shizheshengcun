@@ -3252,7 +3252,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -3283,7 +3283,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "m02_checkpoint",
@@ -3296,7 +3297,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -3327,7 +3328,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "h01_gate",
@@ -3340,7 +3342,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -3371,7 +3373,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "h02_square",
@@ -3384,7 +3387,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -3415,7 +3418,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "h03_workshop",
@@ -3428,7 +3432,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -3459,7 +3463,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "h04_infirmary",
@@ -3472,7 +3477,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -3503,7 +3508,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "h05_homestead",
@@ -3516,7 +3522,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -3547,7 +3553,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": true
+      "safeExterior": true,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "w01_farm",
@@ -3560,7 +3567,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -3591,7 +3598,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w02_forest",
@@ -3604,7 +3612,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -3635,7 +3643,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w03_quarry",
@@ -3648,7 +3657,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -3679,7 +3688,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w04_crossroads",
@@ -3692,7 +3702,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -3723,7 +3733,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w05_marsh",
@@ -3736,7 +3747,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_waterbank",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -3767,7 +3778,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w06_bridge",
@@ -3780,7 +3792,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -3811,7 +3823,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w07_ridge",
@@ -3824,7 +3837,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -3855,7 +3868,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w08_reservoir",
@@ -3868,7 +3882,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_waterbank",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -3899,7 +3913,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w09_logging",
@@ -3912,7 +3927,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -3943,7 +3958,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w10_watchtower",
@@ -3956,7 +3972,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -3987,7 +4003,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "a01_yard",
@@ -4000,7 +4017,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_works",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -4031,7 +4048,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_works",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "a02_pump",
@@ -4044,7 +4062,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_works",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -4075,7 +4093,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_works",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "a03_foundry",
@@ -4088,7 +4107,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_works",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -4119,7 +4138,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_works",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "b01_school",
@@ -4132,7 +4152,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -4163,7 +4183,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "b02_station",
@@ -4176,7 +4197,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -4207,7 +4228,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "b03_hospital",
@@ -4220,7 +4242,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_ruins",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -4251,7 +4273,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_aid",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "c01_pilgrim",
@@ -4264,7 +4287,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_church_road",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -4295,7 +4318,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_oldcity",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "c02_church",
@@ -4308,7 +4332,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -4339,7 +4363,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "c03_crypt",
@@ -4352,7 +4377,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -4383,7 +4408,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "r01_observatory",
@@ -4396,7 +4422,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -4427,7 +4453,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "r02_academy",
@@ -4440,7 +4467,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -4471,7 +4498,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "r03_lab",
@@ -4484,7 +4512,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -4515,7 +4543,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "o01_oldgate",
@@ -4528,7 +4557,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_ruins",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -4559,7 +4588,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_oldcity",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "o02_market",
@@ -4572,7 +4602,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_ruins",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -4603,7 +4633,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_oldcity",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "o03_police",
@@ -4616,7 +4647,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_ruins",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -4647,7 +4678,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_oldcity",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "o04_transit",
@@ -4660,7 +4692,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_ruins",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -4691,7 +4723,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "mainline_oldcity",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "h05_appraisal",
@@ -4704,7 +4737,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -4735,7 +4768,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "h06_shelter",
@@ -4748,7 +4782,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -4779,7 +4813,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "c04_alms",
@@ -4792,7 +4827,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -4823,7 +4858,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "c05_admonition",
@@ -4836,7 +4872,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -4867,7 +4903,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "c06_archive",
@@ -4880,7 +4917,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -4911,7 +4948,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "c07_sanctuary",
@@ -4924,7 +4962,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -4955,7 +4993,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "r04_reception",
@@ -4968,7 +5007,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -4999,7 +5038,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "r05_testing",
@@ -5012,7 +5052,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -5043,7 +5083,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "r06_archive",
@@ -5056,7 +5097,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -5087,7 +5128,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "r07_workshop",
@@ -5100,7 +5142,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -5131,7 +5173,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "r08_observation",
@@ -5144,7 +5187,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_city_tidy",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -5175,7 +5218,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "整理搜集"
     },
     {
       "id": "w11_orchard",
@@ -5188,7 +5232,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_church_road",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -5219,7 +5263,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_church_approach",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w12_canal",
@@ -5232,7 +5277,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_church_road",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -5263,7 +5308,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_church_approach",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w13_mill",
@@ -5276,7 +5322,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_church_road",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -5307,7 +5353,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_church_approach",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w14_cemeteryroad",
@@ -5320,7 +5367,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_church_road",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -5351,7 +5398,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_church_approach",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w15_shrinewoods",
@@ -5364,7 +5412,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_church_road",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -5395,7 +5443,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_church_approach",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w16_service",
@@ -5408,7 +5457,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -5439,7 +5488,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_academy_approach",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w17_switchback",
@@ -5452,7 +5502,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -5483,7 +5533,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_academy_approach",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w18_tunnel",
@@ -5496,7 +5547,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -5527,7 +5578,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_academy_approach",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w19_survey",
@@ -5540,7 +5592,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -5571,7 +5623,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_academy_approach",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w20_powercut",
@@ -5584,7 +5637,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -5615,7 +5668,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_academy_approach",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w21_pine",
@@ -5628,7 +5682,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_deep",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -5659,7 +5713,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w22_ravine",
@@ -5672,7 +5727,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_deep",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -5703,7 +5758,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w23_hunting",
@@ -5716,7 +5772,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_deep",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -5747,7 +5803,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w24_cave",
@@ -5760,7 +5817,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_deep",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -5791,7 +5848,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w25_wetland",
@@ -5804,7 +5862,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_deep",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -5835,7 +5893,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w26_island",
@@ -5848,7 +5907,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_deep",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -5879,7 +5938,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w27_relay",
@@ -5892,7 +5952,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_deep",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -5923,7 +5983,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w28_highland",
@@ -5936,7 +5997,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_deep",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -5967,7 +6028,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w29_riverbend",
@@ -5980,7 +6042,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_ruins",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -6011,7 +6073,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_city_approach",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w30_truckstop",
@@ -6024,7 +6087,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_ruins",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -6055,7 +6118,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_city_approach",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w31_suburb",
@@ -6068,7 +6132,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_ruins",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -6099,7 +6163,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_city_approach",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w32_railcut",
@@ -6112,7 +6177,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_ruins",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 3,
         "initialCharges": 3,
@@ -6143,7 +6208,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_city_approach",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w33_waterworks",
@@ -6156,7 +6222,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_waterbank",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -6187,7 +6253,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_utility",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "w34_depot",
@@ -6200,7 +6267,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_wild_basic",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 2,
         "initialCharges": 2,
@@ -6231,7 +6298,8 @@
       "populationLocalCap": 4,
       "populationRegionId": "ex_pop_utility",
       "dungeonId": null,
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d01_01",
@@ -6244,7 +6312,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_buffer_empty",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6275,7 +6343,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d01",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d01_02",
@@ -6288,7 +6357,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6319,7 +6388,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d01",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d01_03",
@@ -6332,7 +6402,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6363,7 +6433,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d01",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d01_04",
@@ -6376,7 +6447,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6407,7 +6478,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d01",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d01_05",
@@ -6420,7 +6492,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6451,7 +6523,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d01",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d01_06",
@@ -6464,7 +6537,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6495,7 +6568,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d01",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d01_07",
@@ -6508,7 +6582,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6539,7 +6613,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d01",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d01_08",
@@ -6552,7 +6627,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6583,7 +6658,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d01",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d02_01",
@@ -6596,7 +6672,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_buffer_empty",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6627,7 +6703,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d02",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d02_02",
@@ -6640,7 +6717,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6671,7 +6748,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d02",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d02_03",
@@ -6684,7 +6762,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6715,7 +6793,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d02",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d02_04",
@@ -6728,7 +6807,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6759,7 +6838,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d02",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d02_05",
@@ -6772,7 +6852,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6803,7 +6883,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d02",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d02_06",
@@ -6816,7 +6897,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6847,7 +6928,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d02",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d02_07",
@@ -6860,7 +6942,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6891,7 +6973,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d02",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d02_08",
@@ -6904,7 +6987,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6935,7 +7018,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d02",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d02_09",
@@ -6948,7 +7032,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -6979,7 +7063,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d02",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d03_01",
@@ -6992,7 +7077,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_buffer_empty",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7023,7 +7108,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d03",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d03_02",
@@ -7036,7 +7122,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7067,7 +7153,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d03",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d03_03",
@@ -7080,7 +7167,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7111,7 +7198,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d03",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d03_04",
@@ -7124,7 +7212,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7155,7 +7243,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d03",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d03_05",
@@ -7168,7 +7257,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7199,7 +7288,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d03",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d03_06",
@@ -7212,7 +7302,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7243,7 +7333,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d03",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d03_07",
@@ -7256,7 +7347,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7287,7 +7378,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d03",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d03_08",
@@ -7300,7 +7392,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7331,7 +7423,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d03",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d04_01",
@@ -7344,7 +7437,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_buffer_empty",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7375,7 +7468,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d04",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d04_02",
@@ -7388,7 +7482,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7419,7 +7513,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d04",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d04_03",
@@ -7432,7 +7527,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7463,7 +7558,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d04",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d04_04",
@@ -7476,7 +7572,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7507,7 +7603,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d04",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d04_05",
@@ -7520,7 +7617,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7551,7 +7648,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d04",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d04_06",
@@ -7564,7 +7662,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7595,7 +7693,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d04",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d04_07",
@@ -7608,7 +7707,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7639,7 +7738,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d04",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d04_08",
@@ -7652,7 +7752,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7683,7 +7783,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d04",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d05_01",
@@ -7696,7 +7797,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_buffer_empty",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7727,7 +7828,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d05",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d05_02",
@@ -7740,7 +7842,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7771,7 +7873,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d05",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d05_03",
@@ -7784,7 +7887,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7815,7 +7918,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d05",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d05_04",
@@ -7828,7 +7932,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7859,7 +7963,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d05",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d05_05",
@@ -7872,7 +7977,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7903,7 +8008,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d05",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d05_06",
@@ -7916,7 +8022,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7947,7 +8053,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d05",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d05_07",
@@ -7960,7 +8067,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -7991,7 +8098,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d05",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d05_08",
@@ -8004,7 +8112,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8035,7 +8143,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d05",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d06_01",
@@ -8048,7 +8157,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_buffer_empty",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8079,7 +8188,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d06",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d06_02",
@@ -8092,7 +8202,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8123,7 +8233,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d06",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d06_03",
@@ -8136,7 +8247,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8167,7 +8278,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d06",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d06_04",
@@ -8180,7 +8292,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8211,7 +8323,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d06",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d06_05",
@@ -8224,7 +8337,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8255,7 +8368,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d06",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d06_06",
@@ -8268,7 +8382,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8299,7 +8413,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d06",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d06_07",
@@ -8312,7 +8427,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8343,7 +8458,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d06",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d06_08",
@@ -8356,7 +8472,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8387,7 +8503,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d06",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d06_09",
@@ -8400,7 +8517,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8431,7 +8548,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d06",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d07_01",
@@ -8444,7 +8562,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_buffer_empty",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8475,7 +8593,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d07",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d07_02",
@@ -8488,7 +8607,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8519,7 +8638,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d07",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d07_03",
@@ -8532,7 +8652,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8563,7 +8683,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d07",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d07_04",
@@ -8576,7 +8697,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8607,7 +8728,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d07",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d07_05",
@@ -8620,7 +8742,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8651,7 +8773,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d07",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d07_06",
@@ -8664,7 +8787,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8695,7 +8818,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d07",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d07_07",
@@ -8708,7 +8832,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8739,7 +8863,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d07",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d07_08",
@@ -8752,7 +8877,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8783,7 +8908,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d07",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d08_01",
@@ -8796,7 +8922,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_buffer_empty",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8827,7 +8953,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d08",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d08_02",
@@ -8840,7 +8967,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8871,7 +8998,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d08",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d08_03",
@@ -8884,7 +9012,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8915,7 +9043,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d08",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d08_04",
@@ -8928,7 +9057,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -8959,7 +9088,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d08",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d08_05",
@@ -8972,7 +9102,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -9003,7 +9133,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d08",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d08_06",
@@ -9016,7 +9147,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -9047,7 +9178,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d08",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d08_07",
@@ -9060,7 +9192,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -9091,7 +9223,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d08",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d08_08",
@@ -9104,7 +9237,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -9135,7 +9268,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d08",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     },
     {
       "id": "d08_09",
@@ -9148,7 +9282,7 @@
       "canBuildShelter": false,
       "scene": "scenes/placeholder.svg",
       "lootTableId": "q31_dungeon_scraps",
-      "clearEnabled": false,
+      "clearEnabled": true,
       "clear": {
         "cap": 1,
         "initialCharges": 1,
@@ -9179,7 +9313,8 @@
       "populationLocalCap": 0,
       "populationRegionId": null,
       "dungeonId": "d08",
-      "safeExterior": false
+      "safeExterior": false,
+      "clearLabel": "清理翻找"
     }
   ],
   "edges": [
@@ -11920,6 +12055,1948 @@
         }
       ],
       "proficiencyId": "scavenging"
+    },
+    {
+      "nodeId": "w11_orchard_a",
+      "name": "生块根点",
+      "locationId": "w11_orchard",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 12,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "raw_root": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w11_orchard_b",
+      "name": "布料点",
+      "locationId": "w11_orchard",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 8,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "cloth": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w12_canal_a",
+      "name": "植物纤维点",
+      "locationId": "w12_canal",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 6,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "fiber": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w12_canal_b",
+      "name": "橡胶点",
+      "locationId": "w12_canal",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 6,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "rubber": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w13_mill_a",
+      "name": "谷物点",
+      "locationId": "w13_mill",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "grain": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w13_mill_b",
+      "name": "木板点",
+      "locationId": "w13_mill",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "plank": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w14_cemeteryroad_a",
+      "name": "石块点",
+      "locationId": "w14_cemeteryroad",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 12,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "stone": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w14_cemeteryroad_b",
+      "name": "布料点",
+      "locationId": "w14_cemeteryroad",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 8,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "cloth": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w15_shrinewoods_a",
+      "name": "草药点",
+      "locationId": "w15_shrinewoods",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "herb": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w15_shrinewoods_b",
+      "name": "木材点",
+      "locationId": "w15_shrinewoods",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 16,
+      "dailyRefill": 6,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "wood": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w16_service_a",
+      "name": "废金属点",
+      "locationId": "w16_service",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 12,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "scrap": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w16_service_b",
+      "name": "塑料点",
+      "locationId": "w16_service",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 10,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "plastic": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w17_switchback_a",
+      "name": "石块点",
+      "locationId": "w17_switchback",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "stone": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w17_switchback_b",
+      "name": "导线点",
+      "locationId": "w17_switchback",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 8,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "wire": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w18_tunnel_a",
+      "name": "铁矿料点",
+      "locationId": "w18_tunnel",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "iron_ore": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w18_tunnel_b",
+      "name": "紧固件点",
+      "locationId": "w18_tunnel",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 10,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "fastener": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w19_survey_a",
+      "name": "零件点",
+      "locationId": "w19_survey",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "parts": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w19_survey_b",
+      "name": "电池点",
+      "locationId": "w19_survey",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "battery": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w20_powercut_a",
+      "name": "导线点",
+      "locationId": "w20_powercut",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 12,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "wire": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w20_powercut_b",
+      "name": "电子组件点",
+      "locationId": "w20_powercut",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "electronics": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w21_pine_a",
+      "name": "木材点",
+      "locationId": "w21_pine",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 24,
+      "dailyRefill": 8,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "wood": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w21_pine_b",
+      "name": "植物纤维点",
+      "locationId": "w21_pine",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 16,
+      "dailyRefill": 6,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "fiber": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w22_ravine_a",
+      "name": "铁矿料点",
+      "locationId": "w22_ravine",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 20,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "iron_ore": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w22_ravine_b",
+      "name": "石块点",
+      "locationId": "w22_ravine",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 20,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "stone": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w23_hunting_a",
+      "name": "皮革点",
+      "locationId": "w23_hunting",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "leather": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w23_hunting_b",
+      "name": "绳索点",
+      "locationId": "w23_hunting",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 6,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "rope": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w24_cave_a",
+      "name": "铁矿料点",
+      "locationId": "w24_cave",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 24,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "iron_ore": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w24_cave_b",
+      "name": "木炭点",
+      "locationId": "w24_cave",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "charcoal": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w25_wetland_a",
+      "name": "草药点",
+      "locationId": "w25_wetland",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 12,
+      "dailyRefill": 3,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "herb": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w25_wetland_b",
+      "name": "植物纤维点",
+      "locationId": "w25_wetland",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 20,
+      "dailyRefill": 6,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "fiber": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w26_island_a",
+      "name": "生块根点",
+      "locationId": "w26_island",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 6,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "raw_root": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w26_island_b",
+      "name": "盐点",
+      "locationId": "w26_island",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 6,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "salt": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w27_relay_a",
+      "name": "电子组件点",
+      "locationId": "w27_relay",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 6,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "electronics": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w27_relay_b",
+      "name": "精密零件点",
+      "locationId": "w27_relay",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "precision_parts": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w28_highland_a",
+      "name": "石块点",
+      "locationId": "w28_highland",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "stone": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w28_highland_b",
+      "name": "草药点",
+      "locationId": "w28_highland",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 8,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "herb": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w29_riverbend_a",
+      "name": "植物纤维点",
+      "locationId": "w29_riverbend",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "fiber": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w29_riverbend_b",
+      "name": "黏土点",
+      "locationId": "w29_riverbend",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "clay": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w30_truckstop_a",
+      "name": "机油点",
+      "locationId": "w30_truckstop",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "oil": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w30_truckstop_b",
+      "name": "橡胶点",
+      "locationId": "w30_truckstop",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 8,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "rubber": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w31_suburb_a",
+      "name": "布料点",
+      "locationId": "w31_suburb",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 16,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "cloth": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w31_suburb_b",
+      "name": "医用纱布点",
+      "locationId": "w31_suburb",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 8,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "medical_gauze": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w32_railcut_a",
+      "name": "钢材点",
+      "locationId": "w32_railcut",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 10,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "steel": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w32_railcut_b",
+      "name": "紧固件点",
+      "locationId": "w32_railcut",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "fastener": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w33_waterworks_a",
+      "name": "黏合剂点",
+      "locationId": "w33_waterworks",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "adhesive": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w33_waterworks_b",
+      "name": "消毒液点",
+      "locationId": "w33_waterworks",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 6,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "disinfectant": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w34_depot_a",
+      "name": "豆罐头存货",
+      "locationId": "w34_depot",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 6,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "canned_beans": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "finite",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w34_depot_b",
+      "name": "盐水剂存货",
+      "locationId": "w34_depot",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 6,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "saline": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "finite",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w12_canal_water",
+      "name": "脏水水流",
+      "locationId": "w12_canal",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 10,
+      "cap": null,
+      "dailyRefill": 0,
+      "poolMode": "unlimited",
+      "outputs": {
+        "dirty_water": 4
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "flowing",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w25_wetland_water",
+      "name": "脏水水流",
+      "locationId": "w25_wetland",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 10,
+      "cap": null,
+      "dailyRefill": 0,
+      "poolMode": "unlimited",
+      "outputs": {
+        "dirty_water": 4
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "flowing",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w29_riverbend_water",
+      "name": "脏水水流",
+      "locationId": "w29_riverbend",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 10,
+      "cap": null,
+      "dailyRefill": 0,
+      "poolMode": "unlimited",
+      "outputs": {
+        "dirty_water": 4
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "flowing",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w33_waterworks_water",
+      "name": "脏水水流",
+      "locationId": "w33_waterworks",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 10,
+      "cap": null,
+      "dailyRefill": 0,
+      "poolMode": "unlimited",
+      "outputs": {
+        "dirty_water": 4
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "flowing",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w08_reservoir_water",
+      "name": "脏水水流",
+      "locationId": "w08_reservoir",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 10,
+      "cap": null,
+      "dailyRefill": 0,
+      "poolMode": "unlimited",
+      "outputs": {
+        "dirty_water": 4
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "flowing",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w16_service_cistern",
+      "name": "脏水蓄水池",
+      "locationId": "w16_service",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 12,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "dirty_water": 4
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "cistern",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w19_survey_cistern",
+      "name": "脏水蓄水池",
+      "locationId": "w19_survey",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 12,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "dirty_water": 4
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "cistern",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w23_hunting_cistern",
+      "name": "脏水蓄水池",
+      "locationId": "w23_hunting",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 12,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "dirty_water": 4
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "cistern",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w27_relay_cistern",
+      "name": "脏水蓄水池",
+      "locationId": "w27_relay",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 12,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "dirty_water": 4
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "cistern",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w30_truckstop_cistern",
+      "name": "脏水蓄水池",
+      "locationId": "w30_truckstop",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 12,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "dirty_water": 4
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "cistern",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w13_mill_bottles",
+      "name": "净水存货",
+      "locationId": "w13_mill",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 8,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "clean_water": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "finite",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w31_suburb_bottles",
+      "name": "净水存货",
+      "locationId": "w31_suburb",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 8,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "clean_water": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "finite",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w34_depot_bottles",
+      "name": "净水存货",
+      "locationId": "w34_depot",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 8,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "clean_water": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "finite",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d01_04_cache0",
+      "name": "布料物资箱",
+      "locationId": "d01_04",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "cloth": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d01_06_cache1",
+      "name": "缝线物资箱",
+      "locationId": "d01_06",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "thread": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d01_04_cache2",
+      "name": "皮革物资箱",
+      "locationId": "d01_04",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "leather": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d01_08_unique",
+      "name": "教会路线记录",
+      "locationId": "d01_08",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "church_route_record": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "xpAllowed": false,
+      "recordId": "church_route_record",
+      "claimFacts": [
+        "FA02_record_credit"
+      ]
+    },
+    {
+      "nodeId": "d02_04_cache0",
+      "name": "医用纱布物资箱",
+      "locationId": "d02_04",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "medical_gauze": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d02_06_cache1",
+      "name": "实验室试剂物资箱",
+      "locationId": "d02_06",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "lab_reagent": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d02_04_cache2",
+      "name": "电子组件物资箱",
+      "locationId": "d02_04",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "electronics": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d02_08_unique",
+      "name": "学院安全记录",
+      "locationId": "d02_08",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "academy_safety_record": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "xpAllowed": false,
+      "recordId": "academy_safety_record",
+      "claimFacts": [
+        "FA03_record_credit"
+      ]
+    },
+    {
+      "nodeId": "d03_04_cache0",
+      "name": "武器组件物资箱",
+      "locationId": "d03_04",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "weapon_parts": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d03_06_cache1",
+      "name": "钢材物资箱",
+      "locationId": "d03_06",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "steel": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d03_04_cache2",
+      "name": "紧固件物资箱",
+      "locationId": "d03_04",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "fastener": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d03_08_unique",
+      "name": "通信电源",
+      "locationId": "d03_08",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "communication_power": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "xpAllowed": false,
+      "recordId": "communication_power",
+      "claimFacts": [
+        "communication_power_claimed"
+      ]
+    },
+    {
+      "nodeId": "d04_03_cache0",
+      "name": "导线物资箱",
+      "locationId": "d04_03",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "wire": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d04_05_cache1",
+      "name": "电池物资箱",
+      "locationId": "d04_05",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "battery": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d04_03_cache2",
+      "name": "电子组件物资箱",
+      "locationId": "d04_03",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "electronics": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d04_07_unique",
+      "name": "分会联络记录",
+      "locationId": "d04_07",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "chapter_contact": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "xpAllowed": false,
+      "recordId": "chapter_contact",
+      "claimFacts": []
+    },
+    {
+      "nodeId": "d05_04_cache0",
+      "name": "橡胶物资箱",
+      "locationId": "d05_04",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "rubber": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d05_07_cache1",
+      "name": "消毒液物资箱",
+      "locationId": "d05_07",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "disinfectant": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d05_04_cache2",
+      "name": "黏合剂物资箱",
+      "locationId": "d05_04",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "adhesive": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d05_07_unique",
+      "name": "水厂运行记录",
+      "locationId": "d05_07",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "waterworks_record": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "xpAllowed": false,
+      "recordId": "waterworks_record",
+      "claimFacts": []
+    },
+    {
+      "nodeId": "d06_03_cache0",
+      "name": "铁矿料物资箱",
+      "locationId": "d06_03",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "iron_ore": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d06_06_cache1",
+      "name": "铁片物资箱",
+      "locationId": "d06_06",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "iron_plate": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d06_03_cache2",
+      "name": "木炭物资箱",
+      "locationId": "d06_03",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "charcoal": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d06_08_unique",
+      "name": "矿道工作方法包",
+      "locationId": "d06_08",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "mining_blueprint_pack": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "xpAllowed": false,
+      "recordId": "mining_blueprint_pack",
+      "claimFacts": []
+    },
+    {
+      "nodeId": "d07_04_cache0",
+      "name": "豆罐头物资箱",
+      "locationId": "d07_04",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "canned_beans": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d07_07_cache1",
+      "name": "布料物资箱",
+      "locationId": "d07_07",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "cloth": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d07_04_cache2",
+      "name": "塑料物资箱",
+      "locationId": "d07_04",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "plastic": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d07_07_unique",
+      "name": "民用储备记录",
+      "locationId": "d07_07",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "civilian_cache_knowledge": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "xpAllowed": false,
+      "recordId": "civilian_cache_knowledge",
+      "claimFacts": []
+    },
+    {
+      "nodeId": "d08_03_cache0",
+      "name": "盐水剂物资箱",
+      "locationId": "d08_03",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "saline": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d08_06_cache1",
+      "name": "医用纱布物资箱",
+      "locationId": "d08_06",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "medical_gauze": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d08_03_cache2",
+      "name": "肉干物资箱",
+      "locationId": "d08_03",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 2,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "dried_meat": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "instanceId",
+      "kind": "instance",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "d08_08_unique",
+      "name": "冷链仓储记录",
+      "locationId": "d08_08",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "coldchain_knowledge": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign",
+      "xpAllowed": false,
+      "recordId": "coldchain_knowledge",
+      "claimFacts": []
+    },
+    {
+      "nodeId": "h03_workshop_supply_disinfectant",
+      "name": "消毒液配给点",
+      "locationId": "h03_workshop",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "disinfectant": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "world_addition",
+      "xpAllowed": false
+    },
+    {
+      "nodeId": "w13_mill_supply_salt",
+      "name": "盐补给点",
+      "locationId": "w13_mill",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 6,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "salt": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "world_addition",
+      "xpAllowed": true
+    },
+    {
+      "nodeId": "w15_shrinewoods_supply_berry",
+      "name": "野果补给点",
+      "locationId": "w15_shrinewoods",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "berry": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "world_addition",
+      "xpAllowed": true
     }
   ],
   "recipes": [
@@ -23798,872 +25875,6 @@
       ]
     },
     "clueText": "一条安全线索：附近的路况与危险迹象已记下（不另发物资）",
-    "resourceMarkers": [
-      {
-        "id": "w11_orchard_a",
-        "nodeId": "w11_orchard",
-        "reveal": 25,
-        "items": {
-          "raw_root": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w11_orchard_b",
-        "nodeId": "w11_orchard",
-        "reveal": 50,
-        "items": {
-          "cloth": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w12_canal_a",
-        "nodeId": "w12_canal",
-        "reveal": 25,
-        "items": {
-          "fiber": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w12_canal_b",
-        "nodeId": "w12_canal",
-        "reveal": 50,
-        "items": {
-          "rubber": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w13_mill_a",
-        "nodeId": "w13_mill",
-        "reveal": 25,
-        "items": {
-          "grain": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w13_mill_b",
-        "nodeId": "w13_mill",
-        "reveal": 50,
-        "items": {
-          "plank": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w14_cemeteryroad_a",
-        "nodeId": "w14_cemeteryroad",
-        "reveal": 25,
-        "items": {
-          "stone": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w14_cemeteryroad_b",
-        "nodeId": "w14_cemeteryroad",
-        "reveal": 50,
-        "items": {
-          "cloth": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w15_shrinewoods_a",
-        "nodeId": "w15_shrinewoods",
-        "reveal": 25,
-        "items": {
-          "herb": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w15_shrinewoods_b",
-        "nodeId": "w15_shrinewoods",
-        "reveal": 50,
-        "items": {
-          "wood": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w16_service_a",
-        "nodeId": "w16_service",
-        "reveal": 25,
-        "items": {
-          "scrap": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w16_service_b",
-        "nodeId": "w16_service",
-        "reveal": 50,
-        "items": {
-          "plastic": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w17_switchback_a",
-        "nodeId": "w17_switchback",
-        "reveal": 25,
-        "items": {
-          "stone": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w17_switchback_b",
-        "nodeId": "w17_switchback",
-        "reveal": 50,
-        "items": {
-          "wire": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w18_tunnel_a",
-        "nodeId": "w18_tunnel",
-        "reveal": 25,
-        "items": {
-          "iron_ore": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w18_tunnel_b",
-        "nodeId": "w18_tunnel",
-        "reveal": 50,
-        "items": {
-          "fastener": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w19_survey_a",
-        "nodeId": "w19_survey",
-        "reveal": 25,
-        "items": {
-          "parts": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w19_survey_b",
-        "nodeId": "w19_survey",
-        "reveal": 50,
-        "items": {
-          "battery": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w20_powercut_a",
-        "nodeId": "w20_powercut",
-        "reveal": 25,
-        "items": {
-          "wire": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w20_powercut_b",
-        "nodeId": "w20_powercut",
-        "reveal": 50,
-        "items": {
-          "electronics": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w21_pine_a",
-        "nodeId": "w21_pine",
-        "reveal": 25,
-        "items": {
-          "wood": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w21_pine_b",
-        "nodeId": "w21_pine",
-        "reveal": 50,
-        "items": {
-          "fiber": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w22_ravine_a",
-        "nodeId": "w22_ravine",
-        "reveal": 25,
-        "items": {
-          "iron_ore": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w22_ravine_b",
-        "nodeId": "w22_ravine",
-        "reveal": 50,
-        "items": {
-          "stone": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w23_hunting_a",
-        "nodeId": "w23_hunting",
-        "reveal": 25,
-        "items": {
-          "leather": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w23_hunting_b",
-        "nodeId": "w23_hunting",
-        "reveal": 50,
-        "items": {
-          "rope": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w24_cave_a",
-        "nodeId": "w24_cave",
-        "reveal": 25,
-        "items": {
-          "iron_ore": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w24_cave_b",
-        "nodeId": "w24_cave",
-        "reveal": 50,
-        "items": {
-          "charcoal": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w25_wetland_a",
-        "nodeId": "w25_wetland",
-        "reveal": 25,
-        "items": {
-          "herb": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w25_wetland_b",
-        "nodeId": "w25_wetland",
-        "reveal": 50,
-        "items": {
-          "fiber": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w26_island_a",
-        "nodeId": "w26_island",
-        "reveal": 25,
-        "items": {
-          "raw_root": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w26_island_b",
-        "nodeId": "w26_island",
-        "reveal": 50,
-        "items": {
-          "salt": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w27_relay_a",
-        "nodeId": "w27_relay",
-        "reveal": 25,
-        "items": {
-          "electronics": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w27_relay_b",
-        "nodeId": "w27_relay",
-        "reveal": 50,
-        "items": {
-          "precision_parts": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w28_highland_a",
-        "nodeId": "w28_highland",
-        "reveal": 25,
-        "items": {
-          "stone": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w28_highland_b",
-        "nodeId": "w28_highland",
-        "reveal": 50,
-        "items": {
-          "herb": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w29_riverbend_a",
-        "nodeId": "w29_riverbend",
-        "reveal": 25,
-        "items": {
-          "fiber": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w29_riverbend_b",
-        "nodeId": "w29_riverbend",
-        "reveal": 50,
-        "items": {
-          "clay": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w30_truckstop_a",
-        "nodeId": "w30_truckstop",
-        "reveal": 25,
-        "items": {
-          "oil": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w30_truckstop_b",
-        "nodeId": "w30_truckstop",
-        "reveal": 50,
-        "items": {
-          "rubber": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w31_suburb_a",
-        "nodeId": "w31_suburb",
-        "reveal": 25,
-        "items": {
-          "cloth": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w31_suburb_b",
-        "nodeId": "w31_suburb",
-        "reveal": 50,
-        "items": {
-          "medical_gauze": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w32_railcut_a",
-        "nodeId": "w32_railcut",
-        "reveal": 25,
-        "items": {
-          "steel": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w32_railcut_b",
-        "nodeId": "w32_railcut",
-        "reveal": 50,
-        "items": {
-          "fastener": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w33_waterworks_a",
-        "nodeId": "w33_waterworks",
-        "reveal": 25,
-        "items": {
-          "adhesive": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w33_waterworks_b",
-        "nodeId": "w33_waterworks",
-        "reveal": 50,
-        "items": {
-          "disinfectant": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w34_depot_a",
-        "nodeId": "w34_depot",
-        "reveal": 25,
-        "items": {
-          "canned_beans": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w34_depot_b",
-        "nodeId": "w34_depot",
-        "reveal": 50,
-        "items": {
-          "saline": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w12_canal_water",
-        "nodeId": "w12_canal",
-        "reveal": 0,
-        "items": {
-          "dirty_water": 4
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w25_wetland_water",
-        "nodeId": "w25_wetland",
-        "reveal": 0,
-        "items": {
-          "dirty_water": 4
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w29_riverbend_water",
-        "nodeId": "w29_riverbend",
-        "reveal": 0,
-        "items": {
-          "dirty_water": 4
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w33_waterworks_water",
-        "nodeId": "w33_waterworks",
-        "reveal": 0,
-        "items": {
-          "dirty_water": 4
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w08_reservoir_water",
-        "nodeId": "w08_reservoir",
-        "reveal": 0,
-        "items": {
-          "dirty_water": 4
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w16_service_cistern",
-        "nodeId": "w16_service",
-        "reveal": 25,
-        "items": {
-          "dirty_water": 4
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w19_survey_cistern",
-        "nodeId": "w19_survey",
-        "reveal": 25,
-        "items": {
-          "dirty_water": 4
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w23_hunting_cistern",
-        "nodeId": "w23_hunting",
-        "reveal": 25,
-        "items": {
-          "dirty_water": 4
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w27_relay_cistern",
-        "nodeId": "w27_relay",
-        "reveal": 25,
-        "items": {
-          "dirty_water": 4
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w30_truckstop_cistern",
-        "nodeId": "w30_truckstop",
-        "reveal": 25,
-        "items": {
-          "dirty_water": 4
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w13_mill_bottles",
-        "nodeId": "w13_mill",
-        "reveal": 50,
-        "items": {
-          "clean_water": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w31_suburb_bottles",
-        "nodeId": "w31_suburb",
-        "reveal": 50,
-        "items": {
-          "clean_water": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w34_depot_bottles",
-        "nodeId": "w34_depot",
-        "reveal": 50,
-        "items": {
-          "clean_water": 2
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "d01_04_cache0",
-        "nodeId": "d01_04",
-        "reveal": 50,
-        "items": {
-          "cloth": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d01_06_cache1",
-        "nodeId": "d01_06",
-        "reveal": 50,
-        "items": {
-          "thread": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d01_04_cache2",
-        "nodeId": "d01_04",
-        "reveal": 50,
-        "items": {
-          "leather": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d01_08_unique",
-        "nodeId": "d01_08",
-        "reveal": 100,
-        "items": {
-          "church_route_record": 1
-        },
-        "scope": "campaignClaimId"
-      },
-      {
-        "id": "d02_04_cache0",
-        "nodeId": "d02_04",
-        "reveal": 50,
-        "items": {
-          "medical_gauze": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d02_06_cache1",
-        "nodeId": "d02_06",
-        "reveal": 50,
-        "items": {
-          "lab_reagent": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d02_04_cache2",
-        "nodeId": "d02_04",
-        "reveal": 50,
-        "items": {
-          "electronics": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d02_08_unique",
-        "nodeId": "d02_08",
-        "reveal": 100,
-        "items": {
-          "academy_safety_record": 1
-        },
-        "scope": "campaignClaimId"
-      },
-      {
-        "id": "d03_04_cache0",
-        "nodeId": "d03_04",
-        "reveal": 50,
-        "items": {
-          "weapon_parts": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d03_06_cache1",
-        "nodeId": "d03_06",
-        "reveal": 50,
-        "items": {
-          "steel": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d03_04_cache2",
-        "nodeId": "d03_04",
-        "reveal": 50,
-        "items": {
-          "fastener": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d03_08_unique",
-        "nodeId": "d03_08",
-        "reveal": 100,
-        "items": {
-          "communication_power": 1
-        },
-        "scope": "campaignClaimId"
-      },
-      {
-        "id": "d04_03_cache0",
-        "nodeId": "d04_03",
-        "reveal": 50,
-        "items": {
-          "wire": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d04_05_cache1",
-        "nodeId": "d04_05",
-        "reveal": 50,
-        "items": {
-          "battery": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d04_03_cache2",
-        "nodeId": "d04_03",
-        "reveal": 50,
-        "items": {
-          "electronics": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d04_07_unique",
-        "nodeId": "d04_07",
-        "reveal": 100,
-        "items": {
-          "chapter_contact": 1
-        },
-        "scope": "campaignClaimId"
-      },
-      {
-        "id": "d05_04_cache0",
-        "nodeId": "d05_04",
-        "reveal": 50,
-        "items": {
-          "rubber": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d05_07_cache1",
-        "nodeId": "d05_07",
-        "reveal": 50,
-        "items": {
-          "disinfectant": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d05_04_cache2",
-        "nodeId": "d05_04",
-        "reveal": 50,
-        "items": {
-          "adhesive": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d05_07_unique",
-        "nodeId": "d05_07",
-        "reveal": 100,
-        "items": {
-          "waterworks_record": 1
-        },
-        "scope": "campaignClaimId"
-      },
-      {
-        "id": "d06_03_cache0",
-        "nodeId": "d06_03",
-        "reveal": 50,
-        "items": {
-          "iron_ore": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d06_06_cache1",
-        "nodeId": "d06_06",
-        "reveal": 50,
-        "items": {
-          "iron_plate": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d06_03_cache2",
-        "nodeId": "d06_03",
-        "reveal": 50,
-        "items": {
-          "charcoal": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d06_08_unique",
-        "nodeId": "d06_08",
-        "reveal": 100,
-        "items": {
-          "mining_blueprint_pack": 1
-        },
-        "scope": "campaignClaimId"
-      },
-      {
-        "id": "d07_04_cache0",
-        "nodeId": "d07_04",
-        "reveal": 50,
-        "items": {
-          "canned_beans": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d07_07_cache1",
-        "nodeId": "d07_07",
-        "reveal": 50,
-        "items": {
-          "cloth": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d07_04_cache2",
-        "nodeId": "d07_04",
-        "reveal": 50,
-        "items": {
-          "plastic": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d07_07_unique",
-        "nodeId": "d07_07",
-        "reveal": 100,
-        "items": {
-          "civilian_cache_knowledge": 1
-        },
-        "scope": "campaignClaimId"
-      },
-      {
-        "id": "d08_03_cache0",
-        "nodeId": "d08_03",
-        "reveal": 50,
-        "items": {
-          "saline": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d08_06_cache1",
-        "nodeId": "d08_06",
-        "reveal": 50,
-        "items": {
-          "medical_gauze": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d08_03_cache2",
-        "nodeId": "d08_03",
-        "reveal": 50,
-        "items": {
-          "dried_meat": 2
-        },
-        "scope": "instanceId"
-      },
-      {
-        "id": "d08_08_unique",
-        "nodeId": "d08_08",
-        "reveal": 100,
-        "items": {
-          "coldchain_knowledge": 1
-        },
-        "scope": "campaignClaimId"
-      },
-      {
-        "id": "h03_workshop_supply_disinfectant",
-        "nodeId": "h03_workshop",
-        "reveal": 100,
-        "items": {
-          "disinfectant": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w13_mill_supply_salt",
-        "nodeId": "w13_mill",
-        "reveal": 50,
-        "items": {
-          "salt": 1
-        },
-        "scope": "world_stock"
-      },
-      {
-        "id": "w15_shrinewoods_supply_berry",
-        "nodeId": "w15_shrinewoods",
-        "reveal": 50,
-        "items": {
-          "berry": 2
-        },
-        "scope": "world_stock"
-      }
-    ],
     "dungeons": [
       {
         "id": "d01",
@@ -24769,6 +25980,72 @@
           "d08_06"
         ]
       }
-    ]
+    ],
+    "legacyCoreNodes": {
+      "d01_06": "d01_08",
+      "d02_06": "d02_08",
+      "d03_06": "d03_08",
+      "d04_06": "d04_07",
+      "d01_07": "d01_08",
+      "d02_07": "d02_08",
+      "d03_07": "d03_08",
+      "d04_07": "d04_07"
+    },
+    "legacyClaims": [
+      {
+        "claimId": "shield_cache",
+        "node": "d03_03",
+        "grants": {
+          "riot_shield": 1
+        }
+      },
+      {
+        "claimId": "officer_cache",
+        "node": "d03_04",
+        "grants": {
+          "service_pistol": 1
+        }
+      },
+      {
+        "claimId": "rifle_cache",
+        "node": "d03_08",
+        "grants": {
+          "rifle": 1
+        }
+      },
+      {
+        "claimId": "shotgun_cache",
+        "node": "d03_08",
+        "grants": {
+          "shotgun": 1
+        }
+      },
+      {
+        "claimId": "armor_cache",
+        "node": "d03_08",
+        "grants": {
+          "guard_armor": 1
+        }
+      },
+      {
+        "claimId": "ammo_reserve_cache",
+        "node": "d03_08",
+        "grants": {
+          "ammo_9mm": 24,
+          "shell_12g": 12,
+          "ammo_rifle": 15
+        }
+      }
+    ],
+    "recordNodes": {
+      "d01": "d01_08",
+      "d02": "d02_08",
+      "d03": "d03_08",
+      "d04": "d04_07",
+      "d05": "d05_07",
+      "d06": "d06_08",
+      "d07": "d07_07",
+      "d08": "d08_08"
+    }
   }
 }

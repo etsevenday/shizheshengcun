@@ -38,7 +38,7 @@ namespace Survival.Core.State
         /// "17" 起记服务地点迁址标记（v3 地图营区公共居所/收容所）与遗物是否公共候补遗物（策划答复 Q88/Q89，开发计划 v0.9 B8b）；
         /// "18" 起记候补照护规则版本与每名候补的自主 rest/sleep 模式（策划答复 Q90，开发计划 v0.9 B8c）。
         /// </summary>
-        public const string CurrentSchema = "20";
+        public const string CurrentSchema = "21";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -135,8 +135,12 @@ namespace Survival.Core.State
         /// 实例边锁存与实例事实。B11 只建第 1 代、没有重置与守卫/领取（B21/B22）；schema 20 起记录。
         /// </summary>
         public Dictionary<string, DungeonInstanceState> DungeonInstances { get; set; } = new Dictionary<string, DungeonInstanceState>();
-        /// <summary>已揭示的 v3 新增资源点标记（config.map.resourceMarkers 的 ID）：B11 只记发现与日志，采集在 B12。schema 20 起记录。</summary>
-        public HashSet<string> RevealedResourceMarkers { get; set; } = new HashSet<string>();
+        /// <summary>
+        /// schema 20 的 v3 资源点“揭示标记”（B11）。B12 起 96 条增量资源并入资源表、发现记在 <see cref="Resources"/>，
+        /// 本字段只供 20→21 迁移读取，迁移后置空、不再写出（schema 21）。
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public HashSet<string>? RevealedResourceMarkers { get; set; }
         /// <summary>
         /// 工作量余额（Q61 选 A，S01 本轮章；开发计划 v0.9 B7b）：键“actorId|动作族”（移动为“travel|同行角色ID排序集合”），值为小于 5 的基础工作分钟。
         /// 开工时整笔锁进行动（从这里移除），成功后写回新余额，取消/中断原样退回。schema 13 起记录，旧档从 0 开始。
@@ -200,7 +204,7 @@ namespace Survival.Core.State
             c.UnlockedEdges = new HashSet<string>(UnlockedEdges);
             c.TraveledEdges = new HashSet<string>(TraveledEdges);
             c.DungeonInstances = DungeonInstances.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
-            c.RevealedResourceMarkers = new HashSet<string>(RevealedResourceMarkers);
+            c.RevealedResourceMarkers = RevealedResourceMarkers == null ? null : new HashSet<string>(RevealedResourceMarkers);
             c.WorkCarry = new Dictionary<string, double>(WorkCarry);
             c.Resources = Resources.ToDictionary(kv => kv.Key, kv => kv.Value.Clone());
             c.Items = Items.Select(i => i.Clone()).ToList();
@@ -424,7 +428,10 @@ namespace Survival.Core.State
         public int? Available { get; set; }
         public int Reserved { get; set; }
         public int LastRefillDay { get; set; }
+        /// <summary>已发现：整局记（地牢普通箱也按整局记，换代不重新隐藏，开发假设 H3）。</summary>
         public bool Discovered { get; set; }
+        /// <summary>地牢普通箱（instanceId）库存所属的地牢实例代号；新一代开始时补满到 cap 并改写（B12 R36）。world_stock 为 0。</summary>
+        public int Generation { get; set; }
 
         public ResourceState Clone() => (ResourceState)MemberwiseClone();
     }

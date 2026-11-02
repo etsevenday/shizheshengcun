@@ -332,6 +332,10 @@ namespace Survival.Core.Config
         public bool ClearEnabled { get; set; } = true;
         public int? ClearMinutes { get; set; }
         public string? ClearRefillMode { get; set; }
+        /// <summary>清理按钮文字（Q31 clearLabel：野外/地牢“清理翻找”、城市公共“整理搜集”）；旧 8 地点为空，写“清理”。</summary>
+        public string? ClearLabel { get; set; }
+        /// <summary>地牢房间清理每代 1 次，不随世界分钟恢复（instance_generation_once，S04 Q31 节）。</summary>
+        public bool ClearPerGeneration => ClearRefillMode == "instance_generation_once";
 
         /// <summary>区域图图层：地牢节点按所属地牢分层（局部坐标），其余同在世界图层。</summary>
         public string Layer => NodeKind == "dungeon" ? (DungeonId ?? Zone) : "world";
@@ -476,6 +480,19 @@ namespace Survival.Core.Config
         public const string Finite = "finite_units";
         public const string SingleCache = "single_cache";
         public const string Unlimited = "unlimited";
+        /// <summary>单局永久唯一领取（campaignClaimId，B12 R36）：8 份地牢核心记录，领取写事实、不发物资卡。</summary>
+        public const string CampaignClaim = "campaign_claim";
+    }
+
+    /// <summary>资源四账的 scope（S04「四账及奖励防重」、S05「定量采集与四生命周期」；B12 R36）。</summary>
+    public static class ResourceScopes
+    {
+        /// <summary>世界日补库存：午夜补到 cap（含预留），离线不补。旧 20 条与 64 条新增野外资源。</summary>
+        public const string WorldStock = "world_stock";
+        /// <summary>地牢普通箱：按地牢实例代号记账，只在合法新一代恢复（每箱 2/0）。</summary>
+        public const string Instance = "instanceId";
+        /// <summary>单局永久一次（campaignId:&lt;resourceId&gt;），重置不恢复。</summary>
+        public const string Campaign = "campaignClaimId";
     }
 
     public sealed class ResourceConfig
@@ -503,6 +520,20 @@ namespace Survival.Core.Config
         /// </summary>
         public string? ProficiencyId { get; set; }
 
+        // ───── B12 资源四账（R36；S05「唯一资源表与增量边界」、A08 96 条增量表、progression-adjudications resourceRows） ─────
+        /// <summary>world_stock / instanceId / campaignClaimId；旧 20 条为 world_stock。</summary>
+        public string Scope { get; set; } = ResourceScopes.WorldStock;
+        /// <summary>策划数据 kind：renewable / finite / flowing / cistern / world_addition / instance / campaign（旧 20 条为空，只作说明）。</summary>
+        public string? Kind { get; set; }
+        /// <summary>完成后是否给采集/搜集经验（Q55 resourceRows.xpAllowed：核心记录与城市配给为 false）。</summary>
+        public bool XpAllowed { get; set; } = true;
+        /// <summary>campaign 领取的记录 ID（church_route_record 等；R03 容量事实直接用它）。</summary>
+        public string? RecordId { get; set; }
+        /// <summary>campaign 领取同事务写入的门槛事实（gate-contract factProducers：FA02_record_credit 等）。</summary>
+        public List<string> ClaimFacts { get; set; } = new List<string>();
+
+        public bool IsCampaign => PoolMode == PoolModes.CampaignClaim;
+        public bool IsInstance => Scope == ResourceScopes.Instance;
         public bool IsCache => PoolMode == PoolModes.SingleCache;
         public bool IsUnlimited => PoolMode == PoolModes.Unlimited;
         public bool IsUnits => PoolMode == PoolModes.Renewable || PoolMode == PoolModes.Finite;

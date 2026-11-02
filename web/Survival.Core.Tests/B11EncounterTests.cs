@@ -80,12 +80,15 @@ public class B11EncounterTests : TestBase
         Assert.That(a.LocationId, Is.EqualTo("m01_road"), "新区敌人本批不巡游");
     }
 
+    /// <summary>B12 起新节点清理开放（Q31）：w01 为“清理翻找”、20 基础分钟；探索照常。</summary>
     [Test]
-    public void NewNode_ClearNotOpenYet()
+    public void NewNode_ClearOpen()
     {
         var s = Day2();
         E.DebugTeleport(s, "w01_farm");
-        Assert.That(E.Start(s, ActionRequest.Clear()).Reason, Is.EqualTo("这里的清理在后续版本开放"));
+        Assert.That(E.CanStart(s, ActionRequest.Clear()), Is.Null);
+        Assert.That(E.ClearLabelAt("w01_farm"), Is.EqualTo("清理翻找"));
+        Assert.That(E.ClearMinutesAt("w01_farm"), Is.EqualTo(20));
         Start(s, ActionRequest.Explore());
         Run(s);
         Assert.That(s.Locations["w01_farm"].Progress, Is.EqualTo(25));

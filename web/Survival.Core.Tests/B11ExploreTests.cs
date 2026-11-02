@@ -11,6 +11,10 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B11ExploreTests : TestBase
 {
+    /// <summary>B12 起 96 条增量资源并入资源表：某地点已发现的资源点 ID。</summary>
+    private static List<string> DiscAt(GameState s, string loc) =>
+        Cfg.Resources.Where(r => r.LocationId == loc && s.Resources[r.NodeId].Discovered).Select(r => r.NodeId).ToList();
+
     private string Explore(GameState s)
     {
         Start(s, ActionRequest.Explore());
@@ -29,17 +33,17 @@ public class B11ExploreTests : TestBase
         Assert.That(s.Main!.BaseWorkMinutes, Is.EqualTo(30));
         Run(s);
         Assert.That(s.Locations["w11_orchard"].Progress, Is.EqualTo(25));
-        Assert.That(s.RevealedResourceMarkers, Is.EquivalentTo(new[] { "w11_orchard_a" }), "25% 只揭资源 A");
-        Assert.That(s.Log.Last(l => l.Kind == GameEventKind.ActionCompleted.ToString()).Text, Does.Contain("资源点线索：生块根×2"));
+        Assert.That(DiscAt(s, "w11_orchard"), Is.EquivalentTo(new[] { "w11_orchard_a" }), "25% 只揭资源 A");
+        Assert.That(s.Log.Last(l => l.Kind == GameEventKind.ActionCompleted.ToString()).Text, Does.Contain("发现生块根点"));
 
         var t50 = Explore(s);
-        Assert.That(s.RevealedResourceMarkers, Is.EquivalentTo(new[] { "w11_orchard_a", "w11_orchard_b" }));
-        Assert.That(t50, Does.Contain("布料×2"));
+        Assert.That(DiscAt(s, "w11_orchard"), Is.EquivalentTo(new[] { "w11_orchard_a", "w11_orchard_b" }));
+        Assert.That(t50, Does.Contain("布料点"));
         Assert.That(E.NextMilestoneHasContent(s, "w11_orchard"), Is.True, "75 有线索");
 
         var t75 = Explore(s);
         Assert.That(t75, Does.Contain(Cfg.Map.ClueText));
-        Assert.That(s.RevealedResourceMarkers, Has.Count.EqualTo(2), "75 不再揭资源");
+        Assert.That(DiscAt(s, "w11_orchard"), Has.Count.EqualTo(2), "75 不再揭资源");
 
         Assert.That(s.Locations["w12_canal"].Discovered, Is.False);
         var t100 = Explore(s);
@@ -84,7 +88,7 @@ public class B11ExploreTests : TestBase
 
         E.DebugTeleport(s, "d05_04");
         Explore(s);
-        Assert.That(s.RevealedResourceMarkers, Is.SupersetOf(new[] { "d05_04_cache0", "d05_04_cache2" }));
+        Assert.That(DiscAt(s, "d05_04"), Is.SupersetOf(new[] { "d05_04_cache0", "d05_04_cache2" }));
         Assert.That(s.Log.Last(l => l.Kind == GameEventKind.ActionCompleted.ToString()).Text, Does.Not.Contain(Cfg.Map.ClueText), "地牢没有 75 线索");
     }
 
@@ -158,13 +162,13 @@ public class B11ExploreTests : TestBase
         Run(s);
         Run(t);
         Assert.That(SaveSerializer.Serialize(t), Is.EqualTo(SaveSerializer.Serialize(s)), "读档续行一致");
-        var markers = E.RevealedMarkersAt(s, "w11_orchard").Count;
+        var markers = DiscAt(s, "w11_orchard").Count;
         Assert.That(markers, Is.EqualTo(2));
         E.DebugTeleport(s, "w12_canal");
         var log = s.Log.Count;
         E.DebugTeleport(s, "w11_orchard");
-        Assert.That(E.RevealedMarkersAt(s, "w11_orchard"), Has.Count.EqualTo(markers));
-        Assert.That(s.Log.Skip(log).Any(l => l.Text.Contains("资源点线索")), Is.False, "重复到访不重发");
+        Assert.That(DiscAt(s, "w11_orchard"), Has.Count.EqualTo(markers));
+        Assert.That(s.Log.Skip(log).Any(l => l.Text.Contains("生块根点")), Is.False, "重复到访不重发");
         Assert.That(s.Locations["w11_orchard"].TriggeredMilestones, Is.EquivalentTo(new[] { 25, 50 }));
     }
 
@@ -180,7 +184,7 @@ public class B11ExploreTests : TestBase
         Assert.That(s.Progress.Flags, Does.Contain("church_contacted"));
         E.DebugMapTeleport(s, "w11_orchard");
         E.DebugExploreHere100(s);
-        Assert.That(E.RevealedMarkersAt(s, "w11_orchard"), Has.Count.EqualTo(2));
+        Assert.That(DiscAt(s, "w11_orchard"), Has.Count.EqualTo(2));
         Assert.That(s.UnlockedEdges, Does.Contain("w11_orchard__w12_canal"));
         E.DebugMapTeleport(s, "m02_checkpoint");
         Assert.That(E.DebugExploreHere100(s), Does.Contain("营门（需要：解决检查哨"));

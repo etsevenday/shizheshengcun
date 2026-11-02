@@ -71,6 +71,10 @@ namespace Survival.Core.Engine
             return Math.Max(f.Min, Math.Min(f.Max, raw));
         }
 
+        /// <summary>不计野外经验的资源点（Q55 resourceRows.xpAllowed=false：核心记录、城市配给）的说明。</summary>
+        private static string NoFieldXpText(ResourceConfig res) =>
+            res.IsCampaign ? "领取记录不计采集/搜集经验" : "公共配给不计采集/搜集经验";
+
         /// <summary>某角色某门在某世界日已得的经验（日额计数）。</summary>
         private int DailyXpUsed(ActorState actor, int day, string skill) => DailyCount(actor, day, DailyXp, skill);
 
@@ -81,6 +85,7 @@ namespace Survival.Core.Engine
         /// <summary>预估用：完成这次采集/搜集会得到的经验说明（Q55：同点每日前3次、每门每日60）。</summary>
         public string GatherXpPreview(GameState s, ResourceConfig res)
         {
+            if (!res.XpAllowed) return NoFieldXpText(res);
             var skill = GatherSkillOf(res);
             var xp = FieldXp(res);
             var f = Config.Progression.FieldXp;
@@ -98,6 +103,7 @@ namespace Survival.Core.Engine
         /// <summary>采集/搜集成功提交：按开工日计同点次数，额度内给经验（受每门每日上限）。返回日志用文字。</summary>
         private string AwardGatherXp(GameState s, ResourceConfig res, ActionState a)
         {
+            if (!res.XpAllowed) return NoFieldXpText(res);
             var skill = GatherSkillOf(res);
             var f = Config.Progression.FieldXp;
             var day = a.XpDay ?? Clock.Day(s.GameMinute);

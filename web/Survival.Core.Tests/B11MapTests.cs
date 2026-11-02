@@ -435,7 +435,7 @@ public class B11MapTests : TestBase
         j.Remove("RevealedResourceMarkers");
         var items = ((JArray)j["Items"]!).Count;
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out var notes);
-        Assert.That(m.SchemaVersion, Is.EqualTo("20"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "19→20→21");
         Assert.That(m.Locations, Has.Count.EqualTo(143));
         Assert.That(m.UnlockedEdges, Is.SupersetOf(edges), "已开边不回退");
         Assert.That(m.Locations["m01_road"].Discovered, Is.True, "村庄 100 揭示出区路线（未开通）");

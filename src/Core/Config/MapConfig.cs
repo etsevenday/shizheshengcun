@@ -26,8 +26,12 @@ namespace Survival.Core.Config
         public Dictionary<string, List<string>> ArrivalFacts { get; set; } = new Dictionary<string, List<string>>();
         /// <summary>新区探索 75% 的安全线索文字（不另发物资，S03「新区探索与发现」）。</summary>
         public string ClueText { get; set; } = "";
-        /// <summary>96 条新增资源的揭示标记（B11 只记“已发现”与日志；采集、库存与四账在 B12）。</summary>
-        public List<ResourceMarkerConfig> ResourceMarkers { get; set; } = new List<ResourceMarkerConfig>();
+        /// <summary>旧核心节点 → 新核心节点（legacy-node-claim-migration.json：d01_06→d01_08 等；按 claim 身份迁移，不对同号侧室全局替换，B12 R37）。</summary>
+        public Dictionary<string, string> LegacyCoreNodes { get; set; } = new Dictionary<string, string>();
+        /// <summary>6 个旧唯一箱的 claimId → 新领取节点（claimId 原样、已领不补；B12 只建账，领取动作待 Q122）。</summary>
+        public List<LegacyClaimConfig> LegacyClaims { get; set; } = new List<LegacyClaimConfig>();
+        /// <summary>地牢 → 核心记录节点。</summary>
+        public Dictionary<string, string> RecordNodes { get; set; } = new Dictionary<string, string>();
         public List<DungeonConfig> Dungeons { get; set; } = new List<DungeonConfig>();
     }
 
@@ -67,14 +71,12 @@ namespace Survival.Core.Config
         public GatePredicate? Else { get; set; }
     }
 
-    public sealed class ResourceMarkerConfig
+    /// <summary>旧唯一箱的迁移账（expansion-combat legacyUniqueRewards + legacy-node-claim-migration claimNodes）。</summary>
+    public sealed class LegacyClaimConfig
     {
-        public string Id { get; set; } = "";
-        public string NodeId { get; set; } = "";
-        /// <summary>揭示探索度：0 为到访即见，25/50/100 为对应里程碑。</summary>
-        public int Reveal { get; set; }
-        public Dictionary<string, int> Items { get; set; } = new Dictionary<string, int>();
-        public string Scope { get; set; } = "";
+        public string ClaimId { get; set; } = "";
+        public string Node { get; set; } = "";
+        public Dictionary<string, int> Grants { get; set; } = new Dictionary<string, int>();
     }
 
     public sealed class DungeonConfig

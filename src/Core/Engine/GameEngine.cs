@@ -357,15 +357,17 @@ namespace Survival.Core.Engine
 
                 case ActionType.Clear:
                 {
-                    if (!hereCfg.ClearEnabled) return "这里的清理在后续版本开放";
+                    if (!hereCfg.ClearEnabled) return "这里不能清理";
                     if (!hereState.Visited) return "只能清理已访问的当前地点";
                     var cap = hereCfg.Clear.Cap;
                     var (charges, progress) = ClearChargesAt(s, here);
                     if (charges < 1)
-                        return $"清理次数0/{cap}，{Clock.Duration(hereCfg.Clear.RefillIntervalMinutes - progress)}后恢复1次";
+                        return hereCfg.ClearPerGeneration
+                            ? $"本次地牢这里的{ClearLabelAt(here)}已用完（每代{cap}次，地牢换代后恢复）"
+                            : $"清理次数0/{cap}，{Clock.Duration(hereCfg.Clear.RefillIntervalMinutes - progress)}后恢复1次";
                     plan.TargetId = here;
-                    plan.BaseWork = Config.Actions.ClearMinutes;
-                    plan.Label = "清理";
+                    plan.BaseWork = ClearMinutesAt(here);
+                    plan.Label = ClearLabelAt(here);
                     return null;
                 }
 
@@ -375,6 +377,7 @@ namespace Survival.Core.Engine
                     if (res.LocationId != here) return "该资源点不在当前地点";
                     var rs = s.Resources[res.NodeId];
                     if (!rs.Discovered) return "该资源点尚未发现";
+                    if (res.IsCampaign) return "核心记录领取在后续版本开放";
                     plan.Res = res;
 
                     ItemInstance? tool = null;
