@@ -441,7 +441,7 @@ public sealed class GameSession
     public string? CityNpcId { get; set; }
 
     /// <summary>B18：鉴定所的事项面板内容多（三页签、样本与报价列表），与制作面板一样占前三行高。</summary>
-    public bool CityPanelTall => State != null && CityNpcId != null && E.CityNpc(CityNpcId)?.ServiceIds.Any(E.IsAppraisalService) == true;
+    public bool CityPanelTall => State != null && CityNpcId != null && E.CityNpc(CityNpcId)?.ServiceIds.Any(x => E.IsAppraisalService(x) || E.IsRecruitService(x)) == true;
 
     /// <summary>打开某岗位的“事项”面板（预览 0 分钟，只看不提交）。</summary>
     public void OpenCityServices(string npcId)
@@ -451,7 +451,25 @@ public sealed class GameSession
         if (State != null && E.CityNpc(npcId)?.ServiceIds.Any(E.IsAppraisalService) == true && E.QuoteSnapshot(S, Clock.Day(S.GameMinute)) == null
             && E.EnsureAppraisalQuotes(S) != null)
             Save();
+        // B19：在收容所打开面板 = 安全访问的兜底（旧档首次实到在这里开放）；同周期只读存档里的候选，换批时生成当前这一批
+        if (State != null && E.CityNpc(npcId)?.ServiceIds.Any(E.IsRecruitService) == true)
+        {
+            var opened = E.TryOpenShelterRecruitment(S);
+            if (opened | E.EnsureRecruitCycle(S)) { Drain(); Save(); }
+        }
         OpenPanel("city");
+    }
+
+    // ───────────── 收容所周期招募（B19，R08 RC1—RC4） ─────────────
+
+    /// <summary>登记一名当前候选（10 分钟 wait；开始锁候选与名额，完成才建人）。</summary>
+    public Task<ActionResult> StartRecruit(string candidateId) => RunService(() => E.StartRecruit(S, candidateId, Guid.NewGuid().ToString("N")));
+
+    /// <summary>让一名生成角色退役（0 分钟；个人物品进收容所认领箱）。</summary>
+    public ActionResult Retire(string actorId)
+    {
+        if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        return Commit(E.Retire(S, actorId, Guid.NewGuid().ToString("N")));
     }
 
     // ───────────── 鉴定所（B18，R07 X3） ─────────────

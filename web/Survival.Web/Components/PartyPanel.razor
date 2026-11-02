@@ -8,8 +8,9 @@
     var s = G.S;
     var e = G.E;
     var cap = e.PartyCapacity(s);
-    var alive = s.Roster.Where(r => !r.Dead).ToList();
+    var alive = s.Roster.Where(r => r.Present).ToList();
     var dead = s.Roster.Where(r => r.Dead).ToList();
+    var retired = s.Roster.Count(r => r.Retired);   // B19：退役者保留历史，不在名册
     var remains = e.RemainsHere(s);
     var show = s.Roster.Count > 0 || remains.Count > 0;
     var care = e.Config.Party.ReserveCare;
@@ -19,7 +20,7 @@
     <section class="party-block" aria-label="队伍">
         <div class="party-head">
             <b>队伍 @s.Party.Count/@cap</b>
-            <span class="muted tiny">容量 C@(cap) 含你 · 名册 @alive.Count 人存活@(dead.Count > 0 ? $"、{dead.Count} 人已故" : "")</span>
+            <span class="muted tiny">容量 C@(cap) 含你 · 名册 @alive.Count 人存活@(dead.Count > 0 ? $"、{dead.Count} 人已故" : "")@(retired > 0 ? $"、{retired} 人已退役" : "")</span>
         </div>
         <div class="party-list">
             @* B8a（Q86）：号位来自 4 格编队预设（可空位、不连续），改号位统一走顶栏“编队”；这里只显示 *@
@@ -63,7 +64,15 @@
             var rem = kv.Value;
             var items = e.RemainsItems(s, deadId);
             <div class="remains-card" data-remains="@deadId">
-                <div><b>@(rem.Name)的遗物</b> <span class="muted tiny">死于@(Clock.DayTime(rem.Minute))（@rem.Cause）</span></div>
+                @if (rem.IsClaim)
+                {
+                    @* B19（R08 RC4）：生成角色退役时全部个人物品寄存在收容所认领箱，只能在这里实地取 *@
+                    <div><b>认领箱：@(rem.Name)退役寄存</b> <span class="muted tiny">@(Clock.DayTime(rem.Minute))寄存 · 只能在这里取，保质照常</span></div>
+                }
+                else
+                {
+                    <div><b>@(rem.Name)的遗物</b> <span class="muted tiny">死于@(Clock.DayTime(rem.Minute))（@rem.Cause）</span></div>
+                }
                 @foreach (var it in items)
                 {
                     var iid = it.InstanceId;
@@ -96,7 +105,7 @@
         // B14（A11 §6）：固定队友与同行补员分开标注；固定队友带营区职能标签（N01 §5）
         var roster = e.RosterOf(s, id);
         var named = isMe ? null : e.Config.Party.NamedCompanions.FirstOrDefault(n => n.ActorId == id);
-        var kind = isMe ? "" : roster?.IsEscort == true ? "同行补员" : named != null ? "固定队友" : "";
+        var kind = isMe ? "" : roster?.IsEscort == true ? "同行补员" : roster?.IsRandom == true ? "周期候选" : named != null ? "固定队友" : "";
         // B14b（Q143 选 B）：固定队友的正式背景句从配置读（旧档同样显示新句；名字、数值、技能、装备不变），放在悬停说明里
         var kindTip = named == null ? kind : $"{kind}{(named.Affiliation != "" ? " · " + named.Affiliation : "")}{(named.Background != "" ? "：" + named.Background : "")}";
         <div class="party-row @(active ? "" : "reserve")" data-actor="@id">

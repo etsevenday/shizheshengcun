@@ -644,6 +644,34 @@ public class B19RecruitTests : TestBase
         Assert.That(E.RosterAliveWithPlayer(s), Is.EqualTo(8));
     }
 
+    /// <summary>开发入口（?dev=1“周期招募（B19）”）：到收容所开放、容量 C4（K=3）、拨到本批结束前 5 分钟、拨到下一批；面板视图字段齐全。</summary>
+    [Test]
+    public void Dev_RecruitmentEntry_AndPanelView()
+    {
+        var s = New();
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        Assert.That(E.DebugRecruitment(s, "next"), Does.Contain("还没开放"));
+        Assert.That(E.DebugRecruitment(s, "go"), Does.Contain("周期候选开放"));
+        Assert.That(E.DebugRecruitment(s, "c4"), Does.Contain("K=3"));
+        var next = E.NextRecruitRefresh(s)!.Value;
+        E.DebugRecruitment(s, "edge");
+        Assert.That(s.GameMinute, Is.EqualTo(next - 5));
+        Assert.That(s.Recruit.Cycle, Is.EqualTo(0));
+        E.DebugRecruitment(s, "next");
+        Assert.That((s.GameMinute, s.Recruit.Cycle), Is.EqualTo((next, (int?)1)));
+        var v = E.RecruitPreview(s);
+        Assert.That(v.Opened, Is.True);
+        Assert.That(v.CycleText, Does.Contain("第2批"));
+        Assert.That(v.QuotaText, Does.Contain("随机/保底名册 0/3"));
+        Assert.That(v.CostText, Does.Contain("0材料").And.Contain("10分钟"));
+        Assert.That(v.Candidates.Count, Is.EqualTo(3));
+        Assert.That(v.Candidates.All(c => c.SkillText.Contains("主：") && c.BodyText.Contains("未感染") && c.CombatText.Contains("初始装备与随身：空")), Is.True);
+        Assert.That(v.Candidates.All(c => c.Blocked == null), Is.True);
+        var svc = E.CityService(Cfg.Party.Recruitment.ServiceId)!;
+        Assert.That(E.IsRecruitService(svc.Id), Is.True);
+    }
+
     /// <summary>RC12：随机招入者留守按 Q90 自主照护（只补到 80、不发物、不扣你的库存），病毒不被重置。</summary>
     [Test]
     public void RC12_RandomReserveCare_NoFreeItems()

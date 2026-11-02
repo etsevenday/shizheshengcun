@@ -1,0 +1,94 @@
+@inherits GameComponent
+
+@* 收容所同行者名册面板（开发计划 v0.9 B19；R08 RC3/RC4、A11 Q33 shelter_recruitment）：挂在杜穗“事项”面板里（三城鸟瞰随 B24）。
+   周期说明（开放时刻、第几批、下一批时刻）、随机/保底名额 n/K、三名候选卡（模板、两项熟练真实等级、身体当前值与上限、速度与人物档、
+   未感染/无共生、初始装备空、登记耗时）；二级查看完整身体与其余熟练；满额时三名照常可看、按钮禁用写原因。
+   下方列可退役的生成角色（随机/保底），点“退役…”先展开确认说明（永久离开、技能不返还、物品去向），再点“确认退役”才提交。
+   浏览、展开都 0 分钟；只有“登记同行（10分钟）”开工，“确认退役”0 分钟提交。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var v = e.RecruitPreview(s);
+    var busy = G.Running ? "行动进行中" : null;
+}
+
+<section class="city-svc recruit-panel">
+    <h3>@Title <small>@e.LocName(e.Config.Party.Recruitment.LocationId) · 查看不耗时</small></h3>
+    @if (!string.IsNullOrEmpty(NpcLine)) { <p class="city-line">“@NpcLine”</p> }
+    <p class="small">@v.OpenText</p>
+    @if (v.Opened)
+    {
+        <p class="small"><b>@v.CycleText</b></p>
+    }
+    <p class="small rc-quota">@v.QuotaText</p>
+    <p class="small muted">@v.CostText。招募不收金币、罕见材料或钥匙；完成后入名册作候补（在@(e.LocName(e.HubLocation(s)))留守，到那里编入同行）。同行补员（RB01）与借用矛报失在右栏“队伍”。</p>
+    @if (v.PendingText != null) { <p class="warn-text small">@v.PendingText</p> }
+
+    @if (v.Opened)
+    {
+        <div class="rc-cards">
+            @foreach (var c in v.Candidates)
+            {
+                var cid = c.CandidateId;
+                var why = c.Status == "available" ? (c.Blocked ?? busy) : c.StatusText;
+                <div class="rc-card @(c.Status)" data-candidate="@cid">
+                    <div class="rc-head"><b>@c.Name</b> <span class="muted small">@c.StatusText · @c.TemplateName（@c.TemplateUse）</span></div>
+                    <div class="small">@c.SkillText</div>
+                    <div class="small">@c.BodyText</div>
+                    <div class="small">@c.CombatText</div>
+                    <details class="small muted"><summary>完整资料</summary>@c.DetailText</details>
+                    @if (c.Status == "available")
+                    {
+                        <div class="btn-row">
+                            <button class="primary" disabled="@(why != null)" title="@(why ?? $"0材料，{e.Config.Party.Recruitment.RegistrationMinutes}分钟等待（你与同行按等待消耗）；开始即锁这名候选与1个名额，中途停下已耗时间不退、候选不变")"
+                                    @onclick="() => G.StartRecruit(cid)">登记同行（@(e.Config.Party.Recruitment.RegistrationMinutes)分钟）</button>
+                            @if (why != null) { <span class="muted small">@why</span> }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    @if (v.Retirables.Count > 0)
+    {
+        <h4 class="rc-sub">生成角色退役（随机/保底，固定角色不能退役）</h4>
+        @foreach (var r in v.Retirables)
+        {
+            var aid = r.ActorId;
+            var why = r.Blocked ?? busy;
+            <div class="rc-retire" data-actor="@aid">
+                <span><b>@r.Name</b> <span class="muted small">@r.KindLabel · @r.WhereText</span></span>
+                @if (_confirm == aid)
+                {
+                    <p class="small warn-text">@r.ConfirmText</p>
+                    <div class="btn-row">
+                        <button class="primary" disabled="@(why != null)" title="@(why ?? "0分钟，确认后立即生效，不能撤回")" @onclick="() => DoRetire(aid)">确认退役</button>
+                        <button class="secondary" @onclick="() => _confirm = null">取消</button>
+                        @if (why != null) { <span class="muted small">@why</span> }
+                    </div>
+                }
+                else
+                {
+                    <div class="btn-row">
+                        <button class="secondary" disabled="@(why != null)" title="@(why ?? "先看退役说明，再确认")" @onclick="() => _confirm = aid">退役…</button>
+                        @if (why != null) { <span class="muted small">@why</span> }
+                    </div>
+                }
+            </div>
+        }
+    }
+</section>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string NpcLine { get; set; } = "";
+
+    private string? _confirm;
+
+    private void DoRetire(string actorId)
+    {
+        _confirm = null;
+        G.Retire(actorId);
+    }
+}

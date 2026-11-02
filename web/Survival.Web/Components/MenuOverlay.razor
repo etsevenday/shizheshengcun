@@ -186,6 +186,15 @@
                     <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugAppraisal(G.S, "fiber"))'>植物纤维2</button>
                     <button class="secondary small-btn" title="空闲时把时间拨到当日23:55（不结算身体），试跨午夜换物" @onclick='() => DevDone(G.E.DebugAppraisal(G.S, "t2355"))'>拨到当日23:55</button>
                 </div>
+                @* B19（R60/R61）：收容所周期招募。传送按实际到达处理（记营区登记、首次到达开放候选）；拨时间不结算身体 *@
+                <div class="eyebrow">周期招募（B19）：到收容所 → 设施栏杜穗“事项”→ 同行者名册（候选登记/退役）；凑满额用“容量C4”再登记或加护送员</div>
+                <div class="btn-row">
+                    <button class="secondary small-btn" title="记营区登记，传送到收容所（按实际到达处理，首次到达开放周期候选）" @onclick='() => DevDone(G.E.DebugRecruitment(G.S, "go"))'>到收容所（记登记）</button>
+                    <button class="secondary small-btn" title="记下 C3/C4 两条容量事实：随机/保底名额 K=3" @onclick='() => DevDone(G.E.DebugRecruitment(G.S, "c4"))'>容量记到C4（K=3）</button>
+                    <button class="secondary small-btn" title="空闲时把时间拨到下一批开始（不结算身体），换出新一批3名" @onclick='() => DevDone(G.E.DebugRecruitment(G.S, "next"))'>拨到下一批（+至72小时交界）</button>
+                    <button class="secondary small-btn" title="空闲时把时间拨到本批结束前5分钟（不结算身体），试跨批登记" @onclick='() => DevDone(G.E.DebugRecruitment(G.S, "edge"))'>拨到本批结束前5分钟</button>
+                    <button class="secondary small-btn" @onclick="() => DevParty(st => G.E.DebugAddEscort(st))">加入通用护送员（占共享名额）</button>
+                </div>
                 @* B15（R46/R47）：主线与城市委托。地牢实例（B21）前，核心记录用“记下领取”按原领取事务写事实，验证主线推进与容量 *@
                 <div class="eyebrow">任务（B15）：记下核心记录领取（主线推进、容量 C3/C4）；支线地点；战术训练材料</div>
                 <div class="btn-row">
@@ -267,7 +276,7 @@
                     <button class="secondary small-btn" @onclick="() => DevParty(st => G.E.DebugGiveCompanionMeds(st))">同行队友各发药品（绷带/纱布/盐水各2）</button>
                     <button class="secondary small-btn" @onclick="() => DevParty(st => G.E.DebugPartyDrill(st))">全队木矛+信号哨（矛术5/指挥3，试架矛顺延与整队）</button>
                 </div>
-                @foreach (var r in G.S.Roster.Where(r => !r.Dead))
+                @foreach (var r in G.S.Roster.Where(r => r.Present))
                 {
                     var rid = r.ActorId;
                     <div class="btn-row">

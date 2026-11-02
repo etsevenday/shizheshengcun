@@ -1432,3 +1432,13 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 /* B18 试玩修复 M372：鉴定所换物产物落地后保持金色描边（R07 X3.4“落当前服务区地面并高亮”），离开该处或下一批新高亮时取消 */
 /* M374：插画主题 .wasteland :is(.card, …) 的卡阴影是 0,3,0，这里用 0,4,0 盖过它，只作用于带 held 的物品卡 */
 .wasteland .card.item.held, .card.item.held { box-shadow: 0 0 0 3px #e8cf8f, 0 0 10px 2px #e8cf8f88; }
+
+/* B19 收容所周期招募面板（R08 RC3/RC4）：三张候选卡、名额行、退役确认 */
+.recruit-panel .rc-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; margin: 6px 0; }
+.recruit-panel .rc-card { border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.recruit-panel .rc-card.recruited { opacity: .7; }
+.recruit-panel .rc-card .small { color: #cfd5c6; }
+.recruit-panel .rc-head { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+.recruit-panel .rc-sub { margin: 10px 0 4px; font-weight: 500; }
+.recruit-panel .rc-retire { border-top: 1px solid var(--line); padding: 6px 0; display: flex; flex-direction: column; gap: 4px; }
+.recruit-panel details summary { cursor: pointer; }
