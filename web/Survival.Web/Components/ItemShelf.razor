@@ -120,7 +120,7 @@
                     <div class="art">@Icons.Markup(t.ItemId)</div>
                     @{ var deployed = e.IsDeployed(s, t); var tLine = deployed ? "已部署 · 先收起才能拾取" : Ui.ItemLine(e, s, t); }
                     <div class="cinfo @(deployed ? "warn-text" : "")" title="@tLine">@tLine</div>
-                    <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !locked && !busy && !deployed)" />
+                    <TransferArrow Owner="@Owner" ItemId="@toolId" InstanceId="@inst" Enabled="@(t.ReservedBy == null && !locked && !busy && !deployed)" Title="@(deployed ? "已部署 · 先收起才能拾取" : null)" />
                 </div>
                 </div>
             }

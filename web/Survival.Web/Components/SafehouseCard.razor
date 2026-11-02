@@ -19,12 +19,15 @@
     var elsewhere = e.BuiltSafehouses(s).Any(l => l != here);
     string badge = inside ? "屋内" : built ? "已建成" : status == GameEngine.SafehouseBuildingStatus ? "施工中" : "未建造";
     string line;
+    string? cab = null, lead = null;
     if (inside)
     {
         var parts = new List<string> { interior?.BedBuilt == true ? "有床" : "无床", interior?.FireBuilt == true ? "有火" : "无火" };
         line = $"{string.Join("·", parts)}·柜{(e.CabinetGrams(s, here) / 1000.0):0.#}/{e.CabinetCapacityGrams / 1000}公斤";
+        cab = $"柜{(e.CabinetGrams(s, here) / 1000.0):0.#}/{e.CabinetCapacityGrams / 1000}公斤";
+        lead = string.Join("·", parts) + "·";
     }
-    else if (built) line = "遮蔽·休息精神+2·200公斤柜";
+    else if (built) line = "遮蔽·有柜";
     else if (status == GameEngine.SafehouseBuildingStatus) line = "施工中：完工后才有门与柜子";
     else line = reasons.Count == 0 ? $"可以建：{e.SafehouseRecipe.BaseMinutes}分钟" : reasons[0];
     // 卡名：地点名已在场景卡上，这里只写“安全屋”或玩家改的名字（全名在悬停），★ 表示常用
@@ -39,7 +42,8 @@
             Tooltip="@tip" OnClick="Open" AriaLabel="@($"{title}，{badge}：{line}")">
     <Art>@Icons.Markup("shelter")</Art>
     <ChildContent>
-        <div class="oc-line" title="@tip">@line@(!built && reasons.Count > 1 ? $"（另{reasons.Count - 1}条）" : "")</div>
+        @* N5：柜子重量段不拆行 *@
+        <div class="oc-line" title="@tip">@if (cab != null) {@lead<span class="nw">@cab</span>} else {@line@(!built && reasons.Count > 1 ? $"（另{reasons.Count - 1}条）" : "")}</div>
     </ChildContent>
     <Footer>
         @if (built)

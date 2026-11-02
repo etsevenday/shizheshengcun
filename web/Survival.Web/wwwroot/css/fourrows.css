@@ -1096,3 +1096,11 @@
 /* 安全屋卡状态行：最多两行（“无床·有火·柜0.1/200公斤”在 1280/1600 不再被省略），宽 106px 让 1280 设施行不出横向滚动 */
 .center-scroll.four .facility-row .fac-card.sh-card .oc-body .oc-line { white-space: normal; word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
 @media (max-height: 800px) { .center-scroll.four .facility-row .fac-card.sh-card { width: 106px; } }
+/* B17 试玩修复 M363（N2/N5）：1280×720 安全屋卡主图保底 30px（角标在主图内、不压名称），状态一行省略（全文悬停）；柜子重量段不拆行 */
+.center-scroll.four .facility-row .fac-card.sh-card .nw { white-space: nowrap; }
+@media (max-height: 800px) {
+  .center-scroll.four .facility-row .fac-card.sh-card { grid-template-rows: minmax(30px, 1fr) auto auto auto; }
+  .center-scroll.four .facility-row .fac-card.sh-card .oc-art { margin-top: 6px; min-height: 24px; }
+  .center-scroll.four .facility-row .fac-card.sh-card .oc-badge { top: 6px; }
+  .center-scroll.four .facility-row .fac-card.sh-card .oc-body .oc-line { display: block; -webkit-line-clamp: unset; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}

@@ -339,7 +339,7 @@ else if (proc != null)
 else
 {
     <PreviewView Request="request" Eyebrow="@($"手工制作 · {(rc.IsBuild ? "营地设施" : "配方")}")" Title="@rc.Name" Subtitle="@RecipeHint(rc)"
-                 Confirmable="false" FootNote="@($"在中间配方卡下方点“{StartLabel(rc)}”；时间为预计值")" />
+                 Confirmable="false" FootNote="@(e.IsStationBatchRecipe(rc) ? "在中间配方卡下方点“投料（被动）”；被动加工0分钟投料、不占行动，离开也继续" : $"在中间配方卡下方点“{StartLabel(rc)}”；时间为预计值")" />
 }
 
 @code {

@@ -5,7 +5,7 @@
    系统策划总册 v1.0 Q5-2（S14 §9.2）：箭头不选中卡片、不打开操作条；要改数量或目的地请点卡片本身。失败原因写在右栏提示。 *@
 <button type="button" class="card-arrow @(ToCarried ? "down" : "up")" disabled="@(!Enabled)"
         aria-label="@(ToCarried ? "拾取1件" : "放下1件")"
-        title="@(ToCarried ? "取到随身1件，按住连续拾取（点卡片本身可输入数量）" : "放到当前地面1件，按住连续放下（点卡片本身可输入数量）")"
+        title="@(Title ?? (ToCarried ? "取到随身1件，按住连续拾取（点卡片本身可输入数量）" : "放到当前地面1件，按住连续放下（点卡片本身可输入数量）"))"
         @onpointerdown="OnPointerDown"
         @onpointerup="StopHold" @onpointerleave="StopHold" @onpointercancel="StopHold"
         @oncontextmenu:preventDefault="true"
@@ -19,6 +19,8 @@
     [Parameter] public string ItemId { get; set; } = "";
     [Parameter] public int? InstanceId { get; set; }
     [Parameter] public bool Enabled { get; set; } = true;
+    /// <summary>不可用时的说明（如“已部署 · 先收起才能拾取”）；为空用默认拾取/放下说明。</summary>
+    [Parameter] public string? Title { get; set; }
 
     private bool ToCarried => Owner != ItemInstance.Carried;
     private CancellationTokenSource? _hold;
