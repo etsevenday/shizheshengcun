@@ -5464,7 +5464,14 @@
       "discoveryDoesNotWriteVisitedOrExplore": true,
       "noRemoteInstanceCreation": true
     },
-    "completion": "Q127：本代核心领取/核对原10分钟事务成功写recordClaimedAndClear即开放本代出口，不另全图清场；只胜守卫不算。每次走出口重验当前代，原守卫门与移动成本继续。"
+    "completion": "Q127：本代核心领取/核对原10分钟事务成功写recordClaimedAndClear即开放本代出口，不另全图清场；只胜守卫不算。每次走出口重验当前代，原守卫门与移动成本继续。",
+    "prologueRoadArrival": {
+      "question": "Q131",
+      "taskId": "PRO18",
+      "evidence": "actual_arrival_m01_road",
+      "southSignRequired": false,
+      "doesNotChangeQMAP01Predicate": true
+    }
   },
   "factProducers": {
     "checkpoint_obstruction_cleared": "m02固定任务路障战最终胜利且主角存活提交，不使用S04随机清理次数",

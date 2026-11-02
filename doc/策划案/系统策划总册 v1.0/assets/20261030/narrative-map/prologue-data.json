@@ -29,7 +29,9 @@
     "villageExplore100Required": false,
     "fusionRequired": false,
     "allTutorialTasksRequired": false,
-    "preserveAlreadyUnlocked": true
+    "preserveAlreadyUnlocked": true,
+    "southSignRequired": false,
+    "task18Evidence": "actual_visited_m01_road_only"
   },
   "daysAreDeadlines": false,
   "sevenDayWinPopup": false,
@@ -38,147 +40,310 @@
       "id": "PRO01",
       "title": "看清眼前",
       "suggestedStage": "D1",
-      "completionRule": "首次实际选中地面/物资对象并展开一次合法操作预览",
-      "guidance": "中性系统提示四行的地图/设施/地面/随身归属；关闭说明不扣时间",
-      "exitGate": "否，关闭教学可继续"
+      "completionRule": "首次实际选中任一地面或随身物资卡，并展开该卡合法操作预览；0世界分钟；只读任务册或悬停不算",
+      "guidance": "选中地面或随身的一张物资卡，查看操作和预估；只看不耗时。",
+      "exitGate": "否，关闭教学可继续",
+      "goal": "选一张物资卡，看看能做什么。",
+      "guidanceTrigger": "开场剧情读完后的首次可操作界面，在首次物资选择前；若已实际查看则跳过",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO01_reaction",
+      "doneText": "已查看物资操作。"
     },
     {
       "id": "PRO02",
       "title": "留住力气",
       "suggestedStage": "D1",
-      "completionRule": "开局补给中至少一次食用或饮水实际改善N或W",
-      "guidance": "饱饱只表达饿/渴；系统说明选择数量、费用和提交，满值不强迫浪费",
-      "exitGate": "否"
+      "completionRule": "任意来源的一次食用或饮水实际提高主角饱食或水分任一项；满值无实际提高不算，不限定开局物品",
+      "guidance": "饱食或水分不足时，选可食用的食物或饮水并查看用量；满了不必硬吃。",
+      "exitGate": "否",
+      "goal": "吃或喝一次，让饱食或水分实际回升。",
+      "guidanceTrigger": "首次在未完成时选中可食用或可饮用物资，实际使用提交前；满值不要求消耗",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO02_reaction",
+      "doneText": "已用食饮改善状态。"
     },
     {
       "id": "PRO03",
       "title": "带点防身物",
       "suggestedStage": "D1",
       "completionRule": "获得并装备任一合法伤害型武器；已有合法装备直接算",
-      "guidance": "指向已知可制作的低阶配方及所缺材料来源，不要求新增专属配方",
-      "exitGate": "否；无武器仍可用拳，首次离营前警告风险"
+      "guidance": "查看一件已知防身武器的做法或装备入口；拿到后装进武器槽。",
+      "exitGate": "否；无武器仍可用拳，首次离营前警告风险",
+      "goal": "取得并装备一件能造成伤害的武器。",
+      "guidanceTrigger": "首次打开本人武器装备或已知武器配方预览，在首次有效装备前；已有合法伤害武器直接追认",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO03_reaction",
+      "doneText": "已装备防身武器。"
     },
     {
       "id": "PRO04",
       "title": "第一次交手",
       "suggestedStage": "D1",
       "completionRule": "沿原S15保留游荡尸，最终胜利且唯一轮末tick存活",
-      "guidance": "保留首次强制、撤退后主动续战与同敌HP；教选技能/合法目标/预测/AP/防御/结束行动",
-      "exitGate": "是，沿用既有首战门控"
+      "guidance": "先选技能，悬停合法目标看预测，再点目标提交；也可查看防御和结束行动。",
+      "exitGate": "是，沿用既有首战门控",
+      "goal": "处理农野荒地的游荡尸，战斗结束时活着。",
+      "guidanceTrigger": "首战建立后，原到达警告之后、首次战斗行动结算之前；并入该首战教学上下文，不在胜利后补播",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO04_reaction",
+      "doneText": "已战胜首战敌人。"
     },
     {
       "id": "PRO05",
       "title": "身体里的变化",
       "suggestedStage": "D1以后",
       "completionRule": "自愿融合唯一教学实例，完成原R07事务",
-      "guidance": "显示真实白色物质/绿色攻击+0.1；主角可疑虑，饱饱不保证绝对安全",
-      "exitGate": "否，不融合也能求医和进主线"
+      "guidance": "查看这份活性物质的实际融合预览，再自行决定；不融合也能继续求医。",
+      "exitGate": "否，不融合也能求医和进主线",
+      "goal": "查看教学物质的融合预览，自行决定是否融合。",
+      "guidanceTrigger": "首战奖励真实落地且原胜利剧情读完后，在教学活性物质首次融合前；物质不存在或已融合则跳过",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO05_reaction",
+      "doneText": "已完成自愿融合。"
     },
     {
       "id": "PRO06",
       "title": "找到水源",
       "suggestedStage": "D2",
-      "completionRule": "到访stream，且完成一次从合法水源取水",
-      "guidance": "说明脏水与净水、容器/重量/owner，不靠“看起来清”判断",
-      "exitGate": "否"
+      "completionRule": "真实到访过stream且成功完成任一合法水源资源采集并实际产出dirty_water；两证据先后不限；拾取地面水/看资源卡/喝水不算取水",
+      "guidance": "沿已知道路到溪流浅滩；取水前查看水源和产物，脏水要处理后再喝。",
+      "exitGate": "否",
+      "goal": "到访溪流浅滩，并从合法水源实际取一次脏水。",
+      "guidanceTrigger": "溪流已发现而未到访时选中溪流，或真实到达溪流后尚未取水，或首次选中合法水源，均在未完成任务与取水提交前",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO06_reaction",
+      "doneText": "已到访溪流并实际取水。"
     },
     {
       "id": "PRO07",
       "title": "火要有燃料",
       "suggestedStage": "D2",
       "completionRule": "合法给火堆添燃料并成功点火一次",
-      "guidance": "选卡预览/磨损/耗时；使用真实木材与打火器，不赠免费火",
-      "exitGate": "否"
+      "guidance": "先查看火堆燃料，添入木材，再用可用打火器点燃；先核对耗时与耐久。",
+      "exitGate": "否",
+      "goal": "给火堆添燃料，并成功点燃一次。",
+      "guidanceTrigger": "首次在任务未完成时选中可操作火堆，在添燃料/点火提交前",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO07_reaction",
+      "doneText": "已成功点燃火堆。"
     },
     {
       "id": "PRO08",
       "title": "一份安全的水",
       "suggestedStage": "D2",
       "completionRule": "设施完成一次脏水→净水并真实生成",
-      "guidance": "提示锅里内容、受热进度、等待烹饪与“退出保留已做工作”，不废止现有配方",
-      "exitGate": "否"
+      "guidance": "把脏水放入锅并置于可加热的火堆，查看受热进度；可用“等待加工”等它完成。",
+      "exitGate": "否",
+      "goal": "让设施把一批脏水实际处理成净水。",
+      "guidanceTrigger": "任务未完成时首次查看随身脏水、锅或火堆净水配置，在净水实际完成前；已净水者跳过",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO08_reaction",
+      "doneText": "已制得净水。"
     },
     {
       "id": "PRO09",
       "title": "能再做的食物",
       "suggestedStage": "D2",
       "completionRule": "生块根烤制或水煮真实完成一次",
-      "guidance": "指向确定采集/搜集来源和腐败风险；罐头食用不冒充制作完成",
-      "exitGate": "否；新手只选一条简单食物链"
+      "guidance": "取得生块根后可烤或水煮；查看原料保质和受热进度，熟了再取食。",
+      "exitGate": "否；新手只选一条简单食物链",
+      "goal": "把生块根烤熟或水煮熟一次。",
+      "guidanceTrigger": "首次查看生块根来源、食材卡或熟制配置，在实际烤/煮熟前；只显示已知来源",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO09_reaction",
+      "doneText": "已做出熟块根。"
     },
     {
       "id": "PRO10",
       "title": "工具换来效率",
       "suggestedStage": "D3",
-      "completionRule": "完成一件当前已知基础工具/武器配方；PRO03已自行制作可追认",
-      "guidance": "对照材料、工作量、设施与成品，工具属性按既有案",
-      "exitGate": "否"
+      "completionRule": "主角在hand手工制作成功完成至少一件产物为工具或武器的配方，含木盾；不含箭矢/绷带、维修/拆解/建造与工坊配方；PRO03同次制作可追认本项，PRO03另须实际装备伤害武器",
+      "guidance": "在手工制作中选一件已知工具或武器，核对材料、耗时和成品后再开工。",
+      "exitGate": "否",
+      "goal": "亲手做出一件工具或武器。",
+      "guidanceTrigger": "首次打开手工制作或一件当前已知工具/武器配方预览，在制作提交前；先做过者直接追认",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO10_reaction",
+      "doneText": "已完成一次工具或武器制作。"
     },
     {
       "id": "PRO11",
       "title": "五格不是五份",
       "suggestedStage": "D3",
       "completionRule": "一次实际地面↔随身物资转移成功",
-      "guidance": "系统提示批次/数量与五卡、七装备槽分开；不替Q24选择批次显示方案",
-      "exitGate": "否，不要求故意超重或丢弃物品"
+      "guidance": "查看物资数量、批次和重量，再选拾取或放下；五张物资卡与七个装备槽分开计算。",
+      "exitGate": "否，不要求故意超重或丢弃物品",
+      "goal": "在地面和随身之间实际转移一次物资。",
+      "guidanceTrigger": "首次查看可转移的地面或随身物资，在首次拾取/放下提交前；可与PRO01同次选卡后接续",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO11_reaction",
+      "doneText": "已完成物资转移。"
     },
     {
       "id": "PRO12",
       "title": "不要硬撑",
       "suggestedStage": "D3",
       "completionRule": "实际睡眠累计120游戏分钟；按已提交睡眠段计",
-      "guidance": "提示E/S/遮蔽差异，睡眠优先推荐4—6小时但不强制固定一觉",
-      "exitGate": "否；等待不冒充睡眠，未睡也不锁主线"
+      "guidance": "在恢复面板选择“睡眠”和时长，先看遮蔽与消耗；累计睡满2小时计入本项。",
+      "exitGate": "否；等待不冒充睡眠，未睡也不锁主线",
+      "goal": "实际睡眠累计满2小时。",
+      "guidanceTrigger": "首次打开恢复面板或选择睡眠计划，在睡眠开始提交前；不等睡满120分钟才提示",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO12_reaction",
+      "doneText": "已累计睡眠2小时。"
     },
     {
       "id": "PRO13",
       "title": "留个能回的地方",
       "suggestedStage": "D3",
       "completionRule": "建棚完成；有合格旧棚也算",
-      "guidance": "说明遮蔽是恢复条件而非无敌；不把新安全屋完整体系提前塞进序章",
-      "exitGate": "否，材料不足仍可露天休息"
+      "guidance": "在营地建设中查看遮蔽棚的材料和耗时；建成后改善恢复条件，仍要留意危险。",
+      "exitGate": "否，材料不足仍可露天休息",
+      "goal": "在营地建成遮蔽棚。",
+      "guidanceTrigger": "首次在临时营地打开建设或遮蔽棚预览，在开工提交前；已有合格棚则追认",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO13_reaction",
+      "doneText": "已有可用遮蔽棚。"
     },
     {
       "id": "PRO14",
       "title": "走一趟再回来",
       "suggestedStage": "D4",
-      "completionRule": "从camp出发，到village或clinic后实际回camp一次",
-      "guidance": "认识边/耗时/发现与探索区别，往返补给和真实回程；village100才开clinic规则仍保持",
-      "exitGate": "否，不强迫先开诊所"
+      "completionRule": "本局实际到访过village或clinic，之后在成功移动到达camp的事务完成；不另要求camp出发记录，不要求诊所和村庄都去过",
+      "guidance": "去过废弃村庄或诊所后，沿已知道路回临时营地；出发前也留意回程补给。",
+      "exitGate": "否，不强迫先开诊所",
+      "goal": "到访村庄或诊所，再实际回到临时营地。",
+      "guidanceTrigger": "村庄/诊所已发现时首次查看外出路线，或已到访后打开返营路线，在真实回营完成前",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO14_reaction",
+      "doneText": "已完成一次探路返营。"
     },
     {
       "id": "PRO15",
       "title": "找一条求医线索",
       "suggestedStage": "D4",
       "completionRule": "首次到访village并查看固定公开救助残页",
-      "guidance": "给“可能还有组织在救助幸存者”的背景；不是地图钥匙、无医院定位或根治承诺",
-      "exitGate": "否，查看0分钟；已访问可在下一次到访补读"
+      "guidance": "在村庄设施栏查看公开救助残页，了解线索；查看不耗时。",
+      "exitGate": "否，查看0分钟；已访问可在下一次到访补读",
+      "goal": "到废弃村庄查看公开救助残页。",
+      "guidanceTrigger": "首次真实到达村庄且残页可查看，在首次查看残页提交前",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO15_reaction",
+      "doneText": "已查看救助线索。"
     },
     {
       "id": "PRO16",
       "title": "来客与路",
       "suggestedStage": "D5以后",
       "completionRule": "到camp与来客交谈，取得营区路线日志",
-      "guidance": "详见§5，真正把个人求生接向主线",
-      "exitGate": "是，新的路线信息门槛"
+      "guidance": "回到临时营地，在设施栏选择程望并交谈，问清营区路线；晚回也不会错过。",
+      "exitGate": "是，新的路线信息门槛",
+      "goal": "回临时营地，与程望交谈了解路线。",
+      "guidanceTrigger": "来客已登记可见且尚未交谈：营地选中人物前或人物卡显示后、交谈提交前；在外只给返营提示",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO16_reaction",
+      "doneText": "已获知营区路线。"
     },
     {
       "id": "PRO17",
       "title": "为远行打包",
       "suggestedStage": "D5以后",
       "completionRule": "看真实路线与当前全员状态/携物预览后选择“准备好了”",
-      "guidance": "建议净水2份+可食2份+防身物；列出缺项但可明确继续，不偷赠或强吃",
-      "exitGate": "否，知情确认不是物资硬钥匙"
+      "guidance": "打开远行准备，核对路线、全员状态和携物；建议带净水、可食食物与防身物。",
+      "exitGate": "否，知情确认不是物资硬钥匙",
+      "goal": "查看远行准备，再自行确认是否准备好了。",
+      "guidanceTrigger": "已取得营区路线后首次进入远行准备，在“准备好了”确认前",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO17_reaction",
+      "doneText": "已确认远行准备。"
     },
     {
       "id": "PRO18",
       "title": "走向有人烟的地方",
       "suggestedStage": "主线接续",
-      "completionRule": "到village南口识别固定路标，解锁并真实移动至m01_road",
-      "guidance": "任务目标更新旧公路→检查哨→营门→营区；按原边逐段走",
-      "exitGate": "是，实际抵达不靠读图代替"
+      "completionRule": "本局沿合法真实移动成功到达m01_road即完成；south_sign_known不是条件，路标仅可选阅读",
+      "guidance": "按已知道路前往废弃村庄南口，再实际走到旧公路；南口路标可选读。",
+      "exitGate": "否，实际抵达后的教学完成记录，不是进入旧公路前的额外门槛",
+      "goal": "沿真实道路走到旧公路。",
+      "guidanceTrigger": "已取得路线且尚未到访旧公路，首次选中出区相关路线，在首次移动至旧公路前",
+      "guidanceBeforeAction": true,
+      "guidanceSet": "PRO18_reaction",
+      "doneText": "已抵达旧公路。"
     }
   ],
   "approvalDate": "2026-10-30",
-  "approvalNote": "用户批准已有建议初值直接实装，可调实测再改；无初值待定不补值"
+  "approvalNote": "用户批准已有建议初值直接实装，可调实测再改；无初值待定不补值",
+  "guidanceAdjudicationsFile": "assets/20261102/prologue/prologue-adjudications.json",
+  "stageTexts": [
+    {
+      "id": "D1",
+      "headline": "先在附近站稳脚跟",
+      "focus": "查看物资、补给、防身和首战"
+    },
+    {
+      "id": "D2",
+      "headline": "建立食水补给",
+      "focus": "找水、点火、净水和熟食"
+    },
+    {
+      "id": "D3",
+      "headline": "安排工具与休息",
+      "focus": "手工制作、物资转移、睡眠和遮蔽"
+    },
+    {
+      "id": "D4",
+      "headline": "探清周围与退路",
+      "focus": "到访村庄或诊所、返营和救助线索"
+    },
+    {
+      "id": "D5",
+      "headline": "寻找求医的方向",
+      "focus": "与来客交谈、查看路线和准备远行"
+    },
+    {
+      "id": "mainline",
+      "headline": "前往幸存者营区寻找医疗帮助",
+      "focus": "沿真实道路逐段推进"
+    }
+  ],
+  "specialObjectiveTexts": [
+    {
+      "id": "visitor_talk",
+      "title": "向程望问路",
+      "step": "在设施栏选择程望，交谈了解营区路线。"
+    },
+    {
+      "id": "visitor_return",
+      "title": "回营地见来客",
+      "step": "沿已知道路返回临时营地，与程望交谈。"
+    },
+    {
+      "id": "exit_go",
+      "title": "前往幸存者营区寻找医疗帮助",
+      "step": "沿已知道路到废弃村庄南口，再走到旧公路。"
+    },
+    {
+      "id": "exit_need",
+      "title": "前往幸存者营区寻找医疗帮助",
+      "step": "按真实缺项显示：先处理荒地敌踪／回营地向程望问路／先到访废弃村庄。"
+    },
+    {
+      "id": "route_onward",
+      "title": "前往幸存者营区寻找医疗帮助",
+      "step": "沿旧公路、检查哨、营门逐段前进；未开通处查看所需条件。"
+    },
+    {
+      "id": "settle",
+      "title": "整备下一次出行",
+      "step": "补充食水、休息或探索已知地点，留意营地的新消息。"
+    }
+  ],
+  "completionAdjudications": {
+    "PRO01": "首次实际选中任一地面或随身物资卡，并展开该卡合法操作预览；0世界分钟；只读任务册或悬停不算",
+    "PRO02": "任意来源的一次食用或饮水实际提高主角饱食或水分任一项；满值无实际提高不算，不限定开局物品",
+    "PRO06": "真实到访过stream且成功完成任一合法水源资源采集并实际产出dirty_water；两证据先后不限；拾取地面水/看资源卡/喝水不算取水",
+    "PRO10": "主角在hand手工制作成功完成至少一件产物为工具或武器的配方，含木盾；不含箭矢/绷带、维修/拆解/建造与工坊配方；PRO03同次制作可追认本项，PRO03另须实际装备伤害武器",
+    "PRO14": "本局实际到访过village或clinic，之后在成功移动到达camp的事务完成；不另要求camp出发记录，不要求诊所和村庄都去过",
+    "PRO18": "本局沿合法真实移动成功到达m01_road即完成；south_sign_known不是条件，路标仅可选阅读"
+  }
 }

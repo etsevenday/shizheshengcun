@@ -25824,7 +25824,9 @@
       "villageExplore100Required": false,
       "fusionRequired": false,
       "allTutorialTasksRequired": false,
-      "preserveAlreadyUnlocked": true
+      "preserveAlreadyUnlocked": true,
+      "southSignRequired": false,
+      "task18Evidence": "actual_visited_m01_road_only"
     },
     "daysAreDeadlines": false,
     "sevenDayWinPopup": false,
@@ -25833,149 +25835,312 @@
         "id": "PRO01",
         "title": "看清眼前",
         "suggestedStage": "D1",
-        "completionRule": "首次实际选中地面/物资对象并展开一次合法操作预览",
-        "guidance": "中性系统提示四行的地图/设施/地面/随身归属；关闭说明不扣时间",
-        "exitGate": "否，关闭教学可继续"
+        "completionRule": "首次实际选中任一地面或随身物资卡，并展开该卡合法操作预览；0世界分钟；只读任务册或悬停不算",
+        "guidance": "选中地面或随身的一张物资卡，查看操作和预估；只看不耗时。",
+        "exitGate": "否，关闭教学可继续",
+        "goal": "选一张物资卡，看看能做什么。",
+        "guidanceTrigger": "开场剧情读完后的首次可操作界面，在首次物资选择前；若已实际查看则跳过",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO01_reaction",
+        "doneText": "已查看物资操作。"
       },
       {
         "id": "PRO02",
         "title": "留住力气",
         "suggestedStage": "D1",
-        "completionRule": "开局补给中至少一次食用或饮水实际改善N或W",
-        "guidance": "饱饱只表达饿/渴；系统说明选择数量、费用和提交，满值不强迫浪费",
-        "exitGate": "否"
+        "completionRule": "任意来源的一次食用或饮水实际提高主角饱食或水分任一项；满值无实际提高不算，不限定开局物品",
+        "guidance": "饱食或水分不足时，选可食用的食物或饮水并查看用量；满了不必硬吃。",
+        "exitGate": "否",
+        "goal": "吃或喝一次，让饱食或水分实际回升。",
+        "guidanceTrigger": "首次在未完成时选中可食用或可饮用物资，实际使用提交前；满值不要求消耗",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO02_reaction",
+        "doneText": "已用食饮改善状态。"
       },
       {
         "id": "PRO03",
         "title": "带点防身物",
         "suggestedStage": "D1",
         "completionRule": "获得并装备任一合法伤害型武器；已有合法装备直接算",
-        "guidance": "指向已知可制作的低阶配方及所缺材料来源，不要求新增专属配方",
-        "exitGate": "否；无武器仍可用拳，首次离营前警告风险"
+        "guidance": "查看一件已知防身武器的做法或装备入口；拿到后装进武器槽。",
+        "exitGate": "否；无武器仍可用拳，首次离营前警告风险",
+        "goal": "取得并装备一件能造成伤害的武器。",
+        "guidanceTrigger": "首次打开本人武器装备或已知武器配方预览，在首次有效装备前；已有合法伤害武器直接追认",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO03_reaction",
+        "doneText": "已装备防身武器。"
       },
       {
         "id": "PRO04",
         "title": "第一次交手",
         "suggestedStage": "D1",
         "completionRule": "沿原S15保留游荡尸，最终胜利且唯一轮末tick存活",
-        "guidance": "保留首次强制、撤退后主动续战与同敌HP；教选技能/合法目标/预测/AP/防御/结束行动",
-        "exitGate": "是，沿用既有首战门控"
+        "guidance": "先选技能，悬停合法目标看预测，再点目标提交；也可查看防御和结束行动。",
+        "exitGate": "是，沿用既有首战门控",
+        "goal": "处理农野荒地的游荡尸，战斗结束时活着。",
+        "guidanceTrigger": "首战建立后，原到达警告之后、首次战斗行动结算之前；并入该首战教学上下文，不在胜利后补播",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO04_reaction",
+        "doneText": "已战胜首战敌人。"
       },
       {
         "id": "PRO05",
         "title": "身体里的变化",
         "suggestedStage": "D1以后",
         "completionRule": "自愿融合唯一教学实例，完成原R07事务",
-        "guidance": "显示真实白色物质/绿色攻击+0.1；主角可疑虑，饱饱不保证绝对安全",
-        "exitGate": "否，不融合也能求医和进主线"
+        "guidance": "查看这份活性物质的实际融合预览，再自行决定；不融合也能继续求医。",
+        "exitGate": "否，不融合也能求医和进主线",
+        "goal": "查看教学物质的融合预览，自行决定是否融合。",
+        "guidanceTrigger": "首战奖励真实落地且原胜利剧情读完后，在教学活性物质首次融合前；物质不存在或已融合则跳过",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO05_reaction",
+        "doneText": "已完成自愿融合。"
       },
       {
         "id": "PRO06",
         "title": "找到水源",
         "suggestedStage": "D2",
-        "completionRule": "到访stream，且完成一次从合法水源取水",
-        "guidance": "说明脏水与净水、容器/重量/owner，不靠“看起来清”判断",
-        "exitGate": "否"
+        "completionRule": "真实到访过stream且成功完成任一合法水源资源采集并实际产出dirty_water；两证据先后不限；拾取地面水/看资源卡/喝水不算取水",
+        "guidance": "沿已知道路到溪流浅滩；取水前查看水源和产物，脏水要处理后再喝。",
+        "exitGate": "否",
+        "goal": "到访溪流浅滩，并从合法水源实际取一次脏水。",
+        "guidanceTrigger": "溪流已发现而未到访时选中溪流，或真实到达溪流后尚未取水，或首次选中合法水源，均在未完成任务与取水提交前",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO06_reaction",
+        "doneText": "已到访溪流并实际取水。"
       },
       {
         "id": "PRO07",
         "title": "火要有燃料",
         "suggestedStage": "D2",
         "completionRule": "合法给火堆添燃料并成功点火一次",
-        "guidance": "选卡预览/磨损/耗时；使用真实木材与打火器，不赠免费火",
-        "exitGate": "否"
+        "guidance": "先查看火堆燃料，添入木材，再用可用打火器点燃；先核对耗时与耐久。",
+        "exitGate": "否",
+        "goal": "给火堆添燃料，并成功点燃一次。",
+        "guidanceTrigger": "首次在任务未完成时选中可操作火堆，在添燃料/点火提交前",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO07_reaction",
+        "doneText": "已成功点燃火堆。"
       },
       {
         "id": "PRO08",
         "title": "一份安全的水",
         "suggestedStage": "D2",
         "completionRule": "设施完成一次脏水→净水并真实生成",
-        "guidance": "提示锅里内容、受热进度、等待烹饪与“退出保留已做工作”，不废止现有配方",
-        "exitGate": "否"
+        "guidance": "把脏水放入锅并置于可加热的火堆，查看受热进度；可用“等待加工”等它完成。",
+        "exitGate": "否",
+        "goal": "让设施把一批脏水实际处理成净水。",
+        "guidanceTrigger": "任务未完成时首次查看随身脏水、锅或火堆净水配置，在净水实际完成前；已净水者跳过",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO08_reaction",
+        "doneText": "已制得净水。"
       },
       {
         "id": "PRO09",
         "title": "能再做的食物",
         "suggestedStage": "D2",
         "completionRule": "生块根烤制或水煮真实完成一次",
-        "guidance": "指向确定采集/搜集来源和腐败风险；罐头食用不冒充制作完成",
-        "exitGate": "否；新手只选一条简单食物链"
+        "guidance": "取得生块根后可烤或水煮；查看原料保质和受热进度，熟了再取食。",
+        "exitGate": "否；新手只选一条简单食物链",
+        "goal": "把生块根烤熟或水煮熟一次。",
+        "guidanceTrigger": "首次查看生块根来源、食材卡或熟制配置，在实际烤/煮熟前；只显示已知来源",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO09_reaction",
+        "doneText": "已做出熟块根。"
       },
       {
         "id": "PRO10",
         "title": "工具换来效率",
         "suggestedStage": "D3",
-        "completionRule": "完成一件当前已知基础工具/武器配方；PRO03已自行制作可追认",
-        "guidance": "对照材料、工作量、设施与成品，工具属性按既有案",
-        "exitGate": "否"
+        "completionRule": "主角在hand手工制作成功完成至少一件产物为工具或武器的配方，含木盾；不含箭矢/绷带、维修/拆解/建造与工坊配方；PRO03同次制作可追认本项，PRO03另须实际装备伤害武器",
+        "guidance": "在手工制作中选一件已知工具或武器，核对材料、耗时和成品后再开工。",
+        "exitGate": "否",
+        "goal": "亲手做出一件工具或武器。",
+        "guidanceTrigger": "首次打开手工制作或一件当前已知工具/武器配方预览，在制作提交前；先做过者直接追认",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO10_reaction",
+        "doneText": "已完成一次工具或武器制作。"
       },
       {
         "id": "PRO11",
         "title": "五格不是五份",
         "suggestedStage": "D3",
         "completionRule": "一次实际地面↔随身物资转移成功",
-        "guidance": "系统提示批次/数量与五卡、七装备槽分开；不替Q24选择批次显示方案",
-        "exitGate": "否，不要求故意超重或丢弃物品"
+        "guidance": "查看物资数量、批次和重量，再选拾取或放下；五张物资卡与七个装备槽分开计算。",
+        "exitGate": "否，不要求故意超重或丢弃物品",
+        "goal": "在地面和随身之间实际转移一次物资。",
+        "guidanceTrigger": "首次查看可转移的地面或随身物资，在首次拾取/放下提交前；可与PRO01同次选卡后接续",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO11_reaction",
+        "doneText": "已完成物资转移。"
       },
       {
         "id": "PRO12",
         "title": "不要硬撑",
         "suggestedStage": "D3",
         "completionRule": "实际睡眠累计120游戏分钟；按已提交睡眠段计",
-        "guidance": "提示E/S/遮蔽差异，睡眠优先推荐4—6小时但不强制固定一觉",
-        "exitGate": "否；等待不冒充睡眠，未睡也不锁主线"
+        "guidance": "在恢复面板选择“睡眠”和时长，先看遮蔽与消耗；累计睡满2小时计入本项。",
+        "exitGate": "否；等待不冒充睡眠，未睡也不锁主线",
+        "goal": "实际睡眠累计满2小时。",
+        "guidanceTrigger": "首次打开恢复面板或选择睡眠计划，在睡眠开始提交前；不等睡满120分钟才提示",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO12_reaction",
+        "doneText": "已累计睡眠2小时。"
       },
       {
         "id": "PRO13",
         "title": "留个能回的地方",
         "suggestedStage": "D3",
         "completionRule": "建棚完成；有合格旧棚也算",
-        "guidance": "说明遮蔽是恢复条件而非无敌；不把新安全屋完整体系提前塞进序章",
-        "exitGate": "否，材料不足仍可露天休息"
+        "guidance": "在营地建设中查看遮蔽棚的材料和耗时；建成后改善恢复条件，仍要留意危险。",
+        "exitGate": "否，材料不足仍可露天休息",
+        "goal": "在营地建成遮蔽棚。",
+        "guidanceTrigger": "首次在临时营地打开建设或遮蔽棚预览，在开工提交前；已有合格棚则追认",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO13_reaction",
+        "doneText": "已有可用遮蔽棚。"
       },
       {
         "id": "PRO14",
         "title": "走一趟再回来",
         "suggestedStage": "D4",
-        "completionRule": "从camp出发，到village或clinic后实际回camp一次",
-        "guidance": "认识边/耗时/发现与探索区别，往返补给和真实回程；village100才开clinic规则仍保持",
-        "exitGate": "否，不强迫先开诊所"
+        "completionRule": "本局实际到访过village或clinic，之后在成功移动到达camp的事务完成；不另要求camp出发记录，不要求诊所和村庄都去过",
+        "guidance": "去过废弃村庄或诊所后，沿已知道路回临时营地；出发前也留意回程补给。",
+        "exitGate": "否，不强迫先开诊所",
+        "goal": "到访村庄或诊所，再实际回到临时营地。",
+        "guidanceTrigger": "村庄/诊所已发现时首次查看外出路线，或已到访后打开返营路线，在真实回营完成前",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO14_reaction",
+        "doneText": "已完成一次探路返营。"
       },
       {
         "id": "PRO15",
         "title": "找一条求医线索",
         "suggestedStage": "D4",
         "completionRule": "首次到访village并查看固定公开救助残页",
-        "guidance": "给“可能还有组织在救助幸存者”的背景；不是地图钥匙、无医院定位或根治承诺",
-        "exitGate": "否，查看0分钟；已访问可在下一次到访补读"
+        "guidance": "在村庄设施栏查看公开救助残页，了解线索；查看不耗时。",
+        "exitGate": "否，查看0分钟；已访问可在下一次到访补读",
+        "goal": "到废弃村庄查看公开救助残页。",
+        "guidanceTrigger": "首次真实到达村庄且残页可查看，在首次查看残页提交前",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO15_reaction",
+        "doneText": "已查看救助线索。"
       },
       {
         "id": "PRO16",
         "title": "来客与路",
         "suggestedStage": "D5以后",
         "completionRule": "到camp与来客交谈，取得营区路线日志",
-        "guidance": "详见§5，真正把个人求生接向主线",
-        "exitGate": "是，新的路线信息门槛"
+        "guidance": "回到临时营地，在设施栏选择程望并交谈，问清营区路线；晚回也不会错过。",
+        "exitGate": "是，新的路线信息门槛",
+        "goal": "回临时营地，与程望交谈了解路线。",
+        "guidanceTrigger": "来客已登记可见且尚未交谈：营地选中人物前或人物卡显示后、交谈提交前；在外只给返营提示",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO16_reaction",
+        "doneText": "已获知营区路线。"
       },
       {
         "id": "PRO17",
         "title": "为远行打包",
         "suggestedStage": "D5以后",
         "completionRule": "看真实路线与当前全员状态/携物预览后选择“准备好了”",
-        "guidance": "建议净水2份+可食2份+防身物；列出缺项但可明确继续，不偷赠或强吃",
-        "exitGate": "否，知情确认不是物资硬钥匙"
+        "guidance": "打开远行准备，核对路线、全员状态和携物；建议带净水、可食食物与防身物。",
+        "exitGate": "否，知情确认不是物资硬钥匙",
+        "goal": "查看远行准备，再自行确认是否准备好了。",
+        "guidanceTrigger": "已取得营区路线后首次进入远行准备，在“准备好了”确认前",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO17_reaction",
+        "doneText": "已确认远行准备。"
       },
       {
         "id": "PRO18",
         "title": "走向有人烟的地方",
         "suggestedStage": "主线接续",
-        "completionRule": "到village南口识别固定路标，解锁并真实移动至m01_road",
-        "guidance": "任务目标更新旧公路→检查哨→营门→营区；按原边逐段走",
-        "exitGate": "是，实际抵达不靠读图代替"
+        "completionRule": "本局沿合法真实移动成功到达m01_road即完成；south_sign_known不是条件，路标仅可选阅读",
+        "guidance": "按已知道路前往废弃村庄南口，再实际走到旧公路；南口路标可选读。",
+        "exitGate": "否，实际抵达后的教学完成记录，不是进入旧公路前的额外门槛",
+        "goal": "沿真实道路走到旧公路。",
+        "guidanceTrigger": "已取得路线且尚未到访旧公路，首次选中出区相关路线，在首次移动至旧公路前",
+        "guidanceBeforeAction": true,
+        "guidanceSet": "PRO18_reaction",
+        "doneText": "已抵达旧公路。"
       }
     ],
     "approvalDate": "2026-10-30",
-    "approvalNote": "用户批准已有建议初值直接实装，可调实测再改；无初值待定不补值"
+    "approvalNote": "用户批准已有建议初值直接实装，可调实测再改；无初值待定不补值",
+    "guidanceAdjudicationsFile": "assets/20261102/prologue/prologue-adjudications.json",
+    "stageTexts": [
+      {
+        "id": "D1",
+        "headline": "先在附近站稳脚跟",
+        "focus": "查看物资、补给、防身和首战"
+      },
+      {
+        "id": "D2",
+        "headline": "建立食水补给",
+        "focus": "找水、点火、净水和熟食"
+      },
+      {
+        "id": "D3",
+        "headline": "安排工具与休息",
+        "focus": "手工制作、物资转移、睡眠和遮蔽"
+      },
+      {
+        "id": "D4",
+        "headline": "探清周围与退路",
+        "focus": "到访村庄或诊所、返营和救助线索"
+      },
+      {
+        "id": "D5",
+        "headline": "寻找求医的方向",
+        "focus": "与来客交谈、查看路线和准备远行"
+      },
+      {
+        "id": "mainline",
+        "headline": "前往幸存者营区寻找医疗帮助",
+        "focus": "沿真实道路逐段推进"
+      }
+    ],
+    "specialObjectiveTexts": [
+      {
+        "id": "visitor_talk",
+        "title": "向程望问路",
+        "step": "在设施栏选择程望，交谈了解营区路线。"
+      },
+      {
+        "id": "visitor_return",
+        "title": "回营地见来客",
+        "step": "沿已知道路返回临时营地，与程望交谈。"
+      },
+      {
+        "id": "exit_go",
+        "title": "前往幸存者营区寻找医疗帮助",
+        "step": "沿已知道路到废弃村庄南口，再走到旧公路。"
+      },
+      {
+        "id": "exit_need",
+        "title": "前往幸存者营区寻找医疗帮助",
+        "step": "按真实缺项显示：先处理荒地敌踪／回营地向程望问路／先到访废弃村庄。"
+      },
+      {
+        "id": "route_onward",
+        "title": "前往幸存者营区寻找医疗帮助",
+        "step": "沿旧公路、检查哨、营门逐段前进；未开通处查看所需条件。"
+      },
+      {
+        "id": "settle",
+        "title": "整备下一次出行",
+        "step": "补充食水、休息或探索已知地点，留意营地的新消息。"
+      }
+    ],
+    "completionAdjudications": {
+      "PRO01": "首次实际选中任一地面或随身物资卡，并展开该卡合法操作预览；0世界分钟；只读任务册或悬停不算",
+      "PRO02": "任意来源的一次食用或饮水实际提高主角饱食或水分任一项；满值无实际提高不算，不限定开局物品",
+      "PRO06": "真实到访过stream且成功完成任一合法水源资源采集并实际产出dirty_water；两证据先后不限；拾取地面水/看资源卡/喝水不算取水",
+      "PRO10": "主角在hand手工制作成功完成至少一件产物为工具或武器的配方，含木盾；不含箭矢/绷带、维修/拆解/建造与工坊配方；PRO03同次制作可追认本项，PRO03另须实际装备伤害武器",
+      "PRO14": "本局实际到访过village或clinic，之后在成功移动到达camp的事务完成；不另要求camp出发记录，不要求诊所和村庄都去过",
+      "PRO18": "本局沿合法真实移动成功到达m01_road即完成；south_sign_known不是条件，路标仅可选阅读"
+    }
   },
   "appraisalServices": {
     "status": "用户已批准可调初值直接实装；未实现、未实机验证",
@@ -31758,7 +31923,14 @@
         "discoveryDoesNotWriteVisitedOrExplore": true,
         "noRemoteInstanceCreation": true
       },
-      "completion": "Q127：本代核心领取/核对原10分钟事务成功写recordClaimedAndClear即开放本代出口，不另全图清场；只胜守卫不算。每次走出口重验当前代，原守卫门与移动成本继续。"
+      "completion": "Q127：本代核心领取/核对原10分钟事务成功写recordClaimedAndClear即开放本代出口，不另全图清场；只胜守卫不算。每次走出口重验当前代，原守卫门与移动成本继续。",
+      "prologueRoadArrival": {
+        "question": "Q131",
+        "taskId": "PRO18",
+        "evidence": "actual_arrival_m01_road",
+        "southSignRequired": false,
+        "doesNotChangeQMAP01Predicate": true
+      }
     },
     "factProducers": {
       "checkpoint_obstruction_cleared": "m02固定任务路障战最终胜利且主角存活提交，不使用S04随机清理次数",
@@ -38670,7 +38842,9 @@
       "optionalCompanionsNeverGateMainQuest": true,
       "noCureOrOriginRevelation": true,
       "serviceCostSource": "city-services.json and live domain preview; no hardcoded dialogue price",
-      "onceKeyControlsEffectsNotPlayback": true
+      "onceKeyControlsEffectsNotPlayback": true,
+      "starterGuidancePhase": "Q128_before_action_not_completion",
+      "starterCompletedFeedback": "system_only_short_actual_result_no_tutorial_reaction_queue"
     },
     "npcDialogueSets": [
       {
@@ -38966,126 +39140,162 @@
         "title": "看清眼前",
         "initialHint": "PRO01_hint",
         "companionReaction": "PRO01_reaction",
-        "completed": "PRO01_done"
+        "completed": "PRO01_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO02",
         "title": "留住力气",
         "initialHint": "PRO02_hint",
         "companionReaction": "PRO02_reaction",
-        "completed": "PRO02_done"
+        "completed": "PRO02_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO03",
         "title": "带点防身物",
         "initialHint": "PRO03_hint",
         "companionReaction": "PRO03_reaction",
-        "completed": "PRO03_done"
+        "completed": "PRO03_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO04",
         "title": "第一次交手",
         "initialHint": "PRO04_hint",
         "companionReaction": "PRO04_reaction",
-        "completed": "PRO04_done"
+        "completed": "PRO04_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO05",
         "title": "身体里的变化",
         "initialHint": "PRO05_hint",
         "companionReaction": "PRO05_reaction",
-        "completed": "PRO05_done"
+        "completed": "PRO05_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO06",
         "title": "找到水源",
         "initialHint": "PRO06_hint",
         "companionReaction": "PRO06_reaction",
-        "completed": "PRO06_done"
+        "completed": "PRO06_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO07",
         "title": "火要有燃料",
         "initialHint": "PRO07_hint",
         "companionReaction": "PRO07_reaction",
-        "completed": "PRO07_done"
+        "completed": "PRO07_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO08",
         "title": "一份安全的水",
         "initialHint": "PRO08_hint",
         "companionReaction": "PRO08_reaction",
-        "completed": "PRO08_done"
+        "completed": "PRO08_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO09",
         "title": "能再做的食物",
         "initialHint": "PRO09_hint",
         "companionReaction": "PRO09_reaction",
-        "completed": "PRO09_done"
+        "completed": "PRO09_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO10",
         "title": "工具换来效率",
         "initialHint": "PRO10_hint",
         "companionReaction": "PRO10_reaction",
-        "completed": "PRO10_done"
+        "completed": "PRO10_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO11",
         "title": "五格不是五份",
         "initialHint": "PRO11_hint",
         "companionReaction": "PRO11_reaction",
-        "completed": "PRO11_done"
+        "completed": "PRO11_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO12",
         "title": "不要硬撑",
         "initialHint": "PRO12_hint",
         "companionReaction": "PRO12_reaction",
-        "completed": "PRO12_done"
+        "completed": "PRO12_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO13",
         "title": "留个能回的地方",
         "initialHint": "PRO13_hint",
         "companionReaction": "PRO13_reaction",
-        "completed": "PRO13_done"
+        "completed": "PRO13_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO14",
         "title": "走一趟再回来",
         "initialHint": "PRO14_hint",
         "companionReaction": "PRO14_reaction",
-        "completed": "PRO14_done"
+        "completed": "PRO14_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO15",
         "title": "找一条求医线索",
         "initialHint": "PRO15_hint",
         "companionReaction": "PRO15_reaction",
-        "completed": "PRO15_done"
+        "completed": "PRO15_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO16",
         "title": "来客与路",
         "initialHint": "PRO16_hint",
         "companionReaction": "PRO16_reaction",
-        "completed": "PRO16_done"
+        "completed": "PRO16_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO17",
         "title": "为远行打包",
         "initialHint": "PRO17_hint",
         "companionReaction": "PRO17_reaction",
-        "completed": "PRO17_done"
+        "completed": "PRO17_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       },
       {
         "taskId": "PRO18",
         "title": "走向有人烟的地方",
         "initialHint": "PRO18_hint",
         "companionReaction": "PRO18_reaction",
-        "completed": "PRO18_done"
+        "completed": "PRO18_done",
+        "guidancePhase": "before_action",
+        "triggerContractFile": "assets/20261102/prologue/prologue-adjudications.json"
       }
     ],
     "sideQuests": [
@@ -39530,12 +39740,12 @@
       },
       {
         "dialogueSetId": "PRO01_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO01；开场剧情读完后的首次可操作界面，在首次物资选择前；若已实际查看则跳过；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0043",
             "speaker": "system",
-            "text": "选中地面物品，查看合法操作和预估；只看不耗时。"
+            "text": "选中地面或随身的一张物资卡，查看操作和预估；只看不耗时。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39545,7 +39755,7 @@
       },
       {
         "dialogueSetId": "PRO01_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：开场剧情读完后的首次可操作界面，在首次物资选择前；若已实际查看则跳过；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0044",
@@ -39563,7 +39773,9 @@
         "onceKey": "campaignId:dialogue:PRO01_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO01"
       },
       {
         "dialogueSetId": "PRO01_done",
@@ -39572,7 +39784,7 @@
           {
             "lineId": "NTL_0046",
             "speaker": "system",
-            "text": "看清眼前：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已查看物资操作。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39584,12 +39796,12 @@
       },
       {
         "dialogueSetId": "PRO02_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO02；首次在未完成时选中可食用或可饮用物资，实际使用提交前；满值不要求消耗；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0047",
             "speaker": "system",
-            "text": "用已有补给实际改善饱食或水分；满值时不必浪费。"
+            "text": "饱食或水分不足时，选可食用的食物或饮水并查看用量；满了不必硬吃。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39599,7 +39811,7 @@
       },
       {
         "dialogueSetId": "PRO02_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：首次在未完成时选中可食用或可饮用物资，实际使用提交前；满值不要求消耗；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0048",
@@ -39617,7 +39829,9 @@
         "onceKey": "campaignId:dialogue:PRO02_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO02"
       },
       {
         "dialogueSetId": "PRO02_done",
@@ -39626,7 +39840,7 @@
           {
             "lineId": "NTL_0050",
             "speaker": "system",
-            "text": "留住力气：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已用食饮改善状态。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39638,12 +39852,12 @@
       },
       {
         "dialogueSetId": "PRO03_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO03；首次打开本人武器装备或已知武器配方预览，在首次有效装备前；已有合法伤害武器直接追认；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0051",
             "speaker": "system",
-            "text": "取得并装备一件合法伤害型武器；缺料来源只显示已知地点。"
+            "text": "查看一件已知防身武器的做法或装备入口；拿到后装进武器槽。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39653,7 +39867,7 @@
       },
       {
         "dialogueSetId": "PRO03_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：首次打开本人武器装备或已知武器配方预览，在首次有效装备前；已有合法伤害武器直接追认；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0052",
@@ -39663,7 +39877,7 @@
           {
             "lineId": "NTL_0053",
             "speaker": "protagonist",
-            "text": "有备无患。"
+            "text": "先备一件防身物。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39671,7 +39885,9 @@
         "onceKey": "campaignId:dialogue:PRO03_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO03"
       },
       {
         "dialogueSetId": "PRO03_done",
@@ -39680,7 +39896,7 @@
           {
             "lineId": "NTL_0054",
             "speaker": "system",
-            "text": "带点防身物：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已装备防身武器。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39692,12 +39908,12 @@
       },
       {
         "dialogueSetId": "PRO04_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO04；首战建立后，原到达警告之后、首次战斗行动结算之前；并入该首战教学上下文，不在胜利后补播；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0055",
             "speaker": "system",
-            "text": "选技能后查看合法目标，点目标提交；撤退后可主动续战同一敌人。"
+            "text": "先选技能，悬停合法目标看预测，再点目标提交；也可查看防御和结束行动。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39707,7 +39923,7 @@
       },
       {
         "dialogueSetId": "PRO04_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：首战建立后，原到达警告之后、首次战斗行动结算之前；并入该首战教学上下文，不在胜利后补播；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0056",
@@ -39725,7 +39941,9 @@
         "onceKey": "campaignId:dialogue:PRO04_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO04"
       },
       {
         "dialogueSetId": "PRO04_done",
@@ -39734,7 +39952,7 @@
           {
             "lineId": "NTL_0058",
             "speaker": "system",
-            "text": "第一次交手：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已战胜首战敌人。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39746,12 +39964,12 @@
       },
       {
         "dialogueSetId": "PRO05_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO05；首战奖励真实落地且原胜利剧情读完后，在教学活性物质首次融合前；物质不存在或已融合则跳过；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0059",
             "speaker": "system",
-            "text": "可自愿融合唯一教学物质；此目标不作为离境条件。"
+            "text": "查看这份活性物质的实际融合预览，再自行决定；不融合也能继续求医。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39761,7 +39979,7 @@
       },
       {
         "dialogueSetId": "PRO05_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：首战奖励真实落地且原胜利剧情读完后，在教学活性物质首次融合前；物质不存在或已融合则跳过；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0060",
@@ -39779,7 +39997,9 @@
         "onceKey": "campaignId:dialogue:PRO05_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO05"
       },
       {
         "dialogueSetId": "PRO05_done",
@@ -39788,7 +40008,7 @@
           {
             "lineId": "NTL_0062",
             "speaker": "system",
-            "text": "身体里的变化：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已完成自愿融合。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39800,12 +40020,12 @@
       },
       {
         "dialogueSetId": "PRO06_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO06；溪流已发现而未到访时选中溪流，或真实到达溪流后尚未取水，或首次选中合法水源，均在未完成任务与取水提交前；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0063",
             "speaker": "system",
-            "text": "到溪流浅滩并完成一次合法取水；脏水不能看外观当净水。"
+            "text": "沿已知道路到溪流浅滩；取水前查看水源和产物，脏水要处理后再喝。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39815,17 +40035,17 @@
       },
       {
         "dialogueSetId": "PRO06_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：溪流已发现而未到访时选中溪流，或真实到达溪流后尚未取水，或首次选中合法水源，均在未完成任务与取水提交前；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0064",
             "speaker": "baobao",
-            "text": "有水的声音。"
+            "text": "水还够吗？"
           },
           {
             "lineId": "NTL_0065",
             "speaker": "protagonist",
-            "text": "装起来之前，先看能不能喝。"
+            "text": "先看清取到的是什么水。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39833,7 +40053,9 @@
         "onceKey": "campaignId:dialogue:PRO06_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO06"
       },
       {
         "dialogueSetId": "PRO06_done",
@@ -39842,7 +40064,7 @@
           {
             "lineId": "NTL_0066",
             "speaker": "system",
-            "text": "找到水源：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已到访溪流并实际取水。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39854,12 +40076,12 @@
       },
       {
         "dialogueSetId": "PRO07_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO07；首次在任务未完成时选中可操作火堆，在添燃料/点火提交前；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0067",
             "speaker": "system",
-            "text": "为火堆投入真实燃料并用合法工具点火，核对费用与受热。"
+            "text": "先查看火堆燃料，添入木材，再用可用打火器点燃；先核对耗时与耐久。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39869,17 +40091,17 @@
       },
       {
         "dialogueSetId": "PRO07_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：首次在任务未完成时选中可操作火堆，在添燃料/点火提交前；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0068",
             "speaker": "baobao",
-            "text": "亮起来了。"
+            "text": "这里还冷着。"
           },
           {
             "lineId": "NTL_0069",
             "speaker": "protagonist",
-            "text": "火也要有东西烧。"
+            "text": "火要有东西烧，先看看燃料。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39887,7 +40109,9 @@
         "onceKey": "campaignId:dialogue:PRO07_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO07"
       },
       {
         "dialogueSetId": "PRO07_done",
@@ -39896,7 +40120,7 @@
           {
             "lineId": "NTL_0070",
             "speaker": "system",
-            "text": "火要有燃料：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已成功点燃火堆。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39908,12 +40132,12 @@
       },
       {
         "dialogueSetId": "PRO08_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO08；任务未完成时首次查看随身脏水、锅或火堆净水配置，在净水实际完成前；已净水者跳过；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0071",
             "speaker": "system",
-            "text": "让设施实际完成一次脏水变净水；等待烹饪可在原子段后停止。"
+            "text": "把脏水放入锅并置于可加热的火堆，查看受热进度；可用“等待加工”等它完成。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39923,17 +40147,17 @@
       },
       {
         "dialogueSetId": "PRO08_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：任务未完成时首次查看随身脏水、锅或火堆净水配置，在净水实际完成前；已净水者跳过；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0072",
             "speaker": "baobao",
-            "text": "这次喝下去，会好些吗？"
+            "text": "这水现在能喝吗？"
           },
           {
             "lineId": "NTL_0073",
             "speaker": "protagonist",
-            "text": "先等它处理完。"
+            "text": "先处理，再看结果。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39941,7 +40165,9 @@
         "onceKey": "campaignId:dialogue:PRO08_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO08"
       },
       {
         "dialogueSetId": "PRO08_done",
@@ -39950,7 +40176,7 @@
           {
             "lineId": "NTL_0074",
             "speaker": "system",
-            "text": "一份安全的水：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已制得净水。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39962,12 +40188,12 @@
       },
       {
         "dialogueSetId": "PRO09_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO09；首次查看生块根来源、食材卡或熟制配置，在实际烤/煮熟前；只显示已知来源；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0075",
             "speaker": "system",
-            "text": "把确定来源的生块根烤制或水煮完成；吃罐头不算制作。"
+            "text": "取得生块根后可烤或水煮；查看原料保质和受热进度，熟了再取食。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39977,17 +40203,17 @@
       },
       {
         "dialogueSetId": "PRO09_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：首次查看生块根来源、食材卡或熟制配置，在实际烤/煮熟前；只显示已知来源；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0076",
             "speaker": "baobao",
-            "text": "闻到了。"
+            "text": "还不能吃吗？"
           },
           {
             "lineId": "NTL_0077",
             "speaker": "protagonist",
-            "text": "留一点路上吃。"
+            "text": "先弄熟，别只盯着开局罐头。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -39995,7 +40221,9 @@
         "onceKey": "campaignId:dialogue:PRO09_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO09"
       },
       {
         "dialogueSetId": "PRO09_done",
@@ -40004,7 +40232,7 @@
           {
             "lineId": "NTL_0078",
             "speaker": "system",
-            "text": "能再做的食物：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已做出熟块根。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40016,12 +40244,12 @@
       },
       {
         "dialogueSetId": "PRO10_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO10；首次打开手工制作或一件当前已知工具/武器配方预览，在制作提交前；先做过者直接追认；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0079",
             "speaker": "system",
-            "text": "完成一件当前已知的基础工具或武器配方；已做可追认。"
+            "text": "在手工制作中选一件已知工具或武器，核对材料、耗时和成品后再开工。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40031,7 +40259,7 @@
       },
       {
         "dialogueSetId": "PRO10_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：首次打开手工制作或一件当前已知工具/武器配方预览，在制作提交前；先做过者直接追认；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0080",
@@ -40041,7 +40269,7 @@
           {
             "lineId": "NTL_0081",
             "speaker": "protagonist",
-            "text": "好工具也得留意损耗。"
+            "text": "先看看要用什么做。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40049,7 +40277,9 @@
         "onceKey": "campaignId:dialogue:PRO10_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO10"
       },
       {
         "dialogueSetId": "PRO10_done",
@@ -40058,7 +40288,7 @@
           {
             "lineId": "NTL_0082",
             "speaker": "system",
-            "text": "工具换来效率：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已完成一次工具或武器制作。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40070,12 +40300,12 @@
       },
       {
         "dialogueSetId": "PRO11_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO11；首次查看可转移的地面或随身物资，在首次拾取/放下提交前；可与PRO01同次选卡后接续；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0083",
             "speaker": "system",
-            "text": "完成一次真实地面与随身转移；批次占格与数量分开计算。"
+            "text": "查看物资数量、批次和重量，再选拾取或放下；五张物资卡与七个装备槽分开计算。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40085,7 +40315,7 @@
       },
       {
         "dialogueSetId": "PRO11_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：首次查看可转移的地面或随身物资，在首次拾取/放下提交前；可与PRO01同次选卡后接续；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0084",
@@ -40103,7 +40333,9 @@
         "onceKey": "campaignId:dialogue:PRO11_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO11"
       },
       {
         "dialogueSetId": "PRO11_done",
@@ -40112,7 +40344,7 @@
           {
             "lineId": "NTL_0086",
             "speaker": "system",
-            "text": "五格不是五份：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已完成物资转移。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40124,12 +40356,12 @@
       },
       {
         "dialogueSetId": "PRO12_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO12；首次打开恢复面板或选择睡眠计划，在睡眠开始提交前；不等睡满120分钟才提示；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0087",
             "speaker": "system",
-            "text": "实际睡眠累计达到已定义目标；等待不替代睡眠。"
+            "text": "在恢复面板选择“睡眠”和时长，先看遮蔽与消耗；累计睡满2小时计入本项。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40139,7 +40371,7 @@
       },
       {
         "dialogueSetId": "PRO12_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：首次打开恢复面板或选择睡眠计划，在睡眠开始提交前；不等睡满120分钟才提示；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0088",
@@ -40149,7 +40381,7 @@
           {
             "lineId": "NTL_0089",
             "speaker": "protagonist",
-            "text": "找个合适的地方睡。"
+            "text": "先看看在哪里睡、能恢复多少。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40157,7 +40389,9 @@
         "onceKey": "campaignId:dialogue:PRO12_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO12"
       },
       {
         "dialogueSetId": "PRO12_done",
@@ -40166,7 +40400,7 @@
           {
             "lineId": "NTL_0090",
             "speaker": "system",
-            "text": "不要硬撑：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已累计睡眠2小时。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40178,12 +40412,12 @@
       },
       {
         "dialogueSetId": "PRO13_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO13；首次在临时营地打开建设或遮蔽棚预览，在开工提交前；已有合格棚则追认；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0091",
             "speaker": "system",
-            "text": "建成遮蔽棚或已有合格棚；遮蔽不是战斗无敌。"
+            "text": "在营地建设中查看遮蔽棚的材料和耗时；建成后改善恢复条件，仍要留意危险。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40193,17 +40427,17 @@
       },
       {
         "dialogueSetId": "PRO13_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：首次在临时营地打开建设或遮蔽棚预览，在开工提交前；已有合格棚则追认；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0092",
             "speaker": "baobao",
-            "text": "头顶不用一直漏风了。"
+            "text": "要一直淋着吗？"
           },
           {
             "lineId": "NTL_0093",
             "speaker": "protagonist",
-            "text": "能休息，不等于哪里都安全。"
+            "text": "看看能不能先搭个遮顶的地方。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40211,7 +40445,9 @@
         "onceKey": "campaignId:dialogue:PRO13_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO13"
       },
       {
         "dialogueSetId": "PRO13_done",
@@ -40220,7 +40456,7 @@
           {
             "lineId": "NTL_0094",
             "speaker": "system",
-            "text": "留个能回的地方：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已有可用遮蔽棚。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40232,12 +40468,12 @@
       },
       {
         "dialogueSetId": "PRO14_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO14；村庄/诊所已发现时首次查看外出路线，或已到访后打开返营路线，在真实回营完成前；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0095",
             "speaker": "system",
-            "text": "从临时营地到村庄或诊所，再沿真实道路回营。"
+            "text": "去过废弃村庄或诊所后，沿已知道路回临时营地；出发前也留意回程补给。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40247,17 +40483,17 @@
       },
       {
         "dialogueSetId": "PRO14_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：村庄/诊所已发现时首次查看外出路线，或已到访后打开返营路线，在真实回营完成前；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0096",
             "speaker": "baobao",
-            "text": "又回来了。"
+            "text": "走远了，还认得回来吗？"
           },
           {
             "lineId": "NTL_0097",
             "speaker": "protagonist",
-            "text": "认得回来的路，才敢走远。"
+            "text": "记住走过的路，也留回程的力气。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40265,7 +40501,9 @@
         "onceKey": "campaignId:dialogue:PRO14_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO14"
       },
       {
         "dialogueSetId": "PRO14_done",
@@ -40274,7 +40512,7 @@
           {
             "lineId": "NTL_0098",
             "speaker": "system",
-            "text": "走一趟再回来：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已完成一次探路返营。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40286,12 +40524,12 @@
       },
       {
         "dialogueSetId": "PRO15_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO15；首次真实到达村庄且残页可查看，在首次查看残页提交前；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0099",
             "speaker": "system",
-            "text": "到村庄查看公开救助残页；不授予完整路线或根治承诺。"
+            "text": "在村庄设施栏查看公开救助残页，了解线索；查看不耗时。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40301,7 +40539,7 @@
       },
       {
         "dialogueSetId": "PRO15_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：首次真实到达村庄且残页可查看，在首次查看残页提交前；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0100",
@@ -40319,7 +40557,9 @@
         "onceKey": "campaignId:dialogue:PRO15_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO15"
       },
       {
         "dialogueSetId": "PRO15_done",
@@ -40328,7 +40568,7 @@
           {
             "lineId": "NTL_0102",
             "speaker": "system",
-            "text": "找一条求医线索：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已查看救助线索。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40340,12 +40580,12 @@
       },
       {
         "dialogueSetId": "PRO16_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO16；来客已登记可见且尚未交谈：营地选中人物前或人物卡显示后、交谈提交前；在外只给返营提示；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0103",
             "speaker": "system",
-            "text": "在营地与程望实际交谈，取得营区路线；来客不会因晚回错过。"
+            "text": "回到临时营地，在设施栏选择程望并交谈，问清营区路线；晚回也不会错过。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40355,7 +40595,7 @@
       },
       {
         "dialogueSetId": "PRO16_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：来客已登记可见且尚未交谈：营地选中人物前或人物卡显示后、交谈提交前；在外只给返营提示；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0104",
@@ -40365,7 +40605,7 @@
           {
             "lineId": "NTL_0105",
             "speaker": "protagonist",
-            "text": "他只知道路。先问路。"
+            "text": "先向他问问路。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40373,7 +40613,9 @@
         "onceKey": "campaignId:dialogue:PRO16_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO16"
       },
       {
         "dialogueSetId": "PRO16_done",
@@ -40382,7 +40624,7 @@
           {
             "lineId": "NTL_0106",
             "speaker": "system",
-            "text": "来客与路：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已获知营区路线。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40394,12 +40636,12 @@
       },
       {
         "dialogueSetId": "PRO17_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO17；已取得营区路线后首次进入远行准备，在“准备好了”确认前；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0107",
             "speaker": "system",
-            "text": "查看真实路线、当前状态与携物预览，确认准备；缺建议物可知情继续。"
+            "text": "打开远行准备，核对路线、全员状态和携物；建议带净水、可食食物与防身物。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40409,7 +40651,7 @@
       },
       {
         "dialogueSetId": "PRO17_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：已取得营区路线后首次进入远行准备，在“准备好了”确认前；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0108",
@@ -40427,7 +40669,9 @@
         "onceKey": "campaignId:dialogue:PRO17_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO17"
       },
       {
         "dialogueSetId": "PRO17_done",
@@ -40436,7 +40680,7 @@
           {
             "lineId": "NTL_0110",
             "speaker": "system",
-            "text": "为远行打包：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已确认远行准备。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40448,12 +40692,12 @@
       },
       {
         "dialogueSetId": "PRO18_hint",
-        "trigger": "target relevant before completion",
+        "trigger": "Q128：未完成 PRO18；已取得路线且尚未到访旧公路，首次选中出区相关路线，在首次移动至旧公路前；按安全边界与教学开关",
         "lines": [
           {
             "lineId": "NTL_0111",
             "speaker": "system",
-            "text": "满足首战、来客路线、村庄到访三条件后，真实移动到旧公路。"
+            "text": "按已知道路前往废弃村庄南口，再实际走到旧公路；南口路标可选读。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -40463,7 +40707,7 @@
       },
       {
         "dialogueSetId": "PRO18_reaction",
-        "trigger": "first relevant event; only if baobaoPresent",
+        "trigger": "Q128：已取得路线且尚未到访旧公路，首次选中出区相关路线，在首次移动至旧公路前；未完成且baobaoPresent且非Legacy，教学未暂停；不从任务完成事件触发",
         "lines": [
           {
             "lineId": "NTL_0112",
@@ -40481,7 +40725,9 @@
         "onceKey": "campaignId:dialogue:PRO18_reaction",
         "effectsOnReplay": [],
         "baobaoOnlyIfPresent": true,
-        "noGateEffect": true
+        "noGateEffect": true,
+        "guidancePhase": "before_action",
+        "guidanceOnceKey": "campaignId:guide:PRO18"
       },
       {
         "dialogueSetId": "PRO18_done",
@@ -40490,7 +40736,7 @@
           {
             "lineId": "NTL_0114",
             "speaker": "system",
-            "text": "走向有人烟的地方：已记录实际完成结果。相关物资、消耗和知识以原行为结算，不重复发奖。"
+            "text": "已抵达旧公路。"
           }
         ],
         "timeCostSource": "none_read_only",
@@ -45522,7 +45768,8 @@
         "binding": "current public post at actual location",
         "notResurrection": true
       }
-    ]
+    ],
+    "prologueAdjudicationsFile": "assets/20261102/prologue/prologue-adjudications.json"
   },
   "cityServices": {
     "version": "city_services_q33_v1",
@@ -63810,5 +64057,618 @@
       "newOfficerNode": "d03_07",
       "sameClaim": "officer_cache"
     }
+  },
+  "prologueAdjudications": {
+    "version": "q128_q133_20261102",
+    "status": "approved_planning_target_not_engine_or_ui_verified",
+    "questions": [
+      "Q128",
+      "Q129",
+      "Q130",
+      "Q131",
+      "Q132",
+      "Q133"
+    ],
+    "guides": [
+      {
+        "taskId": "PRO01",
+        "title": "看清眼前",
+        "trigger": "开场剧情读完后的首次可操作界面，在首次物资选择前；若已实际查看则跳过",
+        "focus": "物资行或当前物资卡",
+        "hint": "选中地面或随身的一张物资卡，查看操作和预估；只看不耗时。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "东西在地上，还是在你身上？"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "先看清，再动。"
+          }
+        ],
+        "nextStep": "选一张物资卡，看看能做什么。",
+        "done": "已查看物资操作。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO01_hint",
+        "reactionSet": "PRO01_reaction",
+        "doneSet": "PRO01_done",
+        "onceKey": "campaignId:guide:PRO01"
+      },
+      {
+        "taskId": "PRO02",
+        "title": "留住力气",
+        "trigger": "首次在未完成时选中可食用或可饮用物资，实际使用提交前；满值不要求消耗",
+        "focus": "当前食饮卡及使用预览",
+        "hint": "饱食或水分不足时，选可食用的食物或饮水并查看用量；满了不必硬吃。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "肚子空的时候，声音都变响了。"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "吃多少我自己来。"
+          }
+        ],
+        "nextStep": "吃或喝一次，让饱食或水分实际回升。",
+        "done": "已用食饮改善状态。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO02_hint",
+        "reactionSet": "PRO02_reaction",
+        "doneSet": "PRO02_done",
+        "onceKey": "campaignId:guide:PRO02"
+      },
+      {
+        "taskId": "PRO03",
+        "title": "带点防身物",
+        "trigger": "首次打开本人武器装备或已知武器配方预览，在首次有效装备前；已有合法伤害武器直接追认",
+        "focus": "武器槽或当前已知配方",
+        "hint": "查看一件已知防身武器的做法或装备入口；拿到后装进武器槽。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "前面的东西，会咬人吗？"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "先备一件防身物。"
+          }
+        ],
+        "nextStep": "取得并装备一件能造成伤害的武器。",
+        "done": "已装备防身武器。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO03_hint",
+        "reactionSet": "PRO03_reaction",
+        "doneSet": "PRO03_done",
+        "onceKey": "campaignId:guide:PRO03"
+      },
+      {
+        "taskId": "PRO04",
+        "title": "第一次交手",
+        "trigger": "首战建立后，原到达警告之后、首次战斗行动结算之前；并入该首战教学上下文，不在胜利后补播",
+        "focus": "战斗技能与合法目标区域",
+        "hint": "先选技能，悬停合法目标看预测，再点目标提交；也可查看防御和结束行动。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "它过来了。"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "看住它的动作。"
+          }
+        ],
+        "nextStep": "处理农野荒地的游荡尸，战斗结束时活着。",
+        "done": "已战胜首战敌人。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO04_hint",
+        "reactionSet": "PRO04_reaction",
+        "doneSet": "PRO04_done",
+        "onceKey": "campaignId:guide:PRO04"
+      },
+      {
+        "taskId": "PRO05",
+        "title": "身体里的变化",
+        "trigger": "首战奖励真实落地且原胜利剧情读完后，在教学活性物质首次融合前；物质不存在或已融合则跳过",
+        "focus": "真实教学物质卡",
+        "hint": "查看这份活性物质的实际融合预览，再自行决定；不融合也能继续求医。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "那个东西，让我有点想靠近。"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "想吃不等于该吃。"
+          }
+        ],
+        "nextStep": "查看教学物质的融合预览，自行决定是否融合。",
+        "done": "已完成自愿融合。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO05_hint",
+        "reactionSet": "PRO05_reaction",
+        "doneSet": "PRO05_done",
+        "onceKey": "campaignId:guide:PRO05"
+      },
+      {
+        "taskId": "PRO06",
+        "title": "找到水源",
+        "trigger": "溪流已发现而未到访时选中溪流，或真实到达溪流后尚未取水，或首次选中合法水源，均在未完成任务与取水提交前",
+        "focus": "已知溪流或当前合法水源",
+        "hint": "沿已知道路到溪流浅滩；取水前查看水源和产物，脏水要处理后再喝。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "水还够吗？"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "先看清取到的是什么水。"
+          }
+        ],
+        "nextStep": "到访溪流浅滩，并从合法水源实际取一次脏水。",
+        "done": "已到访溪流并实际取水。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO06_hint",
+        "reactionSet": "PRO06_reaction",
+        "doneSet": "PRO06_done",
+        "onceKey": "campaignId:guide:PRO06"
+      },
+      {
+        "taskId": "PRO07",
+        "title": "火要有燃料",
+        "trigger": "首次在任务未完成时选中可操作火堆，在添燃料/点火提交前",
+        "focus": "当前火堆燃料与点火入口",
+        "hint": "先查看火堆燃料，添入木材，再用可用打火器点燃；先核对耗时与耐久。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "这里还冷着。"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "火要有东西烧，先看看燃料。"
+          }
+        ],
+        "nextStep": "给火堆添燃料，并成功点燃一次。",
+        "done": "已成功点燃火堆。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO07_hint",
+        "reactionSet": "PRO07_reaction",
+        "doneSet": "PRO07_done",
+        "onceKey": "campaignId:guide:PRO07"
+      },
+      {
+        "taskId": "PRO08",
+        "title": "一份安全的水",
+        "trigger": "任务未完成时首次查看随身脏水、锅或火堆净水配置，在净水实际完成前；已净水者跳过",
+        "focus": "当前水/锅/净水配置",
+        "hint": "把脏水放入锅并置于可加热的火堆，查看受热进度；可用“等待加工”等它完成。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "这水现在能喝吗？"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "先处理，再看结果。"
+          }
+        ],
+        "nextStep": "让设施把一批脏水实际处理成净水。",
+        "done": "已制得净水。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO08_hint",
+        "reactionSet": "PRO08_reaction",
+        "doneSet": "PRO08_done",
+        "onceKey": "campaignId:guide:PRO08"
+      },
+      {
+        "taskId": "PRO09",
+        "title": "能再做的食物",
+        "trigger": "首次查看生块根来源、食材卡或熟制配置，在实际烤/煮熟前；只显示已知来源",
+        "focus": "已知块根来源或当前熟制配置",
+        "hint": "取得生块根后可烤或水煮；查看原料保质和受热进度，熟了再取食。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "还不能吃吗？"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "先弄熟，别只盯着开局罐头。"
+          }
+        ],
+        "nextStep": "把生块根烤熟或水煮熟一次。",
+        "done": "已做出熟块根。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO09_hint",
+        "reactionSet": "PRO09_reaction",
+        "doneSet": "PRO09_done",
+        "onceKey": "campaignId:guide:PRO09"
+      },
+      {
+        "taskId": "PRO10",
+        "title": "工具换来效率",
+        "trigger": "首次打开手工制作或一件当前已知工具/武器配方预览，在制作提交前；先做过者直接追认",
+        "focus": "手工制作及当前已知配方",
+        "hint": "在手工制作中选一件已知工具或武器，核对材料、耗时和成品后再开工。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "这个能让你少费力气？"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "先看看要用什么做。"
+          }
+        ],
+        "nextStep": "亲手做出一件工具或武器。",
+        "done": "已完成一次工具或武器制作。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO10_hint",
+        "reactionSet": "PRO10_reaction",
+        "doneSet": "PRO10_done",
+        "onceKey": "campaignId:guide:PRO10"
+      },
+      {
+        "taskId": "PRO11",
+        "title": "五格不是五份",
+        "trigger": "首次查看可转移的地面或随身物资，在首次拾取/放下提交前；可与PRO01同次选卡后接续",
+        "focus": "当前物资数量与拾取/放下入口",
+        "hint": "查看物资数量、批次和重量，再选拾取或放下；五张物资卡与七个装备槽分开计算。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "还拿得动吗？"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "背得动也得放得下。"
+          }
+        ],
+        "nextStep": "在地面和随身之间实际转移一次物资。",
+        "done": "已完成物资转移。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO11_hint",
+        "reactionSet": "PRO11_reaction",
+        "doneSet": "PRO11_done",
+        "onceKey": "campaignId:guide:PRO11"
+      },
+      {
+        "taskId": "PRO12",
+        "title": "不要硬撑",
+        "trigger": "首次打开恢复面板或选择睡眠计划，在睡眠开始提交前；不等睡满120分钟才提示",
+        "focus": "恢复面板睡眠与时长",
+        "hint": "在恢复面板选择“睡眠”和时长，先看遮蔽与消耗；累计睡满2小时计入本项。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "你的眼睛快合上了。"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "先看看在哪里睡、能恢复多少。"
+          }
+        ],
+        "nextStep": "实际睡眠累计满2小时。",
+        "done": "已累计睡眠2小时。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO12_hint",
+        "reactionSet": "PRO12_reaction",
+        "doneSet": "PRO12_done",
+        "onceKey": "campaignId:guide:PRO12"
+      },
+      {
+        "taskId": "PRO13",
+        "title": "留个能回的地方",
+        "trigger": "首次在临时营地打开建设或遮蔽棚预览，在开工提交前；已有合格棚则追认",
+        "focus": "当前营地建设/遮蔽棚",
+        "hint": "在营地建设中查看遮蔽棚的材料和耗时；建成后改善恢复条件，仍要留意危险。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "要一直淋着吗？"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "看看能不能先搭个遮顶的地方。"
+          }
+        ],
+        "nextStep": "在营地建成遮蔽棚。",
+        "done": "已有可用遮蔽棚。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO13_hint",
+        "reactionSet": "PRO13_reaction",
+        "doneSet": "PRO13_done",
+        "onceKey": "campaignId:guide:PRO13"
+      },
+      {
+        "taskId": "PRO14",
+        "title": "走一趟再回来",
+        "trigger": "村庄/诊所已发现时首次查看外出路线，或已到访后打开返营路线，在真实回营完成前",
+        "focus": "当前已知物理路线及下一相邻段",
+        "hint": "去过废弃村庄或诊所后，沿已知道路回临时营地；出发前也留意回程补给。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "走远了，还认得回来吗？"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "记住走过的路，也留回程的力气。"
+          }
+        ],
+        "nextStep": "到访村庄或诊所，再实际回到临时营地。",
+        "done": "已完成一次探路返营。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO14_hint",
+        "reactionSet": "PRO14_reaction",
+        "doneSet": "PRO14_done",
+        "onceKey": "campaignId:guide:PRO14"
+      },
+      {
+        "taskId": "PRO15",
+        "title": "找一条求医线索",
+        "trigger": "首次真实到达村庄且残页可查看，在首次查看残页提交前",
+        "focus": "当前村庄公开救助残页",
+        "hint": "在村庄设施栏查看公开救助残页，了解线索；查看不耗时。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "还有别的人？"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "去看看他们留下的话。"
+          }
+        ],
+        "nextStep": "到废弃村庄查看公开救助残页。",
+        "done": "已查看救助线索。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO15_hint",
+        "reactionSet": "PRO15_reaction",
+        "doneSet": "PRO15_done",
+        "onceKey": "campaignId:guide:PRO15"
+      },
+      {
+        "taskId": "PRO16",
+        "title": "来客与路",
+        "trigger": "来客已登记可见且尚未交谈：营地选中人物前或人物卡显示后、交谈提交前；在外只给返营提示",
+        "focus": "程望人物卡或已知返营路线",
+        "hint": "回到临时营地，在设施栏选择程望并交谈，问清营区路线；晚回也不会错过。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "他知道你身体怎么了吗？"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "先向他问问路。"
+          }
+        ],
+        "nextStep": "回临时营地，与程望交谈了解路线。",
+        "done": "已获知营区路线。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO16_hint",
+        "reactionSet": "PRO16_reaction",
+        "doneSet": "PRO16_done",
+        "onceKey": "campaignId:guide:PRO16"
+      },
+      {
+        "taskId": "PRO17",
+        "title": "为远行打包",
+        "trigger": "已取得营区路线后首次进入远行准备，在“准备好了”确认前",
+        "focus": "远行准备预览",
+        "hint": "打开远行准备，核对路线、全员状态和携物；建议带净水、可食食物与防身物。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "这些够吃吗？"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "先算去路，也留回程。"
+          }
+        ],
+        "nextStep": "查看远行准备，再自行确认是否准备好了。",
+        "done": "已确认远行准备。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO17_hint",
+        "reactionSet": "PRO17_reaction",
+        "doneSet": "PRO17_done",
+        "onceKey": "campaignId:guide:PRO17"
+      },
+      {
+        "taskId": "PRO18",
+        "title": "走向有人烟的地方",
+        "trigger": "已取得路线且尚未到访旧公路，首次选中出区相关路线，在首次移动至旧公路前",
+        "focus": "实际路线下一相邻地点；不指向强制路标阅读",
+        "hint": "按已知道路前往废弃村庄南口，再实际走到旧公路；南口路标可选读。",
+        "reaction": [
+          {
+            "speaker": "baobao",
+            "text": "还会回这里吗？"
+          },
+          {
+            "speaker": "protagonist",
+            "text": "路还在。先去找人。"
+          }
+        ],
+        "nextStep": "沿真实道路走到旧公路。",
+        "done": "已抵达旧公路。",
+        "phase": "before_task_completion_and_relevant_action_commit",
+        "hintSet": "PRO18_hint",
+        "reactionSet": "PRO18_reaction",
+        "doneSet": "PRO18_done",
+        "onceKey": "campaignId:guide:PRO18"
+      }
+    ],
+    "stages": [
+      {
+        "id": "D1",
+        "headline": "先在附近站稳脚跟",
+        "focus": "查看物资、补给、防身和首战"
+      },
+      {
+        "id": "D2",
+        "headline": "建立食水补给",
+        "focus": "找水、点火、净水和熟食"
+      },
+      {
+        "id": "D3",
+        "headline": "安排工具与休息",
+        "focus": "手工制作、物资转移、睡眠和遮蔽"
+      },
+      {
+        "id": "D4",
+        "headline": "探清周围与退路",
+        "focus": "到访村庄或诊所、返营和救助线索"
+      },
+      {
+        "id": "D5",
+        "headline": "寻找求医的方向",
+        "focus": "与来客交谈、查看路线和准备远行"
+      },
+      {
+        "id": "mainline",
+        "headline": "前往幸存者营区寻找医疗帮助",
+        "focus": "沿真实道路逐段推进"
+      }
+    ],
+    "specialObjectives": [
+      {
+        "id": "visitor_talk",
+        "title": "向程望问路",
+        "step": "在设施栏选择程望，交谈了解营区路线。"
+      },
+      {
+        "id": "visitor_return",
+        "title": "回营地见来客",
+        "step": "沿已知道路返回临时营地，与程望交谈。"
+      },
+      {
+        "id": "exit_go",
+        "title": "前往幸存者营区寻找医疗帮助",
+        "step": "沿已知道路到废弃村庄南口，再走到旧公路。"
+      },
+      {
+        "id": "exit_need",
+        "title": "前往幸存者营区寻找医疗帮助",
+        "step": "按真实缺项显示：先处理荒地敌踪／回营地向程望问路／先到访废弃村庄。"
+      },
+      {
+        "id": "route_onward",
+        "title": "前往幸存者营区寻找医疗帮助",
+        "step": "沿旧公路、检查哨、营门逐段前进；未开通处查看所需条件。"
+      },
+      {
+        "id": "settle",
+        "title": "整备下一次出行",
+        "step": "补充食水、休息或探索已知地点，留意营地的新消息。"
+      }
+    ],
+    "completionRules": {
+      "PRO01": "首次实际选中任一地面或随身物资卡，并展开该卡合法操作预览；0世界分钟；只读任务册或悬停不算",
+      "PRO02": "任意来源的一次食用或饮水实际提高主角饱食或水分任一项；满值无实际提高不算，不限定开局物品",
+      "PRO06": "真实到访过stream且成功完成任一合法水源资源采集并实际产出dirty_water；两证据先后不限；拾取地面水/看资源卡/喝水不算取水",
+      "PRO10": "主角在hand手工制作成功完成至少一件产物为工具或武器的配方，含木盾；不含箭矢/绷带、维修/拆解/建造与工坊配方；PRO03同次制作可追认本项，PRO03另须实际装备伤害武器",
+      "PRO14": "本局实际到访过village或clinic，之后在成功移动到达camp的事务完成；不另要求camp出发记录，不要求诊所和村庄都去过",
+      "PRO18": "本局沿合法真实移动成功到达m01_road即完成；south_sign_known不是条件，路标仅可选阅读"
+    },
+    "guidancePolicy": {
+      "phase": "before_action",
+      "guidesAndCompletionFeedbackSeparate": true,
+      "mainObjectiveCount": 1,
+      "maxSuggestions": 2,
+      "maxContextHint": 1,
+      "contextHintCanDifferFromMainObjective": true,
+      "order": "current_open_context_then_main_objective; same_context_lower_PRO_id_first; danger_story_and_atomic_action_locks_take_priority",
+      "noEighteenItemAutomaticQueue": true,
+      "noPostCompletionTutorialReplay": true,
+      "taskBookReplay": true,
+      "closeDoesNotComplete": true,
+      "pauseSuppressesEighteenTutorialReactionsNotCoreStory": true,
+      "baobaoNeedsPresentAndNotLegacy": true,
+      "systemHintWorksWithoutBaobao": true,
+      "firstBattle": "original_first_battle_teaching_context_after_warning_before_first_action_resolution",
+      "whenBusy": "defer_revalidate_at_next_safe_context_never_rollback_or_autosubmit",
+      "cost": "zero_game_minutes_AP_items_stats_rewards",
+      "persist": "campaign_guide_seen_and_dismissed_separate_from_task_completion_and_original_story_once_keys"
+    },
+    "objectivePolicy": {
+      "normalTitle": "actual_current_task_title",
+      "normalStep": "guide.nextStep_not_internal_completionRule",
+      "stageHeading": "task_book_group_heading_only",
+      "selectionPriority": "original_domain_priority_and_relevance_no_new_day_gate",
+      "adaptiveSteps": {
+        "PRO06": [
+          {
+            "when": "drew_dirty_water_and_not_visited_stream",
+            "step": "沿已知道路到溪流浅滩确认水源。"
+          },
+          {
+            "when": "visited_stream_and_not_drew_dirty_water",
+            "step": "从当前可达的合法水源实际取一次脏水。"
+          }
+        ],
+        "PRO14": [
+          {
+            "when": "visited_village_or_clinic",
+            "step": "沿已知道路实际返回临时营地。"
+          }
+        ],
+        "exit_need": [
+          {
+            "when": "not_tutorial_win_or_legacy",
+            "step": "先处理农野荒地的敌踪。"
+          },
+          {
+            "when": "not_camp_route_known",
+            "step": "回临时营地向程望问路。"
+          },
+          {
+            "when": "not_visited_village",
+            "step": "先沿已知道路到访废弃村庄。"
+          }
+        ]
+      },
+      "noVisitorTimeSpoilerInSettle": true
+    },
+    "exitPolicy": {
+      "task18RequiresSouthSign": false,
+      "task18NeedsActualRoadArrival": true,
+      "signRemainsOptionalReadOnlyDocument": true,
+      "exitQMAP01ThreeConditionsUnchanged": true,
+      "objectiveFocus": "next_actual_adjacent_route_step_not_unread_south_sign"
+    },
+    "legacyPolicy": {
+      "visitorChoice": "click_talk_not_automatic_arrival_dialogue",
+      "covers": "Legacy_and_all_migrated_existing_saves",
+      "arrivalAwayNotice": "once_nonblocking_when_registered_and_away",
+      "newGameOriginalArrivalStoryUnchanged": true,
+      "visitorTimeAndConditionsUnchanged": true,
+      "neverCreatesBaobaoSamplesRewardsOrHistoricStory": true,
+      "completedTasksPreserved": true,
+      "retroTask18FromTrustedActualVisitedRoadOnly": true,
+      "dropObsoleteCompletedTaskReactionQueue": true,
+      "oldPlayedReactionDoesNotReplayAsNewGuide": true,
+      "unfinishedGuides": "next_real_relevant_ui_or_context_entry_not_all_on_load",
+      "ongoingActions": "preserve_snapshot_no_rewind_or_cost_change"
+    },
+    "acceptanceIds": [
+      "TUT-Q128-01",
+      "TUT-Q128-02",
+      "TUT-Q128-03",
+      "TUT-Q128-04",
+      "TUT-Q128-05",
+      "TUT-Q129-01",
+      "TUT-Q129-02",
+      "TUT-Q130-01",
+      "TUT-Q131-01",
+      "TUT-Q132-01",
+      "TUT-Q133-01",
+      "TUT-Q133-02",
+      "TUT-Q133-03"
+    ]
   }
 }
