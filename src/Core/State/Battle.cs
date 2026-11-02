@@ -146,6 +146,15 @@ namespace Survival.Core.State
         public int ProtectUses { get; set; }
         /// <summary>下一次攻击伤害×（野犬首领“首轮仅自身下一击×1.2”）；1 为没有。</summary>
         public double NextHitFactor { get; set; } = 1;
+        /// <summary>
+        /// B20 低吟感染者“鼓动”给的下一击伤害×（A09 E3：×1.10，不叠层；E2 同名 buff 取强——再被鼓动取较大值）；与自身“蓄势”不同名，两者相乘。
+        /// 下一次攻击（命中或落空）用掉；1 为没有。
+        /// </summary>
+        public double RallyFactor { get; set; } = 1;
+        /// <summary>B20 守卫“标记”的我方 actorId（隔离核心守卫/仓管守卫）；后续 targetMarked 的攻击优先打他。没有为 null。</summary>
+        public string? MarkedActor { get; set; }
+        /// <summary>B20 本轮意图锁定时选定并公开的我方对象（仓管守卫标记最靠后存活者）；没有为 null。</summary>
+        public string? IntentActor { get; set; }
         /// <summary>流窜枪手：弹仓与本场剩余备弹（弹药计划总数，打空后不补）。−1 为未初始化。</summary>
         public int Mag { get; set; } = -1;
         public int Reserve { get; set; }

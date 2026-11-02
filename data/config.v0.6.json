@@ -3497,7 +3497,12 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "路肩残留着车辙和碎玻璃；路面开阔，停留时仍需留意两侧。"
+      "clue": "路肩残留着车辙和碎玻璃；路面开阔，停留时仍需留意两侧。",
+      "populationWeights": {
+        "shambler": 70,
+        "z_slow": 30
+      },
+      "firstPopulation": 2
     },
     {
       "id": "m02_checkpoint",
@@ -3543,7 +3548,11 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "检查哨的栏杆与弃车留下狭窄通道；路障是否清除仍以眼前状态为准。"
+      "clue": "检查哨的栏杆与弃车留下狭窄通道；路障是否清除仍以眼前状态为准。",
+      "populationWeights": {
+        "z_slow": 100
+      },
+      "firstPopulation": 0
     },
     {
       "id": "h01_gate",
@@ -3814,7 +3823,13 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "田埂旁有倒伏作物与散落农具；屋舍遮挡了部分视线。"
+      "clue": "田埂旁有倒伏作物与散落农具；屋舍遮挡了部分视线。",
+      "populationWeights": {
+        "z_slow": 50,
+        "feral_dog": 30,
+        "feral_boar": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w02_forest",
@@ -3860,7 +3875,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "林间空地留有旧营址的痕迹；树冠下仍有雨水滴落。"
+      "clue": "林间空地留有旧营址的痕迹；树冠下仍有雨水滴落。",
+      "populationWeights": {
+        "feral_dog": 50,
+        "wolf": 20,
+        "wild_dog_leader": 10,
+        "z_clinger": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w03_quarry",
@@ -3906,7 +3928,13 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "石坡边缘有松动碎石；坡壁之后的声响不容易判断来源。"
+      "clue": "石坡边缘有松动碎石；坡壁之后的声响不容易判断来源。",
+      "populationWeights": {
+        "z_helmet": 50,
+        "worker": 30,
+        "boar": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w04_crossroads",
@@ -3952,7 +3980,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "数条旧路在这里相交；不同方向都留有风化的标记。"
+      "clue": "数条旧路在这里相交；不同方向都留有风化的标记。",
+      "populationWeights": {
+        "z_slow": 40,
+        "feral_dog": 30,
+        "feral_boar": 20,
+        "shambler": 10
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w05_marsh",
@@ -3998,7 +4033,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "芦苇倒伏处露出泥水；水面平静也不能说明脚下坚实。"
+      "clue": "芦苇倒伏处露出泥水；水面平静也不能说明脚下坚实。",
+      "populationWeights": {
+        "z_slow": 40,
+        "feral_dog": 30,
+        "feral_boar": 20,
+        "shambler": 10
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w06_bridge",
@@ -4044,7 +4086,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "断桥下的河滩留有冲刷痕迹；桥体的缺口仍清楚可见。"
+      "clue": "断桥下的河滩留有冲刷痕迹；桥体的缺口仍清楚可见。",
+      "populationWeights": {
+        "z_slow": 40,
+        "feral_dog": 30,
+        "feral_boar": 20,
+        "shambler": 10
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w07_ridge",
@@ -4090,7 +4139,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "山脊路无遮拦；弯道后的情况无法从这里看清。"
+      "clue": "山脊路无遮拦；弯道后的情况无法从这里看清。",
+      "populationWeights": {
+        "z_slow": 40,
+        "feral_dog": 30,
+        "feral_boar": 20,
+        "shambler": 10
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w08_reservoir",
@@ -4136,7 +4192,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "旧水位线露在岸边；取水仍需分辨资源卡上的水质。"
+      "clue": "旧水位线露在岸边；取水仍需分辨资源卡上的水质。",
+      "populationWeights": {
+        "z_slow": 40,
+        "feral_dog": 30,
+        "feral_boar": 20,
+        "shambler": 10
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w09_logging",
@@ -4182,7 +4245,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "伐木场散落着旧木料；堆垛之间存在难以看清的夹道。"
+      "clue": "伐木场散落着旧木料；堆垛之间存在难以看清的夹道。",
+      "populationWeights": {
+        "z_slow": 40,
+        "feral_dog": 30,
+        "feral_boar": 20,
+        "shambler": 10
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w10_watchtower",
@@ -4228,7 +4298,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "瞭望台周围地势较高；台基背面仍有视线死角。"
+      "clue": "瞭望台周围地势较高；台基背面仍有视线死角。",
+      "populationWeights": {
+        "z_slow": 40,
+        "feral_dog": 30,
+        "feral_boar": 20,
+        "shambler": 10
+      },
+      "firstPopulation": 2
     },
     {
       "id": "a01_yard",
@@ -4274,7 +4351,13 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "货场的轨道间留有杂物；车厢和堆料遮住了远处。"
+      "clue": "货场的轨道间留有杂物；车厢和堆料遮住了远处。",
+      "populationWeights": {
+        "worker": 40,
+        "z_hauler": 40,
+        "z_engineer": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "a02_pump",
@@ -4320,7 +4403,13 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "泵房屋顶尚完整；天然遮挡不代表这里已经没有危险。"
+      "clue": "泵房屋顶尚完整；天然遮挡不代表这里已经没有危险。",
+      "populationWeights": {
+        "worker": 40,
+        "z_spitter": 30,
+        "z_bloater": 30
+      },
+      "firstPopulation": 2
     },
     {
       "id": "a03_foundry",
@@ -4366,7 +4455,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "铸造厂外的堆场留有炉渣；厂墙后的动静仍需另外确认。"
+      "clue": "铸造厂外的堆场留有炉渣；厂墙后的动静仍需另外确认。",
+      "populationWeights": {
+        "z_helmet": 30,
+        "z_engineer": 40,
+        "z_signal": 20,
+        "riot": 10
+      },
+      "firstPopulation": 2
     },
     {
       "id": "b01_school",
@@ -4502,7 +4598,13 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "医院外院的门窗多有破损；建筑名称并不保证整片院落都有遮蔽。"
+      "clue": "医院外院的门窗多有破损；建筑名称并不保证整片院落都有遮蔽。",
+      "populationWeights": {
+        "z_helmet": 30,
+        "z_screamer": 30,
+        "z_nurse": 40
+      },
+      "firstPopulation": 2
     },
     {
       "id": "c01_pilgrim",
@@ -4548,7 +4650,12 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "朝圣路旁有磨损路记；前方的接待与通行仍以实际规则为准。"
+      "clue": "朝圣路旁有磨损路记；前方的接待与通行仍以实际规则为准。",
+      "populationWeights": {
+        "z_slow": 50,
+        "shambler": 50
+      },
+      "firstPopulation": 2
     },
     {
       "id": "c02_church",
@@ -4819,7 +4926,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "旧城门洞旁堆有碎砖；城门内外都存在遮挡。"
+      "clue": "旧城门洞旁堆有碎砖；城门内外都存在遮挡。",
+      "populationWeights": {
+        "shambler": 35,
+        "z_slow": 30,
+        "z_helmet": 20,
+        "z_clinger": 15
+      },
+      "firstPopulation": 2
     },
     {
       "id": "o02_market",
@@ -4865,7 +4979,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "商圈街道上有坍塌招牌；店面间的狭巷不易看清。"
+      "clue": "商圈街道上有坍塌招牌；店面间的狭巷不易看清。",
+      "populationWeights": {
+        "shambler": 35,
+        "z_slow": 30,
+        "z_helmet": 20,
+        "z_clinger": 15
+      },
+      "firstPopulation": 2
     },
     {
       "id": "o03_police",
@@ -4911,7 +5032,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "警备仓外仍能辨认旧岗哨位置；外部院落与仓内情况不能混为一谈。"
+      "clue": "警备仓外仍能辨认旧岗哨位置；外部院落与仓内情况不能混为一谈。",
+      "populationWeights": {
+        "shambler": 35,
+        "z_slow": 30,
+        "z_helmet": 20,
+        "z_clinger": 15
+      },
+      "firstPopulation": 2
     },
     {
       "id": "o04_transit",
@@ -4957,7 +5085,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "车站的外部道路留有旧导向牌；入口之后的环境仍待实地确认。"
+      "clue": "车站的外部道路留有旧导向牌；入口之后的环境仍待实地确认。",
+      "populationWeights": {
+        "shambler": 35,
+        "z_slow": 30,
+        "z_helmet": 20,
+        "z_clinger": 15
+      },
+      "firstPopulation": 2
     },
     {
       "id": "h05_appraisal",
@@ -5498,7 +5633,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "果树之间长着杂草；倒枝后面有被遮住的低洼处。"
+      "clue": "果树之间长着杂草；倒枝后面有被遮住的低洼处。",
+      "populationWeights": {
+        "z_slow": 35,
+        "shambler": 25,
+        "ec_cantor": 20,
+        "z_clinger": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w12_canal",
@@ -5544,7 +5686,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "渠岸留有湿滑的淤泥；水流声会盖住较轻的动静。"
+      "clue": "渠岸留有湿滑的淤泥；水流声会盖住较轻的动静。",
+      "populationWeights": {
+        "z_slow": 35,
+        "shambler": 25,
+        "ec_cantor": 20,
+        "z_clinger": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w13_mill",
@@ -5590,7 +5739,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "磨坊尚有完整屋顶；旧墙与机器仍遮住了室内部分视线。"
+      "clue": "磨坊尚有完整屋顶；旧墙与机器仍遮住了室内部分视线。",
+      "populationWeights": {
+        "z_slow": 35,
+        "shambler": 25,
+        "ec_cantor": 20,
+        "z_clinger": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w14_cemeteryroad",
@@ -5636,7 +5792,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "荒径两边的石标已倾斜；高草遮住了路沿。"
+      "clue": "荒径两边的石标已倾斜；高草遮住了路沿。",
+      "populationWeights": {
+        "z_slow": 35,
+        "shambler": 25,
+        "ec_cantor": 20,
+        "z_clinger": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w15_shrinewoods",
@@ -5682,7 +5845,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "祈祷林中的旧石台覆着落叶；树影之间难以分清细小动静。"
+      "clue": "祈祷林中的旧石台覆着落叶；树影之间难以分清细小动静。",
+      "populationWeights": {
+        "z_slow": 35,
+        "shambler": 25,
+        "ec_cantor": 20,
+        "z_clinger": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w16_service",
@@ -5728,7 +5898,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "服务站主厅尚有遮顶；门窗破损，不能把有屋顶当作无人出入。"
+      "clue": "服务站主厅尚有遮顶；门窗破损，不能把有屋顶当作无人出入。",
+      "populationWeights": {
+        "z_darter": 30,
+        "ec_labwalker": 25,
+        "z_engineer": 25,
+        "ec_cablecrawler": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w17_switchback",
@@ -5774,7 +5951,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "盘山路的急弯较多；崖壁会遮住前后两段道路。"
+      "clue": "盘山路的急弯较多；崖壁会遮住前后两段道路。",
+      "populationWeights": {
+        "z_darter": 30,
+        "ec_labwalker": 25,
+        "z_engineer": 25,
+        "ec_cablecrawler": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w18_tunnel",
@@ -5820,7 +6004,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "塌隧道的堵口仍在；洞外平台没有完整顶盖。"
+      "clue": "塌隧道的堵口仍在；洞外平台没有完整顶盖。",
+      "populationWeights": {
+        "z_darter": 30,
+        "ec_labwalker": 25,
+        "z_engineer": 25,
+        "ec_cablecrawler": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w19_survey",
@@ -5866,7 +6057,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "测绘营址只剩桩位和零散支架；旧营地痕迹不等于现成住处。"
+      "clue": "测绘营址只剩桩位和零散支架；旧营地痕迹不等于现成住处。",
+      "populationWeights": {
+        "z_darter": 30,
+        "ec_labwalker": 25,
+        "z_engineer": 25,
+        "ec_cablecrawler": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w20_powercut",
@@ -5912,7 +6110,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "高压走廊的地面较开阔；塔基周围仍留有遮挡。"
+      "clue": "高压走廊的地面较开阔；塔基周围仍留有遮挡。",
+      "populationWeights": {
+        "z_darter": 30,
+        "ec_labwalker": 25,
+        "z_engineer": 25,
+        "ec_cablecrawler": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w21_pine",
@@ -5958,7 +6163,15 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "针叶铺满林地；密集树干让远处视线变短。"
+      "clue": "针叶铺满林地；密集树干让远处视线变短。",
+      "populationWeights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w22_ravine",
@@ -6004,7 +6217,15 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "沟谷两侧岩壁陡直；转折处会遮住前方，也会放大回声。"
+      "clue": "沟谷两侧岩壁陡直；转折处会遮住前方，也会放大回声。",
+      "populationWeights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w23_hunting",
@@ -6050,7 +6271,15 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "猎人旧营的篷布已经破损；留下的支架不能提供完整遮蔽。"
+      "clue": "猎人旧营的篷布已经破损；留下的支架不能提供完整遮蔽。",
+      "populationWeights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w24_cave",
@@ -6096,7 +6325,15 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "岩洞入口前仍是露天地面；洞内的情况需要另行确认。"
+      "clue": "岩洞入口前仍是露天地面；洞内的情况需要另行确认。",
+      "populationWeights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w25_wetland",
@@ -6142,7 +6379,15 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "黑水间有浮草覆盖；看似连续的草面未必是实地。"
+      "clue": "黑水间有浮草覆盖；看似连续的草面未必是实地。",
+      "populationWeights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w26_island",
@@ -6188,7 +6433,15 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "陆洲岸边可见水位变化的痕迹；四周开阔，缺少现成屋顶。"
+      "clue": "陆洲岸边可见水位变化的痕迹；四周开阔，缺少现成屋顶。",
+      "populationWeights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w27_relay",
@@ -6234,7 +6487,15 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "中继营残留着设备基座；旧建筑的顶盖已经失去遮蔽作用。"
+      "clue": "中继营残留着设备基座；旧建筑的顶盖已经失去遮蔽作用。",
+      "populationWeights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w28_highland",
@@ -6280,7 +6541,15 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "高地上可见明显风蚀；岩块能挡住部分视线，却没有完整遮顶。"
+      "clue": "高地上可见明显风蚀；岩块能挡住部分视线，却没有完整遮顶。",
+      "populationWeights": {
+        "feral_dog": 25,
+        "wolf": 15,
+        "worker": 20,
+        "ec_cablecrawler": 20,
+        "z_helmet": 20
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w29_riverbend",
@@ -6326,7 +6595,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "河弯处的淤积带宽窄不一；水声会干扰对周围动静的判断。"
+      "clue": "河弯处的淤积带宽窄不一；水声会干扰对周围动静的判断。",
+      "populationWeights": {
+        "shambler": 25,
+        "z_darter": 25,
+        "ec_stockbracer": 25,
+        "z_screamer": 25
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w30_truckstop",
@@ -6372,7 +6648,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "货车停靠区留着车位标线；车辆残骸之间有较深的盲区。"
+      "clue": "货车停靠区留着车位标线；车辆残骸之间有较深的盲区。",
+      "populationWeights": {
+        "shambler": 25,
+        "z_darter": 25,
+        "ec_stockbracer": 25,
+        "z_screamer": 25
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w31_suburb",
@@ -6418,7 +6701,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "棚户之间的通道狭窄；破损屋面不能给整片街区提供遮蔽。"
+      "clue": "棚户之间的通道狭窄；破损屋面不能给整片街区提供遮蔽。",
+      "populationWeights": {
+        "shambler": 25,
+        "z_darter": 25,
+        "ec_stockbracer": 25,
+        "z_screamer": 25
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w32_railcut",
@@ -6464,7 +6754,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "铁路线切口两侧地势较高；路堑拐角之后难以直接看见。"
+      "clue": "铁路线切口两侧地势较高；路堑拐角之后难以直接看见。",
+      "populationWeights": {
+        "shambler": 25,
+        "z_darter": 25,
+        "ec_stockbracer": 25,
+        "z_screamer": 25
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w33_waterworks",
@@ -6510,7 +6807,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "水厂外部仍有露天池区；封闭设施与外部场地需要分开判断。"
+      "clue": "水厂外部仍有露天池区；封闭设施与外部场地需要分开判断。",
+      "populationWeights": {
+        "ec_cablecrawler": 35,
+        "z_bloater": 25,
+        "z_spitter": 25,
+        "z_hauler": 15
+      },
+      "firstPopulation": 2
     },
     {
       "id": "w34_depot",
@@ -6556,7 +6860,14 @@
       "dungeonId": null,
       "safeExterior": false,
       "clearLabel": "清理翻找",
-      "clue": "应急仓外是露天装卸场；库内的情况不能从院外直接确定。"
+      "clue": "应急仓外是露天装卸场；库内的情况不能从院外直接确定。",
+      "populationWeights": {
+        "ec_stockbracer": 35,
+        "ec_labwalker": 25,
+        "z_nurse": 25,
+        "z_slow": 15
+      },
+      "firstPopulation": 2
     },
     {
       "id": "d01_01",
@@ -22927,6 +23238,528 @@
           }
         ]
       }
+    },
+    {
+      "id": "ec_cantor",
+      "name": "低吟感染者",
+      "family": "zombie",
+      "hp": 4.6,
+      "armor": 0,
+      "dodge": 28,
+      "speed": 4,
+      "damageMin": 0.6,
+      "damageMax": 0.9,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 22,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 20,
+      "ownSlots": "1234",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "rally",
+            "verb": "鼓动",
+            "nextHitFactor": 1.1,
+            "limit": 0
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 0,
+            "ownSlots": "12",
+            "targetSlots": "12"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ec_labwalker",
+      "name": "试制区感染者",
+      "family": "zombie",
+      "hp": 5.4,
+      "armor": 0.15,
+      "dodge": 29,
+      "speed": 5,
+      "damageMin": 0.8,
+      "damageMax": 1.2,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 24,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 20,
+      "ownSlots": "1234",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 0,
+            "control": "stagger"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ec_cablecrawler",
+      "name": "缠线爬行者",
+      "family": "zombie",
+      "hp": 4.4,
+      "armor": 0.1,
+      "dodge": 30,
+      "speed": 3,
+      "damageMin": 0.6,
+      "damageMax": 1,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 23,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 20,
+      "ownSlots": "1234",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "pull",
+            "verb": "缠线拉扯",
+            "factor": 0.6,
+            "pull": 1
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 20
+          }
+        ]
+      }
+    },
+    {
+      "id": "ec_stockbracer",
+      "name": "货架护卫感染者",
+      "family": "zombie",
+      "hp": 6.4,
+      "armor": 0.3,
+      "dodge": 23,
+      "speed": 3,
+      "damageMin": 0.9,
+      "damageMax": 1.3,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 24,
+      "rarity": "common",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.35,
+      "fearValue": 6,
+      "controlResist": 30,
+      "ownSlots": "1234",
+      "targetSlots": "12",
+      "ap": 3,
+      "elite": false,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "protect",
+            "verb": "护住"
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 20
+          }
+        ]
+      }
+    },
+    {
+      "id": "ec_boss_crypt",
+      "name": "封锁祭室守卫",
+      "family": "zombie",
+      "hp": 10.5,
+      "armor": 0.25,
+      "dodge": 24,
+      "speed": 3,
+      "damageMin": 1,
+      "damageMax": 1.5,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 26,
+      "rarity": "elite",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.6,
+      "fearValue": 14,
+      "controlResist": 40,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 4,
+      "elite": true,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "guard",
+            "verb": "格挡"
+          },
+          {
+            "kind": "charge",
+            "verb": "重击",
+            "factor": 1.3
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "ec_boss_lab",
+      "name": "隔离核心守卫",
+      "family": "zombie",
+      "hp": 11,
+      "armor": 0.2,
+      "dodge": 28,
+      "speed": 5,
+      "damageMin": 1,
+      "damageMax": 1.5,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 26,
+      "rarity": "elite",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.6,
+      "fearValue": 14,
+      "controlResist": 40,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 4,
+      "elite": true,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "mark",
+            "verb": "标记",
+            "markRule": "random"
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 0,
+            "targetMarked": true
+          },
+          {
+            "kind": "guard",
+            "verb": "格挡"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ec_boss_armory",
+      "name": "军械库守卫",
+      "family": "zombie",
+      "hp": 12,
+      "armor": 0.55,
+      "dodge": 24,
+      "speed": 3,
+      "damageMin": 1.2,
+      "damageMax": 1.8,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 27,
+      "rarity": "elite",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.6,
+      "fearValue": 14,
+      "controlResist": 45,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 4,
+      "elite": true,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "charge_prepare",
+            "verb": "蓄力"
+          },
+          {
+            "kind": "charge",
+            "verb": "重击",
+            "factor": 1.4
+          },
+          {
+            "kind": "protect",
+            "verb": "护住"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ec_boss_relay",
+      "name": "天线台守卫",
+      "family": "zombie",
+      "hp": 13,
+      "armor": 0.4,
+      "dodge": 28,
+      "speed": 5,
+      "damageMin": 1.1,
+      "damageMax": 1.7,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 28,
+      "rarity": "elite",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.6,
+      "fearValue": 14,
+      "controlResist": 45,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 4,
+      "elite": true,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "sweep",
+            "verb": "扫击",
+            "factor": 0.6,
+            "ownSlots": "12",
+            "targetSlots": "12"
+          },
+          {
+            "kind": "charge",
+            "verb": "重击",
+            "factor": 1.3
+          },
+          {
+            "kind": "guard",
+            "verb": "防御"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ec_boss_water",
+      "name": "泵房推挤者",
+      "family": "zombie",
+      "hp": 11,
+      "armor": 0.3,
+      "dodge": 25,
+      "speed": 4,
+      "damageMin": 1,
+      "damageMax": 1.5,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 26,
+      "rarity": "elite",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.6,
+      "fearValue": 14,
+      "controlResist": 40,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 4,
+      "elite": true,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "charge",
+            "verb": "推挤",
+            "factor": 0.7,
+            "knockback": 1
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 0
+          },
+          {
+            "kind": "protect",
+            "verb": "护住"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ec_boss_mine",
+      "name": "深井重击者",
+      "family": "zombie",
+      "hp": 13.5,
+      "armor": 0.5,
+      "dodge": 21,
+      "speed": 2,
+      "damageMin": 1.2,
+      "damageMax": 1.8,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 27,
+      "rarity": "elite",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.6,
+      "fearValue": 14,
+      "controlResist": 45,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 4,
+      "elite": true,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "charge_prepare",
+            "verb": "蓄力"
+          },
+          {
+            "kind": "charge",
+            "verb": "重击",
+            "factor": 1.4,
+            "armorBreak": 0.2,
+            "armorBreakRounds": 2
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "ec_boss_mall",
+      "name": "扶梯拦截者",
+      "family": "zombie",
+      "hp": 11.5,
+      "armor": 0.25,
+      "dodge": 28,
+      "speed": 5,
+      "damageMin": 1,
+      "damageMax": 1.5,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 27,
+      "rarity": "elite",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.6,
+      "fearValue": 14,
+      "controlResist": 40,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 4,
+      "elite": true,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "protect",
+            "verb": "护住"
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 0
+          },
+          {
+            "kind": "sweep",
+            "verb": "扫击",
+            "factor": 0.55,
+            "ownSlots": "12",
+            "targetSlots": "12"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ec_boss_cold",
+      "name": "仓管守卫",
+      "family": "zombie",
+      "hp": 12,
+      "armor": 0.3,
+      "dodge": 28,
+      "speed": 4,
+      "damageMin": 1,
+      "damageMax": 1.6,
+      "behavior": "intents",
+      "fleeAtHp": null,
+      "immuneBleed": true,
+      "artRequired": false,
+      "attackRating": 27,
+      "rarity": "elite",
+      "biteIntentWeightPct": 0,
+      "worldPersistentId": true,
+      "fearChance": 0.6,
+      "fearValue": 14,
+      "controlResist": 45,
+      "ownSlots": "12",
+      "targetSlots": "12",
+      "ap": 4,
+      "elite": true,
+      "intents": {
+        "cycle": [
+          {
+            "kind": "mark",
+            "verb": "标记",
+            "markRule": "rearmost"
+          },
+          {
+            "kind": "pull",
+            "verb": "拉扯",
+            "factor": 0.7,
+            "pull": 1,
+            "targetSlots": "1234",
+            "targetMarked": true
+          },
+          {
+            "kind": "attack",
+            "verb": "抓击",
+            "bitePct": 0
+          }
+        ]
+      }
     }
   ],
   "xp": {
@@ -23675,7 +24508,629 @@
       "common": 0,
       "rare": 2880,
       "elite": 8640
-    }
+    },
+    "regions": [
+      {
+        "id": "mainline_wild",
+        "cap": 12,
+        "nodes": [
+          "m01_road",
+          "m02_checkpoint",
+          "w01_farm",
+          "w02_forest",
+          "w03_quarry",
+          "w04_crossroads",
+          "w05_marsh",
+          "w06_bridge",
+          "w07_ridge",
+          "w08_reservoir",
+          "w09_logging",
+          "w10_watchtower"
+        ],
+        "spawnEveryMinutes": 120,
+        "spawnAttempt": 0.25,
+        "patrolEveryMinutes": 180,
+        "patrolAttempt": 0.2,
+        "spawnStartWorldMinute": 1440,
+        "layerWeights": {
+          "ordinary": 96,
+          "rare": 3.5,
+          "strong": 0.5
+        },
+        "layerOpenWorldDay": {
+          "ordinary": 1,
+          "rare": 3,
+          "strong": 7
+        }
+      },
+      {
+        "id": "mainline_works",
+        "cap": 12,
+        "nodes": [
+          "a01_yard",
+          "a02_pump",
+          "a03_foundry"
+        ],
+        "spawnEveryMinutes": 120,
+        "spawnAttempt": 0.25,
+        "patrolEveryMinutes": 180,
+        "patrolAttempt": 0.2,
+        "spawnStartWorldMinute": 1440,
+        "layerWeights": {
+          "ordinary": 96,
+          "rare": 3.5,
+          "strong": 0.5
+        },
+        "layerOpenWorldDay": {
+          "ordinary": 1,
+          "rare": 3,
+          "strong": 7
+        }
+      },
+      {
+        "id": "mainline_aid",
+        "cap": 12,
+        "nodes": [
+          "b03_hospital"
+        ],
+        "spawnEveryMinutes": 120,
+        "spawnAttempt": 0.25,
+        "patrolEveryMinutes": 180,
+        "patrolAttempt": 0.2,
+        "spawnStartWorldMinute": 1440,
+        "layerWeights": {
+          "ordinary": 96,
+          "rare": 3.5,
+          "strong": 0.5
+        },
+        "layerOpenWorldDay": {
+          "ordinary": 1,
+          "rare": 3,
+          "strong": 7
+        }
+      },
+      {
+        "id": "mainline_oldcity",
+        "cap": 12,
+        "nodes": [
+          "o01_oldgate",
+          "o02_market",
+          "o03_police",
+          "o04_transit",
+          "c01_pilgrim"
+        ],
+        "spawnEveryMinutes": 120,
+        "spawnAttempt": 0.25,
+        "patrolEveryMinutes": 180,
+        "patrolAttempt": 0.2,
+        "spawnStartWorldMinute": 1440,
+        "layerWeights": {
+          "ordinary": 96,
+          "rare": 3.5,
+          "strong": 0.5
+        },
+        "layerOpenWorldDay": {
+          "ordinary": 1,
+          "rare": 3,
+          "strong": 7
+        }
+      },
+      {
+        "id": "ex_pop_church_approach",
+        "cap": 12,
+        "nodes": [
+          "w11_orchard",
+          "w12_canal",
+          "w13_mill",
+          "w14_cemeteryroad",
+          "w15_shrinewoods"
+        ],
+        "spawnEveryMinutes": 120,
+        "spawnAttempt": 0.25,
+        "patrolEveryMinutes": 180,
+        "patrolAttempt": 0.2,
+        "spawnStartWorldMinute": 1440
+      },
+      {
+        "id": "ex_pop_academy_approach",
+        "cap": 12,
+        "nodes": [
+          "w16_service",
+          "w17_switchback",
+          "w18_tunnel",
+          "w19_survey",
+          "w20_powercut"
+        ],
+        "spawnEveryMinutes": 120,
+        "spawnAttempt": 0.25,
+        "patrolEveryMinutes": 180,
+        "patrolAttempt": 0.2,
+        "spawnStartWorldMinute": 1440
+      },
+      {
+        "id": "ex_pop_deep_wild",
+        "cap": 16,
+        "nodes": [
+          "w21_pine",
+          "w22_ravine",
+          "w23_hunting",
+          "w24_cave",
+          "w25_wetland",
+          "w26_island",
+          "w27_relay",
+          "w28_highland"
+        ],
+        "spawnEveryMinutes": 120,
+        "spawnAttempt": 0.25,
+        "patrolEveryMinutes": 180,
+        "patrolAttempt": 0.2,
+        "spawnStartWorldMinute": 1440
+      },
+      {
+        "id": "ex_pop_city_approach",
+        "cap": 12,
+        "nodes": [
+          "w29_riverbend",
+          "w30_truckstop",
+          "w31_suburb",
+          "w32_railcut"
+        ],
+        "spawnEveryMinutes": 120,
+        "spawnAttempt": 0.25,
+        "patrolEveryMinutes": 180,
+        "patrolAttempt": 0.2,
+        "spawnStartWorldMinute": 1440
+      },
+      {
+        "id": "ex_pop_utility",
+        "cap": 8,
+        "nodes": [
+          "w33_waterworks",
+          "w34_depot"
+        ],
+        "spawnEveryMinutes": 120,
+        "spawnAttempt": 0.25,
+        "patrolEveryMinutes": 180,
+        "patrolAttempt": 0.2,
+        "spawnStartWorldMinute": 1440
+      }
+    ],
+    "fixedBattles": [
+      {
+        "nodeId": "d01_02",
+        "dungeonId": "d01",
+        "enemyOrder": [
+          "z_slow",
+          "shambler"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d01_03",
+        "dungeonId": "d01",
+        "enemyOrder": [
+          "ec_cantor",
+          "z_clinger",
+          "z_slow"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d01_05",
+        "dungeonId": "d01",
+        "enemyOrder": [
+          "z_helmet",
+          "ec_cantor",
+          "worker"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d01_07",
+        "dungeonId": "d01",
+        "enemyOrder": [
+          "ec_boss_crypt",
+          "ec_cantor",
+          "z_clinger",
+          "z_slow"
+        ],
+        "guardian": true,
+        "scope": "instance",
+        "fact": "guardianDefeated"
+      },
+      {
+        "nodeId": "d02_02",
+        "dungeonId": "d02",
+        "enemyOrder": [
+          "z_nurse",
+          "z_darter"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d02_03",
+        "dungeonId": "d02",
+        "enemyOrder": [
+          "ec_labwalker",
+          "z_spitter",
+          "z_nurse"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d02_05",
+        "dungeonId": "d02",
+        "enemyOrder": [
+          "ec_labwalker",
+          "z_darter",
+          "z_nurse"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d02_07",
+        "dungeonId": "d02",
+        "enemyOrder": [
+          "ec_boss_lab",
+          "ec_labwalker",
+          "z_spitter",
+          "z_darter"
+        ],
+        "guardian": true,
+        "scope": "instance",
+        "fact": "guardianDefeated"
+      },
+      {
+        "nodeId": "d03_02",
+        "dungeonId": "d03",
+        "enemyOrder": [
+          "worker",
+          "z_hauler"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d03_03",
+        "dungeonId": "d03",
+        "enemyOrder": [
+          "z_helmet",
+          "z_engineer"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d03_05",
+        "dungeonId": "d03",
+        "enemyOrder": [
+          "riot",
+          "z_engineer",
+          "z_signal"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d03_07",
+        "dungeonId": "d03",
+        "enemyOrder": [
+          "ec_boss_armory",
+          "z_engineer",
+          "z_signal",
+          "z_helmet"
+        ],
+        "guardian": true,
+        "scope": "instance",
+        "fact": "guardianDefeated"
+      },
+      {
+        "nodeId": "d04_02",
+        "dungeonId": "d04",
+        "enemyOrder": [
+          "ec_cablecrawler",
+          "z_darter"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d04_04",
+        "dungeonId": "d04",
+        "enemyOrder": [
+          "z_engineer",
+          "z_signal",
+          "ec_cablecrawler"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d04_06",
+        "dungeonId": "d04",
+        "enemyOrder": [
+          "ec_boss_relay",
+          "z_darter",
+          "z_signal",
+          "ec_cablecrawler"
+        ],
+        "guardian": true,
+        "scope": "instance",
+        "fact": "guardianDefeated"
+      },
+      {
+        "nodeId": "d05_02",
+        "dungeonId": "d05",
+        "enemyOrder": [
+          "ec_cablecrawler",
+          "z_slow"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d05_03",
+        "dungeonId": "d05",
+        "enemyOrder": [
+          "z_bloater",
+          "z_spitter"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d05_05",
+        "dungeonId": "d05",
+        "enemyOrder": [
+          "z_hauler",
+          "ec_cablecrawler",
+          "z_spitter"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d05_06",
+        "dungeonId": "d05",
+        "enemyOrder": [
+          "ec_boss_water",
+          "z_hauler",
+          "z_spitter",
+          "ec_cablecrawler"
+        ],
+        "guardian": true,
+        "scope": "instance",
+        "fact": "guardianDefeated"
+      },
+      {
+        "nodeId": "d06_02",
+        "dungeonId": "d06",
+        "enemyOrder": [
+          "worker",
+          "z_slow"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d06_04",
+        "dungeonId": "d06",
+        "enemyOrder": [
+          "z_hauler",
+          "z_engineer"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d06_05",
+        "dungeonId": "d06",
+        "enemyOrder": [
+          "z_helmet",
+          "worker",
+          "z_darter"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d06_07",
+        "dungeonId": "d06",
+        "enemyOrder": [
+          "ec_boss_mine",
+          "z_engineer",
+          "z_helmet",
+          "z_slow"
+        ],
+        "guardian": true,
+        "scope": "instance",
+        "fact": "guardianDefeated"
+      },
+      {
+        "nodeId": "d07_02",
+        "dungeonId": "d07",
+        "enemyOrder": [
+          "z_slow",
+          "z_screamer"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d07_03",
+        "dungeonId": "d07",
+        "enemyOrder": [
+          "z_darter",
+          "shambler"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d07_05",
+        "dungeonId": "d07",
+        "enemyOrder": [
+          "z_nurse",
+          "z_screamer",
+          "z_darter"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d07_06",
+        "dungeonId": "d07",
+        "enemyOrder": [
+          "ec_boss_mall",
+          "ec_stockbracer",
+          "z_screamer",
+          "z_darter"
+        ],
+        "guardian": true,
+        "scope": "instance",
+        "fact": "guardianDefeated"
+      },
+      {
+        "nodeId": "d08_02",
+        "dungeonId": "d08",
+        "enemyOrder": [
+          "ec_stockbracer",
+          "worker"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d08_04",
+        "dungeonId": "d08",
+        "enemyOrder": [
+          "ec_cablecrawler",
+          "z_darter"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d08_05",
+        "dungeonId": "d08",
+        "enemyOrder": [
+          "z_nurse",
+          "ec_labwalker",
+          "z_slow"
+        ],
+        "guardian": false,
+        "scope": "instance",
+        "fact": null
+      },
+      {
+        "nodeId": "d08_07",
+        "dungeonId": "d08",
+        "enemyOrder": [
+          "ec_boss_cold",
+          "ec_stockbracer",
+          "ec_labwalker",
+          "z_darter"
+        ],
+        "guardian": true,
+        "scope": "instance",
+        "fact": "guardianDefeated"
+      },
+      {
+        "nodeId": "m02_checkpoint",
+        "dungeonId": null,
+        "enemyOrder": [
+          "z_slow"
+        ],
+        "guardian": false,
+        "scope": "campaign",
+        "fact": "checkpoint_obstruction_cleared"
+      }
+    ],
+    "legacyElites": [
+      {
+        "id": "legacy_elite_z_pump_foreman",
+        "enemyId": "z_pump_foreman",
+        "nodeId": "w33_waterworks",
+        "revealAtExplorePercent": 100,
+        "requiresFact": "hub_registered",
+        "rewardItemId": "precision_parts",
+        "rewardCount": 1,
+        "rewardChance": 1,
+        "claimKey": "campaignId:legacy_elite:z_pump_foreman"
+      },
+      {
+        "id": "legacy_elite_z_isolation_guard",
+        "enemyId": "z_isolation_guard",
+        "nodeId": "w31_suburb",
+        "revealAtExplorePercent": 100,
+        "requiresFact": "hub_registered",
+        "rewardItemId": "medical_gauze",
+        "rewardCount": 2,
+        "rewardChance": 1,
+        "claimKey": "campaignId:legacy_elite:z_isolation_guard"
+      },
+      {
+        "id": "legacy_elite_z_power_guard",
+        "enemyId": "z_power_guard",
+        "nodeId": "w20_powercut",
+        "revealAtExplorePercent": 100,
+        "requiresFact": "hub_registered",
+        "rewardItemId": "electronics",
+        "rewardCount": 1,
+        "rewardChance": 1,
+        "claimKey": "campaignId:legacy_elite:z_power_guard"
+      },
+      {
+        "id": "legacy_elite_z_relay_guard",
+        "enemyId": "z_relay_guard",
+        "nodeId": "w27_relay",
+        "revealAtExplorePercent": 100,
+        "requiresFact": "hub_registered",
+        "rewardItemId": "precision_parts",
+        "rewardCount": 2,
+        "rewardChance": 1,
+        "claimKey": "campaignId:legacy_elite:z_relay_guard"
+      },
+      {
+        "id": "legacy_elite_z_guard",
+        "enemyId": "z_guard",
+        "nodeId": "w32_railcut",
+        "revealAtExplorePercent": 100,
+        "requiresFact": "hub_registered",
+        "rewardItemId": "steel",
+        "rewardCount": 1,
+        "rewardChance": 0.4,
+        "claimKey": "campaignId:legacy_elite:z_guard"
+      }
+    ]
   },
   "combatActions": [
     {

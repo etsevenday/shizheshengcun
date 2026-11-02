@@ -91,6 +91,11 @@ public static partial class Icons
         ["enemy_z_pump_foreman"] = "enemy_riot", ["enemy_z_isolation_guard"] = "enemy_riot", ["enemy_z_power_guard"] = "enemy_riot",
         ["enemy_z_relay_guard"] = "enemy_riot", ["enemy_raider_melee"] = "enemy_worker", ["enemy_raider_gunner"] = "enemy_worker",
         ["enemy_wild_dog_leader"] = "enemy_wolf", ["enemy_feral_boar"] = "enemy_boar",
+        // B20 新敌人（A09 E3）同样暂借旧图
+        ["enemy_ec_cantor"] = "enemy_howler", ["enemy_ec_labwalker"] = "enemy_shambler", ["enemy_ec_cablecrawler"] = "enemy_crawler",
+        ["enemy_ec_stockbracer"] = "enemy_worker", ["enemy_ec_boss_crypt"] = "enemy_riot", ["enemy_ec_boss_lab"] = "enemy_riot",
+        ["enemy_ec_boss_armory"] = "enemy_riot", ["enemy_ec_boss_relay"] = "enemy_riot", ["enemy_ec_boss_water"] = "enemy_riot",
+        ["enemy_ec_boss_mine"] = "enemy_riot", ["enemy_ec_boss_mall"] = "enemy_riot", ["enemy_ec_boss_cold"] = "enemy_riot",
     };
 
     public static string Svg(string key)

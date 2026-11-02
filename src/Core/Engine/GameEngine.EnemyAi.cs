@@ -111,6 +111,7 @@ namespace Survival.Core.Engine
             var cfg = _enemies[e.EnemyId];
             InitAmmo(e);
             e.IntentTarget = 0;
+            e.IntentActor = null;
             if (e.WillFlee) { e.Intent = "flee"; e.IntentStep = -1; }
             else if (!e.Hostile) { e.Intent = "watch"; e.IntentStep = -1; }
             else
@@ -124,6 +125,10 @@ namespace Survival.Core.Engine
                     if ((st.Limit > 0 && e.ProtectUses >= st.Limit) || target == null) { kind = "attack"; idx = -2; }
                     else e.IntentTarget = target.Index;
                 }
+                // B20 鼓动：场上没有其他存活同伴可鼓动时这一轮改普通攻击（与保护找不到同伴同口径）
+                if (kind == "rally" && RallyTargets(b, e).Count == 0) { kind = "attack"; idx = -2; }
+                // B20 标记（仓管守卫“后排”）：意图锁定时选定最靠后的存活者并公开；随机标记在执行时按 Q91 抽
+                if (kind == "mark" && st.MarkRule == "rearmost") e.IntentActor = RearmostAlly(b);
                 if (kind == "reload" && (e.Reserve <= 0 || e.Mag >= cfg.Magazine)) { kind = e.Mag > 0 ? "shoot" : "attack"; idx = e.Mag > 0 ? AllStepIndex(cfg, "shoot") : -2; }
                 if (kind == "shoot" && e.Mag <= 0) { kind = "attack"; idx = -2; }
                 var step = idx >= 0 ? cfg.Intents.At(idx) ?? st : PlainStep(cfg);
@@ -152,6 +157,17 @@ namespace Survival.Core.Engine
             return null;
         }
 
+        /// <summary>
+        /// B20 低吟感染者“鼓动至多两名同伴”的对象：其他存活且敌对的同伴，按与它的号位距离由近到远、同距先前排，取至多 2 名（开发假设 B20-3）。
+        /// </summary>
+        public List<BattleEnemy> RallyTargets(BattleState b, BattleEnemy e) =>
+            b.Alive.Where(x => x.Index != e.Index && x.Hostile && x.Pos > 0)
+                .OrderBy(x => Math.Abs(x.Pos - e.Pos)).ThenBy(x => x.Pos).Take(2).ToList();
+
+        /// <summary>B20 仓管守卫“后排”：我方最靠后（号位最大）的存活参战者；没有为 null。</summary>
+        public static string? RearmostAlly(BattleState b) =>
+            Enumerable.Range(1, 4).Reverse().Select(p => AllyAt(b, p)).FirstOrDefault(a => a != null);
+
         private string Range(EnemyConfig cfg, double f) => $"{Fmt.N(cfg.DamageMin * f)}—{Fmt.N(cfg.DamageMax * f)}";
 
         /// <summary>公开意图文字（轮初锁定；不公开抽值）。</summary>
@@ -169,6 +185,7 @@ namespace Survival.Core.Engine
             if (st.Knockback > 0) extra.Add($"击退{st.Knockback}位");
             if (st.ArmorBreak > 0) extra.Add($"破甲{Fmt.T(st.ArmorBreak)}（{st.ArmorBreakRounds}轮）");
             if (cfg.DeathSplash > 0) extra.Add($"死亡时喷溅1、2号位各{Fmt.T(cfg.DeathSplash)}");
+            if (st.TargetMarked && st.Kind != "pull") extra.Add("优先打它标记的目标");
             var tail = extra.Count > 0 ? "，" + string.Join("，", extra) : "";
             switch (e.Intent)
             {
@@ -187,7 +204,13 @@ namespace Survival.Core.Engine
                 case "buff": return $"{verb}（自身下一击×{Fmt.T(st.NextHitFactor)}）";
                 case "sweep": return $"{verb}1、2号位 各{Range(cfg, st.Factor)}";
                 case "spit": return $"{verb} {Range(cfg, st.Factor)}{tail}（不感染）";
-                case "pull": return $"{verb}（命中后把目标往前拉{Math.Max(1, st.Pull)}位）";
+                case "pull": return st.Factor > 0
+                    ? $"{verb} {Range(cfg, st.Factor)}（命中后把{(st.TargetMarked ? "被标记的目标" : "目标")}往前拉{Math.Max(1, st.Pull)}位）"
+                    : $"{verb}（命中后把目标往前拉{Math.Max(1, st.Pull)}位）";
+                case "rally": return $"{verb}（至多两名同伴下一击×{Fmt.T(st.NextHitFactor)}，不叠层）";
+                case "mark": return st.MarkRule == "rearmost"
+                    ? $"{verb}我方最靠后的存活者{(b != null && e.IntentActor != null && b.Allies.IndexOf(e.IntentActor) >= 0 ? $"（现在是{PosName(b.Allies.IndexOf(e.IntentActor) + 1)}{(e.IntentActor == GameState.PlayerId ? "的你" : "")}）" : "")}"
+                    : $"{verb}我方1人（攻击时随机选一名存活者）";
                 case "shoot": return $"{verb} {Range(cfg, st.Factor)}（弹仓{Math.Max(0, e.Mag)}，备弹{e.Reserve}）";
                 case "reload": return $"{verb}（1AP，弹仓{Math.Max(0, e.Mag)}→{Math.Min(cfg.Magazine, Math.Max(0, e.Mag) + e.Reserve)}）";
             }
@@ -262,6 +285,8 @@ namespace Survival.Core.Engine
             if (st.Kind == "sweep" && plan != ReachPlan.Weak) return "扫击打1、2号位的全部我方（范围攻击，不随机）";
             var slots = plan == ReachPlan.Weak ? FrontSlots : SlotsOf(cfg, st).target;
             var cands = EnemyTargetCandidates(b, slots);
+            if (st.TargetMarked && plan != ReachPlan.Weak && e.MarkedActor is string mk && cands.Contains(mk))
+                return $"打它标记的{ActorDisplayName(s, mk)}（{PosName(b.Allies.IndexOf(mk) + 1)}）；标记失效才在{PosList(slots)}的存活我方中随机";
             var now = cands.Count == 0 ? "现在没有人在范围内" : cands.Count == 1 ? $"现在可选：{ActorDisplayName(s, cands[0])}" : $"现在可选：{string.Join("、", cands.Select(c => ActorDisplayName(s, c)))}，各1/{cands.Count}";
             return $"攻击时在{PosList(slots)}的存活我方中随机选一名（{now}）";
         }
@@ -471,9 +496,32 @@ namespace Survival.Core.Engine
                     else BattleLog(s, $"{EnemyName(e)}{st.Verb}，没有回应（本场已请求过增援）。");
                     return;
                 case "buff":
-                    e.NextHitFactor = st.NextHitFactor > 0 ? st.NextHitFactor : 1;
+                    // A09 E2“同名buff取强”：已有同名的下一击增益时取较大值，不叠乘
+                    e.NextHitFactor = Math.Max(e.NextHitFactor, st.NextHitFactor > 0 ? st.NextHitFactor : 1);
                     BattleLog(s, $"{EnemyName(e)}{st.Verb}：下一击伤害×{Fmt.T(e.NextHitFactor)}。");
                     return;
+                case "rally":
+                {
+                    // B20 低吟感染者（A09 E3）：至多两名同伴下一击×1.10，不叠层；同名 buff 取强（再被鼓动取较大值）
+                    var ts = RallyTargets(b, e);
+                    if (ts.Count == 0) { BattleLog(s, $"{EnemyName(e)}{st.Verb}，身边没有同伴回应。"); return; }
+                    foreach (var t in ts) t.RallyFactor = Math.Max(t.RallyFactor, st.NextHitFactor);
+                    BattleLog(s, $"{EnemyName(e)}低声{st.Verb}：{string.Join("、", ts.Select(t => $"{EnemyName(t)}（{PosName(t.Pos)}）"))}下一击伤害×{Fmt.T(st.NextHitFactor)}（不叠层）。");
+                    return;
+                }
+                case "mark":
+                {
+                    // B20 守卫标记（A09 E3/「最终敌方资源/人口接口」）：随机规则按 Q91 在全部存活我方里抽一名；“后排”规则用锁定时公开的最靠后者，
+                    // 执行前重验，失效（倒下/离场）改取当时最靠后的存活者，不暗换成未预告的攻击
+                    string? who;
+                    if (st.MarkRule == "rearmost")
+                        who = e.IntentActor != null && AllyInBattle(b, e.IntentActor) && b.Allies.Contains(e.IntentActor) ? e.IntentActor : RearmostAlly(b);
+                    else who = DrawEnemyTarget(s, b, e, EnemyTargetCandidates(b, new HashSet<int> { 1, 2, 3, 4 }), st.Verb);
+                    if (who == null) { BattleLog(s, $"{EnemyName(e)}{st.Verb}落空（没有可标记的人）。"); return; }
+                    e.MarkedActor = who;
+                    BattleLog(s, $"{EnemyName(e)}{st.Verb}了{ActorDisplayName(s, who)}（{PosName(b.Allies.IndexOf(who) + 1)}）：它接下来的指定攻击优先打这个人。");
+                    return;
+                }
                 case "reload":
                 {
                     var k = Math.Max(0, Math.Min(cfg.Magazine - Math.Max(0, e.Mag), e.Reserve));
@@ -645,7 +693,10 @@ namespace Survival.Core.Engine
             {
                 var slots = approach ? (FrontmostAlly(b) is string f ? new HashSet<int> { b.Allies.IndexOf(f) + 1 } : new HashSet<int>())
                     : factorOverride < 1 ? FrontSlots : SlotsOf(cfg, st).target;
-                var drawn = DrawEnemyTarget(s, b, e, EnemyTargetCandidates(b, slots), verb);
+                var cands = EnemyTargetCandidates(b, slots);
+                // B20：打标记目标的步骤——被标记者存活且在目标位内就只打他（合法集合 1 人，仍按 Q91 抽一次）；失效则按普通随机，不换成未预告的大招
+                if (!plain && st.TargetMarked && e.MarkedActor is string mk && cands.Contains(mk)) cands = new List<string> { mk };
+                var drawn = DrawEnemyTarget(s, b, e, cands, verb);
                 targets = drawn == null ? new List<string>() : new List<string> { drawn };
             }
             if (targets.Count == 0) { BattleLog(s, $"{EnemyName(e)}{verb}落在空处。"); return; }
@@ -692,15 +743,17 @@ namespace Survival.Core.Engine
             {
                 BattleLog(s, $"{EnemyName(e)}{verb}{tn}落空（命中率{Fmt.Pct(p)}）。");
                 e.NextHitFactor = 1;
+                e.RallyFactor = 1;
                 return;
             }
             var raw = cfg.DamageMin + s.Rng.NextDouble() * (cfg.DamageMax - cfg.DamageMin);
             raw *= factor;
             if (e.NextHitFactor > 1) { raw *= e.NextHitFactor; e.NextHitFactor = 1; }
+            if (e.RallyFactor > 1) { raw *= e.RallyFactor; e.RallyFactor = 1; }   // B20 鼓动（与自身蓄势不同名，相乘）
             if (EnemyWeak(b, e)) raw *= e.WeakFactor;   // 虚弱（重锤/火力压制）：直接伤害×0.8
             if (kind == "charge") e.Charged = false;
             var extra = new List<string>();
-            if (!plain && kind == "pull")
+            if (!plain && kind == "pull" && st.Factor <= 0)
             {
                 // 拉扯（A09 攀附感染者，Q79/Q80）：0 直接伤害，但合法命中后照判控制，成功则真实前移一格（单人也移；1 号位边界不移、不判控制）
                 var px = new List<string>();
@@ -736,6 +789,8 @@ namespace Survival.Core.Engine
             }
             // 击退（Q80）：命中（含被护甲完全挡住）后判控制，成功则真实后移一格；4 号位边界不移、不判控制，伤害照算
             if (!plain && st.Knockback > 0) DisplacePlayer(s, b, st.Knockback, "knockback", extra);
+            // B20 缠线爬行者/仓管守卫：低伤拉扯（×0.6/×0.7）——伤害照算，命中后判控制，成功前移一格（Q80 同口径）
+            if (!plain && kind == "pull") DisplacePlayer(s, b, -Math.Max(1, st.Pull), "pull", extra);
             if (dmg <= 0)
             {
                 if (armorWear != "") extra.Add(armorWear);

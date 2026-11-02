@@ -429,10 +429,14 @@ namespace Survival.Core.Config
                 bool Slots(string? t) => !string.IsNullOrEmpty(t) && t!.All(ch => ch >= '1' && ch <= '4');
                 if (!Slots(en.OwnSlots) || !Slots(en.TargetSlots)) e.Add($"敌人 {en.Id} 的己位/目标位无效");
                 if (en.Intents.Cycle.Count == 0) e.Add($"敌人 {en.Id} 缺少意图循环");
-                var kinds = new[] { "attack", "bite", "charge", "charge_prepare", "guard", "howl", "protect", "signal", "buff", "sweep", "spit", "pull", "shoot", "reload" };
+                var kinds = new[] { "attack", "bite", "charge", "charge_prepare", "guard", "howl", "protect", "signal", "buff", "sweep", "spit", "pull", "shoot", "reload", "rally", "mark" };
                 foreach (var st in en.Intents.Opening.Concat(en.Intents.Cycle))
                 {
                     if (!kinds.Contains(st.Kind)) e.Add($"敌人 {en.Id} 的意图 {st.Kind} 无效");
+                    // B20：鼓动的下一击倍率须 >1；标记须写选人规则；“打被标记者”的步骤前面须有标记步骤
+                    if (st.Kind == "rally" && st.NextHitFactor <= 1) e.Add($"敌人 {en.Id} 的鼓动倍率须大于 1");
+                    if (st.Kind == "mark" && st.MarkRule is not ("random" or "rearmost")) e.Add($"敌人 {en.Id} 的标记规则无效");
+                    if (st.TargetMarked && !en.Intents.Opening.Concat(en.Intents.Cycle).Any(x => x.Kind == "mark")) e.Add($"敌人 {en.Id} 打标记目标却没有标记意图");
                     if ((st.OwnSlots != null && !Slots(st.OwnSlots)) || (st.TargetSlots != null && !Slots(st.TargetSlots))) e.Add($"敌人 {en.Id} 的意图站位无效");
                 }
                 if (en.ControlResist < 0 || en.ControlResist > 100) e.Add($"敌人 {en.Id} 的控制抗性须在 0—100");

@@ -531,6 +531,13 @@ namespace Survival.Core.Config
         /// <summary>覆盖敌人的己位/目标位（尖啸尸等后排敌人的近战为 12→12）。</summary>
         public string? OwnSlots { get; set; }
         public string? TargetSlots { get; set; }
+        /// <summary>
+        /// B20（A09 E3/「最终敌方资源/人口接口」）：标记意图选人的规则——random 任意存活我方中随机一名（隔离核心守卫，执行时按 Q91 抽）；
+        /// rearmost 最靠后的存活者（仓管守卫“后排”，意图锁定时选定并公开，执行前重验，失效改取当时最靠后者）。
+        /// </summary>
+        public string? MarkRule { get; set; }
+        /// <summary>B20：这一步优先打本敌人标记的我方（标记者存活且在目标位内）；标记失效则按普通 Q91 在目标位内随机（不暗换未预告大招）。</summary>
+        public bool TargetMarked { get; set; }
     }
 
     public sealed class EnemyDropConfig

@@ -48,15 +48,16 @@ public class B7CombatTests : BattleTestBase
     public void EN01_ThirtyEnemiesWithA09Fields()
     {
         var ids = Cfg.Enemies.Select(e => e.Id).ToList();
-        Assert.That(ids, Has.Count.EqualTo(30));
-        Assert.That(ids.Distinct().Count(), Is.EqualTo(30));
+        // B20（A09 E3）起另有 12 个新敌人（4 普通变体 + 8 守卫），共 42 种；B7 的 30 种不变
+        Assert.That(ids, Has.Count.EqualTo(42));
+        Assert.That(ids.Distinct().Count(), Is.EqualTo(42));
         var added = new[] { "z_slow", "z_helmet", "z_spitter", "z_hauler", "z_darter", "z_screamer", "z_guard", "z_clinger", "z_bloater", "z_nurse",
                             "z_engineer", "z_signal", "z_pump_foreman", "z_isolation_guard", "z_power_guard", "z_relay_guard",
                             "raider_melee", "raider_gunner", "wild_dog_leader", "feral_boar" };
         Assert.That(ids, Is.SupersetOf(added));
         var en = Cfg.Enemies.ToDictionary(e => e.Id);
         // 普通 3AP、精英 4AP（R03 敌方资源接口补充）
-        Assert.That(Cfg.Enemies.Where(e => e.Elite).Select(e => e.Id), Is.EquivalentTo(new[] { "z_pump_foreman", "z_isolation_guard", "z_power_guard", "z_relay_guard" }));
+        Assert.That(Cfg.Enemies.Where(e => e.Elite && !e.Id.StartsWith("ec_boss_")).Select(e => e.Id), Is.EquivalentTo(new[] { "z_pump_foreman", "z_isolation_guard", "z_power_guard", "z_relay_guard" }));
         Assert.That(Cfg.Enemies.All(e => e.Ap == (e.Elite ? 4 : 3)), Is.True);
         // A09 §1 抽样：面板、己位→目标、控制抗性
         Assert.That((en["z_spitter"].Hp, en["z_spitter"].Dodge, en["z_spitter"].AttackRating, en["z_spitter"].OwnSlots, en["z_spitter"].TargetSlots, en["z_spitter"].ControlResist),
