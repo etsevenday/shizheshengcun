@@ -455,8 +455,8 @@ public class B14CityTests : TestBase
         Ok(E.StartCityService(s, "clinic_consult", GameState.PlayerId));
         Assert.That((s.GameMinute, s.Stats.Health, s.Body.VirusLoad), Is.EqualTo(before));
         Assert.That(s.Log.Last().Text, Does.Contain("伤病咨询"));
-        // B15 起主线与城市支线的任务类服务已实装（见 B15QuestTests）
-        foreach (var id in new[] { "copy_public_knowledge", "appraisal_white_v1" })
+        // B15 起主线与城市支线的任务类服务已实装（见 B15QuestTests），B18 起鉴定已实装（见 B18AppraisalTests）
+        foreach (var id in new[] { "copy_public_knowledge" })
         {
             var svc = Cfg.City.Services.Single(x => x.Id == id);
             E.DebugMapTeleport(s, svc.LocationId);

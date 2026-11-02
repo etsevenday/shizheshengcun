@@ -17,8 +17,8 @@ public class B14bCityQTests : TestBase
 
     private static readonly string[] Hidden =
     {
-        // B15 起主线与城市支线的 7 项任务类服务已实装，其余仍按 Q146 隐藏
-        "copy_public_knowledge", "appraisal_white_v1",
+        // B15 起主线与城市支线的 7 项任务类服务已实装，B18 起鉴定所 appraisal_white_v1 已实装，其余仍按 Q146 隐藏
+        "copy_public_knowledge",
     };
     /// <summary>B14 快照（Q146 的 b14UnimplementedSnapshot，只是版本快照，不是永久隐藏表）。</summary>
     private static readonly string[] B14Snapshot =
@@ -436,8 +436,8 @@ public class B14bCityQTests : TestBase
             }
             else Assert.That(card.Status, Does.Match($@"事项 \d+/{impl} 项可办"));
         }
-        // B15：许安（整理调查记录）、祁闻/温澄（接待路线）、纪牧/宋烛（CH02）、季闻（AC01）、邵宁（AC02）已有实装事项
-        Assert.That(noButton, Is.EquivalentTo(new[] { "陶岑" }));
+        // B15：许安（整理调查记录）、祁闻/温澄（接待路线）、纪牧/宋烛（CH02）、季闻（AC01）、邵宁（AC02）已有实装事项；B18：陶岑（鉴定所）也有
+        Assert.That(noButton, Is.Empty);
     }
 
     /// <summary>
@@ -472,15 +472,17 @@ public class B14bCityQTests : TestBase
         Assert.That(relief.Blocked, Does.Contain("救助配给额度已用完"));
         Assert.That(E.NpcsHere(t).Single().ServiceCount, Is.EqualTo(1));
 
-        // 后续实装同 ID：自然出现在列表里（配额账不动）
-        var svc = Cfg.City.Services.Single(x => x.Id == "appraisal_white_v1");
+        // 后续实装同 ID：自然出现在列表里（配额账不动）。B18 起鉴定已实装，改用仍隐藏的抄录资料包模拟
+        var svc = Cfg.City.Services.Single(x => x.Id == "copy_public_knowledge");
+        var npc = Cfg.City.Npcs.Single(n => n.ServiceIds.Contains(svc.Id));
         var quota = new Dictionary<string, int>(t.City.QuotaUsed);
+        var before = E.CityServicesOf(t, npc.NpcId).Count;
         try
         {
             svc.Implemented = true;
-            E.DebugMapTeleport(t, "h05_appraisal");
-            Assert.That(E.CityServicesOf(t, "npc_tao_cen").Select(v => v.Id), Is.EqualTo(new[] { "appraisal_white_v1" }));
-            Assert.That(E.NpcsHere(t).Single().ServiceCount, Is.EqualTo(1));
+            E.DebugMapTeleport(t, npc.LocationId);
+            Assert.That(E.CityServicesOf(t, npc.NpcId).Select(v => v.Id), Does.Contain("copy_public_knowledge"));
+            Assert.That(E.NpcsHere(t).Single(c => c.NpcId == npc.NpcId).ServiceCount, Is.EqualTo(npc.ServiceIds.Count(id => Cfg.City.Services.Single(x => x.Id == id).Implemented) + (npc.NpcId == Cfg.Scope.Training.NpcId ? 1 : 0)));
             Assert.That(t.City.QuotaUsed, Is.EqualTo(quota));
         }
         finally { svc.Implemented = false; }

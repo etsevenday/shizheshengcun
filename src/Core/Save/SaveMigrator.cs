@@ -53,6 +53,7 @@ namespace Survival.Core.Save
         public const string Schema26 = "26";
         public const string Schema27 = "27";
         public const string Schema28 = "28";
+        public const string Schema29 = "29";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -96,6 +97,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema26) From26To27(s, config, notes);
             if (s.SchemaVersion == Schema27) From27To28(s, config, notes);
             if (s.SchemaVersion == Schema28) From28To29(s, config, notes);
+            if (s.SchemaVersion == Schema29) From29To30(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1008,7 +1010,20 @@ namespace Survival.Core.Save
             }
             if (s.CurrentZone == GameState.SafehouseZone && s.Locations.TryGetValue(s.CurrentLocation, out var here) && here.Safehouse?.Built != true)
                 s.CurrentZone = GameState.ExteriorZone;
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（安全屋与分区设施上线：原营地火堆、锅与加工进程归入营地外部区，原样保留；旧营地不补储物柜）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema29}（安全屋与分区设施上线：原营地火堆、锅与加工进程归入营地外部区，原样保留；旧营地不补储物柜）。" });
+            s.SchemaVersion = Schema29;
+        }
+
+        /// <summary>
+        /// 鉴定交易（开发计划 v0.9 B18，R57—R59；R07 X3.4/X3.7）：旧档物品一律没有鉴定记录（appraisalRecord 为空，原样保留来源与教学标记）；
+        /// 城市状态补空的报价表。当天报价表不在这里补抽：按规则在下一次安全访问鉴定所时生成（数量由固定种子决定，与何时生成无关）。
+        /// 旧档不可能有进行中的鉴定/换物事务（本版本前未开放）。不发物、不改额度。幂等。
+        /// </summary>
+        private static void From29To30(GameState s, GameConfig config, List<string> notes)
+        {
+            s.City ??= new CityState();
+            s.City.Quotes ??= new List<AppraisalQuoteSnapshot>();
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（营区鉴定所开放详细鉴定与以物换物；原有活性物质记为未鉴定，来源与教学标记原样保留）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

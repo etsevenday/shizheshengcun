@@ -32818,7 +32818,7 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false
+        "implemented": true
       },
       {
         "id": "shelter_recruitment",
@@ -34710,5 +34710,47 @@
       "stovePackMinutes": 5,
       "stoveMaxFuelMinutes": 60
     }
+  },
+  "appraisal": {
+    "source": "R07 X3.2—X3.5、appraisal-service-contract.json（B18）",
+    "serviceId": "appraisal_white_v1",
+    "locationId": "h05_appraisal",
+    "sampleItemId": "active_substance_white_unidentified",
+    "scopeVersion": "r07_white_v1",
+    "infoMinutes": 0,
+    "appraiseMinutes": 10,
+    "appraiseConsume": {
+      "fiber": 1
+    },
+    "tradeMinutes": 5,
+    "tradeDailyPartyQuota": 2,
+    "quoteVersion": "white_barter_v2",
+    "quoteKeepDays": 7,
+    "offers": [
+      {
+        "id": "white_for_cloth",
+        "itemId": "cloth",
+        "min": 1,
+        "max": 3,
+        "minGrams": 100,
+        "maxGrams": 300
+      },
+      {
+        "id": "white_for_scrap",
+        "itemId": "scrap",
+        "min": 1,
+        "max": 2,
+        "minGrams": 500,
+        "maxGrams": 1000
+      },
+      {
+        "id": "white_for_water",
+        "itemId": "clean_water",
+        "min": 1,
+        "max": 2,
+        "minGrams": 500,
+        "maxGrams": 1000
+      }
+    ]
   }
 }

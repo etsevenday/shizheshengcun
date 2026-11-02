@@ -323,7 +323,7 @@ public class B15SideQuestTests : TestBase
         Ok(E.TalkNpc(h, "npc_tao_cen"));
         ReadDialogues(h);
         c = E.NpcsHere(h).Single(x => x.Kind == "post");
-        Assert.That((c.Status, c.ItemCount), Is.EqualTo(("可交谈 · 事项 1/1 项可办", 1)), "只有委托的岗位：阅读说明算一项可办");
+        Assert.That((c.Status, c.ItemCount), Is.EqualTo(("可交谈 · 事项 2/2 项可办", 2)), "委托阅读说明算一项可办；B18 起鉴定所服务也算一项");
     }
 
     /// <summary>M333：HU04 前置未满足时“下一步”不再重复条件（条件在未满足条件行），满足后与状态一致；中途停下委托工作的日志写实际时长。</summary>

@@ -102,6 +102,8 @@ namespace Survival.Core.Config
         public MapConfig Map { get; set; } = new MapConfig();
         /// <summary>势力事实、营区登记与城市岗位 NPC/服务（开发计划 v0.9 B14，tools/import-b14-city.py）。</summary>
         public CityConfig City { get; set; } = new CityConfig();
+        /// <summary>鉴定所鉴定与以物换物（R07 X3、appraisal-service-contract.json，B18）。</summary>
+        public AppraisalConfig Appraisal { get; set; } = new AppraisalConfig();
         /// <summary>主线与支线任务（开发计划 v0.9 B15，tools/import-b15-quests.py）。</summary>
         public QuestsConfig Quests { get; set; } = new QuestsConfig();
     }

@@ -38,8 +38,9 @@ namespace Survival.Core.State
         /// "17" 起记服务地点迁址标记（v3 地图营区公共居所/收容所）与遗物是否公共候补遗物（策划答复 Q88/Q89，开发计划 v0.9 B8b）；
         /// "18" 起记候补照护规则版本与每名候补的自主 rest/sleep 模式（策划答复 Q90，开发计划 v0.9 B8c）；
         /// "29" 起安全屋与分区设施：地点带安全屋（屋内区设施、柜子记录），队伍记当前所在区与收藏的安全屋，设施带屋内火堆与折叠柴炉（开发计划 v0.9 B17）。
+        /// "30" 起鉴定交易：物品实例带可空鉴定记录，城市状态带鉴定所世界日报价表，服务事务带报价/样本锁字段（开发计划 v0.9 B18）。
         /// </summary>
-        public const string CurrentSchema = "29";
+        public const string CurrentSchema = "30";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -599,6 +600,11 @@ namespace Survival.Core.State
         public string? LiquidId { get; set; }
         /// <summary>分量水壶里的水量（毫升，250 的整倍数）。</summary>
         public int LiquidMl { get; set; }
+        /// <summary>
+        /// 鉴定记录（R07 X3.4，存档 30）：只记录、不改物品 ID/品质/重量/owner/来源；未鉴定为 null（旧档一律 null）。
+        /// 合堆键含它的结果类别，已鉴定份不与未鉴定份合堆。
+        /// </summary>
+        public AppraisalRecord? Appraisal { get; set; }
 
         public bool IsCarried => Owner == Carried;
         /// <summary>穿戴中（任一角色的七槽之一）：不占五张物资卡，重量计入该角色。</summary>
@@ -695,6 +701,7 @@ namespace Survival.Core.State
             var c = (ItemInstance)MemberwiseClone();
             c.Source = Source?.Clone();
             c.Affixes = Affixes == null ? null : new List<string>(Affixes);
+            c.Appraisal = Appraisal?.Clone();
             return c;
         }
     }
@@ -736,6 +743,23 @@ namespace Survival.Core.State
     }
 
     /// <summary>物品来源（R07 §2）：sourceWorldEnemyId、sourceBattleId、grantEventId、tutorialReward。合堆键含 GrantEventId，教学与普通实例不合并。</summary>
+    /// <summary>
+    /// 活性物质的鉴定记录（R07 X3.4 appraisalRecord）：实际实例号、识别范围版本 r07_white_v1、结果类别
+    /// ordinary_no_effect（普通白色详细鉴定）或 fixed_tutorial_attack（教学样本免费说明）、首次记录世界分钟。
+    /// </summary>
+    public sealed class AppraisalRecord
+    {
+        public const string OrdinaryNoEffect = "ordinary_no_effect";
+        public const string FixedTutorialAttack = "fixed_tutorial_attack";
+
+        public int InstanceId { get; set; }
+        public string ScopeVersion { get; set; } = "";
+        public string Result { get; set; } = "";
+        public int Minute { get; set; }
+
+        public AppraisalRecord Clone() => (AppraisalRecord)MemberwiseClone();
+    }
+
     public sealed class ItemSource
     {
         public int? WorldEnemyId { get; set; }

@@ -91,14 +91,22 @@ namespace Survival.Core.Engine
         public int MaxRootCards => Config.Carry.MaxRootCards;
 
         /// <summary>合堆键：同物品、同到期、同来源事件（与 Normalize 一致）。</summary>
-        private static (string, int?, string?) StackKey(ItemInstance i) => (i.ItemId, i.ExpiresAt, i.Source?.GrantEventId);
+        private static (string, int?, string?) StackKey(ItemInstance i) => (i.ItemId, i.ExpiresAt, MergeTag(i));
 
         /// <summary>
-        /// 真实批次键（Q24，S06 X4）：到期 + 来源（发放事件，与合堆键同一字段）+ 预留状态。现有存档字段能区分的只有这三项，
-        /// “鉴定状态”目前没有对应字段（开发假设 B1-H2），不新增存档字段。形如“1500|grant:7|”“-||r”。
+        /// 合堆键的来源部分：发放事件 ID；已鉴定的再带鉴定结果（R07 X3.4“合堆键纳入有效鉴定状态”，B18），已鉴定份不并回未鉴定的堆。
+        /// 未鉴定时与原来完全相同（旧档、旧用例不变）。
+        /// </summary>
+        private static string? MergeTag(ItemInstance i) =>
+            i.Appraisal == null ? i.Source?.GrantEventId : (i.Source?.GrantEventId ?? "") + "|apr:" + i.Appraisal.Result;
+
+        /// <summary>
+        /// 真实批次键（Q24，S06 X4）：到期 + 来源（发放事件，与合堆键同一字段）+ 预留状态 + 鉴定状态（B18 存档 30 起有 appraisalRecord；
+        /// 未鉴定的不带这一段，与 B1-H2 时的键相同）。形如“1500|grant:7|”“-||r”“-|substance-b3-w9||apr:ordinary_no_effect”。
         /// </summary>
         public static string BatchKeyOf(ItemInstance i) =>
-            $"{(i.ExpiresAt.HasValue ? i.ExpiresAt.Value.ToString() : "-")}|{i.Source?.GrantEventId ?? ""}|{(i.ReservedBy != null ? "r" : "")}";
+            $"{(i.ExpiresAt.HasValue ? i.ExpiresAt.Value.ToString() : "-")}|{i.Source?.GrantEventId ?? ""}|{(i.ReservedBy != null ? "r" : "")}"
+            + (i.Appraisal != null ? "|apr:" + i.Appraisal.Result : "");   // B18：鉴定状态进真实批次键（S06 X4、R07 X3.4）
 
         /// <summary>
         /// 某处同一物品的真实批次（Q24）：最早到期在前、无保质在后，同期限按批内最小实例号稳定排序。每批列出全部堆、合计份数、
@@ -560,7 +568,7 @@ namespace Survival.Core.Engine
             var inPot = owner.StartsWith(ItemInstance.ContainerPrefix);
             var groups = s.Items
                 .Where(i => i.Owner == owner && i.ReservedBy == null && _items[i.ItemId].IsStackable && (!inPot || IsLiquid(i)))
-                .GroupBy(i => (i.ItemId, i.ExpiresAt, i.Source?.GrantEventId))
+                .GroupBy(i => (i.ItemId, i.ExpiresAt, MergeTag(i)))
                 .ToList();
             foreach (var g in groups)
             {
@@ -588,6 +596,7 @@ namespace Survival.Core.Engine
                         Owner = owner,
                         ExpiresAt = tmpl.ExpiresAt,
                         Source = tmpl.Source?.Clone(),
+                        Appraisal = tmpl.Appraisal?.Clone(),
                     });
                     total -= take;
                 }

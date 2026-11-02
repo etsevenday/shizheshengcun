@@ -139,3 +139,41 @@ namespace Survival.Core.Config
         public List<string> Facts { get; set; } = new List<string>();
     }
 }
+
+namespace Survival.Core.Config
+{
+    /// <summary>
+    /// 鉴定所服务（R07 X3.2—X3.5、appraisal-service-contract.json；开发计划 v0.9 B18）：由 tools/import-b18-appraisal.py 导入。
+    /// 基础说明 0 分钟；详细鉴定固定 wait、耗材完成时扣、样本不消耗；换物固定 wait、交出样本 1、全队每世界日共享份数；三档有界随机报价。
+    /// </summary>
+    public sealed class AppraisalConfig
+    {
+        public string Source { get; set; } = "";
+        public string ServiceId { get; set; } = "";
+        public string LocationId { get; set; } = "";
+        public string SampleItemId { get; set; } = "";
+        /// <summary>鉴定记录的识别范围版本（R07 X3.4 r07_white_v1）。</summary>
+        public string ScopeVersion { get; set; } = "";
+        public int InfoMinutes { get; set; }
+        public int AppraiseMinutes { get; set; }
+        public System.Collections.Generic.Dictionary<string, int> AppraiseConsume { get; set; } = new System.Collections.Generic.Dictionary<string, int>();
+        public int TradeMinutes { get; set; }
+        public int TradeDailyPartyQuota { get; set; }
+        /// <summary>报价版本（white_barter_v2）；事务里记的版本不是它时安全取消（contract unknownQuoteVersion）。</summary>
+        public string QuoteVersion { get; set; } = "";
+        /// <summary>存档里保留最近几个世界日的报价表（开发假设 B18-2）。</summary>
+        public int QuoteKeepDays { get; set; } = 7;
+        public System.Collections.Generic.List<AppraisalOfferConfig> Offers { get; set; } = new System.Collections.Generic.List<AppraisalOfferConfig>();
+    }
+
+    /// <summary>一档报价：输出普通物资 ItemId，数量取闭区间 [Min, Max] 内等概率整数。</summary>
+    public sealed class AppraisalOfferConfig
+    {
+        public string Id { get; set; } = "";
+        public string ItemId { get; set; } = "";
+        public int Min { get; set; }
+        public int Max { get; set; }
+        public int MinGrams { get; set; }
+        public int MaxGrams { get; set; }
+    }
+}

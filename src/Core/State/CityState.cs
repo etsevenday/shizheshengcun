@@ -22,6 +22,11 @@ namespace Survival.Core.State
         public int NextTxn { get; set; } = 1;
         /// <summary>已完成的计时服务笔数（completionSerial，只作记录）。</summary>
         public int Completed { get; set; }
+        /// <summary>
+        /// 鉴定所世界日报价表（R07 X3.3、S01「世界日报价与服务快照」，存档 30）：当日首次安全访问时一次生成三档并保存；
+        /// 开窗、取消、读档、代班都读这里，不重抽。保留最近若干世界日（AppraisalConfig.QuoteKeepDays）。
+        /// </summary>
+        public List<AppraisalQuoteSnapshot> Quotes { get; set; } = new List<AppraisalQuoteSnapshot>();
 
         public CityState Clone() => new CityState
         {
@@ -32,6 +37,7 @@ namespace Survival.Core.State
             Pending = Pending?.Clone(),
             NextTxn = NextTxn,
             Completed = Completed,
+            Quotes = Quotes.Select(q => q.Clone()).ToList(),
         };
     }
 
@@ -52,11 +58,45 @@ namespace Survival.Core.State
         /// <summary>开工时预留的材料实例（随主行动 ReservedItemIds，完成时核销）。</summary>
         public List<int> ReservedItemIds { get; set; } = new List<int>();
 
+        // ── 鉴定所事务锁（R07 X3.5、contract transactionLocks，B18；其他服务为空） ──
+        /// <summary>appraise（详细鉴定）/ trade（换物）；其他服务为 null。</summary>
+        public string? AppraisalMode { get; set; }
+        /// <summary>所选样本的确切实例（份额固定 1，开工时已拆出并预留）。</summary>
+        public int? SampleInstanceId { get; set; }
+        /// <summary>样本开工时的 owner（sourceOwner）；取消/失败解除预留后仍在原处。</summary>
+        public string? SampleOwner { get; set; }
+        /// <summary>换物所用报价表的世界日（= StartDay）。</summary>
+        public int QuoteDay { get; set; }
+        public string? QuoteVersion { get; set; }
+        public string? OfferId { get; set; }
+        public string? OutputItemId { get; set; }
+        /// <summary>开工时锁定的确切输出份数；跨午夜完成仍发这个数。</summary>
+        public int ExactOutput { get; set; }
+
         public CityServiceTxn Clone()
         {
             var c = (CityServiceTxn)MemberwiseClone();
             c.ReservedItemIds = ReservedItemIds.ToList();
             return c;
         }
+    }
+
+    /// <summary>某世界日的鉴定所报价表（锁键 campaignId+serviceId+worldDay+quoteVersion）：每档确切输出份数。</summary>
+    public sealed class AppraisalQuoteSnapshot
+    {
+        public string CampaignId { get; set; } = "";
+        public string ServiceId { get; set; } = "";
+        public int Day { get; set; }
+        public string QuoteVersion { get; set; } = "";
+        /// <summary>offerId → 确切份数。</summary>
+        public Dictionary<string, int> Offers { get; set; } = new Dictionary<string, int>();
+        /// <summary>生成（锁存）时的世界分钟。</summary>
+        public int LockedAt { get; set; }
+
+        public AppraisalQuoteSnapshot Clone() => new AppraisalQuoteSnapshot
+        {
+            CampaignId = CampaignId, ServiceId = ServiceId, Day = Day, QuoteVersion = QuoteVersion,
+            Offers = new Dictionary<string, int>(Offers), LockedAt = LockedAt,
+        };
     }
 }
