@@ -305,7 +305,9 @@ public class B11MapTests : TestBase
         Assert.That(s.Locations["c02_church"].Progress, Is.EqualTo(100), "公共城市首次到访自动 100");
         Assert.That(E.Start(s, ActionRequest.Explore()).Reason, Does.Contain("不需要探索"));
         Assert.That(s.UnlockedEdges, Is.SupersetOf(new[] { "c02_church__c04_alms", "c02_church__c05_admonition", "c07_sanctuary__c02_church" }));
-        Assert.That(s.UnlockedEdges, Does.Not.Contain("c06_archive__c07_sanctuary"), "两端都没到过不远程揭开");
+        // Q115 选 B（B13a）：取代 B11-3，c06/c07 都没到过也立即开通并记为已发现，但不算到访
+        Assert.That(s.UnlockedEdges, Does.Contain("c06_archive__c07_sanctuary"), "条件满足即开通，不要求任一端到访");
+        Assert.That((s.Locations["c06_archive"].Discovered, s.Locations["c06_archive"].Visited), Is.EqualTo((true, false)));
         E.DebugTeleport(s, "c05_admonition");
         var fa02 = Edge("c05_admonition", "c06_archive");
         Assert.That(E.EdgeOpen(s, fa02), Is.False);
@@ -407,7 +409,8 @@ public class B11MapTests : TestBase
         ((JObject)gates.First(g => (string)g["id"]! == "field25")!)["predicate"] = JObject.Parse("{\"op\":\"teleport\"}");
         Assert.That(ConfigLoader.Validate(ConfigLoader.FromJson(j.ToString(), validate: false)), Has.Some.Contains("未知运算"));
         var e = new GameEngine(ConfigLoader.FromJson(j.ToString(), validate: false));
-        var s = e.NewGame(1);
+        Assert.Throws<InvalidOperationException>(() => e.NewGame(1), "新局重判全部边（Q115，不再只看到访过的一端）时就报错，不默认放行");
+        var s = E.NewGame(1);
         Assert.Throws<InvalidOperationException>(() => e.EvaluateGate(s, e.Edge("field__stream")));
         var parentless = Cfg.Edges.First(x => x.Gate == "from_explore100");
         var cfg2 = JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));

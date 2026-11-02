@@ -14,8 +14,8 @@ namespace Survival.Core.Engine
     /// $authoredFrom/$dungeonParent/$dungeonId 从边数据绑定（A 是数据原 from，不用当前位置）；未知运算或未绑定变量抛错，不默认放行。</item>
     /// <item>campaign 门槛首次满足写永久锁存（s.UnlockedEdges），正反共享；current_instance 锁存在当前地牢实例；
     /// revalidate_current_instance（单向出口 instance_complete）不锁存、每次走边重验。</item>
-    /// <item>重判时机：新局、每次实际到达成功、探索完成、事实提交、读档迁移。门槛满足的边，要等它任一端实际到访过才解锁
-    /// （防止远处未知地点被一次性揭开，开发假设 B11-3）；解锁时两端记为已发现（原规则）。</item>
+    /// <item>重判时机：新局、每次实际到达成功、探索完成、事实提交、读档（含当前版本读档）。门槛谓词一满足就锁存开通并把该边两端记为已发现，
+    /// 不要求任一端已到访（Q115 选 B，取代 B11 开发假设 B11-3）；发现不写到访、不改探索度、不发奖励；远方没有实例的地牢不凭发现创建实例。</item>
     /// <item>某地点探索到 100%（含到访自动 100）时揭示从它出发的全部表列边：已满足的照常开通，门槛未满足的显示为“未开通”并写明原因（S03 新区探索与发现、EXP30-01）。</item>
     /// </list>
     /// 事实来源：campaign 事实读 s.Progress.Flags（与容量事实 hub_registered 等同一字典）；tutorialBattleWon / legacyTutorialEquivalent 读剧情状态。
@@ -270,29 +270,33 @@ namespace Survival.Core.Engine
         // ───────────────────────── 重判与锁存 ─────────────────────────
 
         /// <summary>
-        /// 重判全部门槛：满足且任一端已实际到访的边锁存（campaign / 当前实例），两端记为已发现；探索 100% 的已到访地点揭示其出发边
-        /// （未开通的远端记为已发现，只显示名称与“未开通”原因）。返回本次新开通与新揭示（未开通）的边。幂等。
+        /// 重判全部门槛（Q115 选 B、Q116 选 A；gate-contract stateRules.campaignLatch/discoveryVsVisit、map-adjudications gateOpening/reveal100）：
+        /// 谓词满足的边立即锁存（campaign 永久 / 当前实例），并把该边两端记为已发现——不要求任一端已到访；只“发现”，不写 visited、不改探索度、
+        /// 不写接触/登记事实、不发奖励。current_instance 边只在该地牢已有当前实例时锁存（远方没有实例的地牢不凭发现创建）；单向出口不锁存、每次重验。
+        /// 扫描全部边并反复处理到没有新可开的边为止。随后：探索 100% 的已到访地点揭示其可出发的全部相连边（双向边不分数据 from/to，单向只算 from），
+        /// 未开通的远端记为已发现（只显示名称与“未开通”原因）。返回本次新开通与新揭示（未开通）的边。幂等。
         /// </summary>
         public (List<EdgeConfig> Unlocked, List<EdgeConfig> Revealed) RefreshGates(GameState s)
         {
             var unlocked = new List<EdgeConfig>();
             var revealed = new List<EdgeConfig>();
-            foreach (var e in Config.Edges)
+            for (var changed = true; changed;)
             {
-                var scope = GateScope(e);
-                if (scope == GateScopes.RevalidateCurrentInstance) continue;   // 单向出口不锁存
-                if (EdgeOpen(s, e)) continue;
-                if (!Visited(s, e.A) && !Visited(s, e.B)) continue;
-                if (!EvaluateGate(s, e)) continue;
-                if (scope == GateScopes.CurrentInstance)
+                changed = false;
+                foreach (var e in Config.Edges)
                 {
-                    if (e.DungeonId == null) continue;
-                    EnsureInstance(s, e.DungeonId).UnlockedEdges.Add(e.Id);
+                    var scope = GateScope(e);
+                    if (scope == GateScopes.RevalidateCurrentInstance) continue;   // 单向出口不锁存
+                    if (EdgeOpen(s, e)) continue;
+                    if (scope == GateScopes.CurrentInstance && (e.DungeonId == null || !s.DungeonInstances.ContainsKey(e.DungeonId))) continue;
+                    if (!EvaluateGate(s, e)) continue;
+                    if (scope == GateScopes.CurrentInstance) s.DungeonInstances[e.DungeonId!].UnlockedEdges.Add(e.Id);
+                    else s.UnlockedEdges.Add(e.Id);
+                    Discover(s, e.A);
+                    Discover(s, e.B);
+                    unlocked.Add(e);
+                    changed = true;
                 }
-                else s.UnlockedEdges.Add(e.Id);
-                Discover(s, e.A);
-                Discover(s, e.B);
-                unlocked.Add(e);
             }
             foreach (var e in Config.Edges)
             {

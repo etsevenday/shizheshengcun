@@ -82,7 +82,18 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema19) From19To20(s, config, notes);
             if (s.SchemaVersion == Schema20) From20To21(s, config, notes);
             if (s.SchemaVersion == Schema21) From21To22(s, config, notes);
+            RejudgeGates(s, config);
             return notes;
+        }
+
+        /// <summary>
+        /// 读档后按门槛契约重判一次（Q115 选 B，gate-contract stateRules.legacy、map-adjudications gateOpening.legacy）：旧已开世界边保留，
+        /// 条件已满足但还没锁的边补锁存并记两端为已发现；不写到访/探索度、不补奖励或日志，缺事实的不开。幂等。
+        /// </summary>
+        public static void RejudgeGates(GameState s, GameConfig config)
+        {
+            if (s.Locations.Count == 0) return;
+            new Engine.GameEngine(config).RefreshGates(s);
         }
 
         // ───────────────────────── 0.2-proto-1 → 3 ─────────────────────────
@@ -852,11 +863,12 @@ namespace Survival.Core.Save
             s.SchemaVersion = GameState.CurrentSchema;
         }
 
-        /// <summary>当前版本读档也补配置新增的地点与资源点状态（幂等）。</summary>
+        /// <summary>当前版本读档也补配置新增的地点与资源点状态，并按门槛契约重判一次（Q115，B13a）（幂等）。</summary>
         public static void EnsureStates(GameState s, GameConfig config)
         {
             EnsureLocationStates(s, config);
             EnsureResourceStates(s, config);
+            RejudgeGates(s, config);
         }
 
         /// <summary>

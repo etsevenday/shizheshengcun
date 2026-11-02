@@ -158,7 +158,9 @@ public class B7bProgressionTests : TestBase
     public void PROG_Q55a_LegacyTwentyRows_Classification_PassiveScopes()
     {
         var rows = ((JArray)Contract()["fieldExperience"]!["resourceRows"]!).ToDictionary(r => (string)r["resourceId"]!);
-        Assert.That(rows, Has.Count.EqualTo(116), "合同 116 行（96 行属 v3 地图，只登记）");
+        // 策划提交 01fd54d（答复 Q120）把合同扩到 169 行，多出的 53 行旧资源点属后续批次 B13b 导入；这里只核对已导入的 116 行
+        Assert.That(rows, Has.Count.GreaterThanOrEqualTo(116), "合同至少 116 行（96 行属 v3 地图）");
+        Assert.That(Cfg.Resources, Has.Count.EqualTo(116));
         foreach (var r in Cfg.Resources)
         {
             // B12：96 行并入资源表；proficiencyId 为空的 9 行（核心记录与城市配给）不给经验（xpAllowed=false）
