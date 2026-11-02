@@ -189,6 +189,8 @@ namespace Survival.Core.Engine
         public List<OutputLine> Outputs { get; set; } = new List<OutputLine>();
         public string OutputPlace { get; set; } = "";
         public string? ToolName { get; set; }
+        /// <summary>B13a2（Q137）：本次实际使用的工具物品 ID（界面据此列出“改用其他合格工具”）。</summary>
+        public string? ToolItemId { get; set; }
         /// <summary>工具是玩家拖入指定的那一把（不自动换）。</summary>
         public bool ToolExplicit { get; set; }
         /// <summary>Q121：本行有合格工具可选——界面给“改用徒手/用随身工具”切换（徒手始终可用）。</summary>

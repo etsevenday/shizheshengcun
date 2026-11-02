@@ -134,6 +134,16 @@ namespace Survival.Core.Engine
         public string DebugGiveResourceTools(GameState s) =>
             "石刀、简易斧、撬棍各1（开发用，试资源点合格工具）：" + DebugGiveCarriedOrGround(s, new[] { ("stone_knife", 1), ("hatchet", 1), ("crowbar", 1) });
 
+        /// <summary>开发入口（B13a2，Q137）：一把白色无词条消防斧（最大耐久 40—52 正常抽、当前满），随身放不下放地面；试 30 个锁闭储物点的破门。</summary>
+        public string DebugGiveFireAxe(GameState s)
+        {
+            var axe = DebugCreateEquipment(s, "fire_axe", "white", "devkit:tmp");
+            var where = RootCardsAfter(s, axe, 1, null, 0) <= MaxRootCards ? ItemInstance.Carried : s.CurrentLocation;
+            MoveItems(s, axe, 1, where);
+            return $"消防斧1（开发用，白色无词条，耐久{Fmt.N(axe.Durability ?? 0)}/{Fmt.N(axe.MaxDurability ?? 0)}，试锁闭储物点破门）：" +
+                   (where == ItemInstance.Carried ? "已放到随身。" : $"随身最多{MaxRootCards}张卡已满，放在当前地面。");
+        }
+
         /// <summary>开发入口（B13b）：某一门熟练度直接设为指定等级（经验清零）。</summary>
         public string DebugSetSkillLevel(GameState s, string skillId, int level)
         {

@@ -78,7 +78,7 @@ namespace Survival.Core.Engine
                 if (trackFactor)
                 {
                     var reasons = new List<string>();
-                    var f = WorkFactor(c, r.Type, reasons, r.TargetId, r.Type == ActionType.Gather && plan.Tool != null);
+                    var f = WorkFactor(c, r.Type, reasons, r.TargetId, r.Type == ActionType.Gather && plan.Tool != null, r.Type == ActionType.Gather ? plan.Tool?.ItemId : null);
                     var litNow = c.Locations[c.CurrentLocation].Facility.FireLit;
                     if (System.Math.Abs(f - prevFactor) > Eps)
                     {
@@ -175,7 +175,7 @@ namespace Survival.Core.Engine
             if (p.IsWork)
             {
                 var reasons = new List<string>();
-                p.FactorAtStart = WorkFactor(s, r.Type, reasons, r.TargetId, r.Type == ActionType.Gather && plan?.Tool != null);
+                p.FactorAtStart = WorkFactor(s, r.Type, reasons, r.TargetId, r.Type == ActionType.Gather && plan?.Tool != null, r.Type == ActionType.Gather ? plan?.Tool?.ItemId : null);
                 p.FactorReasons = reasons;
             }
             p.OutputPlace = $"{LocName(s.CurrentLocation)}地面";
@@ -259,6 +259,7 @@ namespace Survival.Core.Engine
                     {
                         if (res.ToolBonus!.BaseMinutesOverride.HasValue) p.BaseMinutes = res.ToolBonus.BaseMinutesOverride.Value;
                         p.ToolName = ItemName(tool.ItemId);
+                        p.ToolItemId = tool.ItemId;
                         p.ToolExplicit = plan != null && plan.ExplicitTool;
                         p.ToolDurabilityBefore = tool.Durability;
                         p.ToolMaxDurability = tool.MaxDurability;

@@ -47,7 +47,9 @@ namespace Survival.Core.Engine
         private void ReserveCarry(GameState s, ActionState a, double baseWork)
         {
             a.RuleVersion = WorkRuleVersion;
-            a.BaseWorkMinutes = baseWork * GearWorkFactor(s, GameState.PlayerId, a.Type, a.TargetId, null, UsesQualifiedTool(a));
+            // Q137：破门倍率与熟练/装备一起在开工时乘进需求工作量快照；旧在办动作保留开工快照，不中途改价（TOOL-Q137-06）
+            a.BaseWorkMinutes = baseWork * GearWorkFactor(s, GameState.PlayerId, a.Type, a.TargetId, null, UsesQualifiedTool(a),
+                UsesQualifiedTool(a) ? FindItem(s, a.ToolInstanceId!.Value)?.ItemId : null);
             var key = CarryKeyOf(s, a.Type, a.TargetId);
             a.CarryKey = key;
             a.CarryReserved = CarryOf(s, key);

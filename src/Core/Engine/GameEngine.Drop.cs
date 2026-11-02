@@ -374,6 +374,9 @@ namespace Survival.Core.Engine
         {
             if (!_res.TryGetValue(nodeId, out var res) || res.LocationId != s.CurrentLocation || !s.Resources[nodeId].Discovered)
                 return DropIntent.No("只能对当前地点已发现的资源点使用");
+            // Q137（S05 本轮章）：消防斧这类只在名单点合格的条件工具，拖到名单外的资源点明确提示没有加成（可用原工具或徒手），不暗换撬棍
+            if (src.Kind == DropSourceKind.Card && !ToolQualifies(res, head) && IsConditionalTool(head.ItemId))
+                return DropIntent.No("这件工具对该资源点没有加成");
             if (src.Kind != DropSourceKind.Card || !ToolQualifies(res, head))
                 return DropIntent.No(Unsupported);
             if (!OnPlayer(head)) return DropIntent.No("先拾取工具");

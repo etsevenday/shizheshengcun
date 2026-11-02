@@ -392,6 +392,8 @@ namespace Survival.Core.Engine
                     if (res.IsCampaign)
                     {
                         // 核心记录（campaignClaimId，B12 R36）：单局永久一次；新一代只补写本代实例事实，不重发（H4）
+                        // Q137（TOOL-Q137-05）：唯一领取/核心记录保持无工具，显式指定工具（含消防斧）整次拒绝，不借破门加速
+                        if (r.ToolInstanceId.HasValue) return "这件工具对该资源点没有加成";
                         var why = ClaimBlocked(s, res);
                         if (why != null) return why;
                         plan.Notes.AddRange(ClaimNotes(s, res));
@@ -447,6 +449,14 @@ namespace Survival.Core.Engine
                     if (tool != null && res.ToolBonus?.BaseMinutesOverride != null) minutes = res.ToolBonus.BaseMinutesOverride.Value;
                     if (tool != null && res.ToolBonus != null && res.ToolBonus.ItemIds.Count > 0)
                         plan.Notes.Add($"使用合格工具{ItemName(tool.ItemId)}：基础工时{res.BaseMinutes}→{minutes}分钟，产量不变；完成后耐久−{Fmt.T(GatherWear)}，取消不磨损");
+                    if (res.ToolBonus != null && res.ToolBonus.LockedSearch)
+                    {
+                        // Q137（S05/S14/A08 本轮章）：锁闭储物点标签、合格工具与破门条件；只有实际选用消防斧才写“本次生效”
+                        var cond = res.ToolBonus.ConditionalToolWorkFactors;
+                        plan.Notes.Add($"锁闭储物点：合格工具{QualifiedToolNames(res)}；{ConditionalToolHint(res)}（仅实际选用时，与熟练、装备相乘，合成下限×{Fmt.T(Config.Equipment.Limits.SurvivalWorkFloor)}）");
+                        if (tool != null && cond.TryGetValue(tool.ItemId, out var tf))
+                            plan.Notes.Add($"本次实际使用{ItemName(tool.ItemId)}：{ToolTraitName(tool.ItemId)}生效，工作量×{Fmt.T(tf)}");
+                    }
                     plan.BaseWork = minutes;
                     plan.Label = $"{GatherVerb(res)}{res.Name}";
                     return null;

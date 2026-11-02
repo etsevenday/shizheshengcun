@@ -10,6 +10,9 @@
   campaignClaimId：campaign_claim（没有 recordId）；实物包 outputs 整包落地，知识包靠 knowledge.grantedByFacts "claim:<id>"。
 - tools.new96 / tools.restored（Q121）：逐行合格工具 itemIds、工具后基础分钟、产量倍率 1、成功磨损 1、toolUsePassive；
   tools.legacy20 只核对旧 20 条原规则不变（3 条有工具：field_fiber/woods_fiber 石刀 10 分钟、wood 简易斧产量×2）。
+- B13a2（Q137 选 C）：30 个锁闭储物点（new96 中 26 行 + restored 中 4 行）itemIds 另含 fire_axe，带 lockedSearch 与
+  conditionalToolWorkFactors {fire_axe: 0.75}；与 equipment/fire-axe-adjudications.json 的 lockedRows 逐行核对（名单、原工具、
+  工具后基础分钟、倍率），其余行不得出现 fire_axe。
 - resourceDisplayNames（149，Q125）：本批改 135 条资源点显示名（96 条中除 8 份核心记录 + 本批导入的 47 条）；
   8 份核心记录正式名（recordNames）属 B13c，不改；6 个旧唯一箱名登记到 legacyClaims。
 - services（h04_public_boil 公共锅煮水）：要求营区登记，随营区城市批次（B14）接入，本批不导入（开发假设 B13b-5）。
@@ -23,6 +26,7 @@ import os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG = os.path.join(ROOT, "data", "config.v0.6.json")
 ADJ = os.path.join(ROOT, "doc", "策划案", "系统策划总册 v1.0", "assets", "20261102", "map", "resource-adjudications.json")
+FIRE_AXE = os.path.join(ROOT, "doc", "策划案", "系统策划总册 v1.0", "assets", "20261102", "equipment", "fire-axe-adjudications.json")
 
 POOL = {"renewable": "renewable_units", "finite": "finite_units", "flowing": "unlimited"}
 QUARRY_SOURCE = "蓝图：采石坡（w03_quarry）探索100%后领取“采石坡野外装备图册”（10分钟，本局一次，Q120）"
@@ -39,13 +43,41 @@ def tool_entry(t):
         return None
     assert t["outputMultiplier"] == 1 and t["successWear"] == 1, t
     assert t["baseMinutesOverride"] == max(5, t["originalBaseMinutes"] - 5), t
-    return {
+    entry = {
         "toolTag": "",
         "itemIds": list(t["itemIds"]),
         "outputMultiplier": 1,
         "baseMinutesOverride": t["baseMinutesOverride"],
         "toolUsePassive": bool(t["toolUsePassive"]),
     }
+    # B13a2（Q137 C）：锁闭储物点与实际选用工具的条件倍率（消防斧破门）
+    if t.get("lockedSearch"):
+        entry["lockedSearch"] = True
+        entry["conditionalToolWorkFactors"] = dict(t["conditionalToolWorkFactors"])
+    else:
+        assert "fire_axe" not in t["itemIds"] and not t.get("conditionalToolWorkFactors"), t
+    return entry
+
+
+def check_fire_axe(tools):
+    """Q137：资源表的锁闭行与消防斧合同 lockedRows 逐行一致（30 行）。"""
+    fa = load(FIRE_AXE)["trait"]
+    rows = {r["resourceId"]: r for r in fa["lockedRows"]}
+    assert len(rows) == 30 and sorted(rows) == sorted(fa["lockedResourceIds"])
+    seen = set()
+    for t in tools["new96"] + tools["restored"]:
+        if not t.get("lockedSearch"):
+            continue
+        r = rows[t["resourceId"]]
+        assert r["nodeId"] == t["nodeId"], t["resourceId"]
+        assert t["itemIds"] == r["originalTools"] + ["fire_axe"], t["resourceId"]
+        assert t["baseMinutesOverride"] == r["toolBaseMinutes"], t["resourceId"]
+        assert t["conditionalToolWorkFactors"] == {"fire_axe": fa["workMultiplier"]} == {"fire_axe": r["fireAxeWorkMultiplier"]}, t["resourceId"]
+        assert r["successWear"] == 1 and r["outputMultiplier"] == 1
+        seen.add(t["resourceId"])
+    assert seen == set(rows), set(rows) ^ seen
+    for t in tools["legacy20"]:
+        assert "fire_axe" not in t["itemIds"], t["resourceId"]
 
 
 def main():
@@ -57,6 +89,7 @@ def main():
     assert len(res["worldSources"]) == 44 and len(res["uniqueEquipmentCaches"]) == 6
     assert len(tools["new96"]) == 96 and len(tools["restored"]) == 53 and len(tools["legacy20"]) == 20
     assert tools["extraTimeReductionMinutes"] == 5 and tools["cancelWear"] == 0
+    check_fire_axe(tools)
 
     item_ids = {i["id"] for i in cfg["items"]}
     loc_ids = {l["id"] for l in cfg["locations"]}
@@ -183,7 +216,7 @@ def main():
     assert node["skillId"] == tp["skill"] and node["level"] == tp["level"]
     assert node["effects"] == [{"key": "work.scavengeTool", "op": "mul", "value": tp["workMultiplier"]}]
     node["status"] = "live"
-    node["displayText"] = "用资源点逐行列明的合格工具（石刀/简易斧/撬棍）搜集时，搜集工作量再×0.9；徒手、采集、领取与配给不吃"
+    node["displayText"] = "用资源点逐行列明的合格工具（石刀/简易斧/撬棍；锁闭储物点另可用消防斧）搜集时，搜集工作量再×0.9；徒手、采集、领取与配给不吃"
 
     with open(CONFIG, "w", encoding="utf-8", newline="\n") as f:
         json.dump(cfg, f, ensure_ascii=False, indent=2)

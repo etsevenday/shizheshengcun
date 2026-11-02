@@ -149,6 +149,12 @@ namespace Survival.Core.Config
                     else if (!c.Items.Any(i => i.ToolTag == r.ToolBonus.ToolTag))
                         e.Add($"资源点 {r.NodeId} 工具标签 {r.ToolBonus.ToolTag} 无对应工具");
                     if (r.IsCampaign) e.Add($"资源点 {r.NodeId} 唯一领取不能有工具加成");
+                    // Q137：条件工具倍率只能给本行已列出的合格工具，且是 (0,1] 的折减
+                    foreach (var kv in r.ToolBonus.ConditionalToolWorkFactors)
+                    {
+                        if (!r.ToolBonus.ItemIds.Contains(kv.Key)) e.Add($"资源点 {r.NodeId} 条件工具 {kv.Key} 不在合格工具里");
+                        if (kv.Value <= 0 || kv.Value > 1) e.Add($"资源点 {r.NodeId} 条件工具 {kv.Key} 倍率须在 (0,1]");
+                    }
                 }
             }
 

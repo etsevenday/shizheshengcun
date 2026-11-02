@@ -348,6 +348,18 @@ namespace Survival.Core.Engine
                 .ThenBy(i => i.InstanceId)
                 .FirstOrDefault();
 
+        /// <summary>
+        /// 本人随身或已装备、对该资源点合格且现在可用的工具，每种物品取自动候选同序的第一件（B13a2，Q137：界面“改用消防斧开始”，
+        /// 已装备在武器页的消防斧也能明确指定）。
+        /// </summary>
+        public List<ItemInstance> QualifiedToolChoices(GameState s, ResourceConfig res) => res.ToolBonus == null ? new List<ItemInstance>() :
+            s.Items.Where(i => OnPlayer(i) && i.ReservedBy == null && !IsLocked(s, i) && ToolQualifies(res, i) && HasWear(i, GatherWear))
+                .OrderByDescending(Condition)
+                .ThenBy(i => i.InstanceId)
+                .GroupBy(i => i.ItemId)
+                .Select(g => g.First())
+                .ToList();
+
         /// <summary>这件实例对该资源点是否是合格工具（只看物品 ID/旧标签，不按类别猜）。</summary>
         public bool ToolQualifies(ResourceConfig res, ItemInstance it) =>
             res.ToolBonus != null && res.ToolBonus.Qualifies(it.ItemId, _items[it.ItemId].ToolTag);

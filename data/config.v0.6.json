@@ -2030,7 +2030,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "斧·T1；固定特性：破门：搜集锁闭点工作量−10%（仅实际选为工具）"
+      "desc": "斧·T1；固定特性：破门：锁闭资源点工作量−25%（仅实际选为工具）"
     },
     {
       "id": "breach_axe",
@@ -12593,11 +12593,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -12649,11 +12654,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -13013,11 +13023,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -13041,11 +13056,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -13349,11 +13369,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -13377,11 +13402,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -13405,11 +13435,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -13433,11 +13468,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 25,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -13857,11 +13897,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -13885,11 +13930,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -13937,11 +13987,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -13965,11 +14020,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -13993,11 +14053,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14045,11 +14110,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14073,11 +14143,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14101,11 +14176,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14151,11 +14231,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14179,11 +14264,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14207,11 +14297,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14257,11 +14352,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14285,11 +14385,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14313,11 +14418,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14363,11 +14473,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14419,11 +14534,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14469,11 +14589,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14525,11 +14650,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14651,11 +14781,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "stone_knife"
+          "stone_knife",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -14891,11 +15026,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "stone_knife"
+          "stone_knife",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -15077,11 +15217,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 15,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -15664,11 +15809,16 @@
       "toolBonus": {
         "toolTag": "",
         "itemIds": [
-          "crowbar"
+          "crowbar",
+          "fire_axe"
         ],
         "outputMultiplier": 1,
         "baseMinutesOverride": 20,
-        "toolUsePassive": true
+        "toolUsePassive": true,
+        "lockedSearch": true,
+        "conditionalToolWorkFactors": {
+          "fire_axe": 0.75
+        }
       },
       "hazard": null,
       "proficiencyId": "scavenging",
@@ -15928,7 +16078,7 @@
       "kind": "campaign_physical",
       "xpAllowed": false,
       "legacyAliases": [],
-      "equipmentQuality": "white_zero_affixes_full_template_durability"
+      "equipmentQuality": "white_zero_affixes_random_template_max_current_full"
     },
     {
       "nodeId": "w03_quarry_blueprints",
@@ -19610,7 +19760,7 @@
       "speed": -1,
       "ownPositions": "12",
       "targetPositions": "1",
-      "traitText": "破门：搜集锁闭点工作量−10%（仅实际选为工具）",
+      "traitText": "破门：锁闭资源点工作量−25%（仅实际选为工具，名单见Q137）",
       "salvage": {
         "itemId": "scrap",
         "counts": {
@@ -25847,7 +25997,7 @@
           "value": 0.9
         }
       ],
-      "displayText": "用资源点逐行列明的合格工具（石刀/简易斧/撬棍）搜集时，搜集工作量再×0.9；徒手、采集、领取与配给不吃"
+      "displayText": "用资源点逐行列明的合格工具（石刀/简易斧/撬棍；锁闭储物点另可用消防斧）搜集时，搜集工作量再×0.9；徒手、采集、领取与配给不吃"
     },
     {
       "id": "scavenging_07",

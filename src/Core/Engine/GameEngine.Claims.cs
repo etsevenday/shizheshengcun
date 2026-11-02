@@ -67,7 +67,15 @@ namespace Survival.Core.Engine
             {
                 // B13b（Q120）：工坊首次支援包、消防车器材箱（实物整包落当地地面）、采石坡图册（知识包，不发纸卡或成品）
                 notes.Add($"领取{res.Name}：本局唯一一次" + (res.IsCampaignPhysical ? "，产物整包放在当前地点地面" : "，只记作知识，不发纸卡或成品"));
-                if (res.EquipmentQuality != null) notes.Add("装备为白色、无词条、满耐久");
+                // Q136 选 A（EQ-Q136-01）：预览只写区间，不消耗真实随机、不预生成；领取时按模板区间 0.1 步长正常抽一次最大耐久，当前=最大
+                if (res.EquipmentQuality != null)
+                    foreach (var id in res.Outputs.Keys.Where(k => _items[k].IsEquipment))
+                    {
+                        var range = _items[id].DurabilityMaxRange;
+                        notes.Add(range is { Length: 2 }
+                            ? $"{ItemName(id)}为白色、无附加词条；最大耐久在{Fmt.T(range[0])}—{Fmt.T(range[1])}内随机生成一次，领取时当前耐久为满"
+                            : $"{ItemName(id)}为白色、无附加词条、满耐久");
+                    }
                 var k = KnowledgeGrantedBy(s, ClaimFactsOf(res));
                 if (k.Count > 0) notes.Add("获得做法知识：" + string.Join("、", k));
                 return notes;

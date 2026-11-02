@@ -181,26 +181,55 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 装备的求生工作量倍率（乘在基础工作量上，之后再乘 S01 工作倍率 M）：相关键相乘，下限 ×0.70；reasons 写“装备：耐磨工作衣×0.95”。
         /// </summary>
-        public double GearWorkFactor(GameState s, string actorId, ActionType type, string? targetId, List<string>? reasons = null, bool qualifiedTool = false)
+        /// <param name="toolItemId">实际选用的合格工具物品 ID（Q137：锁闭储物点选消防斧时再乘破门 ×0.75）；不知道或没用工具为 null。</param>
+        public double GearWorkFactor(GameState s, string actorId, ActionType type, string? targetId, List<string>? reasons = null, bool qualifiedTool = false, string? toolItemId = null)
         {
             var keys = WorkKeys(type, targetId).ToList();
             var fx = keys.Count == 0 ? null : EquipmentEffects(s, actorId);
             var gear = fx == null ? 1 : keys.Aggregate(1.0, (acc, k) => acc * fx.Factor(k));
             // B5 求生被动与装备相乘后同受 ×0.70 下限（开发假设 H7）
             var (passive, source) = PassiveWorkFactor(s, s.Actor(actorId), type, targetId, qualifiedTool);
-            var f = gear * passive;
+            // Q137（S05/A06 本轮章）：W = B×max(0.70, F装备×F搜集3/10×F搜集5工具运用×F破门)，破门在同一下限内相乘，不放到下限之后
+            var tool = qualifiedTool ? ToolWorkFactor(type, targetId, toolItemId) : 1;
+            var f = gear * passive * tool;
             var floor = Config.Equipment.Limits.SurvivalWorkFloor;
             var floored = f < floor;
             if (floored) f = floor;
-            if (Math.Abs(passive - 1) < 1e-12)
+            if (Math.Abs(passive - 1) < 1e-12 && Math.Abs(tool - 1) < 1e-12)
             {
                 if (Math.Abs(f - 1) > 1e-12) reasons?.Add($"装备工作量×{Fmt.T(f)}");
                 return f;
             }
             if (Math.Abs(gear - 1) > 1e-12) reasons?.Add($"装备工作量×{Fmt.T(gear)}");
-            reasons?.Add($"熟练（{source}）工作量×{Fmt.T(passive)}");
+            if (Math.Abs(passive - 1) > 1e-12) reasons?.Add($"熟练（{source}）工作量×{Fmt.T(passive)}");
+            if (Math.Abs(tool - 1) > 1e-12) reasons?.Add($"{ToolTraitName(toolItemId!)}（{ItemName(toolItemId!)}）工作量×{Fmt.T(tool)}");
             if (floored) reasons?.Add($"求生工作量合成下限×{Fmt.T(floor)}");
             return f;
+        }
+
+        /// <summary>
+        /// Q137：实际选用的这件工具在该资源点的条件工作量倍率（锁闭储物点消防斧破门 ×0.75），其他情况 1。
+        /// 只看资源行 conditionalToolWorkFactors 与实际物品 ID，不看穿戴/背包里的其他实例。
+        /// </summary>
+        public double ToolWorkFactor(ActionType type, string? targetId, string? toolItemId) =>
+            type == ActionType.Gather && targetId != null && _res.TryGetValue(targetId, out var res) && res.ToolBonus != null
+                ? res.ToolBonus.ConditionalFactor(toolItemId) : 1;
+
+        /// <summary>这件物品是否是只在部分资源点带条件倍率的工具（Q137 消防斧）。</summary>
+        public bool IsConditionalTool(string itemId) =>
+            Config.Resources.Any(r => r.ToolBonus != null && r.ToolBonus.ConditionalToolWorkFactors.ContainsKey(itemId));
+
+        /// <summary>资源点条件工具说明：“选消防斧时破门工作量×0.75”（Q137）；没有为空串。</summary>
+        public string ConditionalToolHint(ResourceConfig res) => res.ToolBonus == null ? "" :
+            string.Join("；", res.ToolBonus.ConditionalToolWorkFactors.Select(kv => $"选{ItemName(kv.Key)}时{ToolTraitName(kv.Key)}工作量×{Fmt.T(kv.Value)}"));
+
+        /// <summary>武器固定特性名（“破门：……”取冒号前）；没有为“工具特性”。</summary>
+        public string ToolTraitName(string itemId)
+        {
+            var t = Weapon(itemId)?.TraitText;
+            if (string.IsNullOrEmpty(t)) return "工具特性";
+            var i = t!.IndexOf('：');
+            return i > 0 ? t.Substring(0, i) : t;
         }
 
         /// <summary>该行动在各状态上的负小时率效果键：非战斗 N/W 全行动适用；E 按采集/搜集与清理/移动。</summary>

@@ -490,6 +490,20 @@ namespace Survival.Core.Config
         public int? BaseMinutesOverride { get; set; }
         /// <summary>Q121：本行用合格工具搜集时吃搜集 5 级“工具运用”×0.90（表“可用工具运用”列）。</summary>
         public bool ToolUsePassive { get; set; }
+        /// <summary>
+        /// Q137 选 C（S05/A08 本轮章、fire-axe-adjudications.json）：本行是 30 个“锁闭储物点”之一（定向搜集里从封闭箱柜/检修腔取物的类型标记，
+        /// 不是地图门或永久开门账）。只按 resourceId 名单，不凭名字或撬棍推断。
+        /// </summary>
+        public bool LockedSearch { get; set; }
+        /// <summary>
+        /// Q137：实际选用某件工具时本行的额外工作量倍率（锁闭点 fire_axe 破门 ×0.75）；与装备、搜集 3/10 级、5 级工具运用相乘后同受 ×0.70 下限，
+        /// 位于工具基础分钟覆盖之后、S01 倍率 M 之前。只认实际选中的那件实例，穿着/包里另一把/队友/地面都不生效。
+        /// </summary>
+        public Dictionary<string, double> ConditionalToolWorkFactors { get; set; } = new Dictionary<string, double>();
+
+        /// <summary>实际选用该物品作工具时本行的条件工作量倍率；没有为 1。</summary>
+        public double ConditionalFactor(string? itemId) =>
+            itemId != null && ConditionalToolWorkFactors.TryGetValue(itemId, out var f) ? f : 1;
 
         /// <summary>这件物品（物品 ID 与其工具标签）对本行是否合格。</summary>
         public bool Qualifies(string itemId, string? toolTag) =>
@@ -568,7 +582,7 @@ namespace Survival.Core.Config
         /// 揭示与领取资格：有任一事实才显示/可领（工坊首次支援包：FA02_record_credit 或 trusted_legacy_QMAP02_completed）。空为不要求。
         /// </summary>
         public List<string> UnlockAnyFacts { get; set; } = new List<string>();
-        /// <summary>唯一领取的实物装备品质（white_zero_affixes_full_template_durability：白色、无词条、满模板耐久）。</summary>
+        /// <summary>唯一领取的实物装备品质（white_zero_affixes_random_template_max_current_full：白色、无词条，最大耐久按模板区间 0.1 步长正常抽一次、当前=最大，Q136 选 A）。</summary>
         public string? EquipmentQuality { get; set; }
 
         public bool IsCampaign => PoolMode == PoolModes.CampaignClaim;
