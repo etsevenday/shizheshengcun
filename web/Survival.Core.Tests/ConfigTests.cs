@@ -37,7 +37,7 @@ public class ConfigTests : TestBase
         Assert.That(Cfg.Locations, Has.Count.EqualTo(143));
         Assert.That(Cfg.Edges, Has.Count.EqualTo(180));
         Assert.That(Cfg.Resources, Has.Count.EqualTo(16 + 4 + 96 + 47 + 6), "新增武器柜、旧储物柜、医药补给箱、废弃冷藏箱；B12 并入 v3 的 96 条增量资源（R36）；B13b 补 47 条恢复来源（R129）；B13c 补 6 个旧 d03 唯一箱（R130）");
-        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5 + 3 + 1 + 1 + 56 + 26 + 5), "新增木矛、木弓、箭矢、工具维护、病毒特效药；v1.0 新增金属矛、弩、弩矢；B4 拆解装备；B7c 护拳绑带（Q64，营区登记默认知识）；B10 新装备配方 56、材料加工链 26、工坊建造 5");
+        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5 + 3 + 1 + 1 + 56 + 26 + 5 + 19 + 1), "B16 新增 19 条与现场小修；新增木矛、木弓、箭矢、工具维护、病毒特效药；v1.0 新增金属矛、弩、弩矢；B4 拆解装备；B7c 护拳绑带（Q64，营区登记默认知识）；B10 新装备配方 56、材料加工链 26、工坊建造 5");
     }
 
     // ───────────── v0.2–v0.4 未被 v0.6 替换的部分 ─────────────
@@ -352,7 +352,7 @@ public class ConfigTests : TestBase
         var d = V04()["processes"]!.ToList();
         var meat = V06()["passiveCookingExtensions"]!.ToList();
         // v1.0 T03 追加烤肉复煮；B10b（Q111）追加火堆煅烧木炭
-        Assert.That(Cfg.Processes.Select(p => p.Id), Is.EqualTo(d.Select(x => (string)x["id"]!).Concat(meat.Select(x => (string)x["id"]!)).Concat(new[] { "reboil_cooked_meat", "fire_charcoal" })));
+        Assert.That(Cfg.Processes.Select(p => p.Id), Is.EqualTo(d.Select(x => (string)x["id"]!).Concat(meat.Select(x => (string)x["id"]!)).Concat(new[] { "reboil_cooked_meat", "fire_charcoal", "pot_hardtack", "pot_stew" })), "B16 追加两条锅食谱");
         foreach (var j in d)
         {
             var p = Cfg.Processes.Single(x => x.Id == (string)j["id"]!);
@@ -537,7 +537,7 @@ public class ConfigTests : TestBase
             if (j["restoreOwnDurabilityMaxFraction"] != null) Assert.That(r.RestoreOwnDurabilityMaxFraction, Is.EqualTo((double)j["restoreOwnDurabilityMaxFraction"]!), r.Id);
         }
         var rep = V06()["durability"]!["repair"]!;
-        var repair = Cfg.Recipes.Single(r => r.IsRepair);
+        var repair = Cfg.Recipes.Single(r => r.Id == "repair_selected_tool");
         Assert.That(repair.BaseMinutes, Is.EqualTo((int)rep["baseMinutes"]!));
         Assert.That(repair.Inputs, Is.EquivalentTo(((JObject)rep["inputs"]!).Properties().ToDictionary(p => p.Name, p => (int)p.Value)));
         Assert.That(repair.RestoreOwnDurabilityMaxFraction, Is.EqualTo((double)rep["restoreFractionOfOwnMax"]!));
@@ -660,7 +660,7 @@ public class ConfigTests : TestBase
         AssertInvalid(c => c.WorldEnemies.Initial["village"].AddRange(new[] { "shambler", "shambler", "shambler" }), "超过本地上限");
         AssertInvalid(c => c.SkillGrowth.DamageFactor = "1+0.035*L*L", "skillGrowth.damageFactor 的结构变了");
         AssertInvalid(c => c.Infection.ExposureProbability = "0.05+0.55*immunity", "infection.exposureProbability 的结构变了");
-        AssertInvalid(c => c.Recipes.Single(r => r.IsRepair).TargetInstanceRequired = false, "须指定目标实例");
+        AssertInvalid(c => c.Recipes.Single(r => r.Id == "repair_selected_tool").TargetInstanceRequired = false, "须指定目标实例");
         AssertInvalid(c => c.Resources.Single(r => r.NodeId == "village_cold_box").ExclusiveLoot![0].Weight = 30, "互斥抽取权重合计须为100");
     }
 }

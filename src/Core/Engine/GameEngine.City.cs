@@ -714,7 +714,7 @@ namespace Survival.Core.Engine
             foreach (var n in Config.City.Notices.Where(n => n.LocationId == s.CurrentLocation))
             {
                 var done = s.Progress.Flags.Contains(n.GrantsFact);
-                string? need = n.RequiresFact != null && !s.Progress.Flags.Contains(n.RequiresFact) ? $"需要：{FactLabelOf(n.RequiresFact)}" : null;
+                string? need = NoticeNeed(s, n);
                 yield return new DocumentCardView
                 {
                     Id = n.Id, Title = n.Title,
@@ -723,6 +723,18 @@ namespace Survival.Core.Engine
                     Choices = done ? new List<CityChoiceView>() : n.Choices.Select(c => new CityChoiceView { Id = c.Id, Label = c.Label }).ToList(),
                 };
             }
+        }
+
+        /// <summary>告示现在还不能看的原因：缺前置事实，或熟练不够（B16 基础陶工说明要制造3）；能看为 null。</summary>
+        private string? NoticeNeed(GameState s, CityNoticeConfig n)
+        {
+            if (n.RequiresFact != null && !s.Progress.Flags.Contains(n.RequiresFact)) return $"需要：{FactLabelOf(n.RequiresFact)}";
+            foreach (var kv in n.MinSkills)
+            {
+                var lv = SkillLevel(s, kv.Key);
+                if (lv < kv.Value) return $"需要：{SkillName(kv.Key)}{kv.Value}级（当前{lv}级）";
+            }
+            return null;
         }
 
         private string FactLabelOf(string key) => Config.Map.FactLabels.TryGetValue(key, out var t) ? t : key;
@@ -734,7 +746,7 @@ namespace Survival.Core.Engine
         private ActionResult ReadCityNotice(GameState s, CityNoticeConfig n, string? choiceId)
         {
             if (s.CurrentLocation != n.LocationId) return ActionResult.Fail("不在这里");
-            if (n.RequiresFact != null && !s.Progress.Flags.Contains(n.RequiresFact)) return ActionResult.Fail($"需要：{FactLabelOf(n.RequiresFact)}");
+            if (NoticeNeed(s, n) is string need) return ActionResult.Fail(need);
             var why = TalkBlocked(s);
             if (why != null) return ActionResult.Fail(why);
             var f = s.Progress.Flags;

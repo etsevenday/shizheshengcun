@@ -377,7 +377,7 @@ public class B10bWorkshopQTests : TestBase
 
         // 其他医疗/物资配方沿原归属：绷带仍给制造
         Assert.That(Cfg.Recipes.Single(r => r.Id == "bandage").XpSkill, Is.Null);
-        Assert.That(Cfg.Recipes.Count(r => r.XpSkill != null), Is.EqualTo(3), "只覆盖这三条");
+        Assert.That(Cfg.Recipes.Count(r => r.XpSkill != null && !r.Id.StartsWith("ex_")), Is.EqualTo(3), "只覆盖这三条（B16 新配方按 A07 表技能列另给门类）");
 
         // 医疗满 10：不再加经验，也不转给制造
         var m = New();
@@ -413,7 +413,7 @@ public class B10bWorkshopQTests : TestBase
         Assert.That(Cfg.Workshops.BuildLocations, Is.EqualTo(new[] { "camp" }), "Q107：现阶段只开放 camp");
         var initial = Cfg.Knowledge.Where(k => k.Initial).Select(k => k.Id).OrderBy(x => x).ToList();
         Assert.That(initial, Is.EqualTo(new[] { "blueprint_crossbow", "blueprint_hatchet", "blueprint_metal_spear", "blueprint_stone_knife", "blueprint_wooden_bow", "blueprint_wooden_spear" }));
-        Assert.That(Cfg.Knowledge.Where(k => !k.Initial && !k.Blueprint && k.Id != "expedition_basics").All(k => k.GrantedByFacts.SequenceEqual(new[] { "hub_registered" })), Is.True, "Q108：其余默认知识要真实登记");
+        Assert.That(Cfg.Knowledge.Where(k => !k.Initial && !k.Blueprint && k.Id != "expedition_basics" && k.Id != "ceramic_methods").All(k => k.GrantedByFacts.SequenceEqual(new[] { "hub_registered" })), Is.True, "Q108：其余默认知识要真实登记");
 
         var s = New();
         var armory = Cfg.Knowledge.Single(k => k.Id == "blueprint_armory_station");

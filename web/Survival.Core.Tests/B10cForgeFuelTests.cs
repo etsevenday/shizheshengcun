@@ -46,7 +46,7 @@ public class B10cForgeFuelTests : TestBase
         Assert.That(GameEngine.RecipeItemSplit(Rc("make_guard_sword"), "charcoal", 3), Is.EqualTo((0, 3, 3)), "锻炉装备单份输出1件，做3份燃料3");
 
         // 所有带燃料的配方都是锻炉、每份木炭1；锻炉配方都带燃料（appliesToStation forge）
-        Assert.That(Cfg.Recipes.Where(r => r.Fuel.Count > 0).Select(r => r.Station).Distinct(), Is.EqualTo(new[] { "forge" }));
+        Assert.That(Cfg.Recipes.Where(r => r.Fuel.Count > 0 && !r.Id.StartsWith("ex_")).Select(r => r.Station).Distinct(), Is.EqualTo(new[] { "forge" }), "B16 陶壳的陶窑燃料另计");
         Assert.That(Cfg.Recipes.Where(r => r.Station == "forge").All(r => r.Fuel.Count == 1 && r.Fuel["charcoal"] == 1), Is.True);
 
         var s = Forge(("iron_ore", 9), ("charcoal", 6));
@@ -206,7 +206,7 @@ public class B10cForgeFuelTests : TestBase
 
         // 火堆煅烧：仍是 fire_charcoal 被动进程（木4→炭3），不是配方、没有锻炉燃料
         Assert.That(Cfg.Recipes.Any(r => r.Outputs.ContainsKey("charcoal")), Is.False);
-        Assert.That(Cfg.Recipes.Where(r => r.Fuel.Count > 0).All(r => r.Station == "forge"), Is.True);
+        Assert.That(Cfg.Recipes.Where(r => r.Fuel.Count > 0 && !r.Id.StartsWith("ex_")).All(r => r.Station == "forge"), Is.True);
         var f = New();
         f.Items.RemoveAll(i => i.ItemId == "wood" || i.ItemId == "charcoal");
         E.CreateItems(f, "wood", 8, "camp");

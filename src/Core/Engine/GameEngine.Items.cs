@@ -484,7 +484,8 @@ namespace Survival.Core.Engine
         /// 装备另按来源 origin 抽品质与附加词条（A05 §4，B4 H4）：scavenged 且未指定来源时按 equipment.scavengedResourceOrigin；
         /// 没写概率的来源（开局、开发箱、掉落、剧情等）为白色。返回新生成的实例。
         /// </summary>
-        public List<ItemInstance> CreateItems(GameState s, string itemId, int count, string owner, bool scavenged = false, ItemSource? source = null, string? origin = null)
+        public List<ItemInstance> CreateItems(GameState s, string itemId, int count, string owner, bool scavenged = false, ItemSource? source = null, string? origin = null,
+            int? expiresCap = null)
         {
             var made = new List<ItemInstance>();
             if (count <= 0) return made;
@@ -495,6 +496,7 @@ namespace Survival.Core.Engine
             if (single)
             {
                 for (var k = 0; k < count; k++) made.Add(NewSingle(s, itemId, owner, scavenged, source, origin, null));
+                foreach (var m in made) m.ExpiresAt = CapExpiry(m.ExpiresAt, expiresCap);
                 return made;
             }
             var stack = new ItemInstance
@@ -503,7 +505,7 @@ namespace Survival.Core.Engine
                 ItemId = itemId,
                 Count = count,
                 Owner = owner,
-                ExpiresAt = cfg.ShelfLifeMinutes.HasValue ? s.GameMinute + cfg.ShelfLifeMinutes.Value : (int?)null,
+                ExpiresAt = CapExpiry(cfg.ShelfLifeMinutes.HasValue ? s.GameMinute + cfg.ShelfLifeMinutes.Value : (int?)null, expiresCap),
                 Source = source?.Clone(),
             };
             s.Items.Add(stack);
@@ -511,6 +513,12 @@ namespace Survival.Core.Engine
             Normalize(s, owner);
             return made;
         }
+
+        /// <summary>
+        /// 成品保质“不晚于最早原料截止”（B16，S11 X4、R06 X4：口粮棒、应急恢复剂）：有上限时取 min(自身保质, 上限)；
+        /// 自身无保质但原料有截止时取原料截止（不让非热组装把临期原料变新）。
+        /// </summary>
+        private static int? CapExpiry(int? own, int? cap) => cap == null ? own : own == null ? cap : Math.Min(own.Value, cap.Value);
 
         /// <summary>逐件生成一个实例：随机最大耐久 → 拾荒成色 → 品质与词条（durable 调整最大耐久）。抽随机数顺序固定，读档不重抽。</summary>
         private ItemInstance NewSingle(GameState s, string itemId, string owner, bool scavenged, ItemSource? source, string? origin, string? forcedQuality)

@@ -60,14 +60,15 @@ namespace Survival.Core.Engine
             var c = Config;
 
             ctx.Sheltered = !a.ForceOutdoor && IsSheltered(s, loc);
-            ctx.IsWork = a.IsWorkType;
+            // B16 fixed_wait：固定等待的处理不算工作（身体按等待、不吃工作倍率、0 体力不按工作扣血）
+            ctx.IsWork = a.IsWorkType && !a.FixedWait;
             ctx.ActionType = a.Type;
 
             string key;
             if (a.Type == ActionType.Sleep) key = ctx.Sheltered ? "sleep_sheltered" : "sleep_exposed";
             else
             {
-                var raw = RateKey(a.Type);
+                var raw = RateKey(a.FixedWait ? ActionType.Wait : a.Type);
                 key = c.Actions.RateAliases.TryGetValue(raw, out var alias) ? alias : raw;
             }
             ctx.Rates = c.HourlyRates[key].Copy();
@@ -497,21 +498,21 @@ namespace Survival.Core.Engine
                     }
                     var rc = _recipes[a.TargetId];
                     var batch = Math.Max(1, a.BatchCount);
+                    // B16（S11 X4、R06 X4）：口粮棒/应急恢复剂成品不晚于原料里最早的截止（非热组装不刷新原料寿命）
+                    var expiresCap = rc.ShelfRule == "min_inputs" ? EarliestExpiry(s, a.ReservedItemIds) : null;
                     foreach (var id in a.ReservedItemIds) s.Items.RemoveAll(i => i.InstanceId == id);
                     a.ReservedItemIds.Clear();
                     var made = new List<string>();
                     foreach (var kv in rc.Outputs)
                     {
                         // 制造产物按“普通制造”来源定品质（A05 §4：普通制造默认绿色1条，B4 H4）
-                        var crafted = CreateItems(s, kv.Key, kv.Value * batch, here, false, null, Config.Equipment.CraftOrigin == "" ? null : Config.Equipment.CraftOrigin);
+                        var crafted = CreateItems(s, kv.Key, kv.Value * batch, here, false, null, Config.Equipment.CraftOrigin == "" ? null : Config.Equipment.CraftOrigin, expiresCap);
                         made.Add($"{ItemName(kv.Key)}+{kv.Value * batch}{QualitySuffix(crafted)}");
                     }
                     if (rc.IsRepair) made.Add(CompleteRepair(s, a));
                     // 有效制造按实际提交的配方次数发经验（v0.6 §03）；门类按开工快照（Q110：医疗台三材料给医疗、不双发制造；旧档在途为 null 按制造）
-                    var xp = CraftXp(rc.BaseMinutes) * batch;
                     var xpSkill = a.XpSkill ?? Crafting;
-                    made.Add(XpText(s, xpSkill, xp));
-                    GainXp(s, xpSkill, xp);
+                    made.Add(CraftCompleteXp(s, a, rc, xpSkill, batch));
                     if (rc.FacilityResult != null) SetFacility(s.Locations[here].Facility, rc.FacilityResult);
                     NoteCraft(s, a, rc);   // B13 PRO10
                     ClearAction(s, a);

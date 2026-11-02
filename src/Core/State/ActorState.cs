@@ -41,6 +41,11 @@ namespace Survival.Core.State
         /// 下一真实世界 tick 段首按自身 S/E 阈值判定。编入同行时清空。
         /// </summary>
         public string? ReserveMode { get; set; }
+        /// <summary>
+        /// 护理品目标冷却（B16 R51，A07 X1.2/X1.6）：冷却组 → 可再次使用的世界分钟。relief = 止泻药粉与口服补液共用 6 小时缓解冷却；
+        /// tonic = 应急恢复剂 6 小时给药冷却。只在实际生效时写入。
+        /// </summary>
+        public Dictionary<string, int> Cooldowns { get; set; } = new Dictionary<string, int>();
 
         public bool IsPlayer => Id == GameState.PlayerId;
 
@@ -54,6 +59,7 @@ namespace Survival.Core.State
             c.ZeroLatched = new Dictionary<StatId, bool>(ZeroLatched);
             c.DailyCounts = new Dictionary<string, int>(DailyCounts);
             c.RedLatched = new Dictionary<string, bool>(RedLatched);
+            c.Cooldowns = new Dictionary<string, int>(Cooldowns);
             return c;
         }
     }

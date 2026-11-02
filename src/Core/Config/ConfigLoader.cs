@@ -263,14 +263,25 @@ namespace Survival.Core.Config
                 .FirstOrDefault(x => x != null);
             foreach (var p in c.Processes)
             {
-                if (!items.Contains(p.InputId)) e.Add($"设施进程 {p.Id} 的输入物品 {p.InputId} 不存在");
+                if (!p.IsPotRecipe && !items.Contains(p.InputId)) e.Add($"设施进程 {p.Id} 的输入物品 {p.InputId} 不存在");
                 if (!items.Contains(p.OutputId)) e.Add($"设施进程 {p.Id} 的输出物品 {p.OutputId} 不存在");
                 if (p.HeatMinutes <= 0 || p.HeatMinutes % tick != 0) e.Add($"设施进程 {p.Id} 受热分钟须为{tick}的正倍数");
-                if (p.Target != ProcessTargets.PotLiquidBatch && p.Target != ProcessTargets.SingleFood && p.Target != ProcessTargets.FireSlotBatch) e.Add($"设施进程 {p.Id} 目标类型未知");
+                if (p.Target != ProcessTargets.PotLiquidBatch && p.Target != ProcessTargets.SingleFood && p.Target != ProcessTargets.FireSlotBatch && p.Target != ProcessTargets.PotRecipe) e.Add($"设施进程 {p.Id} 目标类型未知");
                 if (p.InputCount < 1 || p.OutputCount < 1) e.Add($"设施进程 {p.Id} 每批投入与产出份数须≥1");
                 if (p.RequiredOwner != ProcessOwners.FireSlot && p.RequiredOwner != ProcessOwners.PotInFire) e.Add($"设施进程 {p.Id} 位置要求未知");
                 if (p.WaterCostMl < 0) e.Add($"设施进程 {p.Id} 耗水不能为负");
-                if (p.IsSlotBatch)
+                if (p.IsPotRecipe)
+                {
+                    // B16 复合锅食谱：主食材份数合计不超过锅食材位、辅料与主食材都存在、耗水为整份、对应 kind=pot 配方存在
+                    if (p.RequiredOwner != ProcessOwners.PotInFire) e.Add($"设施进程 {p.Id} 锅食谱须在火堆里的锅中");
+                    if (p.FoodInputs.Count == 0) e.Add($"设施进程 {p.Id} 锅食谱须有主食材");
+                    foreach (var k in p.FoodInputs.Keys.Concat(p.AuxInputs.Keys)) if (!items.Contains(k)) e.Add($"设施进程 {p.Id} 的食材 {k} 不存在");
+                    if (potCt != null && p.FoodInputs.Values.Sum() > potCt.FoodSlots) e.Add($"设施进程 {p.Id} 主食材超过锅食材位");
+                    if (potCt != null && p.WaterCostMl % potCt.UnitMl != 0) e.Add($"设施进程 {p.Id} 耗水须为每份体积的整数倍");
+                    if (potCt != null && p.OutputCount > potCt.FoodSlots) e.Add($"设施进程 {p.Id} 成品份数超过锅食材位");
+                    if (p.RecipeId == null || !c.Recipes.Any(r => r.Id == p.RecipeId && r.IsPot)) e.Add($"设施进程 {p.Id} 的锅食谱配方 {p.RecipeId} 不存在");
+                }
+                else if (p.IsSlotBatch)
                 {
                     // Q111 火堆煅烧：占火堆一个加工位的整批非食物加工；投料走显式入口，不能与直烤白名单（拖入加工位）混用
                     if (p.RequiredOwner != ProcessOwners.FireSlot) e.Add($"设施进程 {p.Id} 整批加工须在火堆加工位");
@@ -498,9 +509,11 @@ namespace Survival.Core.Config
                 foreach (var k in rc.MinSkills.Keys) if (!skills.Contains(k)) e.Add($"配方 {rc.Id} 的技能门槛 {k} 不存在");
                 if (rc.Knowledge != null && c.Knowledge.All(k => k.Id != rc.Knowledge)) e.Add($"配方 {rc.Id} 需要的知识 {rc.Knowledge} 不存在");
                 if (rc.IsRepair && !rc.TargetInstanceRequired) e.Add($"维护配方 {rc.Id} 须指定目标实例");
-                if (rc.Station != "hand" && c.Workshops.Stations.All(x => x.Id != rc.Station)) e.Add($"配方 {rc.Id} 的工坊 {rc.Station} 不存在");
+                if (rc.Station != "hand" && !rc.IsPot && c.Workshops.Stations.All(x => x.Id != rc.Station)) e.Add($"配方 {rc.Id} 的工坊 {rc.Station} 不存在");
                 foreach (var k in rc.Fuel.Keys) if (!items.Contains(k)) e.Add($"配方 {rc.Id} 的燃料 {k} 不存在");
                 if (rc.XpSkill != null && !skills.Contains(rc.XpSkill)) e.Add($"配方 {rc.Id} 的经验门类 {rc.XpSkill} 不存在");
+                if (rc.Mode != null && rc.Mode != RecipeConfig.ModeActive && !rc.IsFixedWait && !rc.IsPassive) e.Add($"配方 {rc.Id} 的模式 {rc.Mode} 未知");
+                if (rc.IsPot && !c.Processes.Any(p => p.IsPotRecipe && p.RecipeId == rc.Id)) e.Add($"锅食谱 {rc.Id} 没有对应的锅进程");
                 foreach (var k in rc.Inputs.Keys) if (!items.Contains(k)) e.Add($"配方 {rc.Id} 的原料 {k} 不存在");
             }
             foreach (var st in c.Workshops.Stations)

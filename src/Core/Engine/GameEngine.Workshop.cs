@@ -127,6 +127,10 @@ namespace Survival.Core.Engine
             var here = s.CurrentLocation;
             if (WorkshopBuilt(s, here, rc.Station)) return null;
             var name = StationName(rc.Station);
+            // B16：陶窑、固定净水台（A07 X1.4）先登记配方，建造随 B17 安全屋与分区设施
+            if (Config.Workshops.Stations.FirstOrDefault(x => x.Id == rc.Station) is StationConfig sc && sc.BuildRecipe == null
+                && !PublicStationsAt(here).Any(p => p.StationId == rc.Station))
+                return $"需要{name}（{name}建造在后续版本开放）";
             var pub = PublicStationsAt(here).FirstOrDefault(p => p.StationId == rc.Station);
             if (pub != null)
             {

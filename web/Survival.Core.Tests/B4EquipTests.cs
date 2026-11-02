@@ -381,7 +381,7 @@ public class B4EquipTests : BattleTestBase
 
         // 维修手册 25% 替代 20%
         var rp = New();
-        var rc = Cfg.Recipes.Single(r => r.IsRepair);
+        var rc = Cfg.Recipes.Single(r => r.Id == "repair_selected_tool");
         Assert.That(E.RepairFraction(rp, rc), Is.EqualTo(0.2));
         Wear(rp, "repair_manual", EquipSlots.SurvivalAccessory);
         Assert.That(E.RepairFraction(rp, rc), Is.EqualTo(0.25));

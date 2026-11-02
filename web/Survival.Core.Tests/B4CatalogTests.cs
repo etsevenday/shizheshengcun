@@ -45,7 +45,8 @@ public class B4CatalogTests : TestBase
             }
         }
         // B10b（Q111）：木炭有了火堆煅烧来源与锻炉用途，说明改写，不再是“只有物品定义”（70→69）
-        Assert.That(Cfg.Items.Count(i => i.Desc.Contains("本版只有物品定义")), Is.EqualTo(69));
+        // B16：13 种食品、3 种护理品、水壶/净水片/滤芯/滤水器/修补包有了用法（69→48）
+        Assert.That(Cfg.Items.Count(i => i.Desc.Contains("本版只有物品定义")), Is.EqualTo(48));
     }
 
     [Category("DesignSync")]

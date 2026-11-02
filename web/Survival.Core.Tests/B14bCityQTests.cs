@@ -376,7 +376,7 @@ public class B14bCityQTests : TestBase
         }
         Assert.That(Cfg.Knowledge.Single(k => k.Id == "expedition_basics").Name, Is.EqualTo("远行基础做法"));
         foreach (var x in (JArray)d["notices"]!)
-            Assert.That(Cfg.City.Notices.Single(n => n.LocationId == (string)x["locationId"]!).Title, Is.EqualTo((string)x["displayName"]!));
+            Assert.That(Cfg.City.Notices.Single(n => n.LocationId == (string)x["locationId"]! && n.Id != "h03_ceramic_notice").Title, Is.EqualTo((string)x["displayName"]!));
         Assert.That(Cfg.City.Services.Single(x => x.Id == "clinic_dressing").WorldMinutes, Is.EqualTo(10));
 
         // 每个岗位所在地：人物卡与事项面板的全部玩家文字

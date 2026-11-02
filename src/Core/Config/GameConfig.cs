@@ -224,6 +224,46 @@ namespace Survival.Core.Config
         public bool IsAntiviral { get; set; }
 
         public bool IsMedicine => IsBandage || IsAntibiotic || IsAntiviral;
+
+        // ── B16（A07「X1.2」「X1.6」「二十种食品用品」、R51）：战外护理类消耗品 ──
+        /// <summary>体力即时变化（应急恢复剂 E+2）。</summary>
+        public double Energy { get; set; }
+        /// <summary>清醒即时变化（应急恢复剂 S−2）。</summary>
+        public double Wakefulness { get; set; }
+        /// <summary>腹泻剩余减少的分钟（止泻药粉 120、口服补液 60）。</summary>
+        public int DiarrheaReduceMinutes { get; set; }
+        /// <summary>没有腹泻时拒绝（止泻药粉“无腹泻禁用”）。</summary>
+        public bool RequiresDiarrhea { get; set; }
+        /// <summary>体力已满时拒绝（应急恢复剂“E满禁用”）。</summary>
+        public bool BlockWhenEnergyFull { get; set; }
+        /// <summary>水分已满且没有腹泻收益时拒绝（口服补液“W满且无腹泻收益拒绝”）。</summary>
+        public bool BlockWhenNoHydrationOrDiarrheaGain { get; set; }
+        /// <summary>目标冷却组：同组共用一个冷却（止泻药粉与口服补液共用 relief 6 小时；应急恢复剂 tonic 6 小时）。</summary>
+        public string? CooldownGroup { get; set; }
+        public int CooldownMinutes { get; set; }
+        /// <summary>战内禁用（B16 新护理品只做战外部分；战内 2AP 对友方留后续批次）。</summary>
+        public bool OutOfBattleOnly { get; set; }
+
+        /// <summary>B16 战外护理品（止泻、补液、应急恢复剂）：按“使用”结算、走护理冷却，不是绷带/抗生素/特效药。</summary>
+        public bool IsCare => DiarrheaReduceMinutes > 0 || CooldownGroup != null;
+    }
+
+    /// <summary>
+    /// 分量水壶（S10 X4、A07 X1.5，B16 R49）：一根物资卡、无嵌套子物；只装同种脏/净水，装入/倒出按 500 毫升整份水卡，
+    /// 壶内按 250 毫升一口直接饮用；不受热、不放火堆、不装食材。水量存在实例 LiquidId/LiquidMl 上。
+    /// </summary>
+    public sealed class CanteenConfig
+    {
+        public int CapacityMl { get; set; } = 2000;
+        /// <summary>直接饮用一口的分量（250 毫升）。</summary>
+        public int SipMl { get; set; } = 250;
+        /// <summary>装入/倒出水卡的整份（500 毫升）。</summary>
+        public int TransferMl { get; set; } = 500;
+        public List<string> Accepts { get; set; } = new List<string>();
+        /// <summary>一口的水分（W+15）。</summary>
+        public double SipHydration { get; set; } = 15;
+        /// <summary>每毫升克重（水 1g/ml，满壶 2.40kg）。</summary>
+        public double GramsPerMl { get; set; } = 1;
     }
 
     public sealed class ItemConfig
@@ -253,6 +293,8 @@ namespace Survival.Core.Config
         public string Desc { get; set; } = "";
         /// <summary>该物品本身是容器时指向 containers 的键（金属锅）。</summary>
         public string? ContainerId { get; set; }
+        /// <summary>分量水壶（B16）：不是锅容器，水量记在实例上；不是水壶为 null。</summary>
+        public CanteenConfig? Canteen { get; set; }
         /// <summary>液体每份体积（毫升），可装入容器的物品必须有。</summary>
         public int? UnitVolumeMl { get; set; }
         /// <summary>
@@ -409,6 +451,11 @@ namespace Survival.Core.Config
         public const string SingleFood = "single_food_instance";
         /// <summary>火堆加工位里的一批整料（Q111 火堆煅烧木炭 fire_charcoal：一位一批 wood×4→charcoal×3，非食物、不受热保护、0 经验）。</summary>
         public const string FireSlotBatch = "fire_slot_batch";
+        /// <summary>
+        /// 复合锅食谱（B16 R50，A07 X1.5、S10 X4：远行硬饼 grain2+盐辅料+500ml、谷肉炖食 grain1+raw_meat1+1000ml）：
+        /// 一个进程锁定锅里的多份主食材实例与辅料实例，按锅水预留，完成一次产出多份成品留在原锅。
+        /// </summary>
+        public const string PotRecipe = "pot_recipe";
     }
 
     public static class ProcessOwners
@@ -436,7 +483,15 @@ namespace Survival.Core.Config
         /// <summary>整批加工每批产出份数（Q111 煅烧：木炭3）；其他进程为 1。</summary>
         public int OutputCount { get; set; } = 1;
 
+        /// <summary>复合锅食谱对应的配方 ID（recipes 里 kind=pot 的条目，用于知识、熟练门槛与显示）。</summary>
+        public string? RecipeId { get; set; }
+        /// <summary>复合锅食谱的主食材：每份占一个锅食材位（硬饼 grain×2；炖食 grain×1、raw_meat×1）。</summary>
+        public Dictionary<string, int> FoodInputs { get; set; } = new Dictionary<string, int>();
+        /// <summary>复合锅食谱的辅料：随进程锁进锅里、不占食材位，完成时与主食材一起核销（硬饼 salt×1）。</summary>
+        public Dictionary<string, int> AuxInputs { get; set; } = new Dictionary<string, int>();
+
         public bool IsPotBatch => Target == ProcessTargets.PotLiquidBatch;
+        public bool IsPotRecipe => Target == ProcessTargets.PotRecipe;
         /// <summary>火堆加工位整批被动加工（Q111 火堆煅烧）：不是食物，不受热保护、不给经验。</summary>
         public bool IsSlotBatch => Target == ProcessTargets.FireSlotBatch;
         public bool InPot => RequiredOwner == ProcessOwners.PotInFire;
@@ -646,6 +701,25 @@ namespace Survival.Core.Config
         /// 数额仍按 clamp(ceil(原基础分钟/10),1,12)×批次；开工时快照到 ActionState.XpSkill。
         /// </summary>
         public string? XpSkill { get; set; }
+        /// <summary>
+        /// 制作模式（A07 X1.3、S08 X4，B16 R48）：active_work（默认，主动工作量、吃技能/装备加速）、fixed_wait（固定等待，全队等待、不吃加速、不给经验）、
+        /// passive_heat / passive（设施被动加工，不吃加速；陶窑、火堆锅食谱、净水台）。null 视为 active_work。
+        /// </summary>
+        public string? Mode { get; set; }
+        /// <summary>成品保质规则（S11 X4、R06 X4）：min_inputs = 不晚于原料里最早的截止时间（口粮棒、应急恢复剂）；null 为从完成起按物品保质。</summary>
+        public string? ShelfRule { get; set; }
+        /// <summary>维护目标范围（B16 field_patch：metal_non_gun = 非枪金属武器/工具）；null 为所有有耐久的武器与工具。</summary>
+        public string? RepairFilter { get; set; }
+
+        public const string ModeActive = "active_work";
+        public const string ModeFixedWait = "fixed_wait";
+        public const string ModePassiveHeat = "passive_heat";
+        public const string ModePassive = "passive";
+        public string ModeOrDefault => string.IsNullOrEmpty(Mode) ? ModeActive : Mode!;
+        public bool IsFixedWait => Mode == ModeFixedWait;
+        public bool IsPassive => Mode == ModePassiveHeat || Mode == ModePassive;
+        /// <summary>火堆锅食谱（B16 硬饼、炖食）：在火堆上锅卡的“锅食谱”里投料，走设施进程，不在制作面板开工。</summary>
+        public bool IsPot => Kind == "pot";
 
         /// <summary>原料与燃料合计（每批）：校验与预留都按它。</summary>
         public Dictionary<string, int> AllInputs

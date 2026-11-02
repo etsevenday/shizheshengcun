@@ -58,6 +58,8 @@ namespace Survival.Core.Config
         public string Title { get; set; } = "";
         /// <summary>查看前须有的事实（h03 制作告示要营区登记）；null 为公开。</summary>
         public string? RequiresFact { get; set; }
+        /// <summary>查看前须达到的熟练等级（B16：营区工坊“基础陶工说明”要制造3，A07 X1.3 ceramic_methods）。</summary>
+        public Dictionary<string, int> MinSkills { get; set; } = new Dictionary<string, int>();
         /// <summary>首次明确查看/选择时写入的事实。</summary>
         public string GrantsFact { get; set; } = "";
         public string? KnowledgeId { get; set; }

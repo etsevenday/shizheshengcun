@@ -43,8 +43,8 @@ public class B10WorkshopTests : TestBase
         Assert.That(eq.Where(r => r.Station != "forge").All(r => r.Fuel.Count == 0), Is.True);
         // 工坊建造五类 + 加工链
         Assert.That(Cfg.Recipes.Count(r => r.Group == "workshop"), Is.EqualTo(5));
-        Assert.That(Cfg.Workshops.Stations.Select(x => x.Id), Is.EqualTo(new[] { "hand", "workbench", "forge", "sewing", "medical", "armory" }));
-        Assert.That(Cfg.Recipes.Count(r => r.Group == "material"), Is.EqualTo(26));
+        Assert.That(Cfg.Workshops.Stations.Select(x => x.Id), Is.EqualTo(new[] { "hand", "workbench", "forge", "sewing", "medical", "armory", "kiln", "water_station" }), "B16 登记陶窑、固定净水台（建造在 B17）");
+        Assert.That(Cfg.Recipes.Count(r => r.Group == "material" && !r.Id.StartsWith("ex_")), Is.EqualTo(26));
         Assert.That(Cfg.Recipes.Single(r => r.Id == "make_saline").MinSkills.Keys.Single(), Is.EqualTo("medicine"), "A07：医疗台加工读医疗");
     }
 

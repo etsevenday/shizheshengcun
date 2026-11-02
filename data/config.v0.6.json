@@ -210,6 +210,47 @@
       "requiredLiquid": null,
       "inputCount": 4,
       "outputCount": 3
+    },
+    {
+      "id": "pot_hardtack",
+      "name": "烘制",
+      "target": "pot_recipe",
+      "inputId": "",
+      "outputId": "hardtack",
+      "allowedBatchMl": [],
+      "heatMinutes": 60,
+      "waterCostMl": 500,
+      "requiredOwner": "pot_inside_lit_fire",
+      "requiredLiquid": "clean_water",
+      "inputCount": 1,
+      "outputCount": 2,
+      "recipeId": "ex_hardtack",
+      "foodInputs": {
+        "grain": 2
+      },
+      "auxInputs": {
+        "salt": 1
+      }
+    },
+    {
+      "id": "pot_stew",
+      "name": "炖煮",
+      "target": "pot_recipe",
+      "inputId": "",
+      "outputId": "stew_portion",
+      "allowedBatchMl": [],
+      "heatMinutes": 45,
+      "waterCostMl": 1000,
+      "requiredOwner": "pot_inside_lit_fire",
+      "requiredLiquid": "clean_water",
+      "inputCount": 1,
+      "outputCount": 2,
+      "recipeId": "ex_stew_portion",
+      "foodInputs": {
+        "grain": 1,
+        "raw_meat": 1
+      },
+      "auxInputs": {}
     }
   ],
   "ui": {
@@ -1371,10 +1412,19 @@
       "kind": "food",
       "toolTag": null,
       "durabilityMaxRange": null,
-      "edible": false,
+      "edible": true,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：饱食+30、水分+3。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 30,
+        "hydration": 3,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "策划用途：饱食+30、水分+3。食用5分钟，战斗中不能吃"
     },
     {
       "id": "dried_meat",
@@ -1385,10 +1435,19 @@
       "kind": "food",
       "toolTag": null,
       "durabilityMaxRange": null,
-      "edible": false,
+      "edible": true,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：饱食+28、水分−5。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 28,
+        "hydration": -5,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "策划用途：饱食+28、水分−5。食用5分钟，战斗中不能吃"
     },
     {
       "id": "iron_ore",
@@ -1497,10 +1556,19 @@
       "kind": "food",
       "toolTag": null,
       "durabilityMaxRange": null,
-      "edible": false,
+      "edible": true,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：饱食+38、水分+10、精神+2。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 38,
+        "hydration": 10,
+        "morale": 2,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "策划用途：饱食+38、水分+10、精神+2。食用5分钟，战斗中不能吃"
     },
     {
       "id": "meat_stew",
@@ -1511,10 +1579,19 @@
       "kind": "food",
       "toolTag": null,
       "durabilityMaxRange": null,
-      "edible": false,
+      "edible": true,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：饱食+55、水分+12、精神+3。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 55,
+        "hydration": 12,
+        "morale": 3,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "策划用途：饱食+55、水分+12、精神+3。食用5分钟，战斗中不能吃"
     },
     {
       "id": "grain_cake",
@@ -1525,10 +1602,19 @@
       "kind": "food",
       "toolTag": null,
       "durabilityMaxRange": null,
-      "edible": false,
+      "edible": true,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：饱食+28、水分−2。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 28,
+        "hydration": -2,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "策划用途：饱食+28、水分−2。食用5分钟，战斗中不能吃"
     },
     {
       "id": "berry_jam",
@@ -1539,10 +1625,19 @@
       "kind": "food",
       "toolTag": null,
       "durabilityMaxRange": null,
-      "edible": false,
+      "edible": true,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：饱食+22、精神+3。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 22,
+        "hydration": 0,
+        "morale": 3,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "策划用途：饱食+22、精神+3。食用5分钟，战斗中不能吃"
     },
     {
       "id": "dried_berries",
@@ -1553,10 +1648,19 @@
       "kind": "food",
       "toolTag": null,
       "durabilityMaxRange": null,
-      "edible": false,
+      "edible": true,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：饱食+16、水分−2。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 16,
+        "hydration": -2,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "策划用途：饱食+16、水分−2。食用5分钟，战斗中不能吃"
     },
     {
       "id": "fried_root",
@@ -1567,10 +1671,19 @@
       "kind": "food",
       "toolTag": null,
       "durabilityMaxRange": null,
-      "edible": false,
+      "edible": true,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：饱食+35、水分−3、精神+3。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 35,
+        "hydration": -3,
+        "morale": 3,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "策划用途：饱食+35、水分−3、精神+3。食用5分钟，战斗中不能吃"
     },
     {
       "id": "trail_ration",
@@ -1581,10 +1694,19 @@
       "kind": "food",
       "toolTag": null,
       "durabilityMaxRange": null,
-      "edible": false,
+      "edible": true,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：饱食+48、水分−6。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 48,
+        "hydration": -6,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "策划用途：饱食+48、水分−6。食用5分钟，战斗中不能吃"
     },
     {
       "id": "herbal_drink",
@@ -1595,10 +1717,19 @@
       "kind": "food",
       "toolTag": null,
       "durabilityMaxRange": null,
-      "edible": false,
+      "edible": true,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：水分+25、精神+2。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 0,
+        "hydration": 25,
+        "morale": 2,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "策划用途：水分+25、精神+2。食用5分钟，战斗中不能吃"
     },
     {
       "id": "sterile_bandage",
@@ -1653,8 +1784,22 @@
       "durabilityMaxRange": null,
       "edible": false,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：水分+35，腹泻剩余减60分钟，6小时冷却。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 0,
+        "hydration": 35,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false,
+        "diarrheaReduceMinutes": 60,
+        "cooldownGroup": "relief",
+        "cooldownMinutes": 360,
+        "blockWhenNoHydrationOrDiarrheaGain": true,
+        "outOfBattleOnly": true
+      },
+      "desc": "策划用途：水分+35，腹泻剩余减60分钟，6小时冷却。战外使用5分钟；与止泻药粉共用缓解冷却；水分已满且没有腹泻时没有效果；战斗中不能用"
     },
     {
       "id": "cleaning_wipe",
@@ -1677,12 +1822,12 @@
       "stackMax": 1,
       "shelfLifeMinutes": null,
       "kind": "material",
-      "toolTag": null,
+      "toolTag": "water_filter",
       "durabilityMaxRange": null,
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：战外10分钟脏水1+滤材1转净水1。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：战外10分钟脏水1+滤材1转净水1。作为工具配长效滤芯处理脏水（不消耗）"
     },
     {
       "id": "hand_lamp",
@@ -1780,7 +1925,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：1份处理脏水4份，20世界分钟，游戏抽象净化规则。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：1份处理脏水4份，20世界分钟，游戏抽象净化规则。一片配4份脏水，固定等待20分钟得4份净水（制作面板“净水片处理脏水”）"
     },
     {
       "id": "filter_cartridge",
@@ -1794,7 +1939,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：用于已有便携滤水器，每芯净化脏水4份，20世界分钟。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：用于已有便携滤水器，每芯净化脏水4份，20世界分钟。配便携滤水器，一芯处理4份脏水，固定等待20分钟（制作面板“滤芯处理脏水”）"
     },
     {
       "id": "ration_canteen",
@@ -1808,7 +1953,18 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：空重400g，容量2000ml，250ml分量饮用；不保鲜、不受热。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：空重400g，容量2000ml，250ml分量饮用；不保鲜、不受热。只装同一种水；装入/倒出按500毫升整份水，壶内每次可直接喝250毫升（5分钟，水分+15）",
+      "canteen": {
+        "capacityMl": 2000,
+        "sipMl": 250,
+        "transferMl": 500,
+        "accepts": [
+          "dirty_water",
+          "clean_water"
+        ],
+        "sipHydration": 15,
+        "gramsPerMl": 1
+      }
     },
     {
       "id": "hardtack",
@@ -1819,10 +1975,19 @@
       "kind": "food",
       "toolTag": null,
       "durabilityMaxRange": null,
-      "edible": false,
+      "edible": true,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：饱食+24、水分−3；食用5分钟，战内禁用。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 24,
+        "hydration": -3,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "策划用途：饱食+24、水分−3；食用5分钟，战内禁用。现在可以食用"
     },
     {
       "id": "expedition_bar",
@@ -1833,10 +1998,19 @@
       "kind": "food",
       "toolTag": null,
       "durabilityMaxRange": null,
-      "edible": false,
+      "edible": true,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：饱食+38、水分−2；食用5分钟，战内禁用。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 38,
+        "hydration": -2,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "策划用途：饱食+38、水分−2；食用5分钟，战内禁用。现在可以食用"
     },
     {
       "id": "stew_portion",
@@ -1847,10 +2021,19 @@
       "kind": "food",
       "toolTag": null,
       "durabilityMaxRange": null,
-      "edible": false,
+      "edible": true,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：饱食+35、水分+12、精神+2；食用5分钟，战内禁用。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 35,
+        "hydration": 12,
+        "morale": 2,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false
+      },
+      "desc": "策划用途：饱食+35、水分+12、精神+2；食用5分钟，战内禁用。现在可以食用"
     },
     {
       "id": "field_tarp",
@@ -1892,7 +2075,7 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：战外15基础分钟手工修金属工具、武器最大耐久10%，不修枪、布皮、锅。本版只有物品定义，用途在后续版本开放"
+      "desc": "策划用途：战外15基础分钟手工修金属工具、武器最大耐久10%，不修枪、布皮、锅。战外15分钟手工修一件非枪金属武器/工具，恢复其最大耐久的10%（制作面板“现场小修”）"
     },
     {
       "id": "cable_bundle",
@@ -1961,8 +2144,22 @@
       "durabilityMaxRange": null,
       "edible": false,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：腹泻剩余减120分钟；与口服补液共享6小时缓解冷却，无腹泻拒绝；战内禁用。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 0,
+        "hydration": 0,
+        "morale": 0,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false,
+        "diarrheaReduceMinutes": 120,
+        "requiresDiarrhea": true,
+        "cooldownGroup": "relief",
+        "cooldownMinutes": 360,
+        "outOfBattleOnly": true
+      },
+      "desc": "策划用途：腹泻剩余减120分钟；与口服补液共享6小时缓解冷却，无腹泻拒绝；战内禁用。战外使用5分钟"
     },
     {
       "id": "emergency_tonic",
@@ -1975,8 +2172,23 @@
       "durabilityMaxRange": null,
       "edible": false,
       "requiresCooking": false,
-      "use": null,
-      "desc": "策划用途：体力+2、清醒度−2、精神−1，6小时给药冷却；不增饱食、水分、健康、免疫、不减病毒；战内2AP可对友方。本版只有物品定义，用途在后续版本开放"
+      "use": {
+        "satiety": 0,
+        "hydration": 0,
+        "morale": -1,
+        "health": 0,
+        "causesDiarrhea": false,
+        "isBandage": false,
+        "isAntibiotic": false,
+        "isAntiviral": false,
+        "energy": 2,
+        "wakefulness": -2,
+        "cooldownGroup": "tonic",
+        "cooldownMinutes": 360,
+        "blockWhenEnergyFull": true,
+        "outOfBattleOnly": true
+      },
+      "desc": "策划用途：体力+2、清醒度−2、精神−1，6小时给药冷却；不增饱食、水分、健康、免疫、不减病毒；战内2AP可对友方。战外使用5分钟：体力+2、清醒−2、精神−1，6小时给药冷却；体力已满不能用；战斗中使用在后续版本开放"
     },
     {
       "id": "machete",
@@ -18503,6 +18715,472 @@
       },
       "station": "workbench",
       "group": "material"
+    },
+    {
+      "id": "ex_ceramic_shell",
+      "name": "陶壳",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "clay": 2
+      },
+      "outputs": {
+        "ceramic_shell": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "kiln",
+      "knowledge": "ceramic_methods",
+      "mode": "passive_heat",
+      "group": "material",
+      "fuel": {
+        "charcoal": 1
+      }
+    },
+    {
+      "id": "ex_purification_tablet",
+      "name": "净水片",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "disinfectant": 1,
+        "salt": 1
+      },
+      "outputs": {
+        "purification_tablet": 4
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "medicine": 3
+      },
+      "station": "medical",
+      "knowledge": "expedition_basics",
+      "mode": "active_work",
+      "xpSkill": "medicine"
+    },
+    {
+      "id": "ex_tablet_water",
+      "name": "净水片处理脏水",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "dirty_water": 4,
+        "purification_tablet": 1
+      },
+      "outputs": {
+        "clean_water": 4
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "hand",
+      "knowledge": "expedition_basics",
+      "mode": "fixed_wait"
+    },
+    {
+      "id": "ex_filter_cartridge",
+      "name": "长效滤芯",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "ceramic_shell": 1,
+        "charcoal": 1,
+        "cloth": 1
+      },
+      "outputs": {
+        "filter_cartridge": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "workbench",
+      "knowledge": "ceramic_methods",
+      "mode": "active_work",
+      "group": "material"
+    },
+    {
+      "id": "ex_cartridge_water",
+      "name": "滤芯处理脏水",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "dirty_water": 4,
+        "filter_cartridge": 1
+      },
+      "outputs": {
+        "clean_water": 4
+      },
+      "catalysts": [
+        "water_filter"
+      ],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "hand",
+      "knowledge": "expedition_basics",
+      "mode": "fixed_wait"
+    },
+    {
+      "id": "ex_ration_canteen",
+      "name": "分量水壶",
+      "kind": "craft",
+      "baseMinutes": 45,
+      "inputs": {
+        "plastic": 2,
+        "rubber": 1,
+        "cloth": 1
+      },
+      "outputs": {
+        "ration_canteen": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "workbench",
+      "knowledge": "expedition_basics",
+      "mode": "active_work"
+    },
+    {
+      "id": "ex_hardtack",
+      "name": "远行硬饼",
+      "kind": "pot",
+      "baseMinutes": 60,
+      "inputs": {
+        "grain": 2,
+        "clean_water": 1,
+        "salt": 1
+      },
+      "outputs": {
+        "hardtack": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "cooking": 3
+      },
+      "station": "fire_pot",
+      "knowledge": "expedition_basics",
+      "mode": "passive_heat",
+      "xpSkill": "cooking"
+    },
+    {
+      "id": "ex_expedition_bar",
+      "name": "远征口粮棒",
+      "kind": "craft",
+      "baseMinutes": 15,
+      "inputs": {
+        "dried_meat": 1,
+        "dried_berries": 1
+      },
+      "outputs": {
+        "expedition_bar": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "cooking": 5
+      },
+      "station": "hand",
+      "knowledge": "expedition_basics",
+      "mode": "active_work",
+      "xpSkill": "cooking",
+      "shelfRule": "min_inputs"
+    },
+    {
+      "id": "ex_stew_portion",
+      "name": "谷肉炖食",
+      "kind": "pot",
+      "baseMinutes": 45,
+      "inputs": {
+        "grain": 1,
+        "raw_meat": 1,
+        "clean_water": 2
+      },
+      "outputs": {
+        "stew_portion": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "cooking": 5
+      },
+      "station": "fire_pot",
+      "knowledge": "expedition_basics",
+      "mode": "passive_heat",
+      "xpSkill": "cooking"
+    },
+    {
+      "id": "ex_field_tarp",
+      "name": "野营遮雨布",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "canvas": 2,
+        "rope": 2,
+        "fastener": 2
+      },
+      "outputs": {
+        "field_tarp": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "sewing",
+      "knowledge": "expedition_basics",
+      "mode": "active_work"
+    },
+    {
+      "id": "ex_folding_stove",
+      "name": "折叠柴炉",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "iron_plate": 2,
+        "metal_tube": 1,
+        "fastener": 2
+      },
+      "outputs": {
+        "folding_stove": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "workbench",
+      "knowledge": "expedition_basics",
+      "mode": "active_work"
+    },
+    {
+      "id": "ex_field_patch",
+      "name": "野外修补包",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "iron_plate": 1,
+        "adhesive": 1,
+        "cloth": 1
+      },
+      "outputs": {
+        "field_patch": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "workbench",
+      "knowledge": "expedition_basics",
+      "mode": "active_work"
+    },
+    {
+      "id": "ex_cable_bundle",
+      "name": "绝缘线束",
+      "kind": "craft",
+      "baseMinutes": 20,
+      "inputs": {
+        "wire": 2,
+        "rubber": 1
+      },
+      "outputs": {
+        "cable_bundle": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "workbench",
+      "knowledge": "expedition_basics",
+      "mode": "active_work",
+      "group": "material"
+    },
+    {
+      "id": "ex_flash_marker",
+      "name": "闪光标记器",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "electronics": 1,
+        "battery": 1,
+        "cable_bundle": 1,
+        "plastic": 1
+      },
+      "outputs": {
+        "flash_marker": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "workbench",
+      "knowledge": "expedition_basics",
+      "mode": "active_work"
+    },
+    {
+      "id": "ex_brace_pack",
+      "name": "支撑护带包",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "canvas": 1,
+        "rope": 1,
+        "leather": 1
+      },
+      "outputs": {
+        "brace_pack": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 3
+      },
+      "station": "sewing",
+      "knowledge": "expedition_basics",
+      "mode": "active_work"
+    },
+    {
+      "id": "ex_rally_patch",
+      "name": "鼓舞提示贴",
+      "kind": "craft",
+      "baseMinutes": 15,
+      "inputs": {
+        "cloth": 1,
+        "thread": 1
+      },
+      "outputs": {
+        "rally_patch": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "hand",
+      "knowledge": "expedition_basics",
+      "mode": "active_work"
+    },
+    {
+      "id": "ex_antidiarrheal_powder",
+      "name": "止泻药粉",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "herb_extract": 1,
+        "charcoal": 1,
+        "grain": 1
+      },
+      "outputs": {
+        "antidiarrheal_powder": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "medicine": 3
+      },
+      "station": "medical",
+      "knowledge": "expedition_basics",
+      "mode": "active_work",
+      "xpSkill": "medicine"
+    },
+    {
+      "id": "ex_emergency_tonic",
+      "name": "应急恢复剂",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "herb_extract": 1,
+        "clean_water": 1
+      },
+      "outputs": {
+        "emergency_tonic": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "medicine": 5
+      },
+      "station": "medical",
+      "knowledge": "expedition_basics",
+      "mode": "active_work",
+      "xpSkill": "medicine",
+      "shelfRule": "min_inputs"
+    },
+    {
+      "id": "ex_station_water",
+      "name": "净水台处理脏水",
+      "kind": "craft",
+      "baseMinutes": 30,
+      "inputs": {
+        "dirty_water": 4,
+        "filter_media": 1
+      },
+      "outputs": {
+        "clean_water": 4
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "water_station",
+      "knowledge": "ceramic_methods",
+      "mode": "passive"
+    },
+    {
+      "id": "field_patch_repair",
+      "name": "现场小修",
+      "kind": "repair",
+      "baseMinutes": 15,
+      "inputs": {
+        "field_patch": 1
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "targetInstanceRequired": true,
+      "restoreOwnDurabilityMaxFraction": 0.1,
+      "rerollDurability": false,
+      "requireEmptyDetachedPotWhenTargetIsPot": false,
+      "station": "hand",
+      "minSkills": {
+        "crafting": 1
+      },
+      "repairFilter": "metal_non_gun"
     }
   ],
   "lootTables": {
@@ -28629,7 +29307,9 @@
         "roast_root",
         "boil_root",
         "roast_meat",
-        "boil_meat"
+        "boil_meat",
+        "pot_hardtack",
+        "pot_stew"
       ],
       "foodHeatStepMinutes": 10,
       "foodMin": 1,
@@ -29476,6 +30156,15 @@
         "h03_notice_read"
       ],
       "source": "营区登记后在营区工坊查看制作告示（0分钟）"
+    },
+    {
+      "id": "ceramic_methods",
+      "name": "基础陶工做法",
+      "grantedByFacts": [
+        "h03_ceramic_notice_read",
+        "mining_blueprint_pack"
+      ],
+      "source": "营区工坊“基础陶工说明”（制造3级，0分钟）；或矿道 d06_08 领取“矿道作业手册”时一并补得"
     }
   ],
   "party": {
@@ -29648,6 +30337,16 @@
         "name": "军械台",
         "buildRecipe": "build_armory",
         "note": ""
+      },
+      {
+        "id": "kiln",
+        "name": "陶窑",
+        "note": "陶窑建造在后续版本开放（B17）"
+      },
+      {
+        "id": "water_station",
+        "name": "固定净水台",
+        "note": "净水台建造在后续版本开放（B17）"
       }
     ],
     "equipmentSources": [
@@ -31310,6 +32009,19 @@
         "requiresFact": "hub_registered",
         "grantsFact": "h03_notice_read",
         "knowledgeId": "expedition_basics",
+        "dialogueSet": null,
+        "choices": []
+      },
+      {
+        "id": "h03_ceramic_notice",
+        "locationId": "h03_workshop",
+        "title": "基础陶工说明",
+        "requiresFact": null,
+        "minSkills": {
+          "crafting": 3
+        },
+        "grantsFact": "h03_ceramic_notice_read",
+        "knowledgeId": "ceramic_methods",
         "dialogueSet": null,
         "choices": []
       },

@@ -491,6 +491,10 @@ namespace Survival.Core.State
         public string? LoanSlot { get; set; }
         /// <summary>附加词条 ID（白 0 条、绿 1 条、蓝 2 条；生成时按兼容池等权抽取、同互斥组最多 1 条）；没有词条为 null。</summary>
         public List<string>? Affixes { get; set; }
+        /// <summary>分量水壶里的水种（dirty_water/clean_water）；空壶或不是水壶为 null（B16，存档 28）。</summary>
+        public string? LiquidId { get; set; }
+        /// <summary>分量水壶里的水量（毫升，250 的整倍数）。</summary>
+        public int LiquidMl { get; set; }
 
         public bool IsCarried => Owner == Carried;
         /// <summary>穿戴中（任一角色的七槽之一）：不占五张物资卡，重量计入该角色。</summary>
@@ -776,6 +780,11 @@ namespace Survival.Core.State
         /// 旧档在途的为 null，按旧规则给制造经验结束一次（不补发、不回收）。
         /// </summary>
         public string? XpSkill { get; set; }
+        /// <summary>
+        /// 固定等待的处理（B16 R48 fixed_wait：净水片/滤芯净水 20 分钟）：按配方原分钟逐段计时，不吃技能/装备/夜间/负重倍率，
+        /// 本段身体按等待计、不给经验；预留与完成仍走制作。
+        /// </summary>
+        public bool FixedWait { get; set; }
         /// <summary>批量制作件数（同一预留批次一次提交）；普通行动为 1。</summary>
         public int BatchCount { get; set; } = 1;
         /// <summary>箱子的独立稀有附带物（医药补给箱 1% 特效药）是否抽中：开始时锁定，读档不重抽。</summary>

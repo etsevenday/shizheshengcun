@@ -279,6 +279,8 @@ namespace Survival.Core.Engine
             public string TargetId = "";
             public string Label = "";
             public double BaseWork;
+            /// <summary>B16 fixed_wait 配方：固定等待计时。</summary>
+            public bool FixedWait;
             public int Planned;
             public ItemInstance? Tool;
             public bool ExplicitTool;
@@ -472,6 +474,9 @@ namespace Survival.Core.Engine
                     if (r.BatchCount < 1) return "配方份数须为正整数（至少1份）";
                     var batch = r.BatchCount;
                     if (batch > 1 && (rc.IsBuild || rc.IsRepair || rc.IsSalvage)) return "建造、维护与拆解每次只能做1件";
+                    // B16（A07 X1.3/X1.5、S10 X4）：火堆锅食谱在锅卡上投料；固定等待的净水每次一批 2L
+                    if (rc.IsPot) return $"{rc.Name}在火堆里的锅中做：把锅放进燃烧的火堆、装好净水，在锅卡“锅食谱”里投料";
+                    if (rc.IsFixedWait && batch > 1) return "固定等待的处理每次只做1批";
                     plan.Batch = batch;
                     if (RecipeUnknownReason(s, rc) is string unknown) return unknown;
                     foreach (var kv in rc.MinSkills)
@@ -507,6 +512,7 @@ namespace Survival.Core.Engine
                         if (FacilityFlag(hereState.Facility, rc.FacilityResult)) return rc.Group == "workshop" ? $"{LocName(here)}已有{rc.Name.Replace("建", "")}（每类每地一座）" : "已建造";
                     }
                     if (StationBlocked(s, rc) is string station) return station;
+                    if (rc.IsPassive) return $"{StationName(rc.Station)}的被动加工在后续版本开放";
                     if (rc.Requirement != null)
                     {
                         switch (rc.Requirement.Facility)
@@ -560,6 +566,8 @@ namespace Survival.Core.Engine
                     // Q57 选 B：取消制造等级工作量倍率 1/(1+0.025L)，制造/建造/维修/拆解只用配方基础工作量（再乘装备与节点效果）；
                     // 同批次多件合并成一个工作量。已在进行中的旧动作按开工时保存的工作量结束（BaseWorkMinutes 已存档）
                     plan.BaseWork = rc.BaseMinutes * batch;
+                    plan.FixedWait = rc.IsFixedWait;
+                    if (rc.IsFixedWait) { plan.Label = $"{rc.Name}（固定等待{Clock.Duration(rc.BaseMinutes)}）"; return null; }
                     plan.Label = rc.IsBuild ? rc.Name : rc.IsRepair ? $"维护{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
                         : rc.IsSalvage ? $"拆解{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
                         : batch > 1 ? $"制作{rc.Name}×{batch}份" : $"制作{rc.Name}";
@@ -828,6 +836,7 @@ namespace Survival.Core.Engine
                 {
                     var rc = p.Recipe!;
                     a.BatchCount = p.Batch;
+                    a.FixedWait = p.FixedWait;
                     // Q110：完成经验门类开工即快照（医疗台三材料→医疗，其余→制造）；拆解另按拆解经验
                     if (!rc.IsSalvage) a.XpSkill = rc.XpSkill ?? Crafting;
                     foreach (var kv in rc.AllInputs)
@@ -907,7 +916,8 @@ namespace Survival.Core.Engine
                 UpdateFlags(s);
                 return ActionResult.Success(a.ActionId);
             }
-            if (a.IsWorkType) ReserveCarry(s, a, p.BaseWork);
+            // B16 fixed_wait：固定等待不吃装备/节点倍率，也不用工作量余额（需求就是配方原分钟）
+            if (a.IsWorkType && !a.FixedWait) ReserveCarry(s, a, p.BaseWork);
             if (p.IsSub) s.Sub = a; else s.Main = a;
             if (p.Type != ActionType.Use && p.Type != ActionType.Fuse)
                 Emit(s, GameEventKind.ActionStarted, $"开始{a.Label}。");
