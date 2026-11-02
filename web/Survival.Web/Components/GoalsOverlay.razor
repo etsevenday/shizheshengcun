@@ -14,6 +14,7 @@
     var obj = e.CurrentObjective(s);
     var sugg = e.CurrentSuggestions(s);
     var routeKnown = s.Progress.Flags.Contains(GameEngine.FactCampRouteKnown);
+    var book = e.QuestBook(s);
 }
 
 <div class="sub-panel goals-panel" role="dialog" aria-label="生存目标">
@@ -53,6 +54,37 @@
             </section>
         }
         <div class="goal-days">
+            @* B15（R46/R47）：主线与城市委托——只列已知的（前置未满足的写真实条件），在岗位“事项”里接取与办理；浏览不耗时 *@
+            @if (book.Count > 0)
+            {
+                <section class="goal-day quest-book">
+                    <header><b>主线与委托</b><span>到相应地点与岗位交谈或在“事项”里办理；浏览不耗时</span></header>
+                    <ul>
+                        @foreach (var v in book)
+                        {
+                            var qdone = v.Status == "done";
+                            var qmark = qdone ? "✓" : v.Status == "locked" ? "·" : "○";
+                            <li class="@(qdone ? "done" : "") @(v.Status == "locked" ? "later" : "")">
+                                <span class="goal-mark" aria-hidden="true">@qmark</span>
+                                <span class="goal-task">
+                                    <b>@v.Title</b><em class="goal-gate">@v.KindLabel</em>
+                                    <small>@v.NpcName · @v.LocationName · @v.StatusText@(v.ChoiceLabel != null ? $" · {v.ChoiceLabel}" : "")</small>
+                                    @if (qdone)
+                                    {
+                                        <small class="good-text">@(v.Retro ? "旧档追认" : $"{v.Step}{(v.CompletedAt is int at ? " · " + Clock.DayTime(at) : "")}")</small>
+                                    }
+                                    else
+                                    {
+                                        <small>下一步：@v.Step</small>
+                                        @if (v.Status == "locked" && v.AcceptBlocked != null) { <small class="muted">@v.AcceptBlocked</small> }
+                                    }
+                                </span>
+                                <span class="sr-only">@(qdone ? "（已完成）" : "（未完成）")</span>
+                            </li>
+                        }
+                    </ul>
+                </section>
+            }
             @foreach (var st in cfg.Stages)
             {
                 var group = tasks.Where(t => t.Config.Stage == st.Id).ToList();

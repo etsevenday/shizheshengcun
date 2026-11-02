@@ -1403,6 +1403,10 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .city-svc h3 { margin: 0; font-size: 16px; font-weight: 500; color: var(--accent); }
 .city-svc h3 small { margin-left: 8px; font-size: 13px; color: var(--muted); font-weight: 400; }
 .city-svc p { margin: 0; line-height: 1.5; }
+/* B15：岗位名下的主线与委托（左侧细色条区分于服务；已完成的淡显） */
+.city-svc.city-quest { border-left: 3px solid var(--accent); }
+.city-svc.city-quest.done { opacity: .75; border-left-color: var(--line); }
+.city-svc.city-quest.locked { opacity: .7; }
 .city-line { font-size: 14px; color: #e3e7da; }
 .city-summary { font-size: 14px; color: #cfd5c6; }
 .city-targets { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }

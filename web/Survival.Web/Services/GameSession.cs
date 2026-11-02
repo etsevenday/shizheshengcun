@@ -465,6 +465,32 @@ public sealed class GameSession
         if (res.Ok && !res.Duplicate && S.Main != null) await RunLoop();
         return res;
     }
+    // ───────────── 主线与委托（B15） ─────────────
+
+    /// <summary>在委托条目里接取（与岗位交谈同效；同行邀约为选择登记）：0 分钟，播接取对白。</summary>
+    public ActionResult AcceptQuest(string questId) => PrologueDo(() => E.AcceptQuest(S, questId, Guid.NewGuid().ToString("N")));
+
+    /// <summary>回看已完成委托的对白或 AC02 外部医疗线索（0 分钟，只回放）。</summary>
+    public ActionResult ReviewQuest(string questId, bool note = false) => PrologueDo(() => E.ReviewQuest(S, questId, note));
+
+    /// <summary>委托条目里的工作：0 分钟阅读当场完成；有工时的（核对物资账）开工为主行动后收起面板照常推进。</summary>
+    public async Task<ActionResult> StartQuestWork(string questId)
+    {
+        if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        if (FormationOpen) return Commit(ActionResult.Fail(FormationOpenText));
+        var res = E.StartQuestWork(S, questId, Guid.NewGuid().ToString("N"));
+        Notice = res.Ok ? null : res.Reason;
+        if (res.Ok)
+        {
+            if (S.Main != null || E.DialogueLocked(S)) { Panel = null; Pop = null; }
+            Drain();
+            Save();
+        }
+        Notify();
+        if (res.Ok && !res.Duplicate && S.Main != null) await RunLoop();
+        return res;
+    }
+
     public ActionResult OpenRouteLog() => PrologueDo(() => E.OpenRouteLog(S));
     public ActionResult ConfirmJourney() => PrologueDo(() => E.ConfirmJourney(S), closePanel: false);
     public ActionResult SayNotReady() => PrologueDo(() => E.SayNotReady(S));

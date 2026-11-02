@@ -114,7 +114,7 @@
                     <button class="secondary" @onclick="() => DevSkills(7, false)">熟练度全部7级（含战斗）</button>
                     <button class="secondary" @onclick="() => DevSkills(10, false)">熟练度全部10级（含战斗）</button>
                     <button class="secondary" @onclick="DevSkillKit">技能器具一组（各类武器/盾/指挥/医疗与耗材）</button>
-                    @* B6（R03 §3）：战术训练阶位 0/1/2 → 每次普通激活 3/4/5AP；训练入口（h03）在后续批次 *@
+                    @* B6（R03 §3）：战术训练阶位 0/1/2 → 每次普通激活 3/4/5AP；正式训练入口在营区工坊罗铮“事项”（B15） *@
                     <button class="secondary" @onclick="() => DevTier(0)">战术训练阶位0（3AP）</button>
                     <button class="secondary" @onclick="() => DevTier(1)">战术训练阶位1（4AP）</button>
                     <button class="secondary" @onclick="() => DevTier(2)">战术训练阶位2（5AP）</button>
@@ -156,6 +156,24 @@
                     }
                     <button class="secondary small-btn" title="当前地点的命名岗位人物离岗（由机构当班接续员代班）或回岗；只供测试岗位接续" @onclick="() => DevDone(G.E.DebugToggleCityPostAbsent(G.S))">当前地点岗位离岗/回岗</button>
                     <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugGiveCarriedOrGround(G.S, new[] { ("bandage", 1), ("cloth", 1) }))'>草药绷带1+布料1（试换药）</button>
+                </div>
+                @* B15（R46/R47）：主线与城市委托。地牢实例（B21）前，核心记录用“记下领取”按原领取事务写事实，验证主线推进与容量 *@
+                <div class="eyebrow">任务（B15）：记下核心记录领取（主线推进、容量 C3/C4）；支线地点；战术训练材料</div>
+                <div class="btn-row">
+                    @foreach (var (res, label) in QuestRecords)
+                    {
+                        var r = res;
+                        <button class="secondary small-btn" title="按原领取事务写记录与门槛事实，不发物资、不写本代地牢实例事实" @onclick="() => DevDone(G.E.DebugClaimRecord(G.S, r))">记下领取：@label</button>
+                    }
+                </div>
+                <div class="btn-row">
+                    @foreach (var (loc, label) in QuestStops)
+                    {
+                        var l = loc;
+                        <button class="secondary small-btn" @onclick="() => DevDone(G.E.DebugMapTeleport(G.S, l))">@label</button>
+                    }
+                    <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugGiveCarriedOrGround(G.S, new[] { ("parts", 2), ("cloth", 2) }))'>零件2+布料2（训练阶位1）</button>
+                    <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugGiveCarriedOrGround(G.S, new[] { ("precision_parts", 2), ("steel", 2) }))'>机械组件2+钢材2（训练阶位2）</button>
                 </div>
                 @* B13b（R129，Q120/Q121）：资源点逐行合格工具与搜集5级工具运用的试玩入口 *@
                 <div class="eyebrow">资源来源与工具（B13b）：随身带合格工具时资源卡按钮工时−5；搜集5级再×0.9</div>
@@ -294,6 +312,17 @@
     private string genDungeon = "d01";
 
     /// <summary>B14 城市开发传送点（岗位所在地；r02 为科学院外院、没有岗位）。</summary>
+    private static readonly (string, string)[] QuestRecords =
+    {
+        ("d01_08_unique", "圣所旧路档册"), ("d02_08_unique", "封存区安全规程"), ("d03_08_unique", "警备仓备用电源"), ("d04_07_unique", "通信站联络日志"),
+    };
+
+    private static readonly (string, string)[] QuestStops =
+    {
+        ("c05_admonition", "训诫堂（纪牧）"), ("c06_archive", "典藏室（宋烛）"), ("r05_testing", "检测室（季闻）"),
+        ("r06_archive", "档案室（邵宁）"), ("r08_observation", "隔离观察区（尹珂）"),
+    };
+
     private static readonly (string, string)[] CityStops =
     {
         ("h01_gate", "营门（陆衡·登记）"), ("h02_square", "营区广场（许安）"), ("h03_workshop", "营区工坊（罗铮·制作告示）"),
