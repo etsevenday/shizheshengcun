@@ -162,7 +162,7 @@ public class B16PotRecipeTests : TestBase
         // 取出一份谷物：整份作废，盐退回地面，进度清零
         var grain = E.PotFood(s, pot.InstanceId).First();
         var cons = E.TakeOutConsequenceOf(s, grain);
-        Assert.That(cons.Text, Does.Contain("整份作废").And.Contain("辅料退回"));
+        Assert.That(cons.Text, Does.Contain("整份作废").And.Contain("辅料盐×1退回"));
         Ok(E.DoInstant(s, InstantRequest.TakeOut(grain.InstanceId, Here)));
         Assert.That(Recipe(s), Is.Null);
         Assert.That(Count(s, "salt", Here), Is.EqualTo(1));

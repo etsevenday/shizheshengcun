@@ -25,7 +25,7 @@
         .Where(r => !r.IsSalvage).OrderBy(r => e.RecipeLocks(s, r).Count > 0 ? 1 : 0).ToList();
     var preferred = G.CraftPreferred.Where(id => s.Items.Any(i => i.InstanceId == id && rc.AllInputs.ContainsKey(i.ItemId))).ToList();
     var locks = e.RecipeLocks(s, rc);
-    var batchable = !rc.IsBuild && !rc.IsRepair;
+    var batchable = !rc.IsBuild && !rc.IsRepair && !rc.IsFixedWait;   // B16：固定等待每次只做1批
     var batch = batchable ? Math.Max(1, G.CraftBatch) : 1;
     var request = ActionRequest.Craft(recipeId, rc.NeedsExplicitPot ? G.CraftPot : null, preferred, batch);
     if (rc.IsRepair) request.InstanceId = G.CraftTarget;
@@ -160,6 +160,17 @@
                                 <b>@batch</b>
                                 <button type="button" class="tbar-step" aria-label="增加份数" disabled="@(batch >= maxBatch)" @onclick="() => SetBatch(batch + 1)">+</button>
                                 <span class="tiny @(enough == 0 ? "warn-text" : "muted")" title="同批次合并工作量，高熟练度一段可做多份">@(enough == 0 ? "材料不足，一份也不够" : $"执行{batch}份 · 材料最多够{enough}份")</span>
+                            </div>
+                        }
+                        @if (rc.IsFixedWait)
+                        {
+                            @* B16 试玩修复 M351：固定等待（净水片/滤芯处理脏水）每次一批 2L，份数锁在 1 *@
+                            <div class="batch-row" title="固定等待的处理每次只做1批（一次2L）">
+                                <span class="tiny muted">配方份数</span>
+                                <button type="button" class="tbar-step" aria-label="减少份数" disabled>−</button>
+                                <b>1</b>
+                                <button type="button" class="tbar-step" aria-label="增加份数" disabled>+</button>
+                                <span class="tiny muted">固定等待每次只做1批</span>
                             </div>
                         }
                         @if (rc.Fuel.Count > 0)

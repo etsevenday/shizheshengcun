@@ -714,11 +714,13 @@ namespace Survival.Core.Engine
             foreach (var n in Config.City.Notices.Where(n => n.LocationId == s.CurrentLocation))
             {
                 var done = s.Progress.Flags.Contains(n.GrantsFact);
-                string? need = NoticeNeed(s, n);
+                // B16 试玩修复 M351：告示授的知识已从别处掌握（开发材料包、d06_08 矿道作业手册）时写“已掌握”，不再当作可学
+                var knownElsewhere = !done && n.KnowledgeId != null && KnowsKnowledge(s, n.KnowledgeId);
+                string? need = knownElsewhere ? null : NoticeNeed(s, n);
                 yield return new DocumentCardView
                 {
                     Id = n.Id, Title = n.Title,
-                    Status = done ? (n.KnowledgeId != null ? "已学会 · 可重读" : "已办理通行 · 可重读") : need ?? (n.Choices.Count > 0 ? "选择通行范围 · 不耗时" : "可查看 · 不耗时"),
+                    Status = knownElsewhere ? "已掌握 · 可查看" : done ? (n.KnowledgeId != null ? "已学会 · 可重读" : "已办理通行 · 可重读") : need ?? (n.Choices.Count > 0 ? "选择通行范围 · 不耗时" : "可查看 · 不耗时"),
                     ReadBlocked = need ?? TalkBlocked(s),
                     Choices = done ? new List<CityChoiceView>() : n.Choices.Select(c => new CityChoiceView { Id = c.Id, Label = c.Label }).ToList(),
                 };
@@ -746,6 +748,14 @@ namespace Survival.Core.Engine
         private ActionResult ReadCityNotice(GameState s, CityNoticeConfig n, string? choiceId)
         {
             if (s.CurrentLocation != n.LocationId) return ActionResult.Fail("不在这里");
+            if (n.KnowledgeId != null && !s.Progress.Flags.Contains(n.GrantsFact) && KnowsKnowledge(s, n.KnowledgeId))
+            {
+                if (TalkBlocked(s) is string busy) return ActionResult.Fail(busy);
+                s.Progress.Flags.Add(n.GrantsFact);
+                var known = Config.Knowledge.FirstOrDefault(x => x.Id == n.KnowledgeId);
+                Emit(s, GameEventKind.Info, $"{n.Title}：已掌握{known?.Name ?? n.KnowledgeId}，不再重复学会（不发物、不给经验）。");
+                return ActionResult.Success();
+            }
             if (NoticeNeed(s, n) is string need) return ActionResult.Fail(need);
             var why = TalkBlocked(s);
             if (why != null) return ActionResult.Fail(why);

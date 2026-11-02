@@ -1061,3 +1061,17 @@
   .center-scroll.four .dg-cards > .res-card.post-card .oc-foot { grid-column: 1 / -1; grid-row: 4; align-self: end; display: flex; gap: 4px; padding: 0 12px 12px; }
   .center-scroll.four .dg-cards > .res-card.post-card .oc-foot .res-btn { flex: 1 1 0; min-width: 0; min-height: 40px; padding: 2px 4px; }
 }
+
+/* ───── B16 试玩修复 M351：锅食谱按钮与水壶操作在 1280×720 完整可见 ───── */
+/* 锅浮窗加高（不超出中部列，见 app.js survivalPop 的 data-bound）；锅食谱块放在锅内容滚动区之外、不收缩 */
+.apop.card-pop.pot { max-height: min(calc(100vh - 140px), 640px); }
+.apop.card-pop.pot .apop-body > :is(.pc-recipes, .pc-recipe-why, .pc-aux, .pc-fail) { flex: 0 0 auto; }
+.pc-recipes { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; margin-top: 6px; }
+.pc-recipes .small-btn { white-space: nowrap; flex: 0 1 auto; min-width: 0; min-height: 32px; }
+.pc-recipes-label { font-size: 12px; white-space: nowrap; opacity: .8; }
+.pc-recipe-why, .pc-aux { font-size: 12px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.pc-recipe-why { color: #d9a25a; }
+/* 水壶浮窗：操作多一组（喝/装入/倒出），整窗加高，不再要窗内滚动 */
+.apop.card-pop:has([data-canteen]) { max-height: min(calc(100vh - 140px), 640px); }
+.cact .canteen-ops { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+.cact .canteen-ops .tbar-go { flex: 1 1 calc(50% - 6px); min-width: 0; white-space: nowrap; padding-left: 6px; padding-right: 6px; }

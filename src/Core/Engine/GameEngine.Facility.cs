@@ -188,7 +188,14 @@ namespace Survival.Core.Engine
                 if (IsPotAux(s, inst)) return "锅食谱辅料（不占食材位）";
                 if (IsSpoiled(s, inst)) return "已腐败，不再加工";
                 var fp = PotFoodProcess(inst.ItemId);
-                if (fp == null) return PotConfig(pot).StoreOnlyFoodIds.Contains(inst.ItemId) ? "只存放，不再加工" : "已煮熟，留在锅里";
+                if (fp == null)
+                {
+                    if (PotConfig(pot).StoreOnlyFoodIds.Contains(inst.ItemId)) return "只存放，不再加工";
+                    // B16 试玩修复 M351：只有锅内加工/锅食谱的成品才写“做好”；生谷物等（锅食谱作废后留下的）写只存放
+                    if (PotRecipeProcesses.Any(x => x.OutputId == inst.ItemId)) return "已做好，留在锅里";
+                    if (Config.Processes.Any(x => x.InPot && !x.IsPotBatch && !x.IsPotRecipe && x.OutputId == inst.ItemId)) return "已煮熟，留在锅里";
+                    return "未加工，只存放（锅食谱要先取出再投料）";
+                }
                 var liquid = PotLiquid(s, pot.InstanceId);
                 if (liquid == null) return "缺水，未加工";
                 var loc = PotFireLocation(pot);
@@ -556,12 +563,15 @@ namespace Survival.Core.Engine
                 .Where(t => t != null && t.ExpiresAt.HasValue && t.ExpiresAt.Value <= s.GameMinute)
                 .Select(t => $"{ItemName(t!.ItemId)}#{t.InstanceId}").ToList();
             var name = IsPot(inst) || inst.Count <= 1 ? $"{ItemName(inst.ItemId)}#{inst.InstanceId}" : $"{ItemName(inst.ItemId)}×{inst.Count}#{inst.InstanceId}";
+            // B16 试玩修复 M351：取出锅食谱的食材/辅料或取下锅时，日志写明整份作废与辅料退回
+            var abandon = PotRecipeAbandonText(s, touched);
+            if (abandon != null) reset = false;
             inst.Owner = zone;
             inst.PlacedOrder = null;
             Normalize(s, zone);
             SyncFacilities(s);
             var to = zone == ItemInstance.Carried ? "随身" : $"{LocName(zone)}地面";
-            Emit(s, GameEventKind.Info, $"把{name}从{from}取出到{to}{(reset ? "，相关加工进度清零" : "")}"
+            Emit(s, GameEventKind.Info, $"把{name}从{from}取出到{to}{(reset ? "，相关加工进度清零" : "")}{(abandon != null ? "，" + abandon : "")}"
                                         + $"{(lost.Count > 0 ? $"，{string.Join("、", lost)}解除烹饪保护、已过原保质期而腐败" : "")}。");
             UpdateFlags(s);
             return ActionResult.Success();
@@ -597,10 +607,13 @@ namespace Survival.Core.Engine
             // Q111：取出未完成的煅烧批次退回全部原料（同一批木材），已烧掉的燃料与时间不退
             if (touched.Any(p => Process(p.RecipeId).IsSlotBatch))
                 c.Text += $"；退回{ItemName(inst.ItemId)}×{inst.Count}，已烧掉的火堆燃料不退";
-            // B16：取出锅食谱的任一食材/辅料即作废整份食谱，辅料退回火堆地面
-            var rpTouched = touched.FirstOrDefault(p => Process(p.RecipeId).IsPotRecipe);
-            if (!IsPot(inst) && rpTouched != null)
-                c.Text += $"；{_recipes[Process(rpTouched.RecipeId).RecipeId!].Name}整份作废，辅料退回火堆地面，锅里其余食材留在锅里";
+            // B16：取出锅食谱的任一食材/辅料或取下锅即作废整份食谱，辅料退回火堆地面（受热 0 分钟时也会作废，不写“不损失进度”）
+            if (PotRecipeAbandonText(s, touched) is string ab)
+            {
+                var others = touched.Where(p => !Process(p.RecipeId).IsPotRecipe && p.HeatDoneMinutes > 0)
+                    .Select(p => FindItem(s, p.TargetInstanceId) is ItemInstance t ? $"{ItemName(t.ItemId)}#{t.InstanceId}{Process(p.RecipeId).Name}受热{p.HeatDoneMinutes}分钟" : "").Where(x => x != "").ToList();
+                c.Text = $"取出后{ab}" + (IsPot(inst) ? "" : "，锅里其余食材留在锅里") + (others.Count > 0 ? $"；{string.Join("、", others)}清零" : "");
+            }
             if (c.Spoils.Count > 0) c.Text += $"；{string.Join("、", c.Spoils)}已过原保质期，取出即解除烹饪保护并立即腐败";
             return c;
         }
@@ -770,6 +783,25 @@ namespace Survival.Core.Engine
             fac.Completed.Add($"{p.ProcessId}@{p.CompletionSerial}");
             if (fac.Completed.Count > 20) fac.Completed.RemoveRange(0, fac.Completed.Count - 20);
             Emit(s, GameEventKind.FacilityDone, text, null, new[] { cfg.OutputId });
+        }
+
+        /// <summary>
+        /// 这批相关进程里有锅食谱时的作废说明：“远行硬饼整份作废（已受热10分钟清零），辅料盐×1退回临时营地地面”；没有锅食谱为 null。只读。
+        /// </summary>
+        private string? PotRecipeAbandonText(GameState s, IEnumerable<FacilityProcess> touched)
+        {
+            var parts = new List<string>();
+            foreach (var p in touched.Where(p => Process(p.RecipeId).IsPotRecipe))
+            {
+                var nm = _recipes[Process(p.RecipeId).RecipeId!].Name;
+                var aux = (p.AuxInstanceIds ?? new List<int>()).Select(id => FindItem(s, id)).Where(i => i != null)
+                    .GroupBy(i => i!.ItemId).Select(g => $"{ItemName(g.Key)}×{g.Count()}").ToList();
+                var pot = p.PotInstanceId.HasValue ? FindItem(s, p.PotInstanceId.Value) : null;
+                var loc = pot == null ? null : PotFireLocation(pot);
+                parts.Add($"{nm}整份作废{(p.HeatDoneMinutes > 0 ? $"（已受热{p.HeatDoneMinutes}分钟清零）" : "")}"
+                          + (aux.Count > 0 ? $"，辅料{string.Join("、", aux)}退回{(loc == null ? "火堆" : LocName(loc))}地面" : ""));
+            }
+            return parts.Count == 0 ? null : string.Join("；", parts);
         }
 
         /// <summary>该进程是否涉及这件物品（单目标进程的目标，或锅食谱的任一主食材/辅料）。</summary>
