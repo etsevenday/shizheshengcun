@@ -86,8 +86,10 @@ namespace Survival.Core.Engine
     /// <item>来客程望：worldMinute≥6240 且首战已胜（或旧档等效）且主角存活，在下一安全边界登记 visitor_available；
     /// 人在营地空闲时播抵达对白并在设施栏出现 NPC 卡，人在外只发一次非阻断通知，不传送。交谈 0 分钟，首次写 visitor_met、camp_route_known。</item>
     /// <item>出区：QMAP01 = (首战胜利或旧档等效) AND camp_route_known AND visited(village)；交谈与到达都会重判，满足后一次解锁 village↔m01_road。
-    /// 南口路标读完写永久凭证 south_sign_known；PRO18 = 路标已识别 AND 实际到达旧公路。</item>
-    /// <item>常驻 1 个主目标 + 最多 2 条建议，只在内核安全边界重算（存 StageId/ObjectiveId/Suggestions）。</item>
+    /// 南口路标读完写永久凭证 south_sign_known（可选阅读）；PRO18 = 实际到达旧公路（Q131 选 B，B13d）。</item>
+    /// <item>常驻 1 个主目标 + 最多 2 条建议，只在内核安全边界重算（存 StageId/ObjectiveId/Suggestions）；标题与下一步用策划正式短句（Q129 选 B）。</item>
+    /// <item>操作前引导（Q128 选 C，B13d）：玩家打开相关界面/选中相关对象、动作提交前，按上下文给该项系统提示，首次一并播饱饱/主角短句；
+    /// 完成后只给 PROxx_done 简短结果，不再从完成事件排队播反应。忙时暂存、下一安全边界重验，已完成/失效即丢弃。</item>
     /// </list>
     /// </summary>
     public sealed partial class GameEngine
@@ -106,12 +108,6 @@ namespace Survival.Core.Engine
         /// <summary>非伤害型武器类（S15 PRO03“合法伤害型武器”：盾、指挥、医疗器具不算）。</summary>
         private static readonly string[] NonDamageKinds = { "shield", "command", "medical" };
 
-        /// <summary>
-        /// 饱饱反应对白的触发时机（narrative-texts “first relevant event”）：多数在任务完成时；台词明显在动作之前说的几项在“相关的第一刻”播
-        /// （PRO04 首战建立、PRO05 教学物质落地、PRO06 到达溪流、PRO12 开始睡眠、PRO15 到达村庄），见开发假设 B13-H3。
-        /// </summary>
-        private static readonly HashSet<string> ReactionOnStart = new HashSet<string> { "PRO04", "PRO05", "PRO06", "PRO12", "PRO15" };
-
         private Dictionary<string, PrologueTaskConfig>? _proTasks;
         private Dictionary<string, PrologueTaskConfig> ProTasks => _proTasks ??= Config.Prologue.Tasks.ToDictionary(t => t.Id);
 
@@ -125,7 +121,8 @@ namespace Survival.Core.Engine
         // ───────────────────────── 任务账 ─────────────────────────
 
         /// <summary>
-        /// 锁存一项任务：只写 completedAt/eventId，发一条非模态完成反馈（PROxx_done），按时机播饱饱反应（饱饱不在时不播）。
+        /// 锁存一项任务：只写 completedAt/eventId，记一条非模态完成反馈（PROxx_done 简短结果）。Q128 起不再从这里排饱饱反应：
+        /// 反应只在操作前的相关上下文播（<see cref="GuideContext"/>）；这一项还挂着的引导与暂存一并作废，不在完成后补播。
         /// 已完成的不重复写、不重复发反馈；读档、重放回调不会再触发。返回是否新完成。
         /// </summary>
         private bool CompleteTask(GameState s, string id, string eventId, bool retro = false)
@@ -135,30 +132,13 @@ namespace Survival.Core.Engine
             var t = ProTask(id);
             if (t == null) return false;
             s.Prologue.Tasks[id] = new PrologueTaskRecord { CompletedAt = s.GameMinute, EventId = eventId, Retro = retro };
+            if (s.Prologue.GuideActive == id) s.Prologue.GuideActive = "";
+            if (s.Prologue.GuidePending == id) { s.Prologue.GuidePending = ""; s.Prologue.GuidePendingAt = ""; }
             if (retro) return true;
             // 完成反馈（PROxx_done）是中性系统反馈：非模态，只在任务角短暂显示、任务册留完成时间；不进行动日志、不当行动结果（A10-TUTOR §2）
             s.Prologue.LastDoneTask = id;
             s.Prologue.LastDoneAt = s.GameMinute;
-            if (!ReactionOnStart.Contains(id)) QueueReaction(s, id);
             return true;
-        }
-
-        /// <summary>饱饱反应在空闲安全边界播（不在动作中途抢输入）；饱饱不在或旧档不播。同一组只播一次（对白事件去重）。</summary>
-        private void QueueReaction(GameState s, string taskId)
-        {
-            var t = ProTask(taskId);
-            if (t == null || string.IsNullOrEmpty(t.ReactionSet) || !StoryActive(s) || !s.Story.BaobaoPresent) return;
-            if (s.Story.DialogueLog.Any(d => d.EventId == t.ReactionSet) || s.Prologue.PendingReactions.Contains(t.ReactionSet)) return;
-            s.Prologue.PendingReactions.Add(t.ReactionSet);
-        }
-
-        /// <summary>“相关的第一刻”立即播的反应（PRO04 首战建立时，排在首战警告对白之后）。</summary>
-        private void PlayReactionNow(GameState s, string taskId)
-        {
-            var t = ProTask(taskId);
-            if (!PrologueEnabled || t == null || string.IsNullOrEmpty(t.ReactionSet) || !StoryActive(s) || !s.Story.BaobaoPresent) return;
-            if (TaskDone(s, taskId)) return;
-            OpenDialogue(s, t.ReactionSet);
         }
 
         /// <summary>按当前状态追认可从状态可靠确认的任务（先做后看）：防身武器、首战、融合、净水、块根熟食、棚、路线、出区抵达。</summary>
@@ -177,7 +157,8 @@ namespace Survival.Core.Engine
             if (s.Locations.Values.Any(l => l.Facility.ShelterBuilt)) CompleteTask(s, "PRO13", "state:shelter", retro);
             if (f.Contains(FactCampRouteKnown)) CompleteTask(s, "PRO16", "talk:visitor_route_first", retro);
             var exit = Config.Prologue.Exit;
-            if (f.Contains(FactSouthSignKnown) && !string.IsNullOrEmpty(exit.To) && Visited(s, exit.To)) CompleteTask(s, "PRO18", "travel:" + exit.To, retro);
+            // Q131 选 B：PRO18 只看本局实际到过旧公路；南口路标（south_sign_known）只是可选阅读与凭证，不是条件
+            if (!string.IsNullOrEmpty(exit.To) && Visited(s, exit.To)) CompleteTask(s, "PRO18", "travel:" + exit.To, retro);
         }
 
         /// <summary>
@@ -190,7 +171,8 @@ namespace Survival.Core.Engine
             var before = new HashSet<string>(s.Prologue.Tasks.Keys);
             SyncPrologueTasks(s, retro: true);
             var added = s.Prologue.Tasks.Keys.Where(k => !before.Contains(k)).OrderBy(k => k).Select(k => ProTask(k)?.Title ?? k).ToList();
-            PrologueBoundary(s);
+            // 读档本身不触发引导（Q128：未示的引导等之后真实相关的界面/上下文，不在加载时一次排出）
+            PrologueBoundary(s, guides: false);
             return added;
         }
 
@@ -237,22 +219,20 @@ namespace Survival.Core.Engine
         /// <summary>PRO11：一次实际的地面↔随身转移成功。</summary>
         private void NoteTransfer(GameState s) => CompleteTask(s, "PRO11", "transfer");
 
-        /// <summary>PRO12：已提交的睡眠段累计（等待/休息不算）。开始睡眠时播反应。</summary>
+        /// <summary>PRO12：已提交的睡眠段累计（等待/休息不算）。引导在打开恢复面板/选睡眠时（操作前），不在开始睡眠时（Q128）。</summary>
         private void NoteSleepSegment(GameState s, int minutes)
         {
             s.Prologue.SleepMinutes += minutes;
             if (s.Prologue.SleepMinutes >= Pro12SleepMinutes) CompleteTask(s, "PRO12", "sleep:120");
         }
 
-        /// <summary>移动到达后的序章事务：PRO14 往返、到达溪流/村庄的反应、出区抵达与重判。</summary>
+        /// <summary>移动到达后的序章事务：PRO14 往返、出区抵达与重判。到达溪流/村庄的引导由随后的安全边界按上下文给（Q128）。</summary>
         private void NoteArrive(GameState s, string from, string to)
         {
             if (!PrologueEnabled) return;
             var camp = Config.Prologue.Visitor.LocationId;
             if (to == "village" || to == "clinic") s.Prologue.ReachedVillageOrClinic = true;
             if (to == camp && s.Prologue.ReachedVillageOrClinic) CompleteTask(s, "PRO14", $"travel:{from}->{to}");
-            if (to == "stream" && !TaskDone(s, "PRO06")) QueueReaction(s, "PRO06");
-            if (to == "village" && !TaskDone(s, "PRO15")) QueueReaction(s, "PRO15");
             SyncPrologueTasks(s);
         }
 
@@ -262,21 +242,193 @@ namespace Survival.Core.Engine
             !s.Progress.Dead && s.Main == null && s.Sub == null && s.Battle == null && s.Encounter == null && !DialogueLocked(s);
 
         /// <summary>
-        /// 序章安全边界（段末、战斗结束、即时操作、对话结束、读档迁移、新局）：追认任务 → 来客登记与通知/抵达对白 → 空闲时播排队的反应 → 重算主目标。
-        /// 不推进时间、不发物资。幂等。
+        /// 序章安全边界（段末、战斗结束、即时操作、对话结束、读档迁移、新局）：追认任务 → 来客登记与通知/抵达对白 →（空闲时）重验暂存的引导、
+        /// 给当前状态相关的引导 → 重算主目标。不推进时间、不发物资。幂等。guides=false 时（读档迁移）不触发任何引导。
         /// </summary>
-        public void PrologueBoundary(GameState s)
+        public void PrologueBoundary(GameState s, bool guides = true)
         {
             if (!PrologueEnabled || s.Progress.Dead) return;
             SyncPrologueTasks(s);
             CheckVisitor(s);
-            if (PrologueIdle(s) && s.Prologue.PendingReactions.Count > 0)
-            {
-                var next = s.Prologue.PendingReactions[0];
-                s.Prologue.PendingReactions.RemoveAt(0);
-                OpenDialogue(s, next);
-            }
+            if (guides && GuideSafe(s) && !FlushPendingGuide(s)) StateGuide(s);
             RefreshObjective(s);
+        }
+
+        // ───────────────────────── 操作前引导（Q128 选 C） ─────────────────────────
+
+        /// <summary>
+        /// 界面在真实上下文里调用（0 分钟，不改玩法状态）：打开/选中相关界面或对象、动作提交前，按上下文给一项未完成任务的系统提示，
+        /// 该项首次呈现时一并播饱饱/主角短句（饱饱在体内且非旧档、提示未暂停才播；不在完成后补播）。
+        /// <list type="bullet">
+        /// <item>ctx：item（id=物品，owner=所在）、fire（火堆）、resource（id=资源点）、location（id=地点）、recipe（id=配方，手工制作面板）、
+        /// process（id=自动加工）、gear（整备）、rest（恢复面板/选睡眠）、journey（远行准备）。</item>
+        /// <item>同一上下文多项相关时按 PRO 编号取未示过的最前一项，只呈现一项；其余等之后新的实际上下文或在任务册查看。</item>
+        /// <item>提示已暂停：什么都不记（不积压）；已关闭的项不再自动出；行动中/对话中/敌踪战斗中：暂存，下一安全边界重验仍相关才呈现。</item>
+        /// </list>
+        /// 返回状态是否改变（界面据此存档）。
+        /// </summary>
+        public bool GuideContext(GameState s, string ctx, string? id = null, string? owner = null)
+        {
+            if (!PrologueEnabled || s.Progress.Dead || s.Prologue.HintsPaused) return false;
+            var p = s.Prologue;
+            var cands = GuideCandidates(s, ctx, id, owner).Distinct().Where(t => GuideOpen(s, t)).OrderBy(t => t, StringComparer.Ordinal).ToList();
+            if (cands.Count == 0) return false;
+            var pick = cands.FirstOrDefault(t => !p.GuideSeen.Contains(t)) ?? (cands.Contains(p.GuideActive) ? p.GuideActive : cands[0]);
+            if (!GuideSafe(s))
+            {
+                if (p.GuidePending == pick && p.GuidePendingAt == s.CurrentLocation) return false;
+                p.GuidePending = pick;
+                p.GuidePendingAt = s.CurrentLocation;
+                return true;
+            }
+            if (p.GuideActive == pick && p.GuideSeen.Contains(pick)) return false;
+            ActivateGuide(s, pick);
+            return true;
+        }
+
+        /// <summary>某上下文可能相关的任务（未按完成/相关过滤）。</summary>
+        private IEnumerable<string> GuideCandidates(GameState s, string ctx, string? id, string? owner)
+        {
+            var here = s.CurrentLocation;
+            switch (ctx)
+            {
+                case "item":
+                {
+                    if (id == null || !_items.TryGetValue(id, out var ic)) yield break;
+                    var u = ic.Use;
+                    // PRO02：可直接食用/饮用（脏水等会致病的不算，交给 PRO08“先处理”）
+                    if (u != null && !u.IsMedicine && !u.CausesDiarrhea && !ic.RequiresCooking && (u.Satiety > 0 || u.Hydration > 0)) yield return "PRO02";
+                    var groundOrCarried = owner == ItemInstance.Carried || owner == here;
+                    // PRO03：随身/地面上的伤害型武器卡（卡下有装备入口）
+                    if (groundOrCarried && _weapons.TryGetValue(id, out var w) && (w.WeaponKind == null || !NonDamageKinds.Contains(w.WeaponKind))) yield return "PRO03";
+                    // PRO08：随身/锅里的脏水，或锅本身（净水配置）
+                    if ((id == "dirty_water" && owner != here) || ic.ToolTag == "pot") yield return "PRO08";
+                    // PRO09：生块根食材卡
+                    if (id == RootItemId) yield return "PRO09";
+                    // PRO11：可在地面与随身之间转移的物资卡
+                    if (groundOrCarried) yield return "PRO11";
+                    yield break;
+                }
+                case "fire":
+                    yield return "PRO07";
+                    yield return "PRO08";
+                    yield break;
+                case "resource":
+                {
+                    var res = id == null ? null : Config.Resources.FirstOrDefault(r => r.NodeId == id);
+                    if (res == null) yield break;
+                    if (res.Outputs.Keys.Any(WaterOutputs.Contains)) yield return "PRO06";
+                    if (res.Outputs.ContainsKey(RootItemId)) yield return "PRO09";
+                    yield break;
+                }
+                case "location":
+                {
+                    if (id == null || id == here || !Known(s, id)) yield break;
+                    if (id == "stream" && !Visited(s, "stream")) yield return "PRO06";
+                    var camp = Config.Prologue.Visitor.LocationId;
+                    if (((id == "village" || id == "clinic") && !s.Prologue.ReachedVillageOrClinic) || (id == camp && s.Prologue.ReachedVillageOrClinic)) yield return "PRO14";
+                    var exit = Config.Prologue.Exit;
+                    if (id == exit.From || id == exit.To) yield return "PRO18";
+                    yield break;
+                }
+                case "recipe":
+                {
+                    var rc = id == null ? null : Config.Recipes.FirstOrDefault(r => r.Id == id);
+                    if (rc == null) yield break;
+                    if (rc.FacilityResult == "shelterBuilt") yield return "PRO13";
+                    if (rc.Station != "hand" || rc.IsBuild || rc.IsRepair || rc.IsSalvage) yield break;
+                    if (rc.Outputs.Keys.Any(o => _weapons.TryGetValue(o, out var rw) && (rw.WeaponKind == null || !NonDamageKinds.Contains(rw.WeaponKind)))) yield return "PRO03";
+                    // 打开手工制作即“手工制作”上下文（PRO10）
+                    yield return "PRO10";
+                    yield break;
+                }
+                case "process":
+                    if (id == "boil_water") yield return "PRO08";
+                    if (id == "roast_root" || id == "boil_root") yield return "PRO09";
+                    yield break;
+                case "gear": yield return "PRO03"; yield break;
+                case "rest": yield return "PRO12"; yield break;
+                case "journey": yield return "PRO17"; yield break;
+            }
+        }
+
+        /// <summary>这项引导现在还能给吗：未完成、没关闭、任务相关，且引导自身的前提（地点、来客、路线）成立。</summary>
+        private bool GuideOpen(GameState s, string id)
+        {
+            if (TaskDone(s, id) || s.Prologue.DismissedHints.Contains(id) || ProTask(id) == null || TaskIrrelevantReason(s, id) != null) return false;
+            var f = s.Progress.Flags;
+            switch (id)
+            {
+                case "PRO13": return Config.Locations.FirstOrDefault(l => l.Id == s.CurrentLocation)?.CanBuildShelter == true;
+                case "PRO15": return s.CurrentLocation == "village";
+                case "PRO16": return VisitorRegistered(s) && !f.Contains(FactVisitorMet);
+                case "PRO18": return f.Contains(FactCampRouteKnown) && !Visited(s, Config.Prologue.Exit.To);
+                default: return true;
+            }
+        }
+
+        /// <summary>安全上下文：不在对话读完锁、敌踪/战斗、子行动或进行中的主行动里（暂停中的主行动不算忙）。</summary>
+        private bool GuideSafe(GameState s) =>
+            !s.Progress.Dead && !DialogueLocked(s) && s.Battle == null && s.Encounter == null && s.Sub == null
+            && (s.Main == null || s.Main.Status == ActionStatus.Paused);
+
+        /// <summary>呈现一项引导：成为当前系统提示；该项首次呈现时播饱饱/主角短句（饱饱在体内且非旧档才播；同组对白只播一次）。</summary>
+        private void ActivateGuide(GameState s, string id)
+        {
+            var p = s.Prologue;
+            p.GuideActive = id;
+            if (p.GuidePending == id) { p.GuidePending = ""; p.GuidePendingAt = ""; }
+            if (!p.GuideSeen.Add(id)) return;
+            var t = ProTask(id);
+            if (t == null || string.IsNullOrEmpty(t.ReactionSet) || !StoryActive(s) || !s.Story.BaobaoPresent) return;
+            if (s.Story.DialogueLog.Any(d => d.EventId == t.ReactionSet)) return;
+            OpenDialogue(s, t.ReactionSet);
+        }
+
+        /// <summary>重验忙时暂存的引导：仍在原地点、未完成且相关就呈现，否则丢弃。返回是否呈现了。</summary>
+        private bool FlushPendingGuide(GameState s)
+        {
+            var p = s.Prologue;
+            if (string.IsNullOrEmpty(p.GuidePending)) return false;
+            var id = p.GuidePending;
+            var at = p.GuidePendingAt;
+            p.GuidePending = "";
+            p.GuidePendingAt = "";
+            if (p.HintsPaused || at != s.CurrentLocation || !GuideOpen(s, id)) return false;
+            ActivateGuide(s, id);
+            return true;
+        }
+
+        /// <summary>
+        /// 由当前状态构成的上下文（安全边界时检查，各项只首次）：开场剧情读完后的首次可操作界面（PRO01，新局）、首战奖励落地且胜利剧情读完后（PRO05）、
+        /// 真实到达溪流尚未取水（PRO06）、真实到达村庄残页可查看（PRO15）、营地出现来客人物卡尚未交谈（PRO16）。一次只给一项。
+        /// </summary>
+        private void StateGuide(GameState s)
+        {
+            var p = s.Prologue;
+            if (p.HintsPaused) return;
+            foreach (var id in new[] { "PRO01", "PRO05", "PRO06", "PRO15", "PRO16" })
+            {
+                if (p.GuideSeen.Contains(id) || !GuideOpen(s, id)) continue;
+                var ok = id switch
+                {
+                    "PRO01" => !s.Story.Legacy && p.MigratedAt == null && (s.Story.AwakeningDone || !StoryActive(s)),
+                    "PRO06" => s.CurrentLocation == "stream" && !p.DrewWater,
+                    // 旧档（Legacy/迁移档）由是否主动点“交谈”选择接续（Q132），人物卡出现时不自动弹短句；系统提示仍随主目标显示
+                    "PRO16" => s.CurrentLocation == Config.Prologue.Visitor.LocationId && !OptInVisitor(s),
+                    _ => true,
+                };
+                if (!ok) continue;
+                ActivateGuide(s, id);
+                return;
+            }
+        }
+
+        /// <summary>首战建立（原首战警告之后、首次行动结算之前）的首战教学上下文：PRO04 引导与饱饱短句（Q128；战斗中直接呈现，不走忙时暂存）。</summary>
+        private void TutorialBattleGuide(GameState s)
+        {
+            if (!PrologueEnabled || s.Prologue.HintsPaused || !GuideOpen(s, "PRO04")) return;
+            ActivateGuide(s, "PRO04");
         }
 
         /// <summary>来客条件（S15 §5）：绝对世界分钟 ≥ 阈值、首战已胜（或旧档等效）、主角存活。</summary>
@@ -604,54 +756,99 @@ namespace Survival.Core.Engine
         {
             if (!PrologueEnabled) return null;
             var p = s.Prologue;
-            var v = Config.Prologue.Visitor;
-            var exit = Config.Prologue.Exit;
             switch (p.ObjectiveId)
             {
-                case "visitor_talk": return new PrologueObjectiveView { Id = p.ObjectiveId, TaskId = "PRO16", Title = $"与来客{v.Name}交谈", Step = $"在设施栏的人物卡上点“交谈”（不耗时）" };
-                case "visitor_return": return new PrologueObjectiveView { Id = p.ObjectiveId, TaskId = "PRO16", Title = $"回{LocName(v.LocationId)}，与来客交谈", Step = $"有人在{LocName(v.LocationId)}等候；沿已知道路返回（不会传送，来客不会离开）" };
-                case "exit_go": return new PrologueObjectiveView { Id = p.ObjectiveId, TaskId = "PRO18", Title = "前往幸存者营区寻找医疗帮助", Step = $"沿{LocName(exit.From)}南口前往{LocName(exit.To)}（要实际走过去）" };
-                case "exit_need": return new PrologueObjectiveView { Id = p.ObjectiveId, TaskId = "PRO18", Title = "前往幸存者营区寻找医疗帮助", Step = ExitNeedText(s) };
-                case "route_onward": return new PrologueObjectiveView { Id = p.ObjectiveId, Title = "前往幸存者营区寻找医疗帮助", Step = "旧公路→检查哨→营门→营区：沿道路一段一段走，边走边探清前路" };
-                case "settle": return new PrologueObjectiveView { Id = p.ObjectiveId, Title = StageOf("D5")?.Headline ?? "", Step = "继续整备与可选探索" };
+                case "visitor_talk":
+                case "visitor_return":
+                    return Special(p.ObjectiveId, "PRO16");
+                case "exit_go":
+                    return Special(p.ObjectiveId, "PRO18");
+                case "exit_need":
+                {
+                    // 策划 exit_need 的 step 是“按真实缺项显示”的说明，玩家看到的是 adaptiveSteps 里第一项缺的那句
+                    var o = Special(p.ObjectiveId, "PRO18");
+                    o.Step = AdaptiveStep(s, "exit_need") ?? SpecialOf("exit_go")?.Step ?? "";
+                    return o;
+                }
+                case "route_onward":
+                case "settle":
+                    return Special(p.ObjectiveId, null);
             }
             var t = ProTask(p.ObjectiveId);
             if (t == null) return null;
-            return new PrologueObjectiveView { Id = t.Id, TaskId = t.Id, Title = StageOf(p.StageId)?.Headline ?? t.Title, Step = $"{t.Title}：{GoalText(t)}" };
+            // Q129 选 B：普通主目标标题直接用任务标题，下一步用策划“下一步”短句（按实际缺项可替换），不显示内部完成条件
+            return new PrologueObjectiveView { Id = t.Id, TaskId = t.Id, Title = t.Title, Step = StepText(s, t) };
         }
 
-        /// <summary>出区还缺哪项（A10-TUTOR §6“日志显示缺哪项”）。</summary>
-        public string ExitNeedText(GameState s)
+        public PrologueSpecialObjectiveConfig? SpecialOf(string id) => Config.Prologue.SpecialObjectives.FirstOrDefault(x => x.Id == id);
+
+        private PrologueObjectiveView Special(string id, string? taskId)
         {
-            var exit = Config.Prologue.Exit;
-            if (_edges.TryGetValue(exit.EdgeId, out var e))
-            {
-                var why = GateBlockedReason(s, e);
-                if (!string.IsNullOrEmpty(why)) return why;
-            }
-            return $"沿{LocName(exit.From)}南口前往{LocName(exit.To)}";
+            var sp = SpecialOf(id);
+            return new PrologueObjectiveView { Id = id, TaskId = taskId, Title = sp?.Title ?? "", Step = sp?.Step ?? "" };
         }
 
-        /// <summary>当前建议（最多两条）。</summary>
+        /// <summary>
+        /// 按实际缺项替换的下一步（Q129 adaptiveSteps）：PRO06 已取水未到溪流 / 已到溪流未取水；PRO14 已到过村庄或诊所；
+        /// exit_need 按首战、路线已知、到访村庄的顺序取第一项缺的。都不满足为 null。
+        /// </summary>
+        public string? AdaptiveStep(GameState s, string objective)
+        {
+            foreach (var a in Config.Prologue.AdaptiveSteps.Where(x => x.Objective == objective))
+                if (AdaptiveWhen(s, a.When)) return a.Step;
+            return null;
+        }
+
+        private bool AdaptiveWhen(GameState s, string when)
+        {
+            var p = s.Prologue;
+            switch (when)
+            {
+                case "drew_dirty_water_and_not_visited_stream": return p.DrewWater && !Visited(s, "stream");
+                case "visited_stream_and_not_drew_dirty_water": return Visited(s, "stream") && !p.DrewWater;
+                case "visited_village_or_clinic": return p.ReachedVillageOrClinic;
+                case "not_tutorial_win_or_legacy": return !s.Story.TutorialWon && !s.Story.Legacy;
+                case "not_camp_route_known": return !s.Progress.Flags.Contains(FactCampRouteKnown);
+                case "not_visited_village": return !Visited(s, Config.Prologue.Exit.From);
+                default: return false;
+            }
+        }
+
+        /// <summary>任务的玩家“下一步”（Q129：策划短句，按实际缺项替换）。</summary>
+        public string StepText(GameState s, PrologueTaskConfig t) => AdaptiveStep(s, t.Id) ?? GoalText(t);
+
+        /// <summary>当前建议（最多两条）：标题用任务标题，说明用“下一步”短句。</summary>
         public List<PrologueObjectiveView> CurrentSuggestions(GameState s) =>
             s.Prologue.Suggestions.Select(ProTask).Where(t => t != null)
-                .Select(t => new PrologueObjectiveView { Id = t!.Id, TaskId = t.Id, Title = t.Title, Step = GoalText(t) }).ToList();
+                .Select(t => new PrologueObjectiveView { Id = t!.Id, TaskId = t.Id, Title = t.Title, Step = StepText(s, t) }).ToList();
 
-        /// <summary>任务的玩家可读说明（白话；旧配置没有时退回策划原句）。</summary>
+        /// <summary>任务的玩家“下一步”短句（Q129 nextStep；旧配置没有时退回策划原句）。</summary>
         public static string GoalText(PrologueTaskConfig t) => string.IsNullOrEmpty(t.Goal) ? t.CompletionRule : t.Goal;
 
         /// <summary>
-        /// 当前要显示的那一条中性系统提示（同一时刻最多一条）：主目标对应任务的 PROxx_hint，已关闭或已暂停提示时为 null。
+        /// 当前要显示的那一条中性系统提示（同一时刻最多一条，Q128 guidancePolicy.order“当前打开的上下文优先，其次主目标”）：
+        /// 最近一次真实上下文触发、仍未完成且相关的引导；没有时退回主目标对应任务的 PROxx_hint。已关闭或已暂停提示时为 null。
         /// 提示不锁输入、不推进时间，关闭不等于完成。
         /// </summary>
         public (string TaskId, string Text)? CurrentHint(GameState s)
         {
             if (!PrologueEnabled || s.Prologue.HintsPaused || s.Progress.Dead) return null;
-            var cur = CurrentObjective(s);
-            var id = cur?.TaskId;
+            var id = s.Prologue.GuideActive;
+            if (string.IsNullOrEmpty(id) || !GuideOpen(s, id)) id = CurrentObjective(s)?.TaskId;
             if (id == null || TaskDone(s, id) || s.Prologue.DismissedHints.Contains(id)) return null;
             var t = ProTask(id);
             return t == null || string.IsNullOrEmpty(t.Hint) ? ((string, string)?)null : (id, t.Hint);
+        }
+
+        /// <summary>
+        /// 首战内的引导（Q128 PRO04：原首战警告之后、首次行动结算之前的首战教学上下文；显示在全屏战斗的对象信息区，不放被战斗盖住的常态任务框）。
+        /// 只在首战、PRO04 未完成、提示未暂停/未关闭时给；不给 AP、不替你行动、不推进时间。
+        /// </summary>
+        public (string TaskId, string Text)? BattleHint(GameState s)
+        {
+            if (!PrologueEnabled || s.Battle?.Tutorial != true || s.Prologue.HintsPaused || TaskDone(s, "PRO04") || s.Prologue.DismissedHints.Contains("PRO04")) return null;
+            var t = ProTask("PRO04");
+            return t == null || string.IsNullOrEmpty(t.Hint) ? ((string, string)?)null : ("PRO04", t.Hint);
         }
 
         /// <summary>“关闭这条”：只记已关闭（不完成任务）；可在任务册回看。</summary>
@@ -660,7 +857,10 @@ namespace Survival.Core.Engine
         /// <summary>“暂停后续操作提示”/重新开启：只开关中性教学提示。</summary>
         public void SetHintsPaused(GameState s, bool paused) => s.Prologue.HintsPaused = paused;
 
-        /// <summary>当前主目标要轻量点亮的对象（每次最多一个）：npc:ID、doc:ID、loc:ID；没有为 null。</summary>
+        /// <summary>
+        /// 当前主目标要轻量点亮的对象（每次最多一个）：npc:ID、doc:ID、loc:ID；没有为 null。地点指向真实的下一路段
+        /// （Q131：沿已开通的已知道路走向目标的第一段；出区不再指向南口路标，路标只是可选阅读）。
+        /// </summary>
         public string? ObjectiveFocus(GameState s)
         {
             var p = s.Prologue;
@@ -668,14 +868,53 @@ namespace Survival.Core.Engine
             switch (p.ObjectiveId)
             {
                 case "visitor_talk": return "npc:" + Config.Prologue.Visitor.NpcId;
-                case "visitor_return": return "loc:" + Config.Prologue.Visitor.LocationId;
-                case "exit_go":
-                    if (s.CurrentLocation == exit.From && !s.Progress.Flags.Contains(FactSouthSignKnown)) return "doc:village_south_sign";
-                    return "loc:" + (s.CurrentLocation == exit.From ? exit.To : exit.From);
-                case "PRO04": return "loc:" + Config.Story.TutorialBattle.LocationId;
-                case "PRO15": return s.CurrentLocation == "village" ? "doc:relief_page_village" : "loc:village";
+                case "visitor_return": return LocFocus(s, Config.Prologue.Visitor.LocationId);
+                case "exit_go": return LocFocus(s, s.CurrentLocation == exit.From ? exit.To : exit.From);
+                case "exit_need":
+                    if (!s.Story.TutorialWon && !s.Story.Legacy) return LocFocus(s, Config.Story.TutorialBattle.LocationId);
+                    if (!s.Progress.Flags.Contains(FactCampRouteKnown)) return LocFocus(s, Config.Prologue.Visitor.LocationId);
+                    return LocFocus(s, exit.From);
+                case "route_onward":
+                {
+                    var leg = Config.Prologue.Journey.Legs.FirstOrDefault(l => !Visited(s, l.To));
+                    return leg == null ? null : LocFocus(s, s.CurrentLocation == leg.From ? leg.To : leg.From);
+                }
+                case "PRO04": return LocFocus(s, Config.Story.TutorialBattle.LocationId);
+                case "PRO15": return s.CurrentLocation == "village" ? "doc:relief_page_village" : LocFocus(s, "village");
             }
             return null;
+        }
+
+        /// <summary>
+        /// 走向 target 的真实下一路段：已开通、已知的边上最短路的第一段；中途还有未开通的边时，按已知地点之间的边（不论开通）取最少段数路线的第一段
+        /// （例：荒地→村庄未开通时，从营地仍指向荒地；相邻栏会写所需条件）。已在目标或完全不连通为 null。只读。
+        /// </summary>
+        private string? LocFocus(GameState s, string target)
+        {
+            if (string.IsNullOrEmpty(target) || s.CurrentLocation == target) return null;
+            var path = MapPathTo(s, target);
+            if (path != null && path.Count > 0) return "loc:" + path[0].To;
+            var here = s.CurrentLocation;
+            var prev = new Dictionary<string, string> { [here] = "" };
+            var queue = new Queue<string>();
+            queue.Enqueue(here);
+            while (queue.Count > 0)
+            {
+                var u = queue.Dequeue();
+                if (u == target) break;
+                foreach (var e in EdgesAt(u))
+                {
+                    if (!e.TraversableFrom(u)) continue;
+                    var v = e.Other(u);
+                    if (prev.ContainsKey(v) || (v != target && !Known(s, v))) continue;
+                    prev[v] = u;
+                    queue.Enqueue(v);
+                }
+            }
+            if (!prev.ContainsKey(target)) return null;
+            var at = target;
+            while (prev[at] != here) at = prev[at];
+            return "loc:" + at;
         }
 
         // ───────────────────────── 开发入口 ─────────────────────────
@@ -704,6 +943,13 @@ namespace Survival.Core.Engine
                     return DebugMapTeleport(s, Config.Prologue.Visitor.LocationId);
                 case "village":
                     return DebugMapTeleport(s, "village");
+                case "guides_reset":
+                    s.Prologue.GuideSeen.Clear();
+                    s.Prologue.DismissedHints.Clear();
+                    s.Prologue.GuideActive = s.Prologue.GuidePending = s.Prologue.GuidePendingAt = "";
+                    s.Prologue.HintsPaused = false;
+                    PrologueBoundary(s);
+                    return "开发：已清空操作引导的已示/关闭记录（任务完成不变；播过的饱饱短句按对白去重不再播）。";
                 default:
                     return "开发：未知序章步骤";
             }

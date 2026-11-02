@@ -239,11 +239,11 @@ public class B13cClaimTests : TestBase
         var res = (JObject)j["Resources"]!;
         foreach (var id in Caches) res.Remove(id);
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out _);
-        Assert.That(m.SchemaVersion, Is.EqualTo("24"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "23→24→25 链式升级");
         Assert.That(E.KnowsKnowledge(m, "blueprint_breach_axe"), Is.True, "d01 已领补缺");
         Assert.That(E.KnowsKnowledge(m, "blueprint_guard_sword"), Is.True, "d03 认 communication_power_claimed");
         Assert.That(E.KnowsKnowledge(m, "blueprint_rescue_medkit"), Is.False, "只探索 100% 不补");
-        Assert.That(m.Log.Last().Text, Does.Contain("补学15张蓝图"));
+        Assert.That(m.Log.Any(l => l.Text.Contains("版本24") && l.Text.Contains("补学15张蓝图")), Is.True);
         Assert.That(m.Items, Has.Count.EqualTo(items));
         Assert.That(m.Skills.Sum(kv => kv.Value.Xp), Is.EqualTo(xp));
         Assert.That(m.DungeonInstances["d01"].Facts, Does.Not.Contain(GameEngine.RecordClaimedFact), "不伪造本代核对");

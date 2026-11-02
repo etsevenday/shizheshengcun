@@ -26,8 +26,23 @@ namespace Survival.Core.State
         public bool ReachedVillageOrClinic { get; set; }
         /// <summary>PRO06：已完成一次从合法水源取水（采集到脏水）；与“到访溪流”一起满足才完成。</summary>
         public bool DrewWater { get; set; }
-        /// <summary>排队等空闲安全边界播放的饱饱反应对白组（不在动作中途抢输入）。</summary>
+        /// <summary>
+        /// schema 24 及以前：排队等空闲安全边界播放的饱饱反应对白组（B13 从完成事件排队的做法）。Q128 选 C 起废止：不再写入，
+        /// 24→25 迁移时整队丢弃、不补播（旧档读入的残留也不会被播放）。
+        /// </summary>
         public List<string> PendingReactions { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Q128（schema 25）：已示过的操作前引导（任务 ID，对应 campaignId:guide:PROxx）：该项系统提示已首次呈现、饱饱/主角短句已在那一刻处理过
+        /// （播了，或饱饱不在/旧档而不播）。与任务完成（Tasks）、原剧情对白去重分开；只防重复弹，不算完成。
+        /// </summary>
+        public HashSet<string> GuideSeen { get; set; } = new HashSet<string>();
+        /// <summary>当前真实上下文触发的那一条引导（任务 ID；同一时刻最多一条）。完成、换到新的相关上下文时替换，为空时任务框退回主目标的提示。</summary>
+        public string GuideActive { get; set; } = "";
+        /// <summary>上下文触发时正忙（行动中、对话读完锁、敌踪/战斗）而暂存的引导；下一安全边界重新校验仍相关才呈现，已完成/失效即丢弃。</summary>
+        public string GuidePending { get; set; } = "";
+        /// <summary>暂存时所在地点（换了地点即视为上下文已失效）。</summary>
+        public string GuidePendingAt { get; set; } = "";
 
         /// <summary>来客登记（visitor_available）的世界分钟；未登记为 null。</summary>
         public int? VisitorAvailableAt { get; set; }
@@ -42,9 +57,9 @@ namespace Survival.Core.State
         /// <summary>与程望交谈次数（重复交谈只播“再问路线”，不重发任何效果）。</summary>
         public int VisitorTalks { get; set; }
 
-        /// <summary>已关闭的系统提示（任务 ID）：关闭不等于完成，之后不再自动弹同一条，可在任务册回看。</summary>
+        /// <summary>已关闭的系统提示（任务 ID，Q128 引导的“已关闭”状态）：关闭不等于完成，之后不再自动弹同一条，可在任务册回看。</summary>
         public HashSet<string> DismissedHints { get; set; } = new HashSet<string>();
-        /// <summary>“暂停后续操作提示”：只关中性教学提示，不跳剧情、不清危急反馈、不自动完成任务。</summary>
+        /// <summary>“暂停后续操作提示”：关中性教学提示与 18 组饱饱/主角教学短句（Q128，暂停期间不积压），不跳主线剧情、不清危急反馈、不自动完成任务。</summary>
         public bool HintsPaused { get; set; }
         /// <summary>重复打开的对白组计数（路线日志、路标、再问路线……），用于生成每次回看的独立对话记录编号。</summary>
         public int ReplaySeq { get; set; }
@@ -61,6 +76,7 @@ namespace Survival.Core.State
             c.Suggestions = new List<string>(Suggestions);
             c.PendingReactions = new List<string>(PendingReactions);
             c.DismissedHints = new HashSet<string>(DismissedHints);
+            c.GuideSeen = new HashSet<string>(GuideSeen);
             return c;
         }
     }

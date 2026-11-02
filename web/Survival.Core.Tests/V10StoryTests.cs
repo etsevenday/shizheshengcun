@@ -65,7 +65,7 @@ public class V10StoryTests : BattleTestBase
         Assert.That(E.AckDialogue(s, "food_water").Duplicate, Is.True, "重复确认不改状态");
         Assert.That(s.GameMinute, Is.EqualTo(minute), "对话不推进时间");
         Assert.That(SaveSerializer.Serialize(new GameState { Items = s.Items }), Is.EqualTo(items), "不自动吃喝、不发物");
-        Assert.That(E.CurrentDialogue(s), Is.Null);
+        Assert.That(E.ActiveDialogue(s)?.EventId, Is.EqualTo("PRO01_reaction"), "B13d（Q128）：开场读完后接 PRO01 引导短句");
     }
 
     [Test]
@@ -97,6 +97,7 @@ public class V10StoryTests : BattleTestBase
         // 首战前：第2日也不随机接敌
         s.GameMinute = At(2, 9, 0);
         E.DebugTeleport(s, "village");
+        ReadDialogues(s);   // B13d：到村庄的 PRO15 引导短句
         Assert.That(E.EncounterChance(s, "village", ActionType.Explore), Is.EqualTo(0));
         Assert.That(E.EncounterNote(s, "village", ActionType.Explore), Does.Contain("首战"));
         var other = s.WorldEnemies.First(w => w.LocationId == "village");

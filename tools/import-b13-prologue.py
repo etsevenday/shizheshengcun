@@ -8,8 +8,10 @@
 - narrative-texts.json（Q32 选 B 定稿）：taskTexts（PROxx_hint 中性系统提示、PROxx_reaction 饱饱/主角短对白、PROxx_done 完成反馈）、
   contentBindings.prologueTalk 八组程望对白、documents 里的 PRO15 救助残页 / 南口路标两种 / 求医路线日志。speaker 映射到现有对白
   系统：system → 空（中性叙述），protagonist → “你”（左侧），baobao → “饱饱”，npc_cheng_wang → “程望”。
-- S15 §2 建议五日节奏表“当前叙事问题”列作为各阶段主目标标题；§5 “前往幸存者营区寻找医疗帮助”作为取得路线后的主目标；
-  §6 PRO17 基础路线 village→m01(30)→m02(20)→h01(15)→h02(5) 合计 70（分钟从 edges 配置读并断言）、建议净水2份+可食2份+防身物。
+- S15 §6 PRO17 基础路线 village→m01(30)→m02(20)→h01(15)→h02(5) 合计 70（分钟从 edges 配置读并断言）、建议净水2份+可食2份+防身物。
+- B13d（Q128 选 C、Q129 选 B，2026-11-02）：prologue-data.json 的 goal（玩家“下一步”短句）、stageTexts（6 阶段标题与重点）、
+  specialObjectiveTexts（6 种特殊主目标）直接导入，不再用本脚本里的静态表覆盖；prologue-adjudications.json 的 objectivePolicy.adaptiveSteps
+  （PRO06/PRO14/exit_need 按实际缺项的下一步）一并导入，并断言 guides 的标题/hint/nextStep/done 与 prologue-data、narrative-texts 逐字一致。
 
 可重复运行，结果相同（先删掉本脚本上次写入的对白再追加）。
 用法：python tools/import-b13-prologue.py
@@ -20,18 +22,10 @@ import os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG = os.path.join(ROOT, "data", "config.v0.6.json")
 MAPDIR = os.path.join(ROOT, "doc", "策划案", "系统策划总册 v1.0", "assets", "20261030", "narrative-map")
+ADJ = os.path.join(ROOT, "doc", "策划案", "系统策划总册 v1.0", "assets", "20261102", "prologue", "prologue-adjudications.json")
 
 SPEAKER = {"system": "", "protagonist": "你", "baobao": "饱饱", "npc_cheng_wang": "程望"}
 
-# S15 §2 建议五日节奏表“当前叙事问题”列；mainline 取 S15 §5 “更新主目标为……”
-STAGES = [
-    ("D1", "第1日", "先活下来，弄清声音从哪来"),
-    ("D2", "第2日", "手里的补给会吃完"),
-    ("D3", "第3日", "怎样活得省力一些"),
-    ("D4", "第4日", "周围还剩什么人和地方"),
-    ("D5", "第5日起", "也许有人能告诉我身体怎么了"),
-    ("mainline", "主线接续", "前往幸存者营区寻找医疗帮助"),
-]
 STAGE_OF = {"D1": "D1", "D1以后": "D1", "D2": "D2", "D3": "D3", "D4": "D4", "D5以后": "D5", "主线接续": "mainline"}
 
 # 对话记录里的事件名（开发方措辞，按策划 dialogueSetId 含义）
@@ -51,29 +45,6 @@ SET_TITLES = {
 REPEATABLE = {"visitor_route_repeat", "visitor_not_ready", "PRO15_relief_note", "village_south_sign",
               "village_south_sign_route_unknown", "camp_route_log"}
 
-# 任务角/任务册给玩家看的“要做什么”（试玩修复 M269 P5）：策划 completionRule 是规则口径（含 S15/R07/tick/N/W/地点 ID 等内部写法），
-# 这里按同一规则改写成白话，地点用显示名，不改判定。系统提示仍用策划定稿的 PROxx_hint 原文。
-GOALS = {
-    "PRO01": "第一次选中地面或随身的一张物资卡，看看能做什么（只看不耗时）",
-    "PRO02": "吃或喝一次，让饱食或水分实际回升（满了不必硬吃）",
-    "PRO03": "拿到一件能造成伤害的武器并装备上（已经装备的直接算）",
-    "PRO04": "打赢农野荒地那只游荡尸，并在战斗结束时活着（撤退后可以回去接着打）",
-    "PRO05": "自愿吞噬融合首战得到的教学活性物质（不融合也不影响求医与主线）",
-    "PRO06": "到溪流浅滩，并实际取一次水",
-    "PRO07": "给火堆添燃料，并成功点燃一次",
-    "PRO08": "用火堆把锅里的脏水真正烧成净水",
-    "PRO09": "把生块根烤熟或水煮熟一次（吃罐头不算）",
-    "PRO10": "亲手做出一件工具或武器（做防身武器那次也算）",
-    "PRO11": "在地面和随身之间实际转移一次物资",
-    "PRO12": "实际睡眠累计满2小时（等待和休息不算）",
-    "PRO13": "建成遮蔽棚（已有的也算）",
-    "PRO14": "从临时营地出发，到废弃村庄或诊所，再走回临时营地",
-    "PRO15": "到废弃村庄，查看公开救助残页（不耗时）",
-    "PRO16": "在临时营地和来客交谈，问到营区路线",
-    "PRO17": "看过路线、身体状态和随身物品后，确认“准备好了”（缺建议物也可以）",
-    "PRO18": "在废弃村庄看清南口路标，再实际走到旧公路",
-}
-
 JOURNEY = [("village", "m01_road"), ("m01_road", "m02_checkpoint"), ("m02_checkpoint", "h01_gate"), ("h01_gate", "h02_square")]
 
 
@@ -86,8 +57,13 @@ def main():
     cfg = load(CONFIG)
     pro = load(os.path.join(MAPDIR, "prologue-data.json"))
     nt = load(os.path.join(MAPDIR, "narrative-texts.json"))
+    adj = load(ADJ)
     sets = {d["dialogueSetId"]: d for d in nt["dialogueSets"]}
     assert pro["taskCount"] == 18 and len(pro["tasks"]) == 18
+    # Q128/Q129 机器合同与 prologue-data / narrative-texts 逐字同源
+    guides = {g["taskId"]: g for g in adj["guides"]}
+    assert len(guides) == 18
+    assert pro["stageTexts"] == adj["stages"] and pro["specialObjectiveTexts"] == adj["specialObjectives"]
 
     def lines_of(set_id):
         return [{"lineId": l["lineId"], "speaker": SPEAKER[l["speaker"]], "text": l["text"]} for l in sets[set_id]["lines"]]
@@ -101,13 +77,16 @@ def main():
     texts = {t["taskId"]: t for t in nt["taskTexts"]}
     for t in pro["tasks"]:
         tt = texts[t["id"]]
+        g = guides[t["id"]]
+        assert (g["title"], g["nextStep"], g["hint"], g["done"]) == (t["title"], t["goal"], one_text(tt["initialHint"]), one_text(tt["completed"])), t["id"]
+        assert [l["text"] for l in sets[tt["companionReaction"]]["lines"]] == [r["text"] for r in g["reaction"]], t["id"]
         tasks.append({
             "id": t["id"],
             "title": t["title"],
             "suggestedStage": t["suggestedStage"],
             "stage": STAGE_OF[t["suggestedStage"]],
             "completionRule": t["completionRule"],
-            "goal": GOALS[t["id"]],
+            "goal": t["goal"],
             "guidance": t["guidance"],
             "exitGate": t["exitGate"].startswith("是"),
             "exitGateText": t["exitGate"],
@@ -132,7 +111,7 @@ def main():
     assert exit_edge["gate"] == "QMAP01" and exit_edge["baseMinutes"] == 30
 
     cfg["prologue"] = {
-        "source": "prologue-data.json + narrative-texts.json（Q32B 定稿）；S15 §2—§8、A10-TUTOR",
+        "source": "prologue-data.json + narrative-texts.json（Q32B 定稿）+ prologue-adjudications.json（Q128—Q133）；S15 §2—§8、A10-TUTOR",
         "visitor": {
             "npcId": v["npcId"],
             "name": v["name"],
@@ -165,7 +144,10 @@ def main():
             "suggestedFood": 2,
             "suggestedWeapon": True,
         },
-        "stages": [{"id": i, "label": lab, "headline": h} for i, lab, h in STAGES],
+        "stages": [{"id": x["id"], "headline": x["headline"], "focus": x["focus"]} for x in pro["stageTexts"]],
+        "specialObjectives": [{"id": x["id"], "title": x["title"], "step": x["step"]} for x in pro["specialObjectiveTexts"]],
+        "adaptiveSteps": [{"objective": k, "when": w["when"], "step": w["step"]}
+                          for k, ws in adj["objectivePolicy"]["adaptiveSteps"].items() for w in ws],
         "tasks": tasks,
         "dialogueSets": [{"id": k, "title": SET_TITLES.get(k, "序章"), "repeatable": k in REPEATABLE}
                          for k in list(SET_TITLES.keys()) + [t["reactionSet"] for t in tasks]],

@@ -56,7 +56,7 @@ public class B13PrologueTests : TestBase
     {
         var p = Cfg.Prologue;
         Assert.That(p.Tasks.Select(t => t.Id), Is.EqualTo(Enumerable.Range(1, 18).Select(i => $"PRO{i:00}")));
-        Assert.That(p.Tasks.Where(t => t.ExitGate).Select(t => t.Id), Is.EqualTo(new[] { "PRO04", "PRO16", "PRO18" }));
+        Assert.That(p.Tasks.Where(t => t.ExitGate).Select(t => t.Id), Is.EqualTo(new[] { "PRO04", "PRO16" }), "Q131：PRO18 是到达后的教学完成记录，不再是出区门槛");
         Assert.That(p.Tasks.All(t => t.Hint.Length > 0 && t.Done.Length > 0 && t.ReactionSet.Length > 0), Is.True);
         Assert.That((p.Visitor.NpcId, p.Visitor.Name, p.Visitor.LocationId, p.Visitor.NotBeforeWorldMinute), Is.EqualTo(("npc_cheng_wang", "程望", "camp", 6240)));
         Assert.That(E.Edge(p.Exit.EdgeId).Gate, Is.EqualTo("QMAP01"));
@@ -76,11 +76,11 @@ public class B13PrologueTests : TestBase
         ReadDialogues(s);
         Assert.That(s.Prologue.StageId, Is.EqualTo("D1"));
         Assert.That(s.Prologue.ObjectiveId, Is.EqualTo("PRO04"));
-        Assert.That(E.CurrentObjective(s)!.Title, Is.EqualTo("先活下来，弄清声音从哪来"));
+        Assert.That(E.CurrentObjective(s)!.Title, Is.EqualTo("第一次交手"), "Q129：普通主目标标题用任务标题");
         Assert.That(s.Prologue.Suggestions, Has.Count.EqualTo(2));
         Assert.That(s.Prologue.Suggestions, Does.Not.Contain("PRO04"));
         Assert.That(E.PrologueTasks(s), Has.Count.EqualTo(18));
-        Assert.That(E.CurrentHint(s)!.Value.TaskId, Is.EqualTo("PRO04"));
+        Assert.That(E.CurrentHint(s)!.Value.TaskId, Is.EqualTo("PRO01"), "Q128：开场读完后的首次可操作界面给 PRO01 引导（上下文优先于主目标）");
     }
 
     /// <summary>SP07/TUI03：选中预览只记 PRO01；实际吃喝才记 PRO02（满值时也只按真实改善）；读提示、预览不冒充。</summary>
@@ -91,9 +91,10 @@ public class B13PrologueTests : TestBase
         ReadDialogues(s);
         E.Preview(s, ActionRequest.UseItem("canned_food"));
         Assert.That(GameEngine.TaskDone(s, "PRO02"), Is.False, "预览不算");
+        Assert.That(s.Story.DialogueLog.Any(d => d.EventId == "PRO01_reaction"), Is.True, "Q128：PRO01 短句在开场读完后、选卡之前");
         E.NoteObjectInspected(s);
         Assert.That(GameEngine.TaskDone(s, "PRO01"), Is.True);
-        Assert.That(E.ActiveDialogue(s)!.EventId, Is.EqualTo("PRO01_reaction"), "完成时饱饱短句（空闲边界）");
+        Assert.That(E.DialogueLocked(s), Is.False, "完成后不再补播短句");
         ReadDialogues(s);
         Assert.That(GameEngine.TaskDone(s, "PRO02"), Is.False);
         SetStats(s, 20, 50, 50, 18, 90, 60);
@@ -377,19 +378,19 @@ public class B13PrologueTests : TestBase
         E.TalkNpc(s, "npc_cheng_wang");
         ReadDialogues(s);
         Assert.That(s.Prologue.ObjectiveId, Is.EqualTo("exit_need"));
-        Assert.That(E.CurrentObjective(s)!.Step, Does.Contain("到访过废弃村庄"));
+        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("先沿已知道路到访废弃村庄。"), "Q129 exit_need 按实际缺项");
         Assert.That(GameEngine.TaskDone(s, "PRO05") || GameEngine.TaskDone(s, "PRO12") || GameEngine.TaskDone(s, "PRO13"), Is.False);
         E.DebugUnlockEdge(s, "field__village");
         Travel(s, "field");
         Travel(s, "village");
         Assert.That(s.UnlockedEdges, Does.Contain("village__m01_road"), "到达复核");
         Assert.That(s.Prologue.ObjectiveId, Is.EqualTo("exit_go"));
-        Assert.That(E.ObjectiveFocus(s), Is.EqualTo("doc:village_south_sign"));
+        Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:m01_road"), "Q131：指向真实下一路段，不指路标");
         Assert.That(E.ReadDocument(s, "village_south_sign").Ok, Is.True);
         Assert.That(E.ActiveDialogue(s)!.EventId, Is.EqualTo("village_south_sign"));
         ReadDialogues(s);
         Assert.That(HasFact(s, GameEngine.FactSouthSignKnown), Is.True);
-        Assert.That(GameEngine.TaskDone(s, "PRO18"), Is.False, "还没实际抵达");
+        Assert.That(GameEngine.TaskDone(s, "PRO18"), Is.False, "只读路标不完成，还没实际抵达");
         Travel(s, "m01_road");
         Assert.That(GameEngine.TaskDone(s, "PRO18"), Is.True);
         Assert.That(s.Prologue.ObjectiveId, Is.EqualTo("route_onward"));
@@ -535,6 +536,8 @@ public class B13PrologueTests : TestBase
         var h = E.CurrentHint(s);
         Assert.That(h, Is.Not.Null);
         E.DismissHint(s, h!.Value.TaskId);
+        Assert.That(E.CurrentHint(s)?.TaskId, Is.Not.EqualTo(h.Value.TaskId), "关闭后不再出这条（退回主目标的提示）");
+        E.DismissHint(s, E.CurrentHint(s)!.Value.TaskId);
         Assert.That(E.CurrentHint(s), Is.Null);
         Assert.That(GameEngine.TaskDone(s, h.Value.TaskId), Is.False, "关闭不等于完成");
         Assert.That(E.PrologueTasks(s).Single(t => t.Config.Id == h.Value.TaskId).HintDismissed, Is.True);

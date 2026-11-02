@@ -39,11 +39,12 @@ public class V10DialogueTests : BattleTestBase
         Assert.That(E.DialogueHasMore(s), Is.False, "末句：按钮为“结束对话”");
         Assert.That(E.DialogueLocked(s), Is.True, "末句展示后仍锁定，明确结束才解除");
         Assert.That(E.AckDialogue(s, "food_water").Ok, Is.True);
-        Assert.That(E.DialogueLocked(s), Is.False);
         Assert.That(d.Ended, Is.True);
+        // B13d（Q128）：开场读完后的首次可操作界面接着给 PRO01 引导的饱饱短句（另一段对话）
+        Assert.That(E.ActiveDialogue(s)?.EventId ?? "", Is.EqualTo("PRO01_reaction"));
         Assert.That(E.DialogueHistory(s).Single().Lines.Select(l => (l.Order, l.Speaker)), Is.EqualTo(new[] { (1, "饱饱"), (2, "饱饱"), (3, "饱饱") }));
         Assert.That(s.GameMinute, Is.EqualTo(m0), "对话不推进时间");
-        Assert.That(s.Story.PendingDialogues, Is.Empty);
+        Assert.That(s.Story.PendingDialogues, Is.EqualTo(new[] { "NTL_0044", "NTL_0045" }), "开场对白读完；排着的只剩 PRO01 引导短句");
         Assert.That(s.Story.SeenDialogues, Is.EqualTo(new[] { "awakening_1", "awakening_2", "food_water" }));
     }
 
@@ -142,7 +143,7 @@ public class V10DialogueTests : BattleTestBase
         var e2 = new GameEngine(cfg2);
         var back2 = SaveSerializer.Deserialize(json, cfg2, out _);
         for (var k = 0; k < 5 && e2.DialogueLocked(back2); k++) e2.AckDialogue(back2, e2.CurrentDialogueLine(back2)!.LineId);
-        Assert.That(e2.DialogueHistory(back2).Single().Lines[0].Text, Is.EqualTo("醒醒……醒醒，我饿了。"));
+        Assert.That(e2.DialogueHistory(back2).First(h => h.Lines[0].LineId == "awakening_1").Lines[0].Text, Is.EqualTo("醒醒……醒醒，我饿了。"));
 
         // 新游戏覆盖：记录重置
         var fresh = NewStory();

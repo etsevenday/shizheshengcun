@@ -184,7 +184,7 @@ namespace Survival.Core.Engine
             StartBattle(s, new List<WorldEnemy> { w }, false, "首战", FearTutorial, tutorial: true);
             // 首战建立并保存后先展示警告对白，读完才接受第一条战斗指令（R03 §7.1）
             OpenDialogue(s, EventOf(DialogueTutorialArrive));
-            PlayReactionNow(s, "PRO04");   // B13：饱饱“它过来了”排在首战警告之后
+            TutorialBattleGuide(s);   // Q128：首战教学上下文（原警告之后、首次行动结算之前）：PRO04 系统提示与饱饱“它过来了”
             st.TutorialBattleId = s.Battle?.BattleId;
         }
 
@@ -209,7 +209,7 @@ namespace Survival.Core.Engine
             CreateItems(s, sub.ItemId, Math.Max(1, sub.TutorialDrop.Count), b.LocationId, false,
                 new ItemSource { WorldEnemyId = wid, BattleId = b.BattleId, GrantEventId = grant, TutorialReward = true });
             OpenDialogue(s, EventOf(DialogueTutorialWon));
-            PlayReactionNow(s, "PRO05");   // B13：饱饱“那个东西，让我有点想靠近”在教学物质落地时
+            // Q128：PRO05 引导不在这里播，等胜利剧情读完、战斗结束后的安全边界（教学物质仍在且未融合才给）
             return $"{ItemName(sub.ItemId)}+{Math.Max(1, sub.TutorialDrop.Count)}（首战教学）";
         }
 

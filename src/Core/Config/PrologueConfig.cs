@@ -4,7 +4,8 @@ namespace Survival.Core.Config
 {
     /// <summary>
     /// 新手序章（开发计划 v0.9 B13，R39—R43）：18 项 PRO 任务、来客程望、出区、远行确认与阶段主目标。
-    /// 由 tools/import-b13-prologue.py 从 prologue-data.json 与 narrative-texts.json（Q32B 定稿）导入；对白本身在 story.dialogues（eventId = dialogueSetId）。
+    /// 由 tools/import-b13-prologue.py 从 prologue-data.json 与 narrative-texts.json（Q32B 定稿）导入，B13d 起另读 prologue-adjudications.json
+    /// （Q128 操作前引导、Q129 阶段/特殊目标/下一步短句）；对白本身在 story.dialogues（eventId = dialogueSetId）。
     /// </summary>
     public sealed class PrologueConfig
     {
@@ -15,6 +16,10 @@ namespace Survival.Core.Config
         public PrologueTalkConfig Talk { get; set; } = new PrologueTalkConfig();
         public PrologueJourneyConfig Journey { get; set; } = new PrologueJourneyConfig();
         public List<PrologueStageConfig> Stages { get; set; } = new List<PrologueStageConfig>();
+        /// <summary>6 种特殊主目标的正式文字（Q129：visitor_talk、visitor_return、exit_go、exit_need、route_onward、settle）。</summary>
+        public List<PrologueSpecialObjectiveConfig> SpecialObjectives { get; set; } = new List<PrologueSpecialObjectiveConfig>();
+        /// <summary>按实际缺项替换的下一步短句（Q129 objectivePolicy.adaptiveSteps：PRO06、PRO14、exit_need）。</summary>
+        public List<PrologueAdaptiveStepConfig> AdaptiveSteps { get; set; } = new List<PrologueAdaptiveStepConfig>();
         public List<PrologueTaskConfig> Tasks { get; set; } = new List<PrologueTaskConfig>();
         public List<PrologueDialogueSetConfig> DialogueSets { get; set; } = new List<PrologueDialogueSetConfig>();
     }
@@ -88,12 +93,29 @@ namespace Survival.Core.Config
         public int BaseMinutes { get; set; }
     }
 
-    /// <summary>阶段（S15 §2 建议五日节奏表的“当前叙事问题”作主目标标题；mainline 为取得路线后的主线接续）。</summary>
+    /// <summary>阶段（Q129 选 B：prologue-data stageTexts；标题只作任务册分组标题，不当主目标标题）。</summary>
     public sealed class PrologueStageConfig
     {
         public string Id { get; set; } = "";
-        public string Label { get; set; } = "";
         public string Headline { get; set; } = "";
+        /// <summary>该阶段的重点（任务册分组副标题）。</summary>
+        public string Focus { get; set; } = "";
+    }
+
+    /// <summary>特殊主目标（来客、出区、主线、整备）的正式标题与下一步（Q129 specialObjectiveTexts）。</summary>
+    public sealed class PrologueSpecialObjectiveConfig
+    {
+        public string Id { get; set; } = "";
+        public string Title { get; set; } = "";
+        public string Step { get; set; } = "";
+    }
+
+    /// <summary>按实际缺项替换的下一步（Q129 adaptiveSteps）：Objective 为任务 ID 或特殊目标 ID，When 为条件键。</summary>
+    public sealed class PrologueAdaptiveStepConfig
+    {
+        public string Objective { get; set; } = "";
+        public string When { get; set; } = "";
+        public string Step { get; set; } = "";
     }
 
     /// <summary>一项 PRO 教学目标（S15 §3 表、prologue-data tasks、narrative-texts taskTexts）。</summary>
@@ -106,17 +128,17 @@ namespace Survival.Core.Config
         /// <summary>归并后的阶段 ID（D1—D5、mainline）。</summary>
         public string Stage { get; set; } = "";
         public string CompletionRule { get; set; } = "";
-        /// <summary>给玩家看的“要做什么”（开发方按 CompletionRule 改写的白话，地点用显示名；试玩修复 M269）。</summary>
+        /// <summary>给玩家看的“下一步”短句（Q129 选 B：prologue-data goal = prologue-adjudications nextStep，策划正式文案）。</summary>
         public string Goal { get; set; } = "";
         public string Guidance { get; set; } = "";
         /// <summary>是不是离开门槛（PRO04 首战、PRO16 路线、PRO18 实际抵达）。</summary>
         public bool ExitGate { get; set; }
         public string ExitGateText { get; set; } = "";
-        /// <summary>PROxx_hint：中性系统提示（不是饱饱台词，不锁输入）。</summary>
+        /// <summary>PROxx_hint：操作前的中性系统提示（Q128：在相关界面/预览出现、动作提交前显示；不是饱饱台词，不锁输入）。</summary>
         public string Hint { get; set; } = "";
-        /// <summary>PROxx_reaction 对白组（饱饱/主角；饱饱不在时整组不播）。</summary>
+        /// <summary>PROxx_reaction 对白组（饱饱/主角；Q128 起与系统提示同在首次相关上下文播一次、不从完成事件排队；饱饱不在或 Legacy 时整组不播）。</summary>
         public string ReactionSet { get; set; } = "";
-        /// <summary>PROxx_done：完成时的系统反馈（非模态，进日志）。</summary>
+        /// <summary>PROxx_done：真实完成后的简短结果（非模态，只在任务框短暂显示，不进行动日志）。</summary>
         public string Done { get; set; } = "";
     }
 

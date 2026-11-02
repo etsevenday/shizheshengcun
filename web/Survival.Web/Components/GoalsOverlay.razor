@@ -59,7 +59,7 @@
                 var now = st.Id == s.Prologue.StageId;
                 var allDone = group.All(t => t.Done);
                 <section class="goal-day @(now ? "now" : "") @(allDone ? "done" : "")">
-                    <header><b>@st.Label</b><span>@st.Headline</span>@if (now) {<em class="oc-badge here">当前</em>}</header>
+                    <header><b>@st.Headline</b><span>@st.Focus</span>@if (now) {<em class="oc-badge here">当前</em>}</header>
                     <ul>
                         @foreach (var t in group)
                         {

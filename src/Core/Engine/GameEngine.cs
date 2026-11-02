@@ -904,8 +904,8 @@ namespace Survival.Core.Engine
             if (p.IsSub) s.Sub = a; else s.Main = a;
             if (p.Type != ActionType.Use && p.Type != ActionType.Fuse)
                 Emit(s, GameEventKind.ActionStarted, $"开始{a.Label}。");
-            if (p.Type == ActionType.Sleep) PlayReactionNow(s, "PRO12");   // B13：饱饱“眼睛快合上了”在开始睡眠时
-            else if (p.Type == ActionType.Use) PrologueBoundary(s);
+            // Q128：PRO12 引导在打开恢复面板/选睡眠时（提交前），开始睡眠时不再播
+            if (p.Type == ActionType.Use) PrologueBoundary(s);
             return ActionResult.Success(a.ActionId);
         }
 

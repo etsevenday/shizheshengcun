@@ -48,6 +48,7 @@ namespace Survival.Core.Save
         public const string Schema21 = "21";
         public const string Schema22 = "22";
         public const string Schema23 = "23";
+        public const string Schema24 = "24";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -86,6 +87,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema21) From21To22(s, config, notes);
             if (s.SchemaVersion == Schema22) From22To23(s, config, notes);
             if (s.SchemaVersion == Schema23) From23To24(s, config, notes);
+            if (s.SchemaVersion == Schema24) From24To25(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -901,8 +903,30 @@ namespace Survival.Core.Save
                 .ToList();
             var learned = packs.Sum(x => x.Know.Count(k => engine.KnowsKnowledge(s, k.Id)));
             if (added > 0) notes.Add($"资源点扩展到{config.Resources.Count}处（旧城警备仓的6个旧唯一箱可以领取）");
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（旧城警备仓6个旧唯一箱可领取；核心记录领取同时授予蓝图" +
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema24}（旧城警备仓6个旧唯一箱可领取；核心记录领取同时授予蓝图" +
                 (learned > 0 ? $"：已领取的{string.Join("、", packs.Select(x => x.Res.Name))}补学{learned}张蓝图，不补物资与经验" : "") + "）。" });
+            s.SchemaVersion = Schema24;
+        }
+
+        // ───────────────────────── 24 → 25 ─────────────────────────
+
+        /// <summary>
+        /// 序章操作前引导（开发计划 v0.9 B13d，R132/R134；S15/A10 Q128—Q133 本轮章、prologue-adjudications.json legacyPolicy）：
+        /// 旧的“完成后排队播放”反应队列整队丢弃、不补播；旧档里已实际播过的 PROxx_reaction 记为该项引导“已示”（换了文案也不重新弹），
+        /// 其余未完成且从未示的等之后真实相关的界面再触发，读档本身不一次排出。PRO18 改为只看实际到过旧公路：可信已到者无声追认
+        /// （标“旧档追认”，不补奖励、不发完成反馈，不伪造 south_sign_known）；其他任务、已读剧情、提示关闭/暂停偏好、进行中的动作原样保留。幂等。
+        /// </summary>
+        private static void From24To25(GameState s, GameConfig config, List<string> notes)
+        {
+            var p = s.Prologue ??= new PrologueState();
+            var dropped = p.PendingReactions.Count;
+            p.PendingReactions.Clear();
+            foreach (var t in config.Prologue.Tasks)
+                if (!string.IsNullOrEmpty(t.ReactionSet) && s.Story.DialogueLog.Any(d => d.EventId == t.ReactionSet)) p.GuideSeen.Add(t.Id);
+            p.GuideActive = p.GuidePending = p.GuidePendingAt = "";
+            var retro = new Engine.GameEngine(config).RetroPrologue(s);
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（序章改为操作前引导：相关界面打开时先给提示，完成后只给简短结果" +
+                (dropped > 0 ? $"；旧的{dropped}段待播短句不再补播" : "") + (retro.Count > 0 ? $"；已追认{string.Join("、", retro)}" : "") + "）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 
