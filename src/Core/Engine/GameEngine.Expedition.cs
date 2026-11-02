@@ -425,6 +425,171 @@ namespace Survival.Core.Engine
             return plan;
         }
 
+        // ───────────────────────── 终止远征：惩罚包与惊魂未定（M395，R03 D5/D5.1/D10，B21-6/B21-11） ─────────────────────────
+
+        /// <summary>
+        /// 现在能否主动终止本次远征（R03 D5：非战斗安全边界、确认前可取消）。返回原因，可以为 null。战斗中只解释（必须先普通撤退）；
+        /// 还在 01 没开始远征的提示可按正常 10 分钟原路离开；已通关的提示直接离开免罚。
+        /// </summary>
+        public string? CanAbortExpedition(GameState s)
+        {
+            if (s.Progress.Dead) return "角色已死亡";
+            var e = s.Expedition;
+            if (s.Battle != null) return "战斗中不能直接终止远征：先在战斗里撤退，撤退成功后再终止";
+            if (e == null)
+            {
+                var d = DungeonAt(s.CurrentLocation);
+                if (ExpeditionEnabled(d)) return $"还在入口缓冲、没有开始远征：可以按正常10分钟原路回{LocName(DungeonCfg(d!)!.Parent)}，不扣惩罚";
+                return "不在地牢远征里";
+            }
+            if (e.IsExtracting) return "已经在撤出了（不可取消）";
+            if (DungeonAt(s.CurrentLocation) != e.DungeonId) return "不在本次远征的地牢里";
+            if (DungeonCleared(s, e.DungeonId)) return "本代已通关：直接走出口或原路离开就行，不扣惩罚";
+            if (DialogueLocked(s)) return DialogueLockedReason;
+            if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
+            if (s.Main != null || s.Sub != null) return "行动进行中：先结束或取消当前行动，再终止远征";
+            if (s.AppliedEventKeys.Contains(e.Id + AbortPenaltyKeySuffix)) return "本次远征已经终止过";
+            return null;
+        }
+
+        /// <summary>某人按惩罚包扣完后的六项（不改状态）：五项最低 0，健康实扣 min(2, max(0, H−1))（R03 D5.1）。</summary>
+        public Stats AbortPenaltyAfter(Stats st)
+        {
+            var p = DX.AbortPenalty;
+            var c = st.Clone();
+            c.Add(StatId.Satiety, p.Satiety);
+            c.Add(StatId.Hydration, p.Hydration);
+            c.Add(StatId.Energy, p.Energy);
+            c.Add(StatId.Wakefulness, p.Wakefulness);
+            c.Add(StatId.Morale, p.Morale);
+            c.Add(StatId.Health, -Math.Min(p.HealthMax, Math.Max(0, st.Health - p.HealthKeep)));
+            return c;
+        }
+
+        /// <summary>
+        /// 终止确认窗的预估（R03 D5“其他位置先显示同一预估”、A10 §7）：即时损失逐人（前→后）、惊魂未定、返程路径与 T、回到哪里、返程风险。
+        /// 只读；不能终止时 Reason 写原因（战斗中、在 01、已通关等）。
+        /// </summary>
+        public AbortPreviewInfo AbortPreview(GameState s)
+        {
+            var p = new AbortPreviewInfo { Reason = CanAbortExpedition(s) };
+            var e = s.Expedition;
+            if (e == null || s.Battle != null) return p;
+            var d = DungeonCfg(e.DungeonId)!;
+            p.ExpeditionId = e.Id;
+            p.DungeonName = d.Name;
+            p.ParentName = LocName(d.Parent);
+            foreach (var a in s.PartyActors.Where(a => a.Stats.Health > 0))
+                p.Rows.Add(new AbortPenaltyRow { Id = a.Id, Name = ActorDisplayName(s, a.Id), Before = a.Stats.Clone(), After = AbortPenaltyAfter(a.Stats) });
+            p.ShakenText = ShakenText();
+            var until = s.GameMinute + DX.ShakenMinutes;
+            p.ShakenUntil = Math.Max(until, s.PartyActors.Select(a => a.ShakenUntil ?? 0).DefaultIfEmpty(0).Max());
+            if (e.IsExtracting)
+            {
+                p.Route = e.ExtractRoute.Select(LocName).ToList();
+                p.BaseMinutes = e.ExtractLegMinutes.Sum();
+                p.Factor = e.LockedFactor;
+                p.TotalMinutes = e.TotalMinutes;
+                return p;
+            }
+            var plan = ComputeExtractPlan(s, e.DungeonId, s.CurrentLocation);
+            p.Route = plan.Route.Select(LocName).ToList();
+            p.BaseMinutes = plan.BaseMinutes;
+            p.Factor = plan.Factor;
+            p.FactorReasons = plan.FactorReasons;
+            p.TotalMinutes = plan.TotalMinutes;
+            p.Risks.Add("途中饱食、水分、体力、清醒、精神不再另外下降（已含在这次损失里），但不会自然回血");
+            p.Risks.Add("已经归零的饱食/水分/清醒继续扣健康，出血、感染与病毒照常发展，可能在途中死亡");
+            p.Risks.Add($"终点是{p.ParentName}（不是营区）；回营地要另走，正常消耗");
+            p.Risks.Add("确认后立即扣除、开始撤出，途中不能取消，也不能吃喝、用药或休息");
+            return p;
+        }
+
+        /// <summary>
+        /// 主动终止本次远征（R03 D5/D10，开发假设 B21-11）：重验安全边界 → 锁请求号与返程路径/倍率/T → 每名存活同行一次扣包并记去重键
+        /// （expeditionId+abortPenalty）、惊魂未定截止取 max → 实例 EXTRACTING → 开始不可取消的撤出行动。同一请求号或同一远征重复提交只生效一次。
+        /// </summary>
+        public ActionResult AbortExpedition(GameState s, string? requestId = null)
+        {
+            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
+            if (requestId != null && s.Expedition?.AbortRequestId == requestId) return ActionResult.Repeated();
+            var why = CanAbortExpedition(s);
+            if (why != null) return ActionResult.Fail(why);
+            RememberRequest(s, requestId);
+            var e = s.Expedition!;
+            var d = DungeonCfg(e.DungeonId)!;
+            var plan = ComputeExtractPlan(s, e.DungeonId, s.CurrentLocation);
+            e.AbortRequestId = requestId;
+            e.AbortMinute = s.GameMinute;
+            e.ExtractRoute = plan.Route;
+            e.ExtractLegMinutes = plan.Legs;
+            e.LockedFactor = plan.Factor;
+            e.TotalMinutes = plan.TotalMinutes;
+            e.ElapsedMinutes = 0;
+
+            // 一次扣包（每名仍存活同行，死人不扣），记去重键；装备/技能不折减
+            var lines = new List<string>();
+            var until = s.GameMinute + DX.ShakenMinutes;
+            foreach (var a in s.PartyActors.Where(a => a.Stats.Health > 0).ToList())
+            {
+                var before = a.Stats.Clone();
+                var after = AbortPenaltyAfter(a.Stats);
+                a.Stats.Set(StatId.Satiety, after.Satiety);
+                a.Stats.Set(StatId.Hydration, after.Hydration);
+                a.Stats.Set(StatId.Energy, after.Energy);
+                a.Stats.Set(StatId.Wakefulness, after.Wakefulness);
+                a.Stats.Set(StatId.Morale, after.Morale);
+                a.Stats.Set(StatId.Health, after.Health);
+                a.ShakenUntil = Math.Max(a.ShakenUntil ?? 0, until);
+                lines.Add($"{ActorDisplayName(s, a.Id)}饱食{Fmt.N(before.Satiety)}→{Fmt.N(after.Satiety)}、水分{Fmt.N(before.Hydration)}→{Fmt.N(after.Hydration)}、体力{Fmt.N(before.Energy)}→{Fmt.N(after.Energy)}、清醒{Fmt.N(before.Wakefulness)}→{Fmt.N(after.Wakefulness)}、精神{Fmt.N(before.Morale)}→{Fmt.N(after.Morale)}、健康{Fmt.N(before.Health)}→{Fmt.N(after.Health)}");
+            }
+            s.AppliedEventKeys.Add(e.Id + AbortPenaltyKeySuffix);
+            e.PenaltyApplied = true;
+            e.Phase = ExpeditionState.Extracting;
+            if (s.DungeonInstances.TryGetValue(e.DungeonId, out var inst)) inst.Status = DungeonStatuses.Extracting;
+
+            var a0 = new ActionState
+            {
+                ActionId = s.NextActionId++,
+                Type = ActionType.Extract,
+                TargetId = d.Parent,
+                SourceLocation = s.CurrentLocation,
+                StartMinute = s.GameMinute,
+                PlannedMinutes = e.TotalMinutes,
+                Label = $"撤出到{LocName(d.Parent)}",
+            };
+            s.Main = a0;
+            Emit(s, GameEventKind.ActionStarted,
+                $"终止本次远征（{d.Name}）：{string.Join("；", lines)}；{ShakenText()}。开始撤出：{string.Join("→", e.ExtractRoute.Select(LocName))}，共{e.TotalMinutes}分钟（不可取消）。");
+            UpdateFlags(s);
+            return ActionResult.Success(a0.ActionId);
+        }
+
+        /// <summary>惊魂未定（开发假设 B21-6）：截止前第一次入战恐慌初值 +10，用掉即清；返回加值（没有为 0）。</summary>
+        private double TakeShakenPanic(GameState s, string actorId)
+        {
+            if (!s.Actors.TryGetValue(actorId, out var a) || !a.ShakenUntil.HasValue) return 0;
+            var live = a.ShakenUntil.Value > s.GameMinute;
+            a.ShakenUntil = null;
+            return live ? DX.ShakenPanic : 0;
+        }
+
+        /// <summary>撤出完成：全队到达父地点（普通到达事务，不发移动经验、不回营区），远征结束、实例回 ACTIVE。</summary>
+        private bool CompleteExtract(GameState s, ActionState a)
+        {
+            var e = s.Expedition;
+            var parent = a.TargetId;
+            s.CurrentLocation = parent;
+            s.CurrentZone = ExteriorZone;
+            var notes = new List<string>();
+            Visit(s, parent, notes);
+            ClearAction(s, a);
+            var name = e != null ? DungeonCfg(e.DungeonId)?.Name ?? e.DungeonId : "";
+            EndExpedition(s, "abort");
+            Emit(s, GameEventKind.ActionCompleted, $"撤出完成：到达{LocName(parent)}，离开了{name}（这里不是营区，回营地要另走）。" + string.Concat(notes.Select(n => n + "。")));
+            return true;
+        }
+
         // ───────────────────────── 进入预告（R03 D3、A10 §7，B21-15） ─────────────────────────
 
         /// <summary>
@@ -582,5 +747,33 @@ namespace Survival.Core.Engine
         public bool Infected { get; set; }
         public List<string> Warnings { get; set; } = new List<string>();
         public string Supplies { get; set; } = "";
+    }
+
+    /// <summary>终止远征确认窗（R03 D5、A10 §7，B21）。</summary>
+    public sealed class AbortPreviewInfo
+    {
+        /// <summary>不能终止的原因；可以终止为 null。</summary>
+        public string? Reason { get; set; }
+        public string ExpeditionId { get; set; } = "";
+        public string DungeonName { get; set; } = "";
+        public string ParentName { get; set; } = "";
+        public List<AbortPenaltyRow> Rows { get; set; } = new List<AbortPenaltyRow>();
+        public string ShakenText { get; set; } = "";
+        public int ShakenUntil { get; set; }
+        public List<string> Route { get; set; } = new List<string>();
+        public int BaseMinutes { get; set; }
+        public double Factor { get; set; } = 1;
+        public List<string> FactorReasons { get; set; } = new List<string>();
+        public int TotalMinutes { get; set; }
+        public List<string> Risks { get; set; } = new List<string>();
+    }
+
+    /// <summary>一名同行的即时损失（前→后）。</summary>
+    public sealed class AbortPenaltyRow
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public Stats Before { get; set; } = new Stats();
+        public Stats After { get; set; } = new Stats();
     }
 }

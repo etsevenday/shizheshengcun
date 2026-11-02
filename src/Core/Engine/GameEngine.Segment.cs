@@ -545,6 +545,8 @@ namespace Survival.Core.Engine
                     return CompleteSalvage(s, a);
                 case ActionType.Survey:
                     return CompleteSurvey(s, a);
+                case ActionType.Extract:
+                    return CompleteExtract(s, a);   // B21：撤出抵达父地点
                 case ActionType.Sleep:
                     ClearAction(s, a);
                     Emit(s, GameEventKind.ActionCompleted, $"睡眠结束（{Clock.Duration(a.PlannedMinutes)}）。");

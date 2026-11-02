@@ -155,6 +155,13 @@ namespace Survival.Core.Engine
                     Id = "antibioticCooldown", Name = "抗生素给药间隔", RemainingMinutes = b.AntibioticReadyAt - s.GameMinute,
                     Effect = "间隔结束前不能再用抗生素",
                 });
+            // B21：惊魂未定（R03 D5.1，开发假设 B21-6）
+            if (s.Player.ShakenUntil is int shakenUntil && shakenUntil > s.GameMinute)
+                list.Add(new ActiveCondition
+                {
+                    Id = "shaken", Name = "惊魂未定", RemainingMinutes = shakenUntil - s.GameMinute, Harmful = true,
+                    Effect = $"至{Clock.DayTime(shakenUntil)}；下一次入战恐慌初值+{Fmt.T(Config.DungeonExpedition.ShakenPanic)}（只一场，用掉即消失），不持续扣属性",
+                });
             if (b.Infected && b.BandageVirusReadyAt > s.GameMinute)
                 list.Add(new ActiveCondition
                 {
@@ -990,6 +997,7 @@ namespace Survival.Core.Engine
             var a = s.Sub ?? s.Main;
             if (a == null) return ActionResult.Fail("没有进行中的行动");
             if (a.Type == ActionType.Use || a.Type == ActionType.Ignite || a.Type == ActionType.Fuse) return ActionResult.Fail("该行动不可中途取消");
+            if (a.Type == ActionType.Extract) return ActionResult.Fail("撤出已经开始，不能取消（会一直走到外部入口）");   // B21（R03 D5.2）
 
             // B14 城市计时服务：预留的材料原物原处（不搬到地面）、配额预留随事务作废（city-services common.cancel）
             var apTxn = s.City.Pending is CityServiceTxn cp && cp.ActionId == a.ActionId && cp.AppraisalMode != null ? cp : null;   // B18

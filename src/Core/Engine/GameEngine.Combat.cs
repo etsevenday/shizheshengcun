@@ -421,11 +421,15 @@ namespace Survival.Core.Engine
             RollFear(s, b, joined, context);
             s.Battle = b;
             // R03 §5：每名角色恐慌入场按 (100−M)/2，再按 T01 受惊一次（B9a：队友用同一主惊吓源与同一随机数 u，按各自精神算概率）
+            // B21（R03 D5.1，B21-6）：惊魂未定截止前第一次入战恐慌初值再 +10（夹紧 0—100），用掉即清
+            var shaken = new List<string>();
             foreach (var id in b.Members)
                 using (FocusOn(s, id))
                 {
                     if (id != GameState.PlayerId) CopyFear(s, b, joined, context);
-                    b.Panic = Math.Max(pc.Range[0], Math.Min(pc.Range[1], (pc.InitialBase - s.Stats.Morale) / pc.InitialDivisor + b.FearPanic));
+                    var shake = TakeShakenPanic(s, id);
+                    if (shake > 0) shaken.Add(ActorDisplayName(s, id));
+                    b.Panic = Math.Max(pc.Range[0], Math.Min(pc.Range[1], (pc.InitialBase - s.Stats.Morale) / pc.InitialDivisor + b.FearPanic + shake));
                     b.PanicPeak = b.Panic;
                 }
             var names = string.Join("、", b.Enemies.Select(e => $"{PosName(e.Pos)}{EnemyName(e)}"));
@@ -438,7 +442,7 @@ namespace Survival.Core.Engine
                 var f = b.Fighter(id);
                 return $"{ActorDisplayName(s, id)}（{PosName(AllyPos(b, id))}）恐慌{Fmt.N(f.Panic)}{(f.Frightened ? $"·受惊+{Fmt.T(f.FearPanic)}" : "")}";
             }).ToList();
-            BattleLog(s, $"{source}：{names}。恐慌{Fmt.N(b.Panic)}{fearText}。" + (mates.Count > 0 ? $"同行入场：{string.Join("、", mates)}。" : "") + (left > 0 ? $"本场容量C{b.Capacity}，另有{left}只留在原地。" : ""));
+            BattleLog(s, $"{source}：{names}。恐慌{Fmt.N(b.Panic)}{fearText}。" + (mates.Count > 0 ? $"同行入场：{string.Join("、", mates)}。" : "") + (left > 0 ? $"本场容量C{b.Capacity}，另有{left}只留在原地。" : "") + (shaken.Count > 0 ? $"惊魂未定：{string.Join("、", shaken)}恐慌+{Fmt.T(DX.ShakenPanic)}（只这一场）。" : ""));
             Emit(s, GameEventKind.Battle, $"战斗开始：{names}。", null, b.Enemies.Select(e => $"enemy:{e.WorldId}"));
             // 同速排序用的锁定随机数 u（R03 §2）：入场时各抽一次并存档（在受惊判定之后抽，不改受惊结果）
             b.PlayerTieRoll = s.Rng.NextDouble();
