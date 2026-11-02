@@ -146,6 +146,17 @@
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugPrologue(G.S, "village"))'>传送到废弃村庄</button>
                     <button class="secondary" title="B13d：清空 18 项操作引导的已示/关闭记录并恢复提示，便于重看各项操作前提示（已播过的饱饱短句不再播；任务完成不变）" @onclick='() => DevDone(G.E.DebugPrologue(G.S, "guides_reset"))'>重置操作引导记录</button>
                 </div>
+                @* B14（R44、R45）：三城岗位人物与事项。传送按实际到达处理（到访、公开地点 100、接触事实）；营区登记仍须先在营门办理再走到广场 *@
+                <div class="eyebrow">城市（B14）：传送到岗位所在地 → 设施栏“人物”组点“交谈/事项”；营门登记后走到广场完成登记</div>
+                <div class="btn-row">
+                    @foreach (var (loc, label) in CityStops)
+                    {
+                        var l = loc;
+                        <button class="secondary small-btn" @onclick="() => DevDone(G.E.DebugMapTeleport(G.S, l))">@label</button>
+                    }
+                    <button class="secondary small-btn" title="当前地点的命名岗位人物离岗（由机构当班接续员代班）或回岗；只供测试岗位接续" @onclick="() => DevDone(G.E.DebugToggleCityPostAbsent(G.S))">当前地点岗位离岗/回岗</button>
+                    <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugGiveCarriedOrGround(G.S, new[] { ("bandage", 1), ("cloth", 1) }))'>草药绷带1+布料1（试换药）</button>
+                </div>
                 @* B13b（R129，Q120/Q121）：资源点逐行合格工具与搜集5级工具运用的试玩入口 *@
                 <div class="eyebrow">资源来源与工具（B13b）：随身带合格工具时资源卡按钮工时−5；搜集5级再×0.9</div>
                 <div class="btn-row">
@@ -280,6 +291,15 @@
 
     private bool DevMode => Nav.Uri.Contains("dev=1");
     private string genDungeon = "d01";
+
+    /// <summary>B14 城市开发传送点（岗位所在地；r02 为科学院外院、没有岗位）。</summary>
+    private static readonly (string, string)[] CityStops =
+    {
+        ("h01_gate", "营门（陆衡·登记）"), ("h02_square", "营区广场（许安）"), ("h03_workshop", "营区工坊（罗铮·制作告示）"),
+        ("h04_infirmary", "医务室（陈芷·换药/休息）"), ("h05_appraisal", "鉴定所（陶岑）"), ("h06_shelter", "收容所（杜穗）"),
+        ("c02_church", "教会接待庭（祁闻）"), ("c04_alms", "施济处（白苓·配给）"), ("c07_sanctuary", "圣堂（傅珩·安静休息）"),
+        ("r02_academy", "科学院外院"), ("r04_reception", "科学院接待处（温澄）"), ("r07_workshop", "试制工坊（何远·通行告示）"),
+    };
 
     private void DevDone(string text)
     {

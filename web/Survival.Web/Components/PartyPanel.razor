@@ -93,9 +93,13 @@
         var w2 = e.WornItem(s, id, EquipSlots.Weapon2);
         var weapons = string.Join(" / ", new[] { w1, w2 }.Select(w => w == null ? "空" : e.ItemName(w.ItemId) + (w.LoanSlot != null ? "（借用）" : "")));
         var toggleWhy = isMe ? null : e.SetActiveBlocked(s, id, !active);
+        // B14（A11 §6）：固定队友与同行补员分开标注；固定队友带营区职能标签（N01 §5）
+        var roster = e.RosterOf(s, id);
+        var named = isMe ? null : e.Config.Party.NamedCompanions.FirstOrDefault(n => n.ActorId == id);
+        var kind = isMe ? "" : roster?.IsEscort == true ? "同行补员" : named != null ? "固定队友" : "";
         <div class="party-row @(active ? "" : "reserve")" data-actor="@id">
             @* M191（B8 试玩）：按钮并到姓名行右侧（窄时折到下一行），每人少占一行，1280×720 下最后一人的按钮不再落到右栏底部说明条下面 *@
-            <div class="party-name"><span class="party-pos">@where</span> <b>@name</b> <span class="muted tiny">速度@(Fmt.T(e.ActorBaseSpeed(s, id)))</span>
+            <div class="party-name"><span class="party-pos">@where</span> <b>@name</b>@if (kind != "") {<span class="muted tiny" title="@(named != null && named.Affiliation != "" ? $"{kind} · {named.Affiliation}" : kind)"> @kind@(named != null && named.Affiliation != "" ? $"·{named.Affiliation}" : "")</span>} <span class="muted tiny">速度@(Fmt.T(e.ActorBaseSpeed(s, id)))</span>
             @if (!isMe)
             {
                 <span class="party-acts">

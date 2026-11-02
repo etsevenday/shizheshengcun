@@ -1395,3 +1395,15 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .jr-legs li span { margin: 0 8px; color: #cfd5c6; }
 .jr-legs li em { font-style: normal; font-size: 13px; }
 .jr-total { font-size: 14px; color: #cfd5c6; margin: 6px 0 0; line-height: 1.6; }
+/* 城市岗位事项（B14，A11 Q33 服务表） */
+.city-body { display: flex; flex-direction: column; gap: 10px; }
+.city-offer { margin: 0; font-size: 14px; color: #cfd5c6; line-height: 1.6; }
+.city-svc { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+.city-svc.pending { opacity: .7; }
+.city-svc h3 { margin: 0; font-size: 16px; font-weight: 500; color: var(--accent); }
+.city-svc h3 small { margin-left: 8px; font-size: 13px; color: var(--muted); font-weight: 400; }
+.city-svc p { margin: 0; line-height: 1.5; }
+.city-line { font-size: 14px; color: #e3e7da; }
+.city-targets { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.city-targets label { display: flex; align-items: baseline; gap: 6px; cursor: pointer; }
+.npc-card.post-card .oc-line:first-child { color: var(--muted); }

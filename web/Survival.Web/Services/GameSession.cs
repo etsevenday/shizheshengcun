@@ -377,7 +377,7 @@ public sealed class GameSession
 
     /// <summary>替换中部上方的顶栏面板：地图、制作、休息、日志，以及生存目标、生存提示、对话记录、系统说明。</summary>
     public static bool IsTopPanel(string? panel) =>
-        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth" or "journey";
+        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth" or "journey" or "city";
 
     // ───────────── 新手序章（B13，S15 §3—§8、A10-TUTOR） ─────────────
 
@@ -408,7 +408,42 @@ public sealed class GameSession
     }
 
     public ActionResult TalkNpc(string npcId) => PrologueDo(() => E.TalkNpc(S, npcId));
-    public ActionResult ReadDocument(string docId) => PrologueDo(() => E.ReadDocument(S, docId));
+    public ActionResult ReadDocument(string docId, string? choiceId = null) => PrologueDo(() => E.ReadDocument(S, docId, choiceId));
+
+    // ───────────── 城市岗位事项（B14，A11 Q33 服务表） ─────────────
+
+    /// <summary>城市事项面板当前对应的岗位 npcId。</summary>
+    public string? CityNpcId { get; set; }
+
+    /// <summary>打开某岗位的“事项”面板（预览 0 分钟，只看不提交）。</summary>
+    public void OpenCityServices(string npcId)
+    {
+        CityNpcId = npcId;
+        OpenPanel("city");
+    }
+
+    /// <summary>
+    /// 办理一项城市事项：0 分钟的当场提交（登记、咨询、工坊入口等）；有工时的开工为主行动后收起面板照常推进（换药、施济、休息）。
+    /// 公共工坊入口成功后打开制作面板。
+    /// </summary>
+    public async Task<ActionResult> StartCityService(string serviceId, string? targetActorId, string? choiceId)
+    {
+        if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        if (FormationOpen) return Commit(ActionResult.Fail(FormationOpenText));
+        var opensCraft = E.CityServicePreview(S, serviceId)?.OpensCraft == true;
+        var res = E.StartCityService(S, serviceId, targetActorId, choiceId, Guid.NewGuid().ToString("N"));
+        Notice = res.Ok ? null : res.Reason;
+        if (res.Ok)
+        {
+            if (S.Main != null || E.DialogueLocked(S)) { Panel = null; Pop = null; }
+            Drain();
+            Save();
+            if (opensCraft) { OpenPanel("craft"); return res; }
+        }
+        Notify();
+        if (res.Ok && !res.Duplicate && S.Main != null) await RunLoop();
+        return res;
+    }
     public ActionResult OpenRouteLog() => PrologueDo(() => E.OpenRouteLog(S));
     public ActionResult ConfirmJourney() => PrologueDo(() => E.ConfirmJourney(S), closePanel: false);
     public ActionResult SayNotReady() => PrologueDo(() => E.SayNotReady(S));

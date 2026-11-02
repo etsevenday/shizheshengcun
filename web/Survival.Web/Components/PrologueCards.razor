@@ -22,10 +22,15 @@
             {
                 var why = busy ? "行动进行中" : n.TalkBlocked;
                 var id = n.NpcId;
-                <ObjectCard @key="@("npc-" + id)" Id="@($"npc-{id}")" CssClass="@($"res-card npc-card{(focus == "npc:" + id ? " tut-lit" : "")}")" Title="@n.Name" Badge="@(n.HasNews ? "来客" : "可交谈")" BadgeClass="@(n.HasNews ? "new" : "")"
-                            Tooltip="@($"{n.Name}：{n.Role}。{n.Status}。点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；不是队友）")" OnClick="() => Talk(id, why)">
+                var post = n.Kind == "post";
+                var tip = post
+                    ? $"{n.Name}：{n.FactionName}·{n.Role}（{n.KindLabel}）。{n.Status}。{n.RecruitText}。{(n.QuestText.Length > 0 ? n.QuestText + "。" : "")}点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态）；“事项”查看可办的服务"
+                    : $"{n.Name}：{n.Role}。{n.Status}。点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；不是队友）";
+                <ObjectCard @key="@("npc-" + id)" Id="@($"npc-{id}")" CssClass="@($"res-card npc-card{(post ? " post-card" : "")}{(focus == "npc:" + id ? " tut-lit" : "")}")" Title="@n.Name" Badge="@(post ? n.KindLabel : n.HasNews ? "来客" : "可交谈")" BadgeClass="@(n.HasNews ? "new" : "")"
+                            Tooltip="@tip" OnClick="() => Talk(id, why)">
                     <Art><img class="npc-portrait" src="img/portraits/unknown.svg" alt="@($"{n.Name}（临时形象）")" draggable="false" /></Art>
                     <ChildContent>
+                        @if (post) { <div class="oc-line" title="@($"{n.FactionName} · {n.Role}")">@n.Role</div> }
                         <div class="oc-line" title="@($"{n.Role} · {n.Status}")">@(why ?? n.Status)</div>
                     </ChildContent>
                     <Footer>
@@ -33,6 +38,13 @@
                                 @onclick="() => Talk(id, why)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
                             <strong>交谈</strong><small>0分钟</small>
                         </button>
+                        @if (n.ServiceCount > 0)
+                        {
+                            <button type="button" class="loc-btn res-btn" title="查看这里可办的事项（浏览不耗时）"
+                                    @onclick="() => G.OpenCityServices(id)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                <strong>事项</strong><small>@(n.ServiceCount)项</small>
+                            </button>
+                        }
                     </Footer>
                 </ObjectCard>
             }
@@ -55,10 +67,24 @@
                         <div class="oc-line" title="@d.Status">@(why ?? d.Status)</div>
                     </ChildContent>
                     <Footer>
-                        <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? "查看（0分钟）")"
-                                @onclick="() => Read(id, why)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
-                            <strong>查看</strong><small>0分钟</small>
-                        </button>
+                        @if (d.Choices.Count > 0)
+                        {
+                            @foreach (var ch in d.Choices)
+                            {
+                                var cid = ch.Id;
+                                <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? $"{ch.Label}（0分钟，不改变身体状态）")"
+                                        @onclick="() => Read(id, why, cid)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                    <strong>@ch.Label</strong><small>0分钟</small>
+                                </button>
+                            }
+                        }
+                        else
+                        {
+                            <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? "查看（0分钟）")"
+                                    @onclick="() => Read(id, why)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                <strong>查看</strong><small>0分钟</small>
+                            </button>
+                        }
                     </Footer>
                 </ObjectCard>
             }
@@ -73,9 +99,11 @@
         G.TalkNpc(id);
     }
 
-    private void Read(string id, string? why)
+    private void Read(string id, string? why, string? choice = null)
     {
         if (why != null) { G.Notice = why; G.Notify(); return; }
-        G.ReadDocument(id);
+        // 有选项的告示（r07 观察区通行）点卡片本身只提示先选范围
+        if (choice == null && G.E.DocumentsHere(G.S).FirstOrDefault(d => d.Id == id)?.Choices.Count > 0) { G.Notice = "先选择通行范围"; G.Notify(); return; }
+        G.ReadDocument(id, choice);
     }
 }
