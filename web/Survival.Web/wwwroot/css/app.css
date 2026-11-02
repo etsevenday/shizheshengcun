@@ -1404,6 +1404,7 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .city-svc h3 small { margin-left: 8px; font-size: 13px; color: var(--muted); font-weight: 400; }
 .city-svc p { margin: 0; line-height: 1.5; }
 .city-line { font-size: 14px; color: #e3e7da; }
+.city-summary { font-size: 14px; color: #cfd5c6; }
 .city-targets { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
 .city-targets label { display: flex; align-items: baseline; gap: 6px; cursor: pointer; }
 .npc-card.post-card .oc-line:first-child { color: var(--muted); }

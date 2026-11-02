@@ -1,0 +1,31 @@
+@inherits GameComponent
+
+@* 公共工坊站卡（开发计划 v0.9 B14b，Q141 选 B；A11/S08/S09/A07/A08 本轮章、city-adjudications.json publicStations）：
+   营区工坊工作台/锻炉/军械台、试制工坊工作台、营区公共缝纫台、医务室公共医疗台。固定公共设施：不需建造、不能拆走，
+   0 额外使用费。点卡片打开制作面板并切到该工坊分类；没开放的写真实条件（浏览配方与门槛仍可）。 *@
+@{
+    var open = Station.Blocked == null;
+}
+<ObjectCard CssClass="fac-card public-station" Id="@($"ps-{Station.StationId}")" Title="@Station.Name" Badge="@(open ? "公共" : "未开放")" BadgeClass="@(open ? "built" : "unbuilt")" Dashed="@(!open)"
+            Tooltip="@(open ? $"{Station.Name}：公共设施，0额外费用；点击打开制作面板（{G.E.StationName(Station.StationId)}分类）。制作照常按配方材料、工时、知识与熟练门槛" : $"{Station.Name}未开放：{Station.Blocked}")" OnClick="Open">
+    <Art>@Icons.Markup(Art(Station.StationId))</Art>
+    <ChildContent>
+        <div class="oc-line @(open ? "" : "warn-line")" title="@(Station.Blocked ?? "可用 · 0额外费用")">@(open ? "可用 · 0额外费用" : Station.Blocked)</div>
+    </ChildContent>
+</ObjectCard>
+
+@code {
+    [Parameter, EditorRequired] public PublicStationView Station { get; set; } = null!;
+
+    private void Open() => G.OpenCraftStation(Station.StationId);
+
+    /// <summary>与“营地建造”里的工坊同一套图标。</summary>
+    private static string Art(string station) => station switch
+    {
+        "forge" => "fire_lit",
+        "sewing" => "cloth",
+        "medical" => "bandage",
+        "armory" => "crossbow",
+        _ => "parts",
+    };
+}

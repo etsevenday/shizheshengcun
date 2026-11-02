@@ -48,9 +48,11 @@
                         {
                             var t = tid;
                             var st = e.Config.Workshops.Stations.FirstOrDefault(x => x.Id == t && x.BuildRecipe != null);
-                            var builtSt = st == null || e.WorkshopBuilt(s, here, t);
+                            // B14b（Q141）：本地公共工坊站已开放也算可用（标签写“公共”）
+                            var builtSt = st == null || e.StationUsableHere(s, t);
+                            var pubSt = st != null && !e.WorkshopBuilt(s, here, t) && e.PublicStationOpenHere(s, t);
                             <button type="button" role="tab" aria-selected="@(tab == t)" class="craft-tab @(tab == t ? "on" : "") @(builtSt ? "" : "unbuilt")" data-tab="@t"
-                                    title="@(st == null ? tname : builtSt ? $"{tname}：{lc.Name}已建成" : $"{tname}：{lc.Name}{TabSuffix(t).TrimStart('·')}（可浏览配方与门槛）")" @onclick="() => PickTab(t)">@tname@(builtSt ? "" : TabSuffix(t))</button>
+                                    title="@(st == null ? tname : pubSt ? $"{tname}：{lc.Name}的公共{tname}已开放（0额外费用）" : builtSt ? $"{tname}：{lc.Name}已建成" : $"{tname}：{lc.Name}{TabSuffix(t).TrimStart('·')}（可浏览配方与门槛）")" @onclick="() => PickTab(t)">@tname@(pubSt ? "·公共" : builtSt ? "" : TabSuffix(t))</button>
                         }
                     </div>
             }
@@ -404,12 +406,13 @@ else
 
     private static string TabOf(RecipeConfig r) => r.IsBuild ? CampTab : r.Station;
 
-    /// <summary>工坊标签后缀：本地可建写“·未建”；不能建的地点写“·营地已建”或“·本地无”（B10 试玩修复 9）。</summary>
+    /// <summary>工坊标签后缀：本地可建写“·未建”；本地有公共站但没开放写“·未开放”（B14b，Q141）；不能建的地点写“·营地已建”或“·本地无”（B10 试玩修复 9）。</summary>
     private string TabSuffix(string station)
     {
         var e = G.E;
         var here = G.S.CurrentLocation;
         if (e.CanBuildWorkshopsAt(here)) return "·未建";
+        if (e.PublicStationsAt(here).Any(p => p.StationId == station)) return "·未开放";
         var camp = e.Config.Workshops.BuildLocations.FirstOrDefault();
         return camp != null && e.WorkshopBuilt(G.S, camp, station) ? "·营地已建" : "·本地无";
     }

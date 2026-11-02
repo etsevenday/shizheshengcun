@@ -16,7 +16,9 @@
     // B11（S03、EXP30-01）：已揭示但门槛未满足的路线显示为“未开通”卡并写明原因，不能前往
     var locked = e.AdjacentLocked(s);
     var busy = e.IsBusy(s) || G.Running;
-    var hasFacilities = lc.HasFire || lc.CanBuildShelter;
+    // B14b（Q141）：营区工坊、试制工坊、营区广场、医务室的公共工坊站卡与火堆/棚/床同在“设施”组
+    var publicStations = e.PublicStationsHere(s);
+    var hasFacilities = lc.HasFire || lc.CanBuildShelter || publicStations.Count > 0;
     var enemies = e.VisibleEnemiesAt(s, here);
 }
 
@@ -85,6 +87,10 @@
                     }
                     @* B10 试玩修复 9：营地设施栏显示已建工坊（只在可建工坊的地点） *@
                     @if (G.E.CanBuildWorkshopsAt(G.S.CurrentLocation)) { <FacilityCard Kind="workshops" /> }
+                    @foreach (var ps in publicStations)
+                    {
+                        <PublicStationCard @key="@("ps-" + ps.Id)" Station="ps" />
+                    }
                 </div>
             </div>
         }

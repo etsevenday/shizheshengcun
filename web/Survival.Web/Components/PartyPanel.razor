@@ -97,9 +97,11 @@
         var roster = e.RosterOf(s, id);
         var named = isMe ? null : e.Config.Party.NamedCompanions.FirstOrDefault(n => n.ActorId == id);
         var kind = isMe ? "" : roster?.IsEscort == true ? "同行补员" : named != null ? "固定队友" : "";
+        // B14b（Q143 选 B）：固定队友的正式背景句从配置读（旧档同样显示新句；名字、数值、技能、装备不变），放在悬停说明里
+        var kindTip = named == null ? kind : $"{kind}{(named.Affiliation != "" ? " · " + named.Affiliation : "")}{(named.Background != "" ? "：" + named.Background : "")}";
         <div class="party-row @(active ? "" : "reserve")" data-actor="@id">
             @* M191（B8 试玩）：按钮并到姓名行右侧（窄时折到下一行），每人少占一行，1280×720 下最后一人的按钮不再落到右栏底部说明条下面 *@
-            <div class="party-name"><span class="party-pos">@where</span> <b>@name</b>@if (kind != "") {<span class="muted tiny" title="@(named != null && named.Affiliation != "" ? $"{kind} · {named.Affiliation}" : kind)"> @kind@(named != null && named.Affiliation != "" ? $"·{named.Affiliation}" : "")</span>} <span class="muted tiny">速度@(Fmt.T(e.ActorBaseSpeed(s, id)))</span>
+            <div class="party-name"><span class="party-pos">@where</span> <b>@name</b>@if (kind != "") {<span class="muted tiny party-kind" title="@kindTip" data-background="@(named?.Background)"> @kind@(named != null && named.Affiliation != "" ? $"·{named.Affiliation}" : "")</span>} <span class="muted tiny">速度@(Fmt.T(e.ActorBaseSpeed(s, id)))</span>
             @if (!isMe)
             {
                 <span class="party-acts">

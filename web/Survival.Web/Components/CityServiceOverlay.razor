@@ -2,7 +2,8 @@
 
 @* 城市岗位“事项”面板（开发计划 v0.9 B14，A11「Q33 城市岗位完整服务表」、narrative-texts serviceOfferLines）：
    列出该岗位名下全部事项的实时预览（工时、费用、效果、现在能否办），需要目标的选一名当前同行者，施济另选一项；
-   预览与浏览 0 分钟、不提交。本版本未开放的事项（委托、鉴定等）只列入口并写“暂未开放”。 *@
+   预览与浏览 0 分钟、不提交。B14b（Q146 选 B）：未实装的事项不列出；已实装但条件不足的照常列出并写真实原因。
+   名称与摘要用策划正式名（Q145 选 B）。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -37,6 +38,7 @@
                       ?? (G.Running ? "行动进行中" : null);
             <section class="city-svc @(v.Implemented ? "" : "pending")">
                 <h3>@v.Title <small>@v.TimeText · @v.CostText</small></h3>
+                @if (!string.IsNullOrEmpty(v.Summary)) { <p class="city-summary">@v.Summary</p> }
                 @if (!string.IsNullOrEmpty(v.NpcLine)) { <p class="city-line">“@v.NpcLine”</p> }
                 <p class="small">@v.EffectText</p>
                 @if (v.NeedsTarget && v.Implemented)

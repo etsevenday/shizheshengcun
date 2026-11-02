@@ -412,6 +412,21 @@ public sealed class GameSession
 
     // ───────────── 城市岗位事项（B14，A11 Q33 服务表） ─────────────
 
+    /// <summary>
+    /// 打开制作面板并切到某工坊分类（B14b，Q141：点公共工坊站卡、或在营区工坊/试制工坊办“使用营区工坊/使用试制工坊”）。
+    /// 选中该分类里门槛最少的第一条配方；只是浏览，0 分钟。
+    /// </summary>
+    public void OpenCraftStation(string stationId)
+    {
+        if (State == null) return;
+        var first = E.Config.Recipes.Where(r => !r.IsSalvage && !r.IsBuild && r.Station == stationId)
+            .OrderBy(r => E.RecipeLocks(S, r).Count > 0 ? 1 : 0).FirstOrDefault();
+        OpenPanel("craft", first?.Id);
+        if (Panel != "craft") return;
+        CraftTab = stationId;
+        Notify();
+    }
+
     /// <summary>城市事项面板当前对应的岗位 npcId。</summary>
     public string? CityNpcId { get; set; }
 
@@ -438,7 +453,13 @@ public sealed class GameSession
             if (S.Main != null || E.DialogueLocked(S)) { Panel = null; Pop = null; }
             Drain();
             Save();
-            if (opensCraft) { OpenPanel("craft"); return res; }
+            if (opensCraft)
+            {
+                // Q141：打开工坊入口时切到当地第一个已开放的公共站分类；没有已开放的就留在手工
+                var st = E.PublicStationsHere(S).FirstOrDefault(p => p.Blocked == null)?.StationId;
+                OpenCraftStation(st ?? "hand");
+                return res;
+            }
         }
         Notify();
         if (res.Ok && !res.Duplicate && S.Main != null) await RunLoop();
