@@ -44,6 +44,7 @@
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261102/equipment/fire-axe-adjudications.json" Link="design.fire-axe-adjudications.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261030/facilities/appraisal-service-contract.json" Link="design.appraisal-contract.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261030/combat/expansion-combat.json" Link="design.expansion-combat.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261031/combat/legacy-elite-placements.json" Link="design.legacy-elites.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Fixtures/*.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/基础系统 v0.2/基础系统初始配置 v0.2.json" Link="config.v0.2.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

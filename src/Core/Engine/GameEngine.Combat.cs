@@ -1379,8 +1379,10 @@ namespace Survival.Core.Engine
                 var carcass = Config.AnimalCarcasses.FirstOrDefault(x => x.EnemyId == e.EnemyId);
                 if (carcass != null) b.Loot.Add(new BattleLoot { WorldId = e.WorldId, ItemId = carcass.CarcassItemId, Count = carcass.Count });
             }
-            // A09 §1 附加掉落：独立额外判一次（“固定”为必掉），首次死亡锁定、胜利才落地
-            if (cfg.ExtraDrop is EnemyDropConfig xd && (xd.Chance >= 1 || s.Rng.NextDouble() < xd.Chance))
+            // A09 §1 附加掉落：独立额外判一次（“固定”为必掉），首次死亡锁定、胜利才落地；
+            // B20 旧精英挑战（Q81）：特殊掉落替代原附加掉落，用首次接战时锁定的抽签，不另抽
+            if (EliteLoot(s, b, e) is BattleLoot el) { if (el.ItemId != null) b.Loot.Add(el); }
+            else if (cfg.ExtraDrop is EnemyDropConfig xd && (xd.Chance >= 1 || s.Rng.NextDouble() < xd.Chance))
                 b.Loot.Add(new BattleLoot { WorldId = e.WorldId, ItemId = xd.ItemId, Count = xd.Count });
             s.WorldEnemies.RemoveAll(w => w.Id == e.WorldId);
             DeathSplash(s, b, e, cfg);

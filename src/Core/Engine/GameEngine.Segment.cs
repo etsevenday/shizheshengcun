@@ -800,6 +800,8 @@ namespace Survival.Core.Engine
             SyncLayout(s);
             // B15 任务安全边界：核心记录到手的主线完成、营区广场的公开说明与备份回报（幂等，不推进时间）
             QuestBoundary(s);
+            // B20 旧精英可选挑战告示第一次出现时写一条日志（不建敌人、不挡行动）
+            EliteNoticeBoundary(s);
             // B13 序章安全边界：任务追认、来客登记/通知/抵达、排队的反应、主目标重算（幂等，不推进时间）
             PrologueBoundary(s);
         }
