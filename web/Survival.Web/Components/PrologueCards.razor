@@ -60,7 +60,7 @@
             {
                 var why = busy ? "行动进行中" : d.ReadBlocked;
                 var id = d.Id;
-                <ObjectCard @key="@("doc-" + id)" Id="@($"doc-{id}")" CssClass="@($"res-card doc-card{(focus == "doc:" + id ? " tut-lit" : "")}")" Title="@d.Title"
+                <ObjectCard @key="@("doc-" + id)" Id="@($"doc-{id}")" CssClass="@($"res-card doc-card{(d.Choices.Count > 0 ? " choice-card" : "")}{(focus == "doc:" + id ? " tut-lit" : "")}")" Title="@d.Title"
                             Tooltip="@($"{d.Title}：{d.Status}。点卡片或“查看”阅读（不耗时，不移动、不揭开未知地点；可重读）")" OnClick="() => Read(id, why)">
                     <Art>@Icons.Markup(id == "village_south_sign" ? "route" : "placeholder")</Art>
                     <ChildContent>
@@ -72,9 +72,9 @@
                             @foreach (var ch in d.Choices)
                             {
                                 var cid = ch.Id;
-                                <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? $"{ch.Label}（0分钟，不改变身体状态）")"
+                                <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? $"{ch.Label}（0分钟，不改变身体状态）")" aria-label="@ch.Label"
                                         @onclick="() => Read(id, why, cid)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
-                                    <strong>@ch.Label</strong><small>0分钟</small>
+                                    <strong>@ShortChoice(ch)</strong><small>0分钟</small>
                                 </button>
                             }
                         }
@@ -98,6 +98,16 @@
         if (why != null) { G.Notice = why; G.Notify(); return; }
         G.TalkNpc(id);
     }
+
+    /// <summary>
+    /// 告示选项按钮上的短名（试玩修复 M306 A2：完整选项名放进 title/aria-label；原长名在 1280×720 下把两个按钮撑高，上沿被卡片裁掉）。
+    /// </summary>
+    private static string ShortChoice(CityChoiceView ch) => ch.Id switch
+    {
+        "academy_pass_read_only" => "只看记录",
+        "academy_pass_decline_experiment" => "拒绝试验",
+        _ => ch.Label,
+    };
 
     private void Read(string id, string? why, string? choice = null)
     {

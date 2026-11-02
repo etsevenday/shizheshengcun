@@ -144,6 +144,61 @@ public class B14CityTests : TestBase
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(json), "幂等");
     }
 
+    /// <summary>
+    /// 试玩修复 M306 A1：真实存档 25 的 JSON 走 SaveSerializer 完整读档路径（不只调 Migrator）升到当前版本；
+    /// 原 IsMigratable 只列到 24，存档 25 被判“不兼容”。
+    /// </summary>
+    [Test]
+    public void A1_Save25_FullLoadPath_UpgradesTo26()
+    {
+        var s = At("c02_church");
+        s.Progress.Flags.Remove("church_contacted");
+        var j = JObject.Parse(SaveSerializer.Serialize(s));
+        j["SchemaVersion"] = SaveMigrator.Schema25;
+        j.Remove("City");
+        var json = j.ToString();
+        Assert.That(SaveSerializer.NeedsMigration(json), Is.True);
+        var m = SaveSerializer.Deserialize(json, Cfg, out var notes);
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
+        Assert.That(m.City, Is.Not.Null);
+        Assert.That(m.Progress.Flags, Does.Contain("church_contacted"), "到访过 c02 的旧档补接触事实");
+        Assert.That(m.Log.Count(l => l.Text.Contains($"版本{GameState.CurrentSchema}")), Is.EqualTo(1));
+        Assert.That(SaveSerializer.NeedsMigration(SaveSerializer.Serialize(m)), Is.False);
+    }
+
+    /// <summary>
+    /// 防回归（M306 A1）：SaveMigrator 里每个 SchemaN 常量与 3..当前−1 的每个数字版本都必须被读档入口接受为“可升级”；
+    /// 当前版本不算可升级，未来版本与乱码不接受；SaveMigrator 必须有“当前−1”的常量（升 schema 时漏加迁移步会在这里报）。
+    /// </summary>
+    [Test]
+    public void A1_EveryOlderSchemaIsMigratable()
+    {
+        var current = int.Parse(GameState.CurrentSchema);
+        var consts = typeof(SaveMigrator).GetFields().Where(f => f.IsLiteral && f.Name.StartsWith("Schema")).Select(f => (string)f.GetRawConstantValue()!).ToList();
+        Assert.That(consts, Does.Contain((current - 1).ToString()), "SaveMigrator 要有上一个版本的常量与迁移步");
+        foreach (var v in consts) Assert.That(SaveSerializer.IsMigratable(v), Is.True, v);
+        for (var v = 3; v < current; v++) Assert.That(SaveSerializer.IsMigratable(v.ToString()), Is.True, v.ToString());
+        Assert.That(SaveSerializer.IsMigratable(SaveMigrator.LegacySchema), Is.True);
+        Assert.That(SaveSerializer.IsMigratable(GameState.CurrentSchema), Is.False);
+        Assert.That(SaveSerializer.IsMigratable((current + 1).ToString()), Is.False);
+        Assert.That(SaveSerializer.IsMigratable("2"), Is.False);
+        Assert.That(SaveSerializer.IsMigratable(null), Is.False);
+        Assert.That(SaveSerializer.IsMigratable("x25"), Is.False);
+    }
+
+    /// <summary>试玩修复 M306：换药冷却中，目标只写一句原因（不再“预计/冷却”与“（绷带冷却中…（病毒…））”重复嵌套）。</summary>
+    [Test]
+    public void M306_DressingCooldownReason_OneSentence()
+    {
+        var s = At("h04_infirmary");
+        SetStats(s, 12, 80, 80, 15, 80, 70);
+        s.BandageReadyAt = s.GameMinute + 60;
+        var t = E.CityServicePreview(s, "clinic_dressing")!.Targets.Single();
+        Assert.That(t.Blocked, Does.StartWith("现在换药没有效果：回血冷却还需"));
+        Assert.That(t.Detail, Is.Empty);
+        Assert.That(t.Blocked, Does.Not.Contain("（"));
+    }
+
     /// <summary>旧档整条链：存档 25 往返序列化后升级，城市状态可用。</summary>
     [Test]
     public void FN06_SaveRoundTrip()

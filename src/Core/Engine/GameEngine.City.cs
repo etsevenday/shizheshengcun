@@ -260,7 +260,8 @@ namespace Survival.Core.Engine
                     v.EffectText = $"{svc.WorldMinutes}分钟后由医务室代办一次草药绷带：止血、按原公式回血（医疗按1级、不加装备加值）、病毒减量（最低1）；目标的回血与病毒减量冷却照常共享，主角不得经验；没有任何实际收益不开始";
                     var lack = svc.Inputs.Where(kv => AvailableCount(s, kv.Key, true) < kv.Value).Select(kv => $"{ItemName(kv.Key)}{AvailableCount(s, kv.Key, true)}/{kv.Value}").ToList();
                     if (v.Blocked == null && lack.Count > 0) v.Blocked = "材料不足（随身或当地地面）：" + string.Join("、", lack);
-                    v.Targets = PresentTargets(s, a => DressingBlocked(s, a), a => DressingText(s, a, svc));
+                    // 试玩修复 M306：不能换药的目标只写一句原因（原先预计/冷却与原因各写一遍，冷却重复嵌套）
+                    v.Targets = PresentTargets(s, a => DressingBlocked(s, a), a => DressingBlocked(s, a) != null ? "" : DressingText(s, a, svc));
                     break;
                 }
                 case "clinic_observation_rest":
@@ -321,7 +322,11 @@ namespace Survival.Core.Engine
         private string? DressingBlocked(GameState s, ActorState a)
         {
             if (BandageUse == null) return "没有绷带定义";
-            using (FocusOutOfBattleOn(s, a.Id)) return MedicineBlocked(s, BandageUse);
+            string? why;
+            using (FocusOutOfBattleOn(s, a.Id)) why = MedicineBlocked(s, BandageUse);
+            if (why == null) return null;
+            // 冷却造成的无收益：只写一句“现在换药没有效果：回血冷却还需…，病毒减量冷却还需…”（试玩修复 M306）
+            return a.BandageReadyAt > s.GameMinute ? "现在换药没有效果：" + ConsultCooldowns(s, a) : why;
         }
 
         private string DressingText(GameState s, ActorState a, CityServiceConfig svc)

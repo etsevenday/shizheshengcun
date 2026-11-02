@@ -61,9 +61,14 @@ namespace Survival.Core.Save
             return s;
         }
 
-        private static bool IsMigratable(string? version) =>
-            version == SaveMigrator.LegacySchema || version == SaveMigrator.Schema3 || version == SaveMigrator.Schema4 || version == SaveMigrator.Schema5
-            || version == SaveMigrator.Schema6 || version == SaveMigrator.Schema7 || version == SaveMigrator.Schema8 || version == SaveMigrator.Schema9 || version == SaveMigrator.Schema10 || version == SaveMigrator.Schema11 || version == SaveMigrator.Schema12 || version == SaveMigrator.Schema13 || version == SaveMigrator.Schema14 || version == SaveMigrator.Schema15 || version == SaveMigrator.Schema16 || version == SaveMigrator.Schema17 || version == SaveMigrator.Schema18 || version == SaveMigrator.Schema19 || version == SaveMigrator.Schema20 || version == SaveMigrator.Schema21 || version == SaveMigrator.Schema22 || version == SaveMigrator.Schema23 || version == SaveMigrator.Schema24;
+        /// <summary>
+        /// 能升级的旧版本：0.2-proto-1，或 3 到当前版本减一之间的数字版本（B14 试玩修复 A1：原逐个列举到 Schema24，
+        /// 漏了 25，存档 25 被判“不兼容”；改为按数字范围判断，以后升 schema 不必再改这里）。
+        /// </summary>
+        public static bool IsMigratable(string? version) =>
+            version == SaveMigrator.LegacySchema
+            || (int.TryParse(version, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var v)
+                && v >= 3 && v < int.Parse(GameState.CurrentSchema, System.Globalization.CultureInfo.InvariantCulture));
 
         /// <summary>schema 9 前在顶层的主角个人字段（R08 §5“旧档主角创建 actorId 一次”）。</summary>
         private static readonly string[] LegacyActorFields =
