@@ -352,6 +352,7 @@ namespace Survival.Core.Engine
             if (Config.Map.ArrivalFacts.TryGetValue(locationId, out var facts))
                 foreach (var f in facts)
                     if (s.Progress.Flags.Add(f)) notes.Add($"已与{lc.Name}建立公开接触");
+            ArriveCity(s, locationId, notes);   // B14：持登记授权实际走到营区广场才完成营区登记
             var r = RefreshGates(s);
             var routes = RouteNotes(s, r, locationId);
             if (routes.Count > 0) notes.Add("发现" + string.Join("与", routes));

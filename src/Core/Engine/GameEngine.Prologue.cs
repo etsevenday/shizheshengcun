@@ -45,6 +45,20 @@ namespace Survival.Core.Engine
         public string? TalkBlocked { get; set; }
         /// <summary>首次交谈会取得路线（卡面强调）。</summary>
         public bool HasNews { get; set; }
+        /// <summary>
+        /// 身份类型（A11 §6，B14）：visitor（序章来客）/ post（城市岗位）。固定队友、周期候选、应急补员在队伍与招募入口另标，不作岗位卡。
+        /// </summary>
+        public string Kind { get; set; } = "visitor";
+        /// <summary>卡角标（“来客”“岗位”“代班”）。</summary>
+        public string KindLabel { get; set; } = "";
+        /// <summary>所属组织显示名（岗位）。</summary>
+        public string FactionName { get; set; } = "";
+        /// <summary>命名岗位人物已退场，当前是机构当班接续员代班（不是原人物复活）。</summary>
+        public bool Substitute { get; set; }
+        /// <summary>名下服务事项数（含未开放的入口）；0 为没有“事项”按钮。</summary>
+        public int ServiceCount { get; set; }
+        public string QuestText { get; set; } = "";
+        public string RecruitText { get; set; } = "";
     }
 
     /// <summary>设施栏的固定文书/路标卡（PRO15 救助残页、南口路标）。</summary>
@@ -54,6 +68,8 @@ namespace Survival.Core.Engine
         public string Title { get; set; } = "";
         public string Status { get; set; } = "";
         public string? ReadBlocked { get; set; }
+        /// <summary>需先选一项才提交的告示（r07 观察区公开通道告示，B14）；空为直接查看。</summary>
+        public List<CityChoiceView> Choices { get; set; } = new List<CityChoiceView>();
     }
 
     /// <summary>PRO17 远行确认的只读预览（S15 §6）。</summary>
@@ -500,13 +516,13 @@ namespace Survival.Core.Engine
         /// <summary>当前地点设施栏的人物卡（B13 只有程望；B14 城市岗位在此扩展）。</summary>
         public List<NpcCardView> NpcsHere(GameState s)
         {
-            var list = new List<NpcCardView>();
+            var list = CityNpcsHere(s).ToList();
             var v = Config.Prologue.Visitor;
             if (!PrologueEnabled || string.IsNullOrEmpty(v.NpcId) || !VisitorRegistered(s) || s.CurrentLocation != v.LocationId) return list;
             var known = s.Progress.Flags.Contains(FactCampRouteKnown);
-            list.Add(new NpcCardView
+            list.Insert(0, new NpcCardView
             {
-                NpcId = v.NpcId, Name = v.Name, Role = v.Role,
+                NpcId = v.NpcId, Name = v.Name, Role = v.Role, KindLabel = known ? "可交谈" : "来客",
                 Status = known ? "已告知营区路线 · 可再问" : "有话要说 · 交谈不耗时",
                 HasNews = !known,
                 TalkBlocked = TalkBlocked(s),
@@ -529,6 +545,7 @@ namespace Survival.Core.Engine
         /// </summary>
         public ActionResult TalkNpc(GameState s, string npcId)
         {
+            if (CityNpc(npcId) is CityNpcConfig cn) return TalkCityNpc(s, cn);
             var v = Config.Prologue.Visitor;
             if (!PrologueEnabled || npcId != v.NpcId) return ActionResult.Fail("这里没有这个人");
             if (!VisitorRegistered(s) || s.CurrentLocation != v.LocationId) return ActionResult.Fail($"{v.Name}不在这里");
@@ -573,14 +590,14 @@ namespace Survival.Core.Engine
         public string? DialogueSetTitle(string eventId)
         {
             var id = eventId.Split('#')[0];
-            return Config.Prologue.DialogueSets.FirstOrDefault(d => d.Id == id)?.Title;
+            return Config.Prologue.DialogueSets.FirstOrDefault(d => d.Id == id)?.Title ?? CityDialogueSetTitle(id);
         }
 
         // ───────────────────────── 文书与路标 ─────────────────────────
 
         public List<DocumentCardView> DocumentsHere(GameState s)
         {
-            var list = new List<DocumentCardView>();
+            var list = CityNoticesHere(s).ToList();
             if (!PrologueEnabled) return list;
             foreach (var d in Config.Prologue.Documents.Where(d => d.LocationId == s.CurrentLocation))
             {
@@ -597,8 +614,12 @@ namespace Survival.Core.Engine
         /// 查看固定文书（0 分钟）：救助残页首读锁存 PRO15；南口路标在已知营区路线时识别并写永久凭证 south_sign_known（只此一次，
         /// 开边由 QMAP01 负责，路标不重复发任何东西），不知道路线时只看到模糊字迹、不写凭证。重读只回放台词。
         /// </summary>
-        public ActionResult ReadDocument(GameState s, string docId)
+        public ActionResult ReadDocument(GameState s, string docId) => ReadDocument(s, docId, null);
+
+        /// <summary>查看文书/告示；城市告示（B14）有选项时 choiceId 为所选一项。</summary>
+        public ActionResult ReadDocument(GameState s, string docId, string? choiceId)
         {
+            if (Config.City.Notices.FirstOrDefault(x => x.Id == docId) is CityNoticeConfig cn) return ReadCityNotice(s, cn, choiceId);
             var d = Config.Prologue.Documents.FirstOrDefault(x => x.Id == docId);
             if (d == null) return ActionResult.Fail("没有这份文书");
             if (s.CurrentLocation != d.LocationId) return ActionResult.Fail($"要在{LocName(d.LocationId)}才能查看");

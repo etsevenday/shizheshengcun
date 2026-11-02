@@ -382,7 +382,7 @@ public class B13dGuideTests : BattleTestBase
         var pj = (JObject)j["Prologue"]!;
         foreach (var k in new[] { "GuideSeen", "GuideActive", "GuidePending", "GuidePendingAt" }) pj.Remove(k);
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out _);
-        Assert.That(m.SchemaVersion, Is.EqualTo("25"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
         Assert.That(m.Prologue.Tasks["PRO18"].Retro, Is.True, "可信已到旧公路：无声追认");
         Assert.That(m.Prologue.LastDoneTask, Is.Not.EqualTo("PRO18"), "不发完成反馈");
         Assert.That(m.Progress.Flags.Contains(GameEngine.FactSouthSignKnown), Is.False, "不伪造路标已读");

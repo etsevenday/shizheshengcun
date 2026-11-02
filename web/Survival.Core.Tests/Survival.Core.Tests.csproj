@@ -33,6 +33,9 @@
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261031/progression/progression-adjudications.json" Link="design.progression.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261030/narrative-map/map-v3-normalized.json" Link="design.map-v3.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261030/narrative-map/gate-contract.json" Link="design.gate-contract.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261030/narrative-map/city-npc-data.json" Link="design.city-npc.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261030/narrative-map/city-services.json" Link="design.city-services.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261030/narrative-map/narrative-texts.json" Link="design.narrative-texts.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261030/narrative-map/node-expansion-rules.json" Link="design.node-expansion.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261102/map/map-adjudications.json" Link="design.map-adjudications.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261102/map/resource-adjudications.json" Link="design.resource-adjudications.json" CopyToOutputDirectory="PreserveNewest" />

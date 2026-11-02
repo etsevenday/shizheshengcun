@@ -199,8 +199,9 @@ namespace Survival.Core.Engine
 
         /// <summary>绷带一次的健康恢复量 1×(1+0.02×医疗L)（未扣除已满部分）。</summary>
         /// <summary>包扎回血：1×(1+0.02×医疗L)；非战斗再加护理笔记的 +0.2（A05 §2“非战斗有效包扎H恢复额外+0.2；不改冷却/病毒”，B4）。</summary>
-        public double BandageHeal(GameState s, int? medLevel = null) =>
-            MedicalHeal(BandageItem?.Use?.Health ?? 0, medLevel ?? SkillLevel(s, Medicine)) + (s.Battle == null ? EquipmentEffects(s).Add("bandage.health") : 0);
+        /// <remarks>gearBonus=false：医务室代办换药（B14 clinic_dressing“NPC有效medicine=1无装备增益”）不加目标身上的护理装备加值。</remarks>
+        public double BandageHeal(GameState s, int? medLevel = null, bool gearBonus = true) =>
+            MedicalHeal(BandageItem?.Use?.Health ?? 0, medLevel ?? SkillLevel(s, Medicine)) + (s.Battle == null && gearBonus ? EquipmentEffects(s).Add("bandage.health") : 0);
 
         /// <summary>绷带一次的病毒减量 2×(1+0.01×医疗L)。</summary>
         public double BandageVirusReduction(GameState s, int? medLevel = null) => Inf.Bandage.Base * (1 + Inf.Bandage.PerLevel * (medLevel ?? SkillLevel(s, Medicine)));
@@ -239,7 +240,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>药物效果在确认时应用（战外 5 分钟 wait、战内 2AP），各冷却只在对应效果实际生效时启动；有效才给医疗经验，同次只发一次。</summary>
-        private bool ApplyMedicine(GameState s, ItemUseConfig u, List<string> parts, int? medLevel = null, bool grantXp = true)
+        private bool ApplyMedicine(GameState s, ItemUseConfig u, List<string> parts, int? medLevel = null, bool grantXp = true, bool gearBonus = true)
         {
             var b = s.Body;
             var effective = false;
@@ -252,7 +253,7 @@ namespace Survival.Core.Engine
                     parts.Add("已止血");
                     effective = true;
                 }
-                var heal = s.BandageReadyAt <= s.GameMinute ? Math.Min(BandageHeal(s, medLevel), s.Stats.HealthMax - s.Stats.Health) : 0;
+                var heal = s.BandageReadyAt <= s.GameMinute ? Math.Min(BandageHeal(s, medLevel, gearBonus), s.Stats.HealthMax - s.Stats.Health) : 0;
                 if (heal > 0)
                 {
                     s.Stats.Add(StatId.Health, heal);

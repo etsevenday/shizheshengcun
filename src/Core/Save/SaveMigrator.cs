@@ -49,6 +49,7 @@ namespace Survival.Core.Save
         public const string Schema22 = "22";
         public const string Schema23 = "23";
         public const string Schema24 = "24";
+        public const string Schema25 = "25";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -88,6 +89,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema22) From22To23(s, config, notes);
             if (s.SchemaVersion == Schema23) From23To24(s, config, notes);
             if (s.SchemaVersion == Schema24) From24To25(s, config, notes);
+            if (s.SchemaVersion == Schema25) From25To26(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -925,8 +927,25 @@ namespace Survival.Core.Save
                 if (!string.IsNullOrEmpty(t.ReactionSet) && s.Story.DialogueLog.Any(d => d.EventId == t.ReactionSet)) p.GuideSeen.Add(t.Id);
             p.GuideActive = p.GuidePending = p.GuidePendingAt = "";
             var retro = new Engine.GameEngine(config).RetroPrologue(s);
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（序章改为操作前引导：相关界面打开时先给提示，完成后只给简短结果" +
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema25}（序章改为操作前引导：相关界面打开时先给提示，完成后只给简短结果" +
                 (dropped > 0 ? $"；旧的{dropped}段待播短句不再补播" : "") + (retro.Count > 0 ? $"；已追认{string.Join("、", retro)}" : "") + "）。" });
+            s.SchemaVersion = Schema25;
+        }
+
+        // ───────────────────────── 25 → 26 ─────────────────────────
+
+        /// <summary>
+        /// B14（R44、R45；N01 §3/§6、A11 §6、S02 门槛规则 3/5）：建城市岗位状态；旧势力事实 faction_works/faction_beacon 原样保留并另记
+        /// legacy_service:ID（不改 ID 成新组织、不伪造新组织接触）；任何 joined_faction* 事实改记 legacy_service（新规则永不写入会籍）；
+        /// 已到访 c02/r02 的旧档补 church_contacted/academy_contacted（等效接触，不补对白）；已有 hub_registered 的补 registration_authorized。
+        /// 不发物、不改容量与知识。幂等。
+        /// </summary>
+        private static void From25To26(GameState s, GameConfig config, List<string> notes)
+        {
+            s.City ??= new CityState();
+            var legacy = Engine.GameEngine.MigrateFactionFacts(s, config);
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（三城岗位人物与服务上线：营门登记、医务室、施济处等实地办理" +
+                (legacy.Count > 0 ? $"；{string.Join("、", legacy)}" : "") + "）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

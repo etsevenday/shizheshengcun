@@ -581,6 +581,13 @@ namespace Survival.Core.Engine
 
                 case ActionType.Wait:
                     if (plan.IsSub) return "暂停中只能补给、休息或点火维护";
+                    // B14 城市计时服务（换药 10、施济 5 分钟等）：工时取服务表，由 StartCityService 校验后发起
+                    if (r.TargetId.StartsWith(CityServicePrefix) && r.Minutes > 0 && r.Minutes % 5 == 0)
+                    {
+                        plan.Planned = r.Minutes;
+                        plan.Label = $"办理事项{Clock.Duration(r.Minutes)}";
+                        return null;
+                    }
                     if (!Config.Actions.WaitMinutes.Contains(r.Minutes)) return "等待时长无效";
                     plan.Planned = r.Minutes;
                     plan.Label = $"等待{Clock.Duration(r.Minutes)}";

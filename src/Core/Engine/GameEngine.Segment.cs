@@ -534,11 +534,13 @@ namespace Survival.Core.Engine
                     return true;
                 case ActionType.Rest:
                     ClearAction(s, a);
+                    if (a.TargetId.StartsWith(CityServicePrefix)) { CompleteCityRest(s, a); return true; }
                     Emit(s, GameEventKind.ActionCompleted, $"休息结束（{Clock.Duration(a.PlannedMinutes)}）。");
                     return true;
                 case ActionType.Wait:
                     ClearAction(s, a);
                     if (a.TargetId == EscortRegistrationTarget) { CompleteEscortRegistration(s, a); return true; }
+                    if (a.TargetId.StartsWith(CityServicePrefix)) { CompleteCityService(s, a); return true; }
                     Emit(s, GameEventKind.ActionCompleted, $"等待结束（{Clock.Duration(a.PlannedMinutes)}）。");
                     return true;
                 case ActionType.Butcher:

@@ -38,7 +38,7 @@ namespace Survival.Core.State
         /// "17" 起记服务地点迁址标记（v3 地图营区公共居所/收容所）与遗物是否公共候补遗物（策划答复 Q88/Q89，开发计划 v0.9 B8b）；
         /// "18" 起记候补照护规则版本与每名候补的自主 rest/sleep 模式（策划答复 Q90，开发计划 v0.9 B8c）。
         /// </summary>
-        public const string CurrentSchema = "25";
+        public const string CurrentSchema = "26";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -108,7 +108,12 @@ namespace Survival.Core.State
         }
 
         /// <summary>主角（p0）；战斗中为当前视角成员（轮到的队友、被结算的我方，B9a，见 BattleState.FocusId）。</summary>
-        [JsonIgnore] public ActorState Player => Actor(Battle?.FocusId ?? PlayerId);
+        [JsonIgnore] public ActorState Player => Actor(Battle?.FocusId ?? FocusOutOfBattle ?? PlayerId);
+
+        /// <summary>
+        /// 战斗外临时视角（B14 城市服务：医务室换药对指定同行者调用原绷带函数，using 作用域内有效，见 GameEngine.FocusOutOfBattleOn）。不序列化。
+        /// </summary>
+        [JsonIgnore] public string? FocusOutOfBattle { get; set; }
 
         /// <summary>同行队伍里的全部角色（主角在前），按 Party 顺序；缺失的 actorId 跳过。</summary>
         [JsonIgnore] public IEnumerable<ActorState> PartyActors => Party.Where(Actors.ContainsKey).Select(id => Actors[id]);
@@ -188,6 +193,8 @@ namespace Survival.Core.State
         public StoryState Story { get; set; } = new StoryState();
         /// <summary>新手序章：PRO 任务账、阶段与主目标、来客与系统提示（开发计划 v0.9 B13；schema 22 起）。</summary>
         public PrologueState Prologue { get; set; } = new PrologueState();
+        /// <summary>城市岗位 NPC 与服务（开发计划 v0.9 B14；schema 26 起）。</summary>
+        public CityState City { get; set; } = new CityState();
 
         [JsonIgnore] public List<GameEvent> PendingEvents { get; set; } = new List<GameEvent>();
 
@@ -222,6 +229,7 @@ namespace Survival.Core.State
             c.Traits = Traits.Select(x => x.Clone()).ToList();
             c.Story = Story.Clone();
             c.Prologue = Prologue.Clone();
+            c.City = City.Clone();
             c.PendingEvents = new List<GameEvent>();
             return c;
         }
