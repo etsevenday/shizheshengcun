@@ -151,7 +151,7 @@ public class B8PartyLossTests : TestBase
         Assert.That(E.AliveEscorts(s), Is.Empty, "中途取消不建人");
         Assert.That(E.DebugAddEscort(s), Does.Contain("编入同行"));
         Assert.That(E.EscortRegistrationBlocked(s), Does.Contain("同行没有空位"));
-        Assert.That(E.DebugAddEscort(s), Does.Contain("上限 1"), "C2 时护送员最多 1 名");
+        Assert.That(E.DebugAddEscort(s), Does.Contain("1/1"), "C2 时护送员最多 1 名（B19 起写随机/保底共享名额）");
         E.DebugTeleport(s, "field");
         Assert.That(E.EscortRegistrationBlocked(s), Does.Contain("暂代收容所"), "B8b：RB01 是收容所服务（Q88），迁址前在 camp 代办");
     }

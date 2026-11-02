@@ -81,7 +81,7 @@ namespace Survival.Core.Engine
         /// <summary>已解锁的借用矛位 loan_1..loan_{C−1}（最多 3）。</summary>
         public List<string> LoanSlotIds(GameState s) => Enumerable.Range(1, EscortCap(s)).Select(k => "loan_" + k).ToList();
 
-        /// <summary>登记条件（不含“正在等待登记”这一行动本身）：营区登记、同行有空位、没有可直接编入的存活候补、护送员未满。</summary>
+        /// <summary>登记条件（不含“正在等待登记”这一行动本身）：营区登记、同行有空位、没有可直接编入的存活候补、随机/保底共享名额未满（B19）。</summary>
         private string? EscortConditionBlocked(GameState s)
         {
             if (!s.Progress.Flags.Contains("hub_registered")) return "需要先完成营区登记（QMAP01）";
@@ -89,7 +89,8 @@ namespace Survival.Core.Engine
             if (s.Party.Count >= cap) return $"同行没有空位（{s.Party.Count}/{cap}）";
             var res = Reserves(s);
             if (res.Count > 0) return $"有可直接编入的存活候补：{string.Join("、", res.Select(r => r.Name))}";
-            if (AliveEscorts(s).Count >= EscortCap(s)) return $"存活的通用护送员已达上限 {EscortCap(s)}（C−1）";
+            // B19（R08 RC1/RC6）：RB01 与周期候选共享 K=min(3,C−1)（存活在册的随机+保底合计，含在办登记），不另开第二池；旧档超额冻结
+            if (SharedQuotaBlocked(s, true) is string quota) return quota;
             return null;
         }
 
@@ -249,7 +250,7 @@ namespace Survival.Core.Engine
         /// <summary>开发入口：加入一名通用护送员（跳过营区登记、地点与 30 分钟；仍守存活上限 C−1，满员进候补）。</summary>
         public string DebugAddEscort(GameState s)
         {
-            if (AliveEscorts(s).Count >= EscortCap(s)) return $"存活护送员已达上限 {EscortCap(s)}（C−1）";
+            if (SharedRoster(s).Count >= SharedRosterCap(s)) return $"随机/保底名册{SharedRoster(s).Count}/{SharedRosterCap(s)}（共享 K=min(3,C−1)）";
             var r = CreateEscort(s, true);
             // 与正式 RB01 登记一样写借用矛去向（试玩修复 M191：绑定到矛已损毁的借用位时也要提示报失）
             var text = $"{r.Name}已加入" + (s.Party.Contains(r.ActorId) ? "并编入同行" : "（同行已满，留作候补）") + "。" + LoanNote(s, r);

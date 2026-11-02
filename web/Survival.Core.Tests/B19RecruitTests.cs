@@ -530,4 +530,134 @@ public class B19RecruitTests : TestBase
         Assert.That(s.FormationVersion, Is.GreaterThan(ver));
         Assert.That(E.SetActiveBlocked(s, r.ActorId, true), Does.Contain("退役"));
     }
+
+    // ───────────── RB01 共享 K、旧档超额（RC6/RC7） ─────────────
+
+    /// <summary>RC10：随机与 RB01 共用 K（不各给三人）：C2 有一名随机同行时 RB01 写满额；有一名护送员时随机候选也写满额。</summary>
+    [Test]
+    public void RC10_RandomAndRb01ShareK()
+    {
+        var s = AtShelter(2);
+        var r = Recruit(s, 0);
+        Assert.That(E.EscortRegistrationBlocked(s), Does.Contain("候补"), "随机招入者留守时 RB01 先指向编入候补");
+        E.DebugToggleActive(s, r.ActorId);
+        Assert.That(E.EscortRegistrationBlocked(s), Does.Contain("同行没有空位"), "C2 同行已满");
+        Assert.That(E.SharedRoster(s).Count, Is.EqualTo(1));
+
+        var t = AtShelter(3);
+        Assert.That(E.SharedRosterCap(t), Is.EqualTo(2));
+        Assert.That(E.DebugAddEscort(t), Does.Contain("加入"));
+        Assert.That(E.DebugAddEscort(t), Does.Contain("加入"));
+        Assert.That(E.SharedRoster(t).Count, Is.EqualTo(2));
+        Assert.That(E.RecruitBlocked(t, t.Recruit.Candidates[0].CandidateId), Is.EqualTo("随机/保底名册2/2；留守不释放名额"), "护送员占满 K 时随机候选不能招");
+        Assert.That(E.DebugAddEscort(t), Does.Contain("2/2"), "护送员也不超 K");
+
+        var u = AtShelter(3);
+        Recruit(u, 0);
+        E.DebugToggleActive(u, u.Roster[0].ActorId);
+        Assert.That(E.EscortRegistrationBlocked(u), Is.Null, "C3：随机1人占1个名额，RB01 还剩1个");
+        Recruit(u, 1);
+        E.DebugToggleActive(u, u.Roster[1].ActorId);
+        Assert.That(E.SharedRosterLocked(u), Is.EqualTo(2));
+        Assert.That(E.EscortRegistrationBlocked(u), Does.Contain("同行没有空位").Or.Contain("2/2"));
+    }
+
+    /// <summary>RC09：三名生成队友都死后，RB01 在收容所随时可办（不等 72 小时周期），30 分钟只建一人。</summary>
+    [Test]
+    public void RC09_AllDead_Rb01WithoutWaitingCycle()
+    {
+        var s = AtShelter(4);
+        for (var i = 0; i < 3; i++) Recruit(s, i);
+        foreach (var r in s.Roster.ToList()) E.DebugActor(s, r.ActorId, "kill");
+        Assert.That(E.SharedRoster(s), Is.Empty, "死亡不占名额");
+        var cycle = s.Recruit.Cycle;
+        Assert.That(E.EscortRegistrationBlocked(s), Is.Null);
+        Ok(E.StartEscortRegistration(s, "rb-1"));
+        Run(s);
+        Assert.That(s.Recruit.Cycle, Is.EqualTo(cycle), "没有等到下一批");
+        Assert.That(E.AliveEscorts(s).Count, Is.EqualTo(1));
+        Assert.That(E.SharedRoster(s).Count, Is.EqualTo(1));
+    }
+
+    /// <summary>RC11：护送员退役时借用矛进认领箱、仍归原借用位；再登记 RB01 不另发矛（只指路到认领箱）；全程木矛实例数不增。</summary>
+    [Test]
+    public void RC11_RetireEscort_LoanSpearReturnsToSlot_NoNewSpear()
+    {
+        var s = AtShelter(2);
+        Ok(E.StartEscortRegistration(s));
+        Run(s);
+        var esc = E.AliveEscorts(s).Single();
+        var spearId = s.LoanSlots[esc.LoanSlot!];
+        Assert.That(s.Items.Count(i => i.ItemId == "wooden_spear"), Is.EqualTo(1));
+        Ok(E.Retire(s, esc.ActorId));
+        var spear = E.FindItem(s, spearId)!;
+        Assert.That(spear.LoanSlot, Is.EqualTo(esc.LoanSlot));
+        Assert.That(spear.Owner, Is.EqualTo(ItemInstance.RemainsOwner(esc.ActorId)));
+        Assert.That(E.LoanWhere(s, spear), Does.Contain("认领箱"));
+        Assert.That(E.ReportLostLoanBlocked(s, esc.LoanSlot!), Does.Contain("可以去取回"), "在认领箱里只指路，不能报失");
+        Ok(E.StartEscortRegistration(s));
+        Run(s);
+        var esc2 = E.AliveEscorts(s).Single();
+        Assert.That(esc2.LoanSlot, Is.EqualTo(esc.LoanSlot));
+        Assert.That(s.Items.Count(i => i.ItemId == "wooden_spear"), Is.EqualTo(1), "不因再招发第二把");
+        Assert.That(s.LoanSlots[esc.LoanSlot!], Is.EqualTo(spearId));
+        Assert.That(s.Log.Last(l => l.Text.Contains("登记完成")).Text, Does.Contain("认领箱"));
+    }
+
+    /// <summary>RC17：旧档在册生成角色超过现行 K——冻结新增（随机与 RB01），不随机删人；显式退役到合法人数后才恢复。</summary>
+    [Test]
+    public void RC17_OverK_FreezeNoDelete_RetireToLegal()
+    {
+        var s = AtShelter(4);
+        Recruit(s, 0);
+        Recruit(s, 1);
+        // 模拟旧档：容量事实只剩 C2（K=1），名册仍有 2 名随机
+        s.Progress.Flags.Remove("church_route_record");
+        s.Progress.Flags.Remove("academy_safety_record");
+        Assert.That(E.SharedRosterCap(s), Is.EqualTo(1));
+        var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Assert.That(m.Roster.Count(r => r.Present), Is.EqualTo(2), "读档不删人");
+        var id = m.Recruit.Candidates[2].CandidateId;
+        Assert.That(E.RecruitBlocked(m, id), Does.Contain("随机/保底名册2/1").And.Contain("冻结新增").And.Contain("不会随机删人"));
+        Assert.That(E.EscortRegistrationBlocked(m), Is.Not.Null);
+        Ok(E.Retire(m, m.Roster[0].ActorId));
+        Assert.That(E.RecruitBlocked(m, id), Is.EqualTo("随机/保底名册1/1；留守不释放名额"));
+        Ok(E.Retire(m, m.Roster[1].ActorId));
+        Assert.That(E.RecruitBlocked(m, id), Is.Null);
+    }
+
+    /// <summary>RC08：六名固定角色不占随机/保底名额、不被周期替换；RC16：招人不改容量 C（敌人数上限仍按 C）。</summary>
+    [Test]
+    public void RC08_RC16_FixedRosterSeparate_CapacityUnchanged()
+    {
+        var s = AtShelter(2);
+        foreach (var n in Cfg.Party.NamedCompanions) E.DebugRecruit(s, n.ActorId);
+        Assert.That(s.Roster.Count(r => r.Present), Is.EqualTo(6));
+        Assert.That(E.SharedRoster(s), Is.Empty);
+        Assert.That(E.RecruitBlocked(s, s.Recruit.Candidates[0].CandidateId), Is.Null, "固定角色不占 K");
+        Recruit(s, 0);
+        Assert.That(E.PartyCapacity(s), Is.EqualTo(2), "招人不改 C");
+        Assert.That(E.BattleCapacity(s), Is.EqualTo(2));
+        s.GameMinute = s.Recruit.ShelterOpenedAt!.Value + 4320 * 3;
+        E.EnsureRecruitCycle(s);
+        Assert.That(Cfg.Party.NamedCompanions.All(n => E.RosterOf(s, n.ActorId)!.Present), Is.True, "换批不替换固定角色");
+        Assert.That(E.RosterAliveWithPlayer(s), Is.EqualTo(8));
+    }
+
+    /// <summary>RC12：随机招入者留守按 Q90 自主照护（只补到 80、不发物、不扣你的库存），病毒不被重置。</summary>
+    [Test]
+    public void RC12_RandomReserveCare_NoFreeItems()
+    {
+        var s = AtShelter(2);
+        var r = Recruit(s, 0);
+        var a = s.Actors[r.ActorId];
+        a.Body.Infected = true;
+        a.Body.VirusLoad = 30;
+        var items = s.Items.Count;
+        WaitHalfHours(s, 4);
+        Assert.That(a.Stats.Satiety, Is.GreaterThan(40), "公共补给慢慢回升");
+        Assert.That(a.Stats.Satiety, Is.LessThanOrEqualTo(80));
+        Assert.That(a.Body.VirusLoad, Is.GreaterThanOrEqualTo(30), "照护不清病毒");
+        Assert.That(s.Items.Count, Is.EqualTo(items), "不生成物品");
+    }
 }
