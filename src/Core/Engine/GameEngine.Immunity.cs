@@ -144,6 +144,7 @@ namespace Survival.Core.Engine
             s.Body.VirusLoad = Inf.ZombificationAtLoad;
             s.Progress.Dead = true;
             s.Progress.Death = new DeathInfo { Cause = ZombifiedCause, Minute = s.GameMinute, LocationId = loc, Zombified = true };
+            ExpeditionOnDeath(s);   // B21
             Emit(s, GameEventKind.Death, $"病毒程度达到{Fmt.T(Inf.ZombificationAtLoad)}，你在{LocName(loc)}尸变了。本局结束。");
         }
 

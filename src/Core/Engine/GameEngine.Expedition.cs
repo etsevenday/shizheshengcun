@@ -574,6 +574,56 @@ namespace Survival.Core.Engine
             return live ? DX.ShakenPanic : 0;
         }
 
+        /// <summary>
+        /// 撤出段的身体速率（R03 D5.2、S12/S13 B4，开发假设 B21-10）：N/W/E/S/M 负率与腹泻额外负 W 置 0（已含在固定包内），不按工作算、
+        /// 不给自然回血；已归零的饱食/水分/清醒照常扣健康。出血、I/V、药物期限、燃料、保质与世界敌人照常由世界 tick 推进。
+        /// </summary>
+        private SegmentContext ExtractSegment(GameState s, ActorState actor, SegmentContext ctx)
+        {
+            var st = actor.Stats;
+            var hr = Config.HealthRules;
+            ctx.ActionType = ActionType.Extract;
+            ctx.IsWork = false;
+            ctx.Rates = new RateBlock();
+            var causes = new List<string>();
+            double health = 0;
+            if (st.Satiety <= 0) { health += hr.ZeroSatietyPerHour; causes.Add("饥饿"); }
+            if (st.Hydration <= 0) { health += hr.ZeroHydrationPerHour; causes.Add("缺水"); }
+            if (st.Wakefulness <= 0) { health += hr.ZeroWakefulnessPerHour; causes.Add("缺乏睡眠"); }
+            if (causes.Count > 0) ctx.DamageCause = causes[0];
+            ctx.HealthPerHour = health;
+            return ctx;
+        }
+
+        /// <summary>撤出某分钟时所在的地点（开发假设 B21-8）：先在原地用掉 T−路径时间，再按锁定倍率逐边推进，过完一条边才算到达下一个点。</summary>
+        public static string ExtractPositionAt(ExpeditionState e, int elapsed)
+        {
+            if (e.ExtractRoute.Count == 0) return "";
+            var path = e.ExtractLegMinutes.Sum() * e.LockedFactor;
+            var t = e.TotalMinutes - path;
+            var pos = e.ExtractRoute[0];
+            for (var k = 0; k < e.ExtractLegMinutes.Count && k + 1 < e.ExtractRoute.Count; k++)
+            {
+                t += e.ExtractLegMinutes[k] * e.LockedFactor;
+                if (elapsed + 1e-9 >= t) pos = e.ExtractRoute[k + 1]; else break;
+            }
+            return pos;
+        }
+
+        /// <summary>撤出推进一段后：记已推进分钟、更新所在地点（不触发首次到达、不给移动经验、不记已走物理边）。</summary>
+        private void ExtractStep(GameState s, ActionState a)
+        {
+            var e = s.Expedition;
+            if (e == null || !e.IsExtracting) return;
+            e.ElapsedMinutes = a.ElapsedMinutes;
+            var at = ExtractPositionAt(e, e.ElapsedMinutes);
+            if (at.Length > 0 && at != s.CurrentLocation)
+            {
+                s.CurrentLocation = at;
+                s.CurrentZone = ExteriorZone;
+            }
+        }
+
         /// <summary>撤出完成：全队到达父地点（普通到达事务，不发移动经验、不回营区），远征结束、实例回 ACTIVE。</summary>
         private bool CompleteExtract(GameState s, ActionState a)
         {

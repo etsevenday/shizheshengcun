@@ -55,6 +55,7 @@ namespace Survival.Core.Engine
         {
             var ctx = new SegmentContext();
             var st = actor.Stats;
+            if (a.Type == ActionType.Extract) return ExtractSegment(s, actor, ctx);   // B21：撤出段（固定包已含五项负率）
             // B17：loc 是角色所在区（place）——外部区为地点 ID，安全屋屋内为屋内地面 owner
             var inside = !_locs.ContainsKey(loc);
             var locCfg = _locs[inside ? LocationOfPlace(loc) : loc];
@@ -122,7 +123,7 @@ namespace Survival.Core.Engine
         public static ActionState CompanionAction(ActionState a)
         {
             var c = a.Clone();
-            if (a.Type != ActionType.Travel && a.Type != ActionType.Rest && a.Type != ActionType.Sleep) c.Type = ActionType.Wait;
+            if (a.Type != ActionType.Travel && a.Type != ActionType.Rest && a.Type != ActionType.Sleep && a.Type != ActionType.Extract) c.Type = ActionType.Wait;
             return c;
         }
 
@@ -244,6 +245,7 @@ namespace Survival.Core.Engine
                 done = a.ElapsedMinutes >= a.PlannedMinutes;
             }
             if (a.Type == ActionType.Sleep) { s.Progress.Flags.Add("sleptOnce"); NoteSleepSegment(s, Tick); }
+            if (a.Type == ActionType.Extract && !done) ExtractStep(s, a);   // B21-8：过完一条返程边才更新所在地点
 
             var status = SegmentStatus.Running;
             if (cookEnded != null) status = cookEnded.Value;
@@ -682,6 +684,7 @@ namespace Survival.Core.Engine
                 Minute = s.GameMinute,
                 LocationId = loc,
             };
+            ExpeditionOnDeath(s);   // B21：主角终局，远征停止（不再推进返程、不到父地点）
             Emit(s, GameEventKind.Death, $"你在{LocName(loc)}倒下了。直接原因：{s.Progress.Death.Cause}。");
         }
 
@@ -748,6 +751,8 @@ namespace Survival.Core.Engine
                 Emit(s, GameEventKind.Alert, ActorPrefix(t.actor) + AlertText(t.stat, t.zero), t.stat);
 
             var main = s.Main;
+            // B21-9：撤出不因阈值暂停（只写日志，R03 D5.2/S13“不可取消”）
+            if (ran.Type == ActionType.Extract) return false;
             if (!ran.IsSub && !completed && main != null && main.ActionId == ran.ActionId && main.Status == ActionStatus.Running)
             {
                 var first = triggers[0];
