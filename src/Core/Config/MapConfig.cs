@@ -24,7 +24,7 @@ namespace Survival.Core.Config
         public Dictionary<string, string> FactLabels { get; set; } = new Dictionary<string, string>();
         /// <summary>实际到达成功即提交的事实（gate-contract factProducers：c02 → church_contacted，r02 → academy_contacted）。</summary>
         public Dictionary<string, List<string>> ArrivalFacts { get; set; } = new Dictionary<string, List<string>>();
-        /// <summary>新区探索 75% 的安全线索文字（不另发物资，S03「新区探索与发现」）。</summary>
+        /// <summary>新区探索 75% 安全线索日志的引导语（开发方措辞“一条安全线索：”），后接该地点的逐点文案 <see cref="LocationConfig.Clue"/>（Q117 选 B，B13a）。</summary>
         public string ClueText { get; set; } = "";
         /// <summary>旧核心节点 → 新核心节点（legacy-node-claim-migration.json：d01_06→d01_08 等；按 claim 身份迁移，不对同号侧室全局替换，B12 R37）。</summary>
         public Dictionary<string, string> LegacyCoreNodes { get; set; } = new Dictionary<string, string>();

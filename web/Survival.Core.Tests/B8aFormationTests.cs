@@ -12,6 +12,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B8aFormationTests : BattleTestBase
 {
+    /// <summary>迁址前口径：服务在替身 camp（见 TestBase.ServiceStandIn）。</summary>
+    protected override bool ServiceStandIn => true;
+
     private static JObject Formation() =>
         (JObject)JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.a12.json")))["combatResolutionAdjudications"]!["formation"]!;
 

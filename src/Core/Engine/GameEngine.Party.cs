@@ -40,10 +40,17 @@ namespace Survival.Core.Engine
         public bool AtShelter(GameState s) => s.CurrentLocation == ShelterLocation(s);
 
         /// <summary>
-        /// 地图里已有 v3 的营区公共居所与收容所两个节点，且配置允许迁址（config.map.servicesAtV3Nodes）。B11 已导入节点，但营区登记
-        /// （register 门槛事实）在 B14，迁过去玩家走不到，所以 B11 保持 false、服务继续在 camp 代办（开发假设 B11-9）。
+        /// 地图里已有 v3 的营区公共居所与收容所两个节点，且配置允许迁址（config.map.servicesAtV3Nodes）。B11 曾保持 false（开发假设 B11-9）；
+        /// Q119 选 B 起为 true：不等营区登记（B14）就启用正式地址，未登记的玩家暂时走不到 h02/h06 办理，是策划明确接受的过渡（B13a）。
         /// </summary>
         public bool ServiceMapV3Available => Config.Map.ServicesAtV3Nodes && _locs.ContainsKey(Config.Party.HubV3) && _locs.ContainsKey(Config.Party.ShelterV3);
+
+        /// <summary>原因里的“地点（服务）”：地点名与服务名相同（收容所）时只写一次，不写“收容所（收容所）”。</summary>
+        private string ServiceWhere(GameState s, string loc, bool shelter)
+        {
+            var place = ServicePlace(s, shelter);
+            return LocName(loc) == place ? place : $"{LocName(loc)}（{place}）";
+        }
 
         /// <summary>服务地点的称呼：迁址前替身地点写“暂代营区/暂代收容所”，迁址后写“营区/收容所”。</summary>
         private string ServicePlace(GameState s, bool shelter) =>
@@ -155,7 +162,14 @@ namespace Survival.Core.Engine
             if (s.Main != null || s.Sub != null) return $"正在行动，不能{verb}";
             if (DialogueLocked(s)) return "先读完对话";
             var loc = shelter ? ShelterLocation(s) : HubLocation(s);
-            if (s.CurrentLocation != loc) return $"只能在{LocName(loc)}（{ServicePlace(s, shelter)}）安全空闲时{verb}";
+            if (s.CurrentLocation != loc)
+            {
+                // Q119 选 B（R08/A11/S14 本轮章）：迁址后临时营地不再收新请求，在原替身地点给出去哪办的提示（不自动开路线、不传送）
+                var standIn = shelter ? Config.Party.ShelterStandIn : Config.Party.HubStandIn;
+                if (s.ServiceMapMigrated && s.CurrentLocation == standIn)
+                    return $"{LocName(standIn)}已不再代办；要到{ServiceWhere(s, loc, shelter)}安全空闲时{verb}";
+                return $"只能在{ServiceWhere(s, loc, shelter)}安全空闲时{verb}";
+            }
             return null;
         }
 

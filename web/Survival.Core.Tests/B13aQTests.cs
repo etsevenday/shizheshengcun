@@ -7,7 +7,7 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// 开发计划 v0.9 批次 B13a（R124—R128；本文件先含 R124—R126）：策划提交 7154269 答复待确认 Q114—Q119。出处 S02/S03/S09/S13/S14/R08/A08/A11 本轮章、
+/// 开发计划 v0.9 批次 B13a（R124—R128）：策划提交 7154269 答复待确认 Q114—Q119。出处 S02/S03/S09/S13/S14/R08/A08/A11 本轮章、
 /// assets/20261102/map/map-adjudications.json、gate-contract.json stateRules、party-adjudications.json serviceLocations.v3Activation；
 /// 验收 A10「Q114—Q119 可判定验收」MAP-Q114-01、MAP-Q115-01/02、MAP-Q116-01、MAP-Q117-01、MAP-Q118-01/02、HOUSE-Q118-01/02、PARTY-Q119-01—03。
 /// </summary>
@@ -158,5 +158,244 @@ public class B13aQTests : TestBase
         E.DebugSetProgress(t, "clinic", 100);
         var back = E.AdjacentLocked(t).Single(x => x.Target == "village");
         Assert.That(back.Reason, Does.Contain("废弃村庄"));
+    }
+
+    // ───────────── R127 / Q117 ─────────────
+
+    /// <summary>MAP-Q117-01：45 点恰各一条逐点 75% 文案（同源 map-adjudications），只记一次；不加物资/揭路/揭资源；旧点/城市/地牢没有；读档、取消不重播；旧档已过 75% 不补。</summary>
+    [Test]
+    public void MAP_Q117_01_PerNodeClue_OnceOnly_NoExtras()
+    {
+        var clues = ((JArray)Adj()["clues"]!).ToDictionary(c => (string)c["nodeId"]!, c => (string)c["text"]!);
+        Assert.That(clues, Has.Count.EqualTo(45));
+        Assert.That(Cfg.Locations.Where(l => l.Clue != null).ToDictionary(l => l.Id, l => l.Clue!), Is.EquivalentTo(clues));
+        Assert.That(Cfg.Locations.Where(l => l.Clue != null).All(l => !l.IsStarter && !l.IsDungeon && !l.ExploreAuto100OnVisit && l.ExploreEnabled), Is.True);
+
+        var s = New();
+        E.DebugTeleport(s, "w11_orchard");
+        Explore(s);
+        Explore(s);
+        var res = s.Resources.Count(kv => kv.Value.Discovered);
+        var edges = s.UnlockedEdges.Count;
+        var t75 = Explore(s);
+        Assert.That(t75, Does.Contain("发现一条安全线索：" + clues["w11_orchard"].TrimEnd('。')));
+        Assert.That(s.Resources.Count(kv => kv.Value.Discovered), Is.EqualTo(res), "不揭资源");
+        Assert.That(s.UnlockedEdges.Count, Is.EqualTo(edges), "不揭路");
+        int Count(GameState x) => x.Log.Count(l => l.Text.Contains(clues["w11_orchard"].TrimEnd('。')));
+        var m = Reload(s);
+        Assert.That(Count(m), Is.EqualTo(1), "读档不重播");
+        Start(m, ActionRequest.Explore());
+        E.Cancel(m);
+        Assert.That(Count(m), Is.EqualTo(1), "取消不重播");
+        Explore(m);
+        Assert.That(Count(m), Is.EqualTo(1), "100% 不再记线索");
+
+        // 旧档已过 75%：视为已过，不补
+        var o = New();
+        E.DebugTeleport(o, "m01_road");
+        E.DebugSetProgress(o, "m01_road", 75);
+        Explore(o);
+        Assert.That(o.Log.Any(l => l.Text.Contains(clues["m01_road"].TrimEnd('。'))), Is.False);
+
+        // 地牢房间 / 公开城市 / 旧 8 地点没有线索
+        Assert.That(Cfg.Locations.Where(l => l.IsDungeon || l.ExploreAuto100OnVisit || l.IsStarter).All(l => l.Clue == null), Is.True);
+    }
+
+    // ───────────── R127 / Q118 ─────────────
+
+    /// <summary>MAP-Q118-01：135 新节点 76 室内 / 59 露天，与策划表逐点一致；旧 8 点原标签不变（五金店、诊所室内，其余露天）。</summary>
+    [Test]
+    public void MAP_Q118_01_ExposureTable_Matches()
+    {
+        var table = ((JArray)Adj()["exposure"]!).ToDictionary(x => (string)x["nodeId"]!, x => (string)x["exposure"]!);
+        Assert.That(table, Has.Count.EqualTo(135));
+        foreach (var (id, ex) in table) Assert.That(E.Location(id).Exposure, Is.EqualTo(ex), id);
+        Assert.That(table.Values.Count(v => v == "indoor"), Is.EqualTo(76));
+        Assert.That(Starter.Where(id => E.Location(id).IsIndoor), Is.EquivalentTo(new[] { "hardware", "clinic" }));
+        Assert.That(E.Location("h02_square").IsIndoor, Is.False, "营区广场仍露天");
+        Assert.That(E.Location("h06_shelter").IsIndoor, Is.True);
+    }
+
+    /// <summary>
+    /// MAP-Q118-02：天然室内只给 S13 基础遮蔽——遮蔽睡眠速率与遮蔽休息的健康自然恢复；不给棚休息 M+2、床垫 E+1；露天节点不遮蔽；
+    /// 换到新标签后按当前位置每段实时判定（不回溯旧恢复）。
+    /// </summary>
+    [Test]
+    public void MAP_Q118_02_NaturalIndoor_BasicShelterOnly()
+    {
+        var s = New();
+        E.DebugTeleport(s, "w13_mill");   // 天然室内野外
+        Assert.That(E.IsSheltered(s, "w13_mill"), Is.True);
+        var sleep = E.ComputeSegment(s, new ActionState { Type = ActionType.Sleep, TargetId = "" });
+        Assert.That(sleep.Sheltered, Is.True);
+        Assert.That(sleep.Rates.Energy, Is.EqualTo(Cfg.HourlyRates["sleep_sheltered"].Energy).Within(1e-9), "无床垫 E+1");
+        var rest = E.ComputeSegment(s, new ActionState { Type = ActionType.Rest, TargetId = "" });
+        Assert.That(rest.Rates.Morale, Is.EqualTo(Cfg.HourlyRates["rest"].Morale).Within(1e-9), "没有棚休息 M+2");
+        Assert.That(rest.HealthPerHour, Is.EqualTo(Cfg.HealthRules.ShelteredRestRecoveryPerHour).Within(1e-9), "遮蔽休息按 S13 自然恢复（条件满足时）");
+
+        E.DebugTeleport(s, "w11_orchard");   // 露天
+        Assert.That(E.IsSheltered(s, "w11_orchard"), Is.False);
+        Assert.That(E.ComputeSegment(s, new ActionState { Type = ActionType.Rest, TargetId = "" }).HealthPerHour, Is.EqualTo(0).Within(1e-9));
+
+        // 营地已建棚的休息 M+2 只认营地棚
+        E.DebugTeleport(s, "camp");
+        s.Locations["camp"].Facility.ShelterBuilt = true;
+        var campRest = E.ComputeSegment(s, new ActionState { Type = ActionType.Rest, TargetId = "" });
+        Assert.That(campRest.Rates.Morale, Is.EqualTo(Cfg.HourlyRates["rest"].Morale + Cfg.FacilityEffects.ShelteredCampRestMoralePerHour).Within(1e-9));
+        Assert.That(E.Location("w13_mill").CanBuildShelter, Is.False, "室内不是建设许可");
+    }
+
+    /// <summary>
+    /// HOUSE-Q118-01：地牢 67 点及势力/公共/任务保留地都不许私人住宅（与策划表 safehouseAllowed 一致）；现有营地建造入口在这些地点预览即拒绝并写具体原因，
+    /// 不扣材料、不花时间；允许的野外仍只能在营地建造（住宅本身在 B17）。
+    /// </summary>
+    [Test]
+    public void HOUSE_Q118_01_ForbiddenLand_BuildRefusedWithReason()
+    {
+        foreach (var x in (JArray)Adj()["exposure"]!)
+        {
+            var l = E.Location((string)x["nodeId"]!);
+            Assert.That(l.BuildAllowedSafehouse, Is.EqualTo((bool)x["safehouseAllowed"]!), l.Id);
+            if (l.IsDungeon || l.LandOwner is "faction" or "public" or "quest_reserved")
+            {
+                Assert.That(l.BuildAllowedSafehouse, Is.False, l.Id);
+                Assert.That(l.PrivateBuildForbidden, Is.Not.Null, l.Id);
+            }
+            Assert.That(l.CanBuildShelter, Is.False, $"{l.Id}：新节点没有营地建造入口");
+        }
+        Assert.That(Cfg.Locations.Count(l => l.IsDungeon), Is.EqualTo(67));
+
+        var s = New();
+        foreach (var (loc, why) in new[] { ("d05_01", "地牢内不可建设私人住宅"), ("c02_church", "势力/公共土地不可建设私人住宅"), ("h02_square", "势力/公共土地不可建设私人住宅") })
+        {
+            E.DebugTeleport(s, loc);
+            var minute = s.GameMinute;
+            var items = s.Items.Count;
+            foreach (var rid in new[] { "shelter", "bed", "build_workbench" })
+            {
+                var r = E.Start(s, ActionRequest.Craft(rid));
+                Assert.That(r.Ok, Is.False, $"{loc}/{rid}");
+                Assert.That(r.Reason, Does.Contain(why), $"{loc}/{rid}");
+            }
+            Assert.That((s.GameMinute, s.Items.Count, s.Main), Is.EqualTo((minute, items, (ActionState?)null)), "不扣费、不花时间");
+        }
+        E.DebugTeleport(s, "w13_mill");
+        var ok = E.Start(s, ActionRequest.Craft("shelter"));
+        Assert.That(ok.Reason, Is.EqualTo("只能在营地建造"), "允许地块也没有住宅入口（B17）");
+    }
+
+    /// <summary>HOUSE-Q118-02（本批可判定部分）：给新节点加室内标签不会产生住宅/棚/床/柜；营地棚不会自动升级或赠屋。住宅本身在 B17。</summary>
+    [Test]
+    public void HOUSE_Q118_02_IndoorTagIsNotHousing()
+    {
+        var s = New();
+        foreach (var l in Cfg.Locations.Where(l => l.IsIndoor && !l.IsStarter))
+        {
+            var f = s.Locations[l.Id].Facility;
+            Assert.That((f.ShelterBuilt, f.BedBuilt, l.CanBuildShelter, l.HasFire), Is.EqualTo((false, false, false, false)), l.Id);
+        }
+        Assert.That(Cfg.Recipes.Any(r => r.Id.Contains("safehouse") || r.Name.Contains("住宅") || r.Name.Contains("安全屋")), Is.False, "本批没有住宅配方（B17）");
+    }
+
+    // ───────────── R128 / Q119 ─────────────
+
+    private static void Prep(GameState s, int c = 4)
+    {
+        if (c >= 2) s.Progress.Flags.Add("hub_registered");
+        if (c >= 3) s.Progress.Flags.Add("church_route_record");
+        if (c >= 4) s.Progress.Flags.Add("academy_safety_record");
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        s.GameMinute = At(1, 10, 0);
+    }
+
+    /// <summary>
+    /// PARTY-Q119-01：游戏数据启用正式地址（servicesAtV3Nodes=true）；新局直接 h02/h06；camp 没有新请求代办、原因写去哪办；
+    /// 未登记不会因迁址开路线、不传送；当前同行号位编辑任意空闲地点照常。
+    /// </summary>
+    [Test]
+    public void PARTY_Q119_01_ServicesAtV3Now_CampHintOnly_NoFreeRoute()
+    {
+        var sm = (JObject)Adj()["serviceMigration"]!;
+        Assert.That(Cfg.Map.ServicesAtV3Nodes, Is.EqualTo((bool)sm["servicesAtV3Nodes"]!));
+        Assert.That((Cfg.Party.HubV3, Cfg.Party.ShelterV3), Is.EqualTo(((string)sm["hub"]!, (string)sm["shelter"]!)));
+
+        var s = New();
+        Assert.That(s.ServiceMapMigrated, Is.True);
+        Assert.That((E.HubLocation(s), E.ShelterLocation(s)), Is.EqualTo(("h02_square", "h06_shelter")));
+        Assert.That(s.CurrentLocation, Is.EqualTo("camp"));
+        Assert.That(E.EscortRegistrationBlocked(s), Is.EqualTo("临时营地已不再代办；要到收容所安全空闲时登记补员"));
+        E.DebugRecruit(s, "npc_lin_zhao");
+        Assert.That(E.SetActiveBlocked(s, "npc_lin_zhao", false), Is.EqualTo("临时营地已不再代办；要到营区广场（营区）安全空闲时留作候补"));
+        Assert.That(E.FormationEditBlocked(s), Is.Null, "号位编辑仍任意空闲地点（Q86）");
+        Assert.That(s.UnlockedEdges.Any(id => E.Edge(id).Touches("h02_square") || E.Edge(id).Touches("h06_shelter")), Is.False, "不免费开营区路线");
+        Assert.That(s.Locations["h02_square"].Visited || s.Locations["h06_shelter"].Visited, Is.False);
+        E.DebugTeleport(s, "field");
+        Assert.That(E.EscortRegistrationBlocked(s), Does.StartWith("只能在收容所安全空闲时登记补员"), "别处照常写正式地址");
+    }
+
+    /// <summary>
+    /// PARTY-Q119-02：迁址前的旧档读入后只迁一次——明确公共候补遗物迁 h02（实例/耐久不变），来源不明（null）与同行者 camp 遗物、camp 地面物不迁；
+    /// 在办 camp RB01 按原快照在 camp 收尾、只建一人，之后新请求只在 h06。
+    /// </summary>
+    [Test]
+    public void PARTY_Q119_02_OldSave_MigratesOnce_Rb01Snapshot()
+    {
+        var s = New();
+        s.ServiceMapMigrated = false;   // 迁址前旧档（B11 口径：服务在 camp）
+        Prep(s, 2);
+        E.DebugRecruit(s, "npc_gu_cheng");
+        E.SetActive(s, "npc_gu_cheng", false);
+        E.DebugActor(s, "npc_gu_cheng", "kill");
+        E.DebugRecruit(s, "npc_lin_zhao");
+        E.DebugActor(s, "npc_lin_zhao", "kill");
+        s.Remains["npc_lin_zhao"].PublicReserve = null;   // 旧档分不清来源
+        var guItems = E.RemainsItems(s, "npc_gu_cheng").Select(i => (i.InstanceId, i.Durability)).OrderBy(x => x).ToList();
+        E.CreateItems(s, "wood", 1, "camp");
+        int CampWood(GameState x) => x.Items.Where(i => i.Owner == "camp" && i.ItemId == "wood").Sum(i => i.Count);
+        var wood = CampWood(s);
+        Assert.That(E.StartEscortRegistration(s, "rb-old").Ok, Is.True, "迁址前在 camp 开始的 RB01");
+
+        var m = Reload(s);
+        Assert.That(E.MigrateServiceLocations(m), Is.True);
+        Assert.That(E.MigrateServiceLocations(m), Is.False, "只迁一次");
+        Assert.That(m.Remains["npc_gu_cheng"].LocationId, Is.EqualTo("h02_square"));
+        Assert.That(E.RemainsItems(m, "npc_gu_cheng").Select(i => (i.InstanceId, i.Durability)).OrderBy(x => x), Is.EqualTo(guItems));
+        Assert.That(m.Remains["npc_lin_zhao"].LocationId, Is.EqualTo("camp"), "来源不明不迁、原地可取");
+        Assert.That(CampWood(m), Is.EqualTo(wood), "camp 普通地面物不迁");
+        for (var i = 0; i < 200 && m.Main != null; i++) E.Advance(m);
+        Assert.That(E.AliveEscorts(m), Has.Count.EqualTo(1), "按原快照收尾，只建一人");
+        Assert.That(E.StartEscortRegistration(m, "rb-new").Ok, Is.False);
+        Assert.That(E.EscortRegistrationBlocked(m), Does.Contain("收容所"), "新请求只在 h06");
+        Assert.That(m.UnlockedEdges.Count, Is.EqualTo(Reload(s).UnlockedEdges.Count), "迁址不开路线");
+    }
+
+    /// <summary>PARTY-Q119-03：候补在 h02 按 Q90 持续自主恢复（读 h02 实际设施：露天无棚床，camp 的棚床不远程生效）、不瞬回；h06 报失新矛只落 h06 地面。</summary>
+    [Test]
+    public void PARTY_Q119_03_ReserveCareAtNewSite_LoanReplacementAtShelter()
+    {
+        var s = New();
+        Prep(s, 2);
+        s.Locations["camp"].Facility.ShelterBuilt = true;
+        s.Locations["camp"].Facility.BedBuilt = true;
+        E.DebugTeleport(s, "h02_square");
+        E.DebugRecruit(s, "npc_lin_zhao");
+        Assert.That(E.SetActive(s, "npc_lin_zhao", false).Ok, Is.True);
+        Assert.That(E.ReserveFacility(s), Is.EqualTo("none"), "h02 广场露天，camp 的棚床不远程生效");
+        var a = s.Actors["npc_lin_zhao"];
+        a.Stats.Satiety = 50;
+        Assert.That(a.Stats.Satiety, Is.EqualTo(50), "切换本身不瞬回");
+        E.DebugTeleport(s, "field");
+        Start(s, ActionRequest.Rest(60));
+        Run(s);
+        Assert.That(a.Stats.Satiety, Is.GreaterThan(50).And.LessThanOrEqualTo(Cfg.Party.ReserveCare.PublicNutritionTarget), "玩家不在 h02 也持续公共补给");
+
+        E.DebugTeleport(s, "h06_shelter");
+        E.DebugAddEscort(s);
+        var esc = E.AliveEscorts(s).Single();
+        s.Items.Single(i => i.LoanSlot == "loan_1").Durability = 0;
+        E.DebugActor(s, esc.ActorId, "kill");
+        Assert.That(E.ReportLostLoan(s, "loan_1", "lost-q119").Ok, Is.True);
+        Assert.That(s.Items.Single(i => i.LoanSlot == "loan_1").Owner, Is.EqualTo("h06_shelter"));
     }
 }

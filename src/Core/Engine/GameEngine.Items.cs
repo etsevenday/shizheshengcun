@@ -603,7 +603,7 @@ namespace Survival.Core.Engine
                     found.Add(r.Name);
                     ids.Add(r.NodeId);
                 }
-                if (t == 75 && HasClue(lc)) found.Add(Config.Map.ClueText);
+                if (t == 75 && HasClue(lc)) found.Add(ClueLine(lc));
             }
             var r2 = RefreshGates(s);
             found.AddRange(RouteNotes(s, r2, locationId));
@@ -612,8 +612,14 @@ namespace Survival.Core.Engine
             return (old, now, found, ids);
         }
 
-        /// <summary>75% 安全线索只给 v3 新增普通野外（旧 8 地点照旧、地牢房间没有 25/75 里程碑，S03/Q31）。</summary>
-        private bool HasClue(Config.LocationConfig lc) => !lc.IsStarter && !lc.IsDungeon && !string.IsNullOrEmpty(Config.Map.ClueText);
+        /// <summary>
+        /// 75% 安全线索只给有逐点文案的 45 个新普通野外（Q117 选 B：旧 8 地点、公开自动 100 节点、地牢房间都没有）。
+        /// 跟着原 75% 里程碑只记一次（TriggeredMilestones），取消、重复请求、读档不重播；旧档已过 75% 的不补。
+        /// </summary>
+        private static bool HasClue(Config.LocationConfig lc) => !string.IsNullOrEmpty(lc.Clue) && !lc.IsStarter && !lc.IsDungeon;
+
+        /// <summary>日志里的线索短语：“一条安全线索：&lt;逐点文案&gt;”（去掉文案末尾句号，接在“发现……”句里）。</summary>
+        private string ClueLine(Config.LocationConfig lc) => Config.Map.ClueText + lc.Clue!.TrimEnd('。');
 
         /// <summary>重判门槛并返回本次新开通的边（v3 门槛求值器，B11；旧式 unlockAny 边同样处理）。</summary>
         private List<Config.EdgeConfig> UnlockEdges(GameState s) => RefreshGates(s).Unlocked;

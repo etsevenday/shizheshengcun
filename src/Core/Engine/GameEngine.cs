@@ -58,6 +58,17 @@ namespace Survival.Core.Engine
 
         public bool IsDaylight(int minute) => Clock.IsDaylight(minute, Config.Time.DaylightStartMinute, Config.Time.DaylightEndMinute);
 
+        /// <summary>
+        /// 营地建造（遮蔽棚、床垫、工坊等）在非营地的拒绝原因；地牢内、势力/公共/任务保留地先写明禁建私人住宅（Q118，S14 本轮章“不能只写未解锁”）。
+        /// 预览即拒绝，不扣材料、不花时间。
+        /// </summary>
+        private static string BuildOnlyAtCamp(LocationConfig lc) =>
+            lc.PrivateBuildForbidden is string why ? $"{why}；遮蔽棚、床垫与工坊只能在营地建造" : "只能在营地建造";
+
+        /// <summary>
+        /// 该地点现在是否遮蔽：天然完整室内（exposure=indoor，Q118 补充选 A 只给 S13 基础睡眠遮蔽），或营地已建成遮蔽棚。
+        /// 室内不另给棚休息 M+2（只认营地棚）、床垫（只认已建床）、储物柜、遭遇安全或建屋权限；按当前位置每段实时判定（读档后下一段即按新标签）。
+        /// </summary>
         public bool IsSheltered(GameState s, string locationId)
         {
             var cfg = _locs[locationId];
@@ -481,7 +492,7 @@ namespace Survival.Core.Engine
                     }
                     if (rc.FacilityResult != null)
                     {
-                        if (!hereCfg.CanBuildShelter) return "只能在营地建造";
+                        if (!hereCfg.CanBuildShelter) return BuildOnlyAtCamp(hereCfg);
                         if (FacilityFlag(hereState.Facility, rc.FacilityResult)) return rc.Group == "workshop" ? $"{LocName(here)}已有{rc.Name.Replace("建", "")}（每类每地一座）" : "已建造";
                     }
                     if (StationBlocked(s, rc) is string station) return station;
@@ -495,10 +506,10 @@ namespace Survival.Core.Engine
                                 if (hereState.Facility.FuelMinutes < Tick) return "火堆燃料不足，请先投入木材";
                                 break;
                             case "camp":
-                                if (!hereCfg.CanBuildShelter) return rc.IsBuild ? "只能在营地建造" : "只能在营地制作";
+                                if (!hereCfg.CanBuildShelter) return rc.IsBuild ? BuildOnlyAtCamp(hereCfg) : "只能在营地制作";
                                 break;
                             case "shelter":
-                                if (!hereCfg.CanBuildShelter) return "只能在营地建造";
+                                if (!hereCfg.CanBuildShelter) return BuildOnlyAtCamp(hereCfg);
                                 if (!hereState.Facility.ShelterBuilt) return "需要先建成遮蔽棚";
                                 break;
                         }

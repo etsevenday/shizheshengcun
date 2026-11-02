@@ -22,8 +22,15 @@ public abstract class TestBase
     {
         var s = E.NewGame(seed);
         E.DebugLegacyStory(s);
+        if (ServiceStandIn) s.ServiceMapMigrated = false;
         return s;
     }
+
+    /// <summary>
+    /// 队伍服务的旧用例（B8—B8d）按“迁址前”口径测服务规则本身：营区与收容所服务都在替身临时营地（camp）。Q119 选 B（B13a）起
+    /// 新局直接用 h02_square / h06_shelter，这些用例的 New() 把迁址标记退回 false（等同迁址前的旧档）；新址规则见 B13aQTests。
+    /// </summary>
+    protected virtual bool ServiceStandIn => false;
 
     /// <summary>完整新局（系统策划总册 v1.0：饱饱在体内、开场对白、首战门控）。</summary>
     protected GameState NewStory(uint seed = 12345) => E.NewGame(seed);

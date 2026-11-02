@@ -10,6 +10,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B8PartyTests : TestBase
 {
+    /// <summary>迁址前口径：服务在替身 camp（见 TestBase.ServiceStandIn）。</summary>
+    protected override bool ServiceStandIn => true;
+
     private static readonly string[] Six = { "npc_lin_zhao", "npc_zhou_yan", "npc_shen_he", "npc_tang_li", "npc_gu_cheng", "npc_ye_xun" };
 
     /// <summary>新局（无剧情），在营地；按 c 记下容量事实。</summary>

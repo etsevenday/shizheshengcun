@@ -9,6 +9,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B8PartyLossTests : TestBase
 {
+    /// <summary>迁址前口径：服务在替身 camp（见 TestBase.ServiceStandIn）。</summary>
+    protected override bool ServiceStandIn => true;
+
     private GameState Camp(int c = 4, uint seed = 12345)
     {
         var s = New(seed);

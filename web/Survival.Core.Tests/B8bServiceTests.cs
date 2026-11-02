@@ -15,11 +15,16 @@ namespace Survival.Core.Tests;
 public class B8bServiceTests : TestBase
 {
     /// <summary>测试用配置：在现行地图上临时加 h02_square / h06_shelter 两个节点（复制农野荒地的数据，只改 ID 与名字）。</summary>
-    private static GameConfig V3Cfg()
+    private static GameConfig V3Cfg() => SwitchCfg(true);
+
+    /// <summary>
+    /// 迁址开关：B11 起 h02/h06 已在 v3 地图里，B11 时开关为 false（服务在 camp 代办）；Q119 选 B（B13a）起游戏数据为 true。
+    /// 关掉的配置只用来测“迁址前（没有可用新址）”的旧口径。
+    /// </summary>
+    private static GameConfig SwitchCfg(bool on)
     {
-        // B11 起 h02/h06 已在 v3 地图里；迁址开关 config.map.servicesAtV3Nodes 在营区登记（B14）上线前为 false，这里打开模拟迁址后
         var j = JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));
-        j["map"]!["servicesAtV3Nodes"] = true;
+        j["map"]!["servicesAtV3Nodes"] = on;
         return ConfigLoader.FromJson(j.ToString());
     }
 
@@ -51,8 +56,9 @@ public class B8bServiceTests : TestBase
         Assert.That(Cfg.Party.HubStandIn, Is.EqualTo("camp"));
         Assert.That(Cfg.Party.ShelterStandIn, Is.EqualTo("camp"));
 
+        E = new GameEngine(SwitchCfg(false));   // 迁址开关关闭时（B11 口径；游戏数据 B13a 起为开）
         var s = Camp();
-        Assert.That(E.ServiceMapV3Available, Is.False, "营区登记（B14）上线前服务不迁址（B11 开发假设 B11-9）");
+        Assert.That(E.ServiceMapV3Available, Is.False, "开关关闭时服务不迁址（B11 开发假设 B11-9；Q119 选 B 起游戏数据为开）");
         Assert.That(E.Config.Locations.Any(l => l.Id == "h02_square") && E.Config.Locations.Any(l => l.Id == "h06_shelter"), Is.True, "v3 节点已入图");
         Assert.That(s.ServiceMapMigrated, Is.False);
         Assert.That(E.HubLocation(s), Is.EqualTo("camp"));
@@ -111,9 +117,9 @@ public class B8bServiceTests : TestBase
         s.Remains["npc_lin_zhao"].PublicReserve = false;
 
         // camp 不再提供服务入口；h02 办换入/留守，h06 办 RB01，号位编辑仍任意空闲地点
-        Assert.That(e.EscortRegistrationBlocked(s), Does.Contain("只能在收容所（收容所）安全空闲时登记补员"));
+        Assert.That(e.EscortRegistrationBlocked(s), Does.Contain("临时营地已不再代办；要到收容所安全空闲时登记补员"), "Q119：camp 给出去哪办的提示");
         e.DebugRecruit(s, "npc_tang_li");
-        Assert.That(e.SetActiveBlocked(s, "npc_tang_li", false), Does.Contain("只能在营区广场（营区）安全空闲时留作候补"));
+        Assert.That(e.SetActiveBlocked(s, "npc_tang_li", false), Does.Contain("临时营地已不再代办；要到营区广场（营区）安全空闲时留作候补"));
         Assert.That(e.FormationEditBlocked(s), Is.Null, "当前同行号位编辑不限地点（Q86/Q93）");
         e.DebugTeleport(s, "h02_square");
         Assert.That(e.SetActiveBlocked(s, "npc_tang_li", false), Is.Null);

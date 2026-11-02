@@ -14,6 +14,9 @@ namespace Survival.Core.Tests;
 /// </summary>
 public class B8cReserveCareTests : TestBase
 {
+    /// <summary>迁址前口径：服务在替身 camp（见 TestBase.ServiceStandIn）。</summary>
+    protected override bool ServiceStandIn => true;
+
     private const string Gu = "npc_gu_cheng";
 
     /// <summary>新局（无剧情），在营地、C4，林昭/周砚/沈禾同行、顾承候补；不刷新敌人。时间定在第 1 日 hh:00。</summary>

@@ -3284,7 +3284,8 @@
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "路肩残留着车辙和碎玻璃；路面开阔，停留时仍需留意两侧。"
     },
     {
       "id": "m02_checkpoint",
@@ -3329,7 +3330,8 @@
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "检查哨的栏杆与弃车留下狭窄通道；路障是否清除仍以眼前状态为准。"
     },
     {
       "id": "h01_gate",
@@ -3424,7 +3426,7 @@
     {
       "id": "h03_workshop",
       "name": "营区工坊",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -3469,7 +3471,7 @@
     {
       "id": "h04_infirmary",
       "name": "营区医务室",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -3599,7 +3601,8 @@
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "田埂旁有倒伏作物与散落农具；屋舍遮挡了部分视线。"
     },
     {
       "id": "w02_forest",
@@ -3644,7 +3647,8 @@
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "林间空地留有旧营址的痕迹；树冠下仍有雨水滴落。"
     },
     {
       "id": "w03_quarry",
@@ -3689,7 +3693,8 @@
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "石坡边缘有松动碎石；坡壁之后的声响不容易判断来源。"
     },
     {
       "id": "w04_crossroads",
@@ -3734,7 +3739,8 @@
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "数条旧路在这里相交；不同方向都留有风化的标记。"
     },
     {
       "id": "w05_marsh",
@@ -3779,7 +3785,8 @@
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "芦苇倒伏处露出泥水；水面平静也不能说明脚下坚实。"
     },
     {
       "id": "w06_bridge",
@@ -3824,7 +3831,8 @@
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "断桥下的河滩留有冲刷痕迹；桥体的缺口仍清楚可见。"
     },
     {
       "id": "w07_ridge",
@@ -3869,7 +3877,8 @@
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "山脊路无遮拦；弯道后的情况无法从这里看清。"
     },
     {
       "id": "w08_reservoir",
@@ -3914,7 +3923,8 @@
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "旧水位线露在岸边；取水仍需分辨资源卡上的水质。"
     },
     {
       "id": "w09_logging",
@@ -3959,7 +3969,8 @@
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "伐木场散落着旧木料；堆垛之间存在难以看清的夹道。"
     },
     {
       "id": "w10_watchtower",
@@ -4004,7 +4015,8 @@
       "populationRegionId": "mainline_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "瞭望台周围地势较高；台基背面仍有视线死角。"
     },
     {
       "id": "a01_yard",
@@ -4049,12 +4061,13 @@
       "populationRegionId": "mainline_works",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "货场的轨道间留有杂物；车厢和堆料遮住了远处。"
     },
     {
       "id": "a02_pump",
       "name": "旧泵站",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -4094,7 +4107,8 @@
       "populationRegionId": "mainline_works",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "泵房屋顶尚完整；天然遮挡不代表这里已经没有危险。"
     },
     {
       "id": "a03_foundry",
@@ -4139,12 +4153,13 @@
       "populationRegionId": "mainline_works",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "铸造厂外的堆场留有炉渣；厂墙后的动静仍需另外确认。"
     },
     {
       "id": "b01_school",
       "name": "安置学校",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -4189,7 +4204,7 @@
     {
       "id": "b02_station",
       "name": "急救转运站",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -4274,7 +4289,8 @@
       "populationRegionId": "mainline_aid",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "医院外院的门窗多有破损；建筑名称并不保证整片院落都有遮蔽。"
     },
     {
       "id": "c01_pilgrim",
@@ -4319,7 +4335,8 @@
       "populationRegionId": "mainline_oldcity",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "朝圣路旁有磨损路记；前方的接待与通行仍以实际规则为准。"
     },
     {
       "id": "c02_church",
@@ -4414,7 +4431,7 @@
     {
       "id": "r01_observatory",
       "name": "灰塔观测站",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -4504,7 +4521,7 @@
     {
       "id": "r03_lab",
       "name": "封存实验楼",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -4589,7 +4606,8 @@
       "populationRegionId": "mainline_oldcity",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "旧城门洞旁堆有碎砖；城门内外都存在遮挡。"
     },
     {
       "id": "o02_market",
@@ -4634,7 +4652,8 @@
       "populationRegionId": "mainline_oldcity",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "商圈街道上有坍塌招牌；店面间的狭巷不易看清。"
     },
     {
       "id": "o03_police",
@@ -4679,7 +4698,8 @@
       "populationRegionId": "mainline_oldcity",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "警备仓外仍能辨认旧岗哨位置；外部院落与仓内情况不能混为一谈。"
     },
     {
       "id": "o04_transit",
@@ -4724,12 +4744,13 @@
       "populationRegionId": "mainline_oldcity",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "车站的外部道路留有旧导向牌；入口之后的环境仍待实地确认。"
     },
     {
       "id": "h05_appraisal",
       "name": "鉴定所",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -4774,7 +4795,7 @@
     {
       "id": "h06_shelter",
       "name": "收容所",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -4819,7 +4840,7 @@
     {
       "id": "c04_alms",
       "name": "施济处",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -4864,7 +4885,7 @@
     {
       "id": "c05_admonition",
       "name": "训诫堂",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -4909,7 +4930,7 @@
     {
       "id": "c06_archive",
       "name": "典藏室",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -4954,7 +4975,7 @@
     {
       "id": "c07_sanctuary",
       "name": "圣堂",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -4999,7 +5020,7 @@
     {
       "id": "r04_reception",
       "name": "接待处",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -5044,7 +5065,7 @@
     {
       "id": "r05_testing",
       "name": "检测室",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -5089,7 +5110,7 @@
     {
       "id": "r06_archive",
       "name": "档案室",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -5134,7 +5155,7 @@
     {
       "id": "r07_workshop",
       "name": "试制工坊",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -5179,7 +5200,7 @@
     {
       "id": "r08_observation",
       "name": "隔离观察区",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -5264,7 +5285,8 @@
       "populationRegionId": "ex_pop_church_approach",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "果树之间长着杂草；倒枝后面有被遮住的低洼处。"
     },
     {
       "id": "w12_canal",
@@ -5309,12 +5331,13 @@
       "populationRegionId": "ex_pop_church_approach",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "渠岸留有湿滑的淤泥；水流声会盖住较轻的动静。"
     },
     {
       "id": "w13_mill",
       "name": "旧磨坊",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -5354,7 +5377,8 @@
       "populationRegionId": "ex_pop_church_approach",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "磨坊尚有完整屋顶；旧墙与机器仍遮住了室内部分视线。"
     },
     {
       "id": "w14_cemeteryroad",
@@ -5399,7 +5423,8 @@
       "populationRegionId": "ex_pop_church_approach",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "荒径两边的石标已倾斜；高草遮住了路沿。"
     },
     {
       "id": "w15_shrinewoods",
@@ -5444,12 +5469,13 @@
       "populationRegionId": "ex_pop_church_approach",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "祈祷林中的旧石台覆着落叶；树影之间难以分清细小动静。"
     },
     {
       "id": "w16_service",
       "name": "山间服务站",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -5489,7 +5515,8 @@
       "populationRegionId": "ex_pop_academy_approach",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "服务站主厅尚有遮顶；门窗破损，不能把有屋顶当作无人出入。"
     },
     {
       "id": "w17_switchback",
@@ -5534,7 +5561,8 @@
       "populationRegionId": "ex_pop_academy_approach",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "盘山路的急弯较多；崖壁会遮住前后两段道路。"
     },
     {
       "id": "w18_tunnel",
@@ -5579,7 +5607,8 @@
       "populationRegionId": "ex_pop_academy_approach",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "塌隧道的堵口仍在；洞外平台没有完整顶盖。"
     },
     {
       "id": "w19_survey",
@@ -5624,7 +5653,8 @@
       "populationRegionId": "ex_pop_academy_approach",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "测绘营址只剩桩位和零散支架；旧营地痕迹不等于现成住处。"
     },
     {
       "id": "w20_powercut",
@@ -5669,7 +5699,8 @@
       "populationRegionId": "ex_pop_academy_approach",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "高压走廊的地面较开阔；塔基周围仍留有遮挡。"
     },
     {
       "id": "w21_pine",
@@ -5714,7 +5745,8 @@
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "针叶铺满林地；密集树干让远处视线变短。"
     },
     {
       "id": "w22_ravine",
@@ -5759,7 +5791,8 @@
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "沟谷两侧岩壁陡直；转折处会遮住前方，也会放大回声。"
     },
     {
       "id": "w23_hunting",
@@ -5804,7 +5837,8 @@
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "猎人旧营的篷布已经破损；留下的支架不能提供完整遮蔽。"
     },
     {
       "id": "w24_cave",
@@ -5849,7 +5883,8 @@
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "岩洞入口前仍是露天地面；洞内的情况需要另行确认。"
     },
     {
       "id": "w25_wetland",
@@ -5894,7 +5929,8 @@
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "黑水间有浮草覆盖；看似连续的草面未必是实地。"
     },
     {
       "id": "w26_island",
@@ -5939,7 +5975,8 @@
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "陆洲岸边可见水位变化的痕迹；四周开阔，缺少现成屋顶。"
     },
     {
       "id": "w27_relay",
@@ -5984,7 +6021,8 @@
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "中继营残留着设备基座；旧建筑的顶盖已经失去遮蔽作用。"
     },
     {
       "id": "w28_highland",
@@ -6029,7 +6067,8 @@
       "populationRegionId": "ex_pop_deep_wild",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "高地上可见明显风蚀；岩块能挡住部分视线，却没有完整遮顶。"
     },
     {
       "id": "w29_riverbend",
@@ -6074,7 +6113,8 @@
       "populationRegionId": "ex_pop_city_approach",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "河弯处的淤积带宽窄不一；水声会干扰对周围动静的判断。"
     },
     {
       "id": "w30_truckstop",
@@ -6119,7 +6159,8 @@
       "populationRegionId": "ex_pop_city_approach",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "货车停靠区留着车位标线；车辆残骸之间有较深的盲区。"
     },
     {
       "id": "w31_suburb",
@@ -6164,7 +6205,8 @@
       "populationRegionId": "ex_pop_city_approach",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "棚户之间的通道狭窄；破损屋面不能给整片街区提供遮蔽。"
     },
     {
       "id": "w32_railcut",
@@ -6209,7 +6251,8 @@
       "populationRegionId": "ex_pop_city_approach",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "铁路线切口两侧地势较高；路堑拐角之后难以直接看见。"
     },
     {
       "id": "w33_waterworks",
@@ -6254,7 +6297,8 @@
       "populationRegionId": "ex_pop_utility",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "水厂外部仍有露天池区；封闭设施与外部场地需要分开判断。"
     },
     {
       "id": "w34_depot",
@@ -6299,12 +6343,13 @@
       "populationRegionId": "ex_pop_utility",
       "dungeonId": null,
       "safeExterior": false,
-      "clearLabel": "清理翻找"
+      "clearLabel": "清理翻找",
+      "clue": "应急仓外是露天装卸场；库内的情况不能从院外直接确定。"
     },
     {
       "id": "d01_01",
       "name": "墓门缓冲",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6349,7 +6394,7 @@
     {
       "id": "d01_02",
       "name": "捐献仓",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6394,7 +6439,7 @@
     {
       "id": "d01_03",
       "name": "忏悔长廊",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6439,7 +6484,7 @@
     {
       "id": "d01_04",
       "name": "藏书密室",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6484,7 +6529,7 @@
     {
       "id": "d01_05",
       "name": "环形礼拜厅",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6529,7 +6574,7 @@
     {
       "id": "d01_06",
       "name": "骨龛回道",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6574,7 +6619,7 @@
     {
       "id": "d01_07",
       "name": "封锁祭室",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6619,7 +6664,7 @@
     {
       "id": "d01_08",
       "name": "旧路线档案",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6664,7 +6709,7 @@
     {
       "id": "d02_01",
       "name": "消洗门厅",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6709,7 +6754,7 @@
     {
       "id": "d02_02",
       "name": "观察廊",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6754,7 +6799,7 @@
     {
       "id": "d02_03",
       "name": "样本冷库",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6799,7 +6844,7 @@
     {
       "id": "d02_04",
       "name": "控制室",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6844,7 +6889,7 @@
     {
       "id": "d02_05",
       "name": "试制间",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6889,7 +6934,7 @@
     {
       "id": "d02_06",
       "name": "检修竖井",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6934,7 +6979,7 @@
     {
       "id": "d02_07",
       "name": "隔离核心",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -6979,7 +7024,7 @@
     {
       "id": "d02_08",
       "name": "流程终端",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7024,7 +7069,7 @@
     {
       "id": "d02_09",
       "name": "外排廊",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7069,7 +7114,7 @@
     {
       "id": "d03_01",
       "name": "装卸门",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7114,7 +7159,7 @@
     {
       "id": "d03_02",
       "name": "外仓",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7159,7 +7204,7 @@
     {
       "id": "d03_03",
       "name": "器材室",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7204,7 +7249,7 @@
     {
       "id": "d03_04",
       "name": "值勤室",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7249,7 +7294,7 @@
     {
       "id": "d03_05",
       "name": "内仓闸口",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7294,7 +7339,7 @@
     {
       "id": "d03_06",
       "name": "配电房",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7339,7 +7384,7 @@
     {
       "id": "d03_07",
       "name": "军械守卫",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7384,7 +7429,7 @@
     {
       "id": "d03_08",
       "name": "封存仓",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7429,7 +7474,7 @@
     {
       "id": "d04_01",
       "name": "地堡入口",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7474,7 +7519,7 @@
     {
       "id": "d04_02",
       "name": "缆线沟",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7519,7 +7564,7 @@
     {
       "id": "d04_03",
       "name": "蓄电室",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7564,7 +7609,7 @@
     {
       "id": "d04_04",
       "name": "山腹机房",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7609,7 +7654,7 @@
     {
       "id": "d04_05",
       "name": "屋顶梯井",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7699,7 +7744,7 @@
     {
       "id": "d04_07",
       "name": "联络台",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7789,7 +7834,7 @@
     {
       "id": "d05_01",
       "name": "检修井",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7834,7 +7879,7 @@
     {
       "id": "d05_02",
       "name": "分流室",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -7924,7 +7969,7 @@
     {
       "id": "d05_04",
       "name": "滤料库",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8014,7 +8059,7 @@
     {
       "id": "d05_06",
       "name": "泵房守卫",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8059,7 +8104,7 @@
     {
       "id": "d05_07",
       "name": "阀控室",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8104,7 +8149,7 @@
     {
       "id": "d05_08",
       "name": "出水涵洞",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8194,7 +8239,7 @@
     {
       "id": "d06_02",
       "name": "岔井",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8239,7 +8284,7 @@
     {
       "id": "d06_03",
       "name": "浅矿脉",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8284,7 +8329,7 @@
     {
       "id": "d06_04",
       "name": "废轨道",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8329,7 +8374,7 @@
     {
       "id": "d06_05",
       "name": "塌方绕道",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8374,7 +8419,7 @@
     {
       "id": "d06_06",
       "name": "矿工营室",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8419,7 +8464,7 @@
     {
       "id": "d06_07",
       "name": "深井守卫",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8464,7 +8509,7 @@
     {
       "id": "d06_08",
       "name": "工具封库",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8554,7 +8599,7 @@
     {
       "id": "d07_01",
       "name": "卷帘入口",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8644,7 +8689,7 @@
     {
       "id": "d07_03",
       "name": "食品层",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8689,7 +8734,7 @@
     {
       "id": "d07_04",
       "name": "服装层",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8734,7 +8779,7 @@
     {
       "id": "d07_05",
       "name": "药妆侧厅",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8779,7 +8824,7 @@
     {
       "id": "d07_06",
       "name": "扶梯守卫",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -8959,7 +9004,7 @@
     {
       "id": "d08_02",
       "name": "温区分拣",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -9004,7 +9049,7 @@
     {
       "id": "d08_03",
       "name": "干货库",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -9049,7 +9094,7 @@
     {
       "id": "d08_04",
       "name": "冷库走廊",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -9094,7 +9139,7 @@
     {
       "id": "d08_05",
       "name": "封存药架",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -9139,7 +9184,7 @@
     {
       "id": "d08_06",
       "name": "备用电房",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -9184,7 +9229,7 @@
     {
       "id": "d08_07",
       "name": "仓管守卫",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -9229,7 +9274,7 @@
     {
       "id": "d08_08",
       "name": "调度室",
-      "exposure": "outdoor",
+      "exposure": "indoor",
       "initialProgress": 0,
       "initiallyDiscovered": false,
       "initiallyVisited": false,
@@ -26083,7 +26128,7 @@
     "version": "3.0",
     "gateContractVersion": "2026-10-30-Q30-final",
     "expansionRulesVersion": "Q31_nodes_v1",
-    "servicesAtV3Nodes": false,
+    "servicesAtV3Nodes": true,
     "gateAliases": {
       "from_explore_100": "from_explore100"
     },
@@ -26413,7 +26458,7 @@
         "academy_contacted"
       ]
     },
-    "clueText": "一条安全线索：附近的路况与危险迹象已记下（不另发物资）",
+    "clueText": "一条安全线索：",
     "dungeons": [
       {
         "id": "d01",

@@ -291,6 +291,12 @@ namespace Survival.Core.Config
 
         public bool IsIndoor => Exposure == "indoor";
 
+        /// <summary>
+        /// 探索到 75% 时的逐点安全线索文案（Q117 选 B，A08 本轮表、map-adjudications.json clues；只 45 个新普通野外有）。
+        /// 只是环境提示：不另发物资/经验，不揭示路线、资源或安全属性。没有为 null。
+        /// </summary>
+        public string? Clue { get; set; }
+
         // ───── v3 地图字段（A08「全143节点」、map-v3-normalized.json；B11 R33） ─────
         /// <summary>区域：starter（旧 8 地点）/wild/hub/church/academy/d01…d08 等。</summary>
         public string Zone { get; set; } = "starter";
@@ -344,6 +350,15 @@ namespace Survival.Core.Config
         public bool IsDungeon => NodeKind == "dungeon";
         /// <summary>旧 8 地点（新手区）。</summary>
         public bool IsStarter => Zone == "starter";
+
+        /// <summary>
+        /// 私人住宅禁建原因（Q118、S09「Q118 正式住宅与环境遮蔽」、S14 本轮章）：地牢内部（worldKind=dungeon_instance）写“地牢内不可建设私人住宅”；
+        /// 势力实际占地、公共城市服务地、任务保留地写“势力/公共土地不可建设私人住宅”；其余为 null（可否建仍看原许可与条件，住宅本身在 B17）。
+        /// </summary>
+        public string? PrivateBuildForbidden =>
+            IsDungeon || WorldKind == "dungeon_instance" ? "地牢内不可建设私人住宅"
+            : LandOwner is "faction" or "public" or "quest_reserved" ? "势力/公共土地不可建设私人住宅"
+            : null;
     }
 
     /// <summary>地点清理次数：上限、初始与串行恢复间隔（地图清理案表 2）。</summary>
