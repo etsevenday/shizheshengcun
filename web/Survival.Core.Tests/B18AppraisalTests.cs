@@ -313,4 +313,184 @@ public class B18AppraisalTests : TestBase
         Assert.That(E.EnsureAppraisalQuotes(far), Is.Null);
         Assert.That(far.City.Quotes, Is.Empty);
     }
+
+    // ───────────── R58 以物换物事务 ─────────────
+
+    private int Ground(GameState s, string id) => s.Items.Where(i => i.ItemId == id && i.Owner == s.Ground).Sum(i => i.Count);
+
+    private void Trade(GameState s, ItemInstance sample, string offer)
+    {
+        Ok(E.StartAppraisalTrade(s, sample.InstanceId, offer));
+        Run(s);
+        ReadDialogues(s);
+    }
+
+    /// <summary>AT05：布 1 包 + 水 1 包后再点废金属——全队两包共享已满被拒；换角色/代班/离开再来/读档不重置；输出按锁定份数落地面、样本消耗 1。</summary>
+    [Test]
+    public void AT05_TwoPacksSharedPerDay_NotResetByNpcOrReload()
+    {
+        var s = AtOffice(0);
+        var a = Ordinary(s, ItemInstance.Carried, "g-a");
+        var b = Ordinary(s, ItemInstance.Carried, "g-b");
+        var c = Ordinary(s, ItemInstance.Carried, "g-c");
+        var snap = s.City.Quotes.Single();
+        var v = E.AppraisalPreview(s);
+        Assert.That((v.QuotaTotal, v.QuotaUsed, v.QuotaReserved, v.QuotaAvailable, v.TradeBlocked), Is.EqualTo((2, 0, 0, 2, (string?)null)));
+        var cloth0 = Ground(s, "cloth");
+        var t0 = s.GameMinute;
+        Trade(s, a, "white_for_cloth");
+        Assert.That(s.GameMinute - t0, Is.EqualTo(5));
+        Assert.That(E.FindItem(s, a.InstanceId), Is.Null, "样本 1 份交出");
+        Assert.That(Ground(s, "cloth") - cloth0, Is.EqualTo(snap.Offers["white_for_cloth"]), "按锁定的确切份数");
+        var water0 = Ground(s, "clean_water");
+        Trade(s, b, "white_for_water");
+        Assert.That(Ground(s, "clean_water") - water0, Is.EqualTo(snap.Offers["white_for_water"]));
+        var r = E.StartAppraisalTrade(s, c.InstanceId, "white_for_scrap");
+        Assert.That(r.Ok, Is.False);
+        Assert.That(r.Reason, Does.Contain("额度已用完"));
+        Assert.That(E.AppraisalPreview(s).TradeBlocked, Does.Contain("额度已用完"));
+        E.DebugToggleCityPostAbsent(s);
+        Assert.That(E.StartAppraisalTrade(s, c.InstanceId, "white_for_scrap").Ok, Is.False, "代班不重置");
+        E.DebugMapTeleport(s, "h02_square");
+        E.DebugMapTeleport(s, "h05_appraisal");
+        ReadDialogues(s);
+        var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Assert.That(E.StartAppraisalTrade(m, c.InstanceId, "white_for_scrap").Ok, Is.False, "读档不重置");
+        Assert.That(E.FindItem(m, c.InstanceId)!.ReservedBy, Is.Null);
+    }
+
+    /// <summary>
+    /// AT06/AT15：23:55 开始的 5 分钟交易在午夜完成——发开始日的 exactOutput、只扣旧日桶；新日照常 2 包；
+    /// 下一次安全访问生成新日表，不改旧事务；取消不把旧余额转到新日。
+    /// </summary>
+    [Test]
+    public void AT06_AT15_CrossMidnight_StartDayQuoteAndBucket()
+    {
+        var s = AtOffice(0);
+        var day = Clock.Day(s.GameMinute);
+        var a = Ordinary(s, ItemInstance.Carried, "g-a");
+        var b = Ordinary(s, ItemInstance.Carried, "g-b");
+        var old = s.City.Quotes.Single();
+        old.Offers["white_for_scrap"] = 2;   // 固定一个可辨认的数，验证跨午夜仍按开始日的报价
+        s.GameMinute = day * Clock.MinutesPerDay - 5;   // 第 day 日 23:55
+        Ok(E.StartAppraisalTrade(s, a.InstanceId, "white_for_scrap"));
+        var txn = s.City.Pending!;
+        Assert.That((txn.StartDay, txn.QuoteDay, txn.QuoteVersion, txn.OfferId, txn.ExactOutput, txn.SampleInstanceId, txn.SampleOwner, txn.QuotaReserved),
+            Is.EqualTo((day, day, "white_barter_v2", "white_for_scrap", 2, (int?)a.InstanceId, (string?)ItemInstance.Carried, true)), "事务锁字段");
+        Assert.That(txn.TxnId, Is.GreaterThan(0));
+        Assert.That(E.AppraisalPreview(s).QuotaReserved, Is.EqualTo(1));
+        var scrap0 = Ground(s, "scrap");
+        Run(s);
+        ReadDialogues(s);
+        Assert.That(Clock.Day(s.GameMinute), Is.EqualTo(day + 1));
+        Assert.That(Ground(s, "scrap") - scrap0, Is.EqualTo(2), "按开始日 exactOutput");
+        Assert.That(s.City.QuotaUsed[$"appraisal_white_v1@{day}"], Is.EqualTo(1), "扣旧日桶");
+        Assert.That(s.City.QuotaUsed.ContainsKey($"appraisal_white_v1@{day + 1}"), Is.False, "不扣新日");
+        var v = E.AppraisalPreview(s);
+        Assert.That(v.QuotaAvailable, Is.EqualTo(Cfg.Appraisal.TradeDailyPartyQuota), "新日 2 包");
+        var fresh = E.EnsureAppraisalQuotes(s)!;
+        Assert.That(fresh.Day, Is.EqualTo(day + 1));
+        Assert.That(s.City.Quotes.Single(q => q.Day == day).Offers["white_for_scrap"], Is.EqualTo(2), "新日表不改旧表");
+        // 取消：23:55 开工后马上取消，旧日额度释放，新日仍只有 2 包（不结转）
+        s.GameMinute = (day + 1) * Clock.MinutesPerDay - 5;
+        E.EnsureAppraisalQuotes(s);
+        Ok(E.StartAppraisalTrade(s, b.InstanceId, "white_for_cloth"));
+        Ok(E.Cancel(s));
+        Assert.That(s.Log.Last().Text, Does.Contain("样本未交出"));
+        Assert.That(E.FindItem(s, b.InstanceId)!.ReservedBy, Is.Null);
+        Assert.That(s.City.QuotaUsed.ContainsKey($"appraisal_white_v1@{day + 1}"), Is.False);
+        s.GameMinute = (day + 1) * Clock.MinutesPerDay;
+        Assert.That(E.AppraisalPreview(s).QuotaAvailable, Is.EqualTo(2), "过期日剩余额度不结转");
+    }
+
+    /// <summary>AT07：随身五卡满且超重时换物，奖励确切落服务区地面，随身不变。</summary>
+    [Test]
+    public void AT07_FullPack_OutputOnGround()
+    {
+        var s = AtOffice(0);
+        var a = Ordinary(s, s.Ground, "g-a");
+        E.CreateItems(s, "scrap", 60, ItemInstance.Carried);
+        var carried = s.Items.Where(i => i.IsCarried).Select(i => (i.InstanceId, i.Count)).OrderBy(x => x.InstanceId).ToList();
+        Assert.That(E.IsOverweight(s), Is.True);
+        var water0 = Ground(s, "clean_water");
+        Trade(s, a, "white_for_water");
+        Assert.That(Ground(s, "clean_water") - water0, Is.EqualTo(s.City.Quotes.Single().Offers["white_for_water"]));
+        Assert.That(s.Items.Where(i => i.IsCarried).Select(i => (i.InstanceId, i.Count)).OrderBy(x => x.InstanceId), Is.EqualTo(carried), "不自动挤包");
+        Assert.That(s.Log.Last(l => l.Text.Contains("换物完成")).Text, Does.Contain("不会自动入包"));
+    }
+
+    /// <summary>AT09：同 requestId 重发不重复开工；完成后读档不重复发物；中途死亡不扣样本、不出物、不扣额度。</summary>
+    [Test]
+    public void AT09_RequestIdempotent_ReloadOnce_DeathNoCommit()
+    {
+        var s = AtOffice(0);
+        var a = Ordinary(s, ItemInstance.Carried, "g-a");
+        var txn0 = s.City.NextTxn;
+        Ok(E.StartAppraisalTrade(s, a.InstanceId, "white_for_cloth", "req-1"));
+        var r = E.StartAppraisalTrade(s, a.InstanceId, "white_for_cloth", "req-1");
+        Assert.That(r.Duplicate, Is.True);
+        Assert.That(s.City.NextTxn, Is.EqualTo(txn0 + 1), "只建一次事务");
+        var mid = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Run(mid);
+        ReadDialogues(mid);
+        var cloth = Ground(mid, "cloth");
+        var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(mid), Cfg);
+        Assert.That(Ground(again, "cloth"), Is.EqualTo(cloth), "完成读档不重复发物");
+        Assert.That(again.City.QuotaUsed.Values.Sum(), Is.EqualTo(1));
+        Assert.That(again.City.Pending, Is.Null);
+
+        var d = AtOffice(0);
+        var b = Ordinary(d, ItemInstance.Carried, "g-b");
+        var cloth0 = Ground(d, "cloth");
+        Ok(E.StartAppraisalTrade(d, b.InstanceId, "white_for_cloth"));
+        d.Stats.Health = 0;
+        Run(d);
+        Assert.That(d.Progress.Dead, Is.True);
+        Assert.That(E.FindItem(d, b.InstanceId), Is.Not.Null, "未完成死亡不扣样本");
+        Assert.That(Ground(d, "cloth"), Is.EqualTo(cloth0));
+        Assert.That(d.City.QuotaUsed.Values.Sum(), Is.EqualTo(0));
+    }
+
+    /// <summary>AT16：未知旧报价版本安全取消——原样本与 owner 保留、不出物、不扣额度，不用新表替补；确认页份数与实际一致。</summary>
+    [Test]
+    public void AT16_UnknownQuoteVersion_SafeCancel()
+    {
+        var s = AtOffice(0);
+        var a = Ordinary(s, ItemInstance.Carried, "g-a");
+        var offer = E.AppraisalPreview(s).Offers.Single(o => o.OfferId == "white_for_cloth");
+        Ok(E.StartAppraisalTrade(s, a.InstanceId, "white_for_cloth"));
+        Assert.That(s.City.Pending!.ExactOutput, Is.EqualTo(offer.Quantity), "确认页份数可兑现");
+        s.City.Pending!.QuoteVersion = "white_barter_v1";
+        var cloth0 = Ground(s, "cloth");
+        Run(s);
+        ReadDialogues(s);
+        var i = E.FindItem(s, a.InstanceId)!;
+        Assert.That((i.Owner, i.ReservedBy, i.Count), Is.EqualTo((ItemInstance.Carried, (int?)null, 1)));
+        Assert.That(Ground(s, "cloth"), Is.EqualTo(cloth0));
+        Assert.That(s.City.QuotaUsed.Values.Sum(), Is.EqualTo(0));
+        Assert.That(s.Log.Last(l => l.Text.Contains("换物没有完成")).Text, Does.Contain("white_barter_v1").And.Contain("安全取消"));
+    }
+
+    /// <summary>AT03/AT11/AT17：教学样本服务端拒绝交易（不消耗、不复制）；已鉴定普通样本照常可换；换到的物资不能反向换样本，没有买回入口。</summary>
+    [Test]
+    public void AT03_AT11_AT17_TutorialNeverTraded_NoReverse()
+    {
+        var s = AtOffice(1);
+        var t = E.CreateItems(s, Sub, 1, ItemInstance.Carried, false, new ItemSource { GrantEventId = "tutorial-reward-b1", TutorialReward = true }).Single();
+        var o = Ordinary(s, ItemInstance.Carried, "g-a");
+        var sv = E.AppraisalPreview(s).Samples.Single(x => x.InstanceId == t.InstanceId);
+        Assert.That(sv.TradeBlocked, Is.EqualTo("教学样本不可交易"));
+        var r = E.StartAppraisalTrade(s, t.InstanceId, "white_for_cloth");
+        Assert.That((r.Ok, r.Reason), Is.EqualTo((false, "教学样本不可交易")));
+        Assert.That(s.Items.Count(i => i.ItemId == Sub), Is.EqualTo(2), "不消耗、不复制");
+        Ok(E.StartAppraise(s, o.InstanceId));
+        Run(s);
+        ReadDialogues(s);
+        Trade(s, o, "white_for_cloth");
+        Assert.That(E.FindItem(s, o.InstanceId), Is.Null, "已鉴定普通样本照常可换（交易不要求先鉴定，鉴定也不影响报价）");
+        var cloth = s.Items.First(i => i.ItemId == "cloth" && i.Owner == s.Ground);
+        Assert.That(E.StartAppraisalTrade(s, cloth.InstanceId, "white_for_cloth").Reason, Does.Contain("只收普通活性物质"));
+        Assert.That(Cfg.Appraisal.Offers.Any(x => x.ItemId == Sub), Is.False, "没有买回样本的报价");
+        Assert.That(Cfg.City.Services.SelectMany(x => x.Choices).SelectMany(c => c.Outputs.Keys).Contains(Sub), Is.False, "城市其他服务也不出样本");
+    }
 }
