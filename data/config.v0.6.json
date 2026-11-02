@@ -24398,7 +24398,7 @@
         "communication_power_claimed"
       ],
       "blueprint": true,
-      "source": "蓝图：d03_08 封存仓终点唯一领取（地图在后续版本开放）"
+      "source": "蓝图：d03_08 封存仓终点核心记录领取"
     },
     {
       "id": "blueprint_stone_knife",

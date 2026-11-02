@@ -156,7 +156,7 @@ def main():
         "name": "军械台蓝图",
         "grantedByFacts": list(ARMORY_GRANT_FACTS),
         "blueprint": True,
-        "source": "蓝图：d03_08 封存仓终点唯一领取（地图在后续版本开放）",
+        "source": "蓝图：d03_08 封存仓终点核心记录领取",
     })
 
     # ── 72 件装备：62 个配方 + 10 件不可自制 ──
