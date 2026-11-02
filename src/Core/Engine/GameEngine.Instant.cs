@@ -130,6 +130,10 @@ namespace Survival.Core.Engine
                     return Reorder(s, r);
                 case InstantKind.LoadCharcoal:
                     return LoadCharcoal(s, r.CharcoalPlan);
+                case InstantKind.FillCanteen:
+                    return FillCanteen(s, r);
+                case InstantKind.PourCanteen:
+                    return PourCanteen(s, r);
             }
             return ActionResult.Fail("未知操作");
         }

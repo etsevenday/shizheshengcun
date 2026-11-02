@@ -56,6 +56,8 @@ namespace Survival.Core.Engine
         {
             var g = _items[i.ItemId].WeightGrams * i.Count;
             if (IsPot(i)) g += PotContents(s, i.InstanceId).Sum(c => ItemGrams(s, c));
+            // B16 分量水壶：壶内水按 1 克/毫升计入，满壶 2.40 公斤（S10 X4“所有后代与水重量计一次”）
+            if (i.LiquidMl > 0 && _items[i.ItemId].Canteen is CanteenConfig cc) g += (int)Math.Round(i.LiquidMl * cc.GramsPerMl);
             // 弹仓内弹药属于武器内容，计重一次（v0.5 §05）
             if (i.LoadedAmmo > 0 && i.LoadedAmmoId != null && _items.TryGetValue(i.LoadedAmmoId, out var ammo)) g += ammo.WeightGrams * i.LoadedAmmo;
             return g;

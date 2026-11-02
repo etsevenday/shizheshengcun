@@ -38,7 +38,7 @@ namespace Survival.Core.State
         /// "17" 起记服务地点迁址标记（v3 地图营区公共居所/收容所）与遗物是否公共候补遗物（策划答复 Q88/Q89，开发计划 v0.9 B8b）；
         /// "18" 起记候补照护规则版本与每名候补的自主 rest/sleep 模式（策划答复 Q90，开发计划 v0.9 B8c）。
         /// </summary>
-        public const string CurrentSchema = "27";
+        public const string CurrentSchema = "28";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -394,8 +394,18 @@ namespace Survival.Core.State
         /// B7b 之前的旧进程没有发起者（null），完成不补经验。
         /// </summary>
         public string? InitiatorActorId { get; set; }
+        /// <summary>复合锅食谱（B16）：锁定的主食材实例（每份一个实例，各占一个食材位）；其他进程为 null（存档 28 前的进程都没有）。</summary>
+        public List<int>? InputInstanceIds { get; set; }
+        /// <summary>复合锅食谱（B16）：锁进锅里、不占食材位的辅料实例（硬饼的盐）。</summary>
+        public List<int>? AuxInstanceIds { get; set; }
 
-        public FacilityProcess Clone() => (FacilityProcess)MemberwiseClone();
+        public FacilityProcess Clone()
+        {
+            var c = (FacilityProcess)MemberwiseClone();
+            c.InputInstanceIds = InputInstanceIds == null ? null : new List<int>(InputInstanceIds);
+            c.AuxInstanceIds = AuxInstanceIds == null ? null : new List<int>(AuxInstanceIds);
+            return c;
+        }
     }
 
     public sealed class LocationState

@@ -639,6 +639,16 @@ namespace Survival.Core.Engine
                     }
                     var cfg = _items[inst.ItemId];
                     if (inst.ReservedBy != null) return "该物品已被预留";
+                    // B16 分量水壶：壶内直接喝 250 毫升（5 分钟，W+15；脏水同样腹泻）
+                    if (cfg.Canteen != null)
+                    {
+                        if (CanteenSipBlocked(inst) is string sipWhy) return sipWhy;
+                        plan.UseItem = inst;
+                        plan.TargetId = inst.ItemId;
+                        plan.Planned = Config.ItemActions.UseMinutes;
+                        plan.Label = $"从{cfg.Name}喝{cfg.Canteen.SipMl}毫升{ItemName(inst.LiquidId!)}";
+                        return null;
+                    }
                     if (inst.InContainer && IsLiquid(inst) && PotFreeWaterUnits(s, inst) < 1) return ReservedWaterText(s, inst);
                     if (cfg.Use == null)
                         return cfg.RequiresCooking ? $"{cfg.Name}需先烹饪，不可直接食用" : "该物品不能直接使用";
@@ -855,6 +865,15 @@ namespace Survival.Core.Engine
                 {
                     var inst = p.UseItem!;
                     var cfg = _items[inst.ItemId];
+                    if (cfg.Canteen != null)
+                    {
+                        var sip = new List<string>();
+                        var hb = s.Stats.Hydration;
+                        ApplyCanteenSip(s, inst, sip);
+                        Emit(s, GameEventKind.ActionCompleted, $"{p.Label}：{string.Join("，", sip)}。");
+                        NoteUse(s, a, s.Stats.Satiety, hb);
+                        break;
+                    }
                     var u = cfg.Use!;
                     // Q23：设施/锅里正在加工的实例被吃掉 = 原子地扣它的真实份额并终止它自己的进程（同锅其他食材的进程不动）；
                     // 水预留随进程移除释放，已烧掉的燃料与已扣的水不退；进程不在了，不会再产出成品

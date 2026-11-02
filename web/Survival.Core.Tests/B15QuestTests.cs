@@ -284,7 +284,7 @@ public class B15QuestTests : TestBase
         Assert.That(E.QuestViewOf(s, "FA02")!.Retro, Is.True);
         Assert.That(s.Story.DialogueLog.Count, Is.EqualTo(dialogues), "不播对白");
         Assert.That((E.BattleCapacity(s), s.Items.Sum(i => i.Count)), Is.EqualTo((cap, items)));
-        Assert.That(s.Log.Count(l => l.Text.Contains($"版本{GameState.CurrentSchema}") && l.Text.Contains("被称作新生的人")), Is.EqualTo(1));
+        Assert.That(s.Log.Count(l => l.Text.Contains("版本27") && l.Text.Contains("被称作新生的人")), Is.EqualTo(1));
         var json = SaveSerializer.Serialize(s);
         SaveMigrator.Migrate(s, Cfg);
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(json), "幂等");

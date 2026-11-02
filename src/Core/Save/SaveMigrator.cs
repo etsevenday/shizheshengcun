@@ -51,6 +51,7 @@ namespace Survival.Core.Save
         public const string Schema24 = "24";
         public const string Schema25 = "25";
         public const string Schema26 = "26";
+        public const string Schema27 = "27";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -92,6 +93,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema24) From24To25(s, config, notes);
             if (s.SchemaVersion == Schema25) From25To26(s, config, notes);
             if (s.SchemaVersion == Schema26) From26To27(s, config, notes);
+            if (s.SchemaVersion == Schema27) From27To28(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -962,8 +964,23 @@ namespace Survival.Core.Save
         {
             s.Quests ??= new QuestState();
             var retro = new Engine.GameEngine(config).RetroQuests(s);
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（主线与城市委托上线" +
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema27}（主线与城市委托上线" +
                 (retro.Count > 0 ? $"；已按现有记录追认{string.Join("、", retro)}" : "") + "）。" });
+            s.SchemaVersion = Schema27;
+        }
+
+        /// <summary>
+        /// 配方框架、水壶与复合锅（开发计划 v0.9 B16，R48—R51）：实例加水壶水量（LiquidId/LiquidMl），设施进程加复合锅食谱的
+        /// 主食材/辅料锁定（InputInstanceIds/AuxInstanceIds），角色加护理冷却（Cooldowns）。旧档没有水壶内容、没有复合锅进程、没有护理冷却：
+        /// 旧进程（单目标烤/煮/净水/煅烧）原样保留，锁定字段保持空；旧水壶（只可能来自开发入口）按空壶；不补发、不改进度。幂等。
+        /// </summary>
+        private static void From27To28(GameState s, GameConfig config, List<string> notes)
+        {
+            var canteens = new HashSet<string>(config.Items.Where(i => i.Canteen != null).Select(i => i.Id));
+            foreach (var it in s.Items)
+                if (!canteens.Contains(it.ItemId) || it.LiquidMl <= 0 || it.LiquidId == null) { it.LiquidId = null; it.LiquidMl = 0; }
+            foreach (var a in s.Actors.Values) a.Cooldowns ??= new Dictionary<string, int>();
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（新配方、分量水壶与复合锅上线；进行中的加工原样保留）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

@@ -69,7 +69,7 @@ namespace Survival.Core.Engine
         public static ActionRequest Ignite(int? lighterInstanceId = null) => new ActionRequest { Type = ActionType.Ignite, InstanceId = lighterInstanceId };
     }
 
-    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, PutInFire, PutFoodInPot, TakeOut, Reorder, LoadCharcoal }
+    public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, PutInFire, PutFoodInPot, TakeOut, Reorder, LoadCharcoal, FillCanteen, PourCanteen, LoadPotRecipe }
 
     public sealed class InstantRequest
     {
@@ -110,6 +110,15 @@ namespace Survival.Core.Engine
         /// <summary>Q113：plan 为浮窗展示的明细（<see cref="CharcoalLoadInfo.Plan"/>），确认时内核逐堆重验。</summary>
         public static InstantRequest LoadCharcoal(CharcoalPlan? plan = null) =>
             new InstantRequest { Kind = InstantKind.LoadCharcoal, CharcoalPlan = plan?.Clone() };
+        /// <summary>B16 分量水壶：count 份 500 毫升水卡装进水壶。</summary>
+        public static InstantRequest FillCanteen(int waterInstanceId, int canteenInstanceId, int count = 1) =>
+            new InstantRequest { Kind = InstantKind.FillCanteen, InstanceId = waterInstanceId, TargetInstanceId = canteenInstanceId, Count = count };
+        /// <summary>B16 分量水壶：倒出 count 份 500 毫升水卡到随身或当前地面。</summary>
+        public static InstantRequest PourCanteen(int canteenInstanceId, string zone, int count = 1) =>
+            new InstantRequest { Kind = InstantKind.PourCanteen, InstanceId = canteenInstanceId, Zone = zone, Count = count };
+        /// <summary>B16 复合锅食谱：在当前火堆里的锅中投料开做（ProcessId 为锅食谱进程，如 pot_hardtack；TargetInstanceId 为锅）。</summary>
+        public static InstantRequest LoadPotRecipe(string processId, int potInstanceId) =>
+            new InstantRequest { Kind = InstantKind.LoadPotRecipe, CardKey = processId, TargetInstanceId = potInstanceId };
         public static InstantRequest Reorder(string zone, string cardKey, int index) =>
             new InstantRequest { Kind = InstantKind.Reorder, Zone = zone, CardKey = cardKey, Index = index };
 
