@@ -5,7 +5,8 @@
    主角临时形象恒在最左、对话对象恒在最右（未发言一侧弱化但保留位置），发言者以姓名牌 + 高亮框 + “发言中”区分，不只靠颜色；
    正文按 22px 排版，同一次对话按顺序累计追加到一个纵向对话流（不清空、不替换），滚轮只回看本流、不推进也不透传；
    停在底部时新句自动跟随，向上回看时保持位置并出现“回到最新”。不显示任何剩余句数；末句按钮为“结束对话”，明确结束才撤层解锁。
-   对话本身不推进时间、不消耗物品、不发奖励（推进由内核 AckDialogue 按当前句 ID 去重，双击不会跳句）。 *@
+   对话本身不推进时间、不消耗物品、不发奖励（推进由内核 AckDialogue 按当前句 ID 去重，双击不会跳句）。
+   B15a（Q156 选 B）：同行邀约的末句不显示“结束对话”，改为“暂不登记”“登记同行”两选项（内核 AnswerRecruit 同样按当前句 ID 去重）。 *@
 @{
     var d = G.State == null ? null : G.E.ActiveDialogue(G.S);
 }
@@ -36,7 +37,16 @@
                 {
                     <span class="dlg-hint">对话不消耗时间 · 读完才能继续操作</span>
                 }
-                <button type="button" class="primary dlg-next" @onclick="() => Ack(cur.LineId)">@(more ? "继续" : "结束对话")</button>
+                @if (!more && G.E.RecruitOfferPending(G.S) is string rq)
+                {
+                    @* B15a（Q156 选 B）：同行邀约读完后，末句按钮换成两选项：登记同行（入名册候补）/暂不登记（以后可再谈），都是 0 分钟 *@
+                    <button type="button" class="secondary dlg-next" title="暂不登记：结束对话，不登记也不拒招，以后可以再来交谈（0分钟）" @onclick="() => G.AnswerRecruit(rq, cur.LineId, false)">暂不登记</button>
+                    <button type="button" class="primary dlg-next" title="登记同行：进名册候补，首次两件装备随登记一次生成，不自动编队（0分钟，0物资）" @onclick="() => G.AnswerRecruit(rq, cur.LineId, true)">登记同行</button>
+                }
+                else
+                {
+                    <button type="button" class="primary dlg-next" @onclick="() => Ack(cur.LineId)">@(more ? "继续" : "结束对话")</button>
+                }
             </div>
         </div>
         <div class="dlg-side right @(rightSpeaking ? "speaking" : "idle")">

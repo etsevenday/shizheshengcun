@@ -470,6 +470,22 @@ public sealed class GameSession
     /// <summary>在委托条目里接取（与岗位交谈同效；同行邀约为选择登记）：0 分钟，播接取对白。</summary>
     public ActionResult AcceptQuest(string questId) => PrologueDo(() => E.AcceptQuest(S, questId, Guid.NewGuid().ToString("N")));
 
+    /// <summary>
+    /// 读完同行邀约后的选择（B15a，Q156 选 B）：“登记同行”入名册候补并结束对话；“暂不登记”只结束对话，以后可再谈。0 分钟 0 物资。
+    /// 结束后与“结束对话”一样，让在安全边界等待的行动继续。
+    /// </summary>
+    public void AnswerRecruit(string questId, string lineId, bool register)
+    {
+        if (State == null) return;
+        var res = E.AnswerRecruit(S, questId, lineId, register);
+        Notice = res.Ok || res.Duplicate ? null : res.Reason;
+        Drain();
+        Save();
+        Notify();
+        if (E.DialogueLocked(S) || S.Progress.Dead) return;
+        if (S.Sub != null || (S.Main != null && S.Main.Status == ActionStatus.Running)) _ = RunLoop();
+    }
+
     /// <summary>回看已完成委托的对白或 AC02 外部医疗线索（0 分钟，只回放）。</summary>
     public ActionResult ReviewQuest(string questId, bool note = false) => PrologueDo(() => E.ReviewQuest(S, questId, note));
 
