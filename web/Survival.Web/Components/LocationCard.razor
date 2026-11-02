@@ -52,6 +52,8 @@
             }
             <span class="mc-chip" title="天气玩法待独立立项：现在只是占位，没有任何数值效果">天气：待接入</span>
         </div>
+        @* B13 序章任务角（A10-TUTOR §3）：当前地图卡内右上角，1 主目标 + 建议入口 + 至多一条系统提示 *@
+        <TaskCorner />
         <div class="mc-bottom">
             <div class="mc-progress">
                 <span>@(full ? "已充分探索" : $"探索{ls.Progress}%")</span>
@@ -126,7 +128,7 @@ else
     var dir = e.DirectionFromHere(s, LocationId);
     var dirHint = GameEngine.DirectionHint(dir);
     var open = G.Pop?.Kind == "travel" && G.Pop.Id == LocationId;
-    <ObjectCard Id="@AnchorId" CssClass="loc-card neighbor" Title="@lc.Name" Badge="@(ls.Visited ? "已访问" : "待访问")" BadgeClass="@(ls.Visited ? "" : "new")"
+    <ObjectCard Id="@AnchorId" CssClass="@($"loc-card neighbor{(G.TutorialFocus == "loc:" + LocationId ? " tut-lit" : "")}")" Title="@lc.Name" Badge="@(ls.Visited ? "已访问" : "待访问")" BadgeClass="@(ls.Visited ? "" : "new")"
                 Selected="selected" Fresh="@(edge != null && G.Highlights.Contains(edge.Id))"
                 AriaLabel="@($"{lc.Name}，{(dir == MapDirection.None ? "" : dirHint + "，")}单程{edge?.BaseMinutes ?? 0}分钟")"
                 Tooltip="相邻地点：点击在卡旁查看移动预估并确认出发" OnClick="OpenTravel">

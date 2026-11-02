@@ -359,7 +359,56 @@ public sealed class GameSession
 
     /// <summary>替换中部上方的顶栏面板：地图、制作、休息、日志，以及生存目标、生存提示、对话记录、系统说明。</summary>
     public static bool IsTopPanel(string? panel) =>
-        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth";
+        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth" or "journey";
+
+    // ───────────── 新手序章（B13，S15 §3—§8、A10-TUTOR） ─────────────
+
+    /// <summary>任务角已显示过的“最近完成”键（任务ID@分钟），会话内记住，任务角重建不重复闪。</summary>
+    public string? TaskDoneSeen { get; set; }
+
+    /// <summary>当前主目标要轻量点亮的对象（npc:ID、doc:ID、loc:ID），每次最多一个；没有为 null。</summary>
+    public string? TutorialFocus => State == null || S.Progress.Dead ? null : E.ObjectiveFocus(S);
+
+    /// <summary>序章操作（交谈、查看文书、路线日志、远行确认）：0 分钟；成功后收起浏览面板让对白层可见，存档并刷新。</summary>
+    private ActionResult PrologueDo(Func<ActionResult> f, bool closePanel = true)
+    {
+        if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        if (FormationOpen) return Commit(ActionResult.Fail(FormationOpenText));
+        var res = f();
+        Notice = res.Ok ? null : res.Reason;
+        if (res.Ok)
+        {
+            if (closePanel && E.DialogueLocked(S)) { Panel = null; Pop = null; }
+            Drain();
+            Save();
+        }
+        Notify();
+        return res;
+    }
+
+    public ActionResult TalkNpc(string npcId) => PrologueDo(() => E.TalkNpc(S, npcId));
+    public ActionResult ReadDocument(string docId) => PrologueDo(() => E.ReadDocument(S, docId));
+    public ActionResult OpenRouteLog() => PrologueDo(() => E.OpenRouteLog(S));
+    public ActionResult ConfirmJourney() => PrologueDo(() => E.ConfirmJourney(S), closePanel: false);
+    public ActionResult SayNotReady() => PrologueDo(() => E.SayNotReady(S));
+
+    /// <summary>系统提示“关闭这条”：只记已关闭，不完成任务，可在任务册回看。</summary>
+    public void DismissHint(string taskId)
+    {
+        if (State == null) return;
+        E.DismissHint(S, taskId);
+        Save();
+        Notify();
+    }
+
+    /// <summary>“暂停后续操作提示”/“恢复操作提示”：只开关中性教学提示。</summary>
+    public void SetHintsPaused(bool paused)
+    {
+        if (State == null) return;
+        E.SetHintsPaused(S, paused);
+        Save();
+        Notify();
+    }
 
     /// <summary>对话记录浏览层里选中的那一次对话（DialogueSession.Id）；null 为最近一次。</summary>
     public int? DialogLogPick { get; set; }
@@ -611,6 +660,7 @@ public sealed class GameSession
         Toast = null;
         Highlights.Clear();
         SevenDayPending = false;
+        TaskDoneSeen = null;
         Notice = null;
         Selected = new Selection();
         DetailTab = DetailTab.Character;
@@ -664,6 +714,12 @@ public sealed class GameSession
         Notice = null;
         // 选中卡片后卡下会出现操作条：旧的结果提示收起，不遮挡操作（试玩修复 G5）；内容仍在页脚与行动日志里
         if (sel.Kind != SelectionKind.None) Toast = null;
+        // B13 PRO01：第一次实际选中地面/随身物资卡（卡下展开操作预览）记“看清眼前”；只写任务账，不耗时
+        if (State != null && (sel.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid) && !GameEngine.TaskDone(S, "PRO01"))
+        {
+            E.NoteObjectInspected(S);
+            if (GameEngine.TaskDone(S, "PRO01")) { Drain(); Save(); }
+        }
         Notify();
     }
 
@@ -1212,6 +1268,7 @@ public sealed class GameSession
     {
         if (State == null) return;
         E.AckDialogue(S, id);
+        Drain();
         Save();
         Notify();
         if (E.DialogueLocked(S) || S.Progress.Dead) return;
@@ -1254,6 +1311,10 @@ public sealed class GameSession
                 case GameEventKind.BattleEnd:
                     Toast = ev;
                     toastSet = true;
+                    break;
+                case GameEventKind.Notice:
+                    // B13：来客在营地等候等非阻断短通知，只提示、不打断
+                    if (!toastSet) Toast = ev;
                     break;
                 case GameEventKind.FacilityDone:
                     // 设施完成只提示，不暂停、不替换角色行动；同一批里角色行动的结果提示优先

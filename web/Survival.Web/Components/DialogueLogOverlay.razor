@@ -63,7 +63,7 @@
     private void Close() => G.OpenPanel(null);
 
     /// <summary>对话所属事件的玩家可读名称；旧存档导入组统一叫“旧存档记录”。</summary>
-    private static string EventName(DialogueSession h) => h.Legacy ? "旧存档记录" : h.EventId switch
+    private string EventName(DialogueSession h) => h.Legacy ? "旧存档记录" : G.E.DialogueSetTitle(h.EventId) ?? h.EventId switch
     {
         "opening" => "开场",
         "tutorial_arrive" => "首战到达",

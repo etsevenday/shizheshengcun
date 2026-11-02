@@ -1,0 +1,106 @@
+@inherits GameComponent
+
+@* 序章任务角（A10-TUTOR §3、S15 §4、S14「序章引导」；开发计划 v0.9 B13 R43）：在当前地图卡内右上角，只显示 1 个主目标 + “建议 N ▸”入口，
+   点开在角内读最多两条建议；不新增第五行、不撑高场景、不遮相邻地块“前往”。可收起为目标图标（偏好存浏览器本地，新局不清空）。
+   同一时刻最多一条中性“系统提示”：小标签、可“关闭这条”或“暂停后续操作提示”，不锁输入、不推进时间，关闭不等于完成。
+   新完成一项时短暂显示 PROxx_done 中性反馈（约 8 秒，界面节奏），不进行动日志、不弹窗。所有按钮都阻止冒泡，不会选中地图卡。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var obj = e.CurrentObjective(s);
+    var open = G.IsFoldOpen(FoldKey);
+}
+@if (obj != null && !s.Progress.Dead)
+{
+    var sugg = e.CurrentSuggestions(s);
+    var hint = e.CurrentHint(s);
+    <div class="task-corner @(open ? "" : "folded")" role="region" aria-label="当前目标" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+        @if (!open)
+        {
+            <button type="button" class="tc-fold" title="@($"主目标：{obj.Title}（点开查看建议与提示）")" aria-label="展开当前目标" @onclick="Toggle">
+                <span class="tc-icon" aria-hidden="true">◎</span>目标@if (sugg.Count > 0) {<em>@sugg.Count</em>}
+            </button>
+        }
+        else
+        {
+            <div class="tc-head">
+                <span class="tc-tag">主目标</span>
+                <button type="button" class="tc-min" title="收起任务角（真实危险提示不受影响）" aria-label="收起任务角" @onclick="Toggle">–</button>
+            </div>
+            <div class="tc-title" title="@obj.Title">@obj.Title</div>
+            <div class="tc-step" title="@obj.Step">@obj.Step</div>
+            <div class="tc-row">
+                @if (sugg.Count > 0)
+                {
+                    <button type="button" class="tc-link @(showSugg ? "on" : "")" aria-expanded="@showSugg" @onclick="() => showSugg = !showSugg">建议 @sugg.Count @(showSugg ? "▾" : "▸")</button>
+                }
+                <button type="button" class="tc-link" title="打开任务册（完整18项、已完成与来源提示）" @onclick='() => G.OpenPanel("goals")' disabled="@G.DialogueLocked">任务册</button>
+            </div>
+            @if (showSugg)
+            {
+                <ul class="tc-sugg">
+                    @foreach (var x in sugg)
+                    {
+                        <li title="@x.Step"><b>@x.Title</b><span>@x.Step</span></li>
+                    }
+                </ul>
+            }
+            @if (flash != null)
+            {
+                <div class="tc-done" role="status"><span class="tc-sys">系统</span>@flash</div>
+            }
+            else if (hint is { } h)
+            {
+                <div class="tc-hint" role="note">
+                    <span class="tc-sys">系统提示</span>
+                    <span class="tc-hint-text" title="@h.Text">@h.Text</span>
+                    <span class="tc-hint-btns">
+                        <button type="button" class="tc-link" @onclick="() => G.DismissHint(h.TaskId)">关闭这条</button>
+                        <button type="button" class="tc-link" title="只关闭中性操作提示；剧情、危险提示与任务不受影响，可在任务册恢复" @onclick="() => G.SetHintsPaused(true)">暂停后续提示</button>
+                    </span>
+                </div>
+            }
+        }
+    </div>
+}
+
+@code {
+    /// <summary>任务角收起偏好（UiFoldPrefs，浏览器本地，不进存档）。</summary>
+    public const string FoldKey = "task_corner";
+
+    private bool showSugg;
+    private string? flash;
+    private int _flashSeq;
+
+    private void Toggle() => G.ToggleFold(FoldKey);
+
+    protected override void OnParametersSet() => CheckDone();
+
+    protected override void OnAfterRender(bool firstRender) => CheckDone();
+
+    /// <summary>新完成一项：短暂显示该项 PROxx_done（首次渲染只记下，不回放读档前的完成）。</summary>
+    private void CheckDone()
+    {
+        if (G.State == null) return;
+        var p = G.S.Prologue;
+        var key = $"{p.LastDoneTask}@{p.LastDoneAt}";
+        // 已显示过的完成记在会话里（任务角随地点卡重建也不重复闪）；首次只记下，不回放读档前的完成
+        if (G.TaskDoneSeen == null) { G.TaskDoneSeen = key; return; }
+        if (key == G.TaskDoneSeen) return;
+        G.TaskDoneSeen = key;
+        var t = G.E.ProTask(p.LastDoneTask);
+        if (t == null) return;
+        flash = t.Done;
+        var seq = ++_flashSeq;
+        _ = Clear(seq);
+        StateHasChanged();
+    }
+
+    private async Task Clear(int seq)
+    {
+        await Task.Delay(8000);
+        if (seq != _flashSeq) return;
+        flash = null;
+        await InvokeAsync(StateHasChanged);
+    }
+}

@@ -1,0 +1,75 @@
+@inherits GameComponent
+
+@* 设施栏的人物组与可查看对象（开发计划 v0.9 B13，S15 §5、A10-TUTOR §6）：
+   人物卡（首个 NPC 卡框架：B13 只有来客程望，B14 城市岗位在内核 NpcsHere 里扩展）与火堆/棚/床同栏共存，卡内明确“交谈”（0 分钟），不占物资卡与队伍容量；
+   固定文书/路标卡（PRO15 救助残页、村庄南口路标）“查看”0 分钟，可重读。当前主目标指向的那张卡轻量点亮（细金框，不遮按钮）。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var npcs = e.NpcsHere(s);
+    var docs = e.DocumentsHere(s);
+    var focus = G.TutorialFocus;
+    var busy = G.Running;
+}
+@if (npcs.Count > 0)
+{
+    <div class="desk-group people">
+        <div class="dg-title">人物</div>
+        <div class="dg-cards">
+            @foreach (var n in npcs)
+            {
+                var why = busy ? "行动进行中" : n.TalkBlocked;
+                var id = n.NpcId;
+                <ObjectCard @key="@("npc-" + id)" Id="@($"npc-{id}")" CssClass="@($"npc-card{(focus == "npc:" + id ? " tut-lit" : "")}")" Title="@n.Name" Badge="@(n.HasNews ? "来客" : "可交谈")" BadgeClass="@(n.HasNews ? "new" : "")"
+                            Tooltip="@($"{n.Name}：{n.Role}。交谈不耗时，不赠物资、不改变身体状态；不是队友")">
+                    <Art><img class="npc-portrait" src="img/portraits/unknown.svg" alt="@($"{n.Name}（临时形象）")" draggable="false" /></Art>
+                    <ChildContent>
+                        <div class="oc-line" title="@n.Role">@n.Role</div>
+                        <div class="oc-line @(n.HasNews ? "good-line" : "")" title="@n.Status">@n.Status</div>
+                        @if (why != null) { <div class="oc-line warn-line" title="@why">@why</div> }
+                    </ChildContent>
+                    <Footer>
+                        <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? "交谈（0分钟）")"
+                                @onclick="() => G.TalkNpc(id)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                            <strong>交谈</strong><small>0分钟</small>
+                        </button>
+                        @if (s.Progress.Flags.Contains(GameEngine.FactCampRouteKnown))
+                        {
+                            <button type="button" class="loc-btn res-btn" disabled="@G.DialogueLocked" title="查看路线、当前状态与随身预览，确认远行准备（不耗时）"
+                                    @onclick='() => G.OpenPanel("journey")' @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                <strong>远行准备</strong>
+                            </button>
+                        }
+                    </Footer>
+                </ObjectCard>
+            }
+        </div>
+    </div>
+}
+@if (docs.Count > 0)
+{
+    <div class="desk-group docs">
+        <div class="dg-title">可查看</div>
+        <div class="dg-cards">
+            @foreach (var d in docs)
+            {
+                var why = busy ? "行动进行中" : d.ReadBlocked;
+                var id = d.Id;
+                <ObjectCard @key="@("doc-" + id)" Id="@($"doc-{id}")" CssClass="@($"doc-card{(focus == "doc:" + id ? " tut-lit" : "")}")" Title="@d.Title" Badge="0分钟"
+                            Tooltip="@($"{d.Title}：查看不耗时，不移动、不揭开未知地点；可重读")">
+                    <Art>@Icons.Markup(id == "village_south_sign" ? "route" : "placeholder")</Art>
+                    <ChildContent>
+                        <div class="oc-line" title="@d.Status">@d.Status</div>
+                        @if (why != null) { <div class="oc-line warn-line" title="@why">@why</div> }
+                    </ChildContent>
+                    <Footer>
+                        <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? "查看（0分钟）")"
+                                @onclick="() => G.ReadDocument(id)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                            <strong>查看</strong><small>0分钟</small>
+                        </button>
+                    </Footer>
+                </ObjectCard>
+            }
+        </div>
+    </div>
+}
