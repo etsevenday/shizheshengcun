@@ -298,6 +298,8 @@ namespace Survival.Core.Engine
             public List<string> Notes = new List<string>();
             public int Batch = 1;
             public List<string> CookTargets = new List<string>();
+            /// <summary>B17 部署/收起的野营布或柴炉（开工锁定）。</summary>
+            public ItemInstance? CampingItem;
             public List<int> CookTargetItems = new List<int>();
         }
 
@@ -603,6 +605,8 @@ namespace Survival.Core.Engine
                         plan.Label = $"办理事项{Clock.Duration(r.Minutes)}";
                         return null;
                     }
+                    // B17 野营布/折叠柴炉部署与收起（A07 X1.6）：按等待结算身体消耗
+                    if (IsCampingTarget(r.TargetId)) return ValidateCamping(s, r, plan);
                     if (!Config.Actions.WaitMinutes.Contains(r.Minutes)) return "等待时长无效";
                     plan.Planned = r.Minutes;
                     plan.Label = $"等待{Clock.Duration(r.Minutes)}";
@@ -948,6 +952,7 @@ namespace Survival.Core.Engine
                 return ActionResult.Success(a.ActionId);
             }
             // B16 fixed_wait：固定等待不吃装备/节点倍率，也不用工作量余额（需求就是配方原分钟）
+            if (p.CampingItem != null) a.LockedItemIds.Add(p.CampingItem.InstanceId);
             if (a.IsWorkType && !a.FixedWait) ReserveCarry(s, a, p.BaseWork);
             if (p.IsSub) s.Sub = a; else s.Main = a;
             if (p.Type != ActionType.Use && p.Type != ActionType.Fuse)

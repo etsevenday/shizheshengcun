@@ -369,7 +369,7 @@ namespace Survival.Core.Engine
                 {
                     p.BaseMinutes = r.Minutes;
                     p.ConfirmText = $"睡眠{Clock.Duration(r.Minutes)}";
-                    var sheltered = IsSheltered(s, s.Ground);
+                    var sheltered = SleepSheltered(s, s.Ground);
                     var sr = Config.HourlyRates[sheltered ? "sleep_sheltered" : "sleep_exposed"];
                     p.Notes.Add($"{(sheltered ? "遮蔽" : "露天")}睡眠：每小时清醒度{Fmt.SignedT(sr.Wakefulness)}、体力{Fmt.SignedT(sr.Energy)}、精神{Fmt.SignedT(sr.Morale)}");
                     if (sheltered && (FacOf(s, s.Ground) ?? s.Locations[s.CurrentLocation].Facility).BedBuilt)

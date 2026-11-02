@@ -43,6 +43,7 @@ namespace Survival.Core.Engine
                     if (inst != null && IsLocked(s, inst)) return ActionResult.Fail("行动占用：该物品正被当前行动使用");
                     if (IsBusy(s)) return ActionResult.Fail("行动进行中，不能整理物品");
                     if (inst == null || inst.Owner != here) return ActionResult.Fail("只能拾取当前地点地面的物品");
+                    if (IsDeployed(s, inst)) return ActionResult.Fail($"{ItemName(inst.ItemId)}正部署着，先收起再拾取");
                     if (inst.ReservedBy != null) return ActionResult.Fail("该物品已被预留");
                     if (r.Count < 1 || r.Count > inst.Count) return ActionResult.Fail("数量无效");
                     var max = MaxPickup(s, inst);
@@ -74,9 +75,9 @@ namespace Survival.Core.Engine
                     var fac = FacOf(s, here)!;
                     var room = MaxWoodForFire(fac);
                     if (room <= 0)
-                        return ActionResult.Fail($"至少需要{Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{Config.Fire.MaxFuelMinutes}分钟）");
+                        return ActionResult.Fail($"至少需要{Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{FuelCapOf(fac)}分钟）");
                     if (r.Count < 1) return ActionResult.Fail("数量无效");
-                    if (r.Count > room) return ActionResult.Fail($"火堆最多还能放{room}份木材（上限{Config.Fire.MaxFuelMinutes}分钟）", room);
+                    if (r.Count > room) return ActionResult.Fail($"火堆最多还能放{room}份木材（上限{FuelCapOf(fac)}分钟）", room);
                     List<ItemInstance> source;
                     if (r.InstanceId != 0)
                     {
@@ -146,7 +147,7 @@ namespace Survival.Core.Engine
 
         /// <summary>按燃料空位最多还能投入的木材份数：floor((上限 − 当前燃料) / 每份分钟)。</summary>
         public int MaxWoodForFire(FacilityState fac) =>
-            Math.Max(0, (Config.Fire.MaxFuelMinutes - fac.FuelMinutes) / Config.Fire.BurnMinutesPerWood);
+            Math.Max(0, (FuelCapOf(fac) - fac.FuelMinutes) / Config.Fire.BurnMinutesPerWood);
 
         private string? FireMaintenanceBlocked(GameState s)
         {

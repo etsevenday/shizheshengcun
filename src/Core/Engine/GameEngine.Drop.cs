@@ -274,7 +274,7 @@ namespace Survival.Core.Engine
             if (head.ReservedBy != null) return DropIntent.No("该物品已被预留");
             var fac = FacOf(s, loc)!;
             var room = MaxWoodForFire(fac);
-            if (room < 1) return DropIntent.No($"至少需要{Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{Config.Fire.MaxFuelMinutes}分钟）");
+            if (room < 1) return DropIntent.No($"至少需要{Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{FuelCapOf(fac)}分钟）");
             var max = Math.Min(room, CardBatchCount(s, head));
             return Instant(DropVerb.AddFuel, $"投放1木材，燃料+{Config.Fire.BurnMinutesPerWood}分钟",
                 InstantRequest.AddFuel(1, head.InstanceId), max);

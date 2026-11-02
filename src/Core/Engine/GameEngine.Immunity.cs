@@ -62,7 +62,7 @@ namespace Survival.Core.Engine
             var a = s.Sub ?? s.Main;
             var why = new List<string>();
             var diarrhea = s.DiarrheaUntil.HasValue && s.DiarrheaUntil.Value > s.GameMinute;
-            var sheltered = a != null ? !a.ForceOutdoor && IsSheltered(s, s.Ground) : IsSheltered(s, s.Ground);
+            var sheltered = a != null ? !a.ForceOutdoor && (a.Type == ActionType.Sleep ? SleepSheltered(s, s.Ground) : IsSheltered(s, s.Ground)) : IsSheltered(s, s.Ground);
             var ir = ImmunityRate(s.Stats, s.Stats.HealthMax, diarrhea, s.Body.Infected, a?.Type, sheltered, why);
             var antibiotic = s.Body.AntibioticUntil.HasValue && s.Body.AntibioticUntil.Value > s.GameMinute;
             var vr = (s.Body.Infected ? VirusRate(s.Body.Immunity, antibiotic) : 0) + BaobaoInput(s, s.Body.Immunity);

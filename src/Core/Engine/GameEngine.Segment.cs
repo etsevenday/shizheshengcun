@@ -61,7 +61,8 @@ namespace Survival.Core.Engine
             var fac = FacOf(s, loc) ?? s.Locations[locCfg.Id].Facility;
             var c = Config;
 
-            ctx.Sheltered = !a.ForceOutdoor && IsSheltered(s, loc);
+            // B17：野营遮雨布只把睡眠条件变为遮蔽（A07 X1.6），休息不算
+            ctx.Sheltered = !a.ForceOutdoor && (a.Type == ActionType.Sleep ? SleepSheltered(s, loc) : IsSheltered(s, loc));
             // B16 fixed_wait：固定等待的处理不算工作（身体按等待、不吃工作倍率、0 体力不按工作扣血）
             ctx.IsWork = a.IsWorkType && !a.FixedWait;
             ctx.ActionType = a.Type;
@@ -555,6 +556,7 @@ namespace Survival.Core.Engine
                     ClearAction(s, a);
                     if (a.TargetId == EscortRegistrationTarget) { CompleteEscortRegistration(s, a); return true; }
                     if (a.TargetId.StartsWith(CityServicePrefix)) { CompleteCityService(s, a); return true; }
+                    if (IsCampingTarget(a.TargetId)) { CompleteCamping(s, a); return true; }
                     Emit(s, GameEventKind.ActionCompleted, $"等待结束（{Clock.Duration(a.PlannedMinutes)}）。");
                     return true;
                 case ActionType.Butcher:
