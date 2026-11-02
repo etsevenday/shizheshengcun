@@ -156,7 +156,8 @@ namespace Survival.Core.Engine
                     Substitute = absent,
                     Status = services.Count > 0 ? $"可交谈 · 事项 {canDo}/{services.Count} 项可办" : "可交谈",
                     ServiceCount = services.Count,
-                    QuestCount = QuestsOfNpc(s, n.NpcId).Count,
+                    QuestCount = QuestsOfNpc(s, n.NpcId).Count(q => q.Status != "done"),
+                    HasQuests = QuestsOfNpc(s, n.NpcId).Count > 0,
                     // B15：只写已实装且已显示的委托（正式名 + 状态），不出内部任务编号（Q145/Q146）
                     QuestText = QuestCardText(s, n.NpcId),
                     RecruitText = "岗位人物，不可招募",

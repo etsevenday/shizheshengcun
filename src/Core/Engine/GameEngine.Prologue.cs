@@ -82,8 +82,10 @@ namespace Survival.Core.Engine
         public bool Substitute { get; set; }
         /// <summary>名下服务事项数（含未开放的入口）；0 为没有“事项”按钮。</summary>
         public int ServiceCount { get; set; }
-        /// <summary>名下已显示的委托数（B15，含已完成可回看的）；有委托也出“事项”按钮。</summary>
+        /// <summary>名下已显示且未完成的委托数（B15，计入“事项 N项”）。</summary>
         public int QuestCount { get; set; }
+        /// <summary>名下有已显示的委托（含已完成可回看的）：有就出“事项”按钮。</summary>
+        public bool HasQuests { get; set; }
         public string QuestText { get; set; } = "";
         public string RecruitText { get; set; } = "";
         /// <summary>主按钮的字（默认“交谈”；B15 同行邀约卡为“登记同行”）。</summary>

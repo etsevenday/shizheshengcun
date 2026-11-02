@@ -38,7 +38,7 @@ public class B15SideQuestTests : TestBase
         Assert.That(E.QuestViewOf(s, "HU02"), Is.Null, "HU01 完成前不显示");
         var card = E.NpcsHere(s).Single(c => c.Kind == "post");
         Assert.That(card.QuestText, Is.EqualTo("委托：鉴定之前（可接）"));
-        Assert.That(card.QuestCount, Is.EqualTo(1), "有委托也出“事项”按钮");
+        Assert.That((card.QuestCount, card.HasQuests), Is.EqualTo((1, true)), "有委托也出“事项”按钮");
         var body = Body(s);
         var minute = s.GameMinute;
         Ok(E.TalkNpc(s, "npc_tao_cen"));

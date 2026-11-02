@@ -26,7 +26,7 @@
                 var companion = n.Kind == "companion";
                 var items = n.ServiceCount + n.QuestCount;
                 var tip = post
-                    ? $"{n.Name}：{n.FactionName}·{n.Role}（{n.KindLabel}）。{n.Status}。{n.RecruitText}。{(n.QuestText.Length > 0 ? n.QuestText + "。" : "")}点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；有可接的委托时交谈即接取）{(items > 0 ? "；“事项”查看可办的服务与委托" : "")}"
+                    ? $"{n.Name}：{n.FactionName}·{n.Role}（{n.KindLabel}）。{n.Status}。{n.RecruitText}。{(n.QuestText.Length > 0 ? n.QuestText + "。" : "")}点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；有可接的委托时交谈即接取）{(n.ServiceCount > 0 || n.HasQuests ? "；“事项”查看可办的服务与委托" : "")}"
                     : companion
                         ? $"{n.Name}（固定队友·{n.Role}）：{n.Background}。{n.RecruitText}。点卡片或“{n.ActionLabel}”（0分钟）"
                         : $"{n.Name}：{n.Role}。{n.Status}。点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；不是队友）";
@@ -42,7 +42,7 @@
                                 @onclick="() => Talk(id, why)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
                             <strong>@n.ActionLabel</strong><small>0分钟</small>
                         </button>
-                        @if (items > 0)
+                        @if (n.ServiceCount > 0 || n.HasQuests)
                         {
                             <button type="button" class="loc-btn res-btn" title="查看这里可办的事项与委托（浏览不耗时）"
                                     @onclick="() => G.OpenCityServices(id)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
