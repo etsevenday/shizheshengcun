@@ -324,13 +324,16 @@ public class B14CityTests : TestBase
         E.DebugGive(s, "bandage", 1);
         E.DebugGive(s, "cloth", 1);
         var mats = Count(s, "bandage") + Count(s, "cloth");
+        var carried = Count(s, "bandage", ItemInstance.Carried) + Count(s, "cloth", ItemInstance.Carried);
         Ok(E.StartCityService(s, "clinic_dressing", "npc_lin_zhao"));
         E.Advance(s);
         Ok(E.Cancel(s));
         Assert.That(Count(s, "bandage") + Count(s, "cloth"), Is.EqualTo(mats), "取消不扣材料");
+        Assert.That(Count(s, "bandage", ItemInstance.Carried) + Count(s, "cloth", ItemInstance.Carried), Is.EqualTo(carried), "原物原处，不搬到地面");
+        Assert.That(s.Items.Any(i => i.ReservedBy != null), Is.False, "预留已解除");
         Assert.That(lin.Stats.Health, Is.EqualTo(10));
         Assert.That(E.ActiveCityTxn(s), Is.Null);
-        foreach (var i in s.Items.Where(i => i.ItemId is "bandage" or "cloth" && i.Owner != ItemInstance.Carried).ToList()) i.Owner = ItemInstance.Carried;
+        Assert.That(s.City.Pending, Is.Null);
         Ok(E.StartCityService(s, "clinic_dressing", "npc_lin_zhao"));
         Run(s);
         Assert.That(lin.Stats.Health, Is.GreaterThan(10));

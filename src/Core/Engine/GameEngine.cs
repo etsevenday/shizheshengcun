@@ -925,6 +925,8 @@ namespace Survival.Core.Engine
             if (a == null) return ActionResult.Fail("没有进行中的行动");
             if (a.Type == ActionType.Use || a.Type == ActionType.Ignite || a.Type == ActionType.Fuse) return ActionResult.Fail("该行动不可中途取消");
 
+            // B14 城市计时服务：预留的材料原物原处（不搬到地面）、配额预留随事务作废（city-services common.cancel）
+            if (a.TargetId.StartsWith(CityServicePrefix)) ReleaseCityService(s, a);
             Release(s, a, s.CurrentLocation);
             if (a.IsSub) s.Sub = null; else s.Main = null;
 

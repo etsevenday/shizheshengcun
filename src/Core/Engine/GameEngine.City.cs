@@ -521,6 +521,14 @@ namespace Survival.Core.Engine
             CityServiceEnd(s, p.NpcId);
         }
 
+        /// <summary>取消计时服务：预留材料只解除预留、留在原持有处（不像制作那样返还到地面），事务快照作废（配额未扣）。</summary>
+        private void ReleaseCityService(GameState s, ActionState a)
+        {
+            foreach (var i in s.Items.Where(i => i.ReservedBy == a.ActionId)) i.ReservedBy = null;
+            a.ReservedItemIds.Clear();
+            if (s.City.Pending?.ActionId == a.ActionId) s.City.Pending = null;
+        }
+
         /// <summary>休息类服务结束（rest 段已按原规则逐段结算）：只写结束与岗位“办完事项”台词，不另给效果。</summary>
         private void CompleteCityRest(GameState s, ActionState a)
         {
