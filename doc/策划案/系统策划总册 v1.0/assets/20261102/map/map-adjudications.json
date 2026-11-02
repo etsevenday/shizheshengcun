@@ -1,0 +1,1781 @@
+{
+  "version": "q114_q119_20261102",
+  "status": "approved_planning_target_not_engine_or_ui_verified",
+  "sourceQuestions": [
+    "Q114",
+    "Q115",
+    "Q116",
+    "Q117",
+    "Q118",
+    "Q119"
+  ],
+  "direction": {
+    "coordinateTransform": {
+      "mapX": "130+280*x",
+      "mapY": "100+200*y"
+    },
+    "scope": "same_layer_only",
+    "changedLegacyPairs": [
+      {
+        "from": "village",
+        "to": "clinic",
+        "forward": "↙",
+        "reverse": "↗"
+      },
+      {
+        "from": "hardware",
+        "to": "scrapyard",
+        "forward": "→",
+        "reverse": "←"
+      }
+    ],
+    "legacyOtherSixUnchanged": true
+  },
+  "gateOpening": {
+    "decision": "Q115_B",
+    "requireVisitedEndpoint": false,
+    "when": "predicate_satisfied",
+    "discoverEdgeAndBothEndpoints": true,
+    "discoveryIsVisit": false,
+    "discoverySetsExploration": false,
+    "createRemoteInstanceOnDiscovery": false,
+    "legacy": "recompute_missing_eligible_latches_discovery_only_no_rewards",
+    "triggers": [
+      "new_game",
+      "load_migration",
+      "fact_commit",
+      "exploration_complete",
+      "arrival_commit"
+    ],
+    "instanceScopeAndExitRevalidationPreserved": true
+  },
+  "reveal100": {
+    "bidirectional": "all_incident_edges",
+    "oneWay": "outgoing_only",
+    "unmetGate": "visible_locked_with_reason_and_remote_name_only",
+    "oldEightIncluded": true
+  },
+  "clues": [
+    {
+      "nodeId": "m01_road",
+      "name": "旧公路",
+      "atPercent": 75,
+      "text": "路肩残留着车辙和碎玻璃；路面开阔，停留时仍需留意两侧。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "m02_checkpoint",
+      "name": "检查哨",
+      "atPercent": 75,
+      "text": "检查哨的栏杆与弃车留下狭窄通道；路障是否清除仍以眼前状态为准。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w01_farm",
+      "name": "近郊农场",
+      "atPercent": 75,
+      "text": "田埂旁有倒伏作物与散落农具；屋舍遮挡了部分视线。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w02_forest",
+      "name": "林间营址",
+      "atPercent": 75,
+      "text": "林间空地留有旧营址的痕迹；树冠下仍有雨水滴落。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w03_quarry",
+      "name": "采石坡",
+      "atPercent": 75,
+      "text": "石坡边缘有松动碎石；坡壁之后的声响不容易判断来源。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w04_crossroads",
+      "name": "荒野岔路",
+      "atPercent": 75,
+      "text": "数条旧路在这里相交；不同方向都留有风化的标记。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w05_marsh",
+      "name": "芦苇湿地",
+      "atPercent": 75,
+      "text": "芦苇倒伏处露出泥水；水面平静也不能说明脚下坚实。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w06_bridge",
+      "name": "断桥河滩",
+      "atPercent": 75,
+      "text": "断桥下的河滩留有冲刷痕迹；桥体的缺口仍清楚可见。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w07_ridge",
+      "name": "山脊哨道",
+      "atPercent": 75,
+      "text": "山脊路无遮拦；弯道后的情况无法从这里看清。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w08_reservoir",
+      "name": "旧水库",
+      "atPercent": 75,
+      "text": "旧水位线露在岸边；取水仍需分辨资源卡上的水质。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w09_logging",
+      "name": "深林伐木场",
+      "atPercent": 75,
+      "text": "伐木场散落着旧木料；堆垛之间存在难以看清的夹道。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w10_watchtower",
+      "name": "山顶瞭望台",
+      "atPercent": 75,
+      "text": "瞭望台周围地势较高；台基背面仍有视线死角。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "a01_yard",
+      "name": "铁路货场",
+      "atPercent": 75,
+      "text": "货场的轨道间留有杂物；车厢和堆料遮住了远处。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "a02_pump",
+      "name": "旧泵站",
+      "atPercent": 75,
+      "text": "泵房屋顶尚完整；天然遮挡不代表这里已经没有危险。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "a03_foundry",
+      "name": "铸造厂外",
+      "atPercent": 75,
+      "text": "铸造厂外的堆场留有炉渣；厂墙后的动静仍需另外确认。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "b03_hospital",
+      "name": "医院外院",
+      "atPercent": 75,
+      "text": "医院外院的门窗多有破损；建筑名称并不保证整片院落都有遮蔽。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "c01_pilgrim",
+      "name": "朝圣路",
+      "atPercent": 75,
+      "text": "朝圣路旁有磨损路记；前方的接待与通行仍以实际规则为准。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "o01_oldgate",
+      "name": "旧城门",
+      "atPercent": 75,
+      "text": "旧城门洞旁堆有碎砖；城门内外都存在遮挡。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "o02_market",
+      "name": "旧城商圈",
+      "atPercent": 75,
+      "text": "商圈街道上有坍塌招牌；店面间的狭巷不易看清。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "o03_police",
+      "name": "警备仓外",
+      "atPercent": 75,
+      "text": "警备仓外仍能辨认旧岗哨位置；外部院落与仓内情况不能混为一谈。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "o04_transit",
+      "name": "旧城车站",
+      "atPercent": 75,
+      "text": "车站的外部道路留有旧导向牌；入口之后的环境仍待实地确认。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w11_orchard",
+      "name": "荒弃果园",
+      "atPercent": 75,
+      "text": "果树之间长着杂草；倒枝后面有被遮住的低洼处。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w12_canal",
+      "name": "灌溉渠岸",
+      "atPercent": 75,
+      "text": "渠岸留有湿滑的淤泥；水流声会盖住较轻的动静。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w13_mill",
+      "name": "旧磨坊",
+      "atPercent": 75,
+      "text": "磨坊尚有完整屋顶；旧墙与机器仍遮住了室内部分视线。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w14_cemeteryroad",
+      "name": "墓地荒径",
+      "atPercent": 75,
+      "text": "荒径两边的石标已倾斜；高草遮住了路沿。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w15_shrinewoods",
+      "name": "祈祷林",
+      "atPercent": 75,
+      "text": "祈祷林中的旧石台覆着落叶；树影之间难以分清细小动静。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w16_service",
+      "name": "山间服务站",
+      "atPercent": 75,
+      "text": "服务站主厅尚有遮顶；门窗破损，不能把有屋顶当作无人出入。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w17_switchback",
+      "name": "盘山公路",
+      "atPercent": 75,
+      "text": "盘山路的急弯较多；崖壁会遮住前后两段道路。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w18_tunnel",
+      "name": "塌隧道外",
+      "atPercent": 75,
+      "text": "塌隧道的堵口仍在；洞外平台没有完整顶盖。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w19_survey",
+      "name": "测绘营址",
+      "atPercent": 75,
+      "text": "测绘营址只剩桩位和零散支架；旧营地痕迹不等于现成住处。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w20_powercut",
+      "name": "高压走廊",
+      "atPercent": 75,
+      "text": "高压走廊的地面较开阔；塔基周围仍留有遮挡。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w21_pine",
+      "name": "深针叶林",
+      "atPercent": 75,
+      "text": "针叶铺满林地；密集树干让远处视线变短。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w22_ravine",
+      "name": "陡壁沟谷",
+      "atPercent": 75,
+      "text": "沟谷两侧岩壁陡直；转折处会遮住前方，也会放大回声。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w23_hunting",
+      "name": "猎人旧营",
+      "atPercent": 75,
+      "text": "猎人旧营的篷布已经破损；留下的支架不能提供完整遮蔽。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w24_cave",
+      "name": "岩洞入口",
+      "atPercent": 75,
+      "text": "岩洞入口前仍是露天地面；洞内的情况需要另行确认。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w25_wetland",
+      "name": "黑水湿地",
+      "atPercent": 75,
+      "text": "黑水间有浮草覆盖；看似连续的草面未必是实地。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w26_island",
+      "name": "湖心陆洲",
+      "atPercent": 75,
+      "text": "陆洲岸边可见水位变化的痕迹；四周开阔，缺少现成屋顶。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w27_relay",
+      "name": "废中继营",
+      "atPercent": 75,
+      "text": "中继营残留着设备基座；旧建筑的顶盖已经失去遮蔽作用。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w28_highland",
+      "name": "风蚀高地",
+      "atPercent": 75,
+      "text": "高地上可见明显风蚀；岩块能挡住部分视线，却没有完整遮顶。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w29_riverbend",
+      "name": "河道弯口",
+      "atPercent": 75,
+      "text": "河弯处的淤积带宽窄不一；水声会干扰对周围动静的判断。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w30_truckstop",
+      "name": "货车休息区",
+      "atPercent": 75,
+      "text": "货车停靠区留着车位标线；车辆残骸之间有较深的盲区。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w31_suburb",
+      "name": "城郊棚户",
+      "atPercent": 75,
+      "text": "棚户之间的通道狭窄；破损屋面不能给整片街区提供遮蔽。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w32_railcut",
+      "name": "铁路线切口",
+      "atPercent": 75,
+      "text": "铁路线切口两侧地势较高；路堑拐角之后难以直接看见。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w33_waterworks",
+      "name": "荒废水厂",
+      "atPercent": 75,
+      "text": "水厂外部仍有露天池区；封闭设施与外部场地需要分开判断。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    },
+    {
+      "nodeId": "w34_depot",
+      "name": "应急仓外",
+      "atPercent": 75,
+      "text": "应急仓外是露天装卸场；库内的情况不能从院外直接确定。",
+      "extraItems": false,
+      "revealEdges": false,
+      "revealResources": false,
+      "extraExperience": 0
+    }
+  ],
+  "exposure": [
+    {
+      "nodeId": "m01_road",
+      "name": "旧公路",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "m02_checkpoint",
+      "name": "检查哨",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "h01_gate",
+      "name": "营门",
+      "exposure": "outdoor",
+      "reason": "营门露天通行区，不把门房算整个节点室内",
+      "worldKind": "overworld",
+      "landOwner": "public",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "h02_square",
+      "name": "营区广场",
+      "exposure": "outdoor",
+      "reason": "营区露天广场；公共居所独立区域另按真实设施",
+      "worldKind": "overworld",
+      "landOwner": "public",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "h03_workshop",
+      "name": "营区工坊",
+      "exposure": "indoor",
+      "reason": "完整工坊主厅",
+      "worldKind": "overworld",
+      "landOwner": "public",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "h04_infirmary",
+      "name": "营区医务室",
+      "exposure": "indoor",
+      "reason": "完整医务室",
+      "worldKind": "overworld",
+      "landOwner": "public",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "h05_homestead",
+      "name": "营外安全屋地块",
+      "exposure": "outdoor",
+      "reason": "尚未施工的露天建地；已建住宅按屋内zone另判",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w01_farm",
+      "name": "近郊农场",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w02_forest",
+      "name": "林间营址",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w03_quarry",
+      "name": "采石坡",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w04_crossroads",
+      "name": "荒野岔路",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w05_marsh",
+      "name": "芦苇湿地",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w06_bridge",
+      "name": "断桥河滩",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w07_ridge",
+      "name": "山脊哨道",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w08_reservoir",
+      "name": "旧水库",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w09_logging",
+      "name": "深林伐木场",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w10_watchtower",
+      "name": "山顶瞭望台",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "a01_yard",
+      "name": "铁路货场",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "a02_pump",
+      "name": "旧泵站",
+      "exposure": "indoor",
+      "reason": "保留完整屋顶的旧泵房",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "a03_foundry",
+      "name": "铸造厂外",
+      "exposure": "outdoor",
+      "reason": "厂外露天场地",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "b01_school",
+      "name": "安置学校",
+      "exposure": "indoor",
+      "reason": "现役安置学校楼内公共区域",
+      "worldKind": "overworld",
+      "landOwner": "public",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "b02_station",
+      "name": "急救转运站",
+      "exposure": "indoor",
+      "reason": "急救转运站室内候护厅",
+      "worldKind": "overworld",
+      "landOwner": "public",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "b03_hospital",
+      "name": "医院外院",
+      "exposure": "outdoor",
+      "reason": "医院外院为露天",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "c01_pilgrim",
+      "name": "朝圣路",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "c02_church",
+      "name": "教会接待庭",
+      "exposure": "outdoor",
+      "reason": "露天接待庭院",
+      "worldKind": "overworld",
+      "landOwner": "faction",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "c03_crypt",
+      "name": "教堂墓园",
+      "exposure": "outdoor",
+      "reason": "地上露天墓园；地下圣所是独立地牢节点",
+      "worldKind": "overworld",
+      "landOwner": "faction",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "r01_observatory",
+      "name": "灰塔观测站",
+      "exposure": "indoor",
+      "reason": "观测站完整室内区域",
+      "worldKind": "overworld",
+      "landOwner": "faction",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "r02_academy",
+      "name": "科学院外院",
+      "exposure": "outdoor",
+      "reason": "科学院露天外院",
+      "worldKind": "overworld",
+      "landOwner": "faction",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "r03_lab",
+      "name": "封存实验楼",
+      "exposure": "indoor",
+      "reason": "封存实验楼室内门厅",
+      "worldKind": "overworld",
+      "landOwner": "faction",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "o01_oldgate",
+      "name": "旧城门",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "o02_market",
+      "name": "旧城商圈",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "o03_police",
+      "name": "警备仓外",
+      "exposure": "outdoor",
+      "reason": "仓外露天院落",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "o04_transit",
+      "name": "旧城车站",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "h05_appraisal",
+      "name": "鉴定所",
+      "exposure": "indoor",
+      "reason": "完整鉴定所室内",
+      "worldKind": "overworld",
+      "landOwner": "public",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "h06_shelter",
+      "name": "收容所",
+      "exposure": "indoor",
+      "reason": "完整收容所主厅",
+      "worldKind": "overworld",
+      "landOwner": "public",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "c04_alms",
+      "name": "施济处",
+      "exposure": "indoor",
+      "reason": "施济处完整室内",
+      "worldKind": "overworld",
+      "landOwner": "faction",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "c05_admonition",
+      "name": "训诫堂",
+      "exposure": "indoor",
+      "reason": "训诫堂完整室内",
+      "worldKind": "overworld",
+      "landOwner": "faction",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "c06_archive",
+      "name": "典藏室",
+      "exposure": "indoor",
+      "reason": "典藏室完整室内",
+      "worldKind": "overworld",
+      "landOwner": "faction",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "c07_sanctuary",
+      "name": "圣堂",
+      "exposure": "indoor",
+      "reason": "圣堂完整室内",
+      "worldKind": "overworld",
+      "landOwner": "faction",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "r04_reception",
+      "name": "接待处",
+      "exposure": "indoor",
+      "reason": "接待处完整室内",
+      "worldKind": "overworld",
+      "landOwner": "faction",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "r05_testing",
+      "name": "检测室",
+      "exposure": "indoor",
+      "reason": "检测室完整室内",
+      "worldKind": "overworld",
+      "landOwner": "faction",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "r06_archive",
+      "name": "档案室",
+      "exposure": "indoor",
+      "reason": "档案室完整室内",
+      "worldKind": "overworld",
+      "landOwner": "faction",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "r07_workshop",
+      "name": "试制工坊",
+      "exposure": "indoor",
+      "reason": "试制工坊完整室内",
+      "worldKind": "overworld",
+      "landOwner": "faction",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "r08_observation",
+      "name": "隔离观察区",
+      "exposure": "indoor",
+      "reason": "隔离观察区完整室内",
+      "worldKind": "overworld",
+      "landOwner": "faction",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "w11_orchard",
+      "name": "荒弃果园",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w12_canal",
+      "name": "灌溉渠岸",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w13_mill",
+      "name": "旧磨坊",
+      "exposure": "indoor",
+      "reason": "保留完整屋顶的磨坊主屋",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w14_cemeteryroad",
+      "name": "墓地荒径",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w15_shrinewoods",
+      "name": "祈祷林",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w16_service",
+      "name": "山间服务站",
+      "exposure": "indoor",
+      "reason": "保留完整屋顶的服务站主厅",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w17_switchback",
+      "name": "盘山公路",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w18_tunnel",
+      "name": "塌隧道外",
+      "exposure": "outdoor",
+      "reason": "塌隧道外平台，不是隧道内",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w19_survey",
+      "name": "测绘营址",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w20_powercut",
+      "name": "高压走廊",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w21_pine",
+      "name": "深针叶林",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w22_ravine",
+      "name": "陡壁沟谷",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w23_hunting",
+      "name": "猎人旧营",
+      "exposure": "outdoor",
+      "reason": "旧篷布破损、无完整遮顶",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w24_cave",
+      "name": "岩洞入口",
+      "exposure": "outdoor",
+      "reason": "岩洞入口外，不是洞内",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w25_wetland",
+      "name": "黑水湿地",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w26_island",
+      "name": "湖心陆洲",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w27_relay",
+      "name": "废中继营",
+      "exposure": "outdoor",
+      "reason": "中继营屋面毁损，无完整遮顶",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w28_highland",
+      "name": "风蚀高地",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w29_riverbend",
+      "name": "河道弯口",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w30_truckstop",
+      "name": "货车休息区",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w31_suburb",
+      "name": "城郊棚户",
+      "exposure": "outdoor",
+      "reason": "露天街区，不能以局部棚户覆盖整点",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w32_railcut",
+      "name": "铁路线切口",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w33_waterworks",
+      "name": "荒废水厂",
+      "exposure": "outdoor",
+      "reason": "水厂外部露天场地；地牢区分开",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "w34_depot",
+      "name": "应急仓外",
+      "exposure": "outdoor",
+      "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+      "worldKind": "overworld",
+      "landOwner": "unclaimed",
+      "safehouseAllowed": true
+    },
+    {
+      "nodeId": "d01_01",
+      "name": "墓门缓冲",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（墓门缓冲）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d01_02",
+      "name": "捐献仓",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（捐献仓）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d01_03",
+      "name": "忏悔长廊",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（忏悔长廊）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d01_04",
+      "name": "藏书密室",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（藏书密室）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d01_05",
+      "name": "环形礼拜厅",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（环形礼拜厅）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d01_06",
+      "name": "骨龛回道",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（骨龛回道）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d01_07",
+      "name": "封锁祭室",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（封锁祭室）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d01_08",
+      "name": "旧路线档案",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（旧路线档案）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d02_01",
+      "name": "消洗门厅",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（消洗门厅）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d02_02",
+      "name": "观察廊",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（观察廊）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d02_03",
+      "name": "样本冷库",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（样本冷库）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d02_04",
+      "name": "控制室",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（控制室）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d02_05",
+      "name": "试制间",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（试制间）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d02_06",
+      "name": "检修竖井",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（检修竖井）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d02_07",
+      "name": "隔离核心",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（隔离核心）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d02_08",
+      "name": "流程终端",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（流程终端）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d02_09",
+      "name": "外排廊",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（外排廊）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d03_01",
+      "name": "装卸门",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（装卸门）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d03_02",
+      "name": "外仓",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（外仓）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d03_03",
+      "name": "器材室",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（器材室）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d03_04",
+      "name": "值勤室",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（值勤室）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d03_05",
+      "name": "内仓闸口",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（内仓闸口）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d03_06",
+      "name": "配电房",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（配电房）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d03_07",
+      "name": "军械守卫",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（军械守卫）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d03_08",
+      "name": "封存仓",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（封存仓）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d04_01",
+      "name": "地堡入口",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（地堡入口）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d04_02",
+      "name": "缆线沟",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（缆线沟）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d04_03",
+      "name": "蓄电室",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（蓄电室）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d04_04",
+      "name": "山腹机房",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（山腹机房）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d04_05",
+      "name": "屋顶梯井",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（屋顶梯井）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d04_06",
+      "name": "天线守卫台",
+      "exposure": "outdoor",
+      "reason": "无顶天线守卫台",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d04_07",
+      "name": "联络台",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（联络台）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d04_08",
+      "name": "逃生索道",
+      "exposure": "outdoor",
+      "reason": "露天逃生索道平台",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d05_01",
+      "name": "检修井",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（检修井）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d05_02",
+      "name": "分流室",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（分流室）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d05_03",
+      "name": "沉淀池",
+      "exposure": "outdoor",
+      "reason": "露天沉淀池区",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d05_04",
+      "name": "滤料库",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（滤料库）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d05_05",
+      "name": "环水渠",
+      "exposure": "outdoor",
+      "reason": "露天环水渠区",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d05_06",
+      "name": "泵房守卫",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（泵房守卫）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d05_07",
+      "name": "阀控室",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（阀控室）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d05_08",
+      "name": "出水涵洞",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（出水涵洞）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d06_01",
+      "name": "洞口",
+      "exposure": "outdoor",
+      "reason": "洞外入口缓冲地面",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d06_02",
+      "name": "岔井",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（岔井）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d06_03",
+      "name": "浅矿脉",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（浅矿脉）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d06_04",
+      "name": "废轨道",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（废轨道）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d06_05",
+      "name": "塌方绕道",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（塌方绕道）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d06_06",
+      "name": "矿工营室",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（矿工营室）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d06_07",
+      "name": "深井守卫",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（深井守卫）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d06_08",
+      "name": "工具封库",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（工具封库）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d06_09",
+      "name": "通风出口",
+      "exposure": "outdoor",
+      "reason": "通风出口外的平台",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d07_01",
+      "name": "卷帘入口",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（卷帘入口）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d07_02",
+      "name": "中庭",
+      "exposure": "outdoor",
+      "reason": "顶盖损毁的开放中庭",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d07_03",
+      "name": "食品层",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（食品层）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d07_04",
+      "name": "服装层",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（服装层）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d07_05",
+      "name": "药妆侧厅",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（药妆侧厅）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d07_06",
+      "name": "扶梯守卫",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（扶梯守卫）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d07_07",
+      "name": "屋顶避难点",
+      "exposure": "outdoor",
+      "reason": "露天屋顶避难点",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d07_08",
+      "name": "消防出口",
+      "exposure": "outdoor",
+      "reason": "外侧消防出口平台",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d08_01",
+      "name": "货台",
+      "exposure": "outdoor",
+      "reason": "露天装卸货台",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d08_02",
+      "name": "温区分拣",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（温区分拣）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d08_03",
+      "name": "干货库",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（干货库）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d08_04",
+      "name": "冷库走廊",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（冷库走廊）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d08_05",
+      "name": "封存药架",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（封存药架）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d08_06",
+      "name": "备用电房",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（备用电房）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d08_07",
+      "name": "仓管守卫",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（仓管守卫）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d08_08",
+      "name": "调度室",
+      "exposure": "indoor",
+      "reason": "该节点为有完整顶盖的内部房间或通道（调度室）",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    },
+    {
+      "nodeId": "d08_09",
+      "name": "卸货出口",
+      "exposure": "outdoor",
+      "reason": "露天卸货出口平台",
+      "worldKind": "dungeon_instance",
+      "landOwner": "quest_reserved",
+      "safehouseAllowed": false
+    }
+  ],
+  "naturalIndoorSleepShelter": true,
+  "shelterPolicy": {
+    "sourceQuestion": "Q118_supplement_A",
+    "naturalIndoorOnlyBasicShelter": true,
+    "noAutomaticSafetyBedStorageOrBuildPermission": true,
+    "actualZoneAndCompletedFacilitiesRequired": true,
+    "oldRecoveryNotRecomputed": true
+  },
+  "housing": {
+    "authority": "S09_X2",
+    "form": "enclosed_residence_separate_interior_door_200kg_fixed_storage",
+    "baseMaterials": {
+      "wood": 8,
+      "fiber": 6,
+      "cloth": 2,
+      "stone": 4
+    },
+    "baseWorkMinutes": 240,
+    "craftingLevel": 1,
+    "hubRegistrationRequired": true,
+    "extras": "bed_fire_workshops_original_costs_separate",
+    "forbidden": "dungeon_instances_actual_faction_public_and_quest_reserved_land",
+    "oldPermissionFieldsUnchanged": true,
+    "implementationBatch": "B17"
+  },
+  "serviceMigration": {
+    "decision": "Q119_B",
+    "activateNow": true,
+    "servicesAtV3Nodes": true,
+    "waitForRegistrationBatch": false,
+    "hub": "h02_square",
+    "shelter": "h06_shelter",
+    "newCampStandInRequests": false,
+    "autoUnlockRegisterOrTeleport": false,
+    "rosterAndKnownPublicEstatesMoveOnce": true,
+    "unknownEstateStaysOriginal": true,
+    "preserveOngoingRegistrationSnapshot": true,
+    "reserveCareContinuesAtActualNewLocation": true,
+    "currentPartySlotEditing": "any_Q86_idle_location"
+  },
+  "acceptanceIds": [
+    "MAP-Q114-01",
+    "MAP-Q115-01",
+    "MAP-Q115-02",
+    "MAP-Q116-01",
+    "MAP-Q117-01",
+    "MAP-Q118-01",
+    "MAP-Q118-02",
+    "HOUSE-Q118-01",
+    "HOUSE-Q118-02",
+    "PARTY-Q119-01",
+    "PARTY-Q119-02",
+    "PARTY-Q119-03"
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-30-Q30-final",
+  "version": "2026-11-02-Q115",
   "status": "用户选B授权总控补齐并实装的完整门槛定义；不是工程实现或已实机验证",
   "rawGateCount": 27,
   "canonicalGateCount": 26,
@@ -5453,11 +5453,17 @@
     }
   ],
   "stateRules": {
-    "campaignLatch": "条件首次满足即写campaignId+edgeId.unlocked，双向共享；事实先满足后到达也重判。已开世界边不因探索/UI/任务展示倒锁。",
+    "campaignLatch": "Q115_B：正式门槛首次满足即写campaignId+edgeId.unlocked并揭示边及两端，不要求端点visited；正反共享。所有事实/探索/到达/新局/加载后按实际谓词重判；仅发现不写到访/探索/奖励，旧世界锁不倒锁。",
     "instanceLatch": "当前instanceId+edgeId.unlocked，generation变化丢弃旧代房间探索/守卫/clear；campaign知识/路线/唯一claim仍保留。",
     "revalidation": "每次走边都检查真实当前位置、角色存活/终局、队伍同行、空闲事务、目标/边发现和实例归属；不取消固定时长，不绕战斗/撤出惩罚。instance_complete每次查当前代clear，无反向。",
     "reverse": "原from是数据锚，不是运行时currentLocation；成功走正向后逆向重用同一解锁。未满足锁的逆向也用原锚检查，不额外查原to探索；地图环从别路抵达不创造不存在的边。",
-    "legacy": "只承接可信旧世界已开边/任务完成/记录等效。当前实例重置后不按旧代通关放守卫门。世界进度缺键不补奖励/新对白；可在明确地点重做免费公开对话补路线事实。"
+    "legacy": "只承接可信旧世界已开边/任务完成/记录等效。当前实例重置后不按旧代通关放守卫门。世界进度缺键不补奖励/新对白；可在明确地点重做免费公开对话补路线事实。",
+    "discoveryVsVisit": {
+      "requireVisitedEndpointToOpen": false,
+      "openingRevealsEndpoints": true,
+      "discoveryDoesNotWriteVisitedOrExplore": true,
+      "noRemoteInstanceCreation": true
+    }
   },
   "factProducers": {
     "checkpoint_obstruction_cleared": "m02固定任务路障战最终胜利且主角存活提交，不使用S04随机清理次数",
@@ -5507,6 +5513,12 @@
       "scope": "current_instance"
     },
     "starter": "8地点既有初值保持",
-    "gateThreshold": "from/parent/instance门槛仍检查100，不把副本单次+50误设50通行"
+    "gateThreshold": "from/parent/instance门槛仍检查100，不把副本单次+50误设50通行",
+    "reveal100": {
+      "bidirectional": "all_incident_edges",
+      "oneWay": "outgoing_only",
+      "unmetGate": "visible_locked_with_reason_and_remote_name_only",
+      "oldEightIncluded": true
+    }
   }
 }

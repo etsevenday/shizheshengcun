@@ -382,7 +382,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "路肩残留着车辙和碎玻璃；路面开阔，停留时仍需留意两侧。"
       },
       {
         "id": "m02_checkpoint",
@@ -445,7 +448,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "检查哨的栏杆与弃车留下狭窄通道；路障是否清除仍以眼前状态为准。"
       },
       {
         "id": "h01_gate",
@@ -504,7 +510,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "营门露天通行区，不把门房算整个节点室内"
       },
       {
         "id": "h02_square",
@@ -563,7 +571,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "营区露天广场；公共居所独立区域另按真实设施"
       },
       {
         "id": "h03_workshop",
@@ -624,7 +634,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "完整工坊主厅"
       },
       {
         "id": "h04_infirmary",
@@ -683,7 +695,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "完整医务室"
       },
       {
         "id": "h05_homestead",
@@ -747,7 +761,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "尚未施工的露天建地；已建住宅按屋内zone另判"
       },
       {
         "id": "w01_farm",
@@ -812,7 +828,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "田埂旁有倒伏作物与散落农具；屋舍遮挡了部分视线。"
       },
       {
         "id": "w02_forest",
@@ -878,7 +897,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "林间空地留有旧营址的痕迹；树冠下仍有雨水滴落。"
       },
       {
         "id": "w03_quarry",
@@ -943,7 +965,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "石坡边缘有松动碎石；坡壁之后的声响不容易判断来源。"
       },
       {
         "id": "w04_crossroads",
@@ -1009,7 +1034,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "数条旧路在这里相交；不同方向都留有风化的标记。"
       },
       {
         "id": "w05_marsh",
@@ -1075,7 +1103,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "芦苇倒伏处露出泥水；水面平静也不能说明脚下坚实。"
       },
       {
         "id": "w06_bridge",
@@ -1141,7 +1172,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "断桥下的河滩留有冲刷痕迹；桥体的缺口仍清楚可见。"
       },
       {
         "id": "w07_ridge",
@@ -1207,7 +1241,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "山脊路无遮拦；弯道后的情况无法从这里看清。"
       },
       {
         "id": "w08_reservoir",
@@ -1275,7 +1312,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "旧水位线露在岸边；取水仍需分辨资源卡上的水质。"
       },
       {
         "id": "w09_logging",
@@ -1341,7 +1381,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "伐木场散落着旧木料；堆垛之间存在难以看清的夹道。"
       },
       {
         "id": "w10_watchtower",
@@ -1407,7 +1450,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "瞭望台周围地势较高；台基背面仍有视线死角。"
       },
       {
         "id": "a01_yard",
@@ -1472,7 +1518,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "货场的轨道间留有杂物；车厢和堆料遮住了远处。"
       },
       {
         "id": "a02_pump",
@@ -1537,7 +1586,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "保留完整屋顶的旧泵房",
+        "clue75": "泵房屋顶尚完整；天然遮挡不代表这里已经没有危险。"
       },
       {
         "id": "a03_foundry",
@@ -1603,7 +1655,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "厂外露天场地",
+        "clue75": "铸造厂外的堆场留有炉渣；厂墙后的动静仍需另外确认。"
       },
       {
         "id": "b01_school",
@@ -1662,7 +1717,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "现役安置学校楼内公共区域"
       },
       {
         "id": "b02_station",
@@ -1721,7 +1778,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "急救转运站室内候护厅"
       },
       {
         "id": "b03_hospital",
@@ -1786,7 +1845,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "医院外院为露天",
+        "clue75": "医院外院的门窗多有破损；建筑名称并不保证整片院落都有遮蔽。"
       },
       {
         "id": "c01_pilgrim",
@@ -1850,7 +1912,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "朝圣路旁有磨损路记；前方的接待与通行仍以实际规则为准。"
       },
       {
         "id": "c02_church",
@@ -1909,7 +1974,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "露天接待庭院"
       },
       {
         "id": "c03_crypt",
@@ -1968,7 +2035,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "地上露天墓园；地下圣所是独立地牢节点"
       },
       {
         "id": "r01_observatory",
@@ -2027,7 +2096,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "观测站完整室内区域"
       },
       {
         "id": "r02_academy",
@@ -2086,7 +2157,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "科学院露天外院"
       },
       {
         "id": "r03_lab",
@@ -2145,7 +2218,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "封存实验楼室内门厅"
       },
       {
         "id": "o01_oldgate",
@@ -2211,7 +2286,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "旧城门洞旁堆有碎砖；城门内外都存在遮挡。"
       },
       {
         "id": "o02_market",
@@ -2277,7 +2355,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "商圈街道上有坍塌招牌；店面间的狭巷不易看清。"
       },
       {
         "id": "o03_police",
@@ -2343,7 +2424,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "仓外露天院落",
+        "clue75": "警备仓外仍能辨认旧岗哨位置；外部院落与仓内情况不能混为一谈。"
       },
       {
         "id": "o04_transit",
@@ -2409,7 +2493,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "车站的外部道路留有旧导向牌；入口之后的环境仍待实地确认。"
       },
       {
         "id": "h05_appraisal",
@@ -2468,7 +2555,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "完整鉴定所室内"
       },
       {
         "id": "h06_shelter",
@@ -2527,7 +2616,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "完整收容所主厅"
       },
       {
         "id": "c04_alms",
@@ -2586,7 +2677,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "施济处完整室内"
       },
       {
         "id": "c05_admonition",
@@ -2645,7 +2738,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "训诫堂完整室内"
       },
       {
         "id": "c06_archive",
@@ -2704,7 +2799,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "典藏室完整室内"
       },
       {
         "id": "c07_sanctuary",
@@ -2763,7 +2860,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "圣堂完整室内"
       },
       {
         "id": "r04_reception",
@@ -2822,7 +2921,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "接待处完整室内"
       },
       {
         "id": "r05_testing",
@@ -2881,7 +2982,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "检测室完整室内"
       },
       {
         "id": "r06_archive",
@@ -2940,7 +3043,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "档案室完整室内"
       },
       {
         "id": "r07_workshop",
@@ -2999,7 +3104,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "试制工坊完整室内"
       },
       {
         "id": "r08_observation",
@@ -3058,7 +3165,9 @@
           "resourceFallback": "clear_small_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "隔离观察区完整室内"
       },
       {
         "id": "w11_orchard",
@@ -3126,7 +3235,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "果树之间长着杂草；倒枝后面有被遮住的低洼处。"
       },
       {
         "id": "w12_canal",
@@ -3195,7 +3307,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "渠岸留有湿滑的淤泥；水流声会盖住较轻的动静。"
       },
       {
         "id": "w13_mill",
@@ -3266,7 +3381,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "保留完整屋顶的磨坊主屋",
+        "clue75": "磨坊尚有完整屋顶；旧墙与机器仍遮住了室内部分视线。"
       },
       {
         "id": "w14_cemeteryroad",
@@ -3334,7 +3452,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "荒径两边的石标已倾斜；高草遮住了路沿。"
       },
       {
         "id": "w15_shrinewoods",
@@ -3403,7 +3524,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "祈祷林中的旧石台覆着落叶；树影之间难以分清细小动静。"
       },
       {
         "id": "w16_service",
@@ -3473,7 +3597,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "保留完整屋顶的服务站主厅",
+        "clue75": "服务站主厅尚有遮顶；门窗破损，不能把有屋顶当作无人出入。"
       },
       {
         "id": "w17_switchback",
@@ -3541,7 +3668,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "盘山路的急弯较多；崖壁会遮住前后两段道路。"
       },
       {
         "id": "w18_tunnel",
@@ -3609,7 +3739,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "塌隧道外平台，不是隧道内",
+        "clue75": "塌隧道的堵口仍在；洞外平台没有完整顶盖。"
       },
       {
         "id": "w19_survey",
@@ -3679,7 +3812,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "测绘营址只剩桩位和零散支架；旧营地痕迹不等于现成住处。"
       },
       {
         "id": "w20_powercut",
@@ -3747,7 +3883,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "高压走廊的地面较开阔；塔基周围仍留有遮挡。"
       },
       {
         "id": "w21_pine",
@@ -3817,7 +3956,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "针叶铺满林地；密集树干让远处视线变短。"
       },
       {
         "id": "w22_ravine",
@@ -3886,7 +4028,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "沟谷两侧岩壁陡直；转折处会遮住前方，也会放大回声。"
       },
       {
         "id": "w23_hunting",
@@ -3957,7 +4102,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "旧篷布破损、无完整遮顶",
+        "clue75": "猎人旧营的篷布已经破损；留下的支架不能提供完整遮蔽。"
       },
       {
         "id": "w24_cave",
@@ -4026,7 +4174,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "岩洞入口外，不是洞内",
+        "clue75": "岩洞入口前仍是露天地面；洞内的情况需要另行确认。"
       },
       {
         "id": "w25_wetland",
@@ -4096,7 +4247,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "黑水间有浮草覆盖；看似连续的草面未必是实地。"
       },
       {
         "id": "w26_island",
@@ -4165,7 +4319,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "陆洲岸边可见水位变化的痕迹；四周开阔，缺少现成屋顶。"
       },
       {
         "id": "w27_relay",
@@ -4236,7 +4393,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "中继营屋面毁损，无完整遮顶",
+        "clue75": "中继营残留着设备基座；旧建筑的顶盖已经失去遮蔽作用。"
       },
       {
         "id": "w28_highland",
@@ -4305,7 +4465,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "高地上可见明显风蚀；岩块能挡住部分视线，却没有完整遮顶。"
       },
       {
         "id": "w29_riverbend",
@@ -4374,7 +4537,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "河弯处的淤积带宽窄不一；水声会干扰对周围动静的判断。"
       },
       {
         "id": "w30_truckstop",
@@ -4444,7 +4610,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "货车停靠区留着车位标线；车辆残骸之间有较深的盲区。"
       },
       {
         "id": "w31_suburb",
@@ -4513,7 +4682,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "露天街区，不能以局部棚户覆盖整点",
+        "clue75": "棚户之间的通道狭窄；破损屋面不能给整片街区提供遮蔽。"
       },
       {
         "id": "w32_railcut",
@@ -4581,7 +4753,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "铁路线切口两侧地势较高；路堑拐角之后难以直接看见。"
       },
       {
         "id": "w33_waterworks",
@@ -4650,7 +4825,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "水厂外部露天场地；地牢区分开",
+        "clue75": "水厂外部仍有露天池区；封闭设施与外部场地需要分开判断。"
       },
       {
         "id": "w34_depot",
@@ -4720,7 +4898,10 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "应急仓外是露天装卸场；库内的情况不能从院外直接确定。"
       },
       {
         "id": "d01_01",
@@ -4776,7 +4957,9 @@
           "resourceFallback": "buffer_no_physical_reward",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（墓门缓冲）"
       },
       {
         "id": "d01_02",
@@ -4832,7 +5015,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（捐献仓）"
       },
       {
         "id": "d01_03",
@@ -4888,7 +5073,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（忏悔长廊）"
       },
       {
         "id": "d01_04",
@@ -4947,7 +5134,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（藏书密室）"
       },
       {
         "id": "d01_05",
@@ -5003,7 +5192,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（环形礼拜厅）"
       },
       {
         "id": "d01_06",
@@ -5061,7 +5252,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（骨龛回道）"
       },
       {
         "id": "d01_07",
@@ -5117,7 +5310,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（封锁祭室）"
       },
       {
         "id": "d01_08",
@@ -5175,7 +5370,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（旧路线档案）"
       },
       {
         "id": "d02_01",
@@ -5231,7 +5428,9 @@
           "resourceFallback": "buffer_no_physical_reward",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（消洗门厅）"
       },
       {
         "id": "d02_02",
@@ -5287,7 +5486,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（观察廊）"
       },
       {
         "id": "d02_03",
@@ -5343,7 +5544,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（样本冷库）"
       },
       {
         "id": "d02_04",
@@ -5402,7 +5605,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（控制室）"
       },
       {
         "id": "d02_05",
@@ -5458,7 +5663,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（试制间）"
       },
       {
         "id": "d02_06",
@@ -5516,7 +5723,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（检修竖井）"
       },
       {
         "id": "d02_07",
@@ -5572,7 +5781,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（隔离核心）"
       },
       {
         "id": "d02_08",
@@ -5630,7 +5841,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（流程终端）"
       },
       {
         "id": "d02_09",
@@ -5686,7 +5899,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（外排廊）"
       },
       {
         "id": "d03_01",
@@ -5742,7 +5957,9 @@
           "resourceFallback": "buffer_no_physical_reward",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（装卸门）"
       },
       {
         "id": "d03_02",
@@ -5798,7 +6015,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（外仓）"
       },
       {
         "id": "d03_03",
@@ -5854,7 +6073,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（器材室）"
       },
       {
         "id": "d03_04",
@@ -5913,7 +6134,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（值勤室）"
       },
       {
         "id": "d03_05",
@@ -5969,7 +6192,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（内仓闸口）"
       },
       {
         "id": "d03_06",
@@ -6027,7 +6252,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（配电房）"
       },
       {
         "id": "d03_07",
@@ -6083,7 +6310,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（军械守卫）"
       },
       {
         "id": "d03_08",
@@ -6141,7 +6370,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（封存仓）"
       },
       {
         "id": "d04_01",
@@ -6197,7 +6428,9 @@
           "resourceFallback": "buffer_no_physical_reward",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（地堡入口）"
       },
       {
         "id": "d04_02",
@@ -6253,7 +6486,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（缆线沟）"
       },
       {
         "id": "d04_03",
@@ -6312,7 +6547,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（蓄电室）"
       },
       {
         "id": "d04_04",
@@ -6368,7 +6605,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（山腹机房）"
       },
       {
         "id": "d04_05",
@@ -6426,7 +6665,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（屋顶梯井）"
       },
       {
         "id": "d04_06",
@@ -6482,7 +6723,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "无顶天线守卫台"
       },
       {
         "id": "d04_07",
@@ -6540,7 +6783,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（联络台）"
       },
       {
         "id": "d04_08",
@@ -6596,7 +6841,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "露天逃生索道平台"
       },
       {
         "id": "d05_01",
@@ -6652,7 +6899,9 @@
           "resourceFallback": "buffer_no_physical_reward",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（检修井）"
       },
       {
         "id": "d05_02",
@@ -6708,7 +6957,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（分流室）"
       },
       {
         "id": "d05_03",
@@ -6764,7 +7015,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "露天沉淀池区"
       },
       {
         "id": "d05_04",
@@ -6823,7 +7076,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（滤料库）"
       },
       {
         "id": "d05_05",
@@ -6879,7 +7134,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "露天环水渠区"
       },
       {
         "id": "d05_06",
@@ -6935,7 +7192,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（泵房守卫）"
       },
       {
         "id": "d05_07",
@@ -6994,7 +7253,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（阀控室）"
       },
       {
         "id": "d05_08",
@@ -7050,7 +7311,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（出水涵洞）"
       },
       {
         "id": "d06_01",
@@ -7106,7 +7369,9 @@
           "resourceFallback": "buffer_no_physical_reward",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "洞外入口缓冲地面"
       },
       {
         "id": "d06_02",
@@ -7162,7 +7427,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（岔井）"
       },
       {
         "id": "d06_03",
@@ -7221,7 +7488,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（浅矿脉）"
       },
       {
         "id": "d06_04",
@@ -7277,7 +7546,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（废轨道）"
       },
       {
         "id": "d06_05",
@@ -7333,7 +7604,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（塌方绕道）"
       },
       {
         "id": "d06_06",
@@ -7391,7 +7664,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（矿工营室）"
       },
       {
         "id": "d06_07",
@@ -7447,7 +7722,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（深井守卫）"
       },
       {
         "id": "d06_08",
@@ -7505,7 +7782,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（工具封库）"
       },
       {
         "id": "d06_09",
@@ -7561,7 +7840,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "通风出口外的平台"
       },
       {
         "id": "d07_01",
@@ -7617,7 +7898,9 @@
           "resourceFallback": "buffer_no_physical_reward",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（卷帘入口）"
       },
       {
         "id": "d07_02",
@@ -7673,7 +7956,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "顶盖损毁的开放中庭"
       },
       {
         "id": "d07_03",
@@ -7729,7 +8014,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（食品层）"
       },
       {
         "id": "d07_04",
@@ -7788,7 +8075,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（服装层）"
       },
       {
         "id": "d07_05",
@@ -7844,7 +8133,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（药妆侧厅）"
       },
       {
         "id": "d07_06",
@@ -7900,7 +8191,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（扶梯守卫）"
       },
       {
         "id": "d07_07",
@@ -7959,7 +8252,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "露天屋顶避难点"
       },
       {
         "id": "d07_08",
@@ -8015,7 +8310,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "外侧消防出口平台"
       },
       {
         "id": "d08_01",
@@ -8071,7 +8368,9 @@
           "resourceFallback": "buffer_no_physical_reward",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "露天装卸货台"
       },
       {
         "id": "d08_02",
@@ -8127,7 +8426,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（温区分拣）"
       },
       {
         "id": "d08_03",
@@ -8186,7 +8487,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（干货库）"
       },
       {
         "id": "d08_04",
@@ -8242,7 +8545,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（冷库走廊）"
       },
       {
         "id": "d08_05",
@@ -8298,7 +8603,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（封存药架）"
       },
       {
         "id": "d08_06",
@@ -8356,7 +8663,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（备用电房）"
       },
       {
         "id": "d08_07",
@@ -8412,7 +8721,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（仓管守卫）"
       },
       {
         "id": "d08_08",
@@ -8470,7 +8781,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（调度室）"
       },
       {
         "id": "d08_09",
@@ -8526,7 +8839,9 @@
           "resourceFallback": "shared_loot_common_salvage",
           "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
           "inheritExistingFixedResources": true
-        }
+        },
+        "exposure": "outdoor",
+        "exposureReason": "露天卸货出口平台"
       }
     ],
     "new_field_nodes": 24,
@@ -15900,7 +16215,9 @@
     "gateContractFile": "gate-contract.json",
     "gateAliases": {
       "from_explore_100": "from_explore100"
-    }
+    },
+    "currentMapAdjudicationsFile": "assets/20261102/map/map-adjudications.json",
+    "currentMapAdjudicationsVersion": "q114_q119_20261102"
   },
   "normalizedResourcePatch": [
     {
@@ -24694,7 +25011,7 @@
     }
   },
   "gateContract": {
-    "version": "2026-10-30-Q30-final",
+    "version": "2026-11-02-Q115",
     "status": "用户选B授权总控补齐并实装的完整门槛定义；不是工程实现或已实机验证",
     "rawGateCount": 27,
     "canonicalGateCount": 26,
@@ -30148,11 +30465,17 @@
       }
     ],
     "stateRules": {
-      "campaignLatch": "条件首次满足即写campaignId+edgeId.unlocked，双向共享；事实先满足后到达也重判。已开世界边不因探索/UI/任务展示倒锁。",
+      "campaignLatch": "Q115_B：正式门槛首次满足即写campaignId+edgeId.unlocked并揭示边及两端，不要求端点visited；正反共享。所有事实/探索/到达/新局/加载后按实际谓词重判；仅发现不写到访/探索/奖励，旧世界锁不倒锁。",
       "instanceLatch": "当前instanceId+edgeId.unlocked，generation变化丢弃旧代房间探索/守卫/clear；campaign知识/路线/唯一claim仍保留。",
       "revalidation": "每次走边都检查真实当前位置、角色存活/终局、队伍同行、空闲事务、目标/边发现和实例归属；不取消固定时长，不绕战斗/撤出惩罚。instance_complete每次查当前代clear，无反向。",
       "reverse": "原from是数据锚，不是运行时currentLocation；成功走正向后逆向重用同一解锁。未满足锁的逆向也用原锚检查，不额外查原to探索；地图环从别路抵达不创造不存在的边。",
-      "legacy": "只承接可信旧世界已开边/任务完成/记录等效。当前实例重置后不按旧代通关放守卫门。世界进度缺键不补奖励/新对白；可在明确地点重做免费公开对话补路线事实。"
+      "legacy": "只承接可信旧世界已开边/任务完成/记录等效。当前实例重置后不按旧代通关放守卫门。世界进度缺键不补奖励/新对白；可在明确地点重做免费公开对话补路线事实。",
+      "discoveryVsVisit": {
+        "requireVisitedEndpointToOpen": false,
+        "openingRevealsEndpoints": true,
+        "discoveryDoesNotWriteVisitedOrExplore": true,
+        "noRemoteInstanceCreation": true
+      }
     },
     "factProducers": {
       "checkpoint_obstruction_cleared": "m02固定任务路障战最终胜利且主角存活提交，不使用S04随机清理次数",
@@ -30202,7 +30525,13 @@
         "scope": "current_instance"
       },
       "starter": "8地点既有初值保持",
-      "gateThreshold": "from/parent/instance门槛仍检查100，不把副本单次+50误设50通行"
+      "gateThreshold": "from/parent/instance门槛仍检查100，不把副本单次+50误设50通行",
+      "reveal100": {
+        "bidirectional": "all_incident_edges",
+        "oneWay": "outgoing_only",
+        "unmetGate": "visible_locked_with_reason_and_remote_name_only",
+        "oldEightIncluded": true
+      }
     }
   },
   "nodeExpansionRules": {
@@ -30742,7 +31071,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "路肩残留着车辙和碎玻璃；路面开阔，停留时仍需留意两侧。"
       },
       {
         "nodeId": "m02_checkpoint",
@@ -30789,7 +31121,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "检查哨的栏杆与弃车留下狭窄通道；路障是否清除仍以眼前状态为准。"
       },
       {
         "nodeId": "h01_gate",
@@ -30828,7 +31163,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "营门露天通行区，不把门房算整个节点室内"
       },
       {
         "nodeId": "h02_square",
@@ -30867,7 +31204,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "营区露天广场；公共居所独立区域另按真实设施"
       },
       {
         "nodeId": "h03_workshop",
@@ -30908,7 +31247,9 @@
         ],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "完整工坊主厅"
       },
       {
         "nodeId": "h04_infirmary",
@@ -30947,7 +31288,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "完整医务室"
       },
       {
         "nodeId": "h05_homestead",
@@ -30986,7 +31329,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "尚未施工的露天建地；已建住宅按屋内zone另判"
       },
       {
         "nodeId": "w01_farm",
@@ -31035,7 +31380,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "田埂旁有倒伏作物与散落农具；屋舍遮挡了部分视线。"
       },
       {
         "nodeId": "w02_forest",
@@ -31085,7 +31433,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "林间空地留有旧营址的痕迹；树冠下仍有雨水滴落。"
       },
       {
         "nodeId": "w03_quarry",
@@ -31134,7 +31485,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "石坡边缘有松动碎石；坡壁之后的声响不容易判断来源。"
       },
       {
         "nodeId": "w04_crossroads",
@@ -31184,7 +31538,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "数条旧路在这里相交；不同方向都留有风化的标记。"
       },
       {
         "nodeId": "w05_marsh",
@@ -31234,7 +31591,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "芦苇倒伏处露出泥水；水面平静也不能说明脚下坚实。"
       },
       {
         "nodeId": "w06_bridge",
@@ -31284,7 +31644,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "断桥下的河滩留有冲刷痕迹；桥体的缺口仍清楚可见。"
       },
       {
         "nodeId": "w07_ridge",
@@ -31334,7 +31697,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "山脊路无遮拦；弯道后的情况无法从这里看清。"
       },
       {
         "nodeId": "w08_reservoir",
@@ -31386,7 +31752,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "旧水位线露在岸边；取水仍需分辨资源卡上的水质。"
       },
       {
         "nodeId": "w09_logging",
@@ -31436,7 +31805,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "伐木场散落着旧木料；堆垛之间存在难以看清的夹道。"
       },
       {
         "nodeId": "w10_watchtower",
@@ -31486,7 +31858,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "瞭望台周围地势较高；台基背面仍有视线死角。"
       },
       {
         "nodeId": "a01_yard",
@@ -31535,7 +31910,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "货场的轨道间留有杂物；车厢和堆料遮住了远处。"
       },
       {
         "nodeId": "a02_pump",
@@ -31584,7 +31962,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "保留完整屋顶的旧泵房",
+        "clue75": "泵房屋顶尚完整；天然遮挡不代表这里已经没有危险。"
       },
       {
         "nodeId": "a03_foundry",
@@ -31634,7 +32015,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "厂外露天场地",
+        "clue75": "铸造厂外的堆场留有炉渣；厂墙后的动静仍需另外确认。"
       },
       {
         "nodeId": "b01_school",
@@ -31673,7 +32057,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "现役安置学校楼内公共区域"
       },
       {
         "nodeId": "b02_station",
@@ -31712,7 +32098,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "急救转运站室内候护厅"
       },
       {
         "nodeId": "b03_hospital",
@@ -31761,7 +32149,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "医院外院为露天",
+        "clue75": "医院外院的门窗多有破损；建筑名称并不保证整片院落都有遮蔽。"
       },
       {
         "nodeId": "c01_pilgrim",
@@ -31809,7 +32200,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "朝圣路旁有磨损路记；前方的接待与通行仍以实际规则为准。"
       },
       {
         "nodeId": "c02_church",
@@ -31848,7 +32242,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "露天接待庭院"
       },
       {
         "nodeId": "c03_crypt",
@@ -31887,7 +32283,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "地上露天墓园；地下圣所是独立地牢节点"
       },
       {
         "nodeId": "r01_observatory",
@@ -31926,7 +32324,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "观测站完整室内区域"
       },
       {
         "nodeId": "r02_academy",
@@ -31965,7 +32365,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "科学院露天外院"
       },
       {
         "nodeId": "r03_lab",
@@ -32004,7 +32406,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "封存实验楼室内门厅"
       },
       {
         "nodeId": "o01_oldgate",
@@ -32054,7 +32458,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "旧城门洞旁堆有碎砖；城门内外都存在遮挡。"
       },
       {
         "nodeId": "o02_market",
@@ -32104,7 +32511,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "商圈街道上有坍塌招牌；店面间的狭巷不易看清。"
       },
       {
         "nodeId": "o03_police",
@@ -32154,7 +32564,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "仓外露天院落",
+        "clue75": "警备仓外仍能辨认旧岗哨位置；外部院落与仓内情况不能混为一谈。"
       },
       {
         "nodeId": "o04_transit",
@@ -32204,7 +32617,10 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "车站的外部道路留有旧导向牌；入口之后的环境仍待实地确认。"
       },
       {
         "nodeId": "h05_appraisal",
@@ -32243,7 +32659,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "完整鉴定所室内"
       },
       {
         "nodeId": "h06_shelter",
@@ -32282,7 +32700,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "完整收容所主厅"
       },
       {
         "nodeId": "c04_alms",
@@ -32321,7 +32741,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "施济处完整室内"
       },
       {
         "nodeId": "c05_admonition",
@@ -32360,7 +32782,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "训诫堂完整室内"
       },
       {
         "nodeId": "c06_archive",
@@ -32399,7 +32823,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "典藏室完整室内"
       },
       {
         "nodeId": "c07_sanctuary",
@@ -32438,7 +32864,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "圣堂完整室内"
       },
       {
         "nodeId": "r04_reception",
@@ -32477,7 +32905,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "接待处完整室内"
       },
       {
         "nodeId": "r05_testing",
@@ -32516,7 +32946,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "检测室完整室内"
       },
       {
         "nodeId": "r06_archive",
@@ -32555,7 +32987,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "档案室完整室内"
       },
       {
         "nodeId": "r07_workshop",
@@ -32594,7 +33028,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "试制工坊完整室内"
       },
       {
         "nodeId": "r08_observation",
@@ -32633,7 +33069,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "clear_small_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "隔离观察区完整室内"
       },
       {
         "nodeId": "w11_orchard",
@@ -32685,7 +33123,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "果树之间长着杂草；倒枝后面有被遮住的低洼处。"
       },
       {
         "nodeId": "w12_canal",
@@ -32738,7 +33179,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "渠岸留有湿滑的淤泥；水流声会盖住较轻的动静。"
       },
       {
         "nodeId": "w13_mill",
@@ -32792,7 +33236,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "保留完整屋顶的磨坊主屋",
+        "clue75": "磨坊尚有完整屋顶；旧墙与机器仍遮住了室内部分视线。"
       },
       {
         "nodeId": "w14_cemeteryroad",
@@ -32844,7 +33291,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "荒径两边的石标已倾斜；高草遮住了路沿。"
       },
       {
         "nodeId": "w15_shrinewoods",
@@ -32897,7 +33347,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "祈祷林中的旧石台覆着落叶；树影之间难以分清细小动静。"
       },
       {
         "nodeId": "w16_service",
@@ -32950,7 +33403,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "保留完整屋顶的服务站主厅",
+        "clue75": "服务站主厅尚有遮顶；门窗破损，不能把有屋顶当作无人出入。"
       },
       {
         "nodeId": "w17_switchback",
@@ -33002,7 +33458,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "盘山路的急弯较多；崖壁会遮住前后两段道路。"
       },
       {
         "nodeId": "w18_tunnel",
@@ -33054,7 +33513,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "塌隧道外平台，不是隧道内",
+        "clue75": "塌隧道的堵口仍在；洞外平台没有完整顶盖。"
       },
       {
         "nodeId": "w19_survey",
@@ -33107,7 +33569,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "测绘营址只剩桩位和零散支架；旧营地痕迹不等于现成住处。"
       },
       {
         "nodeId": "w20_powercut",
@@ -33159,7 +33624,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "高压走廊的地面较开阔；塔基周围仍留有遮挡。"
       },
       {
         "nodeId": "w21_pine",
@@ -33212,7 +33680,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "针叶铺满林地；密集树干让远处视线变短。"
       },
       {
         "nodeId": "w22_ravine",
@@ -33265,7 +33736,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "沟谷两侧岩壁陡直；转折处会遮住前方，也会放大回声。"
       },
       {
         "nodeId": "w23_hunting",
@@ -33319,7 +33793,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "旧篷布破损、无完整遮顶",
+        "clue75": "猎人旧营的篷布已经破损；留下的支架不能提供完整遮蔽。"
       },
       {
         "nodeId": "w24_cave",
@@ -33372,7 +33849,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "岩洞入口外，不是洞内",
+        "clue75": "岩洞入口前仍是露天地面；洞内的情况需要另行确认。"
       },
       {
         "nodeId": "w25_wetland",
@@ -33426,7 +33906,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "黑水间有浮草覆盖；看似连续的草面未必是实地。"
       },
       {
         "nodeId": "w26_island",
@@ -33479,7 +33962,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "陆洲岸边可见水位变化的痕迹；四周开阔，缺少现成屋顶。"
       },
       {
         "nodeId": "w27_relay",
@@ -33533,7 +34019,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "中继营屋面毁损，无完整遮顶",
+        "clue75": "中继营残留着设备基座；旧建筑的顶盖已经失去遮蔽作用。"
       },
       {
         "nodeId": "w28_highland",
@@ -33586,7 +34075,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "高地上可见明显风蚀；岩块能挡住部分视线，却没有完整遮顶。"
       },
       {
         "nodeId": "w29_riverbend",
@@ -33639,7 +34131,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "河弯处的淤积带宽窄不一；水声会干扰对周围动静的判断。"
       },
       {
         "nodeId": "w30_truckstop",
@@ -33692,7 +34187,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "货车停靠区留着车位标线；车辆残骸之间有较深的盲区。"
       },
       {
         "nodeId": "w31_suburb",
@@ -33745,7 +34243,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "露天街区，不能以局部棚户覆盖整点",
+        "clue75": "棚户之间的通道狭窄；破损屋面不能给整片街区提供遮蔽。"
       },
       {
         "nodeId": "w32_railcut",
@@ -33797,7 +34298,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "铁路线切口两侧地势较高；路堑拐角之后难以直接看见。"
       },
       {
         "nodeId": "w33_waterworks",
@@ -33850,7 +34354,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "水厂外部露天场地；地牢区分开",
+        "clue75": "水厂外部仍有露天池区；封闭设施与外部场地需要分开判断。"
       },
       {
         "nodeId": "w34_depot",
@@ -33903,7 +34410,10 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "clue75": "应急仓外是露天装卸场；库内的情况不能从院外直接确定。"
       },
       {
         "nodeId": "d01_01",
@@ -33943,7 +34453,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "buffer_no_physical_reward",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（墓门缓冲）"
       },
       {
         "nodeId": "d01_02",
@@ -33983,7 +34495,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（捐献仓）"
       },
       {
         "nodeId": "d01_03",
@@ -34023,7 +34537,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（忏悔长廊）"
       },
       {
         "nodeId": "d01_04",
@@ -34066,7 +34582,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（藏书密室）"
       },
       {
         "nodeId": "d01_05",
@@ -34106,7 +34624,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（环形礼拜厅）"
       },
       {
         "nodeId": "d01_06",
@@ -34148,7 +34668,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（骨龛回道）"
       },
       {
         "nodeId": "d01_07",
@@ -34188,7 +34710,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（封锁祭室）"
       },
       {
         "nodeId": "d01_08",
@@ -34230,7 +34754,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（旧路线档案）"
       },
       {
         "nodeId": "d02_01",
@@ -34270,7 +34796,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "buffer_no_physical_reward",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（消洗门厅）"
       },
       {
         "nodeId": "d02_02",
@@ -34310,7 +34838,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（观察廊）"
       },
       {
         "nodeId": "d02_03",
@@ -34350,7 +34880,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（样本冷库）"
       },
       {
         "nodeId": "d02_04",
@@ -34393,7 +34925,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（控制室）"
       },
       {
         "nodeId": "d02_05",
@@ -34433,7 +34967,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（试制间）"
       },
       {
         "nodeId": "d02_06",
@@ -34475,7 +35011,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（检修竖井）"
       },
       {
         "nodeId": "d02_07",
@@ -34515,7 +35053,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（隔离核心）"
       },
       {
         "nodeId": "d02_08",
@@ -34557,7 +35097,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（流程终端）"
       },
       {
         "nodeId": "d02_09",
@@ -34597,7 +35139,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（外排廊）"
       },
       {
         "nodeId": "d03_01",
@@ -34637,7 +35181,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "buffer_no_physical_reward",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（装卸门）"
       },
       {
         "nodeId": "d03_02",
@@ -34677,7 +35223,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（外仓）"
       },
       {
         "nodeId": "d03_03",
@@ -34717,7 +35265,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（器材室）"
       },
       {
         "nodeId": "d03_04",
@@ -34760,7 +35310,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（值勤室）"
       },
       {
         "nodeId": "d03_05",
@@ -34800,7 +35352,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（内仓闸口）"
       },
       {
         "nodeId": "d03_06",
@@ -34842,7 +35396,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（配电房）"
       },
       {
         "nodeId": "d03_07",
@@ -34882,7 +35438,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（军械守卫）"
       },
       {
         "nodeId": "d03_08",
@@ -34924,7 +35482,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（封存仓）"
       },
       {
         "nodeId": "d04_01",
@@ -34964,7 +35524,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "buffer_no_physical_reward",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（地堡入口）"
       },
       {
         "nodeId": "d04_02",
@@ -35004,7 +35566,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（缆线沟）"
       },
       {
         "nodeId": "d04_03",
@@ -35047,7 +35611,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（蓄电室）"
       },
       {
         "nodeId": "d04_04",
@@ -35087,7 +35653,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（山腹机房）"
       },
       {
         "nodeId": "d04_05",
@@ -35129,7 +35697,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（屋顶梯井）"
       },
       {
         "nodeId": "d04_06",
@@ -35169,7 +35739,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "无顶天线守卫台"
       },
       {
         "nodeId": "d04_07",
@@ -35211,7 +35783,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（联络台）"
       },
       {
         "nodeId": "d04_08",
@@ -35251,7 +35825,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "露天逃生索道平台"
       },
       {
         "nodeId": "d05_01",
@@ -35291,7 +35867,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "buffer_no_physical_reward",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（检修井）"
       },
       {
         "nodeId": "d05_02",
@@ -35331,7 +35909,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（分流室）"
       },
       {
         "nodeId": "d05_03",
@@ -35371,7 +35951,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "露天沉淀池区"
       },
       {
         "nodeId": "d05_04",
@@ -35414,7 +35996,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（滤料库）"
       },
       {
         "nodeId": "d05_05",
@@ -35454,7 +36038,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "露天环水渠区"
       },
       {
         "nodeId": "d05_06",
@@ -35494,7 +36080,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（泵房守卫）"
       },
       {
         "nodeId": "d05_07",
@@ -35537,7 +36125,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（阀控室）"
       },
       {
         "nodeId": "d05_08",
@@ -35577,7 +36167,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（出水涵洞）"
       },
       {
         "nodeId": "d06_01",
@@ -35617,7 +36209,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "buffer_no_physical_reward",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "洞外入口缓冲地面"
       },
       {
         "nodeId": "d06_02",
@@ -35657,7 +36251,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（岔井）"
       },
       {
         "nodeId": "d06_03",
@@ -35700,7 +36296,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（浅矿脉）"
       },
       {
         "nodeId": "d06_04",
@@ -35740,7 +36338,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（废轨道）"
       },
       {
         "nodeId": "d06_05",
@@ -35780,7 +36380,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（塌方绕道）"
       },
       {
         "nodeId": "d06_06",
@@ -35822,7 +36424,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（矿工营室）"
       },
       {
         "nodeId": "d06_07",
@@ -35862,7 +36466,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（深井守卫）"
       },
       {
         "nodeId": "d06_08",
@@ -35904,7 +36510,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（工具封库）"
       },
       {
         "nodeId": "d06_09",
@@ -35944,7 +36552,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "通风出口外的平台"
       },
       {
         "nodeId": "d07_01",
@@ -35984,7 +36594,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "buffer_no_physical_reward",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（卷帘入口）"
       },
       {
         "nodeId": "d07_02",
@@ -36024,7 +36636,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "顶盖损毁的开放中庭"
       },
       {
         "nodeId": "d07_03",
@@ -36064,7 +36678,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（食品层）"
       },
       {
         "nodeId": "d07_04",
@@ -36107,7 +36723,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（服装层）"
       },
       {
         "nodeId": "d07_05",
@@ -36147,7 +36765,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（药妆侧厅）"
       },
       {
         "nodeId": "d07_06",
@@ -36187,7 +36807,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（扶梯守卫）"
       },
       {
         "nodeId": "d07_07",
@@ -36230,7 +36852,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "露天屋顶避难点"
       },
       {
         "nodeId": "d07_08",
@@ -36270,7 +36894,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "外侧消防出口平台"
       },
       {
         "nodeId": "d08_01",
@@ -36310,7 +36936,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "buffer_no_physical_reward",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "露天装卸货台"
       },
       {
         "nodeId": "d08_02",
@@ -36350,7 +36978,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（温区分拣）"
       },
       {
         "nodeId": "d08_03",
@@ -36393,7 +37023,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（干货库）"
       },
       {
         "nodeId": "d08_04",
@@ -36433,7 +37065,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（冷库走廊）"
       },
       {
         "nodeId": "d08_05",
@@ -36473,7 +37107,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（封存药架）"
       },
       {
         "nodeId": "d08_06",
@@ -36515,7 +37151,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（备用电房）"
       },
       {
         "nodeId": "d08_07",
@@ -36555,7 +37193,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（仓管守卫）"
       },
       {
         "nodeId": "d08_08",
@@ -36597,7 +37237,9 @@
         ],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "indoor",
+        "exposureReason": "该节点为有完整顶盖的内部房间或通道（调度室）"
       },
       {
         "nodeId": "d08_09",
@@ -36637,7 +37279,9 @@
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
         "fixedRewardsAndBosses": "unchanged_existing_claims_never_given_by_explore_or_clear",
-        "inheritExistingFixedResources": true
+        "inheritExistingFixedResources": true,
+        "exposure": "outdoor",
+        "exposureReason": "露天卸货出口平台"
       }
     ],
     "contracts": {
@@ -36653,8 +37297,11 @@
       "persistence": "cancel_death_empty_do_not_refund_charge; save_locked_roll_work_progress_generation; reload_no_reroll; legacy_completed_explore_keep_percent_no_retroactive_reward",
       "populationInitialization": "所有首次2只均为目标上限，首次节点进入时在区剩余cap内生成，不把12个点2只提前生成成24只；已有存活worldEnemyId照旧计区/本地上限，不因Q31删除重抽。",
       "exploreCompletion": "23城市/明示safe仅首次真实到访100；45普通野外30基础分钟/+25共四次；67副本15基础分钟/+50共两次。25/50/75/100里程碑仅A08已有事件，副本不凭不存在的25/75触发额外物资。100后探索禁用，清理仍可。",
-      "fixedResources": "fixedResourceIds列规范化新增表；inheritExistingFixedResources=true合并旧S05/A08同节点固定源，空列表不是删除旧资源。"
-    }
+      "fixedResources": "fixedResourceIds列规范化新增表；inheritExistingFixedResources=true合并旧S05/A08同节点固定源，空列表不是删除旧资源。",
+      "reveal100": "Q116 all_outgoing_incident_bidirectional_plus_from_only_one_way; gate_conditions_still_apply",
+      "clue75": "45_new_explorable_overworld_node_specific_flavor_once_only_no_extra_items_xp_or_reveals"
+    },
+    "currentMapAdjudicationsFile": "assets/20261102/map/map-adjudications.json"
   },
   "narrativeTexts": {
     "version": "1.0-final-initial-copy",
@@ -51383,7 +52030,7 @@
     "scope": "伤害分层和真实槽位数学实验，非游戏工程/完整战斗测试"
   },
   "partyAdjudications": {
-    "version": "q88_q98_20261031",
+    "version": "q88_q119_20261102",
     "status": "approved_planning_target_not_engine_verified",
     "sourceQuestions": [
       "Q88",
@@ -51393,7 +52040,8 @@
       "Q92",
       "Q93",
       "Q94",
-      "Q98"
+      "Q98",
+      "Q119"
     ],
     "serviceLocations": {
       "preV3": "camp",
@@ -51416,6 +52064,21 @@
         "onlyExplicitPublicReserveMigrates": true,
         "idempotent": true,
         "contentsOwnerExpiryDurabilityClaimsAndLoanReferencesPreserved": true
+      },
+      "v3Activation": {
+        "decision": "Q119_B",
+        "activateNow": true,
+        "servicesAtV3Nodes": true,
+        "waitForRegistrationBatch": false,
+        "hub": "h02_square",
+        "shelter": "h06_shelter",
+        "newCampStandInRequests": false,
+        "autoUnlockRegisterOrTeleport": false,
+        "rosterAndKnownPublicEstatesMoveOnce": true,
+        "unknownEstateStaysOriginal": true,
+        "preserveOngoingRegistrationSnapshot": true,
+        "reserveCareContinuesAtActualNewLocation": true,
+        "currentPartySlotEditing": "any_Q86_idle_location"
       }
     },
     "reserveCare": {
@@ -51781,5 +52444,1786 @@
         }
       ]
     }
+  },
+  "mapAdjudications": {
+    "version": "q114_q119_20261102",
+    "status": "approved_planning_target_not_engine_or_ui_verified",
+    "sourceQuestions": [
+      "Q114",
+      "Q115",
+      "Q116",
+      "Q117",
+      "Q118",
+      "Q119"
+    ],
+    "direction": {
+      "coordinateTransform": {
+        "mapX": "130+280*x",
+        "mapY": "100+200*y"
+      },
+      "scope": "same_layer_only",
+      "changedLegacyPairs": [
+        {
+          "from": "village",
+          "to": "clinic",
+          "forward": "↙",
+          "reverse": "↗"
+        },
+        {
+          "from": "hardware",
+          "to": "scrapyard",
+          "forward": "→",
+          "reverse": "←"
+        }
+      ],
+      "legacyOtherSixUnchanged": true
+    },
+    "gateOpening": {
+      "decision": "Q115_B",
+      "requireVisitedEndpoint": false,
+      "when": "predicate_satisfied",
+      "discoverEdgeAndBothEndpoints": true,
+      "discoveryIsVisit": false,
+      "discoverySetsExploration": false,
+      "createRemoteInstanceOnDiscovery": false,
+      "legacy": "recompute_missing_eligible_latches_discovery_only_no_rewards",
+      "triggers": [
+        "new_game",
+        "load_migration",
+        "fact_commit",
+        "exploration_complete",
+        "arrival_commit"
+      ],
+      "instanceScopeAndExitRevalidationPreserved": true
+    },
+    "reveal100": {
+      "bidirectional": "all_incident_edges",
+      "oneWay": "outgoing_only",
+      "unmetGate": "visible_locked_with_reason_and_remote_name_only",
+      "oldEightIncluded": true
+    },
+    "clues": [
+      {
+        "nodeId": "m01_road",
+        "name": "旧公路",
+        "atPercent": 75,
+        "text": "路肩残留着车辙和碎玻璃；路面开阔，停留时仍需留意两侧。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "m02_checkpoint",
+        "name": "检查哨",
+        "atPercent": 75,
+        "text": "检查哨的栏杆与弃车留下狭窄通道；路障是否清除仍以眼前状态为准。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w01_farm",
+        "name": "近郊农场",
+        "atPercent": 75,
+        "text": "田埂旁有倒伏作物与散落农具；屋舍遮挡了部分视线。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w02_forest",
+        "name": "林间营址",
+        "atPercent": 75,
+        "text": "林间空地留有旧营址的痕迹；树冠下仍有雨水滴落。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w03_quarry",
+        "name": "采石坡",
+        "atPercent": 75,
+        "text": "石坡边缘有松动碎石；坡壁之后的声响不容易判断来源。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w04_crossroads",
+        "name": "荒野岔路",
+        "atPercent": 75,
+        "text": "数条旧路在这里相交；不同方向都留有风化的标记。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w05_marsh",
+        "name": "芦苇湿地",
+        "atPercent": 75,
+        "text": "芦苇倒伏处露出泥水；水面平静也不能说明脚下坚实。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w06_bridge",
+        "name": "断桥河滩",
+        "atPercent": 75,
+        "text": "断桥下的河滩留有冲刷痕迹；桥体的缺口仍清楚可见。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w07_ridge",
+        "name": "山脊哨道",
+        "atPercent": 75,
+        "text": "山脊路无遮拦；弯道后的情况无法从这里看清。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w08_reservoir",
+        "name": "旧水库",
+        "atPercent": 75,
+        "text": "旧水位线露在岸边；取水仍需分辨资源卡上的水质。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w09_logging",
+        "name": "深林伐木场",
+        "atPercent": 75,
+        "text": "伐木场散落着旧木料；堆垛之间存在难以看清的夹道。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w10_watchtower",
+        "name": "山顶瞭望台",
+        "atPercent": 75,
+        "text": "瞭望台周围地势较高；台基背面仍有视线死角。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "a01_yard",
+        "name": "铁路货场",
+        "atPercent": 75,
+        "text": "货场的轨道间留有杂物；车厢和堆料遮住了远处。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "a02_pump",
+        "name": "旧泵站",
+        "atPercent": 75,
+        "text": "泵房屋顶尚完整；天然遮挡不代表这里已经没有危险。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "a03_foundry",
+        "name": "铸造厂外",
+        "atPercent": 75,
+        "text": "铸造厂外的堆场留有炉渣；厂墙后的动静仍需另外确认。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "b03_hospital",
+        "name": "医院外院",
+        "atPercent": 75,
+        "text": "医院外院的门窗多有破损；建筑名称并不保证整片院落都有遮蔽。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "c01_pilgrim",
+        "name": "朝圣路",
+        "atPercent": 75,
+        "text": "朝圣路旁有磨损路记；前方的接待与通行仍以实际规则为准。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "o01_oldgate",
+        "name": "旧城门",
+        "atPercent": 75,
+        "text": "旧城门洞旁堆有碎砖；城门内外都存在遮挡。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "o02_market",
+        "name": "旧城商圈",
+        "atPercent": 75,
+        "text": "商圈街道上有坍塌招牌；店面间的狭巷不易看清。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "o03_police",
+        "name": "警备仓外",
+        "atPercent": 75,
+        "text": "警备仓外仍能辨认旧岗哨位置；外部院落与仓内情况不能混为一谈。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "o04_transit",
+        "name": "旧城车站",
+        "atPercent": 75,
+        "text": "车站的外部道路留有旧导向牌；入口之后的环境仍待实地确认。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w11_orchard",
+        "name": "荒弃果园",
+        "atPercent": 75,
+        "text": "果树之间长着杂草；倒枝后面有被遮住的低洼处。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w12_canal",
+        "name": "灌溉渠岸",
+        "atPercent": 75,
+        "text": "渠岸留有湿滑的淤泥；水流声会盖住较轻的动静。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w13_mill",
+        "name": "旧磨坊",
+        "atPercent": 75,
+        "text": "磨坊尚有完整屋顶；旧墙与机器仍遮住了室内部分视线。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w14_cemeteryroad",
+        "name": "墓地荒径",
+        "atPercent": 75,
+        "text": "荒径两边的石标已倾斜；高草遮住了路沿。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w15_shrinewoods",
+        "name": "祈祷林",
+        "atPercent": 75,
+        "text": "祈祷林中的旧石台覆着落叶；树影之间难以分清细小动静。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w16_service",
+        "name": "山间服务站",
+        "atPercent": 75,
+        "text": "服务站主厅尚有遮顶；门窗破损，不能把有屋顶当作无人出入。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w17_switchback",
+        "name": "盘山公路",
+        "atPercent": 75,
+        "text": "盘山路的急弯较多；崖壁会遮住前后两段道路。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w18_tunnel",
+        "name": "塌隧道外",
+        "atPercent": 75,
+        "text": "塌隧道的堵口仍在；洞外平台没有完整顶盖。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w19_survey",
+        "name": "测绘营址",
+        "atPercent": 75,
+        "text": "测绘营址只剩桩位和零散支架；旧营地痕迹不等于现成住处。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w20_powercut",
+        "name": "高压走廊",
+        "atPercent": 75,
+        "text": "高压走廊的地面较开阔；塔基周围仍留有遮挡。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w21_pine",
+        "name": "深针叶林",
+        "atPercent": 75,
+        "text": "针叶铺满林地；密集树干让远处视线变短。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w22_ravine",
+        "name": "陡壁沟谷",
+        "atPercent": 75,
+        "text": "沟谷两侧岩壁陡直；转折处会遮住前方，也会放大回声。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w23_hunting",
+        "name": "猎人旧营",
+        "atPercent": 75,
+        "text": "猎人旧营的篷布已经破损；留下的支架不能提供完整遮蔽。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w24_cave",
+        "name": "岩洞入口",
+        "atPercent": 75,
+        "text": "岩洞入口前仍是露天地面；洞内的情况需要另行确认。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w25_wetland",
+        "name": "黑水湿地",
+        "atPercent": 75,
+        "text": "黑水间有浮草覆盖；看似连续的草面未必是实地。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w26_island",
+        "name": "湖心陆洲",
+        "atPercent": 75,
+        "text": "陆洲岸边可见水位变化的痕迹；四周开阔，缺少现成屋顶。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w27_relay",
+        "name": "废中继营",
+        "atPercent": 75,
+        "text": "中继营残留着设备基座；旧建筑的顶盖已经失去遮蔽作用。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w28_highland",
+        "name": "风蚀高地",
+        "atPercent": 75,
+        "text": "高地上可见明显风蚀；岩块能挡住部分视线，却没有完整遮顶。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w29_riverbend",
+        "name": "河道弯口",
+        "atPercent": 75,
+        "text": "河弯处的淤积带宽窄不一；水声会干扰对周围动静的判断。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w30_truckstop",
+        "name": "货车休息区",
+        "atPercent": 75,
+        "text": "货车停靠区留着车位标线；车辆残骸之间有较深的盲区。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w31_suburb",
+        "name": "城郊棚户",
+        "atPercent": 75,
+        "text": "棚户之间的通道狭窄；破损屋面不能给整片街区提供遮蔽。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w32_railcut",
+        "name": "铁路线切口",
+        "atPercent": 75,
+        "text": "铁路线切口两侧地势较高；路堑拐角之后难以直接看见。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w33_waterworks",
+        "name": "荒废水厂",
+        "atPercent": 75,
+        "text": "水厂外部仍有露天池区；封闭设施与外部场地需要分开判断。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      },
+      {
+        "nodeId": "w34_depot",
+        "name": "应急仓外",
+        "atPercent": 75,
+        "text": "应急仓外是露天装卸场；库内的情况不能从院外直接确定。",
+        "extraItems": false,
+        "revealEdges": false,
+        "revealResources": false,
+        "extraExperience": 0
+      }
+    ],
+    "exposure": [
+      {
+        "nodeId": "m01_road",
+        "name": "旧公路",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "m02_checkpoint",
+        "name": "检查哨",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "h01_gate",
+        "name": "营门",
+        "exposure": "outdoor",
+        "reason": "营门露天通行区，不把门房算整个节点室内",
+        "worldKind": "overworld",
+        "landOwner": "public",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "h02_square",
+        "name": "营区广场",
+        "exposure": "outdoor",
+        "reason": "营区露天广场；公共居所独立区域另按真实设施",
+        "worldKind": "overworld",
+        "landOwner": "public",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "h03_workshop",
+        "name": "营区工坊",
+        "exposure": "indoor",
+        "reason": "完整工坊主厅",
+        "worldKind": "overworld",
+        "landOwner": "public",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "h04_infirmary",
+        "name": "营区医务室",
+        "exposure": "indoor",
+        "reason": "完整医务室",
+        "worldKind": "overworld",
+        "landOwner": "public",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "h05_homestead",
+        "name": "营外安全屋地块",
+        "exposure": "outdoor",
+        "reason": "尚未施工的露天建地；已建住宅按屋内zone另判",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w01_farm",
+        "name": "近郊农场",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w02_forest",
+        "name": "林间营址",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w03_quarry",
+        "name": "采石坡",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w04_crossroads",
+        "name": "荒野岔路",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w05_marsh",
+        "name": "芦苇湿地",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w06_bridge",
+        "name": "断桥河滩",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w07_ridge",
+        "name": "山脊哨道",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w08_reservoir",
+        "name": "旧水库",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w09_logging",
+        "name": "深林伐木场",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w10_watchtower",
+        "name": "山顶瞭望台",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "a01_yard",
+        "name": "铁路货场",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "a02_pump",
+        "name": "旧泵站",
+        "exposure": "indoor",
+        "reason": "保留完整屋顶的旧泵房",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "a03_foundry",
+        "name": "铸造厂外",
+        "exposure": "outdoor",
+        "reason": "厂外露天场地",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "b01_school",
+        "name": "安置学校",
+        "exposure": "indoor",
+        "reason": "现役安置学校楼内公共区域",
+        "worldKind": "overworld",
+        "landOwner": "public",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "b02_station",
+        "name": "急救转运站",
+        "exposure": "indoor",
+        "reason": "急救转运站室内候护厅",
+        "worldKind": "overworld",
+        "landOwner": "public",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "b03_hospital",
+        "name": "医院外院",
+        "exposure": "outdoor",
+        "reason": "医院外院为露天",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "c01_pilgrim",
+        "name": "朝圣路",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "c02_church",
+        "name": "教会接待庭",
+        "exposure": "outdoor",
+        "reason": "露天接待庭院",
+        "worldKind": "overworld",
+        "landOwner": "faction",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "c03_crypt",
+        "name": "教堂墓园",
+        "exposure": "outdoor",
+        "reason": "地上露天墓园；地下圣所是独立地牢节点",
+        "worldKind": "overworld",
+        "landOwner": "faction",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "r01_observatory",
+        "name": "灰塔观测站",
+        "exposure": "indoor",
+        "reason": "观测站完整室内区域",
+        "worldKind": "overworld",
+        "landOwner": "faction",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "r02_academy",
+        "name": "科学院外院",
+        "exposure": "outdoor",
+        "reason": "科学院露天外院",
+        "worldKind": "overworld",
+        "landOwner": "faction",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "r03_lab",
+        "name": "封存实验楼",
+        "exposure": "indoor",
+        "reason": "封存实验楼室内门厅",
+        "worldKind": "overworld",
+        "landOwner": "faction",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "o01_oldgate",
+        "name": "旧城门",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "o02_market",
+        "name": "旧城商圈",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "o03_police",
+        "name": "警备仓外",
+        "exposure": "outdoor",
+        "reason": "仓外露天院落",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "o04_transit",
+        "name": "旧城车站",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "h05_appraisal",
+        "name": "鉴定所",
+        "exposure": "indoor",
+        "reason": "完整鉴定所室内",
+        "worldKind": "overworld",
+        "landOwner": "public",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "h06_shelter",
+        "name": "收容所",
+        "exposure": "indoor",
+        "reason": "完整收容所主厅",
+        "worldKind": "overworld",
+        "landOwner": "public",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "c04_alms",
+        "name": "施济处",
+        "exposure": "indoor",
+        "reason": "施济处完整室内",
+        "worldKind": "overworld",
+        "landOwner": "faction",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "c05_admonition",
+        "name": "训诫堂",
+        "exposure": "indoor",
+        "reason": "训诫堂完整室内",
+        "worldKind": "overworld",
+        "landOwner": "faction",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "c06_archive",
+        "name": "典藏室",
+        "exposure": "indoor",
+        "reason": "典藏室完整室内",
+        "worldKind": "overworld",
+        "landOwner": "faction",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "c07_sanctuary",
+        "name": "圣堂",
+        "exposure": "indoor",
+        "reason": "圣堂完整室内",
+        "worldKind": "overworld",
+        "landOwner": "faction",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "r04_reception",
+        "name": "接待处",
+        "exposure": "indoor",
+        "reason": "接待处完整室内",
+        "worldKind": "overworld",
+        "landOwner": "faction",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "r05_testing",
+        "name": "检测室",
+        "exposure": "indoor",
+        "reason": "检测室完整室内",
+        "worldKind": "overworld",
+        "landOwner": "faction",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "r06_archive",
+        "name": "档案室",
+        "exposure": "indoor",
+        "reason": "档案室完整室内",
+        "worldKind": "overworld",
+        "landOwner": "faction",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "r07_workshop",
+        "name": "试制工坊",
+        "exposure": "indoor",
+        "reason": "试制工坊完整室内",
+        "worldKind": "overworld",
+        "landOwner": "faction",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "r08_observation",
+        "name": "隔离观察区",
+        "exposure": "indoor",
+        "reason": "隔离观察区完整室内",
+        "worldKind": "overworld",
+        "landOwner": "faction",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "w11_orchard",
+        "name": "荒弃果园",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w12_canal",
+        "name": "灌溉渠岸",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w13_mill",
+        "name": "旧磨坊",
+        "exposure": "indoor",
+        "reason": "保留完整屋顶的磨坊主屋",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w14_cemeteryroad",
+        "name": "墓地荒径",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w15_shrinewoods",
+        "name": "祈祷林",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w16_service",
+        "name": "山间服务站",
+        "exposure": "indoor",
+        "reason": "保留完整屋顶的服务站主厅",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w17_switchback",
+        "name": "盘山公路",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w18_tunnel",
+        "name": "塌隧道外",
+        "exposure": "outdoor",
+        "reason": "塌隧道外平台，不是隧道内",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w19_survey",
+        "name": "测绘营址",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w20_powercut",
+        "name": "高压走廊",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w21_pine",
+        "name": "深针叶林",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w22_ravine",
+        "name": "陡壁沟谷",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w23_hunting",
+        "name": "猎人旧营",
+        "exposure": "outdoor",
+        "reason": "旧篷布破损、无完整遮顶",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w24_cave",
+        "name": "岩洞入口",
+        "exposure": "outdoor",
+        "reason": "岩洞入口外，不是洞内",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w25_wetland",
+        "name": "黑水湿地",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w26_island",
+        "name": "湖心陆洲",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w27_relay",
+        "name": "废中继营",
+        "exposure": "outdoor",
+        "reason": "中继营屋面毁损，无完整遮顶",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w28_highland",
+        "name": "风蚀高地",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w29_riverbend",
+        "name": "河道弯口",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w30_truckstop",
+        "name": "货车休息区",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w31_suburb",
+        "name": "城郊棚户",
+        "exposure": "outdoor",
+        "reason": "露天街区，不能以局部棚户覆盖整点",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w32_railcut",
+        "name": "铁路线切口",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w33_waterworks",
+        "name": "荒废水厂",
+        "exposure": "outdoor",
+        "reason": "水厂外部露天场地；地牢区分开",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "w34_depot",
+        "name": "应急仓外",
+        "exposure": "outdoor",
+        "reason": "当前节点是露天道路、林地、水岸或外部场地，无完整顶盖",
+        "worldKind": "overworld",
+        "landOwner": "unclaimed",
+        "safehouseAllowed": true
+      },
+      {
+        "nodeId": "d01_01",
+        "name": "墓门缓冲",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（墓门缓冲）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d01_02",
+        "name": "捐献仓",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（捐献仓）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d01_03",
+        "name": "忏悔长廊",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（忏悔长廊）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d01_04",
+        "name": "藏书密室",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（藏书密室）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d01_05",
+        "name": "环形礼拜厅",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（环形礼拜厅）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d01_06",
+        "name": "骨龛回道",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（骨龛回道）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d01_07",
+        "name": "封锁祭室",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（封锁祭室）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d01_08",
+        "name": "旧路线档案",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（旧路线档案）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d02_01",
+        "name": "消洗门厅",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（消洗门厅）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d02_02",
+        "name": "观察廊",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（观察廊）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d02_03",
+        "name": "样本冷库",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（样本冷库）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d02_04",
+        "name": "控制室",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（控制室）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d02_05",
+        "name": "试制间",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（试制间）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d02_06",
+        "name": "检修竖井",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（检修竖井）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d02_07",
+        "name": "隔离核心",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（隔离核心）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d02_08",
+        "name": "流程终端",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（流程终端）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d02_09",
+        "name": "外排廊",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（外排廊）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d03_01",
+        "name": "装卸门",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（装卸门）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d03_02",
+        "name": "外仓",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（外仓）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d03_03",
+        "name": "器材室",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（器材室）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d03_04",
+        "name": "值勤室",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（值勤室）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d03_05",
+        "name": "内仓闸口",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（内仓闸口）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d03_06",
+        "name": "配电房",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（配电房）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d03_07",
+        "name": "军械守卫",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（军械守卫）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d03_08",
+        "name": "封存仓",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（封存仓）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d04_01",
+        "name": "地堡入口",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（地堡入口）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d04_02",
+        "name": "缆线沟",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（缆线沟）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d04_03",
+        "name": "蓄电室",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（蓄电室）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d04_04",
+        "name": "山腹机房",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（山腹机房）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d04_05",
+        "name": "屋顶梯井",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（屋顶梯井）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d04_06",
+        "name": "天线守卫台",
+        "exposure": "outdoor",
+        "reason": "无顶天线守卫台",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d04_07",
+        "name": "联络台",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（联络台）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d04_08",
+        "name": "逃生索道",
+        "exposure": "outdoor",
+        "reason": "露天逃生索道平台",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d05_01",
+        "name": "检修井",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（检修井）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d05_02",
+        "name": "分流室",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（分流室）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d05_03",
+        "name": "沉淀池",
+        "exposure": "outdoor",
+        "reason": "露天沉淀池区",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d05_04",
+        "name": "滤料库",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（滤料库）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d05_05",
+        "name": "环水渠",
+        "exposure": "outdoor",
+        "reason": "露天环水渠区",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d05_06",
+        "name": "泵房守卫",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（泵房守卫）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d05_07",
+        "name": "阀控室",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（阀控室）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d05_08",
+        "name": "出水涵洞",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（出水涵洞）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d06_01",
+        "name": "洞口",
+        "exposure": "outdoor",
+        "reason": "洞外入口缓冲地面",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d06_02",
+        "name": "岔井",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（岔井）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d06_03",
+        "name": "浅矿脉",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（浅矿脉）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d06_04",
+        "name": "废轨道",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（废轨道）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d06_05",
+        "name": "塌方绕道",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（塌方绕道）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d06_06",
+        "name": "矿工营室",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（矿工营室）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d06_07",
+        "name": "深井守卫",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（深井守卫）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d06_08",
+        "name": "工具封库",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（工具封库）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d06_09",
+        "name": "通风出口",
+        "exposure": "outdoor",
+        "reason": "通风出口外的平台",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d07_01",
+        "name": "卷帘入口",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（卷帘入口）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d07_02",
+        "name": "中庭",
+        "exposure": "outdoor",
+        "reason": "顶盖损毁的开放中庭",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d07_03",
+        "name": "食品层",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（食品层）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d07_04",
+        "name": "服装层",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（服装层）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d07_05",
+        "name": "药妆侧厅",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（药妆侧厅）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d07_06",
+        "name": "扶梯守卫",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（扶梯守卫）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d07_07",
+        "name": "屋顶避难点",
+        "exposure": "outdoor",
+        "reason": "露天屋顶避难点",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d07_08",
+        "name": "消防出口",
+        "exposure": "outdoor",
+        "reason": "外侧消防出口平台",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d08_01",
+        "name": "货台",
+        "exposure": "outdoor",
+        "reason": "露天装卸货台",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d08_02",
+        "name": "温区分拣",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（温区分拣）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d08_03",
+        "name": "干货库",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（干货库）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d08_04",
+        "name": "冷库走廊",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（冷库走廊）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d08_05",
+        "name": "封存药架",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（封存药架）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d08_06",
+        "name": "备用电房",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（备用电房）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d08_07",
+        "name": "仓管守卫",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（仓管守卫）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d08_08",
+        "name": "调度室",
+        "exposure": "indoor",
+        "reason": "该节点为有完整顶盖的内部房间或通道（调度室）",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      },
+      {
+        "nodeId": "d08_09",
+        "name": "卸货出口",
+        "exposure": "outdoor",
+        "reason": "露天卸货出口平台",
+        "worldKind": "dungeon_instance",
+        "landOwner": "quest_reserved",
+        "safehouseAllowed": false
+      }
+    ],
+    "naturalIndoorSleepShelter": true,
+    "shelterPolicy": {
+      "sourceQuestion": "Q118_supplement_A",
+      "naturalIndoorOnlyBasicShelter": true,
+      "noAutomaticSafetyBedStorageOrBuildPermission": true,
+      "actualZoneAndCompletedFacilitiesRequired": true,
+      "oldRecoveryNotRecomputed": true
+    },
+    "housing": {
+      "authority": "S09_X2",
+      "form": "enclosed_residence_separate_interior_door_200kg_fixed_storage",
+      "baseMaterials": {
+        "wood": 8,
+        "fiber": 6,
+        "cloth": 2,
+        "stone": 4
+      },
+      "baseWorkMinutes": 240,
+      "craftingLevel": 1,
+      "hubRegistrationRequired": true,
+      "extras": "bed_fire_workshops_original_costs_separate",
+      "forbidden": "dungeon_instances_actual_faction_public_and_quest_reserved_land",
+      "oldPermissionFieldsUnchanged": true,
+      "implementationBatch": "B17"
+    },
+    "serviceMigration": {
+      "decision": "Q119_B",
+      "activateNow": true,
+      "servicesAtV3Nodes": true,
+      "waitForRegistrationBatch": false,
+      "hub": "h02_square",
+      "shelter": "h06_shelter",
+      "newCampStandInRequests": false,
+      "autoUnlockRegisterOrTeleport": false,
+      "rosterAndKnownPublicEstatesMoveOnce": true,
+      "unknownEstateStaysOriginal": true,
+      "preserveOngoingRegistrationSnapshot": true,
+      "reserveCareContinuesAtActualNewLocation": true,
+      "currentPartySlotEditing": "any_Q86_idle_location"
+    },
+    "acceptanceIds": [
+      "MAP-Q114-01",
+      "MAP-Q115-01",
+      "MAP-Q115-02",
+      "MAP-Q116-01",
+      "MAP-Q117-01",
+      "MAP-Q118-01",
+      "MAP-Q118-02",
+      "HOUSE-Q118-01",
+      "HOUSE-Q118-02",
+      "PARTY-Q119-01",
+      "PARTY-Q119-02",
+      "PARTY-Q119-03"
+    ]
   }
 }

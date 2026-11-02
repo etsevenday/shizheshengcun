@@ -1,0 +1,182 @@
+{
+  "date": "2026-11-02",
+  "validation": "static_document_and_data_only_no_engine_or_ui",
+  "questionsAsked": 7,
+  "answers": "Q114 A/Q115 B/Q116 A/Q117 B/Q118逐点表及补充A/Q119 B",
+  "remainingUnansweredElsewhere": [
+    "Q120",
+    "Q121",
+    "Q122",
+    "Q123",
+    "Q124",
+    "Q125",
+    "Q126",
+    "Q127",
+    "Q128",
+    "Q129",
+    "Q130",
+    "Q131",
+    "Q132",
+    "Q133"
+  ],
+  "checks": [
+    {
+      "name": "保留全部开发同步及修改记录 01 基础系统/S02 地图结构与移动系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部开发同步及修改记录 01 基础系统/S03 探索与发现系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部开发同步及修改记录 01 基础系统/S09 营地建造与火堆系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部开发同步及修改记录 01 基础系统/S13 休息、睡眠与恢复系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部开发同步及修改记录 02 参考扩展/R08 队伍招募、编成与共同生存系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部开发同步及修改记录 04 附录/A11 主线任务、势力与队伍角色目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部开发同步及修改记录 04 附录/A08 主线地图、资源与副本目录.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部开发同步及修改记录 01 基础系统/S14 主界面与全局UI交互系统.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部开发同步及修改记录 04 附录/A10 全屏战斗及装备制作UI规范.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部开发同步及修改记录 00 总则/02 开发方待确认问题.md",
+      "passed": true
+    },
+    {
+      "name": "保留全部开发同步及修改记录 CHANGELOG.md",
+      "passed": true
+    },
+    {
+      "name": "问题单只改Q114—Q119六项答复",
+      "passed": true
+    },
+    {
+      "name": "总册全部JSON可解析",
+      "passed": true
+    },
+    {
+      "name": "135环境唯一完备76室内59露天",
+      "passed": true
+    },
+    {
+      "name": "45逐点线索匹配可探索普通野外且无新奖励",
+      "passed": true
+    },
+    {
+      "name": "环境线索三份权威数据一致",
+      "passed": true
+    },
+    {
+      "name": "旧8点及全图拓扑资源土地许可保持",
+      "passed": true
+    },
+    {
+      "name": "节点其他数值人口敌踪与掉落不变",
+      "passed": true
+    },
+    {
+      "name": "全部地牢/势力/公共土地禁建",
+      "passed": true
+    },
+    {
+      "name": "Q115取消额外到访前提且不取消正式谓词",
+      "passed": true
+    },
+    {
+      "name": "Q116双向全部相连/单向仅from",
+      "passed": true
+    },
+    {
+      "name": "Q118自然遮蔽严格匹配用户补充",
+      "passed": true
+    },
+    {
+      "name": "Q119立即正式迁址与其他队伍规则不变",
+      "passed": true
+    },
+    {
+      "name": "A12/联合合同镜像一致及无其他误改 04 附录/A12 全系统策划数据索引.json",
+      "passed": true
+    },
+    {
+      "name": "A12/联合合同镜像一致及无其他误改 assets/20261030/index/joint-expansion-data.json",
+      "passed": true
+    },
+    {
+      "name": "A08完整135环境45线索行及12类验收齐全",
+      "passed": true
+    },
+    {
+      "name": "本轮相对链接有效",
+      "passed": true
+    }
+  ],
+  "audit": [
+    {
+      "category": "数值",
+      "result": "已明确，B17住宅属既有开发依赖，无本批未决规则"
+    },
+    {
+      "category": "名词",
+      "result": "已明确，B17住宅属既有开发依赖，无本批未决规则"
+    },
+    {
+      "category": "范围",
+      "result": "已明确，B17住宅属既有开发依赖，无本批未决规则"
+    },
+    {
+      "category": "时机",
+      "result": "已明确，B17住宅属既有开发依赖，无本批未决规则"
+    },
+    {
+      "category": "边界",
+      "result": "已明确，B17住宅属既有开发依赖，无本批未决规则"
+    },
+    {
+      "category": "自动行为",
+      "result": "已明确，B17住宅属既有开发依赖，无本批未决规则"
+    },
+    {
+      "category": "入口",
+      "result": "已明确，B17住宅属既有开发依赖，无本批未决规则"
+    },
+    {
+      "category": "来源",
+      "result": "已明确，B17住宅属既有开发依赖，无本批未决规则"
+    },
+    {
+      "category": "冲突",
+      "result": "已明确，B17住宅属既有开发依赖，无本批未决规则"
+    },
+    {
+      "category": "未完成依赖",
+      "result": "已明确，B17住宅属既有开发依赖，无本批未决规则"
+    },
+    {
+      "category": "旧档",
+      "result": "已明确，B17住宅属既有开发依赖，无本批未决规则"
+    },
+    {
+      "category": "验收",
+      "result": "已明确，B17住宅属既有开发依赖，无本批未决规则"
+    }
+  ]
+}

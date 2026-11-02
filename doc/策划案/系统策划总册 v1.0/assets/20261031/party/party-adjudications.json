@@ -1,5 +1,5 @@
 {
-  "version": "q88_q98_20261031",
+  "version": "q88_q119_20261102",
   "status": "approved_planning_target_not_engine_verified",
   "sourceQuestions": [
     "Q88",
@@ -9,7 +9,8 @@
     "Q92",
     "Q93",
     "Q94",
-    "Q98"
+    "Q98",
+    "Q119"
   ],
   "serviceLocations": {
     "preV3": "camp",
@@ -32,6 +33,21 @@
       "onlyExplicitPublicReserveMigrates": true,
       "idempotent": true,
       "contentsOwnerExpiryDurabilityClaimsAndLoanReferencesPreserved": true
+    },
+    "v3Activation": {
+      "decision": "Q119_B",
+      "activateNow": true,
+      "servicesAtV3Nodes": true,
+      "waitForRegistrationBatch": false,
+      "hub": "h02_square",
+      "shelter": "h06_shelter",
+      "newCampStandInRequests": false,
+      "autoUnlockRegisterOrTeleport": false,
+      "rosterAndKnownPublicEstatesMoveOnce": true,
+      "unknownEstateStaysOriginal": true,
+      "preserveOngoingRegistrationSnapshot": true,
+      "reserveCareContinuesAtActualNewLocation": true,
+      "currentPartySlotEditing": "any_Q86_idle_location"
     }
   },
   "reserveCare": {
