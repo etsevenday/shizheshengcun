@@ -33,9 +33,10 @@
                 var why = c.Status == "available" ? (c.Blocked ?? busy) : c.StatusText;
                 <div class="rc-card @(c.Status)" data-candidate="@cid">
                     <div class="rc-head"><b>@c.Name</b> <span class="muted small">@c.StatusText · @c.TemplateName（@c.TemplateUse）</span></div>
-                    <div class="small">@c.SkillText</div>
-                    <div class="small">@c.BodyText</div>
-                    <div class="small">@c.CombatText</div>
+                    @* M381：属性按“ · ”分段，每段不拆行（1280 宽下数值与单位不再断开） *@
+                    <div class="small rc-segs">@Segs(c.SkillText)</div>
+                    <div class="small rc-segs">@Segs(c.BodyText)</div>
+                    <div class="small rc-segs">@Segs(c.CombatText)</div>
                     <details class="small muted"><summary>完整资料</summary>@c.DetailText</details>
                     @if (c.Status == "available")
                     {
@@ -85,6 +86,15 @@
     [Parameter] public string NpcLine { get; set; } = "";
 
     private string? _confirm;
+
+    private static RenderFragment Segs(string text) => __builder =>
+    {
+        var parts = text.Split(" · ");
+        for (var i = 0; i < parts.Length; i++)
+        {
+            <span class="rc-seg">@parts[i]@(i < parts.Length - 1 ? " · " : "")</span>
+        }
+    };
 
     private void DoRetire(string actorId)
     {

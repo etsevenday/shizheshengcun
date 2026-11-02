@@ -672,6 +672,35 @@ public class B19RecruitTests : TestBase
         Assert.That(E.IsRecruitService(svc.Id), Is.True);
     }
 
+    /// <summary>
+    /// M381 试玩修复：开放时刻不重复写日期；本批已招入后退役的卡写“已退役（本周期不能再招回）”；人物档数值去掉多余 0（速度一位小数）；
+    /// 护送员退役说明不写“本周期不能再招回、候选池不补人”。
+    /// </summary>
+    [Test]
+    public void M381_PanelTexts()
+    {
+        var s = AtShelter(3);
+        var v = E.RecruitPreview(s);
+        Assert.That(v.OpenText, Does.Not.Match("第\\d+日 第\\d+日"));
+        Assert.That(v.OpenText, Does.StartWith("第1日 10:00开放"));
+        foreach (var cv in v.Candidates)
+        {
+            var c = s.Recruit.Candidates.Single(x => x.CandidateId == cv.CandidateId);
+            Assert.That(cv.CombatText, Does.StartWith($"基础速度{c.BaseSpeed:0.0} · "));
+            Assert.That(cv.CombatText, Does.Contain("基础甲0 ·"));
+            Assert.That(cv.CombatText, Does.Not.Match("\\d\\.\\d0\\b"), "不写成 4.60/34.50/0.00");
+        }
+        var r = Recruit(s, 0);
+        Ok(E.Retire(s, r.ActorId));
+        var card = E.RecruitPreview(s).Candidates.Single(x => x.CandidateId == r.CandidateId);
+        Assert.That((card.Status, card.StatusText), Is.EqualTo(("retired", "已退役（本周期不能再招回）")));
+        Assert.That(E.RecruitPreview(s).Candidates.Count(x => x.StatusText == "已招入名册"), Is.EqualTo(0));
+        E.DebugAddEscort(s);
+        var esc = E.RecruitPreview(s).Retirables.Single(x => x.KindLabel == "同行补员");
+        Assert.That(esc.ConfirmText, Does.Not.Contain("本周期").And.Not.Contain("候选池"));
+        Assert.That(esc.ConfirmText, Does.Contain("技能不返还"));
+    }
+
     /// <summary>RC12：随机招入者留守按 Q90 自主照护（只补到 80、不发物、不扣你的库存），病毒不被重置。</summary>
     [Test]
     public void RC12_RandomReserveCare_NoFreeItems()

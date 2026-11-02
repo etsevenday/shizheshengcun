@@ -408,7 +408,7 @@ namespace Survival.Core.Engine
                 var start = s.Recruit.ShelterOpenedAt!.Value;
                 v.Cycle = s.Recruit.Cycle;
                 var next = NextRecruitRefresh(s)!.Value;
-                v.OpenText = $"第{Clock.Day(start)}日 {Clock.DayTime(start)}开放；每{Clock.Duration(Rc.RefreshMinutes)}换一批{Rc.CandidatesPerCycle}名（只按世界时间，离线不走、不补以前的批次）。";
+                v.OpenText = $"{Clock.DayTime(start)}开放；每{Clock.Duration(Rc.RefreshMinutes)}换一批{Rc.CandidatesPerCycle}名（只按世界时间，离线不走、不补以前的批次）。";
                 v.CycleText = $"第{(s.Recruit.Cycle ?? 0) + 1}批 · 下一批：{Clock.DayTime(next)}（还有{Clock.Duration(next - s.GameMinute)}）；未招者到时离开，已招入的不受影响";
                 foreach (var c in s.Recruit.Candidates) v.Candidates.Add(CandidateView(s, c));
             }
@@ -422,6 +422,8 @@ namespace Survival.Core.Engine
         private RecruitCandidateView CandidateView(GameState s, RecruitCandidate c)
         {
             var tpl = Rc.Template(c.TemplateId);
+            // M381：本批里已招入后又退役的人，卡头写已退役（同周期不能再招回），不再显示“已招入名册”
+            var retired = c.Status == RecruitCandidate.Recruited && c.ActorId != null && RosterOf(s, c.ActorId)?.Retired == true;
             var others = Config.Skills.Where(sk => sk.Id != c.MainSkill && sk.Id != c.SubSkill).Select(sk => sk.Name);
             return new RecruitCandidateView
             {
@@ -429,8 +431,8 @@ namespace Survival.Core.Engine
                 Name = c.Name,
                 TemplateName = tpl?.Name ?? c.TemplateId,
                 TemplateUse = tpl?.Use ?? "",
-                Status = c.Status,
-                StatusText = c.Status switch
+                Status = retired ? "retired" : c.Status,
+                StatusText = retired ? "已退役（本周期不能再招回）" : c.Status switch
                 {
                     RecruitCandidate.Recruited => "已招入名册",
                     RecruitCandidate.Registering => "登记中",
@@ -438,7 +440,7 @@ namespace Survival.Core.Engine
                 },
                 SkillText = $"主：{SkillName(c.MainSkill)}{c.MainLevel}级 · 副：{SkillName(c.SubSkill)}{c.SubLevel}级 · 其余{Rc.OtherLevel}级（经验均为级内0）",
                 BodyText = $"健康{Fmt.T(c.Health)}/{Fmt.T(c.HealthMax)} · 体力{Fmt.T(c.Energy)}/{Fmt.T(c.EnergyMax)} · 饱食{Fmt.T(c.Satiety)} 水分{Fmt.T(c.Hydration)} · 清醒{Fmt.T(c.Wakefulness)} 精神{Fmt.T(c.Morale)} 免疫{Fmt.T(c.Immunity)} · 未感染，没有特殊共生机制",
-                CombatText = $"基础速度{Fmt.N(c.BaseSpeed)} · 控制抗性{Fmt.N(c.ControlResist)} · 闪避{Fmt.N(c.Evasion)} · 基础甲{Fmt.N(c.BaseArmor)} · 初始装备与随身：空",
+                CombatText = $"基础速度{Fmt.Speed(c.BaseSpeed)} · 控制抗性{Fmt.T(c.ControlResist)} · 闪避{Fmt.T(c.Evasion)} · 基础甲{Fmt.T(c.BaseArmor)} · 初始装备与随身：空",
                 DetailText = $"{tpl?.Name}（{tpl?.Use}）。病毒{Fmt.T(c.VirusLoad)}、无出血/腹泻/药物冷却；其余熟练（{string.Join("、", others)}）均{Rc.OtherLevel}级。"
                              + "资料在本批内固定、不随时间变化，招入时按这份资料建人一次；职业图标不附带武器，枪械模板也要你自备枪弹，没武器时用拳。",
                 Blocked = c.Status == RecruitCandidate.Available ? RecruitBlocked(s, c.CandidateId) : null,
@@ -484,7 +486,8 @@ namespace Survival.Core.Engine
                 Name = r.Name,
                 KindLabel = kind,
                 WhereText = s.Party.Contains(r.ActorId) ? "同行" : $"候补（{LocName(HubLocation(s))}）",
-                ConfirmText = $"{r.Name}将永久离开名册（已学技能不返还，本周期不能再招回，候选池不会补人）；"
+                // M381：“本周期不能再招回、候选池不补人”只对周期候选招入者写；护送员只写与他相关的句子
+                ConfirmText = $"{r.Name}将永久离开名册（已学技能不返还{(r.IsRandom ? "，本周期不能再招回，候选池不会补人" : "")}）；"
                               + (items.Count == 0 ? "身上没有个人物品。" : $"全部个人物品{items.Count}件（穿戴与随身）原样放进{LocName(Rc.LocationId)}认领箱，只能在这里实地取，保质照常、不刷新。")
                               + (loans.Count > 0 ? $"借用矛（{string.Join("、", loans)}）随物品进认领箱，仍归该借用位，不另发。" : "")
                               + "退役后释放1个随机/保底名额。",

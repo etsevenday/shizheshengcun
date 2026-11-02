@@ -1442,3 +1442,7 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .recruit-panel .rc-sub { margin: 10px 0 4px; font-weight: 500; }
 .recruit-panel .rc-retire { border-top: 1px solid var(--line); padding: 6px 0; display: flex; flex-direction: column; gap: 4px; }
 .recruit-panel details summary { cursor: pointer; }
+/* M381（B19 试玩）：1280 宽下按钮不折行、属性分段不拆行 */
+.recruit-panel .rc-card .btn-row > button { white-space: nowrap; flex: 0 0 auto; }
+.recruit-panel .rc-segs .rc-seg { white-space: nowrap; }
+.recruit-panel .rc-card.retired { opacity: .6; }
