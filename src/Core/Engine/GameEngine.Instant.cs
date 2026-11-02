@@ -134,6 +134,8 @@ namespace Survival.Core.Engine
                     return FillCanteen(s, r);
                 case InstantKind.PourCanteen:
                     return PourCanteen(s, r);
+                case InstantKind.LoadPotRecipe:
+                    return LoadPotRecipe(s, r.CardKey, r.TargetInstanceId);
             }
             return ActionResult.Fail("未知操作");
         }

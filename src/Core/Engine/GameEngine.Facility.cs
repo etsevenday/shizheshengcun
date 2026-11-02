@@ -103,7 +103,7 @@ namespace Survival.Core.Engine
 
         /// <summary>以这件物品为目标的加工记录。</summary>
         public FacilityProcess? ProcessOf(GameState s, ItemInstance target) =>
-            AllProcesses(s).FirstOrDefault(p => p.TargetInstanceId == target.InstanceId);
+            AllProcesses(s).FirstOrDefault(p => p.TargetInstanceId == target.InstanceId || (p.InputInstanceIds?.Contains(target.InstanceId) ?? false));
 
         /// <summary>为水煮预留的净水（毫升）。</summary>
         public int PotReservedMl(GameState s, int potId) =>
@@ -183,6 +183,9 @@ namespace Survival.Core.Engine
             {
                 var pot = ContainerOf(s, inst);
                 if (pot == null) return "";
+                // B16 复合锅食谱：主食材写食谱进度，辅料写“辅料（不占食材位）”
+                if (p != null && Process(p.RecipeId).IsPotRecipe) return PotRecipeStatus(s, inst, p);
+                if (IsPotAux(s, inst)) return "锅食谱辅料（不占食材位）";
                 if (IsSpoiled(s, inst)) return "已腐败，不再加工";
                 var fp = PotFoodProcess(inst.ItemId);
                 if (fp == null) return PotConfig(pot).StoreOnlyFoodIds.Contains(inst.ItemId) ? "只存放，不再加工" : "已煮熟，留在锅里";
@@ -269,6 +272,21 @@ namespace Survival.Core.Engine
             }
 
             var desired = new List<(ProcessConfig cfg, int target, int? pot)>();
+            // B16 复合锅食谱：显式投料建立，仍成立的保留（其主食材不再各自另起烤/煮进程）；不成立的作废、辅料退回地面
+            var recipeInputs = new HashSet<int>();
+            foreach (var rp in fac.Processes.Where(p => Process(p.RecipeId).IsPotRecipe).ToList())
+            {
+                if (PotRecipeIntact(s, loc, rp))
+                {
+                    desired.Add((Process(rp.RecipeId), rp.TargetInstanceId, rp.PotInstanceId));
+                    foreach (var id in rp.InputInstanceIds!) recipeInputs.Add(id);
+                }
+                else
+                {
+                    fac.Processes.Remove(rp);
+                    AbandonPotRecipe(s, loc, rp);
+                }
+            }
             foreach (var c in contents)
             {
                 if (IsPot(c))
@@ -278,6 +296,7 @@ namespace Survival.Core.Engine
                     if (bp != null) desired.Add((bp, c.InstanceId, c.InstanceId));
                     foreach (var f in PotFood(s, c.InstanceId))
                     {
+                        if (recipeInputs.Contains(f.InstanceId)) continue;
                         var fp = PotFoodProcess(f.ItemId);
                         if (fp != null) desired.Add((fp, f.InstanceId, c.InstanceId));
                     }
@@ -314,12 +333,13 @@ namespace Survival.Core.Engine
                 foreach (var r in recs)
                 {
                     var t = FindItem(s, r.TargetInstanceId);
-                    if (t == null || IsSpoiled(s, t) || liquid != Process(r.RecipeId).RequiredLiquid) r.ReservedWaterMl = 0;
+                    var spoiled = t == null || IsSpoiled(s, t) || (r.InputInstanceIds?.Any(id => FindItem(s, id) is ItemInstance x && IsSpoiled(s, x)) ?? false);
+                    if (spoiled || liquid != Process(r.RecipeId).RequiredLiquid) r.ReservedWaterMl = 0;
                 }
                 var free = PotUnits(s, pot.InstanceId) * PotConfig(pot).UnitMl - recs.Sum(r => r.ReservedWaterMl);
                 var order = recs.Where(r => r.ReservedWaterMl == 0)
                     .Select(r => (r, t: FindItem(s, r.TargetInstanceId)))
-                    .Where(x => x.t != null && !IsSpoiled(s, x.t))
+                    .Where(x => x.t != null && !IsSpoiled(s, x.t) && !(x.r.InputInstanceIds?.Any(id => FindItem(s, id) is ItemInstance y && IsSpoiled(s, y)) ?? false))
                     .OrderBy(x => x.t!.PlacedOrder ?? int.MaxValue).ThenBy(x => x.t!.InstanceId);
                 foreach (var (r, _) in order)
                 {
@@ -529,7 +549,7 @@ namespace Survival.Core.Engine
             var from = WherePath(s, inst);
             var touched = IsPot(inst)
                 ? AllProcesses(s).Where(p => p.PotInstanceId == inst.InstanceId).ToList()
-                : AllProcesses(s).Where(p => p.TargetInstanceId == inst.InstanceId).ToList();
+                : AllProcesses(s).Where(p => TouchesItem(p, inst.InstanceId)).ToList();
             var reset = touched.Any(p => p.HeatDoneMinutes > 0);
             // Q16：成功取出即解除保护；原保质期已过的食材取出后立即按原 expiresAt 判腐败（失败的取出在上面已整次拒绝，什么都不变）
             var lost = touched.Where(p => p.HeatProtected).Select(p => FindItem(s, p.TargetInstanceId))
@@ -555,7 +575,7 @@ namespace Survival.Core.Engine
         {
             var touched = IsPot(inst)
                 ? AllProcesses(s).Where(p => p.PotInstanceId == inst.InstanceId)
-                : AllProcesses(s).Where(p => p.TargetInstanceId == inst.InstanceId);
+                : AllProcesses(s).Where(p => TouchesItem(p, inst.InstanceId));
             var c = new TakeOutConsequence { Grams = ItemGrams(s, inst) };
             foreach (var p in touched.Where(p => p.HeatDoneMinutes > 0).OrderBy(p => p.TargetInstanceId))
             {
@@ -577,6 +597,10 @@ namespace Survival.Core.Engine
             // Q111：取出未完成的煅烧批次退回全部原料（同一批木材），已烧掉的燃料与时间不退
             if (touched.Any(p => Process(p.RecipeId).IsSlotBatch))
                 c.Text += $"；退回{ItemName(inst.ItemId)}×{inst.Count}，已烧掉的火堆燃料不退";
+            // B16：取出锅食谱的任一食材/辅料即作废整份食谱，辅料退回火堆地面
+            var rpTouched = touched.FirstOrDefault(p => Process(p.RecipeId).IsPotRecipe);
+            if (!IsPot(inst) && rpTouched != null)
+                c.Text += $"；{_recipes[Process(rpTouched.RecipeId).RecipeId!].Name}整份作废，辅料退回火堆地面，锅里其余食材留在锅里";
             if (c.Spoils.Count > 0) c.Text += $"；{string.Join("、", c.Spoils)}已过原保质期，取出即解除烹饪保护并立即腐败";
             return c;
         }
@@ -646,6 +670,7 @@ namespace Survival.Core.Engine
         private bool HeatEligible(GameState s, string loc, FacilityProcess p, bool ignoreSpoil = false)
         {
             var cfg = Process(p.RecipeId);
+            if (cfg.IsPotRecipe) return PotRecipeHeatEligible(s, loc, p, ignoreSpoil);
             var t = FindItem(s, p.TargetInstanceId);
             if (t == null) return false;
             var owner = FireOwner(loc);
@@ -680,7 +705,8 @@ namespace Survival.Core.Engine
                     if (!heated) continue;
                     p.HeatDoneMinutes += Tick;
                     // 烹饪受热保护只给食材（Q16）；净水批次与 Q111 煅烧（木材/木炭无食物腐败保护）不用
-                    if (Process(p.RecipeId).Target == ProcessTargets.SingleFood) p.HeatProtected = true;
+                    var tg = Process(p.RecipeId).Target;
+                    if (tg == ProcessTargets.SingleFood || tg == ProcessTargets.PotRecipe) p.HeatProtected = true;
                     if (p.HeatDoneMinutes >= p.RequiredHeatMinutes) CompleteProcess(s, l.Id, fac, p);
                 }
             }
@@ -695,7 +721,8 @@ namespace Survival.Core.Engine
             var cfg = Process(p.RecipeId);
             var t = FindItem(s, p.TargetInstanceId)!;
             string text;
-            if (cfg.IsPotBatch)
+            if (cfg.IsPotRecipe) text = CompletePotRecipe(s, loc, p);
+            else if (cfg.IsPotBatch)
             {
                 var ml = 0;
                 var unit = PotConfig(t).UnitMl;
@@ -744,6 +771,10 @@ namespace Survival.Core.Engine
             if (fac.Completed.Count > 20) fac.Completed.RemoveRange(0, fac.Completed.Count - 20);
             Emit(s, GameEventKind.FacilityDone, text, null, new[] { cfg.OutputId });
         }
+
+        /// <summary>该进程是否涉及这件物品（单目标进程的目标，或锅食谱的任一主食材/辅料）。</summary>
+        private static bool TouchesItem(FacilityProcess p, int id) =>
+            p.TargetInstanceId == id || (p.InputInstanceIds?.Contains(id) ?? false) || (p.AuxInstanceIds?.Contains(id) ?? false);
 
         private void ConsumeWater(GameState s, ItemInstance pot, string liquidId, int ml)
         {

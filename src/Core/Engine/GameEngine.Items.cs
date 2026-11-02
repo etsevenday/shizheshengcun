@@ -20,7 +20,7 @@ namespace Survival.Core.Engine
 
         /// <summary>该物品正受本次烹饪加工保护（只可能在火堆加工位或火堆里的锅中）。</summary>
         public bool IsHeatProtected(GameState s, ItemInstance i) =>
-            (i.InFacility || i.InContainer) && AllProcesses(s).Any(p => p.HeatProtected && p.TargetInstanceId == i.InstanceId);
+            (i.InFacility || i.InContainer) && AllProcesses(s).Any(p => p.HeatProtected && (p.TargetInstanceId == i.InstanceId || (p.InputInstanceIds?.Contains(i.InstanceId) ?? false)));
 
         /// <summary>受保护且原保质期已过：取出后会立即腐败（界面提前写明后果）。</summary>
         public bool PastExpiryButProtected(GameState s, ItemInstance i) =>
@@ -312,7 +312,7 @@ namespace Survival.Core.Engine
 
         /// <summary>锅里的食材：按放入顺序、再按实例 ID；每份单独一个实例，各占一个食材位。</summary>
         public List<ItemInstance> PotFood(GameState s, int potId) =>
-            PotContents(s, potId).Where(i => !IsLiquid(i)).OrderBy(i => i.PlacedOrder ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
+            PotContents(s, potId).Where(i => !IsLiquid(i) && !IsPotAux(s, i)).OrderBy(i => i.PlacedOrder ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
 
         /// <summary>锅里水的份数（每份 500 毫升）。</summary>
         public int PotUnits(GameState s, int potId) => PotLiquids(s, potId).Sum(i => i.Count);
