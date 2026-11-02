@@ -196,6 +196,74 @@ public class B14bCityQTests : TestBase
         Assert.That(E.CityServicePreview(t, "hub_workshop_access")!.Blocked, Is.EqualTo("行动进行中"));
     }
 
+    // ───────────── Q148—Q150 公共站与施济显示定稿 ─────────────
+
+    /// <summary>CITY-Q148-01：无资格时 h03 锻炉/军械台只提示档册条件；未登记仍显示登记条件；可信旧 QMAP02 加登记可开放，界面不出现旧档资格句。</summary>
+    [Test]
+    public void CITY_Q148_01_ForgeArmoryShowOnlyRecordCondition()
+    {
+        const string need = "需要：在教会地下圣所核心领取圣所旧路档册";
+        var s = Crafter("h03_workshop");
+        Assert.That(E.PublicStationsHere(s).Single(v => v.StationId == "forge").Blocked, Is.EqualTo("需要：完成营区登记（在营门办理登记后走到营区广场）"), "未登记先写登记");
+        s.Progress.Flags.Add("hub_registered");
+        foreach (var st in new[] { "forge", "armory" })
+            Assert.That(E.PublicStationsHere(s).Single(v => v.StationId == st).Blocked, Is.EqualTo(need), st);
+        Assert.That(StationWhy(s, "make_steel"), Does.EndWith($"（{need}）"));
+        var text = E.CityServicePreview(s, "hub_workshop_access")!.EffectText;
+        Assert.That(text, Does.Contain(need));
+        foreach (var t0 in new[] { text, StationWhy(s, "make_steel")!, StationWhy(s, "make_gun_service_kit")! })
+            Assert.That(t0, Does.Not.Contain("旧存档").And.Not.Contain("工业支援").And.Not.Contain("QMAP"));
+
+        var t = Crafter("h03_workshop", "hub_registered", "trusted_legacy_QMAP02_completed");
+        Assert.That(E.PublicStationsHere(t).All(v => v.Blocked == null), Is.True, "可信旧资格加登记直接开放，不要求重领档册");
+        Assert.That(E.CityServicePreview(t, "hub_workshop_access")!.EffectText, Does.Not.Contain("旧存档").And.Contain("已开放：营区工坊工作台、营区工坊锻炉、营区工坊军械台"));
+    }
+
+    /// <summary>CITY-Q149-01：两个施济选项逐字用定稿名称；正好 40 不算低于 40；其他领取限制与发物照原规则。</summary>
+    [Test]
+    public void CITY_Q149_01_ReliefChoiceNamesAndThreshold()
+    {
+        var relief = Cfg.City.Services.Single(x => x.Id == "church_relief_ration");
+        Assert.That(relief.Choices.Select(c => c.Label), Is.EqualTo(new[] { "熟块根1份（饱食低于40）", "净水1份（水分低于40）" }));
+        var s = At("c04_alms");
+        Assert.That(E.CityServicePreview(s, "church_relief_ration")!.Choices.Select(c => c.Label), Is.EqualTo(new[] { "熟块根1份（饱食低于40）", "净水1份（水分低于40）" }));
+        SetStats(s, 15, 40, 40, 15, 80, 70);
+        Assert.That(E.CityServicePreview(s, "church_relief_ration")!.Targets.Single().Blocked, Is.Not.Null, "正好40不算低于40");
+        Assert.That(E.StartCityService(s, "church_relief_ration", GameState.PlayerId, "relief_food").Ok, Is.False);
+        SetStats(s, 15, 39.99, 40, 15, 80, 70);
+        Ok(E.StartCityService(s, "church_relief_ration", GameState.PlayerId, "relief_food"));
+        Run(s);
+        Assert.That(Count(s, "cooked_root", "c04_alms"), Is.EqualTo(1));
+        ReadDialogues(s);
+        Assert.That(E.CityServicePreview(s, "church_relief_ration")!.Blocked, Does.Contain("额度已用完"), "原每日额度不变");
+    }
+
+    /// <summary>
+    /// CITY-Q150-01：条件不足的已实装公共站仍出卡并写真实原因，可浏览配方但不能制作；满足后可用；未实装事项仍隐藏；
+    /// 刷新只读重算，不新增存档字段、不改进度。
+    /// </summary>
+    [Test]
+    public void CITY_Q150_01_LockedStationsVisible_ReadOnlyRefresh()
+    {
+        var s = Crafter("h03_workshop");
+        E.CreateItems(s, "iron_plate", 2, "h03_workshop");
+        E.CreateItems(s, "wood", 1, "h03_workshop");
+        E.CreateItems(s, "cloth", 1, "h03_workshop");
+        var views = E.PublicStationsHere(s);
+        Assert.That(views.Select(v => v.StationId), Is.EquivalentTo(new[] { "workbench", "forge", "armory" }), "未开放的也出卡");
+        Assert.That(views.All(v => v.Blocked != null), Is.True);
+        Assert.That(E.RecipeLocks(s, Cfg.Recipes.Single(r => r.Id == "make_machete")), Has.Some.Contains("营区工坊工作台还没开放"), "可浏览配方与门槛");
+        Assert.That(E.CanStart(s, Craft("make_machete")), Does.Contain("还没开放"), "条件不足不能制作");
+        var json = SaveSerializer.Serialize(s);
+        E.PublicStationsHere(s);
+        E.CityServicePreview(s, "hub_workshop_access");
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(json), "查看与刷新只读");
+        s.Progress.Flags.Add("hub_registered");
+        Assert.That(E.PublicStationsHere(s).Single(v => v.StationId == "workbench").Blocked, Is.Null);
+        Assert.That(E.CanStart(s, Craft("make_machete")), Is.Null, "满足后按原规则可用");
+        Assert.That(E.CityServicesOf(s, "npc_luo_zheng").Select(v => v.Id), Is.EqualTo(new[] { "hub_workshop_access" }), "未实装的查抄公开资料仍隐藏");
+    }
+
     // ───────────── Q142 换药 / Q144 登记 ─────────────
 
     /// <summary>CITY-Q142-01：换药玩家自带绷带1+布1，缺任一拒绝；别处地面的布不补；没有机构库存。</summary>

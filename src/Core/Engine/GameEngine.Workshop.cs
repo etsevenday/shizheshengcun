@@ -90,14 +90,19 @@ namespace Survival.Core.Engine
             var miss = ps.AllFacts.FirstOrDefault(x => !f.Contains(x));
             if (miss != null) return $"需要：{PublicFactLabel(miss)}";
             if (ps.AnyFacts.Count > 0 && !ps.AnyFacts.Any(f.Contains))
-                return "需要：" + string.Join("，或", ps.AnyFacts.Select(PublicFactLabel));
+            {
+                // Q148 选 A：旧档资格只在判定里认、不向玩家展示——锻炉/军械台只写“需要：在教会地下圣所核心领取圣所旧路档册”
+                var shown = ps.AnyFacts.Where(x => !HiddenQualificationFacts.Contains(x)).ToList();
+                return "需要：" + string.Join("，或", (shown.Count > 0 ? shown : ps.AnyFacts).Select(PublicFactLabel));
+            }
             return null;
         }
 
-        /// <summary>公共站条件的中文说法（地图事实说明；可信旧 QMAP02 完成没有地图说明，写成旧存档的工业支援委托，不出内部任务编号）。</summary>
-        private string PublicFactLabel(string fact) => fact == "trusted_legacy_QMAP02_completed"
-            ? "旧存档里已完成营区工业支援委托"
-            : Config.Map.FactLabels.TryGetValue(fact, out var t) ? t : fact;
+        /// <summary>只参与判定、不写进玩家条件文字的资格事实（Q148 选 A：可信旧 QMAP02 完成）。</summary>
+        private static readonly HashSet<string> HiddenQualificationFacts = new HashSet<string> { "trusted_legacy_QMAP02_completed" };
+
+        /// <summary>公共站条件的中文说法（地图事实说明）。</summary>
+        private string PublicFactLabel(string fact) => Config.Map.FactLabels.TryGetValue(fact, out var t) ? t : fact;
 
         /// <summary>当前地点这一类公共站已开放（实际在场且条件满足）。</summary>
         public bool PublicStationOpenHere(GameState s, string stationId) =>
