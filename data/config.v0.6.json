@@ -12103,7 +12103,7 @@
     },
     {
       "nodeId": "w11_orchard_a",
-      "name": "生块根点",
+      "name": "果园块根地",
       "locationId": "w11_orchard",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12114,7 +12114,15 @@
       "outputs": {
         "raw_root": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12123,7 +12131,7 @@
     },
     {
       "nodeId": "w11_orchard_b",
-      "name": "布料点",
+      "name": "果园旧布堆",
       "locationId": "w11_orchard",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12134,7 +12142,15 @@
       "outputs": {
         "cloth": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12143,7 +12159,7 @@
     },
     {
       "nodeId": "w12_canal_a",
-      "name": "植物纤维点",
+      "name": "渠岸纤维草丛",
       "locationId": "w12_canal",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12154,7 +12170,15 @@
       "outputs": {
         "fiber": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12163,7 +12187,7 @@
     },
     {
       "nodeId": "w12_canal_b",
-      "name": "橡胶点",
+      "name": "渠边旧密封件",
       "locationId": "w12_canal",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12174,7 +12198,15 @@
       "outputs": {
         "rubber": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12183,7 +12215,7 @@
     },
     {
       "nodeId": "w13_mill_a",
-      "name": "谷物点",
+      "name": "磨坊遗留谷物",
       "locationId": "w13_mill",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12194,7 +12226,15 @@
       "outputs": {
         "grain": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12203,7 +12243,7 @@
     },
     {
       "nodeId": "w13_mill_b",
-      "name": "木板点",
+      "name": "磨坊旧木板",
       "locationId": "w13_mill",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12214,7 +12254,15 @@
       "outputs": {
         "plank": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12223,7 +12271,7 @@
     },
     {
       "nodeId": "w14_cemeteryroad_a",
-      "name": "石块点",
+      "name": "荒径碎石带",
       "locationId": "w14_cemeteryroad",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12234,7 +12282,15 @@
       "outputs": {
         "stone": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12243,7 +12299,7 @@
     },
     {
       "nodeId": "w14_cemeteryroad_b",
-      "name": "布料点",
+      "name": "荒径弃衣堆",
       "locationId": "w14_cemeteryroad",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12254,7 +12310,15 @@
       "outputs": {
         "cloth": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12263,7 +12327,7 @@
     },
     {
       "nodeId": "w15_shrinewoods_a",
-      "name": "草药点",
+      "name": "林下草药丛",
       "locationId": "w15_shrinewoods",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12274,7 +12338,15 @@
       "outputs": {
         "herb": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12283,7 +12355,7 @@
     },
     {
       "nodeId": "w15_shrinewoods_b",
-      "name": "木材点",
+      "name": "祈祷林倒木",
       "locationId": "w15_shrinewoods",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12294,7 +12366,15 @@
       "outputs": {
         "wood": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "hatchet"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12303,7 +12383,7 @@
     },
     {
       "nodeId": "w16_service_a",
-      "name": "废金属点",
+      "name": "服务站废金属堆",
       "locationId": "w16_service",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12314,7 +12394,15 @@
       "outputs": {
         "scrap": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12323,7 +12411,7 @@
     },
     {
       "nodeId": "w16_service_b",
-      "name": "塑料点",
+      "name": "服务站塑料遗料",
       "locationId": "w16_service",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12334,7 +12422,15 @@
       "outputs": {
         "plastic": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12343,7 +12439,7 @@
     },
     {
       "nodeId": "w17_switchback_a",
-      "name": "石块点",
+      "name": "山路碎石带",
       "locationId": "w17_switchback",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12354,7 +12450,15 @@
       "outputs": {
         "stone": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12363,7 +12467,7 @@
     },
     {
       "nodeId": "w17_switchback_b",
-      "name": "导线点",
+      "name": "山路废导线",
       "locationId": "w17_switchback",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12374,7 +12478,15 @@
       "outputs": {
         "wire": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12383,7 +12495,7 @@
     },
     {
       "nodeId": "w18_tunnel_a",
-      "name": "铁矿料点",
+      "name": "洞外露矿",
       "locationId": "w18_tunnel",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12394,7 +12506,15 @@
       "outputs": {
         "iron_ore": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12403,7 +12523,7 @@
     },
     {
       "nodeId": "w18_tunnel_b",
-      "name": "紧固件点",
+      "name": "隧道维护紧固件",
       "locationId": "w18_tunnel",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12414,7 +12534,15 @@
       "outputs": {
         "fastener": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12423,7 +12551,7 @@
     },
     {
       "nodeId": "w19_survey_a",
-      "name": "零件点",
+      "name": "测绘设备旧件",
       "locationId": "w19_survey",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12434,7 +12562,15 @@
       "outputs": {
         "parts": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12443,7 +12579,7 @@
     },
     {
       "nodeId": "w19_survey_b",
-      "name": "电池点",
+      "name": "测绘营备用电池",
       "locationId": "w19_survey",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12454,7 +12590,15 @@
       "outputs": {
         "battery": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12463,7 +12607,7 @@
     },
     {
       "nodeId": "w20_powercut_a",
-      "name": "导线点",
+      "name": "塔基旧导线",
       "locationId": "w20_powercut",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12474,7 +12618,15 @@
       "outputs": {
         "wire": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12483,7 +12635,7 @@
     },
     {
       "nodeId": "w20_powercut_b",
-      "name": "电子组件点",
+      "name": "高压走廊旧电器",
       "locationId": "w20_powercut",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12494,7 +12646,15 @@
       "outputs": {
         "electronics": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12503,7 +12663,7 @@
     },
     {
       "nodeId": "w21_pine_a",
-      "name": "木材点",
+      "name": "针叶林倒木",
       "locationId": "w21_pine",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12514,7 +12674,15 @@
       "outputs": {
         "wood": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "hatchet"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12523,7 +12691,7 @@
     },
     {
       "nodeId": "w21_pine_b",
-      "name": "植物纤维点",
+      "name": "针叶林纤维草丛",
       "locationId": "w21_pine",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12534,7 +12702,15 @@
       "outputs": {
         "fiber": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12543,7 +12719,7 @@
     },
     {
       "nodeId": "w22_ravine_a",
-      "name": "铁矿料点",
+      "name": "沟谷露矿",
       "locationId": "w22_ravine",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12554,7 +12730,15 @@
       "outputs": {
         "iron_ore": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12563,7 +12747,7 @@
     },
     {
       "nodeId": "w22_ravine_b",
-      "name": "石块点",
+      "name": "沟谷碎石带",
       "locationId": "w22_ravine",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12574,7 +12758,15 @@
       "outputs": {
         "stone": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12583,7 +12775,7 @@
     },
     {
       "nodeId": "w23_hunting_a",
-      "name": "皮革点",
+      "name": "旧营皮料",
       "locationId": "w23_hunting",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12594,7 +12786,15 @@
       "outputs": {
         "leather": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12603,7 +12803,7 @@
     },
     {
       "nodeId": "w23_hunting_b",
-      "name": "绳索点",
+      "name": "旧营绳卷",
       "locationId": "w23_hunting",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12614,7 +12814,15 @@
       "outputs": {
         "rope": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12623,7 +12831,7 @@
     },
     {
       "nodeId": "w24_cave_a",
-      "name": "铁矿料点",
+      "name": "洞口矿料堆",
       "locationId": "w24_cave",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12634,7 +12842,15 @@
       "outputs": {
         "iron_ore": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12643,7 +12859,7 @@
     },
     {
       "nodeId": "w24_cave_b",
-      "name": "木炭点",
+      "name": "洞口旧炭袋",
       "locationId": "w24_cave",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12654,7 +12870,15 @@
       "outputs": {
         "charcoal": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12663,7 +12887,7 @@
     },
     {
       "nodeId": "w25_wetland_a",
-      "name": "草药点",
+      "name": "湿地草药丛",
       "locationId": "w25_wetland",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12674,7 +12898,15 @@
       "outputs": {
         "herb": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12683,7 +12915,7 @@
     },
     {
       "nodeId": "w25_wetland_b",
-      "name": "植物纤维点",
+      "name": "湿地纤维草丛",
       "locationId": "w25_wetland",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12694,7 +12926,15 @@
       "outputs": {
         "fiber": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12703,7 +12943,7 @@
     },
     {
       "nodeId": "w26_island_a",
-      "name": "生块根点",
+      "name": "陆洲块根地",
       "locationId": "w26_island",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12714,7 +12954,15 @@
       "outputs": {
         "raw_root": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12723,7 +12971,7 @@
     },
     {
       "nodeId": "w26_island_b",
-      "name": "盐点",
+      "name": "陆洲盐晶",
       "locationId": "w26_island",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12734,7 +12982,15 @@
       "outputs": {
         "salt": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12743,7 +12999,7 @@
     },
     {
       "nodeId": "w27_relay_a",
-      "name": "电子组件点",
+      "name": "中继设备遗件",
       "locationId": "w27_relay",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12754,7 +13010,15 @@
       "outputs": {
         "electronics": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12763,7 +13027,7 @@
     },
     {
       "nodeId": "w27_relay_b",
-      "name": "精密零件点",
+      "name": "中继营精密机件",
       "locationId": "w27_relay",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12774,7 +13038,15 @@
       "outputs": {
         "precision_parts": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12783,7 +13055,7 @@
     },
     {
       "nodeId": "w28_highland_a",
-      "name": "石块点",
+      "name": "高地碎石带",
       "locationId": "w28_highland",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12794,7 +13066,15 @@
       "outputs": {
         "stone": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12803,7 +13083,7 @@
     },
     {
       "nodeId": "w28_highland_b",
-      "name": "草药点",
+      "name": "高地草药丛",
       "locationId": "w28_highland",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12814,7 +13094,15 @@
       "outputs": {
         "herb": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12823,7 +13111,7 @@
     },
     {
       "nodeId": "w29_riverbend_a",
-      "name": "植物纤维点",
+      "name": "河弯纤维草丛",
       "locationId": "w29_riverbend",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12834,7 +13122,15 @@
       "outputs": {
         "fiber": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12843,7 +13139,7 @@
     },
     {
       "nodeId": "w29_riverbend_b",
-      "name": "黏土点",
+      "name": "河弯黏土层",
       "locationId": "w29_riverbend",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12854,7 +13150,15 @@
       "outputs": {
         "clay": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -12863,7 +13167,7 @@
     },
     {
       "nodeId": "w30_truckstop_a",
-      "name": "机油点",
+      "name": "休息区机油余存",
       "locationId": "w30_truckstop",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12874,7 +13178,15 @@
       "outputs": {
         "oil": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12883,7 +13195,7 @@
     },
     {
       "nodeId": "w30_truckstop_b",
-      "name": "橡胶点",
+      "name": "休息区旧胶料",
       "locationId": "w30_truckstop",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12894,7 +13206,15 @@
       "outputs": {
         "rubber": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12903,7 +13223,7 @@
     },
     {
       "nodeId": "w31_suburb_a",
-      "name": "布料点",
+      "name": "棚户旧布堆",
       "locationId": "w31_suburb",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12914,7 +13234,15 @@
       "outputs": {
         "cloth": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12923,7 +13251,7 @@
     },
     {
       "nodeId": "w31_suburb_b",
-      "name": "医用纱布点",
+      "name": "棚户医用纱布余存",
       "locationId": "w31_suburb",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12934,7 +13262,15 @@
       "outputs": {
         "medical_gauze": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12943,7 +13279,7 @@
     },
     {
       "nodeId": "w32_railcut_a",
-      "name": "钢材点",
+      "name": "铁路废钢料",
       "locationId": "w32_railcut",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12954,7 +13290,15 @@
       "outputs": {
         "steel": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12963,7 +13307,7 @@
     },
     {
       "nodeId": "w32_railcut_b",
-      "name": "紧固件点",
+      "name": "铁路维护紧固件",
       "locationId": "w32_railcut",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -12974,7 +13318,15 @@
       "outputs": {
         "fastener": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -12983,7 +13335,7 @@
     },
     {
       "nodeId": "w33_waterworks_a",
-      "name": "黏合剂点",
+      "name": "水厂黏合剂余存",
       "locationId": "w33_waterworks",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -12994,7 +13346,15 @@
       "outputs": {
         "adhesive": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -13003,7 +13363,7 @@
     },
     {
       "nodeId": "w33_waterworks_b",
-      "name": "消毒液点",
+      "name": "水厂消毒液余存",
       "locationId": "w33_waterworks",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13014,7 +13374,15 @@
       "outputs": {
         "disinfectant": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -13023,7 +13391,7 @@
     },
     {
       "nodeId": "w34_depot_a",
-      "name": "豆罐头存货",
+      "name": "应急仓豆罐头存货",
       "locationId": "w34_depot",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -13034,7 +13402,15 @@
       "outputs": {
         "canned_beans": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -13043,7 +13419,7 @@
     },
     {
       "nodeId": "w34_depot_b",
-      "name": "盐水剂存货",
+      "name": "应急仓盐水剂存货",
       "locationId": "w34_depot",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13054,7 +13430,15 @@
       "outputs": {
         "saline": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "world_stock",
@@ -13063,7 +13447,7 @@
     },
     {
       "nodeId": "w12_canal_water",
-      "name": "脏水水流",
+      "name": "灌溉渠岸取水口",
       "locationId": "w12_canal",
       "revealAt": null,
       "revealOnVisit": true,
@@ -13083,7 +13467,7 @@
     },
     {
       "nodeId": "w25_wetland_water",
-      "name": "脏水水流",
+      "name": "黑水湿地取水口",
       "locationId": "w25_wetland",
       "revealAt": null,
       "revealOnVisit": true,
@@ -13103,7 +13487,7 @@
     },
     {
       "nodeId": "w29_riverbend_water",
-      "name": "脏水水流",
+      "name": "河道弯口取水口",
       "locationId": "w29_riverbend",
       "revealAt": null,
       "revealOnVisit": true,
@@ -13123,7 +13507,7 @@
     },
     {
       "nodeId": "w33_waterworks_water",
-      "name": "脏水水流",
+      "name": "荒废水厂取水口",
       "locationId": "w33_waterworks",
       "revealAt": null,
       "revealOnVisit": true,
@@ -13143,7 +13527,7 @@
     },
     {
       "nodeId": "w08_reservoir_water",
-      "name": "脏水水流",
+      "name": "旧水库取水口",
       "locationId": "w08_reservoir",
       "revealAt": null,
       "revealOnVisit": true,
@@ -13163,7 +13547,7 @@
     },
     {
       "nodeId": "w16_service_cistern",
-      "name": "脏水蓄水池",
+      "name": "山间服务站蓄水池",
       "locationId": "w16_service",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -13183,7 +13567,7 @@
     },
     {
       "nodeId": "w19_survey_cistern",
-      "name": "脏水蓄水池",
+      "name": "测绘营址蓄水池",
       "locationId": "w19_survey",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -13203,7 +13587,7 @@
     },
     {
       "nodeId": "w23_hunting_cistern",
-      "name": "脏水蓄水池",
+      "name": "猎人旧营蓄水池",
       "locationId": "w23_hunting",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -13223,7 +13607,7 @@
     },
     {
       "nodeId": "w27_relay_cistern",
-      "name": "脏水蓄水池",
+      "name": "废中继营蓄水池",
       "locationId": "w27_relay",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -13243,7 +13627,7 @@
     },
     {
       "nodeId": "w30_truckstop_cistern",
-      "name": "脏水蓄水池",
+      "name": "货车休息区蓄水池",
       "locationId": "w30_truckstop",
       "revealAt": 25,
       "revealOnVisit": false,
@@ -13263,7 +13647,7 @@
     },
     {
       "nodeId": "w13_mill_bottles",
-      "name": "净水存货",
+      "name": "旧磨坊瓶装净水",
       "locationId": "w13_mill",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13283,7 +13667,7 @@
     },
     {
       "nodeId": "w31_suburb_bottles",
-      "name": "净水存货",
+      "name": "城郊棚户瓶装净水",
       "locationId": "w31_suburb",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13303,7 +13687,7 @@
     },
     {
       "nodeId": "w34_depot_bottles",
-      "name": "净水存货",
+      "name": "应急仓外瓶装净水",
       "locationId": "w34_depot",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13323,7 +13707,7 @@
     },
     {
       "nodeId": "d01_04_cache0",
-      "name": "布料物资箱",
+      "name": "藏书密室·布料箱",
       "locationId": "d01_04",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13334,7 +13718,15 @@
       "outputs": {
         "cloth": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13343,7 +13735,7 @@
     },
     {
       "nodeId": "d01_06_cache1",
-      "name": "缝线物资箱",
+      "name": "骨龛回道·缝线箱",
       "locationId": "d01_06",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13354,7 +13746,15 @@
       "outputs": {
         "thread": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13363,7 +13763,7 @@
     },
     {
       "nodeId": "d01_04_cache2",
-      "name": "皮革物资箱",
+      "name": "藏书密室·皮革箱",
       "locationId": "d01_04",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13374,7 +13774,15 @@
       "outputs": {
         "leather": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13407,7 +13815,7 @@
     },
     {
       "nodeId": "d02_04_cache0",
-      "name": "医用纱布物资箱",
+      "name": "控制室·医用纱布箱",
       "locationId": "d02_04",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13418,7 +13826,15 @@
       "outputs": {
         "medical_gauze": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13427,7 +13843,7 @@
     },
     {
       "nodeId": "d02_06_cache1",
-      "name": "实验室试剂物资箱",
+      "name": "检修竖井·实验室试剂箱",
       "locationId": "d02_06",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13438,7 +13854,15 @@
       "outputs": {
         "lab_reagent": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13447,7 +13871,7 @@
     },
     {
       "nodeId": "d02_04_cache2",
-      "name": "电子组件物资箱",
+      "name": "控制室·电子组件箱",
       "locationId": "d02_04",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13458,7 +13882,15 @@
       "outputs": {
         "electronics": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13491,7 +13923,7 @@
     },
     {
       "nodeId": "d03_04_cache0",
-      "name": "武器组件物资箱",
+      "name": "值勤室·武器组件箱",
       "locationId": "d03_04",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13502,7 +13934,15 @@
       "outputs": {
         "weapon_parts": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13511,7 +13951,7 @@
     },
     {
       "nodeId": "d03_06_cache1",
-      "name": "钢材物资箱",
+      "name": "配电房·钢材箱",
       "locationId": "d03_06",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13522,7 +13962,15 @@
       "outputs": {
         "steel": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13531,7 +13979,7 @@
     },
     {
       "nodeId": "d03_04_cache2",
-      "name": "紧固件物资箱",
+      "name": "值勤室·紧固件箱",
       "locationId": "d03_04",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13542,7 +13990,15 @@
       "outputs": {
         "fastener": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13575,7 +14031,7 @@
     },
     {
       "nodeId": "d04_03_cache0",
-      "name": "导线物资箱",
+      "name": "蓄电室·导线箱",
       "locationId": "d04_03",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13586,7 +14042,15 @@
       "outputs": {
         "wire": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13595,7 +14059,7 @@
     },
     {
       "nodeId": "d04_05_cache1",
-      "name": "电池物资箱",
+      "name": "屋顶梯井·电池箱",
       "locationId": "d04_05",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13606,7 +14070,15 @@
       "outputs": {
         "battery": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13615,7 +14087,7 @@
     },
     {
       "nodeId": "d04_03_cache2",
-      "name": "电子组件物资箱",
+      "name": "蓄电室·电子组件箱",
       "locationId": "d04_03",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13626,7 +14098,15 @@
       "outputs": {
         "electronics": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13657,7 +14137,7 @@
     },
     {
       "nodeId": "d05_04_cache0",
-      "name": "橡胶物资箱",
+      "name": "滤料库·橡胶箱",
       "locationId": "d05_04",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13668,7 +14148,15 @@
       "outputs": {
         "rubber": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13677,7 +14165,7 @@
     },
     {
       "nodeId": "d05_07_cache1",
-      "name": "消毒液物资箱",
+      "name": "阀控室·消毒液箱",
       "locationId": "d05_07",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13688,7 +14176,15 @@
       "outputs": {
         "disinfectant": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13697,7 +14193,7 @@
     },
     {
       "nodeId": "d05_04_cache2",
-      "name": "黏合剂物资箱",
+      "name": "滤料库·黏合剂箱",
       "locationId": "d05_04",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13708,7 +14204,15 @@
       "outputs": {
         "adhesive": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13739,7 +14243,7 @@
     },
     {
       "nodeId": "d06_03_cache0",
-      "name": "铁矿料物资箱",
+      "name": "浅矿脉·铁矿料箱",
       "locationId": "d06_03",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13750,7 +14254,15 @@
       "outputs": {
         "iron_ore": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13759,7 +14271,7 @@
     },
     {
       "nodeId": "d06_06_cache1",
-      "name": "铁片物资箱",
+      "name": "矿工营室·铁片箱",
       "locationId": "d06_06",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13770,7 +14282,15 @@
       "outputs": {
         "iron_plate": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13779,7 +14299,7 @@
     },
     {
       "nodeId": "d06_03_cache2",
-      "name": "木炭物资箱",
+      "name": "浅矿脉·木炭箱",
       "locationId": "d06_03",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13790,7 +14310,15 @@
       "outputs": {
         "charcoal": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13821,7 +14349,7 @@
     },
     {
       "nodeId": "d07_04_cache0",
-      "name": "豆罐头物资箱",
+      "name": "服装层·豆罐头箱",
       "locationId": "d07_04",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13832,7 +14360,15 @@
       "outputs": {
         "canned_beans": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13841,7 +14377,7 @@
     },
     {
       "nodeId": "d07_07_cache1",
-      "name": "布料物资箱",
+      "name": "屋顶避难点·布料箱",
       "locationId": "d07_07",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13852,7 +14388,15 @@
       "outputs": {
         "cloth": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13861,7 +14405,7 @@
     },
     {
       "nodeId": "d07_04_cache2",
-      "name": "塑料物资箱",
+      "name": "服装层·塑料箱",
       "locationId": "d07_04",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13872,7 +14416,15 @@
       "outputs": {
         "plastic": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13903,7 +14455,7 @@
     },
     {
       "nodeId": "d08_03_cache0",
-      "name": "盐水剂物资箱",
+      "name": "干货库·盐水剂箱",
       "locationId": "d08_03",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13914,7 +14466,15 @@
       "outputs": {
         "saline": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13923,7 +14483,7 @@
     },
     {
       "nodeId": "d08_06_cache1",
-      "name": "医用纱布物资箱",
+      "name": "备用电房·医用纱布箱",
       "locationId": "d08_06",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13934,7 +14494,15 @@
       "outputs": {
         "medical_gauze": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13943,7 +14511,7 @@
     },
     {
       "nodeId": "d08_03_cache2",
-      "name": "肉干物资箱",
+      "name": "干货库·肉干箱",
       "locationId": "d08_03",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -13954,7 +14522,15 @@
       "outputs": {
         "dried_meat": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
       "hazard": null,
       "proficiencyId": "scavenging",
       "scope": "instanceId",
@@ -13985,7 +14561,7 @@
     },
     {
       "nodeId": "h03_workshop_supply_disinfectant",
-      "name": "消毒液配给点",
+      "name": "公共工坊消毒液配给柜",
       "locationId": "h03_workshop",
       "revealAt": 100,
       "revealOnVisit": false,
@@ -14005,7 +14581,7 @@
     },
     {
       "nodeId": "w13_mill_supply_salt",
-      "name": "盐补给点",
+      "name": "磨坊食盐存货",
       "locationId": "w13_mill",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -14016,7 +14592,15 @@
       "outputs": {
         "salt": 1
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
@@ -14025,7 +14609,7 @@
     },
     {
       "nodeId": "w15_shrinewoods_supply_berry",
-      "name": "野果补给点",
+      "name": "祈祷林野果丛",
       "locationId": "w15_shrinewoods",
       "revealAt": 50,
       "revealOnVisit": false,
@@ -14036,12 +14620,1336 @@
       "outputs": {
         "berry": 2
       },
-      "toolBonus": null,
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
       "hazard": null,
       "proficiencyId": "gathering",
       "scope": "world_stock",
       "kind": "world_addition",
       "xpAllowed": true
+    },
+    {
+      "nodeId": "m01_road_crate",
+      "name": "路旁旧货箱",
+      "locationId": "m01_road",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 6,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "cloth": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "finite",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "m01/crate"
+      ]
+    },
+    {
+      "nodeId": "m01_road_barrier",
+      "name": "路障金属堆",
+      "locationId": "m01_road",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 8,
+      "dailyRefill": 0,
+      "poolMode": "finite_units",
+      "outputs": {
+        "scrap": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "finite",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "m01/barrier"
+      ]
+    },
+    {
+      "nodeId": "m02_checkpoint_duty",
+      "name": "检查哨值勤补给箱",
+      "locationId": "m02_checkpoint",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 15,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "canned_food": 2,
+        "clean_water": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign_physical",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "m02/duty"
+      ]
+    },
+    {
+      "nodeId": "m02_checkpoint_bench",
+      "name": "哨站维修台遗料",
+      "locationId": "m02_checkpoint",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "fastener": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "m02/bench"
+      ]
+    },
+    {
+      "nodeId": "h02_square_water",
+      "name": "营区净水配给处",
+      "locationId": "h02_square",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 10,
+      "cap": 16,
+      "dailyRefill": 12,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "clean_water": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "h02/water"
+      ]
+    },
+    {
+      "nodeId": "h02_square_ration",
+      "name": "营区罐头配给处",
+      "locationId": "h02_square",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 10,
+      "cap": 4,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "canned_food": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "h02/ration"
+      ]
+    },
+    {
+      "nodeId": "h03_workshop_scrap",
+      "name": "公共工坊旧件回收台",
+      "locationId": "h03_workshop",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 30,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "parts": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "h03/scrap"
+      ]
+    },
+    {
+      "nodeId": "h04_infirmary_dressing",
+      "name": "医务室纱布配给柜",
+      "locationId": "h04_infirmary",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 15,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "medical_gauze": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "h04/dressing"
+      ]
+    },
+    {
+      "nodeId": "w01_farm_crop",
+      "name": "农场块根畦",
+      "locationId": "w01_farm",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 6,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "raw_root": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": false
+      },
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "w01/crop"
+      ]
+    },
+    {
+      "nodeId": "w01_farm_barn",
+      "name": "农场旧谷仓布料",
+      "locationId": "w01_farm",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "cloth": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "w01/barn"
+      ]
+    },
+    {
+      "nodeId": "w02_forest_wood",
+      "name": "林间倒木",
+      "locationId": "w02_forest",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 20,
+      "dailyRefill": 10,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "wood": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "hatchet"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": false
+      },
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "w02/wood"
+      ]
+    },
+    {
+      "nodeId": "w02_forest_fiber",
+      "name": "林间纤维草丛",
+      "locationId": "w02_forest",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 16,
+      "dailyRefill": 8,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "fiber": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": false
+      },
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "w02/fiber"
+      ]
+    },
+    {
+      "nodeId": "w03_quarry_stone",
+      "name": "坡脚碎石带",
+      "locationId": "w03_quarry",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 20,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "stone": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": false
+      },
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "w03/stone"
+      ]
+    },
+    {
+      "nodeId": "w03_quarry_ore",
+      "name": "采石坡露矿",
+      "locationId": "w03_quarry",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "iron_ore": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": false
+      },
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "w03/ore"
+      ]
+    },
+    {
+      "nodeId": "a01_yard_steel",
+      "name": "货场废钢垛",
+      "locationId": "a01_yard",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "steel": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "a01/steel"
+      ]
+    },
+    {
+      "nodeId": "a01_yard_fastener",
+      "name": "货场紧固件匣",
+      "locationId": "a01_yard",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 12,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "fastener": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 15,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "a01/fastener"
+      ]
+    },
+    {
+      "nodeId": "a02_pump_seal",
+      "name": "泵站密封件架",
+      "locationId": "a02_pump",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 6,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "rubber": 1
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "a02/seal"
+      ]
+    },
+    {
+      "nodeId": "a02_pump_fuel",
+      "name": "泵站机油余存",
+      "locationId": "a02_pump",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 6,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "oil": 1
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "a02/fuel"
+      ]
+    },
+    {
+      "nodeId": "a03_foundry_steel",
+      "name": "厂外钢料垛",
+      "locationId": "a03_foundry",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 16,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "steel": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "a03/steel"
+      ]
+    },
+    {
+      "nodeId": "a03_foundry_machine",
+      "name": "厂外机件堆",
+      "locationId": "a03_foundry",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 40,
+      "cap": 6,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "precision_parts": 1
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 35,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "a03/machine"
+      ]
+    },
+    {
+      "nodeId": "b01_school_fabric",
+      "name": "安置学校旧布架",
+      "locationId": "b01_school",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 25,
+      "cap": 12,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "cloth": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "b01/fabric"
+      ]
+    },
+    {
+      "nodeId": "b01_school_leather",
+      "name": "安置学校旧皮料",
+      "locationId": "b01_school",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 30,
+      "cap": 6,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "leather": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "b01/leather"
+      ]
+    },
+    {
+      "nodeId": "b02_station_medical",
+      "name": "转运站纱布配给柜",
+      "locationId": "b02_station",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 30,
+      "cap": 8,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "medical_gauze": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "b02/medical"
+      ]
+    },
+    {
+      "nodeId": "b02_station_electronic",
+      "name": "转运站退役设备",
+      "locationId": "b02_station",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 35,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "electronics": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "b02/electronic"
+      ]
+    },
+    {
+      "nodeId": "b03_hospital_medical",
+      "name": "外院医用纱布箱",
+      "locationId": "b03_hospital",
+      "revealAt": 25,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "medical_gauze": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "b03/medical"
+      ]
+    },
+    {
+      "nodeId": "b03_hospital_electronic",
+      "name": "外院旧设备间",
+      "locationId": "b03_hospital",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 35,
+      "cap": 6,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "electronics": 1
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 30,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "b03/electronic"
+      ]
+    },
+    {
+      "nodeId": "w02_forest_plank",
+      "name": "林间旧木板堆",
+      "locationId": "w02_forest",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "plank": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "w02/plank"
+      ]
+    },
+    {
+      "nodeId": "w02_forest_rope",
+      "name": "林间旧绳卷",
+      "locationId": "w02_forest",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "rope": 1
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "w02/rope"
+      ]
+    },
+    {
+      "nodeId": "b01_school_thread",
+      "name": "安置学校缝线配给柜",
+      "locationId": "b01_school",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 25,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "thread": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "b01/thread"
+      ]
+    },
+    {
+      "nodeId": "m01_road_plastic",
+      "name": "公路塑料遗料",
+      "locationId": "m01_road",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "plastic": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "m01/plastic"
+      ]
+    },
+    {
+      "nodeId": "a01_yard_wire",
+      "name": "货场旧导线卷",
+      "locationId": "a01_yard",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "wire": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "a01/wire"
+      ]
+    },
+    {
+      "nodeId": "a02_pump_adhesive",
+      "name": "泵站黏合剂余存",
+      "locationId": "a02_pump",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "adhesive": 1
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "a02/adhesive"
+      ]
+    },
+    {
+      "nodeId": "a02_pump_charcoal",
+      "name": "泵站旧炭袋",
+      "locationId": "a02_pump",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "charcoal": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "a02/charcoal"
+      ]
+    },
+    {
+      "nodeId": "b02_station_battery",
+      "name": "转运站备用电池柜",
+      "locationId": "b02_station",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 25,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "battery": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "b02/battery"
+      ]
+    },
+    {
+      "nodeId": "b02_station_disinfectant",
+      "name": "转运站消毒液配给柜",
+      "locationId": "b02_station",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 25,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "disinfectant": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "b02/disinfectant"
+      ]
+    },
+    {
+      "nodeId": "h04_infirmary_saline",
+      "name": "医务室盐水剂配给柜",
+      "locationId": "h04_infirmary",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 25,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "saline": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "h04/saline"
+      ]
+    },
+    {
+      "nodeId": "a03_foundry_weapon_parts",
+      "name": "厂外武器组件箱",
+      "locationId": "a03_foundry",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "weapon_parts": 1
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "a03/weapon_parts"
+      ]
+    },
+    {
+      "nodeId": "b03_hospital_ballistic_fiber",
+      "name": "外院防护纤维存货",
+      "locationId": "b03_hospital",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "ballistic_fiber": 1
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "b03/ballistic_fiber"
+      ]
+    },
+    {
+      "nodeId": "w01_farm_grain",
+      "name": "农场谷物畦",
+      "locationId": "w01_farm",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 30,
+      "cap": 12,
+      "dailyRefill": 4,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "grain": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "stone_knife"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 25,
+        "toolUsePassive": false
+      },
+      "hazard": null,
+      "proficiencyId": "gathering",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "w01/grain"
+      ]
+    },
+    {
+      "nodeId": "h02_square_beans",
+      "name": "营区豆罐头配给处",
+      "locationId": "h02_square",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 10,
+      "cap": 4,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "canned_beans": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "h02/beans"
+      ]
+    },
+    {
+      "nodeId": "w01_farm_salt",
+      "name": "农场食盐存货",
+      "locationId": "w01_farm",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "salt": 1
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "w01/salt"
+      ]
+    },
+    {
+      "nodeId": "w01_farm_cooking_oil",
+      "name": "农场食用油存货",
+      "locationId": "w01_farm",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 4,
+      "dailyRefill": 1,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "cooking_oil": 1
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "w01/cooking_oil"
+      ]
+    },
+    {
+      "nodeId": "h01_gate_raw_water",
+      "name": "营门蓄水渠",
+      "locationId": "h01_gate",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 10,
+      "cap": null,
+      "dailyRefill": 0,
+      "poolMode": "unlimited",
+      "outputs": {
+        "dirty_water": 4
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "world_stock",
+      "kind": "flowing",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "h01/raw_water"
+      ]
+    },
+    {
+      "nodeId": "w03_quarry_plate",
+      "name": "采石坡铁片回收堆",
+      "locationId": "w03_quarry",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 25,
+      "cap": 8,
+      "dailyRefill": 2,
+      "poolMode": "renewable_units",
+      "outputs": {
+        "iron_plate": 2
+      },
+      "toolBonus": {
+        "toolTag": "",
+        "itemIds": [
+          "crowbar"
+        ],
+        "outputMultiplier": 1,
+        "baseMinutesOverride": 20,
+        "toolUsePassive": true
+      },
+      "hazard": null,
+      "proficiencyId": "scavenging",
+      "scope": "world_stock",
+      "kind": "renewable",
+      "xpAllowed": true,
+      "legacyAliases": [
+        "w03/plate"
+      ]
+    },
+    {
+      "nodeId": "h03_workshop_contract",
+      "name": "工坊首次支援包",
+      "locationId": "h03_workshop",
+      "revealAt": null,
+      "revealOnVisit": true,
+      "baseMinutes": 0,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "fastener": 4,
+        "precision_parts": 2
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign_physical",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "h03/contract"
+      ],
+      "unlockAnyFacts": [
+        "FA02_record_credit",
+        "trusted_legacy_QMAP02_completed"
+      ]
+    },
+    {
+      "nodeId": "firetruck_cache",
+      "name": "消防车器材箱",
+      "locationId": "m01_road",
+      "revealAt": 50,
+      "revealOnVisit": false,
+      "baseMinutes": 20,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {
+        "fire_axe": 1
+      },
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign_physical",
+      "xpAllowed": false,
+      "legacyAliases": [],
+      "equipmentQuality": "white_zero_affixes_full_template_durability"
+    },
+    {
+      "nodeId": "w03_quarry_blueprints",
+      "name": "采石坡野外装备图册",
+      "locationId": "w03_quarry",
+      "revealAt": 100,
+      "revealOnVisit": false,
+      "baseMinutes": 10,
+      "cap": 1,
+      "dailyRefill": 0,
+      "poolMode": "campaign_claim",
+      "outputs": {},
+      "toolBonus": null,
+      "hazard": null,
+      "proficiencyId": null,
+      "scope": "campaignClaimId",
+      "kind": "campaign_knowledge",
+      "xpAllowed": false,
+      "legacyAliases": [
+        "bp_wild_pack"
+      ]
     }
   ],
   "recipes": [
@@ -23931,7 +25839,7 @@
       "cooldownRounds": 0,
       "extraCost": "无",
       "kind": "survival",
-      "status": "closed",
+      "status": "live",
       "effects": [
         {
           "key": "work.scavengeTool",
@@ -23939,7 +25847,7 @@
           "value": 0.9
         }
       ],
-      "displayText": "选择合格工具时搜集工作量×0.9（新地图逐个搜集点标明合格工具后生效）"
+      "displayText": "用资源点逐行列明的合格工具（石刀/简易斧/撬棍）搜集时，搜集工作量再×0.9；徒手、采集、领取与配给不吃"
     },
     {
       "id": "scavenging_07",
@@ -25051,9 +26959,11 @@
     {
       "id": "blueprint_barbed_spear",
       "name": "倒刺短矛蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:w03_quarry_blueprints"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 w03_quarry，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：采石坡（w03_quarry）探索100%后领取“采石坡野外装备图册”（10分钟，本局一次，Q120）"
     },
     {
       "id": "blueprint_wooden_club",
@@ -25095,9 +27005,11 @@
     {
       "id": "blueprint_hunter_bow",
       "name": "猎手弓蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:w03_quarry_blueprints"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 w03_quarry，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：采石坡（w03_quarry）探索100%后领取“采石坡野外装备图册”（10分钟，本局一次，Q120）"
     },
     {
       "id": "blueprint_crossbow",
@@ -25223,9 +27135,11 @@
     {
       "id": "blueprint_scout_armor",
       "name": "侦察护具蓝图",
-      "grantedByFacts": [],
+      "grantedByFacts": [
+        "claim:w03_quarry_blueprints"
+      ],
       "blueprint": true,
-      "source": "蓝图：A12 记在 w03_quarry，取得方式待策划确认（目前没有来源）"
+      "source": "蓝图：采石坡（w03_quarry）探索100%后领取“采石坡野外装备图册”（10分钟，本局一次，Q120）"
     },
     {
       "id": "blueprint_heavy_armor",
@@ -26581,35 +28495,40 @@
         "node": "d03_03",
         "grants": {
           "riot_shield": 1
-        }
+        },
+        "name": "器材室防暴盾箱"
       },
       {
         "claimId": "officer_cache",
         "node": "d03_04",
         "grants": {
           "service_pistol": 1
-        }
+        },
+        "name": "守卫战利品箱"
       },
       {
         "claimId": "rifle_cache",
         "node": "d03_08",
         "grants": {
           "rifle": 1
-        }
+        },
+        "name": "封存仓步枪箱"
       },
       {
         "claimId": "shotgun_cache",
         "node": "d03_08",
         "grants": {
           "shotgun": 1
-        }
+        },
+        "name": "封存仓霰弹枪箱"
       },
       {
         "claimId": "armor_cache",
         "node": "d03_08",
         "grants": {
           "guard_armor": 1
-        }
+        },
+        "name": "封存仓防护装备箱"
       },
       {
         "claimId": "ammo_reserve_cache",
@@ -26618,7 +28537,8 @@
           "ammo_9mm": 24,
           "shell_12g": 12,
           "ammo_rifle": 15
-        }
+        },
+        "name": "封存仓备用弹药箱"
       }
     ],
     "recordNodes": {

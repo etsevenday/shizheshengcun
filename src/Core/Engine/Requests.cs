@@ -14,6 +14,8 @@ namespace Survival.Core.Engine
         public int? PotInstanceId { get; set; }
         /// <summary>采集时玩家拖入的工具；为空时自动用随身耐久最高的一件。</summary>
         public int? ToolInstanceId { get; set; }
+        /// <summary>采集/搜集明确徒手：不自动候选随身合格工具（Q121，S05 本轮章“可明确改徒手”）。显式 ToolInstanceId 优先。</summary>
+        public bool BareHands { get; set; }
         /// <summary>配方材料槽里手工指定的批次，先于自动补齐使用。</summary>
         public List<int> PreferredInstanceIds { get; set; } = new List<int>();
         /// <summary>批量制作件数（v0.6 §03 同一预留批次结转余工作量）；建造与维护只能 1。</summary>
@@ -26,8 +28,8 @@ namespace Survival.Core.Engine
         public static ActionRequest Clear() => new ActionRequest { Type = ActionType.Clear };
         /// <summary>遗迹勘整（Q55）：在当前地点做搜集训练。</summary>
         public static ActionRequest Survey() => new ActionRequest { Type = ActionType.Survey };
-        public static ActionRequest Gather(string nodeId, int? toolInstanceId = null) =>
-            new ActionRequest { Type = ActionType.Gather, TargetId = nodeId, ToolInstanceId = toolInstanceId };
+        public static ActionRequest Gather(string nodeId, int? toolInstanceId = null, bool bareHands = false) =>
+            new ActionRequest { Type = ActionType.Gather, TargetId = nodeId, ToolInstanceId = toolInstanceId, BareHands = bareHands };
         public static ActionRequest Craft(string recipeId, int? potInstanceId = null, IEnumerable<int>? preferredInstanceIds = null, int batchCount = 1) =>
             new ActionRequest
             {
@@ -182,6 +184,10 @@ namespace Survival.Core.Engine
         public string? ToolName { get; set; }
         /// <summary>工具是玩家拖入指定的那一把（不自动换）。</summary>
         public bool ToolExplicit { get; set; }
+        /// <summary>Q121：本行有合格工具可选——界面给“改用徒手/用随身工具”切换（徒手始终可用）。</summary>
+        public bool ToolChoice { get; set; }
+        /// <summary>本次预估是明确徒手（不自动候选工具）。</summary>
+        public bool BareHands { get; set; }
         public double? ToolDurabilityBefore { get; set; }
         public double? ToolDurabilityAfter { get; set; }
         public double? ToolMaxDurability { get; set; }

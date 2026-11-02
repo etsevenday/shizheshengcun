@@ -122,14 +122,15 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>M = min(上限, 夜间×负重×低体力)（主角）。</summary>
-        public double WorkFactor(GameState s, ActionType type, List<string>? reasons = null, string? targetId = null) => WorkFactor(s, s.Player, type, reasons, targetId);
+        public double WorkFactor(GameState s, ActionType type, List<string>? reasons = null, string? targetId = null, bool qualifiedTool = false) =>
+            WorkFactor(s, s.Player, type, reasons, targetId, qualifiedTool);
 
         /// <summary>
         /// M = min(上限, 夜间×负重×低体力)。移动始终视为无照明；其他工作在火堆燃烧的地点不吃夜间系数。负重与体力按该角色本人。
         /// 再乘装备的求生工作量倍率（B4：A05 §4 末段“求生同类工作量合成下限×0.70，后乘现行S01工作倍率”，等价于基础工作量先乘装备倍率）。
         /// </summary>
-        public double WorkFactor(GameState s, ActorState actor, ActionType type, List<string>? reasons = null, string? targetId = null) =>
-            TimeFactor(s, actor, type, reasons) * GearWorkFactor(s, actor.Id, type, targetId, reasons);
+        public double WorkFactor(GameState s, ActorState actor, ActionType type, List<string>? reasons = null, string? targetId = null, bool qualifiedTool = false) =>
+            TimeFactor(s, actor, type, reasons) * GearWorkFactor(s, actor.Id, type, targetId, reasons, qualifiedTool);
 
         /// <summary>
         /// S01 时间倍率 M = min(上限, 夜间×负重×低体力)（不含装备与熟练节点的工作量倍率）。

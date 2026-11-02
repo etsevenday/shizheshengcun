@@ -181,13 +181,13 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 装备的求生工作量倍率（乘在基础工作量上，之后再乘 S01 工作倍率 M）：相关键相乘，下限 ×0.70；reasons 写“装备：耐磨工作衣×0.95”。
         /// </summary>
-        public double GearWorkFactor(GameState s, string actorId, ActionType type, string? targetId, List<string>? reasons = null)
+        public double GearWorkFactor(GameState s, string actorId, ActionType type, string? targetId, List<string>? reasons = null, bool qualifiedTool = false)
         {
             var keys = WorkKeys(type, targetId).ToList();
             var fx = keys.Count == 0 ? null : EquipmentEffects(s, actorId);
             var gear = fx == null ? 1 : keys.Aggregate(1.0, (acc, k) => acc * fx.Factor(k));
             // B5 求生被动与装备相乘后同受 ×0.70 下限（开发假设 H7）
-            var (passive, source) = PassiveWorkFactor(s, s.Actor(actorId), type, targetId);
+            var (passive, source) = PassiveWorkFactor(s, s.Actor(actorId), type, targetId, qualifiedTool);
             var f = gear * passive;
             var floor = Config.Equipment.Limits.SurvivalWorkFloor;
             var floored = f < floor;

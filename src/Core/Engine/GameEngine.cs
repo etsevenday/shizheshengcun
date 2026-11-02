@@ -406,14 +406,13 @@ namespace Survival.Core.Engine
                         // 显式拖入的工具：必须随身、标签匹配、未损坏；失效时不暗中换另一把（拖拽与容器案 5）
                         tool = FindItem(s, r.ToolInstanceId.Value);
                         if (tool == null) return "这件工具已不在，请重新选择";
-                        var tag = _items[tool.ItemId].ToolTag;
-                        if (res.ToolBonus == null || tag != res.ToolBonus.ToolTag) return "这件工具对该资源点没有加成";
+                        if (!ToolQualifies(res, tool)) return "这件工具对该资源点没有加成";
                         if (!OnPlayer(tool)) return "先拾取工具";
                         if (tool.ReservedBy != null || IsLocked(s, tool)) return "行动占用：这件工具正被使用";
                         if (!HasWear(tool, GatherWear)) return tool.Durability <= 0 ? "这件工具已损坏，请重新选择" : $"这件工具耐久不足（{DurabilityText(tool)}），请维护或重新选择";
                         plan.ExplicitTool = true;
                     }
-                    else if (res.ToolBonus != null) tool = BestTool(s, res.ToolBonus.ToolTag);
+                    else if (res.ToolBonus != null && !r.BareHands) tool = BestToolFor(s, res);   // Q121：可明确改徒手，徒手始终可用
                     plan.Tool = tool;
 
                     if (res.IsInstance && (rs.Available ?? 0) <= 0) return "本代已搜空（地牢换代后恢复）";
@@ -446,6 +445,8 @@ namespace Survival.Core.Engine
 
                     var minutes = res.BaseMinutes;
                     if (tool != null && res.ToolBonus?.BaseMinutesOverride != null) minutes = res.ToolBonus.BaseMinutesOverride.Value;
+                    if (tool != null && res.ToolBonus != null && res.ToolBonus.ItemIds.Count > 0)
+                        plan.Notes.Add($"使用合格工具{ItemName(tool.ItemId)}：基础工时{res.BaseMinutes}→{minutes}分钟，产量不变；完成后耐久−{Fmt.T(GatherWear)}，取消不磨损");
                     plan.BaseWork = minutes;
                     plan.Label = $"{GatherVerb(res)}{res.Name}";
                     return null;
@@ -881,6 +882,14 @@ namespace Survival.Core.Engine
                 }
             }
 
+            if (p.Type == ActionType.Gather && p.Res != null && p.Res.IsCampaign && p.BaseWork == 0)
+            {
+                // 工坊首次支援包（Q120 RES-Q120-04）：0 分钟明确领取，当场一次事务完成，不推进时间
+                s.Main = a;
+                CompleteClaim(s, a, p.Res);
+                UpdateFlags(s);
+                return ActionResult.Success(a.ActionId);
+            }
             if (a.IsWorkType) ReserveCarry(s, a, p.BaseWork);
             if (p.IsSub) s.Sub = a; else s.Main = a;
             if (p.Type != ActionType.Use && p.Type != ActionType.Fuse)

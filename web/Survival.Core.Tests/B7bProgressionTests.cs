@@ -158,9 +158,9 @@ public class B7bProgressionTests : TestBase
     public void PROG_Q55a_LegacyTwentyRows_Classification_PassiveScopes()
     {
         var rows = ((JArray)Contract()["fieldExperience"]!["resourceRows"]!).ToDictionary(r => (string)r["resourceId"]!);
-        // 策划提交 01fd54d（答复 Q120）把合同扩到 169 行，多出的 53 行旧资源点属后续批次 B13b 导入；这里只核对已导入的 116 行
+        // 策划提交 01fd54d（答复 Q120）把合同扩到 169 行；B13b 导入其中 47 行恢复来源（6 个旧唯一箱的领取在 B13c），全部已导入行逐行核对
         Assert.That(rows, Has.Count.GreaterThanOrEqualTo(116), "合同至少 116 行（96 行属 v3 地图）");
-        Assert.That(Cfg.Resources, Has.Count.EqualTo(116));
+        Assert.That(Cfg.Resources, Has.Count.EqualTo(163), "B13b：116 + 47 条恢复来源（6 个旧唯一箱在 B13c）");
         foreach (var r in Cfg.Resources)
         {
             // B12：96 行并入资源表；proficiencyId 为空的 9 行（核心记录与城市配给）不给经验（xpAllowed=false）
@@ -260,17 +260,18 @@ public class B7bProgressionTests : TestBase
     }
 
     [Test]
-    public void PROG_Q59_ToolUse_ShownClosed_NoBonus()
+    public void PROG_Q59_ToolUse_LiveOnlyWithQualifiedTool()
     {
+        // B13b（Q121 选 A）：工具表接入后搜集5级工具运用生效；旧 20 条没有“可用工具运用”行，徒手或旧箱子仍只有分类勘整
         var n = Cfg.SkillNodes.Single(x => x.Id == "scavenging_05");
-        Assert.That(n.Status, Is.EqualTo("closed"));
-        Assert.That(GameEngine.PassiveStatusText(n), Does.Contain("暂未开放"));
+        Assert.That(n.Status, Is.EqualTo("live"));
         Assert.That(n.Text, Does.Not.Contain("暂未开放"), "B7b 试玩修复：说明不再重复状态");
         var s = At("village");
         Lv(s, "scavenging", 5);
-        Assert.That(E.WorkFactor(s, ActionType.Gather, null, "misc_box"), Is.EqualTo(0.95).Within(1e-12), "只有分类勘整，工具运用不加成");
+        Assert.That(E.WorkFactor(s, ActionType.Gather, null, "misc_box"), Is.EqualTo(0.95).Within(1e-12), "旧箱子无合格工具行：只有分类勘整");
+        Assert.That(E.WorkFactor(s, ActionType.Gather, null, "misc_box", true), Is.EqualTo(0.95).Within(1e-12), "旧箱子不标工具运用，即使带工具也不加成");
         var line = E.SurvivalPassiveLines(s.Player).Single(x => x.Contains("工具运用"));
-        Assert.That(line.Split("暂未开放").Length - 1, Is.EqualTo(1), "“暂未开放”只出现一次：" + line);
+        Assert.That(line, Does.Contain("生效中"), line);
     }
 
     // ───────────── M159：烹饪经验（Q60） ─────────────

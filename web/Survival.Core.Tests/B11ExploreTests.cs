@@ -34,11 +34,11 @@ public class B11ExploreTests : TestBase
         Run(s);
         Assert.That(s.Locations["w11_orchard"].Progress, Is.EqualTo(25));
         Assert.That(DiscAt(s, "w11_orchard"), Is.EquivalentTo(new[] { "w11_orchard_a" }), "25% 只揭资源 A");
-        Assert.That(s.Log.Last(l => l.Kind == GameEventKind.ActionCompleted.ToString()).Text, Does.Contain("发现生块根点"));
+        Assert.That(s.Log.Last(l => l.Kind == GameEventKind.ActionCompleted.ToString()).Text, Does.Contain("发现果园块根地"));
 
         var t50 = Explore(s);
         Assert.That(DiscAt(s, "w11_orchard"), Is.EquivalentTo(new[] { "w11_orchard_a", "w11_orchard_b" }));
-        Assert.That(t50, Does.Contain("布料点"));
+        Assert.That(t50, Does.Contain("果园旧布堆"), "Q125 正式名");
         Assert.That(E.NextMilestoneHasContent(s, "w11_orchard"), Is.True, "75 有线索");
 
         var t75 = Explore(s);

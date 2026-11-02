@@ -46,6 +46,7 @@ namespace Survival.Core.Save
         public const string Schema19 = "19";
         public const string Schema20 = "20";
         public const string Schema21 = "21";
+        public const string Schema22 = "22";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -82,6 +83,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema19) From19To20(s, config, notes);
             if (s.SchemaVersion == Schema20) From20To21(s, config, notes);
             if (s.SchemaVersion == Schema21) From21To22(s, config, notes);
+            if (s.SchemaVersion == Schema22) From22To23(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -858,8 +860,24 @@ namespace Survival.Core.Save
             s.Prologue.MigratedAt ??= s.GameMinute;
             var engine = new Engine.GameEngine(config);
             var retro = engine.RetroPrologue(s);
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（新手序章：七日目标改为任务册" +
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema22}（新手序章：七日目标改为任务册" +
                 (retro.Count > 0 ? $"，已追认{string.Join("、", retro)}" : "") + (s.Progress.SevenDayShown ? "；七日检查记录保留为历史" : "") + "）。" });
+            s.SchemaVersion = Schema22;
+        }
+
+        // ───────────────────────── 22 → 23 ─────────────────────────
+
+        /// <summary>
+        /// 资源来源补齐（开发计划 v0.9 B13b，R129；S05/A08 Q120 本轮章、resource-adjudications.json legacyMigration）：
+        /// 新导入而从未存在的来源按表初始化（库存=cap、无限为空、从升级时当前世界日起算日补、不追补漏过的天数）；
+        /// 旧档到访过且探索度已到揭示值的只补资源卡可见，不发物品；唯一领取（支援包、消防斧箱、图册）按未领处理——旧档里没有这些来源的领取账，
+        /// 不凭背包猜（已持有的消防斧不收回、不复制）。旧在办动作按开工快照完成/取消一次（新工具表只对新开工生效）。幂等。
+        /// </summary>
+        private static void From22To23(GameState s, GameConfig config, List<string> notes)
+        {
+            var added = EnsureResourceStates(s, config);
+            if (added > 0) notes.Add($"资源点扩展到{config.Resources.Count}处（补回营区净水配给等旧来源），已到过且探索够的地点直接显示");
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（资源来源补齐：新增{added}处资源点；部分资源点可用石刀/简易斧/撬棍省5分钟）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 
@@ -883,8 +901,9 @@ namespace Survival.Core.Save
             {
                 if (s.Resources.ContainsKey(r.NodeId)) continue;
                 var ls = s.Locations.TryGetValue(r.LocationId, out var l) ? l : null;
-                var seen = (s.RevealedResourceMarkers?.Contains(r.NodeId) ?? false)
-                           || (ls != null && ls.Visited && (r.RevealOnVisit || (r.RevealAt.HasValue && ls.Progress >= r.RevealAt.Value)));
+                    var unlocked = r.UnlockAnyFacts.Count == 0 || r.UnlockAnyFacts.Any(s.Progress.Flags.Contains);
+                var seen = unlocked && ((s.RevealedResourceMarkers?.Contains(r.NodeId) ?? false)
+                           || (ls != null && ls.Visited && (r.RevealOnVisit || (r.RevealAt.HasValue && ls.Progress >= r.RevealAt.Value))));
                 var dungeon = config.Locations.FirstOrDefault(x => x.Id == r.LocationId)?.DungeonId;
                 s.Resources[r.NodeId] = new ResourceState
                 {

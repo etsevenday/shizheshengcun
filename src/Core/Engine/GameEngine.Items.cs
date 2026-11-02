@@ -338,6 +338,29 @@ namespace Survival.Core.Engine
                 .ThenBy(i => i.InstanceId)
                 .FirstOrDefault();
 
+        /// <summary>
+        /// 资源点的自动候选工具（Q121，S05 本轮章“未显式选时沿原合法随身工具自动候选规则”）：本人随身或已装备、未预留、够一次磨损、
+        /// 对本行合格（新表按物品 ID：石刀/简易斧/撬棍；旧 20 条按原标签）的实例里成色最高者，平手取实例 ID 小者。没有合格工具或本行无工具为 null。
+        /// </summary>
+        public ItemInstance? BestToolFor(GameState s, ResourceConfig res) => res.ToolBonus == null ? null :
+            s.Items.Where(i => OnPlayer(i) && i.ReservedBy == null && ToolQualifies(res, i) && HasWear(i, GatherWear))
+                .OrderByDescending(Condition)
+                .ThenBy(i => i.InstanceId)
+                .FirstOrDefault();
+
+        /// <summary>这件实例对该资源点是否是合格工具（只看物品 ID/旧标签，不按类别猜）。</summary>
+        public bool ToolQualifies(ResourceConfig res, ItemInstance it) =>
+            res.ToolBonus != null && res.ToolBonus.Qualifies(it.ItemId, _items[it.ItemId].ToolTag);
+
+        /// <summary>资源点合格工具的显示名（“石刀”“撬棍”“石刀或撬棍”）；本行无工具为 null。</summary>
+        public string? QualifiedToolNames(ResourceConfig res)
+        {
+            if (res.ToolBonus == null) return null;
+            var ids = res.ToolBonus.ItemIds.Count > 0 ? res.ToolBonus.ItemIds
+                : Config.Items.Where(i => i.ToolTag == res.ToolBonus.ToolTag).Select(i => i.Id).ToList();
+            return ids.Count == 0 ? null : string.Join("或", ids.Select(ItemName));
+        }
+
         /// <summary>该标签工具一次成功使用的磨损：打火器按点火磨损，锅不按次磨损（按加工），其余按采集磨损。</summary>
         public double ToolWear(string toolTag) => toolTag == "lighter" ? LighterWear : toolTag == "pot" ? 0 : GatherWear;
 
@@ -566,7 +589,7 @@ namespace Survival.Core.Engine
             foreach (var r in Config.Resources.Where(r => r.LocationId == locationId))
             {
                 var rs = s.Resources[r.NodeId];
-                if (rs.Discovered) continue;
+                if (rs.Discovered || !ResourceUnlocked(s, r)) continue;   // B13b：有领取资格才显示（工坊首次支援包）
                 if (r.RevealOnVisit || (r.RevealAt.HasValue && r.RevealAt.Value <= ls.Progress))
                 {
                     rs.Discovered = true;
@@ -598,7 +621,7 @@ namespace Survival.Core.Engine
                 foreach (var r in Config.Resources.Where(r => r.LocationId == locationId && r.RevealAt.HasValue && r.RevealAt.Value <= t))
                 {
                     var rs = s.Resources[r.NodeId];
-                    if (rs.Discovered) continue;
+                    if (rs.Discovered || !ResourceUnlocked(s, r)) continue;
                     rs.Discovered = true;
                     found.Add(r.Name);
                     ids.Add(r.NodeId);

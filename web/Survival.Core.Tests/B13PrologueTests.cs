@@ -497,7 +497,7 @@ public class B13PrologueTests : TestBase
         j["SchemaVersion"] = "21";
         j.Remove("Prologue");
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out _);
-        Assert.That(m.SchemaVersion, Is.EqualTo("22"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "21→22→23（B13b 起 23）");
         Assert.That(m.CurrentLocation, Is.EqualTo("m01_road"), "不传回营地");
         Assert.That(m.UnlockedEdges, Does.Contain("village__m01_road"), "已开路线不反锁");
         Assert.That(m.Prologue.Tasks["PRO08"].Retro, Is.True);

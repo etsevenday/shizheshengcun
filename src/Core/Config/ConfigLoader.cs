@@ -116,14 +116,22 @@ namespace Survival.Core.Config
             foreach (var r in c.Resources)
             {
                 if (!locs.Contains(r.LocationId)) e.Add($"资源点 {r.NodeId} 地点不存在");
-                if (r.BaseMinutes <= 0 || r.BaseMinutes % tick != 0) e.Add($"资源点 {r.NodeId} 时长须为{tick}的正倍数");
+                // 工坊首次支援包是 0 分钟明确领取（Q120 RES-Q120-04）；其余资源点须为 5 的正倍数
+                if (r.BaseMinutes < 0 || r.BaseMinutes % tick != 0 || (r.BaseMinutes == 0 && !(r.IsCampaign && !r.IsRecord)))
+                    e.Add($"资源点 {r.NodeId} 时长须为{tick}的正倍数");
                 if (r.RevealAt.HasValue && !milestoneSet.Contains(r.RevealAt.Value)) e.Add($"资源点 {r.NodeId} revealAt 不在 25/50/75/100 中");
                 if (!r.RevealAt.HasValue && !r.RevealOnVisit) e.Add($"资源点 {r.NodeId} 没有发现条件");
                 if (r.IsCampaign)
                 {
                     // 核心记录不是物品（不发物资卡当凭证，S05 四生命周期）
-                    if (string.IsNullOrEmpty(r.RecordId)) e.Add($"资源点 {r.NodeId} 是唯一领取却没有记录 ID");
+                    // 实物包/知识包（B13b）没有记录 ID：实物包产物须存在，知识包靠 knowledge grantedByFacts claim:&lt;id&gt;
+                    if (string.IsNullOrEmpty(r.RecordId) && r.Outputs.Count == 0 && !c.Knowledge.Any(k => k.GrantedByFacts.Contains("claim:" + r.NodeId)))
+                        e.Add($"资源点 {r.NodeId} 是唯一领取却没有记录 ID、实物或知识");
                     if (r.Scope != ResourceScopes.Campaign) e.Add($"资源点 {r.NodeId} 唯一领取的 scope 须为 campaignClaimId");
+                    // 核心记录的 outputs 只是记录 ID（不发物资卡）；实物包的产物须是物品
+                    if (!r.IsRecord)
+                        foreach (var o in r.Outputs.Keys)
+                            if (!items.Contains(o)) e.Add($"资源点 {r.NodeId} 产出物品 {o} 不存在");
                 }
                 else foreach (var o in r.Outputs.Keys)
                     if (!items.Contains(o)) e.Add($"资源点 {r.NodeId} 产出物品 {o} 不存在");
@@ -131,8 +139,17 @@ namespace Survival.Core.Config
                     e.Add($"资源点 {r.NodeId} 是地牢普通箱，须在地牢房间且不日补");
                 if (r.IsUnits && r.Outputs.Count != 1) e.Add($"资源点 {r.NodeId} 按件数计库存时只能有一种产物");
                 if (!r.IsUnlimited && !r.Cap.HasValue) e.Add($"资源点 {r.NodeId} 缺少上限");
-                if (r.ToolBonus != null && !c.Items.Any(i => i.ToolTag == r.ToolBonus.ToolTag))
-                    e.Add($"资源点 {r.NodeId} 工具标签 {r.ToolBonus.ToolTag} 无对应工具");
+                if (r.ToolBonus != null)
+                {
+                    if (r.ToolBonus.ItemIds.Count > 0)
+                    {
+                        foreach (var t in r.ToolBonus.ItemIds)
+                            if (!items.Contains(t)) e.Add($"资源点 {r.NodeId} 合格工具 {t} 不存在");
+                    }
+                    else if (!c.Items.Any(i => i.ToolTag == r.ToolBonus.ToolTag))
+                        e.Add($"资源点 {r.NodeId} 工具标签 {r.ToolBonus.ToolTag} 无对应工具");
+                    if (r.IsCampaign) e.Add($"资源点 {r.NodeId} 唯一领取不能有工具加成");
+                }
             }
 
             foreach (var rc in c.Recipes)

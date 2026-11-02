@@ -43,7 +43,7 @@ public class B12ResourceTests : TestBase
             Assert.That(r.DailyRefill, Is.EqualTo((int)j["dailyRefill"]!), r.NodeId);
             var reveal = (int)j["reveal"]!;
             Assert.That(reveal == 0 ? r.RevealOnVisit : r.RevealAt == reveal, Is.True, r.NodeId);
-            Assert.That(r.ToolBonus, Is.Null, "H2：96 行无工具字段，不给工具加成");
+            // B13b（Q121）取代 H2：96 行逐行有/无合格工具，见 B13bResourceTests.TOOL_Q121_01
             if (!r.IsCampaign) Assert.That(r.Outputs.Keys.All(k => Cfg.Items.Any(i => i.Id == k)), Is.True, r.NodeId);
         }
         // 旧 20 条：与 116 行合同里的 legacy_20 一致（数值不变）
@@ -54,9 +54,10 @@ public class B12ResourceTests : TestBase
             Assert.That(r.BaseMinutes, Is.EqualTo((int)row["baseMinutes"]!), r.NodeId);
             Assert.That(r.LocationId, Is.EqualTo((string)row["nodeId"]!), r.NodeId);
         }
-        Assert.That(Cfg.Resources.Count(r => r.Scope == ResourceScopes.WorldStock), Is.EqualTo(20 + 64));
+        Assert.That(Cfg.Resources.Count(r => r.Scope == ResourceScopes.WorldStock), Is.EqualTo(20 + 64 + 43), "B13b：44 条主世界恢复来源里 43 条 world_stock（检查哨值勤补给箱是单局唯一）");
         Assert.That(Cfg.Resources.Count(r => r.IsInstance), Is.EqualTo(24));
-        Assert.That(Cfg.Resources.Count(r => r.IsCampaign), Is.EqualTo(8));
+        Assert.That(Cfg.Resources.Count(r => r.IsRecord), Is.EqualTo(8));
+        Assert.That(Cfg.Resources.Count(r => r.IsCampaign), Is.EqualTo(8 + 4), "B13b：检查哨值勤补给箱、工坊首次支援包、消防车器材箱、采石坡图册");
         Assert.That(Cfg.Resources.Where(r => r.IsInstance).All(r => r.Cap == 2 && !r.Refills && E.Location(r.LocationId).DungeonId != null), Is.True, "普通箱每箱 2/0、在地牢房间");
     }
 
@@ -242,15 +243,15 @@ public class B12ResourceTests : TestBase
         foreach (var r in Cfg.Resources.Skip(20)) res.Remove(r.NodeId);
         j["RevealedResourceMarkers"] = new JArray("w11_orchard_a");
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out var notes);
-        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "20→21→22（B13 起再升到 22）");
-        Assert.That(m.Resources, Has.Count.EqualTo(116));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "20→21→22→23（B13b 起再升到 23）");
+        Assert.That(m.Resources, Has.Count.EqualTo(Cfg.Resources.Count), "B13b 起 163 条（另 47 条恢复来源）");
         Assert.That(m.Resources["w11_orchard_a"].Discovered, Is.True);
         Assert.That(m.Resources["w11_orchard_a"].Available, Is.EqualTo(12));
         Assert.That(m.Resources["w11_orchard_b"].Discovered, Is.False, "50% 未到");
         Assert.That(m.RevealedResourceMarkers, Is.Null);
         Assert.That(m.Progress.Flags, Does.Contain(GameEngine.CampaignKey("d01_08_unique")), "已持有记录 → 已领不补");
         Assert.That(m.Progress.Flags, Does.Not.Contain(GameEngine.CampaignKey("d02_08_unique")));
-        Assert.That(notes, Has.Some.Contains("116"));
+        Assert.That(notes, Has.Some.Contains(Cfg.Resources.Count.ToString()));
         Assert.That(SaveSerializer.Serialize(m), Does.Not.Contain("RevealedResourceMarkers"));
         var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(m), Cfg, out var notes2);
         Assert.That(notes2, Is.Empty);

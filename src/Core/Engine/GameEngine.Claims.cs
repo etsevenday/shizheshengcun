@@ -26,6 +26,12 @@ namespace Survival.Core.Engine
         /// <summary>实例事实：本代核心记录已领取/核对（gate-contract instance_complete 读它）。</summary>
         public const string RecordClaimedFact = "recordClaimedAndClear";
 
+        /// <summary>
+        /// 揭示/领取资格（B13b，Q120）：资源点写了 unlockAnyFacts 时须有其一（工坊首次支援包：FA02_record_credit 或可信旧 QMAP02 已完成）。
+        /// </summary>
+        public bool ResourceUnlocked(GameState s, ResourceConfig res) =>
+            res.UnlockAnyFacts.Count == 0 || res.UnlockAnyFacts.Any(s.Progress.Flags.Contains);
+
         /// <summary>某唯一领取是否已领（本局永久）。</summary>
         public bool CampaignClaimed(GameState s, string resourceId) => s.Progress.Flags.Contains(CampaignKey(resourceId));
 
@@ -41,6 +47,8 @@ namespace Survival.Core.Engine
         {
             var d = DungeonOf(res);
             var claimed = CampaignClaimed(s, res.NodeId);
+            if (!res.IsRecord && claimed) return "已领取（本局唯一，不再重复发放）";
+            if (!ResourceUnlocked(s, res)) return "还没有领取资格";
             if (!claimed) return null;
             if (d == null || InstanceFact(s, d, RecordClaimedFact)) return "已领取（本局唯一，不再重复发放）";
             return null;
@@ -53,6 +61,15 @@ namespace Survival.Core.Engine
             if (CampaignClaimed(s, res.NodeId))
             {
                 notes.Add($"{res.Name}本局已领取：这次只核对本次地牢的记录（打开本代出口），不再重复发放");
+                return notes;
+            }
+            if (!res.IsRecord)
+            {
+                // B13b（Q120）：工坊首次支援包、消防车器材箱（实物整包落当地地面）、采石坡图册（知识包，不发纸卡或成品）
+                notes.Add($"领取{res.Name}：本局唯一一次" + (res.IsCampaignPhysical ? "，产物整包放在当前地点地面" : "，只记作知识，不发纸卡或成品"));
+                if (res.EquipmentQuality != null) notes.Add("装备为白色、无词条、满耐久");
+                var k = KnowledgeGrantedBy(s, ClaimFactsOf(res));
+                if (k.Count > 0) notes.Add("获得做法知识：" + string.Join("、", k));
                 return notes;
             }
             notes.Add($"领取{res.Name}：本局唯一一次，地牢换代后也不会再发；记作记录，不占物资卡");
@@ -88,7 +105,26 @@ namespace Survival.Core.Engine
             var d = DungeonOf(res);
             var first = !CampaignClaimed(s, res.NodeId);
             var text = new List<string>();
-            if (first)
+            if (first && !res.IsRecord)
+            {
+                // B13b（Q120 RES-Q120-03/04）：实物包整包生成在当地地面（装备白色无词条满耐久），知识包只补缺；与领取账同一事务
+                var know = KnowledgeGrantedBy(s, ClaimFactsOf(res));
+                var made = new List<ItemInstance>();
+                foreach (var kv in res.Outputs)
+                {
+                    if (_items[kv.Key].IsEquipment && res.EquipmentQuality != null)
+                        for (var k = 0; k < kv.Value; k++) made.Add(NewSingle(s, kv.Key, s.CurrentLocation, false, null, null, "white"));
+                    else made.AddRange(CreateItems(s, kv.Key, kv.Value, s.CurrentLocation));
+                }
+                Normalize(s, s.CurrentLocation);
+                foreach (var f in ClaimFactsOf(res)) s.Progress.Flags.Add(f);
+                s.Resources[res.NodeId].Available = 0;
+                text.Add($"已领取{res.Name}（本局唯一）");
+                if (res.Outputs.Count > 0)
+                    text.Add(string.Join("，", res.Outputs.Select(kv => $"{ItemName(kv.Key)}+{kv.Value}")) + QualitySuffix(made) + $"，已放在{LocName(s.CurrentLocation)}地面");
+                if (know.Count > 0) text.Add("获得做法知识：" + string.Join("、", know));
+            }
+            else if (first)
             {
                 var know = KnowledgeGrantedBy(s, ClaimFactsOf(res));
                 foreach (var f in ClaimFactsOf(res)) s.Progress.Flags.Add(f);

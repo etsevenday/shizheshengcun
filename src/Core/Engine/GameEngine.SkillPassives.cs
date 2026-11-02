@@ -48,17 +48,29 @@ namespace Survival.Core.Engine
         /// 该行动的被动工作量倍率与来源：采集（非箱子）熟练采伐×0.9；移动在走过的物理边上远途规划×0.90，否则≤20kg 轻装步伐×0.95（10 级替代 5 级）。
         /// targetId：移动为目的地，采集为资源点。
         /// </summary>
-        public (double factor, string? source) PassiveWorkFactor(GameState s, ActorState actor, ActionType type, string? targetId)
+        public (double factor, string? source) PassiveWorkFactor(GameState s, ActorState actor, ActionType type, string? targetId, bool qualifiedTool = false)
         {
             switch (type)
             {
                 case ActionType.Gather:
-                    if (targetId != null && _res.TryGetValue(targetId, out var res) && res.XpAllowed)
+                    if (targetId != null && _res.TryGetValue(targetId, out var res) && res.XpAllowed && !res.IsCampaign)
                     {
                         // 采集被动只管练采集的资源点（熟练采伐），搜集被动只管练搜集的（分类勘整/周密检索，Q54/Q55）；遗迹勘整不吃
                         var key = GatherSkillOf(res) == Gathering ? "work.gather" : "work.scavenge";
                         var f = PassiveFactor(actor, key);
-                        return (f, f < 1 ? PassiveSource(actor, key) : null);
+                        var src = f < 1 ? PassiveSource(actor, key) : null;
+                        // Q121（S05/A06 本轮章）：搜集5级工具运用——只对练搜集、可计经验、本行标了“可用工具运用”且实际用了合格工具的搜集，再×0.90（与同门3/10级相乘）
+                        if (qualifiedTool && ToolUseApplies(res))
+                        {
+                            var t = PassiveFactor(actor, ToolUseKey);
+                            if (t < 1)
+                            {
+                                f *= t;
+                                var ts = PassiveSource(actor, ToolUseKey);
+                                src = src == null ? ts : src + "、" + ts;
+                            }
+                        }
+                        return (f, f < 1 ? src : null);
                     }
                     break;
                 case ActionType.Travel:
@@ -76,6 +88,13 @@ namespace Survival.Core.Engine
             }
             return (1, null);
         }
+
+        /// <summary>搜集 5 级“工具运用”的效果键（scavenging_05 work.scavengeTool ×0.90）。</summary>
+        public const string ToolUseKey = "work.scavengeTool";
+
+        /// <summary>该资源点的搜集能否吃“工具运用”（不看是否已有等级）：练搜集、可计经验、非唯一领取、本行标了可用工具运用。</summary>
+        public bool ToolUseApplies(ResourceConfig res) =>
+            res.XpAllowed && !res.IsCampaign && GatherSkillOf(res) == Scavenging && res.ToolBonus != null && res.ToolBonus.ToolUsePassive;
 
         /// <summary>采集划伤概率的被动倍率：练采集的资源点稳手采集×0.9，练搜集的（危险搜集）危险辨识×0.8。</summary>
         public double PassiveHazardFactor(ActorState actor, ResourceConfig res) => !res.XpAllowed ? 1 :

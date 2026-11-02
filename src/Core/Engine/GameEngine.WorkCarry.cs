@@ -47,12 +47,16 @@ namespace Survival.Core.Engine
         private void ReserveCarry(GameState s, ActionState a, double baseWork)
         {
             a.RuleVersion = WorkRuleVersion;
-            a.BaseWorkMinutes = baseWork * GearWorkFactor(s, GameState.PlayerId, a.Type, a.TargetId);
+            a.BaseWorkMinutes = baseWork * GearWorkFactor(s, GameState.PlayerId, a.Type, a.TargetId, null, UsesQualifiedTool(a));
             var key = CarryKeyOf(s, a.Type, a.TargetId);
             a.CarryKey = key;
             a.CarryReserved = CarryOf(s, key);
             s.WorkCarry.Remove(key);
         }
+
+        /// <summary>该行动是否实际用了本行合格工具（Q121：搜集 5 级工具运用只认实际选中的合格工具实例）。</summary>
+        private bool UsesQualifiedTool(ActionState a) =>
+            a.Type == ActionType.Gather && a.ToolInstanceId.HasValue && a.TargetId != null && _res.ContainsKey(a.TargetId);
 
         /// <summary>按配置截断：floor 到 0.0001，上限 4.9999（只丢小数，不凭空增工作）。</summary>
         public double CarryClamp(double raw)

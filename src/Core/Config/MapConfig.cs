@@ -77,6 +77,8 @@ namespace Survival.Core.Config
         public string ClaimId { get; set; } = "";
         public string Node { get; set; } = "";
         public Dictionary<string, int> Grants { get; set; } = new Dictionary<string, int>();
+        /// <summary>Q125 正式名（“器材室防暴盾箱”等）；领取规则（Q122）在 B13c 接入，本批只登记名称。</summary>
+        public string? Name { get; set; }
     }
 
     public sealed class DungeonConfig

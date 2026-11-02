@@ -36,7 +36,7 @@ public class ConfigTests : TestBase
         // B11（R33，A08）：v3 地图 143 节点（world 62、city_building 14、dungeon 67）、180 边（172 双向、8 单向出口）
         Assert.That(Cfg.Locations, Has.Count.EqualTo(143));
         Assert.That(Cfg.Edges, Has.Count.EqualTo(180));
-        Assert.That(Cfg.Resources, Has.Count.EqualTo(16 + 4 + 96), "新增武器柜、旧储物柜、医药补给箱、废弃冷藏箱；B12 并入 v3 的 96 条增量资源（R36）");
+        Assert.That(Cfg.Resources, Has.Count.EqualTo(16 + 4 + 96 + 47), "新增武器柜、旧储物柜、医药补给箱、废弃冷藏箱；B12 并入 v3 的 96 条增量资源（R36）；B13b 补 47 条恢复来源（R129）");
         Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5 + 3 + 1 + 1 + 56 + 26 + 5), "新增木矛、木弓、箭矢、工具维护、病毒特效药；v1.0 新增金属矛、弩、弩矢；B4 拆解装备；B7c 护拳绑带（Q64，营区登记默认知识）；B10 新装备配方 56、材料加工链 26、工坊建造 5");
     }
 

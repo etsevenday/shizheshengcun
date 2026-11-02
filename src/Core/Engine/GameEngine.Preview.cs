@@ -78,7 +78,7 @@ namespace Survival.Core.Engine
                 if (trackFactor)
                 {
                     var reasons = new List<string>();
-                    var f = WorkFactor(c, r.Type, reasons, r.TargetId);
+                    var f = WorkFactor(c, r.Type, reasons, r.TargetId, r.Type == ActionType.Gather && plan.Tool != null);
                     var litNow = c.Locations[c.CurrentLocation].Facility.FireLit;
                     if (System.Math.Abs(f - prevFactor) > Eps)
                     {
@@ -175,7 +175,7 @@ namespace Survival.Core.Engine
             if (p.IsWork)
             {
                 var reasons = new List<string>();
-                p.FactorAtStart = WorkFactor(s, r.Type, reasons, r.TargetId);
+                p.FactorAtStart = WorkFactor(s, r.Type, reasons, r.TargetId, r.Type == ActionType.Gather && plan?.Tool != null);
                 p.FactorReasons = reasons;
             }
             p.OutputPlace = $"{LocName(s.CurrentLocation)}地面";
@@ -254,7 +254,7 @@ namespace Survival.Core.Engine
                         p.HazardHealthLoss = HazardLoss(s, res);
                         p.HazardLabel = res.Hazard.Label;
                     }
-                    var tool = plan != null ? plan.Tool : res.ToolBonus != null ? BestTool(s, res.ToolBonus.ToolTag) : null;
+                    var tool = plan != null ? plan.Tool : res.ToolBonus != null && !r.BareHands ? BestToolFor(s, res) : null;
                     if (tool != null)
                     {
                         if (res.ToolBonus!.BaseMinutesOverride.HasValue) p.BaseMinutes = res.ToolBonus.BaseMinutesOverride.Value;
@@ -267,9 +267,11 @@ namespace Survival.Core.Engine
                     }
                     else if (res.ToolBonus != null)
                     {
-                        var tname = Config.Items.First(i => i.ToolTag == res.ToolBonus.ToolTag).Name;
-                        p.Notes.Add($"随身携带可用的{tname}可提高效率");
+                        var tname = QualifiedToolNames(res);
+                        p.Notes.Add(r.BareHands ? $"徒手进行（不使用随身的{tname}）" : $"随身携带可用的{tname}可提高效率");
                     }
+                    p.ToolChoice = res.ToolBonus != null && (tool != null || r.BareHands);
+                    p.BareHands = r.BareHands;
                     if (plan != null)
                     {
                         p.Outputs = plan.Outputs;

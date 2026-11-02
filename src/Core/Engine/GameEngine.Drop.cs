@@ -374,8 +374,7 @@ namespace Survival.Core.Engine
         {
             if (!_res.TryGetValue(nodeId, out var res) || res.LocationId != s.CurrentLocation || !s.Resources[nodeId].Discovered)
                 return DropIntent.No("只能对当前地点已发现的资源点使用");
-            var tag = _items[head.ItemId].ToolTag;
-            if (src.Kind != DropSourceKind.Card || tag == null || res.ToolBonus == null || res.ToolBonus.ToolTag != tag)
+            if (src.Kind != DropSourceKind.Card || !ToolQualifies(res, head))
                 return DropIntent.No(Unsupported);
             if (!OnPlayer(head)) return DropIntent.No("先拾取工具");
             return PreviewFor(s, DropVerb.PreviewGatherTool, $"查看采集（使用这把{ItemName(head.ItemId)}）",

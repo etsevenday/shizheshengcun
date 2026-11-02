@@ -479,9 +479,21 @@ namespace Survival.Core.Config
 
     public sealed class ToolBonusConfig
     {
+        /// <summary>旧 20 条的工具标签（stone_knife/hatchet，原规则保留）；新表行为空，改看 <see cref="ItemIds"/>。</summary>
         public string ToolTag { get; set; } = "";
+        /// <summary>
+        /// Q121（S05/A06 本轮章、resource-adjudications.json tools.new96/restored）：新表逐行列出的合格工具物品 ID（stone_knife 石刀、hatchet 简易斧、crowbar 撬棍），
+        /// 只认这些具体物品的实例，不按工具类别或附近地面猜。为空时按旧标签。
+        /// </summary>
+        public List<string> ItemIds { get; set; } = new List<string>();
         public int OutputMultiplier { get; set; } = 1;
         public int? BaseMinutesOverride { get; set; }
+        /// <summary>Q121：本行用合格工具搜集时吃搜集 5 级“工具运用”×0.90（表“可用工具运用”列）。</summary>
+        public bool ToolUsePassive { get; set; }
+
+        /// <summary>这件物品（物品 ID 与其工具标签）对本行是否合格。</summary>
+        public bool Qualifies(string itemId, string? toolTag) =>
+            ItemIds.Count > 0 ? ItemIds.Contains(itemId) : !string.IsNullOrEmpty(ToolTag) && toolTag == ToolTag;
     }
 
     public sealed class HazardConfig
@@ -549,7 +561,21 @@ namespace Survival.Core.Config
         /// <summary>campaign 领取同事务写入的门槛事实（gate-contract factProducers：FA02_record_credit 等）。</summary>
         public List<string> ClaimFacts { get; set; } = new List<string>();
 
+        // ───── B13b（Q120/Q121/Q125；resource-adjudications.json additionalSources） ─────
+        /// <summary>旧来源别名（m01/crate 等，旧 A08 折叠主表的后缀写法）；只作对账与来源说明，资源 ID 不变。</summary>
+        public List<string> LegacyAliases { get; set; } = new List<string>();
+        /// <summary>
+        /// 揭示与领取资格：有任一事实才显示/可领（工坊首次支援包：FA02_record_credit 或 trusted_legacy_QMAP02_completed）。空为不要求。
+        /// </summary>
+        public List<string> UnlockAnyFacts { get; set; } = new List<string>();
+        /// <summary>唯一领取的实物装备品质（white_zero_affixes_full_template_durability：白色、无词条、满模板耐久）。</summary>
+        public string? EquipmentQuality { get; set; }
+
         public bool IsCampaign => PoolMode == PoolModes.CampaignClaim;
+        /// <summary>8 份核心记录（有记录 ID）：领取写事实、不发物资卡；其余唯一领取（支援包、消防斧箱、知识包）没有记录 ID。</summary>
+        public bool IsRecord => IsCampaign && !string.IsNullOrEmpty(RecordId);
+        /// <summary>唯一领取的实物包（campaign_physical）：一次领取，产物整包落当地地面。</summary>
+        public bool IsCampaignPhysical => IsCampaign && !IsRecord && Outputs.Count > 0;
         public bool IsInstance => Scope == ResourceScopes.Instance;
         public bool IsCache => PoolMode == PoolModes.SingleCache;
         public bool IsUnlimited => PoolMode == PoolModes.Unlimited;
