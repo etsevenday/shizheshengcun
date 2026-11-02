@@ -122,5 +122,22 @@ namespace Survival.Core.Engine
             if (EliteEnemy(s, c.Id) is WorldEnemy w) parts.Add($"已交过手：健康{Fmt.N(w.Hp)}/{Fmt.N(_enemies[c.EnemyId].Hp)}");
             return string.Join(" · ", parts);
         }
+
+        /// <summary>开发入口：记营区登记、传送到某处挑战地点（按实际到达）并把当地探索度拨到 100%，让告示出现。</summary>
+        public string DebugEliteGo(GameState s, string id)
+        {
+            var c = EliteConfig(id);
+            if (c == null) return "开发：没有这项挑战";
+            if (IsBusy(s)) return "开发：行动进行中或有敌踪/战斗，先结束再传送";
+            if (c.RequiresFact != null && !MapFact(s, c.RequiresFact)) DebugMapFact(s, c.RequiresFact);
+            DebugMapTeleport(s, c.NodeId);
+            DebugSetProgress(s, c.NodeId, 100);
+            return $"开发：已到{LocName(c.NodeId)}（记营区登记、探索度100%）；设施行“可选强敌”卡：{_enemies[c.EnemyId].Name}。";
+        }
+
+        /// <summary>开发入口：人口区计数一览（“ex_pop_utility 3/8 已进入”）。</summary>
+        public string DebugPopulationText(GameState s) =>
+            "人口区：" + string.Join("；", RegionSummary(s).Select(x => $"{x.Region.Id} {x.Live}/{x.Region.Cap}{(x.Entered ? "（已进入）" : "（未进入，不刷新）")}"))
+            + $"；新手8点 {LiveCount(s)}/{WE.GlobalCap}";
     }
 }

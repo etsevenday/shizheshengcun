@@ -158,4 +158,20 @@ public class B20LegacyEliteTests : BattleTestBase
         var t = SaveSerializer.Deserialize(j.ToString(), Cfg);
         Assert.That(t.Population.Elites, Is.Empty);
     }
+
+    /// <summary>开发入口（?dev=1）：可选强敌一键到达（记登记、探索 100%）、人口区计数文字、固定战一键结清。</summary>
+    [Test]
+    public void DevEntries_EliteGo_PopulationText_WinFixed()
+    {
+        var s = New(5010);
+        var text = E.DebugEliteGo(s, "legacy_elite_z_relay_guard");
+        Assert.That(text, Does.Contain("废中继营").And.Contain("天线守卫"));
+        Assert.That(E.EliteChallengesHere(s).Single().EnemyId, Is.EqualTo("z_relay_guard"));
+        Assert.That(E.DebugPopulationText(s), Does.Contain("ex_pop_deep_wild").And.Contain("（已进入）").And.Contain("新手8点"));
+        E.DebugMapTeleport(s, "d07_06");
+        Assert.That(E.FixedEnemiesAt(s, "d07_06"), Is.Not.Empty);
+        Assert.That(E.DebugWinFixedHere(s), Does.Contain("守卫已击败（本代）"));
+        Assert.That(E.InstanceFact(s, "d07", "guardianDefeated"), Is.True);
+        Assert.That(E.DebugWinFixedHere(s), Does.Contain("已结清"));
+    }
 }

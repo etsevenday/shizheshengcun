@@ -256,6 +256,30 @@
                     </select>
                     <button class="secondary small-btn" @onclick="() => DevDone(G.E.DebugMapTeleport(G.S, teleportTo))">传送（按实际到达处理）</button>
                 </div>
+                @* B20（R62—R64、R100）：固定战房间、可选强敌、人口区计数。传送按实际到达处理（首次揭示按当前容量 C 截名单）；接战在设施行的“固定战/守卫战/可选强敌”卡 *@
+                <div class="eyebrow">新敌人、固定战与人口区（B20）：传送到固定战地点 → 设施行“固定战/守卫战”卡点“接战”；先记容量再传送可看到不同截取</div>
+                <div class="btn-row">
+                    <select class="dev-select" aria-label="固定战地点" @bind="fixedTo">
+                        @foreach (var f in G.E.Config.WorldEnemies.FixedBattles)
+                        {
+                            <option value="@f.NodeId">@FixedLabel(f)</option>
+                        }
+                    </select>
+                    <button class="secondary small-btn" @onclick="() => DevDone(G.E.DebugMapTeleport(G.S, fixedTo))">传送到固定战（按实际到达处理）</button>
+                    <button class="secondary small-btn" title="不打直接结清：固定敌移除、不发掉落；守卫写本代守卫已击败、检查哨写路障已解决" @onclick="() => DevDone(G.E.DebugWinFixedHere(G.S))">当前地点固定战记为已胜</button>
+                </div>
+                <div class="btn-row">
+                    @foreach (var c in G.E.Config.WorldEnemies.LegacyElites)
+                    {
+                        var cid = c.Id;
+                        <button class="secondary small-btn" title="记营区登记、传送并把当地探索度拨到100%（挑战告示出现）" @onclick="() => DevDone(G.E.DebugEliteGo(G.S, cid))">可选强敌：@G.E.Enemy(c.EnemyId).Name（@G.E.LocName(c.NodeId)）</button>
+                    }
+                </div>
+                <div class="btn-row">
+                    <button class="secondary small-btn" title="对已进入的人口区立即各做一次刷新检查（25%，用存档随机数）" @onclick="DevRegionSpawn">人口区立即刷新一次</button>
+                    <button class="secondary small-btn" @onclick="() => DevDone(G.E.DebugPopulationText(G.S))">查看人口区计数</button>
+                </div>
+                <div class="tiny muted">@G.E.DebugPopulationText(G.S)</div>
                 @* B8（R08、A11 §6/§7）：正式招募任务（RN01—RN06）在后续批次，这里直接把六名命名角色登记入名册（同行未满 C 时直接编入） *@
                 <div class="eyebrow">队伍（B8）：先记下容量事实再加人；营区＝临时营地</div>
                 <div class="btn-row">
@@ -303,7 +327,7 @@
                         <button class="secondary small-btn" @onclick="() => DevSpawn(id)">放@(en.Name)</button>
                     }
                 </div>
-                <div class="eyebrow">新敌人（A09，暂不刷新，只能从这里放）</div>
+                <div class="eyebrow">其余敌人（A09；B20 起新区由人口区自然刷新、地牢有固定战，这里直接放到当前地点；城市与地牢房间不能放）</div>
                 <div class="btn-row">
                     @foreach (var en in G.E.Config.Enemies.Where(x => !pooled.Contains(x.Id)))
                     {
@@ -348,6 +372,16 @@
 
     private bool DevMode => Nav.Uri.Contains("dev=1");
     private string genDungeon = "d01";
+    private string fixedTo = "d01_07";
+
+    private string FixedLabel(Survival.Core.Config.FixedBattleConfig f) =>
+        $"{G.E.LocName(f.NodeId)}（{f.NodeId}{(f.Guardian ? "，守卫" : "")}：{string.Join("、", f.EnemyOrder.Select(x => G.E.Enemy(x).Name))}）";
+
+    private void DevRegionSpawn()
+    {
+        var added = G.E.DebugRegionSpawnCheck(G.S);
+        DevDone((added.Count > 0 ? "人口区刷新：" + string.Join("、", added.Select(w => $"{G.E.Enemy(w.EnemyId).Name}（{G.E.LocName(w.LocationId)}）")) : "人口区这次没有刷新（25%未中、区满或没有已进入的区）") + "。" + G.E.DebugPopulationText(G.S));
+    }
 
     /// <summary>B14 城市开发传送点（岗位所在地；r02 为科学院外院、没有岗位）。</summary>
     private static readonly (string, string)[] QuestRecords =

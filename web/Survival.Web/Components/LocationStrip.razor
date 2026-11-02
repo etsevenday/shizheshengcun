@@ -27,6 +27,10 @@
     var hasFacilities = e.HasFireAt(s, place) || (!inside && lc.CanBuildShelter) || (!inside && publicStations.Count > 0) || showSafehouse || tarp != null;
     var enemies = inside ? new List<WorldEnemy>() : e.VisibleEnemiesAt(s, here);
     if (inside) resources = new List<ResourceConfig>();
+    // B20：本地固定战（地牢房间/检查哨，首次揭示时按容量 C 截定的名单）与旧精英可选挑战告示（Q81）
+    var fixedHere = inside ? new List<WorldEnemy>() : e.FixedEnemiesAt(s, here);
+    var fixedCfg = e.FixedBattleAt(here);
+    var elites = e.EliteChallengesHere(s);
 }
 
 @* 四区同屏（S14 §1.3）：两行高度按中部可用高度分配，不再固定 180/220 或 220—300 起始高度；行首竖排区标题常驻可见 *@
@@ -119,6 +123,67 @@
         }
         @* B13：人物组（来客程望，首个 NPC 卡框架）与可查看对象（救助残页、南口路标） *@
         <PrologueCards />
+        @if (fixedHere.Count > 0 || elites.Count > 0)
+        {
+            @* B20（A09 E2/E4、Q81）：固定战整组接战（禁增援、名单已锁定）；可选强敌只在明确接战后才建敌人，不接不挡任何行动 *@
+            <div class="desk-group enemies fixed-battles">
+                <div class="dg-title">@(fixedHere.Count > 0 ? (fixedCfg!.Guardian ? "守卫战" : "固定战") : "可选强敌")</div>
+                <div class="dg-cards">
+                    @if (fixedHere.Count > 0)
+                    {
+                        var st = e.FixedStateAt(s, here)!;
+                        var names = string.Join("、", fixedHere.Select(w => e.Enemy(w.EnemyId).Name));
+                        var why = busy ? "行动进行中" : e.CanEngageFixed(s);
+                        var fear = e.FearNote(s, fixedHere, GameEngine.FearApproach);
+                        var lead = e.Enemy(fixedHere[0].EnemyId);
+                        var tip = $"{names}：揭示时按容量C{st.Capacity}截定名单，之后不重编、不缩怪；固定战不会引来增援；可以离开" + (fixedCfg!.Guardian ? "；守卫胜利后本代守卫门打开" : fixedCfg.IsCampaign ? "；胜利后通往营门的路线开通（单局一次）" : "；敌人还在时本房间不能探索、清理或采集");
+                        <ObjectCard @key="@("fixed-" + here)" Id="fixed-battle" CssClass="enemy-card world fixed" Title="@(fixedCfg.Guardian ? lead.Name : fixedCfg.IsCampaign ? "拦路的感染者" : "固定敌踪")"
+                                    Badge="@(fixedCfg.Guardian ? "守卫" : "固定")" BadgeClass="new" Tooltip="@tip">
+                            <Art>@Icons.Markup("enemy_" + lead.Id)</Art>
+                            <ChildContent>
+                                <div class="oc-line" title="@names">@names</div>
+                                <div class="oc-line" title="@tip">@($"{fixedHere.Count}只 · 名单已锁定 · 不增援")</div>
+                            </ChildContent>
+                            <Footer>
+                                <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? $"全名单一起入场（从1号位起）；{fear}")"
+                                        @onclick="() => G.EngageFixed()" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                    <strong>接战 · @(fixedHere.Count)只</strong>
+                                </button>
+                            </Footer>
+                        </ObjectCard>
+                    }
+                    @foreach (var c in elites)
+                    {
+                        var ec = e.Enemy(c.EnemyId);
+                        var cid = c.Id;
+                        var why = busy ? "行动进行中" : e.CanEngageElite(s, cid);
+                        var we = e.EliteEnemy(s, cid);
+                        var note = e.EliteNote(s, c);
+                        var panel = $"健康{Ui.N(ec.Hp)} · 甲{Ui.T(ec.Armor)} · 伤害{Ui.N(ec.DamageMin)}—{Ui.N(ec.DamageMax)} · 速度{Ui.Speed(ec.Speed)} · {ec.Ap}AP";
+                        var fearE = e.FearNote(s, new[] { we ?? new WorldEnemy { EnemyId = ec.Id } }, GameEngine.FearApproach);
+                        <ObjectCard @key="@("elite-" + cid)" Id="@($"elite-{cid}")" CssClass="enemy-card world elite" Title="@ec.Name" Badge="可选强敌" BadgeClass="new"
+                                    Tooltip="@($"{note}；{panel}；只这一名敌人、不增援；不接也不影响行路、资源与主线；撤退保留它的伤势")">
+                            <Art>@Icons.Markup("enemy_" + ec.Id)</Art>
+                            <ChildContent>
+                                @if (we != null)
+                                {
+                                    <div class="hp-line"><span>健康</span><b>@Ui.N(we.Hp)/@Ui.N(ec.Hp)</b></div>
+                                    <div class="track"><i style="width:@Ui.Bar(we.Hp, ec.Hp)%"></i></div>
+                                }
+                                else { <div class="oc-line" title="@panel">@panel</div> }
+                                <div class="oc-line" title="@note">@note</div>
+                            </ChildContent>
+                            <Footer>
+                                <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? "明确接战（单局一次）；" + fearE)"
+                                        @onclick="() => G.EngageFixed(cid)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                    <strong>接战</strong>
+                                </button>
+                            </Footer>
+                        </ObjectCard>
+                    }
+                </div>
+            </div>
+        }
         @if (enemies.Count > 0)
         {
             @* v0.6 §15：当前地块的可见世界敌人，放在设施行“敌踪”分组（开发计划 v0.5 假设 11）；点卡选中看详情，“接近”在卡旁确认（R05 §7） *@

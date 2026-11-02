@@ -2091,6 +2091,28 @@ public sealed class GameSession
         if (res.Ok) await BattleLoop();
     }
 
+    /// <summary>B20：接战当前地点的固定战（地牢房间/检查哨）或旧精英可选挑战；流程同主动接近。</summary>
+    public async Task EngageFixed(string? eliteId = null)
+    {
+        if (State == null || BattleBusy) return;
+        if (FormationOpen) { Notice = FormationOpenText; Notify(); return; }
+        var res = eliteId == null ? E.EngageFixed(S, Guid.NewGuid().ToString("N")) : E.EngageElite(S, eliteId, Guid.NewGuid().ToString("N"));
+        Notice = res.Ok ? null : res.Reason;
+        if (res.Ok)
+        {
+            ResetBattleUi();
+            Pop = null;
+            Selected = new Selection();
+            DetailTab = DetailTab.Object;
+            Toast = null;
+            ClearHoverNow();
+        }
+        Drain();
+        Save();
+        Notify();
+        if (res.Ok) await BattleLoop();
+    }
+
     /// <summary>逐条推进敌方行动与轮末，直到轮到玩家或战斗结束；每步存档，刷新页面后从游标继续。</summary>
     public async Task BattleLoop()
     {
