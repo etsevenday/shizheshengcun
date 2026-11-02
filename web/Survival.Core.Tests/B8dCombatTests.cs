@@ -49,6 +49,7 @@ public class B8dCombatTests : BattleTestBase
     /// AI-Q95-01：防御/嚎叫/蓄力/保护/鸣响/增益各 2AP、装填 1AP、逃离/警戒 0AP；只做这一个主意图，不自动追加动作、不额外激活；
     /// 普通 3AP 敌人嚎叫后余 1AP，仍可替后方同伴补位一次；够不到又付不起迫近时的合法兜底防御也是 2AP。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void AI_Q95_01_NonAttackIntentCosts_LeftoverCanAssist_NoExtraAction()
     {
@@ -202,6 +203,7 @@ public class B8dCombatTests : BattleTestBase
     /// 迅捷感染者（123→123）在 3、2 都能打你 → 补位；攀附感染者（抓击己位继承面板 23）补到 1 号位就不合法 → 沿 Q78 交换；
     /// 中立未激怒、已死、你不在它目标位都不算。判断不抽随机。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void AI_Q96_01_PlainAttackSlots_HostileAlive_BothSlots()
     {
@@ -309,6 +311,7 @@ public class B8dCombatTests : BattleTestBase
     /// UI-Q97-01：没有矛、或装着矛但没架 → “算主动前移”；架势还有剩余次数 → “触发架矛”；次数清零（用完/到期）后立即改回“算主动前移”。
     /// 先前移再迫近的写法同样；预览不抽随机、不重锁意图。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void UI_Q97_01_ApproachTag_FollowsBraceState()
     {

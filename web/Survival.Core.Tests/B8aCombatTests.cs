@@ -42,6 +42,7 @@ public class B8aCombatTests : BattleTestBase
     /// POS-Q84-01：仅 2 有人→3；仅 4 有人→1；1/3 有人→4；无存活→1；四格全满→0（不生成）。
     /// 落位不压紧其他人、不触发架矛；累计达 C 不增援、请求不核销。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void POS_Q84_01_ReinforcementSlot_BehindRearmost_ElseFrontmost_NoCompaction()
     {
@@ -130,6 +131,7 @@ public class B8aCombatTests : BattleTestBase
     /// POS-Q85-01：迫近 1+2AP 足额才做；先扣 1AP、双方号位都不变，派发一次主动前移事件触发架矛，合法迎击一次且先于弱近袭；
     /// 意图写明“迫近（触发架矛）→弱近袭”；一次迫近只派发一次（剩余次数 2 也只用 1 次）。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void POS_Q85_01_Approach_PaysOne_BraceOnceBeforeWeakStrike_SlotsUnchanged()
     {
@@ -174,6 +176,7 @@ public class B8aCombatTests : BattleTestBase
     /// POS-Q85-02：迎击致死时，未执行的 2AP 不扣、已花 1AP 不返；迎击来源页够不到（非法己位）时不耗架势次数，弱近袭照常；
     /// 追击不迫近；迎击不产生反应链。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void POS_Q85_02_BraceKills_NoChargeForStrike_IllegalSourceKeepsCharges_NoPursuitApproach()
     {
@@ -248,6 +251,7 @@ public class B8aCombatTests : BattleTestBase
     /// POS-Q87-01：F 在 2、敌在 3、1 空，F 本轮 3AP 已攻击花 2 余 1：F 付自己的 1 补到 1，敌付自己的 1 到 2，余 2 才攻击；
     /// 不改队列、不多激活、F 的已行动标记不变；意图写明补位者与当前敌各自花费。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void POS_Q87_01_ActedHelperUsesLeftover_MoverFollowsAndAttacks()
     {
@@ -336,6 +340,7 @@ public class B8aCombatTests : BattleTestBase
     /// POS-Q87-03：F 补位与当前敌跟进各触发一次架矛；迎击打死 F 后重验，前格已空、当前敌照常跟进；当前敌跟进时被打死则不攻击、
     /// 已付的跟进 1AP 不返、没执行的攻击 2AP 不扣；整次激活不额外推进时间。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void POS_Q87_03_EachVoluntaryStepTriggersBrace_RevalidateAfterReaction()
     {
@@ -434,6 +439,7 @@ public class B8aCombatTests : BattleTestBase
     }
 
     /// <summary>POS-Q87-04：不满足补位条件（F 现在不能普通攻击，例如中立未激怒）时沿 Q78 相邻交换，被动交换不触发架矛、不花 F 的 AP。</summary>
+    [Category("DesignSync")]
     [Test]
     public void POS_Q87_04_GeometryNotMet_FallsBackToQ78Swap_PassiveNoBrace()
     {

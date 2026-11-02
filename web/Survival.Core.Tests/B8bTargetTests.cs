@@ -51,6 +51,7 @@ public class B8bTargetTests : BattleTestBase
     }
 
     /// <summary>PTY-Q91a：两名合法目标时等概率（按真实槽升序映射）、每次独立攻击各抽、允许重复；抽中队友时打队友本人并公开抽中的人与号位。</summary>
+    [Category("DesignSync")]
     [Test]
     public void PTY_Q91a_UniformAmongLegalLiving_EachAttackRedraws_RepeatsAllowed()
     {
@@ -101,6 +102,7 @@ public class B8bTargetTests : BattleTestBase
     }
 
     /// <summary>PTY-Q91b：只有 1 名合法目标也抽一次（消耗一次随机）；0 名不抽、不攻击；意图文字/预演只公开范围、不推进随机。</summary>
+    [Category("DesignSync")]
     [Test]
     public void PTY_Q91b_SingletonDraws_EmptyNoDraw_PreviewNoDraw_IntentShowsRange()
     {
@@ -143,6 +145,7 @@ public class B8bTargetTests : BattleTestBase
     /// <summary>
     /// PTY-Q91c：读档重试复用同一游标，抽中的人与结果不变；迫近只打最前暴露者（单元素集合仍抽一次）；扫击按原范围打 1、2 号位全体、不抽签。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void PTY_Q91c_RetryReusesCursor_ApproachFrontmost_SweepWholeRange()
     {

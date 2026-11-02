@@ -161,7 +161,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 
 ## 5 推送条件与提交说明
 
-**推送条件（全部满足）**：`dotnet build web/Survival.sln` 0 错误；`dotnet test web/Survival.sln` 全绿；改了玩法或界面时的试玩放在推送之后做（第 4.1 节：推送 → 线上无头试玩 → 修 → 再推）；文档已按 `/design-dev` 第 6 步同步。只改文档的跳过前三条。
+**推送条件（全部满足）**：`dotnet build web/Survival.sln` 0 错误；`dotnet test web/Survival.sln` 全绿；改了玩法或界面时的试玩放在推送之后做（第 4.1 节：推送 → 线上无头试玩 → 修 → 再推）；文档已按 `/design-dev` 第 6 步同步。只改文档的跳过前三条。（2026-11-02 起 CI 不再因策划案先于实装而失败：只改 `doc/策划案/` 的推送不触发构建；`[Category("DesignSync")]` 对照测试在 CI 单独一步、失败不拦发布。本地推送前仍要 `dotnet test` 全绿；推送后 `gh run view` 里"策划案对照测试"一步若标黄，说明还有策划改了的数值没实装，要排进队列。）
 
 **提交说明**：本轮最后一个提交（通常是文档同步那次）的说明末尾、`Co-Authored-By` 之前必须有这一段：
 

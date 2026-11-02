@@ -40,6 +40,7 @@ public class B7aEquipTests : BattleTestBase
 
     // ───────────── M152：拆解表（R93，Q46/Q52） ─────────────
 
+    [Category("DesignSync")]
     [Test]
     public void EQ_Q46a_AllSeventyTwo_HaveRow_MatchingAdjudication()
     {
@@ -439,6 +440,7 @@ public class B7aEquipTests : BattleTestBase
         Assert.That(fx.Paused, Has.Count.EqualTo(1));
     }
 
+    [Category("DesignSync")]
     [Test]
     public void EQ_Q49_ThirtyEightWeapons_FiveSkillBindings_MatchAdjudication()
     {

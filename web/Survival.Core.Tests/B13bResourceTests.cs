@@ -32,6 +32,7 @@ public class B13bResourceTests : TestBase
     }
 
     /// <summary>RES-Q120-01：原 116 之外 47 条（44 主世界 + 支援包 + 消防斧箱 + 图册）入表，ID/别名不重复，参数与表逐条一致；h02 净水 16/日补 12 每次 2。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q120_01_RestoredSourcesImported()
     {
@@ -176,6 +177,7 @@ public class B13bResourceTests : TestBase
     }
 
     /// <summary>TOOL-Q121-01：96 行 74 行有合格工具、其余明确无；新表只认列出的物品 ID；旧 3 条工具效果不变；徒手始终可用、地面工具不借。</summary>
+    [Category("DesignSync")]
     [Test]
     public void TOOL_Q121_01_ToolTablePerRow()
     {
@@ -263,6 +265,7 @@ public class B13bResourceTests : TestBase
     }
 
     /// <summary>NAME-Q125-01（资源名部分）：135 条资源用正式名，旧 20 原名、8 份核心记录（B13c）不变；ID 不变。</summary>
+    [Category("DesignSync")]
     [Test]
     public void NAME_Q125_01_ResourceDisplayNames()
     {

@@ -44,6 +44,7 @@ public class B13a2FireAxeTests : TestBase
     }
 
     /// <summary>EQ-Q136-01：固定箱只出白色 0 词条消防斧 1，max 在 40—52、0.1 步长正常抽一次、current=max，不固定 52；预览只写区间、不消耗真实随机或创建物。</summary>
+    [Category("DesignSync")]
     [Test]
     public void EQ_Q136_01_FiretruckAxeDurability()
     {
@@ -93,6 +94,7 @@ public class B13a2FireAxeTests : TestBase
     }
 
     /// <summary>TOOL-Q137-01：恰好 30 个名单点新增 fire_axe 并标锁闭，原工具/徒手继续；未列点（含其他撬棍行、旧 20、领取）不能用消防斧。</summary>
+    [Category("DesignSync")]
     [Test]
     public void TOOL_Q137_01_ExactLockedWhitelist()
     {
@@ -253,6 +255,7 @@ public class B13a2FireAxeTests : TestBase
     }
 
     /// <summary>TOOL-Q137-05：唯一奖励/记录/公共服务不受破门（显式消防斧整次拒绝、拖放不接受）；搜集锁闭点不开图、不写钥匙/开门/领取账。</summary>
+    [Category("DesignSync")]
     [Test]
     public void TOOL_Q137_05_NoClaimsNoDoors()
     {

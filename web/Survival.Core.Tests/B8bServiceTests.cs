@@ -46,6 +46,7 @@ public class B8bServiceTests : TestBase
         (JObject)JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.a12.json")))["partyAdjudications"]!;
 
     /// <summary>PTY-Q89：地图前营区与收容所两个配置位都映射 camp；没有 v3 节点时迁址入口什么也不做（不造节点、不改标记）。</summary>
+    [Category("DesignSync")]
     [Test]
     public void PTY_Q89_PreV3_BothServicesAtCamp_NoMigrationWithoutV3Nodes()
     {
@@ -158,6 +159,7 @@ public class B8bServiceTests : TestBase
     /// PTY-Q94：报失补发的新矛固定白色无词条满耐久 30，落实际办理地点地面（迁址前 camp、迁址后 h06_shelter），不进任何人五卡/武器槽、不自动装备；
     /// 旧实例撤销与 loan_slot 改指同一事务；requestId 重试不双发；不花时间。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void PTY_Q94_ReplacementSpear_OnServiceGround_PreAndPostMigration()
     {

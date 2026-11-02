@@ -30,6 +30,7 @@ public class B11MapTests : TestBase
     // ───────────── MAP30-01/02/06/07：数据导入 ─────────────
 
     /// <summary>MAP30-01：143 节点 180 边、引用都存在、原 8 边 ID/分钟不改；8 条单向出口；无重复地点对（无隐含捷径）。</summary>
+    [Category("DesignSync")]
     [Test]
     public void MAP30_01_NodesAndEdgesImported_LegacyEightUnchanged()
     {
@@ -113,6 +114,7 @@ public class B11MapTests : TestBase
     }
 
     /// <summary>MAP30-06/07：逐 143 节点核对 zone/类型/父城/worldKind/landOwner/永久安全屋/临时营地/危险/网格；旧 camp 的棚火与参数不变。</summary>
+    [Category("DesignSync")]
     [Test]
     public void MAP30_06_07_NodeFieldsMatchData_CampKept()
     {

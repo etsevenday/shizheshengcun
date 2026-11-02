@@ -3,6 +3,9 @@ name: 测试并发布到 GitHub Pages
 on:
   push:
     branches: [main]
+    # 网站不含策划案；只改 doc/策划案 的推送（策划经 Codex 上传）不构建，免得策划案先于实现时发失败邮件
+    paths-ignore:
+      - 'doc/策划案/**'
   workflow_dispatch:
 
 permissions:
@@ -25,7 +28,12 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: 内核测试（M/G/S 验收用例与七日通关脚本）
-        run: dotnet test web/Survival.sln -c Release --filter "TestCategory!=Tuning"
+        run: dotnet test web/Survival.sln -c Release --filter "TestCategory!=Tuning&TestCategory!=DesignSync"
+
+      # 与策划案数据文件逐条对照的测试：策划改了数值、开发方还没实装时会失败，属预期差异，只记录不拦发布
+      - name: 策划案对照测试（不拦发布）
+        continue-on-error: true
+        run: dotnet test web/Survival.sln -c Release --no-build --filter "TestCategory=DesignSync"
 
       - name: 发布 Blazor WebAssembly
         run: dotnet publish web/Survival.Web -c Release -o publish

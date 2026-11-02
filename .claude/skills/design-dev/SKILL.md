@@ -50,7 +50,7 @@ description: 接入《适者生存》新策划案的标准开发流程：git 拉
    - **开发假设**：编号列表，只写"规则解释"（ID 写法、状态落在哪个类、Esc 顺序、迁移冲突时玩家看到什么、图片用占位等），不含任何数值。
    - **工程映射与里程碑**：编号接着上一轮（v0.4 用到 M25，下一轮从 M26 起），每个里程碑列文件、改法、测试；通常顺序是 配置与物品 → 模型 → 规则/tick → 拖拽与预览 → 存档迁移 → 界面 → 次级菜单 → 收尾（文档、README、SurvivalBot）。
    - **可直接复用**：函数与组件清单，让开发方别重写。
-   - **验证**：`dotnet build web/Survival.sln`（`dotnet test` 只编译测试工程，网页壳的编译错误要靠它暴露）与 `dotnet test web/Survival.sln`、策划案里的验收编号（U/P 系列）、两档分辨率截图、旧档写入 `localStorage.survival.save.v1` 后点"继续"。
+   - **验证**：`dotnet build web/Survival.sln`（`dotnet test` 只编译测试工程，网页壳的编译错误要靠它暴露）与 `dotnet test web/Survival.sln`、策划案里的验收编号（U/P 系列）、两档分辨率截图、旧档写入 `localStorage.survival.save.v1` 后点"继续"。新写的测试只要读了策划案数据文件（测试目录里的 `design.*.json`、`config.v0.2.json`）逐条对照，就在方法上加 `[Category("DesignSync")]`：CI 把这类单独一步跑、失败不拦发布（策划改数值先于实装时属预期差异），本地 `dotnet test` 照样全跑、要求全绿。
    - **试玩检查清单**：必走路线 + 报告格式。
 4. 真正阻塞的空白（不问就只能补数值）用 `AskUserQuestion` 问；能用假设绕过的不问。然后 `ExitPlanMode`。
 

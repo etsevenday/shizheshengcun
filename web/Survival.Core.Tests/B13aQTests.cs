@@ -32,6 +32,7 @@ public class B13aQTests : TestBase
     // ───────────── R124 / Q114 ─────────────
 
     /// <summary>MAP-Q114-01：村庄↔诊所 ↙/↗、五金↔废料场 →/←（与 map-adjudications 同源），其余 6 组不变；跨图层（父地点↔地牢房间）不画方位。</summary>
+    [Category("DesignSync")]
     [Test]
     public void MAP_Q114_01_LegacyDirectionsFromGrid_CrossLayerNone()
     {
@@ -163,6 +164,7 @@ public class B13aQTests : TestBase
     // ───────────── R127 / Q117 ─────────────
 
     /// <summary>MAP-Q117-01：45 点恰各一条逐点 75% 文案（同源 map-adjudications），只记一次；不加物资/揭路/揭资源；旧点/城市/地牢没有；读档、取消不重播；旧档已过 75% 不补。</summary>
+    [Category("DesignSync")]
     [Test]
     public void MAP_Q117_01_PerNodeClue_OnceOnly_NoExtras()
     {
@@ -204,6 +206,7 @@ public class B13aQTests : TestBase
     // ───────────── R127 / Q118 ─────────────
 
     /// <summary>MAP-Q118-01：135 新节点 76 室内 / 59 露天，与策划表逐点一致；旧 8 点原标签不变（五金店、诊所室内，其余露天）。</summary>
+    [Category("DesignSync")]
     [Test]
     public void MAP_Q118_01_ExposureTable_Matches()
     {
@@ -249,6 +252,7 @@ public class B13aQTests : TestBase
     /// HOUSE-Q118-01：地牢 67 点及势力/公共/任务保留地都不许私人住宅（与策划表 safehouseAllowed 一致，禁建原因留给 B17 住宅入口）；
     /// UI-Q134-01：现有营地建造入口（棚/床垫/工坊）在这些地点与普通野外预览即拒绝，原因只写“只能在临时营地建造”、不挂“不可建设私人住宅”，不扣材料、不花时间。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void HOUSE_Q118_01_ForbiddenLand_BuildRefusedWithReason()
     {
@@ -315,6 +319,7 @@ public class B13aQTests : TestBase
     /// PARTY-Q119-01：游戏数据启用正式地址（servicesAtV3Nodes=true）；新局直接 h02/h06；camp 没有新请求代办、原因写去哪办；
     /// 未登记不会因迁址开路线、不传送；当前同行号位编辑任意空闲地点照常。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void PARTY_Q119_01_ServicesAtV3Now_CampHintOnly_NoFreeRoute()
     {

@@ -42,6 +42,7 @@ public class ConfigTests : TestBase
 
     // ───────────── v0.2–v0.4 未被 v0.6 替换的部分 ─────────────
 
+    [Category("DesignSync")]
     [Test]
     public void Items_MatchV02()
     {
@@ -57,6 +58,7 @@ public class ConfigTests : TestBase
         }
     }
 
+    [Category("DesignSync")]
     [Test]
     public void ItemEffects_MatchV02_WithV06Scaling()
     {
@@ -86,6 +88,7 @@ public class ConfigTests : TestBase
         Assert.That(Cfg.Resources.Single(r => r.NodeId == "woods_fiber").ToolBonus!.BaseMinutesOverride, Is.EqualTo((int)tools["stone_knife"]!["fiberBaseMinutes"]!));
     }
 
+    [Category("DesignSync")]
     [Test]
     public void Resources_MatchV02_HazardsScaledByV06()
     {
@@ -111,6 +114,7 @@ public class ConfigTests : TestBase
         }
     }
 
+    [Category("DesignSync")]
     [Test]
     public void Recipes_MatchV02()
     {
@@ -129,6 +133,7 @@ public class ConfigTests : TestBase
         }
     }
 
+    [Category("DesignSync")]
     [Test]
     public void EdgesAndLocations_MatchV02()
     {
@@ -149,6 +154,7 @@ public class ConfigTests : TestBase
     }
 
     /// <summary>v0.6 §12：全部行为速率、恢复与归零损血改为 v0.6 survivalRates / survivalRecovery。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RatesAndRules_MatchV06()
     {
@@ -188,6 +194,7 @@ public class ConfigTests : TestBase
     }
 
     /// <summary>v0.6 §02 stateScale：健康/体力上限20、初值20/18，提醒线 25→5、20→4；其余初值不变。</summary>
+    [Category("DesignSync")]
     [Test]
     public void StateScale_MatchV06()
     {
@@ -213,6 +220,7 @@ public class ConfigTests : TestBase
         Assert.That(Cfg.Thresholds["morale"].Value, Is.EqualTo((double)old["lowMoraleExclusive"]!), "不缩放");
     }
 
+    [Category("DesignSync")]
     [Test]
     public void StartingConditions_MatchV02()
     {
@@ -227,6 +235,7 @@ public class ConfigTests : TestBase
         Assert.That(s.Locations["camp"].Facility.FireLit, Is.False);
     }
 
+    [Category("DesignSync")]
     [Test]
     public void LootTables_MatchV03Design()
     {
@@ -250,6 +259,7 @@ public class ConfigTests : TestBase
         }
     }
 
+    [Category("DesignSync")]
     [Test]
     public void LocationsClear_MatchV03Design()
     {
@@ -268,6 +278,7 @@ public class ConfigTests : TestBase
         Assert.That(Cfg.Actions.WorkActionTypes, Does.Contain("clear"));
     }
 
+    [Category("DesignSync")]
     [Test]
     public void Container_MatchV03Design()
     {
@@ -289,6 +300,7 @@ public class ConfigTests : TestBase
         Assert.That(Cfg.Ui.DragThresholdPx, Is.EqualTo((int)v["cardInteraction"]!["dragThresholdPx"]!));
     }
 
+    [Category("DesignSync")]
     [Test]
     public void FoodChanges_MatchV04Delta()
     {
@@ -311,6 +323,7 @@ public class ConfigTests : TestBase
     }
 
     /// <summary>火堆与锅（v0.4）；锅食材白名单按 v0.5 §14 新增生肉及两种成品。</summary>
+    [Category("DesignSync")]
     [Test]
     public void FireAndPot_MatchV04Delta_PlusMeat()
     {
@@ -332,6 +345,7 @@ public class ConfigTests : TestBase
         Assert.That(ct.StoredFoodIds, Is.EquivalentTo(pot["storedFoodIds"]!.Select(x => (string)x!).Concat(new[] { "raw_meat", "cooked_meat", "boiled_meat" })));
     }
 
+    [Category("DesignSync")]
     [Test]
     public void Processes_MatchV04Delta_PlusV06Meat()
     {
@@ -415,6 +429,7 @@ public class ConfigTests : TestBase
         ("stateScale", "stateScale"),
     };
 
+    [Category("DesignSync")]
     [Test]
     public void V06Sections_AllFieldsMapped_ValuesEqual()
     {
@@ -468,6 +483,7 @@ public class ConfigTests : TestBase
         AssertSubset(V05()["zombieLoot"]!, mapped["zombieLoot"]!, "v0.5.zombieLoot");
     }
 
+    [Category("DesignSync")]
     [Test]
     public void V06NewItems_MatchDesign()
     {
@@ -504,6 +520,7 @@ public class ConfigTests : TestBase
             Assert.That(Cfg.Items.Single(i => i.Id == (string)w["id"]!).DurabilityMaxRange, Is.EqualTo(w["durabilityMaxRange"]!.Select(x => (double)x)), (string)w["id"]!);
     }
 
+    [Category("DesignSync")]
     [Test]
     public void V06Recipes_Caches_MatchDesign()
     {

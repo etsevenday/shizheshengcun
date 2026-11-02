@@ -20,6 +20,7 @@ public class B4CatalogTests : TestBase
 
     // ───────────── M111：物理物品目录（R13） ─────────────
 
+    [Category("DesignSync")]
     [Test]
     public void SUP01_PhysicalItems_AllImported_DefinitionsMatchA12()
     {
@@ -47,6 +48,7 @@ public class B4CatalogTests : TestBase
         Assert.That(Cfg.Items.Count(i => i.Desc.Contains("本版只有物品定义")), Is.EqualTo(69));
     }
 
+    [Category("DesignSync")]
     [Test]
     public void SUP01_OldItems_ValuesUnchanged()
     {
@@ -57,6 +59,7 @@ public class B4CatalogTests : TestBase
         Assert.That(Item("stone_knife").Kind, Is.EqualTo("tool"));
     }
 
+    [Category("DesignSync")]
     [Test]
     public void ES01_MapResourcesAndNewRecipes_ReferenceOnlyExistingItems()
     {
@@ -105,6 +108,7 @@ public class B4CatalogTests : TestBase
         ["armor"] = "armor", ["combat_charm"] = "combat_acc", ["top"] = "top", ["bottom"] = "bottom", ["survival_charm"] = "survival_acc",
     };
 
+    [Category("DesignSync")]
     [Test]
     public void EQ_Weapons38_MatchA05Panel()
     {
@@ -164,6 +168,7 @@ public class B4CatalogTests : TestBase
         Assert.That(mags["hunter_bow"], Is.EqualTo(("arrow", 0)));
     }
 
+    [Category("DesignSync")]
     [Test]
     public void EQ_Gear34_MatchA05Table()
     {
@@ -197,6 +202,7 @@ public class B4CatalogTests : TestBase
         Assert.That(Cfg.Gear.Count(g => g.Slot == "survival_acc"), Is.EqualTo(6));
     }
 
+    [Category("DesignSync")]
     [Test]
     public void EQ_Affixes18_MatchA05Table_PoolsAndGroups()
     {

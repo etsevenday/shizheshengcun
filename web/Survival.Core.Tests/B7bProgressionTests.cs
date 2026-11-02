@@ -39,6 +39,7 @@ public class B7bProgressionTests : TestBase
         Assert.That(E.Equip(s, GameState.PlayerId, it.InstanceId, EquipSlots.Weapon1).Ok, Is.True);
     }
 
+    [Category("DesignSync")]
     [Test]
     public void PROG_Q54a_CraftingLevelTierMatrix_QualityAndScavengingDontMatter()
     {
@@ -154,6 +155,7 @@ public class B7bProgressionTests : TestBase
         Run(s);
     }
 
+    [Category("DesignSync")]
     [Test]
     public void PROG_Q55a_LegacyTwentyRows_Classification_PassiveScopes()
     {

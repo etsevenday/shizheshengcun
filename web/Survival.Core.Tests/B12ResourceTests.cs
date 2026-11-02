@@ -22,6 +22,7 @@ public class B12ResourceTests : TestBase
     }
 
     /// <summary>RES30-01/COMP19：96 条与 map-v3 逐条一致、引用 143 节点中的合法地点；旧 20 条原样保留；物品产物都在物品表里。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RES30_01_Import96_KeepsLegacy20()
     {
@@ -158,6 +159,7 @@ public class B12ResourceTests : TestBase
     }
 
     /// <summary>NODE01：135 新节点全部开放清理、参数齐全（城市/公开 1/1/1440、低危 3/3/480、中高危 2/2/720、地牢每代 1 次），旧 8 不变。</summary>
+    [Category("DesignSync")]
     [Test]
     public void NODE01_AllNewNodesClearEnabled()
     {

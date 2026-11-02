@@ -38,6 +38,7 @@ public class B7cCombatTests : BattleTestBase
     // ───────────── M164：容量 C 来自真实事实（Q62 选 B） ─────────────
 
     /// <summary>CB-Q62：新局没有任何解锁事实为 C1；敌踪三只只入第一只，其余留在原地、不交战、不判死亡/奖励。</summary>
+    [Category("DesignSync")]
     [Test]
     public void CB_Q62_NewGameC1_OnlyFirstOfOrderedListJoins_RestStayUntouched()
     {
@@ -129,6 +130,7 @@ public class B7cCombatTests : BattleTestBase
     }
 
     /// <summary>CB-Q63a：24 名固定人物档、随机区间与主角档对合同；主角 5/36/0 同步到 scope（队友与随机人物 B8 才接入）。</summary>
+    [Category("DesignSync")]
     [Test]
     public void CB_Q63a_Profiles_MatchContract_PlayerFiveThirtySixZero()
     {
@@ -218,6 +220,7 @@ public class B7cCombatTests : BattleTestBase
     }
 
     /// <summary>CB-Q67 文档样例：1级石刀对游荡尸 正常53.7%→59.7%、双低45.6%→58.4%、双低+P90+失衡37.6%→50.3%。</summary>
+    [Category("DesignSync")]
     [Test]
     public void CB_Q67_DocSamples_StoneKnifeVsShambler()
     {
@@ -275,6 +278,7 @@ public class B7cCombatTests : BattleTestBase
     private static ActionRequest CraftWraps() => new ActionRequest { Type = ActionType.Craft, TargetId = "make_knuckle_wraps" };
 
     /// <summary>CB-Q64a：基础拳、应急拳、推挡只打 1 号位，10 级连拳 12；预览、指令可选目标与执行同源。</summary>
+    [Category("DesignSync")]
     [Test]
     public void CB_Q64a_PunchOnlyPos1_ComboPos12()
     {
@@ -344,6 +348,7 @@ public class B7cCombatTests : BattleTestBase
     }
 
     /// <summary>CB-Q64c：73 装备/38 武器/75 节点；做法是营区登记默认知识（不赠实物），制造3级、45 基础分钟、布2+皮革1+纤维2；拆解布1、制造10级专家+布1（≤80%预算）。</summary>
+    [Category("DesignSync")]
     [Test]
     public void CB_Q64c_Catalog_RecipeKnowledge_Salvage()
     {
@@ -387,6 +392,7 @@ public class B7cCombatTests : BattleTestBase
     // ───────────── M168：当前盾页格挡（Q69 选 B） ─────────────
 
     /// <summary>CB-Q69：当前页盾 0.4 并磨 1；备用页盾 0.5 不磨；0.9 耐久按 0.5；1 耐久可提交、磨到 0 仍保留本次 0.4；提交后切页/读档不改；触发不再磨。</summary>
+    [Category("DesignSync")]
     [Test]
     public void CB_Q69_CurrentPageShieldOnly_SnapshotAtCommand()
     {
@@ -470,6 +476,7 @@ public class B7cCombatTests : BattleTestBase
         typeof(GameEngine).GetMethod("BeginRound", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(E, new object[] { s });
 
     /// <summary>CB-Q71a：4.01 与 4.02 按小数排；真同速 4.0 按锁定 u 降序、再 worldActorId 升序，u 存档不重抽。</summary>
+    [Category("DesignSync")]
     [Test]
     public void CB_Q71a_DecimalOrder_TrueTieByLockedU()
     {
@@ -532,6 +539,7 @@ public class B7cCombatTests : BattleTestBase
     // ───────────── M170：Q65/66/68/70/72/73/74 选 A 的现状核对 ─────────────
 
     /// <summary>CB-Q65：敌人追击只做一次合法普通攻击——不重复咬击（不判感染）、不重复嚎叫/蓄力等特殊意图、不另推进世界时间。</summary>
+    [Category("DesignSync")]
     [Test]
     public void CB_Q65_EnemyPursuit_PlainAttackOnly_NoBiteNoTick()
     {
@@ -566,6 +574,7 @@ public class B7cCombatTests : BattleTestBase
     }
 
     /// <summary>CB-Q66/Q68/Q72/Q73/Q74：合同值与现行配置/规则一致（行为另由 B6 R23_EnemyBleedKillsLast…、CB03、R27_RetreatFormula、CB01_SingleAlly…、B7 技能表用例覆盖）。</summary>
+    [Category("DesignSync")]
     [Test]
     public void CB_Q66_68_72_73_74_ContractMatchesCurrentRules()
     {
@@ -591,6 +600,7 @@ public class B7cCombatTests : BattleTestBase
     }
 
     /// <summary>CB-Q70：失衡先命中后判控制（未命中不判、不给稳态）；成功给稳态、同轮不叠第二层。</summary>
+    [Category("DesignSync")]
     [Test]
     public void CB_Q70_StaggerNeedsHitThenControl()
     {

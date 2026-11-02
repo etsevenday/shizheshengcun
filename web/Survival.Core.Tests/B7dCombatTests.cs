@@ -41,6 +41,7 @@ public class B7dCombatTests : BattleTestBase
     // ───────────── M174：真实稀疏槽、调整站位、旧档迁移、贯穿后缀 ─────────────
 
     /// <summary>RES-Q80a：合同取消自动压紧与单人全兼容 1；死亡、指令后、轮初都不压紧，读档恢复真实空位。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q80a_NoCompaction_DeathAndRoundKeepHoles_SaveRestores()
     {
@@ -74,6 +75,7 @@ public class B7dCombatTests : BattleTestBase
     }
 
     /// <summary>RES-Q80c：单人 1AP/E0.1 调整站位；刀手在 4 号位要两次调整到 2 才能挥刀；弓手在 1 号位退到 2 再射。不再全武器兼容 1。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q80c_SoloAdjustPosition_KnifeFrom4_BowFrom1()
     {
@@ -143,6 +145,7 @@ public class B7dCombatTests : BattleTestBase
     }
 
     /// <summary>RES-Q82a：贯穿选起点 k，作用真实 k 至 4 的存活敌，按槽偏移 0.65/0.50/0.35/0.25，空位不重排；AP2/E0.8/CD1/整指令耐久1。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q82a_PierceSuffix_SlotOffsetFactors_HolesNotRenumbered()
     {
@@ -203,6 +206,7 @@ public class B7dCombatTests : BattleTestBase
     }
 
     /// <summary>RES-Q79/RES-Q80b：攀附感染者拉扯 0 直接伤害，但命中后照判控制，成功则单人也真实前移一格；1 号位边界不移、不判控制、不给稳态。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q79_Q80b_ClingerPull_ZeroDamage_RealMove_BoundaryNoRoll()
     {
@@ -311,6 +315,7 @@ public class B7dCombatTests : BattleTestBase
     }
 
     /// <summary>RES-Q80d：突进斩 123→12：1 号位原地出手，2/3 号位前移一格再攻，4 号位不可用（不靠单人兼容绕过）。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q80d_Lunge_InPlaceAt1_AdvanceFrom3_RejectedAt4()
     {
@@ -344,6 +349,7 @@ public class B7dCombatTests : BattleTestBase
     }
 
     /// <summary>RES-Q80d：挣脱 1234→自身：清减速并后移一格；4 号位原地清；无可解状态且在 4 号位整条拒绝（不扣成本/冷却）；不解失衡/出血。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q80d_Struggle_BackOne_InPlaceAt4_NoBenefitRejected()
     {
@@ -387,6 +393,7 @@ public class B7dCombatTests : BattleTestBase
     /// RES-Q80e：敌在合法己位、够不到躲在 3 号位的单人、你前面全空 → 1AP 迫近 + 2AP 一次 ×0.70 弱近袭；不咬（即使意图是咬击）、不附控制、
     /// 不改你的真实号位、不触发架矛；你在 1 号位时照常攻击；追击 2AP 付不起迫近。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q80e_ExposureApproach_WeakNoBite_KeepsSlot_ApBudget()
     {
@@ -449,6 +456,7 @@ public class B7dCombatTests : BattleTestBase
     }
 
     /// <summary>RES-Q77：每次正常激活最多一个主意图，够得到就一次攻击，余 AP 直接结束，不自动防御、不追加第二击。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q77_OneMainIntent_RemainingApEnds_NoAutoGuard()
     {
@@ -475,6 +483,7 @@ public class B7dCombatTests : BattleTestBase
     /// RES-Q78：前移一格——前格空则移入、有同侧存活同伴则相邻交换（1AP）；被换的同伴不多激活、不改锁定队列；
     /// 主动前移触发架矛（次数有界），被换下去的同伴与强制位移不触发。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q78_AdvanceEmptyOrSwap_PassiveNoActivation_BraceOnlyActive()
     {
@@ -523,6 +532,7 @@ public class B7dCombatTests : BattleTestBase
     // ───────────── M177：伤害增益递减、教学平加、反应与指挥经验 ─────────────
 
     /// <summary>RES-Q82b：rawB≤1.35 原值，以上 1.35+0.25×(1−exp(−(rawB−1.35)/0.25))，渐近 1.6、单调、每个新增正增益仍有正收益；不先 cap 1.5。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q82b_DamageBuffSoftCap_Curve_AndInPreview()
     {
@@ -558,6 +568,7 @@ public class B7dCombatTests : BattleTestBase
     }
 
     /// <summary>RES-Q82d：教学 +0.1 在乘算后、扣甲前，每个目标每条指令只在第一下命中加一次；第一下未命中可留到第二下。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q82d_TutorialFlat_OncePerTargetPerCommand()
     {
@@ -589,6 +600,7 @@ public class B7dCombatTests : BattleTestBase
     /// RES-Q82e：反击/迎击用架势那一页的武器，按当前真实己位/射程重验；不合法不出手也不扣次数；
     /// 不另扣体力/耐久，不吃也不消耗鼓舞/总攻令/斧蓄力。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q82e_Reaction_RevalidatesOwnSlot_NoCost_NoBuffUse()
     {
@@ -648,6 +660,7 @@ public class B7dCombatTests : BattleTestBase
     }
 
     /// <summary>RES-Q82f：指挥经验真实使用才发：鼓舞被下一次攻击用掉（未命中也算）才 +2，每场每技能一次；群攻整条指令只消费一次增益。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q82f_CommandXp_RealUseOnly_OncePerBattle_AreaConsumesOnce()
     {
@@ -691,6 +704,7 @@ public class B7dCombatTests : BattleTestBase
     /// RES-Q75：装兼容医疗器具的医疗技能按真实己位（234）治存活友方（现在只有你自己），只扣施术者随身物资、与绷带共享回血冷却；
     /// 不装器具时 2AP 绷带/抗生素/特效药照样自用（1 号位也行），不远程取物。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q75_MedicalSkillOwnSlotAndSelf_ItemSelfUseWithoutKit_SharedCooldown()
     {
@@ -720,6 +734,7 @@ public class B7dCombatTests : BattleTestBase
     }
 
     /// <summary>RES-Q76：泛称持续 N 轮=施加当轮剩余+之后 N 个完整大回合，第 4 轮施加 2 轮到第 6 轮末；蓄力到 r+1；CD1 r+1 禁用 r+2 可用。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q76_DurationRPlusN_ChargeRPlus1_CooldownSeparate()
     {
@@ -744,6 +759,7 @@ public class B7dCombatTests : BattleTestBase
     }
 
     /// <summary>RES-Q79：重装守卫重击面板×1.0；搬运/攀附抓击 80%/咬击 20%；未写咬击的近战不感染；攀附拉扯 0 直接伤害。</summary>
+    [Category("DesignSync")]
     [Test]
     public void RES_Q79_EnemyNumbersMatchContract()
     {

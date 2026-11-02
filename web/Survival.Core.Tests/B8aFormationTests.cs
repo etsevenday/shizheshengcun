@@ -44,6 +44,7 @@ public class B8aFormationTests : BattleTestBase
 
     // ───────────── POS-Q86-01：单人 C1 可选 1—4，下一战按预设，不按武器自动改位 ─────────────
 
+    [Category("DesignSync")]
     [Test]
     public void POS_Q86_01_SoloC1_AnySlot_NextBattleUsesPreset_NoWeaponAutoPlacement()
     {
@@ -96,6 +97,7 @@ public class B8aFormationTests : BattleTestBase
 
     // ───────────── POS-Q86-02：空白操作时期之外一律拒绝，只有后台加工不阻断 ─────────────
 
+    [Category("DesignSync")]
     [Test]
     public void POS_Q86_02_BlockedOutsideIdle_BackgroundProcessingDoesNot()
     {
@@ -153,6 +155,7 @@ public class B8aFormationTests : BattleTestBase
 
     // ───────────── POS-Q86-03：保存校验、幂等、0 成本、失败整份不变 ─────────────
 
+    [Category("DesignSync")]
     [Test]
     public void POS_Q86_03_SaveValidation_Idempotent_ZeroCost_NoPartialChange()
     {
@@ -206,6 +209,7 @@ public class B8aFormationTests : BattleTestBase
         return j.ToString();
     }
 
+    [Category("DesignSync")]
     [Test]
     public void POS_Q86_04_Migration15To16_OldBattleKept_InvalidSlotsRepaired_DeathNoCompaction_BattleMovesNotWrittenBack()
     {
@@ -267,6 +271,7 @@ public class B8aFormationTests : BattleTestBase
 
     // ───────────── POS-Q86-05：异地只改站位、换人仍营区；C 限人数；主角必在；新成员补最前空槽 ─────────────
 
+    [Category("DesignSync")]
     [Test]
     public void POS_Q86_05_PositionsAnywhere_RosterOnlyAtHub_CapacityAndUniqueness()
     {

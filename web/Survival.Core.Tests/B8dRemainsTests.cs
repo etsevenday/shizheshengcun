@@ -33,6 +33,7 @@ public class B8dRemainsTests : TestBase
     /// 读档后新死的候补（沈禾）是明确的公共候补遗物。地图导入迁址：只有沈禾的迁 h02，未知与同行的都留在 camp 原地、到 camp 仍能取，
     /// 未知遗物不阻塞候补遗物迁移；内容物实例、owner、耐久、保质不变，不复制；重复读档/迁址不再迁、不改来源。
     /// </summary>
+    [Category("DesignSync")]
     [Test]
     public void SV_Q98_UnknownOriginStaysPut_OnlyExplicitReserveMoves_Idempotent()
     {
