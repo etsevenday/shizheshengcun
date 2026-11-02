@@ -972,6 +972,7 @@ namespace Survival.Core.Engine
             if (a.Type == ActionType.Use || a.Type == ActionType.Ignite || a.Type == ActionType.Fuse) return ActionResult.Fail("该行动不可中途取消");
 
             // B14 城市计时服务：预留的材料原物原处（不搬到地面）、配额预留随事务作废（city-services common.cancel）
+            var apTxn = s.City.Pending is CityServiceTxn cp && cp.ActionId == a.ActionId && cp.AppraisalMode != null ? cp : null;   // B18
             if (a.TargetId.StartsWith(CityServicePrefix)) ReleaseCityService(s, a);
             Release(s, a, s.Ground);
             if (a.IsSub) s.Sub = null; else s.Main = null;
@@ -990,6 +991,7 @@ namespace Survival.Core.Engine
                 ActionType.Survey => "已取消遗迹勘整，未获得经验，不占今日勘整次数；已消耗的时间保留。",
                 ActionType.WaitCook => $"已退出等待加工（已完成{a.CookDone.Count}项）：火堆、锅与受热进度原样保留，成品留在原位。",
                 // B15 试玩修复 M333：城市事项/委托工作写实际进行的时长，不写计划工时
+                _ when apTxn != null => AppraisalCancelText(a, apTxn),
                 _ when a.TargetId.StartsWith(CityServicePrefix) =>
                     $"已停止{CityService(a.TargetId.Substring(CityServicePrefix.Length))?.Title ?? a.Label}（实际进行了{Clock.Duration(a.ElapsedMinutes)}）。",
                 _ => $"已结束{a.Label}。",

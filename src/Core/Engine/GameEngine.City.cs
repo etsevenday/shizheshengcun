@@ -359,6 +359,14 @@ namespace Survival.Core.Engine
                 case TrainingServiceId:
                     TrainingPreview(s, svc, v);
                     break;
+                case var ap when IsAppraisalService(ap):
+                    // B18（R07 X3.2，Q33 选 B）：沿原契约，三项在鉴定交易面板里分页办理，不叠收本表费用
+                    v.TimeText = $"说明0分钟 · 鉴定{Ap.AppraiseMinutes}分钟 · 换物{Ap.TradeMinutes}分钟";
+                    v.CostText = $"鉴定：{string.Join("、", Ap.AppraiseConsume.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"))}（样本不消耗）；换物：交出普通活性物质1份";
+                    v.EffectText = "免费说明样本品质、来源与既定融合结果；详细鉴定只给普通白色写档案（不升品、无新词条、不改变融合结果）；"
+                        + $"以物换物按当日已锁定报价交出1份普通样本换一包常用品（全队每世界日共{Ap.TradeDailyPartyQuota}包），产物落鉴定所地面。教学样本不可交易";
+                    v.StartLabel = "打开鉴定交易面板";
+                    break;
                 default:
                     // Q145：不把内部 effect 原文拼给玩家，用玩家摘要
                     v.EffectText = svc.Summary;
@@ -513,6 +521,8 @@ namespace Survival.Core.Engine
                 if (!string.IsNullOrEmpty(choice.Stat) && !ReliefChoiceOk(s.Actors[t!.ActorId], choice)) return ActionResult.Fail($"{t.Name}不符合这一项（{choice.Label}）");
             }
             var npc = Config.City.Npcs.FirstOrDefault(n => n.ServiceIds.Contains(serviceId));
+            // B18：鉴定/换物要先在鉴定交易面板里选确切样本与报价（StartAppraise / StartAppraisalTrade），这里不代选
+            if (IsAppraisalService(svc.Id)) return ActionResult.Fail("请在鉴定交易面板里选样本后办理");
             switch (svc.Id)
             {
                 case "hub_registration_existing":
@@ -604,6 +614,11 @@ namespace Survival.Core.Engine
                 Release();
                 return;
             }
+            if (p.AppraisalMode != null)
+            {
+                CompleteAppraisal(s, a, p, svc);   // B18 鉴定/换物：自有重验与提交
+                return;
+            }
             string? fail = s.Progress.Dead ? "本局已结束" : s.CurrentLocation != p.LocationId ? $"不在{LocName(p.LocationId)}" : null;
             ActorState? target = null;
             if (fail == null && p.TargetActorId != "")
@@ -682,6 +697,13 @@ namespace Survival.Core.Engine
         /// <summary>取消计时服务：预留材料只解除预留、留在原持有处（不像制作那样返还到地面），事务快照作废（配额未扣）。</summary>
         private void ReleaseCityService(GameState s, ActionState a)
         {
+            if (s.City.Pending is CityServiceTxn ap && ap.ActionId == a.ActionId && ap.AppraisalMode != null)
+            {
+                // B18：样本/纤维原物原处、日额度预留随事务作废（S01：非消耗服务专用，不套制作返地）
+                ReleaseAppraisal(s, a);
+                s.City.Pending = null;
+                return;
+            }
             foreach (var i in s.Items.Where(i => i.ReservedBy == a.ActionId)) i.ReservedBy = null;
             a.ReservedItemIds.Clear();
             // B15：任务工作中断保留已提交的整段（A11 §5“工作中断按剩余段续算”、FA04“离开保留已完成段”）
