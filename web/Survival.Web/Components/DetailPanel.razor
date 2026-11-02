@@ -87,7 +87,7 @@
                 break;
             case SelectionKind.Resource:
                 var r = e.Resource(sel.Id);
-                <PreviewView Request="ActionRequest.Gather(sel.Id)" Eyebrow="@($"已选中 · {r.Name}")" Title="@($"{GameEngine.GatherVerb(r)}{r.Name}")" Confirmable="false"
+                <PreviewView Request="ActionRequest.Gather(sel.Id)" Eyebrow="@($"已选中 · {r.Name}")" Title="@($"{e.GatherVerbNow(s, r)}{r.Name}")" Confirmable="false"
                              Subtitle="工具与成本已计入本次预估。" />
                 break;
             case SelectionKind.ItemGroup:

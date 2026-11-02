@@ -1,3 +1,4 @@
+using Survival.Core.Save;
 using Survival.Core.Config;
 using Survival.Core.Engine;
 using Survival.Core.State;
@@ -161,5 +162,51 @@ public class B12ClaimTests : TestBase
         E.DebugMapTeleport(s, "w33_waterworks");
         E.NewDungeonGeneration(s, "d05");
         Assert.That(E.ResourceStock(s, E.Resource("d05_07_unique")).Badge, Is.EqualTo("本局已领·可核对"));
+    }
+
+    /// <summary>B12 试玩修复 1：换代只退回本代开通状态，旧代已知的地牢路线仍显示（未开通写原因），按本代门槛重新满足后再开通。</summary>
+    [Test]
+    public void NewGeneration_KeepsKnownRoutes_ResetsOpenState()
+    {
+        var s = New();
+        E.DebugMapTeleport(s, "d05_01");
+        E.DebugExploreHere100(s);
+        var edge = Cfg.Edges.First(e => e.Id == "d05_01__d05_02");
+        Assert.That(E.EdgeOpen(s, edge), Is.True);
+        E.DebugMapTeleport(s, "d05_02");
+        E.DebugMapTeleport(s, "w33_waterworks");
+        Assert.That(E.NewDungeonGeneration(s, "d05"), Is.Null);
+        Assert.That(E.EdgeOpen(s, edge), Is.False, "本代要重新满足");
+        Assert.That(E.EdgeRevealed(s, edge), Is.True, "路线知识保留");
+        var v = E.BuildMapView(s, "dungeon:d05");
+        var me = v.Edges.Single(e => e.Id == edge.Id);
+        Assert.That(me.Open, Is.False);
+        Assert.That(me.Reason, Does.Contain("本次地牢"));
+        E.DebugMapTeleport(s, "d05_01");
+        Assert.That(E.AdjacentLocked(s).Select(x => x.Target), Does.Contain("d05_02"), "相邻栏写未开通原因");
+        E.DebugExploreHere100(s);
+        Assert.That(E.EdgeOpen(s, edge), Is.True, "本代探索到 100 后重新开通");
+        var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Assert.That(t.DungeonInstances["d05"].KnownEdges, Does.Contain(edge.Id), "读档保留");
+    }
+
+    /// <summary>B12 试玩修复 2/3：已领的核心记录动词写“核对”；出口未开通原因不再写“后续版本开放”。</summary>
+    [Test]
+    public void ClaimedRecord_VerbCheck_ExitReasonNoLaterVersion()
+    {
+        var s = New();
+        Go(s, "d01_08");
+        var res = E.Resource("d01_08_unique");
+        Assert.That(E.GatherVerbNow(s, res), Is.EqualTo("领取"));
+        var exit = Cfg.Edges.First(e => e.Role == "exit" || (e.DungeonId == "d01" && !e.Bidirectional));
+        Assert.That(E.GateBlockedReason(s, exit), Does.Not.Contain("后续版本开放"));
+        Do(s, "d01_08_unique");
+        Assert.That(E.GatherVerbNow(s, res), Is.EqualTo("领取").Or.EqualTo("核对"));
+        E.DebugMapTeleport(s, "c03_crypt");
+        E.NewDungeonGeneration(s, "d01");
+        Assert.That(E.GatherVerbNow(s, res), Is.EqualTo("核对"));
+        Go(s, "d01_08");
+        Assert.That(E.Preview(s, ActionRequest.Gather(res.NodeId)).ConfirmText, Is.EqualTo("开始核对"));
+        Assert.That(Cfg.Knowledge.Where(k => k.Blueprint).All(k => !k.Source.Contains("后续版本开放")), Is.True, "蓝图来源不写误导的“后续版本开放”");
     }
 }

@@ -186,6 +186,9 @@ const cardTexts = `[...document.querySelectorAll('.res-card')].map(c => c.innerT
       // 第一次打开为默认城内层；之后当前位置没变，恢复上次看的主世界层（阅读状态，EXUI13）
       const first = w === SIZES[0][0] && h === SIZES[0][1];
       await check(first ? '默认城内层、面包屑三段' : '阅读状态恢复（主世界层）', m && (first ? m.layer === 'city:h02_square' && m.crumbs.length === 3 : m.layer === 'world'), m);
+      const ctr = await ev(`(() => { const v = document.querySelector('.map-viewport').getBoundingClientRect(); const n = document.querySelector('.map-node.here'); if (!n) return null; const r = n.getBoundingClientRect();
+        return { dx: Math.round(r.x + r.width / 2 - (v.x + v.width / 2)), dy: Math.round(r.y + r.height / 2 - (v.y + v.height / 2)) }; })()`);
+      await check('打开地图时当前位置居中（±40px）', ctr && Math.abs(ctr.dx) <= 40 && Math.abs(ctr.dy) <= 40, ctr);
       await check('地图面板可见文字≥14px、工具条与页面无横向溢出', m && m.smallCount === 0 && !m.barOverflow && !m.pageOverflow, m);
       await ev(`(() => { const s = document.querySelector('.map-layer'); s.value = 'world'; s.dispatchEvent(new Event('change', { bubbles: true })); })()`); await sleep(600);
       m = await ev(MAPCHECK);
@@ -234,6 +237,13 @@ const cardTexts = `[...document.querySelectorAll('.res-card')].map(c => c.innerT
     const gen = await ev(`(() => { const s = JSON.parse(localStorage.getItem(${JSON.stringify(SAVE_KEY)})); return s.DungeonInstances.d05.Generation; })()`);
     await check('开发入口地牢换代：第2代', gen === 2, { gen });
     await closeMenu();
+    await teleport('d05_04'); await closeMenu();
+    await key('m'); await sleep(600);
+    const dEdges = await ev(`({ all: document.querySelectorAll('.map-panel .map-edge').length, locked: document.querySelectorAll('.map-panel .map-edge.locked').length })`);
+    await check('换代后地牢已知路线仍显示（未开通画红虚线）', dEdges.all >= 3 && dEdges.locked >= 1, dEdges);
+    await closeMap();
+    const adjLock = await ev(`document.querySelectorAll('.map-adjacent .locked').length`);
+    await check('换代后相邻栏写未开通路线', adjLock >= 1, { adjLock });
     // 远处路径预览：回到营区广场，打开地图点远处已知地点，右栏列出实际路线（不可达时写明）
     await teleport('h02_square'); await closeMenu();
     await key('m'); await sleep(600);

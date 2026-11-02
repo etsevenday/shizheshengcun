@@ -29,6 +29,10 @@ namespace Survival.Core.Engine
         /// <summary>某唯一领取是否已领（本局永久）。</summary>
         public bool CampaignClaimed(GameState s, string resourceId) => s.Progress.Flags.Contains(CampaignKey(resourceId));
 
+        /// <summary>按当前状态的动词：本局已领的核心记录写“核对”（新一代只补写本代实例事实），其余同 <see cref="GatherVerb"/>。</summary>
+        public string GatherVerbNow(GameState s, ResourceConfig res) =>
+            res.IsCampaign && CampaignClaimed(s, res.NodeId) ? "核对" : GatherVerb(res);
+
         /// <summary>资源点所在地牢；不在地牢为 null。</summary>
         public string? DungeonOf(ResourceConfig res) => _locs.TryGetValue(res.LocationId, out var lc) ? lc.DungeonId : null;
 
@@ -136,8 +140,8 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 地牢换代钩子（gate-contract stateRules.instanceLatch）：代号 +1，丢弃旧代实例边锁存、实例事实（守卫、核心核对）、房间探索度与清理次数，
-        /// 普通箱补满到 cap 并记到新一代；campaign 知识/路线/唯一领取与已发现不动。正式触发条件（72 世界小时、撤出、全队同地）在 B21/B22，
+        /// 地牢换代钩子（gate-contract stateRules.instanceLatch）：代号 +1，丢弃旧代实例边锁存（开通状态）、实例事实（守卫、核心核对）、房间探索度与清理次数，
+        /// 普通箱补满到 cap 并记到新一代；campaign 知识（旧代已知路线记入 KnownEdges，仍显示为未开通并写原因）、唯一领取与已发现不动。正式触发条件（72 世界小时、撤出、全队同地）在 B21/B22，
         /// 本批只给开发入口与测试用（开发假设 H3）。返回 null 表示成功，否则为拒绝原因。
         /// </summary>
         public string? NewDungeonGeneration(GameState s, string dungeonId)
@@ -146,6 +150,8 @@ namespace Survival.Core.Engine
             if (IsBusy(s)) return "行动进行中或有敌踪/战斗，先结束再换代";
             if (_locs[s.CurrentLocation].DungeonId == dungeonId) return "人在这座地牢里，先离开再换代";
             var inst = EnsureInstance(s, dungeonId);
+            // 路线知识是 campaign 的（instanceLatch）：旧代已开通或已揭示的本地牢路线记为已知，只退回开通状态
+            foreach (var e in Config.Edges.Where(e => e.DungeonId == dungeonId && EdgeRevealed(s, e))) inst.KnownEdges.Add(e.Id);
             inst.Generation += 1;
             inst.UnlockedEdges.Clear();
             inst.Facts.Clear();

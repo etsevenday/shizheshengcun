@@ -89,6 +89,8 @@ namespace Survival.Core.Engine
         public bool EdgeRevealed(GameState s, EdgeConfig e)
         {
             if (EdgeOpen(s, e)) return true;
+            // 地牢换代后旧代已知的路线仍算已揭示（只退回开通状态，B12 试玩修复）
+            if (e.DungeonId != null && s.DungeonInstances.TryGetValue(e.DungeonId, out var inst) && inst.KnownEdges.Contains(e.Id)) return true;
             return RevealedFrom(s, e, e.A) || RevealedFrom(s, e, e.B);
         }
 

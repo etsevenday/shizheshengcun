@@ -412,12 +412,18 @@ namespace Survival.Core.State
         public int Generation { get; set; } = 1;
         public HashSet<string> UnlockedEdges { get; set; } = new HashSet<string>();
         public HashSet<string> Facts { get; set; } = new HashSet<string>();
+        /// <summary>
+        /// 已知的地牢路线（B12 试玩修复，gate-contract stateRules.instanceLatch“campaign 知识/路线仍保留”）：换代时把旧代已开通或已揭示的路线记在这里，
+        /// 新一代仍显示（未开通画红虚线、相邻栏写原因），开通状态要按本代门槛重新满足。旧档没有此字段时为空，等同于没换过代。
+        /// </summary>
+        public HashSet<string> KnownEdges { get; set; } = new HashSet<string>();
 
         public DungeonInstanceState Clone()
         {
             var c = (DungeonInstanceState)MemberwiseClone();
             c.UnlockedEdges = new HashSet<string>(UnlockedEdges);
             c.Facts = new HashSet<string>(Facts);
+            c.KnownEdges = new HashSet<string>(KnownEdges);
             return c;
         }
     }

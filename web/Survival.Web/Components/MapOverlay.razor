@@ -258,7 +258,10 @@ else
 
     /// <summary>缩放档：0 为“总览”（只画点，不画字），其余档地名 15px、状态 14px 固定，不随缩放变小。</summary>
     public static readonly double[] Zooms = { 0.3, 0.55, 0.75, 1.0 };
-    private const double PadX = 110, PadY = 76, NodeW = 136, NodeH = 50;
+    private const double NodeW = 136, NodeH = 50;
+    /// <summary>画布四周留白：至少半个视口（B12 试玩修复：1280 档视口约 726×240，当前位置在边上时也能居中），按视口实测更新。</summary>
+    private double PadX = 110, PadY = 76;
+    private bool _firstCenter = true;
 
     private ElementReference _vp;
     private MapView? _view;
@@ -271,7 +274,7 @@ else
 
     private static string F(double v) => v.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
 
-    private static (double, double) P(MapView v, MapViewNode n, double k) => ((n.X - v.MinX) * k + PadX, (n.Y - v.MinY) * k + PadY);
+    private (double, double) P(MapView v, MapViewNode n, double k) => ((n.X - v.MinX) * k + PadX, (n.Y - v.MinY) * k + PadY);
 
     private static (double, double, double, double) Trim(double x1, double y1, double x2, double y2, double r)
     {
@@ -292,7 +295,7 @@ else
 
     private static string Short(string name) => name.Length > 8 ? name.Substring(0, 7) + "…" : name;
 
-    private string MapKey(string layer) => $"{G.S.CurrentLocation}|{layer}|{G.MapZoom}";
+    private string MapKey(string layer) => $"{G.S.CurrentLocation}|{layer}|{G.MapZoom}|{PadX:0}x{PadY:0}";
 
     /// <summary>节点下的圆角标签：可进入的城内/地牢、跨层路口（多于 2 个时合成一张）。</summary>
     private List<(string Label, string Layer, string Title)> Pills(MapView v, MapViewNode n)
@@ -384,11 +387,26 @@ else
         var here = G.S.CurrentLocation;
         if (here != _lastHere) { _lastHere = here; _needCenter = true; _centerWorld = null; }
         if (_view.LayerKey != _lastLayer) { _lastLayer = _view.LayerKey; _needCenter = true; }
+        try
+        {
+            // 视口实测后把四周留白放到至少半个视口，再按新尺寸重画一次后居中
+            var sz = await JS.InvokeAsync<double[]>("survivalMap.size", _vp);
+            var px = Math.Max(110, Math.Ceiling(sz[0] / 2)); var py = Math.Max(76, Math.Ceiling(sz[1] / 2));
+            if (Math.Abs(px - PadX) > 1 || Math.Abs(py - PadY) > 1)
+            {
+                PadX = px; PadY = py; _needCenter = true;
+                StateHasChanged();
+                return;
+            }
+        }
+        catch (JSException) { }
         if (!_needCenter) return;
         _needCenter = false;
         try
         {
-            if (_centerWorld == null && firstRender && await JS.InvokeAsync<bool>("survivalMap.restore", _vp, MapKey(_view.LayerKey))) return;
+            var first = _firstCenter;
+            _firstCenter = false;
+            if (_centerWorld == null && first && await JS.InvokeAsync<bool>("survivalMap.restore", _vp, MapKey(_view.LayerKey))) return;
             double wx, wy;
             if (_centerWorld is (double cx, double cy)) { wx = cx; wy = cy; }
             else if (_view.HereNode != null) { var n = _view.Nodes.First(x => x.Id == _view.HereNode); wx = n.X; wy = n.Y; }

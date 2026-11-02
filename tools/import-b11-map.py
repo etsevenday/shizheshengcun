@@ -43,12 +43,12 @@ FACT_LABELS = {
     "FA02_route_briefed": "在教会接待庭领取公开路线（教会任务后续版本开放）",
     "FA03_environment_briefed": "在科学院接待处领取环境调查路线（科学院任务后续版本开放）",
     "academy_observation_pass": "在试制工坊门旁确认只沿观察通道（后续版本开放）",
-    "FA02_record_credit": "取得教会地下圣所的路线记录（地牢后续版本开放）",
-    "FA03_record_credit": "取得封存实验楼的流程记录（地牢后续版本开放）",
+    "FA02_record_credit": "在教会地下圣所核心领取路线记录",
+    "FA03_record_credit": "在封存实验楼核心领取流程记录",
     "FA04_merged": "在营区广场完成两份记录的合并（主线后续版本开放）",
-    "communication_power_claimed": "领取警备仓封存仓的通信电源（地牢后续版本开放）",
+    "communication_power_claimed": "在警备仓封存仓核心领取通信电源",
     "guardianDefeated": "击败本次地牢的守卫（地牢守卫战后续版本开放）",
-    "recordClaimedAndClear": "领取本次地牢的核心记录（地牢后续版本开放）",
+    "recordClaimedAndClear": "领取（或核对）本次地牢的核心记录",
 }
 
 # 本批已有真实产生来源的事实（gate-contract factProducers）：c02/r02 实际到达成功即提交

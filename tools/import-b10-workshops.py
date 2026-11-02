@@ -184,7 +184,7 @@ def main():
             old = knowledge.get(kid)
             put_knowledge({"id": kid, "name": (old or {}).get("name", f"{x['name']}的做法"), "grantedByFacts": ["hub_registered"], "source": ktext})
         else:
-            ktext = f"蓝图：{node}（地图固定箱与任务在后续版本开放）"
+            ktext = f"蓝图：A12 记在 {node}，取得方式待策划确认（目前没有来源）"
             put_knowledge({"id": kid, "name": f"{x['name']}蓝图", "grantedByFacts": [], "blueprint": True, "source": ktext})
         rid = LEGACY_RECIPE.get(iid, "make_" + iid)
         old = by_id.get(rid, {})

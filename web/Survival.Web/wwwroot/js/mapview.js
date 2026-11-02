@@ -51,6 +51,10 @@ window.survivalMap = (function () {
       el.scrollTop = y - el.clientHeight / 2;
       remember(el);
     },
+    size: function (el) {
+      if (!el) return [0, 0];
+      return [el.clientWidth, el.clientHeight];
+    },
     getCenter: function (el) {
       if (!el) return [0, 0];
       return [el.scrollLeft + el.clientWidth / 2, el.scrollTop + el.clientHeight / 2];
