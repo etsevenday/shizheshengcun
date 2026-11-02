@@ -22,7 +22,11 @@ namespace Survival.Core.Engine
         /// B13b 试玩修复：原键漏了 BareHands，“改用徒手开始”按钮读到带工具的缓存预估，显示了用工具后的工时。
         /// </summary>
         public string PreviewKey =>
-            $"{Type}|{TargetId}|{InstanceId}|{Minutes}|{ToolInstanceId}|{PotInstanceId}|{BatchCount}|{string.Join(",", PreferredInstanceIds)}|{(BareHands ? "bare" : "")}";
+            $"{Type}|{TargetId}|{InstanceId}|{Minutes}|{ToolInstanceId}|{PotInstanceId}|{BatchCount}|{string.Join(",", PreferredInstanceIds)}|{(BareHands ? "bare" : "")}|{(ConfirmExpedition ? "exp" : "")}";
+        /// <summary>
+        /// 移动时确认开始地牢远征（R03 D3，B21）：在入口缓冲 01 第一次走向危险房间必须带它，移动开始时原子提交远征；其他移动忽略。
+        /// </summary>
+        public bool ConfirmExpedition { get; set; }
         /// <summary>配方材料槽里手工指定的批次，先于自动补齐使用。</summary>
         public List<int> PreferredInstanceIds { get; set; } = new List<int>();
         /// <summary>批量制作件数（v0.6 §03 同一预留批次结转余工作量）；建造与维护只能 1。</summary>
@@ -30,7 +34,7 @@ namespace Survival.Core.Engine
         /// <summary>幂等请求号：同一请求重复提交只生效一次。</summary>
         public string? RequestId { get; set; }
 
-        public static ActionRequest Travel(string locationId) => new ActionRequest { Type = ActionType.Travel, TargetId = locationId };
+        public static ActionRequest Travel(string locationId, bool confirmExpedition = false) => new ActionRequest { Type = ActionType.Travel, TargetId = locationId, ConfirmExpedition = confirmExpedition };
         public static ActionRequest Explore() => new ActionRequest { Type = ActionType.Explore };
         public static ActionRequest Clear() => new ActionRequest { Type = ActionType.Clear };
         /// <summary>遗迹勘整（Q55）：在当前地点做搜集训练。</summary>

@@ -482,6 +482,7 @@ namespace Survival.Core.Engine
                     if (revealed.Count > 0) t += $"发现{string.Join("、", revealed.Select(id => _res[id].Name))}。";
                     foreach (var n in mapNotes) t += n + "。";
                     Emit(s, GameEventKind.ActionCompleted, t, null, revealed);
+                    ExpeditionAfterArrive(s, a.TargetId);   // B21：维护来路轨迹；通关后离开地牢结束远征
                     NoteArrive(s, from, a.TargetId);   // B13：PRO14 往返、到达反应、出区抵达
                     // 首次 camp→field：落点并提交到达后，由保留游荡尸触发一次剧情首战（S15 §5、S02 §7）
                     TryStartTutorialBattle(s, a);

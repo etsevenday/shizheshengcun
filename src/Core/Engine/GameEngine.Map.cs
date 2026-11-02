@@ -390,6 +390,7 @@ namespace Survival.Core.Engine
             s.CurrentLocation = locationId;
             s.CurrentZone = ExteriorZone;
             Visit(s, locationId, notes);
+            if (DevExpeditionAfterTeleport(s, locationId) is string expNote) notes.Add(expNote);   // B21-14
             NoteArrive(s, from, locationId);   // B13 试玩修复 P7：与真实到达同一序章钩子（往返、到达反应、出区抵达）
             UpdateFlags(s);
             return $"开发：已传送到{LocName(locationId)}" + (notes.Count > 0 ? "；" + string.Join("；", notes) : "") + "。";

@@ -248,5 +248,305 @@ namespace Survival.Core.Engine
             }
             return notes;
         }
+
+        // ───────────────────────── 进入提交与离开（M393，R03 D3/D4） ─────────────────────────
+
+        /// <summary>
+        /// 从当前地点走向 target 是否需要先确认开始远征（R03 D3：在 01 第一次走向危险房间、本地牢没有进行中远征）。网页据此弹进入预告，
+        /// 确认后用 ConfirmExpedition=true 的移动请求开始。
+        /// </summary>
+        public bool NeedsExpeditionConfirm(GameState s, string target)
+        {
+            var here = s.CurrentLocation;
+            var d = DungeonAt(here);
+            if (!ExpeditionEnabled(d) || here != BufferNodeOf(d!)) return false;
+            if (!IsDangerRoom(target) || DungeonAt(target) != d) return false;
+            if (s.Expedition?.DungeonId == d) return false;
+            var edge = EdgeBetween(here, target);
+            return edge != null && EdgeOpen(s, edge);
+        }
+
+        /// <summary>撤出中拒绝其他操作的原因（开发假设 B21-9）。</summary>
+        public string ExtractingBusyReason(GameState s)
+        {
+            var parent = s.Expedition != null ? DungeonCfg(s.Expedition.DungeonId)?.Parent : null;
+            return $"正在撤出（不可取消）：到达{(parent != null ? LocName(parent) : "外部入口")}之前不能做别的事";
+        }
+
+        /// <summary>终止惩罚包短句（每人）：“饱食−25、水分−30、体力−8、清醒−20、精神−15、健康最多−2（不致死）”。</summary>
+        public string AbortPenaltyText()
+        {
+            var p = DX.AbortPenalty;
+            return $"饱食{Fmt.SignedT(p.Satiety)}、水分{Fmt.SignedT(p.Hydration)}、体力{Fmt.SignedT(p.Energy)}、清醒{Fmt.SignedT(p.Wakefulness)}、精神{Fmt.SignedT(p.Morale)}、健康最多−{Fmt.T(p.HealthMax)}（不致死）";
+        }
+
+        /// <summary>惊魂未定短句：“惊魂未定6小时（下一次入战恐慌+10）”。</summary>
+        public string ShakenText() => $"惊魂未定{Clock.Duration(DX.ShakenMinutes)}（下一次入战恐慌+{Fmt.T(DX.ShakenPanic)}）";
+
+        /// <summary>
+        /// 移动校验的远征部分（R03 D3/D4/D5）：01→危险房间且没有进行中远征 → 未确认拒绝、确认则开始时提交（commit 返回地牢 ID）；
+        /// 有进行中远征且本代未通关时离开地牢 → 拒绝，提示走“终止本次远征”（DR03）。通关后离开（出口或 01 原路）不拦（B21-12）。
+        /// </summary>
+        private string? ExpeditionTravelBlock(GameState s, string here, string target, bool confirm, out string? commit)
+        {
+            commit = null;
+            var d = DungeonAt(here);
+            if (!ExpeditionEnabled(d)) return null;
+            var exp = s.Expedition?.DungeonId == d ? s.Expedition : null;
+            if (exp == null && here == BufferNodeOf(d!) && IsDangerRoom(target) && DungeonAt(target) == d)
+            {
+                if (!confirm) return ExpeditionConfirmReason;
+                commit = d;
+                return null;
+            }
+            if (exp != null && DungeonAt(target) != d && !DungeonCleared(s, d!))
+                return $"未通关离开要先终止本次远征（在安全点或菜单里发起）：每人{AbortPenaltyText()}、{ShakenText()}，撤出至少{DX.ExtractMinMinutes}分钟";
+            return null;
+        }
+
+        /// <summary>开始移动时提交远征（R03 D3“确认才提交远征开始/成员快照”，开发假设 B21-3：确认即开始，之后取消移动也不退）。</summary>
+        private void StartExpeditionOnTravel(GameState s, string dungeonId)
+        {
+            var e = CommitExpedition(s, dungeonId);
+            var d = DungeonCfg(dungeonId)!;
+            Emit(s, GameEventKind.Info,
+                $"远征开始：{d.Name}第{e.Generation}代（{e.Members.Count}人同行）。未通关离开要在安全点终止远征：每人{AbortPenaltyText()}、{ShakenText()}，撤出至少{DX.ExtractMinMinutes}分钟；战斗里撤退只退回来路上没有敌人的房间，不算离开。");
+        }
+
+        /// <summary>移动到达后（R03 D2/D4）：还在本远征地牢里就维护来路轨迹；离开了地牢（只有通关后才放行）则按“通关离开”结束远征，不扣惩罚。</summary>
+        private void ExpeditionAfterArrive(GameState s, string target)
+        {
+            var e = s.Expedition;
+            if (e == null) return;
+            if (DungeonAt(target) == e.DungeonId) { TrackTrail(e, target); return; }
+            var name = DungeonCfg(e.DungeonId)?.Name ?? e.DungeonId;
+            EndExpedition(s, "cleared_exit");
+            Emit(s, GameEventKind.Info, $"通关离开{name}：本次远征结束，不扣终止惩罚。");
+        }
+
+        /// <summary>
+        /// 开发传送（?dev=1，开发假设 B21-14）：传进危险房间时按已开始的远征补提交（不扣包）；进行中远征时传到地牢外直接结束远征（不扣包）；
+        /// 同地牢内传送重算轨迹（01 到目标的已走通最短路）。返回说明短语，没有为 null。
+        /// </summary>
+        private string? DevExpeditionAfterTeleport(GameState s, string loc)
+        {
+            var d = DungeonAt(loc);
+            if (s.Expedition != null && s.Expedition.DungeonId != d)
+            {
+                EndExpedition(s, "dev");
+                return "开发传送离开地牢：本次远征直接结束（不扣惩罚）";
+            }
+            if (s.Expedition != null) { s.Expedition.Trail = TrailFromBuffer(s, d!, loc); return null; }
+            if (!IsDangerRoom(loc) || s.Progress.Dead) return null;
+            var e = CommitExpedition(s, d!, "dev", TrailFromBuffer(s, d!, loc));
+            return $"开发传送进危险房间：按已开始的远征处理（{e.Id}）";
+        }
+
+        // ───────────────────────── 撤出路线与时长（R03 D5.2，B21-4/B21-7） ─────────────────────────
+
+        /// <summary>撤出计划：返程节点（起点…01、父地点）、各段基础分钟、锁定倍率与原因、总分钟 T。</summary>
+        public sealed class ExtractPlan
+        {
+            public List<string> Route = new List<string>();
+            public List<int> Legs = new List<int>();
+            public int BaseMinutes;
+            public double Factor = 1;
+            public List<string> FactorReasons = new List<string>();
+            public int TotalMinutes;
+        }
+
+        /// <summary>T = max(30, 向上取 5 分钟整数(基础路程 × 倍率))（R03 D5.2；已含 01→父地点，不另加）。</summary>
+        public int ExtractTotalMinutes(int baseMinutes, double factor)
+        {
+            var round = Math.Max(1, DX.ExtractRoundMinutes);
+            var scaled = (int)(Math.Ceiling(baseMinutes * factor / round - 1e-9) * round);
+            return Math.Max(DX.ExtractMinMinutes, scaled);
+        }
+
+        /// <summary>
+        /// 从 from 撤出到该地牢父地点的计划（开发假设 B21-4/B21-7）：按本代已开通、两端到过的双向边 + 01↔父地点求基础分钟最短路（不用未发现捷径、不用单向出口）；
+        /// 万一不通，沿来路轨迹反向。倍率取确认时全队最慢的 S01 移动倍率（夜间/负重/低E，封顶）。
+        /// </summary>
+        public ExtractPlan ComputeExtractPlan(GameState s, string dungeonId, string from)
+        {
+            var d = DungeonCfg(dungeonId)!;
+            var plan = new ExtractPlan();
+            var path = ShortestPath(ExpeditionEdges(s, dungeonId), from, d.Parent);
+            if (path != null) { plan.Route = path.Value.Nodes; plan.Legs = path.Value.Legs; }
+            else
+            {
+                var back = new List<string> { from };
+                if (s.Expedition?.DungeonId == dungeonId)
+                    for (var k = s.Expedition.Trail.Count - 1; k >= 0; k--) if (back.Last() != s.Expedition.Trail[k]) back.Add(s.Expedition.Trail[k]);
+                var buf = BufferNodeOf(dungeonId)!;
+                if (back.Last() != buf) back.Add(buf);
+                back.Add(d.Parent);
+                plan.Route = back;
+                for (var k = 0; k + 1 < back.Count; k++)
+                    plan.Legs.Add(EdgesAt(back[k]).FirstOrDefault(e => e.Other(back[k]) == back[k + 1])?.BaseMinutes ?? 5);
+            }
+            plan.BaseMinutes = plan.Legs.Sum();
+            plan.Factor = TimeFactor(s, s.Actor(GameState.PlayerId), ActionType.Travel, plan.FactorReasons);
+            plan.TotalMinutes = ExtractTotalMinutes(plan.BaseMinutes, plan.Factor);
+            return plan;
+        }
+
+        // ───────────────────────── 进入预告（R03 D3、A10 §7，B21-15） ─────────────────────────
+
+        /// <summary>
+        /// 进入前预告（R03 D3）：容量与实际同行、已揭示固定战、全员 N/W/E/S/M/H/I/V 与警告、随身药/弹/武器耐久、续探与否、终止惩罚具体数值、
+        /// 撤出最低 30 分钟与当前估算、探索时间区间（B21-15）、提示。只读，不建实例、不抽物资。首次/重复奖励与重置剩余时间在 B22。
+        /// </summary>
+        public ExpeditionPreviewInfo ExpeditionPreview(GameState s, string dungeonId)
+        {
+            var d = DungeonCfg(dungeonId)!;
+            var p = new ExpeditionPreviewInfo
+            {
+                DungeonId = dungeonId,
+                Name = d.Name,
+                ParentName = LocName(d.Parent),
+                BufferName = LocName(BufferNodeOf(dungeonId) ?? d.SafeNodes.FirstOrDefault() ?? ""),
+                Status = DungeonStatus(s, dungeonId),
+                Capacity = BattleCapacity(s),
+                PartyCount = s.Party.Count,
+                InExpedition = s.Expedition?.DungeonId == dungeonId,
+            };
+            p.StatusName = DungeonStatusName(p.Status);
+            if (s.DungeonInstances.TryGetValue(dungeonId, out var inst))
+            {
+                p.Generation = inst.Generation;
+                p.Continuation = inst.ExpeditionSeq > 0 || inst.Status != DungeonStatuses.Unopened;
+            }
+            else p.Generation = 1;
+            p.Cleared = DungeonCleared(s, dungeonId);
+            foreach (var st in s.Population.Fixed.Values.Where(x => x.DungeonId == dungeonId && !x.Won).OrderBy(x => x.NodeId))
+            {
+                if (FixedStateAt(s, st.NodeId) == null) continue;
+                var alive = FixedEnemiesAt(s, st.NodeId);
+                if (alive.Count == 0) continue;
+                var f = FixedBattleAt(st.NodeId);
+                p.KnownEnemies.Add($"{LocName(st.NodeId)}：{(f?.Guardian == true ? "守卫 " : "")}{string.Join("、", alive.Select(w => _enemies[w.EnemyId].Name))}");
+            }
+            var w = DX.Warn;
+            foreach (var a in s.PartyActors)
+            {
+                var st = a.Stats;
+                var row = new ExpeditionMemberRow
+                {
+                    Id = a.Id, Name = ActorDisplayName(s, a.Id),
+                    Satiety = st.Satiety, Hydration = st.Hydration, Energy = st.Energy, Wakefulness = st.Wakefulness, Morale = st.Morale,
+                    Health = st.Health, Immunity = a.Body.Immunity, Virus = a.Body.VirusLoad, Infected = a.Body.Infected,
+                };
+                if (st.Satiety < w.SatietyBelow) row.Warnings.Add($"饱食低于{Fmt.T(w.SatietyBelow)}");
+                if (st.Hydration < w.HydrationBelow) row.Warnings.Add($"水分低于{Fmt.T(w.HydrationBelow)}");
+                if (st.Energy < w.EnergyBelow) row.Warnings.Add($"体力低于{Fmt.T(w.EnergyBelow)}");
+                if (st.Wakefulness < w.WakefulnessBelow) row.Warnings.Add($"清醒低于{Fmt.T(w.WakefulnessBelow)}");
+                if (st.Morale < w.MoraleBelow) row.Warnings.Add($"精神低于{Fmt.T(w.MoraleBelow)}");
+                if (st.Health <= w.HealthAtMost + 1e-9) row.Warnings.Add($"健康不高于{Fmt.T(w.HealthAtMost)}");
+                if (a.Body.VirusLoad >= w.VirusAtLeast - 1e-9) row.Warnings.Add($"病毒不低于{Fmt.T(w.VirusAtLeast)}");
+                if (a.Body.BleedTriggers > 0) row.Warnings.Add("出血中");
+                row.Supplies = SupplySummary(s, a.Id);
+                p.Members.Add(row);
+            }
+            p.PenaltyText = $"每名存活同行{AbortPenaltyText()}，{ShakenText()}；已带的物资不没收";
+            p.ExtractMinMinutes = DX.ExtractMinMinutes;
+            var from = p.InExpedition && DungeonAt(s.CurrentLocation) == dungeonId ? s.CurrentLocation : BufferNodeOf(dungeonId)!;
+            var plan = ComputeExtractPlan(s, dungeonId, from);
+            p.ExtractFrom = LocName(from);
+            p.ExtractEstimate = plan.TotalMinutes;
+            p.ExtractBaseMinutes = plan.BaseMinutes;
+            p.ExtractFactor = plan.Factor;
+            (p.ExploreLow, p.ExploreHigh) = ExploreEstimate(s, dungeonId);
+            p.Notes.Add("不需要带特定食物才能进；建议备好食水与医疗");
+            p.Notes.Add("战斗中饱食、水分暂停变化，但探索、移动与整备照常消耗；撤出途中感染与伤病也会继续");
+            p.Notes.Add($"在{p.BufferName}还没走进危险房间前，可按正常10分钟原路返回{p.ParentName}，不扣惩罚");
+            if (p.Continuation) p.Notes.Add($"续探第{p.Generation}代：已打掉的敌人与已领的箱子不会刷新，受伤的敌人保留伤势");
+            if (p.Cleared) p.Notes.Add("本代已通关：从出口或原路离开都不扣惩罚");
+            return p;
+        }
+
+        /// <summary>某人随身与穿戴的药品、弹药数与武器耐久（进入预告用）。</summary>
+        private string SupplySummary(GameState s, string actorId)
+        {
+            var carried = ItemInstance.CarriedOwner(actorId);
+            var mine = s.Items.Where(i => i.Owner == carried || i.IsWornBy(actorId)).ToList();
+            var med = mine.Where(i => _items.TryGetValue(i.ItemId, out var c) && c.Kind == "medical").Sum(i => i.Count);
+            var ammo = mine.Where(i => _items.TryGetValue(i.ItemId, out var c) && c.Kind == "ammo").Sum(i => i.Count);
+            var weapons = mine.Where(i => i.IsWornBy(actorId) && _items.TryGetValue(i.ItemId, out var c) && c.IsWeaponKind)
+                .Select(i => i.Durability.HasValue && i.MaxDurability.HasValue ? $"{ItemName(i.ItemId)}耐久{Fmt.N(i.Durability.Value)}/{Fmt.N(i.MaxDurability.Value)}" : ItemName(i.ItemId)).ToList();
+            return $"药品{med}份、弹药{ammo}发；" + (weapons.Count > 0 ? string.Join("、", weapons) : "没有武器（只能用拳）");
+        }
+
+        /// <summary>
+        /// 预计探索基础分钟区间（开发假设 B21-15，待确认 Q200）：下限 = 01 到核心记录房最短路的移动 + 路上各房间（不含记录房）探索到 100%；
+        /// 上限 = 全部房间探索到 100% + 每条内部边走一次。按当前探索度现算，不含战斗与倍率。
+        /// </summary>
+        public (int Low, int High) ExploreEstimate(GameState s, string dungeonId)
+        {
+            var d = DungeonCfg(dungeonId);
+            var buf = BufferNodeOf(dungeonId);
+            if (d == null || buf == null) return (0, 0);
+            var rooms = DungeonRooms(dungeonId).Select(l => l.Id).ToList();
+            var internalEdges = Config.Edges.Where(e => e.Bidirectional && DungeonAt(e.A) == dungeonId && DungeonAt(e.B) == dungeonId).ToList();
+            int ToFull(string n)
+            {
+                var prog = s.Locations.TryGetValue(n, out var ls) ? ls.Progress : 0;
+                if (prog >= 100 || !_locs[n].ExploreEnabled) return 0;
+                var inc = Math.Max(1, ExploreIncrementAt(n));
+                return (int)Math.Ceiling((100 - prog) / (double)inc) * ExploreMinutesAt(n);
+            }
+            var path = ShortestPath(internalEdges, buf, d.RecordNode);
+            var low = path == null ? 0 : path.Value.Legs.Sum() + path.Value.Nodes.Take(path.Value.Nodes.Count - 1).Sum(ToFull);
+            var high = rooms.Sum(ToFull) + internalEdges.Sum(e => e.BaseMinutes);
+            return (low, high);
+        }
+    }
+
+    /// <summary>进入前预告（R03 D3，B21）。</summary>
+    public sealed class ExpeditionPreviewInfo
+    {
+        public string DungeonId { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string ParentName { get; set; } = "";
+        public string BufferName { get; set; } = "";
+        public string Status { get; set; } = "";
+        public string StatusName { get; set; } = "";
+        public int Generation { get; set; }
+        /// <summary>旧实例续探（已提交过远征或已有进度）。</summary>
+        public bool Continuation { get; set; }
+        public bool Cleared { get; set; }
+        /// <summary>当前就在这座地牢的进行中远征里。</summary>
+        public bool InExpedition { get; set; }
+        public int Capacity { get; set; }
+        public int PartyCount { get; set; }
+        public List<string> KnownEnemies { get; set; } = new List<string>();
+        public List<ExpeditionMemberRow> Members { get; set; } = new List<ExpeditionMemberRow>();
+        public string PenaltyText { get; set; } = "";
+        public int ExtractMinMinutes { get; set; }
+        public string ExtractFrom { get; set; } = "";
+        public int ExtractEstimate { get; set; }
+        public int ExtractBaseMinutes { get; set; }
+        public double ExtractFactor { get; set; } = 1;
+        public int ExploreLow { get; set; }
+        public int ExploreHigh { get; set; }
+        public List<string> Notes { get; set; } = new List<string>();
+    }
+
+    /// <summary>预告/终止确认里的一名同行。</summary>
+    public sealed class ExpeditionMemberRow
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public double Satiety { get; set; }
+        public double Hydration { get; set; }
+        public double Energy { get; set; }
+        public double Wakefulness { get; set; }
+        public double Morale { get; set; }
+        public double Health { get; set; }
+        public double Immunity { get; set; }
+        public double Virus { get; set; }
+        public bool Infected { get; set; }
+        public List<string> Warnings { get; set; } = new List<string>();
+        public string Supplies { get; set; } = "";
     }
 }

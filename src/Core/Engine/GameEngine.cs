@@ -301,6 +301,8 @@ namespace Survival.Core.Engine
             /// <summary>B17 部署/收起的野营布或柴炉（开工锁定）。</summary>
             public ItemInstance? CampingItem;
             public List<int> CookTargetItems = new List<int>();
+            /// <summary>B21：本次移动开始时提交远征的地牢（R03 D3）。</summary>
+            public string? CommitDungeon;
         }
 
         private string? Validate(GameState s, ActionRequest r, out Plan plan)
@@ -309,6 +311,8 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) return "角色已死亡";
             if (DialogueLocked(s)) return DialogueLockedReason;
             if (s.Battle != null) return "战斗中：请使用战斗指令";
+            // B21-9：撤出一旦开始一直走到父地点，途中不能做别的事（R03 D5.2、S13 B4）
+            if (s.Expedition?.IsExtracting == true) return ExtractingBusyReason(s);
             if (s.Encounter != null && r.Type != ActionType.Bypass) return "发现敌踪：请先选择接敌或绕行";
             if (r.Type == ActionType.Bypass)
             {
@@ -363,6 +367,9 @@ namespace Survival.Core.Engine
                         if (edge != null && EdgeRevealed(s, edge)) return "路线未开通，" + GateBlockedReason(s, edge);
                         return "尚未发现路线";
                     }
+                    // B21（R03 D3/D4）：01→危险房间要确认开始远征；未通关不能直接离开地牢
+                    if (ExpeditionTravelBlock(s, here, r.TargetId, r.ConfirmExpedition, out var commitDungeon) is string expWhy) return expWhy;
+                    plan.CommitDungeon = commitDungeon;
                     plan.BaseWork = edge.BaseMinutes;
                     plan.Label = $"前往{LocName(r.TargetId)}";
                     return null;
@@ -816,6 +823,9 @@ namespace Survival.Core.Engine
                     break;
                 case ActionType.Bypass:
                     s.Encounter = null;
+                    break;
+                case ActionType.Travel:
+                    if (p.CommitDungeon != null) StartExpeditionOnTravel(s, p.CommitDungeon);   // B21：确认即提交（B21-3）
                     break;
                 case ActionType.Butcher:
                     StartButcher(s, a, p);

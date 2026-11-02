@@ -14,6 +14,7 @@ namespace Survival.Core.Engine
             s.CurrentLocation = locationId;
             s.CurrentZone = ExteriorZone;
             Visit(s, locationId);
+            DevExpeditionAfterTeleport(s, locationId);   // B21-14
             UpdateFlags(s);
         }
 
