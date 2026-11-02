@@ -130,6 +130,18 @@ namespace Survival.Core.Engine
         /// 开发入口（B4）：在当前地面放一组指定品质（white/green/blue）的装备，词条按兼容池照常抽；放地面不占随身卡位。返回给玩家看的说明。
         /// </summary>
         /// <summary>开发入口（B5）：把一组熟练度设为某等级、经验 0（survival=求生五门，否则全部十五门）。不经过 GainXp、不发事件。</summary>
+        /// <summary>开发入口（B13b，Q121）：石刀、简易斧、撬棍各一件（随身，放不下的放地面），试资源点逐行合格工具。</summary>
+        public string DebugGiveResourceTools(GameState s) =>
+            "石刀、简易斧、撬棍各1（开发用，试资源点合格工具）：" + DebugGiveCarriedOrGround(s, new[] { ("stone_knife", 1), ("hatchet", 1), ("crowbar", 1) });
+
+        /// <summary>开发入口（B13b）：某一门熟练度直接设为指定等级（经验清零）。</summary>
+        public string DebugSetSkillLevel(GameState s, string skillId, int level)
+        {
+            var lv = Math.Max(1, Math.Min(SkillCap(skillId), level));
+            s.Skills[skillId] = new SkillState { Level = lv, Xp = 0 };
+            return $"{SkillName(skillId)}熟练度设为{lv}级（开发用）。";
+        }
+
         public string DebugSetSkillLevels(GameState s, int level, bool survivalOnly)
         {
             var ids = Config.Skills.Where(k => !survivalOnly || k.Category == "survival").Select(k => k.Id).ToList();

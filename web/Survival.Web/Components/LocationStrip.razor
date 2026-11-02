@@ -129,19 +129,25 @@
                 {
                     var (stock, empty) = e.ResourceStock(s, r);   // B12：四账角标（日补/不补/无限/本代剩余/已领取）
                     var nodeId = r.NodeId;
-                    var tool = r.ToolBonus != null ? e.BestTool(s, r.ToolBonus.ToolTag) : null;
+                    var tool = e.BestToolFor(s, r);   // B13b（Q121）：新表按物品 ID（石刀/简易斧/撬棍），旧 20 条按原标签
+                    var toolNames = e.QualifiedToolNames(r);
                     var minutes = tool != null && r.ToolBonus?.BaseMinutesOverride != null ? r.ToolBonus.BaseMinutesOverride.Value : r.BaseMinutes;
                     var req = ActionRequest.Gather(r.NodeId);
                     var why = busy ? (s.Main?.Status == ActionStatus.Paused ? "行动暂停中" : "行动进行中") : e.CanStart(s, req);
                     <ObjectCard @key="r.NodeId" Id="@($"res-{nodeId}")" CssClass="res-card" Title="@r.Name" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
                                 Selected="@(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId)" Fresh="@G.Highlights.Contains(r.NodeId)"
-                                DataDrop="@($"res:{nodeId}")" Tooltip="@(r.IsCampaign ? "核心记录：点击查看领取预估" : "资源点：点击查看采集预估；把对应工具拖到这里指定使用")" OnClick="() => SelectResource(nodeId)">
+                                DataDrop="@($"res:{nodeId}")" Tooltip="@(r.IsRecord ? "核心记录：点击查看领取预估" : r.IsCampaign ? "本局唯一领取：点击查看领取预估" : toolNames != null ? $"资源点：点击查看采集预估；可用工具：{toolNames}（把它拖到这里指定使用）" : "资源点：点击查看采集预估；这里没有可用工具，徒手进行")" OnClick="() => SelectResource(nodeId)">
                         <Art>@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</Art>
                         <ChildContent>
                             @* M84：耗时只写在按钮上（“采集/搜集 + N分钟”），状态行不再重复，给名称和产出留位 *@
-                            @if (r.IsCampaign)
+                            @if (r.IsRecord)
                             {
                                 <div class="oc-line" title="核心记录：本局唯一一次，地牢换代后也不再发放；记作记录，不占物资卡">核心记录 · 本局唯一</div>
+                            }
+                            else if (r.IsCampaign)
+                            {
+                                var packLine = r.IsCampaignPhysical ? string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}")) : "做法知识包";
+                                <div class="oc-line" title="本局唯一一次领取：@packLine">本局唯一 · @packLine</div>
                             }
                             else if (r.IsCache)
                             {

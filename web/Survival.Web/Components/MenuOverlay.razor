@@ -145,6 +145,12 @@
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugPrologue(G.S, "camp"))'>传送到临时营地</button>
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugPrologue(G.S, "village"))'>传送到废弃村庄</button>
                 </div>
+                @* B13b（R129，Q120/Q121）：资源点逐行合格工具与搜集5级工具运用的试玩入口 *@
+                <div class="eyebrow">资源来源与工具（B13b）：随身带合格工具时资源卡按钮工时−5；搜集5级再×0.9</div>
+                <div class="btn-row">
+                    <button class="secondary small-btn" @onclick="() => DevDone(G.E.DebugGiveResourceTools(G.S))">石刀、简易斧、撬棍各1（随身）</button>
+                    <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "scavenging", 5))'>搜集熟练设为5级（工具运用）</button>
+                </div>
                 @* B11（R33—R35）：v3 地图。出新手区与城市/地牢的多数门槛事实要等序章、营区登记、任务、地牢等后续系统，这里直接记事实或传送试玩 *@
                 <div class="eyebrow">地图（B11/B12）：门槛事实只能记下（campaign 锁存，已开路线不回退）；传送、地牢换代</div>
                 <div class="btn-row">

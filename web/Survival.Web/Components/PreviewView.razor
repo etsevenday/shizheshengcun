@@ -82,6 +82,14 @@
                 <div><span>使用@(p.ToolName)</span><b>@Ui.N(p.ToolDurabilityBefore.Value)/@Ui.N(p.ToolMaxDurability.Value) → @Ui.N(p.ToolDurabilityAfter ?? 0)/@Ui.N(p.ToolMaxDurability.Value)</b></div>
             }
             <div class="tiny muted">@(p.ToolExplicit ? "使用拖入的这一把；它不可用时不会自动换成其他工具。" : "无需选择工具，自动使用随身成色最高的一件。")</div>
+            @if (p.ToolChoice && !p.ToolExplicit && !Confirmable && Request.Type == ActionType.Gather)
+            {
+                @* B13b（Q121，S05 本轮章）：工具是效率选择不是门票，可明确改徒手（不磨损、按原工时） *@
+                var bare = ActionRequest.Gather(Request.TargetId, null, true);
+                var bp = G.Preview(bare);
+                <button type="button" class="secondary tiny-btn" disabled="@(!bp.Ok || busy || starting)" title="不用随身工具，按原工时徒手进行，工具不磨损"
+                        @onclick="() => StartBare(bare)">改用徒手开始（@(bp.BaseMinutes)分钟）</button>
+            }
         </div>
     }
 
@@ -198,6 +206,14 @@
     [Parameter] public string? FootNote { get; set; }
 
     private bool starting;
+
+    private async Task StartBare(ActionRequest bare)
+    {
+        if (starting) return;
+        starting = true;
+        try { await G.StartAction(bare); await OnStarted.InvokeAsync(); }
+        finally { starting = false; }
+    }
 
     private static string DisabledLabel(ActionPreview p) => string.IsNullOrEmpty(p.ConfirmText) ? "无法执行" : p.ConfirmText;
 
