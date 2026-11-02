@@ -257,6 +257,7 @@ namespace Survival.Core.Engine
                 rs.Reserved = 0;
                 rs.Generation = inst.Generation;
             }
+            ResetFixedForGeneration(s, dungeonId);   // B20：旧代固定战敌人移除，新一代第一次到达重新揭示（新 worldEnemyId）
             RefreshGates(s);
             return null;
         }
@@ -267,7 +268,7 @@ namespace Survival.Core.Engine
             var why = NewDungeonGeneration(s, dungeonId);
             if (why != null) return $"开发：{why}";
             var name = Config.Map.Dungeons.First(x => x.Id == dungeonId).Name;
-            return $"开发：{name}已换到第{s.DungeonInstances[dungeonId].Generation}代——普通物资箱补满、房间探索度与清理次数重置、守卫与本代记录核对清空；核心记录（本局唯一）与已开世界路线不变。";
+            return $"开发：{name}已换到第{s.DungeonInstances[dungeonId].Generation}代——普通物资箱补满、房间探索度与清理次数重置、守卫与本代记录核对清空、固定战下次到达重新揭示；核心记录（本局唯一）与已开世界路线不变。";
         }
     }
 }

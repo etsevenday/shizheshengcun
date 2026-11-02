@@ -1027,6 +1027,63 @@ namespace Survival.Core.Config
         public bool RarityOpen(string rarity, int minute) => !RarityOpenAbsoluteMinute.TryGetValue(rarity, out var m) || minute >= m;
 
         public int CapOf(string locationId) => LocalCaps.TryGetValue(locationId, out var c) ? c : 0;
+
+        /// <summary>
+        /// B20 人口区（node-expansion-rules worldPopulation.regions；A09「最终敌方资源/人口接口」、R05/A09「Q31…」）：mainline 4 区 + ex_pop 5 区。
+        /// 旧 8 地点的全局 12 种群（GlobalCap/LocalCaps/Pools）不在这里、不与它们共享上限。
+        /// </summary>
+        public List<PopulationRegionConfig> Regions { get; set; } = new List<PopulationRegionConfig>();
+        /// <summary>B20 固定战（expansion-combat.json enemySets 31 组 + m02 检查哨拦路战）。</summary>
+        public List<FixedBattleConfig> FixedBattles { get; set; } = new List<FixedBattleConfig>();
+        /// <summary>B20 五处旧精英可选单局挑战（legacy-elite-placements.json，Q81 答复）。</summary>
+        public List<LegacyEliteConfig> LegacyElites { get; set; } = new List<LegacyEliteConfig>();
+    }
+
+    /// <summary>一个人口区：总存活上限、节点、刷新/巡游节律；mainline 区另有强度层（第1/3/7日、96/3.5/0.5）。</summary>
+    public sealed class PopulationRegionConfig
+    {
+        public string Id { get; set; } = "";
+        public int Cap { get; set; }
+        public List<string> Nodes { get; set; } = new List<string>();
+        public int SpawnEveryMinutes { get; set; }
+        public double SpawnAttempt { get; set; }
+        public int PatrolEveryMinutes { get; set; }
+        public double PatrolAttempt { get; set; }
+        public int SpawnStartWorldMinute { get; set; }
+        /// <summary>强度层权重（ordinary/rare/strong）；没有为 null（ex_pop 五区不分层）。</summary>
+        public Dictionary<string, double>? LayerWeights { get; set; }
+        /// <summary>各层开放的世界日（第 N 日 00:00 起）。</summary>
+        public Dictionary<string, int>? LayerOpenWorldDay { get; set; }
+    }
+
+    /// <summary>一组固定战：地牢房间按实例（每代一次）、m02 检查哨按 campaign（单局一次）。</summary>
+    public sealed class FixedBattleConfig
+    {
+        public string NodeId { get; set; } = "";
+        public string? DungeonId { get; set; }
+        /// <summary>候选敌人前后顺序（首次揭示时按当时容量 C 截前 C 个）。</summary>
+        public List<string> EnemyOrder { get; set; } = new List<string>();
+        /// <summary>守卫门（每座地牢一个）：胜利写本代实例事实 guardianDefeated。</summary>
+        public bool Guardian { get; set; }
+        /// <summary>instance（按地牢代）/ campaign（单局一次）。</summary>
+        public string Scope { get; set; } = "instance";
+        /// <summary>胜利且主角存活时写的事实：守卫 guardianDefeated（实例事实）、m02 checkpoint_obstruction_cleared（campaign 事实）；没有为 null。</summary>
+        public string? Fact { get; set; }
+        public bool IsCampaign => Scope == "campaign";
+    }
+
+    /// <summary>一处旧精英可选挑战（Q81 答复）。</summary>
+    public sealed class LegacyEliteConfig
+    {
+        public string Id { get; set; } = "";
+        public string EnemyId { get; set; } = "";
+        public string NodeId { get; set; } = "";
+        public int RevealAtExplorePercent { get; set; } = 100;
+        public string? RequiresFact { get; set; }
+        public string RewardItemId { get; set; } = "";
+        public int RewardCount { get; set; }
+        public double RewardChance { get; set; } = 1;
+        public string ClaimKey { get; set; } = "";
     }
 
     /// <summary>

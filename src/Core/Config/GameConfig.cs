@@ -381,6 +381,10 @@ namespace Survival.Core.Config
         /// <summary>新节点所属人口区的本地上限（接敌概率分母）；旧 8 地点用 worldEnemies.localCaps。人口区刷新在 B20。</summary>
         public int PopulationLocalCap { get; set; }
         public string? PopulationRegionId { get; set; }
+        /// <summary>B20：人口区节点的敌池内部权重（node-expansion-rules worldPopulation.weights；不是刷新概率）；不刷新的节点为 null。</summary>
+        public Dictionary<string, int>? PopulationWeights { get; set; }
+        /// <summary>B20：首次实际到达时的初始目标只数（多数 2，m02 检查哨 0），同时受人口区剩余上限与本地上限约束。</summary>
+        public int FirstPopulation { get; set; }
         /// <summary>地牢节点所属地牢（d01…d08）；非地牢为 null。</summary>
         public string? DungeonId { get; set; }
         /// <summary>外部明示安全（h05_homestead）。</summary>

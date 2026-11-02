@@ -58,6 +58,7 @@ public class B13cClaimTests : TestBase
     {
         var s = New();
         E.DebugMapTeleport(s, "d03_03");
+        E.DebugWinFixedHere(s);   // B20：d03_03 有固定战（护盔/机修感染者），敌人还在时不能领箱
         Assert.That(s.Resources["shield_cache"].Discovered, Is.False);
         E.DebugSetProgress(s, "d03_03", 50);
         Assert.That(s.Resources["shield_cache"].Discovered, Is.False, "50% 还看不到");
@@ -170,6 +171,7 @@ public class B13cClaimTests : TestBase
     {
         var s = New();
         Go(s, "d03_03");
+        E.DebugWinFixedHere(s);   // B20：d03_03 固定战
         E.DebugGiveResourceTools(s);
         var p = E.Preview(s, ActionRequest.Gather("shield_cache"));
         Assert.That(p.ToolItemId, Is.Null);

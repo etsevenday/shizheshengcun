@@ -33,6 +33,13 @@ namespace Survival.Core.State
         /// <summary>受惊随机数 u 与生成的世界分钟（R03 §2.1：60 游戏分钟内再入战复用同一个 u，防撤退重接刷受惊）。</summary>
         public double FearRoll { get; set; }
         public int? FearRollMinute { get; set; }
+        /// <summary>
+        /// B20：不属于随机种群的固定实例——"fixed:&lt;nodeId&gt;" 固定战名单（地牢房间/检查哨）、"elite:&lt;挑战ID&gt;" 旧精英可选挑战；
+        /// 普通种群（旧 8 地点全局 12 与 9 个人口区）为 null。固定实例不计种群上限、不巡游、不进随机接敌与噪声增援。
+        /// </summary>
+        public string? FixedOf { get; set; }
+        /// <summary>B20：地牢固定战敌人所属的实例代号（换代时旧代固定敌移除）；其余为 0。</summary>
+        public int Generation { get; set; }
 
         public WorldEnemy Clone()
         {
@@ -261,6 +268,8 @@ namespace Survival.Core.State
     public sealed class BattleState
     {
         public int BattleId { get; set; }
+        /// <summary>B20：固定战（"fixed:&lt;nodeId&gt;"）或旧精英挑战（"elite:&lt;挑战ID&gt;"）；普通战为 null。固定类战斗不增援，胜利结固定账。</summary>
+        public string? FixedKey { get; set; }
         public string EncounterId { get; set; } = "";
         public string LocationId { get; set; } = "";
         public int Round { get; set; } = 1;

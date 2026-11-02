@@ -372,6 +372,7 @@ namespace Survival.Core.Engine
                 {
                     if (!hereCfg.ExploreEnabled) return "公开地点到达即已全部知晓，不需要探索";
                     if (hereState.Progress >= 100) return "已充分探索，可清理或搜集已发现资源";
+                    if (FixedBlockHere(s) is string fbE) return fbE;   // B20：固定战敌人还在（开发假设 B20-5）
                     plan.TargetId = here;
                     plan.BaseWork = ExploreMinutesAt(here);
                     plan.Label = "探索周边";
@@ -382,6 +383,7 @@ namespace Survival.Core.Engine
                 {
                     if (!hereCfg.ClearEnabled) return "这里不能清理";
                     if (!hereState.Visited) return "只能清理已访问的当前地点";
+                    if (FixedBlockHere(s) is string fbC) return fbC;
                     var cap = hereCfg.Clear.Cap;
                     var (charges, progress) = ClearChargesAt(s, here);
                     if (charges < 1)
@@ -400,6 +402,7 @@ namespace Survival.Core.Engine
                     if (res.LocationId != here) return "该资源点不在当前地点";
                     var rs = s.Resources[res.NodeId];
                     if (!rs.Discovered) return "该资源点尚未发现";
+                    if (FixedBlockHere(s) is string fbG) return fbG;
                     plan.Res = res;
                     if (res.IsCampaign)
                     {

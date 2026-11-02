@@ -55,6 +55,7 @@ namespace Survival.Core.Save
         public const string Schema28 = "28";
         public const string Schema29 = "29";
         public const string Schema30 = "30";
+        public const string Schema31 = "31";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -100,6 +101,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema28) From28To29(s, config, notes);
             if (s.SchemaVersion == Schema29) From29To30(s, config, notes);
             if (s.SchemaVersion == Schema30) From30To31(s, config, notes);
+            if (s.SchemaVersion == Schema31) From31To32(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1039,6 +1041,19 @@ namespace Survival.Core.Save
             s.Recruit ??= new RecruitState();
             s.Recruit.Candidates ??= new List<RecruitCandidate>();
             s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（收容所开放周期招募：营区登记后第一次实际到达收容所时开始计周期，每72小时3名候选；不补算之前的周期）。" });
+            s.SchemaVersion = GameState.CurrentSchema;
+        }
+
+        /// <summary>
+        /// 31→32（开发计划 v0.9 B20）：建空的人口区/固定战/旧精英挑战账（Population）。不补算：已到过的新野外节点不追补首次人口、已进入过的
+        /// 人口区从下次实际到达起才开始刷新（“未进入区不追补”）；地牢固定战在本代下一次实际到达该房间时才揭示（按当时容量 C）；
+        /// 旧档里留在世界上的敌人照旧（旧 8 地点全局 12 只数旧 8 地点的种群，开发入口放进新区的敌人改算所在人口区）。
+        /// 旧精英挑战：旧档没有按 enemyId 记的结算/奖励凭据，五处挑战一律从未结算开始（不按背包里的材料推测）。幂等。
+        /// </summary>
+        private static void From31To32(GameState s, GameConfig config, List<string> notes)
+        {
+            s.Population ??= new PopulationState();
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（新增12种敌人、地牢固定战、9个人口区与五处可选强敌挑战：新野外第一次实际到达时才生成本地敌人，地牢房间下一次到达时才揭示固定战；不补算之前的刷新）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

@@ -353,6 +353,7 @@ namespace Survival.Core.Engine
                 foreach (var f in facts)
                     if (s.Progress.Flags.Add(f)) notes.Add($"已与{lc.Name}建立公开接触");
             ArriveCity(s, locationId, notes);   // B14：持登记授权实际走到营区广场才完成营区登记
+            RevealFixedBattle(s, locationId, notes);   // B20：固定战首次揭示（按当时容量 C 截名单并锁存）
             var r = RefreshGates(s);
             var routes = RouteNotes(s, r, locationId);
             if (routes.Count > 0) notes.Add("发现" + string.Join("与", routes));
@@ -371,6 +372,7 @@ namespace Survival.Core.Engine
             if (!on) return $"开发：地图事实 {key} 是 campaign 锁存，记下后不能清除（已开路线不回退）。";
             if (s.Progress.Flags.Contains(key)) return $"开发：地图事实 {key}（{FactLabel(key)}）已记下。";
             s.Progress.Flags.Add(key);
+            SettleFixedByFacts(s);   // B20：记下“检查哨路障已解决”时检查哨固定战视为已结清
             var r = RefreshGates(s);
             var routes = RouteNotes(s, r, s.CurrentLocation);
             UpdateFlags(s);
@@ -406,6 +408,7 @@ namespace Survival.Core.Engine
         public string DebugInstanceFact(GameState s, string dungeonId, string key)
         {
             EnsureInstance(s, dungeonId).Facts.Add(key);
+            SettleFixedByFacts(s);   // B20：记下“本地牢守卫已击败”时本代守卫固定战视为已结清
             var r = RefreshGates(s);
             var routes = RouteNotes(s, r, s.CurrentLocation);
             var shown = RevealByInstanceFacts(s);   // B13c（Q122）：守卫战利品箱当场出现

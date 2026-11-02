@@ -40,8 +40,9 @@ namespace Survival.Core.State
         /// "29" 起安全屋与分区设施：地点带安全屋（屋内区设施、柜子记录），队伍记当前所在区与收藏的安全屋，设施带屋内火堆与折叠柴炉（开发计划 v0.9 B17）。
         /// "30" 起鉴定交易：物品实例带可空鉴定记录，城市状态带鉴定所世界日报价表，服务事务带报价/样本锁字段（开发计划 v0.9 B18）。
         /// "31" 起周期招募：收容所开放时刻、当前周期候选快照、在办登记与流水号（Recruit），名册条目带随机角色人物档与退役记录，遗物容器带认领箱类别（开发计划 v0.9 B19）。
+        /// "32" 起新敌人、固定战与人口区：人口区已进入/节点首次人口、固定战名单、旧精英挑战账（Population），世界敌人带固定实例标记与实例代号，战斗带固定战键（开发计划 v0.9 B20）。
         /// </summary>
-        public const string CurrentSchema = "31";
+        public const string CurrentSchema = "32";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -218,6 +219,8 @@ namespace Survival.Core.State
         public QuestState Quests { get; set; } = new QuestState();
         /// <summary>收容所周期招募（开发计划 v0.9 B19；schema 31 起）。</summary>
         public RecruitState Recruit { get; set; } = new RecruitState();
+        /// <summary>新敌人、固定战与人口区（开发计划 v0.9 B20；schema 32 起）。</summary>
+        public PopulationState Population { get; set; } = new PopulationState();
 
         [JsonIgnore] public List<GameEvent> PendingEvents { get; set; } = new List<GameEvent>();
 
@@ -255,6 +258,7 @@ namespace Survival.Core.State
             c.City = City.Clone();
             c.Quests = Quests.Clone();
             c.Recruit = Recruit.Clone();
+            c.Population = Population.Clone();
             c.PendingEvents = new List<GameEvent>();
             return c;
         }

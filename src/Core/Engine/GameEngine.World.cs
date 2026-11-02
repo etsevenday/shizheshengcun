@@ -62,7 +62,8 @@ namespace Survival.Core.Engine
         /// <summary>全世界存活敌数（含交战中、中立鹿）。</summary>
         public int LiveCount(GameState s) => s.WorldEnemies.Count;
 
-        public int LocalCount(GameState s, string loc) => s.WorldEnemies.Count(w => w.LocationId == loc);
+        /// <summary>某地的种群敌数（B20：固定战与旧精英挑战的固定实例不计种群上限）。</summary>
+        public int LocalCount(GameState s, string loc) => s.WorldEnemies.Count(w => w.LocationId == loc && w.FixedOf == null);
 
         /// <summary>
         /// 本地上限（接敌概率分母）：旧 8 地点用 worldEnemies.localCaps（R05 原值不变）；v3 新节点用所属人口区的本地上限
@@ -76,7 +77,7 @@ namespace Survival.Core.Engine
 
         /// <summary>某地可见的世界敌人（不含隐藏、不含交战中），按最早出现在前。</summary>
         public List<WorldEnemy> VisibleEnemiesAt(GameState s, string loc) =>
-            s.WorldEnemies.Where(w => w.LocationId == loc && !w.Engaged && !Hidden(s, w)).OrderBy(w => w.Id).ToList();
+            s.WorldEnemies.Where(w => w.LocationId == loc && !w.Engaged && !Hidden(s, w) && w.FixedOf == null).OrderBy(w => w.Id).ToList();
 
         /// <summary>本地可参与随机接敌的敌对实例：未交战、未隐藏、敌对，按最早发现在前。</summary>
         public List<WorldEnemy> LocalHostiles(GameState s, string loc) =>
@@ -195,7 +196,7 @@ namespace Survival.Core.Engine
         {
             foreach (var w in s.WorldEnemies.OrderBy(w => w.Id).ToList())
             {
-                if (w.Engaged || Hidden(s, w)) continue;
+                if (w.Engaged || Hidden(s, w) || w.FixedOf != null) continue;
                 // v3 新人口区（B20）的巡游未接入：不在旧 8 地点种群里的敌人不巡游，也不抽随机数（B11）
                 if (!InLegacyPopulation(w.LocationId)) continue;
                 // 首战保留游荡尸胜利前不巡游（R05 §5），也不抽巡游随机数

@@ -378,11 +378,12 @@ namespace Survival.Core.Engine
         public const string FearEncounter = "encounter";
         public const string FearTutorial = "tutorial";
 
-        private void StartBattle(GameState s, List<WorldEnemy> group, bool surprise, string source, string context, bool tutorial = false)
+        private void StartBattle(GameState s, List<WorldEnemy> group, bool surprise, string source, string context, bool tutorial = false, string? fixedKey = null)
         {
             var b = new BattleState
             {
                 BattleId = s.NextBattleId++,
+                FixedKey = fixedKey,
                 LocationId = s.CurrentLocation,
                 StartMinute = s.GameMinute,
                 Surprise = surprise,
@@ -1462,6 +1463,8 @@ namespace Survival.Core.Engine
             }
             // 首战敌人已在这场倒下、却以撤退收场：也记首战完成并发教学物质（否则它已不在世界上、门控卡死；试玩修复 B7d-2）
             else if (TutorialEnemyKilled(s, b) && GrantTutorialReward(s, b) is string rr) lines.Add(rr);
+            // B20：固定战/旧精英挑战最终胜利结固定账（守卫门、检查哨路线、挑战奖励）
+            var fixedLines = outcome == "victory" ? FixedVictory(s, b) : new List<string>();
             var me = b.Fighter(GameState.PlayerId);
             var loss = Math.Min(Config.Panic.MoraleLossMax, me.Panic / Config.Panic.MoraleLossDivisor);
             if (loss > 0) s.Actor(GameState.PlayerId).Stats.Add(StatId.Morale, -loss);
@@ -1479,7 +1482,7 @@ namespace Survival.Core.Engine
             // 撤退：只有场上确有倒下敌人的掉落/尸体时才写“放弃”（试玩修复 L3）
             var loot = outcome == "victory" ? (lines.Count > 0 ? $"战利品{string.Join("、", lines)}已放在{LocName(loc)}地面" : "没有战利品")
                 : b.Loot.Any(l => l.ItemId != null && l.Count > 0) ? "放弃了场上的尸体与掉落" : null;
-            var text = $"{head}：共{b.Round}轮（世界时间{Clock.Duration(b.Ticks * Tick)}）{(loss > 1e-9 ? $"，精神−{Fmt.N(loss)}" : "")}{(mateLoss.Count > 0 ? "，" + string.Join("、", mateLoss) : "")}{(loot != null ? "；" + loot : "")}。";   // 试玩修复 B7c-1：精神没变时不写“精神−0.00”
+            var text = $"{head}：共{b.Round}轮（世界时间{Clock.Duration(b.Ticks * Tick)}）{(loss > 1e-9 ? $"，精神−{Fmt.N(loss)}" : "")}{(mateLoss.Count > 0 ? "，" + string.Join("、", mateLoss) : "")}{(loot != null ? "；" + loot : "")}{(fixedLines.Count > 0 ? "；" + string.Join("；", fixedLines) : "")}。";   // 试玩修复 B7c-1：精神没变时不写“精神−0.00”
             BattleLog(s, text);
             s.Battle = null;
             Emit(s, GameEventKind.BattleEnd, text, null, outcome == "victory" ? b.Loot.Where(l => l.ItemId != null).Select(l => l.ItemId!) : null);
@@ -1501,6 +1504,8 @@ namespace Survival.Core.Engine
         {
             var b = s.Battle!;
             if (!b.ReinforcementRequested || b.ReinforcementUsed) return;
+            // B20（A09 E2、R05 B4 节）：固定地牢战/检查哨/旧精英挑战禁增援（鸣响只增加噪声提示，不请求额外怪）
+            if (b.FixedKey != null) { b.ReinforcementUsed = true; BattleLog(s, "固定战不会引来增援。"); return; }
             // 剧情首战只有保留游荡尸，不调用噪声增援（S15 §5）
             if (b.Tutorial && Config.Story.TutorialBattle.NoReinforcement) { b.ReinforcementUsed = true; BattleLog(s, "首战不会引来其他丧尸。"); return; }
             // 容量 C（R05 §4）：场上存活加增援、本场累计投入（含已死/逃离）都不超过 C；没有空位就等下一轮
@@ -1509,7 +1514,7 @@ namespace Survival.Core.Engine
             var at = ReinforceSlot(b);
             if (at <= 0) return;
             b.ReinforcementUsed = true;
-            var cand = s.WorldEnemies.Where(w => w.LocationId == b.LocationId && !w.Engaged && !Hidden(s, w)
+            var cand = s.WorldEnemies.Where(w => w.LocationId == b.LocationId && !w.Engaged && !Hidden(s, w) && w.FixedOf == null
                                                  && _enemies[w.EnemyId].Family == Config.Noise.ExistingEnemyFamilyFilter)
                 .OrderBy(w => w.Id).FirstOrDefault();
             if (cand == null)
