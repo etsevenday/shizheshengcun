@@ -1490,6 +1490,13 @@ public sealed class GameSession
         if (State == null) return;
         var toastSet = false;
         var before = Toast;
+        // B18 试玩修复二 M374：离开保持高亮所在的地面（换地点或进出安全屋区）即清掉保持描边与这批高亮，回来不再显示
+        if (HeldHighlightAt != null && HeldHighlightAt != S.Ground)
+        {
+            foreach (var id in HeldHighlights) Highlights.Remove(id);
+            HeldHighlights.Clear();
+            HeldHighlightAt = null;
+        }
         foreach (var ev in E.DrainEvents(S))
         {
             if (string.IsNullOrEmpty(ev.Text)) continue;
