@@ -18,10 +18,10 @@ namespace Survival.Core.Engine
         public RosterEntry? RosterOf(GameState s, string actorId) => s.Roster.FirstOrDefault(r => r.ActorId == actorId);
 
         /// <summary>名册里存活、不在同行队伍的角色（候补，在营区接受公共照护）。</summary>
-        public List<RosterEntry> Reserves(GameState s) => s.Roster.Where(r => !r.Dead && !s.Party.Contains(r.ActorId) && s.Actors.ContainsKey(r.ActorId)).ToList();
+        public List<RosterEntry> Reserves(GameState s) => s.Roster.Where(r => r.Present && !s.Party.Contains(r.ActorId) && s.Actors.ContainsKey(r.ActorId)).ToList();
 
         /// <summary>同行队伍里的名册角色（不含主角）。</summary>
-        public List<RosterEntry> ActiveCompanions(GameState s) => s.Roster.Where(r => !r.Dead && s.Party.Contains(r.ActorId)).ToList();
+        public List<RosterEntry> ActiveCompanions(GameState s) => s.Roster.Where(r => r.Present && s.Party.Contains(r.ActorId)).ToList();
 
         public bool IsReserve(GameState s, string actorId) => Reserves(s).Any(r => r.ActorId == actorId);
 
@@ -187,6 +187,7 @@ namespace Survival.Core.Engine
             var r = RosterOf(s, actorId);
             if (r == null) return "名册里没有这名角色";
             if (r.Dead) return $"{r.Name}已经死亡";
+            if (r.Retired) return $"{r.Name}已退役，不在名册里";   // B19
             // 各按钮用自己的动词，不与顶栏“编队”混淆（试玩修复 B8a 第 1 轮 B7；同登记补员/报失的做法）
             var why = PartyEditBlocked(s);
             if (why != null) return why.Replace("编队", active ? "编入同行" : "留作候补");
@@ -252,7 +253,7 @@ namespace Survival.Core.Engine
         public static List<string> RepairedFormation(GameState s, IList<string>? preset, int n)
         {
             var slots = Enumerable.Repeat("", n).ToList();
-            var alive = s.Party.Distinct().Where(id => id == GameState.PlayerId || (s.Actors.ContainsKey(id) && s.Roster.FirstOrDefault(r => r.ActorId == id)?.Dead != true)).ToList();
+            var alive = s.Party.Distinct().Where(id => id == GameState.PlayerId || (s.Actors.ContainsKey(id) && s.Roster.FirstOrDefault(r => r.ActorId == id)?.Present != false)).ToList();
             if (preset != null)
                 for (var k = 0; k < Math.Min(n, preset.Count); k++)
                 {
@@ -488,7 +489,7 @@ namespace Survival.Core.Engine
         public string DebugToggleActive(GameState s, string actorId)
         {
             var r = RosterOf(s, actorId);
-            if (r == null || r.Dead) return "不能切换";
+            if (r == null || !r.Present) return "不能切换";
             var active = !s.Party.Contains(actorId);
             if (active && s.Party.Count >= PartyCapacity(s)) return $"同行已满 {s.Party.Count}/{PartyCapacity(s)}";
             ApplySetActive(s, actorId, active);

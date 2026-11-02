@@ -765,6 +765,10 @@ namespace Survival.Core.State
         /// null 为 schema 16 及以前的旧档在替身地点、非战斗中留下的，分不清候补还是同行，按“不迁”处理（开发计划 v0.9 B8b-3）。
         /// </summary>
         public bool? PublicReserve { get; set; }
+        /// <summary>容器类别（B19）：null 为死亡遗物；"claim" 为收容所认领箱（生成角色退役时全部个人物品寄存于此，主角实地才能取）。</summary>
+        public string? Kind { get; set; }
+        public const string ClaimKind = "claim";
+        [JsonIgnore] public bool IsClaim => Kind == ClaimKind;
         public RemainsState Clone() => (RemainsState)MemberwiseClone();
     }
 

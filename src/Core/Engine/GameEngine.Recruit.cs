@@ -414,6 +414,8 @@ namespace Survival.Core.Engine
             }
             if (s.Recruit.Pending is RecruitTxn p)
                 v.PendingText = $"正在登记：{p.Candidate.Name}（锁定1个名额；跨批次也保留到这笔结束）";
+            foreach (var r in s.Roster.Where(r => r.IsGenerated && r.Present))
+                v.Retirables.Add(RetireViewOf(s, r));
             return v;
         }
 
@@ -441,6 +443,90 @@ namespace Survival.Core.Engine
                              + "资料在本批内固定、不随时间变化，招入时按这份资料建人一次；职业图标不附带武器，枪械模板也要你自备枪弹，没武器时用拳。",
                 Blocked = c.Status == RecruitCandidate.Available ? RecruitBlocked(s, c.CandidateId) : null,
             };
+        }
+
+        // ───────────── 退役（RC4、v3 校准；开发假设 B19-3/B19-4/B19-5） ─────────────
+
+        /// <summary>某人的全部个人物品根实例：随身（五卡）与七个穿戴槽（锅内内容随锅）。</summary>
+        private List<ItemInstance> PersonalItems(GameState s, string actorId)
+        {
+            var carried = ItemInstance.CarriedOwner(actorId);
+            return s.Items.Where(i => i.Owner == carried || i.IsWornBy(actorId)).ToList();
+        }
+
+        /// <summary>
+        /// 退役的只读预演：只适用于存活在册的生成角色（随机招入者、RB01 护送员；固定六人与主角不行）；在收容所安全空闲办理（开发假设 B19-3）；
+        /// 本人物品有预留/处理中、或在战斗中都不能退役。null 为可以。
+        /// </summary>
+        public string? RetireBlocked(GameState s, string actorId)
+        {
+            if (actorId == GameState.PlayerId) return "你不能退役";
+            var r = RosterOf(s, actorId);
+            if (r == null) return "名册里没有这名角色";
+            if (r.Dead) return $"{r.Name}已经死亡";
+            if (r.Retired) return $"{r.Name}已退役";
+            if (!r.IsGenerated) return $"{r.Name}是固定角色，不能退役（剧情资格与招募任务保留）";
+            var why = RecruitServiceBlocked(s, "办理退役");
+            if (why != null) return why;
+            if (PersonalItems(s, actorId).Any(i => i.ReservedBy != null || IsLocked(s, i) || i.InFacility))
+                return $"{r.Name}的物品正被预留或处理中，先结束相关行动再退役";
+            return null;
+        }
+
+        private RetireView RetireViewOf(GameState s, RosterEntry r)
+        {
+            var items = PersonalItems(s, r.ActorId);
+            var loans = items.Where(i => i.LoanSlot != null).Select(i => i.LoanSlot!).ToList();
+            var kind = r.IsEscort ? "同行补员" : $"周期候选招入·{Rc.Template(r.TemplateId ?? "")?.Name ?? ""}";
+            return new RetireView
+            {
+                ActorId = r.ActorId,
+                Name = r.Name,
+                KindLabel = kind,
+                WhereText = s.Party.Contains(r.ActorId) ? "同行" : $"候补（{LocName(HubLocation(s))}）",
+                ConfirmText = $"{r.Name}将永久离开名册（已学技能不返还，本周期不能再招回，候选池不会补人）；"
+                              + (items.Count == 0 ? "身上没有个人物品。" : $"全部个人物品{items.Count}件（穿戴与随身）原样放进{LocName(Rc.LocationId)}认领箱，只能在这里实地取，保质照常、不刷新。")
+                              + (loans.Count > 0 ? $"借用矛（{string.Join("、", loans)}）随物品进认领箱，仍归该借用位，不另发。" : "")
+                              + "退役后释放1个随机/保底名额。",
+                Blocked = RetireBlocked(s, r.ActorId),
+            };
+        }
+
+        /// <summary>
+        /// 退役（RC4）：0 时间（开发假设 B19-4）、原子；本人全部个人物品（穿戴与随身，锅内内容随锅）一次改 owner 到收容所认领箱（remains:&lt;actorId&gt;，类别 claim），
+        /// 借用矛保留 loan_slot（归原借用额度、不新发、不销毁）；同行者离队并只清自己的号位；名册记退役（保留历史 actorId，不占名额、不结算身体）。requestId 幂等。
+        /// </summary>
+        public ActionResult Retire(GameState s, string actorId, string? requestId = null)
+        {
+            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
+            var why = RetireBlocked(s, actorId);
+            if (why != null) return ActionResult.Fail(why);
+            RememberRequest(s, requestId);
+            var r = RosterOf(s, actorId)!;
+            var items = PersonalItems(s, actorId);
+            var owner = ItemInstance.RemainsOwner(actorId);
+            foreach (var it in items)
+            {
+                it.Owner = owner;
+                it.PlacedOrder = null;
+            }
+            if (items.Count > 0)
+                s.Remains[actorId] = new RemainsState
+                {
+                    Name = r.Name, LocationId = Rc.LocationId, Minute = s.GameMinute, Cause = "退役寄存", PublicReserve = false, Kind = RemainsState.ClaimKind,
+                };
+            if (s.Party.Contains(actorId)) ApplySetActive(s, actorId, false);
+            else s.FormationVersion++;
+            if (s.Actors.TryGetValue(actorId, out var a)) a.ReserveMode = null;
+            r.Retired = true;
+            r.RetiredMinute = s.GameMinute;
+            r.RetiredCycle = s.Recruit.Cycle;
+            var loans = items.Where(i => i.LoanSlot != null).Select(i => i.LoanSlot!).ToList();
+            Emit(s, GameEventKind.Info, $"{r.Name}已退役，永久离开名册（已学技能不返还）"
+                + (items.Count > 0 ? $"；{items.Count}件个人物品已放进{LocName(Rc.LocationId)}认领箱（只能在这里取）" : "")
+                + (loans.Count > 0 ? $"；借用矛（{string.Join("、", loans)}）在认领箱里，仍归该借用位、不另发" : "")
+                + $"。随机/保底名册{SharedRoster(s).Count}/{SharedRosterCap(s)}。");
+            return ActionResult.Success();
         }
 
         // ───────────── 开发入口（?dev=1） ─────────────

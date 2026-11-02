@@ -117,7 +117,7 @@ public class B19RecruitTests : TestBase
     {
         var s = AtShelter();
         var snap = JArray.FromObject(s.Recruit.Candidates).ToString();
-        E.DebugMapTeleport(s, "h02_square");
+        E.DebugMapTeleport(s, "camp");
         E.DebugMapTeleport(s, Shelter);
         E.EnsureRecruitCycle(s);
         _ = E.RecruitPreview(s);
@@ -288,5 +288,246 @@ public class B19RecruitTests : TestBase
         s.Encounter = null;
         Assert.That(E.TryOpenShelterRecruitment(s), Is.True);
         Assert.That(E.TryOpenShelterRecruitment(s), Is.False, "只开放一次");
+    }
+
+    // ───────────── R61 登记事务（RC4/RC7、S01） ─────────────
+
+    /// <summary>登记一名当前候选并走完 10 分钟；返回新角色的名册条目。</summary>
+    private RosterEntry Recruit(GameState s, int index = 0)
+    {
+        var c = s.Recruit.Candidates[index];
+        Ok(E.StartRecruit(s, c.CandidateId, Guid.NewGuid().ToString("N")));
+        Run(s);
+        return s.Roster.Single(r => r.CandidateId == c.CandidateId && r.Cycle == c.Cycle);
+    }
+
+    /// <summary>
+    /// RC04/A06-C01：0 材料 10 分钟 wait（两段）完成才建 actorId，按候选快照一次初始化（主/副/其余 Lv1、经验级内 0、身体与人物档、V0、装备与随身空），
+    /// 入名册作候补；候选标记已招；换批后已招者不被替换。
+    /// </summary>
+    [Test]
+    public void RC04_A06C01_RecruitCreatesExactSnapshot_NotReplacedByRefresh()
+    {
+        var s = AtShelter();
+        var c = s.Recruit.Candidates[1].Clone();
+        var t0 = s.GameMinute;
+        var itemsBefore = s.Items.Count;
+        Ok(E.StartRecruit(s, c.CandidateId));
+        Assert.That(s.Main!.PlannedMinutes, Is.EqualTo(10));
+        Assert.That(s.Recruit.Pending!.CandidateId, Is.EqualTo(c.CandidateId));
+        Assert.That(E.SharedRosterLocked(s), Is.EqualTo(1), "开始即锁 1 个名额");
+        E.Advance(s);
+        Assert.That(s.Roster, Is.Empty, "第一段后还没建人");
+        Run(s);
+        Assert.That(s.GameMinute - t0, Is.EqualTo(10));
+        var r = s.Roster.Single();
+        Assert.That(r.IsRandom && r.Present, Is.True);
+        Assert.That(s.Party, Does.Not.Contain(r.ActorId), "入名册作候补，不自动编入同行（开发假设 B19-6）");
+        Assert.That(E.Reserves(s).Select(x => x.ActorId), Does.Contain(r.ActorId));
+        var a = s.Actors[r.ActorId];
+        Assert.That(a.Name, Is.EqualTo(c.Name));
+        foreach (var sk in Cfg.Skills)
+        {
+            var want = sk.Id == c.MainSkill ? c.MainLevel : sk.Id == c.SubSkill ? c.SubLevel : 1;
+            Assert.That(a.Skills[sk.Id].Level, Is.EqualTo(want), sk.Id);
+            Assert.That(a.Skills[sk.Id].Xp, Is.EqualTo(0), "级内 0 经验（A06-C01）");
+        }
+        Assert.That((a.Stats.Health, a.Stats.HealthMax, a.Stats.Energy, a.Stats.EnergyMax, a.Stats.Satiety, a.Stats.Hydration, a.Stats.Wakefulness, a.Stats.Morale),
+            Is.EqualTo((c.Health, c.HealthMax, c.Energy, c.EnergyMax, c.Satiety, c.Hydration, c.Wakefulness, c.Morale)));
+        Assert.That((a.Body.Immunity, a.Body.Infected, a.Body.VirusLoad), Is.EqualTo((c.Immunity, false, 0.0)));
+        Assert.That(E.ActorBaseSpeed(s, r.ActorId), Is.EqualTo(c.BaseSpeed));
+        var prof = E.ActorProfile(s, r.ActorId)!;
+        Assert.That((prof.ControlResist, prof.Evasion, prof.BaseArmor), Is.EqualTo((c.ControlResist, c.Evasion, c.BaseArmor)));
+        Assert.That(s.Items.Count(i => i.Owner == ItemInstance.CarriedOwner(r.ActorId) || i.IsWornBy(r.ActorId)), Is.EqualTo(0), "不送装备与物资");
+        Assert.That(s.Items.Count, Is.EqualTo(itemsBefore), "0 材料、不发物");
+        Assert.That(s.Recruit.Candidates[1].Status, Is.EqualTo(RecruitCandidate.Recruited));
+        Assert.That(E.RecruitBlocked(s, c.CandidateId), Does.Contain("已招入"));
+
+        // 换批：已招者留在名册、状态与数值不被替换
+        s.GameMinute = s.Recruit.ShelterOpenedAt!.Value + 4320;
+        E.EnsureRecruitCycle(s);
+        Assert.That(s.Recruit.Cycle, Is.EqualTo(1));
+        Assert.That(s.Roster.Single().ActorId, Is.EqualTo(r.ActorId));
+        Assert.That(s.Actors[r.ActorId].Skills[c.MainSkill].Level, Is.EqualTo(c.MainLevel));
+    }
+
+    /// <summary>RC05/RC10：K=min(3,C−1)：C1/2/3/4 分别 0/1/2/3；满额按钮禁用并写“随机/保底名册K/K；留守不释放名额”，满额不先耗时。</summary>
+    [Test]
+    public void RC05_SharedCapByCapacity_FullBlocksWithoutTime()
+    {
+        foreach (var (c, k) in new[] { (2, 1), (3, 2), (4, 3) })
+        {
+            var s = AtShelter(c);
+            Assert.That(E.SharedRosterCap(s), Is.EqualTo(k), $"C{c}");
+            for (var i = 0; i < k; i++) Recruit(s, i);
+            Assert.That(E.SharedRoster(s).Count, Is.EqualTo(k));
+            Assert.That(E.Reserves(s).Count, Is.EqualTo(k), "都在留守（候补）");
+            var free = s.Recruit.Candidates.FirstOrDefault(x => x.Status == RecruitCandidate.Available);
+            if (free == null)
+            {
+                s.GameMinute = s.Recruit.ShelterOpenedAt!.Value + 4320;
+                E.EnsureRecruitCycle(s);
+                free = s.Recruit.Candidates[0];
+            }
+            var t = s.GameMinute;
+            Assert.That(E.RecruitBlocked(s, free.CandidateId), Is.EqualTo($"随机/保底名册{k}/{k}；留守不释放名额"));
+            var res = E.StartRecruit(s, free.CandidateId);
+            Assert.That(res.Ok, Is.False);
+            Assert.That(s.GameMinute, Is.EqualTo(t), "名额不够不推进时间");
+            Assert.That(s.Main, Is.Null);
+            Assert.That(E.RecruitPreview(s).Candidates.Count, Is.EqualTo(3), "满额仍可查看三名");
+            Assert.That(1 + s.Roster.Count(r => r.Present), Is.LessThanOrEqualTo(10));
+        }
+        Assert.That(E.SharedRosterCap(New()), Is.EqualTo(0), "C1 没有随机/保底名额");
+    }
+
+    /// <summary>RC07/COMP12/SCB04：周期交界前 5 分钟开始的登记跨期完成，只建这一人、名额不超；其余旧候选离开、新批 3 人；在办候选与名额一路保留。</summary>
+    [Test]
+    public void RC07_CrossCycleRegistration_OnlyOne_NoOverflow()
+    {
+        var s = AtShelter(2);
+        var start = s.Recruit.ShelterOpenedAt!.Value;
+        s.GameMinute = start + 4320 - 5;
+        E.EnsureRecruitCycle(s);
+        var c = s.Recruit.Candidates[2].Clone();
+        var oldNames = s.Recruit.Candidates.Select(x => x.Name).ToList();
+        const string req = "req-cross";
+        Ok(E.StartRecruit(s, c.CandidateId, req));
+        Assert.That(E.StartRecruit(s, c.CandidateId, req).Duplicate, Is.True, "同一 requestId 重放不另开");
+        E.Advance(s);   // 第一段跨过交界
+        Assert.That(s.Recruit.Cycle, Is.EqualTo(1), "交界换批");
+        Assert.That(s.Recruit.Pending!.CandidateId, Is.EqualTo(c.CandidateId), "在办登记的候选与名额保留");
+        Assert.That(s.Recruit.Candidates.Select(x => x.Name).Intersect(oldNames), Is.Empty);
+        Assert.That(E.SharedRosterLocked(s), Is.EqualTo(1));
+        foreach (var x in s.Recruit.Candidates) Assert.That(E.RecruitBlocked(s, x.CandidateId), Is.Not.Null, "在办期间不能再开第二笔");
+        Run(s);
+        var r = s.Roster.Single();
+        Assert.That((r.Name, r.Cycle), Is.EqualTo((c.Name, (int?)0)));
+        Assert.That(E.SharedRoster(s).Count, Is.EqualTo(1));
+        Assert.That(s.Recruit.Pending, Is.Null);
+        Assert.That(E.StartRecruit(s, c.CandidateId, req).Duplicate, Is.True, "完成后重放也不建第二人");
+        Assert.That(s.Roster.Count, Is.EqualTo(1));
+        Assert.That(s.Recruit.Candidates.All(x => x.Status == RecruitCandidate.Available), Is.True, "新批不受旧登记影响");
+        Assert.That(E.RecruitBlocked(s, s.Recruit.Candidates[0].CandidateId), Is.EqualTo("随机/保底名册1/1；留守不释放名额"));
+    }
+
+    /// <summary>RC04：中途取消只取消登记——已耗时间不退、候选仍是同一人同属性、名额释放；读档后在办登记照常续完只建一人。</summary>
+    [Test]
+    public void RC04_CancelKeepsCandidate_ReloadMidwayCreatesOnce()
+    {
+        var s = AtShelter();
+        var snap = JArray.FromObject(s.Recruit.Candidates).ToString();
+        var c = s.Recruit.Candidates[0];
+        var t = s.GameMinute;
+        Ok(E.StartRecruit(s, c.CandidateId));
+        E.Advance(s);
+        Ok(E.Cancel(s));
+        Assert.That(s.GameMinute, Is.EqualTo(t + 5), "已耗时间不退");
+        Assert.That(s.Recruit.Pending, Is.Null);
+        Assert.That(E.SharedRosterLocked(s), Is.EqualTo(0));
+        Assert.That(JArray.FromObject(s.Recruit.Candidates).ToString(), Is.EqualTo(snap), "候选同一人、属性不重抽、回到可招");
+        Assert.That(s.Roster, Is.Empty);
+
+        Ok(E.StartRecruit(s, c.CandidateId));
+        E.Advance(s);
+        var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Run(m);
+        Assert.That(m.Roster.Count, Is.EqualTo(1));
+        Assert.That(m.GameMinute, Is.EqualTo(t + 15), "读档不补扣时间");
+    }
+
+    /// <summary>RC15：主角在登记中途死亡——死亡优先，不建人、不续局。</summary>
+    [Test]
+    public void RC15_PlayerDeathStopsRegistration()
+    {
+        var s = AtShelter();
+        Ok(E.StartRecruit(s, s.Recruit.Candidates[0].CandidateId));
+        s.Stats.Health = 0;
+        var res = E.Advance(s);
+        Assert.That(res.Status, Is.EqualTo(SegmentStatus.Dead));
+        Assert.That(s.Progress.Dead, Is.True);
+        Assert.That(s.Roster, Is.Empty);
+        Assert.That(E.StartRecruit(s, s.Recruit.Candidates[1].CandidateId).Ok, Is.False);
+    }
+
+    /// <summary>登记只在收容所安全空闲时办理（v3 校准：不从广场或别处远程）。</summary>
+    [Test]
+    public void RC04_OnlyAtShelter()
+    {
+        var s = AtShelter();
+        var id = s.Recruit.Candidates[0].CandidateId;
+        E.DebugMapTeleport(s, "camp");
+        Assert.That(E.RecruitBlocked(s, id), Does.Contain("只能在"));
+        Assert.That(E.StartRecruit(s, id).Ok, Is.False);
+        E.DebugMapTeleport(s, Shelter);
+        Assert.That(E.RecruitBlocked(s, id), Is.Null);
+    }
+
+    // ───────────── R61 退役与认领箱（RC4/RC6） ─────────────
+
+    /// <summary>
+    /// RC06/RC11：退役把本人全部个人物品原子迁到收容所认领箱（实例不变，不新造、不销毁），释放名额；同周期不能再招回；候选池不补人；
+    /// 认领箱只能实地取；存档保留退役记录与认领箱。
+    /// </summary>
+    [Test]
+    public void RC06_RetireMovesItemsToClaimBox_FreesSlot()
+    {
+        var s = AtShelter(2);
+        var r = Recruit(s, 0);
+        Assert.That(E.RecruitBlocked(s, s.Recruit.Candidates[1].CandidateId), Is.EqualTo("随机/保底名册1/1；留守不释放名额"));
+        var spear = E.CreateItems(s, "wooden_spear", 1, ItemInstance.EquipOwner(r.ActorId, EquipSlots.Weapon1)).Single();
+        var food = E.CreateItems(s, "fiber", 1, ItemInstance.CarriedOwner(r.ActorId)).Single();
+        var items = s.Items.Count;
+        var view = E.RecruitPreview(s).Retirables.Single();
+        Assert.That(view.ConfirmText, Does.Contain("永久离开名册").And.Contain("技能不返还").And.Contain("认领箱"));
+        Assert.That(view.Blocked, Is.Null);
+        Ok(E.Retire(s, r.ActorId, "ret-1"));
+        Assert.That(E.Retire(s, r.ActorId, "ret-1").Duplicate, Is.True);
+        Assert.That(s.Items.Count, Is.EqualTo(items), "不新造、不销毁");
+        Assert.That(spear.Owner, Is.EqualTo(ItemInstance.RemainsOwner(r.ActorId)));
+        Assert.That(food.Owner, Is.EqualTo(ItemInstance.RemainsOwner(r.ActorId)));
+        Assert.That(s.Remains[r.ActorId].IsClaim && s.Remains[r.ActorId].LocationId == Shelter, Is.True);
+        Assert.That(r.Retired && !r.Present, Is.True);
+        Assert.That(E.Reserves(s), Is.Empty);
+        Assert.That(E.SharedRoster(s), Is.Empty, "退役释放名额");
+        Assert.That(E.RecruitBlocked(s, s.Recruit.Candidates[0].CandidateId), Does.Contain("已招入"), "同周期不能再招回");
+        Assert.That(E.RecruitBlocked(s, s.Recruit.Candidates[1].CandidateId), Is.Null, "可以再招别人");
+        Assert.That(s.Recruit.Candidates.Count, Is.EqualTo(3), "候选池不补人");
+        E.DebugMapTeleport(s, "camp");
+        Assert.That(E.TakeFromRemainsBlocked(s, r.ActorId, food.InstanceId, false), Does.Contain("认领箱在"));
+        E.DebugMapTeleport(s, Shelter);
+        Ok(E.TakeFromRemains(s, r.ActorId, food.InstanceId, false));
+        Assert.That(food.Owner, Is.EqualTo(ItemInstance.Carried));
+        var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Assert.That(m.Roster.Single().Retired, Is.True);
+        Assert.That(m.Remains[r.ActorId].IsClaim, Is.True);
+    }
+
+    /// <summary>退役限制：主角、固定角色不行；不在收容所、物品被预留时不行；同行者退役离队只清自己的号位。</summary>
+    [Test]
+    public void RC06_RetireRules()
+    {
+        var s = AtShelter(4);
+        E.DebugRecruit(s, "npc_lin_zhao");
+        Assert.That(E.RetireBlocked(s, GameState.PlayerId), Is.Not.Null);
+        Assert.That(E.RetireBlocked(s, "npc_lin_zhao"), Does.Contain("固定角色"));
+        var r = Recruit(s, 0);
+        E.DebugToggleActive(s, r.ActorId);
+        Assert.That(s.Party, Does.Contain(r.ActorId));
+        var ver = s.FormationVersion;
+        var bandage = E.CreateItems(s, "bandage", 1, ItemInstance.CarriedOwner(r.ActorId)).Single();
+        bandage.ReservedBy = 999;
+        Assert.That(E.RetireBlocked(s, r.ActorId), Does.Contain("预留"));
+        bandage.ReservedBy = null;
+        E.DebugMapTeleport(s, "camp");
+        Assert.That(E.RetireBlocked(s, r.ActorId), Does.Contain("只能在"));
+        E.DebugMapTeleport(s, Shelter);
+        var linSlot = GameEngine.FormationSlotOf(s, "npc_lin_zhao");
+        Ok(E.Retire(s, r.ActorId));
+        Assert.That(s.Party, Does.Not.Contain(r.ActorId));
+        Assert.That(GameEngine.FormationSlotOf(s, r.ActorId), Is.EqualTo(0));
+        Assert.That(GameEngine.FormationSlotOf(s, "npc_lin_zhao"), Is.EqualTo(linSlot), "其余号位不动");
+        Assert.That(s.FormationVersion, Is.GreaterThan(ver));
+        Assert.That(E.SetActiveBlocked(s, r.ActorId, true), Does.Contain("退役"));
     }
 }

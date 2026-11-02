@@ -43,7 +43,7 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) return "本局已结束";
             if (!s.Remains.TryGetValue(deadId, out var rem)) return "这里没有这份遗物";
             if (s.Battle != null || s.Encounter != null) return "战斗结束后才能整理遗物";
-            if (rem.LocationId != s.CurrentLocation) return $"遗物在{LocName(rem.LocationId)}，要到那里才能取";
+            if (rem.LocationId != s.CurrentLocation) return $"{(rem.IsClaim ? "认领箱" : "遗物")}在{LocName(rem.LocationId)}，要到那里才能取";
             var it = FindItem(s, instanceId);
             if (it == null || it.Owner != ItemInstance.RemainsOwner(deadId)) return "这件物品已不在遗物里";
             if (!toGround && PickupBlockedText(s, it, it.Count) is string why) return why;
@@ -62,8 +62,9 @@ namespace Survival.Core.Engine
             it.Owner = dest;
             Normalize(s, dest);
             var name = s.Remains[deadId].Name;
+            var claim = s.Remains[deadId].IsClaim;
             if (RemainsItems(s, deadId).Count == 0) s.Remains.Remove(deadId);
-            Emit(s, GameEventKind.Info, $"从{name}的遗物取出{ItemName(it.ItemId)}" + (toGround ? "，放在地面。" : "。"));
+            Emit(s, GameEventKind.Info, $"从{(claim ? $"认领箱（{name}退役寄存）" : $"{name}的遗物")}取出{ItemName(it.ItemId)}" + (toGround ? "，放在地面。" : "。"));
             return ActionResult.Success();
         }
 
@@ -75,7 +76,7 @@ namespace Survival.Core.Engine
         /// <summary>同时存活通用护送员上限 min(3, C−1)。</summary>
         public int EscortCap(GameState s) => Math.Max(0, Math.Min(Config.Party.EscortTemplate.MaxAlive, PartyCapacity(s) - 1));
 
-        public List<RosterEntry> AliveEscorts(GameState s) => s.Roster.Where(r => r.IsEscort && !r.Dead).ToList();
+        public List<RosterEntry> AliveEscorts(GameState s) => s.Roster.Where(r => r.IsEscort && r.Present).ToList();
 
         /// <summary>已解锁的借用矛位 loan_1..loan_{C−1}（最多 3）。</summary>
         public List<string> LoanSlotIds(GameState s) => Enumerable.Range(1, EscortCap(s)).Select(k => "loan_" + k).ToList();
@@ -191,7 +192,8 @@ namespace Survival.Core.Engine
             if (it.InRemains)
             {
                 var dead = it.Owner.Substring(ItemInstance.RemainsPrefix.Length);
-                return s.Remains.TryGetValue(dead, out var rem) ? $"{rem.Name}的遗物里（{LocName(rem.LocationId)}）" : "遗物里";
+                if (s.Remains.TryGetValue(dead, out var rem) && rem.IsClaim) return $"{LocName(rem.LocationId)}认领箱里（{rem.Name}退役寄存）";
+                return s.Remains.TryGetValue(dead, out rem) ? $"{rem.Name}的遗物里（{LocName(rem.LocationId)}）" : "遗物里";
             }
             if (ItemInstance.TryEquip(it.Owner, out var aid, out _)) return $"{ActorDisplayName(s, aid)}身上";
             if (it.IsCarried) return "你的随身";
@@ -258,7 +260,7 @@ namespace Survival.Core.Engine
         /// <summary>开发入口：改所选队友的状态（health1 / virus79 / food41 / kill / spear0）。</summary>
         public string DebugActor(GameState s, string actorId, string what)
         {
-            if (actorId == GameState.PlayerId || !s.Actors.TryGetValue(actorId, out var a) || !(RosterOf(s, actorId) is RosterEntry r) || r.Dead) return "请选一名存活队友";
+            if (actorId == GameState.PlayerId || !s.Actors.TryGetValue(actorId, out var a) || !(RosterOf(s, actorId) is RosterEntry r) || !r.Present) return "请选一名存活队友";
             switch (what)
             {
                 case "health1": a.Stats.Health = 1; return $"{r.Name}健康→1";

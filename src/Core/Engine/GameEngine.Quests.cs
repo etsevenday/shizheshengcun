@@ -94,7 +94,7 @@ namespace Survival.Core.Engine
                 var now = ExploreOf(s, kv.Key, null);
                 if (now < kv.Value) return $"需要：把{LocName(kv.Key)}探索到{kv.Value}%（现在{now}%）";
             }
-            if (q.RequiresRosterMember && !s.Roster.Any(r => !r.Dead)) return "需要：名册里有一名同行者";
+            if (q.RequiresRosterMember && !s.Roster.Any(r => r.Present)) return "需要：名册里有一名同行者";
             return null;
         }
 
@@ -449,10 +449,10 @@ namespace Survival.Core.Engine
             switch (q.Id)
             {
                 case "HU03":
-                    return $"当前队伍容量C{PartyCapacity(s)}（含你），名册{s.Roster.Count(r => !r.Dead)}人";
+                    return $"当前队伍容量C{PartyCapacity(s)}（含你），名册{s.Roster.Count(r => r.Present)}人";
                 case "HU04":
                 {
-                    var list = s.Roster.Where(r => !r.Dead && s.Actors.ContainsKey(r.ActorId)).Select(r =>
+                    var list = s.Roster.Where(r => r.Present && s.Actors.ContainsKey(r.ActorId)).Select(r =>
                     {
                         var a = s.Actors[r.ActorId];
                         return $"{r.Name}：健康{Fmt.N(a.Stats.Health)}/{Fmt.N(a.Stats.HealthMax)}、病毒{Fmt.N(a.Body.VirusLoad)}{(a.Body.Infected ? "（已感染）" : "")}、{(a.Body.BleedTriggers > 0 ? "正在出血" : "没有出血")}";
