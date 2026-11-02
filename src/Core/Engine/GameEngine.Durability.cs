@@ -60,7 +60,7 @@ namespace Survival.Core.Engine
             pot = potId.HasValue ? FindItem(s, potId.Value) : null;
             if (!potId.HasValue) return "请指定一口取下并清空的锅";
             if (pot == null || !IsPot(pot)) return "指定的锅已不在，请重新选择";
-            if (!(pot.IsCarried || pot.Owner == s.CurrentLocation)) return pot.InFacility ? "先把锅从火堆取下" : "只能用随身或当前地面的锅";
+            if (!(pot.IsCarried || pot.Owner == s.Ground)) return pot.InFacility ? "先把锅从火堆取下" : "只能用随身或当前地面的锅";
             if (PotContents(s, pot.InstanceId).Count > 0) return "锅须先清空（倒出水、取出食材）";
             if (pot.ReservedBy != null || IsLocked(s, pot)) return "行动占用：这口锅正被使用";
             return null;
@@ -72,7 +72,7 @@ namespace Survival.Core.Engine
 
         /// <summary>可维护的目标：随身或当前地面（不在火堆、不在锅里）、有耐久且未满、未被预留或锁定。</summary>
         public List<ItemInstance> RepairCandidates(GameState s, RecipeConfig? rc = null) =>
-            s.Items.Where(i => i.Durability.HasValue && i.MaxDurability.HasValue && (OnPlayer(i) || i.Owner == s.CurrentLocation))
+            s.Items.Where(i => i.Durability.HasValue && i.MaxDurability.HasValue && (OnPlayer(i) || i.Owner == s.Ground))
                 .Where(i => rc?.RepairFilter == null || RepairFilterOk(rc, i.ItemId))
                 .OrderBy(i => OnPlayer(i) ? 0 : 1).ThenBy(i => Condition(i)).ThenBy(i => i.InstanceId).ToList();
 
@@ -98,7 +98,7 @@ namespace Survival.Core.Engine
             if (target == null) return "这件工具已不在，请重新选择";
             var cfg = _items[target.ItemId];
             if (!target.Durability.HasValue || !target.MaxDurability.HasValue) return $"{cfg.Name}没有耐久，不需要维护";
-            if (!(OnPlayer(target) || target.Owner == s.CurrentLocation))
+            if (!(OnPlayer(target) || target.Owner == s.Ground))
                 return target.InFacility ? $"先把{cfg.Name}从火堆取下" : "只能维护随身或当前地面的工具";
             if (target.ReservedBy != null || IsLocked(s, target)) return "行动占用：这件工具正被使用";
             if (rc != null && !RepairFilterOk(rc, target.ItemId)) return $"{rc.Name}只修非枪的金属武器/工具，{cfg.Name}不能用它修（枪、布皮、木石器具与锅不修）";
@@ -195,7 +195,7 @@ namespace Survival.Core.Engine
             if (!cfg.IsEquipment) return $"{cfg.Name}不是装备，不能拆解";
             if (target.LoanSlot != null) return $"借用的{cfg.Name}不能拆解（RB01 借用物，不产出材料）";
             if (target.IsWorn) return target.IsWornBy(GameState.PlayerId) ? "穿戴中：先在装备区卸下再拆解" : "穿在别人身上，不能拆解";
-            if (!(target.IsCarried || target.Owner == s.CurrentLocation)) return "只能拆解随身或当前地面的装备";
+            if (!(target.IsCarried || target.Owner == s.Ground)) return "只能拆解随身或当前地面的装备";
             if (target.ReservedBy != null || IsLocked(s, target)) return "行动占用：这件装备正被使用";
             if (target.LoadedAmmo > 0) return $"弹仓里还有{target.LoadedAmmo}发{ItemName(target.LoadedAmmoId ?? "")}，打空后再拆解";
             if (SalvageOutput(target) == null) return $"{cfg.Name}没有拆解表，暂不能拆解";
@@ -225,7 +225,7 @@ namespace Survival.Core.Engine
         /// </summary>
         private bool CompleteSalvage(GameState s, ActionState a)
         {
-            var here = s.CurrentLocation;
+            var here = s.Ground;
             var t = a.ToolInstanceId.HasValue ? FindItem(s, a.ToolInstanceId.Value) : null;
             var yield = t != null ? SalvageYield(s, t) : new List<(string itemId, int count)>();
             var note = t != null ? SalvageExpertBonus(s, t).note : null;

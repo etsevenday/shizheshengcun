@@ -241,7 +241,7 @@ namespace Survival.Core.Engine
             if (keep.Any(id => roots.All(i => i.InstanceId != id))) return ActionResult.Fail("选择的物品已不在随身");
             var cards = RootCardsOf(s, keep);
             if (cards > MaxRootCards) return ActionResult.Fail($"保留{cards}张，超过{MaxRootCards}张上限");
-            var here = s.CurrentLocation;
+            var here = s.Ground;
             var moved = roots.Where(i => !keep.Contains(i.InstanceId)).ToList();
             if (moved.Any(i => IsLocked(s, i))) return ActionResult.Fail("行动占用：有物品正被行动使用");
             foreach (var i in moved) i.Owner = here;
@@ -266,9 +266,9 @@ namespace Survival.Core.Engine
                 {
                     if (!includeContainers || !IsLiquid(i)) return false;
                     var place = PlaceOf(s, i);
-                    return place == ItemInstance.Carried || (allowGround && place == s.CurrentLocation);
+                    return place == ItemInstance.Carried || (allowGround && place == s.Ground);
                 }
-                return i.IsCarried || (allowGround && i.Owner == s.CurrentLocation);
+                return i.IsCarried || (allowGround && i.Owner == s.Ground);
             });
 
         /// <summary>
@@ -382,7 +382,7 @@ namespace Survival.Core.Engine
 
         /// <summary>同地全部可用的某标签工具（随身在前，再按实例 ID），供界面让玩家选定。</summary>
         public List<ItemInstance> AccessibleTools(GameState s, string toolTag) =>
-            s.Items.Where(i => (OnPlayer(i) || i.Owner == s.CurrentLocation) && i.ReservedBy == null && !IsLocked(s, i)
+            s.Items.Where(i => (OnPlayer(i) || i.Owner == s.Ground) && i.ReservedBy == null && !IsLocked(s, i)
                                && _items[i.ItemId].ToolTag == toolTag && HasWear(i, ToolWear(toolTag)))
                 .OrderBy(i => OnPlayer(i) ? 0 : 1)
                 .ThenBy(i => i.InstanceId)
@@ -390,7 +390,7 @@ namespace Survival.Core.Engine
 
         /// <summary>同地可用的催化工具：随身优先，其次当前地面（锅位视为地面）；未预留、未被锁定、耐久足够。</summary>
         public ItemInstance? AccessibleTool(GameState s, string toolTag) =>
-            s.Items.Where(i => (OnPlayer(i) || i.Owner == s.CurrentLocation) && i.ReservedBy == null && !IsLocked(s, i)
+            s.Items.Where(i => (OnPlayer(i) || i.Owner == s.Ground) && i.ReservedBy == null && !IsLocked(s, i)
                                && _items[i.ItemId].ToolTag == toolTag && HasWear(i, ToolWear(toolTag)))
                 .OrderBy(i => OnPlayer(i) ? 0 : 1)
                 .ThenByDescending(Condition)

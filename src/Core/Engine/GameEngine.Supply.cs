@@ -106,7 +106,7 @@ namespace Survival.Core.Engine
                 ("grain", 3), ("salt", 2), ("raw_meat", 1), ("dried_meat", 1), ("dried_berries", 1), ("disinfectant", 1),
                 ("antidiarrheal_powder", 1), ("oral_rehydration", 1), ("emergency_tonic", 1), ("field_patch", 2),
             };
-            foreach (var (id, n) in kit) CreateItems(s, id, n, s.CurrentLocation);
+            foreach (var (id, n) in kit) CreateItems(s, id, n, s.Ground);
             var text = "开发：学会远行基础做法、基础陶工做法，B16 材料（脏水4、净水2、净水片、滤芯、滤水器、分量水壶、谷物3、盐2、生肉、肉干、果干、消毒液、止泻药粉、口服补液、应急恢复剂、野外修补包2）放在当前地面";
             Emit(s, GameEventKind.Info, text + "。");
             return text;

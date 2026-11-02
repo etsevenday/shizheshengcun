@@ -254,7 +254,7 @@ namespace Survival.Core.Engine
             var inst = FindItem(s, r.InstanceId.Value);
             if (inst == null) return "这份活性物质已不在";
             if (!IsSubstance(inst.ItemId)) return "饱饱只能吞噬融合活性物质";
-            if (!(inst.IsCarried || (allowGround && inst.Owner == s.CurrentLocation)))
+            if (!(inst.IsCarried || (allowGround && inst.Owner == s.Ground)))
                 return "只能吞噬融合随身或当前地面的活性物质";
             if (inst.ReservedBy != null || IsLocked(s, inst)) return "该物品已被预留";
             if (inst.Count < 1) return "数量不足";

@@ -60,9 +60,9 @@ namespace Survival.Core.Engine
         /// </summary>
         public CookWaitPlan PreviewCookWait(GameState s)
         {
-            var loc = s.CurrentLocation;
+            var loc = s.Ground;
             var plan = new CookWaitPlan { LocationId = loc, BodyRates = Config.HourlyRates[RateKeyFor(ActionType.WaitCook)].Copy() };
-            if (!_locs.TryGetValue(loc, out var lc) || !lc.HasFire) { plan.Reason = "这里没有火堆"; return plan; }
+            if (!HasFireAt(s, loc)) { plan.Reason = "这里没有火堆"; return plan; }
             AnalyzeCook(s, loc, null, plan);
             plan.Reason = Validate(s, ActionRequest.WaitCook(), out _);
             plan.Ok = plan.Reason == null;
@@ -83,7 +83,7 @@ namespace Survival.Core.Engine
             var c = s.Clone();
             SimReadDialogues(c);
             SyncFacility(c, loc);
-            var fac = c.Locations[loc].Facility;
+            var fac = FacOf(c, loc)!;
             var candidates = bound != null
                 ? bound.ToList()
                 : fac.Processes.Where(p => { var t = FindItem(c, p.TargetInstanceId); return t != null && !IsSpoiled(c, t); }).Select(p => p.ProcessId).ToList();
@@ -145,7 +145,7 @@ namespace Survival.Core.Engine
             fail = new Dictionary<string, string>();
             if (pids.Count == 0) return done;
             var c = src.Clone();
-            var fac = c.Locations[loc].Facility;
+            var fac = FacOf(c, loc)!;
             if (infiniteFuel) { fac.FireLit = true; fac.FuelMinutes = Config.Fire.MaxFuelMinutes * 1000; }
             c.Sub = null;
             c.Battle = null;
@@ -212,9 +212,9 @@ namespace Survival.Core.Engine
         private string? ValidateCookWait(GameState s, Plan plan)
         {
             if (plan.IsSub) return "主行动暂停中：请先退出原行动再等待加工";
-            var here = s.CurrentLocation;
-            if (!_locs[here].HasFire) return "这里没有火堆";
-            var fac = s.Locations[here].Facility;
+            var here = s.Ground;
+            if (!HasFireAt(s, here)) return "这里没有火堆";
+            var fac = FacOf(s, here)!;
             if (!fac.FireLit) return "火堆未燃烧：请先点火（等待加工不会自动点火）";
             if (fac.FuelMinutes < Tick) return "火堆燃料不够下一段，请先投入木材（等待加工不会自动加木）";
             var info = new CookWaitPlan { LocationId = here };
@@ -235,7 +235,7 @@ namespace Survival.Core.Engine
         private bool CookWaitStoppedBeforeSegment(GameState s, ActionState a)
         {
             if (a.Type != ActionType.WaitCook || FireHot(s, a.TargetId)) return false;
-            var f = s.Locations[a.TargetId].Facility;
+            var f = FacOf(s, a.TargetId) ?? new FacilityState();
             StopCookWait(s, a, f.FireLit ? "火堆燃料不够下一段" : "火堆已熄灭");
             return true;
         }
@@ -248,7 +248,7 @@ namespace Survival.Core.Engine
         {
             completed = false;
             var loc = a.TargetId;
-            var fac = s.Locations[loc].Facility;
+            var fac = FacOf(s, loc) ?? new FacilityState();
             foreach (var pid in a.CookTargets.Where(p => !a.CookDone.Contains(p)).ToList())
             {
                 if (fac.Processes.Any(p => p.ProcessId == pid)) continue;

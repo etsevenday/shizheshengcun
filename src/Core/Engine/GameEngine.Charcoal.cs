@@ -88,7 +88,7 @@ namespace Survival.Core.Engine
         /// </summary>
         public int CharcoalHeatAvailable(GameState s, string loc)
         {
-            var f = s.Locations[loc].Facility;
+            var f = FacOf(s, loc)!;
             var fire = Config.Fire;
             var fuel = f.FuelMinutes;
             if (!f.FireLit)
@@ -102,7 +102,7 @@ namespace Survival.Core.Engine
         /// <summary>“煅烧木炭”投料前说明与禁用原因（只读）。</summary>
         public CharcoalLoadInfo CharcoalLoadPreview(GameState s)
         {
-            var here = s.CurrentLocation;
+            var here = s.Ground;
             var cp = CharcoalProcess;
             var info = new CharcoalLoadInfo { Slots = Config.Fire.ProcessingSlots };
             if (cp == null) { info.Reason = "煅烧木炭尚未开放"; return info; }
@@ -111,8 +111,8 @@ namespace Survival.Core.Engine
             info.InputCount = cp.InputCount;
             info.OutputCount = cp.OutputCount;
             info.HeatMinutes = cp.HeatMinutes;
-            if (!_locs.TryGetValue(here, out var lc) || !lc.HasFire) { info.Reason = "这里没有火堆"; return info; }
-            var fac = s.Locations[here].Facility;
+            if (!HasFireAt(s, here)) { info.Reason = "这里没有火堆"; return info; }
+            var fac = FacOf(s, here)!;
             info.FireLit = fac.FireLit;
             info.FuelMinutes = fac.FuelMinutes;
             info.FreeSlots = FireFreeSlots(s, here);
@@ -152,7 +152,7 @@ namespace Survival.Core.Engine
             if (DialogueLocked(s)) return DialogueLockedReason;
             var busy = HolderBlocked(s);
             if (busy != null) return busy;
-            if (info.FreeSlots < 1) return FireFullText(s, s.CurrentLocation);
+            if (info.FreeSlots < 1) return FireFullText(s, s.Ground);
             if (info.WoodAvailable < cp.InputCount)
                 return $"{ItemName(cp.InputId)}不足：随身与当前地面共{info.WoodAvailable}/{cp.InputCount}份（不取队友或别处的）";
             return null;
@@ -165,8 +165,8 @@ namespace Survival.Core.Engine
         private string? CharcoalPlanStale(GameState s, ProcessConfig cp, CharcoalPlan plan, CharcoalLoadInfo now)
         {
             const string tail = "，请重新查看明细后再确认；本次未投料";
-            if (plan.Location != s.CurrentLocation)
-                return $"已不在预览时的地点（{(_locs.ContainsKey(plan.Location) ? LocName(plan.Location) : plan.Location)}）{tail}";
+            if (plan.Location != s.Ground)
+                return $"已不在预览时的地点（{LocName(plan.Location)}）{tail}";
             if (plan.Picks.Count == 0 || plan.Picks.Any(p => p.Take < 1) || plan.Picks.Sum(p => p.Take) != cp.InputCount
                 || plan.Picks.Select(p => p.InstanceId).Distinct().Count() != plan.Picks.Count)
                 return $"投料明细不完整（须合计{ItemName(cp.InputId)}×{cp.InputCount}）{tail}";
@@ -198,7 +198,7 @@ namespace Survival.Core.Engine
             if (!info.Ok) return ActionResult.Fail(info.Reason ?? "不能投料");
             var cp = CharcoalProcess!;
             if (plan != null && CharcoalPlanStale(s, cp, plan, info) is string stale) return ActionResult.Fail(stale);
-            var here = s.CurrentLocation;
+            var here = s.Ground;
             var owner = FireOwner(here);
             var sources = CharcoalSources(s, cp);
             if (sources.Sum(x => x.take) != cp.InputCount) return ActionResult.Fail($"{ItemName(cp.InputId)}不足{cp.InputCount}份");
@@ -225,7 +225,7 @@ namespace Survival.Core.Engine
             }
             batch.PlacedOrder = s.NextProcessSeq++;
             SyncFacility(s, here);
-            var slot = s.Locations[here].Facility.ProcessingSlots.IndexOf(batch.InstanceId) + 1;
+            var slot = FacOf(s, here)!.ProcessingSlots.IndexOf(batch.InstanceId) + 1;
             Emit(s, GameEventKind.Info,
                 $"把{ItemName(cp.InputId)}×{cp.InputCount}（{string.Join("、", info.Sources)}）放进{LocName(here)}火堆加工位{slot}煅烧木炭："
                 + $"需{cp.HeatMinutes}有效受热分钟，完成得{ItemName(cp.OutputId)}×{cp.OutputCount}；燃料另计（现有燃料可给这一批受热{info.HeatAvailable}分钟"

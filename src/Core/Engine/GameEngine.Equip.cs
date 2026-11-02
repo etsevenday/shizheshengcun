@@ -49,7 +49,7 @@ namespace Survival.Core.Engine
         // ───────────── 穿上 ─────────────
 
         /// <summary>该实例是否在当前地点地面（顶层，不在锅里、设施里、别处或他人身上；Q40 只认当前实际可访问的地面）。</summary>
-        public static bool OnCurrentGround(GameState s, ItemInstance it) => it.Owner == s.CurrentLocation;
+        public static bool OnCurrentGround(GameState s, ItemInstance it) => it.Owner == s.Ground;
 
         /// <summary>
         /// 地面取放的时机（Q40/Q42 选定：地面→穿戴、旧件放当前地面沿原地面操作条件）：与拾取/放下相同，要求无敌踪待选、无主/子行动（含暂停）。
@@ -150,7 +150,7 @@ namespace Survival.Core.Engine
             var fromGround = OnCurrentGround(s, it);
             var old = WornItem(s, actorId, slot);
             var carried = ItemInstance.CarriedOwner(actorId);
-            var here = s.CurrentLocation;
+            var here = s.Ground;
             if (old != null)
             {
                 old.Owner = oldToGround ? here : carried;
@@ -207,11 +207,11 @@ namespace Survival.Core.Engine
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, requestId);
             var it = WornItem(s, actorId, slot)!;
-            var dest = toGround ? s.CurrentLocation : ItemInstance.CarriedOwner(actorId);
+            var dest = toGround ? s.Ground : ItemInstance.CarriedOwner(actorId);
             it.Owner = dest;
             it.PlacedOrder = null;
             Normalize(s, dest);
-            Emit(s, GameEventKind.Info, $"{ActorPrefix(s, actorId)}卸下{EquipSlots.Name(slot)}的{ItemName(it.ItemId)}#{it.InstanceId}，{(toGround ? $"放在{LocName(s.CurrentLocation)}地面" : "放回随身")}。");
+            Emit(s, GameEventKind.Info, $"{ActorPrefix(s, actorId)}卸下{EquipSlots.Name(slot)}的{ItemName(it.ItemId)}#{it.InstanceId}，{(toGround ? $"放在{LocName(s.Ground)}地面" : "放回随身")}。");
             UpdateFlags(s);
             return ActionResult.Success();
         }
@@ -267,11 +267,11 @@ namespace Survival.Core.Engine
             foreach (var o in DuplicateKindWeapons(s, actorId).Where(i => i.InstanceId != keepInstanceId))
             {
                 var ground = toGround[o.InstanceId];
-                o.Owner = ground ? s.CurrentLocation : ItemInstance.CarriedOwner(actorId);
+                o.Owner = ground ? s.Ground : ItemInstance.CarriedOwner(actorId);
                 o.PlacedOrder = null;
-                parts.Add($"{ItemName(o.ItemId)}#{o.InstanceId}{(ground ? $"放在{LocName(s.CurrentLocation)}地面" : "放回随身")}");
+                parts.Add($"{ItemName(o.ItemId)}#{o.InstanceId}{(ground ? $"放在{LocName(s.Ground)}地面" : "放回随身")}");
             }
-            Normalize(s, s.CurrentLocation);
+            Normalize(s, s.Ground);
             Normalize(s, ItemInstance.CarriedOwner(actorId));
             Emit(s, GameEventKind.Info, $"整理装备：保留{ItemName(keep.ItemId)}#{keep.InstanceId}，{string.Join("，", parts)}（同类型武器最多装备1件）。");
             UpdateFlags(s);

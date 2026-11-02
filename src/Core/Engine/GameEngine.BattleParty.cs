@@ -339,15 +339,15 @@ namespace Survival.Core.Engine
                 foreach (var (slot, item) in new[] { (EquipSlots.Weapon1, "wooden_spear"), (EquipSlots.Weapon2, "signal_whistle") })
                 {
                     var owner = ItemInstance.EquipOwner(id, slot);
-                    foreach (var old in s.Items.Where(i => i.Owner == owner).ToList()) old.Owner = s.CurrentLocation;
+                    foreach (var old in s.Items.Where(i => i.Owner == owner).ToList()) old.Owner = s.Ground;
                     DebugCreateEquipment(s, item, "white", owner);
                 }
                 var a = s.Actor(id);
                 foreach (var (skill, lv) in new[] { ("spear", 5), ("command", 3) })
                     if (!a.Skills.TryGetValue(skill, out var st) || st.Level < lv) a.Skills[skill] = new SkillState { Level = lv, Xp = 0 };
             }
-            Normalize(s, s.CurrentLocation);
-            var text = $"开发：{string.Join("、", who.Select(id => ActorDisplayName(s, id)))}武器Ⅰ木矛、武器Ⅱ信号哨（原武器放到{LocName(s.CurrentLocation)}地面），矛术≥5级、指挥≥3级（只供试玩架矛顺延与整队）。";
+            Normalize(s, s.Ground);
+            var text = $"开发：{string.Join("、", who.Select(id => ActorDisplayName(s, id)))}武器Ⅰ木矛、武器Ⅱ信号哨（原武器放到{LocName(s.Ground)}地面），矛术≥5级、指挥≥3级（只供试玩架矛顺延与整队）。";
             Emit(s, GameEventKind.Info, text);
             return text;
         }

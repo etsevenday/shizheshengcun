@@ -250,8 +250,8 @@ namespace Survival.Core.Engine
         /// <summary>开发（B10b，Q111 试煅烧）：木材×10 放当前地面（够两批原料 + 2 份燃料）；不点火、不改燃料。</summary>
         public string DebugCharcoalKit(GameState s)
         {
-            CreateItems(s, "wood", 10, s.CurrentLocation);
-            var text = $"开发：木材×10放在{LocName(s.CurrentLocation)}地面（煅烧木炭每批4份，燃料另投）";
+            CreateItems(s, "wood", 10, s.Ground);
+            var text = $"开发：木材×10放在{LocName(s.Ground)}地面（煅烧木炭每批4份，燃料另投）";
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }
@@ -260,8 +260,8 @@ namespace Survival.Core.Engine
         public string DebugMedicalMaterialKit(GameState s)
         {
             var kit = new (string id, int n)[] { ("clean_water", 3), ("salt", 1), ("lab_reagent", 1), ("herb", 2) };
-            foreach (var (id, n) in kit) if (_items.ContainsKey(id)) CreateItems(s, id, n, s.CurrentLocation);
-            var text = $"开发：医疗台材料加工原料放在{LocName(s.CurrentLocation)}地面（{string.Join("、", kit.Select(k => $"{ItemName(k.id)}×{k.n}"))}，盐水剂/消毒液/草药浸膏各一次）";
+            foreach (var (id, n) in kit) if (_items.ContainsKey(id)) CreateItems(s, id, n, s.Ground);
+            var text = $"开发：医疗台材料加工原料放在{LocName(s.Ground)}地面（{string.Join("、", kit.Select(k => $"{ItemName(k.id)}×{k.n}"))}，盐水剂/消毒液/草药浸膏各一次）";
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }
@@ -270,8 +270,8 @@ namespace Survival.Core.Engine
         public string DebugForgeSteelKit(GameState s)
         {
             var kit = new (string id, int n)[] { ("iron_ore", 9), ("charcoal", 6) };
-            foreach (var (id, n) in kit) if (_items.ContainsKey(id)) CreateItems(s, id, n, s.CurrentLocation);
-            var text = $"开发：锻炉钢材3份原料放在{LocName(s.CurrentLocation)}地面（{string.Join("、", kit.Select(k => $"{ItemName(k.id)}×{k.n}"))}；原料木炭3＋燃料木炭3，产钢材6）";
+            foreach (var (id, n) in kit) if (_items.ContainsKey(id)) CreateItems(s, id, n, s.Ground);
+            var text = $"开发：锻炉钢材3份原料放在{LocName(s.Ground)}地面（{string.Join("、", kit.Select(k => $"{ItemName(k.id)}×{k.n}"))}；原料木炭3＋燃料木炭3，产钢材6）";
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }
@@ -285,8 +285,8 @@ namespace Survival.Core.Engine
                 ("medical_gauze", 10), ("precision_parts", 6), ("charcoal", 6), ("leather", 8), ("cloth", 12), ("wood", 10),
                 ("scrap", 10), ("fiber", 10), ("rope", 4), ("rubber", 4), ("plastic", 4), ("wire", 4), ("ballistic_fiber", 4),
             };
-            foreach (var (id, n) in kit) if (_items.ContainsKey(id)) CreateItems(s, id, n, s.CurrentLocation);
-            var text = $"开发：工坊材料包放在{LocName(s.CurrentLocation)}地面（{string.Join("、", kit.Select(k => $"{ItemName(k.id)}×{k.n}"))}）";
+            foreach (var (id, n) in kit) if (_items.ContainsKey(id)) CreateItems(s, id, n, s.Ground);
+            var text = $"开发：工坊材料包放在{LocName(s.Ground)}地面（{string.Join("、", kit.Select(k => $"{ItemName(k.id)}×{k.n}"))}）";
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }

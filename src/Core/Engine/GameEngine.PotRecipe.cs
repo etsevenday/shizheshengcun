@@ -93,7 +93,7 @@ namespace Survival.Core.Engine
                 var lv = SkillLevel(s, kv.Key);
                 if (lv < kv.Value) return $"需要{SkillName(kv.Key)}{kv.Value}级（当前{lv}级）";
             }
-            var here = s.CurrentLocation;
+            var here = s.Ground;
             if (PotFireLocation(pot) != here) return "先把锅放进当前地点的火堆加工位";
             var ct = PotConfig(pot);
             var foods = PotFood(s, pot.InstanceId);
@@ -136,8 +136,8 @@ namespace Survival.Core.Engine
                 taken.Add($"{(inst.IsCarried ? "随身" : "地面")}{ItemName(inst.ItemId)}×{take}（辅料）");
                 for (var k = 0; k < take; k++) aux.Add(MoveOne(s, inst, owner).InstanceId);
             }
-            var here = s.CurrentLocation;
-            var fac = s.Locations[here].Facility;
+            var here = s.Ground;
+            var fac = FacOf(s, here)!;
             fac.Processes.Add(new FacilityProcess
             {
                 ProcessId = $"{pc.Id}#{s.NextProcessSeq++}",
@@ -231,9 +231,9 @@ namespace Survival.Core.Engine
         /// <summary>开发入口（?dev=1，B16）：远行硬饼与谷肉炖食各一份的材料（谷物3、盐1、生肉1）放当前地面。</summary>
         public string DebugPotRecipeKit(GameState s)
         {
-            CreateItems(s, "grain", 3, s.CurrentLocation);
-            CreateItems(s, "salt", 1, s.CurrentLocation);
-            CreateItems(s, "raw_meat", 1, s.CurrentLocation);
+            CreateItems(s, "grain", 3, s.Ground);
+            CreateItems(s, "salt", 1, s.Ground);
+            CreateItems(s, "raw_meat", 1, s.Ground);
             var text = "开发：锅食谱材料（谷物×3、盐×1、生肉×1）放在当前地面";
             Emit(s, GameEventKind.Info, text + "。");
             return text;

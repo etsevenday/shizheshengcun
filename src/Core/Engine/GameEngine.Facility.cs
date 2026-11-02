@@ -14,19 +14,29 @@ namespace Survival.Core.Engine
     {
         public const string FireSuffix = ":fire";
 
-        /// <summary>某地点火堆的设施 ID（营地为 camp:fire）。</summary>
-        public static string FireIdOf(string locationId) => locationId + FireSuffix;
+        /// <summary>
+        /// 某区（place）火堆的设施 ID：外部区为 &lt;地点&gt;:fire（营地为 camp:fire，旧档不变），安全屋屋内为 &lt;地点&gt;:safehouse:fire
+        /// （S09 X2.7“与外部同地点已存在火堆是不同 facilityId”，B17 按 location+zone 生成）。
+        /// </summary>
+        public static string FireIdOf(string place) =>
+            ItemInstance.TrySafehouseFloor(place, out var sid) && ItemInstance.TrySafehouseLocation(sid, out var loc)
+                ? loc + SafehouseFireSuffix : place + FireSuffix;
 
-        /// <summary>设施 ID 所在的地点；不是已知火堆时为 null。</summary>
+        /// <summary>按地点与区生成火堆设施 ID。</summary>
+        public static string FireIdOf(string locationId, string zoneId) => FireIdOf(ZonePlace(locationId, zoneId));
+
+        /// <summary>设施 ID 所在的区（place：外部区为地点 ID）；不是火堆设施 ID 时为 null。</summary>
         public string? FacilityLocation(string facilityId)
         {
             if (!facilityId.EndsWith(FireSuffix)) return null;
-            var loc = facilityId.Substring(0, facilityId.Length - FireSuffix.Length);
-            return _locs.TryGetValue(loc, out var l) && l.HasFire ? loc : null;
+            var place = facilityId.EndsWith(SafehouseFireSuffix)
+                ? ZonePlace(facilityId.Substring(0, facilityId.Length - SafehouseFireSuffix.Length), SafehouseZone)
+                : facilityId.Substring(0, facilityId.Length - FireSuffix.Length);
+            return TryPlace(place, out _, out _) ? place : null;
         }
 
         /// <summary>火堆内物品的归属字符串：facility:camp:fire。</summary>
-        public static string FireOwner(string locationId) => ItemInstance.FacilityOwner(FireIdOf(locationId));
+        public static string FireOwner(string place) => ItemInstance.FacilityOwner(FireIdOf(place));
 
         public ProcessConfig Process(string id) => Config.Processes.First(p => p.Id == id);
 
@@ -62,8 +72,8 @@ namespace Survival.Core.Engine
         public List<ItemInstance?> FireSlots(GameState s, string locationId)
         {
             var list = new List<ItemInstance?>();
-            if (!_locs[locationId].HasFire) return list;
-            var fac = s.Locations[locationId].Facility;
+            if (!HasFireAt(s, locationId)) return list;
+            var fac = FacOf(s, locationId)!;
             var owner = FireOwner(locationId);
             for (var k = 0; k < Config.Fire.ProcessingSlots; k++)
             {
@@ -82,7 +92,7 @@ namespace Survival.Core.Engine
 
         /// <summary>火堆里的锅（最多一口）。</summary>
         public ItemInstance? FirePot(GameState s, string locationId) =>
-            _locs[locationId].HasFire ? FireContents(s, locationId).FirstOrDefault(IsPot) : null;
+            HasFireAt(s, locationId) ? FireContents(s, locationId).FirstOrDefault(IsPot) : null;
 
         /// <summary>锅所在火堆的地点；锅不在火堆里为 null。</summary>
         public string? PotFireLocation(ItemInstance pot) =>
@@ -95,11 +105,11 @@ namespace Survival.Core.Engine
         /// <summary>火堆本段能否加热：燃烧且燃料至少够一段（设施与烹饪案第 7 节）。</summary>
         public bool FireHot(GameState s, string locationId)
         {
-            var f = s.Locations[locationId].Facility;
-            return _locs[locationId].HasFire && f.FireLit && f.FuelMinutes >= Tick;
+            var f = FacOf(s, locationId);
+            return f != null && HasFireAt(s, locationId) && f.FireLit && f.FuelMinutes >= Tick;
         }
 
-        public IEnumerable<FacilityProcess> AllProcesses(GameState s) => s.Locations.Values.SelectMany(l => l.Facility.Processes);
+        public IEnumerable<FacilityProcess> AllProcesses(GameState s) => AllFacilityStates(s).SelectMany(x => x.Fac.Processes);
 
         /// <summary>以这件物品为目标的加工记录。</summary>
         public FacilityProcess? ProcessOf(GameState s, ItemInstance target) =>
@@ -146,9 +156,9 @@ namespace Survival.Core.Engine
             if (ItemInstance.TryFacilityId(i.Owner, out var fid))
             {
                 var loc = FacilityLocation(fid);
-                return loc == null ? "设施里" : $"{LocName(loc)}／火堆";
+                return loc == null ? "设施里" : $"{PlaceName(loc)}／火堆";
             }
-            return _locs.ContainsKey(i.Owner) ? $"{LocName(i.Owner)}地面" : i.Owner;
+            return IsGroundOwner(i.Owner) ? $"{PlaceName(i.Owner)}地面" : i.Owner;
         }
 
         /// <summary>
@@ -249,8 +259,7 @@ namespace Survival.Core.Engine
         /// <summary>全部火堆：加工位对齐真实归属，进程记录按目标增删，按放入顺序为水煮分配净水。</summary>
         public void SyncFacilities(GameState s)
         {
-            foreach (var l in Config.Locations.Where(l => l.HasFire))
-                if (s.Locations.ContainsKey(l.Id)) SyncFacility(s, l.Id);
+            foreach (var place in FirePlaces(s).ToList()) SyncFacility(s, place);
         }
 
         /// <summary>
@@ -259,7 +268,7 @@ namespace Survival.Core.Engine
         /// </summary>
         private void SyncFacility(GameState s, string loc)
         {
-            var fac = s.Locations[loc].Facility;
+            var fac = FacOf(s, loc)!;
             if (string.IsNullOrEmpty(fac.FacilityId)) fac.FacilityId = FireIdOf(loc);
             var owner = FireOwner(loc);
             while (fac.ProcessingSlots.Count < Config.Fire.ProcessingSlots) fac.ProcessingSlots.Add(null);
@@ -378,10 +387,10 @@ namespace Survival.Core.Engine
         /// <summary>最多还能放进当前火堆几份（锅只能 1）；不能放时给出原因，不偷偷改投别处。</summary>
         public int MaxPutInFire(GameState s, ItemInstance inst, out string? reason)
         {
-            var here = s.CurrentLocation;
+            var here = s.Ground;
             reason = HolderBlocked(s);
             if (reason != null) return 0;
-            if (!_locs[here].HasFire) { reason = "这里没有火堆"; return 0; }
+            if (!HasFireAt(s, here)) { reason = "这里没有火堆"; return 0; }
             var cfg = _items[inst.ItemId];
             if (inst.InFacility) { reason = PlaceOf(s, inst) == here ? $"{cfg.Name}已经在火堆里" : "异地不能操作火堆"; return 0; }
             if (!(inst.IsCarried || inst.Owner == here))
@@ -423,7 +432,7 @@ namespace Survival.Core.Engine
             if (inst == null) return ActionResult.Fail("物品已不在");
             var max = MaxPutInFire(s, inst, out var why);
             if (why != null) return ActionResult.Fail(why);
-            var here = s.CurrentLocation;
+            var here = s.Ground;
             var n = IsPot(inst) ? 1 : r.Count;
             if (n < 1) return ActionResult.Fail("数量无效");
             if (n > inst.Count) return ActionResult.Fail("数量无效", max);
@@ -435,12 +444,12 @@ namespace Survival.Core.Engine
             {
                 inst.Owner = owner;
                 inst.PlacedOrder = s.NextProcessSeq++;
-                text = $"把{PotDesc(s, inst)}放进{LocName(here)}火堆加工位。";
+                text = $"把{PotDesc(s, inst)}放进{PlaceName(here)}火堆加工位。";
             }
             else
             {
                 for (var k = 0; k < n; k++) MoveOne(s, inst, owner);
-                text = $"把{n}份{name}放进{LocName(here)}火堆加工位直接烤制。";
+                text = $"把{n}份{name}放进{PlaceName(here)}火堆加工位直接烤制。";
             }
             SyncFacility(s, here);
             Emit(s, GameEventKind.Info, text);
@@ -457,7 +466,7 @@ namespace Survival.Core.Engine
             var fc = _items[food.ItemId];
             if (IsLiquid(food)) { reason = $"{fc.Name}请拖到锅的水量条上装入"; return 0; }
             if (IsPot(food)) { reason = "不能锅套锅"; return 0; }
-            if (!(food.IsCarried || food.Owner == s.CurrentLocation))
+            if (!(food.IsCarried || food.Owner == s.Ground))
             {
                 reason = food.InFacility || food.InContainer ? $"先把{fc.Name}取出来再放进锅" : "只能放入随身或当前地面的食材";
                 return 0;
@@ -524,8 +533,8 @@ namespace Survival.Core.Engine
             var inPotFood = inst.InContainer && !IsLiquid(inst);
             if (!inst.InFacility && !inPotFood) return inst.InContainer ? "锅里的水请用倒出" : "只能取出火堆或锅里的物品";
             var place = PlaceOf(s, inst);
-            if (!(place == ItemInstance.Carried || place == s.CurrentLocation)) return "异地不能取用设施里的物品";
-            if (zone != ItemInstance.Carried && zone != s.CurrentLocation) return "只能取到随身或当前地面";
+            if (!(place == ItemInstance.Carried || place == s.Ground)) return "异地不能取用设施里的物品";
+            if (zone != ItemInstance.Carried && zone != s.Ground) return "只能取到随身或当前地面";
             if (inst.ReservedBy != null || IsLocked(s, inst)) return "行动占用：该物品正被当前行动使用";
             if (zone == ItemInstance.Carried && place != ItemInstance.Carried)
             {
@@ -550,7 +559,7 @@ namespace Survival.Core.Engine
         {
             var inst = FindItem(s, r.InstanceId);
             if (inst == null) return ActionResult.Fail("物品已不在");
-            var zone = string.IsNullOrEmpty(r.Zone) ? s.CurrentLocation : r.Zone;
+            var zone = string.IsNullOrEmpty(r.Zone) ? s.Ground : r.Zone;
             var why = TakeOutBlocked(s, inst, zone);
             if (why != null) return ActionResult.Fail(why);
             var from = WherePath(s, inst);
@@ -624,7 +633,7 @@ namespace Survival.Core.Engine
         /// </summary>
         public List<IgniteToolOption> IgniteToolOptions(GameState s)
         {
-            var here = s.CurrentLocation;
+            var here = s.Ground;
             return s.Items.Where(i => _items[i.ItemId].ToolTag == "lighter" && (i.IsCarried || i.Owner == here))
                 .OrderBy(i => i.IsCarried ? 0 : 1).ThenBy(i => i.InstanceId)
                 .Select(i =>
@@ -664,14 +673,14 @@ namespace Survival.Core.Engine
         private FacilitySnapshot SnapshotFacilities(GameState s, ActionState? running)
         {
             var snap = new FacilitySnapshot();
-            foreach (var l in Config.Locations.Where(l => l.HasFire))
+            foreach (var place in FirePlaces(s).ToList())
             {
-                if (!s.Locations.TryGetValue(l.Id, out var ls)) continue;
-                // 此前未燃烧的火堆在点火完成时才获得加热资格：点火这一段不算受热（02 案第 6 节）
-                var igniting = running != null && running.Type == ActionType.Ignite && running.SourceLocation == l.Id;
-                if (!FireHot(s, l.Id) || igniting) continue;
-                foreach (var p in ls.Facility.Processes)
-                    if (HeatEligible(s, l.Id, p)) snap.Eligible.Add(p.ProcessId);
+                var fac = FacOf(s, place)!;
+                // 此前未燃烧的火堆在点火完成时才获得加热资格：点火这一段不算受热（02 案第 6 节）；点火只在当前区进行
+                var igniting = running != null && running.Type == ActionType.Ignite && running.SourceLocation == LocationOfPlace(place) && s.Ground == place;
+                if (!FireHot(s, place) || igniting) continue;
+                foreach (var p in fac.Processes)
+                    if (HeatEligible(s, place, p)) snap.Eligible.Add(p.ProcessId);
             }
             return snap;
         }
@@ -706,21 +715,20 @@ namespace Survival.Core.Engine
         /// </summary>
         private void AdvanceFacilities(GameState s, FacilitySnapshot snap)
         {
-            foreach (var l in Config.Locations.Where(l => l.HasFire))
+            foreach (var place in FirePlaces(s).ToList())
             {
-                if (!s.Locations.TryGetValue(l.Id, out var ls)) continue;
-                var fac = ls.Facility;
+                var fac = FacOf(s, place)!;
                 foreach (var p in fac.Processes.ToList())
                 {
                     p.LastWorldMinute = s.GameMinute;
-                    var heated = snap.Eligible.Contains(p.ProcessId) && HeatEligible(s, l.Id, p, ignoreSpoil: true);
+                    var heated = snap.Eligible.Contains(p.ProcessId) && HeatEligible(s, place, p, ignoreSpoil: true);
                     p.Status = heated ? ProcessStatus.Heating : ProcessStatus.Waiting;
                     if (!heated) continue;
                     p.HeatDoneMinutes += Tick;
                     // 烹饪受热保护只给食材（Q16）；净水批次与 Q111 煅烧（木材/木炭无食物腐败保护）不用
                     var tg = Process(p.RecipeId).Target;
                     if (tg == ProcessTargets.SingleFood || tg == ProcessTargets.PotRecipe) p.HeatProtected = true;
-                    if (p.HeatDoneMinutes >= p.RequiredHeatMinutes) CompleteProcess(s, l.Id, fac, p);
+                    if (p.HeatDoneMinutes >= p.RequiredHeatMinutes) CompleteProcess(s, place, fac, p);
                 }
             }
             SyncFacilities(s);
@@ -746,7 +754,7 @@ namespace Survival.Core.Engine
                 }
                 Normalize(s, ItemInstance.ContainerOwner(t.InstanceId));
                 s.Progress.Flags.Add("boiled");
-                text = $"{LocName(loc)}火堆：{ItemName(t.ItemId)}#{t.InstanceId}里的{ItemName(cfg.InputId)}{ml}毫升已烧成{ItemName(cfg.OutputId)}，留在原锅。";
+                text = $"{PlaceName(loc)}火堆：{ItemName(t.ItemId)}#{t.InstanceId}里的{ItemName(cfg.InputId)}{ml}毫升已烧成{ItemName(cfg.OutputId)}，留在原锅。";
                 if (CookWaterXp(s, p, ml) is string wx) text = text.TrimEnd('。') + $"（{wx}）。";
             }
             else if (cfg.IsSlotBatch)
@@ -757,7 +765,7 @@ namespace Survival.Core.Engine
                 t.ItemId = cfg.OutputId;
                 t.Count = cfg.OutputCount;
                 t.ExpiresAt = null;
-                text = $"{LocName(loc)}火堆：{before}已煅烧成{ItemName(cfg.OutputId)}×{cfg.OutputCount}，留在火堆加工位（煅烧不给经验）。";
+                text = $"{PlaceName(loc)}火堆：{before}已煅烧成{ItemName(cfg.OutputId)}×{cfg.OutputCount}，留在火堆加工位（煅烧不给经验）。";
             }
             else
             {
@@ -772,8 +780,8 @@ namespace Survival.Core.Engine
                 // 第2日目标“完成一次块根烹饪”与七日检查“完成食物加工”都来自 v0.2（当时只有块根）：只认块根烤制/水煮，烤肉煮肉不算（试玩修复 L7）
                 if (cfg.InputId == RootItemId) s.Progress.Flags.Add("cooked");
                 text = pot != null
-                    ? $"{LocName(loc)}火堆：{input}#{t.InstanceId}已煮成{outCfg.Name}，留在{ItemName(pot.ItemId)}#{pot.InstanceId}里（{ItemName(cfg.RequiredLiquid ?? "")}−{cfg.WaterCostMl}毫升{potWorn}）。"
-                    : $"{LocName(loc)}火堆：{input}#{t.InstanceId}已烤成{outCfg.Name}，留在火堆加工位。";
+                    ? $"{PlaceName(loc)}火堆：{input}#{t.InstanceId}已煮成{outCfg.Name}，留在{ItemName(pot.ItemId)}#{pot.InstanceId}里（{ItemName(cfg.RequiredLiquid ?? "")}−{cfg.WaterCostMl}毫升{potWorn}）。"
+                    : $"{PlaceName(loc)}火堆：{input}#{t.InstanceId}已烤成{outCfg.Name}，留在火堆加工位。";
                 if (CookFoodXp(s, p, cfg, t.Count) is string fx) text = text.TrimEnd('。') + $"（{fx}）。";
             }
             p.Status = ProcessStatus.Done;
@@ -799,7 +807,7 @@ namespace Survival.Core.Engine
                 var pot = p.PotInstanceId.HasValue ? FindItem(s, p.PotInstanceId.Value) : null;
                 var loc = pot == null ? null : PotFireLocation(pot);
                 parts.Add($"{nm}整份作废{(p.HeatDoneMinutes > 0 ? $"（已受热{p.HeatDoneMinutes}分钟清零）" : "")}"
-                          + (aux.Count > 0 ? $"，辅料{string.Join("、", aux)}退回{(loc == null ? "火堆" : LocName(loc))}地面" : ""));
+                          + (aux.Count > 0 ? $"，辅料{string.Join("、", aux)}退回{(loc == null ? "火堆" : PlaceName(loc))}地面" : ""));
             }
             return parts.Count == 0 ? null : string.Join("；", parts);
         }

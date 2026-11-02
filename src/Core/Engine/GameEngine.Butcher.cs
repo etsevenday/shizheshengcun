@@ -26,7 +26,7 @@ namespace Survival.Core.Engine
             if (inst == null) return "尸体已不在";
             var c = CarcassOf(inst.ItemId);
             if (c == null) return "这不是可处理的尸体";
-            if (!(inst.IsCarried || inst.Owner == s.CurrentLocation)) return "只能处理随身或当前地面的尸体";
+            if (!(inst.IsCarried || inst.Owner == s.Ground)) return "只能处理随身或当前地面的尸体";
             if (inst.ReservedBy != null) return "该尸体已被预留";
             if (IsSpoiled(s, inst)) return "尸体已腐败，不能处理";
             var tool = ButcherTool(s, c);
@@ -57,7 +57,7 @@ namespace Survival.Core.Engine
                 AbortSpoiled(s, a);
                 return false;
             }
-            var here = s.CurrentLocation;
+            var here = s.Ground;
             var carcass = a.ReservedItemIds.Select(id => FindItem(s, id)).FirstOrDefault(i => i != null);
             var c = carcass == null ? null : CarcassOf(carcass.ItemId);
             foreach (var id in a.ReservedItemIds) s.Items.RemoveAll(i => i.InstanceId == id);

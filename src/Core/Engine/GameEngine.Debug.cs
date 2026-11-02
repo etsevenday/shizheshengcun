@@ -87,7 +87,7 @@ namespace Survival.Core.Engine
             foreach (var m in s.Items.Where(i => i.Owner == tmp).OrderBy(i => i.InstanceId).ToList())
             {
                 if (RootCardsAfter(s, m, m.Count, null, 0) <= MaxRootCards) { MoveItems(s, m, m.Count, ItemInstance.Carried); carried++; }
-                else { MoveItems(s, m, m.Count, s.CurrentLocation); ground++; }
+                else { MoveItems(s, m, m.Count, s.Ground); ground++; }
             }
             return ground == 0 ? $"{carried}张已放到随身。"
                 : carried == 0 ? $"随身最多{MaxRootCards}张卡已满，{ground}张放在当前地面。"
@@ -138,7 +138,7 @@ namespace Survival.Core.Engine
         public string DebugGiveFireAxe(GameState s)
         {
             var axe = DebugCreateEquipment(s, "fire_axe", "white", "devkit:tmp");
-            var where = RootCardsAfter(s, axe, 1, null, 0) <= MaxRootCards ? ItemInstance.Carried : s.CurrentLocation;
+            var where = RootCardsAfter(s, axe, 1, null, 0) <= MaxRootCards ? ItemInstance.Carried : s.Ground;
             MoveItems(s, axe, 1, where);
             return $"消防斧1（开发用，白色无词条，耐久{Fmt.N(axe.Durability ?? 0)}/{Fmt.N(axe.MaxDurability ?? 0)}，试锁闭储物点破门）：" +
                    (where == ItemInstance.Carried ? "已放到随身。" : $"随身最多{MaxRootCards}张卡已满，放在当前地面。");
@@ -176,20 +176,20 @@ namespace Survival.Core.Engine
         {
             foreach (var (id, n) in DevSkillKit)
             {
-                if (_weapons.ContainsKey(id) || Config.Gear.Any(g => g.Id == id)) for (var i = 0; i < n; i++) DebugCreateEquipment(s, id, "white", s.CurrentLocation);
-                else CreateItems(s, id, n, s.CurrentLocation);
+                if (_weapons.ContainsKey(id) || Config.Gear.Any(g => g.Id == id)) for (var i = 0; i < n; i++) DebugCreateEquipment(s, id, "white", s.Ground);
+                else CreateItems(s, id, n, s.Ground);
             }
-            Normalize(s, s.CurrentLocation);
-            var text = $"开发：技能器具一组放在{LocName(s.CurrentLocation)}地面：" + string.Join("、", DevSkillKit.Select(x => ItemName(x.Id) + (x.Count > 1 ? $"×{x.Count}" : "")));
+            Normalize(s, s.Ground);
+            var text = $"开发：技能器具一组放在{LocName(s.Ground)}地面：" + string.Join("、", DevSkillKit.Select(x => ItemName(x.Id) + (x.Count > 1 ? $"×{x.Count}" : "")));
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }
 
         public string DebugGiveEquipmentSet(GameState s, string quality)
         {
-            var made = DevEquipmentSet.Select(id => DebugCreateEquipment(s, id, quality, s.CurrentLocation)).ToList();
-            Normalize(s, s.CurrentLocation);
-            var text = $"开发：{Config.Equipment.QualityName(quality)}色装备{made.Count}件放在{LocName(s.CurrentLocation)}地面：" +
+            var made = DevEquipmentSet.Select(id => DebugCreateEquipment(s, id, quality, s.Ground)).ToList();
+            Normalize(s, s.Ground);
+            var text = $"开发：{Config.Equipment.QualityName(quality)}色装备{made.Count}件放在{LocName(s.Ground)}地面：" +
                        string.Join("、", made.Select(i => ItemName(i.ItemId) + (i.Affixes is { Count: > 0 } a ? "（" + string.Join("、", a.Select(x => Affix(x)?.Name ?? x)) + "）" : "")));
             Emit(s, GameEventKind.Info, text + "。");
             return text;
@@ -199,9 +199,9 @@ namespace Survival.Core.Engine
         public string DebugGiveNewItems(GameState s, string kind)
         {
             var ids = Config.Items.Where(i => i.Kind == kind && !i.IsEquipment && i.Desc.Contains("本版只有物品定义")).Select(i => i.Id).ToList();
-            foreach (var id in ids) CreateItems(s, id, 1, s.CurrentLocation);
+            foreach (var id in ids) CreateItems(s, id, 1, s.Ground);
             var name = kind switch { "material" => "材料", "food" => "食品", "medical" => "医疗", _ => kind };
-            var text = $"开发：新物品（{name}）{ids.Count}种各1份放在{LocName(s.CurrentLocation)}地面";
+            var text = $"开发：新物品（{name}）{ids.Count}种各1份放在{LocName(s.Ground)}地面";
             Emit(s, GameEventKind.Info, text + "。");
             return text;
         }
@@ -209,11 +209,11 @@ namespace Survival.Core.Engine
         /// <summary>开发入口（B7c，Q64）：白色护拳绑带 1 件与一次制作的材料（布2、皮革1、纤维2）放当前地面。返回说明。</summary>
         public string DebugGiveWraps(GameState s)
         {
-            DebugCreateEquipment(s, "knuckle_wraps", "white", s.CurrentLocation);
+            DebugCreateEquipment(s, "knuckle_wraps", "white", s.Ground);
             var rc = Recipe("make_knuckle_wraps");
-            foreach (var kv in rc.Inputs) CreateItems(s, kv.Key, kv.Value, s.CurrentLocation);
-            Normalize(s, s.CurrentLocation);
-            var text = $"开发：护拳绑带1件（白）与一次制作材料（{string.Join("、", rc.Inputs.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"))}）放在{LocName(s.CurrentLocation)}地面"
+            foreach (var kv in rc.Inputs) CreateItems(s, kv.Key, kv.Value, s.Ground);
+            Normalize(s, s.Ground);
+            var text = $"开发：护拳绑带1件（白）与一次制作材料（{string.Join("、", rc.Inputs.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"))}）放在{LocName(s.Ground)}地面"
                        + (RecipeKnown(s, rc) ? "" : "；做法要营区登记后才会（可点“记下营区登记”）");
             Emit(s, GameEventKind.Info, text + "。");
             return text;
@@ -223,7 +223,7 @@ namespace Survival.Core.Engine
         public void DebugFillGround(GameState s)
         {
             foreach (var it in Config.Items)
-                CreateItems(s, it.Id, it.IsStackable ? 3 : 1, s.CurrentLocation);
+                CreateItems(s, it.Id, it.IsStackable ? 3 : 1, s.Ground);
         }
     }
 }

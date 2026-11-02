@@ -58,7 +58,7 @@ namespace Survival.Core.Engine
             if (why != null) return ActionResult.Fail(why);
             RememberRequest(s, requestId);
             var it = FindItem(s, instanceId)!;
-            var dest = toGround ? s.CurrentLocation : ItemInstance.Carried;
+            var dest = toGround ? s.Ground : ItemInstance.Carried;
             it.Owner = dest;
             Normalize(s, dest);
             var name = s.Remains[deadId].Name;

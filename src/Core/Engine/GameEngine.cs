@@ -54,7 +54,8 @@ namespace Survival.Core.Engine
         public bool HasItem(string id) => _items.ContainsKey(id);
 
         public string ItemName(string id) => _items.TryGetValue(id, out var i) ? i.Name : id;
-        public string LocName(string id) => _locs.TryGetValue(id, out var l) ? l.Name : id;
+        /// <summary>地点名；安全屋屋内地面（place）写“××安全屋”。</summary>
+        public string LocName(string id) => _locs.TryGetValue(id, out var l) ? l.Name : PlaceName(id);
 
         public bool IsDaylight(int minute) => Clock.IsDaylight(minute, Config.Time.DaylightStartMinute, Config.Time.DaylightEndMinute);
 
@@ -236,7 +237,7 @@ namespace Survival.Core.Engine
             InitStory(s);
 
             foreach (var kv in c.StartingCarried) CreateItems(s, kv.Key, kv.Value, ItemInstance.Carried);
-            foreach (var kv in c.StartingCampGround) CreateItems(s, kv.Key, kv.Value, s.CurrentLocation);
+            foreach (var kv in c.StartingCampGround) CreateItems(s, kv.Key, kv.Value, s.Ground);
             // 有火堆的地点初始化设施 ID 与空加工位（营地 camp:fire）
             SyncFacilities(s);
 
@@ -334,6 +335,9 @@ namespace Survival.Core.Engine
             var here = s.CurrentLocation;
             var hereCfg = _locs[here];
             var hereState = s.Locations[here];
+            // B17：当前所在区（外部区或安全屋屋内）的地面与设施；火堆、地面物品、打火器都按区取
+            var ground = s.Ground;
+            var groundFac = FacOf(s, ground) ?? hereState.Facility;
             var allowGround = !plan.TravelPaused;
 
             switch (r.Type)
@@ -518,9 +522,9 @@ namespace Survival.Core.Engine
                         switch (rc.Requirement.Facility)
                         {
                             case "fire":
-                                if (!hereCfg.HasFire) return "只能在营地火堆操作";
-                                if (!hereState.Facility.FireLit) return "需要燃烧的火堆";
-                                if (hereState.Facility.FuelMinutes < Tick) return "火堆燃料不足，请先投入木材";
+                                if (!HasFireAt(s, ground)) return "只能在营地火堆操作";
+                                if (!groundFac.FireLit) return "需要燃烧的火堆";
+                                if (groundFac.FuelMinutes < Tick) return "火堆燃料不足，请先投入木材";
                                 break;
                             case "camp":
                                 if (!hereCfg.CanBuildShelter) return rc.IsBuild ? BuildOnlyAtCamp(hereCfg) : "只能在营地制作";
@@ -622,7 +626,7 @@ namespace Survival.Core.Engine
                         inst = s.Items.FirstOrDefault(i => i.InstanceId == r.InstanceId.Value);
                         if (inst == null) return "物品不存在";
                         var place = PlaceOf(s, inst);
-                        if (!(place == ItemInstance.Carried || (allowGround && place == here)))
+                        if (!(place == ItemInstance.Carried || (allowGround && place == ground)))
                             return plan.TravelPaused ? "移动途中只能使用随身物品" : "只能使用随身或当前地面的物品";
                     }
                     else
@@ -668,8 +672,8 @@ namespace Survival.Core.Engine
                 case ActionType.Ignite:
                 {
                     if (plan.TravelPaused) return "移动途中无法点火";
-                    if (!hereCfg.HasFire) return "这里没有火堆";
-                    if (hereState.Facility.FireLit) return "火堆已在燃烧";
+                    if (!HasFireAt(s, ground)) return "这里没有火堆";
+                    if (groundFac.FireLit) return "火堆已在燃烧";
                     // 点火必须指定一把打火器：拖到火堆即指定，按钮点火也要先选（策划答复 2026-10-24 第 1 条）
                     if (!r.InstanceId.HasValue)
                         return AccessibleTool(s, "lighter") == null ? "缺少打火器（需随身或在当前地面）" : "请选择要使用的打火器";
@@ -677,12 +681,12 @@ namespace Survival.Core.Engine
                     var lighter = FindItem(s, r.InstanceId.Value);
                     if (lighter == null) return "这把打火器已不在，请重新选择";
                     if (_items[lighter.ItemId].ToolTag != "lighter") return "这不是打火器";
-                    if (!(lighter.IsCarried || lighter.Owner == here)) return "只能使用随身或当前地面的打火器";
+                    if (!(lighter.IsCarried || lighter.Owner == ground)) return "只能使用随身或当前地面的打火器";
                     if (lighter.ReservedBy != null || IsLocked(s, lighter)) return "行动占用：打火器正被使用";
                     // v0.6 §05：每次成功点火磨损1，耐久不足一次磨损时拒绝（可维护或换一把）
                     if (!HasWear(lighter, LighterWear)) return $"这把打火器耐久不足（{DurabilityText(lighter)}），请维护或换一把";
                     plan.Lighter = lighter;
-                    var fuel = hereState.Facility.FuelMinutes;
+                    var fuel = groundFac.FuelMinutes;
                     if (fuel < Config.Fire.MinFuelToIgnite)
                     {
                         if (fuel == 0 && AvailableCount(s, "wood", true) > 0) plan.IgniteConsumesWood = true;
@@ -916,7 +920,7 @@ namespace Survival.Core.Engine
                     break;
                 case ActionType.Ignite:
                 {
-                    var fac = s.Locations[s.CurrentLocation].Facility;
+                    var fac = FacOf(s, s.Ground)!;
                     if (p.IgniteConsumesWood)
                     {
                         var wood = UsableBatches(s, "wood", true).First();
@@ -959,7 +963,7 @@ namespace Survival.Core.Engine
 
             // B14 城市计时服务：预留的材料原物原处（不搬到地面）、配额预留随事务作废（city-services common.cancel）
             if (a.TargetId.StartsWith(CityServicePrefix)) ReleaseCityService(s, a);
-            Release(s, a, s.CurrentLocation);
+            Release(s, a, s.Ground);
             if (a.IsSub) s.Sub = null; else s.Main = null;
 
             string text = a.Type switch

@@ -164,7 +164,7 @@ namespace Survival.Core.Engine
         {
             var c = Config.WorkFactors;
             double f = 1;
-            var fac = s.Locations[s.CurrentLocation].Facility;
+            var fac = FacOf(s, s.Ground) ?? s.Locations[s.CurrentLocation].Facility;
             var night = !IsDaylight(s.GameMinute);
             var lit = type != ActionType.Travel && fac.FireLit;
             if (night && !lit)
@@ -415,9 +415,8 @@ namespace Survival.Core.Engine
 
         private void BurnFires(GameState s)
         {
-            foreach (var kv in s.Locations)
+            foreach (var (place, f) in AllFacilityStates(s).ToList())
             {
-                var f = kv.Value.Facility;
                 if (!f.FireLit) continue;
                 f.FuelMinutes -= Tick;
                 if (f.FuelMinutes <= 0)
@@ -425,7 +424,7 @@ namespace Survival.Core.Engine
                     f.FuelMinutes = 0;
                     f.FireLit = false;
                     f.WentOut = true;
-                    Emit(s, GameEventKind.FireOut, $"{LocName(kv.Key)}的火堆燃料耗尽，已熄灭。");
+                    Emit(s, GameEventKind.FireOut, $"{LocName(place)}的火堆燃料耗尽，已熄灭。");
                 }
             }
         }
@@ -452,7 +451,7 @@ namespace Survival.Core.Engine
 
         private void AbortSpoiled(GameState s, ActionState a)
         {
-            Release(s, a, s.CurrentLocation);
+            Release(s, a, s.Ground);
             if (a.IsSub) s.Sub = null; else s.Main = null;
             Emit(s, GameEventKind.ActionAborted, $"{a.Label}中止：原料已腐败，预留物返还当前地面，未生成产物。");
         }
@@ -557,7 +556,7 @@ namespace Survival.Core.Engine
                 case ActionType.Ignite:
                 {
                     ClearAction(s, a);
-                    var f = s.Locations[here].Facility;
+                    var f = FacOf(s, s.Ground)!;
                     // 成功点火磨损打火器（v0.6 §05）；点火不可取消，完成即成功
                     var lighter = a.ToolInstanceId.HasValue ? FindItem(s, a.ToolInstanceId.Value) : null;
                     var worn = lighter != null ? "；" + Wear(lighter, LighterWear) : "";
@@ -649,7 +648,7 @@ namespace Survival.Core.Engine
 
         private void Kill(GameState s, string cause)
         {
-            var loc = s.CurrentLocation;
+            var loc = s.Ground;
             foreach (var a in new[] { s.Sub, s.Main })
                 if (a != null) Release(s, a, loc);
             s.Main = null;

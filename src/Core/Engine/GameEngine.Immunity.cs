@@ -136,7 +136,7 @@ namespace Survival.Core.Engine
         /// <summary>尸变：本局结束，复用死亡结算（文案区分）。</summary>
         private void Zombify(GameState s)
         {
-            var loc = s.CurrentLocation;
+            var loc = s.Ground;
             foreach (var a in new[] { s.Sub, s.Main })
                 if (a != null) Release(s, a, loc);
             s.Main = null;

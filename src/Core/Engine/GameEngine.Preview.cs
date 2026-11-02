@@ -41,8 +41,8 @@ namespace Survival.Core.Engine
             // 点火与自用的结构化字段（v0.7 第 4.1、7 节）：开始那一刻的结果在副本上直接读出，与真实开始同一路径
             if (plan.Type == ActionType.Ignite)
             {
-                p.FuelBefore = s.Locations[here].Facility.FuelMinutes;
-                p.FuelAfterStart = c.Locations[here].Facility.FuelMinutes;
+                p.FuelBefore = FacOf(s, s.Ground)!.FuelMinutes;
+                p.FuelAfterStart = FacOf(c, s.Ground)!.FuelMinutes;
                 p.AutoWood = plan.IgniteConsumesWood;
                 if (plan.IgniteConsumesWood) p.AutoWoodInstanceId = UsableBatches(s, "wood", true).FirstOrDefault()?.InstanceId;
             }
@@ -64,7 +64,7 @@ namespace Survival.Core.Engine
             // 预览必须把变化的时刻与原因列出来（UI 案 06、地图案 07）。
             var trackFactor = p.IsWork && !plan.IsSub;
             var prevFactor = p.FactorAtStart;
-            var prevLit = s.Locations[s.CurrentLocation].Facility.FireLit;
+            var prevLit = (FacOf(s, s.Ground) ?? s.Locations[s.CurrentLocation].Facility).FireLit;
             for (var k = 0; k < SimLimit; k++)
             {
                 SimReadDialogues(c);
@@ -79,7 +79,7 @@ namespace Survival.Core.Engine
                 {
                     var reasons = new List<string>();
                     var f = WorkFactor(c, r.Type, reasons, r.TargetId, r.Type == ActionType.Gather && plan.Tool != null, r.Type == ActionType.Gather ? plan.Tool?.ItemId : null);
-                    var litNow = c.Locations[c.CurrentLocation].Facility.FireLit;
+                    var litNow = (FacOf(c, c.Ground) ?? c.Locations[c.CurrentLocation].Facility).FireLit;
                     if (System.Math.Abs(f - prevFactor) > Eps)
                     {
                         var cause = prevLit && !litNow && r.Type != ActionType.Travel ? "火堆燃尽，" : "";
@@ -108,8 +108,8 @@ namespace Survival.Core.Engine
             p.FacilityChanges = FacilityChanges(s, c);
             if (plan.Type == ActionType.Ignite)
             {
-                p.FuelAtEnd = c.Locations[here].Facility.FuelMinutes;
-                p.DiesOutAtEnd = !c.Locations[here].Facility.FireLit;
+                p.FuelAtEnd = FacOf(c, s.Ground)!.FuelMinutes;
+                p.DiesOutAtEnd = !FacOf(c, s.Ground)!.FireLit;
                 if (p.DiesOutAtEnd)
                     p.Warnings.Add($"现有燃料{p.FuelBefore}分钟只够点火过程：点火完成时燃尽熄灭，请先投入木材");
             }
@@ -128,19 +128,21 @@ namespace Survival.Core.Engine
                 if (ev.Kind == GameEventKind.FacilityDone || ev.Kind == GameEventKind.FireOut)
                     list.Add($"{Clock.HHmm(ev.Minute)} {ev.Text.TrimEnd('。')}");
             }
-            foreach (var l in Config.Locations.Where(l => l.HasFire))
+            foreach (var place in FirePlaces(before).ToList())
             {
-                if (!before.Locations.TryGetValue(l.Id, out var b) || !after.Locations.TryGetValue(l.Id, out var a)) continue;
-                foreach (var p in b.Facility.Processes)
+                var bf = FacOf(before, place);
+                var af = FacOf(after, place);
+                if (bf == null || af == null) continue;
+                foreach (var p in bf.Processes)
                 {
-                    var q = a.Facility.Processes.FirstOrDefault(x => x.ProcessId == p.ProcessId);
+                    var q = af.Processes.FirstOrDefault(x => x.ProcessId == p.ProcessId);
                     if (q == null || q.HeatDoneMinutes == p.HeatDoneMinutes) continue;
                     var t = FindItem(before, p.TargetInstanceId);
                     var name = t == null ? "" : $"{ItemName(t.ItemId)}#{t.InstanceId}";
                     list.Add($"{name}{Process(p.RecipeId).Name}受热{p.HeatDoneMinutes}→{q.HeatDoneMinutes}/{q.RequiredHeatMinutes}分钟");
                 }
-                if (b.Facility.FuelMinutes != a.Facility.FuelMinutes)
-                    list.Add($"{LocName(l.Id)}火堆燃料{b.Facility.FuelMinutes}→{a.Facility.FuelMinutes}分钟");
+                if (bf.FuelMinutes != af.FuelMinutes)
+                    list.Add($"{LocName(place)}火堆燃料{bf.FuelMinutes}→{af.FuelMinutes}分钟");
             }
             return list;
         }
@@ -178,7 +180,7 @@ namespace Survival.Core.Engine
                 p.FactorAtStart = WorkFactor(s, r.Type, reasons, r.TargetId, r.Type == ActionType.Gather && plan?.Tool != null, r.Type == ActionType.Gather ? plan?.Tool?.ItemId : null);
                 p.FactorReasons = reasons;
             }
-            p.OutputPlace = $"{LocName(s.CurrentLocation)}地面";
+            p.OutputPlace = $"{LocName(s.Ground)}地面";
 
             switch (r.Type)
             {
@@ -318,7 +320,7 @@ namespace Survival.Core.Engine
                     if (plan != null) p.Notes.AddRange(plan.Notes);
                     if (rc.NeedsFire)
                     {
-                        var f = s.Locations[s.CurrentLocation].Facility;
+                        var f = FacOf(s, s.Ground) ?? s.Locations[s.CurrentLocation].Facility;
                         p.Notes.Add($"火堆剩余燃料{f.FuelMinutes}分钟；燃尽时加工暂停");
                     }
                     break;

@@ -50,7 +50,7 @@ namespace Survival.Core.Engine
         /// <summary>同区卡片拖到插入线：只改顺序，不改归属；执行中、暂停中都允许，死亡时拒绝。</summary>
         private ActionResult Reorder(GameState s, InstantRequest r)
         {
-            if (r.Zone != ItemInstance.Carried && r.Zone != s.CurrentLocation) return ActionResult.Fail("只能整理随身或当前地面的卡片");
+            if (r.Zone != ItemInstance.Carried && r.Zone != s.Ground) return ActionResult.Fail("只能整理随身或当前地面的卡片");
             var list = OrderedCards(s, r.Zone);
             if (!list.Remove(r.CardKey)) return ActionResult.Fail("这张卡已不在该区域");
             var index = r.Index < 0 ? 0 : r.Index > list.Count ? list.Count : r.Index;

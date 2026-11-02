@@ -131,6 +131,16 @@ namespace Survival.Core.State
         [JsonIgnore] public Dictionary<StatId, bool> ZeroLatched { get => Player.ZeroLatched; set => Player.ZeroLatched = value; }
 
         public string CurrentLocation { get; set; } = "";
+
+        /// <summary>地点外部区（地点默认区域）与安全屋屋内区的区 ID（S09 X2.1 zoneId，B17）。</summary>
+        public const string ExteriorZone = "exterior";
+        public const string SafehouseZone = "safehouse";
+
+        /// <summary>
+        /// 当前地面的 owner（= 当前所在区的 place，B17）：外部区就是地点 ID（旧档不变），安全屋屋内是 safehouseFloor:&lt;safehouseId&gt;。
+        /// 放下、拾取、制作产物、取消返料都落在这里。
+        /// </summary>
+        [JsonIgnore] public string Ground => CurrentLocation;
         public Dictionary<string, LocationState> Locations { get; set; } = new Dictionary<string, LocationState>();
         public HashSet<string> UnlockedEdges { get; set; } = new HashSet<string>();
         /// <summary>完整走过（任一方向）的物理边 ID（athletics_10“已访问物理边”，开发计划 v0.9 B5 H7；schema 11 起记录，旧档从空开始）。</summary>
@@ -536,6 +546,44 @@ namespace Survival.Core.State
             slot = rest.Substring(k + 1);
             return true;
         }
+
+        /// <summary>安全屋屋内地面 owner 前缀（S09 X2.6、S06 X4）："safehouseFloor:&lt;safehouseId&gt;"。</summary>
+        public const string SafehouseFloorPrefix = "safehouseFloor:";
+        /// <summary>安全屋固定柜 owner 前缀："safehouseStorage:&lt;safehouseId&gt;"（柜内根实例，与角色无关）。</summary>
+        public const string SafehouseStoragePrefix = "safehouseStorage:";
+        /// <summary>安全屋实例 ID 前缀：每地点最多一间、不拆除，ID 由地点生成且全局唯一（sh_&lt;地点ID&gt;）。</summary>
+        public const string SafehouseIdPrefix = "sh_";
+
+        public static string SafehouseIdOf(string locationId) => SafehouseIdPrefix + locationId;
+        public static string SafehouseFloorOwner(string safehouseId) => SafehouseFloorPrefix + safehouseId;
+        public static string SafehouseStorageOwner(string safehouseId) => SafehouseStoragePrefix + safehouseId;
+
+        public static bool TrySafehouseFloor(string owner, out string safehouseId)
+        {
+            safehouseId = "";
+            if (!owner.StartsWith(SafehouseFloorPrefix) || owner.Length == SafehouseFloorPrefix.Length) return false;
+            safehouseId = owner.Substring(SafehouseFloorPrefix.Length);
+            return true;
+        }
+
+        public static bool TrySafehouseStorage(string owner, out string safehouseId)
+        {
+            safehouseId = "";
+            if (!owner.StartsWith(SafehouseStoragePrefix) || owner.Length == SafehouseStoragePrefix.Length) return false;
+            safehouseId = owner.Substring(SafehouseStoragePrefix.Length);
+            return true;
+        }
+
+        /// <summary>安全屋 ID 对应的地点。</summary>
+        public static bool TrySafehouseLocation(string safehouseId, out string locationId)
+        {
+            locationId = "";
+            if (!safehouseId.StartsWith(SafehouseIdPrefix) || safehouseId.Length == SafehouseIdPrefix.Length) return false;
+            locationId = safehouseId.Substring(SafehouseIdPrefix.Length);
+            return true;
+        }
+
+        public bool InSafehouseStorage => Owner.StartsWith(SafehouseStoragePrefix);
 
         public static string ContainerOwner(int containerInstanceId) => ContainerPrefix + containerInstanceId;
         public static string FacilityOwner(string facilityId) => FacilityPrefix + facilityId;

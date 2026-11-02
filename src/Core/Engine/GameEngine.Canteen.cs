@@ -34,7 +34,7 @@ namespace Survival.Core.Engine
             if (s.Encounter != null) return "发现敌踪：请先选择接敌或绕行";
             if (DialogueLocked(s)) return DialogueLockedReason;
             if (IsBusy(s)) return "行动进行中，不能整理物品";
-            if (!(c.IsCarried || c.Owner == s.CurrentLocation)) return "只能操作随身或当前地面的水壶";
+            if (!(c.IsCarried || c.Owner == s.Ground)) return "只能操作随身或当前地面的水壶";
             if (c.ReservedBy != null || IsLocked(s, c)) return "行动占用：这个水壶正被使用";
             return null;
         }
@@ -47,7 +47,7 @@ namespace Survival.Core.Engine
             if (reason != null) return 0;
             if (!IsLiquid(water) || !cfg!.Accepts.Contains(water.ItemId)) { reason = $"{ItemName(water.ItemId)}不能装进水壶（只装脏水或净水）"; return 0; }
             if (water.InContainer || water.InFacility) { reason = "锅里的水请先倒出成水卡再装进水壶"; return 0; }
-            if (!(water.IsCarried || water.Owner == s.CurrentLocation)) { reason = "只能用随身或当前地面的水卡"; return 0; }
+            if (!(water.IsCarried || water.Owner == s.Ground)) { reason = "只能用随身或当前地面的水卡"; return 0; }
             if (water.ReservedBy != null || IsLocked(s, water)) { reason = "该物品已被预留"; return 0; }
             if (canteen.LiquidId != null && canteen.LiquidMl > 0 && canteen.LiquidId != water.ItemId)
             { reason = $"水壶里是{ItemName(canteen.LiquidId)}，不能再装{ItemName(water.ItemId)}（不混装）"; return 0; }
@@ -95,7 +95,7 @@ namespace Survival.Core.Engine
             var cfg = CanteenOf(canteen);
             reason = cfg == null ? "这不是水壶" : CanteenHereBlocked(s, canteen);
             if (reason != null) return 0;
-            if (zone != ItemInstance.Carried && zone != s.CurrentLocation) { reason = "只能倒到随身或当前地面"; return 0; }
+            if (zone != ItemInstance.Carried && zone != s.Ground) { reason = "只能倒到随身或当前地面"; return 0; }
             if (canteen.LiquidId == null || canteen.LiquidMl <= 0) { reason = "水壶是空的"; return 0; }
             var unit = _items[canteen.LiquidId].UnitVolumeMl ?? cfg!.TransferMl;
             var n = canteen.LiquidMl / unit;
@@ -123,7 +123,7 @@ namespace Survival.Core.Engine
         {
             var canteen = FindItem(s, r.InstanceId);
             if (canteen == null || !IsCanteen(canteen)) return ActionResult.Fail("没有这个水壶");
-            var zone = string.IsNullOrEmpty(r.Zone) ? s.CurrentLocation : r.Zone;
+            var zone = string.IsNullOrEmpty(r.Zone) ? s.Ground : r.Zone;
             var max = MaxPourCanteen(s, canteen, zone, out var why);
             if (why != null) return ActionResult.Fail(why);
             if (r.Count < 1) return ActionResult.Fail("数量无效", max);

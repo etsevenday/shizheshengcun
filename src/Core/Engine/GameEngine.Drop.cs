@@ -144,7 +144,7 @@ namespace Survival.Core.Engine
             if (head == null)
                 return DropIntent.No(src.Kind == DropSourceKind.Card && s.Items.Any(i => i.Owner == src.Owner && i.ItemId == src.ItemId)
                     ? "该物品已被预留" : "物品已不在");
-            var here = s.CurrentLocation;
+            var here = s.Ground;
             if (head.IsWorn) return DropIntent.No(WornMoveBlocked);
             var srcPlace = PlaceOf(s, head);
             if (srcPlace != ItemInstance.Carried && srcPlace != here) return DropIntent.No("其他地点的物品不能操作");
@@ -199,7 +199,7 @@ namespace Survival.Core.Engine
 
         private DropIntent DropOnZone(GameState s, DropSource src, ItemInstance head, string zone, int index)
         {
-            var here = s.CurrentLocation;
+            var here = s.Ground;
             if (zone != ItemInstance.Carried && zone != here) return DropIntent.No("只能放到随身或当前地面");
             var name = ItemName(head.ItemId);
             // 设施与锅里的物品拖到随身/地面：取出（整锅连同内容），与点击转移箭头同一校验（统一卡片案第 5 节）
@@ -263,7 +263,7 @@ namespace Survival.Core.Engine
 
         private DropIntent DropOnFuel(GameState s, ItemInstance head, string loc)
         {
-            if (loc != s.CurrentLocation || !_locs[loc].HasFire) return DropIntent.No("只能给当前营地的火堆投料");
+            if (loc != s.Ground || !HasFireAt(s, loc)) return DropIntent.No("只能给当前营地的火堆投料");
             // 燃料区与加工位都是火堆的一部分：打火器落在上面同样是点火
             if (IsLighter(head)) return DropOnFire(s, new DropSource { Kind = DropSourceKind.Card }, head, loc);
             if (IsLiquid(head)) return DropIntent.No($"{ItemName(head.ItemId)}不能直接倒进火堆（不会产生净水，也不会灭火），请拖进锅里");
@@ -272,7 +272,7 @@ namespace Survival.Core.Engine
                 return DropIntent.No($"{ItemName(head.ItemId)}请拖到火堆的空加工位或锅的食材区；燃料区只收木材");
             if (head.ItemId != "wood" || head.InContainer || head.InFacility) return DropIntent.No(Unsupported);
             if (head.ReservedBy != null) return DropIntent.No("该物品已被预留");
-            var fac = s.Locations[loc].Facility;
+            var fac = FacOf(s, loc)!;
             var room = MaxWoodForFire(fac);
             if (room < 1) return DropIntent.No($"至少需要{Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{Config.Fire.MaxFuelMinutes}分钟）");
             var max = Math.Min(room, CardBatchCount(s, head));
@@ -299,7 +299,7 @@ namespace Survival.Core.Engine
         /// </summary>
         private DropIntent DropOnFire(GameState s, DropSource src, ItemInstance head, string loc)
         {
-            if (loc != s.CurrentLocation || !_locs[loc].HasFire) return DropIntent.No("异地不能操作火堆");
+            if (loc != s.Ground || !HasFireAt(s, loc)) return DropIntent.No("异地不能操作火堆");
             if (src.Kind == DropSourceKind.Card && IsLighter(head) && !head.InFacility) return IgniteFor(s, head);
             if (head.ItemId == "wood" && src.Kind == DropSourceKind.Card && !head.InFacility)
             {

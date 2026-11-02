@@ -34,7 +34,7 @@ namespace Survival.Core.Engine
             // 战斗与敌踪待选时锁定一切实体操作（v0.5 §16）：装备与弹药走战斗指令
             if (s.Battle != null) return ActionResult.Fail("战斗中不能整理物品；换武器、装填与用药请用战斗指令");
             if (s.Encounter != null) return ActionResult.Fail("发现敌踪：请先选择接敌或绕行");
-            var here = s.CurrentLocation;
+            var here = s.Ground;
             switch (r.Kind)
             {
                 case InstantKind.Pickup:
@@ -70,8 +70,8 @@ namespace Survival.Core.Engine
                 {
                     var err = FireMaintenanceBlocked(s);
                     if (err != null) return ActionResult.Fail(err);
-                    if (!_locs[here].HasFire) return ActionResult.Fail("这里没有火堆");
-                    var fac = s.Locations[here].Facility;
+                    if (!HasFireAt(s, here)) return ActionResult.Fail("这里没有火堆");
+                    var fac = FacOf(s, here)!;
                     var room = MaxWoodForFire(fac);
                     if (room <= 0)
                         return ActionResult.Fail($"至少需要{Config.Fire.BurnMinutesPerWood}分钟空余容量（燃料上限{Config.Fire.MaxFuelMinutes}分钟）");
@@ -109,8 +109,8 @@ namespace Survival.Core.Engine
                 {
                     var err = FireMaintenanceBlocked(s);
                     if (err != null) return ActionResult.Fail(err);
-                    var fac = s.Locations[here].Facility;
-                    if (!_locs[here].HasFire || !fac.FireLit) return ActionResult.Fail("火堆没有在燃烧");
+                    var fac = FacOf(s, here) ?? new FacilityState();
+                    if (!HasFireAt(s, here) || !fac.FireLit) return ActionResult.Fail("火堆没有在燃烧");
                     fac.FireLit = false;
                     fac.WentOut = true;
                     Emit(s, GameEventKind.Info, $"已熄灭火堆，剩余燃料{fac.FuelMinutes}分钟保留。");
@@ -161,7 +161,7 @@ namespace Survival.Core.Engine
             var busy = HolderBlocked(s);
             if (busy != null) return busy;
             var place = PlaceOf(s, pot);
-            if (!(place == ItemInstance.Carried || place == s.CurrentLocation)) return "只能操作随身、当前地面或当前火堆里的锅";
+            if (!(place == ItemInstance.Carried || place == s.Ground)) return "只能操作随身、当前地面或当前火堆里的锅";
             return null;
         }
 
@@ -172,7 +172,7 @@ namespace Survival.Core.Engine
             if (reason != null) return 0;
             var cfg = PotConfig(pot);
             if (!cfg.Accepts.Contains(water.ItemId)) { reason = $"{ItemName(water.ItemId)}不能装入锅中"; return 0; }
-            if (!(water.IsCarried || water.Owner == s.CurrentLocation) || water.ReservedBy != null)
+            if (!(water.IsCarried || water.Owner == s.Ground) || water.ReservedBy != null)
             {
                 reason = "只能装入随身或当前地面未预留的水";
                 return 0;
@@ -233,7 +233,7 @@ namespace Survival.Core.Engine
             if (!ItemInstance.TryContainerId(child.Owner, out var potId)) { reason = "这份水不在锅里"; return 0; }
             reason = PotBlocked(s, FindItem(s, potId));
             if (reason != null) return 0;
-            if (zone != ItemInstance.Carried && zone != s.CurrentLocation) { reason = "只能倒到随身或当前地面"; return 0; }
+            if (zone != ItemInstance.Carried && zone != s.Ground) { reason = "只能倒到随身或当前地面"; return 0; }
             if (child.ReservedBy != null) { reason = "行动占用：锅内水已被预留"; return 0; }
             var pot = FindItem(s, potId)!;
             var free = PotFreeWaterUnits(s, pot);
@@ -260,7 +260,7 @@ namespace Survival.Core.Engine
         {
             var child = FindItem(s, r.InstanceId);
             if (child == null) return ActionResult.Fail("没有这份水");
-            var zone = string.IsNullOrEmpty(r.Zone) ? s.CurrentLocation : r.Zone;
+            var zone = string.IsNullOrEmpty(r.Zone) ? s.Ground : r.Zone;
             var max = MaxDecant(s, child, zone, out var why);
             if (why != null) return ActionResult.Fail(why);
             if (r.Count < 1 || r.Count > child.Count) return ActionResult.Fail("数量无效", max);
