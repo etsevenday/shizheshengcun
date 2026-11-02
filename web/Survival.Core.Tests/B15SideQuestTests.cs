@@ -239,13 +239,25 @@ public class B15SideQuestTests : TestBase
         var s = At("r06_archive", Q("FA03", "accepted"), "FA03_record_credit");
         E.DebugToggleCityPostAbsent(s);
         Ok(E.TalkNpc(s, "npc_shao_ning"));
-        Assert.That(s.Story.DialogueLog.Any(d => d.EventId == "AC02_offer"), Is.False);
+        // M333（A11 Q32B“换speaker到代班角色”）：代班交谈播接续两句后照播委托接取台词，原人物的句子由当班接续员说
+        Assert.That(s.Story.DialogueLog.Any(d => d.EventId == "AC02_offer"), Is.True);
         ReadDialogues(s);
+        var lines = s.Story.DialogueLog.SelectMany(d => d.Lines).ToList();
+        Assert.That(lines.Any(l => l.Speaker == "邵宁"), Is.False, "离岗人物不再发言");
+        Assert.That(lines.Where(l => l.LineId.StartsWith("NTL_")).Any(l => l.Speaker == "机构当班接续员"), Is.True);
         Assert.That(s.Progress.Flags, Does.Contain(Q("AC02", "accepted")));
         Ok(E.StartCityService(s, "academy_report_compare"));
         Run(s);
         ReadDialogues(s);
         Assert.That(s.Progress.Flags, Does.Contain(Q("AC02", "completed")));
+        Ok(E.ReviewQuest(s, "AC02"));
+        ReadDialogues(s);
+        lines = s.Story.DialogueLog.SelectMany(d => d.Lines).ToList();
+        Assert.That(lines.Any(l => l.Speaker == "邵宁"), Is.False, "交付与回看也由当班接续员说");
+        E.DebugToggleCityPostAbsent(s);
+        Ok(E.ReviewQuest(s, "AC02"));
+        ReadDialogues(s);
+        Assert.That(s.Story.DialogueLog.Last().Lines.Any(l => l.Speaker == "邵宁"), Is.True, "回岗后回看照常由原人物说");
     }
 
     /// <summary>
@@ -285,5 +297,45 @@ public class B15SideQuestTests : TestBase
         Assert.That(back.Progress.Flags, Does.Contain(Q("AC02", "completed")));
         Assert.That(back.Log.Count(l => l.Text.Contains("相互矛盾的报告") && l.Text.Contains("完成")), Is.EqualTo(1));
         Assert.That(E.StartCityService(back, "academy_report_compare").Ok, Is.False);
+    }
+
+    /// <summary>M333：岗位卡“事项 a/b 项可办”与按钮 N 项同一口径——接待路线算一项（不和委托重复计），领过路线/委托已归档的服务不计。</summary>
+    [Test]
+    public void M333_CardCountsConsistent()
+    {
+        var s = At("c02_church");
+        var c = E.NpcsHere(s).Single(x => x.Kind == "post");
+        Assert.That((c.Status, c.ItemCount), Is.EqualTo(("可交谈 · 事项 1/1 项可办", 1)), "询问公开路线与“被称作新生的人”算一项");
+        Ok(E.StartCityService(s, "church_reception_existing", null, "FA02_accept_no_oath"));
+        ReadDialogues(s);
+        c = E.NpcsHere(s).Single(x => x.Kind == "post");
+        Assert.That((c.Status, c.ItemCount), Is.EqualTo(("可交谈 · 事项 0/1 项可办", 1)), "路线已领不计；主线进行中计 1、现在没有可办的");
+        var t = At("c06_archive", Q("CH01", "completed"), Q("FA02", "accepted"), "FA02_record_credit", Q("CH02", "accepted"));
+        Ok(E.StartCityService(t, "church_archive_copy"));
+        Run(t);
+        ReadDialogues(t);
+        c = E.NpcsHere(t).Single(x => x.Kind == "post");
+        Assert.That((c.Status, c.ItemCount, c.ServiceCount), Is.EqualTo(("可交谈", 0, 1)), "典藏室已归档：不计（按钮写“可回看”）");
+        var h = At("h05_appraisal");
+        Ok(E.TalkNpc(h, "npc_tao_cen"));
+        ReadDialogues(h);
+        c = E.NpcsHere(h).Single(x => x.Kind == "post");
+        Assert.That((c.Status, c.ItemCount), Is.EqualTo(("可交谈 · 事项 1/1 项可办", 1)), "只有委托的岗位：阅读说明算一项可办");
+    }
+
+    /// <summary>M333：HU04 前置未满足时“下一步”不再重复条件（条件在未满足条件行），满足后与状态一致；中途停下委托工作的日志写实际时长。</summary>
+    [Test]
+    public void M333_Hu04Step_CancelLogActualMinutes()
+    {
+        var s = At("h06_shelter");
+        Assert.That(E.QuestViewOf(s, "HU04")!.Step, Is.EqualTo("到收容所和杜穗交谈。"));
+        var t = At("r06_archive", Q("FA03", "accepted"), "FA03_record_credit");
+        Ok(E.TalkNpc(t, "npc_shao_ning"));
+        ReadDialogues(t);
+        var t0 = t.GameMinute;
+        Ok(E.StartCityService(t, "academy_report_compare"));
+        for (var i = 0; i < 20 && t.GameMinute < t0 + 5; i++) E.Advance(t);
+        Ok(E.Cancel(t));
+        Assert.That(t.Log.Any(l => l.Text == "已停止比对观察报告（实际进行了5分钟）。"), Is.True, string.Join("|", t.Log.TakeLast(3).Select(l => l.Text)));
     }
 }

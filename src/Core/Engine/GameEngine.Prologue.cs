@@ -86,6 +86,8 @@ namespace Survival.Core.Engine
         public int QuestCount { get; set; }
         /// <summary>名下有已显示的委托（含已完成可回看的）：有就出“事项”按钮。</summary>
         public bool HasQuests { get; set; }
+        /// <summary>“事项 N项”与卡面“事项 a/b 项可办”的 b（同一口径，见 NpcItemCounts；M333）。</summary>
+        public int ItemCount { get; set; }
         public string QuestText { get; set; } = "";
         public string RecruitText { get; set; } = "";
         /// <summary>主按钮的字（默认“交谈”；B15 同行邀约卡为“登记同行”）。</summary>

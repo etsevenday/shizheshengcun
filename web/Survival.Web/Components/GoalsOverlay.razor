@@ -76,6 +76,7 @@
                                     else
                                     {
                                         <small>下一步：@v.Step</small>
+                                        @if (v.Retro) { <small class="good-text">旧档追认（已接取）</small> }
                                         @if (v.Status == "locked" && v.AcceptBlocked != null) { <small class="muted">@v.AcceptBlocked</small> }
                                     }
                                 </span>

@@ -34,7 +34,7 @@
             var qid = q.Id;
             var qbusy = G.Running ? "行动进行中" : null;
             <section class="city-svc city-quest @(q.Status)">
-                <h3>@q.Title <small>@q.KindLabel · @q.StatusText@(q.ChoiceLabel != null ? $" · {q.ChoiceLabel}" : "")</small></h3>
+                <h3>@q.Title <small>@q.KindLabel · @q.StatusText@(q.ChoiceLabel != null ? $" · {q.ChoiceLabel}" : "")@(q.Retro ? " · 旧档追认" : "")</small></h3>
                 <p class="city-summary">@(q.Status == "done" ? "结果：" : "下一步：")@q.Step</p>
                 @if (!string.IsNullOrEmpty(q.WorkHint)) { <p class="small muted">@q.WorkHint</p> }
                 @if (q.Status == "locked" && q.AcceptBlocked != null) { <p class="small muted">@q.AcceptBlocked</p> }

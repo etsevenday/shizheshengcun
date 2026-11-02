@@ -24,11 +24,10 @@
                 var id = n.NpcId;
                 var post = n.Kind == "post";
                 var companion = n.Kind == "companion";
-                var items = n.ServiceCount + n.QuestCount;
                 var tip = post
                     ? $"{n.Name}：{n.FactionName}·{n.Role}（{n.KindLabel}）。{n.Status}。{n.RecruitText}。{(n.QuestText.Length > 0 ? n.QuestText + "。" : "")}点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；有可接的委托时交谈即接取）{(n.ServiceCount > 0 || n.HasQuests ? "；“事项”查看可办的服务与委托" : "")}"
                     : companion
-                        ? $"{n.Name}（固定队友·{n.Role}）：{n.Background}。{n.RecruitText}。点卡片或“{n.ActionLabel}”（0分钟）"
+                        ? $"{n.Name}（固定队友·{n.Role}）：{n.Background.TrimEnd('。')}。{n.RecruitText}。点卡片或“{n.ActionLabel}”（0分钟）"
                         : $"{n.Name}：{n.Role}。{n.Status}。点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；不是队友）";
                 <ObjectCard @key="@("npc-" + id)" Id="@($"npc-{id}")" CssClass="@($"res-card npc-card{(post || companion ? " post-card" : "")}{(focus == "npc:" + id ? " tut-lit" : "")}")" Title="@n.Name" Badge="@(post || companion ? n.KindLabel : n.HasNews ? "来客" : "可交谈")" BadgeClass="@(n.HasNews ? "new" : "")"
                             Tooltip="@tip" OnClick="() => Talk(id, why)">
@@ -46,7 +45,7 @@
                         {
                             <button type="button" class="loc-btn res-btn" title="查看这里可办的事项与委托（浏览不耗时）"
                                     @onclick="() => G.OpenCityServices(id)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
-                                <strong>事项</strong><small>@(items)项</small>
+                                <strong>事项</strong><small>@(n.ItemCount > 0 ? $"{n.ItemCount}项" : "可回看")</small>
                             </button>
                         }
                     </Footer>

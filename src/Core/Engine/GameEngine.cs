@@ -942,6 +942,9 @@ namespace Survival.Core.Engine
                 ActionType.Bypass => "已取消绕行。",
                 ActionType.Survey => "已取消遗迹勘整，未获得经验，不占今日勘整次数；已消耗的时间保留。",
                 ActionType.WaitCook => $"已退出等待加工（已完成{a.CookDone.Count}项）：火堆、锅与受热进度原样保留，成品留在原位。",
+                // B15 试玩修复 M333：城市事项/委托工作写实际进行的时长，不写计划工时
+                _ when a.TargetId.StartsWith(CityServicePrefix) =>
+                    $"已停止{CityService(a.TargetId.Substring(CityServicePrefix.Length))?.Title ?? a.Label}（实际进行了{Clock.Duration(a.ElapsedMinutes)}）。",
                 _ => $"已结束{a.Label}。",
             };
             Emit(s, GameEventKind.ActionCancelled, text);

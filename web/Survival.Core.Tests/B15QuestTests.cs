@@ -279,6 +279,8 @@ public class B15QuestTests : TestBase
         Assert.That(s.Progress.Flags, Does.Not.Contain(Q("FA05", "completed")));
         Assert.That(s.Progress.Flags, Does.Not.Contain(Q("FA01", "completed")), "FA01 不追认，下一次到广场照常说明");
         Assert.That(s.Quests.Records["FA02"].Retro, Is.True);
+        Assert.That(E.QuestViewOf(s, "FA05")!.Status, Is.EqualTo("active"));
+        Assert.That(E.QuestViewOf(s, "FA05")!.Retro, Is.True, "M333：已接取的追认项同样标旧档追认");
         Assert.That(E.QuestViewOf(s, "FA02")!.Retro, Is.True);
         Assert.That(s.Story.DialogueLog.Count, Is.EqualTo(dialogues), "不播对白");
         Assert.That((E.BattleCapacity(s), s.Items.Sum(i => i.Count)), Is.EqualTo((cap, items)));

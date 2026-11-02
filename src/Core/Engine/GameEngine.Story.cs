@@ -99,11 +99,22 @@ namespace Survival.Core.Engine
             var ids = Config.Story.Dialogues.Where(d => d.Event == eventId && (st.BaobaoPresent || d.Speaker != BaobaoSpeaker)).Select(d => d.Id)
                 .Where(id => replayId != null || (!st.PendingDialogues.Contains(id) && !st.SeenDialogues.Contains(id))).ToList();
             if (ids.Count == 0) return;
-            var counterpart = Config.Story.Dialogues.Where(d => ids.Contains(d.Id) && SideOf(d) == DialogueSide.Right).Select(d => d.Speaker).FirstOrDefault() ?? "";
+            var counterpart = SpeakerNow(s, Config.Story.Dialogues.Where(d => ids.Contains(d.Id) && SideOf(d) == DialogueSide.Right).Select(d => d.Speaker).FirstOrDefault() ?? "");
             var session = new DialogueSession { Id = st.NextDialogueSessionId++, EventId = sessionId, Counterpart = counterpart, Pending = ids };
             st.DialogueLog.Add(session);
             st.PendingDialogues.AddRange(ids);
             if (ReferenceEquals(ActiveDialogue(s), session)) ShowNextLine(s, session);
+        }
+
+        /// <summary>
+        /// 展示时的发言者（B15 试玩修复 M333，A11 Q32B 字段约定“NPC去世/退场由同机构岗位接续，换speaker到代班角色”）：
+        /// 命名岗位人物已离岗时，其台词由“机构当班接续员”说；已记下的历史台词快照不改。
+        /// </summary>
+        private string SpeakerNow(GameState s, string speaker)
+        {
+            if (string.IsNullOrEmpty(speaker) || s.City.Absent.Count == 0) return speaker;
+            var n = Config.City.Npcs.FirstOrDefault(x => x.Name == speaker && s.City.Absent.Contains(x.NpcId));
+            return n == null ? speaker : n.DutySpeaker;
         }
 
         /// <summary>展示下一句：首次展示即登记快照（发言者、正文、叙述、左右、时间、地点），与游标一同存档。</summary>
@@ -117,7 +128,7 @@ namespace Survival.Core.Engine
                 if (cfg == null) { s.Story.PendingDialogues.Remove(id); continue; }
                 d.Lines.Add(new DialogueLine
                 {
-                    LineId = id, Order = d.Lines.Count + 1, Speaker = cfg.Speaker, Text = cfg.Text, Note = cfg.Note, Side = SideOf(cfg),
+                    LineId = id, Order = d.Lines.Count + 1, Speaker = SpeakerNow(s, cfg.Speaker), Text = cfg.Text, Note = cfg.Note, Side = SideOf(cfg),
                     Minute = s.GameMinute, LocationId = s.CurrentLocation,
                 });
                 if (d.Minute == null) { d.Minute = s.GameMinute; d.LocationId = s.CurrentLocation; }

@@ -33205,7 +33205,7 @@
         "workLabel": "查看说明",
         "completeByAny": [],
         "completeFacts": [],
-        "stepOffer": "名册里有一名同行者后，到收容所和杜穗交谈。",
+        "stepOffer": "到收容所和杜穗交谈。",
         "stepActive": "在收容所查看候补照护与伤病风险说明（0分钟，可以不让任何人留守）。",
         "result": "留守说明已读（不改队伍、不清伤病）"
       },

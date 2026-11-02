@@ -144,7 +144,7 @@ namespace Survival.Core.Engine
                 var absent = s.City.Absent.Contains(n.NpcId);
                 // Q146 选 B：只统计已实装的事项；可办数按当前资格（分母不含未实装）；没有已实装事项不显示事项数占位
                 var services = CityServicesOf(s, n.NpcId);
-                var canDo = services.Count(CityServiceDoable);
+                var (canDo, total) = NpcItemCounts(s, n.NpcId, services);
                 yield return new NpcCardView
                 {
                     NpcId = n.NpcId,
@@ -154,7 +154,8 @@ namespace Survival.Core.Engine
                     Kind = "post",
                     KindLabel = absent ? "代班" : "岗位",
                     Substitute = absent,
-                    Status = services.Count > 0 ? $"可交谈 · 事项 {canDo}/{services.Count} 项可办" : "可交谈",
+                    Status = total > 0 ? $"可交谈 · 事项 {canDo}/{total} 项可办" : "可交谈",
+                    ItemCount = total,
                     ServiceCount = services.Count,
                     QuestCount = QuestsOfNpc(s, n.NpcId).Count(q => q.Status != "done"),
                     HasQuests = QuestsOfNpc(s, n.NpcId).Count > 0,
@@ -165,6 +166,31 @@ namespace Survival.Core.Engine
                     TalkBlocked = TalkBlocked(s),
                 };
             }
+        }
+
+        /// <summary>
+        /// 岗位卡“事项 a/b 项可办”与按钮“N项”的同一口径（B15 试玩修复 M333）：b = 未关闭的已实装服务 + 未完成且不经本岗服务办理的委托；
+        /// 任务类服务对应的那一步已办完（路线已领、委托已完成）记为关闭、不计；经本岗服务接取/办理的委托算在该服务里，不重复计；
+        /// a = 其中现在能办的（服务能办，或它所服务的委托现在可接；委托能接或能做）。
+        /// </summary>
+        private (int Doable, int Total) NpcItemCounts(GameState s, string npcId, List<CityServiceView> services)
+        {
+            var open = services.Where(v => !CityServiceClosed(s, v.Id)).ToList();
+            var quests = QuestsOfNpc(s, npcId).Where(q => q.Status != "done").ToList();
+            bool Served(QuestView q, CityServiceView v) => Quest(q.Id) is QuestConfig c && (c.AcceptServiceId == v.Id || c.WorkServiceIds.Contains(v.Id));
+            static bool QuestDoable(QuestView q) => (q.AcceptHere && q.AcceptBlocked == null) || (q.WorkLabel != null && q.WorkBlocked == null);
+            var own = quests.Where(q => !open.Any(v => Served(q, v))).ToList();
+            var doable = open.Count(v => CityServiceDoable(v) || quests.Any(q => Served(q, v) && QuestDoable(q))) + own.Count(QuestDoable);
+            return (doable, open.Count + own.Count);
+        }
+
+        /// <summary>任务类服务对应的那一步已办完：委托已完成，或接待处路线已领（B15 试玩修复 M333）。</summary>
+        private bool CityServiceClosed(GameState s, string serviceId)
+        {
+            var svc = CityService(serviceId);
+            if (svc == null) return false;
+            if (QuestOfService(svc) is QuestConfig q && QuestDone(s, q.Id)) return true;
+            return Config.Quests.List.Any(x => x.Implemented && x.AcceptServiceId == serviceId) && svc.Choices.SelectMany(c => c.Facts).Any(s.Progress.Flags.Contains);
         }
 
         /// <summary>一项事项现在能不能办（卡面“可办数”）：没有通用阻拦，要目标的至少有一名合法目标。</summary>
@@ -186,9 +212,9 @@ namespace Survival.Core.Engine
             var offer = TalkOffer(s, n.NpcId);
             if (c.Absent.Contains(n.NpcId))
             {
-                // 联系人退场不锁任务：代班员接续，委托照接（不播原人物的接取台词）
+                // 联系人退场不锁任务：代班员接续，委托照接，接取台词由当班接续员说（M333：换 speaker，见 SpeakerNow）
                 OpenReplay(s, StateSet(n, "institution_substitute"));
-                if (offer != null) AcceptCore(s, offer, false);
+                if (offer != null) AcceptCore(s, offer, true);
                 return ActionResult.Success();
             }
             var first = c.Greeted.Add(n.NpcId);

@@ -89,7 +89,7 @@ QUESTS = [
          workLabel="阅读说明", result="招募说明已读（不招人、不刷新名单、不扩大队伍）"),
     dict(id="HU04", title="留守之前", kind="side", npcId="npc_du_sui", locationId="h06_shelter",
          showAny=["hub_registered"], requiresAll=["hub_registered"], requiresRosterMember=True, accept="talk", workMinutes=0,
-         stepOffer="名册里有一名同行者后，到收容所和杜穗交谈。", stepActive="在收容所查看候补照护与伤病风险说明（0分钟，可以不让任何人留守）。",
+         stepOffer="到收容所和杜穗交谈。", stepActive="在收容所查看候补照护与伤病风险说明（0分钟，可以不让任何人留守）。",
          workLabel="查看说明", result="留守说明已读（不改队伍、不清伤病）"),
     dict(id="CH01", title="施济清单", kind="side", npcId="npc_bai_ling", locationId="c04_alms",
          showAny=[qf("FA02", "accepted")], requiresAll=[qf("FA02", "accepted")], accept="talk",
