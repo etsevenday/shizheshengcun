@@ -1468,6 +1468,8 @@ namespace Survival.Core.Engine
             else if (TutorialEnemyKilled(s, b) && GrantTutorialReward(s, b) is string rr) lines.Add(rr);
             // B20：固定战/旧精英挑战最终胜利结固定账（守卫门、检查哨路线、挑战奖励）
             var fixedLines = outcome == "victory" ? FixedVictory(s, b) : new List<string>();
+            // B21（R03 D4）：地牢远征里撤退成功，全队沿来路退到第一个没有敌人的房间（首个危险房间退回 01，不出地牢），含在本场唯一 tick 里
+            if (outcome == "retreat" && DungeonRetreatLanding(s, b) is string landed) fixedLines.Add(landed);
             var me = b.Fighter(GameState.PlayerId);
             var loss = Math.Min(Config.Panic.MoraleLossMax, me.Panic / Config.Panic.MoraleLossDivisor);
             if (loss > 0) s.Actor(GameState.PlayerId).Stats.Add(StatId.Morale, -loss);

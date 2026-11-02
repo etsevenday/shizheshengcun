@@ -342,6 +342,40 @@ namespace Survival.Core.Engine
             return $"开发传送进危险房间：按已开始的远征处理（{e.Id}）";
         }
 
+        // ───────────────────────── 普通战斗撤退落点（M394，R03 D4，B21-5） ─────────────────────────
+
+        /// <summary>该房间是否有活跃敌人（存活、未隐藏、未在交战中的世界敌人，含固定战敌人）。</summary>
+        private bool HasActiveEnemy(GameState s, string node) => s.WorldEnemies.Any(w => w.LocationId == node && !w.Engaged && !Hidden(s, w));
+
+        /// <summary>
+        /// 撤退落点（开发假设 B21-5，待确认 Q196）：本次远征在地牢危险房间里撤退成功——沿来路轨迹从上一个房间往回找第一个没有活跃敌人的房间，
+        /// 都有敌人则回 01；不出地牢、不另加 5 分钟（含在本场唯一 tick 里）、不触发首次到达、不结束远征、不扣包。返回给战报的短语；不在远征里为 null（野外照旧原地）。
+        /// </summary>
+        public string? DungeonRetreatTarget(GameState s, string battleNode)
+        {
+            var e = s.Expedition;
+            if (e == null || e.IsExtracting || DungeonAt(battleNode) != e.DungeonId || !IsDangerRoom(battleNode)) return null;
+            var trail = new List<string>(e.Trail);
+            var k0 = trail.IndexOf(battleNode);
+            if (k0 >= 0) trail.RemoveRange(k0 + 1, trail.Count - k0 - 1); else trail.Add(battleNode);
+            for (var k = trail.Count - 2; k >= 0; k--)
+                if (!HasActiveEnemy(s, trail[k])) return trail[k];
+            return BufferNodeOf(e.DungeonId);
+        }
+
+        private string? DungeonRetreatLanding(GameState s, BattleState b)
+        {
+            if (s.Progress.Dead) return null;
+            var to = DungeonRetreatTarget(s, b.LocationId);
+            if (to == null) return null;
+            var e = s.Expedition!;
+            TrackTrail(e, b.LocationId);
+            s.CurrentLocation = to;
+            s.CurrentZone = ExteriorZone;
+            TrackTrail(e, to);
+            return $"全队撤退到{LocName(to)}（沿来路第一个没有敌人的房间{(to == BufferNodeOf(e.DungeonId) ? "，即入口缓冲" : "")}；仍在本次远征里）";
+        }
+
         // ───────────────────────── 撤出路线与时长（R03 D5.2，B21-4/B21-7） ─────────────────────────
 
         /// <summary>撤出计划：返程节点（起点…01、父地点）、各段基础分钟、锁定倍率与原因、总分钟 T。</summary>
