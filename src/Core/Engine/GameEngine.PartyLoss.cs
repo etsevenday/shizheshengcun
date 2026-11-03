@@ -92,6 +92,8 @@ namespace Survival.Core.Engine
         private string? EscortConditionBlocked(GameState s)
         {
             if (!s.Progress.Flags.Contains("hub_registered")) return "需要先完成营区登记（QMAP01）";
+            // Q211 选 A：待安置确认期间不另开 RB01 登记（与周期登记互斥）
+            if (s.Recruit.Pending?.AwaitingPlacement == true) return $"{s.Recruit.Pending.Candidate.Name}的登记在等待安置确认：先改选去向或取消";
             var cap = PartyCapacity(s);
             if (s.Party.Count >= cap) return $"同行没有空位（{s.Party.Count}/{cap}）";
             var res = Reserves(s);

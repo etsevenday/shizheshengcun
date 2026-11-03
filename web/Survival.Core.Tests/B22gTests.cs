@@ -370,6 +370,7 @@ public class B22gTests : TestBase
         Run(t);
         Assert.That(t.Recruit.Pending!.AwaitingPlacement, Is.True);
         Assert.That(t.Recruit.Pending.PlacementFailure, Does.Contain("没有已知可通的路线"));
+        Assert.That(E.EscortRegistrationBlocked(t), Does.Contain("等待安置确认"), "Q211：待安置期间不能另开 RB01 登记");
         var m3 = t.GameMinute;
         var items = t.Items.Count;
         Ok(E.CancelRecruitPlacement(t));
@@ -378,6 +379,7 @@ public class B22gTests : TestBase
         Assert.That(t.Roster.Any(r => r.IsRandom), Is.False);
         Assert.That(t.Recruit.Candidates.Single(x => x.CandidateId == c2.CandidateId).Status, Is.EqualTo(RecruitCandidate.Available), "候选回到可招、同一人");
         Assert.That(E.SharedRosterLocked(t), Is.EqualTo(0), "名额释放");
+        Assert.That(E.EscortRegistrationBlocked(t) ?? "", Does.Not.Contain("等待安置确认"));
         Assert.That(t.Log.Last().Text, Does.Contain("已取消").And.Contain("时间不退"));
     }
 
