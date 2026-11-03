@@ -157,11 +157,14 @@
       "stackMax": 10,
       "shelfLifeHours": 0,
       "category": "repair",
-      "use": "战外15基础分钟hand修金属工具/武器最大耐久10%，不修枪/布皮/锅",
+      "use": "品阶耐久制现场修补，按Q168合同公式扣包耐久恢复目标",
       "sourceRefs": [
         "recipe:ex_field_patch"
       ],
-      "acquisition": "craft_only_except_explicit_map_sources"
+      "acquisition": "craft_only_except_explicit_map_sources",
+      "durabilityMax": 100,
+      "grade": "white",
+      "usedStackMax": 1
     },
     {
       "id": "cable_bundle",
@@ -240,6 +243,38 @@
         "recipe:ex_emergency_tonic"
       ],
       "acquisition": "craft_only_except_explicit_map_sources"
+    },
+    {
+      "id": "field_patch_green",
+      "name": "野外修补包（绿）",
+      "weightGrams": 150,
+      "stackMax": 10,
+      "shelfLifeHours": 0,
+      "category": "repair",
+      "use": "品阶耐久制现场修补，按Q168合同公式扣包耐久恢复目标",
+      "sourceRefs": [
+        "recipe:ex_field_patch_green"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources",
+      "durabilityMax": 100,
+      "grade": "green",
+      "usedStackMax": 1
+    },
+    {
+      "id": "field_patch_blue",
+      "name": "野外修补包（蓝）",
+      "weightGrams": 150,
+      "stackMax": 10,
+      "shelfLifeHours": 0,
+      "category": "repair",
+      "use": "品阶耐久制现场修补，按Q168合同公式扣包耐久恢复目标",
+      "sourceRefs": [
+        "recipe:ex_field_patch_blue"
+      ],
+      "acquisition": "craft_only_except_explicit_map_sources",
+      "durabilityMax": 100,
+      "grade": "blue",
+      "usedStackMax": 1
     }
   ],
   "recipes": [
@@ -567,6 +602,38 @@
       "baseMinutes": 30,
       "knowledgeId": "ceramic_methods",
       "mode": "passive"
+    },
+    {
+      "id": "ex_field_patch_green",
+      "inputs": {
+        "iron_plate": 3,
+        "adhesive": 3,
+        "cloth": 3
+      },
+      "outputs": {
+        "field_patch_green": 2
+      },
+      "station": "workbench",
+      "skill": "crafting",
+      "level": 5,
+      "baseMinutes": 60,
+      "knowledgeId": "expedition_basics"
+    },
+    {
+      "id": "ex_field_patch_blue",
+      "inputs": {
+        "iron_plate": 6,
+        "adhesive": 6,
+        "cloth": 6
+      },
+      "outputs": {
+        "field_patch_blue": 2
+      },
+      "station": "workbench",
+      "skill": "crafting",
+      "level": 7,
+      "baseMinutes": 90,
+      "knowledgeId": "expedition_basics"
     }
   ],
   "facilities": [
@@ -2684,13 +2751,75 @@
     },
     "repair": {
       "field_patch": {
-        "minutes": 15,
-        "skill": "crafting",
-        "station": "hand",
-        "repairMaxFraction": 0.1,
-        "legalTargets": "非枪械金属武器/工具；锅和布皮除外",
-        "targetMissingDurabilityOnly": true,
-        "cap": "原实例最大值；不重抽成色"
+        "scope": "仅field_patch野外修补包家族；其他完整维修包、布皮修补片、枪械养护包本轮不改",
+        "grades": [
+          {
+            "rank": 0,
+            "id": "field_patch",
+            "name": "野外修补包（白）",
+            "maxDurability": 100,
+            "weightGrams": 150,
+            "recipe": "ex_field_patch",
+            "inputs": {
+              "iron_plate": 1,
+              "adhesive": 1,
+              "cloth": 1
+            },
+            "outputs": 2,
+            "level": 3,
+            "baseMinutes": 30
+          },
+          {
+            "rank": 1,
+            "id": "field_patch_green",
+            "name": "野外修补包（绿）",
+            "maxDurability": 100,
+            "weightGrams": 150,
+            "recipe": "ex_field_patch_green",
+            "inputs": {
+              "iron_plate": 3,
+              "adhesive": 3,
+              "cloth": 3
+            },
+            "outputs": 2,
+            "level": 5,
+            "baseMinutes": 60
+          },
+          {
+            "rank": 2,
+            "id": "field_patch_blue",
+            "name": "野外修补包（蓝）",
+            "maxDurability": 100,
+            "weightGrams": 150,
+            "recipe": "ex_field_patch_blue",
+            "inputs": {
+              "iron_plate": 6,
+              "adhesive": 6,
+              "cloth": 6
+            },
+            "outputs": 2,
+            "level": 7,
+            "baseMinutes": 90
+          }
+        ],
+        "equipmentRanks": {
+          "white": 0,
+          "green": 1,
+          "blue": 2
+        },
+        "formula": "M为目标最大耐久，d为当前耐久，u为包剩余整数耐久，e为装备品质序号，p为包品阶；k=20*2^(e-p)。单次比例上限L=e<=p?1:2^(p-e)。恢复r=floor(10*min(M-d,M*L,u*M/k))/10；消耗c=ceil(k*r/M)。使用十分位整数/有理数计算，不用浮点误差扩大ceil。r<0.1时拒绝；完成d+=r，u-=c；零耐久包销毁。缺损小则只消耗对应耐久，成本最低1。",
+        "examples": [
+          "M100/d0，白修白恢复100耗20",
+          "M100/d0，蓝修白恢复100耗5",
+          "M100/d0，白修绿恢复50耗20",
+          "M100/d0，白修蓝恢复25耗20",
+          "M100/d20，白包剩3修白恢复15耗3"
+        ],
+        "eligibility": "目标是有耐久的武器/工具或七槽防具，其正式制作输入或正式拆解回收表至少一项为scrap_metal/steel/iron_plate；有一项命中即认，缺失的表不猜测，未知品质拒绝。枪械、锅、打火器显式排除，木石布皮制品无金属依据则拒绝；弩和盾满足材料规则可修。原有兼容金属物品ID别名沿材料索引解析。",
+        "operation": "安全空闲战外，hand，制造1，选择执行者本人穿戴/随身或当地地面合法未锁目标与同来源可用包；入口目标卡“现场修补”或制作维护面板。预览明确包品阶/剩余、目标当前/最大、恢复/消耗、15基础分钟；一次只用一包不自动串包，不能修满则显示可恢复量而非声称修满。15基础分钟主动工具维护沿原熟练加速/身体消耗规则，不吃维修效果加成；成功给执行者制造2，沿原制造日限。缺材/目标满/预留/远处/非法所有者拒绝；选中包和目标锁至提交，完成原子扣包修复，不改变目标品质/词条/最大耐久。取消解锁、包和目标不变、已过时间不退。禁止同事务叠完整维修包。",
+        "stacking": "每包独立耐久，无保质；满包同品阶可堆叠10，拆用只拆出一包，已使用包堆叠上限1；不同品阶/剩余/来源不合并，每堆按S06一张五卡计数。不能修补包自己、不能用其作材料或拆解回料，不能补充包耐久。",
+        "acquisition": "三配方均workbench、crafting、知识expedition_basics；白配方原材料/30分钟/产2不变，绿蓝按grades；确定性品阶无随机词条/品质抽签，不要求新蓝图，不额外地图投放。产地面，满包不吞物。",
+        "migration": "旧未耗field_patch逐份转为白100/100，数量/来源/所有者/堆叠保留，迁移幂等；已耗不追补。进行中的旧15分钟修补按原开工快照完成（消耗旧1份/恢复10%），其预留包在事务结算后再迁移，禁止同时新旧扣费。"
       }
     },
     "water": {
@@ -2701,7 +2830,54 @@
       "station": "30有效世界分钟一批2L，预留filter_media1；可跨地点被动处理，无远程投取",
       "cancel": "净化开始只预留；中断释放原水/耗材原状态、无产物、时间不退，已完成不退款"
     },
-    "expiry": "所有普通预留继续绝对保质；新鲜输入完成重验；热食沿Q16真实受热保护，谷肉炖食完成+24h、硬饼完成+336h；口粮棒和恢复剂按配方min保留更早原截止；非热储存不加保护"
+    "expiry": "所有普通预留继续绝对保质；新鲜输入完成重验；热食沿Q16真实受热保护，谷肉炖食完成+24h、硬饼完成+336h；口粮棒和恢复剂按配方min保留更早原截止；非热储存不加保护",
+    "fixedWaitWaterXp": {
+      "mode": "Q166_B",
+      "targets": [
+        "purification_tablet",
+        "filter_cartridge"
+      ],
+      "xp": "成功实际净化输出每500ml给首次启动且仍存活的执行者烹饪1；与锅烧水共享每角色每世界日4上限，非额外4，也计原适用烹饪日总上限。不按输入或预估给；500ml为本配方计量单位，非整份不额外向上取整，不跨失败/取消批次积余。2L正常成功给4，但当天锅烧水已给3则本批只给1。",
+      "timing": "完成原子提交按完成日剩余额度，不按启动日；取消/腐败/未产出0，完成后领取/转移/读档不重给。启动者死亡不转给全队。20分钟等待及不吃制造加速不变，不增加主动工作身体消耗。旧已完成不给历史经验，进行中批次保留原开工经验快照。"
+    },
+    "dryingRack": {
+      "station": "drying_rack",
+      "name": "晾制架",
+      "slots": 8,
+      "construction": "沿原wood4+rope2、60基础分钟、制造1；位置沿Q107/S09工坊区许可，每区一座；无炭化附件，不额外蓝图",
+      "recipes": [
+        {
+          "id": "dry_berries",
+          "inputs": {
+            "berry": 2
+          },
+          "output": {
+            "dried_berries": 1
+          },
+          "minutes": 120,
+          "skill": "cooking",
+          "level": 1
+        },
+        {
+          "id": "dry_meat",
+          "inputs": {
+            "raw_meat": 1,
+            "salt": 1
+          },
+          "output": {
+            "dried_meat": 1
+          },
+          "minutes": 180,
+          "skill": "cooking",
+          "level": 5
+        }
+      ],
+      "process": "每位一批原配方，不是一份原料；最多8批独立并行。当地安全空闲通过晾架卡选择食谱与空位、明确随身/当地地面输入，预览确认0分钟原子迁入锁位；队友包和异地不可自动取。按真实世界5分钟段被动推进，不吃熟练/制造加速、不耗火/燃料、不占角色行动、不增加工作身体消耗。离开地点仍随世界时间推进，游戏暂停/读档不补现实时间，雨昼夜不改速。完成品留原位占位直到当地合法取出，验五卡/负重或选择当地地面，失败不清空。无空位/技能不足/腐败/预留材料拒绝。",
+      "spoilage": "无受热保护；加工中食品继续原截止计时，到期立刻标腐败停止加工，不生成可食成品、不回活原料。未腐败取消可退原输入及原截止至合法随身/当地地面，清本批进度、不退已过时间，腐败输入只可按原腐败规则清理。全部取消/完成/领取幂等，不复制盐。成功干制视作一次新加工，干品截止=完成世界时刻+168小时，完成前原料必须未到期；禁止拿已完成干品回投此配方刷新。",
+      "xp": "沿Q60烹饪产出公式，每批成功给首次投料且仍存活角色clamp(ceil(原分钟/10),1,12)=12，计原每人每日30烹饪产出上限；腐败/取消0，不转移给接收者/全队。完成原子记一次经验，取出/重读不再给；无人存活则不发经验。",
+      "budget": "4肉干+4果干可8位同时投，180世界分钟全部完成，取代旧2位预算的10小时；材料仍raw_meat4+salt4+berry8，无免费原料。",
+      "migration": "已有晾架保留，若有可信进程保留原位和进度并扩至8位；新位为空，未建不赠架，不回算历史经验。"
+    }
   },
   "campaignRecords": [
     {
