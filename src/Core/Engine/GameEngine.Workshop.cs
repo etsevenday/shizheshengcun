@@ -67,9 +67,18 @@ namespace Survival.Core.Engine
             stationId == "hand" || (FacOf(s, place)?.Workshops.Contains(stationId) ?? false);
 
         /// <summary>建造配方的设施在当前地点当前区是否已建成（棚、床、工坊、屋内火堆）；安全屋看本地点是否已建成。</summary>
-        public bool FacilityBuiltHere(GameState s, RecipeConfig rc) =>
-            rc.FacilityResult == "safehouse" ? SafehouseBuilt(s, s.CurrentLocation)
-            : rc.FacilityResult != null && FacilityFlag(FacOf(s, s.Ground) ?? s.Locations[s.CurrentLocation].Facility, rc.FacilityResult);
+        public bool FacilityBuiltHere(GameState s, RecipeConfig rc)
+        {
+            var loc = s.CurrentLocation;
+            if (rc.FacilityResult == "safehouse") return SafehouseBuilt(s, loc);
+            if (rc.FacilityResult == null) return false;
+            // B22e 试玩修复 M455：按配方所建的区判断（地点+区），不按人当前所在区——屋内三项看本地安全屋屋内，
+            // 野外火堆看本地外部区；屋外建了野外火堆不再把“建屋内火堆”标成已建成
+            var fac = rc.Group == "safehouse" ? (SafehouseBuilt(s, loc) ? SafehouseAt(s, loc)!.Interior : null)
+                : IsWildFireRecipe(rc) ? s.Locations[loc].Facility
+                : FacOf(s, s.Ground) ?? s.Locations[loc].Facility;
+            return fac != null && FacilityFlag(fac, rc.FacilityResult);
+        }
 
         /// <summary>当前所在区能不能自建工坊：临时营地外部，或已完工安全屋屋内（Q107 选 A）。</summary>
         public bool CanBuildWorkshopsHere(GameState s) =>

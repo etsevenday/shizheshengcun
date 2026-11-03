@@ -113,11 +113,11 @@
                         <div class="craft-source" data-craft-source>
                             <span>@RecipeMeta(rc)</span>
                             @if (SourceText(rc) is string src) { <span class="muted">来源：@src</span> }
-                            @foreach (var l in locks) { <span class="warn-text">@l</span> }
+                            @foreach (var l in locks) { <span class="warn-text" title="@l">@l</span> }
                             @if (GameEngine.IsWildFireRecipe(rc))
                             {
                                 @* B22e（Q173）：建野外火堆的不合格原因逐项列出（地点/火源/敌踪/行动/材料），施工不能消除危险 *@
-                                @foreach (var w in e.WildFireReasons(s).Except(locks)) { <span class="warn-text" data-wild-fire-reason>@w</span> }
+                                @foreach (var w in e.WildFireReasons(s).Except(locks)) { <span class="warn-text" data-wild-fire-reason title="@w">@w</span> }
                             }
                         </div>
                         @if (rc.IsRepair)

@@ -11,7 +11,11 @@
     var lowMorale = cfg.Thresholds["morale"].IsBelow(s.Stats.Morale);
     var kind = GameEngine.IsRecoveryModule(G.RestKind) ? G.RestKind : "rest";
     var restE = cfg.HourlyRates["rest"].Energy;
-    var sleepR = cfg.HourlyRates[sheltered ? "sleep_sheltered" : "sleep_exposed"];
+    // B22e 试玩修复 M455：铺开野营遮雨布只让睡眠算遮蔽（休息仍露天），睡眠按钮与标题按实际睡眠遮蔽显示
+    var sleepSheltered = e.SleepSheltered(s, here);
+    var tarpOnly = sleepSheltered && !sheltered;
+    var sleepLabel = sleepSheltered ? (tarpOnly ? "野营布遮蔽" : "遮蔽") : "露天";
+    var sleepR = cfg.HourlyRates[sleepSheltered ? "sleep_sheltered" : "sleep_exposed"];
     var minutes = G.RestMinutes;
     var req = kind == "sleep" ? ActionRequest.Sleep(minutes) : ActionRequest.Rest(minutes);
 }
@@ -20,7 +24,7 @@
 {
     <div class="sub-panel" role="dialog" aria-label="休息与睡眠">
         <div class="sub-head">
-            <div><h2>休息与睡眠</h2><span class="sub">@e.ZoneName(s, here) · @(sheltered ? "遮蔽" : "露天")@(fac.BedBuilt ? " · 有床垫" : "") · 选时长后在下方开始，详细预估在右侧</span></div>
+            <div><h2>休息与睡眠</h2><span class="sub">@e.ZoneName(s, here) · @(sheltered ? "遮蔽" : tarpOnly ? "露天（野营布：睡眠算遮蔽）" : "露天")@(fac.BedBuilt ? " · 有床垫" : "") · 选时长后在下方开始，详细预估在右侧</span></div>
             <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
         </div>
         <div class="sub-body rest-scroll">
@@ -43,7 +47,7 @@
                     {
                         var mm = m;
                         <button class="choice @(kind == "sleep" && minutes == m ? "on" : "")" @onclick='() => Pick("sleep", mm)'>
-                            <b>@Clock.Duration(m)</b><span class="tiny muted">@(sheltered ? "遮蔽" : "露天")：清醒@(Ui.SignedT(sleepR.Wakefulness))/小时</span>
+                            <b>@Clock.Duration(m)</b><span class="tiny muted">@sleepLabel：清醒@(Ui.SignedT(sleepR.Wakefulness))/小时</span>
                         </button>
                     }
                 </div>
@@ -52,7 +56,7 @@
             @* Q21（S14 §19）：恢复条件等教学短文移进悬浮说明，一级只留当前条件与实际风险（精神偏低减半） *@
             <div class="lines" style="max-width:560px"
                  title="@($"健康自然恢复：{(sheltered ? $"饱食与水分≥{Ui.T(cfg.HealthRules.RecoveryMinSatiety)}且精神≥{Ui.T(cfg.HealthRules.RecoveryMinMorale)}时每小时{Ui.SignedT(cfg.HealthRules.ShelteredRestRecoveryPerHour)}" : "露天不恢复")}。期间仍消耗饱食、水分与火堆燃料，不会因满值自动结束；越过低值阈值时会暂停，可补给后继续。完整规则见系统说明。")">
-                <div><span>当前条件</span><b>@(sheltered ? "遮蔽" : "露天")@(fac.BedBuilt && sheltered ? $"，床垫：睡眠体力{Ui.SignedT(cfg.FacilityEffects.BedExtraSleepEnergyPerHour)}/小时" : "")</b></div>
+                <div><span>当前条件</span><b>@(sheltered ? "遮蔽" : tarpOnly ? "休息露天，睡眠有野营布遮蔽" : "露天")@(fac.BedBuilt && sheltered ? $"，床垫：睡眠体力{Ui.SignedT(cfg.FacilityEffects.BedExtraSleepEnergyPerHour)}/小时" : "")</b></div>
                 @if (lowMorale)
                 {
                     <div><span>精神</span><b class="warn-text">@Ui.N(s.Stats.Morale)（低于@(Ui.T(cfg.Thresholds["morale"].Value))，体力恢复减半）</b></div>

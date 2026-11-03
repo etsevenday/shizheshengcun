@@ -38,6 +38,17 @@ public sealed class HelpEntry
 /// </summary>
 public static class HelpCatalog
 {
+        /// <summary>B22e（Q173 按 B）：普通野外外部区可铺野营布、建野外固定火堆；柴炉仍限原 8 处；区域火源唯一。数值读配置。</summary>
+        private static string WildCampingText(GameEngine e)
+        {
+            var rc = e.WildFireRecipe;
+            var mats = string.Join("", rc.Inputs.Select(kv => $"{e.ItemName(kv.Key).Replace("块", "").Replace("材", "")}{kv.Value}"));
+            var lv = rc.MinSkills.TryGetValue(GameEngine.Crafting, out var n) ? n : 0;
+            var camps = e.Config.Locations.Count(l => l.TemporaryCamp);
+            return $"普通主世界野外外部区按本轮显式清单可铺野营布并建固定火堆（手工制作“营地建造”里的“建野外火堆”）；火堆{mats}、制造{lv}、{rc.BaseMinutes}基础分钟，初始熄灭零燃料无锅。" +
+                   $"柴炉仍限原{camps}处，区域火源唯一（同一地点的外部区只能有一个固定火堆或已部署的柴炉）。地牢、城市与势力公共地、任务保留地和屋内都不行。";
+        }
+
     private static string T(double v) => Fmt.T(v);
     private static string ST(double v) => Fmt.SignedT(v);
     private static string Pct(double v) => Fmt.Pct(v);
@@ -458,6 +469,8 @@ public static class HelpCatalog
                         {
                             $"营地可以建遮蔽棚和床垫，建在营地里，不能搬走。遮蔽棚让营地算作遮蔽：睡眠每小时{Rates(sh)}，休息额外恢复精神。床垫要先建遮蔽棚，让营地睡眠的体力每小时额外{ST(e.Config.FacilityEffects.BedExtraSleepEnergyPerHour)}。",
                             "设施行里虚线框的“未建造”卡点开就是对应的建造配方。",
+                            // B22e 试玩修复 M455：Q173 按 B（camping-appraisal-adjudications.json rules.Q173）
+                            WildCampingText(e),
                         };
                     },
                 },
@@ -472,6 +485,7 @@ public static class HelpCatalog
                             $"火堆燃料最多{Dur(f.MaxFuelMinutes)}，每投入1份木材+{f.BurnMinutesPerWood}分钟，投料不耗时。燃烧时每过一段时间消耗燃料，燃尽就熄灭，剩余燃料保留。",
                             $"点火需要打火器：点“点燃”选一把，或把打火器拖到火堆，耗时{f.IgniteMinutes}分钟并磨损打火器。燃料为0时点火会自动投入1份木材。",
                             $"火堆有{f.ProcessingSlots}个加工位，可以放一口锅和直接烤的食物。",
+                            WildCampingText(e),
                         };
                     },
                 },

@@ -292,4 +292,23 @@ public class B22eTests : TestBase
         var q = At("h02_square", false);
         Assert.That(E.DebugWildFireKit(q), Does.Contain("这里不能建").And.Contain("普通野外"));
     }
+
+    [Test]
+    public void M455_BuiltStatusByZone_TarpDesc()
+    {
+        // 屋外建了野外火堆：“建屋内火堆”不标已建成（按配方所建的区判断）
+        var s = WithFire("h05_homestead");
+        var inner = Cfg.Recipes.Single(r => r.Id == "safehouse_fire");
+        Assert.That((E.FacilityBuiltHere(s, E.WildFireRecipe), E.FacilityBuiltHere(s, inner)), Is.EqualTo((true, false)));
+        E.DebugBuildSafehouse(s);
+        Ok(E.EnterSafehouse(s));
+        Assert.That((E.FacilityBuiltHere(s, E.WildFireRecipe), E.FacilityBuiltHere(s, inner)), Is.EqualTo((true, false)), "屋内看：野外火堆在外部区，屋内火堆未建");
+        s.Locations["h05_homestead"].Safehouse!.Interior.FireBuilt = true;
+        Assert.That(E.FacilityBuiltHere(s, inner), Is.True);
+        Ok(E.ExitSafehouse(s));
+        Assert.That(E.FacilityBuiltHere(s, inner), Is.True, "屋外看屋内火堆也按屋内区");
+        // 野营布说明按 Q173 B；柴炉仍写许可点
+        Assert.That(E.Item("field_tarp").Desc, Does.Contain("普通野外的外部区").And.Not.Contain("许可点"));
+        Assert.That(E.Item("folding_stove").Desc, Does.Contain("许可点"));
+    }
 }

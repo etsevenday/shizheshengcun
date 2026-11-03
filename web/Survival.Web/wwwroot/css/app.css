@@ -1338,6 +1338,8 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .craft-side > .fire-box { flex: 0 0 auto; }
 .craft-side .craft-go { position: static; margin: 6px -12px -10px; }
 .craft-source span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* B22e 试玩修复 M455：建野外火堆的逐项原因可换行，1280 下不被省略号截断 */
+.craft-source span[data-wild-fire-reason] { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
 .mat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px; }
 .gear-panel .eq-btn { font-size: 13px; padding: 1px 10px; min-height: 26px; white-space: nowrap; background: #2f3a31; color: var(--text); border: 1px solid var(--accent); border-radius: 4px; }
 .gear-panel .eq-btn:hover:not(:disabled) { background: #3d4a3a; }
