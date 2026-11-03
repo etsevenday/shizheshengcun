@@ -5,13 +5,15 @@
 @{
     var s = G.S;
     var e = G.E;
-    var line = e.DryingSummary(s);
+    var parts = e.DryingSummaryParts(s);
+    var line = string.Join(" · ", parts);
     var tip = $"晾制架（{e.ZoneName(s, s.Ground)}）：{e.DryingSlotCount}个独立晾制位，每位一批果干或肉干，被动晾制、不占行动，离开也继续；点击打开晾制架面板";
 }
 <ObjectCard CssClass="fac-card dry-card" Id="drying-rack" Title="晾制架" Badge="@($"{e.DryingSlotCount}位")" BadgeClass="built" Tooltip="@tip" OnClick="Open" AriaLabel="@($"晾制架：{line}")">
     <Art>@Icons.Markup("dried_meat")</Art>
     <ChildContent>
-        <div class="oc-line" title="@tip">@line</div>
+        @* B22c 试玩修复 M470：每段不拆行（1600 宽“空0”的 0 曾被单独折到下一行） *@
+        <div class="oc-line" title="@tip">@for (var i = 0; i < parts.Count; i++) {@(i > 0 ? " · " : "")<span class="nw">@parts[i]</span>}</div>
     </ChildContent>
 </ObjectCard>
 

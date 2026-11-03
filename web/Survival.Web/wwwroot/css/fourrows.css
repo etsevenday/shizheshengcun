@@ -1102,6 +1102,8 @@
 @media (max-height: 800px) { .center-scroll.four .facility-row .fac-card.sh-card { width: 106px; } }
 /* B17 试玩修复 M363（N2/N5）：1280×720 安全屋卡主图保底 30px（角标在主图内、不压名称），状态一行省略（全文悬停）；柜子重量段不拆行 */
 .center-scroll.four .facility-row .fac-card.sh-card .nw { white-space: nowrap; }
+/* B22c 试玩修复 M470：晾制架卡摘要每段不拆行 */
+.center-scroll.four .facility-row .fac-card.dry-card .nw { white-space: nowrap; }
 @media (max-height: 800px) {
   .center-scroll.four .facility-row .fac-card.sh-card { grid-template-rows: minmax(30px, 1fr) auto auto auto; }
   .center-scroll.four .facility-row .fac-card.sh-card .oc-art { margin-top: 6px; min-height: 24px; }

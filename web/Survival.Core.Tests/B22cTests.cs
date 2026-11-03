@@ -234,6 +234,51 @@ public class B22cTests : TestBase
         Assert.That(Count(again, "dried_berries"), Is.EqualTo(1));
     }
 
+    /// <summary>
+    /// 试玩修复 M470：先投 4 批肉干（3 小时）再按第 8、5、6、7 位投果干（2 小时）——经验预估与投料日志只算比自己先完成（同刻按结算顺序在前）的位，
+    /// 不把刚投的这一位算进去；果干 12、12、6、0，肉干在果干之后完成都是 0；当日已满时不写“先完成的晾制位预计占0”。原料到期＝完成时写“不晚于完成”并进日志。
+    /// </summary>
+    [Test]
+    public void M470_XpPreview_OnlyEarlierSlots_FullDayNoAhead_SpoilWarnInLog()
+    {
+        var s = Cook();
+        BuildRack(s);
+        E.DebugDryingKit(s);
+        for (var k = 0; k < 4; k++)
+        {
+            Ok(E.StartDrying(s, "dry_meat", k));
+            Assert.That(s.Log.Last().Text, Does.Contain(k < 2 ? "经验+12" : k == 2 ? "经验+6" : "预计已满30"), $"肉干第{k + 1}位投料日志");
+        }
+        var want = new[] { "经验+12", "经验+12", "经验+6", "预计已满30" };
+        var slots = new[] { 7, 4, 5, 6 };
+        for (var n = 0; n < 4; n++)
+        {
+            Assert.That(E.DryingPreview(s, "dry_berries", slots[n]).XpText, Does.Contain(want[n]), $"果干第{slots[n] + 1}位预估");
+            Ok(E.StartDrying(s, "dry_berries", slots[n]));
+            Assert.That(s.Log.Last().Text, Does.Contain(want[n]), $"果干第{slots[n] + 1}位投料日志");
+        }
+        var views = E.DryingSlotViews(s);
+        Assert.That(views[4].XpText, Does.Contain("经验+12"), "第5位：只有第8位比它先结算");
+        Assert.That(views.Take(4).All(v => v.XpText!.Contains("预计已满30")), Is.True, "肉干在果干之后完成");
+
+        var t0 = s.GameMinute;
+        AdvanceTo(s, t0 + 180);
+        for (var k = 0; k < 8; k++) Ok(E.TakeDrying(s, k, false));
+        E.CreateItems(s, "berry", 2, s.Ground);
+        var full = E.DryingPreview(s, "dry_berries").XpText;
+        Assert.That(full, Does.Contain("今日烹饪经验已满30"));
+        Assert.That(full, Does.Not.Contain("预计占"), "已满只写已满");
+
+        s.Items.RemoveAll(i => i.ItemId == "berry");
+        var b = E.CreateItems(s, "berry", 2, s.Ground)[0];
+        b.ExpiresAt = s.GameMinute + 120;
+        var pv = E.DryingPreview(s, "dry_berries");
+        Assert.That(pv.Warnings.Single(), Does.Contain("不晚于完成时刻"));
+        Ok(E.StartDrying(s, "dry_berries"));
+        Assert.That(s.Log.Last().Text, Does.Contain("不晚于完成时刻"), "投料日志带腐败警告");
+        Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "晾制中1", "空7" }));
+    }
+
     [Test]
     public void Migration37To38_NoFreeRack_EmptySlots()
     {

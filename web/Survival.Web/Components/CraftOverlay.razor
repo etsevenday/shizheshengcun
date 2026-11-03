@@ -25,7 +25,7 @@
         .Where(r => !r.IsSalvage).OrderBy(r => e.RecipeLocks(s, r).Count > 0 ? 1 : 0).ToList();
     var preferred = G.CraftPreferred.Where(id => s.Items.Any(i => i.InstanceId == id && rc.AllInputs.ContainsKey(i.ItemId))).ToList();
     var locks = e.RecipeLocks(s, rc);
-    var batchable = !rc.IsBuild && !rc.IsRepair && !rc.IsFixedWait;   // B16：固定等待每次只做1批
+    var batchable = !rc.IsBuild && !rc.IsRepair && !rc.IsFixedWait && !rc.IsDrying;   // B16：固定等待每次只做1批；B22c 试玩修复 M470：晾制每位一批
     var batch = batchable ? Math.Max(1, G.CraftBatch) : 1;
     var request = ActionRequest.Craft(recipeId, rc.NeedsExplicitPot ? G.CraftPot : null, preferred, batch);
     if (rc.IsRepair) request.InstanceId = G.CraftTarget;
@@ -220,6 +220,13 @@
                                 <span class="tiny muted">固定等待每次只做1批</span>
                             </div>
                         }
+                        @if (rc.IsDrying)
+                        {
+                            @* B22c 试玩修复 M470：晾制每位一批，份数不可调；在晾制架面板选位投料 *@
+                            <div class="batch-row" title="晾制每位一批，共@(e.DryingSlotCount)位；在晾制架面板选空位投料">
+                                <span class="tiny muted">每位一批 · 共@(e.DryingSlotCount)位（在晾制架面板选位）</span>
+                            </div>
+                        }
                         @if (rc.Fuel.Count > 0)
                         {
                             @* Q112：锻炉每份配方另需木炭1；分列份数/成品/原料炭/燃料炭/总炭，原料与燃料按同一库存合计校验 *@
@@ -290,7 +297,7 @@
                         }
                         @foreach (var kv in rc.Outputs)
                         {
-                            <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"×{kv.Value * batch}")" Status="@($"完成后放在{e.ZoneName(s, s.Ground)}地面")" />
+                            <ItemRow Icon="@kv.Key" Name="@e.ItemName(kv.Key)" Qty="@($"×{kv.Value * batch}")" Status="@(rc.IsDrying ? "完成后留在晾制位占位，回到晾制架所在地取出" : $"完成后放在{e.ZoneName(s, s.Ground)}地面")" />
                         }
                         </div>
                         @* 唯一“开始制作/开始建造”入口在所选配方卡内（S08 §5、S14 §14.1）：选配方、改份数、指定批次/锅只预览，不扣物不预留；

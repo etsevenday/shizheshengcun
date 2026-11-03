@@ -180,6 +180,10 @@ namespace Survival.Core.Engine
             _ => $"{_recipes[b.RecipeId].Name} {b.DoneMinutes}/{b.RequiredMinutes}分钟",
         };
 
+        /// <summary>原料到期时刻不晚于完成时刻的警告（B22c 试玩修复 M470：到期＝完成也算，不再写“早于完成”）。</summary>
+        private string DryingSpoilWarning(ItemInstance i, int expires, int finish) =>
+            $"{ItemName(i.ItemId)}#{i.InstanceId}会在{Clock.DayTime(expires)}腐败，不晚于完成时刻{Clock.DayTime(finish)}：届时这一位停止、没有成品";
+
         private string InputText(RecipeConfig rc) => string.Join("＋", rc.Inputs.Select(kv => $"{ItemName(kv.Key)}×{kv.Value}"));
 
         private string ExpiryNote(GameState s, ItemInstance i) =>
@@ -205,8 +209,7 @@ namespace Survival.Core.Engine
                 foreach (var (inst, take) in DryingSources(s, rc, finish))
                 {
                     o.Sources.Add($"{(inst.IsCarried ? "随身" : "地面")}{ItemName(inst.ItemId)}#{inst.InstanceId}×{take}（{ExpiryNote(s, inst)}）");
-                    if (inst.ExpiresAt is int x && x <= finish)
-                        o.Warnings.Add($"{ItemName(inst.ItemId)}#{inst.InstanceId}会在{Clock.DayTime(x)}腐败，早于完成：届时这一位停止、没有成品");
+                    if (inst.ExpiresAt is int x && x <= finish) o.Warnings.Add(DryingSpoilWarning(inst, x, finish));
                 }
             o.Reason = why;
             o.Ok = why == null;
@@ -225,9 +228,11 @@ namespace Survival.Core.Engine
             var owner = ItemInstance.DryingOwner(place, k);
             var finish = s.GameMinute + rc.BaseMinutes;
             var taken = new List<string>();
+            var warns = new List<string>();
             foreach (var (inst, take) in DryingSources(s, rc, finish))
             {
                 taken.Add($"{(inst.IsCarried ? "随身" : "地面")}{ItemName(inst.ItemId)}×{take}");
+                if (inst.ExpiresAt is int x && x <= finish) warns.Add(DryingSpoilWarning(inst, x, finish));
                 ItemInstance moved;
                 if (take < inst.Count)
                 {
@@ -244,14 +249,17 @@ namespace Survival.Core.Engine
             Normalize(s, ItemInstance.Carried);
             Normalize(s, place);
             var id = s.NextActionId++;
-            fac.DryingSlots.Add(new DryingSlot
+            var slotRec = new DryingSlot
             {
                 Slot = k, BatchId = id, RecipeId = rc.Id, Status = DryingSlot.Drying, StartMinute = s.GameMinute,
                 RequiredMinutes = rc.BaseMinutes, InitiatorActorId = GameState.PlayerId, XpSnapshot = DryingXpFor(rc),
-            });
+            };
+            fac.DryingSlots.Add(slotRec);
             RememberRequest(s, requestId);
+            // B22c 试玩修复 M470：日志经验按这一位自身（self）算，不把刚投的这一位当成“先完成的晾制位”；原料会在完成前到期时日志也写警告
             Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}晾制架第{k + 1}位开始{rc.Name}：投入{string.Join("、", taken)}；被动{Clock.Duration(rc.BaseMinutes)}，"
-                                        + $"预计{Clock.DayTime(finish)}完成（不占行动，离开也继续）；{DryingXpPreview(s, rc)}。");
+                                        + $"预计{Clock.DayTime(finish)}完成（不占行动，离开也继续）；{DryingXpNote(s, slotRec)}"
+                                        + string.Concat(warns.Select(w => "；" + w)) + "。");
             UpdateFlags(s);
             return ActionResult.Success(id);
         }
@@ -448,8 +456,10 @@ namespace Survival.Core.Engine
             var free = CookTotalRoom(who, day);
             var pending = DryingXpPending(s, who.Id, day, finish, self);
             var room = Math.Max(0, free - pending);
+            // B22c 试玩修复 M470：当日已满时只写已满，不再附“先完成的晾制位预计占0”
+            if (free <= 0) return $"{DayWord(s, day)}{SkillName(Cooking)}经验已满{cap}（含净化），完成不再给经验";
             var ahead = pending > 0 && room < xp ? $"；先完成的晾制位预计占{Math.Min(pending, free)}" : "";
-            return room <= 0 ? $"{DayWord(s, day)}{SkillName(Cooking)}经验{(free <= 0 ? "已满" : "预计已满")}{cap}（含净化）{ahead}，完成不再给经验"
+            return room <= 0 ? $"{DayWord(s, day)}{SkillName(Cooking)}经验预计已满{cap}（含净化）{ahead}，完成不再给经验"
                 : room < xp ? $"完成后{SkillName(Cooking)}经验+{room}（{CookTotalCapText}，{DayWord(s, day)}只剩{room}{ahead}）"
                 : basic + (day == Clock.Day(s.GameMinute) ? "" : $"，按{DayWord(s, day)}额度");
         }
@@ -498,7 +508,7 @@ namespace Survival.Core.Engine
                         v.Title = $"第{k + 1}位 · {rc.Name} {b.DoneMinutes}/{b.RequiredMinutes}分钟";
                         var early = items.Where(i => i.ExpiresAt is int x && x <= finish).OrderBy(i => i.ExpiresAt).FirstOrDefault();
                         v.Line = $"还需{Clock.Duration(left)}，预计{Clock.DayTime(finish)}完成"
-                                 + (early != null ? $"；{ItemName(early.ItemId)}会在{Clock.DayTime(early.ExpiresAt!.Value)}腐败，早于完成，届时停止、没有成品" : "");
+                                 + (early != null ? $"；{DryingSpoilWarning(early, early.ExpiresAt!.Value, finish)}" : "");
                         v.ToCarriedBlocked = DryingCancelBlocked(s, k, true);
                         v.ToGroundBlocked = DryingCancelBlocked(s, k, false);
                         break;
@@ -521,7 +531,10 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>晾制架卡一行摘要：“晾制中3 · 待取2 · 腐败1 · 空2”。</summary>
-        public string DryingSummary(GameState s)
+        public string DryingSummary(GameState s) => string.Join(" · ", DryingSummaryParts(s));
+
+        /// <summary>摘要各段（卡面逐段不拆行显示，B22c 试玩修复 M470）。</summary>
+        public List<string> DryingSummaryParts(GameState s)
         {
             var slots = FacOf(s, s.Ground)?.DryingSlots ?? new List<DryingSlot>();
             var drying = slots.Count(b => b.Status == DryingSlot.Drying);
@@ -533,7 +546,7 @@ namespace Survival.Core.Engine
             if (done > 0) parts.Add($"待取{done}");
             if (bad > 0) parts.Add($"腐败{bad}");
             parts.Add($"空{free}");
-            return string.Join(" · ", parts);
+            return parts;
         }
 
         /// <summary>开发入口（?dev=1，B22c）：晾制架材料（木材4、绳索2）与 4 肉 4 果八批原料（生肉4、盐4、野果8）放当前地面。</summary>
