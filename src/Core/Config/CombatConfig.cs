@@ -471,6 +471,11 @@ namespace Survival.Core.Config
         /// <summary>普通 3AP、精英 4AP（追击 2AP）。</summary>
         public int Ap { get; set; } = 3;
         public bool Elite { get; set; }
+        /// <summary>
+        /// B22h（Q195，party-combat-expedition-adjudications.json protection）：E3 写有保护的 4 普通/8 守卫相关意图——没有相邻可保护同伴时
+        /// 照常锁定保护并公开“没有可以保护的同伴”，执行时 2AP 照付后落空（不改普通抓击/自动防御）。非 E3 旧敌为 false（保持现状：改普通攻击）。
+        /// </summary>
+        public bool ProtectLapseNoTarget { get; set; }
         /// <summary>己位（数字连写）：主要意图从这些站位出手。</summary>
         public string OwnSlots { get; set; } = "12";
         /// <summary>目标位（我方站位，数字连写）。</summary>

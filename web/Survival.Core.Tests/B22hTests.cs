@@ -1,3 +1,4 @@
+using System.Reflection;
 using Newtonsoft.Json.Linq;
 using Survival.Core.Engine;
 using Survival.Core.State;
@@ -161,5 +162,84 @@ public class B22hTests : BattleTestBase
             foreach (var w in E.DebugRegionSpawnCheck(s))
                 Assert.That(E.Location(w.LocationId).PopulationWeights!.ContainsKey(w.EnemyId), Is.True);
         Assert.That(E.RegionLiveCount(s, deep), Is.EqualTo(16));
+    }
+
+    // ───────────── R198 E3 保护无同伴落空（Q195） ─────────────
+
+    private void EnemyAct(GameState s, BattleEnemy e) =>
+        typeof(GameEngine).GetMethod("EnemyActivation", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(E, new object[] { s, e, false });
+
+    private void Lock(GameState s, BattleEnemy e) =>
+        typeof(GameEngine).GetMethod("LockIntent", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(E, new object[] { s, s.Battle!, e });
+
+    private static void Fresh(GameState s, BattleEnemy e) { e.JoinRound = s.Battle!.Round; e.Acted = false; e.RoundApUsed = 0; }
+
+    /// <summary>PLAN-Q195-01（数据）：无同伴落空分支只标在 E3 写有保护的 4 个敌人上；旧敌不标。</summary>
+    [Test]
+    public void PLAN_Q195_01_FlagOnlyE3Protectors()
+    {
+        var flagged = Cfg.Enemies.Where(x => x.ProtectLapseNoTarget).Select(x => x.Id).OrderBy(x => x).ToList();
+        Assert.That(flagged, Is.EqualTo(new[] { "ec_boss_armory", "ec_boss_mall", "ec_boss_water", "ec_stockbracer" }));
+        foreach (var id in new[] { "z_guard", "z_isolation_guard", "raider_melee" }) Assert.That(E.Enemy(id).ProtectLapseNoTarget, Is.False, id);
+    }
+
+    /// <summary>
+    /// PLAN-Q195-01：E3 保护者身边没有相邻同伴——仍锁定保护并公开“没有可以保护的同伴”（不改普通抓击）；执行时 2AP 照付后落空，
+    /// 不护人、不打人，余 AP 按原预算结束。
+    /// </summary>
+    [Test]
+    public void PLAN_Q195_01_NoCompanion_LocksProtect_LapsesSpending2Ap()
+    {
+        var s = Fight(4201, "ec_stockbracer");
+        var st = Enemy(s, 1);
+        Fresh(s, st);
+        Lock(s, st);
+        Assert.That(st.Intent, Is.EqualTo("protect"), "不自动改抓击");
+        Assert.That(E.IntentShown(s.Battle!, st, s), Does.Contain("没有可以保护的同伴"));
+        var hp = s.Stats.Health;
+        var logs = s.Battle!.Log.Count;
+        EnemyAct(s, st);
+        Assert.That(st.RoundApUsed, Is.EqualTo(GameEngine.EnemyMainIntentAp), "2AP 照常消耗");
+        Assert.That(st.ProtectingIndex, Is.EqualTo(0));
+        Assert.That(s.Stats.Health, Is.EqualTo(hp), "落空，不打人");
+        var line = string.Join(" | ", s.Battle.Log.Skip(logs));
+        Assert.That(line, Does.Contain("没有可以保护的同伴").And.Contain("落空"));
+        Assert.That(E.EnemyApLeft(st), Is.EqualTo(E.EnemyAp(st) - 2), "余 AP 按原预算结束（不再出手）");
+    }
+
+    /// <summary>PLAN-Q195-01：执行前重验相邻——锁定的同伴死了或被挤开，改护当时另一合法相邻者；锁定时没有、执行时有了也护（开发假设 B22h-3）。</summary>
+    [Test]
+    public void PLAN_Q195_01_RevalidateAdjacent_AtExecution()
+    {
+        var s = Fight(4202, "ec_boss_mall", "ec_labwalker", "z_darter");
+        var g = Enemy(s, 1); var lab = Enemy(s, 2); var dart = Enemy(s, 3);
+        g.Slot = "2"; lab.Slot = "3"; dart.Slot = "1";
+        Fresh(s, g);
+        Lock(s, g);
+        Assert.That((g.Intent, g.IntentTarget), Is.EqualTo(("protect", lab.Index)), "后排优先");
+        lab.Dead = true; lab.Slot = "";   // 原目标死亡
+        EnemyAct(s, g);
+        Assert.That(g.ProtectingIndex, Is.EqualTo(dart.Index), "改护当时另一合法相邻者");
+
+        var t = Fight(4203, "ec_stockbracer", "ec_labwalker");
+        var a = Enemy(t, 1); var b = Enemy(t, 2);
+        a.Slot = "1"; b.Slot = "3";
+        Fresh(t, a);
+        Lock(t, a);
+        Assert.That((a.Intent, a.IntentTarget), Is.EqualTo(("protect", 0)), "锁定时没有相邻同伴");
+        b.Slot = "2";
+        EnemyAct(t, a);
+        Assert.That(a.ProtectingIndex, Is.EqualTo(b.Index), "执行时同伴已相邻就护它");
+    }
+
+    /// <summary>PLAN-Q195-01：非 E3 旧敌保持现状——重装守卫感染者没有相邻同伴时这一轮改普通攻击。</summary>
+    [Test]
+    public void PLAN_Q195_01_LegacyProtector_Unchanged()
+    {
+        var s = Fight(4204, "z_guard");
+        var g = Enemy(s, 1);
+        Fresh(s, g);
+        Lock(s, g);   // 激活序号 0 = 循环第 1 项“保护”
+        Assert.That(g.Intent, Is.AnyOf("attack", "bite"), "旧敌没有同伴时改普通攻击");
     }
 }

@@ -103,7 +103,7 @@ namespace Survival.Core.Engine
             (Digits(st.OwnSlots ?? cfg.OwnSlots), Digits(st.TargetSlots ?? cfg.TargetSlots));
 
         /// <summary>
-        /// 轮初锁定并公开意图（不公开伤害抽值）：逃离/警戒优先；按意图循环取步骤；保护找不到相邻同伴或已用满次数、枪手没弹药可装时改普通攻击；
+        /// 轮初锁定并公开意图（不公开伤害抽值）：逃离/警戒优先；按意图循环取步骤；保护找不到相邻同伴（E3 保护者除外，B22h Q195：照常锁定、执行时落空）或已用满次数、枪手没弹药可装时改普通攻击；
         /// 抓击类按 bitePct 改判咬击。
         /// </summary>
         private void LockIntent(GameState s, BattleState b, BattleEnemy e)
@@ -122,8 +122,11 @@ namespace Survival.Core.Engine
                 if (kind == "protect")
                 {
                     var target = ProtectTargetFor(b, e);
-                    if ((st.Limit > 0 && e.ProtectUses >= st.Limit) || target == null) { kind = "attack"; idx = -2; }
-                    else e.IntentTarget = target.Index;
+                    // B22h（Q195）：E3 写有保护的敌人没有相邻可保护同伴时仍锁定保护（公开“没有可以保护的同伴”，执行时落空），不改普通抓击；
+                    // 旧敌（非 E3）与次数用满照旧改普通攻击
+                    if (st.Limit > 0 && e.ProtectUses >= st.Limit) { kind = "attack"; idx = -2; }
+                    else if (target != null) e.IntentTarget = target.Index;
+                    else if (!cfg.ProtectLapseNoTarget) { kind = "attack"; idx = -2; }
                 }
                 // B20 鼓动：场上没有其他存活同伴可鼓动时这一轮改普通攻击（与保护找不到同伴同口径）
                 if (kind == "rally" && RallyTargets(b, e).Count == 0) { kind = "attack"; idx = -2; }
@@ -143,6 +146,31 @@ namespace Survival.Core.Engine
         {
             var all = AllSteps(cfg).ToList();
             return all.FindIndex(x => x.Kind == kind);
+        }
+
+        /// <summary>B22h（Q195）：E3 保护没有合法相邻同伴时公开与战报里的固定说法。</summary>
+        public const string NoProtectTargetText = "没有可以保护的同伴";
+
+        /// <summary>
+        /// B22h（Q195，protection 合同）：E3 写有保护的敌人执行保护——执行前重验相邻：锁定的同伴仍存活、相邻（号位差 1）且不形成循环保护就护它；
+        /// 否则改护当时另一合法相邻同伴（后排优先再前排，ProtectTargetFor）；都没有则写“没有可以保护的同伴”，这次保护落空。
+        /// 2AP 主意图在调用前已照常扣掉，余 AP 按原预算结束（开发假设 B22h-3：锁定时没有、执行时有同伴相邻的也护它）。
+        /// </summary>
+        private void ExecuteProtectE3(GameState s, BattleState b, BattleEnemy e, BattleEnemy? t)
+        {
+            var links = b.Alive.Where(x => x.ProtectingIndex > 0 && x.Index != e.Index).ToDictionary(x => $"e{x.Index}", x => $"e{x.ProtectingIndex}");
+            var legal = t != null && t.Alive && t.Index != e.Index && Math.Abs(t.Pos - e.Pos) == 1 && ProtectBlocked(links, $"e{e.Index}", $"e{t.Index}") == null;
+            if (!legal) t = ProtectTargetFor(b, e);
+            if (t == null)
+            {
+                e.IntentTarget = 0;
+                BattleLog(s, $"{EnemyName(e)}想护住同伴：{NoProtectTargetText}，这次保护落空（{EnemyMainIntentAp}AP照常用掉）。");
+                return;
+            }
+            e.IntentTarget = t.Index;
+            e.ProtectingIndex = t.Index;
+            e.ProtectUses++;
+            BattleLog(s, $"{EnemyName(e)}护住{EnemyName(t)}（替它挡下一次单体攻击，到{EnemyName(e)}下次行动前）。");
         }
 
         /// <summary>保护的对象：相邻同伴（先后排再前排），不是已被别人保护的，不形成相互/循环保护（R03 §4、A09 EN06）。</summary>
@@ -217,7 +245,9 @@ namespace Survival.Core.Engine
                 case "guard": return "防御";
                 case "howl": return $"{verb}（恐慌+{Fmt.T(st.Panic)}）";
                 case "protect": return b?.Enemies.FirstOrDefault(x => x.Index == e.IntentTarget && x.Index != e.Index && x.Alive && Math.Abs(x.Pos - e.Pos) == 1) is BattleEnemy pt
-                    ? $"保护同伴（替{EnemyName(pt)}挡下一次单体攻击）" : "保护相邻同伴（执行时找相邻的同伴）";
+                    ? $"保护同伴（替{EnemyName(pt)}挡下一次单体攻击）"
+                    : cfg.ProtectLapseNoTarget && e.IntentTarget <= 0 ? $"保护同伴（{NoProtectTargetText}：执行时仍没有相邻同伴就落空，{EnemyMainIntentAp}AP照常用掉）"
+                    : "保护相邻同伴（执行时找相邻的同伴）";
                 case "signal": return $"{verb}（呼叫附近同类增援1次）";
                 case "buff": return $"{verb}（自身下一击×{Fmt.T(st.NextHitFactor)}）";
                 case "sweep": return $"{verb}1、2号位 各{Range(cfg, st.Factor, e)}";
@@ -499,6 +529,7 @@ namespace Survival.Core.Engine
                     // B20 试玩修复：A09 E3“保护相邻同伴1次”——执行时重验相邻（号位差 1）。锁定后被同伴换位挤开的，改护当时相邻的同伴
                     // （先后排再前排，不循环保护）；身边没有相邻同伴则这次保护落空（主意图 AP 已付，不改成攻击，开发假设 B20-13）
                     var t = BattleEnemyAt(b, e.IntentTarget);
+                    if (cfg.ProtectLapseNoTarget) { ExecuteProtectE3(s, b, e, t); return; }
                     if (t != null && t.Alive && Math.Abs(t.Pos - e.Pos) != 1)
                     {
                         var moved = t;

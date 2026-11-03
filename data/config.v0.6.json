@@ -23608,7 +23608,8 @@
             "bitePct": 20
           }
         ]
-      }
+      },
+      "protectLapseNoTarget": true
     },
     {
       "id": "ec_boss_crypt",
@@ -23740,7 +23741,8 @@
             "verb": "护住"
           }
         ]
-      }
+      },
+      "protectLapseNoTarget": true
     },
     {
       "id": "ec_boss_relay",
@@ -23831,7 +23833,8 @@
             "verb": "护住"
           }
         ]
-      }
+      },
+      "protectLapseNoTarget": true
     },
     {
       "id": "ec_boss_mine",
@@ -23923,7 +23926,8 @@
             "targetSlots": "12"
           }
         ]
-      }
+      },
+      "protectLapseNoTarget": true
     },
     {
       "id": "ec_boss_cold",
