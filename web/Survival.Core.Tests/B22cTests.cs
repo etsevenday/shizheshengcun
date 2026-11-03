@@ -233,4 +233,19 @@ public class B22cTests : TestBase
         Assert.That(CookXp(again) - x0, Is.EqualTo(12), "取出后读档也不再给");
         Assert.That(Count(again, "dried_berries"), Is.EqualTo(1));
     }
+
+    [Test]
+    public void Migration37To38_NoFreeRack_EmptySlots()
+    {
+        var s = Cook();
+        var j = JObject.Parse(SaveSerializer.Serialize(s));
+        j["SchemaVersion"] = "37";
+        var t = SaveSerializer.Deserialize(j.ToString(), Cfg);
+        Assert.That(t.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
+        Assert.That(t.Locations["camp"].Facility.Workshops, Does.Not.Contain("drying_rack"), "未建不赠架");
+        Assert.That(t.Locations["camp"].Facility.DryingSlots, Is.Empty);
+        Assert.That(t.Log.Count(l => l.Text.Contains("存档已升级到版本38")), Is.EqualTo(1));
+        var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(t), Cfg);
+        Assert.That(again.Log.Count(l => l.Text.Contains("存档已升级到版本38")), Is.EqualTo(1), "幂等");
+    }
 }

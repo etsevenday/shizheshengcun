@@ -61,6 +61,7 @@ namespace Survival.Core.Save
         public const string Schema34 = "34";
         public const string Schema35 = "35";
         public const string Schema36 = "36";
+        public const string Schema37 = "37";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -112,6 +113,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema34) From34To35(s, config, notes);
             if (s.SchemaVersion == Schema35) From35To36(s, config, notes);
             if (s.SchemaVersion == Schema36) From36To37(s, config, notes);
+            if (s.SchemaVersion == Schema37) From37To38(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1135,9 +1137,31 @@ namespace Survival.Core.Save
                 packs += it.Count;
             }
             var legacy = new[] { s.Main, s.Sub }.Any(a => a != null && a.Type == ActionType.Repair && a.TargetId == Engine.GameEngine.FieldPatchRepairId && a.PatchInstanceId == null);
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（野外修补包分白、绿、蓝三品阶，每包耐久100，按品阶扣包耐久修补金属武器、工具和防具：" +
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema37}（野外修补包分白、绿、蓝三品阶，每包耐久100，按品阶扣包耐久修补金属武器、工具和防具：" +
                 (packs > 0 ? $"原有野外修补包{packs}份已转为白色满包100/100" : "原有野外修补包都转为白色满包100/100") +
                 (legacy ? "；正在进行的现场小修仍按开工时的旧规则完成（消耗1份、恢复最大耐久10%）" : "") + "）。" });
+            s.SchemaVersion = Schema37;
+        }
+
+        /// <summary>
+        /// 37→38（开发计划 v0.9 B22c，Q170 migration）：晾制架开放、8 个独立晾制位。区设施新增在用晾制位列表（旧档为空）；
+        /// 已建的晾制架照旧保留（旧版本建不了晾制架，正常没有），8 位全空；没建的不赠送，不发原料、不回算历史经验，不加时间。
+        /// </summary>
+        private static void From37To38(GameState s, GameConfig config, List<string> notes)
+        {
+            var racks = 0;
+            foreach (var ls in s.Locations.Values)
+            {
+                ls.Facility.DryingSlots ??= new List<DryingSlot>();
+                if (ls.Facility.Workshops.Contains("drying_rack")) racks++;
+                if (ls.Safehouse != null)
+                {
+                    ls.Safehouse.Interior.DryingSlots ??= new List<DryingSlot>();
+                    if (ls.Safehouse.Interior.Workshops.Contains("drying_rack")) racks++;
+                }
+            }
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（晾制架开放：木材4＋绳索2建在临时营地或已建成的安全屋屋内，" +
+                "8个独立晾制位，每位一批果干或肉干，被动晾制" + (racks > 0 ? $"；已有晾制架{racks}座保留，8位都是空的" : "；没有建过的不赠送") + "）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

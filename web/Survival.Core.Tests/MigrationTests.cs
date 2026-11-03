@@ -230,7 +230,7 @@ public class MigrationTests : TestBase
         Assert.That(SaveSerializer.NeedsMigration(json), Is.True);
         Assert.Throws<SaveVersionException>(() => SaveSerializer.Deserialize(json));
         var bogus = JObject.Parse(json);
-        bogus["SchemaVersion"] = "38";   // B22b 起 37 是当前版本
+        bogus["SchemaVersion"] = "39";   // B22c 起 38 是当前版本
         Assert.Throws<SaveVersionException>(() => SaveSerializer.Deserialize(bogus.ToString(), Cfg));
     }
 

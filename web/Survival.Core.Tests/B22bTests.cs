@@ -362,7 +362,7 @@ public class B22bTests : TestBase
         var j = JObject.Parse(SaveSerializer.Serialize(s));
         j["SchemaVersion"] = "36";
         var t = SaveSerializer.Deserialize(j.ToString(), Cfg);
-        Assert.That(t.Log.Last().Text, Does.Contain("开工时的旧规则"));
+        Assert.That(t.Log.Any(l => l.Text.Contains("开工时的旧规则")), Is.True);
         Run(t);
         var m2 = t.Items.Single(i => i.InstanceId == mach.InstanceId);
         Assert.That(m2.Durability, Is.EqualTo(18).Within(1e-9), "旧快照：恢复最大耐久 10%");

@@ -44,8 +44,9 @@ namespace Survival.Core.State
         /// "32" 起新敌人、固定战与人口区：人口区已进入/节点首次人口、固定战名单、旧精英挑战账（Population），世界敌人带固定实例标记与实例代号，战斗带固定战键（开发计划 v0.9 B20）。
         /// "33" 起地牢远征：实例带状态与远征流水号，进行中的远征（成员快照、来路轨迹、撤出锁定路径/倍率/T/已推进分钟）、已结束远征记录、
         /// 一次性事件去重键，角色带惊魂未定截止（开发计划 v0.9 B21）。
+        /// "38" 起晾制架八位：区设施带在用晾制位（DryingSlots），位内物品 owner 为 drying:&lt;place&gt;#&lt;位号&gt;（策划答复 Q170，开发计划 v0.9 B22c）。
         /// </summary>
-        public const string CurrentSchema = "37";
+        public const string CurrentSchema = "38";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
