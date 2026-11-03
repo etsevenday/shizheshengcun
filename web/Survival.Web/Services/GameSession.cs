@@ -229,6 +229,8 @@ public sealed class GameSession
     public int CraftBatch { get; set; } = 1;
     /// <summary>工具维护的目标实例（v0.6 §05）。</summary>
     public int? CraftTarget { get; set; }
+    /// <summary>现场修补选用的修补包实例（B22b，Q168）；为空时由内核默认选能恢复最多、消耗最少的一包。</summary>
+    public int? CraftPatch { get; set; }
 
 
     /// <summary>火堆卡“点燃”按钮下的点火工具菜单是否打开（v0.7 第 4.2 节）；只在会话内，Esc 或点菜单外关闭。</summary>
@@ -341,6 +343,7 @@ public sealed class GameSession
         CraftPot = null;
         CraftBatch = 1;
         CraftTarget = null;
+        CraftPatch = null;
         if (panel == "craft" && State != null)
         {
             CraftTab = null;

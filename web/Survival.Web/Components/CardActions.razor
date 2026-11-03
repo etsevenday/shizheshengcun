@@ -248,7 +248,7 @@
                     <div class="ca-note">@(fromGround ? "从地面直接穿上，不经随身卡位；" : "")@(e.Weapon(wInst.ItemId) != null ? "开战停在第一个有武器的页，战斗中切换武器页0AP；同类型武器最多装备1件" : "穿戴不占随身卡位，重量计本人")</div>
                 }
             }
-            @if (m.Instance is ItemInstance kInst && s.Battle == null && (kInst.IsCarried || kInst.Owner == s.Ground)
+            @if (m.Instance is ItemInstance kInst && s.Battle == null && (kInst.IsCarried || kInst.Owner == s.Ground) && !e.IsFieldPatch(kInst)
                  && (kInst.MaxDurability.HasValue || e.Item(kInst.ItemId).IsEquipment))
             {
                 @* B4（A05 §5；开发计划 v0.9 B4 H8/H9/H10）：选中有耐久的工具/装备时卡下给“维修·30分钟”，选中装备时给“拆解·15分钟”；
@@ -259,6 +259,9 @@
                 var rreq = repairRc != null && kInst.MaxDurability.HasValue ? new ActionRequest { Type = ActionType.Craft, TargetId = repairRc.Id, InstanceId = kid } : null;
                 var sreq = salvageRc != null && e.Item(kInst.ItemId).IsEquipment ? new ActionRequest { Type = ActionType.Craft, TargetId = salvageRc.Id, InstanceId = kid } : null;
                 var rwhy = rreq == null ? null : G.Running ? "行动进行中" : e.CanStart(s, rreq);
+                var fpRc = e.FieldPatchRecipe;
+                var fpReq = fpRc != null && kInst.MaxDurability.HasValue && e.FieldPatchEligible(kInst.ItemId) ? new ActionRequest { Type = ActionType.Craft, TargetId = fpRc.Id, InstanceId = kid } : null;
+                var fpWhy = fpReq == null ? null : G.Running ? "行动进行中" : e.CanStart(s, fpReq);
                 var swhy = sreq == null ? null : G.Running ? "行动进行中" : e.CanStart(s, sreq);
                 <div class="tbar-row keep-row">
                     @if (rreq != null)
@@ -267,14 +270,12 @@
                                 @onmouseenter="() => G.Hover(rreq, RepairTitle)" @onmouseleave="() => G.Hover(null)"
                                 @onclick="() => StartKeep(rreq)">维修·@(repairRc!.BaseMinutes)分钟</button>
                     }
-                    @if (e.Config.Recipes.FirstOrDefault(r => r.Id == "field_patch_repair") is RecipeConfig fpRc && kInst.MaxDurability.HasValue && e.RepairFilterOk(fpRc, kInst.ItemId))
+                    @if (fpReq != null)
                     {
-                        @* B16（A07 X1.6、R02 X4）：野外修补包现场小修，只修非枪金属武器/工具，恢复最大耐久 10% *@
-                        var fpReq = new ActionRequest { Type = ActionType.Craft, TargetId = fpRc.Id, InstanceId = kid };
-                        var fpWhy = G.Running ? "行动进行中" : e.CanStart(s, fpReq);
-                        <button type="button" class="tbar-go alt" disabled="@(fpWhy != null)" title="@(fpWhy ?? "消耗野外修补包1份，恢复最大耐久的10%；单击直接开始；右侧显示预测")"
-                                @onmouseenter="() => G.Hover(fpReq, RepairTitle)" @onmouseleave="() => G.Hover(null)"
-                                @onclick="() => StartKeep(fpReq)">现场小修·@(fpRc.BaseMinutes)分钟</button>
+                        @* B22b（Q168）：品阶野外修补包“现场修补”，默认用能恢复最多、消耗最少的一包；要换包在制作面板“现场修补”里选 *@
+                        <button type="button" class="tbar-go alt" disabled="@(fpWhy != null)" title="@(fpWhy ?? "按包品阶扣包耐久修补；单击直接开始；右侧显示预测；要换包在制作面板选")"
+                                @onmouseenter="() => G.Hover(fpReq, PatchTitle)" @onmouseleave="() => G.Hover(null)"
+                                @onclick="() => StartKeep(fpReq)">现场修补·@(fpRc!.BaseMinutes)分钟</button>
                     }
                     @if (sreq != null)
                     {
@@ -284,6 +285,12 @@
                     }
                 </div>
                 @if (rwhy != null) { <div class="ca-note bad">维修：@rwhy</div> }
+                @if (fpReq != null && fpWhy != null && fpWhy != rwhy) { <div class="ca-note bad">现场修补：@fpWhy</div> }
+                @if (fpReq != null && fpWhy == null && e.FieldPatchBlocked(s, kid, null, out var fpT, out var fpK, out var fpQ) == null)
+                {
+                    var fpNotes = e.FieldPatchNotes(fpT!, fpK!, fpQ);
+                    <div class="ca-note">现场修补：@fpNotes[0]；@fpNotes[1]</div>
+                }
                 @if (swhy != null) { <div class="ca-note bad">拆解：@swhy</div> }
                 @if (sreq != null && swhy == null && e.SalvageOutput(kInst) is (string so, int sn))
                 {
@@ -531,6 +538,7 @@
 
     private const string ButcherTitle = "处理尸体";
     private const string RepairTitle = "维修";
+    private const string PatchTitle = "现场修补";
     private const string SalvageTitle = "拆解";
 
     private async Task StartKeep(ActionRequest r)

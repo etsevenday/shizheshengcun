@@ -29,6 +29,7 @@
     var batch = batchable ? Math.Max(1, G.CraftBatch) : 1;
     var request = ActionRequest.Craft(recipeId, rc.NeedsExplicitPot ? G.CraftPot : null, preferred, batch);
     if (rc.IsRepair) request.InstanceId = G.CraftTarget;
+    if (GameEngine.IsFieldPatchRecipe(rc)) request.PatchInstanceId = G.CraftPatch;   // B22b（Q168）：选用的修补包，空为默认
 }
 
 @if (Part == "center")
@@ -120,7 +121,41 @@
                                 @foreach (var w in e.WildFireReasons(s).Except(locks)) { <span class="warn-text" data-wild-fire-reason title="@w">@w</span> }
                             }
                         </div>
-                        @if (rc.IsRepair)
+                        @if (GameEngine.IsFieldPatchRecipe(rc))
+                        {
+                            @* B22b（Q168）：现场修补——先选目标，再选修补包（不选则默认用能恢复最多、消耗最少的一包）；一次只用一包 *@
+                            var cands = e.RepairCandidates(s, rc);
+                            var tgt = G.CraftTarget is int ct ? s.Items.FirstOrDefault(i => i.InstanceId == ct) : null;
+                            <div class="tiny muted">选择要修补的武器、工具或防具（本人随身、穿戴中或当前地面；有金属制作或拆解依据，枪械、锅、打火器不修）</div>
+                            <div class="repair-list">
+                                @foreach (var t in cands)
+                                {
+                                    var tid = t.InstanceId;
+                                    var why = e.FieldPatchBlocked(s, tid, null, out _, out _, out _);
+                                    <button type="button" class="repair-pick @(G.CraftTarget == tid ? "on" : "") @(why != null ? "missing" : "")" title="@(why ?? "选择这件")" @onclick="() => PickTarget(tid)">
+                                        <span class="ir-icon">@Icons.Markup(t.ItemId)</span>
+                                        <span><b>@e.ItemName(t.ItemId)#@tid（@e.QualityName(t)）</b><small>@e.WherePath(s, t) · 耐久@(GameEngine.DurabilityText(t))@(why != null ? $" · {why}" : "")</small></span>
+                                    </button>
+                                }
+                                @if (cands.Count == 0) { <div class="risk none">随身、穿戴中和当前地面都没有可修补的武器、工具或防具。</div> }
+                            </div>
+                            var packs = e.FieldPatchPacks(s);
+                            <div class="tiny muted">选择修补包（随身或当前地面；不选则默认用能恢复最多、消耗最少的一包）</div>
+                            <div class="repair-list" data-patch-picks>
+                                @foreach (var pk in packs)
+                                {
+                                    var pid = pk.InstanceId;
+                                    var q = tgt != null ? e.FieldPatchQuote(tgt, pk) : (0, 0);
+                                    var qText = tgt == null ? "" : q.Item1 >= 1 ? $" · 可恢复{Ui.T(q.Item1 / 10.0)}、包耐久−{q.Item2}" : " · 不够恢复0.1";
+                                    <button type="button" class="repair-pick @(G.CraftPatch == pid ? "on" : "")" title="@(G.CraftPatch == pid ? "再点一次取消指定，改回默认" : "指定用这一包")" @onclick="() => PickPatch(pid)">
+                                        <span class="ir-icon">@Icons.Markup(pk.ItemId)</span>
+                                        <span><b>@e.ItemName(pk.ItemId)#@pid@(pk.Count > 1 ? $"×{pk.Count}" : "")</b><small>@e.WherePath(s, pk) · 剩余@(e.PatchRemaining(pk))/@(e.PatchMax(pk))@qText</small></span>
+                                    </button>
+                                }
+                                @if (packs.Count == 0) { <div class="risk none">随身和当前地面都没有可用的野外修补包（工作台“远行基础做法”可做白/绿/蓝三品阶）。</div> }
+                            </div>
+                        }
+                        else if (rc.IsRepair)
                         {
                             var cands = e.RepairCandidates(s, rc);
                             <div class="tiny muted">@(rc.RepairFilter != null ? "选择要小修的非枪金属武器或工具（随身、穿戴中或当前地面）；恢复其最大耐久的10%" : "选择要维护的工具或装备（随身、穿戴中或当前地面；锅须先取下并清空）")</div>
@@ -370,6 +405,9 @@ else
             "shelter" => $"营地可遮蔽睡眠（清醒{Ui.SignedT(sh.Wakefulness)}、体力{Ui.SignedT(sh.Energy)}、精神{Ui.SignedT(sh.Morale)}/小时），休息额外恢复精神。",
             "bed" => $"营地睡眠体力每小时额外{Ui.SignedT(c.FacilityEffects.BedExtraSleepEnergyPerHour)}。需要先建成遮蔽棚。",
             "repair_selected_tool" => $"选定一件随身、穿戴中或当前地面的工具或装备，恢复它自身最大耐久的{Ui.Pct(G.E.RepairFraction(G.S, r))}{(G.E.RepairFraction(G.S, r) > r.RestoreOwnDurabilityMaxFraction + 1e-9 ? "（穿着维护手册，替代" + Ui.Pct(r.RestoreOwnDurabilityMaxFraction) + "）" : "")}，不超过上限、不重抽最大耐久，品质与词条不变；满耐久不能维护。",
+            "field_patch_repair" => "战外安全空闲时手工修补一件有金属制作或拆解依据的武器、工具或防具（枪械、锅、打火器不修），一次只用一包野外修补包。" +
+                                    "每包耐久100：同品阶从零修满耗20，包品阶每高一阶耗量减半、每低一阶翻倍，且低阶包修高阶装备单次最多恢复50%（差一阶）/25%（差两阶）；缺损小只耗对应耐久（最少1）。" +
+                                    "不吃维修效果加成，不改品质、词条与最大耐久；用过的包单独占一张卡，用完销毁；取消不消耗。成功给制造经验2。",
             "make_wooden_spear" => $"矛类武器，可打敌方1—3号位。{Range("wooden_spear")}。",
             "make_wooden_bow" => $"弓弩类武器，可打敌方1—4号位；每射直接消耗随身箭矢1。{Range("wooden_bow")}。",
             "make_arrows" => "木弓的箭矢，首版不回收。",
@@ -517,7 +555,7 @@ else
 
     private void LoadStation(string recipeId) => G.EngineDo(() => G.E.StartStationBatch(G.S, recipeId, Guid.NewGuid().ToString("N")));
 
-    private static string StartLabel(RecipeConfig r) => r.IsBuild ? "开始建造" : r.IsRepair ? "开始维护" : "开始制作";
+    private static string StartLabel(RecipeConfig r) => r.IsBuild ? "开始建造" : GameEngine.IsFieldPatchRecipe(r) ? "开始修补" : r.IsRepair ? "开始维护" : "开始制作";
 
     /// <summary>开始制作/建造/维护：内核再校验并预留；开始成功后保持面板（与原右栏确认一致），中央推进条接管进度与退出。</summary>
     private async Task Start(ActionRequest request)
@@ -549,6 +587,12 @@ else
     private void PickPot(int id)
     {
         G.CraftPot = G.CraftPot == id ? null : id;
+        G.Notify();
+    }
+
+    private void PickPatch(int id)
+    {
+        G.CraftPatch = G.CraftPatch == id ? null : id;
         G.Notify();
     }
 

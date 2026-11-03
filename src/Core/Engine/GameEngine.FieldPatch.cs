@@ -205,6 +205,31 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
+        /// 开发入口（B22b 试玩用）：当前地面放白/绿/蓝修补包各 2、白/绿/蓝砍刀各 1（耐久 20%）、绿色拼装护甲 1（耐久 50%）、
+        /// 手枪 1（耐久 50%，试拒绝）与一份蓝包配方材料（铁片/黏胶/布料各 6）；学会远行基础做法。返回说明。
+        /// </summary>
+        public string DebugGiveFieldPatchKit(GameState s)
+        {
+            s.Progress.Flags.Add("knowledge:expedition_basics");
+            foreach (var id in new[] { "field_patch", "field_patch_green", "field_patch_blue" }) CreateItems(s, id, 2, s.Ground);
+            void Worn(string id, string q, double frac)
+            {
+                var it = DebugCreateEquipment(s, id, q, s.Ground);
+                if (it.MaxDurability is double m) it.Durability = Math.Round(m * frac, 1);
+            }
+            Worn("machete", "white", 0.2);
+            Worn("machete", "green", 0.2);
+            Worn("machete", "blue", 0.2);
+            Worn("scrap_armor", "green", 0.5);
+            Worn("pistol", "white", 0.5);
+            foreach (var m in new[] { "iron_plate", "adhesive", "cloth" }) CreateItems(s, m, 6, s.Ground);
+            Normalize(s, s.Ground);
+            var text = $"开发：野外修补包白/绿/蓝各2、白/绿/蓝砍刀各1（耐久20%）、绿色拼装护甲1（耐久50%）、手枪1（耐久50%，不可修）、铁片/黏胶/布料各6放在{ZoneName(s, s.Ground)}地面；已学会远行基础做法";
+            Emit(s, GameEventKind.Info, text + "。");
+            return text;
+        }
+
+        /// <summary>
         /// 现场修补完成（一次性结算）：重找目标与包并按当前值重算报价；从包堆里只拆出一包，d+=r、u−=c，u=0 销毁。
         /// 目标或包不在、或已无需修补时什么都不改、不给经验（ok=false）。
         /// </summary>

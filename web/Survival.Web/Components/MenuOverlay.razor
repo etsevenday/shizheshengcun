@@ -161,6 +161,8 @@
                 <div class="eyebrow">配方、水壶与复合锅（B16）</div>
                 <div class="btn-row">
                     <button class="secondary" @onclick="() => DevDone(G.E.DebugSupplyKit(G.S))">B16 材料包（学会两种做法，放当前地面）</button>
+                    <button class="secondary" @onclick="() => DevDone(G.E.DebugGiveFieldPatchKit(G.S))">B22b 修补包试用组（白绿蓝包各2、白绿蓝砍刀、绿护甲、手枪、蓝包材料）</button>
+                    <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "crafting", 7))'>制造熟练设为7级</button>
                     <button class="secondary" @onclick="() => DevDone(G.E.DebugPotRecipeKit(G.S))">锅食谱材料（谷物3、盐1、生肉1）</button>
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "cooking", 5))'>烹饪熟练设为5级</button>
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "crafting", 3))'>制造熟练设为3级</button>

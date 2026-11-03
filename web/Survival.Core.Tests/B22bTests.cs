@@ -268,6 +268,18 @@ public class B22bTests : TestBase
         Assert.That(E.CanStart(s, Req(target, stack)), Is.Null, "整包用完不留卡");
     }
 
+    /// <summary>开发菜单“B22b 修补包试用组”：三品阶包各 2、三品质砍刀可修、手枪被拒。</summary>
+    [Test]
+    public void DevKit_FieldPatch()
+    {
+        var s = Fresh();
+        E.DebugGiveFieldPatchKit(s);
+        foreach (var id in new[] { "field_patch", "field_patch_green", "field_patch_blue" }) Assert.That(Count(s, id, s.Ground), Is.EqualTo(2), id);
+        foreach (var m in s.Items.Where(i => i.ItemId == "machete" && i.Owner == s.Ground))
+            Assert.That(E.CanStart(s, Req(m)), Is.Null, m.Quality);
+        Assert.That(E.CanStart(s, Req(s.Items.First(i => i.ItemId == "pistol" && i.Owner == s.Ground))), Does.Contain("枪械"));
+    }
+
     // ───────────── 旧档 ─────────────
 
     [Test]
