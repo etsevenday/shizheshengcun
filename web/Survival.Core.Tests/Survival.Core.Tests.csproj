@@ -39,6 +39,7 @@
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261030/narrative-map/narrative-texts.json" Link="design.narrative-texts.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261102/city/quest-presentation-adjudications.json" Link="design.quest-presentation.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261103/survival-adjudications.json" Link="design.survival-adjudications.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261103/party-combat-expedition-adjudications.json" Link="design.pce.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261103/camping-appraisal-adjudications.json" Link="design.camping-appraisal.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261030/narrative-map/node-expansion-rules.json" Link="design.node-expansion.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261102/map/map-adjudications.json" Link="design.map-adjudications.json" CopyToOutputDirectory="PreserveNewest" />

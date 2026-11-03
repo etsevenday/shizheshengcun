@@ -72,7 +72,7 @@ namespace Survival.Core.Engine
             var outCfg = _items[pc.OutputId];
             o.OutputText = $"{outCfg.Name}×{pc.OutputCount}" + (outCfg.ShelfLifeMinutes is int sl ? $"（完成起保质{Clock.Duration(sl)}）" : "");
             o.Note = $"需{pc.HeatMinutes}有效受热分钟，火堆燃料按世界时间另扣、不吃熟练加速；熄火保留进度；取出食材或取下锅即作废（辅料退回地面）；"
-                     + $"{CookFoodXpFor(pc.Id) switch { 0 => "不给经验", var x => $"完成后{SkillName(Cooking)}经验+{x}（每日最多{Config.Progression.Cooking.FoodDailyCap}）" }}";
+                     + $"{CookFoodXpFor(pc.Id) switch { 0 => "不给经验", var x => $"完成后{SkillName(Cooking)}经验+{x}（{CookTotalCapText}）" }}";
             var src = PotRecipeSources(s, pc.FoodInputs.Concat(pc.AuxInputs).ToDictionary(k => k.Key, k => k.Value));
             o.Sources = src.Select(x => $"{(x.inst.IsCarried ? "随身" : "地面")}{ItemName(x.inst.ItemId)}#{x.inst.InstanceId}×{x.take}").ToList();
             o.Reason = PotRecipeBlocked(s, pc, rc, pot);

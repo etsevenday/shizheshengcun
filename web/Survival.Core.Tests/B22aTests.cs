@@ -149,7 +149,7 @@ public class B22aTests : TestBase
         Assert.That(s.Skills["crafting"].Xp, Is.EqualTo(craft0), "不给制造");
         Assert.That(s.Log.Last(l => l.Kind == "ActionCompleted").Text, Does.Contain("烹饪经验+4"));
         Assert.That(s.Player.DailyCounts[WaterKey(s, GameEngine.DailyWaterXp)], Is.EqualTo(4));
-        Assert.That(s.Player.DailyCounts.ContainsKey(WaterKey(s, GameEngine.DailyXp)), Is.False, "不计食品日 30（开发假设 B22a-1）");
+        Assert.That(s.Player.DailyCounts.ContainsKey(WaterKey(s, GameEngine.DailyXp)), Is.False, "净化单独记账（B22f Q207 起两账相加计烹饪日 30，见 B22fTests）");
         // 读档、拿起净水都不再给
         var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
         Ok(E.DoInstant(t, InstantRequest.Pickup(First(t, "clean_water", t.CurrentLocation).InstanceId, 1)));

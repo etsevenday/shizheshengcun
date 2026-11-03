@@ -38,8 +38,8 @@ namespace Survival.Core.Engine
                 var c = Config.Progression.Cooking;
                 if (SkillMaxed(s, Cooking)) return XpText(s, Cooking, xp);
                 var day = Clock.Day(s.GameMinute);
-                var room = DailyXpRoom(s.Player, day, Cooking, (int)xp, c.FoodDailyCap);
-                if (room <= 0) return $"今日{SkillName(Cooking)}经验已满{c.FoodDailyCap}，不再给经验";
+                var room = CookFoodRoom(s.Player, day, (int)xp);   // Q207：与食品、净化共用每日 30
+                if (room <= 0) return $"今日{SkillName(Cooking)}经验已满{c.FoodDailyCap}（含净化），不再给经验";
                 BumpDaily(s, s.Player, DailyXp, Cooking, day, room);
                 GainXp(s, s.Player, Cooking, room);
                 return $"{SkillName(Cooking)}经验+{room}";
@@ -116,7 +116,7 @@ namespace Survival.Core.Engine
         public string RecipeModeText(RecipeConfig rc) => rc.ModeOrDefault switch
         {
             RecipeConfig.ModeFixedWait => rc.XpSkill == Cooking
-                ? $"固定等待{Clock.Duration(rc.BaseMinutes)}（全队等待，不吃熟练加速；成功后每500毫升净水{SkillName(Cooking)}经验+1，与锅烧水合计每日最多{Config.Progression.Cooking.WaterDailyCap}）"
+                ? $"固定等待{Clock.Duration(rc.BaseMinutes)}（全队等待，不吃熟练加速；成功后每500毫升净水{SkillName(Cooking)}经验+1，与锅烧水合计每日最多{Config.Progression.Cooking.WaterDailyCap}，也计{CookTotalLimitText}）"
                 : $"固定等待{Clock.Duration(rc.BaseMinutes)}（全队等待，不吃熟练加速，不给经验）",
             RecipeConfig.ModePassiveHeat or RecipeConfig.ModePassive => rc.IsPot
                 ? $"火堆锅里被动加工{rc.BaseMinutes}有效受热分钟（不吃熟练加速）"

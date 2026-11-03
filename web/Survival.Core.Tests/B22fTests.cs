@@ -150,4 +150,117 @@ public class B22fTests : BattleTestBase
         Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("沿已知路线前往营门。"), "胜利后回到 Q139 原口径（清障揭出营门路线，已知可走）");
         Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:h01_gate"));
     }
+
+    // ───────────── Q207 净化也计烹饪每日 30（净化子限 4） ─────────────
+
+    private static string Key(GameState s, string kind) => $"{Clock.Day(s.GameMinute)}|{kind}|cooking";
+
+    private static int Get(GameState s, string kind) => s.Player.DailyCounts.TryGetValue(Key(s, kind), out var n) ? n : 0;
+
+    /// <summary>营地、学会全部知识；清掉水与净水片后放 4 份脏水与 n 片净水片。</summary>
+    private GameState WaterCamp(int tablets = 1)
+    {
+        var s = New();
+        E.DebugLearnAllKnowledge(s);
+        s.Items.RemoveAll(i => i.ItemId is "dirty_water" or "clean_water" or "purification_tablet");
+        E.CreateItems(s, "dirty_water", 4, s.CurrentLocation);
+        E.CreateItems(s, "purification_tablet", tablets, s.CurrentLocation);
+        return s;
+    }
+
+    [Test, Category("DesignSync")]
+    public void PLAN_Q207_Contract_TotalAndSubcap()
+    {
+        var x = Design("design.pce.json")["xp"]!;
+        Assert.That(((int)x["totalDailyCookingCap"]!, (int)x["purificationDailySubcap"]!),
+            Is.EqualTo((Cfg.Progression.Cooking.FoodDailyCap, Cfg.Progression.Cooking.WaterDailyCap)));
+        Assert.That((Cfg.Progression.Cooking.FoodDailyCap, Cfg.Progression.Cooking.WaterDailyCap), Is.EqualTo((30, 4)));
+    }
+
+    /// <summary>PLAN-Q207-02 例一：当天食品已得 28，净水片净化应得 4 只给 2（总 30、净化 2）；随后净化/食品均 0。</summary>
+    [Test]
+    public void PLAN_Q207_02_Food28_ThenPurify_Gives2()
+    {
+        var s = WaterCamp(2);
+        s.Player.DailyCounts[Key(s, GameEngine.DailyXp)] = 28;
+        var pv = E.Preview(s, ActionRequest.Craft("ex_tablet_water"));
+        Assert.That(pv.XpGains, Has.Some.Contains("烹饪经验+2").And.Some.Contains("今日只剩2"));
+        var cook0 = s.Skills["cooking"].Xp;
+        Start(s, ActionRequest.Craft("ex_tablet_water"));
+        Run(s);
+        Assert.That(s.Skills["cooking"].Xp - cook0, Is.EqualTo(2));
+        Assert.That((Get(s, GameEngine.DailyXp), Get(s, GameEngine.DailyWaterXp)), Is.EqualTo((28, 2)), "总 30、净化 2");
+        Assert.That(s.Log.Last(l => l.Kind == "ActionCompleted").Text, Does.Contain("烹饪经验+2（烹饪每日总上限30，只剩2）"));
+        // 再一批：净化子限还剩 2，但总额已满 → 0
+        E.CreateItems(s, "dirty_water", 4, s.CurrentLocation);
+        Assert.That(E.Preview(s, ActionRequest.Craft("ex_tablet_water")).XpGains, Has.Some.Contains("今日烹饪经验已满30（含净化）"));
+        Start(s, ActionRequest.Craft("ex_tablet_water"));
+        Run(s);
+        Assert.That(s.Skills["cooking"].Xp - cook0, Is.EqualTo(2));
+        Assert.That(s.Log.Last(l => l.Kind == "ActionCompleted").Text, Does.Contain("今日烹饪经验已满30（含净化）"));
+    }
+
+    /// <summary>PLAN-Q207-02 例二：先净化 4，食品最多再 26（直烤肉 per 3 时 30 → 只剩 26 时第 9 份只给 2）。</summary>
+    [Test]
+    public void PLAN_Q207_02_Purify4_ThenFoodAtMost26()
+    {
+        var s = New();
+        s.Player.DailyCounts[Key(s, GameEngine.DailyWaterXp)] = 4;
+        s.Player.DailyCounts[Key(s, GameEngine.DailyXp)] = 24;   // 食品已 24：总 28，食品只剩 2（若不计净化会剩 6）
+        var cookXp = typeof(GameEngine).GetMethod("CookFoodRoom", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        var day = Clock.Day(s.GameMinute);
+        Assert.That((int)cookXp.Invoke(E, new object[] { s.Player, day, 3 })!, Is.EqualTo(2), "30 − 4 − 24 = 2");
+        s.Player.DailyCounts[Key(s, GameEngine.DailyXp)] = 0;
+        Assert.That((int)cookXp.Invoke(E, new object[] { s.Player, day, 40 })!, Is.EqualTo(26), "先净化 4，食品最多 26");
+        Assert.That(E.CookActiveXpPreview(s, 40), Does.Contain("烹饪经验+26").And.Contain("今日只剩26"));
+    }
+
+    /// <summary>
+    /// PLAN-Q207-02 例三与旧档：旧档当天已得食品 30 + 净化 4 = 34 不倒扣，当天新增 0；完成日（次日）新额正常。
+    /// 主动烹饪配方（远征口粮棒等 xpSkill=cooking）也走同一总额。
+    /// </summary>
+    [Test]
+    public void PLAN_Q207_02_OldSave34_NoClawback_NextDayFresh()
+    {
+        var s = WaterCamp(1);
+        s.Player.DailyCounts[Key(s, GameEngine.DailyXp)] = 30;
+        s.Player.DailyCounts[Key(s, GameEngine.DailyWaterXp)] = 4;
+        var t = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        var cook0 = t.Skills["cooking"].Xp;
+        Assert.That((Get(t, GameEngine.DailyXp), Get(t, GameEngine.DailyWaterXp)), Is.EqualTo((30, 4)), "不倒扣、不迁移");
+        Assert.That(E.CookActiveXpPreview(t, 5), Does.Contain("今日烹饪经验已满30（含净化）"));
+        // 食品已 30、净化 0 的情形：净化也给 0
+        t.Player.DailyCounts[Key(t, GameEngine.DailyWaterXp)] = 0;
+        Assert.That(E.Preview(t, ActionRequest.Craft("ex_tablet_water")).XpGains, Has.Some.Contains("今日烹饪经验已满30（含净化）"));
+        Start(t, ActionRequest.Craft("ex_tablet_water"));
+        Run(t);
+        Assert.That(t.Skills["cooking"].Xp, Is.EqualTo(cook0), "当天新增 0");
+        // 次日 00:00 后完成：按完成日新额
+        t.GameMinute = At(Clock.Day(t.GameMinute) + 1, 0, 30);
+        E.CreateItems(t, "dirty_water", 4, t.CurrentLocation);
+        E.CreateItems(t, "purification_tablet", 1, t.CurrentLocation);
+        Start(t, ActionRequest.Craft("ex_tablet_water"));
+        Run(t);
+        Assert.That(t.Skills["cooking"].Xp - cook0, Is.EqualTo(4), "完成日新额正常");
+    }
+
+    /// <summary>PLAN-Q207-01：锅烧水净化也受总额 30：当天食品已 29，锅净化 1000ml 应得 2 只给 1。</summary>
+    [Test]
+    public void PLAN_Q207_01_PotWater_AlsoCountsTotal()
+    {
+        var s = New();
+        s.Player.DailyCounts[Key(s, GameEngine.DailyXp)] = 29;
+        var pot = First(s, "pot");
+        E.DebugGive(s, "dirty_water", 2, "camp");
+        Ok(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 2)));
+        Ok(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)));
+        var fac = s.Locations["camp"].Facility;
+        fac.FireLit = true; fac.FuelMinutes = 240;
+        Assert.That(E.CookXpLine(s, pot), Does.Contain("也计烹饪每日总上限30").And.Contain("今日只剩1"));
+        var cook0 = s.Skills["cooking"].Xp;
+        Start(s, ActionRequest.Wait(30));
+        Run(s);
+        Assert.That(s.Skills["cooking"].Xp - cook0, Is.EqualTo(1), "min(2, 4−0, 30−29)=1");
+        Assert.That((Get(s, GameEngine.DailyXp), Get(s, GameEngine.DailyWaterXp)), Is.EqualTo((29, 1)));
+    }
 }

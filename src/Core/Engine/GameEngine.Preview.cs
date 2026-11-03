@@ -318,6 +318,7 @@ namespace Survival.Core.Engine
                     if (!rc.IsSalvage && RecipeFuelSummary(rc, batch) is string fuelNote) p.Notes.Add(fuelNote);
                     if (stationBatch) p.XpGains.Add(StationBatchXpPreview(s, rc));   // B22d Q174
                     else if (rc.IsFixedWait) p.XpGains.Add(rc.XpSkill == Cooking ? FixedWaitWaterXpPreview(s, rc, batch) : "固定等待不给经验");   // B22a Q166
+                    else if (!rc.IsSalvage && rc.XpSkill == Cooking) p.XpGains.Add(CookActiveXpPreview(s, (int)(CraftXp(rc.BaseMinutes) * batch)));   // B22f Q207
                     else if (!rc.IsSalvage) p.XpGains.Add(XpText(s, rc.XpSkill ?? Crafting, CraftXp(rc.BaseMinutes) * batch));
                     if (rc.Mode != null) p.Notes.Add(RecipeModeText(rc));
                     if (rc.ShelfRule == "min_inputs") p.Notes.Add("成品保质不晚于原料里最早的截止时间（非热组装不刷新原料寿命）");

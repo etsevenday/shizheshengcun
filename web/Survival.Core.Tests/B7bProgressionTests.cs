@@ -538,7 +538,7 @@ public class B7bProgressionTests : TestBase
         E.DebugGive(s, "raw_root", 1, "camp");
         Assert.That(E.DoInstant(s, InstantRequest.PutFoodInPot(First(s, "raw_root", "camp").InstanceId, pot.InstanceId, 1)).Ok, Is.True);
         var f = E.PotFood(s, pot.InstanceId).Single();
-        Assert.That(E.CookXpLine(s, f), Is.EqualTo("完成后烹饪经验+3（每日最多30）"));
+        Assert.That(E.CookXpLine(s, f), Is.EqualTo("完成后烹饪经验+3（与净化合计每日最多30）"));   // B22f Q207：净化也计 30
         E.DebugGive(s, "cooked_meat", 1, "camp");
         Assert.That(E.DoInstant(s, InstantRequest.PutFoodInPot(First(s, "cooked_meat", "camp").InstanceId, pot.InstanceId, 1)).Ok, Is.True);
         var meat = E.PotFood(s, pot.InstanceId).Single(x => x.ItemId == "cooked_meat");
