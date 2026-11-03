@@ -8,7 +8,8 @@
   1. 状态文件 .git/claude-git-watch.json 里 runningSince 非空、且心跳（heartbeat，缺省用 runningSince）
      不到 4 小时 → IDLE（上一轮还在跑；技能每进一个阶段就刷新心跳）
   2. git fetch origin；origin/main 等于 notifiedHead → IDLE（已通知过用户，等处理）
-  3. lastSeen..origin/main 里作者不是 etsevenday 的提交为空，且队列（queue.batches）里没有 pending 批次 → IDLE
+  3. lastSeen..origin/main 里作者不是 etsevenday 的提交为空，且队列（queue.batches）里没有 pending 批次 → IDLE；
+     有 waiting 批次（开工前问题已发给策划）时，没有策划新提交也 IDLE，pending 批次不开
   4. 否则 WORK，附新提交列表、队列剩余批次与本地未推送/未提交情况，交给技能继续处理
 fetch 失败等异常一律 ERROR，hook 模式下不拦截，照常交给模型处理。
 
@@ -64,6 +65,7 @@ def check():
     batches = (state.get("queue") or {}).get("batches") or []
     pending = [b for b in batches if b.get("status") == "pending"]
     blocked = [b for b in batches if b.get("status") == "blocked"]
+    waiting = [b for b in batches if b.get("status") == "waiting"]
 
     try:
         git("fetch", "origin", "--quiet", timeout=90)
@@ -78,6 +80,9 @@ def check():
                   f"{last}..origin/main")
         new = [l.split("\x1f") for l in log.splitlines() if l]
         theirs = [c for c in new if c[1] != OWN_AUTHOR]
+        if not theirs and waiting:
+            ids = "；".join(f"{b.get('id', '?')} {'、'.join(b.get('questions') or [])}" for b in waiting)
+            return "IDLE", f"等策划答复（{ids}），开发暂停（origin/main {head[:7]}）"
         if not theirs and not pending:
             if blocked:
                 ids = "、".join(b.get("id", "?") for b in blocked)
@@ -98,6 +103,9 @@ def check():
         lines.append(f"origin/main {head[:7]}，lastSeen {last[:7]}，策划等人的新提交 {len(theirs)} 个"
                      + ("（要并入队列重排）：" if batches else "："))
         lines += [f"  {h} {a} {d} {s}" for h, a, d, s in theirs]
+    if waiting:
+        lines.append("等策划答复的批次（看新提交答了没有，按技能 §2.3 第 6 条处理）："
+                     + "；".join(f"{b.get('id', '?')} {'、'.join(b.get('questions') or [])}" for b in waiting))
     if blocked:
         lines.append("队列里受阻的批次：" + "、".join(b.get("id", "?") for b in blocked))
     if unpushed:
