@@ -33,6 +33,15 @@ else
                  ?? batches.FirstOrDefault(b => !b.Reserved && !Spoiled(b)) ?? batches[0];
     var inst = chosen.Stacks.FirstOrDefault(i => i.ReservedBy == null) ?? chosen.Stacks[0];
     var spoiled = Spoiled(chosen);
+    // B22d 试玩修复 M418（Q178）：已鉴定/未鉴定白色活性物质是两张卡，详情、批次列表与重量只算所点这一侧，另一侧只写一句在另一张卡
+    var aprSide = e.CardSideOf(chosen.Stacks[0]);
+    var aprSplit = group && batches.Select(b => e.CardSideOf(b.Stacks[0])).Contains(GameEngine.IdentifiedCardSuffix);
+    var otherBatches = aprSplit ? batches.Where(b => e.CardSideOf(b.Stacks[0]) != aprSide).ToList() : new List<Batch>();
+    if (aprSplit)
+    {
+        batches = batches.Where(b => e.CardSideOf(b.Stacks[0]) == aprSide).ToList();
+        list = list.Where(i => e.CardSideOf(i) == aprSide).ToList();
+    }
     var total = batches.Sum(b => b.Count);
 
     <div class="detail-scroll">
@@ -51,10 +60,10 @@ else
                 var chosenDr = chosenSide == GameEngine.RewardCardSuffix;
                 var sideN = batches.Where(b => e.CardSideOf(b.Stacks[0]) == chosenSide).Sum(b => b.Count);
                 <h2>@e.CardTitle(cfg.Id, chosenSide)@(chosenDr ? "（战利品）" : "") <small class="muted">×@sideN</small></h2>
-                @if (sideN < total && batches.Any(b => e.CardSideOf(b.Stacks[0]) == GameEngine.IdentifiedCardSuffix))
+                @if (otherBatches.Count > 0)
                 {
-                    var aprN = batches.Where(b => e.CardSideOf(b.Stacks[0]) == GameEngine.IdentifiedCardSuffix).Sum(b => b.Count);
-                    <p class="muted">@(chosenSide == GameEngine.IdentifiedCardSuffix ? $"同名未鉴定×{total - aprN}是另一张卡" : $"另有已鉴定×{aprN}（单独一张“{e.CardTitle(cfg.Id, GameEngine.IdentifiedCardSuffix)}”卡）")（这里合计×@(total)）。</p>
+                    var otherSide = e.CardSideOf(otherBatches[0].Stacks[0]);
+                    <p class="muted">另有@(e.CardTitle(cfg.Id, otherSide))×@(otherBatches.Sum(b => b.Count))在另一张卡。</p>
                 }
             }
             <p>@(cfg.Use != null && cfg.Use.IsMedicine ? (cfg.Use.IsBandage ? "药品：止血、回血、压低病毒（本次实际效果见下）" : cfg.Use.IsAntibiotic ? "药品：抑制病毒（本次实际效果见下）" : "药品：清除感染（本次实际效果见下）")

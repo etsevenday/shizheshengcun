@@ -30,7 +30,7 @@
                     var bk = b.Key;
                     <button type="button" role="radio" aria-checked="@(bk == m.BatchKey)" class="ca-batch @(bk == m.BatchKey ? "on" : "") @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")"
                             title="@BatchTitle(b)" @onclick="() => G.PickBatch(m.Owner, m.ItemId, bk)">
-                        <b>×@b.Count</b><small>@BatchFresh(b)@(b.Reserved ? " · 预留" : "")</small>
+                        <b>×@b.Count</b><small>@BatchFresh(b)@(b.Reserved ? " · 预留" : "")@(G.E.IsIdentifiedWhite(b.Stacks[0]) ? " · 已鉴定" : "")</small>
                     </button>
                 }
             </div>
@@ -132,7 +132,7 @@
 
         @if (e.IsSubstance(m.ItemId))
         {
-            var subs = (m.Instance != null ? new List<ItemInstance> { m.Instance } : s.Items.Where(i => i.Owner == m.Owner && i.ItemId == m.ItemId).ToList())
+            var subs = (m.Instance != null ? new List<ItemInstance> { m.Instance } : s.Items.Where(i => i.Owner == m.Owner && i.ItemId == m.ItemId && e.CardSideOf(i) == m.Side).ToList())
                 .OrderByDescending(i => i.Source?.TutorialReward == true).ThenBy(i => i.InstanceId).ToList();
             foreach (var it in subs)
             {
@@ -390,6 +390,8 @@
         public ItemInstance? Head { get; init; }
         /// <summary>随身同物品多批时的批次条（Q24 可展开选批次）；其余为 null。</summary>
         public List<ItemBatch>? Batches { get; init; }
+        /// <summary>B22d 试玩修复 M418：物品组卡所在的“卡片侧”（apr 已鉴定白色、dr 战利品、普通 null）；操作窗只列这一侧。</summary>
+        public string? Side { get; init; }
     }
 
     private string BatchFresh(ItemBatch b) =>
@@ -455,6 +457,10 @@
                 // Q24：自用与转移都作用于所选真实批次（默认最前合法可用批次）；批次全被预留时仍给出那一批，让按钮写真实原因
                 var batches = e.BatchesOf(s, sel.Owner, sel.Id);
                 var chosen = G.CurrentBatch(sel.Owner, sel.Id, batches)!;
+                // B22d 试玩修复 M418（Q178）：已鉴定/未鉴定活性物质分两张卡，操作窗的批次条、提示与融合列表只算所点这一侧
+                var side = e.CardSideOf(chosen.Stacks[0]);
+                if (batches.Any(b => e.CardSideOf(b.Stacks[0]) == GameEngine.IdentifiedCardSuffix))
+                    batches = batches.Where(b => e.CardSideOf(b.Stacks[0]) == side).ToList();
                 var useInst = chosen.Stacks.FirstOrDefault(i => i.ReservedBy == null && !e.IsSpoiled(s, i)) ?? chosen.Stacks[0];
                 var available = chosen.Reserved ? 0 : chosen.Count;
                 var head = chosen.Stacks.FirstOrDefault(i => i.ReservedBy == null);
@@ -465,7 +471,7 @@
                 {
                     ToCarried = toCarried, Owner = sel.Owner, ExpiresAt = chosen.ExpiresAt, BatchKey = chosen.Key, UnitGrams = e.Item(sel.Id).WeightGrams,
                     Max = toCarried ? G.MaxPickup(sel.Id, available, head) : available, UseId = UseOf(useInst), Head = head,
-                    Batches = batchPick ? batches : null,
+                    Batches = batchPick ? batches : null, Side = side,
                     Hint = batches.Count > 1 && !batchPick ? (manualBatch ? $"共{batches.Count}批，转移所选批次（{BatchFresh(chosen)}）" : $"共{batches.Count}批，转移先取最早到期的有效批次（{BatchFresh(chosen)}）") : null,
                 };
             }

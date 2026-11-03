@@ -255,8 +255,12 @@
                             var sbWhy = busy ? "行动进行中" : e.StationBatchBlocked(s, rc);
                             <div class="craft-go">
                                 <span class="cg-facts">
-                                    @if (sb != null) { <b>加工中</b><small>@(sb.DoneMinutes)/@(sb.RequiredMinutes)分钟 · 完成后放在@(e.ZoneName(s, s.Ground))地面 · @e.StationBatchXpNote(s, sb)</small> }
-                                    else if (sbWhy == null) { <b>被动@(rc.BaseMinutes)分钟</b><small>@e.StationBatchSummary(rc)；@e.StationBatchXpPreview(s, rc)</small> }
+                                    @if (sb != null) { <b>加工中</b><small class="cg-xp">@e.StationBatchXpNote(s, sb)</small><small class="cg-sum">@(sb.DoneMinutes)/@(sb.RequiredMinutes)分钟 · 完成后放在@(e.ZoneName(s, s.Ground))地面</small> }
+                                    else if (sbWhy == null)
+                                    {
+                                        @* B22d 试玩修复 M418：经验句放在说明前面单独一行，窄屏（≤1400）时说明压成一行省略、悬停看全文，经验句不被裁掉 *@
+                                        <b>被动@(rc.BaseMinutes)分钟</b><small class="cg-xp">@e.StationBatchXpPreview(s, rc)</small><small class="cg-sum" title="@e.StationBatchSummary(rc)">@e.StationBatchSummary(rc)</small>
+                                    }
                                     else { <small class="warn-text">@sbWhy</small> }
                                 </span>
                                 @if (sb != null)

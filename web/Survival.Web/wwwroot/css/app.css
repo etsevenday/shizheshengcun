@@ -1110,6 +1110,8 @@ kbd { font-size: 14px; }
 .cg-facts small { font-size: 14px; color: var(--muted); }
 .cg-facts small.warn-text { color: var(--warn); }
 .craft-go .cg-start { flex: 0 0 auto; width: auto; min-width: 150px; padding: 8px 16px; font-size: 17px; }
+/* B22d 试玩修复 M418：陶窑/净水台投料说明在 1280 下最后一行（经验句）被裁——经验句前置，窄屏说明压一行 */
+@media (max-width: 1400px) { .cg-facts small.cg-sum { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
 
 /* 休息面板底部开始条（紧挨时长卡） */
 .rest-go { flex: 0 0 auto; display: flex; align-items: center; gap: 12px; padding: 8px 14px 10px; border-top: 1px solid var(--line); background: #1f2721; }
@@ -1247,6 +1249,7 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .seal-why { padding-left: 4px; }
 /* B22 试玩修复 M409：战利品卡的徽记放在图片区左上角（不再挤占卡名） */
 .card.item .art.has-loot { position: relative; }
+.card.item .loot-badge.apr-badge { background: #5a6470; }   /* B22d M418：已鉴定白色活性物质卡角标 */
 .card.item .loot-badge { position: absolute; left: 3px; top: 3px; min-width: 18px; height: 18px; padding: 0 3px; border-radius: 9px; background: #4f7a3a; color: #f3ecd2; font-size: 12px; line-height: 18px; text-align: center; font-weight: 700; box-shadow: 0 0 0 1px rgba(0, 0, 0, .35); pointer-events: auto; }
 .remains-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 14px; }
 

@@ -374,4 +374,48 @@ public class B22dTests : TestBase
         Assert.That(E.InstanceName(E.FindItem(s, t.InstanceId)!), Is.EqualTo(oldName));
         Assert.That(E.CardSideOf(E.FindItem(s, t.InstanceId)!), Is.Null);
     }
+
+    // ───────────── B22d 试玩修复 M418 ─────────────
+
+    /// <summary>M418-5：经验预估扣掉同一投料者在途、同一完成日先完成的批次（只改显示，结算不变）。</summary>
+    [Test]
+    public void M418_StationXpPreview_CountsInFlightBatches()
+    {
+        var s = Workshop();
+        var xp0 = CraftXp(s);
+        Kiln(s);   // 在途 6（60 分钟后完成）
+        AdvanceTo(s, s.GameMinute + 5);
+        Water(s);  // 在途 3（30 分钟后，先完成）
+        // 已得 0，在途陶窑 6、净水台 3
+        Assert.That(E.StationBatchXpNote(s, E.StationBatchHere(s, "water_station")!), Does.Contain("+3").And.Not.Contain("只剩"), "净水台先完成，不被陶窑占");
+        Assert.That(E.StationBatchXpNote(s, E.StationBatchHere(s, "kiln")!), Does.Contain("+6").And.Not.Contain("只剩"), "陶窑在净水台之后完成：12−3 仍够 6");
+        // 模拟当天已得 6：净水台先完成占 3，陶窑预计只剩 3
+        s.Player.DailyCounts[$"{Clock.Day(s.GameMinute)}|stationXp|crafting"] = 6;
+        Assert.That(E.StationBatchXpNote(s, E.StationBatchHere(s, "kiln")!), Does.Contain("只剩3").And.Contain("在途批次预计占3"));
+        // 结算不变：净水台 +3、陶窑只剩 3
+        AdvanceTo(s, s.GameMinute + 60);
+        Assert.That(CraftXp(s) - xp0, Is.EqualTo(6));
+    }
+
+    /// <summary>M418-6：被动配方（陶窑/净水台）预估不写工作倍率、不写基础工作量，经验写被动批次经验。</summary>
+    [Test]
+    public void M418_StationRecipePreview_NoWorkFactor()
+    {
+        var s = Workshop();
+        s.GameMinute = At(3, 0, 40);   // 夜间
+        var p = E.Preview(s, ActionRequest.Craft("ex_ceramic_shell", null, null, 1));
+        Assert.That(p.IsWork, Is.False);
+        Assert.That(p.Notes, Has.None.Contains("工作倍率").And.None.Contains("基础工作量"));
+        Assert.That(p.XpGains, Has.Some.Contains("陶窑与净水台被动批次合计每日最多12"));
+    }
+
+    /// <summary>M418-4：鉴定面板下次刷新说明与 Q176 一致（到达或在当地开面板/开工时锁，过午夜不自动锁）。</summary>
+    [Test]
+    public void M418_QuoteRefreshText_MatchesQ176()
+    {
+        var s = AtOffice();
+        var t = E.AppraisalPreview(s).NextRefreshText;
+        Assert.That(t, Does.Contain("安全到达鉴定所").And.Contain("打开本面板/开工时锁定").And.Contain("不会自动换表"));
+        Assert.That(t, Does.Not.Contain("第一次安全到访"));
+    }
 }

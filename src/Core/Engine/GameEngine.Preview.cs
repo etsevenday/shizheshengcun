@@ -297,7 +297,10 @@ namespace Survival.Core.Engine
                     // Q57 选 B：制造等级不再折减工作量，只看装备与节点效果（见工作倍率行）
                     // B10b 试玩修复：经验归医疗的配方不写“制造等级”，免得误以为看制造
                     // B16 试玩修复 M351：固定等待不写“基础工作量”（模式说明里已写固定等待分钟）
-                    if (!rc.IsFixedWait) p.Notes.Add(rc.XpSkill == null
+                    // B22d 试玩修复 M418：陶窑/净水台被动批次按世界时间推进，不吃工作倍率（夜间/装备/熟练），也不按主动制作给经验
+                    var stationBatch = IsStationBatchRecipe(rc);
+                    if (stationBatch) { p.IsWork = false; p.FactorAtStart = 1; }
+                    if (!rc.IsFixedWait && !stationBatch) p.Notes.Add(rc.XpSkill == null
                         ? $"基础工作量{rc.BaseMinutes * batch}分钟（制造等级不改变工作量）"
                         : $"基础工作量{rc.BaseMinutes * batch}分钟（完成经验给{SkillName(rc.XpSkill)}，不给制造）");
                     if (rc.IsSalvage)
@@ -313,7 +316,8 @@ namespace Survival.Core.Engine
                         p.Notes.Add($"{ItemName(rt.ItemId)}#{rt.InstanceId}耐久{Fmt.N(d0)}→{Fmt.N(Math.Min(dm, d0 + dm * RepairFraction(s, rc)))}/{Fmt.N(dm)}：恢复自身最大耐久的{Fmt.Pct(RepairFraction(s, rc))}（不超过上限、不重抽最大耐久，品质与词条不变）");
                     // Q112（S14 本轮章）：锻炉配方分列份数、成品、原料炭/燃料炭/总炭；预览只读不预留
                     if (!rc.IsSalvage && RecipeFuelSummary(rc, batch) is string fuelNote) p.Notes.Add(fuelNote);
-                    if (rc.IsFixedWait) p.XpGains.Add(rc.XpSkill == Cooking ? FixedWaitWaterXpPreview(s, rc, batch) : "固定等待不给经验");   // B22a Q166
+                    if (stationBatch) p.XpGains.Add(StationBatchXpPreview(s, rc));   // B22d Q174
+                    else if (rc.IsFixedWait) p.XpGains.Add(rc.XpSkill == Cooking ? FixedWaitWaterXpPreview(s, rc, batch) : "固定等待不给经验");   // B22a Q166
                     else if (!rc.IsSalvage) p.XpGains.Add(XpText(s, rc.XpSkill ?? Crafting, CraftXp(rc.BaseMinutes) * batch));
                     if (rc.Mode != null) p.Notes.Add(RecipeModeText(rc));
                     if (rc.ShelfRule == "min_inputs") p.Notes.Add("成品保质不晚于原料里最早的截止时间（非热组装不刷新原料寿命）");

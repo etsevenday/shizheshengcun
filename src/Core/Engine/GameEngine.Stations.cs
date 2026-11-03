@@ -74,17 +74,41 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 经验说明（预估/进行中共用）：基础经验与完成日余额。xp 为这一批的快照（0 = 旧批次按原规则不给）；finishMinute 为预计完成时刻。
         /// </summary>
-        private string StationXpText(GameState s, int xp, int finishMinute, bool started)
+        /// <summary>
+        /// 预估用（B22d 试玩修复 M418，开发假设 B22d-8）：同一投料者其他在途批次中，预计在同一完成日、且比这一批先（或同一刻排在前面）完成的快照经验合计。
+        /// 只用于显示；结算规则不变（仍按每批完成那一刻的余额）。新批次（self 为 null）同一刻完成的在途批次都算在前面。
+        /// </summary>
+        private int StationXpPending(GameState s, string actorId, int day, int finish, StationBatch? self)
+        {
+            var flat = AllFacilityStates(s).SelectMany(x => x.Fac.StationBatches).ToList();
+            var selfIdx = self == null ? flat.Count : flat.IndexOf(self);
+            var sum = 0;
+            for (var i = 0; i < flat.Count; i++)
+            {
+                var b = flat[i];
+                if (b == self || b.XpSnapshot <= 0 || b.InitiatorActorId != actorId) continue;
+                var f = s.GameMinute + Math.Max(0, b.RequiredMinutes - b.DoneMinutes);
+                if (Clock.Day(f) != day) continue;
+                if (f < finish || (f == finish && i < selfIdx)) sum += b.XpSnapshot;
+            }
+            return sum;
+        }
+
+        private string StationXpText(GameState s, int xp, int finishMinute, bool started, StationBatch? self = null)
         {
             var c = Config.Progression.StationXp;
             if (xp <= 0) return started ? "这一批开始时被动加工不给经验（按原规则完成）" : "被动加工不给经验";
             var skill = c.Skill;
             var basic = $"完成后{SkillName(skill)}经验+{xp}（陶窑与净水台被动批次合计每日最多{c.DailyCap}）";
-            if (SkillLevel(s.Player, skill) >= SkillCap(skill)) return $"{SkillName(skill)}已满{SkillCap(skill)}级，完成不再获得经验";
+            var who = s.Actors.TryGetValue(self?.InitiatorActorId ?? GameState.PlayerId, out var a) ? a : s.Actors[GameState.PlayerId];   // 投料者（主角），不随出战焦点变
+            if (SkillLevel(who, skill) >= SkillCap(skill)) return $"{SkillName(skill)}已满{SkillCap(skill)}级，完成不再获得经验";
             var day = Clock.Day(finishMinute);
-            var room = StationXpRoom(s.Player, day);
-            return room <= 0 ? $"{DayWord(s, day)}被动批次{SkillName(skill)}经验已满{c.DailyCap}，完成不再给经验"
-                : room < xp ? $"完成后{SkillName(skill)}经验+{room}（陶窑与净水台被动批次合计每日最多{c.DailyCap}，{DayWord(s, day)}只剩{room}）"
+            var free = StationXpRoom(who, day);
+            var pending = StationXpPending(s, who.Id, day, finishMinute, self);
+            var room = Math.Max(0, free - pending);
+            var ahead = pending > 0 && room < xp ? $"；先完成的在途批次预计占{Math.Min(pending, free)}" : "";
+            return room <= 0 ? $"{DayWord(s, day)}被动批次{SkillName(skill)}经验{(free <= 0 ? "已满" : "预计已满")}{c.DailyCap}{ahead}，完成不再给经验"
+                : room < xp ? $"完成后{SkillName(skill)}经验+{room}（陶窑与净水台被动批次合计每日最多{c.DailyCap}，{DayWord(s, day)}只剩{room}{ahead}）"
                 : basic + (day == Clock.Day(s.GameMinute) ? "" : $"，按{DayWord(s, day)}额度");
         }
 
@@ -94,7 +118,7 @@ namespace Survival.Core.Engine
 
         /// <summary>进行中的批次：完成后的制造经验（按快照与预计完成日余额）。</summary>
         public string StationBatchXpNote(GameState s, StationBatch b) =>
-            StationXpText(s, b.XpSnapshot, s.GameMinute + Math.Max(0, b.RequiredMinutes - b.DoneMinutes), true);
+            StationXpText(s, b.XpSnapshot, s.GameMinute + Math.Max(0, b.RequiredMinutes - b.DoneMinutes), true, b);
 
         /// <summary>
         /// 批次成功完成：给投料者（完成时仍存活）快照经验，受完成日共享日额；返回日志附注。只在这里结算一次（产物同一处提交），读档/领取不重给。
