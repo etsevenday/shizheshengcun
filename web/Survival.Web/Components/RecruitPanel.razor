@@ -4,7 +4,9 @@
    周期说明（开放时刻、第几批、下一批时刻）、随机/保底名额 n/K、三名候选卡（模板、两项熟练真实等级、身体当前值与上限、速度与人物档、
    未感染/无共生、初始装备空、登记耗时）；二级查看完整身体与其余熟练；满额时三名照常可看、按钮禁用写原因。
    下方列可退役的生成角色（随机/保底），点“退役…”先展开确认说明（永久离开、技能不返还、物品去向），再点“确认退役”才提交。
-   浏览、展开都 0 分钟；只有“登记同行（10分钟）”开工，“确认退役”0 分钟提交。 *@
+   浏览、展开都 0 分钟；只有“登记（10分钟）”开工，“确认退役”0 分钟提交。
+   B22g（Q180/Q183）：候选卡加性别与文字外观；登记前在“登记后去向”里二选一——编入同行（同行满员时禁用写原因）或安排候补（下拉：营区广场、合格安全屋，
+   不合格的屋禁用写原因），没选不能登记；完成重验失败时显示“待安置确认”，只能改选去向或取消。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -21,8 +23,55 @@
         <p class="small"><b>@v.CycleText</b></p>
     }
     <p class="small rc-quota">@v.QuotaText</p>
-    <p class="small muted">@v.CostText。招募不收金币、罕见材料或钥匙；完成后入名册作候补（在@(e.LocName(e.HubLocation(s)))留守，到那里编入同行）。同行补员（RB01）与借用矛报失在右栏“队伍”。</p>
+    <p class="small muted">@v.CostText。招募不收金币、罕见材料或钥匙；完成后按所选去向0分钟到位（编入同行，或在营区广场/安全屋屋内作候补；屋内候补要你实地进那间屋才能编入同行）。同行补员（RB01）与借用矛报失在右栏“队伍”。</p>
     @if (v.PendingText != null) { <p class="warn-text small">@v.PendingText</p> }
+
+    @if (v.Awaiting is RecruitAwaitingView aw)
+    {
+        @* B22g（Q183 confirm）：完成重验失败后停在待安置确认：不建人、不重收10分钟、名额仍锁；只能改选合法去向或取消 *@
+        var awWhy = aw.Blocked ?? busy;
+        var awDest = DestFor(v);
+        <div class="rc-awaiting" data-awaiting="1">
+            <h4 class="rc-sub">待安置确认：@aw.CandidateName</h4>
+            <p class="small">@aw.IdentityText · 原选：@aw.ChoiceText</p>
+            <p class="small warn-text">现在不行：@aw.FailureText。登记手续已办完、人还没建，名额仍锁着；改选去向后0分钟到位，不会再收10分钟；取消则不发人、不发物，已过时间不退。</p>
+            <div class="btn-row">
+                <button class="primary" disabled="@((awWhy ?? v.PartyOptionBlocked) != null)" title="@(awWhy ?? v.PartyOptionBlocked ?? "编入同行（0分钟）")" @onclick='() => G.ResolveRecruitPlacement("party")'>改为编入同行</button>
+                <select class="rc-dest" value="@awDest" @onchange="e => _dest = e.Value?.ToString()">
+                    @foreach (var d in v.ReserveDestinations)
+                    {
+                        <option value="@d.Key" disabled="@(d.Blocked != null)" title="@(d.Blocked ?? d.Label)">@d.Label@(d.Blocked != null ? $"（不可选：{d.Blocked}）" : "")</option>
+                    }
+                </select>
+                @{ var dWhy = awWhy ?? v.ReserveDestinations.FirstOrDefault(d => d.Key == awDest)?.Blocked; }
+                <button class="secondary" disabled="@(dWhy != null)" title="@(dWhy ?? "安排到所选处作候补（0分钟）")" @onclick="() => G.ResolveRecruitPlacement(awDest)">改为候补安置</button>
+                <button class="secondary" disabled="@(awWhy != null)" title="@(awWhy ?? "取消这笔登记：不发人不发物，已过时间不退，名额释放")" @onclick="() => G.CancelRecruitPlacement()">取消登记</button>
+                @if (awWhy != null) { <span class="muted small">@awWhy</span> }
+            </div>
+        </div>
+    }
+
+    @if (v.Opened && v.Awaiting == null)
+    {
+        @* B22g（Q183 selection）：登记确认前明确二选一；同行满员时“编入同行”禁用写真实原因，不挤出他人 *@
+        var dest = DestFor(v);
+        <div class="rc-choice" role="radiogroup" aria-label="登记后去向">
+            <b class="small">登记后去向：</b>
+            <label class="small" title="@(v.PartyOptionBlocked ?? "登记完成即编入同行")">
+                <input type="radio" name="rc-mode" checked="@(_mode == "party")" disabled="@(v.PartyOptionBlocked != null)" @onchange='() => _mode = "party"' /> 编入同行
+            </label>
+            <label class="small" title="营区广场，或已完工、到访过、从收容所有已知可通路线的自有安全屋">
+                <input type="radio" name="rc-mode" checked="@(_mode == "reserve")" @onchange='() => _mode = "reserve"' /> 安排候补
+            </label>
+            <select class="rc-dest" value="@dest" disabled="@(_mode != "reserve")" @onchange="e => _dest = e.Value?.ToString()">
+                @foreach (var d in v.ReserveDestinations)
+                {
+                    <option value="@d.Key" disabled="@(d.Blocked != null)" title="@(d.Blocked ?? d.Label)">@d.Label@(d.Blocked != null ? $"（不可选：{d.Blocked}）" : "")</option>
+                }
+            </select>
+            @if (v.PartyOptionBlocked != null) { <span class="muted small">编入同行：@v.PartyOptionBlocked</span> }
+        </div>
+    }
 
     @if (v.Opened)
     {
@@ -30,10 +79,12 @@
             @foreach (var c in v.Candidates)
             {
                 var cid = c.CandidateId;
-                var why = c.Status == "available" ? (c.Blocked ?? busy) : c.StatusText;
+                var choiceKey = ChoiceKey(v);
+                var why = c.Status == "available" ? (c.Blocked ?? busy ?? ChoiceBlocked(v)) : c.StatusText;
                 <div class="rc-card @(c.Status)" data-candidate="@cid">
                     <div class="rc-head"><b>@c.Name</b> <span class="muted small">@c.StatusText · @c.TemplateName（@c.TemplateUse）</span></div>
                     @* M381：属性按“ · ”分段，每段不拆行（1280 宽下数值与单位不再断开） *@
+                    <div class="small rc-segs rc-identity">@Segs(c.IdentityText)</div>
                     <div class="small rc-segs">@Segs(c.SkillText)</div>
                     <div class="small rc-segs">@Segs(c.BodyText)</div>
                     <div class="small rc-segs">@Segs(c.CombatText)</div>
@@ -41,8 +92,8 @@
                     @if (c.Status == "available")
                     {
                         <div class="btn-row">
-                            <button class="primary" disabled="@(why != null)" title="@(why ?? $"0材料，{e.Config.Party.Recruitment.RegistrationMinutes}分钟等待（你与同行按等待消耗）；开始即锁这名候选与1个名额，中途停下已耗时间不退、候选不变")"
-                                    @onclick='() => G.StartRecruit(cid, "square")'>登记同行（@(e.Config.Party.Recruitment.RegistrationMinutes)分钟）</button>
+                            <button class="primary" disabled="@(why != null)" title="@(why ?? $"0材料，{e.Config.Party.Recruitment.RegistrationMinutes}分钟等待（你与同行按等待消耗）；开始即锁这名候选、1个名额与所选去向，中途停下已耗时间不退、候选不变")"
+                                    @onclick="() => G.StartRecruit(cid, choiceKey!)">@(_mode == "party" ? "登记·编入同行" : _mode == "reserve" ? "登记·候补" : "登记")（@(e.Config.Party.Recruitment.RegistrationMinutes)分钟）</button>
                             @if (why != null) { <span class="muted small">@why</span> }
                         </div>
                     }
@@ -86,6 +137,27 @@
     [Parameter] public string NpcLine { get; set; } = "";
 
     private string? _confirm;
+    /// <summary>B22g：登记后去向（null 未选 / party / reserve）与候补目的地键。</summary>
+    private string? _mode;
+    private string? _dest;
+
+    /// <summary>当前下拉选中的目的地：选过且仍可选用它，否则第一个可选的（营区广场总可选）。</summary>
+    private string DestFor(RecruitView v)
+    {
+        var ok = v.ReserveDestinations.Where(d => d.Blocked == null).Select(d => d.Key).ToList();
+        return _dest != null && ok.Contains(_dest) ? _dest : ok.FirstOrDefault() ?? "square";
+    }
+
+    /// <summary>登记要用的去向键；没选为 null。</summary>
+    private string? ChoiceKey(RecruitView v) => _mode == "party" ? "party" : _mode == "reserve" ? DestFor(v) : null;
+
+    /// <summary>去向没选或不合法时的原因（按钮禁用写出来）。</summary>
+    private string? ChoiceBlocked(RecruitView v) => _mode switch
+    {
+        "party" => v.PartyOptionBlocked,
+        "reserve" => v.ReserveDestinations.FirstOrDefault(d => d.Key == DestFor(v))?.Blocked,
+        _ => "先在上方选择登记后去向：编入同行，或安排候补",
+    };
 
     private static RenderFragment Segs(string text) => __builder =>
     {

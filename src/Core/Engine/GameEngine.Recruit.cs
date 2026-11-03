@@ -767,7 +767,10 @@ namespace Survival.Core.Engine
 
         // ───────────── 开发入口（?dev=1） ─────────────
 
-        /// <summary>开发入口：go 到收容所（记登记，按实际到达处理）；c2/c4 记容量事实；next 拨到下一批开始；edge 拨到本批结束前 5 分钟；escort 加护送员。</summary>
+        /// <summary>
+        /// 开发入口：go 到收容所（记登记，按实际到达处理）；c2/c4 记容量事实；next 拨到下一批开始；edge 拨到本批结束前 5 分钟；escort 加护送员；
+        /// B22g：house 建营外安全屋并回收容所；awaiting 直接造一笔待安置确认。
+        /// </summary>
         public string DebugRecruitment(GameState s, string kind)
         {
             switch (kind)
@@ -794,6 +797,32 @@ namespace Survival.Core.Engine
                     s.GameMinute = to;
                     EnsureRecruitCycle(s);
                     return $"开发：时间拨到{Clock.DayTime(to)}（不结算身体）" + (kind == "next" ? $"，第{(s.Recruit.Cycle ?? 0) + 1}批候选已生成" : "；现在开始一笔10分钟登记会跨过换批时刻");
+                }
+                case "house":
+                {
+                    // B22g：在营外安全屋地块直接建成安全屋（实际到访、探索 100），再回到收容所，试“候补到安全屋”
+                    const string site = "h05_homestead";
+                    if (IsBusy(s)) return "开发：行动进行中或有敌踪/战斗，先结束再传送";
+                    DebugSafehouseSite(s, site);
+                    var built = DebugBuildSafehouse(s);
+                    DebugRecruitment(s, "go");
+                    return $"{built.TrimEnd('。')}；已回到{LocName(Rc.LocationId)}：候补下拉可选“{SafehouseName(s, site)}屋内”" +
+                           (RecruitSafehouseBlocked(s, site) is string why ? $"（现在不可选：{why}）" : "");
+                }
+                case "awaiting":
+                {
+                    // B22g：跳过 10 分钟，直接造一笔“完成重验时同行已满”的待安置确认（只为点验改选/取消界面）
+                    if (s.Recruit.Pending != null) return "开发：已有一笔登记在办或待安置确认";
+                    var c = s.Recruit.Candidates.FirstOrDefault(x => x.Status == RecruitCandidate.Available);
+                    if (c == null) return "开发：本批没有可登记的候选";
+                    if (SharedQuotaBlocked(s, true) is string quota) return "开发：" + quota;
+                    c.Status = RecruitCandidate.Registering;
+                    s.Recruit.Pending = new RecruitTxn
+                    {
+                        ActionId = -1, CandidateId = c.CandidateId, Cycle = c.Cycle, LocationId = Rc.LocationId, StartMinute = s.GameMinute,
+                        Candidate = c.Clone(), Placement = RecruitPlacement.Party, AwaitingPlacement = true, PlacementFailure = "开发：模拟完成重验时同行已满",
+                    };
+                    return $"开发：{c.Name}的登记停在待安置确认（原选编入同行）；在收容所杜穗“事项”里改选去向或取消";
                 }
             }
             return "开发：未知操作";

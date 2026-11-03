@@ -215,6 +215,9 @@
                     <button class="secondary small-btn" title="空闲时把时间拨到下一批开始（不结算身体），换出新一批3名" @onclick='() => DevDone(G.E.DebugRecruitment(G.S, "next"))'>拨到下一批（+至72小时交界）</button>
                     <button class="secondary small-btn" title="空闲时把时间拨到本批结束前5分钟（不结算身体），试跨批登记" @onclick='() => DevDone(G.E.DebugRecruitment(G.S, "edge"))'>拨到本批结束前5分钟</button>
                     <button class="secondary small-btn" @onclick="() => DevParty(st => G.E.DebugAddEscort(st))">加入通用护送员（占共享名额）</button>
+                    @* B22g（Q183）：候补到安全屋与待安置确认 *@
+                    <button class="secondary small-btn" title="在营外安全屋地块直接建成安全屋（到访、探索100），再回到收容所：候补下拉出现该屋" @onclick='() => DevDone(G.E.DebugRecruitment(G.S, "house"))'>建营外安全屋并回收容所（B22g）</button>
+                    <button class="secondary small-btn" title="跳过10分钟，直接造一笔“完成重验时同行已满”的待安置确认，试改选去向/取消" @onclick='() => DevDone(G.E.DebugRecruitment(G.S, "awaiting"))'>造一笔待安置确认（B22g）</button>
                 </div>
                 @* B15（R46/R47）：主线与城市委托。地牢实例（B21）前，核心记录用“记下领取”按原领取事务写事实，验证主线推进与容量 *@
                 <div class="eyebrow">任务（B15）：记下核心记录领取（主线推进、容量 C3/C4）；支线地点；战术训练材料</div>

@@ -669,4 +669,27 @@ public class B22gTests : TestBase
         }
         Assert.That(E.Reserves(t).Count, Is.EqualTo(1));
     }
+
+    // ───────────── 开发入口（?dev=1） ─────────────
+
+    /// <summary>开发入口“建营外安全屋并回收容所”“造一笔待安置确认”：候补下拉出现可选的屋；待安置确认可改选到该屋，0 分钟送达。</summary>
+    [Test]
+    public void B22g_DevEntries_HouseAndAwaiting()
+    {
+        var s = AtShelter();
+        var text = E.DebugRecruitment(s, "house");
+        Assert.That(text, Does.Contain("候补下拉可选").And.Not.Contain("现在不可选"));
+        Assert.That(s.CurrentLocation, Is.EqualTo(Shelter));
+        Assert.That(E.RecruitPreview(s).ReserveDestinations.Single(d => d.Key == "sh:" + Homestead).Blocked, Is.Null);
+        Assert.That(E.DebugRecruitment(s, "awaiting"), Does.Contain("待安置确认"));
+        Assert.That(E.DebugRecruitment(s, "awaiting"), Does.Contain("已有一笔"));
+        var v = E.RecruitPreview(s);
+        Assert.That(v.Awaiting!.FailureText, Does.Contain("开发"));
+        Assert.That(v.PendingText, Does.StartWith("待安置确认"));
+        ReadDialogues(s);
+        Ok(E.ResolveRecruitPlacement(s, GameEngine.PlacementFromKey("sh:" + Homestead)));
+        Assert.That(Recruited(s).ReserveSafehouse, Is.EqualTo(Homestead));
+        Assert.That(GameEngine.PlacementKey(RecruitPlacement.Party), Is.EqualTo("party"));
+        Assert.That(GameEngine.PlacementFromKey("bogus"), Is.Null);
+    }
 }

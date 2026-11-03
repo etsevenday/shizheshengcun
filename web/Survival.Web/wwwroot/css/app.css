@@ -1457,6 +1457,12 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .recruit-panel .rc-card .btn-row > button { white-space: nowrap; flex: 0 0 auto; }
 .recruit-panel .rc-segs .rc-seg { display: inline-block; max-width: 100%; }
 .recruit-panel .rc-card.retired { opacity: .6; }
+/* B22g：登记后去向二选一、待安置确认 */
+.recruit-panel .rc-choice { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 6px 0; }
+.recruit-panel .rc-choice label { white-space: nowrap; }
+.recruit-panel .rc-dest { max-width: 100%; min-width: 0; }
+.recruit-panel .rc-awaiting { border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; margin: 6px 0; }
+.recruit-panel .rc-awaiting .btn-row { flex-wrap: wrap; }
 
 /* B21 地牢远征：进入预告、终止确认窗、安全点卡 */
 .exp-pv { max-height: 42vh; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; font-size: 13px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }

@@ -2448,6 +2448,10 @@ public sealed class GameSession
     public ActionResult SetActive(string actorId, bool active) =>
         FormationOpen ? Commit(ActionResult.Fail(FormationOpenText)) : Commit(E.SetActive(S, actorId, active, Guid.NewGuid().ToString("N")));
 
+    /// <summary>B22g（Q183）：在安全屋屋内把同行者留守此屋（0 分钟）。</summary>
+    public ActionResult StayInSafehouse(string actorId) =>
+        FormationOpen ? Commit(ActionResult.Fail(FormationOpenText)) : Commit(E.StayInSafehouse(S, actorId, Guid.NewGuid().ToString("N")));
+
     // ───────────── Q86 顶栏“编队”（R08/S14 本轮章）：四格草稿 → 保存编队/取消 ─────────────
 
     /// <summary>编队草稿（4 格，下标=号位−1，空位 ""）；面板没开为 null。只改草稿，不自动保存。</summary>

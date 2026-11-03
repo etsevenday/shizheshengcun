@@ -36,11 +36,12 @@
                 @Row(r.ActorId, "候补", false)
             }
         </div>
-        <div class="ca-note tiny">开战号位在顶栏“编队”里改（任何地点空闲时都可以）；编入同行/留作候补只在@(e.LocName(e.HubLocation(s)))办理。</div>
+        @* B22g（Q183 retrieve）：广场候补在营区广场编入/留作候补；安全屋屋内候补要实地进那间屋编入；屋里的同行者可“留守此屋” *@
+        <div class="ca-note tiny">开战号位在顶栏“编队”里改（任何地点空闲时都可以）；编入同行/留作候补在@(e.LocName(e.HubLocation(s)))办理；安全屋里的候补要你进那间屋才能编入同行，在屋里可让同行者“留守此屋”。</div>
         @if (e.Reserves(s).Count > 0)
         {
             @* Q90（B8c，S14 本轮章）：候补只读显示自主休息/睡眠与营区实际设施；慢速公共恢复放悬停（二级），不出现投喂/排班/逐人切模式按钮 *@
-            <div class="ca-note" title="@ReserveCareDetail()">候补留在@(e.LocName(e.HubLocation(s)))自主休息或睡眠（按各自体力与清醒自动切换），饱食、水分、精神由营区慢慢补到@(Fmt.T(care.PublicNutritionTarget))，不用你送食水、不扣你的物资；伤病与病毒照常发展。同行队员仍要你自己补给。</div>
+            <div class="ca-note" title="@ReserveCareDetail()">候补在所在处（@(e.LocName(e.HubLocation(s)))或安全屋屋内）自主休息或睡眠（按各自体力与清醒自动切换），饱食、水分、精神由公共照护慢慢补到@(Fmt.T(care.PublicNutritionTarget))，不用你送食水、不扣你的物资或屋柜；伤病与病毒照常发展。同行队员仍要你自己补给。</div>
         }
         @{
             var rbWhy = e.EscortRegistrationBlocked(s);
@@ -119,6 +120,9 @@
         var w2 = e.WornItem(s, id, EquipSlots.Weapon2);
         var weapons = string.Join(" / ", new[] { w1, w2 }.Select(w => w == null ? "空" : e.ItemName(w.ItemId) + (w.LoanSlot != null ? "（借用）" : "")));
         var toggleWhy = isMe ? null : e.SetActiveBlocked(s, id, !active);
+        // B22g（Q183 retrieve）：人在安全屋屋内时，同行者的按钮是“留守此屋”（0分钟留作该屋候补）
+        var inHouse = s.CurrentZone == GameState.SafehouseZone;
+        var stayWhy = isMe || !active || !inHouse ? null : e.StayInSafehouseBlocked(s, id);
         // B14（A11 §6）：固定队友与同行补员分开标注；固定队友带营区职能标签（N01 §5）
         var roster = e.RosterOf(s, id);
         var named = isMe ? null : e.Config.Party.NamedCompanions.FirstOrDefault(n => n.ActorId == id);
@@ -131,7 +135,14 @@
             @if (!isMe)
             {
                 <span class="party-acts">
-                    <button type="button" class="eq-btn" disabled="@(toggleWhy != null)" title="@(toggleWhy ?? (active ? "留在营区作候补（下一段起自主休息/睡眠，饱食/水分/精神慢慢回到80，伤病照常；切换本身不恢复）" : "编入同行队伍（立即停止营区公共补给，之后要你补给）"))" @onclick="() => G.SetActive(id, !active)">@(active ? "留作候补" : "编入同行")</button>
+                    @if (active && inHouse)
+                    {
+                        <button type="button" class="eq-btn" disabled="@(stayWhy != null)" title="@(stayWhy ?? $"留守{e.SafehouseName(s, s.CurrentLocation)}屋内作候补（0分钟；下一段起自主休息/睡眠，按屋内遮蔽与床照护，饱食/水分/精神慢慢回到80，伤病照常；留守不释放名额）")" @onclick="() => G.StayInSafehouse(id)">留守此屋</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="eq-btn" disabled="@(toggleWhy != null)" title="@(toggleWhy ?? (active ? "留在营区作候补（下一段起自主休息/睡眠，饱食/水分/精神慢慢回到80，伤病照常；切换本身不恢复）" : "编入同行队伍（立即停止候补公共补给，之后要你补给）"))" @onclick="() => G.SetActive(id, !active)">@(active ? "留作候补" : "编入同行")</button>
+                    }
                 </span>
             }
             </div>
@@ -140,7 +151,12 @@
             </div>
             @if (!active)
             {
-                <div class="party-care tiny" data-reserve-mode="@e.ReserveModeOf(a)" title="@ReserveCareDetail()">@e.ReserveCareLabel(s, a)</div>
+                <div class="party-care tiny" data-reserve-mode="@e.ReserveModeOf(a)" data-reserve-where="@(roster?.ReserveSafehouse ?? "square")" title="@ReserveCareDetail()">@e.ReserveCareLabel(s, a) · 在@(roster != null ? e.ReserveWhereName(s, roster) : e.LocName(e.HubLocation(s)))</div>
+            }
+            @if (roster != null && e.IdentityText(roster) is string ident)
+            {
+                @* B22g（Q180）：随机招入者的性别与文字外观摘要（旧档“未说明/未记录”） *@
+                <div class="party-identity tiny muted">@ident</div>
             }
             <div class="party-weapons tiny muted">武器：@weapons</div>
         </div>
@@ -154,6 +170,6 @@
         var hr = G.E.Config.HealthRules;
         return $"自主作息：清醒低于{Fmt.T(c.EnterSleepWakefulnessBelow)}或体力低于{Fmt.T(c.EnterSleepEnergyBelow)}时去睡，睡到清醒≥{Fmt.T(c.ExitSleepWakefulnessAtLeast)}且体力≥{Fmt.T(c.ExitSleepEnergyAtLeast)}再改休息，不看钟点。"
             + $"营区公共补给（叠在休息/睡眠的自然消耗上）：饱食每小时+{Fmt.T(c.PublicSatietyPerHour)}、水分+{Fmt.T(c.PublicHydrationPerHour)}（无病时净+{Fmt.T(c.PublicSatietyPerHour + rest.Satiety)}/+{Fmt.T(c.PublicHydrationPerHour + rest.Hydration)}）、精神+{Fmt.T(c.PublicMoralePerHour)}，各只补到{Fmt.T(c.PublicNutritionTarget)}，高于它照常自然下降。"
-            + $"遮蔽棚、床垫只认营区实际建成的；健康只在遮蔽处且饱食/水分≥{Fmt.T(hr.RecoveryMinSatiety)}、精神≥{Fmt.T(hr.RecoveryMinMorale)}时自然恢复。不治病、不清病毒。";
+            + $"遮蔽棚、床垫只认候补所在处（营区或该安全屋屋内）实际建成的；健康只在遮蔽处且饱食/水分≥{Fmt.T(hr.RecoveryMinSatiety)}、精神≥{Fmt.T(hr.RecoveryMinMorale)}时自然恢复。不治病、不清病毒。";
     }
 }
