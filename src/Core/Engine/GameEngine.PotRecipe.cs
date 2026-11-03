@@ -61,6 +61,26 @@ namespace Survival.Core.Engine
         public List<PotRecipeOption> PotRecipeOptions(GameState s, ItemInstance pot) =>
             PotRecipeProcesses.Select(pc => PotRecipePreview(s, pc, pot)).ToList();
 
+        /// <summary>
+        /// 锅食谱按钮上的经验预估（B22f 试玩修复 M428，Q207）：每批一次给开做者，按预计完成时刻（锅在燃烧的火堆上为现在 + 所需受热分钟，否则按现在）
+        /// 所在世界日的烹饪总额（含净化，每日 30）余量写“只剩N”/“已满30（含净化）”，完成日不是今天时写“按完成日第N日额度”。只读。
+        /// </summary>
+        public string PotRecipeXpPreview(GameState s, ProcessConfig pc, ItemInstance pot)
+        {
+            var per = CookFoodXpFor(pc.Id);
+            if (per <= 0) return "不给经验";
+            var basic = $"完成后{SkillName(Cooking)}经验+{per}（{CookTotalCapText}）";
+            if (SkillMaxed(s, Cooking)) return basic;
+            var loc = PotFireLocation(pot);
+            var finish = loc != null && FireHot(s, loc) ? s.GameMinute + pc.HeatMinutes : s.GameMinute;
+            var day = Clock.Day(finish);
+            var room = CookTotalRoom(s.Player, day);
+            var c = Config.Progression.Cooking;
+            if (room <= 0) return $"{DayWord(s, day)}{SkillName(Cooking)}经验已满{c.FoodDailyCap}（含净化），完成不再给经验";
+            if (room < per) return $"完成后{SkillName(Cooking)}经验+{room}（{CookTotalCapText}，{DayWord(s, day)}只剩{room}）";
+            return day == Clock.Day(s.GameMinute) ? basic : $"完成后{SkillName(Cooking)}经验+{per}（{CookTotalCapText}，按{DayWord(s, day)}额度）";
+        }
+
         public PotRecipeOption PotRecipePreview(GameState s, ProcessConfig pc, ItemInstance pot)
         {
             var rc = _recipes[pc.RecipeId!];
@@ -72,7 +92,7 @@ namespace Survival.Core.Engine
             var outCfg = _items[pc.OutputId];
             o.OutputText = $"{outCfg.Name}×{pc.OutputCount}" + (outCfg.ShelfLifeMinutes is int sl ? $"（完成起保质{Clock.Duration(sl)}）" : "");
             o.Note = $"需{pc.HeatMinutes}有效受热分钟，火堆燃料按世界时间另扣、不吃熟练加速；熄火保留进度；取出食材或取下锅即作废（辅料退回地面）；"
-                     + $"{CookFoodXpFor(pc.Id) switch { 0 => "不给经验", var x => $"完成后{SkillName(Cooking)}经验+{x}（{CookTotalCapText}）" }}";
+                     + PotRecipeXpPreview(s, pc, pot);
             var src = PotRecipeSources(s, pc.FoodInputs.Concat(pc.AuxInputs).ToDictionary(k => k.Key, k => k.Value));
             o.Sources = src.Select(x => $"{(x.inst.IsCarried ? "随身" : "地面")}{ItemName(x.inst.ItemId)}#{x.inst.InstanceId}×{x.take}").ToList();
             o.Reason = PotRecipeBlocked(s, pc, rc, pot);

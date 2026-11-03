@@ -176,4 +176,29 @@ public class B16PotRecipeTests : TestBase
         Assert.That(Recipe(u), Is.Null);
         Assert.That(Count(u, "salt", Here), Is.EqualTo(1));
     }
+    /// <summary>
+    /// B22f 试玩修复 M428（Q207）：锅食谱按钮的经验预估按完成日烹饪总额（含净化 30）的余量写——当日已 28 写“今日只剩2”、已 30（食品+净化）写
+    /// “今日烹饪经验已满30（含净化）”；完成跨午夜按完成日额度；与开做后批次说明、结算一致。
+    /// </summary>
+    [Test]
+    public void M428_PotRecipeHover_ShowsRemainingTotal()
+    {
+        var (s, pot) = Setup(2, ("grain", 3), ("salt", 2));
+        string Note() => E.PotRecipeOptions(s, pot).Single(o => o.ProcessId == "pot_hardtack").Note;
+        var key = $"{Clock.Day(s.GameMinute)}|xp|cooking";
+        var wkey = $"{Clock.Day(s.GameMinute)}|waterXp|cooking";
+        Assert.That(Note(), Does.EndWith("完成后烹饪经验+6（与净化合计每日最多30）"));
+        s.Player.DailyCounts[key] = 28;
+        Assert.That(Note(), Does.Contain("完成后烹饪经验+2（与净化合计每日最多30，今日只剩2）"));
+        s.Player.DailyCounts[key] = 26;
+        s.Player.DailyCounts[wkey] = 4;
+        Assert.That(Note(), Does.Contain("今日烹饪经验已满30（含净化），完成不再给经验"), "食品 26 + 净化 4 = 30");
+        Ok(E.DoInstant(s, InstantRequest.LoadPotRecipe("pot_hardtack", pot.InstanceId)));
+        Assert.That(E.PotRecipeXpLine(s, pot), Does.Contain("今日烹饪经验已满30（含净化）"), "与开做后的批次说明一致");
+        // 跨午夜：23:50 看，完成在次日 → 按次日额度
+        var (t, pot2) = Setup(2, ("grain", 3), ("salt", 2));
+        t.GameMinute = At(Clock.Day(t.GameMinute), 23, 50);
+        t.Player.DailyCounts[$"{Clock.Day(t.GameMinute)}|xp|cooking"] = 30;
+        Assert.That(E.PotRecipeOptions(t, pot2).Single(o => o.ProcessId == "pot_hardtack").Note, Does.Contain("按完成日第").And.Contain("+6"));
+    }
 }
