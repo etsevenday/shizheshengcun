@@ -99,9 +99,10 @@
 else if (LockReason != null)
 {
     @* B11（S03、EXP30-01）：已揭示、门槛未满足的路线：显示名称与原因，不能前往（不打开移动浮窗、不耗时） *@
+    @* B22f2 试玩修复 M431：主目标下一段已知未开通（Q139 KnownBlocked）时内核焦点指向这张卡，与其他分支同一判断加 tut-lit *@
     var ldir = e.DirectionFromHere(s, LocationId);
     var lhint = GameEngine.DirectionHint(ldir);
-    <ObjectCard Id="@($"lock-{LocationId}")" CssClass="loc-card neighbor locked" Title="@lc.Name" Badge="未开通" BadgeClass="unbuilt" Dim="true" Dashed="true"
+    <ObjectCard Id="@($"lock-{LocationId}")" CssClass="@($"loc-card neighbor locked{(G.TutorialFocus == "loc:" + LocationId ? " tut-lit" : "")}")" Title="@lc.Name" Badge="未开通" BadgeClass="unbuilt" Dim="true" Dashed="true"
                 AriaLabel="@($"{lc.Name}，路线未开通：{LockReason}")" Tooltip="@($"路线未开通：{LockReason}")">
         <Art>
             <div class="loc-art" style="background-image:url('@scene')" role="img" aria-label="@($"{lc.Name}图片")"></div>
