@@ -221,6 +221,71 @@ public class B24CityOverviewTests : TestBase
         Assert.That(again.City.OverviewPending, Is.Null);
     }
 
+    // ───────────── 前往（CITY-UI05/06/07、UI-X02） ─────────────
+
+    /// <summary>CITY-UI05/07：工坊点鉴定所“前往”只提交第一段 h03→h02（真实移动、按行动规则计时）；同一请求号双击只走一次；到达后再选下一段。</summary>
+    [Test]
+    public void CITY_UI07_FirstLegOnly_RequestOnce()
+    {
+        var s = Registered("h03_workshop");
+        var t0 = s.GameMinute;
+        var r = E.StartCityOverviewTravel(s, "h05_appraisal", "city-req-1");
+        Assert.That(r.Ok, Is.True, r.Reason);
+        Assert.That(s.Main!.Type, Is.EqualTo(ActionType.Travel));
+        Assert.That(s.Main.TargetId, Is.EqualTo("h02_square"), "只走第一条相邻边");
+        var id = s.Main.ActionId;
+        var again = E.StartCityOverviewTravel(s, "h05_appraisal", "city-req-1");
+        Assert.That(again.Duplicate, Is.True, "重复点击不重复走路");
+        Assert.That(s.Main.ActionId, Is.EqualTo(id));
+        Assert.That(E.StartCityOverviewTravel(s, "h05_appraisal", "city-req-2").Ok, Is.False, "主行动占用");
+        Run(s);
+        ReadDialogues(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo("h02_square"));
+        Assert.That(s.GameMinute - t0, Is.GreaterThanOrEqualTo(5), "第一段按真实移动扣时");
+        Assert.That(E.StartCityOverviewTravel(s, "h05_appraisal", "city-req-1").Duplicate, Is.True, "旧请求号到达后也不重发");
+        Assert.That(s.Main, Is.Null);
+        Ok(E.StartCityOverviewTravel(s, "h05_appraisal", "city-req-3"));
+        Run(s);
+        ReadDialogues(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo("h05_appraisal"));
+        Assert.That(s.GameMinute - t0, Is.GreaterThanOrEqualTo(10), "两段都真实扣时，不免费跨两边");
+        Assert.That(E.StartCityOverviewTravel(s, "h05_appraisal", "city-req-4").Reason, Is.EqualTo("已在此地"));
+    }
+
+    /// <summary>UI-X02/CITY-UI06：提交后未抵达前设施栏仍是出发地人物、目标人物不能交谈；中途退出留在出发地；读档后仍在途、不算已到达。</summary>
+    [Test]
+    public void UI_X02_NoServiceBeforeArrival()
+    {
+        var s = Registered("h03_workshop");
+        Ok(E.StartCityOverviewTravel(s, "h05_appraisal", "x02"));
+        Steps(s, 0);
+        Assert.That(E.NpcsHere(s).Select(n => n.NpcId), Does.Contain("npc_luo_zheng"));
+        Assert.That(E.NpcsHere(s).Select(n => n.NpcId), Does.Not.Contain("npc_tao_cen"));
+        Assert.That(E.TalkNpc(s, "npc_tao_cen").Ok, Is.False, "未抵达不服务");
+        var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Assert.That(m.CurrentLocation, Is.EqualTo("h03_workshop"));
+        Assert.That(m.Main!.TargetId, Is.EqualTo("h02_square"), "读档不把目标当已到达");
+        Ok(E.Cancel(s));
+        Assert.That(s.CurrentLocation, Is.EqualTo("h03_workshop"), "退出留在本段起点");
+        Assert.That(E.NpcsHere(s).Select(n => n.NpcId), Does.Contain("npc_luo_zheng"));
+    }
+
+    /// <summary>CITY-UI08：前往被锁的楼栋直接拒绝并给原因，不规划穿锁路线、不耗时。</summary>
+    [Test]
+    public void CITY_UI08_TravelToLockedRefused()
+    {
+        var s = At("h01_gate");
+        var t0 = s.GameMinute;
+        var r = E.StartCityOverviewTravel(s, "h02_square", "lock");
+        Assert.That(r.Ok, Is.False);
+        Assert.That(r.Reason, Does.StartWith("需要："));
+        Assert.That(s.Main, Is.Null);
+        Assert.That(s.GameMinute, Is.EqualTo(t0));
+        Assert.That(E.StartCityOverviewTravel(s, "c02_church", "far").Reason, Is.EqualTo("目标不在这座城内"));
+    }
+
+    private void Ok(ActionResult r) => Assert.That(r.Ok, Is.True, r.Reason);
+
     // ───────────── 任务标记（CITY-UI13） ─────────────
 
     /// <summary>CITY-UI13：任务标记绑真实状态——鉴定所 HU01 可接；完成后不再标；打开鸟瞰不接、不推进。</summary>

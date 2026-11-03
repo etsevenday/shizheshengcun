@@ -237,6 +237,28 @@ namespace Survival.Core.Engine
             return steps;
         }
 
+        // ───────────────────────── 前往（A10-CITY §5，开发假设 B24-4） ─────────────────────────
+
+        /// <summary>
+        /// 鸟瞰里点“前往”：重新核对真实位置、目标、城内路线与门槛，只提交第一条相邻边的普通移动（首期逐段：到达后再次选择下一段，
+        /// A10-CITY §5 末段允许）；同一请求号重复提交只生效一次（双击不重复走路）。目标不进存档。路过/到达按真实到达处理。
+        /// </summary>
+        public ActionResult StartCityOverviewTravel(GameState s, string targetId, string? requestId = null)
+        {
+            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
+            if (CityTravelBlocked(s) is string why) return ActionResult.Fail(why);
+            var here = s.CurrentLocation;
+            var city = CityOf(here)!;
+            if (CityOf(targetId) != city) return ActionResult.Fail("目标不在这座城内");
+            if (targetId == here) return ActionResult.Fail("已在此地");
+            if (!Known(s, targetId)) return ActionResult.Fail("尚未发现");
+            var path = CityPath(s, city, here, targetId);
+            if (path == null) return ActionResult.Fail(CityPathBlocked(s, city, here, targetId));
+            var r = ActionRequest.Travel(path[0].To);
+            r.RequestId = requestId;
+            return Start(s, r);
+        }
+
         // ───────────────────────── 首次到达自动打开（A10-CITY §3，开发假设 B24-1） ─────────────────────────
 
         /// <summary>实际到达成功后：首次到某城父节点且该城还没展示过鸟瞰，记“待自动打开”（真正打开在对白读完、安全空闲时）。不发任何东西。</summary>
