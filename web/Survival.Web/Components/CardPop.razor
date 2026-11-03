@@ -12,8 +12,16 @@
     var pot = PotOf();
     <AnchorPop AnchorId="card-sel" Title="" Place="below,above,right,left" Bound=".center" CssClass="@(pot != null ? "card-pop pot" : "card-pop")" OnClose="G.ClearSelection">
         @* 锅（或锅里的水/食材）：先放所选对象的操作（主按钮固定在浮窗上部可见，M78），再展开锅的完整内容（内容多时在自己的区内滚动；M77-B2） *@
-        <CardActions />
-        @if (pot != null) { <PotCard Pot="pot" Expanded="true" /> }
+        @if (G.CityBrowsing)
+        {
+            @* B24（A10-CITY §3、S07 中枢联动归档 1）：鸟瞰打开时第四行只看详情（右栏），会消费/转移/穿戴/融合/开始行动的入口不提交 *@
+            <div class="tbar city-readonly" role="note">@GameSession.CityReadOnlyText</div>
+        }
+        else
+        {
+            <CardActions />
+            @if (pot != null) { <PotCard Pot="pot" Expanded="true" /> }
+        }
     </AnchorPop>
 }
 

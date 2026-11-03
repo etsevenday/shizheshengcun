@@ -1,0 +1,212 @@
+@inherits GameComponent
+
+@* 三城主城鸟瞰（开发计划 v0.9 B24，R73；A10「A10-CITY」§2—§7、S14「中枢联动归档」、S07 中枢联动归档 1/2）：
+   覆盖①地图②设施③当前地面三行（tall-panel），④随身原位只读。示意图按地图数据画：每栋建筑一个 nodeId 热区（按钮，≥44px），
+   位置用 v3 网格坐标，道路只画已知城内真实边（已开通实线、已揭示未开通虚线），未发现楼栋只画轮廓。
+   悬停/聚焦显示短说明；点击固定说明与就近确认窗（不移动）；“前往”内核重验后只提交第一段真实移动，立即关闭鸟瞰。
+   Tab/方向键按建筑逻辑顺序移动，Enter 先选、再在确认按钮上提交；右键与 Esc 先取消未提交选择；正式美术后续替换（A10-CITY §8.4）。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var v = e.CityOverviewOf(s);
+}
+@if (v == null)
+{
+    <div class="sub-panel city-panel"><div class="sub-body">不在三城城内。</div></div>
+    return;
+}
+@{
+    var cols = v.MaxX - v.MinX + 1;
+    var rows = v.MaxY - v.MinY + 1;
+    double Cx(CityBuildingView b) => (b.GridX - v.MinX + 0.5) * 100.0 / cols;
+    double Cy(CityBuildingView b) => (b.GridY - v.MinY + 0.5) * 100.0 / rows;
+    var byId = v.Buildings.ToDictionary(b => b.NodeId);
+    var shown = G.CityPick ?? G.CityHover;
+    var focusB = shown != null && byId.TryGetValue(shown, out var fb) ? fb : null;
+    var pinned = G.CityPick != null && focusB != null && focusB.NodeId == G.CityPick;
+    var pathEdges = new HashSet<string>();
+    if (focusB?.Path != null) foreach (var st in focusB.Path) pathEdges.Add(Key(st.From, st.To));
+    var outside = OutsideNote(v.CityId);
+    var style = v.CityId switch { "c02_church" => "church", "r02_academy" => "academy", _ => "hub" };
+}
+
+<div class="sub-panel city-panel city-@style" role="dialog" aria-label="@($"{v.Title}主城鸟瞰")" @oncontextmenu="CancelPick" @oncontextmenu:preventDefault="true">
+    <div class="sub-head">
+        <div>
+            <h2>@v.Title · 主城鸟瞰</h2>
+            <span class="sub">只读浏览 · 上三行覆盖 · 不耗时@(outside != null ? $" · {outside}" : "")</span>
+        </div>
+        <button class="secondary" title="关闭鸟瞰，留在当前真实地点（不移动）" @onclick="Close">返回当前地点<kbd>Esc</kbd></button>
+    </div>
+    @if (G.CityLegacyNote)
+    {
+        <div class="city-legacy" role="note">旧存档首次显示：主城鸟瞰是新加入的浏览界面，只作说明，不补发任何奖励。</div>
+    }
+    <div class="city-body">
+        <div class="city-map" style="--cols:@cols;--rows:@rows">
+            <svg class="city-roads" viewBox="@($"0 0 {cols * 100} {rows * 100}")" preserveAspectRatio="none" aria-hidden="true">
+                @foreach (var r in v.Roads)
+                {
+                    var a = byId[r.A];
+                    var b = byId[r.B];
+                    var on = pathEdges.Contains(Key(r.A, r.B));
+                    <line x1="@F(Cx(a) * cols)" y1="@F(Cy(a) * rows)" x2="@F(Cx(b) * cols)" y2="@F(Cy(b) * rows)"
+                          class="@(on ? "road on" : r.Open ? "road" : "road locked")" vector-effect="non-scaling-stroke" />
+                }
+            </svg>
+            @foreach (var r in v.Roads)
+            {
+                var a = byId[r.A];
+                var b = byId[r.B];
+                <span class="road-tag @(r.Open ? "" : "locked")" style="left:@F((Cx(a) + Cx(b)) / 2)%;top:@F((Cy(a) + Cy(b)) / 2)%"
+                      title="@(r.Open ? $"{e.LocName(r.A)}—{e.LocName(r.B)}：基础{r.Minutes}分钟" : $"未开通：{r.Reason}")">@(r.Open ? $"{r.Minutes}分钟" : "未开通")</span>
+            }
+            @for (var i = 0; i < v.Buildings.Count; i++)
+            {
+                var b = v.Buildings[i];
+                var idx = i;
+                var id = b.NodeId;
+                var sel = G.CityPick == id;
+                var state = b.IsHere ? "here" : !b.Discovered ? "unknown" : b.Path == null ? "locked" : "open";
+                var label = b.Discovered ? b.Name : "尚未发现";
+                var aria = $"{label}：{(b.IsHere ? "当前位置" : b.Blocked ?? $"可前往，基础{b.PathMinutes}分钟")}{(b.QuestNote.Length > 0 ? "；" + b.QuestNote : "")}";
+                <button type="button" @key="id" @ref="_refs[idx]" class="city-bldg @state @(sel ? "picked" : "")" data-node="@id"
+                        style="left:@F(Cx(b))%;top:@F(Cy(b))%" aria-pressed="@sel" aria-label="@aria"
+                        @onclick="() => G.PickCity(id)" @onmouseenter="() => G.HoverCity(id)" @onmouseleave="() => G.HoverCity(null)"
+                        @onfocus="() => G.HoverCity(id)" @onkeydown="ev => Arrow(ev, idx)">
+                    <svg class="bldg-art" viewBox="0 0 120 80" aria-hidden="true">@((MarkupString)House(style, b))</svg>
+                    <span class="bldg-name">@label</span>
+                    @if (b.IsHere) { <span class="bldg-tag here-tag">◎ 当前</span> }
+                    else if (state == "locked") { <span class="bldg-tag lock-tag">锁 未开通</span> }
+                    @if (b.CanAccept > 0) { <span class="bldg-mark accept" title="有可接的委托或邀约">!</span> }
+                    @if (b.CanTurnIn > 0) { <span class="bldg-mark turnin" title="有可交的委托">✓</span> }
+                </button>
+            }
+            @if (focusB != null)
+            {
+                var x = Cx(focusB);
+                var y = Cy(focusB);
+                var right = x > 50;
+                var below = y < 50;
+                var cellW = 50.0 / cols;
+                var posStyle = (right ? $"right:{F(100 - x + cellW * 0.8)}%;" : $"left:{F(x + cellW * 0.8)}%;") + (below ? $"top:{F(Math.Max(2, y - 50.0 / rows))}%;" : $"bottom:{F(Math.Max(2, 100 - y - 50.0 / rows))}%;");
+                <div class="city-info @(pinned ? "pinned" : "")" style="@posStyle" role="@(pinned ? "dialog" : "tooltip")" aria-label="@(focusB.Discovered ? focusB.Name : "尚未发现")">
+                    <div class="ci-head">
+                        <b>@(focusB.Discovered ? focusB.Name : "尚未发现")</b>
+                        <span class="ci-state">@(focusB.IsHere ? "当前" : !focusB.Discovered ? "未公开" : focusB.Path == null ? "未开通" : "可前往")@(pinned ? " · 已选中" : "")</span>
+                        @if (pinned) { <button type="button" class="ci-x" aria-label="取消选择" title="取消选择（Esc/右键）" @onclick="() => G.PickCity(null)">×</button> }
+                    </div>
+                    @if (focusB.Discovered)
+                    {
+                        <div class="ci-line">人物：@(focusB.People.Count > 0 ? string.Join("；", focusB.People) : "没有岗位人物")</div>
+                        @if (focusB.Services.Count > 0) { <div class="ci-line">服务：@string.Join("、", focusB.Services)</div> }
+                        @if (focusB.QuestNote.Length > 0) { <div class="ci-line ci-quest">@focusB.QuestNote</div> }
+                    }
+                    @if (focusB.IsHere)
+                    {
+                        <div class="ci-line">你在这里。</div>
+                    }
+                    else if (focusB.Path != null)
+                    {
+                        var names = new[] { focusB.Path[0].From }.Concat(focusB.Path.Select(p => p.To)).Select(e.LocName);
+                        <div class="ci-line ci-route">路线：@string.Join(" → ", names) · 基础@(string.Join("+", focusB.Path.Select(p => p.Minutes)))@(focusB.Path.Count > 1 ? $"，共{focusB.PathMinutes}" : "")分钟</div>
+                    }
+                    else
+                    {
+                        <div class="ci-line warn">@focusB.Blocked</div>
+                    }
+                    @if (pinned)
+                    {
+                        <div class="ci-actions">
+                            @if (focusB.IsHere)
+                            {
+                                <button type="button" class="primary" @onclick="G.EnterCurrentFromCity">进入当前地点 · 不耗时</button>
+                            }
+                            else if (focusB.Path != null)
+                            {
+                                var first = focusB.Path[0];
+                                var why = v.TravelBlocked;
+                                var est = why == null ? G.Preview(ActionRequest.Travel(first.To)) : null;
+                                if (focusB.Path.Count > 1)
+                                {
+                                    <div class="ci-line ci-leg">共@(focusB.Path.Count)段，本次先走@(e.LocName(first.From))→@(e.LocName(first.To))，到达后再次选择下一段。</div>
+                                }
+                                <button type="button" class="primary" disabled="@(why != null || est?.Ok == false)" title="@(why ?? (est?.Ok == false ? est.Reason : "按真实路线移动，中途可退出"))"
+                                        @onclick="() => Go(focusB.NodeId)">前往@(est?.Ok == true ? $" · 预计{est.EstimatedMinutes}分钟" : "")</button>
+                                if (why != null) { <div class="ci-line warn">@why</div> }
+                                else if (est?.Ok == false) { <div class="ci-line warn">@est.Reason</div> }
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        <div class="city-legend" aria-label="图例">
+            <span><i class="lg here"></i>◎ 当前</span>
+            <span><i class="lg picked"></i>双线框 已选中</span>
+            <span><i class="lg mark">!</i>可接</span>
+            <span><i class="lg mark t">✓</i>可交</span>
+            <span><i class="lg lock"></i>锁 未开通</span>
+            <span><i class="lg unknown"></i>虚线 尚未发现</span>
+            <span class="muted">道路只连已发现的城内真实路线；点建筑只选中，“前往”按真实路线逐段移动。</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly ElementReference[] _refs = new ElementReference[16];
+
+    private static string F(double d) => d.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+    private static string Key(string a, string b) => string.CompareOrdinal(a, b) < 0 ? a + "|" + b : b + "|" + a;
+
+    private void Close() => G.OpenPanel(null);
+
+    private void CancelPick()
+    {
+        if (G.CityPick != null) G.PickCity(null);
+    }
+
+    private async Task Go(string id) => await G.CityGo(id);
+
+    /// <summary>方向键按建筑逻辑顺序（父城在前、再按地图配置顺序）移动焦点；不提交任何东西。</summary>
+    private async Task Arrow(KeyboardEventArgs ev, int idx)
+    {
+        var v = G.E.CityOverviewOf(G.S);
+        if (v == null) return;
+        var n = v.Buildings.Count;
+        var to = ev.Key switch { "ArrowRight" or "ArrowDown" => (idx + 1) % n, "ArrowLeft" or "ArrowUp" => (idx + n - 1) % n, _ => -1 };
+        if (to < 0) return;
+        try { await _refs[to].FocusAsync(); } catch (InvalidOperationException) { } catch (JSException) { }
+    }
+
+    /// <summary>城外独立地点的提示（A10-CITY §2 特别边界）：只在玩家已发现该地点时写。</summary>
+    private string? OutsideNote(string city)
+    {
+        var id = city switch { "h02_square" => "h05_homestead", "c02_church" => "c03_crypt", "r02_academy" => "r03_lab", _ => null };
+        if (id == null || !G.S.Locations.TryGetValue(id, out var l) || !l.Discovered) return null;
+        return $"{G.E.LocName(id)}是城外独立地点，不在鸟瞰内，经区域地图前往";
+    }
+
+    /// <summary>示意建筑（程序绘制的屋顶/楼体，不是成品美术）：营区棚屋、教会尖顶、科学院平顶楼；未发现只画虚线轮廓。</summary>
+    private static string House(string style, CityBuildingView b)
+    {
+        if (!b.Discovered)
+            return "<path d='M14 70 V34 L60 12 L106 34 V70 Z' fill='none' stroke='currentColor' stroke-dasharray='6 5' stroke-width='3' opacity='.7'/>";
+        var body = b.IsParent
+            ? "<rect x='10' y='40' width='100' height='32' rx='3' class='hb'/><rect x='28' y='50' width='14' height='22' class='hd'/><rect x='78' y='50' width='14' height='22' class='hd'/>"
+            : "<rect x='20' y='38' width='80' height='34' rx='2' class='hb'/><rect x='52' y='50' width='16' height='22' class='hd'/><rect x='28' y='46' width='12' height='10' class='hw'/><rect x='80' y='46' width='12' height='10' class='hw'/>";
+        var roof = style switch
+        {
+            "church" => b.IsParent
+                ? "<path d='M6 42 L60 16 L114 42 Z' class='hr'/><path d='M52 18 L60 2 L68 18 Z' class='hr2'/>"
+                : "<path d='M14 40 L60 10 L106 40 Z' class='hr'/><rect x='56' y='4' width='8' height='12' class='hr2'/>",
+            "academy" => b.IsParent
+                ? "<rect x='6' y='28' width='108' height='14' class='hr'/><rect x='48' y='8' width='24' height='22' class='hr2'/>"
+                : "<rect x='16' y='26' width='88' height='14' class='hr'/><rect x='70' y='10' width='16' height='18' class='hr2'/>",
+            _ => b.IsParent
+                ? "<path d='M4 42 L24 24 H96 L116 42 Z' class='hr'/><rect x='54' y='8' width='4' height='18' class='hr2'/><path d='M58 8 L74 12 L58 16 Z' class='hr2'/>"
+                : "<path d='M12 40 L30 20 H104 L108 40 Z' class='hr'/><path d='M12 40 L30 20 L30 40 Z' class='hr2'/>",
+        };
+        return roof + body;
+    }
+}

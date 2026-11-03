@@ -381,6 +381,9 @@ public sealed class GameSession
         // B23：查来源时关掉地图（关闭按钮、Esc）回制作面板并恢复原选择；切到别的面板就结束这次查询
         if (SourceItem != null && Panel == "map" && panel == null) { ReturnFromSources(); return; }
         if (panel != "map") { SourceItem = null; _craftReturn = null; }
+        // B24（A10-CITY §3/§7）：主城鸟瞰打开时记住右栏页签，关闭后原样恢复（不自动展开人物板块、不改折叠偏好）
+        var leavingCity = Panel == "citymap" && panel != "citymap";
+        if (panel == "citymap" && Panel != "citymap") { _cityTabBefore = DetailTab; CityPick = State != null && CityTarget != null && E.CityOf(S.CurrentLocation) == E.CityOf(CityTarget) && CityTarget != S.CurrentLocation ? CityTarget : null; CityHover = null; NewCityRequest(); }
         HoverPreview = null;
         Pop = null;
         // 离开编队面板（切到别的面板或关闭）就丢弃草稿：关闭不自动保存（Q86）
@@ -393,6 +396,7 @@ public sealed class GameSession
         // 关闭面板时没有选中对象就回人物页（v0.7 6.1：无选中默认展示人物信息；复验新发现 2）。
         // 试玩修复 M77-B8：原来这句 else 挂在 dialogs 判断上，打开休息/制作/地图也会被切回人物页，右栏看不到“详细预估”
         if (panel == null && Selected.Kind == SelectionKind.None) DetailTab = DetailTab.Character;
+        if (leavingCity) { if (Selected.Kind == SelectionKind.None) DetailTab = _cityTabBefore; CityPick = null; CityHover = null; CityLegacyNote = false; }
         // 每次打开或关闭面板都清掉上一次拖拽留下的候选与指定批次；拖拽入口在打开后再写入
         CraftCandidates = null;
         CraftPreferred.Clear();
@@ -445,8 +449,121 @@ public sealed class GameSession
     }
 
     /// <summary>替换中部上方的顶栏面板：地图、制作、休息、日志，以及生存目标、生存提示、对话记录、系统说明。</summary>
+    // ───────────── 三城主城鸟瞰（B24，A10-CITY §3—§7、S07 中枢联动归档 1/2） ─────────────
+
+    /// <summary>主城鸟瞰正在打开：上三行被覆盖，第四行随身只看不提交。</summary>
+    public bool CityBrowsing => State != null && Panel == "citymap";
+    public const string CityReadOnlyText = "主城鸟瞰浏览中只能查看；使用、转移、穿戴、融合和开始行动请先点“返回当前地点”再操作";
+    /// <summary>鸟瞰里固定（点选）的建筑；悬停/聚焦的建筑。只存会话。</summary>
+    public string? CityPick { get; private set; }
+    public string? CityHover { get; private set; }
+    /// <summary>多段路线的最终目标（首期逐段走：到达中途节点后再打开鸟瞰时默认选中它；只存会话，不进存档）。</summary>
+    public string? CityTarget { get; private set; }
+    /// <summary>本次是旧档补显（顶部写一句说明，不补奖励）。</summary>
+    public bool CityLegacyNote { get; private set; }
+    /// <summary>当前确认窗的路线请求号：同一确认只发一个，双击/重复回调不重复走路（A10-CITY §5）。</summary>
+    public string CityRequest { get; private set; } = "";
+    private DetailTab _cityTabBefore = DetailTab.Character;
+
+    private void NewCityRequest() => CityRequest = "city:" + Guid.NewGuid().ToString("N");
+
+    private ActionResult CityReadOnlyFail()
+    {
+        Notice = CityReadOnlyText;
+        Notify();
+        return ActionResult.Fail(CityReadOnlyText);
+    }
+
+    /// <summary>当前地点卡旁“主城鸟瞰”：开着再按只退浏览层；不能开时提示原因。</summary>
+    public void ToggleCityOverview()
+    {
+        if (State == null) return;
+        if (Panel == "citymap") { OpenPanel(null); return; }
+        if (E.CityOverviewBlocked(S) is string why) { Notice = why; Notify(); return; }
+        OpenPanel("citymap");
+    }
+
+    public void HoverCity(string? nodeId)
+    {
+        if (CityHover == nodeId) return;
+        CityHover = nodeId;
+        Notify();
+    }
+
+    /// <summary>点建筑：只固定说明与确认窗（不移动）；再点同一栋或右键取消未提交选择。</summary>
+    public void PickCity(string? nodeId)
+    {
+        CityPick = nodeId == CityPick ? null : nodeId;
+        NewCityRequest();
+        Notify();
+    }
+
+    /// <summary>“进入当前地点 · 不耗时”：关闭鸟瞰回当前地点（不移动、不触发服务）。</summary>
+    public void EnterCurrentFromCity()
+    {
+        CityTarget = null;
+        OpenPanel(null);
+    }
+
+    /// <summary>“前往”：内核重验后只提交第一段真实移动，立即关闭鸟瞰回常态主界面，用中央推进条与退出按钮。</summary>
+    public async Task CityGo(string targetId)
+    {
+        if (State == null) return;
+        var path = E.CityOverviewOf(S)?.Buildings.FirstOrDefault(b => b.NodeId == targetId)?.Path;
+        var res = E.StartCityOverviewTravel(S, targetId, CityRequest);
+        if (res.Duplicate) return;
+        if (!res.Ok) { Notice = res.Reason; Notify(); return; }
+        CityTarget = path != null && path.Count > 1 ? targetId : null;
+        var firstTo = path != null && path.Count > 0 ? path[0].To : null;
+        Notice = null;
+        Toast = null;
+        Pop = null;
+        ClearHoverNow();
+        OpenPanel(null);
+        Drain();
+        Save();
+        Notify();
+        await RunLoop();
+        if (State == null || CityTarget == null) return;
+        if (S.CurrentLocation == CityTarget || E.CityOf(S.CurrentLocation) != E.CityOf(CityTarget)) { CityTarget = null; return; }
+        if (S.CurrentLocation == firstTo && S.Main == null)
+        {
+            var left = E.CityOverviewOf(S)?.Buildings.FirstOrDefault(b => b.NodeId == CityTarget)?.Path?.Count ?? 0;
+            Notice = $"已到达{E.LocName(firstTo)}。继续前往{E.LocName(CityTarget)}：再打开“主城鸟瞰”选择下一段" + (left > 0 ? $"（还有{left}段）" : "") + "。";
+            Notify();
+        }
+    }
+
+    /// <summary>
+    /// 每次刷新时：鸟瞰开着但出现敌踪/战斗/死亡就自动关闭（对白期间只收起未提交的确认，读完恢复可读图）；
+    /// 首次到达父节点、对白读完且安全空闲时自动打开一次（A10-CITY §3，开发假设 B24-1）。
+    /// </summary>
+    private void CityOverviewTick()
+    {
+        if (State == null) return;
+        if (Panel == "citymap")
+        {
+            if (DialogueLocked) { CityPick = null; return; }
+            if (E.CityOverviewBlocked(S) != null)
+            {
+                Panel = null;
+                if (Selected.Kind == SelectionKind.None) DetailTab = _cityTabBefore;
+                CityPick = null; CityHover = null; CityLegacyNote = false;
+            }
+            return;
+        }
+        if (Panel != null || Running || !E.CityOverviewAutoOpenDue(S) || OverflowPending || DuplicateWeaponsPending) return;
+        CityLegacyNote = E.MarkCityOverviewShown(S);
+        _cityTabBefore = DetailTab;
+        CityPick = null;
+        CityHover = null;
+        NewCityRequest();
+        Panel = "citymap";
+        Save();
+    }
+
     public static bool IsTopPanel(string? panel) =>
-        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth" or "journey" or "city" or "safehouse" or "drying";
+        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth" or "journey" or "city" or "safehouse" or "drying" or "citymap";
 
     // ───────────── 新手序章（B13，S15 §3—§8、A10-TUTOR） ─────────────
 
@@ -767,6 +884,7 @@ public sealed class GameSession
     public void Notify()
     {
         OnDialogueOnset();
+        CityOverviewTick();
         CloseStaleFormation();
         ClearStaleFormationNotice();
         Version++;
@@ -1135,6 +1253,7 @@ public sealed class GameSession
     private ActionResult BeginAction(ActionRequest r, string? requestId)
     {
         if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        if (CityBrowsing) return CityReadOnlyFail();
         if (FormationOpen) { Notice = FormationOpenText; Notify(); return ActionResult.Fail(FormationOpenText); }
         var res = E.Start(S, r.WithRequestId(string.IsNullOrEmpty(requestId) ? Guid.NewGuid().ToString("N") : requestId));
         if (res.Duplicate) return res;
@@ -1188,6 +1307,7 @@ public sealed class GameSession
     {
         // 每次界面操作带一个请求号：重复提交（连点、重发）只生效一次
         if (string.IsNullOrEmpty(r.RequestId)) r.RequestId = Guid.NewGuid().ToString("N");
+        if (CityBrowsing) return CityReadOnlyFail();
         if (FormationOpen) return Commit(ActionResult.Fail(FormationOpenText));
         var res = E.DoInstant(S, r);
         Notice = res.Ok ? null : res.Reason;
@@ -1208,6 +1328,7 @@ public sealed class GameSession
     public ActionResult TransferBatch(string owner, string itemId, int? expiresAt, int count, bool toCarried, string? requestId = null, string? batchKey = null)
     {
         if (GameEngine.SeenRequest(S, requestId)) return ActionResult.Success();
+        if (CityBrowsing) return CityReadOnlyFail();
         var left = count;
         ActionResult last = ActionResult.Success();
         var stacks = S.Items.Where(i => i.Owner == owner && i.ItemId == itemId && i.ExpiresAt == expiresAt && i.ReservedBy == null
@@ -1354,6 +1475,7 @@ public sealed class GameSession
     public ActionResult ExecuteDrop(DropIntent intent, int count, string requestId)
     {
         if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        if (CityBrowsing) return CityReadOnlyFail();
         if (intent.StartsAction && intent.Action != null)
         {
             // 打火器拖到火堆：松手即开始点火（v0.7 第 4.1 节），请求号沿用起拖时那一个，重复松手不重复点火
@@ -1661,6 +1783,7 @@ public sealed class GameSession
     public ActionResult TransferOne(string owner, string itemId, int? instanceId, string? toZone = null)
     {
         if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        if (CityBrowsing) return CityReadOnlyFail();
         var inst = instanceId.HasValue
             ? S.Items.FirstOrDefault(i => i.InstanceId == instanceId.Value && i.Owner == owner)
             : S.Items.Where(i => i.Owner == owner && i.ItemId == itemId && i.ReservedBy == null)

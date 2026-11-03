@@ -63,7 +63,7 @@
         @* 固定四行（S14 §18.1）：中部净高均分四份——①地图/场景 ②设施/资源 ③当前地面 ④随身；选卡、展开锅、悬停、开面板、对白、
            战斗都不改行高，行内放不下的在行内滚动（随身五张卡不滚动）。对白/战斗/面板只占①②合并区域。 *@
         <section class="center" aria-label="当前地点">
-            <div class="center-scroll four @(centerPanel ? "locked" : "") @(G.Panel == "craft" ? "craft-panel" : "") @(G.Panel is "gear" or "growth" ? "full-panel" : G.Panel is "craft" or "safehouse" or "drying" || (G.Panel == "city" && G.CityPanelTall) ? "tall-panel" : "") @(battleUi ? "battle" : "")">
+            <div class="center-scroll four @(centerPanel ? "locked" : "") @(G.Panel == "craft" ? "craft-panel" : "") @(G.Panel is "gear" or "growth" ? "full-panel" : G.Panel is "craft" or "safehouse" or "drying" or "citymap" || (G.Panel == "city" && G.CityPanelTall) ? "tall-panel" : "") @(battleUi ? "battle" : "")">
                 <div class="rows2" data-row="1-2">
                     <div class="rows2-inner" inert="@dlgLock">
                         @* 战斗/敌踪覆盖层替换地块栏两行（组件替换而非叠加，拖拽不会收集到隐藏的落点） *@
@@ -92,6 +92,7 @@
                                 case "growth": <GrowthOverlay /> break;
                                 case "safehouse": <SafehouseOverlay /> break;
                                 case "drying": <DryingOverlay /> break;
+                                case "citymap": <CityOverview /> break;
                             }
                         </div>
                     }
@@ -302,6 +303,9 @@
                 if (G.PendingDrop != null) G.CancelDropQuantity();
                 else if (G.StatusPinned != null) G.PinStatus(null);
                 else if (G.Pop != null) G.ClosePop();
+                // B24（A10-CITY §7）：鸟瞰里 Esc 先收固定说明/确认窗，再关鸟瞰，最后才是菜单；不撤销已发生的移动
+                else if (G.Panel == "citymap" && G.CityPick != null) G.PickCity(null);
+                else if (G.Panel == "citymap") G.OpenPanel(null);
                 else if (G.IgniteMenuOpen) { G.Hover(null); G.CloseIgniteMenu(); }
                 // B10 试玩修复 2/6：最上层先退——交接确认浮窗、面板开着时选中卡的操作浮窗，再到面板本身
                 else if (G.GivePending != null) G.CancelGive();

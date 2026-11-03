@@ -22,6 +22,12 @@ public sealed class DragController
         var map = new Dictionary<string, object>();
         var src = DropSource.Parse(sourceKey);
         if (G.State == null || src == null) return "{}";
+        // B24（S07 中枢联动归档 1）：主城鸟瞰浏览中第四行只看，不起拖、不成为建筑/NPC 投料热区
+        if (G.CityBrowsing)
+        {
+            foreach (var key in targetKeys) map[key] = new { ok = false, kind = "no", label = "", reason = GameSession.CityReadOnlyText, fall = false, qty = false };
+            return JsonConvert.SerializeObject(map);
+        }
         foreach (var key in targetKeys)
         {
             var dst = DropTarget.Parse(key);
@@ -44,6 +50,7 @@ public sealed class DragController
     public string DragDrop(string sourceKey, string targetKey, int index, bool shift)
     {
         if (G.State == null) return Result(false, "没有进行中的游戏");
+        if (G.CityBrowsing) return Result(false, GameSession.CityReadOnlyText);
         var src = DropSource.Parse(sourceKey);
         var dst = DropTarget.Parse(targetKey, index);
         if (src == null || dst == null) return Result(false, GameEngine.Unsupported);
