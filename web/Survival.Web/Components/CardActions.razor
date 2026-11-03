@@ -30,7 +30,7 @@
                     var bk = b.Key;
                     <button type="button" role="radio" aria-checked="@(bk == m.BatchKey)" class="ca-batch @(bk == m.BatchKey ? "on" : "") @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")"
                             title="@BatchTitle(b)" @onclick="() => G.PickBatch(m.Owner, m.ItemId, bk)">
-                        <b>×@b.Count</b><small>@BatchFresh(b)@(b.Reserved ? " · 预留" : "")@(G.E.IsIdentifiedWhite(b.Stacks[0]) ? " · 已鉴定" : "")@(G.E.IsTutorialCardSample(b.Stacks[0]) ? " · 首战教学" : "")</small>
+                        <b>×@b.Count</b><small>@BatchFresh(b)@(b.Reserved ? " · 预留" : "")@(G.E.IsIdentifiedWhite(b.Stacks[0]) || G.E.IsIdentifiedTutorial(b.Stacks[0]) ? " · 已鉴定" : "")@(G.E.IsTutorialCardSample(b.Stacks[0]) ? " · 首战教学" : "")</small>
                     </button>
                 }
             </div>

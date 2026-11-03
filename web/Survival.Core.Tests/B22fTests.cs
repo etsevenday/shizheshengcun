@@ -123,7 +123,7 @@ public class B22fTests : BattleTestBase
     }
 
     /// <summary>
-    /// 开发假设 B22f-2（待确认 Q208）：序章 route_onward 到检查哨、下一段未知且拦路战未胜时，下一步写“先战胜检查哨拦路敌人。”，不点亮探索入口；
+    /// 开发假设 B22f-2（Q208 已选 A 确认，完整验收见 B22f2Tests TUT-Q208-01/02）：序章 route_onward 到检查哨、下一段未知且拦路战未胜时，下一步写“先战胜检查哨拦路敌人。”，不点亮探索入口；
     /// 胜利后回到 Q139 原句（探索句）。
     /// </summary>
     [Test]
@@ -195,20 +195,19 @@ public class B22fTests : BattleTestBase
     }
 
     /// <summary>
-    /// PLAN-Q179-01 / 开发假设 B22f-5（待确认 Q209）：看免费说明（fixed_tutorial_attack 记录）不算鉴定，仍是未鉴定教学名；教学样本带其他鉴定记录时
-    /// 才用“活性物质（白色·已鉴定·首战教学）”并另成 tutapr 卡。
+    /// PLAN-Q179-01（B22f2 起按 Q209 选 B）：教学样本带本实例鉴定记录（含看免费说明写的 fixed_tutorial_attack）用“活性物质（白色·已鉴定·首战教学）”并另成 tutapr 卡；
+    /// 没有记录仍是未鉴定教学名。已鉴定教学不算普通已鉴定白色。详细验收见 B22f2Tests APP-Q209-01/02。
     /// </summary>
     [Test]
-    public void PLAN_Q179_01_TutorialFreeNote_NotIdentified_IdentifiedNameOnlyWithRecord()
+    public void PLAN_Q179_01_TutorialIdentifiedName_WithInstanceRecord()
     {
         var s = New();
         s.Items.RemoveAll(i => i.ItemId == Sub);
         var t = Sample(s, ItemInstance.Carried, "tutorial-reward-b1", true);
+        Assert.That((E.InstanceName(t), E.CardSideOf(t)), Is.EqualTo(("未鉴定的活性物质（首战教学）", GameEngine.TutorialCardSuffix)));
         Ok(E.AppraisalTutorialNote(s, t.InstanceId));
         var ti = E.FindItem(s, t.InstanceId)!;
         Assert.That(ti.Appraisal!.Result, Is.EqualTo(AppraisalRecord.FixedTutorialAttack));
-        Assert.That((E.InstanceName(ti), E.CardSideOf(ti)), Is.EqualTo(("未鉴定的活性物质（首战教学）", GameEngine.TutorialCardSuffix)));
-        ti.Appraisal = new AppraisalRecord { Result = AppraisalRecord.OrdinaryNoEffect, Minute = s.GameMinute };
         Assert.That((E.InstanceName(ti), E.CardSideOf(ti)), Is.EqualTo(("活性物质（白色·已鉴定·首战教学）", GameEngine.TutorialIdentifiedCardSuffix)));
         Assert.That(E.IsIdentifiedWhite(ti), Is.False, "教学样本不算普通已鉴定白色");
     }

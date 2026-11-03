@@ -177,7 +177,7 @@ else
                 {
                     var key = b.Key;
                     <button class="batch @(b == chosen ? "on" : "")" @onclick="() => PickBatch(key, group)">
-                        <span>×@b.Count@(b.Reserved ? " · 预留" : "")@(b.Stacks[0].RewardOrigin != null ? " · 本实例战利品（可封存）" : "")@(e.IsIdentifiedWhite(b.Stacks[0]) ? " · 已鉴定" : "")@(e.IsTutorialCardSample(b.Stacks[0]) ? " · 首战教学" : "")</span>
+                        <span>×@b.Count@(b.Reserved ? " · 预留" : "")@(b.Stacks[0].RewardOrigin != null ? " · 本实例战利品（可封存）" : "")@(e.IsIdentifiedWhite(b.Stacks[0]) || e.IsIdentifiedTutorial(b.Stacks[0]) ? " · 已鉴定" : "")@(e.IsTutorialCardSample(b.Stacks[0]) ? " · 首战教学" : "")</span>
                         @* 试玩修复 M77-B9：受本次烹饪保护的食材不显示普通倒计时，写“受热保护中（原期限N小时）” *@
                         <span class="@(Spoiled(b) ? "danger-text" : "muted")">@(!b.ExpiresAt.HasValue ? "不会腐败" : b.Stacks.Count == 1 && e.IsHeatProtected(s, b.Stacks[0]) ? Ui.FreshOf(e, s, b.Stacks[0]) : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute))</span>
                     </button>

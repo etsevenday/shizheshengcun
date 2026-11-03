@@ -29,7 +29,7 @@ namespace Survival.Core.Engine
         UnknownExplore,
         /// <summary>下一段未知，当前地点已满 100% 或不能探索。</summary>
         UnknownNoExplore,
-        /// <summary>B22f（Q193）：下一段未知、当前地点本可探索，但 m02 检查哨拦路战未胜，探索被禁（开发假设 B22f-2，待确认 Q208）。</summary>
+        /// <summary>B22f（Q193）/ B22f2（Q208 选 A）：route_onward 在 m02、下一段营门未知、拦路战未胜（探索被禁）；下一步“先战胜检查哨拦路敌人。”，不点亮。</summary>
         UnknownFixedBlocked,
     }
 
@@ -1072,8 +1072,12 @@ namespace Survival.Core.Engine
                     : new TravelSegmentView { Kind = TravelSegmentKind.KnownBlocked, NodeId = node, Target = target, Reason = GateBlockedReason(s, edge) };
             }
             var explorable = _locs.TryGetValue(here, out var lc) && lc.ExploreEnabled && s.Locations.TryGetValue(here, out var ls) && ls.Progress < 100;
-            // B22f（Q193）：m02 拦路战未胜时探索被禁，下一步不再叫玩家“先探索当前地点”、也不点亮探索入口（开发假设 B22f-2）
-            if (explorable && FixedBattleAt(here) is { IsCampaign: true } && FixedBlockHere(s) != null)
+            // B22f（Q193）/ B22f2（Q208 选 A，取代开发假设 B22f-2 的范围）：只在主目标 route_onward、人在 m02（序章固定战地点）、
+            // 真实下一段是序章路线的下一段（营门）且未知、本局拦路战未胜时，下一步写“先战胜检查哨拦路敌人。”、不点亮任何卡；
+            // 覆盖 Q139 未知下一段的探索句与查询句（探索度满 100 也一样）。其他目标/地点/已知/已胜走原分支。只读。
+            if (s.Prologue.ObjectiveId == "route_onward" && FixedBattleAt(here) is { IsCampaign: true }
+                && Config.Prologue.Journey.Legs.Any(l => l.From == here && l.To == node)
+                && FixedStateAt(s, here) is { Won: false } fst && fst.WorldIds.Count > 0)   // 已揭示、本局未胜（交战中也算未胜）
                 return new TravelSegmentView { Kind = TravelSegmentKind.UnknownFixedBlocked, Target = target };
             return new TravelSegmentView { Kind = explorable ? TravelSegmentKind.UnknownExplore : TravelSegmentKind.UnknownNoExplore, Target = target };
         }

@@ -117,7 +117,7 @@ namespace Survival.Core.Engine
         public static bool IsTutorialSample(ItemInstance i) => i.Source?.TutorialReward == true;
 
         /// <summary>
-        /// 已鉴定的普通白色实例（B22d，Q178 选 A）：普通来源、带 ordinary_no_effect 鉴定记录。教学样本（看过免费说明）不算，沿原名（Q179 待定）。
+        /// 已鉴定的普通白色实例（B22d，Q178 选 A）：普通来源、带 ordinary_no_effect 鉴定记录。教学样本不算（已鉴定教学样本另归教学组，Q179/Q209）。
         /// </summary>
         public bool IsIdentifiedWhite(ItemInstance i) =>
             !string.IsNullOrEmpty(Ap.SampleItemId) && i.ItemId == Ap.SampleItemId && IsOrdinarySample(i) && i.Appraisal?.Result == AppraisalRecord.OrdinaryNoEffect;
@@ -141,11 +141,12 @@ namespace Survival.Core.Engine
             !string.IsNullOrEmpty(Ap.SampleItemId) && i.ItemId == Ap.SampleItemId && IsTutorialSample(i);
 
         /// <summary>
-        /// 已鉴定的首战教学样本（Q179“已鉴定教学名”）：教学样本带鉴定记录，且不是看免费说明写的 fixed_tutorial_attack 记录。
-        /// 开发假设 B22f-5（待确认 Q209）：看免费说明不算鉴定，名称仍是“未鉴定的活性物质（首战教学）”；教学样本不能付费详细鉴定，所以正常流程里不会出现已鉴定教学名。
+        /// 已鉴定的首战教学样本（Q179“已鉴定教学名”）：教学样本带本实例鉴定记录。B22f2（Q209 选 B，取代开发假设 B22f-5）：成功看完免费固定说明写的
+        /// fixed_tutorial_attack 记录也算已鉴定，名“活性物质（白色·已鉴定·首战教学）”、卡片侧 tutapr；旧档同记录读档即无声识别。没有本实例记录不推定。
+        /// 已鉴定教学样本仍是教学来源：禁交易、不接受付费详细鉴定、融合效果不变、不与普通样本混组。
         /// </summary>
         public bool IsIdentifiedTutorial(ItemInstance i) =>
-            IsTutorialCardSample(i) && i.Appraisal != null && i.Appraisal.Result != AppraisalRecord.FixedTutorialAttack;
+            IsTutorialCardSample(i) && i.Appraisal != null;
 
         /// <summary>鉴定状态说明（物品卡与面板共用）。</summary>
         public string AppraisalStateText(ItemInstance i)
@@ -154,7 +155,7 @@ namespace Survival.Core.Engine
             if (r == null) return "未鉴定";
             var when = Clock.DayTime(r.Minute);
             return r.Result == AppraisalRecord.FixedTutorialAttack
-                ? $"已看教学说明：融合固定得绿色词条“{Config.ActiveSubstance.TutorialEffect.Label}”（{when}记录）"
+                ? $"已鉴定（免费教学说明）：融合固定得绿色词条“{Config.ActiveSubstance.TutorialEffect.Label}”（{when}记录）"
                 : $"已鉴定：普通白色，融合无属性（{when}记录）";
         }
 
@@ -180,7 +181,9 @@ namespace Survival.Core.Engine
         {
             if (i.ReservedBy != null || IsLocked(s, i)) return "这份样本已被预留";
             if (i.Source == null) return "来源不明的样本：鉴定所不受理（保留不交易）";
-            if (IsTutorialSample(i)) return "教学样本不用付费鉴定：直接看免费说明（0分钟，不扣纤维）";
+            if (IsTutorialSample(i)) return i.Appraisal != null
+                ? "教学样本已鉴定（免费说明）：不接受付费详细鉴定"
+                : "教学样本不用付费鉴定：直接看免费说明（0分钟，不扣纤维）";
             if (i.Appraisal != null) return "已记录：普通白色、融合无属性（再看免费，不重复收费）";
             return null;
         }
@@ -252,6 +255,8 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 教学样本免费说明（R07 X3.2：不要求先到鉴定所，0 分钟、不扣纤维、不推进时间）：首次查看在该实例写 fixed_tutorial_attack 记录（开发假设 B18-5），
         /// 之后只回看。只对主角随身或当前地面的教学样本。
+        /// B22f2（Q209 选 B）：写记录即算已鉴定（改名、移入已鉴定教学组）；只标所选的这 1 份——同堆有多份时拆出 1 份新实例写记录，其余仍未鉴定
+        /// （记录粒度是实例，与付费鉴定的“所选数量 1”同法）；样本不消耗、来源/itemId 不变、不发奖励；已读的份再看只回看，不复制样本或记录。
         /// </summary>
         public ActionResult AppraisalTutorialNote(GameState s, int instanceId, string? requestId = null)
         {
@@ -265,12 +270,23 @@ namespace Survival.Core.Engine
             var first = i.Appraisal == null;
             if (first)
             {
+                var owner = i.Owner;
+                if (i.Count > 1)   // B22f2（Q209）：同堆只标被选的 1 份
+                {
+                    i.Count -= 1;
+                    var n = i.Clone();
+                    n.InstanceId = s.NextInstanceId++;
+                    n.Count = 1;
+                    s.Items.Add(n);
+                    i = n;
+                }
                 i.Appraisal = new AppraisalRecord { InstanceId = i.InstanceId, ScopeVersion = Ap.ScopeVersion, Result = AppraisalRecord.FixedTutorialAttack, Minute = s.GameMinute };
-                Normalize(s, i.Owner);
+                Normalize(s, owner);
             }
             var te = Config.ActiveSubstance.TutorialEffect;
             Emit(s, GameEventKind.Info, $"教学样本说明（免费，0分钟）：首战教学的活性物质，物质品质白色；{(s.Story.TutorialFusionDone ? "教学融合已完成，再融合按普通处理" : $"融合固定得绿色词条“{te.Label}”，只取得一次")}。"
-                + "教学样本不可交易；直接融合的原入口照常可用。" + (first ? "" : "（已记录过，回看不扣任何东西）"));
+                + "教学样本不可交易；直接融合的原入口照常可用。"
+                + (first ? $"这份样本已记为“{InstanceName(i)}”。" : "（已记录过，回看不扣任何东西）"));
             return ActionResult.Success();
         }
 

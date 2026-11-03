@@ -368,11 +368,12 @@ public class B22dTests : TestBase
         Ok(E.StartAppraisalTrade(s, a.InstanceId, "white_for_cloth"));
         Run(s);
         Assert.That(s.Log.Last(l => l.Text.StartsWith("换物完成")).Text, Does.Contain("交出活性物质（白色·已鉴定）1份"));
-        // 教学样本看过免费说明不算已鉴定（B22f Q179 起单独成卡、名“未鉴定的活性物质（首战教学）”，见 B22fTests；开发假设 B22f-5）
+        // 教学样本看过免费说明：B22f2（Q209 选 B）起算已鉴定，但归已鉴定教学组（tutapr），不混入普通已鉴定白色（见 B22fTests APP-Q209）
         var t = E.CreateItems(s, Sub, 1, ItemInstance.Carried, false, new ItemSource { GrantEventId = "tutorial-reward-b1", TutorialReward = true }).Single();
         Ok(E.AppraisalTutorialNote(s, t.InstanceId));
-        Assert.That(E.InstanceName(E.FindItem(s, t.InstanceId)!), Is.EqualTo("未鉴定的活性物质（首战教学）"));
-        Assert.That(E.CardSideOf(E.FindItem(s, t.InstanceId)!), Is.EqualTo(GameEngine.TutorialCardSuffix));
+        Assert.That(E.InstanceName(E.FindItem(s, t.InstanceId)!), Is.EqualTo("活性物质（白色·已鉴定·首战教学）"));
+        Assert.That(E.CardSideOf(E.FindItem(s, t.InstanceId)!), Is.EqualTo(GameEngine.TutorialIdentifiedCardSuffix));
+        Assert.That(E.IsIdentifiedWhite(E.FindItem(s, t.InstanceId)!), Is.False);
     }
 
     // ───────────── B22d 试玩修复 M418 ─────────────
