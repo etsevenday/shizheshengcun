@@ -387,6 +387,11 @@ namespace Survival.Core.Config
         public string? PopulationRegionId { get; set; }
         /// <summary>B20：人口区节点的敌池内部权重（node-expansion-rules worldPopulation.weights；不是刷新概率）；不刷新的节点为 null。</summary>
         public Dictionary<string, int>? PopulationWeights { get; set; }
+        /// <summary>
+        /// B22h（Q192 选 C，party-combat-expedition-adjudications.json layering.rows）：mainline 四区 21 节点的逐敌层表
+        /// ordinary/rare/strong → 敌人 → 层内原权重（层内相对归一化，不当跨层概率）；三层并集等于 PopulationWeights。其余节点为 null（ex_pop 五区不分层）。
+        /// </summary>
+        public Dictionary<string, Dictionary<string, int>>? PopulationLayers { get; set; }
         /// <summary>B20：首次实际到达时的初始目标只数（多数 2，m02 检查哨 0），同时受人口区剩余上限与本地上限约束。</summary>
         public int FirstPopulation { get; set; }
         /// <summary>地牢节点所属地牢（d01…d08）；非地牢为 null。</summary>

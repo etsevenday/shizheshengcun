@@ -128,7 +128,7 @@ public class B20PopulationTests : TestBase
         Assert.That(E.LiveCount(s), Is.EqualTo(s.WorldEnemies.Count(w => E.Location(w.LocationId).IsStarter)), "旧全局 12 只数旧 8 地点");
     }
 
-    /// <summary>mainline 区按 96/3.5/0.5 抽层，节点池都算普通层：抽到稀有/强敌层本次不刷（开发假设 B20-7）；普通层照常。</summary>
+    /// <summary>mainline 区按 96/3.5/0.5 抽层：第 2 日稀有层未开放，抽到即本次不刷、不重抽（B22h 起按节点逐敌层表，见 B22hTests；原开发假设 B20-7 作废）；普通层照常。</summary>
     [Test]
     public void MainlineRegion_LayerRoll_OnlyOrdinarySpawns()
     {

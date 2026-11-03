@@ -3502,7 +3502,15 @@
         "shambler": 70,
         "z_slow": 30
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "shambler": 70,
+          "z_slow": 30
+        },
+        "rare": {},
+        "strong": {}
+      }
     },
     {
       "id": "m02_checkpoint",
@@ -3552,7 +3560,14 @@
       "populationWeights": {
         "z_slow": 100
       },
-      "firstPopulation": 0
+      "firstPopulation": 0,
+      "populationLayers": {
+        "ordinary": {
+          "z_slow": 100
+        },
+        "rare": {},
+        "strong": {}
+      }
     },
     {
       "id": "h01_gate",
@@ -3829,7 +3844,16 @@
         "feral_dog": 30,
         "feral_boar": 20
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "z_slow": 50,
+          "feral_dog": 30,
+          "feral_boar": 20
+        },
+        "rare": {},
+        "strong": {}
+      }
     },
     {
       "id": "w02_forest",
@@ -3882,7 +3906,19 @@
         "wild_dog_leader": 10,
         "z_clinger": 20
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "feral_dog": 50
+        },
+        "rare": {
+          "wolf": 20,
+          "z_clinger": 20
+        },
+        "strong": {
+          "wild_dog_leader": 10
+        }
+      }
     },
     {
       "id": "w03_quarry",
@@ -3934,7 +3970,16 @@
         "worker": 30,
         "boar": 20
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "z_helmet": 50,
+          "worker": 30,
+          "boar": 20
+        },
+        "rare": {},
+        "strong": {}
+      }
     },
     {
       "id": "w04_crossroads",
@@ -3987,7 +4032,17 @@
         "feral_boar": 20,
         "shambler": 10
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "z_slow": 40,
+          "feral_dog": 30,
+          "feral_boar": 20,
+          "shambler": 10
+        },
+        "rare": {},
+        "strong": {}
+      }
     },
     {
       "id": "w05_marsh",
@@ -4040,7 +4095,17 @@
         "feral_boar": 20,
         "shambler": 10
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "z_slow": 40,
+          "feral_dog": 30,
+          "feral_boar": 20,
+          "shambler": 10
+        },
+        "rare": {},
+        "strong": {}
+      }
     },
     {
       "id": "w06_bridge",
@@ -4093,7 +4158,17 @@
         "feral_boar": 20,
         "shambler": 10
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "z_slow": 40,
+          "feral_dog": 30,
+          "feral_boar": 20,
+          "shambler": 10
+        },
+        "rare": {},
+        "strong": {}
+      }
     },
     {
       "id": "w07_ridge",
@@ -4146,7 +4221,17 @@
         "feral_boar": 20,
         "shambler": 10
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "z_slow": 40,
+          "feral_dog": 30,
+          "feral_boar": 20,
+          "shambler": 10
+        },
+        "rare": {},
+        "strong": {}
+      }
     },
     {
       "id": "w08_reservoir",
@@ -4199,7 +4284,17 @@
         "feral_boar": 20,
         "shambler": 10
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "z_slow": 40,
+          "feral_dog": 30,
+          "feral_boar": 20,
+          "shambler": 10
+        },
+        "rare": {},
+        "strong": {}
+      }
     },
     {
       "id": "w09_logging",
@@ -4252,7 +4347,17 @@
         "feral_boar": 20,
         "shambler": 10
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "z_slow": 40,
+          "feral_dog": 30,
+          "feral_boar": 20,
+          "shambler": 10
+        },
+        "rare": {},
+        "strong": {}
+      }
     },
     {
       "id": "w10_watchtower",
@@ -4305,7 +4410,17 @@
         "feral_boar": 20,
         "shambler": 10
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "z_slow": 40,
+          "feral_dog": 30,
+          "feral_boar": 20,
+          "shambler": 10
+        },
+        "rare": {},
+        "strong": {}
+      }
     },
     {
       "id": "a01_yard",
@@ -4357,7 +4472,17 @@
         "z_hauler": 40,
         "z_engineer": 20
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "worker": 40,
+          "z_hauler": 40
+        },
+        "rare": {
+          "z_engineer": 20
+        },
+        "strong": {}
+      }
     },
     {
       "id": "a02_pump",
@@ -4409,7 +4534,18 @@
         "z_spitter": 30,
         "z_bloater": 30
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "worker": 40
+        },
+        "rare": {
+          "z_spitter": 30
+        },
+        "strong": {
+          "z_bloater": 30
+        }
+      }
     },
     {
       "id": "a03_foundry",
@@ -4462,7 +4598,19 @@
         "z_signal": 20,
         "riot": 10
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "z_helmet": 30
+        },
+        "rare": {
+          "z_engineer": 40,
+          "z_signal": 20
+        },
+        "strong": {
+          "riot": 10
+        }
+      }
     },
     {
       "id": "b01_school",
@@ -4604,7 +4752,17 @@
         "z_screamer": 30,
         "z_nurse": 40
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "z_helmet": 30
+        },
+        "rare": {
+          "z_screamer": 30,
+          "z_nurse": 40
+        },
+        "strong": {}
+      }
     },
     {
       "id": "c01_pilgrim",
@@ -4655,7 +4813,15 @@
         "z_slow": 50,
         "shambler": 50
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "z_slow": 50,
+          "shambler": 50
+        },
+        "rare": {},
+        "strong": {}
+      }
     },
     {
       "id": "c02_church",
@@ -4933,7 +5099,18 @@
         "z_helmet": 20,
         "z_clinger": 15
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "shambler": 35,
+          "z_slow": 30,
+          "z_helmet": 20
+        },
+        "rare": {
+          "z_clinger": 15
+        },
+        "strong": {}
+      }
     },
     {
       "id": "o02_market",
@@ -4986,7 +5163,18 @@
         "z_helmet": 20,
         "z_clinger": 15
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "shambler": 35,
+          "z_slow": 30,
+          "z_helmet": 20
+        },
+        "rare": {
+          "z_clinger": 15
+        },
+        "strong": {}
+      }
     },
     {
       "id": "o03_police",
@@ -5039,7 +5227,18 @@
         "z_helmet": 20,
         "z_clinger": 15
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "shambler": 35,
+          "z_slow": 30,
+          "z_helmet": 20
+        },
+        "rare": {
+          "z_clinger": 15
+        },
+        "strong": {}
+      }
     },
     {
       "id": "o04_transit",
@@ -5092,7 +5291,18 @@
         "z_helmet": 20,
         "z_clinger": 15
       },
-      "firstPopulation": 2
+      "firstPopulation": 2,
+      "populationLayers": {
+        "ordinary": {
+          "shambler": 35,
+          "z_slow": 30,
+          "z_helmet": 20
+        },
+        "rare": {
+          "z_clinger": 15
+        },
+        "strong": {}
+      }
     },
     {
       "id": "h05_appraisal",
