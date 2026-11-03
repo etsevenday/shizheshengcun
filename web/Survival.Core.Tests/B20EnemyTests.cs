@@ -61,11 +61,20 @@ public class B20EnemyTests : BattleTestBase
             Assert.That(c.Family, Is.EqualTo("zombie"));
             Assert.That(c.ExtraDrop, Is.Null, "E5：四新普通怪不另加稀有材料；守卫回收材料在奖励分账（B21）");
             Assert.That(c.Elite, Is.EqualTo(c.Ap == 4));
-            // A09 §4 受惊参数：守卫按精英 60%/14，普通变体默认 35%/6（开发假设 B20-2）
-            Assert.That((c.FearChance, c.FearValue), Is.EqualTo(c.Elite ? (0.60, 14.0) : (0.35, 6.0)), id);
+            // PLAN-Q189-01（Q189 选B，280f8be，取代开发假设 B20-2 的精英 60%/14、普通 35%/6 分组）：逐敌受惊参数取自 newEnemies
+            Assert.That((c.FearChance, c.FearValue), Is.EqualTo(((double)j["fearChance"]!, (double)j["fearValue"]!)), id);
+            Assert.That((c.FearChance, c.FearValue), Is.EqualTo(Q189Fear[id]), id);
         }
         Assert.That(Cfg.Enemies.Count(e => e.Id.StartsWith("ec_boss_")), Is.EqualTo(8));
     }
+
+    /// <summary>PLAN-Q189-01：低吟45%/8、试制40%/8、缠线50%/10、货架40%/7、祭室60%/14、隔离65%/14、军械60%/15、天线65%/15、泵房55%/12、深井60%/16、扶梯60%/13、仓管55%/13。</summary>
+    static readonly Dictionary<string, (double, double)> Q189Fear = new()
+    {
+        ["ec_cantor"] = (0.45, 8), ["ec_labwalker"] = (0.40, 8), ["ec_cablecrawler"] = (0.50, 10), ["ec_stockbracer"] = (0.40, 7),
+        ["ec_boss_crypt"] = (0.60, 14), ["ec_boss_lab"] = (0.65, 14), ["ec_boss_armory"] = (0.60, 15), ["ec_boss_relay"] = (0.65, 15),
+        ["ec_boss_water"] = (0.55, 12), ["ec_boss_mine"] = (0.60, 16), ["ec_boss_mall"] = (0.60, 13), ["ec_boss_cold"] = (0.55, 13),
+    };
 
     /// <summary>
     /// EC05 / E2：只有明写“咬击”的意图才可能改判咬击（缠线爬行者、货架护卫感染者抓击 80%/咬击 20%）；其余新敌（守卫“普通抓击”、

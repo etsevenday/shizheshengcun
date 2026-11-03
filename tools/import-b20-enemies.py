@@ -67,7 +67,10 @@ NEW_INTENTS = {
                                step("pull", verb="拉扯", factor=0.7, pull=1, targetSlots="1234", targetMarked=True), GRAB("抓击")]},
 }
 
-FEAR_DEFAULT, FEAR_ELITE = (0.35, 6), (0.60, 14)
+# Q189 选B（280f8be）：12 新敌逐一受惊参数取自 expansion-combat.json newEnemies.fearChance/fearValue，取代 E3 默认分组
+FEAR_Q189 = {"ec_cantor": (0.45, 8), "ec_labwalker": (0.40, 8), "ec_cablecrawler": (0.50, 10), "ec_stockbracer": (0.40, 7),
+             "ec_boss_crypt": (0.60, 14), "ec_boss_lab": (0.65, 14), "ec_boss_armory": (0.60, 15), "ec_boss_relay": (0.65, 15),
+             "ec_boss_water": (0.55, 12), "ec_boss_mine": (0.60, 16), "ec_boss_mall": (0.60, 13), "ec_boss_cold": (0.55, 13)}
 
 
 def enemy(src):
@@ -76,7 +79,8 @@ def enemy(src):
     assert src["ap"] in (3, 4), eid
     slots = "".join(str(x) for x in src["ownSlots"])
     tgt = "".join(str(x) for x in src["targetSlots"])
-    fear = FEAR_ELITE if elite else FEAR_DEFAULT
+    fear = (src["fearChance"], src["fearValue"])
+    assert fear == FEAR_Q189[eid], (eid, fear)
     return {
         "id": eid, "name": src["name"], "family": "zombie", "hp": src["hp"], "armor": src["armor"], "dodge": src["evasion"],
         "speed": src["speed"], "damageMin": src["damage"][0], "damageMax": src["damage"][1], "behavior": "intents", "fleeAtHp": None,
