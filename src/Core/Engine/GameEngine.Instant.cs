@@ -28,6 +28,13 @@ namespace Survival.Core.Engine
             if (s.RecentRequestIds.Count > 128) s.RecentRequestIds.RemoveRange(0, s.RecentRequestIds.Count - 128);
         }
 
+        /// <summary>
+        /// B22f（Q199 选A“可做拾放等合法即时整理，不因这句禁止原整理入口”）：撤出途中（主行动是撤出、没有子行动/战斗/敌踪）允许拾取与放下，
+        /// 在当时所在地点地面照常校验五卡与负重；吃喝、用药、休息、接战等仍不行。
+        /// </summary>
+        public bool ExtractTidyAllowed(GameState s) =>
+            s.Main?.Type == ActionType.Extract && s.Sub == null && s.Battle == null && s.Encounter == null;
+
         private ActionResult DoInstantOnce(GameState s, InstantRequest r)
         {
             if (s.Progress.Dead) return ActionResult.Fail("角色已死亡");
@@ -41,7 +48,7 @@ namespace Survival.Core.Engine
                 {
                     var inst = FindItem(s, r.InstanceId);
                     if (inst != null && IsLocked(s, inst)) return ActionResult.Fail("行动占用：该物品正被当前行动使用");
-                    if (IsBusy(s)) return ActionResult.Fail("行动进行中，不能整理物品");
+                    if (IsBusy(s) && !ExtractTidyAllowed(s)) return ActionResult.Fail("行动进行中，不能整理物品");
                     if (inst == null || inst.Owner != here) return ActionResult.Fail("只能拾取当前地点地面的物品");
                     if (IsDeployed(s, inst)) return ActionResult.Fail($"{ItemName(inst.ItemId)}正部署着，先收起再拾取");
                     if (inst.ReservedBy != null) return ActionResult.Fail("该物品已被预留");
@@ -58,7 +65,7 @@ namespace Survival.Core.Engine
                 {
                     var inst = FindItem(s, r.InstanceId);
                     if (inst != null && IsLocked(s, inst)) return ActionResult.Fail("行动占用：该物品正被当前行动使用");
-                    if (IsBusy(s)) return ActionResult.Fail("行动进行中，不能整理物品");
+                    if (IsBusy(s) && !ExtractTidyAllowed(s)) return ActionResult.Fail("行动进行中，不能整理物品");
                     if (inst == null || !inst.IsCarried) return ActionResult.Fail("只能放下随身物品");
                     if (inst.ReservedBy != null) return ActionResult.Fail("该物品已被预留");
                     if (r.Count < 1 || r.Count > inst.Count) return ActionResult.Fail("数量无效");

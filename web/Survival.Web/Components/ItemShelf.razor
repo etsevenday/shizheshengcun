@@ -12,7 +12,7 @@
     var kinds = items.Select(i => i.ItemId).Distinct().Count();
     var sel = G.Selected;
     var grams = items.Sum(i => e.ItemGrams(s, i));
-    var busy = e.IsBusy(s) || G.Running;
+    var busy = (e.IsBusy(s) || G.Running) && !e.ExtractTidyAllowed(s);   // B22f Q199：撤出途中可拾放（只放开转移箭头）
     var from = carried ? "随身" : $"{e.LocName(Owner)}地面";
     // 随身五张根物品卡（S06 §8）：固定五个可见位置，已用卡数与内核同一计数；同物品多批或超堆叠的卡标“占N格”并占相应宽度
     var used = carried ? e.RootCardCount(s) : 0;
