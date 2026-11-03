@@ -1,0 +1,33 @@
+@inherits GameComponent
+
+@* B21 进入前预告（R03 D3、A10 §7）：容量与同行、已知敌人、全员状态与警告、随身药弹与武器耐久、续探与否、终止惩罚具体数值、
+   撤出最低 30 分钟与当前估算、预计探索基础分钟、提示。数据全部来自内核 ExpeditionPreview（只读，不建实例、不抽物资）。 *@
+@if (Info is ExpeditionPreviewInfo p)
+{
+    <div class="exp-pv" data-wheel="y">
+        <div class="exp-line"><b>@p.Name</b> · @p.StatusName · 第@(p.Generation)代@(p.Continuation ? "（续探旧实例）" : "")</div>
+        <div class="exp-line">队伍容量C@(p.Capacity) · 实际同行@(p.PartyCount)人（不按实到人数缩减敌人）</div>
+        @if (p.KnownEnemies.Count > 0)
+        {
+            <div class="exp-line warn-text">已知敌人：@string.Join("；", p.KnownEnemies)</div>
+        }
+        @foreach (var m in p.Members)
+        {
+            <div class="exp-member @(m.Warnings.Count > 0 ? "warn" : "")">
+                <b>@m.Name</b>
+                <span>饱食@(Ui.T(m.Satiety))</span><span>水分@(Ui.T(m.Hydration))</span><span>体力@(Ui.T(m.Energy))</span><span>清醒@(Ui.T(m.Wakefulness))</span>
+                <span>精神@(Ui.T(m.Morale))</span><span>健康@(Ui.T(m.Health))</span><span>病毒@(m.Infected || m.Virus > 0 ? Ui.T(m.Virus) : "—")</span>
+            </div>
+            <div class="exp-line muted">@m.Supplies</div>
+            @if (m.Warnings.Count > 0) { <div class="exp-line warn-text">⚠ @string.Join("、", m.Warnings)</div> }
+        }
+        <div class="exp-line"><b>未通关离开：</b>@p.PenaltyText</div>
+        <div class="exp-line"><b>撤出：</b>最低@(p.ExtractMinMinutes)分钟；现在从@(p.ExtractFrom)撤出约@(p.ExtractEstimate)分钟（基础@(p.ExtractBaseMinutes)分钟×@(p.ExtractFactor.ToString("0.##"))）</div>
+        <div class="exp-line"><b>预计探索：</b>约@(p.ExploreLow)—@(p.ExploreHigh)分钟（基础分钟，不含战斗与倍率）</div>
+        @foreach (var n in p.Notes) { <div class="exp-line muted">· @n</div> }
+    </div>
+}
+
+@code {
+    [Parameter] public ExpeditionPreviewInfo? Info { get; set; }
+}

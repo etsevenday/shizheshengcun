@@ -19,8 +19,15 @@
             var to = pop.Id;
             var lc = e.Location(to);
             var ls = s.Locations[to];
-            var req = ActionRequest.Travel(to);
+            // B21（R03 D3）：01→危险房间要确认开始远征（同一预告 +“确认开始远征并前往”）；父地点→01 只是预告，正常移动
+            var needExp = e.NeedsExpeditionConfirm(s, to);
+            var req = ActionRequest.Travel(to, needExp);
             var p = G.Preview(req);
+            var dTo = e.DungeonAt(to);
+            var expPv = needExp ? e.ExpeditionPreview(s, dTo!)
+                : dTo != null && e.ExpeditionEnabled(dTo) && e.BufferNodeOf(dTo) == to && e.DungeonAt(s.CurrentLocation) != dTo ? e.ExpeditionPreview(s, dTo) : null;
+            // 未通关想原路离开：内核拒绝并写明惩罚；这里给“终止本次远征…”入口（同一确认窗）
+            var leaveBlocked = !p.Ok && s.Expedition != null && !s.Expedition.IsExtracting && e.DungeonAt(to) != s.Expedition.DungeonId && e.CanAbortExpedition(s) == null;
             var dir = e.DirectionFromHere(s, to);
             var grams = e.CarriedGrams(s);
             var over = grams > e.Config.Carry.SoftGrams;
@@ -48,10 +55,26 @@
                     {
                         <div class="apop-risk">@p.Reason</div>
                     }
+                    @if (expPv != null)
+                    {
+                        @* B21：就近浮窗只放要点（A10 §7 / S14 §14.1 不铺长说明），完整进入预告在右栏 *@
+                        var warnCount = expPv.Members.Count(m => m.Warnings.Count > 0);
+                        <div class="apop-risk exp-brief">@expPv.Name · @expPv.StatusName · 第@(expPv.Generation)代@(expPv.Continuation ? "（续探）" : "")</div>
+                        <div class="apop-risk exp-brief">未通关离开要终止远征：扣属性＋惊魂未定，撤出至少@(expPv.ExtractMinMinutes)分钟</div>
+                        @if (warnCount > 0) { <div class="apop-risk">⚠ @(warnCount)名同行状态偏低</div> }
+                        <div class="apop-risk exp-brief muted">完整进入预告（全员状态、物资、已知敌人、时间）见右栏</div>
+                    }
                     @if (G.Notice != null && _tried) { <div class="apop-risk">@G.Notice</div> }
                 </ChildContent>
                 <Actions>
-                    <button type="button" class="primary apop-go" disabled="@(!p.Ok || busy)" @onclick='() => Travel(req, pop.Kind == "mapnode")'>@(p.Ok ? "确认移动" : "无法移动")</button>
+                    @if (leaveBlocked)
+                    {
+                        <button type="button" class="primary danger apop-go" disabled="@busy" @onclick="G.OpenAbort">终止本次远征…</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="primary apop-go" disabled="@(!p.Ok || busy)" @onclick='() => Travel(req, pop.Kind == "mapnode")'>@(p.Ok ? (needExp ? "确认开始远征并前往" : "确认移动") : "无法移动")</button>
+                    }
                     <button type="button" class="secondary apop-cancel" @onclick="G.ClosePop">取消</button>
                 </Actions>
             </AnchorPop>

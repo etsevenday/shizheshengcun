@@ -13,6 +13,12 @@
             @if (G.S.Battle != null)
             {
                 <div class="tiny muted">战斗中不能通过菜单脱战；撤退请用指令条的“撤退”。每条指令与敌方行动后都已自动保存。</div>
+                @if (G.S.Expedition != null)
+                {
+                    @* B21（R03 D5）：战斗中菜单的“终止远征”只解释，必须先普通撤退 *@
+                    <button class="secondary" disabled title="先在战斗里撤退">终止本次远征</button>
+                    <div class="tiny muted">战斗中不能直接终止远征：先用指令条的“撤退”离开这场战斗（地牢里撤退会退回来路上没有敌人的房间），再从菜单或安全点终止。</div>
+                }
             }
             else
             {
@@ -61,6 +67,20 @@
             <div><span>已推进时间段</span><b>@G.S.SegmentCount</b></div>
             <div><span>存档</span><b>本浏览器单槽，每段自动保存</b></div>
         </div>
+        @if (G.S.Expedition != null || G.E.ExpeditionEnabled(G.E.DungeonAt(G.S.CurrentLocation)))
+        {
+            @* B21（R03 D5、A10 §7）：非战斗时从菜单发起终止远征（先看同一预估，可取消）；撤出中只说明不可取消 *@
+            var abortWhy = G.E.CanAbortExpedition(G.S);
+            if (G.S.Expedition?.IsExtracting == true)
+            {
+                <div class="tiny muted">正在撤出（不可取消）：会一直走到外部入口；关闭页面或返回标题后再继续，从剩余时间接着走。</div>
+            }
+            else
+            {
+                <button class="secondary danger" disabled="@(abortWhy != null)" title="@(abortWhy ?? "先看即时损失与返程时间，确认前可以取消")" @onclick="G.OpenAbort">终止本次远征…</button>
+                @if (abortWhy != null) { <div class="tiny muted">@abortWhy</div> }
+            }
+        }
         <button class="secondary" @onclick="Feedback">反馈与留言（F）</button>
         <button class="secondary" @onclick="ToTitle">返回标题（进度已保存）</button>
         @if (!confirmNew)
@@ -280,6 +300,30 @@
                     <button class="secondary small-btn" @onclick="() => DevDone(G.E.DebugPopulationText(G.S))">查看人口区计数</button>
                 </div>
                 <div class="tiny muted">@G.E.DebugPopulationText(G.S)</div>
+                @* B21（R65/R66）：地牢远征。传送到入口缓冲（开入口边、不开始远征）→ 点相邻危险房间看预告并“确认开始远征并前往”；
+                   传送进危险房间会按已开始的远征补提交（不扣包），传到地牢外直接结束 *@
+                <div class="eyebrow">地牢远征（B21）：入口缓冲 → 确认开始远征 → 战斗撤退 / 终止远征 → 撤出到父地点</div>
+                <div class="btn-row">
+                    <select class="dev-select" aria-label="远征地牢" @bind="expDungeon">
+                        @foreach (var d in G.E.Config.Map.Dungeons)
+                        {
+                            <option value="@d.Id">@d.Name（@d.Id，@GameEngine.DungeonStatusName(G.E.DungeonStatus(G.S, d.Id))）</option>
+                        }
+                    </select>
+                    <button class="secondary small-btn" title="开通父地点—01 入口边并传送到 01（还没开始远征，可免费原路离开）" @onclick='() => G.DevExpedition("buffer", expDungeon)'>传送到入口缓冲（01）</button>
+                    <button class="secondary small-btn" title="结算里程碑与路线揭示，开通相邻（不发探索物资）" @onclick="() => DevDone(G.E.DebugExploreHere100(G.S))">当前房间探索到100%并开通相邻</button>
+                    <button class="secondary small-btn" title="不打直接结清当前房间的固定战（不发掉落）" @onclick="() => DevDone(G.E.DebugWinFixedHere(G.S))">当前房间固定战记为已胜</button>
+                </div>
+                <div class="btn-row">
+                    <button class="secondary small-btn" @onclick='() => G.DevExpedition("dr04a")'>全队状态设为 DR04 例1（N80/W80/E18/S90/M60/H20）</button>
+                    <button class="secondary small-btn" @onclick='() => G.DevExpedition("dr04b")'>全队状态设为 DR04 例2（N12/W8/E4/S10/M9/H0.4）</button>
+                    <button class="secondary small-btn" title="空闲时只改时钟、不结算身体" @onclick='() => G.DevExpedition("night")'>时间跳到当晚22:00（夜间倍率）</button>
+                    <button class="secondary small-btn" @onclick='() => G.DevExpedition("heavy")'>随身加重物到超过20公斤（负重倍率）</button>
+                </div>
+                <div class="btn-row">
+                    <button class="secondary small-btn" @onclick='() => G.DevExpedition("show")'>显示当前远征（ID/轨迹/状态/去重键）</button>
+                    <button class="secondary small-btn" title="不扣惩罚、不花时间；人留在原地（撤出中也会停下）" @onclick='() => G.DevExpedition("end")'>立即结束当前远征（开发，不扣包）</button>
+                </div>
                 @* B8（R08、A11 §6/§7）：正式招募任务（RN01—RN06）在后续批次，这里直接把六名命名角色登记入名册（同行未满 C 时直接编入） *@
                 <div class="eyebrow">队伍（B8）：先记下容量事实再加人；营区＝临时营地</div>
                 <div class="btn-row">
@@ -372,6 +416,7 @@
 
     private bool DevMode => Nav.Uri.Contains("dev=1");
     private string genDungeon = "d01";
+    private string expDungeon = "d01";
     private string fixedTo = "d01_07";
 
     private string FixedLabel(Survival.Core.Config.FixedBattleConfig f) =>

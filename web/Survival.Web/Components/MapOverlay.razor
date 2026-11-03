@@ -225,7 +225,7 @@ else
     }
     else if (adjacent.Contains(target) && !e.IsBusy(s))
     {
-        <PreviewView Request="ActionRequest.Travel(target)" Eyebrow="@($"区域地图 · {tl.Name} · {(ts.Visited ? $"探索度{ts.Progress}%" : "待访问")}")" Title="@($"前往{tl.Name}")"
+        <PreviewView Request="ActionRequest.Travel(target, e.NeedsExpeditionConfirm(s, target))" Eyebrow="@($"区域地图 · {tl.Name} · {(ts.Visited ? $"探索度{ts.Progress}%" : "待访问")}")" Title="@($"前往{tl.Name}")"
                      Confirmable="false" FootNote="在地图上该地点旁的浮窗确认移动；时间为预计值"
                      Subtitle="一次只移动一段相邻路线，不提供自动寻路。" />
     }

@@ -31,6 +31,9 @@
     var fixedHere = inside ? new List<WorldEnemy>() : e.FixedEnemiesAt(s, here);
     var fixedCfg = e.FixedBattleAt(here);
     var elites = e.EliteChallengesHere(s);
+    // B21（R03 D5、A10 §7）：本次远征的安全点（safeNodes）给“终止本次远征”明显入口
+    var expHere = s.Expedition != null && !inside && e.DungeonAt(here) == s.Expedition.DungeonId
+                  && e.DungeonCfg(s.Expedition.DungeonId)!.SafeNodes.Contains(here) ? s.Expedition : null;
 }
 
 @* 四区同屏（S14 §1.3）：两行高度按中部可用高度分配，不再固定 180/220 或 220—300 起始高度；行首竖排区标题常驻可见 *@
@@ -123,6 +126,30 @@
         }
         @* B13：人物组（来客程望，首个 NPC 卡框架）与可查看对象（救助残页、南口路标） *@
         <PrologueCards />
+        @if (expHere != null)
+        {
+            var abortWhy = busy ? "行动进行中" : e.CanAbortExpedition(s);
+            var dname = e.DungeonCfg(expHere.DungeonId)!.Name;
+            var tipX = $"{dname}本次远征：未通关离开要在这里（或菜单里）终止，每人{e.AbortPenaltyText()}、{e.ShakenText()}，撤出至少{e.Config.DungeonExpedition.ExtractMinMinutes}分钟并且途中不能取消；已拿到的物资不没收。战斗里的撤退只退回来路上的房间，不算离开。";
+            <div class="desk-group expedition">
+                <div class="dg-title">远征</div>
+                <div class="dg-cards">
+                    <ObjectCard @key="@("exp-" + expHere.Id)" Id="expedition-abort" CssClass="enemy-card world exp-card" Title="@dname" Badge="@(expHere.IsExtracting ? "撤出中" : "安全点")" BadgeClass="new" Tooltip="@tipX">
+                        <Art><span class="exp-art" aria-hidden="true">⇱</span></Art>
+                        <ChildContent>
+                            <div class="oc-line">第@(expHere.Generation)代 · @GameEngine.DungeonStatusName(e.DungeonStatus(s, expHere.DungeonId))</div>
+                            <div class="oc-line" title="@tipX">终止：撤出至少@(e.Config.DungeonExpedition.ExtractMinMinutes)分钟、扣属性</div>
+                        </ChildContent>
+                        <Footer>
+                            <button type="button" class="loc-btn res-btn" disabled="@(abortWhy != null)" title="@(abortWhy ?? "先看即时损失与返程时间，确认前可以取消")"
+                                    @onclick="G.OpenAbort" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                <strong>终止远征…</strong>
+                            </button>
+                        </Footer>
+                    </ObjectCard>
+                </div>
+            </div>
+        }
         @if (fixedHere.Count > 0 || elites.Count > 0)
         {
             @* B20（A09 E2/E4、Q81）：固定战整组接战（禁增援、名单已锁定）；可选强敌只在明确接战后才建敌人，不接不挡任何行动 *@

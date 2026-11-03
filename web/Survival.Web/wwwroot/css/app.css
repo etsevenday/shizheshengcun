@@ -1446,3 +1446,16 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .recruit-panel .rc-card .btn-row > button { white-space: nowrap; flex: 0 0 auto; }
 .recruit-panel .rc-segs .rc-seg { display: inline-block; max-width: 100%; }
 .recruit-panel .rc-card.retired { opacity: .6; }
+
+/* B21 地牢远征：进入预告、终止确认窗、安全点卡 */
+.exp-pv { max-height: 42vh; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; font-size: 13px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
+.exp-pv .exp-line { line-height: 1.45; overflow-wrap: anywhere; }
+.exp-member { display: flex; flex-wrap: wrap; gap: 0 8px; font-size: 12px; line-height: 1.5; }
+.exp-member.warn span { color: var(--warn); }
+.exp-abort .exp-sec { font-weight: 700; margin-top: 6px; }
+.exp-abort .exp-row { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; line-height: 1.5; }
+.exp-abort .ov-foot button { min-height: 40px; }
+.exp-card .exp-art { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 34px; color: var(--accent); }
+.exp-detail { padding: 0 14px 8px; }
+.exp-detail .exp-pv { max-height: 38vh; }
+.apop-risk.exp-brief { color: inherit; }

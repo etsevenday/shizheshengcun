@@ -38,6 +38,7 @@ public static class StatusView
         ["antibiotic"] = ("virus", "status_antibiotic"),
         ["antibioticCooldown"] = ("virus", "status_antibiotic_cd"),
         ["bandageVirusCooldown"] = ("virus", "status_bandage_virus_cd"),
+        ["shaken"] = ("morale", "status_shaken"),   // B21 惊魂未定
     };
 
     public static List<StatusChip> All(GameEngine e, GameState s)

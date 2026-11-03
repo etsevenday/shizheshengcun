@@ -55,7 +55,7 @@ namespace Survival.Core.Engine
         public static bool IsSingleTransaction(ActionType t) => t == ActionType.Use || t == ActionType.Ignite || t == ActionType.Fuse;
 
         private static bool IsFixedDuration(ActionType t) =>
-            t == ActionType.Wait || t == ActionType.Rest || t == ActionType.Sleep || t == ActionType.Bypass || IsSingleTransaction(t);
+            t == ActionType.Wait || t == ActionType.Rest || t == ActionType.Sleep || t == ActionType.Bypass || t == ActionType.Extract || IsSingleTransaction(t);
 
         /// <summary>
         /// 当前行动（子行动优先）的中央推进数据；没有行动为 null。固定时长按未发生时长；工作按剩余工作量与当前/已知未来倍率逐段模拟（预计）；
@@ -104,6 +104,15 @@ namespace Survival.Core.Engine
             info.Exit = why != null ? ExitKind.None : IsSingleTransaction(a.Type) ? ExitKind.CompletesCurrentTransaction : ExitKind.StopAtBoundary;
             var forfeit = info.Exit == ExitKind.StopAtBoundary ? ExitForfeitText(a) : null;
             info.ExitForfeits = forfeit != null;
+            // B21：撤出不可取消（R03 D5.2、A10 §7“已经提交的撤出进程不可取消，UI 显示原因”）
+            if (a.Type == ActionType.Extract && s.Expedition?.IsExtracting == true)
+            {
+                var e = s.Expedition;
+                var next = e.ExtractRoute.SkipWhile(n => n != s.CurrentLocation).Skip(1).FirstOrDefault() ?? a.TargetId;
+                info.Label = next == a.TargetId
+                    ? $"撤出中：{LocName(s.CurrentLocation)}→{LocName(a.TargetId)}（不可取消）"
+                    : $"撤出中：{LocName(s.CurrentLocation)}→{LocName(next)}→…→{LocName(a.TargetId)}（不可取消）";
+            }
             info.ExitNote = why ?? (info.Exit == ExitKind.CompletesCurrentTransaction ? $"{a.Label}已开始结算，本段完成后结束（已提交的消耗与效果不撤销）" : forfeit ?? "在当前5分钟段结束处停止，已发生的消耗与收获保留");
             return info;
         }
@@ -135,6 +144,7 @@ namespace Survival.Core.Engine
             if (DialogueLocked(s)) return "对话中，时间未推进；读完对话后才能退出";
             if (s.Battle != null) return "战斗中不能退出：请用撤退或战斗指令";
             if (s.Sub == null && s.Main == null) return "没有进行中的行动";
+            if ((s.Sub ?? s.Main)!.Type == ActionType.Extract) return "撤出已经开始，不能取消：会一直走到外部入口（途中不能吃喝、用药或休息）";
             return null;
         }
 

@@ -2113,6 +2113,54 @@ public sealed class GameSession
         if (res.Ok) await BattleLoop();
     }
 
+    // ───────────── B21 地牢远征（R03 D3/D5、A10 §7） ─────────────
+
+    /// <summary>终止远征确认窗的请求号：打开窗口时生成一次，双击确认只提交一次（R03 D5.1 去重）。</summary>
+    private string? _abortRequestId;
+
+    /// <summary>打开“终止本次远征”确认窗（菜单、安全点卡、离开被拒时的按钮）。战斗中不开（只在战斗菜单里解释）。</summary>
+    public void OpenAbort()
+    {
+        if (State == null || S.Battle != null) return;
+        _abortRequestId = Guid.NewGuid().ToString("N");
+        Notice = null;
+        OpenPanel("abort");
+    }
+
+    /// <summary>确认终止：一次扣包并开始不可取消的撤出，存档后逐 5 分钟推进（刷新页面从剩余分钟继续）。</summary>
+    public async Task ConfirmAbort()
+    {
+        if (State == null || Running) return;
+        if (FormationOpen) { Notice = FormationOpenText; Notify(); return; }
+        var res = E.AbortExpedition(S, _abortRequestId ??= Guid.NewGuid().ToString("N"));
+        Notice = res.Ok ? null : res.Reason;
+        if (res.Ok)
+        {
+            Panel = null;
+            Pop = null;
+            Toast = null;
+            ClearHoverNow();
+            ClearSelectionSilently();
+            DetailTab = DetailTab.Character;
+        }
+        Drain();
+        Save();
+        Notify();
+        if (res.Ok && !res.Duplicate) await RunLoop();
+    }
+
+    /// <summary>开发入口（?dev=1）B21 栏。</summary>
+    public void DevExpedition(string kind, string? dungeonId = null)
+    {
+        if (State == null) return;
+        Notice = E.DebugExpedition(S, kind, dungeonId);
+        Drain();
+        ReconcileSelection();
+        Save();
+        Panel = null;   // 与其他开发按钮一样执行后收起菜单
+        Notify();
+    }
+
     /// <summary>逐条推进敌方行动与轮末，直到轮到玩家或战斗结束；每步存档，刷新页面后从游标继续。</summary>
     public async Task BattleLoop()
     {

@@ -640,6 +640,81 @@ namespace Survival.Core.Engine
             return true;
         }
 
+        // ───────────────────────── 开发入口（?dev=1，B21 栏） ─────────────────────────
+
+        /// <summary>
+        /// 开发入口（?dev=1）B21 栏：buffer 传送到某地牢入口缓冲（开入口边、不开始远征）；dr04a/dr04b 全队设成 DR04 例 1/例 2 的属性；
+        /// night 空闲时拨到当晚 22:00（不结算身体）；heavy 随身加重物到超过软负重；show 显示当前远征；end 立即结束当前远征（不扣包）。
+        /// </summary>
+        public string DebugExpedition(GameState s, string kind, string? dungeonId = null)
+        {
+            switch (kind)
+            {
+                case "buffer":
+                {
+                    if (dungeonId == null || !ExpeditionEnabled(dungeonId)) return "开发：地牢不存在";
+                    var d = DungeonCfg(dungeonId)!;
+                    var buf = BufferNodeOf(dungeonId)!;
+                    var entry = EdgesAt(buf).FirstOrDefault(e => e.Other(buf) == d.Parent);
+                    if (entry != null) DebugUnlockEdge(s, entry.Id);
+                    s.Locations[d.Parent].Discovered = true;
+                    return DebugMapTeleport(s, buf).TrimEnd('。') + $"（入口路线{LocName(d.Parent)}—{LocName(buf)}已开；还没开始远征，可免费原路离开）。";
+                }
+                case "dr04a":
+                case "dr04b":
+                {
+                    var v = kind == "dr04a" ? new[] { 80, 80, 18, 90, 60, 20.0 } : new[] { 12, 8, 4, 10, 9, 0.4 };
+                    foreach (var a in s.PartyActors)
+                    {
+                        a.Stats.Set(StatId.Satiety, v[0]);
+                        a.Stats.Set(StatId.Hydration, v[1]);
+                        a.Stats.Set(StatId.Energy, v[2]);
+                        a.Stats.Set(StatId.Wakefulness, v[3]);
+                        a.Stats.Set(StatId.Morale, v[4]);
+                        a.Stats.Set(StatId.Health, v[5]);
+                    }
+                    SyncLatches(s);
+                    return $"开发：全队设为 N{v[0]}/W{v[1]}/E{v[2]}/S{v[3]}/M{v[4]}/H{Fmt.T(v[5])}（DR04 例{(kind == "dr04a" ? 1 : 2)}）";
+                }
+                case "night":
+                {
+                    if (IsBusy(s)) return "开发：行动进行中或有敌踪/战斗，先结束再拨时间";
+                    var day0 = s.GameMinute - s.GameMinute % Clock.MinutesPerDay;
+                    var target = day0 + 22 * 60;
+                    if (target <= s.GameMinute) target += Clock.MinutesPerDay;
+                    s.GameMinute = target;
+                    return $"开发：时间拨到{Clock.DayTime(target)}（只改时钟，不结算身体；移动倍率夜间×{Fmt.T(Config.WorkFactors.Night)}）";
+                }
+                case "heavy":
+                {
+                    var n = 0;
+                    // 木板整堆（20 块一张卡）加到超过软负重，尽量少占随身卡位
+                    while (CarriedGramsOf(s, GameState.PlayerId) <= Config.Carry.SoftGrams && n < 4) { CreateItems(s, "plank", 20, ItemInstance.Carried); n++; }
+                    return $"开发：随身加了{n * 20}块{ItemName("plank")}，负重{Fmt.Kg(CarriedGramsOf(s, GameState.PlayerId))}（超过{Fmt.Kg(Config.Carry.SoftGrams)}减速×{Fmt.T(Config.WorkFactors.Overweight)}；超出五张卡会弹整理窗）";
+                }
+                case "show":
+                {
+                    var e = s.Expedition;
+                    var shaken = string.Join("、", s.PartyActors.Where(a => a.ShakenUntil > s.GameMinute).Select(a => $"{ActorDisplayName(s, a.Id)}至{Clock.DayTime(a.ShakenUntil!.Value)}"));
+                    var status = string.Join("；", Config.Map.Dungeons.Where(d => s.DungeonInstances.ContainsKey(d.Id)).Select(d => $"{d.Id} {DungeonStatusName(DungeonStatus(s, d.Id))}"));
+                    if (e == null) return $"开发：没有进行中的远征。实例：{(status.Length > 0 ? status : "无")}。已结束{s.ExpeditionLog.Count}次。" + (shaken.Length > 0 ? $"惊魂未定：{shaken}。" : "");
+                    return $"开发：远征 {e.Id}（{(e.IsExtracting ? $"撤出中 {e.ElapsedMinutes}/{e.TotalMinutes}分钟，倍率×{Fmt.T(e.LockedFactor)}，路线{string.Join("→", e.ExtractRoute)}" : "进行中")}）"
+                        + $"；成员{string.Join("、", e.Members)}；轨迹{string.Join("→", e.Trail)}；去重键{string.Join("、", s.AppliedEventKeys.Where(k => k.StartsWith(e.Id)))}"
+                        + (e.Origin != null ? $"；来源{e.Origin}" : "") + $"。实例：{status}。" + (shaken.Length > 0 ? $"惊魂未定：{shaken}。" : "");
+                }
+                case "end":
+                {
+                    var e = s.Expedition;
+                    if (e == null) return "开发：没有进行中的远征";
+                    if (s.Battle != null) return "开发：战斗中，先结束战斗";
+                    if (s.Main?.Type == ActionType.Extract) ClearAction(s, s.Main);
+                    EndExpedition(s, "dev");
+                    return $"开发：远征 {e.Id} 已直接结束（不扣惩罚，人留在{LocName(s.CurrentLocation)}；离开地牢的门槛照旧）";
+                }
+            }
+            return "开发：未知操作";
+        }
+
         // ───────────────────────── 进入预告（R03 D3、A10 §7，B21-15） ─────────────────────────
 
         /// <summary>

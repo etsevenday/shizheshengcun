@@ -8,6 +8,8 @@ public static partial class Icons
 {
     private static readonly Dictionary<string, string> Status = new()
     {
+        // B21 惊魂未定：受惊的脸 + 两侧颤抖线
+        ["status_shaken"] = @"<circle cx=""50"" cy=""52"" r=""28"" fill=""#d9c9a3"" stroke=""#4e5752"" stroke-width=""4""/><circle cx=""40"" cy=""46"" r=""5"" fill=""#2f3a42""/><circle cx=""60"" cy=""46"" r=""5"" fill=""#2f3a42""/><ellipse cx=""50"" cy=""64"" rx=""7"" ry=""9"" fill=""#2f3a42""/><path d=""M10 30L16 40 10 50 16 60 10 70M90 30L84 40 90 50 84 60 90 70"" fill=""none"" stroke=""#c4483a"" stroke-width=""5"" stroke-linecap=""round"" stroke-linejoin=""round""/>",
         // 腹泻：水滴 + 向下箭头
         ["status_diarrhea"] = @"<path d=""M40 10Q20 40 20 56 20 76 40 78 60 76 60 56 60 40 40 10Z"" fill=""#7ba7c4"" stroke=""#3e6680"" stroke-width=""4""/><path d=""M74 30V82M62 70L74 84 86 70"" fill=""none"" stroke=""#e4b374"" stroke-width=""7"" stroke-linecap=""round"" stroke-linejoin=""round""/>",
         // 出血：两滴血

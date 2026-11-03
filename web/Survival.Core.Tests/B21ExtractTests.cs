@@ -212,4 +212,39 @@ public class B21ExtractTests : BattleTestBase
         Assert.That(s.Remains.ContainsKey("npc_lin_zhao"), Is.True);
         Assert.That(s.Roster.Single(r => r.ActorId == "npc_lin_zhao").DeathLocation, Is.EqualTo("d01_02"));
     }
+
+    /// <summary>A10 §7：中央推进条写“撤出中：当前→下一站（不可取消）”，退出入口不可用并写原因。</summary>
+    [Test]
+    public void Progress_ExtractNotExitable_Label()
+    {
+        var s = At05(2148);
+        High(s);
+        Assert.That(E.AbortExpedition(s).Ok, Is.True);
+        var p = E.ActionProgress(s)!;
+        Assert.That(p.Exit, Is.EqualTo(ExitKind.None));
+        Assert.That(p.ExitNote, Does.Contain("不能取消"));
+        Assert.That(p.Label, Does.StartWith("撤出中：" + E.LocName("d01_05")).And.Contain("不可取消"));
+        Assert.That(p.RemainingMinutes, Is.EqualTo(s.Expedition!.TotalMinutes));
+        Assert.That(E.RequestExit(s).Ok, Is.False);
+    }
+
+    /// <summary>开发入口 B21 栏：传送到入口缓冲（不开始远征、入口边已开）、DR04 例 1、显示、立即结束（不扣包）。</summary>
+    [Test]
+    public void DevEntry_Buffer_Dr04_Show_End()
+    {
+        var s = New(2149);
+        Assert.That(E.DebugExpedition(s, "buffer", "d02"), Does.Contain("还没开始远征"));
+        Assert.That(s.CurrentLocation, Is.EqualTo("d02_01"));
+        Assert.That(s.Expedition, Is.Null);
+        Assert.That(E.CanStart(s, ActionRequest.Travel("r03_lab")), Is.Null, "入口边已开，可免费原路离开");
+        E.DebugExpedition(s, "dr04a");
+        Assert.That(s.Player.Stats.Satiety, Is.EqualTo(80));
+        Assert.That(E.DebugExpedition(s, "show"), Does.Contain("没有进行中的远征"));
+        E.DebugMapTeleport(s, "d02_02");
+        Assert.That(E.DebugExpedition(s, "show"), Does.Contain(s.Expedition!.Id));
+        Assert.That(E.DebugExpedition(s, "end"), Does.Contain("已直接结束"));
+        Assert.That(s.Expedition, Is.Null);
+        Assert.That(s.ExpeditionLog.Last().EndKind, Is.EqualTo("dev"));
+        Assert.That(s.AppliedEventKeys, Is.Empty);
+    }
 }

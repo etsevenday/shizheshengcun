@@ -1,0 +1,63 @@
+@inherits GameComponent
+
+@* B21 终止远征确认窗（R03 D5/D5.1/D5.2、A10 §7）：即时损失逐人（前→后）与返程风险分开写；锁定的返程路径、倍率与 T；回到父地点（不是营区）；
+   确认前可取消而无成本，确认后立即扣除并开始不可取消的撤出。数据全部来自内核 AbortPreview，按钮交给内核重验（双击只扣一次）。 *@
+@{
+    var p = G.E.AbortPreview(G.S);
+    var shakenAt = Clock.DayTime(p.ShakenUntil);
+}
+<div class="overflow-layer" role="dialog" aria-modal="true" aria-label="终止本次远征">
+    <div class="panel overflow-box exp-abort">
+        <div class="ov-head">
+            <h2>终止本次远征@(p.DungeonName.Length > 0 ? " · " + p.DungeonName : "")</h2>
+            <span class="muted">已拿到的物资都留在身上，不会没收；但要付出下面的代价，并且要真的花时间走出去。</span>
+        </div>
+        @if (p.Reason != null)
+        {
+            <div class="notice">@p.Reason</div>
+            <div class="ov-foot"><span></span><button type="button" class="secondary" @onclick="() => G.OpenPanel(null)">关闭</button></div>
+        }
+        else
+        {
+            <div class="ov-list" data-wheel="y">
+                <div class="exp-sec">即时损失（确认时一次扣除，每名存活同行）</div>
+                @foreach (var r in p.Rows)
+                {
+                    <div class="exp-row">
+                        <b>@r.Name</b>
+                        <span>饱食@(Ui.N(r.Before.Satiety))→@Ui.N(r.After.Satiety)</span>
+                        <span>水分@(Ui.N(r.Before.Hydration))→@Ui.N(r.After.Hydration)</span>
+                        <span>体力@(Ui.N(r.Before.Energy))→@Ui.N(r.After.Energy)</span>
+                        <span>清醒@(Ui.N(r.Before.Wakefulness))→@Ui.N(r.After.Wakefulness)</span>
+                        <span>精神@(Ui.N(r.Before.Morale))→@Ui.N(r.After.Morale)</span>
+                        <span>健康@(Ui.N(r.Before.Health))→@Ui.N(r.After.Health)</span>
+                    </div>
+                }
+                <div class="exp-row"><span>@p.ShakenText，至@(shakenAt)（重复终止只延后到最近一次+6小时，不叠加）</span></div>
+                <div class="exp-sec">撤出（确认后开始，不可取消）</div>
+                <div class="exp-row"><span>路线：@string.Join("→", p.Route)</span></div>
+                <div class="exp-row"><span>基础@(p.BaseMinutes)分钟×倍率@(p.Factor.ToString("0.##"))@(p.FactorReasons.Count > 0 ? $"（{string.Join("，", p.FactorReasons)}）" : "") → 共<b>@(p.TotalMinutes)分钟</b>（最低30分钟，已含出口路程）</span></div>
+                <div class="exp-row"><span>回到：<b>@p.ParentName</b>（不是营区）</span></div>
+                <div class="exp-sec">返程中仍可能发生</div>
+                @foreach (var x in p.Risks) { <div class="exp-row warn-text"><span>· @x</span></div> }
+            </div>
+            <div class="ov-foot">
+                <button type="button" class="secondary" @onclick="() => G.OpenPanel(null)">取消（不扣任何东西）</button>
+                <button type="button" class="primary danger" disabled="@(G.Running || _busy)" @onclick="Confirm">确认终止并撤出</button>
+            </div>
+            @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+        }
+    </div>
+</div>
+
+@code {
+    private bool _busy;
+
+    private async Task Confirm()
+    {
+        if (_busy) return;
+        _busy = true;
+        try { await G.ConfirmAbort(); }
+        finally { _busy = false; }
+    }
+}

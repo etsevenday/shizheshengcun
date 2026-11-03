@@ -130,6 +130,7 @@
         @if (G.DuplicateWeaponsPending && G.Panel != "menu") { <DuplicateWeaponOverlay /> }
         else if (G.OverflowPending && G.Panel != "menu") { <OverflowOverlay /> }
         @if (G.Panel == "menu") { <MenuOverlay /> }
+        @if (G.Panel == "abort" && !battleUi) { <ExpeditionAbort /> }
         @if (G.BattleMenuOpen && battleUi && !G.BattleFullscreen) { <MenuOverlay Battle="true" /> }
         <StatusPop />
 
