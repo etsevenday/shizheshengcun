@@ -75,6 +75,52 @@ namespace Survival.Core.Engine
             }
         }
 
+        // ───────────────────────── 公开抄录（A11 §3 确定替代来源） ─────────────────────────
+
+        /// <summary>城市服务表里的公开抄录（h03“查抄公开资料”）；h02/h04 合成服务借用它的名称与摘要。</summary>
+        public const string CopyBaseServiceId = "copy_public_knowledge";
+        public const string KnowledgeCopyKind = "knowledge_copy";
+
+        /// <summary>某抄录服务可抄的知识包（配置顺序）。</summary>
+        public List<KnowledgePackConfig> CopyPacksOf(string serviceId) => Config.ExpansionQuests.Packs.Where(p => p.CopyServiceId == serviceId).ToList();
+
+        /// <summary>知识包里还没掌握的知识。</summary>
+        private List<string> PackUnknown(GameState s, KnowledgePackConfig p) => p.Knowledge.Where(k => !KnowsKnowledge(s, k)).ToList();
+
+        /// <summary>
+        /// 抄录预览（0 分钟只读）：固定等待 30 分钟、0 材料；每个知识包一项（名称后标已掌握的），完全已知的包禁用（“已全部掌握”）；
+        /// 要营区登记；不写任务调查记录、通关/首通时间或容量。中途停下不授知识、已过时间不退（Q33 通用事务）。
+        /// </summary>
+        private void KnowledgeCopyPreview(GameState s, CityServiceConfig svc, CityServiceView v)
+        {
+            var packs = CopyPacksOf(svc.Id);
+            v.TimeText = $"{svc.WorldMinutes}分钟";
+            v.EffectText = $"固定等待{svc.WorldMinutes}分钟、0材料：抄录所选资料里还没掌握的做法知识（只补未学的）；不需要地牢记录，" +
+                           "不写任务调查记录、地牢通关或首通时间，也不加队伍容量；中途停下不授知识，已过的时间不退";
+            v.Choices = packs.Select(p => new CityChoiceView
+            {
+                Id = p.Id,
+                Label = $"{p.CopyLabel}：" + string.Join("、", p.Knowledge.Select(k => KnowledgeName(k) + (KnowsKnowledge(s, k) ? "（已掌握）" : ""))),
+                Blocked = PackUnknown(s, p).Count == 0 ? "已全部掌握：完全已知的资料不抄录，不白耗时间" : null,
+            }).ToList();
+            if (v.Blocked != null) return;
+            if (!s.Progress.Flags.Contains(Config.City.Registration.RegisteredFact)) v.Blocked = "需要：" + FactLabel(Config.City.Registration.RegisteredFact);
+            else if (v.Choices.All(c => c.Blocked != null)) v.Blocked = "已全部掌握：这里的公开资料里没有你还不会的做法（不白耗时间）";
+        }
+
+        /// <summary>抄录完成（段末、死亡已先判过）：重验仍有未掌握的知识，写抄录事实授予；返回失败原因（时间不退），成功为 null。</summary>
+        private string? CompleteKnowledgeCopy(GameState s, CityServiceTxn p, List<string> made)
+        {
+            var pack = Config.ExpansionQuests.Packs.FirstOrDefault(x => x.Id == p.ChoiceId);
+            if (pack == null) return "资料不存在";
+            var unknown = PackUnknown(s, pack);
+            if (unknown.Count == 0) return "这些做法已全部掌握（已过的时间不退）";
+            s.Progress.Flags.Add(pack.CopyFact);
+            made.Add($"抄录{pack.CopyLabel}，学会做法知识：{string.Join("、", unknown.Select(KnowledgeName))}" +
+                     "（只补未掌握的；不写任务调查记录、地牢通关或容量，不发物、不给经验）");
+            return null;
+        }
+
         // ───────────────────────── 开发入口 ─────────────────────────
 
         /// <summary>开发入口（?dev=1）：所选可选地牢任务的状态一行（接取、记录、完成、两段已提交分钟、知识）。</summary>

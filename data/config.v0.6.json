@@ -34870,7 +34870,7 @@
         "mode": null,
         "target": null,
         "actorSkillLevel": null,
-        "implemented": false
+        "implemented": true
       },
       {
         "id": "clinic_consult",

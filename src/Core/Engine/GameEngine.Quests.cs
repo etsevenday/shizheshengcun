@@ -632,6 +632,14 @@ namespace Survival.Core.Engine
                         Id = QuestWorkServicePrefix + q.Id, Title = q.WorkLabel, Summary = q.StepActive, LocationId = q.LocationId, Kind = "quest_work",
                         WorldMinutes = q.WorkMinutes, QuestId = q.Id, Implemented = q.Implemented,
                     };
+                // B23：h02/h04 的公开抄录（h03 用城市服务表里原有的 copy_public_knowledge）
+                var copyBase = Config.City.Services.FirstOrDefault(x => x.Id == CopyBaseServiceId);
+                foreach (var p in Config.ExpansionQuests.Packs.Where(p => Config.City.Services.All(x => x.Id != p.CopyServiceId)).GroupBy(p => p.CopyServiceId))
+                    d[p.Key] = new CityServiceConfig
+                    {
+                        Id = p.Key, Title = copyBase?.Title ?? "", Summary = copyBase?.Summary ?? "", LocationId = p.First().CopyLocationId, Kind = KnowledgeCopyKind,
+                        WorldMinutes = p.First().CopyMinutes, Implemented = true,
+                    };
                 var t = Config.Scope.Training;
                 if (t.Tiers.Count > 0 && !string.IsNullOrEmpty(t.LocationId))
                     d[TrainingServiceId] = new CityServiceConfig

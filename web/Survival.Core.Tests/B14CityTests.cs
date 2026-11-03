@@ -225,7 +225,7 @@ public class B14CityTests : TestBase
         var c = E.NpcsHere(t).Single();
         Assert.That(c.Name, Is.EqualTo("陈芷"));
         Assert.That(c.FactionName, Is.EqualTo("幸存者营区"));
-        Assert.That(c.ServiceCount, Is.EqualTo(3));
+        Assert.That(c.ServiceCount, Is.EqualTo(4), "B23 起另有查抄公开资料（物资登记资料）");
         E.DebugMapTeleport(t, "c04_alms");
         Assert.That(E.NpcsHere(t).Select(x => x.Name), Is.EqualTo(new[] { "白苓" }));
         E.DebugMapTeleport(t, "r02_academy");
@@ -278,7 +278,7 @@ public class B14CityTests : TestBase
         Assert.That(s.Story.DialogueLog.Any(d => d.EventId.StartsWith("npc_xu_an_dialogue_locked")), Is.False);
         Assert.That(s.Story.DialogueLog.Any(d => d.EventId.StartsWith("npc_xu_an_dialogue_idle")), Is.True);
         // B15：整理调查记录已实装，两份记录没齐时照常列出并写真实原因
-        Assert.That(E.CityServicesOf(s, "npc_xu_an").Single().Blocked, Does.StartWith("需要："));
+        Assert.That(E.CityServicesOf(s, "npc_xu_an").Single(v => v.Id == "hub_affairs_record").Blocked, Does.StartWith("需要："));
     }
 
     /// <summary>CITY-N05/TXT08：命名岗位退场由机构当班接续员代班，不复活原人物；服务照办、日配额与已领账沿用。</summary>
@@ -455,17 +455,8 @@ public class B14CityTests : TestBase
         Ok(E.StartCityService(s, "clinic_consult", GameState.PlayerId));
         Assert.That((s.GameMinute, s.Stats.Health, s.Body.VirusLoad), Is.EqualTo(before));
         Assert.That(s.Log.Last().Text, Does.Contain("伤病咨询"));
-        // B15 起主线与城市支线的任务类服务已实装（见 B15QuestTests），B18 起鉴定已实装（见 B18AppraisalTests）
-        foreach (var id in new[] { "copy_public_knowledge" })
-        {
-            var svc = Cfg.City.Services.Single(x => x.Id == id);
-            E.DebugMapTeleport(s, svc.LocationId);
-            var v = E.CityServicePreview(s, id)!;
-            Assert.That(v.Implemented, Is.False, id);
-            Assert.That(v.Blocked, Is.EqualTo("这里现在不办理这项事项"), id);
-            Assert.That(E.StartCityService(s, id).Ok, Is.False, id);
-            Assert.That(E.NpcsHere(s).SelectMany(n => E.CityServicesOf(s, n.NpcId)).Any(x => x.Id == id), Is.False, id);
-        }
+        // B15 起主线与城市支线的任务类服务已实装（见 B15QuestTests），B18 起鉴定已实装（见 B18AppraisalTests），B23 起查抄公开资料已实装（见 B23ExqCopyTests）
+        Assert.That(Cfg.City.Services.Where(x => !x.Implemented), Is.Empty);
         E.DebugMapTeleport(s, "h06_shelter");
         Assert.That(E.CityServicePreview(s, "shelter_recruitment")!.Blocked, Is.Null);
     }

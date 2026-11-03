@@ -17,8 +17,7 @@ public class B14bCityQTests : TestBase
 
     private static readonly string[] Hidden =
     {
-        // B15 起主线与城市支线的 7 项任务类服务已实装，B18 起鉴定所 appraisal_white_v1 已实装，其余仍按 Q146 隐藏
-        "copy_public_knowledge",
+        // B15 起主线与城市支线的 7 项任务类服务已实装，B18 起鉴定所 appraisal_white_v1 已实装，B23 起 copy_public_knowledge 已实装：九项都已开放
     };
     /// <summary>B14 快照（Q146 的 b14UnimplementedSnapshot，只是版本快照，不是永久隐藏表）。</summary>
     private static readonly string[] B14Snapshot =
@@ -267,7 +266,7 @@ public class B14bCityQTests : TestBase
         s.Progress.Flags.Add("hub_registered");
         Assert.That(E.PublicStationsHere(s).Single(v => v.StationId == "workbench").Blocked, Is.Null);
         Assert.That(E.CanStart(s, Craft("make_machete")), Is.Null, "满足后按原规则可用");
-        Assert.That(E.CityServicesOf(s, "npc_luo_zheng").Select(v => v.Id), Is.EqualTo(new[] { "hub_workshop_access", GameEngine.TrainingServiceId }), "未实装的查抄公开资料仍隐藏（B15：h03 另有战术训练）");
+        Assert.That(E.CityServicesOf(s, "npc_luo_zheng").Select(v => v.Id), Is.EqualTo(new[] { "hub_workshop_access", "copy_public_knowledge", GameEngine.TrainingServiceId }), "B23 起查抄公开资料已实装（B15：h03 另有战术训练）");
     }
 
     // ───────────── Q142 换药 / Q144 登记 ─────────────
@@ -421,7 +420,8 @@ public class B14bCityQTests : TestBase
             var card = E.NpcsHere(s).Single(c => c.Kind == "post");
             var list = E.CityServicesOf(s, n.NpcId);
             Assert.That(list.Select(v => v.Id).Intersect(Hidden), Is.Empty, n.NpcId);
-            var impl = n.ServiceIds.Count(id => !Hidden.Contains(id)) + (n.NpcId == Cfg.Scope.Training.NpcId ? 1 : 0);   // B15：h03 战术训练挂在罗铮事项里
+            var impl = n.ServiceIds.Count(id => !Hidden.Contains(id)) + (n.NpcId == Cfg.Scope.Training.NpcId ? 1 : 0)   // B15：h03 战术训练挂在罗铮事项里
+                       + Cfg.ExpansionQuests.Packs.Where(p => p.CopyNpcId == n.NpcId && !n.ServiceIds.Contains(p.CopyServiceId)).Select(p => p.CopyServiceId).Distinct().Count();   // B23：h02/h04 公开抄录
             Assert.That(card.ServiceCount, Is.EqualTo(impl), n.NpcId);
             if (impl == 0)
             {
@@ -452,15 +452,21 @@ public class B14bCityQTests : TestBase
         SetStats(s, 12, 80, 80, 15, 80, 70);
         var dress = E.CityServicesOf(s, "npc_chen_zhi").Single(v => v.Id == "clinic_dressing");
         Assert.That(dress.Blocked, Does.StartWith("材料不足"), "缺材料仍显示并写原因");
-        Assert.That(E.NpcsHere(s).Single().Status, Is.EqualTo("可交谈 · 事项 2/3 项可办"));
+        Assert.That(E.NpcsHere(s).Single().Status, Is.EqualTo("可交谈 · 事项 2/4 项可办"), "B23：另有查抄公开资料（未登记不可办）");
 
-        // 直接请求隐藏事项：拒绝，状态完全不变
+        // 直接请求隐藏事项：拒绝，状态完全不变（B23 起九项都已实装，以配置开关模拟隐藏）
         E.DebugMapTeleport(s, "h03_workshop");
         var json = SaveSerializer.Serialize(s);
-        var r = E.StartCityService(s, "copy_public_knowledge");
-        Assert.That(r.Ok, Is.False);
-        Assert.That(r.Reason, Does.Not.Contain("后续版本"));
-        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(json), "零扣费零效果");
+        var hidden = Cfg.City.Services.Single(x => x.Id == "copy_public_knowledge");
+        try
+        {
+            hidden.Implemented = false;
+            var r = E.StartCityService(s, "copy_public_knowledge");
+            Assert.That(r.Ok, Is.False);
+            Assert.That(r.Reason, Does.Not.Contain("后续版本"));
+            Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(json), "零扣费零效果");
+        }
+        finally { hidden.Implemented = true; }
 
         // 施济额度用完：仍显示、写真实原因
         var t = At("c04_alms");
@@ -472,20 +478,22 @@ public class B14bCityQTests : TestBase
         Assert.That(relief.Blocked, Does.Contain("救助配给额度已用完"));
         Assert.That(E.NpcsHere(t).Single().ServiceCount, Is.EqualTo(1));
 
-        // 后续实装同 ID：自然出现在列表里（配额账不动）。B18 起鉴定已实装，改用仍隐藏的抄录资料包模拟
+        // 后续实装同 ID：自然出现在列表里（配额账不动）。B23 起抄录资料包已实装，以配置开关模拟“先隐藏后实装”
         var svc = Cfg.City.Services.Single(x => x.Id == "copy_public_knowledge");
         var npc = Cfg.City.Npcs.Single(n => n.ServiceIds.Contains(svc.Id));
         var quota = new Dictionary<string, int>(t.City.QuotaUsed);
         var before = E.CityServicesOf(t, npc.NpcId).Count;
         try
         {
-            svc.Implemented = true;
+            svc.Implemented = false;
             E.DebugMapTeleport(t, npc.LocationId);
+            Assert.That(E.CityServicesOf(t, npc.NpcId).Select(v => v.Id), Does.Not.Contain("copy_public_knowledge"));
+            svc.Implemented = true;
             Assert.That(E.CityServicesOf(t, npc.NpcId).Select(v => v.Id), Does.Contain("copy_public_knowledge"));
             Assert.That(E.NpcsHere(t).Single(c => c.NpcId == npc.NpcId).ServiceCount, Is.EqualTo(npc.ServiceIds.Count(id => Cfg.City.Services.Single(x => x.Id == id).Implemented) + (npc.NpcId == Cfg.Scope.Training.NpcId ? 1 : 0)));
             Assert.That(t.City.QuotaUsed, Is.EqualTo(quota));
         }
-        finally { svc.Implemented = false; }
+        finally { svc.Implemented = true; }
     }
 
     // ───────────── Q151 尹珂台词 ─────────────

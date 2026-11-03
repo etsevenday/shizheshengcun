@@ -82,6 +82,7 @@
             var c = v.Choices.FirstOrDefault(x => x.Id == pickChoice);
             var why = v.Blocked ?? (v.NeedsTarget && t?.Blocked != null ? $"{t.Name}：{t.Blocked}" : null)
                       ?? (v.Choices.Count > 0 && c == null ? "先选一项" : null)
+                      ?? c?.Blocked
                       ?? (G.Running ? "行动进行中" : null);
             <section class="city-svc @(v.Implemented ? "" : "pending")">
                 <h3>@v.Title <small>@v.TimeText · @v.CostText</small></h3>
@@ -108,9 +109,12 @@
                         @foreach (var ch in v.Choices)
                         {
                             var cid = ch.Id;
-                            <button class="@(cid == pickChoice ? "primary" : "secondary")" @onclick="() => SetChoice(id, cid)">@ch.Label</button>
+                            @* B23：公开抄录完全已知的资料包禁用（灰色，原因写在悬停与按钮下） *@
+                            <button class="@(cid == pickChoice ? "primary" : "secondary") @(ch.Blocked != null ? "btn-off" : "")" disabled="@(ch.Blocked != null)"
+                                    title="@(ch.Blocked ?? ch.Label)" data-choice="@cid" @onclick="() => SetChoice(id, cid)">@ch.Label</button>
                         }
                     </div>
+                    @foreach (var ch in v.Choices.Where(x => x.Blocked != null)) { <p class="muted small">@ch.Label：@ch.Blocked</p> }
                 }
                 <div class="btn-row">
                     <button class="primary" disabled="@(why != null)" title="@(why ?? $"办理：{v.Title}")" @onclick="() => Do(id, pickTarget, pickChoice)">
@@ -131,7 +135,8 @@
         _target.TryGetValue(v.Id, out var t) && v.Targets.Any(x => x.ActorId == t) ? t
         : v.Targets.FirstOrDefault(x => x.Blocked == null)?.ActorId ?? v.Targets.FirstOrDefault()?.ActorId ?? "";
 
-    private string? PickedChoice(CityServiceView v) => _choice.TryGetValue(v.Id, out var c) && v.Choices.Any(x => x.Id == c) ? c : null;
+    private string? PickedChoice(CityServiceView v) => _choice.TryGetValue(v.Id, out var c) && v.Choices.Any(x => x.Id == c) ? c
+        : v.Choices.Count(x => x.Blocked == null) == 1 && v.Choices.Count == 1 ? v.Choices[0].Id : null;   // B23：只有一项可选（h04 物资登记资料）时直接选中
 
     private void SetTarget(string svc, string actor) { _target[svc] = actor; StateHasChanged(); }
 

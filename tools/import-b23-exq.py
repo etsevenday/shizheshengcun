@@ -157,7 +157,7 @@ def main():
     for sv in cfg["city"]["services"]:
         if sv["id"] == "copy_public_knowledge":
             assert sv["locationId"] == "h03_workshop" and sv["worldMinutes"] == 30 and sv["inputs"] == {}
-            sv["implemented"] = False   # 公开抄录随 M479 开放
+            sv["implemented"] = True
 
     cfg["expansionQuests"] = {
         "source": "A11「可选地牢任务与知识」§2—§4、expansion-quests.json（2026-10-30-review-1）；开发计划 v0.9 B23（R71）",

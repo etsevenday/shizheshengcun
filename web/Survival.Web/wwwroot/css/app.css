@@ -1502,3 +1502,6 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .apop-risk.exp-brief { color: inherit; }
 /* B21 试玩修复 M399：Esc 菜单压在中央推进条（撤出进度条）之上 */
 .overlay.menu-top { z-index: 60; }
+
+/* B23：城市事项里完全已知的抄录资料包（禁用选项）明显变灰 */
+.city-panel button.btn-off, .city-panel button.btn-off:disabled { opacity: .38; filter: grayscale(1); cursor: not-allowed; }

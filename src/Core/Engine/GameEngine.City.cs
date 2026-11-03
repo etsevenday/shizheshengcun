@@ -260,6 +260,9 @@ namespace Survival.Core.Engine
             var ids = n.ServiceIds.ToList();
             // B15：h03 战术训练（R03 §3）挂在当地岗位的事项里
             if (Config.Scope.Training.NpcId == npcId && ExtraServices.ContainsKey(TrainingServiceId)) ids.Add(TrainingServiceId);
+            // B23：可选地牢知识包的公开抄录挂在替代来源岗位（h03 罗铮原服务、h02 许安/h04 陈芷合成服务）
+            foreach (var sid in Config.ExpansionQuests.Packs.Where(p => p.CopyNpcId == npcId).Select(p => p.CopyServiceId).Distinct())
+                if (!ids.Contains(sid)) ids.Add(sid);
             return ids.Select(CityService).Where(x => x != null && x.Implemented)
                 .Select(x => CityServicePreview(s, x!.Id, n)).Where(v => v != null).Select(v => v!).ToList();
         }
@@ -381,6 +384,7 @@ namespace Survival.Core.Engine
                     break;
             }
             if (QuestOfService(svc) is QuestConfig wq) QuestServicePreview(s, svc, wq, v);
+            if (svc.Kind == KnowledgeCopyKind) KnowledgeCopyPreview(s, svc, v);
             return v;
         }
 
@@ -528,7 +532,17 @@ namespace Survival.Core.Engine
                 if (choice == null) return ActionResult.Fail("先选一项");
                 if (!string.IsNullOrEmpty(choice.Stat) && !ReliefChoiceOk(s.Actors[t!.ActorId], choice)) return ActionResult.Fail($"{t.Name}不符合这一项（{choice.Label}）");
             }
-            var npc = Config.City.Npcs.FirstOrDefault(n => n.ServiceIds.Contains(serviceId));
+            var npc = Config.City.Npcs.FirstOrDefault(n => n.ServiceIds.Contains(serviceId))
+                      ?? Config.City.Npcs.FirstOrDefault(n => Config.ExpansionQuests.Packs.Any(p => p.CopyServiceId == serviceId && p.CopyNpcId == n.NpcId));
+            // B23：公开抄录选知识包（只有一包的直接用它），完全已知的包禁用
+            KnowledgePackConfig? copyPack = null;
+            if (svc.Kind == KnowledgeCopyKind)
+            {
+                var opts = CopyPacksOf(svc.Id);
+                copyPack = opts.FirstOrDefault(p => p.Id == choiceId) ?? (opts.Count == 1 ? opts[0] : null);
+                if (copyPack == null) return ActionResult.Fail("先选一项");
+                if (v.Choices.FirstOrDefault(c => c.Id == copyPack.Id)?.Blocked is string pb) return ActionResult.Fail(pb);
+            }
             // B18：鉴定/换物要先在鉴定交易面板里选确切样本与报价（StartAppraise / StartAppraisalTrade），这里不代选
             if (IsAppraisalService(svc.Id)) return ActionResult.Fail("请在鉴定交易面板里选样本后办理");
             switch (svc.Id)
@@ -589,7 +603,7 @@ namespace Survival.Core.Engine
             var txn = new CityServiceTxn
             {
                 TxnId = s.City.NextTxn++, ActionId = act.ActionId, ServiceId = svc.Id, NpcId = npc?.NpcId ?? "", TargetActorId = t?.ActorId ?? "",
-                ChoiceId = choice?.Id, LocationId = s.CurrentLocation, StartDay = Clock.Day(s.GameMinute), QuotaReserved = svc.DailyPartyQuota != null,
+                ChoiceId = copyPack?.Id ?? choice?.Id, LocationId = s.CurrentLocation, StartDay = Clock.Day(s.GameMinute), QuotaReserved = svc.DailyPartyQuota != null,
             };
             foreach (var kv in svc.Inputs)
             {
@@ -634,7 +648,8 @@ namespace Survival.Core.Engine
                 if (!s.Party.Contains(p.TargetActorId) || !s.Actors.TryGetValue(p.TargetActorId, out target)) fail = "目标已不在同行队伍里";
             }
             var made = new List<string>();
-            if (fail == null)
+            if (fail == null && svc.Kind == KnowledgeCopyKind) fail = CompleteKnowledgeCopy(s, p, made);
+            else if (fail == null)
             {
                 switch (svc.Id)
                 {
