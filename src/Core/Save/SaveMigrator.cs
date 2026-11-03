@@ -64,6 +64,7 @@ namespace Survival.Core.Save
         public const string Schema37 = "37";
         public const string Schema38 = "38";
         public const string Schema39 = "39";
+        public const string Schema40 = "40";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -118,6 +119,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema37) From37To38(s, config, notes);
             if (s.SchemaVersion == Schema38) From38To39(s, config, notes);
             if (s.SchemaVersion == Schema39) From39To40(s, config, notes);
+            if (s.SchemaVersion == Schema40) From40To41(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1221,8 +1223,30 @@ namespace Survival.Core.Save
         private static void From39To40(GameState s, GameConfig config, List<string> notes)
         {
             foreach (var rs in s.Resources.Values) rs.ClaimMinutesDone = 0;
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（可选地牢任务与公开抄录：" +
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = "存档已升级到版本40（可选地牢任务与公开抄录：" +
                 "废水厂、矿洞、商城、冷链仓的核心记录领取改为固定等待10分钟两段、中途停下保留已完成的段；不补物资、经验或任务完成）。" });
+            s.SchemaVersion = Schema40;
+        }
+
+        /// <summary>
+        /// 40→41（开发计划 v0.9 B24，A10-CITY §3“旧档已在城中但无展示标记可首次显示一次纯UI说明，不补历史奖励或伪造接触”）：
+        /// 人正在某城内（父节点或城内建筑）且到过该城父节点的，记该城待自动打开（旧档补显，界面写一句说明）；
+        /// 其余到过父节点的城记为已展示（不是首次到达，不再自动弹）。不补任何奖励、事实或接触。
+        /// </summary>
+        private static void From40To41(GameState s, GameConfig config, List<string> notes)
+        {
+            var e = new Engine.GameEngine(config);
+            var here = e.CityOf(s.CurrentLocation);
+            var c = s.City;
+            c.OverviewShown ??= new HashSet<string>();
+            foreach (var p in e.CityParents())
+            {
+                if (!s.Locations.TryGetValue(p, out var l) || !l.Visited) continue;
+                if (p == here && c.OverviewPending == null) { c.OverviewPending = p; c.OverviewPendingLegacy = true; }
+                else c.OverviewShown.Add(p);
+            }
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（三城主城鸟瞰：" +
+                "在三城内可从当前地点卡旁的“主城鸟瞰”查看城内建筑与路线；不补奖励、不改位置）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

@@ -277,7 +277,7 @@ public class B23ExqQuestTests : TestBase
         j["SchemaVersion"] = "39";
         foreach (var r in ((JObject)j["Resources"]!).Properties()) ((JObject)r.Value).Remove("ClaimMinutesDone");
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out _);
-        Assert.That(m.SchemaVersion, Is.EqualTo("40"));
+        Assert.That(m.SchemaVersion, Is.EqualTo("41"));   // B24 起再升到 41
         Assert.That(m.Log.Count(l => l.Text.Contains("存档已升级到版本40")), Is.EqualTo(1));
         Assert.That(E.KnowsKnowledge(m, "blueprint_repair_manual"), Is.True);
         Assert.That(GameEngine.QuestDone(m, "EXQ05"), Is.False);

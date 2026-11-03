@@ -27,6 +27,14 @@ namespace Survival.Core.State
         /// 开窗、取消、读档、代班都读这里，不重抽。保留最近若干世界日（AppraisalConfig.QuoteKeepDays）。
         /// </summary>
         public List<AppraisalQuoteSnapshot> Quotes { get; set; } = new List<AppraisalQuoteSnapshot>();
+        /// <summary>
+        /// 主城鸟瞰已自动展示过的城（父城节点 ID，A10-CITY §3“首到记录存按城ID的一次展示标记”，开发计划 v0.9 B24，存档 41）：刷新/读档/再到达不再自动打开。
+        /// </summary>
+        public HashSet<string> OverviewShown { get; set; } = new HashSet<string>();
+        /// <summary>待自动打开鸟瞰的城（首次真实到达父节点时记下，对白读完、安全空闲时界面打开并转入 OverviewShown）；没有为 null。</summary>
+        public string? OverviewPending { get; set; }
+        /// <summary>待打开的是旧档补显（存档 40→41 时人已在城里）：界面顶部写一句纯说明，不补奖励。</summary>
+        public bool OverviewPendingLegacy { get; set; }
 
         public CityState Clone() => new CityState
         {
@@ -38,6 +46,9 @@ namespace Survival.Core.State
             NextTxn = NextTxn,
             Completed = Completed,
             Quotes = Quotes.Select(q => q.Clone()).ToList(),
+            OverviewShown = new HashSet<string>(OverviewShown),
+            OverviewPending = OverviewPending,
+            OverviewPendingLegacy = OverviewPendingLegacy,
         };
     }
 

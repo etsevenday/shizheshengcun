@@ -46,8 +46,10 @@ namespace Survival.Core.State
         /// 一次性事件去重键，角色带惊魂未定截止（开发计划 v0.9 B21）。
         /// "38" 起晾制架八位：区设施带在用晾制位（DryingSlots），位内物品 owner 为 drying:&lt;place&gt;#&lt;位号&gt;（策划答复 Q170，开发计划 v0.9 B22c）。
         /// "39" 起肉干在制暂停原料保质：晾制位内肉干原料带暂停时快照的剩余保质（ItemInstance.ShelfPausedMinutes，ExpiresAt 暂为空），晾制位带暂停标记（策划答复 Q215，开发计划 v0.9 B22k）。
+        /// "40" 起可选地牢核心记录两段续做（ResourceState.ClaimMinutesDone，开发计划 v0.9 B23）。
+        /// "41" 起主城鸟瞰按城一次的展示标记与待自动打开（CityState.OverviewShown/OverviewPending，开发计划 v0.9 B24）。
         /// </summary>
-        public const string CurrentSchema = "40";
+        public const string CurrentSchema = "41";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
