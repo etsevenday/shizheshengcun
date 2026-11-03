@@ -85,7 +85,7 @@
                         </div>
                         @if (o.Ok)
                         {
-                            <div class="tiny">投到@(slotText)，预计@(Clock.DayTime(o.FinishMinute))完成；会取：@string.Join("、", o.Sources)</div>
+                            <div class="tiny">投到@(slotText)，预计@(Clock.DayTime(o.FinishMinute))完成；会取：@for (var i = 0; i < o.Sources.Count; i++) {@(i > 0 ? "、" : "")<span class="dry-src">@o.Sources[i]</span>}</div>
                         }
                         else
                         {
@@ -93,7 +93,7 @@
                         }
                         @foreach (var w in o.Warnings)
                         {
-                            <div class="tiny warn-text">@w</div>
+                            <div class="tiny danger-text">@w</div>
                         }
                         @if (o.PausesShelf)
                         {
