@@ -269,3 +269,6 @@
   .weight-icon { left: 8px; top: 5px; width: 48px; height: 55px; }
   .wasteland .vital-icon { top: 2px; height: 26px; }
 }
+/* B21 试玩第 2 轮：卡旁浮窗里的危险操作（01 被拒时的“终止本次远征…”）用红字，与 Esc 菜单 .secondary.danger 同款，不吃 .apop-go 的金底 */
+.wasteland .apop-foot .apop-go.danger { background: #372621; border-image: none; border-color: #7d4f45; color: #e8b3a6; }
+.wasteland .apop-foot .apop-go.danger:hover:not(:disabled) { background: #4a2e27; border-image: none; color: #f0c7b9; }
