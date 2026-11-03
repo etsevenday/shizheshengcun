@@ -126,6 +126,8 @@
                             @* B22b（Q168）：现场修补——先选目标，再选修补包（不选则默认用能恢复最多、消耗最少的一包）；一次只用一包 *@
                             var cands = e.RepairCandidates(s, rc);
                             var tgt = G.CraftTarget is int ct ? s.Items.FirstOrDefault(i => i.InstanceId == ct) : null;
+                            @* B22b 试玩修复 M463：两张列表放进可滚动区，开工条留在卡底 *@
+                            <div class="patch-scroll" data-wheel="y">
                             <div class="tiny muted">选择要修补的武器、工具或防具（本人随身、穿戴中或当前地面；有金属制作或拆解依据，枪械、锅、打火器不修）</div>
                             <div class="repair-list">
                                 @foreach (var t in cands)
@@ -139,20 +141,25 @@
                                 }
                                 @if (cands.Count == 0) { <div class="risk none">随身、穿戴中和当前地面都没有可修补的武器、工具或防具。</div> }
                             </div>
-                            var packs = e.FieldPatchPacks(s);
+                            @{ var packs = e.FieldPatchPacks(s); }
                             <div class="tiny muted">选择修补包（随身或当前地面；不选则默认用能恢复最多、消耗最少的一包）</div>
                             <div class="repair-list" data-patch-picks>
                                 @foreach (var pk in packs)
                                 {
                                     var pid = pk.InstanceId;
                                     var q = tgt != null ? e.FieldPatchQuote(tgt, pk) : (0, 0);
-                                    var qText = tgt == null ? "" : q.Item1 >= 1 ? $" · 可恢复{Ui.T(q.Item1 / 10.0)}、包耐久−{q.Item2}" : " · 不够恢复0.1";
-                                    <button type="button" class="repair-pick @(G.CraftPatch == pid ? "on" : "")" title="@(G.CraftPatch == pid ? "再点一次取消指定，改回默认" : "指定用这一包")" @onclick="() => PickPatch(pid)">
+                                    var qText = tgt == null || q.Item1 < 1 ? "" : $" · 可恢复{Ui.T(q.Item1 / 10.0)}、包耐久−{q.Item2}";
+                                    // B22b 试玩修复 M463：会超五卡/不够恢复的包事先标出；选了目标时置灰不可选
+                                    var pnote = e.FieldPatchPackNote(s, pk, tgt);
+                                    var pblock = pnote != null && tgt != null && G.CraftPatch != pid;
+                                    <button type="button" class="repair-pick @(G.CraftPatch == pid ? "on" : "") @(pblock ? "missing" : pnote != null ? "warn" : "")" disabled="@pblock"
+                                            title="@(pnote ?? (G.CraftPatch == pid ? "再点一次取消指定，改回默认" : "指定用这一包"))" @onclick="() => PickPatch(pid)">
                                         <span class="ir-icon">@Icons.Markup(pk.ItemId)</span>
-                                        <span><b>@e.ItemName(pk.ItemId)#@pid@(pk.Count > 1 ? $"×{pk.Count}" : "")</b><small>@e.WherePath(s, pk) · 剩余@(e.PatchRemaining(pk))/@(e.PatchMax(pk))@qText</small></span>
+                                        <span><b>@e.ItemName(pk.ItemId)#@pid@(pk.Count > 1 ? $"×{pk.Count}" : "")</b><small>@e.WherePath(s, pk) · 剩余@(e.PatchRemaining(pk))/@(e.PatchMax(pk))@qText@(pnote != null ? $" · {pnote}" : "")</small></span>
                                     </button>
                                 }
                                 @if (packs.Count == 0) { <div class="risk none">随身和当前地面都没有可用的野外修补包（工作台“远行基础做法”可做白/绿/蓝三品阶）。</div> }
+                            </div>
                             </div>
                         }
                         else if (rc.IsRepair)
@@ -232,7 +239,7 @@
                                 <span class="muted">@e.RecipeFuelRule(rc)</span>
                             </div>
                         }
-                        <div class="mat-scroll" data-wheel="y">
+                        <div class="mat-scroll @(rc.AllInputs.Count == 0 && rc.Outputs.Count == 0 && rc.Catalysts.Count == 0 ? "mat-empty" : "")" data-wheel="y">
                         <div class="tiny muted">原料@(rc.Fuel.Count > 0 ? "与燃料" : "")</div>
                         <div class="mat-grid">
                         @foreach (var kv in rc.Fuel)

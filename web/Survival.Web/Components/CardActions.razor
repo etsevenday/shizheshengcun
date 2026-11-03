@@ -285,7 +285,7 @@
                     }
                 </div>
                 @if (rwhy != null) { <div class="ca-note bad">维修：@rwhy</div> }
-                @if (fpReq != null && fpWhy != null && fpWhy != rwhy) { <div class="ca-note bad">现场修补：@fpWhy</div> }
+                @if (fpReq != null && fpWhy != null && !(G.Running && rwhy != null)) { <div class="ca-note bad">现场修补：@fpWhy</div> }
                 @if (fpReq != null && fpWhy == null && e.FieldPatchBlocked(s, kid, null, out var fpT, out var fpK, out var fpQ) == null)
                 {
                     var fpNotes = e.FieldPatchNotes(fpT!, fpK!, fpQ);
@@ -402,7 +402,7 @@
     }
 
     private string BatchFresh(ItemBatch b) =>
-        b.Spoiled ? "已腐败" : !b.ExpiresAt.HasValue ? "不会腐败" : Ui.Fresh(b.ExpiresAt.Value - G.S.GameMinute);
+        (b.Spoiled ? "已腐败" : !b.ExpiresAt.HasValue ? "不会腐败" : Ui.Fresh(b.ExpiresAt.Value - G.S.GameMinute)) + G.E.PatchDurabilitySuffix(b.Stacks[0]);   // B22b M463：修补包批次标包耐久
 
     private string BatchTitle(ItemBatch b) =>
         $"这一批×{b.Count}：{BatchFresh(b)}{(string.IsNullOrEmpty(b.GrantEventId) ? "" : " · 来源单独成批")}{(b.Reserved ? " · 正被当前行动预留" : "")}";

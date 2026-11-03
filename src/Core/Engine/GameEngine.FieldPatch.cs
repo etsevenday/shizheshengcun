@@ -178,14 +178,39 @@ namespace Survival.Core.Engine
             var tgt = target;
             var options = packs.Select(p => (pack: p, q: FieldPatchQuote(tgt, p))).Where(x => x.q.restoreTenths >= 1).ToList();
             if (options.Count == 0) return "随身和当前地面的修补包剩余耐久都不够恢复0.1";
+            // B22b 试玩修复 M463：恢复与消耗都相同时先用已用过的包（剩余低于上限），再按实例号，少拆出新的用过包卡
             var legal = options.Where(x => FieldPatchCardBlocked(s, x.pack, x.q.cost) == null)
-                .OrderByDescending(x => x.q.restoreTenths).ThenBy(x => x.q.cost).ThenBy(x => OnPlayer(x.pack) ? 0 : 1).ThenBy(x => x.pack.InstanceId)
+                .OrderByDescending(x => x.q.restoreTenths).ThenBy(x => x.q.cost).ThenBy(x => PatchRemaining(x.pack) < PatchMax(x.pack) ? 0 : 1).ThenBy(x => x.pack.InstanceId)
                 .ToList();
             if (legal.Count == 0) return FieldPatchCardBlocked(s, options[0].pack, options[0].q.cost);
             pack = legal[0].pack;
             quote = legal[0].q;
             return null;
         }
+
+        /// <summary>
+        /// 制作面板包列表的预标（B22b 试玩修复 M463）：选了目标时按这次报价判断（不够恢复 0.1、会多出第六张卡）；还没选目标时，
+        /// 只要用后会剩下（单独成卡）且随身已满就提示。可用为 null。
+        /// </summary>
+        public string? FieldPatchPackNote(GameState s, ItemInstance pack, ItemInstance? target)
+        {
+            if (target != null)
+            {
+                var q = FieldPatchQuote(target, pack);
+                if (q.restoreTenths < 1) return "不够恢复0.1";
+                return FieldPatchCardBlocked(s, pack, q.cost) != null ? $"会多出一张卡，随身已满{MaxRootCards}张" : null;
+            }
+            return FieldPatchCardBlocked(s, pack, 0) != null ? $"用后单独占一张卡，随身已满{MaxRootCards}张" : null;
+        }
+
+        /// <summary>品阶角标“白/绿/蓝”（B22b 试玩修复 M463：卡名在窄屏被截断时仍看得出品阶）；不是修补包为 null。</summary>
+        public string? PatchGradeTag(string itemId) => FieldPatchOf(itemId)?.Rank switch { 0 => "白", 1 => "绿", 2 => "蓝", _ => null };
+
+        /// <summary>品阶角标的样式类（与装备品质角标同色）。</summary>
+        public string PatchGradeClass(string itemId) => FieldPatchOf(itemId)?.Rank switch { 1 => "q-green", 2 => "q-blue", _ => "q-white" };
+
+        /// <summary>批次/堆的包耐久短句“ · 耐久80/100”；不是修补包为空串。</summary>
+        public string PatchDurabilitySuffix(ItemInstance i) => IsFieldPatch(i) ? $" · 耐久{PatchRemaining(i)}/{PatchMax(i)}" : "";
 
         /// <summary>预估与开工共用的说明行：包品阶与剩余、目标当前/最大、恢复量与消耗；不能修满时写可恢复量。</summary>
         public List<string> FieldPatchNotes(ItemInstance target, ItemInstance pack, (int restoreTenths, int cost) q)

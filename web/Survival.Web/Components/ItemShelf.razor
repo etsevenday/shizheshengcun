@@ -78,10 +78,10 @@
                         var bk = b.Key;
                         var fresh = b.Spoiled ? "已腐败" : !b.ExpiresAt.HasValue ? "不会腐败" : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute);
                         <button type="button" class="stack-layer @(pickedKey == bk ? "on" : "") @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")" style="--i:@k"
-                                title="@($"第{k + 1}批×{b.Count}：{fresh}{(b.Reserved ? " · 预留" : "")}（点选这一批）")" aria-label="@($"选择第{k + 1}批，{b.Count}份，{fresh}")"
+                                title="@($"第{k + 1}批×{b.Count}：{fresh}{e.PatchDurabilitySuffix(b.Stacks[0])}{(b.Reserved ? " · 预留" : "")}（点选这一批）")" aria-label="@($"选择第{k + 1}批，{b.Count}份，{fresh}")"
                                 @onclick="() => G.PickBatch(Owner, id, bk)">
                             <span class="sl-art">@Icons.Markup(id)</span>
-                            <span class="sl-tag"><b>×@b.Count</b> @fresh</span>
+                            <span class="sl-tag"><b>×@b.Count</b> @fresh@(e.PatchDurabilitySuffix(b.Stacks[0]))</span>
                         </button>
                     }
                 }
@@ -97,7 +97,7 @@
                 <div id="@(gSel ? "card-sel" : null)" data-tip="@($"{title} ×{total}{(dr ? "（本实例战利品，可封存）" : "")} · {infoLine}{(span > 1 ? $" · 占{span}格" : "")}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drop="@($"card:{key}")" data-drop-level="card"
                      class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel && (!stacked || pickedKey == kb![0].Key) ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "") @(!carried && G.HeldHighlight(id) ? "held" : "")"
                      role="button" tabindex="0" @onclick="() => SelectSide(id, kb, split ? sideKb : null)" @onkeydown="ev => OnCardKey(ev, () => SelectSide(id, kb, split ? sideKb : null))" title="@(dr ? "本实例战利品：这次地牢里领到的奖励，可以封存；成功离开地牢后并回同名物品。" + e.Item(id).Desc : e.Item(id).Desc)">
-                    <div class="ctitle"><span title="@(dr ? title + "（本实例战利品，可封存）" : title)">@title</span><span class="qty" title="@(stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : reservedN > 0 ? $"共{total}份，其中{reservedN}份已被预留（不能拾取或另用）" : null)">@qtyText</span></div>
+                    <div class="ctitle"><span title="@(dr ? title + "（本实例战利品，可封存）" : title)">@title</span>@if (e.PatchGradeTag(id) is string pg) { <i class="qtag @e.PatchGradeClass(id)" title="@($"{title}：{pg}色品阶")">@pg</i> }<span class="qty" title="@(stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : reservedN > 0 ? $"共{total}份，其中{reservedN}份已被预留（不能拾取或另用）" : null)">@qtyText</span></div>
                     <div class="art @(side != null ? "has-loot" : "")">@Icons.Markup(id)@if (dr) { <span class="loot-badge" title="本实例战利品（可封存；离开地牢后并回同名物品）" aria-label="本实例战利品">战</span> }@if (side == GameEngine.IdentifiedCardSuffix) { <span class="loot-badge apr-badge" title="已鉴定（普通白色，融合无属性）" aria-label="已鉴定">鉴</span> }@if (side == GameEngine.TutorialCardSuffix) { <span class="loot-badge apr-badge" title="首战教学样本（未鉴定；不能交易，单独成卡）" aria-label="首战教学">教</span> }@if (side == GameEngine.TutorialIdentifiedCardSuffix) { <span class="loot-badge apr-badge" title="首战教学样本·已鉴定（看过免费说明；不能交易，单独成卡）" aria-label="首战教学，已鉴定">教鉴</span> }</div>
                     <div class="cinfo" title="@infoLine">@infoLine</div>
                     @if (span > 1) { <span class="slot-span" title="@($"同物品{batches}批/超过堆叠上限，占{span}张随身卡{(stacked ? $"；最前这一批×{kb![0].Count}" : "")}")">占@(span)格@(batches > 1 ? $"·{batches}批" : "")</span> }

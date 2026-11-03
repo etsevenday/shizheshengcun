@@ -1336,6 +1336,10 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .craft-side > .craft-mats > * { flex: 0 0 auto; }
 .craft-side > .craft-mats > .mat-scroll { flex: 1 1 auto; min-height: 48px; overflow-y: auto; }
 .craft-side > .fire-box { flex: 0 0 auto; }
+/* B22b 试玩修复 M463：现场修补的目标列表与修补包列表放进可滚动区（原在固定区外被 overflow:hidden 裁掉，三档分辨率都够不到包列表与开始按钮） */
+.craft-side > .craft-mats > .patch-scroll { flex: 1 1 auto; min-height: 96px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+.craft-side > .craft-mats > .mat-scroll.mat-empty { flex: 0 0 auto; min-height: 0; }
+.repair-pick.warn small { color: var(--warn, #d9b45a); }
 .craft-side .craft-go { position: static; margin: 6px -12px -10px; }
 .craft-source span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* B22e 试玩修复 M455：建野外火堆的逐项原因可换行，1280 下不被省略号截断 */

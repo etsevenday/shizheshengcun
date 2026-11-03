@@ -30,18 +30,28 @@ namespace Survival.Core.Engine
         /// <summary>已鉴定首战教学样本卡的卡片键后缀（B22f Q179，鉴定状态不同不混标题）。</summary>
         public const string TutorialIdentifiedCardSuffix = "tutapr";
 
-        /// <summary>堆叠物品属于哪一侧卡：本实例战利品 dr、首战教学样本 tut/tutapr（Q179）、已鉴定白色 apr，普通为 null。</summary>
+        /// <summary>用过的野外修补包卡的卡片键后缀前缀（B22b 试玩修复 M463，Q168 stacking：用过的包堆叠上限 1、单独一张卡）：pu&lt;实例号&gt;。</summary>
+        public const string UsedPatchCardPrefix = "pu";
+
+        /// <summary>是不是用过的修补包那一侧（pu&lt;实例号&gt;）。</summary>
+        public static bool IsUsedPatchSide(string? side) =>
+            side != null && side.Length > UsedPatchCardPrefix.Length && side.StartsWith(UsedPatchCardPrefix) && side.Substring(UsedPatchCardPrefix.Length).All(char.IsDigit);
+
+        /// <summary>堆叠物品属于哪一侧卡：用过的修补包每包一侧 pu&lt;实例号&gt;（B22b）、本实例战利品 dr、首战教学样本 tut/tutapr（Q179）、已鉴定白色 apr，普通为 null。</summary>
         public string? CardSideOf(ItemInstance i) =>
-            i.RewardOrigin != null ? RewardCardSuffix
+            i.IsUsedFieldPatch ? UsedPatchCardPrefix + i.InstanceId
+            : i.RewardOrigin != null ? RewardCardSuffix
             : IsTutorialCardSample(i) ? (IsIdentifiedTutorial(i) ? TutorialIdentifiedCardSuffix : TutorialCardSuffix)
             : IsIdentifiedWhite(i) ? IdentifiedCardSuffix : null;
 
         /// <summary>卡片键第三段是不是“侧”（dr/apr/tut/tutapr）；工具卡第三段是实例号，返回 null。</summary>
         public static string? CardSideOfKey(string[] parts) =>
-            parts.Length == 3 && (parts[2] == RewardCardSuffix || IsSampleSide(parts[2])) ? parts[2] : null;
+            parts.Length == 3 && (parts[2] == RewardCardSuffix || IsSampleSide(parts[2])) ? parts[2] : null;   // IsSampleSide 含用过的修补包 pu<实例号>
 
-        /// <summary>活性物质样本的分卡侧（已鉴定 apr、教学 tut/tutapr）：同区有这些侧时操作窗与详情只算所点那一侧（B22d M418、B22f Q179）。</summary>
-        public static bool IsSampleSide(string? side) => side is IdentifiedCardSuffix or TutorialCardSuffix or TutorialIdentifiedCardSuffix;
+        /// <summary>
+        /// 分卡侧（已鉴定 apr、教学 tut/tutapr，B22b 起含用过的修补包 pu&lt;实例号&gt;）：同区有这些侧时操作窗与详情只算所点那一侧（B22d M418、B22f Q179）。
+        /// </summary>
+        public static bool IsSampleSide(string? side) => side is IdentifiedCardSuffix or TutorialCardSuffix or TutorialIdentifiedCardSuffix || IsUsedPatchSide(side);
 
         /// <summary>堆叠卡的标题：已鉴定白色卡写“活性物质（白色·已鉴定）”，教学样本卡写“未鉴定的活性物质（首战教学）”/“活性物质（白色·已鉴定·首战教学）”，其余为物品名。</summary>
         public string CardTitle(string itemId, string? side)

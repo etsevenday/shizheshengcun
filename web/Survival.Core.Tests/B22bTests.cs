@@ -280,6 +280,47 @@ public class B22bTests : TestBase
         Assert.That(E.CanStart(s, Req(s.Items.First(i => i.ItemId == "pistol" && i.Owner == s.Ground))), Does.Contain("枪械"));
     }
 
+    /// <summary>B22b 试玩修复 M463：用过的包每包单独一张卡（卡片键 owner|itemId|pu&lt;实例号&gt;），满包仍是普通卡；批次与卡侧一致。</summary>
+    [Test]
+    public void M463_UsedPackOwnCard_Ground_AndCarried()
+    {
+        var s = Fresh();
+        var full = Pack(s, "field_patch_blue", 2);
+        var used = E.CreateItems(s, "field_patch_blue", 1, "tmp:m463").Single();
+        used.Durability = 96;
+        used.Owner = s.Ground;
+        var cards = E.OrderedCards(s, s.Ground).Where(k => k.Contains("|field_patch_blue")).ToList();
+        Assert.That(cards, Is.EquivalentTo(new[] { $"{s.Ground}|field_patch_blue", $"{s.Ground}|field_patch_blue|pu{used.InstanceId}" }));
+        Assert.That(GameEngine.CardSideOfKey(cards[1].Split('|')), Is.EqualTo("pu" + used.InstanceId));
+        Assert.That(GameEngine.IsSampleSide("pu" + used.InstanceId), Is.True, "操作窗与详情只算所点这一侧");
+        Assert.That(E.CardSideOf(full), Is.Null);
+        Assert.That(E.PatchDurabilitySuffix(used), Is.EqualTo(" · 耐久96/100"));
+        Assert.That(E.PatchGradeTag("field_patch_blue"), Is.EqualTo("蓝"));
+        Assert.That(E.PatchGradeTag("machete"), Is.Null);
+    }
+
+    /// <summary>B22b 试玩修复 M463：恢复与消耗相同时默认先用已用过的包；制作面板包列表预标超五卡。</summary>
+    [Test]
+    public void M463_DefaultPrefersUsedPack_AndPackNote()
+    {
+        var s = Fresh();
+        var mach = Gear(s, "machete", "white", 100, 95);
+        var full = Pack(s, "field_patch");
+        var used = E.CreateItems(s, "field_patch", 1, "tmp:m463").Single();
+        used.Durability = 50;
+        used.Owner = s.Ground;
+        var p = E.Preview(s, Req(mach));
+        Assert.That(p.Notes, Has.Some.Contains($"#{used.InstanceId}"), "同为恢复5耗1：先用已用过的包");
+        Assert.That(E.FieldPatchPackNote(s, full, mach), Is.Null);
+
+        s.Items.RemoveAll(i => i.IsCarried);
+        var stack = Pack(s, "field_patch", 2, ItemInstance.Carried);
+        foreach (var id in new[] { "machete", "crowbar", "kitchen_knife", "metal_spear" }) Gear(s, id, "white", 50, 50, ItemInstance.Carried);
+        Assert.That(E.FieldPatchPackNote(s, stack, mach), Does.Contain("会多出一张卡"));
+        Assert.That(E.FieldPatchPackNote(s, stack, null), Does.Contain("单独占一张卡"));
+        Assert.That(E.FieldPatchPackNote(s, full, null), Is.Null, "地面包不占随身卡");
+    }
+
     // ───────────── 旧档 ─────────────
 
     [Test]
