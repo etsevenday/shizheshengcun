@@ -183,4 +183,37 @@ public class B22SealedTests : BattleTestBase
         Assert.That(E.CardKey(drHead), Is.EqualTo("d01_04|cloth|dr"));
         Assert.That(E.SealableItems(s).Select(i => i.InstanceId), Is.EqualTo(new[] { drHead.InstanceId }), "只有战利品那一堆可封存");
     }
+    /// <summary>
+    /// 试玩修复 M409（A2）：战利品卡拖到随身空白处、拖到随身别的物品卡（鼓舞提示贴）上、随身战利品卡拖回地面空白处——
+    /// 落点给出的实例都是战利品那一堆，网页按它的真实批次键（含来源）转移，同名普通物品不动。
+    /// </summary>
+    [Test]
+    public void M409_DropToZoneOrOtherCard_MovesRewardSideOnly()
+    {
+        var s = At04(2227);
+        E.CreateItems(s, "cloth", 1, "d01_04");
+        E.CreateItems(s, "cloth", 4, ItemInstance.Carried);
+        E.CreateItems(s, "rally_patch", 1, ItemInstance.Carried);
+        Gather(s, "d01_04_cache0");
+        var src = DropSource.Parse("card:d01_04|cloth|dr")!;
+        foreach (var dst in new[] { DropTarget.Parse("zone:carried")!, DropTarget.Parse("card:carried|rally_patch")! })
+        {
+            var intent = E.ResolveDrop(s, src, dst);
+            if (intent.FallThrough) intent = E.ResolveDrop(s, src, DropTarget.Parse("zone:carried")!);
+            Assert.That(intent.Ok, Is.True, intent.Reason);
+            var head = E.FindItem(s, intent.Instant!.InstanceId)!;
+            Assert.That(head.RewardOrigin, Is.Not.Null, "落点给的是战利品那一堆");
+            var key = GameEngine.BatchKeyOf(head);
+            Assert.That(s.Items.Where(i => i.Owner == "d01_04" && i.ItemId == "cloth" && GameEngine.BatchKeyOf(i) == key).All(i => i.RewardOrigin != null), Is.True,
+                "按真实批次键转移只会选到战利品堆（按到期分组会混进普通布料）");
+        }
+        // 网页同款：按批次键拾取 1 份
+        var g = E.CardHead(s, src)!;
+        Assert.That(E.DoInstant(s, InstantRequest.Pickup(g.InstanceId, 1)).Ok, Is.True);
+        Assert.That(s.Items.Where(i => i.IsCarried && i.ItemId == "cloth" && i.RewardOrigin == null).Sum(i => i.Count), Is.EqualTo(4), "随身普通布料不变");
+        Assert.That(s.Items.Where(i => i.Owner == "d01_04" && i.ItemId == "cloth" && i.RewardOrigin == null).Sum(i => i.Count), Is.EqualTo(1), "地面普通布料不变");
+        // 随身战利品卡拖到地面空白处
+        var back = E.ResolveDrop(s, DropSource.Parse("card:carried|cloth|dr")!, DropTarget.Parse("zone:d01_04")!);
+        Assert.That(E.FindItem(s, back.Instant!.InstanceId)!.RewardOrigin, Is.Not.Null);
+    }
 }

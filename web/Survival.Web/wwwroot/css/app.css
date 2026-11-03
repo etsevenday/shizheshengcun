@@ -1245,6 +1245,9 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 @keyframes remains-flash { 0%, 40% { box-shadow: 0 0 0 3px var(--accent); background: rgba(212, 168, 74, .18); } 100% { box-shadow: none; background: transparent; } }
 .eq-btn.btn-off, .eq-btn.btn-off:disabled { opacity: .38; filter: grayscale(1); cursor: not-allowed; }
 .seal-why { padding-left: 4px; }
+/* B22 试玩修复 M409：战利品卡的徽记放在图片区左上角（不再挤占卡名） */
+.card.item .art.has-loot { position: relative; }
+.card.item .loot-badge { position: absolute; left: 3px; top: 3px; min-width: 18px; height: 18px; padding: 0 3px; border-radius: 9px; background: #4f7a3a; color: #f3ecd2; font-size: 12px; line-height: 18px; text-align: center; font-weight: 700; box-shadow: 0 0 0 1px rgba(0, 0, 0, .35); pointer-events: auto; }
 .remains-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 14px; }
 
 /* B8a（Q86）顶栏“编队”面板：四格号位 + 同行角色 + 保存/取消；1280×720 起四格一行，按钮不被挤出 */

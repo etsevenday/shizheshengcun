@@ -1296,8 +1296,9 @@ public sealed class GameSession
         {
             var head = S.Items.FirstOrDefault(i => i.InstanceId == r.InstanceId);
             if (head == null) return ActionResult.Fail("物品已不在");
+            // B22 试玩修复 M409：按被拖那一堆的真实批次键转移（含本实例战利品来源），不再只按到期分组——否则拖战利品卡到空白处/别的卡会搬走同名普通物品
             if (E.Item(head.ItemId).IsStackable)
-                return TransferBatch(head.Owner, head.ItemId, head.ExpiresAt, count, r.Kind == InstantKind.Pickup, requestId);
+                return TransferBatch(head.Owner, head.ItemId, head.ExpiresAt, count, r.Kind == InstantKind.Pickup, requestId, GameEngine.BatchKeyOf(head));
         }
         r.Count = Math.Max(1, count);
         if (r.Kind == InstantKind.Reorder) r.Count = 1;

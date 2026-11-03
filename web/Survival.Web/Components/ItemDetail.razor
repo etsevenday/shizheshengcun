@@ -45,7 +45,11 @@ else
             }
             else
             {
-                <h2>@cfg.Name <small class="muted">×@total</small></h2>
+                // B22 试玩修复 M409：同物品分成普通卡与战利品卡时，标题按所点那张卡的数量写，合计放说明行
+                var drSide = batches.Where(b => b.Stacks[0].RewardOrigin != null).Sum(b => b.Count);
+                var chosenDr = chosen.Stacks[0].RewardOrigin != null;
+                var sideN = drSide == 0 ? total : chosenDr ? drSide : total - drSide;
+                <h2>@cfg.Name@(chosenDr ? "（战利品）" : "") <small class="muted">×@sideN</small></h2>
             }
             <p>@(cfg.Use != null && cfg.Use.IsMedicine ? (cfg.Use.IsBandage ? "药品：止血、回血、压低病毒（本次实际效果见下）" : cfg.Use.IsAntibiotic ? "药品：抑制病毒（本次实际效果见下）" : "药品：清除感染（本次实际效果见下）")
                  : cfg.Use != null ? GameEngine.UseEffectText(cfg.Use) + (e.UseRiskText(cfg) is string rk ? $"；{rk}" : "") : cfg.Desc)</p>
@@ -55,11 +59,11 @@ else
             }
             @if (drN > 0 && chosen.Stacks[0].RewardOrigin != null)
             {
-                <p class="warn-text">本实例战利品×@(drN)：这次地牢里领到的奖励，可以封存（设施行“封存”卡）；成功离开地牢后并回同名物品。@(total > drN ? $"同名普通物品×{total - drN}是另一张卡。" : "")</p>
+                <p class="warn-text">本实例战利品×@(drN)：这次地牢里领到的奖励，可以封存（设施行“封存”卡）；成功离开地牢后并回同名物品。@(total > drN ? $"同名普通物品×{total - drN}是另一张卡（这里合计×{total}）。" : "")</p>
             }
             else if (drN > 0)
             {
-                <p class="muted">另有本实例战利品×@(drN)（单独一张“战利品”卡，可封存）。</p>
+                <p class="muted">另有本实例战利品×@(drN)（单独一张“战利品”卡，可封存；这里合计×@(total)）。</p>
             }
         </div>
         <div class="detail-icon">@Icons.Markup(cfg.Id)</div>
