@@ -46,7 +46,7 @@
 .city-bldg.unknown .bldg-art { color: #8d8a7c; }
 .city-bldg.unknown .bldg-name { color: var(--muted); border-style: dashed; }
 /* 建筑旁的说明/确认窗：靠近建筑，空间不足向内翻转（左右、上下按位置） */
-.city-info { position: absolute; z-index: 3; width: max-content; max-width: min(46%, 420px); min-width: 220px; padding: 8px 10px; border-radius: 6px;
+.city-info { position: absolute; z-index: 3; width: max-content; min-width: 200px; padding: 8px 10px; border-radius: 6px;
   background: #121a1df2; border: 1px solid #8f8466; box-shadow: 0 6px 18px #0009; font-size: 14px; line-height: 1.4; pointer-events: none; }
 .city-info.pinned { border: 2px solid var(--accent); pointer-events: auto; }
 .city-info .ci-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; }

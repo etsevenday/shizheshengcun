@@ -88,10 +88,11 @@
             {
                 var x = Cx(focusB);
                 var y = Cy(focusB);
-                var right = x > 50;
+                var right = x >= 50;
                 var below = y < 50;
                 var cellW = 50.0 / cols;
-                var posStyle = (right ? $"right:{F(100 - x + cellW * 0.8)}%;" : $"left:{F(x + cellW * 0.8)}%;") + (below ? $"top:{F(Math.Max(2, y - 50.0 / rows))}%;" : $"bottom:{F(Math.Max(2, 100 - y - 50.0 / rows))}%;");
+                var avail = (right ? x - cellW * 0.8 : 100 - x - cellW * 0.8) - 1;
+                var posStyle = $"max-width:min(420px,{F(avail)}%);" + (right ? $"right:{F(100 - x + cellW * 0.8)}%;" : $"left:{F(x + cellW * 0.8)}%;") + (below ? $"top:{F(Math.Max(2, y - 50.0 / rows))}%;" : $"bottom:{F(Math.Max(2, 100 - y - 50.0 / rows))}%;");
                 <div class="city-info @(pinned ? "pinned" : "")" style="@posStyle" role="@(pinned ? "dialog" : "tooltip")" aria-label="@(focusB.Discovered ? focusB.Name : "尚未发现")">
                     <div class="ci-head">
                         <b>@(focusB.Discovered ? focusB.Name : "尚未发现")</b>
