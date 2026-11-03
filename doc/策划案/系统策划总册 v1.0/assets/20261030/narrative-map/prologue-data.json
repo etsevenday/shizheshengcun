@@ -405,5 +405,15 @@
     "otherNormalGoalHintsUnchanged": true,
     "doesNotResetGuideSeenOrReplayReaction": true,
     "noAutomaticAttackAPTimeOrStateChanges": true
+  },
+  "checkpointNextStepQ208": {
+    "sourceQuestion": "Q208_A",
+    "locationId": "m02_checkpoint",
+    "condition": "主目标为前往幸存者营区的route_onward，当前在m02，真实下一段营门未知，且本局拦路战未胜；仅此分支覆盖Q139未知下一段探索/查询文案",
+    "nextStep": "先战胜检查哨拦路敌人。",
+    "focus": "none",
+    "afterVictory": "清障胜利按原事务揭营门路线后，撤此特殊句，按Q139/Q147当前路线状态恢复；正常已知可走显示“沿已知路线前往营门。”；不提前揭路、代打或开门",
+    "priorities": "原危险/战斗/强制对白/动作锁优先；不点亮探索或拦路敌卡，不造新操作入口。若下一段已知、已胜、非此主目标或不在m02，回原分支。已知下一段不因本题改成新战斗提示，仍由Q193操作限制显示真实拦路原因。",
+    "savePolicy": "只读已提交地点/目标/清障/路线事实，原安全边界刷新；0分钟0资源，不重置提示/任务/地图，不改变进行中移动目的地，旧可信清障不反锁。"
   }
 }
