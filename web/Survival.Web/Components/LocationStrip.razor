@@ -24,7 +24,7 @@
     var zfac = e.FacOf(s, place) ?? s.Locations[here].Facility;
     var showSafehouse = e.SafehousePermissionBlocked(here) == null || e.SafehouseBuilt(s, here);
     var tarp = !inside && zfac.TarpInstanceId is int tarpId ? e.FindItem(s, tarpId) : null;
-    var hasFacilities = e.HasFireAt(s, place) || (!inside && lc.CanBuildShelter) || (!inside && publicStations.Count > 0) || showSafehouse || tarp != null;
+    var hasFacilities = e.HasFireAt(s, place) || (!inside && lc.CanBuildShelter) || (!inside && publicStations.Count > 0) || showSafehouse || tarp != null || e.DryingRackHere(s);
     var enemies = inside ? new List<WorldEnemy>() : e.VisibleEnemiesAt(s, here);
     if (inside) resources = new List<ResourceConfig>();
     // B20：本地固定战（地牢房间/检查哨，首次揭示时按容量 C 截定的名单）与旧精英可选挑战告示（Q81）
@@ -108,6 +108,8 @@
                     @if (showSafehouse) { <SafehouseCard /> }
                     @* B10 试玩修复 9：营地设施栏显示已建工坊（只在可建工坊的地点；B17 起含已完工安全屋屋内） *@
                     @if (G.E.CanBuildWorkshopsHere(G.S)) { <FacilityCard Kind="workshops" /> }
+                    @* B22c（Q170）：当前区建成晾制架时单独一张卡（8 个晾制位在面板里操作） *@
+                    @if (G.E.DryingRackHere(G.S)) { <DryingRackCard /> }
                     @if (tarp != null)
                     {
                         var packWhy = G.Running || s.Main != null ? "行动进行中" : e.CanStart(s, GameEngine.Pack(tarp));

@@ -1,0 +1,138 @@
+@inherits GameComponent
+
+@* 晾制架面板（策划答复 Q170，S11/A07「八位晾架完整定稿」；开发计划 v0.9 B22c）：当前区晾制架的 8 个独立晾制位。
+   空位：选食谱（果干/肉干）→ 预览写明投到第几位、取哪几份原料（只取随身与当前地面）、完成时刻、经验与日额 → 确认投料（0 分钟）。
+   晾制中：进度条、剩余时间、原料保质；“取消·到随身/到地面”按原截止退回。已晾好：“取到随身/取到地面”。原料腐败：“清理·到随身/到地面”（原样取出）。
+   全部数据来自内核 DryingSlotViews / DryingPreview；按钮的禁用原因写在悬停提示里。样式沿用安全屋面板。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var here = e.DryingRackHere(s);
+    var views = here ? e.DryingSlotViews(s) : new List<DryingSlotView>();
+    var recipes = e.DryingRecipes.ToList();
+    var busy = G.Running || s.Sub != null;
+    var pick = _pickSlot is int ps && views.Any(v => v.Slot == ps && v.Status == "empty") ? ps : (int?)null;
+}
+
+<div class="sub-panel safehouse-panel drying-panel" role="dialog" aria-label="晾制架">
+    <div class="sub-head">
+        <div><h2>晾制架</h2><span class="sub" title="被动晾制按世界时间推进：不吃熟练加速、不耗火和燃料、不占行动；离开也继续，暂停不推进。原料没有受热保护，到期即腐败、没有成品。">@(here ? $"{e.ZoneName(s, s.Ground)} · {e.DryingSummary(s)} · 每位一批" : "当前区没有晾制架") ⓘ</span></div>
+        <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
+    </div>
+    <div class="sub-body sh-body" data-wheel="y">
+        @if (!here)
+        {
+            <div class="risk none">@e.ZoneName(s, s.Ground)没有晾制架。晾制架在临时营地或已建成的安全屋屋内用“营地建造”建（木材4、绳索2，60分钟），只能在当地操作。</div>
+        }
+        else
+        {
+            <div class="dry-grid">
+                @foreach (var v in views)
+                {
+                    var k = v.Slot;
+                    <div class="sh-row dry-slot @v.Status @(pick == k ? "on" : "")" data-dry-slot="@k">
+                        <div class="sh-row-head"><b>@v.Title</b></div>
+                        @if (v.Status == "drying")
+                        {
+                            <div class="fuel-track"><i style="width:@(v.DoneMinutes * 100 / Math.Max(1, v.RequiredMinutes))%"></i></div>
+                        }
+                        <div class="tiny @(v.Status == "spoiled" || v.Line.Contains("早于完成") ? "warn-text" : "muted")">@v.Line</div>
+                        @foreach (var c in v.Contents)
+                        {
+                            <div class="tiny">· @c</div>
+                        }
+                        @if (v.XpText != null && v.Status != "empty")
+                        {
+                            <div class="tiny cg-xp">@v.XpText</div>
+                        }
+                        <div class="btn-row dry-btns">
+                            @switch (v.Status)
+                            {
+                                case "empty":
+                                    <button type="button" class="secondary" disabled="@busy" title="选这一位，在下方选食谱并预览" @onclick="() => Pick(k)">@(pick == k ? "已选这一位" : "投到这一位")</button>
+                                    break;
+                                case "drying":
+                                    <button type="button" class="secondary" disabled="@(busy || v.ToCarriedBlocked != null)" title="@(v.ToCarriedBlocked ?? "取消这一批：原料按原保质退回随身，已过时间不退，没有成品、不给经验")" @onclick="() => Cancel(k, true)">取消·到随身</button>
+                                    <button type="button" class="secondary" disabled="@(busy || v.ToGroundBlocked != null)" title="@(v.ToGroundBlocked ?? "取消这一批：原料按原保质退回当前地面，已过时间不退，没有成品、不给经验")" @onclick="() => Cancel(k, false)">取消·到地面</button>
+                                    break;
+                                case "done":
+                                    <button type="button" class="primary" disabled="@(busy || v.ToCarriedBlocked != null)" title="@(v.ToCarriedBlocked ?? "取出成品到随身（0分钟），这一位空出")" @onclick="() => Take(k, true)">取到随身</button>
+                                    <button type="button" class="secondary" disabled="@(busy || v.ToGroundBlocked != null)" title="@(v.ToGroundBlocked ?? "取出成品到当前地面（0分钟），这一位空出")" @onclick="() => Take(k, false)">取到地面</button>
+                                    break;
+                                default:
+                                    <button type="button" class="secondary" disabled="@(busy || v.ToCarriedBlocked != null)" title="@(v.ToCarriedBlocked ?? "把原料原样取到随身（腐败的不能吃），这一位空出")" @onclick="() => Take(k, true)">清理·到随身</button>
+                                    <button type="button" class="secondary" disabled="@(busy || v.ToGroundBlocked != null)" title="@(v.ToGroundBlocked ?? "把原料原样取到当前地面（腐败的不能吃），这一位空出")" @onclick="() => Take(k, false)">清理·到地面</button>
+                                    break;
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+            <section class="dry-recipes">
+                <h3>@(pick is int p0 ? $"投到第{p0 + 1}位：选食谱" : "选食谱（默认投到第一个空位，也可先在上面选一位）")</h3>
+                @foreach (var rc in recipes)
+                {
+                    var o = e.DryingPreview(s, rc.Id, pick);
+                    var id = rc.Id;
+                    var slotText = o.Slot >= 0 ? $"第{o.Slot + 1}位" : "没有空位";
+                    <div class="sh-row dry-option @(o.Ok ? "" : "missing")" data-dry-recipe="@id">
+                        <div class="sh-row-head">
+                            <span class="dry-icon">@Icons.Markup(rc.Outputs.Keys.First())</span>
+                            <b>@rc.Name</b>
+                            <span class="muted">@o.InputText → @o.OutputText · 被动@(Clock.Duration(o.Minutes))</span>
+                        </div>
+                        @if (o.Ok)
+                        {
+                            <div class="tiny">投到@(slotText)，预计@(Clock.DayTime(o.FinishMinute))完成；会取：@string.Join("、", o.Sources)</div>
+                        }
+                        else
+                        {
+                            <div class="tiny warn-text">@o.Reason</div>
+                        }
+                        @foreach (var w in o.Warnings)
+                        {
+                            <div class="tiny warn-text">@w</div>
+                        }
+                        <div class="tiny cg-xp">@o.XpText</div>
+                        <div class="tiny muted dry-note" title="@o.Note">@o.Note</div>
+                        <div class="btn-row dry-btns">
+                            @if (_confirm == id)
+                            {
+                                <button type="button" class="primary" disabled="@(!o.Ok || busy)" title="@(o.Reason ?? "确认：0分钟把上面列出的原料放进晾制位，开始被动晾制")" @onclick="() => Load(id, o.Slot)">确认投料（@slotText）</button>
+                                <button type="button" class="secondary" @onclick="() => _confirm = null">先不投</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="primary" disabled="@(!o.Ok || busy)" title="@(o.Reason ?? "看预览后确认投料")" @onclick="() => _confirm = id">投料…</button>
+                            }
+                        </div>
+                    </div>
+                }
+            </section>
+        }
+        @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+    </div>
+</div>
+
+@code {
+    private int? _pickSlot;
+    private string? _confirm;
+
+    private void Close() => G.OpenPanel(null);
+
+    private void Pick(int k)
+    {
+        _pickSlot = _pickSlot == k ? null : k;
+        _confirm = null;
+    }
+
+    private void Load(string recipeId, int slot)
+    {
+        _confirm = null;
+        var r = G.EngineDo(() => G.E.StartDrying(G.S, recipeId, slot >= 0 ? slot : null, Guid.NewGuid().ToString("N")));
+        if (r.Ok) _pickSlot = null;
+    }
+
+    private void Cancel(int slot, bool toCarried) => G.EngineDo(() => G.E.CancelDrying(G.S, slot, toCarried, Guid.NewGuid().ToString("N")));
+    private void Take(int slot, bool toCarried) => G.EngineDo(() => G.E.TakeDrying(G.S, slot, toCarried, Guid.NewGuid().ToString("N")));
+}

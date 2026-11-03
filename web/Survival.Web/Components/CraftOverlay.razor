@@ -295,7 +295,21 @@
                         </div>
                         @* 唯一“开始制作/开始建造”入口在所选配方卡内（S08 §5、S14 §14.1）：选配方、改份数、指定批次/锅只预览，不扣物不预留；
                            点开始才交内核按真实材料/工具/锅/占用重验并预留开工（E.Start），执行中锁住按钮，重复点击不重复制作。右栏只作可选详细预测。 *@
-                        @if (e.IsStationBatchRecipe(rc))
+                        @if (rc.IsDrying)
+                        {
+                            @* B22c（Q170）：晾制在设施栏“晾制架”卡的面板里选空位投料（0 分钟，被动晾制），这里只说明并跳转 *@
+                            var dryHere = e.DryingRackHere(s);
+                            var dryWhy = busy ? "行动进行中" : e.DryingBlocked(s, rc);
+                            <div class="craft-go">
+                                <span class="cg-facts">
+                                    <b>被动@(Clock.Duration(rc.BaseMinutes))</b><small class="cg-xp">@e.DryingXpPreview(s, rc)</small>
+                                    <small class="cg-sum" title="@e.RecipeModeText(rc)">@(dryWhy ?? $"在晾制架面板选空位投料：{e.DryingSummary(s)}")</small>
+                                </span>
+                                <button type="button" class="primary cg-start" disabled="@(!dryHere)" title="@(dryHere ? "打开晾制架面板，选食谱与空位，预览后确认投料" : $"{e.ZoneName(s, s.Ground)}没有晾制架（在“营地建造”里建）")"
+                                        @onclick='() => G.OpenPanel("drying")'>打开晾制架</button>
+                            </div>
+                        }
+                        else if (e.IsStationBatchRecipe(rc))
                         {
                             @* B17（A07 X1.4）：陶窑/固定净水台是被动批次：投料0分钟、不占行动，原料移到本区地面锁定，离开也继续 *@
                             var sb = e.StationBatchHere(s, rc.Station);
@@ -390,7 +404,7 @@ else if (proc != null)
 else
 {
     <PreviewView Request="request" Eyebrow="@($"手工制作 · {(rc.IsBuild ? "营地设施" : "配方")}")" Title="@rc.Name" Subtitle="@RecipeHint(rc)"
-                 Confirmable="false" FootNote="@(e.IsStationBatchRecipe(rc) ? "在中间配方卡下方点“投料（被动）”；被动加工0分钟投料、不占行动，离开也继续" : $"在中间配方卡下方点“{StartLabel(rc)}”；时间为预计值")" />
+                 Confirmable="false" FootNote="@(rc.IsDrying ? "晾制在设施栏“晾制架”卡的面板里选空位投料；0分钟投料、不占行动，离开也继续" : e.IsStationBatchRecipe(rc) ? "在中间配方卡下方点“投料（被动）”；被动加工0分钟投料、不占行动，离开也继续" : $"在中间配方卡下方点“{StartLabel(rc)}”；时间为预计值")" />
 }
 
 @code {
@@ -528,6 +542,7 @@ else
         "workshop:armory" => "crossbow",
         "workshop:kiln" => "ceramic_shell",
         "workshop:water_station" => "clean_water",
+        "workshop:drying_rack" => "dried_meat",
         "safehouse" => "shelter",
         "fireBuilt" => "fire_out",
         _ => r.IsRepair ? "repair" : r.Outputs.Keys.FirstOrDefault() ?? "stone",

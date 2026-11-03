@@ -1439,6 +1439,18 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .safehouse-panel .sh-row { border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; margin-bottom: 6px; display: flex; flex-direction: column; gap: 3px; }
 .safehouse-panel .sh-row-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .safehouse-panel .sh-name { width: 9em; background: transparent; border: 1px solid var(--line); color: var(--text); border-radius: 3px; padding: 2px 4px; }
+/* B22c（Q170）晾制架面板：8 个晾制位两列网格（窄屏一列），食谱预览沿用安全屋行样式 */
+.drying-panel .dry-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 1100px) { .drying-panel .dry-grid { grid-template-columns: minmax(0, 1fr); } }
+.drying-panel .dry-slot { margin-bottom: 0; }
+.drying-panel .dry-slot.on { border-color: var(--accent, #c9823a); }
+.drying-panel .dry-slot.done { border-color: #7d8f5a; }
+.drying-panel .dry-slot.spoiled { border-color: #7d4f45; }
+.drying-panel .dry-btns { gap: 6px; margin-top: 2px; }
+.drying-panel .dry-recipes { display: flex; flex-direction: column; gap: 6px; }
+.drying-panel .dry-option.missing { opacity: .85; }
+.drying-panel .dry-icon svg { width: 22px; height: 22px; vertical-align: middle; }
+.drying-panel .dry-note { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* B18 鉴定所鉴定交易面板（R07 X3.6）：三页签、样本与报价单选列表 */
 

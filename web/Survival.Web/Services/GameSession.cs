@@ -390,7 +390,7 @@ public sealed class GameSession
 
     /// <summary>替换中部上方的顶栏面板：地图、制作、休息、日志，以及生存目标、生存提示、对话记录、系统说明。</summary>
     public static bool IsTopPanel(string? panel) =>
-        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth" or "journey" or "city" or "safehouse";
+        panel is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" or "help" or "formation" or "gear" or "growth" or "journey" or "city" or "safehouse" or "drying";
 
     // ───────────── 新手序章（B13，S15 §3—§8、A10-TUTOR） ─────────────
 
