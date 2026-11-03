@@ -275,6 +275,11 @@ namespace Survival.Core.State
         public int BattleId { get; set; }
         /// <summary>B20：固定战（"fixed:&lt;nodeId&gt;"）或旧精英挑战（"elite:&lt;挑战ID&gt;"）；普通战为 null。固定类战斗不增援，胜利结固定账。</summary>
         public string? FixedKey { get; set; }
+        /// <summary>
+        /// B22h（Q196 选 C，retreat.world/currentBattles）：开战时锁定的普通主世界撤退来处快照。null = 上线前已开始的旧战（按旧落点：留在原地）；
+        /// 快照里 From 为 null = 没有可信来处（撤退成功也留在原地并写明）。
+        /// </summary>
+        public RetreatOriginSnapshot? WorldRetreat { get; set; }
         public string EncounterId { get; set; } = "";
         public string LocationId { get; set; } = "";
         public int Round { get; set; } = 1;
@@ -511,5 +516,12 @@ namespace Survival.Core.State
             c.Log = new List<string>(Log);
             return c;
         }
+    }
+
+    /// <summary>B22h：开战时锁定的撤退来处（最近一次已完成移动的来源节点与那条边）；没有可信来处时两项都为 null。</summary>
+    public sealed class RetreatOriginSnapshot
+    {
+        public string? From { get; set; }
+        public string? EdgeId { get; set; }
     }
 }

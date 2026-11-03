@@ -169,9 +169,10 @@ public class V10StoryTests : BattleTestBase
         var w = E.FindWorldEnemy(s, tid)!;
         Assert.That(w.Hp, Is.EqualTo(2.0), "同一敌人 HP 保留，不重置成满血");
         Assert.That(w.LocationId, Is.EqualTo("field"));
+        // B22h（Q196 选 C）：撤退成功全队退回最近一次走来的营地（0 额外分钟），首战敌人留在荒地
+        Assert.That(s.CurrentLocation, Is.EqualTo("camp"));
         // 重复到达不再强制入战，但可主动接近同一教学敌人继续挑战；其他敌人仍关闭
         SetStats(s, 20, 80, 80, 18, 90, 60);
-        ToCamp(s);
         ToField(s);
         Assert.That(s.Battle, Is.Null);
         Assert.That(E.CanApproach(s, tid), Is.Null);
@@ -316,6 +317,9 @@ public class V10StoryTests : BattleTestBase
         Assert.That(Cmd(s, "retreat").Ok, Is.True);
         if (s.Battle != null) Assert.Inconclusive("强制撤退未成功");
         Assert.That(s.Story.TutorialWon, Is.False);
+        Assert.That(s.CurrentLocation, Is.EqualTo("camp"), "B22h：撤退退回走来的营地");
+        ToField(s);
+        Assert.That(s.Battle, Is.Null, "重复到达不强制入战");
         // 开发入口“本地敌人立即形成敌踪”→“接敌”：普通战斗里把首战游荡尸打死
         s.Encounter = new PendingEncounter { LocationId = "field", EnemyIds = new List<int> { tid }, Source = "explore", Minute = s.GameMinute };
         Assert.That(E.Engage(s).Ok, Is.True);

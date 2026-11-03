@@ -478,6 +478,8 @@ namespace Survival.Core.Engine
                     var from = s.CurrentLocation;
                     var walked = EdgeBetween(from, a.TargetId);
                     if (walked != null) s.TraveledEdges.Add(walked.Id);
+                    // B22h（Q196 选 C）：记最近一次已完成的地点移动（普通主世界战斗撤退的来处只读它）
+                    s.LastMove = new LastMoveRecord { From = from, To = a.TargetId, EdgeId = walked?.Id, Minute = s.GameMinute };
                     s.CurrentLocation = a.TargetId;
                     s.CurrentZone = ExteriorZone;   // B17：移动只从外部区出发、到达外部区
                     var mapNotes = new List<string>();

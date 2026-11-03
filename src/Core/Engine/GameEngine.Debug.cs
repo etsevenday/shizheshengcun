@@ -11,6 +11,7 @@ namespace Survival.Core.Engine
         /// <summary>直接把角色放到某地点（标记已发现、已访问并揭示进入即显示的资源）。</summary>
         public void DebugTeleport(GameState s, string locationId)
         {
+            s.LastMove = null;   // B22h：开发传送不是已完成的移动，之前的移动记录不再可信
             s.CurrentLocation = locationId;
             s.CurrentZone = ExteriorZone;
             Visit(s, locationId);

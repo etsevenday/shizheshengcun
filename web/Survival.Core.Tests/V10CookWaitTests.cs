@@ -349,6 +349,12 @@ public class V10CookWaitTests : BattleTestBase
         Assert.That(Cmd(s, "retreat").Ok, Is.True);
         if (s.Battle != null) Assert.Inconclusive("强制撤退未成功");
         ReadDialogues(s);
+        // B22h（Q196 选 C）：撤退退回走来的营地；再走回荒地（不强制入战）主动重接
+        Assert.That(s.CurrentLocation, Is.EqualTo("camp"));
+        Start(s, ActionRequest.Travel("field"));
+        for (var i = 0; i < 200 && s.Main != null; i++) { var r = E.Advance(s); if (r.Status == SegmentStatus.Paused) E.Resume(s); }
+        ReadDialogues(s);
+        Assert.That(s.Battle, Is.Null);
         Assert.That(E.Approach(s, tid).Ok, Is.True);
         var b2 = s.Battle!;
         Assert.That(b2.Tutorial, Is.True, "仍是同一教学流程");
@@ -374,6 +380,7 @@ public class V10CookWaitTests : BattleTestBase
         Assert.That(Cmd(s, "retreat").Ok, Is.True);
         if (s.Battle != null) Assert.Inconclusive("强制撤退未成功");
         ReadDialogues(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo("camp"), "B22h：撤退退回走来的营地");
         // 跨到第4日，多次往返荒地
         for (var day = 0; day < 3; day++)
         {
@@ -381,8 +388,7 @@ public class V10CookWaitTests : BattleTestBase
             s.Body.Immunity = 95;
             s.Body.Infected = false;
             s.Body.VirusLoad = 0;
-            Start(s, ActionRequest.Travel("camp"));
-            Run(s);
+            if (day > 0) { Start(s, ActionRequest.Travel("camp")); Run(s); }
             AdvanceTo(s, s.GameMinute + 1440 - 60);
             SetStats(s, 20, 80, 80, 18, 90, 60);
             Start(s, ActionRequest.Travel("field"));

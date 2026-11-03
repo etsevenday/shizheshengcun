@@ -393,6 +393,8 @@ namespace Survival.Core.Engine
                 ActiveWeaponSlot = DefaultWeaponPage(s),
             };
             b.EncounterId = $"enc-{b.BattleId}";
+            // B22h（Q196 选 C）：开战快照锁定普通主世界撤退的来处（最近一次已完成移动的来源节点与那条边）；没有可信来处为空快照
+            b.WorldRetreat = RetreatOriginAtStart(s);
             // 容量 C 锁存（R03 §1、A11：决定敌人数上限，不按实到人数缩怪）；有序名单截前 C 个，从 1 号位起紧凑排位
             b.Capacity = BattleCapacity(s);
             // Q86：新战按已保存的编队预设开局（单人也生效）：不压紧、不按武器自动找位、不另收开局站位 AP；
@@ -1172,7 +1174,7 @@ namespace Survival.Core.Engine
                         var retreatTo = DungeonRetreatTarget(s, s.CurrentLocation);
                         p.Notes.Add(retreatTo != null
                             ? $"成功：本轮推进5分钟后脱战，全队退到{LocName(retreatTo)}（来路上第一个没有敌人的房间，仍在本次远征里、不扣终止惩罚），存活敌人保留血量；失败：本回合行动点用尽"
-                            : $"成功：本轮推进5分钟后脱战，留在{LocName(s.CurrentLocation)}（不传回营地），存活敌人保留血量回到世界；失败：本回合行动点用尽");
+                            : $"成功：本轮推进5分钟后脱战，{WorldRetreatPreview(s, b)}，存活敌人保留血量与位置；失败：本回合行动点用尽");
                         if (low) p.Notes.Add($"体力不足{Fmt.N(a.Energy ?? 0)}：强行撤退不耗体力，成功率×{Fmt.T(a.LowEnergyChanceFactor)}");
                         break;
                     }
@@ -1506,6 +1508,8 @@ namespace Survival.Core.Engine
             var fixedLines = outcome == "victory" ? FixedVictory(s, b) : new List<string>();
             // B21（R03 D4）：地牢远征里撤退成功，全队沿来路退到第一个没有敌人的房间（首个危险房间退回 01，不出地牢），含在本场唯一 tick 里
             if (outcome == "retreat" && DungeonRetreatLanding(s, b) is string landed) fixedLines.Add(landed);
+            // B22h（Q196 选 C）：普通主世界撤退成功退回开战快照锁定的来处（0 额外分钟，不是常规移动）；没有可返回的来路就留在原地并写明
+            else if (outcome == "retreat" && WorldRetreatLanding(s, b) is string worldLanded) fixedLines.Add(worldLanded);
             var me = b.Fighter(GameState.PlayerId);
             var loss = Math.Min(Config.Panic.MoraleLossMax, me.Panic / Config.Panic.MoraleLossDivisor);
             if (loss > 0) s.Actor(GameState.PlayerId).Stats.Add(StatId.Morale, -loss);

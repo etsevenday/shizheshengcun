@@ -45,7 +45,7 @@ namespace Survival.Core.State
         /// "33" 起地牢远征：实例带状态与远征流水号，进行中的远征（成员快照、来路轨迹、撤出锁定路径/倍率/T/已推进分钟）、已结束远征记录、
         /// 一次性事件去重键，角色带惊魂未定截止（开发计划 v0.9 B21）。
         /// </summary>
-        public const string CurrentSchema = "35";
+        public const string CurrentSchema = "36";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -138,6 +138,11 @@ namespace Survival.Core.State
         [JsonIgnore] public Dictionary<StatId, bool> ZeroLatched { get => Player.ZeroLatched; set => Player.ZeroLatched = value; }
 
         public string CurrentLocation { get; set; } = "";
+        /// <summary>
+        /// B22h（Q196 选 C，retreat.world）：最近一次已完成的地点移动（移动行动完成到达时写；开发传送清空；撤退、撤出、地牢撤退落点不写）。
+        /// 普通主世界战斗撤退成功按开战时快照退回它的来源节点。旧档（存档 35 及以前）没有可信记录，为 null。
+        /// </summary>
+        public LastMoveRecord? LastMove { get; set; }
 
         /// <summary>地点外部区（地点默认区域）与安全屋屋内区的区 ID（S09 X2.1 zoneId，B17）。</summary>
         public const string ExteriorZone = "exterior";
@@ -1246,5 +1251,14 @@ namespace Survival.Core.State
         }
 
         public double NextDouble() => NextUInt() / 4294967296.0;
+    }
+
+    /// <summary>B22h：一次已完成的地点移动（来源、到达、走的边、完成时刻）。</summary>
+    public sealed class LastMoveRecord
+    {
+        public string From { get; set; } = "";
+        public string To { get; set; } = "";
+        public string? EdgeId { get; set; }
+        public int Minute { get; set; }
     }
 }

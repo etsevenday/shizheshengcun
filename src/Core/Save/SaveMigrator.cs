@@ -59,6 +59,7 @@ namespace Survival.Core.Save
         public const string Schema32 = "32";
         public const string Schema33 = "33";
         public const string Schema34 = "34";
+        public const string Schema35 = "35";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -108,6 +109,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema32) From32To33(s, config, notes);
             if (s.SchemaVersion == Schema33) From33To34(s, config, notes);
             if (s.SchemaVersion == Schema34) From34To35(s, config, notes);
+            if (s.SchemaVersion == Schema35) From35To36(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1097,7 +1099,20 @@ namespace Survival.Core.Save
         private static void From34To35(GameState s, GameConfig config, List<string> notes)
         {
             s.Recruit ??= new RecruitState();
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（收容所周期候选有了姓名、性别与文字外观：已生成的候选与已招入的角色保留原名，性别显示未说明、外观显示未记录，下一批起用新名字；登记时可选编入同行或安排候补到营区广场或已建成的安全屋；原有候补仍在营区广场）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema35}（收容所周期候选有了姓名、性别与文字外观：已生成的候选与已招入的角色保留原名，性别显示未说明、外观显示未记录，下一批起用新名字；登记时可选编入同行或安排候补到营区广场或已建成的安全屋；原有候补仍在营区广场）。" });
+            s.SchemaVersion = Schema35;
+        }
+
+        /// <summary>
+        /// 35→36（开发计划 v0.9 B22h，Q196 选 C，retreat.currentBattles）：普通主世界战斗撤退成功退回“最近一次已完成的地点移动”的来处。
+        /// 旧档里没有可信的已完成移动记录（只有不分先后的已走边集合），LastMove 留空、不猜；下一次实际移动完成后才有来处。
+        /// 读档时进行中的战斗没有开战快照，按旧落点（撤退留在原地）。不加时间、不动敌人。幂等。
+        /// </summary>
+        private static void From35To36(GameState s, GameConfig config, List<string> notes)
+        {
+            s.LastMove = null;
+            if (s.Battle != null) s.Battle.WorldRetreat = null;
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（野外与城市外部的战斗撤退成功后，全队退回最近一次走来的地点；旧存档没有可信的移动记录，下一次实际移动后才生效；读档时正在进行的战斗仍按原规则，撤退后留在原地）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

@@ -387,6 +387,7 @@ namespace Survival.Core.Engine
             if (IsBusy(s)) return "开发：行动进行中或有敌踪/战斗，先结束再传送";
             var notes = new List<string>();
             var from = s.CurrentLocation;
+            s.LastMove = null;   // B22h：开发传送不是已完成的移动，之前的移动记录不再可信（撤退无来处）
             s.CurrentLocation = locationId;
             s.CurrentZone = ExteriorZone;
             Visit(s, locationId, notes);

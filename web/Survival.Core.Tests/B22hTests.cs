@@ -1,6 +1,7 @@
 using System.Reflection;
 using Newtonsoft.Json.Linq;
 using Survival.Core.Engine;
+using Survival.Core.Save;
 using Survival.Core.State;
 
 namespace Survival.Core.Tests;
@@ -241,5 +242,180 @@ public class B22hTests : BattleTestBase
         Fresh(s, g);
         Lock(s, g);   // 激活序号 0 = 循环第 1 项“保护”
         Assert.That(g.Intent, Is.AnyOf("attack", "bite"), "旧敌没有同伴时改普通攻击");
+    }
+
+    // ───────────── R199 普通主世界撤退退回来处（Q196 选 C） ─────────────
+
+    /// <summary>营地 → 荒地真实移动后，在荒地对一只游荡尸接敌（冻结刷新巡游、清掉原有敌人）。</summary>
+    private GameState MoveThenFight(uint seed, string enemy = "shambler")
+    {
+        var s = New(seed);
+        E.DebugTeleport(s, "camp");
+        s.GameMinute = At(2, 9, 0);
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        s.WorldEnemies.Clear();
+        Start(s, ActionRequest.Travel("field"));
+        Run(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo("field"));
+        Assert.That((s.LastMove!.From, s.LastMove.To), Is.EqualTo(("camp", "field")));
+        FightHere(s, enemy);
+        return s;
+    }
+
+    private void FightHere(GameState s, string enemy = "shambler")
+    {
+        var id = E.DebugSpawnEnemy(s, enemy, s.CurrentLocation).Id;
+        s.Encounter = new PendingEncounter { LocationId = s.CurrentLocation, EnemyIds = new List<int> { id }, Source = "explore", Minute = s.GameMinute };
+        Assert.That(E.Engage(s).Ok, Is.True);
+        Assert.That(s.Battle, Is.Not.Null);
+    }
+
+    private void RetreatNow(GameState s)
+    {
+        PlayerFirst(s);
+        E.BattleStep(s);
+        ToPlayer(s);
+        Assert.That(E.AwaitingPlayer(s), Is.True);
+        Force(s, Below(0.0001));
+        Assert.That(Cmd(s, "retreat").Ok, Is.True);
+        Assert.That(s.Battle, Is.Null, "强制撤退成功");
+    }
+
+    /// <summary>
+    /// PLAN-Q196-01：普通主世界撤退成功，全队退回最近一次已完成移动的来处（营地）；含在本场唯一 tick 里（0 额外分钟、不收移动消耗）；
+    /// 不是常规移动——不新增移动记录；敌人原 HP 与位置保留；预览写明退回到哪。
+    /// </summary>
+    [Test]
+    public void PLAN_Q196_01_Retreat_BackToLastMoveOrigin_ZeroExtraMinutes()
+    {
+        var s = MoveThenFight(4301);
+        Assert.That((s.Battle!.WorldRetreat!.From, s.Battle.WorldRetreat.EdgeId), Is.EqualTo(("camp", s.LastMove!.EdgeId)), "开战快照锁定来处");
+        var enemyId = s.Battle.Enemies[0].WorldId;
+        PlayerFirst(s);
+        E.BattleStep(s);
+        ToPlayer(s);
+        var pv = E.PreviewCommand(s, BattleCommand.Of("retreat"));
+        Assert.That(string.Join(" | ", pv.Notes), Does.Contain("全队退回" + E.LocName("camp")));
+        s.Battle.Enemies[0].Hp = 1.5;
+        var t0 = s.GameMinute;
+        var lastMove = (s.LastMove.From, s.LastMove.To, s.LastMove.Minute);
+        Force(s, Below(0.0001));
+        Assert.That(Cmd(s, "retreat").Ok, Is.True);
+        Assert.That(s.Battle, Is.Null);
+        Assert.That(s.CurrentLocation, Is.EqualTo("camp"));
+        Assert.That(s.CurrentZone, Is.EqualTo(GameState.ExteriorZone));
+        Assert.That(s.GameMinute - t0, Is.EqualTo(5), "只有本场这一轮的 5 分钟，没有另加路程");
+        Assert.That((s.LastMove.From, s.LastMove.To, s.LastMove.Minute), Is.EqualTo(lastMove), "撤退不是常规移动，不新增记录");
+        var w = E.FindWorldEnemy(s, enemyId)!;
+        Assert.That((w.LocationId, w.Hp, w.Engaged), Is.EqualTo(("field", 1.5, false)), "敌人原 HP 与位置保留");
+        Assert.That(s.Log.Any(l => l.Text.Contains("撤退成功") && l.Text.Contains("全队退回" + E.LocName("camp"))), Is.True);
+    }
+
+    /// <summary>PLAN-Q196-01：退回处有敌踪照常公开、不自动接战；在来处再开一场，最近完成移动的到达点不是这里，按无可信来处留原地（不连跳）。</summary>
+    [Test]
+    public void PLAN_Q196_01_LandingEnemiesShown_NoChainBattle_NoSecondHop()
+    {
+        var s = MoveThenFight(4302);
+        var campEnemy = E.DebugSpawnEnemy(s, "shambler", "camp");
+        RetreatNow(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo("camp"));
+        Assert.That(s.Battle, Is.Null, "不连触另一场战斗");
+        Assert.That(s.Encounter, Is.Null);
+        Assert.That(E.VisibleEnemiesAt(s, "camp").Select(x => x.Id), Does.Contain(campEnemy.Id), "到达处敌踪照常公开");
+        Assert.That(s.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Contain("有敌踪").And.Contain("不会自动开战"));
+        Assert.That(E.Approach(s, campEnemy.Id).Ok, Is.True);
+        Assert.That(s.Battle!.WorldRetreat!.From, Is.Null, "最近一次完成的移动是营地→荒地，到达点不是营地");
+        RetreatNow(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo("camp"));
+        Assert.That(s.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Contain(GameEngine.NoRetreatPathText));
+    }
+
+    /// <summary>PLAN-Q196-01：开发传送/旧档没有可信来处——留在原地并写“没有可返回的来路，本次撤退后仍在原地”，预览同样写明，不猜路线。</summary>
+    [Test]
+    public void PLAN_Q196_01_NoCredibleOrigin_StayWithExplicitText()
+    {
+        var s = Fight(4303, "shambler");   // DebugTeleport 到荒地（不是已完成的移动）
+        Assert.That(s.LastMove, Is.Null);
+        Assert.That(s.Battle!.WorldRetreat, Is.Not.Null);
+        Assert.That(s.Battle.WorldRetreat!.From, Is.Null);
+        PlayerFirst(s);
+        E.BattleStep(s);
+        ToPlayer(s);
+        Assert.That(string.Join(" | ", E.PreviewCommand(s, BattleCommand.Of("retreat")).Notes), Does.Contain(GameEngine.NoRetreatPathText));
+        Force(s, Below(0.0001));
+        Assert.That(Cmd(s, "retreat").Ok, Is.True);
+        Assert.That(s.CurrentLocation, Is.EqualTo("field"));
+        Assert.That(s.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Contain(GameEngine.NoRetreatPathText));
+    }
+
+    /// <summary>PLAN-Q196-01：来路边已不能反向通行、来处是地牢节点——都留原地并写明；不走未知边、不传送穿门。</summary>
+    [Test]
+    public void PLAN_Q196_01_EdgeNotReversible_OrDungeonOrigin_Stay()
+    {
+        var s = MoveThenFight(4304);
+        s.UnlockedEdges.Remove(s.Battle!.WorldRetreat!.EdgeId!);   // 模拟那条边现在不开通
+        RetreatNow(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo("field"));
+        Assert.That(s.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Contain(GameEngine.NoRetreatPathText));
+
+        // 来处是地牢节点：记录伪造成从某地牢入口缓冲走到父地点
+        var t = New(4305);
+        var edge = Cfg.Edges.First(e => E.DungeonAt(e.A) != null && E.DungeonAt(e.B) == null || E.DungeonAt(e.B) != null && E.DungeonAt(e.A) == null);
+        var buffer = E.DungeonAt(edge.A) != null ? edge.A : edge.B;
+        var parent = edge.Other(buffer);
+        E.DebugMapTeleport(t, parent);
+        t.SpawnNextCheck = int.MaxValue;
+        t.PatrolNextCheck = int.MaxValue;
+        t.WorldEnemies.RemoveAll(w => w.LocationId == parent);
+        t.Encounter = null;
+        t.LastMove = new LastMoveRecord { From = buffer, To = parent, EdgeId = edge.Id, Minute = t.GameMinute };
+        FightHere(t);
+        Assert.That(t.Battle!.WorldRetreat!.From, Is.EqualTo(buffer));
+        RetreatNow(t);
+        Assert.That(t.CurrentLocation, Is.EqualTo(parent), "来处是地牢：留原地");
+        Assert.That(t.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Contain(GameEngine.NoRetreatPathText));
+    }
+
+    /// <summary>PLAN-Q196-01：上线前已开始的战斗（没有开战快照）保留原落点——撤退后留在原地，不写新文字。</summary>
+    [Test]
+    public void PLAN_Q196_01_BattleStartedBeforeRule_KeepsOldLanding()
+    {
+        var s = MoveThenFight(4306);
+        s.Battle!.WorldRetreat = null;
+        RetreatNow(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo("field"));
+        Assert.That(s.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Not.Contain(GameEngine.NoRetreatPathText).And.Not.Contain("全队退回"));
+    }
+
+    /// <summary>PLAN-Q196-01：存档 35→36——旧档没有可信移动记录（LastMove 留空、不猜），进行中的战斗按旧落点；写一条升级日志，幂等。</summary>
+    [Test]
+    public void PLAN_Q196_01_Migration35To36()
+    {
+        var s = MoveThenFight(4307);
+        var j = JObject.Parse(SaveSerializer.Serialize(s));
+        j["SchemaVersion"] = "35";
+        var t = SaveSerializer.Deserialize(j.ToString(), Cfg);
+        Assert.That(t.SchemaVersion, Is.EqualTo("36"));
+        Assert.That(t.LastMove, Is.Null);
+        Assert.That(t.Battle!.WorldRetreat, Is.Null, "读档时进行中的战斗按旧规则");
+        Assert.That(t.Log.Count(l => l.Text.Contains("存档已升级到版本36")), Is.EqualTo(1));
+        var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(t), Cfg);
+        Assert.That(again.Log.Count(l => l.Text.Contains("存档已升级到版本36")), Is.EqualTo(1), "幂等");
+    }
+
+    /// <summary>PLAN-Q196-01：地牢里的战斗撤退保持现状（沿来路退到无敌房间，B21）；新规则只用于主世界节点。</summary>
+    [Test]
+    public void PLAN_Q196_01_DungeonRetreat_Unchanged()
+    {
+        var s = B21EntryTests.AtBuffer(E, 4308);
+        UnlockCapacity(s, 2);
+        Start(s, ActionRequest.Travel("d01_02", true));
+        Run(s);
+        Assert.That(E.EngageFixed(s).Ok, Is.True);
+        Assert.That(E.WorldRetreatTarget(s, s.Battle!), Is.EqualTo(((string?)null, (string?)null)));
+        RetreatNow(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo("d01_01"));
+        Assert.That(s.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Not.Contain(GameEngine.NoRetreatPathText));
     }
 }

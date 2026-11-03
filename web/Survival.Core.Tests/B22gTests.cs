@@ -188,7 +188,7 @@ public class B22gTests : TestBase
 
         var t = SaveSerializer.Deserialize(j.ToString(), Cfg);
         Assert.That(t.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
-        Assert.That(t.Log.Last().Text, Does.Contain("存档已升级到版本35").And.Contain("未说明").And.Contain("未记录"));
+        Assert.That(t.Log.Single(l => l.Text.Contains("存档已升级到版本35")).Text, Does.Contain("未说明").And.Contain("未记录"));   // B22h 起其后还有 35→36 一条
         var r = t.Roster.Single(x => x.IsRandom);
         Assert.That((r.ActorId, r.Name, r.BaseSpeed, t.Actors[aid].Stats.Health), Is.EqualTo((aid, "幸存者·旧模板001", speed, hp)), "名字、数值与 actorId 不变");
         Assert.That(E.IdentityText(r), Is.EqualTo("性别：未说明 · 外观：未记录"));
