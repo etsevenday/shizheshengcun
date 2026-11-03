@@ -60,7 +60,7 @@ public class B12ClaimTests : TestBase
             Assert.That(s.Progress.Flags.Count, Is.EqualTo(flags), "不重发 campaign 事实");
             Assert.That(s.DungeonInstances["d01"].Facts, Does.Contain(GameEngine.RecordClaimedFact));
         }
-        Assert.That(s.Items.Count(i => i.RewardOrigin == null), Is.EqualTo(items));
+        Assert.That(s.Items.Count(i => i.RewardOrigin == null && !i.InRemains), Is.EqualTo(items));   // B22：首通包换代时迁进父地点遗物认领箱
         Assert.That(E.BattleCapacity(s), Is.EqualTo(3), "MAP30-05：容量不重复");
     }
 
@@ -120,7 +120,9 @@ public class B12ClaimTests : TestBase
         Assert.That(s.Resources["d08_03_cache2"].Discovered, Is.True, "已发现按整局记（H3）");
         Assert.That(s.Locations["d08_03"].Progress, Is.EqualTo(0), "房间探索度随代清零");
         Assert.That(E.ClearChargesAt(s, "d08_03").charges, Is.EqualTo(1), "清理次数随代恢复");
-        Assert.That(First(s, "dried_meat", "d08_03").ExpiresAt, Is.EqualTo(expires), "重置不刷新已持有物保质");
+        // B22（R03 D8）：换代前旧实例地面物迁到父地点“旧实例遗物认领箱”，保质照原 expiresAt
+        Assert.That(Count(s, "dried_meat", "d08_03"), Is.EqualTo(0));
+        Assert.That(First(s, "dried_meat", ItemInstance.RemainsOwner(GameEngine.RelicBoxKey("d08"))).ExpiresAt, Is.EqualTo(expires), "重置不刷新已持有物保质");
     }
 
     /// <summary>旧档迁移账（R37）：旧核心节点映射与 6 个旧唯一箱 claimId→新节点按数据导入（B13c 起 officer_cache 改在 d03_07，Q122）；不对 v3 同号侧室全局替换。</summary>

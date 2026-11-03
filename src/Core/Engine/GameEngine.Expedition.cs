@@ -136,10 +136,14 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 远征成功抵达外部父地点的钩子（R03 D7/D10“存活抵达原子移动角色与封存owner”）。封存战利品账与回收箱属批次 B22：本批个人随身物照旧归本人，
-        /// 这里不做任何迁移。
+        /// 远征成功抵达外部父地点的钩子（R03 D7/D10“存活抵达原子移动角色与封存owner”，B22）：本实例封存物一次迁到父地点远征回收箱、随队带出物品清掉本实例来源；
+        /// 个人随身物照旧归本人，不复制。主角死亡不走这里（终局优先）。
         /// </summary>
-        private void OnExpeditionArrived(GameState s, ExpeditionState e) { }
+        private void OnExpeditionArrived(GameState s, ExpeditionState e)
+        {
+            if (s.Progress.Dead) return;
+            if (MoveSealedToRecovery(s, e) is string t) Emit(s, GameEventKind.Info, t + "。");
+        }
 
         /// <summary>主角死亡或尸变（R03 D5.2/D6“主角死亡立即终局，停止未来返程段”）：进行中的远征按终局结束，实例记 CAMPAIGN_ENDED。</summary>
         private void ExpeditionOnDeath(GameState s)
@@ -502,6 +506,12 @@ namespace Survival.Core.Engine
             p.Risks.Add("已经归零的饱食/水分/清醒继续扣健康，出血、感染与病毒照常发展，可能在途中死亡");
             p.Risks.Add($"终点是{p.ParentName}（不是营区）；回营地要另走，正常消耗");
             p.Risks.Add("确认后立即扣除、开始撤出，途中不能取消，也不能吃喝、用药或休息");
+            // B22（A10 §7、R03 D7.1）：原实例遗留物清单与封存物去向
+            p.Leftovers = LeftoverLines(s, e.DungeonId).Where(x => !x.Contains("封存战利品（未带出）")).ToList();
+            var sealedNow = SealedItems(s, e.InstanceId);
+            p.SealedText = sealedNow.Count > 0
+                ? $"封存的{sealedNow.Sum(i => i.Count)}份战利品（{string.Join("、", sealedNow.Select(i => $"{ItemName(i.ItemId)}×{i.Count}"))}）随队带出，到达后放进{p.ParentName}的远征回收箱"
+                : "没有封存的战利品（各人随身的物品照旧归本人）";
             return p;
         }
 
@@ -891,6 +901,10 @@ namespace Survival.Core.Engine
         public List<string> FactorReasons { get; set; } = new List<string>();
         public int TotalMinutes { get; set; }
         public List<string> Risks { get; set; } = new List<string>();
+        /// <summary>B22：留在原实例里的物品（地牢房间地面、死在这里的队友遗物）；不带走，可重入回收，重置前迁到父地点认领箱。</summary>
+        public List<string> Leftovers { get; set; } = new List<string>();
+        /// <summary>B22：封存战利品的去向说明。</summary>
+        public string SealedText { get; set; } = "";
     }
 
     /// <summary>一名同行的即时损失（前→后）。</summary>

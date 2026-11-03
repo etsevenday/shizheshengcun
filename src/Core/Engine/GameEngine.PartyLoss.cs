@@ -43,7 +43,7 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) return "本局已结束";
             if (!s.Remains.TryGetValue(deadId, out var rem)) return "这里没有这份遗物";
             if (s.Battle != null || s.Encounter != null) return "战斗结束后才能整理遗物";
-            if (rem.LocationId != s.CurrentLocation) return $"{(rem.IsClaim ? "认领箱" : "遗物")}在{LocName(rem.LocationId)}，要到那里才能取";
+            if (rem.LocationId != s.CurrentLocation) return $"{(rem.IsClaim ? "认领箱" : rem.IsDungeonBox ? rem.Name : "遗物")}在{LocName(rem.LocationId)}，要到那里才能取";
             var it = FindItem(s, instanceId);
             if (it == null || it.Owner != ItemInstance.RemainsOwner(deadId)) return "这件物品已不在遗物里";
             if (!toGround && PickupBlockedText(s, it, it.Count) is string why) return why;
@@ -63,8 +63,9 @@ namespace Survival.Core.Engine
             Normalize(s, dest);
             var name = s.Remains[deadId].Name;
             var claim = s.Remains[deadId].IsClaim;
+            var box = s.Remains[deadId].IsDungeonBox;
             if (RemainsItems(s, deadId).Count == 0) s.Remains.Remove(deadId);
-            Emit(s, GameEventKind.Info, $"从{(claim ? $"认领箱（{name}退役寄存）" : $"{name}的遗物")}取出{ItemName(it.ItemId)}" + (toGround ? "，放在地面。" : "。"));
+            Emit(s, GameEventKind.Info, $"从{(claim ? $"认领箱（{name}退役寄存）" : box ? name : $"{name}的遗物")}取出{ItemName(it.ItemId)}" + (toGround ? "，放在地面。" : "。"));
             return ActionResult.Success();
         }
 
@@ -194,6 +195,7 @@ namespace Survival.Core.Engine
             {
                 var dead = it.Owner.Substring(ItemInstance.RemainsPrefix.Length);
                 if (s.Remains.TryGetValue(dead, out var rem) && rem.IsClaim) return $"{LocName(rem.LocationId)}认领箱里（{rem.Name}退役寄存）";
+                if (rem != null && rem.IsDungeonBox) return $"{LocName(rem.LocationId)}的{rem.Name}里";
                 return s.Remains.TryGetValue(dead, out rem) ? $"{rem.Name}的遗物里（{LocName(rem.LocationId)}）" : "遗物里";
             }
             if (ItemInstance.TryEquip(it.Owner, out var aid, out _)) return $"{ActorDisplayName(s, aid)}身上";

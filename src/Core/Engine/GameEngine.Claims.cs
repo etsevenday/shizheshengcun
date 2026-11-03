@@ -245,6 +245,8 @@ namespace Survival.Core.Engine
             if (_locs[s.CurrentLocation].DungeonId == dungeonId) return "人在这座地牢里，先离开再换代";
             if (s.Expedition?.DungeonId == dungeonId) return "这座地牢还有进行中的远征，先结束远征再换代";
             var inst = EnsureInstance(s, dungeonId);
+            // B22（R03 D8）：先把旧实例尚存的真实物资/遗物迁到父地点“旧实例遗物认领箱”，再换代（不静默删除、不进新敌群）
+            MoveLeftoversToRelicBox(s, dungeonId);
             // 路线知识是 campaign 的（instanceLatch）：旧代已开通或已揭示的本地牢路线记为已知，只退回开通状态
             foreach (var e in Config.Edges.Where(e => e.DungeonId == dungeonId && EdgeRevealed(s, e))) inst.KnownEdges.Add(e.Id);
             inst.Generation += 1;

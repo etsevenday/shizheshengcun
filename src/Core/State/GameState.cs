@@ -891,7 +891,13 @@ namespace Survival.Core.State
         /// <summary>容器类别（B19）：null 为死亡遗物；"claim" 为收容所认领箱（生成角色退役时全部个人物品寄存于此，主角实地才能取）。</summary>
         public string? Kind { get; set; }
         public const string ClaimKind = "claim";
+        /// <summary>B22：地牢父地点“远征回收箱”（成功撤出带回的封存战利品，R03 D7.1）。</summary>
+        public const string RecoveryKind = "recovery";
+        /// <summary>B22：地牢父地点“旧实例遗物认领箱”（重置前迁出的旧实例遗留物，R03 D8）。</summary>
+        public const string RelicKind = "relic";
         [JsonIgnore] public bool IsClaim => Kind == ClaimKind;
+        /// <summary>地牢回收类箱子（远征回收箱或旧实例遗物认领箱）：名字即标题，只能实地取。</summary>
+        [JsonIgnore] public bool IsDungeonBox => Kind == RecoveryKind || Kind == RelicKind;
         public RemainsState Clone() => (RemainsState)MemberwiseClone();
     }
 
