@@ -101,7 +101,9 @@ namespace Survival.Core.Engine
         {
             var tag = i.Appraisal == null ? i.Source?.GrantEventId : (i.Source?.GrantEventId ?? "") + "|apr:" + i.Appraisal.Result;
             // B22：地牢奖励来源（封存白名单）不与同名外带物合堆；没有来源时与原来完全相同
-            return i.RewardOrigin == null ? tag : (tag ?? "") + "|dr:" + i.RewardOrigin;
+            if (i.RewardOrigin != null) tag = (tag ?? "") + "|dr:" + i.RewardOrigin;
+            // B22b（Q168）：用过的修补包单独成堆（堆叠上限 1），满包仍按原键合堆
+            return i.IsUsedFieldPatch ? (tag ?? "") + "|pu:" + i.InstanceId : tag;
         }
 
         /// <summary>
@@ -111,7 +113,8 @@ namespace Survival.Core.Engine
         public static string BatchKeyOf(ItemInstance i) =>
             $"{(i.ExpiresAt.HasValue ? i.ExpiresAt.Value.ToString() : "-")}|{i.Source?.GrantEventId ?? ""}|{(i.ReservedBy != null ? "r" : "")}"
             + (i.Appraisal != null ? "|apr:" + i.Appraisal.Result : "")   // B18：鉴定状态进真实批次键（S06 X4、R07 X3.4）
-            + (i.RewardOrigin != null ? "|dr:" + i.RewardOrigin : "");   // B22：地牢奖励来源（R03 D7.1）
+            + (i.RewardOrigin != null ? "|dr:" + i.RewardOrigin : "")   // B22：地牢奖励来源（R03 D7.1）
+            + (i.IsUsedFieldPatch ? "|pu:" + i.InstanceId : "");   // B22b（Q168）：用过的修补包各自一批
 
         /// <summary>
         /// 某处同一物品的真实批次（Q24）：最早到期在前、无保质在后，同期限按批内最小实例号稳定排序。每批列出全部堆、合计份数、
@@ -524,6 +527,7 @@ namespace Survival.Core.Engine
                 Source = source?.Clone(),
                 RewardOrigin = rewardOrigin,
             };
+            InitFieldPatch(stack, cfg);   // B22b：新包满耐久
             s.Items.Add(stack);
             made.Add(stack);
             Normalize(s, owner);
@@ -557,6 +561,7 @@ namespace Survival.Core.Engine
                 if (scavenged) condition = RollCondition(s);
                 inst.Durability = scavenged ? inst.MaxDurability * condition : inst.MaxDurability;
             }
+            InitFieldPatch(inst, cfg);
             ApplyQuality(s, inst, cfg, origin, condition, forcedQuality);
             var w = Weapon(itemId);
             if (w != null && w.UsesMagazine) inst.LoadedAmmoId = w.AmmoId;
@@ -573,7 +578,7 @@ namespace Survival.Core.Engine
             if (ItemInstance.TryFacilityId(owner, out _)) return;
             var inPot = owner.StartsWith(ItemInstance.ContainerPrefix);
             var groups = s.Items
-                .Where(i => i.Owner == owner && i.ReservedBy == null && _items[i.ItemId].IsStackable && (!inPot || IsLiquid(i)))
+                .Where(i => i.Owner == owner && i.ReservedBy == null && !IsLocked(s, i) && _items[i.ItemId].IsStackable && (!inPot || IsLiquid(i)))   // B22b：行动锁住的堆（修补包）不参与合堆
                 .GroupBy(i => (i.ItemId, i.ExpiresAt, MergeTag(i)))
                 .ToList();
             foreach (var g in groups)
@@ -604,6 +609,8 @@ namespace Survival.Core.Engine
                         Source = tmpl.Source?.Clone(),
                         Appraisal = tmpl.Appraisal?.Clone(),
                         RewardOrigin = tmpl.RewardOrigin,
+                        Durability = tmpl.Durability,   // B22b：满修补包的包耐久随堆复制
+                        MaxDurability = tmpl.MaxDurability,
                     });
                     total -= take;
                 }

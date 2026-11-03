@@ -531,10 +531,18 @@ namespace Survival.Core.Engine
                         var crafted = CreateItems(s, kv.Key, kv.Value * batch, s.Ground, false, null, Config.Equipment.CraftOrigin == "" ? null : Config.Equipment.CraftOrigin, expiresCap);
                         made.Add($"{ItemName(kv.Key)}+{kv.Value * batch}{QualitySuffix(crafted)}");
                     }
-                    if (rc.IsRepair) made.Add(CompleteRepair(s, a));
+                    var patchOk = true;
+                    if (rc.IsRepair && a.PatchInstanceId.HasValue)
+                    {
+                        // B22b（Q168）：品阶修补包一次性结算；目标或包不在时不改、不给经验
+                        var (ok, patchText) = CompleteFieldPatch(s, a);
+                        made.Add(patchText);
+                        patchOk = ok;
+                    }
+                    else if (rc.IsRepair) made.Add(CompleteRepair(s, a));
                     // 有效制造按实际提交的配方次数发经验（v0.6 §03）；门类按开工快照（Q110：医疗台三材料给医疗、不双发制造；旧档在途为 null 按制造）
                     var xpSkill = a.XpSkill ?? Crafting;
-                    made.Add(CraftCompleteXp(s, a, rc, xpSkill, batch));
+                    if (patchOk) made.Add(CraftCompleteXp(s, a, rc, xpSkill, batch));
                     if (rc.FacilityResult != null) CommitFacility(s, rc);
                     NoteCraft(s, a, rc);   // B13 PRO10
                     ClearAction(s, a);

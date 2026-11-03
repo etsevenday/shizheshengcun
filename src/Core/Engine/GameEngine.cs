@@ -293,6 +293,8 @@ namespace Survival.Core.Engine
             public bool FixedWait;
             public int Planned;
             public ItemInstance? Tool;
+            /// <summary>B22b 现场修补选用的修补包。</summary>
+            public ItemInstance? Patch;
             public bool ExplicitTool;
             public int Units;
             public ResourceConfig? Res;
@@ -511,7 +513,16 @@ namespace Survival.Core.Engine
                         var lv = SkillLevel(s, kv.Key);
                         if (lv < kv.Value) return $"需要{SkillName(kv.Key)}{kv.Value}级（当前{lv}级）";
                     }
-                    if (rc.IsRepair)
+                    if (rc.IsRepair && IsFieldPatchRecipe(rc))
+                    {
+                        // B22b（Q168）：品阶野外修补包——目标与包一起校验，包未指定时默认选恢复最多、消耗最少的一包
+                        var why = FieldPatchBlocked(s, r.InstanceId, r.PatchInstanceId, out var target, out var pack, out var quote);
+                        if (why != null) return why;
+                        plan.Tool = target;
+                        plan.Patch = pack;
+                        plan.Notes.AddRange(FieldPatchNotes(target!, pack!, quote));
+                    }
+                    else if (rc.IsRepair)
                     {
                         var why = RepairBlocked(s, r.InstanceId, out var target, rc);
                         if (why != null) return why;
@@ -595,7 +606,8 @@ namespace Survival.Core.Engine
                     plan.BaseWork = rc.BaseMinutes * batch;
                     plan.FixedWait = rc.IsFixedWait;
                     if (rc.IsFixedWait) { plan.Label = $"{rc.Name}（固定等待{Clock.Duration(rc.BaseMinutes)}）"; return null; }
-                    plan.Label = rc.IsBuild ? rc.Name : rc.IsRepair ? $"维护{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
+                    plan.Label = rc.IsBuild ? rc.Name : plan.Patch != null ? $"{rc.Name}{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
+                        : rc.IsRepair ? $"维护{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
                         : rc.IsSalvage ? $"拆解{ItemName(plan.Tool!.ItemId)}#{plan.Tool.InstanceId}"
                         : batch > 1 ? $"制作{rc.Name}×{batch}份" : $"制作{rc.Name}";
                     return null;
@@ -901,6 +913,12 @@ namespace Survival.Core.Engine
                     {
                         a.ToolInstanceId = p.Tool.InstanceId;
                         a.LockedItemIds.Add(p.Tool.InstanceId);
+                    }
+                    if (p.Patch != null)
+                    {
+                        // B22b（Q168）：选中的包（整堆）锁到提交，完成时才拆出一包结算；取消只解锁
+                        a.PatchInstanceId = p.Patch.InstanceId;
+                        a.LockedItemIds.Add(p.Patch.InstanceId);
                     }
                     break;
                 }

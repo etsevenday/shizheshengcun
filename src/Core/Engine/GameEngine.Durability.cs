@@ -70,24 +70,18 @@ namespace Survival.Core.Engine
 
         public RecipeConfig? RepairRecipe => Config.Recipes.FirstOrDefault(r => r.IsRepair);
 
-        /// <summary>可维护的目标：随身或当前地面（不在火堆、不在锅里）、有耐久且未满、未被预留或锁定。</summary>
+        /// <summary>可维护的目标：随身或当前地面（不在火堆、不在锅里）、有耐久且未满、未被预留或锁定。野外修补包本身不是维护目标（B22b，Q168）。</summary>
         public List<ItemInstance> RepairCandidates(GameState s, RecipeConfig? rc = null) =>
-            s.Items.Where(i => i.Durability.HasValue && i.MaxDurability.HasValue && (OnPlayer(i) || i.Owner == s.Ground))
+            s.Items.Where(i => i.Durability.HasValue && i.MaxDurability.HasValue && (OnPlayer(i) || i.Owner == s.Ground) && !IsFieldPatch(i))
                 .Where(i => rc?.RepairFilter == null || RepairFilterOk(rc, i.ItemId))
                 .OrderBy(i => OnPlayer(i) ? 0 : 1).ThenBy(i => Condition(i)).ThenBy(i => i.InstanceId).ToList();
 
         /// <summary>
-        /// 野外修补包（B16，A07 X1.6、R02 X4）只修“非枪金属武器/工具”：开发方按拆解回收材料判定金属（废金属/钢材/铁片），
-        /// 枪械（weaponKind firearms）、木/石/布皮/塑料类、防具与锅一律不修（开发假设 B16-6，待确认）。
+        /// 维护配方的目标范围：野外修补包现场修补（repairFilter field_patch，B22b，Q168 取代 B16 “非枪金属武器/工具”）按 FieldPatchEligible 判；
+        /// 其他维护配方不限。
         /// </summary>
-        public bool RepairFilterOk(RecipeConfig rc, string itemId)
-        {
-            if (rc.RepairFilter != "metal_non_gun") return true;
-            var w = Weapon(itemId);
-            if (w == null || w.WeaponKind == "firearms") return false;
-            var mat = SalvageDef(itemId)?.ItemId;
-            return mat == "scrap" || mat == "steel" || mat == "iron_plate";
-        }
+        public bool RepairFilterOk(RecipeConfig rc, string itemId) =>
+            rc.RepairFilter != FieldPatchFilter || FieldPatchEligible(itemId);
 
         /// <summary>维护目标是否合法；合法时返回 null 并给出实例。</summary>
         public string? RepairBlocked(GameState s, int? instanceId, out ItemInstance? target, RecipeConfig? rc = null)
@@ -97,11 +91,12 @@ namespace Survival.Core.Engine
             target = FindItem(s, instanceId.Value);
             if (target == null) return "这件工具已不在，请重新选择";
             var cfg = _items[target.ItemId];
+            if (IsFieldPatch(target)) return "野外修补包不能维护，也不能补充包耐久";   // B22b（Q168 stacking）
             if (!target.Durability.HasValue || !target.MaxDurability.HasValue) return $"{cfg.Name}没有耐久，不需要维护";
             if (!(OnPlayer(target) || target.Owner == s.Ground))
                 return target.InFacility ? $"先把{cfg.Name}从火堆取下" : "只能维护随身或当前地面的工具";
             if (target.ReservedBy != null || IsLocked(s, target)) return "行动占用：这件工具正被使用";
-            if (rc != null && !RepairFilterOk(rc, target.ItemId)) return $"{rc.Name}只修非枪的金属武器/工具，{cfg.Name}不能用它修（枪、布皮、木石器具与锅不修）";
+            if (rc != null && !RepairFilterOk(rc, target.ItemId)) return $"{rc.Name}只修有金属制作或拆解依据的武器、工具或防具，{cfg.Name}不能用它修（枪械、锅、打火器和木石布皮制品不修）";
             if (target.Durability.Value >= target.MaxDurability.Value - 1e-9) return $"{cfg.Name}#{target.InstanceId}耐久已满";
             if (IsPot(target) && PotContents(s, target.InstanceId).Count > 0 && RepairRecipe?.RequireEmptyDetachedPotWhenTargetIsPot == true)
                 return "锅须先取下并清空才能维护";
@@ -252,7 +247,10 @@ namespace Survival.Core.Engine
             return true;
         }
 
-        /// <summary>维护完成：恢复自身最大耐久 20%，不超过自身最大、不重抽最大值。</summary>
+        /// <summary>
+        /// 维护完成：恢复自身最大耐久 20%，不超过自身最大、不重抽最大值。
+        /// B22b：旧档进行中的 B16 现场小修（没有 PatchInstanceId）也走这里，按开工快照完成——预留的旧包 1 份已在完成时扣掉、恢复 10%（Q168 migration）。
+        /// </summary>
         private string CompleteRepair(GameState s, ActionState a)
         {
             var rc = _recipes[a.TargetId];

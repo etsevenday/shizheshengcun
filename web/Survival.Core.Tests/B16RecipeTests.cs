@@ -29,10 +29,10 @@ public class B16RecipeTests : TestBase
     public void SUP02_NineteenRecipes_ModesStationsKnowledge()
     {
         var ex = Cfg.Recipes.Where(r => r.Id.StartsWith("ex_")).ToList();
-        Assert.That(ex, Has.Count.EqualTo(19));
+        Assert.That(ex, Has.Count.EqualTo(19 + 2), "B22b（Q168）新增绿/蓝野外修补包配方");
         Assert.That(ex.Where(r => r.IsFixedWait).Select(r => r.Id), Is.EquivalentTo(new[] { "ex_tablet_water", "ex_cartridge_water" }));
         Assert.That(ex.Where(r => r.IsPassive).Select(r => r.Id), Is.EquivalentTo(new[] { "ex_ceramic_shell", "ex_hardtack", "ex_stew_portion", "ex_station_water" }));
-        Assert.That(ex.Count(r => r.ModeOrDefault == RecipeConfig.ModeActive), Is.EqualTo(13));
+        Assert.That(ex.Count(r => r.ModeOrDefault == RecipeConfig.ModeActive), Is.EqualTo(13 + 2));
         Assert.That(ex.Where(r => r.IsPot).Select(r => r.Id), Is.EquivalentTo(new[] { "ex_hardtack", "ex_stew_portion" }));
         Assert.That(ex.Where(r => r.Knowledge == "ceramic_methods").Select(r => r.Id), Is.EquivalentTo(new[] { "ex_ceramic_shell", "ex_filter_cartridge", "ex_station_water" }));
         Assert.That(ex.Where(r => r.Knowledge != "ceramic_methods").All(r => r.Knowledge == "expedition_basics"), Is.True);

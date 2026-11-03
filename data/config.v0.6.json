@@ -2065,7 +2065,7 @@
     },
     {
       "id": "field_patch",
-      "name": "野外修补包",
+      "name": "野外修补包（白）",
       "weightGrams": 150,
       "stackMax": 10,
       "shelfLifeMinutes": null,
@@ -2075,7 +2075,47 @@
       "edible": false,
       "requiresCooking": false,
       "use": null,
-      "desc": "策划用途：战外15基础分钟手工修金属工具、武器最大耐久10%，不修枪、布皮、锅。战外15分钟手工修一件非枪金属武器/工具，恢复其最大耐久的10%（制作面板“现场小修”）"
+      "desc": "白色品阶。战外安全空闲时，在目标卡“现场修补”或制作面板手工15基础分钟修一件有耐久的金属武器/工具或防具（制作或拆解材料含废金属/钢材/铁片；枪械、锅、打火器不修）。每包耐久100，按公式扣包耐久：同品阶从零修满耗20，跨一阶倍率×2，低阶包修高阶装备单次最多恢复50%/25%。满包同品阶最多叠10，用过的包单独一张卡；不能修补包自己、不作材料、不能拆解。",
+      "fieldPatch": {
+        "rank": 0,
+        "maxDurability": 100
+      }
+    },
+    {
+      "id": "field_patch_green",
+      "name": "野外修补包（绿）",
+      "weightGrams": 150,
+      "stackMax": 10,
+      "shelfLifeMinutes": null,
+      "kind": "material",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "绿色品阶。战外安全空闲时，在目标卡“现场修补”或制作面板手工15基础分钟修一件有耐久的金属武器/工具或防具（制作或拆解材料含废金属/钢材/铁片；枪械、锅、打火器不修）。每包耐久100，按公式扣包耐久：同品阶从零修满耗20，跨一阶倍率×2，低阶包修高阶装备单次最多恢复50%/25%。满包同品阶最多叠10，用过的包单独一张卡；不能修补包自己、不作材料、不能拆解。",
+      "fieldPatch": {
+        "rank": 1,
+        "maxDurability": 100
+      }
+    },
+    {
+      "id": "field_patch_blue",
+      "name": "野外修补包（蓝）",
+      "weightGrams": 150,
+      "stackMax": 10,
+      "shelfLifeMinutes": null,
+      "kind": "material",
+      "toolTag": null,
+      "durabilityMaxRange": null,
+      "edible": false,
+      "requiresCooking": false,
+      "use": null,
+      "desc": "蓝色品阶。战外安全空闲时，在目标卡“现场修补”或制作面板手工15基础分钟修一件有耐久的金属武器/工具或防具（制作或拆解材料含废金属/钢材/铁片；枪械、锅、打火器不修）。每包耐久100，按公式扣包耐久：同品阶从零修满耗20，跨一阶倍率×2，低阶包修高阶装备单次最多恢复50%/25%。满包同品阶最多叠10，用过的包单独一张卡；不能修补包自己、不作材料、不能拆解。",
+      "fieldPatch": {
+        "rank": 2,
+        "maxDurability": 100
+      }
     },
     {
       "id": "cable_bundle",
@@ -19500,7 +19540,7 @@
     },
     {
       "id": "ex_field_patch",
-      "name": "野外修补包",
+      "name": "野外修补包（白）",
       "kind": "craft",
       "baseMinutes": 30,
       "inputs": {
@@ -19516,6 +19556,52 @@
       "facilityResult": null,
       "minSkills": {
         "crafting": 3
+      },
+      "station": "workbench",
+      "knowledge": "expedition_basics",
+      "mode": "active_work"
+    },
+    {
+      "id": "ex_field_patch_green",
+      "name": "野外修补包（绿）",
+      "kind": "craft",
+      "baseMinutes": 60,
+      "inputs": {
+        "iron_plate": 3,
+        "adhesive": 3,
+        "cloth": 3
+      },
+      "outputs": {
+        "field_patch_green": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 5
+      },
+      "station": "workbench",
+      "knowledge": "expedition_basics",
+      "mode": "active_work"
+    },
+    {
+      "id": "ex_field_patch_blue",
+      "name": "野外修补包（蓝）",
+      "kind": "craft",
+      "baseMinutes": 90,
+      "inputs": {
+        "iron_plate": 6,
+        "adhesive": 6,
+        "cloth": 6
+      },
+      "outputs": {
+        "field_patch_blue": 2
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "crafting": 7
       },
       "station": "workbench",
       "knowledge": "expedition_basics",
@@ -19685,12 +19771,10 @@
     },
     {
       "id": "field_patch_repair",
-      "name": "现场小修",
+      "name": "现场修补",
       "kind": "repair",
       "baseMinutes": 15,
-      "inputs": {
-        "field_patch": 1
-      },
+      "inputs": {},
       "outputs": {},
       "catalysts": [],
       "requirement": null,
@@ -19703,7 +19787,7 @@
       "minSkills": {
         "crafting": 1
       },
-      "repairFilter": "metal_non_gun"
+      "repairFilter": "field_patch"
     },
     {
       "id": "safehouse_base",

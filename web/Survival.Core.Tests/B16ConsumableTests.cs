@@ -4,8 +4,8 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// 开发计划 v0.9 B16（R51）：止泻药粉与口服补液共用 6 小时缓解冷却、应急恢复剂战外部分、野外修补包（15 分钟、最大耐久 10%、
-/// 只修非枪金属武器/工具）、A07「二十种食品用品」与 X1.2 新食品的食用效果。验收 ES09、ES10（战术效果不在本批）、SUP06、SUP08 中本批能做的部分。
+/// 开发计划 v0.9 B16（R51）：止泻药粉与口服补液共用 6 小时缓解冷却、应急恢复剂战外部分、野外修补包（B16 旧 10% 规则已被 Q168 取代，见 B22bTests）、
+/// A07「二十种食品用品」与 X1.2 新食品的食用效果。验收 ES09、ES10（战术效果不在本批）、SUP06、SUP08 中本批能做的部分。
 /// </summary>
 public class B16ConsumableTests : TestBase
 {
@@ -91,27 +91,5 @@ public class B16ConsumableTests : TestBase
         Assert.That(s.Stats.Hydration - before.Hydration, Is.EqualTo(w).Within(0.6));
     }
 
-    [Test]
-    public void FieldPatch_MetalNonGun_10Percent_15Min()
-    {
-        var s = Give(("field_patch", 2));
-        var mach = E.CreateItems(s, "machete", 1, ItemInstance.Carried).Single();
-        mach.Durability = 10;
-        var gun = E.CreateItems(s, "pistol", 1, s.CurrentLocation).Single();
-        gun.Durability = 10;
-        var spear = E.CreateItems(s, "wooden_spear", 1, s.CurrentLocation).Single();
-        spear.Durability = 5;
-        var rc = Cfg.Recipes.Single(r => r.Id == "field_patch_repair");
-        Assert.That(E.RepairCandidates(s, rc).Select(i => i.ItemId), Does.Contain("machete").And.Not.Contain("pistol").And.Not.Contain("wooden_spear"));
-        Assert.That(E.CanStart(s, new ActionRequest { Type = ActionType.Craft, TargetId = "field_patch_repair", InstanceId = gun.InstanceId }), Does.Contain("只修非枪的金属"));
-        Assert.That(E.CanStart(s, new ActionRequest { Type = ActionType.Craft, TargetId = "field_patch_repair", InstanceId = spear.InstanceId }), Does.Contain("只修非枪的金属"));
-        var t0 = s.GameMinute;
-        Start(s, new ActionRequest { Type = ActionType.Craft, TargetId = "field_patch_repair", InstanceId = mach.InstanceId });
-        Run(s);
-        Assert.That(s.GameMinute - t0, Is.LessThanOrEqualTo(15));
-        Assert.That(mach.Durability, Is.EqualTo(10 + mach.MaxDurability!.Value * 0.1).Within(1e-6));
-        Assert.That(Count(s, "field_patch"), Is.EqualTo(1));
-        // 原工具维护不变：仍可修木矛（20%）
-        Assert.That(E.RepairCandidates(s).Select(i => i.ItemId), Does.Contain("wooden_spear"));
-    }
+    // 野外修补包 B16 旧用例（整份消耗、恢复 10%、只修非枪金属武器/工具）已被 Q168 取代，新规则见 B22bTests。
 }

@@ -45,7 +45,7 @@ namespace Survival.Core.State
         /// "33" 起地牢远征：实例带状态与远征流水号，进行中的远征（成员快照、来路轨迹、撤出锁定路径/倍率/T/已推进分钟）、已结束远征记录、
         /// 一次性事件去重键，角色带惊魂未定截止（开发计划 v0.9 B21）。
         /// </summary>
-        public const string CurrentSchema = "36";
+        public const string CurrentSchema = "37";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -743,6 +743,10 @@ namespace Survival.Core.State
         public string? RewardOrigin { get; set; }
 
         public bool IsCarried => Owner == Carried;
+        /// <summary>
+        /// 用过的野外修补包（B22b，Q168 stacking：剩余耐久低于上限的包堆叠上限 1、不与任何包合堆）。合堆键与真实批次键按它带实例号。
+        /// </summary>
+        [JsonIgnore] public bool IsUsedFieldPatch => ItemId.StartsWith("field_patch") && Durability.HasValue && MaxDurability.HasValue && Durability.Value < MaxDurability.Value - 1e-9;
         /// <summary>穿戴中（任一角色的七槽之一）：不占五张物资卡，重量计入该角色。</summary>
         public bool IsWorn => Owner.StartsWith(EquipPrefix);
         public bool IsWornBy(string actorId) => TryEquip(Owner, out var a, out _) && a == actorId;
@@ -1102,6 +1106,11 @@ namespace Survival.Core.State
         public List<int> ReservedItemIds { get; set; } = new List<int>();
         public List<int> LockedItemIds { get; set; } = new List<int>();
         public int? ToolInstanceId { get; set; }
+        /// <summary>
+        /// 现场修补（B22b，Q168）开工时选中并锁住的修补包实例（整堆锁，完成时拆出一包结算）。旧档进行中的 B16 现场小修为 null，
+        /// 按开工快照完成（预留的旧包 1 份、恢复 10%）。
+        /// </summary>
+        public int? PatchInstanceId { get; set; }
         public bool HazardHit { get; set; }
         /// <summary>移动途中暂停时的子行动按露天结算。</summary>
         public bool ForceOutdoor { get; set; }

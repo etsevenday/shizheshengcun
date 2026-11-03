@@ -423,7 +423,7 @@ public class B22hTests : BattleTestBase
         var j = JObject.Parse(SaveSerializer.Serialize(s));
         j["SchemaVersion"] = "35";
         var t = SaveSerializer.Deserialize(j.ToString(), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("36"));
+        Assert.That(t.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "35 起一路升到当前版本");
         Assert.That(t.LastMove, Is.Null);
         Assert.That(t.Battle!.WorldRetreat, Is.Null, "读档时进行中的战斗按旧规则");
         Assert.That(t.Log.Count(l => l.Text.Contains("存档已升级到版本36")), Is.EqualTo(1));

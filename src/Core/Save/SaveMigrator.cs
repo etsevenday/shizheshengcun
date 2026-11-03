@@ -60,6 +60,7 @@ namespace Survival.Core.Save
         public const string Schema33 = "33";
         public const string Schema34 = "34";
         public const string Schema35 = "35";
+        public const string Schema36 = "36";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -110,6 +111,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema33) From33To34(s, config, notes);
             if (s.SchemaVersion == Schema34) From34To35(s, config, notes);
             if (s.SchemaVersion == Schema35) From35To36(s, config, notes);
+            if (s.SchemaVersion == Schema36) From36To37(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1112,7 +1114,30 @@ namespace Survival.Core.Save
         {
             s.LastMove = null;
             if (s.Battle != null) s.Battle.WorldRetreat = null;
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（野外与城市外部的战斗撤退成功后，全队退回最近一次走来的地点；旧存档没有可信的移动记录，下一次实际移动后才生效；读档时正在进行的战斗仍按原规则，撤退后留在原地）。" });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema36}（野外与城市外部的战斗撤退成功后，全队退回最近一次走来的地点；旧存档没有可信的移动记录，下一次实际移动后才生效；读档时正在进行的战斗仍按原规则，撤退后留在原地）。" });
+            s.SchemaVersion = Schema36;
+        }
+
+        /// <summary>
+        /// 36→37（开发计划 v0.9 B22b，Q168 migration）：旧野外修补包逐份转为白色满包 100/100（数量、来源、所有者、堆叠不变，已有包耐久的不动，幂等）；
+        /// 已用掉的不追补。进行中的旧 15 分钟现场小修（没有 PatchInstanceId）按开工快照完成：完成时扣掉预留的旧包 1 份、恢复最大耐久 10%，
+        /// 不再按新公式扣包耐久（预留包这里也记满包耐久，只在取消后作为白包回到地面，不会新旧同时扣费）。不加时间、不发物资。
+        /// </summary>
+        private static void From36To37(GameState s, GameConfig config, List<string> notes)
+        {
+            var packs = 0;
+            foreach (var it in s.Items)
+            {
+                var fp = config.Items.FirstOrDefault(c => c.Id == it.ItemId)?.FieldPatch;
+                if (fp == null || it.Durability.HasValue) continue;
+                it.MaxDurability = fp.MaxDurability;
+                it.Durability = fp.MaxDurability;
+                packs += it.Count;
+            }
+            var legacy = new[] { s.Main, s.Sub }.Any(a => a != null && a.Type == ActionType.Repair && a.TargetId == Engine.GameEngine.FieldPatchRepairId && a.PatchInstanceId == null);
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（野外修补包分白、绿、蓝三品阶，每包耐久100，按品阶扣包耐久修补金属武器、工具和防具：" +
+                (packs > 0 ? $"原有野外修补包{packs}份已转为白色满包100/100" : "原有野外修补包都转为白色满包100/100") +
+                (legacy ? "；正在进行的现场小修仍按开工时的旧规则完成（消耗1份、恢复最大耐久10%）" : "") + "）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

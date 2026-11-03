@@ -293,7 +293,7 @@ namespace Survival.Core.Engine
                     var batch = Math.Max(1, r.BatchCount);
                     p.BaseMinutes = rc.BaseMinutes * batch;
                     p.Outputs = rc.Outputs.Select(kv => Line(kv.Key, kv.Value * batch)).ToList();
-                    p.ConfirmText = rc.IsBuild ? "开始建造" : rc.IsRepair ? "开始维护" : rc.IsSalvage ? "开始拆解" : batch > 1 ? $"开始制作×{batch}份" : "开始制作";
+                    p.ConfirmText = rc.IsBuild ? "开始建造" : IsFieldPatchRecipe(rc) ? "开始修补" : rc.IsRepair ? "开始维护" : rc.IsSalvage ? "开始拆解" : batch > 1 ? $"开始制作×{batch}份" : "开始制作";
                     // Q57 选 B：制造等级不再折减工作量，只看装备与节点效果（见工作倍率行）
                     // B10b 试玩修复：经验归医疗的配方不写“制造等级”，免得误以为看制造
                     // B16 试玩修复 M351：固定等待不写“基础工作量”（模式说明里已写固定等待分钟）
@@ -312,7 +312,7 @@ namespace Survival.Core.Engine
                         p.Notes.Add("完成后原装备移除，产物放在当前地点地面");
                         p.XpGains.Add(XpText(s, Crafting, Config.Progression.Dismantle.Xp));
                     }
-                    else if (rc.IsRepair && plan?.Tool is ItemInstance rt && rt.Durability is double d0 && rt.MaxDurability is double dm)
+                    else if (rc.IsRepair && !IsFieldPatchRecipe(rc) && plan?.Tool is ItemInstance rt && rt.Durability is double d0 && rt.MaxDurability is double dm)   // B22b：现场修补的说明行在 plan.Notes
                         p.Notes.Add($"{ItemName(rt.ItemId)}#{rt.InstanceId}耐久{Fmt.N(d0)}→{Fmt.N(Math.Min(dm, d0 + dm * RepairFraction(s, rc)))}/{Fmt.N(dm)}：恢复自身最大耐久的{Fmt.Pct(RepairFraction(s, rc))}（不超过上限、不重抽最大耐久，品质与词条不变）");
                     // Q112（S14 本轮章）：锻炉配方分列份数、成品、原料炭/燃料炭/总炭；预览只读不预留
                     if (!rc.IsSalvage && RecipeFuelSummary(rc, batch) is string fuelNote) p.Notes.Add(fuelNote);

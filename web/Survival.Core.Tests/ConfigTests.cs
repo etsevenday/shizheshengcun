@@ -32,12 +32,12 @@ public class ConfigTests : TestBase
     {
         Assert.That(ConfigLoader.Validate(Cfg), Is.Empty);
         Assert.That(Cfg.CombatEnabled, Is.True, "用户 2026-10-26 拍板：直接开启，不做开关");
-        Assert.That(Cfg.Items, Has.Count.EqualTo(19 + 26 + 1 + 70 + 61 + 1), "v0.4 的19种加 v0.6 新增武器、弹药、尸体、肉、药与原料，加 v1.0 活性物质，加 B4 物理目录 70 件（A07/A12 physicalItems）与新装备 61 件（27 武器 + 34 防具饰品衣物），加 B7c 护拳绑带（Q64）");
+        Assert.That(Cfg.Items, Has.Count.EqualTo(19 + 26 + 1 + 70 + 61 + 1 + 2), "B22b 绿/蓝野外修补包（Q168）；v0.4 的19种加 v0.6 新增武器、弹药、尸体、肉、药与原料，加 v1.0 活性物质，加 B4 物理目录 70 件（A07/A12 physicalItems）与新装备 61 件（27 武器 + 34 防具饰品衣物），加 B7c 护拳绑带（Q64）");
         // B11（R33，A08）：v3 地图 143 节点（world 62、city_building 14、dungeon 67）、180 边（172 双向、8 单向出口）
         Assert.That(Cfg.Locations, Has.Count.EqualTo(143));
         Assert.That(Cfg.Edges, Has.Count.EqualTo(180));
         Assert.That(Cfg.Resources, Has.Count.EqualTo(16 + 4 + 96 + 47 + 6), "新增武器柜、旧储物柜、医药补给箱、废弃冷藏箱；B12 并入 v3 的 96 条增量资源（R36）；B13b 补 47 条恢复来源（R129）；B13c 补 6 个旧 d03 唯一箱（R130）");
-        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5 + 3 + 1 + 1 + 56 + 26 + 5 + 19 + 1 + 5 + 1), "B22e 新增野外固定火堆（Q173）；B17 新增安全屋基础/屋内床垫/屋内火堆与陶窑、固定净水台建造；B16 新增 19 条与现场小修；新增木矛、木弓、箭矢、工具维护、病毒特效药；v1.0 新增金属矛、弩、弩矢；B4 拆解装备；B7c 护拳绑带（Q64，营区登记默认知识）；B10 新装备配方 56、材料加工链 26、工坊建造 5");
+        Assert.That(Cfg.Recipes, Has.Count.EqualTo(5 + 5 + 3 + 1 + 1 + 56 + 26 + 5 + 19 + 1 + 5 + 1 + 2), "B22b 绿/蓝野外修补包配方（Q168）；B22e 新增野外固定火堆（Q173）；B17 新增安全屋基础/屋内床垫/屋内火堆与陶窑、固定净水台建造；B16 新增 19 条与现场小修；新增木矛、木弓、箭矢、工具维护、病毒特效药；v1.0 新增金属矛、弩、弩矢；B4 拆解装备；B7c 护拳绑带（Q64，营区登记默认知识）；B10 新装备配方 56、材料加工链 26、工坊建造 5");
     }
 
     // ───────────── v0.2–v0.4 未被 v0.6 替换的部分 ─────────────

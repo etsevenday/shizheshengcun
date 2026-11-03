@@ -260,6 +260,13 @@ namespace Survival.Core.Config
     /// 分量水壶（S10 X4、A07 X1.5，B16 R49）：一根物资卡、无嵌套子物；只装同种脏/净水，装入/倒出按 500 毫升整份水卡，
     /// 壶内按 250 毫升一口直接饮用；不受热、不放火堆、不装食材。水量存在实例 LiquidId/LiquidMl 上。
     /// </summary>
+    /// <summary>野外修补包品阶（B22b，Q168）：rank 0 白 / 1 绿 / 2 蓝；maxDurability 每包整数耐久上限。</summary>
+    public sealed class FieldPatchConfig
+    {
+        public int Rank { get; set; }
+        public int MaxDurability { get; set; } = 100;
+    }
+
     public sealed class CanteenConfig
     {
         public int CapacityMl { get; set; } = 2000;
@@ -303,6 +310,8 @@ namespace Survival.Core.Config
         public string? ContainerId { get; set; }
         /// <summary>分量水壶（B16）：不是锅容器，水量记在实例上；不是水壶为 null。</summary>
         public CanteenConfig? Canteen { get; set; }
+        /// <summary>野外修补包品阶（B22b，Q168“修补包完整定稿”grades）：白/绿/蓝 rank 0/1/2，每包耐久上限 100；不是修补包为 null。</summary>
+        public FieldPatchConfig? FieldPatch { get; set; }
         /// <summary>液体每份体积（毫升），可装入容器的物品必须有。</summary>
         public int? UnitVolumeMl { get; set; }
         /// <summary>
@@ -726,7 +735,7 @@ namespace Survival.Core.Config
         public string? Mode { get; set; }
         /// <summary>成品保质规则（S11 X4、R06 X4）：min_inputs = 不晚于原料里最早的截止时间（口粮棒、应急恢复剂）；null 为从完成起按物品保质。</summary>
         public string? ShelfRule { get; set; }
-        /// <summary>维护目标范围（B16 field_patch：metal_non_gun = 非枪金属武器/工具）；null 为所有有耐久的武器与工具。</summary>
+        /// <summary>维护目标范围：field_patch = 野外修补包现场修补（B22b，Q168：金属依据的武器/工具/防具，按包品阶公式扣包耐久；取代 B16 metal_non_gun 10%）；null 为所有有耐久的武器与工具。</summary>
         public string? RepairFilter { get; set; }
 
         public const string ModeActive = "active_work";
