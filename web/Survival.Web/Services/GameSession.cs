@@ -465,8 +465,23 @@ public sealed class GameSession
 
     // ───────────── 收容所周期招募（B19，R08 RC1—RC4） ─────────────
 
-    /// <summary>登记一名当前候选（10 分钟 wait；开始锁候选与名额，完成才建人）。</summary>
-    public Task<ActionResult> StartRecruit(string candidateId) => RunService(() => E.StartRecruit(S, candidateId, Guid.NewGuid().ToString("N")));
+    /// <summary>登记一名当前候选（10 分钟 wait；开始锁候选、名额与所选去向，完成才建人；B22g：去向键 party/square/sh:地点）。</summary>
+    public Task<ActionResult> StartRecruit(string candidateId, string placementKey) =>
+        RunService(() => E.StartRecruit(S, candidateId, GameEngine.PlacementFromKey(placementKey), Guid.NewGuid().ToString("N")));
+
+    /// <summary>待安置确认：改选合法去向（0 分钟建人送达）。</summary>
+    public ActionResult ResolveRecruitPlacement(string placementKey)
+    {
+        if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        return Commit(E.ResolveRecruitPlacement(S, GameEngine.PlacementFromKey(placementKey), Guid.NewGuid().ToString("N")));
+    }
+
+    /// <summary>待安置确认：取消（不发人不发物，已过时间不退）。</summary>
+    public ActionResult CancelRecruitPlacement()
+    {
+        if (State == null) return ActionResult.Fail("没有进行中的游戏");
+        return Commit(E.CancelRecruitPlacement(S, Guid.NewGuid().ToString("N")));
+    }
 
     /// <summary>让一名生成角色退役（0 分钟；个人物品进收容所认领箱）。</summary>
     public ActionResult Retire(string actorId)

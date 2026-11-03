@@ -25,6 +25,32 @@ namespace Survival.Core.Engine
         /// <summary>在办登记（跨周期时候选可能已不在本期名单里）。</summary>
         public string? PendingText { get; set; }
         public List<RetireView> Retirables { get; set; } = new List<RetireView>();
+        /// <summary>B22g（Q183 selection）：“编入同行”选项的禁用原因（同行已满写真实原因，不挤出他人）；null 为可选。</summary>
+        public string? PartyOptionBlocked { get; set; }
+        /// <summary>B22g（Q183 selection）：候补目的地下拉（营区广场在前，再列已完工/施工中的自有安全屋，禁用项写原因）。</summary>
+        public List<RecruitDestinationView> ReserveDestinations { get; set; } = new List<RecruitDestinationView>();
+        /// <summary>B22g（Q183 confirm）：待安置确认（完成重验失败）；没有为 null。</summary>
+        public RecruitAwaitingView? Awaiting { get; set; }
+    }
+
+    /// <summary>候补目的地一项（B22g）：Key 为 "square" 或 "sh:&lt;地点&gt;"。</summary>
+    public sealed class RecruitDestinationView
+    {
+        public string Key { get; set; } = "";
+        public string Label { get; set; } = "";
+        public RecruitPlacement Placement { get; set; } = RecruitPlacement.Square;
+        public string? Blocked { get; set; }
+    }
+
+    /// <summary>待安置确认（B22g，Q183 confirm）：候选、原选择、失败原因；只能改选合法去向或取消。</summary>
+    public sealed class RecruitAwaitingView
+    {
+        public string CandidateName { get; set; } = "";
+        public string IdentityText { get; set; } = "";
+        public string ChoiceText { get; set; } = "";
+        public string FailureText { get; set; } = "";
+        /// <summary>现在能不能办（在收容所安全空闲，开发假设 B22g-3）；null 为可以。</summary>
+        public string? Blocked { get; set; }
     }
 
     public sealed class RecruitCandidateView
@@ -157,7 +183,7 @@ namespace Survival.Core.Engine
         private void DropStaleRecruitTxn(GameState s)
         {
             var p = s.Recruit.Pending;
-            if (p == null || (s.Main != null && s.Main.ActionId == p.ActionId)) return;
+            if (p == null || p.AwaitingPlacement || (s.Main != null && s.Main.ActionId == p.ActionId)) return;   // B22g：待安置确认不是在办行动，不释放
             var c = s.Recruit.Candidates.FirstOrDefault(x => x.CandidateId == p.CandidateId);
             if (c != null && c.Status == RecruitCandidate.Registering) c.Status = RecruitCandidate.Available;
             s.Recruit.Pending = null;
@@ -319,28 +345,101 @@ namespace Survival.Core.Engine
             return null;
         }
 
-        /// <summary>登记某候选的只读预演（开始时同一函数重验）；null 为可以。</summary>
+        /// <summary>登记某候选的只读预演（开始时同一函数重验；不含去向，去向另由 RecruitPlacementBlocked 判）；null 为可以。</summary>
         public string? RecruitBlocked(GameState s, string candidateId)
         {
-            var why = RecruitServiceBlocked(s, "登记同行");
+            var why = RecruitServiceBlocked(s, "登记");
             if (why != null) return why;
             if (!RecruitOpened(s)) return "收容所候选还没开放（营区登记后第一次实际到达收容所时开放）";
             var c = CurrentCandidate(s, candidateId);
             if (c == null) return "这名候选已不在本期名单里";
             if (c.Status == RecruitCandidate.Recruited) return "本期已招入名册（退役后同一周期也不能再招回）";
+            if (s.Recruit.Pending?.AwaitingPlacement == true) return $"{s.Recruit.Pending.Candidate.Name}的登记在等待安置确认：先改选去向或取消";
             if (c.Status == RecruitCandidate.Registering || s.Recruit.Pending != null) return "已有一笔登记在办";
             return SharedQuotaBlocked(s, true);
         }
 
+        // ───────────── 登记后去向（B22g，Q183 shelter.selection/arrival/confirm） ─────────────
+
+        /// <summary>“编入同行”能不能选：同行人数 &lt; C（满员写真实原因，不能挤出他人）。null 为可以。</summary>
+        public string? RecruitPartyOptionBlocked(GameState s)
+        {
+            var cap = PartyCapacity(s);
+            return s.Party.Count >= cap ? $"同行已满 {s.Party.Count}/{cap}（含你；容量C{cap}），不能挤出别人：请选“安排候补”" : null;
+        }
+
         /// <summary>
-        /// 开始登记（RC4）：0 材料，主行动 10 分钟 wait（两个 5 分钟段，你与同行按等待消耗）；开始时锁 candidateId 与 1 个名额（名额不够不推进时间）。
-        /// requestId 重放不另开。中途取消只取消登记，已耗时间不退，候选仍是同一人、属性不重抽。
+        /// 某间安全屋能不能作候补目的地（selection）：已完工、已实际到访、且从收容所沿当前已知可通路线可达的自有安全屋。null 为可以。
+        /// 不设额外床位上限（人数沿名册 K 与全名册存活 10）。
         /// </summary>
-        public ActionResult StartRecruit(GameState s, string candidateId, string? requestId = null)
+        public string? RecruitSafehouseBlocked(GameState s, string locationId)
+        {
+            if (!_locs.ContainsKey(locationId)) return "地点不存在";
+            var name = SafehouseName(s, locationId);
+            if (!SafehouseBuilt(s, locationId)) return SafehouseBuilding(s, locationId) ? $"{name}还在施工，未完工" : $"{LocName(locationId)}没有建成的安全屋";
+            if (!s.Locations.TryGetValue(locationId, out var ls) || !ls.Visited) return $"还没实际到访过{LocName(locationId)}";
+            if (MapPathFrom(s, Rc.LocationId, locationId) == null) return $"从{LocName(Rc.LocationId)}到{LocName(locationId)}没有已知可通的路线";
+            return null;
+        }
+
+        /// <summary>一种去向现在能不能选（开工与完成重验、待安置改选共用）。null 为可以。</summary>
+        public string? RecruitPlacementBlocked(GameState s, RecruitPlacement? placement)
+        {
+            if (placement == null) return "先选择登记后去向：编入同行，或安排候补（营区广场或安全屋）";
+            if (placement.IsParty) return RecruitPartyOptionBlocked(s);
+            if (placement.Mode != RecruitPlacement.ReserveMode) return "未知的去向";
+            return placement.Safehouse == null ? null : RecruitSafehouseBlocked(s, placement.Safehouse);
+        }
+
+        /// <summary>候补目的地下拉：营区广场（总是可选）在前，再列已完工或施工中的安全屋（禁用项写原因）。</summary>
+        public List<RecruitDestinationView> RecruitReserveDestinations(GameState s)
+        {
+            var list = new List<RecruitDestinationView>
+            {
+                new RecruitDestinationView { Key = PlacementKey(RecruitPlacement.Square), Label = $"{LocName(HubLocation(s))}（公共居所）", Placement = RecruitPlacement.Square },
+            };
+            foreach (var l in Config.Locations)
+            {
+                if (!SafehouseBuilt(s, l.Id) && !SafehouseBuilding(s, l.Id)) continue;
+                var pl = RecruitPlacement.AtSafehouse(l.Id);
+                var path = SafehouseBuilt(s, l.Id) ? MapPathFrom(s, Rc.LocationId, l.Id) : null;
+                list.Add(new RecruitDestinationView
+                {
+                    Key = PlacementKey(pl),
+                    Label = $"{SafehouseName(s, l.Id)}屋内" + (path != null ? $"（从{LocName(Rc.LocationId)}约{path.Sum(x => x.Minutes)}基础分钟路程，0分钟送达）" : ""),
+                    Placement = pl,
+                    Blocked = RecruitSafehouseBlocked(s, l.Id),
+                });
+            }
+            return list;
+        }
+
+        /// <summary>去向的界面键："party"、"square" 或 "sh:&lt;地点&gt;"。</summary>
+        public static string PlacementKey(RecruitPlacement p) => p.IsParty ? "party" : p.Safehouse == null ? "square" : "sh:" + p.Safehouse;
+
+        /// <summary>界面键还原为去向；不认识为 null。</summary>
+        public static RecruitPlacement? PlacementFromKey(string? key) => key switch
+        {
+            "party" => RecruitPlacement.Party,
+            "square" => RecruitPlacement.Square,
+            string k when k.StartsWith("sh:") && k.Length > 3 => RecruitPlacement.AtSafehouse(k.Substring(3)),
+            _ => null,
+        };
+
+        /// <summary>去向文字：“编入同行”“候补·营区广场”“候补·××安全屋屋内”。</summary>
+        public string PlacementText(GameState s, RecruitPlacement? p) =>
+            p == null ? $"候补·{LocName(HubLocation(s))}（旧档在办登记，默认）"
+            : p.IsParty ? "编入同行" : p.Safehouse == null ? $"候补·{LocName(HubLocation(s))}" : $"候补·{SafehouseName(s, p.Safehouse)}屋内";
+
+        /// <summary>
+        /// 开始登记（RC4；B22g Q183）：确认前必须明确选去向（编入同行，或候补到营区广场/合格安全屋）；0 材料，主行动 10 分钟 wait（两个 5 分钟段，你与同行按等待消耗）；
+        /// 开始时锁 candidateId、1 个名额与这次选择的快照（名额不够或去向不合法不推进时间）。requestId 重放不另开。中途取消只取消登记，已耗时间不退，候选仍是同一人。
+        /// </summary>
+        public ActionResult StartRecruit(GameState s, string candidateId, RecruitPlacement? placement, string? requestId = null)
         {
             if (SeenRequest(s, requestId)) return ActionResult.Repeated();
             EnsureRecruitCycle(s);
-            var why = RecruitBlocked(s, candidateId);
+            var why = RecruitBlocked(s, candidateId) ?? RecruitPlacementBlocked(s, placement);
             if (why != null) return ActionResult.Fail(why);
             var c = CurrentCandidate(s, candidateId)!;
             var req = ActionRequest.Wait(Rc.RegistrationMinutes);
@@ -348,12 +447,12 @@ namespace Survival.Core.Engine
             req.RequestId = requestId;
             var res = Start(s, req);
             if (!res.Ok) return res;
-            s.Main!.Label = $"登记同行：{c.Name}（{Clock.Duration(Rc.RegistrationMinutes)}）";
+            s.Main!.Label = $"登记{(placement!.IsParty ? "同行" : "候补")}：{c.Name}（{Clock.Duration(Rc.RegistrationMinutes)}）";
             c.Status = RecruitCandidate.Registering;
             s.Recruit.Pending = new RecruitTxn
             {
                 ActionId = s.Main.ActionId, RequestId = requestId, CandidateId = c.CandidateId, Cycle = c.Cycle,
-                LocationId = s.CurrentLocation, StartMinute = s.GameMinute, Candidate = c.Clone(),
+                LocationId = s.CurrentLocation, StartMinute = s.GameMinute, Candidate = c.Clone(), Placement = placement.Clone(),
             };
             return res;
         }
@@ -370,37 +469,108 @@ namespace Survival.Core.Engine
 
         private string RecruitCancelText(ActionState a)
         {
-            var name = a.Label.StartsWith("登记同行：") ? a.Label.Substring(5).Split('（')[0] : "候选";
+            var name = a.Label.StartsWith("登记同行：") || a.Label.StartsWith("登记候补：") ? a.Label.Substring(5).Split('（')[0] : "候选";
             return $"已取消登记{name}（实际进行了{Clock.Duration(a.ElapsedMinutes)}，已耗时间不退）；候选仍是同一人、属性不变，名额已释放。";
         }
 
         /// <summary>
-        /// 登记完成（段末结算后，死亡已优先判过）：重验主角存活、仍在办理地点与名额（不含本笔），通过才建 actorId、标记候选已招、入名册作候补。
+        /// 登记完成（段末结算后，死亡已优先判过）：重验主角存活、仍在办理地点与名额（不含本笔），不过则按原规则失败释放；
+        /// 再重验开工锁定的去向（B22g confirm：同行空位 / 该屋完工且从收容所合法可达），失败时登记停在“待安置确认”——不建人、不重收 10 分钟、不释放名额，
+        /// 只能改选合法去向或取消。通过才建 actorId、标记候选已招，并 0 分钟送达所选去向（arrival）。旧档在办登记没有选择：默认营区广场候补、不自动入队。
         /// 物资不奖励（七装备槽与五物资卡空）。本笔事务只结算一次（行动只完成一次；requestId 重放在开始时已拦）。
         /// </summary>
         private void CompleteRecruit(GameState s, ActionState a)
         {
             var p = s.Recruit.Pending;
-            s.Recruit.Pending = null;
             if (p == null || p.ActionId != a.ActionId)
             {
-                Emit(s, GameEventKind.ActionCompleted, "同行登记没有完成：登记事务已失效。");
+                s.Recruit.Pending = null;
+                Emit(s, GameEventKind.ActionCompleted, "登记没有完成：登记事务已失效。");
                 return;
             }
             var cur = CurrentCandidate(s, p.CandidateId);
             var why = s.Progress.Dead ? "本局已结束" : s.CurrentLocation != p.LocationId ? $"不在{LocName(p.LocationId)}" : SharedQuotaBlocked(s, false);
             if (why != null)
             {
+                s.Recruit.Pending = null;
                 if (cur != null && cur.Status == RecruitCandidate.Registering) cur.Status = RecruitCandidate.Available;
-                Emit(s, GameEventKind.ActionCompleted, $"同行登记没有完成：{why}。");
+                Emit(s, GameEventKind.ActionCompleted, $"登记没有完成：{why}。");
                 return;
             }
+            var placement = p.Placement ?? RecruitPlacement.Square;   // 旧档在办登记（shelter.compatibility）
+            if (RecruitPlacementBlocked(s, placement) is string fail)
+            {
+                p.AwaitingPlacement = true;
+                p.PlacementFailure = fail;
+                Emit(s, GameEventKind.ActionCompleted,
+                    $"{p.Candidate.Name}的登记手续已办完，但原选的去向（{PlacementText(s, placement)}）现在不行：{fail}。登记暂停在“待安置确认”："
+                    + "人还没建、名额仍锁着，不会再收10分钟；在收容所安全空闲时改选合法去向，或取消（已过时间不退）。");
+                return;
+            }
+            s.Recruit.Pending = null;
+            PlaceNewRecruit(s, p, placement, cur);
+        }
+
+        /// <summary>建人并 0 分钟送达（arrival）：不模拟路途、不扣费、不推进时间、不触发战斗；只转移这次新招、原本空装备的角色，不带任何物品。</summary>
+        private RosterEntry PlaceNewRecruit(GameState s, RecruitTxn p, RecruitPlacement placement, RecruitCandidate? cur)
+        {
             var r = CreateRandomRecruit(s, p.Candidate);
             if (cur != null) { cur.Status = RecruitCandidate.Recruited; cur.ActorId = r.ActorId; }
+            string where;
+            if (placement.IsParty)
+            {
+                ApplySetActive(s, r.ActorId, true);
+                where = $"编入同行（{s.Party.Count}/{PartyCapacity(s)}）";
+            }
+            else if (placement.Safehouse is string loc)
+            {
+                r.ReserveSafehouse = loc;
+                where = $"已0分钟送到{SafehouseName(s, loc)}屋内作候补（不走路途；要你实地进那间屋才能编入同行）";
+            }
+            else where = $"入名册作候补（在{LocName(HubLocation(s))}留守，到那里可编入同行）";
             var tpl = Rc.Template(p.Candidate.TemplateId);
             Emit(s, GameEventKind.ActionCompleted,
-                $"{r.Name}登记完成，入名册作候补（在{LocName(HubLocation(s))}留守，到那里可编入同行）：{tpl?.Name ?? ""}，{SkillName(p.Candidate.MainSkill)}{p.Candidate.MainLevel}级、{SkillName(p.Candidate.SubSkill)}{p.Candidate.SubLevel}级；"
+                $"{r.Name}登记完成，{where}：{tpl?.Name ?? ""}，{SkillName(p.Candidate.MainSkill)}{p.Candidate.MainLevel}级、{SkillName(p.Candidate.SubSkill)}{p.Candidate.SubLevel}级；"
                 + $"初始装备与随身为空。随机/保底名册{SharedRoster(s).Count}/{SharedRosterCap(s)}。");
+            return r;
+        }
+
+        /// <summary>待安置确认能不能处理（开发假设 B22g-3：与登记同一处——收容所安全空闲）；没有待安置为原因。null 为可以。</summary>
+        public string? RecruitAwaitingBlocked(GameState s, string verb)
+        {
+            if (s.Recruit.Pending?.AwaitingPlacement != true) return "没有等待安置确认的登记";
+            return RecruitServiceBlocked(s, verb);
+        }
+
+        /// <summary>
+        /// 改选去向并完成待安置确认（confirm）：只允许合法去向（编入同行需同行空位；候补到营区广场或合格安全屋）；0 分钟、不重收 10 分钟；
+        /// 名额重验（本笔已占）通过才建一人。requestId 幂等。失败时状态不变。
+        /// </summary>
+        public ActionResult ResolveRecruitPlacement(GameState s, RecruitPlacement? placement, string? requestId = null)
+        {
+            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
+            var why = RecruitAwaitingBlocked(s, "确认安置") ?? RecruitPlacementBlocked(s, placement) ?? SharedQuotaBlocked(s, false);
+            if (why != null) return ActionResult.Fail(why);
+            RememberRequest(s, requestId);
+            var p = s.Recruit.Pending!;
+            s.Recruit.Pending = null;
+            PlaceNewRecruit(s, p, placement!, CurrentCandidate(s, p.CandidateId));
+            return ActionResult.Success();
+        }
+
+        /// <summary>取消待安置确认（confirm）：不发人不发物，已过时间不退；释放候选（仍在本期名单里则回到可招）与名额。requestId 幂等。</summary>
+        public ActionResult CancelRecruitPlacement(GameState s, string? requestId = null)
+        {
+            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
+            var why = RecruitAwaitingBlocked(s, "取消登记");
+            if (why != null) return ActionResult.Fail(why);
+            RememberRequest(s, requestId);
+            var p = s.Recruit.Pending!;
+            s.Recruit.Pending = null;
+            var c = CurrentCandidate(s, p.CandidateId);
+            if (c != null && c.Status == RecruitCandidate.Registering) c.Status = RecruitCandidate.Available;
+            Emit(s, GameEventKind.Info, $"已取消{p.Candidate.Name}的登记：没有建人、没有发物，已过的{Clock.Duration(Rc.RegistrationMinutes)}登记时间不退；名额已释放。");
+            return ActionResult.Success();
         }
 
         /// <summary>按候选快照一次初始化角色（RC3“招募提交时才创建玩家角色实体并初始化一次”），之后按 R08 真实状态走。</summary>
@@ -459,7 +629,23 @@ namespace Survival.Core.Engine
                 foreach (var c in s.Recruit.Candidates) v.Candidates.Add(CandidateView(s, c));
             }
             if (s.Recruit.Pending is RecruitTxn p)
-                v.PendingText = $"正在登记：{p.Candidate.Name}（锁定1个名额；跨批次也保留到这笔结束）";
+            {
+                if (p.AwaitingPlacement)
+                    v.Awaiting = new RecruitAwaitingView
+                    {
+                        CandidateName = p.Candidate.Name,
+                        IdentityText = IdentityText(p.Candidate),
+                        ChoiceText = PlacementText(s, p.Placement),
+                        FailureText = p.PlacementFailure ?? "",
+                        Blocked = RecruitAwaitingBlocked(s, "确认安置"),
+                    };
+                v.PendingText = p.AwaitingPlacement
+                    ? $"待安置确认：{p.Candidate.Name}（登记已办完、人还没建；仍锁定1个名额，改选去向或取消，不会再收10分钟）"
+                    : $"正在登记：{p.Candidate.Name}（{PlacementText(s, p.Placement)}；锁定1个名额；跨批次也保留到这笔结束）";
+            }
+            // B22g（Q183 selection）：登记后去向二选一（编入同行 / 安排候补到广场或合格安全屋）
+            v.PartyOptionBlocked = RecruitPartyOptionBlocked(s);
+            v.ReserveDestinations = RecruitReserveDestinations(s);
             foreach (var r in s.Roster.Where(r => r.IsGenerated && r.Present))
                 v.Retirables.Add(RetireViewOf(s, r));
             return v;
@@ -532,7 +718,7 @@ namespace Survival.Core.Engine
                 ActorId = r.ActorId,
                 Name = r.Name,
                 KindLabel = kind,
-                WhereText = s.Party.Contains(r.ActorId) ? "同行" : $"候补（{LocName(HubLocation(s))}）",
+                WhereText = s.Party.Contains(r.ActorId) ? "同行" : $"候补（{ReserveWhereName(s, r)}）",
                 // M381：“本周期不能再招回、候选池不补人”只对周期候选招入者写；护送员只写与他相关的句子
                 ConfirmText = $"{r.Name}将永久离开名册（已学技能不返还{(r.IsRandom ? "，本周期不能再招回，候选池不会补人" : "")}）；"
                               + (items.Count == 0 ? "身上没有个人物品。" : $"全部个人物品{items.Count}件（穿戴与随身）原样放进{LocName(Rc.LocationId)}认领箱，只能在这里实地取，保质照常、不刷新。")

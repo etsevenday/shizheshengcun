@@ -344,9 +344,12 @@ namespace Survival.Core.Engine
         /// 到远处已知地点的实际可达路径（A10-EXUI §1“远处节点显示实际可达路径与分段时间，只能确认下一段”）：只走已开通、可从这一端出发、两端已知的边，
         /// 按基础分钟最短（同价按配置顺序）；到不了为 null，目标就是当前位置为空表。只读。
         /// </summary>
-        public List<MapPathStep>? MapPathTo(GameState s, string targetId)
+        public List<MapPathStep>? MapPathTo(GameState s, string targetId) => MapPathFrom(s, s.CurrentLocation, targetId);
+
+        /// <summary>同上，但从指定起点出发（B22g：周期候选候补目的地“从收容所沿当前已知可通路线可达”）。只读。</summary>
+        public List<MapPathStep>? MapPathFrom(GameState s, string fromId, string targetId)
         {
-            var here = s.CurrentLocation;
+            var here = fromId;
             if (targetId == here) return new List<MapPathStep>();
             if (!Known(s, targetId)) return null;
             var dist = new Dictionary<string, int> { [here] = 0 };

@@ -20,6 +20,14 @@ namespace Survival.Core.Engine
         /// <summary>名册里存活、不在同行队伍的角色（候补，在营区接受公共照护）。</summary>
         public List<RosterEntry> Reserves(GameState s) => s.Roster.Where(r => r.Present && !s.Party.Contains(r.ActorId) && s.Actors.ContainsKey(r.ActorId)).ToList();
 
+        /// <summary>B22g（Q183）：候补所在安全屋（地点 ID）；营区广场或不是候补为 null。</summary>
+        public string? ReserveSafehouseOf(GameState s, string actorId) =>
+            !s.Party.Contains(actorId) && RosterOf(s, actorId) is RosterEntry r && r.Present ? r.ReserveSafehouse : null;
+
+        /// <summary>候补所在处的称呼：“营区广场”或“××安全屋屋内”。</summary>
+        public string ReserveWhereName(GameState s, RosterEntry r) =>
+            r.ReserveSafehouse is string loc ? $"{SafehouseName(s, loc)}屋内" : LocName(HubLocation(s));
+
         /// <summary>同行队伍里的名册角色（不含主角）。</summary>
         public List<RosterEntry> ActiveCompanions(GameState s) => s.Roster.Where(r => r.Present && s.Party.Contains(r.ActorId)).ToList();
 
@@ -218,13 +226,15 @@ namespace Survival.Core.Engine
         /// 编入同行或留作候补后同步编队预设（Q86 本轮章）：新成员在同一换队事务里补到最前空槽；离开的只清自己的格，其余槽与空位不动；
         /// 阵容版本 +1。不增加 C、不改角色状态或物品。
         /// </summary>
-        private void ApplySetActive(GameState s, string actorId, bool active)
+        private void ApplySetActive(GameState s, string actorId, bool active, string? reserveSafehouse = null)
         {
             if (active)
             {
                 if (!s.Party.Contains(actorId)) s.Party.Add(actorId);
             }
             else s.Party.Remove(actorId);
+            // B22g（Q183 retrieve）：编入同行即离开所在屋/广场；留下时记在哪（null 为营区广场，否则该安全屋屋内）
+            if (RosterOf(s, actorId) is RosterEntry entry) entry.ReserveSafehouse = active ? null : reserveSafehouse;
             // Q90：切换本身 0 时间、不恢复；候补模式只在候补期间有效，编入同行即清空（再留作候补时下一真实 tick 重新判定）
             if (s.Actors.TryGetValue(actorId, out var moved)) moved.ReserveMode = null;
             RepairFormation(s);

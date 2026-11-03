@@ -297,7 +297,7 @@ public class B19RecruitTests : TestBase
     private RosterEntry Recruit(GameState s, int index = 0)
     {
         var c = s.Recruit.Candidates[index];
-        Ok(E.StartRecruit(s, c.CandidateId, Guid.NewGuid().ToString("N")));
+        Ok(E.StartRecruit(s, c.CandidateId, RecruitPlacement.Square, Guid.NewGuid().ToString("N")));
         Run(s);
         return s.Roster.Single(r => r.CandidateId == c.CandidateId && r.Cycle == c.Cycle);
     }
@@ -313,7 +313,7 @@ public class B19RecruitTests : TestBase
         var c = s.Recruit.Candidates[1].Clone();
         var t0 = s.GameMinute;
         var itemsBefore = s.Items.Count;
-        Ok(E.StartRecruit(s, c.CandidateId));
+        Ok(E.StartRecruit(s, c.CandidateId, RecruitPlacement.Square));
         Assert.That(s.Main!.PlannedMinutes, Is.EqualTo(10));
         Assert.That(s.Recruit.Pending!.CandidateId, Is.EqualTo(c.CandidateId));
         Assert.That(E.SharedRosterLocked(s), Is.EqualTo(1), "开始即锁 1 个名额");
@@ -372,7 +372,7 @@ public class B19RecruitTests : TestBase
             }
             var t = s.GameMinute;
             Assert.That(E.RecruitBlocked(s, free.CandidateId), Is.EqualTo($"随机/保底名册{k}/{k}；留守不释放名额"));
-            var res = E.StartRecruit(s, free.CandidateId);
+            var res = E.StartRecruit(s, free.CandidateId, RecruitPlacement.Square);
             Assert.That(res.Ok, Is.False);
             Assert.That(s.GameMinute, Is.EqualTo(t), "名额不够不推进时间");
             Assert.That(s.Main, Is.Null);
@@ -393,8 +393,8 @@ public class B19RecruitTests : TestBase
         var c = s.Recruit.Candidates[2].Clone();
         var oldNames = s.Recruit.Candidates.Select(x => x.Name).ToList();
         const string req = "req-cross";
-        Ok(E.StartRecruit(s, c.CandidateId, req));
-        Assert.That(E.StartRecruit(s, c.CandidateId, req).Duplicate, Is.True, "同一 requestId 重放不另开");
+        Ok(E.StartRecruit(s, c.CandidateId, RecruitPlacement.Square, req));
+        Assert.That(E.StartRecruit(s, c.CandidateId, RecruitPlacement.Square, req).Duplicate, Is.True, "同一 requestId 重放不另开");
         E.Advance(s);   // 第一段跨过交界
         Assert.That(s.Recruit.Cycle, Is.EqualTo(1), "交界换批");
         Assert.That(s.Recruit.Pending!.CandidateId, Is.EqualTo(c.CandidateId), "在办登记的候选与名额保留");
@@ -406,7 +406,7 @@ public class B19RecruitTests : TestBase
         Assert.That((r.Name, r.Cycle), Is.EqualTo((c.Name, (int?)0)));
         Assert.That(E.SharedRoster(s).Count, Is.EqualTo(1));
         Assert.That(s.Recruit.Pending, Is.Null);
-        Assert.That(E.StartRecruit(s, c.CandidateId, req).Duplicate, Is.True, "完成后重放也不建第二人");
+        Assert.That(E.StartRecruit(s, c.CandidateId, RecruitPlacement.Square, req).Duplicate, Is.True, "完成后重放也不建第二人");
         Assert.That(s.Roster.Count, Is.EqualTo(1));
         Assert.That(s.Recruit.Candidates.All(x => x.Status == RecruitCandidate.Available), Is.True, "新批不受旧登记影响");
         Assert.That(E.RecruitBlocked(s, s.Recruit.Candidates[0].CandidateId), Is.EqualTo("随机/保底名册1/1；留守不释放名额"));
@@ -420,7 +420,7 @@ public class B19RecruitTests : TestBase
         var snap = JArray.FromObject(s.Recruit.Candidates).ToString();
         var c = s.Recruit.Candidates[0];
         var t = s.GameMinute;
-        Ok(E.StartRecruit(s, c.CandidateId));
+        Ok(E.StartRecruit(s, c.CandidateId, RecruitPlacement.Square));
         E.Advance(s);
         Ok(E.Cancel(s));
         Assert.That(s.GameMinute, Is.EqualTo(t + 5), "已耗时间不退");
@@ -429,7 +429,7 @@ public class B19RecruitTests : TestBase
         Assert.That(JArray.FromObject(s.Recruit.Candidates).ToString(), Is.EqualTo(snap), "候选同一人、属性不重抽、回到可招");
         Assert.That(s.Roster, Is.Empty);
 
-        Ok(E.StartRecruit(s, c.CandidateId));
+        Ok(E.StartRecruit(s, c.CandidateId, RecruitPlacement.Square));
         E.Advance(s);
         var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
         Run(m);
@@ -442,13 +442,13 @@ public class B19RecruitTests : TestBase
     public void RC15_PlayerDeathStopsRegistration()
     {
         var s = AtShelter();
-        Ok(E.StartRecruit(s, s.Recruit.Candidates[0].CandidateId));
+        Ok(E.StartRecruit(s, s.Recruit.Candidates[0].CandidateId, RecruitPlacement.Square));
         s.Stats.Health = 0;
         var res = E.Advance(s);
         Assert.That(res.Status, Is.EqualTo(SegmentStatus.Dead));
         Assert.That(s.Progress.Dead, Is.True);
         Assert.That(s.Roster, Is.Empty);
-        Assert.That(E.StartRecruit(s, s.Recruit.Candidates[1].CandidateId).Ok, Is.False);
+        Assert.That(E.StartRecruit(s, s.Recruit.Candidates[1].CandidateId, RecruitPlacement.Square).Ok, Is.False);
     }
 
     /// <summary>登记只在收容所安全空闲时办理（v3 校准：不从广场或别处远程）。</summary>
@@ -459,7 +459,7 @@ public class B19RecruitTests : TestBase
         var id = s.Recruit.Candidates[0].CandidateId;
         E.DebugMapTeleport(s, "camp");
         Assert.That(E.RecruitBlocked(s, id), Does.Contain("只能在"));
-        Assert.That(E.StartRecruit(s, id).Ok, Is.False);
+        Assert.That(E.StartRecruit(s, id, RecruitPlacement.Square).Ok, Is.False);
         E.DebugMapTeleport(s, Shelter);
         Assert.That(E.RecruitBlocked(s, id), Is.Null);
     }

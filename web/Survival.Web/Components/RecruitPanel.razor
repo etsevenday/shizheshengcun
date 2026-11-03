@@ -42,7 +42,7 @@
                     {
                         <div class="btn-row">
                             <button class="primary" disabled="@(why != null)" title="@(why ?? $"0材料，{e.Config.Party.Recruitment.RegistrationMinutes}分钟等待（你与同行按等待消耗）；开始即锁这名候选与1个名额，中途停下已耗时间不退、候选不变")"
-                                    @onclick="() => G.StartRecruit(cid)">登记同行（@(e.Config.Party.Recruitment.RegistrationMinutes)分钟）</button>
+                                    @onclick='() => G.StartRecruit(cid, "square")'>登记同行（@(e.Config.Party.Recruitment.RegistrationMinutes)分钟）</button>
                             @if (why != null) { <span class="muted small">@why</span> }
                         </div>
                     }

@@ -38,7 +38,7 @@ public class B22fVerifyTests : BattleTestBase
     private RosterEntry Recruit(GameState s, int index = 0)
     {
         var c = s.Recruit.Candidates[index];
-        Ok(E.StartRecruit(s, c.CandidateId, Guid.NewGuid().ToString("N")));
+        Ok(E.StartRecruit(s, c.CandidateId, RecruitPlacement.Square, Guid.NewGuid().ToString("N")));
         Run(s);
         return s.Roster.Single(r => r.CandidateId == c.CandidateId && r.Cycle == c.Cycle);
     }

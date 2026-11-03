@@ -92,12 +92,45 @@ namespace Survival.Core.State
         public int StartMinute { get; set; }
         /// <summary>锁定时的候选快照（跨周期后原批已轮换，仍按它建人）。</summary>
         public RecruitCandidate Candidate { get; set; } = new RecruitCandidate();
+        /// <summary>
+        /// B22g（Q183 shelter.selection/confirm）：开工快照锁定的登记后去向（编入同行 / 候补到营区广场或某间安全屋）。
+        /// 旧档在办登记为 null：完成时默认营区广场候补、不自动入队（shelter.compatibility）。
+        /// </summary>
+        public RecruitPlacement? Placement { get; set; }
+        /// <summary>B22g（Q183 confirm）：完成重验去向失败，登记停在“待安置确认”（10 分钟已走完，不建人、不释放名额，只能改选或取消）。</summary>
+        public bool AwaitingPlacement { get; set; }
+        /// <summary>待安置确认的原因（重验失败时写）。</summary>
+        public string? PlacementFailure { get; set; }
 
         public RecruitTxn Clone()
         {
             var c = (RecruitTxn)MemberwiseClone();
             c.Candidate = Candidate.Clone();
+            c.Placement = Placement?.Clone();
             return c;
         }
+    }
+
+    /// <summary>
+    /// 周期候选登记后的去向（B22g，Q183 shelter.selection）：编入同行（同行人数 &lt; C 才可选，不挤出他人），或安排候补到营区广场 / 一间合格的自有安全屋屋内。
+    /// </summary>
+    public sealed class RecruitPlacement
+    {
+        public const string PartyMode = "party";
+        public const string ReserveMode = "reserve";
+
+        /// <summary>party 编入同行 / reserve 安排候补。</summary>
+        public string Mode { get; set; } = ReserveMode;
+        /// <summary>候补目的地：null 为营区广场；否则为安全屋所在地点 ID（送到该屋屋内）。</summary>
+        public string? Safehouse { get; set; }
+
+        [Newtonsoft.Json.JsonIgnore] public bool IsParty => Mode == PartyMode;
+
+        public static RecruitPlacement Party => new RecruitPlacement { Mode = PartyMode };
+        public static RecruitPlacement Square => new RecruitPlacement { Mode = ReserveMode };
+        public static RecruitPlacement AtSafehouse(string locationId) => new RecruitPlacement { Mode = ReserveMode, Safehouse = locationId };
+
+        public RecruitPlacement Clone() => (RecruitPlacement)MemberwiseClone();
+        public bool SameAs(RecruitPlacement? o) => o != null && o.Mode == Mode && (IsParty || o.Safehouse == Safehouse);
     }
 }

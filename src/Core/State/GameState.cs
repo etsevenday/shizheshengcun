@@ -875,6 +875,12 @@ namespace Survival.Core.State
         public string? HairColor { get; set; }
         public string? FaceDetail { get; set; }
 
+        /// <summary>
+        /// B22g（Q183 shelter）：候补所在的安全屋（安全屋所在地点 ID，人在该屋屋内）；null 为营区广场（公共居所）。只对候补有意义，编入同行即清空。
+        /// 旧档 null：旧在册候补保持在广场，不自动搬屋。
+        /// </summary>
+        public string? ReserveSafehouse { get; set; }
+
         public bool IsEscort => Kind == "escort";
         /// <summary>周期候选招入的随机角色（B19）。</summary>
         public bool IsRandom => Kind == "random";
