@@ -62,6 +62,7 @@ namespace Survival.Core.Save
         public const string Schema35 = "35";
         public const string Schema36 = "36";
         public const string Schema37 = "37";
+        public const string Schema38 = "38";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -114,6 +115,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema35) From35To36(s, config, notes);
             if (s.SchemaVersion == Schema36) From36To37(s, config, notes);
             if (s.SchemaVersion == Schema37) From37To38(s, config, notes);
+            if (s.SchemaVersion == Schema38) From38To39(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1160,8 +1162,49 @@ namespace Survival.Core.Save
                     if (ls.Safehouse.Interior.Workshops.Contains("drying_rack")) racks++;
                 }
             }
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（晾制架开放：木材4＋绳索2建在临时营地或已建成的安全屋屋内，" +
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema38}（晾制架开放：木材4＋绳索2建在临时营地或已建成的安全屋屋内，" +
                 "8个独立晾制位，每位一批果干或肉干，被动晾制" + (racks > 0 ? $"；已有晾制架{racks}座保留，8位都是空的" : "；没有建过的不赠送") + "）。" });
+            s.SchemaVersion = Schema38;
+        }
+
+        /// <summary>
+        /// 38→39（开发计划 v0.9 B22k，策划答复 Q215 migration）：肉干在制暂停原料保质。先按旧规则核对：已标 spoiled 的肉干位不动（不复活、不补产物，清理时腐肉按原规则、
+        /// 未腐败的盐原样退回一次）；晾制中但位内原料在升级时刻 U 已到期的也不动（下一个 5 分钟段按旧规则标腐败停止）。晾制中且原料都未腐败的肉干位从 U 开始保护：
+        /// 每份有截止的原料快照 R＝旧原截止 E − U（不倒推补偿开工到升级已耗的时间），ExpiresAt 暂为空；保留已晾分钟与经验快照。已完成的肉干截止不改，果干位不改。
+        /// 快照只在这里初始化一次（版本号随即升到 39），读档、转移、预览都不重算。
+        /// </summary>
+        private static void From38To39(GameState s, GameConfig config, List<string> notes)
+        {
+            var u = s.GameMinute;
+            var protectedSlots = 0;
+            foreach (var kv in s.Locations)
+            {
+                var facs = new List<(string Place, FacilityState Fac)> { (kv.Key, kv.Value.Facility) };
+                if (kv.Value.Safehouse != null) facs.Add((Engine.GameEngine.ZonePlace(kv.Key, GameState.SafehouseZone), kv.Value.Safehouse.Interior));
+                foreach (var (place, fac) in facs)
+                {
+                    foreach (var b in fac.DryingSlots ?? new List<DryingSlot>())
+                    {
+                        if (b.Status != DryingSlot.Drying || b.ShelfPaused) continue;
+                        var rc = config.Recipes.FirstOrDefault(r => r.Id == b.RecipeId);
+                        if (rc == null || !rc.IsDrying || !rc.Outputs.ContainsKey(Engine.GameEngine.DryingShelfPauseOutput)) continue;
+                        var owner = ItemInstance.DryingOwner(place, b.Slot);
+                        var items = s.Items.Where(i => i.Owner == owner).ToList();
+                        if (items.Any(i => i.ExpiresAt is int e && e <= u)) continue;
+                        foreach (var it in items)
+                        {
+                            if (it.ShelfPausedMinutes != null || it.ExpiresAt is not int e) continue;
+                            it.ShelfPausedMinutes = e - u;
+                            it.ExpiresAt = null;
+                        }
+                        b.ShelfPaused = true;
+                        protectedSlots++;
+                    }
+                }
+            }
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（晾制肉干开始制作后暂停原料保质计时，取消后恢复剩余时长，" +
+                "完成后肉干从完成起保质168小时；果干不变" + (protectedSlots > 0 ? $"；正在晾制的肉干{protectedSlots}批从现在起暂停原料保质，按现在的剩余保质恢复" : "") +
+                "；已腐败的批次不复活）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

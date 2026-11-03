@@ -134,7 +134,10 @@ public class B22cTests : TestBase
         Assert.That(Clock.Day(s.GameMinute), Is.EqualTo(Clock.Day(t0)));
     }
 
-    /// <summary>PLAN-Q170-02（后半）：未腐败取消退原截止原料、清进度不退时间、0 经验；腐败停止不产可食干品、0 经验、只能清理。</summary>
+    /// <summary>
+    /// PLAN-Q170-02（后半）：未腐败取消清进度不退时间、0 经验；腐败停止不产可食干品、0 经验、只能清理。
+    /// B22k（Q215）起肉干取消恢复投料时的剩余保质（原截止＋已晾时长），腐败停止只对果干；本例的腐败段改用野果。
+    /// </summary>
     [Test]
     public void PLAN_Q170_02_Cancel_ReturnsOriginalExpiry_Spoil_NoProduct()
     {
@@ -153,33 +156,32 @@ public class B22cTests : TestBase
         Assert.That(s.GameMinute, Is.EqualTo(t0 + 60), "已过时间不退");
         Assert.That(E.DryingSlotAt(s, s.Ground, 3), Is.Null, "清本批进度");
         Assert.That(First(s, "raw_meat").Owner, Is.EqualTo(ItemInstance.Carried));
-        Assert.That(First(s, "raw_meat").ExpiresAt, Is.EqualTo(meatExp), "原截止");
+        Assert.That(First(s, "raw_meat").ExpiresAt, Is.EqualTo(meatExp + 60), "Q215：恢复投料时的剩余保质（退料分钟＋R）");
         Assert.That(Count(s, "salt"), Is.EqualTo(1), "盐不复制");
         Assert.That(CookXp(s), Is.EqualTo(x0), "取消 0 经验");
         Assert.That(E.CancelDrying(s, 3, true).Reason, Does.Contain("是空的"), "取消幂等");
 
-        // 腐败：生肉在完成前到期 → 到期即停止，不出肉干
-        var meat = First(s, "raw_meat");
-        meat.ExpiresAt = s.GameMinute + 60;
+        // 腐败（果干）：野果在完成前到期 → 到期即停止，不出果干
+        s.Items.RemoveAll(i => i.ItemId is "raw_meat" or "salt");
+        E.CreateItems(s, "berry", 2, ItemInstance.Carried);
+        foreach (var bi in s.Items.Where(i => i.ItemId == "berry")) bi.ExpiresAt = s.GameMinute + 60;
         var t1 = s.GameMinute;
-        var pv = E.DryingPreview(s, "dry_meat");
+        var pv = E.DryingPreview(s, "dry_berries");
         Assert.That(pv.Ok, Is.True);
         Assert.That(pv.Warnings, Has.Count.EqualTo(1), "预览提示会在完成前腐败");
-        Ok(E.StartDrying(s, "dry_meat"));
-        AdvanceTo(s, t1 + 180);
+        Ok(E.StartDrying(s, "dry_berries"));
+        AdvanceTo(s, t1 + 120);
         var b = s.Locations["camp"].Facility.DryingSlots.Single();
         Assert.That(b.Status, Is.EqualTo(DryingSlot.Spoiled));
         Assert.That(b.DoneMinutes, Is.EqualTo(55), "到期那一段停止（到期时刻不能算完成）");
-        Assert.That(Count(s, "dried_meat"), Is.EqualTo(0), "不产可食干品");
+        Assert.That(Count(s, "dried_berries"), Is.EqualTo(0), "不产可食干品");
         Assert.That(CookXp(s), Is.EqualTo(x0), "腐败 0 经验");
         Assert.That(E.CancelDrying(s, b.Slot, false).Reason, Does.Contain("只能清理"));
         Ok(E.TakeDrying(s, b.Slot, false));
-        Assert.That(E.IsSpoiled(s, First(s, "raw_meat", s.Ground)), Is.True, "腐败原料按原腐败规则，不回活");
-        Assert.That(Count(s, "salt"), Is.EqualTo(1), "盐原样取出，不复制");
+        Assert.That(E.IsSpoiled(s, First(s, "berry", s.Ground)), Is.True, "腐败原料按原腐败规则，不回活");
         Assert.That(s.Locations["camp"].Facility.DryingSlots, Is.Empty);
         // 已腐败的原料不能投
-        E.CreateItems(s, "salt", 1, s.Ground);
-        Assert.That(E.StartDrying(s, "dry_meat").Reason, Does.Contain("已腐败1份不能用"));
+        Assert.That(E.StartDrying(s, "dry_berries").Reason, Does.Contain("已腐败2份不能用"));
     }
 
     /// <summary>门槛与来源：烹饪等级不够、预留材料、队友包与异地不自动取；离开营地仍推进、不能远程操作。</summary>
@@ -273,9 +275,9 @@ public class B22cTests : TestBase
         var b = E.CreateItems(s, "berry", 2, s.Ground)[0];
         b.ExpiresAt = s.GameMinute + 120;
         var pv = E.DryingPreview(s, "dry_berries");
-        Assert.That(pv.Warnings.Single(), Does.Contain("不晚于完成时刻"));
+        Assert.That(pv.Warnings.Single(), Does.Contain("会在完成前腐败，届时停止且没有成品"), "到期＝完成也警告（B22k 起用 Q214 定的红字）");
         Ok(E.StartDrying(s, "dry_berries"));
-        Assert.That(s.Log.Last().Text, Does.Contain("不晚于完成时刻"), "投料日志带腐败警告");
+        Assert.That(s.Log.Last().Text, Does.Contain("会在完成前腐败"), "投料日志带腐败警告");
         Assert.That(E.DryingSummaryParts(s), Is.EqualTo(new[] { "晾制中1", "空7" }));
     }
 

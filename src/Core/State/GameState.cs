@@ -45,8 +45,9 @@ namespace Survival.Core.State
         /// "33" 起地牢远征：实例带状态与远征流水号，进行中的远征（成员快照、来路轨迹、撤出锁定路径/倍率/T/已推进分钟）、已结束远征记录、
         /// 一次性事件去重键，角色带惊魂未定截止（开发计划 v0.9 B21）。
         /// "38" 起晾制架八位：区设施带在用晾制位（DryingSlots），位内物品 owner 为 drying:&lt;place&gt;#&lt;位号&gt;（策划答复 Q170，开发计划 v0.9 B22c）。
+        /// "39" 起肉干在制暂停原料保质：晾制位内肉干原料带暂停时快照的剩余保质（ItemInstance.ShelfPausedMinutes，ExpiresAt 暂为空），晾制位带暂停标记（策划答复 Q215，开发计划 v0.9 B22k）。
         /// </summary>
-        public const string CurrentSchema = "38";
+        public const string CurrentSchema = "39";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -460,6 +461,11 @@ namespace Survival.Core.State
         public int XpSnapshot { get; set; }
         /// <summary>完成时实际结算的经验说明（只记一次；取出/读档不重发）。</summary>
         public string? XpNote { get; set; }
+        /// <summary>
+        /// Q215（B22k，存档 39）：这一位是肉干、投料时（旧档为升级时）已暂停食品原料保质计时；位内原料的剩余保质记在 ItemInstance.ShelfPausedMinutes。
+        /// 只初始化一次，读档不重算。果干位恒为 false。
+        /// </summary>
+        public bool ShelfPaused { get; set; }
 
         public DryingSlot Clone() => (DryingSlot)MemberwiseClone();
     }
@@ -780,6 +786,11 @@ namespace Survival.Core.State
         /// 离开地牢（成功抵达父地点）与迁到回收/遗物箱时清掉。普通物品为 null。
         /// </summary>
         public string? RewardOrigin { get; set; }
+        /// <summary>
+        /// 肉干在制暂停保质（策划答复 Q215，B22k，存档 39）：投料成功时快照的剩余保质 R＝原截止 E − 开始分钟 S（正整数世界分钟）；非空时 ExpiresAt 暂为空、不腐败。
+        /// 只在晾制位内出现：取消/退料时新截止＝退料世界分钟 C＋R 并清空；完成时原料核销。原无截止的（盐）不记。普通物品为 null。
+        /// </summary>
+        public int? ShelfPausedMinutes { get; set; }
 
         public bool IsCarried => Owner == Carried;
         /// <summary>
