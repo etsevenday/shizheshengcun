@@ -232,6 +232,59 @@ public sealed class GameSession
     /// <summary>现场修补选用的修补包实例（B22b，Q168）；为空时由内核默认选能恢复最多、消耗最少的一包。</summary>
     public int? CraftPatch { get; set; }
 
+    // ───── B23 来源查询（A10-EXUI §4：缺料→“查看来源”进入只读地图定位，关掉地图回制作面板恢复配方/份数/指定批次/目标） ─────
+    /// <summary>正在地图上查来源的物品；null 为没有在查。</summary>
+    public string? SourceItem { get; private set; }
+    /// <summary>地图打开后要居中的地点（MapOverlay 渲染后取用一次）。</summary>
+    public string? MapFocus { get; set; }
+    private (string? Recipe, string? Tab, int Batch, List<int> Preferred, int? Pot, int? Target, int? Patch, List<string>? Candidates)? _craftReturn;
+
+    /// <summary>从制作面板的缺料行打开来源查询：记下制作面板的选择，打开地图并定位到第一个可获取（或第一个）已知来源地点。只读、0 分钟。</summary>
+    public void OpenSources(string itemId)
+    {
+        if (State == null) return;
+        _craftReturn = (CraftRecipe, CraftTab, CraftBatch, CraftPreferred.ToList(), CraftPot, CraftTarget, CraftPatch, CraftCandidates?.ToList());
+        SourceItem = null;
+        OpenPanel("map");
+        if (Panel != "map") { _craftReturn = null; return; }
+        SourceItem = itemId;
+        var src = E.ItemSources(S, itemId).Where(x => x.LocationId != null).ToList();
+        var loc = (src.FirstOrDefault(x => x.Usable) ?? src.FirstOrDefault())?.LocationId;
+        if (loc != null) FocusSource(loc);
+        Notify();
+    }
+
+    /// <summary>来源列表里“定位”：切到该地点所在层、选中并居中（只读，不移动）。</summary>
+    public void FocusSource(string locationId)
+    {
+        MapLayer = E.MapLayerOf(locationId);
+        MapAnchor = S.CurrentLocation;
+        MapPicked = locationId;
+        MapFocus = locationId;
+        ClosePop();
+        Notify();
+    }
+
+    /// <summary>结束来源查询，回到制作面板并恢复原来的配方、分类、份数、指定批次/锅/目标/修补包（再按新库存预览）。</summary>
+    public void ReturnFromSources()
+    {
+        var snap = _craftReturn;
+        SourceItem = null;
+        _craftReturn = null;
+        if (snap is not { } r) { OpenPanel(null); return; }
+        OpenPanel("craft", r.Recipe);
+        if (Panel != "craft") return;
+        CraftTab = r.Tab;
+        CraftBatch = r.Batch;
+        CraftPreferred.Clear();
+        CraftPreferred.AddRange(r.Preferred.Where(id => S.Items.Any(i => i.InstanceId == id)));
+        CraftPot = r.Pot;
+        CraftTarget = r.Target;
+        CraftPatch = r.Patch;
+        CraftCandidates = r.Candidates;
+        Notify();
+    }
+
 
     /// <summary>火堆卡“点燃”按钮下的点火工具菜单是否打开（v0.7 第 4.2 节）；只在会话内，Esc 或点菜单外关闭。</summary>
     public bool IgniteMenuOpen { get; private set; }
@@ -325,6 +378,9 @@ public sealed class GameSession
         if (IsTopPanel(panel) && InBattleUi) return;
         // 对话读完锁（Q10）：不打开任何面板；关闭（null）仍允许，便于对话出现时收起菜单
         if (panel != null && DialogueLocked) return;
+        // B23：查来源时关掉地图（关闭按钮、Esc）回制作面板并恢复原选择；切到别的面板就结束这次查询
+        if (SourceItem != null && Panel == "map" && panel == null) { ReturnFromSources(); return; }
+        if (panel != "map") { SourceItem = null; _craftReturn = null; }
         HoverPreview = null;
         Pop = null;
         // 离开编队面板（切到别的面板或关闭）就丢弃草稿：关闭不自动保存（Q86）

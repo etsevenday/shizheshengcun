@@ -1,56 +1,54 @@
 @inherits GameComponent
 
-@* B22 封存战利品（R03 D7.1、R08「地牢封存与遗物归属」）：上段可封存（本次地牢实例来源、当前地面或同行者随身），下段已封存（取到随身验五卡/30kg，或放当前地面）。
-   全部 0 时间、整堆；可用与原因都来自内核 SealBlocked / UnsealBlocked，按钮不另判。 *@
+@* B22 封存战利品 → B23 远征物资（A10-EXUI §6“地牢中本人可用物资、当前节点地面、本次已封存战利品三种owner清楚分开”）：
+   三栏分开列；战利品（本次地牢实例来源）在随身或地面那一行可“封存”，已封存的写“封存中·本次不可直接使用”，可取到随身（验五卡/30kg）或放地面；
+   同一实例别处地面/队友遗物里的东西列在“仍在旧实例”（不随队）。全部 0 时间、整堆；可用与原因都来自内核 SealBlocked / UnsealBlocked，按钮不另判。 *@
 @{
     var s = G.S;
     var e = G.E;
-    var exp = s.Expedition;
-    var sealable = e.SealableItems(s);
-    var sealedItems = e.SealedHere(s);
-    var dname = exp != null ? e.DungeonCfg(exp.DungeonId)?.Name ?? "" : "";
-    var parent = exp != null ? e.LocName(e.DungeonCfg(exp.DungeonId)!.Parent) : "";
+    var v = e.ExpeditionStores(s);
 }
-<div class="overflow-layer" role="dialog" aria-modal="true" aria-label="封存战利品">
-    <div class="panel overflow-box exp-abort">
+<div class="overflow-layer" role="dialog" aria-modal="true" aria-label="远征物资">
+    <div class="panel overflow-box exp-abort exp-stores">
         <div class="ov-head">
-            <h2>封存战利品@(dname.Length > 0 ? " · " + dname : "")</h2>
-            <span class="muted">只收本次地牢里已经领到的奖励（物资箱、守卫回收、首通补给、胜利掉落）。封存的不占随身卡位、暂时不能用；成功撤出或通关离开后放进@(parent)的远征回收箱。外带物、自制物不能封存。</span>
+            <h2>远征物资@(v != null ? " · " + v.DungeonName : "")</h2>
+            <span class="muted">封存只收本次地牢里已经领到的奖励（物资箱、守卫回收、首通补给、胜利掉落）：不占随身卡位、暂时不能用；成功撤出或通关离开后放进@(v?.ParentName)的远征回收箱，不直接进背包。外带物、自制物不能封存。</span>
         </div>
         <div class="ov-list" data-wheel="y">
-            <div class="exp-sec">可以封存（当前地面或同行者随身）</div>
-            @if (sealable.Count == 0)
+            @if (v == null)
             {
-                <div class="exp-row muted"><span>没有可封存的奖励</span></div>
+                <div class="exp-row muted"><span>不在本次远征的地牢里</span></div>
             }
-            @foreach (var it in sealable)
+            else
             {
-                var iid = it.InstanceId;
-                var where = it.Owner == s.Ground ? "地面" : it.IsCarried ? "你的随身" : "同行者随身";
-                <div class="exp-row remains-row" data-seal="@iid">
-                    <span>@e.ItemName(it.ItemId)×@it.Count#@iid（@where）</span>
-                    <button type="button" class="eq-btn" title="移进封存：不占卡位，暂时不能用" @onclick="() => G.SealItem(iid)">封存</button>
-                </div>
-            }
-            <div class="exp-sec">已封存</div>
-            @if (sealedItems.Count == 0)
-            {
-                <div class="exp-row muted"><span>还没有封存的物品</span></div>
-            }
-            @foreach (var it in sealedItems)
-            {
-                var iid = it.InstanceId;
-                var whyCarry = e.UnsealBlocked(s, iid, false);
-                var whyGround = e.UnsealBlocked(s, iid, true);
-                <div class="exp-row remains-row" data-sealed="@iid">
-                    <span>@e.ItemName(it.ItemId)×@it.Count#@iid@(e.IsSpoiled(s, it) ? "（已腐败）" : "")</span>
-                    <button type="button" class="eq-btn @(whyCarry != null ? "btn-off" : "")" disabled="@(whyCarry != null)" title="@(whyCarry ?? "取到你的随身（五张卡与30公斤校验）")" @onclick="() => G.UnsealItem(iid, false)">取到随身</button>
-                    <button type="button" class="eq-btn @(whyGround != null ? "btn-off" : "")" disabled="@(whyGround != null)" title="@(whyGround ?? "放到当前地面")" @onclick="() => G.UnsealItem(iid, true)">放地面</button>
-                </div>
-                @* B22 试玩修复 M408：不能取到随身的原因直接写在行下（不只在悬停里） *@
-                @if (whyCarry != null && whyGround == null)
+                <div class="exp-sec" data-store="usable">本人可用物资（全队随身）</div>
+                @if (v.Usable.Count == 0) { <div class="exp-row muted"><span>没有</span></div> }
+                @foreach (var r in v.Usable) { @SealRow(r) }
+                <div class="exp-sec" data-store="ground">当前节点地面（@v.NodeName）</div>
+                @if (v.Ground.Count == 0) { <div class="exp-row muted"><span>没有</span></div> }
+                @foreach (var r in v.Ground) { @SealRow(r) }
+                <div class="exp-sec" data-store="sealed">本次已封存战利品</div>
+                @if (v.Sealed.Count == 0) { <div class="exp-row muted"><span>还没有封存的物品</span></div> }
+                @foreach (var r in v.Sealed)
                 {
-                    <div class="exp-row warn-text tiny seal-why"><span>取到随身：@whyCarry（可以先“放地面”，再逐件拾取）</span></div>
+                    var iid = r.InstanceId;
+                    var whyCarry = e.UnsealBlocked(s, iid, false);
+                    var whyGround = e.UnsealBlocked(s, iid, true);
+                    <div class="exp-row remains-row" data-sealed="@iid">
+                        <span>@r.Text</span>
+                        <button type="button" class="eq-btn @(whyCarry != null ? "btn-off" : "")" disabled="@(whyCarry != null)" title="@(whyCarry ?? "取到你的随身（五张卡与30公斤校验）")" @onclick="() => G.UnsealItem(iid, false)">取到随身</button>
+                        <button type="button" class="eq-btn @(whyGround != null ? "btn-off" : "")" disabled="@(whyGround != null)" title="@(whyGround ?? "放到当前地面")" @onclick="() => G.UnsealItem(iid, true)">放地面</button>
+                    </div>
+                    @* B22 试玩修复 M408：不能取到随身的原因直接写在行下（不只在悬停里） *@
+                    @if (whyCarry != null && whyGround == null)
+                    {
+                        <div class="exp-row warn-text tiny seal-why"><span>取到随身：@whyCarry（可以先“放地面”，再逐件拾取）</span></div>
+                    }
+                }
+                @if (v.Elsewhere.Count > 0)
+                {
+                    <div class="exp-sec" data-store="elsewhere">仍在旧实例（别的房间，不随队）</div>
+                    @foreach (var x in v.Elsewhere) { <div class="exp-row muted"><span>@x</span></div> }
                 }
             }
         </div>
@@ -61,3 +59,17 @@
         }
     </div>
 </div>
+
+@code {
+    private RenderFragment SealRow(ExpeditionStoreRow r) => __builder =>
+    {
+        var iid = r.InstanceId;
+        <div class="exp-row remains-row @(r.Reward ? "reward" : "")" data-seal="@(r.CanSeal ? iid.ToString() : null)">
+            <span>@r.Text</span>
+            @if (r.CanSeal)
+            {
+                <button type="button" class="eq-btn" title="移进封存：不占卡位，暂时不能用" @onclick="() => G.SealItem(iid)">封存</button>
+            }
+        </div>
+    };
+}

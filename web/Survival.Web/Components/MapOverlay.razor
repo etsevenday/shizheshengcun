@@ -75,6 +75,32 @@
             </div>
         </div>
         <div class="map-stage">
+        @if (G.SourceItem is string srcItem)
+        {
+            @* B23（A10-EXUI §4）：缺料来源查询——只列已发现的来源（产量、工时、库存/日补、合格工具、路线），耗尽/已领/本代搜空不亮“可获取”；
+               “定位”只切层并居中，不移动；关闭地图（或“返回制作”）回制作面板并恢复原选择 *@
+            var srcs = e.ItemSources(s, srcItem);
+            <div class="map-sources" data-wheel="y" data-sources="@srcItem">
+                <div class="ms-head">
+                    <b>@e.ItemName(srcItem)的已知来源</b>
+                    <button type="button" class="secondary ms-back" title="回到手工制作，恢复刚才的配方与选择（关闭地图或 Esc 同效）" @onclick="G.ReturnFromSources">返回制作</button>
+                </div>
+                @if (srcs.Count == 0) { <div class="ms-row muted">还没有已发现的来源（未发现的地点与深层房间不提前显示）</div> }
+                @foreach (var x in srcs)
+                {
+                    var loc = x.LocationId;
+                    <div class="ms-row @(x.Usable ? "ok" : "off")" data-source-kind="@x.Kind">
+                        <div class="ms-title">@if (!string.IsNullOrEmpty(x.Account)) { <span class="ms-acct">@x.Account</span> }<b>@x.Title</b></div>
+                        <div class="ms-detail">@x.Detail</div>
+                        <div class="ms-status @(x.Usable ? "" : "warn-text")">@x.Status@(string.IsNullOrEmpty(x.Route) ? "" : $" · {x.Route}")</div>
+                        @if (loc != null)
+                        {
+                            <button type="button" class="secondary ms-loc" title="在地图上定位（只平移视口，不移动）" @onclick="() => G.FocusSource(loc)">定位</button>
+                        }
+                    </div>
+                }
+            </div>
+        }
             <div class="map-viewport" @ref="_vp" tabindex="0" aria-label="@($"{v.LayerName}，已知{v.Nodes.Count}处；拖动平移，+ − 缩放，0 回到当前位置")"
                  data-map-key="@MapKey(v.LayerKey)" @onkeydown="Key">
                 <svg class="map-canvas" width="@F(w)" height="@F(h)" viewBox="@($"0 0 {F(w)} {F(h)}")" role="img" aria-label="地点与路线">
@@ -427,6 +453,13 @@ else
         var here = G.S.CurrentLocation;
         if (here != _lastHere) { _lastHere = here; _needCenter = true; _centerWorld = null; }
         if (_view.LayerKey != _lastLayer) { _lastLayer = _view.LayerKey; _needCenter = true; }
+        // B23 来源查询“定位”：居中到所选来源地点（只平移视口）
+        if (G.MapFocus is string focus && _view.Nodes.FirstOrDefault(n => n.Id == focus) is MapViewNode fn)
+        {
+            G.MapFocus = null;
+            _centerWorld = (fn.X, fn.Y);
+            _needCenter = true;
+        }
         try
         {
             // 视口实测后把四周留白放到至少半个视口，再按新尺寸重画一次后居中

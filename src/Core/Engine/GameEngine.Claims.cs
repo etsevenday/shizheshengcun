@@ -182,9 +182,9 @@ namespace Survival.Core.Engine
             else if (first)
             {
                 var know = KnowledgeGrantedBy(s, ClaimFactsOf(res));
+                var packNote = PackKnownNote(s, res, know);   // 写事实前判断（之后都已掌握）
                 foreach (var f in ClaimFactsOf(res)) s.Progress.Flags.Add(f);
                 s.Resources[res.NodeId].Available = 0;
-                var packNote = PackKnownNote(s, res, know);   // 写事实前判断（之后都已掌握）
                 text.Add($"已领取{res.Name}（本局唯一，记作记录，不占物资卡）");
                 if (know.Count > 0) text.Add("获得做法知识：" + string.Join("、", know));
                 if (packNote != null) text.Add(packNote);

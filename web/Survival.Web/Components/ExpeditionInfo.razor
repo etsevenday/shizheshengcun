@@ -24,6 +24,12 @@
         <div class="exp-line"><b>未通关离开：</b>@p.PenaltyText</div>
         <div class="exp-line"><b>撤出：</b>最低@(p.ExtractMinMinutes)分钟；现在从@(p.ExtractFrom)撤出约@(p.ExtractEstimate)分钟（基础@(p.ExtractBaseMinutes)分钟×@(p.ExtractFactor.ToString("0.##"))）</div>
         <div class="exp-line"><b>预计探索：</b>约@(p.ExploreLow)—@(p.ExploreHigh)分钟（基础分钟，不含战斗与倍率）</div>
+        @* B23（A10 §5）：饮水与热源分列——随身净水、需处理脏水、处理用品、热源；封存的水不计。只提示、不拦 *@
+        @if (p.WaterLines.Count > 0)
+        {
+            <div class="exp-line"><b>饮水与热源（全队随身，只提示）：</b></div>
+            @foreach (var x in p.WaterLines) { <div class="exp-line muted" data-water-line>· @x</div> }
+        }
         @* B22（R03 D3/D8、A09 E6、A10 §7）：首次与重复奖励分开写，加重置剩余时间 *@
         @if (p.FirstRewards.Count > 0)
         {

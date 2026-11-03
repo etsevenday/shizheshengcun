@@ -367,13 +367,14 @@
                             }
                             else if (r.IsCache)
                             {
-                                var cacheLine = string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}"));
+                                var cacheLine = $"{GameEngine.AccountLabel(r)} · " + string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}"));   // B23（A10 §3）：四类账短标
                                 <div class="oc-line" title="@cacheLine">@cacheLine</div>
                             }
                             else
                             {
                                 var per = r.Outputs.Values.First() * (tool != null && r.ToolBonus != null && !r.IsUnlimited ? r.ToolBonus.OutputMultiplier : 1) + e.PassiveGatherBonus(s, s.Player, r, r.Outputs.Keys.First());
-                                var perLine = $"每次{per}{e.ItemName(r.Outputs.Keys.First())}{(r.Refills ? $" · 日补{r.DailyRefill}" : "")}";
+                                // B23（A10 §3）：卡面先写四类账短标（有限/每日补充/本实例/持续），确定产量写“每次”
+                                var perLine = $"{GameEngine.AccountLabel(r)} · 每次{per}{e.ItemName(r.Outputs.Keys.First())}{(r.Refills ? $" · 日补{r.DailyRefill}" : "")}";
                                 <div class="oc-line" title="@perLine">@perLine</div>
                             }
                             @if (r.Hazard != null) { var hz = $"{Ui.Pct(e.HazardChance(s, r))}{r.Hazard.Label} · 健康−{Ui.T(e.HazardLoss(s, r))}"; <div class="oc-line warn-line" title="@hz">@hz</div> }

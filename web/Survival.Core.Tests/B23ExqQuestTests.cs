@@ -74,7 +74,7 @@ public class B23ExqQuestTests : TestBase
         Assert.That(s.Progress.Flags, Does.Contain("claim:d05_07_unique").And.Contain("waterworks_record"));
         Assert.That(E.KnowsKnowledge(s, "blueprint_repair_manual"), Is.True);
         var log = s.Log.Last(l => l.Text.Contains("水厂阀控记录")).Text;
-        Assert.That(log, Does.Contain("获得做法知识：维护手册蓝图").And.Contain("可选任务“水从哪里来”记录已取得：回营区工坊和罗铮交谈（0分钟）即完成"));
+        Assert.That(log, Does.Contain("获得做法知识：维护手册蓝图；净水操作套件的做法已掌握，只记来源").And.Contain("可选任务“水从哪里来”记录已取得：回营区工坊和罗铮交谈（0分钟）即完成"));
         v = E.QuestViewOf(s, "EXQ05")!;
         Assert.That((v.Status, v.StatusText, v.Step), Is.EqualTo(("active", "记录已取得", "回营区工坊和罗铮交谈（0分钟，不交材料）。")));
         Assert.That(v.WorkLabel, Is.EqualTo("交谈（0分钟）"));

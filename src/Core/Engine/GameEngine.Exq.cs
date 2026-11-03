@@ -123,6 +123,42 @@ namespace Survival.Core.Engine
 
         // ───────────────────────── 开发入口 ─────────────────────────
 
+        /// <summary>
+        /// 开发入口（?dev=1）B23 栏：register 记下营区登记（授权+登记，C2 与登记默认知识）；board 传送到该任务接取岗位；
+        /// record 传送到记录房并把探索度拨到 100%（揭示记录卡，不领取；进危险房间按已开始的远征补提交）；copy 传送到该知识包的抄录岗位；status 一行状态。
+        /// </summary>
+        public string DebugExq(GameState s, string kind, string questId)
+        {
+            var q = Quest(questId);
+            var p = Config.ExpansionQuests.Packs.FirstOrDefault(x => x.QuestId == questId);
+            if (q == null || p == null) return $"开发：没有可选任务 {questId}";
+            var res = Config.Resources.First(r => r.NodeId == p.ClaimResourceId);
+            switch (kind)
+            {
+                case "register":
+                {
+                    var reg = Config.City.Registration;
+                    s.Progress.Flags.Add(reg.AuthorizedFact);
+                    s.Progress.Flags.Add(reg.RegisteredFact);
+                    RefreshGates(s);
+                    UpdateFlags(s);
+                    return "开发：已记下营区登记（队伍容量 C2 与登记默认做法知识；不发物资）。";
+                }
+                case "board":
+                    return DebugMapTeleport(s, q.LocationId);
+                case "copy":
+                    return DebugMapTeleport(s, p.CopyLocationId);
+                case "record":
+                {
+                    var tp = DebugMapTeleport(s, res.LocationId);
+                    DebugSetProgress(s, res.LocationId, 100);
+                    return tp + $"；探索度拨到100%，“{res.Name}”卡已出现（{(CampaignClaimed(s, res.NodeId) ? "本局已领，可核对" : "未领取")}）。";
+                }
+                default:
+                    return DebugExqStatus(s, questId);
+            }
+        }
+
         /// <summary>开发入口（?dev=1）：所选可选地牢任务的状态一行（接取、记录、完成、两段已提交分钟、知识）。</summary>
         public string DebugExqStatus(GameState s, string questId)
         {

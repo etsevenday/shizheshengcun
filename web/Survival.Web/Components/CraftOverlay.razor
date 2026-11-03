@@ -114,7 +114,8 @@
                         <div class="craft-source" data-craft-source>
                             <span>@RecipeMeta(rc)</span>
                             @if (SourceText(rc) is string src) { <span class="muted">来源：@src</span> }
-                            @foreach (var l in locks) { <span class="warn-text" title="@l">@l</span> }
+                            @* B23（A10 §4）：配方状态逐类（知识未得/熟练不足/设施未到/工具燃料不足）；材料缺口在下面的原料行 *@
+                            @foreach (var (cat, text, _) in e.RecipeStatus(s, rc, batch).Where(x => x.Category is not ("材料缺口" or "来源当前不可达"))) { <span class="warn-text" title="@text" data-recipe-status="@cat">@cat：@text</span> }
                             @if (GameEngine.IsWildFireRecipe(rc))
                             {
                                 @* B22e（Q173）：建野外火堆的不合格原因逐项列出（地点/火源/敌踪/行动/材料），施工不能消除危险 *@
@@ -270,6 +271,11 @@
                             <ItemRow Icon="@item" Name="@e.ItemName(item)" Qty="@($"需{need}")" Missing="@(lack > 0)" CssClass="mat-row"
                                      Status="@($"现有{have}（随身{carried}／地面{have - carried}）{(reserved > 0 ? $" · 预留{reserved}" : "")}{(lack > 0 ? $" · 缺少{lack}" : "")}")"
                                      DataDrop="@($"slot:{recipeId}:{item}")" Title="把具体批次的卡拖到这里指定使用">
+                                @if (lack > 0)
+                                {
+                                    @* B23（A10 §4）：缺料→查看来源（只读地图定位，关掉地图回这里并恢复选择） *@
+                                    <button type="button" class="linkish src-btn" data-source-item="@item" title="在地图上查看@(e.ItemName(item))的已知来源（只读，不移动；关掉地图回到这里）" @onclick="() => G.OpenSources(item)">查看来源</button>
+                                }
                                 <span class="slot-batches">
                                     @foreach (var (b, n) in plan)
                                     {

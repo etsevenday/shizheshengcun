@@ -357,6 +357,22 @@
                     <button class="secondary small-btn" title="通关时刻、可重置时刻、守卫回收/首通补给、封存、回收箱与遗物箱件数" @onclick='() => G.DevRewards("show", expDungeon)'>显示所选地牢奖励账</button>
                     <button class="secondary small-btn @(G.DevFailNextResetSave ? "on" : "")" title="下一次在父地点确认重置时，写盘一定失败（验证旧代保持、可重试）" @onclick='() => G.DevRewards("failsave", expDungeon)'>@(G.DevFailNextResetSave ? "已开启：下一次重置写盘失败（再点取消）" : "模拟下一次重置写盘失败")</button>
                 </div>
+                @* B23（R71/R72）：可选地牢任务 EXQ05—08、公开抄录、来源查询与远征物资；任务用下面的下拉 *@
+                <div class="eyebrow">可选地牢任务与远征界面（B23）：登记 → 岗位交谈接取 → 记录房领取（10分钟两段）→ 回岗位交谈；查抄公开资料在岗位“事项”</div>
+                <div class="btn-row">
+                    <select class="dev-select" aria-label="可选地牢任务" @bind="exqQuest">
+                        @foreach (var q in G.E.Config.Quests.List.Where(q => q.Kind == "optional"))
+                        {
+                            <option value="@q.Id">@q.Title（@q.Id，@G.E.LocName(q.LocationId)）</option>
+                        }
+                    </select>
+                    <button class="secondary small-btn" title="记下营门登记授权与营区登记（C2、登记默认知识）" @onclick='() => DevDone(G.E.DebugExq(G.S, "register", exqQuest))'>记下营区登记</button>
+                    <button class="secondary small-btn" title="传送到接取岗位所在地点（按实际到达处理）" @onclick='() => DevDone(G.E.DebugExq(G.S, "board", exqQuest))'>传送到接取岗位</button>
+                    <button class="secondary small-btn" title="传送到记录房（按已开始的远征补提交，不扣包）并把探索度拨到100%，记录卡出现、不领取" @onclick='() => DevDone(G.E.DebugExq(G.S, "record", exqQuest))'>传送到记录房（探索100%）</button>
+                    <button class="secondary small-btn" title="传送到这个知识包的公开抄录岗位" @onclick='() => DevDone(G.E.DebugExq(G.S, "copy", exqQuest))'>传送到抄录岗位</button>
+                    <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugExq(G.S, "status", exqQuest))'>显示任务/记录/知识状态</button>
+                </div>
+                <div class="tiny muted">@G.E.DebugExqStatus(G.S, exqQuest)</div>
                 @* B8（R08、A11 §6/§7）：正式招募任务（RN01—RN06）在后续批次，这里直接把六名命名角色登记入名册（同行未满 C 时直接编入） *@
                 <div class="eyebrow">队伍（B8）：先记下容量事实再加人；营区＝临时营地</div>
                 <div class="btn-row">
@@ -419,6 +435,7 @@
 </div>
 
 @code {
+    private string exqQuest = "EXQ05";   // B23 开发入口所选可选任务
 #if DEBUG
     private static readonly bool DebugBuild = true;
 #else
