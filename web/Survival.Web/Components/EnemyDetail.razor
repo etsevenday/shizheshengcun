@@ -45,7 +45,7 @@ else
         else if (ec.IsZombie) { <div class="risk none">它的意图里没有咬击，不会咬伤，攻击不传播病毒。</div> }
         <ul class="notes">
             <li>主动接近：@e.FearNote(s, new[] { w }, GameEngine.FearApproach)；不受随机接敌保护期限制；只与这一只交战。</li>
-            <li>每轮推进5分钟世界时间；撤退成功留在原地，存活敌人保留血量。</li>
+            <li>每轮推进5分钟世界时间；@e.RetreatOutlookHere(s)。</li>
         </ul>
         @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
     </div>

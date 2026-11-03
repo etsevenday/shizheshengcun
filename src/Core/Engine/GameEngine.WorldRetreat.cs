@@ -53,6 +53,21 @@ namespace Survival.Core.Engine
                 : $"{NoRetreatPathText}（{LocName(b.LocationId)}；{why}）";
         }
 
+        /// <summary>
+        /// 开战前（敌人详情）预告：如果现在在这里开战，撤退成功会落在哪——与开战快照、撤退落点同一判断（只读，不改状态）。
+        /// 地牢节点写地牢撤退的现状说法。
+        /// </summary>
+        public string RetreatOutlookHere(GameState s)
+        {
+            var here = s.CurrentLocation;
+            if (DungeonAt(here) != null) return "撤退成功：远征里退回来路上第一个没有敌人的房间（都有敌人回入口缓冲），存活敌人保留血量";
+            var probe = new BattleState { LocationId = here, WorldRetreat = RetreatOriginAtStart(s) };
+            var (to, _) = WorldRetreatTarget(s, probe);
+            return to != null
+                ? $"撤退成功：全队退回{LocName(to)}（最近一次走来的地点，不另花时间、不算一次移动），存活敌人保留血量与位置"
+                : $"撤退成功：{NoRetreatPathText}，存活敌人保留血量与位置";
+        }
+
         /// <summary>撤退成功后的普通主世界落点：移动全队并返回给战报的短语；旧战与地牢节点返回 null（照旧）。</summary>
         private string? WorldRetreatLanding(GameState s, BattleState b)
         {

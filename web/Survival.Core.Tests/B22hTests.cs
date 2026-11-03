@@ -418,4 +418,16 @@ public class B22hTests : BattleTestBase
         Assert.That(s.CurrentLocation, Is.EqualTo("d01_01"));
         Assert.That(s.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Not.Contain(GameEngine.NoRetreatPathText));
     }
+
+    /// <summary>PLAN-Q196-01（网页）：敌人详情的撤退预告与开战快照同一判断——走来的写退回哪，开发传送后写“没有可返回的来路…”。</summary>
+    [Test]
+    public void PLAN_Q196_01_RetreatOutlook_ForEnemyDetail()
+    {
+        var s = New(4309);
+        E.DebugTeleport(s, "camp");
+        Assert.That(E.RetreatOutlookHere(s), Does.Contain(GameEngine.NoRetreatPathText));
+        Start(s, ActionRequest.Travel("field"));
+        Run(s);
+        Assert.That(E.RetreatOutlookHere(s), Does.Contain("全队退回" + E.LocName("camp")));
+    }
 }
