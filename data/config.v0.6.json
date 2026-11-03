@@ -36383,5 +36383,168 @@
       "d07": "d07_01",
       "d08": "d08_01"
     }
+  },
+  "dungeonRewards": {
+    "source": "A09「E6.1—E6.4」「E7」「E8」「每地牢每代固定重复产出合计」、R03 D7/D8、A07 X1.13、expansion-combat.json（策划已批准可调初值）",
+    "resetCooldownMinutes": 4320,
+    "bossSalvage": [
+      {
+        "dungeonId": "d01",
+        "nodeId": "d01_07",
+        "items": {
+          "cloth": 1
+        }
+      },
+      {
+        "dungeonId": "d02",
+        "nodeId": "d02_07",
+        "items": {
+          "medical_gauze": 1
+        }
+      },
+      {
+        "dungeonId": "d03",
+        "nodeId": "d03_07",
+        "items": {
+          "parts": 1
+        }
+      },
+      {
+        "dungeonId": "d04",
+        "nodeId": "d04_06",
+        "items": {
+          "wire": 1
+        }
+      },
+      {
+        "dungeonId": "d05",
+        "nodeId": "d05_06",
+        "items": {
+          "rubber": 1
+        }
+      },
+      {
+        "dungeonId": "d06",
+        "nodeId": "d06_07",
+        "items": {
+          "iron_ore": 2
+        }
+      },
+      {
+        "dungeonId": "d07",
+        "nodeId": "d07_06",
+        "items": {
+          "plastic": 1
+        }
+      },
+      {
+        "dungeonId": "d08",
+        "nodeId": "d08_07",
+        "items": {
+          "cloth": 1
+        }
+      }
+    ],
+    "firstClear": [
+      {
+        "dungeonId": "d01",
+        "clearNode": "d01_08",
+        "items": {
+          "cloth": 3,
+          "thread": 2
+        }
+      },
+      {
+        "dungeonId": "d02",
+        "clearNode": "d02_08",
+        "items": {
+          "medical_gauze": 3,
+          "lab_reagent": 1
+        }
+      },
+      {
+        "dungeonId": "d03",
+        "clearNode": "d03_08",
+        "items": {
+          "gun_service_kit": 1,
+          "ammo_9mm": 8
+        }
+      },
+      {
+        "dungeonId": "d04",
+        "clearNode": "d04_07",
+        "items": {
+          "battery": 2,
+          "wire": 2
+        }
+      },
+      {
+        "dungeonId": "d05",
+        "clearNode": "d05_07",
+        "items": {
+          "disinfectant": 2,
+          "filter_media": 2
+        }
+      },
+      {
+        "dungeonId": "d06",
+        "clearNode": "d06_08",
+        "items": {
+          "steel": 2,
+          "precision_parts": 1
+        }
+      },
+      {
+        "dungeonId": "d07",
+        "clearNode": "d07_07",
+        "items": {
+          "canned_beans": 2,
+          "cloth": 3
+        }
+      },
+      {
+        "dungeonId": "d08",
+        "clearNode": "d08_08",
+        "items": {
+          "saline": 2,
+          "dried_meat": 2
+        }
+      }
+    ],
+    "tactical": [
+      {
+        "id": "flash_marker",
+        "action": "tactic_flash_marker",
+        "target": "enemy",
+        "ap": 2,
+        "energy": 0.1,
+        "noise": 5,
+        "markBonus": 6,
+        "rounds": 2,
+        "text": "标记2完整大回合：全队对其攻击能力+6；与猎标同名取强、不叠层，不直接扣H"
+      },
+      {
+        "id": "brace_pack",
+        "action": "tactic_brace_pack",
+        "target": "self",
+        "ap": 1,
+        "energy": 0,
+        "noise": 0,
+        "displaceResist": 25,
+        "rounds": 2,
+        "text": "位移抵抗+25个百分点，持续2大回合；与稳固同类取强，不格挡/免伤/永久免疫"
+      },
+      {
+        "id": "rally_patch",
+        "action": "tactic_rally_patch",
+        "target": "ally",
+        "ap": 2,
+        "energy": 0,
+        "noise": 0,
+        "panicReduce": 6,
+        "perTargetRoundCap": 6,
+        "text": "当前恐慌-6最低0；每目标每大回合来自此道具总减量最多6，无实际收益禁用"
+      }
+    ]
   }
 }

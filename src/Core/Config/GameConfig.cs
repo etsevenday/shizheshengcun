@@ -108,6 +108,8 @@ namespace Survival.Core.Config
         public QuestsConfig Quests { get; set; } = new QuestsConfig();
         /// <summary>地牢远征：终止惩罚包、惊魂未定、撤出时长、预告警告线与入口缓冲（开发计划 v0.9 B21，tools/import-b21-expedition.py）。</summary>
         public DungeonExpeditionConfig DungeonExpedition { get; set; } = new DungeonExpeditionConfig();
+        /// <summary>地牢守卫回收材料、首通补给包、72 小时重置冷却与三种战术品（开发计划 v0.9 B22，tools/import-b22-rewards.py）。</summary>
+        public DungeonRewardsConfig DungeonRewards { get; set; } = new DungeonRewardsConfig();
     }
 
     /// <summary>工坊（A07「工坊设施」；B10）：hand 不是设施；其余每类每地一座，只在 buildLocations 建（B10-1：只开放 camp，待确认 Q107）。</summary>

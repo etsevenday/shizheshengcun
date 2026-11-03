@@ -141,4 +141,48 @@ namespace Survival.Core.Config
         public double HealthAtMost { get; set; }
         public double VirusAtLeast { get; set; }
     }
+    /// <summary>
+    /// 地牢奖励分账与重置（B22，A09「E6.2」「E6.3」「E7」「E8」、R03 D8、A07 X1.13；tools/import-b22-rewards.py）。地图箱（E6.1）与旧唯一箱（E6.4）
+    /// 直接复用资源表同一 resourceId，不在这里重复。
+    /// </summary>
+    public sealed class DungeonRewardsConfig
+    {
+        public string Source { get; set; } = "";
+        /// <summary>通关后到可重置的世界分钟（72 世界小时，从本代 clearedAt 起算）。</summary>
+        public int ResetCooldownMinutes { get; set; } = 4320;
+        /// <summary>每代守卫战最终胜利后的固定回收材料（instance_once，键 instanceId:守卫节点:combat_salvage）。</summary>
+        public List<DungeonPackConfig> BossSalvage { get; set; } = new List<DungeonPackConfig>();
+        /// <summary>本局首次通关补给包（campaign_once，键 campaignId:地牢:combat_first），在 recordNode 领取/核对成功时发。</summary>
+        public List<DungeonPackConfig> FirstClear { get; set; } = new List<DungeonPackConfig>();
+        /// <summary>三种战术品（flash_marker / brace_pack / rally_patch）。</summary>
+        public List<TacticalItemConfig> Tactical { get; set; } = new List<TacticalItemConfig>();
+    }
+
+    /// <summary>一份固定材料包：所属地牢、发放节点（守卫节点或核心记录节点）与物品。</summary>
+    public sealed class DungeonPackConfig
+    {
+        public string DungeonId { get; set; } = "";
+        public string NodeId { get; set; } = "";
+        public string ClearNode { get; set; } = "";
+        public Dictionary<string, int> Items { get; set; } = new Dictionary<string, int>();
+        /// <summary>发放节点：守卫回收为 NodeId，首通包为 ClearNode。</summary>
+        public string Node => NodeId != "" ? NodeId : ClearNode;
+    }
+
+    /// <summary>战术品（A09 E7）：战斗指令 ID、目标类别（enemy/self/ally）、AP/E/噪声与效果数值。</summary>
+    public sealed class TacticalItemConfig
+    {
+        public string Id { get; set; } = "";
+        public string Action { get; set; } = "";
+        public string Target { get; set; } = "";
+        public int Ap { get; set; }
+        public double Energy { get; set; }
+        public double Noise { get; set; }
+        public double MarkBonus { get; set; }
+        public int Rounds { get; set; }
+        public double DisplaceResist { get; set; }
+        public double PanicReduce { get; set; }
+        public double PerTargetRoundCap { get; set; }
+        public string Text { get; set; } = "";
+    }
 }
