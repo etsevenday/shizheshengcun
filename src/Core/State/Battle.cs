@@ -523,5 +523,10 @@ namespace Survival.Core.State
     {
         public string? From { get; set; }
         public string? EdgeId { get; set; }
+        /// <summary>
+        /// B22h 试玩修复（M448）：没有可信来处时的原因，只用于说明文字——"elsewhere" 有移动记录但终点不是开战地点（刚撤退回来、之后没再走动）；
+        /// 空 = 没有移动记录（旧档、开发传送后）。不影响规则。
+        /// </summary>
+        public string? NoOrigin { get; set; }
     }
 }

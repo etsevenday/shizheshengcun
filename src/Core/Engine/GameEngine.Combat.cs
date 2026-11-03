@@ -1510,6 +1510,8 @@ namespace Survival.Core.Engine
             if (outcome == "retreat" && DungeonRetreatLanding(s, b) is string landed) fixedLines.Add(landed);
             // B22h（Q196 选 C）：普通主世界撤退成功退回开战快照锁定的来处（0 额外分钟，不是常规移动）；没有可返回的来路就留在原地并写明
             else if (outcome == "retreat" && WorldRetreatLanding(s, b) is string worldLanded) fixedLines.Add(worldLanded);
+            // B22h 试玩修复（M448）：远征外的地牢节点、上线前开始的旧战撤退留在原地——结果提示与预览一致写“留在<地点>”
+            else if (outcome == "retreat" && !s.Progress.Dead) fixedLines.Add($"留在{LocName(loc)}");
             var me = b.Fighter(GameState.PlayerId);
             var loss = Math.Min(Config.Panic.MoraleLossMax, me.Panic / Config.Panic.MoraleLossDivisor);
             if (loss > 0) s.Actor(GameState.PlayerId).Stats.Add(StatId.Morale, -loss);

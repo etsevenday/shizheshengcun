@@ -326,6 +326,12 @@ public class B22hTests : BattleTestBase
         Assert.That(s.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Contain("有敌踪").And.Contain("不会自动开战"));
         Assert.That(E.Approach(s, campEnemy.Id).Ok, Is.True);
         Assert.That(s.Battle!.WorldRetreat!.From, Is.Null, "最近一次完成的移动是营地→荒地，到达点不是营地");
+        PlayerFirst(s);
+        E.BattleStep(s);
+        ToPlayer(s);
+        // M448：原因按真实情况写（有记录、只是终点不是这里），不写“没有可信的已完成移动记录”
+        var why = string.Join(" | ", E.PreviewCommand(s, BattleCommand.Of("retreat")).Notes);
+        Assert.That(why, Does.Contain("最近一次完成的移动终点不是这里").And.Not.Contain("没有可信的已完成移动记录"));
         RetreatNow(s);
         Assert.That(s.CurrentLocation, Is.EqualTo("camp"));
         Assert.That(s.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Contain(GameEngine.NoRetreatPathText));
@@ -342,7 +348,7 @@ public class B22hTests : BattleTestBase
         PlayerFirst(s);
         E.BattleStep(s);
         ToPlayer(s);
-        Assert.That(string.Join(" | ", E.PreviewCommand(s, BattleCommand.Of("retreat")).Notes), Does.Contain(GameEngine.NoRetreatPathText));
+        Assert.That(string.Join(" | ", E.PreviewCommand(s, BattleCommand.Of("retreat")).Notes), Does.Contain(GameEngine.NoRetreatPathText).And.Contain("没有可信的已完成移动记录"));
         Force(s, Below(0.0001));
         Assert.That(Cmd(s, "retreat").Ok, Is.True);
         Assert.That(s.CurrentLocation, Is.EqualTo("field"));
@@ -385,7 +391,28 @@ public class B22hTests : BattleTestBase
         s.Battle!.WorldRetreat = null;
         RetreatNow(s);
         Assert.That(s.CurrentLocation, Is.EqualTo("field"));
-        Assert.That(s.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Not.Contain(GameEngine.NoRetreatPathText).And.Not.Contain("全队退回"));
+        Assert.That(s.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Not.Contain(GameEngine.NoRetreatPathText).And.Not.Contain("全队退回")
+            .And.Contain("留在" + E.LocName("field")), "M448：与预览一致写留在哪");
+    }
+
+    /// <summary>M448：远征外的地牢守卫战（传送进守卫房，没有进行中的远征）撤退成功——结果提示与预览一致写“留在<地点>”。</summary>
+    [Test]
+    public void M448_DungeonNodeOutsideExpedition_RetreatSaysWhereStayed()
+    {
+        var s = New(4310);
+        E.DebugMapTeleport(s, "d07_06");
+        Assert.That(E.EngageFixed(s).Ok, Is.True);
+        s.Expedition = null;   // 模拟远征外（开发传送补提交的远征之外）在地牢节点打的守卫战
+        Assert.That(E.DungeonRetreatTarget(s, s.CurrentLocation), Is.Null);
+        PlayerFirst(s);
+        E.BattleStep(s);
+        ToPlayer(s);
+        Assert.That(string.Join(" | ", E.PreviewCommand(s, BattleCommand.Of("retreat")).Notes), Does.Contain("留在" + E.LocName("d07_06")));
+        Force(s, Below(0.0001));
+        Assert.That(Cmd(s, "retreat").Ok, Is.True);
+        Assert.That(s.Battle, Is.Null);
+        Assert.That(s.CurrentLocation, Is.EqualTo("d07_06"));
+        Assert.That(s.Log.Last(l => l.Text.Contains("撤退成功")).Text, Does.Contain("留在" + E.LocName("d07_06")));
     }
 
     /// <summary>PLAN-Q196-01：存档 35→36——旧档没有可信移动记录（LastMove 留空、不猜），进行中的战斗按旧落点；写一条升级日志，幂等。</summary>

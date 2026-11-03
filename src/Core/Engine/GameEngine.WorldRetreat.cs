@@ -19,11 +19,15 @@ namespace Survival.Core.Engine
         /// <summary>没有可返回来路时战报与预览里的固定说法（retreat.fallback）。</summary>
         public const string NoRetreatPathText = "没有可返回的来路，本次撤退后仍在原地";
 
+        /// <summary>快照 NoOrigin：有移动记录，但终点不是开战地点（M448，只用于说明文字）。</summary>
+        public const string NoOriginElsewhere = "elsewhere";
+
         /// <summary>开战时的撤退来处快照：最近一次已完成移动到达的就是这里、且来处不是这里，才记来处；否则为空快照（没有可信来处）。</summary>
         private RetreatOriginSnapshot RetreatOriginAtStart(GameState s)
         {
             var lm = s.LastMove;
-            if (lm == null || lm.From == "" || lm.To != s.CurrentLocation || lm.From == s.CurrentLocation) return new RetreatOriginSnapshot();
+            if (lm == null || lm.From == "") return new RetreatOriginSnapshot();
+            if (lm.To != s.CurrentLocation || lm.From == s.CurrentLocation) return new RetreatOriginSnapshot { NoOrigin = NoOriginElsewhere };
             return new RetreatOriginSnapshot { From = lm.From, EdgeId = lm.EdgeId };
         }
 
@@ -35,7 +39,9 @@ namespace Survival.Core.Engine
         {
             var snap = b.WorldRetreat;
             if (snap == null || DungeonAt(b.LocationId) != null) return (null, null);
-            if (snap.From == null) return (null, "没有可信的已完成移动记录（旧存档或开发传送后）");
+            if (snap.From == null) return (null, snap.NoOrigin == NoOriginElsewhere
+                ? "最近一次完成的移动终点不是这里（刚撤退回来，或之后没有再走动）"
+                : "没有可信的已完成移动记录（旧存档或开发传送后）");
             if (!_locs.ContainsKey(snap.From) || DungeonAt(snap.From) != null) return (null, $"来处{LocName(snap.From)}在地牢里");
             var edge = snap.EdgeId != null && _edges.TryGetValue(snap.EdgeId, out var e) ? e : null;
             if (edge == null || !edge.Touches(b.LocationId) || edge.Other(b.LocationId) != snap.From || !edge.TraversableFrom(b.LocationId) || !EdgeOpen(s, edge))

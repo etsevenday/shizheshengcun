@@ -140,7 +140,8 @@
         @if (G.Toast != null && !s.Progress.Dead && !fullBattle)
         {
             var bad = G.Toast.Kind is GameEventKind.Hazard or GameEventKind.ActionAborted;
-            <div class="toast @(bad ? "bad" : "")" role="status">
+            @* B22h 试玩修复（M448）：长结果（如带敌踪的撤退落点）在 1280 下两行放不下，放宽到最多五行、宽度稍大，完整内容仍在悬停提示 *@
+            <div class="toast @(bad ? "bad" : "") @(G.Toast.Text.Length > 80 ? "long" : "")" role="status">
                 <span title="@G.Toast.Text">@G.Toast.Text</span>
                 <button aria-label="关闭结果提示" @onclick="G.DismissToast">×</button>
             </div>
