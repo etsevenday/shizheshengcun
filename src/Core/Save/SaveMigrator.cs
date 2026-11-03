@@ -58,6 +58,7 @@ namespace Survival.Core.Save
         public const string Schema31 = "31";
         public const string Schema32 = "32";
         public const string Schema33 = "33";
+        public const string Schema34 = "34";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -106,6 +107,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema31) From31To32(s, config, notes);
             if (s.SchemaVersion == Schema32) From32To33(s, config, notes);
             if (s.SchemaVersion == Schema33) From33To34(s, config, notes);
+            if (s.SchemaVersion == Schema34) From34To35(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1083,7 +1085,19 @@ namespace Survival.Core.Save
         private static void From33To34(GameState s, GameConfig config, List<string> notes)
         {
             var extra = new Engine.GameEngine(config).MigrateRewards33(s);
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（地牢奖励分账：守卫回收材料每代一次、首次通关补给本局一次；通关后72世界小时可在父地点确认重置；地牢里拿到的奖励可以封存，成功撤出后放进父地点的远征回收箱）。" + (extra.Count > 0 ? string.Join("；", extra) + "。" : "") });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema34}（地牢奖励分账：守卫回收材料每代一次、首次通关补给本局一次；通关后72世界小时可在父地点确认重置；地牢里拿到的奖励可以封存，成功撤出后放进父地点的远征回收箱）。" + (extra.Count > 0 ? string.Join("；", extra) + "。" : "") });
+            s.SchemaVersion = Schema34;
+        }
+
+        /// <summary>
+        /// 34→35（开发计划 v0.9 B22g，Q180/Q181/Q183）：已生成的旧候选（含在办登记快照）与已招随机角色保留原显示名、数值与 actorId，
+        /// 性别/外观字段留空（显示“未说明/未记录”，不补抽）；新周期候选用新池。旧在册候补位置保持营区广场（ReserveSafehouse 为空），不自动搬屋；
+        /// 旧在办登记没有去向选择，完成时默认广场候补、不自动入队。不发物资、不加时间。幂等。
+        /// </summary>
+        private static void From34To35(GameState s, GameConfig config, List<string> notes)
+        {
+            s.Recruit ??= new RecruitState();
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（收容所周期候选有了姓名、性别与文字外观：已生成的候选与已招入的角色保留原名，性别显示未说明、外观显示未记录，下一批起用新名字；登记时可选编入同行或安排候补到营区广场或已建成的安全屋；原有候补仍在营区广场）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

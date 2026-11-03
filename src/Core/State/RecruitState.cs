@@ -64,6 +64,16 @@ namespace Survival.Core.State
         public string? ActorId { get; set; }
         public int GeneratedAt { get; set; }
 
+        // ── B22g（Q180 选 C，identity 合同）：展示子流一次生成持久化；旧档候选为 null（显示性别“未说明”、外观“未记录”，不补抽） ──
+        /// <summary>候选稳定流水号（显示“姓名·004”；旧档候选为 null，名字里已含旧流水号）。</summary>
+        public int? Seq { get; set; }
+        /// <summary>female / male / undisclosed。</summary>
+        public string? Gender { get; set; }
+        public string? SkinTone { get; set; }
+        public string? HairStyle { get; set; }
+        public string? HairColor { get; set; }
+        public string? FaceDetail { get; set; }
+
         public const string Available = "available";
         public const string Registering = "registering";
         public const string Recruited = "recruited";

@@ -33,6 +33,8 @@ namespace Survival.Core.Engine
         public string Name { get; set; } = "";
         public string TemplateName { get; set; } = "";
         public string TemplateUse { get; set; } = "";
+        /// <summary>B22g（Q180）：“性别：女 · 外观：中等肤色，黑色齐肩发，雀斑”（旧候选“未说明/未记录”）。</summary>
+        public string IdentityText { get; set; } = "";
         public string SkillText { get; set; } = "";
         public string BodyText { get; set; } = "";
         public string CombatText { get; set; } = "";
@@ -209,7 +211,7 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 生成第 k 期候选：9 个模板等权无放回抽 3（期内不重复，跨期可重复）；主熟练 Lv2 70%/Lv3 30%，副熟练二选一等权、Lv1/Lv2 各半，其余 Lv1、
         /// 级内经验 0；身体 H14—20、E10—16（上限 20）、N/W 40、S50—75、M40—65、I60—75 整数均匀、V0 未感染；控制抗性/闪避/基础甲/基础速度按
-        /// actorBaseDefense.randomRecruit（Q62）。姓名按全局流水号（与数值独立，开发假设 B19-2）。
+        /// actorBaseDefense.randomRecruit（Q62）。B22g（Q180 选 C）：姓名/性别/外观按独立展示子流 + 全局流水号（与数值独立）；池为空时退回 B19-2 中性名。
         /// </summary>
         private List<RecruitCandidate> GenerateCandidates(GameState s, int k)
         {
@@ -252,11 +254,54 @@ namespace Survival.Core.Engine
                 c.Evasion = SteppedUniform(rng, spec, "evasion", Config.Scope.BasePlayerDodge);
                 c.BaseArmor = SteppedUniform(rng, spec, "baseArmor", 0);
                 c.BaseSpeed = SteppedUniform(rng, spec, "baseSpeed", Config.Scope.BasePlayerSpeed);
-                c.Name = $"{Rc.NamePrefix}{t.Name}{s.Recruit.NextNameSeq++:000}";
+                var seq = s.Recruit.NextNameSeq++;
+                if (Rc.Identity.Enabled) AssignIdentity(s, c, k, seq);
+                else c.Name = $"{Rc.NamePrefix}{t.Name}{seq:000}";
                 list.Add(c);
             }
             return list;
         }
+
+        // ───────────── 身份（B22g，Q180 选 C：identity 合同） ─────────────
+
+        /// <summary>
+        /// 展示随机子流（identity seedRule）：每个字段 = splitmix64(FNV-1a64("本局种子|收容所|周期|候选流水号|字段键")) mod 池长，各池独立等概率有放回；
+        /// 不碰模板/身体/人物档的属性随机序列（那条流在 GenerateCandidates 里另起），所以外观池不影响数值。
+        /// </summary>
+        private int IdentityPick(GameState s, int cycle, int seq, string field, int n) =>
+            n <= 1 ? 0 : (int)(Mix64(Fnv64($"{CampaignIdOf(s)}|{Rc.LocationId}|{cycle}|{seq}|{field}")) % (ulong)n);
+
+        /// <summary>一次生成并写进候选快照：姓、名、性别、肤色、发型、发色、面部细节；显示名“姓名·004”（至少三位，超过 999 不截断）。</summary>
+        private void AssignIdentity(GameState s, RecruitCandidate c, int cycle, int seq)
+        {
+            var id = Rc.Identity;
+            var surname = id.Surnames[IdentityPick(s, cycle, seq, "surname", id.Surnames.Count)];
+            var given = id.GivenNames[IdentityPick(s, cycle, seq, "givenName", id.GivenNames.Count)];
+            c.Seq = seq;
+            c.Gender = id.Genders[IdentityPick(s, cycle, seq, "gender", id.Genders.Count)].Id;
+            c.SkinTone = id.SkinTones[IdentityPick(s, cycle, seq, "skinTone", id.SkinTones.Count)];
+            c.HairStyle = id.HairStyles[IdentityPick(s, cycle, seq, "hairStyle", id.HairStyles.Count)];
+            c.HairColor = id.HairColors[IdentityPick(s, cycle, seq, "hairColor", id.HairColors.Count)];
+            c.FaceDetail = id.FaceDetails[IdentityPick(s, cycle, seq, "faceDetail", id.FaceDetails.Count)];
+            c.Name = $"{surname}{given}{id.NameSeparator}{seq.ToString(new string('0', Math.Max(1, id.SeqMinDigits)))}";
+        }
+
+        /// <summary>性别显示：池里的名字（女/男/未说明）；旧档没有字段为“未说明”。</summary>
+        public string GenderText(string? gender) => Rc.Identity.GenderName(gender) ?? Rc.Identity.LegacyGender;
+
+        /// <summary>外观摘要“中等肤色，黑色齐肩发，雀斑”；旧档没有字段为“未记录”。</summary>
+        public string AppearanceText(string? skin, string? hairStyle, string? hairColor, string? face) =>
+            skin == null || hairStyle == null || hairColor == null || face == null
+                ? Rc.Identity.LegacyAppearance
+                : $"{skin}，{hairColor}{hairStyle}，{face}";
+
+        /// <summary>候选卡/名册一行：“性别：女 · 外观：中等肤色，黑色齐肩发，雀斑”。</summary>
+        public string IdentityText(RecruitCandidate c) =>
+            $"性别：{GenderText(c.Gender)} · 外观：{AppearanceText(c.SkinTone, c.HairStyle, c.HairColor, c.FaceDetail)}";
+
+        /// <summary>名册里随机招入者的身份行；不是随机招入者（固定六人、RB01 护送员）为 null（Q180：既有名称与资料不改）。</summary>
+        public string? IdentityText(RosterEntry r) =>
+            r.IsRandom ? $"性别：{GenderText(r.Gender)} · 外观：{AppearanceText(r.SkinTone, r.HairStyle, r.HairColor, r.FaceDetail)}" : null;
 
         public RecruitCandidate? CurrentCandidate(GameState s, string candidateId) =>
             s.Recruit.Candidates.FirstOrDefault(c => c.CandidateId == candidateId);
@@ -378,6 +423,7 @@ namespace Survival.Core.Engine
             {
                 ActorId = id, Kind = "random", Name = c.Name, JoinedMinute = s.GameMinute, CandidateId = c.CandidateId, Cycle = c.Cycle,
                 TemplateId = c.TemplateId, ControlResist = c.ControlResist, Evasion = c.Evasion, BaseArmor = c.BaseArmor, BaseSpeed = c.BaseSpeed,
+                Gender = c.Gender, SkinTone = c.SkinTone, HairStyle = c.HairStyle, HairColor = c.HairColor, FaceDetail = c.FaceDetail,
             };
             s.Roster.Add(entry);
             s.FormationVersion++;
@@ -431,6 +477,7 @@ namespace Survival.Core.Engine
                 Name = c.Name,
                 TemplateName = tpl?.Name ?? c.TemplateId,
                 TemplateUse = tpl?.Use ?? "",
+                IdentityText = IdentityText(c),
                 Status = retired ? "retired" : c.Status,
                 StatusText = retired ? "已退役（本周期不能再招回）" : c.Status switch
                 {

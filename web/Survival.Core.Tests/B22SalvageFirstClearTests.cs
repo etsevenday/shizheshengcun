@@ -171,12 +171,12 @@ public class B22SalvageFirstClearTests : BattleTestBase
         foreach (var p in ((JObject)j["DungeonInstances"]!).Properties()) { ((JObject)p.Value).Remove("ClearedAt"); ((JObject)p.Value).Remove("ResetEligibleAt"); }
         var items = s.Items.Count;
         var t = SaveSerializer.Deserialize(j.ToString(), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("34"));
+        Assert.That(t.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));   // B22g 起再升到 35
         Assert.That(t.DungeonInstances["d01"].ClearedAt, Is.EqualTo(t.GameMinute));
         Assert.That(t.DungeonInstances["d01"].ResetEligibleAt, Is.EqualTo(t.GameMinute + 4320));
         Assert.That(t.Progress.Flags, Does.Contain("campaignId:d01:combat_first"));
         Assert.That(t.Items.Count, Is.EqualTo(items), "不发物资");
-        Assert.That(t.Log.Last().Text, Does.Contain("存档已升级到版本34").And.Contain("首次通关补给按已领取处理"));
+        Assert.That(t.Log.Single(x => x.Text.Contains("存档已升级到版本34")).Text, Does.Contain("首次通关补给按已领取处理"));
         var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(t), Cfg);
         Assert.That(again.DungeonInstances["d01"].ClearedAt, Is.EqualTo(t.DungeonInstances["d01"].ClearedAt), "幂等");
     }

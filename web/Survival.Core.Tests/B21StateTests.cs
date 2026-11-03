@@ -99,7 +99,7 @@ public class B21StateTests : TestBase
         Assert.That(t.GameMinute, Is.EqualTo(minute));
         Assert.That(t.Stats.Satiety, Is.EqualTo(stats.Satiety));
         Assert.That(t.ExpeditionLog, Is.Empty);
-        Assert.That(t.Log.Last().Text, Does.Contain("存档已升级到版本34"));
+        Assert.That(t.Log.Any(x => x.Text.Contains("存档已升级到版本34")), Is.True);   // B22g 起再升到 35
     }
 
     /// <summary>B21-13：存档 32 人在 d01_05——补建一次已提交远征（成员=当前同行，轨迹=01→02→04→05），实例 ACTIVE，日志写明；不补扣包。迁移幂等。</summary>

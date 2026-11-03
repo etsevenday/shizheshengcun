@@ -128,8 +128,41 @@ namespace Survival.Core.Config
         /// <summary>候选名前缀（开发假设 B19-2：仓库没有姓名池，名字 = 前缀 + 模板名 + 三位流水号）。</summary>
         public string NamePrefix { get; set; } = "";
         public List<RecruitTemplateConfig> Templates { get; set; } = new List<RecruitTemplateConfig>();
+        /// <summary>B22g（Q180 选 C）：姓名池、性别与文字外观池（party-combat-expedition-adjudications.json identity）。池为空时退回旧中性名。</summary>
+        public RecruitIdentityConfig Identity { get; set; } = new RecruitIdentityConfig();
 
         public RecruitTemplateConfig? Template(string id) => Templates.FirstOrDefault(t => t.Id == id);
+    }
+
+    /// <summary>
+    /// 候选身份池（Q180 选 C，identity 合同）：姓/名/性别/肤色/发型/发色/面部细节各池独立等概率有放回取一；只作成人文字外观描述，
+    /// 与模板/身体/人物档数值独立（展示随机子流），不生成画像、不给性别加成或装备。显示“姓名·004”，序号至少三位、超过 999 不截断。
+    /// </summary>
+    public sealed class RecruitIdentityConfig
+    {
+        public List<string> Surnames { get; set; } = new List<string>();
+        public List<string> GivenNames { get; set; } = new List<string>();
+        public List<RecruitGenderConfig> Genders { get; set; } = new List<RecruitGenderConfig>();
+        public List<string> SkinTones { get; set; } = new List<string>();
+        public List<string> HairStyles { get; set; } = new List<string>();
+        public List<string> HairColors { get; set; } = new List<string>();
+        public List<string> FaceDetails { get; set; } = new List<string>();
+        public string NameSeparator { get; set; } = "·";
+        public int SeqMinDigits { get; set; } = 3;
+        /// <summary>旧候选/已招生成角色没有性别字段时的显示（不补抽）。</summary>
+        public string LegacyGender { get; set; } = "未说明";
+        /// <summary>旧候选/已招生成角色没有外观字段时的显示（不补抽）。</summary>
+        public string LegacyAppearance { get; set; } = "未记录";
+
+        public bool Enabled => Surnames.Count > 0 && GivenNames.Count > 0 && Genders.Count > 0 && SkinTones.Count > 0
+                               && HairStyles.Count > 0 && HairColors.Count > 0 && FaceDetails.Count > 0;
+        public string? GenderName(string? id) => Genders.FirstOrDefault(g => g.Id == id)?.Name;
+    }
+
+    public sealed class RecruitGenderConfig
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
     }
 
     /// <summary>RC3 候选身体：区间为闭区间整数均匀。</summary>

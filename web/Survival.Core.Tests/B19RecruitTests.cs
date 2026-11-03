@@ -236,7 +236,8 @@ public class B19RecruitTests : TestBase
         Assert.That(b.Recruit.Candidates.Select(Body), Is.EqualTo(a.Recruit.Candidates.Select(Body)));
         Assert.That(b.Recruit.Candidates.Select(c => c.Name), Is.Not.EqualTo(a.Recruit.Candidates.Select(c => c.Name)));
         Assert.That(b.Recruit.Candidates[0].Name, Does.EndWith("500"));
-        Assert.That(a.Recruit.Candidates[0].Name, Does.StartWith(Cfg.Party.Recruitment.NamePrefix));
+        // B22g（Q180 选 C）：名字改用姓名池“姓名·流水号”，仍与数值独立
+        Assert.That(a.Recruit.Candidates[0].Name, Does.EndWith("·" + a.Recruit.Candidates[0].Seq!.Value.ToString("000")));
     }
 
     /// <summary>RC14：未招候选只是资料快照——不进 Actors、不结算身体、不随时间变化、不模拟死亡感染。</summary>

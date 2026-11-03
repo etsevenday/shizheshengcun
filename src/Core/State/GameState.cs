@@ -45,7 +45,7 @@ namespace Survival.Core.State
         /// "33" 起地牢远征：实例带状态与远征流水号，进行中的远征（成员快照、来路轨迹、撤出锁定路径/倍率/T/已推进分钟）、已结束远征记录、
         /// 一次性事件去重键，角色带惊魂未定截止（开发计划 v0.9 B21）。
         /// </summary>
-        public const string CurrentSchema = "34";
+        public const string CurrentSchema = "35";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -867,6 +867,13 @@ namespace Survival.Core.State
         public bool Retired { get; set; }
         public int? RetiredMinute { get; set; }
         public int? RetiredCycle { get; set; }
+
+        // ── B22g（Q180 选 C）：随机招入者的性别与文字外观（招入时从候选快照复制；旧档 null，显示“未说明/未记录”） ──
+        public string? Gender { get; set; }
+        public string? SkinTone { get; set; }
+        public string? HairStyle { get; set; }
+        public string? HairColor { get; set; }
+        public string? FaceDetail { get; set; }
 
         public bool IsEscort => Kind == "escort";
         /// <summary>周期候选招入的随机角色（B19）。</summary>
