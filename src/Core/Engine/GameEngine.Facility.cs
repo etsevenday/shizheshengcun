@@ -158,6 +158,7 @@ namespace Survival.Core.Engine
                 var loc = FacilityLocation(fid);
                 return loc == null ? "设施里" : $"{ZoneName(s, loc)}／火堆";
             }
+            if (ItemInstance.TryDrying(i.Owner, out var dplace, out var dslot)) return $"{ZoneName(s, dplace)}／晾制架第{dslot + 1}位";
             return IsGroundOwner(i.Owner) ? $"{ZoneName(s, i.Owner)}地面" : i.Owner;
         }
 

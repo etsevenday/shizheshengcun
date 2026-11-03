@@ -1447,7 +1447,7 @@
         "isAntibiotic": false,
         "isAntiviral": false
       },
-      "desc": "策划用途：饱食+28、水分−5。食用5分钟，战斗中不能吃"
+      "desc": "策划用途：饱食+28、水分−5。食用5分钟，战斗中不能吃。来源：晾制架晾制（生肉1+盐1→肉干1，180分钟，需烹饪5级）、地图固定包"
     },
     {
       "id": "iron_ore",
@@ -1660,7 +1660,7 @@
         "isAntibiotic": false,
         "isAntiviral": false
       },
-      "desc": "策划用途：饱食+16、水分−2。食用5分钟，战斗中不能吃"
+      "desc": "策划用途：饱食+16、水分−2。食用5分钟，战斗中不能吃。来源：晾制架晾制（野果2→果干1，120分钟）"
     },
     {
       "id": "fried_root",
@@ -19918,6 +19918,70 @@
       "station": "hand",
       "group": "workshop",
       "knowledge": "ceramic_methods"
+    },
+    {
+      "id": "build_drying_rack",
+      "name": "建晾制架",
+      "kind": "build",
+      "baseMinutes": 60,
+      "inputs": {
+        "wood": 4,
+        "rope": 2
+      },
+      "outputs": {},
+      "catalysts": [],
+      "requirement": {
+        "facility": "camp"
+      },
+      "facilityResult": "workshop:drying_rack",
+      "minSkills": {
+        "crafting": 1
+      },
+      "station": "hand",
+      "group": "workshop"
+    },
+    {
+      "id": "dry_berries",
+      "name": "晾制果干",
+      "kind": "drying",
+      "baseMinutes": 120,
+      "inputs": {
+        "berry": 2
+      },
+      "outputs": {
+        "dried_berries": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "cooking": 1
+      },
+      "station": "drying_rack",
+      "mode": "passive",
+      "group": "food"
+    },
+    {
+      "id": "dry_meat",
+      "name": "晾制肉干",
+      "kind": "drying",
+      "baseMinutes": 180,
+      "inputs": {
+        "raw_meat": 1,
+        "salt": 1
+      },
+      "outputs": {
+        "dried_meat": 1
+      },
+      "catalysts": [],
+      "requirement": null,
+      "facilityResult": null,
+      "minSkills": {
+        "cooking": 5
+      },
+      "station": "drying_rack",
+      "mode": "passive",
+      "group": "food"
     }
   ],
   "lootTables": {
@@ -32502,6 +32566,13 @@
         "name": "固定净水台",
         "note": "每批耗过滤材料1，无火；一批脏水4份/2L",
         "buildRecipe": "build_water_station"
+      },
+      {
+        "id": "drying_rack",
+        "name": "晾制架",
+        "buildRecipe": "build_drying_rack",
+        "note": "8个独立晾制位，每位一批，被动晾制果干/肉干；无炭化附件",
+        "slots": 8
       }
     ],
     "equipmentSources": [

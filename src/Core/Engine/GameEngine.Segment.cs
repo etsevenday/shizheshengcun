@@ -338,6 +338,7 @@ namespace Survival.Core.Engine
             // 设施自动加工：按段首快照给合格目标 +5 受热分钟，达标即原地转化；不替换、不暂停角色主行动
             AdvanceFacilities(s, snap);
             AdvanceStationBatches(s);   // B17：陶窑、固定净水台的被动批次（同一世界时钟，离开也继续）
+            AdvanceDrying(s);   // B22c（Q170）：晾制架八位被动晾制（同一世界时钟，离开也继续）
             TickWorldEnemies(s);
             return true;
         }

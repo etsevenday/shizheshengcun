@@ -118,6 +118,8 @@ namespace Survival.Core.Engine
             RecipeConfig.ModeFixedWait => rc.XpSkill == Cooking
                 ? $"固定等待{Clock.Duration(rc.BaseMinutes)}（全队等待，不吃熟练加速；成功后每500毫升净水{SkillName(Cooking)}经验+1，与锅烧水合计每日最多{Config.Progression.Cooking.WaterDailyCap}，也计{CookTotalLimitText}）"
                 : $"固定等待{Clock.Duration(rc.BaseMinutes)}（全队等待，不吃熟练加速，不给经验）",
+            RecipeConfig.ModePassive when rc.IsDrying =>   // B22c（Q170）
+                $"{StationName(rc.Station)}被动晾制{Clock.Duration(rc.BaseMinutes)}（每位一批，共{DryingSlotCount}位；不吃熟练加速、不耗燃料、不占行动；成功后{SkillName(Cooking)}经验+{DryingXpFor(rc)}，{CookTotalCapText}）",
             RecipeConfig.ModePassiveHeat or RecipeConfig.ModePassive => rc.IsPot
                 ? $"火堆锅里被动加工{rc.BaseMinutes}有效受热分钟（不吃熟练加速）"
                 : StationBatchXpFor(rc.Station) is int sx && sx > 0   // B22d Q174

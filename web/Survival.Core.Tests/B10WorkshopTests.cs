@@ -42,8 +42,8 @@ public class B10WorkshopTests : TestBase
         Assert.That(eq.Where(r => r.Station == "forge").All(r => r.Fuel.Count == 1 && r.Fuel["charcoal"] == 1), Is.True);
         Assert.That(eq.Where(r => r.Station != "forge").All(r => r.Fuel.Count == 0), Is.True);
         // 工坊建造五类 + 加工链；B17 起陶窑、固定净水台也可建（A07 X1.4，共 7 类自建）
-        Assert.That(Cfg.Recipes.Count(r => r.Group == "workshop"), Is.EqualTo(7));
-        Assert.That(Cfg.Workshops.Stations.Select(x => x.Id), Is.EqualTo(new[] { "hand", "workbench", "forge", "sewing", "medical", "armory", "kiln", "water_station" }), "B16 登记陶窑、固定净水台（建造在 B17）");
+        Assert.That(Cfg.Recipes.Count(r => r.Group == "workshop"), Is.EqualTo(8), "B22c（Q170）加晾制架");
+        Assert.That(Cfg.Workshops.Stations.Select(x => x.Id), Is.EqualTo(new[] { "hand", "workbench", "forge", "sewing", "medical", "armory", "kiln", "water_station", "drying_rack" }), "B16 登记陶窑、固定净水台（建造在 B17）；B22c 晾制架");
         Assert.That(Cfg.Recipes.Count(r => r.Group == "material" && !r.Id.StartsWith("ex_")), Is.EqualTo(26));
         Assert.That(Cfg.Recipes.Single(r => r.Id == "make_saline").MinSkills.Keys.Single(), Is.EqualTo("medicine"), "A07：医疗台加工读医疗");
     }

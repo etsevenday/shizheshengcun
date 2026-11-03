@@ -330,7 +330,8 @@ public class B10bWorkshopQTests : TestBase
         Assert.That(old.Locations.Values.SelectMany(l => l.Facility.Processes).Any(p => p.RecipeId == "fire_charcoal"), Is.False, "没有历史煅烧进度");
 
         Assert.That(Cfg.Recipes.Where(r => r.Outputs.ContainsKey("charcoal")), Is.Empty, "旧 charcoal 主动行已迁为被动过程");
-        Assert.That(Cfg.Workshops.Stations.Any(x => x.Id == "drying_rack"), Is.False, "晾架不在本批开放");
+        // B22c（Q170）起晾架开放为八位晾制（果干/肉干），仍不炭化
+        Assert.That(Cfg.Recipes.Where(r => r.Station == "drying_rack").SelectMany(r => r.Outputs.Keys), Is.EquivalentTo(new[] { "dried_berries", "dried_meat" }), "晾架不炭化");
         var steel = Cfg.Recipes.Single(r => r.Id == "make_steel");
         Assert.That(steel.Inputs["charcoal"], Is.EqualTo(1));
         Assert.That(steel.Fuel["charcoal"], Is.EqualTo(1));

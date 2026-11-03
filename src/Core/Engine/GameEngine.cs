@@ -505,6 +505,8 @@ namespace Survival.Core.Engine
                     if (batch > 1 && (rc.IsBuild || rc.IsRepair || rc.IsSalvage)) return "建造、维护与拆解每次只能做1件";
                     // B16（A07 X1.3/X1.5、S10 X4）：火堆锅食谱在锅卡上投料；固定等待的净水每次一批 2L
                     if (rc.IsPot) return $"{rc.Name}在火堆里的锅中做：把锅放进燃烧的火堆、装好净水，在锅卡“锅食谱”里投料";
+                    // B22c（Q170）：晾制在晾制架卡上选位投料（0 分钟，被动晾制），不在制作面板开工
+                    if (rc.IsDrying) return $"{rc.Name}在晾制架上做：在设施栏“晾制架”卡上选空位投料（0分钟，被动晾制）";
                     if (rc.IsFixedWait && batch > 1) return "固定等待的处理每次只做1批";
                     plan.Batch = batch;
                     if (RecipeUnknownReason(s, rc) is string unknown) return unknown;

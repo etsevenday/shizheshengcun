@@ -518,6 +518,9 @@ namespace Survival.Core.Config
                 if (rc.XpSkill != null && !skills.Contains(rc.XpSkill)) e.Add($"配方 {rc.Id} 的经验门类 {rc.XpSkill} 不存在");
                 if (rc.Mode != null && rc.Mode != RecipeConfig.ModeActive && !rc.IsFixedWait && !rc.IsPassive) e.Add($"配方 {rc.Id} 的模式 {rc.Mode} 未知");
                 if (rc.IsPot && !c.Processes.Any(p => p.IsPotRecipe && p.RecipeId == rc.Id)) e.Add($"锅食谱 {rc.Id} 没有对应的锅进程");
+                // B22c（Q170）：晾制配方须在有处理位的工坊、单一产物、分钟为段长正倍数
+                if (rc.IsDrying && (c.Workshops.Stations.FirstOrDefault(x => x.Id == rc.Station)?.Slots ?? 0) <= 0) e.Add($"晾制配方 {rc.Id} 的工坊 {rc.Station} 没有处理位");
+                if (rc.IsDrying && (rc.Outputs.Count != 1 || rc.BaseMinutes <= 0 || rc.BaseMinutes % tick != 0)) e.Add($"晾制配方 {rc.Id} 须单一产物、时长为{tick}的正倍数");
                 foreach (var k in rc.Inputs.Keys) if (!items.Contains(k)) e.Add($"配方 {rc.Id} 的原料 {k} 不存在");
             }
             foreach (var st in c.Workshops.Stations)

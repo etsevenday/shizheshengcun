@@ -252,7 +252,7 @@ public class DropResolverTests : TestBase
         Assert.That(slot.Action!.PreferredInstanceIds, Has.Count.EqualTo(1));
         Assert.That(R(s, Card("camp|wood"), "slot:knife:stone").Reason, Is.EqualTo("这个材料槽需要石块"));
         var camp = R(s, Card("camp|wood"), "loc:camp");
-        Assert.That(camp.Recipes, Is.EqualTo(new[] { "shelter" }), "原料拖至营地地点卡");
+        Assert.That(camp.Recipes, Is.EqualTo(new[] { "shelter", "build_drying_rack" }), "原料拖至营地地点卡（B22c 起晾制架也用木材）");
         Assert.That(R(s, Card("camp|canned_food"), "card:camp|cloth").Ok, Is.False);
     }
 

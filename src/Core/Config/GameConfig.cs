@@ -129,6 +129,8 @@ namespace Survival.Core.Config
         /// <summary>建造这类工坊的配方 ID；hand 为 null。</summary>
         public string? BuildRecipe { get; set; }
         public string Note { get; set; } = "";
+        /// <summary>独立处理位数（晾制架 8，Q170）；没有处理位的工坊为 null。</summary>
+        public int? Slots { get; set; }
     }
 
     public sealed class EquipmentSourceConfig
@@ -747,6 +749,8 @@ namespace Survival.Core.Config
         public bool IsPassive => Mode == ModePassiveHeat || Mode == ModePassive;
         /// <summary>火堆锅食谱（B16 硬饼、炖食）：在火堆上锅卡的“锅食谱”里投料，走设施进程，不在制作面板开工。</summary>
         public bool IsPot => Kind == "pot";
+        /// <summary>晾制架晾制（Q170，B22c 果干/肉干）：在晾制架卡上选位投料，被动推进，不在制作面板开工。</summary>
+        public bool IsDrying => Kind == "drying";
 
         /// <summary>原料与燃料合计（每批）：校验与预留都按它。</summary>
         public Dictionary<string, int> AllInputs

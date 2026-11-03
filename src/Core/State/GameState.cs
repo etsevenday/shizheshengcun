@@ -406,6 +406,11 @@ namespace Survival.Core.State
         public List<string> Completed { get; set; } = new List<string>();
         /// <summary>本区固定工坊的被动批次（陶窑烧陶壳、固定净水台净水，A07 X1.4、S11 X4，B17）：每座每次一批，随世界时间推进。</summary>
         public List<StationBatch> StationBatches { get; set; } = new List<StationBatch>();
+        /// <summary>
+        /// 本区晾制架的在用晾制位（Q170，B22c，存档 38）：每位一批，只记占用中的位（晾制中/已完成待取出/已腐败待清理），空位不记；
+        /// 位内物品 owner 为 drying:&lt;place&gt;#&lt;位号&gt;。旧档缺省为空。
+        /// </summary>
+        public List<DryingSlot> DryingSlots { get; set; } = new List<DryingSlot>();
 
         public FacilityState Clone()
         {
@@ -415,6 +420,7 @@ namespace Survival.Core.State
             c.Processes = Processes.Select(p => p.Clone()).ToList();
             c.Completed = new List<string>(Completed);
             c.StationBatches = StationBatches.Select(b => b.Clone()).ToList();
+            c.DryingSlots = DryingSlots.Select(b => b.Clone()).ToList();
             return c;
         }
     }
@@ -425,6 +431,38 @@ namespace Survival.Core.State
     /// 固定工坊的一批被动加工（陶窑：黏土×2＋燃料木炭×1→陶壳×2，60 分钟；固定净水台：脏水×4＋过滤材料×1→净水×4，30 分钟）。
     /// 投料时原料移到该区地面并锁定（ReservedBy = BatchId），按世界时间推进、离开也继续；完成一次核销、产物落该区地面；取消释放原料、时间不退。
     /// </summary>
+    /// <summary>
+    /// 晾制架的一个晾制位（Q170，A07/S11「八位晾架完整定稿」，B22c）：每位一批原配方（果干 野果2→1/120 分钟；肉干 生肉1+盐1→1/180 分钟）。
+    /// 投料 0 分钟把原料原子迁入本位（owner drying:&lt;place&gt;#&lt;位号&gt;），按世界 5 分钟段被动推进，离开也继续；原料沿原截止计时，到期即腐败停止；
+    /// 完成一次核销原料、成品留在本位占位，直到在当地取出。经验在完成那一刻原子结算一次。
+    /// </summary>
+    public sealed class DryingSlot
+    {
+        public const string Drying = "drying";
+        public const string Done = "done";
+        public const string Spoiled = "spoiled";
+
+        /// <summary>位号 0—7（界面显示为第 1—8 位）。</summary>
+        public int Slot { get; set; }
+        public int BatchId { get; set; }
+        public string RecipeId { get; set; } = "";
+        /// <summary>drying 晾制中 / done 已完成待取出 / spoiled 原料腐败、停止晾制待清理。</summary>
+        public string Status { get; set; } = Drying;
+        public int StartMinute { get; set; }
+        public int DoneMinutes { get; set; }
+        public int RequiredMinutes { get; set; }
+        /// <summary>完成或腐败停止的世界分钟。</summary>
+        public int? EndMinute { get; set; }
+        /// <summary>首次投料的角色（经验归属，不转移）。</summary>
+        public string? InitiatorActorId { get; set; }
+        /// <summary>投料时快照的这一批完成烹饪经验（clamp(ceil(原分钟/10),1,12)＝12）。</summary>
+        public int XpSnapshot { get; set; }
+        /// <summary>完成时实际结算的经验说明（只记一次；取出/读档不重发）。</summary>
+        public string? XpNote { get; set; }
+
+        public DryingSlot Clone() => (DryingSlot)MemberwiseClone();
+    }
+
     public sealed class StationBatch
     {
         public int BatchId { get; set; }
@@ -814,6 +852,24 @@ namespace Survival.Core.State
         }
 
         public bool InSafehouseStorage => Owner.StartsWith(SafehouseStoragePrefix);
+
+        /// <summary>晾制架晾制位 owner 前缀（Q170，B22c）："drying:&lt;place&gt;#&lt;位号&gt;"（place 为外部区地点 ID 或屋内地面 owner）。</summary>
+        public const string DryingPrefix = "drying:";
+        public static string DryingOwner(string place, int slot) => DryingPrefix + place + "#" + slot;
+        public bool InDrying => Owner.StartsWith(DryingPrefix);
+
+        /// <summary>拆晾制位 owner；不是或格式不对返回 false。</summary>
+        public static bool TryDrying(string owner, out string place, out int slot)
+        {
+            place = "";
+            slot = -1;
+            if (!owner.StartsWith(DryingPrefix)) return false;
+            var rest = owner.Substring(DryingPrefix.Length);
+            var k = rest.LastIndexOf('#');
+            if (k <= 0 || !int.TryParse(rest.Substring(k + 1), out slot)) return false;
+            place = rest.Substring(0, k);
+            return true;
+        }
 
         public static string ContainerOwner(int containerInstanceId) => ContainerPrefix + containerInstanceId;
         public static string FacilityOwner(string facilityId) => FacilityPrefix + facilityId;
