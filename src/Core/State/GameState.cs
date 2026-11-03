@@ -430,6 +430,10 @@ namespace Survival.Core.State
         public int RequiredMinutes { get; set; }
         public int StartMinute { get; set; }
         public string? InitiatorActorId { get; set; }
+        /// <summary>
+        /// B22d（Q174 选 B）：投料时快照的这一批完成经验（陶窑 6、净水台 3）。旧档在途批次没有这个字段，读出为 0：按原规则不给经验（passiveCraftXp.migration）。
+        /// </summary>
+        public int XpSnapshot { get; set; }
 
         public StationBatch Clone()
         {

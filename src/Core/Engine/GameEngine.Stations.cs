@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Survival.Core.Config;
@@ -10,6 +11,8 @@ namespace Survival.Core.Engine
     /// 只建在临时营地外部或已完工安全屋屋内（Q107 每区每类一座）。被动批次：在当前区的工坊投料（0 分钟、不占行动），原料从随身/当前地面取、
     /// 移到该区地面并锁定；按世界时间推进（陶窑 60 分钟、净水台 30 分钟，不吃熟练/装备/夜间倍率），离开也继续、不能远程投取；
     /// 完成一次核销原料与燃料（陶窑每批另耗木炭1），产物落该区地面、不自动入包；取消释放原料、时间不退、没有产物。每座每次一批。
+    /// B22d（Q174 选 B，passiveCraftXp）：每成功整批给首次投料且完成时仍存活的角色制造经验（陶窑 6、净水台 3，投料时快照），
+    /// 两类共享每角色每世界日 12（按完成日，剩余不足给剩余，满级 0），与主动制造/建造经验独立，不另给烹饪；取消/原料不全/读档/领取都不给。
     /// </summary>
     public sealed partial class GameEngine
     {
@@ -55,6 +58,65 @@ namespace Survival.Core.Engine
             return $"{ins}{fuel} → {outs}，被动{rc.BaseMinutes}世界分钟（不占行动，离开也继续），完成后放在本区地面；取消退回原料，时间不退";
         }
 
+        private const string DailyStationXp = "stationXp";
+
+        /// <summary>这座工坊每成功整批的基础经验（Q174：陶窑 6、净水台 3）；没配置为 0。</summary>
+        public int StationBatchXpFor(string stationId) =>
+            Config.Progression.StationXp.PerBatch.TryGetValue(stationId, out var n) ? n : 0;
+
+        /// <summary>某角色某世界日被动批次日额（陶窑+净水台共享 12）还剩多少。</summary>
+        private int StationXpRoom(ActorState actor, int day)
+        {
+            var c = Config.Progression.StationXp;
+            return Math.Max(0, c.DailyCap - DailyCount(actor, day, DailyStationXp, c.Skill));
+        }
+
+        /// <summary>
+        /// 经验说明（预估/进行中共用）：基础经验与完成日余额。xp 为这一批的快照（0 = 旧批次按原规则不给）；finishMinute 为预计完成时刻。
+        /// </summary>
+        private string StationXpText(GameState s, int xp, int finishMinute, bool started)
+        {
+            var c = Config.Progression.StationXp;
+            if (xp <= 0) return started ? "这一批开始时被动加工不给经验（按原规则完成）" : "被动加工不给经验";
+            var skill = c.Skill;
+            var basic = $"完成后{SkillName(skill)}经验+{xp}（陶窑与净水台被动批次合计每日最多{c.DailyCap}）";
+            if (SkillLevel(s.Player, skill) >= SkillCap(skill)) return $"{SkillName(skill)}已满{SkillCap(skill)}级，完成不再获得经验";
+            var day = Clock.Day(finishMinute);
+            var room = StationXpRoom(s.Player, day);
+            return room <= 0 ? $"{DayWord(s, day)}被动批次{SkillName(skill)}经验已满{c.DailyCap}，完成不再给经验"
+                : room < xp ? $"完成后{SkillName(skill)}经验+{room}（陶窑与净水台被动批次合计每日最多{c.DailyCap}，{DayWord(s, day)}只剩{room}）"
+                : basic + (day == Clock.Day(s.GameMinute) ? "" : $"，按{DayWord(s, day)}额度");
+        }
+
+        /// <summary>投料前预估：这一批完成后的制造经验（按预计完成日的余额）。</summary>
+        public string StationBatchXpPreview(GameState s, RecipeConfig rc) =>
+            StationXpText(s, StationBatchXpFor(rc.Station), s.GameMinute + rc.BaseMinutes, false);
+
+        /// <summary>进行中的批次：完成后的制造经验（按快照与预计完成日余额）。</summary>
+        public string StationBatchXpNote(GameState s, StationBatch b) =>
+            StationXpText(s, b.XpSnapshot, s.GameMinute + Math.Max(0, b.RequiredMinutes - b.DoneMinutes), true);
+
+        /// <summary>
+        /// 批次成功完成：给投料者（完成时仍存活）快照经验，受完成日共享日额；返回日志附注。只在这里结算一次（产物同一处提交），读档/领取不重给。
+        /// </summary>
+        private string StationBatchXp(GameState s, StationBatch b)
+        {
+            var c = Config.Progression.StationXp;
+            if (b.XpSnapshot <= 0) return "这一批开始时被动加工不给经验";
+            if (b.InitiatorActorId == null || !s.Actors.TryGetValue(b.InitiatorActorId, out var actor)
+                || (actor.IsPlayer ? s.Progress.Dead : actor.Stats.Health <= 0)) return "投料者已不在，不给经验";
+            var skill = c.Skill;
+            if (SkillLevel(actor, skill) >= SkillCap(skill)) return $"{SkillName(skill)}已满{SkillCap(skill)}级，不再获得经验";
+            var day = Clock.Day(s.GameMinute);
+            var grant = Math.Min(b.XpSnapshot, StationXpRoom(actor, day));
+            if (grant <= 0) return $"今日被动批次{SkillName(skill)}经验已满{c.DailyCap}（陶窑与净水台合计），不再给经验";
+            BumpDaily(s, actor, DailyStationXp, skill, day, grant);
+            GainXp(s, actor, skill, grant);
+            return grant < b.XpSnapshot
+                ? $"{ActorPrefix(actor)}{SkillName(skill)}经验+{grant}（陶窑与净水台合计每日{c.DailyCap}，只剩{grant}）"
+                : $"{ActorPrefix(actor)}{SkillName(skill)}经验+{grant}";
+        }
+
         /// <summary>在当前区的陶窑/净水台投一批（0 分钟）。</summary>
         public ActionResult StartStationBatch(GameState s, string recipeId, string? requestId = null)
         {
@@ -94,9 +156,10 @@ namespace Survival.Core.Engine
             {
                 BatchId = id, StationId = rc.Station, RecipeId = rc.Id, InputInstanceIds = locked,
                 RequiredMinutes = rc.BaseMinutes, StartMinute = s.GameMinute, InitiatorActorId = GameState.PlayerId,
+                XpSnapshot = StationBatchXpFor(rc.Station),
             });
             RememberRequest(s, requestId);
-            Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}{StationName(rc.Station)}投料：{StationBatchSummary(rc)}。");
+            Emit(s, GameEventKind.Info, $"{ZoneName(s, place)}{StationName(rc.Station)}投料：{StationBatchSummary(rc)}；{StationBatchXpPreview(s, rc)}。");
             UpdateFlags(s);
             return ActionResult.Success(id);
         }
@@ -146,7 +209,8 @@ namespace Survival.Core.Engine
                         made.Add($"{ItemName(kv.Key)}×{kv.Value}");
                     }
                     Normalize(s, place);
-                    Emit(s, GameEventKind.FacilityDone, $"{ZoneName(s, place)}{StationName(b.StationId)}：{string.Join("、", made)}已完成，放在{ZoneName(s, place)}地面（被动加工不给经验）。");
+                    var xp = StationBatchXp(s, b);
+                    Emit(s, GameEventKind.FacilityDone, $"{ZoneName(s, place)}{StationName(b.StationId)}：{string.Join("、", made)}已完成，放在{ZoneName(s, place)}地面；{xp}。");
                 }
             }
         }

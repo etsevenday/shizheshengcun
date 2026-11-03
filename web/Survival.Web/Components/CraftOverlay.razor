@@ -255,8 +255,8 @@
                             var sbWhy = busy ? "行动进行中" : e.StationBatchBlocked(s, rc);
                             <div class="craft-go">
                                 <span class="cg-facts">
-                                    @if (sb != null) { <b>加工中</b><small>@(sb.DoneMinutes)/@(sb.RequiredMinutes)分钟 · 完成后放在@(e.ZoneName(s, s.Ground))地面</small> }
-                                    else if (sbWhy == null) { <b>被动@(rc.BaseMinutes)分钟</b><small>@e.StationBatchSummary(rc)</small> }
+                                    @if (sb != null) { <b>加工中</b><small>@(sb.DoneMinutes)/@(sb.RequiredMinutes)分钟 · 完成后放在@(e.ZoneName(s, s.Ground))地面 · @e.StationBatchXpNote(s, sb)</small> }
+                                    else if (sbWhy == null) { <b>被动@(rc.BaseMinutes)分钟</b><small>@e.StationBatchSummary(rc)；@e.StationBatchXpPreview(s, rc)</small> }
                                     else { <small class="warn-text">@sbWhy</small> }
                                 </span>
                                 @if (sb != null)
@@ -265,7 +265,7 @@
                                 }
                                 else
                                 {
-                                    <button type="button" class="primary cg-start" disabled="@(sbWhy != null)" title="@(sbWhy ?? e.StationBatchSummary(rc))"
+                                    <button type="button" class="primary cg-start" disabled="@(sbWhy != null)" title="@(sbWhy ?? e.StationBatchSummary(rc) + "；" + e.StationBatchXpPreview(s, rc))"
                                             @onclick="() => LoadStation(rc.Id)">投料（被动）</button>
                                 }
                             </div>

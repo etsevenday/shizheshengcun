@@ -30890,6 +30890,15 @@
     "workCarry": {
       "maxCredit": 4.9999,
       "roundingDecimals": 4
+    },
+    "stationXp": {
+      "source": "Q174 选 B：expansion-supply.json passiveCraftXp（2026-11-03，B22d）",
+      "skill": "crafting",
+      "perBatch": {
+        "kiln": 6,
+        "water_station": 3
+      },
+      "dailyCap": 12
     }
   },
   "actorBaseDefense": {

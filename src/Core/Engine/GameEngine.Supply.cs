@@ -120,7 +120,9 @@ namespace Survival.Core.Engine
                 : $"固定等待{Clock.Duration(rc.BaseMinutes)}（全队等待，不吃熟练加速，不给经验）",
             RecipeConfig.ModePassiveHeat or RecipeConfig.ModePassive => rc.IsPot
                 ? $"火堆锅里被动加工{rc.BaseMinutes}有效受热分钟（不吃熟练加速）"
-                : $"{StationName(rc.Station)}被动加工{Clock.Duration(rc.BaseMinutes)}（不吃熟练加速）",
+                : StationBatchXpFor(rc.Station) is int sx && sx > 0   // B22d Q174
+                    ? $"{StationName(rc.Station)}被动加工{Clock.Duration(rc.BaseMinutes)}（不吃熟练加速；每成功整批{SkillName(Config.Progression.StationXp.Skill)}经验+{sx}，陶窑与净水台合计每日最多{Config.Progression.StationXp.DailyCap}）"
+                    : $"{StationName(rc.Station)}被动加工{Clock.Duration(rc.BaseMinutes)}（不吃熟练加速）",
             _ => "主动制作（吃熟练与装备加速）",
         };
     }

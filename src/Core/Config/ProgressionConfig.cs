@@ -14,6 +14,19 @@ namespace Survival.Core.Config
         public SurveyConfig Survey { get; set; } = new SurveyConfig();
         public CookingXpConfig Cooking { get; set; } = new CookingXpConfig();
         public WorkCarryConfig WorkCarry { get; set; } = new WorkCarryConfig();
+        /// <summary>B22d（Q174 选 B）：陶窑/固定净水台被动批次的制造经验。</summary>
+        public StationXpConfig StationXp { get; set; } = new StationXpConfig();
+    }
+
+    /// <summary>
+    /// Q174 选 B（expansion-supply.json passiveCraftXp、camping-appraisal-adjudications.json passiveXp）：陶窑/固定净水台每成功整批
+    /// 给首次投料且完成时仍存活的角色 PerBatch[工坊] 点 Skill 经验；两类共享每角色每世界日 DailyCap（按完成日），与主动制造/建造经验独立。
+    /// </summary>
+    public sealed class StationXpConfig
+    {
+        public string Skill { get; set; } = "crafting";
+        public Dictionary<string, int> PerBatch { get; set; } = new Dictionary<string, int>();
+        public int DailyCap { get; set; }
     }
 
     /// <summary>Q54：拆解归制造。制造等级达到 CraftingLevel 可拆阶 ≤MaxTier 的装备；每件完成 +Xp 制造经验；制造 ExpertCraftingLevel 级回收专家（同材料追加 ExpertBonus 份，受 80% 预算）。</summary>

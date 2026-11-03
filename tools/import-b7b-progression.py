@@ -67,6 +67,7 @@ def main():
     assert fx["xpFormula"] == "clamp(2*ceil(originalBaseMinutes/5),2,12)"
     assert ck["foodBaseXp"] == "clamp(ceil(originalHeatMinutes/10),1,12)"
     assert man["levelWorkMultiplier"] == 1
+    keep_station_xp = cfg.get("progression", {}).get("stationXp")   # B22d Q174：后加的被动批次经验，重跑本脚本时保留
     cfg["progression"] = {
         "source": con["version"],
         "dismantle": {
@@ -99,6 +100,8 @@ def main():
         },
         "workCarry": {"maxCredit": wc["maxCredit"], "roundingDecimals": 4},
     }
+    if keep_station_xp is not None:
+        cfg["progression"]["stationXp"] = keep_station_xp
     # Q57：取消制造等级工作量倍率 1/(1+0.025L)（保留字段只作历史，程序不再读）
     cfg["crafting"]["legacyLevelWorkFactorRemoved"] = True
 
