@@ -407,12 +407,27 @@ namespace Survival.Core.Engine
         /// 候补所在地点实际已完工的恢复设施（Q90 PTY-Q90d，S09 本轮章）：none（无遮蔽）/shelter（遮蔽：室内地点或已建成的遮蔽棚）/bed（遮蔽且已建成床垫）。
         /// 读营区（现为替身 camp）真实设施，不因“营区/候补”虚构棚或床，也不读别的地点。
         /// </summary>
-        public string ReserveFacility(GameState s)
+        public string ReserveFacility(GameState s) => ReserveFacilityAt(s, HubLocation(s));
+
+        /// <summary>
+        /// B22g（Q183 care）：某候补所在处（place）实际已完工的恢复设施——营区广场读营区真实设施；安全屋屋内读该屋屋内的遮蔽（完工即遮蔽）与屋内床垫。
+        /// 不虚构棚或床、不读别处。
+        /// </summary>
+        public string ReserveFacilityAt(GameState s, string place)
         {
+            if (!TryPlace(place, out var loc, out _) || !s.Locations.ContainsKey(loc)) return "none";
+            if (!IsSheltered(s, place)) return "none";
+            return (FacOf(s, place)?.BedBuilt ?? false) ? "bed" : "shelter";
+        }
+
+        /// <summary>
+        /// B22g（Q183 care）：候补所在的区（place）：安全屋候补为该屋屋内（安全屋已完工时），其余为营区公共居所；营区地点不在地图里时退回当前地点（旧口径）。
+        /// </summary>
+        public string ReservePlace(GameState s, string actorId)
+        {
+            if (RosterOf(s, actorId)?.ReserveSafehouse is string sh && SafehouseBuilt(s, sh)) return ZonePlace(sh, SafehouseZone);
             var loc = HubLocation(s);
-            if (!_locs.ContainsKey(loc) || !s.Locations.ContainsKey(loc)) return "none";
-            if (!IsSheltered(s, loc)) return "none";
-            return s.Locations[loc].Facility.BedBuilt ? "bed" : "shelter";
+            return _locs.ContainsKey(loc) && s.Locations.ContainsKey(loc) ? loc : s.CurrentLocation;
         }
 
         /// <summary>
@@ -424,8 +439,8 @@ namespace Survival.Core.Engine
             var mode = NextReserveMode(actor);
             actor.ReserveMode = mode;
             var a = new ActionState { Type = mode == "sleep" ? ActionType.Sleep : ActionType.Rest, TargetId = "" };
-            var loc = HubLocation(s);
-            return ComputeSegment(s, a, actor, _locs.ContainsKey(loc) && s.Locations.ContainsKey(loc) ? loc : s.CurrentLocation);
+            // B22g（Q183 care）：安全屋候补按该屋屋内真实遮蔽/床计算（同 Q90 阈值与速率），广场候补照旧读营区
+            return ComputeSegment(s, a, actor, ReservePlace(s, actor.Id));
         }
 
         /// <summary>
@@ -452,7 +467,7 @@ namespace Survival.Core.Engine
         /// <summary>候补本段的一行说明（右栏只读）：自主休息/自主睡眠 + 营区实际设施。</summary>
         public string ReserveCareLabel(GameState s, ActorState actor)
         {
-            var fac = ReserveFacility(s) switch { "bed" => "床垫", "shelter" => "遮蔽", _ => "无设施" };
+            var fac = ReserveFacilityAt(s, ReservePlace(s, actor.Id)) switch { "bed" => "床垫", "shelter" => "遮蔽", _ => "无设施" };
             return $"{(ReserveModeOf(actor) == "sleep" ? "自主睡眠" : "自主休息")} · {fac}";
         }
 
@@ -471,7 +486,8 @@ namespace Survival.Core.Engine
                 else if (!on && latched) actor.RedLatched[key] = false;
             }
             var name = ActorLabel(actor);
-            Line("health", actor.Stats.Health <= care.RedHealth + 1e-9, $"候补{name}健康降到{Fmt.T(actor.Stats.Health)}（≤{Fmt.T(care.RedHealth)}），留在{LocName(HubLocation(s))}，需要你回去救治。");
+            var where = RosterOf(s, actor.Id) is RosterEntry re ? ReserveWhereName(s, re) : LocName(HubLocation(s));
+            Line("health", actor.Stats.Health <= care.RedHealth + 1e-9, $"候补{name}健康降到{Fmt.T(actor.Stats.Health)}（≤{Fmt.T(care.RedHealth)}），留在{where}，需要你回去救治。");
             Line("virus", actor.Body.VirusLoad >= care.RedVirus - 1e-9, $"候补{name}病毒程度到{Fmt.T(actor.Body.VirusLoad)}（≥{Fmt.T(care.RedVirus)}），公共照护不治病，需要你回去处理。");
         }
 

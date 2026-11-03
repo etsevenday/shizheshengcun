@@ -419,4 +419,68 @@ public class B22gTests : TestBase
         Assert.That(t.Party, Does.Not.Contain(r.ActorId), "旧在办登记不自动入队");
         Assert.That(r.ReserveSafehouse, Is.Null, "默认营区广场候补");
     }
+
+    // ───────────── R185 安全屋候补照护（Q183 care） ─────────────
+
+    /// <summary>空闲等待 n 个 30 分钟（世界 tick 照常推进）。</summary>
+    private void WaitHalfHours(GameState s, int n)
+    {
+        for (var i = 0; i < n; i++)
+        {
+            E.DebugSetStats(s, 20, 90, 90, 20, 90, 80);
+            Start(s, ActionRequest.Wait(30));
+            Run(s);
+        }
+    }
+
+    private static void SetBody(ActorState a)
+    {
+        a.Stats.Health = 20; a.Stats.Satiety = 40; a.Stats.Hydration = 40; a.Stats.Energy = 18; a.Stats.Wakefulness = 90; a.Stats.Morale = 40;
+        a.ReserveMode = null;
+    }
+
+    /// <summary>
+    /// PLAN-Q183-02（care）：安全屋候补从下一真实 tick 起按 Q90 同一阈值与速率照护，设施读该屋屋内的真实遮蔽/床（屋内遮蔽，休息精神多 +2/小时；屋内床垫才显示床垫）；
+    /// 饱食/水分与广场候补同额补给；不耗屋柜或玩家库存、不产物资、不给经验。
+    /// </summary>
+    [Test]
+    public void PLAN_Q183_02_SafehouseReserveCare_SameQ90_ShelterBed_NoStockNoOutput()
+    {
+        var s = AtShelter(c: 3);
+        BuildSafehouseAndReturn(s);
+        Ok(E.StartRecruit(s, s.Recruit.Candidates[0].CandidateId, RecruitPlacement.AtSafehouse(Homestead)));
+        Run(s);
+        var inHouse = Recruited(s);
+        Ok(E.StartRecruit(s, s.Recruit.Candidates[1].CandidateId, RecruitPlacement.Square));
+        Run(s);
+        var onSquare = Recruited(s);
+        var a = s.Actors[inHouse.ActorId];
+        var b = s.Actors[onSquare.ActorId];
+        Assert.That(E.ReservePlace(s, a.Id), Is.EqualTo(GameEngine.ZonePlace(Homestead, GameEngine.SafehouseZone)));
+        Assert.That(E.ReservePlace(s, b.Id), Is.EqualTo("h02_square"));
+        SetBody(a);
+        SetBody(b);
+        Assert.That(E.ReserveCareLabel(s, a), Is.EqualTo("自主休息 · 遮蔽"), "屋内完工即遮蔽");
+        Assert.That(E.ReserveCareLabel(s, b), Is.EqualTo("自主休息 · 无设施"), "广场露天，屋内设施不远程生效");
+
+        // 屋柜放一份食物：照护不取用
+        var cabinet = ItemInstance.SafehouseStorageOwner(ItemInstance.SafehouseIdOf(Homestead));
+        var food = E.CreateItems(s, "canned_food", 1, cabinet).Single();
+        var itemsBefore = JArray.FromObject(s.Items.Select(i => new { i.InstanceId, i.ItemId, i.Count, i.Owner })).ToString();
+        var xpBefore = JObject.FromObject(a.Skills).ToString();
+        SetBody(a);
+        SetBody(b);
+        WaitHalfHours(s, 2);
+        Assert.That(a.Stats.Satiety, Is.GreaterThan(40).And.EqualTo(b.Stats.Satiety).Within(1e-9), "同 Q90 公共补给");
+        Assert.That(a.Stats.Hydration, Is.GreaterThan(40).And.EqualTo(b.Stats.Hydration).Within(1e-9));
+        Assert.That(a.Stats.Morale - b.Stats.Morale, Is.EqualTo(Cfg.FacilityEffects.ShelteredCampRestMoralePerHour).Within(1e-6), "屋内遮蔽休息精神每小时多 +2（1 小时）");
+        Assert.That(JArray.FromObject(s.Items.Select(i => new { i.InstanceId, i.ItemId, i.Count, i.Owner })).ToString(), Is.EqualTo(itemsBefore), "不耗屋柜/库存、不产物");
+        Assert.That(JObject.FromObject(a.Skills).ToString(), Is.EqualTo(xpBefore), "不给经验");
+
+        // 屋内铺好床垫：屋内候补显示床垫，广场候补不受影响
+        s.Locations[Homestead].Safehouse!.Interior.BedBuilt = true;
+        Assert.That(E.ReserveCareLabel(s, a), Is.EqualTo("自主休息 · 床垫"));
+        Assert.That(E.ReserveCareLabel(s, b), Is.EqualTo("自主休息 · 无设施"));
+        Assert.That(food, Is.Not.Null);
+    }
 }
