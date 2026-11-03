@@ -157,11 +157,13 @@ namespace Survival.Core.Engine
                 // B13b（Q120 RES-Q120-03/04）：实物包整包生成在当地地面（装备白色无词条满耐久），知识包只补缺；与领取账同一事务
                 var know = KnowledgeGrantedBy(s, ClaimFactsOf(res));
                 var made = new List<ItemInstance>();
+                // B22（R03 D7.1）：地牢里的唯一箱（d03 旧军械箱）产物记本实例来源，可封存
+                var origin = d != null ? RewardOriginAt(s, res.LocationId) : null;
                 foreach (var kv in res.Outputs)
                 {
                     if (_items[kv.Key].IsEquipment && res.EquipmentQuality != null)
-                        for (var k = 0; k < kv.Value; k++) made.Add(NewSingle(s, kv.Key, s.Ground, false, null, null, "white"));
-                    else made.AddRange(CreateItems(s, kv.Key, kv.Value, s.Ground));
+                        for (var k = 0; k < kv.Value; k++) { var one = NewSingle(s, kv.Key, s.Ground, false, null, null, "white"); one.RewardOrigin = origin; made.Add(one); }
+                    else made.AddRange(CreateItems(s, kv.Key, kv.Value, s.Ground, rewardOrigin: origin));
                 }
                 Normalize(s, s.Ground);
                 foreach (var f in ClaimFactsOf(res)) s.Progress.Flags.Add(f);
@@ -182,7 +184,13 @@ namespace Survival.Core.Engine
                 if (BattleCapacity(s) > capBefore) text.Add($"队伍容量升到 C{BattleCapacity(s)}");
             }
             else text.Add($"已核对本次地牢的{res.Name}（本局早已领取，不再重复发放）");
-            if (d != null) EnsureInstance(s, d).Facts.Add(RecordClaimedFact);
+            // B22（R03 D2、Q127）：只有核心记录的领取/核对才算本代通关（写 clearedAt/resetEligibleAt），并发本局首通补给包；
+            // 顺带修正：B13c 起 d03 旧唯一箱（同为 campaign 领取）也会写本代完成事实、提前打开出口，现在只认记录
+            if (d != null && res.IsRecord)
+            {
+                if (MarkCleared(s, d)) text.Add($"本代通关：{DR.ResetCooldownMinutes / 60}世界小时后（{Clock.DayTime(s.DungeonInstances[d].ResetEligibleAt!.Value)}起）可在{LocName(DungeonCfg(d)?.Parent ?? res.LocationId)}确认重置");
+                if (GrantFirstClear(s, d, s.Ground) is string fc) text.Add(fc);
+            }
             var routes = RouteNotes(s, RefreshGates(s), s.CurrentLocation);
             if (routes.Count > 0) text.Add("发现" + string.Join("与", routes));
             text.Add(NoFieldXpText(res));
@@ -243,6 +251,8 @@ namespace Survival.Core.Engine
             inst.UnlockedEdges.Clear();
             inst.Facts.Clear();
             inst.VisitedRooms.Clear();   // B21：新一代从未到过任何房间、尚未提交远征
+            inst.ClearedAt = null;       // B22：新一代未通关、不计时
+            inst.ResetEligibleAt = null;
             if (inst.Status != DungeonStatuses.CampaignEnded) inst.Status = DungeonStatuses.Unopened;
             foreach (var l in DungeonRooms(dungeonId))
             {

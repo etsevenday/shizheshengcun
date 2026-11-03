@@ -208,7 +208,7 @@ public class B13cClaimTests : TestBase
             Run(s);
             Assert.That(s.GameMinute - minute, Is.EqualTo(10));
             Assert.That(ids.All(id => E.KnowsKnowledge(s, id)), Is.True, rid);
-            Assert.That(s.Items.Count, Is.EqualTo(items), "不发纸卡或成品");
+            Assert.That(s.Items.Count(i => i.RewardOrigin == null), Is.EqualTo(items), "不发纸卡或成品（B22：首通补给包是另一份账）");
             Assert.That(s.Skills.Sum(kv => kv.Value.Xp), Is.EqualTo(xp), "不给经验");
             var log = s.Log.Last(l => l.Kind == GameEventKind.ActionCompleted.ToString()).Text;
             Assert.That(log, Does.Contain("获得做法知识"));

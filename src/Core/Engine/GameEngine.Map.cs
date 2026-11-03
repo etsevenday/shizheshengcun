@@ -409,7 +409,8 @@ namespace Survival.Core.Engine
         /// <summary>开发入口与测试：给当前（或指定）地牢实例记下实例事实（guardianDefeated / recordClaimedAndClear）并重判。</summary>
         public string DebugInstanceFact(GameState s, string dungeonId, string key)
         {
-            EnsureInstance(s, dungeonId).Facts.Add(key);
+            if (key == RecordClaimedFact) MarkCleared(s, dungeonId);   // B22：开发记“核心已领取”同样写本代 clearedAt（不发首通包）
+            else EnsureInstance(s, dungeonId).Facts.Add(key);
             SettleFixedByFacts(s);   // B20：记下“本地牢守卫已击败”时本代守卫固定战视为已结清
             var r = RefreshGates(s);
             var routes = RouteNotes(s, r, s.CurrentLocation);

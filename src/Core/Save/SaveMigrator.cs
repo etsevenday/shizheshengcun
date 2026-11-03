@@ -57,6 +57,7 @@ namespace Survival.Core.Save
         public const string Schema30 = "30";
         public const string Schema31 = "31";
         public const string Schema32 = "32";
+        public const string Schema33 = "33";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -104,6 +105,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema30) From30To31(s, config, notes);
             if (s.SchemaVersion == Schema31) From31To32(s, config, notes);
             if (s.SchemaVersion == Schema32) From32To33(s, config, notes);
+            if (s.SchemaVersion == Schema33) From33To34(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1070,7 +1072,18 @@ namespace Survival.Core.Save
             EnsureLocationStates(s, config);
             var extra = new Engine.GameEngine(config).MigrateExpeditions32(s);
             notes.AddRange(extra);
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（地牢远征：从入口缓冲第一次确认走进危险房间才开始远征，未通关离开要在安全点终止远征并承受惩罚与至少30分钟的撤出；战斗撤退会退回来路上没有敌人的房间）。" + (extra.Count > 0 ? string.Join("；", extra) + "。" : "") });
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema33}（地牢远征：从入口缓冲第一次确认走进危险房间才开始远征，未通关离开要在安全点终止远征并承受惩罚与至少30分钟的撤出；战斗撤退会退回来路上没有敌人的房间）。" + (extra.Count > 0 ? string.Join("；", extra) + "。" : "") });
+            s.SchemaVersion = Schema33;
+        }
+
+        /// <summary>
+        /// 33→34（B22，开发假设 B22-9）：实例补 clearedAt/resetEligibleAt（已通关的从升级时起算 72 小时）、旧版已通关者的首通补给记已领、物品新增地牢奖励来源字段
+        /// （旧物一律无来源，不能封存）。不发物资、不加时间。幂等。
+        /// </summary>
+        private static void From33To34(GameState s, GameConfig config, List<string> notes)
+        {
+            var extra = new Engine.GameEngine(config).MigrateRewards33(s);
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（地牢奖励分账：守卫回收材料每代一次、首次通关补给本局一次；通关后72世界小时可在父地点确认重置；地牢里拿到的奖励可以封存，成功撤出后放进父地点的远征回收箱）。" + (extra.Count > 0 ? string.Join("；", extra) + "。" : "") });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

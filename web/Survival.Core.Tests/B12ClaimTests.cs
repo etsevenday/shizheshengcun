@@ -40,7 +40,7 @@ public class B12ClaimTests : TestBase
         Run(s);
         Assert.That(s.Progress.Flags, Is.SupersetOf(new[] { "campaignId:d01_08_unique", "claim:d01_08_unique", "church_route_record", "FA02_record_credit" }));
         Assert.That(s.DungeonInstances["d01"].Facts, Does.Contain(GameEngine.RecordClaimedFact));
-        Assert.That(s.Items.Count, Is.EqualTo(items), "不发物资卡当凭证");
+        Assert.That(s.Items.Count(i => i.RewardOrigin == null), Is.EqualTo(items), "不发物资卡当凭证（B22：首通补给包是另一份账，A09 E6.3）");
         Assert.That(s.Skills.Sum(kv => kv.Value.Xp), Is.EqualTo(xp), "记录不计经验");
         Assert.That(E.BattleCapacity(s), Is.EqualTo(3), "教会路线记录 → C3");
         Assert.That(E.CanStart(s, ActionRequest.Gather("d01_08_unique")), Does.Contain("已领取"));
@@ -60,7 +60,7 @@ public class B12ClaimTests : TestBase
             Assert.That(s.Progress.Flags.Count, Is.EqualTo(flags), "不重发 campaign 事实");
             Assert.That(s.DungeonInstances["d01"].Facts, Does.Contain(GameEngine.RecordClaimedFact));
         }
-        Assert.That(s.Items.Count, Is.EqualTo(items));
+        Assert.That(s.Items.Count(i => i.RewardOrigin == null), Is.EqualTo(items));
         Assert.That(E.BattleCapacity(s), Is.EqualTo(3), "MAP30-05：容量不重复");
     }
 

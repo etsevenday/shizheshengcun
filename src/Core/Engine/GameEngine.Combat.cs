@@ -1467,7 +1467,7 @@ namespace Survival.Core.Engine
             {
                 foreach (var l in b.Loot.Where(l => l.ItemId != null && l.Count > 0))
                 {
-                    CreateItems(s, l.ItemId!, l.Count, loc, false, l.Source);
+                    CreateItems(s, l.ItemId!, l.Count, loc, false, l.Source, rewardOrigin: RewardOriginAt(s, loc));   // B22：地牢胜利掉落记本实例来源
                     lines.Add($"{ItemName(l.ItemId!)}+{l.Count}");
                 }
                 if (GrantTutorialReward(s, b) is string reward) lines.Add(reward);

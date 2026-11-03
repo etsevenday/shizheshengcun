@@ -93,13 +93,13 @@ public class B21StateTests : TestBase
         var minute = s.GameMinute;
         var stats = s.Stats.Clone();
         var t = SaveSerializer.Deserialize(AsSchema32(s), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("33"));
+        Assert.That(t.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));   // B22 起逐级升到 34
         Assert.That(t.Expedition, Is.Null);
         Assert.That(E.DungeonStatus(t, "d01"), Is.EqualTo(DungeonStatuses.Unopened));
         Assert.That(t.GameMinute, Is.EqualTo(minute));
         Assert.That(t.Stats.Satiety, Is.EqualTo(stats.Satiety));
         Assert.That(t.ExpeditionLog, Is.Empty);
-        Assert.That(t.Log.Last().Text, Does.Contain("存档已升级到版本33"));
+        Assert.That(t.Log.Last().Text, Does.Contain("存档已升级到版本34"));
     }
 
     /// <summary>B21-13：存档 32 人在 d01_05——补建一次已提交远征（成员=当前同行，轨迹=01→02→04→05），实例 ACTIVE，日志写明；不补扣包。迁移幂等。</summary>
@@ -110,7 +110,7 @@ public class B21StateTests : TestBase
         s.Expedition = null;
         var stats = s.Stats.Clone();
         var t = SaveSerializer.Deserialize(AsSchema32(s), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("33"));
+        Assert.That(t.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));   // B22 起逐级升到 34
         var e = t.Expedition!;
         Assert.That(e, Is.Not.Null);
         Assert.That(e.Origin, Is.EqualTo("migrated32"));
@@ -121,7 +121,7 @@ public class B21StateTests : TestBase
         Assert.That(E.DungeonStatus(t, "d01"), Is.EqualTo(DungeonStatuses.Active));
         Assert.That(t.DungeonInstances["d01"].VisitedRooms, Is.SupersetOf(new[] { "d01_01", "d01_02", "d01_04", "d01_05" }));
         Assert.That(t.Stats.Satiety, Is.EqualTo(stats.Satiety), "不补扣包");
-        Assert.That(t.Log.Last().Text, Does.Contain("按已开始的远征处理"));
+        Assert.That(t.Log.Any(l => l.Text.Contains("存档已升级到版本33") && l.Text.Contains("按已开始的远征处理")), Is.True);
         Assert.That(t.AppliedEventKeys, Is.Empty);
         // 幂等：再跑一次不重建、不 +1 序号
         Assert.That(E.MigrateExpeditions32(t), Is.Empty);

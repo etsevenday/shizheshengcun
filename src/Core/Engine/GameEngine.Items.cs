@@ -97,8 +97,12 @@ namespace Survival.Core.Engine
         /// 合堆键的来源部分：发放事件 ID；已鉴定的再带鉴定结果（R07 X3.4“合堆键纳入有效鉴定状态”，B18），已鉴定份不并回未鉴定的堆。
         /// 未鉴定时与原来完全相同（旧档、旧用例不变）。
         /// </summary>
-        private static string? MergeTag(ItemInstance i) =>
-            i.Appraisal == null ? i.Source?.GrantEventId : (i.Source?.GrantEventId ?? "") + "|apr:" + i.Appraisal.Result;
+        private static string? MergeTag(ItemInstance i)
+        {
+            var tag = i.Appraisal == null ? i.Source?.GrantEventId : (i.Source?.GrantEventId ?? "") + "|apr:" + i.Appraisal.Result;
+            // B22：地牢奖励来源（封存白名单）不与同名外带物合堆；没有来源时与原来完全相同
+            return i.RewardOrigin == null ? tag : (tag ?? "") + "|dr:" + i.RewardOrigin;
+        }
 
         /// <summary>
         /// 真实批次键（Q24，S06 X4）：到期 + 来源（发放事件，与合堆键同一字段）+ 预留状态 + 鉴定状态（B18 存档 30 起有 appraisalRecord；
@@ -106,7 +110,8 @@ namespace Survival.Core.Engine
         /// </summary>
         public static string BatchKeyOf(ItemInstance i) =>
             $"{(i.ExpiresAt.HasValue ? i.ExpiresAt.Value.ToString() : "-")}|{i.Source?.GrantEventId ?? ""}|{(i.ReservedBy != null ? "r" : "")}"
-            + (i.Appraisal != null ? "|apr:" + i.Appraisal.Result : "");   // B18：鉴定状态进真实批次键（S06 X4、R07 X3.4）
+            + (i.Appraisal != null ? "|apr:" + i.Appraisal.Result : "")   // B18：鉴定状态进真实批次键（S06 X4、R07 X3.4）
+            + (i.RewardOrigin != null ? "|dr:" + i.RewardOrigin : "");   // B22：地牢奖励来源（R03 D7.1）
 
         /// <summary>
         /// 某处同一物品的真实批次（Q24）：最早到期在前、无保质在后，同期限按批内最小实例号稳定排序。每批列出全部堆、合计份数、
@@ -495,7 +500,7 @@ namespace Survival.Core.Engine
         /// 没写概率的来源（开局、开发箱、掉落、剧情等）为白色。返回新生成的实例。
         /// </summary>
         public List<ItemInstance> CreateItems(GameState s, string itemId, int count, string owner, bool scavenged = false, ItemSource? source = null, string? origin = null,
-            int? expiresCap = null)
+            int? expiresCap = null, string? rewardOrigin = null)
         {
             var made = new List<ItemInstance>();
             if (count <= 0) return made;
@@ -506,7 +511,7 @@ namespace Survival.Core.Engine
             if (single)
             {
                 for (var k = 0; k < count; k++) made.Add(NewSingle(s, itemId, owner, scavenged, source, origin, null));
-                foreach (var m in made) m.ExpiresAt = CapExpiry(m.ExpiresAt, expiresCap);
+                foreach (var m in made) { m.ExpiresAt = CapExpiry(m.ExpiresAt, expiresCap); m.RewardOrigin = rewardOrigin; }
                 return made;
             }
             var stack = new ItemInstance
@@ -517,6 +522,7 @@ namespace Survival.Core.Engine
                 Owner = owner,
                 ExpiresAt = CapExpiry(cfg.ShelfLifeMinutes.HasValue ? s.GameMinute + cfg.ShelfLifeMinutes.Value : (int?)null, expiresCap),
                 Source = source?.Clone(),
+                RewardOrigin = rewardOrigin,
             };
             s.Items.Add(stack);
             made.Add(stack);
@@ -597,6 +603,7 @@ namespace Survival.Core.Engine
                         ExpiresAt = tmpl.ExpiresAt,
                         Source = tmpl.Source?.Clone(),
                         Appraisal = tmpl.Appraisal?.Clone(),
+                        RewardOrigin = tmpl.RewardOrigin,
                     });
                     total -= take;
                 }

@@ -147,6 +147,8 @@ namespace Survival.Core.Engine
             // 名单里还有活着的（不在这场里）不算结清——正常流程全名单同场，不会发生
             if (FixedEnemiesAt(s, node).Count > 0) return lines;
             CommitFixedWin(s, f, st, node, lines);
+            // B22（A09 E6.2）：守卫战最终胜利（唯一 tick 已先结算、主角存活）才发本代守卫回收材料
+            if (f.Guardian && f.DungeonId != null && GrantBossSalvage(s, f.DungeonId, node) is string sv) lines.Add(sv);
             return lines;
         }
 

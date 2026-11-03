@@ -609,11 +609,13 @@ namespace Survival.Core.Engine
             if (res.IsCampaign) return CompleteClaim(s, a, res);
             var rs = s.Resources[res.NodeId];
             var made = new List<string>();
+            // B22（R03 D7.1）：地牢实例普通箱的产物记本实例来源（可封存）
+            var origin = res.IsInstance ? RewardOriginAt(s, here) : null;
             if (res.IsUnits)
             {
                 rs.Reserved -= a.ReservedResourceUnits;
                 var kv = res.Outputs.First();
-                CreateItems(s, kv.Key, a.ReservedResourceUnits, here);
+                CreateItems(s, kv.Key, a.ReservedResourceUnits, here, rewardOrigin: origin);
                 made.Add($"{ItemName(kv.Key)}+{a.ReservedResourceUnits}");
                 a.ReservedResourceUnits = 0;
             }
@@ -626,7 +628,7 @@ namespace Survival.Core.Engine
                 }
                 foreach (var kv in res.Outputs)
                 {
-                    CreateItems(s, kv.Key, kv.Value, here, res.Scavenged);
+                    CreateItems(s, kv.Key, kv.Value, here, res.Scavenged, rewardOrigin: origin);
                     made.Add($"{ItemName(kv.Key)}+{kv.Value}");
                 }
                 if (res.ExclusiveLoot != null && a.LootPlanned && a.LootItemId != null && a.LootCount > 0)

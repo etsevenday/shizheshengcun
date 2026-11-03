@@ -45,7 +45,7 @@ namespace Survival.Core.State
         /// "33" 起地牢远征：实例带状态与远征流水号，进行中的远征（成员快照、来路轨迹、撤出锁定路径/倍率/T/已推进分钟）、已结束远征记录、
         /// 一次性事件去重键，角色带惊魂未定截止（开发计划 v0.9 B21）。
         /// </summary>
-        public const string CurrentSchema = "33";
+        public const string CurrentSchema = "34";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -568,6 +568,10 @@ namespace Survival.Core.State
         public int ExpeditionSeq { get; set; }
         /// <summary>本代实际到过的房间（撤出返程只走两端本代都到过的边，开发假设 B21-4；换代清空）。</summary>
         public HashSet<string> VisitedRooms { get; set; } = new HashSet<string>();
+        /// <summary>本代通关时刻（R03 D2/D8：recordNode 领取或核对的 10 分钟事务成功且主角存活时写，Q127）；未通关为 null。换代清空（B22，存档 34）。</summary>
+        public int? ClearedAt { get; set; }
+        /// <summary>本代可重置时刻 = ClearedAt + 4320 世界分钟（只标“可重置”，不自动换代）；未通关为 null。</summary>
+        public int? ResetEligibleAt { get; set; }
 
         public DungeonInstanceState Clone()
         {
@@ -722,6 +726,12 @@ namespace Survival.Core.State
         /// 合堆键含它的结果类别，已鉴定份不与未鉴定份合堆。
         /// </summary>
         public AppraisalRecord? Appraisal { get; set; }
+        /// <summary>
+        /// 地牢奖励来源（R03 D7.1“封存战利品账”的来源白名单，B22，存档 34）：本实例已核销的普通箱、守卫回收、首通包、旧唯一箱与胜利掉落生成时记
+        /// instanceId；只有带本实例来源的物品可以封存（外带物、自制物、候补装备没有）。合堆键含它（不与同名外带物压成一张卡，A07 X1.13）；
+        /// 离开地牢（成功抵达父地点）与迁到回收/遗物箱时清掉。普通物品为 null。
+        /// </summary>
+        public string? RewardOrigin { get; set; }
 
         public bool IsCarried => Owner == Carried;
         /// <summary>穿戴中（任一角色的七槽之一）：不占五张物资卡，重量计入该角色。</summary>
