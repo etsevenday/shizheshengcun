@@ -27,7 +27,7 @@
     var loc = e.PotFireLocation(Pot);
     var hot = loc != null && e.FireHot(s, loc);
     var locked = e.IsLocked(s, Pot) || Pot.ReservedBy != null;
-    var busy = e.IsBusy(s) || G.Running;
+    var busy = e.IsBusy(s) || G.Running || G.CityBrowsing;   // B24：主城鸟瞰浏览中锅卡转移/取出灰掉
 }
 @if (!Expanded)
 {

@@ -284,6 +284,23 @@ public class B24CityOverviewTests : TestBase
         Assert.That(E.StartCityOverviewTravel(s, "c02_church", "far").Reason, Is.EqualTo("目标不在这座城内"));
     }
 
+    /// <summary>CITY-UI06/14：敌踪出现时鸟瞰不可用（界面据此自动关闭）、“前往”拒绝；自动打开等到敌踪处理完；关闭/再开不改真实位置与库存。</summary>
+    [Test]
+    public void CITY_UI06_EncounterClosesAndBlocks()
+    {
+        var s = Registered("h02_square");
+        E.MarkCityOverviewShown(s);
+        s.Encounter = new PendingEncounter { LocationId = s.CurrentLocation, EnemyIds = new List<int>(), Source = "explore", Minute = s.GameMinute };
+        Assert.That(E.CityOverviewBlocked(s), Is.EqualTo("先处理眼前的敌踪"));
+        Assert.That(E.StartCityOverviewTravel(s, "h03_workshop", "enc").Ok, Is.False);
+        Assert.That(s.Main, Is.Null);
+        E.DebugResetCityOverview(s);
+        s.City.OverviewPending = "h02_square";
+        Assert.That(E.CityOverviewAutoOpenDue(s), Is.False, "敌踪中不自动打开");
+        s.Encounter = null;
+        Assert.That(E.CityOverviewAutoOpenDue(s), Is.True);
+    }
+
     private void Ok(ActionResult r) => Assert.That(r.Ok, Is.True, r.Reason);
 
     // ───────────── 设施栏人物卡（CITY-UI10/13） ─────────────

@@ -1,6 +1,8 @@
 /* ───── 三城主城鸟瞰（开发计划 v0.9 B24，A10-CITY §3/§4）：覆盖①②③三行，④随身原位只读；示意建筑为程序绘制，正式美术后续替换 ───── */
 .city-panel { display: flex; flex-direction: column; }
 .city-panel .sub-head h2 { color: var(--accent); }
+.city-panel .sub-head > button { white-space: nowrap; flex: 0 0 auto; }
+.city-outside { color: var(--muted); }
 .city-legacy { margin: 6px 14px 0; padding: 4px 10px; border: 1px dashed var(--warn); border-radius: 4px; color: var(--warn); font-size: 14px; }
 .city-body { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 6px 14px 8px; gap: 4px; }
 .city-map { position: relative; flex: 1; min-height: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
@@ -15,8 +17,8 @@
   background: #11181bd9; color: var(--muted); border: 1px solid #4b4535; white-space: nowrap; pointer-events: auto; }
 .road-tag.locked { color: #f0b3a5; border-color: #c46b5a; border-style: dashed; }
 /* 建筑热区：每栋一个按钮（宽高按格子比例，至少 44×44），互不重叠 */
-.city-bldg { position: absolute; transform: translate(-50%, -50%); width: min(calc(100% / var(--cols) * .66), 190px); height: min(calc(100% / var(--rows) * .74), 150px);
-  min-width: 64px; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px;
+.city-bldg { position: absolute; transform: translate(-50%, -50%); height: min(calc(100% / var(--rows) * .84), 160px); aspect-ratio: 4 / 3; width: auto;
+  max-width: calc(100% / var(--cols) * .8); min-width: 64px; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px;
   padding: 2px 4px 4px; border: 2px solid transparent; border-radius: 8px; background: transparent; color: var(--text); cursor: pointer; }
 .city-bldg:hover, .city-bldg:focus-visible { border-color: #8f8466; background: #ffffff0d; }
 .city-bldg .bldg-art { flex: 1; min-height: 0; width: 100%; color: #b9ae8f; }

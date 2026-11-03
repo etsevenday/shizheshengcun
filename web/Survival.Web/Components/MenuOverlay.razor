@@ -373,6 +373,19 @@
                     <button class="secondary small-btn" @onclick='() => DevDone(G.E.DebugExq(G.S, "status", exqQuest))'>显示任务/记录/知识状态</button>
                 </div>
                 <div class="tiny muted">@G.E.DebugExqStatus(G.S, exqQuest)</div>
+                @* B24（R73）：三城主城鸟瞰与设施栏人物卡；传送按实际到达处理（首次到父节点会自动打开一次鸟瞰，关掉菜单后出现） *@
+                <div class="eyebrow">三城鸟瞰与设施NPC卡（B24）：父节点首次到达自动打开一次；当前地点卡旁“主城鸟瞰”随时再开</div>
+                <div class="btn-row">
+                    <button class="secondary small-btn" title="记下营门登记授权与营区登记（同 B23 栏）" @onclick='() => DevDone(G.E.DebugExq(G.S, "register", "EXQ05"))'>记下营区登记</button>
+                    @foreach (var (lid, label) in new[] { ("h01_gate", "营门"), ("h02_square", "营区广场"), ("h03_workshop", "营区工坊"), ("c02_church", "教会接待庭"), ("r02_academy", "科学院外院") })
+                    {
+                        var to = lid;
+                        <button class="secondary small-btn" title="按实际到达处理（记到访、公开地点100%、接触事实、门槛重判）" @onclick="() => DevDone(G.E.DebugMapTeleport(G.S, to))">传送到@(label)</button>
+                    }
+                    <button class="secondary small-btn" title="记下“已听取教会公开路线说明”（训诫堂→典藏室开通，验证接待庭→训诫堂→典藏室）" @onclick='() => DevDone(G.E.DebugMapFact(G.S, "FA02_route_briefed"))'>记下教会路线简报</button>
+                    <button class="secondary small-btn" title="清除各城“已自动展示”与待打开标记：再次到达父节点时自动打开一次" @onclick="() => DevDone(G.E.DebugResetCityOverview(G.S))">重置鸟瞰展示标记</button>
+                </div>
+                <div class="tiny muted">鸟瞰已展示：@(G.S.City.OverviewShown.Count == 0 ? "无" : string.Join("、", G.S.City.OverviewShown.Select(G.E.LocName)))@(G.S.City.OverviewPending != null ? $" · 待自动打开：{G.E.LocName(G.S.City.OverviewPending)}{(G.S.City.OverviewPendingLegacy ? "（旧档补显）" : "")}" : "")</div>
                 @* B8（R08、A11 §6/§7）：正式招募任务（RN01—RN06）在后续批次，这里直接把六名命名角色登记入名册（同行未满 C 时直接编入） *@
                 <div class="eyebrow">队伍（B8）：先记下容量事实再加人；营区＝临时营地</div>
                 <div class="btn-row">

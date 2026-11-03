@@ -16,10 +16,12 @@
     return;
 }
 @{
-    var cols = v.MaxX - v.MinX + 1;
-    var rows = v.MaxY - v.MinY + 1;
-    double Cx(CityBuildingView b) => (b.GridX - v.MinX + 0.5) * 100.0 / cols;
-    double Cy(CityBuildingView b) => (b.GridY - v.MinY + 0.5) * 100.0 / rows;
+    // 艺术排布沿 A10-CITY 三张示意图（只是摆位，道路仍只画地图数据里的真实边）；示意图没有的节点退回 v3 网格坐标
+    (int X, int Y) Pos(CityBuildingView b) => Layout.TryGetValue(b.NodeId, out var p) ? p : (b.GridX - v.MinX, b.GridY - v.MinY);
+    var cols = v.Buildings.Max(b => Pos(b).X) + 1;
+    var rows = v.Buildings.Max(b => Pos(b).Y) + 1;
+    double Cx(CityBuildingView b) => (Pos(b).X + 0.5) * 100.0 / cols;
+    double Cy(CityBuildingView b) => (Pos(b).Y + 0.5) * 100.0 / rows;
     var byId = v.Buildings.ToDictionary(b => b.NodeId);
     var shown = G.CityPick ?? G.CityHover;
     var focusB = shown != null && byId.TryGetValue(shown, out var fb) ? fb : null;
@@ -34,7 +36,7 @@
     <div class="sub-head">
         <div>
             <h2>@v.Title · 主城鸟瞰</h2>
-            <span class="sub">只读浏览 · 上三行覆盖 · 不耗时@(outside != null ? $" · {outside}" : "")</span>
+            <span class="sub">只读浏览 · 上三行覆盖 · 不耗时</span>
         </div>
         <button class="secondary" title="关闭鸟瞰，留在当前真实地点（不移动）" @onclick="Close">返回当前地点<kbd>Esc</kbd></button>
     </div>
@@ -111,7 +113,7 @@
                         var names = new[] { focusB.Path[0].From }.Concat(focusB.Path.Select(p => p.To)).Select(e.LocName);
                         <div class="ci-line ci-route">路线：@string.Join(" → ", names) · 基础@(string.Join("+", focusB.Path.Select(p => p.Minutes)))@(focusB.Path.Count > 1 ? $"，共{focusB.PathMinutes}" : "")分钟</div>
                     }
-                    else
+                    else if (focusB.Discovered)
                     {
                         <div class="ci-line warn">@focusB.Blocked</div>
                     }
@@ -149,11 +151,23 @@
             <span><i class="lg lock"></i>锁 未开通</span>
             <span><i class="lg unknown"></i>虚线 尚未发现</span>
             <span class="muted">道路只连已发现的城内真实路线；点建筑只选中，“前往”按真实路线逐段移动。</span>
+            @if (outside != null) { <span class="city-outside">@outside</span> }
         </div>
     </div>
 </div>
 
 @code {
+    /// <summary>示意图摆位（列, 行）：营区上排工坊/收容所/医务室、下排营门/广场/鉴定所；教会上排施济处/圣堂、下排接待庭/训诫堂/典藏室；科学院上排检测室/隔离观察区/试制工坊、下排外院/接待处/档案室。</summary>
+    private static readonly Dictionary<string, (int X, int Y)> Layout = new()
+    {
+        ["h03_workshop"] = (0, 0), ["h06_shelter"] = (1, 0), ["h04_infirmary"] = (2, 0),
+        ["h01_gate"] = (0, 1), ["h02_square"] = (1, 1), ["h05_appraisal"] = (2, 1),
+        ["c04_alms"] = (0, 0), ["c07_sanctuary"] = (2, 0),
+        ["c02_church"] = (0, 1), ["c05_admonition"] = (1, 1), ["c06_archive"] = (2, 1),
+        ["r05_testing"] = (0, 0), ["r08_observation"] = (1, 0), ["r07_workshop"] = (2, 0),
+        ["r02_academy"] = (0, 1), ["r04_reception"] = (1, 1), ["r06_archive"] = (2, 1),
+    };
+
     private readonly ElementReference[] _refs = new ElementReference[16];
 
     private static string F(double d) => d.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
