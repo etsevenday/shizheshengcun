@@ -1240,6 +1240,11 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .char-panel { padding-bottom: 10px; scroll-padding-bottom: 16px; }
 .party-btns { gap: 4px; }
 .remains-card { border: 1px solid #7d4f45; border-radius: 3px; padding: 4px 6px; display: flex; flex-direction: column; gap: 3px; }
+/* B22 试玩修复 M408：回收箱卡“取出…”跳到人物页时高亮该块；封存面板不可用按钮明显变灰 */
+.remains-card.flash-focus { animation: remains-flash 2s ease-out; }
+@keyframes remains-flash { 0%, 40% { box-shadow: 0 0 0 3px var(--accent); background: rgba(212, 168, 74, .18); } 100% { box-shadow: none; background: transparent; } }
+.eq-btn.btn-off, .eq-btn.btn-off:disabled { opacity: .38; filter: grayscale(1); cursor: not-allowed; }
+.seal-why { padding-left: 4px; }
 .remains-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 14px; }
 
 /* B8a（Q86）顶栏“编队”面板：四格号位 + 同行角色 + 保存/取消；1280×720 起四格一行，按钮不被挤出 */

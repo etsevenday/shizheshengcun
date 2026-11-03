@@ -164,4 +164,23 @@ public class B22SealedTests : BattleTestBase
         Assert.That(E.RootCardCount(s), Is.EqualTo(cards), "通关离开后来源清掉、合回一张");
         Assert.That(s.Items.Where(i => i.IsCarried && i.ItemId == "cloth").Sum(i => i.Count), Is.EqualTo(3));
     }
+    /// <summary>
+    /// 试玩修复 M408（A1）：地面上无来源布料与本实例战利品布料是两张卡（卡片键 owner|cloth 与 owner|cloth|dr，战利品紧跟在后）；
+    /// 拖动战利品卡取的是战利品那一堆，批次数量不混算；带出地牢后合回一张。
+    /// </summary>
+    [Test]
+    public void M408_RewardStack_SeparateCardKey_DragHead()
+    {
+        var s = At04(2226);
+        E.CreateItems(s, "cloth", 2, "d01_04");
+        Gather(s, "d01_04_cache0");
+        Assert.That(E.NaturalCards(s, "d01_04").Where(k => k.Contains("|cloth")), Is.EqualTo(new[] { "d01_04|cloth", "d01_04|cloth|dr" }));
+        var drHead = E.CardHead(s, DropSource.Parse("card:d01_04|cloth|dr")!)!;
+        var plainHead = E.CardHead(s, DropSource.Parse("card:d01_04|cloth")!)!;
+        Assert.That(drHead.RewardOrigin, Is.EqualTo(s.Expedition!.InstanceId));
+        Assert.That(plainHead.RewardOrigin, Is.Null);
+        Assert.That((E.CardBatchCount(s, drHead), E.CardBatchCount(s, plainHead)), Is.EqualTo((2, 2)));
+        Assert.That(E.CardKey(drHead), Is.EqualTo("d01_04|cloth|dr"));
+        Assert.That(E.SealableItems(s).Select(i => i.InstanceId), Is.EqualTo(new[] { drHead.InstanceId }), "只有战利品那一堆可封存");
+    }
 }

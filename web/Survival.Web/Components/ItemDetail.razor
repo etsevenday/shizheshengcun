@@ -49,6 +49,18 @@ else
             }
             <p>@(cfg.Use != null && cfg.Use.IsMedicine ? (cfg.Use.IsBandage ? "药品：止血、回血、压低病毒（本次实际效果见下）" : cfg.Use.IsAntibiotic ? "药品：抑制病毒（本次实际效果见下）" : "药品：清除感染（本次实际效果见下）")
                  : cfg.Use != null ? GameEngine.UseEffectText(cfg.Use) + (e.UseRiskText(cfg) is string rk ? $"；{rk}" : "") : cfg.Desc)</p>
+            @{
+                // B22 试玩修复 M408：本实例地牢战利品（可封存）单独成卡，详情写明是哪一批
+                var drN = batches.Where(b => b.Stacks[0].RewardOrigin != null).Sum(b => b.Count);
+            }
+            @if (drN > 0 && chosen.Stacks[0].RewardOrigin != null)
+            {
+                <p class="warn-text">本实例战利品×@(drN)：这次地牢里领到的奖励，可以封存（设施行“封存”卡）；成功离开地牢后并回同名物品。@(total > drN ? $"同名普通物品×{total - drN}是另一张卡。" : "")</p>
+            }
+            else if (drN > 0)
+            {
+                <p class="muted">另有本实例战利品×@(drN)（单独一张“战利品”卡，可封存）。</p>
+            }
         </div>
         <div class="detail-icon">@Icons.Markup(cfg.Id)</div>
 
@@ -145,7 +157,7 @@ else
                 {
                     var key = b.Key;
                     <button class="batch @(b == chosen ? "on" : "")" @onclick="() => PickBatch(key, group)">
-                        <span>×@b.Count@(b.Reserved ? " · 预留" : "")</span>
+                        <span>×@b.Count@(b.Reserved ? " · 预留" : "")@(b.Stacks[0].RewardOrigin != null ? " · 本实例战利品（可封存）" : "")</span>
                         @* 试玩修复 M77-B9：受本次烹饪保护的食材不显示普通倒计时，写“受热保护中（原期限N小时）” *@
                         <span class="@(Spoiled(b) ? "danger-text" : "muted")">@(!b.ExpiresAt.HasValue ? "不会腐败" : b.Stacks.Count == 1 && e.IsHeatProtected(s, b.Stacks[0]) ? Ui.FreshOf(e, s, b.Stacks[0]) : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute))</span>
                     </button>

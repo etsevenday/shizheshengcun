@@ -368,7 +368,8 @@
         var notTarget = allyAim && !targetable && pairMark == null;
         <div class="anc ally @(acting ? "acting" : "") @(viewing ? "selected" : "") @(targetable ? "targetable" : "") @(notTarget ? "unreachable" : "") @(pairMark != null ? "pair-picked" : "")" data-slot="@pos" data-actor="@id" role="button" tabindex="0" aria-pressed="@viewing"
              aria-label="@($"我方{pos}号位 {name}，健康{Ui.N(st.Health)}/{Ui.T(st.HealthMax)}，体力{Ui.N(st.Energy)}{(acting ? "，行动中" : "")}{(targetable ? "，可作为目标" : "")}")"
-             title="@(pairMark != null ? $"整队已选为{(pairMark == "A" ? "第一" : "第二")}名，再点取消这一步" : targetable ? (G.BattlePairAiming ? (G.BattleAllyTarget == null ? "点击选为整队的第一名" : "点击选为与他交换的第二名") : "点击即对他执行所选技能") : notTarget ? "不是所选技能的目标" : "点击在右侧查看状态（只查看，不改变行动顺序）")" @onclick="() => ClickAlly(id, token, locked)" @onkeydown="ev => AllyKey(ev, id)">
+             title="@(pairMark != null ? $"整队已选为{(pairMark == "A" ? "第一" : "第二")}名，再点取消这一步" : targetable ? (G.BattlePairAiming ? (G.BattleAllyTarget == null ? "点击选为整队的第一名" : "点击选为与他交换的第二名") : "点击即对他执行所选技能") : notTarget ? "不是所选技能的目标" : "点击在右侧查看状态（只查看，不改变行动顺序）")" @onclick="() => ClickAlly(id, token, locked)" @onkeydown="ev => AllyKey(ev, id)"
+             @onmouseenter="() => G.HoverBattleAlly(targetable ? id : null)" @onmouseleave="() => G.HoverBattleAlly(null)">
             <div class="anc-top" title="@(acting ? $"本次{(b.ActingPursuit ? "追击" : "普通激活")}剩{fa.Ap}AP（不带入下次）" : "还没轮到；行动顺序见上方队列")">
                 <span class="anc-ap">@(acting ? $"{(b.ActingPursuit ? "追击" : "行动中")} {fa.Ap}/{apMax}AP" : "等待")</span>
             </div>

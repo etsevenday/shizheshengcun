@@ -16,6 +16,8 @@ namespace Survival.Core.Engine
         public string Owner { get; set; } = "";
         public string ItemId { get; set; } = "";
         public int? InstanceId { get; set; }
+        /// <summary>B22 M408：拖的是本实例战利品卡（键 owner|itemId|dr）。</summary>
+        public bool Reward { get; set; }
 
         /// <summary>解析网页来源键：card:owner|item[|inst]（owner 可以是 facility:camp:fire）、potchild:inst。</summary>
         public static DropSource? Parse(string key)
@@ -26,7 +28,8 @@ namespace Survival.Core.Engine
             var parts = key.Substring(5).Split('|');
             if (parts.Length < 2) return null;
             int? inst = parts.Length > 2 && int.TryParse(parts[2], out var n) ? n : (int?)null;
-            return new DropSource { Kind = DropSourceKind.Card, Owner = parts[0], ItemId = parts[1], InstanceId = inst };
+            var reward = parts.Length > 2 && parts[2] == GameEngine.RewardCardSuffix;
+            return new DropSource { Kind = DropSourceKind.Card, Owner = parts[0], ItemId = parts[1], InstanceId = inst, Reward = reward };
         }
     }
 
@@ -126,13 +129,13 @@ namespace Survival.Core.Engine
         {
             if (src.Kind == DropSourceKind.PotChild || src.InstanceId.HasValue)
                 return src.InstanceId.HasValue ? FindItem(s, src.InstanceId.Value) : null;
-            return s.Items.Where(i => i.Owner == src.Owner && i.ItemId == src.ItemId && i.ReservedBy == null)
+            return s.Items.Where(i => i.Owner == src.Owner && i.ItemId == src.ItemId && i.ReservedBy == null && (i.RewardOrigin != null) == src.Reward)
                 .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).FirstOrDefault();
         }
 
         /// <summary>该卡当前批次（同物品、同到期、同区、未预留）的总数。</summary>
         public int CardBatchCount(GameState s, ItemInstance head) =>
-            s.Items.Where(i => i.Owner == head.Owner && i.ItemId == head.ItemId && i.ExpiresAt == head.ExpiresAt && i.ReservedBy == null)
+            s.Items.Where(i => i.Owner == head.Owner && i.ItemId == head.ItemId && i.ExpiresAt == head.ExpiresAt && i.ReservedBy == null && i.RewardOrigin == head.RewardOrigin)
                 .Sum(i => i.Count);
 
         public DropIntent ResolveDrop(GameState s, DropSource src, DropTarget dst)

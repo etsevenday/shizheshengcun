@@ -1576,7 +1576,8 @@ public sealed class GameSession
         var inst = instanceId.HasValue
             ? S.Items.FirstOrDefault(i => i.InstanceId == instanceId.Value && i.Owner == owner)
             : S.Items.Where(i => i.Owner == owner && i.ItemId == itemId && i.ReservedBy == null)
-                .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).FirstOrDefault();
+                .OrderBy(i => i.RewardOrigin != null)   // B22 M408：普通卡的箭头先转普通物品，战利品卡的箭头带实例号
+                .ThenBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).FirstOrDefault();
         if (inst == null) return ActionResult.Fail("没有可转移的物品");
         // 火堆或锅里的物品：明确目标“取下到地面”或“拾取到随身”，与拖出走同一校验（统一卡片案第 5 节）
         if (inst.InFacility || (inst.InContainer && !E.IsLiquid(inst)))
@@ -1890,7 +1891,7 @@ public sealed class GameSession
     {
         var c = BattleCommand.Of(BattleAction ?? "", BattleTarget, BattleItem);
         if (S.Battle != null) c.ActorId = GameEngine.ActingAlly(S.Battle);
-        if (BattleAllyAiming) c.AllyTarget = BattleAllyTarget;
+        if (BattleAllyAiming) c.AllyTarget = BattleAllyTarget ?? (BattlePairAiming ? null : BattleAllyHover);   // B22 M408：预览跟随悬停的友方
         if (BattlePairAiming)
         {
             c.AllyTarget2 = BattleAllyTarget2;
@@ -1955,6 +1956,19 @@ public sealed class GameSession
         if (o.TargetMode == "area")
             return E.PreviewCommand(S, BattleCommand.Of(o.Action)) is { Ok: true } p ? p.Targets.Select(t => t.Index).ToList() : new List<int>();
         return o.Targets;
+    }
+
+    /// <summary>
+    /// 瞄准友方目标时悬停的我方成员（B22 试玩修复 M408：鼓舞提示贴等以友方为目标的指令，右栏预览跟随悬停的那一名；点下去才提交）。
+    /// 只在可选目标上设；离开清空。
+    /// </summary>
+    public string? BattleAllyHover { get; private set; }
+
+    public void HoverBattleAlly(string? actorId)
+    {
+        if (BattleAllyHover == actorId) return;
+        BattleAllyHover = actorId;
+        Notify();
     }
 
     /// <summary>悬停敌卡：右栏对象信息临时显示它；瞄准中显示对它的实际预测（不扣费、不抽随机）。</summary>
@@ -2237,6 +2251,18 @@ public sealed class GameSession
         else Notice = r.Ok ? null : r.Reason;
         Drain();
         ReconcileSelection();
+        Notify();
+    }
+
+    /// <summary>B22 试玩修复 M408：要在人物页滚到并高亮的遗物容器（回收箱卡“取出…”设，PartyPanel 渲染后滚动并清空）。</summary>
+    public string? FocusRemainsKey { get; set; }
+
+    /// <summary>父地点“回收箱”卡“取出…”：切到人物页并滚到这座地牢的回收箱/遗物箱块。</summary>
+    public void ShowDungeonBoxes(string dungeonId)
+    {
+        if (State == null) return;
+        FocusRemainsKey = E.RemainsItems(S, GameEngine.RecoveryBoxKey(dungeonId)).Count > 0 ? GameEngine.RecoveryBoxKey(dungeonId) : GameEngine.RelicBoxKey(dungeonId);
+        SetDetailTab(DetailTab.Character);
         Notify();
     }
 

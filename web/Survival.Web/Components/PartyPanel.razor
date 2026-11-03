@@ -1,4 +1,5 @@
 @inherits GameComponent
+@inject IJSRuntime JS
 
 @* B8（R08 §1—§4、A11 §5—§8；开发计划 v0.9 B8 M189）：右栏人物页顶部的“队伍”块——同行与候补各人的六项/病毒/速度/两件武器，
    营区（v3 前替身：临时营地）安全空闲时编入/留守、号位前后移、RB01 登记补员与借用矛报失；当前地点的遗物可取出。
@@ -63,7 +64,7 @@
             var deadId = kv.Key;
             var rem = kv.Value;
             var items = e.RemainsItems(s, deadId);
-            <div class="remains-card" data-remains="@deadId">
+            <div class="remains-card" data-remains="@deadId" id="@("remains-" + deadId)">
                 @if (rem.IsDungeonBox)
                 {
                     @* B22（R03 D7.1/D8）：地牢父地点的远征回收箱与旧实例遗物认领箱：无卡位上限、只能实地取，保质照常 *@
@@ -95,6 +96,17 @@
 }
 
 @code {
+    /// <summary>B22 M408：回收箱卡“取出…”跳过来时滚到对应块并高亮一次。</summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (G.FocusRemainsKey is not string key) return;
+        try
+        {
+            if (await JS.InvokeAsync<bool>("survival.scrollFlash", "remains-" + key)) G.FocusRemainsKey = null;
+        }
+        catch (JSException) { G.FocusRemainsKey = null; }
+    }
+
     private RenderFragment Row(string id, string where, bool active) => __builder =>
     {
         var s = G.S;

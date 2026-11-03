@@ -44,9 +44,14 @@
                 var whyGround = e.UnsealBlocked(s, iid, true);
                 <div class="exp-row remains-row" data-sealed="@iid">
                     <span>@e.ItemName(it.ItemId)×@it.Count#@iid@(e.IsSpoiled(s, it) ? "（已腐败）" : "")</span>
-                    <button type="button" class="eq-btn" disabled="@(whyCarry != null)" title="@(whyCarry ?? "取到你的随身（五张卡与30公斤校验）")" @onclick="() => G.UnsealItem(iid, false)">取到随身</button>
-                    <button type="button" class="eq-btn" disabled="@(whyGround != null)" title="@(whyGround ?? "放到当前地面")" @onclick="() => G.UnsealItem(iid, true)">放地面</button>
+                    <button type="button" class="eq-btn @(whyCarry != null ? "btn-off" : "")" disabled="@(whyCarry != null)" title="@(whyCarry ?? "取到你的随身（五张卡与30公斤校验）")" @onclick="() => G.UnsealItem(iid, false)">取到随身</button>
+                    <button type="button" class="eq-btn @(whyGround != null ? "btn-off" : "")" disabled="@(whyGround != null)" title="@(whyGround ?? "放到当前地面")" @onclick="() => G.UnsealItem(iid, true)">放地面</button>
                 </div>
+                @* B22 试玩修复 M408：不能取到随身的原因直接写在行下（不只在悬停里） *@
+                @if (whyCarry != null && whyGround == null)
+                {
+                    <div class="exp-row warn-text tiny seal-why"><span>取到随身：@whyCarry（可以先“放地面”，再逐件拾取）</span></div>
+                }
             }
         </div>
         <div class="ov-foot"><span></span><button type="button" class="secondary" @onclick="() => G.OpenPanel(null)">关闭</button></div>

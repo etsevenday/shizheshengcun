@@ -39,26 +39,32 @@
         {
             var parts = key.Split('|');
             var id = parts[1];
-            if (parts.Length == 2)
+            // B22 试玩修复 M408：本实例地牢战利品（可封存）单独成卡（键 owner|itemId|dr），不和同名外带物叠在一起
+            var dr = parts.Length == 3 && parts[2] == GameEngine.RewardCardSuffix;
+            if (parts.Length == 2 || dr)
             {
-                var list = items.Where(i => i.ItemId == id).OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
+                var list = items.Where(i => i.ItemId == id && (i.RewardOrigin != null) == dr).OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
                 if (list.Count == 0) continue;
+                var allKb = e.BatchesOf(s, Owner, id);
+                var sideKb = allKb.Where(b => (b.Stacks[0].RewardOrigin != null) == dr).ToList();
+                var split = sideKb.Count < allKb.Count;   // 同物品另有一张普通卡/战利品卡
                 var total = list.Sum(i => i.Count);
                 var head = list.FirstOrDefault(i => i.ReservedBy == null && !e.IsSpoiled(s, i)) ?? list[0];
                 var allSpoiled = list.All(i => e.IsSpoiled(s, i));
                 var anyReserved = list.Any(i => i.ReservedBy != null);
                 // Q24：随身同物品按真实批次（到期 + 来源 + 预留状态）叠卡；最早到期在最前，无保质在后；占格仍按内核合堆计数
-                var kb = carried ? e.BatchesOf(s, Owner, id) : null;
+                var kb = carried ? sideKb : null;
                 var batches = kb?.Count ?? list.Select(i => i.ExpiresAt).Distinct().Count();
                 var movable = list.Any(i => i.ReservedBy == null);
-                var gSel = sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner;
+                var gSel = sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner
+                           && (!split || G.CurrentBatch(Owner, id, allKb) is not { } cur || (cur.Stacks[0].RewardOrigin != null) == dr);
                 var span = carried ? Math.Max(1, e.RootCardsOf(s, list.Select(i => i.InstanceId))) : 1;
                 // 只有真实批次确实占了多个卡位时才铺成叠卡；同批仅因制作预留临时拆堆（仍占1格）不叠
                 var stacked = kb != null && kb.Count > 1 && span > 1;
                 var pickedKey = stacked && gSel ? G.CurrentBatch(Owner, id, kb)?.Key : null;
                 if (stacked) head = kb![0].Stacks.FirstOrDefault(i => i.ReservedBy == null) ?? kb[0].Stacks[0];
                 var colStyle = (span > 1 ? $"grid-column:span {span};--span:{span};" : "") + (stacked ? $"--layers:{kb!.Count - 1};" : "");
-                <div @key="@("g:" + id)" class="card-col @(gSel ? "open" : "") @(stacked ? "stacked" : "")"
+                <div @key="@("g:" + id + (dr ? ":dr" : ""))" class="card-col @(gSel ? "open" : "") @(stacked ? "stacked" : "")"
                      style="@(colStyle.Length > 0 ? colStyle : null)">
                 @if (stacked)
                 {
@@ -85,14 +91,14 @@
                     var qtyText = reservedN > 0 && reservedN < total ? $"×{total}（预留{reservedN}）" : $"×{total}";
                 }
                 @* Q35：长名一行省略时，键盘聚焦提示（data-tip）与名称悬停提示写全名、数量与效果行 *@
-                <div id="@(gSel ? "card-sel" : null)" data-tip="@($"{e.ItemName(id)} ×{total} · {infoLine}{(span > 1 ? $" · 占{span}格" : "")}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drop="@($"card:{key}")" data-drop-level="card"
+                <div id="@(gSel ? "card-sel" : null)" data-tip="@($"{e.ItemName(id)} ×{total}{(dr ? "（本实例战利品，可封存）" : "")} · {infoLine}{(span > 1 ? $" · 占{span}格" : "")}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drop="@($"card:{key}")" data-drop-level="card"
                      class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel && (!stacked || pickedKey == kb![0].Key) ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "") @(!carried && G.HeldHighlight(id) ? "held" : "")"
-                     role="button" tabindex="0" @onclick="() => SelectFront(id, kb)" @onkeydown="ev => OnCardKey(ev, () => SelectFront(id, kb))" title="@e.Item(id).Desc">
-                    <div class="ctitle"><span title="@e.ItemName(id)">@e.ItemName(id)</span><span class="qty" title="@(stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : reservedN > 0 ? $"共{total}份，其中{reservedN}份已被预留（不能拾取或另用）" : null)">@qtyText</span></div>
+                     role="button" tabindex="0" @onclick="() => SelectSide(id, kb, split ? sideKb : null)" @onkeydown="ev => OnCardKey(ev, () => SelectSide(id, kb, split ? sideKb : null))" title="@(dr ? "本实例战利品：这次地牢里领到的奖励，可以封存；成功离开地牢后并回同名物品。" + e.Item(id).Desc : e.Item(id).Desc)">
+                    <div class="ctitle"><span title="@e.ItemName(id)">@e.ItemName(id)</span>@if (dr) { <i class="qtag q-green" title="本实例战利品（可封存；离开地牢后并回同名物品）">战利品</i> }<span class="qty" title="@(stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : reservedN > 0 ? $"共{total}份，其中{reservedN}份已被预留（不能拾取或另用）" : null)">@qtyText</span></div>
                     <div class="art">@Icons.Markup(id)</div>
                     <div class="cinfo" title="@infoLine">@infoLine</div>
                     @if (span > 1) { <span class="slot-span" title="@($"同物品{batches}批/超过堆叠上限，占{span}张随身卡{(stacked ? $"；最前这一批×{kb![0].Count}" : "")}")">占@(span)格@(batches > 1 ? $"·{batches}批" : "")</span> }
-                    <TransferArrow Owner="@Owner" ItemId="@id" Enabled="@(movable && !busy)" />
+                    <TransferArrow Owner="@Owner" ItemId="@id" InstanceId="@(dr ? head.InstanceId : (int?)null)" Enabled="@(movable && !busy)" />
                 </div>
                 </div>
             }
@@ -151,6 +157,14 @@
 
     private void SelectGroup(string itemId) =>
         G.Select(new Selection { Kind = SelectionKind.ItemGroup, Id = itemId, Owner = Owner });
+
+    /// <summary>B22 M408：同物品分成普通卡与战利品卡时，点哪张就选中那一侧的最前一批（之后转移/食用作用于它）；没有分卡时同 SelectFront。</summary>
+    private void SelectSide(string itemId, List<ItemBatch>? batches, List<ItemBatch>? side)
+    {
+        if (side == null || side.Count == 0) { SelectFront(itemId, batches); return; }
+        var pick = side.FirstOrDefault(b => !b.Reserved && !b.Spoiled) ?? side[0];
+        G.PickBatch(Owner, itemId, pick.Key);
+    }
 
     /// <summary>点叠卡最前一张：选中这一物品卡，批次回到默认（最前合法可用批次，Q24）。不叠卡时同 SelectGroup。</summary>
     private void SelectFront(string itemId, List<ItemBatch>? batches)

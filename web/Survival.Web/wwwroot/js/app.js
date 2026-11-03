@@ -83,6 +83,17 @@ window.survival = {
     var r = el.getBoundingClientRect();
     return [r.left, r.top, r.right, r.bottom];
   },
+  // B22 试玩修复 M408：滚到某元素（居中）并短暂高亮（回收箱卡“取出…”跳到人物页的回收箱块）
+  scrollFlash: function (id) {
+    var el = document.getElementById(id);
+    if (!el) return false;
+    try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) { el.scrollIntoView(); }
+    el.classList.remove('flash-focus');
+    void el.offsetWidth;
+    el.classList.add('flash-focus');
+    setTimeout(function () { el.classList.remove('flash-focus'); }, 2200);
+    return true;
+  },
   // 聚焦并选中输入框内容，直接打字即替换
   focusSelect: function (el) {
     try { el.focus(); el.select(); } catch (e) { }
