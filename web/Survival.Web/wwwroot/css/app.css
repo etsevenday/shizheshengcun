@@ -1451,6 +1451,8 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .drying-panel .dry-option.missing { opacity: .85; }
 .drying-panel .dry-icon svg { width: 22px; height: 22px; vertical-align: middle; }
 .drying-panel .dry-note { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.drying-panel .dry-pause { color: var(--good); }   /* B22k Q215：肉干暂停保质说明（不是红字） */
+.drying-panel .dry-changed { flex-basis: 100%; }
 
 /* B18 鉴定所鉴定交易面板（R07 X3.6）：三页签、样本与报价单选列表 */
 

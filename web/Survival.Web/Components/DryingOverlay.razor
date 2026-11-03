@@ -2,8 +2,10 @@
 
 @* 晾制架面板（策划答复 Q170，S11/A07「八位晾架完整定稿」；开发计划 v0.9 B22c）：当前区晾制架的 8 个独立晾制位。
    空位：选食谱（果干/肉干）→ 预览写明投到第几位、取哪几份原料（只取随身与当前地面）、完成时刻、经验与日额 → 确认投料（0 分钟）。
-   晾制中：进度条、剩余时间、原料保质；“取消·到随身/到地面”按原截止退回。已晾好：“取到随身/取到地面”。原料腐败：“清理·到随身/到地面”（原样取出）。
-   全部数据来自内核 DryingSlotViews / DryingPreview；按钮的禁用原因写在悬停提示里。样式沿用安全屋面板。 *@
+   晾制中：进度条、剩余时间、原料保质；“取消·到随身/到地面”：果干按原截止退回，肉干恢复投料时的剩余保质（Q215）。已晾好：“取到随身/取到地面”。原料腐败：“清理·到随身/到地面”（原样取出）。
+   全部数据来自内核 DryingSlotViews / DryingPreview；按钮的禁用原因写在悬停提示里。样式沿用安全屋面板。
+   B22k（Q214/Q215）：肉干预览与位上写“开始制作后暂停原料保质计时，取消后恢复剩余时长”，不再标制作中腐败红字；果干临期红字“会在完成前腐败，届时停止且没有成品”。
+   点“投料…”记下当时预览的来源（SourceKey），确认时带给内核重验；预览变了先提示、要求看新预览再确认，不悄悄换料。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -16,7 +18,7 @@
 
 <div class="sub-panel safehouse-panel drying-panel" role="dialog" aria-label="晾制架">
     <div class="sub-head">
-        <div><h2>晾制架</h2><span class="sub" title="被动晾制按世界时间推进：不吃熟练加速、不耗火和燃料、不占行动；离开也继续，暂停不推进。原料没有受热保护，到期即腐败、没有成品。">@(here ? $"{e.ZoneName(s, s.Ground)} · {e.DryingSummary(s)} · 每位一批" : "当前区没有晾制架") ⓘ</span></div>
+        <div><h2>晾制架</h2><span class="sub" title="被动晾制按世界时间推进：不吃熟练加速、不耗火和燃料、不占行动；离开也继续，暂停不推进。果干原料没有受热保护，到期即腐败、没有成品；肉干@(GameEngine.DryingShelfPauseText)。">@(here ? $"{e.ZoneName(s, s.Ground)} · {e.DryingSummary(s)} · 每位一批" : "当前区没有晾制架") ⓘ</span></div>
         <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
     </div>
     <div class="sub-body sh-body" data-wheel="y">
@@ -36,7 +38,7 @@
                         {
                             <div class="fuel-track"><i style="width:@(v.DoneMinutes * 100 / Math.Max(1, v.RequiredMinutes))%"></i></div>
                         }
-                        <div class="tiny @(v.Status == "spoiled" || v.Line.Contains("不晚于完成") ? "warn-text" : "muted")">@v.Line</div>
+                        <div class="tiny @(v.Status == "spoiled" || v.Line.Contains("会在完成前腐败") ? "warn-text" : "muted")">@v.Line</div>
                         @foreach (var c in v.Contents)
                         {
                             <div class="tiny">· @c</div>
@@ -52,8 +54,8 @@
                                     <button type="button" class="secondary" disabled="@busy" title="选这一位，在下方选食谱并预览" @onclick="() => Pick(k)">@(pick == k ? "已选这一位" : "投到这一位")</button>
                                     break;
                                 case "drying":
-                                    <button type="button" class="secondary" disabled="@(busy || v.ToCarriedBlocked != null)" title="@(v.ToCarriedBlocked ?? "取消这一批：原料按原保质退回随身，已过时间不退，没有成品、不给经验")" @onclick="() => Cancel(k, true)">取消·到随身</button>
-                                    <button type="button" class="secondary" disabled="@(busy || v.ToGroundBlocked != null)" title="@(v.ToGroundBlocked ?? "取消这一批：原料按原保质退回当前地面，已过时间不退，没有成品、不给经验")" @onclick="() => Cancel(k, false)">取消·到地面</button>
+                                    <button type="button" class="secondary" disabled="@(busy || v.ToCarriedBlocked != null)" title="@(v.ToCarriedBlocked ?? v.CancelHint + "（退回随身）")" @onclick="() => Cancel(k, true)">取消·到随身</button>
+                                    <button type="button" class="secondary" disabled="@(busy || v.ToGroundBlocked != null)" title="@(v.ToGroundBlocked ?? v.CancelHint + "（退回当前地面）")" @onclick="() => Cancel(k, false)">取消·到地面</button>
                                     break;
                                 case "done":
                                     <button type="button" class="primary" disabled="@(busy || v.ToCarriedBlocked != null)" title="@(v.ToCarriedBlocked ?? "取出成品到随身（0分钟），这一位空出")" @onclick="() => Take(k, true)">取到随身</button>
@@ -93,17 +95,27 @@
                         {
                             <div class="tiny warn-text">@w</div>
                         }
+                        @if (o.PausesShelf)
+                        {
+                            <div class="tiny dry-pause">@GameEngine.DryingShelfPauseText</div>
+                        }
                         <div class="tiny cg-xp">@o.XpText</div>
                         <div class="tiny muted dry-note" title="@o.Note">@o.Note</div>
                         <div class="btn-row dry-btns">
-                            @if (_confirm == id)
+                            @if (_confirm == id && o.Ok && _confirmKey != o.SourceKey)
+                            {
+                                <div class="tiny warn-text dry-changed">@GameEngine.DryingPreviewChanged</div>
+                                <button type="button" class="primary" disabled="@busy" title="已看过上面更新后的预览，按它确认" @onclick="() => _confirmKey = o.SourceKey">看过新预览，重新确认…</button>
+                                <button type="button" class="secondary" @onclick="() => _confirm = null">先不投</button>
+                            }
+                            else if (_confirm == id)
                             {
                                 <button type="button" class="primary" disabled="@(!o.Ok || busy)" title="@(o.Reason ?? "确认：0分钟把上面列出的原料放进晾制位，开始被动晾制")" @onclick="() => Load(id, o.Slot)">确认投料（@slotText）</button>
                                 <button type="button" class="secondary" @onclick="() => _confirm = null">先不投</button>
                             }
                             else
                             {
-                                <button type="button" class="primary" disabled="@(!o.Ok || busy)" title="@(o.Reason ?? "看预览后确认投料")" @onclick="() => _confirm = id">投料…</button>
+                                <button type="button" class="primary" disabled="@(!o.Ok || busy)" title="@(o.Reason ?? "看预览后确认投料")" @onclick="() => { _confirm = id; _confirmKey = o.SourceKey; }">投料…</button>
                             }
                         </div>
                     </div>
@@ -117,6 +129,8 @@
 @code {
     private int? _pickSlot;
     private string? _confirm;
+    /// <summary>点“投料…”时看到的预览来源（Q214：确认按它重验，变了要求再确认）。</summary>
+    private string? _confirmKey;
 
     private void Close() => G.OpenPanel(null);
 
@@ -128,9 +142,14 @@
 
     private void Load(string recipeId, int slot)
     {
-        _confirm = null;
-        var r = G.EngineDo(() => G.E.StartDrying(G.S, recipeId, slot >= 0 ? slot : null, Guid.NewGuid().ToString("N")));
-        if (r.Ok) _pickSlot = null;
+        var key = _confirmKey;
+        var r = G.EngineDo(() => G.E.StartDrying(G.S, recipeId, slot >= 0 ? slot : null, Guid.NewGuid().ToString("N"), key));
+        if (r.Ok)
+        {
+            _confirm = null;
+            _pickSlot = null;
+        }
+        else if (r.Reason != GameEngine.DryingPreviewChanged) _confirm = null;   // 预览变了：留在确认处，显示新预览与“重新确认”
     }
 
     private void Cancel(int slot, bool toCarried) => G.EngineDo(() => G.E.CancelDrying(G.S, slot, toCarried, Guid.NewGuid().ToString("N")));
