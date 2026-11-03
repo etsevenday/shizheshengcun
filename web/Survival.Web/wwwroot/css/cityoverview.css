@@ -45,10 +45,13 @@
 .city-bldg.locked .bldg-art { opacity: .7; }
 .city-bldg.unknown .bldg-art { color: #8d8a7c; }
 .city-bldg.unknown .bldg-name { color: var(--muted); border-style: dashed; }
-/* 建筑旁的说明/确认窗：靠近建筑，空间不足向内翻转（左右、上下按位置） */
-.city-info { position: absolute; z-index: 3; width: max-content; min-width: 200px; padding: 8px 10px; border-radius: 6px;
-  background: #121a1df2; border: 1px solid #8f8466; box-shadow: 0 6px 18px #0009; font-size: 14px; line-height: 1.4; pointer-events: none; }
-.city-info.pinned { border: 2px solid var(--accent); pointer-events: auto; }
+/* B24 试玩修复（M493）：说明/确认改放右侧边栏，不盖路线经过的楼与相邻热区；动作与原因在最上方 */
+.city-main { flex: 1; min-height: 0; display: flex; gap: 8px; }
+.city-main .city-map { flex: 1; min-width: 0; }
+.city-side { flex: 0 0 clamp(220px, 30%, 340px); min-height: 0; overflow-y: auto; border: 1px solid var(--line); border-radius: 6px; background: #121a1df2; padding: 8px 10px; }
+.city-side .ci-hint { color: var(--muted); font-size: 14px; }
+.city-info { font-size: 14px; line-height: 1.4; display: flex; flex-direction: column; gap: 2px; }
+.city-info.pinned { }
 .city-info .ci-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; }
 .city-info .ci-head b { font-size: 16px; color: var(--accent); }
 .city-info .ci-state { color: var(--muted); font-size: 13px; flex: 1; }
@@ -58,8 +61,14 @@
 .city-info .ci-quest { color: var(--warn); }
 .city-info .ci-route { color: var(--text); }
 .city-info .ci-leg { color: var(--muted); font-size: 13px; }
-.city-info .ci-actions { display: flex; flex-direction: column; align-items: stretch; gap: 4px; margin-top: 6px; }
+.city-info .ci-actions { display: flex; flex-direction: column; align-items: stretch; gap: 4px; margin: 4px 0 6px; }
 .city-info .ci-actions button { min-height: 36px; font-size: 15px; }
+.city-head-btns { display: flex; gap: 8px; align-items: center; flex: 0 0 auto; }
+.city-head-btns .loc-btn.city-btn { min-height: 36px; padding: 2px 12px; }
+/* 主行动进行中打开鸟瞰：中央进度卡停靠到鸟瞰下沿（图例处），不盖住边栏顶部的“前往”与禁用原因 */
+/* 主行动进行中打开鸟瞰：中央进度卡停靠到边栏下部（不盖住图上的楼、路线，也不盖边栏顶部的“前往”与禁用原因） */
+.center.city-open .cprog.float { left: auto; right: 20px; top: auto; bottom: calc(25% + 14px); transform: none; width: clamp(220px, 28%, 330px); padding: 6px 10px; gap: 4px; }
+.center.city-open .cprog.float .cp-head { flex-wrap: wrap; row-gap: 2px; }
 .city-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 13px; color: var(--muted); }
 .city-legend .lg { display: inline-block; width: 16px; height: 12px; margin-right: 4px; vertical-align: -1px; border-radius: 3px; font-style: normal; text-align: center; line-height: 12px; font-size: 11px; }
 .city-legend .lg.here { border: 2px solid var(--accent); }
@@ -71,7 +80,8 @@
 /* 当前地点卡旁“主城鸟瞰”按钮 */
 .loc-btn.city-btn.on { border-color: var(--accent); color: var(--accent); }
 /* 第四行只读提示（鸟瞰期间仅查看） */
-.card-pop .city-readonly { padding: 8px 10px; max-width: 320px; font-size: 14px; color: var(--warn); }
+.card-pop .city-readonly { display: flex; flex-direction: column; gap: 2px; padding: 10px 56px 10px 10px; min-height: 52px; max-width: 340px; font-size: 14px; color: var(--warn); }
+.card-pop .city-readonly b { color: var(--text); font-size: 14px; }
 @media (max-height: 800px) {
   .city-panel .sub-head { padding: 5px 12px; }
   .city-body { padding: 4px 10px 6px; }
@@ -86,3 +96,5 @@
 .people-more .pm-item { display: flex; flex-direction: column; align-items: flex-start; min-height: 40px; padding: 2px 6px; text-align: left; }
 .people-more .pm-item b { font-size: 14px; font-weight: 500; }
 .people-more .pm-item small { font-size: 12px; color: var(--muted); }
+/* 进度卡停靠在边栏下部时，边栏留出底部空间，长说明可滚到进度卡上方 */
+.center.city-open:has(.cprog.float) .city-side { padding-bottom: 140px; }

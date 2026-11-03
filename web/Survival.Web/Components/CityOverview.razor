@@ -38,13 +38,18 @@
             <h2>@v.Title · 主城鸟瞰</h2>
             <span class="sub">只读浏览 · 上三行覆盖 · 不耗时</span>
         </div>
-        <button class="secondary" title="关闭鸟瞰，留在当前真实地点（不移动）" @onclick="Close">返回当前地点<kbd>Esc</kbd></button>
+        <div class="city-head-btns">
+            @* B24 试玩修复（M493，A10-CITY §3“再次按同一打开按钮只退浏览层”）：鸟瞰盖住当前地点卡，这里放同一个“主城鸟瞰”按钮（按下态） *@
+            <button type="button" class="loc-btn city-btn on" aria-pressed="true" title="主城鸟瞰（再按一次只退浏览层，不移动）" @onclick="Close"><strong>主城鸟瞰</strong></button>
+            <button class="secondary" title="关闭鸟瞰，留在当前真实地点（不移动）" @onclick="Close">返回当前地点<kbd>Esc</kbd></button>
+        </div>
     </div>
     @if (G.CityLegacyNote)
     {
         <div class="city-legacy" role="note">旧存档首次显示：主城鸟瞰是新加入的浏览界面，只作说明，不补发任何奖励。</div>
     }
     <div class="city-body">
+        <div class="city-main">
         <div class="city-map" style="--cols:@cols;--rows:@rows">
             <svg class="city-roads" viewBox="@($"0 0 {cols * 100} {rows * 100}")" preserveAspectRatio="none" aria-hidden="true">
                 @foreach (var r in v.Roads)
@@ -84,27 +89,22 @@
                     @if (b.CanTurnIn > 0) { <span class="bldg-mark turnin" title="有可交的委托">✓</span> }
                 </button>
             }
-            @if (focusB != null)
+        </div>
+        @* B24 试玩修复（M493）：说明与确认窗改放鸟瞰右侧边栏，不再浮在图上盖住路线经过的楼与相邻热区；
+           “前往”与禁用原因放在边栏最上方，主行动进行中的中央进度卡（鸟瞰时停靠在下方）不会盖住原因 *@
+        <aside class="city-side" aria-live="polite">
+            @if (focusB == null)
             {
-                var x = Cx(focusB);
-                var y = Cy(focusB);
-                var right = x >= 50;
-                var below = y < 50;
-                var cellW = 50.0 / cols;
-                var avail = (right ? x - cellW * 0.8 : 100 - x - cellW * 0.8) - 1;
-                var posStyle = $"max-width:min(420px,{F(avail)}%);" + (right ? $"right:{F(100 - x + cellW * 0.8)}%;" : $"left:{F(x + cellW * 0.8)}%;") + (below ? $"top:{F(Math.Max(2, y - 50.0 / rows))}%;" : $"bottom:{F(Math.Max(2, 100 - y - 50.0 / rows))}%;");
-                <div class="city-info @(pinned ? "pinned" : "")" style="@posStyle" role="@(pinned ? "dialog" : "tooltip")" aria-label="@(focusB.Discovered ? focusB.Name : "尚未发现")">
+                <div class="ci-hint">把鼠标移到建筑上或用 Tab 聚焦查看说明；点建筑选中后在这里确认。</div>
+            }
+            else
+            {
+                <div class="city-info @(pinned ? "pinned" : "")" role="@(pinned ? "dialog" : "note")" aria-label="@(focusB.Discovered ? focusB.Name : "尚未发现")">
                     <div class="ci-head">
                         <b>@(focusB.Discovered ? focusB.Name : "尚未发现")</b>
                         <span class="ci-state">@(focusB.IsHere ? "当前" : !focusB.Discovered ? "未公开" : focusB.Path == null ? "未开通" : "可前往")@(pinned ? " · 已选中" : "")</span>
                         @if (pinned) { <button type="button" class="ci-x" aria-label="取消选择" title="取消选择（Esc/右键）" @onclick="() => G.PickCity(null)">×</button> }
                     </div>
-                    @if (focusB.Discovered)
-                    {
-                        <div class="ci-line">人物：@(focusB.People.Count > 0 ? string.Join("；", focusB.People) : "没有岗位人物")</div>
-                        @if (focusB.Services.Count > 0) { <div class="ci-line">服务：@string.Join("、", focusB.Services)</div> }
-                        @if (focusB.QuestNote.Length > 0) { <div class="ci-line ci-quest">@focusB.QuestNote</div> }
-                    }
                     @if (focusB.IsHere)
                     {
                         <div class="ci-line">你在这里。</div>
@@ -141,8 +141,15 @@
                             }
                         </div>
                     }
+                    @if (focusB.Discovered)
+                    {
+                        <div class="ci-line">人物：@(focusB.People.Count > 0 ? string.Join("；", focusB.People) : "没有岗位人物")</div>
+                        @if (focusB.Services.Count > 0) { <div class="ci-line">服务：@string.Join("、", focusB.Services)</div> }
+                        @if (focusB.QuestNote.Length > 0) { <div class="ci-line ci-quest">@focusB.QuestNote</div> }
+                    }
                 </div>
             }
+        </aside>
         </div>
         <div class="city-legend" aria-label="图例">
             <span><i class="lg here"></i>◎ 当前</span>
