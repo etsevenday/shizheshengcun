@@ -117,5 +117,13 @@
     "quotaReservation"
   ],
   "crossMidnight": "finish_against_start_day_exact_quote_and_quota; next_day_snapshot_must_not_reprice_old_transaction",
-  "unknownQuoteVersion": "safely_cancel_preserve_original_sample_and_owner_no_consumption"
+  "unknownQuoteVersion": "safely_cancel_preserve_original_sample_and_owner_no_consumption",
+  "q176Q178": {
+    "dailyLock": "安全到达鉴定所时，或在当地安全打开面板/直接开工时，若当日未锁，则先一次生成并持久化整表再展示/确认；人在鉴定所过午夜不自动锁新表，下次上述操作锁。没有战斗/待处理敌踪及原服务锁才算安全。种子/世界日/报价档等既定固定字段决定同日数值，访问时刻不参与随机，已锁不重抽；跨午夜已开工服务沿原开工快照，不中途改价。",
+    "completionDialogue": "仅鉴定/换物两服务：成功仅日志与非强制提示，不弹陶岑service_end，不要求结束对话；已开工后取消或事务失败时在原安全边界播一次“看看结果和剩余物品，没提交的就还在原处。”，失败校验/重复点禁用按钮只显示原因，不反复弹。其他城市服务不受影响；这句不改变材料返还与已提交结算规则，0时间0奖励。",
+    "identifiedName": "对实例读取鉴定状态，普通白色已鉴定显示名为“活性物质（白色·已鉴定）”；未鉴定保持原名。卡名、随身/地面、整备、预览、面板及新生成日志同口径，内部itemId active_substance_white_unidentified不变，不创建新物、不改数量/归属/来源/交易资格/融合效果，历史日志不批量改写。混合鉴定状态不得用同一个标题掩盖状态，分显示组且保留逐实例选择；教学来源保护仍沿原规则，Q179教学卡独立展示待后续裁定。"
+  },
+  "quotes": {
+    "lockPolicy": "安全到达鉴定所时，或在当地安全打开面板/直接开工时，若当日未锁，则先一次生成并持久化整表再展示/确认；人在鉴定所过午夜不自动锁新表，下次上述操作锁。没有战斗/待处理敌踪及原服务锁才算安全。种子/世界日/报价档等既定固定字段决定同日数值，访问时刻不参与随机，已锁不重抽；跨午夜已开工服务沿原开工快照，不中途改价。"
+  }
 }

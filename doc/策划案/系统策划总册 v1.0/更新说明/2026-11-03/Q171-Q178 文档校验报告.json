@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-03",
+  "status": "passed",
+  "checks": [
+    "JSON解析",
+    "原实现同步与完整修改记录保留",
+    "待确认只修改八题答复",
+    "跨系统合同及鉴定镜像一致",
+    "野外名单排除地牢和公共营区广场",
+    "被动经验共享日限计算",
+    "diff --check提交前由提交工具执行"
+  ],
+  "allowedWildNodes": 54,
+  "acceptanceCount": 11,
+  "gameplayTested": false
+}
