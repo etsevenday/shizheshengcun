@@ -8,7 +8,7 @@ namespace Survival.Core.Engine
 {
     /// <summary>
     /// 配方框架（开发计划 v0.9 B16，R48；A07「X1.3 每个配方及知识」、S08 X4）：三种模式——active_work（主动工作量，吃技能/装备加速）、
-    /// fixed_wait（固定等待，全队等待，不吃加速、不给经验）、passive_heat/passive（设施被动加工：火堆锅食谱见 GameEngine.PotRecipe.cs，
+    /// fixed_wait（固定等待，全队等待，不吃加速；B22a Q166 起净水按净化给烹饪经验）、passive_heat/passive（设施被动加工：火堆锅食谱见 GameEngine.PotRecipe.cs，
     /// 陶窑与固定净水台随 B17）。投料按具体实例预留，完成只出一次。知识 expedition_basics（B14）与 ceramic_methods（本批）。
     /// </summary>
     public sealed partial class GameEngine
@@ -26,12 +26,12 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 制作完成经验（返回日志短句）：固定等待不给经验（开发假设 B16-3）；烹饪门类（远征口粮棒）与食品进程合计每角色每日 30（Q60）；
+        /// 制作完成经验（返回日志短句）：固定等待净水按净化给烹饪经验（B22a，Q166 选 B；开工快照不是烹饪的旧批次不给）；烹饪门类（远征口粮棒）与食品进程合计每角色每日 30（Q60）；
         /// 其余按 clamp(ceil(原基础分钟/10),1,12)×批数给开工快照的门类。
         /// </summary>
         private string CraftCompleteXp(GameState s, ActionState a, RecipeConfig rc, string xpSkill, int batch)
         {
-            if (a.FixedWait) return "固定等待不给经验";
+            if (a.FixedWait) return FixedWaitWaterXp(s, a, rc, batch);
             var xp = CraftXp(rc.BaseMinutes) * batch;
             if (xpSkill == Cooking)
             {
@@ -115,7 +115,9 @@ namespace Survival.Core.Engine
         /// <summary>配方模式的玩家说法：“主动制作（吃熟练加速）”“固定等待20分钟（不吃加速）”“被动加工（不吃加速）”。</summary>
         public string RecipeModeText(RecipeConfig rc) => rc.ModeOrDefault switch
         {
-            RecipeConfig.ModeFixedWait => $"固定等待{Clock.Duration(rc.BaseMinutes)}（全队等待，不吃熟练加速，不给经验）",
+            RecipeConfig.ModeFixedWait => rc.XpSkill == Cooking
+                ? $"固定等待{Clock.Duration(rc.BaseMinutes)}（全队等待，不吃熟练加速；成功后每500毫升净水{SkillName(Cooking)}经验+1，与锅烧水合计每日最多{Config.Progression.Cooking.WaterDailyCap}）"
+                : $"固定等待{Clock.Duration(rc.BaseMinutes)}（全队等待，不吃熟练加速，不给经验）",
             RecipeConfig.ModePassiveHeat or RecipeConfig.ModePassive => rc.IsPot
                 ? $"火堆锅里被动加工{rc.BaseMinutes}有效受热分钟（不吃熟练加速）"
                 : $"{StationName(rc.Station)}被动加工{Clock.Duration(rc.BaseMinutes)}（不吃熟练加速）",

@@ -68,16 +68,19 @@ public class B16RecipeTests : TestBase
         Assert.That(u.Main, Is.Null);
     }
 
-    /// <summary>SUP03/ES04 前半：净水片 fixed_wait 固定 20 分钟（制造 10 级也不加速）、全队按等待、不给经验；锁 4 份脏水+1 片，完成一次 4 份净水落当前地面。</summary>
+    /// <summary>
+    /// SUP03/ES04 前半：净水片 fixed_wait 固定 20 分钟（制造 10 级也不加速）、全队按等待；锁 4 份脏水+1 片，完成一次 4 份净水落当前地面。
+    /// B22a（Q166 选 B）起完成给烹饪 4（2L，每 500ml 1），不给制造等其他门类（原“不给经验”取消，详见 B22aTests）。
+    /// </summary>
     [Test]
-    public void SUP03_TabletWater_FixedWait20_NoSpeedNoXp()
+    public void SUP03_TabletWater_FixedWait20_NoSpeed_CookXp4()
     {
         var s = Camp(("dirty_water", 4), ("purification_tablet", 2));
         s.Skills["crafting"].Level = 10;
         var xp = s.Skills.ToDictionary(k => k.Key, k => k.Value.Xp + k.Value.Level * 100000L);
         var pv = E.Preview(s, ActionRequest.Craft("ex_tablet_water"));
         Assert.That(pv.EstimatedMinutes, Is.EqualTo(20));
-        Assert.That(pv.XpGains, Has.Some.Contains("固定等待不给经验"));
+        Assert.That(pv.XpGains, Has.Some.Contains("烹饪经验+4"));
         var t0 = s.GameMinute;
         Start(s, ActionRequest.Craft("ex_tablet_water"));
         Assert.That(s.Main!.FixedWait, Is.True);
@@ -88,6 +91,7 @@ public class B16RecipeTests : TestBase
         Assert.That(Count(s, "dirty_water"), Is.EqualTo(0));
         Assert.That(Count(s, "clean_water", s.CurrentLocation), Is.EqualTo(4));
         Assert.That(Count(s, "purification_tablet"), Is.EqualTo(1));
+        xp["cooking"] += 4;   // B22a Q166：只加烹饪 4
         Assert.That(s.Skills.ToDictionary(k => k.Key, k => k.Value.Xp + k.Value.Level * 100000L), Is.EqualTo(xp));
         Assert.That(E.CanStart(s, ActionRequest.Craft("ex_tablet_water", null, null, 2)), Does.Contain("每次只做1批"));
     }

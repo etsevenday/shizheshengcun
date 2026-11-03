@@ -19095,7 +19095,8 @@
       },
       "station": "hand",
       "knowledge": "expedition_basics",
-      "mode": "fixed_wait"
+      "mode": "fixed_wait",
+      "xpSkill": "cooking"
     },
     {
       "id": "ex_filter_cartridge",
@@ -19143,7 +19144,8 @@
       },
       "station": "hand",
       "knowledge": "expedition_basics",
-      "mode": "fixed_wait"
+      "mode": "fixed_wait",
+      "xpSkill": "cooking"
     },
     {
       "id": "ex_ration_canteen",
@@ -35755,7 +35757,7 @@
         "completeFacts": [],
         "stepOffer": "到施济处和白苓交谈。",
         "stepLocked": "",
-        "stepActive": "取得圣所旧路档册后，在施济处核对物资账（10分钟）。",
+        "stepActive": "在施济处用圣所旧路档册核对物资账（10分钟）。",
         "result": "公开账核对记录已保存（不领取另一份地牢箱）"
       },
       {

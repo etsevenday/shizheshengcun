@@ -22,6 +22,8 @@ namespace Survival.Core.Engine
         /// <summary>烹饪：净化已完成的毫升（每 500ml 1 经验，日 4）与食品经验（日 30）（Q60）。</summary>
         public const string DailyWaterMl = "waterMl";
         public const string DailyWaterXp = "waterXp";
+        /// <summary>净化日 4 里由净水片/滤芯固定等待净水给的部分（B22a，Q166 选 B：与锅烧水共享日 4；锅已得 = waterXp − 本项）。</summary>
+        public const string DailyWaterFixedXp = "waterFixedXp";
 
         private static string DailyKey(int day, string kind, string id) => $"{day}|{kind}|{id}";
 

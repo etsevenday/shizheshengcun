@@ -100,10 +100,11 @@ QUESTS = [
          workLabel="查看说明", result="留守说明已读（不改队伍、不清伤病）"),
     # B15b（Q162 选 A）：在原“FA02 已接”之外须已领圣所旧路档册（FA02_record_credit）才开放接取；showAny 留空＝前置满足才显示，
     # 未领时任务册与岗位都不提这条委托；工作仍读原档册条件（旧档已接无档册者保留进度、不能跳过）
+    # B22a（Q165 选 A）：下一步逐字改为 narrative-texts questCompletionQ163Q165.ch01ActiveStep
     dict(id="CH01", title="施济清单", kind="side", npcId="npc_bai_ling", locationId="c04_alms",
          showAny=[], requiresAll=[qf("FA02", "accepted"), "FA02_record_credit"], accept="talk",
          workMinutes=10, workRequiresAll=["FA02_record_credit"],
-         stepOffer="到施济处和白苓交谈。", stepActive="取得圣所旧路档册后，在施济处核对物资账（10分钟）。",
+         stepOffer="到施济处和白苓交谈。", stepActive="在施济处用圣所旧路档册核对物资账（10分钟）。",
          workLabel="核对物资账", result="公开账核对记录已保存（不领取另一份地牢箱）"),
     dict(id="CH02", title="被扣下的记录", kind="side", npcId="npc_ji_mu", locationId="c05_admonition",
          showAny=[qf("CH01", "completed")], requiresAll=[qf("CH01", "completed")], accept="talk",

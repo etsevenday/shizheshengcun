@@ -711,10 +711,11 @@ namespace Survival.Core.Config
         /// <summary>
         /// 完成经验归属的熟练门类（Q110 选 B：医疗台 saline/disinfectant/herb_extract 三条材料加工给 medicine）；null 为制造 crafting。
         /// 数额仍按 clamp(ceil(原基础分钟/10),1,12)×批次；开工时快照到 ActionState.XpSkill。
+        /// fixed_wait 净水（ex_tablet_water / ex_cartridge_water）为 cooking：按净化每 500ml 给 1、与锅烧水共享日 4（B22a，Q166 选 B），不按分钟。
         /// </summary>
         public string? XpSkill { get; set; }
         /// <summary>
-        /// 制作模式（A07 X1.3、S08 X4，B16 R48）：active_work（默认，主动工作量、吃技能/装备加速）、fixed_wait（固定等待，全队等待、不吃加速、不给经验）、
+        /// 制作模式（A07 X1.3、S08 X4，B16 R48）：active_work（默认，主动工作量、吃技能/装备加速）、fixed_wait（固定等待，全队等待、不吃加速；xpSkill=cooking 的净水按净化给烹饪经验，Q166）、
         /// passive_heat / passive（设施被动加工，不吃加速；陶窑、火堆锅食谱、净水台）。null 视为 active_work。
         /// </summary>
         public string? Mode { get; set; }

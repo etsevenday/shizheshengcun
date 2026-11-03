@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Survival.Core.Config;
 using Survival.Core.State;
 
 namespace Survival.Core.Engine
@@ -7,7 +8,7 @@ namespace Survival.Core.Engine
     /// <summary>
     /// 烹饪经验（策划答复 Q60 选 B、S11/A06 本轮章，开发计划 v0.9 B7b）：
     /// 烤根/煮根/烤肉/煮肉成功产出时，给首次投料/启用进程的存活角色 clamp(ceil(原受热分钟/10),1,12)（30 分钟 = 3），每份一次；
-    /// 复煮 0；净化每实际完成 500ml 给 1，每角色每世界日最多 4；食品（含 B16 主动配方）每角色每日合计最多 30。
+    /// 复煮 0；净化每实际完成 500ml 给 1，每角色每世界日最多 4（B22a Q166：与净水片/滤芯固定等待净水共享这 4）；食品（含 B16 主动配方）每角色每日合计最多 30。
     /// 只在成品提交时发；投料、点火、等待、取消、取出、转锅都不发；旧进程没有发起者（B7b 之前建立）不补。
     /// </summary>
     public sealed partial class GameEngine
@@ -46,7 +47,10 @@ namespace Survival.Core.Engine
             return $"{ActorPrefix(actor)}{SkillName(Cooking)}经验+{room}";
         }
 
-        /// <summary>净化完成：本日累计净化毫升每满 500 给 1，每日最多 4。</summary>
+        /// <summary>
+        /// 净化完成：本日锅里累计净化毫升每满 500 给 1。每日 4 与净水片/滤芯固定等待净水共享（Q166 选 B）：
+        /// 锅已得 = 共享已得 − 固定等待已得，这次最多给到共享余量。
+        /// </summary>
         private string? CookWaterXp(GameState s, FacilityProcess p, int ml)
         {
             var c = Config.Progression.Cooking;
@@ -56,12 +60,63 @@ namespace Survival.Core.Engine
             var day = Clock.Day(s.GameMinute);
             var totalMl = BumpDaily(s, actor, DailyWaterMl, Cooking, day, ml);
             var given = DailyCount(actor, day, DailyWaterXp, Cooking);
-            var due = Math.Min(c.WaterDailyCap, totalMl / c.WaterMlPerXp) - given;
+            var potGiven = given - DailyCount(actor, day, DailyWaterFixedXp, Cooking);
+            var due = Math.Min(Math.Min(c.WaterDailyCap, totalMl / c.WaterMlPerXp) - potGiven, c.WaterDailyCap - given);
             if (SkillLevel(actor, Cooking) >= SkillCap(Cooking)) return $"{SkillName(Cooking)}已满{SkillCap(Cooking)}级，不再获得经验";
             if (due <= 0) return given >= c.WaterDailyCap ? $"今日净化经验已满{c.WaterDailyCap}" : null;
             BumpDaily(s, actor, DailyWaterXp, Cooking, day, due);
             GainXp(s, actor, Cooking, due);
             return $"{ActorPrefix(actor)}{SkillName(Cooking)}经验+{due}";
+        }
+
+        /// <summary>固定等待净水（Q166 选 B）这一批实际产出的净水毫升（只算有每份体积的产物，按批数）。</summary>
+        private int FixedWaitWaterMl(RecipeConfig rc, int batch) =>
+            rc.Outputs.Sum(kv => (Item(kv.Key).UnitVolumeMl ?? 0) * kv.Value) * Math.Max(1, batch);
+
+        /// <summary>固定等待净水本批应给的烹饪经验（每整 500ml 给 1，不向上取整、不跨批积余），未计日额。</summary>
+        private int FixedWaitWaterUnits(RecipeConfig rc, int batch)
+        {
+            var c = Config.Progression.Cooking;
+            return c.WaterMlPerXp <= 0 ? 0 : FixedWaitWaterMl(rc, batch) / c.WaterMlPerXp;
+        }
+
+        /// <summary>
+        /// 净水片/滤芯固定等待净水完成（Q166 选 B，survival-adjudications.json water）：成功实际净化输出每 500ml 给执行者烹饪 1，
+        /// 与锅烧水共享每角色每世界日 4（按完成日剩余额度，不另给 4）；不计食品日 30（开发假设 B22a-1，待 Q207）。
+        /// 开工快照不是烹饪（新规则上线前已开工的批次）按原快照不给。取消/腐败中止不走这里，领取/读档不重给。
+        /// </summary>
+        private string FixedWaitWaterXp(GameState s, ActionState a, RecipeConfig rc, int batch)
+        {
+            if (a.XpSkill != Cooking) return "固定等待不给经验（按开工时的规则）";
+            var c = Config.Progression.Cooking;
+            var units = FixedWaitWaterUnits(rc, batch);
+            if (units <= 0) return "净水不足500毫升，不给经验";
+            var actor = s.Player;
+            if (SkillLevel(actor, Cooking) >= SkillCap(Cooking)) return $"{SkillName(Cooking)}已满{SkillCap(Cooking)}级，不再获得经验";
+            var day = Clock.Day(s.GameMinute);
+            var given = DailyCount(actor, day, DailyWaterXp, Cooking);
+            var grant = Math.Min(units, c.WaterDailyCap - given);
+            if (grant <= 0) return $"今日净化经验已满{c.WaterDailyCap}（与锅烧水合计），不再给经验";
+            BumpDaily(s, actor, DailyWaterXp, Cooking, day, grant);
+            BumpDaily(s, actor, DailyWaterFixedXp, Cooking, day, grant);
+            GainXp(s, actor, Cooking, grant);
+            return grant < units
+                ? $"{SkillName(Cooking)}经验+{grant}（净化日额与锅烧水合计{c.WaterDailyCap}，只剩{grant}）"
+                : $"{SkillName(Cooking)}经验+{grant}";
+        }
+
+        /// <summary>预估用：固定等待净水完成后的烹饪经验说明（按当前日剩余额度；实际按完成日结算）。</summary>
+        public string FixedWaitWaterXpPreview(GameState s, RecipeConfig rc, int batch)
+        {
+            var c = Config.Progression.Cooking;
+            var units = FixedWaitWaterUnits(rc, batch);
+            if (SkillLevel(s.Player, Cooking) >= SkillCap(Cooking)) return $"{SkillName(Cooking)}已满{SkillCap(Cooking)}级，不再获得经验";
+            var room = Math.Max(0, c.WaterDailyCap - DailyCount(s.Player, Clock.Day(s.GameMinute), DailyWaterXp, Cooking));
+            var grant = Math.Min(units, room);
+            var cap = $"与锅烧水合计每日最多{c.WaterDailyCap}";
+            return grant <= 0 ? $"今日净化经验已满{c.WaterDailyCap}（{cap}），完成不再给经验"
+                : grant < units ? $"{SkillName(Cooking)}经验+{grant}（每500毫升+1，{cap}，今日只剩{grant}）"
+                : $"{SkillName(Cooking)}经验+{grant}（每500毫升+1，{cap}）";
         }
 
         /// <summary>某实例（直烤食材、锅内食材，或锅/锅内液体＝净化批次）正在进行的加工完成后的烹饪经验说明；没有进程为 null。</summary>
@@ -78,7 +133,7 @@ namespace Survival.Core.Engine
             var c = Config.Progression.Cooking;
             if (Process(p.RecipeId).IsSlotBatch) return "煅烧不给经验";
             if (p.RecipeId == c.WaterProcess)
-                return p.InitiatorActorId == null ? "旧进程，不给烹饪经验" : $"完成后每500毫升{SkillName(Cooking)}经验+1（每日最多{c.WaterDailyCap}）";
+                return p.InitiatorActorId == null ? "旧进程，不给烹饪经验" : $"完成后每500毫升{SkillName(Cooking)}经验+1（与净水片/滤芯净水合计每日最多{c.WaterDailyCap}）";
             var per = CookFoodXpFor(p.RecipeId);
             if (per <= 0) return c.FoodProcesses.Count > 0 && !c.FoodProcesses.Contains(p.RecipeId) ? "复煮不给烹饪经验" : null;
             return p.InitiatorActorId == null ? "旧进程，不给烹饪经验" : $"完成后{SkillName(Cooking)}经验+{per}（每日最多{c.FoodDailyCap}）";

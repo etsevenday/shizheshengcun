@@ -313,7 +313,7 @@ namespace Survival.Core.Engine
                         p.Notes.Add($"{ItemName(rt.ItemId)}#{rt.InstanceId}耐久{Fmt.N(d0)}→{Fmt.N(Math.Min(dm, d0 + dm * RepairFraction(s, rc)))}/{Fmt.N(dm)}：恢复自身最大耐久的{Fmt.Pct(RepairFraction(s, rc))}（不超过上限、不重抽最大耐久，品质与词条不变）");
                     // Q112（S14 本轮章）：锻炉配方分列份数、成品、原料炭/燃料炭/总炭；预览只读不预留
                     if (!rc.IsSalvage && RecipeFuelSummary(rc, batch) is string fuelNote) p.Notes.Add(fuelNote);
-                    if (rc.IsFixedWait) p.XpGains.Add("固定等待不给经验");
+                    if (rc.IsFixedWait) p.XpGains.Add(rc.XpSkill == Cooking ? FixedWaitWaterXpPreview(s, rc, batch) : "固定等待不给经验");   // B22a Q166
                     else if (!rc.IsSalvage) p.XpGains.Add(XpText(s, rc.XpSkill ?? Crafting, CraftXp(rc.BaseMinutes) * batch));
                     if (rc.Mode != null) p.Notes.Add(RecipeModeText(rc));
                     if (rc.ShelfRule == "min_inputs") p.Notes.Add("成品保质不晚于原料里最早的截止时间（非热组装不刷新原料寿命）");

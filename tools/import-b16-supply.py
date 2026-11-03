@@ -156,6 +156,9 @@ def main():
             r["group"] = "material"
         if sr["skill"] != "crafting":
             r["xpSkill"] = sr["skill"]
+        # B22a（Q166 选 B）：净水片/滤芯固定等待净水按净化给烹饪经验（每 500ml 1、与锅烧水共享日 4），开工快照 cooking
+        if rid in ("ex_tablet_water", "ex_cartridge_water"):
+            r["xpSkill"] = "cooking"
         if isinstance(sr.get("fuel"), dict):
             r["fuel"] = dict(sr["fuel"])
         if "shelfRule" in sr:
