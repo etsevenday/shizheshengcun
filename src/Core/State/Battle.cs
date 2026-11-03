@@ -252,6 +252,11 @@ namespace Survival.Core.State
         public int CoverUntilRound { get; set; }
         /// <summary>协同（command_07）：下一次正常激活 AP+ApBonusNext（总数不超过 6、不加追击；B9a）。</summary>
         public int ApBonusNext { get; set; }
+        /// <summary>B22 战术品：本人最近一次用战术品的大回合（三种共享“施用者每大回合最多 1 次”，追击不刷新）；0 为没用过。</summary>
+        public int TacticalRound { get; set; }
+        /// <summary>B22 鼓舞提示贴：本人作为目标时，RallyRound 这一大回合已从此道具减掉的恐慌合计（每目标每大回合最多 6）。</summary>
+        public int RallyRound { get; set; }
+        public double RallyAmount { get; set; }
 
         public AllyCombatState Clone()
         {

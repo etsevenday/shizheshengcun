@@ -918,6 +918,7 @@ namespace Survival.Core.Engine
                 var have = s.Items.Where(i => CarriedByMe(s, i) && i.ItemId == a.ItemId).Sum(i => i.Count);
                 list.Add(new BattleCommandOption { Action = id, Label = $"{ActionName(id)}（随身×{have}）", Group = "item", Ap = a.ApCost, Available = why == null, Reason = why, TargetMode = "self" });
             }
+            list.AddRange(TacticalOptions(s, b));   // B22（A09 E7）：三种战术品，与医疗同一快捷栏
             return list;
         }
 
@@ -1020,6 +1021,8 @@ namespace Survival.Core.Engine
                 var sw = CurrentWeapon(s, out var swi);
                 return SkillBlocked(s, b, c, sw, swi);
             }
+            // B22（R03 战术物合法性、A09 E7）：战术品与预览/提交同一校验
+            if (TacticalOf(c.Action) is TacticalItemConfig tc) return TacticalBlocked(s, b, c, tc);
             var a = Act(c.Action);
             if (a == null) return c.Action == "aim" ? "瞄准已移除" : "未知指令";
             // 每大回合一次的限制先于行动点判断：本轮已用过就写“本回合已…”，不写“行动点不足”（试玩修复 M137 UX4）
@@ -1100,6 +1103,12 @@ namespace Survival.Core.Engine
                 if (node != null && !_exec[node.Id].IsAttack) NonAttackPreview(s, b, c, p, node, _exec[node.Id], w, wi);
                 else AttackPreview(s, b, c, p, w, wi);
                 p.ConfirmText = p.Ok ? $"执行{p.Title}·{p.Ap}AP" : p.Title;
+                return p;
+            }
+            if (TacticalOf(c.Action) is TacticalItemConfig tp)
+            {
+                TacticalPreview(s, b, c, p, tp);
+                p.ConfirmText = p.Ok ? $"使用{p.Title}·{p.Ap}AP" : p.Title;
                 return p;
             }
             var a = Act(c.Action);
@@ -1247,6 +1256,12 @@ namespace Survival.Core.Engine
                 else PlayerSkillAttack(s, b, c, sw, swi);
                 if (!StillActing()) return ActionResult.Success();
                 if (b.PlayerAp <= 0) EndPlayerActivation(s);
+                return ActionResult.Success();
+            }
+            if (TacticalOf(c.Action) is TacticalItemConfig te)
+            {
+                TacticalExecute(s, b, c, te);
+                if (StillActing() && b.PlayerAp <= 0) EndPlayerActivation(s);
                 return ActionResult.Success();
             }
             var a = Act(c.Action)!;
