@@ -65,9 +65,12 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 可重置判定接口（R03 D8：通关 72 世界小时后、全队在父地点、实例内无人/无事务）。clearedAt/resetEligibleAt 与重置事务属批次 B22，本批恒为 false。
+        /// 可重置（R03 D2 RESET_READY、DR14，B22）：本代已通关且世界时间已到 resetEligibleAt。只是标记——内部有人也照样显示“可重置”、不踢人；
+        /// 真正确认重置还要全队在父地点、实例里没人、没有未决事务（<see cref="ResetBlocked"/>）。
         /// </summary>
-        public bool DungeonResetReady(GameState s, string dungeonId) => false;
+        public bool DungeonResetReady(GameState s, string dungeonId) =>
+            !s.Progress.Dead && DungeonCleared(s, dungeonId) && s.DungeonInstances.TryGetValue(dungeonId, out var inst)
+            && inst.ResetEligibleAt.HasValue && s.GameMinute >= inst.ResetEligibleAt.Value;
 
         /// <summary>状态的中文短名（预告与开发入口显示）。</summary>
         public static string DungeonStatusName(string status) => status switch
@@ -796,6 +799,22 @@ namespace Survival.Core.Engine
             p.Notes.Add($"在{p.BufferName}还没走进危险房间前，可按正常10分钟原路返回{p.ParentName}，不扣惩罚");
             if (p.Continuation) p.Notes.Add($"续探第{p.Generation}代：已打掉的敌人与已领的箱子不会刷新，受伤的敌人保留伤势");
             if (p.Cleared) p.Notes.Add("本代已通关：从出口或原路离开都不扣惩罚");
+            // B22（R03 D3/D8、A09 E6、A10 §7）：首次（本局一次）与重复（每代一次）奖励分开列，加重置剩余时间
+            if (RecordResourceOf(dungeonId) is { } rec)
+                p.FirstRewards.Add($"{rec.Name}（核心记录，通关即本代完成）：{(CampaignClaimed(s, rec.NodeId) ? "本局已领，新一代只需核对" : "未领取")}");
+            if (FirstClearOf(dungeonId) is { } fc)
+                p.FirstRewards.Add($"首次通关补给：{PackText(fc.Items)}——{(FirstClearClaimed(s, dungeonId) ? "已领取" : "未领取")}");
+            foreach (var r in Config.Resources.Where(r => r.IsCampaignPhysical && DungeonOf(r) == dungeonId))
+                p.FirstRewards.Add($"{r.Name}：{PackText(r.Outputs)}——{(CampaignClaimed(s, r.NodeId) ? "已领取" : "未领取")}");
+            foreach (var r in Config.Resources.Where(r => r.IsInstance && DungeonOf(r) == dungeonId))
+            {
+                var avail = s.Resources.TryGetValue(r.NodeId, out var rs) ? rs.Available ?? 0 : r.Cap ?? 0;
+                var known = rs?.Discovered == true;
+                p.RepeatRewards.Add($"{(known ? r.Name : $"{LocName(r.LocationId)}的物资箱")}：{PackText(r.Outputs)}——{(avail > 0 ? "本代未领" : "本代已领")}");
+            }
+            if (SalvageOf(dungeonId) is { } sv)
+                p.RepeatRewards.Add($"守卫回收材料（守卫战胜利）：{PackText(sv.Items)}——{(SalvageClaimed(s, dungeonId) ? "本代已领" : "本代未领")}");
+            p.ResetText = ResetStatusText(s, dungeonId);
             return p;
         }
 
@@ -864,6 +883,12 @@ namespace Survival.Core.Engine
         public int ExploreLow { get; set; }
         public int ExploreHigh { get; set; }
         public List<string> Notes { get; set; } = new List<string>();
+        /// <summary>B22：首次（本局一次）奖励：核心记录、首次通关补给、唯一箱，各写已领/未领。</summary>
+        public List<string> FirstRewards { get; set; } = new List<string>();
+        /// <summary>B22：重复（每代一次）奖励：三个普通物资箱与守卫回收材料，写本代已领/未领。</summary>
+        public List<string> RepeatRewards { get; set; } = new List<string>();
+        /// <summary>B22：重置一行（未通关不计时 / 可重置于… / 已可重置）。</summary>
+        public string ResetText { get; set; } = "";
     }
 
     /// <summary>预告/终止确认里的一名同行。</summary>

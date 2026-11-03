@@ -80,7 +80,7 @@ public class B21StateTests : TestBase
         Assert.That(E.NewDungeonGeneration(s, "d02"), Is.Null);
         Assert.That(E.InstanceId(s, "d02"), Is.EqualTo("1234abcd:d02:g2"));
         Assert.That(E.InstanceId(s, "d01"), Is.EqualTo("1234abcd:d01:g1"), "各地牢代号独立");
-        Assert.That(E.DungeonResetReady(s, "d02"), Is.False, "RESET_READY 属 B22，本批恒假");
+        Assert.That(E.DungeonResetReady(s, "d02"), Is.False, "未通关不可重置（B22 起按 clearedAt+4320 判定）");
     }
 
     /// <summary>B21-13：存档 32 人在 01——升到 33 不建远征（可免费离开），实例 UNOPENED，不扣包不加时间。</summary>
