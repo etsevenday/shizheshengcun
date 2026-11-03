@@ -259,6 +259,44 @@ public class B22fTests : BattleTestBase
         Assert.That(s.DungeonInstances["d01"].Generation, Is.EqualTo(2));
     }
 
+    // ───────────── Q202 远征显示（交开发方定） ─────────────
+
+    /// <summary>PLAN-Q202-01 ②：地牢实例没有进行中的远征时状态写“未开始远征”（进行中实例注“未通关”）；远征进行中仍“进行中（未通关）”。</summary>
+    [Test]
+    public void PLAN_Q202_01_NoExpedition_StatusText()
+    {
+        var s = B21EntryTests.AtBuffer(E, 2301);
+        Assert.That(s.Expedition, Is.Null);
+        Assert.That(E.DungeonStatusLabel(s, "d01"), Is.EqualTo("未开始远征"), "到了 01、还没确认开始");
+        Start(s, ActionRequest.Travel("d01_02", true));
+        Run(s);
+        Assert.That(s.Expedition?.DungeonId, Is.EqualTo("d01"));
+        Assert.That(E.DungeonStatusLabel(s, "d01"), Is.EqualTo("进行中（未通关）"));
+        Assert.That(E.ExpeditionPreview(s, "d01").StatusName, Is.EqualTo("进行中（未通关）"));
+        // 远征结束（开发传送离开）后实例仍 ACTIVE，但没有进行中的远征
+        E.DebugTeleport(s, E.DungeonCfg("d01")!.Parent);
+        Assert.That(s.Expedition, Is.Null);
+        Assert.That(E.DungeonStatus(s, "d01"), Is.EqualTo(DungeonStatuses.Active), "规则状态不变（只改显示）");
+        Assert.That(E.DungeonStatusLabel(s, "d01"), Is.EqualTo("未开始远征（未通关）"));
+        Assert.That(E.ExpeditionPreview(s, "d01").StatusName, Is.EqualTo("未开始远征（未通关）"));
+    }
+
+    /// <summary>PLAN-Q202-01 ③：惊魂未定截止前，接敌前的受惊预估注明“惊魂未定：恐慌+10（只下一场）”；只读不消费，过期后不再写。</summary>
+    [Test]
+    public void PLAN_Q202_01_FearNote_MentionsShaken()
+    {
+        var s = New(3101);
+        UnlockCapacity(s, 1);
+        var w = E.DebugSpawnEnemy(s, "shambler", s.CurrentLocation);
+        var group = E.VisibleEnemiesAt(s, s.CurrentLocation);
+        Assert.That(E.FearNote(s, group, GameEngine.FearApproach), Does.Not.Contain("惊魂未定"));
+        s.Player.ShakenUntil = s.GameMinute + 60;
+        Assert.That(E.FearNote(s, group, GameEngine.FearApproach), Does.EndWith("；惊魂未定：恐慌+10（只下一场）"));
+        Assert.That(s.Player.ShakenUntil, Is.EqualTo(s.GameMinute + 60), "只读，不消费");
+        s.GameMinute += 61;
+        Assert.That(E.FearNote(s, group, GameEngine.FearApproach), Does.Not.Contain("惊魂未定"), "到期不再写");
+    }
+
     // ───────────── Q207 净化也计烹饪每日 30（净化子限 4） ─────────────
 
     private static string Key(GameState s, string kind) => $"{Clock.Day(s.GameMinute)}|{kind}|cooking";

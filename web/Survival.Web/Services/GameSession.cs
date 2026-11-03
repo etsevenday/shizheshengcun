@@ -58,6 +58,9 @@ public sealed class GameSession
     private bool _skip;
     public int SegmentDelayMs { get; set; } = 120;
 
+    /// <summary>B22f（Q202 ④，交开发方定）：撤出进度条至少可见约 2 秒（纯显示：只放慢每段之间的动画间隔，不推进或延长游戏时间）。</summary>
+    public const int ExtractMinVisibleMs = 2000;
+
     public List<GameEvent> Recent { get; } = new();
     public GameEvent? Toast { get; private set; }
     public HashSet<string> Highlights { get; } = new();
@@ -1415,6 +1418,16 @@ public sealed class GameSession
         _skip = true;
     }
 
+    /// <summary>
+    /// 两段之间的动画间隔：一般为 SegmentDelayMs；撤出（Q202 ④）按全程段数摊开，保证整条撤出至少约 <see cref="ExtractMinVisibleMs"/> 毫秒可见。
+    /// </summary>
+    private int SegmentDelay(ActionState? a)
+    {
+        if (a?.Type != ActionType.Extract || S.Expedition is not { } ex) return SegmentDelayMs;
+        var segs = Math.Max(1, (int)Math.Ceiling(ex.TotalMinutes / 5.0));
+        return Math.Max(SegmentDelayMs, (int)Math.Ceiling(ExtractMinVisibleMs / (double)segs));
+    }
+
     /// <summary>连续推进 5 分钟段，直到行动结束、暂停或死亡。浏览与整理时不推进。</summary>
     private async Task RunLoop()
     {
@@ -1444,7 +1457,7 @@ public sealed class GameSession
                 if (r.Status is SegmentStatus.Paused or SegmentStatus.Dead or SegmentStatus.Idle or SegmentStatus.Dialogue) break;
                 if (S.Main == null && S.Sub == null) break;
                 // 任何速度都给“退出”留出响应机会（S01 §9、S14 §11.2）：跳过动画时每段也让出线程，不一次同步把未来整段时间算完
-                await Task.Delay(_skip ? 1 : SegmentDelayMs);
+                await Task.Delay(_skip ? 1 : SegmentDelay(S.Sub ?? S.Main));
             }
         }
         finally

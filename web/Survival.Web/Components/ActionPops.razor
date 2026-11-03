@@ -33,7 +33,8 @@
             var over = grams > e.Config.Carry.SoftGrams;
             var night = p.Ok && !e.IsDaylight(p.EstimatedEndMinute);
             var scene = ArtAssets.Scene(lc.Id, lc.Scene);
-            <AnchorPop AnchorId="@pop.AnchorId" Title="@($"前往{lc.Name}")" CssClass="travel"
+            @* B22f（Q202 ①，交开发方定）：远征入口浮窗限制在中部列里，不盖住右栏完整进入预告 *@
+            <AnchorPop AnchorId="@pop.AnchorId" Title="@($"前往{lc.Name}")" CssClass="travel" Bound="@(expPv != null ? ".center" : null)"
                        Sub="@($"{(dir == MapDirection.None ? "" : GameEngine.DirectionHint(dir) + " · ")}{(ls.Visited ? "已访问" : "待访问")} · 单程{p.BaseMinutes}分钟")" OnClose="G.ClosePop">
                 <Art><span class="apop-scene" style="background-image:url('@scene')"></span></Art>
                 <ChildContent>

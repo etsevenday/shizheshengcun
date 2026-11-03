@@ -47,6 +47,9 @@ namespace Survival.Core.Engine
             return $"{s.Seed:x8}:{dungeonId}:g{gen}";
         }
 
+        /// <summary>Q202 ②：地牢实例没有进行中的远征时的状态名。</summary>
+        public const string NoExpeditionText = "未开始远征";
+
         /// <summary>本代是否已通关（核心记录已领取/核对，B12 写的实例事实 recordClaimedAndClear）。</summary>
         public bool DungeonCleared(GameState s, string dungeonId) => InstanceFact(s, dungeonId, RecordClaimedFact);
 
@@ -83,10 +86,18 @@ namespace Survival.Core.Engine
         public bool DungeonOccupied(GameState s, string dungeonId) =>
             DungeonAt(s.CurrentLocation) == dungeonId || s.Expedition?.DungeonId == dungeonId;
 
-        /// <summary>玩家看到的状态名：Q204 冷却已到但里面有人时写“已通关（冷却已到，离开地牢后才可重置）”，其余同 <see cref="DungeonStatusName"/>。</summary>
+        /// <summary>
+        /// 玩家看到的状态名：Q204 冷却已到但里面有人时写“已通关（冷却已到，离开地牢后才可重置）”；B22f（Q202 ②，交开发方定）没有进行中的远征时
+        /// 未建立/进行中两态写“未开始远征”（进行中实例另注“未通关”）；其余同 <see cref="DungeonStatusName"/>。
+        /// </summary>
         public string DungeonStatusLabel(GameState s, string dungeonId)
         {
             var status = DungeonStatus(s, dungeonId);
+            if (s.Expedition?.DungeonId != dungeonId)
+            {
+                if (status == DungeonStatuses.Unopened) return NoExpeditionText;
+                if (status == DungeonStatuses.Active) return NoExpeditionText + "（未通关）";
+            }
             if (status == DungeonStatuses.Cleared && DungeonCooldownDone(s, dungeonId) && DungeonOccupied(s, dungeonId))
                 return DungeonStatusName(status) + "（冷却已到，离开地牢后才可重置）";
             return DungeonStatusName(status);

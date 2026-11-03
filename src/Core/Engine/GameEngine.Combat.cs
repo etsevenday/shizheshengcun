@@ -505,14 +505,27 @@ namespace Survival.Core.Engine
             b.FearPanic = b.Frightened ? cfg.FearValue : 0;
         }
 
-        /// <summary>入战前的受惊说明（敌踪选择、接近详情）：“可能受惊：游荡尸受惊率14.00%，受惊时恐慌+6”。</summary>
+        /// <summary>
+        /// 入战前的受惊说明（敌踪选择、接近详情）：“可能受惊：游荡尸受惊率14.00%，受惊时恐慌+6”。B22f（Q202 ③，交开发方定）：有同行处在惊魂未定
+        /// （截止未到）时再注明“；惊魂未定：恐慌+10（只下一场）”，多人时写出是谁；只读、不消费惊魂未定。
+        /// </summary>
         public string FearNote(GameState s, IEnumerable<WorldEnemy> group, string context)
         {
             var main = FearSource(group);
             if (main == null) return "";
             var cfg = _enemies[main.EnemyId];
             var p = FearChance(cfg.FearChance, s.Stats.Morale, context);
-            return p <= 0 ? $"精神{Fmt.N(s.Stats.Morale)}，不会受惊" : $"可能受惊：{cfg.Name}受惊率{Fmt.Pct(p)}，受惊时恐慌+{Fmt.T(cfg.FearValue)}";
+            var text = p <= 0 ? $"精神{Fmt.N(s.Stats.Morale)}，不会受惊" : $"可能受惊：{cfg.Name}受惊率{Fmt.Pct(p)}，受惊时恐慌+{Fmt.T(cfg.FearValue)}";
+            return text + ShakenFearNote(s);
+        }
+
+        /// <summary>Q202 ③：“；惊魂未定：恐慌+10（只下一场）”（多人时“；惊魂未定：林某、周某恐慌+10（只下一场）”）；没人惊魂未定为空。</summary>
+        public string ShakenFearNote(GameState s)
+        {
+            var shaken = s.PartyActors.Where(a => a.ShakenUntil.HasValue && a.ShakenUntil.Value > s.GameMinute).ToList();
+            if (shaken.Count == 0) return "";
+            var who = s.Party.Count > 1 ? string.Join("、", shaken.Select(a => ActorDisplayName(s, a.Id))) : "";
+            return $"；惊魂未定：{who}恐慌+{Fmt.T(DX.ShakenPanic)}（只下一场）";
         }
 
         private void BattleLog(GameState s, string text)
