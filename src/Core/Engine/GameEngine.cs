@@ -386,7 +386,7 @@ namespace Survival.Core.Engine
                 {
                     if (!hereCfg.ExploreEnabled) return "公开地点到达即已全部知晓，不需要探索";
                     if (hereState.Progress >= 100) return "已充分探索，可清理或搜集已发现资源";
-                    if (FixedBlockHere(s) is string fbE) return fbE;   // B20：固定战敌人还在（开发假设 B20-5）
+                    if (FixedBlockHere(s) is string fbE) return fbE;   // B20：固定战敌人还在（Q187/Q193）
                     plan.TargetId = here;
                     plan.BaseWork = ExploreMinutesAt(here);
                     plan.Label = "探索周边";

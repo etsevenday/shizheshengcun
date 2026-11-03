@@ -11,7 +11,7 @@ namespace Survival.Core.Engine
     /// 「Q62—Q74」当前优先节；expansion-combat.json enemySets；gate-contract factProducers.checkpoint_obstruction_cleared）：
     /// - 首次揭示（本代第一次实际到达该节点）时按当时容量 C 截名单前 C 个，建固定世界敌人并锁存；之后扩容不重编、少带队员不缩怪、
     ///   读档/撤退不重抽，HP 持久（EC03、EC06、DR21）。
-    /// - 公开敌踪，可离开；地牢房间的固定战敌人还在时本房间不能探索、清理翻找或采集（开发假设 B20-5，待确认；m02 不挡，营门路线由事实门槛控制）。明确接战全名单一起入场，禁增援（EC04）。
+    /// - 公开敌踪，可离开；固定战敌人还在时本节点不能探索、清理翻找或采集（地牢房间：Q187 选A；m02 检查哨：Q193，280f8be 起不再例外）。明确接战全名单一起入场，禁增援（EC04）。
     /// - 最终胜利且主角存活：守卫写本代实例事实 guardianDefeated（守卫门开、守卫战利品箱出现），m02 写 campaign 事实
     ///   checkpoint_obstruction_cleared（营门路线开通）；本代/本局不再出现。地牢换代时旧代固定敌移除、下一代重新揭示。
     /// </summary>
@@ -87,17 +87,24 @@ namespace Survival.Core.Engine
             return hurt.Count == 0 ? null : "已交过手：" + string.Join("、", hurt.Select(w => $"{_enemies[w.EnemyId].Name} 健康{Fmt.N(w.Hp)}/{Fmt.N(_enemies[w.EnemyId].Hp)}"));
         }
 
+        /// <summary>m02 检查哨拦路战未胜时探索/清理翻找/采集的原因（PCE checkpoint.policy 原句）。</summary>
+        public const string CheckpointBlockText = "先战胜检查哨拦路敌人";
+
         /// <summary>
-        /// 开发假设 B20-5：固定战敌人还在这里时，本节点不能探索、清理翻找或采集（“必经路线须胜利或走已存在的绕路”；可以离开）。返回原因，没有为 null。
+        /// 固定战敌人还在这里时，本节点不能开始探索、清理翻找或采集（可以沿已开通的边离开）。地牢房间：Q187 选A（原开发假设 B20-5）；
+        /// m02 检查哨拦路战：Q193（280f8be）取代 B20 的“m02 不挡探索采集”，原因写“先战胜检查哨拦路敌人”。只拦新开工，
+        /// 已在办的动作按开工快照完成（各段推进不重验本条）；撤退/重访/探索度 100 都不清除，只有最终胜利（或旧档已有可信清障事实）才放开。
+        /// 返回原因，没有为 null。
         /// </summary>
         public string? FixedBlockHere(GameState s)
         {
             if (s.CurrentZone == SafehouseZone) return null;
-            // m02 检查哨拦路战不挡探索/采集：营门路线本身由事实门槛 clear_checkpoint 控制（A08 m02 线索“路障是否清除仍以眼前状态为准”）
-            if (FixedBattleAt(s.CurrentLocation) is not FixedBattleConfig f || f.IsCampaign) return null;
+            if (FixedBattleAt(s.CurrentLocation) is not FixedBattleConfig f) return null;
             var left = FixedEnemiesAt(s, s.CurrentLocation);
             if (left.Count == 0) return null;
-            return $"{(f.Guardian ? "守卫" : "固定敌踪")}还在这里（{string.Join("、", left.Select(w => _enemies[w.EnemyId].Name))}）：先接战取胜，或离开";
+            var names = string.Join("、", left.Select(w => _enemies[w.EnemyId].Name));
+            if (f.IsCampaign) return $"{CheckpointBlockText}（{names}）：可以接战，也可以离开";
+            return $"{(f.Guardian ? "守卫" : "固定敌踪")}还在这里（{names}）：先接战取胜，或离开";
         }
 
         public string? CanEngageFixed(GameState s)

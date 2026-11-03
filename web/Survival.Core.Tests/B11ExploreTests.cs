@@ -60,6 +60,8 @@ public class B11ExploreTests : TestBase
     {
         var s = New();
         E.DebugTeleport(s, "m02_checkpoint");
+        // B22f（Q193）：拦路战未胜时 m02 不能探索；这里只测“探索揭边≠门槛满足”，把拦路敌移走但不写清障事实（相当于旧档已探索、未清障）
+        if (E.FixedStateAt(s, "m02_checkpoint") is { } fx) { fx.Won = true; s.WorldEnemies.RemoveAll(w => w.FixedOf == GameEngine.FixedPrefix + "m02_checkpoint"); }
         for (var i = 0; i < 4; i++) Explore(s);
         Assert.That(s.Locations["m02_checkpoint"].Progress, Is.EqualTo(100));
         Assert.That(s.Locations["h01_gate"].Discovered, Is.True);

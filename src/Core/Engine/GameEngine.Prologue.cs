@@ -29,6 +29,8 @@ namespace Survival.Core.Engine
         UnknownExplore,
         /// <summary>下一段未知，当前地点已满 100% 或不能探索。</summary>
         UnknownNoExplore,
+        /// <summary>B22f（Q193）：下一段未知、当前地点本可探索，但 m02 检查哨拦路战未胜，探索被禁（开发假设 B22f-2，待确认 Q208）。</summary>
+        UnknownFixedBlocked,
     }
 
     /// <summary>前进类主目标的下一真实路段（只读视图）。NodeId 只在已知时给，未知时不泄露。</summary>
@@ -1070,6 +1072,9 @@ namespace Survival.Core.Engine
                     : new TravelSegmentView { Kind = TravelSegmentKind.KnownBlocked, NodeId = node, Target = target, Reason = GateBlockedReason(s, edge) };
             }
             var explorable = _locs.TryGetValue(here, out var lc) && lc.ExploreEnabled && s.Locations.TryGetValue(here, out var ls) && ls.Progress < 100;
+            // B22f（Q193）：m02 拦路战未胜时探索被禁，下一步不再叫玩家“先探索当前地点”、也不点亮探索入口（开发假设 B22f-2）
+            if (explorable && FixedBattleAt(here) is { IsCampaign: true } && FixedBlockHere(s) != null)
+                return new TravelSegmentView { Kind = TravelSegmentKind.UnknownFixedBlocked, Target = target };
             return new TravelSegmentView { Kind = explorable ? TravelSegmentKind.UnknownExplore : TravelSegmentKind.UnknownNoExplore, Target = target };
         }
 
@@ -1112,6 +1117,7 @@ namespace Survival.Core.Engine
             {
                 case TravelSegmentKind.UnknownExplore: return NonEmpty(ts.Explore);
                 case TravelSegmentKind.UnknownNoExplore: return NonEmpty(ts.UnknownNoExplore);
+                case TravelSegmentKind.UnknownFixedBlocked: return CheckpointBlockText + "。";
                 case TravelSegmentKind.KnownOpen when s.Prologue.ObjectiveId == "route_onward":
                     return NonEmpty(ts.KnownOpen)?.Replace("{实际下一相邻地点名}", LocName(seg.NodeId!));
                 case TravelSegmentKind.KnownBlocked when s.Prologue.ObjectiveId == "route_onward":

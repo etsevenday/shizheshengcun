@@ -142,9 +142,9 @@ public class B20FixedBattleTests : BattleTestBase
         Assert.That(w.Battle.Enemies, Has.Count.EqualTo(2), "累计含已死 ≤ C");
     }
 
-    /// <summary>开发假设 B20-5：地牢房间固定战敌人还在时不能探索/清理/采集，可以离开；胜利后可以。m02 拦路战不挡探索。</summary>
+    /// <summary>PLAN-Q187-01（原开发假设 B20-5）：地牢房间固定战敌人还在时不能探索/清理/采集，可以离开；胜利后可以。m02 拦路战 B22f（Q193）起同样挡。</summary>
     [Test]
-    public void FixedRoom_BlocksExploreUntilWon_CanLeave_M02DoesNot()
+    public void FixedRoom_BlocksExploreUntilWon_CanLeave_M02Too()
     {
         var s = At("d01_03", 3);
         Assert.That(E.CanStart(s, ActionRequest.Explore()), Does.Contain("固定敌踪还在这里"));
@@ -158,7 +158,7 @@ public class B20FixedBattleTests : BattleTestBase
 
         var m = At("m02_checkpoint", 1);
         Assert.That(E.FixedEnemiesAt(m, "m02_checkpoint").Select(w => w.EnemyId), Is.EqualTo(new[] { "z_slow" }));
-        Assert.That(E.CanStart(m, ActionRequest.Explore()), Is.Null, "m02 拦路战不挡探索");
+        Assert.That(E.CanStart(m, ActionRequest.Explore()), Does.StartWith("先战胜检查哨拦路敌人"), "Q193：m02 拦路战未胜不能探索");
     }
 
     /// <summary>

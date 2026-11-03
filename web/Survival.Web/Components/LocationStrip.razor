@@ -252,7 +252,7 @@
                         var why = busy ? "行动进行中" : e.CanEngageFixed(s);
                         var fear = e.FearNote(s, fixedHere, GameEngine.FearApproach);
                         var lead = e.Enemy(fixedHere[0].EnemyId);
-                        var tip = $"{names}：揭示时按容量C{st.Capacity}截定名单，之后不重编、不缩怪；固定战不会引来增援；可以离开" + (fixedCfg!.Guardian ? "；守卫胜利后本代守卫门打开" : fixedCfg.IsCampaign ? "；胜利后通往营门的路线开通（单局一次）" : "；敌人还在时本房间不能探索、清理或采集");
+                        var tip = $"{names}：揭示时按容量C{st.Capacity}截定名单，之后不重编、不缩怪；固定战不会引来增援；可以离开" + (fixedCfg!.Guardian ? "；守卫胜利后本代守卫门打开" : fixedCfg.IsCampaign ? "；胜利前这里不能探索、清理或采集；胜利后通往营门的路线开通（单局一次）" : "；敌人还在时本房间不能探索、清理或采集");
                         <ObjectCard @key="@("fixed-" + here)" Id="fixed-battle" CssClass="enemy-card world fixed" Title="@(fixedCfg.Guardian ? lead.Name : fixedCfg.IsCampaign ? "拦路的感染者" : "固定敌踪")"
                                     Badge="@(fixedCfg.Guardian ? "守卫" : "固定")" BadgeClass="new" Tooltip="@tip">
                             <Art>@Icons.Markup("enemy_" + lead.Id)</Art>

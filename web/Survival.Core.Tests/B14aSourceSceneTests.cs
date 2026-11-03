@@ -227,12 +227,13 @@ public class B14aSourceSceneTests : BattleTestBase
         Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("沿已知路线前往检查哨。"), "已知且可走");
         Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:m02_checkpoint"));
 
-        // 到检查哨：下一段（营门）未知、检查哨可探索 → 探索句；探索 100% 揭示营门，但门槛未满足 → 已知未开通
+        // 到检查哨：下一段（营门）未知、检查哨本可探索，但 B22f（Q193）起拦路战未胜时探索被禁 → 写“先战胜检查哨拦路敌人。”、不点亮探索入口
+        // （开发假设 B22f-2，待确认 Q208）；探索 100% 揭示营门，但门槛未满足 → 已知未开通
         E.DebugMapTeleport(s, "m02_checkpoint");
         ReadDialogues(s);
         E.PrologueBoundary(s);
-        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo(ExploreStep));
-        Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:m02_checkpoint"));
+        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("先战胜检查哨拦路敌人。"));
+        Assert.That(E.ObjectiveFocus(s), Is.Null);
         E.DebugSetProgress(s, "m02_checkpoint", 100);
         E.PrologueBoundary(s);
         Assert.That(s.Locations["h01_gate"].Discovered, Is.True);
@@ -284,7 +285,7 @@ public class B14aSourceSceneTests : BattleTestBase
         Run(s);
         ReadDialogues(s);
         Assert.That(s.CurrentLocation, Is.EqualTo("m02_checkpoint"));
-        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo(ExploreStep), "成功到达后按新位置重算");
+        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("先战胜检查哨拦路敌人。"), "成功到达后按新位置重算（B22f：m02 拦路战未胜，见开发假设 B22f-2）");
         Assert.That(s.Locations["h01_gate"].Discovered, Is.False, "不自动探索或揭示");
     }
 
