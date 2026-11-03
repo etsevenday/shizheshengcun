@@ -846,6 +846,7 @@ namespace Survival.Core.Engine
             if (SalvageOf(dungeonId) is { } sv)
                 p.RepeatRewards.Add($"守卫回收材料（守卫战胜利）：{PackText(sv.Items)}——{(SalvageClaimed(s, dungeonId) ? "本代已领" : "本代未领")}");
             p.ResetText = ResetStatusText(s, dungeonId);
+            p.WaterLines = ExpeditionWaterLines(s);
             return p;
         }
 
@@ -920,6 +921,8 @@ namespace Survival.Core.Engine
         public List<string> RepeatRewards { get; set; } = new List<string>();
         /// <summary>B22：重置一行（未通关不计时 / 可重置于… / 已可重置）。</summary>
         public string ResetText { get; set; } = "";
+        /// <summary>B23（A10 §5）：全队随身净水 / 需处理脏水 / 处理用品 / 热源分列（封存物不计；只提示、不拦）。</summary>
+        public List<string> WaterLines { get; set; } = new List<string>();
     }
 
     /// <summary>预告/终止确认里的一名同行。</summary>
