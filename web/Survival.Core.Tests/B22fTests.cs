@@ -151,6 +151,52 @@ public class B22fTests : BattleTestBase
         Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:h01_gate"));
     }
 
+    // ───────────── Q204 通关满 72 小时且内部无人才 RESET_READY ─────────────
+
+    /// <summary>
+    /// PLAN-Q204-01：通关满 72 世界小时、主队在父地点（内部无人）→ RESET_READY/“可重置”；主队在地牢里（含 01 缓冲，开发假设 B22f-4）或有进行中远征 →
+    /// 仍 CLEARED/“已通关”，状态名与重置行注明冷却已到、需离开；不踢人、确认仍被原条件拦下；离开回父地点后才显示可重置并能确认。
+    /// </summary>
+    [Test]
+    public void PLAN_Q204_01_ResetReadyOnlyWhenEmpty()
+    {
+        var s = B21EntryTests.AtCrypt(E, 2241);
+        UnlockCapacity(s, 3);
+        E.DebugTeleport(s, "d01_08");
+        E.DebugSetProgress(s, "d01_08", 100);
+        E.DebugInstanceFact(s, "d01", "guardianDefeated");
+        Start(s, ActionRequest.Gather("d01_08_unique"));
+        Run(s);
+        Assert.That(E.DungeonCleared(s, "d01"), Is.True);
+        // 还在核心房（内部，远征进行中）
+        var inst = s.DungeonInstances["d01"];
+        Assert.That(inst.ClearedAt, Is.Not.Null);
+        s.GameMinute = inst.ResetEligibleAt!.Value;
+        var parent = E.DungeonCfg("d01")!.Parent;
+
+        // 在 01 缓冲（内部）：冷却已到但不标可重置
+        E.DebugTeleport(s, "d01_01");
+        Assert.That((E.DungeonCooldownDone(s, "d01"), E.DungeonOccupied(s, "d01"), E.DungeonResetReady(s, "d01")), Is.EqualTo((true, true, false)));
+        Assert.That(E.DungeonStatus(s, "d01"), Is.EqualTo(DungeonStatuses.Cleared));
+        Assert.That(E.DungeonStatusLabel(s, "d01"), Is.EqualTo("已通关（冷却已到，离开地牢后才可重置）"));
+        Assert.That(E.ExpeditionPreview(s, "d01").StatusName, Does.Contain("冷却已到"));
+        Assert.That(E.ResetStatusText(s, "d01"), Does.Contain("冷却已到，但地牢里还有人"));
+        Assert.That(E.ResetDungeon(s, "d01").Ok, Is.False);
+        Assert.That(s.CurrentLocation, Is.EqualTo("d01_01"), "不强踢");
+
+        // 回父地点（内部无人）：可重置，确认条件照原规则全满足才可确认
+        E.DebugTeleport(s, parent);
+        Assert.That(s.Expedition, Is.Null);
+        Assert.That(E.DungeonResetReady(s, "d01"), Is.True);
+        Assert.That(E.DungeonStatus(s, "d01"), Is.EqualTo(DungeonStatuses.ResetReady));
+        Assert.That(E.DungeonStatusLabel(s, "d01"), Is.EqualTo("可重置"));
+        Assert.That(E.ResetStatusText(s, "d01"), Does.Contain("已可重置"));
+        Assert.That(E.ResetConditions(s, "d01").Select(c => c.Text).ToList(), Has.Count.EqualTo(6), "确认条件条目不变");
+        Assert.That(E.ResetBlocked(s, "d01"), Is.Null);
+        Ok(E.ResetDungeon(s, "d01"));
+        Assert.That(s.DungeonInstances["d01"].Generation, Is.EqualTo(2));
+    }
+
     // ───────────── Q207 净化也计烹饪每日 30（净化子限 4） ─────────────
 
     private static string Key(GameState s, string kind) => $"{Clock.Day(s.GameMinute)}|{kind}|cooking";

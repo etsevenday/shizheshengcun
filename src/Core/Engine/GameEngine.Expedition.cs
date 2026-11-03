@@ -65,12 +65,32 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 可重置（R03 D2 RESET_READY、DR14，B22）：本代已通关且世界时间已到 resetEligibleAt。只是标记——内部有人也照样显示“可重置”、不踢人；
-        /// 真正确认重置还要全队在父地点、实例里没人、没有未决事务（<see cref="ResetBlocked"/>）。
+        /// 可重置（R03 D2 RESET_READY，B22；B22f Q204 选B，280f8be，取代 DR14“到点有人也标可重置”）：本代已通关、世界时间已到 resetEligibleAt，
+        /// 且地牢内部无人（<see cref="DungeonOccupied"/>）才标“可重置”；有人时仍是“已通关”，另注明冷却已到、需离开（<see cref="DungeonCooldownDone"/>）。
+        /// 只是显示前提——不踢人；真正确认重置仍验全队在父地点、实例里没人、没有未决事务（<see cref="ResetBlocked"/>）。
         /// </summary>
-        public bool DungeonResetReady(GameState s, string dungeonId) =>
+        public bool DungeonResetReady(GameState s, string dungeonId) => DungeonCooldownDone(s, dungeonId) && !DungeonOccupied(s, dungeonId);
+
+        /// <summary>本代已通关且已满 72 世界小时（不看里面有没有人）。</summary>
+        public bool DungeonCooldownDone(GameState s, string dungeonId) =>
             !s.Progress.Dead && DungeonCleared(s, dungeonId) && s.DungeonInstances.TryGetValue(dungeonId, out var inst)
             && inst.ResetEligibleAt.HasValue && s.GameMinute >= inst.ResetEligibleAt.Value;
+
+        /// <summary>
+        /// 地牢内部有人（Q204）：主队在该地牢任一节点（含 01 缓冲，开发假设 B22f-4），或该地牢有进行中的远征/撤出。
+        /// 主队是唯一能进地牢的队伍（候补、留守者不进地牢；死亡遗物不算人）。
+        /// </summary>
+        public bool DungeonOccupied(GameState s, string dungeonId) =>
+            DungeonAt(s.CurrentLocation) == dungeonId || s.Expedition?.DungeonId == dungeonId;
+
+        /// <summary>玩家看到的状态名：Q204 冷却已到但里面有人时写“已通关（冷却已到，离开地牢后才可重置）”，其余同 <see cref="DungeonStatusName"/>。</summary>
+        public string DungeonStatusLabel(GameState s, string dungeonId)
+        {
+            var status = DungeonStatus(s, dungeonId);
+            if (status == DungeonStatuses.Cleared && DungeonCooldownDone(s, dungeonId) && DungeonOccupied(s, dungeonId))
+                return DungeonStatusName(status) + "（冷却已到，离开地牢后才可重置）";
+            return DungeonStatusName(status);
+        }
 
         /// <summary>状态的中文短名（预告与开发入口显示）。</summary>
         public static string DungeonStatusName(string status) => status switch
@@ -748,7 +768,7 @@ namespace Survival.Core.Engine
                 PartyCount = s.Party.Count,
                 InExpedition = s.Expedition?.DungeonId == dungeonId,
             };
-            p.StatusName = DungeonStatusName(p.Status);
+            p.StatusName = DungeonStatusLabel(s, dungeonId);
             if (s.DungeonInstances.TryGetValue(dungeonId, out var inst))
             {
                 p.Generation = inst.Generation;

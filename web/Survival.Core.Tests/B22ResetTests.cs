@@ -34,8 +34,8 @@ public class B22ResetTests : BattleTestBase
     private static int Eligible(GameState s) => s.DungeonInstances["d01"].ResetEligibleAt!.Value;
 
     /// <summary>
-    /// DR14/COMP11：通关后 71h55 不可重置；72h 只标“可重置”（RESET_READY）；有人在地牢里照样只标，不踢人、不能确认；
-    /// 预告写“可重置于…”/“已可重置”。
+    /// DR14/COMP11：通关后 71h55 不可重置；72h 只标“可重置”（RESET_READY）；有人在地牢里不踢人、不能确认；
+    /// 预告写“可重置于…”/“已可重置”。B22f（PLAN-Q204-01，Q204 选B）：有人在里面时仍显示“已通关”并注明冷却已到、需离开（见 B22fTests）。
     /// </summary>
     [Test]
     public void DR14_7155Not_72hMarked_PeopleInsideNotKicked()
@@ -55,7 +55,7 @@ public class B22ResetTests : BattleTestBase
         Assert.That(E.ExpeditionPreview(s, "d01").ResetText, Does.Contain("已可重置"));
         Assert.That(E.ResetBlocked(s, "d01"), Is.Null);
         E.DebugTeleport(s, "d01_01");
-        Assert.That(E.DungeonStatus(s, "d01"), Is.EqualTo(DungeonStatuses.ResetReady), "有人在里面也只标可重置");
+        Assert.That(E.DungeonStatus(s, "d01"), Is.EqualTo(DungeonStatuses.Cleared), "Q204 选B：有人在里面仍是已通关");
         Assert.That(E.ResetBlocked(s, "d01"), Does.Contain("全队都在教堂墓园"));
         Assert.That(E.ResetDungeon(s, "d01").Ok, Is.False);
         Assert.That(s.CurrentLocation, Is.EqualTo("d01_01"), "不强踢");

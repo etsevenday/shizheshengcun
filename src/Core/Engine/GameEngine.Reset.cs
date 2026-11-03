@@ -11,7 +11,7 @@ namespace Survival.Core.Engine
     /// S01「B3/B4 世界时钟与实例原子事务」，A10 §7）：
     /// <list type="bullet">
     /// <item>计时：只从本代 clearedAt 起算（recordNode 领取/核对成功，Q127），resetEligibleAt=clearedAt+4320；按世界分钟，离线不走（EC15）；未通关反复退出不计时（DR15）。</item>
-    /// <item>到点只标“可重置”（RESET_READY），不自动换代、不踢人、不删遗物（DR14）。</item>
+    /// <item>到点且内部无人才标“可重置”（RESET_READY；Q204 选B，有人时仍“已通关”并注明冷却已到、需离开），不自动换代、不踢人、不删遗物（DR14）。</item>
     /// <item>确认：全队在父地点、实例里没人（没有进行中的远征/撤出）、没有行动/战斗/敌踪/对白、地牢里没有预留中的材料；
     /// 重验 → 预演清单 → 同一事务迁全部旧实例遗留物到父地点“旧实例遗物认领箱” + 关旧代 + 建新代 → 保存。写盘失败回到确认前的状态（不出现两代、不半迁，DR18/SCB03）；
     /// 同一请求号只生效一次，新一代未通关、再点也不会再生一代。</item>
@@ -139,7 +139,8 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 进入预告/入口摘要里的重置一行（A10 §7）：未通关“不计时”；已通关“可重置于第N日HH:MM（还要X）”；到点“已可重置”。
+        /// 进入预告/入口摘要里的重置一行（A10 §7）：未通关“不计时”；已通关“可重置于第N日HH:MM（还要X）”；到点且里面没人“已可重置”；
+        /// 到点但里面有人（Q204）“冷却已到，但地牢里还有人：离开后才可重置”。
         /// </summary>
         public string ResetStatusText(GameState s, string dungeonId)
         {
@@ -148,6 +149,8 @@ namespace Survival.Core.Engine
                 return "未通关：不计重置时间（只能继续原实例，已领的箱子、已打掉的敌人不会刷新）";
             var parent = LocName(DungeonCfg(dungeonId)!.Parent);
             var head = $"已通关于{Clock.DayTime(inst.ClearedAt!.Value)}；";
+            if (DungeonCooldownDone(s, dungeonId) && DungeonOccupied(s, dungeonId))
+                return head + $"冷却已到，但地牢里还有人：全队离开地牢后才显示可重置（再到{parent}确认，不会把人踢出）";
             return DungeonResetReady(s, dungeonId)
                 ? head + $"已可重置（在{parent}确认：全队在场、地牢里没有人和未完成的事）"
                 : head + $"可重置于{Clock.DayTime(inst.ResetEligibleAt.Value)}（还要{Clock.Duration(inst.ResetEligibleAt.Value - s.GameMinute)}，按世界时间计，离线不走）";
@@ -160,7 +163,8 @@ namespace Survival.Core.Engine
                 return "开发：这座地牢本代还没通关（先领取/核对核心记录，或用“本地牢核心已领取”）";
             if (IsBusy(s)) return "开发：行动进行中或有敌踪/战斗，先结束再拨时间";
             if (s.GameMinute < inst.ResetEligibleAt.Value) s.GameMinute = inst.ResetEligibleAt.Value;
-            return $"开发：时间拨到{Clock.DayTime(s.GameMinute)}（只改时钟，不结算身体）；{DungeonCfg(dungeonId)!.Name}已可重置——到{LocName(DungeonCfg(dungeonId)!.Parent)}确认";
+            var inside = DungeonOccupied(s, dungeonId) ? "冷却已到，但你还在地牢里：离开后才显示可重置" : "已可重置";
+            return $"开发：时间拨到{Clock.DayTime(s.GameMinute)}（只改时钟，不结算身体）；{DungeonCfg(dungeonId)!.Name}{inside}——到{LocName(DungeonCfg(dungeonId)!.Parent)}确认";
         }
     }
 

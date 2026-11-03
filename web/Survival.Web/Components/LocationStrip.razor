@@ -147,7 +147,7 @@
                     <ObjectCard @key="@("exp-" + expHere.Id)" Id="expedition-abort" CssClass="enemy-card world exp-card" Title="@dname" Badge="@(cleared ? "已通关" : "安全点")" BadgeClass="new" Tooltip="@tipX">
                         <Art><span class="exp-art" aria-hidden="true">⇱</span></Art>
                         <ChildContent>
-                            <div class="oc-line">第@(expHere.Generation)代 · @GameEngine.DungeonStatusName(e.DungeonStatus(s, expHere.DungeonId))</div>
+                            <div class="oc-line" title="@e.DungeonStatusLabel(s, expHere.DungeonId)">第@(expHere.Generation)代 · @e.DungeonStatusLabel(s, expHere.DungeonId)</div>
                             @if (cleared)
                             {
                                 <div class="oc-line" title="@tipX">已通关：出口或原路离开都不扣惩罚</div>
