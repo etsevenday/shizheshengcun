@@ -126,8 +126,26 @@ namespace Survival.Core.Engine
         /// 实例显示名（B22d，Q178 选 A）：已鉴定普通白色为“活性物质（白色·已鉴定）”，其余就是物品名。内部 itemId 不变；卡名、随身/地面、整备、预览、
         /// 面板与新日志都用它，历史日志不改写。
         /// </summary>
-        public string InstanceName(ItemInstance i) =>
-            IsIdentifiedWhite(i) && !string.IsNullOrEmpty(Ap.IdentifiedName) ? Ap.IdentifiedName : ItemName(i.ItemId);
+        public string InstanceName(ItemInstance i)
+        {
+            if (IsTutorialCardSample(i))   // B22f Q179：首战教学样本单独成卡、名带“首战教学”
+            {
+                var tn = IsIdentifiedTutorial(i) ? Ap.TutorialIdentifiedName : Ap.TutorialName;
+                if (!string.IsNullOrEmpty(tn)) return tn;
+            }
+            return IsIdentifiedWhite(i) && !string.IsNullOrEmpty(Ap.IdentifiedName) ? Ap.IdentifiedName : ItemName(i.ItemId);
+        }
+
+        /// <summary>首战教学样本（活性物质、来源教学奖励）：B22f Q179 起地面与随身单独成卡。</summary>
+        public bool IsTutorialCardSample(ItemInstance i) =>
+            !string.IsNullOrEmpty(Ap.SampleItemId) && i.ItemId == Ap.SampleItemId && IsTutorialSample(i);
+
+        /// <summary>
+        /// 已鉴定的首战教学样本（Q179“已鉴定教学名”）：教学样本带鉴定记录，且不是看免费说明写的 fixed_tutorial_attack 记录。
+        /// 开发假设 B22f-5（待确认 Q209）：看免费说明不算鉴定，名称仍是“未鉴定的活性物质（首战教学）”；教学样本不能付费详细鉴定，所以正常流程里不会出现已鉴定教学名。
+        /// </summary>
+        public bool IsIdentifiedTutorial(ItemInstance i) =>
+            IsTutorialCardSample(i) && i.Appraisal != null && i.Appraisal.Result != AppraisalRecord.FixedTutorialAttack;
 
         /// <summary>鉴定状态说明（物品卡与面板共用）。</summary>
         public string AppraisalStateText(ItemInstance i)

@@ -40,6 +40,8 @@ def main():
         "quoteVersion": c["quoteVersion"],
         "quoteKeepDays": 7,
         "identifiedName": "活性物质（白色·已鉴定）",   # B22d Q178 选 A（appraisal-service-contract.json q176Q178.identifiedName）
+        "tutorialName": "未鉴定的活性物质（首战教学）",   # B22f Q179 选 A（PCE rules.Q179）
+        "tutorialIdentifiedName": "活性物质（白色·已鉴定·首战教学）",   # B22f Q179 选 A
         "offers": [
             {"id": o["id"], "itemId": o["itemId"], "min": o["inclusiveQuantityBounds"][0], "max": o["inclusiveQuantityBounds"][1],
              "minGrams": o["inclusiveWeightGrams"][0], "maxGrams": o["inclusiveWeightGrams"][1]}

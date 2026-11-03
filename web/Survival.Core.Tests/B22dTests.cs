@@ -368,11 +368,11 @@ public class B22dTests : TestBase
         Ok(E.StartAppraisalTrade(s, a.InstanceId, "white_for_cloth"));
         Run(s);
         Assert.That(s.Log.Last(l => l.Text.StartsWith("换物完成")).Text, Does.Contain("交出活性物质（白色·已鉴定）1份"));
-        // 教学样本看过免费说明不改名（Q179 待定，沿原规则）
+        // 教学样本看过免费说明不算已鉴定（B22f Q179 起单独成卡、名“未鉴定的活性物质（首战教学）”，见 B22fTests；开发假设 B22f-5）
         var t = E.CreateItems(s, Sub, 1, ItemInstance.Carried, false, new ItemSource { GrantEventId = "tutorial-reward-b1", TutorialReward = true }).Single();
         Ok(E.AppraisalTutorialNote(s, t.InstanceId));
-        Assert.That(E.InstanceName(E.FindItem(s, t.InstanceId)!), Is.EqualTo(oldName));
-        Assert.That(E.CardSideOf(E.FindItem(s, t.InstanceId)!), Is.Null);
+        Assert.That(E.InstanceName(E.FindItem(s, t.InstanceId)!), Is.EqualTo("未鉴定的活性物质（首战教学）"));
+        Assert.That(E.CardSideOf(E.FindItem(s, t.InstanceId)!), Is.EqualTo(GameEngine.TutorialCardSuffix));
     }
 
     // ───────────── B22d 试玩修复 M418 ─────────────

@@ -24,17 +24,37 @@ namespace Survival.Core.Engine
         /// <summary>已鉴定普通白色活性物质卡的卡片键后缀（B22d Q178：鉴定状态不同不混在一个标题下，分卡、逐实例可选）。</summary>
         public const string IdentifiedCardSuffix = "apr";
 
-        /// <summary>堆叠物品属于哪一侧卡：本实例战利品 dr、已鉴定白色 apr，普通为 null。</summary>
+        /// <summary>首战教学样本卡的卡片键后缀（B22f Q179：教学样本在地面与随身单独成卡）；已鉴定的教学样本另用 <see cref="TutorialIdentifiedCardSuffix"/>。</summary>
+        public const string TutorialCardSuffix = "tut";
+
+        /// <summary>已鉴定首战教学样本卡的卡片键后缀（B22f Q179，鉴定状态不同不混标题）。</summary>
+        public const string TutorialIdentifiedCardSuffix = "tutapr";
+
+        /// <summary>堆叠物品属于哪一侧卡：本实例战利品 dr、首战教学样本 tut/tutapr（Q179）、已鉴定白色 apr，普通为 null。</summary>
         public string? CardSideOf(ItemInstance i) =>
-            i.RewardOrigin != null ? RewardCardSuffix : IsIdentifiedWhite(i) ? IdentifiedCardSuffix : null;
+            i.RewardOrigin != null ? RewardCardSuffix
+            : IsTutorialCardSample(i) ? (IsIdentifiedTutorial(i) ? TutorialIdentifiedCardSuffix : TutorialCardSuffix)
+            : IsIdentifiedWhite(i) ? IdentifiedCardSuffix : null;
 
-        /// <summary>卡片键第三段是不是“侧”（dr/apr）；工具卡第三段是实例号，返回 null。</summary>
+        /// <summary>卡片键第三段是不是“侧”（dr/apr/tut/tutapr）；工具卡第三段是实例号，返回 null。</summary>
         public static string? CardSideOfKey(string[] parts) =>
-            parts.Length == 3 && (parts[2] == RewardCardSuffix || parts[2] == IdentifiedCardSuffix) ? parts[2] : null;
+            parts.Length == 3 && (parts[2] == RewardCardSuffix || IsSampleSide(parts[2])) ? parts[2] : null;
 
-        /// <summary>堆叠卡的标题：已鉴定白色卡写“活性物质（白色·已鉴定）”，其余为物品名。</summary>
-        public string CardTitle(string itemId, string? side) =>
-            side == IdentifiedCardSuffix && !string.IsNullOrEmpty(Ap.IdentifiedName) ? Ap.IdentifiedName : ItemName(itemId);
+        /// <summary>活性物质样本的分卡侧（已鉴定 apr、教学 tut/tutapr）：同区有这些侧时操作窗与详情只算所点那一侧（B22d M418、B22f Q179）。</summary>
+        public static bool IsSampleSide(string? side) => side is IdentifiedCardSuffix or TutorialCardSuffix or TutorialIdentifiedCardSuffix;
+
+        /// <summary>堆叠卡的标题：已鉴定白色卡写“活性物质（白色·已鉴定）”，教学样本卡写“未鉴定的活性物质（首战教学）”/“活性物质（白色·已鉴定·首战教学）”，其余为物品名。</summary>
+        public string CardTitle(string itemId, string? side)
+        {
+            var name = side switch
+            {
+                IdentifiedCardSuffix => Ap.IdentifiedName,
+                TutorialCardSuffix => Ap.TutorialName,
+                TutorialIdentifiedCardSuffix => Ap.TutorialIdentifiedName,
+                _ => null,
+            };
+            return string.IsNullOrEmpty(name) ? ItemName(itemId) : name;
+        }
 
         /// <summary>按配置顺序的卡片：先堆叠物品组，再工具（同种按实例 ID）。</summary>
         public List<string> NaturalCards(GameState s, string zone)

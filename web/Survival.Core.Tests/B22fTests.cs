@@ -151,6 +151,68 @@ public class B22fTests : BattleTestBase
         Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:h01_gate"));
     }
 
+    // ───────────── Q179 首战教学样本单独成卡 ─────────────
+
+    private const string Sub = "active_substance_white_unidentified";
+
+    private ItemInstance Sample(GameState s, string owner, string grant, bool tutorial) =>
+        E.CreateItems(s, Sub, 1, owner, false, new ItemSource { GrantEventId = grant, TutorialReward = tutorial }).Single();
+
+    /// <summary>
+    /// PLAN-Q179-01：地面与随身上教学样本单独成卡，标题“未鉴定的活性物质（首战教学）”，与普通样本（“未鉴定的活性物质”）、已鉴定普通样本
+    /// （“活性物质（白色·已鉴定）”）各一张；底层 itemId、来源、交易保护不变；拖哪张卡只动那一侧；拾取到随身后仍单独一张。
+    /// </summary>
+    [Test]
+    public void PLAN_Q179_01_TutorialSample_OwnCard_Ground_And_Carried()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId == Sub);
+        var g = s.Ground;
+        var t = Sample(s, g, "tutorial-reward-b1", true);
+        var o = Sample(s, g, "g-o", false);
+        var a = Sample(s, g, "g-a", false);
+        a.Appraisal = new AppraisalRecord { Result = AppraisalRecord.OrdinaryNoEffect, Minute = s.GameMinute };
+        var plain = Cfg.Items.Single(i => i.Id == Sub).Name;
+        Assert.That(E.FindItem(s, t.InstanceId)!.ItemId, Is.EqualTo(Sub), "底层 ID 不变");
+        Assert.That((E.InstanceName(t), E.SubstanceLabel(t)), Is.EqualTo(("未鉴定的活性物质（首战教学）", "未鉴定的活性物质（首战教学）")));
+        Assert.That(E.InstanceName(o), Is.EqualTo(plain));
+        var cards = E.OrderedCards(s, g).Where(k => k.Split('|')[1] == Sub).ToList();
+        Assert.That(cards, Is.EquivalentTo(new[] { $"{g}|{Sub}", $"{g}|{Sub}|{GameEngine.IdentifiedCardSuffix}", $"{g}|{Sub}|{GameEngine.TutorialCardSuffix}" }), "三张卡，标题不混");
+        Assert.That(E.CardTitle(Sub, GameEngine.TutorialCardSuffix), Is.EqualTo("未鉴定的活性物质（首战教学）"));
+        Assert.That(E.CardTitle(Sub, GameEngine.TutorialIdentifiedCardSuffix), Is.EqualTo("活性物质（白色·已鉴定·首战教学）"));
+        Assert.That(E.CardTitle(Sub, null), Is.EqualTo(plain));
+        // 拖教学卡只拿教学样本；拖普通卡只拿普通未鉴定那份（单实例选择不变）
+        Assert.That(E.CardHead(s, DropSource.Parse($"card:{g}|{Sub}|{GameEngine.TutorialCardSuffix}")!)!.InstanceId, Is.EqualTo(t.InstanceId));
+        Assert.That(E.CardHead(s, DropSource.Parse($"card:{g}|{Sub}")!)!.InstanceId, Is.EqualTo(o.InstanceId));
+        // 交易保护不变
+        Assert.That(typeof(GameEngine).GetMethod("TradeSampleBlocked", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(E, new object[] { s, t }), Is.EqualTo("教学样本不可交易"));
+        // 拾取到随身：仍单独一张卡
+        Ok(E.DoInstant(s, InstantRequest.Pickup(t.InstanceId, 1)));
+        Ok(E.DoInstant(s, InstantRequest.Pickup(o.InstanceId, 1)));
+        var carried = E.OrderedCards(s, ItemInstance.Carried).Where(k => k.Split('|')[1] == Sub).ToList();
+        Assert.That(carried, Is.EquivalentTo(new[] { $"{ItemInstance.Carried}|{Sub}", $"{ItemInstance.Carried}|{Sub}|{GameEngine.TutorialCardSuffix}" }));
+        Assert.That(E.FindItem(s, t.InstanceId)!.Source!.TutorialReward, Is.True, "来源不变");
+    }
+
+    /// <summary>
+    /// PLAN-Q179-01 / 开发假设 B22f-5（待确认 Q209）：看免费说明（fixed_tutorial_attack 记录）不算鉴定，仍是未鉴定教学名；教学样本带其他鉴定记录时
+    /// 才用“活性物质（白色·已鉴定·首战教学）”并另成 tutapr 卡。
+    /// </summary>
+    [Test]
+    public void PLAN_Q179_01_TutorialFreeNote_NotIdentified_IdentifiedNameOnlyWithRecord()
+    {
+        var s = New();
+        s.Items.RemoveAll(i => i.ItemId == Sub);
+        var t = Sample(s, ItemInstance.Carried, "tutorial-reward-b1", true);
+        Ok(E.AppraisalTutorialNote(s, t.InstanceId));
+        var ti = E.FindItem(s, t.InstanceId)!;
+        Assert.That(ti.Appraisal!.Result, Is.EqualTo(AppraisalRecord.FixedTutorialAttack));
+        Assert.That((E.InstanceName(ti), E.CardSideOf(ti)), Is.EqualTo(("未鉴定的活性物质（首战教学）", GameEngine.TutorialCardSuffix)));
+        ti.Appraisal = new AppraisalRecord { Result = AppraisalRecord.OrdinaryNoEffect, Minute = s.GameMinute };
+        Assert.That((E.InstanceName(ti), E.CardSideOf(ti)), Is.EqualTo(("活性物质（白色·已鉴定·首战教学）", GameEngine.TutorialIdentifiedCardSuffix)));
+        Assert.That(E.IsIdentifiedWhite(ti), Is.False, "教学样本不算普通已鉴定白色");
+    }
+
     // ───────────── Q204 通关满 72 小时且内部无人才 RESET_READY ─────────────
 
     /// <summary>

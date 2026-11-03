@@ -35,7 +35,7 @@ else
     var spoiled = Spoiled(chosen);
     // B22d 试玩修复 M418（Q178）：已鉴定/未鉴定白色活性物质是两张卡，详情、批次列表与重量只算所点这一侧，另一侧只写一句在另一张卡
     var aprSide = e.CardSideOf(chosen.Stacks[0]);
-    var aprSplit = group && batches.Select(b => e.CardSideOf(b.Stacks[0])).Contains(GameEngine.IdentifiedCardSuffix);
+    var aprSplit = group && batches.Any(b => GameEngine.IsSampleSide(e.CardSideOf(b.Stacks[0])));   // B22f Q179：教学样本卡同样分开
     var otherBatches = aprSplit ? batches.Where(b => e.CardSideOf(b.Stacks[0]) != aprSide).ToList() : new List<Batch>();
     if (aprSplit)
     {
@@ -60,10 +60,9 @@ else
                 var chosenDr = chosenSide == GameEngine.RewardCardSuffix;
                 var sideN = batches.Where(b => e.CardSideOf(b.Stacks[0]) == chosenSide).Sum(b => b.Count);
                 <h2>@e.CardTitle(cfg.Id, chosenSide)@(chosenDr ? "（战利品）" : "") <small class="muted">×@sideN</small></h2>
-                @if (otherBatches.Count > 0)
+                @foreach (var og in otherBatches.GroupBy(b => e.CardSideOf(b.Stacks[0])))
                 {
-                    var otherSide = e.CardSideOf(otherBatches[0].Stacks[0]);
-                    <p class="muted">另有@(e.CardTitle(cfg.Id, otherSide))×@(otherBatches.Sum(b => b.Count))在另一张卡。</p>
+                    <p class="muted">另有@(e.CardTitle(cfg.Id, og.Key))×@(og.Sum(b => b.Count))在另一张卡。</p>
                 }
             }
             <p>@(cfg.Use != null && cfg.Use.IsMedicine ? (cfg.Use.IsBandage ? "药品：止血、回血、压低病毒（本次实际效果见下）" : cfg.Use.IsAntibiotic ? "药品：抑制病毒（本次实际效果见下）" : "药品：清除感染（本次实际效果见下）")
@@ -178,7 +177,7 @@ else
                 {
                     var key = b.Key;
                     <button class="batch @(b == chosen ? "on" : "")" @onclick="() => PickBatch(key, group)">
-                        <span>×@b.Count@(b.Reserved ? " · 预留" : "")@(b.Stacks[0].RewardOrigin != null ? " · 本实例战利品（可封存）" : "")@(e.IsIdentifiedWhite(b.Stacks[0]) ? " · 已鉴定" : "")</span>
+                        <span>×@b.Count@(b.Reserved ? " · 预留" : "")@(b.Stacks[0].RewardOrigin != null ? " · 本实例战利品（可封存）" : "")@(e.IsIdentifiedWhite(b.Stacks[0]) ? " · 已鉴定" : "")@(e.IsTutorialCardSample(b.Stacks[0]) ? " · 首战教学" : "")</span>
                         @* 试玩修复 M77-B9：受本次烹饪保护的食材不显示普通倒计时，写“受热保护中（原期限N小时）” *@
                         <span class="@(Spoiled(b) ? "danger-text" : "muted")">@(!b.ExpiresAt.HasValue ? "不会腐败" : b.Stacks.Count == 1 && e.IsHeatProtected(s, b.Stacks[0]) ? Ui.FreshOf(e, s, b.Stacks[0]) : Ui.Fresh(b.ExpiresAt.Value - s.GameMinute))</span>
                     </button>

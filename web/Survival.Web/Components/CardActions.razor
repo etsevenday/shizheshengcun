@@ -30,7 +30,7 @@
                     var bk = b.Key;
                     <button type="button" role="radio" aria-checked="@(bk == m.BatchKey)" class="ca-batch @(bk == m.BatchKey ? "on" : "") @(b.Spoiled ? "spoiled" : "") @(b.Reserved ? "reserved" : "")"
                             title="@BatchTitle(b)" @onclick="() => G.PickBatch(m.Owner, m.ItemId, bk)">
-                        <b>×@b.Count</b><small>@BatchFresh(b)@(b.Reserved ? " · 预留" : "")@(G.E.IsIdentifiedWhite(b.Stacks[0]) ? " · 已鉴定" : "")</small>
+                        <b>×@b.Count</b><small>@BatchFresh(b)@(b.Reserved ? " · 预留" : "")@(G.E.IsIdentifiedWhite(b.Stacks[0]) ? " · 已鉴定" : "")@(G.E.IsTutorialCardSample(b.Stacks[0]) ? " · 首战教学" : "")</small>
                     </button>
                 }
             </div>
@@ -459,7 +459,7 @@
                 var chosen = G.CurrentBatch(sel.Owner, sel.Id, batches)!;
                 // B22d 试玩修复 M418（Q178）：已鉴定/未鉴定活性物质分两张卡，操作窗的批次条、提示与融合列表只算所点这一侧
                 var side = e.CardSideOf(chosen.Stacks[0]);
-                if (batches.Any(b => e.CardSideOf(b.Stacks[0]) == GameEngine.IdentifiedCardSuffix))
+                if (batches.Any(b => GameEngine.IsSampleSide(e.CardSideOf(b.Stacks[0]))))   // B22f Q179：教学样本卡同样只算本侧
                     batches = batches.Where(b => e.CardSideOf(b.Stacks[0]) == side).ToList();
                 var useInst = chosen.Stacks.FirstOrDefault(i => i.ReservedBy == null && !e.IsSpoiled(s, i)) ?? chosen.Stacks[0];
                 var available = chosen.Reserved ? 0 : chosen.Count;

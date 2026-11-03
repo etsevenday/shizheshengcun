@@ -165,6 +165,10 @@ namespace Survival.Core.Config
         public int QuoteKeepDays { get; set; } = 7;
         /// <summary>B22d（Q178 选 A）：已鉴定普通白色实例的显示名（“活性物质（白色·已鉴定）”）；内部物品 ID 不变。空为不改名。</summary>
         public string IdentifiedName { get; set; } = "";
+        /// <summary>B22f（Q179 选 A）：首战教学样本未鉴定时的显示名（“未鉴定的活性物质（首战教学）”）；空为不改名。</summary>
+        public string TutorialName { get; set; } = "";
+        /// <summary>B22f（Q179 选 A）：首战教学样本已鉴定时的显示名（“活性物质（白色·已鉴定·首战教学）”）。</summary>
+        public string TutorialIdentifiedName { get; set; } = "";
         public System.Collections.Generic.List<AppraisalOfferConfig> Offers { get; set; } = new System.Collections.Generic.List<AppraisalOfferConfig>();
     }
 
