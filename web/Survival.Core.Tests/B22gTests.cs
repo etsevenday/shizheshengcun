@@ -692,4 +692,19 @@ public class B22gTests : TestBase
         Assert.That(GameEngine.PlacementKey(RecruitPlacement.Party), Is.EqualTo("party"));
         Assert.That(GameEngine.PlacementFromKey("bogus"), Is.Null);
     }
+
+    /// <summary>M439（试玩修复，只改显示）：在办登记与待安置确认时，名额计数行写明另锁的 1 个名额；没有时不写。</summary>
+    [Test]
+    public void M439_QuotaLine_NotesLockedSlot()
+    {
+        var s = AtShelter(c: 3);
+        Assert.That(E.RecruitPreview(s).QuotaText, Does.Not.Contain("另有1"));
+        Ok(E.StartRecruit(s, s.Recruit.Candidates[0].CandidateId, RecruitPlacement.Square));
+        Assert.That(E.RecruitPreview(s).QuotaText, Does.Contain("随机/保底名册 0/2（另有1笔登记在办锁定1个名额）"));
+        Run(s);
+        Assert.That(E.DebugRecruitment(s, "awaiting"), Does.Contain("待安置确认"));
+        var v = E.RecruitPreview(s);
+        Assert.That(v.QuotaText, Does.Contain("随机/保底名册 1/2（另有1名待安置锁定1个名额）"));
+        Assert.That(v.PartyOptionBlocked, Is.Null.Or.Contain("请选“安排候补”"), "网页待安置块据此改写成“改为候补安置”");
+    }
 }

@@ -24,25 +24,35 @@
     }
     <p class="small rc-quota">@v.QuotaText</p>
     <p class="small muted">@v.CostText。招募不收金币、罕见材料或钥匙；完成后按所选去向0分钟到位（编入同行，或在营区广场/安全屋屋内作候补；屋内候补要你实地进那间屋才能编入同行）。同行补员（RB01）与借用矛报失在右栏“队伍”。</p>
-    @if (v.PendingText != null) { <p class="warn-text small">@v.PendingText</p> }
+    @* M439：待安置时由下方块标题写“待安置确认：某某”，这里不再重复 *@
+    @if (v.PendingText != null && v.Awaiting == null) { <p class="warn-text small">@v.PendingText</p> }
 
     @if (v.Awaiting is RecruitAwaitingView aw)
     {
         @* B22g（Q183 confirm）：完成重验失败后停在待安置确认：不建人、不重收10分钟、名额仍锁；只能改选合法去向或取消 *@
         var awWhy = aw.Blocked ?? busy;
         var awDest = DestFor(v);
+        // M439：待安置块里没有“安排候补”单选，满员原因指向本块的“改为候补安置”
+        var awParty = v.PartyOptionBlocked?.Replace("请选“安排候补”", "请在下方选目的地后点“改为候补安置”");
+        var awDestLabel = v.ReserveDestinations.FirstOrDefault(d => d.Key == awDest)?.Label ?? "";
         <div class="rc-awaiting" data-awaiting="1">
             <h4 class="rc-sub">待安置确认：@aw.CandidateName</h4>
             <p class="small">@aw.IdentityText · 原选：@aw.ChoiceText</p>
             <p class="small warn-text">现在不行：@aw.FailureText。登记手续已办完、人还没建，名额仍锁着；改选去向后0分钟到位，不会再收10分钟；取消则不发人、不发物，已过时间不退。</p>
             <div class="btn-row">
-                <button class="primary" disabled="@((awWhy ?? v.PartyOptionBlocked) != null)" title="@(awWhy ?? v.PartyOptionBlocked ?? "编入同行（0分钟）")" @onclick='() => G.ResolveRecruitPlacement("party")'>改为编入同行</button>
-                <select class="rc-dest" value="@awDest" @onchange="e => _dest = e.Value?.ToString()">
+                <button class="primary" disabled="@((awWhy ?? awParty) != null)" title="@(awWhy ?? awParty ?? "编入同行（0分钟）")" @onclick='() => G.ResolveRecruitPlacement("party")'>改为编入同行</button>
+                @if (awParty != null && awWhy == null) { <span class="muted small">编入同行：@awParty</span> }
+            </div>
+            @* M439：目的地下拉单独占一行、宽度 100%，悬停写完整选中项 *@
+            <div class="rc-dest-row">
+                <select class="rc-dest wide" value="@awDest" title="@awDestLabel" @onchange="e => _dest = e.Value?.ToString()">
                     @foreach (var d in v.ReserveDestinations)
                     {
                         <option value="@d.Key" disabled="@(d.Blocked != null)" title="@(d.Blocked ?? d.Label)">@d.Label@(d.Blocked != null ? $"（不可选：{d.Blocked}）" : "")</option>
                     }
                 </select>
+            </div>
+            <div class="btn-row">
                 @{ var dWhy = awWhy ?? v.ReserveDestinations.FirstOrDefault(d => d.Key == awDest)?.Blocked; }
                 <button class="secondary" disabled="@(dWhy != null)" title="@(dWhy ?? "安排到所选处作候补（0分钟）")" @onclick="() => G.ResolveRecruitPlacement(awDest)">改为候补安置</button>
                 <button class="secondary" disabled="@(awWhy != null)" title="@(awWhy ?? "取消这笔登记：不发人不发物，已过时间不退，名额释放")" @onclick="() => G.CancelRecruitPlacement()">取消登记</button>
@@ -63,7 +73,7 @@
             <label class="small" title="营区广场，或已完工、到访过、从收容所有已知可通路线的自有安全屋">
                 <input type="radio" name="rc-mode" checked="@(_mode == "reserve")" @onchange='() => _mode = "reserve"' /> 安排候补
             </label>
-            <select class="rc-dest" value="@dest" disabled="@(_mode != "reserve")" @onchange="e => _dest = e.Value?.ToString()">
+            <select class="rc-dest" value="@dest" title="@(v.ReserveDestinations.FirstOrDefault(d => d.Key == dest)?.Label)" disabled="@(_mode != "reserve")" @onchange="e => _dest = e.Value?.ToString()">
                 @foreach (var d in v.ReserveDestinations)
                 {
                     <option value="@d.Key" disabled="@(d.Blocked != null)" title="@(d.Blocked ?? d.Label)">@d.Label@(d.Blocked != null ? $"（不可选：{d.Blocked}）" : "")</option>

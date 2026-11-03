@@ -609,7 +609,9 @@ namespace Survival.Core.Engine
             var k = SharedRosterCap(s);
             v.SharedCap = k;
             v.SharedUsed = SharedRoster(s).Count;
-            v.QuotaText = $"随机/保底名册 {v.SharedUsed}/{k}（容量C{PartyCapacity(s)}：K=min({Rc.SharedRosterMax},C−1)；留守候补照常占名额，死亡或退役才释放）"
+            // B22g 试玩修复 M439：在办登记/待安置确认另锁 1 个名额，计数行写明（只改显示）
+            var lockNote = s.Recruit.Pending is RecruitTxn lp ? (lp.AwaitingPlacement ? "（另有1名待安置锁定1个名额）" : "（另有1笔登记在办锁定1个名额）") : "";
+            v.QuotaText = $"随机/保底名册 {v.SharedUsed}/{k}{lockNote}（容量C{PartyCapacity(s)}：K=min({Rc.SharedRosterMax},C−1)；留守候补照常占名额，死亡或退役才释放）"
                           + $" · 全名册存活 {RosterAliveWithPlayer(s)}/{Rc.RosterAliveCap}（含你）";
             v.CostText = $"登记：0材料 · {Clock.Duration(Rc.RegistrationMinutes)}等待（两段，你与同行按等待消耗）· 占1个名额";
             v.Blocked = RecruitServiceBlocked(s, "办理");

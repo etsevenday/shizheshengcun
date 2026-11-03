@@ -1463,6 +1463,9 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .recruit-panel .rc-dest { max-width: 100%; min-width: 0; }
 .recruit-panel .rc-awaiting { border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; margin: 6px 0; }
 .recruit-panel .rc-awaiting .btn-row { flex-wrap: wrap; }
+/* M439：待安置块的目的地下拉单独一行、占满宽度 */
+.recruit-panel .rc-dest-row { margin: 4px 0; }
+.recruit-panel .rc-dest.wide { width: 100%; box-sizing: border-box; }
 
 /* B21 地牢远征：进入预告、终止确认窗、安全点卡 */
 .exp-pv { max-height: 42vh; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; font-size: 13px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
