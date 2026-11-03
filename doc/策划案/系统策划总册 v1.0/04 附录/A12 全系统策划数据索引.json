@@ -27973,8 +27973,19 @@
           "purification_tablet",
           "filter_cartridge"
         ],
-        "xp": "成功实际净化输出每500ml给首次启动且仍存活的执行者烹饪1；与锅烧水共享每角色每世界日4上限，非额外4，也计原适用烹饪日总上限。不按输入或预估给；500ml为本配方计量单位，非整份不额外向上取整，不跨失败/取消批次积余。2L正常成功给4，但当天锅烧水已给3则本批只给1。",
-        "timing": "完成原子提交按完成日剩余额度，不按启动日；取消/腐败/未产出0，完成后领取/转移/读档不重给。启动者死亡不转给全队。20分钟等待及不吃制造加速不变，不增加主动工作身体消耗。旧已完成不给历史经验，进行中批次保留原开工经验快照。"
+        "xp": "每实际500ml给启动存活者烹饪1，与锅烧水共享净化每日4，且按Q207计入烹饪全部来源每日30；本批=min(应得,净化剩额,总剩额)，不足向下按实际500ml，不跨取消/失败批次积余。",
+        "timing": "完成原子提交按完成日剩余额度，不按启动日；取消/腐败/未产出0，完成后领取/转移/读档不重给。启动者死亡不转给全队。20分钟等待及不吃制造加速不变，不增加主动工作身体消耗。旧已完成不给历史经验，进行中批次保留原开工经验快照。",
+        "q207": {
+          "totalDailyCookingCap": 30,
+          "purificationDailySubcap": 4,
+          "policy": "Q207选B，明确取代Q60食品/净化分账上限、Q166歧义及B22a不占30的冲突部分：锅净水+净水片/滤芯净水+食品/主动烹饪/晾制烹饪产出，按每角色完成日合计最多30，其中所有净化仍合计最多4。净化实际获得=min(本批每实际500ml应得量,4-今日净化已得,30-今日烹饪全部已得)，非净化获得=min(本批原应得,30-今日全部已得)，下限0。各源原经验计算与一次性规则不变，不另给制造。不同事务同刻按原提交顺序记账，不争抢出负数。",
+          "examples": [
+            "已食品28，净化应得4则只给2，总30、净化2；随后净化/食品均0",
+            "已净化4，食品最多再26",
+            "食品已30，净化0；换日后按完成日新额"
+          ],
+          "migration": "旧档当前日各源已发经验保留不倒扣，用已有食品及净化已发账相加初始化总额，若已达/超30当日新增给0，次世界日正常新额；不得把累计净化毫升重复当已发经验。进行中批次原基础经验与流程快照不变，但完成发经验统一受新日额限制；旧已完成不重发、不重结算。"
+        }
       },
       "dryingRack": {
         "station": "drying_rack",
@@ -28106,6 +28117,17 @@
         "sharedDailyCapPerActor": 12,
         "policy": "成功批次一次给首次投料且完成时仍存活的角色，陶窑整批两个陶壳共6点、净水台整批2L共3点，非每份产物。按完成世界日共享被动制造日额12，剩余不足给剩余，满级0；不转移给接收者/全队。预估公开基础经验与今日余额。投料/领取/重读/读档不给；取消/腐败/失败/无产物0；领取前已结算经验，不重复。与主动制造/建造经验独立，仅本两类被动批次合计12，不另给烹饪净化经验；Q166固定等待净水仍按每日4烹饪口径。",
         "migration": "批次启动存经验快照；上线前已开始的按原0经验完成，新启动才给新值。旧完成不补，既有进度/材料/燃料保留。经验账与产物原子提交，不能通过同一批反复领取、取消或读档刷取。"
+      },
+      "cookingDailyQ207": {
+        "totalDailyCookingCap": 30,
+        "purificationDailySubcap": 4,
+        "policy": "Q207选B，明确取代Q60食品/净化分账上限、Q166歧义及B22a不占30的冲突部分：锅净水+净水片/滤芯净水+食品/主动烹饪/晾制烹饪产出，按每角色完成日合计最多30，其中所有净化仍合计最多4。净化实际获得=min(本批每实际500ml应得量,4-今日净化已得,30-今日烹饪全部已得)，非净化获得=min(本批原应得,30-今日全部已得)，下限0。各源原经验计算与一次性规则不变，不另给制造。不同事务同刻按原提交顺序记账，不争抢出负数。",
+        "examples": [
+          "已食品28，净化应得4则只给2，总30、净化2；随后净化/食品均0",
+          "已净化4，食品最多再26",
+          "食品已30，净化0；换日后按完成日新额"
+        ],
+        "migration": "旧档当前日各源已发经验保留不倒扣，用已有食品及净化已发账相加初始化总额，若已达/超30当日新增给0，次世界日正常新额；不得把累计净化毫升重复当已发经验。进行中批次原基础经验与流程快照不变，但完成发经验统一受新日额限制；旧已完成不重发、不重结算。"
       }
     },
     "campaignRecords": [
@@ -28880,7 +28902,9 @@
           1,
           2
         ],
-        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
+        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。",
+        "fearChance": 0.45,
+        "fearValue": 8
       },
       {
         "id": "ec_labwalker",
@@ -28911,7 +28935,9 @@
           1,
           2
         ],
-        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
+        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。",
+        "fearChance": 0.4,
+        "fearValue": 8
       },
       {
         "id": "ec_cablecrawler",
@@ -28942,7 +28968,9 @@
           1,
           2
         ],
-        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
+        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。",
+        "fearChance": 0.5,
+        "fearValue": 10
       },
       {
         "id": "ec_stockbracer",
@@ -28973,7 +29001,9 @@
           1,
           2
         ],
-        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
+        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。",
+        "fearChance": 0.4,
+        "fearValue": 7
       },
       {
         "id": "ec_boss_crypt",
@@ -29001,7 +29031,9 @@
           1,
           2
         ],
-        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
+        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。",
+        "fearChance": 0.6,
+        "fearValue": 14
       },
       {
         "id": "ec_boss_lab",
@@ -29030,7 +29062,9 @@
           2
         ],
         "specialTargetRule": "标记可选任意存活目标；冷链守卫标记最靠后存活者，意图锁定后公开；基础近战仍12",
-        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
+        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。",
+        "fearChance": 0.65,
+        "fearValue": 14
       },
       {
         "id": "ec_boss_armory",
@@ -29058,7 +29092,9 @@
           1,
           2
         ],
-        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
+        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。",
+        "fearChance": 0.6,
+        "fearValue": 15
       },
       {
         "id": "ec_boss_relay",
@@ -29086,7 +29122,9 @@
           1,
           2
         ],
-        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
+        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。",
+        "fearChance": 0.65,
+        "fearValue": 15
       },
       {
         "id": "ec_boss_water",
@@ -29114,7 +29152,9 @@
           1,
           2
         ],
-        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
+        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。",
+        "fearChance": 0.55,
+        "fearValue": 12
       },
       {
         "id": "ec_boss_mine",
@@ -29142,7 +29182,9 @@
           1,
           2
         ],
-        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
+        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。",
+        "fearChance": 0.6,
+        "fearValue": 16
       },
       {
         "id": "ec_boss_mall",
@@ -29170,7 +29212,9 @@
           1,
           2
         ],
-        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
+        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。",
+        "fearChance": 0.6,
+        "fearValue": 13
       },
       {
         "id": "ec_boss_cold",
@@ -29199,7 +29243,9 @@
           2
         ],
         "specialTargetRule": "标记可选任意存活目标；冷链守卫标记最靠后存活者，意图锁定后公开；基础近战仍12",
-        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。"
+        "activationBudgetRule": "正常激活一个2AP主意图；合法前移1AP后最多一次普通攻击，余AP直接结束不自动防御；空前排迫近按Q80独立AP/弱攻击条件，不额外第二攻击。追击只普通攻击，不重复主招。",
+        "fearChance": 0.55,
+        "fearValue": 13
       }
     ],
     "enemySets": [
@@ -30631,7 +30677,21 @@
         "71h55不可重置",
         "72h且其他条件全满足可确认"
       ],
-      "uncompletedInstanceNeverRefreshes": true
+      "uncompletedInstanceNeverRefreshes": true,
+      "resetReadyDisplayRequiresEmptyInterior": true,
+      "q196Q206Rules": {
+        "Q196": "选C。地牢沿本次来路找最近已通过无敌房，无则01；野外及普通主世界撤退退回可信已完成移动的来处，详见新战开工快照与无可信来路回退合同，不猜路线、不额外移动时间。",
+        "Q197": "选A。惊魂未定6世界小时内仅下一场入战初始恐慌+10一次，用后消失，不战到期；每人独立截止，重触发取较晚，不叠层。",
+        "Q198": "选A。本代已开通/两端到过的双向内部边加01与父地点入口边构成应急回路，按基础分钟最短路返程；不走未知房或单向出口，无需新增应急字段，导入仍断言双向。",
+        "Q199": "选A。撤出不中途因警戒线暂停，不可手动吃喝/用药/休息/接战，可做拾放等合法即时整理；N/W/E/S/M不继续下降，归零项/出血/感染仍可扣血，沿原死亡处理。不因这句禁止原整理入口。",
+        "Q200": "选A。探索估计下限为01至核心最短路移动加沿途剩余探索，上限全房剩余探索加每条内部边一次，标基础分钟/不含战斗倍率；回撤最低30及当前T，按当前已提交探索度重算，不自动探索。",
+        "Q201": "选A。确认危险房移动即开始，取消移动也算；已通关从01原路离开免罚；旧档危险房追认开始、不补罚，01不开始；通关后再进同代仍确认新远征，离开免罚。",
+        "Q202": "选A，【交开发方定】入口浮窗避开右栏预告、无远征写“未开始远征”、受惊预估注明惊魂+10、撤出进度至少约2秒可见；纯显示不推进或延长游戏时间、不改撤出与恐慌数值。",
+        "Q203": "选A。本实例已核销奖励在本远征非战斗时，可从当前地面或同行随身整堆0分钟封存；取出只到主角合法随身或当地地面，队友再拾。拒绝外带/自制/别实例，成功离开清来源标记；源不同在地牢分卡，离开按原兼容规则合组，owner唯一不复制。",
+        "Q204": "选B。通关满72世界小时且内部无人时才标RESET_READY/可重置；有人仍显示已通关并可注明冷却已到、需离开。无人只是显示前提，真正确认仍验全队父地点、无远征/撤出/动作/战斗/敌踪/预留材料等原全部条件，不强踢人。",
+        "Q205": "选A。旧无clearedAt且本代已核对记录者，以升级时刻记通关，72世界小时后可重置；旧已领核心首通补给记已领、不追补，幂等不因再次读档重记升级时刻。",
+        "Q206": "选A。五项均认可：持续至使用轮+2轮末；闪光只加命中能力6不加伤害；护带与主动稳固比较、装备抵抗另取强；提示贴同目标同轮多人合计最多减6；三件走医疗快捷栏，标记选敌、贴多人选友单人自用。"
+      }
     },
     "recruitment": {
       "locationId": "h06_shelter",
@@ -30640,7 +30700,132 @@
       "candidatesPerCycle": 3,
       "rosterCapFormula": "min(3,C-1)",
       "cycleFormula": "floor((worldMinute-shelterOpenedAt)/4320)",
-      "noOfflineRefresh": true
+      "noOfflineRefresh": true,
+      "identity": {
+        "surnames": [
+          "陈",
+          "林",
+          "周",
+          "沈",
+          "许",
+          "顾",
+          "叶",
+          "唐",
+          "宋",
+          "江",
+          "陆",
+          "程",
+          "何",
+          "徐",
+          "方",
+          "秦",
+          "苏",
+          "魏",
+          "吴",
+          "韩",
+          "赵",
+          "郑",
+          "谢",
+          "梁",
+          "杜",
+          "袁",
+          "高",
+          "孟",
+          "夏",
+          "余",
+          "邵",
+          "罗"
+        ],
+        "givenNames": [
+          "知远",
+          "安宁",
+          "清和",
+          "言初",
+          "景行",
+          "亦舟",
+          "向晨",
+          "思齐",
+          "予川",
+          "怀瑾",
+          "明溪",
+          "星野",
+          "云舒",
+          "南乔",
+          "闻溪",
+          "时雨",
+          "允和",
+          "初晴",
+          "见山",
+          "秋白",
+          "书宁",
+          "望舒",
+          "子衡",
+          "青禾",
+          "若水",
+          "一帆",
+          "晓川",
+          "庭安",
+          "知夏",
+          "嘉木",
+          "予安",
+          "映川"
+        ],
+        "gender": [
+          {
+            "id": "female",
+            "name": "女"
+          },
+          {
+            "id": "male",
+            "name": "男"
+          },
+          {
+            "id": "undisclosed",
+            "name": "未说明"
+          }
+        ],
+        "skinTone": [
+          "浅肤色",
+          "中浅肤色",
+          "中等肤色",
+          "中深肤色",
+          "深肤色"
+        ],
+        "hairStyle": [
+          "短发",
+          "齐耳发",
+          "齐肩发",
+          "束发",
+          "卷发",
+          "剃短发"
+        ],
+        "hairColor": [
+          "黑色",
+          "深棕色",
+          "浅棕色",
+          "灰白色"
+        ],
+        "faceDetail": [
+          "无明显特征",
+          "眉尾浅疤",
+          "面颊浅疤",
+          "雀斑",
+          "左眉缺口",
+          "眼角细纹"
+        ],
+        "appearanceRule": "字段只作成人文字外观描述，不生成画像/性别加成/装备。肤色、发型、发色、面部细节、性别及姓/名各池独立等概率有放回取一，不按性别限制姓名或发型。外观装饰不等于伤病/防具/身份能力。候选卡与名册显示姓名、性别、外观摘要；保持原职业/身体数值公开。",
+        "seedRule": "使用独立于模板/身体/品质数值的展示随机子流：campaignSeed+周期ID+候选稳定流水号+字段键，一次生成持久化。预览/打开/读档/招入/留守不重抽，不改变原属性随机序列。重复姓名允许，以稳定流水号区分；显示“姓名·004”等，序号至少三位，超过999不截断、不循环。",
+        "oldSaves": "已生成旧候选及已招生成角色保留原显示名、数值与actorId，性别显示未说明、外观显示未记录，不补抽；新周期候选使用新池。六命名角色、RB01既有名称不改。"
+      },
+      "placement": {
+        "selection": "周期候选登记确认前明确二选一：编入同行/安排候补。同行选项仅当前同行人数<C时可选，满员写真实原因；不挤出他人。候补下拉可选营区广场，或任一已完工、已实际到访、且从收容所沿当前已知可通路线可达的自有安全屋。无合格屋仍可选广场；人数不设额外床位上限，沿名册K和存活总10上限。",
+        "arrival": "用户补充选择：登记完成原子创建角色，并立即0分钟送达所选安全屋屋内或广场，不模拟路途，不额外扣费/推进时间/触发战斗；不带走任何原主队/候补/屋柜物品，只转移这次新招且原本空装备的角色。此例外不解锁地图、传送主队或已有队员。",
+        "confirm": "沿原10分钟登记与候选名额预留，开工快照锁目的地与选择；完成重验该屋完工/合法可达和同行空位。失败时登记暂停在待安置确认状态，不创建角色、不重收10分钟、不释放导致超额；只允许改选合法目的地/改候补或取消。取消不发人不发物，已过时间不退；完成requestId只建一人。跨周期保留已锁候选身份和数值。",
+        "care": "安全屋候补从下一真实tick按Q90同一休息/睡眠阈值及真实屋内遮蔽/床设施计算，公共照护N+5.2/W+6.4/M+1每小时、公共正补上限80照Q90；自然消耗/伤病/死亡照常，不免病毒、不瞬回。明确扩展该照护至所选屋内候补，不耗屋柜/玩家库存，不产物资或经验；入同行立即停止候补补给，角色状态/装备/物资不重置。",
+        "retrieve": "主队实到对应屋内且安全空闲时，角色页“编入同行”校验C后0分钟加入；广场候补仍在广场办理。已有队员留守安全屋须主队与该人同在该屋内，点“留守此屋”0分钟，不能远程迁人；留守名额不释放K。不得从另一处屋或广场远程编入。",
+        "death": "驻屋候补死亡遗物保留实际屋内，候补死亡不重生；R08认领箱只用于退役。收容所可按Q181给候补办理退役，退役物明确原子迁h06认领箱，这是退役例外，不提供一般远程取物。屋不可拆除沿原规则；任务服务联系仍由机构接续。",
+        "compatibility": "旧在册候补位置保持广场，不自动搬屋；旧在办登记无新选择时完成默认广场候补，不自动入队；新登记必须明确选择。除本节明确扩展之外，Q156命名角色登记和RB01直接同行原规则不改。明确取代Q90/S09/A11“私人安全屋不收候补”、营区唯一换入/留守地点的冲突范围；公共居所与各屋实体/库存仍独立，不成为联网仓。"
+      }
     },
     "userDecisions": {
       "q25": "提交后收起瞄准，下一击重选",
@@ -30821,7 +31006,339 @@
       }
     ],
     "combatResolutionContract": "assets/20261031/combat/combat-resolution-adjudications.json",
-    "legacyElitePlacementVersion": "q75_q82_20261031"
+    "legacyElitePlacementVersion": "q75_q82_20261031",
+    "q187Q195": {
+      "rules": {
+        "Q187": "选A。地牢本房固定敌未胜时不能探索/清理翻找/资源采集，可沿已通边离开；击败后正常，必经房不能靠搜刮绕战。m02不再沿原例外，按本轮Q193同样战前禁三项。",
+        "Q188": "选A。首次实际到房时按当时解锁容量C锁本代固定敌名单与worldEnemyId，到达不自动开战；扩容、少带人、撤退/读档不重编或恢复HP，换代重新揭示；远征入口只作整体预告，不提前锁具体房名单。",
+        "Q189": "选B，由总控给12新敌逐一受惊参数：低吟45%/8、试制40%/8、缠线50%/10、货架40%/7、祭室60%/14、隔离65%/14、军械60%/15、天线65%/15、泵房55%/12、深井60%/16、扶梯60%/13、仓管55%/13。只改初始受惊源参数，沿Q91共用随机源/个人精神修正规则，不增加尖啸招式或伤害。",
+        "Q190": "选A。鼓动最近两名存活同伴，同距前排优先；无其他同伴改普通抓击；各人下一次攻击命中或落空即耗，未攻击不按轮过期；同名取强×1.10，与异名蓄势相乘。",
+        "Q191": "选A。标记无额外命中/伤害加成；隔离守卫Q91随机标记，指定普攻仍只打1/2，目标失效或3/4位则从1/2存活者随机普通攻击，无合法普攻目标按原空目标规则，不改大招。仓管标最靠后活人，低伤拉扯可选1—4位被标者，命中后判控制成功前拉1位。",
+        "Q192": "选C，由总控补21节点逐敌层表，原权重层内归一化；普通/稀有/强敌96/3.5/0.5与第1/3/7日开放不变，空层不重抽、不跨节点补池；ex_pop五区不改，旧已生成个体不重抽。",
+        "Q193": "按用户授权定1只迟缓感染者z_slow，强度沿原4.2HP/零甲/速度2；首次到达出现一局一次固定战，必须战胜才可探索/清理翻找/采集，可沿已开边离开；胜利存活提交原清障事实，旧可信完成不反锁，未完战保留HP。",
+        "Q194": "选A。以Q31为准，b01_school/b02_station公共服务点不刷新、不巡入、不随机接敌，旧池不用，不混入分层人口区。",
+        "Q195": "按用户修订。防御/格挡下一次直接伤害×0.5至下次正常激活；保护挡相邻者下一次单体攻击，后排优先，无同伴提示“没有可以保护的同伴”，执行重验相邻，不自动改抓击。保护落空仍消耗原2AP主意图，余AP按原结束。推挤×0.7命中判击退；重击冲撞不默认蓄力；破甲0.2两轮同名取强；8守卫普抓不咬。"
+      },
+      "layering": {
+        "weights": {
+          "ordinary": 96,
+          "rare": 3.5,
+          "strong": 0.5
+        },
+        "openDay": {
+          "ordinary": 1,
+          "rare": 3,
+          "strong": 7
+        },
+        "rows": [
+          {
+            "nodeId": "m01_road",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "shambler": 70,
+                "z_slow": 30
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "m02_checkpoint",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 100
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w01_farm",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 50,
+                "feral_dog": 30,
+                "feral_boar": 20
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w02_forest",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "feral_dog": 50
+              },
+              "rare": {
+                "wolf": 20,
+                "z_clinger": 20
+              },
+              "strong": {
+                "wild_dog_leader": 10
+              }
+            }
+          },
+          {
+            "nodeId": "w03_quarry",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_helmet": 50,
+                "worker": 30,
+                "boar": 20
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w04_crossroads",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 40,
+                "feral_dog": 30,
+                "feral_boar": 20,
+                "shambler": 10
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w05_marsh",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 40,
+                "feral_dog": 30,
+                "feral_boar": 20,
+                "shambler": 10
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w06_bridge",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 40,
+                "feral_dog": 30,
+                "feral_boar": 20,
+                "shambler": 10
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w07_ridge",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 40,
+                "feral_dog": 30,
+                "feral_boar": 20,
+                "shambler": 10
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w08_reservoir",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 40,
+                "feral_dog": 30,
+                "feral_boar": 20,
+                "shambler": 10
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w09_logging",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 40,
+                "feral_dog": 30,
+                "feral_boar": 20,
+                "shambler": 10
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w10_watchtower",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 40,
+                "feral_dog": 30,
+                "feral_boar": 20,
+                "shambler": 10
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "a01_yard",
+            "regionId": "mainline_works",
+            "layers": {
+              "ordinary": {
+                "worker": 40,
+                "z_hauler": 40
+              },
+              "rare": {
+                "z_engineer": 20
+              },
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "a02_pump",
+            "regionId": "mainline_works",
+            "layers": {
+              "ordinary": {
+                "worker": 40
+              },
+              "rare": {
+                "z_spitter": 30
+              },
+              "strong": {
+                "z_bloater": 30
+              }
+            }
+          },
+          {
+            "nodeId": "a03_foundry",
+            "regionId": "mainline_works",
+            "layers": {
+              "ordinary": {
+                "z_helmet": 30
+              },
+              "rare": {
+                "z_engineer": 40,
+                "z_signal": 20
+              },
+              "strong": {
+                "riot": 10
+              }
+            }
+          },
+          {
+            "nodeId": "b03_hospital",
+            "regionId": "mainline_aid",
+            "layers": {
+              "ordinary": {
+                "z_helmet": 30
+              },
+              "rare": {
+                "z_screamer": 30,
+                "z_nurse": 40
+              },
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "c01_pilgrim",
+            "regionId": "mainline_oldcity",
+            "layers": {
+              "ordinary": {
+                "z_slow": 50,
+                "shambler": 50
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "o01_oldgate",
+            "regionId": "mainline_oldcity",
+            "layers": {
+              "ordinary": {
+                "shambler": 35,
+                "z_slow": 30,
+                "z_helmet": 20
+              },
+              "rare": {
+                "z_clinger": 15
+              },
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "o02_market",
+            "regionId": "mainline_oldcity",
+            "layers": {
+              "ordinary": {
+                "shambler": 35,
+                "z_slow": 30,
+                "z_helmet": 20
+              },
+              "rare": {
+                "z_clinger": 15
+              },
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "o03_police",
+            "regionId": "mainline_oldcity",
+            "layers": {
+              "ordinary": {
+                "shambler": 35,
+                "z_slow": 30,
+                "z_helmet": 20
+              },
+              "rare": {
+                "z_clinger": 15
+              },
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "o04_transit",
+            "regionId": "mainline_oldcity",
+            "layers": {
+              "ordinary": {
+                "shambler": 35,
+                "z_slow": 30,
+                "z_helmet": 20
+              },
+              "rare": {
+                "z_clinger": 15
+              },
+              "strong": {}
+            }
+          }
+        ],
+        "policy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
+      },
+      "checkpoint": {
+        "nodeId": "m02_checkpoint",
+        "enemies": [
+          "z_slow"
+        ],
+        "reason": "总控定为1只迟缓感染者（沿原hp4.2/甲0/速度2/攻击21/伤害0.7—1.1），单主角C1阶段可处理，不增加护甲精英或第二名敌，不按日强化。",
+        "policy": "首次实际到达生成campaign唯一固定敌踪，名单与HP持久化，到达不自动开战；玩家可接战或沿已开通边离开。只要拦路战未胜利，探索/清理翻找/资源采集均禁用并写“先战胜检查哨拦路敌人”；不因撤退/重新到访/探索度100清除。成功胜利且主角存活才原子写checkpoint_obstruction_cleared并沿原规则开营门。随机人口不替固定敌结清任务，之后有随机敌按原随机敌踪规则；首次随机人口0仍不变。",
+        "oldSaves": "旧有可信清障事实不反锁、不生成新拦路战，已探索/已领物不回收；旧未赢固定战保留同一敌HP，不补第二只，新规则只限制未开始的探索/清理/采集，已在办动作沿旧开工快照完成。"
+      },
+      "protection": "格挡/防御：下一次直接伤害×0.5，至使用者下次正常激活前，先触发即消耗；保护挡相邻存活同伴下一次单体攻击，后排优先再前排，同距按号位，至使用者下次正常激活前、不循环保护。无相邻同伴时公开“没有可以保护的同伴”，该2AP保护主意图照常消耗后落空，余AP按原预算结束，不改普通抓击/自动防御；执行前重新验相邻，原目标失效可护当时另一合法相邻者，无合法者同样落空。此无同伴分支适用于E3写有保护的4普通/8守卫相关意图，不改玩家技能规则。推挤×0.7命中后再判击退1位控制；重击为冲撞类不默认蓄力，仅明确写蓄力才蓄力；破甲0.2两轮沿现有效果/同名取强；8守卫普通抓击无咬击。"
+    }
   },
   "expansionQuests": {
     "version": "2026-10-30-review-1",
@@ -38723,7 +39240,16 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "shambler": 70,
+              "z_slow": 30
+            },
+            "rare": {},
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [
           "m01_road_crate",
@@ -38778,7 +39304,15 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "z_slow": 100
+            },
+            "rare": {},
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [
           "m02_checkpoint_duty",
@@ -39051,7 +39585,17 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "z_slow": 50,
+              "feral_dog": 30,
+              "feral_boar": 20
+            },
+            "rare": {},
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [
           "w01_farm_crop",
@@ -39110,7 +39654,20 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "feral_dog": 50
+            },
+            "rare": {
+              "wolf": 20,
+              "z_clinger": 20
+            },
+            "strong": {
+              "wild_dog_leader": 10
+            }
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [
           "w02_forest_wood",
@@ -39167,7 +39724,17 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "z_helmet": 50,
+              "worker": 30,
+              "boar": 20
+            },
+            "rare": {},
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [
           "w03_quarry_stone",
@@ -39225,7 +39792,18 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "z_slow": 40,
+              "feral_dog": 30,
+              "feral_boar": 20,
+              "shambler": 10
+            },
+            "rare": {},
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
@@ -39278,7 +39856,18 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "z_slow": 40,
+              "feral_dog": 30,
+              "feral_boar": 20,
+              "shambler": 10
+            },
+            "rare": {},
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
@@ -39331,7 +39920,18 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "z_slow": 40,
+              "feral_dog": 30,
+              "feral_boar": 20,
+              "shambler": 10
+            },
+            "rare": {},
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
@@ -39384,7 +39984,18 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "z_slow": 40,
+              "feral_dog": 30,
+              "feral_boar": 20,
+              "shambler": 10
+            },
+            "rare": {},
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
@@ -39437,7 +40048,18 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "z_slow": 40,
+              "feral_dog": 30,
+              "feral_boar": 20,
+              "shambler": 10
+            },
+            "rare": {},
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [
           "w08_reservoir_water"
@@ -39492,7 +40114,18 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "z_slow": 40,
+              "feral_dog": 30,
+              "feral_boar": 20,
+              "shambler": 10
+            },
+            "rare": {},
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
@@ -39545,7 +40178,18 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "z_slow": 40,
+              "feral_dog": 30,
+              "feral_boar": 20,
+              "shambler": 10
+            },
+            "rare": {},
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
@@ -39597,7 +40241,18 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "worker": 40,
+              "z_hauler": 40
+            },
+            "rare": {
+              "z_engineer": 20
+            },
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [
           "a01_yard_steel",
@@ -39653,7 +40308,19 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "worker": 40
+            },
+            "rare": {
+              "z_spitter": 30
+            },
+            "strong": {
+              "z_bloater": 30
+            }
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [
           "a02_pump_seal",
@@ -39711,7 +40378,20 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "z_helmet": 30
+            },
+            "rare": {
+              "z_engineer": 40,
+              "z_signal": 20
+            },
+            "strong": {
+              "riot": 10
+            }
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [
           "a03_foundry_steel",
@@ -39858,7 +40538,18 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "z_helmet": 30
+            },
+            "rare": {
+              "z_screamer": 30,
+              "z_nurse": 40
+            },
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [
           "b03_hospital_medical",
@@ -39913,7 +40604,16 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "z_slow": 50,
+              "shambler": 50
+            },
+            "rare": {},
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
@@ -40171,7 +40871,19 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "shambler": 35,
+              "z_slow": 30,
+              "z_helmet": 20
+            },
+            "rare": {
+              "z_clinger": 15
+            },
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
@@ -40224,7 +40936,19 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "shambler": 35,
+              "z_slow": 30,
+              "z_helmet": 20
+            },
+            "rare": {
+              "z_clinger": 15
+            },
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
@@ -40277,7 +41001,19 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "shambler": 35,
+              "z_slow": 30,
+              "z_helmet": 20
+            },
+            "rare": {
+              "z_clinger": 15
+            },
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
@@ -40330,7 +41066,19 @@
           "patrol": true,
           "initializationPolicy": "lazy_on_first_node_visit_target_2_limited_by_remaining_region_cap_and_local_cap; never_initialize_all_nodes_above_region_cap",
           "spawnEligibility": "not_current_player_node; existing_region_shared_cap_and_local_cap; unentered_region_no_backfill",
-          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region"
+          "patrolEligibility": "same_population_region_existing_physical_edge_only; no_city_no_instance_no_cross_region",
+          "layerPools": {
+            "ordinary": {
+              "shambler": 35,
+              "z_slow": 30,
+              "z_helmet": 20
+            },
+            "rare": {
+              "z_clinger": 15
+            },
+            "strong": {}
+          },
+          "layerPoolPolicy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
         },
         "fixedResourceIds": [],
         "resourceFallback": "shared_loot_common_salvage",
@@ -45025,7 +45773,325 @@
       "exploreCompletion": "23城市/明示safe仅首次真实到访100；45普通野外30基础分钟/+25共四次；67副本15基础分钟/+50共两次。25/50/75/100里程碑仅A08已有事件，副本不凭不存在的25/75触发额外物资。100后探索禁用，清理仍可。",
       "fixedResources": "规范96+原20+Q120/Q122另表53=169；fixedResourceIds合并既有固定源与增量，不替换共享碎料池，不从空列表删除旧源",
       "reveal100": "Q116 all_outgoing_incident_bidirectional_plus_from_only_one_way; gate_conditions_still_apply",
-      "clue75": "45_new_explorable_overworld_node_specific_flavor_once_only_no_extra_items_xp_or_reveals"
+      "clue75": "45_new_explorable_overworld_node_specific_flavor_once_only_no_extra_items_xp_or_reveals",
+      "q192Layers": {
+        "weights": {
+          "ordinary": 96,
+          "rare": 3.5,
+          "strong": 0.5
+        },
+        "openDay": {
+          "ordinary": 1,
+          "rare": 3,
+          "strong": 7
+        },
+        "rows": [
+          {
+            "nodeId": "m01_road",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "shambler": 70,
+                "z_slow": 30
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "m02_checkpoint",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 100
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w01_farm",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 50,
+                "feral_dog": 30,
+                "feral_boar": 20
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w02_forest",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "feral_dog": 50
+              },
+              "rare": {
+                "wolf": 20,
+                "z_clinger": 20
+              },
+              "strong": {
+                "wild_dog_leader": 10
+              }
+            }
+          },
+          {
+            "nodeId": "w03_quarry",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_helmet": 50,
+                "worker": 30,
+                "boar": 20
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w04_crossroads",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 40,
+                "feral_dog": 30,
+                "feral_boar": 20,
+                "shambler": 10
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w05_marsh",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 40,
+                "feral_dog": 30,
+                "feral_boar": 20,
+                "shambler": 10
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w06_bridge",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 40,
+                "feral_dog": 30,
+                "feral_boar": 20,
+                "shambler": 10
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w07_ridge",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 40,
+                "feral_dog": 30,
+                "feral_boar": 20,
+                "shambler": 10
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w08_reservoir",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 40,
+                "feral_dog": 30,
+                "feral_boar": 20,
+                "shambler": 10
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w09_logging",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 40,
+                "feral_dog": 30,
+                "feral_boar": 20,
+                "shambler": 10
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "w10_watchtower",
+            "regionId": "mainline_wild",
+            "layers": {
+              "ordinary": {
+                "z_slow": 40,
+                "feral_dog": 30,
+                "feral_boar": 20,
+                "shambler": 10
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "a01_yard",
+            "regionId": "mainline_works",
+            "layers": {
+              "ordinary": {
+                "worker": 40,
+                "z_hauler": 40
+              },
+              "rare": {
+                "z_engineer": 20
+              },
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "a02_pump",
+            "regionId": "mainline_works",
+            "layers": {
+              "ordinary": {
+                "worker": 40
+              },
+              "rare": {
+                "z_spitter": 30
+              },
+              "strong": {
+                "z_bloater": 30
+              }
+            }
+          },
+          {
+            "nodeId": "a03_foundry",
+            "regionId": "mainline_works",
+            "layers": {
+              "ordinary": {
+                "z_helmet": 30
+              },
+              "rare": {
+                "z_engineer": 40,
+                "z_signal": 20
+              },
+              "strong": {
+                "riot": 10
+              }
+            }
+          },
+          {
+            "nodeId": "b03_hospital",
+            "regionId": "mainline_aid",
+            "layers": {
+              "ordinary": {
+                "z_helmet": 30
+              },
+              "rare": {
+                "z_screamer": 30,
+                "z_nurse": 40
+              },
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "c01_pilgrim",
+            "regionId": "mainline_oldcity",
+            "layers": {
+              "ordinary": {
+                "z_slow": 50,
+                "shambler": 50
+              },
+              "rare": {},
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "o01_oldgate",
+            "regionId": "mainline_oldcity",
+            "layers": {
+              "ordinary": {
+                "shambler": 35,
+                "z_slow": 30,
+                "z_helmet": 20
+              },
+              "rare": {
+                "z_clinger": 15
+              },
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "o02_market",
+            "regionId": "mainline_oldcity",
+            "layers": {
+              "ordinary": {
+                "shambler": 35,
+                "z_slow": 30,
+                "z_helmet": 20
+              },
+              "rare": {
+                "z_clinger": 15
+              },
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "o03_police",
+            "regionId": "mainline_oldcity",
+            "layers": {
+              "ordinary": {
+                "shambler": 35,
+                "z_slow": 30,
+                "z_helmet": 20
+              },
+              "rare": {
+                "z_clinger": 15
+              },
+              "strong": {}
+            }
+          },
+          {
+            "nodeId": "o04_transit",
+            "regionId": "mainline_oldcity",
+            "layers": {
+              "ordinary": {
+                "shambler": 35,
+                "z_slow": 30,
+                "z_helmet": 20
+              },
+              "rare": {
+                "z_clinger": 15
+              },
+              "strong": {}
+            }
+          }
+        ],
+        "policy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
+      },
+      "q193Checkpoint": {
+        "nodeId": "m02_checkpoint",
+        "enemies": [
+          "z_slow"
+        ],
+        "reason": "总控定为1只迟缓感染者（沿原hp4.2/甲0/速度2/攻击21/伤害0.7—1.1），单主角C1阶段可处理，不增加护甲精英或第二名敌，不按日强化。",
+        "policy": "首次实际到达生成campaign唯一固定敌踪，名单与HP持久化，到达不自动开战；玩家可接战或沿已开通边离开。只要拦路战未胜利，探索/清理翻找/资源采集均禁用并写“先战胜检查哨拦路敌人”；不因撤退/重新到访/探索度100清除。成功胜利且主角存活才原子写checkpoint_obstruction_cleared并沿原规则开营门。随机人口不替固定敌结清任务，之后有随机敌按原随机敌踪规则；首次随机人口0仍不变。",
+        "oldSaves": "旧有可信清障事实不反锁、不生成新拦路战，已探索/已领物不回收；旧未赢固定战保留同一敌HP，不补第二只，新规则只限制未开始的探索/清理/采集，已在办动作沿旧开工快照完成。"
+      }
     },
     "currentMapAdjudicationsFile": "assets/20261102/map/map-adjudications.json",
     "resourceAdjudicationsFile": "assets/20261102/map/resource-adjudications.json"
@@ -74439,8 +75505,19 @@
         "purification_tablet",
         "filter_cartridge"
       ],
-      "xp": "成功实际净化输出每500ml给首次启动且仍存活的执行者烹饪1；与锅烧水共享每角色每世界日4上限，非额外4，也计原适用烹饪日总上限。不按输入或预估给；500ml为本配方计量单位，非整份不额外向上取整，不跨失败/取消批次积余。2L正常成功给4，但当天锅烧水已给3则本批只给1。",
-      "timing": "完成原子提交按完成日剩余额度，不按启动日；取消/腐败/未产出0，完成后领取/转移/读档不重给。启动者死亡不转给全队。20分钟等待及不吃制造加速不变，不增加主动工作身体消耗。旧已完成不给历史经验，进行中批次保留原开工经验快照。"
+      "xp": "每实际500ml给启动存活者烹饪1，与锅烧水共享净化每日4，且按Q207计入烹饪全部来源每日30；本批=min(应得,净化剩额,总剩额)，不足向下按实际500ml，不跨取消/失败批次积余。",
+      "timing": "完成原子提交按完成日剩余额度，不按启动日；取消/腐败/未产出0，完成后领取/转移/读档不重给。启动者死亡不转给全队。20分钟等待及不吃制造加速不变，不增加主动工作身体消耗。旧已完成不给历史经验，进行中批次保留原开工经验快照。",
+      "q207": {
+        "totalDailyCookingCap": 30,
+        "purificationDailySubcap": 4,
+        "policy": "Q207选B，明确取代Q60食品/净化分账上限、Q166歧义及B22a不占30的冲突部分：锅净水+净水片/滤芯净水+食品/主动烹饪/晾制烹饪产出，按每角色完成日合计最多30，其中所有净化仍合计最多4。净化实际获得=min(本批每实际500ml应得量,4-今日净化已得,30-今日烹饪全部已得)，非净化获得=min(本批原应得,30-今日全部已得)，下限0。各源原经验计算与一次性规则不变，不另给制造。不同事务同刻按原提交顺序记账，不争抢出负数。",
+        "examples": [
+          "已食品28，净化应得4则只给2，总30、净化2；随后净化/食品均0",
+          "已净化4，食品最多再26",
+          "食品已30，净化0；换日后按完成日新额"
+        ],
+        "migration": "旧档当前日各源已发经验保留不倒扣，用已有食品及净化已发账相加初始化总额，若已达/超30当日新增给0，次世界日正常新额；不得把累计净化毫升重复当已发经验。进行中批次原基础经验与流程快照不变，但完成发经验统一受新日额限制；旧已完成不重发、不重结算。"
+      }
     },
     "patch": {
       "scope": "仅field_patch野外修补包家族；其他完整维修包、布皮修补片、枪械养护包本轮不改",
@@ -74886,5 +75963,734 @@
     "quotes": {
       "lockPolicy": "安全到达鉴定所时，或在当地安全打开面板/直接开工时，若当日未锁，则先一次生成并持久化整表再展示/确认；人在鉴定所过午夜不自动锁新表，下次上述操作锁。没有战斗/待处理敌踪及原服务锁才算安全。种子/世界日/报价档等既定固定字段决定同日数值，访问时刻不参与随机，已锁不重抽；跨午夜已开工服务沿原开工快照，不中途改价。"
     }
+  },
+  "partyCombatExpeditionAdjudications": {
+    "version": "party_combat_expedition_q179_q207_v1",
+    "date": "2026-11-03",
+    "sourceQuestions": [
+      "Q179",
+      "Q180",
+      "Q181",
+      "Q182",
+      "Q183",
+      "Q184",
+      "Q185",
+      "Q186",
+      "Q187",
+      "Q188",
+      "Q189",
+      "Q190",
+      "Q191",
+      "Q192",
+      "Q193",
+      "Q194",
+      "Q195",
+      "Q196",
+      "Q197",
+      "Q198",
+      "Q199",
+      "Q200",
+      "Q201",
+      "Q202",
+      "Q203",
+      "Q204",
+      "Q205",
+      "Q206",
+      "Q207"
+    ],
+    "rules": {
+      "Q179": "选A。教学样本在地面和随身单独成卡，显示名带“首战教学”，与普通样本不共用组标题；底层ID、来源、鉴定状态、教学交易保护与单实例选择不变。已鉴定教学名“活性物质（白色·已鉴定·首战教学）”，未鉴定“未鉴定的活性物质（首战教学）”。",
+      "Q180": "选C，由总控补姓名池、性别及文字外观字段，完整池与独立生成/持久化/旧档规则见identity合同；不与属性、职业质量或装备挂钩，不新造画像资产。",
+      "Q181": "选A。仅收容所安全空闲可退役生成角色，主队须实到，广场或安全屋候补本人可不到场，物品原子迁收容所认领箱；非退役的取人/取物不因此远程化。",
+      "Q182": "选A。退役确认0世界分钟立即生效，不计经验；其他退役资格与原子迁物条件不变。",
+      "Q183": "玩家自行选择登记后同行或候补，补充确认①A②B③A：候补可选已完工/已到访且从收容所有已知可通路线的自有安全屋，无合格屋可留广场；登记完成0分钟送达，不模拟路途；屋内按Q90同额照护、不耗库存、不产物，主队实到该屋才能编入同行。满同行不可强挤，选择/重验/旧档见合同。",
+      "Q184": "选A。每名退役者独立认领箱，仅实到h06收容所可取，取随身验五卡与本人负重或放当地地面；无容量/保管期限，但只收该退役者原子迁来的物，不作可无限存入仓；保质照常，借用矛仍归原位，死亡遗物独立。",
+      "Q185": "选A。随机角色不新增申请借矛入口，登记空装备/空随身；玩家自备或拾取已有合法借矛。取代RC5本轮可申请的过宽说法，不改RB01与报失额度。",
+      "Q186": "选A。速度3.0—5.0步0.1的21值等概率，抗性0—10步0.5、闪避34—38步0.5、基础甲0；取代RC3整数3—5，旧已生成数值不重抽。",
+      "Q187": "选A。地牢本房固定敌未胜时不能探索/清理翻找/资源采集，可沿已通边离开；击败后正常，必经房不能靠搜刮绕战。m02不再沿原例外，按本轮Q193同样战前禁三项。",
+      "Q188": "选A。首次实际到房时按当时解锁容量C锁本代固定敌名单与worldEnemyId，到达不自动开战；扩容、少带人、撤退/读档不重编或恢复HP，换代重新揭示；远征入口只作整体预告，不提前锁具体房名单。",
+      "Q189": "选B，由总控给12新敌逐一受惊参数：低吟45%/8、试制40%/8、缠线50%/10、货架40%/7、祭室60%/14、隔离65%/14、军械60%/15、天线65%/15、泵房55%/12、深井60%/16、扶梯60%/13、仓管55%/13。只改初始受惊源参数，沿Q91共用随机源/个人精神修正规则，不增加尖啸招式或伤害。",
+      "Q190": "选A。鼓动最近两名存活同伴，同距前排优先；无其他同伴改普通抓击；各人下一次攻击命中或落空即耗，未攻击不按轮过期；同名取强×1.10，与异名蓄势相乘。",
+      "Q191": "选A。标记无额外命中/伤害加成；隔离守卫Q91随机标记，指定普攻仍只打1/2，目标失效或3/4位则从1/2存活者随机普通攻击，无合法普攻目标按原空目标规则，不改大招。仓管标最靠后活人，低伤拉扯可选1—4位被标者，命中后判控制成功前拉1位。",
+      "Q192": "选C，由总控补21节点逐敌层表，原权重层内归一化；普通/稀有/强敌96/3.5/0.5与第1/3/7日开放不变，空层不重抽、不跨节点补池；ex_pop五区不改，旧已生成个体不重抽。",
+      "Q193": "按用户授权定1只迟缓感染者z_slow，强度沿原4.2HP/零甲/速度2；首次到达出现一局一次固定战，必须战胜才可探索/清理翻找/采集，可沿已开边离开；胜利存活提交原清障事实，旧可信完成不反锁，未完战保留HP。",
+      "Q194": "选A。以Q31为准，b01_school/b02_station公共服务点不刷新、不巡入、不随机接敌，旧池不用，不混入分层人口区。",
+      "Q195": "按用户修订。防御/格挡下一次直接伤害×0.5至下次正常激活；保护挡相邻者下一次单体攻击，后排优先，无同伴提示“没有可以保护的同伴”，执行重验相邻，不自动改抓击。保护落空仍消耗原2AP主意图，余AP按原结束。推挤×0.7命中判击退；重击冲撞不默认蓄力；破甲0.2两轮同名取强；8守卫普抓不咬。",
+      "Q196": "选C。地牢沿本次来路找最近已通过无敌房，无则01；野外及普通主世界撤退退回可信已完成移动的来处，详见新战开工快照与无可信来路回退合同，不猜路线、不额外移动时间。",
+      "Q197": "选A。惊魂未定6世界小时内仅下一场入战初始恐慌+10一次，用后消失，不战到期；每人独立截止，重触发取较晚，不叠层。",
+      "Q198": "选A。本代已开通/两端到过的双向内部边加01与父地点入口边构成应急回路，按基础分钟最短路返程；不走未知房或单向出口，无需新增应急字段，导入仍断言双向。",
+      "Q199": "选A。撤出不中途因警戒线暂停，不可手动吃喝/用药/休息/接战，可做拾放等合法即时整理；N/W/E/S/M不继续下降，归零项/出血/感染仍可扣血，沿原死亡处理。不因这句禁止原整理入口。",
+      "Q200": "选A。探索估计下限为01至核心最短路移动加沿途剩余探索，上限全房剩余探索加每条内部边一次，标基础分钟/不含战斗倍率；回撤最低30及当前T，按当前已提交探索度重算，不自动探索。",
+      "Q201": "选A。确认危险房移动即开始，取消移动也算；已通关从01原路离开免罚；旧档危险房追认开始、不补罚，01不开始；通关后再进同代仍确认新远征，离开免罚。",
+      "Q202": "选A，【交开发方定】入口浮窗避开右栏预告、无远征写“未开始远征”、受惊预估注明惊魂+10、撤出进度至少约2秒可见；纯显示不推进或延长游戏时间、不改撤出与恐慌数值。",
+      "Q203": "选A。本实例已核销奖励在本远征非战斗时，可从当前地面或同行随身整堆0分钟封存；取出只到主角合法随身或当地地面，队友再拾。拒绝外带/自制/别实例，成功离开清来源标记；源不同在地牢分卡，离开按原兼容规则合组，owner唯一不复制。",
+      "Q204": "选B。通关满72世界小时且内部无人时才标RESET_READY/可重置；有人仍显示已通关并可注明冷却已到、需离开。无人只是显示前提，真正确认仍验全队父地点、无远征/撤出/动作/战斗/敌踪/预留材料等原全部条件，不强踢人。",
+      "Q205": "选A。旧无clearedAt且本代已核对记录者，以升级时刻记通关，72世界小时后可重置；旧已领核心首通补给记已领、不追补，幂等不因再次读档重记升级时刻。",
+      "Q206": "选A。五项均认可：持续至使用轮+2轮末；闪光只加命中能力6不加伤害；护带与主动稳固比较、装备抵抗另取强；提示贴同目标同轮多人合计最多减6；三件走医疗快捷栏，标记选敌、贴多人选友单人自用。",
+      "Q207": "选B。所有净化含锅/净水片/滤芯也计烹饪每日30总上限，净化子限仍每日4；食品/主动烹饪/晾制共用30，按完成日剩余发，旧已得不倒扣、不重发。"
+    },
+    "identity": {
+      "surnames": [
+        "陈",
+        "林",
+        "周",
+        "沈",
+        "许",
+        "顾",
+        "叶",
+        "唐",
+        "宋",
+        "江",
+        "陆",
+        "程",
+        "何",
+        "徐",
+        "方",
+        "秦",
+        "苏",
+        "魏",
+        "吴",
+        "韩",
+        "赵",
+        "郑",
+        "谢",
+        "梁",
+        "杜",
+        "袁",
+        "高",
+        "孟",
+        "夏",
+        "余",
+        "邵",
+        "罗"
+      ],
+      "givenNames": [
+        "知远",
+        "安宁",
+        "清和",
+        "言初",
+        "景行",
+        "亦舟",
+        "向晨",
+        "思齐",
+        "予川",
+        "怀瑾",
+        "明溪",
+        "星野",
+        "云舒",
+        "南乔",
+        "闻溪",
+        "时雨",
+        "允和",
+        "初晴",
+        "见山",
+        "秋白",
+        "书宁",
+        "望舒",
+        "子衡",
+        "青禾",
+        "若水",
+        "一帆",
+        "晓川",
+        "庭安",
+        "知夏",
+        "嘉木",
+        "予安",
+        "映川"
+      ],
+      "gender": [
+        {
+          "id": "female",
+          "name": "女"
+        },
+        {
+          "id": "male",
+          "name": "男"
+        },
+        {
+          "id": "undisclosed",
+          "name": "未说明"
+        }
+      ],
+      "skinTone": [
+        "浅肤色",
+        "中浅肤色",
+        "中等肤色",
+        "中深肤色",
+        "深肤色"
+      ],
+      "hairStyle": [
+        "短发",
+        "齐耳发",
+        "齐肩发",
+        "束发",
+        "卷发",
+        "剃短发"
+      ],
+      "hairColor": [
+        "黑色",
+        "深棕色",
+        "浅棕色",
+        "灰白色"
+      ],
+      "faceDetail": [
+        "无明显特征",
+        "眉尾浅疤",
+        "面颊浅疤",
+        "雀斑",
+        "左眉缺口",
+        "眼角细纹"
+      ],
+      "appearanceRule": "字段只作成人文字外观描述，不生成画像/性别加成/装备。肤色、发型、发色、面部细节、性别及姓/名各池独立等概率有放回取一，不按性别限制姓名或发型。外观装饰不等于伤病/防具/身份能力。候选卡与名册显示姓名、性别、外观摘要；保持原职业/身体数值公开。",
+      "seedRule": "使用独立于模板/身体/品质数值的展示随机子流：campaignSeed+周期ID+候选稳定流水号+字段键，一次生成持久化。预览/打开/读档/招入/留守不重抽，不改变原属性随机序列。重复姓名允许，以稳定流水号区分；显示“姓名·004”等，序号至少三位，超过999不截断、不循环。",
+      "oldSaves": "已生成旧候选及已招生成角色保留原显示名、数值与actorId，性别显示未说明、外观显示未记录，不补抽；新周期候选使用新池。六命名角色、RB01既有名称不改。"
+    },
+    "shelter": {
+      "selection": "周期候选登记确认前明确二选一：编入同行/安排候补。同行选项仅当前同行人数<C时可选，满员写真实原因；不挤出他人。候补下拉可选营区广场，或任一已完工、已实际到访、且从收容所沿当前已知可通路线可达的自有安全屋。无合格屋仍可选广场；人数不设额外床位上限，沿名册K和存活总10上限。",
+      "arrival": "用户补充选择：登记完成原子创建角色，并立即0分钟送达所选安全屋屋内或广场，不模拟路途，不额外扣费/推进时间/触发战斗；不带走任何原主队/候补/屋柜物品，只转移这次新招且原本空装备的角色。此例外不解锁地图、传送主队或已有队员。",
+      "confirm": "沿原10分钟登记与候选名额预留，开工快照锁目的地与选择；完成重验该屋完工/合法可达和同行空位。失败时登记暂停在待安置确认状态，不创建角色、不重收10分钟、不释放导致超额；只允许改选合法目的地/改候补或取消。取消不发人不发物，已过时间不退；完成requestId只建一人。跨周期保留已锁候选身份和数值。",
+      "care": "安全屋候补从下一真实tick按Q90同一休息/睡眠阈值及真实屋内遮蔽/床设施计算，公共照护N+5.2/W+6.4/M+1每小时、公共正补上限80照Q90；自然消耗/伤病/死亡照常，不免病毒、不瞬回。明确扩展该照护至所选屋内候补，不耗屋柜/玩家库存，不产物资或经验；入同行立即停止候补补给，角色状态/装备/物资不重置。",
+      "retrieve": "主队实到对应屋内且安全空闲时，角色页“编入同行”校验C后0分钟加入；广场候补仍在广场办理。已有队员留守安全屋须主队与该人同在该屋内，点“留守此屋”0分钟，不能远程迁人；留守名额不释放K。不得从另一处屋或广场远程编入。",
+      "death": "驻屋候补死亡遗物保留实际屋内，候补死亡不重生；R08认领箱只用于退役。收容所可按Q181给候补办理退役，退役物明确原子迁h06认领箱，这是退役例外，不提供一般远程取物。屋不可拆除沿原规则；任务服务联系仍由机构接续。",
+      "compatibility": "旧在册候补位置保持广场，不自动搬屋；旧在办登记无新选择时完成默认广场候补，不自动入队；新登记必须明确选择。除本节明确扩展之外，Q156命名角色登记和RB01直接同行原规则不改。明确取代Q90/S09/A11“私人安全屋不收候补”、营区唯一换入/留守地点的冲突范围；公共居所与各屋实体/库存仍独立，不成为联网仓。"
+    },
+    "shocks": [
+      {
+        "enemyId": "ec_cantor",
+        "probabilityPercent": 45,
+        "panicValue": 8
+      },
+      {
+        "enemyId": "ec_labwalker",
+        "probabilityPercent": 40,
+        "panicValue": 8
+      },
+      {
+        "enemyId": "ec_cablecrawler",
+        "probabilityPercent": 50,
+        "panicValue": 10
+      },
+      {
+        "enemyId": "ec_stockbracer",
+        "probabilityPercent": 40,
+        "panicValue": 7
+      },
+      {
+        "enemyId": "ec_boss_crypt",
+        "probabilityPercent": 60,
+        "panicValue": 14
+      },
+      {
+        "enemyId": "ec_boss_lab",
+        "probabilityPercent": 65,
+        "panicValue": 14
+      },
+      {
+        "enemyId": "ec_boss_armory",
+        "probabilityPercent": 60,
+        "panicValue": 15
+      },
+      {
+        "enemyId": "ec_boss_relay",
+        "probabilityPercent": 65,
+        "panicValue": 15
+      },
+      {
+        "enemyId": "ec_boss_water",
+        "probabilityPercent": 55,
+        "panicValue": 12
+      },
+      {
+        "enemyId": "ec_boss_mine",
+        "probabilityPercent": 60,
+        "panicValue": 16
+      },
+      {
+        "enemyId": "ec_boss_mall",
+        "probabilityPercent": 60,
+        "panicValue": 13
+      },
+      {
+        "enemyId": "ec_boss_cold",
+        "probabilityPercent": 55,
+        "panicValue": 13
+      }
+    ],
+    "layering": {
+      "weights": {
+        "ordinary": 96,
+        "rare": 3.5,
+        "strong": 0.5
+      },
+      "openDay": {
+        "ordinary": 1,
+        "rare": 3,
+        "strong": 7
+      },
+      "rows": [
+        {
+          "nodeId": "m01_road",
+          "regionId": "mainline_wild",
+          "layers": {
+            "ordinary": {
+              "shambler": 70,
+              "z_slow": 30
+            },
+            "rare": {},
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "m02_checkpoint",
+          "regionId": "mainline_wild",
+          "layers": {
+            "ordinary": {
+              "z_slow": 100
+            },
+            "rare": {},
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "w01_farm",
+          "regionId": "mainline_wild",
+          "layers": {
+            "ordinary": {
+              "z_slow": 50,
+              "feral_dog": 30,
+              "feral_boar": 20
+            },
+            "rare": {},
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "w02_forest",
+          "regionId": "mainline_wild",
+          "layers": {
+            "ordinary": {
+              "feral_dog": 50
+            },
+            "rare": {
+              "wolf": 20,
+              "z_clinger": 20
+            },
+            "strong": {
+              "wild_dog_leader": 10
+            }
+          }
+        },
+        {
+          "nodeId": "w03_quarry",
+          "regionId": "mainline_wild",
+          "layers": {
+            "ordinary": {
+              "z_helmet": 50,
+              "worker": 30,
+              "boar": 20
+            },
+            "rare": {},
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "w04_crossroads",
+          "regionId": "mainline_wild",
+          "layers": {
+            "ordinary": {
+              "z_slow": 40,
+              "feral_dog": 30,
+              "feral_boar": 20,
+              "shambler": 10
+            },
+            "rare": {},
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "w05_marsh",
+          "regionId": "mainline_wild",
+          "layers": {
+            "ordinary": {
+              "z_slow": 40,
+              "feral_dog": 30,
+              "feral_boar": 20,
+              "shambler": 10
+            },
+            "rare": {},
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "w06_bridge",
+          "regionId": "mainline_wild",
+          "layers": {
+            "ordinary": {
+              "z_slow": 40,
+              "feral_dog": 30,
+              "feral_boar": 20,
+              "shambler": 10
+            },
+            "rare": {},
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "w07_ridge",
+          "regionId": "mainline_wild",
+          "layers": {
+            "ordinary": {
+              "z_slow": 40,
+              "feral_dog": 30,
+              "feral_boar": 20,
+              "shambler": 10
+            },
+            "rare": {},
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "w08_reservoir",
+          "regionId": "mainline_wild",
+          "layers": {
+            "ordinary": {
+              "z_slow": 40,
+              "feral_dog": 30,
+              "feral_boar": 20,
+              "shambler": 10
+            },
+            "rare": {},
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "w09_logging",
+          "regionId": "mainline_wild",
+          "layers": {
+            "ordinary": {
+              "z_slow": 40,
+              "feral_dog": 30,
+              "feral_boar": 20,
+              "shambler": 10
+            },
+            "rare": {},
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "w10_watchtower",
+          "regionId": "mainline_wild",
+          "layers": {
+            "ordinary": {
+              "z_slow": 40,
+              "feral_dog": 30,
+              "feral_boar": 20,
+              "shambler": 10
+            },
+            "rare": {},
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "a01_yard",
+          "regionId": "mainline_works",
+          "layers": {
+            "ordinary": {
+              "worker": 40,
+              "z_hauler": 40
+            },
+            "rare": {
+              "z_engineer": 20
+            },
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "a02_pump",
+          "regionId": "mainline_works",
+          "layers": {
+            "ordinary": {
+              "worker": 40
+            },
+            "rare": {
+              "z_spitter": 30
+            },
+            "strong": {
+              "z_bloater": 30
+            }
+          }
+        },
+        {
+          "nodeId": "a03_foundry",
+          "regionId": "mainline_works",
+          "layers": {
+            "ordinary": {
+              "z_helmet": 30
+            },
+            "rare": {
+              "z_engineer": 40,
+              "z_signal": 20
+            },
+            "strong": {
+              "riot": 10
+            }
+          }
+        },
+        {
+          "nodeId": "b03_hospital",
+          "regionId": "mainline_aid",
+          "layers": {
+            "ordinary": {
+              "z_helmet": 30
+            },
+            "rare": {
+              "z_screamer": 30,
+              "z_nurse": 40
+            },
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "c01_pilgrim",
+          "regionId": "mainline_oldcity",
+          "layers": {
+            "ordinary": {
+              "z_slow": 50,
+              "shambler": 50
+            },
+            "rare": {},
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "o01_oldgate",
+          "regionId": "mainline_oldcity",
+          "layers": {
+            "ordinary": {
+              "shambler": 35,
+              "z_slow": 30,
+              "z_helmet": 20
+            },
+            "rare": {
+              "z_clinger": 15
+            },
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "o02_market",
+          "regionId": "mainline_oldcity",
+          "layers": {
+            "ordinary": {
+              "shambler": 35,
+              "z_slow": 30,
+              "z_helmet": 20
+            },
+            "rare": {
+              "z_clinger": 15
+            },
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "o03_police",
+          "regionId": "mainline_oldcity",
+          "layers": {
+            "ordinary": {
+              "shambler": 35,
+              "z_slow": 30,
+              "z_helmet": 20
+            },
+            "rare": {
+              "z_clinger": 15
+            },
+            "strong": {}
+          }
+        },
+        {
+          "nodeId": "o04_transit",
+          "regionId": "mainline_oldcity",
+          "layers": {
+            "ordinary": {
+              "shambler": 35,
+              "z_slow": 30,
+              "z_helmet": 20
+            },
+            "rare": {
+              "z_clinger": 15
+            },
+            "strong": {}
+          }
+        }
+      ],
+      "policy": "仅mainline四区21节点，先按原25%刷新尝试再抽层；未开放或该节点该层无敌即抽空不重抽，非空在本层按原权重相对归一化抽一种，只生一名。不得将空层重分配到普通层，不加全局候选池，不给所有节点塞强敌。原各敌权重作为层内权重，不再直接当跨层概率。初次人口初始化仅按普通层、原初始数量和区/地上限生成，不借初次人口绕过日层；若普通层为空则0。巡逻不重抽敌种，沿原同区物理边和开层既有个体规则，不按天强化已存敌。b01/b02 none_random_world不入此表；ex_pop五区不加层，原池照旧。旧已生成敌及进行中战斗保留，新刷新/未初始化节点用新表。"
+    },
+    "checkpoint": {
+      "nodeId": "m02_checkpoint",
+      "enemies": [
+        "z_slow"
+      ],
+      "reason": "总控定为1只迟缓感染者（沿原hp4.2/甲0/速度2/攻击21/伤害0.7—1.1），单主角C1阶段可处理，不增加护甲精英或第二名敌，不按日强化。",
+      "policy": "首次实际到达生成campaign唯一固定敌踪，名单与HP持久化，到达不自动开战；玩家可接战或沿已开通边离开。只要拦路战未胜利，探索/清理翻找/资源采集均禁用并写“先战胜检查哨拦路敌人”；不因撤退/重新到访/探索度100清除。成功胜利且主角存活才原子写checkpoint_obstruction_cleared并沿原规则开营门。随机人口不替固定敌结清任务，之后有随机敌按原随机敌踪规则；首次随机人口0仍不变。",
+      "oldSaves": "旧有可信清障事实不反锁、不生成新拦路战，已探索/已领物不回收；旧未赢固定战保留同一敌HP，不补第二只，新规则只限制未开始的探索/清理/采集，已在办动作沿旧开工快照完成。"
+    },
+    "protection": "格挡/防御：下一次直接伤害×0.5，至使用者下次正常激活前，先触发即消耗；保护挡相邻存活同伴下一次单体攻击，后排优先再前排，同距按号位，至使用者下次正常激活前、不循环保护。无相邻同伴时公开“没有可以保护的同伴”，该2AP保护主意图照常消耗后落空，余AP按原预算结束，不改普通抓击/自动防御；执行前重新验相邻，原目标失效可护当时另一合法相邻者，无合法者同样落空。此无同伴分支适用于E3写有保护的4普通/8守卫相关意图，不改玩家技能规则。推挤×0.7命中后再判击退1位控制；重击为冲撞类不默认蓄力，仅明确写蓄力才蓄力；破甲0.2两轮沿现有效果/同名取强；8守卫普通抓击无咬击。",
+    "retreat": {
+      "dungeon": "保持本次来路回退：走回头路截短轨迹，战斗撤退成功倒找最近已通过且无存活敌房，无则01；不额外5分钟、不扣包、不结束远征。",
+      "world": "按用户Q196选C：普通主世界（含城市外部、m02、可选强敌）战斗撤退成功，全队退回最近一次已完成的地点移动的来源节点。开战快照锁定该来处；不以屏幕方位/未完成移动/安全屋进出作为来处，不走未知边。沿该实际来路可反向通行时，撤退结算0额外分钟、不再收移动费、不再抽路途遭遇；不是常规移动，不推进探索/开边/领奖，敌人原HP和位置保留。",
+      "fallback": "旧档/开发入口没有可信来处，或该边已不可反向通行、来处为地牢/不可站立节点时，保持原地并明确“没有可返回的来路，本次撤退后仍在原地”，不猜路线、不传送穿门，不把胜利事实当作撤退奖励。到达处既有敌踪正常公开，不能自动消灭；本次不连触另一场战斗。",
+      "currentBattles": "上线前已开始战斗保留原撤退快照和落点，新战才用新规则；旧档补记来处只读已有可信已完成移动记录，无可信记录留空。"
+    },
+    "xp": {
+      "totalDailyCookingCap": 30,
+      "purificationDailySubcap": 4,
+      "policy": "Q207选B，明确取代Q60食品/净化分账上限、Q166歧义及B22a不占30的冲突部分：锅净水+净水片/滤芯净水+食品/主动烹饪/晾制烹饪产出，按每角色完成日合计最多30，其中所有净化仍合计最多4。净化实际获得=min(本批每实际500ml应得量,4-今日净化已得,30-今日烹饪全部已得)，非净化获得=min(本批原应得,30-今日全部已得)，下限0。各源原经验计算与一次性规则不变，不另给制造。不同事务同刻按原提交顺序记账，不争抢出负数。",
+      "examples": [
+        "已食品28，净化应得4则只给2，总30、净化2；随后净化/食品均0",
+        "已净化4，食品最多再26",
+        "食品已30，净化0；换日后按完成日新额"
+      ],
+      "migration": "旧档当前日各源已发经验保留不倒扣，用已有食品及净化已发账相加初始化总额，若已达/超30当日新增给0，次世界日正常新额；不得把累计净化毫升重复当已发经验。进行中批次原基础经验与流程快照不变，但完成发经验统一受新日额限制；旧已完成不重发、不重结算。"
+    },
+    "scope": "优先与替代：本轮Q179—Q207是当前定稿。Q183取代R08 Q90/A11候补仅广场、S09私人屋不收候补的冲突范围，明确0分钟新招安置例外但非已有队员传送。Q189取代E3默认受惊分组；Q192取代主线整池普通层处理但不改未开放抽空/区cap；Q193取代m02不挡探索采集；Q195取代无保护目标自动普攻；Q196取代野外撤退留原地；Q204取代DR14到点有人也可重置展示；Q207取代Q60净化与食品独立日限、B22a不计30及Q166歧义。本轮其他选A保留原规则。原【实现同步】与完整修改记录必须原样保留，旧实现不得误报已实现新规则。",
+    "general": "除明确数值与例外外，原AP预算、容量C、技能/耐久、装备/材料来源、地图开边、存活/死亡、战斗锁、事务预留与所有权校验均不变。显示/重读0世界分钟，不自动接战/领奖/回满/重抽/创建角色；新规则仅在原安全边界与新事务生效，旧在办动作及战斗保留原快照，Q207日限按其专项兼容处理。预览不消费真实随机，生成结果一次持久化。",
+    "acceptance": [
+      {
+        "id": "PLAN-Q179-01",
+        "criterion": "选A。教学样本在地面和随身单独成卡，显示名带“首战教学”，与普通样本不共用组标题；底层ID、来源、鉴定状态、教学交易保护与单实例选择不变。已鉴定教学名“活性物质（白色·已鉴定·首战教学）”，未鉴定“未鉴定的活性物质（首战教学）”。"
+      },
+      {
+        "id": "PLAN-Q180-01",
+        "criterion": "选C，由总控补姓名池、性别及文字外观字段，完整池与独立生成/持久化/旧档规则见identity合同；不与属性、职业质量或装备挂钩，不新造画像资产。"
+      },
+      {
+        "id": "PLAN-Q181-01",
+        "criterion": "选A。仅收容所安全空闲可退役生成角色，主队须实到，广场或安全屋候补本人可不到场，物品原子迁收容所认领箱；非退役的取人/取物不因此远程化。"
+      },
+      {
+        "id": "PLAN-Q182-01",
+        "criterion": "选A。退役确认0世界分钟立即生效，不计经验；其他退役资格与原子迁物条件不变。"
+      },
+      {
+        "id": "PLAN-Q183-01",
+        "criterion": "玩家自行选择登记后同行或候补，补充确认①A②B③A：候补可选已完工/已到访且从收容所有已知可通路线的自有安全屋，无合格屋可留广场；登记完成0分钟送达，不模拟路途；屋内按Q90同额照护、不耗库存、不产物，主队实到该屋才能编入同行。满同行不可强挤，选择/重验/旧档见合同。"
+      },
+      {
+        "id": "PLAN-Q184-01",
+        "criterion": "选A。每名退役者独立认领箱，仅实到h06收容所可取，取随身验五卡与本人负重或放当地地面；无容量/保管期限，但只收该退役者原子迁来的物，不作可无限存入仓；保质照常，借用矛仍归原位，死亡遗物独立。"
+      },
+      {
+        "id": "PLAN-Q185-01",
+        "criterion": "选A。随机角色不新增申请借矛入口，登记空装备/空随身；玩家自备或拾取已有合法借矛。取代RC5本轮可申请的过宽说法，不改RB01与报失额度。"
+      },
+      {
+        "id": "PLAN-Q186-01",
+        "criterion": "选A。速度3.0—5.0步0.1的21值等概率，抗性0—10步0.5、闪避34—38步0.5、基础甲0；取代RC3整数3—5，旧已生成数值不重抽。"
+      },
+      {
+        "id": "PLAN-Q187-01",
+        "criterion": "选A。地牢本房固定敌未胜时不能探索/清理翻找/资源采集，可沿已通边离开；击败后正常，必经房不能靠搜刮绕战。m02不再沿原例外，按本轮Q193同样战前禁三项。"
+      },
+      {
+        "id": "PLAN-Q188-01",
+        "criterion": "选A。首次实际到房时按当时解锁容量C锁本代固定敌名单与worldEnemyId，到达不自动开战；扩容、少带人、撤退/读档不重编或恢复HP，换代重新揭示；远征入口只作整体预告，不提前锁具体房名单。"
+      },
+      {
+        "id": "PLAN-Q189-01",
+        "criterion": "选B，由总控给12新敌逐一受惊参数：低吟45%/8、试制40%/8、缠线50%/10、货架40%/7、祭室60%/14、隔离65%/14、军械60%/15、天线65%/15、泵房55%/12、深井60%/16、扶梯60%/13、仓管55%/13。只改初始受惊源参数，沿Q91共用随机源/个人精神修正规则，不增加尖啸招式或伤害。"
+      },
+      {
+        "id": "PLAN-Q190-01",
+        "criterion": "选A。鼓动最近两名存活同伴，同距前排优先；无其他同伴改普通抓击；各人下一次攻击命中或落空即耗，未攻击不按轮过期；同名取强×1.10，与异名蓄势相乘。"
+      },
+      {
+        "id": "PLAN-Q191-01",
+        "criterion": "选A。标记无额外命中/伤害加成；隔离守卫Q91随机标记，指定普攻仍只打1/2，目标失效或3/4位则从1/2存活者随机普通攻击，无合法普攻目标按原空目标规则，不改大招。仓管标最靠后活人，低伤拉扯可选1—4位被标者，命中后判控制成功前拉1位。"
+      },
+      {
+        "id": "PLAN-Q192-01",
+        "criterion": "选C，由总控补21节点逐敌层表，原权重层内归一化；普通/稀有/强敌96/3.5/0.5与第1/3/7日开放不变，空层不重抽、不跨节点补池；ex_pop五区不改，旧已生成个体不重抽。"
+      },
+      {
+        "id": "PLAN-Q193-01",
+        "criterion": "按用户授权定1只迟缓感染者z_slow，强度沿原4.2HP/零甲/速度2；首次到达出现一局一次固定战，必须战胜才可探索/清理翻找/采集，可沿已开边离开；胜利存活提交原清障事实，旧可信完成不反锁，未完战保留HP。"
+      },
+      {
+        "id": "PLAN-Q194-01",
+        "criterion": "选A。以Q31为准，b01_school/b02_station公共服务点不刷新、不巡入、不随机接敌，旧池不用，不混入分层人口区。"
+      },
+      {
+        "id": "PLAN-Q195-01",
+        "criterion": "按用户修订。防御/格挡下一次直接伤害×0.5至下次正常激活；保护挡相邻者下一次单体攻击，后排优先，无同伴提示“没有可以保护的同伴”，执行重验相邻，不自动改抓击。保护落空仍消耗原2AP主意图，余AP按原结束。推挤×0.7命中判击退；重击冲撞不默认蓄力；破甲0.2两轮同名取强；8守卫普抓不咬。"
+      },
+      {
+        "id": "PLAN-Q196-01",
+        "criterion": "选C。地牢沿本次来路找最近已通过无敌房，无则01；野外及普通主世界撤退退回可信已完成移动的来处，详见新战开工快照与无可信来路回退合同，不猜路线、不额外移动时间。"
+      },
+      {
+        "id": "PLAN-Q197-01",
+        "criterion": "选A。惊魂未定6世界小时内仅下一场入战初始恐慌+10一次，用后消失，不战到期；每人独立截止，重触发取较晚，不叠层。"
+      },
+      {
+        "id": "PLAN-Q198-01",
+        "criterion": "选A。本代已开通/两端到过的双向内部边加01与父地点入口边构成应急回路，按基础分钟最短路返程；不走未知房或单向出口，无需新增应急字段，导入仍断言双向。"
+      },
+      {
+        "id": "PLAN-Q199-01",
+        "criterion": "选A。撤出不中途因警戒线暂停，不可手动吃喝/用药/休息/接战，可做拾放等合法即时整理；N/W/E/S/M不继续下降，归零项/出血/感染仍可扣血，沿原死亡处理。不因这句禁止原整理入口。"
+      },
+      {
+        "id": "PLAN-Q200-01",
+        "criterion": "选A。探索估计下限为01至核心最短路移动加沿途剩余探索，上限全房剩余探索加每条内部边一次，标基础分钟/不含战斗倍率；回撤最低30及当前T，按当前已提交探索度重算，不自动探索。"
+      },
+      {
+        "id": "PLAN-Q201-01",
+        "criterion": "选A。确认危险房移动即开始，取消移动也算；已通关从01原路离开免罚；旧档危险房追认开始、不补罚，01不开始；通关后再进同代仍确认新远征，离开免罚。"
+      },
+      {
+        "id": "PLAN-Q202-01",
+        "criterion": "选A，【交开发方定】入口浮窗避开右栏预告、无远征写“未开始远征”、受惊预估注明惊魂+10、撤出进度至少约2秒可见；纯显示不推进或延长游戏时间、不改撤出与恐慌数值。"
+      },
+      {
+        "id": "PLAN-Q203-01",
+        "criterion": "选A。本实例已核销奖励在本远征非战斗时，可从当前地面或同行随身整堆0分钟封存；取出只到主角合法随身或当地地面，队友再拾。拒绝外带/自制/别实例，成功离开清来源标记；源不同在地牢分卡，离开按原兼容规则合组，owner唯一不复制。"
+      },
+      {
+        "id": "PLAN-Q204-01",
+        "criterion": "选B。通关满72世界小时且内部无人时才标RESET_READY/可重置；有人仍显示已通关并可注明冷却已到、需离开。无人只是显示前提，真正确认仍验全队父地点、无远征/撤出/动作/战斗/敌踪/预留材料等原全部条件，不强踢人。"
+      },
+      {
+        "id": "PLAN-Q205-01",
+        "criterion": "选A。旧无clearedAt且本代已核对记录者，以升级时刻记通关，72世界小时后可重置；旧已领核心首通补给记已领、不追补，幂等不因再次读档重记升级时刻。"
+      },
+      {
+        "id": "PLAN-Q206-01",
+        "criterion": "选A。五项均认可：持续至使用轮+2轮末；闪光只加命中能力6不加伤害；护带与主动稳固比较、装备抵抗另取强；提示贴同目标同轮多人合计最多减6；三件走医疗快捷栏，标记选敌、贴多人选友单人自用。"
+      },
+      {
+        "id": "PLAN-Q207-01",
+        "criterion": "选B。所有净化含锅/净水片/滤芯也计烹饪每日30总上限，净化子限仍每日4；食品/主动烹饪/晾制共用30，按完成日剩余发，旧已得不倒扣、不重发。"
+      },
+      {
+        "id": "PLAN-Q180-02",
+        "criterion": "模板/数值随机序列不受外观池影响，同周期/旧候选不重抽；新姓名池字段全有效，序号不重复，性别/肤色不改属性。"
+      },
+      {
+        "id": "PLAN-Q183-02",
+        "criterion": "有空位可选同行，满员禁止；合格屋可选并0分钟送达，未完工/未到访/无已知通路屋禁选；候补下一tick照护，主队异地不能远程编入；旧候补不强迁。"
+      },
+      {
+        "id": "PLAN-Q192-02",
+        "criterion": "21节点每种原池敌恰归一层，层内权重保留；第1/3/7日普通/稀有/强敌开放，空层不重抽，b01/b02不刷新；既有敌不删改。"
+      },
+      {
+        "id": "PLAN-Q193-02",
+        "criterion": "未清障m02的探索/清理/采集全禁，旧可信清障不反锁；退战/重访不刷敌HP，主角存活最终胜利才开营门。"
+      },
+      {
+        "id": "PLAN-Q207-02",
+        "criterion": "先食品28再净化应得4只给2；先净化4后食品最多26；旧日已得34不倒扣且当日新给0，完成日新额正常。"
+      }
+    ]
   }
 }
