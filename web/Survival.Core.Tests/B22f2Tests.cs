@@ -61,7 +61,7 @@ public class B22f2Tests : BattleTestBase
         Assert.That(E.NextTravelSegment(s)!.Kind, Is.EqualTo(TravelSegmentKind.UnknownFixedBlocked));
         Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo(Fight));
         Assert.That(E.ObjectiveFocus(s), Is.Null, "不点亮探索入口或拦路敌卡");
-        // 探索度满 100（营门仍未发现）：仍是本句，不回到“查看当前已知路线与通行条件。”
+        // 营门仍未发现时不论探索度（不再要求“还能探索”）：仍是本句，不回到“查看当前已知路线与通行条件。”
         s.Locations[M02].Progress = 100;
         Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo(Fight), "覆盖查询句");
         Assert.That(E.ObjectiveFocus(s), Is.Null);
@@ -73,16 +73,13 @@ public class B22f2Tests : BattleTestBase
         Assert.That(E.NextTravelSegment(s)?.Kind, Is.Not.EqualTo(TravelSegmentKind.UnknownFixedBlocked), "其他目标走原规则");
         s.Prologue.ObjectiveId = keep;
 
-        // 下一段已知（营门已发现、路线已揭示但未开通）：不改成战斗句，仍是 Q139 已知未开通原分支
-        s.Locations[M02].Progress = 100;
-        s.Locations[Gate].Discovered = true;
-        var seg = E.NextTravelSegment(s)!;
-        Assert.That(seg.Kind, Is.EqualTo(TravelSegmentKind.KnownBlocked));
-        Assert.That(E.CurrentObjective(s)!.Step, Is.Not.EqualTo(Fight));
-        Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:" + Gate));
-        s.Locations[Gate].Discovered = false;
-        s.Locations[M02].Progress = 0;
-        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo(Fight));
+        // 下一段已知（实际探索到 100% 揭出营门、路线未开通）：不改成战斗句，仍是 Q139 已知未开通原分支（写真实拦路原因）
+        var probe = RouteOnwardAtM02();
+        E.DebugExploreHere100(probe);
+        Assert.That(probe.Locations[Gate].Discovered, Is.True);
+        Assert.That(E.NextTravelSegment(probe)!.Kind, Is.EqualTo(TravelSegmentKind.KnownBlocked));
+        Assert.That(E.CurrentObjective(probe)!.Step, Does.StartWith("查看通往营门的路线条件").And.Contain("固定拦路战"));
+        Assert.That(E.ObjectiveFocus(probe), Is.EqualTo("loc:" + Gate));
 
         // 胜利提交：清障揭出营门路线，恢复“沿已知路线前往营门。”
         E.DebugWinFixedHere(s);
