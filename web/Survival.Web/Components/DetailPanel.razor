@@ -84,14 +84,22 @@
                 break;
             case SelectionKind.Entrance:
                 @* B21（R03 D3）：去地牢入口缓冲或从 01 去危险房间时，右栏先给完整进入预告 *@
+                // B21 试玩修复 M399：完整预告放进预估的滚动区里（原来放在滚动区外撑高右栏，页面一闪滚动条、相邻卡浮窗被收起）；
+                // 01→危险房间时右栏也给“确认开始远征并前往”，不依赖卡旁浮窗
                 var dEnt = e.DungeonAt(sel.Id);
-                if (dEnt != null && e.ExpeditionEnabled(dEnt) && (e.NeedsExpeditionConfirm(s, sel.Id) || (e.BufferNodeOf(dEnt) == sel.Id && e.DungeonAt(s.CurrentLocation) != dEnt)))
-                {
-                    <div class="exp-detail"><div class="eyebrow">进入预告 · 只读，不建实例、不抽物资</div><ExpeditionInfo Info="@e.ExpeditionPreview(s, dEnt)" /></div>
-                }
-                <PreviewView Request="ActionRequest.Travel(sel.Id, e.NeedsExpeditionConfirm(s, sel.Id))" Eyebrow="@($"已选中 · 前往{e.LocName(sel.Id)}")" Title="@($"前往{e.LocName(sel.Id)}")" Confirmable="false"
+                var needExp = e.NeedsExpeditionConfirm(s, sel.Id);
+                var showExp = dEnt != null && e.ExpeditionEnabled(dEnt) && (needExp || (e.BufferNodeOf(dEnt) == sel.Id && e.DungeonAt(s.CurrentLocation) != dEnt));
+                <PreviewView Request="ActionRequest.Travel(sel.Id, needExp)" Eyebrow="@($"已选中 · 前往{e.LocName(sel.Id)}")" Title="@($"前往{e.LocName(sel.Id)}")" Confirmable="needExp"
+                             ConfirmLabel="@(needExp ? "确认开始远征并前往" : null)"
                              FootNote="在相邻地图卡旁的浮窗确认移动；时间为预计值"
-                             Subtitle="位置在到达时一次更新；途中不能取用两端的物资。" />
+                             Subtitle="位置在到达时一次更新；途中不能取用两端的物资。">
+                    <Extra>
+                        @if (showExp)
+                        {
+                            <div class="exp-detail"><div class="eyebrow">进入预告 · 只读，不建实例、不抽物资</div><ExpeditionInfo Info="@e.ExpeditionPreview(s, dEnt!)" /></div>
+                        }
+                    </Extra>
+                </PreviewView>
                 break;
             case SelectionKind.Resource:
                 var r = e.Resource(sel.Id);

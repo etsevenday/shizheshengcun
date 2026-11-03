@@ -1456,6 +1456,8 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .exp-abort .exp-row { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; line-height: 1.5; }
 .exp-abort .ov-foot button { min-height: 40px; }
 .exp-card .exp-art { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 34px; color: var(--accent); }
-.exp-detail { padding: 0 14px 8px; }
-.exp-detail .exp-pv { max-height: 38vh; }
+.exp-detail { padding: 0 0 8px; }
+.exp-detail .exp-pv { max-height: none; overflow: visible; }
 .apop-risk.exp-brief { color: inherit; }
+/* B21 试玩修复 M399：Esc 菜单压在中央推进条（撤出进度条）之上 */
+.overlay.menu-top { z-index: 60; }

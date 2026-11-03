@@ -213,7 +213,7 @@ public class B21ExtractTests : BattleTestBase
         Assert.That(s.Roster.Single(r => r.ActorId == "npc_lin_zhao").DeathLocation, Is.EqualTo("d01_02"));
     }
 
-    /// <summary>A10 §7：中央推进条写“撤出中：当前→下一站（不可取消）”，退出入口不可用并写原因。</summary>
+    /// <summary>A10 §7：中央推进条标题“撤出到终点（不可取消）”、条下写当前一段，退出入口不可用并写原因。</summary>
     [Test]
     public void Progress_ExtractNotExitable_Label()
     {
@@ -223,7 +223,8 @@ public class B21ExtractTests : BattleTestBase
         var p = E.ActionProgress(s)!;
         Assert.That(p.Exit, Is.EqualTo(ExitKind.None));
         Assert.That(p.ExitNote, Does.Contain("不能取消"));
-        Assert.That(p.Label, Does.StartWith("撤出中：" + E.LocName("d01_05")).And.Contain("不可取消"));
+        Assert.That(p.Label, Is.EqualTo($"撤出到{E.LocName("c03_crypt")}（不可取消）"));
+        Assert.That(p.StopNote, Does.StartWith("现在：" + E.LocName("d01_05") + "→" + E.LocName("d01_04")));
         Assert.That(p.RemainingMinutes, Is.EqualTo(s.Expedition!.TotalMinutes));
         Assert.That(E.RequestExit(s).Ok, Is.False);
     }

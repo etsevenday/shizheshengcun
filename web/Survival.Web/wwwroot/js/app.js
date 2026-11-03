@@ -239,9 +239,15 @@ window.survivalPop = (function () {
     var el = cur.el;
     if (!el || !el.isConnected) { stop(); return; }
     var a = cur.anchor ? document.getElementById(cur.anchor) : null;
-    if (!a) { lost(); return; }
-    var A = visibleRect(a);
-    if (A.vis < 0.25) { lost(); return; }
+    var A = a ? visibleRect(a) : null;
+    // B21 试玩修复：页面重排（右栏内容变化引起的一闪滚动条等）会让锚点瞬间“看不见”；连续 250ms 仍看不见才算滚出，避免浮窗刚弹出就被收起
+    if (!a || A.vis < 0.25) {
+      var now = Date.now();
+      if (!cur.lostAt) { cur.lostAt = now; setTimeout(function () { if (cur) place(); }, 260); return; }
+      if (now - cur.lostAt >= 250) lost();
+      return;
+    }
+    cur.lostAt = 0;
     var W = window.innerWidth, H = window.innerHeight, m = 8, g = 8;
     var w = el.offsetWidth, h = el.offsetHeight;
     var order = (el.getAttribute('data-place') || 'right,left,below,above').split(',');

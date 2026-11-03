@@ -109,9 +109,11 @@ namespace Survival.Core.Engine
             {
                 var e = s.Expedition;
                 var next = e.ExtractRoute.SkipWhile(n => n != s.CurrentLocation).Skip(1).FirstOrDefault() ?? a.TargetId;
-                info.Label = next == a.TargetId
-                    ? $"撤出中：{LocName(s.CurrentLocation)}→{LocName(a.TargetId)}（不可取消）"
-                    : $"撤出中：{LocName(s.CurrentLocation)}→{LocName(next)}→…→{LocName(a.TargetId)}（不可取消）";
+                // 试玩修复 M399：标题只写终点（长了会被截断），当前一段写在条下
+                info.Label = $"撤出到{LocName(a.TargetId)}（不可取消）";
+                info.StopNote = next == a.TargetId
+                    ? $"现在：{LocName(s.CurrentLocation)}→{LocName(a.TargetId)}"
+                    : $"现在：{LocName(s.CurrentLocation)}→{LocName(next)}→…→{LocName(a.TargetId)}";
             }
             info.ExitNote = why ?? (info.Exit == ExitKind.CompletesCurrentTransaction ? $"{a.Label}已开始结算，本段完成后结束（已提交的消耗与效果不撤销）" : forfeit ?? "在当前5分钟段结束处停止，已发生的消耗与收获保留");
             return info;

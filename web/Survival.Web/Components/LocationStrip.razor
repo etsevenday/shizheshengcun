@@ -32,7 +32,8 @@
     var fixedCfg = e.FixedBattleAt(here);
     var elites = e.EliteChallengesHere(s);
     // B21（R03 D5、A10 §7）：本次远征的安全点（safeNodes）给“终止本次远征”明显入口
-    var expHere = s.Expedition != null && !inside && e.DungeonAt(here) == s.Expedition.DungeonId
+    // 试玩修复 M399：撤出中不显示（按钮本就不可用，且会被中央撤出进度条盖住）
+    var expHere = s.Expedition != null && !s.Expedition.IsExtracting && !inside && e.DungeonAt(here) == s.Expedition.DungeonId
                   && e.DungeonCfg(s.Expedition.DungeonId)!.SafeNodes.Contains(here) ? s.Expedition : null;
 }
 
@@ -130,21 +131,39 @@
         {
             var abortWhy = busy ? "行动进行中" : e.CanAbortExpedition(s);
             var dname = e.DungeonCfg(expHere.DungeonId)!.Name;
-            var tipX = $"{dname}本次远征：未通关离开要在这里（或菜单里）终止，每人{e.AbortPenaltyText()}、{e.ShakenText()}，撤出至少{e.Config.DungeonExpedition.ExtractMinMinutes}分钟并且途中不能取消；已拿到的物资不没收。战斗里的撤退只退回来路上的房间，不算离开。";
+            // 试玩修复 M399（B21-12）：本代已通关时写“已通关，直接离开”，不再写终止代价
+            var cleared = e.DungeonCleared(s, expHere.DungeonId);
+            var tipX = cleared
+                ? $"{dname}本代已通关：从出口或原路回{e.LocName(e.DungeonCfg(expHere.DungeonId)!.Parent)}都不扣惩罚，不需要终止远征。"
+                : $"{dname}本次远征：未通关离开要在这里（或菜单里）终止，每人{e.AbortPenaltyText()}、{e.ShakenText()}，撤出至少{e.Config.DungeonExpedition.ExtractMinMinutes}分钟并且途中不能取消；已拿到的物资不没收。战斗里的撤退只退回来路上的房间，不算离开。";
             <div class="desk-group expedition">
                 <div class="dg-title">远征</div>
                 <div class="dg-cards">
-                    <ObjectCard @key="@("exp-" + expHere.Id)" Id="expedition-abort" CssClass="enemy-card world exp-card" Title="@dname" Badge="@(expHere.IsExtracting ? "撤出中" : "安全点")" BadgeClass="new" Tooltip="@tipX">
+                    <ObjectCard @key="@("exp-" + expHere.Id)" Id="expedition-abort" CssClass="enemy-card world exp-card" Title="@dname" Badge="@(cleared ? "已通关" : "安全点")" BadgeClass="new" Tooltip="@tipX">
                         <Art><span class="exp-art" aria-hidden="true">⇱</span></Art>
                         <ChildContent>
                             <div class="oc-line">第@(expHere.Generation)代 · @GameEngine.DungeonStatusName(e.DungeonStatus(s, expHere.DungeonId))</div>
-                            <div class="oc-line" title="@tipX">终止：撤出至少@(e.Config.DungeonExpedition.ExtractMinMinutes)分钟、扣属性</div>
+                            @if (cleared)
+                            {
+                                <div class="oc-line" title="@tipX">已通关：出口或原路离开都不扣惩罚</div>
+                            }
+                            else
+                            {
+                                <div class="oc-line" title="@tipX">终止：撤出至少@(e.Config.DungeonExpedition.ExtractMinMinutes)分钟、扣属性</div>
+                            }
                         </ChildContent>
                         <Footer>
-                            <button type="button" class="loc-btn res-btn" disabled="@(abortWhy != null)" title="@(abortWhy ?? "先看即时损失与返程时间，确认前可以取消")"
-                                    @onclick="G.OpenAbort" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
-                                <strong>终止远征…</strong>
-                            </button>
+                            @if (cleared)
+                            {
+                                <button type="button" class="loc-btn res-btn" disabled title="@tipX"><strong>已通关·直接离开</strong></button>
+                            }
+                            else
+                            {
+                                <button type="button" class="loc-btn res-btn" disabled="@(abortWhy != null)" title="@(abortWhy ?? "先看即时损失与返程时间，确认前可以取消")"
+                                        @onclick="G.OpenAbort" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                    <strong>终止远征…</strong>
+                                </button>
+                            }
                         </Footer>
                     </ObjectCard>
                 </div>

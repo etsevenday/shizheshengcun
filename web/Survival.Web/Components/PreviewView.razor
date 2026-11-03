@@ -13,6 +13,7 @@
         <h2>@(string.IsNullOrEmpty(Title) ? p.Label : Title)</h2>
         @if (!string.IsNullOrEmpty(Subtitle)) { <p>@Subtitle</p> }
     </div>
+    @Extra
 
     @if (p.Ok)
     {
@@ -201,7 +202,7 @@
 <div class="detail-foot">
     @if (Confirmable)
     {
-        <button class="primary" disabled="@(!p.Ok || busy || starting)" @onclick="Confirm">@(p.Ok ? p.ConfirmText : DisabledLabel(p))</button>
+        <button class="primary" disabled="@(!p.Ok || busy || starting)" @onclick="Confirm">@(p.Ok ? (ConfirmLabel ?? p.ConfirmText) : DisabledLabel(p))</button>
         <div class="under">@(p.AsSubAction ? "作为补给或维护执行，原行动保持暂停" : "确认后才推进游戏时间；时间为预计值")</div>
     }
     else
@@ -221,6 +222,10 @@
     [Parameter] public bool Confirmable { get; set; } = true;
     /// <summary>不可确认时底部的说明（就近执行的入口在哪里，S14 §14.1）；为空用默认文案。</summary>
     [Parameter] public string? FootNote { get; set; }
+    /// <summary>B21：插在标题下、滚动区里的附加内容（地牢进入预告）。</summary>
+    [Parameter] public RenderFragment? Extra { get; set; }
+    /// <summary>B21：确认按钮文字（如“确认开始远征并前往”）；为空用预估自带的文字。</summary>
+    [Parameter] public string? ConfirmLabel { get; set; }
 
     private bool starting;
 
