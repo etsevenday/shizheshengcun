@@ -302,8 +302,14 @@
                 <div class="btn-row">
                     <button class="secondary small-btn" title="对已进入的人口区立即各做一次刷新检查（25%，用存档随机数）" @onclick="DevRegionSpawn">人口区立即刷新一次</button>
                     <button class="secondary small-btn" @onclick="() => DevDone(G.E.DebugPopulationText(G.S))">查看人口区计数</button>
+                    @* B22h（Q192）：分层刷新要第3日（稀有）/第7日（强敌）才开放；连刷20次便于看层内抽种 *@
+                    <button class="secondary small-btn" title="对已进入的人口区连续做20次刷新检查（每次25%，再抽层；未开放或该节点该层空即抽空）" @onclick="DevRegionSpawn20">人口区连续刷新20次（B22h）</button>
+                    <button class="secondary small-btn" @onclick="() => DevDayAt(3)">跳到第3日08:00（稀有层开放）</button>
+                    <button class="secondary small-btn" @onclick="() => DevDayAt(7)">跳到第7日08:00（强敌层开放）</button>
                 </div>
                 <div class="tiny muted">@G.E.DebugPopulationText(G.S)</div>
+                @* B22h（Q196）：普通主世界撤退落点预告（与开战快照同一判断）；开发传送会清掉“最近一次移动”记录 *@
+                <div class="tiny muted">撤退落点（B22h）：@(G.S.LastMove is Survival.Core.State.LastMoveRecord lm ? $"最近一次完成的移动 {G.E.LocName(lm.From)}→{G.E.LocName(lm.To)}" : "没有最近一次完成的移动记录（开发传送或旧档）")；在这里开战的话：@G.E.RetreatOutlookHere(G.S)</div>
                 @* B21（R65/R66）：地牢远征。传送到入口缓冲（开入口边、不开始远征）→ 点相邻危险房间看预告并“确认开始远征并前往”；
                    传送进危险房间会按已开始的远征补提交（不扣包），传到地牢外直接结束 *@
                 <div class="eyebrow">地牢远征（B21）：入口缓冲 → 确认开始远征 → 战斗撤退 / 终止远征 → 撤出到父地点</div>
@@ -531,6 +537,23 @@
         if (G.E.DebugSpawnBlocked(G.S, G.S.CurrentLocation) is string why) { DevDone($"没有放置：{why}。"); return; }
         G.E.DebugSpawnEnemy(G.S, id, G.S.CurrentLocation);
         DevDone($"已在当前地点放置{G.E.Enemy(id).Name}。");
+    }
+
+    private void DevRegionSpawn20()
+    {
+        var added = new List<Survival.Core.State.WorldEnemy>();
+        for (var i = 0; i < 20; i++) added.AddRange(G.E.DebugRegionSpawnCheck(G.S));
+        DevDone((added.Count > 0 ? $"人口区20次刷新出{added.Count}只：" + string.Join("、", added.Select(w => $"{G.E.Enemy(w.EnemyId).Name}（{G.E.LocName(w.LocationId)}）")) : $"人口区20次都没有刷新：{G.E.RegionSpawnIdleReason(G.S)}") + "。" + G.E.DebugPopulationText(G.S));
+    }
+
+    /// <summary>B22h：只往后拨时钟到第 day 日 08:00（不结算身体消耗），用于看稀有/强敌层开放。</summary>
+    private void DevDayAt(int day)
+    {
+        var s = G.S;
+        var at = (day - 1) * 1440 + 480;
+        if (s.GameMinute < at) s.GameMinute = at;
+        G.E.ResetWorldCursors(s);
+        DevDone($"已跳到第{day}日08:00（只改时钟，不结算身体消耗；已过这个时刻则不动）。");
     }
 
     private void DevDay2()
