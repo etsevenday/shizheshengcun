@@ -286,6 +286,29 @@ public class B24CityOverviewTests : TestBase
 
     private void Ok(ActionResult r) => Assert.That(r.Ok, Is.True, r.Reason);
 
+    // ───────────── 设施栏人物卡（CITY-UI10/13） ─────────────
+
+    /// <summary>CITY-UI10/13：岗位卡带组织、“在场”与可接短标；离岗由代班接手标“代班”、不复用原人物；人物与公共工坊站等设施同栏共存。</summary>
+    [Test]
+    public void CITY_UI10_NpcCardPresenceAndMarks()
+    {
+        var s = Registered("h05_appraisal");
+        var tao = E.NpcsHere(s).Single(n => n.NpcId == "npc_tao_cen");
+        Assert.That((tao.FactionName, tao.Presence, tao.KindLabel), Is.EqualTo(("幸存者营区", "在场", "岗位")));
+        Assert.That(tao.QuestMarks, Is.EqualTo("可接1"), "HU01 可接；HU02 要先完成 HU01");
+        s.Progress.Flags.Add(GameEngine.QuestFact("HU01", "completed"));
+        s.Progress.Flags.Add(GameEngine.QuestFact("HU02", "completed"));
+        Assert.That(E.NpcsHere(s).Single(n => n.NpcId == "npc_tao_cen").QuestMarks, Is.Empty, "已完成不再标");
+        E.DebugToggleCityPostAbsent(s);
+        var sub = E.NpcsHere(s).Single(n => n.NpcId == "npc_tao_cen");
+        Assert.That((sub.Presence, sub.KindLabel, sub.Substitute), Is.EqualTo(("代班", "代班", true)));
+        Assert.That(sub.Name, Is.Not.EqualTo("陶岑"), "不复用退场人物");
+
+        var w = Registered("h03_workshop");
+        Assert.That(E.NpcsHere(w).Select(n => n.NpcId), Does.Contain("npc_luo_zheng"));
+        Assert.That(E.PublicStationsHere(w), Is.Not.Empty, "人物卡不替换设施");
+    }
+
     // ───────────── 任务标记（CITY-UI13） ─────────────
 
     /// <summary>CITY-UI13：任务标记绑真实状态——鉴定所 HU01 可接；完成后不再标；打开鸟瞰不接、不推进。</summary>

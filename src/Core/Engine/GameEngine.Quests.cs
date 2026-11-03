@@ -592,10 +592,12 @@ namespace Survival.Core.Engine
                 if (c == null) continue;
                 yield return new NpcCardView
                 {
-                    NpcId = q.NpcId, Name = c.Name, Role = c.Affiliation, Kind = "companion", KindLabel = "固定队友",
+                    NpcId = q.NpcId, Name = c.Name, Role = c.Affiliation, Kind = "companion", KindLabel = "固定同行者",   // B24（A10-CITY §6）：命名队友作访客卡标“固定同行者”（原“固定队友”）
                     Status = "可邀约同行 · 不耗时", HasNews = true, ActionLabel = "交谈", Background = c.Background,
                     RecruitText = "交谈读完邀约后可选“登记同行”或“暂不登记”；登记后进名册（候补，在营区公共居所留守，不自动编队，队伍满员也能登记），首次两件装备随登记一次生成；暂不登记可以以后再来",
                     TalkBlocked = TalkBlocked(s),
+                    Presence = "在场",
+                    QuestMarks = "可接1",
                 };
             }
         }

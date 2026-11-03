@@ -168,8 +168,22 @@ namespace Survival.Core.Engine
                     RecruitText = "岗位人物，不可招募",
                     HasNews = !s.City.Greeted.Contains(n.NpcId) && !absent,
                     TalkBlocked = TalkBlocked(s),
+                    Presence = absent ? "代班" : "在场",
+                    QuestMarks = NpcQuestMarks(s, n.NpcId),
                 };
             }
+        }
+
+        /// <summary>B24：岗位卡的可接/可交短标（与鸟瞰任务标记同一口径：可接=已显示可接；可交=已接且记录已取得或有可在这里办的工作）。</summary>
+        private string NpcQuestMarks(GameState s, string npcId)
+        {
+            var qs = QuestsOfNpc(s, npcId);
+            var acc = qs.Count(v => v.Status == "available");
+            var turn = qs.Count(v => v.Status == "active" && (Quest(v.Id) is QuestConfig q && HasQuestRecord(s, q) || v.WorkLabel != null));
+            var parts = new List<string>();
+            if (acc > 0) parts.Add($"可接{acc}");
+            if (turn > 0) parts.Add($"可交{turn}");
+            return string.Join(" · ", parts);
         }
 
         /// <summary>

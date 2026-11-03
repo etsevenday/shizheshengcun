@@ -96,6 +96,10 @@ namespace Survival.Core.Engine
         public string ActionLabel { get; set; } = "交谈";
         /// <summary>悬停说明里的人物背景（同行邀约卡：固定队友正式背景句）。</summary>
         public string Background { get; set; } = "";
+        /// <summary>B24（A10-CITY §6）：在场状态短标“在场”/“代班”（岗位无作息数据，在岗一律“在场”，离岗由代班接手）；来客为空。</summary>
+        public string Presence { get; set; } = "";
+        /// <summary>B24（A10-CITY §6）：可接/可交任务短标（“可接1 · 可交1”）；没有为空。只定位，不自动接任务。</summary>
+        public string QuestMarks { get; set; } = "";
     }
 
     /// <summary>设施栏的固定文书/路标卡（PRO15 救助残页、南口路标）。</summary>

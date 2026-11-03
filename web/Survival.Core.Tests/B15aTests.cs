@@ -98,7 +98,7 @@ public class B15aTests : TestBase
         Assert.That(E.AcceptQuest(s, quest).Reason, Does.StartWith("须实际到达"));
         Go(s, loc);
         var c = Card(s, actor)!;
-        Assert.That((c.KindLabel, c.ActionLabel), Is.EqualTo(("固定队友", "交谈")));
+        Assert.That((c.KindLabel, c.ActionLabel), Is.EqualTo(("固定同行者", "交谈")));   // B24：访客卡标“固定同行者”
         var v = E.QuestViewOf(s, quest)!;
         Assert.That((v.Status, v.KindLabel), Is.EqualTo(("available", "同行邀约")));
         // 0 分钟 0 物资；首次两件装备；进名册候补

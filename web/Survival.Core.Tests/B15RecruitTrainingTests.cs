@@ -34,7 +34,7 @@ public class B15RecruitTrainingTests : TestBase
         var cards = E.NpcsHere(s);
         Assert.That(cards.Select(c => c.Kind), Is.EquivalentTo(new[] { "post", "companion" }));
         var lin = cards.Single(c => c.Kind == "companion");
-        Assert.That((lin.Name, lin.Role, lin.KindLabel, lin.ActionLabel), Is.EqualTo(("林昭", "营区巡路", "固定队友", "交谈")));
+        Assert.That((lin.Name, lin.Role, lin.KindLabel, lin.ActionLabel), Is.EqualTo(("林昭", "营区巡路", "固定同行者", "交谈")));   // B24：访客卡标“固定同行者”
         Assert.That(lin.Background, Does.StartWith("营区的物资搬运与巡路人员"));
         Assert.That(E.QuestViewOf(s, "RN01")!.KindLabel, Is.EqualTo("同行邀约"));
         var minute = s.GameMinute;

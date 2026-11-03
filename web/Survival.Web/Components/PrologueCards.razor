@@ -15,10 +15,15 @@
 }
 @if (npcs.Count > 0)
 {
+    // B24（A10-CITY §6、开发假设 B24-6）：人物多于两张时组内紧凑选择——只完整显示所选一人（默认本建筑岗位/主目标所指的人），
+    // 其余列成同高的名字小表，点名字切换；不增长整行、不替换设施组
+    var compact = npcs.Count > 2;
+    var primary = compact ? npcs.FirstOrDefault(n => n.NpcId == _pick) ?? npcs.FirstOrDefault(n => focus == "npc:" + n.NpcId) ?? npcs[0] : null;
+    var shownNpcs = compact ? new List<NpcCardView> { primary! } : npcs;
     <div class="desk-group people">
         <div class="dg-title">人物</div>
         <div class="dg-cards">
-            @foreach (var n in npcs)
+            @foreach (var n in shownNpcs)
             {
                 var why = busy ? "行动进行中" : n.TalkBlocked;
                 var id = n.NpcId;
@@ -27,14 +32,19 @@
                 var tip = post
                     ? $"{n.Name}：{n.FactionName}·{n.Role}（{n.KindLabel}）。{n.Status}。{n.RecruitText}。{(n.QuestText.Length > 0 ? n.QuestText + "。" : "")}点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；有可接的委托时交谈即接取）{(n.ServiceCount > 0 || n.HasQuests ? "；“事项”查看可办的服务与委托" : "")}"
                     : companion
-                        ? $"{n.Name}（固定队友·{n.Role}）：{n.Background.TrimEnd('。')}。{n.RecruitText}。点卡片或“{n.ActionLabel}”（0分钟）"
+                        ? $"{n.Name}（{n.KindLabel}·{n.Role}）：{n.Background.TrimEnd('。')}。{n.RecruitText}。点卡片或“{n.ActionLabel}”（0分钟）"
                         : $"{n.Name}：{n.Role}。{n.Status}。点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；不是队友）";
                 <ObjectCard @key="@("npc-" + id)" Id="@($"npc-{id}")" CssClass="@($"res-card npc-card{(post || companion ? " post-card" : "")}{(focus == "npc:" + id ? " tut-lit" : "")}")" Title="@n.Name" Badge="@(post || companion ? n.KindLabel : n.HasNews ? "来客" : "可交谈")" BadgeClass="@(n.HasNews ? "new" : "")"
                             Tooltip="@tip" OnClick="() => Talk(id, why)">
                     <Art><img class="npc-portrait" src="img/portraits/unknown.svg" alt="@($"{n.Name}（临时形象）")" draggable="false" /></Art>
                     <ChildContent>
-                        @if (post || companion) { <div class="oc-line" title="@($"{n.FactionName} · {n.Role}")">@n.Role</div> }
-                        <div class="oc-line" title="@($"{n.Role} · {n.Status}")">@(why ?? n.Status)</div>
+                        @{
+                            // B24（A10-CITY §6）：卡面补组织、在场/代班与可接/可交短标（只定位，不自动接任务）
+                            var org = post ? $"{n.FactionName} · {n.Role}" : companion ? $"{n.KindLabel} · {n.Role}" : n.Role;
+                            var marks = string.Join(" · ", new[] { n.Presence, n.QuestMarks }.Where(x => x.Length > 0));
+                        }
+                        @if (post || companion) { <div class="oc-line" title="@org">@org</div> }
+                        <div class="oc-line" title="@($"{(marks.Length > 0 ? marks + " · " : "")}{n.Status}")">@(why ?? (marks.Length > 0 ? $"{marks} · {n.Status}" : n.Status))</div>
                     </ChildContent>
                     <Footer>
                         <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? $"{n.ActionLabel}（0分钟）")"
@@ -50,6 +60,20 @@
                         }
                     </Footer>
                 </ObjectCard>
+            }
+            @if (compact)
+            {
+                <div class="people-more" role="listbox" aria-label="这里的其他人物" data-wheel="y">
+                    <div class="pm-title">这里还有@(npcs.Count - 1)人</div>
+                    @foreach (var n in npcs.Where(x => x.NpcId != primary!.NpcId))
+                    {
+                        var id = n.NpcId;
+                        var marks = string.Join(" · ", new[] { n.KindLabel, n.QuestMarks }.Where(x => x.Length > 0));
+                        <button type="button" role="option" aria-selected="false" class="pm-item" title="@($"{n.Name}（{marks}）：点一下在左侧显示这张人物卡")" @onclick="() => _pick = id">
+                            <b>@n.Name</b><small>@marks</small>
+                        </button>
+                    }
+                </div>
             }
         </div>
     </div>
@@ -96,6 +120,9 @@
 }
 
 @code {
+    /// <summary>人物多于两张时完整显示的那一位（只存在组件里，换地点后按默认重选）。</summary>
+    private string? _pick;
+
     private void Talk(string id, string? why)
     {
         if (why != null) { G.Notice = why; G.Notify(); return; }
