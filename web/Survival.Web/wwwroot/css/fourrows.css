@@ -1070,6 +1070,7 @@
 .pc-recipes .small-btn { white-space: nowrap; flex: 0 1 auto; min-width: 0; min-height: 32px; }
 .pc-recipes-label { font-size: 12px; white-space: nowrap; opacity: .8; }
 .pc-recipe-why, .pc-aux { font-size: 12px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.pc-aux.pc-aux-wrap { white-space: normal; overflow: visible; }
 .pc-recipe-why { color: #d9a25a; }
 /* 水壶浮窗：操作多一组（喝/装入/倒出），整窗加高，不再要窗内滚动 */
 .apop.card-pop:has([data-canteen]) { max-height: min(calc(100vh - 140px), 640px); }

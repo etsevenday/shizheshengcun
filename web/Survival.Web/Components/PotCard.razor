@@ -88,7 +88,7 @@ else
     @* B22a 试玩修复 M412：锅食谱烹饪经验每批一次，只在这里写一处（锅内各份原料行不再各写一遍） *@
     @if (e.PotRecipeXpLine(s, Pot) is string prx)
     {
-        <div class="pc-aux" title="锅食谱每完成一批给投料人一次烹饪经验，不按成品份数">@prx</div>
+        <div class="pc-aux pc-aux-wrap" title="锅食谱每完成一批给投料人一次烹饪经验，不按成品份数">@prx</div>
     }
     @if (loc != null && loc == s.Ground)
     {
