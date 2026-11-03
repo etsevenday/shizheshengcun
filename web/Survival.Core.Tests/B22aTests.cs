@@ -354,4 +354,74 @@ public class B22aTests : TestBase
         WaitMinutes(t, 60);
         Assert.That(t.Skills["cooking"].Xp - y0, Is.EqualTo(2));
     }
+
+    // ───────────── 试玩修复 M412 ─────────────
+
+    /// <summary>M412（违反“按完成日剩余额度”）：当天净化已满 4，23:55 开工（00:15 完成）预估按完成日额度写 +4，实际也给 +4；同日完成仍写已满。</summary>
+    [TestCase("ex_tablet_water")]
+    [TestCase("ex_cartridge_water")]
+    public void M412_FixedWaitPreview_UsesCompletionDay(string recipe)
+    {
+        var s = WaterCamp();
+        E.CreateItems(s, "filter_cartridge", 1, s.CurrentLocation);
+        E.CreateItems(s, "water_filter", 1, s.CurrentLocation);
+        s.GameMinute = At(1, 23, 30);
+        s.Player.DailyCounts[WaterKey(s, GameEngine.DailyWaterXp)] = 4;
+        Assert.That(E.Preview(s, ActionRequest.Craft(recipe)).XpGains, Has.Some.Contains("今日净化经验已满4"), "23:30 开工 23:50 完成：同日已满");
+        s.GameMinute = At(1, 23, 55);
+        var xp = E.Preview(s, ActionRequest.Craft(recipe)).XpGains;
+        Assert.That(xp, Has.Some.Contains("烹饪经验+4").And.Some.Contains("按完成日第2日额度"));
+        Assert.That(xp, Has.None.Contains("已满"));
+        var c0 = s.Skills["cooking"].Xp;
+        Start(s, ActionRequest.Craft(recipe));
+        Run(s);
+        Assert.That(s.Skills["cooking"].Xp - c0, Is.EqualTo(4), "预估与实际一致");
+    }
+
+    /// <summary>M412 2a：锅净化经验说明在完成日已满/只剩 N 时标出；跨午夜完成按完成日。</summary>
+    [Test]
+    public void M412_PotWaterNote_ShowsRoomByCompletionDay()
+    {
+        var s = New();
+        var pot = First(s, "pot");
+        E.DebugGive(s, "dirty_water", 1, "camp");
+        Ok(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 1)));
+        Ok(E.DoInstant(s, InstantRequest.PutInFire(pot.InstanceId)));
+        var fac = s.Locations["camp"].Facility;
+        fac.FireLit = true; fac.FuelMinutes = 240;
+        var key = WaterKey(s, GameEngine.DailyWaterXp);
+        Assert.That(E.CookXpLine(s, pot), Does.Contain("每500毫升烹饪经验+1").And.Not.Contain("只剩"));
+        s.Player.DailyCounts[key] = 3;
+        Assert.That(E.CookXpLine(s, pot), Does.Contain("今日只剩1"));
+        s.Player.DailyCounts[key] = 4;
+        Assert.That(E.CookXpLine(s, pot), Does.Contain("今日净化经验已满4").And.Contain("完成不再给经验"));
+        // 23:55 时还要受热到次日：按完成日（次日额度满）写
+        s.GameMinute = At(1, 23, 55);
+        s.Player.DailyCounts[WaterKey(s, GameEngine.DailyWaterXp)] = 4;
+        Assert.That(E.CookXpLine(s, pot), Does.Contain("每500毫升烹饪经验+1").And.Not.Contain("已满"));
+        // 火灭了算不了完成时刻：按今天
+        fac.FireLit = false;
+        Assert.That(E.CookXpLine(s, pot), Does.Contain("今日净化经验已满4"));
+    }
+
+    /// <summary>M412 2b：锅食谱每批一次的经验只在锅上写一处，锅内各份原料不再逐行写。</summary>
+    [Test]
+    public void M412_PotRecipeXp_OncePerPot()
+    {
+        var (s, pot) = PotSetup(1, ("grain", 2), ("salt", 1));
+        Ok(E.DoInstant(s, InstantRequest.LoadPotRecipe("pot_hardtack", pot.InstanceId)));
+        var foods = E.PotFood(s, pot.InstanceId);
+        Assert.That(foods, Has.Count.EqualTo(2));
+        Assert.That(foods.Select(f => E.CookXpLine(s, f)), Is.All.Null, "原料行不重复写经验");
+        var line = E.PotRecipeXpLine(s, pot)!;
+        Assert.That(line, Does.Contain("烹饪经验+6").And.Contain("每批一次"));
+        s.Player.DailyCounts[WaterKey(s, GameEngine.DailyXp)] = 27;
+        Assert.That(E.PotRecipeXpLine(s, pot), Does.Contain("烹饪经验+3").And.Contain("今日只剩3"));
+        // 普通水煮食材仍逐份写（每份各给一次）
+        var (t, pot2) = PotSetup(2);
+        E.DebugGive(t, "raw_root", 1, "camp");
+        Ok(E.DoInstant(t, InstantRequest.PutFoodInPot(First(t, "raw_root", "camp").InstanceId, pot2.InstanceId, 1)));
+        Assert.That(E.CookXpLine(t, E.PotFood(t, pot2.InstanceId).Single()), Does.Contain("烹饪经验+3"));
+        Assert.That(E.PotRecipeXpLine(t, pot2), Is.Null);
+    }
 }

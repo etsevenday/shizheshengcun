@@ -105,38 +105,95 @@ namespace Survival.Core.Engine
                 : $"{SkillName(Cooking)}经验+{grant}";
         }
 
-        /// <summary>预估用：固定等待净水完成后的烹饪经验说明（按当前日剩余额度；实际按完成日结算）。</summary>
+        /// <summary>
+        /// 预估用：固定等待净水完成后的烹饪经验说明。按预计完成时刻（现在 + 固定分钟）所在世界日的剩余额度写（B22a 试玩修复 M412：
+        /// 23:55 开工、00:15 完成按次日额度），完成日不是今天时写“完成日第N日”。
+        /// </summary>
         public string FixedWaitWaterXpPreview(GameState s, RecipeConfig rc, int batch)
         {
             var c = Config.Progression.Cooking;
             var units = FixedWaitWaterUnits(rc, batch);
             if (SkillLevel(s.Player, Cooking) >= SkillCap(Cooking)) return $"{SkillName(Cooking)}已满{SkillCap(Cooking)}级，不再获得经验";
-            var room = Math.Max(0, c.WaterDailyCap - DailyCount(s.Player, Clock.Day(s.GameMinute), DailyWaterXp, Cooking));
+            var day = Clock.Day(s.GameMinute + rc.BaseMinutes * Math.Max(1, batch));
+            var room = WaterRoom(s.Player, day);
             var grant = Math.Min(units, room);
             var cap = $"与锅烧水合计每日最多{c.WaterDailyCap}";
-            return grant <= 0 ? $"今日净化经验已满{c.WaterDailyCap}（{cap}），完成不再给经验"
-                : grant < units ? $"{SkillName(Cooking)}经验+{grant}（每500毫升+1，{cap}，今日只剩{grant}）"
-                : $"{SkillName(Cooking)}经验+{grant}（每500毫升+1，{cap}）";
+            var dayText = DayWord(s, day);
+            return grant <= 0 ? $"{dayText}净化经验已满{c.WaterDailyCap}（{cap}），完成不再给经验"
+                : grant < units ? $"{SkillName(Cooking)}经验+{grant}（每500毫升+1，{cap}，{dayText}只剩{grant}）"
+                : $"{SkillName(Cooking)}经验+{grant}（每500毫升+1，{cap}{(day == Clock.Day(s.GameMinute) ? "" : $"，按{dayText}额度")}）";
         }
 
-        /// <summary>某实例（直烤食材、锅内食材，或锅/锅内液体＝净化批次）正在进行的加工完成后的烹饪经验说明；没有进程为 null。</summary>
+        /// <summary>某角色某世界日净化日额（锅与固定等待共享）还剩多少。</summary>
+        private int WaterRoom(ActorState actor, int day) =>
+            Math.Max(0, Config.Progression.Cooking.WaterDailyCap - DailyCount(actor, day, DailyWaterXp, Cooking));
+
+        /// <summary>“今日”或“完成日第N日”。</summary>
+        private static string DayWord(GameState s, int day) => day == Clock.Day(s.GameMinute) ? "今日" : $"完成日第{day}日";
+
+        /// <summary>
+        /// 进程预计完成的世界分钟（B22a 试玩修复 M412，经验说明按完成日写）：锅/食材在燃烧的火堆上按剩余受热分钟连续受热估算；
+        /// 火没烧、锅不在火堆上算不了，按现在。
+        /// </summary>
+        private int ProcessFinishEstimate(GameState s, FacilityProcess p)
+        {
+            var holder = FindItem(s, p.PotInstanceId ?? p.TargetInstanceId);
+            var loc = holder == null ? null : IsPot(holder) ? PotFireLocation(holder)
+                : ItemInstance.TryFacilityId(holder.Owner, out var fid) ? FacilityLocation(fid) : null;
+            if (loc == null || !FireHot(s, loc)) return s.GameMinute;
+            return s.GameMinute + Math.Max(0, p.RequiredHeatMinutes - p.HeatDoneMinutes);
+        }
+
+        /// <summary>
+        /// 某实例（直烤食材、锅内食材，或锅/锅内液体＝净化批次）正在进行的加工完成后的烹饪经验说明；没有进程为 null。
+        /// 锅食谱（硬饼/炖食）每批一次：锅内各份原料不再逐行写，只在锅上写一次（PotRecipeXpLine，B22a 试玩修复 M412）。
+        /// </summary>
         public string? CookXpLine(GameState s, ItemInstance inst)
         {
             var p = ProcessOf(s, inst);
+            if (p?.InputInstanceIds != null && p.PotInstanceId != inst.InstanceId) return null;
             if (p == null && inst.InContainer && ContainerOf(s, inst) is ItemInstance pot) p = ProcessOf(s, pot);
             return p == null ? null : CookXpNote(s, p);
         }
 
-        /// <summary>火堆/锅卡与预估用：这一项完成后的烹饪经验说明（旧进程写不补）。</summary>
+        /// <summary>锅上一处：这口锅正在做的锅食谱这一批完成后的烹饪经验（每批一次，不按份数）；没有锅食谱为 null。</summary>
+        public string? PotRecipeXpLine(GameState s, ItemInstance pot)
+        {
+            var p = AllProcesses(s).FirstOrDefault(x => x.PotInstanceId == pot.InstanceId && x.InputInstanceIds != null);
+            if (p == null) return null;
+            var note = CookXpNote(s, p);
+            if (note == null) return null;
+            var pc = Process(p.RecipeId);
+            var name = pc.RecipeId != null && _recipes.TryGetValue(pc.RecipeId, out var rc) ? rc.Name : ItemName(pc.OutputId);
+            return $"{name}这一批（出{ItemName(pc.OutputId)}×{pc.OutputCount}）：{note}，每批一次，不按份数";
+        }
+
+        /// <summary>火堆/锅卡与预估用：这一项完成后的烹饪经验说明（旧进程写不补）；日额已满/只剩 N 按预计完成日标出（M412）。</summary>
         public string? CookXpNote(GameState s, FacilityProcess p)
         {
             var c = Config.Progression.Cooking;
             if (Process(p.RecipeId).IsSlotBatch) return "煅烧不给经验";
             if (p.RecipeId == c.WaterProcess)
-                return p.InitiatorActorId == null ? "旧进程，不给烹饪经验" : $"完成后每500毫升{SkillName(Cooking)}经验+1（与净水片/滤芯净水合计每日最多{c.WaterDailyCap}）";
+            {
+                if (p.InitiatorActorId == null) return "旧进程，不给烹饪经验";
+                var basic = $"完成后每500毫升{SkillName(Cooking)}经验+1（与净水片/滤芯净水合计每日最多{c.WaterDailyCap}）";
+                var actor = CookCredit(s, p);
+                if (actor == null || SkillLevel(actor, Cooking) >= SkillCap(Cooking)) return basic;
+                var day = Clock.Day(ProcessFinishEstimate(s, p));
+                var room = WaterRoom(actor, day);
+                return room <= 0 ? $"{DayWord(s, day)}净化经验已满{c.WaterDailyCap}（与净水片/滤芯净水合计），完成不再给经验"
+                    : room < c.WaterDailyCap ? basic + $"，{DayWord(s, day)}只剩{room}" : basic;
+            }
             var per = CookFoodXpFor(p.RecipeId);
             if (per <= 0) return c.FoodProcesses.Count > 0 && !c.FoodProcesses.Contains(p.RecipeId) ? "复煮不给烹饪经验" : null;
-            return p.InitiatorActorId == null ? "旧进程，不给烹饪经验" : $"完成后{SkillName(Cooking)}经验+{per}（每日最多{c.FoodDailyCap}）";
+            if (p.InitiatorActorId == null) return "旧进程，不给烹饪经验";
+            var text = $"完成后{SkillName(Cooking)}经验+{per}（每日最多{c.FoodDailyCap}）";
+            var who = CookCredit(s, p);
+            if (who == null || SkillLevel(who, Cooking) >= SkillCap(Cooking)) return text;
+            var fday = Clock.Day(ProcessFinishEstimate(s, p));
+            var froom = Math.Max(0, c.FoodDailyCap - DailyXpUsed(who, fday, Cooking));
+            return froom <= 0 ? $"{DayWord(s, fday)}{SkillName(Cooking)}经验已满{c.FoodDailyCap}，完成不再给经验"
+                : froom < per ? $"完成后{SkillName(Cooking)}经验+{froom}（每日最多{c.FoodDailyCap}，{DayWord(s, fday)}只剩{froom}）" : text;
         }
     }
 }

@@ -122,6 +122,8 @@ else
                     <div><span>食材位</span><b>@foods.Count/@pc.FoodSlots</b></div>
                     <div><span>状态</span><b>@e.ContentStatus(s, inst)</b></div>
                     @if (e.CookXpLine(s, inst) is string pcx) { <div><span>净化经验</span><b>@pcx</b></div> }
+                    @* B22a 试玩修复 M412：锅食谱每批一次的烹饪经验只在锅上写一处，锅内各份原料行不再重复 *@
+                    @if (e.PotRecipeXpLine(s, inst) is string prx) { <div><span>烹饪经验</span><b>@prx</b></div> }
                 </div>
                 @if (liquids.Count == 0 && foods.Count == 0)
                 {
