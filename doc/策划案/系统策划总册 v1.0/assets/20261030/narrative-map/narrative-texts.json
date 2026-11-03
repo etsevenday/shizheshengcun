@@ -6780,6 +6780,118 @@
       "questRef": "CH02",
       "sameCompletionLedgerAs": "CH02",
       "noReward": true
+    },
+    {
+      "dialogueSetId": "EXQ05_offer",
+      "trigger": "canonical quest acceptance committed",
+      "lines": [
+        {
+          "lineId": "NTL_Q217_EXQ05_offer",
+          "speaker": "npc_luo_zheng",
+          "text": "旧水厂的管网记录，能帮我们分清哪些管线还接着、哪些已经断了。你若去那里，就把能核实的记录带回来；别把旧图上的水源当成现在还能直接喝的水。"
+        }
+      ],
+      "worldMinutes": 0,
+      "effectsOnReplay": [],
+      "questId": "EXQ05"
+    },
+    {
+      "dialogueSetId": "EXQ05_turnin",
+      "trigger": "canonical quest completion committed",
+      "lines": [
+        {
+          "lineId": "NTL_Q217_EXQ05_turnin",
+          "speaker": "npc_luo_zheng",
+          "text": "这份管网记录收好了。哪些是现场核实的、哪些还要复查，我们会分开记。公开的净水做法也一并归档，记录本身不代表水已经安全。"
+        }
+      ],
+      "worldMinutes": 0,
+      "effectsOnReplay": [],
+      "questId": "EXQ05"
+    },
+    {
+      "dialogueSetId": "EXQ06_offer",
+      "trigger": "canonical quest acceptance committed",
+      "lines": [
+        {
+          "lineId": "NTL_Q217_EXQ06_offer",
+          "speaker": "npc_luo_zheng",
+          "text": "矿道里可能还留着作业手册。我们缺的不是一句“还能用”，而是工具怎么检查、出了问题怎么退回来。你愿意的话，把找到的旧工具记录带回工坊。"
+        }
+      ],
+      "worldMinutes": 0,
+      "effectsOnReplay": [],
+      "questId": "EXQ06"
+    },
+    {
+      "dialogueSetId": "EXQ06_turnin",
+      "trigger": "canonical quest completion committed",
+      "lines": [
+        {
+          "lineId": "NTL_Q217_EXQ06_turnin",
+          "speaker": "npc_luo_zheng",
+          "text": "作业手册留下了。工具和防护用品的做法可以照资料核对，真正动手仍要准备材料。你带回的是记录，我们不会因此再算一份矿道里的物资。"
+        }
+      ],
+      "worldMinutes": 0,
+      "effectsOnReplay": [],
+      "questId": "EXQ06"
+    },
+    {
+      "dialogueSetId": "EXQ07_offer",
+      "trigger": "canonical quest acceptance committed",
+      "lines": [
+        {
+          "lineId": "NTL_Q217_EXQ07_offer",
+          "speaker": "npc_xu_an",
+          "text": "旧商城的疏散图，记着当时的人怎样绕过封闭通道。若你去那里，请把还能辨认的图和记录带回来。旧出口不一定还能通，我们只记你确实见到的情况。"
+        }
+      ],
+      "worldMinutes": 0,
+      "effectsOnReplay": [],
+      "questId": "EXQ07"
+    },
+    {
+      "dialogueSetId": "EXQ07_turnin",
+      "trigger": "canonical quest completion committed",
+      "lines": [
+        {
+          "lineId": "NTL_Q217_EXQ07_turnin",
+          "speaker": "npc_xu_an",
+          "text": "疏散图已经归档。旧图和你亲眼见到的情况会分开标注，免得后来的人把猜测当成通路。公开的防护与随行医疗做法也会保留下来。"
+        }
+      ],
+      "worldMinutes": 0,
+      "effectsOnReplay": [],
+      "questId": "EXQ07"
+    },
+    {
+      "dialogueSetId": "EXQ08_offer",
+      "trigger": "canonical quest acceptance committed",
+      "lines": [
+        {
+          "lineId": "NTL_Q217_EXQ08_offer",
+          "speaker": "npc_chen_zhi",
+          "text": "应急仓封存的东西也会过期。我想核对当年的保存记录，弄清哪些判断仍有依据。你若找到冷链资料，请带回医务室；别仅凭包装完好就试用药品。"
+        }
+      ],
+      "worldMinutes": 0,
+      "effectsOnReplay": [],
+      "questId": "EXQ08"
+    },
+    {
+      "dialogueSetId": "EXQ08_turnin",
+      "trigger": "canonical quest completion committed",
+      "lines": [
+        {
+          "lineId": "NTL_Q217_EXQ08_turnin",
+          "speaker": "npc_chen_zhi",
+          "text": "冷链资料收到了。哪些保存条件还能成立，要按现在的情况再核对。配给袋的做法可以整理公开，但封存标签不能替代对实物状态的检查。"
+        }
+      ],
+      "worldMinutes": 0,
+      "effectsOnReplay": [],
+      "questId": "EXQ08"
     }
   ],
   "summary": {
@@ -7022,5 +7134,16 @@
       "Q165": "选A。下一步逐字改为“在施济处用圣所旧路档册核对物资账（10分钟）。”，接取与工作条件不变。"
     },
     "ch01ActiveStep": "在施济处用圣所旧路档册核对物资账（10分钟）。"
+  },
+  "exqDialoguePolicyQ217": "八句逐字稿只接入EXQ05—08接取与回报，通用NPC台词不删不替其他任务。0分钟对白不代提交工作/发物/经验/容量/通关；回报在原任务完成后触发，已知知识沿原只补缺项，不承诺再发蓝图。先取记录后接取按原任务追认与对白队列，回看不重奖；岗位离岗由机构当班接续员改speaker但不冒充原人。台词提到的地点仅在任务原公开范围展示，不揭深房坐标或新开路。",
+  "cityOverviewCopyQ223": {
+    "outside": "{地点名}是城外独立地点，不在鸟瞰内，经区域地图前往。",
+    "confirm": "共{段数}段。本次先走{当前地点}→{下一地点}，到达后请再次选择下一段。",
+    "arrival": "已到达{到达地点}。继续前往{最终目标}：请再打开“主城鸟瞰”选择下一段（还有{剩余段数}段）。",
+    "arrived": "已到达{最终目标}。",
+    "readOnly": "主城鸟瞰浏览中只能查看；使用、转移、穿戴、融合和开始行动，请先点“返回当前地点”再操作。",
+    "legacyReveal": "已按旧存档的到访记录补显城内建筑，仅用于浏览与定位，不补发奖励，也不开通新路线。",
+    "policy": "只用已发现的真实中文地点，段数/下一段取已知可通真实物理路线，确认只走第一段并按原时间消耗；到达最终点用arrived、不显示剩0段或再选下一段。路线失效时显示真实禁用原因，不按旧文案强走。旧档补显首次一次，迁移标记持久化，读档不反复弹，0分钟不造奖励。",
+    "handoff": "Q220【交开发方定】由开发方在本轮更新四类资源账徽标与地图水源图标，沿现有界面风格/可读性；有限、每日补充、本实例、本局一次及水源水种须可区分，文字短标/悬停说明保留，不能仅靠颜色；图形不改变库存/日补/水种或取水落地规则。无需策划另出图片作为开工前置。提醒已写入本轮交接与策划答复。"
   }
 }

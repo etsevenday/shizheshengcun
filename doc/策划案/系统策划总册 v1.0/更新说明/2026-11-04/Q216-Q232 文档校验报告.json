@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-04",
+  "status": "passed",
+  "checks": [
+    "JSON解析与全量规范镜像一致",
+    "五蓝图原知识包来源存在且登记默认映射移除",
+    "四任务八句逐字稿和speaker/任务引用合法",
+    "A01十五门上限表、A08六/八列表及MP引用",
+    "实现同步真实记录和完整修改记录保留",
+    "饮水估算边界及向上250ml取整",
+    "同行食饮四项验收含正常COMP20回归要求"
+  ],
+  "questionCount": 17,
+  "acceptanceCount": 23,
+  "protectedLines": 692,
+  "modifiedRecordFiles": 28,
+  "waterCases": 96,
+  "pendingQuestions": [],
+  "gameplayTested": false
+}

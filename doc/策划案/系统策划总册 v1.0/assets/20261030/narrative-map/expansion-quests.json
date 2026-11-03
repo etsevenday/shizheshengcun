@@ -31,7 +31,9 @@
       "claimId": "d05_07_unique",
       "rewardScope": "campaign_once",
       "capacityDelta": 0,
-      "repeatableRewardSource": "dungeon_repeatable_table"
+      "repeatableRewardSource": "dungeon_repeatable_table",
+      "offerDialogue": "EXQ05_offer",
+      "turnInDialogue": "EXQ05_turnin"
     },
     {
       "id": "EXQ06",
@@ -57,7 +59,9 @@
       "claimId": "d06_08_unique",
       "rewardScope": "campaign_once",
       "capacityDelta": 0,
-      "repeatableRewardSource": "dungeon_repeatable_table"
+      "repeatableRewardSource": "dungeon_repeatable_table",
+      "offerDialogue": "EXQ06_offer",
+      "turnInDialogue": "EXQ06_turnin"
     },
     {
       "id": "EXQ07",
@@ -83,7 +87,9 @@
       "claimId": "d07_07_unique",
       "rewardScope": "campaign_once",
       "capacityDelta": 0,
-      "repeatableRewardSource": "dungeon_repeatable_table"
+      "repeatableRewardSource": "dungeon_repeatable_table",
+      "offerDialogue": "EXQ07_offer",
+      "turnInDialogue": "EXQ07_turnin"
     },
     {
       "id": "EXQ08",
@@ -108,7 +114,9 @@
       "claimId": "d08_08_unique",
       "rewardScope": "campaign_once",
       "capacityDelta": 0,
-      "repeatableRewardSource": "dungeon_repeatable_table"
+      "repeatableRewardSource": "dungeon_repeatable_table",
+      "offerDialogue": "EXQ08_offer",
+      "turnInDialogue": "EXQ08_turnin"
     }
   ],
   "recordRules": {
@@ -124,10 +132,30 @@
     "skipPaidCopyIfKnown": true,
     "recipeCostsAndSkillUnchanged": true,
     "alternativeRequiresDungeonRecord": false,
-    "alternativeRequiresMembership": false
+    "alternativeRequiresMembership": false,
+    "registrationExclusionsQ216": {
+      "removeFromRegistration": [
+        "blueprint_gather_gloves",
+        "blueprint_utility_trousers",
+        "blueprint_forage_jacket",
+        "blueprint_field_medkit",
+        "blueprint_filter_token"
+      ],
+      "remainingRegistrationDefaultCount": 21,
+      "packages": {
+        "blueprint_gather_gloves": "kp_mining",
+        "blueprint_utility_trousers": "kp_mining",
+        "blueprint_forage_jacket": "kp_civilian_cache",
+        "blueprint_field_medkit": "kp_civilian_cache",
+        "blueprint_filter_token": "kp_waterworks"
+      },
+      "policy": "Q216选B，取代Q144登记默认26项的对应5项，登记仍C2不发物，剩21项照旧。采集手套/作业长裤来自d06_08记录同事务或h03公开作业资料抄录；采集外套/随行医疗包来自d07_07或h02公共告示资料；净水操作套件来自d05_07或h03公开资料。保持原各知识包其他知识、30固定等待分钟/0材料、登记前置、部分已知只补缺项/完全已知禁用；不要求先通关才抄录。",
+      "migration": "已学会知识永久保留，不回收已有蓝图/装备，不因来源变更重新锁住已知配方；新登记不发5项，旧档已登记但漏学这5项不按登记再补，只从新明确来源学。正在进行的旧登记沿原开工快照完成；旧抄录/任务继续原快照，幂等不双授、不补偿物资/经验。"
+    }
   },
   "itemDataSource": "equipment-mainline-20261030/equipment-skill-data.json",
   "resourceRewardAuthority": "地图最终repeatable/unique奖励清单 单一claimId 不在任务稿另发实体包",
   "approvalDate": "2026-10-30",
-  "approvalNote": "用户批准已有建议初值直接实装，可调实测再改；无初值待定不补值"
+  "approvalNote": "用户批准已有建议初值直接实装，可调实测再改；无初值待定不补值",
+  "dialoguePolicyQ217": "八句逐字稿只接入EXQ05—08接取与回报，通用NPC台词不删不替其他任务。0分钟对白不代提交工作/发物/经验/容量/通关；回报在原任务完成后触发，已知知识沿原只补缺项，不承诺再发蓝图。先取记录后接取按原任务追认与对白队列，回看不重奖；岗位离岗由机构当班接续员改speaker但不冒充原人。台词提到的地点仅在任务原公开范围展示，不揭深房坐标或新开路。"
 }

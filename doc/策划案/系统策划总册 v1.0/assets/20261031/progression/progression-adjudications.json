@@ -5356,5 +5356,12 @@
     "skillNodesRemain75": true,
     "recipeSnapshotAndActionRuleVersionSaved": true,
     "sameWorldDayResourceCapsNotResetByClassificationChange": true
+  },
+  "operatorDisplayQ227": {
+    "sourceQuestion": "Q227_B",
+    "supersedes": "取代Q26答复中操作台隐藏未解锁技能的范围；成长页展示全部75节点及公开条件继续有效",
+    "operator": "当前武器页绑定的门类五技能按1/3/5/7/10固定顺序全部显示；空槽徒手仍按拳门五项，盾/指挥/医疗器具沿各自真实兼容门类，不借另一把武器跨门混用。未解锁卡置灰/锁标，显示正式名、所需等级与当前等级，不能选目标/执行/耗AP或体力。已解锁但当前位/射程/弹药/器具/冷却/AP/E不满足仍显示并给真实原因。",
+    "condition": "灰卡悬停/键盘聚焦可读公开技能说明与解锁条件，不造可执行指令或提前授技能。五卡超出当前可见宽度由开发调整排版/滚动，但不得漏卡或以剪影替正式条件；当前指令逻辑仍仅执行真实已解锁合法技能。",
+    "migration": "仅显示与禁用状态变化，不重置技能等级/节点/AP/冷却/装备，旧在办战斗和当前已提交指令保持。其他系统未实装事项按Q146隐藏不受影响，不把技能置灰规则套成所有未实装城市服务可见。"
   }
 }
