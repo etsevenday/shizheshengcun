@@ -1027,6 +1027,7 @@ namespace Survival.Core.Engine
                 _ => $"已结束{a.Label}。",
             };
             Emit(s, GameEventKind.ActionCancelled, text);
+            if (apTxn != null) AppraisalServiceEnd(s, apTxn.NpcId);   // B22d Q177：鉴定/换物开工后取消，播一次陶岑原结束句
             UpdateFlags(s);
             return ActionResult.Success(a.ActionId);
         }

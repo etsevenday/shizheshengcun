@@ -40,13 +40,16 @@
             var parts = key.Split('|');
             var id = parts[1];
             // B22 试玩修复 M408：本实例地牢战利品（可封存）单独成卡（键 owner|itemId|dr），不和同名外带物叠在一起
-            var dr = parts.Length == 3 && parts[2] == GameEngine.RewardCardSuffix;
-            if (parts.Length == 2 || dr)
+            // B22d Q178：已鉴定普通白色活性物质也单独成卡（键 owner|itemId|apr），标题“活性物质（白色·已鉴定）”，不和未鉴定的混在一个标题下
+            var side = GameEngine.CardSideOfKey(parts);
+            var dr = side == GameEngine.RewardCardSuffix;
+            var title = e.CardTitle(id, side);
+            if (parts.Length == 2 || side != null)
             {
-                var list = items.Where(i => i.ItemId == id && (i.RewardOrigin != null) == dr).OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
+                var list = items.Where(i => i.ItemId == id && e.CardSideOf(i) == side).OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
                 if (list.Count == 0) continue;
                 var allKb = e.BatchesOf(s, Owner, id);
-                var sideKb = allKb.Where(b => (b.Stacks[0].RewardOrigin != null) == dr).ToList();
+                var sideKb = allKb.Where(b => e.CardSideOf(b.Stacks[0]) == side).ToList();
                 var split = sideKb.Count < allKb.Count;   // 同物品另有一张普通卡/战利品卡
                 var total = list.Sum(i => i.Count);
                 var head = list.FirstOrDefault(i => i.ReservedBy == null && !e.IsSpoiled(s, i)) ?? list[0];
@@ -57,14 +60,14 @@
                 var batches = kb?.Count ?? list.Select(i => i.ExpiresAt).Distinct().Count();
                 var movable = list.Any(i => i.ReservedBy == null);
                 var gSel = sel.Kind == SelectionKind.ItemGroup && sel.Id == id && sel.Owner == Owner
-                           && (!split || G.CurrentBatch(Owner, id, allKb) is not { } cur || (cur.Stacks[0].RewardOrigin != null) == dr);
+                           && (!split || G.CurrentBatch(Owner, id, allKb) is not { } cur || e.CardSideOf(cur.Stacks[0]) == side);
                 var span = carried ? Math.Max(1, e.RootCardsOf(s, list.Select(i => i.InstanceId))) : 1;
                 // 只有真实批次确实占了多个卡位时才铺成叠卡；同批仅因制作预留临时拆堆（仍占1格）不叠
                 var stacked = kb != null && kb.Count > 1 && span > 1;
                 var pickedKey = stacked && gSel ? G.CurrentBatch(Owner, id, kb)?.Key : null;
                 if (stacked) head = kb![0].Stacks.FirstOrDefault(i => i.ReservedBy == null) ?? kb[0].Stacks[0];
                 var colStyle = (span > 1 ? $"grid-column:span {span};--span:{span};" : "") + (stacked ? $"--layers:{kb!.Count - 1};" : "");
-                <div @key="@("g:" + id + (dr ? ":dr" : ""))" class="card-col @(gSel ? "open" : "") @(stacked ? "stacked" : "")"
+                <div @key="@("g:" + id + (side != null ? ":" + side : ""))" class="card-col @(gSel ? "open" : "") @(stacked ? "stacked" : "")"
                      style="@(colStyle.Length > 0 ? colStyle : null)">
                 @if (stacked)
                 {
@@ -91,14 +94,14 @@
                     var qtyText = reservedN > 0 && reservedN < total ? $"×{total}（预留{reservedN}）" : $"×{total}";
                 }
                 @* Q35：长名一行省略时，键盘聚焦提示（data-tip）与名称悬停提示写全名、数量与效果行 *@
-                <div id="@(gSel ? "card-sel" : null)" data-tip="@($"{e.ItemName(id)} ×{total}{(dr ? "（本实例战利品，可封存）" : "")} · {infoLine}{(span > 1 ? $" · 占{span}格" : "")}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drop="@($"card:{key}")" data-drop-level="card"
+                <div id="@(gSel ? "card-sel" : null)" data-tip="@($"{title} ×{total}{(dr ? "（本实例战利品，可封存）" : "")} · {infoLine}{(span > 1 ? $" · 占{span}格" : "")}")" data-card="@key" data-drag="@($"card:{key}")" data-drag-from="@($"{from} ×{total}")" data-drop="@($"card:{key}")" data-drop-level="card"
                      class="card item @(allSpoiled ? "spoiled" : "") @(anyReserved ? "reserved" : "") @(gSel && (!stacked || pickedKey == kb![0].Key) ? "selected" : "") @(stacked ? "stack-front" : "") @(G.Highlights.Contains(id) && !carried ? "fresh" : "") @(!carried && G.HeldHighlight(id) ? "held" : "")"
                      role="button" tabindex="0" @onclick="() => SelectSide(id, kb, split ? sideKb : null)" @onkeydown="ev => OnCardKey(ev, () => SelectSide(id, kb, split ? sideKb : null))" title="@(dr ? "本实例战利品：这次地牢里领到的奖励，可以封存；成功离开地牢后并回同名物品。" + e.Item(id).Desc : e.Item(id).Desc)">
-                    <div class="ctitle"><span title="@(dr ? e.ItemName(id) + "（本实例战利品，可封存）" : e.ItemName(id))">@e.ItemName(id)</span><span class="qty" title="@(stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : reservedN > 0 ? $"共{total}份，其中{reservedN}份已被预留（不能拾取或另用）" : null)">@qtyText</span></div>
+                    <div class="ctitle"><span title="@(dr ? title + "（本实例战利品，可封存）" : title)">@title</span><span class="qty" title="@(stacked ? $"共{total}份，最前这一批×{kb![0].Count}" : reservedN > 0 ? $"共{total}份，其中{reservedN}份已被预留（不能拾取或另用）" : null)">@qtyText</span></div>
                     <div class="art @(dr ? "has-loot" : "")">@Icons.Markup(id)@if (dr) { <span class="loot-badge" title="本实例战利品（可封存；离开地牢后并回同名物品）" aria-label="本实例战利品">战</span> }</div>
                     <div class="cinfo" title="@infoLine">@infoLine</div>
                     @if (span > 1) { <span class="slot-span" title="@($"同物品{batches}批/超过堆叠上限，占{span}张随身卡{(stacked ? $"；最前这一批×{kb![0].Count}" : "")}")">占@(span)格@(batches > 1 ? $"·{batches}批" : "")</span> }
-                    <TransferArrow Owner="@Owner" ItemId="@id" InstanceId="@(dr ? head.InstanceId : (int?)null)" Enabled="@(movable && !busy)" />
+                    <TransferArrow Owner="@Owner" ItemId="@id" InstanceId="@(side != null ? head.InstanceId : (int?)null)" Enabled="@(movable && !busy)" />
                 </div>
                 </div>
             }

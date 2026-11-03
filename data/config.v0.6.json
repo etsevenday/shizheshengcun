@@ -36333,6 +36333,7 @@
     "tradeDailyPartyQuota": 2,
     "quoteVersion": "white_barter_v2",
     "quoteKeepDays": 7,
+    "identifiedName": "活性物质（白色·已鉴定）",
     "offers": [
       {
         "id": "white_for_cloth",

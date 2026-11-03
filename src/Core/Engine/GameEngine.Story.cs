@@ -233,9 +233,9 @@ namespace Survival.Core.Engine
         /// <summary>是不是活性物质（饱饱吞噬融合的材料）。</summary>
         public bool IsSubstance(string itemId) => !string.IsNullOrEmpty(Config.ActiveSubstance.ItemId) && itemId == Config.ActiveSubstance.ItemId;
 
-        /// <summary>“首战教学·未鉴定的活性物质”或“未鉴定的活性物质（白色）”。</summary>
+        /// <summary>“首战教学·未鉴定的活性物质”“未鉴定的活性物质（白色）”，已鉴定普通白色为“活性物质（白色·已鉴定）”（B22d Q178）。</summary>
         public string SubstanceLabel(ItemInstance i) =>
-            i.Source?.TutorialReward == true ? $"首战教学·{ItemName(i.ItemId)}" : $"{ItemName(i.ItemId)}（白色）";
+            i.Source?.TutorialReward == true ? $"首战教学·{ItemName(i.ItemId)}" : IsIdentifiedWhite(i) ? InstanceName(i) : $"{ItemName(i.ItemId)}（白色）";
 
         /// <summary>融合会得到什么（预览与卡下说明）：教学实例为指定绿色词条，普通实例无属性。</summary>
         public string FusionOutcomeText(GameState s, ItemInstance i)

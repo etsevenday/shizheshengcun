@@ -167,4 +167,211 @@ public class B22dTests : TestBase
         AdvanceTo(c, c.GameMinute + 60);
         Assert.That(CraftXp(c), Is.EqualTo(cx), "取消没有经验");
     }
+
+    // ───────────── Q171 基础陶工做法 / Q172 camp 两区 / Q175 部署等待（核对现状） ─────────────
+
+    /// <summary>PLAN-Q171-01：知识 ceramic_methods 正式名“基础陶工做法”；制造3 首读学会、0 分钟 0 物资 0 经验，再读幂等；d06_08 矿道作业手册同事务授予。</summary>
+    [Test]
+    public void PLAN_Q171_01_CeramicMethods_Name_FreeOnce()
+    {
+        var k = Cfg.Knowledge.Single(x => x.Id == "ceramic_methods");
+        Assert.That(k.Name, Is.EqualTo("基础陶工做法"));
+        Assert.That(k.GrantedByFacts, Is.EquivalentTo(new[] { "h03_ceramic_notice_read", "mining_blueprint_pack" }));
+        var s = New();
+        E.DebugMapTeleport(s, "h03_workshop");
+        ReadDialogues(s);
+        s.Skills["crafting"].Level = 3;
+        var before = (s.GameMinute, s.Items.Sum(i => i.Count), CraftXp(s));
+        Ok(E.ReadDocument(s, "h03_ceramic_notice"));
+        Assert.That(E.KnowsKnowledge(s, "ceramic_methods"), Is.True);
+        Ok(E.ReadDocument(s, "h03_ceramic_notice"));
+        Assert.That((s.GameMinute, s.Items.Sum(i => i.Count), CraftXp(s)), Is.EqualTo(before), "0 分钟 0 物资 0 经验，再读幂等");
+        var t = New();
+        t.Progress.Flags.Add("mining_blueprint_pack");
+        Assert.That(E.KnowsKnowledge(t, "ceramic_methods"), Is.True, "矿道作业手册同事务授予");
+    }
+
+    /// <summary>PLAN-Q172-01：camp 外部既有设施照旧保留，安全屋屋内是独立区（设施另建），柜子只在屋内；旧 camp 不补柜、不合并搬迁。</summary>
+    [Test]
+    public void PLAN_Q172_01_CampExteriorKept_InteriorSeparate_CabinetInsideOnly()
+    {
+        var s = New();
+        var ext = s.Locations["camp"].Facility;
+        ext.ShelterBuilt = true;
+        ext.BedBuilt = true;
+        ext.FireBuilt = true;
+        ext.Workshops.Add("kiln");
+        Assert.That(E.CabinetOwnerOf(s, "camp"), Is.Null, "没建屋的旧 camp 没有柜");
+        E.DebugSetProgress(s, "camp", 100);
+        s.Progress.Flags.Add("hub_registered");
+        s.WorldEnemies.RemoveAll(w => w.LocationId == "camp");
+        foreach (var (id, n) in new[] { ("wood", 8), ("fiber", 6), ("cloth", 2), ("stone", 4) }) E.CreateItems(s, id, n, s.Ground);
+        Start(s, Craft("safehouse_base"));
+        Run(s);
+        Assert.That(E.SafehouseBuilt(s, "camp"), Is.True);
+        var after = s.Locations["camp"].Facility;
+        Assert.That((after.ShelterBuilt, after.BedBuilt, after.FireBuilt, after.Workshops.Contains("kiln")), Is.EqualTo((true, true, true, true)), "外部旧设施原样保留");
+        var inside = s.Locations["camp"].Safehouse!.Interior;
+        Assert.That((inside.BedBuilt, inside.FireBuilt, inside.Workshops.Count), Is.EqualTo((false, false, 0)), "屋内是独立区，设施另建，不搬迁");
+        Assert.That(E.CabinetBlocked(s), Does.Contain("屋内"), "外部区不能用柜");
+        Ok(E.EnterSafehouse(s));
+        Assert.That(E.CabinetBlocked(s), Is.Null, "柜只在屋内");
+    }
+
+    /// <summary>PLAN-Q175-01：野营布铺开 10 分钟、柴炉部署 5 分钟，按等待结算身体消耗（与同长等待一致）、不给经验；中途取消物品原样、已过时间不退。</summary>
+    [Test]
+    public void PLAN_Q175_01_DeployAsWait_NoXp_CancelKeepsItem()
+    {
+        var s = New();
+        E.DebugTeleport(s, "w19_survey");
+        s.WorldEnemies.RemoveAll(w => w.LocationId == "w19_survey");
+        var tarp = E.CreateItems(s, "field_tarp", 1, ItemInstance.Carried).Single();
+        var stove = E.CreateItems(s, "folding_stove", 1, ItemInstance.Carried).Single();
+        foreach (var (req, minutes) in new[] { (GameEngine.Deploy(tarp), 10), (GameEngine.Deploy(stove), 5) })
+        {
+            Assert.That(E.Preview(s, req).IsWork, Is.False, "不是工作");
+            var skills = Newtonsoft.Json.JsonConvert.SerializeObject(s.Skills);
+            var t0 = s.GameMinute;
+            Start(s, req);
+            var seg = E.ComputeSegment(s, s.Main!, s.Player);
+            var wait = E.ComputeSegment(s, new ActionState { Type = ActionType.Wait }, s.Player);
+            Assert.That(Newtonsoft.Json.JsonConvert.SerializeObject(seg.Rates), Is.EqualTo(Newtonsoft.Json.JsonConvert.SerializeObject(wait.Rates)), "身体消耗按等待");
+            Run(s);
+            Assert.That(s.GameMinute - t0, Is.EqualTo(minutes), "固定分钟，不吃熟练加速");
+            Assert.That(Newtonsoft.Json.JsonConvert.SerializeObject(s.Skills), Is.EqualTo(skills), "不给经验");
+        }
+        // 收起中途取消：布仍部署、原实例不变，已过时间不退
+        var t1 = s.GameMinute;
+        Start(s, GameEngine.Pack(tarp));
+        Steps(s, 1);
+        Ok(E.Cancel(s));
+        Assert.That(s.GameMinute - t1, Is.EqualTo(5), "已过时间不退");
+        Assert.That((E.FindItem(s, tarp.InstanceId)!.Owner, E.IsDeployed(s, tarp)), Is.EqualTo(("w19_survey", true)), "物品不变");
+    }
+
+    // ───────────── Q176 报价锁定 / Q177 成功不弹对白 / Q178 已鉴定显示名 ─────────────
+
+    private const string Sub = "active_substance_white_unidentified";
+    private const string ServiceEndText = "看看结果和剩余物品，没提交的就还在原处。";
+
+    private ItemInstance Ordinary(GameState s, string owner, string grant = "substance-b9-w1") =>
+        E.CreateItems(s, Sub, 1, owner, false, new ItemSource { WorldEnemyId = 1, BattleId = 9, GrantEventId = grant }).Single();
+
+    private GameState AtOffice(int fiber = 2)
+    {
+        var s = New();
+        E.DebugMapTeleport(s, "h05_appraisal");
+        ReadDialogues(s);
+        s.Items.RemoveAll(i => i.ItemId == "fiber");
+        if (fiber > 0) E.CreateItems(s, "fiber", fiber, ItemInstance.Carried);
+        return s;
+    }
+
+    /// <summary>PLAN-Q176-01/02：安全到达即锁；当日未锁时在当地直接开工（详细鉴定）也锁；同日锁的数值只由种子与世界日决定，不重抽。</summary>
+    [Test]
+    public void PLAN_Q176_LockOnArrivalOrDirectStart_SameValues()
+    {
+        var s = AtOffice();
+        var arrived = s.City.Quotes.Single();
+        var values = new Dictionary<string, int>(arrived.Offers);
+        s.City.Quotes.Clear();   // 当日还没锁（例如旧档或到达时不安全）
+        var o = Ordinary(s, ItemInstance.Carried);
+        Ok(E.StartAppraise(s, o.InstanceId));
+        var locked = s.City.Quotes.Single();
+        Assert.That(locked.Day, Is.EqualTo(Clock.Day(s.GameMinute)), "直接开工也锁当日整表");
+        Assert.That(locked.Offers, Is.EquivalentTo(values), "访问时刻不参与随机：同日同值");
+        Run(s);
+        Assert.That(s.City.Quotes, Has.Count.EqualTo(1), "已锁不重抽");
+    }
+
+    /// <summary>PLAN-Q177-01：鉴定、换物成功只写日志与提示，不弹陶岑结束句、不要求结束对话；可连着换两包。</summary>
+    [Test]
+    public void PLAN_Q177_01_Success_NoServiceEndDialogue()
+    {
+        var s = AtOffice();
+        var a = Ordinary(s, ItemInstance.Carried, "g-a");
+        var b = Ordinary(s, ItemInstance.Carried, "g-b");
+        var sessions = s.Story.DialogueLog.Count;
+        Ok(E.StartAppraise(s, a.InstanceId));
+        Run(s);
+        Assert.That(E.DialogueLocked(s), Is.False, "鉴定成功不弹对白");
+        Assert.That(s.Log.Any(l => l.Text.Contains("详细鉴定完成")), Is.True);
+        Ok(E.StartAppraisalTrade(s, a.InstanceId, "white_for_cloth"));
+        Run(s);
+        Assert.That(E.DialogueLocked(s), Is.False, "换物成功不弹对白");
+        Ok(E.StartAppraisalTrade(s, b.InstanceId, "white_for_scrap"));
+        Run(s);
+        Assert.That(E.DialogueLocked(s), Is.False);
+        Assert.That(s.Log.Count(l => l.Text.StartsWith("换物完成")), Is.EqualTo(2), "两包都写日志");
+        Assert.That(s.Story.DialogueLog.Count, Is.EqualTo(sessions), "没有新对白");
+    }
+
+    /// <summary>PLAN-Q177-01：已开工后取消、或事务失败（未知报价版本）时，播一次陶岑原结束句；开工前校验失败只给原因不弹。</summary>
+    [Test]
+    public void PLAN_Q177_01_CancelOrFailure_PlaysServiceEndOnce()
+    {
+        var s = AtOffice();
+        var a = Ordinary(s, ItemInstance.Carried, "g-a");
+        Ok(E.StartAppraise(s, a.InstanceId));
+        Steps(s, 1);
+        Ok(E.Cancel(s));
+        Assert.That(E.DialogueLocked(s), Is.True, "取消后播一次结束句");
+        Assert.That(E.CurrentDialogueLine(s)!.Text, Is.EqualTo(ServiceEndText));
+        ReadDialogues(s);
+        Assert.That(E.DialogueLocked(s), Is.False);
+
+        Ok(E.StartAppraisalTrade(s, a.InstanceId, "white_for_cloth"));
+        s.City.Pending!.QuoteVersion = "white_barter_v1";
+        Run(s);
+        Assert.That(E.CurrentDialogueLine(s)?.Text, Is.EqualTo(ServiceEndText), "事务失败播一次");
+        ReadDialogues(s);
+
+        var bad = E.StartAppraise(s, 999999);
+        Assert.That(bad.Ok, Is.False);
+        Assert.That(E.DialogueLocked(s), Is.False, "开工前校验失败只给原因");
+    }
+
+    /// <summary>
+    /// PLAN-Q178-01：已鉴定普通白色实例显示名“活性物质（白色·已鉴定）”，itemId 不变；卡片分开（未鉴定同名卡另一张）、面板与新日志一致；
+    /// 教学样本看过免费说明也不改名；历史日志不重写。
+    /// </summary>
+    [Test]
+    public void PLAN_Q178_01_IdentifiedName_SeparateCard_NewLogsOnly()
+    {
+        var s = AtOffice();
+        var a = Ordinary(s, s.Ground, "g-a");
+        var u = Ordinary(s, s.Ground, "g-u");
+        var oldName = Cfg.Items.Single(i => i.Id == Sub).Name;
+        Assert.That(E.InstanceName(a), Is.EqualTo(oldName));
+        var oldLogs = s.Log.Select(l => l.Text).ToList();
+        Ok(E.StartAppraise(s, a.InstanceId));
+        Run(s);
+        var ai = E.FindItem(s, a.InstanceId)!;
+        Assert.That(ai.ItemId, Is.EqualTo(Sub), "内部物品 ID 不变");
+        Assert.That((E.InstanceName(ai), E.SubstanceLabel(ai)), Is.EqualTo(("活性物质（白色·已鉴定）", "活性物质（白色·已鉴定）")));
+        Assert.That(E.InstanceName(E.FindItem(s, u.InstanceId)!), Is.EqualTo(oldName), "未鉴定保持原名");
+        Assert.That(s.Log.Last(l => l.Text.Contains("详细鉴定完成")).Text, Does.Contain("活性物质（白色·已鉴定）已记录为普通白色"));
+        Assert.That(s.Log.Take(oldLogs.Count).Select(l => l.Text), Is.EqualTo(oldLogs), "历史日志不重写");
+        // 地面分两张卡：未鉴定一张、已鉴定一张；标题不混
+        var cards = E.OrderedCards(s, s.Ground).Where(k => k.Split('|')[1] == Sub).ToList();
+        Assert.That(cards, Is.EquivalentTo(new[] { $"{s.Ground}|{Sub}", $"{s.Ground}|{Sub}|{GameEngine.IdentifiedCardSuffix}" }));
+        Assert.That(E.CardTitle(Sub, GameEngine.IdentifiedCardSuffix), Is.EqualTo("活性物质（白色·已鉴定）"));
+        Assert.That(E.CardTitle(Sub, null), Is.EqualTo(oldName));
+        // 拖已鉴定卡只拿已鉴定那份；拖普通卡只拿未鉴定那份
+        Assert.That(E.CardHead(s, DropSource.Parse($"card:{s.Ground}|{Sub}|{GameEngine.IdentifiedCardSuffix}")!)!.InstanceId, Is.EqualTo(a.InstanceId));
+        Assert.That(E.CardHead(s, DropSource.Parse($"card:{s.Ground}|{Sub}")!)!.InstanceId, Is.EqualTo(u.InstanceId));
+        // 面板里的样本名
+        var view = E.AppraisalPreview(s);
+        Assert.That(view.Samples.Single(x => x.InstanceId == a.InstanceId).Name, Is.EqualTo("活性物质（白色·已鉴定）"));
+        Assert.That(view.Samples.Single(x => x.InstanceId == u.InstanceId).Name, Does.Not.Contain("已鉴定"));
+        // 换物日志用新名
+        Ok(E.StartAppraisalTrade(s, a.InstanceId, "white_for_cloth"));
+        Run(s);
+        Assert.That(s.Log.Last(l => l.Text.StartsWith("换物完成")).Text, Does.Contain("交出活性物质（白色·已鉴定）1份"));
+        // 教学样本看过免费说明不改名（Q179 待定，沿原规则）
+        var t = E.CreateItems(s, Sub, 1, ItemInstance.Carried, false, new ItemSource { GrantEventId = "tutorial-reward-b1", TutorialReward = true }).Single();
+        Ok(E.AppraisalTutorialNote(s, t.InstanceId));
+        Assert.That(E.InstanceName(E.FindItem(s, t.InstanceId)!), Is.EqualTo(oldName));
+        Assert.That(E.CardSideOf(E.FindItem(s, t.InstanceId)!), Is.Null);
+    }
 }

@@ -32,17 +32,19 @@
         {
             var parts = key.Split('|');
             var id = parts[1];
-            var dr = parts.Length == 3 && parts[2] == GameEngine.RewardCardSuffix;   // B22 M408：本实例战利品单独成卡
-            if (parts.Length == 2 || dr)
+            var side = GameEngine.CardSideOfKey(parts);   // B22 M408：本实例战利品单独成卡；B22d Q178：已鉴定白色单独成卡
+            var dr = side == GameEngine.RewardCardSuffix;
+            var title = e.CardTitle(id, side);
+            if (parts.Length == 2 || side != null)
             {
-                var list = items.Where(i => i.ItemId == id && (i.RewardOrigin != null) == dr).OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
+                var list = items.Where(i => i.ItemId == id && e.CardSideOf(i) == side).OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).ToList();
                 if (list.Count == 0) continue;
                 any = true;
                 var head = list[0];
                 var batches = list.Select(i => i.ExpiresAt).Distinct().Count();
-                <div class="bsup-card" tabindex="0" title="@($"{e.ItemName(id)}×{list.Sum(i => i.Count)}：{Ui.ItemLine(e, s, head)}{(batches > 1 ? $"（{batches}批，最早到期在前）" : "")}")">
+                <div class="bsup-card" tabindex="0" title="@($"{title}×{list.Sum(i => i.Count)}：{Ui.ItemLine(e, s, head)}{(batches > 1 ? $"（{batches}批，最早到期在前）" : "")}")">
                     <span class="bsup-art" aria-hidden="true">@Icons.Markup(id)</span>
-                    <span class="bsup-text"><b>@e.ItemName(id) ×@list.Sum(i => i.Count)@(dr ? "（战利品）" : "")</b><small>@(e.IsSpoiled(s, head) ? "已腐败" : Ui.ItemLine(e, s, head))@(batches > 1 ? $" · {batches}批" : "")</small></span>
+                    <span class="bsup-text"><b>@title ×@list.Sum(i => i.Count)@(dr ? "（战利品）" : "")</b><small>@(e.IsSpoiled(s, head) ? "已腐败" : Ui.ItemLine(e, s, head))@(batches > 1 ? $" · {batches}批" : "")</small></span>
                 </div>
             }
             else

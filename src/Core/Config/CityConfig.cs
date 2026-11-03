@@ -163,6 +163,8 @@ namespace Survival.Core.Config
         public string QuoteVersion { get; set; } = "";
         /// <summary>存档里保留最近几个世界日的报价表（开发假设 B18-2）。</summary>
         public int QuoteKeepDays { get; set; } = 7;
+        /// <summary>B22d（Q178 选 A）：已鉴定普通白色实例的显示名（“活性物质（白色·已鉴定）”）；内部物品 ID 不变。空为不改名。</summary>
+        public string IdentifiedName { get; set; } = "";
         public System.Collections.Generic.List<AppraisalOfferConfig> Offers { get; set; } = new System.Collections.Generic.List<AppraisalOfferConfig>();
     }
 

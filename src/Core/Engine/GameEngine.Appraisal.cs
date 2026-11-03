@@ -116,6 +116,19 @@ namespace Survival.Core.Engine
 
         public static bool IsTutorialSample(ItemInstance i) => i.Source?.TutorialReward == true;
 
+        /// <summary>
+        /// 已鉴定的普通白色实例（B22d，Q178 选 A）：普通来源、带 ordinary_no_effect 鉴定记录。教学样本（看过免费说明）不算，沿原名（Q179 待定）。
+        /// </summary>
+        public bool IsIdentifiedWhite(ItemInstance i) =>
+            !string.IsNullOrEmpty(Ap.SampleItemId) && i.ItemId == Ap.SampleItemId && IsOrdinarySample(i) && i.Appraisal?.Result == AppraisalRecord.OrdinaryNoEffect;
+
+        /// <summary>
+        /// 实例显示名（B22d，Q178 选 A）：已鉴定普通白色为“活性物质（白色·已鉴定）”，其余就是物品名。内部 itemId 不变；卡名、随身/地面、整备、预览、
+        /// 面板与新日志都用它，历史日志不改写。
+        /// </summary>
+        public string InstanceName(ItemInstance i) =>
+            IsIdentifiedWhite(i) && !string.IsNullOrEmpty(Ap.IdentifiedName) ? Ap.IdentifiedName : ItemName(i.ItemId);
+
         /// <summary>鉴定状态说明（物品卡与面板共用）。</summary>
         public string AppraisalStateText(ItemInstance i)
         {
@@ -257,6 +270,7 @@ namespace Survival.Core.Engine
             if (i == null || i.ItemId != Ap.SampleItemId || !(i.IsCarried || i.Owner == s.Ground)) return ActionResult.Fail("只能选主角随身或当前地面的活性物质");
             if (AppraiseSampleBlocked(s, i) is string why) return ActionResult.Fail(why);
             if (AppraiseCostBlocked(s) is string lack) return ActionResult.Fail(lack);
+            EnsureAppraisalQuotes(s);   // B22d Q176 选 A：在当地安全直接开工也算当日首次安全访问（当日未锁才锁，已锁不重抽）
             var req = ActionRequest.Wait(Ap.AppraiseMinutes);
             req.TargetId = CityServicePrefix + svc.Id;
             req.RequestId = requestId;
@@ -349,12 +363,23 @@ namespace Survival.Core.Engine
             if (fail != null)
             {
                 Emit(s, GameEventKind.ActionCompleted, $"{what}没有完成：{fail}（样本{(p.AppraisalMode == TradeMode ? "未交出、日额度未扣、没有产物" : "与植物纤维都未扣")}，原物在原处）。");
+                AppraisalServiceEnd(s, p.NpcId);   // B22d Q177：已启动事务失败时播一次原结束句
                 return;
             }
             s.City.Completed++;
+            // B22d Q177 选 A：成功只写日志与提示（非强制），不弹陶岑“办完事项”、不要求结束对话
             Emit(s, GameEventKind.ActionCompleted, $"{what}完成：{made}。", null, p.OutputItemId != null ? new[] { p.OutputItemId } : null);
             if (p.OutputItemId != null) s.PendingEvents[s.PendingEvents.Count - 1].HoldHighlight = true;   // 换物产物落地高亮保持（R07 X3.4）
-            CityServiceEnd(s, p.NpcId);
+        }
+
+        /// <summary>
+        /// 鉴定/换物已开工后取消或事务失败（B22d，Q177 选 A）：在原安全边界（人在鉴定所、没死、没有战斗或敌踪待处理）播一次陶岑原结束句
+        /// （service_end，离岗时机构代班句）；0 时间 0 奖励，不改返还/结算。成功不走这里；开工前的校验失败只在按钮上写原因。
+        /// </summary>
+        private void AppraisalServiceEnd(GameState s, string npcId)
+        {
+            if (s.Battle != null || s.Encounter != null) return;
+            CityServiceEnd(s, npcId);
         }
 
         /// <summary>取消/中止时的日志（S01：只保留已流逝时间，不收费、不交样、不出物，释放预留；不套用制作返地）。</summary>

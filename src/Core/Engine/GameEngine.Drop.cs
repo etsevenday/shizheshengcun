@@ -17,7 +17,9 @@ namespace Survival.Core.Engine
         public string ItemId { get; set; } = "";
         public int? InstanceId { get; set; }
         /// <summary>B22 M408：拖的是本实例战利品卡（键 owner|itemId|dr）。</summary>
-        public bool Reward { get; set; }
+        public bool Reward => Side == GameEngine.RewardCardSuffix;
+        /// <summary>卡片侧：dr 本实例战利品、apr 已鉴定白色（B22d Q178），普通卡为 null。</summary>
+        public string? Side { get; set; }
 
         /// <summary>解析网页来源键：card:owner|item[|inst]（owner 可以是 facility:camp:fire）、potchild:inst。</summary>
         public static DropSource? Parse(string key)
@@ -28,8 +30,7 @@ namespace Survival.Core.Engine
             var parts = key.Substring(5).Split('|');
             if (parts.Length < 2) return null;
             int? inst = parts.Length > 2 && int.TryParse(parts[2], out var n) ? n : (int?)null;
-            var reward = parts.Length > 2 && parts[2] == GameEngine.RewardCardSuffix;
-            return new DropSource { Kind = DropSourceKind.Card, Owner = parts[0], ItemId = parts[1], InstanceId = inst, Reward = reward };
+            return new DropSource { Kind = DropSourceKind.Card, Owner = parts[0], ItemId = parts[1], InstanceId = inst, Side = GameEngine.CardSideOfKey(parts) };
         }
     }
 
@@ -129,13 +130,13 @@ namespace Survival.Core.Engine
         {
             if (src.Kind == DropSourceKind.PotChild || src.InstanceId.HasValue)
                 return src.InstanceId.HasValue ? FindItem(s, src.InstanceId.Value) : null;
-            return s.Items.Where(i => i.Owner == src.Owner && i.ItemId == src.ItemId && i.ReservedBy == null && (i.RewardOrigin != null) == src.Reward)
+            return s.Items.Where(i => i.Owner == src.Owner && i.ItemId == src.ItemId && i.ReservedBy == null && CardSideOf(i) == src.Side)
                 .OrderBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).FirstOrDefault();
         }
 
         /// <summary>该卡当前批次（同物品、同到期、同区、未预留）的总数。</summary>
         public int CardBatchCount(GameState s, ItemInstance head) =>
-            s.Items.Where(i => i.Owner == head.Owner && i.ItemId == head.ItemId && i.ExpiresAt == head.ExpiresAt && i.ReservedBy == null && i.RewardOrigin == head.RewardOrigin)
+            s.Items.Where(i => i.Owner == head.Owner && i.ItemId == head.ItemId && i.ExpiresAt == head.ExpiresAt && i.ReservedBy == null && i.RewardOrigin == head.RewardOrigin && CardSideOf(i) == CardSideOf(head))
                 .Sum(i => i.Count);
 
         public DropIntent ResolveDrop(GameState s, DropSource src, DropTarget dst)
@@ -204,7 +205,7 @@ namespace Survival.Core.Engine
         {
             var here = s.Ground;
             if (zone != ItemInstance.Carried && zone != here) return DropIntent.No("只能放到随身或当前地面");
-            var name = ItemName(head.ItemId);
+            var name = InstanceName(head);   // B22d Q178：已鉴定白色写“活性物质（白色·已鉴定）”
             // 设施与锅里的物品拖到随身/地面：取出（整锅连同内容），与点击转移箭头同一校验（统一卡片案第 5 节）
             if (head.InFacility || (head.InContainer && !IsLiquid(head)))
             {

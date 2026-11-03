@@ -1577,7 +1577,7 @@ public sealed class GameSession
         var inst = instanceId.HasValue
             ? S.Items.FirstOrDefault(i => i.InstanceId == instanceId.Value && i.Owner == owner)
             : S.Items.Where(i => i.Owner == owner && i.ItemId == itemId && i.ReservedBy == null)
-                .OrderBy(i => i.RewardOrigin != null)   // B22 M408：普通卡的箭头先转普通物品，战利品卡的箭头带实例号
+                .OrderBy(i => E.CardSideOf(i) != null)   // B22 M408：普通卡的箭头先转普通物品，战利品卡/已鉴定卡（B22d）的箭头带实例号
                 .ThenBy(i => i.ExpiresAt ?? int.MaxValue).ThenBy(i => i.InstanceId).FirstOrDefault();
         if (inst == null) return ActionResult.Fail("没有可转移的物品");
         // 火堆或锅里的物品：明确目标“取下到地面”或“拾取到随身”，与拖出走同一校验（统一卡片案第 5 节）

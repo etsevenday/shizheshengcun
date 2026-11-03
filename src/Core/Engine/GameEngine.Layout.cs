@@ -16,10 +16,25 @@ namespace Survival.Core.Engine
         /// </summary>
         public string CardKey(ItemInstance i) =>
             !_items[i.ItemId].IsStackable ? $"{i.Owner}|{i.ItemId}|{i.InstanceId}"
-            : i.RewardOrigin != null ? $"{i.Owner}|{i.ItemId}|{RewardCardSuffix}" : $"{i.Owner}|{i.ItemId}";
+            : CardSideOf(i) is string side ? $"{i.Owner}|{i.ItemId}|{side}" : $"{i.Owner}|{i.ItemId}";
 
         /// <summary>地牢战利品卡的卡片键后缀（B22 M408）。</summary>
         public const string RewardCardSuffix = "dr";
+
+        /// <summary>已鉴定普通白色活性物质卡的卡片键后缀（B22d Q178：鉴定状态不同不混在一个标题下，分卡、逐实例可选）。</summary>
+        public const string IdentifiedCardSuffix = "apr";
+
+        /// <summary>堆叠物品属于哪一侧卡：本实例战利品 dr、已鉴定白色 apr，普通为 null。</summary>
+        public string? CardSideOf(ItemInstance i) =>
+            i.RewardOrigin != null ? RewardCardSuffix : IsIdentifiedWhite(i) ? IdentifiedCardSuffix : null;
+
+        /// <summary>卡片键第三段是不是“侧”（dr/apr）；工具卡第三段是实例号，返回 null。</summary>
+        public static string? CardSideOfKey(string[] parts) =>
+            parts.Length == 3 && (parts[2] == RewardCardSuffix || parts[2] == IdentifiedCardSuffix) ? parts[2] : null;
+
+        /// <summary>堆叠卡的标题：已鉴定白色卡写“活性物质（白色·已鉴定）”，其余为物品名。</summary>
+        public string CardTitle(string itemId, string? side) =>
+            side == IdentifiedCardSuffix && !string.IsNullOrEmpty(Ap.IdentifiedName) ? Ap.IdentifiedName : ItemName(itemId);
 
         /// <summary>按配置顺序的卡片：先堆叠物品组，再工具（同种按实例 ID）。</summary>
         public List<string> NaturalCards(GameState s, string zone)
@@ -27,7 +42,7 @@ namespace Survival.Core.Engine
             var items = s.Items.Where(i => i.Owner == zone).ToList();
             int Order(string id) => Config.Items.FindIndex(c => c.Id == id);
             // 同物品：普通卡在前、本实例战利品卡（B22 M408）紧跟其后
-            var stacks = items.Where(i => _items[i.ItemId].IsStackable).OrderBy(i => Order(i.ItemId)).ThenBy(i => i.RewardOrigin != null)
+            var stacks = items.Where(i => _items[i.ItemId].IsStackable).OrderBy(i => Order(i.ItemId)).ThenBy(i => CardSideOf(i) ?? "")
                 .Select(CardKey).Distinct();
             var tools = items.Where(i => !_items[i.ItemId].IsStackable)
                 .OrderBy(i => Order(i.ItemId)).ThenBy(i => i.InstanceId).Select(CardKey);

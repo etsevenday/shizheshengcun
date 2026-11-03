@@ -40,7 +40,7 @@
         var gwhy = e.GiveBlocked(s, gd.From, gd.To, gd.InstanceId, gd.Count);
         var (fc, tc, fg, tg) = e.GiveOutcome(s, gd.From, gd.To, gi, Math.Min(gd.Count, gi.Count));
         <div class="give-confirm" role="dialog" aria-label="确认交接" data-give-confirm>
-            <b>把@(e.ItemName(gi.ItemId))×@gd.Count 从@(e.ActorDisplayName(s, gd.From))交给@(e.ActorDisplayName(s, gd.To))？</b>
+            <b>把@(e.InstanceName(gi))×@gd.Count 从@(e.ActorDisplayName(s, gd.From))交给@(e.ActorDisplayName(s, gd.To))？</b>
             <span>交接后 @e.ActorDisplayName(s, gd.From)：@(fc)/@(e.MaxRootCards)张 · @Ui.KgText(fg)</span>
             <span>交接后 @e.ActorDisplayName(s, gd.To)：@(tc)/@(e.MaxRootCards)张 · @Ui.KgText(tg)</span>
             @if (gwhy != null) { <span class="warn-text">@gwhy</span> }
@@ -92,7 +92,7 @@
             {
                 var inst = it;
                 <div class="gear-card" data-item="@inst.ItemId">
-                    <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.ItemName(inst.ItemId)</b><small>×@inst.Count@(inst.MaxDurability.HasValue ? " · 耐久" + GameEngine.DurabilityText(inst) : "")</small></span>
+                    <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>×@inst.Count@(inst.MaxDurability.HasValue ? " · 耐久" + GameEngine.DurabilityText(inst) : "")</small></span>
                     <span class="gs-btns">
                         @foreach (var (slot, reason) in e.EquipChoices(s, me, inst.InstanceId))
                         {
@@ -131,7 +131,7 @@
             {
                 var inst = it;
                 <div class="gear-card" data-ground-item="@inst.ItemId">
-                    <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.ItemName(inst.ItemId)</b><small>@Stat(inst)</small></span>
+                    <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>@Stat(inst)</small></span>
                     <span class="gs-btns">
                         @foreach (var (slot, reason) in e.EquipChoices(s, me, inst.InstanceId))
                         {

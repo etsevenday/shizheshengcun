@@ -314,6 +314,15 @@ namespace Survival.Core.Engine
             return $"开发：制造3级、学会基础陶工做法；陶窑与净水台建造及各一批材料放在{ZoneName(s, s.Ground)}地面";
         }
 
+        /// <summary>开发（B22d Q174 试被动批次经验日额）：陶窑一批（黏土2、木炭1）与净水台两批（脏水8、过滤材料2）原料放当前地面。</summary>
+        public string DebugStationInputs(GameState s)
+        {
+            foreach (var (id, n) in new[] { ("clay", 2), ("charcoal", 1), ("dirty_water", 8), ("filter_media", 2) }) CreateItems(s, id, n, s.Ground);
+            Normalize(s, s.Ground);
+            UpdateFlags(s);
+            return $"开发：陶窑一批（黏土2、木炭1）与净水台两批（脏水8、过滤材料2）原料放在{ZoneName(s, s.Ground)}地面";
+        }
+
         /// <summary>开发：野营遮雨布、折叠柴炉各一（当前地面）与木材2。</summary>
         public string DebugCampingKit(GameState s)
         {

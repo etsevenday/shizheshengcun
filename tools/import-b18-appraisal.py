@@ -39,6 +39,7 @@ def main():
         "tradeDailyPartyQuota": trade["dailyPartyQuota"],
         "quoteVersion": c["quoteVersion"],
         "quoteKeepDays": 7,
+        "identifiedName": "活性物质（白色·已鉴定）",   # B22d Q178 选 A（appraisal-service-contract.json q176Q178.identifiedName）
         "offers": [
             {"id": o["id"], "itemId": o["itemId"], "min": o["inclusiveQuantityBounds"][0], "max": o["inclusiveQuantityBounds"][1],
              "minGrams": o["inclusiveWeightGrams"][0], "maxGrams": o["inclusiveWeightGrams"][1]}

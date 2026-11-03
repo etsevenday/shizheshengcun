@@ -85,7 +85,7 @@
                     var whyCarry = e.TakeFromRemainsBlocked(s, deadId, iid, false);
                     var whyGround = e.TakeFromRemainsBlocked(s, deadId, iid, true);
                     <div class="remains-row">
-                        <span>@e.ItemName(it.ItemId)@(it.Count > 1 ? $"×{it.Count}" : "")#@iid@(it.LoanSlot != null ? "（借用）" : "")</span>
+                        <span>@e.InstanceName(it)@(it.Count > 1 ? $"×{it.Count}" : "")#@iid@(it.LoanSlot != null ? "（借用）" : "")</span>
                         <button type="button" class="eq-btn" disabled="@(whyCarry != null)" title="@(whyCarry ?? "取到你的随身（五张卡与30公斤校验）")" @onclick="() => G.TakeRemains(deadId, iid, false)">取到随身</button>
                         <button type="button" class="eq-btn" disabled="@(whyGround != null)" title="@(whyGround ?? "放到当前地面")" @onclick="() => G.TakeRemains(deadId, iid, true)">放地面</button>
                     </div>
