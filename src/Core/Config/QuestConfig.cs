@@ -19,7 +19,7 @@ namespace Survival.Core.Config
         public string Id { get; set; } = "";
         /// <summary>正式中文名（A11 表的任务名，玩家看到的名字，不带内部编号）。</summary>
         public string Title { get; set; } = "";
-        /// <summary>main / side / recruit。</summary>
+        /// <summary>main / side / recruit / optional（B23 可选地牢任务 EXQ05—08）。</summary>
         public string Kind { get; set; } = "";
         /// <summary>接取/交付的岗位人物（招募任务为被招募的命名队友）。</summary>
         public string NpcId { get; set; } = "";
@@ -61,6 +61,15 @@ namespace Survival.Core.Config
         public List<string> CompleteByAny { get; set; } = new List<string>();
         /// <summary>CompleteByAny 只在已接取后才算完成（B15a Q157：FA05 先领联络日志的，接取后安全边界完成）。</summary>
         public bool CompleteRequiresAccepted { get; set; }
+        /// <summary>
+        /// B23（A11「可选地牢任务与知识」§2）：记录事实（claim:d05_07_unique 等）。领取核心记录同一事务写入；已接取且有记录时“记录已取得”，
+        /// 回接取岗位交谈 0 分钟完成（岗位不在由代班接手）；先领记录后接取的，接取时追认完成。空 = 不是这种任务。
+        /// </summary>
+        public List<string> RecordFacts { get; set; } = new List<string>();
+        /// <summary>B23：任务对应的地牢（d05—d08），只作显示与开发入口。</summary>
+        public string? DungeonId { get; set; }
+        /// <summary>B23：记录已取得后的“下一步”（回岗位交谈）。</summary>
+        public string StepTurnin { get; set; } = "";
         /// <summary>完成同一事务写入的事实（FA04_merged）。</summary>
         public List<string> CompleteFacts { get; set; } = new List<string>();
         /// <summary>可接时的“下一步”。</summary>

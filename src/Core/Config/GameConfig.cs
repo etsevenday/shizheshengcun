@@ -110,6 +110,37 @@ namespace Survival.Core.Config
         public DungeonExpeditionConfig DungeonExpedition { get; set; } = new DungeonExpeditionConfig();
         /// <summary>地牢守卫回收材料、首通补给包、72 小时重置冷却与三种战术品（开发计划 v0.9 B22，tools/import-b22-rewards.py）。</summary>
         public DungeonRewardsConfig DungeonRewards { get; set; } = new DungeonRewardsConfig();
+        /// <summary>可选地牢知识支线的四个知识包与公开抄录（A11「可选地牢任务与知识」§2—§4；开发计划 v0.9 B23，tools/import-b23-exq.py）。</summary>
+        public ExpansionQuestsConfig ExpansionQuests { get; set; } = new ExpansionQuestsConfig();
+    }
+
+    /// <summary>B23（R71）：可选地牢知识包。</summary>
+    public sealed class ExpansionQuestsConfig
+    {
+        public string Source { get; set; } = "";
+        public List<KnowledgePackConfig> Packs { get; set; } = new List<KnowledgePackConfig>();
+    }
+
+    /// <summary>
+    /// 一个知识包（A11 §3）：首次固定来源是地牢核心记录（ClaimResourceId 领取事实 claim:… 授予），确定替代来源是登记后岗位处“查抄公开资料”
+    /// 固定等待 CopyMinutes、0 材料（写 CopyFact 授予，只补未掌握的，不写任务/通关/容量事实）。知识集合按并集，已知不兑换任何东西。
+    /// </summary>
+    public sealed class KnowledgePackConfig
+    {
+        public string Id { get; set; } = "";
+        /// <summary>A11 §2 奖励列的说法（“净水/维护知识包”）。</summary>
+        public string Label { get; set; } = "";
+        public string QuestId { get; set; } = "";
+        public List<string> Knowledge { get; set; } = new List<string>();
+        public string ClaimResourceId { get; set; } = "";
+        public string DungeonId { get; set; } = "";
+        public string CopyLocationId { get; set; } = "";
+        public string CopyNpcId { get; set; } = "";
+        public string CopyServiceId { get; set; } = "";
+        public int CopyMinutes { get; set; }
+        /// <summary>A11 §3 替代来源的资料名（“公开资料”“公开作业资料”“公共告示资料”“物资登记资料”）。</summary>
+        public string CopyLabel { get; set; } = "";
+        public string CopyFact { get; set; } = "";
     }
 
     /// <summary>工坊（A07「工坊设施」；B10）：hand 不是设施；其余每类每地一座，只在 buildLocations 建（B10-1：只开放 camp，待确认 Q107）。</summary>

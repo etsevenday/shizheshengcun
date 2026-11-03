@@ -541,6 +541,19 @@ namespace Survival.Core.Config
                     if (!string.IsNullOrEmpty(d) && !dialogueEvents.Contains(d!)) e.Add($"任务 {q.Id} 的对白组 {d} 没有台词");
                 foreach (var sv in q.WorkServiceIds) if (c.City.Services.All(x => x.Id != sv)) e.Add($"任务 {q.Id} 的工作服务 {sv} 不存在");
                 if (q.WorkMinutes < 0 || q.WorkMinutes % 5 != 0) e.Add($"任务 {q.Id} 的工时须为 5 分钟的整数倍");
+                if (q.RecordFacts.Count > 0 && (q.Accept != "talk" || q.WorkMinutes != 0 || string.IsNullOrEmpty(q.StepTurnin)))
+                    e.Add($"任务 {q.Id} 记录类任务须交谈接取、0 分钟回报并有回报步骤");
+            }
+            // B23：可选地牢知识包（A11 §3）
+            foreach (var p in c.ExpansionQuests.Packs)
+            {
+                foreach (var k in p.Knowledge)
+                    if (c.Knowledge.FirstOrDefault(x => x.Id == k) is not KnowledgeConfig kc) e.Add($"知识包 {p.Id} 的知识 {k} 不存在");
+                    else if (!kc.GrantedByFacts.Contains("claim:" + p.ClaimResourceId) || !kc.GrantedByFacts.Contains(p.CopyFact)) e.Add($"知识 {k} 缺少知识包 {p.Id} 的授予事实");
+                if (c.Resources.FirstOrDefault(r => r.NodeId == p.ClaimResourceId) is not ResourceConfig pr || !pr.IsRecord) e.Add($"知识包 {p.Id} 的核心记录 {p.ClaimResourceId} 不存在");
+                if (c.Quests.List.All(q => q.Id != p.QuestId)) e.Add($"知识包 {p.Id} 的任务 {p.QuestId} 不存在");
+                if (c.Locations.All(l => l.Id != p.CopyLocationId) || c.City.Npcs.All(n => n.NpcId != p.CopyNpcId || n.LocationId != p.CopyLocationId)) e.Add($"知识包 {p.Id} 的抄录地点/岗位无效");
+                if (p.CopyMinutes <= 0 || p.CopyMinutes % 5 != 0 || string.IsNullOrEmpty(p.CopyFact) || string.IsNullOrEmpty(p.CopyServiceId)) e.Add($"知识包 {p.Id} 的抄录工时/事实/服务无效");
             }
             foreach (var t in c.Scope.Training.Tiers)
             {

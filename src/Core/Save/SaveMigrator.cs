@@ -925,7 +925,8 @@ namespace Survival.Core.Save
         {
             var added = EnsureResourceStates(s, config);
             var engine = new Engine.GameEngine(config);
-            var packs = config.Resources.Where(r => r.IsRecord)
+            // B23：只算 B13c 当时的核心记录同授蓝图（d05—d08 可选地牢知识包是 B23 新增的来源，不进这条历史日志）
+            var packs = config.Resources.Where(r => r.IsRecord && config.ExpansionQuests.Packs.All(p => p.ClaimResourceId != r.NodeId))
                 .Select(r => (Res: r, Know: config.Knowledge.Where(k => k.Id != "blueprint_armory_station" && k.GrantedByFacts.Contains(Engine.GameEngine.ClaimKey(r.NodeId))).ToList()))
                 .Where(x => x.Know.Count > 0 && x.Know.Any(k => engine.KnowsKnowledge(s, k.Id)))
                 .ToList();

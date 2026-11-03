@@ -31776,9 +31776,11 @@
       "id": "blueprint_field_medkit",
       "name": "随行医疗包的做法",
       "grantedByFacts": [
-        "hub_registered"
+        "hub_registered",
+        "claim:d07_07_unique",
+        "kpcopy:kp_civilian_cache"
       ],
-      "source": "营区登记默认知识（h02 广场）"
+      "source": "营区登记默认知识（h02 广场）；或洪淹商城·屋顶避难点（d07_07）领取“商场避难物资簿”；或营区登记后在营区广场“查抄公开资料”抄公共告示资料（30分钟，0材料）"
     },
     {
       "id": "blueprint_trauma_bag",
@@ -31957,9 +31959,11 @@
       "id": "blueprint_forage_jacket",
       "name": "采集外套的做法",
       "grantedByFacts": [
-        "hub_registered"
+        "hub_registered",
+        "claim:d07_07_unique",
+        "kpcopy:kp_civilian_cache"
       ],
-      "source": "营区登记默认知识（h02 广场）"
+      "source": "营区登记默认知识（h02 广场）；或洪淹商城·屋顶避难点（d07_07）领取“商场避难物资簿”；或营区登记后在营区广场“查抄公开资料”抄公共告示资料（30分钟，0材料）"
     },
     {
       "id": "blueprint_scavenge_vest",
@@ -32019,9 +32023,11 @@
       "id": "blueprint_utility_trousers",
       "name": "作业长裤的做法",
       "grantedByFacts": [
-        "hub_registered"
+        "hub_registered",
+        "claim:d06_08_unique",
+        "kpcopy:kp_mining"
       ],
-      "source": "营区登记默认知识（h02 广场）"
+      "source": "营区登记默认知识（h02 广场）；或深林矿洞·工具封库（d06_08）领取“矿道作业手册”；或营区登记后在营区工坊“查抄公开资料”抄公开作业资料（30分钟，0材料）"
     },
     {
       "id": "blueprint_reinforced_trousers",
@@ -32057,9 +32063,11 @@
       "id": "blueprint_gather_gloves",
       "name": "采集手套的做法",
       "grantedByFacts": [
-        "hub_registered"
+        "hub_registered",
+        "claim:d06_08_unique",
+        "kpcopy:kp_mining"
       ],
-      "source": "营区登记默认知识（h02 广场）"
+      "source": "营区登记默认知识（h02 广场）；或深林矿洞·工具封库（d06_08）领取“矿道作业手册”；或营区登记后在营区工坊“查抄公开资料”抄公开作业资料（30分钟，0材料）"
     },
     {
       "id": "blueprint_route_compass",
@@ -32073,19 +32081,23 @@
       "id": "blueprint_filter_token",
       "name": "净水操作套件的做法",
       "grantedByFacts": [
-        "hub_registered"
+        "hub_registered",
+        "claim:d05_07_unique",
+        "kpcopy:kp_waterworks"
       ],
-      "source": "营区登记默认知识（h02 广场）"
+      "source": "营区登记默认知识（h02 广场）；或废水厂地下管网·阀控室（d05_07）领取“水厂阀控记录”；或营区登记后在营区工坊“查抄公开资料”抄公开资料（30分钟，0材料）"
     },
     {
       "id": "blueprint_repair_manual",
       "name": "维护手册蓝图",
       "grantedByFacts": [
         "claim:d01_08_unique",
-        "campaignId:d01_08_unique"
+        "campaignId:d01_08_unique",
+        "claim:d05_07_unique",
+        "kpcopy:kp_waterworks"
       ],
       "blueprint": true,
-      "source": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）"
+      "source": "蓝图：教会地下圣所·旧路线档案（d01_08）领取核心记录“圣所旧路档册”时一并获得（Q123）；或废水厂地下管网·阀控室（d05_07）领取“水厂阀控记录”；或营区登记后在营区工坊“查抄公开资料”抄公开资料（30分钟，0材料）"
     },
     {
       "id": "blueprint_medical_notes",
@@ -32102,10 +32114,12 @@
       "name": "配给袋蓝图",
       "grantedByFacts": [
         "claim:d04_07_unique",
-        "campaignId:d04_07_unique"
+        "campaignId:d04_07_unique",
+        "claim:d08_08_unique",
+        "kpcopy:kp_coldchain"
       ],
       "blueprint": true,
-      "source": "蓝图：深野通信站·联络台（d04_07）领取核心记录“通信站联络日志”时一并获得（Q123）"
+      "source": "蓝图：深野通信站·联络台（d04_07）领取核心记录“通信站联络日志”时一并获得（Q123）；或应急冷链仓·调度室（d08_08）领取“冷链调度档案”；或营区登记后在营区医务室“查抄公开资料”抄物资登记资料（30分钟，0材料）"
     },
     {
       "id": "expedition_basics",
@@ -36614,6 +36628,166 @@
         "stepLocked": "",
         "stepActive": "在营区广场和叶洵交谈，读完邀约后选择是否登记同行。",
         "result": "叶洵登记入名册（首次装备随登记一次生成）"
+      },
+      {
+        "id": "EXQ05",
+        "title": "水从哪里来",
+        "kind": "optional",
+        "npcId": "npc_luo_zheng",
+        "locationId": "h03_workshop",
+        "implemented": true,
+        "showAny": [],
+        "requiresAll": [
+          "hub_registered"
+        ],
+        "requiresAny": [],
+        "requiresExplore": {},
+        "requiresRosterMember": false,
+        "accept": "talk",
+        "acceptServiceId": null,
+        "offerDialogue": "npc_luo_zheng_dialogue_quest_offer",
+        "workDialogue": null,
+        "turninDialogue": "npc_luo_zheng_dialogue_quest_return",
+        "repeatDialogue": null,
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "交谈",
+        "completeByAny": [],
+        "completeRequiresAccepted": false,
+        "completeFacts": [],
+        "recordFacts": [
+          "claim:d05_07_unique"
+        ],
+        "dungeonId": "d05",
+        "stepOffer": "到营区工坊和罗铮交谈。",
+        "stepLocked": "",
+        "stepActive": "从荒废水厂进入废水厂地下管网，在阀控室领取水厂阀控记录（10分钟）。",
+        "stepTurnin": "回营区工坊和罗铮交谈（0分钟，不交材料）。",
+        "result": "已核对水路日志，得到净水/维护知识包（水本身仍按原净化规则）"
+      },
+      {
+        "id": "EXQ06",
+        "title": "矿道里的旧工具",
+        "kind": "optional",
+        "npcId": "npc_luo_zheng",
+        "locationId": "h03_workshop",
+        "implemented": true,
+        "showAny": [],
+        "requiresAll": [
+          "hub_registered"
+        ],
+        "requiresAny": [],
+        "requiresExplore": {},
+        "requiresRosterMember": false,
+        "accept": "talk",
+        "acceptServiceId": null,
+        "offerDialogue": "npc_luo_zheng_dialogue_quest_offer",
+        "workDialogue": null,
+        "turninDialogue": "npc_luo_zheng_dialogue_quest_return",
+        "repeatDialogue": null,
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "交谈",
+        "completeByAny": [],
+        "completeRequiresAccepted": false,
+        "completeFacts": [],
+        "recordFacts": [
+          "claim:d06_08_unique"
+        ],
+        "dungeonId": "d06",
+        "stepOffer": "到营区工坊和罗铮交谈。",
+        "stepLocked": "",
+        "stepActive": "从岩洞入口进入深林矿洞，在工具封库领取矿道作业手册（10分钟）。",
+        "stepTurnin": "回营区工坊和罗铮交谈（0分钟，不交材料）。",
+        "result": "得到野外工作衣物知识包（矿料来自资源表，不再任务附发一包）"
+      },
+      {
+        "id": "EXQ07",
+        "title": "最后一张疏散图",
+        "kind": "optional",
+        "npcId": "npc_xu_an",
+        "locationId": "h02_square",
+        "implemented": true,
+        "showAny": [],
+        "requiresAll": [
+          "hub_registered"
+        ],
+        "requiresAny": [],
+        "requiresExplore": {},
+        "requiresRosterMember": false,
+        "accept": "talk",
+        "acceptServiceId": null,
+        "offerDialogue": "npc_xu_an_dialogue_quest_offer",
+        "workDialogue": null,
+        "turninDialogue": "npc_xu_an_dialogue_quest_return",
+        "repeatDialogue": null,
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "交谈",
+        "completeByAny": [],
+        "completeRequiresAccepted": false,
+        "completeFacts": [],
+        "recordFacts": [
+          "claim:d07_07_unique"
+        ],
+        "dungeonId": "d07",
+        "stepOffer": "到营区广场和许安交谈。",
+        "stepLocked": "",
+        "stepActive": "从旧城商圈进入洪淹商城，在屋顶避难点领取商场避难物资簿（10分钟）。",
+        "stepTurnin": "回营区广场和许安交谈（0分钟，不交材料）。",
+        "result": "得到衣物/医疗工具知识与疏散日志（不把记录包装成当前存活者名单）"
+      },
+      {
+        "id": "EXQ08",
+        "title": "封存不是永存",
+        "kind": "optional",
+        "npcId": "npc_chen_zhi",
+        "locationId": "h04_infirmary",
+        "implemented": true,
+        "showAny": [],
+        "requiresAll": [
+          "hub_registered"
+        ],
+        "requiresAny": [],
+        "requiresExplore": {},
+        "requiresRosterMember": false,
+        "accept": "talk",
+        "acceptServiceId": null,
+        "offerDialogue": "npc_chen_zhi_dialogue_quest_offer",
+        "workDialogue": null,
+        "turninDialogue": "npc_chen_zhi_dialogue_quest_return",
+        "repeatDialogue": null,
+        "completeDialogue": null,
+        "hubTurninDialogue": null,
+        "noteDialogue": null,
+        "workMinutes": 0,
+        "workServiceIds": [],
+        "workRequiresAll": [],
+        "workLabel": "交谈",
+        "completeByAny": [],
+        "completeRequiresAccepted": false,
+        "completeFacts": [],
+        "recordFacts": [
+          "claim:d08_08_unique"
+        ],
+        "dungeonId": "d08",
+        "stepOffer": "到营区医务室和陈芷交谈。",
+        "stepLocked": "",
+        "stepActive": "从应急仓外进入应急冷链仓，在调度室领取冷链调度档案（10分钟）。",
+        "stepTurnin": "回营区医务室和陈芷交谈（0分钟，不交材料）。",
+        "result": "得到配给知识与封存记录（不赋予药品无限保质）"
       }
     ],
     "dialogueSets": [
@@ -37122,6 +37296,78 @@
         "panicReduce": 6,
         "perTargetRoundCap": 6,
         "text": "当前恐慌-6最低0；每目标每大回合来自此道具总减量最多6，无实际收益禁用"
+      }
+    ]
+  },
+  "expansionQuests": {
+    "source": "A11「可选地牢任务与知识」§2—§4、expansion-quests.json（2026-10-30-review-1）；开发计划 v0.9 B23（R71）",
+    "packs": [
+      {
+        "id": "kp_waterworks",
+        "label": "净水/维护知识包",
+        "questId": "EXQ05",
+        "knowledge": [
+          "blueprint_filter_token",
+          "blueprint_repair_manual"
+        ],
+        "claimResourceId": "d05_07_unique",
+        "dungeonId": "d05",
+        "copyLocationId": "h03_workshop",
+        "copyNpcId": "npc_luo_zheng",
+        "copyServiceId": "copy_public_knowledge",
+        "copyMinutes": 30,
+        "copyLabel": "公开资料",
+        "copyFact": "kpcopy:kp_waterworks"
+      },
+      {
+        "id": "kp_mining",
+        "label": "野外工作衣物知识包",
+        "questId": "EXQ06",
+        "knowledge": [
+          "blueprint_gather_gloves",
+          "blueprint_utility_trousers"
+        ],
+        "claimResourceId": "d06_08_unique",
+        "dungeonId": "d06",
+        "copyLocationId": "h03_workshop",
+        "copyNpcId": "npc_luo_zheng",
+        "copyServiceId": "copy_public_knowledge",
+        "copyMinutes": 30,
+        "copyLabel": "公开作业资料",
+        "copyFact": "kpcopy:kp_mining"
+      },
+      {
+        "id": "kp_civilian_cache",
+        "label": "衣物/医疗工具知识与疏散日志",
+        "questId": "EXQ07",
+        "knowledge": [
+          "blueprint_forage_jacket",
+          "blueprint_field_medkit"
+        ],
+        "claimResourceId": "d07_07_unique",
+        "dungeonId": "d07",
+        "copyLocationId": "h02_square",
+        "copyNpcId": "npc_xu_an",
+        "copyServiceId": "copy_public_knowledge_h02",
+        "copyMinutes": 30,
+        "copyLabel": "公共告示资料",
+        "copyFact": "kpcopy:kp_civilian_cache"
+      },
+      {
+        "id": "kp_coldchain",
+        "label": "配给知识与封存记录",
+        "questId": "EXQ08",
+        "knowledge": [
+          "blueprint_ration_pouch"
+        ],
+        "claimResourceId": "d08_08_unique",
+        "dungeonId": "d08",
+        "copyLocationId": "h04_infirmary",
+        "copyNpcId": "npc_chen_zhi",
+        "copyServiceId": "copy_public_knowledge_h04",
+        "copyMinutes": 30,
+        "copyLabel": "物资登记资料",
+        "copyFact": "kpcopy:kp_coldchain"
       }
     ]
   }

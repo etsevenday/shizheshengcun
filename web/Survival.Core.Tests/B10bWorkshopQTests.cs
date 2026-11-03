@@ -414,7 +414,8 @@ public class B10bWorkshopQTests : TestBase
         Assert.That(Cfg.Workshops.BuildLocations, Is.EqualTo(new[] { "camp" }), "Q107：现阶段只开放 camp");
         var initial = Cfg.Knowledge.Where(k => k.Initial).Select(k => k.Id).OrderBy(x => x).ToList();
         Assert.That(initial, Is.EqualTo(new[] { "blueprint_crossbow", "blueprint_hatchet", "blueprint_metal_spear", "blueprint_stone_knife", "blueprint_wooden_bow", "blueprint_wooden_spear" }));
-        Assert.That(Cfg.Knowledge.Where(k => !k.Initial && !k.Blueprint && k.Id != "expedition_basics" && k.Id != "ceramic_methods").All(k => k.GrantedByFacts.SequenceEqual(new[] { "hub_registered" })), Is.True, "Q108：其余默认知识要真实登记");
+        Assert.That(Cfg.Knowledge.Where(k => !k.Initial && !k.Blueprint && k.Id != "expedition_basics" && k.Id != "ceramic_methods").All(k => k.GrantedByFacts.Where(f => !Cfg.ExpansionQuests.Packs.Any(p => f == "claim:" + p.ClaimResourceId || f == p.CopyFact)).SequenceEqual(new[] { "hub_registered" })), Is.True,
+            "Q108：其余默认知识要真实登记（B23 起另有可选地牢记录与公开抄录同授，见 B23ExqDataTests）");
 
         var s = New();
         var armory = Cfg.Knowledge.Single(k => k.Id == "blueprint_armory_station");
