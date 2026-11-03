@@ -196,10 +196,18 @@ namespace Survival.Core.Engine
             if (r == null) return "名册里没有这名角色";
             if (r.Dead) return $"{r.Name}已经死亡";
             if (r.Retired) return $"{r.Name}已退役，不在名册里";   // B19
+            var inParty = s.Party.Contains(actorId);
+            // B22g（Q183 retrieve）：安全屋屋内的候补只能由主队实到该屋屋内且安全空闲时编入同行；不能从另一处屋或广场远程编入
+            if (active && !inParty && r.ReserveSafehouse is string sh)
+            {
+                var shWhy = SafehouseServiceBlocked(s, sh, "编入同行", r.Name);
+                if (shWhy != null) return shWhy;
+                var c = PartyCapacity(s);
+                return s.Party.Count >= c ? $"同行已满 {s.Party.Count}/{c}（含你；容量 C{c}）" : null;
+            }
             // 各按钮用自己的动词，不与顶栏“编队”混淆（试玩修复 B8a 第 1 轮 B7；同登记补员/报失的做法）
             var why = PartyEditBlocked(s);
             if (why != null) return why.Replace("编队", active ? "编入同行" : "留作候补");
-            var inParty = s.Party.Contains(actorId);
             if (active && inParty) return $"{r.Name}已在同行队伍里";
             if (!active && !inParty) return $"{r.Name}已是候补";
             var cap = PartyCapacity(s);
@@ -219,6 +227,52 @@ namespace Survival.Core.Engine
             ApplySetActive(s, actorId, active);
             var name = RosterOf(s, actorId)!.Name;
             Emit(s, GameEventKind.Info, active ? $"{name}编入同行队伍。" : $"{name}留在{LocName(HubLocation(s))}作候补（自主休息/睡眠，饱食/水分/精神慢慢回到{Fmt.T(Config.Party.ReserveCare.PublicNutritionTarget)}，伤病照常）。");
+            return ActionResult.Success();
+        }
+
+        /// <summary>
+        /// B22g（Q183 retrieve）：在某间安全屋屋内办的队伍事（屋内候补编入同行、留守此屋）：主角存活、无战斗/敌踪、无主/子行动、无未读对白，
+        /// 且主队实际在该屋屋内。null 为可以。
+        /// </summary>
+        public string? SafehouseServiceBlocked(GameState s, string locationId, string verb, string? who = null)
+        {
+            if (s.Progress.Dead) return "本局已结束";
+            if (InCombatFlow(s)) return $"战斗中不能{verb}";
+            if (s.Main != null || s.Sub != null) return $"正在行动，不能{verb}";
+            if (DialogueLocked(s)) return "先读完对话";
+            if (s.CurrentLocation != locationId || s.CurrentZone != SafehouseZone)
+                return who != null
+                    ? $"{who}在{SafehouseName(s, locationId)}屋内：要你实地进那间屋才能{verb}（不能从别处或营区广场远程编入）"
+                    : $"只能在{SafehouseName(s, locationId)}屋内{verb}";
+            return null;
+        }
+
+        /// <summary>“留守此屋”的只读预演（Q183 retrieve）：同行者（非主角）与主队同在一间已建成安全屋屋内且安全空闲。null 为可以。</summary>
+        public string? StayInSafehouseBlocked(GameState s, string actorId)
+        {
+            if (actorId == GameState.PlayerId) return "主角必须在队伍里，不能留守";
+            var r = RosterOf(s, actorId);
+            if (r == null) return "名册里没有这名角色";
+            if (r.Dead) return $"{r.Name}已经死亡";
+            if (r.Retired) return $"{r.Name}已退役，不在名册里";
+            if (!s.Party.Contains(actorId)) return $"{r.Name}不在同行队伍里（不能远程把人迁到屋里）";
+            if (s.CurrentZone != SafehouseZone || !SafehouseBuilt(s, s.CurrentLocation)) return "只能在已建成的安全屋屋内留守此屋（主队与这名队员同在屋内）";
+            return SafehouseServiceBlocked(s, s.CurrentLocation, "留守此屋");
+        }
+
+        /// <summary>
+        /// 留守此屋（Q183 retrieve）：0 分钟把同行者留作当前安全屋屋内的候补（下一真实 tick 起按该屋遮蔽/床照护）；不能远程迁人；留守不释放随机/保底名额。requestId 幂等。
+        /// </summary>
+        public ActionResult StayInSafehouse(GameState s, string actorId, string? requestId = null)
+        {
+            if (SeenRequest(s, requestId)) return ActionResult.Repeated();
+            var why = StayInSafehouseBlocked(s, actorId);
+            if (why != null) return ActionResult.Fail(why);
+            RememberRequest(s, requestId);
+            var loc = s.CurrentLocation;
+            ApplySetActive(s, actorId, false, loc);
+            var name = RosterOf(s, actorId)!.Name;
+            Emit(s, GameEventKind.Info, $"{name}留守{SafehouseName(s, loc)}屋内作候补（0分钟；自主休息/睡眠，饱食/水分/精神慢慢回到{Fmt.T(Config.Party.ReserveCare.PublicNutritionTarget)}，伤病照常；要你回到这间屋里才能再编入同行）。");
             return ActionResult.Success();
         }
 

@@ -483,4 +483,190 @@ public class B22gTests : TestBase
         Assert.That(E.ReserveCareLabel(s, b), Is.EqualTo("自主休息 · 无设施"));
         Assert.That(food, Is.Not.Null);
     }
+
+    // ───────────── R186 从安全屋取人、留守此屋、驻屋死亡遗物；R180 退役（Q181） ─────────────
+
+    /// <summary>登记一名候选到营外安全屋地块安全屋屋内作候补，返回名册条目（人在收容所）。</summary>
+    private RosterEntry RecruitToHouse(GameState s, int index = 0)
+    {
+        Ok(E.StartRecruit(s, s.Recruit.Candidates[index].CandidateId, RecruitPlacement.AtSafehouse(Homestead)));
+        Run(s);
+        return Recruited(s);
+    }
+
+    /// <summary>传送到营外安全屋地块并进屋（开发传送按实际到达处理）。</summary>
+    private void IntoHouse(GameState s, string loc = Homestead)
+    {
+        E.DebugMapTeleport(s, loc);
+        ReadDialogues(s);
+        Ok(E.EnterSafehouse(s));
+    }
+
+    /// <summary>
+    /// PLAN-Q183-01/02（retrieve）：屋内候补只能由主队实到该屋屋内且安全空闲时“编入同行”（校验 C、0 分钟）；在收容所、营区广场、该地点屋外、另一间安全屋里都不能远程编入；
+    /// 广场候补仍在广场办理，进安全屋也不能编入。
+    /// </summary>
+    [Test]
+    public void PLAN_Q183_02_RetrieveOnlyInsideThatSafehouse_NoRemote()
+    {
+        var s = AtShelter(c: 3);
+        BuildSafehouseAndReturn(s);
+        // 另一间安全屋（田野）
+        E.DebugSafehouseSite(s, "field");
+        E.DebugBuildSafehouse(s);
+        E.DebugMapTeleport(s, Shelter);
+        ReadDialogues(s);
+        var r = RecruitToHouse(s);
+        Ok(E.StartRecruit(s, s.Recruit.Candidates[1].CandidateId, RecruitPlacement.Square));
+        Run(s);
+        var sq = Recruited(s);
+
+        Assert.That(E.SetActiveBlocked(s, r.ActorId, true), Does.Contain("要你实地进那间屋才能编入同行"), "收容所不能远程编入");
+        E.DebugMapTeleport(s, "h02_square");
+        ReadDialogues(s);
+        Assert.That(E.SetActiveBlocked(s, r.ActorId, true), Does.Contain("不能从别处或营区广场远程编入"), "广场不能远程编入屋内候补");
+        Assert.That(E.SetActiveBlocked(s, sq.ActorId, true), Is.Null, "广场候补仍在广场办理");
+        IntoHouse(s, "field");
+        Assert.That(E.SetActiveBlocked(s, r.ActorId, true), Does.Contain("营外安全屋地块安全屋屋内"), "另一间屋不能编入");
+        Ok(E.ExitSafehouse(s));
+        E.DebugMapTeleport(s, Homestead);
+        ReadDialogues(s);
+        Assert.That(E.SetActiveBlocked(s, r.ActorId, true), Does.Contain("要你实地进那间屋"), "屋外也不行");
+        Ok(E.EnterSafehouse(s));
+        Assert.That(E.SetActiveBlocked(s, sq.ActorId, true), Does.Contain("只能在营区广场"), "广场候补不能在屋里编入");
+        var minute = s.GameMinute;
+        Assert.That(E.SetActiveBlocked(s, r.ActorId, true), Is.Null);
+        Ok(E.SetActive(s, r.ActorId, true));
+        Assert.That(s.Party, Does.Contain(r.ActorId));
+        Assert.That(r.ReserveSafehouse, Is.Null, "编入同行即离开屋内候补");
+        Assert.That(s.GameMinute, Is.EqualTo(minute), "0 分钟");
+    }
+
+    /// <summary>
+    /// PLAN-Q183-02（retrieve）：“留守此屋”——主队与该同行者同在已建成安全屋屋内且安全空闲时 0 分钟留作该屋候补；不在屋内、对候补都不能用；留守不释放随机/保底名额；
+    /// 屋里不能“留作候补”到营区广场；下一 tick 起按该屋照护。
+    /// </summary>
+    [Test]
+    public void PLAN_Q183_02_StayInSafehouse_ZeroMinute_KeepsQuota()
+    {
+        var s = AtShelter(c: 3);
+        BuildSafehouseAndReturn(s);
+        Ok(E.StartRecruit(s, s.Recruit.Candidates[0].CandidateId, RecruitPlacement.Party));
+        Run(s);
+        var r = Recruited(s);
+        E.DebugRecruit(s, "npc_gu_cheng");
+        Assert.That(E.StayInSafehouseBlocked(s, r.ActorId), Does.Contain("只能在已建成的安全屋屋内"));
+        IntoHouse(s);
+        Assert.That(E.SetActiveBlocked(s, r.ActorId, false), Does.Contain("只能在营区广场"), "屋里不能留作广场候补");
+        Assert.That(E.StayInSafehouseBlocked(s, GameState.PlayerId), Is.Not.Null);
+        var quota = E.SharedRoster(s).Count;
+        var minute = s.GameMinute;
+        Ok(E.StayInSafehouse(s, r.ActorId, "stay-1"));
+        Assert.That(E.StayInSafehouse(s, r.ActorId, "stay-1").Duplicate, Is.True);
+        Assert.That(s.Party, Does.Not.Contain(r.ActorId));
+        Assert.That(r.ReserveSafehouse, Is.EqualTo(Homestead));
+        Assert.That(s.GameMinute, Is.EqualTo(minute), "0 分钟");
+        Assert.That(E.SharedRoster(s).Count, Is.EqualTo(quota), "留守不释放名额");
+        Assert.That(E.StayInSafehouseBlocked(s, r.ActorId), Does.Contain("不在同行队伍里"));
+        Assert.That(s.Log.Last().Text, Does.Contain("留守营外安全屋地块安全屋屋内作候补"));
+        // 固定队友同样可留守此屋（“已有队员”）
+        Ok(E.StayInSafehouse(s, "npc_gu_cheng"));
+        Assert.That(E.ReservePlace(s, "npc_gu_cheng"), Is.EqualTo(GameEngine.ZonePlace(Homestead, GameEngine.SafehouseZone)));
+        Assert.That(E.ReserveCareLabel(s, s.Actors["npc_gu_cheng"]), Does.EndWith("遮蔽"));
+        // 再编入同行
+        Ok(E.SetActive(s, r.ActorId, true));
+        Assert.That(s.Party, Does.Contain(r.ActorId));
+    }
+
+    /// <summary>
+    /// shelter.death：驻屋候补死亡遗物保留实际屋内（不进营区、不迁址、不重生）；只有进那间屋才看得到、取得到；屋外与别处取不到。
+    /// </summary>
+    [Test]
+    public void PLAN_Q183_02_HouseReserveDeath_RemainsInsideHouse()
+    {
+        var s = AtShelter();
+        BuildSafehouseAndReturn(s);
+        var r = RecruitToHouse(s);
+        var wood = E.CreateItems(s, "wood", 1, ItemInstance.CarriedOwner(r.ActorId)).Single();
+        Assert.That(E.DebugActor(s, r.ActorId, "kill"), Does.Contain("已死亡"));
+        Assert.That(r.Dead, Is.True);
+        Assert.That(r.DeathLocation, Is.EqualTo(Homestead));
+        Assert.That(s.Log.Last().Text, Does.Contain("遗物留在营外安全屋地块安全屋屋内"));
+        var rem = s.Remains[r.ActorId];
+        Assert.That((rem.LocationId, rem.Zone, rem.PublicReserve), Is.EqualTo((Homestead, GameEngine.SafehouseZone, (bool?)false)));
+        Assert.That(E.RemainsHere(s), Is.Empty, "收容所看不到");
+        Assert.That(E.TakeFromRemainsBlocked(s, r.ActorId, wood.InstanceId, true), Does.Contain("在营外安全屋地块安全屋屋内"), "不能远程取");
+        E.DebugMapTeleport(s, Homestead);
+        ReadDialogues(s);
+        Assert.That(E.RemainsHere(s), Is.Empty, "屋外看不到");
+        Assert.That(E.TakeFromRemainsBlocked(s, r.ActorId, wood.InstanceId, true), Does.Contain("要到那里才能取"));
+        Ok(E.EnterSafehouse(s));
+        Assert.That(E.RemainsHere(s).Select(kv => kv.Key), Is.EqualTo(new[] { r.ActorId }));
+        Ok(E.TakeFromRemains(s, r.ActorId, wood.InstanceId, true));
+        Assert.That(wood.Owner, Is.EqualTo(s.Ground), "取到屋内地面");
+        Assert.That(E.SharedRoster(s), Is.Empty, "死亡释放名额、不重生");
+    }
+
+    /// <summary>
+    /// PLAN-Q181-01：退役只在收容所安全空闲办理、主队须实到；营区广场或安全屋候补本人不必到场，全部个人物品原子迁收容所认领箱（不留在屋里）；
+    /// 在广场或安全屋里不能办退役；非退役的取人/取物不因此远程化（收容所不能编入屋内候补、不能取屋内遗物）。
+    /// </summary>
+    [Test]
+    public void PLAN_Q181_01_RetireAtShelterOnly_ReserveAbsent_ItemsToClaimBox()
+    {
+        var s = AtShelter(c: 3);
+        BuildSafehouseAndReturn(s);
+        var house = RecruitToHouse(s, 0);
+        Ok(E.StartRecruit(s, s.Recruit.Candidates[1].CandidateId, RecruitPlacement.Square));
+        Run(s);
+        var square = Recruited(s);
+        var w1 = E.CreateItems(s, "wood", 2, ItemInstance.CarriedOwner(house.ActorId)).Single();
+        var w2 = E.CreateItems(s, "stone", 1, ItemInstance.CarriedOwner(square.ActorId)).Single();
+
+        // 广场与安全屋里都不能办退役
+        E.DebugMapTeleport(s, "h02_square");
+        ReadDialogues(s);
+        Assert.That(E.RetireBlocked(s, square.ActorId), Does.Contain("只能在收容所"));
+        IntoHouse(s);
+        Assert.That(E.RetireBlocked(s, house.ActorId), Does.Contain("只能在收容所"), "人就在屋里也要到收容所办");
+        Ok(E.ExitSafehouse(s));
+        E.DebugMapTeleport(s, Shelter);
+        ReadDialogues(s);
+
+        // 收容所：本人不在场也能办；物品进收容所认领箱
+        Assert.That(E.SetActiveBlocked(s, house.ActorId, true), Does.Contain("要你实地进那间屋"), "退役例外不让编入远程化");
+        var minute = s.GameMinute;
+        Ok(E.Retire(s, house.ActorId));
+        Ok(E.Retire(s, square.ActorId));
+        Assert.That(s.GameMinute, Is.EqualTo(minute), "0 分钟");
+        foreach (var (r, it) in new[] { (house, w1), (square, w2) })
+        {
+            Assert.That(r.Retired, Is.True);
+            Assert.That(it.Owner, Is.EqualTo(ItemInstance.RemainsOwner(r.ActorId)));
+            var box = s.Remains[r.ActorId];
+            Assert.That((box.Kind, box.LocationId, box.Zone), Is.EqualTo((RemainsState.ClaimKind, Shelter, (string?)null)), "认领箱在收容所，不在屋里");
+        }
+        Assert.That(E.RemainsHere(s).Count, Is.EqualTo(2));
+        Assert.That(E.SharedRoster(s), Is.Empty);
+    }
+
+    /// <summary>shelter.compatibility：旧在册候补位置保持营区广场（存档里没有所在屋字段），不自动搬屋；照护读营区。</summary>
+    [Test]
+    public void PLAN_Q183_02_OldReserves_StayOnSquare()
+    {
+        var s = AtShelter();
+        BuildSafehouseAndReturn(s);
+        Ok(E.StartRecruit(s, s.Recruit.Candidates[0].CandidateId, RecruitPlacement.Square));
+        Run(s);
+        var j = JObject.Parse(SaveSerializer.Serialize(s));
+        j["SchemaVersion"] = "34";
+        foreach (var r in (JArray)j["Roster"]!) ((JObject)r).Remove("ReserveSafehouse");
+        var t = SaveSerializer.Deserialize(j.ToString(), Cfg);
+        foreach (var r in E.Reserves(t))
+        {
+            Assert.That(r.ReserveSafehouse, Is.Null);
+            Assert.That(E.ReservePlace(t, r.ActorId), Is.EqualTo("h02_square"), "旧候补不强迁");
+        }
+        Assert.That(E.Reserves(t).Count, Is.EqualTo(1));
+    }
 }

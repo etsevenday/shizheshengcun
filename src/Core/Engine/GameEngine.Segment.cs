@@ -365,7 +365,9 @@ namespace Survival.Core.Engine
             if (actor.IsPlayer) return;
             if (cause != ZombifiedCause) actor.Stats.Health = 0;
             var wasActive = s.Party.Contains(actor.Id);
-            var where = wasActive ? (s.Battle?.LocationId ?? s.CurrentLocation) : HubLocation(s);   // 候补死在营区公共居所（Q89：迁址前为替身地点）
+            // 候补死在营区公共居所（Q89：迁址前为替身地点）；B22g（Q183 death）：驻屋候补死在该安全屋屋内，遗物保留实际屋内
+            var houseOf = wasActive ? null : RosterOf(s, actor.Id)?.ReserveSafehouse;
+            var where = wasActive ? (s.Battle?.LocationId ?? s.CurrentLocation) : houseOf ?? HubLocation(s);
             s.Party.Remove(actor.Id);
             RepairFormation(s);   // Q86：只清死者那一格，其余槽与空位不动
             s.FormationVersion++;
@@ -382,8 +384,9 @@ namespace Survival.Core.Engine
                 r.DeathLocation = where;
                 r.DeathCause = cause;
             }
-            var moved = MoveToRemains(s, actor, where, cause, wasActive ? s.Battle?.BattleId : null, !wasActive);
-            Emit(s, GameEventKind.Alert, $"{ActorLabel(actor)}死了（{cause}）" + (moved > 0 ? $"，遗物留在{LocName(where)}。" : "。"));
+            var moved = MoveToRemains(s, actor, where, cause, wasActive ? s.Battle?.BattleId : null, !wasActive && houseOf == null, houseOf != null ? SafehouseZone : null);
+            var whereName = houseOf != null ? $"{SafehouseName(s, houseOf)}屋内" : LocName(where);
+            Emit(s, GameEventKind.Alert, $"{ActorLabel(actor)}死了（{cause}）" + (moved > 0 ? $"，遗物留在{whereName}。" : "。"));
         }
 
         /// <summary>角色在文案里的称呼：主角为“你”，队友为名册名（B8）；没有名字的测试注入角色为“队友&lt;id&gt;”。</summary>

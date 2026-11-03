@@ -13,7 +13,7 @@ namespace Survival.Core.Engine
         // ───────────── 死亡与遗物（R08 §4、A11 §8） ─────────────
 
         /// <summary>把死者全部穿戴与随身实例一次改 owner 为 remains:&lt;id&gt;（锅内内容随锅）；有物品才建遗物容器。返回迁移件数。</summary>
-        private int MoveToRemains(GameState s, ActorState actor, string where, string cause, int? battleId, bool publicReserve = false)
+        private int MoveToRemains(GameState s, ActorState actor, string where, string cause, int? battleId, bool publicReserve = false, string? zone = null)
         {
             var carried = ItemInstance.CarriedOwner(actor.Id);
             var owner = ItemInstance.RemainsOwner(actor.Id);
@@ -25,7 +25,7 @@ namespace Survival.Core.Engine
             }
             if (items.Count == 0) return 0;
             if (!s.Remains.ContainsKey(actor.Id))
-                s.Remains[actor.Id] = new RemainsState { Name = ActorLabel(actor), LocationId = where, Minute = s.GameMinute, Cause = cause, BattleId = battleId, PublicReserve = publicReserve };
+                s.Remains[actor.Id] = new RemainsState { Name = ActorLabel(actor), LocationId = where, Minute = s.GameMinute, Cause = cause, BattleId = battleId, PublicReserve = publicReserve, Zone = zone };
             return items.Count;
         }
 
@@ -35,7 +35,12 @@ namespace Survival.Core.Engine
 
         /// <summary>当前地点的遗物（有物品的）。</summary>
         public List<KeyValuePair<string, RemainsState>> RemainsHere(GameState s) =>
-            s.Remains.Where(kv => kv.Value.LocationId == s.CurrentLocation && RemainsItems(s, kv.Key).Count > 0).OrderBy(kv => kv.Value.Minute).ToList();
+            s.Remains.Where(kv => kv.Value.LocationId == s.CurrentLocation && (kv.Value.Zone == null || kv.Value.Zone == s.CurrentZone)   // B22g：屋内遗物只在屋内看见
+                                  && RemainsItems(s, kv.Key).Count > 0).OrderBy(kv => kv.Value.Minute).ToList();
+
+        /// <summary>遗物所在处的称呼：屋内遗物为“××安全屋屋内”，其余为地点名。</summary>
+        public string RemainsWhere(GameState s, RemainsState rem) =>
+            rem.Zone == SafehouseZone ? $"{SafehouseName(s, rem.LocationId)}屋内" : LocName(rem.LocationId);
 
         /// <summary>从遗物取出一件（整堆）到你的随身（五卡与 30kg 校验）或当前地面的只读预演；null 为可以。</summary>
         public string? TakeFromRemainsBlocked(GameState s, string deadId, int instanceId, bool toGround)
@@ -43,7 +48,8 @@ namespace Survival.Core.Engine
             if (s.Progress.Dead) return "本局已结束";
             if (!s.Remains.TryGetValue(deadId, out var rem)) return "这里没有这份遗物";
             if (s.Battle != null || s.Encounter != null) return "战斗结束后才能整理遗物";
-            if (rem.LocationId != s.CurrentLocation) return $"{(rem.IsClaim ? "认领箱" : rem.IsDungeonBox ? rem.Name : "遗物")}在{LocName(rem.LocationId)}，要到那里才能取";
+            if (rem.LocationId != s.CurrentLocation || (rem.Zone != null && rem.Zone != s.CurrentZone))
+                return $"{(rem.IsClaim ? "认领箱" : rem.IsDungeonBox ? rem.Name : "遗物")}在{RemainsWhere(s, rem)}，要到那里才能取";
             var it = FindItem(s, instanceId);
             if (it == null || it.Owner != ItemInstance.RemainsOwner(deadId)) return "这件物品已不在遗物里";
             if (!toGround && PickupBlockedText(s, it, it.Count) is string why) return why;
@@ -196,7 +202,7 @@ namespace Survival.Core.Engine
                 var dead = it.Owner.Substring(ItemInstance.RemainsPrefix.Length);
                 if (s.Remains.TryGetValue(dead, out var rem) && rem.IsClaim) return $"{LocName(rem.LocationId)}认领箱里（{rem.Name}退役寄存）";
                 if (rem != null && rem.IsDungeonBox) return $"{LocName(rem.LocationId)}的{rem.Name}里";
-                return s.Remains.TryGetValue(dead, out rem) ? $"{rem.Name}的遗物里（{LocName(rem.LocationId)}）" : "遗物里";
+                return s.Remains.TryGetValue(dead, out rem) ? $"{rem.Name}的遗物里（{RemainsWhere(s, rem)}）" : "遗物里";
             }
             if (ItemInstance.TryEquip(it.Owner, out var aid, out _)) return $"{ActorDisplayName(s, aid)}身上";
             if (it.IsCarried) return "你的随身";
