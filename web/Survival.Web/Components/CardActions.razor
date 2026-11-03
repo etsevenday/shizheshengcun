@@ -294,7 +294,7 @@
             }
             @if ((m.Instance ?? m.Head) is ItemInstance tsInst && s.Battle == null && (e.IsTarp(tsInst) || e.IsStove(tsInst)) && (tsInst.IsCarried || tsInst.Owner == s.Ground))
             {
-                @* B17（A07 X1.6）：野营遮雨布/折叠柴炉在临时露营许可点部署或收起；单击直接开始 *@
+                @* B17（A07 X1.6）：野营遮雨布/折叠柴炉部署或收起；单击直接开始。B22e（Q173）：野营布在普通野外外部区都能铺，柴炉仍只限临时露营许可点 *@
                 var stoveSel = e.IsStove(tsInst);
                 var deployed = e.IsDeployed(s, tsInst);
                 var cfac = e.FacOf(s, s.Ground);

@@ -36,7 +36,7 @@
              @onclick="SelectFire" @onclick:stopPropagation="true" @onkeydown="Key">
             <span class="fc-art">@Icons.Markup(fac.FireLit ? "fire_lit" : "fire_out")</span>
             <span class="fc-info">
-                <span class="fc-title" title="@(fac.StoveInstanceId.HasValue ? "折叠柴炉：收起请选中地面上的柴炉卡（先取空、熄火；剩余燃料要明确放弃）" : null)"><b title="@(fac.StoveInstanceId.HasValue ? "折叠柴炉" : s.CurrentZone == GameState.SafehouseZone ? "安全屋屋内火堆（与外部火堆分开）" : "火堆")">@(fac.StoveInstanceId.HasValue ? "柴炉" : "火堆")</b><span class="oc-badge @(fac.FireLit ? "lit" : "")">@state</span>@if (slots.Count > 0 && slots.All(x => x != null)) {<span class="oc-badge full" title="@($"火堆加工位已满（{slots.Count}/{slots.Count}）：取出成品或半成品后才能再煅烧木炭、放锅或直烤")">加工位满</span>}</span>
+                <span class="fc-title" title="@(fac.StoveInstanceId.HasValue ? "折叠柴炉：收起请选中地面上的柴炉卡（先取空、熄火；剩余燃料要明确放弃）" : null)"><b title="@(fac.StoveInstanceId.HasValue ? "折叠柴炉" : s.CurrentZone == GameState.SafehouseZone ? "安全屋屋内火堆（与外部火堆分开）" : fac.FireBuilt ? "野外固定火堆（不能拾取或拆除，不挡遭遇）" : "火堆")">@(fac.StoveInstanceId.HasValue ? "柴炉" : "火堆")</b><span class="oc-badge @(fac.FireLit ? "lit" : "")">@state</span>@if (slots.Count > 0 && slots.All(x => x != null)) {<span class="oc-badge full" title="@($"火堆加工位已满（{slots.Count}/{slots.Count}）：取出成品或半成品后才能再煅烧木炭、放锅或直烤")">加工位满</span>}</span>
                 <span class="fuel-line"><span>燃料</span><b>@(fac.FuelMinutes)/@(maxFuel)分钟</b></span>
                 <span class="fuel-track"><i style="width:@(fac.FuelMinutes * 100 / Math.Max(1, maxFuel))%"></i></span>
             </span>

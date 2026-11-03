@@ -342,7 +342,19 @@ namespace Survival.Core.Engine
             CreateItems(s, Config.Safehouse.Camping.StoveItemId, 1, s.Ground);
             CreateItems(s, "wood", 2, s.Ground);
             Normalize(s, s.Ground);
-            return $"开发：野营遮雨布、折叠柴炉各1与木材2放在{ZoneName(s, s.Ground)}地面（只能在临时露营许可点部署）";
+            return $"开发：野营遮雨布、折叠柴炉各1与木材2放在{ZoneName(s, s.Ground)}地面（野营布可在普通野外铺，柴炉只能在临时露营许可点部署）";
+        }
+
+        /// <summary>开发（B22e，Q173）：建野外火堆的材料石块4、木材2放当前地面。</summary>
+        public string DebugWildFireKit(GameState s)
+        {
+            var rc = WildFireRecipe;
+            foreach (var kv in rc.Inputs) CreateItems(s, kv.Key, kv.Value, s.Ground);
+            Normalize(s, s.Ground);
+            UpdateFlags(s);
+            var why = WildFireSiteReasons(s);
+            return $"开发：建野外火堆材料（{string.Join("、", rc.Inputs.Select(kv => $"{ItemName(kv.Key)}{kv.Value}"))}）放在{ZoneName(s, s.Ground)}地面；" +
+                   (why.Count == 0 ? "这里可以建野外火堆" : "这里不能建：" + string.Join("；", why));
         }
     }
 }

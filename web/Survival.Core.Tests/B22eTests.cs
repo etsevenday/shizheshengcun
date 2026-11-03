@@ -281,4 +281,15 @@ public class B22eTests : TestBase
         AdvanceTo(u, u.GameMinute + 60);
         Assert.That((u.Locations["field"].Facility.FireLit, u.Locations["field"].Facility.FuelMinutes), Is.EqualTo((false, 0)));
     }
+
+    [Test]
+    public void M452_DevWildFireKit_FieldOk_SquareRejected()
+    {
+        var s = At("field", false);
+        s.Items.RemoveAll(i => i.ItemId is "stone" or "wood");
+        Assert.That(E.DebugWildFireKit(s), Does.Contain("这里可以建野外火堆"));
+        Assert.That(E.CanStart(s, Fire()), Is.Null);
+        var q = At("h02_square", false);
+        Assert.That(E.DebugWildFireKit(q), Does.Contain("这里不能建").And.Contain("普通野外"));
+    }
 }

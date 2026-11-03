@@ -108,12 +108,17 @@
                 else
                 {
                     <div class="panel craft-mats">
-                        <div class="eyebrow" title="@RecipeHint(rc)">@(rc.IsBuild ? "营地建造" : e.StationName(rc.Station)) · @rc.Name ⓘ</div>
+                        <div class="eyebrow" title="@RecipeHint(rc)">@(rc.IsBuild ? (GameEngine.IsWildFireRecipe(rc) ? "野外建造" : "营地建造") : e.StationName(rc.Station)) · @rc.Name ⓘ</div>
                         @* B10（A10 §9.1）：来源、工坊与门槛一次写全；不满足的标出原因（不是缺料） *@
                         <div class="craft-source" data-craft-source>
                             <span>@RecipeMeta(rc)</span>
                             @if (SourceText(rc) is string src) { <span class="muted">来源：@src</span> }
                             @foreach (var l in locks) { <span class="warn-text">@l</span> }
+                            @if (GameEngine.IsWildFireRecipe(rc))
+                            {
+                                @* B22e（Q173）：建野外火堆的不合格原因逐项列出（地点/火源/敌踪/行动/材料），施工不能消除危险 *@
+                                @foreach (var w in e.WildFireReasons(s).Except(locks)) { <span class="warn-text" data-wild-fire-reason>@w</span> }
+                            }
                         </div>
                         @if (rc.IsRepair)
                         {
@@ -239,7 +244,7 @@
                         <div class="tiny muted" style="margin-top:8px">产物</div>
                         @if (rc.FacilityResult != null)
                         {
-                            <ItemRow Icon="@RecipeIcon(rc)" Name="@rc.Name.Replace("建", "").Replace("铺", "")" Qty="×1" Status="@($"建在{e.ZoneName(s, s.Ground)}，不可搬动{(rc.Group == "workshop" ? "，每区每类一座" : "")}")" />
+                            <ItemRow Icon="@RecipeIcon(rc)" Name="@rc.Name.Replace("建", "").Replace("铺", "")" Qty="×1" Status="@($"建在{e.ZoneName(s, s.Ground)}，不可搬动{(rc.Group == "workshop" ? "，每区每类一座" : GameEngine.IsWildFireRecipe(rc) ? "、不能拾取或拆除，每区只能有一处火源" : "")}")" />
                         }
                         @foreach (var kv in rc.Outputs)
                         {
@@ -368,6 +373,9 @@ else
             "make_wooden_spear" => $"矛类武器，可打敌方1—3号位。{Range("wooden_spear")}。",
             "make_wooden_bow" => $"弓弩类武器，可打敌方1—4号位；每射直接消耗随身箭矢1。{Range("wooden_bow")}。",
             "make_arrows" => "木弓的箭矢，首版不回收。",
+            "wild_fixed_fire" => $"在普通野外的外部区建一处固定火堆（地牢、城市与势力公共地、任务保留地不行；不要求登记、安全屋或探索100%）。材料取随身与当前地面；" +
+                                 $"建成初始熄灭、燃料0、没有锅，点火{c.Fire.IgniteMinutes}分钟、木材每份{c.Fire.BurnMinutesPerWood}分钟、燃料上限{c.Fire.MaxFuelMinutes}分钟、{c.Fire.ProcessingSlots}个加工位最多{c.Fire.MaxPots}口锅。" +
+                                 "每区只能有一处火源：已有火堆或部署着折叠柴炉都不能建。不能拾取或拆除，不挡遭遇。",
             "make_antiviral_cure" => "立即清除病毒感染。需医疗≥15、制造≥12，在营地制作，并指定一口取下并清空的锅（不消耗）；净水作为原料直接消耗，不自动装锅。",
             _ => "",
         };
@@ -484,7 +492,7 @@ else
     private string RecipeMeta(RecipeConfig r)
     {
         var lv = r.MinSkills.Count == 0 ? "" : " · " + string.Join("、", r.MinSkills.Select(kv => $"{G.E.SkillName(kv.Key)}{kv.Value}级"));
-        return $"{r.BaseMinutes}分钟{lv}{(r.IsBuild ? " · 营地" : "")}";
+        return $"{r.BaseMinutes}分钟{lv}{(r.IsBuild ? (GameEngine.IsWildFireRecipe(r) ? " · 普通野外" : " · 营地") : "")}";
     }
 
     /// <summary>列表里的锁定短句（详细原因在悬停与配方卡）。</summary>

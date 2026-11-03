@@ -55,7 +55,7 @@ public sealed class FeedbackBridge
             energy = Math.Round(st.Energy, 2), wakefulness = Math.Round(st.Wakefulness, 2), morale = Math.Round(st.Morale, 2),
         };
         ctx["carriedKg"] = (double)Math.Round(e.CarriedGrams(s) / 1000m, 2, MidpointRounding.AwayFromZero);
-        ctx["fires"] = s.Locations.Where(kv => e.Location(kv.Key).HasFire)
+        ctx["fires"] = s.Locations.Where(kv => e.HasFireAt(s, kv.Key))   // B22e：含野外固定火堆与部署中的柴炉
             .ToDictionary(kv => kv.Key, kv => new { lit = kv.Value.Facility.FireLit, fuel = kv.Value.Facility.FuelMinutes, shelter = kv.Value.Facility.ShelterBuilt, bed = kv.Value.Facility.BedBuilt });
         ctx["clear"] = s.Locations.Where(kv => kv.Value.Visited && e.Location(kv.Key).ClearEnabled)
             .ToDictionary(kv => kv.Key, kv => e.ClearChargesText(s, kv.Key));
