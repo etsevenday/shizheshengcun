@@ -1032,7 +1032,9 @@ namespace Survival.Core.Engine
             var apTxn = s.City.Pending is CityServiceTxn cp && cp.ActionId == a.ActionId && cp.AppraisalMode != null ? cp : null;   // B18
             if (a.TargetId.StartsWith(CityServicePrefix)) ReleaseCityService(s, a);
             if (a.TargetId.StartsWith(RecruitTargetPrefix)) ReleaseRecruit(s, a);   // B19：只释放候选与名额锁，已耗时间不退
-            Release(s, a, s.Ground);
+            var stagedNote = _stagedCancelNote = new List<string>();
+            try { Release(s, a, s.Ground); }
+            finally { _stagedCancelNote = null; }
             if (a.IsSub) s.Sub = null; else s.Main = null;
 
             string text = a.Type switch
@@ -1055,6 +1057,7 @@ namespace Survival.Core.Engine
                     $"已停止{CityService(a.TargetId.Substring(CityServicePrefix.Length))?.Title ?? a.Label}（实际进行了{Clock.Duration(a.ElapsedMinutes)}）。",
                 _ => $"已结束{a.Label}。",
             };
+            if (stagedNote.Count > 0) text += string.Join("", stagedNote);   // B23 试玩修复：记录领取保留的段写进取消提示
             Emit(s, GameEventKind.ActionCancelled, text);
             if (apTxn != null) AppraisalServiceEnd(s, apTxn.NpcId);   // B22d Q177：鉴定/换物开工后取消，播一次陶岑原结束句
             UpdateFlags(s);

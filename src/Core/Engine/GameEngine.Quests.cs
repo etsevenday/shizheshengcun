@@ -163,6 +163,12 @@ namespace Survival.Core.Engine
                 v.Status = req == null ? "available" : "locked";
                 v.StatusText = req == null ? "可接" : "未满足条件";
                 v.Step = req != null && !string.IsNullOrEmpty(q.StepLocked) ? q.StepLocked : q.StepOffer;
+                // B23 试玩修复：先领了记录还没接取的可选任务写明记录已取得（沿用领取日志原句）
+                if (HasQuestRecord(s, q))
+                {
+                    if (req == null) v.StatusText = "可接 · 记录已取得";
+                    v.Step = $"记录已保存，{(req == null ? "" : "营区登记后")}在{LocName(q.LocationId)}和{NpcNameOf(q.NpcId)}交谈接取时即完成，不用再进一次。";
+                }
                 v.AcceptBlocked = req;
                 if (req == null && (q.Accept == "talk"))
                 {
@@ -261,8 +267,9 @@ namespace Survival.Core.Engine
             if (s.Progress.Flags.Add(QuestFact(q.Id, "accepted"))) rec.AcceptedAt ??= s.GameMinute;
             if (choice != null) rec.Choice = choice;
             if (dialogue && !string.IsNullOrEmpty(q.OfferDialogue)) PlayQuestSet(s, q, q.OfferDialogue!);
-            if (!QuestDone(s, q.Id))
-                Emit(s, GameEventKind.Info, $"{KindWord(q)}“{q.Title}”已接取：{(HasQuestRecord(s, q) ? q.StepTurnin : q.StepActive)}");
+            // B23 试玩修复：记录已在手的可选任务接取即追认完成，只记完成那一条
+            if (!QuestDone(s, q.Id) && !(q.RecordFacts.Count > 0 && HasQuestRecord(s, q)))
+                Emit(s, GameEventKind.Info, $"{KindWord(q)}“{q.Title}”已接取：{q.StepActive}");
             // B23（A11 §2“任务可提前拾取后补接，不重复要求再进一次”）：接取时记录已在手——就在岗位面前，接取即追认完成（同 FA05 先例，不再给第二份知识/物资）
             if (q.RecordFacts.Count > 0 && HasQuestRecord(s, q)) CompleteQuest(s, q, false);
             // B15a（Q157 选 A）：须先接取才完成的（FA05），接取时完成事实已在手（先领了联络日志）——接取后这一安全边界追认完成：

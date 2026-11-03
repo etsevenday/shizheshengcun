@@ -423,10 +423,11 @@ namespace Survival.Core.Engine
                 }
             }
             if (p.WorkMinutes <= 0) p.WorkMinutes = p.BaseMinutes;
-            if (p.IsWork && System.Math.Abs(p.FactorAtStart - 1) > Eps)
+            // B23 试玩修复：不能开始的行动（plan 为空）不写倍率行
+            if (plan != null && p.IsWork && System.Math.Abs(p.FactorAtStart - 1) > Eps)
                 p.Notes.Add($"当前工作倍率×{p.FactorAtStart:0.##}：{string.Join("，", p.FactorReasons)}");
             // B4 试玩修复：装备的负小时率效果也写一行（与“装备工作量×…”同样写法），右栏状态预估已按它计算
-            if (p.IsWork && GearRateNote(s, r.Type, r.TargetId) is string gr) p.Notes.Add(gr);
+            if (plan != null && p.IsWork && GearRateNote(s, r.Type, r.TargetId) is string gr) p.Notes.Add(gr);
         }
 
         /// <summary>即时效果超过该项上限的部分（两位小数）：“饱食溢出12.00”“健康溢出0.30”。健康用实际恢复量（含医疗加成）。</summary>

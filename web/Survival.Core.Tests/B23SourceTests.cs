@@ -84,6 +84,16 @@ public class B23SourceTests : TestBase
         Assert.That(st.Any(x => x.Category == "熟练不足" && x.Text.Contains("制造7级")), Is.True, "蓝图已得不代表等级满足");
     }
 
+    /// <summary>试玩修复：有库存但没有已开通路线的来源不写“可获取”，原因只写一次（状态写原因、路线栏留空）。</summary>
+    [Test]
+    public void NoRoute_NotAvailable_ReasonOnce()
+    {
+        var s = Fresh();
+        Discover(s, "w34_depot_a");
+        var v = E.ItemSources(s, "canned_beans").Single(x => x.Kind == "resource");
+        Assert.That((v.Usable, v.Status, v.Route), Is.EqualTo((false, "现在没有已开通的路线", "")));
+    }
+
     /// <summary>已掌握配方与火堆加工也作来源：净水有“火堆加工：烧水”。</summary>
     [Test]
     public void RecipeAndProcessSources()

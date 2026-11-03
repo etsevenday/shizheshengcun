@@ -347,7 +347,8 @@
                     var nodeId = r.NodeId;
                     var tool = e.BestToolFor(s, r);   // B13b（Q121）：新表按物品 ID（石刀/简易斧/撬棍），旧 20 条按原标签
                     var toolNames = e.QualifiedToolNames(r);
-                    var minutes = tool != null && r.ToolBonus?.BaseMinutesOverride != null ? r.ToolBonus.BaseMinutesOverride.Value : r.BaseMinutes;
+                    var minutes = tool != null && r.ToolBonus?.BaseMinutesOverride != null ? r.ToolBonus.BaseMinutesOverride.Value
+                        : e.StagedRecord(r) ? e.StagedLeft(s, r) : r.BaseMinutes;   // B23 试玩修复（EXQ-A05）：两段续做的记录写剩余分钟
                     var req = ActionRequest.Gather(r.NodeId);
                     var why = busy ? (s.Main?.Status == ActionStatus.Paused ? "行动暂停中" : "行动进行中") : e.CanStart(s, req);
                     <ObjectCard @key="r.NodeId" Id="@($"res-{nodeId}")" CssClass="res-card" Title="@r.Name" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"

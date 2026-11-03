@@ -118,7 +118,8 @@ namespace Survival.Core.Engine
             else { status = "可获取"; usable = true; }
             if (usable && r.IsInstance) status = $"可获取（本代剩余{rs.Available ?? 0}/{r.Cap}，换代才恢复）";
             var route = RouteText(s, r.LocationId);
-            if (usable && route == NoRouteText) { status = "可获取，但现在没有已开通的路线"; usable = false; }
+            // B23 试玩修复：没有已开通路线时不写“可获取”，原因只写一次（状态即原因，路线栏留空）
+            if (usable && route == NoRouteText) { status = NoRouteText; usable = false; route = ""; }
             return new ItemSourceView
             {
                 Kind = "resource", Account = AccountLabel(r), Title = $"{LocName(r.LocationId)} · {r.Name}", Detail = string.Join(" · ", parts),

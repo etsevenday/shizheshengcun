@@ -94,6 +94,7 @@ public class B23ExpeditionUiTests : BattleTestBase
         var row = v.Ground.Single(r => r.InstanceId == cloth.InstanceId);
         Assert.That((row.Reward, row.CanSeal, row.Text.Contains("战利品")), Is.EqualTo((true, true, true)));
         Assert.That(v.Elsewhere, Has.Some.Contains("木材×1").And.Contains("地面"));
+        Assert.That(v.Usable.Concat(v.Ground).Concat(v.Sealed).Any(r => r.Text.Contains("#")), Is.False, "试玩修复：不显示内部实例号");
         Assert.That(v.Elsewhere.Any(x => x.Contains("藏书密室")), Is.False, "当前节点地面不算“别处”");
         var t = New();
         Assert.That(E.ExpeditionStores(t), Is.Null);

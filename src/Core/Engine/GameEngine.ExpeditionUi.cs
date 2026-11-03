@@ -74,7 +74,7 @@ namespace Survival.Core.Engine
             lines.Add("处理用品：" + (treat.Count == 0 ? "没有" : string.Join("、", treat)));
             var heat = new List<string>();
             foreach (var it in mine.Where(i => !i.InContainer && _items.TryGetValue(i.ItemId, out var c) && c.ToolTag == "lighter"))
-                heat.Add($"{ItemName(it.ItemId)}#{it.InstanceId}" + (it.Durability.HasValue && it.MaxDurability.HasValue ? $"（耐久{Fmt.N(it.Durability.Value)}/{Fmt.N(it.MaxDurability.Value)}）" : ""));
+                heat.Add(ItemName(it.ItemId) + (it.Durability.HasValue && it.MaxDurability.HasValue ? $"（耐久{Fmt.N(it.Durability.Value)}/{Fmt.N(it.MaxDurability.Value)}）" : ""));
             var wood = Cards("wood");
             if (wood > 0) heat.Add($"{ItemName("wood")}×{wood}（每份燃烧{Config.Fire.BurnMinutesPerWood}分钟）");
             lines.Add("热源：" + (heat.Count == 0 ? "没有点火工具与燃料" : string.Join("、", heat)));
@@ -100,7 +100,7 @@ namespace Survival.Core.Engine
                 return new ExpeditionStoreRow
                 {
                     InstanceId = it.InstanceId, Reward = reward, Spoiled = spoiled, CanSeal = reward && SealBlocked(s, it.InstanceId) == null,
-                    Text = $"{ItemName(it.ItemId)}×{it.Count}#{it.InstanceId}" + (where.Length > 0 ? $"（{where}）" : "") + (reward ? " · 战利品" : "") + (spoiled ? " · 已腐败" : ""),
+                    Text = $"{ItemName(it.ItemId)}×{it.Count}" + (where.Length > 0 ? $"（{where}）" : "") + (reward ? " · 战利品" : "") + (spoiled ? " · 已腐败" : ""),
                 };
             }
             foreach (var a in s.PartyActors)
@@ -114,7 +114,7 @@ namespace Survival.Core.Engine
                 v.Sealed.Add(new ExpeditionStoreRow
                 {
                     InstanceId = it.InstanceId, Reward = true, Spoiled = IsSpoiled(s, it),
-                    Text = $"{ItemName(it.ItemId)}×{it.Count}#{it.InstanceId} · 封存中·本次不可直接使用" + (IsSpoiled(s, it) ? " · 已腐败" : ""),
+                    Text = $"{ItemName(it.ItemId)}×{it.Count} · 封存中·本次不可直接使用" + (IsSpoiled(s, it) ? " · 已腐败" : ""),
                 });
             v.Elsewhere = DungeonLeftovers(s, e.DungeonId)
                 .Where(x => x.Item.Owner != s.Ground && !x.Item.Owner.StartsWith(SealedPrefix))

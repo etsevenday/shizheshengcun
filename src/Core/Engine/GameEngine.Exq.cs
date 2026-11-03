@@ -36,6 +36,9 @@ namespace Survival.Core.Engine
             if (done > 0) yield return $"已完成{done}分钟，续做剩余{res.BaseMinutes - done}分钟";
         }
 
+        /// <summary>Cancel 进行中时收集两段续做说明（并进取消提示）；平时为 null。</summary>
+        private List<string>? _stagedCancelNote;
+
         /// <summary>取消/中断时保留已提交的整 5 分钟段（最多留到差最后一段）；未提交的不算。</summary>
         private void KeepStagedClaim(GameState s, ActionState a)
         {
@@ -44,7 +47,10 @@ namespace Survival.Core.Engine
             if (seg <= 0) return;
             var rs = s.Resources[res.NodeId];
             rs.ClaimMinutesDone = Math.Min(res.BaseMinutes - 5, rs.ClaimMinutesDone + seg);
-            Emit(s, GameEventKind.Info, $"{res.Name}已保存完成的{rs.ClaimMinutesDone}分钟，下次只需续做剩余{res.BaseMinutes - rs.ClaimMinutesDone}分钟。");
+            var note = $"{res.Name}已保存完成的{rs.ClaimMinutesDone}分钟，下次只需续做剩余{res.BaseMinutes - rs.ClaimMinutesDone}分钟。";
+            // B23 试玩修复：玩家点“退出”时这句并进取消提示（浮窗与日志同一条），其余中断仍单独写一条
+            if (_stagedCancelNote != null) _stagedCancelNote.Add(note);
+            else Emit(s, GameEventKind.Info, note);
         }
 
         /// <summary>知识包里这次没有新知识时的说明（A11 §3“知识已知，本次用于保存调查记录”）；部分已知写哪些只记来源。不是知识包为 null。</summary>

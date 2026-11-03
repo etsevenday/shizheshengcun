@@ -126,7 +126,10 @@ public class B23ExqQuestTests : TestBase
         Steps(s, 1);
         Ok(E.Cancel(s));
         Assert.That(s.Resources["d08_08_unique"].ClaimMinutesDone, Is.EqualTo(5));
-        Assert.That(s.Log.Any(l => l.Text.Contains("冷链调度档案已保存完成的5分钟，下次只需续做剩余5分钟")), Is.True);
+        var cancel = s.Log.Last(l => l.Kind == GameEventKind.ActionCancelled.ToString()).Text;
+        Assert.That(cancel, Does.StartWith("已取消领取，未获得产物").And.EndWith("冷链调度档案已保存完成的5分钟，下次只需续做剩余5分钟。"), "试玩修复：保留的段并进取消提示");
+        Assert.That(s.Log.Count(l => l.Text.Contains("已保存完成的5分钟")), Is.EqualTo(1), "日志不重复");
+        Assert.That(E.StagedLeft(s, Cfg.Resources.Single(r => r.NodeId == "d08_08_unique")), Is.EqualTo(5), "卡面按钮写剩余分钟");
         Assert.That(E.CampaignClaimed(s, "d08_08_unique"), Is.False, "只提交一段，不算领取");
         Assert.That(E.KnowsKnowledge(s, "blueprint_ration_pouch"), Is.False);
 
@@ -164,12 +167,15 @@ public class B23ExqQuestTests : TestBase
         var items = s.Items.Sum(i => i.Count);
         E.DebugMapTeleport(s, "h03_workshop");
         ReadDialogues(s);
+        var pre = E.QuestViewOf(s, "EXQ06")!;
+        Assert.That((pre.Status, pre.StatusText, pre.Step), Is.EqualTo(("available", "可接 · 记录已取得", "记录已保存，在营区工坊和罗铮交谈接取时即完成，不用再进一次。")), "试玩修复：接取前写明记录已取得");
         Ok(E.TalkNpc(s, "npc_luo_zheng"));   // 接取 EXQ06 → 记录已在手 → 追认完成
         ReadDialogues(s);
         Assert.That(GameEngine.QuestDone(s, "EXQ06"), Is.True);
         Assert.That(GameEngine.QuestDone(s, "EXQ05"), Is.False);
         Assert.That(s.Items.Sum(i => i.Count), Is.EqualTo(items));
         Assert.That(s.Log.Count(l => l.Text.StartsWith("可选任务“矿道里的旧工具”完成")), Is.EqualTo(1));
+        Assert.That(s.Log.Any(l => l.Text.StartsWith("可选任务“矿道里的旧工具”已接取")), Is.False, "追认完成时只记完成那条");
     }
 
     /// <summary>
@@ -197,9 +203,15 @@ public class B23ExqQuestTests : TestBase
         Assert.That(E.NewDungeonGeneration(s, "d08"), Is.Null);
         ToRecord(s, "d08_08");
         Assert.That(E.Preview(s, ActionRequest.Gather("d08_08_unique")).Notes, Has.Some.Contains("这次只核对本次地牢的记录"));
+
         Start(s, ActionRequest.Gather("d08_08_unique"));
         Run(s);
         Assert.That(s.Log.Last(l => l.Text.Contains("冷链调度档案")).Text, Does.Contain("已核对本次地牢的冷链调度档案"));
+        // 试玩修复：本代已核对（按钮灰）时，夜间右栏也不写工作倍率行
+        s.GameMinute = At(9, 23, 0);
+        var greyed = E.Preview(s, ActionRequest.Gather("d08_08_unique"));
+        Assert.That(greyed.Ok, Is.False);
+        Assert.That(greyed.Notes.Any(n => n.StartsWith("当前工作倍率")), Is.False);
         Assert.That(s.Log.Count(l => l.Text.Contains("获得做法知识：配给袋蓝图")), Is.EqualTo(1));
         E.DebugMapTeleport(s, "h04_infirmary");
         ReadDialogues(s);
