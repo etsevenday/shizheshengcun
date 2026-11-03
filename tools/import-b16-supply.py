@@ -30,6 +30,8 @@ MODE = {
     "ex_field_tarp": "active_work",
     "ex_folding_stove": "active_work",
     "ex_field_patch": "active_work",
+    "ex_field_patch_green": "active_work",   # B22b（Q168 grades）
+    "ex_field_patch_blue": "active_work",
     "ex_cable_bundle": "active_work",
     "ex_flash_marker": "active_work",
     "ex_brace_pack": "active_work",
@@ -51,7 +53,9 @@ NAMES = {
     "ex_stew_portion": "谷肉炖食",
     "ex_field_tarp": "野营遮雨布",
     "ex_folding_stove": "折叠柴炉",
-    "ex_field_patch": "野外修补包",
+    "ex_field_patch": "野外修补包（白）",   # B22b（Q168 grades）：白绿蓝三品阶；物品的 fieldPatch 品阶字段由 B22b 写入配置，本脚本不动
+    "ex_field_patch_green": "野外修补包（绿）",
+    "ex_field_patch_blue": "野外修补包（蓝）",
     "ex_cable_bundle": "绝缘线束",
     "ex_flash_marker": "闪光标记器",
     "ex_brace_pack": "支撑护带包",
@@ -92,7 +96,7 @@ TAIL = {
     "oral_rehydration": "战外使用5分钟；与止泻药粉共用缓解冷却；水分已满且没有腹泻时没有效果；战斗中不能用",
     "antidiarrheal_powder": "战外使用5分钟",
     "emergency_tonic": "战外使用5分钟：体力+2、清醒−2、精神−1，6小时给药冷却；体力已满不能用；战斗中使用在后续版本开放",
-    "field_patch": "战外15分钟手工修一件非枪金属武器/工具，恢复其最大耐久的10%（制作面板“现场小修”）",
+    "field_patch": "战外15分钟手工修补一件金属武器/工具/防具，按包品阶扣包耐久（目标卡或制作面板“现场修补”，B22b Q168）",
     "ration_canteen": "只装同一种水；装入/倒出按500毫升整份水，壶内每次可直接喝250毫升（5分钟，水分+15）",
     "purification_tablet": "一片配4份脏水，固定等待20分钟得4份净水（制作面板“净水片处理脏水”）",
     "filter_cartridge": "配便携滤水器，一芯处理4份脏水，固定等待20分钟（制作面板“滤芯处理脏水”）",
@@ -165,13 +169,14 @@ def main():
             r["shelfRule"] = "min_inputs"
         cfg["recipes"].append(r)
 
-    # ── 野外修补包维护（A07 X1.6、R02 X4）：hand、制造1、15 分钟、恢复最大耐久 10%、只修非枪金属武器/工具 ──
+    # ── 野外修补包现场修补：hand、制造1、15 分钟。B22b（Q168）取代 B16 的整份消耗/恢复 10%/只修非枪金属：
+    #    不再列原料，repairFilter=field_patch 按包品阶公式扣包耐久；restoreOwnDurabilityMaxFraction 0.1 只给旧档在途的现场小修按开工快照完成 ──
     cfg["recipes"].append({
-        "id": "field_patch_repair", "name": "现场小修", "kind": "repair", "baseMinutes": 15,
-        "inputs": {"field_patch": 1}, "outputs": {}, "catalysts": [], "requirement": None, "facilityResult": None,
+        "id": "field_patch_repair", "name": "现场修补", "kind": "repair", "baseMinutes": 15,
+        "inputs": {}, "outputs": {}, "catalysts": [], "requirement": None, "facilityResult": None,
         "targetInstanceRequired": True, "restoreOwnDurabilityMaxFraction": 0.1, "rerollDurability": False,
         "requireEmptyDetachedPotWhenTargetIsPot": False, "station": "hand", "minSkills": {"crafting": 1},
-        "repairFilter": "metal_non_gun",
+        "repairFilter": "field_patch",
     })
 
     # ── 锅食谱进程 ──
