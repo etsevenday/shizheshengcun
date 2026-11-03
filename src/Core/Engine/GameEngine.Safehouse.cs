@@ -97,6 +97,12 @@ namespace Survival.Core.Engine
                 if (FacilityFlag(fac, result)) return result == "fireBuilt" ? $"{ZoneName(s, place)}已有火堆（每区一处）" : $"{ZoneName(s, place)}已铺好床垫";
                 return null;
             }
+            if (IsWildFireRecipe(rc))
+            {
+                // Q173 按 B（B22e）：普通野外清单外部区、已到访、本区无火源；不扩大屋内/工坊/公共设施的建造权限
+                var wild = WildFireSiteReasons(s);
+                return wild.Count > 0 ? string.Join("；", wild) : null;
+            }
             if (rc.Group == "workshop")
             {
                 if (inside ? !SafehouseBuilt(s, loc) : !CanBuildWorkshopsAt(loc)) return WorkshopBuildOnly;
@@ -138,6 +144,10 @@ namespace Survival.Core.Engine
             if (rc.FacilityResult == "fireBuilt")
             {
                 fac.FacilityId = FireIdOf(s.Ground);
+                // 新建火堆初始熄灭、零燃料、无锅（S09 X2.3；Q173 fixedFire initialLit/initialFuelMinutes/initialPot）
+                fac.FireLit = false;
+                fac.WentOut = false;
+                fac.FuelMinutes = 0;
                 SyncFacilities(s);
             }
         }
@@ -147,6 +157,8 @@ namespace Survival.Core.Engine
         {
             "safehouse" => $"{SafehouseName(s, s.CurrentLocation)}建成：可以“进入安全屋”（0分钟）；屋内遮蔽，休息时精神每小时额外{Fmt.SignedT(Config.FacilityEffects.ShelteredCampRestMoralePerHour)}，" +
                            $"有{Config.Safehouse.StorageCapacityGrams / 1000}公斤固定储物柜；床垫、火堆与工坊要在屋内另建。",
+            "fireBuilt" when IsWildFireRecipe(rc) => $"{LocName(s.CurrentLocation)}野外火堆建成：初始熄灭、燃料0、没有锅，点火仍需打火器（燃料上限{Config.Fire.MaxFuelMinutes}分钟、" +
+                           $"{Config.Fire.ProcessingSlots}个加工位、最多{Config.Fire.MaxPots}口锅）；火堆不能拾取或拆除，也不挡遭遇。",
             "fireBuilt" => $"{ZoneName(s, s.Ground)}火堆建成：初始熄灭、燃料0、没有锅，点火仍需打火器。",
             "bedBuilt" when rc.Group == "safehouse" => $"{ZoneName(s, s.Ground)}床垫铺好：屋内睡眠体力恢复每小时额外{Fmt.SignedT(Config.FacilityEffects.BedExtraSleepEnergyPerHour)}。",
             _ => null,

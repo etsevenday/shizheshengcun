@@ -534,7 +534,8 @@ namespace Survival.Core.Engine
                         plan.Catalysts.Add(pot!);
                     }
                     // 建造（棚/床/工坊/安全屋/屋内床与火）：按当前地点与所在区判位置与唯一性（S09 X2.2/X2.7、Q107、Q134）
-                    if (rc.FacilityResult != null && BuildSiteBlocked(s, rc) is string site) return site;
+                    if (IsWildFireRecipe(rc)) { if (WildFireStartBlocked(s, rc) is string wild) return wild; }   // Q173（B22e）：地点、火源与材料一次列全
+                    else if (rc.FacilityResult != null && BuildSiteBlocked(s, rc) is string site) return site;
                     if (StationBlocked(s, rc) is string station) return station;
                     if (IsStationBatchRecipe(rc)) return StationBatchBlocked(s, rc) ?? $"{StationName(rc.Station)}是被动加工：在中间配方卡下方点“投料（被动）”开始（0分钟、不占行动）";
                     if (rc.IsPassive) return $"{StationName(rc.Station)}的被动加工在后续版本开放";

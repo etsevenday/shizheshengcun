@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Survival.Core.Config;
 using Survival.Core.State;
@@ -6,7 +7,7 @@ namespace Survival.Core.Engine
 {
     /// <summary>
     /// 野营遮雨布与折叠柴炉（A07 X1.6、S11 X4、expansion-supply.json operationalRules.camping；开发计划 v0.9 B17 R56）：
-    /// 只在普通主世界 temporaryCamp 许可点（8 处）的外部区部署，角色空闲、无战斗/敌踪/移动。
+    /// 野营布在普通野外外部区显式清单（Q173 按 B，54 处，B22e）铺；柴炉仍只在普通主世界 temporaryCamp 许可点（8 处）的外部区部署；角色空闲、无战斗/敌踪/移动。
     /// 野营布铺开/收起各 10 分钟：铺开期间当地外部区睡眠算遮蔽（至多 4 名同行），不给安全屋休息精神加成、不挡遭遇、不托底 N/W。
     /// 折叠柴炉部署/收起各 5 分钟：部署后当作本区一处火堆（2 加工位、最多 1 口锅、燃料上限 60、木材每份 60、5 分钟打火器点火且点火段不受热），
     /// 当前区已有固定火堆时不能部署；收起须先取空、熄火，剩余燃料须明确放弃（不退木材）。部署中的布/炉留在当地地面、不能拾取。
@@ -37,12 +38,33 @@ namespace Survival.Core.Engine
         /// <summary>某区火堆的燃料上限：折叠柴炉 60，固定火堆 240（A07 X1.6）。</summary>
         public int FuelCapOf(FacilityState fac) => fac.StoveInstanceId.HasValue ? Camping.StoveMaxFuelMinutes : Config.Fire.MaxFuelMinutes;
 
-        /// <summary>当前地点能不能部署野营物品（地点许可与所在区）；能为 null。</summary>
-        public string? CampingSiteBlocked(GameState s)
+        /// <summary>
+        /// 这个地点在不在 Q173 普通野外外部区显式清单里（camping.allowedExteriorNodeIds，B22e）：野营布可铺、野外固定火堆可建。
+        /// 只认清单，不按 ID 前缀、图形或是否安全推定；清单外的地牢（含 safe 房）、城市/势力公共地、任务保留地一律不行。
+        /// </summary>
+        public bool CampingAllowedAt(string locationId) =>
+            Camping.AllowedExteriorNodeIds.Contains(locationId) && _locs.TryGetValue(locationId, out var lc) && lc.WorldKind == "overworld" && !lc.IsDungeon;
+
+        /// <summary>普通野外清单外地点的拒绝原因（野营布与野外火堆共用）：“只能在普通野外的外部区铺野营遮雨布（地牢、城市与势力公共地、任务保留地不行）”。</summary>
+        public static string CampingWildOnly(string what) => $"只能在普通野外的外部区{what}（地牢、城市与势力公共地、任务保留地不行）";
+
+        /// <summary>
+        /// 当前地点能不能部署野营物品（地点许可与所在区）；能为 null。
+        /// 野营布（Q173 按 B，B22e）：普通野外清单内的外部区，须已实际到访；不要求登记、建屋或探索 100%。
+        /// 折叠柴炉：仍只限 temporaryCamp 8 处（Q173 不放宽）。
+        /// </summary>
+        public string? CampingSiteBlocked(GameState s, bool stove)
         {
-            var lc = _locs[s.CurrentLocation];
+            var loc = s.CurrentLocation;
+            var lc = _locs[loc];
             if (s.CurrentZone != ExteriorZone) return "只能在屋外部署";
-            if (!lc.TemporaryCamp || lc.WorldKind != "overworld" || lc.IsDungeon) return "只能在临时露营许可点部署（野外 8 处）";
+            if (stove)
+            {
+                if (!lc.TemporaryCamp || lc.WorldKind != "overworld" || lc.IsDungeon) return "只能在临时露营许可点部署（野外 8 处）";
+                return null;
+            }
+            if (!CampingAllowedAt(loc)) return CampingWildOnly("铺野营遮雨布");
+            if (!s.Locations[loc].Visited) return $"要先实际到访{LocName(loc)}";
             return null;
         }
 
@@ -74,7 +96,7 @@ namespace Survival.Core.Engine
         private string? ValidateCamping(GameState s, ActionRequest r, Plan plan)
         {
             if (!TryCampingTarget(r.TargetId, out var deploy, out var stove, out var id, out var abandon)) return "部署请求无效";
-            if (CampingSiteBlocked(s) is string site) return site;
+            if (CampingSiteBlocked(s, stove) is string site) return site;
             var item = FindItem(s, id);
             var name = stove ? "折叠柴炉" : "野营遮雨布";
             if (item == null || (stove ? !IsStove(item) : !IsTarp(item))) return $"{name}已不在";
@@ -87,7 +109,7 @@ namespace Survival.Core.Engine
                 if (stove)
                 {
                     if (fac.StoveInstanceId.HasValue) return "这里已经部署了一个折叠柴炉";
-                    if (HasFireAt(s, place)) return "当前区已有固定火堆，不能再部署第二处火堆";
+                    if (HasFireAt(s, place)) return "当前区已有固定火堆，不能再部署第二处火堆";   // Q173：区域火源唯一（含野外固定火堆）
                 }
                 else if (fac.TarpInstanceId.HasValue) return "这里已经铺开了一块野营遮雨布";
             }
@@ -156,6 +178,78 @@ namespace Survival.Core.Engine
                 }
             }
             UpdateFlags(s);
+        }
+
+
+        // ───────────── 野外固定火堆（Q173 按 B，B22e；camping-appraisal-adjudications.json camping.fixedFire/fireOperation/fireUse） ─────────────
+
+        /// <summary>野外固定火堆建造配方的分组（配置 recipes[].group = "wild"）。</summary>
+        public const string WildBuildGroup = "wild";
+
+        /// <summary>野外固定火堆的建造配方（wild_fixed_fire）。</summary>
+        public RecipeConfig WildFireRecipe => _recipes[Camping.WildFireRecipe];
+
+        public static bool IsWildFireRecipe(RecipeConfig rc) => rc.Group == WildBuildGroup;
+
+        /// <summary>
+        /// 在当前位置建野外火堆的地点与火源原因（开工与完工都重验）：普通野外清单内、外部区、已实际到访；
+        /// 同一 locationId+zoneId 至多一个固定火堆或已部署柴炉（有柴炉要先熄火、取空、收起）。不要求登记、建安全屋或探索 100%。可建为空表。
+        /// </summary>
+        public List<string> WildFireSiteReasons(GameState s)
+        {
+            var list = new List<string>();
+            var loc = s.CurrentLocation;
+            if (s.CurrentZone != ExteriorZone) { list.Add("野外火堆只能建在屋外（屋内火堆用“建屋内火堆”）"); return list; }
+            if (!CampingAllowedAt(loc)) { list.Add(CampingWildOnly("建野外火堆")); return list; }
+            var ls = s.Locations[loc];
+            if (!ls.Visited) list.Add($"要先实际到访{LocName(loc)}");
+            if (ls.Facility.StoveInstanceId.HasValue) list.Add("这里部署着折叠柴炉：先熄火、取空并收起，才能建固定火堆（每区只能有一处火源）");
+            else if (HasFireAt(s, loc)) list.Add($"{LocName(loc)}已有火堆（每区只能有一处火源）");
+            return list;
+        }
+
+        /// <summary>材料缺口（执行者随身＋当前外部地面，预留中的不算）：“缺少石块（现有1/需4）”。</summary>
+        private List<string> WildFireMaterialReasons(GameState s, RecipeConfig rc)
+        {
+            var list = new List<string>();
+            foreach (var kv in rc.AllInputs)
+            {
+                var have = AvailableCount(s, kv.Key, true);
+                if (have < kv.Value) list.Add($"缺少{ItemName(kv.Key)}（现有{have}/需{kv.Value}）");
+            }
+            return list;
+        }
+
+        /// <summary>开工校验用：地点/火源原因与材料缺口一次列全（“；”分隔）；可以为 null。</summary>
+        private string? WildFireStartBlocked(GameState s, RecipeConfig rc)
+        {
+            var list = WildFireSiteReasons(s);
+            list.AddRange(WildFireMaterialReasons(s, rc));
+            return list.Count > 0 ? string.Join("；", list) : null;
+        }
+
+        /// <summary>
+        /// “建野外火堆”预览的全部不合格原因（逐项显示）：死亡/对白/战斗/敌踪/撤出/行动占用→地点与火源→制造等级→材料。
+        /// 施工不能消除危险：敌踪要先接敌或绕行。合格为空表。
+        /// </summary>
+        public List<string> WildFireReasons(GameState s)
+        {
+            var rc = WildFireRecipe;
+            var list = new List<string>();
+            if (s.Progress.Dead) list.Add("角色已死亡");
+            if (DialogueLocked(s)) list.Add(DialogueLockedReason);
+            if (s.Battle != null) list.Add("战斗中不能施工");
+            if (s.Encounter != null) list.Add("发现敌踪：先接敌或绕行，不能靠施工躲开");
+            if (s.Expedition?.IsExtracting == true) list.Add(ExtractingBusyReason(s));
+            if (s.Main != null || s.Sub != null) list.Add("行动进行中：先完成或取消原行动");
+            list.AddRange(WildFireSiteReasons(s));
+            foreach (var kv in rc.MinSkills)
+            {
+                var lv = SkillLevel(s, kv.Key);
+                if (lv < kv.Value) list.Add($"需要{SkillName(kv.Key)}{kv.Value}级（当前{lv}级）");
+            }
+            list.AddRange(WildFireMaterialReasons(s, rc));
+            return list;
         }
     }
 }

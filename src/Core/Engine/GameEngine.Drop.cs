@@ -393,7 +393,8 @@ namespace Survival.Core.Engine
             if (loc != s.CurrentLocation) return DropIntent.No("只能对当前地点操作");
             if (src.Kind != DropSourceKind.Card || !_locs[loc].CanBuildShelter) return DropIntent.No(Unsupported);
             // 原料拖至营地地点卡：列出营地设施配方（遮蔽棚、床垫）
-            var rec = Config.Recipes.Where(r => r.FacilityResult != null && r.Group != "safehouse" && r.Inputs.ContainsKey(head.ItemId)).Select(r => r.Id).ToList();
+            // B22e：野外固定火堆（group wild）在手工制作“营地建造”里选，营地本身已有火堆，不列在这里
+            var rec = Config.Recipes.Where(r => r.FacilityResult != null && r.Group != "safehouse" && r.Group != WildBuildGroup && r.Inputs.ContainsKey(head.ItemId)).Select(r => r.Id).ToList();
             if (rec.Count == 0) return DropIntent.No(Unsupported);
             return new DropIntent { Ok = true, Verb = DropVerb.PreviewRecipe, Label = "查看营地设施", Recipes = rec };
         }

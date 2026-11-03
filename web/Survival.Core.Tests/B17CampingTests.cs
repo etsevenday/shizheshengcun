@@ -114,8 +114,10 @@ public class B17CampingTests : TestBase
         Run(s);
         Assert.That(E.ComputeSegment(s, sleep, s.Player).Sheltered, Is.False);
         Ok(E.DoInstant(s, InstantRequest.Pickup(tarp.InstanceId, 1)));
-        // 非许可点（普通野外）不能铺
+        // B22e（Q173 按 B）：普通野外清单内（农野荒地）也能铺；城市公共地仍不能铺
         E.DebugTeleport(s, "field");
-        Assert.That(E.CanStart(s, GameEngine.Deploy(tarp)), Does.Contain("临时露营许可点"));
+        Assert.That(E.CanStart(s, GameEngine.Deploy(tarp)), Is.Null);
+        E.DebugTeleport(s, "h02_square");
+        Assert.That(E.CanStart(s, GameEngine.Deploy(tarp)), Does.Contain("普通野外"));
     }
 }

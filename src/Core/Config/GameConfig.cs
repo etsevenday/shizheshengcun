@@ -831,6 +831,14 @@ namespace Survival.Core.Config
         public int StoveDeployMinutes { get; set; } = 5;
         public int StovePackMinutes { get; set; } = 5;
         public int StoveMaxFuelMinutes { get; set; } = 60;
+        /// <summary>
+        /// Q173 按 B（camping-appraisal-adjudications.json camping.allowedExteriorNodeIds，B22e）：普通主世界野外外部区显式清单（54 处），
+        /// 野营遮雨布可铺、野外固定火堆可建；未列出的地点（地牢含 safe 房、城市/势力公共地、任务保留地）一律不行，不按 ID 前缀或图形推定。
+        /// 折叠柴炉不看这张表，仍只限 temporaryCamp 8 处。
+        /// </summary>
+        public List<string> AllowedExteriorNodeIds { get; set; } = new List<string>();
+        /// <summary>野外固定火堆的建造配方（wild_fixed_fire：石4木2、制造1、30 基础分钟、手工）。</summary>
+        public string WildFireRecipe { get; set; } = "wild_fixed_fire";
     }
 
     public sealed class ToolEffectsConfig
