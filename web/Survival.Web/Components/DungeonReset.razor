@@ -1,0 +1,62 @@
+@inherits GameComponent
+
+@* B22 重置地牢确认窗（R03 D8/D10、A10 §7）：条件逐条、会刷新的可重复部分、不重发的本局唯一部分、旧实例全部遗留真实物与迁往何处、已腐败件数；
+   没有“默认勾选销毁”。确认后内核同一事务迁遗留物、关旧代、建新代并立即写盘；写盘失败整局回到确认前（旧代与物品不变）。数据全部来自 ResetPreview。 *@
+@{
+    var did = G.ResetDungeonId;
+    var p = did != null ? G.E.ResetPreview(G.S, did) : null;
+}
+@if (p != null)
+{
+    <div class="overflow-layer" role="dialog" aria-modal="true" aria-label="重置地牢">
+        <div class="panel overflow-box exp-abort">
+            <div class="ov-head">
+                <h2>重置地牢 · @p.DungeonName（第@(p.Generation)代 → 第@(p.Generation + 1)代）</h2>
+                <span class="muted">@G.E.ResetStatusText(G.S, p.DungeonId)</span>
+            </div>
+            <div class="ov-list" data-wheel="y">
+                <div class="exp-sec">条件</div>
+                @foreach (var c in p.Conditions)
+                {
+                    <div class="exp-row @(c.Met ? "" : "warn-text")"><span>@(c.Met ? "✓" : "✗") @c.Text</span></div>
+                }
+                <div class="exp-sec">新一代会刷新</div>
+                @foreach (var x in p.Refresh)
+                {
+                    <div class="exp-row"><span>· @x</span></div>
+                }
+                <div class="exp-sec">不会重发</div>
+                @foreach (var x in p.NotReissued)
+                {
+                    <div class="exp-row"><span>· @x</span></div>
+                }
+                <div class="exp-sec">旧实例遗留物（全部迁到@(p.Destination)，保质不变、不删除）</div>
+                @if (p.Leftovers.Count == 0)
+                {
+                    <div class="exp-row muted"><span>旧实例里没有遗留物</span></div>
+                }
+                @foreach (var x in p.Leftovers)
+                {
+                    <div class="exp-row"><span>· @x</span></div>
+                }
+                @if (p.SpoiledCount > 0)
+                {
+                    <div class="exp-row warn-text"><span>其中@(p.SpoiledCount)堆已腐败（照样迁出，不能吃）</span></div>
+                }
+                <div class="exp-row muted"><span>旧一代关闭后不能再回到旧图；遗物认领箱只能在@(p.ParentName)实地取。</span></div>
+            </div>
+            <div class="ov-foot">
+                <button type="button" class="secondary" @onclick="() => G.OpenPanel(null)">取消</button>
+                <button type="button" class="primary" disabled="@(p.Reason != null || G.Running)" title="@(p.Reason ?? "确认后立即迁出遗留物并建立新一代")" @onclick="G.ConfirmReset">确认重置</button>
+            </div>
+            @if (p.Reason != null)
+            {
+                <div class="notice">@p.Reason</div>
+            }
+            @if (G.Notice != null)
+            {
+                <div class="notice">@G.Notice</div>
+            }
+        </div>
+    </div>
+}

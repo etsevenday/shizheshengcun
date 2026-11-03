@@ -1,0 +1,58 @@
+@inherits GameComponent
+
+@* B22 封存战利品（R03 D7.1、R08「地牢封存与遗物归属」）：上段可封存（本次地牢实例来源、当前地面或同行者随身），下段已封存（取到随身验五卡/30kg，或放当前地面）。
+   全部 0 时间、整堆；可用与原因都来自内核 SealBlocked / UnsealBlocked，按钮不另判。 *@
+@{
+    var s = G.S;
+    var e = G.E;
+    var exp = s.Expedition;
+    var sealable = e.SealableItems(s);
+    var sealedItems = e.SealedHere(s);
+    var dname = exp != null ? e.DungeonCfg(exp.DungeonId)?.Name ?? "" : "";
+    var parent = exp != null ? e.LocName(e.DungeonCfg(exp.DungeonId)!.Parent) : "";
+}
+<div class="overflow-layer" role="dialog" aria-modal="true" aria-label="封存战利品">
+    <div class="panel overflow-box exp-abort">
+        <div class="ov-head">
+            <h2>封存战利品@(dname.Length > 0 ? " · " + dname : "")</h2>
+            <span class="muted">只收本次地牢里已经领到的奖励（物资箱、守卫回收、首通补给、胜利掉落）。封存的不占随身卡位、暂时不能用；成功撤出或通关离开后放进@(parent)的远征回收箱。外带物、自制物不能封存。</span>
+        </div>
+        <div class="ov-list" data-wheel="y">
+            <div class="exp-sec">可以封存（当前地面或同行者随身）</div>
+            @if (sealable.Count == 0)
+            {
+                <div class="exp-row muted"><span>没有可封存的奖励</span></div>
+            }
+            @foreach (var it in sealable)
+            {
+                var iid = it.InstanceId;
+                var where = it.Owner == s.Ground ? "地面" : it.IsCarried ? "你的随身" : "同行者随身";
+                <div class="exp-row remains-row" data-seal="@iid">
+                    <span>@e.ItemName(it.ItemId)×@it.Count#@iid（@where）</span>
+                    <button type="button" class="eq-btn" title="移进封存：不占卡位，暂时不能用" @onclick="() => G.SealItem(iid)">封存</button>
+                </div>
+            }
+            <div class="exp-sec">已封存</div>
+            @if (sealedItems.Count == 0)
+            {
+                <div class="exp-row muted"><span>还没有封存的物品</span></div>
+            }
+            @foreach (var it in sealedItems)
+            {
+                var iid = it.InstanceId;
+                var whyCarry = e.UnsealBlocked(s, iid, false);
+                var whyGround = e.UnsealBlocked(s, iid, true);
+                <div class="exp-row remains-row" data-sealed="@iid">
+                    <span>@e.ItemName(it.ItemId)×@it.Count#@iid@(e.IsSpoiled(s, it) ? "（已腐败）" : "")</span>
+                    <button type="button" class="eq-btn" disabled="@(whyCarry != null)" title="@(whyCarry ?? "取到你的随身（五张卡与30公斤校验）")" @onclick="() => G.UnsealItem(iid, false)">取到随身</button>
+                    <button type="button" class="eq-btn" disabled="@(whyGround != null)" title="@(whyGround ?? "放到当前地面")" @onclick="() => G.UnsealItem(iid, true)">放地面</button>
+                </div>
+            }
+        </div>
+        <div class="ov-foot"><span></span><button type="button" class="secondary" @onclick="() => G.OpenPanel(null)">关闭</button></div>
+        @if (G.Notice != null)
+        {
+            <div class="notice">@G.Notice</div>
+        }
+    </div>
+</div>

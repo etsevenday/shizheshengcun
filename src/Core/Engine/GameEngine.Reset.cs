@@ -83,7 +83,8 @@ namespace Survival.Core.Engine
             if (SalvageOf(dungeonId) is { } sv) p.Refresh.Add($"守卫回收材料：{PackText(sv.Items)}（新一代守卫战胜利后再发一次）");
             p.Refresh.Add("固定战敌人：新一代第一次到达时重新出现（新的敌人，经验照常）");
             p.Refresh.Add("房间探索度与清理次数回到初值，本代开通的门与核心核对清空（已发现的房间、路线、资源点整局保留）");
-            if (RecordResourceOf(dungeonId) is { } rec) p.NotReissued.Add($"{rec.Name}：本局已领，新一代只需再核对（不再发放、不再加容量与知识）");
+            if (RecordResourceOf(dungeonId) is { } rec)
+                p.NotReissued.Add(CampaignClaimed(s, rec.NodeId) ? $"{rec.Name}：本局已领，新一代只需再核对（不再发放、不再加容量与知识）" : $"{rec.Name}：还没领，本局唯一一次（新一代领取即通关）");
             if (FirstClearOf(dungeonId) is { } fc) p.NotReissued.Add($"首次通关补给（{PackText(fc.Items)}）：本局只发一次");
             foreach (var r in Config.Resources.Where(r => r.IsCampaignPhysical && DungeonOf(r) == dungeonId))
                 p.NotReissued.Add($"{r.Name}：{(CampaignClaimed(s, r.NodeId) ? "已领取，不会复活" : "还没领，新一代仍可领一次（本局唯一）")}");
@@ -160,6 +161,30 @@ namespace Survival.Core.Engine
             if (IsBusy(s)) return "开发：行动进行中或有敌踪/战斗，先结束再拨时间";
             if (s.GameMinute < inst.ResetEligibleAt.Value) s.GameMinute = inst.ResetEligibleAt.Value;
             return $"开发：时间拨到{Clock.DayTime(s.GameMinute)}（只改时钟，不结算身体）；{DungeonCfg(dungeonId)!.Name}已可重置——到{LocName(DungeonCfg(dungeonId)!.Parent)}确认";
+        }
+    }
+
+    public sealed partial class GameEngine
+    {
+        /// <summary>开发入口（?dev=1）B22：随身各加 2 份三种战术品（试战斗指令）。</summary>
+        public string DebugGiveTactical(GameState s)
+        {
+            foreach (var t in Config.DungeonRewards.Tactical) CreateItems(s, t.Id, 2, ItemInstance.Carried);
+            return $"开发：随身加了{string.Join("、", Config.DungeonRewards.Tactical.Select(t => ItemName(t.Id) + "×2"))}（超出五张卡会弹整理窗）";
+        }
+
+        /// <summary>开发入口（?dev=1）B22：某地牢的奖励账与重置状态（代号、通关/可重置时刻、守卫回收与首通包、封存、回收箱与遗物箱件数）。</summary>
+        public string DebugRewardLedger(GameState s, string dungeonId)
+        {
+            var d = DungeonCfg(dungeonId);
+            if (d == null) return "开发：地牢不存在";
+            s.DungeonInstances.TryGetValue(dungeonId, out var inst);
+            var sealedN = SealedItems(s, InstanceId(s, dungeonId)).Sum(i => i.Count);
+            int Box(string key) => RemainsItems(s, key).Sum(i => i.Count);
+            return $"开发：{d.Name} {InstanceId(s, dungeonId)} · {DungeonStatusName(DungeonStatus(s, dungeonId))}；"
+                + (inst?.ClearedAt is int c ? $"通关于{Clock.DayTime(c)}，可重置于{Clock.DayTime(inst.ResetEligibleAt!.Value)}" : "本代未通关")
+                + $"；守卫回收{(SalvageClaimed(s, dungeonId) ? "本代已发" : "本代未发")}；首通补给{(FirstClearClaimed(s, dungeonId) ? "已领" : "未领")}"
+                + $"；封存{sealedN}份；{LocName(d.Parent)}远征回收箱{Box(RecoveryBoxKey(dungeonId))}份、旧实例遗物认领箱{Box(RelicBoxKey(dungeonId))}份；遗留物{DungeonLeftovers(s, dungeonId).Count}堆。";
         }
     }
 

@@ -38,6 +38,11 @@
                 <div class="exp-row"><span>路线：@string.Join("→", p.Route)</span></div>
                 <div class="exp-row"><span>基础@(p.BaseMinutes)分钟×倍率@(p.Factor.ToString("0.##"))@(p.FactorReasons.Count > 0 ? $"（{string.Join("，", p.FactorReasons)}）" : "") → 共<b>@(p.TotalMinutes)分钟</b>（最低30分钟，已含出口路程）</span></div>
                 <div class="exp-row"><span>回到：<b>@p.ParentName</b>（不是营区）</span></div>
+                @* B22（A10 §7、R03 D7.1）：封存去向与原实例遗留物清单 *@
+                <div class="exp-sec">带走与留下</div>
+                <div class="exp-row"><span>@p.SealedText</span></div>
+                <div class="exp-row"><span>原实例遗留物（不带走；可以再进来取，重置前迁到@(p.ParentName)的旧实例遗物认领箱）：@(p.Leftovers.Count == 0 ? "没有" : "")</span></div>
+                @foreach (var x in p.Leftovers) { <div class="exp-row muted"><span>· @x</span></div> }
                 <div class="exp-sec">返程中仍可能发生</div>
                 @foreach (var x in p.Risks) { <div class="exp-row warn-text"><span>· @x</span></div> }
             </div>

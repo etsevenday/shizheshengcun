@@ -324,6 +324,18 @@
                     <button class="secondary small-btn" @onclick='() => G.DevExpedition("show")'>显示当前远征（ID/轨迹/状态/去重键）</button>
                     <button class="secondary small-btn" title="不扣惩罚、不花时间；人留在原地（撤出中也会停下）" @onclick='() => G.DevExpedition("end")'>立即结束当前远征（开发，不扣包）</button>
                 </div>
+                @* B22（R67—R70）：奖励分账、封存与回收箱、72 小时重置、战术品；地牢用上面 B21 的下拉 *@
+                <div class="eyebrow">奖励分账与重置（B22）：通关记时刻 → 快进到可重置 → 到父地点“地牢”卡确认重置；战术品在战斗“医疗”快捷栏</div>
+                <div class="btn-row">
+                    <button class="secondary small-btn" title="给所选地牢当前代记“核心已领取”，同时写本代通关时刻与72小时（不发首通补给）" @onclick='() => G.DevRewards("clear", expDungeon)'>所选地牢记为本代通关（写通关时刻）</button>
+                    <button class="secondary small-btn" title="只改时钟、不结算身体" @onclick='() => G.DevRewards("ready", expDungeon)'>时间快进到所选地牢可重置</button>
+                    <button class="secondary small-btn" @onclick='() => G.DevRewards("parent", expDungeon)'>传送到所选地牢父地点</button>
+                </div>
+                <div class="btn-row">
+                    <button class="secondary small-btn" @onclick='() => G.DevRewards("tactical", expDungeon)'>随身各加2份战术品（闪光标记器/护带包/提示贴）</button>
+                    <button class="secondary small-btn" title="通关时刻、可重置时刻、守卫回收/首通补给、封存、回收箱与遗物箱件数" @onclick='() => G.DevRewards("show", expDungeon)'>显示所选地牢奖励账</button>
+                    <button class="secondary small-btn @(G.DevFailNextResetSave ? "on" : "")" title="下一次在父地点确认重置时，写盘一定失败（验证旧代保持、可重试）" @onclick='() => G.DevRewards("failsave", expDungeon)'>@(G.DevFailNextResetSave ? "已开启：下一次重置写盘失败（再点取消）" : "模拟下一次重置写盘失败")</button>
+                </div>
                 @* B8（R08、A11 §6/§7）：正式招募任务（RN01—RN06）在后续批次，这里直接把六名命名角色登记入名册（同行未满 C 时直接编入） *@
                 <div class="eyebrow">队伍（B8）：先记下容量事实再加人；营区＝临时营地</div>
                 <div class="btn-row">

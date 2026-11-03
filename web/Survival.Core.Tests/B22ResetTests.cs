@@ -240,4 +240,23 @@ public class B22ResetTests : BattleTestBase
         Assert.That(E.DungeonStatus(s, "d01"), Is.EqualTo(DungeonStatuses.CampaignEnded));
         Assert.That(E.ResetBlocked(s, "d01"), Is.EqualTo("本局已结束"));
     }
+    /// <summary>网页与开发入口：重置后新一代不算“续探”；开发“时间快进到可重置”“奖励账”“给战术品”可用；重置预览对没领过的核心记录写“还没领”。</summary>
+    [Test]
+    public void Web_DevHelpers_PreviewAfterReset()
+    {
+        var s = ClearedAtCrypt(2248);
+        Assert.That(E.DebugResetReady(s, "d01"), Does.Contain("已可重置"));
+        Assert.That(E.DungeonResetReady(s, "d01"), Is.True);
+        Assert.That(E.DebugRewardLedger(s, "d01"), Does.Contain("首通补给已领").And.Contain("可重置于"));
+        Assert.That(E.ResetDungeon(s, "d01").Ok, Is.True);
+        var pv = E.ExpeditionPreview(s, "d01");
+        Assert.That(pv.Continuation, Is.False, "新一代不是续探");
+        Assert.That(pv.RepeatRewards, Has.Some.Contains("本代未领"));
+        Assert.That(pv.FirstRewards, Has.Some.Contains("首次通关补给").And.Some.Contains("已领取"));
+        Assert.That(E.DebugGiveTactical(s), Does.Contain("闪光标记器×2"));
+        Assert.That(s.Items.Where(i => i.IsCarried && i.ItemId == "rally_patch").Sum(i => i.Count), Is.EqualTo(2));
+        var w = B21EntryTests.AtCrypt(E, 2249);
+        E.DebugInstanceFact(w, "d01", GameEngine.RecordClaimedFact);
+        Assert.That(E.ResetPreview(w, "d01").NotReissued, Has.Some.Contains("还没领"));
+    }
 }

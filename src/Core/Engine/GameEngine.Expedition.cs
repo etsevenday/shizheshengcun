@@ -752,7 +752,7 @@ namespace Survival.Core.Engine
             if (s.DungeonInstances.TryGetValue(dungeonId, out var inst))
             {
                 p.Generation = inst.Generation;
-                p.Continuation = inst.ExpeditionSeq > 0 || inst.Status != DungeonStatuses.Unopened;
+                p.Continuation = inst.Status != DungeonStatuses.Unopened;   // B22：重置后的新一代是 UNOPENED（远征序号不清零），不算续探
             }
             else p.Generation = 1;
             p.Cleared = DungeonCleared(s, dungeonId);

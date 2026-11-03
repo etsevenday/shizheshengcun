@@ -35,6 +35,11 @@
     // 试玩修复 M399：撤出中不显示（按钮本就不可用，且会被中央撤出进度条盖住）
     var expHere = s.Expedition != null && !s.Expedition.IsExtracting && !inside && e.DungeonAt(here) == s.Expedition.DungeonId
                   && e.DungeonCfg(s.Expedition.DungeonId)!.SafeNodes.Contains(here) ? s.Expedition : null;
+    // B22（R03 D7.1）：本次远征地牢里任何房间都能整理封存战利品；父地点给“地牢重置”与回收箱入口（R03 D8、A10 §7）
+    var sealHere = s.Expedition != null && !inside && e.DungeonAt(here) == s.Expedition.DungeonId ? s.Expedition : null;
+    var sealableN = sealHere != null ? e.SealableItems(s).Count : 0;
+    var sealedN = sealHere != null ? e.SealedItems(s, sealHere.InstanceId).Sum(i => i.Count) : 0;
+    var parentOf = e.Config.Map.Dungeons.Where(d => !inside && d.Parent == here && s.DungeonInstances.ContainsKey(d.Id)).ToList();
 }
 
 @* 四区同屏（S14 §1.3）：两行高度按中部可用高度分配，不再固定 180/220 或 220—300 起始高度；行首竖排区标题常驻可见 *@
@@ -166,6 +171,71 @@
                             }
                         </Footer>
                     </ObjectCard>
+                </div>
+            </div>
+        }
+        @if (sealHere != null && (sealableN > 0 || sealedN > 0))
+        {
+            var tipS = "封存只收本次地牢里已经领到的奖励（物资箱、守卫回收、首通补给、胜利掉落）：不占随身卡位、暂时不能用；成功撤出或通关离开后放进父地点的远征回收箱。外带物、自制物不能封存。";
+            <div class="desk-group expedition">
+                <div class="dg-title">封存</div>
+                <div class="dg-cards">
+                    <ObjectCard @key="@("seal-" + sealHere.Id)" Id="expedition-seal" CssClass="enemy-card world exp-card" Title="封存战利品" Badge="@($"已封存{sealedN}")" BadgeClass="new" Tooltip="@tipS">
+                        <Art><span class="exp-art" aria-hidden="true">▣</span></Art>
+                        <ChildContent>
+                            <div class="oc-line" title="@tipS">可封存@(sealableN)堆 · 已封存@(sealedN)份</div>
+                            <div class="oc-line" title="@tipS">不占卡位，撤出后进父地点回收箱</div>
+                        </ChildContent>
+                        <Footer>
+                            <button type="button" class="loc-btn res-btn" disabled="@(s.Battle != null)" title="@tipS" @onclick="G.OpenSeal" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                <strong>整理封存…</strong>
+                            </button>
+                        </Footer>
+                    </ObjectCard>
+                </div>
+            </div>
+        }
+        @if (parentOf.Count > 0)
+        {
+            <div class="desk-group expedition">
+                <div class="dg-title">地牢</div>
+                <div class="dg-cards">
+                    @foreach (var d in parentOf)
+                    {
+                        var did = d.Id;
+                        var status = e.DungeonStatus(s, did);
+                        var resetText = e.ResetStatusText(s, did);
+                        var recN = e.RemainsItems(s, GameEngine.RecoveryBoxKey(did)).Sum(i => i.Count);
+                        var relN = e.RemainsItems(s, GameEngine.RelicBoxKey(did)).Sum(i => i.Count);
+                        var ready = e.DungeonResetReady(s, did);
+                        <ObjectCard @key="@("reset-" + did)" Id="@("dungeon-reset-" + did)" CssClass="enemy-card world exp-card" Title="@d.Name" Badge="@GameEngine.DungeonStatusName(status)" BadgeClass="@(ready ? "new" : "")" Tooltip="@resetText">
+                            <Art><span class="exp-art" aria-hidden="true">↻</span></Art>
+                            <ChildContent>
+                                <div class="oc-line" title="@resetText">第@(s.DungeonInstances[did].Generation)代 · @(ready ? "已可重置" : e.DungeonCleared(s, did) ? $"可重置于{Clock.DayTime(s.DungeonInstances[did].ResetEligibleAt ?? 0)}" : "未通关，不计时")</div>
+                            </ChildContent>
+                            <Footer>
+                                <button type="button" class="loc-btn res-btn" disabled="@(busy)" title="@(busy ? "行动进行中" : "查看重置条件、会刷新与不重发的内容、旧实例遗留物清单；条件满足才能确认")"
+                                        @onclick="() => G.OpenReset(did)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                    <strong>@(ready ? "重置地牢…" : "重置条件…")</strong>
+                                </button>
+                            </Footer>
+                        </ObjectCard>
+                        @if (recN + relN > 0)
+                        {
+                            var tipB = "远征回收箱（成功撤出带回的封存战利品）与旧实例遗物认领箱（重置前迁出的旧实例遗留物）：无卡位上限、只能在这里取；在右栏人物页“队伍”块逐件取到随身（验五卡与负重）或放地面。";
+                            <ObjectCard @key="@("box-" + did)" Id="@("dungeon-box-" + did)" CssClass="enemy-card world exp-card" Title="回收箱" Badge="@($"{recN + relN}份")" BadgeClass="new" Tooltip="@tipB">
+                                <Art><span class="exp-art" aria-hidden="true">▤</span></Art>
+                                <ChildContent>
+                                    <div class="oc-line" title="@tipB">远征回收箱@(recN)份 · 遗物认领箱@(relN)份</div>
+                                </ChildContent>
+                                <Footer>
+                                    <button type="button" class="loc-btn res-btn" title="@tipB" @onclick="() => G.SetDetailTab(DetailTab.Character)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                        <strong>取出…</strong>
+                                    </button>
+                                </Footer>
+                            </ObjectCard>
+                        }
+                    }
                 </div>
             </div>
         }

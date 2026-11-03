@@ -64,7 +64,12 @@
             var rem = kv.Value;
             var items = e.RemainsItems(s, deadId);
             <div class="remains-card" data-remains="@deadId">
-                @if (rem.IsClaim)
+                @if (rem.IsDungeonBox)
+                {
+                    @* B22（R03 D7.1/D8）：地牢父地点的远征回收箱与旧实例遗物认领箱：无卡位上限、只能实地取，保质照常 *@
+                    <div><b>@rem.Name</b> <span class="muted tiny">@(Clock.DayTime(rem.Minute))放入 · @rem.Cause · 只能在这里取，保质照常</span></div>
+                }
+                else if (rem.IsClaim)
                 {
                     @* B19（R08 RC4）：生成角色退役时全部个人物品寄存在收容所认领箱，只能在这里实地取 *@
                     <div><b>认领箱：@(rem.Name)退役寄存</b> <span class="muted tiny">@(Clock.DayTime(rem.Minute))寄存 · 只能在这里取，保质照常</span></div>

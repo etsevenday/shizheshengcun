@@ -2161,6 +2161,106 @@ public sealed class GameSession
         Notify();
     }
 
+    // ───────────── B22 封存战利品、远征回收箱与 72 小时重置（R03 D7/D8/D10、A10 §7） ─────────────
+
+    /// <summary>打开“封存战利品”面板（本次远征地牢里的设施行“封存”卡）。</summary>
+    public void OpenSeal()
+    {
+        if (State == null || S.Battle != null) return;
+        Notice = null;
+        OpenPanel("seal");
+    }
+
+    /// <summary>封存一件（整堆）本实例奖励：0 时间，存档。</summary>
+    public void SealItem(int instanceId)
+    {
+        if (State == null) return;
+        var r = E.SealReward(S, instanceId, Guid.NewGuid().ToString("N"));
+        Notice = r.Ok ? null : r.Reason;
+        Drain();
+        ReconcileSelection();
+        Save();
+        Notify();
+    }
+
+    /// <summary>从封存里取出一件到随身或当前地面：0 时间，存档。</summary>
+    public void UnsealItem(int instanceId, bool toGround)
+    {
+        if (State == null) return;
+        var r = E.UnsealReward(S, instanceId, toGround, Guid.NewGuid().ToString("N"));
+        Notice = r.Ok ? null : r.Reason;
+        Drain();
+        ReconcileSelection();
+        Save();
+        Notify();
+    }
+
+    /// <summary>重置确认窗对应的地牢与请求号（打开时生成一次，双击只生效一次）。</summary>
+    public string? ResetDungeonId { get; private set; }
+    private string? _resetRequestId;
+
+    /// <summary>开发入口：下一次重置写盘时模拟失败（验证“写盘失败旧代保持”）。只生效一次。</summary>
+    public bool DevFailNextResetSave { get; set; }
+
+    /// <summary>打开“重置地牢”确认窗（父地点设施行“地牢重置”卡）：只读预览条件、刷新与不重发、遗留物清单。</summary>
+    public void OpenReset(string dungeonId)
+    {
+        if (State == null || S.Battle != null) return;
+        ResetDungeonId = dungeonId;
+        _resetRequestId = Guid.NewGuid().ToString("N");
+        Notice = null;
+        OpenPanel("reset");
+    }
+
+    /// <summary>
+    /// 确认重置（R03 D10）：内核在同一事务里迁遗留物、关旧代、建新代，随即写盘；写盘失败时整局回到确认前（旧代与全部物品 owner 不变，可再试）。
+    /// </summary>
+    public void ConfirmReset()
+    {
+        if (State == null || Running || ResetDungeonId == null) return;
+        var fail = DevFailNextResetSave;
+        DevFailNextResetSave = false;
+        var r = E.ResetDungeonAtomic(S, ResetDungeonId, _resetRequestId ??= Guid.NewGuid().ToString("N"), st =>
+        {
+            if (fail) return false;
+            _store.Save(SaveSerializer.Serialize(st));
+            return true;
+        }, out var next);
+        State = next;
+        if (r.Ok && !r.Duplicate)
+        {
+            SaveState = SaveStatus.Saved;
+            SaveError = null;
+            Panel = null;
+            Notice = null;
+        }
+        else Notice = r.Ok ? null : r.Reason;
+        Drain();
+        ReconcileSelection();
+        Notify();
+    }
+
+    /// <summary>开发入口（?dev=1）B22 栏。</summary>
+    public void DevRewards(string kind, string dungeonId)
+    {
+        if (State == null) return;
+        Notice = kind switch
+        {
+            "clear" => E.DebugInstanceFact(S, dungeonId, GameEngine.RecordClaimedFact),
+            "ready" => E.DebugResetReady(S, dungeonId),
+            "parent" => E.DebugMapTeleport(S, E.DungeonCfg(dungeonId)!.Parent),
+            "tactical" => E.DebugGiveTactical(S),
+            "show" => E.DebugRewardLedger(S, dungeonId),
+            "failsave" => (DevFailNextResetSave = !DevFailNextResetSave) ? "开发：下一次确认重置时模拟写盘失败（只生效一次）" : "开发：已取消模拟写盘失败",
+            _ => "开发：未知操作",
+        };
+        Drain();
+        ReconcileSelection();
+        Save();
+        Panel = null;
+        Notify();
+    }
+
     /// <summary>逐条推进敌方行动与轮末，直到轮到玩家或战斗结束；每步存档，刷新页面后从游标继续。</summary>
     public async Task BattleLoop()
     {
