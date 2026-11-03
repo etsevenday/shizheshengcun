@@ -92,6 +92,7 @@ namespace Survival.Core.Engine
             if (CampaignClaimed(s, res.NodeId))
             {
                 notes.Add($"{res.Name}本局已领取：这次只核对本次地牢的记录（打开本代出口），不再重复发放");
+                notes.AddRange(StagedClaimNotes(s, res));
                 return notes;
             }
             if (!res.IsRecord)
@@ -116,6 +117,10 @@ namespace Survival.Core.Engine
             notes.Add($"领取{res.Name}：本局唯一一次，地牢换代后也不会再发；记作记录，不占物资卡");
             var know = KnowledgeGrantedBy(s, ClaimFactsOf(res));
             if (know.Count > 0) notes.Add("同时获得做法知识：" + string.Join("、", know));
+            // B23（A11 §3）：知识包里已从别处掌握的只记来源，不兑换材料、经验、钱或别的蓝图
+            if (PackKnownNote(s, res, know) is string kn) notes.Add(kn);
+            notes.AddRange(RecordQuestNotes(s, res, true));
+            notes.AddRange(StagedClaimNotes(s, res));
             if (res.RecordId != null && Config.Scope.Capacity.Unlocks.Any(u => u.AllOf.Contains(res.RecordId) || u.AnyOf.Contains(res.RecordId)))
             {
                 // Q125：容量说明用正式记录名（旧名“教会路线记录/学院安全记录”只是同一份记录 ID 的旧称）
@@ -148,6 +153,7 @@ namespace Survival.Core.Engine
         private bool CompleteClaim(GameState s, ActionState a, ResourceConfig res)
         {
             ClearAction(s, a);
+            s.Resources[res.NodeId].ClaimMinutesDone = 0;   // B23：两段都提交，本次领取/核对结束
             var d = DungeonOf(res);
             var first = !CampaignClaimed(s, res.NodeId);
             var text = new List<string>();
@@ -178,8 +184,11 @@ namespace Survival.Core.Engine
                 var know = KnowledgeGrantedBy(s, ClaimFactsOf(res));
                 foreach (var f in ClaimFactsOf(res)) s.Progress.Flags.Add(f);
                 s.Resources[res.NodeId].Available = 0;
+                var packNote = PackKnownNote(s, res, know);   // 写事实前判断（之后都已掌握）
                 text.Add($"已领取{res.Name}（本局唯一，记作记录，不占物资卡）");
                 if (know.Count > 0) text.Add("获得做法知识：" + string.Join("、", know));
+                if (packNote != null) text.Add(packNote);
+                text.AddRange(RecordQuestNotes(s, res, false));
                 // B15（A11 §4/R46）：首次拿到不同种类的关键记录时容量升档（同一种记录重置后再领不再加）
                 if (BattleCapacity(s) > capBefore) text.Add($"队伍容量升到 C{BattleCapacity(s)}");
             }
@@ -265,6 +274,8 @@ namespace Survival.Core.Engine
                 ls.ClearRefillProgress = 0;
                 ls.ClearUpdatedMinute = s.GameMinute;
             }
+            // B23：旧代未完成的核心记录领取/核对段属于旧实例，新一代从头算
+            foreach (var r in Config.Resources.Where(r => r.IsRecord && DungeonOf(r) == dungeonId && s.Resources.ContainsKey(r.NodeId))) s.Resources[r.NodeId].ClaimMinutesDone = 0;
             foreach (var r in Config.Resources.Where(r => r.IsInstance && DungeonOf(r) == dungeonId))
             {
                 var rs = s.Resources[r.NodeId];

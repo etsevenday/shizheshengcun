@@ -302,7 +302,7 @@ public class B22kTests : TestBase
         var j = JObject.Parse(SaveSerializer.Serialize(s));
         j["SchemaVersion"] = "38";
         var t = SaveSerializer.Deserialize(j.ToString(), Cfg);
-        Assert.That(t.SchemaVersion, Is.EqualTo("39"));
+        Assert.That(t.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
         Assert.That(t.Log.Count(l => l.Text.Contains("存档已升级到版本39")), Is.EqualTo(1));
 
         var ts = Slots(t);

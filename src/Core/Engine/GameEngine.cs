@@ -430,6 +430,13 @@ namespace Survival.Core.Engine
                         plan.Notes.AddRange(ClaimNotes(s, res));
                         plan.BaseWork = res.BaseMinutes;
                         plan.Label = CampaignClaimed(s, res.NodeId) ? $"核对{res.Name}" : $"领取{res.Name}";
+                        if (StagedRecord(res))
+                        {
+                            // B23（A11 EXQ-A05）：可选地牢记录固定 wait10、两段 5 分钟，中断只续剩余（与地图搜集同一事务，不另叠任务工时）
+                            plan.FixedWait = true;
+                            plan.BaseWork = StagedLeft(s, res);
+                            plan.Label += $"（固定等待{Clock.Duration((int)plan.BaseWork)}）";
+                        }
                         return null;
                     }
 
@@ -866,6 +873,7 @@ namespace Survival.Core.Engine
                 {
                     var res = p.Res!;
                     var rs = s.Resources[res.NodeId];
+                    a.FixedWait = p.FixedWait;   // B23：可选地牢记录固定等待
                     a.XpDay = Clock.Day(s.GameMinute);   // Q55：经验日额按开工日记账
                     if (!res.IsUnlimited)
                     {
@@ -1070,6 +1078,7 @@ namespace Survival.Core.Engine
         private void Release(GameState s, ActionState a, string groundLocation)
         {
             RestoreCarry(s, a);   // Q61：取消/中断/死亡退回原锁余额，本次不结新余额
+            KeepStagedClaim(s, a);   // B23（EXQ-A05）：可选地牢记录保留已提交的整段
             if (a.Type == ActionType.Gather && a.ReservedResourceUnits > 0)
             {
                 var rs = s.Resources[a.TargetId];

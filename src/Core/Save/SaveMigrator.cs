@@ -63,6 +63,7 @@ namespace Survival.Core.Save
         public const string Schema36 = "36";
         public const string Schema37 = "37";
         public const string Schema38 = "38";
+        public const string Schema39 = "39";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -116,6 +117,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema36) From36To37(s, config, notes);
             if (s.SchemaVersion == Schema37) From37To38(s, config, notes);
             if (s.SchemaVersion == Schema38) From38To39(s, config, notes);
+            if (s.SchemaVersion == Schema39) From39To40(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1203,9 +1205,24 @@ namespace Survival.Core.Save
                     }
                 }
             }
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（晾制肉干开始制作后暂停原料保质计时，取消后恢复剩余时长，" +
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema39}（晾制肉干开始制作后暂停原料保质计时，取消后恢复剩余时长，" +
                 "完成后肉干从完成起保质168小时；果干不变" + (protectedSlots > 0 ? $"；正在晾制的肉干{protectedSlots}批从现在起暂停原料保质，按现在的剩余保质恢复" : "") +
                 "；已腐败的批次不复活）。" });
+            s.SchemaVersion = Schema39;
+        }
+
+        // ───────────────────────── 39 → 40 ─────────────────────────
+
+        /// <summary>
+        /// 可选地牢知识支线（开发计划 v0.9 B23，R71；A11「可选地牢任务与知识」EXQ-A05）：资源点状态新增“核心记录固定等待已提交分钟”，旧档一律 0
+        /// （旧档没有可续做的段；进行中的领取按开工时的规则走完）。知识按授予事实读档即会（已领 d05—d08 记录的旧档自动掌握对应知识），
+        /// 不补物资、经验、任务完成或容量。幂等。
+        /// </summary>
+        private static void From39To40(GameState s, GameConfig config, List<string> notes)
+        {
+            foreach (var rs in s.Resources.Values) rs.ClaimMinutesDone = 0;
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（可选地牢任务与公开抄录：" +
+                "废水厂、矿洞、商城、冷链仓的核心记录领取改为固定等待10分钟两段、中途停下保留已完成的段；不补物资、经验或任务完成）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

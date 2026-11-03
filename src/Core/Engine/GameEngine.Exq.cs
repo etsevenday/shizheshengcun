@@ -1,0 +1,93 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Survival.Core.Config;
+using Survival.Core.State;
+
+namespace Survival.Core.Engine
+{
+    /// <summary>
+    /// 可选地牢知识支线（开发计划 v0.9 B23，R71；A11「可选地牢任务与知识」§2—§4、expansion-quests.json，验收 EXQ-A01—A08）：
+    /// <list type="bullet">
+    /// <item>EXQ05—08 登记后在 h03 罗铮 / h02 许安 / h04 陈芷交谈接取；d05_07/d06_08/d07_07/d08_08 核心记录的领取事务同时写记录事实、日志与知识（claim:…），
+    /// 任务标“记录已取得”，回接取岗位交谈 0 分钟完成（岗位不在由代班员接手）；先领记录后接取的接取时追认完成。不另发物资、经验、容量。</item>
+    /// <item>这四份记录的领取/核对是固定等待 10 分钟、两段 5 分钟（EXQ-A05）：中途停下保留已提交的段，续做只补剩余，不叠任务工时。</item>
+    /// <item>知识按集合并入：已从别处掌握的只记来源（“知识已知，本次用于保存调查记录”），不兑换任何东西。</item>
+    /// </list>
+    /// </summary>
+    public sealed partial class GameEngine
+    {
+        /// <summary>以这份核心记录为首次固定来源的知识包；不是为 null。</summary>
+        public KnowledgePackConfig? PackOfClaim(string resourceId) => Config.ExpansionQuests.Packs.FirstOrDefault(p => p.ClaimResourceId == resourceId);
+
+        /// <summary>两段续做的核心记录（B23 只对可选地牢四份记录，开发假设 B23-3）。</summary>
+        public bool StagedRecord(ResourceConfig res) => res.IsRecord && PackOfClaim(res.NodeId) != null;
+
+        /// <summary>两段续做记录本次还要等几分钟（已提交整段之外）。</summary>
+        public int StagedLeft(GameState s, ResourceConfig res) =>
+            Math.Max(0, res.BaseMinutes - (s.Resources.TryGetValue(res.NodeId, out var rs) ? rs.ClaimMinutesDone : 0));
+
+        /// <summary>领取/核对预演里的两段说明。</summary>
+        private IEnumerable<string> StagedClaimNotes(GameState s, ResourceConfig res)
+        {
+            if (!StagedRecord(res)) yield break;
+            var done = res.BaseMinutes - StagedLeft(s, res);
+            yield return $"固定等待{res.BaseMinutes}分钟，按两段5分钟提交；中途停下保留已完成的段，续做只补剩余（与这次领取是同一件事，不另加任务时间）";
+            if (done > 0) yield return $"已完成{done}分钟，续做剩余{res.BaseMinutes - done}分钟";
+        }
+
+        /// <summary>取消/中断时保留已提交的整 5 分钟段（最多留到差最后一段）；未提交的不算。</summary>
+        private void KeepStagedClaim(GameState s, ActionState a)
+        {
+            if (a.Type != ActionType.Gather || !_res.TryGetValue(a.TargetId, out var res) || !StagedRecord(res)) return;
+            var seg = Math.Max(0, a.ElapsedMinutes - a.ElapsedMinutes % 5);
+            if (seg <= 0) return;
+            var rs = s.Resources[res.NodeId];
+            rs.ClaimMinutesDone = Math.Min(res.BaseMinutes - 5, rs.ClaimMinutesDone + seg);
+            Emit(s, GameEventKind.Info, $"{res.Name}已保存完成的{rs.ClaimMinutesDone}分钟，下次只需续做剩余{res.BaseMinutes - rs.ClaimMinutesDone}分钟。");
+        }
+
+        /// <summary>知识包里这次没有新知识时的说明（A11 §3“知识已知，本次用于保存调查记录”）；部分已知写哪些只记来源。不是知识包为 null。</summary>
+        private string? PackKnownNote(GameState s, ResourceConfig res, List<string> newKnowledge)
+        {
+            var p = PackOfClaim(res.NodeId);
+            if (p == null) return null;
+            // 只看本包的知识（矿道作业手册另有 B16 同授的基础陶工做法，照旧单列）
+            if (!p.Knowledge.Any(k => newKnowledge.Contains(KnowledgeName(k)))) return "知识已知，本次用于保存调查记录";
+            var known = p.Knowledge.Where(k => KnowsKnowledge(s, k)).Select(KnowledgeName).ToList();
+            return known.Count == 0 ? null : $"{string.Join("、", known)}已掌握，只记来源（不兑换材料、经验或别的蓝图）";
+        }
+
+        private string KnowledgeName(string id) => Config.Knowledge.FirstOrDefault(k => k.Id == id)?.Name ?? id;
+
+        /// <summary>领取这份记录对应的可选任务说明（预演 preview=true / 完成日志）。</summary>
+        private IEnumerable<string> RecordQuestNotes(GameState s, ResourceConfig res, bool preview)
+        {
+            var key = ClaimKey(res.NodeId);
+            foreach (var q in LiveQuests.Where(q => q.RecordFacts.Contains(key) && !QuestDone(s, q.Id)))
+            {
+                var back = $"回{LocName(q.LocationId)}和{NpcNameOf(q.NpcId)}交谈（0分钟）即完成";
+                if (QuestAccepted(s, q.Id))
+                    yield return preview ? $"{KindWord(q)}“{q.Title}”：领取后记为“记录已取得”，{back}" : $"{KindWord(q)}“{q.Title}”记录已取得：{back}";
+                else
+                    yield return $"{KindWord(q)}“{q.Title}”：{(preview ? "领取后" : "")}记录已保存，" +
+                                 (QuestRequiresBlocked(s, q) == null ? "" : "营区登记后") + $"在{LocName(q.LocationId)}和{NpcNameOf(q.NpcId)}交谈接取时即完成，不用再进一次";
+            }
+        }
+
+        // ───────────────────────── 开发入口 ─────────────────────────
+
+        /// <summary>开发入口（?dev=1）：所选可选地牢任务的状态一行（接取、记录、完成、两段已提交分钟、知识）。</summary>
+        public string DebugExqStatus(GameState s, string questId)
+        {
+            var q = Quest(questId);
+            var p = Config.ExpansionQuests.Packs.FirstOrDefault(x => x.QuestId == questId);
+            if (q == null || p == null) return $"开发：没有可选任务 {questId}";
+            var res = Config.Resources.First(r => r.NodeId == p.ClaimResourceId);
+            var know = string.Join("、", p.Knowledge.Select(k => $"{KnowledgeName(k)}{(KnowsKnowledge(s, k) ? "✓" : "✗")}"));
+            return $"开发：{q.Title}（{q.Id}）· {(QuestDone(s, q.Id) ? "已完成" : QuestAccepted(s, q.Id) ? (HasQuestRecord(s, q) ? "记录已取得" : "进行中") : "未接取")}" +
+                   $" · {res.Name}{(CampaignClaimed(s, res.NodeId) ? "已领取" : "未领取")}（已提交{res.BaseMinutes - StagedLeft(s, res)}/{res.BaseMinutes}分钟）· 知识：{know}" +
+                   $" · 公开抄录{(s.Progress.Flags.Contains(p.CopyFact) ? "已抄" : "未抄")}";
+        }
+    }
+}

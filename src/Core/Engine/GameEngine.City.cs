@@ -214,10 +214,13 @@ namespace Survival.Core.Engine
             c.Talks[n.NpcId] = (c.Talks.TryGetValue(n.NpcId, out var k) ? k : 0) + 1;
             // B15：可接的委托在交谈时接取（播该委托的接取对白；narrative-texts offer 触发“quest eligible, local safe talk”）
             var offer = TalkOffer(s, n.NpcId);
+            // B23（A11 §2“返营交谈0分钟0材料”、EXQ-A07）：记录已取得的可选任务，交谈即回报完成；岗位不在由代班员接手
+            var turnins = LiveQuests.Where(q => q.NpcId == n.NpcId && q.RecordFacts.Count > 0 && QuestAccepted(s, q.Id) && !QuestDone(s, q.Id) && HasQuestRecord(s, q)).ToList();
             if (c.Absent.Contains(n.NpcId))
             {
                 // 联系人退场不锁任务：代班员接续，委托照接，接取台词由当班接续员说（M333：换 speaker，见 SpeakerNow）
                 OpenReplay(s, StateSet(n, "institution_substitute"));
+                foreach (var q in turnins) CompleteQuest(s, q, false);
                 if (offer != null) AcceptCore(s, offer, true);
                 return ActionResult.Success();
             }
@@ -227,12 +230,13 @@ namespace Survival.Core.Engine
                 OpenReplay(s, StateSet(n, "first_greeting"));
                 OpenReplay(s, StateSet(n, "role"));
             }
+            foreach (var q in turnins) CompleteQuest(s, q, false);
             if (offer != null)
             {
                 AcceptCore(s, offer, true);
                 return ActionResult.Success();
             }
-            if (first) return ActionResult.Success();
+            if (first || turnins.Count > 0) return ActionResult.Success();
             OpenReplay(s, StateSet(n, QuestTalkState(s, n) ?? "idle"));
             return ActionResult.Success();
         }

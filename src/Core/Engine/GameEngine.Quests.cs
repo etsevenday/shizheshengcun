@@ -134,7 +134,7 @@ namespace Survival.Core.Engine
             var v = new QuestView
             {
                 Id = q.Id, Title = q.Title, Kind = q.Kind, NpcId = q.NpcId, NpcName = NpcNameOf(q.NpcId), LocationName = LocName(q.LocationId),
-                KindLabel = q.Kind == "main" ? "主线" : q.Kind == "recruit" ? "同行邀约" : "委托",
+                KindLabel = KindWord(q),
                 WorkTotal = q.WorkMinutes, WorkDone = done ? q.WorkMinutes : rec?.WorkMinutes ?? 0,
                 CompletedAt = rec?.CompletedAt, Retro = rec?.Retro ?? false,
                 ChoiceLabel = rec?.Choice == null ? null : ChoiceLabelOf(rec.Choice),
@@ -154,6 +154,8 @@ namespace Survival.Core.Engine
                 v.Status = "active";
                 v.StatusText = q.WorkMinutes > 0 && v.WorkDone > 0 ? $"进行中（已完成{v.WorkDone}/{q.WorkMinutes}分钟）" : "进行中";
                 v.Step = q.StepActive;
+                // B23（A11 §2）：可选地牢任务领到记录后“记录已取得”，下一步回岗位交谈
+                if (HasQuestRecord(s, q)) { v.StatusText = "记录已取得"; v.Step = q.StepTurnin; }
                 v.WorkHint = string.IsNullOrEmpty(q.WorkDialogue) ? "" : string.Join("", Config.Story.Dialogues.Where(d => d.Event == q.WorkDialogue).Select(d => d.Text));
             }
             else
@@ -174,7 +176,8 @@ namespace Survival.Core.Engine
                 v.WorkLabel = q.WorkLabel;
                 v.WorkBlocked = req ?? AcceptBlocked(s, q);
             }
-            else if (acc && q.WorkServiceIds.Count == 0 && q.Accept != "service" && q.Accept != "auto" && q.CompleteByAny.Count == 0)
+            else if (acc && q.WorkServiceIds.Count == 0 && q.Accept != "service" && q.Accept != "auto" && q.CompleteByAny.Count == 0
+                     && (q.RecordFacts.Count == 0 || HasQuestRecord(s, q)))
             {
                 v.WorkLabel = q.WorkMinutes > 0 ? $"{q.WorkLabel}（{q.WorkMinutes - v.WorkDone}分钟）" : $"{q.WorkLabel}（0分钟）";
                 v.WorkBlocked = QuestWorkBlocked(s, q);
@@ -182,12 +185,25 @@ namespace Survival.Core.Engine
             return v;
         }
 
+        /// <summary>任务类别的玩家说法：主线 / 委托 / 可选任务（B23，A11“四条可选任务”）/ 同行邀约。</summary>
+        public static string KindWord(QuestConfig q) => q.Kind switch { "main" => "主线", "recruit" => "同行邀约", "optional" => "可选任务", _ => "委托" };
+
+        /// <summary>B23：记录类任务的记录事实已在（领取核心记录同一事务写入，本局永久）。</summary>
+        public static bool HasQuestRecord(GameState s, QuestConfig q) => q.RecordFacts.Count > 0 && q.RecordFacts.Any(s.Progress.Flags.Contains);
+
+        /// <summary>可选任务借用岗位通用 quest_offer/quest_return 台词组：每次都回放（不受“同一组只播一次”影响）；其余任务的专属台词照旧只播一次。</summary>
+        private void PlayQuestSet(GameState s, QuestConfig q, string set)
+        {
+            if (q.Kind == "optional") OpenReplay(s, set);
+            else OpenDialogue(s, set);
+        }
+
         private string? ChoiceLabelOf(string choiceId) =>
             Config.City.Services.SelectMany(x => x.Choices).FirstOrDefault(c => c.Id == choiceId)?.Label;
 
         /// <summary>任务册：已显示的全部任务（主线、委托、同行邀约，各按配置顺序）。</summary>
         public List<QuestView> QuestBook(GameState s) =>
-            new[] { "main", "side", "recruit" }.SelectMany(k => LiveQuests.Where(q => q.Kind == k)).Select(q => QuestViewOf(s, q.Id))
+            new[] { "main", "side", "optional", "recruit" }.SelectMany(k => LiveQuests.Where(q => q.Kind == k)).Select(q => QuestViewOf(s, q.Id))
                 .Where(v => v != null).Select(v => v!).ToList();
 
         /// <summary>某岗位（或命名队友）名下已显示的任务。</summary>
@@ -244,9 +260,11 @@ namespace Survival.Core.Engine
             var rec = s.Quests.Of(q.Id);
             if (s.Progress.Flags.Add(QuestFact(q.Id, "accepted"))) rec.AcceptedAt ??= s.GameMinute;
             if (choice != null) rec.Choice = choice;
-            if (dialogue && !string.IsNullOrEmpty(q.OfferDialogue)) OpenDialogue(s, q.OfferDialogue!);
+            if (dialogue && !string.IsNullOrEmpty(q.OfferDialogue)) PlayQuestSet(s, q, q.OfferDialogue!);
             if (!QuestDone(s, q.Id))
-                Emit(s, GameEventKind.Info, $"{(q.Kind == "main" ? "主线" : "委托")}“{q.Title}”已接取：{q.StepActive}");
+                Emit(s, GameEventKind.Info, $"{KindWord(q)}“{q.Title}”已接取：{(HasQuestRecord(s, q) ? q.StepTurnin : q.StepActive)}");
+            // B23（A11 §2“任务可提前拾取后补接，不重复要求再进一次”）：接取时记录已在手——就在岗位面前，接取即追认完成（同 FA05 先例，不再给第二份知识/物资）
+            if (q.RecordFacts.Count > 0 && HasQuestRecord(s, q)) CompleteQuest(s, q, false);
             // B15a（Q157 选 A）：须先接取才完成的（FA05），接取时完成事实已在手（先领了联络日志）——接取后这一安全边界追认完成：
             // 写完成与日志，不补播联络完成场景（场景属于 d04_07 联络提交那一刻，见待确认 Q163）、不加奖励
             if (q.CompleteRequiresAccepted && q.CompleteByAny.Any(s.Progress.Flags.Contains)) CompleteQuest(s, q, false, quiet: true);
@@ -337,6 +355,7 @@ namespace Survival.Core.Engine
         {
             if (QuestDone(s, q.Id)) return "已完成";
             if (!QuestAccepted(s, q.Id) && q.Accept != "work") return $"先接取“{q.Title}”";
+            if (q.RecordFacts.Count > 0 && !HasQuestRecord(s, q)) return "还没有取得记录：" + q.StepActive;
             var miss = q.WorkRequiresAll.FirstOrDefault(f => !s.Progress.Flags.Contains(f));
             if (miss != null) return "需要：" + RequirementText(miss);
             if (s.CurrentLocation != q.LocationId && q.WorkServiceIds.Count == 0) return $"须实际到达{LocName(q.LocationId)}";
@@ -434,12 +453,12 @@ namespace Survival.Core.Engine
             var routes = q.CompleteFacts.Count > 0 ? RouteNotes(s, RefreshGates(s), s.CurrentLocation) : new List<string>();
             if (!quiet)
             {
-                if (!string.IsNullOrEmpty(q.TurninDialogue)) OpenDialogue(s, q.TurninDialogue!);
+                if (!string.IsNullOrEmpty(q.TurninDialogue)) PlayQuestSet(s, q, q.TurninDialogue!);
                 if (!string.IsNullOrEmpty(q.CompleteDialogue)) OpenDialogue(s, q.CompleteDialogue!);
                 if (!string.IsNullOrEmpty(q.NoteDialogue)) OpenDialogue(s, q.NoteDialogue!);
             }
             var extra = QuestCompletionDetail(s, q);
-            Emit(s, GameEventKind.Info, $"{(q.Kind == "main" ? "主线" : q.Kind == "recruit" ? "同行邀约" : "委托")}“{q.Title}”完成：{q.Result}" +
+            Emit(s, GameEventKind.Info, $"{KindWord(q)}“{q.Title}”完成：{q.Result}" +
                 (extra != null ? "；" + extra : "") + (routes.Count > 0 ? "；发现" + string.Join("与", routes) : "") + "。");
         }
 

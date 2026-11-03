@@ -47,7 +47,7 @@ namespace Survival.Core.State
         /// "38" 起晾制架八位：区设施带在用晾制位（DryingSlots），位内物品 owner 为 drying:&lt;place&gt;#&lt;位号&gt;（策划答复 Q170，开发计划 v0.9 B22c）。
         /// "39" 起肉干在制暂停原料保质：晾制位内肉干原料带暂停时快照的剩余保质（ItemInstance.ShelfPausedMinutes，ExpiresAt 暂为空），晾制位带暂停标记（策划答复 Q215，开发计划 v0.9 B22k）。
         /// </summary>
-        public const string CurrentSchema = "39";
+        public const string CurrentSchema = "40";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -732,6 +732,11 @@ namespace Survival.Core.State
         public bool Discovered { get; set; }
         /// <summary>地牢普通箱（instanceId）库存所属的地牢实例代号；新一代开始时补满到 cap 并改写（B12 R36）。world_stock 为 0。</summary>
         public int Generation { get; set; }
+        /// <summary>
+        /// B23（A11 EXQ-A05，存档 40）：可选地牢核心记录（d05—d08）领取/核对的固定等待已提交分钟（5 分钟整段）；中途停下保留，续做只补剩余，
+        /// 领取完成或地牢换代清零。其余资源点恒为 0。
+        /// </summary>
+        public int ClaimMinutesDone { get; set; }
 
         public ResourceState Clone() => (ResourceState)MemberwiseClone();
     }
