@@ -588,6 +588,18 @@ namespace Survival.Core.Engine
             return null;
         }
 
+        /// <summary>
+        /// 代班兜底交谈选哪一组（B26a，Q236 selection）：本岗事项里有已显示、前置满足、未接的委托 → 待接提示；否则岗位关联（名下或 questIds）已接未完成 → 进度提醒；否则本岗闲谈。
+        /// 待接只认本岗事项能办的（q.NpcId 是本岗，即事项面板列出的那些）；已被交谈接走的走不到这里。六人招募邀约不由代班代说。
+        /// </summary>
+        private string SubstituteTalkState(GameState s, CityNpcConfig n)
+        {
+            var related = LiveQuests.Where(q => q.Kind != "recruit" && (q.NpcId == n.NpcId || n.QuestIds.Contains(q.Id))).ToList();
+            if (related.Any(q => q.NpcId == n.NpcId && !QuestAccepted(s, q.Id) && !QuestDone(s, q.Id) && QuestShown(s, q) && QuestRequiresBlocked(s, q) == null)) return "substitute_quest_offer";
+            if (related.Any(q => QuestAccepted(s, q.Id) && !QuestDone(s, q.Id))) return "substitute_quest_return";
+            return "substitute_idle";
+        }
+
         // ───────────────────────── 同行邀约卡（RN01—RN06） ─────────────────────────
 
         /// <summary>某命名队友的招募任务（已实装）；没有为 null。</summary>

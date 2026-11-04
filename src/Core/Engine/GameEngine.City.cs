@@ -217,7 +217,7 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 与岗位人物交谈（0 分钟，不扣物、不恢复、不改身体、不写事实）：首次播“初次见面”与“岗位说明”；之后播“闲谈”
         /// （B14b，Q146 选 B：未实装本身不触发“暂不可办”；目前没有已实装且剧情条件不足的事项，locked 组暂不使用）；
-        /// 命名人物退场时由代班员接续，接续说明只自动播一次（B26a，Q235）。回看只回放台词。
+        /// 命名人物退场时由代班员接续，接续说明只自动播一次（B26a，Q235），之后没有事务对白时播一句代班专用交谈（Q236）。回看只回放台词。
         /// B26a（Q235_B）：本次实际将接取的是 EXQ05—08 时跳过“初次见面/岗位说明”，首次铺垫记为已处理、不补播；
         /// 其他首次交谈与其他任务照旧。顺序：铺垫（或代班说明）→ 回报（可连播）→ 至多接一项。
         /// </summary>
@@ -236,9 +236,11 @@ namespace Survival.Core.Engine
             {
                 // 联系人退场不锁任务：代班员接续，委托照接，接取台词由当班接续员说（M333：换 speaker，见 SpeakerNow）。
                 // 和代班员交谈不写 Greeted：本人回岗的首次问候等 Q238 答复，这里保持现状
-                PlaySubstituteIntro(s, n);
+                var intro = PlaySubstituteIntro(s, n);
                 foreach (var q in turnins) CompleteQuest(s, q, false);
                 if (offer != null) AcceptCore(s, offer, true);
+                // Q236 entry/selection：说明已示之后、这次又没有实际回报与接取，才播一句代班专用交谈；首次说明这一次只播说明
+                if (!intro && turnins.Count == 0 && offer == null) OpenReplay(s, StateSet(n, SubstituteTalkState(s, n)));
                 return ActionResult.Success();
             }
             var first = c.Greeted.Add(n.NpcId);

@@ -13,6 +13,12 @@ public class B26aSubstituteTalkTests : TestBase
 {
     private static readonly string[] Dedicated = { "EXQ05", "EXQ06", "EXQ07", "EXQ08" };
 
+    private static readonly JObject Q236 = JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.substitute-talk.json")));
+
+    private static string Shared(string state) => (string)Q236["sharedLines"]![state]!;
+
+    public static IEnumerable<string> Posts => ((JArray)Q236["idleLines"]!).Select(x => (string)x["npcId"]!);
+
     private GameState Registered(string loc)
     {
         var s = New();
@@ -424,5 +430,232 @@ public class B26aSubstituteTalkTests : TestBase
         Talk(c, "npc_xu_an");
         Assert.That(GameEngine.SubstituteIntroShown(c, "npc_xu_an"), Is.True);
         Assert.That(GameEngine.SubstituteIntroShown(s, "npc_xu_an"), Is.False);
+    }
+    // ───────────── DIALOGUE-Q236-01：16 岗位闲谈 ─────────────
+
+    /// <summary>说明已示、没有相关委托时：播本岗一句，可反复，发言人是机构当班接续员，文字与合同逐字一致，不重播两句接续说明。</summary>
+    [TestCaseSource(nameof(Posts))]
+    public void Q236_01_Idle_EachPost_Verbatim_Repeatable(string npcId)
+    {
+        var c = (JObject)((JArray)Q236["idleLines"]!).Single(x => (string)x["npcId"]! == npcId);
+        var n = Cfg.City.Npcs.Single(x => x.NpcId == npcId);
+        Assert.That(n.LocationId, Is.EqualTo((string)c["locationId"]!));
+        var line = Cfg.Story.Dialogues.Single(d => d.Id == (string)c["lineId"]!);
+        Assert.That((line.Event, line.Text, line.Speaker), Is.EqualTo(((string)c["dialogueSetId"]!, (string)c["text"]!, n.DutySpeaker)));
+        Assert.That(n.States["substitute_idle"], Is.EqualTo((string)c["dialogueSetId"]!));
+
+        // 关联任务都记为已完成：没有待接、没有已接未完成
+        var s = New();
+        s.GameMinute = At(2, 9, 0);
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        foreach (var q in Cfg.Quests.List.Where(q => q.NpcId == npcId || n.QuestIds.Contains(q.Id))) s.Progress.Flags.Add($"quest:{q.Id}:completed");
+        E.DebugMapTeleport(s, n.LocationId);
+        ReadDialogues(s);
+        s.City.Absent.Add(npcId);
+        TalkRead(s, npcId);
+        Assert.That(Plays(s, npcId, "institution_substitute"), Is.EqualTo(1));
+        Assert.That(Plays(s, npcId, "substitute_idle"), Is.Zero, "首次说明这一次只播说明，不尾随兜底句");
+        var snap = Ledger(s);
+        for (var i = 1; i <= 3; i++)
+        {
+            var mark = s.Story.DialogueLog.Count;
+            Talk(s, npcId);
+            var d = s.Story.DialogueLog.Skip(mark).Single();
+            Assert.That(Base(d), Is.EqualTo((string)c["dialogueSetId"]!));
+            Assert.That(d.Lines.Single().Speaker, Is.EqualTo(n.DutySpeaker));
+            Assert.That(d.Lines.Single().Speaker, Is.Not.EqualTo(n.Name));
+            Assert.That(d.Lines.Single().Text, Is.EqualTo((string)c["text"]!));
+            ReadDialogues(s);
+        }
+        Assert.That(Plays(s, npcId, "institution_substitute"), Is.EqualTo(1), "不重播两句接续说明");
+        Assert.That(Ledger(s), Is.EqualTo(snap), "0 分钟 0 资源");
+    }
+
+    /// <summary>合同的 16 岗位与配置的 16 岗位一一对应；48 组 lineId 不重复；两条共用句三十二组逐字一致。</summary>
+    [Test]
+    public void Q236_01_AllGroupsVerbatim()
+    {
+        Assert.That(Posts, Is.EquivalentTo(Cfg.City.Npcs.Select(n => n.NpcId)));
+        var ids = new List<string>();
+        foreach (var n in Cfg.City.Npcs)
+            foreach (var st in new[] { "substitute_quest_offer", "substitute_quest_return" })
+            {
+                var d = Cfg.Story.Dialogues.Single(x => x.Event == n.States[st]);
+                Assert.That((d.Text, d.Speaker), Is.EqualTo((Shared(st), n.DutySpeaker)), n.States[st]);
+                ids.Add(d.Id);
+            }
+        ids.AddRange(((JArray)Q236["idleLines"]!).Select(x => (string)x["lineId"]!));
+        Assert.That(ids.Count, Is.EqualTo(48));
+        Assert.That(ids.Distinct().Count(), Is.EqualTo(48));
+    }
+
+    // ───────────── DIALOGUE-Q236-02：分支优先级 ─────────────
+
+    private GameState SubstituteReady(string loc, string npc)
+    {
+        var s = Registered(loc);
+        s.City.Absent.Add(npc);
+        s.City.SubstituteIntroShown.Add(GameEngine.SubstituteIntroKey(s, npc));
+        return s;
+    }
+
+    private string TalkLine(GameState s, string npc)
+    {
+        var mark = s.Story.DialogueLog.Count;
+        Talk(s, npc);
+        var d = s.Story.DialogueLog.Skip(mark).Single();
+        ReadDialogues(s);
+        return d.Lines.Single().Text;
+    }
+
+    private static string IdleOf(string npc) => (string)((JArray)Q236["idleLines"]!).Single(x => (string)x["npcId"]! == npc)["text"]!;
+
+    /// <summary>事项里待接（服务接取 FA02）：播待接句；本次不接取、不写事实。接取后未完成：播进度句。完成后：闲谈。</summary>
+    [Test]
+    public void Q236_02_OfferThenReturnThenIdle()
+    {
+        var s = SubstituteReady("c02_church", "npc_qi_wen");
+        var flags = s.Progress.Flags.Count;
+        Assert.That(TalkLine(s, "npc_qi_wen"), Is.EqualTo(Shared("substitute_quest_offer")));
+        Assert.That(s.Progress.Flags.Count, Is.EqualTo(flags), "只是提示，不代接");
+        Assert.That(GameEngine.QuestAccepted(s, "FA02"), Is.False);
+        s.Progress.Flags.Add("quest:FA02:accepted");
+        Assert.That(TalkLine(s, "npc_qi_wen"), Is.EqualTo(Shared("substitute_quest_return")));
+        s.Progress.Flags.Add("quest:FA02:completed");
+        Assert.That(TalkLine(s, "npc_qi_wen"), Is.EqualTo(IdleOf("npc_qi_wen")), "完成不触发进度提醒");
+    }
+
+    /// <summary>待接与进度都有：待接优先。许安：FA04 可在事项办理、EXQ07 已接未完成。</summary>
+    [Test]
+    public void Q236_02_OfferBeatsReturn()
+    {
+        var s = SubstituteReady("h02_square", "npc_xu_an");
+        s.Progress.Flags.UnionWith(new[] { "quest:EXQ07:accepted", "quest:EXQ07:completed" });
+        Assert.That(TalkLine(s, "npc_xu_an"), Is.EqualTo(IdleOf("npc_xu_an")), "FA04 未显示：隐藏的委托不触发，完成的 EXQ07 也不提醒");
+        s.Progress.Flags.Remove("quest:EXQ07:completed");
+        Assert.That(TalkLine(s, "npc_xu_an"), Is.EqualTo(Shared("substitute_quest_return")));
+        s.Progress.Flags.UnionWith(new[] { "quest:FA02:completed", "quest:FA03:completed" });
+        Assert.That(TalkLine(s, "npc_xu_an"), Is.EqualTo(Shared("substitute_quest_return")), "FA04 已显示但前置不足：无资格不触发");
+        s.Progress.Flags.UnionWith(new[] { "FA02_record_credit", "FA03_record_credit" });
+        Assert.That(TalkLine(s, "npc_xu_an"), Is.EqualTo(Shared("substitute_quest_offer")));
+    }
+
+    /// <summary>待接提示说的是“这里”的事项：宋烛关联 FA02、尹珂关联 AC01，它们不在本岗事项里办，不触发待接；已接未完成仍按岗位关联提醒。</summary>
+    [TestCase("c06_archive", "npc_song_zhu", "FA02", new[] { "quest:FA01:completed", "church_contacted" })]
+    [TestCase("r08_observation", "npc_yin_ke", "AC01", new[] { "quest:FA03:accepted" })]
+    public void Q236_02_RelatedElsewhere_NoOfferHint(string loc, string npc, string quest, string[] facts)
+    {
+        var s = SubstituteReady(loc, npc);
+        s.Progress.Flags.UnionWith(facts);
+        Assert.That(E.QuestViewOf(s, quest), Is.Not.Null);
+        var related = Cfg.City.Npcs.Single(n => n.NpcId == npc).QuestIds;
+        Assert.That(related, Does.Contain(quest));
+        Assert.That(TalkLine(s, npc), Is.Not.EqualTo(Shared("substitute_quest_offer")));
+        s.Progress.Flags.Add($"quest:{quest}:accepted");
+        Assert.That(TalkLine(s, npc), Is.EqualTo(Shared("substitute_quest_return")));
+    }
+
+    /// <summary>六人招募不由代班代说：林昭可邀约时，许安的代班员播闲谈；邀约卡还在、由本人说。</summary>
+    [Test]
+    public void Q236_02_RecruitNotSpokenBySubstitute()
+    {
+        var s = SubstituteReady("h02_square", "npc_xu_an");
+        s.Progress.Flags.UnionWith(new[] { "quest:EXQ07:accepted", "quest:EXQ07:completed" });
+        var card = E.NpcsHere(s).SingleOrDefault(c => c.NpcId == "npc_lin_zhao");
+        Assert.That(card, Is.Not.Null, "前置满足的邀约卡");
+        Assert.That(TalkLine(s, "npc_xu_an"), Is.EqualTo(IdleOf("npc_xu_an")));
+        Talk(s, "npc_lin_zhao");
+        Assert.That(s.Story.DialogueLog.Last().Lines.First().Speaker, Is.EqualTo(card!.Name));
+    }
+
+    // ───────────── DIALOGUE-Q236-03：有事务对白时不尾随 ─────────────
+
+    /// <summary>实际接取或回报（一项、多项）时只播专属句，不尾随兜底；不多接、不多授奖。</summary>
+    [Test]
+    public void Q236_03_NoFallbackAfterDedicated()
+    {
+        var s = SubstituteReady("h03_workshop", "npc_luo_zheng");
+        var mark = s.Story.DialogueLog.Count;
+        TalkRead(s, "npc_luo_zheng");
+        Assert.That(Since(s, mark), Is.EqualTo(new[] { "EXQ05_offer" }));
+        mark = s.Story.DialogueLog.Count;
+        TalkRead(s, "npc_luo_zheng");
+        Assert.That(Since(s, mark), Is.EqualTo(new[] { "EXQ06_offer" }));
+        mark = s.Story.DialogueLog.Count;
+        TalkRead(s, "npc_luo_zheng");
+        Assert.That(Since(s, mark), Is.EqualTo(new[] { Set("npc_luo_zheng", "substitute_quest_return") }), "这次没有事务才兜底");
+        GiveClaim(s, "d05_07_unique", "waterworks_record");
+        mark = s.Story.DialogueLog.Count;
+        TalkRead(s, "npc_luo_zheng");
+        Assert.That(Since(s, mark), Is.EqualTo(new[] { "EXQ05_turnin" }));
+        GiveClaim(s, "d06_08_unique", "mining_record");
+        mark = s.Story.DialogueLog.Count;
+        var snap = Ledger(s);
+        TalkRead(s, "npc_luo_zheng");
+        Assert.That(Since(s, mark), Is.EqualTo(new[] { "EXQ06_turnin" }));
+        Assert.That(Ledger(s), Is.EqualTo(snap));
+    }
+
+    /// <summary>本人在岗不切换成代班句：闲谈与委托句照旧。</summary>
+    [Test]
+    public void Q236_03_InPerson_Unchanged()
+    {
+        var s = Registered("h01_gate");
+        TalkRead(s, "npc_lu_heng");
+        TalkRead(s, "npc_lu_heng");
+        Assert.That(Plays(s, "npc_lu_heng", "idle"), Is.EqualTo(1));
+        Assert.That(Plays(s, "npc_lu_heng", "substitute_idle"), Is.Zero);
+
+        var c = Registered("c02_church");
+        c.Progress.Flags.UnionWith(new[] { "quest:FA01:completed", "church_contacted" });
+        TalkRead(c, "npc_qi_wen");
+        TalkRead(c, "npc_qi_wen");
+        Assert.That(Plays(c, "npc_qi_wen", "quest_offer"), Is.EqualTo(1));
+        Assert.That(Plays(c, "npc_qi_wen", "substitute_quest_offer"), Is.Zero);
+    }
+
+    // ───────────── DIALOGUE-Q236-04：零结算、读档、非法状态、升级 ─────────────
+
+    /// <summary>反复交谈、回看、读档后再交谈：0 分钟 0 资源，身体、任务、知识、配额、奖励都不动；“歇歇”不启动休息。</summary>
+    [Test]
+    public void Q236_04_ZeroEffect_Repeat_Reload()
+    {
+        var s = SubstituteReady("c07_sanctuary", "npc_fu_heng");
+        var snap = (Ledger(s), s.Progress.Flags.Count);   // 知识按事实判断，事实数含知识
+        Assert.That(TalkLine(s, "npc_fu_heng"), Is.EqualTo(IdleOf("npc_fu_heng")));
+        Assert.That(TalkLine(s, "npc_fu_heng"), Is.EqualTo(IdleOf("npc_fu_heng")));
+        Assert.That(s.Main, Is.Null, "不启动休息行动");
+        var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Assert.That(TalkLine(m, "npc_fu_heng"), Is.EqualTo(IdleOf("npc_fu_heng")));
+        Assert.That((Ledger(m), m.Progress.Flags.Count), Is.EqualTo(snap));
+        Assert.That(Plays(m, "npc_fu_heng", "substitute_idle"), Is.EqualTo(3));
+    }
+
+    /// <summary>非法状态维持原禁用理由，卡上写同一句，点了不播不记。</summary>
+    [Test]
+    public void Q236_04_Illegal_KeepsReason()
+    {
+        var s = SubstituteReady("h01_gate", "npc_lu_heng");
+        Start(s, ActionRequest.Rest(60));
+        Assert.That(E.NpcsHere(s).Single(n => n.NpcId == "npc_lu_heng").TalkBlocked, Is.EqualTo("行动进行中"));
+        var count = s.Story.DialogueLog.Count;
+        Assert.That(E.TalkNpc(s, "npc_lu_heng").Reason, Is.EqualTo("行动进行中"));
+        Assert.That(s.Story.DialogueLog.Count, Is.EqualTo(count));
+    }
+
+    /// <summary>升级后下一次合法交谈选新句，不补播历史，不重置 Greeted；已示的不再介绍。</summary>
+    [Test]
+    public void Q236_04_Upgrade_NextTalkUsesNewLine()
+    {
+        var s = Registered("h01_gate");
+        TalkRead(s, "npc_lu_heng");
+        E.DebugToggleCityPostAbsent(s);
+        TalkRead(s, "npc_lu_heng");
+        s.City.SubstituteIntroShown.Clear();
+        var m = Upgrade41(s);
+        Assert.That(m.City.Greeted, Does.Contain("npc_lu_heng"));
+        Assert.That(TalkLine(m, "npc_lu_heng"), Is.EqualTo(IdleOf("npc_lu_heng")));
+        Assert.That(Plays(m, "npc_lu_heng", "institution_substitute"), Is.EqualTo(1));
     }
 }
