@@ -197,7 +197,7 @@ namespace Survival.Core.Engine
         /// <summary>B23：记录类任务的记录事实已在（领取核心记录同一事务写入，本局永久）。</summary>
         public static bool HasQuestRecord(GameState s, QuestConfig q) => q.RecordFacts.Count > 0 && q.RecordFacts.Any(s.Progress.Flags.Contains);
 
-        /// <summary>可选任务借用岗位通用 quest_offer/quest_return 台词组：每次都回放（不受“同一组只播一次”影响）；其余任务的专属台词照旧只播一次。</summary>
+        /// <summary>可选任务的接取/回报台词（B26 Q217 起是 EXQ05—08 专属组）：走回放，不受“同一组只播一次”影响；其余任务的台词照旧只播一次。</summary>
         private void PlayQuestSet(GameState s, QuestConfig q, string set)
         {
             if (q.Kind == "optional") OpenReplay(s, set);

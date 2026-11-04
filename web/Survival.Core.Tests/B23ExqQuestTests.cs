@@ -41,7 +41,7 @@ public class B23ExqQuestTests : TestBase
         (s.Items.Where(i => !i.Owner.StartsWith("d0")).Sum(i => i.Count), s.Skills.Sum(kv => kv.Value.Xp), E.BattleCapacity(s));
 
     /// <summary>
-    /// EXQ05 全流程：h03 与罗铮交谈接取（播岗位通用委托台词）→ d05_07 领取水厂阀控记录（固定 10 分钟，同一事务写记录、日志、知识）→ 任务册“记录已取得”、
+    /// EXQ05 全流程：h03 与罗铮交谈接取（播专属接取台词）→ d05_07 领取水厂阀控记录（固定 10 分钟，同一事务写记录、日志、知识）→ 任务册“记录已取得”、
     /// 下一步回工坊交谈 → 回 h03 交谈 0 分钟完成（播回报台词）；不发物资、不给经验、不加容量；维护手册蓝图由 claim:d05_07_unique 授予。
     /// </summary>
     [Test]
@@ -52,7 +52,7 @@ public class B23ExqQuestTests : TestBase
         Assert.That((v.Status, v.KindLabel, v.Step), Is.EqualTo(("available", "可选任务", "到营区工坊和罗铮交谈。")));
         Assert.That(E.QuestBook(s).Select(x => x.Id), Does.Contain("EXQ05").And.Contain("EXQ06"));
         Ok(E.TalkNpc(s, "npc_luo_zheng"));
-        Assert.That(s.Story.DialogueLog.Any(d => d.EventId.StartsWith("npc_luo_zheng_dialogue_quest_offer")), Is.True, "岗位通用委托台词");
+        Assert.That(s.Story.DialogueLog.Any(d => d.EventId.StartsWith("EXQ05_offer")), Is.True, "专属接取台词（B26 Q217）");
         ReadDialogues(s);
         Assert.That(s.Progress.Flags, Does.Contain(Q("EXQ05", "accepted")));
         v = E.QuestViewOf(s, "EXQ05")!;
@@ -84,7 +84,7 @@ public class B23ExqQuestTests : TestBase
         ReadDialogues(s);
         var t1 = s.GameMinute;
         Ok(E.TalkNpc(s, "npc_luo_zheng"));
-        Assert.That(s.Story.DialogueLog.Any(d => d.EventId.StartsWith("npc_luo_zheng_dialogue_quest_return")), Is.True, "回报台词");
+        Assert.That(s.Story.DialogueLog.Any(d => d.EventId.StartsWith("EXQ05_turnin")), Is.True, "专属回报台词（B26 Q217）");
         ReadDialogues(s);
         Assert.That(s.Progress.Flags, Does.Contain(Q("EXQ05", "completed")));
         Assert.That(s.GameMinute, Is.EqualTo(t1), "交谈 0 分钟");

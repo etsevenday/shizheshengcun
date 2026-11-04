@@ -9,7 +9,8 @@
 
 写入：
 - quests.list 追加/覆盖 EXQ05—EXQ08（kind=optional，talk 接取，recordFacts=claim:<claimId>，交谈 0 分钟回报）；
-  接取/回报台词用三名岗位已有的通用 quest_offer/quest_return 组（开发假设 B23-1），不新写台词；
+  接取/回报台词用策划逐字稿（B26，Q217：expansion-quests.json 的 offerDialogue/turnInDialogue 指向 narrative-texts.json 的 EXQ0x_offer/turnin，
+  八句写进 story.dialogues；三名岗位通用 quest_offer/quest_return 不动，其他任务照旧用）；
   “下一步”短句只用地图里的地点名、记录名拼出（父地点 → 地牢 → 记录房 → 记录名）。
 - expansionQuests：四个知识包（knowledge、claimResourceId、questId、替代抄录地点/岗位/服务/分钟/来源名）。
 - knowledge：七条知识的 grantedByFacts 加 claim:<claimId> 与替代抄录事实 kpcopy:<包>，source 补上新来源。
@@ -28,6 +29,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG = os.path.join(ROOT, "data", "config.v0.6.json")
 DOC = os.path.join(ROOT, "doc", "策划案", "系统策划总册 v1.0")
 EXQ = os.path.join(DOC, "assets", "20261030", "narrative-map", "expansion-quests.json")
+NARR = os.path.join(DOC, "assets", "20261030", "narrative-map", "narrative-texts.json")
 
 # A11 §2 接取岗位（board）对应的岗位人物（city-npc-data：h03 罗铮、h02 许安、h04 陈芷）
 BOARD_NPC = {"h03_workshop": "npc_luo_zheng", "h02_square": "npc_xu_an", "h04_infirmary": "npc_chen_zhi"}
@@ -60,6 +62,8 @@ def main():
         cfg = json.load(f)
     with open(EXQ, encoding="utf-8") as f:
         src = json.load(f)
+    with open(NARR, encoding="utf-8") as f:
+        sets = {d["dialogueSetId"]: d for d in json.load(f)["dialogueSets"]}
 
     locs = {l["id"]: l for l in cfg["locations"]}
     res = {r["nodeId"]: r for r in cfg["resources"]}
@@ -67,7 +71,7 @@ def main():
     know = {k["id"]: k for k in cfg["knowledge"]}
     npcs = {n["npcId"]: n for n in cfg["city"]["npcs"]}
     recipes = {r.get("knowledge"): r for r in cfg["recipes"] if r.get("knowledge")}
-    events = {d["eventId"] for d in cfg["story"]["dialogues"]}
+    dialogues = cfg["story"]["dialogues"]
     cap_records = set()
     for u in cfg["scope"]["capacity"]["unlocks"]:
         cap_records.update(u.get("allOf", []))
@@ -98,9 +102,16 @@ def main():
         assert q["alternativeKnowledgeNode"] == q["board"] and q["alternativeWorkMinutes"] == 30, q["id"]
         npc = BOARD_NPC[q["board"]]
         assert q["id"] in npcs[npc]["questIds"], (npc, q["id"])
-        offer = npcs[npc]["states"]["quest_offer"]
-        back = npcs[npc]["states"]["quest_return"]
-        assert offer in events and back in events, npc
+        offer = q["offerDialogue"]
+        back = q["turnInDialogue"]
+        # Q217：八句逐字稿进 story.dialogues（speaker 用中文名，代班时 GameEngine.Story 按名字换成代班员）；可重复运行
+        for set_id in (offer, back):
+            ds = sets[set_id]
+            assert ds["questId"] == q["id"] and ds["worldMinutes"] == 0 and len(ds["lines"]) == 1, set_id
+            line = ds["lines"][0]
+            assert line["speaker"] == npc, set_id
+            dialogues[:] = [d for d in dialogues if d["eventId"] != set_id]
+            dialogues.append({"id": line["lineId"], "eventId": set_id, "speaker": npcs[npc]["name"], "text": line["text"], "note": ""})
         claim_fact = "claim:" + q["claimId"]
         board_name = locs[q["board"]]["name"]
         npc_name = npcs[npc]["name"]

@@ -27976,6 +27976,62 @@
         "speaker": "叶洵",
         "text": "值守记录在这里，亲眼见过的和听来的，我分开记了。我在通信设施外围收集过记录，但没见过的事不会替它下结论。你愿意的话，我们可以登记同行。",
         "note": ""
+      },
+      {
+        "id": "NTL_Q217_EXQ05_offer",
+        "eventId": "EXQ05_offer",
+        "speaker": "罗铮",
+        "text": "旧水厂的管网记录，能帮我们分清哪些管线还接着、哪些已经断了。你若去那里，就把能核实的记录带回来；别把旧图上的水源当成现在还能直接喝的水。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q217_EXQ05_turnin",
+        "eventId": "EXQ05_turnin",
+        "speaker": "罗铮",
+        "text": "这份管网记录收好了。哪些是现场核实的、哪些还要复查，我们会分开记。公开的净水做法也一并归档，记录本身不代表水已经安全。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q217_EXQ06_offer",
+        "eventId": "EXQ06_offer",
+        "speaker": "罗铮",
+        "text": "矿道里可能还留着作业手册。我们缺的不是一句“还能用”，而是工具怎么检查、出了问题怎么退回来。你愿意的话，把找到的旧工具记录带回工坊。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q217_EXQ06_turnin",
+        "eventId": "EXQ06_turnin",
+        "speaker": "罗铮",
+        "text": "作业手册留下了。工具和防护用品的做法可以照资料核对，真正动手仍要准备材料。你带回的是记录，我们不会因此再算一份矿道里的物资。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q217_EXQ07_offer",
+        "eventId": "EXQ07_offer",
+        "speaker": "许安",
+        "text": "旧商城的疏散图，记着当时的人怎样绕过封闭通道。若你去那里，请把还能辨认的图和记录带回来。旧出口不一定还能通，我们只记你确实见到的情况。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q217_EXQ07_turnin",
+        "eventId": "EXQ07_turnin",
+        "speaker": "许安",
+        "text": "疏散图已经归档。旧图和你亲眼见到的情况会分开标注，免得后来的人把猜测当成通路。公开的防护与随行医疗做法也会保留下来。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q217_EXQ08_offer",
+        "eventId": "EXQ08_offer",
+        "speaker": "陈芷",
+        "text": "应急仓封存的东西也会过期。我想核对当年的保存记录，弄清哪些判断仍有依据。你若找到冷链资料，请带回医务室；别仅凭包装完好就试用药品。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q217_EXQ08_turnin",
+        "eventId": "EXQ08_turnin",
+        "speaker": "陈芷",
+        "text": "冷链资料收到了。哪些保存条件还能成立，要按现在的情况再核对。配给袋的做法可以整理公开，但封存标签不能替代对实物状态的检查。",
+        "note": ""
       }
     ]
   },
@@ -36645,9 +36701,9 @@
         "requiresRosterMember": false,
         "accept": "talk",
         "acceptServiceId": null,
-        "offerDialogue": "npc_luo_zheng_dialogue_quest_offer",
+        "offerDialogue": "EXQ05_offer",
         "workDialogue": null,
-        "turninDialogue": "npc_luo_zheng_dialogue_quest_return",
+        "turninDialogue": "EXQ05_turnin",
         "repeatDialogue": null,
         "completeDialogue": null,
         "hubTurninDialogue": null,
@@ -36685,9 +36741,9 @@
         "requiresRosterMember": false,
         "accept": "talk",
         "acceptServiceId": null,
-        "offerDialogue": "npc_luo_zheng_dialogue_quest_offer",
+        "offerDialogue": "EXQ06_offer",
         "workDialogue": null,
-        "turninDialogue": "npc_luo_zheng_dialogue_quest_return",
+        "turninDialogue": "EXQ06_turnin",
         "repeatDialogue": null,
         "completeDialogue": null,
         "hubTurninDialogue": null,
@@ -36725,9 +36781,9 @@
         "requiresRosterMember": false,
         "accept": "talk",
         "acceptServiceId": null,
-        "offerDialogue": "npc_xu_an_dialogue_quest_offer",
+        "offerDialogue": "EXQ07_offer",
         "workDialogue": null,
-        "turninDialogue": "npc_xu_an_dialogue_quest_return",
+        "turninDialogue": "EXQ07_turnin",
         "repeatDialogue": null,
         "completeDialogue": null,
         "hubTurninDialogue": null,
@@ -36765,9 +36821,9 @@
         "requiresRosterMember": false,
         "accept": "talk",
         "acceptServiceId": null,
-        "offerDialogue": "npc_chen_zhi_dialogue_quest_offer",
+        "offerDialogue": "EXQ08_offer",
         "workDialogue": null,
-        "turninDialogue": "npc_chen_zhi_dialogue_quest_return",
+        "turninDialogue": "EXQ08_turnin",
         "repeatDialogue": null,
         "completeDialogue": null,
         "hubTurninDialogue": null,
