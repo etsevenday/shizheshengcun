@@ -209,7 +209,419 @@
         "id": "DIALOGUE-Q236-04",
         "criterion": "合法反复交谈、历史回看和读档后再交谈均0分钟0资源、身体/任务/知识/配额/奖励无新增变化；非法状态维持原禁用理由，不吞首次接续；升级不截断已打开旧队列，服务结束与本人首次问候遵循Q237/Q238，不由本题兜底改写。"
       }
-    ]
+    ],
+    "historyTitlesQ239": {
+      "version": "q239_20261104",
+      "date": "2026-11-04",
+      "answer": "选C，由总控补正式组名。48组统一采用“{岗位名}：代班闲谈／代班事项提示／代班进度提醒”，不用原人物名作代班记录标题。16个岗位名及全部48个组ID到标题的绑定见A11/N01与Q239数据；实际发言人仍为对应机构当班接续员，正文与触发规则不变。",
+      "policy": {
+        "scope": "仅新增Q236的16岗位×3状态共48组在“对话记录”中的正式组名。原institution_substitute介绍、本人在岗台词、其他任务与招募邀约标题不改；不以原命名人物姓名作为这48组代班标题。岗位名仅用于记录定位，不是新增人物或服务。",
+        "binding": "按明确dialogueSetId绑定title，沿原稳定岗位npcId取组，不按显示名、文本或代班人数猜；三类后缀依次固定为代班闲谈、代班事项提示、代班进度提醒。下表48项为最终逐字标题；实际对白speaker和发言内容保留原机构当班接续员数据，不把岗位名写入本人Greeted。",
+        "display": "只给已实际产生、按原对话记录规则可查看的组显示标题；不为展示目录预先生成未见对白条目，不泄露未知地点、任务或未接分支。对话当场、历史回看和组标题引用处如显示该组名，应使用同一title；仅改名不自动播放、不创建新记录。",
+        "migration": "线上尚无这48组，新增组直接用定稿。若开发测试/导入旧记录已有可信组ID，标题可按组ID解析为新定稿，不改原发言内容、speaker、时间或已示事实；无可信组ID保留原通用“对话”，不按台词猜组、不补建条目。进行中的旧对白沿原队列播完，不重复排队。",
+        "effects": "改标题与查看/回看均0分钟0物资，不改Q235自动一次、Q236可重复/分支、Q237服务收尾或Q238本人首次记录；不改变任务、配额、知识和奖励。Q240—Q243为独立待答题，本题不裁定其日志/筛选/接取/延后触发。"
+      },
+      "groups": [
+        {
+          "dialogueSetId": "npc_lu_heng_dialogue_substitute_idle",
+          "npcId": "npc_lu_heng",
+          "postName": "营门值守岗",
+          "state": "substitute_idle",
+          "title": "营门值守岗：代班闲谈",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_lu_heng_dialogue_substitute_quest_offer",
+          "npcId": "npc_lu_heng",
+          "postName": "营门值守岗",
+          "state": "substitute_quest_offer",
+          "title": "营门值守岗：代班事项提示",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_lu_heng_dialogue_substitute_quest_return",
+          "npcId": "npc_lu_heng",
+          "postName": "营门值守岗",
+          "state": "substitute_quest_return",
+          "title": "营门值守岗：代班进度提醒",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_xu_an_dialogue_substitute_idle",
+          "npcId": "npc_xu_an",
+          "postName": "营区公事务岗",
+          "state": "substitute_idle",
+          "title": "营区公事务岗：代班闲谈",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_xu_an_dialogue_substitute_quest_offer",
+          "npcId": "npc_xu_an",
+          "postName": "营区公事务岗",
+          "state": "substitute_quest_offer",
+          "title": "营区公事务岗：代班事项提示",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_xu_an_dialogue_substitute_quest_return",
+          "npcId": "npc_xu_an",
+          "postName": "营区公事务岗",
+          "state": "substitute_quest_return",
+          "title": "营区公事务岗：代班进度提醒",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_luo_zheng_dialogue_substitute_idle",
+          "npcId": "npc_luo_zheng",
+          "postName": "营区工务岗",
+          "state": "substitute_idle",
+          "title": "营区工务岗：代班闲谈",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_luo_zheng_dialogue_substitute_quest_offer",
+          "npcId": "npc_luo_zheng",
+          "postName": "营区工务岗",
+          "state": "substitute_quest_offer",
+          "title": "营区工务岗：代班事项提示",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_luo_zheng_dialogue_substitute_quest_return",
+          "npcId": "npc_luo_zheng",
+          "postName": "营区工务岗",
+          "state": "substitute_quest_return",
+          "title": "营区工务岗：代班进度提醒",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_chen_zhi_dialogue_substitute_idle",
+          "npcId": "npc_chen_zhi",
+          "postName": "营区医务岗",
+          "state": "substitute_idle",
+          "title": "营区医务岗：代班闲谈",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_chen_zhi_dialogue_substitute_quest_offer",
+          "npcId": "npc_chen_zhi",
+          "postName": "营区医务岗",
+          "state": "substitute_quest_offer",
+          "title": "营区医务岗：代班事项提示",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_chen_zhi_dialogue_substitute_quest_return",
+          "npcId": "npc_chen_zhi",
+          "postName": "营区医务岗",
+          "state": "substitute_quest_return",
+          "title": "营区医务岗：代班进度提醒",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_tao_cen_dialogue_substitute_idle",
+          "npcId": "npc_tao_cen",
+          "postName": "营区鉴定岗",
+          "state": "substitute_idle",
+          "title": "营区鉴定岗：代班闲谈",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_tao_cen_dialogue_substitute_quest_offer",
+          "npcId": "npc_tao_cen",
+          "postName": "营区鉴定岗",
+          "state": "substitute_quest_offer",
+          "title": "营区鉴定岗：代班事项提示",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_tao_cen_dialogue_substitute_quest_return",
+          "npcId": "npc_tao_cen",
+          "postName": "营区鉴定岗",
+          "state": "substitute_quest_return",
+          "title": "营区鉴定岗：代班进度提醒",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_du_sui_dialogue_substitute_idle",
+          "npcId": "npc_du_sui",
+          "postName": "收容安置岗",
+          "state": "substitute_idle",
+          "title": "收容安置岗：代班闲谈",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_du_sui_dialogue_substitute_quest_offer",
+          "npcId": "npc_du_sui",
+          "postName": "收容安置岗",
+          "state": "substitute_quest_offer",
+          "title": "收容安置岗：代班事项提示",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_du_sui_dialogue_substitute_quest_return",
+          "npcId": "npc_du_sui",
+          "postName": "收容安置岗",
+          "state": "substitute_quest_return",
+          "title": "收容安置岗：代班进度提醒",
+          "speaker": "hub_survivor_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_qi_wen_dialogue_substitute_idle",
+          "npcId": "npc_qi_wen",
+          "postName": "教会接待岗",
+          "state": "substitute_idle",
+          "title": "教会接待岗：代班闲谈",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_qi_wen_dialogue_substitute_quest_offer",
+          "npcId": "npc_qi_wen",
+          "postName": "教会接待岗",
+          "state": "substitute_quest_offer",
+          "title": "教会接待岗：代班事项提示",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_qi_wen_dialogue_substitute_quest_return",
+          "npcId": "npc_qi_wen",
+          "postName": "教会接待岗",
+          "state": "substitute_quest_return",
+          "title": "教会接待岗：代班进度提醒",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_bai_ling_dialogue_substitute_idle",
+          "npcId": "npc_bai_ling",
+          "postName": "教会施济岗",
+          "state": "substitute_idle",
+          "title": "教会施济岗：代班闲谈",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_bai_ling_dialogue_substitute_quest_offer",
+          "npcId": "npc_bai_ling",
+          "postName": "教会施济岗",
+          "state": "substitute_quest_offer",
+          "title": "教会施济岗：代班事项提示",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_bai_ling_dialogue_substitute_quest_return",
+          "npcId": "npc_bai_ling",
+          "postName": "教会施济岗",
+          "state": "substitute_quest_return",
+          "title": "教会施济岗：代班进度提醒",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_ji_mu_dialogue_substitute_idle",
+          "npcId": "npc_ji_mu",
+          "postName": "教会训诫岗",
+          "state": "substitute_idle",
+          "title": "教会训诫岗：代班闲谈",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_ji_mu_dialogue_substitute_quest_offer",
+          "npcId": "npc_ji_mu",
+          "postName": "教会训诫岗",
+          "state": "substitute_quest_offer",
+          "title": "教会训诫岗：代班事项提示",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_ji_mu_dialogue_substitute_quest_return",
+          "npcId": "npc_ji_mu",
+          "postName": "教会训诫岗",
+          "state": "substitute_quest_return",
+          "title": "教会训诫岗：代班进度提醒",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_song_zhu_dialogue_substitute_idle",
+          "npcId": "npc_song_zhu",
+          "postName": "教会誊录岗",
+          "state": "substitute_idle",
+          "title": "教会誊录岗：代班闲谈",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_song_zhu_dialogue_substitute_quest_offer",
+          "npcId": "npc_song_zhu",
+          "postName": "教会誊录岗",
+          "state": "substitute_quest_offer",
+          "title": "教会誊录岗：代班事项提示",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_song_zhu_dialogue_substitute_quest_return",
+          "npcId": "npc_song_zhu",
+          "postName": "教会誊录岗",
+          "state": "substitute_quest_return",
+          "title": "教会誊录岗：代班进度提醒",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_fu_heng_dialogue_substitute_idle",
+          "npcId": "npc_fu_heng",
+          "postName": "圣堂主持岗",
+          "state": "substitute_idle",
+          "title": "圣堂主持岗：代班闲谈",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_fu_heng_dialogue_substitute_quest_offer",
+          "npcId": "npc_fu_heng",
+          "postName": "圣堂主持岗",
+          "state": "substitute_quest_offer",
+          "title": "圣堂主持岗：代班事项提示",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_fu_heng_dialogue_substitute_quest_return",
+          "npcId": "npc_fu_heng",
+          "postName": "圣堂主持岗",
+          "state": "substitute_quest_return",
+          "title": "圣堂主持岗：代班进度提醒",
+          "speaker": "faction_church_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_wen_cheng_dialogue_substitute_idle",
+          "npcId": "npc_wen_cheng",
+          "postName": "科学院接待岗",
+          "state": "substitute_idle",
+          "title": "科学院接待岗：代班闲谈",
+          "speaker": "faction_academy_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_wen_cheng_dialogue_substitute_quest_offer",
+          "npcId": "npc_wen_cheng",
+          "postName": "科学院接待岗",
+          "state": "substitute_quest_offer",
+          "title": "科学院接待岗：代班事项提示",
+          "speaker": "faction_academy_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_wen_cheng_dialogue_substitute_quest_return",
+          "npcId": "npc_wen_cheng",
+          "postName": "科学院接待岗",
+          "state": "substitute_quest_return",
+          "title": "科学院接待岗：代班进度提醒",
+          "speaker": "faction_academy_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_ji_wen_dialogue_substitute_idle",
+          "npcId": "npc_ji_wen",
+          "postName": "科学院检测岗",
+          "state": "substitute_idle",
+          "title": "科学院检测岗：代班闲谈",
+          "speaker": "faction_academy_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_ji_wen_dialogue_substitute_quest_offer",
+          "npcId": "npc_ji_wen",
+          "postName": "科学院检测岗",
+          "state": "substitute_quest_offer",
+          "title": "科学院检测岗：代班事项提示",
+          "speaker": "faction_academy_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_ji_wen_dialogue_substitute_quest_return",
+          "npcId": "npc_ji_wen",
+          "postName": "科学院检测岗",
+          "state": "substitute_quest_return",
+          "title": "科学院检测岗：代班进度提醒",
+          "speaker": "faction_academy_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_shao_ning_dialogue_substitute_idle",
+          "npcId": "npc_shao_ning",
+          "postName": "科学院档案岗",
+          "state": "substitute_idle",
+          "title": "科学院档案岗：代班闲谈",
+          "speaker": "faction_academy_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_shao_ning_dialogue_substitute_quest_offer",
+          "npcId": "npc_shao_ning",
+          "postName": "科学院档案岗",
+          "state": "substitute_quest_offer",
+          "title": "科学院档案岗：代班事项提示",
+          "speaker": "faction_academy_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_shao_ning_dialogue_substitute_quest_return",
+          "npcId": "npc_shao_ning",
+          "postName": "科学院档案岗",
+          "state": "substitute_quest_return",
+          "title": "科学院档案岗：代班进度提醒",
+          "speaker": "faction_academy_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_he_yuan_dialogue_substitute_idle",
+          "npcId": "npc_he_yuan",
+          "postName": "科学院设备岗",
+          "state": "substitute_idle",
+          "title": "科学院设备岗：代班闲谈",
+          "speaker": "faction_academy_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_he_yuan_dialogue_substitute_quest_offer",
+          "npcId": "npc_he_yuan",
+          "postName": "科学院设备岗",
+          "state": "substitute_quest_offer",
+          "title": "科学院设备岗：代班事项提示",
+          "speaker": "faction_academy_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_he_yuan_dialogue_substitute_quest_return",
+          "npcId": "npc_he_yuan",
+          "postName": "科学院设备岗",
+          "state": "substitute_quest_return",
+          "title": "科学院设备岗：代班进度提醒",
+          "speaker": "faction_academy_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_yin_ke_dialogue_substitute_idle",
+          "npcId": "npc_yin_ke",
+          "postName": "科学院观察岗",
+          "state": "substitute_idle",
+          "title": "科学院观察岗：代班闲谈",
+          "speaker": "faction_academy_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_yin_ke_dialogue_substitute_quest_offer",
+          "npcId": "npc_yin_ke",
+          "postName": "科学院观察岗",
+          "state": "substitute_quest_offer",
+          "title": "科学院观察岗：代班事项提示",
+          "speaker": "faction_academy_duty_staff"
+        },
+        {
+          "dialogueSetId": "npc_yin_ke_dialogue_substitute_quest_return",
+          "npcId": "npc_yin_ke",
+          "postName": "科学院观察岗",
+          "state": "substitute_quest_return",
+          "title": "科学院观察岗：代班进度提醒",
+          "speaker": "faction_academy_duty_staff"
+        }
+      ],
+      "acceptance": [
+        {
+          "id": "DIALOGUE-Q239-01",
+          "criterion": "16岗位各触发Q236三类分支后，历史组名逐项等于48组映射；三后缀正确且不同岗位不合并，实际speaker仍为对应机构当班接续员。"
+        },
+        {
+          "id": "DIALOGUE-Q239-02",
+          "criterion": "同组新产生记录与历史回看采用同一岗位标题，不改正文或本人标题；没有实际出现的组不凭新目录预先列入历史，未知分支不泄露。"
+        },
+        {
+          "id": "DIALOGUE-Q239-03",
+          "criterion": "可信旧组ID可解析新标题且原内容/时间/speaker/已示事实不变，无可信ID仍通用“对话”；回看/改名0分钟0结算、不设本人首次、不重复生成任务或奖励。"
+        }
+      ]
+    }
   },
   "serviceGreetingQ237Q238": {
     "version": "q237_q238_20261104",
@@ -252,6 +664,418 @@
       {
         "id": "DIALOGUE-Q238-03",
         "criterion": "旧档本人已见过者回岗不重播，未见过者不按Talks/任务事实猜测；回看0分钟0奖励、不影响首次标记，死亡本人不复活，不增加工作或重复奖励。"
+      }
+    ]
+  },
+  "substituteTitlesQ239": {
+    "version": "q239_20261104",
+    "date": "2026-11-04",
+    "answer": "选C，由总控补正式组名。48组统一采用“{岗位名}：代班闲谈／代班事项提示／代班进度提醒”，不用原人物名作代班记录标题。16个岗位名及全部48个组ID到标题的绑定见A11/N01与Q239数据；实际发言人仍为对应机构当班接续员，正文与触发规则不变。",
+    "policy": {
+      "scope": "仅新增Q236的16岗位×3状态共48组在“对话记录”中的正式组名。原institution_substitute介绍、本人在岗台词、其他任务与招募邀约标题不改；不以原命名人物姓名作为这48组代班标题。岗位名仅用于记录定位，不是新增人物或服务。",
+      "binding": "按明确dialogueSetId绑定title，沿原稳定岗位npcId取组，不按显示名、文本或代班人数猜；三类后缀依次固定为代班闲谈、代班事项提示、代班进度提醒。下表48项为最终逐字标题；实际对白speaker和发言内容保留原机构当班接续员数据，不把岗位名写入本人Greeted。",
+      "display": "只给已实际产生、按原对话记录规则可查看的组显示标题；不为展示目录预先生成未见对白条目，不泄露未知地点、任务或未接分支。对话当场、历史回看和组标题引用处如显示该组名，应使用同一title；仅改名不自动播放、不创建新记录。",
+      "migration": "线上尚无这48组，新增组直接用定稿。若开发测试/导入旧记录已有可信组ID，标题可按组ID解析为新定稿，不改原发言内容、speaker、时间或已示事实；无可信组ID保留原通用“对话”，不按台词猜组、不补建条目。进行中的旧对白沿原队列播完，不重复排队。",
+      "effects": "改标题与查看/回看均0分钟0物资，不改Q235自动一次、Q236可重复/分支、Q237服务收尾或Q238本人首次记录；不改变任务、配额、知识和奖励。Q240—Q243为独立待答题，本题不裁定其日志/筛选/接取/延后触发。"
+    },
+    "groups": [
+      {
+        "dialogueSetId": "npc_lu_heng_dialogue_substitute_idle",
+        "npcId": "npc_lu_heng",
+        "postName": "营门值守岗",
+        "state": "substitute_idle",
+        "title": "营门值守岗：代班闲谈",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_lu_heng_dialogue_substitute_quest_offer",
+        "npcId": "npc_lu_heng",
+        "postName": "营门值守岗",
+        "state": "substitute_quest_offer",
+        "title": "营门值守岗：代班事项提示",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_lu_heng_dialogue_substitute_quest_return",
+        "npcId": "npc_lu_heng",
+        "postName": "营门值守岗",
+        "state": "substitute_quest_return",
+        "title": "营门值守岗：代班进度提醒",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_xu_an_dialogue_substitute_idle",
+        "npcId": "npc_xu_an",
+        "postName": "营区公事务岗",
+        "state": "substitute_idle",
+        "title": "营区公事务岗：代班闲谈",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_xu_an_dialogue_substitute_quest_offer",
+        "npcId": "npc_xu_an",
+        "postName": "营区公事务岗",
+        "state": "substitute_quest_offer",
+        "title": "营区公事务岗：代班事项提示",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_xu_an_dialogue_substitute_quest_return",
+        "npcId": "npc_xu_an",
+        "postName": "营区公事务岗",
+        "state": "substitute_quest_return",
+        "title": "营区公事务岗：代班进度提醒",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_luo_zheng_dialogue_substitute_idle",
+        "npcId": "npc_luo_zheng",
+        "postName": "营区工务岗",
+        "state": "substitute_idle",
+        "title": "营区工务岗：代班闲谈",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_luo_zheng_dialogue_substitute_quest_offer",
+        "npcId": "npc_luo_zheng",
+        "postName": "营区工务岗",
+        "state": "substitute_quest_offer",
+        "title": "营区工务岗：代班事项提示",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_luo_zheng_dialogue_substitute_quest_return",
+        "npcId": "npc_luo_zheng",
+        "postName": "营区工务岗",
+        "state": "substitute_quest_return",
+        "title": "营区工务岗：代班进度提醒",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_chen_zhi_dialogue_substitute_idle",
+        "npcId": "npc_chen_zhi",
+        "postName": "营区医务岗",
+        "state": "substitute_idle",
+        "title": "营区医务岗：代班闲谈",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_chen_zhi_dialogue_substitute_quest_offer",
+        "npcId": "npc_chen_zhi",
+        "postName": "营区医务岗",
+        "state": "substitute_quest_offer",
+        "title": "营区医务岗：代班事项提示",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_chen_zhi_dialogue_substitute_quest_return",
+        "npcId": "npc_chen_zhi",
+        "postName": "营区医务岗",
+        "state": "substitute_quest_return",
+        "title": "营区医务岗：代班进度提醒",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_tao_cen_dialogue_substitute_idle",
+        "npcId": "npc_tao_cen",
+        "postName": "营区鉴定岗",
+        "state": "substitute_idle",
+        "title": "营区鉴定岗：代班闲谈",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_tao_cen_dialogue_substitute_quest_offer",
+        "npcId": "npc_tao_cen",
+        "postName": "营区鉴定岗",
+        "state": "substitute_quest_offer",
+        "title": "营区鉴定岗：代班事项提示",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_tao_cen_dialogue_substitute_quest_return",
+        "npcId": "npc_tao_cen",
+        "postName": "营区鉴定岗",
+        "state": "substitute_quest_return",
+        "title": "营区鉴定岗：代班进度提醒",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_du_sui_dialogue_substitute_idle",
+        "npcId": "npc_du_sui",
+        "postName": "收容安置岗",
+        "state": "substitute_idle",
+        "title": "收容安置岗：代班闲谈",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_du_sui_dialogue_substitute_quest_offer",
+        "npcId": "npc_du_sui",
+        "postName": "收容安置岗",
+        "state": "substitute_quest_offer",
+        "title": "收容安置岗：代班事项提示",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_du_sui_dialogue_substitute_quest_return",
+        "npcId": "npc_du_sui",
+        "postName": "收容安置岗",
+        "state": "substitute_quest_return",
+        "title": "收容安置岗：代班进度提醒",
+        "speaker": "hub_survivor_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_qi_wen_dialogue_substitute_idle",
+        "npcId": "npc_qi_wen",
+        "postName": "教会接待岗",
+        "state": "substitute_idle",
+        "title": "教会接待岗：代班闲谈",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_qi_wen_dialogue_substitute_quest_offer",
+        "npcId": "npc_qi_wen",
+        "postName": "教会接待岗",
+        "state": "substitute_quest_offer",
+        "title": "教会接待岗：代班事项提示",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_qi_wen_dialogue_substitute_quest_return",
+        "npcId": "npc_qi_wen",
+        "postName": "教会接待岗",
+        "state": "substitute_quest_return",
+        "title": "教会接待岗：代班进度提醒",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_bai_ling_dialogue_substitute_idle",
+        "npcId": "npc_bai_ling",
+        "postName": "教会施济岗",
+        "state": "substitute_idle",
+        "title": "教会施济岗：代班闲谈",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_bai_ling_dialogue_substitute_quest_offer",
+        "npcId": "npc_bai_ling",
+        "postName": "教会施济岗",
+        "state": "substitute_quest_offer",
+        "title": "教会施济岗：代班事项提示",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_bai_ling_dialogue_substitute_quest_return",
+        "npcId": "npc_bai_ling",
+        "postName": "教会施济岗",
+        "state": "substitute_quest_return",
+        "title": "教会施济岗：代班进度提醒",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_ji_mu_dialogue_substitute_idle",
+        "npcId": "npc_ji_mu",
+        "postName": "教会训诫岗",
+        "state": "substitute_idle",
+        "title": "教会训诫岗：代班闲谈",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_ji_mu_dialogue_substitute_quest_offer",
+        "npcId": "npc_ji_mu",
+        "postName": "教会训诫岗",
+        "state": "substitute_quest_offer",
+        "title": "教会训诫岗：代班事项提示",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_ji_mu_dialogue_substitute_quest_return",
+        "npcId": "npc_ji_mu",
+        "postName": "教会训诫岗",
+        "state": "substitute_quest_return",
+        "title": "教会训诫岗：代班进度提醒",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_song_zhu_dialogue_substitute_idle",
+        "npcId": "npc_song_zhu",
+        "postName": "教会誊录岗",
+        "state": "substitute_idle",
+        "title": "教会誊录岗：代班闲谈",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_song_zhu_dialogue_substitute_quest_offer",
+        "npcId": "npc_song_zhu",
+        "postName": "教会誊录岗",
+        "state": "substitute_quest_offer",
+        "title": "教会誊录岗：代班事项提示",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_song_zhu_dialogue_substitute_quest_return",
+        "npcId": "npc_song_zhu",
+        "postName": "教会誊录岗",
+        "state": "substitute_quest_return",
+        "title": "教会誊录岗：代班进度提醒",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_fu_heng_dialogue_substitute_idle",
+        "npcId": "npc_fu_heng",
+        "postName": "圣堂主持岗",
+        "state": "substitute_idle",
+        "title": "圣堂主持岗：代班闲谈",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_fu_heng_dialogue_substitute_quest_offer",
+        "npcId": "npc_fu_heng",
+        "postName": "圣堂主持岗",
+        "state": "substitute_quest_offer",
+        "title": "圣堂主持岗：代班事项提示",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_fu_heng_dialogue_substitute_quest_return",
+        "npcId": "npc_fu_heng",
+        "postName": "圣堂主持岗",
+        "state": "substitute_quest_return",
+        "title": "圣堂主持岗：代班进度提醒",
+        "speaker": "faction_church_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_wen_cheng_dialogue_substitute_idle",
+        "npcId": "npc_wen_cheng",
+        "postName": "科学院接待岗",
+        "state": "substitute_idle",
+        "title": "科学院接待岗：代班闲谈",
+        "speaker": "faction_academy_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_wen_cheng_dialogue_substitute_quest_offer",
+        "npcId": "npc_wen_cheng",
+        "postName": "科学院接待岗",
+        "state": "substitute_quest_offer",
+        "title": "科学院接待岗：代班事项提示",
+        "speaker": "faction_academy_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_wen_cheng_dialogue_substitute_quest_return",
+        "npcId": "npc_wen_cheng",
+        "postName": "科学院接待岗",
+        "state": "substitute_quest_return",
+        "title": "科学院接待岗：代班进度提醒",
+        "speaker": "faction_academy_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_ji_wen_dialogue_substitute_idle",
+        "npcId": "npc_ji_wen",
+        "postName": "科学院检测岗",
+        "state": "substitute_idle",
+        "title": "科学院检测岗：代班闲谈",
+        "speaker": "faction_academy_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_ji_wen_dialogue_substitute_quest_offer",
+        "npcId": "npc_ji_wen",
+        "postName": "科学院检测岗",
+        "state": "substitute_quest_offer",
+        "title": "科学院检测岗：代班事项提示",
+        "speaker": "faction_academy_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_ji_wen_dialogue_substitute_quest_return",
+        "npcId": "npc_ji_wen",
+        "postName": "科学院检测岗",
+        "state": "substitute_quest_return",
+        "title": "科学院检测岗：代班进度提醒",
+        "speaker": "faction_academy_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_shao_ning_dialogue_substitute_idle",
+        "npcId": "npc_shao_ning",
+        "postName": "科学院档案岗",
+        "state": "substitute_idle",
+        "title": "科学院档案岗：代班闲谈",
+        "speaker": "faction_academy_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_shao_ning_dialogue_substitute_quest_offer",
+        "npcId": "npc_shao_ning",
+        "postName": "科学院档案岗",
+        "state": "substitute_quest_offer",
+        "title": "科学院档案岗：代班事项提示",
+        "speaker": "faction_academy_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_shao_ning_dialogue_substitute_quest_return",
+        "npcId": "npc_shao_ning",
+        "postName": "科学院档案岗",
+        "state": "substitute_quest_return",
+        "title": "科学院档案岗：代班进度提醒",
+        "speaker": "faction_academy_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_he_yuan_dialogue_substitute_idle",
+        "npcId": "npc_he_yuan",
+        "postName": "科学院设备岗",
+        "state": "substitute_idle",
+        "title": "科学院设备岗：代班闲谈",
+        "speaker": "faction_academy_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_he_yuan_dialogue_substitute_quest_offer",
+        "npcId": "npc_he_yuan",
+        "postName": "科学院设备岗",
+        "state": "substitute_quest_offer",
+        "title": "科学院设备岗：代班事项提示",
+        "speaker": "faction_academy_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_he_yuan_dialogue_substitute_quest_return",
+        "npcId": "npc_he_yuan",
+        "postName": "科学院设备岗",
+        "state": "substitute_quest_return",
+        "title": "科学院设备岗：代班进度提醒",
+        "speaker": "faction_academy_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_yin_ke_dialogue_substitute_idle",
+        "npcId": "npc_yin_ke",
+        "postName": "科学院观察岗",
+        "state": "substitute_idle",
+        "title": "科学院观察岗：代班闲谈",
+        "speaker": "faction_academy_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_yin_ke_dialogue_substitute_quest_offer",
+        "npcId": "npc_yin_ke",
+        "postName": "科学院观察岗",
+        "state": "substitute_quest_offer",
+        "title": "科学院观察岗：代班事项提示",
+        "speaker": "faction_academy_duty_staff"
+      },
+      {
+        "dialogueSetId": "npc_yin_ke_dialogue_substitute_quest_return",
+        "npcId": "npc_yin_ke",
+        "postName": "科学院观察岗",
+        "state": "substitute_quest_return",
+        "title": "科学院观察岗：代班进度提醒",
+        "speaker": "faction_academy_duty_staff"
+      }
+    ],
+    "acceptance": [
+      {
+        "id": "DIALOGUE-Q239-01",
+        "criterion": "16岗位各触发Q236三类分支后，历史组名逐项等于48组映射；三后缀正确且不同岗位不合并，实际speaker仍为对应机构当班接续员。"
+      },
+      {
+        "id": "DIALOGUE-Q239-02",
+        "criterion": "同组新产生记录与历史回看采用同一岗位标题，不改正文或本人标题；没有实际出现的组不凭新目录预先列入历史，未知分支不泄露。"
+      },
+      {
+        "id": "DIALOGUE-Q239-03",
+        "criterion": "可信旧组ID可解析新标题且原内容/时间/speaker/已示事实不变，无可信ID仍通用“对话”；回看/改名0分钟0结算、不设本人首次、不重复生成任务或奖励。"
       }
     ]
   }
