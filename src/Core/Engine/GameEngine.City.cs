@@ -235,7 +235,7 @@ namespace Survival.Core.Engine
             if (c.Absent.Contains(n.NpcId))
             {
                 // 联系人退场不锁任务：代班员接续，委托照接，接取台词由当班接续员说（M333：换 speaker，见 SpeakerNow）。
-                // 和代班员交谈不写 Greeted：本人回岗的首次问候等 Q238 答复，这里保持现状
+                // 和代班员交谈不写 Greeted（Q238）：本人回岗后第一次交谈才按原首次规则处理
                 var intro = PlaySubstituteIntro(s, n);
                 foreach (var q in turnins) CompleteQuest(s, q, false);
                 if (offer != null) AcceptCore(s, offer, true);
@@ -798,7 +798,7 @@ namespace Survival.Core.Engine
             if (s.City.Absent.Contains(n.NpcId))
             {
                 // B26a：Q235 定了服务结束入口也只介绍一次：未示且没有战斗/敌踪挡着才播，挡着就留到下一次合法入口；已示不重播。
-                // 已示之后服务结束该播什么是 Q237 待答内容，答复前这里不播任何替代对白（结束日志和事务效果不变）
+                // 已示之后服务结束不播任何对白（Q237），只留原结束日志和事务效果
                 if (s.Battle == null && s.Encounter == null) PlaySubstituteIntro(s, n);
                 return;
             }

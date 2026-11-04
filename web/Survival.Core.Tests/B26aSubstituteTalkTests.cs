@@ -7,7 +7,7 @@ namespace Survival.Core.Tests;
 
 /// <summary>
 /// 开发计划 v0.9 批次 B26a（R22 Q235、R26 Q236）。规则来源：策划合同 exq-dialogue-flow-adjudications.json、substitute-talk-adjudications.json；
-/// 验收 DIALOGUE-Q235-01—04、DIALOGUE-Q236-01—04。Q237（说明已示后服务结束）、Q238（代班期间接 EXQ 算不算本人首次）待答，这里只锁定“答复前不动”的现状。
+/// 验收 DIALOGUE-Q235-01—04、DIALOGUE-Q236-01—04。Q237、Q238 验收 DIALOGUE-Q237-01—03、DIALOGUE-Q238-01—03 在文件末尾。
 /// </summary>
 public class B26aSubstituteTalkTests : TestBase
 {
@@ -131,7 +131,7 @@ public class B26aSubstituteTalkTests : TestBase
         Assert.That(Since(s, mark), Is.EqualTo(new[] { Set("npc_tao_cen", "first_greeting"), Set("npc_tao_cen", "role"), "HU01_offer" }));
     }
 
-    /// <summary>代班首次与 EXQ 接取同次：先说明、再专属句，不要通用铺垫；和代班员交谈不写 Greeted（Q238 待答，保持现状）。</summary>
+    /// <summary>代班首次与 EXQ 接取同次：先说明、再专属句，不要通用铺垫；和代班员交谈不写 Greeted（Q238）。</summary>
     [TestCase(false)]
     [TestCase(true)]
     public void Q235_01_SubstituteFirst_IntroThenDedicated_NoGreeted(bool viaButton)
@@ -143,10 +143,10 @@ public class B26aSubstituteTalkTests : TestBase
         else Talk(s, "npc_xu_an");
         ReadDialogues(s);
         Assert.That(Since(s, mark), Is.EqualTo(new[] { Set("npc_xu_an", "institution_substitute"), "EXQ07_offer" }));
-        Assert.That(s.City.Greeted, Does.Not.Contain("npc_xu_an"), "Q238 待答：代班交谈不算本人首次");
+        Assert.That(s.City.Greeted, Does.Not.Contain("npc_xu_an"), "Q238：代班交谈不算本人首次");
         E.DebugToggleCityPostAbsent(s);
         TalkRead(s, "npc_xu_an");
-        Assert.That((Plays(s, "npc_xu_an", "first_greeting"), Plays(s, "npc_xu_an", "role")), Is.EqualTo((1, 1)), "Q238 待答：本人回岗后照现状播首次问候");
+        Assert.That((Plays(s, "npc_xu_an", "first_greeting"), Plays(s, "npc_xu_an", "role")), Is.EqualTo((1, 1)), "Q238：本人回岗后播首次问候");
     }
 
     // ───────────── DIALOGUE-Q235-02：每名代班员只介绍一次 ─────────────
@@ -183,7 +183,7 @@ public class B26aSubstituteTalkTests : TestBase
 
     /// <summary>服务结束也是自动入口：未示时播一次并记已示，之后交谈不再介绍；已示后服务结束不重播、不换别的对白（Q237 待答），结束日志与事务效果不变。</summary>
     [Test]
-    public void Q235_02_ServiceEnd_IntroOnce_ThenSilentUntilQ237()
+    public void Q235_02_ServiceEnd_IntroOnce_ThenSilent()
     {
         var s = Registered("c04_alms");
         SetLow(s);
@@ -201,7 +201,7 @@ public class B26aSubstituteTalkTests : TestBase
         s.GameMinute = At(3, 9, 0);   // 全队每日一份额度，隔日再领
         Assert.That(E.StartCityService(s, "church_relief_ration", GameState.PlayerId, "relief_water").Ok, Is.True);
         Run(s);
-        Assert.That(E.DialogueLocked(s), Is.False, "Q237 待答：已示后服务结束不开对话");
+        Assert.That(E.DialogueLocked(s), Is.False, "Q237：已示后服务结束不开对话");
         Assert.That(Since(s, mark), Is.Empty);
         Assert.That(Plays(s, "npc_bai_ling", "service_end"), Is.Zero, "不改播“办完事项”");
         Assert.That(s.Log.Skip(logs).Any(l => l.Text.Contains("完成")), Is.True, "结束日志照写");
@@ -657,5 +657,131 @@ public class B26aSubstituteTalkTests : TestBase
         Assert.That(m.City.Greeted, Does.Contain("npc_lu_heng"));
         Assert.That(TalkLine(m, "npc_lu_heng"), Is.EqualTo(IdleOf("npc_lu_heng")));
         Assert.That(Plays(m, "npc_lu_heng", "institution_substitute"), Is.EqualTo(1));
+    }
+
+    // ───────────── DIALOGUE-Q237：说明已示后的服务结束 ─────────────
+
+    private GameState AppraisalOffice()
+    {
+        var s = Registered("h05_appraisal");
+        s.Items.RemoveAll(i => i.ItemId == "fiber");
+        E.CreateItems(s, "fiber", 2, ItemInstance.Carried);
+        return s;
+    }
+
+    private ItemInstance Sample(GameState s) =>
+        E.CreateItems(s, "active_substance_white_unidentified", 1, ItemInstance.Carried, false, new ItemSource { WorldEnemyId = 1, BattleId = 9, GrantEventId = "q237" }).Single();
+
+    /// <summary>已示后连着完成两项服务：各写一次结束日志、各结算一次，不开对话，不播“办完事项”和代班闲谈。</summary>
+    [Test]
+    public void Q237_01_TwoServices_LogOnly_NoDialogue()
+    {
+        var s = Registered("c04_alms");
+        SetLow(s);
+        E.DebugToggleCityPostAbsent(s);
+        TalkRead(s, "npc_bai_ling");
+        var logs = s.Log.Count;
+        var mark = s.Story.DialogueLog.Count;
+        foreach (var (day, choice) in new[] { (2, "relief_food"), (3, "relief_water") })
+        {
+            s.GameMinute = At(day, 10, 0);
+            Assert.That(E.StartCityService(s, "church_relief_ration", GameState.PlayerId, choice).Ok, Is.True);
+            Run(s);
+            Assert.That(E.DialogueLocked(s), Is.False);
+        }
+        Assert.That(Since(s, mark), Is.Empty, "不播 service_end，也不追加 Q236 兜底");
+        Assert.That(s.Log.Skip(logs).Count(l => l.Text.Contains("完成")), Is.EqualTo(2), "每项一条结束日志");
+        Assert.That(s.City.QuotaUsed.Values.Sum(), Is.EqualTo(2), "每项结算一次");
+    }
+
+    /// <summary>鉴定成功原来就不走结束钩子（Q177）：代班未示时也不为补介绍新增对白，说明留到下一次合法入口。</summary>
+    [Test]
+    public void Q237_02_AppraisalSuccess_NoNewHook()
+    {
+        var s = AppraisalOffice();
+        E.DebugToggleCityPostAbsent(s);
+        var npc = Cfg.City.Npcs.Single(n => n.LocationId == "h05_appraisal").NpcId;
+        Assert.That(E.StartAppraise(s, Sample(s).InstanceId).Ok, Is.True);
+        Run(s);
+        Assert.That(E.DialogueLocked(s), Is.False);
+        Assert.That(GameEngine.SubstituteIntroShown(s, npc), Is.False, "没显示就不记已示");
+    }
+
+    /// <summary>原会进结束钩子的取消：未示时只播一次说明；已示后不开对话，取消日志照写，样本不扣。</summary>
+    [Test]
+    public void Q237_03_Cancel_IntroOnce_ThenLogOnly()
+    {
+        var s = AppraisalOffice();
+        E.DebugToggleCityPostAbsent(s);
+        var npc = Cfg.City.Npcs.Single(n => n.LocationId == "h05_appraisal").NpcId;
+        var sample = Sample(s);
+        Assert.That(E.StartAppraise(s, sample.InstanceId).Ok, Is.True);
+        Steps(s, 1);
+        Assert.That(E.Cancel(s).Ok, Is.True);
+        ReadDialogues(s);
+        Assert.That(Plays(s, npc, "institution_substitute"), Is.EqualTo(1));
+        Assert.That(Plays(s, npc, "service_end"), Is.Zero);
+
+        var mark = s.Story.DialogueLog.Count;
+        var logs = s.Log.Count;
+        Assert.That(E.StartAppraise(s, sample.InstanceId).Ok, Is.True);
+        Steps(s, 1);
+        Assert.That(E.Cancel(s).Ok, Is.True);
+        Assert.That(E.DialogueLocked(s), Is.False);
+        Assert.That(Since(s, mark), Is.Empty);
+        Assert.That(s.Log.Count, Is.GreaterThan(logs), "取消日志照写");
+        Assert.That(s.Items.Any(i => i.InstanceId == sample.InstanceId), Is.True, "取消不交样");
+    }
+
+    // ───────────── DIALOGUE-Q238：代班不代记本人 ─────────────
+
+    /// <summary>代班接了 EXQ，本人回岗当次没接 EXQ：问候和岗位介绍各一次，下一次不再播，代班已示记录不动。</summary>
+    [Test]
+    public void Q238_01_ReturnAfterSubstituteExq_GreetsOnce()
+    {
+        var s = Registered("h02_square");
+        E.DebugToggleCityPostAbsent(s);
+        TalkRead(s, "npc_xu_an");
+        Assert.That(GameEngine.QuestAccepted(s, "EXQ07"), Is.True);
+        Assert.That(s.City.Greeted, Does.Not.Contain("npc_xu_an"));
+        E.DebugToggleCityPostAbsent(s);
+        TalkRead(s, "npc_xu_an");
+        TalkRead(s, "npc_xu_an");
+        Assert.That((Plays(s, "npc_xu_an", "first_greeting"), Plays(s, "npc_xu_an", "role")), Is.EqualTo((1, 1)));
+        Assert.That(GameEngine.SubstituteIntroShown(s, "npc_xu_an"), Is.True);
+    }
+
+    /// <summary>本人回岗当次实际接 EXQ：跳过两组铺垫并记已处理，之后不补播（罗铮 EXQ05、EXQ06 分两次接）。</summary>
+    [Test]
+    public void Q238_02_ReturnActualExq_SkipsAndMarks()
+    {
+        var npc = Cfg.City.Npcs.Single(n => n.NpcId == "npc_luo_zheng");
+        var s = Registered(npc.LocationId);
+        E.DebugToggleCityPostAbsent(s);
+        TalkRead(s, npc.NpcId);
+        Assert.That(GameEngine.QuestAccepted(s, "EXQ05"), Is.True);
+        Assert.That(s.City.Greeted, Does.Not.Contain(npc.NpcId), "代班期间不设本人标记");
+        E.DebugToggleCityPostAbsent(s);
+        TalkRead(s, npc.NpcId);
+        Assert.That(GameEngine.QuestAccepted(s, "EXQ06"), Is.True);
+        Assert.That(s.City.Greeted, Does.Contain(npc.NpcId));
+        TalkRead(s, npc.NpcId);
+        Assert.That(Plays(s, npc.NpcId, "first_greeting") + Plays(s, npc.NpcId, "role"), Is.Zero, "不补播");
+    }
+
+    /// <summary>旧记录：已见过本人的回岗不重播；没见过的不按交谈次数和任务事实猜。</summary>
+    [TestCase(true, 0)]
+    [TestCase(false, 1)]
+    public void Q238_03_OldRecord_NoGuess(bool greeted, int plays)
+    {
+        var s = Registered("h02_square");
+        E.DebugToggleCityPostAbsent(s);
+        TalkRead(s, "npc_xu_an");
+        E.DebugToggleCityPostAbsent(s);
+        s.City.Talks["npc_xu_an"] = 5;
+        if (greeted) s.City.Greeted.Add("npc_xu_an");
+        var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        TalkRead(m, "npc_xu_an");
+        Assert.That((Plays(m, "npc_xu_an", "first_greeting"), Plays(m, "npc_xu_an", "role")), Is.EqualTo((plays, plays)));
     }
 }
