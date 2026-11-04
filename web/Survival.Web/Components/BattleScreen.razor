@@ -32,6 +32,9 @@
     var token = G.BattleExecToken();
     var skills = opts.Where(o => o.Group is "attack" or "move").ToList();
     var cards = e.OperatorSkillCards(s, skills);
+    // 灰卡说明跟随悬停，没有悬停时跟随键盘焦点；切页或升级后焦点那张已不是灰卡就清掉；选了别的指令时不留说明（试玩修复 M503）
+    if (_lockFocus != null && !cards.Any(c => c.LockedText != null && c.Node.Id == _lockFocus)) _lockFocus = null;
+    var lockShown = _lockHover ?? (sel == null ? _lockFocus : null);
     var general = opts.Where(o => o.Group == "general").ToList();
     var items = opts.Where(o => o.Group == "item" && CarriedFor(o) > 0).ToList();
     // B9（A10 §4.5）：瞄准中悬停合法目标时，目标生命条上画“预计”条纹——与右栏同一次 PreviewCommand（只读、不抽随机）
@@ -175,7 +178,7 @@
                     }
                 </div>
                 @RangeMap(sel ?? HoverSkill(skills), aimSet)
-                @if (cards.FirstOrDefault(c => c.LockedText != null && c.Node.Id == _lockNode) is { } lockCard)
+                @if (cards.FirstOrDefault(c => c.LockedText != null && c.Node.Id == lockShown) is { } lockCard)
                 {
                     <div class="bc-locknote" role="note">
                         <b>@lockCard.Node.Name</b><span>@(e.SkillName(lockCard.Node.SkillId))@(lockCard.Node.Level)级</span>
@@ -596,7 +599,7 @@
 
     /// <summary>
     /// 本页一个技能位（A10 §4.2/§4.3、Q227）：该门在这一级的专属节点——已解锁的主动技能为可点按钮（不可用写短原因）；
-    /// 已解锁的战斗被动只读显示；未解锁的是灰卡：卡上写正式名、所需等级（左上角）与当前等级，悬停/键盘聚焦在操作台上方读说明与完整条件，点它只写原因，不选目标、不耗 AP。
+    /// 已解锁的战斗被动只读显示；未解锁的是灰卡：卡上写正式名、所需等级（左上角）与当前等级，悬停/键盘聚焦在操作台右侧通用区上层读说明与完整条件（不挡场景里的健康体力），点它只写原因，不选目标、不耗 AP。
     /// </summary>
     private RenderFragment SkillSlot(OperatorSkillCard card, BattleCommandOption? sel, ItemInstance? wi, WeaponConfig w, bool locked) => __builder =>
     {
@@ -615,9 +618,9 @@
         }
         var why = card.LockedText;
         var id = node.Id;
-        <button type="button" class="cmdt skill locked-card" data-level="@lv" data-node="@id" aria-disabled="true"
+        <button type="button" @ref="_lockRefs[id]" class="cmdt skill locked-card" data-level="@lv" data-node="@id" aria-disabled="true"
                 aria-label="@($"{node.Name}，未解锁，{why}。{node.Text}")"
-                @onmouseenter="() => SetLockNode(id)" @onmouseleave="() => SetLockNode(null)" @onfocus="() => SetLockNode(id)" @onblur="() => SetLockNode(null)"
+                @onmouseenter="() => SetLockHover(id)" @onmouseleave="() => SetLockHover(null)" @onfocus="() => SetLockFocus(id)" @onblur="() => SetLockFocus(null)"
                 @onclick="() => { if (!locked) G.ExplainBlocked(node.Name, why); }">
             <span class="cmdt-lv bdg" aria-hidden="true">@(lv)级</span>
             <span class="cmdt-ap bdg cmdt-lock" aria-hidden="true">锁</span>
@@ -629,9 +632,21 @@
         </button>
     };
 
-    /// <summary>悬停/键盘聚焦中的灰卡节点（操作台上方显示公开说明与解锁条件；只存界面）。</summary>
-    private string? _lockNode;
-    private void SetLockNode(string? id) { if (_lockNode != id) { _lockNode = id; StateHasChanged(); } }
+    /// <summary>悬停中、键盘焦点所在的灰卡节点（分开记：鼠标移开后焦点还在卡上，继续显示这张的说明；只存界面）。</summary>
+    private string? _lockHover;
+    private string? _lockFocus;
+    private readonly Dictionary<string, ElementReference> _lockRefs = new();
+    private void SetLockHover(string? id) { if (_lockHover != id) { _lockHover = id; StateHasChanged(); } }
+    private void SetLockFocus(string? id) { if (_lockFocus != id) { _lockFocus = id; StateHasChanged(); } }
+
+    /// <summary>快捷键 1—5 落在灰卡上：焦点移到那张卡，说明与右栏原因写的是同一张（试玩修复 M503）。</summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (G.BattleFocusNode is not string id) return;
+        G.BattleFocusNode = null;
+        if (!_lockRefs.TryGetValue(id, out var el)) return;
+        try { await el.FocusAsync(); } catch (InvalidOperationException) { } catch (JSException) { }
+    }
 
     /// <summary>悬停中的技能（未选技能时目标位图跟着悬停显示）。</summary>
     private string? _hoverSkill;

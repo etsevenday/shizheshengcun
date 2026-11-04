@@ -72,6 +72,8 @@
 
 /* ── 右对象信息栏（窄栏 240—360px）：正文 16px、单列，长数值不挤成竖排 ── */
 .bfs-info .detail-scroll { gap: 8px; }
+/* 试玩修复 M503：最新拒绝句贴在滚动区顶部，滚动过也完整可读 */
+.bfs-info .detail-scroll > .blocked.pin { position: sticky; top: 0; z-index: 1; flex: 0 0 auto; background: #3a2019; }
 .bfs-info .eyebrow { font-size: 16px; letter-spacing: 0; }
 .bfs-info .op-head { padding-bottom: 6px; }
 .bfs-info .op-head h2 { font-size: 20px; margin: 2px 0; }
@@ -261,7 +263,8 @@
 .cmdt-ap { right: 2px; background: #6b3f19; color: #fff3df; font-weight: 700; }
 .bfs-console .cmdt.skill .cmdt-art { margin-top: 12px; }
 .bfs-console .cmdt.passive { border-style: dotted; background: #262c26; }
-/* B26（Q227）：未解锁灰卡——锁标、灰图、正式名与条件都在卡上，不只靠颜色；说明与条件在操作台上方（悬停/键盘聚焦） */
+/* B26（Q227）：未解锁灰卡——锁标、灰图、正式名与条件都在卡上，不只靠颜色；说明与条件盖在操作台右侧通用区上（悬停/键盘聚焦），
+   不放场景上：1280×720 时场景下沿是玩家与敌人的健康、体力条（试玩修复 M503） */
 .bfs-console .cmdt.locked-card { border: 2px dashed #5a5f58; background: #20262a; color: #b4b4a6; cursor: help; }
 .bfs-console .cmdt.locked-card .cmdt-art { filter: grayscale(1); opacity: .5; }
 .bfs-console .cmdt.locked-card .cmdt-name { -webkit-line-clamp: 1; }
@@ -271,8 +274,8 @@
   .bfs-console .cmdt.locked-card .cmdt-art { display: none; }
 }
 .cmdt-ap.cmdt-lock { background: #4a4f4a; color: #e8e6da; }
-.bc-main { position: relative; }
-.bc-locknote { position: absolute; left: 0; right: 0; bottom: calc(100% + 10px); z-index: 30; padding: 8px 10px; background: #121a1dfa; border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 8px 24px #000c; font-size: 16px; line-height: 1.35; pointer-events: none; }
+.bfs-console { position: relative; }
+.bc-locknote { position: absolute; top: 6px; right: 8px; width: var(--bc-side); max-height: calc(100% - 12px); box-sizing: border-box; overflow: hidden; z-index: 30; padding: 8px 10px; background: #121a1dfa; border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 8px 24px #000c; font-size: 16px; line-height: 1.35; pointer-events: none; }
 .bc-locknote b { margin-right: 8px; }
 .bc-locknote span { color: var(--muted); }
 .bc-locknote p { margin: 2px 0 0; }

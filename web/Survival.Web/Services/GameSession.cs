@@ -444,7 +444,8 @@ public sealed class GameSession
     /// </summary>
     public void Guide(string ctx, string? id = null, string? owner = null)
     {
-        if (State == null || S.Progress.Dead) return;
+        // 试玩修复 M503：鸟瞰浏览中点第四行的卡只看详情，不给引导——否则饱饱对白会清掉已选建筑（CityOverviewTick 对白期间收起未提交的确认）
+        if (State == null || S.Progress.Dead || CityBrowsing) return;
         if (E.GuideContext(S, ctx, id, owner)) { Drain(); Save(); }
     }
 
@@ -1100,7 +1101,8 @@ public sealed class GameSession
         // 选中卡片后卡下会出现操作条：旧的结果提示收起，不遮挡操作（试玩修复 G5）；内容仍在页脚与行动日志里
         if (sel.Kind != SelectionKind.None) Toast = null;
         // B13 PRO01：第一次实际选中地面/随身物资卡（卡下展开操作预览）记“看清眼前”；只写任务账，不耗时
-        if (State != null && (sel.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid) && !GameEngine.TaskDone(S, "PRO01"))
+        // 试玩修复 M503：鸟瞰浏览中第四行只看，点卡不算任务进度
+        if (State != null && !CityBrowsing && (sel.Kind is SelectionKind.ItemGroup or SelectionKind.Tool or SelectionKind.PotLiquid) && !GameEngine.TaskDone(S, "PRO01"))
         {
             E.NoteObjectInspected(S);
             if (GameEngine.TaskDone(S, "PRO01")) { Drain(); Save(); }
@@ -2038,6 +2040,9 @@ public sealed class GameSession
         ToggleBattleMenu(true);
     }
 
+    /// <summary>快捷键落在灰卡上时，下一次渲染要把键盘焦点移到的技能节点；BattleScreen 取走后清空。</summary>
+    public string? BattleFocusNode { get; set; }
+
     /// <summary>
     /// 全屏战斗快捷键 1—5（A10 §6.4）：只选本页对应 1/3/5/7/10 级的技能位（进入瞄准或待确认），不直接攻击；
     /// 该位未解锁、是被动或不可用时只写原因。
@@ -2049,7 +2054,7 @@ public sealed class GameSession
         var w = E.CurrentWeapon(S, out _);
         var node = E.Config.SkillNodes.FirstOrDefault(n => n.SkillId == w.SkillId && n.Level == lv && !n.IsSurvival);
         var o = node == null ? null : E.BattleOptions(S).FirstOrDefault(x => x.NodeId == node.Id);
-        if (node != null && !E.SkillUnlocked(S, node)) { ExplainBlocked(node.Name, E.SkillLockedText(S, node)); return; }   // Q227：灰卡只写条件
+        if (node != null && !E.SkillUnlocked(S, node)) { BattleFocusNode = node.Id; ExplainBlocked(node.Name, E.SkillLockedText(S, node)); return; }   // Q227：灰卡只写条件，焦点移到这张卡
         if (o == null) { Notice = node != null ? $"{node.Name}是被动，自动生效" : $"本页第{slot}个技能位（{lv}级）还没解锁"; Notify(); return; }
         if (o.Available) PickBattleAction(o.Action, o.ItemInstanceId);
         else ExplainBlocked(o.Label, o.Reason);

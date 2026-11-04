@@ -136,6 +136,7 @@ else if (b != null)
         var vAct = GameEngine.ActingAlly(b) == vid;
         var apMax = vAct && vf.ActivationAp > 0 ? vf.ActivationAp : e.NormalActivationAp(va);
         <div class="detail-scroll">
+            @if (G.Notice != null) { <div class="blocked pin">@G.Notice</div> }
             <div class="op-head">
                 <div class="eyebrow">战斗第@(b.Round)轮 · 我方@(GameEngine.AllyPos(b, vid))号位 · 只查看</div>
                 <h2>@(vid == GameState.PlayerId ? "你" : e.ActorDisplayName(s, vid))</h2>
@@ -150,7 +151,6 @@ else if (b != null)
                 @if (va.Body.BleedTriggers > 0) { <div><span>出血</span><b>@Ui.T(va.Body.BleedDamage)×@va.Body.BleedTriggers</b></div> }
                 @if (GameEngine.AllyProtector(b, vid) is string pg) { <div><span>保护</span><b>@(pg == GameState.PlayerId ? "你" : e.ActorDisplayName(s, pg))护着（接下一次单体攻击）</b></div> }
             </div>
-            @if (G.Notice != null) { <div class="blocked">@G.Notice</div> }
         </div>
         <div class="detail-foot"><div class="under">点己方只查看；行动顺序由队列决定</div></div>
     }
@@ -159,13 +159,14 @@ else if (b != null)
         var focus = G.BattleHover ?? G.BattleTarget;
         var t = focus.HasValue ? e.BattleEnemyAt(b, focus.Value) : null;
         <div class="detail-scroll">
+            @* 试玩修复 B7d-6：点了不可用的技能/指令，原因放在最上面（原先在最近战斗记录下面，常常看不到）；
+               试玩修复 M503：1280×720 首战系统提示开着时右栏只剩一百多像素，放到说明之下会被裁，所以放在滚动区最顶并贴住 *@
+            @if (G.Notice != null) { <div class="blocked pin">@G.Notice</div> }
             <div class="op-head">
                 <div class="eyebrow">战斗第@(b.Round)轮 · @(awaiting ? $"{(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))}的行动（剩{b.PlayerAp}AP）" : G.BattleShownActor > 0 ? "敌方行动中" : b.Cursor >= b.Queue.Count ? "轮末结算" : b.Queue[b.Cursor] <= 0 ? "等待我方行动" : "敌方行动中")</div>
                 <h2>@(t != null && t.Alive ? $"{t.Slot}号位 {e.EnemyName(t)}" : "选择指令")</h2>
                 @if (t == null || !t.Alive) { <p>先在操作台选技能，再把鼠标移到亮起的目标上看预测、点击目标执行；没选技能时点敌卡只查看。</p> }
             </div>
-            @* 试玩修复 B7d-6：点了不可用的技能/指令，原因放在最上面（原先在最近战斗记录下面，常常看不到） *@
-            @if (G.Notice != null) { <div class="blocked">@G.Notice</div> }
             @if (t != null && t.Alive)
             {
                 var ec = e.Enemy(t.EnemyId);
