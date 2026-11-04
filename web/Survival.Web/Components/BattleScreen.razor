@@ -32,7 +32,7 @@
     var token = G.BattleExecToken();
     var skills = opts.Where(o => o.Group is "attack" or "move").ToList();
     var cards = e.OperatorSkillCards(s, skills);
-    // 灰卡说明跟随悬停，没有悬停时跟随键盘焦点；切页或升级后焦点那张已不是灰卡就清掉；选了别的指令时不留说明（试玩修复 M503）
+    // 灰卡说明跟随悬停；键盘（Tab、1—5）落到灰卡时留着，鼠标点灰卡不算；切页或升级后那张已不是灰卡就清掉；选了别的指令时不留说明（试玩修复 M503、M504）
     if (_lockFocus != null && !cards.Any(c => c.LockedText != null && c.Node.Id == _lockFocus)) _lockFocus = null;
     var lockShown = _lockHover ?? (sel == null ? _lockFocus : null);
     var general = opts.Where(o => o.Group == "general").ToList();
@@ -180,7 +180,8 @@
                 @RangeMap(sel ?? HoverSkill(skills), aimSet)
                 @if (cards.FirstOrDefault(c => c.LockedText != null && c.Node.Id == lockShown) is { } lockCard)
                 {
-                    <div class="bc-locknote" role="note">
+                    @* 说明盖着通用区：它接收鼠标，鼠标移入或点它都只收起，看不见的按钮不会被点中（试玩修复 M504） *@
+                    <div class="bc-locknote" role="note" @onmouseenter="CloseLockNote" @onclick="CloseLockNote">
                         <b>@lockCard.Node.Name</b><span>@(e.SkillName(lockCard.Node.SkillId))@(lockCard.Node.Level)级</span>
                         <p>@lockCard.Node.Text</p>
                         <p class="bc-locknote-why">@lockCard.LockedText</p>
@@ -621,7 +622,7 @@
         <button type="button" @ref="_lockRefs[id]" class="cmdt skill locked-card" data-level="@lv" data-node="@id" aria-disabled="true"
                 aria-label="@($"{node.Name}，未解锁，{why}。{node.Text}")"
                 @onmouseenter="() => SetLockHover(id)" @onmouseleave="() => SetLockHover(null)" @onfocus="() => SetLockFocus(id)" @onblur="() => SetLockFocus(null)"
-                @onclick="() => { if (!locked) G.ExplainBlocked(node.Name, why); }">
+                @onclick="ev => ClickLocked(ev, node.Name, why, locked)">
             <span class="cmdt-lv bdg" aria-hidden="true">@(lv)级</span>
             <span class="cmdt-ap bdg cmdt-lock" aria-hidden="true">锁</span>
             <span class="cmdt-art">@Icons.Markup(wi?.ItemId ?? "fists")</span>
@@ -632,12 +633,20 @@
         </button>
     };
 
-    /// <summary>悬停中、键盘焦点所在的灰卡节点（分开记：鼠标移开后焦点还在卡上，继续显示这张的说明；只存界面）。</summary>
+    /// <summary>悬停中、键盘操作停留的灰卡节点（分开记：Tab 或 1—5 落到的卡在鼠标移开后继续显示说明；鼠标点中的卡不留，只存界面）。</summary>
     private string? _lockHover;
     private string? _lockFocus;
     private readonly Dictionary<string, ElementReference> _lockRefs = new();
     private void SetLockHover(string? id) { if (_lockHover != id) { _lockHover = id; StateHasChanged(); } }
     private void SetLockFocus(string? id) { if (_lockFocus != id) { _lockFocus = id; StateHasChanged(); } }
+    private void CloseLockNote() { _lockHover = null; SetLockFocus(null); }
+
+    /// <summary>点灰卡：只写原因。鼠标点的（Detail≥1；回车/空格触发的是 0）不把说明留在焦点上，移开就收起（试玩修复 M504）。</summary>
+    private void ClickLocked(MouseEventArgs ev, string name, string why, bool locked)
+    {
+        if (ev.Detail > 0) _lockFocus = null;
+        if (!locked) G.ExplainBlocked(name, why);
+    }
 
     /// <summary>快捷键 1—5 落在灰卡上：焦点移到那张卡，说明与右栏原因写的是同一张（试玩修复 M503）。</summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -646,6 +655,7 @@
         G.BattleFocusNode = null;
         if (!_lockRefs.TryGetValue(id, out var el)) return;
         try { await el.FocusAsync(); } catch (InvalidOperationException) { } catch (JSException) { }
+        SetLockFocus(id);   // 焦点原本就在这张卡上（鼠标点过）时不会再发 focus 事件
     }
 
     /// <summary>悬停中的技能（未选技能时目标位图跟着悬停显示）。</summary>

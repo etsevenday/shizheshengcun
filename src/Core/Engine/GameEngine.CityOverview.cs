@@ -298,6 +298,14 @@ namespace Survival.Core.Engine
             return path == null ? CityPathBlocked(s, city, s.CurrentLocation, targetId) : CityCopy.Arrival(LocName(s.CurrentLocation), LocName(targetId), path.Count);
         }
 
+        /// <summary>打开鸟瞰时默认选中的建筑：多段路线还没走到的最终目标（手动打开与首次自动打开同一口径）；已到或已离开这座城为 null。只读。</summary>
+        public string? CityDefaultPick(GameState s, string? targetId)
+        {
+            if (targetId == null || targetId == s.CurrentLocation) return null;
+            var city = CityOf(s.CurrentLocation);
+            return city != null && CityOf(targetId) == city ? targetId : null;
+        }
+
         /// <summary>城外独立地点的提示（A10-CITY §2 特别边界，Q222）：只在玩家已发现该地点时写；这些地点不进城内路线图。</summary>
         public string? CityOutsideNote(GameState s, string cityId)
         {

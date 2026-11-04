@@ -383,7 +383,7 @@ public sealed class GameSession
         if (panel != "map") { SourceItem = null; _craftReturn = null; }
         // B24（A10-CITY §3/§7）：主城鸟瞰打开时记住右栏页签，关闭后原样恢复（不自动展开人物板块、不改折叠偏好）
         var leavingCity = Panel == "citymap" && panel != "citymap";
-        if (panel == "citymap" && Panel != "citymap") { _cityTabBefore = DetailTab; CityPick = State != null && CityTarget != null && E.CityOf(S.CurrentLocation) == E.CityOf(CityTarget) && CityTarget != S.CurrentLocation ? CityTarget : null; CityHover = null; NewCityRequest(); }
+        if (panel == "citymap" && Panel != "citymap") { _cityTabBefore = DetailTab; CityPick = State != null ? E.CityDefaultPick(S, CityTarget) : null; CityHover = null; NewCityRequest(); }
         HoverPreview = null;
         Pop = null;
         // 离开编队面板（切到别的面板或关闭）就丢弃草稿：关闭不自动保存（Q86）
@@ -556,7 +556,7 @@ public sealed class GameSession
         if (Panel != null || Running || !E.CityOverviewAutoOpenDue(S) || OverflowPending || DuplicateWeaponsPending) return;
         CityLegacyNote = E.MarkCityOverviewShown(S);
         _cityTabBefore = DetailTab;
-        CityPick = null;
+        CityPick = E.CityDefaultPick(S, CityTarget);   // 试玩修复 M504：多段路线途经父节点首次自动打开时，同手动打开一样预选最终目标
         CityHover = null;
         NewCityRequest();
         Panel = "citymap";

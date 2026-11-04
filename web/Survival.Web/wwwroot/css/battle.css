@@ -275,7 +275,7 @@
 }
 .cmdt-ap.cmdt-lock { background: #4a4f4a; color: #e8e6da; }
 .bfs-console { position: relative; }
-.bc-locknote { position: absolute; top: 6px; right: 8px; width: var(--bc-side); max-height: calc(100% - 12px); box-sizing: border-box; overflow: hidden; z-index: 30; padding: 8px 10px; background: #121a1dfa; border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 8px 24px #000c; font-size: 16px; line-height: 1.35; pointer-events: none; }
+.bc-locknote { position: absolute; top: 6px; right: 8px; width: var(--bc-side); max-height: calc(100% - 12px); box-sizing: border-box; overflow: hidden; z-index: 30; padding: 8px 10px; background: #121a1dfa; border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 8px 24px #000c; font-size: 16px; line-height: 1.35; }
 .bc-locknote b { margin-right: 8px; }
 .bc-locknote span { color: var(--muted); }
 .bc-locknote p { margin: 2px 0 0; }

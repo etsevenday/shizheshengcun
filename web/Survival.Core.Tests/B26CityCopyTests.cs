@@ -89,6 +89,29 @@ public class B26CityCopyTests : TestBase
         Assert.That(note, Does.Not.Contain("段"));
     }
 
+    /// <summary>
+    /// 试玩修复 M504：工坊选鉴定所走第一段，首次到广场时待自动打开鸟瞰，此时默认选中最终目标（与手动打开同一函数）；
+    /// 已到目标、没有目标、已离开这座城都不预选。
+    /// </summary>
+    [Test]
+    public void CityDefaultPick_AutoOpenKeepsFinalTarget()
+    {
+        var s = Registered("h03_workshop");
+        DiscoverCity(s, "h02_square");
+        Assert.That(E.StartCityOverviewTravel(s, "h05_appraisal", "req-1").Ok, Is.True);
+        Run(s);
+        ReadDialogues(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo("h02_square"));
+        Assert.That(E.CityOverviewAutoOpenDue(s), Is.True, "首次到父节点");
+        Assert.That(E.CityDefaultPick(s, "h05_appraisal"), Is.EqualTo("h05_appraisal"));
+        Assert.That(E.CityDefaultPick(s, null), Is.Null);
+        Assert.That(E.CityDefaultPick(s, "h02_square"), Is.Null, "已在目标");
+        Assert.That(E.CityDefaultPick(s, "c04_alms"), Is.Null, "不是这座城");
+        E.DebugMapTeleport(s, "c02_church");
+        ReadDialogues(s);
+        Assert.That(E.CityDefaultPick(s, "h05_appraisal"), Is.Null, "已离开这座城");
+    }
+
     /// <summary>单段路线也写“已到达”；中途路线失效写真实原因（不写“还有N段”）。</summary>
     [Test]
     public void Q223_SingleLeg_And_RouteLost()
