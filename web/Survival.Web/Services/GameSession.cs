@@ -453,7 +453,7 @@ public sealed class GameSession
 
     /// <summary>主城鸟瞰正在打开：上三行被覆盖，第四行随身只看不提交。</summary>
     public bool CityBrowsing => State != null && Panel == "citymap";
-    public const string CityReadOnlyText = "主城鸟瞰浏览中只能查看；使用、转移、穿戴、融合和开始行动请先点“返回当前地点”再操作";
+    public const string CityReadOnlyText = CityCopy.ReadOnly;
     /// <summary>鸟瞰里固定（点选）的建筑；悬停/聚焦的建筑。只存会话。</summary>
     public string? CityPick { get; private set; }
     public string? CityHover { get; private set; }
@@ -524,12 +524,12 @@ public sealed class GameSession
         Save();
         Notify();
         await RunLoop();
-        if (State == null || CityTarget == null) return;
-        if (S.CurrentLocation == CityTarget || E.CityOf(S.CurrentLocation) != E.CityOf(CityTarget)) { CityTarget = null; return; }
-        if (S.CurrentLocation == firstTo && S.Main == null)
+        if (State == null) return;
+        if (CityTarget != null && (S.CurrentLocation == CityTarget || E.CityOf(S.CurrentLocation) != E.CityOf(CityTarget))) CityTarget = null;
+        // B26（Q223）：到终点写“已到达”，半路写还剩几段，路线失效写真实原因；单段路线也提示到达
+        if (E.CityArrivalNote(S, targetId, firstTo) is string note)
         {
-            var left = E.CityOverviewOf(S)?.Buildings.FirstOrDefault(b => b.NodeId == CityTarget)?.Path?.Count ?? 0;
-            Notice = $"已到达{E.LocName(firstTo)}。继续前往{E.LocName(CityTarget)}：再打开“主城鸟瞰”选择下一段" + (left > 0 ? $"（还有{left}段）" : "") + "。";
+            Notice = note;
             Notify();
         }
     }

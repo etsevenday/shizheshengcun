@@ -7,6 +7,20 @@ using Survival.Core.State;
 namespace Survival.Core.Engine
 {
     /// <summary>
+    /// 鸟瞰定稿文案（批次 B26，Q222/Q223；策划合同 content-feeding-adjudications.json cityCopy，逐字）。
+    /// 地点名、段数都由调用方按真实已知路线填入；到达终点用 Arrived，不写“还有0段”。
+    /// </summary>
+    public static class CityCopy
+    {
+        public const string ReadOnly = "主城鸟瞰浏览中只能查看；使用、转移、穿戴、融合和开始行动，请先点“返回当前地点”再操作。";
+        public const string LegacyReveal = "已按旧存档的到访记录补显城内建筑，仅用于浏览与定位，不补发奖励，也不开通新路线。";
+        public static string Outside(string place) => $"{place}是城外独立地点，不在鸟瞰内，经区域地图前往。";
+        public static string Confirm(int legs, string from, string to) => $"共{legs}段。本次先走{from}→{to}，到达后请再次选择下一段。";
+        public static string Arrival(string at, string target, int left) => $"已到达{at}。继续前往{target}：请再打开“主城鸟瞰”选择下一段（还有{left}段）。";
+        public static string Arrived(string target) => $"已到达{target}。";
+    }
+
+    /// <summary>
     /// 三城主城鸟瞰的只读视图（开发计划 v0.9 批次 B24，R73；A10「A10-CITY」§2—§7、S14「中枢联动归档」「建筑、NPC与物理移动」）。
     /// 只用玩家已发现的信息：未发现的楼栋只给轮廓（不给名称、人物、服务）；打开、浏览、选建筑都 0 分钟、不改状态。
     /// </summary>
@@ -159,14 +173,15 @@ namespace Survival.Core.Engine
             }
             var accept = new List<string>();
             var turnin = new List<string>();
-            foreach (var q in LiveQuests.Where(q => q.LocationId == id))
+            foreach (var q in LiveQuests.Where(q => q.LocationId == id || q.WorkServiceIds.Any(x => CityService(x)?.LocationId == id)))
             {
-                if (q.Kind == "recruit" && !QuestDone(s, q.Id) && RosterOf(s, q.NpcId) == null && QuestRequiresBlocked(s, q) == null && Config.Party.Named(q.NpcId) is NamedCompanionConfig c)
+                var home = q.LocationId == id;
+                if (home && q.Kind == "recruit" && !QuestDone(s, q.Id) && RosterOf(s, q.NpcId) == null && QuestRequiresBlocked(s, q) == null && Config.Party.Named(q.NpcId) is NamedCompanionConfig c)
                     b.People.Add($"{c.Name} · 固定同行者");
                 var qv = QuestViewOf(s, q.Id);
                 if (qv == null) continue;
-                if (qv.Status == "available") accept.Add(qv.Title);
-                else if (qv.Status == "active" && (HasQuestRecord(s, q) || qv.WorkLabel != null)) turnin.Add(qv.Title);
+                if (home && qv.Status == "available") accept.Add(qv.Title);
+                else if (qv.Status == "active" && ((home && HasQuestRecord(s, q)) || QuestWorkOpenAt(s, q, qv, id))) turnin.Add(qv.Title);
             }
             b.CanAccept = accept.Count;
             b.CanTurnIn = turnin.Count;
@@ -174,6 +189,16 @@ namespace Survival.Core.Engine
             if (accept.Count > 0) parts.Add("可接：" + string.Join("、", accept));
             if (turnin.Count > 0) parts.Add("可交：" + string.Join("、", turnin));
             b.QuestNote = string.Join("；", parts);
+        }
+
+        /// <summary>
+        /// Q224“该楼栋有可办理的委托工作”：任务条目里的工作（0 分钟交谈或 CH01 这类计时工作）在任务所在楼栋且工作前置已满足，
+        /// 或经这栋楼事项办理的工作（CH02/AC01/AC02）现在能办。人不在那里不算阻拦（标记本来就是定位用的）。只读。
+        /// </summary>
+        private bool QuestWorkOpenAt(GameState s, QuestConfig q, QuestView qv, string id)
+        {
+            if (q.LocationId == id && qv.WorkLabel != null && q.WorkRequiresAll.All(s.Progress.Flags.Contains)) return true;
+            return q.WorkServiceIds.Select(CityService).Any(svc => svc != null && svc.Implemented && svc.LocationId == id && QuestServiceBlocked(s, svc, q) == null);
         }
 
         /// <summary>
@@ -257,6 +282,28 @@ namespace Survival.Core.Engine
             var r = ActionRequest.Travel(path[0].To);
             r.RequestId = requestId;
             return Start(s, r);
+        }
+
+        /// <summary>
+        /// 鸟瞰“前往”走完一段后的提示（批次 B26，Q223）：到终点写 Arrived；还在半路按真实已知路线写还剩几段；路线已失效写真实原因，不按旧文案强走。
+        /// 没到这一段的终点（中途退出、仍在行动）不写。只读。
+        /// </summary>
+        public string? CityArrivalNote(GameState s, string targetId, string? firstTo)
+        {
+            if (firstTo == null || s.Main != null || s.CurrentLocation != firstTo) return null;
+            if (s.CurrentLocation == targetId) return CityCopy.Arrived(LocName(targetId));
+            var city = CityOf(s.CurrentLocation);
+            if (city == null || CityOf(targetId) != city) return null;
+            var path = CityPath(s, city, s.CurrentLocation, targetId);
+            return path == null ? CityPathBlocked(s, city, s.CurrentLocation, targetId) : CityCopy.Arrival(LocName(s.CurrentLocation), LocName(targetId), path.Count);
+        }
+
+        /// <summary>城外独立地点的提示（A10-CITY §2 特别边界，Q222）：只在玩家已发现该地点时写；这些地点不进城内路线图。</summary>
+        public string? CityOutsideNote(GameState s, string cityId)
+        {
+            var id = cityId switch { "h02_square" => "h05_homestead", "c02_church" => "c03_crypt", "r02_academy" => "r03_lab", _ => null };
+            if (id == null || !s.Locations.TryGetValue(id, out var l) || !l.Discovered) return null;
+            return CityCopy.Outside(LocName(id));
         }
 
         // ───────────────────────── 首次到达自动打开（A10-CITY §3，开发假设 B24-1） ─────────────────────────

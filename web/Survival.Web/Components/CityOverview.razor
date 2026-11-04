@@ -28,7 +28,7 @@
     var pinned = G.CityPick != null && focusB != null && focusB.NodeId == G.CityPick;
     var pathEdges = new HashSet<string>();
     if (focusB?.Path != null) foreach (var st in focusB.Path) pathEdges.Add(Key(st.From, st.To));
-    var outside = OutsideNote(v.CityId);
+    var outside = e.CityOutsideNote(s, v.CityId);
     var style = v.CityId switch { "c02_church" => "church", "r02_academy" => "academy", _ => "hub" };
 }
 
@@ -46,7 +46,7 @@
     </div>
     @if (G.CityLegacyNote)
     {
-        <div class="city-legacy" role="note">旧存档首次显示：主城鸟瞰是新加入的浏览界面，只作说明，不补发任何奖励。</div>
+        <div class="city-legacy" role="note">@CityCopy.LegacyReveal</div>
     }
     <div class="city-body">
         <div class="city-main">
@@ -132,7 +132,7 @@
                                 var est = why == null ? G.Preview(ActionRequest.Travel(first.To)) : null;
                                 if (focusB.Path.Count > 1)
                                 {
-                                    <div class="ci-line ci-leg">共@(focusB.Path.Count)段，本次先走@(e.LocName(first.From))→@(e.LocName(first.To))，到达后再次选择下一段。</div>
+                                    <div class="ci-line ci-leg">@CityCopy.Confirm(focusB.Path.Count, e.LocName(first.From), e.LocName(first.To))</div>
                                 }
                                 <button type="button" class="primary" disabled="@(why != null || est?.Ok == false)" title="@(why ?? (est?.Ok == false ? est.Reason : "按真实路线移动，中途可退出"))"
                                         @onclick="() => Go(focusB.NodeId)">前往@(est?.Ok == true ? $" · 预计{est.EstimatedMinutes}分钟" : "")</button>
@@ -199,14 +199,6 @@
         var to = ev.Key switch { "ArrowRight" or "ArrowDown" => (idx + 1) % n, "ArrowLeft" or "ArrowUp" => (idx + n - 1) % n, _ => -1 };
         if (to < 0) return;
         try { await _refs[to].FocusAsync(); } catch (InvalidOperationException) { } catch (JSException) { }
-    }
-
-    /// <summary>城外独立地点的提示（A10-CITY §2 特别边界）：只在玩家已发现该地点时写。</summary>
-    private string? OutsideNote(string city)
-    {
-        var id = city switch { "h02_square" => "h05_homestead", "c02_church" => "c03_crypt", "r02_academy" => "r03_lab", _ => null };
-        if (id == null || !G.S.Locations.TryGetValue(id, out var l) || !l.Discovered) return null;
-        return $"{G.E.LocName(id)}是城外独立地点，不在鸟瞰内，经区域地图前往";
     }
 
     /// <summary>示意建筑（程序绘制的屋顶/楼体，不是成品美术）：营区棚屋、教会尖顶、科学院平顶楼；未发现只画虚线轮廓。</summary>
