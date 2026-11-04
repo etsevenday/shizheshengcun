@@ -115,11 +115,11 @@ public class B26ExqDialogueTests : TestBase
         Assert.That(s.City.Absent, Does.Contain("npc_xu_an"));
         var duty = Cfg.City.Npcs.Single(n => n.NpcId == "npc_xu_an").DutySpeaker;
         Assert.That(E.AcceptQuest(s, "EXQ07").Ok, Is.True);
+        ReadDialogues(s);   // Q235：代班首次先播一次接续说明，专属句排在后面
         var line = Said(s, "EXQ07_offer")!;
         Assert.That(line.Speaker, Is.EqualTo(duty));
         Assert.That(line.Speaker, Is.Not.EqualTo("许安"));
         Assert.That(line.Text, Is.EqualTo((string)Line("EXQ07")["offer"]!));
-        ReadDialogues(s);
         s.Progress.Flags.UnionWith(new[] { "claim:d07_07_unique", "campaignId:d07_07_unique", "civilian_cache_knowledge" });
         Assert.That(E.TalkNpc(s, "npc_xu_an").Ok, Is.True);
         ReadDialogues(s);

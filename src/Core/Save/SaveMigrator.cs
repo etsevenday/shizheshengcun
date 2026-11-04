@@ -65,6 +65,7 @@ namespace Survival.Core.Save
         public const string Schema38 = "38";
         public const string Schema39 = "39";
         public const string Schema40 = "40";
+        public const string Schema41 = "41";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -120,6 +121,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema38) From38To39(s, config, notes);
             if (s.SchemaVersion == Schema39) From39To40(s, config, notes);
             if (s.SchemaVersion == Schema40) From40To41(s, config, notes);
+            if (s.SchemaVersion == Schema41) From41To42(s, config, notes);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1245,8 +1247,28 @@ namespace Survival.Core.Save
                 if (p == here && c.OverviewPending == null) { c.OverviewPending = p; c.OverviewPendingLegacy = true; }
                 else c.OverviewShown.Add(p);
             }
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（三城主城鸟瞰：" +
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema41}（三城主城鸟瞰：" +
                 "在三城内可从当前地点卡旁的“主城鸟瞰”查看城内建筑与路线；不补奖励、不改位置）。" });
+            s.SchemaVersion = Schema41;
+        }
+
+        // ───────────────────────── 41 → 42 ─────────────────────────
+
+        /// <summary>
+        /// 代班接续说明只自动播一次（开发计划 v0.9 B26a，Q235 migration）：DialogueLog 里本岗 institution_substitute 组（含 #序号的重播）实际显示过台词的，无声记为已展示；
+        /// 不按 Talks 次数或原人物问候推定，还在排队没显示的旧对白留给开始显示时记录。对话队列、Greeted、任务、配额、知识、奖励都不动。幂等。
+        /// </summary>
+        private static void From41To42(GameState s, GameConfig config, List<string> notes)
+        {
+            s.City.SubstituteIntroShown ??= new HashSet<string>();
+            foreach (var n in config.City.Npcs)
+            {
+                if (!n.States.TryGetValue(Engine.GameEngine.SubstituteIntroState, out var set)) continue;
+                if (s.Story.DialogueLog.Any(d => d.Lines.Count > 0 && d.EventId.Split('#')[0] == set))
+                    s.City.SubstituteIntroShown.Add(Engine.GameEngine.SubstituteIntroKey(s, n.NpcId));
+            }
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（岗位代班：" +
+                "各岗位的代班接续说明只自动播一次，已播过的不再播；不补播对白，不改任务、配额与奖励）。" });
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

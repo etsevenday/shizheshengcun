@@ -35,6 +35,11 @@ namespace Survival.Core.State
         public string? OverviewPending { get; set; }
         /// <summary>待打开的是旧档补显（存档 40→41 时人已在城里）：界面顶部写一句纯说明，不补奖励。</summary>
         public bool OverviewPendingLegacy { get; set; }
+        /// <summary>
+        /// 代班接续说明已展示的身份（Q235 substituteOnce，开发计划 v0.9 B26a，存档 42）：键 = GameEngine.SubstituteIntroKey（本局 campaignId + 岗位 npcId，现版本岗位 npcId 代表该代班身份）。
+        /// 说明实际开始显示时写入（不是排队或预览时）；回岗再离岗、读档、过日都不清。
+        /// </summary>
+        public HashSet<string> SubstituteIntroShown { get; set; } = new HashSet<string>();
 
         public CityState Clone() => new CityState
         {
@@ -49,6 +54,7 @@ namespace Survival.Core.State
             OverviewShown = new HashSet<string>(OverviewShown),
             OverviewPending = OverviewPending,
             OverviewPendingLegacy = OverviewPendingLegacy,
+            SubstituteIntroShown = new HashSet<string>(SubstituteIntroShown),
         };
     }
 

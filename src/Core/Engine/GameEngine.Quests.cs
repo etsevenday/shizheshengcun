@@ -204,6 +204,20 @@ namespace Survival.Core.Engine
             else OpenDialogue(s, set);
         }
 
+        /// <summary>EXQ05—08（配置里 kind=optional 的四项）：接取走专属句，不要通用首次铺垫（Q235_B scope）。</summary>
+        private static bool DedicatedOffer(QuestConfig q) => q.Kind == "optional";
+
+        /// <summary>
+        /// 事项里的“接取”与交谈同效（B26a，Q235 scope/sequence）：EXQ05—08 从这里接取时，本人在岗把首次铺垫记为已处理、不补播；
+        /// 岗位离岗时先播一次未示的代班接续说明。其他任务的这个入口保持原样。
+        /// </summary>
+        private void DedicatedOfferLead(GameState s, QuestConfig q)
+        {
+            if (!DedicatedOffer(q) || CityNpc(q.NpcId) is not CityNpcConfig n) return;
+            if (s.City.Absent.Contains(n.NpcId)) PlaySubstituteIntro(s, n);
+            else s.City.Greeted.Add(n.NpcId);
+        }
+
         private string? ChoiceLabelOf(string choiceId) =>
             Config.City.Services.SelectMany(x => x.Choices).FirstOrDefault(c => c.Id == choiceId)?.Label;
 
@@ -251,6 +265,7 @@ namespace Survival.Core.Engine
             switch (q.Accept)
             {
                 case "talk":
+                    DedicatedOfferLead(s, q);
                     AcceptCore(s, q, true);
                     return ActionResult.Success();
                 case "roster":

@@ -49,7 +49,7 @@ namespace Survival.Core.State
         /// "40" 起可选地牢核心记录两段续做（ResourceState.ClaimMinutesDone，开发计划 v0.9 B23）。
         /// "41" 起主城鸟瞰按城一次的展示标记与待自动打开（CityState.OverviewShown/OverviewPending，开发计划 v0.9 B24）。
         /// </summary>
-        public const string CurrentSchema = "41";
+        public const string CurrentSchema = "42";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";

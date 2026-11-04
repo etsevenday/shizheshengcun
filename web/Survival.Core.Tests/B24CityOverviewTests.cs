@@ -207,7 +207,7 @@ public class B24CityOverviewTests : TestBase
         var city = (JObject)j["City"]!;
         city.Remove("OverviewShown"); city.Remove("OverviewPending"); city.Remove("OverviewPendingLegacy");
         var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out _);
-        Assert.That(m.SchemaVersion, Is.EqualTo("41"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
         Assert.That(m.Log.Count(l => l.Text.Contains("存档已升级到版本41")), Is.EqualTo(1));
         Assert.That(m.City.OverviewPending, Is.EqualTo("c02_church"));
         Assert.That(m.City.OverviewPendingLegacy, Is.True);

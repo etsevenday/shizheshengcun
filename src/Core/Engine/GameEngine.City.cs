@@ -217,7 +217,9 @@ namespace Survival.Core.Engine
         /// <summary>
         /// 与岗位人物交谈（0 分钟，不扣物、不恢复、不改身体、不写事实）：首次播“初次见面”与“岗位说明”；之后播“闲谈”
         /// （B14b，Q146 选 B：未实装本身不触发“暂不可办”；目前没有已实装且剧情条件不足的事项，locked 组暂不使用）；
-        /// 命名人物退场时播“岗位接续”（代班员，不复活原人物）。回看只回放台词。
+        /// 命名人物退场时由代班员接续，接续说明只自动播一次（B26a，Q235）。回看只回放台词。
+        /// B26a（Q235_B）：本次实际将接取的是 EXQ05—08 时跳过“初次见面/岗位说明”，首次铺垫记为已处理、不补播；
+        /// 其他首次交谈与其他任务照旧。顺序：铺垫（或代班说明）→ 回报（可连播）→ 至多接一项。
         /// </summary>
         private ActionResult TalkCityNpc(GameState s, CityNpcConfig n)
         {
@@ -232,14 +234,15 @@ namespace Survival.Core.Engine
             var turnins = LiveQuests.Where(q => q.NpcId == n.NpcId && q.RecordFacts.Count > 0 && QuestAccepted(s, q.Id) && !QuestDone(s, q.Id) && HasQuestRecord(s, q)).ToList();
             if (c.Absent.Contains(n.NpcId))
             {
-                // 联系人退场不锁任务：代班员接续，委托照接，接取台词由当班接续员说（M333：换 speaker，见 SpeakerNow）
-                OpenReplay(s, StateSet(n, "institution_substitute"));
+                // 联系人退场不锁任务：代班员接续，委托照接，接取台词由当班接续员说（M333：换 speaker，见 SpeakerNow）。
+                // 和代班员交谈不写 Greeted：本人回岗的首次问候等 Q238 答复，这里保持现状
+                PlaySubstituteIntro(s, n);
                 foreach (var q in turnins) CompleteQuest(s, q, false);
                 if (offer != null) AcceptCore(s, offer, true);
                 return ActionResult.Success();
             }
             var first = c.Greeted.Add(n.NpcId);
-            if (first)
+            if (first && !(offer != null && DedicatedOffer(offer)))
             {
                 OpenReplay(s, StateSet(n, "first_greeting"));
                 OpenReplay(s, StateSet(n, "role"));
@@ -253,6 +256,34 @@ namespace Survival.Core.Engine
             if (first || turnins.Count > 0) return ActionResult.Success();
             OpenReplay(s, StateSet(n, QuestTalkState(s, n) ?? "idle"));
             return ActionResult.Success();
+        }
+
+        /// <summary>代班接续说明的状态名（narrative-texts npcDialogueSets）。</summary>
+        public const string SubstituteIntroState = "institution_substitute";
+
+        /// <summary>代班接续说明的已示键（Q235 substituteOnce）：本局 campaignId + 岗位 npcId；现版本没有个人代班 ID，岗位 npcId 代表该代班身份，显示名不进键。</summary>
+        public static string SubstituteIntroKey(GameState s, string npcId) => $"{CampaignIdOf(s)}|{npcId}";
+
+        public static bool SubstituteIntroShown(GameState s, string npcId) => s.City.SubstituteIntroShown.Contains(SubstituteIntroKey(s, npcId));
+
+        /// <summary>
+        /// 自动入口（交谈、事项接取、服务结束）请求一次代班接续说明：已示不再播；同一组还在队列里不再排。已示记录不在这里写，
+        /// 在说明实际开始显示时写（<see cref="NoteSubstituteIntroShown"/>，Q235 receipt）。返回这次是否还有说明要播（新排的或已在队列里的）。
+        /// </summary>
+        private bool PlaySubstituteIntro(GameState s, CityNpcConfig n)
+        {
+            if (SubstituteIntroShown(s, n.NpcId)) return false;
+            var set = StateSet(n, SubstituteIntroState);
+            if (!s.Story.DialogueLog.Any(d => !d.Ended && d.EventId.Split('#')[0] == set)) OpenReplay(s, set);
+            return true;
+        }
+
+        /// <summary>某段对话首句开始显示：是代班接续说明就记已示（含升级前已排队的旧对白）。</summary>
+        private void NoteSubstituteIntroShown(GameState s, DialogueSession d)
+        {
+            var set = d.EventId.Split('#')[0];
+            var n = Config.City.Npcs.FirstOrDefault(x => StateSet(x, SubstituteIntroState) == set);
+            if (n != null) s.City.SubstituteIntroShown.Add(SubstituteIntroKey(s, n.NpcId));
         }
 
         private static string StateSet(CityNpcConfig n, string state) => n.States.TryGetValue(state, out var id) ? id : "";
@@ -762,7 +793,14 @@ namespace Survival.Core.Engine
         {
             var n = CityNpc(npcId);
             if (n == null || s.Progress.Dead || s.CurrentLocation != n.LocationId) return;
-            OpenReplay(s, StateSet(n, s.City.Absent.Contains(n.NpcId) ? "institution_substitute" : "service_end"));
+            if (s.City.Absent.Contains(n.NpcId))
+            {
+                // B26a：Q235 定了服务结束入口也只介绍一次：未示且没有战斗/敌踪挡着才播，挡着就留到下一次合法入口；已示不重播。
+                // 已示之后服务结束该播什么是 Q237 待答内容，答复前这里不播任何替代对白（结束日志和事务效果不变）
+                if (s.Battle == null && s.Encounter == null) PlaySubstituteIntro(s, n);
+                return;
+            }
+            OpenReplay(s, StateSet(n, "service_end"));
         }
 
         // ───────────────────────── 公开告示 ─────────────────────────

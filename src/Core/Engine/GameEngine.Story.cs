@@ -132,6 +132,7 @@ namespace Survival.Core.Engine
                     Minute = s.GameMinute, LocationId = s.CurrentLocation,
                 });
                 if (d.Minute == null) { d.Minute = s.GameMinute; d.LocationId = s.CurrentLocation; }
+                if (d.Lines.Count == 1) NoteSubstituteIntroShown(s, d);
                 return;
             }
             // 配置里的台词全被删掉了：这一次没有可展示内容，直接结束，不卡住输入锁
