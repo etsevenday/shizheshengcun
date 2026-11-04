@@ -28032,6 +28032,342 @@
         "speaker": "陈芷",
         "text": "冷链资料收到了。哪些保存条件还能成立，要按现在的情况再核对。配给袋的做法可以整理公开，但封存标签不能替代对实物状态的检查。",
         "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_01",
+        "eventId": "npc_lu_heng_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "营门这边照常值守。出发前，记得看看身上的吃喝和装备。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_01",
+        "eventId": "npc_lu_heng_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_01",
+        "eventId": "npc_lu_heng_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_02",
+        "eventId": "npc_xu_an_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "告示和路线记录都在这里。要出远门，先把准备做的事理清楚。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_02",
+        "eventId": "npc_xu_an_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_02",
+        "eventId": "npc_xu_an_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_03",
+        "eventId": "npc_luo_zheng_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "台面上的东西各有归处。开工前先核对材料，做完记得带走工具。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_03",
+        "eventId": "npc_luo_zheng_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_03",
+        "eventId": "npc_luo_zheng_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_04",
+        "eventId": "npc_chen_zhi_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "赶路回来，先看看伤口和身体状况。有不舒服的地方就说。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_04",
+        "eventId": "npc_chen_zhi_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_04",
+        "eventId": "npc_chen_zhi_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_05",
+        "eventId": "npc_tao_cen_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "样本可以先留着。想清楚要查什么，再决定怎么办。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_05",
+        "eventId": "npc_tao_cen_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_05",
+        "eventId": "npc_tao_cen_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_06",
+        "eventId": "npc_du_sui_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "安置和同行都得先问本人的意思。你可以先看看资料，再作打算。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_06",
+        "eventId": "npc_du_sui_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_06",
+        "eventId": "npc_du_sui_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_07",
+        "eventId": "npc_qi_wen_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "公开的路怎么走，都可以问。想去哪里，你自己决定。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_07",
+        "eventId": "npc_qi_wen_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_07",
+        "eventId": "npc_qi_wen_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_08",
+        "eventId": "npc_bai_ling_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "物资要一份份记清。需要援助，就先看看眼下能办理的项目。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_08",
+        "eventId": "npc_bai_ling_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_08",
+        "eventId": "npc_bai_ling_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_09",
+        "eventId": "npc_ji_mu_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "有要商量的事，就把来由说清楚。今天不想谈，也可以改日再来。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_09",
+        "eventId": "npc_ji_mu_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_09",
+        "eventId": "npc_ji_mu_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_10",
+        "eventId": "npc_song_zhu_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "目录和抄本都按原处收着。要查哪一段，慢慢找，不用急。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_10",
+        "eventId": "npc_song_zhu_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_10",
+        "eventId": "npc_song_zhu_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_11",
+        "eventId": "npc_fu_heng_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "这里可以安静歇歇。想说话就说，想走也不用等我点头。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_11",
+        "eventId": "npc_fu_heng_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_11",
+        "eventId": "npc_fu_heng_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_12",
+        "eventId": "npc_wen_cheng_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "公开说明可以慢慢看。没想好的事，不必急着签字。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_12",
+        "eventId": "npc_wen_cheng_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_12",
+        "eventId": "npc_wen_cheng_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_13",
+        "eventId": "npc_ji_wen_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "看记录和做检测是两回事。要不要继续，先听清说明再决定。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_13",
+        "eventId": "npc_ji_wen_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_13",
+        "eventId": "npc_ji_wen_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_14",
+        "eventId": "npc_shao_ning_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "查资料时，把记录和推测分开看。拿不准的地方，可以再核一遍。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_14",
+        "eventId": "npc_shao_ning_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_14",
+        "eventId": "npc_shao_ning_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_15",
+        "eventId": "npc_he_yuan_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "设备按原规程使用。动手前先看清操作说明，别拿猜测当做法。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_15",
+        "eventId": "npc_he_yuan_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_15",
+        "eventId": "npc_he_yuan_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_IDLE_16",
+        "eventId": "npc_yin_ke_dialogue_substitute_idle",
+        "speaker": "机构当班接续员",
+        "text": "已有的观察记录可以查。想停下来或离开，直接说就好。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_OFFER_16",
+        "eventId": "npc_yin_ke_dialogue_substitute_quest_offer",
+        "speaker": "机构当班接续员",
+        "text": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+        "note": ""
+      },
+      {
+        "id": "NTL_Q236_PENDING_16",
+        "eventId": "npc_yin_ke_dialogue_substitute_quest_return",
+        "speaker": "机构当班接续员",
+        "text": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。",
+        "note": ""
       }
     ]
   },
@@ -34366,7 +34702,10 @@
           "locked": "npc_lu_heng_dialogue_locked",
           "service_end": "npc_lu_heng_dialogue_service_end",
           "institution_substitute": "npc_lu_heng_dialogue_institution_substitute",
-          "service_offer": "npc_lu_heng_dialogue_service_offer"
+          "service_offer": "npc_lu_heng_dialogue_service_offer",
+          "substitute_idle": "npc_lu_heng_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_lu_heng_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_lu_heng_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "hub_registration_existing": "核对来路和去向后再确认登记；通过营门后仍须真实走到广场。"
@@ -34399,7 +34738,10 @@
           "locked": "npc_xu_an_dialogue_locked",
           "service_end": "npc_xu_an_dialogue_service_end",
           "institution_substitute": "npc_xu_an_dialogue_institution_substitute",
-          "service_offer": "npc_xu_an_dialogue_service_offer"
+          "service_offer": "npc_xu_an_dialogue_service_offer",
+          "substitute_idle": "npc_xu_an_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_xu_an_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_xu_an_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "hub_affairs_record": "两份首次记录都齐了才能整理。这里使用原任务的工作进度，不再另外收一次工作。"
@@ -34434,7 +34776,10 @@
           "locked": "npc_luo_zheng_dialogue_locked",
           "service_end": "npc_luo_zheng_dialogue_service_end",
           "institution_substitute": "npc_luo_zheng_dialogue_institution_substitute",
-          "service_offer": "npc_luo_zheng_dialogue_service_offer"
+          "service_offer": "npc_luo_zheng_dialogue_service_offer",
+          "substitute_idle": "npc_luo_zheng_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_luo_zheng_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_luo_zheng_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "hub_workshop_access": "先看当地已开放的工坊。真正选配方之后，才按执行者和物资核费用。",
@@ -34469,7 +34814,10 @@
           "locked": "npc_chen_zhi_dialogue_locked",
           "service_end": "npc_chen_zhi_dialogue_service_end",
           "institution_substitute": "npc_chen_zhi_dialogue_institution_substitute",
-          "service_offer": "npc_chen_zhi_dialogue_service_offer"
+          "service_offer": "npc_chen_zhi_dialogue_service_offer",
+          "substitute_idle": "npc_chen_zhi_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_chen_zhi_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_chen_zhi_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "clinic_consult": "先说症状和时间，我按现有记录解释；咨询不自动处理伤口或清除感染。",
@@ -34503,7 +34851,10 @@
           "locked": "npc_tao_cen_dialogue_locked",
           "service_end": "npc_tao_cen_dialogue_service_end",
           "institution_substitute": "npc_tao_cen_dialogue_institution_substitute",
-          "service_offer": "npc_tao_cen_dialogue_service_offer"
+          "service_offer": "npc_tao_cen_dialogue_service_offer",
+          "substitute_idle": "npc_tao_cen_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_tao_cen_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_tao_cen_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "appraisal_white_v1": "先选自己的合法样本，再看可鉴定或可交易的范围。报价和费用以当前服务预览为准，未确认不交样。"
@@ -34535,7 +34886,10 @@
           "locked": "npc_du_sui_dialogue_locked",
           "service_end": "npc_du_sui_dialogue_service_end",
           "institution_substitute": "npc_du_sui_dialogue_institution_substitute",
-          "service_offer": "npc_du_sui_dialogue_service_offer"
+          "service_offer": "npc_du_sui_dialogue_service_offer",
+          "substitute_idle": "npc_du_sui_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_du_sui_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_du_sui_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "shelter_recruitment": "先看候选、名额和身体资料，再确认实际登记。查看资料不会替你招入队伍。"
@@ -34566,7 +34920,10 @@
           "locked": "npc_qi_wen_dialogue_locked",
           "service_end": "npc_qi_wen_dialogue_service_end",
           "institution_substitute": "npc_qi_wen_dialogue_institution_substitute",
-          "service_offer": "npc_qi_wen_dialogue_service_offer"
+          "service_offer": "npc_qi_wen_dialogue_service_offer",
+          "substitute_idle": "npc_qi_wen_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_qi_wen_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_qi_wen_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "church_reception_existing": "你可以领公开路线而不宣誓。调查完成的事实不会因你拒绝作见证而撤销。"
@@ -34597,7 +34954,10 @@
           "locked": "npc_bai_ling_dialogue_locked",
           "service_end": "npc_bai_ling_dialogue_service_end",
           "institution_substitute": "npc_bai_ling_dialogue_institution_substitute",
-          "service_offer": "npc_bai_ling_dialogue_service_offer"
+          "service_offer": "npc_bai_ling_dialogue_service_offer",
+          "substitute_idle": "npc_bai_ling_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_bai_ling_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_bai_ling_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "church_relief_ration": "先核对实际需要与今天的公共额度，选择当前允许的一项援助。代班或换个人来问，不会多出另一份。"
@@ -34628,7 +34988,10 @@
           "locked": "npc_ji_mu_dialogue_locked",
           "service_end": "npc_ji_mu_dialogue_service_end",
           "institution_substitute": "npc_ji_mu_dialogue_institution_substitute",
-          "service_offer": "npc_ji_mu_dialogue_service_offer"
+          "service_offer": "npc_ji_mu_dialogue_service_offer",
+          "substitute_idle": "npc_ji_mu_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_ji_mu_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_ji_mu_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "church_public_mediation": "协商保存公开记录，不要求交人或入教。实际整理的时间沿任务原进度，不双收。"
@@ -34660,7 +35023,10 @@
           "locked": "npc_song_zhu_dialogue_locked",
           "service_end": "npc_song_zhu_dialogue_service_end",
           "institution_substitute": "npc_song_zhu_dialogue_institution_substitute",
-          "service_offer": "npc_song_zhu_dialogue_service_offer"
+          "service_offer": "npc_song_zhu_dialogue_service_offer",
+          "substitute_idle": "npc_song_zhu_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_song_zhu_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_song_zhu_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "church_archive_copy": "核对原件和已有知识后才抄录。抄过的同一资料只保留来源，不再给第二份奖。"
@@ -34689,7 +35055,10 @@
           "locked": "npc_fu_heng_dialogue_locked",
           "service_end": "npc_fu_heng_dialogue_service_end",
           "institution_substitute": "npc_fu_heng_dialogue_institution_substitute",
-          "service_offer": "npc_fu_heng_dialogue_service_offer"
+          "service_offer": "npc_fu_heng_dialogue_service_offer",
+          "substitute_idle": "npc_fu_heng_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_fu_heng_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_fu_heng_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "church_quiet_rest": "愿意的话可以在这里按普通遮蔽条件休息；不需要宣誓，也没有额外祝祷加成。"
@@ -34720,7 +35089,10 @@
           "locked": "npc_wen_cheng_dialogue_locked",
           "service_end": "npc_wen_cheng_dialogue_service_end",
           "institution_substitute": "npc_wen_cheng_dialogue_institution_substitute",
-          "service_offer": "npc_wen_cheng_dialogue_service_offer"
+          "service_offer": "npc_wen_cheng_dialogue_service_offer",
+          "substitute_idle": "npc_wen_cheng_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_wen_cheng_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_wen_cheng_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "academy_reception_existing": "公共路线和观察同意分开登记；拒绝检测仍能领取公开调查路线。"
@@ -34752,7 +35124,10 @@
           "locked": "npc_ji_wen_dialogue_locked",
           "service_end": "npc_ji_wen_dialogue_service_end",
           "institution_substitute": "npc_ji_wen_dialogue_institution_substitute",
-          "service_offer": "npc_ji_wen_dialogue_service_offer"
+          "service_offer": "npc_ji_wen_dialogue_service_offer",
+          "substitute_idle": "npc_ji_wen_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_ji_wen_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_ji_wen_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "academy_noninvasive_observation": "先明确仅核环境记录或允许只读现有指标；范围之外不做，任务工作不会被另一扇窗口重收费。"
@@ -34783,7 +35158,10 @@
           "locked": "npc_shao_ning_dialogue_locked",
           "service_end": "npc_shao_ning_dialogue_service_end",
           "institution_substitute": "npc_shao_ning_dialogue_institution_substitute",
-          "service_offer": "npc_shao_ning_dialogue_service_offer"
+          "service_offer": "npc_shao_ning_dialogue_service_offer",
+          "substitute_idle": "npc_shao_ning_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_shao_ning_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_shao_ning_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "academy_report_compare": "把两份报告和真实流程对照后写笔记。输出的是具体线索，不是治愈保证。"
@@ -34814,7 +35192,10 @@
           "locked": "npc_he_yuan_dialogue_locked",
           "service_end": "npc_he_yuan_dialogue_service_end",
           "institution_substitute": "npc_he_yuan_dialogue_institution_substitute",
-          "service_offer": "npc_he_yuan_dialogue_service_offer"
+          "service_offer": "npc_he_yuan_dialogue_service_offer",
+          "substitute_idle": "npc_he_yuan_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_he_yuan_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_he_yuan_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "academy_workshop_access": "只打开已开放的真实工坊，制作仍需原配方条件；门口的观察通行告示可另外阅读。"
@@ -34845,7 +35226,10 @@
           "locked": "npc_yin_ke_dialogue_locked",
           "service_end": "npc_yin_ke_dialogue_service_end",
           "institution_substitute": "npc_yin_ke_dialogue_institution_substitute",
-          "service_offer": "npc_yin_ke_dialogue_service_offer"
+          "service_offer": "npc_yin_ke_dialogue_service_offer",
+          "substitute_idle": "npc_yin_ke_dialogue_substitute_idle",
+          "substitute_quest_offer": "npc_yin_ke_dialogue_substitute_quest_offer",
+          "substitute_quest_return": "npc_yin_ke_dialogue_substitute_quest_return"
         },
         "serviceOfferLines": {
           "academy_observation_record": "这里只读你已经同意的范围和现有观察记录；不再办理第二次观察协作收费。"

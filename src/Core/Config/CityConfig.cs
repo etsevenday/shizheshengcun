@@ -87,7 +87,7 @@ namespace Survival.Core.Config
         public string RecruitmentType { get; set; } = "";
         public bool CanRecruit { get; set; }
         public string DialogueSet { get; set; } = "";
-        /// <summary>九种状态 → 对白组 ID（first_greeting/role/quest_offer/quest_return/idle/locked/service_end/institution_substitute/service_offer）。</summary>
+        /// <summary>十二种状态 → 对白组 ID（first_greeting/role/quest_offer/quest_return/idle/locked/service_end/institution_substitute/service_offer；B26a Q236 加代班专用 substitute_idle/substitute_quest_offer/substitute_quest_return）。</summary>
         public Dictionary<string, string> States { get; set; } = new Dictionary<string, string>();
         /// <summary>服务面板里该岗位对每项服务说的一句（narrative-texts serviceOfferLines）。</summary>
         public Dictionary<string, string> ServiceOfferLines { get; set; } = new Dictionary<string, string>();

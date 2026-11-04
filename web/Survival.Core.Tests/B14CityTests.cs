@@ -51,7 +51,7 @@ public class B14CityTests : TestBase
             Assert.That(c.ServiceIds, Is.EqualTo(n["serviceIds"]!.Select(x => (string)x!)));
             Assert.That(c.QuestIds, Is.EqualTo(n["questIds"]!.Select(x => (string)x!)));
             Assert.That(c.CanRecruit, Is.False, "岗位不可招募（COMP06）");
-            Assert.That(c.States.Keys, Is.EquivalentTo(new[] { "first_greeting", "role", "quest_offer", "quest_return", "idle", "locked", "service_end", "institution_substitute", "service_offer" }));
+            Assert.That(c.States.Keys, Is.EquivalentTo(new[] { "first_greeting", "role", "quest_offer", "quest_return", "idle", "locked", "service_end", "institution_substitute", "service_offer", "substitute_idle", "substitute_quest_offer", "substitute_quest_return" }));
             foreach (var set in c.States.Values)
                 Assert.That(Cfg.Story.Dialogues.Any(d => d.Event == set && d.Text.Length > 0), Is.True, $"TXT01：{set} 有文字");
         }
