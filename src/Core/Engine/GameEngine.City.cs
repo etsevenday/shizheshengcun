@@ -797,7 +797,8 @@ namespace Survival.Core.Engine
             if (n == null || s.Progress.Dead || s.CurrentLocation != n.LocationId) return;
             if (s.City.Absent.Contains(n.NpcId))
             {
-                // B26a：Q235 定了服务结束入口也只介绍一次：未示且没有战斗/敌踪挡着才播，挡着就留到下一次合法入口；已示不重播。
+                // B26a：Q235 定了服务结束入口也只介绍一次：未示且没有战斗/敌踪挡着才播；已示不重播。
+                // 挡着时这次不播不记已示，战后不自动补弹，下一次走到交谈、接取或服务结束才显示（Q243 待定，答复前保持这样）。
                 // 已示之后服务结束不播任何对白（Q237），只留原结束日志和事务效果
                 if (s.Battle == null && s.Encounter == null) PlaySubstituteIntro(s, n);
                 return;

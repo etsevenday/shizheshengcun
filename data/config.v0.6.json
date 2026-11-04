@@ -36341,6 +36341,198 @@
       {
         "id": "academy_public_observation_notice",
         "title": "观察区公开通道告示"
+      },
+      {
+        "id": "npc_lu_heng_dialogue_substitute_idle",
+        "title": "营门值守岗：代班闲谈"
+      },
+      {
+        "id": "npc_lu_heng_dialogue_substitute_quest_offer",
+        "title": "营门值守岗：代班事项提示"
+      },
+      {
+        "id": "npc_lu_heng_dialogue_substitute_quest_return",
+        "title": "营门值守岗：代班进度提醒"
+      },
+      {
+        "id": "npc_xu_an_dialogue_substitute_idle",
+        "title": "营区公事务岗：代班闲谈"
+      },
+      {
+        "id": "npc_xu_an_dialogue_substitute_quest_offer",
+        "title": "营区公事务岗：代班事项提示"
+      },
+      {
+        "id": "npc_xu_an_dialogue_substitute_quest_return",
+        "title": "营区公事务岗：代班进度提醒"
+      },
+      {
+        "id": "npc_luo_zheng_dialogue_substitute_idle",
+        "title": "营区工务岗：代班闲谈"
+      },
+      {
+        "id": "npc_luo_zheng_dialogue_substitute_quest_offer",
+        "title": "营区工务岗：代班事项提示"
+      },
+      {
+        "id": "npc_luo_zheng_dialogue_substitute_quest_return",
+        "title": "营区工务岗：代班进度提醒"
+      },
+      {
+        "id": "npc_chen_zhi_dialogue_substitute_idle",
+        "title": "营区医务岗：代班闲谈"
+      },
+      {
+        "id": "npc_chen_zhi_dialogue_substitute_quest_offer",
+        "title": "营区医务岗：代班事项提示"
+      },
+      {
+        "id": "npc_chen_zhi_dialogue_substitute_quest_return",
+        "title": "营区医务岗：代班进度提醒"
+      },
+      {
+        "id": "npc_tao_cen_dialogue_substitute_idle",
+        "title": "营区鉴定岗：代班闲谈"
+      },
+      {
+        "id": "npc_tao_cen_dialogue_substitute_quest_offer",
+        "title": "营区鉴定岗：代班事项提示"
+      },
+      {
+        "id": "npc_tao_cen_dialogue_substitute_quest_return",
+        "title": "营区鉴定岗：代班进度提醒"
+      },
+      {
+        "id": "npc_du_sui_dialogue_substitute_idle",
+        "title": "收容安置岗：代班闲谈"
+      },
+      {
+        "id": "npc_du_sui_dialogue_substitute_quest_offer",
+        "title": "收容安置岗：代班事项提示"
+      },
+      {
+        "id": "npc_du_sui_dialogue_substitute_quest_return",
+        "title": "收容安置岗：代班进度提醒"
+      },
+      {
+        "id": "npc_qi_wen_dialogue_substitute_idle",
+        "title": "教会接待岗：代班闲谈"
+      },
+      {
+        "id": "npc_qi_wen_dialogue_substitute_quest_offer",
+        "title": "教会接待岗：代班事项提示"
+      },
+      {
+        "id": "npc_qi_wen_dialogue_substitute_quest_return",
+        "title": "教会接待岗：代班进度提醒"
+      },
+      {
+        "id": "npc_bai_ling_dialogue_substitute_idle",
+        "title": "教会施济岗：代班闲谈"
+      },
+      {
+        "id": "npc_bai_ling_dialogue_substitute_quest_offer",
+        "title": "教会施济岗：代班事项提示"
+      },
+      {
+        "id": "npc_bai_ling_dialogue_substitute_quest_return",
+        "title": "教会施济岗：代班进度提醒"
+      },
+      {
+        "id": "npc_ji_mu_dialogue_substitute_idle",
+        "title": "教会训诫岗：代班闲谈"
+      },
+      {
+        "id": "npc_ji_mu_dialogue_substitute_quest_offer",
+        "title": "教会训诫岗：代班事项提示"
+      },
+      {
+        "id": "npc_ji_mu_dialogue_substitute_quest_return",
+        "title": "教会训诫岗：代班进度提醒"
+      },
+      {
+        "id": "npc_song_zhu_dialogue_substitute_idle",
+        "title": "教会誊录岗：代班闲谈"
+      },
+      {
+        "id": "npc_song_zhu_dialogue_substitute_quest_offer",
+        "title": "教会誊录岗：代班事项提示"
+      },
+      {
+        "id": "npc_song_zhu_dialogue_substitute_quest_return",
+        "title": "教会誊录岗：代班进度提醒"
+      },
+      {
+        "id": "npc_fu_heng_dialogue_substitute_idle",
+        "title": "圣堂主持岗：代班闲谈"
+      },
+      {
+        "id": "npc_fu_heng_dialogue_substitute_quest_offer",
+        "title": "圣堂主持岗：代班事项提示"
+      },
+      {
+        "id": "npc_fu_heng_dialogue_substitute_quest_return",
+        "title": "圣堂主持岗：代班进度提醒"
+      },
+      {
+        "id": "npc_wen_cheng_dialogue_substitute_idle",
+        "title": "科学院接待岗：代班闲谈"
+      },
+      {
+        "id": "npc_wen_cheng_dialogue_substitute_quest_offer",
+        "title": "科学院接待岗：代班事项提示"
+      },
+      {
+        "id": "npc_wen_cheng_dialogue_substitute_quest_return",
+        "title": "科学院接待岗：代班进度提醒"
+      },
+      {
+        "id": "npc_ji_wen_dialogue_substitute_idle",
+        "title": "科学院检测岗：代班闲谈"
+      },
+      {
+        "id": "npc_ji_wen_dialogue_substitute_quest_offer",
+        "title": "科学院检测岗：代班事项提示"
+      },
+      {
+        "id": "npc_ji_wen_dialogue_substitute_quest_return",
+        "title": "科学院检测岗：代班进度提醒"
+      },
+      {
+        "id": "npc_shao_ning_dialogue_substitute_idle",
+        "title": "科学院档案岗：代班闲谈"
+      },
+      {
+        "id": "npc_shao_ning_dialogue_substitute_quest_offer",
+        "title": "科学院档案岗：代班事项提示"
+      },
+      {
+        "id": "npc_shao_ning_dialogue_substitute_quest_return",
+        "title": "科学院档案岗：代班进度提醒"
+      },
+      {
+        "id": "npc_he_yuan_dialogue_substitute_idle",
+        "title": "科学院设备岗：代班闲谈"
+      },
+      {
+        "id": "npc_he_yuan_dialogue_substitute_quest_offer",
+        "title": "科学院设备岗：代班事项提示"
+      },
+      {
+        "id": "npc_he_yuan_dialogue_substitute_quest_return",
+        "title": "科学院设备岗：代班进度提醒"
+      },
+      {
+        "id": "npc_yin_ke_dialogue_substitute_idle",
+        "title": "科学院观察岗：代班闲谈"
+      },
+      {
+        "id": "npc_yin_ke_dialogue_substitute_quest_offer",
+        "title": "科学院观察岗：代班事项提示"
+      },
+      {
+        "id": "npc_yin_ke_dialogue_substitute_quest_return",
+        "title": "科学院观察岗：代班进度提醒"
       }
     ]
   },

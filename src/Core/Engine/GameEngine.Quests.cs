@@ -208,8 +208,8 @@ namespace Survival.Core.Engine
         private static bool DedicatedOffer(QuestConfig q) => q.Kind == "optional";
 
         /// <summary>
-        /// 事项里的“接取”与交谈同效（B26a，Q235 scope/sequence）：EXQ05—08 从这里接取时，本人在岗把首次铺垫记为已处理、不补播；
-        /// 岗位离岗时先播一次未示的代班接续说明。其他任务的这个入口保持原样。
+        /// 事项里的“接取”与交谈同效（B26a，Q235 scope/sequence、Q242 buttonEquivalence）：EXQ05—08 从这里实际接取时，本人在岗把首次铺垫记为已处理、不补播；
+        /// 岗位离岗时先播一次未示的代班接续说明，不记本人首次。只在校验都过了之后调用，预览和失败的请求走不到这里（Q242 buttonBoundaries）。其他任务的这个入口保持原样。
         /// </summary>
         private void DedicatedOfferLead(GameState s, QuestConfig q)
         {
@@ -589,15 +589,15 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// 代班兜底交谈选哪一组（B26a，Q236 selection）：本岗事项里有已显示、前置满足、未接的委托 → 待接提示；否则岗位关联（名下或 questIds）已接未完成 → 进度提醒；否则本岗闲谈。
-        /// 待接只认本岗事项能办的（q.NpcId 是本岗，即事项面板列出的那些）；已被交谈接走的走不到这里。六人招募邀约不由代班代说。
+        /// 代班兜底交谈选哪一组（B26a，Q236 selection、Q241 offerFilter/offerOrder）：本岗事项面板当前列出的委托（<see cref="QuestsOfNpc"/>，面板用的同一份）里
+        /// 有状态“可接”的（已实装、已显示、未接未完、原前置满足）→ 待接提示；否则岗位关联（名下或 questIds）已接未完成 → 进度提醒；否则本岗闲谈。
+        /// 只在岗位关联列表里、不在本岗面板办的不算待接，按面板动态判断，不写固定 ID；已被交谈接走的走不到这里。六人招募邀约不由代班代说。
         /// </summary>
         private string SubstituteTalkState(GameState s, CityNpcConfig n)
         {
-            var related = LiveQuests.Where(q => q.Kind != "recruit" && (q.NpcId == n.NpcId || n.QuestIds.Contains(q.Id))).ToList();
-            if (related.Any(q => q.NpcId == n.NpcId && !QuestAccepted(s, q.Id) && !QuestDone(s, q.Id) && QuestShown(s, q) && QuestRequiresBlocked(s, q) == null)) return "substitute_quest_offer";
-            if (related.Any(q => QuestAccepted(s, q.Id) && !QuestDone(s, q.Id))) return "substitute_quest_return";
-            return "substitute_idle";
+            if (QuestsOfNpc(s, n.NpcId).Any(v => v.Kind != "recruit" && v.Status == "available")) return "substitute_quest_offer";
+            var related = LiveQuests.Where(q => q.Kind != "recruit" && (q.NpcId == n.NpcId || n.QuestIds.Contains(q.Id)));
+            return related.Any(q => QuestAccepted(s, q.Id) && !QuestDone(s, q.Id)) ? "substitute_quest_return" : "substitute_idle";
         }
 
         // ───────────────────────── 同行邀约卡（RN01—RN06） ─────────────────────────
