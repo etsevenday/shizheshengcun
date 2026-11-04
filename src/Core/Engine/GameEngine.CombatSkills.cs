@@ -7,8 +7,16 @@ using Survival.Core.State;
 
 namespace Survival.Core.Engine
 {
+    /// <summary>操作台一张技能卡（Q227）：Option 非空是可选指令；Option 空且 LockedText 空是已解锁被动；LockedText 非空是未解锁灰卡。</summary>
+    public sealed class OperatorSkillCard
+    {
+        public SkillNodeConfig Node { get; set; } = null!;
+        public BattleCommandOption? Option { get; set; }
+        public string? LockedText { get; set; }
+    }
+
     /// <summary>
-    /// 50 个战斗/医疗主动技能（A06 §2；开发计划 v0.9 B7 R25）。两武器页各列本门已解锁的五节点技能（Q26：未达等级的不列出），
+    /// 50 个战斗/医疗主动技能（A06 §2；开发计划 v0.9 B7 R25）。两武器页的指令各列本门已解锁的节点技能（未达等级的不进指令；Q227 起操作台另用灰卡显示，见 OperatorSkillCards），
     /// 1 级攻击技能就是“普通攻击”指令 basic_attack（拳击/斩击/劈砍/刺击/敲击/射击/开火/盾击）；其余用节点 ID 作指令。
     /// AP、基准E、使用位→目标、冷却读 config.skillNodes，效果读 config.skillExec。E 成本 = 表内基准E × 武器E÷该类基准E ÷(1+0.025L)。
     /// 预览（PreviewCommand）、操作台（BattleOptions）、系统说明（CompatibleCommands）与执行（ExecuteCommand）都走同一组函数（Q19/Q26 同源）。
@@ -46,6 +54,26 @@ namespace Survival.Core.Engine
         public string ActionIdOf(SkillNodeConfig n) => n.Level == 1 && _exec[n.Id].IsAttack ? BasicAttack : n.Id;
 
         public bool SkillUnlocked(GameState s, SkillNodeConfig n) => SkillLevel(s, n.SkillId) >= n.Level;
+
+        /// <summary>未解锁技能的公开条件（执行拒绝原因与操作台灰卡同一句）。</summary>
+        public string SkillLockedText(GameState s, SkillNodeConfig n) => $"需要{SkillName(n.SkillId)}{n.Level}级（当前{SkillLevel(s, n.SkillId)}级）";
+
+        /// <summary>
+        /// 操作台当前武器页的五张技能卡（批次 B26，Q227 取代 Q26 的操作台隐藏范围）：当前门类五个节点按 1/3/5/7/10 全列。
+        /// 已解锁的主动技能带指令（不可用写真实原因）；已解锁的被动 Option 为 null；未解锁的 Option 为 null、LockedText 写公开条件，只是灰卡，
+        /// 不进指令列表（SkillOptions 与执行逻辑不变）。只读。options 传 BattleOptions 的结果。
+        /// </summary>
+        public List<OperatorSkillCard> OperatorSkillCards(GameState s, IEnumerable<BattleCommandOption> options)
+        {
+            var w = CurrentWeapon(s, out _);
+            var opts = options.ToList();
+            return Config.SkillNodes.Where(n => n.SkillId == w.SkillId && !n.IsSurvival).OrderBy(n => n.Level).Select(n => new OperatorSkillCard
+            {
+                Node = n,
+                Option = opts.FirstOrDefault(o => o.NodeId == n.Id),
+                LockedText = SkillUnlocked(s, n) ? null : SkillLockedText(s, n),
+            }).ToList();
+        }
 
         /// <summary>指令在当前武器上的名字：basic_attack 写本门 1 级技能名（斩击、射击……），技能写节点名，其余同 ActionName。</summary>
         public string CommandLabel(GameState s, string action)
@@ -159,7 +187,7 @@ namespace Survival.Core.Engine
         // ───────────── 指令列表 ─────────────
 
         /// <summary>
-        /// 当前武器页的技能指令（Q26：未达等级的不列出；暂时缺 AP/E/弹药/耐久/冷却的列出写原因）与应急拳击。
+        /// 当前武器页的技能指令（未达等级的不进指令列表，操作台灰卡见 OperatorSkillCards；暂时缺 AP/E/弹药/耐久/冷却的列出写原因）与应急拳击。
         /// 战斗中可用性与原因取 CommandBlocked（与执行同源）；战斗外只写暂时条件（弹仓空、耐久不足、没有随身物资、需要队友）。
         /// </summary>
         private List<BattleCommandOption> SkillOptions(GameState s, bool inBattle)
@@ -273,7 +301,7 @@ namespace Survival.Core.Engine
                 return $"当前武器（{w.Name}）不能用{ActionName(c.Action)}";
             }
             var x = _exec[n.Id];
-            if (!SkillUnlocked(s, n)) return $"需要{SkillName(n.SkillId)}{n.Level}级（当前{SkillLevel(s, n.SkillId)}级）";
+            if (!SkillUnlocked(s, n)) return SkillLockedText(s, n);
             if (CooldownReadyRound(b, n) is int ready) return $"冷却中（第{ready}轮起可用）";
             // 结构性原因（需要队友、耐久、单发弩、弹药、随身物资、弹仓满）先于“行动点不足”显示（试玩修复 M150 UX6）
             var structural = x.IsAttack

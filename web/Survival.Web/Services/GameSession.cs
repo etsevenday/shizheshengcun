@@ -2049,7 +2049,8 @@ public sealed class GameSession
         var w = E.CurrentWeapon(S, out _);
         var node = E.Config.SkillNodes.FirstOrDefault(n => n.SkillId == w.SkillId && n.Level == lv && !n.IsSurvival);
         var o = node == null ? null : E.BattleOptions(S).FirstOrDefault(x => x.NodeId == node.Id);
-        if (o == null) { Notice = node != null && E.SkillUnlocked(S, node) ? $"{node.Name}是被动，自动生效" : $"本页第{slot}个技能位（{lv}级）还没解锁"; Notify(); return; }
+        if (node != null && !E.SkillUnlocked(S, node)) { ExplainBlocked(node.Name, E.SkillLockedText(S, node)); return; }   // Q227：灰卡只写条件
+        if (o == null) { Notice = node != null ? $"{node.Name}是被动，自动生效" : $"本页第{slot}个技能位（{lv}级）还没解锁"; Notify(); return; }
         if (o.Available) PickBattleAction(o.Action, o.ItemInstanceId);
         else ExplainBlocked(o.Label, o.Reason);
     }

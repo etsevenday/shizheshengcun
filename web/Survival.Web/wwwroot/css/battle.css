@@ -261,7 +261,22 @@
 .cmdt-ap { right: 2px; background: #6b3f19; color: #fff3df; font-weight: 700; }
 .bfs-console .cmdt.skill .cmdt-art { margin-top: 12px; }
 .bfs-console .cmdt.passive { border-style: dotted; background: #262c26; }
-.bfs-console .cmdt.locked-slot { border: 1px dashed #4a4a3e; background: transparent; }
+/* B26（Q227）：未解锁灰卡——锁标、灰图、正式名与条件都在卡上，不只靠颜色；说明与条件在操作台上方（悬停/键盘聚焦） */
+.bfs-console .cmdt.locked-card { border: 2px dashed #5a5f58; background: #20262a; color: #b4b4a6; cursor: help; }
+.bfs-console .cmdt.locked-card .cmdt-art { filter: grayscale(1); opacity: .5; }
+.bfs-console .cmdt.locked-card .cmdt-name { -webkit-line-clamp: 1; }
+.bfs-console .cmdt-need { color: #d8d2bd; background: none; padding: 0; font-size: 14px; line-height: 16px; }
+@media (max-height: 800px) {
+  .bfs-console .cmdt.locked-card { padding: 16px 2px 2px; justify-content: flex-start; gap: 0; }
+  .bfs-console .cmdt.locked-card .cmdt-art { display: none; }
+}
+.cmdt-ap.cmdt-lock { background: #4a4f4a; color: #e8e6da; }
+.bc-main { position: relative; }
+.bc-locknote { position: absolute; left: 0; right: 0; bottom: calc(100% + 10px); z-index: 30; padding: 8px 10px; background: #121a1dfa; border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 8px 24px #000c; font-size: 16px; line-height: 1.35; pointer-events: none; }
+.bc-locknote b { margin-right: 8px; }
+.bc-locknote span { color: var(--muted); }
+.bc-locknote p { margin: 2px 0 0; }
+.bc-locknote-why { color: var(--warn); }
 .bc-skills .cmdt { max-width: 132px; }
 .bc-range { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 16px; }
 .bc-range-label { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; max-width: 40%; }
