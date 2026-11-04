@@ -29,5 +29,186 @@
       "id": "DIALOGUE-Q235-04",
       "criterion": "旧可信已示说明无声追认，无记录不按Talks猜；阻止打开不吞首次，开始显示后关闭不再自动重复；已在办事务和旧队列不截断不重置。"
     }
-  ]
+  ],
+  "substituteTalkQ236": {
+    "version": "q236_20261104",
+    "date": "2026-11-04",
+    "answer": "由总控补写正式文案：代班说明已播、当次无实际接取或回报时，按原岗位任务状态选用代班专用交谈；无相关委托用16岗位各自闲谈，有可经事项办理的委托用待接提示，有已接未完成委托用进度提醒。逐字稿与分支见A11/N01及Q236专门数据；0分钟，无任务结算或奖励。",
+    "policy": {
+      "sourceQuestion": "Q236_controller_authored",
+      "entry": "仅处理机构代班接续说明已展示后，在本岗位地点、安全空闲且原交谈入口合法时点击“交谈”的兜底内容。本人在岗的原对白不改。首次代班接续是否已展示仍读Q235稳定身份记录；Q237服务结束、Q238本人回岗首次问候仍待用户答复，本题不裁定。",
+      "selection": "先按现有资格、配置顺序处理实际回报与至多一个实际接取。只要本次已经入队实际接取、回报或其他应播的专属事务对白，不追加本题兜底。确无该类对白时，沿原岗位关联的已实装任务状态选择：有已显示且原前置满足、可在事项中办理但本次交谈没有实际接取的未接委托，播substitute_quest_offer；否则有原岗位关联的已接未完成公共委托，播substitute_quest_return；否则播substitute_idle。前者优先于后者，与原QuestTalkState优先级一致。没有实际可接资格的未接任务、未实装任务不触发待接提示、不泄露；已完成任务不触发进度提醒。六人本人招募邀约不由代班代说，继续原规则。",
+      "playback": "每次合法主动交谈只播放所选的一句，普通交谈可重复；不随机轮换，不把institution_substitute的一次限制套到闲谈。speaker使用本岗位现有机构当班接续员ID和显示名；文本不冒充离岗本人。数据中的onceKey仅为原对白历史索引，automaticOnce=false明确不据此禁止后续主动闲谈；手动历史回看仍只读。",
+      "effects": "所有句子0分钟、0物资，无身体恢复、工作提交、收费、任务接取/完成、知识/物品/经验/通关/容量奖励；“歇歇”等叙事词不启动休息行动。任务提示只指向原任务册或事项，实际接取/工作仍须原入口和原条件。未知任务与地点不展示；正文不承诺额度、路已开通或新服务。",
+      "migration": "旧档使用现有岗位/任务/代班已示状态，下一次合法主动交谈选新句，不补播历史、不重置Greeted/任务/配额/知识/奖励；不增加一次领取或恢复。升级时已经打开的旧对白队列可正常播完，之后新请求用新规则，不中途截断或重复排队。"
+    },
+    "idleLines": [
+      {
+        "npcId": "npc_lu_heng",
+        "post": "营门·值守登记",
+        "locationId": "h01_gate",
+        "speaker": "hub_survivor_duty_staff",
+        "text": "营门这边照常值守。出发前，记得看看身上的吃喝和装备。",
+        "dialogueSetId": "npc_lu_heng_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_01"
+      },
+      {
+        "npcId": "npc_xu_an",
+        "post": "营区广场·公共事务",
+        "locationId": "h02_square",
+        "speaker": "hub_survivor_duty_staff",
+        "text": "告示和路线记录都在这里。要出远门，先把准备做的事理清楚。",
+        "dialogueSetId": "npc_xu_an_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_02"
+      },
+      {
+        "npcId": "npc_luo_zheng",
+        "post": "营区工坊·工务",
+        "locationId": "h03_workshop",
+        "speaker": "hub_survivor_duty_staff",
+        "text": "台面上的东西各有归处。开工前先核对材料，做完记得带走工具。",
+        "dialogueSetId": "npc_luo_zheng_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_03"
+      },
+      {
+        "npcId": "npc_chen_zhi",
+        "post": "营区医务室·医疗",
+        "locationId": "h04_infirmary",
+        "speaker": "hub_survivor_duty_staff",
+        "text": "赶路回来，先看看伤口和身体状况。有不舒服的地方就说。",
+        "dialogueSetId": "npc_chen_zhi_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_04"
+      },
+      {
+        "npcId": "npc_tao_cen",
+        "post": "鉴定所·样本鉴定",
+        "locationId": "h05_appraisal",
+        "speaker": "hub_survivor_duty_staff",
+        "text": "样本可以先留着。想清楚要查什么，再决定怎么办。",
+        "dialogueSetId": "npc_tao_cen_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_05"
+      },
+      {
+        "npcId": "npc_du_sui",
+        "post": "收容所·安置登记",
+        "locationId": "h06_shelter",
+        "speaker": "hub_survivor_duty_staff",
+        "text": "安置和同行都得先问本人的意思。你可以先看看资料，再作打算。",
+        "dialogueSetId": "npc_du_sui_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_06"
+      },
+      {
+        "npcId": "npc_qi_wen",
+        "post": "教会接待·外来者接待",
+        "locationId": "c02_church",
+        "speaker": "faction_church_duty_staff",
+        "text": "公开的路怎么走，都可以问。想去哪里，你自己决定。",
+        "dialogueSetId": "npc_qi_wen_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_07"
+      },
+      {
+        "npcId": "npc_bai_ling",
+        "post": "施济处·物资账务",
+        "locationId": "c04_alms",
+        "speaker": "faction_church_duty_staff",
+        "text": "物资要一份份记清。需要援助，就先看看眼下能办理的项目。",
+        "dialogueSetId": "npc_bai_ling_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_08"
+      },
+      {
+        "npcId": "npc_ji_mu",
+        "post": "训诫堂·公开协商",
+        "locationId": "c05_admonition",
+        "speaker": "faction_church_duty_staff",
+        "text": "有要商量的事，就把来由说清楚。今天不想谈，也可以改日再来。",
+        "dialogueSetId": "npc_ji_mu_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_09"
+      },
+      {
+        "npcId": "npc_song_zhu",
+        "post": "教会档案·誊录",
+        "locationId": "c06_archive",
+        "speaker": "faction_church_duty_staff",
+        "text": "目录和抄本都按原处收着。要查哪一段，慢慢找，不用急。",
+        "dialogueSetId": "npc_song_zhu_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_10"
+      },
+      {
+        "npcId": "npc_fu_heng",
+        "post": "圣堂·主持岗位",
+        "locationId": "c07_sanctuary",
+        "speaker": "faction_church_duty_staff",
+        "text": "这里可以安静歇歇。想说话就说，想走也不用等我点头。",
+        "dialogueSetId": "npc_fu_heng_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_11"
+      },
+      {
+        "npcId": "npc_wen_cheng",
+        "post": "科学院接待·协调",
+        "locationId": "r04_reception",
+        "speaker": "faction_academy_duty_staff",
+        "text": "公开说明可以慢慢看。没想好的事，不必急着签字。",
+        "dialogueSetId": "npc_wen_cheng_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_12"
+      },
+      {
+        "npcId": "npc_ji_wen",
+        "post": "科学院检测·研究",
+        "locationId": "r05_testing",
+        "speaker": "faction_academy_duty_staff",
+        "text": "看记录和做检测是两回事。要不要继续，先听清说明再决定。",
+        "dialogueSetId": "npc_ji_wen_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_13"
+      },
+      {
+        "npcId": "npc_shao_ning",
+        "post": "科学院档案·比对",
+        "locationId": "r06_archive",
+        "speaker": "faction_academy_duty_staff",
+        "text": "查资料时，把记录和推测分开看。拿不准的地方，可以再核一遍。",
+        "dialogueSetId": "npc_shao_ning_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_14"
+      },
+      {
+        "npcId": "npc_he_yuan",
+        "post": "科学院工坊·设备",
+        "locationId": "r07_workshop",
+        "speaker": "faction_academy_duty_staff",
+        "text": "设备按原规程使用。动手前先看清操作说明，别拿猜测当做法。",
+        "dialogueSetId": "npc_he_yuan_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_15"
+      },
+      {
+        "npcId": "npc_yin_ke",
+        "post": "科学院观察区·记录",
+        "locationId": "r08_observation",
+        "speaker": "faction_academy_duty_staff",
+        "text": "已有的观察记录可以查。想停下来或离开，直接说就好。",
+        "dialogueSetId": "npc_yin_ke_dialogue_substitute_idle",
+        "lineId": "NTL_Q236_IDLE_16"
+      }
+    ],
+    "sharedLines": {
+      "substitute_quest_offer": "这里有可以办理的委托。先看看事项里的要求，决定后再办理。",
+      "substitute_quest_return": "已经接下的委托，照任务册里的进度继续就好。下一步和所需条件都记在那里。"
+    },
+    "acceptance": [
+      {
+        "id": "DIALOGUE-Q236-01",
+        "criterion": "16岗位代班接续已示、没有相关已接未完成或合格待接委托时，点击交谈各播本岗位substitute_idle一行；再点可再播，speaker为对应机构当班接续员，不重播两句接续说明。"
+      },
+      {
+        "id": "DIALOGUE-Q236-02",
+        "criterion": "无实际接取/回报对白且有合格的事项待接委托时播待接句；没有此类待接但有已接未完成公共委托时播进度句；两者都有优先待接。隐藏/未实装/无资格的未接任务和完成任务不误触发，六人邀约不代说。"
+      },
+      {
+        "id": "DIALOGUE-Q236-03",
+        "criterion": "本次有实际EXQ接取或一项/多项回报时，仍按Q235及原规则播专属句，不尾随兜底闲谈；不多接一项、不多提交工作或授奖；本人在岗不切换成本题代班句。"
+      },
+      {
+        "id": "DIALOGUE-Q236-04",
+        "criterion": "合法反复交谈、历史回看和读档后再交谈均0分钟0资源、身体/任务/知识/配额/奖励无新增变化；非法状态维持原禁用理由，不吞首次接续；升级不截断已打开旧队列，不替Q237/Q238作结论。"
+      }
+    ]
+  }
 }

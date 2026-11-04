@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-04",
+  "status": "passed",
+  "authoredIdleLines": 16,
+  "sharedLines": 2,
+  "generatedDialogueGroups": 48,
+  "checks": [
+    "JSON解析与索引/嵌套镜像一致",
+    "16岗位48状态引用完整且对白组/行ID唯一",
+    "真实机构speaker与普通闲谈不受一次限制",
+    "原实现同步/完整修改记录原样保留",
+    "02仅改Q236答复，Q237/Q238待定原样保留",
+    "十二类上传前自查与四项验收"
+  ],
+  "gameplayTested": false
+}
