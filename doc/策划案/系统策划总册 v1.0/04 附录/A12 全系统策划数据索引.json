@@ -51613,7 +51613,7 @@
           {
             "lineId": "NTL_0174",
             "speaker": "hub_survivor_duty_staff",
-            "text": "本岗由我接续值守登记员的工作。我管营门登记与公开通行，不收效忠誓言。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续营门值守工作。营门登记与公开通行仍按原规则办理，不要求效忠誓言。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0175",
@@ -51632,7 +51632,8 @@
         "serviceRefs": [
           "hub_registration_existing"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "营门值守岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_xu_an_dialogue_first_greeting",
@@ -51837,7 +51838,7 @@
           {
             "lineId": "NTL_0183",
             "speaker": "hub_survivor_duty_staff",
-            "text": "本岗由我接续公事务协调员的工作。我把公共事务和路线记录放在同一份告示里；各处服务还是要到当地办。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续公共事务工作。公共事务和路线记录仍在原告示里，各处服务仍须到当地办理。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0184",
@@ -51858,7 +51859,8 @@
         "serviceRefs": [
           "hub_affairs_record"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "营区公事务岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_luo_zheng_dialogue_first_greeting",
@@ -52077,7 +52079,7 @@
           {
             "lineId": "NTL_0192",
             "speaker": "hub_survivor_duty_staff",
-            "text": "本岗由我接续工务领班的工作。我管公共工坊和工务记录。会不会做，得看你自己的知识、材料和设施。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续工务工作。公共工坊和工务记录照常使用，能否制作仍取决于你的知识、材料和设施。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0193",
@@ -52100,7 +52102,8 @@
           "hub_workshop_access",
           "copy_public_knowledge"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "营区工务岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_chen_zhi_dialogue_first_greeting",
@@ -52312,7 +52315,7 @@
           {
             "lineId": "NTL_0201",
             "speaker": "hub_survivor_duty_staff",
-            "text": "本岗由我接续值班医师的工作。这里先分清咨询、包扎与休息。看记录不等于治好了，伤情也不能只凭一句感觉判断。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续医务工作。咨询、包扎与休息仍分别办理，查看记录不等于完成治疗。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0202",
@@ -52334,7 +52337,8 @@
           "clinic_dressing",
           "clinic_observation_rest"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "营区医务岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_tao_cen_dialogue_first_greeting",
@@ -52532,7 +52536,7 @@
           {
             "lineId": "NTL_0210",
             "speaker": "hub_survivor_duty_staff",
-            "text": "本岗由我接续样本鉴定师的工作。我分辨能确认的原料性质和来源；融合结果不是看到颜色就能保证的东西。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续鉴定工作。原料性质和来源只按能确认的结果说明，不凭颜色保证融合结果。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0211",
@@ -52552,7 +52556,8 @@
         "serviceRefs": [
           "appraisal_white_v1"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "营区鉴定岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_du_sui_dialogue_first_greeting",
@@ -52750,7 +52755,7 @@
           {
             "lineId": "NTL_0219",
             "speaker": "hub_survivor_duty_staff",
-            "text": "本岗由我接续安置登记员的工作。我管同行意愿、候选资料和安置登记；人不是跟着一张床一起归你所有。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续安置登记工作。同行意愿、候选资料和安置仍按原规则登记，安置不等于替对方同意同行。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0220",
@@ -52770,7 +52775,8 @@
         "serviceRefs": [
           "shelter_recruitment"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "收容安置岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_qi_wen_dialogue_first_greeting",
@@ -52961,7 +52967,7 @@
           {
             "lineId": "NTL_0228",
             "speaker": "faction_church_duty_staff",
-            "text": "本岗由我接续外来者接待者的工作。我接外来者的公开委托，也转达教会的邀请。接受委托不必等于接受教义。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续教会接待工作。公开委托和教会邀请仍按原规则办理，接受委托不等于接受教义。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0229",
@@ -52980,7 +52986,8 @@
         "serviceRefs": [
           "church_reception_existing"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "教会接待岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_bai_ling_dialogue_first_greeting",
@@ -53171,7 +53178,7 @@
           {
             "lineId": "NTL_0237",
             "speaker": "faction_church_duty_staff",
-            "text": "本岗由我接续施济员的工作。我核对施济账，也按规则办紧急援助。物资有限，不能靠换个领用人再算一次。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续施济工作。施济账和紧急援助仍按原规则核对，不能因为换了当班人就多领一份。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0238",
@@ -53190,7 +53197,8 @@
         "serviceRefs": [
           "church_relief_ration"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "教会施济岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_ji_mu_dialogue_first_greeting",
@@ -53381,7 +53389,7 @@
           {
             "lineId": "NTL_0246",
             "speaker": "faction_church_duty_staff",
-            "text": "本岗由我接续训诫执事的工作。我处理训诫堂的公开协商，不掌管你身体里的任何东西。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续训诫堂的公开协商工作。协商仍按原规则办理，不会因此获得处置你身体的许可。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0247",
@@ -53400,7 +53408,8 @@
         "serviceRefs": [
           "church_public_mediation"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "教会训诫岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_song_zhu_dialogue_first_greeting",
@@ -53598,7 +53607,7 @@
           {
             "lineId": "NTL_0255",
             "speaker": "faction_church_duty_staff",
-            "text": "本岗由我接续誊录员的工作。我管公开路线与证言的抄录。证言里的解释不等于路线本身。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续誊录工作。公开路线和证言仍按原规则抄录，证言中的解释不等于路线本身。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0256",
@@ -53618,7 +53627,8 @@
         "serviceRefs": [
           "church_archive_copy"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "教会誊录岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_fu_heng_dialogue_first_greeting",
@@ -53795,7 +53805,7 @@
           {
             "lineId": "NTL_0264",
             "speaker": "faction_church_duty_staff",
-            "text": "本岗由我接续主持者的工作。我主持圣堂，也希望人们接受共同的解释。希望不是替你作主的许可。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续圣堂的当班事务。安静休息仍按原规则办理，是否接受教义由你自己决定。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0265",
@@ -53812,7 +53822,8 @@
         "serviceRefs": [
           "church_quiet_rest"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "圣堂主持岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_wen_cheng_dialogue_first_greeting",
@@ -54003,7 +54014,7 @@
           {
             "lineId": "NTL_0273",
             "speaker": "faction_academy_duty_staff",
-            "text": "本岗由我接续协调员的工作。我协调来访和公开路线。各组意见不总一致，但谁也不能替你同意身体试验。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续科学院接待工作。来访和公开路线仍按原规则协调，任何人都不能替你同意身体试验。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0274",
@@ -54022,7 +54033,8 @@
         "serviceRefs": [
           "academy_reception_existing"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "科学院接待岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_ji_wen_dialogue_first_greeting",
@@ -54220,7 +54232,7 @@
           {
             "lineId": "NTL_0282",
             "speaker": "faction_academy_duty_staff",
-            "text": "本岗由我接续检测研究员的工作。我负责检测说明与现有记录观察。没有明确同意，不进行额外取样或身体操作。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续检测说明与记录观察工作。没有你的明确同意，不进行额外取样或身体操作。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0283",
@@ -54240,7 +54252,8 @@
         "serviceRefs": [
           "academy_noninvasive_observation"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "科学院检测岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_shao_ning_dialogue_first_greeting",
@@ -54431,7 +54444,7 @@
           {
             "lineId": "NTL_0291",
             "speaker": "faction_academy_duty_staff",
-            "text": "本岗由我接续档案员的工作。我比对档案，区分哪句话有记录支撑，哪句话只是作者的解释。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续档案比对工作。记录能够证实的内容和作者自己的解释，仍须分别核对。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0292",
@@ -54450,7 +54463,8 @@
         "serviceRefs": [
           "academy_report_compare"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "科学院档案岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_he_yuan_dialogue_first_greeting",
@@ -54641,7 +54655,7 @@
           {
             "lineId": "NTL_0300",
             "speaker": "faction_academy_duty_staff",
-            "text": "本岗由我接续设备技师的工作。我管现有工坊的设备与公开操作信息，不把门口说明当成一套新配方。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续设备与公开操作信息的说明工作。工坊仍按原条件使用，门口的说明不会直接变成新配方。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0301",
@@ -54660,7 +54674,8 @@
         "serviceRefs": [
           "academy_workshop_access"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "科学院设备岗：岗位接续"
       },
       {
         "dialogueSetId": "npc_yin_ke_dialogue_first_greeting",
@@ -54851,7 +54866,7 @@
           {
             "lineId": "NTL_0309",
             "speaker": "faction_academy_duty_staff",
-            "text": "本岗由我接续观察区负责人的工作。我管观察区的边界与已有观察记录。只读、退出和拒绝试验都必须被尊重。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
+            "text": "这里由我代班接续观察区的当班事务。区域边界和已有观察记录仍按原规则处理，只读、退出和拒绝试验的选择都保留。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。"
           },
           {
             "lineId": "NTL_0310",
@@ -54870,7 +54885,8 @@
         "serviceRefs": [
           "academy_observation_record"
         ],
-        "sameClaimAndQuota": true
+        "sameClaimAndQuota": true,
+        "title": "科学院观察岗：岗位接续"
       },
       {
         "dialogueSetId": "gate_h01_registration",
@@ -59410,7 +59426,284 @@
           "criterion": "已示代班、原无钩子的鉴定成功、岗位不存在/非原地点/主角死亡不新建补播；对白与回看0分钟0结算，48组标题和既有服务/任务奖励账保持。"
         }
       ]
-    }
+    },
+    "substituteIntroductionQ244Q245": {
+      "version": "q244_q245_20261105",
+      "date": "2026-11-05",
+      "status": "策划定稿，待开发实装与验证",
+      "answers": {
+        "Q244": "选A。16组institution_substitute接续说明的对话记录标题统一为“{岗位名}：岗位接续”，岗位名沿用Q239的16岗位映射，组ID到title的完整绑定见A11/N01与Q244—Q245数据。实际发言人、对白及触发不因本题改变；只改可信组ID解析出的标题，不新增历史、不吞首次、不重播。",
+        "Q245": "选A，由总控重写16组正式接续说明。去掉原命名人物的第一人称自我介绍，改为代班身份、原岗位事务边界及原登记/领取额度/任务进度沿用的说明；16句定稿及原系统第二句见A11/N01与Q244—Q245数据。保留原组ID、台词ID和speaker，不改触发、权限、一次标记与事务效果；已展示历史正文保留，未展示台词用新稿，不补播。"
+      },
+      "canonicalNarrativeFile": "assets/20261030/narrative-map/narrative-texts.json",
+      "policy": {
+        "scope": "Q244补足Q239未覆盖的16组institution_substitute标题，不改变Q239的48组代班闲谈/事项提示/进度提醒。Q245以本合同16句取代A11“2026-10-30 Q32B 首期完整叙事定稿→三城16岗位逐字文字”中16组institution_substitute的旧第一句及narrative-texts同组同lineId文本；Q239旧scope所说介绍不改仅限当时Q239范围，本次介绍标题/首句由Q244/Q245补足。本人在岗自我介绍、其他组、任务及招募台词保持。",
+        "binding": "按稳定npcId的institution_substitute组ID绑定title与第一句lineId，岗位名沿用Q239的postName；不按显示名、句子或机构通用speaker猜岗位。保留组ID、两句顺序、原lineId、机构当班接续员speaker和原system第二句，不新增人物或对白状态。16个标题与16句均为逐字定稿。",
+        "titleDisplay": "仅已实际生成且按原规则可看的对话记录显示岗位标题，含列表、阅读区、已有#序号重播及读档后回看。其他原本显示该组名的引用处统一title，不要求为本来没有组标题的对白框新加一行。相同机构的不同岗位分开，不预生成未见记录，不泄露未到访地点和任务。",
+        "textDisplay": "代班第一句说明由当班接续员接续本岗事务，岗位职责按原边界描述，不沿用本人自我介绍或宣称原人物身份；第二句仍为原中性系统说明。提及的事项仅解释既有职责，不新增服务、解锁条件、任务、配方或业务权限；实际开放与合法条件仍沿原规则。",
+        "timing": "仅更新标题和逐字文案，0世界分钟、0AP、0物资，无随机或自动行动。保留Q235每本局/岗位/稳定代班身份自动一次、实际开始展示才记已示，Q236主动闲谈分支与重复、Q237服务收尾、Q238本人首次隔离、Q240日志原句、Q241待接范围、Q242事项接取同效和Q243可信待补播/离开取消规则。不得因文案或标题变更新增入口、排队、已示记录或补播；事务日志、任务/知识/经验/配额/奖励均保持。",
+        "historyAndSave": "已实际显示的台词正文、speaker、时间、地点及游标是S01既有历史快照，原文保留，回看不倒改。可信组ID（含#重播后缀）的历史标题按新title解析，不改历史事件本身；无可信组ID仍用原有通用“对话”或“旧存档记录”兜底，不按台词猜组，不补造记录。此为文案/标题修订，不要求升存档版本或新迁移日志，不清已示/本人首次/待补播状态、不补历史效果。",
+        "inProgress": "尚未首次展示的台词（含已排队或Q243可信待补播）到原合法展示边界时读取新稿；已显示的当前句保留原快照，原队列和当前游标继续，不重启或重复该句。若首句已显示而系统第二句未显示，第二句照原稿继续；已示身份不因升级再介绍。安全锁、离开原地点或换身份等仍完全依原规则，不为换文案忽略锁或恢复已取消的自动资格。",
+        "protectedRecords": "本合同取代的仅是旧介绍标题默认人物名前缀及16句旧第一句。A11/N01/S14等文中的【实现同步】和完整“修改记录”保留，记录的是开发当时实现；不把本次策划交付写成开发已实装或实机验证通过。"
+      },
+      "groups": [
+        {
+          "npcId": "npc_lu_heng",
+          "postName": "营门值守岗",
+          "locationId": "h01_gate",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_lu_heng_dialogue_institution_substitute",
+          "title": "营门值守岗：岗位接续",
+          "lineId": "NTL_0174",
+          "speaker": "hub_survivor_duty_staff",
+          "text": "这里由我代班接续营门值守工作。营门登记与公开通行仍按原规则办理，不要求效忠誓言。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0175",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_xu_an",
+          "postName": "营区公事务岗",
+          "locationId": "h02_square",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_xu_an_dialogue_institution_substitute",
+          "title": "营区公事务岗：岗位接续",
+          "lineId": "NTL_0183",
+          "speaker": "hub_survivor_duty_staff",
+          "text": "这里由我代班接续公共事务工作。公共事务和路线记录仍在原告示里，各处服务仍须到当地办理。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0184",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_luo_zheng",
+          "postName": "营区工务岗",
+          "locationId": "h03_workshop",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_luo_zheng_dialogue_institution_substitute",
+          "title": "营区工务岗：岗位接续",
+          "lineId": "NTL_0192",
+          "speaker": "hub_survivor_duty_staff",
+          "text": "这里由我代班接续工务工作。公共工坊和工务记录照常使用，能否制作仍取决于你的知识、材料和设施。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0193",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_chen_zhi",
+          "postName": "营区医务岗",
+          "locationId": "h04_infirmary",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_chen_zhi_dialogue_institution_substitute",
+          "title": "营区医务岗：岗位接续",
+          "lineId": "NTL_0201",
+          "speaker": "hub_survivor_duty_staff",
+          "text": "这里由我代班接续医务工作。咨询、包扎与休息仍分别办理，查看记录不等于完成治疗。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0202",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_tao_cen",
+          "postName": "营区鉴定岗",
+          "locationId": "h05_appraisal",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_tao_cen_dialogue_institution_substitute",
+          "title": "营区鉴定岗：岗位接续",
+          "lineId": "NTL_0210",
+          "speaker": "hub_survivor_duty_staff",
+          "text": "这里由我代班接续鉴定工作。原料性质和来源只按能确认的结果说明，不凭颜色保证融合结果。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0211",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_du_sui",
+          "postName": "收容安置岗",
+          "locationId": "h06_shelter",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_du_sui_dialogue_institution_substitute",
+          "title": "收容安置岗：岗位接续",
+          "lineId": "NTL_0219",
+          "speaker": "hub_survivor_duty_staff",
+          "text": "这里由我代班接续安置登记工作。同行意愿、候选资料和安置仍按原规则登记，安置不等于替对方同意同行。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0220",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_qi_wen",
+          "postName": "教会接待岗",
+          "locationId": "c02_church",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_qi_wen_dialogue_institution_substitute",
+          "title": "教会接待岗：岗位接续",
+          "lineId": "NTL_0228",
+          "speaker": "faction_church_duty_staff",
+          "text": "这里由我代班接续教会接待工作。公开委托和教会邀请仍按原规则办理，接受委托不等于接受教义。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0229",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_bai_ling",
+          "postName": "教会施济岗",
+          "locationId": "c04_alms",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_bai_ling_dialogue_institution_substitute",
+          "title": "教会施济岗：岗位接续",
+          "lineId": "NTL_0237",
+          "speaker": "faction_church_duty_staff",
+          "text": "这里由我代班接续施济工作。施济账和紧急援助仍按原规则核对，不能因为换了当班人就多领一份。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0238",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_ji_mu",
+          "postName": "教会训诫岗",
+          "locationId": "c05_admonition",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_ji_mu_dialogue_institution_substitute",
+          "title": "教会训诫岗：岗位接续",
+          "lineId": "NTL_0246",
+          "speaker": "faction_church_duty_staff",
+          "text": "这里由我代班接续训诫堂的公开协商工作。协商仍按原规则办理，不会因此获得处置你身体的许可。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0247",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_song_zhu",
+          "postName": "教会誊录岗",
+          "locationId": "c06_archive",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_song_zhu_dialogue_institution_substitute",
+          "title": "教会誊录岗：岗位接续",
+          "lineId": "NTL_0255",
+          "speaker": "faction_church_duty_staff",
+          "text": "这里由我代班接续誊录工作。公开路线和证言仍按原规则抄录，证言中的解释不等于路线本身。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0256",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_fu_heng",
+          "postName": "圣堂主持岗",
+          "locationId": "c07_sanctuary",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_fu_heng_dialogue_institution_substitute",
+          "title": "圣堂主持岗：岗位接续",
+          "lineId": "NTL_0264",
+          "speaker": "faction_church_duty_staff",
+          "text": "这里由我代班接续圣堂的当班事务。安静休息仍按原规则办理，是否接受教义由你自己决定。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0265",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_wen_cheng",
+          "postName": "科学院接待岗",
+          "locationId": "r04_reception",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_wen_cheng_dialogue_institution_substitute",
+          "title": "科学院接待岗：岗位接续",
+          "lineId": "NTL_0273",
+          "speaker": "faction_academy_duty_staff",
+          "text": "这里由我代班接续科学院接待工作。来访和公开路线仍按原规则协调，任何人都不能替你同意身体试验。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0274",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_ji_wen",
+          "postName": "科学院检测岗",
+          "locationId": "r05_testing",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_ji_wen_dialogue_institution_substitute",
+          "title": "科学院检测岗：岗位接续",
+          "lineId": "NTL_0282",
+          "speaker": "faction_academy_duty_staff",
+          "text": "这里由我代班接续检测说明与记录观察工作。没有你的明确同意，不进行额外取样或身体操作。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0283",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_shao_ning",
+          "postName": "科学院档案岗",
+          "locationId": "r06_archive",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_shao_ning_dialogue_institution_substitute",
+          "title": "科学院档案岗：岗位接续",
+          "lineId": "NTL_0291",
+          "speaker": "faction_academy_duty_staff",
+          "text": "这里由我代班接续档案比对工作。记录能够证实的内容和作者自己的解释，仍须分别核对。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0292",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_he_yuan",
+          "postName": "科学院设备岗",
+          "locationId": "r07_workshop",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_he_yuan_dialogue_institution_substitute",
+          "title": "科学院设备岗：岗位接续",
+          "lineId": "NTL_0300",
+          "speaker": "faction_academy_duty_staff",
+          "text": "这里由我代班接续设备与公开操作信息的说明工作。工坊仍按原条件使用，门口的说明不会直接变成新配方。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0301",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        },
+        {
+          "npcId": "npc_yin_ke",
+          "postName": "科学院观察岗",
+          "locationId": "r08_observation",
+          "state": "institution_substitute",
+          "dialogueSetId": "npc_yin_ke_dialogue_institution_substitute",
+          "title": "科学院观察岗：岗位接续",
+          "lineId": "NTL_0309",
+          "speaker": "faction_academy_duty_staff",
+          "text": "这里由我代班接续观察区的当班事务。区域边界和已有观察记录仍按原规则处理，只读、退出和拒绝试验的选择都保留。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+          "systemLineId": "NTL_0310",
+          "systemSpeaker": "system",
+          "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+        }
+      ],
+      "acceptance": [
+        {
+          "id": "DIALOGUE-Q244-01",
+          "criterion": "16个岗位的接续说明实际产生记录后，列表及阅读区标题逐项等于本合同16组title，均为岗位名加“：岗位接续”；发言人仍是对应机构接续员，本人及Q239的48组标题保持。"
+        },
+        {
+          "id": "DIALOGUE-Q244-02",
+          "criterion": "可信旧组ID及#序号记录读档/回看采用新岗位标题，原正文/speaker/时间/地点不变；无可信ID维持原通用兜底，不猜组、不预生成记录。"
+        },
+        {
+          "id": "DIALOGUE-Q244-03",
+          "criterion": "仅改名或查看历史不走世界时间、不改物资/AP/任务/配额/奖励，不清代班已示、不设本人首次、不自动重播；同机构不同岗位按稳定组ID独立。"
+        },
+        {
+          "id": "DIALOGUE-Q245-01",
+          "criterion": "16岗位首次合法显示接续说明时，第一句lineId/speaker不变且正文逐字等于本合同；第二句仍是原system/lineId/正文，顺序和两句数量不变，不播原人物的自我介绍。"
+        },
+        {
+          "id": "DIALOGUE-Q245-02",
+          "criterion": "本人回岗自我介绍、其他对白组及原服务/事项权限保持；代班说明不能新增知识、任务进度、领取次数或身体恢复，事务原效果不重结算。"
+        },
+        {
+          "id": "DIALOGUE-Q245-03",
+          "criterion": "已有已展示的旧第一句读档及历史回看保留原文，不清已示也不补播；未展示的排队句首次显示用新稿，当前已展示句不重启，原system第二句继续。"
+        },
+        {
+          "id": "DIALOGUE-Q245-04",
+          "criterion": "Q243可信待补播未显示时，安全释放且仍原地点同身份才自动按新稿显示一次；离开/回岗/换身份按原规则取消，升级不恢复资格，跨入口不重复，旧无可信证据不补造。"
+        }
+      ]
+    },
+    "substituteIntroductionFileQ244Q245": "assets/20261105/substitute-introduction-adjudications.json"
   },
   "cityServices": {
     "version": "city_services_q141_q146_v2",
@@ -88105,5 +88398,282 @@
         "criterion": "已示代班、原无钩子的鉴定成功、岗位不存在/非原地点/主角死亡不新建补播；对白与回看0分钟0结算，48组标题和既有服务/任务奖励账保持。"
       }
     ]
-  }
+  },
+  "substituteIntroductionAdjudications": {
+    "version": "q244_q245_20261105",
+    "date": "2026-11-05",
+    "status": "策划定稿，待开发实装与验证",
+    "answers": {
+      "Q244": "选A。16组institution_substitute接续说明的对话记录标题统一为“{岗位名}：岗位接续”，岗位名沿用Q239的16岗位映射，组ID到title的完整绑定见A11/N01与Q244—Q245数据。实际发言人、对白及触发不因本题改变；只改可信组ID解析出的标题，不新增历史、不吞首次、不重播。",
+      "Q245": "选A，由总控重写16组正式接续说明。去掉原命名人物的第一人称自我介绍，改为代班身份、原岗位事务边界及原登记/领取额度/任务进度沿用的说明；16句定稿及原系统第二句见A11/N01与Q244—Q245数据。保留原组ID、台词ID和speaker，不改触发、权限、一次标记与事务效果；已展示历史正文保留，未展示台词用新稿，不补播。"
+    },
+    "canonicalNarrativeFile": "assets/20261030/narrative-map/narrative-texts.json",
+    "policy": {
+      "scope": "Q244补足Q239未覆盖的16组institution_substitute标题，不改变Q239的48组代班闲谈/事项提示/进度提醒。Q245以本合同16句取代A11“2026-10-30 Q32B 首期完整叙事定稿→三城16岗位逐字文字”中16组institution_substitute的旧第一句及narrative-texts同组同lineId文本；Q239旧scope所说介绍不改仅限当时Q239范围，本次介绍标题/首句由Q244/Q245补足。本人在岗自我介绍、其他组、任务及招募台词保持。",
+      "binding": "按稳定npcId的institution_substitute组ID绑定title与第一句lineId，岗位名沿用Q239的postName；不按显示名、句子或机构通用speaker猜岗位。保留组ID、两句顺序、原lineId、机构当班接续员speaker和原system第二句，不新增人物或对白状态。16个标题与16句均为逐字定稿。",
+      "titleDisplay": "仅已实际生成且按原规则可看的对话记录显示岗位标题，含列表、阅读区、已有#序号重播及读档后回看。其他原本显示该组名的引用处统一title，不要求为本来没有组标题的对白框新加一行。相同机构的不同岗位分开，不预生成未见记录，不泄露未到访地点和任务。",
+      "textDisplay": "代班第一句说明由当班接续员接续本岗事务，岗位职责按原边界描述，不沿用本人自我介绍或宣称原人物身份；第二句仍为原中性系统说明。提及的事项仅解释既有职责，不新增服务、解锁条件、任务、配方或业务权限；实际开放与合法条件仍沿原规则。",
+      "timing": "仅更新标题和逐字文案，0世界分钟、0AP、0物资，无随机或自动行动。保留Q235每本局/岗位/稳定代班身份自动一次、实际开始展示才记已示，Q236主动闲谈分支与重复、Q237服务收尾、Q238本人首次隔离、Q240日志原句、Q241待接范围、Q242事项接取同效和Q243可信待补播/离开取消规则。不得因文案或标题变更新增入口、排队、已示记录或补播；事务日志、任务/知识/经验/配额/奖励均保持。",
+      "historyAndSave": "已实际显示的台词正文、speaker、时间、地点及游标是S01既有历史快照，原文保留，回看不倒改。可信组ID（含#重播后缀）的历史标题按新title解析，不改历史事件本身；无可信组ID仍用原有通用“对话”或“旧存档记录”兜底，不按台词猜组，不补造记录。此为文案/标题修订，不要求升存档版本或新迁移日志，不清已示/本人首次/待补播状态、不补历史效果。",
+      "inProgress": "尚未首次展示的台词（含已排队或Q243可信待补播）到原合法展示边界时读取新稿；已显示的当前句保留原快照，原队列和当前游标继续，不重启或重复该句。若首句已显示而系统第二句未显示，第二句照原稿继续；已示身份不因升级再介绍。安全锁、离开原地点或换身份等仍完全依原规则，不为换文案忽略锁或恢复已取消的自动资格。",
+      "protectedRecords": "本合同取代的仅是旧介绍标题默认人物名前缀及16句旧第一句。A11/N01/S14等文中的【实现同步】和完整“修改记录”保留，记录的是开发当时实现；不把本次策划交付写成开发已实装或实机验证通过。"
+    },
+    "groups": [
+      {
+        "npcId": "npc_lu_heng",
+        "postName": "营门值守岗",
+        "locationId": "h01_gate",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_lu_heng_dialogue_institution_substitute",
+        "title": "营门值守岗：岗位接续",
+        "lineId": "NTL_0174",
+        "speaker": "hub_survivor_duty_staff",
+        "text": "这里由我代班接续营门值守工作。营门登记与公开通行仍按原规则办理，不要求效忠誓言。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0175",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_xu_an",
+        "postName": "营区公事务岗",
+        "locationId": "h02_square",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_xu_an_dialogue_institution_substitute",
+        "title": "营区公事务岗：岗位接续",
+        "lineId": "NTL_0183",
+        "speaker": "hub_survivor_duty_staff",
+        "text": "这里由我代班接续公共事务工作。公共事务和路线记录仍在原告示里，各处服务仍须到当地办理。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0184",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_luo_zheng",
+        "postName": "营区工务岗",
+        "locationId": "h03_workshop",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_luo_zheng_dialogue_institution_substitute",
+        "title": "营区工务岗：岗位接续",
+        "lineId": "NTL_0192",
+        "speaker": "hub_survivor_duty_staff",
+        "text": "这里由我代班接续工务工作。公共工坊和工务记录照常使用，能否制作仍取决于你的知识、材料和设施。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0193",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_chen_zhi",
+        "postName": "营区医务岗",
+        "locationId": "h04_infirmary",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_chen_zhi_dialogue_institution_substitute",
+        "title": "营区医务岗：岗位接续",
+        "lineId": "NTL_0201",
+        "speaker": "hub_survivor_duty_staff",
+        "text": "这里由我代班接续医务工作。咨询、包扎与休息仍分别办理，查看记录不等于完成治疗。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0202",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_tao_cen",
+        "postName": "营区鉴定岗",
+        "locationId": "h05_appraisal",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_tao_cen_dialogue_institution_substitute",
+        "title": "营区鉴定岗：岗位接续",
+        "lineId": "NTL_0210",
+        "speaker": "hub_survivor_duty_staff",
+        "text": "这里由我代班接续鉴定工作。原料性质和来源只按能确认的结果说明，不凭颜色保证融合结果。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0211",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_du_sui",
+        "postName": "收容安置岗",
+        "locationId": "h06_shelter",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_du_sui_dialogue_institution_substitute",
+        "title": "收容安置岗：岗位接续",
+        "lineId": "NTL_0219",
+        "speaker": "hub_survivor_duty_staff",
+        "text": "这里由我代班接续安置登记工作。同行意愿、候选资料和安置仍按原规则登记，安置不等于替对方同意同行。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0220",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_qi_wen",
+        "postName": "教会接待岗",
+        "locationId": "c02_church",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_qi_wen_dialogue_institution_substitute",
+        "title": "教会接待岗：岗位接续",
+        "lineId": "NTL_0228",
+        "speaker": "faction_church_duty_staff",
+        "text": "这里由我代班接续教会接待工作。公开委托和教会邀请仍按原规则办理，接受委托不等于接受教义。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0229",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_bai_ling",
+        "postName": "教会施济岗",
+        "locationId": "c04_alms",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_bai_ling_dialogue_institution_substitute",
+        "title": "教会施济岗：岗位接续",
+        "lineId": "NTL_0237",
+        "speaker": "faction_church_duty_staff",
+        "text": "这里由我代班接续施济工作。施济账和紧急援助仍按原规则核对，不能因为换了当班人就多领一份。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0238",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_ji_mu",
+        "postName": "教会训诫岗",
+        "locationId": "c05_admonition",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_ji_mu_dialogue_institution_substitute",
+        "title": "教会训诫岗：岗位接续",
+        "lineId": "NTL_0246",
+        "speaker": "faction_church_duty_staff",
+        "text": "这里由我代班接续训诫堂的公开协商工作。协商仍按原规则办理，不会因此获得处置你身体的许可。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0247",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_song_zhu",
+        "postName": "教会誊录岗",
+        "locationId": "c06_archive",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_song_zhu_dialogue_institution_substitute",
+        "title": "教会誊录岗：岗位接续",
+        "lineId": "NTL_0255",
+        "speaker": "faction_church_duty_staff",
+        "text": "这里由我代班接续誊录工作。公开路线和证言仍按原规则抄录，证言中的解释不等于路线本身。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0256",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_fu_heng",
+        "postName": "圣堂主持岗",
+        "locationId": "c07_sanctuary",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_fu_heng_dialogue_institution_substitute",
+        "title": "圣堂主持岗：岗位接续",
+        "lineId": "NTL_0264",
+        "speaker": "faction_church_duty_staff",
+        "text": "这里由我代班接续圣堂的当班事务。安静休息仍按原规则办理，是否接受教义由你自己决定。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0265",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_wen_cheng",
+        "postName": "科学院接待岗",
+        "locationId": "r04_reception",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_wen_cheng_dialogue_institution_substitute",
+        "title": "科学院接待岗：岗位接续",
+        "lineId": "NTL_0273",
+        "speaker": "faction_academy_duty_staff",
+        "text": "这里由我代班接续科学院接待工作。来访和公开路线仍按原规则协调，任何人都不能替你同意身体试验。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0274",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_ji_wen",
+        "postName": "科学院检测岗",
+        "locationId": "r05_testing",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_ji_wen_dialogue_institution_substitute",
+        "title": "科学院检测岗：岗位接续",
+        "lineId": "NTL_0282",
+        "speaker": "faction_academy_duty_staff",
+        "text": "这里由我代班接续检测说明与记录观察工作。没有你的明确同意，不进行额外取样或身体操作。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0283",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_shao_ning",
+        "postName": "科学院档案岗",
+        "locationId": "r06_archive",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_shao_ning_dialogue_institution_substitute",
+        "title": "科学院档案岗：岗位接续",
+        "lineId": "NTL_0291",
+        "speaker": "faction_academy_duty_staff",
+        "text": "这里由我代班接续档案比对工作。记录能够证实的内容和作者自己的解释，仍须分别核对。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0292",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_he_yuan",
+        "postName": "科学院设备岗",
+        "locationId": "r07_workshop",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_he_yuan_dialogue_institution_substitute",
+        "title": "科学院设备岗：岗位接续",
+        "lineId": "NTL_0300",
+        "speaker": "faction_academy_duty_staff",
+        "text": "这里由我代班接续设备与公开操作信息的说明工作。工坊仍按原条件使用，门口的说明不会直接变成新配方。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0301",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      },
+      {
+        "npcId": "npc_yin_ke",
+        "postName": "科学院观察岗",
+        "locationId": "r08_observation",
+        "state": "institution_substitute",
+        "dialogueSetId": "npc_yin_ke_dialogue_institution_substitute",
+        "title": "科学院观察岗：岗位接续",
+        "lineId": "NTL_0309",
+        "speaker": "faction_academy_duty_staff",
+        "text": "这里由我代班接续观察区的当班事务。区域边界和已有观察记录仍按原规则处理，只读、退出和拒绝试验的选择都保留。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "systemLineId": "NTL_0310",
+        "systemSpeaker": "system",
+        "systemText": "当前为岗位接续，不是原命名人物复活；未完成条件不因代班自动满足。"
+      }
+    ],
+    "acceptance": [
+      {
+        "id": "DIALOGUE-Q244-01",
+        "criterion": "16个岗位的接续说明实际产生记录后，列表及阅读区标题逐项等于本合同16组title，均为岗位名加“：岗位接续”；发言人仍是对应机构接续员，本人及Q239的48组标题保持。"
+      },
+      {
+        "id": "DIALOGUE-Q244-02",
+        "criterion": "可信旧组ID及#序号记录读档/回看采用新岗位标题，原正文/speaker/时间/地点不变；无可信ID维持原通用兜底，不猜组、不预生成记录。"
+      },
+      {
+        "id": "DIALOGUE-Q244-03",
+        "criterion": "仅改名或查看历史不走世界时间、不改物资/AP/任务/配额/奖励，不清代班已示、不设本人首次、不自动重播；同机构不同岗位按稳定组ID独立。"
+      },
+      {
+        "id": "DIALOGUE-Q245-01",
+        "criterion": "16岗位首次合法显示接续说明时，第一句lineId/speaker不变且正文逐字等于本合同；第二句仍是原system/lineId/正文，顺序和两句数量不变，不播原人物的自我介绍。"
+      },
+      {
+        "id": "DIALOGUE-Q245-02",
+        "criterion": "本人回岗自我介绍、其他对白组及原服务/事项权限保持；代班说明不能新增知识、任务进度、领取次数或身体恢复，事务原效果不重结算。"
+      },
+      {
+        "id": "DIALOGUE-Q245-03",
+        "criterion": "已有已展示的旧第一句读档及历史回看保留原文，不清已示也不补播；未展示的排队句首次显示用新稿，当前已展示句不重启，原system第二句继续。"
+      },
+      {
+        "id": "DIALOGUE-Q245-04",
+        "criterion": "Q243可信待补播未显示时，安全释放且仍原地点同身份才自动按新稿显示一次；离开/回岗/换身份按原规则取消，升级不恢复资格，跨入口不重复，旧无可信证据不补造。"
+      }
+    ]
+  },
+  "substituteIntroductionAdjudicationsFile": "assets/20261105/substitute-introduction-adjudications.json"
 }
