@@ -1,0 +1,492 @@
+{
+  "date": "2026-11-05",
+  "status": "passed",
+  "scope": "策划文本/图片/数据镜像及独立HTML示例流程，不含游戏实机或引擎验收",
+  "browser": "156.0.4314.58",
+  "baseCommit": "6b9cd812bdbda2f626ea512ce0641616c868d883",
+  "pendingQuestions": 0,
+  "imagesVerified": 4,
+  "linksVerified": 50,
+  "protectedImplementationAndHistory": true,
+  "questionEditsOnlyAnswerFields": true,
+  "qAnswers": {
+    "Q252": "A",
+    "Q253": "A",
+    "Q254": "B",
+    "Q255": "A",
+    "Q256": "A",
+    "Q257": "B"
+  },
+  "qCopyTemplates": 17,
+  "qKnowledgeRecipeIds": 23,
+  "qMirrors": 4,
+  "browserErrors": [],
+  "layoutCases": [
+    {
+      "flow": "F01",
+      "size": [
+        1280,
+        720
+      ],
+      "rows": [
+        151.5,
+        151.5,
+        151.5,
+        151.5
+      ],
+      "rootPlaces": 5,
+      "slots": 0,
+      "units": 0,
+      "skills": 0,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [],
+      "workButtons": [
+        41,
+        41,
+        40
+      ]
+    },
+    {
+      "flow": "F03",
+      "size": [
+        1280,
+        720
+      ],
+      "rows": [],
+      "rootPlaces": 5,
+      "slots": 7,
+      "units": 0,
+      "skills": 0,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [],
+      "workButtons": []
+    },
+    {
+      "flow": "F06",
+      "size": [
+        1280,
+        720
+      ],
+      "rows": [],
+      "rootPlaces": 0,
+      "slots": 0,
+      "units": 8,
+      "skills": 5,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [],
+      "workButtons": []
+    },
+    {
+      "flow": "F08",
+      "size": [
+        1280,
+        720
+      ],
+      "rows": [
+        151.5,
+        151.5,
+        151.5,
+        151.5
+      ],
+      "rootPlaces": 5,
+      "slots": 0,
+      "units": 0,
+      "skills": 0,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [
+        {
+          "width": 840,
+          "height": 467,
+          "within": true
+        }
+      ],
+      "workButtons": [
+        41,
+        41,
+        40
+      ]
+    },
+    {
+      "flow": "F09",
+      "size": [
+        1280,
+        720
+      ],
+      "rows": [
+        151.5,
+        151.5,
+        151.5,
+        151.5
+      ],
+      "rootPlaces": 5,
+      "slots": 0,
+      "units": 0,
+      "skills": 0,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [
+        {
+          "width": 840,
+          "height": 467,
+          "within": true
+        }
+      ],
+      "workButtons": [
+        41,
+        41,
+        40
+      ]
+    },
+    {
+      "flow": "F01",
+      "size": [
+        1600,
+        900
+      ],
+      "rows": [
+        194,
+        194,
+        194,
+        194
+      ],
+      "rootPlaces": 5,
+      "slots": 0,
+      "units": 0,
+      "skills": 0,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [],
+      "workButtons": [
+        62,
+        62,
+        40
+      ]
+    },
+    {
+      "flow": "F03",
+      "size": [
+        1600,
+        900
+      ],
+      "rows": [],
+      "rootPlaces": 5,
+      "slots": 7,
+      "units": 0,
+      "skills": 0,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [],
+      "workButtons": []
+    },
+    {
+      "flow": "F06",
+      "size": [
+        1600,
+        900
+      ],
+      "rows": [],
+      "rootPlaces": 0,
+      "slots": 0,
+      "units": 8,
+      "skills": 5,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [],
+      "workButtons": []
+    },
+    {
+      "flow": "F08",
+      "size": [
+        1600,
+        900
+      ],
+      "rows": [
+        194,
+        194,
+        194,
+        194
+      ],
+      "rootPlaces": 5,
+      "slots": 0,
+      "units": 0,
+      "skills": 0,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [
+        {
+          "width": 1068,
+          "height": 598,
+          "within": true
+        }
+      ],
+      "workButtons": [
+        62,
+        62,
+        40
+      ]
+    },
+    {
+      "flow": "F09",
+      "size": [
+        1600,
+        900
+      ],
+      "rows": [
+        194,
+        194,
+        194,
+        194
+      ],
+      "rootPlaces": 5,
+      "slots": 0,
+      "units": 0,
+      "skills": 0,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [
+        {
+          "width": 1068,
+          "height": 598,
+          "within": true
+        }
+      ],
+      "workButtons": [
+        62,
+        62,
+        40
+      ]
+    },
+    {
+      "flow": "F01",
+      "size": [
+        1920,
+        1080
+      ],
+      "rows": [
+        239,
+        239,
+        239,
+        239
+      ],
+      "rootPlaces": 5,
+      "slots": 0,
+      "units": 0,
+      "skills": 0,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [],
+      "workButtons": [
+        85,
+        85,
+        40
+      ]
+    },
+    {
+      "flow": "F03",
+      "size": [
+        1920,
+        1080
+      ],
+      "rows": [],
+      "rootPlaces": 5,
+      "slots": 7,
+      "units": 0,
+      "skills": 0,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [],
+      "workButtons": []
+    },
+    {
+      "flow": "F06",
+      "size": [
+        1920,
+        1080
+      ],
+      "rows": [],
+      "rootPlaces": 0,
+      "slots": 0,
+      "units": 8,
+      "skills": 5,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [],
+      "workButtons": []
+    },
+    {
+      "flow": "F08",
+      "size": [
+        1920,
+        1080
+      ],
+      "rows": [
+        239,
+        239,
+        239,
+        239
+      ],
+      "rootPlaces": 5,
+      "slots": 0,
+      "units": 0,
+      "skills": 0,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [
+        {
+          "width": 1352,
+          "height": 733,
+          "within": true
+        }
+      ],
+      "workButtons": [
+        85,
+        85,
+        40
+      ]
+    },
+    {
+      "flow": "F09",
+      "size": [
+        1920,
+        1080
+      ],
+      "rows": [
+        239,
+        239,
+        239,
+        239
+      ],
+      "rootPlaces": 5,
+      "slots": 0,
+      "units": 0,
+      "skills": 0,
+      "overflow": [
+        0,
+        0
+      ],
+      "navOverflow": false,
+      "overlay": [
+        {
+          "width": 1352,
+          "height": 733,
+          "within": true
+        }
+      ],
+      "workButtons": [
+        85,
+        85,
+        40
+      ]
+    }
+  ],
+  "interactiveFlows": [
+    {
+      "id": "F01",
+      "result": "查看/直接提交/结果/轨道稳定"
+    },
+    {
+      "id": "F02",
+      "result": "工位子对象与等待返回"
+    },
+    {
+      "id": "F03",
+      "result": "满包拒绝/明确放地/一次装备/切人清意图"
+    },
+    {
+      "id": "F04",
+      "result": "接收方满包拒绝/解除分支/双方数量更新"
+    },
+    {
+      "id": "F05",
+      "result": "先选目标/源失效清除/明确重选/来源扣份"
+    },
+    {
+      "id": "F06",
+      "result": "查看不攻击/目标确认/一次扣AP/提交后清瞄准"
+    },
+    {
+      "id": "F07",
+      "result": "锁级解释/切页清瞄准/通用医疗可达/自用不伤敌"
+    },
+    {
+      "id": "F08",
+      "result": "查来源/只定位/返回原配方并重验"
+    },
+    {
+      "id": "F09",
+      "result": "查看不移动/鸟瞰随身只读/相邻段到场/岗位服务"
+    }
+  ],
+  "extraChecks": [
+    "当前对白顶部可达/20px/背景inert/Esc不透传/读完不重执行"
+  ],
+  "screenshots": [
+    {
+      "path": "assets/原型-01-主界面.png",
+      "sha256": "f9fdf4f845bbb5ab3a3ab892a200af9b3f3fb4f29f8276e1173e6e9b1b8b6c34",
+      "kind": "独立HTML流程原型截图，非游戏实机"
+    },
+    {
+      "path": "assets/原型-02-整备.png",
+      "sha256": "3df4a3be5e59491c90cd54acc159e987b6f05794e9a12568d2b317c277fc5a1d",
+      "kind": "独立HTML流程原型截图，非游戏实机"
+    },
+    {
+      "path": "assets/原型-03-战斗.png",
+      "sha256": "cee5aac8121981283032584aa62e39ae312c104476799e5e94cbedbd59ffc868",
+      "kind": "独立HTML流程原型截图，非游戏实机"
+    },
+    {
+      "path": "assets/原型-04-制作.png",
+      "sha256": "d3968b8abf5060dd0a3f69d4007741462b80097a7a1abdbb6bbd8ef22252ffdd",
+      "kind": "独立HTML流程原型截图，非游戏实机"
+    }
+  ],
+  "runtimeAcceptance": "UX2-A01—18及INK2-01—14均待开发实装与三档实机验收"
+}

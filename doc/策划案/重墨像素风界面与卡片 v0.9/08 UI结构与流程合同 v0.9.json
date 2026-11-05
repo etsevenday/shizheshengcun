@@ -1,0 +1,365 @@
+{
+  "version": "0.9",
+  "date": "2026-11-05",
+  "status": "UI重做设计；非运行时配置",
+  "uiOnlyIds": true,
+  "rulesAuthority": "现行S14/A10/S06/S07/R02/R03及已答Q；本包不重定义领域数值/权限/时序",
+  "navigation": [
+    {
+      "group": "环境与作业",
+      "labels": [
+        "区域地图",
+        "手工制作",
+        "休息"
+      ]
+    },
+    {
+      "group": "队伍与人物",
+      "labels": [
+        "编队",
+        "整备",
+        "成长"
+      ]
+    },
+    {
+      "group": "记录与规则",
+      "labels": [
+        "生存目标",
+        "生存提示",
+        "行动日志",
+        "对话记录",
+        "系统说明"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "id": "P01",
+      "name": "场景",
+      "tracks": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "P02",
+      "name": "火堆工位",
+      "parent": "P01",
+      "slots": 2
+    },
+    {
+      "id": "P03",
+      "name": "整备",
+      "tracks": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "equipmentSlots": 7,
+      "carryRoots": 5
+    },
+    {
+      "id": "P04",
+      "name": "同行食饮",
+      "presentation": "锚定盘",
+      "runtimeStatus": "Q255—257已定；待B28真实实现"
+    },
+    {
+      "id": "P05",
+      "name": "战斗",
+      "presentation": "全屏",
+      "anchors": 8,
+      "weaponPages": 2,
+      "skillsPerPage": 5
+    },
+    {
+      "id": "P06",
+      "name": "制作",
+      "tracks": [
+        1,
+        2,
+        3
+      ],
+      "preserve": [
+        4
+      ]
+    },
+    {
+      "id": "P07",
+      "name": "地图/主城/岗位",
+      "mapTracks": [
+        1,
+        2
+      ],
+      "cityTracks": [
+        1,
+        2,
+        3
+      ],
+      "cityPreserveReadOnly": [
+        4
+      ]
+    },
+    {
+      "id": "P08",
+      "name": "成长/编队/休息/记录",
+      "growthTracks": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "ordinaryOverlayTracks": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": "P09",
+      "name": "当前对白/历史",
+      "normalDialogueTracks": [
+        1,
+        2
+      ],
+      "battle": "沿战斗专用覆盖与锁"
+    }
+  ],
+  "cardTemplates": [
+    "物件",
+    "作业",
+    "人物",
+    "路线",
+    "招式"
+  ],
+  "cardTypes": [
+    "普通物品",
+    "资源",
+    "设施",
+    "岗位",
+    "敌踪",
+    "相邻地点",
+    "装备",
+    "技能"
+  ],
+  "objectView": {
+    "required": [
+      "stableObjectId",
+      "kind",
+      "displayName",
+      "knownState",
+      "ownerActorIdOrGround",
+      "instanceAndBatchReference",
+      "artKey",
+      "criticalState",
+      "availableActionsAndReasons"
+    ],
+    "optionalByKind": [
+      "containerContentReferences",
+      "stockAndYield",
+      "accountBadge",
+      "quality",
+      "realDurability",
+      "foodExpiry",
+      "progress",
+      "direction",
+      "realActorIdentity",
+      "skillLevelAndCosts"
+    ]
+  },
+  "actionDraft": {
+    "required": [
+      "contextPage",
+      "sourceStableReference",
+      "actionKind",
+      "explicitTargetIfRequired",
+      "explicitSourceIfRequired",
+      "previewVersion",
+      "costsAndConsequences",
+      "canSubmitAndReasons"
+    ],
+    "submit": "复用原领域命令/请求去重；重验版本与目标；失败不暗换源",
+    "notPersistedAsGameFact": true
+  },
+  "selection": {
+    "identity": [
+      "stableObjectId",
+      "instanceId",
+      "ownerActorId",
+      "containerContentReference"
+    ],
+    "ui": [
+      "page",
+      "filter",
+      "scroll",
+      "inspectorTab",
+      "draft"
+    ],
+    "onActorSwitch": "取消旧意图，重验选择",
+    "onWeaponPageSwitch": "取消瞄准",
+    "onDialogue": "取消未提交意图，应用原锁",
+    "onLoad": "从真实状态重建，不重放意图"
+  },
+  "flows": [
+    {
+      "id": "F01",
+      "name": "资源作业",
+      "states": [
+        "浏览",
+        "查看资源",
+        "本地预览",
+        "原主动作提交",
+        "真实结果"
+      ],
+      "failure": "保留对象与原因，不换资源/工具"
+    },
+    {
+      "id": "F02",
+      "name": "火堆工位",
+      "states": [
+        "火堆",
+        "工位",
+        "锅内容",
+        "回火堆",
+        "原等待入口",
+        "真实结果"
+      ],
+      "failure": "按燃料/锁/可加工原因拒绝"
+    },
+    {
+      "id": "F03",
+      "name": "装备替换",
+      "states": [
+        "成员",
+        "候选",
+        "同槽比较",
+        "明确槽与旧物去向",
+        "最终容量预演",
+        "原确认",
+        "真实结果"
+      ],
+      "failure": "双方原位"
+    },
+    {
+      "id": "F04",
+      "name": "成员交接",
+      "states": [
+        "本人随身实例",
+        "同行目标与数量",
+        "双方容量预演",
+        "原确认",
+        "真实结果"
+      ],
+      "failure": "双方原位"
+    },
+    {
+      "id": "F05",
+      "name": "同行食饮",
+      "states": [
+        "所点合法食饮",
+        "明确同行",
+        "两人合法来源",
+        "目标效果与5分钟",
+        "原确认",
+        "真实结果"
+      ],
+      "failure": "无自动换人换源；文案采用总控Q257正式逐字稿"
+    },
+    {
+      "id": "F06",
+      "name": "战斗目标",
+      "states": [
+        "查看",
+        "选武器页",
+        "选五卡之一",
+        "合法目标预测",
+        "点击目标提交",
+        "真实结果",
+        "清瞄准"
+      ],
+      "failure": "不抽随机不扣费不暗换"
+    },
+    {
+      "id": "F07",
+      "name": "战斗边界",
+      "states": [
+        "临时不可用或锁级",
+        "原因说明",
+        "切武器页",
+        "清瞄准",
+        "重新选择"
+      ],
+      "failure": "不能把临时不足写成未学会"
+    },
+    {
+      "id": "F08",
+      "name": "制作来源返回",
+      "states": [
+        "配方",
+        "缺料",
+        "来源列表",
+        "地图定位",
+        "返回配方",
+        "重验条件",
+        "原开工"
+      ],
+      "failure": "不把查询当移动/拿物"
+    },
+    {
+      "id": "F09",
+      "name": "地图到岗位",
+      "states": [
+        "查看建筑",
+        "真实下一路段预览",
+        "原移动确认",
+        "真实到场",
+        "岗位卡",
+        "真实事项"
+      ],
+      "failure": "不自动全程/开服务/发奖励"
+    }
+  ],
+  "implementationNeeds": [
+    {
+      "view": "装备比较/替换",
+      "data": "现有属性/生效情况+只读最终状态预演",
+      "fallback": "未接预演时保留当前安全装卸流程，不用伪数字"
+    },
+    {
+      "view": "交接",
+      "data": "双方最终根卡/重量/合法性",
+      "fallback": "原确认和失败原因"
+    },
+    {
+      "view": "同行食饮",
+      "data": "Q232/Q233领域预演+Q255—257定稿",
+      "fallback": "未实装不显示可成功入口"
+    },
+    {
+      "view": "材料来源",
+      "data": "现有可取来源/预留/公开来源查询",
+      "fallback": "只读列表；未授权来源不提供取料"
+    },
+    {
+      "view": "地图",
+      "data": "真实节点边与当前首段规则",
+      "fallback": "只定位/现行移动，不自动全程"
+    }
+  ],
+  "pendingQuestions": [],
+  "acceptance": "UX2-A01—A18 + INK2-01—14",
+  "runtimeVerified": false,
+  "adjudications": {
+    "source": "../系统策划总册 v1.0/assets/20261105/ui-card-feeding-q252-257.json",
+    "answers": {
+      "Q252": "A",
+      "Q253": "A",
+      "Q254": "B",
+      "Q255": "A",
+      "Q256": "A",
+      "Q257": "B"
+    }
+  }
+}

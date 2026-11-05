@@ -1,0 +1,152 @@
+{
+  "date": "2026-11-05",
+  "mode": "builtin image_gen",
+  "initial": {
+    "date": "2026-11-05",
+    "mode": "built-in image_gen",
+    "intent": "new UI designs using V2 as style reference",
+    "jobs": [
+      {
+        "id": "01",
+        "name": "求生主界面",
+        "file": "01-求生主界面.png",
+        "refs": [
+          "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/03-UI布局/01-营地求生主界面.png",
+          "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/02-UI底图/01-锈铁框架.png",
+          "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/01-item/01-食物与饮水.png"
+        ],
+        "prompt": "Use case: ui-mockup. Create an ORIGINAL new UI art direction proposal for the contemporary Chinese zombie survival game 适者生存. Reference images are STYLE AND MATERIAL REFERENCES only, not exact layouts or rules. Retain heavy jagged black ink contours, large charcoal shadow masses, hard square pixel clusters, stair-step silhouettes, restrained 2x2 dithering and bone-white hard highlights. Palette: charcoal #111210, bone #E9DBBC, tarnished brass #89704B, rust #8C4933, dirty olive #74734E, dry blood #8F302A; sparing water teal #6F9A9B and fire amber #D89B48. Modern Chinese ruins, concrete, repaired canvas and salvaged iron. Premium hand-inked pixel game, not soft painting with a noise overlay. Build a fresh, cleaner, production-minded design with consistent slim battered iron frames, quiet opaque dark text fields, large complete object silhouettes and clear Chinese type. No medieval armor, no skull ornament overload, no glossy rounded web dashboard. Dynamic text remains graphically crisp, never scratched through. All numbers depict one illustrative state, not new gameplay rules. One full-bleed single 16:9 desktop mockup, no surrounding desktop monitor, no collage of screens, no watermark.\nAsset: newly redesigned survival home screen at 1920x1080. Use Image 1 for atmosphere, Image 2 for iron construction, Image 3 for inked pixel objects. CORRECT the old mockup's excessive decoration and mismatched rows. A thin top game header, left survival rail, central FOUR EXACTLY EQUAL HEIGHT horizontal rows, right read-only object inspector. The four central rows occupy the same vertical interval and have identical height: 场景, 设施, 地面, 随身. Their boundaries must be visibly aligned across the center; no oversized scenic row. Left rail shows 第3日 16:10 and six clean labeled meters: 健康 18.40/20.00, 饱食 62/100, 水分 58/100, 体力 15.60/20.00, 清醒 76/100, 精神 64/100. Small protagonist portrait below, restrained art. Top navigation text: 地图 制作 编队 整备 成长 任务 日志 菜单. First central row: wide ruined forest-camp scene about 60 percent of row width, with a decrepit Chinese bus and shelter, next to two framed adjacent-location cards 林间小径 and 废弃公路. Second row: fire facility, tarp shelter and one resource card. Selected fire is a COMPOSITE card with a readable fire picture at left and EXACTLY TWO small vertically stacked processing slots at right: a pot with water and a single piece of meat. Fuel, progress and short actions remain INSIDE this facility's allocated row and card, never expanding row height. Use local buttons 投入木材 and 等待烹饪 beneath its art. Third row: five normal ground item cards 木材, 净水, 纤维, 生肉, 石块; tall art approximately 70 percent and quiet bone-paper name bands. Fourth row: EXACTLY FIVE root inventory cards 净水, 绷带, 罐头, 打火机, 木材; show 随身 5/5 in row label, no sixth card or add-slot. Right inspector has title 火堆, a large fire illustration and quiet text readouts 燃料 90分钟 and 加工中, with NO distant primary action button; actions are local to fire. Thin footer 行动记录. Charcoal and bone dominant, gold only selected frame, red reserved for warnings. Chunky pixel brushwork closely matching references but sharper typography and less brass clutter. This is a polished new design, not a pasted edit of the old board."
+      },
+      {
+        "id": "02",
+        "name": "四对四战斗界面",
+        "file": "02-四对四战斗界面.png",
+        "refs": [
+          "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/03-UI布局/02-四对四战斗界面.png",
+          "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/02-UI底图/03-暗红刻痕与冷钢.png"
+        ],
+        "prompt": "Use case: ui-mockup. Create an ORIGINAL new UI art direction proposal for the contemporary Chinese zombie survival game 适者生存. Reference images are STYLE AND MATERIAL REFERENCES only, not exact layouts or rules. Retain heavy jagged black ink contours, large charcoal shadow masses, hard square pixel clusters, stair-step silhouettes, restrained 2x2 dithering and bone-white hard highlights. Palette: charcoal #111210, bone #E9DBBC, tarnished brass #89704B, rust #8C4933, dirty olive #74734E, dry blood #8F302A; sparing water teal #6F9A9B and fire amber #D89B48. Modern Chinese ruins, concrete, repaired canvas and salvaged iron. Premium hand-inked pixel game, not soft painting with a noise overlay. Build a fresh, cleaner, production-minded design with consistent slim battered iron frames, quiet opaque dark text fields, large complete object silhouettes and clear Chinese type. No medieval armor, no skull ornament overload, no glossy rounded web dashboard. Dynamic text remains graphically crisp, never scratched through. All numbers depict one illustrative state, not new gameplay rules. One full-bleed single 16:9 desktop mockup, no surrounding desktop monitor, no collage of screens, no watermark.\nAsset: freshly redesigned fullscreen FOUR-versus-FOUR tactical battle at an abandoned modern Chinese checkpoint. Image 1 supplies only art style and mood; CORRECT its old UI mechanics. Layout: thin header and turn-order portrait rail; left 81 percent is battle scene above action console, right 19 percent is a clearly separated inspector above compact combat log. Scene is about 58 percent of total height; controls about 28 percent, remaining header/queue/footer. EXACTLY FOUR living survivors on left and FOUR infected on right, all full silhouettes visible with clean health bars and short position labels. Left-to-right actual anchors are 我方4 3 2 1 | 敌方1 2 3 4; middle gap clear. Current actor gold outline, one selected enemy crimson targeting outline, non-actors stay subdued. Header 第2回合, 主角 · 普通激活 · AP 3/3. Side-on brutal inked pixel figures, no new named canon characters, modern axe/spear/medical gear/firearm silhouettes; no fantasy costumes. In bottom-left selected actor portrait and AP; middle two weapon page tabs Ⅰ 简易斧 and Ⅱ 空槽. EXACTLY FIVE skill cards for axe, in ONE row, labeled in order: 劈砍 (1级,2AP), 破甲劈 (3级,2AP), 蓄力 (5级,1AP), 震退 (7级), 破阵 (10级). Current axe level 5. Last two cards visibly gray locked with formal names still readable and condition 需要斧7级 / 需要斧10级; no extra lock cards beside them. Distinct woodcut pixel ability illustrations. Below the five cards, a compact secondary command strip with 防御 调息 后退 撤退 结束行动, all reachable; no invented consumable buttons in the action strip. Include a small clearly READ-ONLY 物资查看 button in the inspector, no eating or transferring. Right selected enemy panel 感染者, short target/intent information, compact expected hit preview without giant formulas. No health values based on 100/42; current game health upper bound 20 for protagonist, use only clear small illustrative health bars if crowded. Preserve visceral silhouettes while keeping target information and all five skill cards fully unobstructed. No camp inventory visible during fullscreen battle."
+      },
+      {
+        "id": "03",
+        "name": "整备与人物界面",
+        "file": "03-整备与人物界面.png",
+        "refs": [
+          "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/03-UI布局/03-整备与人物界面.png",
+          "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/04-人物画风/01-幸存者全身造型.png",
+          "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/06-武器防具图标/03-防具与穿戴装备.png"
+        ],
+        "prompt": "Use case: ui-mockup. Create an ORIGINAL new UI art direction proposal for the contemporary Chinese zombie survival game 适者生存. Reference images are STYLE AND MATERIAL REFERENCES only, not exact layouts or rules. Retain heavy jagged black ink contours, large charcoal shadow masses, hard square pixel clusters, stair-step silhouettes, restrained 2x2 dithering and bone-white hard highlights. Palette: charcoal #111210, bone #E9DBBC, tarnished brass #89704B, rust #8C4933, dirty olive #74734E, dry blood #8F302A; sparing water teal #6F9A9B and fire amber #D89B48. Modern Chinese ruins, concrete, repaired canvas and salvaged iron. Premium hand-inked pixel game, not soft painting with a noise overlay. Build a fresh, cleaner, production-minded design with consistent slim battered iron frames, quiet opaque dark text fields, large complete object silhouettes and clear Chinese type. No medieval armor, no skull ornament overload, no glossy rounded web dashboard. Dynamic text remains graphically crisp, never scratched through. All numbers depict one illustrative state, not new gameplay rules. One full-bleed single 16:9 desktop mockup, no surrounding desktop monitor, no collage of screens, no watermark.\nAsset: redesigned preparation/equipment screen, same visual family as the new survival and battle screens. First reference supplies mood, NOT its inaccurate equipment slots. Opaque charcoal panel, thin rust/steel frame, bone-paper section labels. Header 适者生存 and navigation with 整备 selected using dry-crimson cloth paint. A compact strip of FOUR party portrait selectors, active 主角 gold frame, other portraits unnamed existing companions, summary 同行4/4 and current owner clearly identified. Main left/center shows an imposing modern survivor half-to-full-body inked pixel portrait, grounded in contemporary coat, scarf and work trousers, with EXACTLY SEVEN labeled equipment slots, four to the left and three to the right. Required slot labels, exactly one of each: 武器Ⅰ, 武器Ⅱ, 防具, 战斗饰品, 上衣, 下衣, 求生饰品. NO head slot, boot slot, backpack slot or invented equipment stats. Illustrations: 简易斧 in weapon I, weapon II labeled 空槽, 衬垫护具 in armor, 稳手指环 combat accessory, 耐磨工作衣 top, 工作长裤 bottom, 采集手套 survival accessory. Selected top coat gold border. All seven frames visibly distinct and readable at once. Bottom fixed inventory rail titled 主角随身 5/5 has EXACTLY FIVE physical-root cards 净水 绷带 罐头 打火机 木材; wearing equipment is not duplicated as inventory. Right approx25 percent is selection comparison/description in quiet dark fields, title 耐磨工作衣, large pixel item art, headings 装备位置 上衣 / 当前状态 / 现有特性, no made-up +3 defense or infection bonuses. Local controls 装备 卸下 as appropriate and a compact 当前地面装备 section with two small equipment cards; each action stays tied to its item. Clothing on the character may include shoes and a backpack as illustration, but these MUST NOT have clickable slot frames. Display text and numbers as real clean UI, not scuffed illustration lettering. A coherent seven-slot system, not an RPG paper-doll with extra slots."
+      },
+      {
+        "id": "04",
+        "name": "统一卡片与状态",
+        "file": "04-统一卡片与状态.png",
+        "refs": [
+          "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/01-item/01-食物与饮水.png",
+          "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/01-item/03-材料与设施卡.png",
+          "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/02-UI底图/01-锈铁框架.png"
+        ],
+        "prompt": "Use case: ui-mockup. Create an ORIGINAL new UI art direction proposal for the contemporary Chinese zombie survival game 适者生存. Reference images are STYLE AND MATERIAL REFERENCES only, not exact layouts or rules. Retain heavy jagged black ink contours, large charcoal shadow masses, hard square pixel clusters, stair-step silhouettes, restrained 2x2 dithering and bone-white hard highlights. Palette: charcoal #111210, bone #E9DBBC, tarnished brass #89704B, rust #8C4933, dirty olive #74734E, dry blood #8F302A; sparing water teal #6F9A9B and fire amber #D89B48. Modern Chinese ruins, concrete, repaired canvas and salvaged iron. Premium hand-inked pixel game, not soft painting with a noise overlay. Build a fresh, cleaner, production-minded design with consistent slim battered iron frames, quiet opaque dark text fields, large complete object silhouettes and clear Chinese type. No medieval armor, no skull ornament overload, no glossy rounded web dashboard. Dynamic text remains graphically crisp, never scratched through. All numbers depict one illustrative state, not new gameplay rules. One full-bleed single 16:9 desktop mockup, no surrounding desktop monitor, no collage of screens, no watermark.\nAsset: one high-resolution visual COMPONENT DESIGN BOARD, 16:9, for a unified dark ink pixel card system. Top short title 统一卡片规范. Clean 4 columns by 2 rows of EIGHT large component samples, generous dark gutters. Strong original illustrations and restrained brass corners; NEVER a screenshot collage. Each sample has a small bone-paper category label outside the card and a readable nameplate. Categories in order: 物品 / 资源 / 设施 / 岗位人物 / 敌踪 / 相邻地点 / 武器 / 技能. 1 Item: 净水 ×3, dented blue-cap water bottle, art70%, quiet label30%, gold selected edge plus small corner selection marker. 2 Resource: 废料箱 with badge 有限 and clear 已耗尽, desaturated art and diagonal hatch but readable name. 3 Facility: 火堆 as composite wide card, fire illustration left, exactly two stacked processing slots right, visible fuel and cooking progress, local buttons 投入木材 and 等待烹饪, no third slot. 4 Post NPC: 机构当班接续员 portrait with small 代班 badge and 事项 marker, not an original named person's portrait label. 5 Encounter: infected silhouette labeled 敌踪 with danger red corner, no implication of automatic battle. 6 Adjacent location: 林间小径, clear known-route direction arrow and 已发现 label. 7 Weapon: 简易斧, complete silhouette, quality tag and short 耐久 readout on a separate information band, no art clipping. 8 Skill: 震退, large symbolic axe-impact art, gray locked state, readable level 7 and 需要斧7级（当前5级）. Under board, a slim state strip showing six little frame treatments with labels 普通 悬停 焦点 选中 禁用 危险; focus uses a clear bone-white corner line, selected gold, danger crimson plus warning shape, disabled uses lock/hatch and text. Add another small four-badge strip 有限 每日补充 本实例 本局一次 using distinct shapes and words, not color alone. Dominant art space, consistent border thickness, no lorem ipsum or tiny prose. This sheet defines the visual component family and edge states; no new game mechanics."
+      }
+    ]
+  },
+  "edits": {
+    "main": "Edit the supplied survival UI mockup. Preserve its established ink-pixel art, all objects, palette, top navigation, left status rail, right read-only inspector, footer and EXACTLY FIVE inventory cards. Change ONLY geometry of the central four rows so their OUTER RECTANGLE HEIGHTS ARE EXACTLY EQUAL. On this 1672x941 composition, the central area spans roughly x314..1326 and y84..858. Use four outer row rectangles each about186 pixels high, at y84..270, y280..466, y476..662, y672..858, with three10px separators. Row1 场景, row2 设施, row3 地面, row4 随身. Third and fourth rows must NOT become shorter than first/second. Fit each row's existing art and labels within its new identical bounds, retaining complete silhouettes. Fire composite retains pot and meat as exactly two stacked processing slots, with fuel 90分钟 and local 投入木材 / 等待烹饪 buttons; none of these may spill into another row. Normal item name bands stay readable, root inventory remains5/5. Do not enlarge left portrait, change any left numeric readouts, add new cards, add new gameplay, or move actions into right inspector. A precise layout correction to the same polished screenshot, not a new concept or a diagram. No guide lines or measurement annotations in the final image.",
+    "cards": "Edit this component design board, preserving all eight categories, their compositions, art style, palette, NPC/encounter/location imagery, six bottom frame-state examples, and all unaffected lettering. Correct only the facility component and runtime terminology. In the top-row facility 火堆 sample, replace the two right-hand meter-only blocks with EXACTLY TWO real processing-slot boxes stacked vertically: upper slot shows a metal pot and a short 水 label; lower slot shows one piece of meat and a short 烤制 label. Each slot may have its own thin progress bar. Fuel is a SEPARATE SMALL LINE reading 燃料 90分钟, NOT 18/20. Keep 投入木材 and 等待烹饪 local to that facility card; no third slot. In the bottom-row 简易斧 weapon card, change the quality badge from 良品 to 白 and change durability from28/40 to18/24; leave the axe illustration intact. The four account badges at the very bottom must read exactly 有限 / 每日补充 / 本实例 / 本局一次, correcting any misspelled glyphs. No extra equipment or items, no new panels, no changes to the other card counts. Crisp readable Chinese text. This is a precise correction of a review board, not a redesigned overall composition.",
+    "others": [
+      {
+        "id": "02",
+        "path": "C:/Users/63245/.codex/generated_images/01a1a9c0-2849-7342-a1e7-496ac65d5b1c/exec-9d9de85b-8640-4363-8089-4e6e02921f2d.png",
+        "prompt": "Edit this battle UI screenshot with only ONE text correction in the right-hand prediction card. The line currently reads 劈砍（5级）对该目标. Replace it with exactly 劈砍 · 对该目标. Preserve everything else exactly: four survivors and four infected, correct 4/3/2/1|1/2/3/4 positions, five skill cards 劈砍/破甲劈/蓄力/震退/破阵, their level labels and AP costs, two weapon tabs, AP3/3, all imagery, colors, margins, control strip and current axe skill level5 in its separate header. This removes an ambiguous level label only; do not redesign any panel or add/remove a card. Same sharp ink pixel art and readable Chinese."
+      },
+      {
+        "id": "03",
+        "path": "C:/Users/63245/.codex/generated_images/01a1a9c0-2849-7342-a1e7-496ac65d5b1c/exec-9137fa91-ea97-47ac-b366-034fbe80208a.png",
+        "prompt": "Edit only text in this equipment UI screenshot; preserve ALL artwork, layout, EXACTLY SEVEN equipment slots and EXACTLY FIVE carried items. In the right panel selected 耐磨工作衣, replace the generic descriptive text beside 现有特性 with exactly 制造/建造的基础工作量×0.95. Under 当前地面装备, replace the left item name 棉布外套 with 休养外衣 and right item name 工装马甲 with 衬垫护具. Do not change their pictures or buttons. All slot labels remain 武器Ⅰ/武器Ⅱ/防具/战斗饰品/上衣/下衣/求生饰品; no head/boot/bag slots. Keep all other text, character, paper, black ink pixel style, lights, frames, and menus unchanged. This is a small correction to use the existing game's exact terminology, not a new composition."
+      }
+    ]
+  },
+  "selected": [
+    {
+      "id": "01",
+      "title": "营地求生主界面",
+      "path": "assets/01-营地求生主界面.png",
+      "sourceFile": "exec-6085eeeb-288a-4eb0-a4ca-e4f952951fda.png",
+      "sha256": "14a5693d928bcda09240a17342d9f38a20517a7ce4162e2a7430ff0cdb43efb2",
+      "status": "concept-reference",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "id": "02",
+      "title": "四对四战斗界面",
+      "path": "assets/02-四对四战斗界面.png",
+      "sourceFile": "exec-8a7b1f21-963a-4711-921f-7c5fc7e0467e.png",
+      "sha256": "2a89d318d3766591e2bd7fbdf38260c0515eca4b308ade556625180b68bc2e46",
+      "status": "concept-reference",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "id": "03",
+      "title": "人物整备界面",
+      "path": "assets/03-人物整备界面.png",
+      "sourceFile": "exec-2c0083a8-9840-4ac5-b95f-69581f48a6ec.png",
+      "sha256": "e58ea34bcaff766b609a317ced01db9450b389fdf06b73fec2d8788893da9f8b",
+      "status": "concept-reference",
+      "width": 1671,
+      "height": 941
+    },
+    {
+      "id": "04",
+      "title": "统一卡片与状态",
+      "path": "assets/04-统一卡片与状态.png",
+      "sourceFile": "exec-4f62ea34-4331-4336-802f-66cabbf053a4.png",
+      "sha256": "c509a4db4681bde3272fb21d94513ba4f23c92894295dd7033e5c8ea13b92c02",
+      "status": "concept-reference",
+      "width": 1672,
+      "height": 941
+    }
+  ],
+  "referenceRoot": "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2",
+  "preservedOriginals": true,
+  "referenceManifest": [
+    {
+      "path": "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/03-UI布局/01-营地求生主界面.png",
+      "sha256": "ca514d327ccdcca49eb2ba3bea61ca09169d60d9e8b853b5b9a0cd965ef4c992"
+    },
+    {
+      "path": "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/02-UI底图/01-锈铁框架.png",
+      "sha256": "4f4ca1812c32de0635713d11426cc58d0dc1f8340ace6ce21e82ecae0bd0666c"
+    },
+    {
+      "path": "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/01-item/01-食物与饮水.png",
+      "sha256": "940fb5f6cbc4f390047a2e8b51791caa0426eb6d1f095ff85e11c85e900c5044"
+    },
+    {
+      "path": "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/03-UI布局/02-四对四战斗界面.png",
+      "sha256": "9a3effbc15cf36e1c5177bb6a3ceec6d7a93d0945b0630ab17244efa68ac2aa8"
+    },
+    {
+      "path": "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/02-UI底图/03-暗红刻痕与冷钢.png",
+      "sha256": "3100ebe960cfe331d0eb588cd3dc1b945bd9517d094bb33144ddb728b2079295"
+    },
+    {
+      "path": "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/03-UI布局/03-整备与人物界面.png",
+      "sha256": "eb9edfb7a7a31042284bef84df919318cc0ac9fd95445ce567bcb5bb7a0b9a81"
+    },
+    {
+      "path": "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/04-人物画风/01-幸存者全身造型.png",
+      "sha256": "7da6ca841b8994eb536d0579f437f57343a4fe63a6b6cae09056bb5ecdac1225"
+    },
+    {
+      "path": "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/06-武器防具图标/03-防具与穿戴装备.png",
+      "sha256": "6e8681a8b944ac286326408b59e6993f403f9079cbb4e9449ea0184f0036d3f8"
+    },
+    {
+      "path": "D:/适者生存/美术参考/2026-11-04-重墨像素风-v2/01-item/03-材料与设施卡.png",
+      "sha256": "f3e3e9779d8fcc0290a36f5290240c0ad7ba9f63e4b803dafa3dd83001f025a9"
+    }
+  ]
+}
