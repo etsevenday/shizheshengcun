@@ -35,6 +35,7 @@
     // 灰卡说明跟随悬停；键盘（Tab、1—5）落到灰卡时留着，鼠标点灰卡不算；切页或升级后那张已不是灰卡就清掉；选了别的指令时不留说明（试玩修复 M503、M504）
     if (_lockFocus != null && !cards.Any(c => c.LockedText != null && c.Node.Id == _lockFocus)) _lockFocus = null;
     var lockShown = _lockHover ?? (sel == null ? _lockFocus : null);
+    var lockNote = lockShown ?? _lockGhost;
     var general = opts.Where(o => o.Group == "general").ToList();
     var items = opts.Where(o => o.Group == "item" && CarriedFor(o) > 0).ToList();
     // B9（A10 §4.5）：瞄准中悬停合法目标时，目标生命条上画“预计”条纹——与右栏同一次 PreviewCommand（只读、不抽随机）
@@ -178,10 +179,10 @@
                     }
                 </div>
                 @RangeMap(sel ?? HoverSkill(skills), aimSet)
-                @if (cards.FirstOrDefault(c => c.LockedText != null && c.Node.Id == lockShown) is { } lockCard)
+                @if (cards.FirstOrDefault(c => c.LockedText != null && c.Node.Id == lockNote) is { } lockCard)
                 {
-                    @* 说明盖着通用区：它接收鼠标，鼠标移入或点它都只收起，看不见的按钮不会被点中（试玩修复 M504） *@
-                    <div class="bc-locknote" role="note" @onmouseenter="CloseLockNote" @onclick="CloseLockNote">
+                    @* 说明盖着通用区：鼠标移入就隐去，隐去后再留一小会接住紧跟着的点击，看不见的按钮不会被点中（试玩修复 M504、M516） *@
+                    <div class="bc-locknote @(lockShown == null ? "ghost" : "")" role="note" @onmouseenter="() => HideLockNote(lockCard.Node.Id)" @onclick="CloseLockNote">
                         <b>@lockCard.Node.Name</b><span>@(e.SkillName(lockCard.Node.SkillId))@(lockCard.Node.Level)级</span>
                         <p>@lockCard.Node.Text</p>
                         <p class="bc-locknote-why">@lockCard.LockedText</p>
@@ -639,7 +640,20 @@
     private readonly Dictionary<string, ElementReference> _lockRefs = new();
     private void SetLockHover(string? id) { if (_lockHover != id) { _lockHover = id; StateHasChanged(); } }
     private void SetLockFocus(string? id) { if (_lockFocus != id) { _lockFocus = id; StateHasChanged(); } }
-    private void CloseLockNote() { _lockHover = null; SetLockFocus(null); }
+    private void CloseLockNote() { _lockHover = null; _lockGhost = null; SetLockFocus(null); }
+
+    /// <summary>刚隐去、还接着点击的说明（只存界面）；说明一消失下面的按钮就露出来，移入后紧跟的点击会落到按钮上（试玩修复 M516）。</summary>
+    private string? _lockGhost;
+
+    private async Task HideLockNote(string id)
+    {
+        _lockGhost = id;
+        _lockHover = null;
+        SetLockFocus(null);
+        StateHasChanged();
+        await Task.Delay(400);
+        if (_lockGhost == id) { _lockGhost = null; StateHasChanged(); }
+    }
 
     /// <summary>点灰卡：只写原因。鼠标点的（Detail≥1；回车/空格触发的是 0）不把说明留在焦点上，移开就收起（试玩修复 M504）。</summary>
     private void ClickLocked(MouseEventArgs ev, string name, string why, bool locked)

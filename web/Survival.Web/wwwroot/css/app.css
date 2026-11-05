@@ -984,7 +984,7 @@ kbd { font-size: 14px; }
 /* 对话记录浏览层：左列表（日期时间 · 地点 · 对象），右正文（同对话层左右归属与 22px） */
 .dlog-body { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 12px; min-height: 0; }
 .dlog-list { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; min-height: 0; padding-right: 4px; }
-.dlog-item { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 52px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 5px; background: transparent; text-align: left; }
+.dlog-item { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 52px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 5px; background: transparent; text-align: left; }
 .dlog-item b { font-size: 16px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
 .dlog-item small { font-size: 14px; color: var(--muted); }
 .dlog-item.on { border-color: var(--accent); background: #2c3427; }
