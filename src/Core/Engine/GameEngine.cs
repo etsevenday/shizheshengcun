@@ -955,16 +955,7 @@ namespace Survival.Core.Engine
                     // 即时效果先应用并夹紧 0—100，再按 wait 推进 5 分钟；负数如实写“水分−2”（设施与烹饪案 5.3）
                     var satBefore = s.Stats.Satiety;
                     var hydBefore = s.Stats.Hydration;
-                    var sat = UseSatiety(s, u);   // 配给袋：非战斗食用正饱食×1.05（B4）
-                    if (sat != 0) { s.Stats.Add(StatId.Satiety, sat); parts.Add(Signed("饱食", sat)); }
-                    if (u.Hydration != 0) { s.Stats.Add(StatId.Hydration, u.Hydration); parts.Add(Signed("水分", u.Hydration)); }
-                    if (u.Morale != 0) { s.Stats.Add(StatId.Morale, u.Morale); parts.Add(Signed("精神", u.Morale)); }
-                    if (u.Health != 0 && !u.IsBandage) { s.Stats.Add(StatId.Health, u.Health); parts.Add(Signed("健康", u.Health)); }
-                    if (u.CausesDiarrhea)
-                    {
-                        s.DiarrheaUntil = s.GameMinute + Config.ItemActions.DiarrheaMinutes;
-                        parts.Add("出现腹泻（12小时）");
-                    }
+                    ApplyUseEffect(s, s.Player, u, parts, false);
                     // 绷带、抗生素、特效药：效果在确认时应用，各自冷却只在对应效果实际生效时启动（v0.6 §11）
                     if (u.IsMedicine) ApplyMedicine(s, u, parts);
                     if (u.IsCare) ApplyCare(s, u, parts);

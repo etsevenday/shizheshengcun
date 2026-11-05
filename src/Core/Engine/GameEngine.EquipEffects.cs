@@ -354,9 +354,9 @@ namespace Survival.Core.Engine
             rc.RepairFilter != null ? rc.RestoreOwnDurabilityMaxFraction
             : Math.Max(PassiveRepairFraction(s.Player, rc.RestoreOwnDurabilityMaxFraction), EquipmentEffects(s).Set("repair.fraction") ?? 0);
 
-        /// <summary>非战斗食用的正饱食收益 × 装备 eat.satiety（配给袋 ×1.05）；负值与战斗中不变。</summary>
-        public double UseSatiety(GameState s, ItemUseConfig u) =>
-            u.Satiety > 0 && s.Battle == null ? u.Satiety * EquipmentEffects(s).Factor("eat.satiety") : u.Satiety;
+        /// <summary>非战斗食用的正饱食收益 × 吃的人本人有效穿戴的 eat.satiety（配给袋 ×1.05，Q255 只看 actorId）；负值与战斗中不变。</summary>
+        public double UseSatiety(GameState s, ItemUseConfig u, string actorId = GameState.PlayerId) =>
+            u.Satiety > 0 && s.Battle == null ? u.Satiety * EquipmentEffects(s, actorId).Factor("eat.satiety") : u.Satiety;
 
         // ───────────── 界面文字（对象信息栏、人物页装备区；B4 H10） ─────────────
 

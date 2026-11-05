@@ -156,18 +156,23 @@ namespace Survival.Core.Engine
         /// <summary>水壶一口的效果（Use 开始时一次结清）：扣 250 毫升，水分+15；脏水必定腹泻 12 小时（不按半份免风险）。</summary>
         private void ApplyCanteenSip(GameState s, ItemInstance c, List<string> parts)
         {
+            ApplyCanteenEffect(s, c, s.Player, parts, false);
+            parts.Add($"壶里剩{CanteenLabel(c)}");
+        }
+
+        /// <summary>水壶一口落到指定角色（B28 R12）：扣 250 毫升，水分与腹泻写到 actor。actualDelta 见 ApplyUseEffect。</summary>
+        private void ApplyCanteenEffect(GameState s, ItemInstance c, ActorState actor, List<string> parts, bool actualDelta)
+        {
             var cfg = CanteenOf(c)!;
             var liquid = c.LiquidId!;
             c.LiquidMl -= cfg.SipMl;
             if (c.LiquidMl <= 0) { c.LiquidMl = 0; c.LiquidId = null; }
-            s.Stats.Add(StatId.Hydration, cfg.SipHydration);
-            parts.Add(Signed("水分", cfg.SipHydration));
+            AddUseStat(actor, StatId.Hydration, "水分", cfg.SipHydration, parts, actualDelta);
             if (_items[liquid].Use?.CausesDiarrhea == true)
             {
-                s.DiarrheaUntil = s.GameMinute + Config.ItemActions.DiarrheaMinutes;
+                actor.DiarrheaUntil = s.GameMinute + Config.ItemActions.DiarrheaMinutes;
                 parts.Add($"出现腹泻（{Clock.Duration(Config.ItemActions.DiarrheaMinutes)}）");
             }
-            parts.Add($"壶里剩{CanteenLabel(c)}");
         }
 
         /// <summary>界面用：从水壶喝一口的按钮文字“喝一口（净水250毫升）”。</summary>
