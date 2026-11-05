@@ -415,92 +415,7 @@ namespace Survival.Core.Engine
                 }
 
                 case ActionType.Gather:
-                {
-                    if (!_res.TryGetValue(r.TargetId, out var res)) return "资源点不存在";
-                    if (res.LocationId != here) return "该资源点不在当前地点";
-                    var rs = s.Resources[res.NodeId];
-                    if (!rs.Discovered) return "该资源点尚未发现";
-                    if (FixedBlockHere(s) is string fbG) return fbG;
-                    plan.Res = res;
-                    if (res.IsCampaign)
-                    {
-                        // 核心记录（campaignClaimId，B12 R36）：单局永久一次；新一代只补写本代实例事实，不重发（H4）
-                        // Q137（TOOL-Q137-05）：唯一领取/核心记录保持无工具，显式指定工具（含消防斧）整次拒绝，不借破门加速
-                        if (r.ToolInstanceId.HasValue) return "这件工具对该资源点没有加成";
-                        var why = ClaimBlocked(s, res);
-                        if (why != null) return why;
-                        plan.Notes.AddRange(ClaimNotes(s, res));
-                        plan.BaseWork = res.BaseMinutes;
-                        plan.Label = CampaignClaimed(s, res.NodeId) ? $"核对{res.Name}" : $"领取{res.Name}";
-                        if (StagedRecord(res))
-                        {
-                            // B23（A11 EXQ-A05）：可选地牢记录固定 wait10、两段 5 分钟，中断只续剩余（与地图搜集同一事务，不另叠任务工时）
-                            plan.FixedWait = true;
-                            plan.BaseWork = StagedLeft(s, res);
-                            plan.Label += $"（固定等待{Clock.Duration((int)plan.BaseWork)}）";
-                        }
-                        return null;
-                    }
-
-                    ItemInstance? tool = null;
-                    if (r.ToolInstanceId.HasValue)
-                    {
-                        // 显式拖入的工具：必须随身、标签匹配、未损坏；失效时不暗中换另一把（拖拽与容器案 5）
-                        tool = FindItem(s, r.ToolInstanceId.Value);
-                        if (tool == null) return "这件工具已不在，请重新选择";
-                        if (!ToolQualifies(res, tool)) return "这件工具对该资源点没有加成";
-                        if (!OnPlayer(tool)) return "先拾取工具";
-                        if (tool.ReservedBy != null || IsLocked(s, tool)) return "行动占用：这件工具正被使用";
-                        if (!HasWear(tool, GatherWear)) return tool.Durability <= 0 ? "这件工具已损坏，请重新选择" : $"这件工具耐久不足（{DurabilityText(tool)}），请维护或重新选择";
-                        plan.ExplicitTool = true;
-                    }
-                    else if (res.ToolBonus != null && !r.BareHands) tool = BestToolFor(s, res);   // Q121：可明确改徒手，徒手始终可用
-                    plan.Tool = tool;
-
-                    if (res.IsInstance && (rs.Available ?? 0) <= 0) return "本代已搜空（地牢换代后恢复）";
-                    if (res.IsCache)
-                    {
-                        if ((rs.Available ?? 0) <= 0) return "该容器已搜空，不再补充";
-                        plan.Units = 1;
-                        foreach (var kv in res.Outputs) plan.Outputs.Add(Line(kv.Key, kv.Value));
-                        if (res.ExclusiveLoot != null)
-                            plan.Notes.Add("随机得到其一：" + string.Join("；", res.ExclusiveLoot.Select(x => $"{ItemName(x.ItemId)}×{x.Count}（{x.Weight}%）")));
-                        if (res.IndependentRare != null)
-                            plan.Notes.Add($"另有{Fmt.Pct(res.IndependentRare.Chance)}独立概率附带{ItemName(res.IndependentRare.ItemId)}×{res.IndependentRare.Count}");
-                    }
-                    else if (res.IsUnlimited)
-                    {
-                        foreach (var kv in res.Outputs) plan.Outputs.Add(Line(kv.Key, kv.Value));
-                    }
-                    else
-                    {
-                        var avail = rs.Available ?? 0;
-                        if (avail <= 0)
-                            return res.Refills ? $"库存为0，下次00:00补充{res.DailyRefill}" : "已采尽，不再补充";
-                        var kv = res.Outputs.First();
-                        var per = kv.Value * (tool != null && res.ToolBonus != null ? res.ToolBonus.OutputMultiplier : 1);
-                        per += PassiveGatherBonus(s, s.Player, res, kv.Key, plan.Notes);   // B5 合理取材/精取，仍受库存限制
-                        plan.Units = Math.Min(avail, per);
-                        plan.Outputs.Add(Line(kv.Key, plan.Units));
-                        if (plan.Units < per) plan.Notes.Add($"库存不足，本次产出{plan.Units}{ItemName(kv.Key)}，耗时不减少");
-                    }
-
-                    var minutes = res.BaseMinutes;
-                    if (tool != null && res.ToolBonus?.BaseMinutesOverride != null) minutes = res.ToolBonus.BaseMinutesOverride.Value;
-                    if (tool != null && res.ToolBonus != null && res.ToolBonus.ItemIds.Count > 0)
-                        plan.Notes.Add($"使用合格工具{ItemName(tool.ItemId)}：基础工时{res.BaseMinutes}→{minutes}分钟，产量不变；完成后耐久−{Fmt.T(GatherWear)}，取消不磨损");
-                    if (res.ToolBonus != null && res.ToolBonus.LockedSearch)
-                    {
-                        // Q137（S05/S14/A08 本轮章）：锁闭储物点标签、合格工具与破门条件；只有实际选用消防斧才写“本次生效”
-                        var cond = res.ToolBonus.ConditionalToolWorkFactors;
-                        plan.Notes.Add($"锁闭储物点：合格工具{QualifiedToolNames(res)}；{ConditionalToolHint(res)}（仅实际选用时，与熟练、装备相乘，合成下限×{Fmt.T(Config.Equipment.Limits.SurvivalWorkFloor)}）");
-                        if (tool != null && cond.TryGetValue(tool.ItemId, out var tf))
-                            plan.Notes.Add($"本次实际使用{ItemName(tool.ItemId)}：{ToolTraitName(tool.ItemId)}生效，工作量×{Fmt.T(tf)}");
-                    }
-                    plan.BaseWork = minutes;
-                    plan.Label = $"{GatherVerb(res)}{res.Name}";
-                    return null;
-                }
+                    return ValidateGather(s, r, plan);
 
                 case ActionType.Craft:
                 case ActionType.Build:
@@ -756,6 +671,96 @@ namespace Survival.Core.Engine
             return "未知行动";
         }
 
+        /// <summary>采集/搜集/领取目标本身的校验（Validate 的 Gather 分支），不看对白、战斗、在办行动这些全局锁；Q252 资源卡第二行也用它读资源自身状态。</summary>
+        private string? ValidateGather(GameState s, ActionRequest r, Plan plan)
+        {
+            var here = s.CurrentLocation;
+            if (!_res.TryGetValue(r.TargetId, out var res)) return "资源点不存在";
+            if (res.LocationId != here) return "该资源点不在当前地点";
+            var rs = s.Resources[res.NodeId];
+            if (!rs.Discovered) return "该资源点尚未发现";
+            if (FixedBlockHere(s) is string fbG) return fbG;
+            plan.Res = res;
+            if (res.IsCampaign)
+            {
+                // 核心记录（campaignClaimId，B12 R36）：单局永久一次；新一代只补写本代实例事实，不重发（H4）
+                // Q137（TOOL-Q137-05）：唯一领取/核心记录保持无工具，显式指定工具（含消防斧）整次拒绝，不借破门加速
+                if (r.ToolInstanceId.HasValue) return "这件工具对该资源点没有加成";
+                var why = ClaimBlocked(s, res);
+                if (why != null) return why;
+                plan.Notes.AddRange(ClaimNotes(s, res));
+                plan.BaseWork = res.BaseMinutes;
+                plan.Label = CampaignClaimed(s, res.NodeId) ? $"核对{res.Name}" : $"领取{res.Name}";
+                if (StagedRecord(res))
+                {
+                    // B23（A11 EXQ-A05）：可选地牢记录固定 wait10、两段 5 分钟，中断只续剩余（与地图搜集同一事务，不另叠任务工时）
+                    plan.FixedWait = true;
+                    plan.BaseWork = StagedLeft(s, res);
+                    plan.Label += $"（固定等待{Clock.Duration((int)plan.BaseWork)}）";
+                }
+                return null;
+            }
+
+            ItemInstance? tool = null;
+            if (r.ToolInstanceId.HasValue)
+            {
+                // 显式拖入的工具：必须随身、标签匹配、未损坏；失效时不暗中换另一把（拖拽与容器案 5）
+                tool = FindItem(s, r.ToolInstanceId.Value);
+                if (tool == null) return "这件工具已不在，请重新选择";
+                if (!ToolQualifies(res, tool)) return "这件工具对该资源点没有加成";
+                if (!OnPlayer(tool)) return "先拾取工具";
+                if (tool.ReservedBy != null || IsLocked(s, tool)) return "行动占用：这件工具正被使用";
+                if (!HasWear(tool, GatherWear)) return tool.Durability <= 0 ? "这件工具已损坏，请重新选择" : $"这件工具耐久不足（{DurabilityText(tool)}），请维护或重新选择";
+                plan.ExplicitTool = true;
+            }
+            else if (res.ToolBonus != null && !r.BareHands) tool = BestToolFor(s, res);   // Q121：可明确改徒手，徒手始终可用
+            plan.Tool = tool;
+
+            if (res.IsInstance && (rs.Available ?? 0) <= 0) return "本代已搜空（地牢换代后恢复）";
+            if (res.IsCache)
+            {
+                if ((rs.Available ?? 0) <= 0) return "该容器已搜空，不再补充";
+                plan.Units = 1;
+                foreach (var kv in res.Outputs) plan.Outputs.Add(Line(kv.Key, kv.Value));
+                if (res.ExclusiveLoot != null)
+                    plan.Notes.Add("随机得到其一：" + string.Join("；", res.ExclusiveLoot.Select(x => $"{ItemName(x.ItemId)}×{x.Count}（{x.Weight}%）")));
+                if (res.IndependentRare != null)
+                    plan.Notes.Add($"另有{Fmt.Pct(res.IndependentRare.Chance)}独立概率附带{ItemName(res.IndependentRare.ItemId)}×{res.IndependentRare.Count}");
+            }
+            else if (res.IsUnlimited)
+            {
+                foreach (var kv in res.Outputs) plan.Outputs.Add(Line(kv.Key, kv.Value));
+            }
+            else
+            {
+                var avail = rs.Available ?? 0;
+                if (avail <= 0)
+                    return res.Refills ? $"库存为0，下次00:00补充{res.DailyRefill}" : "已采尽，不再补充";
+                var kv = res.Outputs.First();
+                var per = kv.Value * (tool != null && res.ToolBonus != null ? res.ToolBonus.OutputMultiplier : 1);
+                per += PassiveGatherBonus(s, s.Player, res, kv.Key, plan.Notes);   // B5 合理取材/精取，仍受库存限制
+                plan.Units = Math.Min(avail, per);
+                plan.Outputs.Add(Line(kv.Key, plan.Units));
+                if (plan.Units < per) plan.Notes.Add($"库存不足，本次产出{plan.Units}{ItemName(kv.Key)}，耗时不减少");
+            }
+
+            var minutes = res.BaseMinutes;
+            if (tool != null && res.ToolBonus?.BaseMinutesOverride != null) minutes = res.ToolBonus.BaseMinutesOverride.Value;
+            if (tool != null && res.ToolBonus != null && res.ToolBonus.ItemIds.Count > 0)
+                plan.Notes.Add($"使用合格工具{ItemName(tool.ItemId)}：基础工时{res.BaseMinutes}→{minutes}分钟，产量不变；完成后耐久−{Fmt.T(GatherWear)}，取消不磨损");
+            if (res.ToolBonus != null && res.ToolBonus.LockedSearch)
+            {
+                // Q137（S05/S14/A08 本轮章）：锁闭储物点标签、合格工具与破门条件；只有实际选用消防斧才写“本次生效”
+                var cond = res.ToolBonus.ConditionalToolWorkFactors;
+                plan.Notes.Add($"锁闭储物点：合格工具{QualifiedToolNames(res)}；{ConditionalToolHint(res)}（仅实际选用时，与熟练、装备相乘，合成下限×{Fmt.T(Config.Equipment.Limits.SurvivalWorkFloor)}）");
+                if (tool != null && cond.TryGetValue(tool.ItemId, out var tf))
+                    plan.Notes.Add($"本次实际使用{ItemName(tool.ItemId)}：{ToolTraitName(tool.ItemId)}生效，工作量×{Fmt.T(tf)}");
+            }
+            plan.BaseWork = minutes;
+            plan.Label = $"{GatherVerb(res)}{res.Name}";
+            return null;
+        }
+
         private OutputLine Line(string itemId, int count) => new OutputLine { ItemId = itemId, Name = ItemName(itemId), Count = count };
 
         /// <summary>自用物品的健康恢复量：绷带按医疗公式（v0.6 §03），其他物品为配置值。</summary>
@@ -819,6 +824,20 @@ namespace Survival.Core.Engine
 
         /// <summary>只做开始前校验，不模拟、不改状态。返回 null 表示可以开始，否则为不能开始的原因。</summary>
         public string? CanStart(GameState s, ActionRequest r) => Validate(s, r, out _);
+
+        /// <summary>
+        /// 资源卡第二行写的原因（Q252 选 A）：行动进行中/暂停中、请先读完对话是全局状态，由中央行动层和对白层表达，不占卡面，也不盖住资源自身状态；
+        /// 这时只读资源自身（已搜空、已领取、库存为0等）。其余 CanStart 原因照旧。busy 是壳的“按钮已被在办行动锁住”，按钮锁与悬停原因不在这里。
+        /// </summary>
+        public string? ResourceCardReason(GameState s, ActionRequest r, bool busy)
+        {
+            if (!busy)
+            {
+                var why = CanStart(s, r);
+                if (why != DialogueLockedReason) return why;
+            }
+            return ValidateGather(s, r, new Plan { Type = r.Type, TargetId = r.TargetId });
+        }
 
         /// <summary>空闲时开始主行动；主行动暂停时开始子行动（补给、休息、点火）。</summary>
         public ActionResult Start(GameState s, ActionRequest r)

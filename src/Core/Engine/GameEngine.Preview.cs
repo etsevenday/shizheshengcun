@@ -23,6 +23,9 @@ namespace Survival.Core.Engine
                 p.Reason = err;
                 p.Label = DefaultLabel(r);
                 FillStatic(s, r, p, null);
+                // Q254：开不了工（在办、已搜空、已领取）时点选详情也读得到全句；未发现的资源不公开
+                if (r.Type == ActionType.Gather && _res.TryGetValue(r.TargetId, out var res0) && s.Resources.TryGetValue(res0.NodeId, out var rs0) && rs0.Discovered
+                    && NoOutputYieldLine(res0) is string yieldLine) p.Notes.Add(yieldLine);
                 return p;
             }
 

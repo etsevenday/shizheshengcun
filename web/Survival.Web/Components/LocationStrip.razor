@@ -350,8 +350,10 @@
                     var minutes = tool != null && r.ToolBonus?.BaseMinutesOverride != null ? r.ToolBonus.BaseMinutesOverride.Value
                         : e.StagedRecord(r) ? e.StagedLeft(s, r) : r.BaseMinutes;   // B23 试玩修复（EXQ-A05）：两段续做的记录写剩余分钟
                     var req = ActionRequest.Gather(r.NodeId);
-                    var why = busy ? (s.Main?.Status == ActionStatus.Paused ? "行动暂停中" : "行动进行中") : e.CanStart(s, req);
-                    <ObjectCard @key="r.NodeId" Id="@($"res-{nodeId}")" CssClass="res-card" Title="@r.Name" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
+                    var why = busy ? (s.Main?.Status == ActionStatus.Paused ? "行动暂停中" : "行动进行中") : e.CanStart(s, req);   // 按钮的锁与悬停原因
+                    var cardWhy = e.ResourceCardReason(s, req, busy);   // Q252：卡面第二行只写资源自身状态，全局状态不让主图消失
+                    var noOutputLine = e.NoOutputYieldLine(r);   // Q254：没有确定产出的资源点
+                    <ObjectCard @key="r.NodeId" Id="@($"res-{nodeId}")" CssClass="res-card" Title="@r.Name" AriaLabel="@(noOutputLine == null ? null : $"{r.Name}：{noOutputLine}")" Badge="@stock" BadgeClass="@(empty ? "unbuilt" : "")" Dim="empty"
                                 Selected="@(sel.Kind == SelectionKind.Resource && sel.Id == r.NodeId)" Fresh="@G.Highlights.Contains(r.NodeId)"
                                 DataDrop="@($"res:{nodeId}")" Tooltip="@(r.IsRecord ? "核心记录：点击查看领取预估" : r.IsCampaign ? "本局唯一领取：点击查看领取预估" : toolNames != null ? $"{(r.ToolBonus!.LockedSearch ? "锁闭储物点" : "资源点")}：点击查看采集预估；可用工具：{toolNames}（把它拖到这里指定使用）{(r.ToolBonus.LockedSearch ? "；" + e.ConditionalToolHint(r) : "")}" : "资源点：点击查看采集预估；这里没有可用工具，徒手进行")" OnClick="() => SelectResource(nodeId)">
                         <Art>@Icons.Markup(Icons.ForResource(r.NodeId, r.Outputs))</Art>
@@ -361,9 +363,14 @@
                             {
                                 <div class="oc-line" title="核心记录：本局唯一一次，地牢换代后也不再发放；记作记录，不占物资卡"><AccountIcon Label="@GameEngine.AccountLabel(r)" />核心记录 · 本局唯一</div>
                             }
+                            else if (noOutputLine != null)
+                            {
+                                @* 全句可能长，窄卡单行省略，全文在悬停、聚焦朗读和点选详情 *@
+                                <div class="oc-line res-yield" title="@noOutputLine"><AccountIcon Label="@GameEngine.AccountLabel(r)" />@noOutputLine</div>
+                            }
                             else if (r.IsCampaign)
                             {
-                                var packLine = r.IsCampaignPhysical ? string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}")) : "做法知识包";
+                                var packLine = string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}"));
                                 <div class="oc-line" title="本局唯一一次领取：@packLine"><AccountIcon Label="@GameEngine.AccountLabel(r)" />本局唯一 · @packLine</div>
                             }
                             else if (r.IsCache)
@@ -380,7 +387,7 @@
                             }
                             @if (r.Hazard != null) { var hz = $"{Ui.Pct(e.HazardChance(s, r))}{r.Hazard.Label} · 健康−{Ui.T(e.HazardLoss(s, r))}"; <div class="oc-line warn-line" title="@hz">@hz</div> }
                             @* Q28：按钮缩成“动词 + 时长”让出约70%图片区，不能开始的实际原因改写在卡面状态角标里，不隐藏 *@
-                            @if (why != null) { <div class="oc-line warn-line res-why" title="@why">@why</div> }
+                            @if (cardWhy != null) { <div class="oc-line warn-line res-why" title="@cardWhy">@cardWhy</div> }
                         </ChildContent>
                         <Footer>
                             @* 试玩修复 B5：与探索/清理同一按钮形态，悬停或聚焦即在右栏预测，离开恢复 *@

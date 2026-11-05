@@ -1172,3 +1172,6 @@
   .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .oc-body .oc-line { font-size: 11px; line-height: 1.15; }
   .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .acct-ico { width: 12px; height: 12px; margin-right: 2px; }
 }
+/* Q252：第二行只来自资源自身状态（危险、已领取、库存为0等），行动进行中、请先读完对话不写进卡面，主图不因它们消失。
+   Q254：没有确定产出的整句较长，不换行、不缩字、不压主图，单行省略，全文在悬停、聚焦朗读和点选详情。 */
+.center-scroll.four .facility-row .desk-group.resources .res-card .oc-body .oc-line.res-yield:not(.warn-line) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

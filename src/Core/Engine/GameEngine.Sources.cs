@@ -108,6 +108,28 @@ namespace Survival.Core.Engine
         public static string AccountLabel(ResourceConfig r) =>
             r.IsCampaign ? "本局一次" : r.IsInstance ? "本实例" : r.IsUnlimited ? "持续" : r.Refills ? "每日补充" : "有限";
 
+        /// <summary>
+        /// 没有确定 outputs 的资源点写什么（Q254 选 B）：卡面、悬停和详情同一句。有确定产出或核心记录返回 null，走原来的写法。
+        /// 只读配置：不抽随机、不读在办快照已抽结果，也不看存档，已掌握的蓝图照列。
+        /// </summary>
+        public string? NoOutputYieldLine(ResourceConfig r)
+        {
+            if (r.IsRecord || r.Outputs.Count > 0) return null;
+            var account = AccountLabel(r);
+            if (r.ExclusiveLoot != null && r.ExclusiveLoot.Count > 0)
+                return $"{account} · 随机其一：" + string.Join("；", r.ExclusiveLoot.Select(x => $"{YieldItemName(x.ItemId)}×{x.Count}（{x.Weight}%）"));
+            if (r.IsCampaign)
+            {
+                var facts = new HashSet<string>(ClaimFactsOf(r));
+                var names = Config.Knowledge.Where(k => k.GrantedByFacts.Any(facts.Contains)).Select(k => k.Name).ToList();
+                if (names.Count > 0) return $"{account} · 做法：{string.Join("、", names)}（领取时授予，已掌握不重复授予）";
+            }
+            return $"{account} · 无物品产出";
+        }
+
+        /// <summary>Q254 冷藏箱定稿逐字写“绷带”，物品全名是“草药绷带”（Q258 待策划确认）。只有这一句缩写，掉落、预览和物品卡都用全名。</summary>
+        private string YieldItemName(string itemId) => itemId == "bandage" ? "绷带" : ItemName(itemId);
+
         private ItemSourceView ResourceSource(GameState s, ResourceConfig r, string itemId)
         {
             var rs = s.Resources[r.NodeId];

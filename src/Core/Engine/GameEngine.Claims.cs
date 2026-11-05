@@ -112,6 +112,7 @@ namespace Survival.Core.Engine
                     }
                 var k = KnowledgeGrantedBy(s, ClaimFactsOf(res));
                 if (k.Count > 0) notes.Add("获得做法知识：" + string.Join("、", k));
+                if (NoOutputYieldLine(res) is string yieldLine) notes.Add(yieldLine);   // Q254：选中后读得到卡面全句
                 return notes;
             }
             notes.Add($"领取{res.Name}：本局唯一一次，地牢换代后也不会再发；记作记录，不占物资卡");
