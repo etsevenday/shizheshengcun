@@ -343,4 +343,104 @@ public class B27KnowledgeSourceTests : TestBase
         Assert.That(added.Any(t => t.Contains("版本43")), Is.False);
         Assert.That(added.Count(t => t.StartsWith("存档已升级到版本")), Is.EqualTo(22), "21—42 每步一句，43 没有");
     }
+
+    // ───────────── TEXT-Q249-01：五句来源 ─────────────
+
+    /// <summary>五项 source 逐字等于合同，名称、记录、地点、抄录资料对得上，不再写登记默认；配方查询和未知原因跟着走；其他知识 source 没动。</summary>
+    [Test]
+    public void TEXT_Q249_01_FiveSources_Verbatim_OthersUntouched()
+    {
+        foreach (var x in Sources)
+        {
+            var k = Cfg.Knowledge.Single(c => c.Id == (string)x["knowledgeId"]!);
+            var src = (string)x["source"]!;
+            Assert.That(k.Source, Is.EqualTo(src));
+            Assert.That(k.Name, Does.StartWith((string)x["name"]!));
+            foreach (var part in new[] { "dungeonName", "roomName", "recordName", "copyLocationName", "copyAction", "copyMaterial" })
+                Assert.That(src, Does.Contain((string)x[part]!), part);
+            Assert.That(src, Does.Contain("固定等待30分钟，0材料"));
+            Assert.That(src, Does.Not.Contain("默认"));
+            var res = Cfg.Resources.Single(r => r.NodeId == (string)x["recordNode"]! + "_unique");
+            Assert.That(res.Name, Is.EqualTo((string)x["recordName"]!));
+            var rc = E.Recipe("make_" + (string)x["itemId"]!);
+            Assert.That(E.RecipeUnknownReason(New(), rc), Does.Contain(src));
+        }
+        var rest = Cfg.Knowledge.Where(k => k.GrantedByFacts.Contains("hub_registered")).ToList();
+        Assert.That(rest.All(k => k.Source == "营区登记默认知识（h02 广场）"), Is.True, "其余 21 项 source 不动");
+    }
+
+    /// <summary>装备来源（“来源：…”）前段工位/制造/分钟保留，末段换成同一条知识的定稿句；只有这五件改了。</summary>
+    [Test]
+    public void TEXT_Q249_01_EquipmentSourceText()
+    {
+        foreach (var x in Sources)
+        {
+            var e = E.EquipmentSource((string)x["itemId"]!)!;
+            Assert.That(e.Knowledge, Is.EqualTo((string)x["knowledgeId"]!));
+            var cut = e.Text.IndexOf('；');
+            Assert.That(e.Text.Substring(0, cut), Does.Match("^[^／]+／制造[0-9]+／[0-9]+分钟$"));
+            Assert.That(e.Text.Substring(cut + 1), Is.EqualTo((string)x["source"]!));
+        }
+        Assert.That(Cfg.Workshops.EquipmentSources.Where(e => !Five.Contains(e.Knowledge)).Count(e => e.Text.EndsWith("营区登记默认知识（h02 广场）")), Is.EqualTo(21));
+    }
+
+    // ───────────── TEXT-Q249-02：改稿不改规则 ─────────────
+
+    /// <summary>新登记的档：抄录 30 分钟 0 材料学到包内知识（不要求先通关），只写抄录事实；部分已知只补缺项，完全已知禁用；不发物不给经验。</summary>
+    [Test]
+    public void TEXT_Q249_02_Copy_Rules_Unchanged()
+    {
+        var s = Registered();
+        var v = E.CityServicesOf(s, "npc_luo_zheng").Single(x => x.Id == "copy_public_knowledge");
+        Assert.That(v.Choices.Select(c => c.Label), Is.EqualTo(new[]
+        {
+            "公开资料：净水操作套件的做法、维护手册蓝图",
+            "公开作业资料：采集手套的做法、作业长裤的做法",
+        }), "登记不再默认给，入口不再是灰的");
+        Assert.That(v.Choices.All(c => c.Blocked == null), Is.True);
+
+        var ledger = Ledger(s);
+        var flags = s.Progress.Flags.ToHashSet();
+        var t0 = s.GameMinute;
+        Ok(E.StartCityService(s, "copy_public_knowledge", null, "kp_mining"));
+        Run(s);
+        ReadDialogues(s);
+        Assert.That(s.GameMinute - t0, Is.EqualTo(30));
+        Assert.That(E.KnowsKnowledge(s, "blueprint_gather_gloves") && E.KnowsKnowledge(s, "blueprint_utility_trousers"), Is.True);
+        Assert.That(s.Progress.Flags.Except(flags), Is.EquivalentTo(new[] { "kpcopy:kp_mining" }));
+        Assert.That(Ledger(s).Items, Is.EqualTo(ledger.Items));
+        Assert.That(E.CampaignClaimed(s, "d06_08_unique"), Is.False);
+
+        v = E.CityServicePreview(s, "copy_public_knowledge")!;
+        Assert.That(v.Choices[1].Blocked, Does.StartWith("已全部掌握"), "完全已知禁用");
+        Assert.That(E.StartCityService(s, "copy_public_knowledge", null, "kp_mining").Ok, Is.False);
+
+        s.Progress.Flags.Add("knowledge:blueprint_filter_token");
+        v = E.CityServicePreview(s, "copy_public_knowledge")!;
+        Assert.That(v.Choices[0].Label, Is.EqualTo("公开资料：净水操作套件的做法（已掌握）、维护手册蓝图"));
+        Assert.That(v.Choices[0].Blocked, Is.Null, "部分已知只补缺项");
+    }
+
+    /// <summary>未登记时抄录仍禁用（要先登记）；来源改稿本身不授知识：新局五项都不知道。</summary>
+    [Test]
+    public void TEXT_Q249_02_SourceTextGrantsNothing()
+    {
+        var s = At("h03_workshop");
+        Assert.That(KnowsAny(s), Is.False);
+        Assert.That(E.CityServicesOf(s, "npc_luo_zheng").Single(x => x.Id == "copy_public_knowledge").Blocked, Does.Contain("营区登记"));
+        foreach (var k in Five)
+            Assert.That(Cfg.Knowledge.Single(c => c.Id == k).Initial, Is.False);
+    }
+
+    /// <summary>新登记未学的玩家领核心记录：同事务学到包内蓝图，不再写“知识已知”。</summary>
+    [Test]
+    public void TEXT_Q249_02_RecordClaim_TeachesFive()
+    {
+        var s = Registered();
+        E.DebugExq(s, "record", "EXQ05");
+        ReadDialogues(s);
+        var p = E.Preview(s, ActionRequest.Gather("d05_07_unique"));
+        Assert.That(p.Notes, Has.Some.Contains("同时获得做法知识：净水操作套件的做法、维护手册蓝图"));
+        Assert.That(p.Notes, Has.None.Contains("知识已知"));
+    }
 }
