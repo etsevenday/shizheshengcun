@@ -874,13 +874,13 @@ public class B26aSubstituteTalkTests : TestBase
     public void Q239_02_NamedTitles_Unchanged()
     {
         foreach (var n in Cfg.City.Npcs)
-            foreach (var kv in n.States.Where(kv => !kv.Key.StartsWith("substitute_")))
+            foreach (var kv in n.States.Where(kv => !kv.Key.StartsWith("substitute_") && kv.Key != GameEngine.SubstituteIntroState))
             {
                 var title = E.DialogueSetTitle(kv.Value);
                 Assert.That(title, Does.StartWith(n.Name + "："), kv.Value);
                 Assert.That(title, Does.Not.Contain("代班"), kv.Value);
             }
-        Assert.That(E.DialogueSetTitle(Set("npc_xu_an", "institution_substitute")), Is.EqualTo("许安：岗位接续"));
+        Assert.That(E.DialogueSetTitle(Set("npc_xu_an", "institution_substitute")), Is.EqualTo("营区公事务岗：岗位接续"), "Q244 接续说明也用岗位名");
     }
 
     /// <summary>新目录不预先进历史：没产生过的组不列，产生一组只多这一组，同岗位没走到的分支不出现。</summary>
@@ -1767,5 +1767,144 @@ public class B26aSubstituteTalkTests : TestBase
         Assert.That(Plays(s, OfficeIntro), Is.EqualTo(1), "说明已示，之后交谈只走 Q236");
         Assert.That(E.DialogueHistory(s).Count, Is.EqualTo(history + 1));
         Assert.That(E.DialogueSetTitle(Set(OfficeNpc, "substitute_idle")), Does.EndWith("：代班闲谈"), "Q239 组名保持");
+    }
+
+    // ───────────── B26b：DIALOGUE-Q244-01—03、DIALOGUE-Q245-01—04（接续说明组名与首句定稿） ─────────────
+
+    private static readonly JObject Q244 = Design("design.substitute-introduction.json");
+
+    private static IEnumerable<JToken> IntroGroups => (JArray)Q244["groups"]!;
+
+    private static JToken IntroOf(string npc) => IntroGroups.Single(g => (string)g["npcId"]! == npc);
+
+    /// <summary>未示状态下让岗位走一次接续说明（关联任务记完成，只剩说明可播）。</summary>
+    private GameState IntroPost(string npcId)
+    {
+        var n = Cfg.City.Npcs.Single(x => x.NpcId == npcId);
+        var s = New();
+        s.GameMinute = At(2, 9, 0);
+        s.SpawnNextCheck = int.MaxValue;
+        s.PatrolNextCheck = int.MaxValue;
+        foreach (var q in Cfg.Quests.List.Where(q => q.NpcId == npcId || n.QuestIds.Contains(q.Id))) s.Progress.Flags.Add($"quest:{q.Id}:completed");
+        E.DebugMapTeleport(s, n.LocationId);
+        ReadDialogues(s);
+        s.City.Absent.Add(npcId);
+        return s;
+    }
+
+    /// <summary>16 组标题逐字等于合同：岗位名加“：岗位接续”，互不相同，不带原人物名；本人与 Q239 的组名不受影响。</summary>
+    [Test]
+    public void Q244_01_AllGroups_TitleFromContract()
+    {
+        Assert.That(IntroGroups.Count(), Is.EqualTo(16));
+        Assert.That(IntroGroups.Select(g => (string)g["title"]!).Distinct().Count(), Is.EqualTo(16));
+        foreach (var g in IntroGroups)
+        {
+            var n = Cfg.City.Npcs.Single(x => x.NpcId == (string)g["npcId"]!);
+            var title = (string)g["title"]!;
+            Assert.That(n.States[GameEngine.SubstituteIntroState], Is.EqualTo((string)g["dialogueSetId"]!));
+            Assert.That(E.DialogueSetTitle((string)g["dialogueSetId"]!), Is.EqualTo(title));
+            Assert.That(title, Is.EqualTo($"{g["postName"]}：岗位接续"));
+            Assert.That(title, Does.Not.Contain(n.Name));
+            Assert.That(E.DialogueSetTitle(n.States["substitute_idle"]), Is.EqualTo($"{g["postName"]}：代班闲谈"), "Q239 与本组同一岗位名");
+        }
+    }
+
+    /// <summary>可信组 ID 含 #序号的旧记录按新标题解析，正文快照不动；没有可信组 ID 的不猜组。</summary>
+    [Test]
+    public void Q244_02_TrustedHistory_NewTitle_TextKept_NoGuess()
+    {
+        var set = Set("npc_xu_an", GameEngine.SubstituteIntroState);
+        var s = Registered("h02_square");
+        var old = new DialogueSession { Id = s.Story.NextDialogueSessionId++, EventId = set + "#2", Ended = true, Minute = 77, LocationId = "h02_square" };
+        old.Lines.Add(new DialogueLine { LineId = (string)IntroOf("npc_xu_an")["lineId"]!, Order = 1, Speaker = "机构当班接续员", Text = "旧稿原文" });
+        s.Story.DialogueLog.Add(old);
+        var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        var d = m.Story.DialogueLog.Single(x => x.EventId == set + "#2");
+        Assert.That(E.DialogueSetTitle(d.EventId), Is.EqualTo("营区公事务岗：岗位接续"));
+        Assert.That((d.Lines.Single().Text, d.Lines.Single().Speaker, d.Minute, d.LocationId), Is.EqualTo(("旧稿原文", "机构当班接续员", (int?)77, "h02_square")));
+        Assert.That(E.DialogueSetTitle("legacy_save"), Is.Null, "无可信组 ID 走界面原有兜底");
+    }
+
+    /// <summary>读标题不走时间、不动账，不清已示，不重播。</summary>
+    [Test]
+    public void Q244_03_ReadTitle_NoSideEffect()
+    {
+        var s = IntroPost("npc_xu_an");
+        TalkRead(s, "npc_xu_an");
+        var snap = Ledger(s);
+        foreach (var d in s.Story.DialogueLog) E.DialogueSetTitle(d.EventId);
+        Assert.That(Ledger(s), Is.EqualTo(snap));
+        Assert.That(GameEngine.SubstituteIntroShown(s, "npc_xu_an"), Is.True);
+        Assert.That(E.DialogueLocked(s), Is.False);
+        Assert.That(Plays(s, "npc_xu_an", GameEngine.SubstituteIntroState), Is.EqualTo(1));
+    }
+
+    /// <summary>16 岗位实际播放：两句、顺序、lineId 不变，第一句逐字等于合同，第二句是原 system，0 分钟 0 资源，无本人自述。</summary>
+    [TestCaseSource(nameof(Posts))]
+    public void Q245_01_02_Intro_PlaysFinalText(string npcId)
+    {
+        var g = IntroOf(npcId);
+        var n = Cfg.City.Npcs.Single(x => x.NpcId == npcId);
+        var s = IntroPost(npcId);
+        var snap = Ledger(s);
+        TalkRead(s, npcId);
+        var d = s.Story.DialogueLog.Single(x => Base(x) == (string)g["dialogueSetId"]!);
+        Assert.That(d.Lines.Select(l => l.LineId), Is.EqualTo(new[] { (string)g["lineId"]!, (string)g["systemLineId"]! }));
+        Assert.That(d.Lines[0].Text, Is.EqualTo((string)g["text"]!));
+        Assert.That(d.Lines[0].Speaker, Is.EqualTo(n.DutySpeaker));
+        Assert.That(d.Lines[1].Text, Is.EqualTo((string)g["systemText"]!));
+        Assert.That(d.Lines[0].Text, Does.Not.StartWith("本岗由我接续"));
+        Assert.That(Ledger(s), Is.EqualTo(snap), "说明不新增事务");
+    }
+
+    /// <summary>已显示的旧第一句读档后保留并继续，第二句接着播，不重启；已示不清。</summary>
+    [Test]
+    public void Q245_03_ShownOldLine_Kept_SecondContinues()
+    {
+        var g = IntroOf("npc_xu_an");
+        var s = IntroPost("npc_xu_an");
+        Talk(s, "npc_xu_an");
+        var cur = E.CurrentDialogueLine(s)!;
+        Assert.That(cur.LineId, Is.EqualTo((string)g["lineId"]!));
+        cur.Text = "旧稿第一句";
+        var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        Assert.That(E.CurrentDialogueLine(m)!.Text, Is.EqualTo("旧稿第一句"), "不倒改、不重启");
+        ReadDialogues(m);
+        var d = m.Story.DialogueLog.Single(x => Base(x) == (string)g["dialogueSetId"]!);
+        Assert.That(d.Lines.Select(l => l.Text), Is.EqualTo(new[] { "旧稿第一句", (string)g["systemText"]! }));
+        Assert.That(GameEngine.SubstituteIntroShown(m, "npc_xu_an"), Is.True);
+        TalkRead(m, "npc_xu_an");
+        Assert.That(Plays(m, "npc_xu_an", GameEngine.SubstituteIntroState), Is.EqualTo(1), "不补播");
+    }
+
+    /// <summary>排在别的对白后面、还没开始显示的接续说明，读档后轮到时用新稿。</summary>
+    [Test]
+    public void Q245_03_QueuedLine_UsesNewText()
+    {
+        var s = Registered("h03_workshop");
+        Talk(s, "npc_luo_zheng");
+        Assert.That(E.DialogueLocked(s), Is.True);
+        var set = Set("npc_luo_zheng", GameEngine.SubstituteIntroState);
+        var ids = Cfg.Story.Dialogues.Where(d => d.Event == set).Select(d => d.Id).ToList();
+        s.Story.DialogueLog.Add(new DialogueSession { Id = s.Story.NextDialogueSessionId++, EventId = set, Pending = ids.ToList() });
+        s.Story.PendingDialogues.AddRange(ids);
+        var m = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg);
+        ReadDialogues(m);
+        var g = IntroOf("npc_luo_zheng");
+        Assert.That(m.Story.DialogueLog.Single(x => x.EventId == set).Lines.Select(l => l.Text), Is.EqualTo(new[] { (string)g["text"]!, (string)g["systemText"]! }));
+    }
+
+    /// <summary>Q243 待补播未显示时，读档、安全释放后按新稿自动显示一次。</summary>
+    [Test]
+    public void Q245_04_Deferred_ShowsNewTextOnce()
+    {
+        var s = SaveSerializer.Deserialize(SaveSerializer.Serialize(BlockedEnd()), Cfg);
+        Assert.That(Deferred(s), Is.EqualTo(1));
+        Start(s, ActionRequest.Bypass());
+        Run(s);
+        AssertAutoShownOnce(s);
+        var g = IntroOf(OfficeNpc);
+        Assert.That(s.Story.DialogueLog.Single(x => Base(x) == OfficeIntro).Lines.Select(l => l.Text), Is.EqualTo(new[] { (string)g["text"]!, (string)g["systemText"]! }));
     }
 }

@@ -26329,7 +26329,7 @@
         "id": "NTL_0174",
         "eventId": "npc_lu_heng_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续值守登记员的工作。我管营门登记与公开通行，不收效忠誓言。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续营门值守工作。营门登记与公开通行仍按原规则办理，不要求效忠誓言。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -26399,7 +26399,7 @@
         "id": "NTL_0183",
         "eventId": "npc_xu_an_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续公事务协调员的工作。我把公共事务和路线记录放在同一份告示里；各处服务还是要到当地办。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续公共事务工作。公共事务和路线记录仍在原告示里，各处服务仍须到当地办理。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -26469,7 +26469,7 @@
         "id": "NTL_0192",
         "eventId": "npc_luo_zheng_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续工务领班的工作。我管公共工坊和工务记录。会不会做，得看你自己的知识、材料和设施。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续工务工作。公共工坊和工务记录照常使用，能否制作仍取决于你的知识、材料和设施。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -26539,7 +26539,7 @@
         "id": "NTL_0201",
         "eventId": "npc_chen_zhi_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续值班医师的工作。这里先分清咨询、包扎与休息。看记录不等于治好了，伤情也不能只凭一句感觉判断。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续医务工作。咨询、包扎与休息仍分别办理，查看记录不等于完成治疗。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -26609,7 +26609,7 @@
         "id": "NTL_0210",
         "eventId": "npc_tao_cen_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续样本鉴定师的工作。我分辨能确认的原料性质和来源；融合结果不是看到颜色就能保证的东西。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续鉴定工作。原料性质和来源只按能确认的结果说明，不凭颜色保证融合结果。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -26679,7 +26679,7 @@
         "id": "NTL_0219",
         "eventId": "npc_du_sui_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续安置登记员的工作。我管同行意愿、候选资料和安置登记；人不是跟着一张床一起归你所有。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续安置登记工作。同行意愿、候选资料和安置仍按原规则登记，安置不等于替对方同意同行。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -26749,7 +26749,7 @@
         "id": "NTL_0228",
         "eventId": "npc_qi_wen_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续外来者接待者的工作。我接外来者的公开委托，也转达教会的邀请。接受委托不必等于接受教义。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续教会接待工作。公开委托和教会邀请仍按原规则办理，接受委托不等于接受教义。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -26819,7 +26819,7 @@
         "id": "NTL_0237",
         "eventId": "npc_bai_ling_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续施济员的工作。我核对施济账，也按规则办紧急援助。物资有限，不能靠换个领用人再算一次。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续施济工作。施济账和紧急援助仍按原规则核对，不能因为换了当班人就多领一份。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -26889,7 +26889,7 @@
         "id": "NTL_0246",
         "eventId": "npc_ji_mu_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续训诫执事的工作。我处理训诫堂的公开协商，不掌管你身体里的任何东西。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续训诫堂的公开协商工作。协商仍按原规则办理，不会因此获得处置你身体的许可。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -26959,7 +26959,7 @@
         "id": "NTL_0255",
         "eventId": "npc_song_zhu_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续誊录员的工作。我管公开路线与证言的抄录。证言里的解释不等于路线本身。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续誊录工作。公开路线和证言仍按原规则抄录，证言中的解释不等于路线本身。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -27029,7 +27029,7 @@
         "id": "NTL_0264",
         "eventId": "npc_fu_heng_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续主持者的工作。我主持圣堂，也希望人们接受共同的解释。希望不是替你作主的许可。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续圣堂的当班事务。安静休息仍按原规则办理，是否接受教义由你自己决定。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -27099,7 +27099,7 @@
         "id": "NTL_0273",
         "eventId": "npc_wen_cheng_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续协调员的工作。我协调来访和公开路线。各组意见不总一致，但谁也不能替你同意身体试验。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续科学院接待工作。来访和公开路线仍按原规则协调，任何人都不能替你同意身体试验。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -27169,7 +27169,7 @@
         "id": "NTL_0282",
         "eventId": "npc_ji_wen_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续检测研究员的工作。我负责检测说明与现有记录观察。没有明确同意，不进行额外取样或身体操作。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续检测说明与记录观察工作。没有你的明确同意，不进行额外取样或身体操作。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -27239,7 +27239,7 @@
         "id": "NTL_0291",
         "eventId": "npc_shao_ning_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续档案员的工作。我比对档案，区分哪句话有记录支撑，哪句话只是作者的解释。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续档案比对工作。记录能够证实的内容和作者自己的解释，仍须分别核对。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -27309,7 +27309,7 @@
         "id": "NTL_0300",
         "eventId": "npc_he_yuan_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续设备技师的工作。我管现有工坊的设备与公开操作信息，不把门口说明当成一套新配方。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续设备与公开操作信息的说明工作。工坊仍按原条件使用，门口的说明不会直接变成新配方。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -27379,7 +27379,7 @@
         "id": "NTL_0309",
         "eventId": "npc_yin_ke_dialogue_institution_substitute",
         "speaker": "机构当班接续员",
-        "text": "本岗由我接续观察区负责人的工作。我管观察区的边界与已有观察记录。只读、退出和拒绝试验都必须被尊重。 原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
+        "text": "这里由我代班接续观察区的当班事务。区域边界和已有观察记录仍按原规则处理，只读、退出和拒绝试验的选择都保留。原有登记、领取额度和任务进度沿用同一本账，不要求重新办一遍。",
         "note": ""
       },
       {
@@ -35788,7 +35788,7 @@
       },
       {
         "id": "npc_lu_heng_dialogue_institution_substitute",
-        "title": "陆衡：岗位接续"
+        "title": "营门值守岗：岗位接续"
       },
       {
         "id": "npc_lu_heng_dialogue_service_offer",
@@ -35824,7 +35824,7 @@
       },
       {
         "id": "npc_xu_an_dialogue_institution_substitute",
-        "title": "许安：岗位接续"
+        "title": "营区公事务岗：岗位接续"
       },
       {
         "id": "npc_xu_an_dialogue_service_offer",
@@ -35860,7 +35860,7 @@
       },
       {
         "id": "npc_luo_zheng_dialogue_institution_substitute",
-        "title": "罗铮：岗位接续"
+        "title": "营区工务岗：岗位接续"
       },
       {
         "id": "npc_luo_zheng_dialogue_service_offer",
@@ -35896,7 +35896,7 @@
       },
       {
         "id": "npc_chen_zhi_dialogue_institution_substitute",
-        "title": "陈芷：岗位接续"
+        "title": "营区医务岗：岗位接续"
       },
       {
         "id": "npc_chen_zhi_dialogue_service_offer",
@@ -35932,7 +35932,7 @@
       },
       {
         "id": "npc_tao_cen_dialogue_institution_substitute",
-        "title": "陶岑：岗位接续"
+        "title": "营区鉴定岗：岗位接续"
       },
       {
         "id": "npc_tao_cen_dialogue_service_offer",
@@ -35968,7 +35968,7 @@
       },
       {
         "id": "npc_du_sui_dialogue_institution_substitute",
-        "title": "杜穗：岗位接续"
+        "title": "收容安置岗：岗位接续"
       },
       {
         "id": "npc_du_sui_dialogue_service_offer",
@@ -36004,7 +36004,7 @@
       },
       {
         "id": "npc_qi_wen_dialogue_institution_substitute",
-        "title": "祁闻：岗位接续"
+        "title": "教会接待岗：岗位接续"
       },
       {
         "id": "npc_qi_wen_dialogue_service_offer",
@@ -36040,7 +36040,7 @@
       },
       {
         "id": "npc_bai_ling_dialogue_institution_substitute",
-        "title": "白苓：岗位接续"
+        "title": "教会施济岗：岗位接续"
       },
       {
         "id": "npc_bai_ling_dialogue_service_offer",
@@ -36076,7 +36076,7 @@
       },
       {
         "id": "npc_ji_mu_dialogue_institution_substitute",
-        "title": "纪牧：岗位接续"
+        "title": "教会训诫岗：岗位接续"
       },
       {
         "id": "npc_ji_mu_dialogue_service_offer",
@@ -36112,7 +36112,7 @@
       },
       {
         "id": "npc_song_zhu_dialogue_institution_substitute",
-        "title": "宋烛：岗位接续"
+        "title": "教会誊录岗：岗位接续"
       },
       {
         "id": "npc_song_zhu_dialogue_service_offer",
@@ -36148,7 +36148,7 @@
       },
       {
         "id": "npc_fu_heng_dialogue_institution_substitute",
-        "title": "傅珩：岗位接续"
+        "title": "圣堂主持岗：岗位接续"
       },
       {
         "id": "npc_fu_heng_dialogue_service_offer",
@@ -36184,7 +36184,7 @@
       },
       {
         "id": "npc_wen_cheng_dialogue_institution_substitute",
-        "title": "温澄：岗位接续"
+        "title": "科学院接待岗：岗位接续"
       },
       {
         "id": "npc_wen_cheng_dialogue_service_offer",
@@ -36220,7 +36220,7 @@
       },
       {
         "id": "npc_ji_wen_dialogue_institution_substitute",
-        "title": "季闻：岗位接续"
+        "title": "科学院检测岗：岗位接续"
       },
       {
         "id": "npc_ji_wen_dialogue_service_offer",
@@ -36256,7 +36256,7 @@
       },
       {
         "id": "npc_shao_ning_dialogue_institution_substitute",
-        "title": "邵宁：岗位接续"
+        "title": "科学院档案岗：岗位接续"
       },
       {
         "id": "npc_shao_ning_dialogue_service_offer",
@@ -36292,7 +36292,7 @@
       },
       {
         "id": "npc_he_yuan_dialogue_institution_substitute",
-        "title": "何远：岗位接续"
+        "title": "科学院设备岗：岗位接续"
       },
       {
         "id": "npc_he_yuan_dialogue_service_offer",
@@ -36328,7 +36328,7 @@
       },
       {
         "id": "npc_yin_ke_dialogue_institution_substitute",
-        "title": "尹珂：岗位接续"
+        "title": "科学院观察岗：岗位接续"
       },
       {
         "id": "npc_yin_ke_dialogue_service_offer",
