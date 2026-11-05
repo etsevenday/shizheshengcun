@@ -198,7 +198,12 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 
 没有新问题就写 `待策划确认：无`。另起一行写 `来源：策划提交 <短号>…`。分了批的再加一行 `批次：B2/4 <主题>（R5–R9）；剩余 B3 <主题>、B4 <主题>`（最后一批写"剩余：无，本次策划提交已全部处理"）。
 
-**推送**：推送前刷新心跳（第 1 节，`runId` 不是自己的就不推）。`git pull --rebase --autostash origin main`；拉到策划的新提交且改到本批涉及的策划案文件 → 不推，批次记 `blocked`，通知用户，清锁结束（拉到的新提交只改了别的文件 → 照常推，下一轮会把它拆进队列）。否则 `git push origin main`，然后 `gh run list --limit 1 --json databaseId,status,conclusion` 拿 run id，`gh run watch <id> --exit-status --compact`；失败读日志修，修不了通知用户。成功后 `curl -s -o /dev/null -w "%{http_code}" https://etsevenday.github.io/shizheshengcun/` 应为 200。
+**推送**：推送前刷新心跳（第 1 节，`runId` 不是自己的就不推）。先 `git fetch origin`，看 `git log HEAD..origin/main` 有没有策划新提交，再 `git pull --rebase --autostash origin main`（拉取和推送不串在一条命令里）。拉到策划新提交时按下面分情况：
+- **答复的只是本批的问题，`git merge-tree` 预演无冲突**（2026-11-04 用户定）→ **自动并入本批继续，不停下、不通知用户**：拆成新的 R 并进本批（写进清单和 `items`），`lastSeen` 前移；按第 3.0 节核对答复，再按答复改代码和文档，测试全绿后回到这里推送。"本批的问题"= 本批 `questions` 里的 Q，或本批开工前、开发中提的 Q；策划为这些 Q 同步改到的其他策划案和合同也算。答复含义不清或引出新缺口 → 按第 3.0 节写成问题、批次 `waiting`，不算受阻。
+- 改到本批涉及的策划案文件，但不是答复本批问题（别的修订、别批的 Q），或预演有冲突 → 不推，批次记 `blocked`，通知用户，清锁结束。
+- 只改了别的文件 → 照常推，下一轮会把它拆进队列。
+
+没有上面要停的情况就 `git push origin main`，然后 `gh run list --limit 1 --json databaseId,status,conclusion` 拿 run id，`gh run watch <id> --exit-status --compact`；失败读日志修，修不了通知用户。成功后 `curl -s -o /dev/null -w "%{http_code}" https://etsevenday.github.io/shizheshengcun/` 应为 200。
 
 ## 6 通知与收尾
 
