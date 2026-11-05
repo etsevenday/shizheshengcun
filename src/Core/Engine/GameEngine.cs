@@ -312,6 +312,8 @@ namespace Survival.Core.Engine
             public List<int> CookTargetItems = new List<int>();
             /// <summary>B21：本次移动开始时提交远征的地牢（R03 D3）。</summary>
             public string? CommitDungeon;
+            /// <summary>B28：给同行者吃喝（校验通过后的目标、出物人与真实对象）。</summary>
+            public FeedPlan? Feed;
         }
 
         private string? Validate(GameState s, ActionRequest r, out Plan plan)
@@ -319,9 +321,9 @@ namespace Survival.Core.Engine
             plan = new Plan { Type = r.Type, TargetId = r.TargetId };
             if (s.Progress.Dead) return "角色已死亡";
             if (DialogueLocked(s)) return DialogueLockedReason;
-            if (s.Battle != null) return "战斗中：请使用战斗指令";
+            if (s.Battle != null) return r.Feeding != null ? FeedCopy.Battle : "战斗中：请使用战斗指令";
             // B21-9：撤出一旦开始一直走到父地点，途中不能做别的事（R03 D5.2、S13 B4）
-            if (s.Expedition?.IsExtracting == true) return ExtractingBusyReason(s);
+            if (s.Expedition?.IsExtracting == true) return r.Feeding != null ? FeedCopy.Extracting : ExtractingBusyReason(s);
             if (s.Encounter != null && r.Type != ActionType.Bypass) return "发现敌踪：请先选择接敌或绕行";
             if (r.Type == ActionType.Bypass)
             {
@@ -673,6 +675,7 @@ namespace Survival.Core.Engine
 
                 case ActionType.Use:
                 {
+                    if (r.Feeding != null) return ValidateFeed(s, r.Feeding, plan);
                     ItemInstance? inst;
                     if (r.InstanceId.HasValue)
                     {
@@ -934,6 +937,7 @@ namespace Survival.Core.Engine
                 }
                 case ActionType.Use:
                 {
+                    if (p.Feed != null) { StartFeed(s, p.Feed); break; }
                     var inst = p.UseItem!;
                     var cfg = _items[inst.ItemId];
                     if (cfg.Canteen != null)

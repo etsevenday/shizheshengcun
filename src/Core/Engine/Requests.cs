@@ -24,7 +24,7 @@ namespace Survival.Core.Engine
         /// B13b 试玩修复：原键漏了 BareHands，“改用徒手开始”按钮读到带工具的缓存预估，显示了用工具后的工时。
         /// </summary>
         public string PreviewKey =>
-            $"{Type}|{TargetId}|{InstanceId}|{Minutes}|{ToolInstanceId}|{PotInstanceId}|{BatchCount}|{string.Join(",", PreferredInstanceIds)}|{(BareHands ? "bare" : "")}|{(ConfirmExpedition ? "exp" : "")}|{PatchInstanceId}";
+            $"{Type}|{TargetId}|{InstanceId}|{Minutes}|{ToolInstanceId}|{PotInstanceId}|{BatchCount}|{string.Join(",", PreferredInstanceIds)}|{(BareHands ? "bare" : "")}|{(ConfirmExpedition ? "exp" : "")}|{PatchInstanceId}|{Feeding?.Key}";
         /// <summary>
         /// 移动时确认开始地牢远征（R03 D3，B21）：在入口缓冲 01 第一次走向危险房间必须带它，移动开始时原子提交远征；其他移动忽略。
         /// </summary>
@@ -35,6 +35,8 @@ namespace Survival.Core.Engine
         public int BatchCount { get; set; } = 1;
         /// <summary>幂等请求号：同一请求重复提交只生效一次。</summary>
         public string? RequestId { get; set; }
+        /// <summary>给同行者吃喝（B28，Q232）：非空时这次 Use 的效果落到目标本人，校验与文字走 FeedRequest 一路。</summary>
+        public FeedRequest? Feeding { get; set; }
 
         public static ActionRequest Travel(string locationId, bool confirmExpedition = false) => new ActionRequest { Type = ActionType.Travel, TargetId = locationId, ConfirmExpedition = confirmExpedition };
         public static ActionRequest Explore() => new ActionRequest { Type = ActionType.Explore };
@@ -55,6 +57,8 @@ namespace Survival.Core.Engine
         public static ActionRequest Sleep(int minutes) => new ActionRequest { Type = ActionType.Sleep, Minutes = minutes };
         public static ActionRequest UseInstance(int instanceId) => new ActionRequest { Type = ActionType.Use, InstanceId = instanceId };
         public static ActionRequest UseItem(string itemId) => new ActionRequest { Type = ActionType.Use, TargetId = itemId };
+        /// <summary>给同行者吃喝一份（B28）：与主角食饮同一 5 分钟事务，开始时原子扣一份并给效果。</summary>
+        public static ActionRequest FeedCompanion(FeedRequest f) => new ActionRequest { Type = ActionType.Use, Feeding = f, RequestId = f.RequestId };
         /// <summary>绕行当前敌踪（固定10分钟，按 travel 消耗）。</summary>
         public static ActionRequest Bypass() => new ActionRequest { Type = ActionType.Bypass };
         /// <summary>饱饱吞噬融合指定的活性物质实例（R07 §4）。</summary>
@@ -73,6 +77,83 @@ namespace Survival.Core.Engine
         }
         /// <summary>点火；指定打火器实例时用它（随身或当前地面），否则自动选。</summary>
         public static ActionRequest Ignite(int? lighterInstanceId = null) => new ActionRequest { Type = ActionType.Ignite, InstanceId = lighterInstanceId };
+    }
+
+    /// <summary>
+    /// 给同行者吃喝的请求（开发计划 v0.9 B28，合同 feeding、carriedPotQ233）：一次一目标一份。出物人只能是主角或目标本人，不自动换人、不自动换批次。
+    /// 选中的物品用 InstanceId（食物、水卡、水壶、锅内食物或锅内水）；锅水也可写 PotInstanceId + WaterItemId。
+    /// </summary>
+    public sealed class FeedRequest
+    {
+        /// <summary>吃喝的同行者 actorId。</summary>
+        public string TargetActorId { get; set; } = "";
+        /// <summary>出物人 actorId：主角 "p0" 或目标本人。</summary>
+        public string SourceActorId { get; set; } = "";
+        public int? InstanceId { get; set; }
+        /// <summary>出物的随身锅；带 InstanceId 时重验内容确实在这口锅里。</summary>
+        public int? PotInstanceId { get; set; }
+        /// <summary>不带 InstanceId 时，从 PotInstanceId 这口锅里取这种水（dirty_water/clean_water）。</summary>
+        public string? WaterItemId { get; set; }
+        /// <summary>预览给出的 FeedSourceInfo.Stamp：带上时确认前重验 owner/份数/水量，有变化整条拒绝。null = 不比对。</summary>
+        public string? ConfirmStamp { get; set; }
+        /// <summary>幂等请求号：连点、读档只结算一次。</summary>
+        public string? RequestId { get; set; }
+
+        internal string Key => $"{TargetActorId}|{SourceActorId}|{InstanceId}|{PotInstanceId}|{WaterItemId}|{ConfirmStamp}";
+    }
+
+    public enum FeedSourceKind { Food, Water, Canteen, PotFood, PotWater }
+
+    /// <summary>一个合法出物批次（FeedSources 的一行，也是预览的来源字段）。</summary>
+    public sealed class FeedSourceInfo
+    {
+        public string SourceActorId { get; set; } = "";
+        /// <summary>“你”或同行显示名。</summary>
+        public string SourceName { get; set; } = "";
+        public int InstanceId { get; set; }
+        public string ItemId { get; set; } = "";
+        /// <summary>物品或水种原名；水壶为壶内水种名。</summary>
+        public string ItemName { get; set; } = "";
+        public FeedSourceKind Kind { get; set; }
+        /// <summary>出物的随身锅实例号；不在锅里为 null。</summary>
+        public int? PotInstanceId { get; set; }
+        /// <summary>可用份数：食物与水卡为堆叠数，锅水为未预留的 500 毫升份数，水壶为可喝的 250 毫升次数。</summary>
+        public int Portions { get; set; }
+        /// <summary>这一份消耗的毫升（水卡与锅水 500、水壶 250）；食物为 0。</summary>
+        public int PortionMl { get; set; }
+        /// <summary>现有水量毫升（水卡为这一堆的总量，锅水为未预留水量，水壶为壶内水量）；食物为 0。</summary>
+        public int LiquidMl { get; set; }
+        /// <summary>保质截止世界分钟；无截止为 null。</summary>
+        public int? ExpiresAt { get; set; }
+        /// <summary>确认用快照：放进 FeedRequest.ConfirmStamp。</summary>
+        public string Stamp { get; set; } = "";
+    }
+
+    /// <summary>合法目标（FeedTargets 的一行）。</summary>
+    public sealed class FeedTargetInfo
+    {
+        public string ActorId { get; set; } = "";
+        public string Name { get; set; } = "";
+        public Stats Stats { get; set; } = new Stats();
+    }
+
+    /// <summary>给同行者吃喝的预览字段；耗时、确认文字、溢出在 ActionPreview 的 BaseMinutes/EstimatedMinutes/ConfirmText/Overflow。</summary>
+    public sealed class FeedPreviewInfo
+    {
+        public string TargetActorId { get; set; } = "";
+        public string TargetName { get; set; } = "";
+        public FeedSourceInfo Source { get; set; } = new FeedSourceInfo();
+        /// <summary>结算后的现有水量毫升（规则同 FeedSourceInfo.LiquidMl）；食物为 0。</summary>
+        public int LiquidMlAfter { get; set; }
+        public Stats TargetBefore { get; set; } = new Stats();
+        /// <summary>确认那一刻效果给完（裁上限）后的目标状态。</summary>
+        public Stats TargetAfterImmediate { get; set; } = new Stats();
+        /// <summary>5 分钟走完后的目标状态（含自然消耗）。</summary>
+        public Stats TargetAfter { get; set; } = new Stats();
+        /// <summary>结果句里的{变化}：目标实际生效并裁上限后的变化与风险反馈。</summary>
+        public string ChangeText { get; set; } = "";
+        /// <summary>成功后的完整结果句。</summary>
+        public string ResultText { get; set; } = "";
     }
 
     public enum InstantKind { Pickup, Drop, AddFuel, Extinguish, FillPot, Decant, PutInFire, PutFoodInPot, TakeOut, Reorder, LoadCharcoal, FillCanteen, PourCanteen, LoadPotRecipe, StoreCabinet, TakeCabinet }
@@ -265,6 +346,8 @@ namespace Survival.Core.Engine
         public Stats? StatsAfterImmediate { get; set; }
         /// <summary>临近上限的溢出，如“饱食溢出12”。</summary>
         public List<string> Overflow { get; set; } = new List<string>();
+        /// <summary>给同行者吃喝（B28）的结构化预览；其他行动与不能开始时为 null。Overflow 此时按目标本人算。</summary>
+        public FeedPreviewInfo? Feed { get; set; }
         /// <summary>“接近上限：饱食溢出12，溢出部分浪费。”；没有溢出为 null。</summary>
         public string? OverflowText => Overflow.Count > 0 ? $"接近上限：{string.Join("，", Overflow)}，溢出部分浪费。" : null;
     }

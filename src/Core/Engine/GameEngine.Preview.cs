@@ -94,6 +94,7 @@ namespace Survival.Core.Engine
             p.AlertsExpected = alerts.ToList();
             p.WouldDie = c.Progress.Dead;
             p.StatsAfter = c.Stats.Clone();
+            if (p.Feed != null) p.Feed.TargetAfter = c.Actors[p.Feed.TargetActorId].Stats.Clone();
             p.EstimatedEndMinute = c.GameMinute;
             p.EstimatedMinutes = c.GameMinute - s.GameMinute;
             if (carryKey != null && !c.Progress.Dead)
@@ -385,6 +386,7 @@ namespace Survival.Core.Engine
                 case ActionType.Use:
                 {
                     p.BaseMinutes = Config.ItemActions.UseMinutes;
+                    if (plan?.Feed != null) { FillFeedPreview(s, p, plan.Feed); break; }
                     p.ConfirmText = plan != null ? $"{plan.Label}·{Config.ItemActions.UseMinutes}分钟" : "使用";
                     // 临近上限的溢出（原在网页 ItemDetail 里算，v0.7 起放进内核，卡下按钮与右栏共用）
                     var cfg = plan?.UseItem != null ? _items[plan.UseItem.ItemId] : _items.TryGetValue(r.TargetId, out var tc) ? tc : null;
@@ -431,7 +433,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>即时效果超过该项上限的部分（两位小数）：“饱食溢出12.00”“健康溢出0.30”。健康用实际恢复量（含医疗加成）。</summary>
-        public static List<string> OverflowLines(Stats st, Survival.Core.Config.ItemUseConfig u, double healthAmount)
+        public static List<string> OverflowLines(Stats st, Survival.Core.Config.ItemUseConfig u, double healthAmount, double? satietyAmount = null)
         {
             var over = new List<string>();
             void Check(StatId id, string name, double amount)
@@ -440,7 +442,7 @@ namespace Survival.Core.Engine
                 var raw = st.Get(id) + amount;
                 if (raw > st.Max(id) + 1e-9) over.Add($"{name}溢出{Fmt.N(raw - st.Max(id))}");
             }
-            Check(StatId.Satiety, "饱食", u.Satiety);
+            Check(StatId.Satiety, "饱食", satietyAmount ?? u.Satiety);
             Check(StatId.Hydration, "水分", u.Hydration);
             Check(StatId.Health, "健康", healthAmount);
             Check(StatId.Morale, "精神", u.Morale);
