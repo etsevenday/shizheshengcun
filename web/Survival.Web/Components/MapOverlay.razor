@@ -155,11 +155,14 @@
                                     var rw = 16 + 14 * rt.Length;
                                     <g class="map-role"><rect x="@F(x - rw / 2.0)" y="@F(y - NodeH / 2 - 24)" width="@rw" height="22" rx="4" /><text x="@F(x)" y="@F(y - NodeH / 2 - 8)" text-anchor="middle">@rt</text></g>
                                 }
-                                @* Q220（A10-EXUI §5）：节点右上角水源图标，左边的形状写水源形态、右边的水滴写水种（脏水带斜杠），不靠颜色区分；悬停写资源点名、四类账、水种 *@
+                                @* Q220（A10-EXUI §5）：节点右上方框外的水源图标，左边的形状写水源形态、右边的水滴写水种（脏水带斜杠），不靠颜色区分；悬停写资源点名、四类账、水种。
+                                   B27 试玩修复：放在框外上方，右端对齐框右，不压节点名和框；有角色标签时排到标签右边，方向徽标在框左上角 *@
+                                var waterX = x + NodeW / 2 - (46 * n.Water.Count - 2);
+                                if (n.Roles.Count > 0) waterX = Math.Max(waterX, x + (16 + 14 * string.Join("·", n.Roles).Length) / 2.0 + 2);
                                 @for (var wi = 0; wi < n.Water.Count; wi++)
                                 {
                                     var wm = n.Water[wi];
-                                    <g class="map-water" data-water="@wm.Shape" transform="@($"translate({F(x + NodeW / 2 - 40 - wi * 46)},{F(y - NodeH / 2 - 12)})")">
+                                    <g class="map-water" data-water="@wm.Shape" transform="@($"translate({F(waterX + wi * 46)},{F(y - NodeH / 2 - 26)})")">
                                         <title>@wm.Title</title>
                                         <rect width="44" height="24" rx="6" />
                                         <g class="wg" transform="translate(3,3) scale(0.75)">

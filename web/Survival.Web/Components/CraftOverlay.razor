@@ -71,7 +71,7 @@
                     var why = candidates != null ? e.CanStart(s, ActionRequest.Craft(id)) : rl.FirstOrDefault();
                     <button class="recipe @(id == recipeId && proc == null ? "on" : "") @(why != null && !built ? "missing" : "")" @onclick="() => Pick(id)" title="@(why ?? RecipeMeta(r))" data-recipe="@id">
                         @Icons.Markup(icon)
-                        <span>@r.Name<small>@(built ? "已建成" : why != null ? ShortLock(why) : RecipeMeta(r))</small></span>
+                        <span>@r.Name<small>@(built ? "已建成" : why != null ? e.RecipeLockShort(r, why) : RecipeMeta(r))</small></span>
                     </button>
                 }
                 @if (candidates == null && tab == AutoTab)
@@ -566,15 +566,6 @@ else
     {
         var lv = r.MinSkills.Count == 0 ? "" : " · " + string.Join("、", r.MinSkills.Select(kv => $"{G.E.SkillName(kv.Key)}{kv.Value}级"));
         return $"{r.BaseMinutes}分钟{lv}{(r.IsBuild ? (GameEngine.IsWildFireRecipe(r) ? " · 普通野外" : " · 营地") : "")}";
-    }
-
-    /// <summary>列表里的锁定短句（详细原因在悬停与配方卡）。</summary>
-    private static string ShortLock(string why)
-    {
-        if (why.StartsWith("未掌握")) return "未掌握：需要蓝图";
-        if (why.StartsWith("还不知道")) return "未掌握：营区登记后学会";
-        var cut = why.IndexOf('\uff1a');
-        return why.StartsWith("需要") && cut > 0 ? why.Substring(0, cut) : why;
     }
 
     /// <summary>配方需要的知识与来源（A05 §3 默认知识/蓝图）。</summary>

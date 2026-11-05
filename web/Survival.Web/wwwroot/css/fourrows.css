@@ -1141,3 +1141,34 @@
 .mat-row .src-btn { margin-right: 6px; font-size: 13px; }
 .exp-stores .remains-row.reward span { color: #b8e0a0; }
 .map-sources .ms-back { min-height: 32px; padding: 2px 12px; font-size: 14px; flex: none; }
+
+/* ───── B27 试玩修复：采集资源卡的产量行完整显示（四类账徽标、产量、日补都看得到） ─────
+   原来 .oc-body 是 flex 列，行内 overflow:hidden 时会被压扁（1280 档徽标行只剩 10px），产量行单行省略或被两行上限裁掉。
+   现在产量行按内容换行、不压扁。屏高 >800：状态区整宽放在“名称+按钮”下面，主图让位。
+   屏高 ≤800：一行内容的卡不变；有第二行（风险、不能开始原因）时放不下主图，主图让位，名称与按钮同一行，状态区 11px。
+   内容还超出时状态区内滚动。只改这一组卡，人物卡、选择卡、设施卡不动。 */
+.center-scroll.four .facility-row .desk-group.resources .res-card .oc-body .oc-line { flex: none; }
+.center-scroll.four .facility-row .desk-group.resources .res-card .oc-body .oc-line:not(.warn-line) {
+  display: block; -webkit-line-clamp: unset; white-space: normal; word-break: normal; overflow-wrap: anywhere; overflow: visible; text-overflow: clip;
+}
+@media (min-height: 801px) {
+  .center-scroll.four .facility-row .desk-group.resources .res-card { grid-template-rows: minmax(0, 1fr) auto minmax(0, auto); }
+  .center-scroll.four .facility-row .desk-group.resources .res-card .oc-head { align-self: center; }
+  .center-scroll.four .facility-row .desk-group.resources .res-card .oc-foot { grid-row: 2; align-self: center; padding: 2px 12px 0 0; }
+  .center-scroll.four .facility-row .desk-group.resources .res-card .oc-body {
+    grid-column: 1 / -1; align-self: stretch; padding-right: 14px; min-height: 0; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin;
+  }
+}
+@media (max-height: 800px) {
+  .center-scroll.four .facility-row .desk-group.resources .res-card .oc-body .oc-line:not(.warn-line) { line-height: 1.2; }
+  .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) { grid-template-rows: auto minmax(0, 1fr); }
+  .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .oc-art { display: none; }
+  .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .oc-head {
+    grid-column: 1; grid-row: 1; align-self: center; flex-wrap: wrap; padding: 12px 4px 0 14px;
+  }
+  .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .oc-foot { grid-column: 2; grid-row: 1; padding: 12px 12px 0 0; }
+  .wasteland .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .oc-head b { line-height: 1.15; }
+  .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .oc-body { grid-row: 2; gap: 0; padding-bottom: 12px; scrollbar-width: none; }
+  .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .oc-body .oc-line { font-size: 11px; line-height: 1.15; }
+  .center-scroll.four .facility-row .desk-group.resources .res-card:has(.oc-line + .oc-line) .acct-ico { width: 12px; height: 12px; margin-right: 2px; }
+}

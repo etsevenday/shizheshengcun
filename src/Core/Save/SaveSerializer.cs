@@ -121,6 +121,9 @@ namespace Survival.Core.Save
         /// <summary>存档是旧版、读取时会迁移。</summary>
         public static bool NeedsMigration(string json) => IsMigratable(SchemaOf(json));
 
+        /// <summary>读档升级要不要告诉玩家：只走 42→43 这一步时不提示（Q248 migration.logs：43 不写新迁移日志、系统提示或对白），备份照常；更老的档照旧提示。</summary>
+        public static bool AnnouncesUpgrade(string json) => NeedsMigration(json) && SchemaOf(json) != SaveMigrator.Schema42;
+
         /// <summary>存档的结构版本号（开始界面预告升级用）。</summary>
         public static string? SchemaVersionOf(string json) => SchemaOf(json);
 

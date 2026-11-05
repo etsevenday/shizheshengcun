@@ -30,6 +30,16 @@ namespace Survival.Core.Engine
             return $"还不知道{k?.Name ?? rc.Name + "的做法"}（{k?.Source ?? "后续解锁"}）";
         }
 
+        /// <summary>配方列表的锁定短句（详细原因在悬停与配方卡）。登记不教的五张蓝图（Q216、Q249）不写“营区登记后学会”。</summary>
+        public string RecipeLockShort(RecipeConfig rc, string why)
+        {
+            if (why.StartsWith("未掌握")) return "未掌握：需要蓝图";
+            if (why.StartsWith("还不知道"))
+                return rc.Knowledge != null && Config.City.Registration.LegacyKnowledge.Contains(rc.Knowledge) ? "未掌握：需要蓝图" : "未掌握：营区登记后学会";
+            var cut = why.IndexOf('\uff1a');
+            return why.StartsWith("需要") && cut > 0 ? why.Substring(0, cut) : why;
+        }
+
         public bool RecipeKnown(GameState s, RecipeConfig rc) => RecipeUnknownReason(s, rc) == null;
 
         public const string Crafting = "crafting";

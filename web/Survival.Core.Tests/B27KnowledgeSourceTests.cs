@@ -443,4 +443,49 @@ public class B27KnowledgeSourceTests : TestBase
         Assert.That(p.Notes, Has.Some.Contains("同时获得做法知识：净水操作套件的做法、维护手册蓝图"));
         Assert.That(p.Notes, Has.None.Contains("知识已知"));
     }
+
+    // ───────────── B27 试玩修复 ─────────────
+
+    /// <summary>配方列表短句：五张蓝图登记前后都是“需要蓝图”，21 项登记默认知识不变；悬停的完整原因不动。</summary>
+    [Test]
+    public void B27_Playtest_LockShort_FiveBlueprints_NotRegistration()
+    {
+        var s = Registered();
+        foreach (var k in Five)
+        {
+            var r = Cfg.Recipes.First(x => x.Knowledge == k);
+            var why = E.RecipeUnknownReason(s, r);
+            Assert.That(why, Does.StartWith("还不知道").And.Contain((string)Sources.Single(x => (string)x["knowledgeId"]! == k)["source"]!), k);
+            Assert.That(E.RecipeLockShort(r, why!), Is.EqualTo("未掌握：需要蓝图"), k);
+        }
+        var fresh = At("h03_workshop");
+        var regs = Cfg.Recipes.Where(r => r.Knowledge != null && Cfg.Knowledge.Single(x => x.Id == r.Knowledge).GrantedByFacts.Contains("hub_registered")).ToList();
+        Assert.That(regs, Is.Not.Empty);
+        foreach (var r in regs) Assert.That(E.RecipeLockShort(r, E.RecipeUnknownReason(fresh, r)!), Is.EqualTo("未掌握：营区登记后学会"), r.Id);
+    }
+
+    /// <summary>其他锁定原因的短句和原来一样。</summary>
+    [Test]
+    public void B27_Playtest_LockShort_OtherReasonsKept()
+    {
+        var r = Cfg.Recipes.First(x => x.Knowledge == Five[0]);
+        Assert.That(E.RecipeLockShort(r, "未掌握：需要某图（来源）"), Is.EqualTo("未掌握：需要蓝图"));
+        Assert.That(E.RecipeLockShort(r, "需要火堆：先建"), Is.EqualTo("需要火堆"));
+        Assert.That(E.RecipeLockShort(r, "材料不足"), Is.EqualTo("材料不足"));
+    }
+
+    /// <summary>Q248 migration.logs：只走 43 这一步的 42 档不预告、不在右栏说明；更老的档维持通用提示，当前版本不算升级。备份另走 NeedsMigration，仍然要做。</summary>
+    [TestCase("42", true, false)]
+    [TestCase("41", true, true)]
+    [TestCase("3", true, true)]
+    [TestCase("0.2-proto-1", true, true)]
+    [TestCase(GameState.CurrentSchema, false, false)]
+    public void SAVE_Q248_01_UpgradeNotice_42Silent_OlderKept(string schema, bool backup, bool announce)
+    {
+        var j = JObject.Parse(SaveSerializer.Serialize(New()));
+        j["SchemaVersion"] = schema;
+        var json = j.ToString();
+        Assert.That(SaveSerializer.NeedsMigration(json), Is.EqualTo(backup));
+        Assert.That(SaveSerializer.AnnouncesUpgrade(json), Is.EqualTo(announce));
+    }
 }

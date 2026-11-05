@@ -960,7 +960,7 @@ public sealed class GameSession
             if (migrate)
             {
                 Save();
-                Notice = $"旧存档已升级到版本{GameState.CurrentSchema}，原档已备份" + (notes.Count > 0 ? "：" + string.Join("；", notes) : "") + "。";
+                if (SaveSerializer.AnnouncesUpgrade(json)) Notice = $"旧存档已升级到版本{GameState.CurrentSchema}，原档已备份" + (notes.Count > 0 ? "：" + string.Join("；", notes) : "") + "。";
             }
             Notify();
             // 行动动画每 5 分钟段都会存档，播放中刷新页面时存档里的主行动仍是“运行中”；
@@ -997,7 +997,7 @@ public sealed class GameSession
         try
         {
             var json = _store.Load();
-            if (string.IsNullOrEmpty(json) || !SaveSerializer.NeedsMigration(json)) return null;
+            if (string.IsNullOrEmpty(json) || !SaveSerializer.AnnouncesUpgrade(json)) return null;
             return SaveSerializer.SchemaVersionOf(json);
         }
         catch { return null; }
