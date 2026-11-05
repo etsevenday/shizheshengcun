@@ -1,0 +1,378 @@
+{
+  "version": "q251_20261105",
+  "date": "2026-11-05",
+  "status": "策划定稿，待开发实装验证",
+  "answer": "选A。kind=gear的全部35件装备（armor、上衣、下衣、战斗饰品、生存饰品）都用防具线索；pot金属锅、ration_canteen分量水壶用容器线索，不按其tool/material落入工具/材料；4种动物尸体及未鉴定活性物质用通用兜底线索。稳定ID、元数据及完整映射见本轮合同；Q219逐字稿和Q250无任何可获取来源才显示的门槛保持，当前未有的查询入口不因本题新增。",
+  "policy": {
+    "scope": "本题补足Q219公开来源线索的特殊物品类别匹配，只定分类，不改逐字稿、来源可获取资格或Q250显示门槛。全部装备在本题特指kind=gear的非武器装备，含8防具、6上衣、6下衣、9战斗饰品、6生存饰品，共35；不把武器、弹药、医疗物品一并改成防具。",
+    "gear": "物品kind=gear统一匹配armor线索，包括战斗饰品和生存饰品。35项清单为当前版本核对快照，规则按gear元数据判断而非只写死这35个ID；将来同类gear仍依此规则。槽位名称是已有装备槽，不要求为了线索修改物品kind或槽。",
+    "containers": "以明确稳定itemId识别pot与ration_canteen为container线索；这条语义优先于它们原kind=tool/material的通用分支。不要求存在kind=container，不按中文名称包含锅/壶猜分类。只查询容器本身时用容器线索；独立查询其中水或食品仍按被查询物品自身原类别，不随外层锅壶改成容器。",
+    "fallback": "当前4种kind=carcass动物尸体及active_substance_white_unidentified用fallback，不按处理产物或可融合用途改成食品/材料/医疗。未知或未匹配类别沿Q219原fallback，分类不鉴定活性物质、不提前公开其真实性质。",
+    "priority": "沿Q219顺序water→food→medicine→ammo→weapon→armor→container→tool→material→fallback；在armor分支将gear包含完整，在container分支纳入pot/ration_canteen，因而二者不会提前落入tool/material。其他类别及其冲突优先级保持，不重排武器和医疗。",
+    "display": "仅当Q250原当前来源列表没有任何可获取行时，在末尾追加一条所选hintKey对应的Q219原文。有任一原可获取行不显示，原来源行与排序/状态保持；分类不替代可获取条件。只读0世界分钟/0AP/0资源，不开图、不授知识/物品/任务/经验，不承诺必得，不报未知地点、坐标或深房。",
+    "entry": "当前来源查询入口仍只按原已实装制作缺料等入口开放；42种物品中现在点不到的类别，先配置好分类，不为本题增加卡片按钮或新查询入口、不提前生成来源目录。未来由合法入口查询时采用同一分类。",
+    "save": "分类为当前查询的只读结果，重开按当前元数据/来源资格刷新。不新增存档迁移或日志、不重置知识/登记/任务/配额/存量，不改变进行中的制作、抄录或动作快照。旧存档同样按新分类显示，不补过去没展示的线索。",
+    "supersedes": "明确补足并取代Q219 hintPolicy和Q246—Q250合同中Q251特殊归属仍待定/本批不裁定的当前状态；前批日期更新说明和校验报告作为历史交付保留。Q246—Q249迁移与五句来源、Q250门槛及fallback逐字稿完全保持。所有实际【实现同步】与完整修改记录原样保留，不能把本次策划静态验证说成开发实装或界面试玩通过。"
+  },
+  "classification": {
+    "gearKind": "gear",
+    "gearHint": "armor",
+    "containerItemIds": [
+      "pot",
+      "ration_canteen"
+    ],
+    "containerHint": "container",
+    "carcassKind": "carcass",
+    "carcassHint": "fallback",
+    "unidentifiedSubstanceItemIds": [
+      "active_substance_white_unidentified"
+    ],
+    "unidentifiedSubstanceHint": "fallback",
+    "priority": [
+      "water",
+      "food",
+      "medicine",
+      "ammo",
+      "weapon",
+      "armor",
+      "container",
+      "tool",
+      "material",
+      "fallback"
+    ]
+  },
+  "snapshot": {
+    "source": "data/config.v0.6.json（只读核对，未改运行配置）",
+    "sourceSHA256": "a425eccaa79d26ea54c3109b3e5413c57e0a0aa8087161b9186e519734e47172",
+    "counts": {
+      "armor": 35,
+      "container": 2,
+      "fallback": 5
+    },
+    "gearSlots": {
+      "armor": 8,
+      "top": 6,
+      "bottom": 6,
+      "combat_acc": 9,
+      "survival_acc": 6
+    },
+    "sourceCommit": "abfc355f0a36a03fc6c9769f4b37333bcaa49c46"
+  },
+  "mappings": [
+    {
+      "itemId": "padded_vest",
+      "name": "衬垫护具",
+      "kind": "gear",
+      "slot": "armor",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "leather_armor",
+      "name": "皮革护具",
+      "kind": "gear",
+      "slot": "armor",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "scrap_armor",
+      "name": "拼接铁甲",
+      "kind": "gear",
+      "slot": "armor",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "guard_armor",
+      "name": "守备护甲",
+      "kind": "gear",
+      "slot": "armor",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "scout_armor",
+      "name": "侦察护具",
+      "kind": "gear",
+      "slot": "armor",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "heavy_armor",
+      "name": "重型防护甲",
+      "kind": "gear",
+      "slot": "armor",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "medic_armor",
+      "name": "救护防护背心",
+      "kind": "gear",
+      "slot": "armor",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "balanced_armor",
+      "name": "均衡战术甲",
+      "kind": "gear",
+      "slot": "armor",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "steady_ring",
+      "name": "稳手指环",
+      "kind": "gear",
+      "slot": "combat_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "swift_pendant",
+      "name": "轻捷吊坠",
+      "kind": "gear",
+      "slot": "combat_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "guard_badge",
+      "name": "守护徽记",
+      "kind": "gear",
+      "slot": "combat_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "hunter_token",
+      "name": "猎手护符",
+      "kind": "gear",
+      "slot": "combat_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "focus_lens",
+      "name": "聚焦镜片",
+      "kind": "gear",
+      "slot": "combat_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "aid_badge",
+      "name": "救护徽章",
+      "kind": "gear",
+      "slot": "combat_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "resolve_medal",
+      "name": "镇定勋章",
+      "kind": "gear",
+      "slot": "combat_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "tactics_watch",
+      "name": "战术计时表",
+      "kind": "gear",
+      "slot": "combat_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "knuckle_wraps",
+      "name": "护拳绑带",
+      "kind": "gear",
+      "slot": "combat_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "work_shirt",
+      "name": "耐磨工作衣",
+      "kind": "gear",
+      "slot": "top",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "forage_jacket",
+      "name": "采集外套",
+      "kind": "gear",
+      "slot": "top",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "scavenge_vest",
+      "name": "搜集背心",
+      "kind": "gear",
+      "slot": "top",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "craft_coat",
+      "name": "工匠围衣",
+      "kind": "gear",
+      "slot": "top",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "rest_coat",
+      "name": "休养外衣",
+      "kind": "gear",
+      "slot": "top",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "expedition_coat",
+      "name": "远征上衣",
+      "kind": "gear",
+      "slot": "top",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "work_trousers",
+      "name": "工作长裤",
+      "kind": "gear",
+      "slot": "bottom",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "trail_trousers",
+      "name": "行路裤",
+      "kind": "gear",
+      "slot": "bottom",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "utility_trousers",
+      "name": "作业长裤",
+      "kind": "gear",
+      "slot": "bottom",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "reinforced_trousers",
+      "name": "加固长裤",
+      "kind": "gear",
+      "slot": "bottom",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "recovery_trousers",
+      "name": "休养长裤",
+      "kind": "gear",
+      "slot": "bottom",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "expedition_trousers",
+      "name": "远征下衣",
+      "kind": "gear",
+      "slot": "bottom",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "gather_gloves",
+      "name": "采集手套",
+      "kind": "gear",
+      "slot": "survival_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "route_compass",
+      "name": "路线罗盘",
+      "kind": "gear",
+      "slot": "survival_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "filter_token",
+      "name": "净水操作套件",
+      "kind": "gear",
+      "slot": "survival_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "repair_manual",
+      "name": "维护手册",
+      "kind": "gear",
+      "slot": "survival_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "medical_notes",
+      "name": "护理笔记",
+      "kind": "gear",
+      "slot": "survival_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "ration_pouch",
+      "name": "配给袋",
+      "kind": "gear",
+      "slot": "survival_acc",
+      "hintKey": "armor"
+    },
+    {
+      "itemId": "pot",
+      "name": "金属锅",
+      "kind": "tool",
+      "hintKey": "container"
+    },
+    {
+      "itemId": "ration_canteen",
+      "name": "分量水壶",
+      "kind": "material",
+      "hintKey": "container"
+    },
+    {
+      "itemId": "carcass_feral_dog",
+      "name": "野犬尸体",
+      "kind": "carcass",
+      "hintKey": "fallback"
+    },
+    {
+      "itemId": "carcass_wolf",
+      "name": "狼尸体",
+      "kind": "carcass",
+      "hintKey": "fallback"
+    },
+    {
+      "itemId": "carcass_boar",
+      "name": "野猪尸体",
+      "kind": "carcass",
+      "hintKey": "fallback"
+    },
+    {
+      "itemId": "carcass_stag",
+      "name": "鹿尸体",
+      "kind": "carcass",
+      "hintKey": "fallback"
+    },
+    {
+      "itemId": "active_substance_white_unidentified",
+      "name": "未鉴定的活性物质",
+      "kind": "substance",
+      "hintKey": "fallback"
+    }
+  ],
+  "hintTexts": {
+    "armor": "可查看已掌握的防护制作和已发现的装备记录；具体材料与等级以配方条件为准。",
+    "container": "可查看已掌握的容器制作和已发现的物资记录；空容器不等于已经装有补给。",
+    "fallback": "暂无已知来源。可继续调查已经发现的地点与公开资料；此提示不代表未发现区域一定存在该物品。"
+  },
+  "displayContractFile": "assets/20261105/knowledge-source-adjudications.json",
+  "acceptance": [
+    {
+      "id": "SOURCE-Q251-01",
+      "criterion": "当前35个kind=gear物品逐项匹配armor，8防具/12衣裤/9战斗饰品/6生存饰品全部覆盖；稳手指环、护拳绑带、路线罗盘、配给袋均非fallback，武器原weapon分类保持。"
+    },
+    {
+      "id": "SOURCE-Q251-02",
+      "criterion": "pot即使kind=tool也匹配container，ration_canteen即使kind=material也匹配container；按稳定ID识别，不靠名字或新增kind，独立查询净水/食品仍用原类别。"
+    },
+    {
+      "id": "SOURCE-Q251-03",
+      "criterion": "carcass_feral_dog、carcass_wolf、carcass_boar、carcass_stag及active_substance_white_unidentified全部匹配fallback，不按其产物/用途猜类别，不因此鉴定或揭示未知来源。"
+    },
+    {
+      "id": "SOURCE-Q251-04",
+      "criterion": "无任何可获取来源时，所选类别只在列表末尾显示一次Q219原文；任一可获取来源存在时不追加，原不可用来源仍保留，不因分类改查询资格、来源状态或物资。"
+    },
+    {
+      "id": "SOURCE-Q251-05",
+      "criterion": "没有既有查询入口的物品不因本题新增按钮或预建目录；旧档/在办事务不迁移不重算，查看0分钟0AP0物资，不授知识/任务/奖励，原武器/水/食物/医疗/弹药及冲突顺序保持。"
+    }
+  ]
+}

@@ -227,7 +227,7 @@
     "container": "可查看已掌握的容器制作和已发现的物资记录；空容器不等于已经装有补给。",
     "fallback": "暂无已知来源。可继续调查已经发现的地点与公开资料；此提示不代表未发现区域一定存在该物品。"
   },
-  "hintPolicy": "Q250选C：当前来源列表不存在任何原资格判定为可获取的行时，在末尾追加一条Q219公开类别线索；耗尽/已领/不可达/概率来源原行保留，全空也显示，不叠旧空列表句。有任一可获取行即不追加，沿原可获取资格不另改条件。只给方法与类别，不泄露未知地点/坐标/深房/产量/必得；类别与原逐字稿保持，Q251特殊归属待答。按现有物品定义的kind、武器/装备槽、弹药/容器等已知元数据匹配；冲突优先water→food→medicine→ammo→weapon→armor→container→tool→material→fallback。这里只维护公开泛线索，不把未来未实装配方当作可获取。",
+  "hintPolicy": "Q250选C：当前来源列表不存在任何原资格判定为可获取的行时，在末尾追加一条Q219公开类别线索；耗尽/已领/不可达/概率来源原行保留，全空也显示，不叠旧空列表句。有任一可获取行即不追加，沿原可获取资格不另改条件。只给方法与类别，不泄露未知地点/坐标/深房/产量/必得；类别按Q251选A补足，原逐字稿保持。按现有物品定义的kind、武器/装备槽、弹药/容器等已知元数据匹配；冲突优先water→food→medicine→ammo→weapon→armor→container→tool→material→fallback。这里只维护公开泛线索，不把未来未实装配方当作可获取。 Q251：kind=gear全部匹配armor；pot/ration_canteen匹配container，优先于其tool/material；4种动物尸体和未鉴定活性物质匹配fallback。",
   "cityCopy": {
     "outside": "{地点名}是城外独立地点，不在鸟瞰内，经区域地图前往。",
     "confirm": "共{段数}段。本次先走{当前地点}→{下一地点}，到达后请再次选择下一段。",
@@ -2707,8 +2707,36 @@
     "condition": "取当前同一物品来源查询已生成的全部原来源行；当且仅当不存在任何一行原可获取资格为true时，追加一条公开线索。现实现可直接沿ItemSourceView.Usable或等价原资格字段判断，不从Status中文字是否恰好等于“可获取”反推，不另造一套更宽或更窄的来源资格。",
     "order": "原来源行及其原排序、状态和原因全部保留，提示固定放在列表末尾；全空时同样显示一条，不再同时叠加旧“还没有已发现的来源”空列表句。不因一个物品有多个不可用来源重复追加提示；存在任意一条可获取行就不追加，下一次按原刷新机制重算。",
     "examples": "只有已耗尽/已领取/本代搜空/未满足资格/无已开通路线或概率来源时，原行保留并追加线索。概率来源不冒充确定可获取。配方、火堆加工、城市服务只按各自原资格字段参与；本题不重写资格或新增对材料/热源/配额的检测。现火堆加工行原Usable=true时仍算已有可获取行，不因本题额外压成不可用。",
-    "copy": "线索正文沿Q219既有hints逐字稿，公开方法/类别，不报未知地点、坐标、深房、产量或必得保证；沿原物品类别匹配，查询不自动授知识/开图/接任务/给物或走时间。Q251所列gear/容器/尸体/活性物质的特殊归属仍待用户答复，本批不新增映射、不把本合同当作Q251已定。",
-    "fallbackContext": "若原Q219的fallback原句用于有行但不可用的列表，其“暂无已知来源”仅表示当前无可获取的已知来源；原不可用行仍完整保留，不因此删行或改状态。fallback正文在本题不另改稿，避免将Q251待定分类提前定案。"
+    "copy": "线索正文沿Q219既有hints逐字稿，公开方法/类别，不报未知地点、坐标、深房、产量或必得保证；沿原物品类别匹配，查询不自动授知识/开图/接任务/给物或走时间。Q251已选A：gear用防具，锅壶用容器，尸体及未鉴定活性物质用通用线索，完整稳定ID/元数据绑定见本轮分类合同。",
+    "fallbackContext": "若原Q219的fallback原句用于有行但不可用的列表，其“暂无已知来源”仅表示当前无可获取的已知来源；原不可用行仍完整保留，不因此删行或改状态。fallback正文保持Q219原稿，Q251只定哪些物品使用它，不另改提示原句。"
   },
-  "knowledgeSourceAdjudicationsFile": "assets/20261105/knowledge-source-adjudications.json"
+  "knowledgeSourceAdjudicationsFile": "assets/20261105/knowledge-source-adjudications.json",
+  "sourceHintClassificationQ251": {
+    "gearKind": "gear",
+    "gearHint": "armor",
+    "containerItemIds": [
+      "pot",
+      "ration_canteen"
+    ],
+    "containerHint": "container",
+    "carcassKind": "carcass",
+    "carcassHint": "fallback",
+    "unidentifiedSubstanceItemIds": [
+      "active_substance_white_unidentified"
+    ],
+    "unidentifiedSubstanceHint": "fallback",
+    "priority": [
+      "water",
+      "food",
+      "medicine",
+      "ammo",
+      "weapon",
+      "armor",
+      "container",
+      "tool",
+      "material",
+      "fallback"
+    ]
+  },
+  "sourceHintClassificationFileQ251": "assets/20261105/source-hint-classification-adjudications.json"
 }

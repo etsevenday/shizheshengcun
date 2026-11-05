@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-05",
+  "status": "passed",
+  "answer": "A",
+  "counts": {
+    "armor": 35,
+    "container": 2,
+    "fallback": 5
+  },
+  "totalMappedItems": 42,
+  "acceptanceCount": 5,
+  "jsonFilesParsedBeforeReport": 103,
+  "checks": [
+    "42项稳定ID唯一且与只读运行元数据一致",
+    "35 gear槽位/2容器/5fallback覆盖完整",
+    "Q219逐字稿/优先级及Q250门槛保持",
+    "旧登记迁移与5句来源保持",
+    "A12/joint新合同及内容/前序合同镜像一致，其他字段未变",
+    "02仅Q251答复变化，原问题/处理结果/实现同步/完整修改记录保留",
+    "十二类自查及5项验收",
+    "拉取B26b最新后重新核对42项元数据，保留新实现同步与完整修改记录，02仍仅Q251答复变化"
+  ],
+  "engineTestsRun": false,
+  "gameplayTested": false,
+  "revalidatedAgainstCommit": "abfc355f0a36a03fc6c9769f4b37333bcaa49c46"
+}
