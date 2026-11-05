@@ -80,12 +80,13 @@
             @* B23（A10-EXUI §4）：缺料来源查询——只列已发现的来源（产量、工时、库存/日补、合格工具、路线），耗尽/已领/本代搜空不亮“可获取”；
                “定位”只切层并居中，不移动；关闭地图（或“返回制作”）回制作面板并恢复原选择 *@
             var srcs = e.ItemSources(s, srcItem);
+            var srcHint = e.ItemSourceHint(srcs, srcItem);   // Q250：没有一行可获取时末尾一条公开线索；全空时替换旧句（Q251 待定的物品没有线索，仍是旧句）
             <div class="map-sources" data-wheel="y" data-sources="@srcItem">
                 <div class="ms-head">
                     <b>@e.ItemName(srcItem)的已知来源</b>
                     <button type="button" class="secondary ms-back" title="回到手工制作，恢复刚才的配方与选择（关闭地图或 Esc 同效）" @onclick="G.ReturnFromSources">返回制作</button>
                 </div>
-                @if (srcs.Count == 0) { <div class="ms-row muted">还没有已发现的来源（未发现的地点与深层房间不提前显示）</div> }
+                @if (srcs.Count == 0 && srcHint == null) { <div class="ms-row muted">还没有已发现的来源（未发现的地点与深层房间不提前显示）</div> }
                 @foreach (var x in srcs)
                 {
                     var loc = x.LocationId;
@@ -99,6 +100,7 @@
                         }
                     </div>
                 }
+                @if (srcHint != null) { <div class="ms-row ms-hint" data-source-hint>@srcHint</div> }
             </div>
         }
             <div class="map-viewport" @ref="_vp" tabindex="0" aria-label="@($"{v.LayerName}，已知{v.Nodes.Count}处；拖动平移，+ − 缩放，0 回到当前位置")"

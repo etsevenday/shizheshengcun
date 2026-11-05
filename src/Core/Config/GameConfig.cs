@@ -112,9 +112,24 @@ namespace Survival.Core.Config
         public DungeonRewardsConfig DungeonRewards { get; set; } = new DungeonRewardsConfig();
         /// <summary>可选地牢知识支线的四个知识包与公开抄录（A11「可选地牢任务与知识」§2—§4；开发计划 v0.9 B23，tools/import-b23-exq.py）。</summary>
         public ExpansionQuestsConfig ExpansionQuests { get; set; } = new ExpansionQuestsConfig();
+        /// <summary>来源查询的公开线索（Q219、Q250，开发计划 v0.9 B27）。</summary>
+        public SourceHintsConfig SourceHints { get; set; } = new SourceHintsConfig();
     }
 
     /// <summary>B23（R71）：可选地牢知识包。</summary>
+    /// <summary>来源查询公开线索：类别→原句（Q219 hints 十句逐字）；物品 kind→类别；冲突时按 priority 取最前（Q219 hintPolicy）。</summary>
+    public sealed class SourceHintsConfig
+    {
+        public string Source { get; set; } = "";
+        public Dictionary<string, string> Hints { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Kinds { get; set; } = new Dictionary<string, string>();
+        public List<string> Priority { get; set; } = new List<string>();
+        /// <summary>Q251 待定：这些 kind 不给线索，保持原有显示。</summary>
+        public List<string> PendingKinds { get; set; } = new List<string>();
+        /// <summary>Q251 待定：这些物品（金属锅、分量水壶）不给线索，保持原有显示。</summary>
+        public List<string> PendingItems { get; set; } = new List<string>();
+    }
+
     public sealed class ExpansionQuestsConfig
     {
         public string Source { get; set; } = "";

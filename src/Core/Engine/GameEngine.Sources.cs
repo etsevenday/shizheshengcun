@@ -81,6 +81,26 @@ namespace Survival.Core.Engine
             return list;
         }
 
+        /// <summary>
+        /// 来源查询末尾的公开线索（Q250 选 C，hintDisplay）：传入同一次查询的 ItemSources 结果，没有任何一行 Usable 时返回一句，否则 null。
+        /// 线索不是来源行（不进 ItemSources，不影响定位）；只读，不走时间、不授知识、不改任务。Q251 待定的物品也是 null，界面保持旧显示。
+        /// </summary>
+        public string? ItemSourceHint(IReadOnlyList<ItemSourceView> sources, string itemId) =>
+            sources.Any(v => v.Usable) || SourceHintCategory(itemId) is not string cat ? null : Config.SourceHints.Hints[cat];
+
+        /// <summary>物品的线索类别（Q219 hintPolicy）：kind 加武器表、工具标签两项元数据，有冲突按 priority 取最前；未映射的 kind 用 fallback。</summary>
+        private string? SourceHintCategory(string itemId)
+        {
+            var h = Config.SourceHints;
+            var item = Config.Items.FirstOrDefault(i => i.Id == itemId);
+            if (item == null || h.Hints.Count == 0 || h.PendingItems.Contains(itemId) || h.PendingKinds.Contains(item.Kind)) return null;
+            var cats = new HashSet<string>();
+            if (h.Kinds.TryGetValue(item.Kind, out var c)) cats.Add(c);
+            if (Config.Weapons.Any(w => w.Id == itemId)) cats.Add("weapon");
+            if (!string.IsNullOrEmpty(item.ToolTag)) cats.Add("tool");
+            return h.Priority.FirstOrDefault(cats.Contains) ?? "fallback";
+        }
+
         private static bool ResourceYields(ResourceConfig r, string itemId) =>
             r.Outputs.ContainsKey(itemId) || (r.ExclusiveLoot?.Any(x => x.ItemId == itemId) ?? false) || r.IndependentRare?.ItemId == itemId;
 

@@ -544,6 +544,16 @@ namespace Survival.Core.Config
                 if (q.RecordFacts.Count > 0 && (q.Accept != "talk" || q.WorkMinutes != 0 || string.IsNullOrEmpty(q.StepTurnin)))
                     e.Add($"任务 {q.Id} 记录类任务须交谈接取、0 分钟回报并有回报步骤");
             }
+            // B27（Q219）：十句线索齐全，类别映射与优先顺序只用这十类，待定物品存在
+            var hintCats = c.SourceHints.Hints.Keys.ToHashSet();
+            if (hintCats.Count > 0)
+            {
+                if (!hintCats.SetEquals(c.SourceHints.Priority)) e.Add("来源线索的优先顺序与线索类别不一致");
+                if (!hintCats.Contains("fallback")) e.Add("来源线索缺少 fallback");
+                foreach (var kv in c.SourceHints.Hints) if (string.IsNullOrEmpty(kv.Value)) e.Add($"来源线索 {kv.Key} 没有原句");
+                foreach (var kv in c.SourceHints.Kinds) if (!hintCats.Contains(kv.Value)) e.Add($"物品类别 {kv.Key} 映射到不存在的线索 {kv.Value}");
+                foreach (var k in c.SourceHints.PendingItems) if (!items.Contains(k)) e.Add($"来源线索待定物品 {k} 不存在");
+            }
             // B27（Q216）：旧档专用的五张蓝图须存在，且不再是登记默认知识
             foreach (var k in c.City.Registration.LegacyKnowledge)
                 if (c.Knowledge.FirstOrDefault(x => x.Id == k) is not KnowledgeConfig kc) e.Add($"旧登记知识 {k} 不存在");

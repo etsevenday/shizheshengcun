@@ -38004,5 +38004,50 @@
         "copyFact": "kpcopy:kp_coldchain"
       }
     ]
+  },
+  "sourceHints": {
+    "source": "content-feeding-adjudications.json hints/hintPolicy（Q219）、knowledge-source-adjudications.json hintDisplay（Q250）；Q251 待定的特殊归属在 pendingKinds/pendingItems，本批不给线索",
+    "hints": {
+      "water": "可先查看已发现的水源与已掌握的净水做法；脏水处理前仍有饮用风险。",
+      "food": "可查看已发现的采集点、既有食品记录和已掌握的加工做法；随机搜获不保证出现。",
+      "medicine": "可查看已发现的医疗物资来源及已掌握的医疗加工做法；机构服务仍需实际到场并满足条件。",
+      "material": "可在已发现的资源点、清理记录和已掌握的材料加工做法中查找；没有记录的地点不会在这里公开。",
+      "tool": "可查看已掌握的工具制作与已发现的器材记录；拥有类似工具不代表已掌握这件的做法。",
+      "weapon": "可查看已掌握的武器制作和已发现的武备记录；掉落与随机箱不承诺必得。",
+      "armor": "可查看已掌握的防护制作和已发现的装备记录；具体材料与等级以配方条件为准。",
+      "ammo": "可查看已掌握的弹药制作与已发现的补给记录；留意实际弹药类型，不能跨类型装填。",
+      "container": "可查看已掌握的容器制作和已发现的物资记录；空容器不等于已经装有补给。",
+      "fallback": "暂无已知来源。可继续调查已经发现的地点与公开资料；此提示不代表未发现区域一定存在该物品。"
+    },
+    "kinds": {
+      "water": "water",
+      "food": "food",
+      "medical": "medicine",
+      "ammo": "ammo",
+      "weapon": "weapon",
+      "tool": "tool",
+      "material": "material"
+    },
+    "priority": [
+      "water",
+      "food",
+      "medicine",
+      "ammo",
+      "weapon",
+      "armor",
+      "container",
+      "tool",
+      "material",
+      "fallback"
+    ],
+    "pendingKinds": [
+      "gear",
+      "carcass",
+      "substance"
+    ],
+    "pendingItems": [
+      "pot",
+      "ration_canteen"
+    ]
   }
 }

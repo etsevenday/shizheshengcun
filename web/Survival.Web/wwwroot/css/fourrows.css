@@ -1127,6 +1127,7 @@
 .map-sources .ms-row.ok .ms-title b { color: #9fd18a; }
 .map-sources .ms-row.off { opacity: .8; }
 .map-sources .ms-acct { display: inline-block; margin-right: 6px; padding: 0 6px; border: 1px solid #a88b55; border-radius: 9px; font-size: 13px; color: #e2c27e; }
+.map-sources .ms-row.ms-hint { padding-right: 0; font-size: 14px; line-height: 1.4; color: #cfd6c3; }
 .map-sources .ms-detail, .map-sources .ms-status { font-size: 13px; line-height: 1.35; }
 .map-sources .ms-loc { position: absolute; right: 0; top: 6px; min-height: 30px; padding: 2px 8px; }
 .mat-row .src-btn { margin-right: 6px; font-size: 13px; }
