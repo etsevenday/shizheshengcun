@@ -73,7 +73,7 @@ public class B27SourceHintTests : TestBase
         Assert.That(HintOf(s, "lighter"), Is.EqualTo(Hint("tool")));
     }
 
-    /// <summary>冲突按 hintPolicy：石刀、手斧是 tool 也在武器表，weapon 在前；滤水器是 material 也有工具标签，tool 在前。</summary>
+    /// <summary>冲突按 hintPolicy：石刀、简易斧是 tool 也在武器表，weapon 在前；便携滤水器是 material 也有工具标签，tool 在前。</summary>
     [TestCase("stone_knife", "weapon")]
     [TestCase("hatchet", "weapon")]
     [TestCase("water_filter", "tool")]
