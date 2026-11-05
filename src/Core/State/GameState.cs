@@ -48,6 +48,7 @@ namespace Survival.Core.State
         /// "39" 起肉干在制暂停原料保质：晾制位内肉干原料带暂停时快照的剩余保质（ItemInstance.ShelfPausedMinutes，ExpiresAt 暂为空），晾制位带暂停标记（策划答复 Q215，开发计划 v0.9 B22k）。
         /// "40" 起可选地牢核心记录两段续做（ResourceState.ClaimMinutesDone，开发计划 v0.9 B23）。
         /// "41" 起主城鸟瞰按城一次的展示标记与待自动打开（CityState.OverviewShown/OverviewPending，开发计划 v0.9 B24）。
+        /// "42" 起代班接续说明按身份一次的已示标记（CityState.SubstituteIntroShown）与服务结束被挡住后的待补播（CityState.SubstituteIntroDeferred，策划答复 Q235、Q243，开发计划 v0.9 B26a）。
         /// </summary>
         public const string CurrentSchema = "42";
 

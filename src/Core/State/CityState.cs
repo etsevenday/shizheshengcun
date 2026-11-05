@@ -40,6 +40,12 @@ namespace Survival.Core.State
         /// 说明实际开始显示时写入（不是排队或预览时）；回岗再离岗、读档、过日都不清。
         /// </summary>
         public HashSet<string> SubstituteIntroShown { get; set; } = new HashSet<string>();
+        /// <summary>
+        /// 服务结束时被战斗/待处理敌踪挡住、等待自动补播的首次代班说明（Q243 选 B，开发计划 v0.9 B26a，放在存档 42 结构里，不升版本）：
+        /// 只在原服务结束入口被挡时写入，同键一条；说明实际开始显示、离开原地点、本人回岗、换代班身份时移除。
+        /// 取消即删除记录，所以“已取消自动资格”随存档保留，回到原地不恢复。旧档没有这个字段就是空表，不按 Talks 或日志猜造。
+        /// </summary>
+        public List<SubstituteIntroDeferral> SubstituteIntroDeferred { get; set; } = new List<SubstituteIntroDeferral>();
 
         public CityState Clone() => new CityState
         {
@@ -55,7 +61,20 @@ namespace Survival.Core.State
             OverviewPending = OverviewPending,
             OverviewPendingLegacy = OverviewPendingLegacy,
             SubstituteIntroShown = new HashSet<string>(SubstituteIntroShown),
+            SubstituteIntroDeferred = SubstituteIntroDeferred.Select(d => d.Clone()).ToList(),
         };
+    }
+
+    /// <summary>一条待补播的首次代班说明（Q243 record）：绑定本局、岗位、原地点与 Q235 代班身份键；只含说明本身，不含服务、任务或旧对白队列。</summary>
+    public sealed class SubstituteIntroDeferral
+    {
+        public string CampaignId { get; set; } = "";
+        public string NpcId { get; set; } = "";
+        public string LocationId { get; set; } = "";
+        /// <summary>记录时的代班身份键（GameEngine.SubstituteIntroKey）；显示前键不同就是换了身份，这条取消。</summary>
+        public string IdentityKey { get; set; } = "";
+
+        public SubstituteIntroDeferral Clone() => (SubstituteIntroDeferral)MemberwiseClone();
     }
 
     /// <summary>计时城市服务事务快照（city-services.json common.saveFields：serviceTxnId/serviceId/actorAndTarget/locationId/startDay/quotaReservation）。</summary>

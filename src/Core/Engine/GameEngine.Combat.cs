@@ -347,6 +347,7 @@ namespace Survival.Core.Engine
             {
                 s.Encounter = null;
                 Emit(s, GameEventKind.Info, "敌踪已经离开。");
+                SubstituteIntroBoundary(s);   // Q243：这条路不走 UpdateFlags，敌踪解除也要重验待补播
                 return ActionResult.Success();
             }
             s.Encounter = null;

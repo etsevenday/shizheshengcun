@@ -1,3 +1,4 @@
+using System.Reflection;
 using Newtonsoft.Json.Linq;
 using Survival.Core.Config;
 using Survival.Core.Engine;
@@ -8,8 +9,8 @@ namespace Survival.Core.Tests;
 
 /// <summary>
 /// 开发计划 v0.9 批次 B26a（R22 Q235、R26 Q236）。规则来源：策划合同 exq-dialogue-flow-adjudications.json、substitute-talk-adjudications.json、
-/// substitute-title-adjudications.json、substitute-followup-adjudications.json；验收 DIALOGUE-Q235-01—04、DIALOGUE-Q236-01—04。
-/// DIALOGUE-Q237-01—03、Q238-01—03、Q239-01—03、Q240-01、Q241-01/02、Q242-01/02 在文件后部。
+/// substitute-title-adjudications.json、substitute-followup-adjudications.json、substitute-deferred-adjudications.json；验收 DIALOGUE-Q235-01—04、DIALOGUE-Q236-01—04。
+/// DIALOGUE-Q237-01—03、Q238-01—03、Q239-01—03、Q240-01、Q241-01/02、Q242-01/02、Q243-01—05 在文件后部。
 /// </summary>
 public class B26aSubstituteTalkTests : TestBase
 {
@@ -1303,27 +1304,468 @@ public class B26aSubstituteTalkTests : TestBase
         Assert.That((Plays(s, npc, "first_greeting"), Plays(s, npc, "role")), Is.EqualTo((1, 1)));
     }
 
-    // ───────────── Q243 待定：保持现状，不做自动补弹 ─────────────
+    // ───────────── DIALOGUE-Q243-01—05：服务结束说明被挡住后的自动补播 ─────────────
 
-    /// <summary>服务结束被敌踪挡住：这次不播、不记已示；敌踪处理完不自动弹，下一次交谈才显示。策划答复前保持这样。</summary>
+    private const string Office = "h05_appraisal";
+
+    private static string OfficeNpc => Cfg.City.Npcs.Single(n => n.LocationId == Office).NpcId;
+
+    private static string OfficeIntro => Set(OfficeNpc, "institution_substitute");
+
+    private static int Deferred(GameState s) => s.City.SubstituteIntroDeferred.Count;
+
+    private void EncounterHere(GameState s)
+    {
+        var id = E.DebugSpawnEnemy(s, "shambler", s.CurrentLocation).Id;
+        s.Encounter = new PendingEncounter { LocationId = s.CurrentLocation, EnemyIds = new List<int> { id }, Source = "explore", Minute = s.GameMinute };
+    }
+
+    /// <summary>代班未示的鉴定所：开工后碰上敌踪再取消，原服务结束入口被挡住（鉴定取消是走得到结束钩子的入口）。</summary>
+    private GameState BlockedEnd(GameState? office = null)
+    {
+        var s = office ?? AppraisalOffice();
+        if (!s.City.Absent.Contains(OfficeNpc)) E.DebugToggleCityPostAbsent(s);
+        Assert.That(E.StartAppraise(s, Sample(s).InstanceId).Ok, Is.True);
+        Steps(s, 1);
+        EncounterHere(s);
+        Assert.That(E.Cancel(s).Ok, Is.True);
+        return s;
+    }
+
+    /// <summary>从广场实际走到鉴定所（留下可信的来处，撤退能退回广场）。</summary>
+    private GameState WalkedIntoOffice()
+    {
+        var s = Registered("h02_square");
+        s.Items.RemoveAll(i => i.ItemId == "fiber");
+        E.CreateItems(s, "fiber", 2, ItemInstance.Carried);
+        E.DebugUnlockEdge(s, "h02_square__h05_appraisal");
+        Start(s, ActionRequest.Travel(Office));
+        Run(s);
+        ReadDialogues(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo(Office));
+        return s;
+    }
+
+    private void Walk(GameState s, string to)
+    {
+        E.DebugUnlockEdge(s, "h02_square__h05_appraisal");
+        Start(s, ActionRequest.Travel(to));
+        Run(s);
+        ReadDialogues(s);
+        Assert.That(s.CurrentLocation, Is.EqualTo(to));
+    }
+
+    private void WinBattle(GameState s)
+    {
+        var kill = typeof(GameEngine).GetMethod("KillEnemy", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        var check = typeof(GameEngine).GetMethod("CheckVictory", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        foreach (var e in s.Battle!.Enemies.Where(e => e.Alive).ToList()) kill.Invoke(E, new object[] { s, e });
+        check.Invoke(E, new object[] { s });
+        Assert.That(s.Battle, Is.Null);
+    }
+
+    /// <summary>说明已经自动开始显示：记已示、待补播已清、只有一段，读完后边界再跑也不多弹。</summary>
+    private void AssertAutoShownOnce(GameState s)
+    {
+        Assert.That(Base(E.ActiveDialogue(s)!), Is.EqualTo(OfficeIntro), "不用再点入口，说明已经开始显示");
+        Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.True, "开始显示时记已示");
+        Assert.That(Deferred(s), Is.Zero);
+        ReadDialogues(s);
+        E.UpdateFlags(s);
+        E.SubstituteIntroBoundary(s);
+        Assert.That(E.DialogueLocked(s), Is.False, "重复回调不多弹");
+        Assert.That(Plays(s, OfficeIntro), Is.EqualTo(1));
+    }
+
+    /// <summary>被挡住：不播、不记已示，只记一条待补播，绑定本局、岗位、原地点和身份键；重复回调不记已示。</summary>
     [Test]
-    public void Q243_Pending_BlockedEnd_NoAutoPopup_NextTalkShows()
+    public void Q243_01_BlockedEnd_RecordsOnly_NotShown()
+    {
+        var s = BlockedEnd();
+        Assert.That(E.DialogueLocked(s), Is.False);
+        Assert.That(Plays(s, OfficeIntro), Is.Zero);
+        Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.False);
+        var r = s.City.SubstituteIntroDeferred.Single();
+        Assert.That((r.CampaignId, r.NpcId, r.LocationId, r.IdentityKey), Is.EqualTo((GameEngine.CampaignIdOf(s), OfficeNpc, Office, GameEngine.SubstituteIntroKey(s, OfficeNpc))));
+        E.UpdateFlags(s);
+        E.SubstituteIntroBoundary(s);
+        Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.False, "敌踪还在：重复回调不显示、不记已示");
+        Assert.That(Deferred(s), Is.EqualTo(1));
+    }
+
+    /// <summary>敌踪绕开后：绕行结束那一段自动显示一次；取消日志只有一条，样本不扣；留在当地未接触的敌人不算显示锁。</summary>
+    [Test]
+    public void Q243_01_Bypass_AutoShowsOnce_ServiceNotResettled()
+    {
+        var s = BlockedEnd();
+        var cancels = s.Log.Count(l => l.Text.Contains("详细鉴定") || l.Text.Contains("鉴定"));
+        var fiber = Count(s, "fiber");
+        var completed = s.City.Completed;
+        Start(s, ActionRequest.Bypass());
+        Run(s);
+        Assert.That(s.Main, Is.Null);
+        Assert.That(E.LocalHostiles(s, Office), Is.Not.Empty, "未接触的游荡敌人不另加为显示锁");
+        AssertAutoShownOnce(s);
+        Assert.That(s.Log.Count(l => l.Text.Contains("详细鉴定") || l.Text.Contains("鉴定")), Is.EqualTo(cancels), "原服务不再结算、不再写日志");
+        Assert.That((Count(s, "fiber"), s.City.Completed), Is.EqualTo((fiber, completed)));
+    }
+
+    /// <summary>战斗后：胜利结算的同一步自动显示一次。</summary>
+    [Test]
+    public void Q243_01_BattleWon_AutoShowsOnce()
+    {
+        var s = BlockedEnd();
+        Assert.That(E.Engage(s).Ok, Is.True);
+        Assert.That(s.Battle, Is.Not.Null);
+        E.UpdateFlags(s);
+        Assert.That(E.DialogueLocked(s), Is.False, "战斗中不显示");
+        WinBattle(s);
+        AssertAutoShownOnce(s);
+    }
+
+    /// <summary>敌踪自行散去（接敌时名单已空）这条路不走 UpdateFlags，也是边界。</summary>
+    [Test]
+    public void Q243_01_EncounterGone_AutoShowsOnce()
+    {
+        var s = BlockedEnd();
+        s.WorldEnemies.Clear();
+        Assert.That(E.Engage(s).Ok, Is.True);
+        Assert.That(s.Encounter, Is.Null);
+        AssertAutoShownOnce(s);
+    }
+
+    /// <summary>敌踪解除后还有动作锁：不打断，动作结束才显示；绕行段内一直等待。</summary>
+    [Test]
+    public void Q243_02_ActionLock_Waits_ShowsOnRelease()
+    {
+        var s = BlockedEnd();
+        Start(s, ActionRequest.Bypass());
+        Assert.That(s.Encounter, Is.Null);
+        E.Advance(s);
+        Assert.That(s.Main, Is.Not.Null, "绕行还没走完");
+        Assert.That((E.DialogueLocked(s), Deferred(s)), Is.EqualTo((false, 1)));
+        Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.False);
+        Run(s);
+        AssertAutoShownOnce(s);
+    }
+
+    /// <summary>取消动作放开锁也算：人还在原地就显示。</summary>
+    [Test]
+    public void Q243_02_ActionCancelled_StillHere_Shows()
+    {
+        var s = BlockedEnd();
+        s.Encounter = null;
+        Start(s, ActionRequest.Wait(30));
+        E.Advance(s);
+        Assert.That(E.DialogueLocked(s), Is.False, "动作中不打断");
+        Assert.That(E.Cancel(s).Ok, Is.True);
+        Assert.That(s.CurrentLocation, Is.EqualTo(Office));
+        AssertAutoShownOnce(s);
+    }
+
+    /// <summary>敌踪解除后还有其他对白：不打断、不插队，那段读完才显示。</summary>
+    [Test]
+    public void Q243_02_OtherDialogue_NotInterrupted_ShowsAfter()
+    {
+        var s = BlockedEnd();
+        s.Encounter = null;
+        Assert.That(E.AcceptQuest(s, "HU01").Ok, Is.True);
+        Assert.That(Base(E.ActiveDialogue(s)!), Is.EqualTo("HU01_offer"));
+        Assert.That(Deferred(s), Is.EqualTo(1));
+        Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.False);
+        var line = E.CurrentDialogueLine(s)!;
+        while (E.DialogueHasMore(s)) { E.AckDialogue(s, line.LineId); line = E.CurrentDialogueLine(s)!; }
+        Assert.That(Plays(s, OfficeIntro), Is.Zero, "末句读完之前不显示");
+        E.AckDialogue(s, line.LineId);
+        AssertAutoShownOnce(s);
+    }
+
+    /// <summary>显示前实际离开：资格取消；回到原地、旧回调都不追播；下一次交谈才显示，且只一次。</summary>
+    [Test]
+    public void Q243_02_Left_Cancelled_ReturnNoReplay_NextTalkShows()
+    {
+        var s = BlockedEnd();
+        s.Encounter = null;
+        Walk(s, "h02_square");
+        Assert.That(Deferred(s), Is.Zero, "到达别处就取消");
+        Assert.That(E.DialogueLocked(s), Is.False, "不跨地点追播");
+        Walk(s, Office);
+        E.UpdateFlags(s);
+        E.SubstituteIntroBoundary(s);
+        Assert.That(E.DialogueLocked(s), Is.False, "回来不恢复");
+        Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.False, "取消的是自动资格，身份仍未示");
+        TalkRead(s, OfficeNpc);
+        Assert.That(Plays(s, OfficeIntro), Is.EqualTo(1));
+    }
+
+    /// <summary>战斗撤退退回别处也算离开：不在落点显示，回来也不追播。</summary>
+    [Test]
+    public void Q243_02_RetreatAway_Cancelled()
+    {
+        var s = BlockedEnd(WalkedIntoOffice());
+        Assert.That(E.Engage(s).Ok, Is.True);
+        typeof(GameEngine).GetMethod("FinishBattle", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(E, new object[] { s, "retreat", true });
+        Assert.That(s.CurrentLocation, Is.EqualTo("h02_square"));
+        Assert.That((E.DialogueLocked(s), Deferred(s)), Is.EqualTo((false, 0)));
+        Walk(s, Office);
+        Assert.That(E.DialogueLocked(s), Is.False);
+    }
+
+    /// <summary>本人回岗：取消，不以原人名发言、不写 Greeted；再离岗不恢复；本人首次问候规则不受影响。</summary>
+    [Test]
+    public void Q243_03_OwnerBack_Cancelled_NoSpeaker_NoGreeted()
+    {
+        var s = BlockedEnd();
+        E.DebugToggleCityPostAbsent(s);
+        Assert.That(Deferred(s), Is.Zero);
+        E.DebugToggleCityPostAbsent(s);
+        s.Encounter = null;
+        E.UpdateFlags(s);
+        Assert.That(E.DialogueLocked(s), Is.False, "回岗再离岗不恢复");
+        Assert.That(Plays(s, OfficeIntro), Is.Zero);
+        Assert.That(s.City.Greeted, Does.Not.Contain(OfficeNpc));
+        Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.False);
+        E.DebugToggleCityPostAbsent(s);
+        TalkRead(s, OfficeNpc);
+        Assert.That((Plays(s, OfficeNpc, "first_greeting"), Plays(s, OfficeNpc, "role")), Is.EqualTo((1, 1)), "本人首次规则照旧");
+    }
+
+    /// <summary>换了代班身份（键不同）：取消原待补播，不把新身份标已示，新身份等下一次合法入口。现版本一岗只有一个身份，用改键模拟。</summary>
+    [Test]
+    public void Q243_03_IdentityChanged_Cancelled_NewIdentityNotMarked()
+    {
+        var s = BlockedEnd();
+        s.City.SubstituteIntroDeferred.Single().IdentityKey = "other|" + OfficeNpc;
+        s.Encounter = null;
+        E.UpdateFlags(s);
+        Assert.That((E.DialogueLocked(s), Deferred(s)), Is.EqualTo((false, 0)));
+        Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.False);
+        Assert.That(s.City.SubstituteIntroShown, Is.Empty);
+        TalkRead(s, OfficeNpc);
+        Assert.That(Plays(s, OfficeIntro), Is.EqualTo(1));
+    }
+
+    /// <summary>玩家另一入口抢先触发同身份说明：只显示一份、开始显示时清待补播；EXQ 专属接取句照原顺序保留。</summary>
+    [TestCase(true)]
+    [TestCase(false)]
+    public void Q243_03_OtherEntryFirst_OneCopy_ExqLineKept(bool talk)
+    {
+        const string npc = "npc_xu_an";
+        var s = Registered("h02_square");
+        E.DebugToggleCityPostAbsent(s);
+        s.City.SubstituteIntroDeferred.Add(new SubstituteIntroDeferral { CampaignId = GameEngine.CampaignIdOf(s), NpcId = npc, LocationId = "h02_square", IdentityKey = GameEngine.SubstituteIntroKey(s, npc) });
+        var mark = s.Story.DialogueLog.Count;
+        Assert.That((talk ? E.TalkNpc(s, npc) : E.AcceptQuest(s, "EXQ07")).Ok, Is.True);
+        Assert.That(Deferred(s), Is.Zero, "实际打开时清待补播");
+        ReadDialogues(s);
+        E.UpdateFlags(s);
+        Assert.That(Since(s, mark), Is.EqualTo(new[] { Set(npc, "institution_substitute"), "EXQ07_offer" }));
+        Assert.That(s.City.Greeted, Does.Not.Contain(npc));
+    }
+
+    /// <summary>读档：待补播随存档；敌踪还在就等，绕开后才显示，显示时才记已示。</summary>
+    [Test]
+    public void Q243_04_Reload_RevalidatesLock_ShowsOnStart()
+    {
+        var s = SaveSerializer.Deserialize(SaveSerializer.Serialize(BlockedEnd()), Cfg, out _);
+        Assert.That(Deferred(s), Is.EqualTo(1));
+        Assert.That(E.SubstituteIntroBoundary(s), Is.False, "敌踪还在");
+        Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.False);
+        Start(s, ActionRequest.Bypass());
+        var mid = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg, out _);
+        Assert.That(Deferred(mid), Is.EqualTo(1), "行动中读档仍等待");
+        Run(mid);
+        AssertAutoShownOnce(mid);
+    }
+
+    /// <summary>读回时已安全：读档这个边界就显示；不在原地、别的本局、已回岗的记录不算可信，丢弃不显示。</summary>
+    [TestCase("ok")]
+    [TestCase("left")]
+    [TestCase("campaign")]
+    [TestCase("owner")]
+    public void Q243_04_ReloadIdle_RevalidatesRecord(string kind)
+    {
+        var s = BlockedEnd();
+        s.Encounter = null;
+        var j = JObject.Parse(SaveSerializer.Serialize(s));
+        if (kind == "left") j["CurrentLocation"] = "h02_square";
+        if (kind == "campaign") j["City"]!["SubstituteIntroDeferred"]![0]!["CampaignId"] = "1";
+        if (kind == "owner") j["City"]!["Absent"] = new JArray();
+        var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out _);
+        Assert.That(E.SubstituteIntroBoundary(m), Is.True);
+        Assert.That(Deferred(m), Is.Zero);
+        Assert.That(E.DialogueLocked(m), Is.EqualTo(kind == "ok"));
+        Assert.That(GameEngine.SubstituteIntroShown(m, OfficeNpc), Is.EqualTo(kind == "ok"));
+    }
+
+    /// <summary>线上试玩路线的存档写法（开发计划 B26a.5）：代班未示的岗位，手写敌踪和待补播，读档后绕开或接敌都自动显示一次。</summary>
+    [TestCase(true)]
+    [TestCase(false)]
+    public void Q243_04_PlaytestRoute_HandWrittenSave(bool bypass)
     {
         var s = AppraisalOffice();
         E.DebugToggleCityPostAbsent(s);
-        var npc = Cfg.City.Npcs.Single(n => n.LocationId == "h05_appraisal").NpcId;
+        var j = JObject.Parse(SaveSerializer.Serialize(s));
+        var seed = (string)j["Seed"]!;
+        j["Encounter"] = JObject.FromObject(new { LocationId = Office, EnemyIds = new int[0], Source = "explore", Minute = (int)j["GameMinute"]! });
+        j["City"]!["SubstituteIntroDeferred"] = JArray.FromObject(new[] { new { CampaignId = seed, NpcId = OfficeNpc, LocationId = Office, IdentityKey = seed + "|" + OfficeNpc } });
+        var m = SaveSerializer.Deserialize(j.ToString(), Cfg, out _);
+        Assert.That(E.SubstituteIntroBoundary(m), Is.False);
+        Assert.That(Deferred(m), Is.EqualTo(1));
+        if (bypass)
+        {
+            Start(m, ActionRequest.Bypass());
+            Run(m);
+        }
+        else Assert.That(E.Engage(m).Ok, Is.True);
+        AssertAutoShownOnce(m);
+    }
+
+    /// <summary>显示中和已示的档重载不重播；已取消的档重载、回到原地也不恢复。</summary>
+    [Test]
+    public void Q243_04_ShownOrCancelled_SaveKeepsIt()
+    {
+        var s = BlockedEnd();
+        s.WorldEnemies.Clear();
+        E.Engage(s);
+        var shown = SaveSerializer.Deserialize(SaveSerializer.Serialize(s), Cfg, out _);
+        Assert.That(GameEngine.SubstituteIntroShown(shown, OfficeNpc), Is.True);
+        ReadDialogues(shown);
+        var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(shown), Cfg, out _);
+        E.SubstituteIntroBoundary(again);
+        Assert.That(E.DialogueLocked(again), Is.False);
+        Assert.That(Plays(again, OfficeIntro), Is.EqualTo(1));
+
+        var c = BlockedEnd();
+        c.Encounter = null;
+        Walk(c, "h02_square");
+        var away = SaveSerializer.Deserialize(SaveSerializer.Serialize(c), Cfg, out _);
+        Walk(away, Office);
+        Assert.That((E.DialogueLocked(away), Deferred(away)), Is.EqualTo((false, 0)), "已取消的资格随存档保留");
+        Assert.That(GameEngine.SubstituteIntroShown(away, OfficeNpc), Is.False);
+    }
+
+    /// <summary>旧档没有待补播字段：不按 Talks、服务日志或未示猜造；等下一次合法入口。</summary>
+    [TestCase(true)]
+    [TestCase(false)]
+    public void Q243_04_OldSave_NoGuess(bool from41)
+    {
+        var s = BlockedEnd();
+        s.Encounter = null;
+        s.City.Talks[OfficeNpc] = 3;
+        Action<JObject> strip = j => ((JObject)j["City"]!).Remove("SubstituteIntroDeferred");
+        GameState m;
+        if (from41) m = Upgrade41(s, strip);
+        else
+        {
+            var j = JObject.Parse(SaveSerializer.Serialize(s));
+            strip(j);
+            m = SaveSerializer.Deserialize(j.ToString(), Cfg, out _);
+        }
+        Assert.That(Deferred(m), Is.Zero);
+        Assert.That(E.SubstituteIntroBoundary(m), Is.False);
+        E.UpdateFlags(m);
+        Assert.That(E.DialogueLocked(m), Is.False);
+        Assert.That(GameEngine.SubstituteIntroShown(m, OfficeNpc), Is.False);
+        Assert.That(m.SchemaVersion, Is.EqualTo("42"));
+        TalkRead(m, OfficeNpc);
+        Assert.That(Plays(m, OfficeIntro), Is.EqualTo(1));
+    }
+
+    /// <summary>Clone 带上待补播且互不影响（预览用副本读完对白不动本体）。</summary>
+    [Test]
+    public void Q243_04_Clone_CopiesDeferred()
+    {
+        var s = BlockedEnd();
+        var c = s.Clone();
+        Assert.That(Deferred(c), Is.EqualTo(1));
+        c.City.SubstituteIntroDeferred.Single().IdentityKey = "x";
+        c.City.SubstituteIntroDeferred.Clear();
+        Assert.That(s.City.SubstituteIntroDeferred.Single().IdentityKey, Is.EqualTo(GameEngine.SubstituteIntroKey(s, OfficeNpc)));
+    }
+
+    /// <summary>同键合并：同一身份被挡两次也只有一条。</summary>
+    [Test]
+    public void Q243_05_SameKey_Merged()
+    {
+        var s = BlockedEnd();
+        s.Encounter = null;
+        var hold = s.City.SubstituteIntroDeferred.ToList();
+        s.City.SubstituteIntroDeferred.Clear();
+        var again = E.StartAppraise(s, First(s, "active_substance_white_unidentified").InstanceId);
+        Assert.That(again.Ok, Is.True, again.Reason);
+        s.City.SubstituteIntroDeferred.AddRange(hold);
+        Steps(s, 1);
+        EncounterHere(s);
+        Assert.That(E.Cancel(s).Ok, Is.True);
+        Assert.That(Deferred(s), Is.EqualTo(1));
+    }
+
+    /// <summary>已示、本人在岗、岗位不存在、已不在原地点：被挡住也不新建待补播；本人的结束句照旧不播。</summary>
+    [TestCase("shown")]
+    [TestCase("owner")]
+    [TestCase("missing")]
+    [TestCase("elsewhere")]
+    public void Q243_05_NoRecord_WhenEntryWouldNotShow(string kind)
+    {
+        var s = AppraisalOffice();
+        if (kind != "owner") E.DebugToggleCityPostAbsent(s);
+        if (kind == "shown") s.City.SubstituteIntroShown.Add(GameEngine.SubstituteIntroKey(s, OfficeNpc));
         Assert.That(E.StartAppraise(s, Sample(s).InstanceId).Ok, Is.True);
         Steps(s, 1);
-        s.Encounter = new PendingEncounter();
+        if (kind == "missing") s.City.Pending!.NpcId = "npc_none";
+        EncounterHere(s);
+        if (kind == "elsewhere") E.DebugTeleport(s, "h02_square");
+        var mark = s.Story.DialogueLog.Count;
         Assert.That(E.Cancel(s).Ok, Is.True);
-        Assert.That(GameEngine.SubstituteIntroShown(s, npc), Is.False);
-        s.Encounter = null;
-        Start(s, ActionRequest.Wait(30));
+        Assert.That(Deferred(s), Is.Zero);
+        Assert.That(Since(s, mark), Is.Empty);
+    }
+
+    /// <summary>原无结束钩子的鉴定成功：说明未示也不新建待补播（Q177）。</summary>
+    [Test]
+    public void Q243_05_AppraisalSuccess_NoRecord()
+    {
+        var s = AppraisalOffice();
+        E.DebugToggleCityPostAbsent(s);
+        Assert.That(E.StartAppraise(s, Sample(s).InstanceId).Ok, Is.True);
         Run(s);
-        Assert.That(E.DialogueLocked(s), Is.False, "敌踪处理完不自动补弹");
-        Assert.That(GameEngine.SubstituteIntroShown(s, npc), Is.False);
-        Assert.That(Plays(s, npc, "institution_substitute"), Is.Zero);
-        TalkRead(s, npc);
-        Assert.That(Plays(s, npc, "institution_substitute"), Is.EqualTo(1));
+        Assert.That((E.DialogueLocked(s), Deferred(s)), Is.EqualTo((false, 0)));
+    }
+
+    /// <summary>主角死亡：不显示说明，也不记已示。</summary>
+    [Test]
+    public void Q243_05_Dead_NotShown()
+    {
+        var s = BlockedEnd();
+        s.Encounter = null;
+        s.Progress.Dead = true;
+        E.UpdateFlags(s);
+        E.SubstituteIntroBoundary(s);
+        Assert.That(Plays(s, OfficeIntro), Is.Zero);
+        Assert.That(GameEngine.SubstituteIntroShown(s, OfficeNpc), Is.False);
+    }
+
+    /// <summary>补播 0 分钟 0 结算：物资、经验、容量、时间、身体、配额、任务都不动；原组名和普通闲谈组不受影响，回看不改已示。</summary>
+    [Test]
+    public void Q243_05_ZeroCost_TitlesAndLedgerKept()
+    {
+        var s = BlockedEnd();
+        s.WorldEnemies.Clear();
+        var snap = Ledger(s);
+        var flags = s.Progress.Flags.Count;
+        var quests = s.City.Completed;
+        var greeted = s.City.Greeted.Count;
+        var title = E.DialogueSetTitle(OfficeIntro);
+        Assert.That(E.Engage(s).Ok, Is.True);
+        ReadDialogues(s);
+        Assert.That(Ledger(s), Is.EqualTo(snap));
+        Assert.That((s.Progress.Flags.Count, s.City.Completed, s.City.Greeted.Count), Is.EqualTo((flags, quests, greeted)));
+        Assert.That(E.DialogueSetTitle(OfficeIntro), Is.EqualTo(title));
+        var history = E.DialogueHistory(s).Count;
+        TalkRead(s, OfficeNpc);
+        Assert.That(Plays(s, OfficeIntro), Is.EqualTo(1), "说明已示，之后交谈只走 Q236");
+        Assert.That(E.DialogueHistory(s).Count, Is.EqualTo(history + 1));
+        Assert.That(E.DialogueSetTitle(Set(OfficeNpc, "substitute_idle")), Does.EndWith("：代班闲谈"), "Q239 组名保持");
     }
 }

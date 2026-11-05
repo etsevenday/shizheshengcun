@@ -213,10 +213,15 @@ namespace Survival.Core.Engine
             if ((a.Type == ActionType.Craft || a.Type == ActionType.Build || a.Type == ActionType.Butcher) && AnyReservedSpoiled(s, a))
             {
                 AbortSpoiled(s, a);
+                SubstituteIntroBoundary(s);   // 这两处段前中止不走段末 UpdateFlags，行动锁放开也要重验待补播（Q243）
                 return new SegmentResult(SegmentStatus.Aborted);
             }
             // 等待烹饪：火堆不能给这一段完整供热就停止，不 tick（S11 §9、开发假设 A8）
-            if (CookWaitStoppedBeforeSegment(s, a)) return new SegmentResult(SegmentStatus.Aborted);
+            if (CookWaitStoppedBeforeSegment(s, a))
+            {
+                SubstituteIntroBoundary(s);
+                return new SegmentResult(SegmentStatus.Aborted);
+            }
 
             // 1–3. 段首计算角色本段速率，再做一次世界 tick（身体、燃料、设施、免疫、病毒、终局、刷新）
             var ctx = ComputeSegment(s, a);
@@ -828,6 +833,8 @@ namespace Survival.Core.Engine
             EliteNoticeBoundary(s);
             // B13 序章安全边界：任务追认、来客登记/通知/抵达、排队的反应、主目标重算（幂等，不推进时间）
             PrologueBoundary(s);
+            // B26a Q243：待补播的代班说明放最后，序章这一步新开的对白先读
+            SubstituteIntroBoundary(s);
         }
     }
 }

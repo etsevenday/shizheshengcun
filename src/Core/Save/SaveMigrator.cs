@@ -1262,6 +1262,7 @@ namespace Survival.Core.Save
         private static void From41To42(GameState s, GameConfig config, List<string> notes)
         {
             s.City.SubstituteIntroShown ??= new HashSet<string>();
+            s.City.SubstituteIntroDeferred ??= new List<SubstituteIntroDeferral>();   // Q243 save：旧档没有可信证据，不按 Talks、服务日志或未示状态造待补播
             foreach (var n in config.City.Npcs)
             {
                 if (!n.States.TryGetValue(Engine.GameEngine.SubstituteIntroState, out var set)) continue;

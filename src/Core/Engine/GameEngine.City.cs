@@ -280,12 +280,47 @@ namespace Survival.Core.Engine
             return true;
         }
 
-        /// <summary>某段对话首句开始显示：是代班接续说明就记已示（含升级前已排队的旧对白）。</summary>
+        /// <summary>某段对话首句开始显示：是代班接续说明就记已示（含升级前已排队的旧对白），并清掉同键待补播（Q243 receipt）。</summary>
         private void NoteSubstituteIntroShown(GameState s, DialogueSession d)
         {
             var set = d.EventId.Split('#')[0];
             var n = Config.City.Npcs.FirstOrDefault(x => StateSet(x, SubstituteIntroState) == set);
-            if (n != null) s.City.SubstituteIntroShown.Add(SubstituteIntroKey(s, n.NpcId));
+            if (n == null) return;
+            var key = SubstituteIntroKey(s, n.NpcId);
+            s.City.SubstituteIntroShown.Add(key);
+            s.City.SubstituteIntroDeferred.RemoveAll(r => r.IdentityKey == key);
+        }
+
+        /// <summary>服务结束入口的说明被战斗/敌踪挡住：记一条待补播（Q243 record），同键合并。不算已示；已示或这岗没有说明不记。</summary>
+        private void DeferSubstituteIntro(GameState s, CityNpcConfig n)
+        {
+            if (SubstituteIntroShown(s, n.NpcId) || string.IsNullOrEmpty(StateSet(n, SubstituteIntroState))) return;
+            var key = SubstituteIntroKey(s, n.NpcId);
+            if (s.City.SubstituteIntroDeferred.Any(r => r.IdentityKey == key)) return;
+            s.City.SubstituteIntroDeferred.Add(new SubstituteIntroDeferral { CampaignId = CampaignIdOf(s), NpcId = n.NpcId, LocationId = n.LocationId, IdentityKey = key });
+        }
+
+        /// <summary>这条待补播还算数：同一局、岗位还在原地点、主队没离开、仍由同一代班身份接续、该身份未示。</summary>
+        private bool SubstituteIntroDeferralLive(GameState s, SubstituteIntroDeferral r) =>
+            r.CampaignId == CampaignIdOf(s) && CityNpc(r.NpcId) is CityNpcConfig n && n.LocationId == r.LocationId && s.CurrentLocation == r.LocationId
+            && s.City.Absent.Contains(r.NpcId) && r.IdentityKey == SubstituteIntroKey(s, r.NpcId) && !s.City.SubstituteIntroShown.Contains(r.IdentityKey);
+
+        /// <summary>
+        /// 待补播的安全边界（Q243 automatic/departure/identity）：先取消已不算数的记录（有锁时也取消，所以离开后回到原地不恢复），
+        /// 再看原对白显示条件（<see cref="TalkBlocked"/>：死亡、对白、战斗/敌踪、主/子行动）；都放开才显示一条，其余等这段对白读完。
+        /// 不推进时间、不结算。调用点：<see cref="UpdateFlags"/> 末尾（每段末、战斗结束、取消、即时操作、传送）、对白读完、敌踪自行散去、段前中止、读档、离岗/回岗开发入口。
+        /// 返回状态是否改变。
+        /// </summary>
+        public bool SubstituteIntroBoundary(GameState s)
+        {
+            var list = s.City.SubstituteIntroDeferred;
+            if (list.Count == 0) return false;
+            var dropped = list.RemoveAll(r => !SubstituteIntroDeferralLive(s, r)) > 0;
+            if (list.Count == 0 || TalkBlocked(s) != null) return dropped;
+            var head = list[0];
+            PlaySubstituteIntro(s, CityNpc(head.NpcId)!);
+            list.Remove(head);   // 正常已在开始显示时移除；配置里台词被删掉、什么也没显示时也不留着反复重试
+            return true;
         }
 
         private static string StateSet(CityNpcConfig n, string state) => n.States.TryGetValue(state, out var id) ? id : "";
@@ -798,9 +833,10 @@ namespace Survival.Core.Engine
             if (s.City.Absent.Contains(n.NpcId))
             {
                 // B26a：Q235 定了服务结束入口也只介绍一次：未示且没有战斗/敌踪挡着才播；已示不重播。
-                // 挡着时这次不播不记已示，战后不自动补弹，下一次走到交谈、接取或服务结束才显示（Q243 待定，答复前保持这样）。
+                // 挡着时这次不播不记已示，记一条待补播，处理完在下一个安全边界自动显示（Q243 选 B，见 SubstituteIntroBoundary）。
                 // 已示之后服务结束不播任何对白（Q237），只留原结束日志和事务效果
-                if (s.Battle == null && s.Encounter == null) PlaySubstituteIntro(s, n);
+                if (InCombatFlow(s)) DeferSubstituteIntro(s, n);
+                else PlaySubstituteIntro(s, n);
                 return;
             }
             OpenReplay(s, StateSet(n, "service_end"));
@@ -921,6 +957,7 @@ namespace Survival.Core.Engine
                 if (s.City.Absent.Remove(n.NpcId)) notes.Add($"{n.Name}回岗");
                 else { s.City.Absent.Add(n.NpcId); notes.Add($"{n.Name}离岗（由机构当班接续员代班）"); }
             }
+            SubstituteIntroBoundary(s);   // Q243 identity：回岗当场取消待补播，再离岗不恢复
             return "开发：" + string.Join("、", notes) + "。";
         }
     }
