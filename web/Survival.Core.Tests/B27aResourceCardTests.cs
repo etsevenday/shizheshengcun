@@ -101,6 +101,61 @@ public class B27aResourceCardTests : TestBase
         Assert.That(E.ResourceCardReason(d, ActionRequest.Gather(r.NodeId), false), Is.Not.Null.And.Not.EqualTo(GameEngine.DialogueLockedReason));
     }
 
+    /// <summary>试玩修复：本卡在办时自己的预留算作还在，不写已搜空，主图不消失；暂停也一样。锁和库存账不动，完成后才是真的空。</summary>
+    [Test]
+    public void Q252_OwnReservation_NotEmpty_WhileGathering()
+    {
+        const string locker = "village_weapon_locker";
+        var s = Village();
+        var req = ActionRequest.Gather(locker);
+        Assert.That(s.Resources[locker].Available, Is.EqualTo(1));
+        Start(s, req);
+        Assert.That(s.Resources[locker].Available, Is.EqualTo(0));
+        Assert.That(s.Resources[locker].Reserved, Is.EqualTo(1));
+        Assert.That(E.CanStart(s, req), Is.Not.Null, "动作锁不变");
+        Assert.That(E.ResourceCardReason(s, req, true), Is.Null);
+        s.Main!.Status = ActionStatus.Paused;
+        Assert.That(E.ResourceCardReason(s, req, true), Is.Null);
+        Assert.That(s.Resources[locker].Available, Is.EqualTo(0), "读卡面不改账");
+        Assert.That(s.Resources[locker].Reserved, Is.EqualTo(1));
+        s.Main!.Status = ActionStatus.Running;
+        Run(s);
+        Assert.That(s.Main, Is.Null);
+        Assert.That(E.ResourceCardReason(s, req, false), Does.Contain("搜空"), "搜完才写空");
+    }
+
+    /// <summary>试玩修复：在办占的是这张卡，别的已空卡照写空；已空的卡不因别人的预留变成“还在”。</summary>
+    [Test]
+    public void Q252_OtherEmptyCard_StillEmpty_WhileGathering()
+    {
+        var s = Village();
+        s.Resources[ColdBox].Available = 0;
+        var empty = E.CanStart(s, ActionRequest.Gather(ColdBox));
+        Start(s, ActionRequest.Gather("village_weapon_locker"));
+        Assert.That(E.ResourceCardReason(s, ActionRequest.Gather(ColdBox), true), Is.EqualTo(empty));
+    }
+
+    /// <summary>试玩修复：补充点抽走最后一批时不提前写库存为0；库存本来就是 0 的照写，完成后才写。</summary>
+    [Test]
+    public void Q252_RefillPoint_LastBatch_NotZero_UntilDone()
+    {
+        const string node = "h02_square_water";
+        var r = E.Resource(node);
+        Assert.That(r.Refills, Is.True);
+        var s = AtNode("h02_square");
+        ReadDialogues(s);
+        s.Resources[node].Available = r.Outputs.Values.First();
+        var req = ActionRequest.Gather(node);
+        Start(s, req);
+        Assert.That(s.Resources[node].Available, Is.EqualTo(0), "最后一批已被预留");
+        Assert.That(E.ResourceCardReason(s, req, true), Is.Null);
+        Run(s);
+        var zero = $"库存为0，下次00:00补充{r.DailyRefill}";
+        Assert.That(E.ResourceCardReason(s, req, false), Is.EqualTo(zero));
+        Start(s, ActionRequest.Wait(30));
+        Assert.That(E.ResourceCardReason(s, req, true), Is.EqualTo(zero), "别的行动在办时真空照写");
+    }
+
     /// <summary>已领取也算资源自身状态，在办时照样写。</summary>
     [Test]
     public void Q252_Claimed_StaysOnCard_WhileBusy()
@@ -321,6 +376,8 @@ public class B27aResourceCardTests : TestBase
         var css = File.ReadAllLines(Path.Combine(Root(), "web", "Survival.Web", "wwwroot", "css", "fourrows.css"));
         var rule = css.Single(l => l.Contains(".oc-line.res-yield"));
         Assert.That(rule, Does.Contain("white-space: nowrap").And.Contain("text-overflow: ellipsis"));
-        Assert.That(rule, Does.Not.Contain("font-size"));
+        Assert.That(rule, Does.Contain("font-size: 12px"), "低屏有第二行时这一句也不缩到 11px");
+        var low = Array.FindIndex(css, l => l.Contains(":has(.oc-line + .oc-line) .oc-body .oc-line { font-size: 11px"));
+        Assert.That(Array.IndexOf(css, rule), Is.GreaterThan(low), "同优先级时写在后面才盖得住");
     }
 }

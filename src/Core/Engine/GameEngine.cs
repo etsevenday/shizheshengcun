@@ -672,7 +672,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>采集/搜集/领取目标本身的校验（Validate 的 Gather 分支），不看对白、战斗、在办行动这些全局锁；Q252 资源卡第二行也用它读资源自身状态。</summary>
-        private string? ValidateGather(GameState s, ActionRequest r, Plan plan)
+        private string? ValidateGather(GameState s, ActionRequest r, Plan plan, int heldUnits = 0)
         {
             var here = s.CurrentLocation;
             if (!_res.TryGetValue(r.TargetId, out var res)) return "资源点不存在";
@@ -716,10 +716,11 @@ namespace Survival.Core.Engine
             else if (res.ToolBonus != null && !r.BareHands) tool = BestToolFor(s, res);   // Q121：可明确改徒手，徒手始终可用
             plan.Tool = tool;
 
-            if (res.IsInstance && (rs.Available ?? 0) <= 0) return "本代已搜空（地牢换代后恢复）";
+            var stock = (rs.Available ?? 0) + heldUnits;   // heldUnits 只有卡面读法传，开工校验恒为 0
+            if (res.IsInstance && stock <= 0) return "本代已搜空（地牢换代后恢复）";
             if (res.IsCache)
             {
-                if ((rs.Available ?? 0) <= 0) return "该容器已搜空，不再补充";
+                if (stock <= 0) return "该容器已搜空，不再补充";
                 plan.Units = 1;
                 foreach (var kv in res.Outputs) plan.Outputs.Add(Line(kv.Key, kv.Value));
                 if (res.ExclusiveLoot != null)
@@ -733,7 +734,7 @@ namespace Survival.Core.Engine
             }
             else
             {
-                var avail = rs.Available ?? 0;
+                var avail = stock;
                 if (avail <= 0)
                     return res.Refills ? $"库存为0，下次00:00补充{res.DailyRefill}" : "已采尽，不再补充";
                 var kv = res.Outputs.First();
@@ -827,7 +828,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 资源卡第二行写的原因（Q252 选 A）：行动进行中/暂停中、请先读完对话是全局状态，由中央行动层和对白层表达，不占卡面，也不盖住资源自身状态；
-        /// 这时只读资源自身（已搜空、已领取、库存为0等）。其余 CanStart 原因照旧。busy 是壳的“按钮已被在办行动锁住”，按钮锁与悬停原因不在这里。
+        /// 这时只读资源自身（已搜空、已领取、库存为0等），本次在办行动占着的预留算作还在，不写成空。其余 CanStart 原因照旧。busy 是壳的“按钮已被在办行动锁住”，按钮锁与悬停原因不在这里。
         /// </summary>
         public string? ResourceCardReason(GameState s, ActionRequest r, bool busy)
         {
@@ -836,7 +837,8 @@ namespace Survival.Core.Engine
                 var why = CanStart(s, r);
                 if (why != DialogueLockedReason) return why;
             }
-            return ValidateGather(s, r, new Plan { Type = r.Type, TargetId = r.TargetId });
+            var held = s.Main != null && s.Main.Type == ActionType.Gather && s.Main.TargetId == r.TargetId ? s.Main.ReservedResourceUnits : 0;
+            return ValidateGather(s, r, new Plan { Type = r.Type, TargetId = r.TargetId }, held);
         }
 
         /// <summary>空闲时开始主行动；主行动暂停时开始子行动（补给、休息、点火）。</summary>
