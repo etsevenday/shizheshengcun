@@ -1,0 +1,232 @@
+{
+  "date": "2026-11-05",
+  "status": "passed",
+  "scope": "本轮策划合同、11答复、配置路程/公式样例及独立UI队伍食饮分支；不代表游戏/引擎实机验收",
+  "baseCommit": "32a03e46a6b19b8698f5becf7a7d9df4a75e0eab",
+  "answers": {
+    "Q258": "A",
+    "Q259": "A",
+    "Q260": "A",
+    "Q261": "A",
+    "Q262": "A",
+    "Q263": "A",
+    "Q264": "B",
+    "Q265": "B",
+    "Q266": "A",
+    "Q267": "B",
+    "Q268": "B"
+  },
+  "pending": 0,
+  "questionsOnlyAnswerFields": true,
+  "implementationAndHistoryPreserved": true,
+  "mirrorCopies": 5,
+  "outerQ257TemplatesUnchanged": 17,
+  "acceptanceTargets": 15,
+  "links": 59,
+  "routeCount": 8,
+  "routeBasisAtFactor1": [
+    {
+      "dungeonId": "d01",
+      "coreNode": "d01_08",
+      "parentNode": "c03_crypt",
+      "configuredBaseMinutes": 35,
+      "RAtFactor1": 35
+    },
+    {
+      "dungeonId": "d02",
+      "coreNode": "d02_08",
+      "parentNode": "r03_lab",
+      "configuredBaseMinutes": 30,
+      "RAtFactor1": 30
+    },
+    {
+      "dungeonId": "d03",
+      "coreNode": "d03_08",
+      "parentNode": "o03_police",
+      "configuredBaseMinutes": 30,
+      "RAtFactor1": 30
+    },
+    {
+      "dungeonId": "d04",
+      "coreNode": "d04_07",
+      "parentNode": "w10_watchtower",
+      "configuredBaseMinutes": 35,
+      "RAtFactor1": 35
+    },
+    {
+      "dungeonId": "d05",
+      "coreNode": "d05_07",
+      "parentNode": "w33_waterworks",
+      "configuredBaseMinutes": 30,
+      "RAtFactor1": 30
+    },
+    {
+      "dungeonId": "d06",
+      "coreNode": "d06_08",
+      "parentNode": "w24_cave",
+      "configuredBaseMinutes": 30,
+      "RAtFactor1": 30
+    },
+    {
+      "dungeonId": "d07",
+      "coreNode": "d07_07",
+      "parentNode": "o02_market",
+      "configuredBaseMinutes": 25,
+      "RAtFactor1": 30
+    },
+    {
+      "dungeonId": "d08",
+      "coreNode": "d08_08",
+      "parentNode": "w34_depot",
+      "configuredBaseMinutes": 30,
+      "RAtFactor1": 30
+    }
+  ],
+  "roundingFixtures": [
+    {
+      "B": 25,
+      "f": 1,
+      "R": 30
+    },
+    {
+      "B": 35,
+      "f": 1.1,
+      "R": 40
+    },
+    {
+      "B": 35,
+      "f": 1,
+      "R": 35
+    }
+  ],
+  "treatmentFixtures": [
+    {
+      "D": 0,
+      "P": 0,
+      "C": 0,
+      "F": 0,
+      "V": 0,
+      "missing": false,
+      "small": false
+    },
+    {
+      "D": 1500,
+      "P": 0,
+      "C": 0,
+      "F": 0,
+      "V": 0,
+      "missing": true,
+      "small": true
+    },
+    {
+      "D": 4000,
+      "P": 0,
+      "C": 1,
+      "F": 0,
+      "V": 0,
+      "missing": false,
+      "small": false
+    },
+    {
+      "D": 3500,
+      "P": 1,
+      "C": 1,
+      "F": 1,
+      "V": 2000,
+      "missing": false,
+      "small": false
+    },
+    {
+      "D": 8000,
+      "P": 1,
+      "C": 2,
+      "F": 1,
+      "V": 6000,
+      "missing": false,
+      "small": false
+    }
+  ],
+  "browser": "156.0.4314.58",
+  "browserErrors": [],
+  "uiCases": [
+    {
+      "size": [
+        1280,
+        720
+      ],
+      "overflow": [
+        0,
+        0
+      ],
+      "rows": [
+        152,
+        152,
+        152,
+        152
+      ],
+      "popWithin": true
+    },
+    {
+      "size": [
+        1600,
+        900
+      ],
+      "overflow": [
+        0,
+        0
+      ],
+      "rows": [
+        194,
+        194,
+        194,
+        194
+      ],
+      "popWithin": true
+    },
+    {
+      "size": [
+        1920,
+        1080
+      ],
+      "overflow": [
+        0,
+        0
+      ],
+      "rows": [
+        239,
+        239,
+        239,
+        239
+      ],
+      "popWithin": true
+    }
+  ],
+  "uiBranches": [
+    "队伍展开源不变",
+    "所有入口target留空",
+    "目标变化使owner非法清源",
+    "腐败源灰显/所选行保留/不可确认",
+    "说明Esc返回保留草稿不消费",
+    "确认仅扣明确目标本人来源",
+    "切成员清未提交意图"
+  ],
+  "screenshot": {
+    "path": "assets/原型-05-队伍食饮.png",
+    "sha256": "043b7604b4a211ccea00fb1c09909805904c78bf03fba85ca06d28a0ae802513",
+    "kind": "独立HTML示例截图，非游戏实机"
+  },
+  "checklist12": {
+    "数值": "30/5分钟读取原参数，500/250/2000单位与公式不变，源数量/余量已定义",
+    "名词": "核心recordNode/parent、同类、队伍面板、零收益已定义",
+    "作用范围": "仅本次预留展示/两人食饮/只读预算，不改其他行为",
+    "时机": "预览0分钟，原5分钟一次及确认快照保持",
+    "边界": "无路/异常分母/缺耗材/不足批次/源失效/0变化逐项定稿",
+    "敌人与自动行为": "不改敌人、不自动分水或换源",
+    "入口与条件": "隐藏/置灰/PartyPanel展开及target空已定",
+    "来源与解锁": "两人随身及发现范围不变，不新增知识门槛",
+    "冲突": "本轮明确取代旧对应显示/预算/入口措辞，历史原文保留",
+    "依赖": "B28内核已实现，B29及完整UI待开发",
+    "旧档": "无新字段/迁移/奖励，已提交动作按旧真实状态恢复",
+    "验收": "15项可判定，原型3档分支通过，正式验收待开发"
+  }
+}
