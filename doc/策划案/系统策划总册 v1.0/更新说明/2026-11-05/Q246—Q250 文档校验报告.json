@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-05",
+  "status": "passed",
+  "answers": {
+    "Q246": "A",
+    "Q247": "A",
+    "Q248": "A",
+    "Q249": "B",
+    "Q250": "C"
+  },
+  "pending": [
+    "Q251"
+  ],
+  "blueprintSourceLines": 5,
+  "acceptanceCount": 10,
+  "jsonFilesParsedBeforeReport": 101,
+  "checks": [
+    "所有JSON可解析",
+    "内容合同/城市登记/可选任务和A12/joint镜像一致",
+    "5个知识ID、记录/抄录包关系与抄录成本保持",
+    "Q219原线索逐字稿和原知识包保持，Q251仍待定",
+    "02仅5个答复字段变化",
+    "原实现同步及完整修改记录保留",
+    "12类上传前自查完整"
+  ],
+  "engineTestsRun": false,
+  "gameplayTested": false
+}
