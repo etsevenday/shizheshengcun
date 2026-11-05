@@ -1019,6 +1019,12 @@
 .map-canvas .map-node.here text.st { fill: #e7ce94; }
 .map-canvas .map-role rect { fill: #3b2c1c; stroke: #a7824c; stroke-width: 1; }
 .map-canvas .map-role text { font-size: 14px; fill: #f0d9a0; }
+/* Q220：地图水源图标（形状+水滴，脏水水滴空心带斜杠），不靠颜色区分 */
+.map-canvas .map-node .map-water rect { fill: #20271d; stroke: #e9d9ad; stroke-width: 1.5; stroke-dasharray: none; }
+.map-canvas .map-water path { fill: none; stroke: #f0d9a0; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.map-canvas .map-water .wd.clean path { fill: #cfe7ee; stroke: #cfe7ee; }
+.map-canvas .map-water .wd.dirty path { stroke: #c9a877; }
+.map-canvas .map-water .wd.dirty .slash { stroke-width: 3; }
 .map-canvas .map-pill { cursor: pointer; outline: none; }
 .map-canvas .map-pill rect { fill: #24302a; stroke: #8fa486; stroke-width: 1.5; }
 .map-canvas .map-pill:hover rect, .map-canvas .map-pill:focus-visible rect { stroke: #f0d9a0; }
@@ -1126,6 +1132,8 @@
 .map-sources .ms-row { position: relative; border-top: 1px solid #3a4232; padding: 6px 56px 4px 0; display: grid; gap: 2px; }
 .map-sources .ms-row.ok .ms-title b { color: #9fd18a; }
 .map-sources .ms-row.off { opacity: .8; }
+.acct-ico { display: inline-block; vertical-align: -2px; margin-right: 3px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linejoin: round; stroke-linecap: round; flex: none; }
+.acct-ico .fill { fill: currentColor; stroke: none; }
 .map-sources .ms-acct { display: inline-block; margin-right: 6px; padding: 0 6px; border: 1px solid #a88b55; border-radius: 9px; font-size: 13px; color: #e2c27e; }
 .map-sources .ms-row.ms-hint { padding-right: 0; font-size: 14px; line-height: 1.4; color: #cfd6c3; }
 .map-sources .ms-detail, .map-sources .ms-status { font-size: 13px; line-height: 1.35; }

@@ -1,0 +1,29 @@
+@* Q220（A10 §3）：四类账徽标——箱形“有限”、日历“每日补充”、环形“本实例”、印章“本局一次”，持续水源用水纹；靠形状区分，颜色跟随所在文字。文字短标与悬停说明在调用处保留 *@
+<svg class="acct-ico" viewBox="0 0 16 16" width="15" height="15" role="img" aria-label="@Label" data-acct="@Label">
+    <title>@Label</title>
+    @switch (Label)
+    {
+        case "有限":
+            <path d="M2 5.5 8 2.5l6 3v7l-6 3-6-3zM2 5.5l6 3 6-3M8 8.5v7" />
+            break;
+        case "每日补充":
+            <path d="M2.5 3.5h11v10h-11zM2.5 6.5h11M5.5 1.5v3M10.5 1.5v3" />
+            <path class="fill" d="M5 8.5h2v2H5zM9 8.5h2v2H9z" />
+            break;
+        case "本实例":
+            <circle cx="8" cy="8" r="6" />
+            <circle cx="8" cy="8" r="2.5" />
+            break;
+        case "本局一次":
+            <path d="M6 1.5h4v3.5l-.8 2.5h3.3v3h-9v-3h3.3L6 5zM3 13.5h10" />
+            break;
+        case "持续":
+            <path d="M1.5 5c2-2 4.5-2 6.5 0s4.5 2 6.5 0M1.5 11c2-2 4.5-2 6.5 0s4.5 2 6.5 0" />
+            break;
+    }
+</svg>
+
+@code {
+    /// <summary>GameEngine.AccountLabel 的短标：有限 / 每日补充 / 本实例 / 本局一次 / 持续。</summary>
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+}

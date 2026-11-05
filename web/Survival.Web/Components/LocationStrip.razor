@@ -359,24 +359,24 @@
                             @* M84：耗时只写在按钮上（“采集/搜集 + N分钟”），状态行不再重复，给名称和产出留位 *@
                             @if (r.IsRecord)
                             {
-                                <div class="oc-line" title="核心记录：本局唯一一次，地牢换代后也不再发放；记作记录，不占物资卡">核心记录 · 本局唯一</div>
+                                <div class="oc-line" title="核心记录：本局唯一一次，地牢换代后也不再发放；记作记录，不占物资卡"><AccountIcon Label="@GameEngine.AccountLabel(r)" />核心记录 · 本局唯一</div>
                             }
                             else if (r.IsCampaign)
                             {
                                 var packLine = r.IsCampaignPhysical ? string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}")) : "做法知识包";
-                                <div class="oc-line" title="本局唯一一次领取：@packLine">本局唯一 · @packLine</div>
+                                <div class="oc-line" title="本局唯一一次领取：@packLine"><AccountIcon Label="@GameEngine.AccountLabel(r)" />本局唯一 · @packLine</div>
                             }
                             else if (r.IsCache)
                             {
                                 var cacheLine = $"{GameEngine.AccountLabel(r)} · " + string.Join("、", r.Outputs.Select(o => $"{e.ItemName(o.Key)}{o.Value}"));   // B23（A10 §3）：四类账短标
-                                <div class="oc-line" title="@cacheLine">@cacheLine</div>
+                                <div class="oc-line" title="@cacheLine"><AccountIcon Label="@GameEngine.AccountLabel(r)" />@cacheLine</div>
                             }
                             else
                             {
                                 var per = r.Outputs.Values.First() * (tool != null && r.ToolBonus != null && !r.IsUnlimited ? r.ToolBonus.OutputMultiplier : 1) + e.PassiveGatherBonus(s, s.Player, r, r.Outputs.Keys.First());
                                 // B23（A10 §3）：卡面先写四类账短标（有限/每日补充/本实例/持续），确定产量写“每次”
                                 var perLine = $"{GameEngine.AccountLabel(r)} · 每次{per}{e.ItemName(r.Outputs.Keys.First())}{(r.Refills ? $" · 日补{r.DailyRefill}" : "")}";
-                                <div class="oc-line" title="@perLine">@perLine</div>
+                                <div class="oc-line" title="@perLine"><AccountIcon Label="@GameEngine.AccountLabel(r)" />@perLine</div>
                             }
                             @if (r.Hazard != null) { var hz = $"{Ui.Pct(e.HazardChance(s, r))}{r.Hazard.Label} · 健康−{Ui.T(e.HazardLoss(s, r))}"; <div class="oc-line warn-line" title="@hz">@hz</div> }
                             @* Q28：按钮缩成“动词 + 时长”让出约70%图片区，不能开始的实际原因改写在卡面状态角标里，不隐藏 *@

@@ -91,7 +91,7 @@
                 {
                     var loc = x.LocationId;
                     <div class="ms-row @(x.Usable ? "ok" : "off")" data-source-kind="@x.Kind">
-                        <div class="ms-title">@if (!string.IsNullOrEmpty(x.Account)) { <span class="ms-acct">@x.Account</span> }<b>@x.Title</b></div>
+                        <div class="ms-title">@if (!string.IsNullOrEmpty(x.Account)) { <span class="ms-acct"><AccountIcon Label="@x.Account" />@x.Account</span> }<b>@x.Title</b></div>
                         <div class="ms-detail">@x.Detail</div>
                         <div class="ms-status @(x.Usable ? "" : "warn-text")">@x.Status@(string.IsNullOrEmpty(x.Route) ? "" : $" · {x.Route}")</div>
                         @if (loc != null)
@@ -136,7 +136,7 @@
                         var isPicked = id == picked;
                         var state = n.IsHere || n.HereInside ? "here" : n.Visited ? "visited" : "known";
                         var status = n.IsHere ? "● 当前位置" : n.HereInside ? "● 你在城内" : n.Visited ? $"探索度{n.Progress}%" : "待访问";
-                        var tip = $"{n.Name} · {status}{(n.Danger is int dg ? $" · 危险{dg}" : "")}{(n.Roles.Count > 0 ? " · " + string.Join("、", n.Roles) : "")}";
+                        var tip = $"{n.Name} · {status}{(n.Danger is int dg ? $" · 危险{dg}" : "")}{(n.Roles.Count > 0 ? " · " + string.Join("、", n.Roles) : "")}{(n.Water.Count > 0 ? " · " + string.Join("、", n.Water.Select(m => m.Title)) : "")}";
                         <g class="map-node @state @(isPicked ? "picked" : "")" id="@($"mn-{id}")" tabindex="0" role="button" aria-label="@tip"
                            @onclick="() => Pick(id)" @onkeydown="ev => NodeKey(ev, id)" @onkeydown:stopPropagation="true">
                             <title>@tip</title>
@@ -155,6 +155,31 @@
                                     var rt = string.Join("·", n.Roles);
                                     var rw = 16 + 14 * rt.Length;
                                     <g class="map-role"><rect x="@F(x - rw / 2.0)" y="@F(y - NodeH / 2 - 24)" width="@rw" height="22" rx="4" /><text x="@F(x)" y="@F(y - NodeH / 2 - 8)" text-anchor="middle">@rt</text></g>
+                                }
+                                @* Q220（A10-EXUI §5）：节点右上角水源图标，左边的形状写水源形态、右边的水滴写水种（脏水带斜杠），不靠颜色区分；悬停写资源点名、四类账、水种 *@
+                                @for (var wi = 0; wi < n.Water.Count; wi++)
+                                {
+                                    var wm = n.Water[wi];
+                                    <g class="map-water" data-water="@wm.Shape" transform="@($"translate({F(x + NodeW / 2 - 40 - wi * 46)},{F(y - NodeH / 2 - 12)})")">
+                                        <title>@wm.Title</title>
+                                        <rect width="44" height="24" rx="6" />
+                                        <g class="wg" transform="translate(3,3) scale(0.75)">
+                                            @switch (wm.Shape)
+                                            {
+                                                case "flow": <path d="M2 7c3.3-3 6.7-3 10 0s6.7 3 10 0M2 13c3.3-3 6.7-3 10 0s6.7 3 10 0M2 19c3.3-3 6.7-3 10 0s6.7 3 10 0" /> break;
+                                                case "bottle": <path d="M9.5 2h5v4l2.5 3.5V21a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V9.5L9.5 6zM7 13h10" /> break;
+                                                case "cistern": <path d="M4 6c0-3 16-3 16 0v12c0 3-16 3-16 0zM4 6c0 3 16 3 16 0M4 12c0 3 16 3 16 0" /> break;
+                                                default: <path d="M3 4h18l-7 8.5V20l-4 2v-9.5zM7 8h10" /> break;
+                                            }
+                                        </g>
+                                        @if (wm.Clean is bool clean)
+                                        {
+                                            <g class="wd @(clean ? "clean" : "dirty")" transform="translate(23,3) scale(0.75)">
+                                                <path d="M12 2.5C8 8 5 11.5 5 15a7 7 0 0 0 14 0c0-3.5-3-7-7-12.5z" />
+                                                @if (!clean) { <path class="slash" d="M4 21 20 5" /> }
+                                            </g>
+                                        }
+                                    </g>
                                 }
                                 @if (labels && !n.IsHere)
                                 {

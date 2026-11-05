@@ -46,6 +46,19 @@ namespace Survival.Core.Engine
         public string? SubLabel { get; set; }
         /// <summary>地牢房间角色（只给已到访房间）：守卫、核心记录、出口。</summary>
         public List<string> Roles { get; set; } = new List<string>();
+        /// <summary>这里已知的水源与净水设施（Q220，A10-EXUI §5）：地图图标用，只给已发现的资源点和已建成的设施。</summary>
+        public List<MapWaterMark> Water { get; set; } = new List<MapWaterMark>();
+    }
+
+    /// <summary>地图水源图标（Q220）：形状写水源形态，水滴写水种；只作展示，不改库存、日补、水种或取水规则。</summary>
+    public sealed class MapWaterMark
+    {
+        /// <summary>flow 持续水源 / bottle 有限 / cistern 每日补充 / station 净水设施。</summary>
+        public string Shape { get; set; } = "";
+        /// <summary>水种：true 净水、false 脏水；设施没有水种，为 null。</summary>
+        public bool? Clean { get; set; }
+        /// <summary>悬停说明：资源点名 · 四类账短标 · 水种名（设施写工位名）。</summary>
+        public string Title { get; set; } = "";
     }
 
     public sealed class MapViewEdge
@@ -201,6 +214,33 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>某层的只读视图。层不合法或没有已知节点时退回主世界。</summary>
+        private const string WaterStationId = "water_station";
+
+        private ILookup<string, ResourceConfig>? _waterResources;
+
+        /// <summary>单产一种水的资源点（混装补给箱不是水源），按地点。</summary>
+        private ILookup<string, ResourceConfig> WaterResources => _waterResources ??= Config.Resources
+            .Where(r => r.Outputs.Count == 1 && Config.Items.FirstOrDefault(i => i.Id == r.Outputs.Keys.First())?.Kind == "water")
+            .ToLookup(r => r.LocationId);
+
+        /// <summary>一个地点的水源图标（Q220）：未发现的资源点不出（与来源查询同一口径，不泄露未知水源）。</summary>
+        private List<MapWaterMark> MapWaterMarks(GameState s, string id)
+        {
+            var list = new List<MapWaterMark>();
+            foreach (var r in WaterResources[id])
+            {
+                if (!s.Resources.TryGetValue(r.NodeId, out var rs) || !rs.Discovered) continue;
+                var water = r.Outputs.Keys.First();
+                list.Add(new MapWaterMark
+                {
+                    Shape = r.IsUnlimited ? "flow" : r.Refills ? "cistern" : "bottle", Clean = water == "clean_water",
+                    Title = $"{r.Name} · {AccountLabel(r)} · {ItemName(water)}",
+                });
+            }
+            if (WorkshopBuilt(s, id, WaterStationId) || WorkshopBuilt(s, ZonePlace(id, SafehouseZone), WaterStationId)) list.Add(new MapWaterMark { Shape = "station", Title = StationName(WaterStationId) });
+            return list;
+        }
+
         public MapView BuildMapView(GameState s, string? layerKey = null)
         {
             var layer = layerKey ?? DefaultMapLayer(s);
@@ -265,6 +305,7 @@ namespace Survival.Core.Engine
                 }
                 // B17（S09 X2.5/X2.9）：已建成的安全屋与收藏的“常用屋”在地图上标出，只是定位，不是捷径
                 if (SafehouseBuilt(s, id)) n.Roles.Add(s.FavoriteSafehouse == id ? "常用安全屋" : "安全屋");
+                n.Water = MapWaterMarks(s, id);
                 view.Nodes.Add(n);
             }
 
