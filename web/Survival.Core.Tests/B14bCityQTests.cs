@@ -297,7 +297,7 @@ public class B14bCityQTests : TestBase
     {
         var s = At("h01_gate");
         var know = Cfg.Knowledge.Where(k => k.GrantedByFacts.Contains("hub_registered")).ToList();
-        Assert.That(know, Has.Count.EqualTo(26));
+        Assert.That(know, Has.Count.EqualTo(21), "Q216：五张蓝图取消登记默认，26→21");
         Assert.That(know.Any(k => k.Id == "expedition_basics"), Is.False, "远行基础做法不是第 27 项");
         Ok(E.StartCityService(s, "hub_registration_existing"));
         ReadDialogues(s);

@@ -46,6 +46,11 @@ namespace Survival.Core.State
         /// 取消即删除记录，所以“已取消自动资格”随存档保留，回到原地不恢复。旧档没有这个字段就是空表，不按 Talks 或日志猜造。
         /// </summary>
         public List<SubstituteIntroDeferral> SubstituteIntroDeferred { get; set; } = new List<SubstituteIntroDeferral>();
+        /// <summary>
+        /// 旧登记在办资格（Q247，开发计划 v0.9 B27，存档 43）：只在 42→43 迁移时写入（已有营门授权、尚未到广场的旧档）。
+        /// 之后真实到广场按旧 26 项完成登记并清除；新版本才办的营门授权不写这里。
+        /// </summary>
+        public bool LegacyRegistrationPending { get; set; }
 
         public CityState Clone() => new CityState
         {
@@ -62,6 +67,7 @@ namespace Survival.Core.State
             OverviewPendingLegacy = OverviewPendingLegacy,
             SubstituteIntroShown = new HashSet<string>(SubstituteIntroShown),
             SubstituteIntroDeferred = SubstituteIntroDeferred.Select(d => d.Clone()).ToList(),
+            LegacyRegistrationPending = LegacyRegistrationPending,
         };
     }
 

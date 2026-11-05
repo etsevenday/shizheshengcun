@@ -66,6 +66,7 @@ namespace Survival.Core.Save
         public const string Schema39 = "39";
         public const string Schema40 = "40";
         public const string Schema41 = "41";
+        public const string Schema42 = "42";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -122,6 +123,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema39) From39To40(s, config, notes);
             if (s.SchemaVersion == Schema40) From40To41(s, config, notes);
             if (s.SchemaVersion == Schema41) From41To42(s, config, notes);
+            if (s.SchemaVersion == Schema42) From42To43(s, config);
             RejudgeGates(s, config);
             return notes;
         }
@@ -879,7 +881,8 @@ namespace Survival.Core.Save
             var claimed = SyncLegacyClaims(s, config);
             s.RevealedResourceMarkers = null;
             if (added > 0) notes.Add($"资源点扩展到{config.Resources.Count}处，已发现的资源点线索可以直接采集");
-            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{GameState.CurrentSchema}（资源四账：新增{added}处资源点" +
+            // 这句的版本号原来拼 CurrentSchema，上线后一直写到 42；B27 起写死 42，存档再升版本时句子不变（Q248：既有日志保持）
+            s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = $"存档已升级到版本{Schema42}（资源四账：新增{added}处资源点" +
                 (claimed.Count > 0 ? $"；已持有的{string.Join("、", claimed)}记为已领取，不再重复领取" : "") + "）。" });
             s.SchemaVersion = Schema21;
         }
@@ -1271,6 +1274,24 @@ namespace Survival.Core.Save
             }
             s.Log.Add(new LogEntry { Minute = s.GameMinute, Kind = GameEventKind.Info.ToString(), Text = "存档已升级到版本42（岗位代班：" +
                 "各岗位的代班接续说明只自动播一次，已播过的不再播；不补播对白，不改任务、配额与奖励）。" });
+            s.SchemaVersion = Schema42;
+        }
+
+        // ───────────────────────── 42 → 43 ─────────────────────────
+
+        /// <summary>
+        /// 五张蓝图取消登记默认（开发计划 v0.9 B27，Q216；knowledge-source-adjudications.json migration）：只在这一步看一次旧档——
+        /// 已有 hub_registered 的五项写成永久知识（Q246）；已有 registration_authorized 且无 hub_registered 的记下旧登记在办资格（Q247），
+        /// 迁移时不提前完成登记、不提前授知识，留给真实到广场的 ArriveCity；其余旧档什么都不写。之后的档不再走这里，不按事实补发或重判。
+        /// 静默（Q248）：不写日志、提示或对白，不发物资经验。幂等。
+        /// </summary>
+        private static void From42To43(GameState s, GameConfig config)
+        {
+            var reg = config.City.Registration;
+            var f = s.Progress.Flags;
+            if (f.Contains(reg.RegisteredFact))
+                foreach (var id in reg.LegacyKnowledge) f.Add("knowledge:" + id);
+            else if (f.Contains(reg.AuthorizedFact)) s.City.LegacyRegistrationPending = true;
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

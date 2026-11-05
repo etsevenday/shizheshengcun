@@ -13,7 +13,7 @@ namespace Survival.Core.Engine
     /// </summary>
     public sealed partial class GameEngine
     {
-        /// <summary>做法知识（Q64）：存档里直接记下 knowledge:id，或有它的授予事实（护拳绑带=营区登记 hub_registered）。</summary>
+        /// <summary>做法知识（Q64）：存档里直接记下 knowledge:id，或有它的授予事实（护拳绑带=营区登记 hub_registered；Q216 的五张蓝图只认记录与抄录事实）。</summary>
         public bool KnowsKnowledge(GameState s, string knowledgeId)
         {
             if (s.Progress.Flags.Contains("knowledge:" + knowledgeId)) return true;

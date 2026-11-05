@@ -16,6 +16,9 @@ public class B23ExqQuestTests : TestBase
 
     private static string Q(string id, string kind) => GameEngine.QuestFact(id, kind);
 
+    /// <summary>存档 43 迁移过的已登记旧档：五张蓝图已是永久知识（Q246）。</summary>
+    private static void LegacyLearned(GameState s) => s.Progress.Flags.UnionWith(Cfg.City.Registration.LegacyKnowledge.Select(k => "knowledge:" + k));
+
     private GameState Registered(string loc)
     {
         var s = New();
@@ -48,6 +51,7 @@ public class B23ExqQuestTests : TestBase
     public void EXQ05_AcceptClaimReturn_FullFlow()
     {
         var s = Registered("h03_workshop");
+        LegacyLearned(s);
         var v = E.QuestViewOf(s, "EXQ05")!;
         Assert.That((v.Status, v.KindLabel, v.Step), Is.EqualTo(("available", "可选任务", "到营区工坊和罗铮交谈。")));
         Assert.That(E.QuestBook(s).Select(x => x.Id), Does.Contain("EXQ05").And.Contain("EXQ06"));
@@ -154,11 +158,12 @@ public class B23ExqQuestTests : TestBase
     public void EXQ_A06_ClaimBeforeAccept_RetroCompleteOnAccept()
     {
         var s = Registered("h03_workshop");
+        LegacyLearned(s);
         Ok(E.TalkNpc(s, "npc_luo_zheng"));   // 首次见面接取 EXQ05
         ReadDialogues(s);
         ToRecord(s, "d06_08");
         var p = E.Preview(s, ActionRequest.Gather("d06_08_unique"));
-        Assert.That(p.Notes, Has.Some.EqualTo("知识已知，本次用于保存调查记录"), "两条衣物知识已是登记默认知识");
+        Assert.That(p.Notes, Has.Some.EqualTo("知识已知，本次用于保存调查记录"), "已登记旧档两条衣物知识已是永久知识（Q246）");
         Assert.That(p.Notes, Has.Some.EqualTo("同时获得做法知识：基础陶工做法"), "矿道手册原有的同授知识照旧");
         Start(s, ActionRequest.Gather("d06_08_unique"));
         Run(s);

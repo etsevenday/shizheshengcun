@@ -121,7 +121,10 @@ namespace Survival.Core.Engine
 
         // ───────────────────────── 营区登记（S02 规则 3） ─────────────────────────
 
-        /// <summary>实际到达成功后的城市事务：持登记授权真实走到广场，写 hub_registered（C2、登记默认知识）与 QMAP01 完成；幂等。</summary>
+        /// <summary>
+        /// 实际到达成功后的城市事务：持登记授权真实走到广场，写 hub_registered（C2、登记默认知识）与 QMAP01 完成；幂等。
+        /// 带旧登记在办资格的（Q247，只由 42→43 迁移写入）在同一事务把五项写成永久知识，按旧 26 项完成并清掉资格；其余登记只有 21 项。
+        /// </summary>
         private void ArriveCity(GameState s, string locationId, List<string> notes)
         {
             // B18：当日首次安全到达鉴定所时锁定当日报价表（R07 X3.3、开发假设 B18-1）
@@ -134,6 +137,12 @@ namespace Survival.Core.Engine
             if (!f.Contains(reg.AuthorizedFact) || !f.Add(reg.RegisteredFact)) return;
             if (!string.IsNullOrEmpty(reg.QuestId)) f.Add(QuestFact(reg.QuestId, "completed"));
             var know = Config.Knowledge.Count(k => k.GrantedByFacts.Contains(reg.RegisteredFact));
+            if (s.City.LegacyRegistrationPending)
+            {
+                foreach (var id in reg.LegacyKnowledge) f.Add("knowledge:" + id);
+                know += reg.LegacyKnowledge.Count;
+                s.City.LegacyRegistrationPending = false;
+            }
             notes.Add($"营区登记完成：队伍容量升到 C{BattleCapacity(s)}" + (know > 0 ? $"，学会营区登记默认做法知识 {know} 项" : "") + "（不发额外物资，再到广场不会重复登记）");
         }
 

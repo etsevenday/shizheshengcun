@@ -323,12 +323,12 @@ public class B17SafehouseTests : TestBase
         Assert.That((mp.ProcessId, mp.HeatDoneMinutes, mp.TargetInstanceId), Is.EqualTo((proc.ProcessId, proc.HeatDoneMinutes, proc.TargetInstanceId)));
         Assert.That(E.FindItem(m, pot.InstanceId)!.Owner, Is.EqualTo("facility:camp:fire"));
         Assert.That(m.Items.Count, Is.EqualTo(s.Items.Count));
-        Assert.That(m.Log.Count(l => l.Text.Contains($"版本{GameState.CurrentSchema}")), Is.EqualTo(1));
+        Assert.That(m.Log.Count(l => l.Text.Contains("版本42")), Is.EqualTo(1));
         // 登记只解锁资格，不赠建筑
         Assert.That(E.SafehouseStatus(m, "camp"), Is.EqualTo(GameEngine.SafehouseNotStarted));
         // 幂等：再读一次不再写日志
         var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(m), Cfg);
-        Assert.That(again.Log.Count(l => l.Text.Contains($"版本{GameState.CurrentSchema}")), Is.EqualTo(1));
+        Assert.That(again.Log.Count(l => l.Text.Contains("版本42")), Is.EqualTo(1));
     }
     // ───────────── SH14 收藏、改名与返程定位 ─────────────
 

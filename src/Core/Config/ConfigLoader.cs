@@ -544,6 +544,10 @@ namespace Survival.Core.Config
                 if (q.RecordFacts.Count > 0 && (q.Accept != "talk" || q.WorkMinutes != 0 || string.IsNullOrEmpty(q.StepTurnin)))
                     e.Add($"任务 {q.Id} 记录类任务须交谈接取、0 分钟回报并有回报步骤");
             }
+            // B27（Q216）：旧档专用的五张蓝图须存在，且不再是登记默认知识
+            foreach (var k in c.City.Registration.LegacyKnowledge)
+                if (c.Knowledge.FirstOrDefault(x => x.Id == k) is not KnowledgeConfig kc) e.Add($"旧登记知识 {k} 不存在");
+                else if (kc.GrantedByFacts.Contains(c.City.Registration.RegisteredFact)) e.Add($"旧登记知识 {k} 不应再由 {c.City.Registration.RegisteredFact} 授予");
             // B23：可选地牢知识包（A11 §3）
             foreach (var p in c.ExpansionQuests.Packs)
             {

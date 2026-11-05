@@ -49,8 +49,9 @@ namespace Survival.Core.State
         /// "40" 起可选地牢核心记录两段续做（ResourceState.ClaimMinutesDone，开发计划 v0.9 B23）。
         /// "41" 起主城鸟瞰按城一次的展示标记与待自动打开（CityState.OverviewShown/OverviewPending，开发计划 v0.9 B24）。
         /// "42" 起代班接续说明按身份一次的已示标记（CityState.SubstituteIntroShown）与服务结束被挡住后的待补播（CityState.SubstituteIntroDeferred，策划答复 Q235、Q243，开发计划 v0.9 B26a）。
+        /// "43" 起蓝图来源改写：旧档已登记的五张蓝图写成永久知识（knowledge:id），旧在办登记资格存 CityState.LegacyRegistrationPending（策划答复 Q246、Q247，开发计划 v0.9 B27）。
         /// </summary>
-        public const string CurrentSchema = "42";
+        public const string CurrentSchema = "43";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";

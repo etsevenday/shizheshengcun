@@ -100,9 +100,9 @@ public class B18AppraisalTests : TestBase
         Assert.That(E.FindItem(m, t.InstanceId)!.Source!.TutorialReward, Is.True);
         Assert.That(E.FindItem(m, o.InstanceId)!.Source!.GrantEventId, Is.EqualTo(o.Source!.GrantEventId));
         Assert.That(m.City.Quotes, Is.Empty, "旧档不补抽报价表，下一次安全访问再生成");
-        Assert.That(m.Log.Count(l => l.Text.Contains($"版本{GameState.CurrentSchema}")), Is.EqualTo(1));
+        Assert.That(m.Log.Count(l => l.Text.Contains("版本42")), Is.EqualTo(1));
         var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(m), Cfg);
-        Assert.That(again.Log.Count(l => l.Text.Contains($"版本{GameState.CurrentSchema}")), Is.EqualTo(1));
+        Assert.That(again.Log.Count(l => l.Text.Contains("版本42")), Is.EqualTo(1));
     }
 
     // ───────────── R57 详细鉴定与教学保护 ─────────────

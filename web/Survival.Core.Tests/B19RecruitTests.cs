@@ -269,12 +269,12 @@ public class B19RecruitTests : TestBase
         Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
         Assert.That(m.Recruit.ShelterOpenedAt, Is.Null);
         Assert.That(m.Recruit.Candidates, Is.Empty);
-        Assert.That(m.Log.Count(l => l.Text.Contains($"版本{GameState.CurrentSchema}")), Is.EqualTo(1));
+        Assert.That(m.Log.Count(l => l.Text.Contains("版本42")), Is.EqualTo(1));
         E.DebugMapTeleport(m, Shelter);
         Assert.That(m.Recruit.ShelterOpenedAt, Is.EqualTo(At(9, 8, 0)), "旧档首次实到才起算");
         Assert.That(m.Recruit.Cycle, Is.EqualTo(0));
         var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(m), Cfg);
-        Assert.That(again.Log.Count(l => l.Text.Contains($"版本{GameState.CurrentSchema}")), Is.EqualTo(1));
+        Assert.That(again.Log.Count(l => l.Text.Contains("版本42")), Is.EqualTo(1));
     }
 
     /// <summary>不在安全访问时不开放：战斗/敌踪中到达不记起点（RC1“安全空闲”）。</summary>

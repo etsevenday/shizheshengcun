@@ -213,7 +213,7 @@ public class B24CityOverviewTests : TestBase
         Assert.That(m.City.OverviewPendingLegacy, Is.True);
         Assert.That(m.City.OverviewShown, Does.Contain("h02_square"));
         Assert.That(m.Items.Count, Is.EqualTo(s.Items.Count));
-        Assert.That(m.Progress.Flags, Is.EquivalentTo(s.Progress.Flags));
+        Assert.That(m.Progress.Flags, Is.EquivalentTo(s.Progress.Flags.Concat(Cfg.City.Registration.LegacyKnowledge.Select(k => "knowledge:" + k))), "只多 42→43 的五项永久知识（Q246）");
         Assert.That(E.CityOverviewAutoOpenDue(m), Is.True);
         Assert.That(E.MarkCityOverviewShown(m), Is.True, "旧档补显：界面写说明");
         var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(m), Cfg);

@@ -11,6 +11,9 @@ public class B23ExqCopyTests : TestBase
 {
     private void Ok(ActionResult r) => Assert.That(r.Ok, Is.True, r.Reason);
 
+    /// <summary>存档 43 迁移过的已登记旧档：五张蓝图已是永久知识（Q246）。</summary>
+    private static void LegacyLearned(GameState s) => s.Progress.Flags.UnionWith(Cfg.City.Registration.LegacyKnowledge.Select(k => "knowledge:" + k));
+
     private GameState At(string loc, bool registered = true)
     {
         var s = New();
@@ -24,13 +27,15 @@ public class B23ExqCopyTests : TestBase
     }
 
     /// <summary>
-    /// EXQ-A04：h03 罗铮事项“查抄公开资料”两项——公开资料（净水操作套件已掌握、维护手册未学）可抄；公开作业资料两条都是登记默认知识，禁用写“已全部掌握”。
+    /// EXQ-A04：h03 罗铮事项“查抄公开资料”两项——公开资料（净水操作套件已掌握、维护手册未学）可抄；公开作业资料两条都已掌握，禁用写“已全部掌握”。
+    /// 这里按存档 43 迁移过的已登记旧档（Q246：五张蓝图是永久知识）；新登记未掌握时见 B27KnowledgeSourceTests。
     /// 抄录 30 分钟 0 材料后学会维护手册；不写核心记录/任务/通关/容量事实，不发物、不给经验。
     /// </summary>
     [Test]
     public void EXQ_A04_H03Copy_LearnsUnknownOnly_NoFakeClear()
     {
         var s = At("h03_workshop");
+        LegacyLearned(s);
         var v = E.CityServicesOf(s, "npc_luo_zheng").Single(x => x.Id == "copy_public_knowledge");
         Assert.That((v.Title, v.TimeText, v.CostText, v.Blocked), Is.EqualTo(("查抄公开资料", "30分钟", "无额外耗材/费用", (string?)null)));
         Assert.That(v.Choices.Select(c => c.Label), Is.EqualTo(new[]
@@ -61,11 +66,12 @@ public class B23ExqCopyTests : TestBase
         Assert.That(v.Blocked, Does.StartWith("已全部掌握"), "两包都已知后整项禁用");
     }
 
-    /// <summary>h04 陈芷“查抄公开资料”只有物资登记资料一包：不选也直接用它；学会配给袋蓝图。h02 许安的公共告示资料两条都是登记默认知识：整项禁用。</summary>
+    /// <summary>h04 陈芷“查抄公开资料”只有物资登记资料一包：不选也直接用它；学会配给袋蓝图。h02 许安的公共告示资料两条都已掌握（已登记旧档，Q246）：整项禁用。</summary>
     [Test]
     public void H04Copy_SinglePack_H02AllKnownDisabled()
     {
         var s = At("h04_infirmary");
+        LegacyLearned(s);
         var v = E.CityServicesOf(s, "npc_chen_zhi").Single(x => x.Id == "copy_public_knowledge_h04");
         Assert.That((v.Title, v.Choices.Single().Label), Is.EqualTo(("查抄公开资料", "物资登记资料：配给袋蓝图")));
         Ok(E.StartCityService(s, "copy_public_knowledge_h04"));

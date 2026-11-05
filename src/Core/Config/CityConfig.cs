@@ -49,6 +49,8 @@ namespace Survival.Core.Config
         public string AuthorizedFact { get; set; } = "";
         public string RegisteredFact { get; set; } = "";
         public string QuestId { get; set; } = "";
+        /// <summary>Q216 取消登记默认的五张蓝图：只给 43 以前的旧档用（已登记迁移写永久知识、旧在办到广场按 26 项完成），新登记不给（Q246、Q247）。</summary>
+        public List<string> LegacyKnowledge { get; set; } = new List<string>();
     }
 
     public sealed class CityNoticeConfig

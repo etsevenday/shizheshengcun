@@ -163,7 +163,7 @@ public class B14CityTests : TestBase
         Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
         Assert.That(m.City, Is.Not.Null);
         Assert.That(m.Progress.Flags, Does.Contain("church_contacted"), "到访过 c02 的旧档补接触事实");
-        Assert.That(m.Log.Count(l => l.Text.Contains($"版本{GameState.CurrentSchema}")), Is.EqualTo(1));
+        Assert.That(m.Log.Count(l => l.Text.Contains("版本42")), Is.EqualTo(1));
         Assert.That(SaveSerializer.NeedsMigration(SaveSerializer.Serialize(m)), Is.False);
     }
 

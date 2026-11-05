@@ -32168,7 +32168,6 @@
       "id": "blueprint_field_medkit",
       "name": "随行医疗包的做法",
       "grantedByFacts": [
-        "hub_registered",
         "claim:d07_07_unique",
         "kpcopy:kp_civilian_cache"
       ],
@@ -32351,7 +32350,6 @@
       "id": "blueprint_forage_jacket",
       "name": "采集外套的做法",
       "grantedByFacts": [
-        "hub_registered",
         "claim:d07_07_unique",
         "kpcopy:kp_civilian_cache"
       ],
@@ -32415,7 +32413,6 @@
       "id": "blueprint_utility_trousers",
       "name": "作业长裤的做法",
       "grantedByFacts": [
-        "hub_registered",
         "claim:d06_08_unique",
         "kpcopy:kp_mining"
       ],
@@ -32455,7 +32452,6 @@
       "id": "blueprint_gather_gloves",
       "name": "采集手套的做法",
       "grantedByFacts": [
-        "hub_registered",
         "claim:d06_08_unique",
         "kpcopy:kp_mining"
       ],
@@ -32473,7 +32469,6 @@
       "id": "blueprint_filter_token",
       "name": "净水操作套件的做法",
       "grantedByFacts": [
-        "hub_registered",
         "claim:d05_07_unique",
         "kpcopy:kp_waterworks"
       ],
@@ -34631,7 +34626,14 @@
       "dialogueSet": "gate_h01_registration",
       "authorizedFact": "registration_authorized",
       "registeredFact": "hub_registered",
-      "questId": "QMAP01"
+      "questId": "QMAP01",
+      "legacyKnowledge": [
+        "blueprint_gather_gloves",
+        "blueprint_utility_trousers",
+        "blueprint_forage_jacket",
+        "blueprint_field_medkit",
+        "blueprint_filter_token"
+      ]
     },
     "notices": [
       {

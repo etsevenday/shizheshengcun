@@ -230,7 +230,7 @@ public class MigrationTests : TestBase
         Assert.That(SaveSerializer.NeedsMigration(json), Is.True);
         Assert.Throws<SaveVersionException>(() => SaveSerializer.Deserialize(json));
         var bogus = JObject.Parse(json);
-        bogus["SchemaVersion"] = "43";   // B26a 起 42 是当前版本
+        bogus["SchemaVersion"] = "44";   // B27 起 43 是当前版本
         Assert.Throws<SaveVersionException>(() => SaveSerializer.Deserialize(bogus.ToString(), Cfg));
     }
 
@@ -307,7 +307,7 @@ public class MigrationTests : TestBase
         Assert.That(s.Items.All(i => i.ReservedBy == null));
         Assert.That(E.IsLocked(s, pot), Is.False);
         Assert.That(s.Log.Any(l => l.Text.Contains("旧版烧水已取消")), Is.True);
-        Assert.That(s.Log.Last().Text, Does.Contain($"升级到版本{GameState.CurrentSchema}"));
+        Assert.That(s.Log.Last().Text, Does.Contain("升级到版本42"), "43 静默（Q248），最后一句是 42 的 Q240 定稿句");
         AssertIdempotent(s);
         Assert.That(E.DoInstant(s, InstantRequest.FillPot(First(s, "dirty_water", "camp").InstanceId, pot.InstanceId, 2)).Ok, Is.True, "可按新方式装锅");
     }

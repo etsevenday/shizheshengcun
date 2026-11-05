@@ -330,11 +330,11 @@ public class B26aSubstituteTalkTests : TestBase
         var sessions = s.Story.DialogueLog.Count;
         var quests = s.Progress.Flags.Count;
         var m = Upgrade41(s);
-        Assert.That(m.SchemaVersion, Is.EqualTo("42"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
         Assert.That(GameEngine.SubstituteIntroShown(m, "npc_xu_an"), Is.True);
         Assert.That(m.Story.DialogueLog.Count, Is.EqualTo(sessions));
         Assert.That(E.DialogueLocked(m), Is.False, "无声");
-        Assert.That(m.Progress.Flags.Count, Is.EqualTo(quests));
+        Assert.That(m.Progress.Flags.Count, Is.EqualTo(quests + Cfg.City.Registration.LegacyKnowledge.Count), "只多 42→43 的五项永久知识（Q246）");
         Assert.That(m.City.Greeted, Is.EquivalentTo(s.City.Greeted));
         Assert.That(GameEngine.SubstituteIntroShown(m, "npc_luo_zheng"), Is.False, "别的岗位不受影响");
         TalkRead(m, "npc_xu_an");
@@ -978,7 +978,8 @@ public class B26aSubstituteTalkTests : TestBase
         var m = Upgrade41(s);
         Assert.That(m.Log.Select(l => l.Text), Is.EqualTo(logs.Append(UpgradeLog)), "只多这一条，旧日志不改写");
         Assert.That(m.Log.Last().Kind, Is.EqualTo(GameEventKind.Info.ToString()));
-        Assert.That((Ledger(m), m.Progress.Flags.Count, m.Story.DialogueLog.Count, m.GameMinute, m.City.Greeted.Count), Is.EqualTo(snap));
+        // 已登记旧档接着走 42→43：Flags 只多五项永久知识（Q246）
+        Assert.That((Ledger(m), m.Progress.Flags.Count - Cfg.City.Registration.LegacyKnowledge.Count, m.Story.DialogueLog.Count, m.GameMinute, m.City.Greeted.Count), Is.EqualTo(snap));
         Assert.That(E.DialogueLocked(m), Is.False, "不弹对话");
 
         var r = SaveSerializer.Deserialize(SaveSerializer.Serialize(m), Cfg);
@@ -1667,7 +1668,7 @@ public class B26aSubstituteTalkTests : TestBase
         E.UpdateFlags(m);
         Assert.That(E.DialogueLocked(m), Is.False);
         Assert.That(GameEngine.SubstituteIntroShown(m, OfficeNpc), Is.False);
-        Assert.That(m.SchemaVersion, Is.EqualTo("42"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema));
         TalkRead(m, OfficeNpc);
         Assert.That(Plays(m, OfficeIntro), Is.EqualTo(1));
     }
