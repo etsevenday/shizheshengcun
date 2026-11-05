@@ -8,13 +8,18 @@ namespace Survival.Core.Tests;
 
 /// <summary>
 /// 开发计划 v0.9 批次 B27（R10 Q219、R40 Q250）：来源查询的公开线索。规则来源：content-feeding-adjudications.json hints/hintPolicy、
-/// knowledge-source-adjudications.json hintDisplay；验收 SOURCE-Q250-01—03。Q251 待定的物品不给线索，保持旧显示。
+/// knowledge-source-adjudications.json hintDisplay、source-hint-classification-adjudications.json；验收 SOURCE-Q250-01—03、SOURCE-Q251-01—05。
 /// </summary>
 public class B27SourceHintTests : TestBase
 {
     private static readonly JObject Hints = (JObject)JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.content-feeding.json")))["hints"]!;
 
+    private static readonly JObject Q251 = JObject.Parse(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "design.source-hint-classification.json")));
+
     private static string Hint(string cat) => (string)Hints[cat]!;
+
+    /// <summary>只看类别：空列表等于没有可获取行。</summary>
+    private string? HintFor(string id) => E.ItemSourceHint(new List<ItemSourceView>(), id);
 
     private GameState Fresh()
     {
@@ -28,7 +33,7 @@ public class B27SourceHintTests : TestBase
     private string? HintOf(GameState s, string itemId) => E.ItemSourceHint(E.ItemSources(s, itemId), itemId);
 
     /// <summary>新局里来源全空的物品（配置里挑，不写死）。</summary>
-    private string EmptyItem(GameState s, string kind) => Cfg.Items.First(i => i.Kind == kind && !Cfg.SourceHints.PendingItems.Contains(i.Id) && E.ItemSources(s, i.Id).Count == 0).Id;
+    private string EmptyItem(GameState s, string kind) => Cfg.Items.First(i => i.Kind == kind && !Cfg.SourceHints.Items.ContainsKey(i.Id) && E.ItemSources(s, i.Id).Count == 0).Id;
 
     private static void Discover(GameState s, params string[] ids)
     {
@@ -73,10 +78,10 @@ public class B27SourceHintTests : TestBase
         Assert.That(HintOf(s, "lighter"), Is.EqualTo(Hint("tool")));
     }
 
-    /// <summary>冲突按 hintPolicy：石刀、简易斧是 tool 也在武器表，weapon 在前；便携滤水器是 material 也有工具标签，tool 在前。</summary>
+    /// <summary>冲突按 hintPolicy：石刀、简易斧是 tool 也在武器表，weapon 在前；便携滤水器有工具标签，但合同没授权归 tool，按 kind 取 material。</summary>
     [TestCase("stone_knife", "weapon")]
     [TestCase("hatchet", "weapon")]
-    [TestCase("water_filter", "tool")]
+    [TestCase("water_filter", "material")]
     public void SOURCE_Q250_01_ConflictPriority(string id, string cat)
     {
         var rows = new List<ItemSourceView>();   // 只看类别：这几件在新局有已知配方，空列表等于没有可获取行
@@ -169,17 +174,12 @@ public class B27SourceHintTests : TestBase
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before));
     }
 
-    /// <summary>Q251 待定：gear、carcass、substance 以及金属锅、分量水壶一律没有线索（界面保持旧句）。container/armor 目前没有物品映射到。</summary>
+    /// <summary>Q251 定稿后每件物品都有线索类别，配置里没有待定项；不存在的物品没有线索。界面的旧空列表句因此走不到，已删。</summary>
     [Test]
-    public void SOURCE_Q250_03_Q251Pending_NoHint()
+    public void SOURCE_Q250_03_EveryItemHasHint_NoPending()
     {
-        var s = Fresh();
-        var pending = Cfg.Items.Where(i => i.Kind is "gear" or "carcass" or "substance").Select(i => i.Id).Concat(new[] { "pot", "ration_canteen" }).ToList();
-        Assert.That(pending, Has.Count.EqualTo(35 + 4 + 1 + 2));
-        foreach (var id in pending) Assert.That(E.ItemSourceHint(new List<ItemSourceView>(), id), Is.Null, id);
-        var used = Cfg.Items.Select(i => E.ItemSourceHint(new List<ItemSourceView>(), i.Id)).Where(h => h != null).ToHashSet();
-        Assert.That(used, Does.Not.Contain(Hint("container")).And.Not.Contain(Hint("armor")));
-        Assert.That(E.ItemSourceHint(new List<ItemSourceView>(), "no_such_item"), Is.Null);
+        foreach (var i in Cfg.Items) Assert.That(HintFor(i.Id), Is.Not.Null, i.Id);
+        Assert.That(HintFor("no_such_item"), Is.Null);
     }
 
     /// <summary>未映射的 kind 用 fallback 原句（配置校验不放行未知 kind，这里在内存里改一件）。</summary>
@@ -190,5 +190,121 @@ public class B27SourceHintTests : TestBase
         cfg.Items.Single(i => i.Id == "cloth").Kind = "mystery";
         var e = new GameEngine(cfg);
         Assert.That(e.ItemSourceHint(new List<ItemSourceView>(), "cloth"), Is.EqualTo(Hint("fallback")));
+    }
+
+    // ───────────── SOURCE-Q251：特殊物品分类 ─────────────
+
+    /// <summary>合同的映射表与三段原文和运行结果逐条相等（当前 35/2/5 快照）。</summary>
+    [Test]
+    public void SOURCE_Q251_MappingsMatchContract()
+    {
+        var map = ((JArray)Q251["mappings"]!).ToList();
+        Assert.That(map.Count(x => (string)x["hintKey"]! == "armor"), Is.EqualTo(35));
+        Assert.That(map.Count(x => (string)x["hintKey"]! == "container"), Is.EqualTo(2));
+        Assert.That(map.Count(x => (string)x["hintKey"]! == "fallback"), Is.EqualTo(5));
+        foreach (var x in map)
+        {
+            Assert.That(Cfg.Items.Single(i => i.Id == (string)x["itemId"]!).Kind, Is.EqualTo((string)x["kind"]!));
+            Assert.That(HintFor((string)x["itemId"]!), Is.EqualTo(Hint((string)x["hintKey"]!)), (string)x["itemId"]!);
+        }
+        foreach (var p in ((JObject)Q251["hintTexts"]!).Properties()) Assert.That(Hint(p.Name), Is.EqualTo((string)p.Value!));
+        Assert.That(Cfg.SourceHints.Priority, Is.EqualTo(Q251["classification"]!["priority"]!.Select(x => (string)x!)));
+    }
+
+    /// <summary>SOURCE-Q251-01：全部 kind=gear 逐项取 armor，五种槽位 8/6/6/9/6；按元数据判断，新增同类 gear 也一样；武器仍是 weapon。</summary>
+    [Test]
+    public void SOURCE_Q251_01_AllGear_Armor()
+    {
+        var gear = Cfg.Items.Where(i => i.Kind == "gear").ToList();
+        Assert.That(gear, Has.Count.EqualTo(35));
+        Assert.That(gear.GroupBy(i => i.EquipSlot!).ToDictionary(g => g.Key, g => g.Count()), Is.EquivalentTo(new Dictionary<string, int>
+        {
+            ["armor"] = 8, ["top"] = 6, ["bottom"] = 6, ["combat_acc"] = 9, ["survival_acc"] = 6,
+        }));
+        foreach (var i in gear) Assert.That(HintFor(i.Id), Is.EqualTo(Hint("armor")), i.Id);
+        foreach (var id in new[] { "steady_ring", "knuckle_wraps", "route_compass", "ration_pouch" })
+            Assert.That(HintFor(id), Is.Not.EqualTo(Hint("fallback")), id);
+        foreach (var i in Cfg.Items.Where(i => i.Kind == "weapon")) Assert.That(HintFor(i.Id), Is.EqualTo(Hint("weapon")), i.Id);
+
+        var cfg = ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));
+        cfg.Items.Single(i => i.Id == "cloth").Kind = "gear";
+        Assert.That(new GameEngine(cfg).ItemSourceHint(new List<ItemSourceView>(), "cloth"), Is.EqualTo(Hint("armor")), "按 kind，不是写死 35 个 ID");
+    }
+
+    /// <summary>SOURCE-Q251-02：金属锅、分量水壶按稳定 ID 取 container，优先于 tool/material，不靠名字或新 kind；别的工具、材料和水、食品原类别不变。</summary>
+    [Test]
+    public void SOURCE_Q251_02_PotCanteen_Container_ContentsKeepOwn()
+    {
+        Assert.That(Cfg.Items.Single(i => i.Id == "pot").Kind, Is.EqualTo("tool"));
+        Assert.That(Cfg.Items.Single(i => i.Id == "ration_canteen").Kind, Is.EqualTo("material"));
+        Assert.That(HintFor("pot"), Is.EqualTo(Hint("container")));
+        Assert.That(HintFor("ration_canteen"), Is.EqualTo(Hint("container")));
+        Assert.That(HintFor("lighter"), Is.EqualTo(Hint("tool")));
+        Assert.That(HintFor("cloth"), Is.EqualTo(Hint("material")));
+        Assert.That(HintFor("clean_water"), Is.EqualTo(Hint("water")));
+        Assert.That(HintFor("dirty_water"), Is.EqualTo(Hint("water")));
+        Assert.That(HintFor("boiled_root"), Is.EqualTo(Hint("food")), "锅里的食品按它自己");
+
+        var cfg = ConfigLoader.FromJson(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "config.v0.6.json")));
+        cfg.Items.Single(i => i.Id == "pot").Name = "别的名字";
+        cfg.Items.Single(i => i.Id == "cloth").Name = "水壶和锅";
+        var e = new GameEngine(cfg);
+        Assert.That(e.ItemSourceHint(new List<ItemSourceView>(), "pot"), Is.EqualTo(Hint("container")));
+        Assert.That(e.ItemSourceHint(new List<ItemSourceView>(), "cloth"), Is.EqualTo(Hint("material")), "不按中文名猜");
+    }
+
+    /// <summary>SOURCE-Q251-03：四种尸体与未鉴定的活性物质取 fallback，不按产物或用途猜类别。</summary>
+    [TestCase("carcass_feral_dog")]
+    [TestCase("carcass_wolf")]
+    [TestCase("carcass_boar")]
+    [TestCase("carcass_stag")]
+    [TestCase("active_substance_white_unidentified")]
+    public void SOURCE_Q251_03_CarcassAndSubstance_Fallback(string id)
+    {
+        Assert.That(HintFor(id), Is.EqualTo(Hint("fallback")));
+    }
+
+    /// <summary>SOURCE-Q251-04：新分类同样走 Q250 门槛：可获取时不追加；不可获取时一条，原行保留。</summary>
+    [Test]
+    public void SOURCE_Q251_04_SameGate_OnceAtEnd()
+    {
+        var s = Fresh();
+        var node = Cfg.Resources.First(r => r.Outputs.ContainsKey("pot"));
+        E.DebugMapTeleport(s, node.LocationId);
+        ReadDialogues(s);
+        Discover(s, node.NodeId);
+        var rows = E.ItemSources(s, "pot");
+        Assert.That(rows.Any(v => v.Usable), Is.True);
+        Assert.That(E.ItemSourceHint(rows, "pot"), Is.Null, "有可获取行不追加");
+
+        s.Resources[node.NodeId].Available = 0;
+        rows = E.ItemSources(s, "pot");
+        Assert.That(rows.Any(v => v.Usable), Is.False);
+        Assert.That(rows.Count(v => v.Kind == "resource"), Is.EqualTo(1), "原不可用行保留");
+        Assert.That(E.ItemSourceHint(rows, "pot"), Is.EqualTo(Hint("container")));
+        var off = new ItemSourceView { Usable = false };
+        var on = new ItemSourceView { Usable = true };
+        Assert.That(E.ItemSourceHint(new[] { off, off }, "steady_ring"), Is.EqualTo(Hint("armor")));
+        Assert.That(E.ItemSourceHint(new[] { off, on }, "steady_ring"), Is.Null);
+        Assert.That(E.ItemSourceHint(new[] { off, on }, "carcass_wolf"), Is.Null);
+    }
+
+    /// <summary>SOURCE-Q251-05：42 件查询全只读；存档版本不升、旧档不写新日志；水、食品、医疗、弹药、武器的原分类和冲突顺序不变。</summary>
+    [Test]
+    public void SOURCE_Q251_05_ReadOnly_NoMigration_OthersKept()
+    {
+        var s = Fresh();
+        var before = SaveSerializer.Serialize(s);
+        foreach (var x in (JArray)Q251["mappings"]!)
+        {
+            var id = (string)x["itemId"]!;
+            E.ItemSourceHint(E.ItemSources(s, id), id);
+        }
+        Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before));
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("43"), "Q251 不升存档");
+        Assert.That(SaveSerializer.Deserialize(before, Cfg).Log.Select(l => l.Text), Is.EqualTo(s.Log.Select(l => l.Text)));
+        var kept = new Dictionary<string, string> { ["water"] = "water", ["food"] = "food", ["medical"] = "medicine", ["ammo"] = "ammo", ["weapon"] = "weapon" };
+        foreach (var i in Cfg.Items.Where(i => kept.ContainsKey(i.Kind))) Assert.That(HintFor(i.Id), Is.EqualTo(Hint(kept[i.Kind])), i.Id);
+        Assert.That(HintFor("stone_knife"), Is.EqualTo(Hint("weapon")));
     }
 }

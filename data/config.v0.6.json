@@ -38006,7 +38006,7 @@
     ]
   },
   "sourceHints": {
-    "source": "content-feeding-adjudications.json hints/hintPolicy（Q219）、knowledge-source-adjudications.json hintDisplay（Q250）；Q251 待定的特殊归属在 pendingKinds/pendingItems，本批不给线索",
+    "source": "content-feeding-adjudications.json hints/hintPolicy（Q219）、knowledge-source-adjudications.json hintDisplay（Q250）、source-hint-classification-adjudications.json classification（Q251）",
     "hints": {
       "water": "可先查看已发现的水源与已掌握的净水做法；脏水处理前仍有饮用风险。",
       "food": "可查看已发现的采集点、既有食品记录和已掌握的加工做法；随机搜获不保证出现。",
@@ -38026,7 +38026,14 @@
       "ammo": "ammo",
       "weapon": "weapon",
       "tool": "tool",
-      "material": "material"
+      "material": "material",
+      "gear": "armor",
+      "carcass": "fallback"
+    },
+    "items": {
+      "pot": "container",
+      "ration_canteen": "container",
+      "active_substance_white_unidentified": "fallback"
     },
     "priority": [
       "water",
@@ -38039,15 +38046,6 @@
       "tool",
       "material",
       "fallback"
-    ],
-    "pendingKinds": [
-      "gear",
-      "carcass",
-      "substance"
-    ],
-    "pendingItems": [
-      "pot",
-      "ration_canteen"
     ]
   }
 }

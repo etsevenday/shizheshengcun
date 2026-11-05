@@ -117,17 +117,15 @@ namespace Survival.Core.Config
     }
 
     /// <summary>B23（R71）：可选地牢知识包。</summary>
-    /// <summary>来源查询公开线索：类别→原句（Q219 hints 十句逐字）；物品 kind→类别；冲突时按 priority 取最前（Q219 hintPolicy）。</summary>
+    /// <summary>来源查询公开线索：类别→原句（Q219 hints 十句逐字）；物品 kind→类别、物品 ID→类别（Q251）；冲突时按 priority 取最前（Q219 hintPolicy）。</summary>
     public sealed class SourceHintsConfig
     {
         public string Source { get; set; } = "";
         public Dictionary<string, string> Hints { get; set; } = new Dictionary<string, string>();
         public Dictionary<string, string> Kinds { get; set; } = new Dictionary<string, string>();
+        /// <summary>按稳定物品 ID 定的类别（Q251：金属锅、分量水壶算 container，未鉴定的活性物质算 fallback）。</summary>
+        public Dictionary<string, string> Items { get; set; } = new Dictionary<string, string>();
         public List<string> Priority { get; set; } = new List<string>();
-        /// <summary>Q251 待定：这些 kind 不给线索，保持原有显示。</summary>
-        public List<string> PendingKinds { get; set; } = new List<string>();
-        /// <summary>Q251 待定：这些物品（金属锅、分量水壶）不给线索，保持原有显示。</summary>
-        public List<string> PendingItems { get; set; } = new List<string>();
     }
 
     public sealed class ExpansionQuestsConfig
