@@ -132,7 +132,7 @@ public class B28FeedTests : TestBase
         var s = Party();
         s.Actors[Lin].Stats.Satiety = 100;
         Fed(s, Req(Lin, Me, Give(s, "canned_food", ItemInstance.Carried)));
-        Assert.That(s.Log.Last().Text, Is.EqualTo("林昭食用了罐头×1（取自你的随身物品）：饱食0。"), "实际变化为 0 也写出，不留空字段");
+        Assert.That(s.Log.Last().Text, Is.EqualTo("林昭食用了罐头×1（取自你的随身物品）：饱食无变化。"), "Q268：实际变化为 0 写“{属性名}无变化”，不留空字段");
     }
 
     // ───────────── 水卡与水壶（PLAN-Q232-02） ─────────────
@@ -278,7 +278,7 @@ public class B28FeedTests : TestBase
         var pot = Give(s, "pot", ItemInstance.Carried);
         var food = Give(s, "boiled_root", ItemInstance.ContainerOwner(pot.InstanceId));
         s.Locations["camp"].Facility.Processes.Add(new FacilityProcess { RecipeId = "boil_root", TargetInstanceId = food.InstanceId, PotInstanceId = pot.InstanceId });
-        Rejected(s, Req(Lin, Me, food), "该物品已被预留");
+        Rejected(s, Req(Lin, Me, food), FeedCopy.ProcessingFood);
     }
 
     [Test]

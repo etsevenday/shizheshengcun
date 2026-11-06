@@ -28,6 +28,10 @@ namespace Survival.Core.Engine
         public const string Battle = "战斗中无法给同行者吃喝。";
         public const string Extracting = "正在撤出，无法给同行者吃喝。";
         public const string Changed = "当前情况已变化，请重新选择后再操作。";
+        /// <summary>Q268（assets/20261105/b29-entry-water-q258-268.json feeding.deltaCopy）：{变化}里真正为 0 的分项。只用于同行食饮，主角自用文字不改。</summary>
+        public const string ZeroDelta = "{属性名}无变化";
+        /// <summary>Q268：只用于正在加工的锅内食物；真实预留和锁仍写“该物品已被预留”。</summary>
+        public const string ProcessingFood = "食物正在加工，暂不能给同行者食用。";
 
         /// <summary>合同键 → 逐字稿，测试逐句比对。</summary>
         public static readonly IReadOnlyDictionary<string, string> All = new Dictionary<string, string>
@@ -91,7 +95,9 @@ namespace Survival.Core.Engine
         {
             var before = actor.Stats.Get(id);
             actor.Stats.Add(id, amount);
-            parts.Add(Signed(name, actualDelta ? actor.Stats.Get(id) - before : amount));
+            var delta = actor.Stats.Get(id) - before;
+            // Q268：同行食饮真正为 0 才写无变化；极小非零按原精度和符号
+            parts.Add(!actualDelta ? Signed(name, amount) : delta == 0 ? FeedCopy.Fill(FeedCopy.ZeroDelta, ("属性名", name)) : Signed(name, delta));
         }
 
         /// <summary>原子扣一份并把效果给目标本人，返回{变化}。空锅与水壶留原 owner，不生成临时水卡。</summary>
@@ -203,7 +209,7 @@ namespace Survival.Core.Engine
                 if (pot != null && IsLiquid(inst) && PotFreeWaterUnits(s, inst) < 1)
                     return PotFreeMl(s, pot) > 0 ? FeedCopy.Fill(FeedCopy.InsufficientPotWater, ("水种", ItemName(inst.ItemId))) : ReservedWaterText(s, inst);
                 // 锁中加工原料不能通过给同行吃喝拆掉（Q233 boundaries）；主角 Q23 受热保护直接食用入口不变
-                if (pot != null && (ProcessOf(s, inst) != null || IsPotAux(s, inst))) return ReservedText;
+                if (pot != null && (ProcessOf(s, inst) != null || IsPotAux(s, inst))) return IsLiquid(inst) ? ReservedText : FeedCopy.ProcessingFood;
                 if (cfg.Use == null) return cfg.RequiresCooking ? $"{cfg.Name}需先烹饪，不可直接食用" : FeedCopy.InvalidItem;
                 if (IsSpoiled(s, inst)) return "已腐败，不能食用";
                 if (!IsFeedableUse(cfg)) return FeedCopy.InvalidItem;
