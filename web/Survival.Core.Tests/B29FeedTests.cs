@@ -507,6 +507,19 @@ public class B29FeedTests : TestBase
         Assert.That(E.FeedBlocked(s, req), Is.EqualTo(FeedCopy.Changed));
     }
 
+    [Test]
+    public void DevKit_BuildsPlaytestScene()
+    {
+        var s = New();
+        E.DebugFeedKit(s);
+        var targets = E.FeedTargets(s);
+        Assert.That(targets, Has.Count.EqualTo(2));
+        var rows = E.CompanionCarried(s, targets[0].ActorId);
+        Assert.That(rows.Any(r => r.InPot && r.Feed != null), Is.True, "锅水有入口");
+        Assert.That(rows.Any(r => r.Feed?.Blocked == "已腐败，不能食用"), Is.True, "腐败行置灰");
+        Assert.That(E.FeedClassRows(s, targets[0].ActorId, "clean_water").Select(r => r.Kind), Is.EquivalentTo(new[] { FeedSourceKind.Canteen, FeedSourceKind.PotWater }));
+    }
+
     private static string Doc()
     {
         var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);

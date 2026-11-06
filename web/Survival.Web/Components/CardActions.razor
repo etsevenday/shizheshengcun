@@ -130,6 +130,16 @@
             </div>
         }
 
+        @if ((m.UseId ?? (m.Instance is ItemInstance fi && e.IsCanteen(fi) ? fi.InstanceId : null)) is int feedId && e.FeedEntry(s, feedId) is FeedEntryInfo fe)
+        {
+            @* B29（Q263）：普通食物卡、水壶、锅里的水共用这一个入口；隐藏与置灰都由内核判，战斗中也显示置灰 *@
+            var feedWhy = G.Running ? "行动进行中" : fe.Blocked;
+            <div class="ca-use-row">
+                <button type="button" class="ca-use" data-feed-entry disabled="@(feedWhy != null)" title="@(feedWhy ?? fe.Title)" @onclick='() => G.OpenFeed(fe, "card-sel")'>@fe.Title</button>
+            </div>
+            @if (feedWhy != null) { <div class="ca-note bad">@(fe.Title)：@feedWhy</div> }
+        }
+
         @if (e.IsSubstance(m.ItemId))
         {
             var subs = (m.Instance != null ? new List<ItemInstance> { m.Instance } : s.Items.Where(i => i.Owner == m.Owner && i.ItemId == m.ItemId && e.CardSideOf(i) == m.Side).ToList())

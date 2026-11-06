@@ -15,7 +15,14 @@
         <div class="help-crumb">
             @if (topic != null)
             {
-                <button type="button" class="secondary help-back" @onclick="G.HelpBack">‹ 返回</button>
+                @if (G.HelpFromFeed)
+                {
+                    <button type="button" class="secondary help-back" data-help-feed-back @onclick="G.CloseHelp">‹ @FeedPanelCopy.HelpBack</button>
+                }
+                else
+                {
+                    <button type="button" class="secondary help-back" @onclick="G.HelpBack">‹ 返回</button>
+                }
             }
             <h2>系统说明</h2>
             @if (topic != null) { <span class="sub">@topic.Title@(entry != null ? $" · {entry.Title}" : "")</span> }

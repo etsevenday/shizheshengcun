@@ -201,7 +201,9 @@ public sealed class GameSession
         if (BattleDrawer == "help") BattleDrawer = null;   // B9：战斗内的说明抽屉随之收起
         var back = _helpReturn;
         _helpReturn = null;
-        Panel = back is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" ? back : null;
+        // B29：从食饮盘进来的回到原来的面板（整备也算），食饮盘由 FeedPop 重新校验后显示
+        Panel = HelpFromFeed || back is "map" or "craft" or "rest" or "log" or "goals" or "tips" or "dialogs" ? back : null;
+        HelpFromFeed = false;
         // 来源是固定的状态浮层：恢复它（状态已消失时 StatusPop 渲染后自行收起）
         if (_helpReturnStatus != null)
         {
@@ -316,6 +318,7 @@ public sealed class GameSession
     public void OpenPop(string kind, string id, string anchorId)
     {
         if (State == null || DialogueLocked) return;
+        FeedPending = null;
         Pop = new PopContext(kind, id, anchorId);
         IgniteMenuOpen = false;
         Notify();
@@ -374,6 +377,8 @@ public sealed class GameSession
     /// </summary>
     public void OpenPanel(string? panel, string? recipe = null)
     {
+        // B29：食饮说明开着时点顶栏“系统说明”关掉，同样回到原食饮窗口
+        if (panel == null && Panel == "help" && HelpFromFeed) { CloseHelp(); return; }
         // 战斗与敌踪选择中：地图、制作、休息、日志及顶栏浏览入口锁定（v0.5 §16；生存目标/提示、对话记录、系统说明沿用日志限制，S14 §12.3、§13.3）
         if (IsTopPanel(panel) && InBattleUi) return;
         // 对话读完锁（Q10）：不打开任何面板；关闭（null）仍允许，便于对话出现时收起菜单
@@ -389,6 +394,8 @@ public sealed class GameSession
         // 离开编队面板（切到别的面板或关闭）就丢弃草稿：关闭不自动保存（Q86）
         if (panel != "formation") { FormationDraft = null; FormationPick = null; }
         GivePending = null;
+        FeedPending = null;
+        HelpFromFeed = false;
         // 只有地图/制作/休息会在右栏显示面板自己的预估，切到“对象信息”；顶栏浏览层（日志、目标、提示、对话记录、说明）不改右栏页签
         if (panel != null) { IgniteMenuOpen = false; if (panel is "map" or "craft" or "rest") DetailTab = DetailTab.Object; }
         if (panel == "help") { HelpTopic = null; HelpEntry = null; _helpDirect = false; _helpReturn = null; _helpReturnStatus = null; }
@@ -884,6 +891,7 @@ public sealed class GameSession
 
     public void Notify()
     {
+        ReconcileFeed();
         OnDialogueOnset();
         CityOverviewTick();
         CloseStaleFormation();
@@ -1055,6 +1063,9 @@ public sealed class GameSession
         HoverPreview = null;
         IgniteMenuOpen = false;
         Pop = null;
+        FeedPending = null;
+        PartyItemsOpen = null;
+        HelpFromFeed = false;
         CharPage = null;
         StatusHover = null;
         StatusPinned = null;
@@ -1094,7 +1105,7 @@ public sealed class GameSession
 
     public void Select(Selection sel)
     {
-        if (sel.Key != Selected.Key) SelectedBatchKey = null;
+        if (sel.Key != Selected.Key) { SelectedBatchKey = null; FeedPending = null; }
         Selected = sel;
         Pop = null;
         if (sel.Kind != SelectionKind.None) DetailTab = DetailTab.Object;
@@ -1163,6 +1174,7 @@ public sealed class GameSession
     /// </summary>
     private void ClearSelectionSilently()
     {
+        DropCardFeed();
         Selected = new Selection();
         DetailTab = DetailTab.Character;
     }
@@ -1170,6 +1182,7 @@ public sealed class GameSession
     /// <summary>Esc 或收起操作条：清空选中，右栏回到默认的人物页。</summary>
     public void ClearSelection()
     {
+        DropCardFeed();
         Selected = new Selection();
         Pop = null;
         DetailTab = DetailTab.Character;
@@ -2577,6 +2590,102 @@ public sealed class GameSession
 
     public ActionResult UnequipFor(string actorId, string slot, bool toGround) =>
         Commit(E.Unequip(S, actorId, slot, toGround, Guid.NewGuid().ToString("N")));
+
+    // ───────────── 同行食饮局部盘（B29，P04、Q262—Q265）─────────────
+
+    /// <summary>系统说明里“给同行者吃喝”条目的 id。</summary>
+    public const string FeedHelpEntry = "feed-companion";
+
+    /// <summary>未提交的食饮意图：草稿、浮窗锚点、从谁的展开列表打开的。只是界面状态，不进存档。</summary>
+    public sealed record FeedContext(FeedDraft Draft, string AnchorId, string? PartyActor);
+    public FeedContext? FeedPending { get; private set; }
+
+    /// <summary>队伍面板里展开随身物品的成员，同一时刻最多一人；只是界面状态。</summary>
+    public string? PartyItemsOpen { get; private set; }
+
+    /// <summary>系统说明是从食饮盘打开的：返回按钮写“返回食饮”，关闭后回原盘。</summary>
+    public bool HelpFromFeed { get; private set; }
+
+    /// <summary>从入口开盘：目标留空，所点实例只作待重验候选。</summary>
+    public void OpenFeed(FeedEntryInfo entry, string anchorId, string? partyActor = null)
+    {
+        if (State == null || DialogueLocked || InBattleUi || entry.Blocked != null) return;
+        Pop = null;
+        IgniteMenuOpen = false;
+        GivePending = null;
+        FeedPending = new FeedContext(FeedDraft.From(entry), anchorId, partyActor);
+        Notify();
+    }
+
+    public void CancelFeed()
+    {
+        FeedPending = null;
+        Notify();
+    }
+
+    /// <summary>清掉未提交的食饮意图，由调用方 Notify。</summary>
+    public void DropFeed() => FeedPending = null;
+
+    private void DropCardFeed()
+    {
+        if (FeedPending?.AnchorId == "card-sel") FeedPending = null;
+    }
+
+    public void PickFeedTarget(string? actorId)
+    {
+        if (FeedPending is not { } f) return;
+        f.Draft.TargetActorId = string.IsNullOrEmpty(actorId) ? null : actorId;
+        f.Draft.SourceCleared = false;
+        Notify();
+    }
+
+    public void PickFeedSource(string? key)
+    {
+        if (FeedPending is not { } f) return;
+        f.Draft.SourceKey = string.IsNullOrEmpty(key) ? null : key;
+        f.Draft.SourceCleared = false;
+        Notify();
+    }
+
+    /// <summary>确认：带显示时的快照重验，情况变了留在盘里按新状态刷新；通过后收盘提交，走原 Use 事务。</summary>
+    public async Task ConfirmFeed(FeedRequest req)
+    {
+        if (FeedPending == null) return;
+        if (E.FeedBlocked(S, req) != null) { Notify(); return; }
+        FeedPending = null;
+        await StartAction(ActionRequest.FeedCompanion(req));
+    }
+
+    /// <summary>局部“查看食饮说明”：定位同一条目，草稿留着，返回后重验。</summary>
+    public void OpenFeedHelp()
+    {
+        if (FeedPending == null || InBattleUi || DialogueLocked) return;
+        OpenHelp("body", FeedHelpEntry);
+        HelpFromFeed = true;
+    }
+
+    /// <summary>切成员或收起列表都清掉未提交意图。</summary>
+    public void TogglePartyItems(string actorId)
+    {
+        PartyItemsOpen = PartyItemsOpen == actorId ? null : actorId;
+        if (FeedPending?.PartyActor != null) FeedPending = null;
+        Notify();
+    }
+
+    /// <summary>战斗、敌踪、对白、离队打断未提交意图；展开的成员不再是在场同行就收起。</summary>
+    private void ReconcileFeed()
+    {
+        if (State == null || (FeedPending == null && PartyItemsOpen == null)) return;
+        var targets = E.FeedTargets(S);
+        if (PartyItemsOpen != null && targets.All(t => t.ActorId != PartyItemsOpen))
+        {
+            if (FeedPending?.PartyActor == PartyItemsOpen) FeedPending = null;
+            PartyItemsOpen = null;
+        }
+        if (FeedPending is not { } f) return;
+        var left = f.Draft.TargetActorId is string target && targets.All(t => t.ActorId != target);
+        if (InBattleUi || DialogueLocked || targets.Count == 0 || left) FeedPending = null;
+    }
 
     /// <summary>待确认的交接（A10 §7.2：先在短浮窗列双方最终重量/卡数，确认再提交；Esc/取消退出）。</summary>
     public GiveDraft? GivePending { get; set; }

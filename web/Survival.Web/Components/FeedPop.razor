@@ -1,0 +1,61 @@
+@inherits GameComponent
+
+@* B29（R14、R67、R90—R93，P04、Q264）：给同行者吃喝的局部盘，四区“选择同行者—选择来源—预计变化—确认操作”。过渡期用现有 AnchorPop，B31 换重墨样式。
+   开盘目标一律留空；来源行、原因、预览、确认文字全部来自内核 FeedPanel，界面不另判。× / Esc / 取消只收起未提交意图，不耗时、不扣物。
+   说明打开时让位（草稿留在 GameSession），返回后重新走 FeedPanel 重验。 *@
+@if (G.State != null && G.FeedPending is { } ctx && G.Panel != "help" && G.Panel != "menu" && !G.DialogueLocked)
+{
+    var d = ctx.Draft;
+    var v = G.E.FeedPanel(G.S, d);
+    var why = G.Running ? "行动进行中" : v.ConfirmWhy;
+    <AnchorPop AnchorId="@ctx.AnchorId" Title="@v.Title" CloseAria="@FeedPanelCopy.CloseAria" Place="left,right,above,below" CssClass="feed-pop" OnClose="G.CancelFeed">
+        <ChildContent>
+            <section class="fp-sec" aria-label="@FeedPanelCopy.SectionTarget">
+                <b>@FeedPanelCopy.SectionTarget</b>
+                <select aria-label="@FeedPanelCopy.SectionTarget" value="@(d.TargetActorId ?? "")" @onchange="e => G.PickFeedTarget(e.Value as string)">
+                    <option value="">@FeedPanelCopy.TargetPlaceholder</option>
+                    @foreach (var t in v.Targets)
+                    {
+                        <option value="@t.ActorId">@t.Name</option>
+                    }
+                </select>
+            </section>
+            <section class="fp-sec" aria-label="@FeedPanelCopy.SectionSource">
+                <b>@FeedPanelCopy.SectionSource</b>
+                <select aria-label="@FeedPanelCopy.SectionSource" disabled="@(d.TargetActorId == null)" value="@(v.Selected?.Key ?? "")" @onchange="e => G.PickFeedSource(e.Value as string)">
+                    <option value="">@FeedPanelCopy.SourcePlaceholder</option>
+                    @foreach (var r in v.Rows)
+                    {
+                        <option value="@r.Key" disabled="@(r.Blocked != null)">@r.Text@(r.Blocked != null ? " · " + FeedCopy.Fill(FeedPanelCopy.LabelBlocked, ("原因", r.Blocked)) : "")</option>
+                    }
+                </select>
+                @if (v.Selected != null) { <div class="apop-note" data-feed-source>@v.Selected.Text</div> }
+                @foreach (var n in v.SourceNotes) { <div class="apop-note" data-feed-note>@n</div> }
+                @if (v.BlockedLine != null) { <div class="ca-note bad" data-feed-blocked>@v.BlockedLine</div> }
+            </section>
+            <section class="fp-sec" aria-label="@FeedPanelCopy.SectionEffect">
+                <b>@FeedPanelCopy.SectionEffect</b>
+                @if (v.EffectHint != null) { <div class="apop-note">@v.EffectHint</div> }
+                @foreach (var l in v.EffectLines) { <div class="fp-line">@l</div> }
+                @foreach (var l in v.StatLines) { <div class="fp-line" data-feed-stat>@l</div> }
+                @if (v.RiskText != null) { <div class="ca-note risk-line">⚠ @v.RiskText</div> }
+                @if (v.OverflowText != null) { <div class="ca-note warn">@v.OverflowText</div> }
+            </section>
+            <section class="fp-sec" aria-label="@FeedPanelCopy.SectionConfirm">
+                <b>@FeedPanelCopy.SectionConfirm</b>
+                <button type="button" class="fp-go" data-feed-confirm disabled="@(why != null)" title="@why" @onclick="() => Confirm(v.Request)">@v.ConfirmText</button>
+                <button type="button" class="secondary" data-feed-help @onclick="G.OpenFeedHelp">@FeedPanelCopy.Help</button>
+            </section>
+        </ChildContent>
+        <Actions>
+            <button type="button" class="secondary" data-feed-cancel @onclick="G.CancelFeed">@FeedPanelCopy.Cancel</button>
+        </Actions>
+    </AnchorPop>
+}
+
+@code {
+    private async Task Confirm(FeedRequest? req)
+    {
+        if (req != null) await G.ConfirmFeed(req);
+    }
+}

@@ -376,6 +376,7 @@ public static class HelpCatalog
                 new HelpEntry { Id = "stat-energy", Title = "体力", Icon = "status_low_energy", Paragraphs = (e, s) => new[] { Ui.StatExplain(e, StatId.Energy) } },
                 new HelpEntry { Id = "stat-wakefulness", Title = "清醒度", Icon = "bed", Paragraphs = (e, s) => new[] { Ui.StatExplain(e, StatId.Wakefulness) } },
                 new HelpEntry { Id = "stat-morale", Title = "精神", Icon = "status_low_morale", Paragraphs = (e, s) => new[] { Ui.StatExplain(e, StatId.Morale) } },
+                new HelpEntry { Id = GameSession.FeedHelpEntry, Title = FeedPanelCopy.HelpTitle, Icon = "clean_water", Paragraphs = (e, s) => FeedPanelCopy.HelpText },
                 new HelpEntry
                 {
                     Id = "food", Title = "饮食与饮水", Icon = "clean_water",

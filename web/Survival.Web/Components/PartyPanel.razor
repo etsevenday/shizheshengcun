@@ -159,6 +159,33 @@
                 <div class="party-identity tiny muted">@ident</div>
             }
             <div class="party-weapons tiny muted">武器：@weapons</div>
+            @if (!isMe && active && e.FeedTargets(s).Any(t => t.ActorId == id))
+            {
+                @* B29（Q265）：当前同地点同区存活同行者的随身物品，同一时刻最多展开一人；展开只读，食饮入口与物品卡同一判定 *@
+                var open = G.PartyItemsOpen == id;
+                <button type="button" class="eq-btn party-items-btn" aria-expanded="@(open ? "true" : "false")" data-party-toggle="@id" @onclick="() => G.TogglePartyItems(id)">@(open ? FeedPanelCopy.CollapseItems : FeedCopy.Fill(FeedPanelCopy.ExpandItems, ("数量", e.RootCardCountOf(s, id).ToString())))</button>
+                @if (open)
+                {
+                    var rows = e.CompanionCarried(s, id);
+                    <div class="party-items" data-wheel="y" data-party-items="@id">
+                        @if (rows.Count == 0) { <div class="muted tiny">@FeedPanelCopy.EmptyItems</div> }
+                        @foreach (var r in rows)
+                        {
+                            var fe = r.Feed;
+                            var anchor = $"feed-src-{r.InstanceId}";
+                            var feedWhy = fe == null ? null : G.CityBrowsing ? GameSession.CityReadOnlyText : G.Running ? "行动进行中" : fe.Blocked;
+                            <div class="party-item @(r.InPot ? "in-pot" : "")" id="@anchor">
+                                <span>@r.Text</span>
+                                @if (fe != null)
+                                {
+                                    <button type="button" class="eq-btn" data-feed-entry disabled="@(feedWhy != null)" title="@(feedWhy ?? fe.Title)" @onclick="() => G.OpenFeed(fe, anchor, id)">@fe.Title</button>
+                                    @if (feedWhy != null) { <small class="warn-text">@feedWhy</small> }
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            }
         </div>
     };
 

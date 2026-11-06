@@ -169,6 +169,11 @@
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "crafting", 3))'>制造熟练设为3级</button>
                     <button class="secondary" @onclick='() => DevDone(G.E.DebugSetSkillLevel(G.S, "medicine", 5))'>医疗熟练设为5级</button>
                 </div>
+                @* B29（R90—R96）：同行者、随身食水、腐败与锅水，试食饮局部盘和地牢饮水预告 *@
+                <div class="eyebrow">同行食饮与饮水预算（B29）</div>
+                <div class="btn-row">
+                    <button class="secondary" @onclick="() => DevDone(G.E.DebugFeedKit(G.S))">B29 食饮试玩组（同行两人、随身食水、地面水与耗材）</button>
+                </div>
                 @* B17（R52—R56）：安全屋与分区设施——选址、材料、直接建成、陶窑/净水台、野营布与柴炉 *@
                 <div class="eyebrow">安全屋与分区设施（B17）</div>
                 <div class="btn-row">

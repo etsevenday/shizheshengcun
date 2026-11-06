@@ -364,6 +364,35 @@ namespace Survival.Core.Engine
             return lines;
         }
 
+        /// <summary>
+        /// 开发入口（B29）：记容量事实、招前两名固定队友同行，给两人随身放食物、腐败野果、水壶和带水的锅，主角要用的水与耗材放当前地面。
+        /// 同伴随身超过五卡不拦，只用来摆试玩场面。
+        /// </summary>
+        public string DebugFeedKit(GameState s)
+        {
+            s.Progress.Flags.Add("hub_registered");
+            s.Progress.Flags.Add("church_route_record");
+            s.Progress.Flags.Add("academy_safety_record");
+            var recruited = Config.Party.NamedCompanions.Take(2).Select(n => n.ActorId).ToList();
+            foreach (var id in recruited.Where(id => RosterOf(s, id) == null)) DebugRecruit(s, id);
+            var first = ItemInstance.CarriedOwner(recruited[0]);
+            var second = ItemInstance.CarriedOwner(recruited[1]);
+            CreateItems(s, "canned_food", 2, first);
+            CreateItems(s, "berry", 1, first).Single().ExpiresAt = s.GameMinute;
+            var canteen = CreateItems(s, "ration_canteen", 1, first).Single();
+            canteen.LiquidId = "clean_water";
+            canteen.LiquidMl = 750;
+            var pot = CreateItems(s, "pot", 1, first).Single();
+            CreateItems(s, "clean_water", 2, ItemInstance.ContainerOwner(pot.InstanceId));
+            CreateItems(s, "canned_food", 1, second);
+            CreateItems(s, "dirty_water", 1, second);
+            foreach (var (id, n) in new (string id, int n)[] { ("clean_water", 2), ("dirty_water", 3), ("canned_food", 1), ("pot", 1), ("purification_tablet", 1), ("filter_cartridge", 2), ("water_filter", 1) })
+                CreateItems(s, id, n, s.Ground);
+            var text = "开发：同行者已编入，两人随身放了食物、腐败野果、水壶与带水的锅；净水2、脏水3、罐头、锅、净水片、滤芯2、滤水器放在当前地面";
+            Emit(s, GameEventKind.Info, text + "。");
+            return text;
+        }
+
         /// <summary>队伍面板展开的真实随身根卡与锅内内容（Q265）。只读，每行带这件东西的食饮入口。</summary>
         public List<CompanionCarriedRow> CompanionCarried(GameState s, string actorId)
         {

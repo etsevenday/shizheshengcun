@@ -91,9 +91,15 @@
             @foreach (var it in carried)
             {
                 var inst = it;
-                <div class="gear-card" data-item="@inst.ItemId">
+                <div class="gear-card" data-item="@inst.ItemId" id="@($"feed-src-{inst.InstanceId}")">
                     <span class="gs-item"><span class="eq-ico" aria-hidden="true">@Icons.Markup(inst.ItemId)</span><b class="q-@(inst.Quality ?? "white")">@e.InstanceName(inst)</b><small>×@inst.Count@(inst.MaxDurability.HasValue ? " · 耐久" + GameEngine.DurabilityText(inst) : "")</small></span>
                     <span class="gs-btns">
+                        @if (e.FeedEntry(s, inst.InstanceId) is { } fe)
+                        {
+                            @* B29（Q263）：整备的通用物品卡复用入口，不替代队伍面板的展开 *@
+                            var feedWhy = G.Running ? "行动进行中" : fe.Blocked;
+                            <button type="button" class="eq-btn" data-feed-entry disabled="@(feedWhy != null)" title="@(feedWhy ?? fe.Title)" @onclick='() => G.OpenFeed(fe, $"feed-src-{inst.InstanceId}")'>@fe.Title</button>
+                        }
                         @foreach (var (slot, reason) in e.EquipChoices(s, me, inst.InstanceId))
                         {
                             var sl = slot;
@@ -152,6 +158,7 @@
     private void PickActor(string id)
     {
         G.GivePending = null;
+        G.DropFeed();
         G.GearActor = id;
         G.Notify();
     }

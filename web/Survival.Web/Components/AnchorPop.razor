@@ -9,7 +9,7 @@
     <div class="apop-head">
         @if (Art != null) { <span class="apop-art" aria-hidden="true">@Art</span> }
         <span class="apop-title"><b>@Title</b>@if (!string.IsNullOrEmpty(Sub)) {<small>@Sub</small>}</span>
-        <button type="button" class="apop-x" aria-label="@($"关闭{Title}，不执行")" title="关闭（Esc），不执行" @onclick="Close">×</button>
+        <button type="button" class="apop-x" aria-label="@(CloseAria ?? $"关闭{Title}，不执行")" title="关闭（Esc），不执行" @onclick="Close">×</button>
     </div>
     @if (ChildContent != null) { <div class="apop-body">@ChildContent</div> }
     @if (Actions != null) { <div class="apop-foot">@Actions</div> }
@@ -20,6 +20,8 @@
     [Parameter, EditorRequired] public string AnchorId { get; set; } = "";
     [Parameter] public string Title { get; set; } = "";
     [Parameter] public string? Sub { get; set; }
+    /// <summary>× 的无障碍名；空时写“关闭{Title}，不执行”。</summary>
+    [Parameter] public string? CloseAria { get; set; }
     /// <summary>方向优先顺序（right,left,below,above 的子序列）；默认先右后左再下再上。</summary>
     [Parameter] public string Place { get; set; } = "right,left,below,above";
     [Parameter] public string CssClass { get; set; } = "";
