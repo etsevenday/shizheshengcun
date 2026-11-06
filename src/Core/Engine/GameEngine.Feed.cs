@@ -173,8 +173,9 @@ namespace Survival.Core.Engine
         {
             plan = null;
             var stamped = f.ConfirmStamp != null;
-            var ownerWhy = FeedCopy.Fill(FeedCopy.InvalidOwner, ("目标", ActorDisplayName(s, f.TargetActorId)));
-            if (f.SourceActorId != GameState.PlayerId && f.SourceActorId != f.TargetActorId) return ownerWhy;
+            // 入口探测时目标还没选（TargetActorId 为空），要目标名才能填的句子用到才填
+            string OwnerWhy() => FeedCopy.Fill(FeedCopy.InvalidOwner, ("目标", ActorDisplayName(s, f.TargetActorId)));
+            if (f.SourceActorId != GameState.PlayerId && f.SourceActorId != f.TargetActorId) return OwnerWhy();
             var root = ItemInstance.CarriedOwner(f.SourceActorId);
 
             var pot = f.PotInstanceId is int potId ? FindItem(s, potId) : null;
@@ -189,12 +190,12 @@ namespace Survival.Core.Engine
             }
             else if (pot != null && f.WaterItemId != null && IsLiquidItem(f.WaterItemId))
             {
-                if (PlaceOf(s, pot) != root) return stamped ? FeedCopy.Changed : ownerWhy;
+                if (PlaceOf(s, pot) != root) return stamped ? FeedCopy.Changed : OwnerWhy();
                 inst = PotLiquids(s, pot.InstanceId).FirstOrDefault(i => i.ItemId == f.WaterItemId);
                 if (inst == null) return FeedCopy.Fill(FeedCopy.InsufficientPotWater, ("水种", ItemName(f.WaterItemId)));
             }
             else return FeedCopy.Changed;
-            if (PlaceOf(s, inst) != root) return stamped ? FeedCopy.Changed : ownerWhy;
+            if (PlaceOf(s, inst) != root) return stamped ? FeedCopy.Changed : OwnerWhy();
 
             var cfg = _items[inst.ItemId];
             if (inst.ReservedBy != null || IsLocked(s, inst) || (pot != null && (pot.ReservedBy != null || IsLocked(s, pot)))) return ReservedText;
@@ -266,7 +267,7 @@ namespace Survival.Core.Engine
 
         /// <summary>
         /// 目标的合法出物批次：主角随身在前、目标本人随身在后，含这两人随身锅内未锁食水；只看物品本身，战斗等全局限制看 FeedBlocked。只读。
-        /// 目标不合法时为空。“同类”筛选由界面按所点物品做（B29）。
+        /// 目标不合法时为空。局部盘的同类来源（含不合法行）看 FeedClassRows。
         /// </summary>
         public List<FeedSourceInfo> FeedSources(GameState s, string targetActorId)
         {
@@ -314,13 +315,19 @@ namespace Survival.Core.Engine
             }
         }
 
+        private ItemUseConfig FeedUse(FeedPlan f)
+        {
+            var cfg = _items[f.Item.ItemId];
+            return cfg.Canteen != null ? new ItemUseConfig { Hydration = cfg.Canteen.SipHydration } : cfg.Use!;
+        }
+
         /// <summary>FillStatic 的 Use 分支：结构化预览。效果在副本上走真实结算函数，与确认时同一路径。</summary>
         private void FillFeedPreview(GameState s, ActionPreview p, FeedPlan f)
         {
             p.ConfirmText = FeedConfirmText(s, f);
             var actor = s.Actors[f.TargetId];
             var cfg = _items[f.Item.ItemId];
-            var use = cfg.Canteen != null ? new ItemUseConfig { Hydration = cfg.Canteen.SipHydration } : cfg.Use!;
+            var use = FeedUse(f);
             p.Overflow = OverflowLines(actor.Stats, use, use.Health, UseSatiety(s, use, f.TargetId));
 
             var c = s.Clone();
