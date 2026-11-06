@@ -90352,5 +90352,12 @@
         "队伍展开的普通行、锅、壶及子行不显示内部编号。空、满、到期、腐败均按模板表达，同名行各自点选真实来源。"
       ]
     ]
+  },
+  "dialogueRewrite20261107": {
+    "date": "2026-11-07",
+    "baseline": "937cdb8255598e768de43604b34ac67b2ae0f423",
+    "pathFromMaster": "assets/20261107/dialogue-rewrite.json",
+    "dialogueRows": 383,
+    "configCopyFields": 95
   }
 }
