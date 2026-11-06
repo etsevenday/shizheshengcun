@@ -867,6 +867,7 @@ namespace Survival.Core.Engine
                     Id = n.Id, Title = n.Title,
                     Status = knownElsewhere ? "已掌握 · 可查看" : done ? (n.KnowledgeId != null ? "已学会 · 可重读" : "已办理通行 · 可重读") : need ?? (n.Choices.Count > 0 ? "选择通行范围 · 不耗时" : "可查看 · 不耗时"),
                     ReadBlocked = need ?? TalkBlocked(s),
+                    OwnBlocked = need,
                     Choices = done ? new List<CityChoiceView>() : n.Choices.Select(c => new CityChoiceView { Id = c.Id, Label = c.Label }).ToList(),
                 };
             }

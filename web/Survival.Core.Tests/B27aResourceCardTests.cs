@@ -253,9 +253,9 @@ public class B27aResourceCardTests : TestBase
     {
         var c = (JObject)Contract.Value["randomYield"]!["coldBox"]!;
         var box = E.Resource(ColdBox);
-        Assert.That(E.NoOutputYieldLine(box), Is.EqualTo("有限 · 随机其一：抗病毒前体×1（20%）；绷带×2（80%）"));
+        Assert.That(E.NoOutputYieldLine(box), Is.EqualTo("有限 · 随机其一：抗病毒前体×1（20%）；草药绷带×2（80%）"));
         Assert.That(E.NoOutputYieldLine(box), Is.EqualTo((string)c["copy"]!));
-        Assert.That(E.ItemName("bandage"), Is.EqualTo("草药绷带"), "定稿缩写只在这一句，物品全名不动（Q258）");
+        Assert.That(E.ItemName("bandage"), Is.EqualTo("草药绷带"), "这一句用物品全名（Q258）");
         Assert.That(box.ExclusiveLoot!.Select(x => (x.ItemId, x.Count, x.Weight)),
             Is.EqualTo(c["entries"]!.Select(x => ((string)x["itemId"]!, (int)x["count"]!, (int)x["percent"]!))));
     }

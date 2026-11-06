@@ -213,10 +213,17 @@ namespace Survival.Core.Engine
         /// 资源卡角标（S14「地图、来源与四类账」：不同账写清楚）：日补“10/12”；finite“6/8·不补”/“搜空不补”；flowing“无限”；
         /// 地牢普通箱“本代剩余2/2”/“本代已搜空”；核心记录“可领取”/“本局已领·可核对”/“已领取”；单次箱“可搜1次”/“已搜空”。Empty 为灰显。
         /// </summary>
-        public (string Badge, bool Empty) ResourceStock(GameState s, ResourceConfig r)
+        public (string Badge, bool Empty) ResourceStock(GameState s, ResourceConfig r) => StockBadge(s, r, s.Resources[r.NodeId].Available ?? 0);
+
+        /// <summary>
+        /// 资源卡角标和灰显的读法（Q260 选 A）：本次 Main 在本资源点搜集时，展示库存 = Available + 这次的预留，暂停同样；完成或退出后读真实库存。
+        /// 只读，不改账；已领取、待守卫胜利这些不看库存的状态照旧。来源查询等其他地方仍读 <see cref="ResourceStock"/>。
+        /// </summary>
+        public (string Badge, bool Empty) ResourceCardStock(GameState s, ResourceConfig r) =>
+            StockBadge(s, r, (s.Resources[r.NodeId].Available ?? 0) + OwnGatherHeld(s, r.NodeId));
+
+        private (string Badge, bool Empty) StockBadge(GameState s, ResourceConfig r, int avail)
         {
-            var rs = s.Resources[r.NodeId];
-            var avail = rs.Available ?? 0;
             if (r.IsCampaign)
             {
                 if (!CampaignClaimed(s, r.NodeId)) return InstanceConditionMet(s, r) ? ("可领取", false) : ("待本代守卫胜利", true);

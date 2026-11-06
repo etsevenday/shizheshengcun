@@ -109,6 +109,10 @@ namespace Survival.Core.Engine
         public string Title { get; set; } = "";
         public string Status { get; set; } = "";
         public string? ReadBlocked { get; set; }
+        /// <summary>这张文书自己不能看的原因（缺前置事实、熟练不够）；行动、暂停、对白这些全局原因不算，只在 ReadBlocked。</summary>
+        public string? OwnBlocked { get; set; }
+        /// <summary>卡上的状态行（Q259 选 A）：只写文书自身状态，全局原因由按钮禁用和悬停表达。</summary>
+        public string CardLine => OwnBlocked ?? Status;
         /// <summary>需先选一项才提交的告示（r07 观察区公开通道告示，B14）；空为直接查看。</summary>
         public List<CityChoiceView> Choices { get; set; } = new List<CityChoiceView>();
     }

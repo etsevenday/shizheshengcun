@@ -91,7 +91,8 @@
                             Tooltip="@($"{d.Title}：{d.Status}。点卡片或“查看”阅读（不耗时，不移动、不揭开未知地点；可重读）")" OnClick="() => Read(id, why)">
                     <Art>@Icons.Markup(id == "village_south_sign" ? "route" : "placeholder")</Art>
                     <ChildContent>
-                        <div class="oc-line" title="@d.Status">@(why ?? d.Status)</div>
+                        @* Q259：状态行只写文书自身状态，全局原因在下面按钮的 disabled 和 title *@
+                        <div class="oc-line" title="@d.CardLine">@d.CardLine</div>
                     </ChildContent>
                     <Footer>
                         @if (d.Choices.Count > 0)

@@ -117,7 +117,7 @@ namespace Survival.Core.Engine
             if (r.IsRecord || r.Outputs.Count > 0) return null;
             var account = AccountLabel(r);
             if (r.ExclusiveLoot != null && r.ExclusiveLoot.Count > 0)
-                return $"{account} · 随机其一：" + string.Join("；", r.ExclusiveLoot.Select(x => $"{YieldItemName(x.ItemId)}×{x.Count}（{x.Weight}%）"));
+                return $"{account} · 随机其一：" + string.Join("；", r.ExclusiveLoot.Select(x => $"{ItemName(x.ItemId)}×{x.Count}（{x.Weight}%）"));
             if (r.IsCampaign)
             {
                 var facts = new HashSet<string>(ClaimFactsOf(r));
@@ -126,9 +126,6 @@ namespace Survival.Core.Engine
             }
             return $"{account} · 无物品产出";
         }
-
-        /// <summary>Q254 冷藏箱定稿逐字写“绷带”，物品全名是“草药绷带”（Q258 待策划确认）。只有这一句缩写，掉落、预览和物品卡都用全名。</summary>
-        private string YieldItemName(string itemId) => itemId == "bandage" ? "绷带" : ItemName(itemId);
 
         private ItemSourceView ResourceSource(GameState s, ResourceConfig r, string itemId)
         {

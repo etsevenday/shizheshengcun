@@ -837,9 +837,12 @@ namespace Survival.Core.Engine
                 var why = CanStart(s, r);
                 if (why != DialogueLockedReason) return why;
             }
-            var held = s.Main != null && s.Main.Type == ActionType.Gather && s.Main.TargetId == r.TargetId ? s.Main.ReservedResourceUnits : 0;
-            return ValidateGather(s, r, new Plan { Type = r.Type, TargetId = r.TargetId }, held);
+            return ValidateGather(s, r, new Plan { Type = r.Type, TargetId = r.TargetId }, OwnGatherHeld(s, r.TargetId));
         }
+
+        /// <summary>本次 Main 在这个资源点搜集时占着的预留（Q252、Q260）；别的行动和旧档残留的 Reserved 不算。只给卡面读法，不改账。</summary>
+        private static int OwnGatherHeld(GameState s, string nodeId) =>
+            s.Main != null && s.Main.Type == ActionType.Gather && s.Main.TargetId == nodeId ? s.Main.ReservedResourceUnits : 0;
 
         /// <summary>空闲时开始主行动；主行动暂停时开始子行动（补给、休息、点火）。</summary>
         public ActionResult Start(GameState s, ActionRequest r)
