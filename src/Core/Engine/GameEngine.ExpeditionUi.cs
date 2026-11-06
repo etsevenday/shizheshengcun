@@ -38,29 +38,17 @@ namespace Survival.Core.Engine
     public sealed partial class GameEngine
     {
         /// <summary>
-        /// 进入预告里的饮水与热源（A10 §5“将已携净水、可处理脏水及所需热源分别计算，封存战利品不可即时使用的水不计可饮储备”）：
-        /// 只数全队随身（含随身水壶、随身锅里的水）；封存物与地面不计。只列物资与份数，不估算够不够（策划案没给估算口径，只提示、不拦）。
+        /// 进入预告饮水块的行（A10 §5、Q266）：估算与库存、Q267 处理块、处理用品、热源、封存附注、统一附注。标题 WaterCopy.Heading 由界面写。
+        /// 只数全队随身；封存物与地面不计。只提示、不拦。
         /// </summary>
-        public List<string> ExpeditionWaterLines(GameState s)
+        public List<string> ExpeditionWaterLines(GameState s, string dungeonId) => ExpeditionWaterLines(s, ExpeditionWaterBudget(s, dungeonId));
+
+        private List<string> ExpeditionWaterLines(GameState s, WaterBudgetInfo budget)
         {
             var carried = PartyCarriedOwners(s);
             var mine = s.Items.Where(i => carried.Contains(i.Owner) || (i.InContainer && FindItem(s, ContainerIdOf(i)) is ItemInstance pot && carried.Contains(pot.Owner))).ToList();
             int Cards(string id) => mine.Where(i => i.ItemId == id && !i.InContainer).Sum(i => i.Count);
-            int InPots(string id) => mine.Where(i => i.ItemId == id && i.InContainer).Sum(i => i.Count);
-            int Canteen(string id) => mine.Where(i => IsCanteen(i) && i.LiquidId == id).Sum(i => i.LiquidMl);
-            string Water(string id)
-            {
-                var parts = new List<string>();
-                if (Cards(id) > 0) parts.Add($"{ItemName(id)}×{Cards(id)}份");
-                if (InPots(id) > 0) parts.Add($"锅里{ItemName(id)}×{InPots(id)}份");
-                if (Canteen(id) > 0) parts.Add($"水壶里{ItemName(id)}{Canteen(id)}毫升");
-                return parts.Count == 0 ? "没有" : string.Join("、", parts);
-            }
-            var lines = new List<string>
-            {
-                $"随身净水（可直接饮用）：{Water("clean_water")}",
-                $"需处理的脏水（直接喝必定腹泻）：{Water("dirty_water")}",
-            };
+            var lines = WaterBudgetLines(budget).Concat(WaterTreatmentLines(budget)).ToList();
             // 只列供给主案定义过的处理路径用到的随身物品（净水片、滤芯与滤水器、烧水用的锅）
             var treat = new List<string>();
             foreach (var rc in Config.Recipes.Where(r => r.Inputs.ContainsKey("dirty_water") && r.Outputs.ContainsKey("clean_water")))
@@ -80,6 +68,7 @@ namespace Survival.Core.Engine
             lines.Add("热源：" + (heat.Count == 0 ? "没有点火工具与燃料" : string.Join("、", heat)));
             if (s.Expedition != null && SealedItems(s, s.Expedition.InstanceId).Any(i => _items.TryGetValue(i.ItemId, out var c) && c.Kind == "water"))
                 lines.Add("封存中的水不计入（本次不可直接使用）");
+            lines.Add(WaterCopy.Disclaimer);
             return lines;
         }
 

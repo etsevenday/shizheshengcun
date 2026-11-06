@@ -846,7 +846,8 @@ namespace Survival.Core.Engine
             if (SalvageOf(dungeonId) is { } sv)
                 p.RepeatRewards.Add($"守卫回收材料（守卫战胜利）：{PackText(sv.Items)}——{(SalvageClaimed(s, dungeonId) ? "本代已领" : "本代未领")}");
             p.ResetText = ResetStatusText(s, dungeonId);
-            p.WaterLines = ExpeditionWaterLines(s);
+            p.WaterBudget = ExpeditionWaterBudget(s, dungeonId);
+            p.WaterLines = ExpeditionWaterLines(s, p.WaterBudget);
             return p;
         }
 
@@ -872,7 +873,7 @@ namespace Survival.Core.Engine
             var buf = BufferNodeOf(dungeonId);
             if (d == null || buf == null) return (0, 0);
             var rooms = DungeonRooms(dungeonId).Select(l => l.Id).ToList();
-            var internalEdges = Config.Edges.Where(e => e.Bidirectional && DungeonAt(e.A) == dungeonId && DungeonAt(e.B) == dungeonId).ToList();
+            var internalEdges = ExploreEdges(dungeonId);
             int ToFull(string n)
             {
                 var prog = s.Locations.TryGetValue(n, out var ls) ? ls.Progress : 0;
@@ -884,6 +885,17 @@ namespace Survival.Core.Engine
             var low = path == null ? 0 : path.Value.Legs.Sum() + path.Value.Nodes.Take(path.Value.Nodes.Count - 1).Sum(ToFull);
             var high = rooms.Sum(ToFull) + internalEdges.Sum(e => e.BaseMinutes);
             return (low, high);
+        }
+
+        private List<EdgeConfig> ExploreEdges(string dungeonId) =>
+            Config.Edges.Where(e => e.Bidirectional && DungeonAt(e.A) == dungeonId && DungeonAt(e.B) == dungeonId).ToList();
+
+        /// <summary>探索区间能不能信（Q266 missingRoute）：入口缓冲到核心记录房有路。</summary>
+        private bool ExploreEstimateTrusted(string dungeonId)
+        {
+            var d = DungeonCfg(dungeonId);
+            var buf = BufferNodeOf(dungeonId);
+            return d != null && buf != null && ShortestPath(ExploreEdges(dungeonId), buf, d.RecordNode) != null;
         }
     }
 
@@ -921,8 +933,10 @@ namespace Survival.Core.Engine
         public List<string> RepeatRewards { get; set; } = new List<string>();
         /// <summary>B22：重置一行（未通关不计时 / 可重置于… / 已可重置）。</summary>
         public string ResetText { get; set; } = "";
-        /// <summary>B23（A10 §5）：全队随身净水 / 需处理脏水 / 处理用品 / 热源分列（封存物不计；只提示、不拦）。</summary>
+        /// <summary>B29（Q266、Q267）：饮水块标题下的各行，顺序见 ExpeditionWaterLines（封存物不计；只提示、不拦）。</summary>
         public List<string> WaterLines { get; set; } = new List<string>();
+        /// <summary>B29：饮水估算的结构化数据。</summary>
+        public WaterBudgetInfo WaterBudget { get; set; } = new WaterBudgetInfo();
     }
 
     /// <summary>预告/终止确认里的一名同行。</summary>

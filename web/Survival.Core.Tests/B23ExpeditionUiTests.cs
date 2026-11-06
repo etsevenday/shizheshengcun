@@ -40,7 +40,7 @@ public class B23ExpeditionUiTests : BattleTestBase
         }
     }
 
-    /// <summary>EXUI07：进入预告的饮水与热源分列——随身净水、需处理脏水、处理用品、热源；地面的水不算随身。</summary>
+    /// <summary>EXUI07：进入预告的饮水块——库存与估算、脏水处理块、处理用品、热源；地面的水不算随身（Q266 删旧净水、脏水两行）。</summary>
     [Test]
     public void EXUI07_PreviewWaterLines_CarriedOnly()
     {
@@ -51,10 +51,11 @@ public class B23ExpeditionUiTests : BattleTestBase
         E.CreateItems(s, "clean_water", 3, s.Ground);
         E.CreateItems(s, "purification_tablet", 1, ItemInstance.Carried);
         var lines = E.ExpeditionPreview(s, "d01").WaterLines;
-        Assert.That(lines[0], Is.EqualTo("随身净水（可直接饮用）：净水×2份"));
-        Assert.That(lines[1], Is.EqualTo("需处理的脏水（直接喝必定腹泻）：脏水×1份"));
-        Assert.That(lines[2], Does.StartWith("处理用品：").And.Contain("净水片×1"));
-        Assert.That(lines[3], Does.StartWith("热源："));
+        Assert.That(lines.Any(l => l.StartsWith("全队随身净水1000毫升")), Is.True);
+        Assert.That(lines.Any(l => l.StartsWith("处理后才可饮用：随身脏水500毫升")), Is.True);
+        Assert.That(lines.Any(l => l.StartsWith("随身净水") || l.StartsWith("需处理的脏水")), Is.False, "Q266 删旧净水、脏水两行");
+        Assert.That(lines.Single(l => l.StartsWith("处理用品：")), Does.Contain("净水片×1"));
+        Assert.That(lines.Count(l => l.StartsWith("热源：")), Is.EqualTo(1));
     }
 
     /// <summary>
@@ -68,8 +69,8 @@ public class B23ExpeditionUiTests : BattleTestBase
         s.Items.RemoveAll(i => i.ItemId is "clean_water" or "dirty_water");
         var water = E.CreateItems(s, "clean_water", 2, s.Ground, rewardOrigin: s.Expedition!.InstanceId).First();
         Assert.That(E.SealReward(s, water.InstanceId).Ok, Is.True);
-        var lines = E.ExpeditionWaterLines(s);
-        Assert.That(lines[0], Is.EqualTo("随身净水（可直接饮用）：没有"));
+        var lines = E.ExpeditionWaterLines(s, s.Expedition.DungeonId);
+        Assert.That(E.ExpeditionWaterBudget(s, s.Expedition.DungeonId).StockMl, Is.EqualTo(0));
         Assert.That(lines, Does.Contain("封存中的水不计入（本次不可直接使用）"));
         Assert.That(E.CanStart(s, ActionRequest.UseItem("clean_water")), Is.Not.Null, "封存的水不能直接喝");
         var v = E.ExpeditionStores(s)!;
