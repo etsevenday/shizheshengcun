@@ -289,38 +289,42 @@
 .wasteland :is(.clock, .weight, .map-row, .facility-row, .section.ground, .section.carried, .cprog, .st-pop, .map-card) {
   border-image-width: var(--ink2-frame-m);
 }
-.wasteland :is(.nav button, .secondary, .detail-tabs button, .attr-back, .st-close, .oc-foot .oc-btn, .fc-btn) {
+:is(.wasteland, .title-screen) :is(.nav button, .secondary, .detail-tabs button, .attr-back, .st-close, .oc-foot .oc-btn, .fc-btn) {
+  border-color: var(--ink2-btn-edge);
+  border-image: var(--ink2-frame-panel) 12 / var(--ink2-frame-s) / 0 stretch;
+  border-radius: 1px;
   background: var(--iron-texture), var(--ink2-btn-fill);
   color: var(--ink2-light);
   box-shadow: inset 0 0 0 1px var(--ink2-btn-edge), inset 0 2px 0 var(--ink2-btn-hi), 0 2px 2px color-mix(in srgb, var(--ink2-black) 47%, transparent);
 }
-.wasteland :is(.loc-btn, .primary, .apop-go, .rest-go button, .ca-use, .fc-btn.ignite, .fc-btn.cook) {
+:is(.wasteland, .title-screen) :is(.loc-btn, .primary, .apop-go, .rest-go button, .ca-use, .fc-btn.ignite, .fc-btn.cook) {
   border-color: var(--ink2-btn-primary-edge);
-  border-image-source: var(--ink2-frame-action);
+  border-image: var(--ink2-frame-action) 12 / var(--ink2-frame-s) / 0 stretch;
+  border-radius: 1px;
   background: var(--iron-texture), var(--ink2-btn-primary-fill);
   color: var(--ink2-light);
   box-shadow: inset 0 0 0 1px var(--ink2-btn-primary-edge), inset 0 2px 0 var(--ink2-btn-primary-hi), 0 2px 2px color-mix(in srgb, var(--ink2-black) 53%, transparent);
 }
-.wasteland :is(.loc-btn, .primary, .apop-go, .rest-go button, .ca-use, .fc-btn.ignite, .fc-btn.cook):hover:not(:disabled, .gate-off) {
+:is(.wasteland, .title-screen) :is(.loc-btn, .primary, .apop-go, .rest-go button, .ca-use, .fc-btn.ignite, .fc-btn.cook):hover:not(:disabled, .gate-off) {
   background-color: color-mix(in srgb, var(--ink2-btn-primary-fill) 78%, var(--ink2-btn-primary-edge));
   border-image-source: var(--ink2-frame-selected);
   filter: none;
 }
-.wasteland :is(.nav button, .secondary, .oc-btn):hover:not(:disabled, .gate-off) {
+:is(.wasteland, .title-screen) :is(.nav button, .secondary, .oc-btn):hover:not(:disabled, .gate-off) {
   border-image-source: var(--ink2-frame-selected);
   background-color: var(--ink2-tile-top);
 }
-.wasteland :is(.loc-btn, .primary, .oc-btn, .fc-btn, .ca-use, .apop-go, .rest-go button, .nav button, .secondary):is(:disabled, .gate-off) {
+:is(.wasteland, .title-screen) :is(.loc-btn, .primary, .oc-btn, .fc-btn, .ca-use, .apop-go, .rest-go button, .nav button, .secondary):is(:disabled, .gate-off) {
   background: var(--iron-texture), var(--ink2-btn-muted-fill);
   color: var(--ink2-btn-muted-text);
   border-color: var(--ink2-btn-muted-edge);
   border-image-source: var(--ink2-frame-panel);
   box-shadow: inset 0 0 0 1px var(--ink2-btn-muted-edge);
 }
-.wasteland .secondary.danger { color: var(--ink2-danger); box-shadow: inset 0 0 0 1px var(--ink2-badge-red-edge), inset 0 2px 0 var(--ink2-btn-hi); }
+:is(.wasteland, .title-screen) .secondary.danger { color: var(--ink2-danger); box-shadow: inset 0 0 0 1px var(--ink2-badge-red-edge), inset 0 2px 0 var(--ink2-btn-hi); }
 
-/* 卡片默认层与状态层 */
-.wasteland :is(.card, .ocard, .pot-card, .fc-food, .map-card) {
+/* 卡片默认层与状态层（:is 里带 .pot-card.in-fire 使特异性为 0,3,0，盖过前面 v0.9 纸卡的整条阴影） */
+.wasteland :is(.card, .ocard, .pot-card, .pot-card.in-fire, .fc-food, .map-card) {
   --st-hover: 0 0 #0000;
   --st-sel: 0 0 #0000;
   --st-danger: 0 0 #0000;
@@ -329,7 +333,7 @@
   --st-shadow: var(--st-hover), var(--st-sel), var(--st-danger), var(--st-busy), var(--st-base);
   box-shadow: var(--st-shadow);
 }
-.wasteland .map-card { --st-base: 0 3px 5px color-mix(in srgb, var(--ink2-black) 60%, transparent); }
+.wasteland .map-card.map-card { --st-base: 0 3px 5px color-mix(in srgb, var(--ink2-black) 60%, transparent); }
 .wasteland :is(.card, .ocard, .pot-card, .fc-food, .map-card):hover:not(.selected) {
   --st-hover: inset 0 0 0 2px color-mix(in srgb, var(--ink2-light) 60%, transparent);
   border-image-source: var(--ink2-frame-card);
@@ -347,8 +351,8 @@
   outline: 5px double var(--ink2-light);
   outline-offset: 1px;
 }
-.wasteland :is(.card, .ocard, .pot-card, .fc-food).dim,
-.wasteland :is(.card, .ocard, .pot-card, .fc-food, .map-card).st-disabled {
+/* 写成 0,4,0：要盖过后加载的 illustration.css 纸卡底（0,3,0） */
+.wasteland :is(.card, .ocard, .pot-card, .pot-card.in-fire, .fc-food, .map-card):is(.dim, .st-disabled) {
   background-image: var(--paper-texture),
     repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in srgb, var(--ink2-black) 14%, transparent) 7px 9px),
     linear-gradient(110deg, var(--ink2-btn-muted-text), var(--ink2-btn-muted-text));

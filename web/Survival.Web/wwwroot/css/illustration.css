@@ -27,7 +27,8 @@
 .wasteland :is(.card, .ocard, .pot-card, .pot-card.in-fire, .fc-food) {
   background: var(--paper-texture), linear-gradient(115deg, #e7d9b8, #d3c299);
   background-size: 100% 100%, auto;
-  box-shadow: inset 0 0 14px #72532635, 0 3px 5px #0009;
+  /* B31a 试玩修复：只换默认阴影层（--st-base），整条阴影仍由 materials.css 九状态组合，选中、危险、加工中各层可叠加 */
+  --st-base: inset 0 0 14px #72532635, 0 3px 5px #0009;
 }
 .wasteland :is(.res-card, .fac-card) .oc-head { border-bottom: 0; }
 .wasteland :is(.res-card, .fac-card) .oc-body { border-top: 0; }

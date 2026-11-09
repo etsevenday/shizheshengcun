@@ -120,6 +120,20 @@ public class B31aPresentationTests
         Assert.That(mat, Does.Not.Contain("art/v09/"));
     }
 
+    /// <summary>B31a 试玩修复（构建 5220202）：不可用斜线盖过后加载的纸卡底；纸卡只换默认阴影层，九状态阴影可叠加；标题页按钮也走新按钮令牌。</summary>
+    [Test]
+    public void PlaytestFix_StatesAndTitleButtons()
+    {
+        var mat = Web("wwwroot", "css", "materials.css");
+        Assert.That(mat, Does.Contain(".wasteland :is(.card, .ocard, .pot-card, .pot-card.in-fire, .fc-food, .map-card):is(.dim, .st-disabled) {"), "0,4,0 盖过 illustration.css 0,3,0");
+        Assert.That(mat, Does.Contain(".wasteland :is(.card, .ocard, .pot-card, .pot-card.in-fire, .fc-food, .map-card) {\n  --st-hover").Or.Contain(".wasteland :is(.card, .ocard, .pot-card, .pot-card.in-fire, .fc-food, .map-card) {\r\n  --st-hover"));
+        Assert.That(mat, Does.Contain(":is(.wasteland, .title-screen) :is(.loc-btn, .primary, .apop-go, .rest-go button, .ca-use, .fc-btn.ignite, .fc-btn.cook) {"));
+        var ill = Web("wwwroot", "css", "illustration.css");
+        var start = ill.IndexOf(".wasteland :is(.card, .ocard, .pot-card, .pot-card.in-fire, .fc-food) {");
+        var rule = ill.Substring(start, ill.IndexOf('}', start) - start);
+        Assert.That(rule, Does.Contain("--st-base:").And.Not.Contain("box-shadow:"));
+    }
+
     /// <summary>Q327-A01：四档字号令牌；样式表里除图标字符外不再有零散像素字号（留言组件不在本批）。</summary>
     [Test]
     public void Q327_A01_FontTiers()
