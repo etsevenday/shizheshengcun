@@ -149,6 +149,7 @@ public class B9aPartyBattleTests : BattleTestBase
         Assert.That(s.Actors[Lin].Body.Infected, Is.True, "咬击感染按本人");
         Assert.That(s.Actors[GameState.PlayerId].Body.Infected, Is.False);
         Assert.That(b.Log.Last(), Does.Contain("林昭"));
+        Assert.That(b.Log.Last(), Does.Match("林昭因这次咬伤感染（判定概率[0-9.]+%）"), "B38b N02 附录 §4 首次咬伤感染句");
     }
 
     /// <summary>敌人拉扯/击退队友：按队友本人判控制并移格（与相邻同伴原子交换），主角号位随之改变（Q80）。</summary>
@@ -200,6 +201,36 @@ public class B9aPartyBattleTests : BattleTestBase
         E.BattleStep(s);
         E.BattleStep(s);
         Assert.That(GameEngine.ActingAlly(b), Is.EqualTo(GameState.PlayerId));
+    }
+
+    private void AllyDown(GameState s, string actorId, string cause) =>
+        typeof(GameEngine).GetMethod("AllyDownInBattle", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(E, new object[] { s, actorId, cause });
+
+    /// <summary>Q284-A01（B38b）：同行战死——即时提醒“{人物}已战死（{原因}）”一次；战报首句、实际有遗物才接遗物句、恐慌按实际增量合组。</summary>
+    [Test]
+    public void Q284_A01_CompanionKilled_Remains_PanicGroups()
+    {
+        var s = Party(9706, 3, "shambler");
+        var b = s.Battle!;
+        b.Allies = new List<string> { Lin, GameState.PlayerId, Zhou };
+        b.Fighter(GameState.PlayerId).Panic = 10;
+        b.Fighter(Zhou).Panic = 10;
+        var hasItems = s.Items.Any(i => i.Owner.Contains(Lin));
+        var logs = s.Log.Count;
+        AllyDown(s, Lin, "被游荡尸咬击");
+        Assert.That(s.Log.Skip(logs).Count(l => l.Text == "林昭已战死（被游荡尸咬击）"), Is.EqualTo(1), "即时提醒位置与次数不变");
+        var where = E.LocName(b.LocationId);
+        Assert.That(b.Log.Last(), Does.EndWith(" · 林昭已战死（被游荡尸咬击）。" + (hasItems ? $"遗物留在{where}，战后可取。" : "") + $"你、{E.ActorDisplayName(s, Zhou)}恐慌+8。"));
+
+        // 恐慌已满者不写；不同增量分别成句；没有遗物省略遗物句
+        var t = Party(9706, 3, "shambler");
+        var c = t.Battle!;
+        c.Allies = new List<string> { Lin, GameState.PlayerId, Zhou };
+        c.Fighter(GameState.PlayerId).Panic = 96;
+        c.Fighter(Zhou).Panic = 100;
+        foreach (var i in t.Items.Where(i => i.Owner.Contains(Lin)).ToList()) t.Items.Remove(i);
+        AllyDown(t, Lin, "伤势过重");
+        Assert.That(c.Log.Last(), Does.EndWith(" · 林昭已战死（伤势过重）。你恐慌+4。"));
     }
 
     /// <summary>CB09：同一事件主角与队友都倒下（死亡喷溅打 1、2 号位）时按主角死亡终局。</summary>

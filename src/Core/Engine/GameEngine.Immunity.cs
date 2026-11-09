@@ -124,8 +124,9 @@ namespace Survival.Core.Engine
                     if (b.VirusWarned.Contains(stage)) continue;
                     b.VirusWarned.Add(stage);
                     var rate = VirusRate(b.Immunity, b.AntibioticUntil.HasValue && b.AntibioticUntil.Value > s.GameMinute) + BaobaoInput(s, actor, b.Immunity);
-                    var left = rate > 0 ? $"，按现状理论上约{Clock.Duration((int)Math.Ceiling((Inf.ZombificationAtLoad - b.VirusLoad) / rate * 60))}后尸变（免疫或用药改变时随之变化）" : "，按现状不会继续升高";
-                    Emit(s, GameEventKind.Alert, $"{ActorPrefix(actor)}病毒程度达到{Fmt.T(stage)}（当前{Fmt.N(b.VirusLoad)}）：每小时{Fmt.SignedT(rate)}{left}。");
+                    // B38b（Q289）：主角称“你”；只有速率为正时追加预计尸变句，零或负只写主句
+                    var left = rate > 0 ? $"若免疫和用药状态维持现状，按当前速率估计约{Clock.Duration((int)Math.Ceiling((Inf.ZombificationAtLoad - b.VirusLoad) / rate * 60))}后尸变。" : "";
+                    Emit(s, GameEventKind.Alert, $"{ActorLabel(actor)}的病毒程度达到{Fmt.T(stage)}，当前{Fmt.N(b.VirusLoad)}，每小时{Fmt.SignedT(rate)}。{left}");
                 }
                 else b.VirusWarned.Remove(stage);
             }
@@ -263,7 +264,7 @@ namespace Survival.Core.Engine
                     s.BandageReadyAt = s.GameMinute + Config.ItemActions.BandageCooldownMinutes;
                     effective = true;
                 }
-                else parts.Add(s.BandageReadyAt > s.GameMinute ? "回血冷却中，本次不回血" : "健康已满，本次不回血");
+                else parts.Add(s.BandageReadyAt > s.GameMinute ? HealCooldownText(s) : "健康已满，本次不回血");
                 if (BandageVirusUseful(s))
                 {
                     var before = b.VirusLoad;
@@ -290,7 +291,7 @@ namespace Survival.Core.Engine
                 b.VirusLoad = Inf.AntiviralCure.SetLoad;
                 b.HighImmunityMinutes = Inf.AntiviralCure.SetHighImmunityMinutes;
                 b.VirusWarned.Clear();
-                parts.Add("病毒感染已清除（特效药）");
+                parts.Add("病毒特效药已清除感染");   // B38b N02 附录 §4
                 effective = true;
             }
             // 有效治疗给医疗经验，同次只发一次（v0.6 §03、§11）；特效药清除感染同样是有效医疗（开发假设 26，试玩修复 L2）
@@ -313,7 +314,7 @@ namespace Survival.Core.Engine
             if (b.BleedTriggers > 0) parts.Add("止血");
             var healReady = s.BandageReadyAt <= s.GameMinute;
             var heal = healReady ? Math.Min(BandageHeal(s, medLevel), s.Stats.HealthMax - s.Stats.Health) : 0;
-            if (!healReady) parts.Add($"回血冷却中（还需{Clock.Duration(s.BandageReadyAt - s.GameMinute)}），本次不回血");
+            if (!healReady) parts.Add(HealCooldownText(s));
             else if (heal > 0) parts.Add($"健康{Fmt.N(s.Stats.Health)}→{Fmt.N(s.Stats.Health + heal)}");
             else parts.Add("健康已满，本次不回血");
             if (b.Infected)
@@ -324,6 +325,9 @@ namespace Survival.Core.Engine
             }
             return string.Join("；", parts);
         }
+
+        /// <summary>健康恢复冷却行（N02 附录 §4，预览与结算同句）。</summary>
+        private static string HealCooldownText(GameState s) => $"健康恢复冷却中（还需{Clock.Duration(s.BandageReadyAt - s.GameMinute)}），本次不恢复健康";
 
         /// <summary>药品这一次的实际效果文字（绷带、抗生素、特效药），卡下操作条、右栏详情与战斗预览共用；非药品返回 null。</summary>
         public string? MedicineEffectText(GameState s, ItemUseConfig u, int? medLevel = null)

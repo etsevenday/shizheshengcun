@@ -276,15 +276,15 @@ public class B8PartyTests : TestBase
         Start(s, ActionRequest.Wait(60));
         Run(s);
         Assert.That(s.Main, Is.Null, "主行动照常完成，不被候补红线暂停");
-        Assert.That(s.Log.Count(l => l.Text.Contains("候补顾承健康降到")), Is.EqualTo(1));
+        Assert.That(s.Log.Count(l => l.Text.Contains("顾承的健康降至")), Is.EqualTo(1));
         gu.Stats.Health = 8; gu.Stats.Wakefulness = 50;
         Start(s, ActionRequest.Wait(30)); Run(s); s.Main = null;
         gu.Stats.Health = 5.02; gu.Stats.Wakefulness = 0;
         Start(s, ActionRequest.Wait(30)); Run(s); s.Main = null;
-        Assert.That(s.Log.Count(l => l.Text.Contains("候补顾承健康降到")), Is.EqualTo(2), "离开阈值后再跨入再提示");
+        Assert.That(s.Log.Count(l => l.Text.Contains("顾承的健康降至")), Is.EqualTo(2), "离开阈值后再跨入再提示");
         gu.Body.Infected = true; gu.Body.VirusLoad = 79.9; gu.Body.Immunity = 0;
         Start(s, ActionRequest.Wait(30)); Run(s); s.Main = null;
-        Assert.That(s.Log.Count(l => l.Text.Contains("候补顾承病毒程度到")), Is.EqualTo(1));
+        Assert.That(s.Log.Count(l => l.Text.Contains("顾承的病毒程度升至")), Is.EqualTo(1));
     }
 
     /// <summary>TX02：同行者不得工作经验（制作只主角得），队友按 wait 结算。</summary>

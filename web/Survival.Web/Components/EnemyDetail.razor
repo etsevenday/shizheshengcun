@@ -41,7 +41,7 @@ else
             @* 试玩修复 D3：弹仓为0时提前提示，开战后第一件事是装填 *@
             <div class="risk">@($"{weapon.Name}#{wi.InstanceId}")弹仓为0：开战后需先装填（1AP），或在右栏人物“装备”区换一把再接近。</div>
         }
-        @if (e.CanBite(ec)) { <div class="risk">咬击命中且造成伤害时可能感染僵尸病毒（当前一次@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))）。</div> }
+        @if (e.CanBite(ec)) { <div class="risk">咬击命中并造成伤害时可能感染。单次咬伤感染概率@(Ui.Pct(e.ExposureChance(s.Body.Immunity)))。</div> }
         else if (ec.IsZombie) { <div class="risk none">它的意图里没有咬击，不会咬伤，攻击不传播病毒。</div> }
         <ul class="notes">
             <li>主动接近：@e.FearNote(s, new[] { w }, GameEngine.FearApproach)；不受随机接敌保护期限制；只与这一只交战。</li>

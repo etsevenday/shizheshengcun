@@ -328,7 +328,7 @@ public class B22gTests : TestBase
         Assert.That(s.Recruit.Pending!.AwaitingPlacement, Is.True);
         Assert.That(s.Recruit.Pending.PlacementFailure, Does.Contain("同行已满"));
         Assert.That(s.Roster.Any(r => r.IsRandom), Is.False, "不建人");
-        Assert.That(s.Log.Last().Text, Does.Contain("待安置确认"));
+        Assert.That(s.Log.Last().Text, Does.Contain("目前无法安排。").And.Contain("名额仍保留，人物尚未加入。"));
         Assert.That(E.SharedRosterLocked(s), Is.EqualTo(1), "名额仍锁");
         var v = E.RecruitPreview(s);
         Assert.That(v.Awaiting, Is.Not.Null);

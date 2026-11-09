@@ -541,8 +541,9 @@ namespace Survival.Core.Engine
             }
             var name = ActorLabel(actor);
             var where = RosterOf(s, actor.Id) is RosterEntry re ? ReserveWhereName(s, re) : LocName(HubLocation(s));
-            Line("health", actor.Stats.Health <= care.RedHealth + 1e-9, $"候补{name}健康降到{Fmt.T(actor.Stats.Health)}（≤{Fmt.T(care.RedHealth)}），留在{where}，需要你回去救治。");
-            Line("virus", actor.Body.VirusLoad >= care.RedVirus - 1e-9, $"候补{name}病毒程度到{Fmt.T(actor.Body.VirusLoad)}（≥{Fmt.T(care.RedVirus)}），公共照护不治病，需要你回去处理。");
+            // B38b（N02 附录 §4）
+            Line("health", actor.Stats.Health <= care.RedHealth + 1e-9, $"{name}的健康降至{Fmt.T(actor.Stats.Health)}（警戒线≤{Fmt.T(care.RedHealth)}）。请回{where}救治。");
+            Line("virus", actor.Body.VirusLoad >= care.RedVirus - 1e-9, $"{name}的病毒程度升至{Fmt.T(actor.Body.VirusLoad)}（警戒线≥{Fmt.T(care.RedVirus)}）。公共照护只能补给和休养，请回去处理。");
         }
 
         // ───────────── 开发入口（B8-19；不改正式条件函数） ─────────────

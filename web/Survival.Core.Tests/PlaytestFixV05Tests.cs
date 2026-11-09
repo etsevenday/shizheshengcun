@@ -131,7 +131,7 @@ public class PlaytestFixV05Tests : BattleTestBase
         var u = E.Item("bandage").Use!;
         var text = E.MedicineEffectText(s, u)!;
         var expectV = Math.Max(Cfg.Infection.AllSuppressantsMinLoad, 12.02 - E.BandageVirusReduction(s));
-        Assert.That(text, Does.Contain("本次不回血").And.Contain($"病毒12.02→{Fmt.N(expectV)}"));
+        Assert.That(text, Does.Contain("本次不恢复健康").And.Contain($"病毒12.02→{Fmt.N(expectV)}"));
         var p = E.Preview(s, ActionRequest.UseItem("bandage"));
         Assert.That(p.StatsAfterImmediate!.Health, Is.EqualTo(16.01).Within(1e-9), "即时健康不变");
         Start(s, ActionRequest.UseItem("bandage"));

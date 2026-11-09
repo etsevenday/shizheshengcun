@@ -156,21 +156,27 @@ namespace Survival.Core.Engine
             if (!b.Allies.Contains(actorId) && actor.Stats.Health > 0) return;
             var name = ActorDisplayName(s, actorId);
             var wasActing = ActingAlly(b) == actorId;
-            using (FocusOn(s, GameState.PlayerId)) CompanionDown(s, actor, cause);
+            int moved;
+            using (FocusOn(s, GameState.PlayerId)) moved = CompanionDown(s, actor, cause, inBattle: true);
             var f = b.Fighter(actorId);
             f.Acting = false;
             f.Ap = 0;
             var gain = Config.Panic.AllyDeathGain;
             var others = AlliesOnField(b);
+            var rises = new List<(string Name, string Inc)>();
             if (gain > 0)
                 foreach (var id in others)
                 {
                     var of = b.Fighter(id);
+                    var before = of.Panic;
                     of.Panic = Math.Min(Config.Panic.Range[1], of.Panic + gain);
                     of.PanicPeak = Math.Max(of.PanicPeak, of.Panic);
+                    if (of.Panic > before + 1e-9) rises.Add((ActorDisplayName(s, id), Fmt.T(of.Panic - before)));
                 }
-            BattleLog(s, $"{name}倒下了（{cause}），遗物留在{LocName(b.LocationId)}，战后可取" +
-                         (gain > 0 && others.Count > 0 ? $"；{string.Join("、", others.Select(o => ActorDisplayName(s, o)))}恐慌+{Fmt.T(gain)}" : "") + "。");
+            // B38b（Q284）：首句“{人物}已战死（{原因}）。”；实际有遗物才接遗物句；只有恐慌实际增加者按增量合组（顿号），不同增量分别成句，顺序沿参战顺序
+            var text = $"{name}已战死（{cause}）。" + (moved > 0 ? $"遗物留在{LocName(b.LocationId)}，战后可取。" : "");
+            foreach (var g in rises.GroupBy(x => x.Inc)) text += $"{string.Join("、", g.Select(x => x.Name))}恐慌+{g.Key}。";
+            BattleLog(s, text);
             if (wasActing)
             {
                 b.ActiveAlly = "";

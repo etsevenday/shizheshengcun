@@ -876,8 +876,11 @@ namespace Survival.Core.Engine
                 if (cfg.IsZombie)
                 {
                     var infectedBefore = s.Body.Infected;
+                    var loadBefore = s.Body.VirusLoad;
                     var hit = ExposeToVirus(s, out var chance);
-                    extra.Add(hit ? (infectedBefore ? $"病毒暴露成功（{Fmt.Pct(chance)}），{tn}病毒+{Fmt.T(Config.Infection.OnRepeatedSuccessfulExposure.LoadDelta)}" : $"病毒暴露成功（{Fmt.Pct(chance)}），{Who(s)}被感染了") : $"病毒暴露判定未感染（{Fmt.Pct(chance)}）");
+                    // B38b（N02 附录 §4）：首次、再次（实际增量）与未感染三句
+                    extra.Add(hit ? (infectedBefore ? $"{Who(s)}再次受到感染暴露，病毒+{Fmt.T(s.Body.VirusLoad - loadBefore)}（判定概率{Fmt.Pct(chance)}）" : $"{Who(s)}因这次咬伤感染（判定概率{Fmt.Pct(chance)}）")
+                        : $"这次咬伤未增加感染（判定概率{Fmt.Pct(chance)}）");
                 }
             }
             else if (!plain)

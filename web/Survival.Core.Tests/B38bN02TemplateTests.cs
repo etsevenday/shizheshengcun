@@ -141,6 +141,7 @@ public class B38bN02TemplateTests : TestBase
         var ok = s.Log.Skip(logs).Single(l => l.Kind == nameof(GameEventKind.ActionCompleted)).Text;
         Assert.That(ok, Does.StartWith("已为你换药。").And.EndWith($"。消耗{E.ItemName("bandage")}×1、{E.ItemName("cloth")}×1。"));
         Assert.That(ok, Does.Match("病毒[0-9.]+→[0-9.]+（仍感染）"), "病毒前后值");
+        Assert.That(ok, Does.Contain("健康恢复冷却中（还需").And.Contain("），本次不恢复健康"), "Q289 冷却行定稿");
         ReadDialogues(s);
 
         // 预留材料完成前被挪走：失败外层，材料和额度不扣
@@ -240,6 +241,53 @@ public class B38bN02TemplateTests : TestBase
         Assert.That(t, Does.StartWith("探索度50%→75%；").And.EndWith("。安全线索：" + clue));
         Assert.That(t, Does.Not.Contain("未发现新线索").And.Not.Contain("一条安全线索"));
         Assert.That(t.IndexOf("安全线索", StringComparison.Ordinal), Is.EqualTo(t.Length - clue.Length - "安全线索：".Length), "线索正文不夹在路线拼接中");
+    }
+
+    // ───────────── §4 队伍、战斗和医疗（Q284、Q289） ─────────────
+
+    /// <summary>Q289-A01：病毒警戒主句，速率正、零、负三种值，只有正速率追加预计尸变句；主角称“你”。</summary>
+    [Test]
+    public void Q289_A01_VirusWarning_RateSigns()
+    {
+        string Warn(double immunity)
+        {
+            var s = New();
+            s.Body.Infected = true;
+            s.Body.Immunity = immunity;
+            s.Body.VirusLoad = 20.5;
+            var n = s.Log.Count;
+            typeof(GameEngine).GetMethod("VirusWarnings", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, new[] { typeof(GameState) })!.Invoke(E, new object[] { s });
+            return s.Log.Skip(n).Single(l => l.Kind == nameof(GameEventKind.Alert)).Text;
+        }
+        var texts = new[] { 0.0, 50.0, 100.0 }.Select(Warn).ToList();
+        foreach (var t in texts) Assert.That(t, Does.Match("^你的病毒程度达到20，当前20.50，每小时[+−-]?[0-9.]+。"));
+        var pos = texts.Where(t => t.Contains("每小时+")).ToList();
+        var nonPos = texts.Where(t => !t.Contains("每小时+")).ToList();
+        Assert.That(pos, Is.Not.Empty);
+        foreach (var t in pos) Assert.That(t, Does.Match("。若免疫和用药状态维持现状，按当前速率估计约.+后尸变。$"));
+        foreach (var t in nonPos) Assert.That(t, Does.Not.Contain("尸变").And.EndWith("。"), "零或负只写主句");
+    }
+
+    /// <summary>Q289-A01：药物预览按效果用分号分段；应用结果只记一条日志；冷却行与特效药成功句照定稿。</summary>
+    [Test]
+    public void Q289_A01_Medicine_Preview_OneLog()
+    {
+        var s = New();
+        s.Body.Infected = true;
+        s.Body.VirusLoad = 30;
+        s.BandageReadyAt = s.GameMinute + 30;
+        var pre = E.MedicineEffectText(s, Cfg.Items.Single(i => i.Id == "bandage").Use!)!;
+        Assert.That(pre, Is.EqualTo($"健康恢复冷却中（还需{Clock.Duration(30)}），本次不恢复健康；病毒30.00→{Fmt.N(Math.Max(1, 30 - E.BandageVirusReduction(s)))}（仍感染）"));
+        var anti = Cfg.Items.FirstOrDefault(i => i.Use?.IsAntiviral == true);
+        if (anti != null)
+        {
+            E.DebugGive(s, anti.Id, 1);
+            var n = s.Log.Count;
+            var r = E.Start(s, ActionRequest.UseItem(anti.Id));
+            if (r.Ok) Run(s);
+            var logs = s.Log.Skip(n).Where(l => l.Text.Contains("病毒特效药已清除感染")).ToList();
+            Assert.That(logs, Has.Count.EqualTo(1), "成功日志一条");
+        }
     }
 
     /// <summary>Q288-A01：换物主句只用实际地面名；第 3 行的下一世界午夜。</summary>

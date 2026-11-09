@@ -532,6 +532,25 @@ public class B19RecruitTests : TestBase
         Assert.That(E.SetActiveBlocked(s, r.ActorId, true), Does.Contain("退役"));
     }
 
+    /// <summary>Q284-A01（B38b）：退役同一条日志——退役句、寄存物品、借用矛、退役后名册；空包与含借用矛各一例。</summary>
+    [Test]
+    public void Q284_A01_RetireLog_Items_Empty_Loan()
+    {
+        var s = AtShelter(4);
+        var a = Recruit(s, 0);
+        var spear = E.CreateItems(s, "wooden_spear", 1, ItemInstance.EquipOwner(a.ActorId, EquipSlots.Weapon1)).Single();
+        spear.LoanSlot = "矛位1";
+        E.CreateItems(s, "fiber", 1, ItemInstance.CarriedOwner(a.ActorId));
+        var b = Recruit(s, 1);
+        var n = s.Log.Count;
+        Ok(E.Retire(s, a.ActorId));
+        Assert.That(s.Log.Skip(n).Single().Text, Is.EqualTo(
+            $"{a.Name}已退役，永久离开名册。已学技能不返还。2件个人物品已放进{E.LocName(Shelter)}认领箱，只能在这里取。借用矛（矛位1）在认领箱里，仍归原借用位，不另发。随机/保底名册1/{E.SharedRosterCap(s)}。"));
+        n = s.Log.Count;
+        Ok(E.Retire(s, b.ActorId));
+        Assert.That(s.Log.Skip(n).Single().Text, Is.EqualTo($"{b.Name}已退役，永久离开名册。已学技能不返还。随机/保底名册0/{E.SharedRosterCap(s)}。"), "空包省略寄存句");
+    }
+
     // ───────────── RB01 共享 K、旧档超额（RC6/RC7） ─────────────
 
     /// <summary>RC10：随机与 RB01 共用 K（不各给三人）：C2 有一名随机同行时 RB01 写满额；有一名护送员时随机候选也写满额。</summary>

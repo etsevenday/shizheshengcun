@@ -503,8 +503,9 @@ namespace Survival.Core.Engine
                 p.AwaitingPlacement = true;
                 p.PlacementFailure = fail;
                 Emit(s, GameEventKind.ActionCompleted,
-                    $"{p.Candidate.Name}的登记手续已办完，但原选的去向（{PlacementText(s, placement)}）现在不行：{fail}。登记暂停在“待安置确认”："
-                    + "人还没建、名额仍锁着，不会再收10分钟；在收容所安全空闲时改选合法去向，或取消（已过时间不退）。");
+                    // B38b（N02 附录 §4）
+                    $"{p.Candidate.Name}的登记手续已办完。原定去向（{PlacementText(s, placement)}）目前无法安排。{Sentence(fail)}"
+                    + "名额仍保留，人物尚未加入。可在收容所安全空闲时重选（0分钟），也可取消并释放名额。已用时间不退。");
                 return;
             }
             s.Recruit.Pending = null;
@@ -760,10 +761,11 @@ namespace Survival.Core.Engine
             r.RetiredMinute = s.GameMinute;
             r.RetiredCycle = s.Recruit.Cycle;
             var loans = items.Where(i => i.LoanSlot != null).Select(i => i.LoanSlot!).ToList();
-            Emit(s, GameEventKind.Info, $"{r.Name}已退役，永久离开名册（已学技能不返还）"
-                + (items.Count > 0 ? $"；{items.Count}件个人物品已放进{LocName(Rc.LocationId)}认领箱（只能在这里取）" : "")
-                + (loans.Count > 0 ? $"；借用矛（{string.Join("、", loans)}）在认领箱里，仍归该借用位、不另发" : "")
-                + $"。随机/保底名册{SharedRoster(s).Count}/{SharedRosterCap(s)}。");
+            // B38b（Q284）：同一条日志依次为退役句、寄存物品、寄存借用矛、退役后名册；没有的分支省略
+            Emit(s, GameEventKind.Info, $"{r.Name}已退役，永久离开名册。已学技能不返还。"
+                + (items.Count > 0 ? $"{items.Count}件个人物品已放进{LocName(Rc.LocationId)}认领箱，只能在这里取。" : "")
+                + (loans.Count > 0 ? $"借用矛（{string.Join("、", loans)}）在认领箱里，仍归原借用位，不另发。" : "")
+                + $"随机/保底名册{SharedRoster(s).Count}/{SharedRosterCap(s)}。");
             return ActionResult.Success();
         }
 

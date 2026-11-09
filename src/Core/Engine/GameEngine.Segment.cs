@@ -366,9 +366,11 @@ namespace Survival.Core.Engine
         /// 队友（同行或候补）健康归零或尸变（R08 §4、A11 §8，B8）：永久退出可控名册（名称、技能与死亡记录保留），离开同行与预设、
         /// 战斗中清出号位（不压紧）；穿戴与随身一次原子迁到死亡地点的遗物容器（owner 唯一、保质/耐久不变）。容量 C 不降。主角不走这里。
         /// </summary>
-        private void CompanionDown(GameState s, ActorState actor, string cause)
+        /// <param name="inBattle">战斗中同行者战死（B38b Q284：即时提醒改“{人物}已战死（{原因}）”，位置与次数不变）。</param>
+        /// <returns>实际迁进遗物容器的件数。</returns>
+        private int CompanionDown(GameState s, ActorState actor, string cause, bool inBattle = false)
         {
-            if (actor.IsPlayer) return;
+            if (actor.IsPlayer) return 0;
             if (cause != ZombifiedCause) actor.Stats.Health = 0;
             var wasActive = s.Party.Contains(actor.Id);
             // 候补死在营区公共居所（Q89：迁址前为替身地点）；B22g（Q183 death）：驻屋候补死在该安全屋屋内，遗物保留实际屋内
@@ -392,7 +394,9 @@ namespace Survival.Core.Engine
             }
             var moved = MoveToRemains(s, actor, where, cause, wasActive ? s.Battle?.BattleId : null, !wasActive && houseOf == null, houseOf != null ? SafehouseZone : null);
             var whereName = houseOf != null ? $"{SafehouseName(s, houseOf)}屋内" : LocName(where);
-            Emit(s, GameEventKind.Alert, $"{ActorLabel(actor)}死了（{cause}）" + (moved > 0 ? $"，遗物留在{whereName}。" : "。"));
+            Emit(s, GameEventKind.Alert, inBattle && wasActive ? $"{ActorLabel(actor)}已战死（{cause}）"
+                : $"{ActorLabel(actor)}死了（{cause}）" + (moved > 0 ? $"，遗物留在{whereName}。" : "。"));
+            return moved;
         }
 
         /// <summary>角色在文案里的称呼：主角为“你”，队友为名册名（B8）；没有名字的测试注入角色为“队友&lt;id&gt;”。</summary>
