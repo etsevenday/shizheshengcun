@@ -191,7 +191,7 @@
     /// <summary>中央条淡出 150ms（UI 初值，S14 §11.2）后移除；只是表现，不推进 tick、不拦截操作。</summary>
     private async Task FadeOut(ActionProgressInfo info)
     {
-        await Task.Delay(150);
+        await Task.Delay(G.MotionMs(150));
         if (!ReferenceEquals(_fadeInfo, info)) return;
         _fadeInfo = null;
         await InvokeAsync(StateHasChanged);

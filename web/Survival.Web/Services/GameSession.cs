@@ -56,7 +56,58 @@ public sealed class GameSession
 
     public bool Running { get; private set; }
     private bool _skip;
-    public int SegmentDelayMs { get; set; } = 120;
+    // B31a（逐字稿 §1 Q295、§1.1 Q321）：阅读字体与动画速度是当前浏览器的偏好（survival.pref.readFont / animSpeed），
+    // 不进存档，换档、新游戏、重载沿用；常态与战斗菜单读同一份。无有效偏好时为默认（细像素、标准），不写回。
+    // 本地存储不可用时只在本次会话的内存里保留。速度只改呈现间隔，世界分钟与结算与它无关。
+    private UiPresentationPrefs? _presentation;
+
+    public UiPresentationPrefs Presentation
+    {
+        get
+        {
+            if (_presentation != null) return _presentation;
+            string? font = null, speed = null;
+            try
+            {
+                font = _store.GetPref(UiPresentationPrefs.FontKey);
+                speed = _store.GetPref(UiPresentationPrefs.SpeedKey);
+            }
+            catch { /* 本地存储不可用：从默认开始 */ }
+            return _presentation = UiPresentationPrefs.Parse(font, speed);
+        }
+    }
+
+    /// <summary>世界推进每个 5 游戏分钟段的呈现间隔：快／标准／慢 = 60／120／180 毫秒（Q321，取代 S14 的 40／120／250）。</summary>
+    public int SegmentDelayMs => Presentation.SegmentDelayMs;
+
+    /// <summary>当前敌方逐条展示的间隔：快／标准／慢 = 240／480／720 毫秒（Q321，取代原 max(160, 4×段间隔)）。</summary>
+    public int EnemyStepDelayMs => Presentation.EnemyStepDelayMs;
+
+    /// <summary>按当前动画速度缩放一个界面动效的基准时长（Q321「其他动效取各自基准时长」）。</summary>
+    public int MotionMs(int baseMs) => UiPresentationPrefs.Scale(baseMs, Presentation.Speed);
+
+    public void SetReadingFont(ReadingFont font)
+    {
+        Presentation.Font = font;
+        try { _store.SetPref(UiPresentationPrefs.FontKey, UiPresentationPrefs.FontValue(font)); } catch { /* 只在本次有效 */ }
+        ApplyPresentation();
+        Notify();
+    }
+
+    public void SetAnimationSpeed(AnimationSpeed speed)
+    {
+        Presentation.Speed = speed;
+        try { _store.SetPref(UiPresentationPrefs.SpeedKey, UiPresentationPrefs.SpeedValue(speed)); } catch { /* 只在本次有效 */ }
+        ApplyPresentation();
+        Notify();
+    }
+
+    /// <summary>把当前偏好落到页面（html[data-read-font]、--motion-k）。页面载入时 app.js 已按同一偏好套用一次。</summary>
+    public void ApplyPresentation()
+    {
+        var p = Presentation;
+        try { _store.ApplyPresentation(UiPresentationPrefs.FontValue(p.Font), UiPresentationPrefs.Multiplier(p.Speed)); } catch { /* 页面接口不可用时只影响呈现 */ }
+    }
 
     /// <summary>B22f（Q202 ④，交开发方定）：撤出进度条至少可见约 2 秒（纯显示：只放慢每段之间的动画间隔，不推进或延长游戏时间）。</summary>
     public const int ExtractMinVisibleMs = 2000;
@@ -2597,7 +2648,7 @@ public sealed class GameSession
                 Notify();
                 if (r.Kind is BattleStepKind.None or BattleStepKind.Ended or BattleStepKind.Dialogue) break;
                 if (r.Kind is BattleStepKind.EnemyActed or BattleStepKind.RoundEnded)
-                    await Task.Delay(Math.Max(160, SegmentDelayMs * 4));
+                    await Task.Delay(EnemyStepDelayMs);
             }
         }
         finally

@@ -1,0 +1,27 @@
+@inherits GameComponent
+@using Survival.Core.State
+
+@* B31a（逐字稿 §1 Q295、§1.1 Q321、§2 PXb）：游戏菜单的「阅读字体」与「动画速度」。常态与战斗菜单共用这一块，读写同一份浏览器偏好；
+   只改呈现，不提交、不取消世界行动或战斗指令。 *@
+<div class="pref-group" role="group" aria-label="阅读字体">
+    <div class="eyebrow">阅读字体</div>
+    <div class="btn-row">
+        @foreach (var f in new[] { ReadingFont.Pixel, ReadingFont.Clear })
+        {
+            var v = f;
+            var on = G.Presentation.Font == v;
+            <button type="button" class="secondary @(on ? "on" : "")" aria-pressed="@(on ? "true" : "false")" @onclick="() => G.SetReadingFont(v)">@UiPresentationPrefs.Label(v)</button>
+        }
+    </div>
+</div>
+<div class="pref-group" role="group" aria-label="动画速度">
+    <div class="eyebrow">动画速度</div>
+    <div class="btn-row">
+        @foreach (var sp in new[] { AnimationSpeed.Fast, AnimationSpeed.Standard, AnimationSpeed.Slow })
+        {
+            var v = sp;
+            var on = G.Presentation.Speed == v;
+            <button type="button" class="secondary @(on ? "on" : "")" aria-pressed="@(on ? "true" : "false")" @onclick="() => G.SetAnimationSpeed(v)">@UiPresentationPrefs.Label(v)</button>
+        }
+    </div>
+</div>

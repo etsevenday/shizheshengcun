@@ -11,7 +11,7 @@
   --title-font: var(--font-read);
 }
 body { background: var(--bg); }
-button { transition: background-color .12s ease, border-color .12s ease, box-shadow .12s ease; }
+button { transition: background-color calc(.12s * var(--motion-k)) ease, border-color calc(.12s * var(--motion-k)) ease, box-shadow calc(.12s * var(--motion-k)) ease; }
 button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ink2-light); outline-offset: -3px; }
 button:is(:disabled, .gate-off) { cursor: not-allowed; }
 .wasteland {

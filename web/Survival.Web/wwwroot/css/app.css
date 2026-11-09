@@ -256,7 +256,7 @@ kbd { font-family: inherit; font-size: var(--fs-aux); color: var(--muted); margi
 .card { position: relative; flex: 0 0 auto; background: var(--paper); color: var(--ink); border: 2px solid transparent; border-radius: 5px; display: flex; flex-direction: column; overflow: hidden; text-align: left; padding: 0; }
 .card:hover { border-color: #e9d9ad; }
 .card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px #111911; }
-.card.fresh { animation: fresh 1.6s ease-out 2; }
+.card.fresh { animation: fresh calc(1.6s * var(--motion-k)) ease-out 2; }
 @keyframes fresh { 0% { box-shadow: 0 0 0 0 #e8cf8f; } 50% { box-shadow: 0 0 0 5px #e8cf8f66; } 100% { box-shadow: 0 0 0 0 #e8cf8f00; } }
 .card.dim { opacity: .55; filter: grayscale(.5); }
 .card .ctitle { padding: 8px 9px 6px; font-size: var(--fs-body); font-weight: 600; border-bottom: 1px solid #88856a66; display: flex; justify-content: space-between; gap: 6px; }
@@ -291,7 +291,7 @@ kbd { font-family: inherit; font-size: var(--fs-aux); color: var(--muted); margi
 .item.reserved::after { content: "预留"; position: absolute; left: 6px; bottom: 26px; font-size: var(--fs-aux); background: #3b4a3b; color: #e5e8da; padding: 1px 5px; border-radius: 2px; }
 .item.broken .art { opacity: .5; }
 
-.flame { animation: flicker .42s ease-in-out infinite alternate; transform-origin: 0 14px; }
+.flame { animation: flicker calc(.42s * var(--motion-k)) ease-in-out infinite alternate; transform-origin: 0 14px; }
 @keyframes flicker { from { transform: scale(1, 1); opacity: .95; } to { transform: scale(.9, 1.12); opacity: 1; } }
 
 /* ───── 物品卡旁的拾取/放下条（试玩留言 fb68265e，按策划要求出现在卡片下方） ───── */
@@ -357,7 +357,7 @@ div.card { cursor: pointer; }
 .batch + .batch { margin-top: 5px; }
 
 .progress { height: 10px; background: #151c17; border-radius: 8px; overflow: hidden; }
-.progress i { display: block; height: 100%; background: var(--accent); transition: width .1s linear; }
+.progress i { display: block; height: 100%; background: var(--accent); transition: width calc(.1s * var(--motion-k)) linear; }
 .status-chip { display: inline-block; font-size: var(--fs-aux); padding: 2px 8px; border-radius: 10px; background: #344833; color: #e4e6d9; }
 .status-chip.paused { background: #6b5022; }
 .status-chip.sub { background: #2f4a55; }
@@ -508,8 +508,8 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .map-card:hover { border-color: #8a9a7e; }
 .map-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px #111911, 0 2px 8px #0005; }
 .mc-art, .mc-tint, .mc-over { position: absolute; inset: 0; width: 100%; height: 100%; }
-.mc-art { background-size: cover; background-position: center 60%; background-repeat: no-repeat; transition: filter 1.2s linear; }
-.mc-tint { mix-blend-mode: multiply; pointer-events: none; transition: background 1.2s linear; }
+.mc-art { background-size: cover; background-position: center 60%; background-repeat: no-repeat; transition: filter calc(1.2s * var(--motion-k)) linear; }
+.mc-tint { mix-blend-mode: multiply; pointer-events: none; transition: background calc(1.2s * var(--motion-k)) linear; }
 .mc-over { pointer-events: none; }
 .mc-top { position: absolute; left: 8px; right: 8px; top: 8px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; pointer-events: none; }
 .mc-chip { display: inline-flex; align-items: baseline; gap: 8px; padding: 3px 9px; background: #0e1a14c9; color: var(--text); border-radius: 4px; font-size: var(--fs-aux); line-height: 1.5; white-space: nowrap; }
@@ -527,7 +527,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .ocard { position: relative; flex: 0 0 auto; width: var(--card-w); min-height: 0; background: var(--paper); color: var(--ink); border: 2px solid transparent; border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px #0005; }
 .ocard:hover { border-color: #e9d9ad; }
 .ocard.selected { border-color: var(--accent); box-shadow: 0 0 0 2px #111911, 0 2px 8px #0005; }
-.ocard.fresh { animation: fresh 1.6s ease-out 2; }
+.ocard.fresh { animation: fresh calc(1.6s * var(--motion-k)) ease-out 2; }
 .ocard.dim { opacity: .6; filter: grayscale(.45); }
 .ocard.dashed { background: #d1c5a8cc; border: 2px dashed #7d7656; }
 .ocard.dashed .oc-art { opacity: .55; filter: grayscale(.6); }
@@ -1039,7 +1039,7 @@ kbd { font-size: var(--fs-aux); }
 :root { --dlg-side: 150px; }
 .dlg-layer { position: absolute; inset: 0; z-index: 40; display: grid; grid-template-columns: var(--dlg-side) minmax(0, 1fr) var(--dlg-side); gap: 12px;
   padding: 10px 12px; background: #141c17; background-image: linear-gradient(180deg, #121a15, #18211b); border: 1px solid var(--accent); border-radius: 6px; box-shadow: 0 8px 28px #000a; }
-.dlg-side { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; min-height: 0; transition: opacity .15s, filter .15s; }
+.dlg-side { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; min-height: 0; transition: opacity calc(.15s * var(--motion-k)), filter calc(.15s * var(--motion-k)); }
 .dlg-side.idle { opacity: .5; filter: grayscale(.6) brightness(.85); }
 .dlg-portrait { width: 100%; min-height: 0; max-height: calc(100% - 50px); object-fit: contain; border-radius: 14px; border: 3px solid transparent; user-select: none; -webkit-user-drag: none; }
 .dlg-side.speaking .dlg-portrait { border-color: var(--accent); box-shadow: 0 0 0 3px #d6b77944, 0 0 18px #d6b77966; }
@@ -1100,12 +1100,12 @@ kbd { font-size: var(--fs-aux); }
 
 /* ───────────── 中央时间推进条与等待烹饪（S14 §11；开发计划 M63） ───────────── */
 .cprog { width: min(600px, 94%); display: flex; flex-direction: column; gap: 6px; padding: 10px 14px; background: #141d17; border: 1px solid var(--accent);
-  border-radius: 8px; box-shadow: 0 10px 30px #000b; animation: cp-in .15s ease-out; }
+  border-radius: 8px; box-shadow: 0 10px 30px #000b; animation: cp-in calc(.15s * var(--motion-k)) ease-out; }
 .cprog.float { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; }
 /* 对话等待时中央条并入对话层底栏（DialogueLayer .dlg-action），不在中部另叠一层 */
 .cprog.inflow { margin: 0 auto; }
 .cprog.paused { border-color: var(--warn); }
-.cprog.fading { animation: cp-out .15s ease-in forwards; pointer-events: none; }
+.cprog.fading { animation: cp-out calc(.15s * var(--motion-k)) ease-in forwards; pointer-events: none; }
 @keyframes cp-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes cp-out { from { opacity: 1; } to { opacity: 0; } }
 .cp-head { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
@@ -1115,7 +1115,7 @@ kbd { font-size: var(--fs-aux); }
 .cp-name { flex: 1 1 auto; min-width: 0; font-size: var(--fs-body); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cp-remain { flex: 0 0 auto; font-size: var(--fs-body); font-variant-numeric: tabular-nums; }
 .cp-bar { height: 10px; background: #0f1611; border-radius: 6px; overflow: hidden; }
-.cp-bar i { display: block; height: 100%; background: var(--accent); transition: width .12s linear; }
+.cp-bar i { display: block; height: 100%; background: var(--accent); transition: width calc(.12s * var(--motion-k)) linear; }
 .cprog.paused .cp-bar i { background: var(--warn); }
 .cp-reason { font-size: var(--fs-body); color: var(--warn); line-height: 1.5; }
 .cp-note { font-size: var(--fs-aux); line-height: 1.5; }
@@ -1173,7 +1173,7 @@ kbd { font-size: var(--fs-aux); }
    层级：对话层 40 < 中央推进条 45 < 操作浮窗 50 < 菜单/数量框；浮窗只在空闲时出现，不盖住推进条的退出。 */
 .apop { position: fixed; left: 0; top: 0; visibility: hidden; z-index: 50; width: 300px; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px);
   display: flex; flex-direction: column; gap: 6px; padding: 8px 10px 10px; background: #141d17; color: var(--text); border: 1px solid var(--accent);
-  border-radius: 8px; box-shadow: 0 10px 28px #000c; overflow: auto; cursor: default; animation: cp-in .12s ease-out; }
+  border-radius: 8px; box-shadow: 0 10px 28px #000c; overflow: auto; cursor: default; animation: cp-in calc(.12s * var(--motion-k)) ease-out; }
 .apop-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .apop-art { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 5px; background: var(--paper); display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .apop-art svg { width: 38px; height: 38px; }
@@ -1360,7 +1360,7 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .party-btns { gap: 4px; }
 .remains-card { border: 1px solid #7d4f45; border-radius: 3px; padding: 4px 6px; display: flex; flex-direction: column; gap: 3px; }
 /* B22 试玩修复 M408：回收箱卡“取出…”跳到人物页时高亮该块；封存面板不可用按钮明显变灰 */
-.remains-card.flash-focus { animation: remains-flash 2s ease-out; }
+.remains-card.flash-focus { animation: remains-flash calc(2s * var(--motion-k)) ease-out; }
 @keyframes remains-flash { 0%, 40% { box-shadow: 0 0 0 3px var(--accent); background: rgba(212, 168, 74, .18); } 100% { box-shadow: none; background: transparent; } }
 .eq-btn.btn-off, .eq-btn.btn-off:is(:disabled, .gate-off) { opacity: .38; filter: grayscale(1); cursor: not-allowed; }
 .seal-why { padding-left: 4px; }
@@ -1502,9 +1502,9 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 .bfs-hint .tc-hint-btns { display: flex; gap: 12px; margin-top: 1px; }
 .bfs-hint .tc-link { background: none; border: none; padding: 0; min-height: 0; color: var(--accent); font-size: var(--fs-aux); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 /* 轻量点亮（A10-TUTOR §3）：细金框 + 柔和亮边，不加遮罩、不放大点击区，减少动态模式用静态框 */
-.ocard.tut-lit { outline: 2px solid #e1b665; outline-offset: 1px; box-shadow: 0 0 10px #e1b66588; animation: tutLit 2.4s ease-in-out 2; }
+.ocard.tut-lit { outline: 2px solid #e1b665; outline-offset: 1px; box-shadow: 0 0 10px #e1b66588; animation: tutLit calc(2.4s * var(--motion-k)) ease-in-out 2; }
 @keyframes tutLit { 50% { box-shadow: 0 0 2px #e1b66533; } }
-.map-card.tut-lit { outline: 2px solid #e1b665; outline-offset: -2px; box-shadow: inset 0 0 12px #e1b66566; animation: tutLit 2.4s ease-in-out 2; }
+.map-card.tut-lit { outline: 2px solid #e1b665; outline-offset: -2px; box-shadow: inset 0 0 12px #e1b66566; animation: tutLit calc(2.4s * var(--motion-k)) ease-in-out 2; }
 @media (prefers-reduced-motion: reduce) { .ocard.tut-lit, .map-card.tut-lit { animation: none; } }
 /* 人物卡/可查看卡沿用资源卡的设施行布局（res-card），高度跟设施行走（试玩修复 M269） */
 /* B39 Q312：「交谈」旁的接取预告（只读；窄时在按钮下换行，不替换卡状态行） */
@@ -1624,3 +1624,19 @@ h2 .qtag { margin-left: 6px; vertical-align: middle; }
 
 /* B23：城市事项里完全已知的抄录资料包（禁用选项）明显变灰 */
 .city-panel button.btn-off, .city-panel button.btn-off:is(:disabled, .gate-off) { opacity: .38; filter: grayscale(1); cursor: not-allowed; }
+
+/* B31a（Q295、Q321、PXb）：菜单「阅读字体」「动画速度」两组偏好；当前档用金色文字与选中框，并有 aria-pressed */
+.pref-group .eyebrow { margin-bottom: 6px; }
+.pref-group .secondary.on { border-color: var(--accent); color: var(--accent); }
+.wasteland .pref-group .secondary.on { border-image-source: var(--ink2-frame-selected); background-color: var(--ink2-tile-top); }
+
+/* B31a（Q295「跟随系统的减少动态效果」）：系统要求减少动态效果时，过渡与动画直接落到结果状态（静态反馈代替位移、闪烁），
+   数值、文字、焦点与真实进度照常显示；世界推进与敌方展示的间隔不受影响（不是位移动效）。 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

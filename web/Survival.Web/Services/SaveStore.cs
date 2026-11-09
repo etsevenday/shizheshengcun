@@ -54,4 +54,7 @@ public sealed class SaveStore
     public string? GetPref(string key) => _js.Invoke<string?>("survival.prefGet", key);
 
     public void SetPref(string key, string value) => _js.InvokeVoid("survival.prefSet", key, value);
+
+    /// <summary>B31a：把阅读字体（pixel/clear）与动画倍率落到页面。</summary>
+    public void ApplyPresentation(string font, double motionK) => _js.InvokeVoid("survival.applyPresentation", font, motionK);
 }

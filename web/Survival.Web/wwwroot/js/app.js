@@ -94,7 +94,8 @@ window.survival = {
     el.classList.remove('flash-focus');
     void el.offsetWidth;
     el.classList.add('flash-focus');
-    setTimeout(function () { el.classList.remove('flash-focus'); }, 2200);
+    var k = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--motion-k')) || 1; // B31a：随动画速度
+    setTimeout(function () { el.classList.remove('flash-focus'); }, 2200 * k);
     return true;
   },
   // 聚焦并选中输入框内容，直接打字即替换
