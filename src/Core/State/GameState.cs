@@ -50,8 +50,9 @@ namespace Survival.Core.State
         /// "41" 起主城鸟瞰按城一次的展示标记与待自动打开（CityState.OverviewShown/OverviewPending，开发计划 v0.9 B24）。
         /// "42" 起代班接续说明按身份一次的已示标记（CityState.SubstituteIntroShown）与服务结束被挡住后的待补播（CityState.SubstituteIntroDeferred，策划答复 Q235、Q243，开发计划 v0.9 B26a）。
         /// "43" 起蓝图来源改写：旧档已登记的五张蓝图写成永久知识（knowledge:id），旧在办登记资格存 CityState.LegacyRegistrationPending（策划答复 Q246、Q247，开发计划 v0.9 B27）。
+        /// "44" 起随机资源点掉落按点持久化：资源点状态带可空的本局抽定记录 ResourceState.LootDraw（策划答复 Q271，开发计划 v0.9 B27c）。
         /// </summary>
-        public const string CurrentSchema = "43";
+        public const string CurrentSchema = "44";
 
         /// <summary>主角的 actorId（R08 §5：旧档主角创建 actorId 一次）。</summary>
         public const string PlayerId = "p0";
@@ -741,8 +742,38 @@ namespace Survival.Core.State
         /// 领取完成或地牢换代清零。其余资源点恒为 0。
         /// </summary>
         public int ClaimMinutesDone { get; set; }
+        /// <summary>
+        /// Q271 选 B（开发计划 v0.9 B27c，存档 44）：带互斥掉落或独立稀有掉落的资源点本局首次合法开工时抽定的结果。null（缺键）= 未抽定；
+        /// 有记录 = 已抽定（独立稀有未命中也记）。之后同局同点开工复制到行动快照、不再推进掉落随机；取消、完成、读档都保留，不刷新。
+        /// </summary>
+        public GatherLootDraw? LootDraw { get; set; }
 
-        public ResourceState Clone() => (ResourceState)MemberwiseClone();
+        public ResourceState Clone()
+        {
+            var c = (ResourceState)MemberwiseClone();
+            c.LootDraw = LootDraw?.Clone();
+            return c;
+        }
+    }
+
+    /// <summary>
+    /// 资源点 Gather 的掉落抽定记录（Q271，q269-q273-display-loot-adjudications.json loot.record）：互斥物品 ID 与数量（无互斥表时为空），
+    /// 独立稀有是否命中，命中时的物品 ID 与数量。只在开工（或迁移从原在办快照补写）时写，界面不读。
+    /// </summary>
+    public sealed class GatherLootDraw
+    {
+        /// <summary>互斥抽取的物品；资源点没有互斥表时为 null。</summary>
+        public string? ExclusiveItemId { get; set; }
+        public int ExclusiveCount { get; set; }
+        /// <summary>互斥抽取的原掷点 [0,100)（复制回行动快照的 LootRoll；迁移补写时取原快照）。</summary>
+        public int ExclusiveRoll { get; set; }
+        /// <summary>独立稀有是否命中（false 也是已抽定）；资源点没有独立稀有时恒为 false。</summary>
+        public bool RareHit { get; set; }
+        /// <summary>命中时的稀有物品与数量；未命中为 null/0。</summary>
+        public string? RareItemId { get; set; }
+        public int RareCount { get; set; }
+
+        public GatherLootDraw Clone() => (GatherLootDraw)MemberwiseClone();
     }
 
     public sealed class ItemInstance

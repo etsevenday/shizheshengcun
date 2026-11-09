@@ -109,7 +109,7 @@ public class B27KnowledgeSourceTests : TestBase
         var s = Registered();
         var ledger = Ledger(s);
         var m = Upgrade(s, schema);
-        Assert.That(m.SchemaVersion, Is.EqualTo("43"));
+        Assert.That(m.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "B27c 起链尾为 44");
         Assert.That(m.Progress.Flags, Is.SupersetOf(Permanent));
         Assert.That(KnowsAll(m), Is.True);
         Assert.That(m.City.LegacyRegistrationPending, Is.False, "已登记不是在办");
@@ -159,7 +159,7 @@ public class B27KnowledgeSourceTests : TestBase
     public void KNOW_Q246_02_Schema43_RegisteredFact_NoBackfill()
     {
         var s = Registered();
-        Assert.That(s.SchemaVersion, Is.EqualTo("43"));
+        Assert.That(s.SchemaVersion, Is.EqualTo(GameState.CurrentSchema), "43 起的当前档（B27c 起 44）");
         var flags = s.Progress.Flags.ToHashSet();
         var r = Reload(Reload(s));
         Assert.That(r.Progress.Flags, Is.EquivalentTo(flags));

@@ -67,6 +67,7 @@ namespace Survival.Core.Save
         public const string Schema40 = "40";
         public const string Schema41 = "41";
         public const string Schema42 = "42";
+        public const string Schema43 = "43";
         /// <summary>schema 11 以前（B6 之前）的单场敌人上限 3：迁移进行中的旧战斗时作为它锁存的容量 C（Q62：旧战斗保持到结束）。</summary>
         public const int LegacyBattleCapacity = 3;
 
@@ -124,6 +125,7 @@ namespace Survival.Core.Save
             if (s.SchemaVersion == Schema40) From40To41(s, config, notes);
             if (s.SchemaVersion == Schema41) From41To42(s, config, notes);
             if (s.SchemaVersion == Schema42) From42To43(s, config);
+            if (s.SchemaVersion == Schema43) From43To44(s, config);
             RejudgeGates(s, config);
             return notes;
         }
@@ -1292,6 +1294,43 @@ namespace Survival.Core.Save
             if (f.Contains(reg.RegisteredFact))
                 foreach (var id in reg.LegacyKnowledge) f.Add("knowledge:" + id);
             else if (f.Contains(reg.AuthorizedFact)) s.City.LegacyRegistrationPending = true;
+            s.SchemaVersion = Schema43;
+        }
+
+        // ───────────────────────── 43 → 44 ─────────────────────────
+
+        /// <summary>
+        /// 随机资源点掉落按点持久化（开发计划 v0.9 B27c，Q271 选 B；q269-q273-display-loot-adjudications.json loot.legacy）：
+        /// 旧档没有记录默认未抽定。只有仍在办、目标是带互斥/独立稀有表的资源点的 Gather，从它已保存的快照补写该点记录——互斥读原
+        /// LootPlanned/LootItemId/LootCount（LootRoll 一并带上），独立稀有读原 RareHit（false 也是已抽定），命中项按该资源点的原奖励定义；
+        /// 原行动、时间和预留一点不动。已退出无快照的点不写（下次合法开工再抽一次），已领耗尽的点保持耗尽，迁移不发奖励。
+        /// 已有记录不覆盖（幂等）。互斥表的快照缺损（LootPlanned 为假或缺物品/数量）不替它抽、不写记录，按原完成结算处理。不抽随机，静默不写日志。
+        /// </summary>
+        private static void From43To44(GameState s, GameConfig config)
+        {
+            foreach (var a in new[] { s.Main, s.Sub })
+            {
+                if (a == null || a.Type != ActionType.Gather) continue;
+                var res = config.Resources.FirstOrDefault(r => r.NodeId == a.TargetId);
+                if (res == null || !s.Resources.TryGetValue(res.NodeId, out var rs) || rs.LootDraw != null) continue;
+                var hasExclusive = res.ExclusiveLoot != null && res.ExclusiveLoot.Count > 0;
+                if (!hasExclusive && res.IndependentRare == null) continue;
+                if (hasExclusive && (!a.LootPlanned || a.LootItemId == null || a.LootCount <= 0)) continue;
+                var d = new GatherLootDraw();
+                if (hasExclusive)
+                {
+                    d.ExclusiveItemId = a.LootItemId;
+                    d.ExclusiveCount = a.LootCount;
+                    d.ExclusiveRoll = a.LootRoll;
+                }
+                if (res.IndependentRare != null && a.RareHit)
+                {
+                    d.RareHit = true;
+                    d.RareItemId = res.IndependentRare.ItemId;
+                    d.RareCount = res.IndependentRare.Count;
+                }
+                rs.LootDraw = d;
+            }
             s.SchemaVersion = GameState.CurrentSchema;
         }
 

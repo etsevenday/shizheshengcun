@@ -916,19 +916,9 @@ namespace Survival.Core.Engine
                     }
                     if (res.Hazard != null && res.Hazard.Probability > 0)
                         a.HazardHit = s.Rng.NextDouble() < HazardChance(s, res);
-                    // 箱子的随机部分开始时锁定，完成才公布，读档不重抽（v0.6 §11）
-                    if (res.IndependentRare != null) a.RareHit = s.Rng.NextDouble() < res.IndependentRare.Chance;
-                    if (res.ExclusiveLoot != null && res.ExclusiveLoot.Count > 0)
-                    {
-                        var roll = (int)Math.Floor(s.Rng.NextDouble() * 100);
-                        var acc = 0;
-                        var pick = res.ExclusiveLoot[res.ExclusiveLoot.Count - 1];
-                        foreach (var x in res.ExclusiveLoot) { acc += x.Weight; if (roll < acc) { pick = x; break; } }
-                        a.LootPlanned = true;
-                        a.LootRoll = roll;
-                        a.LootItemId = pick.ItemId;
-                        a.LootCount = pick.Count;
-                    }
+                    // 箱子的随机部分开始时锁定，完成才公布，读档不重抽（v0.6 §11）；
+                    // Q271 选 B：本局首次开工抽定并记在资源点上，之后同点开工复制原结果、不再推进掉落随机
+                    PlanGatherLoot(s, a, res, rs);
                     break;
                 }
                 case ActionType.Craft:
@@ -1081,6 +1071,47 @@ namespace Survival.Core.Engine
             if (apTxn != null) AppraisalServiceEnd(s, apTxn.NpcId);   // B22d Q177：鉴定/换物开工后取消，播一次陶岑原结束句
             UpdateFlags(s);
             return ActionResult.Success(a.ActionId);
+        }
+
+        /// <summary>
+        /// 资源点 Gather 的互斥掉落与独立稀有（Q271 选 B，q269-q273-display-loot-adjudications.json loot.lifecycle）：资源点已有抽定记录时
+        /// 原样复制到这次行动快照，不碰随机序列；没有记录时沿原概率抽（先独立稀有、后互斥，同原顺序），写进快照并记到资源点，
+        /// 和快照、库存预留、随机状态同在这次开工提交。取消、完成、读档都不清记录。没有这两种表的资源点什么都不做。
+        /// </summary>
+        private void PlanGatherLoot(GameState s, ActionState a, ResourceConfig res, ResourceState rs)
+        {
+            var hasExclusive = res.ExclusiveLoot != null && res.ExclusiveLoot.Count > 0;
+            if (!hasExclusive && res.IndependentRare == null) return;
+            var d = rs.LootDraw;
+            if (d == null)
+            {
+                d = new GatherLootDraw();
+                if (res.IndependentRare != null && s.Rng.NextDouble() < res.IndependentRare.Chance)
+                {
+                    d.RareHit = true;
+                    d.RareItemId = res.IndependentRare.ItemId;
+                    d.RareCount = res.IndependentRare.Count;
+                }
+                if (hasExclusive)
+                {
+                    var roll = (int)Math.Floor(s.Rng.NextDouble() * 100);
+                    var acc = 0;
+                    var pick = res.ExclusiveLoot![res.ExclusiveLoot.Count - 1];
+                    foreach (var x in res.ExclusiveLoot) { acc += x.Weight; if (roll < acc) { pick = x; break; } }
+                    d.ExclusiveRoll = roll;
+                    d.ExclusiveItemId = pick.ItemId;
+                    d.ExclusiveCount = pick.Count;
+                }
+                rs.LootDraw = d;
+            }
+            a.RareHit = d.RareHit;
+            if (hasExclusive && d.ExclusiveItemId != null)
+            {
+                a.LootPlanned = true;
+                a.LootRoll = d.ExclusiveRoll;
+                a.LootItemId = d.ExclusiveItemId;
+                a.LootCount = d.ExclusiveCount;
+            }
         }
 
         /// <summary>暂停中的主行动继续推进。</summary>

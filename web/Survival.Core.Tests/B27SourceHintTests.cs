@@ -301,7 +301,7 @@ public class B27SourceHintTests : TestBase
             E.ItemSourceHint(E.ItemSources(s, id), id);
         }
         Assert.That(SaveSerializer.Serialize(s), Is.EqualTo(before));
-        Assert.That(GameState.CurrentSchema, Is.EqualTo("43"), "Q251 不升存档");
+        Assert.That(GameState.CurrentSchema, Is.EqualTo("44"), "Q251 不升存档（B27c Q271 起 44）");
         Assert.That(SaveSerializer.Deserialize(before, Cfg).Log.Select(l => l.Text), Is.EqualTo(s.Log.Select(l => l.Text)));
         var kept = new Dictionary<string, string> { ["water"] = "water", ["food"] = "food", ["medical"] = "medicine", ["ammo"] = "ammo", ["weapon"] = "weapon" };
         foreach (var i in Cfg.Items.Where(i => kept.ContainsKey(i.Kind))) Assert.That(HintFor(i.Id), Is.EqualTo(Hint(kept[i.Kind])), i.Id);
