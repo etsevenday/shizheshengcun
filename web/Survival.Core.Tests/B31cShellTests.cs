@@ -118,6 +118,7 @@ public class B31cShellTests : TestBase
         drain = drain.Substring(0, drain.IndexOf("E.DrainEvents(S)"));
         Assert.That(drain, Does.Contain("SyncCommitMark();"), "先清旧提示再放本次结果");
         Assert.That(g, Does.Not.Contain("if (sel.Kind != SelectionKind.None) Toast = null;"));
+        Assert.That(g, Does.Contain("requestId ??= Guid.NewGuid().ToString(\"N\");"), "操作条整批拾放不带请求号时补一个，成功也算有效提交");
         var screen = Web("Components", "GameScreen.razor");
         Assert.That(screen, Does.Contain("var bad = ResultToast.IsCritical(G.Toast);"));
         Assert.That(screen, Does.Contain("@(G.ToastLeaving ? \"leaving\" : \"\")"));

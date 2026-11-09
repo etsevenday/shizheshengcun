@@ -1493,6 +1493,8 @@ public sealed class GameSession
     public ActionResult TransferBatch(string owner, string itemId, int? expiresAt, int count, bool toCarried, string? requestId = null, string? batchKey = null)
     {
         if (GameEngine.SeenRequest(S, requestId)) return ActionResult.Success();
+        // B31c（Q330）：操作条按钮不带请求号时补一个，成功的整批转移也记进请求号账本（算一次有效提交，清掉关键结果提示）
+        requestId ??= Guid.NewGuid().ToString("N");
         if (CityBrowsing) return CityReadOnlyFail();
         var left = count;
         ActionResult last = ActionResult.Success();
