@@ -1,0 +1,129 @@
+{
+  "profiles": [
+    {
+      "id": "melee",
+      "mode": "battle",
+      "duration": 1200
+    },
+    {
+      "id": "ranged",
+      "mode": "battle",
+      "duration": 1200
+    },
+    {
+      "id": "miss",
+      "mode": "battle",
+      "duration": 1200
+    },
+    {
+      "id": "heal",
+      "mode": "battle",
+      "duration": 1200
+    },
+    {
+      "id": "area",
+      "mode": "battle",
+      "duration": 1200
+    },
+    {
+      "id": "guard",
+      "mode": "battle",
+      "duration": 1200
+    },
+    {
+      "id": "defeat",
+      "mode": "battle",
+      "duration": 1200
+    },
+    {
+      "id": "move",
+      "mode": "action",
+      "duration": 1750
+    },
+    {
+      "id": "gather",
+      "mode": "action",
+      "duration": 1750
+    },
+    {
+      "id": "craft",
+      "mode": "action",
+      "duration": 1750
+    },
+    {
+      "id": "rest",
+      "mode": "action",
+      "duration": 1750
+    },
+    {
+      "id": "feed",
+      "mode": "action",
+      "duration": 1300
+    },
+    {
+      "id": "swap",
+      "mode": "action",
+      "duration": 1300
+    },
+    {
+      "id": "interrupt",
+      "mode": "action",
+      "duration": 1750
+    },
+    {
+      "id": "reject",
+      "mode": "action",
+      "duration": 1300
+    },
+    {
+      "id": "popup",
+      "mode": "panel",
+      "duration": 1500
+    },
+    {
+      "id": "drawer",
+      "mode": "panel",
+      "duration": 1500
+    },
+    {
+      "id": "toast",
+      "mode": "panel",
+      "duration": 1500
+    },
+    {
+      "id": "dialogue",
+      "mode": "dialogue",
+      "duration": 2100
+    },
+    {
+      "id": "duty",
+      "mode": "dialogue",
+      "duration": 2100
+    },
+    {
+      "id": "hub",
+      "mode": "map",
+      "duration": 450
+    },
+    {
+      "id": "church",
+      "mode": "map",
+      "duration": 450
+    },
+    {
+      "id": "lab",
+      "mode": "map",
+      "duration": 450
+    }
+  ],
+  "cityHoverAndKeyboard": true,
+  "nonFactionBuildingTargets": 0,
+  "reducedMotion": true,
+  "previewWidths": [
+    1280,
+    1366,
+    1600,
+    1920
+  ],
+  "errors": []
+}

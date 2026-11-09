@@ -1,0 +1,3695 @@
+{
+  "baseline": "02ea6a299a3559b110ca66db58ad82e8ec2197ec",
+  "artBaseline": "fd7518c24b3a99a8262c60c6c5399db935a842fb",
+  "designSize": [
+    1600,
+    900
+  ],
+  "families": {
+    "P01": "主桌与对象",
+    "P02": "设施与加工",
+    "P03": "整备与交接",
+    "P04": "同行食饮",
+    "P05": "战斗与只读面板",
+    "P06": "制作与来源",
+    "P07": "地图与城市服务",
+    "P08": "队伍与记录",
+    "P09": "对白与历史",
+    "PX": "标题、菜单与异常"
+  },
+  "layers": [
+    "01 场景与光影",
+    "02 底板与分区",
+    "03 主体美术与图标",
+    "04 边框与装饰",
+    "05 操作控件",
+    "06 选中与状态反馈",
+    "07 文字与数值"
+  ],
+  "sourceReferences": {
+    "I1": {
+      "name": "01-食物与饮水",
+      "use": "食饮卡与锅内内容",
+      "file": "素材/21张原始参考/01-item/01-食物与饮水.png",
+      "pages": [
+        "P01a",
+        "P01d",
+        "P02a",
+        "P02b",
+        "P02c",
+        "P03c",
+        "P04a",
+        "P04b",
+        "P04c",
+        "P05c",
+        "P07h",
+        "PXe",
+        "PXg",
+        "PXh"
+      ]
+    },
+    "I2": {
+      "name": "02-医疗与求生工具",
+      "use": "医疗物资与作业工具",
+      "file": "素材/21张原始参考/01-item/02-医疗与求生工具.png",
+      "pages": [
+        "P01a",
+        "P01b",
+        "P01d",
+        "P01f",
+        "P02e",
+        "P05c",
+        "P05d",
+        "P06a",
+        "P06c",
+        "P07g",
+        "P08e",
+        "P08g",
+        "PXe"
+      ]
+    },
+    "I3": {
+      "name": "03-材料与设施卡",
+      "use": "材料、火堆、遮蔽棚与集水器",
+      "file": "素材/21张原始参考/01-item/03-材料与设施卡.png",
+      "pages": [
+        "P01a",
+        "P01b",
+        "P01d",
+        "P01e",
+        "P02a",
+        "P02b",
+        "P02c",
+        "P02d",
+        "P02e",
+        "P02f",
+        "P03c",
+        "P06a",
+        "P06b",
+        "P06d",
+        "P08c",
+        "P08d",
+        "P08f",
+        "P08h",
+        "PXg",
+        "PXh",
+        "PXi"
+      ]
+    },
+    "U1": {
+      "name": "01-锈铁框架",
+      "use": "常态与装备边框方向，取顶部锈铁装饰",
+      "file": "素材/21张原始参考/02-UI底图/01-锈铁框架.png",
+      "pages": [
+        "P01a",
+        "P01b",
+        "P02a",
+        "P02b",
+        "P02d",
+        "P02e",
+        "P02f",
+        "P03a",
+        "P03b",
+        "P03c",
+        "P05g",
+        "P07a",
+        "P07b",
+        "P07c",
+        "P07d",
+        "P08a",
+        "P08h",
+        "PXa",
+        "PXb",
+        "PXe",
+        "PXh",
+        "PXk",
+        "PXm",
+        "PXn",
+        "PXo"
+      ]
+    },
+    "U2": {
+      "name": "02-旧布与档案纸",
+      "use": "制作与档案阅读方向，取纸条装饰",
+      "file": "素材/21张原始参考/02-UI底图/02-旧布与档案纸.png",
+      "pages": [
+        "P02c",
+        "P04a",
+        "P04b",
+        "P06a",
+        "P06b",
+        "P06c",
+        "P06d",
+        "P07e",
+        "P07f",
+        "P07g",
+        "P07h",
+        "P08b",
+        "P08c",
+        "P08d",
+        "P08e",
+        "P08f",
+        "P08g",
+        "P09a",
+        "P09c",
+        "P09d",
+        "PXf",
+        "PXo"
+      ]
+    },
+    "U3": {
+      "name": "03-暗红刻痕与冷钢",
+      "use": "战斗与危险方向，取冷钢警示装饰",
+      "file": "素材/21张原始参考/02-UI底图/03-暗红刻痕与冷钢.png",
+      "pages": [
+        "P01c",
+        "P01f",
+        "P03d",
+        "P04c",
+        "P05a",
+        "P05b",
+        "P05c",
+        "P05d",
+        "P05e",
+        "P05g",
+        "P05h",
+        "P07i",
+        "P09b",
+        "PXc",
+        "PXd",
+        "PXg",
+        "PXi",
+        "PXj",
+        "PXk",
+        "PXl",
+        "PXn"
+      ]
+    },
+    "L1": {
+      "name": "01-营地求生主界面",
+      "use": "常态左右栏与四轨构图",
+      "file": "素材/21张原始参考/03-UI布局/01-营地求生主界面.png",
+      "pages": [
+        "P01a",
+        "P01b",
+        "P01c",
+        "P01d",
+        "P01e",
+        "P01f",
+        "P02a",
+        "P02b",
+        "P02c",
+        "P02d",
+        "P02e",
+        "P02f",
+        "P04a",
+        "P04b",
+        "P04c",
+        "P08c",
+        "P08d",
+        "P08e",
+        "P08f",
+        "P08g",
+        "P09a",
+        "PXb",
+        "PXd",
+        "PXe",
+        "PXg",
+        "PXh",
+        "PXk",
+        "PXn",
+        "PXo"
+      ]
+    },
+    "L2": {
+      "name": "02-四对四战斗界面",
+      "use": "八站位与下方操作台构图",
+      "file": "素材/21张原始参考/03-UI布局/02-四对四战斗界面.png",
+      "pages": [
+        "P05a",
+        "P05b",
+        "P05c",
+        "P05d",
+        "P05e",
+        "P05f",
+        "P05g",
+        "P05h",
+        "P09b"
+      ]
+    },
+    "L3": {
+      "name": "03-整备与人物界面",
+      "use": "七槽、角色、候选比较构图",
+      "file": "素材/21张原始参考/03-UI布局/03-整备与人物界面.png",
+      "pages": [
+        "P03a",
+        "P03b",
+        "P03c",
+        "P03d",
+        "P08a",
+        "P08b"
+      ]
+    },
+    "C1": {
+      "name": "01-幸存者全身造型",
+      "use": "生存者与同行站位造型",
+      "file": "素材/21张原始参考/04-人物画风/01-幸存者全身造型.png",
+      "pages": [
+        "P03a",
+        "P05a",
+        "P05e",
+        "P05f",
+        "P07f",
+        "P08a",
+        "P08b",
+        "P08h",
+        "PXa"
+      ]
+    },
+    "C2": {
+      "name": "02-三方联系人造型",
+      "use": "三城岗位角色方向",
+      "file": "素材/21张原始参考/04-人物画风/02-三方联系人造型.png",
+      "pages": [
+        "P01e",
+        "P07b",
+        "P07c",
+        "P07d",
+        "P07e",
+        "P07f",
+        "P07g",
+        "P09c",
+        "P09d"
+      ]
+    },
+    "C3": {
+      "name": "03-头像与情绪表现",
+      "use": "头像、人物栏与对白表情",
+      "file": "素材/21张原始参考/04-人物画风/03-头像与情绪表现.png",
+      "pages": [
+        "P01a",
+        "P01f",
+        "P03a",
+        "P03c",
+        "P04a",
+        "P04b",
+        "P04c",
+        "P07e",
+        "P07f",
+        "P08a",
+        "P08b",
+        "P08c",
+        "P08f",
+        "P08h",
+        "P09a",
+        "P09b",
+        "P09c",
+        "P09d",
+        "PXc",
+        "PXf",
+        "PXl"
+      ]
+    },
+    "M1": {
+      "name": "01-幸存者营区",
+      "use": "营区鸟瞰与菜单背景",
+      "file": "素材/21张原始参考/05-势力鸟瞰/01-幸存者营区.png",
+      "pages": [
+        "P01a",
+        "P01e",
+        "P02d",
+        "P06b",
+        "P07a",
+        "P07b",
+        "P07e",
+        "P07f",
+        "P07g",
+        "P07h",
+        "P09a",
+        "P09c",
+        "P09d",
+        "PXa",
+        "PXb",
+        "PXc",
+        "PXf",
+        "PXl",
+        "PXm"
+      ]
+    },
+    "M2": {
+      "name": "02-教会圣所地区",
+      "use": "教会鸟瞰",
+      "file": "素材/21张原始参考/05-势力鸟瞰/02-教会圣所地区.png",
+      "pages": [
+        "P07a",
+        "P07c",
+        "P07e",
+        "P07i",
+        "PXi",
+        "PXj"
+      ]
+    },
+    "M3": {
+      "name": "03-科学院封存地区",
+      "use": "科学院鸟瞰",
+      "file": "素材/21张原始参考/05-势力鸟瞰/03-科学院封存地区.png",
+      "pages": [
+        "P07a",
+        "P07d",
+        "P07e"
+      ]
+    },
+    "W1": {
+      "name": "01-近战武器",
+      "use": "近战装备、技能与制作图形参考",
+      "file": "素材/21张原始参考/06-武器防具图标/01-近战武器.png",
+      "pages": [
+        "P03a",
+        "P03b",
+        "P03d",
+        "P05a",
+        "P05b",
+        "P05f",
+        "P06a",
+        "P06b",
+        "P06c",
+        "P08b"
+      ]
+    },
+    "W2": {
+      "name": "02-远程武器与配件",
+      "use": "远程武器与配件图形参考",
+      "file": "素材/21张原始参考/06-武器防具图标/02-远程武器与配件.png",
+      "pages": [
+        "P03a",
+        "P03d",
+        "P05a",
+        "P05b",
+        "P05f",
+        "P08b"
+      ]
+    },
+    "W3": {
+      "name": "03-防具与穿戴装备",
+      "use": "七槽与防具候选比较",
+      "file": "素材/21张原始参考/06-武器防具图标/03-防具与穿戴装备.png",
+      "pages": [
+        "P03a",
+        "P03b",
+        "P05f",
+        "P06c",
+        "P06d"
+      ]
+    },
+    "E1": {
+      "name": "01-常见感染者",
+      "use": "常见感染者敌踪与站位参考",
+      "file": "素材/21张原始参考/07-怪物类型/01-常见感染者.png",
+      "pages": [
+        "P01c",
+        "P05a",
+        "P05b",
+        "P05d",
+        "P05h",
+        "PXd"
+      ]
+    },
+    "E2": {
+      "name": "02-特殊感染者",
+      "use": "特殊感染者敌踪与站位参考",
+      "file": "素材/21张原始参考/07-怪物类型/02-特殊感染者.png",
+      "pages": [
+        "P01c",
+        "P05a",
+        "P05h",
+        "P07i",
+        "P09b",
+        "PXj"
+      ]
+    },
+    "E3": {
+      "name": "03-野外动物与异变轮廓",
+      "use": "异变动物敌踪与站位参考",
+      "file": "素材/21张原始参考/07-怪物类型/03-野外动物与异变轮廓.png",
+      "pages": [
+        "P01c",
+        "P05e"
+      ]
+    }
+  },
+  "componentIndex": {
+    "GameScreen": [
+      "P01a",
+      "PXk",
+      "PXo"
+    ],
+    "Hud": [
+      "P01a",
+      "P01f",
+      "P08e"
+    ],
+    "LocationStrip": [
+      "P01a",
+      "P01b",
+      "P01e",
+      "P07b",
+      "P07c",
+      "P07d"
+    ],
+    "LocationCard": [
+      "P01a",
+      "P07a"
+    ],
+    "ItemShelf": [
+      "P01a",
+      "P01d",
+      "P03c",
+      "PXg"
+    ],
+    "TaskCorner": [
+      "P01a",
+      "P08d"
+    ],
+    "DetailPanel": [
+      "P01a",
+      "P01b"
+    ],
+    "ObjectCard": [
+      "P01b",
+      "P01c"
+    ],
+    "ActionPops": [
+      "P01b",
+      "P02f"
+    ],
+    "BattleOverlay": [
+      "P01c"
+    ],
+    "EnemyDetail": [
+      "P01c",
+      "P05e",
+      "P05h"
+    ],
+    "ItemDetail": [
+      "P01d",
+      "P04c"
+    ],
+    "CardPop": [
+      "P01d",
+      "P02b"
+    ],
+    "CardActions": [
+      "P01d"
+    ],
+    "TransferArrow": [
+      "P01d",
+      "P03c",
+      "PXh"
+    ],
+    "PrologueCards": [
+      "P01e",
+      "P07e",
+      "P09d",
+      "PXf"
+    ],
+    "PublicStationCard": [
+      "P01e",
+      "P06a"
+    ],
+    "AttrDetail": [
+      "P01f"
+    ],
+    "VitalIcon": [
+      "P01f"
+    ],
+    "StatusIcons": [
+      "P01f",
+      "P05h"
+    ],
+    "StatusPop": [
+      "P01f",
+      "P05b"
+    ],
+    "AccountIcon": [
+      "P01f"
+    ],
+    "FireCard": [
+      "P02a",
+      "P02e",
+      "P02f"
+    ],
+    "FireDetail": [
+      "P02a"
+    ],
+    "FacilityCard": [
+      "P02a",
+      "P06d"
+    ],
+    "FoodCard": [
+      "P02a",
+      "P02b"
+    ],
+    "PotCard": [
+      "P02b",
+      "P04b"
+    ],
+    "DryingRackCard": [
+      "P02c"
+    ],
+    "DryingOverlay": [
+      "P02c"
+    ],
+    "SafehouseCard": [
+      "P02d"
+    ],
+    "SafehouseOverlay": [
+      "P02d",
+      "P08c"
+    ],
+    "RestOverlay": [
+      "P02d",
+      "P08c"
+    ],
+    "IgniteMenu": [
+      "P02e"
+    ],
+    "AnchorPop": [
+      "P02f",
+      "PXn"
+    ],
+    "GearOverlay": [
+      "P03a",
+      "P03b",
+      "P03c",
+      "P03d"
+    ],
+    "CharacterPanel": [
+      "P03a",
+      "P08b",
+      "P08h"
+    ],
+    "PreviewView": [
+      "P03b",
+      "P06c",
+      "PXn"
+    ],
+    "DuplicateWeaponOverlay": [
+      "P03d"
+    ],
+    "PartyPanel": [
+      "P04a",
+      "P04b",
+      "P04c",
+      "P08a",
+      "P08h"
+    ],
+    "FeedPop": [
+      "P04a",
+      "P04b",
+      "P04c"
+    ],
+    "TargetPicker": [
+      "P04a",
+      "P05d"
+    ],
+    "BattleScreen": [
+      "P05a",
+      "P05b",
+      "P05c",
+      "P05d",
+      "P05e",
+      "P05f",
+      "P05g",
+      "P05h",
+      "P09b"
+    ],
+    "BattlePanel": [
+      "P05a",
+      "P05d"
+    ],
+    "BattleSupplies": [
+      "P05c"
+    ],
+    "BattleEquip": [
+      "P05f"
+    ],
+    "MenuOverlay": [
+      "P05g",
+      "PXb"
+    ],
+    "CraftOverlay": [
+      "P06a",
+      "P06b",
+      "P06c",
+      "P06d"
+    ],
+    "ItemRow": [
+      "P06a",
+      "P06c"
+    ],
+    "MapOverlay": [
+      "P06b",
+      "P07a",
+      "P07i"
+    ],
+    "CentralProgress": [
+      "P06d",
+      "PXe",
+      "PXn"
+    ],
+    "CityOverview": [
+      "P07b",
+      "P07c",
+      "P07d"
+    ],
+    "CityServiceOverlay": [
+      "P07e",
+      "P07f",
+      "P07g"
+    ],
+    "RecruitPanel": [
+      "P07f"
+    ],
+    "AppraisalPanel": [
+      "P07g"
+    ],
+    "JourneyOverlay": [
+      "P07h"
+    ],
+    "ExpeditionInfo": [
+      "P07h",
+      "P07i",
+      "PXd",
+      "PXi",
+      "PXj"
+    ],
+    "FormationOverlay": [
+      "P08a"
+    ],
+    "GrowthOverlay": [
+      "P08b"
+    ],
+    "GoalsOverlay": [
+      "P08d"
+    ],
+    "TipsOverlay": [
+      "P08e"
+    ],
+    "LogOverlay": [
+      "P08f",
+      "PXl"
+    ],
+    "HelpOverlay": [
+      "P08g"
+    ],
+    "DialogueLayer": [
+      "P09a",
+      "P09b",
+      "P09d",
+      "PXf"
+    ],
+    "DialogueLines": [
+      "P09a",
+      "P09b",
+      "P09c",
+      "P09d"
+    ],
+    "DialogueLogOverlay": [
+      "P09c"
+    ],
+    "Root": [
+      "PXa",
+      "PXm"
+    ],
+    "StartScreen": [
+      "PXa",
+      "PXk",
+      "PXm",
+      "PXo"
+    ],
+    "EndScreens": [
+      "PXc",
+      "PXl"
+    ],
+    "ExpeditionAbort": [
+      "PXd"
+    ],
+    "PauseLayer": [
+      "PXe"
+    ],
+    "OverflowOverlay": [
+      "PXg"
+    ],
+    "DropQuantity": [
+      "PXh"
+    ],
+    "ExpeditionSeal": [
+      "PXi"
+    ],
+    "DungeonReset": [
+      "PXj"
+    ]
+  },
+  "baselineComponentCount": 74,
+  "pages": [
+    {
+      "id": "P01a",
+      "title": "营地总览",
+      "template": "world",
+      "components": [
+        "GameScreen",
+        "Hud",
+        "LocationStrip",
+        "LocationCard",
+        "ItemShelf",
+        "TaskCorner",
+        "DetailPanel"
+      ],
+      "refs": [
+        "L1",
+        "U1",
+        "I1",
+        "I2",
+        "I3",
+        "C3",
+        "M1"
+      ],
+      "variant": "营地",
+      "group": "P01",
+      "srcFile": "SVG源稿/P01a.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:shelter",
+        "facility:workbench",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "P01b",
+      "title": "野外资源与右栏详情",
+      "template": "world",
+      "components": [
+        "ObjectCard",
+        "LocationStrip",
+        "DetailPanel",
+        "ActionPops"
+      ],
+      "refs": [
+        "L1",
+        "I3",
+        "I2",
+        "U1"
+      ],
+      "variant": "资源",
+      "group": "P01",
+      "srcFile": "SVG源稿/P01b.svg",
+      "artKeys": [
+        "facility:camping",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:search",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood",
+        "resource:woods:berries",
+        "resource:woods:stones",
+        "resource:woods:wood",
+        "resource:woods:woods_fiber"
+      ]
+    },
+    {
+      "id": "P01c",
+      "title": "敌踪 · 接敌或绕行",
+      "template": "world",
+      "components": [
+        "BattleOverlay",
+        "EnemyDetail",
+        "ObjectCard"
+      ],
+      "refs": [
+        "U3",
+        "E1",
+        "E2",
+        "E3",
+        "L1"
+      ],
+      "variant": "敌踪",
+      "group": "P01",
+      "srcFile": "SVG源稿/P01c.svg",
+      "artKeys": [
+        "enemy:feral_dog",
+        "enemy:shambler",
+        "enemy:z_helmet",
+        "facility:shelter",
+        "glyph:battle",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:route",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "P01d",
+      "title": "物品选中 · 拖放与转移",
+      "template": "world",
+      "components": [
+        "ItemShelf",
+        "ItemDetail",
+        "CardPop",
+        "CardActions",
+        "TransferArrow"
+      ],
+      "refs": [
+        "L1",
+        "I1",
+        "I2",
+        "I3"
+      ],
+      "variant": "转移",
+      "group": "P01",
+      "srcFile": "SVG源稿/P01d.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:shelter",
+        "facility:workbench",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:transfer",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "P01e",
+      "title": "营区人物、设施与公告",
+      "template": "world",
+      "components": [
+        "PrologueCards",
+        "LocationStrip",
+        "PublicStationCard"
+      ],
+      "refs": [
+        "L1",
+        "M1",
+        "C2",
+        "I3"
+      ],
+      "variant": "岗位",
+      "group": "P01",
+      "srcFile": "SVG源稿/P01e.svg",
+      "artKeys": [
+        "actor:npc_lin_zhao",
+        "actor:npc_xu_an",
+        "facility:sewing",
+        "facility:workbench",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:knowledge",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:service",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "P01f",
+      "title": "人物属性与状态详情",
+      "template": "world",
+      "components": [
+        "Hud",
+        "AttrDetail",
+        "VitalIcon",
+        "StatusIcons",
+        "StatusPop",
+        "AccountIcon"
+      ],
+      "refs": [
+        "L1",
+        "C3",
+        "I2",
+        "U3"
+      ],
+      "variant": "状态",
+      "group": "P01",
+      "srcFile": "SVG源稿/P01f.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:shelter",
+        "facility:workbench",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood",
+        "status:status_infected"
+      ]
+    },
+    {
+      "id": "P02a",
+      "title": "火堆 · 两个加工位",
+      "template": "world",
+      "components": [
+        "FireCard",
+        "FireDetail",
+        "FacilityCard",
+        "FoodCard"
+      ],
+      "refs": [
+        "L1",
+        "I3",
+        "I1",
+        "U1"
+      ],
+      "variant": "火堆",
+      "group": "P02",
+      "srcFile": "SVG源稿/P02a.svg",
+      "artKeys": [
+        "facility:charcoal",
+        "facility:fire_lit",
+        "facility:shelter",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "P02b",
+      "title": "锅内水与食材",
+      "template": "world",
+      "components": [
+        "PotCard",
+        "FoodCard",
+        "CardPop"
+      ],
+      "refs": [
+        "I1",
+        "I3",
+        "L1",
+        "U1"
+      ],
+      "variant": "锅",
+      "group": "P02",
+      "srcFile": "SVG源稿/P02b.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "P02c",
+      "title": "晾制架 · 8 个工位",
+      "template": "slots",
+      "components": [
+        "DryingRackCard",
+        "DryingOverlay"
+      ],
+      "refs": [
+        "I1",
+        "I3",
+        "U2",
+        "L1"
+      ],
+      "variant": "晾制",
+      "group": "P02",
+      "srcFile": "SVG源稿/P02c.svg",
+      "artKeys": [
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:recipe",
+        "glyph:rest",
+        "glyph:warning",
+        "item:berry",
+        "item:dried_berries",
+        "item:dried_meat",
+        "item:raw_meat"
+      ]
+    },
+    {
+      "id": "P02d",
+      "title": "安全屋 · 外部与屋内",
+      "template": "house",
+      "components": [
+        "SafehouseCard",
+        "SafehouseOverlay",
+        "RestOverlay"
+      ],
+      "refs": [
+        "I3",
+        "U1",
+        "L1",
+        "M1"
+      ],
+      "variant": "安全屋",
+      "group": "P02",
+      "srcFile": "SVG源稿/P02d.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:storage",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P02e",
+      "title": "选择点火工具",
+      "template": "modal",
+      "components": [
+        "IgniteMenu",
+        "FireCard"
+      ],
+      "refs": [
+        "I2",
+        "I3",
+        "U1",
+        "L1"
+      ],
+      "variant": "点火",
+      "group": "P02",
+      "srcFile": "SVG源稿/P02e.svg",
+      "artKeys": [
+        "facility:charcoal",
+        "facility:fire_lit",
+        "facility:fire_out",
+        "facility:shelter",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "P02f",
+      "title": "煅烧木炭 · 投料确认",
+      "template": "modal",
+      "components": [
+        "ActionPops",
+        "AnchorPop",
+        "FireCard"
+      ],
+      "refs": [
+        "I3",
+        "U1",
+        "L1"
+      ],
+      "variant": "投炭",
+      "group": "P02",
+      "srcFile": "SVG源稿/P02f.svg",
+      "artKeys": [
+        "facility:charcoal",
+        "facility:fire_lit",
+        "facility:shelter",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:charcoal",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "P03a",
+      "title": "整备 · 人物与七槽",
+      "template": "gear",
+      "components": [
+        "GearOverlay",
+        "CharacterPanel"
+      ],
+      "refs": [
+        "L3",
+        "C1",
+        "C3",
+        "W1",
+        "W2",
+        "W3",
+        "U1"
+      ],
+      "variant": "整备",
+      "group": "P03",
+      "srcFile": "SVG源稿/P03a.svg",
+      "artKeys": [
+        "actor:npc_lin_zhao",
+        "actor:npc_zhou_yan",
+        "actor:p0",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning",
+        "item:canned_food",
+        "item:clean_water",
+        "item:crossbow",
+        "item:hatchet",
+        "item:leather_armor",
+        "item:pot",
+        "item:ration_pouch",
+        "item:steady_ring",
+        "item:work_shirt",
+        "item:work_trousers"
+      ]
+    },
+    {
+      "id": "P03b",
+      "title": "装备比较 · 同槽候选",
+      "template": "gear",
+      "components": [
+        "GearOverlay",
+        "PreviewView"
+      ],
+      "refs": [
+        "L3",
+        "W3",
+        "W1",
+        "U1"
+      ],
+      "variant": "比较",
+      "group": "P03",
+      "srcFile": "SVG源稿/P03b.svg",
+      "artKeys": [
+        "actor:npc_lin_zhao",
+        "actor:npc_zhou_yan",
+        "actor:p0",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning",
+        "item:crossbow",
+        "item:hatchet",
+        "item:leather_armor",
+        "item:padded_vest",
+        "item:ration_pouch",
+        "item:steady_ring",
+        "item:work_shirt",
+        "item:work_trousers"
+      ]
+    },
+    {
+      "id": "P03c",
+      "title": "交给同行者 · 根卡交接",
+      "template": "gear",
+      "components": [
+        "GearOverlay",
+        "ItemShelf",
+        "TransferArrow"
+      ],
+      "refs": [
+        "L3",
+        "I1",
+        "I3",
+        "C3",
+        "U1"
+      ],
+      "variant": "交接",
+      "group": "P03",
+      "srcFile": "SVG源稿/P03c.svg",
+      "artKeys": [
+        "actor:npc_lin_zhao",
+        "actor:npc_zhou_yan",
+        "actor:p0",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:transfer",
+        "glyph:warning",
+        "item:clean_water",
+        "item:crossbow",
+        "item:hatchet",
+        "item:leather_armor",
+        "item:pot",
+        "item:ration_pouch",
+        "item:steady_ring",
+        "item:work_shirt",
+        "item:work_trousers"
+      ]
+    },
+    {
+      "id": "P03d",
+      "title": "同类武器冲突",
+      "template": "modal",
+      "components": [
+        "DuplicateWeaponOverlay",
+        "GearOverlay"
+      ],
+      "refs": [
+        "L3",
+        "W1",
+        "W2",
+        "U3"
+      ],
+      "variant": "重复武器",
+      "group": "P03",
+      "srcFile": "SVG源稿/P03d.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:shelter",
+        "facility:workbench",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:fire_axe",
+        "item:hatchet",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "P04a",
+      "title": "给同行者食用",
+      "template": "feed",
+      "components": [
+        "PartyPanel",
+        "FeedPop",
+        "TargetPicker"
+      ],
+      "refs": [
+        "I1",
+        "C3",
+        "L1",
+        "U2"
+      ],
+      "variant": "食用",
+      "group": "P04",
+      "srcFile": "SVG源稿/P04a.svg",
+      "artKeys": [
+        "actor:npc_lin_zhao",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning",
+        "item:berry",
+        "item:canned_food"
+      ]
+    },
+    {
+      "id": "P04b",
+      "title": "给同行者饮用 · 锅内水",
+      "template": "feed",
+      "components": [
+        "PotCard",
+        "PartyPanel",
+        "FeedPop"
+      ],
+      "refs": [
+        "I1",
+        "C3",
+        "L1",
+        "U2"
+      ],
+      "variant": "饮用",
+      "group": "P04",
+      "srcFile": "SVG源稿/P04b.svg",
+      "artKeys": [
+        "actor:npc_lin_zhao",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning",
+        "item:clean_water",
+        "item:pot"
+      ]
+    },
+    {
+      "id": "P04c",
+      "title": "食饮入口不可用",
+      "template": "feed",
+      "components": [
+        "FeedPop",
+        "PartyPanel",
+        "ItemDetail"
+      ],
+      "refs": [
+        "I1",
+        "C3",
+        "U3",
+        "L1"
+      ],
+      "variant": "不可用",
+      "group": "P04",
+      "srcFile": "SVG源稿/P04c.svg",
+      "artKeys": [
+        "actor:npc_lin_zhao",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning",
+        "item:berry",
+        "item:canned_food"
+      ]
+    },
+    {
+      "id": "P05a",
+      "title": "战斗 · 四对四站位与瞄准",
+      "template": "battle",
+      "components": [
+        "BattleScreen",
+        "BattlePanel"
+      ],
+      "refs": [
+        "L2",
+        "U3",
+        "C1",
+        "E1",
+        "E2",
+        "W1",
+        "W2"
+      ],
+      "variant": "战斗",
+      "group": "P05",
+      "srcFile": "SVG源稿/P05a.svg",
+      "artKeys": [
+        "action:bandage",
+        "action:breathe",
+        "action:guard",
+        "action:retreat",
+        "action:swap",
+        "actor:npc_lin_zhao",
+        "actor:npc_shen_he",
+        "actor:npc_zhou_yan",
+        "actor:p0",
+        "enemy:shambler",
+        "enemy:z_hauler",
+        "enemy:z_helmet",
+        "enemy:z_spitter",
+        "glyph:battle",
+        "glyph:continue",
+        "glyph:equipment",
+        "glyph:fear",
+        "glyph:health",
+        "glyph:menu",
+        "glyph:storage",
+        "skill:unarmed_01",
+        "skill:unarmed_03",
+        "skill:unarmed_05",
+        "skill:unarmed_07",
+        "skill:unarmed_10"
+      ]
+    },
+    {
+      "id": "P05b",
+      "title": "战斗 · 技能锁级与不足",
+      "template": "battle",
+      "components": [
+        "BattleScreen",
+        "StatusPop"
+      ],
+      "refs": [
+        "L2",
+        "U3",
+        "W1",
+        "W2",
+        "E1"
+      ],
+      "variant": "锁级",
+      "group": "P05",
+      "srcFile": "SVG源稿/P05b.svg",
+      "artKeys": [
+        "action:bandage",
+        "action:breathe",
+        "action:guard",
+        "action:retreat",
+        "action:swap",
+        "actor:npc_lin_zhao",
+        "actor:npc_shen_he",
+        "actor:npc_zhou_yan",
+        "actor:p0",
+        "enemy:shambler",
+        "enemy:z_hauler",
+        "enemy:z_helmet",
+        "enemy:z_spitter",
+        "glyph:battle",
+        "glyph:continue",
+        "glyph:equipment",
+        "glyph:fear",
+        "glyph:health",
+        "glyph:menu",
+        "glyph:storage",
+        "skill:unarmed_01",
+        "skill:unarmed_03",
+        "skill:unarmed_05",
+        "skill:unarmed_07",
+        "skill:unarmed_10"
+      ]
+    },
+    {
+      "id": "P05c",
+      "title": "战斗物资 · 只读",
+      "template": "battle",
+      "components": [
+        "BattleSupplies",
+        "BattleScreen"
+      ],
+      "refs": [
+        "L2",
+        "U3",
+        "I1",
+        "I2"
+      ],
+      "variant": "物资",
+      "group": "P05",
+      "srcFile": "SVG源稿/P05c.svg",
+      "artKeys": [
+        "action:bandage",
+        "action:breathe",
+        "action:guard",
+        "action:retreat",
+        "action:swap",
+        "actor:npc_lin_zhao",
+        "actor:npc_shen_he",
+        "actor:npc_zhou_yan",
+        "actor:p0",
+        "enemy:shambler",
+        "enemy:z_hauler",
+        "enemy:z_helmet",
+        "enemy:z_spitter",
+        "glyph:battle",
+        "glyph:continue",
+        "glyph:equipment",
+        "glyph:fear",
+        "glyph:health",
+        "glyph:menu",
+        "glyph:return",
+        "glyph:storage",
+        "item:bandage",
+        "item:canned_food",
+        "item:clean_water",
+        "item:lighter",
+        "item:pot",
+        "skill:unarmed_01",
+        "skill:unarmed_03",
+        "skill:unarmed_05",
+        "skill:unarmed_07",
+        "skill:unarmed_10"
+      ]
+    },
+    {
+      "id": "P05d",
+      "title": "通用指令与医疗",
+      "template": "battle",
+      "components": [
+        "BattleScreen",
+        "BattlePanel",
+        "TargetPicker"
+      ],
+      "refs": [
+        "L2",
+        "U3",
+        "I2",
+        "E1"
+      ],
+      "variant": "医疗",
+      "group": "P05",
+      "srcFile": "SVG源稿/P05d.svg",
+      "artKeys": [
+        "action:bandage",
+        "action:breathe",
+        "action:guard",
+        "action:retreat",
+        "action:swap",
+        "actor:npc_lin_zhao",
+        "actor:npc_shen_he",
+        "actor:npc_zhou_yan",
+        "actor:p0",
+        "enemy:shambler",
+        "enemy:z_hauler",
+        "enemy:z_helmet",
+        "enemy:z_spitter",
+        "glyph:battle",
+        "glyph:continue",
+        "glyph:equipment",
+        "glyph:fear",
+        "glyph:health",
+        "glyph:menu",
+        "glyph:return",
+        "glyph:storage",
+        "item:antibiotics",
+        "item:antiviral_cure",
+        "item:bandage",
+        "skill:unarmed_01",
+        "skill:unarmed_03",
+        "skill:unarmed_05",
+        "skill:unarmed_07",
+        "skill:unarmed_10"
+      ]
+    },
+    {
+      "id": "P05e",
+      "title": "战斗 · 异变动物与空位",
+      "template": "battle",
+      "components": [
+        "BattleScreen",
+        "EnemyDetail"
+      ],
+      "refs": [
+        "L2",
+        "U3",
+        "C1",
+        "E3"
+      ],
+      "variant": "兽战",
+      "group": "P05",
+      "srcFile": "SVG源稿/P05e.svg",
+      "artKeys": [
+        "action:bandage",
+        "action:breathe",
+        "action:guard",
+        "action:retreat",
+        "action:swap",
+        "actor:npc_lin_zhao",
+        "actor:p0",
+        "enemy:boar",
+        "enemy:crawler",
+        "enemy:feral_dog",
+        "glyph:battle",
+        "glyph:continue",
+        "glyph:equipment",
+        "glyph:fear",
+        "glyph:health",
+        "glyph:menu",
+        "glyph:storage",
+        "skill:unarmed_01",
+        "skill:unarmed_03",
+        "skill:unarmed_05",
+        "skill:unarmed_07",
+        "skill:unarmed_10"
+      ]
+    },
+    {
+      "id": "P05f",
+      "title": "战斗装备 · 只读",
+      "template": "battle",
+      "components": [
+        "BattleEquip",
+        "BattleScreen"
+      ],
+      "refs": [
+        "L2",
+        "W1",
+        "W2",
+        "W3",
+        "C1"
+      ],
+      "variant": "装备",
+      "group": "P05",
+      "srcFile": "SVG源稿/P05f.svg",
+      "artKeys": [
+        "action:bandage",
+        "action:breathe",
+        "action:guard",
+        "action:retreat",
+        "action:swap",
+        "actor:npc_lin_zhao",
+        "actor:npc_shen_he",
+        "actor:npc_zhou_yan",
+        "actor:p0",
+        "enemy:shambler",
+        "enemy:z_hauler",
+        "enemy:z_helmet",
+        "enemy:z_spitter",
+        "glyph:battle",
+        "glyph:continue",
+        "glyph:equipment",
+        "glyph:fear",
+        "glyph:health",
+        "glyph:menu",
+        "glyph:return",
+        "glyph:storage",
+        "item:crossbow",
+        "item:hatchet",
+        "item:leather_armor",
+        "item:steady_ring",
+        "item:work_shirt",
+        "skill:unarmed_01",
+        "skill:unarmed_03",
+        "skill:unarmed_05",
+        "skill:unarmed_07",
+        "skill:unarmed_10"
+      ]
+    },
+    {
+      "id": "P05g",
+      "title": "战斗菜单与保存返回",
+      "template": "battle",
+      "components": [
+        "MenuOverlay",
+        "BattleScreen"
+      ],
+      "refs": [
+        "L2",
+        "U1",
+        "U3"
+      ],
+      "variant": "战斗菜单",
+      "group": "P05",
+      "srcFile": "SVG源稿/P05g.svg",
+      "artKeys": [
+        "action:bandage",
+        "action:breathe",
+        "action:guard",
+        "action:retreat",
+        "action:swap",
+        "actor:npc_lin_zhao",
+        "actor:npc_shen_he",
+        "actor:npc_zhou_yan",
+        "actor:p0",
+        "enemy:shambler",
+        "enemy:z_hauler",
+        "enemy:z_helmet",
+        "enemy:z_spitter",
+        "glyph:battle",
+        "glyph:continue",
+        "glyph:equipment",
+        "glyph:fear",
+        "glyph:health",
+        "glyph:menu",
+        "glyph:return",
+        "glyph:storage",
+        "skill:unarmed_01",
+        "skill:unarmed_03",
+        "skill:unarmed_05",
+        "skill:unarmed_07",
+        "skill:unarmed_10"
+      ]
+    },
+    {
+      "id": "P05h",
+      "title": "战斗记录与敌情",
+      "template": "battle",
+      "components": [
+        "BattleScreen",
+        "EnemyDetail",
+        "StatusIcons"
+      ],
+      "refs": [
+        "L2",
+        "U3",
+        "E1",
+        "E2"
+      ],
+      "variant": "战报",
+      "group": "P05",
+      "srcFile": "SVG源稿/P05h.svg",
+      "artKeys": [
+        "action:bandage",
+        "action:breathe",
+        "action:guard",
+        "action:retreat",
+        "action:swap",
+        "actor:npc_lin_zhao",
+        "actor:npc_shen_he",
+        "actor:npc_zhou_yan",
+        "actor:p0",
+        "enemy:shambler",
+        "enemy:z_hauler",
+        "enemy:z_helmet",
+        "enemy:z_spitter",
+        "glyph:battle",
+        "glyph:continue",
+        "glyph:equipment",
+        "glyph:fear",
+        "glyph:health",
+        "glyph:menu",
+        "glyph:return",
+        "glyph:storage",
+        "skill:unarmed_01",
+        "skill:unarmed_03",
+        "skill:unarmed_05",
+        "skill:unarmed_07",
+        "skill:unarmed_10"
+      ]
+    },
+    {
+      "id": "P06a",
+      "title": "制作配方 · 工坊与材料",
+      "template": "craft",
+      "components": [
+        "CraftOverlay",
+        "ItemRow",
+        "PublicStationCard"
+      ],
+      "refs": [
+        "U2",
+        "I3",
+        "W1",
+        "I2"
+      ],
+      "variant": "制作",
+      "group": "P06",
+      "srcFile": "SVG源稿/P06a.svg",
+      "artKeys": [
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning",
+        "item:fiber",
+        "item:hatchet",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "P06b",
+      "title": "材料来源 · 缺料与返回",
+      "template": "craft",
+      "components": [
+        "CraftOverlay",
+        "MapOverlay"
+      ],
+      "refs": [
+        "U2",
+        "I3",
+        "W1",
+        "M1"
+      ],
+      "variant": "来源",
+      "group": "P06",
+      "srcFile": "SVG源稿/P06b.svg",
+      "artKeys": [
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:route",
+        "glyph:warning",
+        "item:fiber",
+        "resource:woods:woods_fiber"
+      ]
+    },
+    {
+      "id": "P06c",
+      "title": "制作维护 · 修补和耐久",
+      "template": "craft",
+      "components": [
+        "CraftOverlay",
+        "ItemRow",
+        "PreviewView"
+      ],
+      "refs": [
+        "U2",
+        "W1",
+        "W3",
+        "I2"
+      ],
+      "variant": "维护",
+      "group": "P06",
+      "srcFile": "SVG源稿/P06c.svg",
+      "artKeys": [
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning",
+        "item:cloth",
+        "item:hatchet",
+        "item:parts",
+        "item:scrap"
+      ]
+    },
+    {
+      "id": "P06d",
+      "title": "加工 · 工坊队列与产物",
+      "template": "craft",
+      "components": [
+        "CraftOverlay",
+        "CentralProgress",
+        "FacilityCard"
+      ],
+      "refs": [
+        "I3",
+        "U2",
+        "W3"
+      ],
+      "variant": "工坊",
+      "group": "P06",
+      "srcFile": "SVG源稿/P06d.svg",
+      "artKeys": [
+        "facility:water_station",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning",
+        "item:clean_water",
+        "item:dirty_water"
+      ]
+    },
+    {
+      "id": "P07a",
+      "title": "区域地图 · 已知路径",
+      "template": "map",
+      "components": [
+        "MapOverlay",
+        "LocationCard"
+      ],
+      "refs": [
+        "U1",
+        "M1",
+        "M2",
+        "M3"
+      ],
+      "variant": "地图",
+      "group": "P07",
+      "srcFile": "SVG源稿/P07a.svg",
+      "artKeys": [
+        "faction:hub_survivor",
+        "glyph:craft",
+        "glyph:destination",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:known",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:route",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P07b",
+      "title": "幸存者营区 · 主城鸟瞰",
+      "template": "map",
+      "components": [
+        "CityOverview",
+        "LocationStrip"
+      ],
+      "refs": [
+        "U1",
+        "M1",
+        "C2"
+      ],
+      "variant": "营区",
+      "group": "P07",
+      "srcFile": "SVG源稿/P07b.svg",
+      "artKeys": [
+        "faction:hub_survivor",
+        "glyph:craft",
+        "glyph:destination",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:known",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:route",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P07c",
+      "title": "教会圣所 · 主城鸟瞰",
+      "template": "map",
+      "components": [
+        "CityOverview",
+        "LocationStrip"
+      ],
+      "refs": [
+        "U1",
+        "M2",
+        "C2"
+      ],
+      "variant": "教会",
+      "group": "P07",
+      "srcFile": "SVG源稿/P07c.svg",
+      "artKeys": [
+        "faction:faction_church",
+        "glyph:craft",
+        "glyph:destination",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:known",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:route",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P07d",
+      "title": "科学院封存区 · 主城鸟瞰",
+      "template": "map",
+      "components": [
+        "CityOverview",
+        "LocationStrip"
+      ],
+      "refs": [
+        "U1",
+        "M3",
+        "C2"
+      ],
+      "variant": "科学院",
+      "group": "P07",
+      "srcFile": "SVG源稿/P07d.svg",
+      "artKeys": [
+        "faction:faction_academy",
+        "glyph:craft",
+        "glyph:destination",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:known",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:route",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P07e",
+      "title": "岗位事项 · 委托与服务",
+      "template": "service",
+      "components": [
+        "CityServiceOverlay",
+        "PrologueCards"
+      ],
+      "refs": [
+        "U2",
+        "C2",
+        "C3",
+        "M1",
+        "M2",
+        "M3"
+      ],
+      "variant": "岗位事项",
+      "group": "P07",
+      "srcFile": "SVG源稿/P07e.svg",
+      "artKeys": [
+        "duty:npc_xu_an",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:service",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P07f",
+      "title": "收容所 · 同行者名册",
+      "template": "service",
+      "components": [
+        "RecruitPanel",
+        "CityServiceOverlay"
+      ],
+      "refs": [
+        "U2",
+        "C1",
+        "C2",
+        "C3",
+        "M1"
+      ],
+      "variant": "招募",
+      "group": "P07",
+      "srcFile": "SVG源稿/P07f.svg",
+      "artKeys": [
+        "actor:npc_du_sui",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:service",
+        "glyph:warning",
+        "recruitTemplate:camp_nurse",
+        "recruitTemplate:coordinator",
+        "recruitTemplate:front_guard"
+      ]
+    },
+    {
+      "id": "P07g",
+      "title": "活性样本鉴定 · 以物换物",
+      "template": "service",
+      "components": [
+        "AppraisalPanel",
+        "CityServiceOverlay"
+      ],
+      "refs": [
+        "U2",
+        "I2",
+        "C2",
+        "M1"
+      ],
+      "variant": "鉴定",
+      "group": "P07",
+      "srcFile": "SVG源稿/P07g.svg",
+      "artKeys": [
+        "actor:npc_tao_cen",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:service",
+        "glyph:warning",
+        "item:active_substance_white_unidentified",
+        "item:cloth",
+        "item:scrap"
+      ]
+    },
+    {
+      "id": "P07h",
+      "title": "远行准备 · 路线与饮水",
+      "template": "map",
+      "components": [
+        "JourneyOverlay",
+        "ExpeditionInfo"
+      ],
+      "refs": [
+        "I1",
+        "M1",
+        "U2"
+      ],
+      "variant": "饮水预告",
+      "group": "P07",
+      "srcFile": "SVG源稿/P07h.svg",
+      "artKeys": [
+        "glyph:craft",
+        "glyph:destination",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:known",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:route",
+        "glyph:warning",
+        "item:clean_water"
+      ]
+    },
+    {
+      "id": "P07i",
+      "title": "地牢地图 · 层级与出口",
+      "template": "map",
+      "components": [
+        "MapOverlay",
+        "ExpeditionInfo"
+      ],
+      "refs": [
+        "U3",
+        "M2",
+        "E2"
+      ],
+      "variant": "地牢地图",
+      "group": "P07",
+      "srcFile": "SVG源稿/P07i.svg",
+      "artKeys": [
+        "faction:hub_survivor",
+        "glyph:craft",
+        "glyph:destination",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:known",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:route",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P08a",
+      "title": "队伍与编队 · 一至四号位",
+      "template": "people",
+      "components": [
+        "PartyPanel",
+        "FormationOverlay"
+      ],
+      "refs": [
+        "U1",
+        "C1",
+        "C3",
+        "L3"
+      ],
+      "variant": "编队",
+      "group": "P08",
+      "srcFile": "SVG源稿/P08a.svg",
+      "artKeys": [
+        "actor:npc_lin_zhao",
+        "actor:npc_zhou_yan",
+        "actor:p0",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P08b",
+      "title": "成长与熟练度 · 五技能节点",
+      "template": "growth",
+      "components": [
+        "GrowthOverlay",
+        "CharacterPanel"
+      ],
+      "refs": [
+        "U2",
+        "C1",
+        "C3",
+        "W1",
+        "W2",
+        "L3"
+      ],
+      "variant": "成长",
+      "group": "P08",
+      "srcFile": "SVG源稿/P08b.svg",
+      "artKeys": [
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning",
+        "skill:unarmed_01",
+        "skill:unarmed_03",
+        "skill:unarmed_05",
+        "skill:unarmed_07",
+        "skill:unarmed_10",
+        "skillFamily:archery",
+        "skillFamily:athletics",
+        "skillFamily:axe",
+        "skillFamily:blade",
+        "skillFamily:blunt",
+        "skillFamily:command",
+        "skillFamily:cooking",
+        "skillFamily:crafting",
+        "skillFamily:firearms",
+        "skillFamily:gathering",
+        "skillFamily:medicine",
+        "skillFamily:scavenging",
+        "skillFamily:shield",
+        "skillFamily:spear",
+        "skillFamily:unarmed"
+      ]
+    },
+    {
+      "id": "P08c",
+      "title": "休息 · 时长与风险",
+      "template": "reading",
+      "components": [
+        "RestOverlay",
+        "SafehouseOverlay"
+      ],
+      "refs": [
+        "U2",
+        "I3",
+        "C3",
+        "L1"
+      ],
+      "variant": "休息",
+      "group": "P08",
+      "srcFile": "SVG源稿/P08c.svg",
+      "artKeys": [
+        "facility:bed",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P08d",
+      "title": "生存目标 · 主线与任务册",
+      "template": "reading",
+      "components": [
+        "GoalsOverlay",
+        "TaskCorner"
+      ],
+      "refs": [
+        "U2",
+        "I3",
+        "L1"
+      ],
+      "variant": "目标",
+      "group": "P08",
+      "srcFile": "SVG源稿/P08d.svg",
+      "artKeys": [
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:return",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P08e",
+      "title": "生存提示 · 当前处境",
+      "template": "reading",
+      "components": [
+        "TipsOverlay",
+        "Hud"
+      ],
+      "refs": [
+        "U2",
+        "I2",
+        "L1"
+      ],
+      "variant": "提示",
+      "group": "P08",
+      "srcFile": "SVG源稿/P08e.svg",
+      "artKeys": [
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:return",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P08f",
+      "title": "行动日志 · 时间与事件",
+      "template": "reading",
+      "components": [
+        "LogOverlay"
+      ],
+      "refs": [
+        "U2",
+        "C3",
+        "I3",
+        "L1"
+      ],
+      "variant": "日志",
+      "group": "P08",
+      "srcFile": "SVG源稿/P08f.svg",
+      "artKeys": [
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:return",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P08g",
+      "title": "系统说明 · 主题阅读",
+      "template": "reading",
+      "components": [
+        "HelpOverlay"
+      ],
+      "refs": [
+        "U2",
+        "I2",
+        "L1"
+      ],
+      "variant": "说明",
+      "group": "P08",
+      "srcFile": "SVG源稿/P08g.svg",
+      "artKeys": [
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:return",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P08h",
+      "title": "留守候补 · 队伍与认领箱",
+      "template": "people",
+      "components": [
+        "PartyPanel",
+        "CharacterPanel"
+      ],
+      "refs": [
+        "U1",
+        "C1",
+        "C3",
+        "I3"
+      ],
+      "variant": "候补",
+      "group": "P08",
+      "srcFile": "SVG源稿/P08h.svg",
+      "artKeys": [
+        "actor:npc_lin_zhao",
+        "actor:npc_zhou_yan",
+        "actor:p0",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P09a",
+      "title": "营地对白 · 阅读锁",
+      "template": "dialogue",
+      "components": [
+        "DialogueLayer",
+        "DialogueLines"
+      ],
+      "refs": [
+        "U2",
+        "C3",
+        "M1",
+        "L1"
+      ],
+      "variant": "营地对白",
+      "group": "P09",
+      "srcFile": "SVG源稿/P09a.svg",
+      "artKeys": [
+        "actor:baobao",
+        "actor:p0",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P09b",
+      "title": "战斗内对白 · 发言覆盖",
+      "template": "battle",
+      "components": [
+        "DialogueLayer",
+        "DialogueLines",
+        "BattleScreen"
+      ],
+      "refs": [
+        "U3",
+        "L2",
+        "C3",
+        "E2"
+      ],
+      "variant": "战斗对白",
+      "group": "P09",
+      "srcFile": "SVG源稿/P09b.svg",
+      "artKeys": [
+        "action:bandage",
+        "action:breathe",
+        "action:guard",
+        "action:retreat",
+        "action:swap",
+        "actor:npc_lin_zhao",
+        "actor:npc_shen_he",
+        "actor:npc_zhou_yan",
+        "actor:p0",
+        "enemy:shambler",
+        "enemy:z_hauler",
+        "enemy:z_helmet",
+        "enemy:z_spitter",
+        "glyph:battle",
+        "glyph:continue",
+        "glyph:equipment",
+        "glyph:fear",
+        "glyph:health",
+        "glyph:menu",
+        "glyph:storage",
+        "skill:unarmed_01",
+        "skill:unarmed_03",
+        "skill:unarmed_05",
+        "skill:unarmed_07",
+        "skill:unarmed_10"
+      ]
+    },
+    {
+      "id": "P09c",
+      "title": "对话记录 · 历史身份",
+      "template": "dialogue",
+      "components": [
+        "DialogueLogOverlay",
+        "DialogueLines"
+      ],
+      "refs": [
+        "U2",
+        "C2",
+        "C3",
+        "M1"
+      ],
+      "variant": "对话记录",
+      "group": "P09",
+      "srcFile": "SVG源稿/P09c.svg",
+      "artKeys": [
+        "actor:p0",
+        "duty:npc_xu_an",
+        "glyph:close",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "P09d",
+      "title": "岗位代班 · 接续对白",
+      "template": "dialogue",
+      "components": [
+        "DialogueLayer",
+        "DialogueLines",
+        "PrologueCards"
+      ],
+      "refs": [
+        "U2",
+        "C2",
+        "C3",
+        "M1"
+      ],
+      "variant": "代班对白",
+      "group": "P09",
+      "srcFile": "SVG源稿/P09d.svg",
+      "artKeys": [
+        "actor:p0",
+        "duty:npc_xu_an",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:help",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:rest",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "PXa",
+      "title": "标题 · 新游戏与继续",
+      "template": "title",
+      "components": [
+        "Root",
+        "StartScreen"
+      ],
+      "refs": [
+        "U1",
+        "M1",
+        "C1"
+      ],
+      "variant": "标题",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXa.svg",
+      "artKeys": [
+        "actor:p0",
+        "glyph:camp",
+        "glyph:continue",
+        "glyph:fresh",
+        "glyph:help"
+      ]
+    },
+    {
+      "id": "PXb",
+      "title": "游戏菜单 · 阅读与设置",
+      "template": "modal",
+      "components": [
+        "MenuOverlay"
+      ],
+      "refs": [
+        "U1",
+        "L1",
+        "M1"
+      ],
+      "variant": "菜单",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXb.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:shelter",
+        "facility:workbench",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:return",
+        "glyph:satiety",
+        "glyph:save",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "PXc",
+      "title": "结局 · 生存结算",
+      "template": "title",
+      "components": [
+        "EndScreens"
+      ],
+      "refs": [
+        "U3",
+        "M1",
+        "C3"
+      ],
+      "variant": "生存结算",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXc.svg",
+      "artKeys": [
+        "actor:p0",
+        "glyph:camp",
+        "glyph:fresh",
+        "glyph:log",
+        "glyph:return"
+      ]
+    },
+    {
+      "id": "PXd",
+      "title": "撤出确认 · 已确认战利品",
+      "template": "modal",
+      "components": [
+        "ExpeditionAbort",
+        "ExpeditionInfo"
+      ],
+      "refs": [
+        "U3",
+        "L1",
+        "E1"
+      ],
+      "variant": "撤出",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXd.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:shelter",
+        "facility:workbench",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:dungeon",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:route",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "PXe",
+      "title": "行动暂停 · 补给与继续",
+      "template": "modal",
+      "components": [
+        "PauseLayer",
+        "CentralProgress"
+      ],
+      "refs": [
+        "U1",
+        "L1",
+        "I1",
+        "I2"
+      ],
+      "variant": "暂停",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXe.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:shelter",
+        "facility:workbench",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "PXf",
+      "title": "新局序章 · 营地醒来",
+      "template": "title",
+      "components": [
+        "PrologueCards",
+        "DialogueLayer"
+      ],
+      "refs": [
+        "U2",
+        "M1",
+        "C3"
+      ],
+      "variant": "序章",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXf.svg",
+      "artKeys": [
+        "actor:p0",
+        "glyph:camp",
+        "glyph:continue",
+        "glyph:history"
+      ]
+    },
+    {
+      "id": "PXg",
+      "title": "背包超额 · 处理待放物品",
+      "template": "modal",
+      "components": [
+        "OverflowOverlay",
+        "ItemShelf"
+      ],
+      "refs": [
+        "I1",
+        "I3",
+        "U3",
+        "L1"
+      ],
+      "variant": "超额",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXg.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:shelter",
+        "facility:workbench",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "PXh",
+      "title": "数量 · 选择转移份数",
+      "template": "modal",
+      "components": [
+        "DropQuantity",
+        "TransferArrow"
+      ],
+      "refs": [
+        "I1",
+        "I3",
+        "U1",
+        "L1"
+      ],
+      "variant": "数量",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXh.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:shelter",
+        "facility:workbench",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "PXi",
+      "title": "远征封存 · 战利品与去向",
+      "template": "modal",
+      "components": [
+        "ExpeditionSeal",
+        "ExpeditionInfo"
+      ],
+      "refs": [
+        "I3",
+        "U3",
+        "M2"
+      ],
+      "variant": "封存",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXi.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:shelter",
+        "facility:workbench",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:cloth",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "PXj",
+      "title": "地牢重置 · 风险确认",
+      "template": "modal",
+      "components": [
+        "DungeonReset",
+        "ExpeditionInfo"
+      ],
+      "refs": [
+        "U3",
+        "M2",
+        "E2"
+      ],
+      "variant": "重置",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXj.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:shelter",
+        "facility:workbench",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:dungeon",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:history",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "PXk",
+      "title": "存档失败 · 恢复与重试",
+      "template": "world",
+      "components": [
+        "GameScreen",
+        "StartScreen"
+      ],
+      "refs": [
+        "U3",
+        "U1",
+        "L1"
+      ],
+      "variant": "保存失败",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXk.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:shelter",
+        "facility:workbench",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:save",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    },
+    {
+      "id": "PXl",
+      "title": "失败结局 · 死亡与回看",
+      "template": "title",
+      "components": [
+        "EndScreens",
+        "LogOverlay"
+      ],
+      "refs": [
+        "U3",
+        "M1",
+        "C3"
+      ],
+      "variant": "死亡",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXl.svg",
+      "artKeys": [
+        "enemy:z_helmet",
+        "glyph:fresh",
+        "glyph:log",
+        "glyph:return",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "PXm",
+      "title": "加载中、读档与覆盖确认",
+      "template": "title",
+      "components": [
+        "Root",
+        "StartScreen"
+      ],
+      "refs": [
+        "U1",
+        "M1"
+      ],
+      "variant": "读档",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXm.svg",
+      "artKeys": [
+        "actor:p0",
+        "glyph:continue",
+        "glyph:return",
+        "glyph:save",
+        "glyph:warning"
+      ]
+    },
+    {
+      "id": "PXn",
+      "title": "行动推进 · 进度与退出",
+      "template": "world",
+      "components": [
+        "CentralProgress",
+        "PreviewView",
+        "AnchorPop"
+      ],
+      "refs": [
+        "U1",
+        "U3",
+        "L1"
+      ],
+      "variant": "行动推进",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXn.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:shelter",
+        "facility:workbench",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:progress",
+        "glyph:rest",
+        "glyph:return",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood",
+        "resource:woods:wood"
+      ]
+    },
+    {
+      "id": "PXo",
+      "title": "反馈与留言 · 本局上下文",
+      "template": "modal",
+      "components": [
+        "StartScreen",
+        "GameScreen"
+      ],
+      "refs": [
+        "U1",
+        "U2",
+        "L1"
+      ],
+      "variant": "反馈",
+      "group": "PX",
+      "srcFile": "SVG源稿/PXo.svg",
+      "artKeys": [
+        "facility:bed",
+        "facility:fire_lit",
+        "facility:safehouse",
+        "facility:shelter",
+        "facility:workbench",
+        "glyph:continue",
+        "glyph:craft",
+        "glyph:dialogue",
+        "glyph:energy",
+        "glyph:equipment",
+        "glyph:formation",
+        "glyph:goal",
+        "glyph:growth",
+        "glyph:health",
+        "glyph:help",
+        "glyph:history",
+        "glyph:hydration",
+        "glyph:immunity",
+        "glyph:log",
+        "glyph:map",
+        "glyph:menu",
+        "glyph:morale",
+        "glyph:rest",
+        "glyph:satiety",
+        "glyph:storage",
+        "glyph:virus",
+        "glyph:wakefulness",
+        "glyph:warning",
+        "item:bandage",
+        "item:berry",
+        "item:canned_food",
+        "item:clean_water",
+        "item:fiber",
+        "item:lighter",
+        "item:pot",
+        "item:raw_root",
+        "item:stone",
+        "item:wood"
+      ]
+    }
+  ]
+}
