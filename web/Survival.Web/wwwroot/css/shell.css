@@ -45,3 +45,120 @@
 .title-card .title-pref .pref-group .eyebrow { margin: 0; font-size: var(--fs-body); white-space: nowrap; }
 .title-card .title-pref .btn-row { flex: 1 1 auto; }
 .title-card .actions .secondary.on { border-color: var(--accent); color: var(--accent); }
+
+/* ───── Q325 外壳几何：三档令牌 ───── */
+/* 档位按视口高度切换（与现有 800/1000 断点一致）：≤800 为 1280×720 档 ×0.8，801—999 为 1600×900 基准档，≥1000 为 1920×1080 档 ×1.2。
+   顶栏双行：品牌行 + 12 键一排（Q292、R51）；键高不低于 40 的触控下限，1280 档顶栏因此取 84 而非 77。 */
+:root {
+  --sh-side: 24px;      /* 左右外边 */
+  --sh-brand: 44px;     /* 品牌行高 */
+  --sh-row-gap: 8px;    /* 品牌行与键行间距 */
+  --sh-key-h: 40px;
+  --sh-key-gap: 10px;
+  --sh-key-pad: 32px;   /* 第一个键左缘 */
+  --sh-top-bottom: 4px;
+  --sh-left: 192px;
+  --sh-right: 262px;
+  --sh-col-gap: 14px;
+  --sh-pad-top: 14px;
+  --sh-pad-bottom: 16px;
+  --sh-foot: 38px;
+  --sh-gap: 9px;        /* 四轨间距 */
+}
+@media (max-height: 800px) {
+  :root {
+    --sh-side: 19px; --sh-brand: 35px; --sh-row-gap: 6px; --sh-key-h: 40px; --sh-key-gap: 8px; --sh-key-pad: 26px; --sh-top-bottom: 3px;
+    --sh-left: 154px; --sh-right: 210px; --sh-col-gap: 11px; --sh-pad-top: 11px; --sh-pad-bottom: 13px; --sh-foot: 30px; --sh-gap: 7px;
+    --pop-w: 608px; --pop-h: 438px; --float-w: 461px; --float-h: 225px;
+  }
+}
+@media (min-height: 1000px) {
+  :root {
+    --sh-side: 29px; --sh-brand: 53px; --sh-row-gap: 10px; --sh-key-h: 48px; --sh-key-gap: 12px; --sh-key-pad: 38px; --sh-top-bottom: 4px;
+    --sh-left: 230px; --sh-right: 314px; --sh-col-gap: 17px; --sh-pad-top: 17px; --sh-pad-bottom: 19px; --sh-foot: 46px; --sh-gap: 11px;
+    --pop-w: 912px; --pop-h: 656px; --float-w: 691px; --float-h: 337px;
+  }
+}
+:root {
+  --sh-top: calc(var(--sh-brand) + var(--sh-row-gap) + var(--sh-key-h) + var(--sh-top-bottom));
+  --top-h: var(--sh-top);
+  --foot-h: var(--sh-foot);
+  --gap: var(--sh-gap);
+}
+
+.game { grid-template-rows: var(--sh-top) minmax(0, 1fr) var(--sh-foot); }
+.wasteland .top {
+  min-height: 0; height: var(--sh-top); padding: 0 var(--sh-side) var(--sh-top-bottom);
+  display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: var(--sh-brand) var(--sh-key-h);
+  row-gap: var(--sh-row-gap); align-items: stretch; justify-content: stretch;
+}
+.wasteland .top .brand { flex: none; align-items: center; padding-left: calc(var(--sh-key-pad) - var(--sh-side)); min-width: 0; }
+.wasteland .top .nav {
+  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--sh-key-gap);
+  padding-left: calc(var(--sh-key-pad) - var(--sh-side)); justify-content: stretch; align-items: stretch; flex-wrap: nowrap;
+}
+.wasteland .top .nav button { min-width: 0; width: 100%; height: var(--sh-key-h); min-height: 40px; padding: 0 4px; overflow: hidden; text-overflow: ellipsis; }
+
+.wasteland .body {
+  padding: var(--sh-pad-top) var(--sh-side) var(--sh-pad-bottom);
+  grid-template-columns: var(--sh-left) minmax(0, 1fr) var(--sh-right);
+  column-gap: var(--sh-col-gap); row-gap: 0;
+}
+.wasteland .center-scroll.four { gap: var(--sh-gap); }
+.wasteland .footer { padding-left: var(--sh-side); }
+
+/* ───── R53 左栏「生存状况」（P01a） ───── */
+/* 一整块铁框：标题、时钟、属性区（单独滚动）、负重块（固定在底部，任何档位不滚动可见） */
+.wasteland .sidebar.sl {
+  display: flex; flex-direction: column; gap: 0; overflow: hidden; min-height: 0;
+  padding: 10px 12px 10px;
+}
+.sl .sl-title { flex: 0 0 auto; margin: 0 0 6px; font-size: var(--fs-title); font-weight: 500; color: var(--ink2-light); font-family: var(--title-font); line-height: 1.25; }
+.sl .sl-clock { flex: 0 0 auto; padding: 4px 0 8px; border-bottom: 1px solid color-mix(in srgb, var(--ink2-line) 60%, transparent); }
+.sl .sl-now { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 2px; }
+.sl .sl-phase { font-size: var(--fs-body); color: var(--ink2-light); white-space: nowrap; }
+.sl .sl-now .time { font-size: var(--fs-display); line-height: 1.15; color: var(--ink2-gold); white-space: nowrap; }
+.sl .sl-clock .sun { margin-top: 2px; }
+.sl .sl-vitals { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 6px 2px 4px 0; }
+.wasteland .sl .vital { padding: 2px 0 4px 32px; min-height: 40px; }
+.sl .vital-label { margin-bottom: 2px; gap: 0 6px; align-items: baseline; flex-wrap: wrap; }
+/* 紧凑时先换行（Q327）：数值放不下才落到第二行右对齐，不裁切 */
+.sl .vital-label b { margin-left: auto; }
+.sl .vital-label span, .sl .vital-label b { white-space: nowrap; }
+.sl .vital-label b small { font-size: var(--fs-aux); }
+.sl .vital-bar { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.sl .vital-bar .flag { flex: 0 0 auto; margin: 0; line-height: 1; white-space: nowrap; }
+.sl .vital-bar .track { flex: 1 1 auto; min-width: 0; }
+.wasteland .sl .vital-icon { width: 24px; height: 27px; }
+.sl .sl-weight {
+  flex: 0 0 auto; position: relative; padding: 8px 0 0 34px; margin-top: 4px;
+  border-top: 1px solid color-mix(in srgb, var(--ink2-line) 60%, transparent);
+}
+.sl .sl-weight .weight-icon { position: absolute; left: 0; top: 10px; width: 28px; height: 28px; }
+.sl .slw-row { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; white-space: nowrap; line-height: 1.35; }
+.sl .slw-row > span { color: var(--ink2-light); }
+.sl .slw-row strong, .sl .slw-row b { font-weight: 500; font-variant-numeric: tabular-nums; color: var(--ink2-gold); }
+.sl .slw-state { font-size: var(--fs-aux); color: var(--muted); line-height: 1.3; }
+@media (max-height: 800px) {
+  .wasteland .sidebar.sl { padding: 8px 6px 8px 7px; }
+  .sl .sl-title { margin-bottom: 2px; }
+  .sl .sl-clock { padding: 2px 0 5px; }
+  .sl .sl-vitals { padding-top: 4px; }
+  .wasteland .sl .vital { padding: 1px 0 3px 21px; }
+  .wasteland .sl .vital-icon { width: 18px; height: 21px; top: 2px; left: 0; }
+  .sl .vital-label { column-gap: 4px; }
+  .sl .sl-vitals { padding-right: 0; }
+  .sl .sl-weight { padding-left: 30px; padding-top: 5px; }
+  .sl .sl-weight .weight-icon { width: 24px; height: 24px; top: 7px; }
+}
+
+/* ───── R54 右栏（P01a、P01f；Q328、Q329） ───── */
+.detail .sr-title { flex: 0 0 auto; margin: 2px 0 0; font-size: var(--fs-title); font-weight: 500; font-family: var(--title-font); color: var(--ink2-light); line-height: 1.25; }
+.detail .place-summary { margin: 6px 0 0; line-height: 1.5; text-align: left; display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+.detail .place-summary h3 { margin: 0; font-size: var(--fs-body); color: var(--ink2-gold); font-weight: 600; }
+.detail .place-summary .ps-lines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; color: var(--ink2-light); }
+.detail .place-summary .ps-hint { margin: 4px 0 0; color: var(--muted); }
+.detail .place-summary .notice { margin-top: 4px; }
+.attr-page .op-head h2 { margin: 0 0 4px; font-size: var(--fs-title); font-weight: 500; }
+.attr-page .op-head .attr-name { font-size: var(--fs-body); color: var(--ink2-gold); }
+.attr-page .op-head .attr-name small { font-size: var(--fs-aux); }

@@ -28,9 +28,10 @@
         var th = cfg.Thresholds[GameEngine.StatKey(id)];
         var below = th.IsBelow(v);
         var zero = v <= 0 && id != StatId.Health;
+        @* Q329、P01f：左栏属性点开的说明子页标题「身体状态」，下面是所选属性及实际值 *@
         <div class="op-head">
-            <div class="eyebrow">基础属性</div>
-            <h2>@GameEngine.StatName(id) <small class="muted">@Ui.N(v)/@Ui.T(s.Stats.Max(id))</small></h2>
+            <h2>@ShellText.BodyTitle</h2>
+            <div class="attr-name">@ShellText.LeftStatName(id) <small class="muted">@Ui.N(v)/@Ui.T(s.Stats.Max(id))</small></div>
         </div>
         <div class="track big"><i style="width:@Ui.Bar(v, s.Stats.Max(id))%"></i><span class="mark" style="left:@Ui.Bar(th.Value, s.Stats.Max(id))%"></span></div>
         <div class="lines">
@@ -47,8 +48,8 @@
     {
         var (ir, _, why) = e.CurrentBodyRates(s);
         <div class="op-head">
-            <div class="eyebrow">免疫与感染</div>
-            <h2>免疫力 <small class="muted">@Ui.N(s.Body.Immunity)/@Ui.T(cfg.Immunity.Max)</small></h2>
+            <h2>@ShellText.BodyTitle</h2>
+            <div class="attr-name">免疫力 <small class="muted">@Ui.N(s.Body.Immunity)/@Ui.T(cfg.Immunity.Max)</small></div>
         </div>
         <div class="track big"><i style="width:@Ui.Bar(s.Body.Immunity, cfg.Immunity.Max)%"></i><span class="mark" style="left:@Ui.Bar(cfg.Infection.NaturalCure.ConsecutiveImmunityAtLeast, cfg.Immunity.Max)%"></span></div>
         <div class="lines">
@@ -64,8 +65,9 @@
         var b = s.Body;
         var (_, vr, _) = e.CurrentBodyRates(s);
         <div class="op-head">
-            <div class="eyebrow">免疫与感染</div>
-            <h2>病毒 <small class="muted">@(b.Infected ? $"{Ui.N(b.VirusLoad)}/{Ui.T(cfg.Infection.ZombificationAtLoad)}" : "未感染")</small></h2>
+            <h2>@ShellText.BodyTitle</h2>
+            @* P01f：未感染显示「病毒 · 未感染」，已感染按真实值 *@
+            <div class="attr-name">@if (b.Infected) {<text>病毒 <small class="muted">@Ui.N(b.VirusLoad)/@Ui.T(cfg.Infection.ZombificationAtLoad)</small></text>} else {<text>病毒 · 未感染</text>}</div>
         </div>
         <div class="track big"><i style="width:@Ui.Bar(b.VirusLoad, cfg.Infection.ZombificationAtLoad)%"></i></div>
         <div class="lines">

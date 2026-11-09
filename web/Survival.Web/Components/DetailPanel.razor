@@ -1,9 +1,9 @@
 @inherits GameComponent
 
 @* 右栏（基础UI布局与操作修订案 v0.7 第 6.1 节；S14 §11.1 起执行进度移到中央推进条）：
-   固定两个页签“对象信息 / 人物” → 详情区。
-   悬停具体操作时详情区临时显示预测，离开恢复原页签；无选中时默认人物页，选中任何对象自动切到对象信息；
-   点“对象信息”而对象已消失时提示“未选中对象”。页签只在会话内，不持久化。 *@
+   固定两个页签「对象」「人物」（B31b R54，逐字稿 §2 右栏）→ 详情区；对象页顶部区标题「对象详情」。
+   悬停具体操作时详情区临时显示预测，离开恢复原页签；无选中时默认人物页，选中任何对象自动切到对象页；
+   对象页没有当前对象、也没有面板详情／临时预估／战斗详情接管时，显示 Q328「当前位置」摘要和「选择对象查看详情。」。页签只在会话内，不持久化。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -18,14 +18,18 @@
     var shownTab = !battlePanel && G.HoverPreview != null && G.Panel == null ? DetailTab.Object : tab;
 }
 
-<aside class="panel detail" aria-label="对象信息与人物" inert="@G.DialogueLocked">
+<aside class="panel detail" aria-label="@($"{ShellText.ObjectTab}与{ShellText.CharacterTab}")" inert="@G.DialogueLocked">
     @* 开始后的执行进度、剩余时间与退出统一在屏幕中央（S14 §5.1、§11.1），右栏不再重复显示；开始前悬停/选中的预估照常在下方显示 *@
     <div class="detail-tabs" role="tablist" aria-label="右栏页签">
         <button type="button" role="tab" aria-selected="@(shownTab == DetailTab.Object)" class="@(shownTab == DetailTab.Object ? "on" : "")"
-                @onclick="() => G.SetDetailTab(DetailTab.Object)">对象信息</button>
+                @onclick="() => G.SetDetailTab(DetailTab.Object)">@ShellText.ObjectTab</button>
         <button type="button" role="tab" aria-selected="@(shownTab == DetailTab.Character)" class="@(shownTab == DetailTab.Character ? "on" : "")"
-                @onclick="() => G.SetDetailTab(DetailTab.Character)">人物</button>
+                @onclick="() => G.SetDetailTab(DetailTab.Character)">@ShellText.CharacterTab</button>
     </div>
+    @if (shownTab == DetailTab.Object && !G.BattleFullscreen)
+    {
+        <h2 class="sr-title">@ShellText.ObjectTitle</h2>
+    }
     @* B13 序章任务框（试玩修复 M269：从地图卡内移到这里，三档都能直接看到、不压任何按钮） *@
     <TaskCorner />
     <div class="detail-body" role="tabpanel">
@@ -118,10 +122,14 @@
                 <EnemyDetail />
                 break;
             default:
-                <div class="empty-detail">
-                    <b>未选中对象</b><br />
-                    选择地点、路线、资源、设施或物品查看信息；<br />执行、使用与转移都在对应卡片上或卡旁
-                    @if (G.RightNotice != null) { <div class="notice" style="margin-top:12px">@G.RightNotice</div> }
+                @* Q328：读当前实际地点（不跟随选中的地图节点或未抵达的目的地），字段缺失时省略该行；下面保留当前有效的原反馈 *@
+                <div class="empty-detail place-summary">
+                    <h3>@ShellText.PlaceTitle</h3>
+                    <ul class="ps-lines">
+                        @foreach (var line in e.CurrentPlaceSummary(s)) { <li>@line</li> }
+                    </ul>
+                    <p class="ps-hint">@ShellText.ObjectEmptyHint</p>
+                    @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
                 </div>
                 break;
         }

@@ -208,6 +208,44 @@ public class B31bShellTests : TestBase
         Assert.That(t, Does.Contain("<PresentationSettings FontOnly=\"true\" />"));
     }
 
+    /// <summary>Q325：外壳三档几何令牌（1600 基准、1280 ×0.8、1920 ×1.2 取整），顶栏双行 12 键一排。</summary>
+    [Test]
+    public void Q325_ShellGeometryTiers()
+    {
+        var css = Web("wwwroot", "css", "shell.css");
+        foreach (var v in new[] { "--sh-left: 192px", "--sh-right: 262px", "--sh-side: 24px", "--sh-foot: 38px",
+                                  "--sh-left: 154px", "--sh-right: 210px", "--sh-side: 19px", "--sh-foot: 30px",
+                                  "--sh-left: 230px", "--sh-right: 314px", "--sh-side: 29px", "--sh-foot: 46px",
+                                  "--pop-w: 760px", "--pop-w: 608px", "--pop-w: 912px" })
+            Assert.That(css, Does.Contain(v), v);
+        Assert.That(css, Does.Contain("grid-template-columns: repeat(12, minmax(0, 1fr))"), "顶栏 12 键一排");
+        Assert.That(Web("wwwroot", "index.html"), Does.Contain("css/shell.css"));
+    }
+
+    /// <summary>R53：左栏一块「生存状况」，左栏属性名、负重、随身物品；第几日在顶栏不重复；状态标记在条前（不和名称抢行）。</summary>
+    [Test]
+    public void R53_LeftPanel()
+    {
+        var hud = Web("Components", "Hud.razor");
+        Assert.That(hud, Does.Contain("ShellText.LeftTitle").And.Contain("ShellText.LeftStatName(id)").And.Contain("ShellText.Weight").And.Contain("ShellText.Carried"));
+        Assert.That(hud, Does.Not.Contain("存活第").And.Not.Contain("携带重量"));
+        Assert.That(hud, Does.Contain("<div class=\"vital-bar\">@if (body.Infected) {<em class=\"flag danger-text\">已感染</em>}"));
+        Assert.That(Web("wwwroot", "css", "shell.css"), Does.Contain(".sl .sl-vitals { flex: 1 1 auto; min-height: 0; overflow-y: auto;"), "属性区单独滚动，负重块固定在底部");
+    }
+
+    /// <summary>R54、Q328、Q329：右栏页签「对象」「人物」、区标题「对象详情」、空态当前位置摘要；属性子页标题「身体状态」。</summary>
+    [Test]
+    public void R54_RightPanel()
+    {
+        var d = Web("Components", "DetailPanel.razor");
+        Assert.That(d, Does.Contain("ShellText.ObjectTab").And.Contain("ShellText.CharacterTab").And.Contain("ShellText.ObjectTitle"));
+        Assert.That(d, Does.Contain("e.CurrentPlaceSummary(s)").And.Contain("ShellText.PlaceTitle").And.Contain("ShellText.ObjectEmptyHint"));
+        Assert.That(d, Does.Not.Contain("未选中对象").And.Not.Contain(">对象信息<"));
+        var a = Web("Components", "AttrDetail.razor");
+        Assert.That(Regex.Matches(a, "ShellText.BodyTitle").Count, Is.EqualTo(3), "基础属性、免疫、病毒三类子页");
+        Assert.That(a, Does.Contain("病毒 · 未感染"));
+    }
+
     private static string Root()
     {
         var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);

@@ -1,7 +1,8 @@
 @inherits GameComponent
 
-@* 左栏（S14 §5.1、§12）：时间、基础状态数值/条、各属性下方的实际生效状态图标、携重摘要。
-   原“生存目标”“生存提示”长板块已迁到顶栏同名按钮（S14 §12.3、S15 §6）；点属性在右栏打开该属性的二级说明页。 *@
+@* 左栏（S14 §5.1、§12；B31b R53 按 a9b93f0 P01a）：一块「生存状况」框，自上而下为「{时段} · {时刻}」与距入夜／天亮、
+   八项基础属性（名称、数值、条、实际生效状态图标）、负重块。属性区单独滚动，负重块固定在底部，1280×720 不用滚动也看得到。
+   原“生存目标”“生存提示”长板块已迁到顶栏同名按钮（S14 §12.3、S15 §6）；点属性在右栏打开「身体状态」说明子页（Q329）。 *@
 @{
     var s = G.S;
     var e = G.E;
@@ -9,19 +10,19 @@
     var day = e.IsDaylight(s.GameMinute);
     var toSwitch = Clock.MinutesToSwitch(s.GameMinute, cfg.Time.DaylightStartMinute, cfg.Time.DaylightEndMinute);
     var grams = e.CarriedGrams(s);
-    var currentDay = Clock.Day(s.GameMinute);
     var chips = StatusView.Ordered(StatusView.All(e, s));
     var locked = G.DialogueLocked;
 }
 
-<aside class="sidebar" aria-label="求生状态" inert="@locked">
-    <div class="panel clock">
-        <div class="eyebrow">存活第@(currentDay)日</div>
-        <div class="time">@Clock.HHmm(s.GameMinute)</div>
-        <div class="sun">@(day ? "白昼" : "夜间") · 距@(day ? "入夜" : "天亮")@Clock.Duration(toSwitch)</div>
+<aside class="sidebar panel sl" aria-label="@ShellText.LeftTitle" inert="@locked">
+    <h2 class="sl-title">@ShellText.LeftTitle</h2>
+    @* §2「{时段} · {时刻}」；第几日在顶栏品牌行（「第{世界日}日 · {地点}」），此处不重复 *@
+    <div class="sl-clock">
+        <div class="sl-now"><span class="sl-phase">@(day ? "白昼" : "夜间") · </span><span class="time">@Clock.HHmm(s.GameMinute)</span></div>
+        <div class="sun">距@(day ? "入夜" : "天亮")@Clock.Duration(toSwitch)</div>
     </div>
 
-    <div class="panel vitals">
+    <div class="sl-vitals">
         @foreach (var id in Stats.All)
         {
             var v = s.Stats.Get(id);
@@ -34,10 +35,11 @@
             <button class="vital @cls" data-stat="@key" @onclick="() => OpenStat(statId)" title="@($"在右栏查看{GameEngine.StatName(id)}说明")">
                 <VitalIcon Stat="@key" />
                 <div class="vital-label">
-                    <span>@GameEngine.StatName(id)@if (zero && id != StatId.Health) {<em class="flag danger-text">归零</em>} else if (below) {<em class="flag">偏低</em>}</span>
+                    <span>@ShellText.LeftStatName(id)</span>
                     <b>@Ui.N(v) <small class="muted">/@Ui.T(s.Stats.Max(id))</small></b>
                 </div>
-                <div class="track"><i style="width:@Ui.Bar(v, s.Stats.Max(id))%"></i><span class="mark" style="left:@Ui.Bar(th.Value, s.Stats.Max(id))%"></span></div>
+                @* 「偏低」「归零」移到条前，不和名称、数值抢一行（窄栏不折行） *@
+                <div class="vital-bar">@if (zero && id != StatId.Health) {<em class="flag danger-text">归零</em>} else if (below) {<em class="flag">偏低</em>}<div class="track"><i style="width:@Ui.Bar(v, s.Stats.Max(id))%"></i><span class="mark" style="left:@Ui.Bar(th.Value, s.Stats.Max(id))%"></span></div></div>
             </button>
             <StatusIcons Chips="@chips.Where(c => c.Anchor == key).ToList()" Label="@GameEngine.StatName(id)" />
         }
@@ -49,19 +51,20 @@
         <button class="vital @(immLow ? "warning" : "")" data-stat="immunity" @onclick='() => G.OpenCharPage("immunity")' title="在右栏查看免疫力说明">
             <VitalIcon Stat="immunity" />
             <div class="vital-label">
-                <span>@("免疫")@if (immLow) {<em class="flag">偏低</em>}</span>
+                <span>免疫</span>
                 <b>@Ui.N(body.Immunity) <small class="muted">/@Ui.T(cfg.Immunity.Max)</small></b>
             </div>
-            <div class="track"><i style="width:@Ui.Bar(body.Immunity, cfg.Immunity.Max)%"></i><span class="mark" style="left:@Ui.Bar(cfg.Infection.NaturalCure.ConsecutiveImmunityAtLeast, cfg.Immunity.Max)%"></span></div>
+            <div class="vital-bar">@if (immLow) {<em class="flag">偏低</em>}<div class="track"><i style="width:@Ui.Bar(body.Immunity, cfg.Immunity.Max)%"></i><span class="mark" style="left:@Ui.Bar(cfg.Infection.NaturalCure.ConsecutiveImmunityAtLeast, cfg.Immunity.Max)%"></span></div></div>
         </button>
         <StatusIcons Chips="@chips.Where(c => c.Anchor == "immunity").ToList()" Label="免疫" />
         <button class="vital @(body.Infected ? (body.VirusLoad >= 50 ? "critical" : "warning") : "")" data-stat="virus" @onclick='() => G.OpenCharPage("virus")' title="在右栏查看病毒说明">
             <VitalIcon Stat="virus" />
             <div class="vital-label">
-                <span>@("病毒")@if (body.Infected) {<em class="flag danger-text">已感染</em>}</span>
+                <span>病毒</span>
                 <b>@(body.Infected ? Ui.N(body.VirusLoad) : "未感染")@if (body.Infected) {<small class="muted">/@Ui.T(cfg.Infection.ZombificationAtLoad)</small>}</b>
             </div>
-            <div class="track"><i style="width:@Ui.Bar(body.VirusLoad, cfg.Infection.ZombificationAtLoad)%"></i></div>
+            @* 「已感染」在条前（修 B31a 遗留：病毒值两位数时与名称同行折行） *@
+            <div class="vital-bar">@if (body.Infected) {<em class="flag danger-text">已感染</em>}<div class="track"><i style="width:@Ui.Bar(body.VirusLoad, cfg.Infection.ZombificationAtLoad)%"></i></div></div>
         </button>
         <StatusIcons Chips="@chips.Where(c => c.Anchor == "virus").ToList()" Label="病毒" />
     </div>
@@ -77,14 +80,13 @@
         var worn = e.WornGrams(s);
         var weightTip = $"总重{Ui.KgText(grams)}{(worn > 0 ? $"，含穿戴{Ui.KgText(worn)}" : "")}；随身物资卡{cardsUsed}/{e.MaxRootCards}张（穿戴不占卡）";
     }
-    <div class="panel weight" title="@weightTip" aria-label="@($"当前角色携重：{Ui.KgText(grams)}{(worn > 0 ? $"（含穿戴{Ui.KgText(worn)}）" : "")}，{(over ? "超重" : "轻装")}，随身{cardsUsed}/{e.MaxRootCards}张卡")">
+    @* 负重块（§2 左栏「负重」「随身物品」，常用实值「{重量}公斤」「{已占卡位}/{卡位上限}」）：总重含穿戴，卡位只数随身物资根卡；
+       轻装／超重照旧显示；减速与上限阈值收进悬停提示（窄栏放不下整句） *@
+    <div class="sl-weight" title="@($"{weightTip}；超过{cfg.Carry.SoftGrams / 1000}公斤减速 · 上限{cfg.Carry.HardGrams / 1000}公斤")" aria-label="@($"{ShellText.Weight}{Ui.KgText(grams)}{(worn > 0 ? $"（含穿戴{Ui.KgText(worn)}）" : "")}，{(over ? "超重" : "轻装")}，{ShellText.Carried}{cardsUsed}/{e.MaxRootCards}")">
         <span class="weight-icon" aria-hidden="true">@Icons.Markup("backpack")</span>
-        <div class="eyebrow">携带重量 · @(over ? "超重" : "轻装")</div>
-        <div class="weight-main">
-            <strong class="@(over ? "warn-text" : "")">@Ui.KgText(grams)</strong>
-            <span class="weight-cards @(cardsUsed > e.MaxRootCards ? "warn-text" : "")" title="随身已用卡位 / 上限（同物品多批、超堆叠按真实占格计）">@cardsUsed/@(e.MaxRootCards)张卡</span>
-        </div>
-        <div class="tiny muted">超过@(cfg.Carry.SoftGrams / 1000)公斤减速 · 上限@(cfg.Carry.HardGrams / 1000)公斤</div>
+        <div class="slw-row"><span>@ShellText.Weight</span><strong class="@(over ? "warn-text" : "")">@Ui.KgText(grams)</strong></div>
+        <div class="slw-row"><span>@ShellText.Carried</span><b class="@(cardsUsed > e.MaxRootCards ? "warn-text" : "")">@cardsUsed/@(e.MaxRootCards)</b></div>
+        <div class="slw-state @(over ? "warn-text" : "")">@(over ? "超重" : "轻装")</div>
     </div>
 </aside>
 
