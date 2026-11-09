@@ -17,6 +17,7 @@
             <h2>接敌还是绕行？</h2>
             <p>原@(s.Encounter.Source == "explore" ? "探索" : "清理")的结果已经提交，不会因为这次选择回滚。</p>
         </div>
+        @* 试玩修复 M553：这一支 b（s.Battle）一定为空，视角成员取 MeId（敌踪时就是主角），不能读战斗里的 FocusId *@
         @{ var joinIds = e.EncounterJoiners(s).Select(x => x.Id).ToHashSet(); }
         @foreach (var w in e.EncounterEnemies(s))
         {
@@ -29,7 +30,7 @@
             }
             <div class="lines enemy-lines">
                 <div><span>@ec.Name</span><b>健康@(Ui.N(w.Hp))/@(Ui.N(ec.Hp)) · 甲@(Ui.T(ec.Armor))</b></div>
-                <div><span>对@(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))命中率</span><b>@Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.MyBaseDodge(s)))（攻击能力@(Ui.T(ec.AttackRating))对闪避@(Ui.T(e.MyBaseDodge(s)))）</b></div>
+                <div><span>对@(GameEngine.MeId(s) == GameState.PlayerId ? "你" : e.ActorDisplayName(s, GameEngine.MeId(s)))命中率</span><b>@Ui.Pct(GameEngine.HitChance(ec.AttackRating, e.MyBaseDodge(s)))（攻击能力@(Ui.T(ec.AttackRating))对闪避@(Ui.T(e.MyBaseDodge(s)))）</b></div>
                 <div><span>伤害</span><b>@Ui.N(ec.DamageMin)—@Ui.N(ec.DamageMax)@(ec.IsZombie ? BiteText(ec) : "")</b></div>
             </div>
         }
