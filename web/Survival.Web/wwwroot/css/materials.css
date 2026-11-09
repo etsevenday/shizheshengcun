@@ -139,12 +139,12 @@
   color: #211b0e;
   box-shadow: inset 0 0 10px #7954253b, 0 2px 2px #0008;
 }
-.wasteland :is(.loc-btn, .primary, .apop-go, .rest-go button, .ca-use, .fc-btn.ignite, .fc-btn.cook):hover:not(:disabled) {
+.wasteland :is(.loc-btn, .primary, .apop-go, .rest-go button, .ca-use, .fc-btn.ignite, .fc-btn.cook):hover:not(:disabled, .gate-off) {
   background-color: #efd08a;
   border-image-source: var(--frame-selected);
   filter: brightness(1.07);
 }
-.wasteland :is(.nav button, .secondary, .oc-btn):hover:not(:disabled) {
+.wasteland :is(.nav button, .secondary, .oc-btn):hover:not(:disabled, .gate-off) {
   border-image-source: var(--frame-button);
   color: #ffe0a0;
 }
@@ -154,7 +154,7 @@
   background: var(--iron-texture), #2c3026;
   box-shadow: inset 0 0 12px #030b1099;
 }
-.wasteland :is(.loc-btn, .primary, .oc-btn, .fc-btn, .ca-use, .apop-go, .rest-go button):disabled {
+.wasteland :is(.loc-btn, .primary, .oc-btn, .fc-btn, .ca-use, .apop-go, .rest-go button):is(:disabled, .gate-off) {
   background: var(--iron-texture), #45483f;
   color: #dbd6c6;
   border-color: #676a59;
@@ -163,7 +163,7 @@
   opacity: 1;
   box-shadow: inset 0 0 8px #14201c44;
 }
-.wasteland button:active:not(:disabled) {
+.wasteland button:active:not(:disabled, .gate-off) {
   filter: brightness(.88);
   box-shadow: inset 0 2px 4px #03080a80;
 }
@@ -271,4 +271,4 @@
 }
 /* B21 试玩第 2 轮：卡旁浮窗里的危险操作（01 被拒时的“终止本次远征…”）用红字，与 Esc 菜单 .secondary.danger 同款，不吃 .apop-go 的金底 */
 .wasteland .apop-foot .apop-go.danger { background: #372621; border-image: none; border-color: #7d4f45; color: #e8b3a6; }
-.wasteland .apop-foot .apop-go.danger:hover:not(:disabled) { background: #4a2e27; border-image: none; color: #f0c7b9; }
+.wasteland .apop-foot .apop-go.danger:hover:not(:disabled, .gate-off) { background: #4a2e27; border-image: none; color: #f0c7b9; }

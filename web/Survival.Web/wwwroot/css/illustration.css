@@ -53,13 +53,13 @@
 .wasteland .res-card .oc-head b { font-size: 19px; }
 .wasteland .res-card .oc-body { padding: 3px 8px 5px; }
 .wasteland .res-card .oc-foot { padding: 0 7px 7px; }
-.wasteland .res-card .oc-foot button:not(:disabled) {
+.wasteland .res-card .oc-foot button:not(:disabled, .gate-off) {
   color: #211b0e;
   background: var(--paper-texture), linear-gradient(110deg, #e5be72, #c99e51);
   background-size: 100% 100%, auto;
   border-image-source: var(--frame-button);
 }
-.wasteland .res-card .oc-foot button:not(:disabled):hover { filter: brightness(1.07); }
+.wasteland .res-card .oc-foot button:not(:disabled, .gate-off):hover { filter: brightness(1.07); }
 .wasteland .res-card.selected .oc-head b {
   margin: 0; padding: 0; background: none; color: #211d16; clip-path: none;
 }

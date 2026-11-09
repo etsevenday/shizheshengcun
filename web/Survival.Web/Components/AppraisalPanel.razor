@@ -59,7 +59,7 @@
             {
                 var sid = sample.InstanceId;
                 <div class="btn-row">
-                    <button class="primary" disabled="@(busy != null)" title="0分钟、不扣植物纤维、不耗样本；首次查看把所选这一份记为已鉴定（改名“活性物质（白色·已鉴定·首战教学）”，同堆其余份不变）" @onclick="() => G.AppraisalTutorialNote(sid)">看教学样本免费说明（0分钟）</button>
+                    <GateButton Class="primary" Name="看教学样本免费说明（0分钟）" Blocked="@busy" Title="0分钟、不扣植物纤维、不耗样本；首次查看把所选这一份记为已鉴定（改名“活性物质（白色·已鉴定·首战教学）”，同堆其余份不变）" OnClick="() => G.AppraisalTutorialNote(sid)">看教学样本免费说明（0分钟）</GateButton>
                     <span class="muted small">教学样本可看免费说明，不能交易。</span>
                 </div>
             }
@@ -72,9 +72,8 @@
         var why = v.Blocked ?? (sample == null ? "先选一份样本" : sample.AppraiseBlocked) ?? v.FiberBlocked ?? busy;
         var sid = sample?.InstanceId ?? 0;
         <div class="btn-row">
-            <button class="primary" disabled="@(why != null)" title="@(why ?? "开始后中途停下：已过时间保留，样本与纤维都不扣")" @onclick="() => G.StartAppraise(sid)">
-                开始鉴定（@(v.AppraiseMinutes)分钟，完成扣@(v.AppraiseCost.Split('（')[0])）
-            </button>
+            @{ var startName = $"开始鉴定（{v.AppraiseMinutes}分钟，完成扣{v.AppraiseCost.Split('（')[0]}）"; }
+            <GateButton Class="primary" Name="@startName" Blocked="@why" Title="开始后中途停下：已过时间保留，样本与纤维都不扣" OnClick="() => G.StartAppraise(sid)">@startName</GateButton>
             @if (why != null) { <span class="muted small">@why</span> }
         </div>
     }
@@ -104,8 +103,9 @@
             var sid = tsample?.InstanceId ?? 0;
             var oid2 = offer.OfferId;
             <div class="btn-row">
-                <button class="primary" disabled="@(why != null)" title="@(why ?? $"交出{tsample?.Name}1份（{tsample?.HolderText}），{v.TradeMinutes}分钟后{offer.Text}落在{v.OutputPlace}；中途停下不交样")"
-                        @onclick="() => G.StartAppraisalTrade(sid, oid2)">交出1份并换取@(offer.ItemName)×@(offer.Quantity)（@(v.TradeMinutes)分钟）</button>
+                @{ var tradeName = $"交出1份并换取{offer.ItemName}×{offer.Quantity}（{v.TradeMinutes}分钟）"; }
+                <GateButton Class="primary" Name="@tradeName" Blocked="@why" Title="@($"交出{tsample?.Name}1份（{tsample?.HolderText}），{v.TradeMinutes}分钟后{offer.Text}落在{v.OutputPlace}；中途停下不交样")"
+                            OnClick="() => G.StartAppraisalTrade(sid, oid2)">@tradeName</GateButton>
                 @if (why != null) { <span class="muted small">@why</span> }
             </div>
         }

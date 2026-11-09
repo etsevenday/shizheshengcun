@@ -5,6 +5,8 @@
    预览与浏览 0 分钟、不提交。B14b（Q146 选 B）：未实装的事项不列出；已实装但条件不足的照常列出并写真实原因。
    名称与摘要用策划正式名（Q145 选 B）。
    B18：鉴定所“活性样本鉴定”换成专用的鉴定交易面板（AppraisalPanel）。B19：收容所“同行者名册”换成周期招募面板（RecruitPanel）。
+   B39（N02 附录 §1 Q308、Q309）：受阻按钮用 GateButton——保持禁用语义、键盘可定位，读屏名「{按钮名}，不可用：{原因}」，
+   轻点或 Enter／空格在原反馈位显示实时原因（按钮旁的原因句照旧）。
    B15：顶部列这名岗位名下的主线与委托（接取、阅读/核对、回看、AC02 外部医疗线索）；任务类服务（整理调查记录、CH02/AC01/AC02）照常在下面办理。 *@
 @{
     var s = G.S;
@@ -43,13 +45,13 @@
                     @if (q.AcceptHere)
                     {
                         var why = q.AcceptBlocked ?? qbusy;
-                        <button class="primary" disabled="@(why != null)" title="@(why ?? "接取（0分钟，与交谈同效）")" @onclick="() => G.AcceptQuest(qid)">接取（0分钟）</button>
+                        <GateButton Class="primary" Name="接取（0分钟）" Blocked="@why" Title="接取（0分钟，与交谈同效）" OnClick="() => G.AcceptQuest(qid)">接取（0分钟）</GateButton>
                         @if (why != null) { <span class="muted small">@why</span> }
                     }
                     @if (q.WorkLabel != null)
                     {
                         var why = q.WorkBlocked ?? qbusy;
-                        <button class="primary" disabled="@(why != null)" title="@(why ?? q.WorkLabel)" @onclick="() => QuestWork(qid)">@q.WorkLabel</button>
+                        <GateButton Class="primary" Name="@q.WorkLabel" Blocked="@why" Title="@q.WorkLabel" OnClick="() => QuestWork(qid)">@q.WorkLabel</GateButton>
                         @if (why != null) { <span class="muted small">@why</span> }
                     }
                     @if (q.CanReview)
@@ -110,8 +112,8 @@
                         {
                             var cid = ch.Id;
                             @* B23：公开抄录完全已知的资料包禁用（灰色，原因写在悬停与按钮下） *@
-                            <button class="@(cid == pickChoice ? "primary" : "secondary") @(ch.Blocked != null ? "btn-off" : "")" disabled="@(ch.Blocked != null)"
-                                    title="@(ch.Blocked ?? ch.Label)" data-choice="@cid" @onclick="() => SetChoice(id, cid)">@ch.Label</button>
+                            <GateButton Class="@($"{(cid == pickChoice ? "primary" : "secondary")} {(ch.Blocked != null ? "btn-off" : "")}")" Name="@ch.Label" Blocked="@ch.Blocked"
+                                        Title="@ch.Label" data-choice="@cid" OnClick="() => SetChoice(id, cid)">@ch.Label</GateButton>
                         }
                     </div>
                     @foreach (var ch in v.Choices.Where(x => x.Blocked != null)) { <p class="muted small">@ch.Label：@ch.Blocked</p> }
@@ -120,9 +122,10 @@
                 <p class="small city-effect">@(string.IsNullOrEmpty(v.EffectText) ? v.Summary : v.EffectText)</p>
                 @foreach (var line in v.Lines) { <p class="small city-line-extra">@line</p> }
                 <div class="btn-row">
-                    <button class="primary" disabled="@(why != null)" title="@(why ?? $"办理：{v.Title}")" @onclick="() => Do(id, pickTarget, pickChoice)">
-                        @(v.StartLabel ?? (v.OpensCraft ? "打开制作" : $"{v.Title}（{v.TimeText}）"))
-                    </button>
+                    @{ var startLabel = v.StartLabel ?? (v.OpensCraft ? "打开制作" : $"{v.Title}（{v.TimeText}）"); }
+                    <GateButton Class="primary" Name="@startLabel" Blocked="@why" Title="@($"办理：{v.Title}")" OnClick="() => Do(id, pickTarget, pickChoice)">
+                        @startLabel
+                    </GateButton>
                     @if (why != null) { <span class="muted small">@why</span> }
                 </div>
             </section>

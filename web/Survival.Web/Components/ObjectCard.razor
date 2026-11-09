@@ -3,7 +3,7 @@
 <div id="@Id" class="ocard @CssClass @(Selected ? "selected" : "") @(Dashed ? "dashed" : "") @(Dim ? "dim" : "") @(Wide ? "wide" : "") @(Fresh ? "fresh" : "")"
      data-drop="@DataDrop" data-drop-level="@(DataDrop == null ? null : DropLevel)"
      data-drag="@DataDrag" data-drag-from="@DragFrom" data-drag-title="@DragTitle" data-card="@DataCard"
-     role="button" tabindex="0" title="@Tooltip" aria-label="@(AriaLabel ?? Title)"
+     role="button" tabindex="0" title="@Tooltip" aria-label="@(AriaLabel ?? Title)" aria-describedby="@DescribedBy"
      @onclick="Click" @onkeydown="Key">
     <div class="oc-head">
         <b title="@Title">@Title</b>
@@ -30,6 +30,8 @@
     [Parameter] public bool Fresh { get; set; }
     [Parameter] public string? Tooltip { get; set; }
     [Parameter] public string? AriaLabel { get; set; }
+    /// <summary>卡面的可访问说明（B39 Q312：人物卡与「交谈」按钮共用接取预告）。</summary>
+    [Parameter] public string? DescribedBy { get; set; }
     [Parameter] public string? DataDrop { get; set; }
     [Parameter] public string DropLevel { get; set; } = "card";
     [Parameter] public string? DataDrag { get; set; }

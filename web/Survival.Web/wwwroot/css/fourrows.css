@@ -1071,6 +1071,25 @@
   .center-scroll.four .dg-cards > .res-card.post-card .oc-foot .res-btn { flex: 1 1 0; min-width: 0; min-height: 40px; padding: 2px 4px; }
 }
 
+/* B39 Q312：人物卡「交谈」旁的接取预告。有预告时按钮区单独占一整行（任何屏高），预告排在两键下面整行换行；
+   卡高不变、状态行保留：主图让位、组织职务行收起（悬停说明里仍有）；屏高 ≤800 主图不显示，按钮沿该档 34px 可见高 + 40px 热区。 */
+.center-scroll.four .dg-cards > .res-card.has-preview { grid-template-rows: minmax(0, 1fr) auto auto auto; }
+.center-scroll.four .dg-cards > .res-card.has-preview :is(.oc-head, .oc-body) { grid-column: 1 / -1; padding-right: 14px; }
+.center-scroll.four .dg-cards > .res-card.has-preview .oc-body { padding-bottom: 2px; }
+.center-scroll.four .dg-cards > .res-card.post-card.has-preview .oc-body .oc-line:first-child:not(:last-child) { display: none; }
+.center-scroll.four .dg-cards > .res-card.has-preview .oc-foot { grid-column: 1 / -1; grid-row: 4; align-self: end; justify-self: stretch; display: flex; flex-wrap: wrap; gap: 2px 4px; padding: 0 10px 8px; }
+.center-scroll.four .dg-cards > .res-card.has-preview .oc-foot .res-btn { flex: 1 1 0; min-width: 0; min-height: 40px; padding: 2px 4px; }
+.center-scroll.four .dg-cards > .res-card.has-preview .oc-foot .npc-preview { order: 1; flex: 1 0 100%; contain: inline-size; font-size: 13px; line-height: 1.2; }
+@media (max-height: 800px) {
+  .center-scroll.four .dg-cards > .res-card.has-preview { grid-template-rows: 0 auto auto auto; }
+  .center-scroll.four .dg-cards > .res-card.has-preview .oc-art { display: none; }
+  .center-scroll.four .dg-cards > .res-card.has-preview .oc-head { padding-top: 3px; }
+  .center-scroll.four .dg-cards > .res-card.has-preview .oc-body { padding-top: 0; padding-bottom: 1px; }
+  .center-scroll.four .dg-cards > .res-card.has-preview .oc-foot { gap: 1px 4px; padding-bottom: 5px; }
+  .center-scroll.four .dg-cards > .res-card.has-preview .oc-foot .res-btn { min-height: 34px; }
+  .center-scroll.four .dg-cards > .res-card.has-preview .oc-foot .npc-preview { font-size: 12px; line-height: 1.2; }
+}
+
 /* ───── B16 试玩修复 M351：锅食谱按钮与水壶操作在 1280×720 完整可见 ───── */
 /* 锅浮窗加高（不超出中部列，见 app.js survivalPop 的 data-bound）；锅食谱块放在锅内容滚动区之外、不收缩 */
 .apop.card-pop.pot { max-height: min(calc(100vh - 140px), 640px); }

@@ -383,4 +383,87 @@ public class B39ReadingLayerTests : TestBase
         Assert.That(GameEngine.DialogueLogSubtitle(E.DialogueHistory(s).Count), Is.EqualTo("已收录2段 · 回看不消耗时间"));
         Assert.That(baseCount, Is.GreaterThanOrEqualTo(0));
     }
+
+    // ───────────── 界面接线（Q305—Q309、Q312—Q315；壳层源文检查，实机见开发计划 B39 记录） ─────────────
+
+    private static string Root()
+    {
+        var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "web", "Survival.sln"))) dir = dir.Parent;
+        Assert.That(dir, Is.Not.Null, "找到仓库根目录");
+        return dir!.FullName;
+    }
+
+    private static string Razor(string name) => File.ReadAllText(Path.Combine(Root(), "web", "Survival.Web", "Components", name));
+
+    /// <summary>Q308-A01、Q309-A01：受阻按钮保持禁用语义且可聚焦；读屏名「{按钮名}，不可用：{原因}」；轻点/Enter/空格只在原反馈位给原因，不冒泡到卡片。</summary>
+    [Test]
+    public void Q308_Q309_A01_GateButton_Wiring()
+    {
+        var g = Razor("GateButton.razor");
+        Assert.That(g, Does.Contain("aria-disabled=\"@(Blocked != null ? \"true\" : null)\""));
+        Assert.That(g, Does.Contain("$\"{Name}，不可用：{Blocked}\""));
+        Assert.That(g, Does.Not.Contain(" disabled=\"@"), "不用 disabled 属性（键盘可定位）");
+        Assert.That(g, Does.Contain("G.Notice = Blocked;"));
+        Assert.That(g, Does.Contain("@onclick:stopPropagation=\"StopPropagation\" @onkeydown:stopPropagation=\"StopPropagation\""));
+
+        // 四类入口：人物卡、文档卡、事项盘（含鉴定所与收容所专用面板）都不再用 disabled 挡按钮
+        var cards = Razor("PrologueCards.razor");
+        Assert.That(cards, Does.Contain("<GateButton Class=\"loc-btn res-btn\" Name=\"@n.ActionLabel\" Blocked=\"@why\""));
+        Assert.That(cards, Does.Contain("<GateButton Class=\"loc-btn res-btn\" Name=\"@ch.Label\" Blocked=\"@why\""));
+        Assert.That(cards, Does.Contain("<GateButton Class=\"loc-btn res-btn\" Name=\"查看\" Blocked=\"@why\""));
+        Assert.That(cards, Does.Contain("StopPropagation=\"true\""));
+        foreach (var f in new[] { "PrologueCards.razor", "AppraisalPanel.razor" })
+            Assert.That(Razor(f), Does.Not.Contain(" disabled=\"@"), f);
+        Assert.That(Razor("CityServiceOverlay.razor"), Does.Not.Contain("disabled="));
+        Assert.That(Razor("RecruitPanel.razor"), Does.Not.Contain("<button class=\"primary\" disabled="));
+        // Q309：人物卡状态行不再被忙碌原因替换（原 why ?? …）
+        Assert.That(cards, Does.Not.Contain("@(why ?? (marks.Length > 0"));
+        Assert.That(cards, Does.Contain("@(marks.Length > 0 ? $\"{marks} · {n.Status}\" : n.Status)"));
+        // 外观沿原禁用样式
+        var css = File.ReadAllText(Path.Combine(Root(), "web", "Survival.Web", "wwwroot", "css", "app.css"));
+        Assert.That(css, Does.Contain(".loc-btn:is(:disabled, .gate-off)"));
+    }
+
+    /// <summary>Q312：预告放在「交谈」旁，卡面与按钮共用同一预告作为可访问说明；旧悬停里的通用接取说明去掉。</summary>
+    [Test]
+    public void Q312_Card_Wiring()
+    {
+        var cards = Razor("PrologueCards.razor");
+        Assert.That(cards, Does.Contain("var preview = why == null ? n.TalkPreview : null;"));
+        Assert.That(cards, Does.Contain("<span class=\"npc-preview\" id=\"@($\"npc-pv-{id}\")\">@preview</span>"));
+        Assert.That(cards.Split("DescribedBy=\"@(preview != null ? $\"npc-pv-{id}\" : null)\"").Length - 1, Is.EqualTo(2), "卡面与按钮");
+        Assert.That(cards, Does.Not.Contain("有可接的委托时交谈即接取"));
+    }
+
+    /// <summary>Q305、Q306、Q307、Q310、Q313：对白层与台词流读内核视图；右侧无对方时留空，不写「对方」。</summary>
+    [Test]
+    public void Q305_Q307_Q310_Q313_DialogueLayer_Wiring()
+    {
+        var layer = Razor("DialogueLayer.razor");
+        Assert.That(layer, Does.Contain("G.E.DialogueLayer(G.S)"));
+        Assert.That(layer, Does.Contain("aria-label=\"@v.AriaName\""));
+        Assert.That(layer, Does.Contain("@if (v.Title != null)"));
+        Assert.That(layer, Does.Contain("@v.StatusLine"));
+        Assert.That(layer, Does.Contain("@v.Footnote"));
+        Assert.That(layer, Does.Not.Contain("\"对方\""));
+        Assert.That(layer, Does.Not.Contain("对话不消耗时间 · 读完才能继续操作"));
+        var lines = Razor("DialogueLines.razor");
+        Assert.That(lines, Does.Contain("DialogueKinds.Of(l)"));
+        Assert.That(lines, Does.Contain("DialogueKinds.NoteLabel(l)"));
+        Assert.That(lines, Does.Not.Contain("\"对方\""));
+    }
+
+    /// <summary>Q306、Q314、Q315：对话记录无对象时省略对象项与分隔符；副标题与空态读定稿句；操作提示经共用台词流回看。</summary>
+    [Test]
+    public void Q306_Q314_Q315_DialogueLog_Wiring()
+    {
+        var log = Razor("DialogueLogOverlay.razor");
+        Assert.That(log, Does.Contain("GameEngine.DialogueLogSubtitle(hist.Count)"));
+        Assert.That(log, Does.Contain("GameEngine.DialogueLogEmptyText"));
+        Assert.That(log, Does.Not.Contain("\"旁白\""));
+        Assert.That(log, Does.Not.Contain("暂无对话记录"));
+        Assert.That(log, Does.Contain("@if (!string.IsNullOrEmpty(h.Counterpart))"));
+        Assert.That(log, Does.Contain("<DialogueLines Lines=\"pick.Lines\" />"));
+    }
 }

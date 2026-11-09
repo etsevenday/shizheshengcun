@@ -94,7 +94,8 @@ public class B27cDocumentCardTests : TestBase
     {
         var razor = Razor("PrologueCards.razor");
         Assert.That(razor, Does.Contain("var why = busy ? \"行动进行中\" : d.ReadBlocked;"));
-        Assert.That(razor, Does.Contain("disabled=\"@(why != null)\" title=\"@(why ?? \"查看（0分钟）\")\""));
+        // B39 Q309：按钮改 GateButton（禁用语义 + 可聚焦，原因仍读 why）
+        Assert.That(razor, Does.Contain("<GateButton Class=\"loc-btn res-btn\" Name=\"查看\" Blocked=\"@why\" Title=\"查看（0分钟）\""));
     }
 
     // ───────────── Q270 不可读时卡面悬停 ─────────────

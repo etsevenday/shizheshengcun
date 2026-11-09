@@ -27,15 +27,17 @@
             {
                 var why = busy ? "行动进行中" : n.TalkBlocked;
                 var id = n.NpcId;
+                // Q312（B39）：交谈当前可执行且这次确实会接取时才有预告（内核与交谈同一选择）；受阻时省略
+                var preview = why == null ? n.TalkPreview : null;
                 var post = n.Kind == "post";
                 var companion = n.Kind == "companion";
                 var tip = post
-                    ? $"{n.Name}：{n.FactionName}·{n.Role}（{n.KindLabel}）。{n.Status}。{n.RecruitText}。{(n.QuestText.Length > 0 ? n.QuestText + "。" : "")}点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；有可接的委托时交谈即接取）{(n.ServiceCount > 0 || n.HasQuests ? "；“事项”查看可办的服务与委托" : "")}"
+                    ? $"{n.Name}：{n.FactionName}·{n.Role}（{n.KindLabel}）。{n.Status}。{n.RecruitText}。{(n.QuestText.Length > 0 ? n.QuestText + "。" : "")}点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态）{(n.ServiceCount > 0 || n.HasQuests ? "；“事项”查看可办的服务与委托" : "")}"
                     : companion
                         ? $"{n.Name}（{n.KindLabel}·{n.Role}）：{n.Background.TrimEnd('。')}。{n.RecruitText}。点卡片或“{n.ActionLabel}”（0分钟）"
                         : $"{n.Name}：{n.Role}。{n.Status}。点卡片或“交谈”开始（不耗时，不赠物资、不改变身体状态；不是队友）";
-                <ObjectCard @key="@("npc-" + id)" Id="@($"npc-{id}")" CssClass="@($"res-card npc-card{(post || companion ? " post-card" : "")}{(focus == "npc:" + id ? " tut-lit" : "")}")" Title="@n.Name" Badge="@(post || companion ? n.KindLabel : n.HasNews ? "来客" : "可交谈")" BadgeClass="@(n.HasNews ? "new" : "")"
-                            Tooltip="@tip" OnClick="() => Talk(id, why)">
+                <ObjectCard @key="@("npc-" + id)" Id="@($"npc-{id}")" CssClass="@($"res-card npc-card{(post || companion ? " post-card" : "")}{(preview != null ? " has-preview" : "")}{(focus == "npc:" + id ? " tut-lit" : "")}")" Title="@n.Name" Badge="@(post || companion ? n.KindLabel : n.HasNews ? "来客" : "可交谈")" BadgeClass="@(n.HasNews ? "new" : "")"
+                            Tooltip="@tip" DescribedBy="@(preview != null ? $"npc-pv-{id}" : null)" OnClick="() => Talk(id, why)">
                     <Art><img class="npc-portrait" src="img/portraits/unknown.svg" alt="@($"{n.Name}（临时形象）")" draggable="false" /></Art>
                     <ChildContent>
                         @{
@@ -44,13 +46,15 @@
                             var marks = string.Join(" · ", new[] { n.Presence, n.QuestMarks }.Where(x => x.Length > 0));
                         }
                         @if (post || companion) { <div class="oc-line" title="@org">@org</div> }
-                        <div class="oc-line" title="@($"{(marks.Length > 0 ? marks + " · " : "")}{n.Status}")">@(why ?? (marks.Length > 0 ? $"{marks} · {n.Status}" : n.Status))</div>
+                        @* Q309（B39）：状态行持续写本卡的在场、代班、委托等实际状态，忙碌等全局原因只由「交谈」按钮表达 *@
+                        <div class="oc-line" title="@($"{(marks.Length > 0 ? marks + " · " : "")}{n.Status}")">@(marks.Length > 0 ? $"{marks} · {n.Status}" : n.Status)</div>
                     </ChildContent>
                     <Footer>
-                        <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? $"{n.ActionLabel}（0分钟）")"
-                                @onclick="() => Talk(id, why)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                        <GateButton Class="loc-btn res-btn" Name="@n.ActionLabel" Blocked="@why" Title="@($"{n.ActionLabel}（0分钟）")" DescribedBy="@(preview != null ? $"npc-pv-{id}" : null)"
+                                    StopPropagation="true" OnClick="() => Talk(id, null)">
                             <strong>@n.ActionLabel</strong><small>0分钟</small>
-                        </button>
+                        </GateButton>
+                        @if (preview != null) { <span class="npc-preview" id="@($"npc-pv-{id}")">@preview</span> }
                         @if (n.ServiceCount > 0 || n.HasQuests)
                         {
                             <button type="button" class="loc-btn res-btn" title="查看这里可办的事项与委托（浏览不耗时）"
@@ -91,7 +95,7 @@
                             Tooltip="@(why != null ? $"{d.Title}：{d.Status}。" : $"{d.Title}：{d.Status}。点卡片或“查看”阅读（不耗时，不移动、不揭开未知地点；可重读）")" OnClick="() => Read(id, why)">
                     <Art>@Icons.Markup(id == "village_south_sign" ? "route" : "placeholder")</Art>
                     <ChildContent>
-                        @* Q259：状态行只写文书自身状态，全局原因在下面按钮的 disabled 和 title。
+                        @* Q259：状态行只写文书自身状态，全局原因在下面按钮（B39 Q309：aria-disabled + 可访问名称，轻点或 Enter／空格在原反馈位显示）。
                            Q270 选 A：读不了（why 非空：缺前置、忙碌、未读对白等）时卡面悬停只写“{标题}：{状态}。”，阅读指引只在可读时写；
                            Q269 选 A：主行动暂停时 why 由内核 ReadBlocked 给“行动暂停中”，壳在推进中（busy）仍写“行动进行中” *@
                         <div class="oc-line" title="@d.CardLine">@d.CardLine</div>
@@ -102,18 +106,17 @@
                             @foreach (var ch in d.Choices)
                             {
                                 var cid = ch.Id;
-                                <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? $"{ch.Label}（0分钟，不改变身体状态）")" aria-label="@ch.Label"
-                                        @onclick="() => Read(id, why, cid)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                                <GateButton Class="loc-btn res-btn" Name="@ch.Label" Blocked="@why" Title="@($"{ch.Label}（0分钟，不改变身体状态）")" AriaLabel="@ch.Label"
+                                            StopPropagation="true" OnClick="() => Read(id, null, cid)">
                                     <strong>@ShortChoice(ch)</strong><small>0分钟</small>
-                                </button>
+                                </GateButton>
                             }
                         }
                         else
                         {
-                            <button type="button" class="loc-btn res-btn" disabled="@(why != null)" title="@(why ?? "查看（0分钟）")"
-                                    @onclick="() => Read(id, why)" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                            <GateButton Class="loc-btn res-btn" Name="查看" Blocked="@why" Title="查看（0分钟）" StopPropagation="true" OnClick="() => Read(id, null)">
                                 <strong>查看</strong><small>0分钟</small>
-                            </button>
+                            </GateButton>
                         }
                     </Footer>
                 </ObjectCard>

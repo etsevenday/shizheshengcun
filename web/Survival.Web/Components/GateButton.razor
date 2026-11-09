@@ -1,0 +1,40 @@
+@inherits GameComponent
+
+@* B39（N02 附录 §1 Q308、Q309）：受阻按钮保持禁用语义（aria-disabled）但不加 disabled，键盘可定位；可访问名称为「{按钮名}，不可用：{原因}」。
+   轻点，或聚焦后按 Enter／空格，只在原全局反馈位（G.Notice）显示当前实时原因，不执行动作，也不触发卡片父级动作（阻止冒泡）。
+   外观沿原禁用样式（.gate-off 与 :disabled 共用规则）；可用时与普通按钮相同。原因由调用方按原阻断顺序给出。 *@
+<button type="button" class="@Class @(Blocked != null ? "gate-off" : "")" aria-disabled="@(Blocked != null ? "true" : null)"
+        aria-label="@(Blocked != null ? $"{Name}，不可用：{Blocked}" : AriaLabel)" aria-describedby="@DescribedBy"
+        title="@(Blocked ?? Title)" @attributes="Attrs"
+        @onclick="Click" @onclick:stopPropagation="StopPropagation" @onkeydown:stopPropagation="StopPropagation">
+    @ChildContent
+</button>
+
+@code {
+    [Parameter] public string Class { get; set; } = "";
+    /// <summary>按钮名（可访问名称里“不可用”前的部分）。</summary>
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+    /// <summary>当前受阻原因；可用为 null。</summary>
+    [Parameter] public string? Blocked { get; set; }
+    /// <summary>可用时的悬停说明。</summary>
+    [Parameter] public string? Title { get; set; }
+    /// <summary>可用时的可访问名称（缺省用按钮文字）。</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+    [Parameter] public string? DescribedBy { get; set; }
+    /// <summary>放在卡片里时阻止点击与按键冒泡到卡片（卡片自身也有点击动作）。</summary>
+    [Parameter] public bool StopPropagation { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? Attrs { get; set; }
+
+    private Task Click()
+    {
+        if (Blocked != null)
+        {
+            G.Notice = Blocked;
+            G.Notify();
+            return Task.CompletedTask;
+        }
+        return OnClick.InvokeAsync();
+    }
+}

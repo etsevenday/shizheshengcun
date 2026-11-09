@@ -40,7 +40,7 @@
             <p class="small">@aw.IdentityText · 原选：@aw.ChoiceText</p>
             <p class="small warn-text">现在不行：@aw.FailureText。登记手续已办完、人还没建，名额仍锁着；改选去向后0分钟到位，不会再收10分钟；取消则不发人、不发物，已过时间不退。</p>
             <div class="btn-row">
-                <button class="primary" disabled="@((awWhy ?? awParty) != null)" title="@(awWhy ?? awParty ?? "编入同行（0分钟）")" @onclick='() => G.ResolveRecruitPlacement("party")'>改为编入同行</button>
+                <GateButton Class="primary" Name="改为编入同行" Blocked="@(awWhy ?? awParty)" Title="编入同行（0分钟）" OnClick='() => G.ResolveRecruitPlacement("party")'>改为编入同行</GateButton>
                 @if (awParty != null && awWhy == null) { <span class="muted small">编入同行：@awParty</span> }
             </div>
             @* M439：目的地下拉单独占一行、宽度 100%，悬停写完整选中项 *@
@@ -54,8 +54,8 @@
             </div>
             <div class="btn-row">
                 @{ var dWhy = awWhy ?? v.ReserveDestinations.FirstOrDefault(d => d.Key == awDest)?.Blocked; }
-                <button class="secondary" disabled="@(dWhy != null)" title="@(dWhy ?? "安排到所选处作候补（0分钟）")" @onclick="() => G.ResolveRecruitPlacement(awDest)">改为候补安置</button>
-                <button class="secondary" disabled="@(awWhy != null)" title="@(awWhy ?? "取消这笔登记：不发人不发物，已过时间不退，名额释放")" @onclick="() => G.CancelRecruitPlacement()">取消登记</button>
+                <GateButton Class="secondary" Name="改为候补安置" Blocked="@dWhy" Title="安排到所选处作候补（0分钟）" OnClick="() => G.ResolveRecruitPlacement(awDest)">改为候补安置</GateButton>
+                <GateButton Class="secondary" Name="取消登记" Blocked="@awWhy" Title="取消这笔登记：不发人不发物，已过时间不退，名额释放" OnClick="() => G.CancelRecruitPlacement()">取消登记</GateButton>
                 @if (awWhy != null) { <span class="muted small">@awWhy</span> }
             </div>
         </div>
@@ -102,8 +102,9 @@
                     @if (c.Status == "available")
                     {
                         <div class="btn-row">
-                            <button class="primary" disabled="@(why != null)" title="@(why ?? $"0材料，{e.Config.Party.Recruitment.RegistrationMinutes}分钟等待（你与同行按等待消耗）；开始即锁这名候选、1个名额与所选去向，中途停下已耗时间不退、候选不变")"
-                                    @onclick="() => G.StartRecruit(cid, choiceKey!)">@(_mode == "party" ? "登记·编入同行" : _mode == "reserve" ? "登记·候补" : "登记")（@(e.Config.Party.Recruitment.RegistrationMinutes)分钟）</button>
+                            @{ var regName = $"{(_mode == "party" ? "登记·编入同行" : _mode == "reserve" ? "登记·候补" : "登记")}（{e.Config.Party.Recruitment.RegistrationMinutes}分钟）"; }
+                            <GateButton Class="primary" Name="@regName" Blocked="@why" Title="@($"0材料，{e.Config.Party.Recruitment.RegistrationMinutes}分钟等待（你与同行按等待消耗）；开始即锁这名候选、1个名额与所选去向，中途停下已耗时间不退、候选不变")"
+                                        OnClick="() => G.StartRecruit(cid, choiceKey!)">@regName</GateButton>
                             @if (why != null) { <span class="muted small">@why</span> }
                         </div>
                     }
@@ -125,7 +126,7 @@
                 {
                     <p class="small warn-text">@r.ConfirmText</p>
                     <div class="btn-row">
-                        <button class="primary" disabled="@(why != null)" title="@(why ?? "0分钟，确认后立即生效，不能撤回")" @onclick="() => DoRetire(aid)">确认退役</button>
+                        <GateButton Class="primary" Name="确认退役" Blocked="@why" Title="0分钟，确认后立即生效，不能撤回" OnClick="() => DoRetire(aid)">确认退役</GateButton>
                         <button class="secondary" @onclick="() => _confirm = null">取消</button>
                         @if (why != null) { <span class="muted small">@why</span> }
                     </div>
@@ -133,7 +134,7 @@
                 else
                 {
                     <div class="btn-row">
-                        <button class="secondary" disabled="@(why != null)" title="@(why ?? "先看退役说明，再确认")" @onclick="() => _confirm = aid">退役…</button>
+                        <GateButton Class="secondary" Name="退役…" Blocked="@why" Title="先看退役说明，再确认" OnClick="() => _confirm = aid">退役…</GateButton>
                         @if (why != null) { <span class="muted small">@why</span> }
                     </div>
                 }
