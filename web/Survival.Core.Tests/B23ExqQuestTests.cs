@@ -53,14 +53,14 @@ public class B23ExqQuestTests : TestBase
         var s = Registered("h03_workshop");
         LegacyLearned(s);
         var v = E.QuestViewOf(s, "EXQ05")!;
-        Assert.That((v.Status, v.KindLabel, v.Step), Is.EqualTo(("available", "可选任务", "到营区工坊和罗铮交谈。")));
+        Assert.That((v.Status, v.KindLabel, v.Step), Is.EqualTo(("available", "可选任务", "到营区工坊找罗铮，了解水厂调查。")));
         Assert.That(E.QuestBook(s).Select(x => x.Id), Does.Contain("EXQ05").And.Contain("EXQ06"));
         Ok(E.TalkNpc(s, "npc_luo_zheng"));
         Assert.That(s.Story.DialogueLog.Any(d => d.EventId.StartsWith("EXQ05_offer")), Is.True, "专属接取台词（B26 Q217）");
         ReadDialogues(s);
         Assert.That(s.Progress.Flags, Does.Contain(Q("EXQ05", "accepted")));
         v = E.QuestViewOf(s, "EXQ05")!;
-        Assert.That((v.Status, v.Step, v.WorkLabel), Is.EqualTo(("active", "从荒废水厂进入废水厂地下管网，在阀控室领取水厂阀控记录（10分钟）。", (string?)null)));
+        Assert.That((v.Status, v.Step, v.WorkLabel), Is.EqualTo(("active", "从荒废水厂进入废水厂地下管网。到阀控室领取水厂阀控记录（10分钟）。", (string?)null)));
         Assert.That(E.KnowsKnowledge(s, "blueprint_repair_manual"), Is.False);
 
         var before = Snapshot(s);
@@ -80,7 +80,7 @@ public class B23ExqQuestTests : TestBase
         var log = s.Log.Last(l => l.Text.Contains("水厂阀控记录")).Text;
         Assert.That(log, Does.Contain("获得做法知识：维护手册蓝图；净水操作套件的做法已掌握，只记来源").And.Contain("可选任务“水从哪里来”记录已取得：回营区工坊和罗铮交谈（0分钟）即完成"));
         v = E.QuestViewOf(s, "EXQ05")!;
-        Assert.That((v.Status, v.StatusText, v.Step), Is.EqualTo(("active", "记录已取得", "回营区工坊和罗铮交谈（0分钟，不交材料）。")));
+        Assert.That((v.Status, v.StatusText, v.Step), Is.EqualTo(("active", "记录已取得", "回营区工坊和罗铮交谈回报（0分钟，不交材料）。")));
         Assert.That(v.WorkLabel, Is.EqualTo("交谈（0分钟）"));
         Assert.That(v.WorkBlocked, Is.EqualTo("须实际到达营区工坊"));
 
@@ -92,7 +92,8 @@ public class B23ExqQuestTests : TestBase
         ReadDialogues(s);
         Assert.That(s.Progress.Flags, Does.Contain(Q("EXQ05", "completed")));
         Assert.That(s.GameMinute, Is.EqualTo(t1), "交谈 0 分钟");
-        Assert.That(s.Log.Any(l => l.Text.StartsWith("可选任务“水从哪里来”完成：已核对水路日志")), Is.True);
+        Assert.That(s.Log.Any(l => l.Text.StartsWith("可选任务“水从哪里来”完成：水厂阀控记录已归档。")), Is.True);
+        Assert.That(s.Log.Last(l => l.Text.StartsWith("可选任务“水从哪里来”完成：")).Text, Does.Not.Contain("。。").And.Not.Contain("。；"), "B38：N02 结果句自带句号，拼接不重复标点");
         var after = Snapshot(s);
         Assert.That((after.Items, after.Xp, after.Cap), Is.EqualTo((before.Items, before.Xp, before.Cap)), "不发物资、不给经验、不加容量");
         Assert.That(E.QuestViewOf(s, "EXQ05")!.Status, Is.EqualTo("done"));

@@ -78,14 +78,14 @@ public class B22f2Tests : BattleTestBase
         E.DebugExploreHere100(probe);
         Assert.That(probe.Locations[Gate].Discovered, Is.True);
         Assert.That(E.NextTravelSegment(probe)!.Kind, Is.EqualTo(TravelSegmentKind.KnownBlocked));
-        Assert.That(E.CurrentObjective(probe)!.Step, Does.StartWith("查看通往营门的路线条件").And.Contain("固定拦路战"));
+        Assert.That(E.CurrentObjective(probe)!.Step, Does.StartWith("前往营门还需要").And.Contain("固定拦路战"));
         Assert.That(E.ObjectiveFocus(probe), Is.EqualTo("loc:" + Gate));
 
-        // 胜利提交：清障揭出营门路线，恢复“沿已知路线前往营门。”
+        // 胜利提交：清障揭出营门路线，恢复“下一段路已开通，前往营门。”
         E.DebugWinFixedHere(s);
         Assert.That(E.FixedBlockHere(s), Is.Null);
         Assert.That(E.NextTravelSegment(s)!.Kind, Is.EqualTo(TravelSegmentKind.KnownOpen));
-        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("沿已知路线前往营门。"));
+        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("下一段路已开通，前往营门。"));
         Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:" + Gate));
     }
 

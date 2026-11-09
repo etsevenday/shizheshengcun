@@ -125,7 +125,7 @@ public class B15QuestTests : TestBase
         Assert.That(E.BattleCapacity(s), Is.EqualTo(3));
         Assert.That(s.Log.Any(l => l.Text.Contains("被称作新生的人") && l.Text.Contains("完成")), Is.True);
         Assert.That(E.QuestViewOf(s, "FA04")!.Status, Is.EqualTo("locked"));
-        Assert.That(E.QuestViewOf(s, "FA04")!.AcceptBlocked, Is.EqualTo("需要：在灰塔封存区核心领取封存区安全规程"));
+        Assert.That(E.QuestViewOf(s, "FA04")!.AcceptBlocked, Is.EqualTo("需要：在灰塔封存区领取封存区安全规程"));
         E.DebugClaimRecord(s, "d02_08_unique");
         Assert.That(E.BattleCapacity(s), Is.EqualTo(4));
         Assert.That(s.Progress.Flags, Does.Contain(Q("FA03", "completed")));
@@ -162,7 +162,7 @@ public class B15QuestTests : TestBase
     {
         var s = At("h02_square", Registered);
         var v = E.CityServicePreview(s, "hub_affairs_record")!;
-        Assert.That(v.Blocked, Is.EqualTo("需要：在教会地下圣所核心领取圣所旧路档册"));
+        Assert.That(v.Blocked, Is.EqualTo("需要：在教会地下圣所领取圣所旧路档册"));
         E.DebugClaimRecord(s, "d01_08_unique");
         E.DebugClaimRecord(s, "d02_08_unique");
         ReadDialogues(s);

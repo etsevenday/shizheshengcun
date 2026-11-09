@@ -105,7 +105,7 @@ namespace Survival.Core.Engine
             if (miss != null) return $"需要：{PublicFactLabel(miss)}";
             if (ps.AnyFacts.Count > 0 && !ps.AnyFacts.Any(f.Contains))
             {
-                // Q148 选 A：旧档资格只在判定里认、不向玩家展示——锻炉/军械台只写“需要：在教会地下圣所核心领取圣所旧路档册”
+                // Q148 选 A：旧档资格只在判定里认、不向玩家展示——锻炉/军械台只写“需要：在教会地下圣所领取圣所旧路档册”（B38 N02 事实标签新稿）
                 var shown = ps.AnyFacts.Where(x => !HiddenQualificationFacts.Contains(x)).ToList();
                 return "需要：" + string.Join("，或", (shown.Count > 0 ? shown : ps.AnyFacts).Select(PublicFactLabel));
             }

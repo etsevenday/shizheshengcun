@@ -147,7 +147,7 @@ public class B22fTests : BattleTestBase
         Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("先战胜检查哨拦路敌人。"));
         Assert.That(E.ObjectiveFocus(s), Is.Null, "不点亮探索入口");
         E.DebugWinFixedHere(s);
-        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("沿已知路线前往营门。"), "胜利后回到 Q139 原口径（清障揭出营门路线，已知可走）");
+        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("下一段路已开通，前往营门。"), "胜利后回到 Q139 原口径（清障揭出营门路线，已知可走）");
         Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:h01_gate"));
     }
 

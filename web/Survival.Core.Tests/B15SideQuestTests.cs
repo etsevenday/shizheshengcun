@@ -277,7 +277,7 @@ public class B15SideQuestTests : TestBase
         Ok(E.TalkNpc(s, "npc_yin_ke"));
         ReadDialogues(s);
         Assert.That(s.Story.DialogueLog.Any(d => d.EventId.StartsWith("npc_yin_ke_dialogue_quest_offer")), Is.True);
-        Assert.That(Cfg.Story.Dialogues.Single(d => d.Id == "NTL_0304").Text, Is.EqualTo("这里只接续你已选的观察范围，不再收一次观察协作工作时间。"));
+        Assert.That(Cfg.Story.Dialogues.Single(d => d.Id == "NTL_0304").Text, Is.EqualTo("你选到哪一项，我就接到哪一项。观察协作的工时已经记过，这里不再收一次。"));
         Assert.That((s.GameMinute, s.Items.Sum(i => i.Count), s.Progress.Flags.Count), Is.EqualTo(before), "不收费、不计时、不写事实");
         s.Progress.Flags.Add(Q("AC01", "accepted"));
         Ok(E.TalkNpc(s, "npc_yin_ke"));

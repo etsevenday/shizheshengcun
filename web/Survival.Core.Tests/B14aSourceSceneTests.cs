@@ -15,8 +15,8 @@ namespace Survival.Core.Tests;
 public class B14aSourceSceneTests : BattleTestBase
 {
     private const int D5 = 6240;
-    private const string ExploreStep = "先探索当前地点，找到通往下一段的路。";
-    private const string NoExploreStep = "查看当前已知路线与通行条件。";
+    private const string ExploreStep = "先探索脚下这个地点，找出往前走的路。";
+    private const string NoExploreStep = "先看看地图上已经认出的路和通行条件。";
 
     private GameState Fresh()
     {
@@ -214,7 +214,7 @@ public class B14aSourceSceneTests : BattleTestBase
     // ───────────── TUT-Q139-02 ─────────────
 
     /// <summary>
-    /// TUT-Q139-02：路线揭示后恢复真实已知相邻段（“沿已知路线前往检查哨。”并指向检查哨）；已知但未开通显示“查看通往营门的路线条件：…”与相邻栏同一原因；
+    /// TUT-Q139-02：路线揭示后恢复真实已知相邻段（“下一段路已开通，前往检查哨。”并指向检查哨）；已知但未开通显示“前往营门还需要…”与相邻栏同一原因；
     /// 下一段仍未知而当前已 100% 时只写“查看当前已知路线与通行条件。”，不点亮、不要求重复探索。
     /// </summary>
     [Test]
@@ -224,7 +224,7 @@ public class B14aSourceSceneTests : BattleTestBase
         E.DebugSetProgress(s, "m01_road", 100);
         E.PrologueBoundary(s);
         Assert.That(s.Locations["m02_checkpoint"].Discovered, Is.True, "按原发现规则：探索 100% 揭示");
-        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("沿已知路线前往检查哨。"), "已知且可走");
+        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("下一段路已开通，前往检查哨。"), "已知且可走");
         Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:m02_checkpoint"));
 
         // 到检查哨：下一段（营门）未知、检查哨本可探索，但 B22f（Q193）起拦路战未胜时探索被禁 → 写“先战胜检查哨拦路敌人。”、不点亮探索入口
@@ -242,7 +242,7 @@ public class B14aSourceSceneTests : BattleTestBase
         var reason = E.GateBlockedReason(s, edge);
         Assert.That(reason, Does.StartWith("需要："));
         var step = E.CurrentObjective(s)!.Step;
-        Assert.That(step, Is.EqualTo("查看通往营门的路线条件：" + reason.Substring(3).TrimEnd('。') + "。"), "用相邻栏同一句领域可公开原因，不编造");
+        Assert.That(step, Is.EqualTo("前往营门还需要" + reason.Substring(3).TrimEnd('。') + "。"), "用相邻栏同一句领域可公开原因，不编造");
         Assert.That(step, Does.Not.Contain("{").And.Not.Contain("需要："));
         Assert.That(E.ObjectiveFocus(s), Is.EqualTo("loc:h01_gate"), "指向已知但未开通的那一段");
         Assert.That(E.AdjacentLocked(s).Any(x => x.Target == "h01_gate" && x.Reason == reason), Is.True, "与相邻栏一致");
@@ -277,10 +277,10 @@ public class B14aSourceSceneTests : BattleTestBase
 
         E.DebugSetProgress(s, "m01_road", 100);
         E.PrologueBoundary(s);
-        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("沿已知路线前往检查哨。"));
+        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("下一段路已开通，前往检查哨。"));
         Start(s, ActionRequest.Travel("m02_checkpoint"));
         Assert.That(s.CurrentLocation, Is.EqualTo("m01_road"));
-        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("沿已知路线前往检查哨。"), "移动中不提前切到目的地");
+        Assert.That(E.CurrentObjective(s)!.Step, Is.EqualTo("下一段路已开通，前往检查哨。"), "移动中不提前切到目的地");
         Assert.That(s.Locations["m02_checkpoint"].Visited, Is.False);
         Run(s);
         ReadDialogues(s);
@@ -396,13 +396,13 @@ public class B14aSourceSceneTests : BattleTestBase
         Assert.That(E.DialogueLocked(t), Is.False, "不重播已示短句");
     }
 
-    /// <summary>B14a 数据同源：Q139 四句与 Q140 战斗类任务表从 prologue-adjudications.json 导入（逐字）。</summary>
+    /// <summary>B14a 数据同源：Q139 四句与 Q140 战斗类任务表从 prologue-adjudications.json 导入（逐字；四句 B38 起为 N02 新稿）。</summary>
     [Test]
     public void B14a_Config_FromPlannerData()
     {
         var ts = Cfg.Prologue.TravelStep;
         Assert.That((ts.Explore, ts.KnownOpen, ts.KnownBlocked, ts.UnknownNoExplore), Is.EqualTo((
-            ExploreStep, "沿已知路线前往{实际下一相邻地点名}。", "查看通往{已发现地点名}的路线条件：{领域可公开原因}。", NoExploreStep)));
+            ExploreStep, "下一段路已开通，前往{实际下一相邻地点名}。", "前往{已发现地点名}还需要{领域可公开原因}。", NoExploreStep)));
         Assert.That(Cfg.Prologue.BattleOnlyHintTaskIds, Is.EqualTo(new[] { "PRO04" }));
     }
 }

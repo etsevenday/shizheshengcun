@@ -84,7 +84,7 @@ public class B15aTests : TestBase
                 s.Progress.Flags.Add(Q("FA03", "completed"));
                 break;
             case "RN05":
-                Assert.That(E.AcceptQuest(s, quest).Reason, Is.EqualTo("需要：在警备仓封存仓核心领取警备仓备用电源，或完成“同一条归路”"));
+                Assert.That(E.AcceptQuest(s, quest).Reason, Is.EqualTo("需要：在警备仓封存仓领取警备仓备用电源，或完成“同一条归路”"));
                 s.Progress.Flags.Add(Q("FA04", "completed"));
                 break;
             case "RN06":
@@ -254,7 +254,7 @@ public class B15aTests : TestBase
             Assert.That(q.OfferDialogue, Is.EqualTo((string)x["dialogueId"]!));
             var lines = Cfg.Story.Dialogues.Where(d => d.Event == q.OfferDialogue).ToList();
             Assert.That(lines, Has.Count.EqualTo(1));
-            Assert.That((lines[0].Id, lines[0].Speaker, lines[0].Text), Is.EqualTo(((string)x["lineId"]!, (string)x["displayName"]!, (string)x["text"]!)));
+            Assert.That((lines[0].Id, lines[0].Speaker, lines[0].Text), Is.EqualTo(((string)x["lineId"]!, (string)x["displayName"]!, N02.Line((string)x["lineId"]!, (string)x["text"]!))));   // B38 起为 N02 新稿
             Assert.That(Cfg.Party.Named(q.NpcId)!.Name, Is.EqualTo((string)x["displayName"]!));
             Assert.That(Cfg.Quests.DialogueSets.Single(d => d.Id == q.OfferDialogue).Title, Is.EqualTo(q.Title + "：邀约"));
         }
@@ -390,7 +390,7 @@ public class B15aTests : TestBase
     public void QUEST_Q157_01_Fa05_NormalOrder()
     {
         var s = At("h03_workshop", Registered.Concat(new[] { Q("FA04", "completed") }).ToArray());
-        Assert.That(E.QuestViewOf(s, "FA05")!.AcceptBlocked, Is.EqualTo("需要：在警备仓封存仓核心领取警备仓备用电源"));
+        Assert.That(E.QuestViewOf(s, "FA05")!.AcceptBlocked, Is.EqualTo("需要：在警备仓封存仓领取警备仓备用电源"));
         E.DebugClaimRecord(s, "d03_08_unique");
         ReadDialogues(s);
         Ok(E.TalkNpc(s, "npc_luo_zheng"));
@@ -442,7 +442,7 @@ public class B15aTests : TestBase
         var s = At("h03_workshop", Registered);
         var v = E.CityServicePreview(s, GameEngine.TrainingServiceId)!;
         Assert.That(v.EffectText, Does.Not.Contain("在在"));
-        Assert.That(v.EffectText, Does.Contain("阶位2在警备仓封存仓核心领取警备仓备用电源，或完成“同一条归路”后花"));
+        Assert.That(v.EffectText, Does.Contain("阶位2在警备仓封存仓领取警备仓备用电源，或完成“同一条归路”后花"));
         Assert.That(v.EffectText, Does.Contain("阶位1在队伍容量C3后"));
     }
 

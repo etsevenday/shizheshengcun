@@ -1131,7 +1131,7 @@ namespace Survival.Core.Engine
         }
 
         /// <summary>
-        /// Q139 的下一步句（策划原文）：未知且可探索 →“先探索当前地点，找到通往下一段的路。”；未知且不能探索 →“查看当前已知路线与通行条件。”
+        /// Q139 的下一步句（文字取 config prologue.travelStep，B38 起为 N02 新稿）：未知且可探索 →“先探索脚下这个地点，找出往前走的路。”；未知且不能探索 →“先看看地图上已经认出的路和通行条件。”
         /// （所有前进类主目标）。已知可走/已知未开通两句只替换出区之后“沿旧公路、检查哨、营门逐段前进”（route_onward）那句泛指的下一步，
         /// 其余前进类主目标在下一段已知时保留 Q129 原下一步（开发假设 B14a-3）。不替换时为 null。
         /// </summary>
@@ -1154,7 +1154,7 @@ namespace Survival.Core.Engine
 
         private static string? NonEmpty(string t) => string.IsNullOrEmpty(t) ? null : t;
 
-        /// <summary>相邻栏的未开通原因“需要：A；B”放进“……的路线条件：{原因}。”时去掉“需要：”前缀与句末句号，避免重复标点。</summary>
+        /// <summary>相邻栏的未开通原因“需要：A；B”放进“前往……还需要{原因}。”（B38 前为“……的路线条件：{原因}。”）时去掉“需要：”前缀与句末句号，避免重复标点。</summary>
         private static string PublicReason(string reason)
         {
             var r = reason.StartsWith("需要：") ? reason.Substring(3) : reason;

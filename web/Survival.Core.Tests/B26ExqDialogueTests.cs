@@ -16,6 +16,14 @@ public class B26ExqDialogueTests : TestBase
 
     private static JObject Line(string quest) => (JObject)Lines.Single(l => (string)l["questId"]! == quest);
 
+    /// <summary>B38 N02：合同句按该组台词 id 换成 N02 新稿（key = offer / turnin；合同原文须是 N02 的 oldText）。</summary>
+    private static string Text(string quest, string key)
+    {
+        var l = Line(quest);
+        var id = Cfg.Story.Dialogues.Single(d => d.Event == (string)l[key + "Id"]!).Id;
+        return N02.Line(id, (string)l[key]!);
+    }
+
     private GameState Registered(string loc)
     {
         var s = New();
@@ -46,11 +54,11 @@ public class B26ExqDialogueTests : TestBase
         {
             var d = Cfg.Story.Dialogues.Where(x => x.Event == set).ToList();
             Assert.That(d.Count, Is.EqualTo(1), set);
-            Assert.That((d[0].Speaker, d[0].Text), Is.EqualTo(((string)l["name"]!, (string)l[key]!)));
+            Assert.That((d[0].Speaker, d[0].Text), Is.EqualTo(((string)l["name"]!, N02.Line(d[0].Id, (string)l[key]!))));
         }
     }
 
-    /// <summary>通用台词不动：三名岗位的通用组还在、文字未改，其他任务不借用专属句。</summary>
+    /// <summary>通用台词不动：三名岗位的通用组还在、文字只按 B38 N02 新稿替换，其他任务不借用专属句。</summary>
     [Test]
     public void Q217_GenericLinesUntouched()
     {
@@ -61,7 +69,7 @@ public class B26ExqDialogueTests : TestBase
                 Assert.That(Cfg.Story.Dialogues.Count(d => d.Event == set), Is.EqualTo(1), set);
                 Assert.That(Cfg.Quests.List.Where(q => q.Id.StartsWith("EXQ")).Select(q => q.OfferDialogue).Concat(Cfg.Quests.List.Where(q => q.Id.StartsWith("EXQ")).Select(q => q.TurninDialogue)), Does.Not.Contain(set));
             }
-        Assert.That(Cfg.Story.Dialogues.Single(d => d.Event == "npc_xu_an_dialogue_quest_offer").Text, Is.EqualTo("你可以分别去教会和科学院问路，不用先选一个效忠。"));
+        Assert.That(Cfg.Story.Dialogues.Single(d => d.Event == "npc_xu_an_dialogue_quest_offer").Text, Is.EqualTo(N02.Line("NTL_0178", "你可以分别去教会和科学院问路，不用先选一个效忠。")));
         var others = Cfg.Quests.List.Where(q => !new[] { "EXQ05", "EXQ06", "EXQ07", "EXQ08" }.Contains(q.Id)).SelectMany(q => new[] { q.OfferDialogue, q.TurninDialogue });
         Assert.That(others.Where(x => x != null && x.StartsWith("EXQ")), Is.Empty);
     }
@@ -73,7 +81,7 @@ public class B26ExqDialogueTests : TestBase
         var s = Registered("h02_square");
         var t0 = s.GameMinute;
         Assert.That(E.AcceptQuest(s, "EXQ07").Ok, Is.True);
-        Assert.That(Said(s, "EXQ07_offer")?.Text, Is.EqualTo((string)Line("EXQ07")["offer"]!));
+        Assert.That(Said(s, "EXQ07_offer")?.Text, Is.EqualTo(Text("EXQ07", "offer")));
         Assert.That(Said(s, "npc_xu_an_dialogue_quest_offer"), Is.Null, "不再借通用委托句");
         ReadDialogues(s);
         Assert.That(GameEngine.QuestAccepted(s, "EXQ07"), Is.True);
@@ -81,7 +89,7 @@ public class B26ExqDialogueTests : TestBase
         var snap = (s.Items.Sum(i => i.Count), s.Skills.Sum(kv => kv.Value.Xp), E.BattleCapacity(s));
         Assert.That(E.TalkNpc(s, "npc_xu_an").Ok, Is.True);
         ReadDialogues(s);
-        Assert.That(Said(s, "EXQ07_turnin")?.Text, Is.EqualTo((string)Line("EXQ07")["turnin"]!));
+        Assert.That(Said(s, "EXQ07_turnin")?.Text, Is.EqualTo(Text("EXQ07", "turnin")));
         Assert.That(GameEngine.QuestDone(s, "EXQ07"), Is.True);
         Assert.That(s.GameMinute, Is.EqualTo(t0), "0 分钟");
         Assert.That((s.Items.Sum(i => i.Count), s.Skills.Sum(kv => kv.Value.Xp), E.BattleCapacity(s)), Is.EqualTo(snap));
@@ -119,7 +127,7 @@ public class B26ExqDialogueTests : TestBase
         var line = Said(s, "EXQ07_offer")!;
         Assert.That(line.Speaker, Is.EqualTo(duty));
         Assert.That(line.Speaker, Is.Not.EqualTo("许安"));
-        Assert.That(line.Text, Is.EqualTo((string)Line("EXQ07")["offer"]!));
+        Assert.That(line.Text, Is.EqualTo(Text("EXQ07", "offer")));
         s.Progress.Flags.UnionWith(new[] { "claim:d07_07_unique", "campaignId:d07_07_unique", "civilian_cache_knowledge" });
         Assert.That(E.TalkNpc(s, "npc_xu_an").Ok, Is.True);
         ReadDialogues(s);

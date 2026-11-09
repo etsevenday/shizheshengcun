@@ -178,13 +178,13 @@ public class V10ConfigTests : TestBase
         Assert.That(st.TutorialBattle.EnemyId, Is.EqualTo("shambler"));
         Assert.That(st.TutorialBattle.NoReinforcement, Is.True);
         string T(string id) => st.Dialogues.Single(d => d.Id == id).Text;
-        Assert.That(T("awakening_1"), Is.EqualTo("醒醒……醒醒，我饿了。"));
-        Assert.That(T("awakening_2"), Is.EqualTo("我不知道我叫什么。我只知道，我饿了。"));
-        Assert.That(T("food_water"), Is.EqualTo("先找点能吃的。还有水。"));
-        Assert.That(T("tutorial_arrive"), Is.EqualTo("前面那个……不像还活着。小心。"));
-        Assert.That(T("tutorial_won"), Is.EqualTo("那东西身上有一团还在动的物质……让我试试。"));
-        Assert.That(T("fusion_done_1"), Is.EqualTo("有变化了。攻击力增加了0.1。"));
-        Assert.That(T("fusion_done_2"), Is.EqualTo("也可能有不好的变化……这次运气不错。"));
+        Assert.That(T("awakening_1"), Is.EqualTo("喂，你醒了没有？……我饿得睡不着。"));
+        Assert.That(T("awakening_2"), Is.EqualTo("你听见我了，是不是？我想不起自己叫什么。"));
+        Assert.That(T("food_water"), Is.EqualTo("先喝口水吧。你嘴里发干，我也能觉出来。"));
+        Assert.That(T("tutorial_arrive"), Is.EqualTo("等等。它走路的声音不对。你看它的脚。"));
+        Assert.That(T("tutorial_won"), Is.EqualTo("那一团还在动。它离我那么远，我怎么觉得它就在嘴边？"));
+        Assert.That(T("fusion_done_1"), Is.EqualTo("刚才那一下……你的手有力了一点。我也觉到了。"));
+        Assert.That(T("fusion_done_2"), Is.EqualTo("这次还好。下一口会怎样，我说不准。"));
         // 初始 6 只世界敌人里荒地游荡尸作为首战保留实例（R05 §5）
         Assert.That(Cfg.WorldEnemies.Initial["field"], Does.Contain("shambler"));
     }

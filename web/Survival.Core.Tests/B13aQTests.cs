@@ -168,7 +168,7 @@ public class B13aQTests : TestBase
     [Test]
     public void MAP_Q117_01_PerNodeClue_OnceOnly_NoExtras()
     {
-        var clues = ((JArray)Adj()["clues"]!).ToDictionary(c => (string)c["nodeId"]!, c => (string)c["text"]!);
+        var clues = ((JArray)Adj()["clues"]!).ToDictionary(c => (string)c["nodeId"]!, c => N02.Field("locations", (string)c["nodeId"]!, "clue", (string)c["text"]!));   // B38 起为 N02 新稿
         Assert.That(clues, Has.Count.EqualTo(45));
         Assert.That(Cfg.Locations.Where(l => l.Clue != null).ToDictionary(l => l.Id, l => l.Clue!), Is.EquivalentTo(clues));
         Assert.That(Cfg.Locations.Where(l => l.Clue != null).All(l => !l.IsStarter && !l.IsDungeon && !l.ExploreAuto100OnVisit && l.ExploreEnabled), Is.True);

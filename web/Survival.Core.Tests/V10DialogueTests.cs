@@ -143,7 +143,7 @@ public class V10DialogueTests : BattleTestBase
         var e2 = new GameEngine(cfg2);
         var back2 = SaveSerializer.Deserialize(json, cfg2, out _);
         for (var k = 0; k < 5 && e2.DialogueLocked(back2); k++) e2.AckDialogue(back2, e2.CurrentDialogueLine(back2)!.LineId);
-        Assert.That(e2.DialogueHistory(back2).First(h => h.Lines[0].LineId == "awakening_1").Lines[0].Text, Is.EqualTo("醒醒……醒醒，我饿了。"));
+        Assert.That(e2.DialogueHistory(back2).First(h => h.Lines[0].LineId == "awakening_1").Lines[0].Text, Is.EqualTo("喂，你醒了没有？……我饿得睡不着。"));
 
         // 新游戏覆盖：记录重置
         var fresh = NewStory();

@@ -6,15 +6,15 @@ using Survival.Core.State;
 namespace Survival.Core.Tests;
 
 /// <summary>
-/// 批次 B14c（R148）：策划答复 Q147 选 A——“沿已知路线前往…”“查看通往…的路线条件…”两句只用于出区后逐段前进（route_onward）；
+/// 批次 B14c（R148）：策划答复 Q147 选 A——“沿已知路线前往…”“查看通往…的路线条件…”两句（B38 N02 起为“下一段路已开通，前往…”“前往…还需要…”）只用于出区后逐段前进（route_onward）；
 /// 其他前进类主目标（回营见来客、出区、首战、到访村庄）下一段已知时保留 Q129 原下一步及缺项分支；下一段未知时所有前进类主目标仍按可探索/不可探索两句。
 /// 规则出处：S14/S15/A10/A11 等「Q147 已知路线提示的适用范围」本轮章、prologue-adjudications.json；验收 A10 TUT-Q147-01/02。
 /// </summary>
 public class B14cRouteHintScopeTests : BattleTestBase
 {
     private const int D5 = 6240;
-    private const string ExploreStep = "先探索当前地点，找到通往下一段的路。";
-    private const string NoExploreStep = "查看当前已知路线与通行条件。";
+    private const string ExploreStep = "先探索脚下这个地点，找出往前走的路。";
+    private const string NoExploreStep = "先看看地图上已经认出的路和通行条件。";
 
     private GameState Won()
     {
@@ -64,7 +64,7 @@ public class B14cRouteHintScopeTests : BattleTestBase
         var v = VisitorReturn();
         Assert.That(Known(E.NextTravelSegment(v)), Is.True);
         Assert.That(E.CurrentObjective(v)!.Step, Is.EqualTo(E.SpecialOf("visitor_return")!.Step), "保留“与程望交谈”");
-        Assert.That(E.CurrentObjective(v)!.Step, Does.Not.StartWith("沿已知路线前往"));
+        Assert.That(E.CurrentObjective(v)!.Step, Does.Not.StartWith("下一段路已开通，前往"));
 
         // 出区：缺“到访村庄”时保留缺项分支原句（村庄已知、路已开通）
         var x = Won();
@@ -82,7 +82,7 @@ public class B14cRouteHintScopeTests : BattleTestBase
             var o = E.CurrentObjective(x)!;
             var expected = x.Prologue.ObjectiveId == "exit_need" ? E.AdaptiveStep(x, "exit_need") ?? E.SpecialOf("exit_go")!.Step : E.SpecialOf("exit_go")!.Step;
             Assert.That(o.Step, Is.EqualTo(expected), "出区保留 Q129 原句/缺项分支");
-            Assert.That(o.Step, Does.Not.StartWith("沿已知路线前往").And.Not.StartWith("查看通往"));
+            Assert.That(o.Step, Does.Not.StartWith("下一段路已开通，前往").And.Not.Match("^前往.+还需要"));
         }
 
         // 到访村庄（PRO15）：村庄已知、人在营地
@@ -106,7 +106,7 @@ public class B14cRouteHintScopeTests : BattleTestBase
         Assert.That(r.Prologue.ObjectiveId, Is.EqualTo("route_onward"));
         E.DebugSetProgress(r, "m01_road", 100);
         E.PrologueBoundary(r);
-        Assert.That(E.CurrentObjective(r)!.Step, Is.EqualTo("沿已知路线前往检查哨。"));
+        Assert.That(E.CurrentObjective(r)!.Step, Is.EqualTo("下一段路已开通，前往检查哨。"));
     }
 
     // ───────────── TUT-Q147-02 ─────────────
@@ -150,7 +150,7 @@ public class B14cRouteHintScopeTests : BattleTestBase
             var step = E.CurrentObjective(w)!.Step;
             var expected = w.Prologue.ObjectiveId == "exit_need" ? E.AdaptiveStep(w, "exit_need") ?? E.SpecialOf("exit_go")!.Step : E.SpecialOf("exit_go")!.Step;
             Assert.That(step, Is.EqualTo(expected));
-            Assert.That(step, Does.Not.StartWith("沿已知路线前往").And.Not.StartWith("查看通往"));
+            Assert.That(step, Does.Not.StartWith("下一段路已开通，前往").And.Not.Match("^前往.+还需要"));
         }
     }
 }

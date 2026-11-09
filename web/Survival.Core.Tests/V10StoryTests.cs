@@ -53,7 +53,7 @@ public class V10StoryTests : BattleTestBase
         var s = NewStory();
         Assert.That(s.Story.Legacy, Is.False);
         Assert.That(s.Story.PendingDialogues, Is.EqualTo(new[] { "awakening_1", "awakening_2", "food_water" }));
-        Assert.That(E.CurrentDialogue(s)!.Text, Is.EqualTo("醒醒……醒醒，我饿了。"));
+        Assert.That(E.CurrentDialogue(s)!.Text, Is.EqualTo("喂，你醒了没有？……我饿得睡不着。"));
         var minute = s.GameMinute;
         var items = SaveSerializer.Serialize(new GameState { Items = s.Items });
         Assert.That(E.AckDialogue(s, "awakening_1").Ok, Is.True);

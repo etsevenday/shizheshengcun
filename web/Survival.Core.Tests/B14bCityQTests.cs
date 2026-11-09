@@ -207,7 +207,7 @@ public class B14bCityQTests : TestBase
     [Test]
     public void CITY_Q148_01_ForgeArmoryShowOnlyRecordCondition()
     {
-        const string need = "需要：在教会地下圣所核心领取圣所旧路档册";
+        const string need = "需要：在教会地下圣所领取圣所旧路档册";
         var s = Crafter("h03_workshop");
         Assert.That(E.PublicStationsHere(s).Single(v => v.StationId == "forge").Blocked, Is.EqualTo("需要：完成营区登记（在营门办理登记后走到营区广场）"), "未登记先写登记");
         s.Progress.Flags.Add("hub_registered");
@@ -505,8 +505,8 @@ public class B14bCityQTests : TestBase
     {
         var q = Design("design.city-adjudications.json")["dialogueQ151"]!;
         var npc = Cfg.City.Npcs.Single(n => n.NpcId == "npc_yin_ke");
-        Assert.That(npc.ServiceOfferLines[(string)q["serviceId"]!], Is.EqualTo((string)q["serviceText"]!));
-        Assert.That(Cfg.Story.Dialogues.Single(d => d.Id == (string)q["lineId"]!).Text, Is.EqualTo((string)q["questText"]!));
+        Assert.That(npc.ServiceOfferLines[(string)q["serviceId"]!], Is.EqualTo(N02.Field("city.npcs", "npc_yin_ke", "serviceOfferLines." + (string)q["serviceId"]!, (string)q["serviceText"]!)));   // B38 起为 N02 新稿
+        Assert.That(Cfg.Story.Dialogues.Single(d => d.Id == (string)q["lineId"]!).Text, Is.EqualTo(N02.Line((string)q["lineId"]!, (string)q["questText"]!)));
         foreach (var d in Cfg.Story.Dialogues.Where(d => d.Event.StartsWith("npc_yin_ke_")))
             Assert.That(InternalId.IsMatch(d.Text), Is.False, d.Id);
         Assert.That(npc.ServiceOfferLines.Values.Any(InternalId.IsMatch), Is.False);
@@ -518,7 +518,7 @@ public class B14bCityQTests : TestBase
     {
         var s = At("r08_observation");
         var v = E.CityServicesOf(s, "npc_yin_ke").Single(x => x.Id == "academy_observation_record");
-        Assert.That(v.NpcLine, Is.EqualTo("这里只读你已经同意的范围和现有观察记录；不再办理第二次观察协作收费。"));
+        Assert.That(v.NpcLine, Is.EqualTo("只翻已经有的记录。先前同意看到哪里，就看到哪里。"));
         Assert.That(v.EffectText, Does.Contain("0分钟").And.Not.Match(InternalId.ToString()));
         var minutes = s.GameMinute;
         var items = s.Items.Sum(i => i.Count);

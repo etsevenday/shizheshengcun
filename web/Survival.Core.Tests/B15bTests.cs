@@ -42,14 +42,16 @@ public class B15bTests : TestBase
     // ───────────── Q160 FA04 系统台词 ─────────────
 
     /// <summary>
-    /// QUEST-Q160-01：开始“整理调查记录”播的 FA04_merge_accept 系统句逐字为定稿“将按‘同一条归路’的工作预览整理记录；对话本身不替代工作提交。”，
+    /// QUEST-Q160-01：开始“整理调查记录”播的 FA04_merge_accept 系统句逐字为定稿“将按‘同一条归路’的工作预览整理记录；对话本身不替代工作提交。”（B38 起为 N02 新稿），
     /// 新生成的对话记录里没有“FA04”；工作预览（10 分钟）与结算（FA04_merged、完成）不变；已有的旧对话记录快照不被批量改写（读档后也一样）。
     /// </summary>
     [Test]
     public void QUEST_Q160_01_Fa04SystemLine()
     {
-        var want = (string)Design()["mainWorkText"]!;
-        Assert.That(want, Is.EqualTo("将按‘同一条归路’的工作预览整理记录；对话本身不替代工作提交。"));
+        var contract = (string)Design()["mainWorkText"]!;
+        Assert.That(contract, Is.EqualTo("将按‘同一条归路’的工作预览整理记录；对话本身不替代工作提交。"));
+        var want = N02.Line("NTL_0325", contract);   // B38 N02 新稿
+        Assert.That(want, Is.EqualTo("到「同一条归路」的工作预览核对记录，提交后才算整理完成。"));
         Assert.That(Cfg.Story.Dialogues.Where(d => d.Event == "FA04_merge_accept").Select(d => d.Text), Does.Contain(want));
         Assert.That(Cfg.Story.Dialogues.Any(d => d.Text.Contains("FA04")), Is.False, "玩家可见台词不带内部编号");
 
@@ -82,6 +84,10 @@ public class B15bTests : TestBase
 
     // ───────────── Q161 八条工作提示 ─────────────
 
+    /// <summary>B38 N02：定稿八句按 {quest}_work 组的台词 id 换成 N02 新稿（合同原文须是 N02 的 oldText）。</summary>
+    private string WorkHint(string quest) =>
+        N02.Line(Cfg.Story.Dialogues.Single(d => d.Event == quest + "_work").Id, (string)Design()["workHints"]![quest]!);
+
     /// <summary>
     /// QUEST-Q161-01：HU01—HU04、CH01、CH02、AC01、AC02 进行中时的工作提示分别逐字匹配定稿八句，原通用句不再出现；
     /// 任务册与岗位事项（同一视图）一致；真实耗时、工作按钮/条件与进度照旧；反复查看 0 分钟、不提交工作、不发奖励。
@@ -96,13 +102,13 @@ public class B15bTests : TestBase
     [TestCase("AC02", "npc_shao_ning", 10, null)]
     public void QUEST_Q161_01_WorkHints(string quest, string npc, int minutes, string? workLabel)
     {
-        var want = (string)Design()["workHints"]![quest]!;
+        var want = WorkHint(quest);
         Assert.That(Cfg.Story.Dialogues.Any(d => d.Text == OldWorkHint), Is.False, "原通用句不再出现在配置里");
         var s = At("h02_square", Q(quest, "accepted"));
         var v = E.QuestViewOf(s, quest)!;
         Assert.That((v.Status, v.WorkHint), Is.EqualTo(("active", want)));
         Assert.That((v.WorkTotal, v.WorkLabel), Is.EqualTo((minutes, workLabel)), "真实耗时与工作按钮照旧");
-        if (quest == "CH01") Assert.That(v.WorkBlocked, Is.EqualTo("需要：在教会地下圣所核心领取圣所旧路档册"), "条件照旧");
+        if (quest == "CH01") Assert.That(v.WorkBlocked, Is.EqualTo("需要：在教会地下圣所领取圣所旧路档册"), "条件照旧");
         Assert.That(E.QuestBook(s).Single(x => x.Id == quest).WorkHint, Is.EqualTo(want), "任务册");
         Assert.That(E.QuestsOfNpc(s, npc).Single(x => x.Id == quest).WorkHint, Is.EqualTo(want), "岗位事项");
         var json = SaveSerializer.Serialize(s);
@@ -126,7 +132,7 @@ public class B15bTests : TestBase
         var s = At("c04_alms", Q("FA02", "accepted"), "FA02_record_credit", Q("CH01", "accepted"));
         s.Quests.Of("CH01").WorkMinutes = 5;
         var v = E.QuestViewOf(s, "CH01")!;
-        Assert.That(v.WorkHint, Is.EqualTo((string)Design()["workHints"]!["CH01"]!));
+        Assert.That(v.WorkHint, Is.EqualTo(WorkHint("CH01")));
         Assert.That((v.StatusText, v.WorkLabel, v.WorkBlocked), Is.EqualTo(("进行中（已完成5/10分钟）", "核对物资账（5分钟）", (string?)null)));
     }
 
@@ -175,8 +181,8 @@ public class B15bTests : TestBase
         Assert.That(s.Progress.Flags, Does.Contain(Q("CH01", "accepted")));
         Assert.That(offer.Lines.Select(l => l.Text), Is.EqualTo(new[]
         {
-            "你带回的路线记录里有物资去向。请帮我和公开清单核对，先记事实，不用替任何人说好话。",
-            "记录和清单有几处对不上。我只写能核实的部分。",
+            "你带回来的路线里记了物资去了哪儿。跟这张公开清单挨行对一下。有缺口就空着，别替谁填。",
+            "这几笔对不上。我能查到哪儿，就写到哪儿。",
         }), "原接取台词保留");
         Assert.That(E.QuestViewOf(s, "CH01")!.WorkBlocked, Is.Null);
     }
@@ -194,7 +200,7 @@ public class B15bTests : TestBase
         Assert.That(s.Progress.Flags, Does.Contain(Q("CH01", "accepted")), "不删除旧档已接");
         var v = E.QuestViewOf(s, "CH01")!;
         Assert.That((v.Status, v.WorkDone), Is.EqualTo(("active", 5)));
-        Assert.That(v.WorkBlocked, Is.EqualTo("需要：在教会地下圣所核心领取圣所旧路档册"));
+        Assert.That(v.WorkBlocked, Is.EqualTo("需要：在教会地下圣所领取圣所旧路档册"));
         Assert.That(E.StartQuestWork(s, "CH01").Ok, Is.False, "不能跳过档册条件");
         Assert.That(s.Quests.Records["CH01"].WorkMinutes, Is.EqualTo(5));
         E.DebugClaimRecord(s, "d01_08_unique");

@@ -480,7 +480,8 @@ namespace Survival.Core.Engine
                 if (!string.IsNullOrEmpty(q.NoteDialogue)) OpenDialogue(s, q.NoteDialogue!);
             }
             var extra = QuestCompletionDetail(s, q);
-            Emit(s, GameEventKind.Info, $"{KindWord(q)}“{q.Title}”完成：{q.Result}" +
+            // B38：N02 新稿的结果句自带句号（如 EXQ05—08），拼进“；……。”前去掉句末句号，避免“。。”/“。；”
+            Emit(s, GameEventKind.Info, $"{KindWord(q)}“{q.Title}”完成：{q.Result.TrimEnd('。')}" +
                 (extra != null ? "；" + extra : "") + (routes.Count > 0 ? "；发现" + string.Join("与", routes) : "") + "。");
         }
 

@@ -56,6 +56,7 @@
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261105/substitute-introduction-adjudications.json" Link="design.substitute-introduction.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261105/knowledge-source-adjudications.json" Link="design.knowledge-source.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261105/source-hint-classification-adjudications.json" Link="design.source-hint-classification.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../doc/策划案/系统策划总册 v1.0/assets/20261107/dialogue-rewrite.json" Link="design.dialogue-rewrite.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Fixtures/*.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../doc/策划案/基础系统 v0.2/基础系统初始配置 v0.2.json" Link="config.v0.2.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

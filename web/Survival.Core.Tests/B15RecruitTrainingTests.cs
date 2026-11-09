@@ -106,7 +106,7 @@ public class B15RecruitTrainingTests : TestBase
         Assert.That(E.NormalActivationAp(s.Player), Is.EqualTo(4));
         Assert.That(s.Items.Where(i => i.ItemId is "parts" or "cloth").Sum(i => i.Count), Is.EqualTo(0), "完成时扣材料");
         Assert.That(s.Skills.Values.Sum(k => k.Xp), Is.EqualTo(xp), "训练不是熟练度，不给经验");
-        Assert.That(E.CityServicePreview(s, GameEngine.TrainingServiceId)!.Targets.Single().Blocked, Is.EqualTo("阶位2需要：在警备仓封存仓核心领取警备仓备用电源，或完成“同一条归路”"), "B15a Q153：阶位2 前置改为已领备用电源或 FA04 完成");
+        Assert.That(E.CityServicePreview(s, GameEngine.TrainingServiceId)!.Targets.Single().Blocked, Is.EqualTo("阶位2需要：在警备仓封存仓领取警备仓备用电源，或完成“同一条归路”"), "B15a Q153：阶位2 前置改为已领备用电源或 FA04 完成");
     }
 
     /// <summary>取消训练：材料原物原处、阶位不变；队友也能训练（各自一次），冷却/阶位记在本人。</summary>
