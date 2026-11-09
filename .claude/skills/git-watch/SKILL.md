@@ -31,7 +31,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
       "head": "<拆分时的 origin/main 提交>",
       "issue": "<本队列开的待策划确认 issue 号或 null>",
       "batches": [
-        {"id": "B1", "title": "<主题>", "items": ["R1", "R2"], "kind": "A|B|C|D", "status": "pending|running|waiting|done|blocked", "commits": ["<短号>"], "questions": ["Q29"], "note": "<受阻原因或遗留问题>"}
+        {"id": "B1", "title": "<主题>", "items": ["R1", "R2"], "kind": "A|B|C|D", "status": "pending|running|waiting|held|done|blocked", "commits": ["<短号>"], "questions": ["Q29"], "note": "<受阻原因或遗留问题>"}
       ]
     },
     "pendingPlaytest": ["<已上线但还没浏览器试玩的提交短号>"]
@@ -39,6 +39,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
   ```
 
   `waiting` = 开工前发现缺口、问题已推给策划、整批没开发，`questions` 里是在等的 Q（第 3.0 节）。队列里有 `waiting` 批次时**不开任何别的批次**，直到策划推来新提交。
+  `held` = 用户挂起（2026-11-09 起；首例是 UI 重做 B31—B37，等用户评估策划补的效果图和图素）：不开工，也不挡别的批次，预检不算它待处理；`note` 写挂起原因和恢复条件。策划答复它的 Q 或推来它的素材都**不自动恢复**，只有用户在场明确说开工才改回 `pending`。
   `queue`、`pendingPlaytest` 可缺省。需求清单全文写在 `.git/claude-git-watch-queue.md`（第 2 节；每轮是新会话，scratchpad 不跨轮保留，所以放 .git 里）。队列全部 `done` 后把 `queue` 删掉、清单文件改名为 `.git/claude-git-watch-queue.<日期>.done.md` 留档。
 - 凡是"通知用户、停下"的情况，同时把 `notifiedHead` 记为当前 origin/main；下一轮 origin/main 仍是这个提交就安静结束、不再重复通知，等用户处理或策划再推新提交。本轮成功推送后把 `notifiedHead` 清回 null。
 - 用户手动触发（在场）时预检报"已通知过用户"或"批次受阻"：先把受阻原因讲给用户，用户说继续再清 `notifiedHead`、把受阻批次改回 `pending` 往下走。
@@ -85,6 +86,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 4. 整体量和以往一轮相当（一个主题、≤10 个里程碑）就只分一批，照旧一轮做完。
 5. 新提交到来时队列里还有没做完的批次：已 `done` 的不动；新需求如果修订了某个未做批次的内容就并进那一批，否则按上面顺序插队或排在后面；策划答复（A）照样排最前。
 6. **答复的是 `waiting` 批次在等的 Q**：不另开 A 批，答复并进那一批，那批改回 `pending` 排最前，开发 brief 里写明每条结论。策划这次推送后那批的 Q 仍是"待定"的（`AGENTS.md`：待定 = 这部分这次先不做）→ 对应部分跳过不做、写进 `note`，其余照做，不再挂起等它。策划的新提交一条都没答到它的 Q → 照常拆分入队，但 `waiting` 批次仍挡在前面，本轮拆完就结束。
+7. **属于 `held` 批次的新需求**（答复它的 Q、修订它的内容、补它要的素材）：并进那一批或新开一个 `held` 批次，状态保持 `held`，不开发；别的需求照常拆分入队。拆完 `PushNotification` 一行告诉用户"<批次> 的答复/素材已到，等你评估"（不记 `notifiedHead`，免得挡住别的批次；`lastSeen` 已前移，不会重复通知）；本轮有别的 `pending` 批次就照常接着做。
 
 ### 2.4 写队列
 
@@ -107,7 +109,7 @@ description: 定时检查 main 上别人（策划 dotpad1994 经 Codex）推的�
 
 ## 3 做一批（一轮只做一批）
 
-取队列第一个 `pending` 批次，状态改成 `running`、刷新心跳。只做这一批包含的 R：读 `.git/claude-git-watch-queue.md` 里这些 R 的出处，按它们的类别走下面 3.1–3.4（一批里有几类就几种都走）。给开发/试玩/文档代理的 brief 里写清"本批只做 R…；同一提交里的其他需求属于后续批次，不要顺手做"。
+取队列第一个 `pending` 批次（`held` 批次跳过，排在它后面的 `pending` 照常做），状态改成 `running`、刷新心跳。只做这一批包含的 R：读 `.git/claude-git-watch-queue.md` 里这些 R 的出处，按它们的类别走下面 3.1–3.4（一批里有几类就几种都走）。给开发/试玩/文档代理的 brief 里写清"本批只做 R…；同一提交里的其他需求属于后续批次，不要顺手做"。
 
 - 开发前先走 3.0 开工前核对；有缺口就整批挂起，不往下走。
 - 文档同步（`/design-dev` 第 6 步）只给本批做过的需求补【实现同步】与修改记录；后续批次的条目还没实现，不写【实现同步】、不当作偏差。
