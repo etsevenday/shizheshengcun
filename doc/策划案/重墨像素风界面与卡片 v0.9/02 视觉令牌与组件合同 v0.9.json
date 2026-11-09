@@ -221,5 +221,12 @@
     "runtimeReady": false,
     "wholeScreenshotAsRuntimeTexture": false
   },
-  "authority": "页面/流程以04—08和交互原型为准；本JSON及01—03为视觉基准，玩法依现行总册/Q。"
+  "authority": "页面/流程以04—08和交互原型为准；本JSON及01—03为视觉基准，玩法依现行总册/Q。",
+  "q274To277": {
+    "contract": "11 Q274-Q278 素材字体与实施合同 v0.9.json",
+    "referenceFolder": "assets/参考原图/",
+    "typographyScope": "全部像素字体",
+    "artAcceptance": "INK2-14 正常窗口清晰度，允许连续缩放",
+    "portraitsFinalBatch": "UX2-B5"
+  }
 }

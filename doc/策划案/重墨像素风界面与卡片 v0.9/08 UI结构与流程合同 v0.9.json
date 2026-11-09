@@ -399,5 +399,18 @@
       "Q268": "B"
     },
     "acceptance": "Q258-268-A01—A15"
+  },
+  "q278": {
+    "contract": "11 Q274-Q278 素材字体与实施合同 v0.9.json",
+    "existingQueueFirst": true,
+    "uiBatchOrder": [
+      "UX2-B1",
+      "UX2-B2",
+      "UX2-B3",
+      "UX2-B4",
+      "UX2-B5"
+    ],
+    "acceptNewGameplayAfterUi": true,
+    "continueSmallAnsweredQ": true
   }
 }

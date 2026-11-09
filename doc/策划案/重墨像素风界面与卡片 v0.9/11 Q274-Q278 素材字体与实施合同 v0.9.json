@@ -1,0 +1,586 @@
+{
+  "date": "2026-11-09",
+  "baseline": "2620a066d711519419a0da0cbb453643a5496615",
+  "status": "已答复，待开发实施与实机验收",
+  "answers": {
+    "Q274": "选 A。将重墨像素风 V2 的 21 张参考原图按原目录和文件名完整上传到本包 `assets/参考原图/`，开发方据原图取视觉方向，游戏显示与玩法仍按现行规格。",
+    "Q275": "选 B。游戏界面的标题、导航、卡名、按钮、正文、数值、提示、日志和对白全部用像素字体，采用本包 11 的字库、像素字号与缺字验收。",
+    "Q276": "选 B。UX2-B5 交付全部可出现人物与每种敌人的独立正式形象。命名人物按身份绑定，生成角色按保存的身份与外观组合生成并稳定绑定独立成图，敌人按配置 ID 区分，当前 42 种。同种变体不得共用一张正式图。前序批可暂用现有图。",
+    "Q277": "选 A。开发方分批用 AI 出图并做降采样、限色、整理像素。阶段缺图用现有可辨识图配新框并登记。INK2-14 按正常窗口像素清楚、不糊、无整屏噪点验收，保留连续调整尺寸。UX2-B5 全量交付时核对缺项清零。",
+    "Q278": "选 A。先做完已有功能队列和已答 Q，N02 照现有队列处理。随后连续推进 UX2-B1–B5，期间新增玩法照收并排在 B5 后，已答 Q 的小改在当前生效组件照常处理并回归。"
+  },
+  "references": {
+    "folder": "assets/参考原图/",
+    "count": 21,
+    "bytes": 45088300,
+    "publication": "仅策划引用，不纳入游戏分发",
+    "files": [
+      {
+        "file": "assets/参考原图/01-item/01-食物与饮水.png",
+        "bytes": 2251063,
+        "width": 1448,
+        "height": 1086,
+        "sha256": "940fb5f6cbc4f390047a2e8b51791caa0426eb6d1f095ff85e11c85e900c5044"
+      },
+      {
+        "file": "assets/参考原图/01-item/02-医疗与求生工具.png",
+        "bytes": 2193476,
+        "width": 1672,
+        "height": 941,
+        "sha256": "19a20963a0db598c06973d886813e668e6d29b4e39ddc919282e3457b3083e86"
+      },
+      {
+        "file": "assets/参考原图/01-item/03-材料与设施卡.png",
+        "bytes": 2513294,
+        "width": 1672,
+        "height": 941,
+        "sha256": "f3e3e9779d8fcc0290a36f5290240c0ad7ba9f63e4b803dafa3dd83001f025a9"
+      },
+      {
+        "file": "assets/参考原图/02-UI底图/01-锈铁框架.png",
+        "bytes": 1596190,
+        "width": 1672,
+        "height": 941,
+        "sha256": "4f4ca1812c32de0635713d11426cc58d0dc1f8340ace6ce21e82ecae0bd0666c"
+      },
+      {
+        "file": "assets/参考原图/02-UI底图/02-旧布与档案纸.png",
+        "bytes": 1789676,
+        "width": 1672,
+        "height": 941,
+        "sha256": "d69940c4adde7cfc772f321bc0829a356d9fc77b323291bfcde3c05024b70434"
+      },
+      {
+        "file": "assets/参考原图/02-UI底图/03-暗红刻痕与冷钢.png",
+        "bytes": 1595268,
+        "width": 1672,
+        "height": 941,
+        "sha256": "3100ebe960cfe331d0eb588cd3dc1b945bd9517d094bb33144ddb728b2079295"
+      },
+      {
+        "file": "assets/参考原图/03-UI布局/01-营地求生主界面.png",
+        "bytes": 2419938,
+        "width": 1672,
+        "height": 941,
+        "sha256": "ca514d327ccdcca49eb2ba3bea61ca09169d60d9e8b853b5b9a0cd965ef4c992"
+      },
+      {
+        "file": "assets/参考原图/03-UI布局/02-四对四战斗界面.png",
+        "bytes": 2619539,
+        "width": 1672,
+        "height": 941,
+        "sha256": "9a3effbc15cf36e1c5177bb6a3ceec6d7a93d0945b0630ab17244efa68ac2aa8"
+      },
+      {
+        "file": "assets/参考原图/03-UI布局/03-整备与人物界面.png",
+        "bytes": 2049406,
+        "width": 1672,
+        "height": 941,
+        "sha256": "eb9edfb7a7a31042284bef84df919318cc0ac9fd95445ce567bcb5bb7a0b9a81"
+      },
+      {
+        "file": "assets/参考原图/04-人物画风/01-幸存者全身造型.png",
+        "bytes": 2026092,
+        "width": 1672,
+        "height": 941,
+        "sha256": "7da6ca841b8994eb536d0579f437f57343a4fe63a6b6cae09056bb5ecdac1225"
+      },
+      {
+        "file": "assets/参考原图/04-人物画风/02-三方联系人造型.png",
+        "bytes": 1910281,
+        "width": 1672,
+        "height": 941,
+        "sha256": "fb17aad400ef996aeb1f1256edfdb1547ec886d46fbf8339194a598d3a235b37"
+      },
+      {
+        "file": "assets/参考原图/04-人物画风/03-头像与情绪表现.png",
+        "bytes": 1986187,
+        "width": 1672,
+        "height": 941,
+        "sha256": "b05d639354a5a59c5e18d7b947af942b3378079968fc33ea2ff1e8bf8b3510ee"
+      },
+      {
+        "file": "assets/参考原图/05-势力鸟瞰/01-幸存者营区.png",
+        "bytes": 2847918,
+        "width": 1672,
+        "height": 941,
+        "sha256": "6abd4999da1e9fb23dfde7eda32b79a54fde0893d96f85b325ccb6005e367d0b"
+      },
+      {
+        "file": "assets/参考原图/05-势力鸟瞰/02-教会圣所地区.png",
+        "bytes": 2939963,
+        "width": 1672,
+        "height": 941,
+        "sha256": "17d86b5a24ac5d24c4d06de5010afb6903792f31f816b583fde53d2ec54a142b"
+      },
+      {
+        "file": "assets/参考原图/05-势力鸟瞰/03-科学院封存地区.png",
+        "bytes": 3050588,
+        "width": 1672,
+        "height": 941,
+        "sha256": "0974a3767fed5c57e054c48f482ac8aa190074b46ff4e634ed0c0758721021e0"
+      },
+      {
+        "file": "assets/参考原图/06-武器防具图标/01-近战武器.png",
+        "bytes": 1685674,
+        "width": 1448,
+        "height": 1086,
+        "sha256": "4185c856f074c8fd55b38c24a1c285489946f1b358d9bbf9d0f262a09c2068d9"
+      },
+      {
+        "file": "assets/参考原图/06-武器防具图标/02-远程武器与配件.png",
+        "bytes": 2030598,
+        "width": 1448,
+        "height": 1086,
+        "sha256": "720bac093ebcd5ff62d5881e62fdb7441f7d34452e4043074e27727a936b4c72"
+      },
+      {
+        "file": "assets/参考原图/06-武器防具图标/03-防具与穿戴装备.png",
+        "bytes": 2431224,
+        "width": 1448,
+        "height": 1086,
+        "sha256": "6e8681a8b944ac286326408b59e6993f403f9079cbb4e9449ea0184f0036d3f8"
+      },
+      {
+        "file": "assets/参考原图/07-怪物类型/01-常见感染者.png",
+        "bytes": 1754043,
+        "width": 1672,
+        "height": 941,
+        "sha256": "65df801a049d62c3713cf30e70ff614f48453fbc9f97c485b34e2ddc89383344"
+      },
+      {
+        "file": "assets/参考原图/07-怪物类型/02-特殊感染者.png",
+        "bytes": 1886850,
+        "width": 1672,
+        "height": 941,
+        "sha256": "ed923ced5d07afa948de71dd9d492bfce406d70f801718c3e7339b7c9f5a7fa2"
+      },
+      {
+        "file": "assets/参考原图/07-怪物类型/03-野外动物与异变轮廓.png",
+        "bytes": 1511032,
+        "width": 1672,
+        "height": 941,
+        "sha256": "33f7a434aa4be69d19e94c0b40d5310ff2c0c8a07c31eb395f488555790b6cf0"
+      }
+    ]
+  },
+  "fonts": {
+    "scope": "全部游戏界面文字，包括动态正文、数值、提示、战报、对白、日志和历史",
+    "family": "Fusion Pixel Font，简体中文比例版",
+    "release": "由开发记录固定上游版本，随游戏自托管 WOFF2",
+    "license": "SIL OFL 1.1，分发保留版权与授权，修改或子集化遵循所用版本的保留字体名规则",
+    "sourceUrl": "https://github.com/TakWolf/fusion-pixel-font",
+    "licenseUrl": "https://github.com/TakWolf/fusion-pixel-font/blob/master/LICENSE-OFL",
+    "preferred": {
+      "body": {
+        "sourcePx": 8,
+        "cssPx": 16
+      },
+      "auxiliary": {
+        "sourcePx": 8,
+        "cssPx": 16
+      },
+      "longText": {
+        "sourcePx": 10,
+        "cssPx": 20
+      },
+      "dialogue": {
+        "sourcePx": 10,
+        "cssPx": 20
+      },
+      "display": {
+        "sourcePx": 12,
+        "cssPx": 24
+      }
+    },
+    "minimum": {
+      "bodyCssPx": 16,
+      "auxiliaryCssPx": 14,
+      "dialogueCssPx": 20,
+      "bodyLineHeight": 1.5
+    },
+    "missingGlyphPolicy": "已知文字覆盖姓名池、标点、数字、单位、技术符号与插值。优先完整像素字库或合法像素补字。长文仍按N02换行、滚动、固定控制。"
+  },
+  "assets": {
+    "finalBatch": "UX2-B5",
+    "fixedCompanions": [
+      {
+        "actorId": "npc_lin_zhao",
+        "name": "林昭"
+      },
+      {
+        "actorId": "npc_zhou_yan",
+        "name": "周砚"
+      },
+      {
+        "actorId": "npc_shen_he",
+        "name": "沈禾"
+      },
+      {
+        "actorId": "npc_tang_li",
+        "name": "唐梨"
+      },
+      {
+        "actorId": "npc_gu_cheng",
+        "name": "顾承"
+      },
+      {
+        "actorId": "npc_ye_xun",
+        "name": "叶洵"
+      }
+    ],
+    "cityNpcs": [
+      {
+        "npcId": "npc_lu_heng",
+        "name": "陆衡",
+        "role": "值守登记员",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_xu_an",
+        "name": "许安",
+        "role": "公事务协调员",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_luo_zheng",
+        "name": "罗铮",
+        "role": "工务领班",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_chen_zhi",
+        "name": "陈芷",
+        "role": "值班医师",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_tao_cen",
+        "name": "陶岑",
+        "role": "样本鉴定师",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_du_sui",
+        "name": "杜穗",
+        "role": "安置登记员",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_qi_wen",
+        "name": "祁闻",
+        "role": "外来者接待者",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_bai_ling",
+        "name": "白苓",
+        "role": "施济员",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_ji_mu",
+        "name": "纪牧",
+        "role": "训诫执事",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_song_zhu",
+        "name": "宋烛",
+        "role": "誊录员",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_fu_heng",
+        "name": "傅珩",
+        "role": "主持者",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_wen_cheng",
+        "name": "温澄",
+        "role": "协调员",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_ji_wen",
+        "name": "季闻",
+        "role": "检测研究员",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_shao_ning",
+        "name": "邵宁",
+        "role": "档案员",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_he_yuan",
+        "name": "何远",
+        "role": "设备技师",
+        "dutySpeaker": "机构当班接续员"
+      },
+      {
+        "npcId": "npc_yin_ke",
+        "name": "尹珂",
+        "role": "观察区负责人",
+        "dutySpeaker": "机构当班接续员"
+      }
+    ],
+    "otherIdentities": [
+      "主角",
+      "营地来客程望",
+      "饱饱"
+    ],
+    "dutyIdentity": "按原在场岗位和实际代班身份绑定。保存的实际身份在对话回看时保持。",
+    "procedural": {
+      "identity": "原角色稳定ID与保存外观",
+      "sourceFields": [
+        "Gender",
+        "SkinTone",
+        "HairStyle",
+        "HairColor",
+        "FaceDetail"
+      ],
+      "currentPoolCounts": {
+        "gender": 3,
+        "skinTone": 5,
+        "hairStyle": 6,
+        "hairColor": 4,
+        "faceDetail": 6
+      },
+      "missingFields": "采用中性无推断构成，保留原显示和外观值",
+      "delivery": "同一身份各入口与读档稳定使用独立成图。允许使用可验收像素部件组合和缓存。"
+    },
+    "enemies": [
+      {
+        "id": "shambler",
+        "name": "游荡尸"
+      },
+      {
+        "id": "crawler",
+        "name": "爬行尸"
+      },
+      {
+        "id": "runner",
+        "name": "狂奔尸"
+      },
+      {
+        "id": "worker",
+        "name": "厚衣工尸"
+      },
+      {
+        "id": "riot",
+        "name": "防护尸"
+      },
+      {
+        "id": "howler",
+        "name": "嚎叫尸"
+      },
+      {
+        "id": "feral_dog",
+        "name": "野犬"
+      },
+      {
+        "id": "wolf",
+        "name": "灰狼"
+      },
+      {
+        "id": "boar",
+        "name": "野猪"
+      },
+      {
+        "id": "stag",
+        "name": "警戒雄鹿"
+      },
+      {
+        "id": "z_slow",
+        "name": "迟缓感染者"
+      },
+      {
+        "id": "z_helmet",
+        "name": "护盔感染者"
+      },
+      {
+        "id": "z_spitter",
+        "name": "酸液感染者"
+      },
+      {
+        "id": "z_hauler",
+        "name": "搬运感染者"
+      },
+      {
+        "id": "z_darter",
+        "name": "迅捷感染者"
+      },
+      {
+        "id": "z_screamer",
+        "name": "尖啸感染者"
+      },
+      {
+        "id": "z_guard",
+        "name": "重装守卫感染者"
+      },
+      {
+        "id": "z_clinger",
+        "name": "攀附感染者"
+      },
+      {
+        "id": "z_bloater",
+        "name": "膨胀感染者"
+      },
+      {
+        "id": "z_nurse",
+        "name": "制服感染者"
+      },
+      {
+        "id": "z_engineer",
+        "name": "机修感染者"
+      },
+      {
+        "id": "z_signal",
+        "name": "鸣响感染者"
+      },
+      {
+        "id": "z_pump_foreman",
+        "name": "泵室领班"
+      },
+      {
+        "id": "z_isolation_guard",
+        "name": "隔离守卫"
+      },
+      {
+        "id": "z_power_guard",
+        "name": "配电守卫"
+      },
+      {
+        "id": "z_relay_guard",
+        "name": "天线守卫"
+      },
+      {
+        "id": "raider_melee",
+        "name": "流窜掠夺者"
+      },
+      {
+        "id": "raider_gunner",
+        "name": "流窜枪手"
+      },
+      {
+        "id": "wild_dog_leader",
+        "name": "野犬首领"
+      },
+      {
+        "id": "feral_boar",
+        "name": "暴躁野猪"
+      },
+      {
+        "id": "ec_cantor",
+        "name": "低吟感染者"
+      },
+      {
+        "id": "ec_labwalker",
+        "name": "试制区感染者"
+      },
+      {
+        "id": "ec_cablecrawler",
+        "name": "缠线爬行者"
+      },
+      {
+        "id": "ec_stockbracer",
+        "name": "货架护卫感染者"
+      },
+      {
+        "id": "ec_boss_crypt",
+        "name": "封锁祭室守卫"
+      },
+      {
+        "id": "ec_boss_lab",
+        "name": "隔离核心守卫"
+      },
+      {
+        "id": "ec_boss_armory",
+        "name": "军械库守卫"
+      },
+      {
+        "id": "ec_boss_relay",
+        "name": "天线台守卫"
+      },
+      {
+        "id": "ec_boss_water",
+        "name": "泵房推挤者"
+      },
+      {
+        "id": "ec_boss_mine",
+        "name": "深井重击者"
+      },
+      {
+        "id": "ec_boss_mall",
+        "name": "扶梯拦截者"
+      },
+      {
+        "id": "ec_boss_cold",
+        "name": "仓管守卫"
+      }
+    ]
+  },
+  "production": {
+    "owner": "开发方",
+    "steps": [
+      "AI生图",
+      "降采样",
+      "限色",
+      "边缘与像素整理"
+    ],
+    "sizePolicy": "连续响应式，合适时用整倍数。正常窗口像素清晰度为验收依据。",
+    "stagedFallback": "现有可辨识图配新框，记入缺项清单",
+    "finalCoverage": "UX2-B5 无正式素材占位"
+  },
+  "schedule": {
+    "existingQueueSnapshot": [
+      "B27c",
+      "B30",
+      "B38",
+      "B39"
+    ],
+    "existingRules": "已入队功能和已答Q先完成。N02按现有队列。Q272/Q273已处理后复验。",
+    "uiBatchOrder": [
+      "UX2-B1",
+      "UX2-B2",
+      "UX2-B3",
+      "UX2-B4",
+      "UX2-B5"
+    ],
+    "newGameplay": "收录，排B5之后",
+    "smallQ": "按生效组件照常处理并纳入回归"
+  },
+  "acceptance": {
+    "ids": [
+      "Q274-A01",
+      "Q275-A01",
+      "Q275-A02",
+      "Q276-A01",
+      "Q276-A02",
+      "Q277-A01",
+      "Q278-A01"
+    ],
+    "baselineViewports": [
+      [
+        1280,
+        720
+      ],
+      [
+        1600,
+        900
+      ],
+      [
+        1920,
+        1080
+      ]
+    ],
+    "artExtraViewport": [
+      1366,
+      768
+    ],
+    "zoomPercent": 100
+  }
+}
