@@ -47,7 +47,7 @@ else
             <li>主动接近：@e.FearNote(s, new[] { w }, GameEngine.FearApproach)；不受随机接敌保护期限制；只与这一只交战。</li>
             <li>每轮推进5分钟世界时间；@e.RetreatOutlookHere(s)。</li>
         </ul>
-        @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+        @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
     </div>
     <div class="detail-foot">
         @* S14 §14.1：右栏只作可选详细阅读，接近的确认在敌踪卡旁（R05 §7），不在这里重复执行按钮 *@

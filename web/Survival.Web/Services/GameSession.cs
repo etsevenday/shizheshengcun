@@ -72,7 +72,28 @@ public sealed class GameSession
     /// <summary>某张地面物品卡是否该显示保持的落地高亮。</summary>
     public bool HeldHighlight(string itemId) => State != null && HeldHighlightAt == S.Ground && HeldHighlights.Contains(itemId);
     public bool SevenDayPending { get; set; }
-    public string? Notice { get; set; }
+    /// <summary>当前反馈位（右栏，暂停层显示时也在暂停层底部）。每次赋值都算一次新的触发（Q318：忙碌句按触发时的占用重新归属）。</summary>
+    public string? Notice
+    {
+        get => _notice;
+        set { _notice = value; _busyNotice.Rearm(); }
+    }
+    private string? _notice;
+
+    /// <summary>Q318（N02 附录 §2）：事项盘忙碌反馈依附触发它的行动，行动都结束、取消或停止后在下次刷新前清掉。</summary>
+    private readonly BusyNoticeTracker _busyNotice = new();
+
+    /// <summary>右栏显示的反馈：Q318 暂停层显示时，事项盘忙碌句只在暂停层底部出现一次，右栏省略；其他反馈照常。</summary>
+    public string? RightNotice => BusyNoticeTracker.RightColumnNotice(Notice, State, Panel);
+
+    /// <summary>暂停层此刻是否显示（GameScreen 与 Q318 右栏去重共用同一条件）。</summary>
+    public bool PauseLayerShown => BusyNoticeTracker.PauseLayerShown(State, Panel);
+
+    /// <summary>Q318：忙碌句依附的行动都已结束、取消或停止时清掉它；其他反馈不动。</summary>
+    private void ClearEndedBusyNotice()
+    {
+        if (_busyNotice.Observe(_notice, State)) _notice = null;
+    }
 
     public SaveStatus SaveState { get; private set; }
     /// <summary>最近一次存档写入失败的浏览器原始错误文本（开发诊断用；玩家看 <see cref="SaveErrorText"/>）。</summary>
@@ -910,6 +931,7 @@ public sealed class GameSession
         CityOverviewTick();
         CloseStaleFormation();
         ClearStaleFormationNotice();
+        ClearEndedBusyNotice();
         Version++;
         Changed?.Invoke();
     }
@@ -1572,7 +1594,9 @@ public sealed class GameSession
         var res = E.RequestExit(S);
         ExitNote = res.Ok && res.Deferred ? res.Reason : null;
         ExitNoteAction = res.ActionId ?? 0;
-        Notice = res.Ok ? null : res.Reason;
+        // Q318：事项盘忙碌句不随“退出”一并清掉——退出尚待段边界或只退了补给子行动时按实际占用保留，行动真正停止后由 Notify 清
+        if (!res.Ok) Notice = res.Reason;
+        else if (!BusyNoticeTracker.IsBusyNotice(Notice)) Notice = null;
         if (res.Ok && !res.Deferred)
         {
             Drain();

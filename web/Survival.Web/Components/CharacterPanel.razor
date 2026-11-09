@@ -28,7 +28,7 @@ else
     var passives = e.SurvivalPassiveLines(s.Player);
     <div class="detail-scroll char-panel" data-wheel="y">
         @* 读档升级说明、被拒绝操作的原因等提示：默认人物页也要看得到 *@
-        @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+        @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
         <div class="char-top">
             <b>人物</b>
             <span class="muted">@(day ? "白昼" : "夜间") · @(e.ZoneName(s, s.Ground))@(e.IsSheltered(s, s.Ground) ? "（遮蔽）" : "（露天）")</span>

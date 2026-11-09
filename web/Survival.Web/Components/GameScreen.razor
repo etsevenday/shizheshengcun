@@ -6,8 +6,7 @@
     var s = G.S;
     var e = G.E;
     var main = s.Main;
-    var pausedLayer = main != null && main.Status == ActionStatus.Paused && G.Panel != "craft";
-    var subRunning = s.Sub != null;
+    // 暂停层（主行动暂停且不在制作面板，或补给子行动进行中）的显示条件见 G.PauseLayerShown（Q318 右栏去重共用）
     // 战斗与敌踪选择：顶栏地图/制作/休息/日志入口锁定（v0.5 §16），覆盖层替换地块栏两行
     var battleUi = G.InBattleUi;
     // B9 全屏四对四战斗（A10 §1.2）：战斗中整个应用内容区由 BattleScreen 覆盖，外层顶栏/左右栏/地面随身/底栏留在下面不可操作
@@ -101,7 +100,7 @@
                 <ItemShelf Owner="@ItemInstance.Carried" Title="随身物品" />
             </div>
 
-            @if (pausedLayer || subRunning)
+            @if (G.PauseLayerShown)
             {
                 @* 暂停/补给：中央推进条嵌在暂停层正中一行 *@
                 <PauseLayer />

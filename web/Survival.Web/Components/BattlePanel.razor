@@ -76,7 +76,7 @@ else if (b != null)
                 <div class="blocked">@($"{he.Slot}号位 {e.EnemyName(he)}：{e.CommandBlocked(s, BattleCommand.Of(G.BattleAction!, hx, G.BattleItem)) ?? "不是这个指令的目标"}")</div>
             }
             <div class="risk none">把鼠标移到亮起的目标上，这里显示对它的实际命中率与伤害；点击亮起的目标即执行。右键或 Esc 取消，不耗AP。</div>
-            @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+            @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
         </div>
         <div class="detail-foot"><div class="under">悬停只看预测，不扣费、不抽随机</div></div>
     }
@@ -118,7 +118,7 @@ else if (b != null)
             </div>
             @if (p.Notes.Count > 0) { <ul class="notes">@foreach (var n in p.Notes) { <li>@n</li> }</ul> }
             @if (!p.Ok) { <div class="blocked">@p.Reason</div> }
-            @if (G.Notice != null) { <div class="notice">@G.Notice</div> }
+            @if (G.RightNotice != null) { <div class="notice">@G.RightNotice</div> }
         </div>
         <div class="detail-foot">
             @* S14 §18.4、R03 §7.4：提交入口在战斗区（点亮起的目标 / 操作台“确认”），这里只作完整预测，不保留执行按钮 *@
@@ -137,7 +137,7 @@ else if (b != null)
         var vAct = GameEngine.ActingAlly(b) == vid;
         var apMax = vAct && vf.ActivationAp > 0 ? vf.ActivationAp : e.NormalActivationAp(va);
         <div class="detail-scroll">
-            @if (G.Notice != null) { <div class="blocked pin">@G.Notice</div> }
+            @if (G.RightNotice != null) { <div class="blocked pin">@G.RightNotice</div> }
             <div class="op-head">
                 <div class="eyebrow">战斗第@(b.Round)轮 · 我方@(GameEngine.AllyPos(b, vid))号位 · 只查看</div>
                 <h2>@(vid == GameState.PlayerId ? "你" : e.ActorDisplayName(s, vid))</h2>
@@ -162,7 +162,7 @@ else if (b != null)
         <div class="detail-scroll">
             @* 试玩修复 B7d-6：点了不可用的技能/指令，原因放在最上面（原先在最近战斗记录下面，常常看不到）；
                试玩修复 M503：1280×720 首战系统提示开着时右栏只剩一百多像素，放到说明之下会被裁，所以放在滚动区最顶并贴住 *@
-            @if (G.Notice != null) { <div class="blocked pin">@G.Notice</div> }
+            @if (G.RightNotice != null) { <div class="blocked pin">@G.RightNotice</div> }
             <div class="op-head">
                 <div class="eyebrow">战斗第@(b.Round)轮 · @(awaiting ? $"{(b.FocusId == GameState.PlayerId ? "你" : e.ActorDisplayName(s, b.FocusId))}的行动（剩{b.PlayerAp}AP）" : G.BattleShownActor > 0 ? "敌方行动中" : b.Cursor >= b.Queue.Count ? "轮末结算" : b.Queue[b.Cursor] <= 0 ? "等待我方行动" : "敌方行动中")</div>
                 <h2>@(t != null && t.Alive ? $"{t.Slot}号位 {e.EnemyName(t)}" : "选择指令")</h2>
