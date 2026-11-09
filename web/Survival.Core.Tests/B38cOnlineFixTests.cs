@@ -150,14 +150,16 @@ public class B38cOnlineFixTests : TestBase
         s.Body.BandageVirusReadyAt = s.GameMinute + 360;
         Assert.That(DressingBlocked(s), Is.EqualTo($"当前换药没有收益。病毒减量冷却还需{Clock.Duration(360)}。"));
 
-        // 2) 仅回血冷却（未感染；病毒减量冷却即使有时间也不适用、不列）
+        // 2) 仅回血冷却（健康未满；病毒减量冷却未感染不适用、不列）——健康已满的情形见 Q302-A01
         s = FullHealthAtInfirmary();
+        s.Stats.Health = s.Stats.HealthMax - 5;
         s.BandageReadyAt = s.GameMinute + 60;
         s.Body.BandageVirusReadyAt = s.GameMinute + 300;
         Assert.That(DressingBlocked(s), Is.EqualTo($"当前换药没有收益。回血冷却还需{Clock.Duration(60)}。"));
 
-        // 3) 两者均有（仍感染）：按回血、病毒减量顺序
+        // 3) 两者均有（仍感染、健康未满，VirusLoad 高于最低值但冷却在走）：按回血、病毒减量顺序
         s = FullHealthAtInfirmary();
+        s.Stats.Health = s.Stats.HealthMax - 5;
         s.Body.Infected = true;
         s.Body.VirusLoad = 30;
         s.BandageReadyAt = s.GameMinute + 60;
@@ -170,6 +172,27 @@ public class B38cOnlineFixTests : TestBase
         s.Body.Infected = true;
         s.Body.VirusLoad = 0;
         Assert.That(DressingBlocked(s), Is.EqualTo("健康已满、没有出血，病毒减量也不可用，包扎没有效果"));
+    }
+
+    /// <summary>Q302-A01：满健康、无出血且回血冷却在走——未感染显示原因句；仍感染且病毒减量冷却在走只列病毒减量；健康未满仍按 Q300 列回血。</summary>
+    [Test]
+    public void Q302_A01_Dressing_FullHealth_DropsHealCooldown()
+    {
+        var s = FullHealthAtInfirmary();
+        s.BandageReadyAt = s.GameMinute + 60;
+        Assert.That(DressingBlocked(s), Is.EqualTo("健康已满且没有出血，包扎没有效果"));
+
+        s = FullHealthAtInfirmary();
+        s.Body.Infected = true;
+        s.Body.VirusLoad = 30;
+        s.BandageReadyAt = s.GameMinute + 60;
+        s.Body.BandageVirusReadyAt = s.GameMinute + 360;
+        Assert.That(DressingBlocked(s), Is.EqualTo($"当前换药没有收益。病毒减量冷却还需{Clock.Duration(360)}。"));
+
+        s = FullHealthAtInfirmary();
+        s.Stats.Health = s.Stats.HealthMax - 5;
+        s.BandageReadyAt = s.GameMinute + 60;
+        Assert.That(DressingBlocked(s), Is.EqualTo($"当前换药没有收益。回血冷却还需{Clock.Duration(60)}。"));
     }
 
     /// <summary>Q300：事务重验的无收益分支同句——开工时有收益，完成前变成无收益且冷却在走，失败外层里只列在走的冷却。</summary>
@@ -189,8 +212,9 @@ public class B38cOnlineFixTests : TestBase
         var logs = s.Log.Count;
         Run(s);
         var text = s.Log.Skip(logs).Single(l => l.Kind == nameof(GameEventKind.ActionCompleted)).Text;
-        Assert.That(text, Does.Match($"^{Title("clinic_dressing")}未完成。当前换药没有收益。回血冷却还需[^。]+。病毒减量冷却还需[^。]+。材料和额度均未扣除。$"));
+        Assert.That(text, Does.Match($"^{Title("clinic_dressing")}未完成。当前换药没有收益。病毒减量冷却还需[^。]+。材料和额度均未扣除。$"));
         Assert.That(text, Does.Not.Contain("已就绪"));
+        Assert.That(text, Does.Not.Contain("回血冷却"), "Q302：健康已满且无出血，事务重验也省去回血冷却句");
     }
 
     // ───────────── Q301 施济选项 ─────────────
