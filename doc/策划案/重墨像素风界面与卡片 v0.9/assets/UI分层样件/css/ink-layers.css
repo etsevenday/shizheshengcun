@@ -1,0 +1,91 @@
+/* Layer sample. Add the ink-* class to the existing component root.
+   Retain the component's layout, position, drag/keyboard handlers and disabled state. */
+.ink-skin {
+  --ink-iron: url("../ui/texture-iron.svg");
+  --ink-paper: url("../ui/texture-paper.svg");
+  --ink-panel-frame: url("../ui/frame-panel.svg");
+  --ink-card-frame: url("../ui/frame-card.svg");
+  --ink-action-frame: url("../ui/frame-action.svg");
+  --ink-selected-frame: url("../ui/frame-selected.svg");
+  --ink-bone: #e7d5af;
+  --ink-gold: #e2b65c;
+  --ink-teal: #91b9ad;
+}
+.ink-skin :is(.ink-panel, .ink-card, .ink-button) {
+  color: var(--ink-bone);
+  border-color: #6e5940;
+  background-clip: padding-box;
+}
+.ink-skin .ink-panel {
+  background-color: #1a1e1d;
+  background-image: var(--ink-iron);
+  border-image: var(--ink-panel-frame) 16 / 10px / 0 stretch;
+}
+.ink-skin .ink-card {
+  background-color: #101414;
+  background-image: var(--ink-iron);
+  border-image: var(--ink-card-frame) 16 / 8px / 0 stretch;
+}
+.ink-skin .ink-button {
+  background-color: #242827;
+  background-image: var(--ink-iron);
+  border-image: var(--ink-panel-frame) 16 / 6px / 0 stretch;
+}
+.ink-skin .ink-button[data-ink-action="primary"] {
+  background-color: #662b23;
+  background-image: none;
+  border-image-source: var(--ink-action-frame);
+}
+.ink-skin .ink-card-title {
+  background-color: #dac5a0;
+  background-image: var(--ink-paper);
+  color: #211914;
+}
+.ink-skin .ink-art {
+  display: block;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.ink-skin .ink-scene { image-rendering: pixelated; }
+.ink-skin .ink-card:is(:hover, [data-ink-hover="true"]):not([aria-disabled="true"]) {
+  box-shadow: inset 0 0 0 1px #ad9470;
+}
+.ink-skin .ink-card:is([data-ink-selected="true"], .selected) {
+  border-image-source: var(--ink-selected-frame);
+}
+.ink-skin :is(.ink-card, .ink-button):is(:focus-visible, [data-ink-focus="true"]) {
+  outline: 3px double #f5e6c3;
+  outline-offset: 1px;
+}
+.ink-skin :is(.ink-button:disabled, .ink-button[aria-disabled="true"]) {
+  color: #b7aea1;
+  border-image-source: var(--ink-panel-frame);
+  background-color: #242827;
+}
+.ink-skin .ink-card[aria-disabled="true"] {
+  background-color: #252525;
+  background-image: repeating-linear-gradient(135deg, transparent 0 9px, #8b858320 9px 11px), var(--ink-iron);
+}
+.ink-skin .ink-card[data-ink-drop="allow"] {
+  box-shadow: inset 0 0 0 2px var(--ink-teal);
+}
+.ink-skin .ink-card[data-ink-drop="deny"] {
+  box-shadow: inset 0 0 0 2px #c86a55;
+  background-image: repeating-linear-gradient(135deg, transparent 0 9px, #b55e4c32 9px 11px), var(--ink-iron);
+}
+.ink-skin .ink-status-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.ink-skin .ink-progress {
+  height: 6px;
+  background: #35302a;
+}
+.ink-skin .ink-progress > i {
+  display: block;
+  height: 100%;
+  background: var(--ink-teal);
+}

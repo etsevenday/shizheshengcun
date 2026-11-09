@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 1,
+  "project": "适者生存",
+  "theme": "重墨像素",
+  "files": [
+    {
+      "file": "ui/frame-panel.svg",
+      "size": [
+        96,
+        96
+      ],
+      "role": "面板边框",
+      "source": "本次重绘",
+      "usage": "可复用 UI 样件",
+      "transparent": true,
+      "slice": 16
+    },
+    {
+      "file": "ui/frame-card.svg",
+      "size": [
+        96,
+        96
+      ],
+      "role": "卡片边框",
+      "source": "本次重绘",
+      "usage": "可复用 UI 样件",
+      "transparent": true,
+      "slice": 16
+    },
+    {
+      "file": "ui/frame-selected.svg",
+      "size": [
+        96,
+        96
+      ],
+      "role": "选中边框",
+      "source": "本次重绘",
+      "usage": "可复用 UI 样件",
+      "transparent": true,
+      "slice": 16
+    },
+    {
+      "file": "ui/frame-action.svg",
+      "size": [
+        96,
+        96
+      ],
+      "role": "主操作边框",
+      "source": "本次重绘",
+      "usage": "可复用 UI 样件",
+      "transparent": true,
+      "slice": 16
+    },
+    {
+      "file": "ui/texture-iron.svg",
+      "size": [
+        64,
+        64
+      ],
+      "role": "铁灰底纹",
+      "source": "本次重绘",
+      "usage": "可复用 UI 样件",
+      "transparent": true,
+      "repeat": true
+    },
+    {
+      "file": "ui/texture-paper.svg",
+      "size": [
+        64,
+        64
+      ],
+      "role": "旧纸底纹",
+      "source": "本次重绘",
+      "usage": "可复用 UI 样件",
+      "transparent": true,
+      "repeat": true
+    },
+    {
+      "file": "ui/state-lock.svg",
+      "size": [
+        16,
+        16
+      ],
+      "role": "锁定 / 不可放入",
+      "source": "本次重绘",
+      "usage": "可复用 UI 样件",
+      "transparent": true
+    },
+    {
+      "file": "ui/state-risk.svg",
+      "size": [
+        16,
+        16
+      ],
+      "role": "危险",
+      "source": "本次重绘",
+      "usage": "可复用 UI 样件",
+      "transparent": true
+    },
+    {
+      "file": "ui/state-drop.svg",
+      "size": [
+        16,
+        16
+      ],
+      "role": "可放入",
+      "source": "本次重绘",
+      "usage": "可复用 UI 样件",
+      "transparent": true
+    },
+    {
+      "file": "art/item-clean-water.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "role": "物品 / 净水",
+      "source": "本次独立生成",
+      "usage": "透明美术样件",
+      "transparent": true,
+      "prompt": "A single isolated production sample sprite for original 2D Chinese post-apocalypse survival PC game 适者生存. Genuine transparent alpha background, clear empty transparent margin on all sides, no backdrop, no floor, no painted black background, no frame, no typography, no numbers, no watermark. Darkest Dungeon 1 angular ink woodcut aesthetic combined with strong chunky deliberately stepped pixel clusters, dramatic jet-black planes and hard bone-ivory highlights, low saturation limited palette, distressed rusty ochre and subdued olive. Straight pixel edges, clear silhouette at thumbnail size, no soft gradients, no blur. Centered, entire object inside frame. A worn clean water plastic bottle, pale slate blue transparent water suggested using opaque highlights, muted cyan blue cap, asymmetrical crumpled sides, no printed label. Slight diagonal, large isolated inventory icon, nearly square canvas."
+    },
+    {
+      "file": "art/facility-fire-lit.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "role": "设施 / 燃烧的火堆",
+      "source": "本次独立生成",
+      "usage": "透明美术样件",
+      "transparent": true,
+      "prompt": "A single isolated production sample sprite for original 2D Chinese post-apocalypse survival PC game 适者生存. Genuine transparent alpha background, clear empty transparent margin on all sides, no backdrop, no floor, no painted black background, no frame, no typography, no numbers, no watermark. Darkest Dungeon 1 angular ink woodcut aesthetic combined with strong chunky deliberately stepped pixel clusters, dramatic jet-black planes and hard bone-ivory highlights, low saturation limited palette, distressed rusty ochre and subdued olive. Straight pixel edges, clear silhouette at thumbnail size, no soft gradients, no blur. Centered, entire object inside frame. One small modern improvised campfire facility, soot-black metal pot hanging on a rough stick tripod, orange chunky flames above a ring of stones and embers. Thick black contours. Show entire structure, no environment, no broad floor shadow, nearly square composition."
+    },
+    {
+      "file": "art/actor-survivor-sample.png",
+      "size": [
+        1024,
+        1536
+      ],
+      "role": "角色 / 幸存者",
+      "source": "本次独立生成",
+      "usage": "透明美术样件",
+      "transparent": true,
+      "prompt": "A single isolated production sample sprite for original 2D Chinese post-apocalypse survival PC game 适者生存. Genuine transparent alpha background, clear empty transparent margin on all sides, no backdrop, no floor, no painted black background, no frame, no typography, no numbers, no watermark. Darkest Dungeon 1 angular ink woodcut aesthetic combined with strong chunky deliberately stepped pixel clusters, dramatic jet-black planes and hard bone-ivory highlights, low saturation limited palette, distressed rusty ochre and subdued olive. Straight pixel edges, clear silhouette at thumbnail size, no soft gradients, no blur. Centered, entire object inside frame. Original adult Chinese male survivor, full body from boots to hood, three-quarter side-on facing RIGHT, wearing patched olive canvas jacket, faded rust scarf, backpack and gloves, carrying a short hatchet pointed toward ground. Strong shadowed eyes and distinctive modern salvager shape. Portrait canvas, all limbs in frame."
+    },
+    {
+      "file": "../参考原图/05-势力鸟瞰/01-幸存者营区.png",
+      "size": [
+        1672,
+        941
+      ],
+      "role": "场景 / 幸存者营区",
+      "source": "v2 势力鸟瞰 / 仓库 Q274 参考原图",
+      "usage": "无字场景参考",
+      "transparent": false
+    },
+    {
+      "file": "../参考原图/05-势力鸟瞰/02-教会圣所地区.png",
+      "size": [
+        1672,
+        941
+      ],
+      "role": "场景 / 教会",
+      "source": "v2 势力鸟瞰 / 仓库 Q274 参考原图",
+      "usage": "无字场景参考",
+      "transparent": false
+    },
+    {
+      "file": "../参考原图/05-势力鸟瞰/03-科学院封存地区.png",
+      "size": [
+        1672,
+        941
+      ],
+      "role": "场景 / 科学院",
+      "source": "v2 势力鸟瞰 / 仓库 Q274 参考原图",
+      "usage": "无字场景参考",
+      "transparent": false
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>适者生存 · 重墨像素 UI 分层预览</title>
+<link rel="stylesheet" href="css/ink-layers.css">
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; color: #e7d5af; background: #101414; font: 16px/1.5 "Microsoft YaHei", sans-serif; }
+main { width: min(1200px, calc(100% - 32px)); margin: 0 auto; padding: 30px 0 48px; }
+h1, h2, p { margin: 0 0 12px; }
+h1 { font-size: clamp(24px, 3vw, 36px); }
+h2 { font-size: 20px; }
+p { color: #b6a88c; }
+a { color: #e2b65c; }
+header { border-bottom: 2px solid #604a35; padding-bottom: 14px; margin-bottom: 20px; }
+.eyebrow { color: #e2b65c; letter-spacing: .12em; font-size: 14px; }
+section { margin-top: 20px; }
+.ink-panel, .ink-card, .ink-button { border: 2px solid #6e5940; }
+.ink-panel { padding: 18px; }
+.controls { display: flex; gap: 8px 22px; flex-wrap: wrap; margin: 14px 0 18px; }
+.controls label { display: flex; align-items: center; gap: 6px; min-height: 40px; }
+input { accent-color: #d8a355; }
+.example { display: grid; gap: 14px; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+.sample { position: relative; min-height: 266px; display: grid; place-items: center; overflow: hidden; padding: 15px; background: #151a1a; }
+.sample .ink-scene { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .66; pointer-events: none; }
+.sample .ink-card { position: relative; width: 174px; }
+.item-card { padding: 8px; min-width: 0; }
+.card-art { width: 100%; height: 106px; }
+.sample .card-art { height: 140px; }
+.ink-card-title { padding: 3px 6px; display: flex; justify-content: space-between; gap: 4px; font-size: 14px; }
+.state { min-height: 27px; margin-top: 4px; font-size: 13px; color: #e7d5af; }
+.status { display: inline-flex; gap: 5px; align-items: center; }
+.layer-list { margin: 0 0 12px; padding-left: 24px; }
+.layer-list li { margin-bottom: 5px; }
+.ink-button { min-height: 40px; padding: 5px 12px; font: inherit; }
+.states { display: grid; grid-template-columns: repeat(auto-fit, minmax(106px, 1fr)); gap: 10px; }
+figure { margin: 0; }
+figcaption { font-size: 14px; margin-top: 4px; color: #d2bc97; }
+.art-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 10px; }
+.art-grid img { width: 100%; height: 152px; background: #101414; }
+.art-grid figure { padding: 8px; }
+body:has(#show-scene:not(:checked)) .sample .ink-scene,
+body:has(#show-art:not(:checked)) .sample .ink-art,
+body:has(#show-state:not(:checked)) .sample .state,
+body:has(#show-text:not(:checked)) .sample .live { visibility: hidden; }
+body:has(#show-frame:not(:checked)) .sample .ink-card { border-image: none; border-color: transparent; }
+body:has(#show-frame:checked):has(#show-state:not(:checked)) .sample .ink-card { border-image-source: url("ui/frame-card.svg"); }
+body:has(#show-state:not(:checked)) .sample .ink-card { box-shadow: none; }
+body:has(#show-texture:not(:checked)) .sample .ink-card,
+body:has(#show-texture:not(:checked)) .sample .ink-card-title { background-image: none; }
+@media (max-width: 680px) { .example { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body class="ink-skin">
+<main>
+<header>
+  <p class="eyebrow">适者生存　/　美术交接</p>
+  <h1>重墨像素 UI · 图层预览</h1>
+  <p>切换下方图层，观察同一张卡如何合成。界面示例使用系统字，游戏字体以 Q275 为准。</p>
+  <a href="开发交接.md">开发交接与组件对照</a>　<a href="素材清单.json">素材清单</a>
+</header>
+<section class="ink-panel">
+  <h2>一张卡如何叠起来</h2>
+  <div class="controls">
+    <label><input id="show-scene" type="checkbox" checked>场景</label>
+    <label><input id="show-texture" type="checkbox" checked>底纹</label>
+    <label><input id="show-art" type="checkbox" checked>物件插画</label>
+    <label><input id="show-frame" type="checkbox" checked>边框</label>
+    <label><input id="show-state" type="checkbox" checked>状态</label>
+    <label><input id="show-text" type="checkbox" checked>名称与数量</label>
+  </div>
+  <div class="example">
+    <div class="sample">
+      <img class="ink-scene" src="../参考原图/05-势力鸟瞰/01-幸存者营区.png" alt="">
+      <div class="ink-card item-card" data-ink-selected="true" data-ink-drop="allow">
+        <img class="ink-art card-art" src="art/item-clean-water.png" alt="">
+        <div class="ink-card-title live"><b>净水</b><span>×2</span></div>
+        <div class="state"><span class="status"><img class="ink-status-icon" src="ui/state-drop.svg" alt="">可放入</span></div>
+      </div>
+    </div>
+    <div>
+      <ol class="layer-list">
+        <li>场景单独加载，切换地点时替换。</li>
+        <li>底色和底纹铺在面板内。</li>
+        <li>透明插画跟随物品、设施或角色 ID。</li>
+        <li>九宫格只画边缘，角部尺寸固定。</li>
+        <li>程序绘制状态、进度和拖放反馈。</li>
+        <li>名称、数量和操作按钮保留为真实控件。</li>
+      </ol>
+      <button class="ink-button" type="button">普通按钮</button>
+      <button class="ink-button" data-ink-action="primary" type="button">主按钮</button>
+      <button class="ink-button" data-ink-action="primary" type="button" disabled>禁用按钮</button>
+    </div>
+  </div>
+</section>
+<section class="ink-panel">
+  <h2>九种卡片状态</h2>
+  <p>金边、焦点、风险角标和进度位置可以叠加。示例原因由真实状态替换。</p>
+  <div class="states"><figure>
+  <div class="ink-card item-card" >
+    <img class="ink-art card-art" src="art/item-clean-water.png" alt="">
+    <div class="ink-card-title live"><b>净水</b><span>×2</span></div>
+    <div class="state"><span>净水</span></div>
+  </div>
+  <figcaption>默认</figcaption>
+</figure>
+<figure>
+  <div class="ink-card item-card" data-ink-hover="true">
+    <img class="ink-art card-art" src="art/item-clean-water.png" alt="">
+    <div class="ink-card-title live"><b>净水</b><span>×2</span></div>
+    <div class="state"><span>可查看</span></div>
+  </div>
+  <figcaption>悬停</figcaption>
+</figure>
+<figure>
+  <div class="ink-card item-card" data-ink-focus="true">
+    <img class="ink-art card-art" src="art/item-clean-water.png" alt="">
+    <div class="ink-card-title live"><b>净水</b><span>×2</span></div>
+    <div class="state"><span>键盘焦点</span></div>
+  </div>
+  <figcaption>焦点</figcaption>
+</figure>
+<figure>
+  <div class="ink-card item-card" data-ink-selected="true">
+    <img class="ink-art card-art" src="art/item-clean-water.png" alt="">
+    <div class="ink-card-title live"><b>净水</b><span>×2</span></div>
+    <div class="state"><span>已选中</span></div>
+  </div>
+  <figcaption>选中</figcaption>
+</figure>
+<figure>
+  <div class="ink-card item-card" aria-disabled="true">
+    <img class="ink-art card-art" src="art/item-clean-water.png" alt="">
+    <div class="ink-card-title live"><b>净水</b><span>×2</span></div>
+    <div class="state"><span class="status"><img class="ink-status-icon" src="ui/state-lock.svg" alt="">暂不可用</span></div>
+  </div>
+  <figcaption>不可用</figcaption>
+</figure>
+<figure>
+  <div class="ink-card item-card" >
+    <img class="ink-art card-art" src="art/item-clean-water.png" alt="">
+    <div class="ink-card-title live"><b>净水</b><span>×2</span></div>
+    <div class="state"><span class="status"><img class="ink-status-icon" src="ui/state-risk.svg" alt="">存在风险</span></div>
+  </div>
+  <figcaption>危险</figcaption>
+</figure>
+<figure>
+  <div class="ink-card item-card" >
+    <img class="ink-art card-art" src="art/facility-fire-lit.png" alt="">
+    <div class="ink-card-title live"><b>火堆</b><span>燃烧中</span></div>
+    <div class="state"><span>加工中</span><div class="ink-progress" role="progressbar" aria-label="示例加工进度" aria-valuenow="60"><i style="width:60%"></i></div></div>
+  </div>
+  <figcaption>加工中</figcaption>
+</figure>
+<figure>
+  <div class="ink-card item-card" data-ink-drop="allow">
+    <img class="ink-art card-art" src="art/item-clean-water.png" alt="">
+    <div class="ink-card-title live"><b>净水</b><span>×2</span></div>
+    <div class="state"><span class="status"><img class="ink-status-icon" src="ui/state-drop.svg" alt="">可放入</span></div>
+  </div>
+  <figcaption>可放入</figcaption>
+</figure>
+<figure>
+  <div class="ink-card item-card" data-ink-drop="deny">
+    <img class="ink-art card-art" src="art/item-clean-water.png" alt="">
+    <div class="ink-card-title live"><b>净水</b><span>×2</span></div>
+    <div class="state"><span class="status"><img class="ink-status-icon" src="ui/state-lock.svg" alt="">容量不足</span></div>
+  </div>
+  <figcaption>不可放入</figcaption>
+</figure></div>
+</section>
+<section class="ink-panel">
+  <h2>独立插画</h2>
+  <div class="art-grid">
+    <figure class="ink-card"><a href="art/item-clean-water.png"><img class="ink-art" src="art/item-clean-water.png" alt="净水 · 透明"></a><figcaption>净水 · 透明</figcaption></figure>
+    <figure class="ink-card"><a href="art/facility-fire-lit.png"><img class="ink-art" src="art/facility-fire-lit.png" alt="火堆 · 透明"></a><figcaption>火堆 · 透明</figcaption></figure>
+    <figure class="ink-card"><a href="art/actor-survivor-sample.png"><img class="ink-art" src="art/actor-survivor-sample.png" alt="幸存者 · 透明样件"></a><figcaption>幸存者 · 透明样件</figcaption></figure>
+    <figure class="ink-card"><a href="../参考原图/05-势力鸟瞰/01-幸存者营区.png"><img class="ink-art" src="../参考原图/05-势力鸟瞰/01-幸存者营区.png" alt="营区 · 无字参考"></a><figcaption>营区 · 无字参考</figcaption></figure>
+    <figure class="ink-card"><a href="../参考原图/05-势力鸟瞰/02-教会圣所地区.png"><img class="ink-art" src="../参考原图/05-势力鸟瞰/02-教会圣所地区.png" alt="教会 · 无字参考"></a><figcaption>教会 · 无字参考</figcaption></figure>
+    <figure class="ink-card"><a href="../参考原图/05-势力鸟瞰/03-科学院封存地区.png"><img class="ink-art" src="../参考原图/05-势力鸟瞰/03-科学院封存地区.png" alt="科学院 · 无字参考"></a><figcaption>科学院 · 无字参考</figcaption></figure>
+  </div>
+</section>
+</main>
+</body>
+</html>
