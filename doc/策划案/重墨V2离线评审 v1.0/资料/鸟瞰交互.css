@@ -1,0 +1,9 @@
+.building{cursor:pointer;outline:none}.building .building-outline{transition:fill 160ms ease,stroke-opacity 160ms ease,stroke-width 160ms ease,filter 180ms ease}
+.building[aria-pressed=false] .building-outline{fill:#e9b57808;stroke:#dcb177;stroke-opacity:.46;stroke-width:1.8px}
+.building[aria-pressed=true] .building-outline{fill:#e9aa4726;stroke:#ffe0a2;stroke-opacity:1;stroke-width:3.4px}
+.building:is(:hover,:focus-visible) .building-outline{fill:#f7b35739;stroke:#ffdb9a;stroke-opacity:1;stroke-width:3.1px;filter:drop-shadow(0 0 4px #dc8b4799)}
+.building[aria-pressed=true]:is(:hover,:focus-visible) .building-outline{stroke-width:4.2px}
+.building:focus-visible .building-shadow{stroke:#fff1c5;stroke-width:7px;opacity:.78}
+.building.flash .building-outline{animation:building-hit 190ms ease-out}
+@keyframes building-hit{from{fill:#ffd99466}to{fill:#e9aa4726}}
+@media(prefers-reduced-motion:reduce){.building .building-outline{transition:none}.building.flash .building-outline{animation:none}}

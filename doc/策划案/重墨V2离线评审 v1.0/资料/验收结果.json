@@ -1,0 +1,1623 @@
+{
+  "baseline": "02ea6a299a3559b110ca66db58ad82e8ec2197ec",
+  "designSize": [
+    1600,
+    900
+  ],
+  "scenes": 67,
+  "componentCount": 74,
+  "referenceCount": 21,
+  "layersPerScene": 7,
+  "rendered": [
+    {
+      "id": "P01a",
+      "layers": [
+        3,
+        62,
+        40,
+        277,
+        42,
+        18,
+        99
+      ],
+      "images": 41,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P01b",
+      "layers": [
+        3,
+        63,
+        41,
+        277,
+        45,
+        18,
+        99
+      ],
+      "images": 42,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P01c",
+      "layers": [
+        3,
+        64,
+        41,
+        277,
+        48,
+        18,
+        99
+      ],
+      "images": 42,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P01d",
+      "layers": [
+        3,
+        63,
+        41,
+        277,
+        45,
+        19,
+        100
+      ],
+      "images": 42,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P01e",
+      "layers": [
+        3,
+        64,
+        42,
+        277,
+        48,
+        18,
+        100
+      ],
+      "images": 43,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P01f",
+      "layers": [
+        3,
+        62,
+        40,
+        277,
+        42,
+        18,
+        99
+      ],
+      "images": 41,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P02a",
+      "layers": [
+        3,
+        62,
+        40,
+        277,
+        42,
+        19,
+        99
+      ],
+      "images": 41,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P02b",
+      "layers": [
+        3,
+        62,
+        40,
+        277,
+        42,
+        19,
+        99
+      ],
+      "images": 41,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P02c",
+      "layers": [
+        3,
+        38,
+        18,
+        136,
+        39,
+        4,
+        45
+      ],
+      "images": 19,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P02d",
+      "layers": [
+        3,
+        31,
+        18,
+        97,
+        42,
+        1,
+        41
+      ],
+      "images": 19,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P02e",
+      "layers": [
+        3,
+        11,
+        4,
+        43,
+        7,
+        1,
+        14
+      ],
+      "images": 44,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P02f",
+      "layers": [
+        3,
+        13,
+        5,
+        56,
+        7,
+        1,
+        15
+      ],
+      "images": 45,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P03a",
+      "layers": [
+        3,
+        56,
+        30,
+        267,
+        42,
+        1,
+        70
+      ],
+      "images": 31,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P03b",
+      "layers": [
+        3,
+        48,
+        26,
+        216,
+        42,
+        3,
+        70
+      ],
+      "images": 27,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P03c",
+      "layers": [
+        3,
+        48,
+        26,
+        216,
+        42,
+        2,
+        70
+      ],
+      "images": 27,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P03d",
+      "layers": [
+        3,
+        11,
+        4,
+        43,
+        7,
+        1,
+        14
+      ],
+      "images": 44,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P04a",
+      "layers": [
+        3,
+        32,
+        18,
+        89,
+        42,
+        2,
+        54
+      ],
+      "images": 19,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P04b",
+      "layers": [
+        3,
+        32,
+        18,
+        89,
+        42,
+        2,
+        54
+      ],
+      "images": 19,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P04c",
+      "layers": [
+        3,
+        32,
+        18,
+        89,
+        42,
+        2,
+        54
+      ],
+      "images": 19,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P05a",
+      "layers": [
+        3,
+        62,
+        52,
+        486,
+        18,
+        25,
+        73
+      ],
+      "images": 45,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P05b",
+      "layers": [
+        3,
+        62,
+        52,
+        486,
+        18,
+        24,
+        73
+      ],
+      "images": 45,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P05c",
+      "layers": [
+        3,
+        16,
+        7,
+        79,
+        4,
+        1,
+        15
+      ],
+      "images": 51,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P05d",
+      "layers": [
+        3,
+        12,
+        5,
+        53,
+        4,
+        3,
+        11
+      ],
+      "images": 49,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P05e",
+      "layers": [
+        3,
+        53,
+        38,
+        378,
+        18,
+        22,
+        65
+      ],
+      "images": 34,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P05f",
+      "layers": [
+        3,
+        16,
+        7,
+        79,
+        4,
+        1,
+        15
+      ],
+      "images": 51,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P05g",
+      "layers": [
+        3,
+        6,
+        2,
+        18,
+        4,
+        1,
+        12
+      ],
+      "images": 46,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P05h",
+      "layers": [
+        3,
+        6,
+        2,
+        18,
+        4,
+        1,
+        12
+      ],
+      "images": 46,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P06a",
+      "layers": [
+        3,
+        40,
+        25,
+        84,
+        66,
+        1,
+        47
+      ],
+      "images": 26,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P06b",
+      "layers": [
+        3,
+        40,
+        25,
+        84,
+        66,
+        1,
+        47
+      ],
+      "images": 26,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P06c",
+      "layers": [
+        3,
+        40,
+        25,
+        84,
+        66,
+        1,
+        47
+      ],
+      "images": 26,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P06d",
+      "layers": [
+        3,
+        40,
+        25,
+        84,
+        66,
+        1,
+        47
+      ],
+      "images": 26,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P07a",
+      "layers": [
+        3,
+        26,
+        17,
+        62,
+        48,
+        12,
+        36
+      ],
+      "images": 18,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P07b",
+      "layers": [
+        3,
+        25,
+        18,
+        44,
+        48,
+        2,
+        34
+      ],
+      "images": 19,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P07c",
+      "layers": [
+        3,
+        25,
+        18,
+        44,
+        48,
+        2,
+        34
+      ],
+      "images": 19,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P07d",
+      "layers": [
+        3,
+        25,
+        18,
+        44,
+        48,
+        2,
+        34
+      ],
+      "images": 19,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P07e",
+      "layers": [
+        3,
+        23,
+        14,
+        33,
+        42,
+        1,
+        35
+      ],
+      "images": 15,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P07f",
+      "layers": [
+        3,
+        29,
+        17,
+        70,
+        42,
+        1,
+        37
+      ],
+      "images": 18,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P07g",
+      "layers": [
+        3,
+        29,
+        17,
+        71,
+        42,
+        1,
+        39
+      ],
+      "images": 18,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P07h",
+      "layers": [
+        3,
+        26,
+        17,
+        62,
+        48,
+        12,
+        36
+      ],
+      "images": 18,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P07i",
+      "layers": [
+        3,
+        26,
+        17,
+        62,
+        48,
+        12,
+        36
+      ],
+      "images": 18,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P08a",
+      "layers": [
+        3,
+        27,
+        16,
+        69,
+        39,
+        2,
+        32
+      ],
+      "images": 17,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P08b",
+      "layers": [
+        3,
+        46,
+        32,
+        96,
+        81,
+        16,
+        63
+      ],
+      "images": 33,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P08c",
+      "layers": [
+        3,
+        26,
+        14,
+        32,
+        51,
+        1,
+        34
+      ],
+      "images": 15,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P08d",
+      "layers": [
+        3,
+        26,
+        14,
+        32,
+        51,
+        1,
+        34
+      ],
+      "images": 15,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P08e",
+      "layers": [
+        3,
+        26,
+        14,
+        32,
+        51,
+        1,
+        34
+      ],
+      "images": 15,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P08f",
+      "layers": [
+        3,
+        26,
+        14,
+        32,
+        51,
+        1,
+        34
+      ],
+      "images": 15,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P08g",
+      "layers": [
+        3,
+        26,
+        14,
+        32,
+        51,
+        1,
+        34
+      ],
+      "images": 15,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P08h",
+      "layers": [
+        3,
+        27,
+        16,
+        69,
+        39,
+        2,
+        32
+      ],
+      "images": 17,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P09a",
+      "layers": [
+        3,
+        24,
+        15,
+        42,
+        39,
+        1,
+        26
+      ],
+      "images": 16,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P09b",
+      "layers": [
+        3,
+        8,
+        2,
+        16,
+        4,
+        1,
+        6
+      ],
+      "images": 46,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P09c",
+      "layers": [
+        3,
+        30,
+        15,
+        55,
+        48,
+        1,
+        30
+      ],
+      "images": 16,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "P09d",
+      "layers": [
+        3,
+        24,
+        15,
+        42,
+        39,
+        1,
+        26
+      ],
+      "images": 16,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXa",
+      "layers": [
+        3,
+        5,
+        5,
+        14,
+        9,
+        1,
+        9
+      ],
+      "images": 6,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXb",
+      "layers": [
+        3,
+        13,
+        5,
+        56,
+        7,
+        1,
+        15
+      ],
+      "images": 45,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXc",
+      "layers": [
+        3,
+        5,
+        5,
+        14,
+        9,
+        1,
+        9
+      ],
+      "images": 6,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXd",
+      "layers": [
+        3,
+        13,
+        5,
+        56,
+        7,
+        1,
+        15
+      ],
+      "images": 45,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXe",
+      "layers": [
+        3,
+        13,
+        5,
+        56,
+        7,
+        1,
+        15
+      ],
+      "images": 45,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXf",
+      "layers": [
+        3,
+        4,
+        4,
+        14,
+        6,
+        1,
+        8
+      ],
+      "images": 5,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXg",
+      "layers": [
+        3,
+        13,
+        5,
+        56,
+        7,
+        1,
+        15
+      ],
+      "images": 45,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXh",
+      "layers": [
+        3,
+        9,
+        3,
+        30,
+        7,
+        1,
+        13
+      ],
+      "images": 43,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXi",
+      "layers": [
+        3,
+        13,
+        5,
+        56,
+        7,
+        1,
+        15
+      ],
+      "images": 45,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXj",
+      "layers": [
+        3,
+        13,
+        5,
+        56,
+        7,
+        1,
+        15
+      ],
+      "images": 45,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXk",
+      "layers": [
+        3,
+        64,
+        41,
+        278,
+        45,
+        18,
+        100
+      ],
+      "images": 42,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXl",
+      "layers": [
+        3,
+        5,
+        5,
+        14,
+        9,
+        1,
+        9
+      ],
+      "images": 6,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXm",
+      "layers": [
+        3,
+        5,
+        5,
+        14,
+        9,
+        3,
+        9
+      ],
+      "images": 6,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXn",
+      "layers": [
+        3,
+        6,
+        3,
+        14,
+        4,
+        8,
+        8
+      ],
+      "images": 43,
+      "outside": [],
+      "font": true
+    },
+    {
+      "id": "PXo",
+      "layers": [
+        3,
+        11,
+        4,
+        43,
+        7,
+        1,
+        14
+      ],
+      "images": 44,
+      "outside": [],
+      "font": true
+    }
+  ],
+  "openRaster": [
+    {
+      "id": "P01a",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8281
+    },
+    {
+      "id": "P01b",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8547
+    },
+    {
+      "id": "P01c",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8649
+    },
+    {
+      "id": "P01d",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.834
+    },
+    {
+      "id": "P01e",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8084
+    },
+    {
+      "id": "P01f",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8859
+    },
+    {
+      "id": "P02a",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8635
+    },
+    {
+      "id": "P02b",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8501
+    },
+    {
+      "id": "P02c",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.4305
+    },
+    {
+      "id": "P02d",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.6734
+    },
+    {
+      "id": "P02e",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.978
+    },
+    {
+      "id": "P02f",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.9795
+    },
+    {
+      "id": "P03a",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.778
+    },
+    {
+      "id": "P03b",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.7427
+    },
+    {
+      "id": "P03c",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.7452
+    },
+    {
+      "id": "P03d",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.9687
+    },
+    {
+      "id": "P04a",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8491
+    },
+    {
+      "id": "P04b",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8566
+    },
+    {
+      "id": "P04c",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8748
+    },
+    {
+      "id": "P05a",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8142
+    },
+    {
+      "id": "P05b",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8267
+    },
+    {
+      "id": "P05c",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8866
+    },
+    {
+      "id": "P05d",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.9236
+    },
+    {
+      "id": "P05e",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.6704
+    },
+    {
+      "id": "P05f",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.876
+    },
+    {
+      "id": "P05g",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8658
+    },
+    {
+      "id": "P05h",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.9076
+    },
+    {
+      "id": "P06a",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.5462
+    },
+    {
+      "id": "P06b",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.5924
+    },
+    {
+      "id": "P06c",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.56
+    },
+    {
+      "id": "P06d",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.5413
+    },
+    {
+      "id": "P07a",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.4359
+    },
+    {
+      "id": "P07b",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.5238
+    },
+    {
+      "id": "P07c",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.533
+    },
+    {
+      "id": "P07d",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.5354
+    },
+    {
+      "id": "P07e",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.5659
+    },
+    {
+      "id": "P07f",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.5683
+    },
+    {
+      "id": "P07g",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.5115
+    },
+    {
+      "id": "P07h",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.4433
+    },
+    {
+      "id": "P07i",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.4328
+    },
+    {
+      "id": "P08a",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.4095
+    },
+    {
+      "id": "P08b",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.6136
+    },
+    {
+      "id": "P08c",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.4276
+    },
+    {
+      "id": "P08d",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.4449
+    },
+    {
+      "id": "P08e",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.482
+    },
+    {
+      "id": "P08f",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.4269
+    },
+    {
+      "id": "P08g",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.541
+    },
+    {
+      "id": "P08h",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.4163
+    },
+    {
+      "id": "P09a",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.4877
+    },
+    {
+      "id": "P09b",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8682
+    },
+    {
+      "id": "P09c",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.6123
+    },
+    {
+      "id": "P09d",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.5712
+    },
+    {
+      "id": "PXa",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.2668
+    },
+    {
+      "id": "PXb",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 1.0143
+    },
+    {
+      "id": "PXc",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.3245
+    },
+    {
+      "id": "PXd",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 1.0282
+    },
+    {
+      "id": "PXe",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.9607
+    },
+    {
+      "id": "PXf",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.3129
+    },
+    {
+      "id": "PXg",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.9587
+    },
+    {
+      "id": "PXh",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.9026
+    },
+    {
+      "id": "PXi",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.9874
+    },
+    {
+      "id": "PXj",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.9868
+    },
+    {
+      "id": "PXk",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.8789
+    },
+    {
+      "id": "PXl",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.3498
+    },
+    {
+      "id": "PXm",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.3544
+    },
+    {
+      "id": "PXn",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.9235
+    },
+    {
+      "id": "PXo",
+      "size": [
+        1600,
+        900
+      ],
+      "layers": 7,
+      "maxChannelMeanDifference": 0.9955
+    }
+  ]
+}

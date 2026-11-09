@@ -1,0 +1,39 @@
+{
+  "baseResolution": [1600,900],
+  "battle": {
+    "duration": 1200,
+    "cues": [
+      {"at":0,"name":"锁定已确认指令"},
+      {"at":150,"name":"切入攻击方与目标"},
+      {"at":390,"name":"接触帧 · 播放实际命中结果"},
+      {"at":565,"name":"数值与状态反馈"},
+      {"at":880,"name":"镜头回位"},
+      {"at":1200,"name":"释放输入"}
+    ]
+  },
+  "profiles": [
+    {"id":"melee","label":"战斗 · 近战命中","mode":"battle","board":"P05a","duration":1200,"attacker":"actor:p0","defender":"enemy:shambler","action":"拳击","outcome":"−4","note":"单目标正反打。接触帧才出现伤害与受击。"},
+    {"id":"ranged","label":"战斗 · 远程命中","mode":"battle","board":"P05a","duration":1200,"attacker":"actor:npc_lin_zhao","defender":"enemy:z_helmet","action":"远程攻击","outcome":"−3","note":"保持站位，通过出射方向、弹迹和落点衔接两人。"},
+    {"id":"miss","label":"战斗 · 未命中","mode":"battle","board":"P05a","duration":1200,"attacker":"actor:p0","defender":"enemy:shambler","action":"攻击","outcome":"闪避","note":"目标侧移，不播伤害数字或受伤闪光。"},
+    {"id":"heal","label":"战斗 · 包扎支援","mode":"battle","board":"P05d","duration":1200,"attacker":"actor:p0","defender":"actor:npc_lin_zhao","action":"包扎","outcome":"+3","note":"目标使用实际治疗对象。暖绿反馈，取消受击与抖动。"},
+    {"id":"area","label":"战斗 · 多目标","mode":"battle","board":"P05a","duration":1200,"attacker":"actor:p0","defender":"enemy:shambler","second":"enemy:z_helmet","action":"范围攻击","outcome":"−3   /   −2","note":"多个目标同镜头，数值以实际结果分开挂在各目标上。"},
+    {"id":"guard","label":"战斗 · 防御与格挡","mode":"battle","board":"P05a","duration":1200,"attacker":"actor:p0","defender":"enemy:shambler","action":"攻击","outcome":"格挡","note":"在接触帧给出盾面反馈。是否扣血按实际结果。"},
+    {"id":"defeat","label":"战斗 · 目标倒下","mode":"battle","board":"P05a","duration":1200,"attacker":"actor:p0","defender":"enemy:shambler","action":"致命攻击","outcome":"倒下","note":"同一接触帧播结果，回位时保留空槽位置。"},
+    {"id":"move","label":"行动 · 移动到达","mode":"action","board":"P01a","duration":1750,"labelAction":"前往林地","result":"已到达林地","glyph":"route","note":"只有引擎回报到达才切地景，途中退出走原有中断流程。"},
+    {"id":"gather","label":"行动 · 采集与拾取","mode":"action","board":"P01b","duration":1750,"labelAction":"搜集林地木材","result":"木材 ×2 · 已放入地面","glyph":"search","note":"中央进度按阶段更新；产物在结果时显现。"},
+    {"id":"craft","label":"行动 · 制作与加工","mode":"action","board":"P06a","duration":1750,"labelAction":"制作简易斧","result":"简易斧 · 制作完成","glyph":"craft","note":"制作、净水、烹饪和晾制共用推进方式，产物与消耗各有落点。"},
+    {"id":"rest","label":"行动 · 休息与等待","mode":"action","board":"P08c","duration":1750,"labelAction":"在安全处休息","result":"休息结束 · 身体状态已刷新","glyph":"rest","note":"按阶段反馈已过去时长，风险触发后可以切暂停。"},
+    {"id":"feed","label":"结果 · 给同行者饮水","mode":"action","board":"P04b","duration":1300,"labelAction":"给林昭饮水","result":"林昭 · 水分上升","glyph":"hydration","immediate":true,"note":"即时操作只播反馈，不显示虚假的世界时间进度。"},
+    {"id":"swap","label":"结果 · 转移与装备","mode":"action","board":"P03c","duration":1300,"labelAction":"交接金属锅","result":"金属锅 · 已交给林昭","glyph":"transfer","immediate":true,"note":"先验证接收方和容量，再用来源与去向的关联动效。"},
+    {"id":"interrupt","label":"行动 · 暂停与退出","mode":"action","board":"PXn","duration":1750,"labelAction":"搜集林地木材","result":"行动已暂停 · 保留已结算阶段","glyph":"pause","note":"显示真实暂停原因，保留进度与退出按钮，不模拟完成。"},
+    {"id":"reject","label":"结果 · 操作被拒","mode":"action","board":"P04c","duration":1300,"labelAction":"尝试给同行者饮水","result":"当前状态无法饮水","glyph":"warning","immediate":true,"note":"聚焦原控件与原因，不播成功动作，不改变数值。"},
+    {"id":"popup","label":"界面 · 弹层打开与关闭","mode":"panel","board":"P01a","duration":1500,"note":"遮罩、面板与按钮焦点分开过渡。开后接焦点，关后还给触发按钮。"},
+    {"id":"drawer","label":"界面 · 侧栏与二级面板","mode":"panel","board":"P01a","duration":1500,"note":"靠近触发侧滑入；不推动地面与随身四轨。"},
+    {"id":"toast","label":"界面 · 结果与提示浮现","mode":"panel","board":"P01a","duration":1500,"note":"短反馈由原位浮起并消退。关键失败原因仍保留可读。"},
+    {"id":"dialogue","label":"对白 · 左右交错与换句","mode":"dialogue","board":"P09a","duration":2100,"note":"按发言顺序叠加独立气泡，入场方向跟随发言者。"},
+    {"id":"duty","label":"对白 · 代班与当前发言","mode":"dialogue","board":"P09d","duration":2100,"note":"姓名牌与尾巴同时标识当前发言人。历史记录保留原身份。"},
+    {"id":"hub","label":"鸟瞰 · 幸存者营区","mode":"map","board":"P07b","duration":450,"note":"悬停建筑轮廓查看名称，点击或 Enter 选中；实际移动另行确认。"},
+    {"id":"church","label":"鸟瞰 · 教会圣所","mode":"map","board":"P07c","duration":450,"note":"淡描边始终可见，悬停加强高亮，选中保持。"},
+    {"id":"lab","label":"鸟瞰 · 科学院","mode":"map","board":"P07d","duration":450,"note":"描边跟随建筑轮廓，画面缩放时命中区域与建筑一起缩放。"}
+  ]
+}

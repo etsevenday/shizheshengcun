@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>适者生存 · 重墨 V2 全界面设计参考</title>
+<link rel="stylesheet" href="资料/鸟瞰交互.css">
+<style>
+:root{color-scheme:dark;--bg:#11100e;--panel:#1f1914;--edge:#594632;--muted:#bcaa8e;--bone:#f0dfbe;--gold:#e3ad70}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--bone);font:15px/1.6 "Microsoft YaHei",sans-serif}a{color:var(--gold);text-underline-offset:3px}button,input,select{font:inherit}button,select{color:var(--bone);background:#251c15;border:1px solid #6c5137;padding:5px 10px}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}h1,h2,h3,p{margin:0}.small{font-size:13px;color:var(--muted)}.top{padding:19px 24px;background:linear-gradient(105deg,#302219,#1a1511 68%);border-bottom:1px solid var(--edge)}.kicker{color:var(--gold);letter-spacing:.16em;font-size:13px}.top h1{font-size:clamp(24px,3vw,42px);letter-spacing:.045em}.top p{margin-top:6px}.app{display:grid;grid-template-columns:236px minmax(0,1fr);gap:16px;padding:17px;max-width:1920px;margin:auto}.side{position:sticky;top:12px;align-self:start;max-height:calc(100vh - 24px);overflow:auto}.side input{width:100%;margin-bottom:8px;background:#211b15;border:1px solid var(--edge);color:var(--bone);padding:6px 8px}.side details{margin-bottom:5px;border:1px solid var(--edge);background:#1c1611}.side summary{padding:7px 9px;color:var(--gold);cursor:pointer}.side button{display:block;width:100%;text-align:left;background:transparent;border:0;padding:5px 8px;font-size:13px}.side button[aria-current=true]{background:#493124;color:#ffdfab}.side button:hover{background:#37271c}.side button i{display:inline-block;width:48px;color:#d69c63;font-style:normal}.bar,.layers,.links{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}.bar h2{flex:1;min-width:210px;font-size:21px}.layers label{display:inline-flex;align-items:center;gap:3px;color:var(--muted);font-size:13px}.layers input{accent-color:#d19b63}.layers button[aria-pressed=true]{background:#573824;border-color:#ba8756}.sheet{width:100%;aspect-ratio:16/9;overflow:hidden;border:1px solid var(--edge);background:repeating-conic-gradient(#282622 0 25%,#1b1916 0 50%) center/20px 20px}.sheet>svg{width:100%;height:100%;display:block}.links{margin-top:10px}.sources{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}.sources>a{width:140px;padding:4px;background:#201913;border:1px solid var(--edge);font-size:13px}.sources img{width:100%;height:74px;object-fit:contain}.info{padding:12px;border:1px solid var(--edge);background:#1c1612}.info p+details{margin-top:8px}details>summary{cursor:pointer}.indexRefs{padding:14px 17px;max-width:1920px;margin:auto}.indexRefs summary{color:var(--gold)}#sourcesAll>a{width:157px}.indexRefs .small{margin:5px 0}#refsSelected span,.indexRefs span{display:block}.hide{display:none!important}
+@media(max-width:840px){.app{grid-template-columns:1fr}.side{position:static;max-height:186px}.top{padding:12px 16px}.bar h2{flex-basis:100%}}
+</style>
+</head>
+<body>
+<header class="top"><div class="kicker">离线设计档案  /  粗框与动效修订</div><h1>适者生存 · 重墨 V2 全界面</h1><p>67 张效果图 · 7 层可拆 · <a href="打开动效样机.html">播放战斗特写、行动推进与界面转场</a></p></header>
+<div class="app">
+<nav class="side" aria-label="场景目录"><input id="search" type="search" placeholder="筛选名称或编号" aria-label="筛选场景"><div id="catalog"></div></nav>
+<main>
+<div class="bar"><h2 id="heading"></h2><select id="page" aria-label="跳转场景"></select><button id="prev">上一张</button><button id="next">下一张</button></div>
+<div class="layers" id="layers"><button data-mode="all" aria-pressed="true">合成</button><button data-mode="art">仅美术</button><button data-mode="ui">仅 UI</button><button id="font" aria-pressed="false">清晰阅读</button></div>
+<div class="sheet" id="sheet" aria-label="设计稿画布"></div>
+<div class="links"><a id="png" target="_blank">1600×900 合成 PNG</a><a id="ora" download>OpenRaster 分层文件</a><a id="svg" target="_blank">SVG 源稿</a><a href="资料/覆盖与素材映射.json" target="_blank">全部组件、参考和素材 ID</a><a href="资料/逐页坐标与组件槽.json" target="_blank">逐页坐标</a><a href="使用说明.md" target="_blank">使用说明</a></div>
+<div class="info"><p id="components"></p><details><summary>本页使用的素材 ID</summary><p id="assetKeys" class="small"></p></details><details open><summary>本页原始参考</summary><div class="sources" id="refsSelected"></div></details></div>
+</main>
+</div>
+<details class="indexRefs"><summary>全部 21 张原始效果图及其页面去向</summary><div class="sources" id="sourcesAll"></div></details>
+<script src="资料/预览数据.js"></script>
+<script src="资料/鸟瞰交互.js"></script>
+<script>
+const byId=id=>document.getElementById(id), model=window.INK_BOARDS, panels=model.pages;
+const deck=byId('sheet'), picker=byId('page'), catalog=byId('catalog'), layerControls=byId('layers');
+let current=panels[0], activeLayers=model.layers.map(()=>true), clear=false;
+const refsToNodes=(codes,all=false)=>codes.map(code=>{
+ const r=model.sourceReferences[code], a=document.createElement('a'), im=document.createElement('img'), name=document.createElement('strong'), use=document.createElement('span');
+ a.href=r.file; a.target='_blank'; im.src=r.file; im.loading='lazy'; im.alt=''; name.textContent=code+' · '+r.name; use.textContent=all?r.pages.join(' / '):r.use; a.append(im,name,use);return a;
+});
+for(const [group,name] of Object.entries(model.families)){
+ const details=document.createElement('details'), title=document.createElement('summary'), options=document.createElement('optgroup');
+ title.textContent=group+' · '+name;details.append(title);options.label=title.textContent;
+ for(const page of panels.filter(p=>p.group===group)){
+  const button=document.createElement('button'), code=document.createElement('i'), option=document.createElement('option');
+  code.textContent=page.id;button.append(code,document.createTextNode(page.title));button.dataset.id=page.id;button.onclick=()=>go(page.id);details.append(button);option.value=page.id;option.textContent=page.id+' · '+page.title;options.append(option);
+ }
+ catalog.append(details);picker.append(options);
+}
+model.layers.forEach((name,i)=>{
+ const input=document.createElement('input'), label=document.createElement('label');input.type='checkbox';input.checked=true;input.dataset.index=i;
+ input.onchange=()=>{activeLayers[i]=input.checked;apply();};label.append(input,document.createTextNode(name.slice(3)));layerControls.append(label);
+});
+function apply(){
+ deck.firstElementChild?.classList.toggle('clear',clear);
+ deck.querySelectorAll('svg > g[data-layer]').forEach(g=>g.style.display=activeLayers[Number(g.dataset.layer)-1]?'':'none');
+ const presets={all:[true,true,true,true,true,true,true],art:[true,false,true,false,false,false,false],ui:[false,true,false,true,true,true,true]};
+ for(const button of layerControls.querySelectorAll('button[data-mode]'))button.setAttribute('aria-pressed',String(activeLayers.every((a,i)=>a===presets[button.dataset.mode][i])));
+ for(const check of layerControls.querySelectorAll('input'))check.checked=activeLayers[Number(check.dataset.index)];
+ byId('font').setAttribute('aria-pressed',String(clear));
+}
+function render(id){
+ current=panels.find(p=>p.id===id)||panels[0];
+ deck.innerHTML=current.svg;window.bindInkBuildings(deck.firstElementChild);byId('heading').textContent=current.id+' · '+current.title;picker.value=current.id;
+ catalog.querySelector('[aria-current]')?.removeAttribute('aria-current');
+ const selected=catalog.querySelector('button[data-id="'+current.id+'"]');selected.setAttribute('aria-current','true');selected.closest('details').open=true;
+ byId('components').textContent='现行组件：'+current.components.join(' · ');byId('assetKeys').textContent=current.artKeys.join(' · ');
+ byId('png').href='效果图/'+current.id+'.png';byId('ora').href='分层文件/'+current.id+'.ora';byId('svg').href=current.srcFile;
+ byId('refsSelected').replaceChildren(...refsToNodes(current.refs));apply();
+}
+function go(id){if(location.hash!=='#'+id)location.hash=id;render(id);}
+window.addEventListener('hashchange',()=>render(location.hash.slice(1)));
+picker.onchange=()=>go(picker.value);
+byId('prev').onclick=()=>go(panels[(panels.indexOf(current)-1+panels.length)%panels.length].id);
+byId('next').onclick=()=>go(panels[(panels.indexOf(current)+1)%panels.length].id);
+layerControls.addEventListener('click',event=>{
+ const mode=event.target.dataset.mode;if(!mode)return;
+ activeLayers=model.layers.map((_,i)=>mode==='all'||(mode==='art'?(i===0||i===2):(i!==0&&i!==2)));apply();
+});
+byId('font').onclick=()=>{clear=!clear;apply();};
+byId('search').oninput=()=>{
+ const q=byId('search').value.trim().toLowerCase();
+ for(const section of catalog.children){let hits=0;for(const button of section.querySelectorAll('button')){const match=button.textContent.toLowerCase().includes(q);button.hidden=!match;hits+=Number(match);}section.hidden=!hits;if(q&&hits)section.open=true;}
+};
+byId('sourcesAll').replaceChildren(...refsToNodes(Object.keys(model.sourceReferences),true));
+render(location.hash.slice(1));
+</script>
+</body>
+</html>
