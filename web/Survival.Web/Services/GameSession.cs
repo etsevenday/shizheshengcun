@@ -891,6 +891,7 @@ public sealed class GameSession
 
     public void Notify()
     {
+        ResetOnLocationChange();
         ReconcileFeed();
         OnDialogueOnset();
         CityOverviewTick();
@@ -898,6 +899,26 @@ public sealed class GameSession
         ClearStaleFormationNotice();
         Version++;
         Changed?.Invoke();
+    }
+
+    /// <summary>Q281：右栏对象上下文所属的真实地点（只在会话内）。</summary>
+    private readonly LocationContextTracker _uiLocation = new();
+
+    /// <summary>
+    /// Q281（S14「2026-11-09 Q281–Q282」）：真实地点 ID 前后不同（正常抵达、撤退、撤出逐段换点、现有传送）时，在新地点首次可操作前
+    /// （每次刷新界面之前）清掉旧右栏对象选中及只依附它的批次、拖拽预览、卡下食饮草稿、卡旁浮窗与点火菜单，右栏回默认人物页。
+    /// 打开地图、鸟瞰预览、移动在途、取消或移动失败不改 CurrentLocation，不在这里清，沿 ReconcileSelection 的同地点有效性校验。
+    /// 不动 Notice（当前反馈位）、面板与地图选点（各按自己的规则）。
+    /// </summary>
+    private void ResetOnLocationChange()
+    {
+        if (State == null) { _uiLocation.Reset(); return; }
+        if (!_uiLocation.Observe(S.CurrentLocation)) return;
+        ClearSelectionSilently();
+        SelectedBatchKey = null;
+        PendingAction = null;
+        Pop = null;
+        IgniteMenuOpen = false;
     }
 
     private bool _wasLocked;
@@ -1072,6 +1093,7 @@ public sealed class GameSession
         HelpTopic = null;
         HelpEntry = null;
         DialogLogPick = null;
+        _uiLocation.Reset();
         _skip = false;
         Running = false;
         ResetBattleUi();
@@ -1647,7 +1669,6 @@ public sealed class GameSession
         Running = true;
         _skip = false;
         var segs = 0;
-        var startLocation = S.CurrentLocation;
         try
         {
             while (State != null && !S.Progress.Dead)
@@ -1676,11 +1697,7 @@ public sealed class GameSession
         {
             Running = false;
             _skip = false;
-            // 到达新地点后，原地点的路线、资源与地面选择都已失效
-            if (State != null && S.CurrentLocation != startLocation && Selected.Kind != SelectionKind.None
-                && !(Selected.Owner == ItemInstance.Carried))
-                ClearSelectionSilently();
-            if (State != null && S.CurrentLocation != startLocation) IgniteMenuOpen = false;
+            // 到达新地点后旧右栏选中（含随身卡）与只依附它的临时状态由 Notify 里的 ResetOnLocationChange 统一清（Q281）
             if (State != null) ReconcileSelection();
             Save();
             Notify();
