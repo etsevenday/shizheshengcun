@@ -1,0 +1,39 @@
+{
+  "default": "chill16",
+  "previewToggle": "清晰阅读",
+  "roles": {
+    "ui": 16,
+    "aux": 14,
+    "dialogue": 20,
+    "title": 24,
+    "lineHeight": 1.7
+  },
+  "sources": [
+    {
+      "key": "chill16",
+      "title": "寒蝉点阵体 16px",
+      "version": "v2.502",
+      "release": "https://github.com/Warren2060/ChillBitmap/releases/tag/v2.502",
+      "file": "fonts/chill16/ChillBitmap_16px.ttf",
+      "license": "fonts/chill16/ChillBitmap_16px_License.txt",
+      "sha256": "9c699de0d24e482700fa0a08ce3abe58ef2ceaf6173323c77b767c72cd538512"
+    },
+    {
+      "key": "ark16",
+      "title": "方舟像素 16px 比例版",
+      "version": "2026.09.01",
+      "release": "https://github.com/TakWolf/ark-pixel-font/releases/tag/2026.09.01",
+      "file": "fonts/ark16/ark-pixel-16px-proportional-zh_cn.otf.woff2",
+      "latin": "fonts/ark16/ark-pixel-16px-proportional-latin.otf.woff2",
+      "license": "fonts/ark16/OFL.txt",
+      "sha256": "7191f0f5146d9a53429aafbc15b119dc1517515fc3d2e0b4e65be9e2e090efd",
+      "purpose": "比较；16px 上游构建已停止"
+    },
+    {
+      "key": "cubic11",
+      "title": "Cubic 11",
+      "source": "https://github.com/ACh-K/Cubic-11",
+      "purpose": "11格参考，未作为长对白默认"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>适者生存 · 中文字体实景对照</title>
+<link rel="stylesheet" href="新版阅读.css">
+<style>
+@font-face{font-family:Old8;src:url("../全量素材库/fonts/8/fusion-pixel-8px-proportional-zh_hans.otf.woff2")}@font-face{font-family:Old10;src:url("../全量素材库/fonts/10/fusion-pixel-10px-proportional-zh_hans.otf.woff2")}
+*{box-sizing:border-box}body{margin:0;background:#161412;color:#f0e3cc;font:16px/1.6 "Microsoft YaHei",sans-serif}
+main{max-width:1240px;padding:20px;margin:auto}h1,h2,p{margin:0 0 10px}a{color:#e1bd83}
+section{margin-top:12px}header p,.note{color:#cdbb9f}
+.compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.sample{border:1px solid #6a5337;background:#201a15;padding:12px;min-width:0}
+.sample h2{font-size:18px;font-weight:600;color:#e1bd83}
+.ui{color:#f0e3cc;padding:8px;border:1px solid #684e35;background:#211b17;min-height:190px}
+.ui p{margin:0 0 9px}.ui .dialog{margin:8px 0;padding:9px;background:#12100f;line-height:1.7;font-size:20px}
+.ui button{padding:3px 9px;margin:0 3px 4px 0;background:#583224;color:#f1dfbc;border:1px solid #ae845b;font:inherit}
+.old .ui{font:16px Old8,sans-serif}.old .dialog{font-family:Old10,sans-serif;line-height:1.45}
+.ark .ui{font:16px/1.55 V2Ark16,V2ArkLatin,V2Chill16,sans-serif}
+.chill .ui{font:16px/1.55 V2Chill16,sans-serif}
+.clear .ui{font:16px/1.55 var(--ink-clear)}.clear .dialog{font-size:21px;line-height:1.72}
+@media(max-width:730px){.compare{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>同一套文字，四种读法</h1><p>在相同底色和画面宽度下比较菜单、数值及长对白。使用 100% 浏览器缩放查看。</p>
+<a href="重绘图册.html">查看重绘图册</a></header>
+<div class="compare" id="compare"></div>
+<p class="note">建议默认使用寒蝉点阵 16px。长对白 20 CSS px、行高 1.7，关闭合成粗体。清晰阅读模式用系统黑体，仍保留图形、版式和墨色 UI。</p>
+</main>
+<template id="copy"><div class="ui"><p><button type="button">物资查看</button><button type="button">区域地图</button><button type="button">继续</button></p>
+<p>净水 ×2　荨麻纤维 ×1　临时耐久 12/30　风险 &lt;0.01　工位 ① → ②</p>
+<p>存档失败：浏览器存储空间已满。　<button type="button">重试</button></p>
+<p class="dialog">前方是灰塔科学院的封存区。先核对纸上的路线，再决定要不要进门。听见异响时，停一停，看看队伍的水分和伤势。</p></div></template>
+<script>
+const cards=[
+ ['old','上一版 · 缝合像素 8/10 点阵','细节密集的字容易挤在一起。'],
+ ['ark','参考 A · 方舟像素 16 点阵','对照冻结版本，部分字形会落到后备字体。'],
+ ['chill','建议 · 寒蝉点阵体 16','保留像素边，汉字笔画与间隙更细。'],
+ ['clear','清晰阅读 · 系统黑体','正文更平滑，适合长时间阅读。']
+];
+for(const [id,name,note] of cards){
+  const panel=document.createElement('section');panel.className='sample '+id;
+  const h=document.createElement('h2');h.textContent=name;panel.append(h,document.getElementById('copy').content.cloneNode(true));
+  const p=document.createElement('p');p.className='note';p.textContent=note;panel.append(p);
+  document.getElementById('compare').append(panel);
+}
+</script>
+</body>
+</html>

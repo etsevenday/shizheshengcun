@@ -1,0 +1,65 @@
+{
+  "items-01": {
+    "approved": true,
+    "note": "按序核对 16 格：两种水、罐头、野果、根菜三态、肉三态、谷物、油、豆罐头、肉干、粥和炖肉。"
+  },
+  "skills-01": {
+    "approved": true,
+    "note": "门类图形和拳击动作核对通过。"
+  },
+  "skills-02": {"approved": true, "note": "徒手护身被画成盾，长矛逼退画成空手，已排除。", "cells": {"1": "reject", "15": "reject"}},
+  "skills-03": {"approved": true, "note": "弓弩五技中的枪械和泛箭标错配排除，按门类实义重绘。", "cells": {"8": "reject", "9": "reject", "10": "reject", "11": "reject", "12": "reject"}},
+  "skills-04": {"approved": true, "note": "盾掩护误画成枪械掩体，护理误画成药包，排除两格。", "cells": {"5": "reject", "15": "reject"}},
+  "skills-05": {"approved": true, "note": "医疗救护、制作、采集及搜集均展示独立动作。"},
+  "skills-06": {"approved": true, "note": "烹饪、行旅与常用战斗动作按名称和姿势逐格核对。"},
+  "skills-07": {"approved": true, "note": "包扎、应急拳、撤退、结束行动与两种用药动作按序核对。"},
+  "skills-corrections-01": {"approved": true, "note": "徒手护身、长矛逼退和五个弓弩技能已按武器语义逐格纠正。"},
+  "skills-corrections-02": {"approved": true, "note": "掩护使用盾与保护姿势，护理以手部处理动作呈现。"},
+  "ui-icons-01": {
+    "approved": true,
+    "note": "第 5 格错用食物，第 10 格错用刷新，先不绑定。",
+    "cells": {
+      "4": "reject",
+      "9": "reject"
+    }
+  },
+  "ui-icons-02": {"approved": true, "note": "锁定画成瞄准、休息带字母、整备像设置，三格另画。", "cells": {"2": "reject", "14": "reject", "23": "reject"}},
+  "ui-icons-03": {"approved": true, "note": "导航与地图状态核对；通用配方误画成炊事，另画。", "cells": {"22": "reject"}},
+  "ui-icons-04": {"approved": true, "note": "封锁用路障，陷阱用捕兽夹；全部误画成木箱，改分类汇总符号。", "cells": {"3": "reject"}},
+  "ui-corrections-02": {"approved": true, "note": "锁、无字休息、穿戴整备、通用配方与类别汇总五格校正。"},
+  "duty-01": {
+    "approved": true,
+    "note": "营区六岗位按从登记、工务、医师、鉴定到收容的实际顺序核对。"
+  },
+  "duty-02": {"approved": true, "note": "外来接待、施济、训诫、誊录、主持及协调岗位逐格核对。"},
+  "duty-03": {"approved": true, "note": "研究、档案、设备与观察四岗位的道具和头像裁窗核对。"},
+  "items-02": {"approved": true, "note": "熟食、草药、绷带、抗生素及医疗液体按名称顺序核对。"},
+  "items-03": {"approved": true, "note": "急救和工具与箭弹的形制及顺序核对通过。"},
+  "items-04": {"approved": true, "note": "近远程武器及斧矛变体按名称核对。"},
+  "items-05": {"approved": true, "note": "盾、枪械及战术工具按形制和顺序核对。"},
+  "items-06": {"approved": true, "note": "医疗装备、各档护具和挂件逐格区分。"},
+  "items-07": {"approved": true, "note": "徽记、计时表和不同岗位穿戴各有独立结构。"},
+  "items-08": {"approved": true, "note": "远征穿戴、手套、罗盘、维护文档、纤维和试剂核对。"},
+  "items-09": {"approved": true, "note": "木板、绳索、铁件、线路、电子、油与炭材按顺序核对。"},
+  "items-10": {"approved": true, "note": "用独立机械零件和清洁工具重绘，材料、过滤和引火等 16 个题材通过。"},
+  "items-11": {"approved": true, "note": "滤芯、水壶、铺垫、三档修补包和标记器的结构与用途可辨。"},
+  "items-12": {"approved": true, "note": "狼、野猪、鹿与未鉴定样本各有独立轮廓，空格透明。"},
+  "icons-corrections-01": {"approved": true, "note": "三枚势力徽章、脑内声音、归零警示与饱饱头像标识逐格校正。"},
+  "sites-01": {
+    "approved": true,
+    "note": "资源按名称通过；前三格是建筑，不作为势力徽章。",
+    "cells": {"0": "reject", "1": "reject", "2": "reject"}
+  },
+  "sites-02": {"approved": true, "note": "户外纤维、道旁材料、隧道零件和电力器材 25 格按顺序核对。"},
+  "sites-03": {"approved": true, "note": "野外、铁路、水厂和应急仓资源分别以实际材质和内容辨识。"},
+  "sites-04": {"approved": true, "note": "取水点按环境区分，资源箱与档案保留可辨内容。"},
+  "sites-05": {"approved": true, "note": "地牢补给、档案、路障及配给设施逐格比对。"},
+  "sites-06": {"approved": true, "note": "配给柜、场站资源和设施材料区分清楚，裁窗核验通过。"},
+  "sites-07": {"approved": true, "note": "营地设施、补给柜、封存装备与工坊对象按名称比对。"},
+  "sites-08": {"approved": true, "note": "缝纫、医疗、军械、净水、晾制、火堆、储藏等设施各有独立轮廓。"},
+  "recruit-01": {
+    "approved": true,
+    "note": "前排护卫、刀具熟手、破障、长柄、回收和猎行职业样例已核对。"
+  },
+  "recruit-02": {"approved": true, "note": "勤务、协调、护理与未记录外观的中性样例逐格核对。"}
+}

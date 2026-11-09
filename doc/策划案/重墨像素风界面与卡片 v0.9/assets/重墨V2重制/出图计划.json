@@ -1,0 +1,3139 @@
+[
+  {
+    "id": "items-01",
+    "type": "icon",
+    "title": "物品",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/01-item/02-医疗与求生工具.png",
+    "cells": [
+      {
+        "key": "item:dirty_water",
+        "name": "脏水",
+        "kind": "water"
+      },
+      {
+        "key": "item:clean_water",
+        "name": "净水",
+        "kind": "water"
+      },
+      {
+        "key": "item:canned_food",
+        "name": "罐头",
+        "kind": "food"
+      },
+      {
+        "key": "item:berry",
+        "name": "野果",
+        "kind": "food"
+      },
+      {
+        "key": "item:raw_root",
+        "name": "生块根",
+        "kind": "food"
+      },
+      {
+        "key": "item:cooked_root",
+        "name": "烤熟块根",
+        "kind": "food"
+      },
+      {
+        "key": "item:boiled_root",
+        "name": "水煮块根",
+        "kind": "food"
+      },
+      {
+        "key": "item:raw_meat",
+        "name": "生肉",
+        "kind": "food"
+      },
+      {
+        "key": "item:cooked_meat",
+        "name": "烤肉",
+        "kind": "food"
+      },
+      {
+        "key": "item:boiled_meat",
+        "name": "水煮肉",
+        "kind": "food"
+      },
+      {
+        "key": "item:grain",
+        "name": "谷物",
+        "kind": "food"
+      },
+      {
+        "key": "item:cooking_oil",
+        "name": "食用油",
+        "kind": "food"
+      },
+      {
+        "key": "item:canned_beans",
+        "name": "豆罐头",
+        "kind": "food"
+      },
+      {
+        "key": "item:dried_meat",
+        "name": "肉干",
+        "kind": "food"
+      },
+      {
+        "key": "item:root_porridge",
+        "name": "块根粥",
+        "kind": "food"
+      },
+      {
+        "key": "item:meat_stew",
+        "name": "炖肉",
+        "kind": "food"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw each as one original physical inventory object or set only if the name calls for a set. Item proportions, silhouette, materials, and signs of use should fit its own name. For similar names distinguish function, shape, parts, or construction; do not use palette swaps alone. No interface frame. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 脏水 | 净水 | 罐头 | 野果\nRow 2 (left to right): 生块根 | 烤熟块根 | 水煮块根 | 生肉\nRow 3 (left to right): 烤肉 | 水煮肉 | 谷物 | 食用油\nRow 4 (left to right): 豆罐头 | 肉干 | 块根粥 | 炖肉"
+  },
+  {
+    "id": "items-02",
+    "type": "icon",
+    "title": "物品",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/01-item/02-医疗与求生工具.png",
+    "cells": [
+      {
+        "key": "item:grain_cake",
+        "name": "谷饼",
+        "kind": "food"
+      },
+      {
+        "key": "item:berry_jam",
+        "name": "果酱",
+        "kind": "food"
+      },
+      {
+        "key": "item:dried_berries",
+        "name": "果干",
+        "kind": "food"
+      },
+      {
+        "key": "item:fried_root",
+        "name": "油煎块根",
+        "kind": "food"
+      },
+      {
+        "key": "item:trail_ration",
+        "name": "行军口粮",
+        "kind": "food"
+      },
+      {
+        "key": "item:herbal_drink",
+        "name": "草药饮",
+        "kind": "food"
+      },
+      {
+        "key": "item:hardtack",
+        "name": "远行硬饼",
+        "kind": "food"
+      },
+      {
+        "key": "item:expedition_bar",
+        "name": "远征口粮棒",
+        "kind": "food"
+      },
+      {
+        "key": "item:stew_portion",
+        "name": "谷肉炖食",
+        "kind": "food"
+      },
+      {
+        "key": "item:herb",
+        "name": "草药",
+        "kind": "medical"
+      },
+      {
+        "key": "item:bandage",
+        "name": "草药绷带",
+        "kind": "medical"
+      },
+      {
+        "key": "item:antibiotics",
+        "name": "抗生素",
+        "kind": "medical"
+      },
+      {
+        "key": "item:antiviral_cure",
+        "name": "病毒特效药",
+        "kind": "medical"
+      },
+      {
+        "key": "item:medical_gauze",
+        "name": "医用纱布",
+        "kind": "medical"
+      },
+      {
+        "key": "item:disinfectant",
+        "name": "消毒液",
+        "kind": "medical"
+      },
+      {
+        "key": "item:saline",
+        "name": "盐水剂",
+        "kind": "medical"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw each as one original physical inventory object or set only if the name calls for a set. Item proportions, silhouette, materials, and signs of use should fit its own name. For similar names distinguish function, shape, parts, or construction; do not use palette swaps alone. No interface frame. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 谷饼 | 果酱 | 果干 | 油煎块根\nRow 2 (left to right): 行军口粮 | 草药饮 | 远行硬饼 | 远征口粮棒\nRow 3 (left to right): 谷肉炖食 | 草药 | 草药绷带 | 抗生素\nRow 4 (left to right): 病毒特效药 | 医用纱布 | 消毒液 | 盐水剂"
+  },
+  {
+    "id": "items-03",
+    "type": "icon",
+    "title": "物品",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/01-item/02-医疗与求生工具.png",
+    "cells": [
+      {
+        "key": "item:herb_extract",
+        "name": "草药浸膏",
+        "kind": "medical"
+      },
+      {
+        "key": "item:sterile_bandage",
+        "name": "无菌绷带",
+        "kind": "medical"
+      },
+      {
+        "key": "item:compression_bandage",
+        "name": "加压绷带",
+        "kind": "medical"
+      },
+      {
+        "key": "item:first_aid_pack",
+        "name": "急救包",
+        "kind": "medical"
+      },
+      {
+        "key": "item:oral_rehydration",
+        "name": "口服补液",
+        "kind": "medical"
+      },
+      {
+        "key": "item:antidiarrheal_powder",
+        "name": "止泻药粉",
+        "kind": "medical"
+      },
+      {
+        "key": "item:emergency_tonic",
+        "name": "应急恢复剂",
+        "kind": "medical"
+      },
+      {
+        "key": "item:stone_knife",
+        "name": "石刀",
+        "kind": "tool"
+      },
+      {
+        "key": "item:hatchet",
+        "name": "简易斧",
+        "kind": "tool"
+      },
+      {
+        "key": "item:pot",
+        "name": "金属锅",
+        "kind": "tool"
+      },
+      {
+        "key": "item:lighter",
+        "name": "打火器",
+        "kind": "tool"
+      },
+      {
+        "key": "item:arrow",
+        "name": "箭矢",
+        "kind": "ammo"
+      },
+      {
+        "key": "item:bolt",
+        "name": "弩矢",
+        "kind": "ammo"
+      },
+      {
+        "key": "item:ammo_9mm",
+        "name": "9mm弹",
+        "kind": "ammo"
+      },
+      {
+        "key": "item:shell_12g",
+        "name": "霰弹",
+        "kind": "ammo"
+      },
+      {
+        "key": "item:ammo_rifle",
+        "name": "步枪弹",
+        "kind": "ammo"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw each as one original physical inventory object or set only if the name calls for a set. Item proportions, silhouette, materials, and signs of use should fit its own name. For similar names distinguish function, shape, parts, or construction; do not use palette swaps alone. No interface frame. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 草药浸膏 | 无菌绷带 | 加压绷带 | 急救包\nRow 2 (left to right): 口服补液 | 止泻药粉 | 应急恢复剂 | 石刀\nRow 3 (left to right): 简易斧 | 金属锅 | 打火器 | 箭矢\nRow 4 (left to right): 弩矢 | 9mm弹 | 霰弹 | 步枪弹"
+  },
+  {
+    "id": "items-04",
+    "type": "icon",
+    "title": "物品",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/01-item/02-医疗与求生工具.png",
+    "cells": [
+      {
+        "key": "item:kitchen_knife",
+        "name": "厨房刀",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:crowbar",
+        "name": "撬棍",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:wooden_spear",
+        "name": "木矛",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:metal_spear",
+        "name": "金属矛",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:wooden_bow",
+        "name": "木弓",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:crossbow",
+        "name": "弩",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:pistol",
+        "name": "手枪",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:shotgun",
+        "name": "霰弹枪",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:rifle",
+        "name": "步枪",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:machete",
+        "name": "砍刀",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:guard_sword",
+        "name": "守备短剑",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:fire_axe",
+        "name": "消防斧",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:breach_axe",
+        "name": "破障斧",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:rescue_axe",
+        "name": "救援短斧",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:pike",
+        "name": "加固长枪",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:barbed_spear",
+        "name": "倒刺短矛",
+        "kind": "weapon"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw each as one original physical inventory object or set only if the name calls for a set. Item proportions, silhouette, materials, and signs of use should fit its own name. For similar names distinguish function, shape, parts, or construction; do not use palette swaps alone. No interface frame. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 厨房刀 | 撬棍 | 木矛 | 金属矛\nRow 2 (left to right): 木弓 | 弩 | 手枪 | 霰弹枪\nRow 3 (left to right): 步枪 | 砍刀 | 守备短剑 | 消防斧\nRow 4 (left to right): 破障斧 | 救援短斧 | 加固长枪 | 倒刺短矛"
+  },
+  {
+    "id": "items-05",
+    "type": "icon",
+    "title": "物品",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/01-item/02-医疗与求生工具.png",
+    "cells": [
+      {
+        "key": "item:wooden_club",
+        "name": "木棍",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:steel_mace",
+        "name": "钢制钉锤",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:shock_baton",
+        "name": "绝缘警棍",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:recurve_bow",
+        "name": "复合木弓",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:hunter_bow",
+        "name": "猎手弓",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:repeater_crossbow",
+        "name": "轻型战术弩",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:service_pistol",
+        "name": "勤务手枪",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:marksman_rifle",
+        "name": "精校步枪",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:wooden_shield",
+        "name": "木盾",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:scrap_shield",
+        "name": "包铁盾",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:riot_shield",
+        "name": "防暴盾",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:rescue_shield",
+        "name": "救援盾",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:signal_whistle",
+        "name": "信号哨",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:signal_flag",
+        "name": "战术旗",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:field_radio",
+        "name": "战术电台",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:command_terminal",
+        "name": "便携指挥终端",
+        "kind": "weapon"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw each as one original physical inventory object or set only if the name calls for a set. Item proportions, silhouette, materials, and signs of use should fit its own name. For similar names distinguish function, shape, parts, or construction; do not use palette swaps alone. No interface frame. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 木棍 | 钢制钉锤 | 绝缘警棍 | 复合木弓\nRow 2 (left to right): 猎手弓 | 轻型战术弩 | 勤务手枪 | 精校步枪\nRow 3 (left to right): 木盾 | 包铁盾 | 防暴盾 | 救援盾\nRow 4 (left to right): 信号哨 | 战术旗 | 战术电台 | 便携指挥终端"
+  },
+  {
+    "id": "items-06",
+    "type": "icon",
+    "title": "物品",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/01-item/02-医疗与求生工具.png",
+    "cells": [
+      {
+        "key": "item:field_medkit",
+        "name": "随行医疗包",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:trauma_bag",
+        "name": "创伤救护包",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:rescue_medkit",
+        "name": "救援医疗箱",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:triage_kit",
+        "name": "分诊器材组",
+        "kind": "weapon"
+      },
+      {
+        "key": "item:padded_vest",
+        "name": "衬垫护具",
+        "kind": "gear"
+      },
+      {
+        "key": "item:leather_armor",
+        "name": "皮革护具",
+        "kind": "gear"
+      },
+      {
+        "key": "item:scrap_armor",
+        "name": "拼接铁甲",
+        "kind": "gear"
+      },
+      {
+        "key": "item:guard_armor",
+        "name": "守备护甲",
+        "kind": "gear"
+      },
+      {
+        "key": "item:scout_armor",
+        "name": "侦察护具",
+        "kind": "gear"
+      },
+      {
+        "key": "item:heavy_armor",
+        "name": "重型防护甲",
+        "kind": "gear"
+      },
+      {
+        "key": "item:medic_armor",
+        "name": "救护防护背心",
+        "kind": "gear"
+      },
+      {
+        "key": "item:balanced_armor",
+        "name": "均衡战术甲",
+        "kind": "gear"
+      },
+      {
+        "key": "item:steady_ring",
+        "name": "稳手指环",
+        "kind": "gear"
+      },
+      {
+        "key": "item:swift_pendant",
+        "name": "轻捷吊坠",
+        "kind": "gear"
+      },
+      {
+        "key": "item:guard_badge",
+        "name": "守护徽记",
+        "kind": "gear"
+      },
+      {
+        "key": "item:hunter_token",
+        "name": "猎手护符",
+        "kind": "gear"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw each as one original physical inventory object or set only if the name calls for a set. Item proportions, silhouette, materials, and signs of use should fit its own name. For similar names distinguish function, shape, parts, or construction; do not use palette swaps alone. No interface frame. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 随行医疗包 | 创伤救护包 | 救援医疗箱 | 分诊器材组\nRow 2 (left to right): 衬垫护具 | 皮革护具 | 拼接铁甲 | 守备护甲\nRow 3 (left to right): 侦察护具 | 重型防护甲 | 救护防护背心 | 均衡战术甲\nRow 4 (left to right): 稳手指环 | 轻捷吊坠 | 守护徽记 | 猎手护符"
+  },
+  {
+    "id": "items-07",
+    "type": "icon",
+    "title": "物品",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/01-item/02-医疗与求生工具.png",
+    "cells": [
+      {
+        "key": "item:focus_lens",
+        "name": "聚焦镜片",
+        "kind": "gear"
+      },
+      {
+        "key": "item:aid_badge",
+        "name": "救护徽章",
+        "kind": "gear"
+      },
+      {
+        "key": "item:resolve_medal",
+        "name": "镇定勋章",
+        "kind": "gear"
+      },
+      {
+        "key": "item:tactics_watch",
+        "name": "战术计时表",
+        "kind": "gear"
+      },
+      {
+        "key": "item:knuckle_wraps",
+        "name": "护拳绑带",
+        "kind": "gear"
+      },
+      {
+        "key": "item:work_shirt",
+        "name": "耐磨工作衣",
+        "kind": "gear"
+      },
+      {
+        "key": "item:forage_jacket",
+        "name": "采集外套",
+        "kind": "gear"
+      },
+      {
+        "key": "item:scavenge_vest",
+        "name": "搜集背心",
+        "kind": "gear"
+      },
+      {
+        "key": "item:craft_coat",
+        "name": "工匠围衣",
+        "kind": "gear"
+      },
+      {
+        "key": "item:rest_coat",
+        "name": "休养外衣",
+        "kind": "gear"
+      },
+      {
+        "key": "item:expedition_coat",
+        "name": "远征上衣",
+        "kind": "gear"
+      },
+      {
+        "key": "item:work_trousers",
+        "name": "工作长裤",
+        "kind": "gear"
+      },
+      {
+        "key": "item:trail_trousers",
+        "name": "行路裤",
+        "kind": "gear"
+      },
+      {
+        "key": "item:utility_trousers",
+        "name": "作业长裤",
+        "kind": "gear"
+      },
+      {
+        "key": "item:reinforced_trousers",
+        "name": "加固长裤",
+        "kind": "gear"
+      },
+      {
+        "key": "item:recovery_trousers",
+        "name": "休养长裤",
+        "kind": "gear"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw each as one original physical inventory object or set only if the name calls for a set. Item proportions, silhouette, materials, and signs of use should fit its own name. For similar names distinguish function, shape, parts, or construction; do not use palette swaps alone. No interface frame. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 聚焦镜片 | 救护徽章 | 镇定勋章 | 战术计时表\nRow 2 (left to right): 护拳绑带 | 耐磨工作衣 | 采集外套 | 搜集背心\nRow 3 (left to right): 工匠围衣 | 休养外衣 | 远征上衣 | 工作长裤\nRow 4 (left to right): 行路裤 | 作业长裤 | 加固长裤 | 休养长裤"
+  },
+  {
+    "id": "items-08",
+    "type": "icon",
+    "title": "物品",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/01-item/02-医疗与求生工具.png",
+    "cells": [
+      {
+        "key": "item:expedition_trousers",
+        "name": "远征下衣",
+        "kind": "gear"
+      },
+      {
+        "key": "item:gather_gloves",
+        "name": "采集手套",
+        "kind": "gear"
+      },
+      {
+        "key": "item:route_compass",
+        "name": "路线罗盘",
+        "kind": "gear"
+      },
+      {
+        "key": "item:filter_token",
+        "name": "净水操作套件",
+        "kind": "gear"
+      },
+      {
+        "key": "item:repair_manual",
+        "name": "维护手册",
+        "kind": "gear"
+      },
+      {
+        "key": "item:medical_notes",
+        "name": "护理笔记",
+        "kind": "gear"
+      },
+      {
+        "key": "item:ration_pouch",
+        "name": "配给袋",
+        "kind": "gear"
+      },
+      {
+        "key": "item:wood",
+        "name": "木材",
+        "kind": "material"
+      },
+      {
+        "key": "item:fiber",
+        "name": "植物纤维",
+        "kind": "material"
+      },
+      {
+        "key": "item:stone",
+        "name": "石块",
+        "kind": "material"
+      },
+      {
+        "key": "item:scrap",
+        "name": "废金属",
+        "kind": "material"
+      },
+      {
+        "key": "item:cloth",
+        "name": "布料",
+        "kind": "material"
+      },
+      {
+        "key": "item:parts",
+        "name": "零件",
+        "kind": "material"
+      },
+      {
+        "key": "item:hide",
+        "name": "兽皮",
+        "kind": "material"
+      },
+      {
+        "key": "item:antiviral_precursor",
+        "name": "抗病毒前体",
+        "kind": "material"
+      },
+      {
+        "key": "item:lab_reagent",
+        "name": "实验室试剂",
+        "kind": "material"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw each as one original physical inventory object or set only if the name calls for a set. Item proportions, silhouette, materials, and signs of use should fit its own name. For similar names distinguish function, shape, parts, or construction; do not use palette swaps alone. No interface frame. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 远征下衣 | 采集手套 | 路线罗盘 | 净水操作套件\nRow 2 (left to right): 维护手册 | 护理笔记 | 配给袋 | 木材\nRow 3 (left to right): 植物纤维 | 石块 | 废金属 | 布料\nRow 4 (left to right): 零件 | 兽皮 | 抗病毒前体 | 实验室试剂"
+  },
+  {
+    "id": "items-09",
+    "type": "icon",
+    "title": "物品",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/01-item/02-医疗与求生工具.png",
+    "cells": [
+      {
+        "key": "item:plank",
+        "name": "木板",
+        "kind": "material"
+      },
+      {
+        "key": "item:rope",
+        "name": "绳索",
+        "kind": "material"
+      },
+      {
+        "key": "item:iron_plate",
+        "name": "铁片",
+        "kind": "material"
+      },
+      {
+        "key": "item:steel",
+        "name": "钢材",
+        "kind": "material"
+      },
+      {
+        "key": "item:fastener",
+        "name": "紧固件",
+        "kind": "material"
+      },
+      {
+        "key": "item:leather",
+        "name": "皮革",
+        "kind": "material"
+      },
+      {
+        "key": "item:thread",
+        "name": "缝线",
+        "kind": "material"
+      },
+      {
+        "key": "item:rubber",
+        "name": "橡胶",
+        "kind": "material"
+      },
+      {
+        "key": "item:plastic",
+        "name": "塑料",
+        "kind": "material"
+      },
+      {
+        "key": "item:wire",
+        "name": "导线",
+        "kind": "material"
+      },
+      {
+        "key": "item:electronics",
+        "name": "电子组件",
+        "kind": "material"
+      },
+      {
+        "key": "item:battery",
+        "name": "电池",
+        "kind": "material"
+      },
+      {
+        "key": "item:adhesive",
+        "name": "黏合剂",
+        "kind": "material"
+      },
+      {
+        "key": "item:oil",
+        "name": "机油",
+        "kind": "material"
+      },
+      {
+        "key": "item:charcoal",
+        "name": "木炭",
+        "kind": "material"
+      },
+      {
+        "key": "item:precision_parts",
+        "name": "精密零件",
+        "kind": "material"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw each as one original physical inventory object or set only if the name calls for a set. Item proportions, silhouette, materials, and signs of use should fit its own name. For similar names distinguish function, shape, parts, or construction; do not use palette swaps alone. No interface frame. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 木板 | 绳索 | 铁片 | 钢材\nRow 2 (left to right): 紧固件 | 皮革 | 缝线 | 橡胶\nRow 3 (left to right): 塑料 | 导线 | 电子组件 | 电池\nRow 4 (left to right): 黏合剂 | 机油 | 木炭 | 精密零件"
+  },
+  {
+    "id": "items-10",
+    "type": "icon",
+    "title": "物品",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/01-item/02-医疗与求生工具.png",
+    "cells": [
+      {
+        "key": "item:weapon_parts",
+        "name": "武器组件",
+        "kind": "material"
+      },
+      {
+        "key": "item:ballistic_fiber",
+        "name": "防护纤维",
+        "kind": "material"
+      },
+      {
+        "key": "item:repair_kit",
+        "name": "维修包",
+        "kind": "material"
+      },
+      {
+        "key": "item:gun_service_kit",
+        "name": "枪械养护包",
+        "kind": "material"
+      },
+      {
+        "key": "item:salt",
+        "name": "盐",
+        "kind": "material"
+      },
+      {
+        "key": "item:iron_ore",
+        "name": "铁矿料",
+        "kind": "material"
+      },
+      {
+        "key": "item:soap",
+        "name": "肥皂",
+        "kind": "material"
+      },
+      {
+        "key": "item:filter_media",
+        "name": "滤材",
+        "kind": "material"
+      },
+      {
+        "key": "item:metal_tube",
+        "name": "金属管",
+        "kind": "material"
+      },
+      {
+        "key": "item:spring",
+        "name": "弹簧",
+        "kind": "material"
+      },
+      {
+        "key": "item:canvas",
+        "name": "帆布",
+        "kind": "material"
+      },
+      {
+        "key": "item:cleaning_wipe",
+        "name": "清洁巾",
+        "kind": "material"
+      },
+      {
+        "key": "item:water_filter",
+        "name": "便携滤水器",
+        "kind": "material"
+      },
+      {
+        "key": "item:hand_lamp",
+        "name": "手持灯",
+        "kind": "material"
+      },
+      {
+        "key": "item:fire_starter",
+        "name": "引火包",
+        "kind": "material"
+      },
+      {
+        "key": "item:repair_patch",
+        "name": "修补片",
+        "kind": "material"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw each as one original physical inventory object or set only if the name calls for a set. Item proportions, silhouette, materials, and signs of use should fit its own name. For similar names distinguish function, shape, parts, or construction; do not use palette swaps alone. No interface frame. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 武器组件 | 防护纤维 | 维修包 | 枪械养护包\nRow 2 (left to right): 盐 | 铁矿料 | 肥皂 | 滤材\nRow 3 (left to right): 金属管 | 弹簧 | 帆布 | 清洁巾\nRow 4 (left to right): 便携滤水器 | 手持灯 | 引火包 | 修补片",
+    "selectedStyle": "../参考原图/01-item/03-材料与设施卡.png",
+    "selectedPrompt": "Create a 4×4 transparent atlas of everyday inert workshop, repair, hygiene and water supplies for an original post-disaster survival game. None is being used, no people or animals or injuries or action, no weapon or ammunition assemblies. True transparency and broad clear gutters; each named item completely within its own equal grid cell. Dark heavy ink, aged warm muted pigments, wooden print texture and stepped pixels, style reference only. Match EXACTLY this 4×4 order. Row 1: a few disconnected mechanical replacement pins and screws (武器组件) | dense roll of protective woven fiber (防护纤维) | canvas maintenance pouch with pliers (维修包) | open maintenance pouch holding cleaning brushes and a small oil can, no weapons (枪械养护包). Row 2: salt in a paper bag | iron ore rocks | a worn rectangular soap bar | charcoal filter media beads in a mesh bag. Row 3: hollow metal tubes | metal coil spring | folded canvas | folded cleaning wipes. Row 4: portable hand-pump water filter | handheld work lamp | sealed kindling packet | stitched repair patch. Crisp bold outlines, ochre canvas, rusty steel, charcoal shadows, fully transparent around every subject, no ground, no gray or white matte, no words or numbers or letters, no labels, no frames or grid marks."
+  },
+  {
+    "id": "items-11",
+    "type": "icon",
+    "title": "物品",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/01-item/02-医疗与求生工具.png",
+    "cells": [
+      {
+        "key": "item:field_bedroll",
+        "name": "行旅铺垫",
+        "kind": "material"
+      },
+      {
+        "key": "item:clay",
+        "name": "黏土",
+        "kind": "material"
+      },
+      {
+        "key": "item:ceramic_shell",
+        "name": "陶壳",
+        "kind": "material"
+      },
+      {
+        "key": "item:purification_tablet",
+        "name": "净水片",
+        "kind": "material"
+      },
+      {
+        "key": "item:filter_cartridge",
+        "name": "长效滤芯",
+        "kind": "material"
+      },
+      {
+        "key": "item:ration_canteen",
+        "name": "分量水壶",
+        "kind": "material"
+      },
+      {
+        "key": "item:field_tarp",
+        "name": "野营遮雨布",
+        "kind": "material"
+      },
+      {
+        "key": "item:folding_stove",
+        "name": "折叠柴炉",
+        "kind": "material"
+      },
+      {
+        "key": "item:field_patch",
+        "name": "野外修补包（白）",
+        "kind": "material"
+      },
+      {
+        "key": "item:field_patch_green",
+        "name": "野外修补包（绿）",
+        "kind": "material"
+      },
+      {
+        "key": "item:field_patch_blue",
+        "name": "野外修补包（蓝）",
+        "kind": "material"
+      },
+      {
+        "key": "item:cable_bundle",
+        "name": "绝缘线束",
+        "kind": "material"
+      },
+      {
+        "key": "item:flash_marker",
+        "name": "闪光标记器",
+        "kind": "material"
+      },
+      {
+        "key": "item:brace_pack",
+        "name": "支撑护带包",
+        "kind": "material"
+      },
+      {
+        "key": "item:rally_patch",
+        "name": "鼓舞提示贴",
+        "kind": "material"
+      },
+      {
+        "key": "item:carcass_feral_dog",
+        "name": "野犬尸体",
+        "kind": "carcass"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw each as one original physical inventory object or set only if the name calls for a set. Item proportions, silhouette, materials, and signs of use should fit its own name. For similar names distinguish function, shape, parts, or construction; do not use palette swaps alone. No interface frame. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 行旅铺垫 | 黏土 | 陶壳 | 净水片\nRow 2 (left to right): 长效滤芯 | 分量水壶 | 野营遮雨布 | 折叠柴炉\nRow 3 (left to right): 野外修补包（白） | 野外修补包（绿） | 野外修补包（蓝） | 绝缘线束\nRow 4 (left to right): 闪光标记器 | 支撑护带包 | 鼓舞提示贴 | 野犬尸体"
+  },
+  {
+    "id": "items-12",
+    "type": "icon",
+    "title": "物品",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/01-item/02-医疗与求生工具.png",
+    "cells": [
+      {
+        "key": "item:carcass_wolf",
+        "name": "狼尸体",
+        "kind": "carcass"
+      },
+      {
+        "key": "item:carcass_boar",
+        "name": "野猪尸体",
+        "kind": "carcass"
+      },
+      {
+        "key": "item:carcass_stag",
+        "name": "鹿尸体",
+        "kind": "carcass"
+      },
+      {
+        "key": "item:active_substance_white_unidentified",
+        "name": "未鉴定的活性物质",
+        "kind": "substance"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw each as one original physical inventory object or set only if the name calls for a set. Item proportions, silhouette, materials, and signs of use should fit its own name. For similar names distinguish function, shape, parts, or construction; do not use palette swaps alone. No interface frame. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 狼尸体 | 野猪尸体 | 鹿尸体 | 未鉴定的活性物质\nRow 2 (left to right): [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell]\nRow 3 (left to right): [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell]\nRow 4 (left to right): [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell]"
+  },
+  {
+    "id": "skills-01",
+    "type": "skill",
+    "title": "技能与动作",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/03-UI布局/02-四对四战斗界面.png",
+    "cells": [
+      {
+        "key": "skillFamily:unarmed",
+        "name": "拳",
+        "kind": "combat"
+      },
+      {
+        "key": "skillFamily:blade",
+        "name": "刀剑",
+        "kind": "combat"
+      },
+      {
+        "key": "skillFamily:axe",
+        "name": "斧",
+        "kind": "combat"
+      },
+      {
+        "key": "skillFamily:spear",
+        "name": "矛",
+        "kind": "combat"
+      },
+      {
+        "key": "skillFamily:blunt",
+        "name": "钝器",
+        "kind": "combat"
+      },
+      {
+        "key": "skillFamily:archery",
+        "name": "弓弩",
+        "kind": "combat"
+      },
+      {
+        "key": "skillFamily:firearms",
+        "name": "枪械",
+        "kind": "combat"
+      },
+      {
+        "key": "skillFamily:shield",
+        "name": "盾",
+        "kind": "combat"
+      },
+      {
+        "key": "skillFamily:command",
+        "name": "指挥",
+        "kind": "combat"
+      },
+      {
+        "key": "skillFamily:medicine",
+        "name": "医疗",
+        "kind": "both"
+      },
+      {
+        "key": "skillFamily:crafting",
+        "name": "制造",
+        "kind": "survival"
+      },
+      {
+        "key": "skillFamily:gathering",
+        "name": "采集",
+        "kind": "survival"
+      },
+      {
+        "key": "skillFamily:scavenging",
+        "name": "搜集",
+        "kind": "survival"
+      },
+      {
+        "key": "skillFamily:cooking",
+        "name": "烹饪",
+        "kind": "survival"
+      },
+      {
+        "key": "skillFamily:athletics",
+        "name": "行旅",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:unarmed_01",
+        "name": "拳击",
+        "kind": "combat"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw a strongly readable visual symbol for the named action or skill itself. Show the action through one gesture, impact, moving direction, treatment, or a characteristic object in motion. Do not substitute a generic weapon-family picture. For progression use a visible difference in shape. No UI box or text. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 拳 | 刀剑 | 斧 | 矛\nRow 2 (left to right): 钝器 | 弓弩 | 枪械 | 盾\nRow 3 (left to right): 指挥 | 医疗 | 制造 | 采集\nRow 4 (left to right): 搜集 | 烹饪 | 行旅 | 拳击"
+  },
+  {
+    "id": "skills-02",
+    "type": "skill",
+    "title": "技能与动作",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/03-UI布局/02-四对四战斗界面.png",
+    "cells": [
+      {
+        "key": "skill:unarmed_03",
+        "name": "推挡",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:unarmed_05",
+        "name": "护身",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:unarmed_07",
+        "name": "挣脱",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:unarmed_10",
+        "name": "连拳",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:blade_01",
+        "name": "斩击",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:blade_03",
+        "name": "割伤",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:blade_05",
+        "name": "反击架势",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:blade_07",
+        "name": "突进斩",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:blade_10",
+        "name": "处决",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:axe_01",
+        "name": "劈砍",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:axe_03",
+        "name": "破甲劈",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:axe_05",
+        "name": "蓄力",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:axe_07",
+        "name": "震退",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:axe_10",
+        "name": "破阵",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:spear_01",
+        "name": "刺击",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:spear_03",
+        "name": "逼退",
+        "kind": "combat"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw a strongly readable visual symbol for the named action or skill itself. Show the action through one gesture, impact, moving direction, treatment, or a characteristic object in motion. Do not substitute a generic weapon-family picture. For progression use a visible difference in shape. No UI box or text. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 推挡 | 护身 | 挣脱 | 连拳\nRow 2 (left to right): 斩击 | 割伤 | 反击架势 | 突进斩\nRow 3 (left to right): 处决 | 劈砍 | 破甲劈 | 蓄力\nRow 4 (left to right): 震退 | 破阵 | 刺击 | 逼退"
+  },
+  {
+    "id": "skills-03",
+    "type": "skill",
+    "title": "技能与动作",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/03-UI布局/02-四对四战斗界面.png",
+    "cells": [
+      {
+        "key": "skill:spear_05",
+        "name": "架矛",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:spear_07",
+        "name": "贯穿",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:spear_10",
+        "name": "连刺",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:blunt_01",
+        "name": "敲击",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:blunt_03",
+        "name": "震击",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:blunt_05",
+        "name": "压制",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:blunt_07",
+        "name": "打断",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:blunt_10",
+        "name": "重锤",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:archery_01",
+        "name": "射击",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:archery_03",
+        "name": "致残射击",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:archery_05",
+        "name": "猎标",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:archery_07",
+        "name": "穿透射击",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:archery_10",
+        "name": "连射",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:firearms_01",
+        "name": "开火",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:firearms_03",
+        "name": "火力压制",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:firearms_05",
+        "name": "快速装填",
+        "kind": "combat"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw a strongly readable visual symbol for the named action or skill itself. Show the action through one gesture, impact, moving direction, treatment, or a characteristic object in motion. Do not substitute a generic weapon-family picture. For progression use a visible difference in shape. No UI box or text. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 架矛 | 贯穿 | 连刺 | 敲击\nRow 2 (left to right): 震击 | 压制 | 打断 | 重锤\nRow 3 (left to right): 射击 | 致残射击 | 猎标 | 穿透射击\nRow 4 (left to right): 连射 | 开火 | 火力压制 | 快速装填"
+  },
+  {
+    "id": "skills-04",
+    "type": "skill",
+    "title": "技能与动作",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/03-UI布局/02-四对四战斗界面.png",
+    "cells": [
+      {
+        "key": "skill:firearms_07",
+        "name": "专长射击",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:firearms_10",
+        "name": "决胜射击",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:shield_01",
+        "name": "盾击",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:shield_03",
+        "name": "保护",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:shield_05",
+        "name": "稳固",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:shield_07",
+        "name": "掩护",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:shield_10",
+        "name": "坚守",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:command_01",
+        "name": "鼓舞",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:command_03",
+        "name": "整队",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:command_05",
+        "name": "稳心",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:command_07",
+        "name": "协同",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:command_10",
+        "name": "总攻令",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:medicine_01",
+        "name": "战地包扎",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:medicine_03",
+        "name": "创伤处理",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:medicine_05",
+        "name": "稳定伤势",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:medicine_07",
+        "name": "应急护理",
+        "kind": "combat"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw a strongly readable visual symbol for the named action or skill itself. Show the action through one gesture, impact, moving direction, treatment, or a characteristic object in motion. Do not substitute a generic weapon-family picture. For progression use a visible difference in shape. No UI box or text. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 专长射击 | 决胜射击 | 盾击 | 保护\nRow 2 (left to right): 稳固 | 掩护 | 坚守 | 鼓舞\nRow 3 (left to right): 整队 | 稳心 | 协同 | 总攻令\nRow 4 (left to right): 战地包扎 | 创伤处理 | 稳定伤势 | 应急护理"
+  },
+  {
+    "id": "skills-05",
+    "type": "skill",
+    "title": "技能与动作",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/03-UI布局/02-四对四战斗界面.png",
+    "cells": [
+      {
+        "key": "skill:medicine_10",
+        "name": "危急救护",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:crafting_01",
+        "name": "基础手作",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:crafting_03",
+        "name": "工坊装配",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:crafting_05",
+        "name": "精细加工",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:crafting_07",
+        "name": "专业制造",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:crafting_10",
+        "name": "大师装配",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:gathering_01",
+        "name": "辨识采集",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:gathering_03",
+        "name": "稳手采集",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:gathering_05",
+        "name": "合理取材",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:gathering_07",
+        "name": "熟练采伐",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:gathering_10",
+        "name": "精取",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:scavenging_01",
+        "name": "基础搜集",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:scavenging_03",
+        "name": "分类勘整",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:scavenging_05",
+        "name": "工具运用",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:scavenging_07",
+        "name": "危险辨识",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:scavenging_10",
+        "name": "周密检索",
+        "kind": "survival"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw a strongly readable visual symbol for the named action or skill itself. Show the action through one gesture, impact, moving direction, treatment, or a characteristic object in motion. Do not substitute a generic weapon-family picture. For progression use a visible difference in shape. No UI box or text. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 危急救护 | 基础手作 | 工坊装配 | 精细加工\nRow 2 (left to right): 专业制造 | 大师装配 | 辨识采集 | 稳手采集\nRow 3 (left to right): 合理取材 | 熟练采伐 | 精取 | 基础搜集\nRow 4 (left to right): 分类勘整 | 工具运用 | 危险辨识 | 周密检索"
+  },
+  {
+    "id": "skills-06",
+    "type": "skill",
+    "title": "技能与动作",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/03-UI布局/02-四对四战斗界面.png",
+    "cells": [
+      {
+        "key": "skill:cooking_01",
+        "name": "安全烹饪",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:cooking_03",
+        "name": "分量掌握",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:cooking_05",
+        "name": "干粮制作",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:cooking_07",
+        "name": "熟练炊事",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:cooking_10",
+        "name": "远征备餐",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:athletics_01",
+        "name": "行旅基础",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:athletics_03",
+        "name": "节奏行进",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:athletics_05",
+        "name": "轻装步伐",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:athletics_07",
+        "name": "耐力行进",
+        "kind": "survival"
+      },
+      {
+        "key": "skill:athletics_10",
+        "name": "远途规划",
+        "kind": "survival"
+      },
+      {
+        "key": "action:basic_attack",
+        "name": "普通攻击"
+      },
+      {
+        "key": "action:guard",
+        "name": "防御"
+      },
+      {
+        "key": "action:breathe",
+        "name": "调息"
+      },
+      {
+        "key": "action:switch_weapon",
+        "name": "切换武器"
+      },
+      {
+        "key": "action:swap",
+        "name": "交换站位"
+      },
+      {
+        "key": "action:reload",
+        "name": "装填"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw a strongly readable visual symbol for the named action or skill itself. Show the action through one gesture, impact, moving direction, treatment, or a characteristic object in motion. Do not substitute a generic weapon-family picture. For progression use a visible difference in shape. No UI box or text. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 安全烹饪 | 分量掌握 | 干粮制作 | 熟练炊事\nRow 2 (left to right): 远征备餐 | 行旅基础 | 节奏行进 | 轻装步伐\nRow 3 (left to right): 耐力行进 | 远途规划 | 普通攻击 | 防御\nRow 4 (left to right): 调息 | 切换武器 | 交换站位 | 装填"
+  },
+  {
+    "id": "skills-07",
+    "type": "skill",
+    "title": "技能与动作",
+    "cols": 4,
+    "rows": 4,
+    "style": "../参考原图/03-UI布局/02-四对四战斗界面.png",
+    "cells": [
+      {
+        "key": "action:bandage",
+        "name": "包扎"
+      },
+      {
+        "key": "action:desperate_punch",
+        "name": "应急拳击"
+      },
+      {
+        "key": "action:retreat",
+        "name": "撤退"
+      },
+      {
+        "key": "action:end_turn",
+        "name": "结束行动"
+      },
+      {
+        "key": "action:use_antibiotics",
+        "name": "使用抗生素"
+      },
+      {
+        "key": "action:use_antiviral_cure",
+        "name": "使用特效药"
+      }
+    ],
+    "prompt": "Create a NEW 4-column × 4-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Draw a strongly readable visual symbol for the named action or skill itself. Show the action through one gesture, impact, moving direction, treatment, or a characteristic object in motion. Do not substitute a generic weapon-family picture. For progression use a visible difference in shape. No UI box or text. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 包扎 | 应急拳击 | 撤退 | 结束行动\nRow 2 (left to right): 使用抗生素 | 使用特效药 | [empty transparent cell] | [empty transparent cell]\nRow 3 (left to right): [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell]\nRow 4 (left to right): [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell]"
+  },
+  {
+    "id": "ui-icons-01",
+    "type": "ui",
+    "title": "界面和状态图标",
+    "cols": 5,
+    "rows": 5,
+    "style": "../参考原图/03-UI布局/01-营地求生主界面.png",
+    "cells": [
+      {
+        "key": "status:status_shaken",
+        "name": "惊魂未定"
+      },
+      {
+        "key": "status:status_diarrhea",
+        "name": "腹泻"
+      },
+      {
+        "key": "status:status_bleed",
+        "name": "流血"
+      },
+      {
+        "key": "status:status_bandage_cd",
+        "name": "包扎冷却"
+      },
+      {
+        "key": "status:status_baobao",
+        "name": "饱饱"
+      },
+      {
+        "key": "status:status_infected",
+        "name": "感染"
+      },
+      {
+        "key": "status:status_antibiotic",
+        "name": "药效"
+      },
+      {
+        "key": "status:status_antibiotic_cd",
+        "name": "药物冷却"
+      },
+      {
+        "key": "status:status_bandage_virus_cd",
+        "name": "病毒相关包扎冷却"
+      },
+      {
+        "key": "status:status_zero",
+        "name": "状态归零"
+      },
+      {
+        "key": "status:status_low_energy",
+        "name": "低精力"
+      },
+      {
+        "key": "status:status_low_morale",
+        "name": "低士气"
+      },
+      {
+        "key": "status:status_panic",
+        "name": "恐慌"
+      },
+      {
+        "key": "status:status_unknown",
+        "name": "未分类状态"
+      },
+      {
+        "key": "glyph:health",
+        "name": "生命"
+      },
+      {
+        "key": "glyph:satiety",
+        "name": "饱食"
+      },
+      {
+        "key": "glyph:hydration",
+        "name": "水分"
+      },
+      {
+        "key": "glyph:energy",
+        "name": "精力"
+      },
+      {
+        "key": "glyph:wakefulness",
+        "name": "清醒"
+      },
+      {
+        "key": "glyph:morale",
+        "name": "士气"
+      },
+      {
+        "key": "glyph:immunity",
+        "name": "免疫"
+      },
+      {
+        "key": "glyph:virus",
+        "name": "感染"
+      },
+      {
+        "key": "glyph:bleed",
+        "name": "流血"
+      },
+      {
+        "key": "glyph:stagger",
+        "name": "失衡"
+      },
+      {
+        "key": "glyph:slow",
+        "name": "迟缓"
+      }
+    ],
+    "prompt": "Create a NEW 5-column × 5-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Make compact unmistakable action or status pictograms recognizable at 24–32px, with thick deliberate silhouettes, hard edges, little microdetail, one primary mark, and bounded bone or rust highlights. Keep related state pairs distinct in shape. No border, lettering, numerical marks or UI panels. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 惊魂未定 | 腹泻 | 流血 | 包扎冷却 | 饱饱\nRow 2 (left to right): 感染 | 药效 | 药物冷却 | 病毒相关包扎冷却 | 状态归零\nRow 3 (left to right): 低精力 | 低士气 | 恐慌 | 未分类状态 | 生命\nRow 4 (left to right): 饱食 | 水分 | 精力 | 清醒 | 士气\nRow 5 (left to right): 免疫 | 感染 | 流血 | 失衡 | 迟缓"
+  },
+  {
+    "id": "ui-icons-02",
+    "type": "ui",
+    "title": "界面和状态图标",
+    "cols": 5,
+    "rows": 5,
+    "style": "../参考原图/03-UI布局/01-营地求生主界面.png",
+    "cells": [
+      {
+        "key": "glyph:fear",
+        "name": "恐惧"
+      },
+      {
+        "key": "glyph:panic",
+        "name": "恐慌"
+      },
+      {
+        "key": "glyph:disabled",
+        "name": "锁定"
+      },
+      {
+        "key": "glyph:warning",
+        "name": "风险"
+      },
+      {
+        "key": "glyph:selected",
+        "name": "选中"
+      },
+      {
+        "key": "glyph:drop_allow",
+        "name": "可放入"
+      },
+      {
+        "key": "glyph:drop_deny",
+        "name": "不可放入"
+      },
+      {
+        "key": "glyph:progress",
+        "name": "进度"
+      },
+      {
+        "key": "glyph:loading",
+        "name": "读取中"
+      },
+      {
+        "key": "glyph:focus",
+        "name": "焦点"
+      },
+      {
+        "key": "glyph:drag",
+        "name": "拖放"
+      },
+      {
+        "key": "glyph:transfer",
+        "name": "转移"
+      },
+      {
+        "key": "glyph:close",
+        "name": "关闭"
+      },
+      {
+        "key": "glyph:add",
+        "name": "增加"
+      },
+      {
+        "key": "glyph:rest",
+        "name": "休息"
+      },
+      {
+        "key": "glyph:map",
+        "name": "地图"
+      },
+      {
+        "key": "glyph:dialogue",
+        "name": "对白"
+      },
+      {
+        "key": "glyph:log",
+        "name": "日志"
+      },
+      {
+        "key": "glyph:goal",
+        "name": "目标"
+      },
+      {
+        "key": "glyph:help",
+        "name": "说明"
+      },
+      {
+        "key": "glyph:menu",
+        "name": "菜单"
+      },
+      {
+        "key": "glyph:battle",
+        "name": "战斗"
+      },
+      {
+        "key": "glyph:aim",
+        "name": "瞄准"
+      },
+      {
+        "key": "glyph:equipment",
+        "name": "整备"
+      },
+      {
+        "key": "glyph:craft",
+        "name": "制作"
+      }
+    ],
+    "prompt": "Create a NEW 5-column × 5-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Make compact unmistakable action or status pictograms recognizable at 24–32px, with thick deliberate silhouettes, hard edges, little microdetail, one primary mark, and bounded bone or rust highlights. Keep related state pairs distinct in shape. No border, lettering, numerical marks or UI panels. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 恐惧 | 恐慌 | 锁定 | 风险 | 选中\nRow 2 (left to right): 可放入 | 不可放入 | 进度 | 读取中 | 焦点\nRow 3 (left to right): 拖放 | 转移 | 关闭 | 增加 | 休息\nRow 4 (left to right): 地图 | 对白 | 日志 | 目标 | 说明\nRow 5 (left to right): 菜单 | 战斗 | 瞄准 | 整备 | 制作"
+  },
+  {
+    "id": "ui-icons-03",
+    "type": "ui",
+    "title": "界面和状态图标",
+    "cols": 5,
+    "rows": 5,
+    "style": "../参考原图/03-UI布局/01-营地求生主界面.png",
+    "cells": [
+      {
+        "key": "glyph:formation",
+        "name": "编队"
+      },
+      {
+        "key": "glyph:growth",
+        "name": "成长"
+      },
+      {
+        "key": "glyph:pause",
+        "name": "暂停"
+      },
+      {
+        "key": "glyph:continue",
+        "name": "继续"
+      },
+      {
+        "key": "glyph:fresh",
+        "name": "新游戏"
+      },
+      {
+        "key": "glyph:save",
+        "name": "存档"
+      },
+      {
+        "key": "glyph:return",
+        "name": "返回"
+      },
+      {
+        "key": "glyph:history",
+        "name": "历史"
+      },
+      {
+        "key": "glyph:storage",
+        "name": "仓储"
+      },
+      {
+        "key": "glyph:search",
+        "name": "查看"
+      },
+      {
+        "key": "glyph:task",
+        "name": "任务"
+      },
+      {
+        "key": "glyph:known",
+        "name": "已知地点"
+      },
+      {
+        "key": "glyph:unknown",
+        "name": "未知地点"
+      },
+      {
+        "key": "glyph:route",
+        "name": "路线"
+      },
+      {
+        "key": "glyph:destination",
+        "name": "目标地点"
+      },
+      {
+        "key": "glyph:camp",
+        "name": "营地"
+      },
+      {
+        "key": "glyph:dungeon",
+        "name": "地牢"
+      },
+      {
+        "key": "glyph:recruit",
+        "name": "招募"
+      },
+      {
+        "key": "glyph:service",
+        "name": "服务"
+      },
+      {
+        "key": "glyph:watch",
+        "name": "时间"
+      },
+      {
+        "key": "glyph:expand",
+        "name": "展开"
+      },
+      {
+        "key": "glyph:collapse",
+        "name": "折叠"
+      },
+      {
+        "key": "glyph:recipe",
+        "name": "配方"
+      },
+      {
+        "key": "glyph:knowledge",
+        "name": "知识"
+      },
+      {
+        "key": "glyph:foot",
+        "name": "行走"
+      }
+    ],
+    "prompt": "Create a NEW 5-column × 5-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Make compact unmistakable action or status pictograms recognizable at 24–32px, with thick deliberate silhouettes, hard edges, little microdetail, one primary mark, and bounded bone or rust highlights. Keep related state pairs distinct in shape. No border, lettering, numerical marks or UI panels. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 编队 | 成长 | 暂停 | 继续 | 新游戏\nRow 2 (left to right): 存档 | 返回 | 历史 | 仓储 | 查看\nRow 3 (left to right): 任务 | 已知地点 | 未知地点 | 路线 | 目标地点\nRow 4 (left to right): 营地 | 地牢 | 招募 | 服务 | 时间\nRow 5 (left to right): 展开 | 折叠 | 配方 | 知识 | 行走"
+  },
+  {
+    "id": "ui-icons-04",
+    "type": "ui",
+    "title": "界面和状态图标",
+    "cols": 5,
+    "rows": 5,
+    "style": "../参考原图/03-UI布局/01-营地求生主界面.png",
+    "cells": [
+      {
+        "key": "glyph:weapon",
+        "name": "武器"
+      },
+      {
+        "key": "glyph:armor",
+        "name": "护甲"
+      },
+      {
+        "key": "glyph:utility",
+        "name": "工具"
+      },
+      {
+        "key": "glyph:all",
+        "name": "全部"
+      },
+      {
+        "key": "glyph:lock",
+        "name": "封锁"
+      },
+      {
+        "key": "glyph:trap",
+        "name": "陷阱"
+      }
+    ],
+    "prompt": "Create a NEW 5-column × 5-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Make compact unmistakable action or status pictograms recognizable at 24–32px, with thick deliberate silhouettes, hard edges, little microdetail, one primary mark, and bounded bone or rust highlights. Keep related state pairs distinct in shape. No border, lettering, numerical marks or UI panels. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 武器 | 护甲 | 工具 | 全部 | 封锁\nRow 2 (left to right): 陷阱 | [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell]\nRow 3 (left to right): [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell]\nRow 4 (left to right): [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell]\nRow 5 (left to right): [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell]"
+  },
+  {
+    "id": "sites-01",
+    "type": "site",
+    "title": "资源、设施和势力",
+    "cols": 5,
+    "rows": 5,
+    "style": "../参考原图/01-item/03-材料与设施卡.png",
+    "cells": [
+      {
+        "key": "faction:hub_survivor",
+        "name": "幸存者营区"
+      },
+      {
+        "key": "faction:faction_church",
+        "name": "新生教会"
+      },
+      {
+        "key": "faction:faction_academy",
+        "name": "灰塔科学院"
+      },
+      {
+        "key": "resource:field:roots",
+        "name": "块根地"
+      },
+      {
+        "key": "resource:field:field_fiber",
+        "name": "荒地纤维丛"
+      },
+      {
+        "key": "resource:stream:water",
+        "name": "脏水源"
+      },
+      {
+        "key": "resource:stream:herbs",
+        "name": "草药丛"
+      },
+      {
+        "key": "resource:woods:wood",
+        "name": "可采木材"
+      },
+      {
+        "key": "resource:woods:stones",
+        "name": "地表石块"
+      },
+      {
+        "key": "resource:woods:berries",
+        "name": "野果丛"
+      },
+      {
+        "key": "resource:woods:woods_fiber",
+        "name": "林下纤维丛"
+      },
+      {
+        "key": "resource:village:supply_box",
+        "name": "补给箱"
+      },
+      {
+        "key": "resource:village:misc_box",
+        "name": "杂物箱"
+      },
+      {
+        "key": "resource:hardware:pot_box",
+        "name": "锅具箱"
+      },
+      {
+        "key": "resource:hardware:tool_box",
+        "name": "工具箱"
+      },
+      {
+        "key": "resource:clinic:med_cabinet",
+        "name": "药柜"
+      },
+      {
+        "key": "resource:clinic:cloth_bag",
+        "name": "布料包"
+      },
+      {
+        "key": "resource:scrapyard:metal_heap",
+        "name": "废金属堆"
+      },
+      {
+        "key": "resource:scrapyard:parts_box",
+        "name": "零件箱"
+      },
+      {
+        "key": "resource:hardware:hardware_weapon_cache",
+        "name": "武器柜"
+      },
+      {
+        "key": "resource:village:village_weapon_locker",
+        "name": "旧储物柜"
+      },
+      {
+        "key": "resource:clinic:clinic_medical_supply",
+        "name": "医药补给箱"
+      },
+      {
+        "key": "resource:village:village_cold_box",
+        "name": "废弃冷藏箱"
+      },
+      {
+        "key": "resource:w11_orchard:w11_orchard_a",
+        "name": "果园块根地"
+      },
+      {
+        "key": "resource:w11_orchard:w11_orchard_b",
+        "name": "果园旧布堆"
+      }
+    ],
+    "prompt": "Create a NEW 5-column × 5-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Each named site, material deposit, cache, facility or emblem is its own small isolated physical vignette or distinct badge, interpreted strictly from its own name. Small ground fragment is allowed only when integral to the named subject, not an opaque square. No card frame. Make different contents recognizable through shape and objects. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 幸存者营区 | 新生教会 | 灰塔科学院 | 块根地 | 荒地纤维丛\nRow 2 (left to right): 脏水源 | 草药丛 | 可采木材 | 地表石块 | 野果丛\nRow 3 (left to right): 林下纤维丛 | 补给箱 | 杂物箱 | 锅具箱 | 工具箱\nRow 4 (left to right): 药柜 | 布料包 | 废金属堆 | 零件箱 | 武器柜\nRow 5 (left to right): 旧储物柜 | 医药补给箱 | 废弃冷藏箱 | 果园块根地 | 果园旧布堆"
+  },
+  {
+    "id": "sites-02",
+    "type": "site",
+    "title": "资源、设施和势力",
+    "cols": 5,
+    "rows": 5,
+    "style": "../参考原图/01-item/03-材料与设施卡.png",
+    "cells": [
+      {
+        "key": "resource:w12_canal:w12_canal_a",
+        "name": "渠岸纤维草丛"
+      },
+      {
+        "key": "resource:w12_canal:w12_canal_b",
+        "name": "渠边旧密封件"
+      },
+      {
+        "key": "resource:w13_mill:w13_mill_a",
+        "name": "磨坊遗留谷物"
+      },
+      {
+        "key": "resource:w13_mill:w13_mill_b",
+        "name": "磨坊旧木板"
+      },
+      {
+        "key": "resource:w14_cemeteryroad:w14_cemeteryroad_a",
+        "name": "荒径碎石带"
+      },
+      {
+        "key": "resource:w14_cemeteryroad:w14_cemeteryroad_b",
+        "name": "荒径弃衣堆"
+      },
+      {
+        "key": "resource:w15_shrinewoods:w15_shrinewoods_a",
+        "name": "林下草药丛"
+      },
+      {
+        "key": "resource:w15_shrinewoods:w15_shrinewoods_b",
+        "name": "祈祷林倒木"
+      },
+      {
+        "key": "resource:w16_service:w16_service_a",
+        "name": "服务站废金属堆"
+      },
+      {
+        "key": "resource:w16_service:w16_service_b",
+        "name": "服务站塑料遗料"
+      },
+      {
+        "key": "resource:w17_switchback:w17_switchback_a",
+        "name": "山路碎石带"
+      },
+      {
+        "key": "resource:w17_switchback:w17_switchback_b",
+        "name": "山路废导线"
+      },
+      {
+        "key": "resource:w18_tunnel:w18_tunnel_a",
+        "name": "洞外露矿"
+      },
+      {
+        "key": "resource:w18_tunnel:w18_tunnel_b",
+        "name": "隧道维护紧固件"
+      },
+      {
+        "key": "resource:w19_survey:w19_survey_a",
+        "name": "测绘设备旧件"
+      },
+      {
+        "key": "resource:w19_survey:w19_survey_b",
+        "name": "测绘营备用电池"
+      },
+      {
+        "key": "resource:w20_powercut:w20_powercut_a",
+        "name": "塔基旧导线"
+      },
+      {
+        "key": "resource:w20_powercut:w20_powercut_b",
+        "name": "高压走廊旧电器"
+      },
+      {
+        "key": "resource:w21_pine:w21_pine_a",
+        "name": "针叶林倒木"
+      },
+      {
+        "key": "resource:w21_pine:w21_pine_b",
+        "name": "针叶林纤维草丛"
+      },
+      {
+        "key": "resource:w22_ravine:w22_ravine_a",
+        "name": "沟谷露矿"
+      },
+      {
+        "key": "resource:w22_ravine:w22_ravine_b",
+        "name": "沟谷碎石带"
+      },
+      {
+        "key": "resource:w23_hunting:w23_hunting_a",
+        "name": "旧营皮料"
+      },
+      {
+        "key": "resource:w23_hunting:w23_hunting_b",
+        "name": "旧营绳卷"
+      },
+      {
+        "key": "resource:w24_cave:w24_cave_a",
+        "name": "洞口矿料堆"
+      }
+    ],
+    "prompt": "Create a NEW 5-column × 5-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Each named site, material deposit, cache, facility or emblem is its own small isolated physical vignette or distinct badge, interpreted strictly from its own name. Small ground fragment is allowed only when integral to the named subject, not an opaque square. No card frame. Make different contents recognizable through shape and objects. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 渠岸纤维草丛 | 渠边旧密封件 | 磨坊遗留谷物 | 磨坊旧木板 | 荒径碎石带\nRow 2 (left to right): 荒径弃衣堆 | 林下草药丛 | 祈祷林倒木 | 服务站废金属堆 | 服务站塑料遗料\nRow 3 (left to right): 山路碎石带 | 山路废导线 | 洞外露矿 | 隧道维护紧固件 | 测绘设备旧件\nRow 4 (left to right): 测绘营备用电池 | 塔基旧导线 | 高压走廊旧电器 | 针叶林倒木 | 针叶林纤维草丛\nRow 5 (left to right): 沟谷露矿 | 沟谷碎石带 | 旧营皮料 | 旧营绳卷 | 洞口矿料堆"
+  },
+  {
+    "id": "sites-03",
+    "type": "site",
+    "title": "资源、设施和势力",
+    "cols": 5,
+    "rows": 5,
+    "style": "../参考原图/01-item/03-材料与设施卡.png",
+    "cells": [
+      {
+        "key": "resource:w24_cave:w24_cave_b",
+        "name": "洞口旧炭袋"
+      },
+      {
+        "key": "resource:w25_wetland:w25_wetland_a",
+        "name": "湿地草药丛"
+      },
+      {
+        "key": "resource:w25_wetland:w25_wetland_b",
+        "name": "湿地纤维草丛"
+      },
+      {
+        "key": "resource:w26_island:w26_island_a",
+        "name": "陆洲块根地"
+      },
+      {
+        "key": "resource:w26_island:w26_island_b",
+        "name": "陆洲盐晶"
+      },
+      {
+        "key": "resource:w27_relay:w27_relay_a",
+        "name": "中继设备遗件"
+      },
+      {
+        "key": "resource:w27_relay:w27_relay_b",
+        "name": "中继营精密机件"
+      },
+      {
+        "key": "resource:w28_highland:w28_highland_a",
+        "name": "高地碎石带"
+      },
+      {
+        "key": "resource:w28_highland:w28_highland_b",
+        "name": "高地草药丛"
+      },
+      {
+        "key": "resource:w29_riverbend:w29_riverbend_a",
+        "name": "河弯纤维草丛"
+      },
+      {
+        "key": "resource:w29_riverbend:w29_riverbend_b",
+        "name": "河弯黏土层"
+      },
+      {
+        "key": "resource:w30_truckstop:w30_truckstop_a",
+        "name": "休息区机油余存"
+      },
+      {
+        "key": "resource:w30_truckstop:w30_truckstop_b",
+        "name": "休息区旧胶料"
+      },
+      {
+        "key": "resource:w31_suburb:w31_suburb_a",
+        "name": "棚户旧布堆"
+      },
+      {
+        "key": "resource:w31_suburb:w31_suburb_b",
+        "name": "棚户医用纱布余存"
+      },
+      {
+        "key": "resource:w32_railcut:w32_railcut_a",
+        "name": "铁路废钢料"
+      },
+      {
+        "key": "resource:w32_railcut:w32_railcut_b",
+        "name": "铁路维护紧固件"
+      },
+      {
+        "key": "resource:w33_waterworks:w33_waterworks_a",
+        "name": "水厂黏合剂余存"
+      },
+      {
+        "key": "resource:w33_waterworks:w33_waterworks_b",
+        "name": "水厂消毒液余存"
+      },
+      {
+        "key": "resource:w34_depot:w34_depot_a",
+        "name": "应急仓豆罐头存货"
+      },
+      {
+        "key": "resource:w34_depot:w34_depot_b",
+        "name": "应急仓盐水剂存货"
+      },
+      {
+        "key": "resource:w12_canal:w12_canal_water",
+        "name": "灌溉渠岸取水口"
+      },
+      {
+        "key": "resource:w25_wetland:w25_wetland_water",
+        "name": "黑水湿地取水口"
+      },
+      {
+        "key": "resource:w29_riverbend:w29_riverbend_water",
+        "name": "河道弯口取水口"
+      },
+      {
+        "key": "resource:w33_waterworks:w33_waterworks_water",
+        "name": "荒废水厂取水口"
+      }
+    ],
+    "prompt": "Create a NEW 5-column × 5-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Each named site, material deposit, cache, facility or emblem is its own small isolated physical vignette or distinct badge, interpreted strictly from its own name. Small ground fragment is allowed only when integral to the named subject, not an opaque square. No card frame. Make different contents recognizable through shape and objects. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 洞口旧炭袋 | 湿地草药丛 | 湿地纤维草丛 | 陆洲块根地 | 陆洲盐晶\nRow 2 (left to right): 中继设备遗件 | 中继营精密机件 | 高地碎石带 | 高地草药丛 | 河弯纤维草丛\nRow 3 (left to right): 河弯黏土层 | 休息区机油余存 | 休息区旧胶料 | 棚户旧布堆 | 棚户医用纱布余存\nRow 4 (left to right): 铁路废钢料 | 铁路维护紧固件 | 水厂黏合剂余存 | 水厂消毒液余存 | 应急仓豆罐头存货\nRow 5 (left to right): 应急仓盐水剂存货 | 灌溉渠岸取水口 | 黑水湿地取水口 | 河道弯口取水口 | 荒废水厂取水口"
+  },
+  {
+    "id": "sites-04",
+    "type": "site",
+    "title": "资源、设施和势力",
+    "cols": 5,
+    "rows": 5,
+    "style": "../参考原图/01-item/03-材料与设施卡.png",
+    "cells": [
+      {
+        "key": "resource:w08_reservoir:w08_reservoir_water",
+        "name": "旧水库取水口"
+      },
+      {
+        "key": "resource:w16_service:w16_service_cistern",
+        "name": "山间服务站蓄水池"
+      },
+      {
+        "key": "resource:w19_survey:w19_survey_cistern",
+        "name": "测绘营址蓄水池"
+      },
+      {
+        "key": "resource:w23_hunting:w23_hunting_cistern",
+        "name": "猎人旧营蓄水池"
+      },
+      {
+        "key": "resource:w27_relay:w27_relay_cistern",
+        "name": "废中继营蓄水池"
+      },
+      {
+        "key": "resource:w30_truckstop:w30_truckstop_cistern",
+        "name": "货车休息区蓄水池"
+      },
+      {
+        "key": "resource:w13_mill:w13_mill_bottles",
+        "name": "旧磨坊瓶装净水"
+      },
+      {
+        "key": "resource:w31_suburb:w31_suburb_bottles",
+        "name": "城郊棚户瓶装净水"
+      },
+      {
+        "key": "resource:w34_depot:w34_depot_bottles",
+        "name": "应急仓外瓶装净水"
+      },
+      {
+        "key": "resource:d01_04:d01_04_cache0",
+        "name": "藏书密室·布料箱"
+      },
+      {
+        "key": "resource:d01_06:d01_06_cache1",
+        "name": "骨龛回道·缝线箱"
+      },
+      {
+        "key": "resource:d01_04:d01_04_cache2",
+        "name": "藏书密室·皮革箱"
+      },
+      {
+        "key": "resource:d01_08:d01_08_unique",
+        "name": "圣所旧路档册"
+      },
+      {
+        "key": "resource:d02_04:d02_04_cache0",
+        "name": "控制室·医用纱布箱"
+      },
+      {
+        "key": "resource:d02_06:d02_06_cache1",
+        "name": "检修竖井·实验室试剂箱"
+      },
+      {
+        "key": "resource:d02_04:d02_04_cache2",
+        "name": "控制室·电子组件箱"
+      },
+      {
+        "key": "resource:d02_08:d02_08_unique",
+        "name": "封存区安全规程"
+      },
+      {
+        "key": "resource:d03_04:d03_04_cache0",
+        "name": "值勤室·武器组件箱"
+      },
+      {
+        "key": "resource:d03_06:d03_06_cache1",
+        "name": "配电房·钢材箱"
+      },
+      {
+        "key": "resource:d03_04:d03_04_cache2",
+        "name": "值勤室·紧固件箱"
+      },
+      {
+        "key": "resource:d03_08:d03_08_unique",
+        "name": "警备仓备用电源"
+      },
+      {
+        "key": "resource:d04_03:d04_03_cache0",
+        "name": "蓄电室·导线箱"
+      },
+      {
+        "key": "resource:d04_05:d04_05_cache1",
+        "name": "屋顶梯井·电池箱"
+      },
+      {
+        "key": "resource:d04_03:d04_03_cache2",
+        "name": "蓄电室·电子组件箱"
+      },
+      {
+        "key": "resource:d04_07:d04_07_unique",
+        "name": "通信站联络日志"
+      }
+    ],
+    "prompt": "Create a NEW 5-column × 5-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Each named site, material deposit, cache, facility or emblem is its own small isolated physical vignette or distinct badge, interpreted strictly from its own name. Small ground fragment is allowed only when integral to the named subject, not an opaque square. No card frame. Make different contents recognizable through shape and objects. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 旧水库取水口 | 山间服务站蓄水池 | 测绘营址蓄水池 | 猎人旧营蓄水池 | 废中继营蓄水池\nRow 2 (left to right): 货车休息区蓄水池 | 旧磨坊瓶装净水 | 城郊棚户瓶装净水 | 应急仓外瓶装净水 | 藏书密室·布料箱\nRow 3 (left to right): 骨龛回道·缝线箱 | 藏书密室·皮革箱 | 圣所旧路档册 | 控制室·医用纱布箱 | 检修竖井·实验室试剂箱\nRow 4 (left to right): 控制室·电子组件箱 | 封存区安全规程 | 值勤室·武器组件箱 | 配电房·钢材箱 | 值勤室·紧固件箱\nRow 5 (left to right): 警备仓备用电源 | 蓄电室·导线箱 | 屋顶梯井·电池箱 | 蓄电室·电子组件箱 | 通信站联络日志"
+  },
+  {
+    "id": "sites-05",
+    "type": "site",
+    "title": "资源、设施和势力",
+    "cols": 5,
+    "rows": 5,
+    "style": "../参考原图/01-item/03-材料与设施卡.png",
+    "cells": [
+      {
+        "key": "resource:d05_04:d05_04_cache0",
+        "name": "滤料库·橡胶箱"
+      },
+      {
+        "key": "resource:d05_07:d05_07_cache1",
+        "name": "阀控室·消毒液箱"
+      },
+      {
+        "key": "resource:d05_04:d05_04_cache2",
+        "name": "滤料库·黏合剂箱"
+      },
+      {
+        "key": "resource:d05_07:d05_07_unique",
+        "name": "水厂阀控记录"
+      },
+      {
+        "key": "resource:d06_03:d06_03_cache0",
+        "name": "浅矿脉·铁矿料箱"
+      },
+      {
+        "key": "resource:d06_06:d06_06_cache1",
+        "name": "矿工营室·铁片箱"
+      },
+      {
+        "key": "resource:d06_03:d06_03_cache2",
+        "name": "浅矿脉·木炭箱"
+      },
+      {
+        "key": "resource:d06_08:d06_08_unique",
+        "name": "矿道作业手册"
+      },
+      {
+        "key": "resource:d07_04:d07_04_cache0",
+        "name": "服装层·豆罐头箱"
+      },
+      {
+        "key": "resource:d07_07:d07_07_cache1",
+        "name": "屋顶避难点·布料箱"
+      },
+      {
+        "key": "resource:d07_04:d07_04_cache2",
+        "name": "服装层·塑料箱"
+      },
+      {
+        "key": "resource:d07_07:d07_07_unique",
+        "name": "商场避难物资簿"
+      },
+      {
+        "key": "resource:d08_03:d08_03_cache0",
+        "name": "干货库·盐水剂箱"
+      },
+      {
+        "key": "resource:d08_06:d08_06_cache1",
+        "name": "备用电房·医用纱布箱"
+      },
+      {
+        "key": "resource:d08_03:d08_03_cache2",
+        "name": "干货库·肉干箱"
+      },
+      {
+        "key": "resource:d08_08:d08_08_unique",
+        "name": "冷链调度档案"
+      },
+      {
+        "key": "resource:h03_workshop:h03_workshop_supply_disinfectant",
+        "name": "公共工坊消毒液配给柜"
+      },
+      {
+        "key": "resource:w13_mill:w13_mill_supply_salt",
+        "name": "磨坊食盐存货"
+      },
+      {
+        "key": "resource:w15_shrinewoods:w15_shrinewoods_supply_berry",
+        "name": "祈祷林野果丛"
+      },
+      {
+        "key": "resource:m01_road:m01_road_crate",
+        "name": "路旁旧货箱"
+      },
+      {
+        "key": "resource:m01_road:m01_road_barrier",
+        "name": "路障金属堆"
+      },
+      {
+        "key": "resource:m02_checkpoint:m02_checkpoint_duty",
+        "name": "检查哨值勤补给箱"
+      },
+      {
+        "key": "resource:m02_checkpoint:m02_checkpoint_bench",
+        "name": "哨站维修台遗料"
+      },
+      {
+        "key": "resource:h02_square:h02_square_water",
+        "name": "营区净水配给处"
+      },
+      {
+        "key": "resource:h02_square:h02_square_ration",
+        "name": "营区罐头配给处"
+      }
+    ],
+    "prompt": "Create a NEW 5-column × 5-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Each named site, material deposit, cache, facility or emblem is its own small isolated physical vignette or distinct badge, interpreted strictly from its own name. Small ground fragment is allowed only when integral to the named subject, not an opaque square. No card frame. Make different contents recognizable through shape and objects. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 滤料库·橡胶箱 | 阀控室·消毒液箱 | 滤料库·黏合剂箱 | 水厂阀控记录 | 浅矿脉·铁矿料箱\nRow 2 (left to right): 矿工营室·铁片箱 | 浅矿脉·木炭箱 | 矿道作业手册 | 服装层·豆罐头箱 | 屋顶避难点·布料箱\nRow 3 (left to right): 服装层·塑料箱 | 商场避难物资簿 | 干货库·盐水剂箱 | 备用电房·医用纱布箱 | 干货库·肉干箱\nRow 4 (left to right): 冷链调度档案 | 公共工坊消毒液配给柜 | 磨坊食盐存货 | 祈祷林野果丛 | 路旁旧货箱\nRow 5 (left to right): 路障金属堆 | 检查哨值勤补给箱 | 哨站维修台遗料 | 营区净水配给处 | 营区罐头配给处"
+  },
+  {
+    "id": "sites-06",
+    "type": "site",
+    "title": "资源、设施和势力",
+    "cols": 5,
+    "rows": 5,
+    "style": "../参考原图/01-item/03-材料与设施卡.png",
+    "cells": [
+      {
+        "key": "resource:h03_workshop:h03_workshop_scrap",
+        "name": "公共工坊旧件回收台"
+      },
+      {
+        "key": "resource:h04_infirmary:h04_infirmary_dressing",
+        "name": "医务室纱布配给柜"
+      },
+      {
+        "key": "resource:w01_farm:w01_farm_crop",
+        "name": "农场块根畦"
+      },
+      {
+        "key": "resource:w01_farm:w01_farm_barn",
+        "name": "农场旧谷仓布料"
+      },
+      {
+        "key": "resource:w02_forest:w02_forest_wood",
+        "name": "林间倒木"
+      },
+      {
+        "key": "resource:w02_forest:w02_forest_fiber",
+        "name": "林间纤维草丛"
+      },
+      {
+        "key": "resource:w03_quarry:w03_quarry_stone",
+        "name": "坡脚碎石带"
+      },
+      {
+        "key": "resource:w03_quarry:w03_quarry_ore",
+        "name": "采石坡露矿"
+      },
+      {
+        "key": "resource:a01_yard:a01_yard_steel",
+        "name": "货场废钢垛"
+      },
+      {
+        "key": "resource:a01_yard:a01_yard_fastener",
+        "name": "货场紧固件匣"
+      },
+      {
+        "key": "resource:a02_pump:a02_pump_seal",
+        "name": "泵站密封件架"
+      },
+      {
+        "key": "resource:a02_pump:a02_pump_fuel",
+        "name": "泵站机油余存"
+      },
+      {
+        "key": "resource:a03_foundry:a03_foundry_steel",
+        "name": "厂外钢料垛"
+      },
+      {
+        "key": "resource:a03_foundry:a03_foundry_machine",
+        "name": "厂外机件堆"
+      },
+      {
+        "key": "resource:b01_school:b01_school_fabric",
+        "name": "安置学校旧布架"
+      },
+      {
+        "key": "resource:b01_school:b01_school_leather",
+        "name": "安置学校旧皮料"
+      },
+      {
+        "key": "resource:b02_station:b02_station_medical",
+        "name": "转运站纱布配给柜"
+      },
+      {
+        "key": "resource:b02_station:b02_station_electronic",
+        "name": "转运站退役设备"
+      },
+      {
+        "key": "resource:b03_hospital:b03_hospital_medical",
+        "name": "外院医用纱布箱"
+      },
+      {
+        "key": "resource:b03_hospital:b03_hospital_electronic",
+        "name": "外院旧设备间"
+      },
+      {
+        "key": "resource:w02_forest:w02_forest_plank",
+        "name": "林间旧木板堆"
+      },
+      {
+        "key": "resource:w02_forest:w02_forest_rope",
+        "name": "林间旧绳卷"
+      },
+      {
+        "key": "resource:b01_school:b01_school_thread",
+        "name": "安置学校缝线配给柜"
+      },
+      {
+        "key": "resource:m01_road:m01_road_plastic",
+        "name": "公路塑料遗料"
+      },
+      {
+        "key": "resource:a01_yard:a01_yard_wire",
+        "name": "货场旧导线卷"
+      }
+    ],
+    "prompt": "Create a NEW 5-column × 5-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Each named site, material deposit, cache, facility or emblem is its own small isolated physical vignette or distinct badge, interpreted strictly from its own name. Small ground fragment is allowed only when integral to the named subject, not an opaque square. No card frame. Make different contents recognizable through shape and objects. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 公共工坊旧件回收台 | 医务室纱布配给柜 | 农场块根畦 | 农场旧谷仓布料 | 林间倒木\nRow 2 (left to right): 林间纤维草丛 | 坡脚碎石带 | 采石坡露矿 | 货场废钢垛 | 货场紧固件匣\nRow 3 (left to right): 泵站密封件架 | 泵站机油余存 | 厂外钢料垛 | 厂外机件堆 | 安置学校旧布架\nRow 4 (left to right): 安置学校旧皮料 | 转运站纱布配给柜 | 转运站退役设备 | 外院医用纱布箱 | 外院旧设备间\nRow 5 (left to right): 林间旧木板堆 | 林间旧绳卷 | 安置学校缝线配给柜 | 公路塑料遗料 | 货场旧导线卷"
+  },
+  {
+    "id": "sites-07",
+    "type": "site",
+    "title": "资源、设施和势力",
+    "cols": 5,
+    "rows": 5,
+    "style": "../参考原图/01-item/03-材料与设施卡.png",
+    "cells": [
+      {
+        "key": "resource:a02_pump:a02_pump_adhesive",
+        "name": "泵站黏合剂余存"
+      },
+      {
+        "key": "resource:a02_pump:a02_pump_charcoal",
+        "name": "泵站旧炭袋"
+      },
+      {
+        "key": "resource:b02_station:b02_station_battery",
+        "name": "转运站备用电池柜"
+      },
+      {
+        "key": "resource:b02_station:b02_station_disinfectant",
+        "name": "转运站消毒液配给柜"
+      },
+      {
+        "key": "resource:h04_infirmary:h04_infirmary_saline",
+        "name": "医务室盐水剂配给柜"
+      },
+      {
+        "key": "resource:a03_foundry:a03_foundry_weapon_parts",
+        "name": "厂外武器组件箱"
+      },
+      {
+        "key": "resource:b03_hospital:b03_hospital_ballistic_fiber",
+        "name": "外院防护纤维存货"
+      },
+      {
+        "key": "resource:w01_farm:w01_farm_grain",
+        "name": "农场谷物畦"
+      },
+      {
+        "key": "resource:h02_square:h02_square_beans",
+        "name": "营区豆罐头配给处"
+      },
+      {
+        "key": "resource:w01_farm:w01_farm_salt",
+        "name": "农场食盐存货"
+      },
+      {
+        "key": "resource:w01_farm:w01_farm_cooking_oil",
+        "name": "农场食用油存货"
+      },
+      {
+        "key": "resource:h01_gate:h01_gate_raw_water",
+        "name": "营门蓄水渠"
+      },
+      {
+        "key": "resource:w03_quarry:w03_quarry_plate",
+        "name": "采石坡铁片回收堆"
+      },
+      {
+        "key": "resource:h03_workshop:h03_workshop_contract",
+        "name": "工坊首次支援包"
+      },
+      {
+        "key": "resource:m01_road:firetruck_cache",
+        "name": "消防车器材箱"
+      },
+      {
+        "key": "resource:w03_quarry:w03_quarry_blueprints",
+        "name": "采石坡野外装备图册"
+      },
+      {
+        "key": "resource:d03_03:shield_cache",
+        "name": "器材室防暴盾箱"
+      },
+      {
+        "key": "resource:d03_07:officer_cache",
+        "name": "守卫战利品箱"
+      },
+      {
+        "key": "resource:d03_08:shotgun_cache",
+        "name": "封存仓霰弹枪箱"
+      },
+      {
+        "key": "resource:d03_08:rifle_cache",
+        "name": "封存仓步枪箱"
+      },
+      {
+        "key": "resource:d03_08:armor_cache",
+        "name": "封存仓防护装备箱"
+      },
+      {
+        "key": "resource:d03_08:ammo_reserve_cache",
+        "name": "封存仓备用弹药箱"
+      },
+      {
+        "key": "facility:hand",
+        "name": "手工"
+      },
+      {
+        "key": "facility:workbench",
+        "name": "工作台"
+      },
+      {
+        "key": "facility:forge",
+        "name": "锻炉"
+      }
+    ],
+    "prompt": "Create a NEW 5-column × 5-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Each named site, material deposit, cache, facility or emblem is its own small isolated physical vignette or distinct badge, interpreted strictly from its own name. Small ground fragment is allowed only when integral to the named subject, not an opaque square. No card frame. Make different contents recognizable through shape and objects. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 泵站黏合剂余存 | 泵站旧炭袋 | 转运站备用电池柜 | 转运站消毒液配给柜 | 医务室盐水剂配给柜\nRow 2 (left to right): 厂外武器组件箱 | 外院防护纤维存货 | 农场谷物畦 | 营区豆罐头配给处 | 农场食盐存货\nRow 3 (left to right): 农场食用油存货 | 营门蓄水渠 | 采石坡铁片回收堆 | 工坊首次支援包 | 消防车器材箱\nRow 4 (left to right): 采石坡野外装备图册 | 器材室防暴盾箱 | 守卫战利品箱 | 封存仓霰弹枪箱 | 封存仓步枪箱\nRow 5 (left to right): 封存仓防护装备箱 | 封存仓备用弹药箱 | 手工 | 工作台 | 锻炉"
+  },
+  {
+    "id": "sites-08",
+    "type": "site",
+    "title": "资源、设施和势力",
+    "cols": 5,
+    "rows": 5,
+    "style": "../参考原图/01-item/03-材料与设施卡.png",
+    "cells": [
+      {
+        "key": "facility:sewing",
+        "name": "缝纫台"
+      },
+      {
+        "key": "facility:medical",
+        "name": "医疗台"
+      },
+      {
+        "key": "facility:armory",
+        "name": "军械台"
+      },
+      {
+        "key": "facility:kiln",
+        "name": "陶窑"
+      },
+      {
+        "key": "facility:water_station",
+        "name": "固定净水台"
+      },
+      {
+        "key": "facility:drying_rack",
+        "name": "晾制架"
+      },
+      {
+        "key": "facility:fire_lit",
+        "name": "火堆 · 燃烧"
+      },
+      {
+        "key": "facility:fire_out",
+        "name": "火堆 · 未燃"
+      },
+      {
+        "key": "facility:pot",
+        "name": "锅"
+      },
+      {
+        "key": "facility:bed",
+        "name": "铺垫"
+      },
+      {
+        "key": "facility:shelter",
+        "name": "遮蔽棚"
+      },
+      {
+        "key": "facility:safehouse",
+        "name": "安全屋"
+      },
+      {
+        "key": "facility:camping",
+        "name": "临时扎营"
+      },
+      {
+        "key": "facility:catchment",
+        "name": "集水设施"
+      },
+      {
+        "key": "facility:storage",
+        "name": "储藏设施"
+      },
+      {
+        "key": "facility:charcoal",
+        "name": "炭化"
+      }
+    ],
+    "prompt": "Create a NEW 5-column × 5-row game sprite atlas, square canvas, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Each named site, material deposit, cache, facility or emblem is its own small isolated physical vignette or distinct badge, interpreted strictly from its own name. Small ground fragment is allowed only when integral to the named subject, not an opaque square. No card frame. Make different contents recognizable through shape and objects. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 缝纫台 | 医疗台 | 军械台 | 陶窑 | 固定净水台\nRow 2 (left to right): 晾制架 | 火堆 · 燃烧 | 火堆 · 未燃 | 锅 | 铺垫\nRow 3 (left to right): 遮蔽棚 | 安全屋 | 临时扎营 | 集水设施 | 储藏设施\nRow 4 (left to right): 炭化 | [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell]\nRow 5 (left to right): [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell] | [empty transparent cell]"
+  },
+  {
+    "id": "duty-01",
+    "type": "portrait",
+    "title": "岗位代班",
+    "cols": 3,
+    "rows": 2,
+    "style": "../参考原图/04-人物画风/02-三方联系人造型.png",
+    "cells": [
+      {
+        "key": "duty:npc_lu_heng",
+        "name": "值守登记员 · 当班接续员",
+        "faction": "hub_survivor"
+      },
+      {
+        "key": "duty:npc_xu_an",
+        "name": "公事务协调员 · 当班接续员",
+        "faction": "hub_survivor"
+      },
+      {
+        "key": "duty:npc_luo_zheng",
+        "name": "工务领班 · 当班接续员",
+        "faction": "hub_survivor"
+      },
+      {
+        "key": "duty:npc_chen_zhi",
+        "name": "值班医师 · 当班接续员",
+        "faction": "hub_survivor"
+      },
+      {
+        "key": "duty:npc_tao_cen",
+        "name": "样本鉴定师 · 当班接续员",
+        "faction": "hub_survivor"
+      },
+      {
+        "key": "duty:npc_du_sui",
+        "name": "安置登记员 · 当班接续员",
+        "faction": "hub_survivor"
+      }
+    ],
+    "prompt": "Create a NEW 3-column × 2-row game sprite atlas, wide 3:2 landscape, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Each named role becomes a NEW adult Chinese post-apocalyptic character, full body at rest at a three-quarter angle, head, hands and shoes in view. Outfit, held kit, posture and silhouette follow the literal role title, not any named actor or existing character. For unlabeled or unrecorded identity use understated neutral design, do not infer gender. Person goes in exactly one cell. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 值守登记员 · 当班接续员 | 公事务协调员 · 当班接续员 | 工务领班 · 当班接续员\nRow 2 (left to right): 值班医师 · 当班接续员 | 样本鉴定师 · 当班接续员 | 安置登记员 · 当班接续员"
+  },
+  {
+    "id": "duty-02",
+    "type": "portrait",
+    "title": "岗位代班",
+    "cols": 3,
+    "rows": 2,
+    "style": "../参考原图/04-人物画风/02-三方联系人造型.png",
+    "cells": [
+      {
+        "key": "duty:npc_qi_wen",
+        "name": "外来者接待者 · 当班接续员",
+        "faction": "faction_church"
+      },
+      {
+        "key": "duty:npc_bai_ling",
+        "name": "施济员 · 当班接续员",
+        "faction": "faction_church"
+      },
+      {
+        "key": "duty:npc_ji_mu",
+        "name": "训诫执事 · 当班接续员",
+        "faction": "faction_church"
+      },
+      {
+        "key": "duty:npc_song_zhu",
+        "name": "誊录员 · 当班接续员",
+        "faction": "faction_church"
+      },
+      {
+        "key": "duty:npc_fu_heng",
+        "name": "主持者 · 当班接续员",
+        "faction": "faction_church"
+      },
+      {
+        "key": "duty:npc_wen_cheng",
+        "name": "协调员 · 当班接续员",
+        "faction": "faction_academy"
+      }
+    ],
+    "prompt": "Create a NEW 3-column × 2-row game sprite atlas, wide 3:2 landscape, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Each named role becomes a NEW adult Chinese post-apocalyptic character, full body at rest at a three-quarter angle, head, hands and shoes in view. Outfit, held kit, posture and silhouette follow the literal role title, not any named actor or existing character. For unlabeled or unrecorded identity use understated neutral design, do not infer gender. Person goes in exactly one cell. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 外来者接待者 · 当班接续员 | 施济员 · 当班接续员 | 训诫执事 · 当班接续员\nRow 2 (left to right): 誊录员 · 当班接续员 | 主持者 · 当班接续员 | 协调员 · 当班接续员"
+  },
+  {
+    "id": "duty-03",
+    "type": "portrait",
+    "title": "岗位代班",
+    "cols": 3,
+    "rows": 2,
+    "style": "../参考原图/04-人物画风/02-三方联系人造型.png",
+    "cells": [
+      {
+        "key": "duty:npc_ji_wen",
+        "name": "检测研究员 · 当班接续员",
+        "faction": "faction_academy"
+      },
+      {
+        "key": "duty:npc_shao_ning",
+        "name": "档案员 · 当班接续员",
+        "faction": "faction_academy"
+      },
+      {
+        "key": "duty:npc_he_yuan",
+        "name": "设备技师 · 当班接续员",
+        "faction": "faction_academy"
+      },
+      {
+        "key": "duty:npc_yin_ke",
+        "name": "观察区负责人 · 当班接续员",
+        "faction": "faction_academy"
+      }
+    ],
+    "prompt": "Create a NEW 3-column × 2-row game sprite atlas, wide 3:2 landscape, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Each named role becomes a NEW adult Chinese post-apocalyptic character, full body at rest at a three-quarter angle, head, hands and shoes in view. Outfit, held kit, posture and silhouette follow the literal role title, not any named actor or existing character. For unlabeled or unrecorded identity use understated neutral design, do not infer gender. Person goes in exactly one cell. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 检测研究员 · 当班接续员 | 档案员 · 当班接续员 | 设备技师 · 当班接续员\nRow 2 (left to right): 观察区负责人 · 当班接续员 | [empty transparent cell] | [empty transparent cell]"
+  },
+  {
+    "id": "recruit-01",
+    "type": "portrait",
+    "title": "招募模板",
+    "cols": 3,
+    "rows": 2,
+    "style": "../参考原图/04-人物画风/01-幸存者全身造型.png",
+    "cells": [
+      {
+        "key": "recruitTemplate:front_guard",
+        "name": "前排护卫"
+      },
+      {
+        "key": "recruitTemplate:blade_hand",
+        "name": "刀具熟手"
+      },
+      {
+        "key": "recruitTemplate:breaker",
+        "name": "破障工"
+      },
+      {
+        "key": "recruitTemplate:spear_walker",
+        "name": "长柄巡路员"
+      },
+      {
+        "key": "recruitTemplate:salvager",
+        "name": "回收工"
+      },
+      {
+        "key": "recruitTemplate:hunter",
+        "name": "猎行者"
+      }
+    ],
+    "prompt": "Create a NEW 3-column × 2-row game sprite atlas, wide 3:2 landscape, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Each named role becomes a NEW adult Chinese post-apocalyptic character, full body at rest at a three-quarter angle, head, hands and shoes in view. Outfit, held kit, posture and silhouette follow the literal role title, not any named actor or existing character. For unlabeled or unrecorded identity use understated neutral design, do not infer gender. Person goes in exactly one cell. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 前排护卫 | 刀具熟手 | 破障工\nRow 2 (left to right): 长柄巡路员 | 回收工 | 猎行者"
+  },
+  {
+    "id": "recruit-02",
+    "type": "portrait",
+    "title": "招募模板",
+    "cols": 3,
+    "rows": 2,
+    "style": "../参考原图/04-人物画风/01-幸存者全身造型.png",
+    "cells": [
+      {
+        "key": "recruitTemplate:old_service",
+        "name": "旧勤务员"
+      },
+      {
+        "key": "recruitTemplate:coordinator",
+        "name": "随行协调员"
+      },
+      {
+        "key": "recruitTemplate:camp_nurse",
+        "name": "营地护理员"
+      },
+      {
+        "key": "recruitTemplate:legacy_neutral",
+        "name": "旧档未记录外观"
+      }
+    ],
+    "prompt": "Create a NEW 3-column × 2-row game sprite atlas, wide 3:2 landscape, exact equal-size grid and strict ordering. Existing image is ONLY a rendering and palette reference for original Chinese wasteland project 重墨V2. Do not extract, convert, duplicate, trace or reuse any object, character or UI layout from it. Design the subjects ONLY from the listed exact Chinese names, no additional subjects, no substitutions, no reading order changes. Each named role becomes a NEW adult Chinese post-apocalyptic character, full body at rest at a three-quarter angle, head, hands and shoes in view. Outfit, held kit, posture and silhouette follow the literal role title, not any named actor or existing character. For unlabeled or unrecorded identity use understated neutral design, do not infer gender. Person goes in exactly one cell. Use the established 重墨V2 look: gritty hand-rendered black ink outlines and angular woodcut shadows, broken bone highlights, dry worn texture, chunky deliberately stepped pixels in small clusters; muted iron, warm ochre, old olive and restrained rust red. Avoid smooth gradients, flat low-detail vector glyphs, glossy game icons, emoji and generic symbols. Each cell has one independent centered silhouette that never touches cell boundaries, generous 12% clear transparent safety margins, item silhouette fills the center 65–75%. True RGBA transparency around every subject and in all gutters. No white, grey, checkerboard or dark matte, no gridlines, no text, no label or numbers, no card or decoration backgrounds. Leave every explicitly empty cell fully transparent. Exact map:\nRow 1 (left to right): 旧勤务员 | 随行协调员 | 营地护理员\nRow 2 (left to right): 旧档未记录外观 | [empty transparent cell] | [empty transparent cell]"
+  },
+  {
+    "id": "icons-corrections-01",
+    "type": "ui",
+    "title": "势力徽记与状态语义校正",
+    "cols": 3,
+    "rows": 2,
+    "style": "../参考原图/03-UI布局/01-营地求生主界面.png",
+    "cells": [
+      {
+        "key": "faction:hub_survivor",
+        "name": "幸存者营区"
+      },
+      {
+        "key": "faction:faction_church",
+        "name": "新生教会"
+      },
+      {
+        "key": "faction:faction_academy",
+        "name": "灰塔科学院"
+      },
+      {
+        "key": "status:status_baobao",
+        "name": "饱饱"
+      },
+      {
+        "key": "status:status_zero",
+        "name": "状态归零"
+      },
+      {
+        "key": "actor:baobao",
+        "name": "饱饱"
+      }
+    ],
+    "prompt": "Create a NEW exact six-icon sheet, 3 columns and 2 rows on 1536×1024 canvas, one isolated original game icon per equal square cell, 15% transparent margin in each cell. Reference is only for the angular woodcut style of the original Chinese wasteland game 重墨V2. No use of source objects. Bold black ink, gritty bone highlights, deliberately chunky stepped pixels and worn dark rust and olive. Row 1 strictly left to right: (1) emblem for survivor camp, a riveted silhouette of barricade in an olive shield; (2) emblem for new church, red chapel arch and candle engraved on a dark badge; (3) emblem for gray tower academy, a blue-gray observation tower with small ring and rivets engraved into a dark badge. Each is a flat readable emblem, NOT an architectural scene or building card. Row 2 strictly left to right: (4) small abstract icon for 饱饱 the inner voice, a dark moss-green broken sound-wave ring, no food, no face; (5) status depleted to zero, red warning triangle enclosing a cracked completely empty horizontal meter, no numbers, no circular arrow; (6) larger portrait symbol for 饱饱 the unseen inner voice, dark muted olive asymmetric pulse shape with angular echo waves and a bone-colored glint, no body, no food, no literal germ or mascot. True alpha around the six figures and every grid gap. No background matte, no labels, no writing, no numbers, no gridlines, no painted square, no watermark. Each icon exactly in its cell and completely separated."
+  },
+  {
+    "id": "skills-corrections-01",
+    "type": "skill",
+    "title": "同名技能的武器语义校正",
+    "cols": 4,
+    "rows": 2,
+    "style": "../参考原图/03-UI布局/02-四对四战斗界面.png",
+    "cells": [
+      {
+        "key": "skill:unarmed_05",
+        "name": "护身",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:spear_03",
+        "name": "逼退",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:archery_01",
+        "name": "射击",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:archery_03",
+        "name": "致残射击",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:archery_05",
+        "name": "猎标",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:archery_07",
+        "name": "穿透射击",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:archery_10",
+        "name": "连射",
+        "kind": "combat"
+      }
+    ],
+    "prompt": "Create a NEW transparent 4 columns × 2 rows atlas for the original Chinese wasteland game 重墨V2. Reference image solely style: thick black ink angular woodcut shadows, stepped pixel clusters, worn bone colors, rusty accents. Do not copy any character or design from it. Exactly eight equal cells in the order below, 14% transparent borders, no letters numbers grid lines or opaque square. Draw each action clearly as a tight half-body/action vignette, stylized non-graphic game art, no wounds, no red splatters, no firearms or bullets anywhere. Top row left to right: (1) bare-handed self-guard, survivor raises crossed forearms in front of torso, empty hands, NO shield or weapon; (2) forced retreat by a long wooden spear, shaft held horizontally as target staggers backwards; (3) normal archery shot, person drawing and releasing a wooden bow and a single visibly fletched arrow; (4) crippling archery shot, one feathered arrow narrowly marks lower-leg area against a red abstract aim spark, no injury. Bottom row left to right: (5) hunter mark, wooden arrow plus clear square rust targeting brackets marking a silhouette; (6) penetrating archery shot, visibly feathered arrow trajectory with two pale target silhouettes and clear through path; (7) rapid repeated archery, bow archer and several fletched arrows along independent trajectories; (8) leave completely transparent. True alpha for every gutter and outside all subjects."
+  },
+  {
+    "id": "skills-corrections-02",
+    "type": "skill",
+    "title": "掩护与应急护理",
+    "cols": 2,
+    "rows": 1,
+    "style": "../参考原图/03-UI布局/02-四对四战斗界面.png",
+    "cells": [
+      {
+        "key": "skill:shield_07",
+        "name": "掩护",
+        "kind": "combat"
+      },
+      {
+        "key": "skill:medicine_07",
+        "name": "应急护理",
+        "kind": "combat"
+      }
+    ],
+    "prompt": "Create two NEW game action icons in two equal separated cells left to right on a wide transparent sprite atlas for 重墨V2. Style reference ONLY for coarse angular black ink outlines, woodcut texture, chunky stepped pixels, bone fabric, dark iron and restrained rust highlights. Draw left: 掩护, one adult survivor crouched shielding another with a large visible battered shield. Show the shield and protection gesture, no guns, no firing, no shooting, no injury. Draw right: 应急护理, close-up of two gloved hands quickly placing a clean emergency compress on a companion's sleeve, a small folded clean cloth and a gentle bone-colored action spark, no wound, no blood and no loose medical kit as the main subject. Both independent readable half-body/action silhouettes, true RGBA with empty margins and clear center gutter. No text, border, matte, flat ground, panels, watermark or texture outside subject."
+  },
+  {
+    "id": "ui-corrections-02",
+    "type": "ui",
+    "title": "菜单图标语义校正",
+    "cols": 3,
+    "rows": 2,
+    "style": "../参考原图/03-UI布局/01-营地求生主界面.png",
+    "cells": [
+      {
+        "key": "glyph:disabled",
+        "name": "锁定"
+      },
+      {
+        "key": "glyph:rest",
+        "name": "休息"
+      },
+      {
+        "key": "glyph:equipment",
+        "name": "整备"
+      },
+      {
+        "key": "glyph:recipe",
+        "name": "配方"
+      },
+      {
+        "key": "glyph:all",
+        "name": "全部"
+      }
+    ],
+    "prompt": "Create a NEW 3-column × 2-row transparent sprite atlas, exact six equal cells on a wide landscape image. Five original menu symbols for the Chinese wasteland game 重墨V2, each bold and readable at tiny 24 px. Rendering reference ONLY: angular black woodcut ink, chunky stepped pixels, bone-white ochre highlights, dark bronze and rust. No copied source objects or UI layout. Top row left to right: (1) 锁定: distinctly closed heavy steel padlock, not a target or aim marker; (2) 休息: simple bundled bedroll with a pale crescent moon above it, NO Z characters or any glyph or words; (3) 整备: a worn chest rig with recognizable shoulder straps and utility pouches, no gears or tools. Bottom row left to right: (4) 配方: folded general schematic sheet with a gear and square bolt diagram drawn as icons, NO lettering, no cooking; (5) 全部: a compact tiled group of FOUR different small category silhouettes, wood bundle, flask, axe and jacket, no container; (6) totally empty transparent cell. One tightly bounded symbol per slot with 14% transparent margins, clear gutters, no gridlines, no panels, no square background, no floor, no letters, numbers, watermark or matte."
+  }
+]

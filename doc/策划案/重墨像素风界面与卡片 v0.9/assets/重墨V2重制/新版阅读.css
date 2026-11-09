@@ -1,0 +1,21 @@
+@font-face{font-family:V2Chill16;src:url("fonts/chill16/ChillBitmap_16px.ttf") format("truetype");font-display:swap}
+@font-face{font-family:V2Ark16;src:url("fonts/ark16/ark-pixel-16px-proportional-zh_cn.otf.woff2") format("woff2");font-display:swap}
+@font-face{font-family:V2ArkLatin;src:url("fonts/ark16/ark-pixel-16px-proportional-latin.otf.woff2") format("woff2");font-display:swap}
+:root{--ink-readable:"V2Chill16","Microsoft YaHei","PingFang SC",sans-serif;--ink-clear:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",sans-serif;--ink-body:#f0e3cc;--ink-secondary:#cdbb9f}
+.stage,.screen{font-family:var(--ink-readable);font-size:16px;line-height:1.55;font-synthesis:none;color:var(--ink-body)}
+.stage :is(h2,h3),.screen :is(h2,h3){font-family:var(--ink-readable);font-synthesis:none;font-weight:400}
+.stage :is(h2,h3){font-size:24px;line-height:1.3}
+.stage .dialogueText,.screen .dialogueScroll{font-family:var(--ink-readable);font-size:20px;line-height:1.7;color:var(--ink-body);background:#100e0de8;max-width:70ch}
+.stage .dialogueText p,.screen .dialogueScroll p{margin-bottom:.55em}
+.stage .chip,.screen .badge,.screen .meter{font-size:14px;line-height:1.35}
+.stage .chip,.screen .badge:not(.danger),.screen .meter{color:var(--ink-secondary)}
+.stage .skin,.screen .ink-button{color:var(--ink-body)}
+.stage .skin button,.screen .ink-button{font-size:16px;line-height:1.32}
+.stage .dialogueTop{align-items:center}
+.stage .navDemo strong,.stage h3 .text,.stage h2 .text,.screen .tile .ink-card-title,.screen .personName{font-weight:400}
+.stage .text,.screen [data-layer=text]{text-shadow:none}
+body[data-reading=clear] :is(.stage,.screen),
+body[data-reading=clear] :is(.stage,.screen) :is(h2,h3,.dialogueText,.dialogueScroll){
+  font-family:var(--ink-clear);
+}
+body[data-reading=clear] :is(.stage,.screen) :is(.dialogueText,.dialogueScroll){font-size:21px;line-height:1.72}

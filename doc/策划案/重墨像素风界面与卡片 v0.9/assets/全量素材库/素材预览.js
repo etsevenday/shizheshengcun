@@ -47,12 +47,10 @@
   const meter=(name,n)=>'<div class="meter" data-layer="status">'+text(name)+'<i style="--value:'+n+'%"></i></div>';
   const stateCard=(key,state,variant)=>skin(rowArt(key,'','subject')+text(byKey.get(key).name,'name')+chip(state),'uislot '+variant);
   const portrait=key=>rowArt(key,'','subject',true);
-  const fields=C.identity;
   const select=(label,name,values)=>'<label>'+esc(label)+'<select data-identity="'+name+'"><option value="">未记录</option>'+
-    values.map(x=>'<option>'+esc(x)+'</option>').join('')+'</select></label>';
-  const identityUI=()=>skin('<h3>'+text('保存字段合成示例')+'</h3><div class="identityFields">'+
-    select('肤色','skinTone',fields.skinTones)+select('发型','hairStyle',fields.hairStyles)+select('发色','hairColor',fields.hairColors)+
-    select('面部细节','faceDetail',fields.faceDetails)+select('服装样例','template',['front_guard','blade_hand','breaker','spear_walker','salvager','hunter','old_service','coordinator','camp_nurse'])+
+    values.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('')+'</select></label>';
+  const identityUI=()=>skin('<h3>'+text('按职业名称重绘')+'</h3><div class="identityFields">'+
+    select('服装样例','template',C.assets.filter(row=>row.category==='recruitTemplate'&&row.id!=='legacy_neutral'))+
     '</div><div id="pose" class="pose" data-layer="subject"></div>','identityDemo');
   const dialog=(kind)=>{
     const history=kind==='history',battle=kind==='battle';
@@ -72,7 +70,7 @@
     history:'历史按保存的发言身份展示。代班头像与原岗位人物分开。',
     menu:'菜单底图、按钮框、禁用原因和说明可分别替换。选项与返回行为由原菜单提供。',
     items:'物品图、选中、焦点、可放入与拒绝原因独立。每张卡保留原展示位置。',
-    recruit:'修改保存字段可预览合成。缺字段使用中性部件，外观部件不推断性别。'
+    recruit:'查看新绘制的职业造型样例。正式随机人物仍用实际保存外观。'
   };
   const demos={
     hud:()=>scene('location:camp')+
@@ -92,8 +90,8 @@
   function updatePose(){
     const pose=$('pose');
     if(!pose)return;
-    const values=Object.fromEntries([...$('stage').querySelectorAll('[data-identity]')].map(el=>[el.dataset.identity,el.value]));
-    pose.innerHTML=personSvg(values);
+    const template=$('stage').querySelector('[data-identity=template]').value||'legacy_neutral';
+    pose.innerHTML=rowArt('recruitTemplate:'+template);
   }
   function showDemo(){
     const kind=$('demoKind').value;
@@ -102,6 +100,7 @@
     updatePose();
   }
   $('demoKind').addEventListener('change',showDemo);
+  $('readingMode').addEventListener('change',()=>{document.body.dataset.reading=$('readingMode').value;});
   $('stage').addEventListener('change',updatePose);
   const fieldsUi=[...$('layers').querySelectorAll('[data-layer-toggle]')];
   const mode=(preset,id)=>preset==='all'||(preset==='art'?['scene','subject'].includes(id):!['scene','subject'].includes(id));
@@ -128,7 +127,7 @@
     const binding=resolve(row.asset);
     const data=[
       ['分类',names[row.category]],['稳定 ID',row.id],['绑定键',row.key],['开发入口',row.entry],
-      ['来源',row.source],['图层',row.layers?.join(' / ')],['切图',binding?.crop?.join(', ')],['头像裁窗',binding?.portraitCrop?.join(', ')],
+      ['重制状态',row.rebuildStatus],['来源',row.source],['图层',row.layers?.join(' / ')],['切图',binding?.crop?.join(', ')],['头像裁窗',binding?.portraitCrop?.join(', ')],
       ['文件',binding?.file],['继承素材',row.asset?.ref],['替换说明',row.design||row.display||binding?.review]
     ].filter(([,v])=>v);
     $('inspect').innerHTML=rowArt(row.key)+'<h3>'+esc(row.name)+'</h3><dl>'+
@@ -143,9 +142,10 @@
     page=Math.min(Math.max(page,0),max-1);
     const visible=hits.slice(page*limit,(page+1)*limit);
     $('grid').innerHTML=visible.map(row=>'<button type="button" class="tile" data-key="'+esc(row.key)+'" aria-pressed="false">'+
-      rowArt(row.key,row.category==='frame'?'frameThumb':'')+'<b>'+esc(row.name)+'</b><small>'+esc(row.id)+'</small></button>').join('');
+      (row.rebuildStatus&&!row.asset?'<span class="art pending">待复核</span>':rowArt(row.key,row.category==='frame'?'frameThumb':''))+
+      '<b>'+esc(row.name)+'</b><small>'+esc(row.id)+'</small></button>').join('');
     $('pageInfo').textContent=(page+1)+' / '+max+' 页　'+hits.length+' 项';
-    $('total').textContent=C.assets.length+' 个视觉绑定';
+    $('total').textContent=C.assets.length+' 个视觉绑定 · 重绘 '+C.rebuild.approved+'/'+C.rebuild.expected;
     $('prev').disabled=page<=0;$('next').disabled=page+1>=max;
     inspect(visible.find(row=>row.key===selected)??visible[0]);
   }

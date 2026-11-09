@@ -166,30 +166,31 @@
   },
   "fonts": {
     "scope": "全部游戏界面文字，包括动态正文、数值、提示、战报、对白、日志和历史",
-    "family": "Fusion Pixel Font，简体中文比例版",
-    "release": "由开发记录固定上游版本，随游戏自托管 WOFF2",
-    "license": "SIL OFL 1.1，分发保留版权与授权，修改或子集化遵循所用版本的保留字体名规则",
-    "sourceUrl": "https://github.com/TakWolf/fusion-pixel-font",
-    "licenseUrl": "https://github.com/TakWolf/fusion-pixel-font/blob/master/LICENSE-OFL",
+    "family": "寒蝉点阵体 16px",
+    "release": "v2.502，按 15 的来源清单自托管",
+    "license": "保留发行包附带的授权与版权声明；修改或子集化遵循所用版本授权",
+    "sourceUrl": "https://github.com/Warren2060/ChillBitmap/releases/tag/v2.502",
+    "licensePath": "assets/重墨V2重制/fonts/chill16/ChillBitmap_16px_License.txt",
+    "readabilityRevision": "assets/重墨V2重制/字体来源.json",
     "preferred": {
       "body": {
-        "sourcePx": 8,
+        "sourcePx": 16,
         "cssPx": 16
       },
       "auxiliary": {
-        "sourcePx": 8,
+        "sourcePx": 16,
         "cssPx": 16
       },
       "longText": {
-        "sourcePx": 10,
+        "sourcePx": 16,
         "cssPx": 20
       },
       "dialogue": {
-        "sourcePx": 10,
+        "sourcePx": 16,
         "cssPx": 20
       },
       "display": {
-        "sourcePx": 12,
+        "sourcePx": 16,
         "cssPx": 24
       }
     },
@@ -197,7 +198,8 @@
       "bodyCssPx": 16,
       "auxiliaryCssPx": 14,
       "dialogueCssPx": 20,
-      "bodyLineHeight": 1.5
+      "bodyLineHeight": 1.5,
+      "dialogueLineHeight": 1.7
     },
     "missingGlyphPolicy": "已知文字覆盖姓名池、标点、数字、单位、技术符号与插值。优先完整像素字库或合法像素补字。长文仍按N02换行、滚动、固定控制。"
   },

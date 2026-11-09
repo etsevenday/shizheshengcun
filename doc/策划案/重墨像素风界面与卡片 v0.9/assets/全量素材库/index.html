@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>适者生存 · 重墨像素全量素材库</title>
 <link rel="stylesheet" href="素材预览.css">
-<script defer src="清单预览数据.js"></script>
-<script defer src="角色预览.js"></script>
+<link rel="stylesheet" href="../重墨V2重制/新版阅读.css">
+<script defer src="../重墨V2重制/新版预览数据.js"></script>
 <script defer src="素材预览.js"></script>
 </head>
 <body>
@@ -14,12 +14,13 @@
   <p class="kicker">适者生存　/　重墨像素　/　美术生产交接</p>
   <h1>全量素材库</h1>
   <p>按配置 ID、角色、地点和部件查看独立素材。样板中的文字与数据使用独立控件。</p>
-  <nav><a href="../../14 全量美术风格化与替换交付 v0.9.md">开发使用说明</a><a href="../UI场景全览/index.html">40 个界面样板</a><a href="全量视觉清单.json">机器清单</a><a href="生成图集.json">位图来源与图集</a><a href="字库来源.json">字库来源</a></nav>
+  <nav><a href="../../15 重墨V2重新出图与易读字体 v0.9.md">重制使用说明</a><a href="../UI场景全览/index.html">40 个界面样板</a><a href="../重墨V2重制/新版全量视觉清单.json">新版机器清单</a><a href="../重墨V2重制/替换清单.json">重绘裁窗清单</a><a href="../重墨V2重制/字体对照.html">字体对照</a></nav>
 </header>
 <main class="workspace">
   <section class="panel lab" aria-labelledby="labTitle">
     <div class="sectionHead"><div><p class="kicker">01 / LAYERS</p><h2 id="labTitle">界面图层试装</h2></div>
-    <label>界面 <select id="demoKind"><option value="hud">主界面 / 菜单栏</option><option value="dialogue">普通对白</option><option value="battle">战斗对白</option><option value="history">对白历史</option><option value="menu">暂停 / 设置</option><option value="items">物品卡 / 拖放状态</option><option value="recruit">随机角色外观</option></select></label></div>
+    <label>文字 <select id="readingMode"><option value="pixel">细像素</option><option value="clear">清晰阅读</option></select></label>
+    <label>界面 <select id="demoKind"><option value="hud">主界面 / 菜单栏</option><option value="dialogue">普通对白</option><option value="battle">战斗对白</option><option value="history">对白历史</option><option value="menu">暂停 / 设置</option><option value="items">物品卡 / 拖放状态</option><option value="recruit">招募造型样例</option></select></label></div>
     <div id="layers" class="tools">
       <button type="button" data-preset="all">合成</button><button type="button" data-preset="ui">仅 UI</button><button type="button" data-preset="art">仅美术</button>
       <label><input type="checkbox" data-layer-toggle="scene" checked>场景</label>

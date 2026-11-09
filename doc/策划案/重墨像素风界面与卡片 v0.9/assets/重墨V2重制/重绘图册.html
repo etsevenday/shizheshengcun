@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>重墨 V2 · 重绘图册</title>
+<style>
+:root{color-scheme:dark;--size:64px;--bg:#171511;--fg:#f0e3cc;--border:#624b35;--accent:#e0b479}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 "Microsoft YaHei",sans-serif}main{max-width:1360px;margin:auto;padding:20px}p,h1{margin:0 0 8px}a{color:var(--accent)}label{display:inline-flex;align-items:center;gap:4px}button,input,select{font:inherit;color:inherit;background:#272019;border:1px solid var(--border);padding:4px 7px}input[type=range]{accent-color:var(--accent)}button:disabled{opacity:.4}.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:10px 0}#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:7px}article{border:1px solid var(--border);background:#231e18;padding:8px;min-width:0}article svg{display:block;width:var(--size);height:var(--size);margin:0 auto 5px;image-rendering:pixelated}article strong,article small{display:block;overflow-wrap:anywhere}small{color:#beab8f}article a{font-size:13px}
+</style>
+<script defer src="替换预览数据.js"></script>
+</head>
+<body>
+<main>
+<h1>重墨 V2 · 重绘图册</h1>
+<p id="summary"></p>
+<a href="字体对照.html">字体实景对照</a>　<a href="替换清单.json">替换清单</a>
+<div class="bar">
+<label>分类 <select id="kind"></select></label>
+<label>名称或 ID <input id="query" type="search"></label>
+<label>图标大小 <input id="size" type="range" min="24" max="96" value="64" step="8"></label>
+<span id="sizeValue">64 px</span>
+</div>
+<div id="grid"></div>
+<div class="bar"><button id="prev" type="button">上一页</button><span id="status" aria-live="polite"></span><button id="next" type="button">下一页</button></div>
+</main>
+<script>
+window.addEventListener('DOMContentLoaded',()=>{
+ const $=id=>document.getElementById(id);
+ const data=Object.entries(window.InkRedo.bindings);
+ const names={item:'物品',skill:'技能',skillFamily:'熟练度',action:'战斗动作',glyph:'界面图标',status:'状态',resource:'资源点',facility:'设施',faction:'势力徽章',duty:'代班',recruitTemplate:'招募样例',actor:'人物符号'};
+ const keys=[...new Set(data.map(([key])=>key.split(':')[0]))];
+ const escape=value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+ $('summary').textContent='当前收录 '+data.length+' 项通过复核的新绘素材。可把图标缩到 24 px 检查辨识度。';
+ $('kind').innerHTML='<option value="">全部</option>'+keys.map(k=>'<option value="'+escape(k)+'">'+escape(names[k]||k)+'</option>').join('');
+ let page=0;
+ function tile([key,asset]){
+  const [x,y,w,h]=asset.crop;
+  return '<article><svg viewBox="0 0 '+w+' '+h+'" aria-hidden="true"><svg width="'+w+'" height="'+h+'" viewBox="'+[x,y,w,h].join(' ')+'" overflow="hidden">'+
+   '<image href="'+escape(asset.file)+'" width="'+asset.size[0]+'" height="'+asset.size[1]+'"/></svg></svg>'+
+   '<strong>'+escape(asset.name)+'</strong><small>'+escape(key)+'</small><a href="'+escape(asset.file)+'" target="_blank" rel="noopener">查看原图集</a></article>';
+ }
+ function render(){
+  const kind=$('kind').value,query=$('query').value.trim().toLowerCase();
+  const selected=data.filter(([k,a])=>(!kind||k.startsWith(kind+':'))&&(!query||k.includes(query)||a.name.includes(query)));
+  const n=48,max=Math.max(1,Math.ceil(selected.length/n));
+  page=Math.max(0,Math.min(page,max-1));
+  $('grid').innerHTML=selected.slice(page*n,(page+1)*n).map(tile).join('');
+  $('status').textContent=(page+1)+' / '+max+' 页　'+selected.length+' 项';
+  $('prev').disabled=page===0;$('next').disabled=page+1===max;
+ }
+ $('prev').addEventListener('click',()=>{page--;render();});$('next').addEventListener('click',()=>{page++;render();});
+ $('kind').addEventListener('change',()=>{page=0;render();});$('query').addEventListener('input',()=>{page=0;render();});
+ $('size').addEventListener('input',()=>{document.documentElement.style.setProperty('--size',$('size').value+'px');$('sizeValue').textContent=$('size').value+' px';});
+ render();
+});
+</script>
+</body>
+</html>
