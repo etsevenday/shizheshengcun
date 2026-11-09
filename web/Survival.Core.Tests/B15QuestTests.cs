@@ -150,7 +150,7 @@ public class B15QuestTests : TestBase
         Assert.That(r.Ok, Is.True, r.Reason);
         Run(s);
         ReadDialogues(s);
-        Assert.That(s.Log.Any(l => l.Text.Contains("已领取圣所旧路档册") && l.Text.Contains("队伍容量升到 C3")), Is.True);
+        Assert.That(s.Log.Any(l => l.Text.Contains("已领取「圣所旧路档册」") && l.Text.Contains("队伍容量升到 C3。")), Is.True);
         Assert.That(s.Progress.Flags, Does.Contain(Q("FA02", "completed")));
     }
 

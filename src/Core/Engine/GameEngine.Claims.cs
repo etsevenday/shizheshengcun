@@ -91,7 +91,7 @@ namespace Survival.Core.Engine
             }
             if (CampaignClaimed(s, res.NodeId))
             {
-                notes.Add($"{res.Name}本局已领取：这次只核对本次地牢的记录（打开本代出口），不再重复发放");
+                notes.Add($"「{res.Name}」已在本局记录里。这次只核对本代记录，完成后开放本代出口。");   // B38b N02 附录 §3
                 notes.AddRange(StagedClaimNotes(s, res));
                 return notes;
             }
@@ -100,7 +100,7 @@ namespace Survival.Core.Engine
                 // B13b（Q120）：工坊首次支援包、消防车器材箱（实物整包落当地地面）、采石坡图册（知识包，不发纸卡或成品）
                 notes.Add($"领取{res.Name}：本局唯一一次" + (res.IsCampaignPhysical ? "，产物整包放在当前地点地面" : "，只记作知识，不发纸卡或成品"));
                 if (res.IsCampaignPhysical) notes.Add("包满也能领：放在地面后再逐人拾取（照常受随身五卡与负重限制）；不计采集/搜集经验，不能用工具加速");
-                if (res.RevealInstanceFact != null) notes.Add("本代守卫战胜利后出现；领过以后地牢换代也不会再出现");
+                if (res.RevealInstanceFact != null) notes.Add("击败本代守卫后可领取这只箱，本局只领一次。");   // B38b Q291-1：只换第三行
                 // Q136 选 A（EQ-Q136-01）：预览只写区间，不消耗真实随机、不预生成；领取时按模板区间 0.1 步长正常抽一次最大耐久，当前=最大
                 if (res.EquipmentQuality != null)
                     foreach (var id in res.Outputs.Keys.Where(k => _items[k].IsEquipment))
@@ -115,7 +115,7 @@ namespace Survival.Core.Engine
                 if (NoOutputYieldLine(res) is string yieldLine) notes.Add(yieldLine);   // Q254：选中后读得到卡面全句
                 return notes;
             }
-            notes.Add($"领取{res.Name}：本局唯一一次，地牢换代后也不会再发；记作记录，不占物资卡");
+            notes.Add($"领取「{res.Name}」后会记入本局记录。这份记录只领一次，不占物资卡。");   // B38b N02 附录 §3
             var know = KnowledgeGrantedBy(s, ClaimFactsOf(res));
             if (know.Count > 0) notes.Add("同时获得做法知识：" + string.Join("、", know));
             // B23（A11 §3）：知识包里已从别处掌握的只记来源，不兑换材料、经验、钱或别的蓝图
@@ -157,6 +157,7 @@ namespace Survival.Core.Engine
             s.Resources[res.NodeId].ClaimMinutesDone = 0;   // B23：两段都提交，本次领取/核对结束
             var d = DungeonOf(res);
             var first = !CampaignClaimed(s, res.NodeId);
+            // B38b（Q283）：一条结果日志；首句与按原顺序出现的追加段各以一个句号收尾，段间不插分号，未发生的段省略
             var text = new List<string>();
             var capBefore = BattleCapacity(s);
             if (first && !res.IsRecord)
@@ -186,26 +187,26 @@ namespace Survival.Core.Engine
                 var packNote = PackKnownNote(s, res, know);   // 写事实前判断（之后都已掌握）
                 foreach (var f in ClaimFactsOf(res)) s.Progress.Flags.Add(f);
                 s.Resources[res.NodeId].Available = 0;
-                text.Add($"已领取{res.Name}（本局唯一，记作记录，不占物资卡）");
+                text.Add($"已领取「{res.Name}」，记入本局记录（只领一次，不占物资卡）。");
                 if (know.Count > 0) text.Add("获得做法知识：" + string.Join("、", know));
                 if (packNote != null) text.Add(packNote);
                 text.AddRange(RecordQuestNotes(s, res, false));
                 // B15（A11 §4/R46）：首次拿到不同种类的关键记录时容量升档（同一种记录重置后再领不再加）
                 if (BattleCapacity(s) > capBefore) text.Add($"队伍容量升到 C{BattleCapacity(s)}");
             }
-            else text.Add($"已核对本次地牢的{res.Name}（本局早已领取，不再重复发放）");
+            else text.Add($"已核对本代的「{res.Name}」（本局已领）。");
             // B22（R03 D2、Q127）：只有核心记录的领取/核对才算本代通关（写 clearedAt/resetEligibleAt），并发本局首通补给包；
             // 顺带修正：B13c 起 d03 旧唯一箱（同为 campaign 领取）也会写本代完成事实、提前打开出口，现在只认记录
             if (d != null && res.IsRecord)
             {
-                if (MarkCleared(s, d)) text.Add($"本代通关：{DR.ResetCooldownMinutes / 60}世界小时后（{Clock.DayTime(s.DungeonInstances[d].ResetEligibleAt!.Value)}起）可在{LocName(DungeonCfg(d)?.Parent ?? res.LocationId)}确认重置");
+                if (MarkCleared(s, d)) text.Add($"本代已通关。经过{DR.ResetCooldownMinutes / 60}世界小时后，可到{LocName(DungeonCfg(d)?.Parent ?? res.LocationId)}确认重置（最早{Clock.DayTime(s.DungeonInstances[d].ResetEligibleAt!.Value)}）。");
                 if (GrantFirstClear(s, d, s.Ground) is string fc) text.Add(fc);
             }
             var routes = RouteNotes(s, RefreshGates(s), s.CurrentLocation);
             if (routes.Count > 0) text.Add("发现" + string.Join("与", routes));
             text.Add(NoFieldXpText(res));
             UpdateFlags(s);
-            Emit(s, GameEventKind.ActionCompleted, string.Join("；", text) + "。");
+            Emit(s, GameEventKind.ActionCompleted, string.Concat(text.Select(Sentence)));
             return true;
         }
 

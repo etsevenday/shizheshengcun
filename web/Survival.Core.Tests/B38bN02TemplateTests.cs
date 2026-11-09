@@ -192,6 +192,56 @@ public class B38bN02TemplateTests : TestBase
         Assert.That((v.TimeText, v.Lines.Single()), Is.EqualTo(("5分钟", "已完成5分钟，还需5分钟。")));
     }
 
+    // ───────────── §3 探索、地牢和任务册（Q283、Q290、Q291） ─────────────
+
+    /// <summary>Q283-A01：首领核心记录一条日志；首句定稿、知识/容量/通关/首通/经验各以一个句号收尾，段间不插分号。</summary>
+    [Test]
+    public void Q283_A01_Claim_FirstRecord_OneLog_Sentences()
+    {
+        var s = Registered("h02_square");
+        E.DebugMapTeleport(s, "d01_08");
+        ReadDialogues(s);
+        var res = Cfg.Resources.Single(r => r.NodeId == "d01_08_unique");
+        s.Resources[res.NodeId].Discovered = true;
+        E.DebugInstanceFact(s, "d01", "guardianDefeated");
+        var notes = E.Preview(s, ActionRequest.Gather(res.NodeId)).Notes;
+        Assert.That(notes, Has.Some.EqualTo("领取「圣所旧路档册」后会记入本局记录。这份记录只领一次，不占物资卡。"));
+        var logs = s.Log.Count;
+        Start(s, ActionRequest.Gather(res.NodeId));
+        Run(s);
+        var done = s.Log.Skip(logs).Where(l => l.Kind == nameof(GameEventKind.ActionCompleted)).ToList();
+        Assert.That(done, Has.Count.EqualTo(1), "一个原结果事件");
+        var t = done[0].Text;
+        Assert.That(t, Does.StartWith("已领取「圣所旧路档册」，记入本局记录（只领一次，不占物资卡）。"));
+        Assert.That(t, Does.Contain("队伍容量升到 C3。").And.Contain("本代已通关。经过72世界小时后，可到").And.Contain("确认重置（最早第"));
+        Assert.That(t, Does.EndWith("领取记录不计采集/搜集经验。"));
+        Assert.That(t, Does.Not.Contain("。；").And.Not.Contain("。。").And.Not.Contain("）；"), "段间不插分号、不重复句号");
+    }
+
+    /// <summary>Q290-A01：75% 探索一条日志，探索度与物资在前，“安全线索：{原文}”完整位于最后，不再写“未发现新线索”。</summary>
+    [Test]
+    public void Q290_A01_Explore_ClueLast()
+    {
+        var s = New();
+        E.DebugTeleport(s, "w11_orchard");
+        string Explore()
+        {
+            var n = s.Log.Count;
+            Start(s, ActionRequest.Explore());
+            Run(s);
+            var done = s.Log.Skip(n).Where(l => l.Kind == nameof(GameEventKind.ActionCompleted)).ToList();
+            Assert.That(done, Has.Count.EqualTo(1));
+            return done[0].Text;
+        }
+        Explore();
+        Explore();
+        var t = Explore();
+        var clue = Cfg.Locations.Single(l => l.Id == "w11_orchard").Clue!;
+        Assert.That(t, Does.StartWith("探索度50%→75%；").And.EndWith("。安全线索：" + clue));
+        Assert.That(t, Does.Not.Contain("未发现新线索").And.Not.Contain("一条安全线索"));
+        Assert.That(t.IndexOf("安全线索", StringComparison.Ordinal), Is.EqualTo(t.Length - clue.Length - "安全线索：".Length), "线索正文不夹在路线拼接中");
+    }
+
     /// <summary>Q288-A01：换物主句只用实际地面名；第 3 行的下一世界午夜。</summary>
     [Test]
     public void Q288_A01_Appraisal_Trade_Lines()

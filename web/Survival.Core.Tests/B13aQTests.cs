@@ -180,7 +180,7 @@ public class B13aQTests : TestBase
         var res = s.Resources.Count(kv => kv.Value.Discovered);
         var edges = s.UnlockedEdges.Count;
         var t75 = Explore(s);
-        Assert.That(t75, Does.Contain("发现一条安全线索：" + clues["w11_orchard"].TrimEnd('。')));
+        Assert.That(t75, Does.EndWith("安全线索：" + clues["w11_orchard"]), "B38b Q290：线索原文完整位于最后");
         Assert.That(s.Resources.Count(kv => kv.Value.Discovered), Is.EqualTo(res), "不揭资源");
         Assert.That(s.UnlockedEdges.Count, Is.EqualTo(edges), "不揭路");
         int Count(GameState x) => x.Log.Count(l => l.Text.Contains(clues["w11_orchard"].TrimEnd('。')));

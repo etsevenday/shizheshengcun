@@ -126,12 +126,11 @@ namespace Survival.Core.Engine
         {
             ClearAction(s, a);
             var loc = a.TargetId;
-            var (old, now, found, ids) = ApplyExplore(s, loc);
-            var parts = new List<string>
-            {
-                $"探索度{old}%→{now}%",
-                found.Count > 0 ? $"发现{string.Join("与", found)}" : "未发现新线索",
-            };
+            var (old, now, found, ids) = ApplyExplore(s, loc, out var clue);
+            var parts = new List<string> { $"探索度{old}%→{now}%" };
+            // B38b（Q290 选 A）：安全线索不夹在“发现……”里；只有线索时省去“未发现新线索”
+            if (found.Count > 0) parts.Add($"发现{string.Join("与", found)}");
+            else if (clue == null) parts.Add("未发现新线索");
             if (!a.LegacyNoLoot)
             {
                 var got = GrantLoot(s, a, loc);
@@ -140,6 +139,7 @@ namespace Survival.Core.Engine
             }
             var text = string.Join("；", parts) + "。";
             if (now >= 100) text += "此地已充分探索。";
+            if (clue != null) text += clue;   // 一条日志，线索完整位于最后
             Emit(s, GameEventKind.ActionCompleted, text, null, ids);
             return true;
         }

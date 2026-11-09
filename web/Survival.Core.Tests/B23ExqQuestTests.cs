@@ -70,7 +70,7 @@ public class B23ExqQuestTests : TestBase
         Assert.That(p.Ok, Is.True, p.Reason);
         Assert.That(p.Notes, Has.Some.Contains("同时获得做法知识：维护手册蓝图"));
         Assert.That(p.Notes, Has.Some.Contains("净水操作套件的做法已掌握，只记来源"));
-        Assert.That(p.Notes, Has.Some.Contains("可选任务“水从哪里来”：领取后记为“记录已取得”"));
+        Assert.That(p.Notes, Has.Some.EqualTo("可选任务「水从哪里来」：领取后会记为记录已取得，回营区工坊和罗铮交谈即可回报（0分钟）。"));
         Assert.That(p.Notes, Has.Some.Contains("固定等待10分钟，按两段5分钟提交"));
         Start(s, ActionRequest.Gather("d05_07_unique"));
         Run(s);
@@ -78,7 +78,7 @@ public class B23ExqQuestTests : TestBase
         Assert.That(s.Progress.Flags, Does.Contain("claim:d05_07_unique").And.Contain("waterworks_record"));
         Assert.That(E.KnowsKnowledge(s, "blueprint_repair_manual"), Is.True);
         var log = s.Log.Last(l => l.Text.Contains("水厂阀控记录")).Text;
-        Assert.That(log, Does.Contain("获得做法知识：维护手册蓝图；净水操作套件的做法已掌握，只记来源").And.Contain("可选任务“水从哪里来”记录已取得：回营区工坊和罗铮交谈（0分钟）即完成"));
+        Assert.That(log, Does.Contain("获得做法知识：维护手册蓝图。净水操作套件的做法已掌握，只记来源").And.Contain("可选任务「水从哪里来」的记录已取得。回营区工坊和罗铮交谈即可回报（0分钟）。"));
         v = E.QuestViewOf(s, "EXQ05")!;
         Assert.That((v.Status, v.StatusText, v.Step), Is.EqualTo(("active", "记录已取得", "回营区工坊和罗铮交谈回报（0分钟，不交材料）。")));
         Assert.That(v.WorkLabel, Is.EqualTo("交谈（0分钟）"));
@@ -169,7 +169,7 @@ public class B23ExqQuestTests : TestBase
         Start(s, ActionRequest.Gather("d06_08_unique"));
         Run(s);
         Assert.That(s.Log.Last(l => l.Text.Contains("矿道作业手册")).Text, Does.Contain("知识已知，本次用于保存调查记录")
-            .And.Contain("可选任务“矿道里的旧工具”：记录已保存，在营区工坊和罗铮交谈接取时即完成"));
+            .And.Contain("可选任务「矿道里的旧工具」的记录已保存。到营区工坊和罗铮交谈接取即可完成（0分钟）。"));
         var items = s.Items.Sum(i => i.Count);
         E.DebugMapTeleport(s, "h03_workshop");
         ReadDialogues(s);
@@ -208,11 +208,11 @@ public class B23ExqQuestTests : TestBase
         E.DebugExpedition(s, "end");
         Assert.That(E.NewDungeonGeneration(s, "d08"), Is.Null);
         ToRecord(s, "d08_08");
-        Assert.That(E.Preview(s, ActionRequest.Gather("d08_08_unique")).Notes, Has.Some.Contains("这次只核对本次地牢的记录"));
+        Assert.That(E.Preview(s, ActionRequest.Gather("d08_08_unique")).Notes, Has.Some.EqualTo("「冷链调度档案」已在本局记录里。这次只核对本代记录，完成后开放本代出口。"));
 
         Start(s, ActionRequest.Gather("d08_08_unique"));
         Run(s);
-        Assert.That(s.Log.Last(l => l.Text.Contains("冷链调度档案")).Text, Does.Contain("已核对本次地牢的冷链调度档案"));
+        Assert.That(s.Log.Last(l => l.Text.Contains("冷链调度档案")).Text, Does.StartWith("已核对本代的「冷链调度档案」（本局已领）。"));
         // 试玩修复：本代已核对（按钮灰）时，夜间右栏也不写工作倍率行
         s.GameMinute = At(9, 23, 0);
         var greyed = E.Preview(s, ActionRequest.Gather("d08_08_unique"));
@@ -263,7 +263,7 @@ public class B23ExqQuestTests : TestBase
         Start(s, ActionRequest.Gather("d05_07_unique"));
         Run(s);
         Assert.That(E.QuestViewOf(s, "EXQ05"), Is.Null);
-        Assert.That(s.Log.Last(l => l.Text.Contains("水厂阀控记录")).Text, Does.Contain("营区登记后在营区工坊和罗铮交谈接取时即完成"));
+        Assert.That(s.Log.Last(l => l.Text.Contains("水厂阀控记录")).Text, Does.Contain("的记录已保存。营区登记后，到营区工坊和罗铮交谈接取即可完成（0分钟）。"));
         s.Progress.Flags.UnionWith(new[] { "registration_authorized", "hub_registered" });
         E.DebugMapTeleport(s, "h03_workshop");
         ReadDialogues(s);

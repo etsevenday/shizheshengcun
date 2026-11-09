@@ -56,7 +56,7 @@ public class B12ClaimTests : TestBase
             Go(s, "d01_08");
             Assert.That(E.CanStart(s, ActionRequest.Gather("d01_08_unique")), Is.Null, "新一代可核对本代记录");
             Do(s, "d01_08_unique");
-            Assert.That(s.Log.Last(l => l.Kind == GameEventKind.ActionCompleted.ToString()).Text, Does.Contain("不再重复发放"));
+            Assert.That(s.Log.Last(l => l.Kind == GameEventKind.ActionCompleted.ToString()).Text, Does.Contain("（本局已领）。"));
             Assert.That(s.Progress.Flags.Count, Is.EqualTo(flags), "不重发 campaign 事实");
             Assert.That(s.DungeonInstances["d01"].Facts, Does.Contain(GameEngine.RecordClaimedFact));
         }

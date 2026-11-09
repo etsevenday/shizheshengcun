@@ -96,7 +96,7 @@ namespace Survival.Core.Engine
             var r = SurveyRules;
             p.BaseMinutes = r.BaseMinutes;
             p.ConfirmText = $"开始{r.Name}·{r.BaseMinutes}分钟";
-            p.Notes.Add($"练习，不产物：不消耗资源点库存，不恢复箱子、资源或探索度，不扣清理次数");
+            p.Notes.Add("勘整用于练习搜集，可获得搜集经验。探索度、资源点与箱子库存、清理次数照旧。");   // B38b N02 附录 §3
             p.Notes.Add($"每天每个地点最多{r.DailyPerActorNode}次（今日已{SurveyDoneToday(s, here)}次）；取消不给经验、不占次数");
             p.Notes.Add("工具、装备与搜集速度被动都不缩短勘整；按正常搜集消耗身体");
             if (SurveyHazard(here) is HazardConfig h)

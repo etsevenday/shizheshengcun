@@ -70,14 +70,18 @@ namespace Survival.Core.Engine
         private IEnumerable<string> RecordQuestNotes(GameState s, ResourceConfig res, bool preview)
         {
             var key = ClaimKey(res.NodeId);
+            // B38b（N02 附录 §3、Q291-2）：预演用“领取后会……”“领取后先保存……”，实际完成才用“已取得”“已保存”
             foreach (var q in LiveQuests.Where(q => q.RecordFacts.Contains(key) && !QuestDone(s, q.Id)))
             {
-                var back = $"回{LocName(q.LocationId)}和{NpcNameOf(q.NpcId)}交谈（0分钟）即完成";
+                var head = $"{KindWord(q)}「{q.Title}」";
+                var where = $"{LocName(q.LocationId)}和{NpcNameOf(q.NpcId)}";
                 if (QuestAccepted(s, q.Id))
-                    yield return preview ? $"{KindWord(q)}“{q.Title}”：领取后记为“记录已取得”，{back}" : $"{KindWord(q)}“{q.Title}”记录已取得：{back}";
+                    yield return preview ? $"{head}：领取后会记为记录已取得，回{where}交谈即可回报（0分钟）。" : $"{head}的记录已取得。回{where}交谈即可回报（0分钟）。";
                 else
-                    yield return $"{KindWord(q)}“{q.Title}”：{(preview ? "领取后" : "")}记录已保存，" +
-                                 (QuestRequiresBlocked(s, q) == null ? "" : "营区登记后") + $"在{LocName(q.LocationId)}和{NpcNameOf(q.NpcId)}交谈接取时即完成，不用再进一次";
+                {
+                    var cond = QuestRequiresBlocked(s, q) == null ? "" : "营区登记后，";
+                    yield return preview ? $"{head}：领取后先保存记录，{cond}到{where}交谈接取即可完成（0分钟）。" : $"{head}的记录已保存。{cond}到{where}交谈接取即可完成（0分钟）。";
+                }
             }
         }
 

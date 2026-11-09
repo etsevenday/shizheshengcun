@@ -104,7 +104,7 @@ public class B13cClaimTests : TestBase
         Assert.That(text, Does.Contain("守卫战利品箱已出现"));
         Assert.That(E.ResourceStock(s, E.Resource("officer_cache")).Badge, Is.EqualTo("可领取"));
         var p = E.Preview(s, ActionRequest.Gather("officer_cache"));
-        Assert.That(p.Notes, Has.Some.Contains("本代守卫战胜利后出现"));
+        Assert.That(p.Notes, Has.Some.EqualTo("击败本代守卫后可领取这只箱，本局只领一次。"));
         Do(s, "officer_cache");
         Assert.That(Count(s, "service_pistol", "d03_07"), Is.EqualTo(1));
         Assert.That(s.Resources.ContainsKey("d03_04_officer"), Is.False);

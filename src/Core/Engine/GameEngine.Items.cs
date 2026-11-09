@@ -650,7 +650,10 @@ namespace Survival.Core.Engine
         /// 探索完成：按地点增量（旧 8 地点 +25；新区普通 +25、地牢房间 +50，S03/Q31）推进探索度，按 25→50→75→100 顺序处理新跨过的里程碑，
         /// 每个只触发一次。v3 新节点：25/50 揭对应资源点（B12 起可采集）、75 给安全线索（不发物资）、100 揭出边（门槛也要满足）。
         /// </summary>
-        private (int old, int now, List<string> found, List<string> ids) ApplyExplore(GameState s, string locationId)
+        private (int old, int now, List<string> found, List<string> ids) ApplyExplore(GameState s, string locationId) => ApplyExplore(s, locationId, out _);
+
+        /// <param name="clue">本次实际触发的安全线索整句（B38b Q290：不再夹进“发现……”，由完成日志接在最后）；没有为 null。</param>
+        private (int old, int now, List<string> found, List<string> ids) ApplyExplore(GameState s, string locationId, out string? clue)
         {
             var ls = s.Locations[locationId];
             var lc = _locs[locationId];
@@ -660,6 +663,7 @@ namespace Survival.Core.Engine
 
             var found = new List<string>();
             var ids = new List<string>();
+            clue = null;
             foreach (var t in new[] { 25, 50, 75, 100 })
             {
                 if (t <= old || t > now) continue;
@@ -672,7 +676,7 @@ namespace Survival.Core.Engine
                     found.Add(r.Name);
                     ids.Add(r.NodeId);
                 }
-                if (t == 75 && HasClue(lc)) found.Add(ClueLine(lc));
+                if (t == 75 && HasClue(lc)) clue = ClueLine(lc);
             }
             var r2 = RefreshGates(s);
             found.AddRange(RouteNotes(s, r2, locationId));
@@ -687,8 +691,8 @@ namespace Survival.Core.Engine
         /// </summary>
         private static bool HasClue(Config.LocationConfig lc) => !string.IsNullOrEmpty(lc.Clue) && !lc.IsStarter && !lc.IsDungeon;
 
-        /// <summary>日志里的线索短语：“一条安全线索：&lt;逐点文案&gt;”（去掉文案末尾句号，接在“发现……”句里）。</summary>
-        private string ClueLine(Config.LocationConfig lc) => Config.Map.ClueText + lc.Clue!.TrimEnd('。');
+        /// <summary>日志末尾的线索句：“安全线索：&lt;线索原文&gt;”（B38b Q290：保留线索自身标点）。</summary>
+        private string ClueLine(Config.LocationConfig lc) => Config.Map.ClueText + lc.Clue!;
 
         /// <summary>重判门槛并返回本次新开通的边（v3 门槛求值器，B11；旧式 unlockAny 边同样处理）。</summary>
         private List<Config.EdgeConfig> UnlockEdges(GameState s) => RefreshGates(s).Unlocked;
