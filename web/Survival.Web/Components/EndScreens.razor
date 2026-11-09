@@ -46,7 +46,6 @@
             <div class="btn-row">
                 <button class="primary" @onclick="Restart">重新开始</button>
                 <button class="secondary" @onclick="ShowLog">查看记录</button>
-                <button class="secondary" @onclick="Feedback">反馈</button>
                 <button class="secondary" @onclick="G.BackToTitle">返回标题</button>
             </div>
             <div class="under">原型不提供跨局继承，重新开始会完整重置世界与角色。</div>
@@ -65,7 +64,5 @@
     }
 
     private void ShowLog() => showLog = true;
-
-    private async Task Feedback() => await JS.InvokeVoidAsync("survival.openFeedback");
 
 }

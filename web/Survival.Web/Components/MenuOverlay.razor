@@ -1,55 +1,67 @@
 @inherits GameComponent
 @inject IJSRuntime JS
 
+@{
+    // B31b（逐字稿 §1.1 Q322）：强制对白锁期间只开放关闭菜单、阅读／动画偏好与反馈；其余入口按原锁禁用，悬停写原锁的说明
+    var locked = G.DialogueLocked;
+    var lockTip = locked ? "请先读完对话" : null;
+}
 @if (Battle)
 {
-    @* 战斗菜单（开发计划 v0.5 假设 10；B9 A10 §6.3）：继续、系统说明、保存并返回标题；不含脱战，Esc 不能关掉战斗免费脱战（菜单已开时 Esc 回战场） *@
-    <div class="overlay" role="dialog" aria-label="战斗菜单" style="inset:14px auto auto 50%;transform:translateX(-50%);width:440px">
-        <div class="overlay-head">
-            <h2>@(G.S.Battle != null ? $"战斗菜单 · 第{G.S.Battle.Round}轮" : "菜单 · 敌踪选择中")</h2>
-            <button class="secondary" @onclick="() => G.ToggleBattleMenu(false)">继续<kbd>Esc</kbd></button>
-        </div>
-        <div style="padding:18px;display:flex;flex-direction:column;gap:14px">
-            @if (G.S.Battle != null)
-            {
-                <div class="tiny muted">战斗中不能通过菜单脱战；撤退请用指令条的“撤退”。每条指令与敌方行动后都已自动保存。</div>
-                @if (G.S.Expedition != null)
+    @* 战斗菜单（P05g；开发计划 v0.5 假设 10、B9 A10 §6.3）：阅读字体、动画速度、系统说明、反馈与留言、保存并返回标题、返回战斗；不含脱战，
+       Esc 不能关掉战斗免费脱战（菜单已开时 Esc 回战场）。敌踪选择中同用这一层（B31a 开发假设 8），标题与关闭键沿现行。 *@
+    var inBattle = G.S.Battle != null;
+    <div class="menu-scrim" role="presentation">
+        <div class="menu-modal overlay" role="dialog" aria-modal="true" aria-label="@(inBattle ? ShellText.BattleMenu : "菜单 · 敌踪选择中")">
+            <div class="overlay-head mm-head">
+                <h2>@(inBattle ? ShellText.BattleMenu : "菜单 · 敌踪选择中")</h2>
+            </div>
+            <div class="mm-body" data-wheel="y">
+                @if (inBattle)
                 {
-                    @* B21（R03 D5）：战斗中菜单的“终止远征”只解释，必须先普通撤退 *@
-                    <button class="secondary" disabled title="先在战斗里撤退">终止本次远征</button>
-                    <div class="tiny muted">战斗中不能直接终止远征：先用指令条的“撤退”离开这场战斗（地牢里撤退会退回来路上没有敌人的房间），再从菜单或安全点终止。</div>
+                    <div class="tiny muted">战斗中不能通过菜单脱战；撤退请用指令条的“撤退”。每条指令与敌方行动后都已自动保存。</div>
+                    @if (G.S.Expedition != null)
+                    {
+                        @* B21（R03 D5）：战斗中菜单的“终止远征”只解释，必须先普通撤退 *@
+                        <button class="secondary" disabled title="先在战斗里撤退">终止本次远征</button>
+                        <div class="tiny muted">战斗中不能直接终止远征：先用指令条的“撤退”离开这场战斗（地牢里撤退会退回来路上没有敌人的房间），再从菜单或安全点终止。</div>
+                    }
                 }
-            }
-            else
-            {
-                <div class="tiny muted">发现敌踪后要先在中间选择“接敌”或“绕行”，菜单不能跳过这个选择；返回标题后再继续仍停在这里。</div>
-            }
-            <button class="secondary" @onclick="() => G.ToggleBattleMenu(false)">继续</button>
-            @* B31a（Q295、Q321）：阅读字体与动画速度，与常态菜单同一偏好；战斗与敌踪选择中都可调，只改呈现 *@
-            <PresentationSettings />
-            @if (G.S.Battle != null)
-            {
-                @* B9（A10 §6.3）：战斗菜单含系统说明（阅读暂停，不触发敌方行动、不推进世界时间） *@
-                <button class="secondary" @onclick='() => { G.ToggleBattleMenu(false); G.OpenBattleDrawer("help"); }'>系统说明</button>
-            }
-            <button class="secondary" @onclick="ToTitle">保存并返回标题</button>
+                else
+                {
+                    <div class="tiny muted">发现敌踪后要先在中间选择“接敌”或“绕行”，菜单不能跳过这个选择；返回标题后再继续仍停在这里。</div>
+                }
+                @* B31a（Q295、Q321）：阅读字体与动画速度，与常态菜单同一偏好；战斗与敌踪选择中都可调，只改呈现 *@
+                <PresentationSettings />
+                @if (inBattle)
+                {
+                    @* B9（A10 §6.3）：战斗菜单含系统说明（阅读暂停，不触发敌方行动、不推进世界时间）；对白锁期间禁用 *@
+                    <button class="secondary" disabled="@(!ShellMenu.Enabled(ShellMenuItem.Help, locked))" title="@lockTip" @onclick='() => { G.ToggleBattleMenu(false); G.OpenBattleDrawer("help"); }'>@ShellText.Help</button>
+                }
+                <button class="secondary" @onclick="Feedback">@ShellText.Feedback</button>
+            </div>
+            <div class="mm-foot">
+                <button class="secondary" disabled="@(!ShellMenu.Enabled(ShellMenuItem.SaveToTitle, locked))" title="@lockTip" @onclick="ToTitle">@ShellText.SaveToTitle</button>
+                <button class="primary" @ref="_first" @onclick="() => G.ToggleBattleMenu(false)">@(inBattle ? ShellText.BackToBattle : "继续")</button>
+            </div>
         </div>
     </div>
     return;
 }
-<div class="overlay menu-top" role="dialog" aria-label="菜单" style="inset:14px auto auto 50%;transform:translateX(-50%);width:520px">
-    <div class="overlay-head">
-        <h2>菜单</h2>
-        <button class="secondary" @onclick="Close">关闭<kbd>Esc</kbd></button>
+@* 游戏菜单（PXb；Q322）：盖在当前画面上的居中一层，关闭后回到原场景；对白锁、行动推进和暂停中也可打开，不提交、取消或恢复世界行动 *@
+<div class="menu-scrim" role="presentation">
+<div class="menu-modal overlay menu-top" role="dialog" aria-modal="true" aria-label="@ShellText.GameMenu">
+    <div class="overlay-head mm-head">
+        <h2>@ShellText.GameMenu</h2>
     </div>
-    <div class="menu-scroll" style="padding:18px;display:flex;flex-direction:column;gap:14px">
+    <div class="mm-body menu-scroll" data-wheel="y">
         @* B31a（Q295、Q321）：阅读字体与动画速度（浏览器偏好，取代原「动画速度（每5分钟时间段）」40／120／250 档） *@
         <PresentationSettings />
         <div class="lines">
             <div><span>种子</span><b>@G.S.Seed</b></div>
             <div><span>已推进时间段</span><b>@G.S.SegmentCount</b></div>
-            <div><span>存档</span><b>本浏览器单槽，每段自动保存</b></div>
         </div>
+        <div class="tiny muted">@ShellText.SaveNote</div>
         @if (G.S.Expedition != null || G.E.ExpeditionEnabled(G.E.DungeonAt(G.S.CurrentLocation)))
         {
             @* B21（R03 D5、A10 §7）：非战斗时从菜单发起终止远征（先看同一预估，可取消）；撤出中只说明不可取消 *@
@@ -60,34 +72,33 @@
             }
             else
             {
-                <button class="secondary danger" disabled="@(abortWhy != null)" title="@(abortWhy ?? "先看即时损失与返程时间，确认前可以取消")" @onclick="G.OpenAbort">终止本次远征…</button>
+                <button class="secondary danger" disabled="@(abortWhy != null || !ShellMenu.Enabled(ShellMenuItem.AbortExpedition, locked))" title="@(lockTip ?? abortWhy ?? "先看即时损失与返程时间，确认前可以取消")" @onclick="OpenAbort">终止本次远征…</button>
                 @if (abortWhy != null) { <div class="tiny muted">@abortWhy</div> }
             }
         }
-        <button class="secondary" @onclick="Feedback">反馈与留言（F）</button>
-        <button class="secondary" @onclick="ToTitle">返回标题（进度已保存）</button>
+        <button class="secondary" @onclick="Feedback">@ShellText.Feedback</button>
         @if (!confirmNew)
         {
-            <button class="secondary danger" @onclick="() => confirmNew = true">重新开始…</button>
+            <button class="secondary danger" disabled="@(!ShellMenu.Enabled(ShellMenuItem.Restart, locked))" title="@lockTip" @onclick="() => confirmNew = true">重新开始…</button>
         }
         else
         {
             <div class="confirm-box">
                 重新开始会清除当前存档，无法恢复。
                 <div class="row">
-                    <button class="secondary danger" @onclick="Restart">确认重新开始</button>
+                    <button class="secondary danger" disabled="@locked" @onclick="Restart">确认重新开始</button>
                     <button class="secondary" @onclick="() => confirmNew = false">取消</button>
                 </div>
             </div>
         }
         @if (DebugBuild || DevMode)
         {
-            <button class="secondary" @onclick="G.DebugFill">调试：在当前地面放一批物资</button>
+            <button class="secondary" disabled="@locked" @onclick="G.DebugFill">调试：在当前地面放一批物资</button>
         }
         @if (DevMode)
         {
             @* 开发入口（地址加 ?dev=1 才显示）：开发测试箱、放敌人、立即敌踪、感染与尸变测试。正式流程不可见。 *@
-            <div class="dev-box">
+            <div class="dev-box" inert="@(!ShellMenu.Enabled(ShellMenuItem.Dev, locked))">
                 <div class="eyebrow">开发入口（?dev=1）</div>
                 <div class="btn-row">
                     <button class="secondary" @onclick="DevKit">开发测试箱</button>
@@ -431,8 +442,13 @@
                 </div>
             </div>
         }
-        <div class="tiny muted">快捷键：M 地图 · C 手工制作 · R 休息 · L 日志 · F 反馈 · Esc 关闭当前面板。Esc 不会取消进行中的行动。</div>
+        <div class="tiny muted">快捷键：M 地图 · C 手工制作 · R 休息 · L 日志 · Esc 关闭当前面板。Esc 不会取消进行中的行动。</div>
     </div>
+    <div class="mm-foot">
+        <button class="secondary" disabled="@(!ShellMenu.Enabled(ShellMenuItem.SaveToTitle, locked))" title="@lockTip" @onclick="ToTitle">@ShellText.SaveToTitle</button>
+        <button class="primary" @ref="_first" @onclick="Close">@ShellText.ContinueGame</button>
+    </div>
+</div>
 </div>
 
 @code {
@@ -508,8 +524,7 @@
         G.FlushEvents();
         G.Notice = text;
         G.Save();
-        G.Panel = null;
-        G.Notify();
+        G.SetMenu(false);
     }
 
     private void DevMeds()
@@ -538,8 +553,7 @@
     private void DevParty(Func<GameState, string> act)
     {
         G.DevParty(act);
-        G.Panel = null;
-        G.Notify();
+        G.SetMenu(false);
     }
 
     private void DevSubstance()
@@ -607,9 +621,23 @@
         G.NewGame();
     }
 
-    private void Close()
+    private void Close() => G.SetMenu(false);
+
+    /// <summary>终止远征确认窗（PXd）：先收菜单再开确认窗。</summary>
+    private void OpenAbort()
     {
-        G.Panel = null;
-        G.Notify();
+        G.SetMenu(false);
+        G.OpenAbort();
+    }
+
+    private ElementReference _first;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // 菜单打开时键盘焦点进菜单：回车／空格落在菜单自己的按钮上，不会推进背后的对白或下达战斗指令（Q322「菜单不会消费对白继续键」）
+        if (firstRender)
+        {
+            try { await _first.FocusAsync(); } catch (Exception) { /* 渲染尚未完成或已关闭 */ }
+        }
     }
 }

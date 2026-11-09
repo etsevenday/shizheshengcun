@@ -20,7 +20,8 @@
     var rightSpeaking = v.CurrentIsPerson && cur.Side == DialogueSide.Right;
     var other = v.Counterpart;
     var more = v.HasMore;
-    <div class="dlg-layer" role="dialog" aria-modal="true" aria-label="@v.AriaName">
+    @* B31b（Q322）：游戏菜单／战斗菜单开着时对白层不可操作，菜单不会消费对白继续键；关菜单后回到原对白行 *@
+    <div class="dlg-layer" role="dialog" aria-modal="true" aria-label="@v.AriaName" inert="@(G.MenuOpen || G.BattleMenuOpen)">
         <div class="dlg-side left @(leftSpeaking ? "speaking" : "idle")">
             <img class="dlg-portrait" src="img/portraits/protagonist.svg" alt="主角（临时形象）" draggable="false" />
             <div class="dlg-name"><b>你</b>@if (leftSpeaking) {<em>发言中</em>}</div>

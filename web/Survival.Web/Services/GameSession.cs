@@ -293,8 +293,29 @@ public sealed class GameSession
 
     /// <summary>有未读完的对话（Q10）：整局游戏输入锁定，界面只保留对话层的阅读与“继续/结束对话”。</summary>
     public bool DialogueLocked => State != null && Engine != null && E.DialogueLocked(S);
-    /// <summary>当前打开的浏览层：map / craft / rest / log / goals / tips / dialogs / help / menu。</summary>
+    /// <summary>当前打开的浏览层：map / craft / rest / log / goals / tips / dialogs / help 等（游戏菜单另见 <see cref="MenuOpen"/>）。</summary>
     public string? Panel { get; set; }
+
+    /// <summary>
+    /// B31b（逐字稿 §1.1 Q322、PXb）：常态游戏菜单是盖在当前画面上的一层，不替换已开的面板，关闭后回到原场景；
+    /// 对白锁、行动推进与暂停中也可打开（锁内只开放关闭、阅读／动画偏好与反馈）。打开或关闭都不提交、取消或恢复世界行动。
+    /// 战斗与敌踪用 <see cref="BattleMenuOpen"/>。
+    /// </summary>
+    public bool MenuOpen { get; private set; }
+
+    public void SetMenu(bool open)
+    {
+        if (open && State == null) return;
+        MenuOpen = open;
+        if (open)
+        {
+            // 菜单盖住画面：收起悬停预测、就近浮窗与状态浮层，它们不在菜单下面继续可点（不提交、不取消任何草稿以外的东西）
+            HoverPreview = null;
+            StatusHover = null;
+            StatusPinned = null;
+        }
+        Notify();
+    }
     /// <summary>从设施卡打开加工面板时要预选的配方；面板读取一次后清空。</summary>
     public string? CraftRecipe { get; set; }
     /// <summary>手工制作当前分类标签（B10：工坊/营地建造/自动加工）；null 时按所选配方的工坊。</summary>
@@ -1025,7 +1046,7 @@ public sealed class GameSession
             ClearHoverNow();
             StatusHover = null;
             StatusPinned = null;
-            if (Panel == "menu") Panel = null;
+            MenuOpen = false;
             BattleMenuOpen = false;
             // B9 战斗对白锁（A10 §6.2）：取消未提交瞄准、医疗确认、抽屉与临时悬停；已提交的指令不撤销，选中查看的对象保留
             BattleAction = null;
@@ -1167,6 +1188,7 @@ public sealed class GameSession
         Selected = new Selection();
         DetailTab = DetailTab.Character;
         Panel = null;
+        MenuOpen = false;
         HoverPreview = null;
         IgniteMenuOpen = false;
         Pop = null;
@@ -2138,6 +2160,16 @@ public sealed class GameSession
     /// 全屏战斗的 Esc（A10 §6.3）：每次只关最高可退层——战斗菜单（已开则回战场）→ 数量框 → 医疗小盘/就近浮窗 → 固定的状态说明 →
     /// 物资/战报/装备/说明抽屉（说明内先逐级返回）→ 取消瞄准 → 清查看对象 → 打开战斗菜单。不关闭战斗、不脱战、不提交指令。
     /// </summary>
+    /// <summary>
+    /// B31b（Q322）：全屏战斗里还有看得见、可关闭的子层。只是悬停的预测（<see cref="BattleHover"/>）与外层残留选中在战场上看不见，
+    /// 不算子层，不吃掉一次 Esc（修 B31a 线上遗留「战斗中 Esc 有时要按两次」）。
+    /// </summary>
+    public bool BattleHasEscLayer =>
+        State != null && S.Battle != null
+        && (PendingDrop != null || MedTrayOpen || Pop != null || StatusPinned != null || BattleDrawer != null || BattleAction != null || BattleAllyView != null
+            // 只剩一个敌人时查看对象由 AutoTarget 自动选上，不是玩家打开的子层
+            || (BattleTarget != null && S.Battle.Alive.Count() > 1));
+
     public void BattleEscape()
     {
         if (State == null || S.Battle == null) return;
@@ -2149,7 +2181,7 @@ public sealed class GameSession
         if (BattleDrawer == "help") { HelpBack(); return; }
         if (BattleDrawer != null) { OpenBattleDrawer(null); return; }
         if (BattleAction != null) { ClearBattleAction(); return; }
-        if (BattleTarget != null || BattleHover != null || BattleAllyView != null || Selected.Kind != SelectionKind.None)
+        if (BattleTarget != null || BattleAllyView != null)
         {
             BattleTarget = null;
             BattleAllyView = null;

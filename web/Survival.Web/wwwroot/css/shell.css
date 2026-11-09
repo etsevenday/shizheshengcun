@@ -1,0 +1,47 @@
+/* 重墨 V2 外壳（开发计划 v1.0 B31b；逐字稿 §1.1 Q319、Q322、Q325，§2 PXb、PXe、PXn）。本文件最后加载，只管外壳几何与外壳浮层：
+   双行顶栏、左右栏、四轨、底栏、居中弹窗（游戏菜单、战斗菜单、行动暂停）与中央浮窗（行动进行中）。
+   基准 1600×900 照 a9b93f0《逐页坐标与组件槽》；1280×720 ×0.8、1920×1080 ×1.2，按整 CSS px 对齐，余差给中部；字号与 40px 触控下限不缩放。 */
+
+:root {
+  /* 居中弹窗 [420,187,760,547]、中央浮窗 [512,310,576,281]（1600 基准） */
+  --pop-w: 760px;
+  --pop-h: 547px;
+  --float-w: 576px;
+  --float-h: 281px;
+}
+
+/* ───── 居中弹窗：游戏菜单（PXb）、战斗菜单（P05g） ───── */
+/* 遮罩挡住背后全部输入（无穿透）；菜单本身固定标题与底部按钮，正文独立滚动，任何档位都不超出视口 */
+.menu-scrim {
+  position: fixed; inset: 0; z-index: 85;
+  background: color-mix(in srgb, var(--ink2-black) 45%, transparent);
+  display: grid; place-items: center;
+}
+.menu-modal.overlay {
+  position: relative; inset: auto; transform: none;
+  width: min(var(--pop-w), calc(100vw - 16px));
+  height: min(var(--pop-h), calc(100vh - 16px));
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.menu-modal .mm-head { flex: 0 0 auto; }
+.menu-modal .mm-body {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 14px 18px; display: flex; flex-direction: column; gap: 12px;
+}
+.menu-modal .mm-foot {
+  flex: 0 0 auto; display: flex; justify-content: space-between; gap: 12px;
+  padding: 10px 18px 14px; border-top: 1px solid var(--line);
+}
+.menu-modal .mm-foot > button { flex: 0 1 240px; width: auto; min-height: 40px; }
+.menu-modal .pref-group { display: grid; grid-template-columns: minmax(6em, auto) minmax(0, 1fr); align-items: center; gap: 8px 12px; }
+.menu-modal .pref-group .eyebrow { margin: 0; font-size: var(--fs-body); color: var(--muted); }
+.menu-modal .lines { margin: 0; }
+/* 原「menu-scroll 高度按 100vh-110px」不再用：开发模式长菜单在弹窗正文里滚动，底部按钮固定可达 */
+.menu-modal .menu-scroll { max-height: none; }
+
+/* ───── 标题页（PXa） ───── */
+.title-card .title-pref { margin-top: 22px; }
+.title-card .title-pref .pref-group { display: flex; align-items: center; gap: 12px; }
+.title-card .title-pref .pref-group .eyebrow { margin: 0; font-size: var(--fs-body); white-space: nowrap; }
+.title-card .title-pref .btn-row { flex: 1 1 auto; }
+.title-card .actions .secondary.on { border-color: var(--accent); color: var(--accent); }

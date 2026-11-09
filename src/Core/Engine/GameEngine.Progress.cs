@@ -32,6 +32,8 @@ namespace Survival.Core.Engine
         /// <summary>有未读对话：中央条标“对话中，时间未推进”。</summary>
         public bool DialogueWaiting { get; set; }
         public int ElapsedMinutes { get; set; }
+        /// <summary>B31b（Q320）：固定时长行动（含补给子行动、单段事务）的计划总时长，用于「已推进{已耗时} / {计划时长}」；工作量型与等待烹饪没有计划总时长，为 null。</summary>
+        public int? PlannedMinutes { get; set; }
         /// <summary>剩余游戏分钟（按 5 分钟段）；无法给出可信倒计时（如燃料不足会停止）为 null，此时看 StopNote。</summary>
         public int? RemainingMinutes { get; set; }
         /// <summary>工作与等待烹饪的剩余是按当前及可预知条件重算的“预计”；固定时长为 false。</summary>
@@ -91,6 +93,7 @@ namespace Survival.Core.Engine
             else if (IsFixedDuration(a.Type))
             {
                 info.RemainingMinutes = Math.Max(0, a.PlannedMinutes - a.ElapsedMinutes);
+                info.PlannedMinutes = a.PlannedMinutes;
                 info.Fraction = a.PlannedMinutes <= 0 ? 0 : Math.Min(1, a.ElapsedMinutes / (double)a.PlannedMinutes);
             }
             else

@@ -3,7 +3,7 @@
 @* B29（R14、R67、R90—R93，P04、Q264）：给同行者吃喝的局部盘，四区“选择同行者—选择来源—预计变化—确认操作”。过渡期用现有 AnchorPop，B31 换重墨样式。
    开盘目标一律留空；来源行、原因、预览、确认文字全部来自内核 FeedPanel，界面不另判。× / Esc / 取消只收起未提交意图，不耗时、不扣物。
    说明打开时让位（草稿留在 GameSession），返回后重新走 FeedPanel 重验。 *@
-@if (G.State != null && G.FeedPending is { } ctx && G.Panel != "help" && G.Panel != "menu" && !G.DialogueLocked)
+@if (G.State != null && G.FeedPending is { } ctx && G.Panel != "help" && !G.MenuOpen && !G.DialogueLocked)
 {
     var d = ctx.Draft;
     var v = G.E.FeedPanel(G.S, d);

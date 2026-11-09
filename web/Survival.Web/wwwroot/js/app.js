@@ -133,6 +133,11 @@ window.survival = {
         return t ? { name: 'save.json', text: t } : null;
       },
       attachmentLabel: '附带当前存档（方便作者复现问题）',
+      // B31b（Q322「返回」）：反馈关闭后回到游戏菜单，键盘焦点回到菜单里的按钮
+      onClose: function () {
+        var b = document.querySelector('.menu-modal .mm-foot .primary');
+        if (b) { try { b.focus(); } catch (e) { } }
+      },
     });
   },
   openFeedback: function () { if (window.FeedbackWidget) FeedbackWidget.open(); },
@@ -140,13 +145,22 @@ window.survival = {
     if (window.__survivalKeys) document.removeEventListener('keydown', window.__survivalKeys);
     window.__survivalKeys = function (ev) {
       var t = ev.target && ev.target.tagName;
-      // 人物对话读完锁（Q10、S14 §10.1）：数字跳数量框、回车执行操作条、M/C/R/L、Esc 一律不转给游戏；
-      // 对话层自己的按钮仍可用键盘聚焦后按回车/空格（浏览器原生行为），F 反馈不属于游戏操作
-      if (document.querySelector('.dlg-layer')) {
-        if (ev.key === 'Escape') { ev.preventDefault(); return; }
-        if ((ev.key === 'f' || ev.key === 'F') && t !== 'INPUT' && t !== 'TEXTAREA' && !ev.ctrlKey && !ev.altKey && !ev.metaKey && !(window.FeedbackWidget && FeedbackWidget.isOpen())) {
+      // 反馈与留言窗口开着：按键归窗口自己（它的 Esc 只关窗口，关掉后回到游戏菜单，Q322）
+      if (window.FeedbackWidget && FeedbackWidget.isOpen()) return;
+      // B31b（Q322）：游戏菜单／战斗菜单打开时，只有 Esc 交给游戏（收起菜单）；回车、空格、数字留给菜单里的按钮，不落到背后的操作条、对白或战斗指令
+      if (document.querySelector('.menu-modal')) {
+        if (ev.key === 'Escape' && !ev.ctrlKey && !ev.altKey && !ev.metaKey) {
           ev.preventDefault();
-          dotnet.invokeMethodAsync('OnKey', 'F');
+          dotnet.invokeMethodAsync('OnKey', 'Escape');
+        }
+        return;
+      }
+      // 人物对话读完锁（Q10、S14 §10.1）：数字跳数量框、回车执行操作条、M/C/R/L 一律不转给游戏；对话层自己的按钮仍可用键盘聚焦后按回车/空格（浏览器原生行为）。
+      // Esc 不结束对白，交给游戏打开当前情境的游戏菜单（B31b，Q322）
+      if (document.querySelector('.dlg-layer')) {
+        if (ev.key === 'Escape' && !ev.ctrlKey && !ev.altKey && !ev.metaKey) {
+          ev.preventDefault();
+          dotnet.invokeMethodAsync('OnKey', 'Escape');
         }
         return;
       }
@@ -172,7 +186,6 @@ window.survival = {
       }
       if (ev.ctrlKey || ev.altKey || ev.metaKey) return;
       var k = ev.key;
-      if (window.FeedbackWidget && FeedbackWidget.isOpen()) return;
       // 全屏战斗（A10 §6.4）：1—5 只选本页技能位、Q/E 切武器Ⅰ/Ⅱ页（0AP）、←/→ 在合法目标间移动预测、回车提交当前预测的目标；
       // 焦点在按钮或可点锚点上时回车/空格交给它自己（浏览器原生），不重复提交
       if (document.querySelector('.bfs') && t !== 'INPUT' && t !== 'TEXTAREA') {
@@ -187,7 +200,8 @@ window.survival = {
       }
       // 数量框等弹窗自己处理按键（回车确认、Esc 取消），不再触发游戏快捷键
       if (ev.target && ev.target.closest && ev.target.closest('.modal')) return;
-      if (['m', 'M', 'c', 'C', 'r', 'R', 'l', 'L', 'f', 'F', 'Escape'].indexOf(k) >= 0) {
+      // B31b（Q322）：反馈只从游戏菜单进入，F 不再直达
+      if (['m', 'M', 'c', 'C', 'r', 'R', 'l', 'L', 'Escape'].indexOf(k) >= 0) {
         ev.preventDefault();
         // Esc 收起预览/选中后，焦点仍留在刚点过的按钮上会被画成键盘焦点框，看起来像“仍选中”（试玩修复 L6）
         if (k === 'Escape' && document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
