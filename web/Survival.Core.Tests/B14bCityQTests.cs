@@ -224,14 +224,14 @@ public class B14bCityQTests : TestBase
         Assert.That(string.Join("|", E.CityServicePreview(t, "hub_workshop_access")!.Lines), Does.Not.Contain("旧存档").And.Contain("已开放 营区工坊工作台、营区工坊锻炉、营区工坊军械台"));
     }
 
-    /// <summary>CITY-Q149-01：两个施济选项逐字用定稿名称；正好 40 不算低于 40；其他领取限制与发物照原规则。</summary>
+    /// <summary>CITY-Q149-01：两个施济选项逐字用定稿名称（B38c Q301 起食物项为“烤熟块根1份”，与产物全名一致）；正好 40 不算低于 40；其他领取限制与发物照原规则。</summary>
     [Test]
     public void CITY_Q149_01_ReliefChoiceNamesAndThreshold()
     {
         var relief = Cfg.City.Services.Single(x => x.Id == "church_relief_ration");
-        Assert.That(relief.Choices.Select(c => c.Label), Is.EqualTo(new[] { "熟块根1份（饱食低于40）", "净水1份（水分低于40）" }));
+        Assert.That(relief.Choices.Select(c => c.Label), Is.EqualTo(new[] { "烤熟块根1份（饱食低于40）", "净水1份（水分低于40）" }));
         var s = At("c04_alms");
-        Assert.That(E.CityServicePreview(s, "church_relief_ration")!.Choices.Select(c => c.Label), Is.EqualTo(new[] { "熟块根1份（饱食低于40）", "净水1份（水分低于40）" }));
+        Assert.That(E.CityServicePreview(s, "church_relief_ration")!.Choices.Select(c => c.Label), Is.EqualTo(new[] { "烤熟块根1份（饱食低于40）", "净水1份（水分低于40）" }));
         SetStats(s, 15, 40, 40, 15, 80, 70);
         Assert.That(E.CityServicePreview(s, "church_relief_ration")!.Targets.Single().Blocked, Is.Not.Null, "正好40不算低于40");
         Assert.That(E.StartCityService(s, "church_relief_ration", GameState.PlayerId, "relief_food").Ok, Is.False);

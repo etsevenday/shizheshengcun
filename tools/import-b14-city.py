@@ -58,7 +58,7 @@ IMPLEMENTED = {
 }
 # Q141 公共站的资格别名：legacy_QMAP02_completed = 可信旧 QMAP02 完成事实，与 B13b 工坊首次支援包同一事实键
 QUAL_ALIAS = {"legacy_QMAP02_completed": "trusted_legacy_QMAP02_completed"}
-CHOICE_LABELS = {"relief_food": "熟块根1份（饱食低于40）", "relief_water": "净水1份（水分低于40）"}
+CHOICE_LABELS = {"relief_food": "烤熟块根1份（饱食低于40）", "relief_water": "净水1份（水分低于40）"}
 
 STATE_TITLES = {
     "first_greeting": "初次见面", "role": "岗位说明", "quest_offer": "委托", "quest_return": "委托回报", "idle": "闲谈",

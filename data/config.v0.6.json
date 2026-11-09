@@ -35463,7 +35463,7 @@
         "choices": [
           {
             "id": "relief_food",
-            "label": "熟块根1份（饱食低于40）",
+            "label": "烤熟块根1份（饱食低于40）",
             "stat": "satiety",
             "below": 40.0,
             "outputs": {

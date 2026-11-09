@@ -9,6 +9,12 @@
     var e = G.E;
     var v = e.AppraisalPreview(s);
     var sample = v.Samples.FirstOrDefault(x => x.InstanceId == _sample) ?? v.Samples.FirstOrDefault(x => !x.Reserved) ?? v.Samples.FirstOrDefault();
+    // B38c（N02 附录 Q299）：换物页地面样本按地面卡一堆一行，行上绑定的实例由引擎按现行样本顺序挑；按行键记住所选行，没选过就跟随另两页所选样本所在的行
+    var trade = _tab == "trade";
+    var tsample = v.TradeSamples.FirstOrDefault(x => x.RowKey == _tradeRow)
+                  ?? (_tradeRow == null && sample != null ? v.TradeSamples.FirstOrDefault(x => x.MemberIds.Contains(sample.InstanceId)) : null)
+                  ?? v.TradeSamples.FirstOrDefault(x => !x.Reserved) ?? v.TradeSamples.FirstOrDefault();
+    var rows = trade ? v.TradeSamples : v.Samples;
     var busy = G.Running ? GameEngine.CityBusyText : null;
 }
 
@@ -29,13 +35,15 @@
     else
     {
         <div class="city-targets ap-samples">
-            @foreach (var x in v.Samples)
+            @foreach (var x in rows)
             {
                 var id = x.InstanceId;
-                <label class="@(x.Reserved ? "muted" : "")" title="@($"来源事件（开发核验）：{(x.DevSource == "" ? "无" : x.DevSource)}")">
-                    <input type="radio" name="ap-sample" checked="@(sample?.InstanceId == id)" @onchange="() => _sample = id" />
+                var rk = x.RowKey;
+                var on = trade ? tsample?.RowKey == rk : sample?.InstanceId == id;
+                <label @key="rk" class="@(x.Reserved ? "muted" : "")" title="@($"来源事件（开发核验）：{(x.DevSource == "" ? "无" : x.DevSource)}")">
+                    <input type="radio" name="ap-sample" checked="@on" @onchange="() => { if (trade) _tradeRow = rk; else _tradeRow = null; _sample = id; }" />
                     <b>@x.Name</b>
-                    <span class="small">@x.QualityText · @x.SourceText · 所选1份@(x.Count > 1 ? $"（本堆共{x.Count}份）" : "") · @x.HolderText@(x.Reserved ? " · 已预留" : "") · @x.AppraisalText</span>
+                    <span class="small">@x.QualityText · @x.SourceText · @x.PickText · @x.HolderText@(x.Reserved ? " · 已预留" : "") · @x.AppraisalText</span>
                 </label>
             }
         </div>
@@ -92,11 +100,11 @@
             <p class="small">@v.QuoteTitle：第@(v.QuoteDay)日锁定</p>
             <p class="small">下次世界午夜@(v.NextMidnightText)起恢复@(v.QuotaTotal)包</p>
             <p class="small muted">@v.QuoteLockNote</p>
-            var why = v.Blocked ?? v.TradeBlocked ?? (sample == null ? "先选一份样本" : sample.TradeBlocked) ?? busy;
-            var sid = sample?.InstanceId ?? 0;
+            var why = v.Blocked ?? v.TradeBlocked ?? (tsample == null ? "先选一份样本" : tsample.TradeBlocked) ?? busy;
+            var sid = tsample?.InstanceId ?? 0;
             var oid2 = offer.OfferId;
             <div class="btn-row">
-                <button class="primary" disabled="@(why != null)" title="@(why ?? $"交出{sample?.Name}1份（{sample?.HolderText}），{v.TradeMinutes}分钟后{offer.Text}落在{v.OutputPlace}；中途停下不交样")"
+                <button class="primary" disabled="@(why != null)" title="@(why ?? $"交出{tsample?.Name}1份（{tsample?.HolderText}），{v.TradeMinutes}分钟后{offer.Text}落在{v.OutputPlace}；中途停下不交样")"
                         @onclick="() => G.StartAppraisalTrade(sid, oid2)">交出1份并换取@(offer.ItemName)×@(offer.Quantity)（@(v.TradeMinutes)分钟）</button>
                 @if (why != null) { <span class="muted small">@why</span> }
             </div>
@@ -114,5 +122,6 @@
 
     private string _tab = "info";
     private int _sample;
+    private string? _tradeRow;
     private string _offer = "";
 }

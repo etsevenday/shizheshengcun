@@ -19,6 +19,11 @@ namespace Survival.Core.Engine
         /// <summary>通用阻拦（不在鉴定所、行动中、战斗、对话）；能办为 null。</summary>
         public string? Blocked { get; set; }
         public List<AppraisalSampleView> Samples { get; set; } = new List<AppraisalSampleView>();
+        /// <summary>
+        /// 「以物换物」页的样本行（B38c，N02 附录 Q299）：随身样本仍逐实例一行；当前地面样本按实际地面卡（CardKey：持有处、普通／教学、鉴定与特殊侧）合并，
+        /// 一堆一行，Count 为该地面卡的真实堆总量，行上其余字段按绑定实例（堆内按样本列表顺序第一份可交易的，没有则首项）。免费说明与详细鉴定页仍用 <see cref="Samples"/>。
+        /// </summary>
+        public List<AppraisalSampleView> TradeSamples { get; set; } = new List<AppraisalSampleView>();
         public int AppraiseMinutes { get; set; }
         /// <summary>“植物纤维×1（完成时扣）”。</summary>
         public string AppraiseCost { get; set; } = "";
@@ -56,7 +61,14 @@ namespace Survival.Core.Engine
     /// <summary>一份可在鉴定所选用的活性物质样本（主角随身或当前服务区地面）。</summary>
     public sealed class AppraisalSampleView
     {
+        /// <summary>绑定的样本实例（交易/鉴定按钮提交的就是它）。</summary>
         public int InstanceId { get; set; }
+        /// <summary>行键：实例行“i:{实例号}”，换物页地面合并行“card:{地面卡键}”（B38c Q299；界面按行键记住所选行）。</summary>
+        public string RowKey { get; set; } = "";
+        /// <summary>这一行包含的实例（实例行只有自己；换物页地面合并行为同一地面卡的全部实例，按样本列表顺序）。</summary>
+        public List<int> MemberIds { get; set; } = new List<int>();
+        /// <summary>“所选1份”／“所选1份（本堆共{数量}份）”（N02 附录 Q288、Q299）。</summary>
+        public string PickText => Count > 1 ? $"所选1份（本堆共{Count}份）" : "所选1份";
         public string Name { get; set; } = "";
         /// <summary>物质品质（白色）。</summary>
         public string QualityText { get; set; } = "";
@@ -226,26 +238,18 @@ namespace Survival.Core.Engine
                 TradeMinutes = Ap.TradeMinutes,
             };
             v.Status = v.Blocked ?? "可办理";
-            foreach (var i in AppraisalSamples(s))
+            var samples = AppraisalSamples(s).ToList();
+            v.Samples = samples.Select(i => SampleView(s, i)).ToList();
+            // B38c（N02 附录 Q299）：换物页地面样本按实际地面卡合并，一堆一行；绑定堆内按样本列表顺序第一份可交易的实例，没有就绑定首项并显示其实际阻断原因
+            foreach (var g in samples.GroupBy(i => i.IsCarried ? $"i:{i.InstanceId}" : $"card:{CardKey(i)}"))
             {
-                v.Samples.Add(new AppraisalSampleView
-                {
-                    InstanceId = i.InstanceId,
-                    Name = SubstanceLabel(i),
-                    QualityText = "白色",
-                    SourceText = SampleSourceText(i),
-                    Tutorial = IsTutorialSample(i),
-                    Ordinary = IsOrdinarySample(i),
-                    Count = i.Count,
-                    HolderText = HolderOf(s, i),
-                    Reserved = i.ReservedBy != null || IsLocked(s, i),
-                    Appraised = i.Appraisal != null,
-                    AppraisalText = AppraisalStateText(i),
-                    FusionText = AppraisalFusionText(s, i),
-                    AppraiseBlocked = AppraiseSampleBlocked(s, i),
-                    TradeBlocked = TradeSampleBlocked(s, i),
-                    DevSource = i.Source?.GrantEventId ?? "",
-                });
+                var members = g.ToList();
+                var bound = members.FirstOrDefault(i => TradeSampleBlocked(s, i) == null) ?? members[0];
+                var row = SampleView(s, bound);
+                row.RowKey = g.Key;
+                row.MemberIds = members.Select(i => i.InstanceId).ToList();
+                row.Count = members.Sum(i => i.Count);
+                v.TradeSamples.Add(row);
             }
             FillTradePreview(s, v);
             if (ActiveCityTxn(s) is CityServiceTxn p && p.AppraisalMode != null)
@@ -257,6 +261,28 @@ namespace Survival.Core.Engine
             }
             return v;
         }
+
+        /// <summary>一份样本实例的面板行（来源、鉴定、预留与两种阻断都按这份实例）。</summary>
+        private AppraisalSampleView SampleView(GameState s, ItemInstance i) => new AppraisalSampleView
+        {
+            InstanceId = i.InstanceId,
+            RowKey = $"i:{i.InstanceId}",
+            MemberIds = new List<int> { i.InstanceId },
+            Name = SubstanceLabel(i),
+            QualityText = "白色",
+            SourceText = SampleSourceText(i),
+            Tutorial = IsTutorialSample(i),
+            Ordinary = IsOrdinarySample(i),
+            Count = i.Count,
+            HolderText = HolderOf(s, i),
+            Reserved = i.ReservedBy != null || IsLocked(s, i),
+            Appraised = i.Appraisal != null,
+            AppraisalText = AppraisalStateText(i),
+            FusionText = AppraisalFusionText(s, i),
+            AppraiseBlocked = AppraiseSampleBlocked(s, i),
+            TradeBlocked = TradeSampleBlocked(s, i),
+            DevSource = i.Source?.GrantEventId ?? "",
+        };
 
         /// <summary>
         /// 教学样本免费说明（R07 X3.2：不要求先到鉴定所，0 分钟、不扣纤维、不推进时间）：首次查看在该实例写 fixed_tutorial_attack 记录（开发假设 B18-5），

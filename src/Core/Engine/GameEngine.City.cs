@@ -582,7 +582,7 @@ namespace Survival.Core.Engine
             return string.Join("，", parts);
         }
 
-        /// <summary>咨询与换药无收益的冷却说明（N02 附录 Q286）：“回血冷却还需{剩余时长}。”／“回血冷却已就绪。”，已感染再接病毒减量冷却句。</summary>
+        /// <summary>咨询的冷却说明（N02 附录 Q286；换药无收益自 B38c 改用 RunningDressingCooldowns，只列在走的冷却）：“回血冷却还需{剩余时长}。”／“回血冷却已就绪。”，已感染再接病毒减量冷却句。</summary>
         public string CooldownSentences(GameState s, ActorState a)
         {
             var text = a.BandageReadyAt > s.GameMinute ? $"回血冷却还需{Clock.Duration(a.BandageReadyAt - s.GameMinute)}。" : "回血冷却已就绪。";
@@ -600,8 +600,19 @@ namespace Survival.Core.Engine
             string? why;
             using (FocusOutOfBattleOn(s, a.Id)) why = MedicineBlocked(s, BandageUse);
             if (why == null) return null;
-            // 冷却造成的无收益：只写一句（试玩修复 M306）；B38b 起用 N02 附录 Q286“当前换药没有收益。{冷却说明}”
-            return a.BandageReadyAt > s.GameMinute ? "当前换药没有收益。" + CooldownSentences(s, a) : why;
+            // 冷却造成的无收益：只写一句（试玩修复 M306）。B38c（N02 附录 Q300）：回血或病毒减量（仅仍感染）有任一冷却在走就用
+            // “当前换药没有收益。”，按回血、病毒减量顺序只列正在冷却的项目；两项都无冷却时沿用原实际原因。预览与事务重验同走这里。
+            var running = RunningDressingCooldowns(s, a);
+            return running.Length > 0 ? "当前换药没有收益。" + running : why;
+        }
+
+        /// <summary>换药无收益时正在走的适用冷却（N02 附录 Q300）：“回血冷却还需{剩余时长}。”，仍感染再接“病毒减量冷却还需{剩余时长}。”；没有在走的为空串。</summary>
+        private static string RunningDressingCooldowns(GameState s, ActorState a)
+        {
+            var text = "";
+            if (a.BandageReadyAt > s.GameMinute) text += $"回血冷却还需{Clock.Duration(a.BandageReadyAt - s.GameMinute)}。";
+            if (a.Body.Infected && a.Body.BandageVirusReadyAt > s.GameMinute) text += $"病毒减量冷却还需{Clock.Duration(a.Body.BandageVirusReadyAt - s.GameMinute)}。";
+            return text;
         }
 
         private string DressingText(GameState s, ActorState a, CityServiceConfig svc)
