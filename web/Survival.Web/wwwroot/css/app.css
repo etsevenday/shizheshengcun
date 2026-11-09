@@ -445,17 +445,17 @@ div.card { cursor: pointer; }
 [data-drag] { user-select: none; -webkit-user-select: none; touch-action: none; }
 body.dragging, body.dragging * { cursor: grabbing !important; }
 .drag-source { opacity: .45; }
-.drop-can { outline: 2px dashed #8fcf86; outline-offset: 2px; }
+.drop-can { outline: 2px dashed var(--ink2-sage); outline-offset: 2px; }
 .drop-can-preview { outline: 2px dashed var(--accent); outline-offset: 2px; }
-.drop-hover { outline: 3px solid #8fcf86 !important; outline-offset: 2px; }
+.drop-hover { outline: 3px solid var(--ink2-sage) !important; outline-offset: 2px; }
 .drop-can-preview.drop-hover { outline-color: var(--accent) !important; }
 .drop-hover-no { outline: 3px solid var(--danger) !important; outline-offset: 2px; }
-.drop-line { position: fixed; z-index: 80; width: 4px; border-radius: 2px; background: #8fcf86; box-shadow: 0 0 6px #8fcf86; pointer-events: none; display: none; }
+.drop-line { position: fixed; z-index: 80; width: 4px; border-radius: 2px; background: var(--ink2-sage); box-shadow: 0 0 6px var(--ink2-sage); pointer-events: none; display: none; }
 .drag-ghost { position: fixed; z-index: 90; pointer-events: none; min-width: 120px; max-width: 280px; padding: 7px 10px; background: #1c2620f2; border: 1px solid #6c7d68; border-radius: 6px; box-shadow: 0 8px 20px #000a; color: var(--text); font-size: var(--fs-aux); line-height: 1.5; }
 .drag-ghost .dg-title { font-weight: 600; font-size: var(--fs-body); }
 .drag-ghost .dg-from { color: var(--muted); font-size: var(--fs-aux); }
 .drag-ghost .dg-label:empty { display: none; }
-.drag-ghost.ok { border-color: #8fcf86; }
+.drag-ghost.ok { border-color: var(--ink2-sage); }
 .drag-ghost.ok .dg-label { color: #a8dd9f; }
 .drag-ghost.preview { border-color: var(--accent); }
 .drag-ghost.preview .dg-label { color: var(--accent); }

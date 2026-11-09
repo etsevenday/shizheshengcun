@@ -1,15 +1,23 @@
-/* v0.9: static, nine-slice material borders; the original layout and hit areas
-   stay intact. No overlay nodes, new grid rows, dynamic filters or input handlers.
-   Each 24-unit source corner occupies 12 CSS px, independent of panel size. */
+/* 框体层（v0.9 起为静态九宫格；B31a R50 换重墨 V2 新框体，a9b93f0 素材/ink-v2）。
+   原布局、命中区与卡尺寸不变：框体只画在原 border 区并向内叠盖，不新增节点、网格行或输入处理。
+   新框体源图 96 单位、边宽 12 单位；显示粗细照 生成界面.cjs frame()：高 ≥280 的面板 8px、≥75 的卡与行 6px、更矮的按钮与小件 4px。 */
 :root {
-  --paper-texture: url('../art/v09/paper.svg');
-  --iron-texture: url('../art/v09/iron.svg');
-  --frame-iron: url('../art/v09/frame-iron.svg');
-  --frame-paper: url('../art/v09/frame-paper.svg');
-  --frame-selected: url('../art/v09/frame-selected.svg');
-  --frame-button: url('../art/v09/frame-button.svg');
-  --frame-iron-alt: url('../art/v09/frame-iron-alt.svg');
-  --frame-paper-alt: url('../art/v09/frame-paper-alt.svg');
+  --ink2-frame-panel: url('../art/ink2/frame-panel.svg');
+  --ink2-frame-card: url('../art/ink2/frame-card.svg');
+  --ink2-frame-selected: url('../art/ink2/frame-selected.svg');
+  --ink2-frame-action: url('../art/ink2/frame-action.svg');
+  --paper-texture: url('../art/ink2/texture-paper.svg');
+  --iron-texture: url('../art/ink2/texture-iron.svg');
+  /* 旧变量名沿用，指向新框体（新稿无旋转变体，-alt 与原框相同） */
+  --frame-iron: var(--ink2-frame-panel);
+  --frame-paper: var(--ink2-frame-card);
+  --frame-selected: var(--ink2-frame-selected);
+  --frame-button: var(--ink2-frame-action);
+  --frame-iron-alt: var(--ink2-frame-panel);
+  --frame-paper-alt: var(--ink2-frame-card);
+  --ink2-frame-l: 8px;
+  --ink2-frame-m: 6px;
+  --ink2-frame-s: 4px;
 }
 
 /* Keep a plain border and base colour as the missing-resource fallback.
@@ -18,7 +26,7 @@
 .title-card {
   border-color: var(--ink2-paper-bottom);
   border-radius: 2px;
-  border-image: var(--frame-iron) 24 / 12px / 0 stretch;
+  border-image: var(--frame-iron) 12 / var(--ink2-frame-l) / 0 stretch;
   background-clip: padding-box;
   box-shadow: 0 3px 8px color-mix(in srgb, var(--ink2-black) 60%, transparent);
 }
@@ -56,7 +64,7 @@
 }
 .wasteland .map-card {
   border-color: var(--ink2-line);
-  border-image: var(--frame-iron) 24 / 10px / 0 stretch;
+  border-image: var(--frame-iron) 12 / var(--ink2-frame-m) / 0 stretch;
   border-radius: 2px;
   box-shadow: 0 3px 5px color-mix(in srgb, var(--ink2-black) 60%, transparent);
 }
@@ -67,7 +75,7 @@
 .wasteland :is(.card, .ocard, .pot-card, .pot-card.in-fire, .fc-food) {
   border-color: var(--ink2-paper-bottom);
   border-radius: 2px;
-  border-image: var(--frame-paper) 24 / 10px / 0 stretch;
+  border-image: var(--frame-paper) 12 / var(--ink2-frame-m) / 0 stretch;
   background: var(--paper-texture), linear-gradient(110deg, var(--ink2-light), var(--ink2-muted));
   background-size: 100% 100%, auto;
   background-clip: padding-box;
@@ -122,7 +130,7 @@
    outlines deliberately stay independent from the decorative border image. */
 .wasteland :is(.nav button, .secondary, .detail-tabs button, .attr-back, .st-close, .oc-foot .oc-btn, .fc-btn) {
   border-color: var(--ink2-btn-edge);
-  border-image: var(--frame-iron) 24 / 8px / 0 stretch;
+  border-image: var(--frame-iron) 12 / var(--ink2-frame-s) / 0 stretch;
   border-radius: 1px;
   background: var(--iron-texture), linear-gradient(115deg, var(--ink2-btn-fill), var(--ink2-dark));
   background-clip: padding-box;
@@ -131,7 +139,7 @@
 .wasteland .fc-btn.plain { color: var(--ink2-light); }
 .wasteland :is(.loc-btn, .primary, .apop-go, .rest-go button, .ca-use, .fc-btn.ignite, .fc-btn.cook) {
   border-color: var(--ink2-meter-gold);
-  border-image: var(--frame-button) 24 / 9px / 0 stretch;
+  border-image: var(--frame-button) 12 / var(--ink2-frame-s) / 0 stretch;
   border-radius: 1px;
   background: var(--paper-texture), linear-gradient(110deg, var(--ink2-gold), var(--ink2-gold));
   background-size: 100% 100%, auto;
@@ -173,12 +181,12 @@
 }
 .wasteland :is(.mc-chip, .fact, .item-row, .pc-row, .pc-slot, .pc-reserved) {
   border-radius: 1px;
-  border-image: var(--frame-iron) 24 / 5px / 0 stretch;
+  border-image: var(--frame-iron) 12 / var(--ink2-frame-s) / 0 stretch;
 }
 .wasteland .mc-chip { background: var(--iron-texture), color-mix(in srgb, var(--ink2-dark) 92%, transparent); box-shadow: 1px 2px color-mix(in srgb, var(--ink2-black) 67%, transparent); }
 .wasteland :is(.pc-row, .pc-slot, .pc-reserved) { border-image-source: var(--frame-paper); }
 .wasteland :is(.card-arrow, .row-arrow) {
-  border-image: var(--frame-paper) 24 / 6px / 0 stretch;
+  border-image: var(--frame-paper) 12 / var(--ink2-frame-s) / 0 stretch;
   background-image: var(--paper-texture);
   border-radius: 1px;
 }
@@ -233,14 +241,14 @@
   background-image: var(--iron-texture);
 }
 .wasteland .track i { background-image: var(--iron-texture), linear-gradient(90deg, var(--ink2-meter-sage), var(--ink2-sage)); }
-.wasteland .vital .track i { background-image: url('../art/v09/iron.svg'), linear-gradient(90deg, var(--ink2-meter-sage), var(--ink2-sage)); }
-.wasteland .vital.warning .track i { background-image: url('../art/v09/iron.svg'), linear-gradient(90deg, var(--ink2-meter-gold), var(--ink2-gold)); }
-.wasteland .vital.critical .track i { background-image: url('../art/v09/iron.svg'), linear-gradient(90deg, var(--ink2-btn-primary-fill), var(--ink2-btn-primary-edge)); }
+.wasteland .vital .track i { background-image: var(--iron-texture), linear-gradient(90deg, var(--ink2-meter-sage), var(--ink2-sage)); }
+.wasteland .vital.warning .track i { background-image: var(--iron-texture), linear-gradient(90deg, var(--ink2-meter-gold), var(--ink2-gold)); }
+.wasteland .vital.critical .track i { background-image: var(--iron-texture), linear-gradient(90deg, var(--ink2-btn-primary-fill), var(--ink2-btn-primary-edge)); }
 
 /* The shared theme also reaches dialogue and combat. Keep turn/target states
    explicit; only these surfaces change, not action locks or target logic. */
 .wasteland :is(.ally-card, .foe) {
-  border-image: var(--frame-paper) 24 / 8px / 0 stretch;
+  border-image: var(--frame-paper) 12 / var(--ink2-frame-l) / 0 stretch;
   border-radius: 1px;
   background: var(--paper-texture), var(--ink2-light);
   background-size: 100% 100%, auto;
@@ -250,7 +258,7 @@
 .wasteland .foe.selected { border-image-source: var(--frame-selected); }
 .wasteland .foe.targetable:not(.selected):not(.acting) { border-image-source: var(--frame-button); }
 .wasteland :is(.cmdt, .bx-x) {
-  border-image: var(--frame-iron) 24 / 6px / 0 stretch;
+  border-image: var(--frame-iron) 12 / var(--ink2-frame-s) / 0 stretch;
   border-radius: 1px;
 }
 .wasteland .cmdt.on { border-image-source: var(--frame-selected); }
@@ -272,3 +280,85 @@
 /* B21 试玩第 2 轮：卡旁浮窗里的危险操作（01 被拒时的“终止本次远征…”）用红字，与 Esc 菜单 .secondary.danger 同款，不吃 .apop-go 的金底 */
 .wasteland .apop-foot .apop-go.danger { background: var(--ink2-btn-fill); border-image: none; border-color: var(--ink2-btn-primary-fill); color: var(--ink2-danger); }
 .wasteland .apop-foot .apop-go.danger:hover:not(:disabled, .gate-off) { background: var(--ink2-badge-red-fill); border-image: none; color: var(--ink2-light); }
+
+/* ───── B31a（R50）：重墨 V2 按钮与九种表现状态 ─────
+   按钮照 a9b93f0 生成界面.cjs button()：普通深褐底＋褐内框＋顶亮线，主要动作暗红底＋铜内框，弱化（不可用）暗底灰字。
+   卡片九状态照 v0.9 06 §4：默认、悬停（内边提亮）、键盘焦点（卡外双线）、选中（金框＋金内框）、不可用（斜线）、
+   危险（左侧暗红条＋红内光）、加工中（底部金线）、可放入／不可放入（拖拽轮廓，见 app.css .drop-*）。
+   各状态各占一层（卡外、边框、内框、左条、底线），可同时出现；都不改变卡片外尺寸。 */
+.wasteland :is(.clock, .weight, .map-row, .facility-row, .section.ground, .section.carried, .cprog, .st-pop, .map-card) {
+  border-image-width: var(--ink2-frame-m);
+}
+.wasteland :is(.nav button, .secondary, .detail-tabs button, .attr-back, .st-close, .oc-foot .oc-btn, .fc-btn) {
+  background: var(--iron-texture), var(--ink2-btn-fill);
+  color: var(--ink2-light);
+  box-shadow: inset 0 0 0 1px var(--ink2-btn-edge), inset 0 2px 0 var(--ink2-btn-hi), 0 2px 2px color-mix(in srgb, var(--ink2-black) 47%, transparent);
+}
+.wasteland :is(.loc-btn, .primary, .apop-go, .rest-go button, .ca-use, .fc-btn.ignite, .fc-btn.cook) {
+  border-color: var(--ink2-btn-primary-edge);
+  border-image-source: var(--ink2-frame-action);
+  background: var(--iron-texture), var(--ink2-btn-primary-fill);
+  color: var(--ink2-light);
+  box-shadow: inset 0 0 0 1px var(--ink2-btn-primary-edge), inset 0 2px 0 var(--ink2-btn-primary-hi), 0 2px 2px color-mix(in srgb, var(--ink2-black) 53%, transparent);
+}
+.wasteland :is(.loc-btn, .primary, .apop-go, .rest-go button, .ca-use, .fc-btn.ignite, .fc-btn.cook):hover:not(:disabled, .gate-off) {
+  background-color: color-mix(in srgb, var(--ink2-btn-primary-fill) 78%, var(--ink2-btn-primary-edge));
+  border-image-source: var(--ink2-frame-selected);
+  filter: none;
+}
+.wasteland :is(.nav button, .secondary, .oc-btn):hover:not(:disabled, .gate-off) {
+  border-image-source: var(--ink2-frame-selected);
+  background-color: var(--ink2-tile-top);
+}
+.wasteland :is(.loc-btn, .primary, .oc-btn, .fc-btn, .ca-use, .apop-go, .rest-go button, .nav button, .secondary):is(:disabled, .gate-off) {
+  background: var(--iron-texture), var(--ink2-btn-muted-fill);
+  color: var(--ink2-btn-muted-text);
+  border-color: var(--ink2-btn-muted-edge);
+  border-image-source: var(--ink2-frame-panel);
+  box-shadow: inset 0 0 0 1px var(--ink2-btn-muted-edge);
+}
+.wasteland .secondary.danger { color: var(--ink2-danger); box-shadow: inset 0 0 0 1px var(--ink2-badge-red-edge), inset 0 2px 0 var(--ink2-btn-hi); }
+
+/* 卡片默认层与状态层 */
+.wasteland :is(.card, .ocard, .pot-card, .fc-food, .map-card) {
+  --st-hover: 0 0 #0000;
+  --st-sel: 0 0 #0000;
+  --st-danger: 0 0 #0000;
+  --st-busy: 0 0 #0000;
+  --st-base: inset 0 0 13px color-mix(in srgb, var(--ink2-btn-edge) 31%, transparent), 0 3px 5px color-mix(in srgb, var(--ink2-black) 60%, transparent);
+  --st-shadow: var(--st-hover), var(--st-sel), var(--st-danger), var(--st-busy), var(--st-base);
+  box-shadow: var(--st-shadow);
+}
+.wasteland .map-card { --st-base: 0 3px 5px color-mix(in srgb, var(--ink2-black) 60%, transparent); }
+.wasteland :is(.card, .ocard, .pot-card, .fc-food, .map-card):hover:not(.selected) {
+  --st-hover: inset 0 0 0 2px color-mix(in srgb, var(--ink2-light) 60%, transparent);
+  border-image-source: var(--ink2-frame-card);
+  box-shadow: var(--st-shadow);
+}
+.wasteland .map-card:hover:not(.selected) { border-image-source: var(--ink2-frame-panel); }
+.wasteland :is(.card, .ocard, .pot-card, .fc-food, .map-card).selected {
+  --st-sel: inset 0 0 0 2px var(--ink2-selected);
+  border-color: var(--ink2-gold);
+  border-image-source: var(--ink2-frame-selected);
+  box-shadow: var(--st-shadow);
+}
+.wasteland :is(.card, .ocard, .pot-card, .fc-food, .map-card):focus-visible,
+.wasteland :is(.card, .ocard, .pot-card, .fc-food, .map-card):has(> :focus-visible) {
+  outline: 5px double var(--ink2-light);
+  outline-offset: 1px;
+}
+.wasteland :is(.card, .ocard, .pot-card, .fc-food).dim,
+.wasteland :is(.card, .ocard, .pot-card, .fc-food, .map-card).st-disabled {
+  background-image: var(--paper-texture),
+    repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in srgb, var(--ink2-black) 14%, transparent) 7px 9px),
+    linear-gradient(110deg, var(--ink2-btn-muted-text), var(--ink2-btn-muted-text));
+  background-size: 100% 100%, auto, auto;
+}
+.wasteland :is(.card, .ocard, .pot-card, .fc-food, .map-card).st-danger {
+  --st-danger: inset 5px 0 0 var(--ink2-red), inset 0 0 12px color-mix(in srgb, var(--ink2-red) 45%, transparent);
+  box-shadow: var(--st-shadow);
+}
+.wasteland :is(.card, .ocard, .pot-card, .fc-food, .map-card).st-busy {
+  --st-busy: inset 0 -3px 0 var(--ink2-gold);
+  box-shadow: var(--st-shadow);
+}
